@@ -403,7 +403,11 @@ extern uint64_t sk_g_006fea38;   /* DAT_00006fea38 */
 extern uint64_t sk_g_006ff0c8;   /* DAT_00006ff0c8 */
 extern uint64_t sk_g_00700170;   /* DAT_0000700170 */
 
-/* String constants referenced by this slice (Ghidra s_ ground truth). */
+extern uint64_t sk_g_0068a0b0;   /* DAT_000068a0b0 */
+extern uint64_t sk_g_0068a3b0;   /* DAT_000068a3b0 */
+extern uint64_t sk_g_0068a3c0;   /* DAT_000068a3c0 */
+extern uint64_t sk_g_0068a510;   /* DAT_000068a510 */
+extern uint64_t sk_g_0068a520;   /* DAT_000068a520 */
 extern const char sk_str_00689f40[];   /* string at 0x00689f40 */
 extern const char sk_str_00689f60[];   /* string at 0x00689f60 */
 extern const char sk_str_00689f80[];   /* string at 0x00689f80 */
@@ -444,6 +448,12 @@ extern const char sk_str_0068a488[];   /* string at 0x0068a488 */
 extern const char sk_str_0068a4a8[];   /* string at 0x0068a4a8 */
 extern const char sk_str_0068a4c8[];   /* string at 0x0068a4c8 */
 extern const char sk_str_0068a4e8[];   /* string at 0x0068a4e8 */
+extern const char sk_str_006a9c4f[];   /* string at 0x006a9c4f */
+extern const char sk_str_006a9c9a[];   /* string at 0x006a9c9a */
+extern const char sk_str_006a9f4f[];   /* string at 0x006a9f4f */
+extern const char sk_str_006aa0db[];   /* string at 0x006aa0db */
+
+/* String constants referenced by this slice (Ghidra s_ ground truth). */
 /* ===== part 0: fragment of SKR68 ===== */
 
 /* FUN_00663c04 @ 0x00663c04   (est. sk_l4_error_string)
@@ -748,7 +758,7 @@ unwind_check:
 bounds_fault:
     {
         /* WARNING: Does not return */
-        ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x6642a0))();
+        SoftwareBreakpoint(0x5519, 0x6642a0);;
     }
 }
 
@@ -772,7 +782,7 @@ void sk_f_006642bc(uint64_t *obj, uint64_t flags, uint64_t unused, uint64_t *res
         return;
     }
     /* WARNING: Does not return */
-    ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x664304))();
+    SoftwareBreakpoint(0x5519, 0x664304);;
 }
 
 /* FUN_00664304 @ 0x00664304   (est. sk_scratch_peek_reply)
@@ -791,7 +801,7 @@ uint64_t sk_f_00664304(int64_t obj, int64_t index)
         return *reply;
     }
     /* WARNING: Does not return */
-    ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x664330))();
+    SoftwareBreakpoint(0x5519, 0x664330);;
 }
 
 /* FUN_00664330 @ 0x00664330   (est. sk_scratch_claim_owner)
@@ -817,7 +827,7 @@ void sk_f_00664330(uint64_t new_owner)
                 (uint64_t)(cur + 0xe0U) < (uint64_t)(slot + 1) ||
                 (uint64_t)(slot + 1) < (uint64_t)slot) {
                 /* WARNING: Does not return */
-                ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x6643b8))();
+                SoftwareBreakpoint(0x5519, 0x6643b8);;
             }
             do {
                 CallSupervisor(4);
@@ -895,7 +905,7 @@ void sk_f_006643b8(uint64_t new_owner)
     }
 bounds_fault:
     /* WARNING: Does not return */
-    ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x66453c))();
+    SoftwareBreakpoint(0x5519, 0x66453c);;
 }
 
 /* FUN_0066453c @ 0x0066453c   (est. sk_scratch_report_error)
@@ -929,7 +939,7 @@ uint64_t sk_f_0066455c(uint64_t obj)
     if ((obj != 0) && (((*(uint64_t *)(obj + 0x10) >> 1) & 1) != 0)) {
         if ((uint64_t)(obj + 0x70) < obj) {
             /* WARNING: Does not return */
-            ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x664588))();
+            SoftwareBreakpoint(0x5519, 0x664588);;
         }
         link = *(uint64_t *)(obj + 0x58);
     }
@@ -953,7 +963,7 @@ void sk_f_00664588(uint64_t obj)
         ((uint64_t)(obj + 0x70 & mask) < (uint64_t)(base + 0x70) ||
          (uint64_t)(base + 0x70) < base)) {
         /* WARNING: Does not return */
-        ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x6645bc))();
+        SoftwareBreakpoint(0x5519, 0x6645bc);;
     }
     return;
 }
@@ -972,7 +982,7 @@ uint32_t sk_f_006645bc(uint64_t obj)
     if ((obj != 0) && (((*(uint8_t *)(obj + 0x10) >> 1) & 1) != 0)) {
         if ((uint64_t)(obj + 0x70) < obj) {
             /* WARNING: Does not return */
-            ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x6645ec))();
+            SoftwareBreakpoint(0x5519, 0x6645ec);;
         }
         code = *(uint32_t *)(obj + 0x60);
     }
@@ -1029,7 +1039,7 @@ void sk_f_0066469c(void)
         value = *(uint64_t *)(base + 0x50);
         if ((uint64_t)(value + 0x2f0) < value) {
             /* WARNING: Does not return */
-            ((uint64_t (*)(void))(uintptr_t)SoftwareBreakpoint(0x5519, 0x6646e0))();
+            SoftwareBreakpoint(0x5519, 0x6646e0);;
         }
     }
     sk_g_006fe7e8 = value;
@@ -4405,7 +4415,7 @@ void sk_f_00668c94(int64_t base)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x668cb0))();
+  SoftwareBreakpoint(0x5519, 0x668cb0);;
 }
 
 /* FUN_00668cb0 @ 0x00668cb0   (est. sk_error_msg_build)
@@ -4508,7 +4518,7 @@ void sk_f_00668dd8(void)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x668e24))();
+  SoftwareBreakpoint(0x5519, 0x668e24);;
 }
 
 /* FUN_00668e24 @ 0x00668e24   (est. sk_slab_alloc)
@@ -4602,7 +4612,7 @@ uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags)
 
   fail:
     /* WARNING: does not return */
-    ((void (*)(void))SoftwareBreakpoint(0x5519, 0x669048))();
+    SoftwareBreakpoint(0x5519, 0x669048);;
     return 0;
 
   split:
@@ -4661,7 +4671,7 @@ void sk_f_006690dc(uint64_t obj)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x669134))();
+  SoftwareBreakpoint(0x5519, 0x669134);;
 }
 
 /* FUN_00669134 @ 0x00669134   (est. sk_slab_free)
@@ -4707,7 +4717,7 @@ void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj)
     }
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x66921c))();
+  SoftwareBreakpoint(0x5519, 0x66921c);;
 }
 
 /* FUN_0066924c @ 0x0066924c   (est. sk_alloc_slab_1c8)
@@ -4727,7 +4737,7 @@ void sk_f_0066924c(void)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x669298))();
+  SoftwareBreakpoint(0x5519, 0x669298);;
 }
 
 /* FUN_00669298 @ 0x00669298   (est. sk_alloc_slab_270)
@@ -4747,7 +4757,7 @@ void sk_f_00669298(void)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x6692e4))();
+  SoftwareBreakpoint(0x5519, 0x6692e4);;
 }
 
 /* FUN_006692e4 @ 0x006692e4   (est. sk_alloc_slab_2a8)
@@ -4767,7 +4777,7 @@ void sk_f_006692e4(void)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x669330))();
+  SoftwareBreakpoint(0x5519, 0x669330);;
 }
 
 /* FUN_00669330 @ 0x00669330   (est. sk_free_slab_2a8)
@@ -4787,7 +4797,7 @@ void sk_f_00669330(uint64_t obj)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x669388))();
+  SoftwareBreakpoint(0x5519, 0x669388);;
 }
 
 /* FUN_00669388 @ 0x00669388   (est. sk_alloc_slab_2e0)
@@ -4807,7 +4817,7 @@ void sk_f_00669388(void)
     return;
   }
   /* WARNING: does not return */
-  ((void (*)(void))SoftwareBreakpoint(0x5519, 0x6693d4))();
+  SoftwareBreakpoint(0x5519, 0x6693d4);;
 }
 /* ===== part 7: fragment of SKR68 ===== */
 /* Recreated from cL4 Secure Kernel slice SKR68. Ground truth: Ghidra FUN_

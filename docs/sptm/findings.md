@@ -4687,3 +4687,99 @@ aliased copies is the main potential over-release surface.
 Confidence: medium (refcount ordering and signed-bound semantics
 reconstructed from decompiles; the copy/swap operators are structurally
 high-confidence).
+
+## [SKR61] 0x003fdfe8-0x00404a7c Message/object serialization + dispatch cluster (120 fn)
+- **Observation**: This slice is a dense cluster of cL4 message/object serialization and dispatch wrappers plus the Swift-runtime byte-buffer encoder. A substantial subset (003fdfe8/00404c/003fe564/003fe5d0/003fe648/003ff4c0/003ff524/003ff598/003ff5f8/00400638/00400758/00400fd4/00401044/004010b4/00401124/00401188/00401d58/…) dispatches through vtable method pointers at caller-inherited `this+0x10..0x28` obtained only as register artifacts (extraout_x16). There is NO null/bounds validation of the recovered this pointer or the method slot anywhere in these paths. The Swift string/byte encoders (004008c0/00400b3c/004011f0/003fe0b8/003ff664/003ffc64/003fe720/003ff030) select element width 1/2/4 bytes by a caller-register selector and apply `(len+0x10+ptr)&~mask` alignment math against 0x1000/0x1001 thresholds, with width-3 cases hitting SoftwareBreakpoint traps.
+- **Evidence**: vtable dispatch rendered as `((void (*)(void))(**(uint64_t **)((uint64_t)this + 0x20)))()` where `this` is a `= 0; /* register artifact */` placeholder (e.g. 003fdfe8 `(**(code **)(extraout_x16 + 0x20))()`, 003ff4c0 `+0x10`, 003ff598 `+0x20`). Encoders: 004008c0 uses `(lVar10 + 7U & 0xfffffffffffffff8) + 0x10` alignment and `if (uVar1 < 0x1001) uVar1 = 0x1000;` clamp; 00400b3c stores via width switch and hits `SoftwareBreakpoint(1,0x400e1c)` for width-3; 003ff664/003ffc64/003ff14c/003fe838 all contain `SoftwareBreakpoint(1,<addr>)` traps for illegal width 3. 004025f4/004027a8 use a length clamped only at `>0x18` as a byte index `(unaff_x19 + len)`.
+- **Severity (hypothesis)**: medium — the serialization width/length math and the register-artifact this-pointers are the trust boundary of the message layer; a malformed/attacker-influenced width or length drives OOB slot pointer arithmetic, and the unvalidated vtable slots are an indirect-control-flow surface. All fail via SoftwareBreakpoint traps on illegal width-3, but the 1/2/4-byte paths have no explicit destination bound.
+- **Confidence**: medium (width-selector semantics and register-artifact this recovery are the main unknowns).
+
+## [SKR61] 004049a8 sk_r61_004049a8 (lazy slot initializer)
+- **Observation**: Lazy one-time slot initialization dereferences `*param_1` after a fatal-report path via sk_rt_00027614; the 16-byte descriptor from sk_rt_00027670 is still processed and `sk_rt_0006b6f4(lo, hi, &0x6720e8)` runs, then the result of sk_rt_00376820 is cached into `*param_1`. Slot pointers passed from the 00404898/004048cc/00404974 forwarders are fixed global addresses — no bounds check on the slot value, though it is an internal constant, not attacker input.
+- **Evidence**: body: `sk_rt_00027614(); u128 = sk_rt_00027670(); sk_rt_0006b6f4(u128.lo, u128.hi, &0x6720e8); *param_1 = sk_rt_00376820();`. Forwarders 00404898/0040489c/004048cc/004048d0/00404974/00404978 pass fixed globals 0x64c2e0/0x656380/0x656378.
+- **Severity (hypothesis)**: low — deref of `*param_1` occurs only after the (assumed noreturn) fatal path; the slot is an internal constant.
+- **Confidence**: medium
+
+## [SKR61] 004008c0/00400b3c/004011f0 (variable-width slot encoder/decoder)
+- **Observation**: Element width (1/2/4-byte) is selected by a caller register (extraout_w1/w9/unaff_w20), and the resulting stores/loads at `unaff_x19 + offset` have no explicit bounds validation beyond the 0x1000/0x1001 size-class clamp and a `+1`/`-1` adjust. The 3-byte width case is a hard `SoftwareBreakpoint` trap (0x400e1c/0x4012fc). Alignment math `(len+7)&~7 + 0x10` combined with a size byte at `obj+0x50` means an over-large size byte overflows the slot — the only guard is the tail-length `>0x18`/`<0x1001` checks.
+- **Evidence**: 00400b3c `(uVar13 + (lVar15 + 7U & 0xfffffffffffffff8) + 0x10 & (uVar13 ^ 0xffffffffffffffff))` then width switch storing byte/short/int at `unaff_x19 + lVar8`; `SoftwareBreakpoint(1,0x400e1c)` for width 3; 004011f0 `SoftwareBreakpoint(1,0x4012fc)` for width 3; 004008c0 `if (uVar1 < 0x1001) uVar1 = 0x1000;`.
+- **Severity (hypothesis)**: medium — OOB read/write if the caller-supplied size-class byte or width is inconsistent with the real slot length; the traps fail closed on width-3 but the valid 1/2/4 paths are unchecked.
+- **Confidence**: medium (size byte at +0x50 and width selectors are register artifacts).
+
+## [SKR61] 003fe0b8/003ff664/003ffc64/003fe720/003ff030 (slot size-class validation)
+- **Observation**: Slot index is validated against the table width at `this+0x54` before decode, and empty-slot paths return 0, but the width selector (1/2/4-byte) switch falls through to a SoftwareBreakpoint trap on illegal selector 3, and the return values derive from unrecoverable register artifacts. 003ff664/003ffc64 use `0xfff < v7` / `v7==0x1000` page-size adjustment where the pre-branch value is an artifact.
+- **Evidence**: 003fe0b8 `SoftwareBreakpoint(1,0x3fe1b4)` for width 3; `if (extraout_w9 < unaff_w20) { ... switch over 1/2/4 }`; 003ff030 `uVar3 = iVar5-1; uVar1 = (uVar2<=uVar3)?uVar3:uVar2; if (uVar1<0x1001) uVar1=0x1000;`. 003ff664 `bVar5 = 0xfff < uVar7; bVar6 = uVar7==0x1000; if (!bVar5) { ... return uVar3; }`.
+- **Severity (hypothesis)**: low-medium — bounds correctness depends on artifact values that cannot be statically verified; traps fail closed on illegal width.
+- **Confidence**: low
+
+## [SKR61] 003ff3a0/003ff958/003fe444/00401940/00400eb0 (object back-pointer walk)
+- **Observation**: These walk an object via a 128-bit descriptor from sk_rt_00377824(0x13f): only when `desc.hi < 0x40` do they deref the back-pointer at `(desc.lo - 8)` then `+0x40` and run a finalize/commit sequence (sk_rt_00357d44/0034d1c0/003728b8/00019858 or 003728b8/00019858). The guard is only the `hi < 0x40` size check; a bad `desc.lo` yields an invalid-memory access.
+- **Evidence**: 003ff3a0 `u128 = sk_rt_00377824(0x13f); if (u128.hi < 0x40) { node = *(int64_t*)((uint64_t)u128.lo - 8); sk_rt_00357d44(*(int64_t*)node + 0x40); ... }`; 003fe444 `if (auVar1.hi < 0x40) { sk_rt_00357d44(*(int64_t *)(auVar1.lo - 8) + 0x40); ... }`.
+- **Severity (hypothesis)**: low — the 0x13f-tagged lookup and hi<0x40 guard assume a valid descriptor; deref of `lo-8` is unchecked if the descriptor is stale.
+- **Confidence**: low
+
+## [SKR61] 00401df8/00401f78/004025f4/004027a8 (message length-prefix decode/serialize)
+- **Observation**: The message serialize/deserialize paths trust a variable-width length prefix: the width is derived from `(value & 0xfffffff8) == 0` and the capacity is clamped, but the destination index uses a length rejected only when `>0x18` or type byte `>7` or the 0x100000 flag is set. 004027a8 dispatches through an unrecovered jumptable pointer at `this+8` (indirect jump treated as a call). 00401f78 writes a length delta through param_1 and stores byte/short/int at `param_1 + lVar1` with no explicit buffer-size validation.
+- **Evidence**: 00401df8 `SoftwareBreakpoint(1,0x401f50)`; 00401f78 `SoftwareBreakpoint(1,0x402150)`; 004025f4 `if (uVar1 > 0x18 || type > 7 || (flags & 0x100000)) return;` then `*(uint8_t*)(unaff_x19 + len)`; 004027a8 `UNRECOVERED_JUMPTABLE` via `this+8`.
+- **Severity (hypothesis)**: medium — caller-supplied length used as a byte index with only a 0x18 clamp could drive OOB access; the 004027a8 indirect jump is an arbitrary-control-flow surface if the descriptor is attacker-influenced.
+- **Confidence**: low
+
+## [SKR61] 00400e44/004014d4/00400f28/004019d8/00401aec/00401b7c/00401c18/00401cc0 (cursor-advance dispatchers)
+- **Observation**: A family of cursor-advance dispatchers computes byte-aligned advance arithmetic (`value + 1` masked by `^0xffffffffffffffff`) on register-artifact base pointers (unaff_x19/unaff_x20), then performs vtable dispatch at `this+8/0x10/0x18/0x20`. No bounds check on the aligned advance target.
+- **Evidence**: 00401aec `uint64_t adv = (uint64_t)unaff_x19 + (*(uint8_t*)((uint64_t)this+0x50) + (offset + 7U & ~7U) + 0x10 & ~*(uint8_t*)((uint64_t)this+0x50)) + 1;` then `((void (*)(void))(**(uint64_t **)((uint64_t)this + 8)))();`; 00401b7c `+0x10`, 00401c18 `+0x18`, 00401cc0 `+0x20`.
+- **Severity (hypothesis)**: low-medium — if the artifact base or advance size is attacker-influenced, the store/indirect call target is unchecked.
+- **Confidence**: low
+
+## [SKR61] 003ff424/003ff9cc/003fe4bc/003fe9f0/003fedb4/00400f28 (guarded teardown/continuation)
+- **Observation**: Guarded teardown paths continue only when `in_ZR` (caller Z flag artifact) is set and a count artifact `extraout_x10 < 0x19`, then call a release method through a caller-supplied function pointer artifact (extraout_x9) with no validation, or copy a 1/2-byte record. Control flow depends entirely on inherited caller state.
+- **Evidence**: 003ff424 `if (in_ZR && extraout_x10 < 0x19) { (*x9)(); ... }`; 003ff9cc 1-byte copy variant; 003fe4bc `if ((bool)in_ZR && extraout_x10 < 0x19) { sk_rt_00406c08(); (*extraout_x9)(); ... }`.
+- **Severity (hypothesis)**: low — the indirect call target is an unrecoverable register artifact; no validation before the call.
+- **Confidence**: low
+
+## [SKR61] 003ffad8/003ffb40/003ffba8/003ffc04/003ff318/003ff330/003ff348/003ff360/003ff378 (vtable forwarder family)
+- **Observation**: A family of composition forwarders calls the shared prologue sk_rt_00406f08 then tail-dispatches through a vtable slot at `this+0x10..0x28`, optionally copying 1 byte from a register-artifact base (unaff_x19/unaff_x22)+0x10. These mirror 003ff4c0/003ff524/003ff598/003ff5f8. All vtable targets are unvalidated.
+- **Evidence**: 003ffad8 `((void (*)(void))(**(uint64_t **)((uint64_t)this + 0x10)))();` with byte copy between extraout_x8/x9; 003ffb40 `+0x18` copying from unaff_x22+0x10.
+- **Severity (hypothesis)**: low — unvalidated indirect dispatch family.
+- **Confidence**: low
+
+## [SKR50] 0x388630-0x397a98 Swift runtime TypeDecoder type-cache / materializer (57 fns, batch reclaim)
+Observation: The cL4 Secure Kernel embeds a full Swift runtime type-demangler/decoder whose type-decl cache (0x388630-0x394968 region) stores {node, flags, resolved-decl} triples in an open-addressed table keyed by a 64-bit hash computed from the node, with the element count (DAT_006c08e4) updated on every insert. Bound-generic / protocol-conformance materializers (0x396784, 0x3973e4, 0x397a98) resolve arbitrary generic argument lists and protocol witnesses, and the metadata-pack builders validate each element against the "metadata pack" bit pattern ((x & 1) or x==0).
+Evidence: Decompiles of FUN_00388630 (cache lookup+insert), FUN_00396784/003973e4/00397a98 (bound-generic / protocol / bound-type materialization); the cache is protected by LSE lock-objects (LOAcquire/LORelease over _DAT_006c08e0 / _DAT_006c09d8 / _DAT_006c0a20) and side mutexes (DAT_006c0900 / 006c09a0 via FUN_00118148/00118164); hash probing uses cL4_waiter_next/FUN_0035b588. SoftwareBreakpoint fatal on allocation failure (0x388c50, 0x395ddc, 0x3975e4) — no NULL-return graceful path.
+Severity (hypothesis): Medium. The type-decl cache is attacker-reachable from guest demangle requests (TypeDecoder.decode entry 0x3893d0); if the element count (_DAT_006c08e4) or table capacity could be corrupted, the open-addressed probe could read/write out of the slot array (0x18-byte stride). All bounds checks are present in the transcribed body, so this is a defense-in-depth observation, not a confirmed bug.
+Confidence: Medium
+
+## [SKR65] 00459138 / 0045a4b4 (multi-way box retain/release dispatchers)
+- **Observation**: Two large switch-based dispatchers select release (00459138) or retain (0045a4b4) behavior from a 4-bit selector nibble (opcode byte >> 4) embedded in a box header. The default case and several specific codes addr-mask-release / retain a field whose identity is chosen purely by the selector; code 0xc falls through to release of a forwarded register field. No bounds validation on the selector beyond `sel >> 4 <= 0xd`.
+- **Evidence**: 00459138 `switch(sel >> 4) { default: p5=p2; ... case 0xc: break; } addr_mask_release(p5);`; 0045a4b4 mirror with sk_refcount_acquire_c. Selector byte originates from a Swift value witness table / box opcode.
+- **Severity (hypothesis)**: low — if a boxed value with a corrupted opcode nibble reaches these, an arbitrary (offset-derived) field is released/retained; potential UAF/double-free surface.
+- **Confidence**: low
+
+## [SKR65] 0045a830 / 0045b1f4 / 0045b458 (unchecked 22-word box copies)
+- **Observation**: A family of 0x98-byte (22-word + flag byte) box copy functions performs bulk word copies with no bounds checks. If the source/destination box sizes are mismatched, they read/write past the box allocation.
+- **Evidence**: 0045a830 copies indices 0..0x15 (22 words) plus a byte; 0045b1f4 reads src[8..0x12] and writes dst+0x40..0x90; 0045b458 copies indices 0..0x13. All driven by the 16-byte pair from FUN_00352b20 / FUN_00466408.
+- **Severity (hypothesis)**: low — oversized inline copy could overrun a smaller allocation.
+- **Confidence**: low
+
+## [SKR65] 0045aab0 / 0045a904 / 0045aa44 (box length/selector packing)
+- **Observation**: Box length/selector setters pack a selector into a flag byte (`b = (byte)box[0x13] & 3 | (byte)(sel << 4)`), and for selectors >= 0xe store `sel - 0xe` as the length and memset 0x90 bytes via thunk_FUN_00114330. The memset size (0x90) is fixed regardless of actual box capacity.
+- **Evidence**: 0045aab0 `*box = sel - 0xe; thunk_FUN_00114330(box+1, 0x90); b = 0xe0;`. 0045a904 zeroes box[0x11..0x15] for len>=0x32.
+- **Severity (hypothesis)**: low — a fixed-size 0x90 memset without a capacity check could overflow a smaller box allocation when the large-selector path is taken.
+- **Confidence**: low
+
+## [SKR65] 004595a0/004595d4/0045962c/004596ec/00459720/00459854/00459900..004599d4 (one-time global initializers)
+- **Observation**: Many near-identical one-time global-initializer gates (0x657a40..0x657ac8 range) resolve a Swift object behind a check-once flag and store it into a fixed global slot. The gate token (DAT_005a2xxx) and resolve target (DAT_004ea7c8 etc.) vary per slot. No thread-safety primitive is visible beyond the check-once pair from FUN_00352b20 — a race could double-initialize or publish a partially-built object.
+- **Evidence**: 00459514 `sk_global_init_gate(); sk_global_store();` behind FUN_00352b20 gate; 00459888 bootstraps via FUN_00027614/FUN_00027670/FUN_0006b6f4 then FUN_00376820.
+- **Severity (hypothesis)**: low-medium — check-then-act global init without an explicit lock could race if reached concurrently before the gate is set.
+- **Confidence**: low
+
+## [SKR65] 0045b1a0 / 0045a3ac / 0045a980 (indirect dispatch thunks)
+- **Observation**: Three dispatch thunks forward control through FUN_004607c4 (an unrecoverable indirect jump, `(*UNRECOVERED_JUMPTABLE)(*param_1,...)`) or resolve an object via FUN_004644cc and call through a function-pointer slot with no target validation.
+- **Evidence**: 0045a3ac `sk_4607c4((void*)a, b, sk_rt_4592dc);`; 0045b1a0 `long base = sk_464644(...); ... (*fn)();`; 004607c4 decompiler warning "Could not recover jumptable... Treating indirect jump as call".
+- **Severity (hypothesis)**: medium — the jumptable target is a direct function of the box opcode field; if attacker-influenced, arbitrary control-flow.
+- **Confidence**: low
+
+## [SKR65] 00459aa0 / 00459b14 / 00459d40 / 00459a04 (retain/release swap helpers)
+- **Observation**: Swap helpers read a global pointer slot (FUN_0034d454), swap two owned fields between objects with explicit retain/release ordering (retain-new-then-release-old), and also swap the global slot itself. The release-after-retain ordering is correct, but the global slot value is overwritten without clearing its low tag bits before re-storing in one path (00459aa0 `*puVar1 = extraout_x8` then `acquire(extraout_x8 & mask)`).
+- **Evidence**: 00459aa0 `*puVar1 = extraout_x8; acquire(extraout_x8 & mask); release(uVar2 & mask);` — store happens before the retained acquire of the same value.
+- **Severity (hypothesis)**: low — transient window where the slot holds an unretained pointer during the swap.
+- **Confidence**: low

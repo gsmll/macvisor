@@ -146,7 +146,6 @@ extern void    sk_4666c0(void);                            /* FUN_004666c0 */
 extern void    sk_4607c4(void *obj, word_t arg, void (*fn)(void)); /* FUN_004607c4 */
 extern void    sk_460d(word_t a);                          /* FUN_00460d50 */
 extern void    sk_4629(void);                              /* FUN_00462948 */
-extern void    sk_46454(word_t a, word_t b, word_t c);     /* FUN_0045545c */
 
 /* runtime data references (opaque address constants). */
 extern byte DAT_005a2018, DAT_005a2ca8, DAT_005a2db0, DAT_005a26cc, DAT_005a2cb0,
@@ -181,8 +180,6 @@ extern void    sk_00355538(void);            /* FUN_00355538 */
 extern void    sk_00114330(word_t *p, word_t n); /* thunk_FUN_00114330 */
 extern void    sk_global_2cb0_store(word_t v);   /* store into 0x657a60 slot */
 extern cL4_w16_t sk_call_pair_slot(word_t fn);   /* indirect call through pair slot */
-extern void    sk_00002840(void);            /* FUN_00002840 */
-extern void    sk_00355968b(void);           /* unused */
 
 /* Forward declarations of slice-internal statics that call each other. */
 static void sk_rt_458f00(word_t, word_t, word_t, word_t, uint);
@@ -716,7 +713,7 @@ static void sk_rt_459768(word_t dst, word_t tramp, word_t str)
     if (pair.lo == 0) {
         sk_00027614(0x657a58, (word_t)&DAT_005a2ca8);
         pair = sk_call_pair_slot(pair.hi);
-        sk_00350af4(pair.lo, pair.hi, &pair.lo);
+        sk_00350af4(pair.lo, pair.hi, (word_t *)&pair.lo);
         v = sk_obj_resolve_forward(0, 0);
         *(word_t*)dst = v;
     }
@@ -1518,7 +1515,7 @@ static void sk_rt_45b5a8(word_t *dst, word_t *src)
 {
     cL4_nop_handler();
     sk_462848();
-    sk_58b94();
+    sk_58b94(0, 0, 0, 0);
     sk_4640d0();
     *(byte*)((char*)dst + 0x20) = *(byte*)((char*)src + 0x20);
     sk_4653cc();
@@ -1531,7 +1528,7 @@ static void sk_rt_45b5ec(void)
 {
     cL4_nop_handler();
     sk_462848();
-    sk_58b94();
+    sk_58b94(0, 0, 0, 0);
     sk_rt_46303c();
     sk_58bac();
     sk_cmp_4632b8();

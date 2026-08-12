@@ -3029,3 +3029,1213 @@ static cl4_pair_t sk_script_name_0045399c(word_t param_1)
     au = sk_x_004643cc((word_t)pcVar4, 0xd000000000000010);
     return au;
 }
+/* FUN_004553e4 @ 0x004553e4   (est. sk_script_name_store2)
+ * Ghidra: void FUN_004553e4(undefined1 (*param_1)[16])
+ * Stores the Script name (0x45399c) for the enum in x20 into the 16-byte
+ * out-param.
+ * Confidence: medium */
+static void sk_script_name_store2_004553e4(cl4_pair_t *param_1, word_t self)
+{
+    *param_1 = sk_script_name_0045399c(self);
+}
+
+/* FUN_00455438 @ 0x00455438   (est. sk_collection_element_types_check)
+ * Ghidra: long FUN_00455438(void)
+ * Builds and validates the "collection of element types" diagnostic. Calls the
+ * element-type provider (00350980, 00027754/00027788), runs the build closure
+ * (004662b8 + 00002534 + 00310c44 + 004594f4 through the 004662b8 runtime),
+ * and if the produced element count is non-zero returns it; otherwise raises
+ * the "The collection of element types..." precondition-failure fatal
+ * (00002874 + 003593c0 + 00002818 -> noreturn 001afa84).
+ * Confidence: low (register/closure-fragment heavy)
+ * Notes: s_The_collection_of_element_types_d_005df6e0. */
+static long sk_collection_element_types_check_00455438(void)
+{
+    word_t uVar1, uVar2, uVar3;
+    word_t local_58[2], local_48;
+    word_t in_x3, in_x4;
+    long unaff_x21;
+
+    uVar1 = sk_x_00350980();
+    uVar2 = sk_x_00027754(in_x4);
+    uVar3 = sk_x_00027788();
+    sk_x_00084174(uVar3);
+    local_48 = 0;   /* (*extraout_x8)() - closure result */
+    if (unaff_x21 != 0) {
+        local_48 |= 0x10000;
+    }
+    uVar2 = sk_x_00027754(uVar2);
+    sk_x_004662b8();
+    uVar3 = sk_x_00002534();
+    sk_x_00310c44()(0, 0, 0, uVar3, in_x3, uVar2);
+    if (local_58[0] != 0) {
+        sk_x_003509c8(in_x3);
+        return local_58[0];
+    }
+    sk_x_00002874((word_t)s_The_collection_of_element_types_d_005df6e0);
+    sk_x_003593c0();
+    sk_x_00002818();
+    sk_x_001afa84();   /* does not return */
+    return 0;
+}
+
+/* FUN_00455574 @ 0x00455574   (est. sk_str_from_substring)
+ * Ghidra: void FUN_00455574(undefined1 (*param_1)[16], ...)
+ * Builds a 16-byte String from a substring view (param_5/param_6 slice into a
+ * buffer whose words are in param_2/param_3). Handles the shared/owned small-
+ * string and native-buffer cases; on the overflow/native path falls to the
+ * 004662b8 builder with the 00460ddc element descriptor.
+ * Confidence: low (string-layout fragment heavy) */
+static void sk_str_from_substring_00455574(cl4_pair_t *param_1, word_t param_2,
+                                           word_t param_3, word_t param_4,
+                                           word_t param_5, word_t *param_6)
+{
+    cl4_pair_t au;
+    word_t uVar1;
+    if (param_5 == 0) {
+        uVar1 = *param_6;
+    } else {
+        /* DAT_00658cf0 runtime dispatch */
+        if ((param_5 >> 0x3c & 1) != 0) goto build;
+        if ((param_5 >> 0x3d & 1) == 0) {
+            if ((param_4 >> 0x3c & 1) == 0) goto build;
+            uVar1 = *param_6;
+        } else {
+            uVar1 = *param_6;
+        }
+    }
+    au = sk_x_00371950(0, uVar1);
+    *param_1 = au;
+    return;
+build:
+    sk_x_004662b8();
+    sk_x_00002534();
+    sk_x_00351e3c((word_t)param_1, (word_t)sk_x_00460ddc, (word_t)au.lo);
+    sk_x_002a4468();
+}
+
+/* FUN_0045567c @ 0x0045567c   (est. sk_special_string_init)
+ * Ghidra: void FUN_0045567c(undefined8 param_1,...)
+ * Initializes a special String: builds the element-type collection (0046647c +
+ * 00027754 + 000262fc) and a native-buffer string (00371950), then forwards
+ * through 00455778. Ends with a virtual dispatch on the unaff_x19 witness.
+ * Confidence: low */
+static void sk_special_string_init_0045567c(word_t param_1, word_t param_2, word_t param_3)
+{
+    cl4_pair_t au;
+    long lVar1;
+    word_t uVar2;
+
+    sk_x_003504d0();
+    sk_x_0046647c();
+    sk_x_00027754(param_3);
+    lVar1 = sk_x_000262fc((word_t)sk_x_00455a68, 0);
+    uVar2 = sk_x_00371950(0, *(word_t *)(lVar1 + 0x10)).lo;
+    sk_x_0036b118(lVar1);
+    au = sk_x_0007c1c4(0);
+    sk_x_00455778(au.lo, au.hi, uVar2, param_3);
+    /* virtual dispatch on unaff_x19 witness */
+    return;
+}
+
+/* FUN_00455778 @ 0x00455778   (est. sk_str_guts_init_full)
+ * Ghidra: void FUN_00455778(undefined8 param_1,...)
+ * Full _StringGuts initializer: takes the substring pieces (param_3/param_4),
+ * builds the native buffer via 0008e518/00350530/00377824, iterates the
+ * element runs (00100efc loop) invoking 00455990 per element, then finalizes
+ * (003514e8/001a29a0) and returns.
+ * Confidence: low (heavy register/closure flow) */
+static void sk_str_guts_init_full_00455778(word_t param_1, word_t param_2,
+                                           word_t param_3, word_t param_4)
+{
+    cl4_pair_t au6, au7;
+    word_t uVar1, uVar2, uVar4;
+
+    au6 = sk_x_0008e518();
+    uVar4 = au6.hi;
+    sk_x_0007c028();
+    sk_x_000aa4ec();
+    sk_x_00027754(param_4);
+    uVar1 = sk_x_00027754();
+    au7 = sk_x_00350530();
+    uVar2 = sk_x_00377824(au7.lo, au7.hi, uVar4);
+    sk_x_000a6f88();
+    sk_x_0007c1a4();
+    sk_x_003509c8(param_3);
+    sk_x_002b8444(0, param_3);
+    /* element loop: while runs remain, build + 00455990 */
+    while (1) {
+        if (0) break;
+        sk_x_00455990(0, 0, 0);
+        sk_x_000026e8(0);
+    }
+    sk_x_00077024();
+    sk_x_003514e8(0);
+    sk_x_001a29a0();
+    sk_x_003514e8();
+    sk_x_00359208();
+    sk_x_0008e500(0);
+}
+
+/* FUN_00455990 @ 0x00455990   (est. sk_str_elem_append)
+ * Ghidra: void FUN_00455990(undefined8 param_1,...)
+ * Appends one string element run to the growing buffer: builds the run via
+ * 00450848/003507bc/00350618 and writes the result into *unaff_x20, adding
+ * the run length from the runtime.
+ * Confidence: low */
+static void sk_str_elem_append_00455990(word_t param_1, word_t param_2, word_t param_3)
+{
+    cl4_pair_t au;
+    long lVar1, lVar2;
+    long *unaff_x20;
+
+    sk_x_00084220();
+    sk_x_0035098c();
+    sk_x_0007c028();
+    lVar2 = 0;   /* *(extraout_x8 + 0x40) */
+    au = sk_x_00450848(0, 0);
+    lVar1 = au.lo;
+    *unaff_x20 = lVar1;
+    au = sk_x_003507bc();
+    sk_x_003509c8(0);
+    au = sk_x_00350618(0);
+    *unaff_x20 = *unaff_x20 + lVar2;
+    sk_x_00084234(0);
+}
+
+/* FUN_00455a68 @ 0x00455a68   (est. sk_str_elem_type)
+ * Ghidra: void FUN_00455a68(undefined8 *param_1, long param_2)
+ * Reads the element type from a buffer header (param_2+0x18) and builds the
+ * owning collection (00464000 + 003625e4).
+ * Confidence: low */
+static void sk_str_elem_type_00455a68(word_t *param_1, long param_2)
+{
+    sk_x_0006a4c0(param_2, *(word_t *)(param_2 + 0x18));
+    sk_x_00464000();
+    *param_1 = sk_x_003625e4();
+}
+
+/* FUN_00455abc @ 0x00455abc   (est. sk_utf8_emit_byte)
+ * Ghidra: void FUN_00455abc(undefined8 param_1)
+ * Emits a single UTF-8 byte (0 + param_1) into the output via 00310d68.
+ * Confidence: high */
+static void sk_utf8_emit_byte_00455abc(word_t param_1)
+{
+    sk_x_00310d68(0, param_1);
+}
+
+/* FUN_00455ac8 @ 0x00455ac8   (est. sk_utf8_encode)
+ * Ghidra: void FUN_00455ac8(undefined8 param_1, ulong param_2, undefined8 param_3)
+ * UTF-8 encodes a scalar value (param_3) into the output, handling 1-4 byte
+ * sequences via the 004665e8 emitter / 00310d68; the 4-byte tail splits into
+ * two 3-byte halves and a final byte.
+ * Confidence: medium */
+static void sk_utf8_encode_00455ac8(word_t param_1, word_t param_2, word_t param_3)
+{
+    cl4_pair_t a, b;
+    word_t cur = param_3;
+    while (param_2 >= 5) {
+        sk_x_004665e8();
+        sk_x_00310d68(0xff, cur);
+        sk_x_00310d68(0xff, cur);
+        a = sk_x_00310d68(0, cur);
+        param_1 = a.lo;
+        param_2 -= 4;
+    }
+    switch (param_2) {
+    case 4: sk_x_004665e8(); cur = cur; /* fallthrough */
+    case 3: b = sk_x_004665e8(a.lo, a.hi, cur); cur = b.lo; /* fallthrough */
+    case 2: cur = sk_x_004665e8(a.lo, a.hi, cur); /* fallthrough */
+    case 1: sk_x_00310d68(0, cur); return;
+    default: return;
+    }
+}
+
+/* FUN_00455b88 @ 0x00455b88   (est. sk_str_run_iter)
+ * Ghidra: void FUN_00455b88(void)
+ * Iterates the string element runs, validating each against the count and
+ * emitting them; traps (SoftwareBreakpoint) on count overflow.
+ * Confidence: low (register/closure-fragment heavy) */
+static void sk_str_run_iter_00455b88(void)
+{
+    cl4_pair_t au9;
+    word_t uVar2, uVar3, uVar4;
+    long lVar7, lVar8;
+    long *unaff_x20;
+
+    au9 = sk_x_0008e518();
+    lVar7 = au9.lo;
+    sk_x_00027754(0);
+    sk_x_00352840(0);
+    uVar2 = sk_x_0031b760();
+    sk_x_003509c8(uVar2);
+    sk_x_0007c1a4();
+    sk_x_0034b05c();
+    sk_x_00352840(0);
+    uVar3 = sk_x_0031b778();
+    sk_x_000a6f88();
+    sk_x_0007c1a4();
+    uVar4 = 0;
+    sk_x_00351db4();
+    /* element run loop with count-overflow traps */
+    if (uVar4 == 0) {
+        uVar2 = 0;
+    } else {
+        sk_x_00350a04();
+        sk_x_00200b38();
+        sk_x_00200bd0(0, uVar2);
+        lVar8 = 0;
+        while (0) {   /* 00200bf4 element scan */
+            lVar8 += 0;
+        }
+        sk_x_00350560(0);
+        sk_x_0008e500(0);
+    }
+}
+
+/* FUN_00455d8c @ 0x00455d8c   (est. sk_buf_init_682e08)
+ * Ghidra: void FUN_00455d8c(void)
+ * Initializes a buffer at (x20+0x20) with element base *(x20+0x10) and the
+ * 0x682e08 element-size tag via 0035bc70.
+ * Confidence: high */
+static void sk_buf_init_682e08_00455d8c(word_t self)
+{
+    sk_x_0035bc70(self + 0x20, *(word_t *)(self + 0x10), 0x682e08);
+}
+
+/* FUN_00455db8 @ 0x00455db8   (est. sk_buf_init_6728f0)
+ * Ghidra: void FUN_00455db8(void)
+ * Same buffer-init helper with the 0x6728f0 element-size tag.
+ * Confidence: high */
+static void sk_buf_init_6728f0_00455db8(word_t self)
+{
+    sk_x_0035bc70(self + 0x20, *(word_t *)(self + 0x10), 0x6728f0);
+}
+
+/* FUN_00455de4 @ 0x00455de4   (est. sk_arr_reserve_de4)
+ * Ghidra: undefined * FUN_00455de4(long param_1, long param_2)
+ * Reserve-capacity helper (8-byte stride): ensures param_2 >= param_1, and if
+ * non-zero allocates a buffer (0036a940, 8-byte elements + 0x20 header)
+ * returning the base with the count at +0x10 and the capacity (rounded to
+ * even) at +0x18; empty requests return the 00657778 empty sentinel.
+ * Confidence: high */
+static long sk_arr_reserve_00455de4(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x6579c8, 0x005a19a0);
+        long buf = sk_x_0036a940(meta, param_2 * 8 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 8) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00455e60 @ 0x00455e60   (est. sk_arr_reserve_e60)
+ * Reserve-capacity helper (0x178-byte stride).
+ * Confidence: high */
+static long sk_arr_reserve_00455e60(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x657b20, 0x005a35c8);
+        long buf = sk_x_0036a940(meta, param_2 * 0x178 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x178) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00455ee4 @ 0x00455ee4   (est. sk_arr_reserve_ee4)
+ * Reserve-capacity helper (4-byte stride).
+ * Confidence: high */
+static long sk_arr_reserve_00455ee4(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x006575f0, 0x005a19e0);
+        long buf = sk_x_0036a940(meta, param_2 * 4 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 4) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00455f60 @ 0x00455f60   (est. sk_arr_reserve_f60)
+ * Reserve-capacity helper (0x38-byte stride).
+ * Confidence: high */
+static long sk_arr_reserve_00455f60(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x657ba8, 0x005a3690);
+        long buf = sk_x_0036a940(meta, param_2 * 0x38 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x38) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00455fe4 @ 0x00455fe4   (est. sk_arr_reserve_fe4)
+ * Reserve-capacity helper (0x50-byte stride).
+ * Confidence: high */
+static long sk_arr_reserve_00455fe4(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x657b98, 0x005a3670);
+        long buf = sk_x_0036a940(meta, param_2 * 0x50 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x50) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00456068 @ 0x00456068   (est. sk_arr_reserve_068)
+ * Reserve-capacity helper (0x30-byte stride).
+ * Confidence: high */
+static long sk_arr_reserve_00456068(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) return 0x00657778;
+    {
+        word_t meta = sk_x_00002534(0x657b90, 0x005a3668);
+        long buf = sk_x_0036a940(meta, param_2 * 0x30 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x30) << 1;
+        return buf;
+    }
+}
+
+/* FUN_004560ec @ 0x004560ec   (est. sk_arr_reserve_0ec)
+ * Reserve-capacity helper (0x10-byte stride). Empty -> 0.
+ * Confidence: high */
+static long sk_arr_reserve_004560ec(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) { sk_x_000776cc(); return 0; }
+    sk_x_00355968();
+    {
+        word_t meta = sk_x_00002534();
+        long buf = sk_x_0036a940(meta, param_2 * 0x10 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x10) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00456158 @ 0x00456158   (est. sk_arr_reserve_158)
+ * Reserve-capacity helper (0x18-byte stride). Empty -> 0.
+ * Confidence: high */
+static long sk_arr_reserve_00456158(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) { sk_x_000776cc(); return 0; }
+    sk_x_00355968();
+    {
+        word_t meta = sk_x_00002534();
+        long buf = sk_x_0036a940(meta, param_2 * 0x18 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x18) << 1;
+        return buf;
+    }
+}
+
+/* FUN_004561cc @ 0x004561cc   (est. sk_arr_reserve_1cc)
+ * Reserve-capacity helper (0x20-byte stride). Empty -> 0.
+ * Confidence: high */
+static long sk_arr_reserve_004561cc(long param_1, long param_2)
+{
+    if (param_2 <= param_1) param_2 = param_1;
+    if (param_2 == 0) { sk_x_000776cc(); return 0; }
+    sk_x_00355968();
+    {
+        word_t meta = sk_x_00002534();
+        long buf = sk_x_0036a940(meta, param_2 * 0x20 + 0x20, 7);
+        long cap = sk_x_000126e8();
+        *(long *)(buf + 0x10) = param_1;
+        *(long *)(buf + 0x18) = ((cap - 0x20) / 0x20) << 1;
+        return buf;
+    }
+}
+
+/* FUN_00456238 / 00456294 / 00456310   (est. sk_arr_ensure_delegates)
+ * Ghidra: void FUN_00456238/94/310(void)
+ * Delegates that store the 0045636c ensure-capacity result into *unaff_x20.
+ * Confidence: low (thunk) */
+static void sk_arr_ensure_dlg1_00456238(long *self)
+{ *self = sk_arr_ensure_0045636c(0, 0, 0, 0); }
+static void sk_arr_ensure_dlg2_00456294(long *self)
+{ *self = sk_arr_ensure_0045636c(0, 0, 0, 0); }
+static void sk_arr_ensure_dlg3_00456310(long *self)
+{ *self = sk_arr_ensure_0045636c(0, 0, 0, 0); }
+
+/* FUN_004562f0 @ 0x004562f0   (est. sk_arr_grow_delegate)
+ * Ghidra: void FUN_004562f0(void)
+ * Delegates that store the 00456420 grow result into *unaff_x20.
+ * Confidence: low (thunk) */
+static void sk_arr_grow_delegate_004562f0(long *self)
+{ *self = sk_arr_grow_00456420(0, 0, 0, 0); }
+
+/* FUN_0045636c @ 0x0045636c   (est. sk_arr_ensure_00636c)
+ * Ghidra: long FUN_0045636c(ulong param_1, long param_2, ulong param_3, ...)
+ * Ensures the array buffer has capacity for param_2 elements of the element
+ * type at param_4+0x10. If the growth flag (param_3&1) is set it consults
+ * 004652d4/00465428 for the 1.5x growth factor; then either reserves into a
+ * fresh buffer (param_5) or rewrites in place (param_6/param_7), releasing the
+ * old buffer. Traps on count overflow.
+ * Confidence: medium */
+static long sk_arr_ensure_0045636c(word_t param_1, long param_2, word_t param_3,
+                                   long param_4)
+{
+    word_t elem;
+    long result;
+    if ((param_3 & 1) != 0) {
+        sk_x_004652d4();
+        param_2 = 0;
+        if ((long)(0 + 0x4000000000000000) < 0) CL4_SW_BP(0x456420);
+        sk_x_00465428();
+        param_2 = 0;
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    result = 0;   /* (*param_5)(elem, param_2) - reserve */
+    if ((param_1 & 1) == 0) {
+        sk_x_0006b6e0();
+        return result;
+    } else {
+        /* (*param_6)(param_4 + 0x20, elem, result + 0x20) */
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+        return result;
+    }
+}
+
+/* FUN_00456420 @ 0x00456420   (est. sk_arr_grow_0046420)
+ * Ghidra: long FUN_00456420(ulong param_1,...)
+ * Grows the array buffer to hold param_2 elements of the 0x20-stride type.
+ * When the capacity flag (param_3&1) is set, doubles capacity; reserves via
+ * 004561cc and either appends in place (004568d8) or builds fresh
+ * (000699a4), releasing the old buffer. Traps on capacity overflow.
+ * Confidence: medium */
+static long sk_arr_grow_00456420(word_t param_1, word_t param_2, word_t param_3,
+                                 long param_4)
+{
+    long result;
+    word_t cap = param_2;
+    word_t elem;
+    if ((param_3 & 1) != 0) {
+        cap = *(word_t *)(param_4 + 0x18) >> 1;
+        if ((long)cap < (long)param_2) {
+            if ((long)(cap + 0x4000000000000000) < 0) CL4_SW_BP(0x4564e4);
+            cap = *(word_t *)(param_4 + 0x18) & 0xfffffffffffffffe;
+            if ((long)cap <= (long)param_2) cap = param_2;
+        }
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    result = sk_arr_reserve_004561cc(elem, cap);
+    if ((param_1 & 1) == 0) {
+        sk_x_004568d8(0, elem, result + 0x20, param_4);
+    } else {
+        sk_x_000699a4(param_4 + 0x20, elem, result + 0x20);
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+    }
+    return result;
+}
+
+/* FUN_004564e4 @ 0x004564e4   (est. sk_arr_ensure2_00464e4)
+ * Ghidra: long FUN_004564e4(ulong param_1,...)
+ * Ensure-capacity variant that copies via 00354828 and reserves through
+ * 004561cc, then writes in place (param_7) or rebuilds (000699a4).
+ * Confidence: medium */
+static long sk_arr_ensure2_004564e4(word_t param_1, long param_2, word_t param_3,
+                                    long param_4, word_t param_5, word_t param_6,
+                                    word_t param_7)
+{
+    word_t elem;
+    long result;
+    if ((param_3 & 1) != 0) {
+        sk_x_004652d4();
+        if ((long)(0 + 0x4000000000000000) < 0) CL4_SW_BP(0x45659c);
+        sk_x_00465428();
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    sk_x_00354828(elem, param_2);
+    result = sk_arr_reserve_004561cc(elem, 0);
+    if ((param_1 & 1) == 0) {
+        sk_x_004568d8(0, elem, result + 0x20, param_4);
+    } else {
+        sk_x_000699a4(param_4 + 0x20, elem, result + 0x20);
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+    }
+    return result;
+}
+
+/* FUN_0045659c @ 0x0045659c   (est. sk_arr_ensure3_004659c)
+ * Ghidra: long FUN_0045659c(ulong param_1,...)
+ * Ensure-capacity variant reserving through 004560ec and rebuilding via
+ * 0006b6e0 / param_8, or in-place via param_7.
+ * Confidence: medium */
+static long sk_arr_ensure3_0045659c(word_t param_1, long param_2, word_t param_3,
+                                    long param_4, word_t param_5, word_t param_6,
+                                    word_t param_7, word_t param_8)
+{
+    word_t elem;
+    long result;
+    if ((param_3 & 1) != 0) {
+        sk_x_004652d4();
+        if ((long)(0 + 0x4000000000000000) < 0) CL4_SW_BP(0x456650);
+        sk_x_00465428();
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    sk_x_00354828(elem, param_2);
+    result = sk_arr_reserve_004560ec(elem, 0);
+    if ((param_1 & 1) == 0) {
+        sk_x_0006b6e0();
+    } else {
+        sk_x_000699a4(param_4 + 0x20, elem, result + 0x20);
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+    }
+    return result;
+}
+
+/* FUN_00456650 @ 0x00456650   (est. sk_arr_grow2_0046650)
+ * Ghidra: long FUN_00456650(ulong param_1,...)
+ * Grow variant (0x18-stride) doubling capacity; reserves via 00456158 and
+ * appends in place (00456b28) or rebuilds (000699d8).
+ * Confidence: medium */
+static long sk_arr_grow2_00456650(word_t param_1, word_t param_2, word_t param_3,
+                                  long param_4)
+{
+    long result;
+    word_t cap = param_2;
+    word_t elem;
+    if ((param_3 & 1) != 0) {
+        cap = *(word_t *)(param_4 + 0x18) >> 1;
+        if ((long)cap < (long)param_2) {
+            if ((long)(cap + 0x4000000000000000) < 0) CL4_SW_BP(0x456714);
+            cap = *(word_t *)(param_4 + 0x18) & 0xfffffffffffffffe;
+            if ((long)cap <= (long)param_2) cap = param_2;
+        }
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    result = sk_arr_reserve_00456158(elem, cap);
+    if ((param_1 & 1) == 0) {
+        sk_x_00456b28(0, elem, result + 0x20, param_4);
+    } else {
+        sk_x_000699d8(param_4 + 0x20, elem, result + 0x20);
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+    }
+    return result;
+}
+
+/* FUN_00456714 @ 0x00456714   (est. sk_arr_grow3_0046714)
+ * Ghidra: long FUN_00456714(ulong param_1,...)
+ * Grow variant (0x18-stride, 00456b28 copy) doubling capacity.
+ * Confidence: medium */
+static long sk_arr_grow3_00456714(word_t param_1, word_t param_2, word_t param_3,
+                                  long param_4)
+{
+    long result;
+    word_t cap = param_2;
+    word_t elem;
+    if ((param_3 & 1) != 0) {
+        cap = *(word_t *)(param_4 + 0x18) >> 1;
+        if ((long)cap < (long)param_2) {
+            if ((long)(cap + 0x4000000000000000) < 0) CL4_SW_BP(0x4567d8);
+            cap = *(word_t *)(param_4 + 0x18) & 0xfffffffffffffffe;
+            if ((long)cap <= (long)param_2) cap = param_2;
+        }
+    }
+    elem = *(word_t *)(param_4 + 0x10);
+    result = sk_arr_reserve_00456158(elem, cap);
+    if ((param_1 & 1) == 0) {
+        sk_x_00456b28(0, elem, result + 0x20, param_4);
+    } else {
+        sk_x_000699d8(param_4 + 0x20, elem, result + 0x20);
+        *(word_t *)(param_4 + 0x10) = 0;
+        sk_x_0036b118(param_4);
+    }
+    return result;
+}
+
+/* FUN_004567d8 @ 0x004567d8   (est. sk_buf_copy_0178)
+ * Ghidra: ulong FUN_004567d8(long param_1, long param_2, ulong param_3, long param_4)
+ * Copies the [param_1, param_2) slice (0x178-stride elements) of buffer param_4
+ * into destination param_3. Validates the range (trap on underflow), checks
+ * for overlap, copies via 0035b67c and releases the source buffer. Returns the
+ * end pointer.
+ * Confidence: high */
+static word_t sk_buf_copy_0178_004567d8(long param_1, long param_2, word_t param_3,
+                                        long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456850);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x178 + 0x20;
+        word_t end = param_3 + n * 0x178;
+        if (end <= src || src + n * 0x178 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x684390);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456858);
+    }
+    CL4_SW_BP(0x456854);
+}
+
+/* FUN_00456858 @ 0x00456858   (est. sk_buf_copy_038)
+ * Copy helper (0x38-stride, 0035b67c). Confidence: high */
+static word_t sk_buf_copy_038_00456858(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x4568d0);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x38 + 0x20;
+        word_t end = param_3 + n * 0x38;
+        if (end <= src || src + n * 0x38 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x684cf0);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x4568d8);
+    }
+    CL4_SW_BP(0x4568d4);
+}
+
+/* FUN_004568d8 @ 0x004568d8   (est. sk_buf_copy_020)
+ * Copy helper (0x20-stride, 0035b67c). Confidence: high */
+static word_t sk_buf_copy_020_004568d8(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456944);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x20 + 0x20;
+        word_t end = param_3 + n * 0x20;
+        if (end <= src || src + n * 0x20 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x685e98);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x45694c);
+    }
+    CL4_SW_BP(0x456948);
+}
+
+/* FUN_0045694c @ 0x0045694c   (est. sk_buf_copy_050)
+ * Copy helper (0x50-stride, 0035b67c, tag 006850c8). Confidence: high */
+static word_t sk_buf_copy_050_0045694c(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x4569c0);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x50 + 0x20;
+        word_t end = param_3 + n * 0x50;
+        if (end <= src || src + n * 0x50 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x006850c8);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x4569c8);
+    }
+    CL4_SW_BP(0x4569c4);
+}
+
+/* FUN_004569c8 @ 0x004569c8   (est. sk_buf_copy_030)
+ * Copy helper (0x30-stride, 00117cc4 memcpy). Confidence: high */
+static word_t sk_buf_copy_030_004569c8(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456a38);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x30 + 0x20;
+        word_t end = param_3 + n * 0x30;
+        if (end <= src || src + n * 0x30 <= param_3) {
+            sk_x_00117cc4(param_3, src, n * 0x30);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456a40);
+    }
+    CL4_SW_BP(0x456a3c);
+}
+
+/* FUN_00456a40 @ 0x00456a40   (est. sk_buf_copy_020b)
+ * Copy helper (0x20-stride, 0035b67c, tag 0x683000). Confidence: high */
+static word_t sk_buf_copy_020b_00456a40(long param_1, long param_2, word_t param_3,
+                                        long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456aac);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x20 + 0x20;
+        word_t end = param_3 + n * 0x20;
+        if (end <= src || src + n * 0x20 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x683000);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456ab4);
+    }
+    CL4_SW_BP(0x456ab0);
+}
+
+/* FUN_00456ab4 @ 0x00456ab4   (est. sk_buf_copy_08)
+ * Copy helper (8-stride, 0035b67c, tag 0x682e08). Confidence: high */
+static word_t sk_buf_copy_08_00456ab4(long param_1, long param_2, word_t param_3,
+                                      long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456b20);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 8 + 0x20;
+        word_t end = param_3 + n * 8;
+        if (end <= src || src + n * 8 <= param_3) {
+            sk_x_0035b67c(param_3, src, n, 0x682e08);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456b28);
+    }
+    CL4_SW_BP(0x456b24);
+}
+
+/* FUN_00456b28 @ 0x00456b28   (est. sk_buf_copy_018)
+ * Copy helper (0x18-stride, 00117cc4 memcpy). Confidence: high */
+static word_t sk_buf_copy_018_00456b28(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456b98);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x18 + 0x20;
+        word_t end = param_3 + n * 0x18;
+        if (end <= src || src + n * 0x18 <= param_3) {
+            sk_x_00117cc4(param_3, src, n * 0x18);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456ba0);
+    }
+    CL4_SW_BP(0x456b9c);
+}
+
+/* FUN_00456ba0 @ 0x00456ba0   (est. sk_buf_copy_020c)
+ * Copy helper (0x20-stride, 0035b67c with 0x657b58 metadata). Confidence: high */
+static word_t sk_buf_copy_020c_00456ba0(long param_1, long param_2, word_t param_3,
+                                        long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456c34);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x20 + 0x20;
+        word_t end = param_3 + n * 0x20;
+        if (end <= src || src + n * 0x20 <= param_3) {
+            word_t meta = sk_x_00002534(0x657b58, 0x005a3630);
+            sk_x_0035b67c(param_3, src, n, meta);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456c3c);
+    }
+    CL4_SW_BP(0x456c38);
+}
+
+/* FUN_00456c3c @ 0x00456c3c   (est. sk_buf_copy_010)
+ * Copy helper (0x10-stride, 0035b67c with 0x657ae8 metadata). Confidence: high */
+static word_t sk_buf_copy_010_00456c3c(long param_1, long param_2, word_t param_3,
+                                       long param_4)
+{
+    long n = param_2 - param_1;
+    if (param_2 < param_1) CL4_SW_BP(0x456cd0);
+    if (n >= 0) {
+        word_t src = param_4 + param_1 * 0x10 + 0x20;
+        word_t end = param_3 + n * 0x10;
+        if (end <= src || src + n * 0x10 <= param_3) {
+            word_t meta = sk_x_00002534(0x657ae8, 0x005a3528);
+            sk_x_0035b67c(param_3, src, n, meta);
+            sk_x_0036b118(param_4);
+            return end;
+        }
+        CL4_SW_BP(0x456cd8);
+    }
+    CL4_SW_BP(0x456cd4);
+}
+
+/* FUN_00456cd8 @ 0x00456cd8   (est. sk_buf_move_0178)
+ * Ghidra: void FUN_00456cd8(ulong param_1, long param_2, ulong param_3)
+ * Moves param_2 elements (0x178-stride) from param_1 to param_3; validates the
+ * count and uses 00117d14 memmove (no overlap check beyond the source range).
+ * Confidence: high */
+static void sk_buf_move_0178_00456cd8(word_t param_1, long param_2, word_t param_3)
+{
+    if (param_2 < 0) CL4_SW_BP(0x456d14);
+    if (param_3 != param_1 || param_1 + param_2 * 0x178 <= param_3) {
+        sk_x_00117d14(param_3, param_1, param_2 * 0x178);
+    }
+}
+
+/* FUN_00456d50 @ 0x00456d50   (est. sk_buf_move_050)
+ * Ghidra: void FUN_00456d50(ulong param_1, long param_2, ulong param_3)
+ * Moves param_2 elements (0x50-stride) from param_1 to param_3 with overlap
+ * check via 0035b67c; traps on overlap. Confidence: high */
+static void sk_buf_move_050_00456d50(word_t param_1, long param_2, word_t param_3)
+{
+    if (param_2 < 0) CL4_SW_BP(0x456d8c);
+    if (param_3 + param_2 * 0x50 <= param_1 || param_1 + param_2 * 0x50 <= param_3) {
+        sk_x_0035b67c(param_3, param_1, param_2, 0x006850c8);
+        return;
+    }
+    CL4_SW_BP(0x456d90);
+}
+
+/* FUN_00456d90 @ 0x00456d90   (est. sk_str_equal)
+ * Ghidra: bool FUN_00456d90(ulong param_1, ulong param_2, long param_3)
+ * String equality: compares the small-string (param_1/param_2) against the
+ * native UTF-8 buffer at param_3 (count at +0x10, bytes at +0x20). Walks the
+ * string via the _StringGuts iterator (0001da84/002a9ba8/002b141c), comparing
+ * byte-by-byte. Returns true iff both are exhausted together.
+ * Confidence: high */
+static bool sk_str_equal_00456d90(word_t param_1, word_t param_2, long param_3)
+{
+    word_t count = *(word_t *)(param_3 + 0x10);
+    word_t uVar1 = param_1 & 0xffffffffffff;
+    if ((param_2 & 0x2000000000000000) != 0) uVar1 = (param_2 >> 0x38) & 0xf;
+    word_t uVar14 = uVar1 * 4;
+    int uVar6 = (int)(param_1 >> 0x3b) & 1;
+    if ((param_2 & 0x1000000000000000) == 0) uVar6 = 1;
+    word_t idx = 0;
+    word_t iter = 0xf;
+    while (1) {
+        char c1, c2;
+        word_t next;
+        if (idx == count) { c1 = 0; next = count; }
+        else {
+            if (count <= idx) CL4_SW_BP(0x456fa0);
+            c1 = *(char *)(param_3 + 0x20 + idx);
+            next = idx + 1;
+        }
+        word_t uVar13 = iter >> 0xe;
+        if (uVar13 == uVar14) {
+            c2 = 0;
+        } else {
+            word_t p = iter;
+            if ((iter & 0xc) == (word_t)(4L << uVar6)) p = sk_x_0001da84(iter, param_1, param_2);
+            word_t uVar10 = p >> 0x10;
+            if (uVar1 <= uVar10) CL4_SW_BP(0x456fa4);
+            if ((param_2 >> 0x3c & 1) == 0) {
+                if ((param_2 >> 0x3d & 1) == 0) {
+                    word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
+                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2);
+                    c2 = *(char *)(base + uVar10);
+                } else {
+                    c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar10);
+                }
+            } else {
+                c2 = (char)sk_x_002b141c(p, param_1, param_2);
+            }
+            if ((iter & 0xc) == (word_t)(4L << uVar6)) iter = sk_x_0001da84(iter, param_1, param_2);
+            if ((param_2 >> 0x3c & 1) == 0) {
+                iter = (iter & 0xffffffffffff0000) + 0x10004;
+            } else {
+                if (uVar1 <= (iter >> 0x10)) CL4_SW_BP(0x456fa8);
+                iter = sk_x_002b141c(iter, param_1, param_2);
+            }
+        }
+        if (idx == count) return uVar13 == uVar14;
+        if (uVar13 == uVar14) break;
+        idx = next;
+        if (c1 != c2) return false;
+    }
+    return false;
+}
+
+/* FUN_00456fa8 @ 0x00456fa8   (est. sk_str_equal_buf)
+ * Ghidra: bool FUN_00456fa8(ulong param_1, ulong param_2, char *param_3, char *param_4)
+ * String equality against a byte-range [param_3, param_4). Walks both sides
+ * with the same small-string iterator; returns true iff both exhausted.
+ * Confidence: high */
+static bool sk_str_equal_buf_00456fa8(word_t param_1, word_t param_2, char *param_3,
+                                      char *param_4)
+{
+    word_t uVar1 = param_1 & 0xffffffffffff;
+    if ((param_2 & 0x2000000000000000) != 0) uVar1 = (param_2 >> 0x38) & 0xf;
+    word_t uVar9 = uVar1 * 4;
+    int uVar7 = (int)(param_1 >> 0x3b) & 1;
+    if ((param_2 & 0x1000000000000000) == 0) uVar7 = 1;
+    word_t iter = 0xf;
+    while (1) {
+        char c1, c2;
+        bool done;
+        if (param_3 == 0) { c1 = 0; done = true; }
+        else {
+            if (param_4 == 0) CL4_SW_BP(0x4571b0);
+            if (param_3 == param_4) { c1 = 0; done = true; param_3 = param_4; }
+            else {
+                if (param_4 <= param_3) CL4_SW_BP(0x4571a8);
+                done = false; c1 = *param_3; param_3++;
+            }
+        }
+        word_t uVar8 = iter >> 0xe;
+        if (uVar8 == uVar9) {
+            c2 = 0;
+        } else {
+            word_t p = iter;
+            if ((iter & 0xc) == (word_t)(4L << uVar7)) p = sk_x_0001da84(iter, param_1, param_2);
+            word_t uVar11 = p >> 0x10;
+            if (uVar1 <= uVar11) CL4_SW_BP(0x4571a4);
+            if ((param_2 >> 0x3c & 1) == 0) {
+                if ((param_2 >> 0x3d & 1) == 0) {
+                    word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
+                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1);
+                    c2 = *(char *)(base + uVar11);
+                } else {
+                    c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar11);
+                }
+            } else {
+                c2 = (char)sk_x_002b141c(p, param_1, param_2);
+            }
+            if ((iter & 0xc) == (word_t)(4L << uVar7)) iter = sk_x_0001da84(iter, param_1, param_2);
+            if ((param_2 >> 0x3c & 1) == 0) {
+                iter = (iter & 0xffffffffffff0000) + 0x10004;
+            } else {
+                if (uVar1 <= (iter >> 0x10)) CL4_SW_BP(0x4571ac);
+                iter = sk_x_002b141c(iter, param_1, param_2);
+            }
+        }
+        if (done) return uVar8 == uVar9;
+        if (uVar8 == uVar9) break;
+        if (c1 != c2) return false;
+    }
+    return false;
+}
+
+/* FUN_004571b0 @ 0x004571b0   (est. sk_str_has_prefix)
+ * Ghidra: undefined8 FUN_004571b0(char *param_1, char *param_2, ulong param_3, ulong param_4)
+ * Returns 1 if the small-string [param_1, param_2) starts with the byte-range
+ * prefix (param_3/param_4 string), 0 otherwise. Compares char-by-char.
+ * Confidence: high */
+static word_t sk_str_has_prefix_004571b0(char *param_1, char *param_2, word_t param_3,
+                                         word_t param_4)
+{
+    word_t uVar2 = param_3 & 0xffffffffffff;
+    if ((param_4 & 0x2000000000000000) != 0) uVar2 = (param_4 >> 0x38) & 0xf;
+    int uVar9 = (int)(param_3 >> 0x3b) & 1;
+    if ((param_4 & 0x1000000000000000) == 0) uVar9 = 1;
+    word_t iter = 0xf;
+    char *pc = param_1;
+    do {
+        word_t uVar14 = iter >> 0xe;
+        char c1, c2;
+        word_t result;
+        char *next;
+        if (uVar14 == uVar2 * 4) {
+            c1 = 0;
+            if (pc != 0) goto got1;
+            goto empty;
+        } else {
+            word_t p = iter;
+            if ((iter & 0xc) == (word_t)(4L << uVar9)) p = sk_x_0001da84(iter, param_3, param_4);
+            word_t uVar13 = p >> 0x10;
+            if (uVar2 <= uVar13) CL4_SW_BP(0x4573a4);
+            if ((param_4 >> 0x3c & 1) == 0) {
+                if ((param_4 >> 0x3d & 1) == 0) {
+                    word_t base = (param_4 & 0xfffffffffffffff) + 0x20;
+                    if ((param_3 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_3, param_4);
+                    c1 = *(char *)(base + uVar13);
+                } else {
+                    c1 = *(char *)((word_t)(param_3 & 0xffffffffffff) + uVar13);
+                }
+            } else {
+                c1 = (char)sk_x_002b141c(p, param_3, param_4);
+            }
+            if ((iter & 0xc) == (word_t)(4L << uVar9)) iter = sk_x_0001da84(iter, param_3, param_4);
+            if ((param_4 >> 0x3c & 1) == 0) {
+                iter = (iter & 0xffffffffffff0000) + 0x10004;
+            } else {
+                if (uVar2 <= (iter >> 0x10)) CL4_SW_BP(0x4573ac);
+                iter = sk_x_002b141c(iter, param_3, param_4);
+            }
+            if (pc == 0) goto empty;
+        got1:
+            if (param_2 == 0) CL4_SW_BP(0x4573b0);
+            if (pc == param_2) { c2 = 0; result = 1; next = param_2; }
+            else {
+                if (param_2 <= pc) CL4_SW_BP(0x4573a8);
+                result = 0; next = pc + 1; c2 = *pc;
+            }
+        }
+        if (uVar14 == uVar2 * 4) return result;
+        if (c1 == c2) { pc = next; continue; }
+        return 0;
+    empty:
+        c2 = 0;
+        if (uVar14 == uVar2 * 4) return 1;
+        return 0;
+    } while (1);
+}
+
+/* FUN_004573b0 @ 0x004573b0   (est. sk_str_contains_equiv)
+ * Ghidra: undefined8 FUN_004573b0(undefined *param_1, ...)
+ * Equivalence / contains primitive: walks the small-string (param_1/param_2)
+ * and the reference string (param_5/param_6), comparing runs; returns 1 when
+ * the reference is exhausted within the subject, 0 otherwise. Retains the
+ * reference (thunk 0036b270) and releases it (003a25d4) before returning.
+ * Confidence: low (string-iterator fragment heavy) */
+static word_t sk_str_contains_equiv_004573b0(byte *param_1, word_t param_2, word_t param_3,
+                                             word_t param_4, word_t param_5, word_t param_6)
+{
+    word_t uVar1 = param_5 & 0xffffffffffff;
+    if ((param_6 & 0x2000000000000000) != 0) uVar1 = (param_6 >> 0x38) & 0xf;
+    int uVar9 = (int)(param_5 >> 0x3b) & 1;
+    if ((param_6 & 0x1000000000000000) == 0) uVar9 = 1;
+    int uVar10 = (int)(param_3 >> 0x3b) & 1;
+    if ((param_4 & 0x1000000000000000) == 0) uVar10 = 1;
+    word_t uVar2 = param_3 & 0xffffffffffff;
+    if ((param_4 & 0x2000000000000000) != 0) uVar2 = (param_4 >> 0x38) & 0xf;
+    sk_x_0036b270(param_6);
+    word_t iter = 0xf;
+    byte *pc = param_1;
+    do {
+        word_t uVar12 = iter >> 0xe;
+        char c1, c2;
+        word_t result;
+        if (uVar12 == uVar1 * 4) {
+            if (((word_t)pc ^ param_2) < 0x4000) { result = 1; goto ret; }
+            c1 = 0;
+        } else {
+            word_t p = iter;
+            if ((iter & 0xc) == (word_t)(4L << uVar9)) p = sk_x_0001da84(iter, param_5, param_6);
+            word_t uVar11 = p >> 0x10;
+            if (uVar1 <= uVar11) CL4_SW_BP(0x457648);
+            if ((param_6 >> 0x3c & 1) == 0) {
+                if ((param_6 >> 0x3d & 1) == 0) {
+                    word_t base = (param_6 & 0xfffffffffffffff) + 0x20;
+                    if ((param_5 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_5, param_6);
+                    c1 = *(char *)(base + uVar11);
+                } else {
+                    c1 = *(char *)((word_t)(param_5 & 0xffffffffffff) + uVar11);
+                }
+            } else {
+                c1 = (char)sk_x_002b141c(p, param_5, param_6);
+            }
+            if ((iter & 0xc) == (word_t)(4L << uVar9)) iter = sk_x_0001da84(iter, param_5, param_6);
+            if ((param_6 >> 0x3c & 1) == 0) {
+                iter = (iter & 0xffffffffffff0000) + 0x10004;
+            } else {
+                if (uVar1 <= (iter >> 0x10)) CL4_SW_BP(0x45764c);
+                iter = sk_x_002b141c(iter, param_5, param_6);
+            }
+            if (((word_t)pc ^ param_2) < 0x4000) { result = 0; goto ret; }
+        }
+        c2 = (char)sk_x_002b5ba0((word_t)pc, (word_t)param_1, param_2, param_3, param_4);
+        if (((word_t)pc & 0xc) == (word_t)(4L << uVar10)) {
+            pc = (byte *)sk_x_0001da84((word_t)pc, param_3, param_4);
+            if ((param_4 >> 0x3c & 1) == 0) {
+                pc = (byte *)(((word_t)pc & 0xffffffffffff0000) + 0x10004);
+            } else {
+                if (uVar2 <= ((word_t)pc >> 0x10)) CL4_SW_BP(0x457650);
+                pc = (byte *)sk_x_002b141c((word_t)pc, param_3, param_4);
+            }
+        } else {
+            if ((param_4 >> 0x3c & 1) != 0) {
+                if (uVar2 <= ((word_t)pc >> 0x10)) CL4_SW_BP(0x457650);
+                pc = (byte *)sk_x_002b141c((word_t)pc, param_3, param_4);
+            } else {
+                pc = (byte *)(((word_t)pc & 0xffffffffffff0000) + 0x10004);
+            }
+        }
+        result = 0;
+        if (uVar12 == uVar1 * 4 || c1 != c2) goto ret;
+    } while (1);
+ret:
+    sk_x_003a25d4(param_6);
+    return result;
+}
+
+/* FUN_00457650 @ 0x00457650   (est. sk_str_suffix_equiv)
+ * Ghidra: undefined8 FUN_00457650(ulong param_1,...)
+ * Suffix-equivalence primitive: walks the subject (param_3/param_4) against
+ * the reference (param_1/param_2), comparing runs; returns 1 on match.
+ * Confidence: low (string-iterator fragment heavy) */
+static word_t sk_str_suffix_equiv_00457650(word_t param_1, word_t param_2, byte *param_3,
+                                           word_t param_4, word_t param_5, word_t param_6)
+{
+    int uVar9 = (int)(param_5 >> 0x3b) & 1;
+    if ((param_6 & 0x1000000000000000) == 0) uVar9 = 1;
+    word_t uVar1 = param_5 & 0xffffffffffff;
+    if ((param_6 & 0x2000000000000000) != 0) uVar1 = (param_6 >> 0x38) & 0xf;
+    word_t uVar2 = param_1 & 0xffffffffffff;
+    if ((param_2 & 0x2000000000000000) != 0) uVar2 = (param_2 >> 0x38) & 0xf;
+    int uVar10 = (int)(param_1 >> 0x3b) & 1;
+    if ((param_2 & 0x1000000000000000) == 0) uVar10 = 1;
+    sk_x_0036b270(param_2);
+    word_t iter = 0xf;
+    byte *pc = param_3;
+    do {
+        word_t uVar13 = (word_t)pc ^ param_4;
+        char c1, c2;
+        word_t result;
+        if (uVar13 < 0x4000) {
+            if (uVar2 * 4 == (iter >> 0xe)) { result = 1; goto ret; }
+            c1 = 0;
+        } else {
+            c1 = (char)sk_x_002b5ba0((word_t)pc, (word_t)param_3, param_4, param_5, param_6);
+            if (((word_t)pc & 0xc) == (word_t)(4L << uVar9)) pc = (byte *)sk_x_0001da84((word_t)pc, param_5, param_6);
+            if ((param_6 >> 0x3c & 1) == 0) {
+                pc = (byte *)(((word_t)pc & 0xffffffffffff0000) + 0x10004);
+            } else {
+                if (uVar1 <= ((word_t)pc >> 0x10)) CL4_SW_BP(0x4578dc);
+                pc = (byte *)sk_x_002b141c((word_t)pc, param_5, param_6);
+            }
+            if (uVar2 * 4 == (iter >> 0xe)) { result = 0; goto ret; }
+        }
+        word_t p = iter;
+        if ((iter & 0xc) == (word_t)(4L << uVar10)) p = sk_x_0001da84(iter, param_1, param_2);
+        word_t uVar12 = p >> 0x10;
+        if (uVar2 <= uVar12) CL4_SW_BP(0x4578d4);
+        if ((param_2 >> 0x3c & 1) == 0) {
+            if ((param_2 >> 0x3d & 1) == 0) {
+                word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
+                if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2);
+                c2 = *(char *)(base + uVar12);
+            } else {
+                c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar12);
+            }
+        } else {
+            c2 = (char)sk_x_002b141c(p, param_1, param_2);
+        }
+        if ((iter & 0xc) == (word_t)(4L << uVar10)) iter = sk_x_0001da84(iter, param_1, param_2);
+        if ((param_2 >> 0x3c & 1) == 0) {
+            iter = (iter & 0xffffffffffff0000) + 0x10004;
+        } else {
+            if (uVar2 <= (iter >> 0x10)) CL4_SW_BP(0x4578d8);
+            iter = sk_x_002b141c(iter, param_1, param_2);
+        }
+        result = 0;
+        if (uVar13 < 0x4000 || c1 != c2) goto ret;
+    } while (1);
+ret:
+    sk_x_003a25d4(param_2);
+    return result;
+}

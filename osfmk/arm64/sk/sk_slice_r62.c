@@ -305,6 +305,13 @@ extern unsigned long sk_x_004666e4();   /* FUN_004666e4 */
 extern unsigned long sk_x_004666f8();   /* FUN_004666f8 */
 extern unsigned long sk_x_0067f9a0();   /* FUN_0067f9a0 */
 
+/* ---- Global data slots referenced by this region ---- */
+extern word_t DAT_00658c80;   /* global Swift dispatch slot */
+extern word_t DAT_00657778;   /* global object pointer (opaque) */
+extern word_t _DAT_004be5e0;  /* global (overlapping-underscore) word */
+extern word_t _DAT_005a1820;  /* global (overlapping-underscore) word */
+extern word_t DAT_004e80a0;   /* descriptor template */
+extern word_t DAT_005a3520;   /* string/data template */
 
 /* ---- Forward declarations (cross-referenced within this slice) ---- */
 static void sk_r62_00404e60(word_t a, word_t b, sword_t *out);
@@ -313,18 +320,12 @@ static uint sk_ipc_match_tag1_0041a9e4(void);
 static void sk_ipc_badge_emit_tag1_0041aab4(void);
 static word_t sk_ipc_match_tag2_0041ae14(void);
 static void sk_ipc_badge_emit_tag2_0041aee4(void);
-static word_t sk_ipc_badge_match_0041a0dc(sword_t *p1, sword_t *p2);
+static uint sk_ipc_badge_match_0041a0dc(sword_t *p1, sword_t *p2);
 static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t p4, byte p5);
 static void sk_ipc_encode_payload_0041d180(word_t p1, word_t p2, sword_t p3, word_t p4,
                                           uint p5, word_t p6, word_t p7, sword_t *p8);
 static void sk_ipc_emit_reset_0041d14c(byte val, sword_t idx, sword_t base, sword_t end);
 static void sk_ipc_frame_emit_slot_0041d4a4(sword_t p1, sword_t p2, sword_t p3, sword_t p4, char p5);
-
-/* ---- Global data slots referenced by this region ---- */
-extern word_t DAT_00658c80;   /* global Swift dispatch slot */
-extern word_t DAT_00657778;   /* global object pointer (opaque) */
-extern word_t _DAT_004be5e0;  /* global (overlapping-underscore) word */
-extern word_t _DAT_005a1820;  /* global (overlapping-underscore) word */
 /* FUN_00404ac0 @ 0x00404ac0   (est. sk_mr_syscall_dispatch)
  * Ghidra: void FUN_00404ac0(undefined8,undefined8,undefined8*,undefined8,undefined8)
  * Top-level syscall dispatcher. Fetches the caller frame via 00351da8,
@@ -397,7 +398,7 @@ static void sk_mr_update_hint_00404c08(void)
  * Confidence: high (trivial). */
 static void sk_r62_00404c60(void)
 {
-    sk_r62_00404e60();
+    sk_r62_00404e60(0, 0, 0);
 }
 
 /* FUN_00404c78 @ 0x00404c78   (est. sk_mr_span_read)
@@ -551,7 +552,7 @@ static void sk_mr_emit_span_00404ed8(void)
  * Confidence: low. */
 static void sk_mr_span_copy_00404f60(void)
 {
-    word_t *p = (word_t *)sk_x_0035860c().lo;
+    word_t *p = (word_t *)sk_x_0035860c();
     cl4_pair_t v = sk_x_0001a1c8(*p, p[1], *(word_t *)((word_t)0 + 0x10));
     ((cl4_pair_t *)((word_t)0 + 0x10))[0] = v;
 }
@@ -694,7 +695,7 @@ static void sk_mr_emit_region_00405180(cl4_pair_t *out, word_t p2, word_t p3)
         sk_x_003f7e8c();
         sk_x_003f7d48(0, 0, 0, 0, u10);
     }
-    u9 = sk_x_0036b270(u4).lo;
+    u9 = sk_x_0036b270(u4);
     cl4_pair_t r = sk_x_003f7b44(u9, l11);
     *out = r;
     *(word_t *)((word_t)&out[1]) = u10;
@@ -1333,7 +1334,7 @@ static void sk_ipc_build_msgwords_0041a96c(word_t out, word_t p2, word_t p3, wor
  * Confidence: low. */
 static uint sk_ipc_match_tag1_0041a9e4(void)
 {
-    word_t l4 = sk_x_003504d0().lo;
+    word_t l4 = sk_x_003504d0();
     word_t v5 = *(word_t *)(l4 + 8);
     word_t v6 = ((word_t *)((word_t)0 + 0x19))[1];
     if (v5 == 0) {
@@ -2225,7 +2226,7 @@ static cl4_pair_t sk_ipc_ret_const_0041c25c(void)
  * Confidence: low. */
 static bool sk_ipc_scan_nomatch_0041c26c(void)
 {
-    sk_ipc_slot_scan_0041c1d8(0, 0, 0);
+    sk_ipc_slot_scan_0041c1d8();
     sk_x_00351db4();
     return 0;   /* in_ZR-derived: not-found flag */
 }
@@ -2236,7 +2237,7 @@ static bool sk_ipc_scan_nomatch_0041c26c(void)
  * Confidence: low. */
 static bool sk_ipc_scan_nomatch2_0041c270(void)
 {
-    sk_ipc_slot_scan_0041c1d8(0, 0, 0);
+    sk_ipc_slot_scan_0041c1d8();
     sk_x_00351db4();
     return 0;
 }
@@ -2285,236 +2286,6 @@ static void sk_ipc_check_increment_0041c2c8(word_t p1, word_t p2, sword_t p3)
     if ((p2 & 1) != 0 && p3 == (word_t)-1) CL4_SW_BP(0x41c2d8);
 }
 
-/* FUN_0041c2e4 @ 0x0041c2e4   (est. sk_ipc_obj_release)
- * Ghidra: void FUN_0041c2e4(undefined8,undefined8,ulong,long,byte)
- * The core object-release / teardown dispatcher for the message/cap objects.
- * The frame tag (from 0008e518) selects the object kind:
- *  - kind 0: walk the object's slot array releasing each element
- *  - kind 2: the 0x50-byte frame teardown (release the stored object and
- *    run the callback set)
- *  - kind 3: the 0x90-byte descriptor teardown (release cap words)
- *  - kind 4: the 0x78-byte cap-object teardown
- *  - kind 10: special "in-use" bit clear
- * Confidence: low (large multi-kind teardown).
- * Notes: callback table FUN_00455f60/000722b0/00456858/0045636c; global
- *   DAT_00658c80 dispatch slot. */
-static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t p4, byte p5)
-{
-    cl4_pair_t v = sk_x_0008e518();
-    sword_t l11 = v.hi;
-    word_t u9 = v.lo;
-    uint u7 = (uint)p3;
-    switch (u9 >> 0x3c) {
-    case 0:
-        u9 = *(word_t *)(u9 + 0x10);
-        l11 = *(sword_t *)(u9 + 0x10);
-        if (l11 == 0) break;
-        sk_x_0036b270(u9);
-        {
-            word_t idx = 0x20;
-            do {
-                if ((u7 & ((word_t)p4 + 1) < (word_t)p4) != 0) CL4_SW_BP(0x41c9e0);
-                word_t e = *(word_t *)(u9 + idx);
-                cl4_pair_t r = sk_x_0036b270(e & 0xfffffffffffffff);
-                sk_x_00464308(r.lo, r.hi, u7 & 1);
-                sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-                sk_x_0036b118(e & 0xfffffffffffffff);
-                idx += 8;
-                l11--;
-            } while (l11 != 0);
-        }
-        goto LAB_objrel_end;
-    case 1:
-        u9 = *(word_t *)((u9 & 0xfffffffffffffff) + 0x10);
-        l11 = *(sword_t *)(u9 + 0x10);
-        if (l11 != 0) {
-            sk_x_0036b270(u9);
-            word_t idx = 0x20;
-            do {
-                word_t e = *(word_t *)(u9 + idx);
-                cl4_pair_t r = sk_x_0036b270(e & 0xfffffffffffffff);
-                sk_x_00464308(r.lo, r.hi, u7 & 1);
-                sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-                sk_x_0036b118(e & 0xfffffffffffffff);
-                idx += 8;
-                l11--;
-            } while (l11 != 0);
-            goto LAB_objrel_end;
-        }
-        break;
-    case 2:
-        sk_x_00117cc4(&l11, (u9 & 0xfffffffffffffff) + 0x10, 0x68);
-        u9 = *(word_t *)((u9 & 0xfffffffffffffff) + 0x78);
-        if (*(byte *)((word_t)&l11 + 0x50) == 0) {
-            if (p4 == (word_t)-1) CL4_SW_BP(0x41c9f0);
-            sk_x_00464f58();
-            sk_x_00351aec();
-            sk_x_0045908c();
-            sk_x_00464f58();
-            sk_x_00351aec();
-            sk_x_0045908c();
-            sk_x_0036b270();
-            sk_x_004578dc((word_t)sk_x_00455f60, (word_t)sk_x_000722b0,
-                          (word_t)sk_x_00456858, (word_t)sk_x_0045636c);
-            word_t u4 = sk_x_00463708();
-            sk_x_00457994(u4, (word_t)sk_x_00455f60, (word_t)sk_x_000722b0,
-                          (word_t)sk_x_00456858, (word_t)sk_x_0045636c);
-            sk_x_00465a14();
-            sk_x_00463ab8();
-            *(word_t *)(0 + 0x13c05da0) = l11;
-            *(word_t *)(0 + 0x13c05da8) = 0;
-            sk_x_004652f4();
-            l11 = 0;
-            sword_t l12 = 0;
-            *(byte *)(l12 + 0x50) = p5 & 1;
-            *(sword_t *)((word_t)0 + 0x20) = l11;
-        } else if (*(byte *)((word_t)&l11 + 0x50) == 1) {
-            if (p4 == (word_t)-1) CL4_SW_BP(0x41c9ec);
-            word_t u4 = 0;
-            if (*(sword_t *)((word_t)&l11 + 0x10) != 0) u4 = l11;
-            sk_x_004637b4();
-            sk_x_00464f58();
-            sk_x_0045908c();
-            sk_x_0036b270();
-            sk_x_0036b270(*(sword_t *)((word_t)&l11 + 0x10));
-            sk_x_004578dc((word_t)sk_x_00455f60, (word_t)sk_x_000722b0,
-                          (word_t)sk_x_00456858, (word_t)sk_x_0045636c);
-            sword_t cnt = *(sword_t *)(*(sword_t *)((word_t)0 + 0x20) + 0x10);
-            sk_x_004632a4();
-            sk_x_00457994();
-            sk_x_00465a14();
-            sk_x_00463ab8();
-            l11 = 0 + cnt * 0x38;
-            *(word_t *)(l11 + 0x20) = u4;
-            *(sword_t *)(l11 + 0x28) = *(sword_t *)((word_t)&l11 + 0x10);
-            sk_x_004652f4();
-            l11 = 0;
-            sword_t l12 = 0;
-            *(byte *)(l12 + 0x50) = p5 & 1;
-            *(sword_t *)((word_t)0 + 0x20) = l11;
-        } else if (*(byte *)((word_t)&l11 + 0x50) == 3 &&
-                   (l11 = sk_x_00463558(*(word_t *)((word_t)&l11 + 0x38),
-                                        *(word_t *)((word_t)&l11 + 0x30),
-                                        *(word_t *)((word_t)&l11 + 0x10),
-                                        *(word_t *)((word_t)&l11 + 0x20)),
-                    l11 == 0 && 0 == 0 && *(sword_t *)((word_t)&l11 + 0x10) == 0)) {
-            if (p4 == (word_t)-1) CL4_SW_BP(0x41c9f4);
-            sk_x_004637b4();
-            sk_x_00464f58();
-            sk_x_0045908c();
-            sk_x_0036b270();
-            sk_x_003a25d4(0);
-            sk_x_004578dc((word_t)sk_x_00455f60, (word_t)sk_x_000722b0,
-                          (word_t)sk_x_00456858, (word_t)sk_x_0045636c);
-            sword_t cnt = *(sword_t *)(*(sword_t *)((word_t)0 + 0x20) + 0x10);
-            sk_x_00353bc4(cnt, (word_t)sk_x_00455f60, (word_t)sk_x_000722b0);
-            sk_x_00457994();
-            sword_t base = *(sword_t *)((word_t)0 + 0x20);
-            *(sword_t *)(base + 0x10) = cnt + 1;
-            base = base + cnt * 0x38;
-            *(word_t *)(base + 0x20) = 0;
-            *(word_t *)(base + 0x28) = 0;
-            sk_x_004652f4();
-            l11 = 0;
-            sword_t l12 = 0;
-            *(byte *)(l12 + 0x50) = p5 & 1;
-            *(sword_t *)((word_t)0 + 0x20) = l11;
-        } else {
-            sk_x_0036b270(u9 & 0xfffffffffffffff);
-        }
-        sk_x_00464d68();
-        sk_x_003505e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-        goto LAB_objrel_end;
-    case 3:
-        u9 = u9 & 0xfffffffffffffff;
-        sk_x_00117cc4(&l11, u9 + 0x20, 0x90);
-        word_t u10 = *(word_t *)(u9 + 0xb0);
-        word_t u8 = *(word_t *)(u9 + 0xd0);
-        sk_x_00117cc4((byte *)&l11 + 0x18, u9 + 0x20, 0x80);
-        if (sk_x_00458cb8(&l11) == 3) {
-            word_t u4 = sk_x_00458cd4((byte *)&l11 + 0x18);
-            sk_x_00465884(0x67f9a0);
-            word_t u9 = sk_x_0036a940();
-            sk_x_00117cc4(u9 + 0x10, u4, 0x80);
-            sk_x_00464f58();
-            sk_x_00458c98();
-            sk_x_00464f58();
-            sk_x_00458c98();
-            sk_x_0036b270(u8 & 0xfffffffffffffff);
-            sk_x_0036b270(u10 & 0xfffffffffffffff);
-            word_t u4b = sk_x_00464d68(u9 | 0x2000000000000000);
-            sk_ipc_obj_release_0041c2e4(u4b, l11);
-            sk_x_0036b118(u9);
-            sk_x_00458e28(&l11);
-            if ((p3 & 1) != 0) goto LAB_objrel_kind3_pending;
-            goto LAB_objrel_drop;
-        } else {
-            sk_x_0036b270(u8 & 0xfffffffffffffff);
-            sk_x_0036b270(u10 & 0xfffffffffffffff);
-            if ((p3 & 1) == 0) goto LAB_objrel_drop;
-LAB_objrel_kind3_pending:
-            if (p4 == (word_t)-1) CL4_SW_BP(0x41c9e4);
-            sk_x_0006b6a0(u10);
-        }
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-        sk_x_0036b118(u10 & 0xfffffffffffffff);
-        sk_x_00464d68();
-        sk_x_003514e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-LAB_objrel_end:
-        sk_x_0036b118(u8 & 0xfffffffffffffff);
-        break;
-    case 4:
-        u9 = u9 & 0xfffffffffffffff;
-        u10 = *(word_t *)(u9 + 0x10);
-        word_t u1 = *(word_t *)(u9 + 0x18);
-        u8 = *(word_t *)(u9 + 0x78);
-        word_t u5 = *(word_t *)(u9 + 0x38);
-        word_t u6 = 0;
-        if ((u5 >> 0x3d) == 4) {
-            if (u5 == 0x8000000000000000 && u1 == 0 && u10 == 0 &&
-                *(sword_t *)(u9 + 0x48) == 0 && *(sword_t *)(u9 + 0x40) == 0 &&
-                *(sword_t *)(u9 + 0x30) == 0 && *(sword_t *)(u9 + 0x28) == 0 &&
-                *(sword_t *)(u9 + 0x20) == 0) {
-                u6 = 0;
-            } else {
-                u6 = (word_t)((u10 == 1 && u1 == 0 && *(sword_t *)(u9 + 0x48) == 0 &&
-                              *(sword_t *)(u9 + 0x40) == 0 && *(sword_t *)(u9 + 0x30) == 0 &&
-                              *(sword_t *)(u9 + 0x28) == 0 && *(sword_t *)(u9 + 0x20) == 0) &&
-                             u5 == 0x8000000000000000);
-            }
-        } else {
-            u6 = u10;
-            if ((u1 & 0xff) == 1) {
-                if (u6 == 0 && (p3 & 1) != 0 && p4 == (word_t)-1) CL4_SW_BP(0x41c9e8);
-            }
-        }
-        sk_x_0036b270(u8 & 0xfffffffffffffff);
-        sk_x_00464d68();
-        sk_x_003514e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
-        u8 = u8 & 0xfffffffffffffff;
-LAB_objrel_end:
-        sk_x_0008e500(u8, 0);
-        sk_x_0036b118();
-        return;
-    case 10:
-        u8 = *(word_t *)((u9 & 0xfffffffffffffff) + 0x38);
-        if ((u8 & 6) == 2) {
-            sk_x_0036b270(u8 & 0xffffffffffffff9);
-            word_t u4 = sk_x_00464d68(u8 & 0xfffffffffffffff9);
-            sk_ipc_obj_release_0041c2e4(u4, l11);
-            u8 = u8 & 0xffffffffffffff9;
-            goto LAB_objrel_end;
-        }
-        break;
-    case 5: case 6: case 7: case 8: case 9: case 0xb:
-        break;
-    }
-LAB_objrel_drop:
-    sk_x_0008e500(0);
-}
 /* FUN_0041ca38 @ 0x0041ca38   (est. sk_ipc_frame_alloc_slot)
  * Ghidra: long FUN_0041ca38(void)
  * Allocates a new message slot in the frame's slot array (stride 0x38),
@@ -2563,7 +2334,7 @@ static cl4_pair_t sk_ipc_ret_f15_0041cb78(void)
  * Confidence: low. */
 static word_t sk_ipc_frame_compare_0041cb8c(void)
 {
-    sword_t l2 = (sword_t)sk_x_003504d0().lo;
+    sword_t l2 = sk_x_003504d0();
     sword_t l4 = ((sword_t *)((word_t)0 + 0x19))[1];
     if (*(sword_t *)(l2 + 8) == 0) {
         if (l4 != 0) return 0;
@@ -2601,7 +2372,7 @@ static uint sk_ipc_frame_compare2_0041cc48(word_t p1, word_t *p2)
     w[0] = p2[0]; w[1] = p2[1]; w[2] = p2[2]; w[3] = p2[3];
     w[4] = p2[4]; w[5] = p2[5];
     byte tag = *(byte *)(p2 + 6);
-    return sk_ipc_frame_compare_0041cb8c((sword_t)p1, (sword_t *)(word_t *)&w) & 1;
+    return sk_ipc_frame_compare_0041cb8c(p1, (word_t *)&w) & 1;
 }
 
 /* FUN_0041cc98 @ 0x0041cc98   (est. sk_ipc_emit_tag_pair)
@@ -2775,7 +2546,7 @@ static void sk_ipc_emit_payload_0041d070(void)
     sk_x_002cb61c();
     if ((u1 & 0xff) != 2 || *(sword_t *)(*(sword_t *)((word_t)0 + 0x10) + 0x10) != 0) {
         cl4_pair_t v = sk_x_00350518();
-        sk_ipc_encode_payload_0041d180(v.lo, v.hi, 0, 0, 1);
+        sk_ipc_encode_payload_0041d180(v.lo, v.hi, 0, 0, 1, 0, 0, 0);
     }
     sk_x_0035053c(0, 2);
     sk_ipc_emit_reset_0041d14c(0, 0, 0, 0);
@@ -3117,7 +2888,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
                 word_t e = *(word_t *)(u9 + idx);
                 cl4_pair_t r = sk_x_0036b270(e & 0xfffffffffffffff);
                 sk_x_00464308(r.lo, r.hi, u7 & 1);
-                sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+                sk_ipc_obj_release_0041c2e4();
                 sk_x_0036b118(e & 0xfffffffffffffff);
                 idx += 8;
                 l11--;
@@ -3134,7 +2905,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
                 word_t e = *(word_t *)(u9 + idx);
                 cl4_pair_t r = sk_x_0036b270(e & 0xfffffffffffffff);
                 sk_x_00464308(r.lo, r.hi, u7 & 1);
-                sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+                sk_ipc_obj_release_0041c2e4();
                 sk_x_0036b118(e & 0xfffffffffffffff);
                 idx += 8;
                 l11--;
@@ -3230,7 +3001,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
         }
         sk_x_00464d68();
         sk_x_003505e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+        sk_ipc_obj_release_0041c2e4();
         goto LAB_objrel_c9c0;
     case 3:
         u9 = u9 & 0xfffffffffffffff;
@@ -3250,7 +3021,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
             sk_x_0036b270(u8 & 0xfffffffffffffff);
             sk_x_0036b270(u10 & 0xfffffffffffffff);
             word_t u4b = sk_x_00464d68(u9b | 0x2000000000000000);
-            sk_ipc_obj_release_0041c2e4(u4b, l11);
+            sk_ipc_obj_release_0041c2e4(u4b, l11, 0, 0, 0);
             sk_x_0036b118(u9b);
             sk_x_00458e28(&l11);
             if ((p3 & 1) == 0) goto LAB_objrel_drop;
@@ -3261,11 +3032,11 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
             if (p4 == (word_t)-1) CL4_SW_BP(0x41c9e4);
             sk_x_0006b6a0(u10);
         }
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+        sk_ipc_obj_release_0041c2e4();
         sk_x_0036b118(u10 & 0xfffffffffffffff);
         sk_x_00464d68();
         sk_x_003514e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+        sk_ipc_obj_release_0041c2e4();
         goto LAB_objrel_c9c0;
     case 4:
         u9 = u9 & 0xfffffffffffffff;
@@ -3294,7 +3065,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
         sk_x_0036b270(u8 & 0xfffffffffffffff);
         sk_x_00464d68();
         sk_x_003514e8();
-        sk_ipc_obj_release_0041c2e4(0, 0, 0, 0, 0);
+        sk_ipc_obj_release_0041c2e4();
         u8 = u8 & 0xfffffffffffffff;
         goto LAB_objrel_c89c;
     case 10:
@@ -3302,7 +3073,7 @@ static void sk_ipc_obj_release_0041c2e4(word_t p1, word_t p2, word_t p3, sword_t
         if ((u8 & 6) == 2) {
             sk_x_0036b270(u8 & 0xffffffffffffff9);
             word_t u4b = sk_x_00464d68(u8 & 0xfffffffffffffff9);
-            sk_ipc_obj_release_0041c2e4(u4b, l11);
+            sk_ipc_obj_release_0041c2e4(u4b, l11, 0, 0, 0);
             u8 = u8 & 0xffffffffffffff9;
             goto LAB_objrel_c89c;
         }

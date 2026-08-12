@@ -4676,10 +4676,10 @@ extern void FUN_003d3dd8(unsigned long *, unsigned long *, ...); /* diag log */ 
 extern void FUN_0038c324(void);                         /* lock init sibling @ 0x38c324 */
 extern void FUN_00399614(void);                         /* lock init sibling @ 0x399614 */
 extern unsigned long thunk_FUN_001144a0(unsigned long, unsigned long, unsigned long);
-extern unsigned long thunk_FUN_001145b0(unsigned long, unsigned long, unsigned long);
+extern unsigned long thunk_FUN_001145b0(unsigned long, unsigned long, ...);
 extern unsigned long FUN_00115080(unsigned long, ...);
 extern unsigned long FUN_001144a0(unsigned long, unsigned long, unsigned long);
-extern unsigned long FUN_001145b0(unsigned long, unsigned long, unsigned long);
+extern unsigned long FUN_001145b0(unsigned long, unsigned long, ...);
 extern cL4_w16_t FUN_0038c640(unsigned long *, unsigned long, unsigned long, long); /* waiter scan */
 extern unsigned long FUN_0038c750(unsigned long, ...);  /* hashtable chain find */
 extern cL4_w16_t FUN_0038c3ac(unsigned long);           /* stringbuf get small */
@@ -4737,6 +4737,12 @@ extern const char s_Bf32__005d5b87[];
 extern const char s_Bf64__005d5b8d[];
 extern const char s_Bf80__005d5b93[];
 extern const char s_Bf128__005d5b99[];
+
+extern unsigned long FUN_0000456c(unsigned long, ...);       /* generic arg count */
+extern unsigned long FUN_00019850(unsigned long);         /* identifier string */
+extern const char s__gatherGenericParameters__contex_005d52fa[];
+extern const char s_parent__005d5327[];
+extern const char s_null_005d5330[];
 
 /* Newly needed binary data / globals. */
 extern unsigned long DAT_004f28f8;
@@ -7585,7 +7591,7 @@ void sk_err_ctx_38dd44(unsigned long *out, unsigned long *err)
     FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d5324);
     FUN_00112db4((unsigned long)out, (unsigned long)s_parent__005d5327);
     if (err[3] == 0)
-        FUN_00112db4((unsigned long)out, (unsigned long)s_<null>_005d5330);
+        FUN_00112db4((unsigned long)out, (unsigned long)s_null_005d5330);
     else
         FUN_00112db4((unsigned long)out, err[3]);
     FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d5337);

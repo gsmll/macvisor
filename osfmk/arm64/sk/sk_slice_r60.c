@@ -250,6 +250,8 @@ extern unsigned long FUN_004092d8();  /* clock-read primitive B (continuation) *
 /* Forward declarations for in-slice functions (Swift async ABI: many
  * cross-calls pass register args the decompiler omits; forward decls let
  * forwarders reference targets defined later in the file). */
+static void sk_r60_3fae1c_async_body_dispatch_loop_v1(void);
+static void sk_r60_3fb108_async_body_dispatch_loop_v2(void);
 static void sk_r60_3fac14_task_init_call(uint64_t *out, unsigned long a2,
                                           unsigned long a3, unsigned long a4,
                                           long task_ctx);
@@ -468,6 +470,158 @@ static void sk_r60_3fadbc_task_execute_body(unsigned long p1, unsigned long p2,
     cont[0] = FUN_00350618();
     cont[1] = FUN_00350618(); /* second half of the 16-byte return */
     FUN_001a5968(cont[0], cont[1], p3);
+}
+
+/* FUN_003fae1c @ 0x3fae1c   (est. sk_r60_async_body_dispatch_loop_v1)
+ * The shared async coroutine body-dispatch loop (variant A). Sets up the
+ * task executor context (FUN_0008e518/0007c028, indirect helper dispatch
+ * through DAT_00658c80), then loops:
+ *   while (FUN_003f7648(FUN_00404b8c()) and FUN_00349f3c()) {
+ *       cont = *(code**)(x16+0x20);
+ *       (*cont)(lo, hi, extra);            // run coroutine body
+ *       if (!alive) { lVar1=-0x60; thunk_FUN_002acbb8(0x202c, ...); }
+ *       FUN_0036a9a0(...); FUN_00408160(); FUN_003504a0(); (*cont)();
+ *       FUN_004070c0(&stack[lVar1], 0x20, ..., &local_10);
+ *       FUN_001a8b7c(); FUN_0036b588(&stack[lVar1]);
+ *       FUN_0036b6ac(...);
+ *   }
+ * Completes with FUN_0036b118(cont_hi) and FUN_0008e500(...).
+ * Confidence: low (indirect continuation calls; decompiler emits extraout
+ *   continuation pointers because the coroutine trampoline reuses x8/x16
+ *   across the loop).
+ * Notes: references the "vas_core operation setup" string at 0x5b281e+0x20.
+ *   This is the coroutine "suspend/resume" driver for an async task. */
+static void sk_r60_3fae1c_async_body_dispatch_loop_v1(void)
+{
+    int alive;
+    unsigned long u2, u3, aux[2];
+    long slot16;
+    unsigned long lvar1;
+    unsigned long contHi, contLo;
+    unsigned char st[64];
+    unsigned long local_10, stack_8;
+
+    FUN_0008e518();
+    FUN_0007c028();
+    ((void (*)(unsigned long))(DAT_00658c80))(*(unsigned long *)(0 + 0x40));
+    FUN_000aa4ec();
+    FUN_0040841c();
+    FUN_00310d68(0);
+    FUN_00351f10();
+    FUN_0007c1a4();
+    ((void (*)(void))(DAT_00658c80))();
+    FUN_0034b460();
+    FUN_00408258();
+    aux[0] = 0; aux[1] = 0;     /* local_28 pair (extraout) */
+    FUN_00208418(0, 0);
+    thunk_FUN_002acbb8();
+    FUN_003a25d4(0);
+    thunk_FUN_002acbb8((unsigned long)(0x5b281e + 0x20), 0xe300000000000000UL);
+    local_10 = aux[0];
+    stack_8 = aux[1];
+    FUN_00350524();
+    FUN_003f761c();
+    FUN_003504e8();
+    u2 = FUN_00404b8c();
+    alive = 1;
+    while (1) {
+        lvar1 = (unsigned long)-0x78;
+        FUN_003f7648(u2);
+        FUN_00349f3c();
+        alive = 0;              /* (bool)in_ZR from FUN_00349f3c */
+        if (!alive) break;
+        contHi = *(unsigned long *)(slot16 + 0x20);
+        aux[0] = FUN_000b4390();
+        aux[1] = FUN_000b4390();
+        ((void (*)(unsigned long, unsigned long, unsigned long))contHi)(
+            aux[0], aux[1], 0);
+        if (!alive) {
+            lvar1 = (unsigned long)-0x60;
+            thunk_FUN_002acbb8(0x202c, 0xe200000000000000UL);
+        }
+        u3 = FUN_0008e0d4();
+        FUN_0036a9a0(u3, st);
+        FUN_00408160();
+        FUN_003504a0();
+        ((void (*)(void))contHi)();
+        FUN_004070c0((long)&local_10 + (long)lvar1, 0x20, 0xe100000000000000UL,
+                     0, 0, &local_10);
+        FUN_001a8b7c();
+        FUN_0036b588((long)&local_10 + (long)lvar1);
+        u3 = FUN_00002688();
+        FUN_0036b6ac(u3, 0x20, 7);
+        alive = 0;
+    }
+    FUN_0036b118(aux[0]);
+    thunk_FUN_002acbb8(0x295d, 0xe200000000000000UL);
+    FUN_0008e500(local_10, stack_8, 0);
+}
+
+/* FUN_003fb108 @ 0x3fb108   (est. sk_r60_async_body_dispatch_loop_v2)
+ * The shared async coroutine body-dispatch loop (variant B) — near-twin of
+ * 003fae1c. Same setup and loop; the differences are the local_10/uStack_8
+ * seed (0x5b / 0xe100000000000000), the inner body helper
+ * (FUN_001edad0 instead of FUN_001a8b7c), and the exit tags
+ * (thunk_FUN_002acbb8(0x5d, 0xe100000000000000)).
+ * Confidence: low (indirect continuation calls; extraout registers). */
+static void sk_r60_3fb108_async_body_dispatch_loop_v2(void)
+{
+    int alive;
+    unsigned long u2, u3, aux[2];
+    long slot16;
+    unsigned long lvar1;
+    unsigned long contHi;
+    unsigned char st[64];
+    unsigned long local_10, stack_8;
+
+    FUN_0008e518();
+    FUN_0007c028();
+    ((void (*)(unsigned long))(DAT_00658c80))(*(unsigned long *)(0 + 0x40));
+    FUN_000aa4ec();
+    FUN_0040841c();
+    FUN_00310d68(0);
+    FUN_00351f10();
+    FUN_0007c1a4();
+    ((void (*)(void))(DAT_00658c80))();
+    FUN_0034b460();
+    local_10 = 0x5b;
+    stack_8 = 0xe100000000000000UL;
+    FUN_00350524();
+    FUN_003f761c();
+    FUN_003504e8();
+    u2 = FUN_00404b8c();
+    alive = 1;
+    while (1) {
+        lvar1 = (unsigned long)-0x78;
+        FUN_003f7648(u2);
+        FUN_00349f3c();
+        alive = 0;              /* (bool)in_ZR from FUN_00349f3c */
+        if (!alive) break;
+        contHi = *(unsigned long *)(slot16 + 0x20);
+        aux[0] = FUN_000b4390();
+        aux[1] = FUN_000b4390();
+        ((void (*)(unsigned long, unsigned long, unsigned long))contHi)(
+            aux[0], aux[1], 0);
+        if (!alive) {
+            lvar1 = (unsigned long)-0x60;
+            thunk_FUN_002acbb8(0x202c, 0xe200000000000000UL);
+        }
+        u3 = FUN_0008e0d4();
+        FUN_0036a9a0(u3, st);
+        FUN_00408160();
+        FUN_003504a0();
+        ((void (*)(void))contHi)();
+        FUN_004070c0((long)&local_10 + (long)lvar1, 0x20, 0xe100000000000000UL,
+                     0, 0, &local_10);
+        FUN_001edad0();
+        FUN_0036b588((long)&local_10 + (long)lvar1);
+        u3 = FUN_00002688();
+        FUN_0036b6ac(u3, 0x20, 7);
+        alive = 0;
+    }
+    FUN_0036b118(aux[0]);
+    thunk_FUN_002acbb8(0x5d, 0xe100000000000000UL);
+    FUN_0008e500(local_10, stack_8, 0);
 }
 
 /* FUN_003fb028 @ 0x3fb028   (est. sk_r60_task_context_capture)
