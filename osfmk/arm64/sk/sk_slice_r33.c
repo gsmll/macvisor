@@ -31,6 +31,8 @@ static inline void sk_break(uint64_t a, uint64_t b) __attribute__((noreturn))
  * ground truth).
  * ------------------------------------------------------------------ */
 
+extern uint64_t sk_g_00657d98;  /* DAT_00657d98: one-time init guard/result */
+
 /* ------------------------------------------------------------------ *
  * Out-of-slice callees (reconstructed by other slice workers). The
  * sk_x_XXXXXXXX names encode the Ghidra FUN_ address. Functions that
@@ -83,7 +85,7 @@ extern unsigned long sk_x_0036b270();
 extern unsigned long sk_x_003728b8();
 extern unsigned long sk_x_00376820();
 extern cl4_result_t sk_x_00377824();
-extern unsigned long sk_x_00377dcc();
+extern cl4_result_t sk_x_00377dcc();
 extern unsigned long sk_x_003a25d4();
 extern unsigned long sk_x_00458940();
 extern unsigned long sk_x_00459138();
@@ -165,7 +167,7 @@ extern unsigned long sk_x_004abe40();
 extern unsigned long sk_x_004abec0();
 extern unsigned long sk_x_004abee0();
 extern unsigned long sk_x_004abf50();
-extern unsigned long sk_x_004abf7c();
+extern cl4_result_t sk_x_004abf7c();
 extern unsigned long sk_x_004ac168();
 extern unsigned long sk_x_004ac1d4();
 extern unsigned long sk_x_004ac264();
@@ -196,6 +198,7 @@ extern unsigned long sk_x_004aca80();
 extern unsigned long sk_x_004acac0();
 extern unsigned long sk_x_004acc70();
 extern unsigned long sk_x_004accf0();
+extern unsigned long sk_x_004a3714();
 
 /* ------------------------------------------------------------------ *
  * In-slice forward declarations.
@@ -651,7 +654,7 @@ static void sk_x_0049f318(void)
     uint64_t *unaff_x19;    /* preserved x19 */
     uint64_t *unaff_x20;    /* preserved x20 */
 
-    lVar1 = sk_x_0034b264();
+    lVar1 = sk_x_0034b264().lo;
     sk_x_003a25d4(*(uint64_t *)(lVar1 + 8));
     uVar2 = *(uint64_t *)((uint8_t *)unaff_x20 + 0x10);
     uVar3 = *(uint64_t *)((uint8_t *)unaff_x19 + 8);
@@ -847,7 +850,7 @@ static void sk_x_0049f75c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     uVar3 = sk_x_00350c5c();
     sk_x_004aa47c(uVar3.lo, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
     sk_x_00377824();
-    iVar2 = sk_x_004aa914();
+    iVar2 = (int32_t)sk_x_004aa914().lo;
     lVar4 = *(uint64_t *)(extraout_x17 - 8);
     if (iVar2 == 0) {
         sk_x_0034bfb4();
@@ -1106,7 +1109,7 @@ static void sk_x_0049fd8c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     int32_t iret;              /* Ghidra iVar1 */
     cl4_result_t result;       /* Ghidra auVar4 */
 
-    uvar2 = sk_x_00350c5c();
+    uvar2 = sk_x_00350c5c().lo;
     sk_x_004aa47c(uvar2, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
     sk_x_00377824();           /* leaves x8 -> x8_state, x16 -> x16_state */
     uvar3 = *(uint64_t *)(x8_state + 0x40);
@@ -1186,7 +1189,7 @@ static void sk_x_0049ff7c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     int32_t w23_in;               /* Ghidra unaff_w23 (incoming register) */
     cl4_result_t result;          /* Ghidra auVar4 */
 
-    uvar2 = sk_x_00350c5c();
+    uvar2 = sk_x_00350c5c().lo;
     sk_x_004aa47c(uvar2, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
     sk_x_00377824();              /* leaves x16 -> x16_state */
     iret = sk_x_004aa8b0();
@@ -1237,7 +1240,7 @@ static void sk_x_004a0058(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     uint64_t lvar3;            /* Ghidra lVar3 */
     cl4_result_t result;       /* Ghidra auVar4 */
 
-    uvar1 = sk_x_00350c5c();
+    uvar1 = sk_x_00350c5c().lo;
     sk_x_004aa47c(uvar1, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
     sk_x_00377824();           /* leaves x17 -> x17_state */
     result = sk_x_004aa914();
@@ -1279,7 +1282,7 @@ static void sk_x_004a00f4(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     int32_t w23_in;               /* Ghidra unaff_w23 */
     cl4_result_t result;          /* Ghidra auVar4 */
 
-    uvar2 = sk_x_00350c5c();
+    uvar2 = sk_x_00350c5c().lo;
     sk_x_004aa47c(uvar2, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
     sk_x_00377824();              /* leaves x16 -> x16_state */
     iret = sk_x_004aa8b0();
@@ -1429,7 +1432,7 @@ static void sk_x_004a058c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     uint64_t uvar1;   /* Ghidra uVar1 */
 
     sk_x_004aa47c(param_1, *(uint64_t *)(param_3 + 0x18), *(uint64_t *)(param_3 + 0x10));
-    uvar1 = sk_x_00377824();
+    uvar1 = sk_x_00377824().lo;
     sk_x_000839d8(param_1, param_2, 1, uvar1);
     return;
 }
@@ -1700,7 +1703,7 @@ static void sk_x_004a0d6c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
     cl4_result_t auVar8;
 
     sk_x_00084220();
-    uVar5 = sk_x_00350c5c();
+    uVar5 = sk_x_00350c5c().lo;
     uVar3 = *(uint64_t *)(param_3 + 0x10);
     auVar8 = sk_x_004aa4fc(uVar5, *(uint64_t *)(param_3 + 0x18));
     sk_x_00377824(auVar8.lo, auVar8.hi, uVar3);
@@ -3344,7 +3347,7 @@ static void sk_x_004a3184(void) {
  * i.e. sk_x_0049ef90(param_2, param_1). No other work.
  * Confidence: high */
 static void sk_x_004a31ec(uint64_t param_1, uint64_t param_2) {
-    sk_x_0049ef90(param_2, param_1);
+    ((void (*)(uint64_t, uint64_t))sk_x_0049ef90)(param_2, param_1);  /* callee takes no params; args are register residue */
 }
 
 /* FUN_004a31fc @ 0x4a31fc   (est. sk_x_004a31fc)
@@ -3564,7 +3567,7 @@ static void sk_x_004a33e4(uint64_t param_1)
  * Notes: single forward call. */
 static void sk_x_004a3400(void)
 {
-	sk_x_004a3458();
+	((void (*)(void))sk_x_004a3458)();  /* callee takes 4 params; decompile shows none (register residue) */
 	return;
 }
 
@@ -3766,10 +3769,10 @@ static int64_t sk_x_004a3588(uint64_t param_1)
 
 /* FUN_004a35b8 @ 0x004a35b8   (est. sk_x_004a35b8)
  * Ghidra: void FUN_004a35b8(void)
- * One-time lazy initializer: if the global DAT_00657d98 is already non-zero it
+ * One-time lazy initializer: if the global sk_g_00657d98 (DAT_00657d98) is already non-zero it
  * returns immediately. Otherwise it builds a descriptor (uVar1 via the
  * out-of-slice helper sk_x_00027614 with two global addresses) and stores the
- * result of sk_x_00376820 into DAT_00657d98, passing a pointer to a local that
+ * result of sk_x_00376820 into sk_g_00657d98 (DAT_00657d98), passing a pointer to a local that
  * holds the address 0x6707a8.
  * Confidence: low
  * Notes: DAT_00657d98 (init guard/result), DAT_004e8330 and local_18=0x6707a8
@@ -3779,12 +3782,12 @@ static void sk_x_004a35b8(void)
     uint64_t uVar1;
     uint64_t local_18;
 
-    if (DAT_00657d98 != 0) {
+    if (sk_g_00657d98 != 0) {
         return;
     }
     uVar1 = sk_x_00027614(0x64e078ULL, 0x005a4b80ULL);
     local_18 = 0x6707a8ULL;
-    DAT_00657d98 = sk_x_00376820(0x004e8330ULL, uVar1, &local_18);
+    sk_g_00657d98 = sk_x_00376820(0x004e8330ULL, uVar1, &local_18);
     return;
 }
 

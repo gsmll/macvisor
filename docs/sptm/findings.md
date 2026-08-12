@@ -4009,3 +4009,57 @@ Confidence: Medium.
 - **Evidence**: `thunk_FUN_00114330(param_1+1, 0x90)` and `param_1[0x14]=param_1[0x15]=0` on the `param_2>=8` branch.
 - **Severity (hypothesis)**: informational — safe re-initialization of resized metadata.
 - **Confidence**: medium
+
+## [SkR30] 0x00490174-0x004961a0 SKR30 — Swift _StringProcessing matcher/runtime region in the Secure Kernel (GL1)
+- **Observation**: The cL4 Secure Kernel embeds a second contiguous block of the Swift Foundation/RegexBuilder runtime (the SKR29 slice covered 0x481600-0x48fe4c; this slice is 0x490174-0x4961a0). The functions here are the runtime fragments around the regex matcher: boxed-value/collection helpers, dictionary/set/array element ops, string primitives, and a large recursive type-tag/value walker (FUN_004934a8) that dispatches on a `(param >> 0x3b) & 0x1e | (param>>2)&1` tag. As with SKR29 this confirms GL1 ships general-purpose regex/string machinery in-ring for policy matching inside Exclaves.
+- **Evidence**: 120 functions in sk_slice_r30.c; string refs `s__StringProcessing_Match_swift_005e1fe0` (FUN_00490268), `s_upperBound_output_005e2540` + `s_lower_upper_005e1f90` (FUN_00491bd4), `s_L4_ErrorCodeCapInvalid_006886c8` (FUN_00491db4 — a capability-error string stored into a result object at +0x18). Retain/release/emplace trampolines FUN_0036b118/0036b270/0036a940; collection growth via FUN_0006b42c/FUN_0049a550 with `backing+0x18 >> 1 <= count` reserve checks.
+- **Severity (hypothesis)**: low — the region is defensive Swift runtime code; the L4_ErrorCodeCapInvalid string is written into a result box, indicating the matcher surfaces cL4 capability errors. The regex matcher remains a fuzz-worthy attack surface.
+- **Confidence**: medium.
+
+## [SkR30] 0x004934a8 sk_r30_type_value_walk — recursive tagged-value walker with bounds traps
+- **Observation**: FUN_004934a8 recursively walks a tagged Swift value (tag bits `(param>>0x3b)&0x1e | (param>>2)&1`). Every array/collection deref is bounds-checked and traps (SoftwareBreakpoint) on out-of-range index: 0x493878, 0x49387c, 0x493880. It also recurses on retained sub-objects (FUN_0036b270/FUN_0036b118 = retain/release) and carries a sentinel test `uVar6 == 0x8000000000000000` (empty-box marker).
+- **Evidence**: decompile 0x4934a8 — `if (*(ulong *)(lVar9+0x10) <= uVar10) SoftwareBreakpoint(1,0x493878)`; three SWBP sites; `FUN_004934a8()` self-recursion; `uVar6 == 0x8000000000000000` empty-box checks.
+- **Severity (hypothesis)**: low — defensive invariants (bounds + empty-box), consistent with Swift runtime.
+- **Confidence**: medium.
+
+## [SkR30] 0x0049063c / 0x00490268 — collection copy/emplace with growth bounds checks
+- **Observation**: These functions copy element arrays (stride 0x160/0x178) into growing Swift collections, checking `backing->count`/`capacity` and trapping on negative counts (SoftwareBreakpoint 0x49096c/0x490970 in 0x49063c) and on out-of-bounds growth. The `*(ulong *)(x+0x18) >> 1 <= count` pattern is the Swift Array `reserveCapacity`/uniquing growth guard.
+- **Evidence**: decompile 0x49063c — `if (lVar2 < 1) SoftwareBreakpoint(1,0x49096c)`; `for (; lVar2 != 0; lVar2--)` loop over `param_5+0x20 + i*0x58`; decompile 0x490268 — `if (*(ulong*)(p+0x18) >> 1 <= uVar1) { FUN_0006b42c(); FUN_0049a550(); }` growth then `p[2] = uVar1+1`.
+- **Severity (hypothesis)**: low — Swift capacity/growth invariants; negative-count SWBP is defensive.
+- **Confidence**: medium.
+
+## [SkR31] 0x004961e8-0x0049a4b8 SKR31 — Swift Array-buffer / RangeSet runtime region in the Secure Kernel (GL1)
+- **Observation**: The cL4 Secure Kernel embeds another contiguous block of the Swift standard-library runtime (following SKR29 0x481600-0x48fe4c and SKR30 0x490174-0x4961a0). This slice (120 functions) is the per-element-type Array-buffer machinery: uninitialized-array allocation (`_allocateUninitializedArray`, 0x4981d8/4983ac/4983fc/49844c/49849c/499e1c/499e94), in-place resize with move-or-copy (`_ArrayBuffer` 0x498cc8-0x4997xx), per-stride bulk element copy/move with overlap+negative-count traps (0x499820-0x499c7c, 0x499cfc-0x499d7c), a hash-map backed by a parallel bitset+value-array layout (map+0x40 bitset, +0x30/+0x38 value arrays, +0x10 count; 0x499fcc-0x49a348), and two large RangeSet-style range-merge rebuild routines (0x49751c, 0x4979f8) plus a split variant (0x498708). This confirms GL1 ships full Swift collection/hashing machinery in-ring for Exclave policy data.
+- **Evidence**: 120 functions in sk_slice_r31.c; `FUN_0036a940` object alloc with `thunk_FUN_000126e8` malloc_size; `FUN_0036b118`/`0036b270` release/retain; DAT_00657778 empty-buffer sentinel; string/metadata addresses 0x657bc8/0x5a3c70, 0x657e80/0x5a5600.
+- **Severity (hypothesis)**: low — defensive Swift runtime code; the collection/hash machinery is a fuzz-worthy surface in-ring.
+- **Confidence**: medium.
+
+## [SkR31] 0x0049a058 / 0x0049a184 / 0x0049a2a4 — hash-map slot write without explicit bounds check against capacity
+- **Observation**: The hash-map insert functions compute a slot index from the hash probe (FUN_0006ae9c / FUN_00499f6c) and write into the value arrays at map+0x30[slot] and map+0x38[slot] (0x499fcc/0x49a010) or overwrite map+0x38[slot] on a hit (0x49a058/0x49a184), and 0x49a2a4 reads map+0x30[hash] during lookup. None of these re-validate `slot < capacity (map+0x18>>1)`; correctness relies on the Swift hash-table invariant that the probe only yields in-bounds slots. A corrupt/forged hash value (or a table left inconsistent by a partial update) would index out of the value arrays. Growth is guarded (SCARRY8 count-overflow trap at 0x49a174/0x49a288), and hash instability on a re-probe triggers the noreturn fatal FUN_002591b4 — so the runtime fail-closes rather than silently corrupting.
+- **Evidence**: decompiles 0x49a058/0x49a184 (`*(word_t*)(*(long*)(lVar6+0x38) + lVar7*8) = v1` with no `lVar7 < cap` check); 0x49a2a4 (`*(long*)(*(long*)(map+0x30) + hash*8)` bounded only by the bitset bit test); SCARRY8 traps; `FUN_002591b4(0x6728f0)` fatal on re-probe hash mismatch.
+- **Severity (hypothesis)**: low — requires an inconsistent table/forged hash to reach; defensive growth traps present.
+- **Confidence**: low.
+
+## [SkR31] 0x00499751c / 0x004979f8 / 0x00498708 — RangeSet merge traps on every index under/overflow
+- **Observation**: The three range-merge/rebuild routines guard every collection index arithmetic with signed-underflow (SBORROW8) and add-overflow (SCARRY8) checks that trap (SoftwareBreakpoint) on out-of-range range cursors, and they compare addresses by `word >> 0xe` so a merged range never crosses its 14-bit bucket. Growth of the output buffer re-checks capacity (`(uVar+0x4000000000000000) < 0` trap) and copies the old storage with an overlap check before release. This is defensive fail-closed behavior on potentially attacker-influenced range data.
+- **Evidence**: SWBP sites 0x497978/984/988/98c/990/994, 0x49813c/140/1b0/1b4/1b8/1bc/1c0/1c4/1c8, 0x498ac0/4/c8/cc/d0/d4; `>> 0xe` comparisons; `FUN_0036a940` buffer growth with `thunk_FUN_000126e8` size and overlap-guarded `FUN_00117d14` copy.
+- **Severity (hypothesis)**: informational — strong defensive invariants; the range parser feeding these is the real attack surface.
+- **Confidence**: medium.
+
+## [SKR34] 0x004a3a94 / 0x004a39dc / 0x004a3f38 / 0x004a630c — UTF-8 decoder uses LZCOUNT element-width decode on untrusted pattern buffers
+- **Observation**: The UTF-8/string walkers classify a codepoint width with `LZCOUNT(byte<<0x18 ^ ~0)` and then read a 1/2/4-byte element at the computed offset into the tagged string buffer (`*(byte|ushort|uint*)(base+off)`). The element width is derived purely from the leading byte; a malformed leading byte in a guest/pattern-supplied buffer selects a 4-byte read, which can read past the element when the buffer is shorter. FUN_004a3a94 additionally has `if (sz < 0x4000) SoftwareBreakpoint(1, 0x4a3b70)` — a hard underflow guard on the arena size before the walk.
+- **Evidence**: decompile 0x39dc — `uVar4 = (uint)LZCOUNT((uint)bVar1 << 0x18 ^ 0xffffffff); if (-1 < (char)bVar1) uVar4=1; uVar2 = (uVar2+uVar4)*0x10000|5;` then store to `*param_1`; decompile 0x3a94 — `if (uVar3 < 0x4000) SoftwareBreakpoint(1,0x4a3b70); if (uVar5 != 0xffffffbf && !SCARRY4(uVar5,0x20000000)) {...}`.
+- **Severity (hypothesis)**: medium — width-from-leading-byte decoding on untrusted regex source could over-read if the source is attacker-controlled and not length-checked; the SWBP at 0x4a3b70 only guards arena size, not per-element bounds.
+- **Confidence**: medium.
+
+## [SKR34] 0x004a4310 — RegexBuilder character-class emitter prints DSL constants from fixed table (no untrusted string interpolation)
+- **Observation**: FUN_004a4310 emits one of several fixed RegexBuilder DSL string constants (0x5e2fd0 "asciiOnlyDigits", 0x5e2f10, 0x5e2f30, 0x5e2f70, 0x5e2f50) selected by a class-tag byte (< 0xd). The tag byte is bounded and the emitted strings are all compile-time constants — no length/format string comes from the input.
+- **Evidence**: decompile 0x4310 — switch on `*pbVar4` (0..0xc) each case calling `FUN_002a4ab4(size)` with a fixed `0x80000000005e2fXX` string ref and a fixed `0xd0000000000000NN` tag word.
+- **Severity (hypothesis)**: low — no injection surface; fixed DSL printer.
+- **Confidence**: high.
+
+## [SKR34] 0x004a7c4c / 0x004a731c — concatenation emitter SoftwareBreakpoint(1,0x4a7f78) on a decode switch default
+- **Observation**: FUN_004a7c4c's 4-way element-width switch has `case 3: SoftwareBreakpoint(1, 0x4a7f78)` (WARNING: does not return). A width code of 3 (the reserved 3-byte path) traps rather than reading, so the 1/2/4-byte decode cannot over-read via width 3.
+- **Evidence**: decompile 0x7c4c — `case 3: pcVar7 = (code *)SoftwareBreakpoint(1,0x4a7f78); (*pcVar7)();`.
+- **Severity (hypothesis)**: low — width-3 trap is a deliberate bound; but widths 1/2/4 still decode from the pattern buffer without an independent per-element length check.
+- **Confidence**: medium.

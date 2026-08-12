@@ -274,7 +274,7 @@ extern sw128_t sw_2b5ba0(word_t, ...);  /* FUN_002b5ba0 */
 extern sw96_t sw_2b5e10(word_t, ...);  /* FUN_002b5e10 */
 extern word_t sw_2b5ed4(word_t, ...);  /* FUN_002b5ed4 */
 extern word_t sw_2b7088(word_t, ...);  /* FUN_002b7088 */
-extern word_t sw_2b74c0(word_t, ...);  /* FUN_002b74c0 */
+extern sw128_t sw_2b74c0(word_t, ...);  /* FUN_002b74c0 */
 extern word_t sw_2bc2dc(word_t, ...);  /* FUN_002bc2dc */
 extern word_t sw_2bd724(word_t, ...);  /* FUN_002bd724 */
 extern word_t sw_2bd8f0(word_t, ...);  /* FUN_002bd8f0 */
@@ -991,14 +991,14 @@ bool sk_re_emit_len(long n, char ch, byte *p, word_t flagsA, word_t flagsB, word
                 word_t d = (word_t)cur ^ flagsA;
                 char got = '\\0';
                 if (d >= 0x4000) {
-                        got = (char)sw_2b5ba0(cur, p, flagsA, flagsB, flagsC);
+                        got = (char)sw_2b5ba0((word_t)cur, (word_t)p, flagsA, flagsB, flagsC).lo;
                         if (((word_t)cur & 0xc) == (4ul << shift))
-                                cur = (byte*)sw_1da84(cur, flagsB, flagsC);
+                                cur = (byte*)sw_1da84((word_t)cur, flagsB, flagsC);
                         if (((flagsC >> 0x3c) & 1) == 0)
                                 cur = (byte*)(0x10004 + ((word_t)cur & 0xffffffffffff0000));
                         else {
                                 if (span <= ((word_t)cur >> 0x10)) SW_FATAL(0x42be08);
-                                cur = (byte*)sw_2b141c(cur, flagsB, flagsC);
+                                cur = (byte*)sw_2b141c((word_t)cur, flagsB, flagsC);
                         }
                 }
                 char expect; long next;
@@ -1146,7 +1146,7 @@ void sk_re_parse_delims(void)
                         byte *cur = (byte*)sw_429398(0xf, sc.lo);
                         sw_463f34(0);
                         while (true) {
-                                char c = sw_2b5ba0(0);
+                                char c = (char)sw_2b5ba0(0).lo;
                                 if (c != '#') break;
                                 cur = (byte*)sw_1da84(0);
                                 cur = (byte*)(0x10004 + ((word_t)cur & 0xffffffffffff0000));
@@ -1219,7 +1219,7 @@ void sk_re_retreat(void)
  * Confidence: low. */
 void sk_re_task_flush(void)
 {
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         sw_35199c(0);
         sw_7c028(0);
         sw_6490c(0);
@@ -1507,7 +1507,7 @@ void sk_re_scan_utf8_detect2(void)
 {
         word_t fn = 0; /* unaff_x19 */
         sw_4648fc(0);
-        ((vcode)fn)(__builtin_frame_address(0));
+        ((vcode)fn)((word_t)__builtin_frame_address(0));
         sw_1a8564(0);
 }
 
@@ -2106,7 +2106,7 @@ void sk_re_write_rec2(void)
         byte b = *(byte*)(__builtin_frame_address(0) + 0);
         vcode fn = 0; /* in_x3 */
         sw_1a84f4((word_t)__builtin_frame_address(0));
-        fn(__builtin_frame_address(0), b);
+        fn((word_t)__builtin_frame_address(0), b);
         sw_1a8564(0);
 }
 
@@ -3527,7 +3527,7 @@ done:
 void sk_re_parse_group_end(word_t a, word_t b, word_t c, word_t d)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         sw_464adc(0);
         sw_464adc(0);
         sw_4614cc(0, 0);
@@ -4400,7 +4400,7 @@ void sk_re_record_select(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t
 void sk_re_record_join(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t p6)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
         sw_463cb8(0);
         sw_464adc(0);
@@ -4694,7 +4694,7 @@ word_t sk_re_backref_check(long *p)
 void sk_re_parse_char_class(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         sw_464adc(0);
         sw_464b20(0);
         sw_462d98(0); sw_29fa0c(0); sw_4630c4(0);
@@ -4804,7 +4804,7 @@ void sk_re_parse_char_class(void)
 void sk_re_parse_alternation(word_t a, word_t b, word_t c)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         sw_463cb8(0);
         sw_464adc(0);
         sw_34ede8(0);
@@ -5055,7 +5055,7 @@ void sk_re_parse_expr(void)
 sw128_t sk_re_parse_sequence(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
-        word_t task = sw_8e518(0);
+        word_t task = sw_8e518(0).lo;
         word_t start = *(word_t*)(__builtin_frame_address(0) + 0x10);
         sw_463cb8(0);
         sw_464adc(0);

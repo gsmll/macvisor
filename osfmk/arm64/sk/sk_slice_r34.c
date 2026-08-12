@@ -52,7 +52,7 @@ extern unsigned long sk_x_00019858(); /* FUN_00019858 */
 extern unsigned long sk_x_00027614(); /* FUN_00027614 */
 extern unsigned long sk_x_00027754(); /* FUN_00027754 */
 extern unsigned long sk_x_00041138(); /* FUN_00041138 */
-extern unsigned long sk_x_00068e14(); /* FUN_00068e14 */
+extern cl4_result_t sk_x_00068e14(); /* FUN_00068e14 */
 extern unsigned long sk_x_0006b438(); /* FUN_0006b438 */
 extern cl4_result_t sk_x_0006b6f4(); /* FUN_0006b6f4 */
 extern unsigned long sk_x_0007764c(); /* FUN_0007764c */
@@ -97,10 +97,10 @@ extern unsigned long sk_x_002a9ba8(); /* FUN_002a9ba8 */
 extern unsigned long sk_x_002ab130(); /* FUN_002ab130 */
 extern unsigned long sk_x_002acbb8(); /* FUN_002acbb8 */
 extern unsigned long sk_x_002ae098(); /* FUN_002ae098 */
-extern unsigned long sk_x_002bc524(); /* FUN_002bc524 */
+extern cl4_result_t sk_x_002bc524(); /* FUN_002bc524 */
 extern unsigned long sk_x_002bc5bc(); /* FUN_002bc5bc */
-extern unsigned long sk_x_002bd4e4(); /* FUN_002bd4e4 */
-extern unsigned long sk_x_002bd540(); /* FUN_002bd540 */
+extern cl4_result_t sk_x_002bd4e4(); /* FUN_002bd4e4 */
+extern cl4_result_t sk_x_002bd540(); /* FUN_002bd540 */
 extern unsigned long sk_x_002bd6f4(); /* FUN_002bd6f4 */
 extern unsigned long sk_x_002bd724(); /* FUN_002bd724 */
 extern unsigned long sk_x_002bd784(); /* FUN_002bd784 */
@@ -118,7 +118,7 @@ extern unsigned long sk_x_0034c444(); /* FUN_0034c444 */
 extern unsigned long sk_x_0034cb88(); /* FUN_0034cb88 */
 extern unsigned long sk_x_0034cec4(); /* FUN_0034cec4 */
 extern unsigned long sk_x_0034e34c(); /* FUN_0034e34c */
-extern unsigned long sk_x_0034f2f4(); /* FUN_0034f2f4 */
+extern cl4_result_t sk_x_0034f2f4(); /* FUN_0034f2f4 */
 extern unsigned long sk_x_0034fbb0(); /* FUN_0034fbb0 */
 extern unsigned long sk_x_00350404(); /* FUN_00350404 */
 extern unsigned long sk_x_003504a0(); /* FUN_003504a0 */
@@ -127,13 +127,13 @@ extern unsigned long sk_x_00350518(); /* FUN_00350518 */
 extern unsigned long sk_x_00350548(); /* FUN_00350548 */
 extern unsigned long sk_x_0035056c(); /* FUN_0035056c */
 extern unsigned long sk_x_003505c4(); /* FUN_003505c4 */
-extern unsigned long sk_x_003507e0(); /* FUN_003507e0 */
+extern cl4_result_t sk_x_003507e0(); /* FUN_003507e0 */
 extern unsigned long sk_x_00350914(); /* FUN_00350914 */
 extern unsigned long sk_x_00350c08(); /* FUN_00350c08 */
 extern cl4_result_t sk_x_00350c5c(); /* FUN_00350c5c */
 extern unsigned long sk_x_003510c4(); /* FUN_003510c4 */
 extern unsigned long sk_x_003511d8(); /* FUN_003511d8 */
-extern unsigned long sk_x_00351244(); /* FUN_00351244 */
+extern cl4_result_t sk_x_00351244(); /* FUN_00351244 */
 extern unsigned long sk_x_003514a0(); /* FUN_003514a0 */
 extern unsigned long sk_x_00351b78(); /* FUN_00351b78 */
 extern unsigned long sk_x_00351d30(); /* FUN_00351d30 */
@@ -265,12 +265,19 @@ extern unsigned long sk_x_004ac87c(); /* FUN_004ac87c */
 extern unsigned long sk_x_004ac948(); /* FUN_004ac948 */
 extern unsigned long sk_x_004ac998(); /* FUN_004ac998 */
 extern unsigned long sk_x_004aca4c(); /* FUN_004aca4c */
-extern unsigned long sk_x_004aca58(); /* FUN_004aca58 */
+extern cl4_result_t sk_x_004aca58(); /* FUN_004aca58 */
 extern unsigned long sk_x_004aca80(); /* FUN_004aca80 */
 extern unsigned long sk_x_004acb80(); /* FUN_004acb80 */
 extern unsigned long sk_x_004accf0(); /* FUN_004accf0 */
 
+/* Forward declarations for in-slice helpers referenced before their
+ * definition. */
+static void sk_r34_node_init_stream(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4);
+static unsigned long sk_r34_node_publish(unsigned long a);
+static void sk_r34_emit_nodepub(unsigned long self, unsigned long src);
+
 /* End of extern block. Bodies below. */
+
 
 /* ------------------------------------------------------------------ *
  * FUN_004a3714 @ 0x004a3714   (est. sk_regex_triple_release)
@@ -559,11 +566,11 @@ static unsigned long sk_r34_str_tail_check(unsigned long p1, unsigned long base,
  */
 static void sk_r34_elem_dispatch(unsigned long p1, unsigned long p2, unsigned long e, unsigned long self)
 {
-    void (*handler)(unsigned long);
+    unsigned long (*handler)(unsigned long);
     unsigned long r;
     cl4_result_t res;
     sk_x_00084220();
-    handler = *(void (**)(unsigned long))(self + 0x10);
+    handler = *(unsigned long (**)(unsigned long))(self + 0x10);
     sk_x_0035056c(e);
     sk_x_00267510();
     r = sk_x_001ae8a8();
@@ -806,7 +813,7 @@ static bool sk_r34_elem_range_byte_equal(unsigned long self)
 static void sk_r34_utf8_decode(unsigned long p1, unsigned long p2, unsigned long e, unsigned long self,
                                unsigned long ctx19, unsigned long ctx21)
 {
-    void (*handler)(unsigned long);
+    unsigned long (*handler)(unsigned long);
     unsigned long cp;
     long addr;
     unsigned char b;
@@ -814,7 +821,7 @@ static void sk_r34_utf8_decode(unsigned long p1, unsigned long p2, unsigned long
     cl4_result_t res;
     sk_x_00357cb4();
     sk_x_0008409c();
-    handler = *(void (**)(unsigned long))(self + 0x10);
+    handler = *(unsigned long (**)(unsigned long))(self + 0x10);
     sk_x_003504a0(e);
     cp = sk_x_00167404();
     if ((ctx19 >> 0x3c & 1) != 0) {
@@ -987,7 +994,7 @@ static void sk_r34_elem_call5(unsigned long *p1, unsigned long *p2, unsigned lon
  */
 static unsigned long sk_r34_indirect_call(unsigned long a)
 {
-    (*_DAT_f9400260910da27b)();
+    (void)a;
     return a;
 }
 
@@ -1916,7 +1923,7 @@ static void sk_r34_node_copy_s57(unsigned long *self, unsigned long *src)
 {
     unsigned long *p;
     unsigned long a, b;
-    p = (unsigned long *)sk_x_00350c5c();
+    p = (unsigned long *)sk_x_00350c5c().lo;
     sk_x_0036b118(*p);
     a = self[1];
     b = *src;
@@ -2190,7 +2197,7 @@ static void sk_r34_utf8_subspan(unsigned long p1, unsigned long p2, unsigned lon
     b = *(unsigned long *)(src + 0x18);
     sk_x_004aa74c();
     sk_x_00353960(0, b);
-    l1 = sk_x_00377824();
+    l1 = sk_x_00377824().lo;
     len1 = *(unsigned *)(l1 - 8 + 0x54);
     l2 = *(long *)(a - 8);
     u17 = *(unsigned *)(l2 + 0x54);
@@ -2198,7 +2205,7 @@ static void sk_r34_utf8_subspan(unsigned long p1, unsigned long p2, unsigned lon
     if (u17 <= len1) w2 = len1;
     sk_x_004aa8a0();
     sk_x_00353960(0, b);
-    l3 = sk_x_00377824();
+    l3 = sk_x_00377824().lo;
     len2 = *(unsigned *)(l3 - 8 + 0x54);
     if (len2 > w2) w2 = len2;
     u15 = (unsigned long)*(unsigned char *)(l3 + 0x50);
@@ -2935,7 +2942,7 @@ static void sk_r34_emit_concat2(unsigned long p1, unsigned long p2, unsigned lon
     l6 = *(long *)(src + 0x10);
     b = *(unsigned long *)(src + 0x18);
     sk_x_004aa74c();
-    l7 = sk_x_00377824(0, b, l6, 0x61628c);
+    l7 = sk_x_00377824(0, b, l6, 0x61628c).lo;
     len1 = *(unsigned *)(*(long *)(l7 - 8) + 0x54);
     r16 = *(unsigned *)(*(long *)(l6 - 8) + 0x54);
     maxlen = (r16 <= len1) ? len1 : r16;
@@ -3403,7 +3410,7 @@ static void sk_r34_node_rebuild2(unsigned long self, unsigned long src)
 {
     unsigned long *p;
     long l;
-    p = (unsigned long *)sk_x_004ab9a4(0);
+    p = (unsigned long *)sk_x_004ab9a4(0).lo;
     p[1] = 0;
     *p = 0;
     l = *(long *)(0 + 0x30);
@@ -3787,7 +3794,7 @@ static void sk_r34_node_copy_s98(unsigned long self, unsigned long src)
 {
     unsigned long *p;
     unsigned long a, b;
-    p = (unsigned long *)sk_x_003504d0();
+    p = (unsigned long *)sk_x_003504d0().lo;
     sk_x_0036b118(*p);
     sk_x_004ac45c();
     sk_x_0036b118(*(unsigned long *)(src + 0x10));
@@ -4003,7 +4010,7 @@ static void sk_r34_elem_swap_release(unsigned long self, unsigned long target)
 static void sk_r34_emit_drop(void)
 {
     unsigned long *p;
-    p = (unsigned long *)sk_x_003504d0();
+    p = (unsigned long *)sk_x_003504d0().lo;
     sk_x_003a25d4(*p);
     sk_x_004ac45c();
 }

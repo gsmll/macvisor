@@ -437,126 +437,219 @@ extern word_t FUN_004acccc();
 /* ------------------------------------------------------------------ *
  * In-slice forward declarations (defined below in sk_slice_r30.c).
  * ------------------------------------------------------------------ */
-static word_t sk_r30_00490174();
-static word_t sk_r30_00490268();
-static word_t sk_r30_00490600();
-static word_t sk_r30_0049063c();
-static word_t sk_r30_00490970();
-static word_t sk_r30_00490a04();
-static word_t sk_r30_00490ae0();
-static word_t sk_r30_00490b0c();
-static word_t sk_r30_00490b14();
-static word_t sk_r30_00490b78();
-static word_t sk_r30_00490b98();
-static word_t sk_r30_00490c18();
-static word_t sk_r30_00490c44();
-static word_t sk_r30_00490c8c();
-static word_t sk_r30_00490cb8();
-static word_t sk_r30_00490d28();
-static word_t sk_r30_00490d58();
-static word_t sk_r30_00490dac();
-static word_t sk_r30_00490dfc();
-static word_t sk_r30_00490e40();
-static word_t sk_r30_00490ea8();
-static word_t sk_r30_00490efc();
-static word_t sk_r30_00490fe0();
-static word_t sk_r30_004910bc();
-static word_t sk_r30_0049115c();
-static word_t sk_r30_004911b0();
-static word_t sk_r30_00491288();
-static word_t sk_r30_0049153c();
-static word_t sk_r30_0049156c();
-static word_t sk_r30_00491600();
-static word_t sk_r30_00491644();
-static word_t sk_r30_00491688();
-static word_t sk_r30_004916f4();
-static word_t sk_r30_00491704();
-static word_t sk_r30_0049174c();
-static word_t sk_r30_004917d8();
-static word_t sk_r30_00491864();
-static word_t sk_r30_004918ac();
-static word_t sk_r30_004918ec();
-static word_t sk_r30_004918f0();
-static word_t sk_r30_00491914();
-static word_t sk_r30_004919f0();
-static word_t sk_r30_00491abc();
-static word_t sk_r30_00491b58();
-static word_t sk_r30_00491b88();
-static word_t sk_r30_00491bb4();
-static word_t sk_r30_00491bb8();
-static word_t sk_r30_00491bd4();
-static word_t sk_r30_00491c84();
-static word_t sk_r30_00491db4();
-static word_t sk_r30_00491f48();
-static word_t sk_r30_00492038();
-static word_t sk_r30_0049204c();
-static word_t sk_r30_00492078();
-static word_t sk_r30_0049214c();
-static word_t sk_r30_004921bc();
-static word_t sk_r30_004922d8();
-static word_t sk_r30_00492614();
-static word_t sk_r30_00492704();
-static word_t sk_r30_00492758();
-static word_t sk_r30_00492850();
-static word_t sk_r30_00492920();
-static word_t sk_r30_00492a2c();
-static word_t sk_r30_00492b3c();
-static word_t sk_r30_00492c6c();
-static word_t sk_r30_00492e18();
-static word_t sk_r30_00492eec();
-static word_t sk_r30_00493354();
-static word_t sk_r30_0049341c();
-static word_t sk_r30_004934a8();
-static word_t sk_r30_00493d30();
-static word_t sk_r30_00493d7c();
-static word_t sk_r30_00493dfc();
-static word_t sk_r30_00493fa0();
-static word_t sk_r30_00494240();
-static word_t sk_r30_0049466c();
-static word_t sk_r30_0049478c();
-static word_t sk_r30_00494790();
-static word_t sk_r30_004947b8();
-static word_t sk_r30_004947bc();
-static word_t sk_r30_004947e4();
-static word_t sk_r30_004947e8();
-static word_t sk_r30_00494810();
-static word_t sk_r30_004948e0();
-static word_t sk_r30_004948e4();
-static word_t sk_r30_0049490c();
-static word_t sk_r30_00494a1c();
-static word_t sk_r30_00494b44();
-static word_t sk_r30_00494cc4();
-static word_t sk_r30_00494d1c();
-static word_t sk_r30_00494d68();
-static word_t sk_r30_00494dd0();
-static word_t sk_r30_00494e2c();
-static word_t sk_r30_00494ea8();
-static word_t sk_r30_00494ef0();
-static word_t sk_r30_00494f3c();
-static word_t sk_r30_004950f0();
-static word_t sk_r30_0049513c();
-static word_t sk_r30_0049516c();
-static word_t sk_r30_00495298();
-static word_t sk_r30_00495388();
-static word_t sk_r30_00495400();
-static word_t sk_r30_00495464();
-static word_t sk_r30_004954d0();
-static word_t sk_r30_0049552c();
-static word_t sk_r30_00495598();
-static word_t sk_r30_00495634();
-static word_t sk_r30_004956c0();
-static word_t sk_r30_00495768();
-static word_t sk_r30_00495810();
-static word_t sk_r30_004958a8();
-static word_t sk_r30_00495940();
-static word_t sk_r30_004959d8();
-static word_t sk_r30_00495a74();
-static word_t sk_r30_00495ab0();
-static word_t sk_r30_00495aec();
-static word_t sk_r30_00495bcc();
-static word_t sk_r30_00495c48();
-static word_t sk_r30_00495ca4();
-static word_t sk_r30_004961a0();
+static word_t sk_r30_00490174(word_t unaff_x20, word_t unaff_x22 /* unaff_x22: dest array register-global */);
+static word_t sk_r30_00490268(word_t arg_a, word_t arg_b);
+static word_t sk_r30_00490600(char kind);
+static word_t sk_r30_0049063c(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              long param_5, word_t param_6, long unaff_x25 /* self register-global */);
+static word_t sk_r30_00490970(word_t unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00490a04(word_t *unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00490ae0(word_t *unaff_x20 /* unaff_x20: self/context */);
+static word_t sk_r30_00490b0c(word_t self, word_t param_2, long value);
+static word_t sk_r30_00490b14(word_t element, word_t index, word_t param_3, word_t param_4,
+                              word_t collection, word_t unaff_x19, word_t unaff_x20 /* register-globals */);
+static word_t sk_r30_00490b78(word_t param_1, word_t param_2,
+                              word_t param_3, word_t param_4, word_t param_5);
+static word_t sk_r30_00490b98(word_t base, word_t count, word_t cand_end,
+                              word_t arg4, word_t arg5, long ctx,
+                              word_t *out_hi /* upper word of 16-byte result */);
+static word_t sk_r30_00490c18(word_t *param_1);
+static word_t sk_r30_00490c44(word_t unaff_x19 /* unaff_x19: store pointer register-global */,
+                              word_t unaff_x20 /* unaff_x20: key/value context register-global */);
+static word_t sk_r30_00490c8c(word_t *param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00490cb8(word_t *param_1, word_t *param_2, word_t *unaff_x20 /* unaff_x20: self */);
+static word_t sk_r30_00490d28(word_t *obj);
+static word_t sk_r30_00490d58(word_t *param_1, word_t *param_2, word_t *unaff_x20 /* unaff_x20: context register-global */);
+static word_t sk_r30_00490dac(word_t *param_1, word_t param_2, word_t param_3,
+                              word_t param_4, word_t param_5, word_t param_6);
+static word_t sk_r30_00490dfc(wpair_t *out, word_t *ctx /* unaff_x20 */);
+static word_t sk_r30_00490e40(word_t param_1, word_t param_2, word_t *param_3,
+                              word_t *unaff_x19 /* self register-global */,
+                              word_t *unaff_x20 /* context register-global */);
+static word_t sk_r30_00490ea8(word_t param_1, word_t param_2, word_t param_3);
+static word_t sk_r30_00490efc(word_t param_1,
+                              word_t in_x3 /* register-global */,
+                              long in_x4 /* register-global */,
+                              long unaff_x22 /* register-global */,
+                              long unaff_x23 /* register-global */);
+static word_t sk_r30_00490fe0(word_t param_1, word_t *unaff_x20 /* unaff_x20: self */,
+                              word_t unaff_x21 /* unaff_x21 */, word_t unaff_x22 /* unaff_x22 */);
+static word_t sk_r30_004910bc(word_t param_1, word_t param_2, word_t param_3,
+                              long unaff_x21 /* unaff_x21: self/context register-global */,
+                              uint unaff_w24 /* unaff_w24: self/context register-global */);
+static word_t sk_r30_0049115c(word_t param_1, word_t param_2, word_t param_3, word_t param_4, word_t param_5);
+static word_t sk_r30_004911b0(word_t param_1, word_t param_2, word_t param_3,
+                              word_t param_4, word_t *out /* extraout_x1 */,
+                              word_t unaff_x21 /* context register-global */);
+static word_t sk_r30_00491288(word_t unaff_x30 /* context register-global */);
+static word_t sk_r30_0049153c(void);
+static word_t sk_r30_0049156c(word_t param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x19 /* unaff_x19: value key register-global */,
+                              word_t unaff_x20 /* unaff_x20: key register-global */);
+static word_t sk_r30_00491600(word_t unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00491644(word_t param_1);
+static word_t sk_r30_00491688(long param_1, word_t param_2, word_t param_3);
+static word_t sk_r30_004916f4(word_t *param_1, word_t param_2);
+static word_t sk_r30_00491704(void);
+static word_t sk_r30_0049174c(word_t unaff_x30 /* context register-global */);
+static word_t sk_r30_004917d8(word_t unaff_x30 /* register-global */);
+static word_t sk_r30_00491864(word_t unaff_x20 /* unaff_x20: element value register-global */);
+static word_t sk_r30_004918ac(void);
+static word_t sk_r30_004918ec(word_t *unaff_x20 /* unaff_x20: self */);
+static word_t sk_r30_004918f0(long unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00491914(word_t param_1, word_t *param_2);
+static word_t sk_r30_004919f0(word_t param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x20 /* self/context */);
+static word_t sk_r30_00491abc(word_t param_1, word_t param_2, word_t param_3,
+                              long ctx /* unaff_x20 */);
+static word_t sk_r30_00491b58(word_t param_1);
+static word_t sk_r30_00491b88(word_t unaff_x20 /* unaff_x20: container register-global */);
+static word_t sk_r30_00491bb4(void);
+static word_t sk_r30_00491bb8(void);
+static word_t sk_r30_00491bd4(ulong param_1, char param_2,
+                              long *unaff_x20 /* unaff_x20: self/context register-global */);
+static word_t sk_r30_00491c84(word_t in_x8, word_t in_x9, word_t in_x16,
+                              word_t unaff_x19, word_t unaff_x20,
+                              word_t unaff_x25, word_t unaff_x30 /* register-globals */);
+static word_t sk_r30_00491db4(word_t param_1, word_t param_2, word_t param_3,
+                              word_t param_4, word_t param_5, word_t param_6,
+                              word_t param_7, word_t param_8,
+                              word_t *out_x8, word_t reg_x9, word_t reg_x16,
+                              word_t unaff_x21, word_t *unaff_x24);
+static word_t sk_r30_00491f48(void);
+static word_t sk_r30_00492038(ulong param_1);
+static word_t sk_r30_0049204c(void);
+static word_t sk_r30_00492078(unsigned char *param_1, word_t *param_2);
+static word_t sk_r30_0049214c(void);
+static word_t sk_r30_004921bc(long param_1);
+static word_t sk_r30_004922d8(word_t param_1, word_t unaff_x20, word_t unaff_x29, word_t unaff_x30 /* register-globals */);
+static word_t sk_r30_00492614(word_t reg_x19, uint reg_w20, word_t reg_x24,
+                              word_t reg_x30, word_t reg_40a4);
+static word_t sk_r30_00492704(code unaff_x19 /* context code pointer */);
+static word_t sk_r30_00492758(word_t unaff_x30 /* register-global */);
+static word_t sk_r30_00492850(word_t param_1,
+                              word_t in_x4 /* in_x4: indirect callback fn pointer */,
+                              word_t in_x7 /* in_x7: context pointer */,
+                              word_t extraout_x8 /* extraout_x8: stack offset carried from prior call */,
+                              word_t unaff_x21 /* unaff_x21: guard register-global */);
+static word_t sk_r30_00492920(long param_1, word_t param_2, code *param_3,
+                              word_t param_4, word_t param_5, word_t param_6,
+                              long extraout_x8_00 /* register carry-over */,
+                              long extraout_x8_01 /* register carry-over */,
+                              long extraout_x9 /* register carry-over */,
+                              long extraout_x16 /* register carry-over */,
+                              code *extraout_x8_02 /* register carry-over */,
+                              long unaff_x21 /* register-global */);
+static word_t sk_r30_00492a2c(word_t in_x3, word_t unaff_x30);
+static word_t sk_r30_00492b3c(word_t *param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t param_5, code *param_6, word_t param_7, word_t param_8,
+                              long param_9,
+                              long unaff_x21 /* unaff_x21: self/context register-global */);
+static word_t sk_r30_00492c6c(word_t in_x3, word_t in_x4, word_t unaff_x21, word_t unaff_x30 /* register-globals */);
+static word_t sk_r30_00492e18(word_t *pair_out /* 16-byte result buffer */,
+                              word_t unaff_x20 /* context */);
+static word_t sk_r30_00492eec(word_t param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x19 /* tag mask */,
+                              word_t unaff_x30 /* context register-global */);
+static word_t sk_r30_00493354(word_t param_1);
+static word_t sk_r30_0049341c(word_t param_1, word_t unaff_x21 /* unaff_x21: mask register-global */);
+static word_t sk_r30_004934a8(word_t param_1, ulong param_2,
+                              ulong extraout_x1 /* register carry-over */,
+                              long extraout_x1_00 /* register carry-over */,
+                              ulong extraout_x8 /* register carry-over */,
+                              long extraout_x9 /* register carry-over */,
+                              ulong unaff_x21 /* register-global */,
+                              ulong unaff_x22 /* register-global */);
+static word_t sk_r30_00493d30(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t unaff_x19 /* unaff_x19 */);
+static word_t sk_r30_00493d7c(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static word_t sk_r30_00493dfc(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t unaff_x30 /* register-global */);
+static word_t sk_r30_00493fa0(word_t unaff_x20 /* context */, word_t reg_x8,
+                              word_t reg_x16);
+static word_t sk_r30_00494240(word_t *unaff_x20 /* context array */,
+                              word_t unaff_x30 /* context register-global */);
+static word_t sk_r30_0049466c(word_t param_1, long param_2, word_t param_3, word_t param_4,
+                              word_t *unaff_x20 /* context register-global */);
+static word_t sk_r30_0049478c(void);
+static word_t sk_r30_00494790(void);
+static word_t sk_r30_004947b8(void);
+static word_t sk_r30_004947bc(void);
+static word_t sk_r30_004947e4(void);
+static word_t sk_r30_004947e8(void);
+static word_t sk_r30_00494810(code in_x4 /* x4 callback */,
+                              word_t *extraout_x8 /* result buffer */,
+                              long unaff_x21 /* context register-global */,
+                              word_t unaff_x30 /* context register-global */,
+                              word_t in_98, word_t in_a0, word_t in_a8,
+                              word_t in_b0, word_t in_b8);
+static word_t sk_r30_004948e0(void);
+static word_t sk_r30_004948e4(void);
+static word_t sk_r30_0049490c(code *in_x6 /* register-global */,
+                              word_t *extraout_x8 /* register carry-over */,
+                              long unaff_x21 /* register-global */,
+                              word_t unaff_x30 /* register-global */,
+                              word_t in_stack_00000090, word_t in_stack_00000098,
+                              word_t in_stack_000000a0, word_t in_stack_000000a8,
+                              word_t in_stack_000000b0);
+static word_t sk_r30_00494a1c(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t param_5, word_t param_6, code *param_7,
+                              word_t *extraout_x8 /* caller buffer */, word_t unaff_x30);
+static word_t sk_r30_00494b44(word_t param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x30 /* unaff_x30: link/self register-global */);
+static word_t sk_r30_00494cc4(byte param_1);
+static word_t sk_r30_00494d1c(word_t param_1, word_t param_2,
+                              word_t param_3, word_t param_4);
+static word_t sk_r30_00494d68(char kind);
+static word_t sk_r30_00494dd0(char param_1);
+static word_t sk_r30_00494e2c(void);
+static word_t sk_r30_00494ea8(unsigned char param_1, code *param_2);
+static word_t sk_r30_00494ef0(code *in_x3, word_t *unaff_x20 /* unaff_x20: self */);
+static word_t sk_r30_00494f3c(word_t param_1, char param_2, ulong *param_3, byte param_4);
+static word_t sk_r30_004950f0(uint32_t param_1, word_t unaff_x20 /* unaff_x20: bitmap base register-global */);
+static word_t sk_r30_0049513c(word_t param_1, word_t param_2, word_t param_3);
+static word_t sk_r30_0049516c(word_t param_1, word_t param_2, word_t param_3,
+                              word_t unaff_x19 /* context register-global */);
+static word_t sk_r30_00495298(word_t in_x5 /* register */, word_t in_x6 /* register */,
+                              word_t in_x7 /* register: code * */);
+static word_t sk_r30_00495388(uint param_1, word_t param_2);
+static word_t sk_r30_00495400(code *unaff_x19 /* unaff_x19: callback register-global */);
+static word_t sk_r30_00495464(void);
+static word_t sk_r30_004954d0(void);
+static word_t sk_r30_0049552c(word_t param_1, byte param_2, word_t param_3);
+static word_t sk_r30_00495598(word_t unaff_x20 /* self/context */, word_t in_x4,
+                              word_t reg_x8, uint extraout_w8, uint extraout_w9);
+static word_t sk_r30_00495634(word_t unaff_x20 /* context register-global */,
+                              word_t unaff_x24 /* context register-global */,
+                              uint extraout_w8, uint extraout_w9,
+                              code extraout_x8);
+static word_t sk_r30_004956c0(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t param_5);
+static word_t sk_r30_00495768(word_t param_1, word_t param_2, word_t param_3,
+                              word_t param_4, word_t param_5, word_t param_6,
+                              word_t param_7,
+                              word_t unaff_x30 /* unaff_x30: context register-global */);
+static word_t sk_r30_00495810(code *extraout_x8 /* register carry-over */,
+                              ulong unaff_x24 /* register-global */,
+                              word_t extraout_d0 /* register carry-over */,
+                              word_t extraout_var /* register carry-over */);
+static word_t sk_r30_004958a8(word_t in_x3);
+static word_t sk_r30_00495940(word_t in_x3 /* in_x3: input register x3 */);
+static word_t sk_r30_004959d8(void);
+static word_t sk_r30_00495a74(void);
+static word_t sk_r30_00495ab0(void);
+static word_t sk_r30_00495aec(word_t param_1, word_t param_2, uint param_3, word_t param_4,
+                              word_t param_5, word_t param_6, word_t param_7, word_t param_8,
+                              word_t param_9, word_t param_10, word_t param_11, word_t param_12,
+                              word_t param_13, word_t param_14, unsigned char param_15,
+                              word_t in_stack_000000a8 /* stack-passed register */,
+                              word_t in_stack_000000b0 /* stack-passed register: code * */);
+static word_t sk_r30_00495bcc(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static word_t sk_r30_00495c48(long param_1, code *param_2);
+static word_t sk_r30_00495ca4(word_t param_1, word_t param_2, word_t param_3, word_t param_4,
+                              word_t unaff_x20 /* unaff_x20 */);
+static word_t sk_r30_004961a0(long param_1);
 
 /* In-slice FUN_ aliases: a few bodies call a sibling by its Ghidra FUN_<addr>
  * name; these macros route them to the in-slice definition. */

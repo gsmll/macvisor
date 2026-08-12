@@ -83,7 +83,7 @@ extern wpair_t FUN_00084220(); /* out of slice 0x84220 */
 extern word_t FUN_00084234(); /* out of slice 0x84234 */
 extern word_t FUN_000867ec(); /* out of slice 0x867ec */
 extern word_t FUN_00086840(); /* out of slice 0x86840 */
-extern word_t FUN_0008e388(); /* out of slice 0x8e388 */
+extern wpair_t FUN_0008e388(); /* out of slice 0x8e388 */
 extern word_t FUN_0008e500(); /* out of slice 0x8e500 */
 extern wpair_t FUN_0008e518(); /* out of slice 0x8e518 */
 extern wpair_t FUN_0009461c(); /* out of slice 0x9461c */
@@ -233,7 +233,7 @@ extern word_t FUN_0035056c(); /* out of slice 0x35056c */
 extern word_t FUN_003505c4(); /* out of slice 0x3505c4 */
 extern wpair_t FUN_003505e8(); /* out of slice 0x3505e8 */
 extern wpair_t FUN_0035060c(); /* out of slice 0x35060c */
-extern word_t FUN_00350618(); /* out of slice 0x350618 */
+extern wpair_t FUN_00350618(); /* out of slice 0x350618 */
 extern word_t FUN_00350624(); /* out of slice 0x350624 */
 extern word_t FUN_0035063c(); /* out of slice 0x35063c */
 extern wpair_t FUN_00350738(); /* out of slice 0x350738 */
@@ -263,7 +263,7 @@ extern wpair_t FUN_00350a70(); /* out of slice 0x350a70 */
 extern word_t FUN_00350aa0(); /* out of slice 0x350aa0 */
 extern word_t FUN_00350ab8(); /* out of slice 0x350ab8 */
 extern wpair_t FUN_00350af4(); /* out of slice 0x350af4 */
-extern word_t FUN_00350b3c(); /* out of slice 0x350b3c */
+extern wpair_t FUN_00350b3c(); /* out of slice 0x350b3c */
 extern word_t FUN_00350b48(); /* out of slice 0x350b48 */
 extern word_t FUN_00350b54(); /* out of slice 0x350b54 */
 extern word_t FUN_00350b84(); /* out of slice 0x350b84 */
@@ -298,7 +298,7 @@ extern word_t FUN_003513a8(); /* out of slice 0x3513a8 */
 extern word_t FUN_003513b4(); /* out of slice 0x3513b4 */
 extern wpair_t FUN_00351414(); /* out of slice 0x351414 */
 extern wpair_t FUN_00351450(); /* out of slice 0x351450 */
-extern word_t FUN_0035145c(); /* out of slice 0x35145c */
+extern wpair_t FUN_0035145c(); /* out of slice 0x35145c */
 extern word_t FUN_00351488(); /* out of slice 0x351488 */
 extern word_t FUN_003514a0(); /* out of slice 0x3514a0 */
 extern word_t FUN_003514e8(); /* out of slice 0x3514e8 */
@@ -347,7 +347,7 @@ extern word_t FUN_00353238(); /* out of slice 0x353238 */
 extern word_t FUN_003532b8(); /* out of slice 0x3532b8 */
 extern wpair_t FUN_003535a8(); /* out of slice 0x3535a8 */
 extern word_t FUN_00353960(); /* out of slice 0x353960 */
-extern word_t FUN_00353cfc(); /* out of slice 0x353cfc */
+extern wpair_t FUN_00353cfc(); /* out of slice 0x353cfc */
 extern word_t FUN_00353d14(); /* out of slice 0x353d14 */
 extern word_t FUN_00353ff4(); /* out of slice 0x353ff4 */
 extern word_t FUN_003542b8(); /* out of slice 0x3542b8 */
@@ -360,7 +360,7 @@ extern word_t FUN_00354f1c(); /* out of slice 0x354f1c */
 extern word_t FUN_00356370(); /* out of slice 0x356370 */
 extern wpair_t FUN_0035638c(); /* out of slice 0x35638c */
 extern word_t FUN_00356bb0(); /* out of slice 0x356bb0 */
-extern word_t FUN_003583e8(); /* out of slice 0x3583e8 */
+extern wpair_t FUN_003583e8(); /* out of slice 0x3583e8 */
 extern word_t FUN_00358454(); /* out of slice 0x358454 */
 extern word_t FUN_00359018(); /* out of slice 0x359018 */
 extern word_t FUN_003593c0(); /* out of slice 0x3593c0 */
@@ -2076,12 +2076,12 @@ static void sk_bcg_0046d810(long p1, word_t p2, code *p3)
  * than the declared prototype - that is preserved faithfully. */
 static void     sk_bcg_0046c91c(word_t p1, word_t p2, word_t p3, word_t p4,
                                 word_t p5, word_t p6);
-static void     sk_bcg_0046d860(void);
+static void sk_bcg_0046d860(void);
 static word_t   sk_bcg_0046df0c(word_t, word_t, word_t, word_t, word_t,
                                 word_t, word_t, word_t);
 static word_t   sk_bcg_0046e128(word_t, word_t, word_t, word_t, word_t,
                                 word_t, word_t, word_t, word_t, word_t);
-static void     sk_bcg_0046e7a8(void);
+static void sk_bcg_0046e7a8(void);
 static void     sk_bcg_0046ece8(word_t, word_t, word_t, word_t, word_t);
 static wpair_t  sk_bcg_0046f298(word_t, word_t, long);
 
@@ -2451,7 +2451,7 @@ static word_t sk_bcg_0046e274(void)
     FUN_00356bb0();
     FUN_00270c08(&slot_a, FUN_004b5a74, 0, arg_b);
     FUN_0011e71c();
-    v2 = FUN_002b3978();
+    v2 = FUN_002b3978().lo;
     if ((range_lo >> 0xe) <= (range_hi >> 0xe)) {
         FUN_00350618();
         FUN_004ab910();
@@ -2715,7 +2715,7 @@ static void sk_bcg_0046e7a8(void)
  * was present (local_70 != 0).
  * Confidence: medium   Notes: indirect continuation call via extraout_x16 + 8;
  * register artifacts (arg_a/arg_b, extraout_x8, unaff_x30). */
-static void sk_bcg_0046ea18(void);
+static void sk_bcg_0046ea18(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
 static bool sk_bcg_0046e900(void)
 {
     word_t v1;
@@ -2736,7 +2736,7 @@ static bool sk_bcg_0046e900(void)
     FUN_00350878();
     FUN_00377824();
     FUN_0034e5bc(&payload, payload);
-    sk_bcg_0046ea18();
+    sk_bcg_0046ea18(0,0,0,0,0); /* register-residue args */
     FUN_003a25d4(tmp);
     FUN_0036b118(v1);
     if (cont != 0) {
@@ -2753,8 +2753,9 @@ static bool sk_bcg_0046e900(void)
  * Ghidra: void sk_bcg_0046ea18(void)
  * Thin trampoline that forwards to the node-builder clean-up helper
  * (FUN_0049490c). */
-static void sk_bcg_0046ea18(void)
+static void sk_bcg_0046ea18(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5)
 {
+    (void)p1; (void)p2; (void)p3; (void)p4; (void)p5;  /* register-residue args */
     FUN_0049490c();
 }
 /* FUN_0046ea44 @ 0x0046ea44   (est. sk_bcg_0046ea44)
@@ -2811,7 +2812,7 @@ static void sk_bcg_0046ea44(void)
                 CL4_SWBP(0x46ecd4);
             }
             v6 = FUN_00002534((word_t)0 /* &DAT_00657d18 */,
-                              (word_t)0 /* &DAT_005a4ac0 */);
+                              (word_t)0 /* &DAT_005a4ac0 */).lo;
             v8 = FUN_00258c60(v5, l7 + v8, v6);
             if ((v8 & 1) != 0) {
                 FUN_00084180();
@@ -3043,7 +3044,7 @@ static void sk_bcg_0046ef90(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
                     if ((v11 >> 0xe) < (v2 >> 0xe)) break;
                     FUN_002b439c(v11, v2, v4, v3, v5);
                     FUN_004ac960();
-                    w20 = FUN_00100efc().lo;
+                    w20 = FUN_00100efc();
                     w20 = FUN_002b439c(w20.lo, w20.hi, v14, p3, p4);
                     v15 = w20.hi;
                     if ((w20.lo == w19.lo) && (w20.hi == w19.hi)) {
@@ -3078,7 +3079,7 @@ static void sk_bcg_0046ef90(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
                 }
                 FUN_003504a0(v10);
                 w19 = FUN_002b439c();
-                a21_lo = sk_bcg_0046f298(w19.lo, w19.hi, l16);
+                a21_lo = sk_bcg_0046f298(w19.lo, w19.hi, l16).lo;
                 FUN_003a25d4(w19.hi);
                 l1 = 0;
                 if (a21_flag != 1) {
@@ -3153,6 +3154,8 @@ static wpair_t sk_bcg_0046f298(word_t p1, word_t p2, long p3)
 
 extern word_t thunk_FUN_00498708();
 extern wpair_t thunk_FUN_002b74c0();
+extern word_t DAT_0060e208;
+extern word_t DAT_00611b24;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_001a29a0();
 
@@ -3255,20 +3258,22 @@ static wpair_t sk_bcg_0046f3f4(word_t p1, word_t p2, word_t p3, word_t p4,
  * runs the 0x4ac8c0 step and stores the x8/x9 register outputs back into
  * obj+0x10 (word) and obj+0x18 (byte).
  * Confidence: low   Notes: in_x4 = caller object; extraout_x8/w9 artifacts. */
-static void sk_bcg_0046f474(word_t obj)
+static wpair_t sk_bcg_0046f474(word_t obj, word_t p2, word_t p3, word_t p4, word_t p5)
 {
     word_t out_x8;        /* extraout_x8 */
     word_t out_w9;        /* extraout_w9 */
     unsigned char sbuf[40];
+    (void)p2; (void)p3; (void)p4; (void)p5;
 
     if (*(char *)(obj + 0x18) == '\x01') {
         FUN_00019858();
     } else {
-        sk_bcg_0046ef90((word_t)sbuf);
+        sk_bcg_0046ef90((word_t)sbuf, 0, 0, 0, 0); /* register-residue args */
         FUN_004ac8c0();
         *(word_t *)(obj + 0x10) = out_x8;        /* extraout_x8 */
         *(unsigned char *)(obj + 0x18) = (unsigned char)out_w9; /* extraout_w9 */
     }
+    return (wpair_t){ out_x8, (word_t)out_w9 };  /* register residue */
 }
 
 /* FUN_0046f4cc @ 0x46f4cc  (est. sk_bcg_0046f4cc)
@@ -3325,7 +3330,7 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
     long   x9, x12, x12b, lsize;   /* extraout_x9 / extraout_x12 / _00 */
     code   fn9;               /* extraout_x9_00 / _01 */
     code   fn8;               /* extraout_x8_01 / _02 */
-    code   *fnp16;                    /* extraout_x16 / _00 / _01 base */
+    word_t fnp16;                   /* extraout_x16 / _00 / _01 base (raw addr) */
     word_t scratch;                   /* local_50 */
     wpair_t pr;
     int    zr;                /* in_ZR (flags) */
@@ -3366,10 +3371,10 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
         fn9(x1, r2);                          /* extraout_x9_01 indirect */
         FUN_00350884(lsize, 1, r3);
         if (/* !flags */ 1) {
-            (*(code **)(fnp16 + 8))(lsize, r5);   /* indirect at _00+8 */
+            (**(code **)(fnp16 + 8))(lsize, r5);   /* indirect at _00+8 */
         }
     } else {
-        (*(code **)(fnp16 + 0x20))();             /* indirect at _01+0x20 */
+        (**(code **)(fnp16 + 0x20))();             /* indirect at _01+0x20 */
     }
     FUN_00349fe0(r7);
     FUN_00351de4();
@@ -3409,7 +3414,7 @@ static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3, word
     code   fn8;                       /* extraout_x8_04/_05/_06 indirect */
     code   fn9;                       /* extraout_x9_01/_02 indirect */
     code   fnp;                       /* FUN_000277b8 result */
-    code   *fnp16;                    /* extraout_x16 / _00 / _01 base */
+    word_t fnp16;                   /* extraout_x16 / _00 / _01 base (raw addr) */
     word_t lsize;                     /* extraout_x8_00 etc (sizes) */
     wpair_t pr;
     word_t status;
@@ -3500,7 +3505,7 @@ static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3)
     word_t aux;                       /* unaff_x30 */
     word_t x8;                        /* extraout_x8 */
     code   fn8;                       /* extraout_x8_01.._04 indirect */
-    code   *fnp16;                    /* extraout_x16 / _00 / _01 / _02 base */
+    word_t fnp16;                   /* extraout_x16 / _00 / _01 / _02 base (raw addr) */
     wpair_t pr;
     word_t status;
 
@@ -3544,8 +3549,8 @@ static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3)
         FUN_00350b3c(*(word_t *)(fnp16 + 8));  /* extraout_x16_01 */
         fn8();                                 /* extraout_x8_04 indirect */
     } else {
-        (*(code **)(fnp16 + 0x20))((word_t)0x60e208);  /* &DAT_0060e208 */
-        (*(code **)(fnp16 + 0x20))(x8, r3, r7);        /* extraout_x8_00 */
+        (**(code **)(fnp16 + 0x20))((word_t)0x60e208);  /* &DAT_0060e208 */
+        (**(code **)(fnp16 + 0x20))(x8, r3, r7);        /* extraout_x8_00 */
         FUN_00027754(r4);
         r8 = FUN_0014ae44();
         FUN_00350bfc(r8, 0x60e208, 0x60e208);          /* &DAT_0060e208 */
@@ -3580,7 +3585,7 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
     word_t r2, r3, r4;
     word_t aux;                       /* unaff_x30 */
     code   fn8;                       /* extraout_x8 / _00 / _01 indirect */
-    code   *fnp16;                    /* extraout_x16 / _00 / _01 base */
+    word_t fnp16;                   /* extraout_x16 / _00 / _01 base (raw addr) */
     wpair_t pr;
     word_t status;
     int    zr;                        /* in_ZR (flags) */
@@ -3593,7 +3598,7 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
     FUN_00464f4c();
     FUN_00350b84(r2);
     r2 = FUN_00377bec().lo;
-    pr = FUN_0035050c().lo;
+    pr = FUN_0035050c();
     FUN_0031d600(pr.lo, pr.hi, r2);
     r4 = FUN_000a6f88();
     FUN_0007c1a4();
@@ -3613,9 +3618,9 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
     FUN_00350884();
     zr = /* flags from last compare */ 0;
     if (zr) {
-        (*(code **)(fnp16 + 8))();             /* indirect at _00+8 */
+        (**(code **)(fnp16 + 8))();             /* indirect at _00+8 */
     } else {
-        pr = FUN_003510dc(*(word_t *)(fnp16 + 0x20)).lo;  /* _01+0x20 */
+        pr = FUN_003510dc(*(word_t *)(fnp16 + 0x20));  /* _01+0x20 */
         fn8(pr.lo, pr.hi, r3);                 /* extraout_x8 indirect */
         FUN_00349fe0(r2);
         status = fn8();                        /* extraout_x8_00 indirect */
@@ -3669,7 +3674,7 @@ static void sk_bcg_004700d4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
     FUN_00351f1c(lsize - x12b, FUN_004a4a74, (word_t)stack);  /* extraout_x12_00 */
     FUN_001d80e0();
     if (ctx == 0) {                   /* unaff_x21 */
-        pr = FUN_003508cc().lo;
+        pr = FUN_003508cc();
         fn9(pr.lo, pr.hi, r2);        /* extraout_x9_00 indirect */
         i1 = FUN_000839f8(lsize, 1, x1);
         if (i1 == 1) {
@@ -3683,7 +3688,7 @@ static void sk_bcg_004700d4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
                 fn8();                /* extraout_x8_00 indirect */
             }
         } else {
-            (*(code **)(*(word_t *)(x1 - 8) + 0x20))(p1, lsize, x1);
+            (**(code **)(*(word_t *)(x1 - 8) + 0x20))(p1, lsize, x1);
         }
     }
 }
@@ -3712,8 +3717,8 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
     r2 = FUN_00377824(r2, inreg).lo;
     FUN_00464f4c();
     pr = FUN_000e15d8();
-    r3 = FUN_00377bec(pr.lo, pr.hi, r2, 0x60e208);   /* &DAT_0060e208 */
-    pr = FUN_003508e4().lo;
+    r3 = FUN_00377bec(pr.lo, pr.hi, r2, 0x60e208).lo;   /* &DAT_0060e208 */
+    pr = FUN_003508e4();
     FUN_00319308(pr.lo, pr.hi, r3);
     FUN_000a6f88();
     FUN_0007c1a4();
@@ -3724,7 +3729,7 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
     ((code)(uintptr_t)0x54ffff60f100041f)();   /* masked tramp */
     FUN_0034b0d4();
     FUN_00351e3c(pr.lo, pr.hi);
-    sk_bcg_004700d4();
+    sk_bcg_004700d4(0,0,0,0,0); /* register-residue args */
     if (ctx == 0) {                   /* unaff_x21 */
         FUN_00027754(r3);
         r2 = FUN_0014ae44();
@@ -3733,7 +3738,7 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
         if ((status & 1) == 0) {
             CL4_SWBP(0x47042c);  /* SoftwareBreakpoint(1,0x47042c), no return */
         }
-        pr = FUN_00350914(0x60e208).lo;  /* &DAT_0060e208 */
+        pr = FUN_00350914(0x60e208);  /* &DAT_0060e208 */
         thunk_FUN_001a29a0(pr.lo, pr.hi, r3);
         FUN_00407300();
         FUN_00350518();
@@ -3750,34 +3755,29 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
 
 /* ---- Part 3: extra externs used by this part but absent from the shared
  * header (out-of-slice callees + thunks + masked trampoline). ---- */
-extern word_t sk_bcg_0046e7a8(); /* out of slice */
-extern word_t sk_bcg_0046ea18(); /* out of slice */
-extern word_t sk_bcg_0046f54c(); /* out of slice */
-extern word_t sk_bcg_0046fb9c(); /* out of slice */
-extern word_t sk_bcg_0046feb0(); /* out of slice */
-extern word_t sk_bcg_004700d4(); /* out of slice */
 extern word_t thunk_FUN_0006f6b4(); /* thunk -> FUN_0006f6b4 */
 extern word_t thunk_FUN_001a29a0(); /* thunk -> FUN_001a29a0 */
-extern wpair_t thunk_FUN_002b74c0(); /* thunk -> FUN_002b74c0 */
+extern wpair_t thunk_FUN_002b74c0();
+extern word_t DAT_0060e208;
+extern word_t DAT_00611b24; /* thunk -> FUN_002b74c0 */
 extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn */
 
 /* Forward declarations of this part's own static functions (cross-calls). */
 static void sk_bcg_0047042c(void);
-static void sk_bcg_00470644(void);
+static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4);
 static void sk_bcg_00470998(void);
 static void sk_bcg_00470ae4(void);
 static void sk_bcg_00470c28(void);
 static void sk_bcg_00470d88(void);
 static void sk_bcg_00470ebc(void);
-static void sk_bcg_00470ff8(void);
+static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3);
 static void sk_bcg_0047153c(void);
 static void sk_bcg_00471644(void);
-static void sk_bcg_00471aec(void);
+static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3);
 static void sk_bcg_00471c14(void);
 static void sk_bcg_00471cfc(void);
 static void sk_bcg_00471e78(void);
 static void sk_bcg_00471f20(void);
-
 /* FUN_0047042c @ 0x0047042c   (est. sk_bcg_0047042c)
  * Ghidra: void sk_bcg_0047042c(void)
  * Regex ByteCodeGen setup helper: opens a builder context (FUN_00353cfc),
@@ -3801,7 +3801,7 @@ static void sk_bcg_0047042c(void)
 
     r6 = (wpair_t)FUN_00353cfc();
     t1 = (word_t)FUN_004aa770();
-    t1 = (word_t)FUN_00377824(t1, in_x3);
+    t1 = FUN_00377824(t1, in_x3).lo;
     FUN_00464f4c();
     FUN_003510b8();
     t2 = t1;
@@ -3821,7 +3821,7 @@ static void sk_bcg_0047042c(void)
     ((code)&SUB_54ffff60f100041f)();                      /* masked self-modifying/trampoline fn */
     FUN_0034af20();
     FUN_00350a1c(r6.lo, r6.hi);
-    sk_bcg_004700d4();
+    sk_bcg_004700d4(0,0,0,0,0); /* register-residue args */
     if (x21 == 0) {
         FUN_00350624(&DAT_0060e208);      /* DAT_0060e208 */
         ((code)x9_fn)();                  /* (*extraout_x9)() */
@@ -3831,7 +3831,7 @@ static void sk_bcg_0047042c(void)
         if ((r & 1) == 0) {
             CL4_SWBP(0x470644);           /* SoftwareBreakpoint(1,0x470644) */
         }
-        r6 = (wpair_t)FUN_00350b3c();
+        r6 = FUN_00350b3c();
         thunk_FUN_001a29a0(r6.lo, r6.hi, t2);
         FUN_00407300();
         r6 = (wpair_t)FUN_003505e8(x20);
@@ -3868,7 +3868,7 @@ static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4)
     r10 = (wpair_t)FUN_00353cfc();
     t2 = (word_t)FUN_00027754(p4);
     t3 = (word_t)FUN_004aa67c();
-    t3 = (word_t)FUN_00377824(t3, t2, p3);
+    t3 = FUN_00377824(t3, t2, p3).lo;
     t4 = (word_t)FUN_0034b0b4();
     FUN_004ab644(t4, t3);
     l5 = (long)FUN_003722e4();
@@ -3904,7 +3904,7 @@ static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4)
             }
         }
         fn_c = *(code **)(e_x16c + 0x20);       /* pcVar9 = *(extraout_x16_01+0x20) */
-        r10 = (wpair_t)FUN_0035145c();
+        r10 = FUN_0035145c();
         fn_c(r10.lo, r10.hi, t3);
         FUN_00350b84(e_x8 + *(int *)(l5 + 0x30)); /* arg = extraout_x8_00 + *(lVar5+0x30) */
         fn_c();
@@ -4094,7 +4094,7 @@ static void sk_bcg_00470d88(void)
     FUN_00351178();
     FUN_00377824();
     FUN_0034be0c(&s10, t6);
-    sk_bcg_0046ea18();
+    sk_bcg_0046ea18(0,0,0,0,0); /* register-residue args */
     FUN_0036b118(t5);
     t3 = s30;                   /* uVar3 = in_stack_00000030 */
     if (s18 != 0) {
@@ -4236,8 +4236,8 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     FUN_0007c1a4();
     ((code)&SUB_54ffff60f100041f)();                           /* masked trampoline fn */
     l6 = (e_x9b - e_x8) - e_x8c;      /* (extraout_x9_00 - extraout_x8_03) - extraout_x8_04 */
-    (*(code **)(e_x12 + 0x10))(l6, e_x1);
-    (*(code **)(e_x16b + 0x10))(e_x9b - e_x8, x20, t12);
+    (**(code **)(e_x12 + 0x10))(l6, e_x1);
+    (**(code **)(e_x16b + 0x10))(e_x9b - e_x8, x20, t12);
     FUN_000a68c4(t11);
     FUN_003504c4(&DAT_00611b24);
     x9fn();                          /* (*extraout_x9_01)() */
@@ -4249,10 +4249,10 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
         fn(local_50, t4, t11);       /* (*pcVar7)(local_50,uVar4,uVar11) */
         FUN_00350884(local_50, 1, t2);
         if (in_ZR) {
-            (*(code **)(e_x16c + 8))(&DAT_00611b24, t4);
+            (**(code **)(e_x16c + 8))(&DAT_00611b24, t4);
             FUN_00350bc0(&st40);
             x8fn7(local_50, t3);     /* (*extraout_x8_08)(local_50,uVar3) */
-            (*(code **)(e_x12 + 0x20))(e_x8, l6, t5);
+            (**(code **)(e_x12 + 0x20))(e_x8, l6, t5);
             t2 = 0;
             goto done_00471514;
         }
@@ -4276,7 +4276,7 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
         t12 = (word_t)FUN_000277e8(t13);
         FUN_00350a1c(t12, auStack_28, l6);
         a15 = (wpair_t)x8fn5();      /* auVar15 = (*extraout_x8_06)() */
-        (*(code **)(e_x16 + 0x10))(e_x9, a15.hi, t2);
+        (**(code **)(e_x16 + 0x10))(e_x9, a15.hi, t2);
         ((code)a15.lo)(auStack_28, auStack_28, 0);   /* (*auVar15._0_8_)(...) */
         t12 = (word_t)FUN_0014ae44(*(word_t *)(p3 + 0x30));
         FUN_00351f4c(t12, e_x9, e_x8b);
@@ -4292,8 +4292,8 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     } while (1);
     /* fallthrough only via goto above */
 retry_004714d4: {
-        (*(code **)(e_x16c + 8))(&DAT_00611b24, t4);
-        (*(code **)(e_x12 + 8))(l6, t5);
+        (**(code **)(e_x16c + 8))(&DAT_00611b24, t4);
+        (**(code **)(e_x12 + 8))(l6, t5);
         t2 = 1;
     }
 done_00471514: {
@@ -4451,7 +4451,7 @@ static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4,
         r10 = local_38;
         if (x21 != 0) {
             FUN_003509c8(p7);
-            (*(code **)(e_x16b + 8))(e_x8, p7);
+            (**(code **)(e_x16b + 8))(e_x8, p7);
             uStack_68 = uStack_40;
             local_70 = local_48;
             FUN_000f5e5c(&local_70);
@@ -4511,7 +4511,7 @@ static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3)
     t1 = (word_t)FUN_00498c54();
     FUN_00469dc4(auStack_260);
     FUN_003509c8(t1);
-    (*(code **)(e_x16 + 8))(auStack_e8, t1);
+    (**(code **)(e_x16 + 8))(auStack_e8, t1);
     FUN_0035050c();
     t1 = (word_t)FUN_00498c6c();
     while (1) {
@@ -4527,7 +4527,7 @@ static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3)
         FUN_001a1854(&local_288, t2);
     }
     FUN_003509c8(t1);
-    (*(code **)(e_x16b + 8))(auStack_260, t1);
+    (**(code **)(e_x16b + 8))(auStack_260, t1);
     FUN_0008e500(local_f0, x30);
     return;
 }
@@ -4594,7 +4594,7 @@ static void sk_bcg_00471cfc(void)
         if (x21 == 0) {
             FUN_0007c1c4();
             ((code)x9fn)();             /* (*extraout_x9)() */
-            (*(code **)(e_x16 + 0x20))();
+            (**(code **)(e_x16 + 0x20))();
         }
         return;
     }
@@ -4621,7 +4621,7 @@ static void sk_bcg_00471e78(void)
     FUN_00351488(0);
     FUN_0049fd10();
     FUN_00349530();
-    (*(code **)(e_x16 + 0x20))(e_x8);
+    (**(code **)(e_x16 + 0x20))(e_x8);
     FUN_00350624(0);
     l2 = (long)FUN_0049fcf8();
     i1 = *(int *)(l2 + 0x24);
@@ -4630,7 +4630,7 @@ static void sk_bcg_00471e78(void)
     r3 = (wpair_t)FUN_00377824();
     FUN_00350404(r3.lo, r3.hi, r3.lo);
     /* indirect jump (too many branches) treated as a call */
-    (*(code **)(e_x16b + 0x20))(e_x8 + i1);
+    (**(code **)(e_x16b + 0x20))(e_x8 + i1);
     return;
 }
 
@@ -4696,35 +4696,6 @@ static void sk_bcg_00471f20(void)
  * not declared in the shared header above. Signatures reflect the
  * register use observed at the call sites (all default to word_t).
  * ------------------------------------------------------------------ */
-extern word_t sk_bcg_00471f20();   /* other part */
-extern word_t sk_bcg_00475e14();   /* other part */
-extern word_t sk_bcg_00476518();   /* other part */
-extern word_t sk_bcg_004765b0();   /* other part */
-extern word_t sk_bcg_004766ec();   /* other part */
-extern word_t sk_bcg_0047684c();   /* other part */
-extern word_t sk_bcg_004769a4();   /* other part */
-extern word_t sk_bcg_00476c0c();   /* other part */
-extern word_t sk_bcg_00476c58();   /* other part */
-extern word_t sk_bcg_00476cd4();   /* other part */
-extern word_t sk_bcg_00476dd0();   /* other part */
-extern word_t sk_bcg_00476e18();   /* other part */
-extern word_t sk_bcg_00476e74();   /* other part */
-extern word_t sk_bcg_00476e94();   /* other part */
-extern word_t sk_bcg_00476fd0();   /* other part */
-extern word_t sk_bcg_004772d0();   /* other part */
-extern word_t sk_bcg_00477494();   /* other part */
-extern word_t sk_bcg_00477504();   /* other part */
-extern word_t sk_bcg_00477590();   /* other part */
-extern word_t sk_bcg_004775d0();   /* other part */
-extern word_t sk_bcg_00477694();   /* other part */
-extern word_t sk_bcg_004776c4();   /* other part */
-extern word_t sk_bcg_004776ec();   /* other part */
-extern word_t sk_bcg_00477e10();   /* other part */
-extern word_t sk_bcg_00477e8c();   /* other part */
-extern word_t sk_bcg_0047aa0c();   /* other part */
-extern word_t sk_bcg_0047c1b0();   /* other part */
-extern word_t sk_bcg_0047c474();   /* other part */
-extern word_t sk_bcg_0047c4e4();   /* other part */
 
 /* Thunk variants referenced by name in the decompiles (jump-stubs to the
  * corresponding FUN_ targets declared in the shared header). */
@@ -4737,7 +4708,6 @@ extern word_t thunk_FUN_0044f818();
 static void sk_bcg_00475bf4(void);
 static void sk_bcg_00475c7c(void);
 static void sk_bcg_00475cf8(void);
-
 /* FUN_004720b8 @ 0x004720b8   (est. sk_bcg_004720b8)
  * Ghidra: void sk_bcg_004720b8(undefined8 param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
  * Regex-ByteCodeGen emission driver: builds a bytecode node for a regex AST
@@ -8398,8 +8368,6 @@ static void sk_bcg_00476e74(long param_1)
 /* ==================== SKR27 function bodies ==================== */
 
 /* Extra out-of-slice / cross-part callees used by part 6 bodies. */
-extern word_t sk_bcg_00476d44();    /* out of part 6 (slice callee) */
-extern word_t sk_bcg_00473244();    /* out of part 6 (slice callee) */
 extern word_t thunk_FUN_0036b270(); /* thunk alias of FUN_0036b270 */
 
 /* FUN_00476e94 @ 0x00476e94   (est. sk_bcg_00476e94)
@@ -10125,33 +10093,10 @@ reset_acc:                                  /* LAB_004784ac */
 
 
 /* Extra out-of-part/out-of-slice callees used by these functions. */
-extern word_t sk_bcg_004730f0(); /* out of slice */
-extern word_t sk_bcg_00475544(); /* out of slice */
-extern word_t sk_bcg_00475e14(); /* out of slice */
-extern word_t sk_bcg_00476518(); /* out of slice */
-extern word_t sk_bcg_00476d88(); /* out of slice */
-extern word_t sk_bcg_004772d0(); /* out of slice */
-extern word_t sk_bcg_00477338(); /* out of slice */
-extern word_t sk_bcg_004773a8(); /* out of slice */
-extern word_t sk_bcg_00477494(); /* out of slice */
-extern word_t sk_bcg_00478110(); /* out of slice */
-extern word_t sk_bcg_00478a98(); /* out of slice (sibling part) */
-extern word_t sk_bcg_004795b0(); /* out of slice (sibling part) */
-extern word_t sk_bcg_00479c18(); /* out of slice (sibling part) */
-extern word_t sk_bcg_00479fe4(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047a258(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047aa0c(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047b844(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047bcc8(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047bd74(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047be1c(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047c0dc(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047c1b0(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047c3a4(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047c474(); /* out of slice (sibling part) */
-extern word_t sk_bcg_0047c4e4(); /* out of slice (sibling part) */
 extern word_t thunk_FUN_002acbb8();
 extern wpair_t thunk_FUN_002b74c0();
+extern word_t DAT_0060e208;
+extern word_t DAT_00611b24;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_0044f818();
 

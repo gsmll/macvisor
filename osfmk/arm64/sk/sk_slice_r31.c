@@ -1261,9 +1261,23 @@ word_t sk_r31_49751c(long param_1)
     word_t uVar14, uVar15, uVar18, uVar19;
     long lVar25_2;
 
+    uint8_t inbuf[0x59];
+
     auVar29.lo = *(word_t *)(param_1 + 0x50);
     auVar29.hi = (word_t)*(byte *)(param_1 + 0x58);   /* 9-byte tagged cursor */
-    memcpy((void *)&local_c8, (void *)param_1, 0x59);
+    /* FUN_00117cc4(&local_c8, param_1, 0x59): copy the 0x59-byte input struct.
+     * Field offsets per the Ghidra stack layout (10 words then a 9-byte tag). */
+    memcpy(inbuf, (void *)param_1, 0x59);
+    local_c8 = *(word_t *)(inbuf + 0x00);
+    uStack_c0 = *(word_t *)(inbuf + 0x08);
+    local_b8 = *(word_t *)(inbuf + 0x10);
+    uStack_b0 = *(word_t *)(inbuf + 0x18);
+    local_a8 = *(word_t *)(inbuf + 0x20);
+    uStack_a0 = *(word_t *)(inbuf + 0x28);
+    local_98 = *(word_t *)(inbuf + 0x30);
+    uStack_90 = *(word_t *)(inbuf + 0x38);
+    local_88 = *(word_t *)(inbuf + 0x40);
+    local_80 = *(word_t *)(inbuf + 0x48);
     sk_h_004a4b60(param_1, (word_t *)&local_128);
     lVar25 = 0;
     puVar27 = &sk_d_00657798;
@@ -2823,7 +2837,6 @@ long sk_r31_49952c(ulong isUnique, long count, ulong reserve, long buf,
                    word_t meta, word_t name)
 {
     word_t uVar3;
-    sk_r31_pair_t auVar4;
     long lVar2;
 
     if (((reserve & 1) != 0) && (sk_h_004652d4() != 0)) {
@@ -2833,10 +2846,9 @@ long sk_r31_49952c(ulong isUnique, long count, ulong reserve, long buf,
         sk_h_00465428();
     }
     uVar3 = *(word_t *)(buf + 0x10);
-    auVar4 = sk_r31_4983fc(uVar3, count, meta, name);
-    lVar2 = auVar4.lo;
+    lVar2 = sk_r31_4983fc(uVar3, count, (word_t *)meta, (word_t *)name);
     if ((isUnique & 1) == 0) {
-        sk_h_00350500(lVar2, auVar4.hi, lVar2 + 0x20);
+        sk_h_00350500(lVar2, 0, lVar2 + 0x20);   /* decompiler's x1 leftover = 0 */
         sk_r31_499b90(0, 0, 0, 0, 0);
     } else {
         sk_h_00072358(buf + 0x20, uVar3, lVar2 + 0x20);
@@ -2952,4 +2964,753 @@ long sk_r31_49976c(ulong isUnique, ulong count, ulong reserve, long buf)
         sk_h_0036b118(buf);
     }
     return lVar2;
+}
+
+/* The following are the per-stride "copy N elements into a fresh buffer"
+ * helpers: copy `to-from` 0x48/0x58/8/0x160/0x18/0x68/0x10-byte elements from
+ * buf+(from*stride)+0x20 to dst, releasing the old buffer. Each traps on a
+ * negative or overlapping range. */
+
+/* FUN_00499820 @ 0x00499820   (est. sk_r31_copy_elems_0x48)
+ * Ghidra: ulong FUN_00499820(long, long, ulong, long)
+ * Copy 0x48-byte elements [from,to) out of buf into dst; release buf.
+ * Confidence: medium */
+word_t sk_r31_499820(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499894);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x48 + 0x20;
+        uVar2 = dst + lVar3 * 0x48;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x48 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, &sk_d_00688ea0);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x49989c);
+    }
+    SK_TRAP(0x499898);
+    return 0;
+}
+
+/* FUN_0049989c @ 0x0049989c   (est. sk_r31_copy_elems_0x48b)
+ * Ghidra: ulong FUN_0049989c(long, long, ulong, long)
+ * Copy 0x48-byte elements (variant B).
+ * Confidence: medium */
+word_t sk_r31_49989c(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499910);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x48 + 0x20;
+        uVar2 = dst + lVar3 * 0x48;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x48 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, &sk_d_006893a8);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499918);
+    }
+    SK_TRAP(0x499914);
+    return 0;
+}
+
+/* FUN_00499918 @ 0x00499918   (est. sk_r31_copy_elems_0x58)
+ * Ghidra: ulong FUN_00499918(long, long, ulong, long)
+ * Copy 0x58-byte elements (tag 0x687800).
+ * Confidence: medium */
+word_t sk_r31_499918(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499990);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x58 + 0x20;
+        uVar2 = dst + lVar3 * 0x58;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x58 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, 0x687800);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499998);
+    }
+    SK_TRAP(0x499994);
+    return 0;
+}
+
+/* FUN_00499998 @ 0x00499998   (est. sk_r31_copy_elems_8)
+ * Ghidra: ulong FUN_00499998(long, long, ulong, long)
+ * Copy 8-byte elements (tag 0x687408).
+ * Confidence: medium */
+word_t sk_r31_499998(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499a04);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 8 + 0x20;
+        uVar2 = dst + lVar3 * 8;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 8 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, 0x687408);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499a0c);
+    }
+    SK_TRAP(0x499a08);
+    return 0;
+}
+
+/* FUN_00499a0c @ 0x00499a0c   (est. sk_r31_copy_elems_0x160)
+ * Ghidra: ulong FUN_00499a0c(long, long, ulong, long)
+ * Copy 0x160-byte elements (tag 0x686868).
+ * Confidence: medium */
+word_t sk_r31_499a0c(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499a84);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x160 + 0x20;
+        uVar2 = dst + lVar3 * 0x160;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x160 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, 0x686868);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499a8c);
+    }
+    SK_TRAP(0x499a88);
+    return 0;
+}
+
+/* FUN_00499a8c @ 0x00499a8c   (est. sk_r31_copy_elems_8b)
+ * Ghidra: ulong FUN_00499a8c(long, long, ulong, long)
+ * Copy 8-byte elements (memcpy via FUN_00117cc4).
+ * Confidence: medium */
+word_t sk_r31_499a8c(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499af4);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 8 + 0x20;
+        uVar2 = dst + lVar3 * 8;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 8 <= dst) {
+            sk_h_00117cc4(dst, uVar1, lVar3 * 8);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499afc);
+    }
+    SK_TRAP(0x499af8);
+    return 0;
+}
+
+/* FUN_00499afc @ 0x00499afc   (est. sk_r31_copy_elems_0x10)
+ * Ghidra: ulong FUN_00499afc(long, long, ulong, long)
+ * Copy 0x10-byte elements through the boxed-copy helper FUN_00351450
+ * (elements are reference-counted pairs).
+ * Confidence: medium */
+word_t sk_r31_499afc(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+    long lVar5;
+    sk_r31_pair_t auVar6;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499b88);
+    }
+    if (-1 < lVar3) {
+        lVar5 = sk_h_00077888();
+        uVar1 = buf + lVar5 * 0x10 + 0x20;
+        uVar2 = dst + lVar3 * 0x10;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x10 <= dst) {
+            sk_h_00002534((word_t)&sk_d_00657dc8, (word_t)&sk_d_005a4bb8);
+            auVar6 = sk_h_00351450();
+            sk_h_0035b67c(auVar6.lo, auVar6.hi, lVar3);
+            sk_h_0036b118();
+            return uVar2;
+        }
+        SK_TRAP(0x499b90);
+    }
+    SK_TRAP(0x499b8c);
+    return 0;
+}
+
+/* FUN_00499b90 @ 0x00499b90   (est. sk_r31_copy_elems_0x18)
+ * Ghidra: ulong FUN_00499b90(long, long, ulong, long, undefined8)
+ * Copy 0x18-byte elements with the tag in param_5.
+ * Confidence: medium */
+word_t sk_r31_499b90(long from, long to, ulong dst, long buf, word_t tag)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499c00);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x18 + 0x20;
+        uVar2 = dst + lVar3 * 0x18;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x18 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, tag);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499c08);
+    }
+    SK_TRAP(0x499c04);
+    return 0;
+}
+
+/* FUN_00499c08 @ 0x00499c08   (est. sk_r31_copy_elems_8c)
+ * Ghidra: ulong FUN_00499c08(long, long, ulong, long)
+ * Copy 8-byte elements (tag DAT_006888f0).
+ * Confidence: medium */
+word_t sk_r31_499c08(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499c74);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 8 + 0x20;
+        uVar2 = dst + lVar3 * 8;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 8 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, &sk_d_006888f0);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499c7c);
+    }
+    SK_TRAP(0x499c78);
+    return 0;
+}
+
+/* FUN_00499c7c @ 0x00499c7c   (est. sk_r31_copy_elems_0x68)
+ * Ghidra: ulong FUN_00499c7c(long, long, ulong, long)
+ * Copy 0x68-byte elements (tag 0x686660).
+ * Confidence: medium */
+word_t sk_r31_499c7c(long from, long to, ulong dst, long buf)
+{
+    ulong uVar1, uVar2;
+    long lVar3;
+
+    lVar3 = to - from;
+    if (SBORROW8(to, from)) {
+        SK_TRAP(0x499cf4);
+    }
+    if (-1 < lVar3) {
+        uVar1 = buf + from * 0x68 + 0x20;
+        uVar2 = dst + lVar3 * 0x68;
+        if (uVar2 <= uVar1 || uVar1 + lVar3 * 0x68 <= dst) {
+            sk_h_0035b67c(dst, uVar1, lVar3, 0x686660);
+            sk_h_0036b118(buf);
+            return uVar2;
+        }
+        SK_TRAP(0x499cfc);
+    }
+    SK_TRAP(0x499cf8);
+    return 0;
+}
+
+/* FUN_00499cfc @ 0x00499cfc   (est. sk_r31_swap_elems_8)
+ * Ghidra: void FUN_00499cfc(ulong, long, ulong)
+ * Overlap-checked swap/move of `n` 8-byte elements from src to dst (tag
+ * 0x687408). Trap-fails on negative n or overlap.
+ * Confidence: medium */
+void sk_r31_499cfc(word_t src, long n, word_t dst)
+{
+    if (n < 0) {
+        SK_TRAP(0x499d34);
+    }
+    if (dst + n * 8 <= src || src + n * 8 <= dst) {
+        sk_h_0035b67c(dst, src, n, 0x687408);
+        return;
+    }
+    SK_TRAP(0x499d38);
+}
+
+/* FUN_00499d38 @ 0x00499d38   (est. sk_r31_swap_elems_0x160)
+ * Ghidra: void FUN_00499d38(ulong, long, ulong)
+ * Overlap-checked swap/move of `n` 0x160-byte elements (tag 0x686868).
+ * Confidence: medium */
+void sk_r31_499d38(word_t src, long n, word_t dst)
+{
+    if (n < 0) {
+        SK_TRAP(0x499d78);
+    }
+    if (dst + n * 0x160 <= src || src + n * 0x160 <= dst) {
+        sk_h_0035b67c(dst, src, n, 0x686868);
+        return;
+    }
+    SK_TRAP(0x499d7c);
+}
+
+/* FUN_00499d7c @ 0x00499d7c   (est. sk_r31_swap_elems_0x18)
+ * Ghidra: void FUN_00499d7c(ulong, long, ulong)
+ * Overlap-checked swap/move of `n` 0x18-byte elements (tag DAT_00688878).
+ * Confidence: medium */
+void sk_r31_499d7c(word_t src, long n, word_t dst)
+{
+    if (n < 0) {
+        SK_TRAP(0x499db8);
+    }
+    if (dst + n * 0x18 <= src || src + n * 0x18 <= dst) {
+        sk_h_0035b67c(dst, src, n, &sk_d_00688878);
+        return;
+    }
+    SK_TRAP(0x499dbc);
+}
+
+/* FUN_00499dbc @ 0x00499dbc   (est. sk_r31_alloc_array_8_cap)
+ * Ghidra: long FUN_00499dbc(long)
+ * Allocates an 8-byte-element array buffer of at least `count` slots,
+ * zero-initialized (+0x10 = 0). Trap-fails (FUN_000a6fe0) when count < 1.
+ * Confidence: low */
+long sk_r31_499dbc(long count)
+{
+    long lVar1;
+    word_t buf;
+
+    if (count < 1) {
+        sk_h_000a6fe0();
+    } else {
+        sk_h_00106e3c();
+        sk_h_00002534(0, 0);
+        buf = sk_h_0007791c(count << 3);
+        lVar1 = sk_h_000126e8();
+        *(word_t *)(buf + 0x10) = 0;
+        *(long *)(buf + 0x18) = (lVar1 - 0x20) / 8 << 1;
+    }
+    return buf;
+}
+
+/* FUN_00499e1c @ 0x00499e1c   (est. sk_r31_alloc_array_0x20)
+ * Ghidra: undefined * FUN_00499e1c(long)
+ * Allocates a 0x20-byte-element array buffer of `count` slots; empty sentinel
+ * when count < 1.
+ * Confidence: low */
+word_t sk_r31_499e1c(long count)
+{
+    word_t uVar1;
+    word_t *puVar2;
+    long lVar3;
+
+    if (count < 1) {
+        puVar2 = &sk_d_00657778;
+    } else {
+        uVar1 = sk_h_00002534((word_t)&sk_d_0064c040, (word_t)&sk_d_004bbf40);
+        puVar2 = (word_t *)sk_h_0036a940(uVar1, count * 0x20 + 0x20, 7);
+        lVar3 = sk_h_000126e8();
+        *(word_t *)(puVar2 + 0x10) = 0;
+        *(long *)(puVar2 + 0x18) = (lVar3 - 0x20) / 0x20 << 1;
+    }
+    return (word_t)puVar2;
+}
+
+/* FUN_00499e94 @ 0x00499e94   (est. sk_r31_alloc_array_0x48)
+ * Ghidra: undefined * FUN_00499e94(long)
+ * Allocates a 0x48-byte-element array buffer of `count` slots; empty sentinel
+ * when count < 1.
+ * Confidence: low */
+word_t sk_r31_499e94(long count)
+{
+    word_t uVar1;
+    word_t *puVar2;
+    long lVar3;
+
+    if (count < 1) {
+        puVar2 = &sk_d_00657778;
+    } else {
+        uVar1 = sk_h_00002534((word_t)&sk_d_00657d78, (word_t)&sk_d_005a4b40);
+        puVar2 = (word_t *)sk_h_0036a940(uVar1, count * 0x48 + 0x20, 7);
+        lVar3 = sk_h_000126e8();
+        *(word_t *)(puVar2 + 0x10) = 0;
+        *(long *)(puVar2 + 0x18) = (lVar3 - 0x20) / 0x48 << 1;
+    }
+    return (word_t)puVar2;
+}
+
+/* FUN_00499f0c @ 0x00499f0c   (est. sk_r31_diag_emit)
+ * Ghidra: void FUN_00499f0c(undefined8)
+ * Emits a diagnostic value to the debug stream with the context string from
+ * register global unaff_x20+0x28, then forwards via FUN_00072a30.
+ * Confidence: low
+ * Notes: unaff_x20 register global. */
+void sk_r31_499f0c(word_t v)
+{
+    word_t buf[9];
+    word_t uVar1;
+
+    sk_h_001a84f4((word_t)buf, *(word_t *)(0 + 0x28));
+    sk_h_002298d4(v);
+    uVar1 = sk_h_001a8564();
+    sk_h_00072a30(v, uVar1);
+}
+
+/* FUN_00499f6c @ 0x00499f6c   (est. sk_r31_hash_probe)
+ * Ghidra: void FUN_00499f6c(undefined8)
+ * Hash-probe helper used by FUN_0049a184: seeds a scratch buffer with the
+ * context string, hashes the value, flushes, and probes the table. The
+ * decompiler dropped the 16-byte {slot,found} return that callers consume;
+ * transcribed as returning sk_r31_pair_t (best-effort from the probe call).
+ * Confidence: low
+ * Notes: unaff_x20 register global; return reconstructed. */
+sk_r31_pair_t sk_r31_499f6c(word_t v)
+{
+    word_t buf[9];
+    word_t uVar1;
+    sk_r31_pair_t r;
+
+    sk_h_001a84f4((word_t)buf, *(word_t *)(0 + 0x28));
+    sk_h_004a4184((word_t)buf, v);
+    uVar1 = sk_h_001a8564();
+    sk_r31_49a2a4(v, uVar1);
+    r.lo = uVar1;
+    r.hi = 0;
+    return r;
+}
+
+/* FUN_00499fcc @ 0x00499fcc   (est. sk_r31_hashmap_insert_8)
+ * Ghidra: void FUN_00499fcc(ulong, undefined8, undefined8, long)
+ * Inserts (key -> v1, v2) into a hash map: sets the presence bit in the
+ * parallel bitset at map+0x40 (word key>>6, bit key&0x3f), stores v1 at
+ * map+0x30[key] and v2 at map+0x38[key], and increments the count at map+0x10.
+ * Trap-fails on count overflow.
+ * Confidence: medium
+ * Notes: SoftwareBreakpoint(1,0x49a010). */
+void sk_r31_499fcc(word_t key, word_t v1, word_t v2, long map)
+{
+    long lVar1;
+
+    lVar1 = map + (key >> 6) * 8;
+    *(ulong *)(lVar1 + 0x40) = *(ulong *)(lVar1 + 0x40) | (ulong)1 << (key & 0x3f);
+    *(word_t *)(*(long *)(map + 0x30) + key * 8) = v1;
+    *(word_t *)(*(long *)(map + 0x38) + key * 8) = v2;
+    if (!SCARRY8(*(long *)(map + 0x10), 1)) {
+        *(long *)(map + 0x10) = *(long *)(map + 0x10) + 1;
+        return;
+    }
+    SK_TRAP(0x49a010);
+}
+
+/* FUN_0049a010 @ 0x0049a010   (est. sk_r31_hashmap_insert_16)
+ * Ghidra: void FUN_0049a010(ulong, undefined8, undefined8, undefined8, long)
+ * Inserts (key -> {v1,v2}, v3) into a hash map, storing the {v1,v2} pair as
+ * a 16-byte value at map+0x30[key]. Trap-fails on count overflow.
+ * Confidence: medium
+ * Notes: SoftwareBreakpoint(1,0x49a058). */
+void sk_r31_49a010(word_t key, word_t v1, word_t v2, word_t v3, long map)
+{
+    long lVar1;
+    word_t *puVar2;
+
+    lVar1 = map + (key >> 6) * 8;
+    *(ulong *)(lVar1 + 0x40) = *(ulong *)(lVar1 + 0x40) | (ulong)1 << (key & 0x3f);
+    puVar2 = (word_t *)(*(long *)(map + 0x30) + key * 0x10);
+    puVar2[0] = v1;
+    puVar2[1] = v2;
+    *(word_t *)(*(long *)(map + 0x38) + key * 8) = v3;
+    if (!SCARRY8(*(long *)(map + 0x10), 1)) {
+        *(long *)(map + 0x10) = *(long *)(map + 0x10) + 1;
+        return;
+    }
+    SK_TRAP(0x49a058);
+}
+
+/* FUN_0049a058 @ 0x0049a058   (est. sk_r31_hashmap_upsert_16)
+ * Ghidra: void FUN_0049a058(undefined8, undefined8, undefined8)
+ * Upserts a key into a hash map held at *unaff_x20. If the key's hash lookup
+ * (FUN_0006ae9c) misses, grows the table if needed and inserts {v1,v2,key}
+ * via FUN_0049a010, retaining the key; if present, overwrites the stored
+ * value. Trap-fails on growth overflow or a hash-stability mismatch.
+ * Confidence: medium
+ * Notes: unaff_x20 = *map register global; FUN_002591b4 is a noreturn fatal
+ * on hash instability. */
+void sk_r31_49a058(word_t v1, word_t v2, word_t key)
+{
+    word_t uVar2, uVar3;
+    long lVar4;
+    ulong uVar5;
+    long *unaff_x20;
+    long lVar6;
+    long lVar7;
+    sk_r31_pair_t auVar8;
+    sk_r31_pair_t auVar9;
+
+    uVar2 = sk_h_003a261c(*unaff_x20);
+    lVar6 = *unaff_x20;
+    auVar8 = sk_h_0006ae9c(v2, key);
+    lVar7 = auVar8.lo;
+    lVar4 = *(long *)(lVar6 + 0x10);
+    uVar5 = (ulong)(~auVar8.hi & 1);
+    if (SCARRY8(lVar4, uVar5)) {
+        SK_TRAP(0x49a174);
+    }
+    uVar3 = sk_h_00002534((word_t)&sk_d_00657df0, (word_t)&sk_d_005a4be0);
+    uVar5 = sk_h_00258c60(uVar2, lVar4 + uVar5, uVar3);
+    if ((uVar5 & 1) != 0) {
+        auVar9 = sk_h_0006ae9c(v2, key);
+        lVar7 = auVar9.lo;
+        if ((auVar8.hi & 1) != (auVar9.hi & 1)) {
+            sk_h_002591b4(0x6728f0);
+        }
+    }
+    if ((auVar8.hi & 1) == 0) {
+        sk_r31_49a010(lVar7, v1, v2, key, lVar6);
+        sk_h_0036b270(key);
+    } else {
+        *(word_t *)(*(long *)(lVar6 + 0x38) + lVar7 * 8) = v1;
+    }
+    *unaff_x20 = lVar6;
+}
+
+/* FUN_0049a184 @ 0x0049a184   (est. sk_r31_hashmap_upsert_8)
+ * Ghidra: void FUN_0049a184(undefined8, undefined8)
+ * Upserts a key into a hash map held at *unaff_x20 using the FUN_00499f6c
+ * probe; inserts {v2,v1} (with retain) via FUN_00499fcc when absent, else
+ * overwrites. Fatal on hash instability.
+ * Confidence: medium
+ * Notes: unaff_x20 = *map register global. */
+void sk_r31_49a184(word_t v1, word_t v2)
+{
+    word_t uVar2, uVar3;
+    long lVar4;
+    ulong uVar5;
+    long *unaff_x20;
+    long lVar6;
+    long lVar7;
+    sk_r31_pair_t auVar8;
+    sk_r31_pair_t auVar9;
+
+    uVar2 = sk_h_003a261c(*unaff_x20);
+    lVar6 = *unaff_x20;
+    auVar8 = sk_r31_499f6c(v2);
+    lVar7 = auVar8.lo;
+    lVar4 = *(long *)(lVar6 + 0x10);
+    uVar5 = (ulong)(~auVar8.hi & 1);
+    if (SCARRY8(lVar4, uVar5)) {
+        SK_TRAP(0x49a288);
+    }
+    uVar3 = sk_h_00002534((word_t)&sk_d_00657e28, (word_t)&sk_d_005a5560);
+    uVar5 = sk_h_00258c60(uVar2, lVar4 + uVar5, uVar3);
+    if ((uVar5 & 1) != 0) {
+        auVar9 = sk_r31_499f6c(v2);
+        lVar7 = auVar9.lo;
+        if ((auVar8.hi & 1) != (auVar9.hi & 1)) {
+            sk_h_00002534((word_t)&sk_d_0064e078, (word_t)&sk_d_005a4b80);
+            sk_h_002591b4(0, 0);
+        }
+    }
+    if ((auVar8.hi & 1) == 0) {
+        sk_r31_499fcc(lVar7, v2, v1, lVar6);
+        sk_h_0036b270(v2);
+    } else {
+        *(word_t *)(*(long *)(lVar6 + 0x38) + lVar7 * 8) = v1;
+    }
+    *unaff_x20 = lVar6;
+}
+
+/* FUN_0049a2a4 @ 0x0049a2a4   (est. sk_r31_hashmap_lookup)
+ * Ghidra: void FUN_0049a2a4(long, ulong)
+ * Looks up a key in the hash map at register global unaff_x20 by probing the
+ * bitset; when a slot is occupied, compares the key bytes (length at
+ * key+0x10, payload at key+0x20) and stops at the first match or when the
+ * probe chain ends.
+ * Confidence: medium
+ * Notes: unaff_x20 = map register global. */
+void sk_r31_49a2a4(long key_ptr, ulong hash)
+{
+    ulong uVar1;
+    long lVar2;
+    long lVar3;
+    char *pcVar4;
+    char *pcVar5;
+
+    uVar1 = (ulong)-1 << ((ulong)*(byte *)(0 + 0x20) & 0x3f);
+    hash = hash & (uVar1 ^ 0xffffffffffffffff);
+    if ((*(ulong *)(0 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0) {
+        lVar2 = *(long *)(key_ptr + 0x10);
+        do {
+            lVar3 = *(long *)(*(long *)(0 + 0x30) + hash * 8);
+            if (*(long *)(lVar3 + 0x10) == lVar2) {
+                if ((lVar2 == 0) || (lVar3 == key_ptr)) {
+                    return;
+                }
+                pcVar4 = (char *)(lVar3 + 0x20);
+                pcVar5 = (char *)(key_ptr + 0x20);
+                lVar3 = lVar2;
+                while (true) {
+                    if (*pcVar4 != *pcVar5) break;
+                    lVar3 = lVar3 - 1;
+                    pcVar4 = pcVar4 + 1;
+                    pcVar5 = pcVar5 + 1;
+                    if (lVar3 == 0) {
+                        return;
+                    }
+                }
+            }
+            hash = hash + 1 & ~uVar1;
+        } while ((*(ulong *)(0 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0);
+    }
+}
+
+/* FUN_0049a348 @ 0x0049a348   (est. sk_r31_buffer_ensure_capacity)
+ * Ghidra: void FUN_0049a348(long, uint, code *param_3)
+ * Grows the buffer at *unaff_x20 via the supplied grow function when it is
+ * not uniquely referenced or its capacity is below `count`.
+ * Confidence: medium
+ * Notes: unaff_x20 = *buffer register global. */
+void sk_r31_49a348(long count, uint flag, void *grow_fn)
+{
+    long lVar1;
+    word_t uVar2;
+    long *unaff_x20;
+    long lVar3;
+
+    lVar3 = *unaff_x20;
+    uVar2 = sk_h_003a261c(lVar3);
+    *unaff_x20 = lVar3;
+    if (((int)uVar2 == 0) || ((long)(*(ulong *)(lVar3 + 0x18) >> 1) < count)) {
+        lVar1 = *(long *)(lVar3 + 0x10);
+        if (*(long *)(lVar3 + 0x10) <= count) {
+            lVar1 = count;
+        }
+        lVar3 = ((long (*)(word_t, long, uint, long))grow_fn)(uVar2, lVar1, flag & 1, lVar3);
+        *unaff_x20 = lVar3;
+    }
+}
+
+/* FUN_0049a3c0 @ 0x0049a3c0   (est. sk_r31_buffer_ensure_capacity2)
+ * Ghidra: void FUN_0049a3c0(void)
+ * Like FUN_0049a348 with the target size from FUN_0034d090 and a grow call
+ * through a register-global function pointer (in_x5).
+ * Confidence: low
+ * Notes: unaff_x20/in_x5 register globals. */
+void sk_r31_49a3c0(void)
+{
+    long lVar1, lVar3, lVar4;
+    word_t uVar2;
+    long *unaff_x20;
+    sk_r31_pair_t auVar5;
+
+    sk_h_00084220();
+    auVar5 = sk_h_0034d090();
+    lVar3 = auVar5.lo;
+    lVar4 = *unaff_x20;
+    uVar2 = sk_h_003a261c(lVar4);
+    *unaff_x20 = lVar4;
+    if (((int)uVar2 == 0) || ((long)(*(ulong *)(lVar4 + 0x18) >> 1) < lVar3)) {
+        lVar1 = *(long *)(lVar4 + 0x10);
+        if (*(long *)(lVar4 + 0x10) <= lVar3) {
+            lVar1 = lVar3;
+        }
+        sk_h_004ab910(uVar2, lVar1, auVar5.hi & 1);
+        /* (*in_x5)() register-global grow fn: dropped by decompiler */
+        *unaff_x20 = lVar4;
+    }
+    sk_h_00084234(0);
+}
+
+/* The following wrappers (0x0049a440-0x0049a4b8) are the public buffer-
+ * resize entry points: they resize the buffer at param_1 to its own current
+ * element count (param_1+0x10), passing the element stride type. */
+
+/* FUN_0049a440 @ 0x0049a440   (est. sk_r31_buffer_resize_wrap_a)
+ * Ghidra: void FUN_0049a440(long)
+ * Resize wrapper via FUN_0001dd14.
+ * Confidence: low */
+void sk_r31_49a440(long buf)
+{
+    sk_h_0001dd14(0, *(word_t *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a454 @ 0x0049a454   (est. sk_r31_buffer_resize_wrap_b)
+ * Ghidra: void FUN_0049a454(long)
+ * Resize wrapper via FUN_001a09bc.
+ * Confidence: low */
+void sk_r31_49a454(long buf)
+{
+    sk_h_001a09bc(0, *(word_t *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a468 @ 0x0049a468   (est. sk_r31_buffer_resize_wrap_c)
+ * Ghidra: void FUN_0049a468(long)
+ * Resize wrapper via sk_r31_498cc8 (0x48-stride).
+ * Confidence: low */
+void sk_r31_49a468(long buf)
+{
+    sk_r31_498cc8(0, *(ulong *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a47c @ 0x0049a47c   (est. sk_r31_buffer_resize_wrap_d)
+ * Ghidra: void FUN_0049a47c(long)
+ * Resize wrapper via thunk_FUN_001a0d1c.
+ * Confidence: low */
+void sk_r31_49a47c(long buf)
+{
+    sk_h_001a0d1c(0, *(word_t *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a490 @ 0x0049a490   (est. sk_r31_buffer_resize_wrap_e)
+ * Ghidra: void FUN_0049a490(long)
+ * Resize wrapper via sk_r31_498d8c (0x48-stride variant B).
+ * Confidence: low */
+void sk_r31_49a490(long buf)
+{
+    sk_r31_498d8c(0, *(ulong *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a4a4 @ 0x0049a4a4   (est. sk_r31_buffer_resize_wrap_f)
+ * Ghidra: void FUN_0049a4a4(long)
+ * Resize wrapper via sk_r31_498fd0.
+ * Confidence: low */
+void sk_r31_49a4a4(long buf)
+{
+    sk_r31_498fd0(0, *(ulong *)(buf + 0x10), 0, buf);
+}
+
+/* FUN_0049a4b8 @ 0x0049a4b8   (est. sk_r31_buffer_resize_wrap_g)
+ * Ghidra: void FUN_0049a4b8(long)
+ * Generic resize wrapper passing the 4-byte-element alloc (sk_r31_4982ac),
+ * move (FUN_00071fe4) and done (FUN_00074a28) functions.
+ * Confidence: low */
+void sk_r31_49a4b8(long buf)
+{
+    sk_r31_498e50(0, *(long *)(buf + 0x10), 0, buf,
+                  (void *)sk_r31_4982ac, (void *)sk_h_00071fe4, (void *)sk_h_00074a28);
 }
