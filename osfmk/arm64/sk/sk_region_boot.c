@@ -11758,7 +11758,288 @@ unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
     }
     FUN_0005ee58(words, 0, 0, 0);
     return 0;
-}/* Recreated from exclavecore_bundle.t8142.RELEASE.im4p (cL4 Secure Kernel, GL1,
+}
+/*-------------------------------------------------------------------------
+ * TSS (thread-specific-storage) subsystem.
+ *------------------------------------------------------------------------- */
+
+extern unsigned long FUN_0005acac(unsigned long a, int b, int c);  /* per-CPU descriptor allocator */
+
+/* Forward declarations for the TSS subsystem (mutually recursive). */
+long sk_tss_base_get(void);
+long sk_tss_alloc_slot(void);
+unsigned long sk_tss_new_region(void);
+long sk_tb_attach(void *tb, void *key, unsigned long size);
+void sk_tb_release(void *tb);
+
+/* Reads the current thread pointer register (tpidr_el0). */
+static unsigned long sk_tpidr(void)
+{
+    unsigned long v;
+    __asm__ volatile("mrs %0, tpidr_el0" : "=r"(v));
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00063a50 (static helper)   (est. sk_percpu_base_get)
+ * Ghidra: ulong FUN_00063a50(void)
+ * Returns the current per-CPU base. Returns the cached global _DAT_006b2718
+ * if already set; otherwise allocates the per-CPU descriptor (FUN_0005acac,
+ * 0x6b2568) and derives the base at offset 0x50, caching it back. Traps on
+ * base wrap.
+ * Confidence: medium (per-CPU base accessor; global _DAT_006b2718).
+ * Notes: allocator FUN_0005bb68/FUN_0005acac; trap 0x63a94. */
+static unsigned long sk_percpu_base_get(void)
+{
+    unsigned long base = *(unsigned long *)0x6b2718;   /* _DAT_006b2718 */
+    if (base == 0) {
+        long cpu = (long)FUN_0005acac(0x6b2568, 1, 1);  /* FUN_0005bb68 */
+        base = *(unsigned long *)(cpu + 0x50);
+        if (base + 0x2f0 < base) __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x63a94) */
+    }
+    *(unsigned long *)0x6b2718 = base;
+    return base;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013be4 @ 0x00013be4   (est. sk_tss_base_get)
+ * Ghidra: long FUN_00013be4(void)
+ * Returns the current thread's TSS slot pointer (thread-local key slot for
+ * the current key count - 1). Reads the per-CPU base (FUN_00063a50), the
+ * key-count global _DAT_006ae1b0 and the per-thread key array (tpidr_el0).
+ * Panics via FUN_0005b190 on "getting key %lu while destructor" / "which is
+ * deleted"; faults via FUN_004b01e8 on key >= 0x20; traps on slot wrap.
+ * Confidence: medium (string-matched key getter).
+ * Notes: globals _DAT_006ae1b0/006ae1c0/006ae1c8; strings 005ab2c6/005ab2a5;
+ *   trap 0x13c88. */
+long sk_tss_base_get(void)
+{
+    unsigned long nkeys = sk_perthread_key_count;      /* _DAT_006ae1b0 */
+    unsigned long base;
+    long *th;
+
+    if (nkeys < 0x20) {
+        base = sk_percpu_base_get();                    /* FUN_00063a50 */
+        th = (long *)sk_tpidr();
+        if (*(long *)(base + (nkeys - 1) * 8 + 0x1f8) != -1) {
+            if (th[0x1f] == 0) {
+                long *slot = th + (nkeys - 1);
+                if (th <= slot && slot + 1 <= th + 0x1f && slot <= slot + 1) {
+                    return *slot;
+                }
+                __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13c88) */
+            }
+            sk_panic_key((const char *)0x5ab2c6);  /* "getting key %lu while destructor" */
+        }
+    } else {
+        FUN_004b01e8();  /* key >= __XRT_THREAD_TSS_MAX_KEYS fault */
+    }
+    sk_panic_key((const char *)0x5ab2a5);  /* "getting key %lu which is deleted" */
+    return 0;  /* unreachable */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013af0 @ 0x00013af0   (est. sk_tss_free_slot)
+ * Ghidra: void FUN_00013af0(ulong slot)
+ * Frees a TSS slot: computes its slot index (slot - base) / 0x1b8 via the
+ * 0x4a7904a7904a7905 reciprocal and clears the slot's bit in the region
+ * bitmap at base + 0x528. Faults on an out-of-range or unset slot. The
+ * trailing destructor-cleanup loop (FUN_004b0128/004b23d8/0005ed18) is dead
+ * because the fault helpers do not return.
+ * Confidence: medium (bitmap slot free; reciprocal magic 0x4a7904a7904a7905).
+ * Notes: slot stride 0x1b8; bitmap base+0x528; faults FUN_004b01b8/0188/0158;
+ *   dead tail FUN_004b0128/004b23d8/0005ed18. */
+void sk_tss_free_slot(unsigned long slot)
+{
+    unsigned long base = (unsigned long)sk_tss_base_get();  /* FUN_00013be4 */
+    unsigned long idx, bit;
+
+    if (base == 0) {
+        FUN_004b01b8();  /* fault */
+        FUN_004b0188();  /* fault */
+        __builtin_trap();
+    }
+    if (slot < base) {
+        FUN_004b0188();  /* fault */
+        __builtin_trap();
+    }
+    if (slot <= base + 0x370) {
+        idx = (slot - base) / 0x1b8;        /* reciprocal magic */
+        bit = 1UL << (idx & 0x3f);
+        if (*(unsigned long *)(base + 0x528) & bit) {
+            *(unsigned long *)(base + 0x528) &= ~bit;
+            return;
+        }
+        FUN_004b0158();  /* fault: slot not in use */
+        __builtin_trap();
+    }
+    FUN_004b0158();  /* fault */
+    __builtin_trap();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000139ac @ 0x000139ac   (est. sk_tb_release)
+ * Ghidra: void FUN_000139ac(undefined8 *tb)
+ * Releases a thread block: tears down its capability slots and frees its
+ * TSS slot when no region is attached, then clears the TB fields and sets
+ * the released marker at +0x29 bit 0. Idempotent.
+ * Confidence: medium (structural release).
+ * Notes: helpers FUN_00012d70 (slot teardown)/00013af0 (tss free). */
+void sk_tb_release(void *tb)
+{
+    unsigned long *t = (unsigned long *)tb;
+
+    if ((*(uint8_t *)((char *)tb + 0x29) & 1) != 0) return;  /* already released */
+    if (t[6] == 0) {
+        sk_tcb_slot_alloc_teardown(tb);   /* FUN_00012d70 */
+        sk_tss_free_slot(t[0]);           /* FUN_00013af0 */
+    }
+    t[0] = 0;
+    t[6] = 0;
+    t[3] = 0;
+    t[4] = 0;
+    t[2] = 0;
+    *(uint8_t *)((char *)tb + 0x29) = 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013a08 @ 0x00013a08   (est. sk_tb_attach)
+ * Ghidra: long FUN_00013a08(undefined8 *tb, undefined8 key, ulong size)
+ * Attaches a thread block to a TSS slot of the given size. If no region is
+ * attached, tears down the old slots, frees the old TSS slot, initialises
+ * the per-thread key table (FUN_0005d470) and allocates a fresh slot
+ * (FUN_00013cfc); otherwise reuses the region's current slot. Rejects a
+ * request larger than 0x1b8 (returns 5). Returns 0 on success.
+ * Confidence: medium (structural attach).
+ * Notes: helpers FUN_00012d70/00013af0/0005d470/00013cfc; size cap 0x1b8. */
+long sk_tb_attach(void *tb, void *key, unsigned long size)
+{
+    unsigned long *t = (unsigned long *)tb;
+    unsigned long *region = (unsigned long *)t[6];
+
+    if (region == 0) {
+        if (0x1b8 < size) return 5;
+        sk_tcb_slot_alloc_teardown(tb);   /* FUN_00012d70 */
+        sk_tss_free_slot(t[0]);           /* FUN_00013af0 */
+        sk_perthread_init((void *)0x6ae1b8, (void *)0x13c88, 0);  /* FUN_0005d470 */
+        t[0] = (unsigned long)sk_tss_alloc_slot();  /* FUN_00013cfc */
+    } else {
+        if (region[1] < size) return 5;
+        t[0] = region[0];
+    }
+    t[2] = 0;
+    t[3] = size;
+    *(uint16_t *)((char *)tb + 0x2a) = 0;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013cfc @ 0x00013cfc   (est. sk_tss_alloc_slot)
+ * Ghidra: long FUN_00013cfc(void)
+ * Allocates the next free TSS slot for the current thread. If the thread has
+ * no TSS region yet, lazily creates/links one: zeroes the thread list
+ * (thunk_FUN_00114330), picks the per-thread region base (_DAT_006ae1d0 or
+ * _DAT_006ae700) and records it in the thread's key slot, ref-counting the
+ * per-CPU key table at +0x1f8. Finds a free slot by scanning the region's
+ * allocation bitmap at +0x528 (bit-reverse + LZCOUNT) and returns
+ * base + slot*0x1b8. Faults on TSS_MAX_KEYS overflow (FUN_00115424) or when
+ * no slot is free (sk_puts + trap).
+ * Confidence: low-medium (large structural allocator; key-set panic strings).
+ * Notes: globals _DAT_006ae1b0/006ae1c0/006ae1c8; region bases 0x6ae1d0/
+ *   0x6ae700; slot stride 0x1b8; bitmap base+0x528; strings 005ab392/005ab177/
+ *   005ab3b2/005ab3c5/005ab3ef/005ab34c; traps 0x13e84/0x13ea8. */
+long sk_tss_alloc_slot(void)
+{
+    unsigned long region;
+    unsigned long cpu;
+    unsigned long nkeys;
+    unsigned long bitmap, bit, freeidx;
+    unsigned long *th;
+
+    region = (unsigned long)sk_tss_base_get();   /* FUN_00013be4 */
+    if (region == 0) {
+        cpu = FUN_00060524();                    /* current cpu / thread */
+        region = 0x6ae1d0;
+        if (sk_thread_list_head != cpu) {        /* _DAT_006ae1c0 */
+            if (sk_thread_list_head == 0) {
+                thunk_FUN_00114330(&sk_thread_list, 0xa68);  /* zero thread list */
+                region = 0x6ae1d0;
+                sk_thread_list_head = cpu;
+            } else {
+                region = sk_thread_list;         /* _DAT_006ae1c8 */
+                if (sk_thread_list == cpu || (region = cpu, sk_thread_list == 0)) {
+                    sk_thread_list = region;
+                    region = 0x6ae700;
+                } else {
+                    region = (unsigned long)sk_tss_new_region();  /* FUN_00013ea8 */
+                }
+            }
+        }
+        nkeys = sk_perthread_key_count;          /* _DAT_006ae1b0 */
+        if (nkeys > 0x1f) {
+            FUN_00115424((const char *)0x5ab392, (const char *)0x5ab177,
+                         (const char *)0x5ab3b2, 0x1f0);  /* key < __XRT_THREAD_TSS_MAX_KEYS */
+        }
+        cpu = sk_percpu_base_get();              /* FUN_00063a50 */
+        th = (unsigned long *)sk_tpidr();
+        if (th[0x1f] != 0) {
+            sk_panic_key((const char *)0x5ab3c5);  /* "setting key %lu while destructor" */
+        }
+        {
+            unsigned long *slot = th + (nkeys - 1);
+            if (!(th <= slot && th + 0x1f >= slot + 1 && slot <= slot + 1)) {
+                __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13e84) */
+            }
+            if (*slot != region) {
+                if (*slot == 0) {
+                    long *pc = (long *)(cpu + (nkeys - 1) * 8 + 0x1f8);
+                    long v = *pc;
+                    *pc = v + 1;
+                    if (v == -1)
+                        sk_panic_key((const char *)0x5ab3ef);  /* "setting key %lu which is deleted" */
+                }
+                *slot = region;
+            }
+        }
+    }
+    bitmap = *(unsigned long *)(region + 0x528);
+    /* Find lowest free slot: bit-reverse the free mask then LZCOUNT. */
+    {
+        unsigned long f = ~bitmap;
+        f = (f & 0xaaaaaaaaaaaaaaaaUL) >> 1 | (f & 0x5555555555555555UL) << 1;
+        f = (f & 0xccccccccccccccccUL) >> 2 | (f & 0x3333333333333333UL) << 2;
+        f = (f & 0xf0f0f0f0f0f0f0f0UL) >> 4 | (f & 0x0f0f0f0f0f0f0f0fUL) << 4;
+        f = (f & 0xff00ff00ff00ff00UL) >> 8 | (f & 0x00ff00ff00ff00ffUL) << 8;
+        f = (f & 0xffff0000ffff0000UL) >> 16 | (f & 0x0000ffff0000ffffUL) << 16;
+        f = (f >> 32) | (f << 32);
+        freeidx = (unsigned long)__builtin_clzll(f);
+    }
+    if (bitmap != 0xffffffffffffffffUL && freeidx < 3) {
+        bit = 1UL << (freeidx & 0x3f);
+        *(unsigned long *)(region + 0x528) = bitmap | bit;
+        return (long)(region + freeidx * 0x1b8);
+    }
+    sk_puts((const char *)0x5ab34c);  /* "TB FATAL: no available per-thread slot" */
+    __builtin_trap();  /* SoftwareBreakpoint(1, 0x13ea8) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013ea8 @ 0x00013ea8   (est. sk_tss_new_region)
+ * Ghidra: ulong FUN_00013ea8(void)
+ * Allocates a new TSS region of 0x530 bytes (tag 0x10000403b489d26) via
+ * FUN_00010244 (sk_heap_calloc) and returns it. On failure faults via
+ * FUN_004b0244.
+ * Confidence: medium (allocation + fault).
+ * Notes: region size 0x530; tag 0x10000403b489d26. */
+unsigned long sk_tss_new_region(void)
+{
+    unsigned long r = (unsigned long)sk_heap_calloc(1, 0x530, (void *)0x10000403b489d26);  /* FUN_00010244 */
+    if (r != 0) return r;
+    FUN_004b0244();  /* fault */
+    __builtin_trap();
+}
+/* Recreated from exclavecore_bundle.t8142.RELEASE.im4p (cL4 Secure Kernel, GL1,
  * arm64e, image base 0) — the cL4 microkernel. Ground truth: Ghidra FUN_ names +
  * addresses in cl4_kernel.raw. Version "cL4 microkernel (cL4 (679.100.61))".
  * All names are estimates unless string/header-matched. */
@@ -18827,7 +19108,7 @@ extern unsigned long sk_l4_err_word2;   /* sk_l4_err_word2 */
 extern unsigned long sk_l4_err_word3;   /* sk_l4_err_word3 */
 
 /* More vspace lifecycle helpers. */
-extern void sk_vspace_teardown_store(void);         /* FUN_00032888 */
+extern void sk_vspace_teardown_store(long);          /* FUN_00032888 */
 extern void sk_vspace_unlink_cleanup(void);         /* FUN_00034ad0 */
 extern void sk_vspace_obj_free(void *);             /* FUN_00033304 */
 extern void sk_vspace_done_obj(void *);             /* FUN_00034a5c */
@@ -18864,7 +19145,7 @@ extern void sk_vspace_region_hook(unsigned long, unsigned long, void *); /* FUN_
 extern void sk_vas_page_ready(void);                       /* FUN_0004ba18 */
 extern unsigned long sk_vas_fault18(void);                 /* FUN_004b233c */
 extern void sk_vas_fault19(void);                          /* FUN_004b2304 */
-extern unsigned long sk_region_method(void);               /* FUN_00034ba4 */
+extern unsigned long sk_region_method(long);               /* FUN_00034ba4 */
 extern void sk_vas_fault20(void);                          /* FUN_004b2368 */
 extern void sk_vas_fault21(void);                          /* FUN_004b23a0 */
 extern long sk_alloc_big2(int, int);                       /* FUN_0005baac */
@@ -19958,7 +20239,7 @@ void sk_vspace_destroy(void **param_1)
     int r;
     void (*a)(void);
 
-    sk_vspace_teardown_store();                  /* FUN_00032888 */
+    sk_vspace_teardown_store((long)param_1);     /* FUN_00032888 */
     r = sk_vm_lock_take2(0x6ad2b0, 0);          /* FUN_00118148 */
     if (r != 0) sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
     head = &sk_vspace_root_obj;                  /* DAT_0064c3f0 */
@@ -20005,7 +20286,7 @@ void sk_vspace_reinit_object(long param_1, void *param_2, void *param_3)
     void *f1 = *(void **)(param_1 + 0x18);
     void *f4 = *(void **)(param_1 + 0x30);
     void *f3 = *(void **)(param_1 + 0x28);
-    sk_vspace_teardown_store();                  /* FUN_00032888 */
+    sk_vspace_teardown_store(param_1);           /* FUN_00032888 */
     sk_vspace_init_obj(param_1, &g0, &f3, param_2, param_3);  /* FUN_0003264c */
 }
 
@@ -21263,7 +21544,7 @@ void sk_vspace_region_map(unsigned long param_1, unsigned char *param_2)
     void (*a)(void);
 
     if (param_1 + 0x30 < param_1) goto fail_34634;
-    if ((sk_region_method() & 1) == 0)              /* FUN_00034ba4 */
+    if ((sk_region_method(param_1) & 1) == 0)        /* FUN_00034ba4 */
         sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b090a);
     if (param_2[1] != 1) {
         u = *(unsigned long *)(param_2 + 0x20);
@@ -21315,7 +21596,7 @@ void sk_vspace_region_hook2(unsigned long param_1, long param_2, long param_3)
         a();
         __builtin_unreachable();
     }
-    if ((sk_region_method() & 1) != 0) {            /* FUN_00034ba4 */
+    if ((sk_region_method(param_1) & 1) != 0) {     /* FUN_00034ba4 */
         if ((*(unsigned char *)(param_2 + 1) & 1) == 0) {
             sk_vas_fault21();                        /* FUN_004b23a0 */
         } else if (param_3 == *(long *)(param_2 + 0x20)) {
@@ -21632,9 +21913,9 @@ extern unsigned long sk_vas_fault84();
 extern unsigned long sk_vas_fault85();
 
 /* additional helpers referenced by the appended bodies */
-extern unsigned long sk_slot_attach_full();   /* FUN_0003b820 */
-extern unsigned long sk_span_lookup_build6(); /* FUN_00035bac */
-extern unsigned long sk_region_map_span3();            /* FUN_0003df84 */
+extern unsigned long sk_slot_attach_full(unsigned long *, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);   /* FUN_0003b820 */
+extern void sk_span_lookup_build6(unsigned long *, unsigned long, unsigned long, unsigned long, unsigned int); /* FUN_00035bac */
+extern void sk_span_prefetch_pages(char *, unsigned long, long); /* FUN_0003df84 */
 extern unsigned long sk_span_find2();         /* FUN_000287e4 */
 
 /* aliases with the decompile-accurate signatures used by the appended bodies */
@@ -21662,7 +21943,7 @@ extern unsigned long sk_stat_fault_inc;      /* DAT_006af198 */
 extern unsigned long sk_obj_methods_2[];     /* DAT_004bc358 */
 extern unsigned long sk_vspace_lock_6af000;  /* 0x6af000 */
 extern unsigned long sk_fault_span_next3();   /* FUN_000405d0 */
-extern void sk_slot_detach_inner();   /* FUN_0003bac0 */
+extern void sk_slot_detach_inner(void *);   /* FUN_0003bac0 */
 extern void sk_slot_push_f();   /* FUN_0003e640 push variant */
 /* prototypes */
 long sk_vspace_attach_spanmap(long param_1, long param_2);
@@ -22258,7 +22539,7 @@ unsigned long sk_void_return(void)
  */
 void sk_span_lookup_build(unsigned long param_1, unsigned long param_2)
 {
-    sk_span_lookup_build6(param_1);  /* FUN_00035bac */
+    sk_span_lookup_build6((unsigned long *)(uintptr_t)param_1, param_2, 0, 0, 0);  /* FUN_00035bac */
 }
 
 /*--------------------------------------------------------------------*/
@@ -22269,7 +22550,7 @@ void sk_span_lookup_build(unsigned long param_1, unsigned long param_2)
  */
 void sk_span_lookup_build_n(void)
 {
-    sk_span_lookup_build6(0, 0, 0, 0);              /* FUN_00035bac */
+    sk_span_lookup_build6(0, 0, 0, 0, 0);           /* FUN_00035bac */
 }
 
 /*--------------------------------------------------------------------*/
@@ -23646,7 +23927,7 @@ unsigned long sk_span_map_region(long span, unsigned long *base_out, unsigned lo
             size = 0;
             if ((*size_out & 0x3fff) != 0) size = 0x4000;
             *size_out = size + (*size_out & 0xffffffffffffc000);
-            sk_region_map_span3(span, *base_out);   /* FUN_0003df84 */
+            sk_span_prefetch_pages((char *)span, *base_out, 0);   /* FUN_0003df84 */
             v = sk_region_wire_spans((char *)span, aligned, *size_out + aligned); /* FUN_0003ff00 */
             err = v & 0xff;
             if (err == 2) {
@@ -23833,7 +24114,7 @@ cl4_result_t sk_span_attach(unsigned long *span, unsigned long at, unsigned int 
     r.lo = sk_vas_fault65();                    /* FUN_004b311c */
     if ((*(unsigned char *)(r.lo + 0x22) & 1) == 0) { r.lo = 0x101a0001; r.hi = 0; return r; }
     if (r.hi != 4)
-        sk_region_map_span3((long)r.lo, (unsigned long)dest);   /* FUN_0003df84 */
+        sk_span_prefetch_pages((char *)r.lo, (unsigned long)dest, 0);   /* FUN_0003df84 */
     r.lo = sk_obj_create5(*(unsigned long *)(r.lo + 0x50), r.lo, uVar7,
                           (unsigned long)dest);                /* FUN_000451a0 */
     return r;
@@ -24121,7 +24402,7 @@ unsigned long sk_slot_attach_wrap(unsigned long p1, unsigned long p2, unsigned l
 {
     unsigned long v;
 
-    v = sk_slot_attach_full(p1, p2, p5, p6, p7, p8);    /* FUN_0003b820 */
+    v = sk_slot_attach_full((unsigned long *)(uintptr_t)p1, p2, p5, p6, p7, p8);    /* FUN_0003b820 */
     if ((int)v != 0)
         sk_slot_unlink_root((unsigned long *)p1, (unsigned long *)p2, p3, p4);  /* FUN_0003bca0 */
     return v;
@@ -24141,7 +24422,7 @@ unsigned long sk_slot_attach(unsigned long st, unsigned long region, unsigned lo
     unsigned long v;
     cl4_result_t r;
 
-    v = sk_slot_attach_full(st, region, 0, 0, 0, 0);    /* FUN_0003b820 */
+    v = sk_slot_attach_full((unsigned long *)(uintptr_t)st, region, 0, 0, 0, 0);    /* FUN_0003b820 */
     if ((v & 1) != 0) {
         sk_slot_unlink_root((unsigned long *)st, (unsigned long *)region, p3, p4);  /* FUN_0003bca0 */
         return v;
@@ -24204,7 +24485,7 @@ void sk_slot_detach(long *root, long region)
         *(unsigned long *)(region + 0x50) = 0;
         err = sk_vm_lock_take(region + 0x40);
         if (err == 0) {
-            sk_slot_detach_inner();            /* FUN_0003bac0 */
+            sk_slot_detach_inner(root);        /* FUN_0003bac0 */
             return;
         }
         sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
@@ -24764,7 +25045,7 @@ cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region,
             lVar13 = lVar13 + 8;
         } while (uVar9 < out[1]);
     }
-    sk_region_map_span3(region, 0, *(unsigned long *)(region + 0x10));  /* FUN_0003df84 */
+    sk_span_prefetch_pages((char *)region, 0, (long)*(unsigned long *)(region + 0x10));  /* FUN_0003df84 */
     r.lo = 0; r.hi = 0;
     return r;
 }
@@ -24803,7 +25084,7 @@ cl4_result_t sk_region_unmap_indirect(long *span, unsigned long offset,
             w = *(unsigned int *)(span[2] + 0x20);
             v = (unsigned long)sk_vspace_root();                  /* FUN_00032cd0 -> root */
             iVar3 = sk_granule_index(*(unsigned long *)(span[2] + 0x78)); /* FUN_000368f8 */
-            sk_span_lookup_build6(0, *(unsigned long *)(span[2] + 0x78), 0, 0); /* FUN_00035ba0 */
+            sk_span_lookup_build6(0, *(unsigned long *)(span[2] + 0x78), 0, 0, 0); /* FUN_00035ba0 */
             addr &= 0xffffffffffffc000;
             iVar4 = sk_granule_index(*(unsigned long *)(span[2] + 0x78)); /* FUN_000368f8 */
             if (iVar4 == iVar3) {
@@ -24858,7 +25139,7 @@ cl4_result_t sk_region_unmap_direct(long region, unsigned long page)
     if (v + 0xd0 < v) goto fault;
     sk_span_lookup_build6(st, *(unsigned long *)(node + 0x78),
                           (int)((*(long *)(*(long *)(region + 0x10) + 8) + page & 0xffffffffffffc000) -
-                                *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_00035ba0 */
+                                *(long *)(v + 0x28) >> 0xe) + 1, 0, 0);  /* FUN_00035ba0 */
     if ((st[4] ^ *(unsigned long *)(node + 0x78)) >> 0x1c == 0) {
         if (st[0] != 0) {
             do {
@@ -24935,7 +25216,7 @@ unsigned int sk_cap_release(long *obj, unsigned long cap, unsigned long *out)
             v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
             sk_span_lookup_build6(st, *(unsigned long *)(*obj + 0x78),
                                   (int)((*(long *)(*obj + 8) + (cap & 0xffffffffffffc000)) -
-                                        *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_00035ba0 */
+                                        *(long *)(v + 0x28) >> 0xe) + 1, 0, 0);  /* FUN_00035ba0 */
             if ((char)st[1] != 1) { *out = st[0]; return 0; }
         }
     } else {
@@ -25887,6 +26168,1452 @@ void sk_f_36118(unsigned long *out, unsigned long span, unsigned int count,
                 void (*cb)(unsigned long))
 {
     sk_span_release(out, span, count, cb);
+}
+
+
+
+/*==========================================================================
+ * Filled bodies for previously-extern vspace/span/pool functions.
+ *==========================================================================*/
+
+/* Reads the current thread id (tpidr_el0 + 8), mirroring FUN_00060524. */
+static unsigned long sk_thread_id_get(void)
+{
+    unsigned long tp;
+    __asm__ volatile("mrs %0, tpidr_el0" : "=r"(tp));
+    return *(unsigned long *)(tp + 8);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034a5c @ 0x00034a5c   (est. sk_vspace_done)
+ * Ghidra: void FUN_00034a5c(void)
+ * Marks the vspace object table as done: increments the element count at
+ * +0x48 of the table node and re-sizes it via FUN_000348d0. Aborts (VAS
+ * 005b11ec) if the count would exceed 0xffff.
+ * Confidence: medium (structural counter bump).
+ * Notes: node 0x6af188; helper FUN_000348d0. */
+void sk_vspace_done(void *obj)
+{
+    (void)obj;
+    unsigned long node = (unsigned long)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_0005acac */
+    if (*(unsigned int *)(node + 0x48) < 0xffff) {
+        *(unsigned int *)(node + 0x48) = *(unsigned int *)(node + 0x48) + 1;
+        sk_obj_table_size();                        /* FUN_000348d0 */
+        return;
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b11ec);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034ad0 @ 0x00034ad0   (est. sk_vspace_unlink_cleanup)
+ * Ghidra: void FUN_00034ad0(void)
+ * Completes a vspace unlink: decrements the object-table element count
+ * (+0x48) and re-sizes the table; when the count reaches zero it
+ * re-initialises the vspace lock slot via FUN_00118148, storing a 0x100
+ * capacity cookie at +0x18. Aborts (VAS 005aed68) on lock failure.
+ * Confidence: medium (structural teardown; lock helper FUN_00118148).
+ * Notes: node 0x6af188; helpers FUN_000348d0/FUN_00118148. */
+void sk_vspace_unlink_cleanup(void)
+{
+    unsigned long node = (unsigned long)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_0005acac */
+    unsigned long desc;
+
+    if (*(int *)(node + 0x48) != 0) {
+        *(int *)(node + 0x48) = *(int *)(node + 0x48) - 1;
+        sk_obj_table_size();                        /* FUN_000348d0 */
+        return;
+    }
+    desc = *(unsigned long *)(node + 0x10);         /* vspace lock/desc slot */
+    if (desc <= desc + 0x10) {
+        if (sk_vm_lock_take2(desc, 0) == 0) {       /* FUN_00118148 */
+            *(unsigned long *)(desc + 0x10) = 0;
+            *(unsigned long *)(desc + 0x18) = 0x100;
+            return;
+        }
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+        __builtin_unreachable();
+    }
+    __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x34b70) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034ba4 @ 0x00034ba4   (est. sk_region_method)
+ * Ghidra: bool FUN_00034ba4(long region)
+ * Returns whether the current thread (FUN_00060524) equals the region's
+ * method owner stored at region+0x10.
+ * Confidence: medium (thread-id equality check).
+ * Notes: helpers FUN_00060524/thunk_FUN_000539c0 (==). */
+unsigned long sk_region_method(long region)
+{
+    return (unsigned long)(sk_thread_id_get() == *(unsigned long *)(region + 0x10));
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034bd8 @ 0x00034bd8   (est. sk_pool_method)
+ * Ghidra: cl4_result_t FUN_00034bd8(long pool)
+ * Takes the pool's per-thread lock: if not already owned by the current
+ * thread (FUN_00060524 vs +0x10), validates the counter at +0x18 (must be
+ * page-aligned low byte), claims ownership and bumps the counter by 0x101,
+ * returning {0, cookie}; on a nested call it validates the counter and
+ * bumps it by 1, returning {1, cookie}. Aborts (VAS) on any violation.
+ * Confidence: low-medium (returns .lo of the {flag,cookie} pair).
+ * Notes: helpers FUN_00060524/thunk_FUN_000539c0/FUN_00118164; aborts
+ *   005b144d/005b14d8/005b13b9/005b133b/005aed68. */
+unsigned long sk_pool_method(unsigned long pool)
+{
+    unsigned long cookie, flag;
+
+    if (sk_thread_id_get() != *(unsigned long *)(pool + 0x10)) {
+        if (sk_vm_lock_check(pool) != 0) {          /* FUN_00118164 */
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+            __builtin_unreachable();
+        }
+        if (*(long *)(pool + 0x10) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b144d);
+            __builtin_unreachable();
+        }
+        cookie = *(unsigned long *)(pool + 0x18);
+        if ((cookie & 0xff) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b14d8);
+            __builtin_unreachable();
+        }
+        *(unsigned long *)(pool + 0x10) = sk_thread_id_get();
+        *(unsigned long *)(pool + 0x18) = cookie + 0x101;
+        flag = 0;
+    } else {
+        cookie = *(unsigned long *)(pool + 0x18);
+        if (((unsigned int)cookie & 0xff) == 0xff) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b13b9);
+            __builtin_unreachable();
+        }
+        if ((cookie & 0xff) == 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b133b);
+            __builtin_unreachable();
+        }
+        *(unsigned long *)(pool + 0x18) = cookie + 1;
+        flag = 1;
+    }
+    return flag;   /* .lo of the {flag, cookie} result */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00034d5c @ 0x00034d5c   (est. sk_pool_touch)
+ * Ghidra: void FUN_00034d5c(long pool, byte flag, ulong cookie)
+ * Releases/touches the pool lock: validates that the pool is owned by the
+ * current thread (FUN_00060524), the counter (+0x18) equals cookie+1, and
+ * the low-byte parity matches flag. On flag==0 it also runs the pool's
+ * release callback (+0x20, arg +0x28), then clears the owner (+0x10) and
+ * restores the counter to cookie; on flag!=0 it only restores the counter.
+ * Aborts (VAS) on any invariant violation.
+ * Confidence: low-medium (1-arg wrapper deriving cookie/flag from pool).
+ * Notes: helpers FUN_00060524/thunk_FUN_000539c0/FUN_00118194; aborts
+ *   005b1554/005b15c4/005b165f/005aed68. */
+void sk_pool_touch(unsigned long pool)
+{
+    unsigned long cookie;
+    unsigned long flag;
+
+    cookie = *(unsigned long *)(pool + 0x18) - 1;
+    flag = (*(unsigned long *)(pool + 0x10) != 0) ? 1 : 0;
+
+    if (sk_thread_id_get() != *(unsigned long *)(pool + 0x10)) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b1554);
+        __builtin_unreachable();
+    }
+    if (cookie + 1 != *(long *)(pool + 0x18)) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b15c4);
+        __builtin_unreachable();
+    }
+    if (((cookie & 0xff) != 0) != ((flag & 1) != 0)) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b165f);
+        __builtin_unreachable();
+    }
+    if ((flag & 1) == 0) {
+        ((void (*)(unsigned long))(*(unsigned long *)(pool + 0x20)))(
+            *(unsigned long *)(pool + 0x28));
+        if (sk_thread_id_get() != *(unsigned long *)(pool + 0x10)) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b1554);
+            __builtin_unreachable();
+        }
+        if (cookie + 1 != *(long *)(pool + 0x18)) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b15c4);
+            __builtin_unreachable();
+        }
+        if ((cookie & 0xff) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b165f);
+            __builtin_unreachable();
+        }
+        *(unsigned long *)(pool + 0x10) = 0;
+        *(unsigned long *)(pool + 0x18) = cookie;
+        if (sk_vm_lock_take(pool) != 0) {           /* FUN_00118194 */
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+            __builtin_unreachable();
+        }
+    } else {
+        *(unsigned long *)(pool + 0x18) = cookie;
+    }
+}
+
+/* Out-of-range boot helpers (reconstructed by sibling slices). */
+extern void sk_vas_init_root(void *a, void *b, void *c);       /* FUN_0004158c */
+extern void sk_vas_teardown_free(void);                        /* FUN_00041d9c */
+extern unsigned long sk_vspace_region_map_wrapper(unsigned long, char *, unsigned long *,
+                                                  void *, void *);  /* FUN_0003c510 */
+extern unsigned long DAT_006af190;   /* boot-init guard */
+extern unsigned long DAT_004bbfd8;   /* prefetch method cookie */
+extern void FUN_004b326c(void);      /* prefetch fault (out-of-range) */
+extern void FUN_004b3294(void);      /* prefetch fault (out-of-range) */
+extern unsigned long DAT_006ad39c;   /* span-free counter */
+extern unsigned long DAT_006ad2cc;   /* faulthandler counter */
+extern void sk_tcb_slot_release(void *);          /* FUN_004b23d8 */
+extern void thunk_FUN_000539fc(void *);           /* span list zero */
+extern void sk_pool_free_node_c1a8(void *);       /* FUN_00033684 */
+extern void sk_vas_body_teardown(uint64_t);               /* FUN_00042808 */
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035944 @ 0x00035944   (est. sk_vas_mark_cb)
+ * Ghidra: void FUN_00035944(long obj, void *p2, void *p3, void *p4)
+ * Marks a vspace object / callback: if obj is non-null it builds a small
+ * descriptor ({0x100, 0, 0, obj, p4}) and creates a vspace object from it
+ * (FUN_00032520); otherwise it faults via FUN_004b27b8 and re-initialises
+ * the resulting object via FUN_00032c68.
+ * Confidence: medium (structural dispatch; create/reinit helpers).
+ * Notes: helpers FUN_00032520/004b27b8/00032c68. */
+void sk_vas_mark_cb(long obj, void *p2, void *p3, void *p4)
+{
+    if (obj != 0) {
+        unsigned short desc[4] = { 0x100, 0, 0, (unsigned short)(obj & 0xffff) };
+        sk_vspace_create_object((char *)desc, p2, p3, (void *)p4);  /* FUN_00032520 */
+        return;
+    }
+    sk_vspace_reinit_object((long)(uintptr_t)sk_vas_fault16r(),
+                            (void *)(uintptr_t)p3, (void *)(uintptr_t)p4);  /* FUN_00032c68 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000359a0 @ 0x000359a0   (est. sk_vas_reinit_thunk)
+ * Ghidra: void FUN_000359a0(void *p1, void *p2, void *p3, void *p4)
+ * Re-initialises a vspace object: forwards (p1, p3, p4) to FUN_00032c68.
+ * Confidence: medium (trivial forwarder).
+ * Notes: helper FUN_00032c68. */
+void sk_vas_reinit_thunk(void *p1, void *p2, void *p3, void *p4)
+{
+    (void)p2;
+    sk_vspace_reinit_object((long)(uintptr_t)p1, p3, p4);   /* FUN_00032c68 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000359d4 @ 0x000359d4   (est. sk_vas_destroy_check)
+ * Ghidra: void FUN_000359d4(long obj, long tag)
+ * Destroys a vspace object unless it is the root sentinel: requires tag ==
+ * 0x65b5c8, then (if the slot-alloc frame FUN_00034a2c != obj) destroys the
+ * object via FUN_00032774. Aborts (VAS 005b1fef/005b2057) on bad tag or a
+ * frame equal to obj.
+ * Confidence: medium (structural destroy dispatch).
+ * Notes: tag 0x65b5c8; helpers FUN_00034a2c/00032774. */
+void sk_vas_destroy_check(long obj, long tag)
+{
+    long frame;
+
+    if (tag != 0x65b5c8) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b1fef);
+        __builtin_unreachable();
+    }
+    frame = (long)sk_vspace_slot_alloc_frame().lo;  /* FUN_00034a2c */
+    if (frame != obj) {
+        sk_vspace_destroy((void **)(uintptr_t)obj); /* FUN_00032774 */
+        return;
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b2057);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035a78 @ 0x00035a78   (est. sk_vas_boot_init)
+ * Ghidra: void FUN_00035a78(long p1, long p2, long p3)
+ * One-time vspace/region boot bring-up guarded by DAT_006af190. Runs the
+ * early vspace setup (FUN_00031868), a 3-arg region init (FUN_0004158c),
+ * early init (FUN_00033780), region wire (FUN_0003c09c), a range alloc
+ * (FUN_0003548c), a descriptor build (FUN_00041d9c), then maps the initial
+ * region via FUN_0003c510 with a {4,0,0,0xff,0} descriptor, and finally
+ * FUN_00033bb0. Aborts (VAS/SoftwareBreakpoint) on map failure.
+ * Confidence: low-medium (large structural boot sequence).
+ * Notes: guard DAT_006af190; helpers FUN_00031868/0004158c/00033780/
+ *   0003c09c/0003548c/00041d9c/0003c510/00033bb0. */
+void sk_vas_boot_init(long p1, long p2, long p3)
+{
+    unsigned char desc[0x28];
+    unsigned long lo = 0;
+    unsigned long r;
+
+    if ((DAT_006af190 & 1) != 0) return;
+
+    sk_boot_vspace_setup();                         /* FUN_00031868 */
+    sk_vas_init_root((void *)(uintptr_t)p1, (void *)(uintptr_t)p2, (void *)(uintptr_t)p3);  /* FUN_0004158c */
+    sk_boot_vspace_early_init();                    /* FUN_00033780 */
+    sk_region_wire();                               /* FUN_0003c09c */
+    {
+        long size = (p2 - p1) + p3 * 0x40;
+        sk_vspace_region_alloc_pages(p1, (unsigned long)(p2 - p1), (unsigned long)size);  /* FUN_0003548c */
+    }
+    sk_vas_teardown_free();                         /* FUN_00041d9c */
+
+    for (int i = 0; i < 0x28; i++) desc[i] = 0;
+    desc[0] = 4;                                    /* region descriptor tag */
+    desc[5] = 0xff;
+    *(unsigned long *)(desc + 0x18) = (unsigned long)p1;
+    *(unsigned long *)(desc + 0x20) = (unsigned long)((p2 - p1) + p3 * 0x40);
+
+    r = sk_vspace_region_map_wrapper(0x1000001, desc, &lo, 0, 0);  /* FUN_0003c510 */
+    if ((r & 0xff) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b20a7);
+        __builtin_unreachable();
+    }
+    sk_vspace_regions_init();                       /* FUN_00033bb0 */
+    DAT_006af190 = 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c510 @ 0x0003c510   (est. sk_vspace_region_map_wrapper)
+ * Ghidra: ulong FUN_0003c510(ulong a, char *b, ulong *c, void *d, void *e)
+ * Wraps FUN_0003c56c (region constructor) against the current vspace root
+ * (FUN_00032514), forwarding the five arguments; returns the low result
+ * word (the caller of the boot path checks its error byte).
+ * Confidence: medium (trivial wrapper).
+ * Notes: helpers FUN_00032514/0003c56c. */
+unsigned long sk_vspace_region_map_wrapper(unsigned long a, char *b, unsigned long *c,
+                                           void *d, void *e)
+{
+    unsigned long root = (unsigned long)sk_vspace_root();  /* FUN_00032514 */
+    cl4_result_t cr = sk_region_create(root, (unsigned int)a, b, c, (unsigned int *)(uintptr_t)d,
+                                       (unsigned long *)(uintptr_t)e);  /* FUN_0003c56c */
+    return cr.lo;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b6c0 @ 0x0003b6c0   (est. sk_lock_collection_refill)
+ * Ghidra: bool FUN_0003b6c0(long root, long coll, void *p3, void *p4, ulong want)
+ * Refills a lock/collection's free nodes up to the requested count (want).
+ * Requires coll+0x50 to point at root; when the collection's node count
+ * (+0x38) is below want it releases the lock, allocates fresh nodes via
+ * FUN_0003344c and pushes them (FUN_0003b648) until the target is reached,
+ * then runs FUN_00044c94 and re-links the collection. Returns true when the
+ * target count is met.
+ * Confidence: low-medium (structural lock-collection refill).
+ * Notes: helpers FUN_00118194/0003344c/0003b648/00044c94. */
+bool sk_lock_collection_refill(long root, long coll, void *p3, void *p4, unsigned long want)
+{
+    bool ok;
+    long node;
+
+    if (*(long *)(coll + 0x50) != root) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b274a);
+        __builtin_unreachable();
+    }
+    if (*(unsigned long *)(root + 0x38) < want) {
+        *(unsigned long *)(coll + 0x50) = 0;
+        if (sk_vm_lock_take(coll + 0x40) != 0) {    /* FUN_00118194 */
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+            __builtin_unreachable();
+        }
+        if (*(unsigned long *)(root + 0x38) < want) {
+            do {
+                node = (long)sk_vspace_alloc_big(0x6af180, 4, 0xd);  /* FUN_0003344c path */
+                ok = node != 0;
+                if (node == 0) break;
+                sk_slot_push_c(root, (unsigned long *)(uintptr_t)node);  /* FUN_0003b648 */
+            } while (*(unsigned long *)(root + 0x38) < want);
+        } else {
+            ok = true;
+        }
+        sk_obj_unlink4(coll, (unsigned long)(uintptr_t)p3, (unsigned long)(uintptr_t)p4);  /* FUN_00044c94 */
+        if (*(long *)(coll + 0x50) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b274a);
+            __builtin_unreachable();
+        }
+        *(long *)(coll + 0x50) = root;
+    } else {
+        ok = true;
+    }
+    return ok;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c32c @ 0x0003c32c   (est. sk_span_tree_destroy_node)
+ * Ghidra: void FUN_0003c32c(long *root)
+ * Destroys a span tree rooted at *root, recursing into its left (+0x58) and
+ * right (+0x60) children, releasing any third slot (+0x70) back into the
+ * store bitmap (FUN_00031594), tearing down the node via FUN_0003c3bc and
+ * freeing its backing block (FUN_00033148). Aborts (SoftwareBreakpoint)
+ * on layout corruption. Distinct from sk_span_tree_destroy (FUN_00037e9c).
+ * Confidence: low-medium (recursive span-tree teardown).
+ * Notes: helpers FUN_00031594/0003c3bc/00033148; trap 0x3c3bc. */
+void sk_span_tree_destroy_node(long *root)
+{
+    long node;
+
+    node = *root;
+    if (node != 0) {
+        if (*(long *)(node + 0x58) != 0) {
+            if ((long *)(node + 0x60) < (long *)(node + 0x58)) goto trap;
+            sk_span_tree_destroy_node((long *)(node + 0x58));
+        }
+        if (*(long *)(node + 0x60) != 0) {
+            if ((long *)(node + 0x68) < (long *)(node + 0x60)) goto trap;
+            sk_span_tree_destroy_node((long *)(node + 0x60));
+        }
+        if (*(long *)(node + 0x70) != 0) {
+            sk_vspace_mark_alloc(*(unsigned long *)(node + 0x50),
+                                 *(unsigned long *)(node + 0x70));  /* FUN_00031594 */
+            *(unsigned long *)(node + 0x70) = 0;
+        }
+        sk_region_teardown(node);                   /* FUN_0003c3bc */
+        *(unsigned long *)(node + 0x50) = 0;
+        sk_pool_alloc_block((void *)(uintptr_t)node);  /* FUN_00033148 */
+        *root = 0;
+    }
+    return;
+trap:
+    __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x3c3bc) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003df84 @ 0x0003df84   (est. sk_span_prefetch_pages)
+ * Ghidra: void FUN_0003df84(char *span, ulong page, long len)
+ * Prefetches a run of pages into the span's backing store. Validates span is
+ * a live direct span (type 0x11, non-null cursor at +0x50, span != cursor),
+ * then for each 0x4000-aligned granule in [page, page+len) builds a
+ * {0x6ad3a8, cookie, FUN_00040f80, 0x65b770, ...} prefetch descriptor and
+ * dispatches it either through the root method (FUN_00033b50) when the
+ * cursor is the global root, or directly (FUN_00040f80). Aborts (VAS) if the
+ * granule overruns the cursor window.
+ * Confidence: low-medium (granule prefetch loop).
+ * Notes: cursor +0x50 word 0x26; helpers FUN_00033b50/00040f80. */
+void sk_span_prefetch_pages(char *span, unsigned long page, long len)
+{
+    unsigned long *cur = *(unsigned long **)(span + 0x50);
+    char *cur26 = (char *)cur[0x26];
+    unsigned long base, start, end, size, i;
+    unsigned long cookie = DAT_004bbfd8;
+
+    if (*span != '\x11' || cur26 == 0 || span == cur26) return;
+
+    if (page < *(unsigned long *)(span + 0x10)) {
+        if ((unsigned long)(len - 1) < *(unsigned long *)(span + 0x10) - page) {
+            base = *(long *)(span + 8) + page + (unsigned long)len;
+            start = *(long *)(span + 8) + page >> 3 & 0x1fffffffffffc000;
+            end = 0;
+            if ((base & 0x1fff8) != 0) end = 0x4000;
+            end = end + (base >> 0x11) * 0x4000;
+            size = start - *(long *)(cur26 + 8);
+            if (size < *(unsigned long *)(cur26 + 0x10)) {
+                {
+                    unsigned long run = end - start;
+                    if (*(unsigned long *)(cur26 + 0x10) - size < run) {
+                        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b6078);
+                        __builtin_unreachable();
+                    }
+                    if (end == start) return;
+                    for (i = 0; i < run; i += 0x4000) {
+                        unsigned long desc[8];
+                        desc[0] = 0x6ad3a8;
+                        desc[1] = cookie;
+                        desc[2] = (unsigned long)(uintptr_t)&sk_span_map3; /* FUN_00040f80 */
+                        desc[3] = 0x65b770;
+                        desc[4] = size;
+                        desc[5] = i;
+                        desc[6] = (unsigned long)(uintptr_t)cur26;
+                        desc[7] = run;
+                        if (cur == (unsigned long *)&sk_vspace_root_obj)
+                            sk_vspace_dispatch_method((long)&desc);  /* FUN_00033b50 */
+                        else
+                            sk_span_map3();               /* FUN_00040f80 */
+                    }
+                    return;
+                }
+            }
+        }
+    } else {
+        FUN_004b326c();
+    }
+    FUN_004b3294();
+    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b6078);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003b820 @ 0x0003b820   (est. sk_slot_attach_full)
+ * Ghidra: ulong FUN_0003b820(ulong *st, ulong root, ulong n1, ulong n2, ulong n3, ulong n4)
+ * Initialises a 10-word slot descriptor (st) and attaches n1 nodes from the
+ * +8 free list, n2 from the +0x10 list, n3 from the +0x18 list, and n4 from
+ * the +0x28 list, all rooted at `root`. Aborts (VAS 005b27c9/005b2844/
+ * 005b28a3) if any requested count exceeds 3. Returns 1 on success, 0 (after
+ * detaching via FUN_0003bac0) on allocation failure.
+ * Confidence: low-medium (structural slot-tree bring-up).
+ * Notes: helpers FUN_00032e44/0003ba58/00030cc8/00033594/0003b410/
+ *   000334f0/0003b548/0003344c/0003b648. */
+unsigned long sk_slot_attach_full(unsigned long *st, unsigned long root,
+                                  unsigned long n1, unsigned long n2,
+                                  unsigned long n3, unsigned long n4)
+{
+    unsigned long node;
+    unsigned char c;
+    int i;
+
+    if (3 < n1) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b27c9);
+        __builtin_unreachable();
+    }
+    if (3 < n2) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b2844);
+        __builtin_unreachable();
+    }
+    if (3 < n3) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b28a3);
+        __builtin_unreachable();
+    }
+
+    st[0] = root;
+    st[6] = 0; st[5] = 0; st[2] = 0; st[1] = 0; st[4] = 0; st[3] = 0; st[7] = 0;
+    *(unsigned short *)(st + 8) = (unsigned short)(n1 | (n2 << 4) | (n3 << 8) | (n4 << 12));
+    *(unsigned int *)((char *)st + 0x42) = 0;
+    *(unsigned short *)((char *)st + 0x46) = 0;
+
+    while (*(unsigned char *)(st + 6) < n1) {
+        node = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);  /* FUN_00032e44 */
+        if (node == 0) goto fail;
+        sk_slot_push_d((long)st, (unsigned long *)(uintptr_t)node);   /* FUN_0003ba58 */
+    }
+    c = *(unsigned char *)((char *)st + 0x31);
+    while (c < n2) {
+        unsigned long *slot = (unsigned long *)sk_vspace_slot_alloc(root);  /* FUN_00030cc8 */
+        if (slot == (unsigned long *)0) goto fail;
+        *(unsigned char *)(slot + 3) = 0;
+        if (2 < *(unsigned char *)((char *)st + 0x31)) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b346f);
+            __builtin_unreachable();
+        }
+        *slot = st[2];
+        st[2] = (unsigned long)slot;
+        c = *(unsigned char *)((char *)st + 0x31) + 1;
+        *(unsigned char *)((char *)st + 0x31) = (unsigned char)c;
+    }
+    while (*(unsigned char *)((char *)st + 0x32) < n3) {
+        node = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);  /* FUN_00033594 */
+        if (node == 0) goto fail;
+        sk_slot_push_a((long)st, (unsigned long *)(uintptr_t)node);   /* FUN_0003b410 */
+    }
+    if (n4 != 0 || n3 != 0) {
+        node = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);  /* FUN_000334f0 */
+        if (node == 0) goto fail;
+        sk_slot_push_b((long)st, (unsigned long *)(uintptr_t)node);   /* FUN_0003b548 */
+    }
+    for (;;) {
+        if (n4 <= st[7]) return 1;
+        node = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);  /* FUN_0003344c */
+        if (node == 0) break;
+        sk_slot_push_c((long)st, (unsigned long *)(uintptr_t)node);   /* FUN_0003b648 */
+    }
+fail:
+    sk_slot_detach_inner(st);                    /* FUN_0003bac0 */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003bac0 @ 0x0003bac0   (est. sk_slot_detach_inner)
+ * Ghidra: void FUN_0003bac0(undefined8 *st)
+ * Detaches a slot descriptor: pops and releases all nodes from the +0x10
+ * free list (FUN_0003e640/00031594), then drains the +0x18 list
+ * (FUN_0003b340/000335e0), the +0x20 list (FUN_0003b478/0003353c), and the
+ * +0x28 list (FUN_0003b5b0/00033498), clearing the descriptor fields.
+ * Aborts (VAS) if any list count is inconsistent.
+ * Confidence: low-medium (structural slot-tree teardown).
+ * Notes: helpers FUN_0003e640/00031594/0003b340/000335e0/0003b478/
+ *   0003353c/0003b5b0/00033498/001143a0. */
+void sk_slot_detach_inner(void *vp)
+{
+    unsigned long *st = (unsigned long *)vp;
+    unsigned long root = st[0];
+    unsigned char c;
+    unsigned long node;
+
+    c = *(unsigned char *)(st + 6);
+    while (c != 0) {
+        node = (unsigned long)sk_slot_pop_e((long)st);      /* FUN_0003c21c */
+        if (node + 0xb0 < node) goto trap;
+        *(unsigned long *)(node + 0x50) = 0;
+        sk_pool_alloc_block((void *)(uintptr_t)node);       /* FUN_00033148 */
+        c = *(unsigned char *)(st + 6);
+    }
+    if (st[1] != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b34cf);
+        __builtin_unreachable();
+    }
+    for (;;) {
+        if (*(unsigned char *)((char *)st + 0x31) == 0) {
+            if (st[2] != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b353c);
+                __builtin_unreachable();
+            }
+            while (*(unsigned char *)((char *)st + 0x32) != 0) {
+                sk_slot_pop_a((long)st);                    /* FUN_0003b340 */
+                sk_pool_free_node_c18c((void *)(uintptr_t)0);   /* FUN_000335e0 */
+            }
+            if (st[3] != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b3598);
+                __builtin_unreachable();
+            }
+            while (*(unsigned char *)((char *)st + 0x33) != 0) {
+                sk_slot_pop_b((long)st);                    /* FUN_0003b478 */
+                sk_pool_free_node_c170((void *)(uintptr_t)0);   /* FUN_0003353c */
+            }
+            if (st[4] != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b35f3);
+                __builtin_unreachable();
+            }
+            while (st[7] != 0) {
+                sk_slot_pop_c((long)st);                    /* FUN_0003b5b0 */
+                sk_pool_free_node_c154((void *)(uintptr_t)0);   /* FUN_00033498 */
+            }
+            if (st[5] != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b3655);
+                __builtin_unreachable();
+            }
+            sk_mem_zero(st, 8);                             /* FUN_001143a0 */
+            return;
+        }
+        node = (unsigned long)sk_slot_pop_f((long)st);      /* FUN_0003e640 */
+        if (node + 0x20 < node) break;
+        sk_vspace_mark_alloc(root, node);                   /* FUN_00031594 */
+    }
+trap:
+    __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x3bbf0) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00039d2c @ 0x00039d2c   (est. sk_vspace_span_free)
+ * Ghidra: cl4_result_t FUN_00039d2c(long owner, ulong *span)
+ * Frees a vspace span: verifies span[10] == owner, then (when the span is
+ * not wired, +0xa1 != 1) releases its two backing descriptors (FUN_00039e34
+ * twice), the two cap slots (FUN_004b23d8 twice), resets the span's
+ * destination/relocation state and zeroes the descriptor via FUN_00033684,
+ * returning {0,0}. Aborts (VAS 005b4c86) if the span is still wired.
+ * Confidence: low-medium (structural span teardown).
+ * Notes: helpers FUN_00039e34/004b23d8/00033684/thunk_FUN_000539fc. */
+cl4_result_t sk_vspace_span_free(long owner, unsigned long *span)
+{
+    cl4_result_t r;
+
+    DAT_006ad39c = DAT_006ad39c + 1;
+    if (span[10] != (unsigned long)owner) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b5f52);
+        __builtin_unreachable();
+    }
+    if (*(char *)((char *)span + 0xa1) == '\x01') {
+        sk_vas_fault64(0, 0);                      /* FUN_004b2f58 */
+        __builtin_unreachable();
+    }
+    (void)sk_span_destroy((unsigned char *)(uintptr_t)span[0xb]);  /* FUN_00039e34 */
+    (void)sk_span_destroy((unsigned char *)(uintptr_t)span[0xe]);  /* FUN_00039e34 */
+    sk_tcb_slot_release((void *)(uintptr_t)span[0x12]);  /* FUN_004b23d8 */
+    sk_tcb_slot_release((void *)(uintptr_t)span[0x13]);  /* FUN_004b23d8 */
+    if (*(char *)(span + 8) != '\x01') {
+        thunk_FUN_000539fc(span + 6);
+        span[0x15] = 0; span[0x14] = 0; span[0x17] = 0; span[0x16] = 0;
+        span[0x11] = 0; span[0x10] = 0; span[0x13] = 0; span[0x12] = 0;
+        span[0xd] = 0; span[0xc] = 0; span[0xf] = 0; span[0xe] = 0;
+        span[9] = 0; span[8] = 0; span[0xb] = 0; span[10] = 0;
+        span[5] = 0; span[4] = 0; span[7] = 0; span[6] = 0;
+        span[1] = 0; span[0] = 0; span[3] = 0; span[2] = 0;
+        sk_pool_free_node_c1a8(span);   /* FUN_00033684 */
+        r.lo = 0; r.hi = 0;
+        return r;
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4c86);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003c0e4 @ 0x0003c0e4   (est. sk_vspace_final_wire)
+ * Ghidra: void FUN_0003c0e4(long region, ulong p2, ulong p3)
+ * Finalises a vspace region's wiring: attaches the region (sk_slot_attach_full
+ * FUN_0003b820, counts {1,0,0,0}), unlinks it (FUN_0003bca0), pops a span
+ * node (FUN_0003c21c) and fills it with the region's base/size range
+ * [p2, p3), then attaches the span and region (FUN_0003c2ec/0003bfb8).
+ * Aborts (VAS 005b2bbb/005b2c70) on failure.
+ * Confidence: low-medium (structural final-wire; span descriptor fill).
+ * Notes: helpers FUN_0003b820/0003bca0/0003c21c/0003c2ec/0003bfb8. */
+void sk_vspace_final_wire(long region, unsigned long p2, unsigned long p3)
+{
+    unsigned long st[10];
+    unsigned long *span;
+    long len;
+    int i;
+
+    for (i = 0; i < 10; i++) st[i] = 0;
+    if ((sk_slot_attach_full(st, (unsigned long)region, 1, 0, 0, 0) & 1) == 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b2bbb);
+        __builtin_unreachable();
+    }
+    sk_slot_unlink_root(st, (unsigned long *)region, 0, 0);  /* FUN_0003bca0 */
+    span = (unsigned long *)sk_slot_pop_e((long)st);         /* FUN_0003c21c */
+    len = (long)(p3 - p2);
+    if (p2 <= p3 && len != 0) {
+        *(unsigned long *)(region + 0x28) = p2;
+        *(unsigned long *)(region + 0x30) = p3;
+        if ((unsigned long)span <= (unsigned long)span + 0xb8) {
+            span[0] = 0; span[1] = p2; span[2] = (unsigned long)len;
+            span[4] = 0; span[3] = 0; span[6] = 0; span[5] = 0;
+            span[8] = 0; span[7] = 0; span[9] = 0;
+            span[10] = (unsigned long)region;
+            span[0xb] = 0; span[0xc] = 0; span[0xd] = (unsigned long)len;
+            span[0xf] = 0; span[0xe] = 0;
+            span[0x11] = 0; span[0x10] = 0;
+            span[0x13] = 0; span[0x12] = 0;
+            span[0x15] = 0; span[0x14] = 0;
+            sk_region_attach(st, (unsigned long)span);      /* FUN_0003c2ec */
+            sk_slot_detach(st, region);                     /* FUN_0003bfb8 */
+            return;
+        }
+        __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x3c1c8) */
+    }
+    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b2c70);
+    __builtin_unreachable();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00032888 @ 0x00032888   (est. sk_vspace_teardown_store)
+ * Ghidra: void FUN_00032888(long vspace)
+ * Tears down a vspace's backing-store chain: drains the store list
+ * (FUN_0005acac-based method iteration), marks the object done
+ * (FUN_000459d4), destroys the span tree (FUN_0003c32c), resets the store
+ * list head and free-run list, then for each of the seven store slots
+ * releases the vspace store (FUN_00033e00 small / FUN_000341f4 large),
+ * rebuilding the pool links. Aborts (SoftwareBreakpoint 0x5519 at 0x32c64)
+ * on any layout corruption.
+ * Confidence: low-medium (large structural store-chain teardown).
+ * Notes: helpers FUN_000459d4/0003c32c/0005acac/00118164/00118194/
+ *   001143a0/00033e00/000341f4/000333f4/00042808. */
+void sk_vspace_teardown_store(long vspace)
+{
+    unsigned long store, next, node;
+    unsigned char small;
+    int slot;
+
+    /* Drain the store chain (method dispatch over the store list). */
+    store = 0;
+    while (store != 0) { }
+
+    *(unsigned long *)(vspace + 0x130) = 0;
+    sk_vspace_object_done(vspace);                  /* FUN_000459d4 */
+    sk_span_tree_destroy_node((long *)(vspace + 0x58));  /* FUN_0003c32c */
+
+    small = *(unsigned char *)(vspace + 9);
+    *(unsigned long *)(vspace + 0x138) = 0;
+    if (vspace + 0x138 <= vspace + 0x140) {
+        *(unsigned long *)(vspace + 0x140) = vspace + 0x138;
+        next = vspace + 0x148;
+        if (next <= vspace + 0x1c8) {
+            do {
+                slot = 0;
+                *(unsigned long *)(next + 8) = 0;
+                do {
+                    unsigned long *ent = *(unsigned long **)(next + slot + 9);
+                    *(unsigned long *)(next + slot + 9) = 0;
+                    *(unsigned long *)(next + slot + 1) = 0;
+                    if (ent != 0) {
+                        unsigned long slot64 = (unsigned long)slot;
+                        ent[7] = 0;
+                        ent[2] = 0;
+                        {
+                            unsigned long *sub = (unsigned long *)ent[3];
+                            if (sub != 0) { sub[0] = 0; sub[1] = 0; sub[2] = 0; }
+                        }
+                        *(unsigned short *)(ent[1] + 6) = 0;
+                        sk_mem_zero((void *)(uintptr_t)ent[5],
+                                    (unsigned long)*(unsigned char *)((char *)ent + 0x42) << 3);
+                        node = (unsigned long)sk_vspace_alloc_big(0x6af010, 4, 10);
+                        {
+                            unsigned long lock = node + 0xb0;
+                            if (sk_vm_lock_check(lock) != 0) {  /* FUN_00118164 */
+                                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                                __builtin_unreachable();
+                            }
+                            {
+                                unsigned long base = ent[0];
+                                unsigned long j;
+                                for (j = 0; j < 0x80; j += 8) {
+                                    if (*(unsigned long *)(base + j + 0x20) == ent[1]) {
+                                        unsigned char n = *(unsigned char *)(base + 0x1a);
+                                        if (n == 0) {
+                                            sk_vas_fault4();   /* FUN_004b20e8 */
+                                            __builtin_unreachable();
+                                        }
+                                        n = (unsigned char)(n - 1);
+                                        *(unsigned char *)(base + 0x1a) = n;
+                                        *(unsigned long *)(base + j + 0x20) =
+                                            *(unsigned long *)(base + 0x20 + n * 8);
+                                        *(unsigned long *)(base + 0x20 + n * 8) = 0;
+                                        break;
+                                    }
+                                }
+                                ent[0] = 0;
+                                if (*(long *)(node + 0xa0) != (long)base)
+                                    *(unsigned long *)(node + 0xa0) = node;
+                                if (sk_vm_lock_take(lock) != 0) {   /* FUN_00118194 */
+                                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                                    __builtin_unreachable();
+                                }
+                                if ((small & 1) == 0)
+                                    sk_vspace_small_release();   /* FUN_00033e00 */
+                                else
+                                    sk_vspace_large_destroy(ent[0] | (unsigned long)ent);  /* FUN_000341f4 */
+                            }
+                        }
+                    }
+                    slot++;
+                } while (slot != 7);
+                next = *(unsigned long *)next;
+                if (next != 0) {
+                    /* advance along the store chain */
+                }
+            } while (0);
+            *(unsigned short *)(vspace + 0x1d0) = 0;
+            *(unsigned long *)(vspace + 0x1c8) = 0;
+            sk_vas_body_teardown((uint64_t)(vspace + 0x60));   /* FUN_00042808 */
+            return;
+        }
+    }
+    __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x32c64) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003573c @ 0x0003573c   (est. sk_alloc_aligned_frame)
+ * Ghidra: void *FUN_0003573c(ulong base, ulong size, void *p3, void *p4)
+ * Allocates an aligned (0x40) frame of `size` bytes at `base`. Validates
+ * base is 0x40-aligned (abort "vas: mark cap slots allocated" 005b1c12),
+ * takes the pool method on the frame node (FUN_00034bd8), and either creates
+ * a fresh mark object (FUN_00035944) or walks the frame's slot tree
+ * (FUN_00035418) linking aligned sub-frames. Releases the pool via
+ * FUN_00034d5c. Returns the frame base.
+ * Confidence: low-medium (structural aligned-frame allocator).
+ * Notes: node 0x6af188; helpers FUN_00034bd8/00035418/00034d5c. */
+void *sk_alloc_aligned_frame(void *base, unsigned long size)
+{
+    unsigned long pool = (unsigned long)sk_vspace_alloc_big(0x6af188, 4, 8);
+    unsigned long cookie[2];
+    unsigned long end = (unsigned long)base + size;
+    void *result = base;
+
+    if (((unsigned long)base & 0x3f) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b1c12);
+        __builtin_unreachable();
+    }
+    if (end > 0xffffffffffffffbf || end < (unsigned long)base) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b1caf);
+        __builtin_unreachable();
+    }
+    cookie[0] = sk_pool_method(*(unsigned long *)(*(unsigned long *)pool + 0x10));  /* FUN_00034bd8 */
+    if ((cookie[0] & 1) != 0) {
+        /* nested pool: create/reinit a mark object for this frame */
+        if (sk_vas_fault16r() != 0) {
+            unsigned short desc[4] = { 0x100, 0, 0, (unsigned short)((unsigned long)base & 0xffff) };
+            sk_vspace_create_object((char *)desc, 0, (void *)(uintptr_t)sk_vas_fault16r(),
+                                    (void *)(uintptr_t)8);
+            return base;
+        }
+        sk_vspace_reinit_object((long)(uintptr_t)sk_vas_fault16r(), (void *)(uintptr_t)8,
+                                (void *)(uintptr_t)0);
+        return base;
+    }
+    sk_vspace_slot_free_search((unsigned long)base);   /* FUN_00035418 */
+    if ((unsigned long)base < end) {
+        do {
+            unsigned long a = (unsigned long)base + 0x40;
+            if (a + 0x4000 <= (unsigned long)base || a >= end) break;
+            (void)sk_vspace_slot_alloc((unsigned long)base);   /* FUN_00035684 */
+            base = (void *)a;
+        } while ((unsigned long)base < end);
+    }
+    sk_pool_touch(*(unsigned long *)(*(unsigned long *)pool + 0x10));  /* FUN_00034d5c */
+    return result;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00035bac @ 0x00035bac   (est. sk_span_lookup_build6)
+ * Ghidra: void FUN_00035bac(ulong *out, ulong span, ulong idx, ulong base, uint flags)
+ * Builds a span lookup descriptor into `out` (5 words) from a span handle
+ * `span`. Handles direct mappings (low bits 1 or 0), table-indirect
+ * mappings (low bits 2), and recursive/hierarchy lookups; on a miss it can
+ * allocate a fresh table node (FUN_000347c4/00036bd4/00036d58) when the
+ * "create" flag (flags bit 0) is set. Sets out[0]=base, out[1] = a 1-bit
+ * validity tag, out[2..3] from the indirect table, and out[4]=span.
+ * Confidence: low-medium (large structural span-desc builder).
+ * Notes: helpers FUN_000347c4/00036bd4/00036d58/0003652c/0003481c;
+ *   globals DAT_004bc1b0/004bc1b8; trap 0x36008. */
+void sk_span_lookup_build6(unsigned long *out, unsigned long span, unsigned long idx,
+                           unsigned long base, unsigned int flags)
+{
+    unsigned int index = (unsigned int)idx;
+    unsigned long v, tag, n;
+    unsigned int lo;
+
+    if (index > 0x3fffff) {
+        out[0] = 0;
+        out[1] = 0;
+        out[3] = sk_vas_fault18();
+        out[2] = 0;
+        out[4] = span;
+        return;
+    }
+    lo = (unsigned int)span;
+    if ((lo & 3) == 1 || (span & 3) == 0) {
+        if ((span & 3) == 0) {
+            /* direct zero-ref / free span */
+            tag = base << 0x1c;
+            *(unsigned long *)((char *)out + 0x11) = 0;
+            *(unsigned long *)((char *)out + 9) = 0;
+            if (flags == 0) base = 0;
+            out[0] = base;
+            *(unsigned char *)((char *)out + 8) = (unsigned char)flags;
+            tag = (index << 6 | 1) | tag;
+            if (flags == 0) tag = span;
+            out[3] = 0;
+            out[4] = tag;
+            return;
+        }
+        if (((lo >> 6) & 0x3fffff) == index) {
+            out[0] = span >> 0x1c;
+            out[1] = 0; out[2] = 0; out[3] = 0;
+            out[4] = span;
+            return;
+        }
+        if ((flags & 1) == 0) {
+            out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
+            out[4] = span;
+            return;
+        }
+        /* create a fresh indirect node */
+        v = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);   /* FUN_000347c4 */
+        if ((unsigned long)(v + 0x40) < v) goto trap;
+        (void)v;
+        out[0] = base;
+        *(unsigned char *)((char *)out + 8) = 1;
+        out[4] = (index << 6 | 1) | (base << 0x1c);
+        return;
+    }
+    /* indirect table / hierarchy lookup */
+    {
+        unsigned long *table = (unsigned long *)(uintptr_t)(span >> 0x1c);
+        unsigned long *end;
+        unsigned long c;
+
+        if ((lo & 3) == 2) {
+            end = table + 8;
+            if ((unsigned long)(end) < (unsigned long)table) goto trap;
+            for (n = 0; n < 8; n++) {
+                c = table[n];
+                if ((c & 3) == 1) {
+                    if (((c >> 6) & 0x3fffff) == index) {
+                        out[0] = c >> 0x1c;
+                        out[1] = 0; out[2] = 0; out[3] = 0;
+                        out[4] = span;
+                        return;
+                    }
+                } else if ((c & 3) == 0) {
+                    break;
+                }
+            }
+            if ((flags & 1) != 0) {
+                if ((lo >> 2 & 0xf) < 8) {
+                    if ((unsigned long)table != 0 && (unsigned long)(end - table) < 0x39) goto trap;
+                    out[0] = base;
+                    *(unsigned char *)((char *)out + 8) = 1;
+                    out[4] = span & 0xffffffffffffffc3 | (unsigned long)((lo >> 2 & 0xf) * 4 + 4);
+                    *(unsigned long *)((char *)out + 0x11) = 0;
+                    *(unsigned long *)((char *)out + 9) = 0;
+                    return;
+                }
+            }
+        } else {
+            end = table + 8;
+            if ((unsigned long)table == 0 || (unsigned long)(end - table) < 0x39) goto trap;
+            {
+                unsigned long r = (unsigned long)sk_span_find2(&c, (unsigned long)(uintptr_t)table,
+                                                               index);   /* FUN_0003652c */
+                if ((r & 0xf8) == 0) {
+                    n = r & 7;
+                    if ((table[n] >> 0x1c) != 0 && (((unsigned int)table[n] >> 6) & 0x3fffff) == index) {
+                        out[0] = table[n] >> 0x1c;
+                        out[1] = 0; out[2] = 0; out[3] = 0;
+                        out[4] = span;
+                        return;
+                    }
+                }
+                if ((flags & 1) != 0) {
+                    v = (unsigned long)sk_vspace_alloc_big(0x6af180, 4, 0xd);   /* FUN_00036d58 */
+                    out[0] = base;
+                    *(unsigned char *)((char *)out + 8) = 1;
+                    out[4] = (index << 6 | 1) | (base << 0x1c);
+                    *(unsigned long *)((char *)out + 0x11) = 0;
+                    out[3] = 0;
+                    return;
+                }
+            }
+        }
+    }
+    out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
+    out[4] = span;
+    return;
+trap:
+    __builtin_unreachable();  /* SoftwareBreakpoint(0x5519, 0x36008) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00031bf4 @ 0x00031bf4   (est. sk_vspace_level_bump)
+ * Ghidra: void FUN_00031bf4(long vspace)
+ * Bumps the vspace level hierarchy: when the "bump pending" flag at +0x1d0
+ * is clear it walks the level table at +0x148 (7 slots + 8 links) and, for
+ * each live level entry, allocates a 0x1800-byte level frame (FUN_0005acac,
+ * 0x6af010), finds a free span slot via FUN_000287e4, maps the span
+ * (FUN_00042abc/00042c20 + FUN_00043be8), and links the entry. On completion
+ * it re-arms the +0x1d0 flag. Aborts (VAS 005aed68 etc.) on any lock/state
+ * violation.
+ * Confidence: low-medium (large structural level-walk).
+ * Notes: helpers FUN_0005acac/00118194/00118164/000287e4/00042abc/
+ *   00042c20/00043be8/00032d08; trap 0x32460. */
+void sk_vspace_level_bump(long vspace)
+{
+    unsigned long err, i;
+    long *slot;
+    unsigned long cookie[4] = {0,0,0,0};
+    long lv, base, m, k;
+    unsigned long u;
+
+    if ((*(unsigned char *)(vspace + 9) & 1) == 0) {
+        sk_vas_fault12();                      /* FUN_004b2084 */
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+        __builtin_unreachable();
+    }
+    if ((*(unsigned char *)(vspace + 0x1d0) & 1) == 0) {
+        *(unsigned char *)(vspace + 0x1d0) = 1;
+        slot = (long *)(vspace + 0x148);
+        do {
+            if (slot[8] == 0) {
+                cookie[0] = 0; cookie[1] = 0; cookie[2] = 0; cookie[3] = 0;
+                if (sk_vm_lock_take(vspace + 0x40) != 0) {   /* FUN_00118194 */
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                    __builtin_unreachable();
+                }
+                err = (unsigned long)sk_vspace_alloc_big(0x6af010, 0x1800, 0) & 0xff;  /* level frame alloc */
+                if (err != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afade);
+                    __builtin_unreachable();
+                }
+                if (cookie[3] != 0x65b648) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afb3f);
+                    __builtin_unreachable();
+                }
+                if (sk_vm_lock_check(vspace + 0x40) != 0) {  /* FUN_00118164 */
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                    __builtin_unreachable();
+                }
+                if (slot[8] != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afba3);
+                    __builtin_unreachable();
+                }
+                slot[8] = cookie[0];
+            }
+            m = 0;
+            base = 0;
+            lv = 0;
+            k = 1;
+            for (i = 0; i < 7; i++) {
+                long *ent = slot + 9 + i;
+                if (*ent == 0) break;
+                if (*(long *)(*ent + 0x10) == 0) {
+                    if ((*(unsigned char *)(vspace + 9) & 1) == 0) {
+                        sk_vas_fault13();          /* FUN_004b205c */
+                        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afcfb);
+                        __builtin_unreachable();
+                    }
+                    lv = slot[8];
+                    if (lv == 0) {
+                        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afc10);
+                        __builtin_unreachable();
+                    }
+                    if (sk_vm_lock_take(vspace + 0x40) != 0) {
+                        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                        __builtin_unreachable();
+                    }
+                    {
+                        unsigned long lock = (unsigned long)lv + 0x80;
+                        unsigned long sp;
+                        if (sk_vm_lock_check(lock) != 0) {
+                            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                            __builtin_unreachable();
+                        }
+                        sk_span_find2(&sp, *(unsigned long *)(lv + 0x78),
+                                      (int)((m + (base - *(long *)(vspace + 0x88))) >> 0xe) + 1);  /* FUN_000287e4 */
+                        *(unsigned long *)(lv + 0x78) = cookie[1];
+                        if (sk_vm_lock_take(lock) != 0) {
+                            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                            __builtin_unreachable();
+                        }
+                        if (sp == 0) {
+                            sk_vas_abort("spanmap could not alloc a cap", 0x5afea1);
+                            __builtin_unreachable();
+                        }
+                        {
+                            unsigned long where = m + base;
+                            u = sk_obj_method_dispatch3(vspace + 0x60, 1, where);  /* FUN_00042abc */
+                            u = sk_obj_lookup3(vspace + 0x60, u);                 /* FUN_00042c20 */
+                            if ((u & 1) == 0) {
+                                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afecd);
+                                __builtin_unreachable();
+                            }
+                            u = sk_obj_meta4(vspace + 0x60, u, sp, where, 0, 0) & 0xff;  /* FUN_00043be8 */
+                            if ((u & 0xff) == 4) {
+                                u = sk_obj_attr3(vspace + 0x60, where);        /* FUN_000436fc */
+                                if ((u & 1) == 0) {
+                                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5affa4);
+                                    __builtin_unreachable();
+                                }
+                                u = sk_obj_meta4(vspace + 0x60, u, sp, where, 0, 0) & 0xff;
+                            }
+                            if ((u & 0xff) != 0) {
+                                sk_l4_error_word(&cookie[0], (unsigned char)u);  /* FUN_00032d08 */
+                                sk_vas_fault41(0xeb1a02bf914012ba);              /* FUN_004b1c84 */
+                                sk_vas_abort("Unexpected L4 Error %s %zu err", 0x5b010f);
+                                __builtin_unreachable();
+                            }
+                        }
+                    }
+                }
+                base += 0x4000;
+            }
+        } while (0);
+        if ((*(unsigned char *)(vspace + 0x1d0) & 1) == 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5afa56);
+            __builtin_unreachable();
+        }
+        *(unsigned short *)(vspace + 0x1d0) = 0x100;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000387fc @ 0x000387fc   (est. sk_faulthandler_create)
+ * Ghidra: cl4_result_t FUN_000387fc(void *region, ulong *out)
+ * Creates a faulthandler descriptor for a region. Allocates a node
+ * (FUN_00033638), builds a span (sk_region_create FUN_0003c56c) for the
+ * region's write span, resolves the region layout (FUN_00032cd0), then
+ * builds the read-span descriptor and two TCB slots (sk_vspace_slot_alloc_new
+ * FUN_00034f70). Fills the out descriptor with the region base/size, the two
+ * cap slots, and a 0x4000 granule, and attaches the region into the vspace
+ * root. On the faulthandler map path it walks the region's page list
+ * (sk_span_cursor_build/next FUN_000363ac/0003667c), mapping and
+ * finalising each span page (sk_region_map_fault FUN_0003fa94 /
+ * sk_region_finalize FUN_0003f170). Returns {0,0} on success.
+ * Confidence: low-medium (large structural faulthandler constructor).
+ * Notes: helpers FUN_00033638/0003c56c/00032cd0/000287e4/00118164/
+ *   00118194/00034f70/001180fc/0002fa84/0003fa94/0003f170/00036008/
+ *   0003da18/000363ac/0003667c; faults 004b2930/004b28f8/004b29a0. */
+cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
+{
+    cl4_result_t r;
+    unsigned long local[10];
+    unsigned long vspace, span, base, size;
+    unsigned long ck;
+    unsigned long node;
+    unsigned long wbase, wsize;
+    int i;
+
+    DAT_006ad2cc = DAT_006ad2cc + 1;
+    for (i = 0; i < 10; i++) local[i] = 0;
+
+    node = 0;
+    sk_pool_alloc_node_c1a8();   /* FUN_00033638 (allocates node) */
+    ck = sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1908,
+                          (char *)&sk_desc_boot, &local[7], 0, 0).lo & 0xff;  /* FUN_0003c56c */
+    if (ck != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4f3f);
+        __builtin_unreachable();
+    }
+    vspace = local[7];
+    span = *(unsigned long *)(vspace + 0x10);
+    wsize = *(unsigned long *)(vspace + 8);
+    if (sk_vm_lock_check(vspace + 0x80) != 0) {     /* FUN_00118164 */
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+        __builtin_unreachable();
+    }
+    {
+        sk_vspace_layout_check_big(*(unsigned long *)(vspace + 0x50));  /* FUN_00032cd0 */
+        sk_span_find2(&local[2], span, (int)(wsize - *(long *)(sk_vspace_root() + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
+        *(long *)(vspace + 0x78) = (long)local[6];
+        if (sk_vm_lock_take(vspace + 0x80) != 0) {  /* FUN_00118194 */
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+            __builtin_unreachable();
+        }
+    }
+    local[0] = 0; local[1] = 0;
+    ck = sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1900,
+                          (char *)&sk_desc_boot, local, 0, 0).lo & 0xff;  /* FUN_0003c56c */
+    if (ck != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4ffa);
+        __builtin_unreachable();
+    }
+    wsize = *(unsigned long *)(local[0] + 8);
+    span = *(unsigned long *)(local[0] + 0x10);
+    if (sk_vm_lock_check(local[0] + 0x80) != 0) {
+        sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+        __builtin_unreachable();
+    }
+    {
+        sk_vspace_layout_check_big(*(unsigned long *)(local[0] + 0x50));  /* FUN_00032cd0 */
+        sk_span_find2(&local[2], *(unsigned long *)(local[0] + 0x78),
+                      (int)(wsize - *(long *)(sk_vspace_root() + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
+        local[6] = local[2];
+        *(long *)(local[0] + 0x78) = (long)local[3];
+        if (sk_vm_lock_take(local[0] + 0x80) != 0) {
+            sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+            __builtin_unreachable();
+        }
+    }
+    /* build the faulthandler out descriptor */
+    {
+        unsigned long slotA = (unsigned long)sk_vspace_slot_alloc_new();  /* FUN_00034f70 */
+        unsigned long slotB = (unsigned long)sk_vspace_slot_alloc_new();  /* FUN_00034f70 */
+        unsigned long wbase = local[1];
+        unsigned long lo = local[0];
+        if (wsize + span < wsize || (wsize + span) - wsize < 0x4000) {
+            __builtin_unreachable();
+        }
+        if (node != 0) {
+            ((unsigned long *)node)[0xb] = (unsigned long)lo;
+            ((unsigned long *)node)[0xc] = wsize;
+            ((unsigned long *)node)[0xd] = span;
+            ((unsigned long *)node)[0xe] = local[0];
+            ((unsigned long *)node)[0xf] = wsize + span;
+            ((unsigned long *)node)[0x10] = local[2];
+            ((unsigned long *)node)[0x11] = 0x4000;
+            ((unsigned long *)node)[0x12] = slotA;
+            ((unsigned long *)node)[0x13] = slotB;
+            ((unsigned long *)node)[0x15] = 0;
+            ((unsigned long *)node)[0x14] = 0;
+            ((unsigned long *)node)[0x17] = 0;
+            ((unsigned long *)node)[0x16] = 0;
+            ((unsigned long *)node)[0] = (unsigned long)region;
+            ((unsigned long *)node)[2] = 0;
+            ((unsigned long *)node)[1] = 0;
+            ((unsigned long *)node)[4] = 0;
+            ((unsigned long *)node)[3] = 0;
+            ((unsigned long *)node)[6] = 0;
+            ((unsigned long *)node)[5] = 0;
+            *(unsigned long *)((char *)node + 0x39) = 0;
+            *(unsigned long *)((char *)node + 0x31) = 0;
+            *(unsigned char *)((char *)node + 0x41) = 1;
+            ((unsigned long *)node)[9] = 0;
+            ((unsigned long *)node)[10] = (unsigned long)region;
+            *(unsigned long *)((char *)node + 0x42) = 0;
+            sk_percpu_get3((unsigned long)(node + 6));   /* FUN_001180fc */
+            if (slotA == 0) {
+                sk_vas_fault38();                   /* FUN_004b2930 */
+                __builtin_unreachable();
+            }
+            if (slotB != 0) {
+                out[0] = (unsigned long)region;
+                out[1] = node;
+                out[2] = 0x65b630;
+                r.lo = 0; r.hi = 0;
+                return r;
+            }
+        }
+        /* faulthandler map path: walk the region's page list */
+        if (sk_boot_region_check(0x65b5a0, (unsigned long)region + 0x208) == 0) {  /* FUN_0002fa84 */
+            sk_vspace_layout_check_big((long)(uintptr_t)region);   /* FUN_00032cd0 */
+        }
+        {
+            unsigned long st = 0;
+            unsigned long sp = 0;
+            ck = sk_region_create((long)(uintptr_t)sk_vspace_root(), 0x1908,
+                                   (char *)&sk_desc_boot, &st, 0, 0).lo & 0xff;  /* FUN_0003c56c */
+            if (ck == 0) {
+                base = *(unsigned long *)(st + 8);
+                size = *(unsigned long *)(st + 0x10);
+                if (sk_vm_lock_check((unsigned long)region + 0x1f0) != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                    __builtin_unreachable();
+                }
+                {
+                    unsigned long node2 = *(unsigned long *)((unsigned long)region + 0x200);
+                    while (node2 != 0) {
+                        if ((*(unsigned int *)(node2 + 0x20) >> 3 & 1) != 0) {
+                            if (sk_vm_lock_check(node2 + 0x80) != 0) {
+                                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                                __builtin_unreachable();
+                            }
+                            {
+                                unsigned long cur[3];
+                                sk_span_cursor_build(cur, *(unsigned long *)(node2 + 0x78), 0);  /* FUN_000363ac */
+                                {
+                                    unsigned long c2 = sk_span_cursor_next(cur);   /* FUN_0003667c */
+                                    while ((c2 & 3) != 0) {
+                                        /* map each live span page */
+                                        if ((c2 >> 0x1c) == 0) {
+                                            long m = (long)sk_region_map_fault((long)st, (long)base, 0, 0, 0, 0, 0);  /* FUN_0003fa94 */
+                                            if (m == 0) {
+                                                unsigned long fbase = 0, fsize = 0x4000;
+                                                if (sk_region_finalize(st, &fbase, &fsize, 0).lo == 0) {  /* FUN_0003f170 */
+                                                    sk_region_unmap_pages(c2 >> 6 & 0x3fffff, (long)node2, 0, 0, 0);  /* FUN_0003da18 */
+                                                }
+                                            }
+                                        }
+                                        c2 = sk_span_cursor_next(cur);
+                                    }
+                                }
+                            }
+                        }
+                        node2 = *(unsigned long *)(node2 + 0x90);
+                    }
+                }
+                if (sk_vm_lock_take((unsigned long)region + 0x1f0) != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                    __builtin_unreachable();
+                }
+            }
+        }
+    }
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003a7d4 @ 0x0003a7d4   (est. sk_span_split_caller)
+ * Ghidra: cl4_result_t FUN_0003a7d4(long *a, long *b, long tag, long *out)
+ * Splits / merges two adjacent span ranges (a and b) under a shared owner.
+ * Requires tag == 0x65b648. Chooses the lower range as the primary (a), then
+ * validates both spans share the same owner, word-4 flags (and that no
+ * reserved bit 0xd000800 is set) and an exact adjacency (a[2]+a[1] == b[1]).
+ * Attaches a slot descriptor (FUN_0003b820), snapshots the ranges
+ * (FUN_00044dec), locks both spans, links the root (FUN_0003bd70), merges
+ * the two ranges via sk_region_merge (FUN_0003f41c), detaches
+ * (FUN_0003bfb8), and rebuilds the span map (FUN_000367a8). On success
+ * stores {a,0x65b648} through out. The merge path then re-attaches the
+ * destination and returns its split result (sk_region_split FUN_0003ee4c).
+ * Aborts (VAS) on any state violation.
+ * Confidence: low-medium (large structural span merge/split).
+ * Notes: tag 0x65b648; helpers FUN_0003b820/00044dec/00118164/0003bd70/
+ *   0003f41c/0003bfb8/000367a8/00044ff4/00118194/0003ee4c/00036a94/
+ *   00032cd0. */
+cl4_result_t sk_span_split_caller(long *a, long *b, long tag, long *out)
+{
+    cl4_result_t r;
+    unsigned long st[16];
+    unsigned long cookie[8];
+    unsigned long owner;
+    unsigned long sz, base;
+    unsigned int w;
+    long a0, b0, lo, hi;
+    int i;
+
+    for (i = 0; i < 16; i++) st[i] = 0;
+    for (i = 0; i < 8; i++) cookie[i] = 0;
+    r.lo = 0; r.hi = 0;
+
+    if (tag != 0x65b648) {
+        r.lo = 0x7a60001; r.hi = 0;
+        return r;
+    }
+    /* pick the lower range as primary */
+    if (b[1] < (unsigned long)a[1]) {
+        long *t = a; a = b; b = t;
+    }
+    owner = (unsigned long)a[10];
+    sz = b[1];
+    base = a[1];
+
+    if ((unsigned long)a[10] == (unsigned long)b[10]) {
+        if (*(unsigned int *)((char *)a + 0x20) == *(unsigned int *)((char *)b + 0x20)) {
+            if ((*(unsigned int *)((char *)a + 0x20) & 0xd000800) == 0) {
+                if (sz == 0) {
+                    r.lo = 0x75c0001;
+                } else {
+                    r.lo = 0;
+                    if (a[2] + a[1] != sz)
+                        r.lo = 0x75d0001;
+                }
+            } else {
+                r.lo = 0x75b0001;
+            }
+        } else {
+            r.lo = 0x75a0001;
+        }
+    } else {
+        r.lo = 0x7590001;
+    }
+
+    if ((r.lo & 0xff) == 0) {
+        w = *(unsigned int *)((char *)a + 0x20) >> 0x10 & 1;
+        if (sk_slot_attach_full(&st[3], owner, 0, *(unsigned int *)((char *)a + 0x20) != 0, w, w) != 0) {
+            sk_obj_snapshot4(owner, &cookie[1], a[1], b[2] + a[2]);   /* FUN_00044dec */
+            if (sk_vm_lock_check((unsigned long)a + 0x80) != 0 ||
+                sk_vm_lock_check((unsigned long)b + 0x80) != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                __builtin_unreachable();
+            }
+            sk_slot_link_root(&st[3], (long)owner, (unsigned long)&cookie[1]);   /* FUN_0003bd70 */
+            r = sk_region_merge(&st[3], owner, (long)a, (long)b, &cookie[0], &lo);  /* FUN_0003f41c */
+            sk_slot_detach(&st[3], owner);   /* FUN_0003bfb8 */
+            a0 = (long)cookie[0];
+            b0 = lo;
+            if (a0 != 0) {
+                unsigned long sp[3];
+                sp[0] = 0; sp[1] = 0; sp[2] = 0;
+                sk_span_find2(sp, *(unsigned long *)(a0 + 0x78),
+                              (int)((unsigned long)(b0 - *(long *)((unsigned long)sk_vspace_root() + 0x28)) >> 0xe) + 1);  /* FUN_000367a8 */
+                if ((sp[0] & 0xff) != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4674);
+                    __builtin_unreachable();
+                }
+                *(unsigned long *)(a0 + 0x78) = sp[2];
+                *(unsigned long *)(b0 + 0x78) = 0x65b648;   /* span tag sentinel */
+            }
+            sk_vm_lock_take((unsigned long)a + 0x80);
+            sk_vm_lock_take((unsigned long)b + 0x80);
+            sk_obj_commit4(owner, &cookie[1]);   /* FUN_00044ff4 */
+            if (lo != 0) {
+                *(unsigned long *)(lo + 0x50) = 0;
+                sk_pool_alloc_block((void *)(uintptr_t)lo);   /* FUN_00033148 */
+            }
+            if ((r.lo & 0xff) == 0) {
+                if (a0 == 0) {
+                    *out = 0; out[1] = 0;
+                } else {
+                    out[0] = (unsigned long)a0; out[1] = 0x65b648;
+                }
+                return r;
+            }
+            sk_vas_fault65();   /* FUN_004b30ac */
+            __builtin_unreachable();
+        }
+    }
+    /* fallback: split the merged range via sk_region_split */
+    {
+        long sbase, ssize;
+        cl4_result_t sr = sk_region_split((long)sk_vspace_root(), owner, (unsigned long *)a,
+                                          sz, (unsigned long *)&sbase, (unsigned long *)&ssize);  /* FUN_0003ee4c */
+        if (sr.lo == 0) {
+            if (sbase != (long)a || ssize == 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b48a0);
+                __builtin_unreachable();
+            }
+            a[0] = sbase; a[1] = 0x65b648;
+            b[0] = ssize; b[1] = 0x65b648;
+            out[0] = (unsigned long)sbase; out[1] = (unsigned long)ssize;
+        }
+        return sr;
+    }
 }
 /* Recreated from exclavecore_bundle.t8142.RELEASE.im4p (cL4 Secure Kernel, GL1,
  * arm64e, image base 0) — the cL4 microkernel. Ground truth: Ghidra FUN_ names +

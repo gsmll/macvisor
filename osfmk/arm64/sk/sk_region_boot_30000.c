@@ -7373,6 +7373,7 @@ extern unsigned long DAT_004bbfd8;   /* prefetch method cookie */
 extern void FUN_004b326c(void);      /* prefetch fault (out-of-range) */
 extern void FUN_004b3294(void);      /* prefetch fault (out-of-range) */
 extern unsigned long DAT_006ad39c;   /* span-free counter */
+extern unsigned long DAT_006ad2cc;   /* faulthandler counter */
 extern void sk_tcb_slot_release(void *);          /* FUN_004b23d8 */
 extern void thunk_FUN_000539fc(void *);           /* span list zero */
 extern void sk_pool_free_node_c1a8(void *);       /* FUN_00033684 */
@@ -8339,9 +8340,10 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
     DAT_006ad2cc = DAT_006ad2cc + 1;
     for (i = 0; i < 10; i++) local[i] = 0;
 
-    node = (unsigned long)sk_pool_alloc_node_c1a8((void *)(uintptr_t)0);  /* FUN_00033638 */
-    ck = (unsigned long)sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1908,
-                                         (char *)&sk_desc_boot, &local[7], 0, 0) & 0xff;  /* FUN_0003c56c */
+    node = 0;
+    sk_pool_alloc_node_c1a8();   /* FUN_00033638 (allocates node) */
+    ck = sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1908,
+                          (char *)&sk_desc_boot, &local[7], 0, 0).lo & 0xff;  /* FUN_0003c56c */
     if (ck != 0) {
         sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4f3f);
         __builtin_unreachable();
@@ -8354,8 +8356,8 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
         __builtin_unreachable();
     }
     {
-        unsigned long layout = (unsigned long)sk_vspace_layout_check_big(*(unsigned long *)(vspace + 0x50));  /* FUN_00032cd0 */
-        sk_span_find2(&local[2], span, (int)(wsize - *(long *)(layout + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
+        sk_vspace_layout_check_big(*(unsigned long *)(vspace + 0x50));  /* FUN_00032cd0 */
+        sk_span_find2(&local[2], span, (int)(wsize - *(long *)(sk_vspace_root() + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
         *(long *)(vspace + 0x78) = (long)local[6];
         if (sk_vm_lock_take(vspace + 0x80) != 0) {  /* FUN_00118194 */
             sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
@@ -8363,8 +8365,8 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
         }
     }
     local[0] = 0; local[1] = 0;
-    ck = (unsigned long)sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1900,
-                                         (char *)&sk_desc_boot, local, 0, 0) & 0xff;  /* FUN_0003c56c */
+    ck = sk_region_create((long)(uintptr_t)&sk_vspace_root_obj, 0x1900,
+                          (char *)&sk_desc_boot, local, 0, 0).lo & 0xff;  /* FUN_0003c56c */
     if (ck != 0) {
         sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4ffa);
         __builtin_unreachable();
@@ -8376,9 +8378,9 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
         __builtin_unreachable();
     }
     {
-        unsigned long layout = (unsigned long)sk_vspace_layout_check_big(*(unsigned long *)(local[0] + 0x50));  /* FUN_00032cd0 */
+        sk_vspace_layout_check_big(*(unsigned long *)(local[0] + 0x50));  /* FUN_00032cd0 */
         sk_span_find2(&local[2], *(unsigned long *)(local[0] + 0x78),
-                      (int)(wsize - *(long *)(layout + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
+                      (int)(wsize - *(long *)(sk_vspace_root() + 0x28) >> 0xe) + 1);  /* FUN_000287e4 */
         local[6] = local[2];
         *(long *)(local[0] + 0x78) = (long)local[3];
         if (sk_vm_lock_take(local[0] + 0x80) != 0) {
@@ -8422,7 +8424,7 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
             ((unsigned long *)node)[9] = 0;
             ((unsigned long *)node)[10] = (unsigned long)region;
             *(unsigned long *)((char *)node + 0x42) = 0;
-            FUN_001180fc((unsigned long *)node + 6);
+            sk_percpu_get3((unsigned long)(node + 6));   /* FUN_001180fc */
             if (slotA == 0) {
                 sk_vas_fault38();                   /* FUN_004b2930 */
                 __builtin_unreachable();
@@ -8442,8 +8444,8 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
         {
             unsigned long st = 0;
             unsigned long sp = 0;
-            ck = (unsigned long)sk_region_create((long)(uintptr_t)sk_vspace_root(), 0x1908,
-                                                 (char *)&sk_desc_boot, &st, 0, 0) & 0xff;  /* FUN_0003c56c */
+            ck = sk_region_create((long)(uintptr_t)sk_vspace_root(), 0x1908,
+                                   (char *)&sk_desc_boot, &st, 0, 0).lo & 0xff;  /* FUN_0003c56c */
             if (ck == 0) {
                 base = *(unsigned long *)(st + 8);
                 size = *(unsigned long *)(st + 0x10);
@@ -8470,7 +8472,7 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
                                             long m = (long)sk_region_map_fault((long)st, (long)base, 0, 0, 0, 0, 0);  /* FUN_0003fa94 */
                                             if (m == 0) {
                                                 unsigned long fbase = 0, fsize = 0x4000;
-                                                if (sk_region_finalize(st, &fbase, &fsize, 0) == 0) {  /* FUN_0003f170 */
+                                                if (sk_region_finalize(st, &fbase, &fsize, 0).lo == 0) {  /* FUN_0003f170 */
                                                     sk_region_unmap_pages(c2 >> 6 & 0x3fffff, (long)node2, 0, 0, 0);  /* FUN_0003da18 */
                                                 }
                                             }
@@ -8492,4 +8494,132 @@ cl4_result_t sk_faulthandler_create(void *region, unsigned long *out)
     }
     r.lo = 0; r.hi = 0;
     return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0003a7d4 @ 0x0003a7d4   (est. sk_span_split_caller)
+ * Ghidra: cl4_result_t FUN_0003a7d4(long *a, long *b, long tag, long *out)
+ * Splits / merges two adjacent span ranges (a and b) under a shared owner.
+ * Requires tag == 0x65b648. Chooses the lower range as the primary (a), then
+ * validates both spans share the same owner, word-4 flags (and that no
+ * reserved bit 0xd000800 is set) and an exact adjacency (a[2]+a[1] == b[1]).
+ * Attaches a slot descriptor (FUN_0003b820), snapshots the ranges
+ * (FUN_00044dec), locks both spans, links the root (FUN_0003bd70), merges
+ * the two ranges via sk_region_merge (FUN_0003f41c), detaches
+ * (FUN_0003bfb8), and rebuilds the span map (FUN_000367a8). On success
+ * stores {a,0x65b648} through out. The merge path then re-attaches the
+ * destination and returns its split result (sk_region_split FUN_0003ee4c).
+ * Aborts (VAS) on any state violation.
+ * Confidence: low-medium (large structural span merge/split).
+ * Notes: tag 0x65b648; helpers FUN_0003b820/00044dec/00118164/0003bd70/
+ *   0003f41c/0003bfb8/000367a8/00044ff4/00118194/0003ee4c/00036a94/
+ *   00032cd0. */
+cl4_result_t sk_span_split_caller(long *a, long *b, long tag, long *out)
+{
+    cl4_result_t r;
+    unsigned long st[16];
+    unsigned long cookie[8];
+    unsigned long owner;
+    unsigned long sz, base;
+    unsigned int w;
+    long a0, b0, lo, hi;
+    int i;
+
+    for (i = 0; i < 16; i++) st[i] = 0;
+    for (i = 0; i < 8; i++) cookie[i] = 0;
+    r.lo = 0; r.hi = 0;
+
+    if (tag != 0x65b648) {
+        r.lo = 0x7a60001; r.hi = 0;
+        return r;
+    }
+    /* pick the lower range as primary */
+    if (b[1] < (unsigned long)a[1]) {
+        long *t = a; a = b; b = t;
+    }
+    owner = (unsigned long)a[10];
+    sz = b[1];
+    base = a[1];
+
+    if ((unsigned long)a[10] == (unsigned long)b[10]) {
+        if (*(unsigned int *)((char *)a + 0x20) == *(unsigned int *)((char *)b + 0x20)) {
+            if ((*(unsigned int *)((char *)a + 0x20) & 0xd000800) == 0) {
+                if (sz == 0) {
+                    r.lo = 0x75c0001;
+                } else {
+                    r.lo = 0;
+                    if (a[2] + a[1] != sz)
+                        r.lo = 0x75d0001;
+                }
+            } else {
+                r.lo = 0x75b0001;
+            }
+        } else {
+            r.lo = 0x75a0001;
+        }
+    } else {
+        r.lo = 0x7590001;
+    }
+
+    if ((r.lo & 0xff) == 0) {
+        w = *(unsigned int *)((char *)a + 0x20) >> 0x10 & 1;
+        if (sk_slot_attach_full(&st[3], owner, 0, *(unsigned int *)((char *)a + 0x20) != 0, w, w) != 0) {
+            sk_obj_snapshot4(owner, &cookie[1], a[1], b[2] + a[2]);   /* FUN_00044dec */
+            if (sk_vm_lock_check((unsigned long)a + 0x80) != 0 ||
+                sk_vm_lock_check((unsigned long)b + 0x80) != 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
+                __builtin_unreachable();
+            }
+            sk_slot_link_root(&st[3], (long)owner, (unsigned long)&cookie[1]);   /* FUN_0003bd70 */
+            r = sk_region_merge(&st[3], owner, (long)a, (long)b, &cookie[0], &lo);  /* FUN_0003f41c */
+            sk_slot_detach(&st[3], owner);   /* FUN_0003bfb8 */
+            a0 = (long)cookie[0];
+            b0 = lo;
+            if (a0 != 0) {
+                unsigned long sp[3];
+                sp[0] = 0; sp[1] = 0; sp[2] = 0;
+                sk_span_find2(sp, *(unsigned long *)(a0 + 0x78),
+                              (int)((unsigned long)(b0 - *(long *)((unsigned long)sk_vspace_root() + 0x28)) >> 0xe) + 1);  /* FUN_000367a8 */
+                if ((sp[0] & 0xff) != 0) {
+                    sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b4674);
+                    __builtin_unreachable();
+                }
+                *(unsigned long *)(a0 + 0x78) = sp[2];
+                *(unsigned long *)(b0 + 0x78) = 0x65b648;   /* span tag sentinel */
+            }
+            sk_vm_lock_take((unsigned long)a + 0x80);
+            sk_vm_lock_take((unsigned long)b + 0x80);
+            sk_obj_commit4(owner, &cookie[1]);   /* FUN_00044ff4 */
+            if (lo != 0) {
+                *(unsigned long *)(lo + 0x50) = 0;
+                sk_pool_alloc_block((void *)(uintptr_t)lo);   /* FUN_00033148 */
+            }
+            if ((r.lo & 0xff) == 0) {
+                if (a0 == 0) {
+                    *out = 0; out[1] = 0;
+                } else {
+                    out[0] = (unsigned long)a0; out[1] = 0x65b648;
+                }
+                return r;
+            }
+            sk_vas_fault65();   /* FUN_004b30ac */
+            __builtin_unreachable();
+        }
+    }
+    /* fallback: split the merged range via sk_region_split */
+    {
+        long sbase, ssize;
+        cl4_result_t sr = sk_region_split((long)sk_vspace_root(), owner, (unsigned long *)a,
+                                          sz, (unsigned long *)&sbase, (unsigned long *)&ssize);  /* FUN_0003ee4c */
+        if (sr.lo == 0) {
+            if (sbase != (long)a || ssize == 0) {
+                sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5b48a0);
+                __builtin_unreachable();
+            }
+            a[0] = sbase; a[1] = 0x65b648;
+            b[0] = ssize; b[1] = 0x65b648;
+            out[0] = (unsigned long)sbase; out[1] = (unsigned long)ssize;
+        }
+        return sr;
+    }
 }

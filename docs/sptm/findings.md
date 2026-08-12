@@ -3613,3 +3613,27 @@ Confidence: medium
 - **Evidence**: `out.index=0; out.found=0x100000000;` vs `out.found=(ulong)*(uint*)(unaff_x20+0x24); out.index=u1;`
 - **Severity (hypothesis)**: informational — the marker is unambiguous (class bit 32 set); standard seL4-style sentinel.
 - **Confidence**: medium
+
+## [sk191-ringminus1] 004176ec / 00417b60 sk_java_cp_decode / sk_java_cp_build — constant-pool walker reads fixed payload offsets
+- **Observation**: The constant-pool entry decode (004176ec) and build (00417b60) walkers dispatch on a kind selector (0-0x11) and, in the member-ref case (case 0xd), read the name and descriptor at fixed byte offsets `+0x18` and `+0x38` from a payload pointer obtained via FUN_00458b14. No length check against a validated payload size is visible before those reads; a truncated/malformed constant-pool entry could cause an out-of-bounds read within the kernel.
+- **Evidence**: `case 0xd: lVar5 = FUN_00458b14(auStack_d8); local_38 = *(undefined8*)(lVar5+0x18); uVar8 = *(undefined8*)(lVar5+0x38);` (dec_004176ec, dec_00417b60)
+- **Severity (hypothesis)**: medium — OOB read on malformed class-file data if the payload bounds are not enforced upstream; the reader is reachable from the class-file verification path.
+- **Confidence**: medium
+
+## [sk191-ringminus1] 004176ec / 00417b60 / 00419d98 / 00419f24 — SoftwareBreakpoint fatal traps on malformed structural input
+- **Observation**: Several structural walkers take a `SoftwareBreakpoint(1,<addr>)` "does not return" path when invariants are violated: cp_decode when a tagged string ref has a negative high word (trap at 0x4178bc/0x417898), struct_validate when the span bounds are inverted (`hi>>0xe < lo>>0xe`, trap 0x419e44), and struct_grow when the scan index overruns the count (trap 0x41a044). These are fail-closed kernel panics rather than graceful rejection.
+- **Evidence**: `if (auVar9._8_8_ < 0) { /* Does not return */ (*SoftwareBreakpoint(1,0x4178bc))(); }`; `if (hi>>0xe < lo>>0xe) { (*SoftwareBreakpoint(1,0x419e44))(); }`; `if (count <= i) { (*SoftwareBreakpoint(1,0x41a044))(); }`
+- **Severity (hypothesis)**: low — fail-closed; a crafted structure only triggers an availability (panic) DoS, not a memory-safety break. Confirms untrusted input reaches these paths.
+- **Confidence**: medium
+
+## [sk191-ringminus1] 004165ec / 00416ad0 / 00417454 / 00418378 — descriptor equality compares packed words on low 14 bits only
+- **Observation**: The structural-equality predicates compare packed type/descriptor words using `(a ^ b) < 0x4000` (low 14 bits) and `(a ^ b) >> 0xe == 0`, and the method/field tag words with the same 14-bit window. Two descriptors whose tag bits differ only at or above bit 14 would compare equal, making the verifier's equality over-permissive. Whether this is a real over-match depends on whether the high tag bits encode identity or only length/kind metadata.
+- **Evidence**: `(*(ulong*)(x+0x88) ^ *(ulong*)(y+0x88)) < 0x4000 && (*(ulong*)(x+0x90) ^ *(ulong*)(y+0x90)) < 0x4000` (dec_00416ad0); `(*(ulong*)(param_1+8) ^ *(ulong*)(param_2+8)) >> 0xe == 0` (dec_00417454)
+- **Severity (hypothesis)**: low-to-medium — potential type-confusion in the verifier if distinct types share the low 14 bits; needs confirmation of the tag-word layout.
+- **Confidence**: low
+
+## [sk191-ringminus1] 00415b54 sk_java_character_methref — java.lang.Character method table packed as raw constants
+- **Observation**: This function is a static method-reference table for java.lang.Character (javaLowerCase, javaMirrored, javaSpaceChar, javaTitleCase, javaUnicodeIdentifierStart/Part, javaWhitespace, ...), returning 16-byte tagged references. The presence of a full Java Character Unicode-property method table inside the ring-1 microkernel indicates the kernel embeds a Java class-file / reflection runtime for Exclave workloads.
+- **Evidence**: string refs `s_javaIdentifierIgnorable_005dd110`, `s_javaJavaIdentifierPart_005dd150`, `s_javaJavaIdentifierStart_005dd170`, `s_javaLetterOrDigit_005dd1a0`, `s_javaUnicodeIdentifierPart_005dd1f0`, `s_javaUnicodeIdentifierStart_005dd210`; packed words `0x696665446176616a` ("javaDefi...").
+- **Severity (hypothesis)**: informational — documents attack surface (Java class-file parsing in the TCB).
+- **Confidence**: high (string-matched)
