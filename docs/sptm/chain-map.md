@@ -641,3 +641,9 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - Object retain/dispatch: 0x00656284 (retain) -> 0x006561fc/0x00656240 (vtable slots); 0x00656474 (dispatch) -> 0x00656284 + 0x006827a8 (alloc) + 0x006823d4 (free); 0x00656634 (release dispatch).
 - Teardown: 0x0065403c -> 0x006557e0 (rt clr) + 0x006541d4 (notif broadcast) + 0x006825bc (cache flush) + 0x00660eec (sched pin); store teardown 0x00655bf8 -> 0x00655c84 (dispatch) + 0x0065cc50 (bucket release).
 - Debug/PRNG: 0x00655eec (debug write, CallSupervisor(0) per byte) -> 0x00654cc8/0x00654cf4/0x00654d20 (store getters); 0x0065564c (PRNG fill, xorshift DAT_006feb88/feb90).
+
+## SkR55 (0x003cccf4-0x003d2e80) — cL4 IPC message-register tag emitters + demangler/map (sk_slice_r55.c)
+- Arg marshallers: 0x003d01ac (cL4_msg_args) -> 0x003d11d4 (cL4_msg_one) -> 0x003bfae4 (cL4_arg_decode); 0x003d0280 (cL4_msg_arg_index); 0x003d1218 (cL4_msg_three) -> 0x003d12c8 (cL4_msg_parse) + 0x003d0458 (cL4_msg_decode, "Swift" magic); 0x003d02dc (arg-kind dispatch).
+- Dispatchers: 0x003d08c4 (cL4_msg_dispatch_full, depth cap 0x400) -> 0x003d1128 (dispatch_tag) -> 0x003d0358 (fmt_begin) + 0x003d0bc8 (dispatch_pkt); 0x003d174c (dispatch2) -> 0x003d0650 (fmt_emit_letter); 0x003d081c (msg_args_reverse).
+- Emitters: 0x003d154c (emit_pair), 0x003d16b4 (emit_l), 0x003d1810 (emit_tc2), 0x003d1ad4/0x003d1b88 (emit_sym[_raw]); grow helpers 0x003d2058/0x003d20bc/0x003d216c -> 0x003a3a70 (cL4_mr_emit_tag) + 0x00117cc4 (memcpy).
+- Map/demangle: 0x003d2740 (map_destroy) / 0x003d27a0 (keyeq) / 0x003d27ec (find) / 0x003d28d8 (put) -> 0x0037d700 (resize); 0x003d2b1c (demangle_kind, table 0x67c558) -> 0x003d2b90 (demangle_node) -> 0x003d2d34 (snprintf_alloc) / 0x003d2dd4 (log_sprintf) / 0x003d2e80 (demangle_emit).
