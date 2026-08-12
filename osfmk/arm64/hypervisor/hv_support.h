@@ -1,4 +1,5 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_support.h — support/init prototypes and EL2 feature globals (est.).
@@ -23,18 +24,18 @@ static int hv_support_init(void);
 static void hv_el2_feature_detect(void);
 
 /* FUN_fffffe000b984ed8 — est. hv_available. Mach-trap dispatcher over the
- * PTR_FUN_fffffe0007e0d750 operation table. */
+ * PTR_hv_op_table operation table. */
 static void hv_available(long param_1);
 
 /* ---- Shared kernel dependencies (declared, NOT recreated) ---- */
-extern int   FUN_fffffe000c09c084(long node, const char *path, void **out);  /* kernel DT node lookup, not recreated */
-extern int   FUN_fffffe000c09c31c(const void *node, const char *name, uint **val, int *size); /* kernel DT property get, not recreated */
-extern int   FUN_fffffe000c09cbf0(long base, const char *name, int *val, int size, long flag); /* kernel boot-arg getter, not recreated */
-extern void  FUN_fffffe000bd30528(int event, ...);  /* kernel trace/log, not recreated */
+extern int   kernel_dt_node_lookup(long node, const char *path, void **out);  /* kernel DT node lookup, not recreated */
+extern int   kernel_dt_prop_get(const void *node, const char *name, uint **val, int *size); /* kernel DT property get, not recreated */
+extern int   kernel_boot_arg_get(long base, const char *name, int *val, int size, long flag); /* kernel boot-arg getter, not recreated */
+extern void  kernel_trace(int event, ...);  /* kernel trace/log, not recreated */
 
 /* EL2 feature globals (est.), written by hv_el2_feature_detect / hv_support_init */
-extern ulong hv_el2_features;   /* DAT_fffffe0007e0d800 EL2 features */
-extern uint  hv_quota[3];       /* DAT_fffffe0007e0d7f0/0x7f4/0x7f8 hv ISA VM quota */
-extern uint  hv_available_flag; /* DAT_fffffe0007e41db0 hv availability flag */
+extern uint64_t hv_el2_features;   /* DAT_fffffe0007e0d800 EL2 features */
+extern uint32_t hv_quota[3];       /* DAT_fffffe0007e0d7f0/0x7f4/0x7f8 hv ISA VM quota */
+extern uint64_t hv_available_flag; /* DAT_fffffe0007e41db0 hv availability flag */
 
 #endif /* _ARM64_HYPERVISOR_HV_SUPPORT_H_ */

@@ -63,6 +63,12 @@ Function header comment (every function — template):
 
 Rules:
 - Keep the logic faithful to the decompile. Rename locals/params meaningfully.
+- **English-first is mandatory on FIRST write**: function bodies must use
+  meaningful English identifiers (locals, params, globals). Raw Ghidra
+  identifiers (`uVar4`, `local_88`, `DAT_fffffe...`, `FUN_fffffe...` as a code
+  identifier) in a body are a DEFECT and fail acceptance. Use the shared
+  global naming table in `osfmk/arm64/hypervisor/hv_internal.h` for globals
+  (add a named extern there when a global is missing).
 - For every unresolved artifact keep an inline comment with its exact Ghidra
   name and address: `DAT_fffffe0007e0d800 /* EL2 features */`,
   `FUN_fffffe000b987fa8 /* est. hv_el2_feature_detect */`.

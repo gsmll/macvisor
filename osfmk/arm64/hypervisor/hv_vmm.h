@@ -1,4 +1,5 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_vmm.h — EL2 register state offsets and prototypes (est.).
@@ -6,7 +7,7 @@
  * Owned by the el2-state tree.
  *
  * Ground truth anchors (from Ghidra):
- *   FUN_fffffe000b9895b8 (est. hv_el2_state_build) writes the per-CPU EL2
+ *   hv_el2_state_build (est. hv_el2_state_build) writes the per-CPU EL2
  *   state block at param_2 + 0x4000 ... 0x4148 with HCR/SCTLR/TCR-style
  *   constants, and a parallel "template"/requested set at param_2 + 0x6a8 ...
  *   0x780, plus two translation pages at param_2 + 0x1000 / 0x2000 and a
@@ -23,6 +24,15 @@
 
 #include <stdint.h>
 #include <stddef.h>
+
+/*
+ * The per-VM owner block (hv_vm_t / hv_vm_percpu_t) and the region-rbtree
+ * node are consolidated in hv_vm.h (structs-audit tree). The el2-state
+ * functions receive the vcpu as `param_1` and read the owner-block fields
+ * via the same offsets (cfg +0x00, base +0x88, el2 +0xb0, built +0xb8,
+ * pt_block +0xc0) — those fields are carried on hv_vm_t.
+ */
+#include "hv_vm.h"
 
 /*
  * EL2 state block offsets (relative to the per-CPU state base = param_2).
@@ -67,7 +77,7 @@
 /*
  * hv_vm_config — the config object pointed at by *param_1 in the el2-state
  * functions. The +0x2088/+0x2090/+0x2098 triple (and +0x20a0/+0x20a8/+0x20b0)
- * are "mask / value1 / value2" groups that FUN_fffffe000b98dd40 uses to merge
+ * are "mask / value1 / value2" groups that hv_el2_state_apply uses to merge
  * template EL2 regs into the active set. Names are estimates.
  */
 struct hv_vm_config {
@@ -88,29 +98,123 @@ struct hv_vm_config {
 };
 
 /*
- * hv_vm — the per-VM object passed as param_1 by the el2-state functions.
- * Field 0 points at hv_vm_config; +0xb0 points at the per-CPU EL2 state.
- * Names are estimates.
+ * hv_vm — the per-VM owner block. Moved to hv_vm.h (structs-audit tree) and
+ * renamed hv_vm_t. The el2-state functions here receive the vcpu as
+ * `param_1` and read the owner-block fields at these offsets: +0x00 cfg,
+ * +0x68 page0, +0x70 page1, +0x88 base, +0xb0 el2, +0xb8 built, +0xc0
+ * pt_block. The full owner block (refcount, quota/tier, host map +0x2120,
+ * region rbtree root +0x2138, per-cpu vcpu slots +0x2148, embedded config
+ * +0x2088) is defined in hv_vm.h.
  */
-struct hv_vm {
-    struct hv_vm_config *cfg;         /* +0x00 */
-    uint8_t   _pad0[0x68 - 0x08];
-    uint64_t  page0;                  /* +0x68: el2_state + 0x1000 */
-    uint64_t  page1;                  /* +0x70: el2_state + 0x2000 */
-    uint8_t   _pad1[0x88 - 0x78];
-    uint64_t  base;                   /* +0x88 (alloc base in slot op) */
-    uint8_t   _pad2[0xb0 - 0x90];
-    uint8_t  *el2;                    /* +0xb0: per-CPU EL2 state base */
-    uint8_t   built;                  /* +0xb8 */
-    uint8_t   _pad3[0xc0 - 0xb9];
-    uint64_t  pt_block;               /* +0xc0: 0x4000 EL2 translation block */
+
+/*
+ * struct hv_el2_state — the per-CPU EL2 state block layout (base = the
+ * `el2` pointer; also reached at the vcpu's +0xb0 / the owner's +0xb0).
+ * Consolidates the EL2_RW/EL2_RD offsets observed in the el2-state
+ * (hv_vmm.c), vcpu-core (hv_vcpu.c hv_vcpu_save_el2_state hv_vcpu_save_el2_state
+ * and the hub b989a44) and el2-vectors (hv_el2.h) files. All register names
+ * are ESTIMATES; register identity unverified (stripped kernelcache).
+ *
+ * The two parallel 64-bit banks are:
+ *   - template / requested bank at +0x6a8 (HV_EL2_TMPL_BASE), and
+ *   - active / committed bank at +0x4030 (HV_EL2_ACTIVE_BASE).
+ * Slot i of the template bank (offset +0x6a8 + 8*i) shadows active slot i
+ * (offset +0x4030 + 8*i); delta between banks is +0x3988. The build function
+ * (hv_el2_state_build) writes both banks; the apply function
+ * (hv_el2_state_apply) merges template into active under the config masks.
+ */
+struct hv_el2_state {
+    /* ---- translation pages (wired by hv_el2_state_build on primary vCPU) ---- */
+    uint8_t   l1_table[0x1000];        /* +0x0000 level-1 root (also vm->pt_block) */
+    uint8_t   l2_table[0x1000];        /* +0x1000 level-2 table (vm->page0)       */
+    uint8_t   l3_table[0x1000];        /* +0x2000 level-3 table (vm->page1)       */
+    uint8_t   rsvd_3000[0x1000];       /* +0x3000 spare                             */
+
+    /* +0x3b8 .. +0x470 : guest-saved EL2 capture group 0 (GIC / timer / EL2
+     *   control sysregs) — written by hv_vcpu_save_el2_state
+     *   (hv_vcpu_save_el2_state) when dirty bit 0 is set. */
+    uint8_t   gic_capture[0x470 - 0x3b8];
+
+    /* +0x698 / +0x6a0 : timer/counter group (dirty bit 3). */
+    uint8_t   timer_698[0x6a8 - 0x698];
+
+    /* +0x6a8 .. +0x780 : TEMPLATE bank (HV_EL2_TMPL_BASE), 18 x 64-bit slots.
+     *   Slots (est. identity): 0 SCTLR, 1 TCR, 2 HCR, 3 CPTR, 4 misc0,
+     *   5 MAIR, 6..16 misc, 17 el2_reg9 (+0x730, 0x1c00); +0x778 tmpl_ctl. */
+    uint64_t  tmpl_reg[18];            /* +0x6a8 .. +0x730 */
+    uint8_t   tmpl_pad[0x778 - 0x730];
+    uint64_t  tmpl_ctl;                /* +0x778 (merged into active +0x4100) */
+
+    /* +0x738 .. +0x770 : dirty-tracking flags (HV_EL2_DIRTY_BASE), 8 x 64-bit.
+     *   Bit 32 (0x100000000) = "changed"; cleared by hv_el2_state_commit
+     *   (hv_el2_state_commit). */
+    uint64_t  dirty[8];                /* +0x738 .. +0x770 */
+
+    /* +0x798 / +0x7a0 : CNTP/CTL capture group (save_el2_state bit 0x39). */
+    uint8_t   cntp_798[0x7b0 - 0x798];
+
+    /* +0x7b0 .. +0x868 : CNTHV / EL0-accessible timer group (bit 0x3e). */
+    uint8_t   cnthv[0x868 - 0x7b0];
+
+    /* +0x870 : (save_el2_state bit 0 tail) UnkSytemRegRead(3,4,0xf,2,6). */
+    uint64_t  sctlr_capture;           /* +0x870 */
+
+    /* +0x880 .. +0x948 : CNTHP / feature capture groups (bits 0x3c/0x3d/0x3a). */
+    uint8_t   cnthp_880[0x950 - 0x880];
+
+    /* +0x950 .. +0x9c8 : CNTHPS / EL2 timer group (bit 0x3b). */
+    uint8_t   cnthps_950[0x9f0 - 0x950];
+
+    /* +0x9f0 : EL2 sysreg capture (HV_EL2_SYSREG), read (3,4,0xf,0xc,0). */
+    uint64_t  sysreg_capture;          /* +0x9f0 */
+
+    /* +0x9f8 .. +0xa28 : (save_el2_state bit 0x38 group, 0x9f8/0xa00/0xa08/0xa10/
+     *   0xa18/0xa20) and EL2 state version (HV_EL2_VER = 3) at +0xa28. */
+    uint8_t   misc_a00[0xa28 - 0x9f8];
+    uint64_t  state_version;           /* +0xa28 (3) */
+
+    uint8_t   pad_a30[0x4000 - 0xa30];
+
+    /* +0x4000 .. : active EL2 register bank (HV_EL2_ACTIVE_BASE) + header.
+     * The build (hv_el2_state_build) writes the magic at +0x4000, the exit
+     * reason word at +0x4008, ESR/ISS/exit-record words at +0x4010/+0x4018,
+     * the synthesised guest IPA at +0x4028, then the active registers at
+     * +0x4030..0x4148 and the guest-saved EL2 regs at +0x40c0..0x40f8. */
+    uint64_t  magic;                   /* +0x4000 HV_EL2_MAGIC_PRIMARY 0x2068797003000000 */
+    uint32_t  exit_reason;             /* +0x4008 (1 sync/2 error/3 irq/4 fiq) */
+    uint8_t   pad_400c[0x4010 - 0x400c];
+    uint64_t  esr_word;                /* +0x4010 (>>26 = EC)               */
+    uint64_t  iss;                     /* +0x4018 (SVC ISS / exit record)   */
+    uint64_t  synth_ipa;               /* +0x4028 (HPFAR_EL2-derived IPA)   */
+
+    /* +0x4030 .. +0x40c0 : ACTIVE bank (HV_EL2_ACTIVE_BASE), 18 x 64-bit.
+     *   Named slots (est.): SCTLR +0x4030, TCR +0x4038, HCR +0x4040,
+     *   CPTR +0x4048, misc0 +0x4050, MAIR +0x4058, +0x4060, +0x4068..+0x40b0,
+     *   el2_reg9 +0x40b8. The apply fn (b98dd40) merges template slots into
+     *   these under the config masks. */
+    uint64_t  active_reg[18];          /* +0x4030 .. +0x40c0 */
+
+    /* +0x40c0 .. +0x40f8 : guest-saved EL2 registers (HV_EL2_GSAVE_BASE),
+     *   8 x 64-bit, compared/committed by hv_el2_state_commit. */
+    uint64_t  gsave[8];                /* +0x40c0 .. +0x4100 */
+    uint64_t  el2_ctl;                 /* +0x4100 */
+    uint64_t  el2_hipr;                /* +0x4108 */
+    uint64_t  el2_mask;                /* +0x4110 */
+    uint64_t  el2_flags;               /* +0x4118 (dirty/flags; bit49 = hyp-pt-active) */
+    uint64_t  vbar;                    /* +0x4120 HV_EL2_VBAR (captured VBAR_EL2) */
+    uint8_t   pad_4128[0x4138 - 0x4128];
+    uint64_t  svcr;                    /* +0x4138 SVCR_EL2-style mode (bits 0/1) */
+    uint16_t  sme_guard;               /* +0x4140 (SME save-state guard)     */
+    uint8_t   pad_4142[0x4148 - 0x4142];
+    uint64_t  el2_scratch_va;          /* +0x4148 (0x4000 SVE/EL2 scratch VA) */
+    uint64_t  el2_block_base;          /* +0x4150 HV_EL2_GUEST_PT (EL2 xlate block base) */
 };
 
 /* --- prototypes (est.) --- */
 
 /*
- * hv_vcpu_run_state — the per-vCPU run object used by FUN_fffffe000b98dd04
- * (est. hv_vcpu_run_prepare) and FUN_fffffe000b98ded4 (hv_el2_state_commit):
+ * hv_vcpu_run_state — the per-vCPU run object used by hv_vcpu_run_prepare
+ * (est. hv_vcpu_run_prepare) and hv_el2_state_commit (hv_el2_state_commit):
  *   +8    -> run buffer (fields +8, +0x10 written)
  *   +0xb0 -> run buffer base (aliases +8; the EL2 state base in commit)
  *   +0xe8 / +0xf0 -> state (2 -> 1 transition observed)
@@ -174,9 +278,9 @@ extern uint64_t hv_build_gate;              /* DAT_fffffe0007e0da68 build-path g
 extern uint64_t hv_soc_feature_index;       /* DAT_fffffe0007e31628 SoC feature index */
 extern uint8_t  hv_vm_wire_fault_table[];   /* DAT_fffffe0007d813d8 {int,char*} VM_MAP_WIRE fault table */
 extern uint8_t  hv_vm_unwire_fault_table[]; /* DAT_fffffe0007d81408 {int,char*} VM_MAP_UNWIRE fault table */
-extern uint8_t *tpidr_el1;                  /* per-cpu data base (kernel) */
+extern uint64_t tpidr_el1;                  /* per-cpu data base (kernel) */
 
-/* vcpu-core tree, not decompiled here (see docs/chain-map.md). */
-extern void FUN_fffffe000b986e50(uint64_t); /* est. hv_vcpu_run (vcpu-core) */
+/* vcpu-core tree, not decompiled here (see docs/chain-map.md).
+ * hv_vcpu_attach (FUN_fffffe000b986e50) prototype lives in hv_internal.h. */
 
 #endif /* _HV_VMM_H_ */

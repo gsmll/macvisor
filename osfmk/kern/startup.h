@@ -1,4 +1,5 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * startup.h — boot path prototypes and shared-kernel externs (est.).
@@ -34,7 +35,7 @@ void kernel_bootstrap(unsigned long boot_args);
 
 /* FUN_fffffe000b8239e0 — est. kernel_bootstrap_thread. The first kernel
  * thread; logs and runs every named boot step in order, including
- * hv_support_init (FUN_fffffe000b984d4c). */
+ * hv_support_init (hv_support_init). */
 void kernel_bootstrap_thread(void *cpu_thread);
 
 /* Direct boot-step callees of kernel_bootstrap_thread (recreated here). */
@@ -48,7 +49,7 @@ void dtrace_early_init(void);                                      /* FUN_fffffe
 void code_signing_monitor_lockdown(void);                          /* FUN_fffffe000bdbb37c */
 void provisioning_profile_init(void);                              /* FUN_fffffe000bdbaa20 */
 void trust_cache_init(void);                                       /* FUN_fffffe000bdb9144 */
-void oskext_remove_kext_bootstrap(void);                           /* FUN_fffffe000bf2413c */
+unsigned long oskext_remove_kext_bootstrap(void);            /* FUN_fffffe000bf2413c */
 void machine_lockdown(void);                                       /* FUN_fffffe000b969374 */
 void pe_lockdown_iokit(void);                                      /* FUN_fffffe000bf748bc */
 
@@ -56,30 +57,30 @@ void pe_lockdown_iokit(void);                                      /* FUN_fffffe
  * osfmk/arm64/hypervisor/hv_support.c (static there); referenced here by
  * its Ghidra name so startup.c does not own it. Returns 1 when EL2 is
  * active; kernel_bootstrap_thread stores that to DAT_fffffe0007e41db0. */
-extern unsigned long FUN_fffffe000b984d4c(void);
+extern unsigned long hv_support_init(void);
 
 /* ---- Shared kernel dependencies (declared, NOT recreated) ---- */
-extern void   FUN_fffffe000c0e11ec(const char *fmt, ...); /* kernel panic, noreturn */
-extern void   FUN_fffffe000c0e0620(void);                 /* kernel stack-check panic, noreturn */
-extern void   FUN_fffffe000c0f8674(void);                 /* kernel panic, noreturn */
-extern void   FUN_fffffe000c0f1874(void);                 /* kernel panic, noreturn */
-extern int    FUN_fffffe000c09cbf0(long base, const char *name, void *val, int size, long flag); /* kernel boot-arg getter */
-extern void   FUN_fffffe000c0e7664(unsigned long v);      /* kernel early log/timestamp */
-extern void   FUN_fffffe000b801ce4(const char *fmt, ...); /* kernel printf */
-extern void   FUN_fffffe000c09f2dc(const char *fmt, ...); /* kernel printf (boot) */
-extern void   FUN_fffffe000b968948(int flag);             /* kernel interrupt/exception state restore */
-extern void   FUN_fffffe000b7f8738(void *lock);           /* kernel lock acquire */
-extern void   FUN_fffffe000b7f8a60(void *lock);           /* kernel lock release */
-extern void   FUN_fffffe000b7f0afc(void *lock, ...);      /* kernel lock acquire (spl) */
-extern void   FUN_fffffe000b7f1e80(void *lock, ...);      /* kernel lock release (spl) */
-extern void   FUN_fffffe000b7fddc0(unsigned long x, int f); /* kernel boot continuation hook */
-extern void   FUN_fffffe000b812f5c(void *fn, unsigned long a, unsigned long b); /* kernel thread/daemon dispatch */
-extern unsigned long FUN_fffffe000b93c6c8(void);          /* kernel current-cpu / generation */
-extern void   FUN_fffffe000b816d1c(void *cpu);            /* kernel per-cpu setup */
-extern void   FUN_fffffe000b924334(void *dst, const char *src, unsigned long n, unsigned long max); /* boot-step name build (strncpy_chk) */
-extern void   FUN_fffffe000bd31b80(int tag, unsigned long a, unsigned long b, unsigned long c, unsigned long d); /* boot-step log */
-extern void   FUN_fffffe000b75ea20(void *thread);         /* kernel thread state setup */
-extern void   FUN_fffffe000b75f0e4(void);                 /* kernel early-CPU init */
+extern void   kernel_panic_msg_fmt(const char *fmt, ...); /* kernel panic, noreturn */
+extern void   kernel_stack_check_panic(void);                 /* kernel stack-check panic, noreturn */
+extern void   kernel_panic_b(void);                 /* kernel panic, noreturn */
+extern void   kernel_panic(void);                 /* kernel panic, noreturn */
+extern int    kernel_boot_arg_get(long base, const char *name, void *val, int size, long flag); /* kernel boot-arg getter */
+extern void   kernel_early_log(unsigned long v);      /* kernel early log/timestamp */
+extern void   kernel_daemon_init(const char *fmt, ...); /* kernel printf */
+extern void   kernel_boot_misc_o(const char *fmt, ...); /* kernel printf (boot) */
+extern void   debug_exceptions_disable(int flag);             /* kernel interrupt/exception state restore */
+extern void   kernel_spinlock_acquire(void *lock);         /* FUN_fffffe000b7f8738, kernel lock acquire */
+extern void   kernel_spinlock_release(void *lock);         /* FUN_fffffe000b7f8a60, kernel lock release */
+extern void   lck_mtx_lock(void *lock, ...);      /* kernel lock acquire (spl) */
+extern void   lck_mtx_unlock(void *lock, ...);      /* kernel lock release (spl) */
+extern void   kernel_boot_continuation(unsigned long x, int f); /* kernel boot continuation hook */
+extern void   kernel_preemption_helper(void *fn, unsigned long a, unsigned long b); /* kernel thread/daemon dispatch */
+extern unsigned long kernel_feature_flag(void);          /* kernel current-cpu / generation */
+extern void   kernel_percpu_op(void *cpu);            /* kernel per-cpu setup */
+extern void   kernel_strncpy_chk(void *dst, const char *src, unsigned long n, unsigned long max); /* boot-step name build (strncpy_chk) */
+extern void   kernel_boot_step_log(int tag, void *a, unsigned long b, unsigned long c, unsigned long d); /* boot-step log */
+extern void   kernel_thread_state_setup(void *thread);         /* kernel thread state setup */
+extern void   kernel_early_cpu_init(void);                 /* kernel early-CPU init */
 
 /* ---- Boot-path + hypervisor globals written/read by the boot steps.
  * Ground truth is the Ghidra DAT_ address (kept in the comment); code uses
@@ -88,8 +89,8 @@ extern void   FUN_fffffe000b75f0e4(void);                 /* kernel early-CPU in
 extern uint64_t hv_available_flag;     /* DAT_fffffe0007e41db0 : hv availability (hv_support_init return) */
 extern uint64_t hv_build_gate;         /* DAT_fffffe0007e0da68 : EL2 build-path gate (==0 at runtime) */
 extern uint64_t hv_soc_feature_index;  /* DAT_fffffe0007e31628 : SoC feature index */
-extern uint8_t  hv_trace_flag;         /* DAT_fffffe000c68ac90 : trace-enable flag (bit 0) */
-extern uintptr_t cred_ops;             /* DAT_fffffe0007e93310 : credential/sandbox ops table */
+extern uint64_t hv_trace_flag;         /* DAT_fffffe000c68ac90 : trace-enable flag (bit 0) */
+extern uintptr_t cred_ops[];            /* DAT_fffffe0007e93310 : credential/sandbox ops table */
 extern uint64_t hv_bootarg_table;      /* DAT_fffffe0007e9d440 : boot-arg descriptor table */
 extern uint32_t hv_debug_flag;         /* DAT_fffffe000c62b3d0 : pending-sync / lock-storm flag */
 extern uint64_t hv_flush_lock;         /* DAT_fffffe000c756760 : flush/state lock */
@@ -217,7 +218,7 @@ extern uint64_t panic_log_buf;         /* DAT_fffffe000c62be38 : panic log buffe
 /* Code-signing / provisioning / trust-cache / MAC globals. */
 extern uint64_t cs_feature_init_flag;  /* DAT_fffffe0007e31c50 : code-signing feature init flag */
 extern uint64_t cs_feature_bitmap;     /* DAT_fffffe0007e31c58 : code-signing feature bitmap */
-extern uint64_t cs_feature_query;      /* DAT_fffffe0007e31d78 : code-signing feature query record ptr */
+extern int (*cs_feature_query)(void *buf);      /* DAT_fffffe0007e31d78 : code-signing feature query fn ptr (est.) */
 extern uint64_t coretrust_interface;   /* DAT_fffffe0007e46a60 : coretrust interface present flag */
 extern uint64_t image4_interface;      /* DAT_fffffe0007e46a78 : image4 interface present flag */
 extern uint64_t amfi_flags_0;          /* DAT_fffffe0007e31788 : AMFI/trust-cache flags word 0 */
@@ -244,4 +245,93 @@ extern uint64_t kernel_boot_state;     /* DAT_fffffe000c62be78 : kernel boot sta
 extern uintptr_t per_cpu_kmem_slots;   /* PTR_DAT_fffffe0007d6c6d0 : per-CPU kmem slot table */
 extern uintptr_t vm_pages_array;       /* PTR_DAT_fffffe0007d7ffe0 : vm pages array table */
 
+
+/* ---- raw kernel/boot helpers referenced as calls (identity uncertain;
+ * old-style declarations so the tree compiles; NOT recreated) ---- */
 #endif /* _KERN_STARTUP_H_ */
+
+/* ---- boot-path kernel helpers referenced as calls (identity uncertain;
+ * old-style declarations so the tree compiles; NOT recreated) ---- */
+extern int cs_features_enabled();
+extern int early_machine_lockdown();
+extern int hv_flush_lock_op();
+extern int iokit_finalize();
+extern int kdp_init_part1();
+extern int kdp_magic_init();
+extern int kdp_register_transport();
+extern int kernel_boot_alloc_init();
+extern int kernel_boot_arg_handle();
+extern int kernel_boot_finalize_a();
+extern int kernel_boot_finalize_b();
+extern int kernel_boot_finalize_c();
+extern int kernel_boot_finalize_d();
+extern int kernel_boot_log();
+extern int kernel_boot_misc();
+extern int kernel_boot_misc_c();
+extern int kernel_boot_misc_d();
+extern int kernel_boot_misc_e();
+extern int kernel_boot_misc_f();
+extern int kernel_boot_misc_g();
+extern int kernel_boot_misc_h();
+extern int kernel_boot_misc_i();
+extern int kernel_boot_misc_j();
+extern int kernel_boot_misc_k();
+extern int kernel_boot_misc_m();
+extern int kernel_boot_misc_n();
+extern int kernel_boot_misc_p();
+extern int kernel_boot_mp_start();
+extern int kernel_boot_policy();
+extern int kernel_boot_sync();
+extern int kernel_callback_register();
+extern int kernel_clock_init();
+extern int kernel_cpu_data_setup();
+extern int kernel_cpu_feature_setup();
+extern int kernel_dt_node_lookup();
+extern int kernel_dt_prop_get();
+extern int kernel_dt_read();
+extern int kernel_flush();
+extern int kernel_kalloc();
+extern int kernel_load_context_check();
+extern int kernel_lockdown_cb();
+extern int kernel_mapping_init();
+extern int kernel_mp_op_a();
+extern int kernel_mp_op_b();
+extern int kernel_percpu_bind();
+extern int kernel_percpu_finalize();
+extern int kernel_percpu_id();
+extern int kernel_progress();
+extern int kernel_sched_init();
+extern int kernel_spl();
+extern int kernel_termfuncs();
+extern int kernel_thread_state_set();
+extern int kernel_tlb_flush();
+extern int kernel_trace();
+extern int kernel_vm_pages();
+extern int machine_idle_continue();
+extern int pe_early_init();
+extern int pe_iokit_finalize();
+extern int pe_trace();
+extern int percpu_boot_continuation();
+extern int kdp_callback_a();
+extern int kdp_callback_b();
+extern int kdp_callback_c();
+extern int kdp_callback_d();
+
+/* ---- Mach-O artifacts from the kernel image (est., from Ghidra) ---- */
+struct segment_command {
+    uint32_t cmd;          /* LC_SEGMENT_64 = 0x19 */
+    uint32_t cmdsize;
+    char     segname[16];
+    uint64_t vmaddr;
+    uint64_t vmsize;
+    uint64_t fileoff;
+    uint64_t filesize;
+    uint32_t maxprot;
+    uint32_t initprot;
+    uint32_t nsects;
+    uint32_t flags;
+};
+extern struct segment_command segment_command_fffffe000700c020; /* segment-command table base */
+typedef struct segment_command segment_command;   /* allow bare 'segment_command *' in the reconstruction */
+extern uint64_t MACH_HEADER;      /* DAT_fffffe0007e9d280 kernel Mach-O header */
+extern uint64_t kernel_mach_header; /* est. kernel Mach-O header pointer */

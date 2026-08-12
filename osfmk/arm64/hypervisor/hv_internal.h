@@ -1,5 +1,8 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
 
+#include <stdint.h>
+#include <stddef.h>
+
 /*
  * hv_internal.h — internal shared helpers and cross-file prototypes.
  *
@@ -29,10 +32,10 @@
  * hv_vcpu.h both declared hv_vcpu_destroy and hv_vcpu_run with DIFFERENT
  * signatures for DIFFERENT Ghidra functions. The trap-dispatch pair in
  * hv.h/hv.c is now renamed hv_vcpu_destroy_trap / hv_vcpu_run_trap:
- *   hv.h        : kern_return_t hv_vcpu_destroy_trap(void *);  idx7 FUN_fffffe000b9897bc
- *                 kern_return_t hv_vcpu_run_trap(void *);      idx8 FUN_fffffe000b9899b0
- *   hv_vcpu.h   : void hv_vcpu_destroy(hv_vcpu_t *);              FUN_fffffe000b988e70
- *                 uint64_t hv_vcpu_run(void *);                   FUN_fffffe000b989a44 hub
+ *   hv.h        : kern_return_t hv_vcpu_destroy_trap(void *);  idx7 hv_vcpu_destroy_trap
+ *                 kern_return_t hv_vcpu_run_trap(void *);      idx8 hv_vcpu_run_trap
+ *   hv_vcpu.h   : void hv_vcpu_destroy(hv_vcpu_t *);              hv_vcpu_destroy
+ *                 uint64_t hv_vcpu_run(void *);                   hv_vcpu_run hub
  * hv_vcpu_destroy (b988e70) and hv_vcpu_run (b989a44) are the canonical
  * vcpu-core names; only those two remain under those names. A single
  * translation unit can now include both headers. This header declares the
@@ -72,16 +75,16 @@ struct hv_vcpu_run_state;
  * ======================================================================== */
 
 /* copyin/copyout — user<->kernel buffer moves.
- *   FUN_fffffe000b95c144 @ 0xfffffe000b95c144  (est. copyin)
- *   FUN_fffffe000b95d6f4 @ 0xfffffe000b95d6f4  (est. copyout)
+ *   copyin @ 0xfffffe000b95c144  (est. copyin)
+ *   copyout @ 0xfffffe000b95d6f4  (est. copyout)
  * Referenced by vcpu-core (hv_vcpu.c) and trap-dispatch (hv.c). */
 extern int  copyin(const void *src, void *dst, size_t len);
 extern int  copyout(const void *src, void *dst, size_t len);
 
 /* Per-CPU object locks around the shared vm/owner lock DAT_fffffe000c62c0b8.
- *   FUN_fffffe000b7f0afc @ 0xfffffe000b7f0afc  (est. lock_acquire)
- *   FUN_fffffe000b7f1e4c @ 0xfffffe000b7f1e4c  (est. lock_release)
- *   FUN_fffffe000b7f1e80 @ 0xfffffe000b7f1e80  (est. per-cpu sync / release)
+ *   lck_mtx_lock @ 0xfffffe000b7f0afc  (est. lock_acquire)
+ *   lock_acquire_variant @ 0xfffffe000b7f1e4c  (est. lock_release)
+ *   lck_mtx_unlock @ 0xfffffe000b7f1e80  (est. per-cpu sync / release)
  * Referenced by vcpu-core and trap-dispatch. The decompiles differ in arity
  * (vcpu.c passes 2 args, hv.c up to 4); keep call sites as decompiled. */
 extern void lock_acquire(void *lock, uint64_t arg, ...);
@@ -89,7 +92,7 @@ extern void lock_release(void *lock);
 extern void lock_sync(void *lock, uint64_t cpu);
 
 /* Per-CPU state base.
- *   FUN_fffffe000b866ec4 @ 0xfffffe000b866ec4  (est. per_cpu_base)
+ *   current_cpu_datap @ 0xfffffe000b866ec4  (est. per_cpu_base)
  * Returns the current CPU's per-cpu struct base (also reachable via
  * tpidr_el1). Referenced by vcpu-core and trap-dispatch. */
 extern void *per_cpu_base(uint64_t cpu);
@@ -108,10 +111,10 @@ extern void LORelease(void);
 
 /* Kernel zone allocation / free + validation used for EL2 translation and
  * guest-memory windows. Referenced by vcpu-core and el2-state.
- *   FUN_fffffe000b8a6c14 @ 0xfffffe000b8a6c14  (est. kernel_alloc / kalloc)
- *   FUN_fffffe000b8b51c8 @ 0xfffffe000b8b51c8  (est. kernel_mem_validate / vm_map_enter)
- *   FUN_fffffe000b8a8078 @ 0xfffffe000b8a8078  (est. kernel_mem_release / dealloc)
- *   FUN_fffffe000b8b6860 @ 0xfffffe000b8b6860  (est. kernel_memzero / kfree) */
+ *   kernel_alloc @ 0xfffffe000b8a6c14  (est. kernel_alloc / kalloc)
+ *   kernel_mem_validate @ 0xfffffe000b8b51c8  (est. kernel_mem_validate / vm_map_enter)
+ *   kernel_mem_release @ 0xfffffe000b8a8078  (est. kernel_mem_release / dealloc)
+ *   kernel_memzero @ 0xfffffe000b8b6860  (est. kernel_memzero / kfree) */
 extern int  kernel_alloc(uint64_t a, uint64_t b, uint64_t c, uint32_t prot,
                          int e, int f);
 extern int  kernel_mem_validate(void *a, void *b, uint64_t len, int prot,
@@ -132,7 +135,7 @@ extern void kernel_memzero(uint64_t a, uint64_t b, uint64_t c, int d, uint64_t e
  * carry a best-effort name + "(est.)" note.
  * ======================================================================== */
 
-extern uint8_t *tpidr_el1;                 /* per-cpu data base (kernel, el2-state/vcpu-core/trap-dispatch) */
+extern uint64_t tpidr_el1;                 /* per-cpu data base (kernel, el2-state/vcpu-core/trap-dispatch) */
 
 /* ---- Feature / SoC identity (written by support-init / el2 detect) ---- */
 extern uint64_t hv_chip_id;        /* DAT_fffffe0007e0c03c SoC/chip id, high byte 0x61='a' */
@@ -212,13 +215,13 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len);/* FUN
 uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which);/* FUN_fffffe000b98e12c */
 void hv_el2_pt_alloc(struct hv_vm *vm);                                   /* FUN_fffffe000b98e344; called by hv.c (op16) */
 uint64_t hv_el2_pt_alloc_wrapper(uint64_t vcpu);                          /* FUN_fffffe000b98e99c */
-extern void FUN_fffffe000b98e74c(uint64_t owner);  /* est. hv_el2_state_finalize, el2-state; called by hv_trap_op_10 (hv.c). NOT yet in manifest — needs an el2-state entry. */
+extern void hv_el2_state_finalize(uint64_t owner);  /* est. hv_el2_state_finalize, el2-state; called by hv_trap_op_10 (hv.c). NOT yet in manifest — needs an el2-state entry. */
 
 /* ---- from osfmk/arm64/hypervisor/hv_vcpu.c (vcpu-core tree) ---- */
 uint64_t hv_vcpu_create(void *user_state);              /* FUN_fffffe000b989040 */
 int hv_vcpu_alloc_init(struct hv_vcpu **out, uint64_t vm, int flag); /* FUN_fffffe000b989390 */
 void hv_vcpu_destroy(struct hv_vcpu *vcpu);             /* FUN_fffffe000b988e70 (see collision note above) */
-void hv_vcpu_object_release(void *object);              /* FUN_fffffe000b98533c; called by hv.c (vm create/destroy) */
+void hv_vcpu_object_release(uint64_t *object);           /* FUN_fffffe000b98533c; called by hv.c (vm create/destroy) */
 void hv_vcpu_state_merge(uint64_t dst, uint64_t src, uint64_t off_a,
                          uint64_t len_a, uint64_t off_b, uint64_t len_b); /* FUN_fffffe000b98503c */
 uint64_t hv_vcpu_map_memory(void *vcpu, uint64_t gpa, uint64_t size,
@@ -227,12 +230,71 @@ uint64_t hv_vcpu_attach(struct hv_vcpu *vcpu, uint64_t id); /* FUN_fffffe000b986
 void hv_vcpu_save_el2_state(struct hv_vcpu *vcpu, uint64_t dirty_mask);  /* FUN_fffffe000b988358 */
 uint64_t hv_vcpu_run(void *arg);                        /* FUN_fffffe000b989a44 (the run/exit hub; see collision note) */
 
+/* ---- raw kernel helpers referenced by hv.c with uncertain identity ----
+ * (declared so the tree compiles; names/arity are best-effort estimates) */
+extern void *os_ref_retain(void *obj);  /* FUN_fffffe000b7f089c: object retain */
+
 /* ---- from osfmk/arm64/hypervisor/hv_entitlements.c (entitlements tree) ---- */
 /* Referenced by hv.c (hv_vm_create). Entitlements tree has decompiled
- * FUN_fffffe000b985ae4: takes NO args (reads current thread's proc/cred
+ * hv_entitlement_tier: takes NO args (reads current thread's proc/cred
  * itself), returns uint8_t tier 0/1/3/4 (0=none,1=com.apple.security.hypervisor,
  * 3=vmapple or private,4=private+bootflag). hv.c's `hv_entitlement_tier(&in)`
  * call is a reconstruction approximation; real signature is void->uint8_t. */
 uint8_t hv_entitlement_tier(void);
 
+
+
+/* ---- raw kernel/boot helpers referenced as calls (identity uncertain;
+ * old-style declarations so the tree compiles; NOT recreated) ---- */
+extern int hv_vm_pool_release();
+extern int hv_flush();
+extern int hv_flush_lock_op();
+extern int LOAcquire();
+extern void refcount_dec(void *ref, void *free_fn);  /* typed (hv_kernel_glue.h) */
+extern int hv_addr_width();
+extern int hv_percpu_notify();
+extern int hv_debug_reg_apply();
+extern int kernel_obj_lookup_core();
+extern int hv_rbtree_insert();
+extern int hv_vm_unwind();
+extern int hv_vm_owner_teardown();
+extern int hv_el2_state_activate();
+extern int hv_vcpu_slot_clear();
+extern int hv_obj_list_op();
+extern int kernel_daemon_plumbing_b();
+extern int kernel_snprintf();
+extern int kernel_thread_create();
+extern int kernel_thread_create_variant();
+extern int list_remove();
+extern int nesting_exit();
+extern int page_release();
+extern int thread_set_name();
+extern int thread_deallocate();
+extern int kernel_thread_create_core();
+extern int thread_daemon_cont_a();
+extern int thread_daemon_cont_b();
+extern int thread_daemon_cont_c();
+extern int thread_daemon_cont_d();
+extern int thread_bind_core();
+extern int zfree_waitq();
+extern int kernel_thread_state_get();
+extern int kernel_percpu_bind_cpu();
+extern int kernel_zone_alloc();
+extern int kernel_zone_meta();
+extern int kernel_mp_setup();
+extern int kernel_progress_log();
+extern int kernel_log();
+extern int kernel_strlcat_a();
+extern int kernel_strlcat_b();
+extern int kernel_boot_arg_present();
+extern int kernel_unmap();
+extern int kernel_segment_bounds();
+extern int kernel_vm_page_op();
+extern int kernel_copy_handle();
+extern int kernel_copy_src();
+extern int kernel_cpu_data_init();
+extern int kernel_daemon_plumbing_a();
+extern int kernel_early_init();
+extern int kernel_boot_misc_b();
+extern int kernel_boot_misc_l();
 #endif /* _ARM64_HYPERVISOR_HV_INTERNAL_H_ */

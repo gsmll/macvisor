@@ -1,4 +1,5 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_entitlements.h — entitlement-gated capability prototypes and the
@@ -26,7 +27,7 @@ uint8_t hv_entitlement_tier(void);
 void hv_caps_feature_mask(uint64_t *mask, uint32_t tier);
 
 /* FUN_fffffe000b988038 — fill hv capabilities CPU/memory feature report. */
-void hv_caps_cpu_report(int64_t tier_block, uint64_t *report);
+void hv_caps_cpu_report(int64_t *tier_block, uint64_t *report);
 
 /* ---- Shared kernel deps used by the entitlement code (declared, NOT
  *      recreated; direct callees get bodies in hv_kernel_glue.c) ---- */
@@ -36,13 +37,13 @@ void hv_caps_cpu_report(int64_t tier_block, uint64_t *report);
 extern uintptr_t cred_ops[];                         /* DAT_fffffe0007e93310 */
 
 /* Thread->proc accessor (FUN_fffffe000b866ec4) and credential validator
- * (FUN_fffffe000b8663e8, recreated as current_task in hv_kernel_glue.c). */
+ * (current_task, recreated as current_task in hv_kernel_glue.c). */
 extern void *per_cpu_base(uint64_t thread);
 extern void *current_task(void *obj);   /* FUN_fffffe000b8663e8, body in hv_kernel_glue.c */
-extern long  FUN_fffffe000b95fe60(int idx);   /* est. cache_type_lookup */
+extern long  cache_type_lookup(int idx);   /* est. cache_type_lookup */
 
 /* Entitlement-relevant globals (est.). */
-extern uint8_t *tpidr_el1;                     /* per-cpu data base (kernel) */
+extern uint64_t tpidr_el1;                     /* per-cpu data base (kernel) */
 extern uint32_t hv_bootarg_flags;                  /* DAT_fffffe0007e255f8 boot-arg enable flags */
 extern uint32_t hv_soc_implementer;                /* DAT_fffffe0007e0d818 SoC implementer (hv_el2_feature_detect) */
 extern uint64_t hv_features;                       /* DAT_fffffe0007e0d820 hv feature flags */

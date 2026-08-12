@@ -1,26 +1,27 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_entitlements.c — entitlement-gated hypervisor capability reporting.
  *
  * Owned by the entitlements tree.
  *
- * The hypervisor capability trap (FUN_fffffe000b984fd8, est. hv_trap_op_0 /
+ * The hypervisor capability trap (hv_capabilities, est. hv_trap_op_0 /
  * hv_capabilities; trap-dispatch tree) builds a 0x1b3-byte capabilities
  * block and copies it out to the caller. It does so in three steps:
- *   1. FUN_fffffe000b985ae4 (est. hv_entitlement_access_level, owned by the
+ *   1. hv_entitlement_tier (est. hv_entitlement_access_level, owned by the
  *      vmapple-ipc tree, decompiled in hv_vmapple.c) returns the calling
  *      task's hypervisor entitlement tier (0/1/3/4) from the three strings
  *      com.apple.security.hypervisor / com.apple.private.hypervisor.vmapple /
  *      com.apple.private.hypervisor via the credential ops table
  *      DAT_fffffe0007e93310 slot +0x1c0.
- *   2. FUN_fffffe000b987d9c (this file, est. hv_caps_feature_mask) folds that
+ *   2. hv_caps_feature_mask (this file, est. hv_caps_feature_mask) folds that
  *      tier into a 19-qword feature-mask block.
- *   3. FUN_fffffe000b988038 (this file, est. hv_caps_cpu_report) fills the
+ *   3. hv_caps_cpu_report (this file, est. hv_caps_cpu_report) fills the
  *      CPU/memory feature report (cache geometry + ID registers) into the
  *      same block.
- * hv_vm_create (FUN_fffffe000b985588, trap-dispatch) also calls
- * FUN_fffffe000b987d9c with a tier value.
+ * hv_vm_create (hv_vm_create, trap-dispatch) also calls
+ * hv_caps_feature_mask with a tier value.
  */
 
 #include "hv_entitlements.h"
@@ -28,18 +29,18 @@
 #include "hv_internal.h"     /* per_cpu_base, DAT_fffffe0007e0d818, PTR_PTR_... */
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b985ae4 @ 0xfffffe000b985ae4   (est. hv_entitlement_tier)
- * Ghidra: undefined1 FUN_fffffe000b985ae4(void)
+ * hv_entitlement_tier @ 0xfffffe000b985ae4   (est. hv_entitlement_tier)
+ * Ghidra: undefined1 hv_entitlement_tier(void)
  * Determines the calling thread's hypervisor entitlement tier by probing the
  * three entitlement strings through the shared credential ops table. Returns
  * 0 (no entitlement), 1 (com.apple.security.hypervisor), 3 (the vmapple or
  * private-hypervisor entitlement is present) or 4 (private-hypervisor is
  * present AND the boot-arg enable bit DAT_fffffe0007e255f8 & 0x1010 is set).
- * Called by op-table index 0 (FUN_fffffe000b984fd8) to gate the capabilities
- * report, and is the tier input to FUN_fffffe000b987d9c.
+ * Called by op-table index 0 (hv_capabilities) to gate the capabilities
+ * report, and is the tier input to hv_caps_feature_mask.
  * Confidence: high
- * Notes: resolves the current task via per_cpu_base(FUN_fffffe000b866ec4) and
- *   validates it via current_task (FUN_fffffe000b8663e8, recreated in
+ * Notes: resolves the current task via per_cpu_base(current_cpu_datap) and
+ *   validates it via current_task (current_task, recreated in
  *   hv_kernel_glue.c); entitlement dispatch is
  *   `(**(code **)(DAT_fffffe0007e93310 + 0x1c0))(cred, string)`. Reads
  *   DAT_fffffe0007e255f8 (boot-arg enable flags). Ground truth FUN_ + addr
@@ -53,7 +54,7 @@ uint8_t hv_entitlement_tier(void)
 	bool    has_security;
 
 	proc = (long)per_cpu_base((uint64_t)tpidr_el1); /* FUN_fffffe000b866ec4: thread->proc (kernel dep) */
-	if (proc == 0 || (cred = current_task((void *)proc), cred == 0)) {
+	if (proc == 0 || (cred = (long)current_task((void *)proc), cred == 0)) {
 		has_security = false;
 	} else {
 		rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
@@ -62,15 +63,15 @@ uint8_t hv_entitlement_tier(void)
 	}
 	tier = has_security;
 
-	if (proc != 0 && (cred = current_task((void *)proc), cred != 0)) {
-		rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
-		                                                  "com.apple.private.hypervisor.vmapple");
+		if (proc != 0 && (cred = (long)current_task((void *)proc), cred != 0)) {
+			rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
+			                                                  "com.apple.private.hypervisor.vmapple");
 		tier = 3;
 		if (rc != 0)
 			tier = has_security;
 	}
 
-	if (proc != 0 && (cred = current_task((void *)proc), cred != 0) &&
+	if (proc != 0 && (cred = (long)current_task((void *)proc), cred != 0) &&
 	    ((rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
 	                                                        "com.apple.private.hypervisor"),
 	      rc == 0)) && ((tier = 3), (hv_bootarg_flags & 0x1010) != 0)) {   /* DAT_fffffe0007e255f8 */
@@ -80,11 +81,11 @@ uint8_t hv_entitlement_tier(void)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b987d9c @ 0xfffffe000b987d9c   (est. hv_caps_feature_mask)
- * Ghidra: void FUN_fffffe000b987d9c(ulong *param_1, uint param_2)
+ * hv_caps_feature_mask @ 0xfffffe000b987d9c   (est. hv_caps_feature_mask)
+ * Ghidra: void hv_caps_feature_mask(ulong *param_1, uint param_2)
  * Fills a 19-qword (0x98-byte) feature-mask block at param_1 with the
  * hypervisor capability bits that the caller (param_2 = entitlement tier from
- * FUN_fffffe000b985ae4) is entitled to. For tiers < 2 it additionally probes
+ * hv_entitlement_tier) is entitled to. For tiers < 2 it additionally probes
  * the "com.apple.private.virtualization" entitlement to decide whether to set
  * the extended (0x202) capability; tiers 2..3 select progressively richer
  * default masks. Clears a CPU-feature bit when DAT_fffffe0007e0d820 bit 1 is
@@ -93,7 +94,7 @@ uint8_t hv_entitlement_tier(void)
  * Notes: reads DAT_fffffe0007e0d818 (SoC implementer) to clear a feature bit
  *   (uVar9 = 0 when (DAT-3) > 0xfffffffd) and DAT_fffffe0007e0d820 (hv feature
  *   flags). Entitlement dispatch via DAT_fffffe0007e93310 + 0x1c0; current
- *   task via per_cpu_base(FUN_fffffe000b866ec4) + current_task (FUN_fffffe000b8663e8, recreated in hv_kernel_glue.c). */
+ *   task via per_cpu_base(current_cpu_datap) + current_task (current_task, recreated in hv_kernel_glue.c). */
 /* Fixed capability feature-mask literals for hv_caps_feature_mask().
  * HV_CAP_MASK_<n> is the default mask stored at mask[n]. Index 0x12 (18) is
  * computed at runtime (SoC-dependent) and stays a literal. */
@@ -116,7 +117,7 @@ uint8_t hv_entitlement_tier(void)
 #define HV_CAP_MASK_16  0x20e12
 #define HV_CAP_MASK_17  0
 
-void hv_caps_feature_mask(ulong *mask, uint tier)
+void hv_caps_feature_mask(uint64_t *mask, uint32_t tier)
 {
 	ulong feat, cap4, cap5, cap7, cap6, cap8;
 	long  task;
@@ -150,7 +151,7 @@ void hv_caps_feature_mask(ulong *mask, uint tier)
 		mask[0xd] = 2;
 		task = (long)per_cpu_base((uint64_t)tpidr_el1);
 		if (task != 0) {
-			task = current_task((void *)task);
+                        task = (long)current_task((void *)task);
 			if (task == 0) {
 				feat = 2;
 			} else {
@@ -201,8 +202,8 @@ build:
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b988038 @ 0xfffffe000b988038   (est. hv_caps_cpu_report)
- * Ghidra: void FUN_fffffe000b988038(long param_1, undefined8 *param_2)
+ * hv_caps_cpu_report @ 0xfffffe000b988038   (est. hv_caps_cpu_report)
+ * Ghidra: void hv_caps_cpu_report(long param_1, undefined8 *param_2)
  * Fills the hv capabilities CPU/memory report block at param_2 with feature
  * and cache information: the cache block-size shift for 0x1000/0x4000 page
  * sizes, CTR/DCZID/ID_AA64* read-only registers, and the cache-geometry data
@@ -213,19 +214,19 @@ build:
  * Notes: reads ctr_el0, dczid_el0, id_aa64dfr0/1_el1, id_aa64isar0/1_el1,
  *   id_aa64mmfr0/1_el1, id_aa64pfr0/1_el1, UnkSytemRegRead(3,0,0,7,2) and
  *   UnkSytemRegRead(3,0,0,4,5)/(3,0,0,4,4). Cache geometry via
- *   FUN_fffffe000b95fe60 (est. cache_type_lookup, shared kernel dep,
+ *   cache_type_lookup (est. cache_type_lookup, shared kernel dep,
  *   universal cache-topology primitive, extern in hv_kernel_glue.c);
  *   page-size tables PTR_PTR_fffffe000c5b3f58/60/68. DAT_fffffe0007e0c6ac is a
  *   cache/topology flag word; DAT_fffffe0007e0d820 bit 2 feeds byte +0x34.
  *   Decompiler warning: "Control flow encountered bad instruction data". */
-void hv_caps_cpu_report(long tier_block, ulong *report)
+void hv_caps_cpu_report(int64_t *tier_block, uint64_t *report)
 {
 	ulong ctr;
 	ulong dczid;
 	int   popcnt, sel_a, sel_b;
 	byte  sel;
-	long *psz_tbl;
-	long *psz_tbl_b;
+	uint64_t *psz_tbl;
+	uint64_t *psz_tbl_b;
 	long  cache_desc;
 
 	report[5] = 0; report[4] = 0; report[7] = 0; report[6] = 0;
@@ -292,7 +293,7 @@ joined:
 	}
 	sel = 0;
 select:
-	cache_desc = (long)FUN_fffffe000b95fe60(sel);   /* est. cache_type_lookup (kernel dep) */
+	cache_desc = (long)cache_type_lookup(sel);   /* est. cache_type_lookup (kernel dep) */
 	report[0x18] = (ulong)*(uint *)(cache_desc + 0x30);
 	report[0x19] = *(ulong *)(cache_desc + 0x38);
 	report[0x21] = *(ulong *)(cache_desc + 0x70);

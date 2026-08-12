@@ -1,24 +1,25 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_support.c — hypervisor support/init: boot entry, EL2 feature
  * detection, availability (mach-trap dispatcher).
  *
  * Owned by the support-init tree.
- * Seed roots: FUN_fffffe000b984d4c (est. hv_support_init),
- *   FUN_fffffe000b987fa8 (est. hv_el2_feature_detect),
- *   FUN_fffffe000b984ed8 (est. hv_available / mach-trap dispatcher).
+ * Seed roots: hv_support_init (est. hv_support_init),
+ *   hv_el2_feature_detect (est. hv_el2_feature_detect),
+ *   hv_available (est. hv_available / mach-trap dispatcher).
  *
  * The hv mach-trap operation table this tree dispatches through lives at
- * PTR_FUN_fffffe0007e0d750; its handlers are owned by the vcpu-core and
+ * PTR_hv_op_table; its handlers are owned by the vcpu-core and
  * trap-dispatch trees (see docs/manifest.json).
  */
 
 #include "hv_support.h"
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b984d4c @ 0xfffffe000b984d4c   (est. hv_support_init)
- * Ghidra: undefined8 FUN_fffffe000b984d4c(void)
+ * hv_support_init @ 0xfffffe000b984d4c   (est. hv_support_init)
+ * Ghidra: undefined8 hv_support_init(void)
  * Boot-time hypervisor support initialization. Runs only when the CPU is
  * executing at EL2 (currentel bits [3:2] == 8) and the SoC/chip identifier
  * (DAT_fffffe0007e0c03c, high byte 0x61 = 'a') marks an Apple implementer.
@@ -27,14 +28,14 @@
  * "apple-isa-vm-quota" device-tree property, clamps it to INT_MAX, writes it
  * to the quota globals, and lets a "hv_apple_isa_vm_quota" boot-arg override
  * it when the enable bit in DAT_fffffe0007e255f8 is set. Finally runs EL2
- * feature detection (FUN_fffffe000b987fa8) and returns 1 on success, 0 if
+ * feature detection (hv_el2_feature_detect) and returns 1 on success, 0 if
  * EL2 is not active or the chip is unsupported.
  * Confidence: high
  * Notes: writes DAT_fffffe0007e0d7f0/0x7f4/0x7f8 (quota) and
  *   DAT_fffffe000c5b83b0/0x3b4/0x3b8 (derived quota copies). Reads
  *   DAT_fffffe0007e0c03c (chip id) and DAT_fffffe0007e255f8 (boot-arg enable
- *   bit 4). Kernel deps: FUN_fffffe000c09c084 (DT "/product" lookup),
- *   FUN_fffffe000c09c31c (DT property get), FUN_fffffe000c09cbf0 (boot-arg
+ *   bit 4). Kernel deps: kernel_dt_node_lookup (DT "/product" lookup),
+ *   kernel_dt_prop_get (DT property get), kernel_boot_arg_get (boot-arg
  *   getter). Warning: "Globals starting with '_' overlap smaller symbols." */
 static int hv_support_init(void)
 {
@@ -63,9 +64,9 @@ static int hv_support_init(void)
             dt_node = 0;
             prop_val = 0;
             prop_size = 0;
-            rc = FUN_fffffe000c09c084(0, "/product", &dt_node); /* DT "/product" node lookup, kernel */
+            rc = kernel_dt_node_lookup(0, "/product", &dt_node); /* DT "/product" node lookup, kernel */
             if ((rc == 1) &&
-                (rc = FUN_fffffe000c09c31c(dt_node, "apple-isa-vm-quota",
+                (rc = kernel_dt_prop_get(dt_node, "apple-isa-vm-quota",
                                            &prop_val, &prop_size), /* DT property get, kernel */
                  rc == 1) && (prop_size == 4)) {
                 quota = *prop_val;
@@ -81,7 +82,7 @@ static int hv_support_init(void)
             if ((hv_bootarg_flags >> 4 & 1) != 0) {
                 /* boot-arg override enabled: read hv_apple_isa_vm_quota */
                 boot_quota = 0;
-                rc = FUN_fffffe000c09cbf0(hv_bootarg_table + 0x6c,
+                rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c,
                                           "hv_apple_isa_vm_quota",
                                           &boot_quota, 4, 0); /* boot-arg getter, kernel */
                 if (rc != 0) {
@@ -93,7 +94,7 @@ static int hv_support_init(void)
                     hv_quota[2] = boot_quota;
                 }
             }
-            FUN_fffffe000b987fa8();   /* est. hv_el2_feature_detect */
+			hv_el2_feature_detect();   /* FUN_fffffe000b987fa8 (same file) */
             return 1;
         }
     }
@@ -101,8 +102,8 @@ static int hv_support_init(void)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b987fa8 @ 0xfffffe000b987fa8   (est. hv_el2_feature_detect)
- * Ghidra: void FUN_fffffe000b987fa8(void)
+ * hv_el2_feature_detect @ 0xfffffe000b987fa8   (est. hv_el2_feature_detect)
+ * Ghidra: void hv_el2_feature_detect(void)
  * EL2 feature / SoC detection. Reads the EL2 feature register (masking out
  * bits 0x0..0x2000 into DAT_fffffe0007e0d800), the main ID registers aidr_el1
  * and id_aa64pfr0/1_el1, and derives three SoC feature flags: the part
@@ -142,20 +143,20 @@ static void hv_el2_feature_detect(void)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b984ed8 @ 0xfffffe000b984ed8   (est. hv_available)
- * Ghidra: void FUN_fffffe000b984ed8(long param_1)
+ * hv_available @ 0xfffffe000b984ed8   (est. hv_available)
+ * Ghidra: void hv_available(long param_1)
  * Mach-trap entry that dispatches hypervisor operations by command number.
  * Reads the command (param_1+8) and its argument (param_1+0x10); if the
  * hypervisor availability global DAT_fffffe0007e41db0 is clear it returns
  * error 0xfae9400f; otherwise it calls the command's handler through the
- * PTR_FUN_fffffe0007e0d750 table (commands 0xd and 0x12 are reserved NULL
+ * PTR_hv_op_table table (commands 0xd and 0x12 are reserved NULL
  * entries) and writes the result back to param_1+8. Traces entry (0x10c0015)
- * and exit (0x10c0016) through FUN_fffffe000bd30528 when the trace flag
+ * and exit (0x10c0016) through kernel_trace when the trace flag
  * (DAT_fffffe000c68ac90 bit 0) is set.
  * Confidence: medium
- * Notes: dispatches through PTR_FUN_fffffe0007e0d750 (19-entry hv mach-trap
+ * Notes: dispatches through PTR_hv_op_table (19-entry hv mach-trap
  *   op table; handlers owned by vcpu-core/trap-dispatch trees). Reads
- *   DAT_fffffe0007e41db0 (hv availability). Kernel dep: FUN_fffffe000bd30528
+ *   DAT_fffffe0007e41db0 (hv availability). Kernel dep: kernel_trace
  *   (trace). Error codes -0x516bff1=0xfae9400f (hv unavailable),
  *   -0x516bfff=0xfae94001 (default). Decompiler quirk: the table-index
  *   arithmetic (0x2bad000000000000 OR) is pointer sign-extension noise. */
@@ -169,7 +170,7 @@ static void hv_available(long param_1)
     arg = *(ulong *)(param_1 + 0x10);
 
     if (((byte)hv_trace_flag & 1) != 0) {
-        FUN_fffffe000bd30528(0x10c0015, cmd, arg, 0, 0); /* kernel trace */
+        kernel_trace(0x10c0015, cmd, arg, 0, 0); /* kernel trace */
     }
 
     result = -0x516bfff;   /* 0xfae94001 default error */
@@ -177,8 +178,8 @@ static void hv_available(long param_1)
         result = -0x516bff1;           /* 0xfae9400f: hypervisor unavailable */
     } else if ((cmd < 0x13 && cmd != 0xd) && cmd != 0x12) {
         /* dispatch through the 19-entry hv operation table at
-         * PTR_FUN_fffffe0007e0d750; 0xd/0x12 are the two NULL entries. */
-        result = (long)((hv_op_func_t *)(PTR_FUN_fffffe0007e0d750))[cmd](arg);
+         * PTR_hv_op_table; 0xd/0x12 are the two NULL entries. */
+        result = (long)((hv_op_func_t *)(PTR_hv_op_table))[cmd](arg);
     }
 
     *(long *)(param_1 + 8) = result;
@@ -186,5 +187,5 @@ static void hv_available(long param_1)
     if (((byte)hv_trace_flag & 1) == 0) {
         return;
     }
-    FUN_fffffe000bd30528(0x10c0016, result, 0, 0, 0); /* kernel trace */
+    kernel_trace(0x10c0016, result, 0, 0, 0); /* kernel trace */
 }

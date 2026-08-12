@@ -1,15 +1,16 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_vmm.c — EL2 register state construction and feature reads.
  *
  * Owned by the el2-state tree.
- * Seed roots: FUN_fffffe000b9895b8 (est. hv_el2_state_build),
- *   FUN_fffffe000b98dd40 (hv_el2_state_apply), FUN_fffffe000b98dd04
- *   (hv_vcpu_run_prepare), FUN_fffffe000b98ded4 (hv_el2_state_commit),
- *   FUN_fffffe000b98e020 (hv_copyin_user), FUN_fffffe000b98e12c
- *   (hv_vcpu_slot_op), FUN_fffffe000b98e344 (hv_el2_pt_alloc), plus the
- *   table-dispatched wrapper FUN_fffffe000b98e99c.
+ * Seed roots: hv_el2_state_build (est. hv_el2_state_build),
+ *   hv_el2_state_apply (hv_el2_state_apply), hv_vcpu_run_prepare
+ *   (hv_vcpu_run_prepare), hv_el2_state_commit (hv_el2_state_commit),
+ *   hv_copyin_user (hv_copyin_user), hv_vcpu_slot_op
+ *   (hv_vcpu_slot_op), hv_el2_pt_alloc (hv_el2_pt_alloc), plus the
+ *   table-dispatched wrapper hv_el2_pt_alloc_wrapper.
  *
  * See hv_vmm.h for the EL2 state offsets. All register-identity names are
  * estimates; constants are recorded verbatim. EL2 sysreg reads stay literal.
@@ -21,7 +22,7 @@
 #define HV_EL2_MAGIC_PRIMARY  0x2068797003000000ULL
 
 /*
- * EL2 register constants written by FUN_fffffe000b9895b8 and the offsets
+ * EL2 register constants written by hv_el2_state_build and the offsets
  * they land in. All are ESTIMATES of the named register; bit-field decodes
  * are against the ARM ARM AArch64 system-register encodings and are marked
  * unverified because the kernelcache is stripped (we only see the 64-bit
@@ -53,8 +54,8 @@
  */
 
 /*
- * FUN_fffffe000b9895b8 @ 0xfffffe000b9895b8   (est. hv_el2_state_build)
- * Ghidra: void FUN_fffffe000b9895b8(long *param_1,long param_2,uint param_3)
+ * hv_el2_state_build @ 0xfffffe000b9895b8   (est. hv_el2_state_build)
+ * Ghidra: void hv_el2_state_build(long *param_1,long param_2,uint param_3)
  * Builds the initial per-CPU EL2 register state. param_1 = hv_vm (field 0 =
  * hv_vm_config), param_2 = per-CPU EL2 state block base, param_3 = flags
  * (bit 0 == primary vCPU). Writes the magic header, reads EL2 sysregs, then
@@ -156,11 +157,11 @@ void hv_el2_state_build(struct hv_vm *vm, uint8_t *el2, uint32_t flags)
 }
 
 /*
- * FUN_fffffe000b98dd40 @ 0xfffffe000b98dd40   (est. hv_el2_state_apply)
- * Ghidra: void FUN_fffffe000b98dd40(long *param_1)
+ * hv_el2_state_apply @ 0xfffffe000b98dd40   (est. hv_el2_state_apply)
+ * Ghidra: void hv_el2_state_apply(long *param_1)
  * Merges the template (requested) EL2 register values (+0x6a8..) into the
  * active set (+0x4030..), applying per-register config masks from
- * hv_vm_config (+0x2088..). Called by the vcpu hub FUN_fffffe000b989a44 to
+ * hv_vm_config (+0x2088..). Called by the vcpu hub hv_vcpu_run to
  * commit a guest's EL2 register requests to the live state.
  * Confidence: medium (inferred from param_1[0x16] -> el2 base and *param_1
  *   -> cfg; matches template/active split in b9895b8)
@@ -219,15 +220,15 @@ void hv_el2_state_apply(struct hv_vm *vm)
 }
 
 /*
- * FUN_fffffe000b98dd04 @ 0xfffffe000b98dd04   (est. hv_vcpu_run_prepare)
- * Ghidra: void FUN_fffffe000b98dd04(long param_1,int param_2)
+ * hv_vcpu_run_prepare @ 0xfffffe000b98dd04   (est. hv_vcpu_run_prepare)
+ * Ghidra: void hv_vcpu_run_prepare(long param_1,int param_2)
  * Sets up a vCPU run request: transitions a state word (2 -> 1), records the
- * run buffer, and delegates the actual run to FUN_fffffe000b986e50
+ * run buffer, and delegates the actual run to hv_vcpu_attach
  * (vcpu-core tree, not decompiled here).
  * Confidence: medium (inferred from state transition + buffer setup)
  * Notes: the +0xf0 field is a pointer to an int state that goes 2->1; +8 is
  *   a buffer whose +8/+0x10 are written with param_2; +0xb0 aliases it.
- *   Calls FUN_fffffe000b986e50 (est. hv_vcpu_run, vcpu-core tree).
+ *   Calls hv_vcpu_attach (est. hv_vcpu_run, vcpu-core tree).
  */
 void hv_vcpu_run_prepare(struct hv_vcpu_run_state *vcpu, int param2)
 {
@@ -239,12 +240,12 @@ void hv_vcpu_run_prepare(struct hv_vcpu_run_state *vcpu, int param2)
     vcpu->runbuf_slot = (uint64_t)vcpu->runbuf;  /* +0xb0 */
     vcpu->state2 = 0;                            /* +0xe8 */
     vcpu->state_ptr = NULL;                      /* +0xf0 */
-    FUN_fffffe000b986e50(0);   /* est. hv_vcpu_run — vcpu-core tree */
+    hv_vcpu_attach(NULL, 0);   /* est. hv_vcpu_attach (vcpu-core tree, b986e50); arg estimate */
 }
 
 /*
- * FUN_fffffe000b98ded4 @ 0xfffffe000b98ded4   (est. hv_el2_state_commit)
- * Ghidra: void FUN_fffffe000b98ded4(long param_1)
+ * hv_el2_state_commit @ 0xfffffe000b98ded4   (est. hv_el2_state_commit)
+ * Ghidra: void hv_el2_state_commit(long param_1)
  * Iterates the 8 dirty-tracking registers (template +0x738..0x770 vs
  * guest-saved +0x40c0..0x40f8). For each slot whose "changed" bit (bit 32)
  * is set, validates the saved value against the current guest value, then
@@ -293,20 +294,20 @@ void hv_el2_state_commit(struct hv_vcpu_run_state *vcpu)
 }
 
 /*
- * FUN_fffffe000b98e020 @ 0xfffffe000b98e020   (est. hv_copyin_user)
- * Ghidra: undefined4 FUN_fffffe000b98e020(undefined8 param_1,long *param_2,
+ * hv_copyin_user @ 0xfffffe000b98e020   (est. hv_copyin_user)
+ * Ghidra: undefined4 hv_copyin_user(undefined8 param_1,long *param_2,
  *         undefined8 param_3,long param_4)
  * Validates and copies a user buffer of length param_4 from address *param_2.
- * First validates the range via kernel_mem_validate (FUN_fffffe000b8b51c8)
+ * First validates the range via kernel_mem_validate (kernel_mem_validate)
  * with protection 0x1c100008, then copies via kernel_copyin
- * (FUN_fffffe000b8afb18) with the VM_MAP_WIRE fault table. Returns 0 on
+ * (kernel_copyin) with the VM_MAP_WIRE fault table. Returns 0 on
  * success or an hv error code (0xfae94001/3/5).
  * Confidence: medium (two-step validate-then-copyin shape, kernel helper refs)
  * Notes: error decode — kernel result 1 -> 0xfae94003, 3 -> 0xfae94005,
  *   else 0xfae94001. DAT_fffffe0007d813d8 is a {int,char*} fault-name array
  *   pointing at "VM_MAP_WIRE" (fffffe0007067b6b) / "VM_MAP_UNWIRE"
  *   (fffffe0007067b77). On copyin failure calls kernel_mem_release
- *   (FUN_fffffe000b8a8078) to unwind the validated range.
+ *   (kernel_mem_release) to unwind the validated range.
  */
 uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len)
 {
@@ -337,8 +338,8 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len)
 }
 
 /*
- * FUN_fffffe000b98e12c @ 0xfffffe000b98e12c   (est. hv_vcpu_slot_op)
- * Ghidra: undefined4 FUN_fffffe000b98e12c(long *param_1,ulong param_2,ulong param_3)
+ * hv_vcpu_slot_op @ 0xfffffe000b98e12c   (est. hv_vcpu_slot_op)
+ * Ghidra: undefined4 hv_vcpu_slot_op(long *param_1,ulong param_2,ulong param_3)
  * Performs an operation on a vCPU slot (index param_2 < 8, sub-field
  * param_3 < 64). Bumps the vcpu object's refcount (LORelease on unwind),
  * transitions a per-slot word from 1 -> 2, then either wires a fresh
@@ -347,11 +348,11 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len)
  * Confidence: low (complex slot/refcount logic, no strong identity)
  * Notes: cfg->vcpu_slot[] at +0x2148; object refcount at *(obj) (negative ->
  *   0xfae94002, zero -> 0xfae94006). kernel deps: kernel_lock_ref
- *   (FUN_fffffe000b7f62e8), kernel_memzero (FUN_fffffe000b8b6860),
- *   kernel_copyout (FUN_fffffe000b8b49e8), kernel_copyin2
- *   (FUN_fffffe000b8b122c, with DAT_fffffe0007d81408 fault table =
+ *   (kernel_lock_ref), kernel_memzero (kernel_memzero),
+ *   kernel_copyout (kernel_copyout), kernel_copyin2
+ *   (kernel_copyin2, with DAT_fffffe0007d81408 fault table =
  *   {20,"VM_MAP_UNWIRE",19,"VM_MAP_WIRE"...}), kernel_mem_release
- *   (FUN_fffffe000b8a8078 thunk @ b9141a4). Uses param_1[0x11] (+0x88) and
+ *   (kernel_mem_release thunk @ b9141a4). Uses param_1[0x11] (+0x88) and
  *   cfg->el2_cfg (+0x2198). LORelease on every unwind path.
  */
 uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which)
@@ -440,21 +441,21 @@ commit:
 }
 
 /*
- * FUN_fffffe000b98e344 @ 0xfffffe000b98e344   (est. hv_el2_pt_alloc)
- * Ghidra: void FUN_fffffe000b98e344(long *param_1)
+ * hv_el2_pt_alloc @ 0xfffffe000b98e344   (est. hv_el2_pt_alloc)
+ * Ghidra: void hv_el2_pt_alloc(long *param_1)
  * Allocates the 0x4000-byte EL2 translation block for a vCPU (via
- * kernel_alloc FUN_fffffe000b8a6c14), validates it with
- * kernel_mem_validate (FUN_fffffe000b8b51c8), stores it into the per-CPU EL2
+ * kernel_alloc kernel_alloc), validates it with
+ * kernel_mem_validate (kernel_mem_validate), stores it into the per-CPU EL2
  * state at +0x4150, sets the "hyp running" flag bit (bit 49 of +0x4118), and
- * on the last reference clears it via an EL2 TLB flush (FUN_fffffe000b96c6d4).
+ * on the last reference clears it via an EL2 TLB flush (kernel_tlb_flush).
  * Uses the per-cpu counter at tpidr_el1 + 0x1c0; panics on overflow via
- * FUN_fffffe000c0f1874. Marks vm->built = 1 on exit.
+ * kernel_panic. Marks vm->built = 1 on exit.
  * Confidence: medium (allocation + per-cpu refcount + flush shape)
- * Notes: kernel deps: kernel_alloc (FUN_fffffe000b8a6c14, size 0x4000,
- *   prot 0x10080), kernel_mem_validate (FUN_fffffe000b8b51c8),
- *   kernel_lock_ref (FUN_fffffe000b7f62e8), kernel_memzero
- *   (FUN_fffffe000b8b6860), kernel_tlb_flush (FUN_fffffe000b96c6d4),
- *   kernel_panic noreturn (FUN_fffffe000c0f1874). param_1[0x18] (+0xc0) is
+ * Notes: kernel deps: kernel_alloc (kernel_alloc, size 0x4000,
+ *   prot 0x10080), kernel_mem_validate (kernel_mem_validate),
+ *   kernel_lock_ref (kernel_lock_ref), kernel_memzero
+ *   (kernel_memzero), kernel_tlb_flush (kernel_tlb_flush),
+ *   kernel_panic noreturn (kernel_panic). param_1[0x18] (+0xc0) is
  *   the allocation pointer; param_1[0x16] (+0xb0) is the el2 state base.
  */
 void hv_el2_pt_alloc(struct hv_vm *vm)
@@ -495,12 +496,12 @@ void hv_el2_pt_alloc(struct hv_vm *vm)
 }
 
 /*
- * FUN_fffffe000b98e99c @ 0xfffffe000b98e99c   (est. hv_el2_pt_alloc_wrapper)
- * Ghidra: undefined8 FUN_fffffe000b98e99c(undefined8 param_1)
- * Thin table-dispatched wrapper: calls FUN_fffffe000b98e344 on its argument
+ * hv_el2_pt_alloc_wrapper @ 0xfffffe000b98e99c   (est. hv_el2_pt_alloc_wrapper)
+ * Ghidra: undefined8 hv_el2_pt_alloc_wrapper(undefined8 param_1)
+ * Thin table-dispatched wrapper: calls hv_el2_pt_alloc on its argument
  * and returns 0. No direct callers (dispatched via the vcpu hub's table).
  * Confidence: high (trivial 2-instruction wrapper, callee confirmed)
- * Notes: only callee is FUN_fffffe000b98e344.
+ * Notes: only callee is hv_el2_pt_alloc.
  */
 uint64_t hv_el2_pt_alloc_wrapper(uint64_t vcpu)
 {

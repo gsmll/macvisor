@@ -512,3 +512,146 @@ hypothesis, never a claim, and carries Ghidra evidence.
   surface (guest can observe an extra mapping once SVE mode is enabled).
 - **Confidence**: medium — the guards are directly observed; the scratch
   mapping's guest-visibility is inferred from the vm_map_enter call.
+
+## [hvc-abi] fffffe000b989a44 hv_vcpu_run / b98a08c — guest-controlled HVC dispatch index, no observed privilege gate
+
+- **Observation**: The run hub dispatches the guest HVC by masking the
+  exception ISS/immediate (es+0x4018, the value the guest controls via the
+  `hvc #imm` immediate and its register-visible exception) against the
+  0x332c00..0x30fc1e families and routing through the jump table at
+  0xfffffe000b989cf4. The dispatch selector is therefore guest-influenced.
+  No bounds check on the derived table index is visible in the partial
+  reconstruction, and no SPSR_EL1 EL-field (guest EL0 vs EL1) privilege check
+  is observed between the HVC trap and dispatch — both a user guest and a
+  supervisor guest appear to enter the same HVC path. These gaps are real but
+  UNVERIFIED: the hub is a partial assembly-only reconstruction (decompiler
+  failed), so the absence of a bounds check / privilege gate may be a
+  reconstruction artifact, not a genuine defect.
+- **Evidence**: hv_vcpu.c @ b989a44 case 0x8 -> b98a08c: "mask es[0x4018]
+  against 0x332c00..0x30fc1e families and dispatch on the encoded exception
+  class (see jump table at 0xfffffe000b989cf4)"; hv_el2_guest_esr_classify
+  (b96743c) does NOT list HVC (0x30-class) among its handled ECs, so HVC
+  reaches the hub; no register-arg or EL-privilege validation documented in
+  either reconstruction.
+- **Severity (hypothesis)**: low — guest-controlled dispatch index is standard
+  for a hypercall table; a real OOB/privilege defect would be high, but the
+  evidence is a partial reconstruction and cannot support that claim.
+- **Confidence**: low — dispatch-by-ISS is directly observed; the absence of a
+  bounds/privilege check is inferred from an incomplete reconstruction.
+
+## [hvc-abi] fffffe000b989a44 hv_vcpu_run — HVC64 enable-mask gate verified; SVC/VM-op channel gated only by opcode count (2nd pass, deepened)
+
+- **Observation**: Second pass (TreeRunHubDeep + targeted disassemble_bytes of
+  the HVC dispatch region) VERIFIES a per-VM hypercall enable mask on the HVC64
+  path: `imm<=6` AND `(container_enable_mask & (1<<imm)) != 0` else the
+  hypercall is skipped — a positive privilege control (a VM must opt in to each
+  HVC64 hypercall).  This supersedes the earlier "no bounds check" hypothesis:
+  the imm<=6 bound IS present.  The residual asymmetry is that the SVC/VM-op
+  channel (0xc6000010..0xc600001a -> hv_vm_op_dispatch b98e020 /
+  hv_vcpu_slot_op b98e12c / per-slot map b9866d0) is gated only by the
+  container opcode count (vm+0x2128) plus "no attach id (vcpu+0xe0==0) and no
+  pending SPSR bit" — NOT by the enable mask.  A guest reaching the VM-op SVC
+  channel up to the configured opcode count is not separately vetted per op.
+- **Evidence**: disasm at 0xfffffe000b98a76c: `ldr x9,[x21,#0x1350]` (enable
+  mask), `and x10,x8,#0xff` (imm), `subs xzr,x10,#6; b.hi` (imm<=6),
+  `mov w10,#1; lsl x10,x10,x8; and x9,x9,x10; cbz x9` (mask bit test); HVC64
+  numbers materialized as `mov w9,#imm; movk w9,#0xc300,lsl#16` then `subs
+  xzr,x8,x9` (0xc3000003/0xc3000004/...).  SVC/VM-op gate at 0xfffffe000b98b3d0
+  (opcode-count vm+0x2128, no enable-mask check observed).  Reconstruction
+  noted the enable mask at container+0x2130 (disasm read +0x1350; offset
+  unconfirmed).
+- **Severity (hypothesis)**: informational — HVC64 hypercalls are mask-gated
+  (good); the VM-op SVC channel's opcode-count-only gate is a mild privilege
+  asymmetry, not a demonstrated defect.
+- **Confidence**: medium — the enable-mask gate is directly observed in the
+  disassembly; the VM-op channel's lack of a mask check is inferred from the
+  reconstruction (the VM-op bodies themselves are not fully re-verified).
+
+## [vcpu-core] fffffe000b989a44 hv_vcpu_run / b98a08c — guest-triggerable host panic on unhandled ESR EC / exit reason
+- **Observation**: The run hub classifies synchronous exceptions from the guest ESR (es+0x4018) against a large set of EC families (0x24-0x3f debug/arch, 0x83000000 IABT, 0xc1000000/0xc3000000 HVC, 0xc6000000 SVC). For every family the guest-enable bit is tested (vm+0x20a8/0x20b0 masks ANDed with es+0x6xx per-EC bits) and a matching exception is emulated/re-injected; a class whose enable bit is clear falls through to the unhandled-EC path. That path and several invariant checks reach HOST-KERNEL PANICS (FUN_fffffe000c0e11ec with line-numbered format strings at 0xfffffe000b98db24 [line 0x4e6], 0xfffffe000b98dbb8 [line 0x12f0], 0xfffffe000b98dbe0 [line 0xfb8] via c0e0620/c0e4d74). A guest that triggers an exception class/state the hypervisor does not expect can therefore panic the host kernel (denial of service) rather than being surfaced as a recoverable exit error.
+- **Evidence**: disasm 0xfffffe000b98a08c..0xfffffe000b98cbe0: per-family `tbnz ... -> 0xfffffe000b98d860` (unhandled) and `bl 0xfffffe000c0e11ec` panic calls at 0xfffffe000b98db24/0xfffffe000b98dbb8/0xfffffe000b98dbe0; the SVC handler also panics/asserts on invalid opcode-count state (0xfffffe000b98dbb4 -> 0xfffffe000b98dbb8).
+- **Severity (hypothesis)**: medium — a guest-driven host panic is a real DoS, but whether a benign/attacker guest can actually reach these invariant panics (vs. the recoverable 0xfae94001 return) is unverified.
+- **Confidence**: medium — the panic calls are directly observed; guest reachability is inferred.
+
+## [vcpu-core] fffffe000b989a44 hv_vcpu_run — conditional AMX/SVE EL2 state save may leak across vcpus
+- **Observation**: The EL2 state is captured per dirty-mask group by hv_vcpu_save_el2_state (b988358); the AMX payload block (es+0x8e8..0x9c8) is only saved when the mask bit-4 group is set AND (es+0x4138 >> 1 & 1) is set, and the hub restores it only for restore bits 0x3a/0x3b. If a vcpu that enabled AMX exits without that gate being set, its AMX/SVE register payload may not be captured, so a later vcpu (or the host) could observe stale AMX state — a potential cross-vcpu privilege-domain data leak.
+- **Evidence**: b988358 decompile: `if ((uVar8>>4&1)!=0 && ((*(byte*)(lVar5+0x4138)>>1&1)!=0))` guards the es+0xd0 AMX area clear; hub restore blocks 0xfffffe000b98af84/0xfffffe000b98b0a0 gate the AMX payload on restore bits 0x3a/0x3b.
+- **Severity (hypothesis)**: low — would require a missed dirty-tracking gate; the save is guarded, not unconditional, so the leak is conditional on tracking correctness.
+- **Confidence**: low — the conditional gates are directly observed; a real save-miss is not demonstrated.
+
+## [vcpu-core] fffffe000b989a44 hv_vcpu_run — synthetic register blob injected into guest on HVC/SVC emulation
+- **Observation**: On the HVC (0xc1000001..0xc100000f, 0xc3000003..0xc3000006) and IABT (0x83000000) handlers the hub stores hypervisor-chosen constant vectors (loaded from DAT tables into q0/q1 at sp+0x50/0x60/0x70/0x80/0x90 and the fixed magic 0xfedefacafeadfad9) into the guest-visible save area es+0x8/0x18/0x28. These become the guest-visible x0..x3/PC-style register state after return-to-guest. The injected values are constants in the traced disassembly, but any future code path that mixes guest-controlled data into these blobs would be a register-injection / privilege bug; the fixed magic also fingerprints the hypervisor emulation to the guest.
+- **Evidence**: disasm 0xfffffe000b98bd1c (stores q0/q1 from sp+0x50 to es[0x8]/[0x18], magic 0xfedefacafeadfad9 to es[0x28]); 0xfffffe000b98c464/0xfffffe000b98c50c/0xfffffe000b98c5b4/0xfffffe000b98c648 (same magic family writes); 0xfffffe000b98a7d8 (rev-swapped 32-bit pair stores for the HVC hint handler).
+- **Severity (hypothesis)**: informational/low — observed values are constant; no guest influence in the traced paths.
+- **Confidence**: high — the injection writes are directly observed; the 'no guest influence' part is limited to the traced constant paths.
+
+## [kernel-iface] fffffe0007e41db0 hv_available_flag — single-flag presence gate, no per-call re-validation
+
+- **Observation**: The entire hypervisor presence decision is one boot-time
+  global (`hv_available_flag`, DAT_fffffe0007e41db0). Its complete xref
+  closure is four references: WRITE by kernel_bootstrap_thread (from
+  hv_support_init return), READ by hv_available (b984ed8), and two DATA refs
+  (0x7e2bda8 / 0x7e41dd0) that are the `hv_support`/`hv_disable` boot-arg
+  descriptors whose value-storage target IS the flag. Because the two boot-arg
+  descriptors write into the same flag, a privileged `hv_disable`/`hv_support`
+  boot-arg can override the EL2-detection result; and because the flag is only
+  checked once per mach-trap call at the top of hv_available, there is no
+  TOCTOU window within a call (it is read once), but there is also no
+  re-validation that the EL2 configuration is still consistent at dispatch.
+- **Evidence**: get_xrefs_to(DAT_fffffe0007e41db0) = {0x7e2bda8, 0x7e41dd0
+  [DATA], b984f08 in hv_available [READ], b823ee4 in kernel_bootstrap_thread
+  [WRITE]}; hv_support.c hv_available reads the flag once and returns
+  -0x516bff1 (0xfae9400f) when clear. hv_vmm_present (be39fd0) uses a separate
+  IOKit "vmm-present" property, not the flag.
+- **Severity (hypothesis)**: informational — a boot-arg override requires
+  privileged boot-arg control, and the flag is read atomically per call; the
+  notable property is that no hibernation/power/vm subsystem re-checks it.
+- **Confidence**: high — the four-ref xref closure is exhaustive (only these
+  references exist).
+
+## [kernel-iface] fffffe0007e34f98 coredump_docmd_trigger_kernel_coredump — live-dump handler pointer lands mid-function
+
+- **Observation**: The panic/coredump "docommand" entry
+  "trigger_kernel_coredump" (desc: "Request that the hypervisor take a live
+  kernel dump") carries a +0x08 code pointer 0xfffffe000b8f9f08 that falls
+  INSIDE FUN_fffffe000b8f91b8, a large VM contiguous-page-allocation function.
+  Either Ghidra failed to split a small docommand handler out of the enclosing
+  VM function, or the docommand dispatch invokes it at a mid-function offset.
+  Either way the dump-request entry point is not a clean, independently
+  verifiable function — the actual live-dump path is shared kernel
+  panic/coredump code (not hypervisor code), so a request to dump a live
+  kernel via the hypervisor routes through this entry whose exact semantics
+  are unverified.
+- **Evidence**: get_xrefs_to(0x70c58af) -> 0x7e34fb0 [DATA] only;
+  get_function_by_address(0xfffffe000b8f9f08) -> FUN_fffffe000b8f91b8
+  (entry 0xfffffe000b8f91b8, body ..b8fa467). Entry record at 0x7e34f98:
+  name@+0x00, value_or_func@+0x08=0xfffffe000b8f9f08, help@+0x10,
+  desc@+0x18, flags@+0x20=1, chain@+0x28=0x7e34f18.
+- **Severity (hypothesis)**: informational — no privilege boundary is crossed
+  by an ambiguous coredump-command pointer; flagged because the dump-request
+  interface's real entry point is unverified and could route to the VM
+  allocator if the pointer is genuine.
+- **Confidence**: medium — the mid-function landing is directly observed;
+  whether it is a Ghidra split failure vs. a genuine off-entry call is unknown.
+
+## [kernel-iface] fffffe0007e2bda8 / fffffe0007e41dd0 hv_support / hv_disable boot-arg descriptors — flag is a writable boot-arg target
+
+- **Observation**: The hv availability flag address is the value-storage
+  target of both the `hv_support` (0x7e2bda8) and `hv_disable` (0x7e41dd0)
+  boot-arg descriptors (each also references the shared trap munger
+  bda3ca8). This means a boot-time "hv_disable" argument can clear the same
+  flag that hv_support_init's EL2 check sets, and "hv_support" can force it.
+  The presence decision is therefore attacker-influencable only at boot (not
+  at runtime), but the two paths (boot-arg write vs. EL2-detection write) are
+  not reconciled — the last writer wins.
+- **Evidence**: at 0x7e2bda8 the 8 bytes = 0xfffffe0007e41db0 (flag address),
+  with name "hv_support" @0x70b84d5 and munger 0xfffffe000bda3ca8 nearby; at
+  0x7e41dd0 the value 0xfffffe0007e41db0 again with munger bda3ca8 and name
+  near 0x70b84e0 ("hv_disable").
+- **Severity (hypothesis)**: low — requires privileged boot-arg control
+  (secure boot / EFI), so not a runtime bypass; noted as a single point where
+  a boot-time knob and the hardware-EL2 gate share one flag with last-writer-
+  wins semantics.
+- **Confidence**: medium — the flag address appears as the descriptor value
+  target in both records; the "last writer wins" ordering is inferred from
+  the shared storage, not a traced call sequence.

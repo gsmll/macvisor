@@ -1,4 +1,5 @@
 /* Recreated from kernelcache.arm64.kc (xnu-12377.121.10 RELEASE_ARM64_T8142, image base fffffe0007004000). Ground truth: Ghidra FUN_ names + addresses; all names are estimates. */
+#include "hv_compat.h"
 
 /*
  * hv_pmap.h — stage-2 MMU (guest -> host) translation layer.
@@ -6,10 +7,10 @@
  * Owned by the hv-pmap tree.
  *
  * In this hypervisor the guest->host memory boundary is implemented as a host
- * vm_map per VM owner (built by hv_vm_map_core, FUN_fffffe000b9868a8, owned by
+ * vm_map per VM owner (built by hv_vm_map_core, hv_vm_map_core, owned by
  * the trap-dispatch tree) plus a small fixed EL2 translation table that is
- * allocated by hv_el2_pt_alloc (FUN_fffffe000b98e344, el2-state tree) and
- * programmed by hv_el2_state_build (FUN_fffffe000b9895b8, el2-state tree).
+ * allocated by hv_el2_pt_alloc (hv_el2_pt_alloc, el2-state tree) and
+ * programmed by hv_el2_state_build (hv_el2_state_build, el2-state tree).
  * This header models the EL2 stage-2 table layout and the (estimated) ARM
  * VMSAv8-64 stage-2 descriptor format, and declares the hv-pmap owner-lookup /
  * unwind helpers decompiled into hv_pmap.c.
@@ -29,8 +30,8 @@
 
 /* ======================================================================== *
  * EL2 translation table layout (offsets within the per-CPU EL2 block that
- * hv_el2_pt_alloc, FUN_fffffe000b98e344, allocates and stores at vm+0x4150).
- * Observed offsets come from FUN_fffffe000b9895b8 (hv_el2_state_build), which
+ * hv_el2_pt_alloc, hv_el2_pt_alloc, allocates and stores at vm+0x4150).
+ * Observed offsets come from hv_el2_state_build (hv_el2_state_build), which
  * sets param_1[0xd] = base+0x1000 and param_1[0xe] = base+0x2000 and writes
  * the EL2 register state at base+0x4000..:
  * ======================================================================== */
@@ -99,8 +100,7 @@
  * Shared kernel dependencies — stubbed, NEVER decompiled.
  * ======================================================================== */
 /* vm-map core body owned by the trap-dispatch tree (FUN_fffffe000b9868a8,
- * decompiled in osfmk/arm64/hypervisor/hv.c). */
-extern uint64_t hv_vm_map_core(void *args, int op, int mode);
+ * decompiled in osfmk/arm64/hypervisor/hv.c; prototype in hv.h). */
 
 /* Owner/map resolution (FUN_fffffe000b7e0f30, kernel object lookup). */
 extern int kernel_obj_lookup(uint64_t base, uint64_t id, uint32_t type,
@@ -128,10 +128,10 @@ extern void kernel_panic_msg(void *msg, uint64_t a, uint64_t b)
 extern void LORelease(void);
 /* Owner/vcpu object release on refcount drop to 1 (FUN_fffffe000b98533c,
  * owned by the vcpu-core tree; see hv_vcpu.c). */
-extern void hv_vcpu_object_release(void *object);
+extern void hv_vcpu_object_release(uint64_t *object);
 
 /* Hypervisor/feature globals (see docs/kernelcache.md anchors). */
-extern uint8_t *tpidr_el1;            /* per-cpu data base (kernel) */
+extern uint64_t tpidr_el1;            /* per-cpu data base (kernel) */
 extern uint64_t hv_lock;              /* DAT_fffffe000c62c0b8 shared owner lock */
 extern uint64_t hv_cached_cpu_id;     /* DAT_fffffe000c62c0c0 current-cpu cache */
 extern uint32_t hv_debug_flag;        /* DAT_fffffe000c62b3d0 lock-storm flag   */

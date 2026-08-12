@@ -705,3 +705,244 @@ Notes:
 - idx0 (hv_capabilities), idx10/15/16 take a value arg or copyout only (no
   guest-memory copyin beyond their fixed arg block); idx1/3/12/14/17 copyin a
   fixed user arg block of 0x1c/0x28/0x20/0x18/0x34 bytes respectively.
+
+## structs consolidated (structs-audit tree, 2026-08-11)
+
+The scattered structure offsets have been consolidated into single,
+evidence-commented definitions (no manifest change — structs are not
+functions):
+- `osfmk/arm64/hypervisor/hv_vm.h` (NEW) — `hv_vm_t` (the per-VM owner block:
+  refcount +0x08, base +0x88, embedded hv_vm_config +0x2088.., host map
+  +0x2120, tier +0x2128, quota_cap +0x2130, region rbtree root +0x2138,
+  per-cpu vcpu slots +0x2148.., tier3 flag +0x2190), `hv_vm_percpu_t` (per-CPU
+  state: el2_ctrl_ptr +0x1b8, nesting +0x1c0, resource_base +0x318, bound_vcpu
+  +0x4d8, cpu_id +0x518, owner +0x628, dabt/iabt counters +0x8d8/+0x8e0), and
+  `hv_vm_region_node` (node[0]=vm, node[2]=start, node[3]=start+size,
+  node[4]=ret, node[5..7]=rbtree links).
+- `hv_vmm.h` — `struct hv_el2_state` added (template bank +0x6a8..0x780,
+  active bank +0x4030..0x40c0, dirty flags +0x738.., guest-saved +0x40c0..,
+  capture groups, magic/exit_reason +0x4000/+0x4008, el2_block_base +0x4150);
+  the old inline `struct hv_vm` moved to `hv_vm.h` as `hv_vm_t`.
+- `hv_vcpu.h` — `hv_vcpu_t` completed/corrected (container +0x0, guest_mem
+  +0x8, container copy +0x88, el2_state +0xb0, amx_enable +0xb8, vmm_ctx
+  +0xc0, el2_extra +0xd0, generation +0xd8, attach_id +0xe0, attach_obj +0xf0,
+  vcpu_id +0xf8).
+- `hv.h` — `hv_trap_record_t` left as-is (already complete: +0x10 copyin_flag,
+  +0x28 copy helper, +0x30 copyout_flag, +0x38 arg_size, +0x48 handler).
+See `docs/audit.md` for the consolidated security audit synthesis.
+
+## Guest hypercall (hvc) ABI — observed interface (tree hvc-abi)
+
+Constants live in `osfmk/arm64/hv_hvc.h`; this section is the prose map.
+
+Guest -> host hypercall path: guest `hvc` at EL0/EL1 traps to the EL2 vectors
+(hv_el2.c), guest EL1 state is saved to el2_state (base = vcpu->el2_state),
+and the run hub (`FUN_fffffe000b989a44`, est. hv_vcpu_run) dispatches the exit.
+
+Two dispatch levels:
+1. **Guest ESR classifier** `FUN_fffffe000b96743c` (hv_el2_guest_esr_classify,
+   full body in hv_el2.c): decodes ESR_EL1 EC = (esr>>26) & 0x3f and writes
+   raw ESR low 32 bits to es+0x4010, the ISS (`esr & 0x1ffffff`) to es+0x4018
+   (SVC), and an exit-code word to es+0x4008. Standard ECs here: SVC 0x18->8,
+   0x1d->0xd, IABT 0x20->fault5, DABT 0x24->fault1/3, SMC-ish 0x3f->0x80000000/
+   7/8/1 by ISS. **HVC is NOT a handled class here** — it falls through to the
+   host-abort / "Unrecognized guest trap" panic path.
+2. **Run hub dispatch** (hv_vcpu_run case 0x8 -> `FUN_fffffe000b98a08c`, the
+   inline ESR classifier `hv_esr_classify`): reads es[0x4018] (the exception
+   ISS/immediate) into a scratch GPR and decodes the full (class|imm) token by
+   a large compare tree (verified in the 3958-instruction disassembly): HVC64
+   0xc3000000, HVC-hint 0xc1000000, IABT-channel 0x83000000, SVC/VM-op
+   0xc6000000, plus the debug/arch 0x24-0x3fxxxxxx families.  HVC64 dispatch is
+   gated: `imm<=6` AND `(container_enable_mask & (1<<imm)) != 0`.
+
+Observed ESR-class tokens (run-hub family, UNVERIFIED labels — see hv_hvc.h):
+- `0xc3000000` est. HVC(64-bit)  (EC bits[31:26]=0x30)  — imm 3..6 dispatched
+- `0xc1000000` est. HVC(32-bit)/hint (EC bits[31:26]=0x30) — imm 1..0xf
+- `0x83000000` est. IABT-channel (EC bits[31:26]=0x20) — imm 0xfeff/0xff01/0xff03
+- `0xc6000000` est. SVC/VM-op   (EC bits[31:26]=0x31)  — imm 0x10..0x1a -> vm_op_dispatch
+
+Cross-check: ARM-standard EC for these classes are SVC64 0x18 / HVC64 0x19 /
+SMC64 0x1b / IABT-lower 0x21 / DABT-lower 0x24. The 0xc3-family tokens do NOT
+match these, so they are an internal hypervisor class encoding (e.g. a tag bit
+OR'd with EC<<26), not raw ESR_EL1 — recorded as observed, no claim.
+
+**Known / unknown of the ABI (deepened by TreeRunHubDeep + targeted disasm):**
+- [known] The hypercall SELECTOR is the `hvc #imm` immediate (ISS, es+0x4018),
+  NOT a general-purpose register. The HVC64 case (0xfffffe000b98a76c) compares
+  the ISS against 0xc3000003/0xc3000004/... (`mov/movk w9,#0xc300`; `subs
+  xzr,x8,x9`) — no x16/x0 dispatch.
+- [known] Enable gating: HVC64 hypercalls dispatch only if `imm<=6` AND the
+  per-VM enable mask bit `(1<<imm)` is set (disasm `ldr x9,[x21,#0x1350]`,
+  `lsl x10,x10,x8`, `and x9,x9,x10`, `cbz`); reconstruction noted the mask at
+  container+0x2130 (offset unconfirmed).
+- [known] Observed hypercall numbers: HVC64 imm 3..6; HVC-hint imm 1..0xf;
+  IABT-channel imm 0xfeff/0xff01/0xff03; SVC/VM-op imm 0x10..0x1a (routed to
+  hv_vm_op_dispatch b98e020 / hv_vcpu_slot_op b98e12c / per-slot map b9866d0,
+  gated by container opcode count vm+0x2128, requires no attach id and no
+  pending SPSR bit).
+- [known] Args are read from the guest's SAVED GPR/vector registers in the EL2
+  save frame (es+0x8..0x28; q0/q1 from sp+0x50/0x60; blob at sp+0x80) — x0-x3 /
+  q0-q1 style GPR/vector passing, not a dedicated hypercall-arg register.
+- [partial] Return: the emulated result is written back into the guest
+  save-frame GPR region (es+0x8/+0x18/+0x28 = guest x0/x1/x2 slots) and the
+  synthetic sentinel 0xfedefacafeadfad9 is injected there. The sentinel's exact
+  role (return/status code in x0 vs. emulation-completed marker) is UNVERIFIED
+  (the reconstruction records both readings).
+- [unknown] Full 16-bit `hvc #imm` -> operation map beyond the observed numbers,
+  per-operation arg->register layout, and exact guest error-code convention.
+  Not derivable from the reconstructions; not fabricated.
+
+Kernel-issued hvc: NONE observed in the recreated code. Every hvc/eret mention
+is guest->host (traps into the run hub) or an ERET back to the guest
+(return-to-guest paths b75e468/b75e5cc/b75e420). No kernel-side hvc to an
+SPMC/SPTM world was found in the hypervisor closure; a whole-program
+`search_instructions hvc` was not run (timeout, see kernelcache.md), so no
+kernel hvc outside the closure is asserted either way.
+
+
+## Ghidra DB annotations (tree ghidra-rename)
+
+Ghidra DB annotated with estimated names from manifest: 73 decompiled functions renamed (FUN_* -> estimated_name via batch_rename_function_components); 1 skipped (b986d84 hv_vm_protect — bare branch stub, no Ghidra function symbol). No name conflicts encountered. Collision-fix names applied: b9897bc -> hv_vcpu_destroy_trap, b9899b0 -> hv_vcpu_run_trap.
+
+## vmapple-deep conclusion (2026-08-11, from vmapple-deep agent)
+
+### The vmapple surface is genuinely SMALL — no separate nested-VM vmm
+
+Deep-dive verdict: this kernelcache has NO production nested-VM/vmapple vmm
+module. The vmapple service is the IPC kobject handler + entitlement gate +
+object-registry glue already mapped. Evidence (targeted MCP, all verified):
+
+| # | Search / call | Result |
+|---|---|---|
+| 1 | `search_strings("vmapple")` | **1 hit TOTAL** in the 121 MB binary: the entitlement `com.apple.private.hypervisor.vmapple` (fffffe000707250e). A real vmapple module would carry many vmapple-named strings (trap/panic/log names); none exist. |
+| 2 | `search_strings("hypervisor")` | 7 hits, all already mapped (3 entitlements, IKOT_HYPERVISOR, "hypervisor guest", live-dump sysctl, "Hypervisor info"). |
+| 3 | `get_xrefs_to(vmapple entitlement)` | exactly 3 referencers, all owned: b985588 (hv_vm_create), b985ae4 (hv_entitlement_tier), b96c158 (kernel exec flags). |
+| 4 | `get_function_callees(b985e38)` | all shared kernel deps (b78fb24, b793cf4, b7e0d8c, b7f0afc, b7f1e80, b862b6c, b866ec4, b8afa78, c0f8674, c0f86a4) + owned hv (b98533c, b9860bc). No vmm. |
+| 5 | `get_function_callees(b985ae4)` + callers | only current_task + current_cpu_datap; **single caller b984fd8 (hv_capabilities)**. |
+| 6 | region fffffe000c7a9a00..c7aa000 | generic kernel name->value registry (SPTM/DART/power names). Only hypervisor records: "hv" (c7a9e68) + IKOT_HYPERVISOR (c7a9f28). |
+| 7 | `get_xrefs_to(IKOT string 7072550)` / `(b985e38)` | single data ref from IKOT record; handler referenced only by generic kernel IKOT kobject dispatch table (d20ad7c + c7a9f30), NO code caller. |
+| 8 | hypervisor cluster BFS | no "nested"/secondary-guest state beyond the entitlement tier gate. |
+
+### IKOT_HYPERVISOR kobject record (final form)
+```
+fffffe000c7a9f28  { type_id = 0x12d (301), name_ptr = 7072550 ("IKOT_HYPERVISOR"),
+                    handler = FUN_fffffe000b985e38 }
+```
+- Single-handler kobject type in the generic kernel IKOT dispatch table
+  (fffffe000c7b3340..7b37e0 records {name_ptr, registry_ptr, count}). The
+  handler (b985e38) is invoked only via kernel kobject dispatch, never by a
+  direct code call.
+- The name->value registry also holds "hv" (fffffe000c7a9e68, value refs
+  DAT_fffffe000c62c0c0 the hv lock) and the type-name
+  "hv_vm_t.hv_vm_percpu_t" (fffffe0007071e74, data ref c7a9ef8 only).
+
+### Nested-VM capability is the SAME Hypervisor.framework service
+The vmapple entitlement only elevates `hv_entitlement_tier` (b985ae4) to
+tier 3, which widens the capability set (hv_capabilities b984fd8) exposed by
+the shared mach-trap op table PTR_FUN_fffffe0007e0d750 (dispatcher b984ed8)
+already owned by trap-dispatch / vcpu-core / el2-state / hv-pmap. There is no
+distinct vmapple trap set, panic path, or vmm function cluster.
+
+Manifest: b985e38 + b9860bc flipped to `tree: vmapple-deep`; no new vmapple
+functions added because the deep-dive found none beyond the 3 already
+documented (b985e38, b985ae4 [entitlements-owned], b9860bc).
+
+## guest-fault tree (from guest-fault agent, 2026-08-11) — guest fault path decompiled
+
+Per the FULL-AUDIT rule, the direct vm_fault-family callees of the guest fault
+handler are now recreated with bodies (tree `guest-fault`, file
+`osfmk/arm64/hypervisor/hv_el2.c`), replacing the earlier `stubbed` entries.
+
+### The full guest memory-fault path (all addresses verified)
+
+```
+guest data/instruction abort (stage-2 translation fault)
+  -> VBAR_EL2 sync vector (b760b10) -> common dispatch b761930
+     -> EL1 kernel handler -> hv_el2_guest_esr_classify FUN_fffffe000b96743c
+        (EC decode: SVC 0x18 -> exit 8; 0x1d -> exit 0xd; IABT 0x20 ->
+         fault reason=ISS which=5; DABT 0x24 -> reason=ISS which=1/3;
+         SMC-ish 0x3f -> 0x80000000/7/8/1; unhandled -> host-abort panic
+         c0f0fa4 or "Unrecognized guest trap exception" panic c0e11ec)
+        -> hv_el2_guest_fault FUN_fffffe000b967768   [guest-fault, hv_el2.c]
+             |-- reason 0x18 (SVC/SError) -> FUN_fffffe000b98f304 (hw error)
+             |-- resolve guest IPA:
+             |     FAR direct (EA clear + in-guest) or
+             |     FAR[11:0] | (HPFAR_EL2[31:4] << 12) -> state+0x4028
+             |-- FUN_fffffe000b968948 (disable debug exceptions)
+             |-- hv_el2_guest_pte_check FUN_fffffe000b94b450   [guest-fault]
+             |     stage-2 walk: 0 = present+correct (no fault),
+             |     5 = not-present, 2 = wrong attr/perm
+             |     -> if 0: r=5 (resume)
+             |-- kernel_vm_fault FUN_fffffe000b89988c   [guest-fault]
+             |     XNU vm_fault on the guest vm (faultarg {2,0,0,0,0});
+             |     err 0xe -> exit 9, 5 -> panic "vm_fault() KERN_FAILURE",
+             |     0 -> exit 5 (resume)
+             |     -> on failure: hv_el2_guest_fault_retry FUN_fffffe000b9879b8
+             |          [guest-fault]: region rbtree (vm+0x427) lookup +
+             |          fault-post (b7e16f0); success -> PC+=4, r=5
+             \-- exit code -> state+0x4008 (5 resume / 6 out-of-range / 9 err)
+```
+Edges re-verified: `get_function_callees(b967768)` includes b94b450, b89988c,
+b9879b8 (the recreated family) plus b98f304, b968948, c0d993c (stubbed
+kernel). The vm resolved by the stage-2 fault is the same one returned by
+`hv_pmap_resolve_owner` (b986b34, hv-pmap tree) — the fault path and the
+map/unmap layer share the per-owner host vm_map.
+
+### FULL-AUDIT boundary (this tree)
+- RECREATED with bodies (hv_el2.c, tree guest-fault, manifest decompiled):
+  b967768, b94b450, b89988c, b9879b8.
+- STUBBED externs (2+ levels into XNU; manifest shared-dep, kept as externs
+  in hv_el2.h): vm_fault_enter b89d5f8, b89de34, b94c554, c0d7b94/c0d7c20
+  (page-validate / paddr-type), b94abbc (memattr resolve), lock bits
+  b7f8ce0/b7f8d9c/b7f8e50, TLB b96c6d4, region lock b78fd40, fault-post
+  b7e16f0, release b78cc20, LORelease, panics c0e11ec/c0f1874/c0f8674.
+- ESR classifier b96743c verified full-faithful (corrected argument order
+  reason/which to hv_el2_guest_fault, DABT sub-condition `< 0xfffffffd`,
+  pstate bit20-first ordering). Security observations in findings.md
+  (guest-fault sections: HPFAR_EL2 IPA synthesis, fault-driven fault
+  injection / PC-advance retry, 32-bit stage-2 index truncation, guest-
+  induced KERN_FAILURE host panic).
+
+## kernel-iface edges (from kernel-iface agent)
+
+### Panic / coredump "docommand" table (dump-request path, DATA)
+The strings `hypervisor guest` (`fffffe00070c5886`) and `Request that the
+hypervisor take a live kernel dump` (`fffffe00070c58af`) are the DESCRIPTION
+(+0x18) text of two panic/coredump `docommand` command entries, not function
+code. get_xrefs_to on each string returns a single DATA slot inside the table:
+- `0x7e34f48` = entry "hvg"       → desc `hypervisor guest`     @ +0x18 (0x7e34f60)
+- `0x7e34f98` = entry "trigger_kernel_coredump"
+                                  → desc `Request that the hypervisor take a
+                                    live kernel dump`           @ +0x18 (0x7e34fb0)
+Entry layout (0x50-byte records, chained to list head `0x7e34f18`):
+name@+0x00, value_or_func@+0x08, help@+0x10, description@+0x18, flags@+0x20
+(=1), chain@+0x28, pad@+0x30, mask@+0x38. The +0x08 code pointer of
+trigger_kernel_coredump (`0xfffffe000b8f9f08`) falls INSIDE
+`FUN_fffffe000b8f91b8` (a large VM contiguous-page function) — it is NOT a
+clean docommand entry point. The actual live-dump request is issued by shared
+kernel panic/coredump code (stubbed). A first, VM-statistics `docommand` list
+is headed at `0x7e34c40` (enumerated by trap-dispatch). Reconstructed as
+read-only data in `osfmk/kern/hv_kernel_iface.c` (tree kernel-iface).
+
+### hv presence consumers (complete xref closure on the availability flag)
+`get_xrefs_to(DAT_fffffe0007e41db0)` returns exactly four references — the
+complete consumer set:
+```
+DAT_fffffe0007e41db0  (hv_available_flag)
+  ├─ [WRITE] fffffe000b823ee4  kernel_bootstrap_thread
+  │        ← stores hv_support_init() (b984d4c) return = presence
+  ├─ [READ]  fffffe000b984f08  hv_available (b984ed8)
+  │        ← clear ⇒ every hv mach-trap returns 0xfae9400f
+  ├─ [DATA]  fffffe0007e2bda8  hv_support   boot-arg descriptor (value
+  │        │                    storage target = flag address)
+  └─ [DATA]  fffffe0007e41dd0  hv_disable   boot-arg descriptor (value
+                                   storage target = flag address)
+```
+Presence is ALSO reported through the IOKit `vmm-present` property by
+`hv_vmm_present` (`FUN_fffffe000be39fd0`, trap-dispatch): it calls
+`FUN_fffffe000bf77834("vmm-present", &local, 4)` (boot property getter,
+entitlements tree) and copies the normalized 0/1 out via the trap record's
++0x28 helper. No hibernation / power-management / vm subsystem reads the
+availability flag (only the four refs above). Files: `osfmk/kern/hv_kernel_iface.c`
++ `.h` (tree kernel-iface).
+

@@ -87,10 +87,13 @@ def main() -> int:
         if e.get("status") == "decompiled" and e.get("tree"):
             trees_with_decompiled.add(e["tree"])
 
-    # every tree in the manifest must have at least one decompiled entry
+    # every tree in the manifest must have at least one decompiled entry,
+    # unless the tree is declarations-only (every entry stubbed)
     trees = {e.get("tree") for e in entries if e.get("tree")}
     for t in sorted(trees):
-        if t not in trees_with_decompiled:
+        tree_entries = [e for e in entries if e.get("tree") == t]
+        all_stubbed = all(e.get("status") == "stubbed" for e in tree_entries)
+        if not all_stubbed and t not in trees_with_decompiled:
             errors.append(f"tree {t!r} has no decompiled entry")
 
     if errors:
