@@ -507,9 +507,8 @@ void sk_report_end2(void);  /* FUN_0006b6ac */
 void sk_report_end3(void);  /* FUN_0006b4d0 */
 void sk_report_finish(void*);  /* FUN_000026e8 */
 void sk_report_flush(void);  /* FUN_0006b560 */
-void sk_report_flush2(void);  /* FUN_0006b728 */
-void sk_report_flush3(void);  /* FUN_0006b714 */
-void sk_report_free(sk_word_t);  /* FUN_003a25d4 */
+sk_word_t sk_report_flush2(void);  /* FUN_0006b728 */
+sk_word_t sk_report_flush3(void);  /* FUN_0006b714 */void sk_report_free(sk_word_t);  /* FUN_003a25d4 */
 void sk_report_iter_init(sk_word_t*,long*);  /* FUN_0006afb4 */
 void sk_report_lock(int);  /* FUN_002a4ab4 */
 void sk_report_lock2(void);  /* FUN_0006b65c */
@@ -5216,7 +5215,8 @@ sk_word_t sk_iter_next_idx(void)
 {
     long i = unaff_x20[1];
     if (i < (long)unaff_x20[2]) {
-        sk_word_t r = sk_dt_lookup_fatal(*unaff_x20);
+        sk_dt_lookup_fatal(*unaff_x20);
+        sk_word_t r = 0;
         unaff_x20[1] = i + 1;
         return r;
     }
@@ -5647,7 +5647,7 @@ sk_word_t sk_report_cmp(sk_word_t a0, sk_word_t b0)
     sk_word_t ctx[4];
     sk_report_iter_init(&ctx, a);              /* FUN_0006afb4 */
     sk_report_ref(a, 2);                       /* FUN_003a25e0 */
-    sk_alloc_pages(b, 0);
+    sk_alloc_pages((sk_word_t)(uintptr_t)b, 0);
     sk_word_t idx = ctx[2], bitmap = ctx[3];
     while (bitmap != 0) {
         /* pop lowest set bit (bit-reversed) -> entry */
@@ -5683,8 +5683,8 @@ sk_word_t sk_report_cmp(sk_word_t a0, sk_word_t b0)
         idx += 1;
         bitmap = *(sk_word_t *)(ctx[1] + idx * 8);
     } while (bitmap == 0);
-    sk_report_free(b);
-    sk_report_free(a);
+    sk_report_free((sk_word_t)(uintptr_t)b);
+    sk_report_free((sk_word_t)(uintptr_t)a);
     return 1;
 }
 
@@ -5763,7 +5763,7 @@ sk_word_t sk_report_process_rec(void *rec)
 {
     sk_word_t d0 = *(sk_word_t *)((char*)rec + 0x18);
     sk_word_t d1 = *(sk_word_t *)((char*)rec + 0x20);
-    sk_report_proc(rec, d0);
+    sk_report_proc(rec, (void*)(uintptr_t)d0);
     sk_report_proc5(d1);                                   /* FUN_0006a668 */
     sk_report_emit2();
     sk_word_t r = sk_report_cb();
@@ -5807,7 +5807,7 @@ void sk_report_process_wrap(sk_word_t *out)
  * Confidence: low
  * Notes: FUN_00069214.
  */
-void sk_report_flush_line2(sk_word_t a){ sk_report_flush_line(a); }
+void sk_report_flush_line2(sk_word_t a){ sk_report_flush_line((void*)(uintptr_t)a); }
 
 /*--------------------------------------------------------------------*/
 
@@ -5817,7 +5817,7 @@ void sk_report_flush_line2(sk_word_t a){ sk_report_flush_line(a); }
  * Confidence: low
  * Notes: FUN_00069214.
  */
-void sk_report_flush_line3(sk_word_t a){ sk_report_flush_line(a); }
+void sk_report_flush_line3(sk_word_t a){ sk_report_flush_line((void*)(uintptr_t)a); }
 
 /*--------------------------------------------------------------------*/
 
@@ -5899,7 +5899,7 @@ long sk_buf_resize(sk_word_t mode, sk_word_t need, sk_word_t grow, long buf,
         }
     }
     sk_word_t cur = *(sk_word_t *)((char*)buf + 0x10);
-    long r = growf(cur, cap);
+    long r = (long)growf(cur, cap);
     if ((mode & 1) == 0) {
         sk_buf_free2();                                 /* FUN_0006b6e0 */
         freef();
@@ -5933,7 +5933,7 @@ long sk_buf_resize10(sk_word_t mode, sk_word_t need, sk_word_t grow, long buf,
         }
     }
     sk_word_t cur = *(sk_word_t *)((char*)buf + 0x10);
-    long r = sk_buf_alloc10(cur, cap, key, tag);
+    long r = (long)sk_buf_alloc10(cur, cap, key, tag);
     if ((mode & 1) == 0) { sk_buf_free2(); freef(); }
     else {
         movef((char*)buf + 0x20, cur, r + 0x20);
@@ -6392,7 +6392,7 @@ void sk_buf_resize10_wrap(void){ *unaff_x20 = sk_buf_resize10(0,0,0,0,0,0,0,0); 
 void sk_cb_init(long *slot, sk_word_t a, sk_word_t b, sk_word_t c)
 {
     if (*slot == 0) {
-        sk_word_t sym = sk_sym_resolve(a, b);     /* FUN_00027614 */
+        sk_word_t sym = sk_sym_resolve(a, (void*)(uintptr_t)b);     /* FUN_00027614 */
         *slot = sk_cb_bind(c, sym);               /* FUN_00376820 */
     }
 }
@@ -6530,7 +6530,7 @@ void sk_console_cb_init(void)
 {
     sk_word_t sym = sk_sym_resolve(0x64e0b0, &DAT_004be938);
     sk_word_t ctx = 0x66ee00;
-    *(volatile sk_word_t*)0x64e0a8 = sk_cb_bind2(&DAT_004ea504, sym, &ctx);
+    *(volatile sk_word_t*)0x64e0a8 = sk_cb_bind2((sk_word_t)&DAT_004ea504, sym, &ctx);
 }
 
 /*--------------------------------------------------------------------*/
@@ -6569,7 +6569,7 @@ void sk_report_build_index(void *rec, unsigned int flags, long **index)
         if ((r[1] & 1) != 0) {
             /* duplicate key -> fatal from NativeDictionary */
             sk_word_t *w = sk_hash_fail2();            /* FUN_0036993c */
-            *w[1] = 0;
+            w[1] = 0;
             sk_hash_fail3();                             /* FUN_0036986c */
             sk_alloc_pages(w[0], 0);
             sk_word_t k2 = sk_boot_enter();
@@ -6616,7 +6616,8 @@ void sk_report_lookup_ctx(sk_word_t k0, sk_word_t k1)
     sk_word_t ctx = *(sk_word_t *)((char*)unaff_x20 + 0x28);
     sk_ctx_save(ctx);
     sk_report_lookup_save(k0, k1);               /* FUN_001b9084 */
-    sk_word_t r = sk_ctx_restore();
+    sk_ctx_restore();
+    sk_word_t r = 0;
     sk_report_lookup2(k0, k1, r);                /* FUN_0006af08 */
 }
 

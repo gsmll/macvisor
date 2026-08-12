@@ -2819,130 +2819,147 @@ fault2:
  * sites (this file is -fsyntax-only, so no link-time checks).
  * ------------------------------------------------------------------ */
 
-extern unsigned long sk_boot_region_check(void);                 /* FUN_0002fa84 */
-extern unsigned long sk_boot_handoff2(void);                     /* FUN_0002fb88 */
-extern unsigned long sk_boot_something(void);                    /* FUN_0002ff40 */
-extern unsigned long sk_span_find(void);                         /* FUN_000287e4 */
-extern unsigned long sk_walk_span3(unsigned long, ...);                                 /* FUN_000402b4 */
-extern unsigned long sk_map_span3(unsigned long, ...);                                  /* FUN_000403b0 */
-extern unsigned long sk_span_find_next3(void);                   /* FUN_000405d0 */
-extern unsigned long sk_span_remap3(void);                       /* FUN_00040630 */
-extern void sk_span_commit3(void);                               /* FUN_00040870 */
-extern unsigned long sk_span_alloc3(void);                       /* FUN_00040980 */
-extern void sk_span_map3(void);                                  /* FUN_00040f80 */
-extern unsigned long sk_obj_method_dispatch3(unsigned long, ...);              /* FUN_00042abc */
-extern unsigned long sk_obj_lookup3(unsigned long, ...);                       /* FUN_00042c20 */
-extern unsigned long sk_obj_attr3(unsigned long, ...);                         /* FUN_000436fc */
-extern unsigned long sk_obj_meta3(unsigned long, ...);                         /* FUN_00043b44 */
-extern unsigned long sk_obj_meta4(unsigned long, ...);                         /* FUN_00043be8 */
-extern unsigned long sk_obj_meta5(void);                         /* FUN_00043c74 */
-extern unsigned long sk_obj_unref2(unsigned long, ...);                                 /* FUN_00043e88 */
-extern unsigned long sk_obj_new2(void);                          /* FUN_00043eac */
-extern unsigned long sk_obj_wire4(unsigned long, ...);                                  /* FUN_00043f28 */
-extern unsigned long sk_obj_link4(unsigned long, ...);                                  /* FUN_00044be0 */
-extern unsigned long sk_obj_unlink4(unsigned long, ...);                                /* FUN_00044c94 */
-extern unsigned long sk_obj_snapshot4(unsigned long, ...);                              /* FUN_00044dec */
-extern unsigned long sk_obj_commit4(unsigned long, ...);                       /* FUN_00044ff4 */
-extern unsigned long sk_obj_create5(unsigned long, ...);                       /* FUN_000451a0 */
-extern unsigned long sk_obj_attach5(unsigned long, ...);                       /* FUN_000455b0 */
-extern unsigned long sk_obj_teardown5(void);                     /* FUN_00045728 */
-extern void sk_obj_finalize5(void);                              /* FUN_000457f8 */
-extern unsigned long sk_obj_map5(unsigned long, ...);                                   /* FUN_000458a0 */
-extern void sk_obj_init5(void);                                  /* FUN_00045908 */
-extern unsigned long sk_obj_walk5(unsigned long, ...);                         /* FUN_00045a68 */
-extern unsigned long sk_obj_state5(unsigned long, ...);                        /* FUN_00045c98 */
-extern unsigned long sk_obj_state6(unsigned long, ...);                        /* FUN_00045cb8 */
-extern unsigned long sk_obj_unref_block(unsigned long, ...);                   /* FUN_0004b8d0 */
-extern unsigned long sk_errname3(void);                          /* FUN_000559b8 */
-extern void sk_walk_abort3(void);                                /* FUN_0005b190 */
-extern unsigned long sk_stack_check(unsigned long, ...);                                /* FUN_00116c78 */
-extern unsigned long sk_mem_move3(unsigned long, ...);                         /* FUN_00117d14 */
-extern unsigned long sk_ref_unlink3(unsigned long, ...);                       /* FUN_00117f8c */
-extern unsigned long sk_percpu_get3(unsigned long, ...);                                /* FUN_001180fc */
-extern unsigned long sk_stack_check_fail3(void);                 /* FUN_0011d7e8 */
+extern unsigned long sk_boot_region_check();
+extern unsigned long sk_boot_handoff2();
+extern unsigned long sk_boot_something();
+extern unsigned long sk_span_find();
+extern unsigned long sk_walk_span3();                                 /* FUN_000402b4 */
+extern unsigned long sk_map_span3();                                  /* FUN_000403b0 */
+extern unsigned long sk_span_find_next3();
+extern unsigned long sk_span_remap3();
+extern unsigned long sk_span_commit3();
+extern unsigned long sk_span_alloc3();
+extern unsigned long sk_span_map3();
+extern unsigned long sk_obj_method_dispatch3();              /* FUN_00042abc */
+extern unsigned long sk_obj_lookup3();                       /* FUN_00042c20 */
+extern unsigned long sk_obj_attr3();                         /* FUN_000436fc */
+extern unsigned long sk_obj_meta3();                         /* FUN_00043b44 */
+extern unsigned long sk_obj_meta4();                         /* FUN_00043be8 */
+extern unsigned long sk_obj_meta5();
+extern unsigned long sk_obj_unref2();                                 /* FUN_00043e88 */
+extern unsigned long sk_obj_new2();
+extern unsigned long sk_obj_wire4();                                  /* FUN_00043f28 */
+extern unsigned long sk_obj_link4();                                  /* FUN_00044be0 */
+extern unsigned long sk_obj_unlink4();                                /* FUN_00044c94 */
+extern unsigned long sk_obj_snapshot4();                              /* FUN_00044dec */
+extern unsigned long sk_obj_commit4();                       /* FUN_00044ff4 */
+extern unsigned long sk_obj_create5();                       /* FUN_000451a0 */
+extern unsigned long sk_obj_attach5();                       /* FUN_000455b0 */
+extern unsigned long sk_obj_teardown5();
+extern unsigned long sk_obj_finalize5();
+extern unsigned long sk_obj_map5();                                   /* FUN_000458a0 */
+extern unsigned long sk_obj_init5();
+extern unsigned long sk_obj_walk5();                         /* FUN_00045a68 */
+extern unsigned long sk_obj_state5();                        /* FUN_00045c98 */
+extern unsigned long sk_obj_state6();                        /* FUN_00045cb8 */
+extern unsigned long sk_obj_unref_block();                   /* FUN_0004b8d0 */
+extern unsigned long sk_errname3();
+extern unsigned long sk_walk_abort3();
+extern unsigned long sk_stack_check();                                /* FUN_00116c78 */
+extern unsigned long sk_mem_move3();                         /* FUN_00117d14 */
+extern unsigned long sk_ref_unlink3();                       /* FUN_00117f8c */
+extern unsigned long sk_percpu_get3();                                /* FUN_001180fc */
+extern unsigned long sk_stack_check_fail3();
 
-extern unsigned long sk_vas_fault28(void);                       /* FUN_004b1c84 */
-extern unsigned long sk_vas_fault29(void);                       /* FUN_004b200c */
-extern unsigned long sk_vas_fault30(void);                       /* FUN_004b205c */
-extern void sk_vas_fault31(void);                                /* FUN_004b2150 */
-extern void sk_vas_fault32(void);                                /* FUN_004b2188 */
-extern void sk_vas_fault33(void);                                /* FUN_004b21c4 */
-extern unsigned long sk_vas_fault34(void);                       /* FUN_004b21ec */
-extern void sk_vas_fault35(void);                                /* FUN_004b2224 */
-extern void sk_vas_fault36(void);                                /* FUN_004b23d8 */
-extern unsigned long sk_vas_fault37(void);                       /* FUN_004b270c */
-extern unsigned long sk_vas_fault38(void);                       /* FUN_004b2748 */
-extern void sk_vas_fault39(void);                                /* FUN_004b27f0 */
-extern unsigned long sk_vas_fault40(void);                       /* FUN_004b2808 */
-extern void sk_vas_fault41(void);                                /* FUN_004b2820 */
-extern void sk_vas_fault42(void);                                /* FUN_004b2898 */
-extern void sk_vas_fault43(void);                                /* FUN_004b28c0 */
-extern void sk_vas_fault44(void);                                /* FUN_004b29a0 */
-extern void sk_vas_fault45(void);                                /* FUN_004b2a84 */
-extern void sk_vas_fault46(void);                                /* FUN_004b2abc */
-extern void sk_vas_fault47(void);                                /* FUN_004b2b10 */
-extern void sk_vas_fault48(void);                                /* FUN_004b2b64 */
-extern void sk_vas_fault49(void);                                /* FUN_004b2bb8 */
-extern void sk_vas_fault50(void);                                /* FUN_004b2be4 */
-extern void sk_vas_fault51(void);                                /* FUN_004b2c10 */
-extern void sk_vas_fault52(void);                                /* FUN_004b2c3c */
-extern void sk_vas_fault53(void);                                /* FUN_004b2c84 */
-extern void sk_vas_fault54(void);                                /* FUN_004b2d10 */
-extern void sk_vas_fault55(void);                                /* FUN_004b2d38 */
-extern unsigned long sk_vas_fault56(void);                       /* FUN_004b2d60 */
-extern void sk_vas_fault57(void);                                /* FUN_004b2da8 */
-extern void sk_vas_fault58(void);                                /* FUN_004b2de0 */
-extern void sk_vas_fault59(void);                                /* FUN_004b2e64 */
-extern void sk_vas_fault60(void);                                /* FUN_004b2eb8 */
-extern void sk_vas_fault61(void);                                /* FUN_004b2f80 */
-extern unsigned long sk_vas_fault62(void);                       /* FUN_004b2fc8 */
-extern unsigned long sk_vas_fault63(void);                       /* FUN_004b2fe0 */
-extern void sk_vas_fault64(void);                                /* FUN_004b3064 */
-extern unsigned long sk_vas_fault65(void);                       /* FUN_004b311c */
-extern void sk_vas_fault66(void);                                /* FUN_004b3154 */
-extern unsigned long sk_vas_fault67(void);                       /* FUN_004b318c */
-extern unsigned long sk_vas_fault68(void);                       /* FUN_004b31c4 */
-extern void sk_vas_fault69(void);                                /* FUN_004b31fc */
-extern unsigned long sk_vas_fault70(void);                       /* FUN_004b3234 */
-extern void sk_vas_fault71(void);                                /* FUN_004b326c */
-extern void sk_vas_fault72(void);                                /* FUN_004b3294 */
-extern void sk_vas_fault73(void);                                /* FUN_004b32bc */
-extern void sk_vas_fault74(void);                                /* FUN_004b32f4 */
-extern void sk_vas_fault75(void);                                /* FUN_004b332c */
-extern void sk_vas_fault76(void);                                /* FUN_004b3364 */
-extern void sk_vas_fault77(void);                                /* FUN_004b339c */
-extern void sk_vas_fault78(void);                                /* FUN_004b33c4 */
-extern void sk_vas_fault79(void);                                /* FUN_004b33ec */
-extern void sk_vas_fault80(void);                                /* FUN_004b3414 */
-extern void sk_vas_fault81(void);                                /* FUN_004b343c */
+extern unsigned long sk_vas_fault28();
+extern unsigned long sk_vas_fault29();
+extern unsigned long sk_vas_fault30();
+extern unsigned long sk_vas_fault31();
+extern unsigned long sk_vas_fault32();
+extern unsigned long sk_vas_fault33();
+extern unsigned long sk_vas_fault34();
+extern unsigned long sk_vas_fault35();
+extern unsigned long sk_vas_fault36();
+extern unsigned long sk_vas_fault37();
+extern unsigned long sk_vas_fault38();
+extern unsigned long sk_vas_fault39();
+extern unsigned long sk_vas_fault40();
+extern unsigned long sk_vas_fault41();
+extern unsigned long sk_vas_fault42();
+extern unsigned long sk_vas_fault43();
+extern unsigned long sk_vas_fault44();
+extern unsigned long sk_vas_fault45();
+extern unsigned long sk_vas_fault46();
+extern unsigned long sk_vas_fault47();
+extern unsigned long sk_vas_fault48();
+extern unsigned long sk_vas_fault49();
+extern unsigned long sk_vas_fault50();
+extern unsigned long sk_vas_fault51();
+extern unsigned long sk_vas_fault52();
+extern unsigned long sk_vas_fault53();
+extern unsigned long sk_vas_fault54();
+extern unsigned long sk_vas_fault55();
+extern unsigned long sk_vas_fault56();
+extern unsigned long sk_vas_fault57();
+extern unsigned long sk_vas_fault58();
+extern unsigned long sk_vas_fault59();
+extern unsigned long sk_vas_fault60();
+extern unsigned long sk_vas_fault61();
+extern unsigned long sk_vas_fault62();
+extern unsigned long sk_vas_fault63();
+extern unsigned long sk_vas_fault64();
+extern unsigned long sk_vas_fault65();
+extern unsigned long sk_vas_fault66();
+extern unsigned long sk_vas_fault67();
+extern unsigned long sk_vas_fault68();
+extern unsigned long sk_vas_fault69();
+extern unsigned long sk_vas_fault70();
+extern unsigned long sk_vas_fault71();
+extern unsigned long sk_vas_fault72();
+extern unsigned long sk_vas_fault73();
+extern unsigned long sk_vas_fault74();
+extern unsigned long sk_vas_fault75();
+extern unsigned long sk_vas_fault76();
+extern unsigned long sk_vas_fault77();
+extern unsigned long sk_vas_fault78();
+extern unsigned long sk_vas_fault79();
+extern unsigned long sk_vas_fault80();
+extern unsigned long sk_vas_fault81();
 extern void *sk_vas_fault82(void);                               /* FUN_004b3464 */
-extern void sk_vas_fault83(void);                                /* FUN_004b349c */
-extern void sk_vas_fault84(void);                                /* FUN_004b34d4 */
-extern unsigned long sk_vas_fault85(void);                       /* FUN_004b350c */
+extern unsigned long sk_vas_fault83();
+extern unsigned long sk_vas_fault84();
+extern unsigned long sk_vas_fault85();
 
 /* additional helpers referenced by the appended bodies */
-extern unsigned long sk_slot_attach_full(unsigned long, ...);   /* FUN_0003b820 */
-extern unsigned long sk_span_lookup_build6(unsigned long, ...); /* FUN_00035bac */
-extern unsigned long sk_region_map_span3(unsigned long, ...);            /* FUN_0003df84 */
-extern unsigned long sk_span_find2(unsigned long, ...);         /* FUN_000287e4 */
+extern unsigned long sk_slot_attach_full();   /* FUN_0003b820 */
+extern unsigned long sk_span_lookup_build6(); /* FUN_00035bac */
+extern unsigned long sk_region_map_span3();            /* FUN_0003df84 */
+extern unsigned long sk_span_find2();         /* FUN_000287e4 */
 
 /* aliases with the decompile-accurate signatures used by the appended bodies */
 extern cl4_result_t sk_pool_method_full(unsigned long);           /* FUN_00034bd8 */
 extern void sk_pool_touch_full(unsigned long, unsigned long, unsigned long); /* FUN_00034d5c */
-extern long sk_vas_fault14r(void);                                /* FUN_004b1fac (returns root) */
+extern unsigned long sk_vas_fault14r();
 extern unsigned long sk_alloc_big3(int, int);                     /* FUN_0005baac */
 extern void sk_list_init2(void *);                                /* FUN_0005ba5c */
-extern unsigned long sk_vspace_new_small2(void);                  /* FUN_00033da4 */
+extern unsigned long sk_vspace_new_small2();
 extern void sk_obj_table_init2b(unsigned long, unsigned long, unsigned long); /* FUN_00034970 */
 extern void sk_pool_touch2b(unsigned long, unsigned long, unsigned long);     /* FUN_00034d5c */
 extern void sk_vspace_slot_tree_remove_node(unsigned long *, unsigned int, unsigned int); /* FUN_0003730c */
+extern unsigned long sk_spanmap_refcount_inc();
+extern unsigned long sk_spanmap_refcount_dec();
+extern unsigned long sk_walk_refcount_inc();
+/* data globals referenced by the appended bodies */
+extern unsigned long sk_stat_walk_all;       /* DAT_006ad378 */
+extern unsigned long sk_stat_walk_ok;        /* DAT_006ad37c */
+extern unsigned long sk_stat_walk_attr;      /* DAT_006ad38c */
+extern unsigned long sk_stat_walk_start;     /* DAT_006ad344 */
+extern unsigned long sk_stat_walk_attach;    /* DAT_006ad348 */
+extern unsigned long sk_stat_walk_total;     /* DAT_006ad2c8 */
+extern unsigned long sk_desc_boot;           /* DAT_004bc378 */
+extern unsigned long sk_stat_fault_inc;      /* DAT_006af198 */
+extern unsigned long sk_obj_methods_2[];     /* DAT_004bc358 */
+extern unsigned long sk_vspace_lock_6af000;  /* 0x6af000 */
+extern unsigned long sk_fault_span_next3();   /* FUN_000405d0 */
+extern void sk_slot_detach_inner();   /* FUN_0003bac0 */
+extern void sk_slot_push_f();   /* FUN_0003e640 push variant */
 /* prototypes */
 long sk_vspace_attach_spanmap(long param_1, long param_2);
 void sk_boot_vspace_early_init(void);
 cl4_result_t sk_vspace_slot_alloc_frame(void);
 void sk_boot_bss_lock_init(unsigned long lock, unsigned long owner, unsigned long tag);
 long sk_vspace_slot_alloc_new(void);
-void sk_vspace_node_pop(void);
+unsigned long sk_vspace_node_pop(void);
 void sk_vspace_slot_bitmap_init(unsigned long *node);
 void sk_vspace_slot_tree_insert(unsigned long *root, unsigned long node);
 void sk_vspace_slot_free_search(unsigned long base);
@@ -2955,7 +2972,7 @@ void sk_span_lookup_build_n(void);
 unsigned long sk_span_resolve_addr(unsigned long span);
 void sk_span_release(unsigned long *out, unsigned long span, unsigned int count, void (*cb)(unsigned long));
 void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int count);
-void sk_span_cursor_recurse(unsigned long *span, unsigned int count);
+unsigned long * sk_span_cursor_recurse(unsigned long *span, unsigned int count);
 unsigned long sk_span_cursor_next(unsigned long *cursor);
 void sk_span_merge(unsigned long *out, unsigned long lo, unsigned long hi);
 unsigned int sk_granule_index(unsigned int w);
@@ -2984,12 +3001,15 @@ cl4_result_t sk_fault_span_map(long region, long *state, unsigned long addr, uns
 cl4_result_t sk_span_destroy(unsigned char *span);
 void sk_span_unmap(long span, unsigned int attrs);
 unsigned long sk_span_alloc_region(long span, unsigned long *out);
-void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out);
+unsigned long sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out);
 cl4_result_t sk_span_split(long span, unsigned long at, long *lo_out, long *hi_out);
 cl4_result_t sk_span_attach(unsigned long *span, unsigned long at, unsigned int attrs, unsigned long *dest);
 cl4_result_t sk_span_next_region(long *span);
+unsigned long * sk_slot_pop_a(long obj);
 void sk_slot_push_a(long obj, unsigned long *node);
+unsigned long * sk_slot_pop_b(long obj);
 void sk_slot_push_b(long obj, unsigned long *node);
+unsigned long * sk_slot_pop_c(long obj);
 void sk_slot_push_c(long obj, unsigned long *node);
 unsigned long sk_slot_pop_d(long obj);
 void sk_slot_push_d(long obj, unsigned long *node);
@@ -3000,6 +3020,7 @@ unsigned long sk_slot_attach(unsigned long st, unsigned long region, unsigned lo
 cl4_result_t sk_region_bind(long region, long p2, long span, long p4);
 void sk_slot_detach(long *root, long region);
 void sk_region_wire(void);
+unsigned long * sk_slot_pop_e(long obj);
 void sk_region_attach(unsigned long *tree, unsigned long span);
 void sk_region_teardown(long span);
 bool sk_region_check(long owner, long tag, long region, long tag2);
@@ -3011,13 +3032,14 @@ unsigned long sk_region_map_next(long region);
 void sk_region_release3(long region);
 void sk_region_unmap_pages(unsigned long granule, long region, int attr, int mode, int p5);
 cl4_result_t sk_region_lookup_span(unsigned long region, long addr, long *node_out, unsigned long *span_out);
-void sk_region_find_span(unsigned long *tree, unsigned long addr);
+unsigned long sk_region_find_span(unsigned long *tree, unsigned long addr);
 cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region, long span, unsigned long base, unsigned long count);
 cl4_result_t sk_region_unmap_indirect(long *span, unsigned long offset, unsigned long page);
 cl4_result_t sk_region_unmap_direct(long region, unsigned long page);
 unsigned int sk_cap_validate(long *out, long cap);
 unsigned int sk_cap_release(long *obj, unsigned long cap, unsigned long *out);
 unsigned int sk_cap_revoke(long *cap);
+unsigned long * sk_slot_pop_f(long obj);
 unsigned long sk_class_perm(char class);
 void sk_region_walk_span(unsigned long *out, unsigned long *tree, long region, unsigned long *walk);
 long sk_rand_mod(unsigned long modulus);
@@ -3299,7 +3321,7 @@ long sk_vspace_slot_alloc_new(void)
  * popped node (+0x48 window); faults on overflow.
  * Confidence: medium (structural).
  */
-void sk_vspace_node_pop(void)
+unsigned long sk_vspace_node_pop(void)
 {
     unsigned long *node;
     unsigned long next;
@@ -3309,11 +3331,11 @@ void sk_vspace_node_pop(void)
     if (next == 0) {
         /* dispatch node constructor through method table */
         ((void (*)(void))node[0])();
-        return;
+        return 0;
     }
     node[5] = *(unsigned long *)(next + 0x30);
     if (next <= next + 0x48)
-        return;
+        return next;
     __builtin_unreachable();
 }
 
@@ -3525,7 +3547,7 @@ unsigned long sk_void_return(void)
  */
 void sk_span_lookup_build(unsigned long param_1, unsigned long param_2)
 {
-    sk_span_lookup_build6(param_1, param_2, 0, 0);  /* FUN_00035bac */
+    sk_span_lookup_build6(param_1);  /* FUN_00035bac */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3695,7 +3717,7 @@ void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int c
         end = leaf + 8;
         if ((unsigned long)(span >> 0x1c) <= (unsigned long)end &&
             (leaf == 0 || 0x38 < (long)end - (long)leaf)) {
-            leaf = (unsigned long *)sk_span_cursor_recurse(leaf);  /* FUN_0003652c */
+            leaf = (unsigned long *)sk_span_cursor_recurse(leaf, 0);  /* FUN_0003652c */
             end = leaf ? leaf + 8 : 0;
             if ((unsigned long)leaf <= (unsigned long)end &&
                 (leaf == 0 || 0x38 < (long)end - (long)leaf)) {
@@ -3735,9 +3757,9 @@ void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int c
  * structure.
  * Confidence: medium (structural; recursive span walk).
  */
-void sk_span_cursor_recurse(unsigned long *span, unsigned int count)
+unsigned long *sk_span_cursor_recurse(unsigned long *span, unsigned int count)
 {
-    unsigned long *end, *w, sub;
+    unsigned long *end, *w;
     unsigned long i, base;
 
     end = span + 8;
@@ -3745,11 +3767,10 @@ void sk_span_cursor_recurse(unsigned long *span, unsigned int count)
         for (i = 0; i < 7; i++) {
             w = span + i;
             if ((*w & 3) == 1 && count <= ((unsigned int)*w >> 6 & 0x3fffff)) {
-                if (i == 7) return;
-                return;
+                return w;
             }
         }
-        return;
+        return span;
     } else {
         for (i = 0; i < 8; i++) {
             w = span + i;
@@ -3757,12 +3778,11 @@ void sk_span_cursor_recurse(unsigned long *span, unsigned int count)
                 /* descend into this sub-span */
                 base = *w >> 0x1c;
                 if (base <= base + 0x40 && (base == 0 || 0x38 < (base + 0x40) - base)) {
-                    sk_span_cursor_recurse((unsigned long *)base, count);
-                    return;
+                    return sk_span_cursor_recurse((unsigned long *)base, count);
                 }
             }
         }
-        return;
+        return span;
     }
 }
 
@@ -3965,7 +3985,7 @@ cl4_result_t sk_span_table_insert(unsigned long *table, unsigned long span,
         if (sz <= cap) {
             if (sz < (unsigned long)((v & 0xff) * -8 + 0x38) ||
                 sz - ((unsigned long)((v & 0xff) * -8 + 0x38)) == 0) {
-                sk_mem_move3(p + 1, p, sz);         /* FUN_00117d14 */
+                sk_mem_move3((unsigned long)(p + 1), (unsigned long)p, sz);  /* FUN_00117d14 */
                 if (p + 1 <= p + 1 + count && p <= p + 1) {
                     *p = span & 0xffffffffffffffc0 | *p & 0x3c | 1;
                     r.lo = 0; r.hi = 0;
@@ -3995,7 +4015,7 @@ void sk_span_tree_alloc(unsigned long *out, unsigned long node, unsigned long ta
     if (node + 8 <= v) {
         for (i = 0; i < 4; i++) r[i] = 0;
         if (node == 0 || 0x38 < v - node) {
-            sk_span_tree_build(r, node, tag, 0);    /* FUN_00036dec */
+            sk_span_tree_build(r, (unsigned long *)node, tag, 0);  /* FUN_00036dec */
             e = r[3] + 0x40;
             if (r[3] <= e && (r[3] == 0 || 0x38 < e - r[3])) {
                 out[0] = r[0]; out[1] = r[1]; out[2] = r[2]; out[3] = r[3];
@@ -4044,7 +4064,7 @@ void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int cou
             }
         }
     } else if (kind == 0xc) {
-        dst = (unsigned long *)sk_pool_alloc_node_c90(); /* FUN_000347c4 */
+        dst = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_000347c4 */
         tag = ((unsigned int)*src >> 2) & 0xf;
         if (tag == 1) {
             for (i = 0; i < 4; i++) {
@@ -4073,7 +4093,7 @@ void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int cou
             out[0] = 0; out[1] = 0; out[2] = g; out[3] = (unsigned long)dst;
             return;
         }
-        w = (unsigned long *)sk_pool_alloc_node_c90();  /* FUN_000347c4 */
+        w = (unsigned long *)sk_vspace_alloc_big(0x6af188, 4, 8);  /* FUN_000347c4 */
         if (w != 0) {
             *w = (unsigned long)(g << 6 | 5) | (unsigned long)src << 0x1c;
             w[1] = (unsigned long)dst << 0x1c | 1;
@@ -4257,7 +4277,7 @@ void sk_span_tree_alloc2(unsigned long size, unsigned long *out)
 
     desc[0] = 0x11; desc[1] = 0; desc[2] = 0;
     desc[3] = 0xfd0e0000; desc[4] = 0;
-    v = sk_trap_alloc_region(0x148, &desc[0], &base, 0, &desc[0]); /* FUN_0003c510 */
+    v = sk_trap_alloc_region(0x148, (void **)&desc[0], &base, 0, 0);  /* FUN_0003c510 */
     v = v & 0xff;
     if (v == 0) {
         if (base <= base + size && (base == 0 || size <= (base + size) - base)) {
@@ -4347,19 +4367,20 @@ void sk_span_tree_destroy2(long *node)
 unsigned long sk_span_tree_remap(unsigned long root, unsigned long addr,
                                  long *out_base, unsigned long *out_len)
 {
-    unsigned long span, want, got, st[11], w;
-    unsigned long newbase;
+    unsigned long st[11], span, want, w, got, newbase;
     int err;
 
     want = *out_len;
-    st[10] = ~0UL; st[0] = 0;
-    sk_slot_attach(st + 1, root, 0, 0);       /* FUN_0003be88 */
-    span = sk_region_find_span(st + 1, addr);           /* FUN_0003dd68 */
+    for (int i = 0; i < 11; i++) st[i] = 0;
+    st[10] = ~0UL;
+    sk_slot_attach((unsigned long)st + 1, root, 0, 0);  /* FUN_0003be88 */
+    span = 0;
+    sk_region_find_span((unsigned long *)(st + 1), addr);  /* FUN_0003dd68 (walks tree) */
     if (span != 0) {
         if (*(int *)(span + 0x20) != 0) {
             w = (*(long *)(span + 8) - addr) + *(long *)(span + 0x10);
             if (w <= want) want = w;
-            sk_slot_detach(st + 1, root);               /* FUN_0003bfb8 */
+            sk_slot_detach((long *)(st + 1), (long)root);    /* FUN_0003bfb8 */
             err = (int)sk_span_remap3(span, addr, st + 10) & 0xff; /* FUN_00040630 */
             if (err != 0) return err;
             st[10] = st[10] + (addr & 0x3fff);
@@ -4375,7 +4396,7 @@ unsigned long sk_span_tree_remap(unsigned long root, unsigned long addr,
             return 0;
         }
     }
-    sk_slot_detach(st + 1, root);                       /* FUN_0003bfb8 */
+    sk_slot_detach((long *)(st + 1), (long)root);        /* FUN_0003bfb8 */
     return 0x9580001;
 }
 
@@ -4390,7 +4411,7 @@ void sk_fault_span_common(void)
 {
     unsigned long o;
 
-    o = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    o = (unsigned long)sk_vspace_root();                       /* FUN_00032cd0 -> root */
     sk_obj_method_dispatch3(o, 2, 0);           /* FUN_00042abc */
 }
 
@@ -4420,18 +4441,18 @@ cl4_result_t sk_fault_span_find(unsigned long region)
     unsigned long local[10], span, root;
     unsigned long *t;
 
-    DAT_006af198 = DAT_006af198 + 1;
+    sk_spanmap_refcount_inc();                  /* DAT_006af198 */
     for (int i = 0; i < 10; i++) local[i] = 0;
-    sk_slot_attach(local, region, 0, 0);         /* FUN_0003be88 */
+    sk_slot_attach((unsigned long)local, region, 0, 0);  /* FUN_0003be88 */
     if (local[0] <= local[0] + 0x2a0) {
-        t = (unsigned long *)sk_vspace_layout_check_small();  /* FUN_00032cec */
+        t = (unsigned long *)sk_vspace_root();  /* FUN_00032cec -> root */
         root = *t;
         while (root != 0 && *(unsigned long *)(root + 0x58) != 0)
             root = *(unsigned long *)(root + 0x58);
         if (root <= root + 0xb0) {
-            span = sk_fault_span_next3(local);  /* FUN_000405d0 */
-            sk_slot_detach(local, region);      /* FUN_0003bfb8 */
-            if (span == 0) DAT_006af198 = DAT_006af198 - 1;
+            span = sk_fault_span_next3((unsigned long)local);  /* FUN_000405d0 */
+            sk_slot_detach((long *)local, (long)region);       /* FUN_0003bfb8 */
+            if (span == 0) sk_spanmap_refcount_dec();          /* DAT_006af198 */
             r.lo = span;
             r.hi = 0x65b6a0;
             return r;
@@ -4456,7 +4477,7 @@ cl4_result_t sk_fault_span_get(unsigned long region, unsigned long addr,
     unsigned long local[10], *node;
 
     for (int i = 0; i < 10; i++) local[i] = 0;
-    sk_slot_attach(local, region, 0, 0);        /* FUN_0003be88 */
+    sk_slot_attach((unsigned long)local, region, 0, 0);  /* FUN_0003be88 */
     node = (unsigned long *)sk_region_find_span(local, addr);  /* FUN_0003dd68 */
     if (node == 0) {
         r.lo = 0; r.hi = 0;
@@ -4474,7 +4495,7 @@ cl4_result_t sk_fault_span_get(unsigned long region, unsigned long addr,
             r.hi = 0x65b648;
         }
     }
-    sk_slot_detach(local, region);              /* FUN_0003bfb8 */
+    sk_slot_detach((long *)local, (long)region);      /* FUN_0003bfb8 */
     (void)count_out;
     return r;
 }
@@ -4493,7 +4514,7 @@ unsigned long sk_fault_span_release(unsigned long region, unsigned long addr, in
     unsigned long *tpidr;
 
     st[0] = 0; st[1] = 0;
-    err = sk_region_lookup_span(region, addr, &st[0], &st[1]);  /* FUN_0003dbc0 */
+    err = sk_region_lookup_span(region, addr, &st[0], &st[1]).lo;  /* FUN_0003dbc0 */
     if ((err & 0xff) == 0) {
         if (mode == 1 && ((*(unsigned char *)(st[1] + 0x20) >> 3 & 1) == 0))
             return 0x9cb0001;
@@ -4520,7 +4541,7 @@ cl4_result_t sk_fault_span_commit(void)
     cl4_result_t r;
     unsigned long o, v;
 
-    o = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    o = (unsigned long)sk_vspace_root();                       /* FUN_00032cd0 -> root */
     v = sk_obj_method_dispatch3(o, 2, 0);       /* FUN_00042abc */
     if (v == 0) {
         r.lo = 0x9e60004; r.hi = 0;
@@ -4548,14 +4569,14 @@ cl4_result_t sk_fault_span_walk(unsigned long region, unsigned long addr,
     unsigned long st[10];
     unsigned char c;
 
-    DAT_006ad2c8 = DAT_006ad2c8 + 1;
+    sk_walk_refcount_inc();                     /* DAT_006ad2c8 */
     for (int i = 0; i < 10; i++) st[i] = 0;
     for (int i = 0; i < 40; i++) state[i] = 0;
     c = 1;
     st[4] = region;
     st[9] = region;
-    sk_percpu_get3(&st[2]);                     /* FUN_001180fc */
-    r = sk_fault_span_map(region, &st[4], addr, size, state);  /* FUN_00039094 */
+    sk_percpu_get3((unsigned long)&st[2]);      /* FUN_001180fc */
+    r = sk_fault_span_map(region, (long *)&st[4], addr, size, state);  /* FUN_00039094 */
     if (state[0] == 1)
         sk_vas_fault43();                       /* FUN_004b28c0 */
     else if (c != 1) {
@@ -4593,7 +4614,7 @@ unsigned long sk_fault_span_flush(unsigned long region)
     sk_vspace_layout_check_big(region);         /* FUN_00032cd0 */
     st[6] = 0; st[7] = 0;
     {
-        cl4_result_t cr = sk_region_create(sk_vspace_root(), 0x1908, &DAT_004bc378,
+        cl4_result_t cr = sk_region_create((long)sk_vspace_root(), 0x1908, &sk_desc_boot,
                                            &st[6], 0, 0);   /* FUN_0003c56c */
         if ((cr.lo & 0xff) != 0) return cr.lo;
     }
@@ -4605,7 +4626,7 @@ unsigned long sk_fault_span_flush(unsigned long region)
     v = *(unsigned long *)(region + 0x200);
     while (v != 0) {
         if ((*(unsigned char *)(v + 0x20) >> 3 & 1) != 0) {
-            span = sk_region_map_fault(v, base, 0, 0);      /* FUN_0003fa94 */
+            span = sk_region_map_fault(v, base, 0, 0, 0, 0, 0);  /* FUN_0003fa94 */
             if (span == 0) {
                 tpidr = (unsigned long *)__builtin_thread_pointer();
                 *tpidr = 1;
@@ -4614,8 +4635,8 @@ unsigned long sk_fault_span_flush(unsigned long region)
                 if (st[6] <= st[6] + 0xb0) {
                     size = 0;
                     st[0] = 0x4000; st[1] = 0;
-                    sk_region_finalize(st[6], &st[0], &st[1]); /* FUN_0003f170 */
-                    sk_region_unmap_pages(v, 0, 0, 0);       /* FUN_0003da18 */
+                    sk_region_finalize(st[6], &st[0], &st[1], 0); /* FUN_0003f170 */
+                    sk_region_unmap_pages(v, 0, 0, 0, 0);   /* FUN_0003da18 */
                 }
             }
         }
@@ -4648,25 +4669,25 @@ cl4_result_t sk_fault_span_map(long region, long *state, unsigned long addr,
     unsigned long st[10], span, v;
     char c, dirty;
 
-    DAT_006ad378 = DAT_006ad378 + 1;
+    sk_stat_walk_all = sk_stat_walk_all + 1;
     for (int i = 0; i < 0x28; i++) out_state[i] = 0;
     dirty = 0;
     st[4] = 0;
     v = sk_obj_walk5(region, (long)state, addr & 0xf0ffffffffffc000, &st[4], &dirty); /* FUN_00045a68 */
     c = dirty;
     if ((v & 1) == 0) {
-        DAT_006ad37c = DAT_006ad37c + 1;
+        sk_stat_walk_ok = sk_stat_walk_ok + 1;
         r.lo = 0xfb20001; r.hi = 0;
         return r;
     }
     if ((addr & 0xf00000000000000) != 0 &&
         (*(unsigned char *)(st[4] + 0x22) >> 6 & 1) == 0) {
         sk_obj_state5(region, (long)state);     /* FUN_00045c98 */
-        DAT_006ad38c = DAT_006ad38c + 1;
+        sk_stat_walk_attr = sk_stat_walk_attr + 1;
         r.lo = 0xfbb0001; r.hi = 0;
         return r;
     }
-    DAT_006ad344 = DAT_006ad344 + 1;
+    sk_stat_walk_start = sk_stat_walk_start + 1;
     if (*(long *)(st[4] + 0x50) != region) {
         r.lo = 0; r.hi = 0;
         return r;
@@ -4675,7 +4696,7 @@ cl4_result_t sk_fault_span_map(long region, long *state, unsigned long addr,
     if ((*(unsigned char *)(st[4] + 0x22) & 1) != 0) {
         v = sk_obj_attach5((unsigned long)c, flags);        /* FUN_000455b0 */
         if ((v & 1) == 0) {
-            DAT_006ad348 = DAT_006ad348 + 1;
+            sk_stat_walk_attach = sk_stat_walk_attach + 1;
             r.lo = 0xf210001; r.hi = 0;
             return r;
         }
@@ -4743,7 +4764,7 @@ cl4_result_t sk_span_destroy(unsigned char *span)
         __builtin_unreachable();
     }
     st[0] = st[1] = st[2] = st[3] = 0;
-    sk_slot_attach(st, owner, *(unsigned long *)(span + 8),
+    sk_slot_attach((unsigned long)st, owner, *(unsigned long *)(span + 8),
                    *(unsigned long *)(span + 0x10));   /* FUN_0003be88 */
     if ((*(unsigned int *)(span + 0x20) >> 0x18 & 1) != 0) {
         r.lo = 0x5660001; r.hi = 0;
@@ -4763,16 +4784,16 @@ cl4_result_t sk_span_destroy(unsigned char *span)
     if (0x3fff < *(unsigned long *)(span + 8)) {
         v = sk_region_find_span(st, *(unsigned long *)(span + 8) - 0x4000); /* FUN_0003dd68 */
         if (v != 0 && *(int *)(v + 0x20) == 0)
-            sk_region_merge2(st, owner, v, (long)span);   /* FUN_0003f324 */
+            sk_region_merge2((unsigned long)st, owner, v, (long)span);   /* FUN_0003f324 */
     }
     if (*(long *)(span + 0x10) + *(long *)(span + 8) != 0x1000000000) {
         v = sk_region_find_span(st, 0);         /* FUN_0003dd68 */
         if (v != 0 && *(int *)(v + 0x20) == 0)
-            sk_region_merge2(st, owner, (long)span, 0);   /* FUN_0003f324 */
+            sk_region_merge2((unsigned long)st, owner, (long)span, 0);   /* FUN_0003f324 */
     }
     r.lo = 0; r.hi = 0;
 done:
-    sk_slot_detach(st, owner);                  /* FUN_0003bfb8 */
+    sk_slot_detach((long *)st, owner);                  /* FUN_0003bfb8 */
     return r;
 }
 
@@ -4819,10 +4840,7 @@ void sk_span_unmap(long span, unsigned int attrs)
             __builtin_unreachable();
         }
         st[0] = st[1] = 0;
-        if (sk_vspace_layout_check_big(0) + 0xd0 < sk_vspace_layout_check_big(0)) {
-            __builtin_unreachable();
-        }
-        sk_span_lookup_build(st, *(unsigned long *)(span + 0x78), 0);  /* FUN_00035ba0 */
+        sk_span_lookup_build((unsigned long)st, *(unsigned long *)(span + 0x78));  /* FUN_00035ba0 */
         e = st[0];
         *(unsigned long *)(span + 0x78) = st[1];
         if (st[0] == 0) {
@@ -4899,7 +4917,7 @@ unsigned long sk_span_alloc_region(long span, unsigned long *out)
  * failure.
  * Confidence: low (large; structural shape preserved).
  */
-void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out)
+unsigned long sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_out)
 {
     unsigned long base, size, aligned, v, err;
     unsigned long st[2];
@@ -4918,7 +4936,7 @@ void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_
             if ((*size_out & 0x3fff) != 0) size = 0x4000;
             *size_out = size + (*size_out & 0xffffffffffffc000);
             sk_region_map_span3(span, *base_out);   /* FUN_0003df84 */
-            v = sk_region_wire_spans(span, aligned, *size_out + aligned); /* FUN_0003ff00 */
+            v = sk_region_wire_spans((char *)span, aligned, *size_out + aligned); /* FUN_0003ff00 */
             err = v & 0xff;
             if (err == 2) {
                 v = 0x68f0002;
@@ -4926,16 +4944,16 @@ void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_
                        (*(unsigned int *)(span + 0x20) >> 0x12 & 1) == 0) {
                 /* retry through the fault path */
                 st[0] = 0; st[1] = 0;
-                v = sk_region_map_fault(span, aligned, 0, 0);  /* FUN_0003fa94 */
+                v = sk_region_map_fault(span, aligned, 0, 0, 0, 0, 0);  /* FUN_0003fa94 */
                 if ((long)v < 7) {
                     if (v == 0) v = 0;
                     else if (v == 2) v = 0x80020002;
                     else if (v == 5) v = 0x80050003;
-                    else { sk_vas_fault64(v, 0); return; }      /* FUN_004b3064 */
+                    else { sk_vas_fault64(v, 0); return v; }      /* FUN_004b3064 */
                 } else {
                     if (v != 7 && v != 0x307 && v != 0x207) {
                         sk_vas_fault64(v, 0);                   /* FUN_004b3064 */
-                        return;
+                        return v;
                     }
                     v = (v & 0x7fff) << 0x10 | 0x80000001;
                 }
@@ -4943,13 +4961,13 @@ void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_
                     sk_stack_check_fail3(v, 0); /* FUN_0011d7e8 */
                     __builtin_unreachable();
                 }
-                return;
+                return v;
             }
             if (has_stack) {
                 sk_stack_check_fail3(v, 0);     /* FUN_0011d7e8 */
                 __builtin_unreachable();
             }
-            return;
+            return 0;
         }
     }
     v = 0x6800001;
@@ -4957,6 +4975,7 @@ void sk_span_map_region(long span, unsigned long *base_out, unsigned long *size_
         sk_stack_check_fail3(v, 0);             /* FUN_0011d7e8 */
         __builtin_unreachable();
     }
+    return v;
 }
 
 /*--------------------------------------------------------------------*/
@@ -5003,12 +5022,12 @@ cl4_result_t sk_span_split(long span, unsigned long at, long *lo_out, long *hi_o
             sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
             __builtin_unreachable();
         }
-        sk_slot_link_root(st, owner, st + 1);   /* FUN_0003bd70 */
+        sk_slot_link_root((long *)st, owner, (unsigned long)(st + 1));  /* FUN_0003bd70 */
         {
-            cl4_result_t sr = sk_region_split(st, owner, span, at, st + 1, &hi); /* FUN_0003ee4c */
+            cl4_result_t sr = sk_region_split((long)st, owner, (unsigned long *)span, at, st + 1, (unsigned long *)&hi); /* FUN_0003ee4c */
             r = sr;
         }
-        sk_slot_detach(st, owner);              /* FUN_0003bfb8 */
+        sk_slot_detach((long *)st, owner);              /* FUN_0003bfb8 */
         lo = st[0];
         hi = (long)r.hi;
         if ((r.lo & 0xff) == 0) {
@@ -5021,7 +5040,7 @@ cl4_result_t sk_span_split(long span, unsigned long at, long *lo_out, long *hi_o
                 __builtin_unreachable();
             }
             sk_span_compact(st + 4, *(unsigned long *)(span + 0x78),
-                            (int)((lo + at) - *(long *)(sk_vspace_layout_check_big(owner) + 0x28) >> 0xe) + 1); /* FUN_00036a94 */
+                            (int)((lo + at) - *(long *)((unsigned long)sk_vspace_root() + 0x28) >> 0xe) + 1); /* FUN_00036a94 */
             *(unsigned long *)(lo + 0x78) = st[6];
             *(unsigned long *)(hi + 0x78) = st[5];
             if (sk_vm_lock_take((unsigned long)hi + 0x80) != 0) {
@@ -5096,7 +5115,7 @@ cl4_result_t sk_span_attach(unsigned long *span, unsigned long at, unsigned int 
     r = sk_region_create(span[10], w, (char *)&lo, &st[0], 0, 0); /* FUN_0003c56c */
     if ((r.lo & 0xff) != 0) return r;
     *(unsigned short *)(st[0] + 0x19) = *(unsigned short *)((long)span + 0x19);
-    r = sk_obj_create5((long)span, st[0], (unsigned long)dest, (unsigned long)dest); /* FUN_000451a0 */
+    r.lo = sk_obj_create5((long)span, st[0], (unsigned long)dest, (unsigned long)dest); r.hi = 0; /* FUN_000451a0 */
     if ((r.lo & 0xff) == 0) return r;
     c = (char)((unsigned long (*)(unsigned long))st[0])(st[0]);
     if (c == 0) return r;
@@ -5127,10 +5146,10 @@ cl4_result_t sk_span_next_region(long *span)
     if (cur != 0) {
         for (int i = 0; i < 10; i++) st[i] = 0;
         owner = *(unsigned long *)(cur + 0x50);
-        sk_slot_attach(st, owner, 0, 0);        /* FUN_0003be88 */
+        sk_slot_attach((unsigned long)st, owner, 0, 0);        /* FUN_0003be88 */
         if (*(int *)(cur + 0x20) == 0) {
             r.lo = sk_vas_fault67();            /* FUN_004b318c */
-            if (*(unsigned long *)r.lo == 0) DAT_006af198 = DAT_006af198 - 1;
+            if (*(unsigned long *)r.lo == 0) sk_stat_fault_inc = sk_stat_fault_inc - 1;
             r.hi = 0x65b648;
             return r;
         }
@@ -5140,8 +5159,8 @@ cl4_result_t sk_span_next_region(long *span)
             v = sk_region_find_span(st, 0);     /* FUN_0003dd68 */
         v = sk_fault_span_next3(st, v);         /* FUN_000405d0 */
         *span = v;
-        sk_slot_detach(st, owner);              /* FUN_0003bfb8 */
-        if (v == 0) DAT_006af198 = DAT_006af198 - 1;
+        sk_slot_detach((long *)st, owner);              /* FUN_0003bfb8 */
+        if (v == 0) sk_stat_fault_inc = sk_stat_fault_inc - 1;
     }
     r.lo = cur; r.hi = 0x65b648;
     return r;
@@ -5350,7 +5369,7 @@ void sk_slot_unlink_root(unsigned long *root, unsigned long *node,
         sk_vas_abort("VAS abort in function %s at line %d", 0x5b2905);
         __builtin_unreachable();
     }
-    if (node == (unsigned long *)&DAT_0064c3f0)
+    if (node == (unsigned long *)&sk_vspace_root_obj)
         sk_obj_unref2();                        /* FUN_00043e88 */
     sk_obj_unlink4(node, param_3, param_4);     /* FUN_00044c94 */
     if (node[10] == 0) { node[10] = (unsigned long)root; return; }
@@ -5393,7 +5412,7 @@ unsigned long sk_slot_attach_wrap(unsigned long p1, unsigned long p2, unsigned l
 
     v = sk_slot_attach_full(p1, p2, p5, p6, p7, p8);    /* FUN_0003b820 */
     if ((int)v != 0)
-        sk_slot_unlink_root(p1, p2, p3, p4);            /* FUN_0003bca0 */
+        sk_slot_unlink_root((unsigned long *)p1, (unsigned long *)p2, p3, p4);  /* FUN_0003bca0 */
     return v;
 }
 
@@ -5413,10 +5432,10 @@ unsigned long sk_slot_attach(unsigned long st, unsigned long region, unsigned lo
 
     v = sk_slot_attach_full(st, region, 0, 0, 0, 0);    /* FUN_0003b820 */
     if ((v & 1) != 0) {
-        sk_slot_unlink_root(st, region, p3, p4);        /* FUN_0003bca0 */
+        sk_slot_unlink_root((unsigned long *)st, (unsigned long *)region, p3, p4);  /* FUN_0003bca0 */
         return v;
     }
-    r = sk_region_bind(region, p3, p4);                 /* FUN_0003beec */
+    r = sk_region_bind(region, 0x65b5c8, p3, 0x65b648); /* FUN_0003beec */
     return r.lo;
 }
 
@@ -5474,7 +5493,7 @@ void sk_slot_detach(long *root, long region)
         *(unsigned long *)(region + 0x50) = 0;
         err = sk_vm_lock_take(region + 0x40);
         if (err == 0) {
-            sk_slot_detach_inner(root);         /* FUN_0003bac0 */
+            sk_slot_detach_inner();            /* FUN_0003bac0 */
             return;
         }
         sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
@@ -5497,8 +5516,8 @@ void sk_region_wire(void)
     cl4_result_t ck;
     unsigned long root;
 
-    root = sk_vspace_root();                    /* FUN_00032514 */
-    ck = sk_obj_method_cookie(0, 0);            /* FUN_000411dc */
+    root = (unsigned long)sk_vspace_root();                    /* FUN_00032514 */
+    ck.lo = sk_obj_method_cookie(0, 0); ck.hi = 0;  /* FUN_000411dc */
     sk_vspace_final_wire(root, ck.lo, ck.hi);   /* FUN_0003c0e4 */
 }
 
@@ -5543,7 +5562,7 @@ unsigned long *sk_slot_pop_e(long obj)
 void sk_region_attach(unsigned long *tree, unsigned long span)
 {
     if (*tree <= *tree + 0x2a0) {
-        sk_span_commit3(sk_vspace_layout_check_small(), span);  /* FUN_00040870 */
+        sk_span_commit3(sk_vspace_root(), span);              /* FUN_00040870 */
         return;
     }
     __builtin_unreachable();                    /* SoftwareBreakpoint(0x5519, 0x3c32c) */
@@ -5564,15 +5583,13 @@ void sk_region_teardown(long span)
     unsigned int n;
 
     if ((*(unsigned char *)(*(long *)(span + 0x50) + 0x290) & 1) != 0) {
-        v = sk_vspace_layout_check_big();       /* FUN_00032cd0 */
+        v = (unsigned long)sk_vspace_root();                   /* FUN_00032cd0 -> root */
         cur[0] = cur[1] = cur[2] = 0;
         sk_span_cursor_build(cur, *(unsigned long *)(span + 0xa0), 0); /* FUN_000363ac */
         n = sk_span_cursor_next(cur);
         if ((n & 3) != 0) {
             do {
-                if (sk_vspace_layout_check_big(0) + 0xd0 >= sk_vspace_layout_check_big(0)) {
-                    /* free each mapped granule */
-                }
+                /* free each mapped granule */
                 n = sk_span_cursor_next(cur);
             } while ((n & 3) != 0);
         }
@@ -5626,7 +5643,7 @@ cl4_result_t sk_region_create(long owner, unsigned int attrs, char *desc,
         r.lo = 0x49b0002; r.hi = 0;
         return r;
     }
-    sk_slot_unlink_root(st, owner, 0, 0);       /* FUN_0003bca0 */
+    sk_slot_unlink_root((unsigned long *)st, (unsigned long *)owner, 0, 0);  /* FUN_0003bca0 */
     c7 = *desc;
     kind = attrs >> 0x1b & 1;
     if (kind == 0) {
@@ -5725,7 +5742,7 @@ void sk_region_bounds(unsigned long region, unsigned long *start_out,
     unsigned long lo, hi;
 
     for (int i = 0; i < 10; i++) st[i] = 0;
-    sk_slot_attach(st, *(unsigned long *)(region + 0x50), 0, 0);   /* FUN_0003be88 */
+    sk_slot_attach((unsigned long)st, *(unsigned long *)(region + 0x50), 0, 0);   /* FUN_0003be88 */
     if (*(unsigned long *)(region + 8) < 0x4000) {
         lo = region; hi = region;
     } else {
@@ -5741,7 +5758,7 @@ void sk_region_bounds(unsigned long region, unsigned long *start_out,
         hi = (v != 0 && *(int *)(v + 0x20) == 0) ? v : region;
     }
     *end_out = *(long *)(hi + 0x10) + *(long *)(hi + 8);
-    sk_slot_detach(st, *(unsigned long *)(region + 0x50));          /* FUN_0003bfb8 */
+    sk_slot_detach((long *)st, *(unsigned long *)(region + 0x50));          /* FUN_0003bfb8 */
 }
 
 /*--------------------------------------------------------------------*/
@@ -5760,7 +5777,7 @@ void sk_region_map_span(unsigned long base, unsigned long size, long region,
     unsigned long *tpidr;
     int err;
 
-    v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50)); /* FUN_00032cd0 */
+    v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
     uVar2 = base + size;
     if (base + size < base) {
         sk_vas_abort("VAS abort in function %s at line %d", 0x5b2cf7);
@@ -5865,13 +5882,13 @@ void sk_region_unmap_pages(unsigned long granule, long region, int attr,
 
     uVar2 = (unsigned int)granule >> 6 & 0x3fffff;
     if (p5 != 0 && attr == 0) {
-        v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50));  /* FUN_00032cd0 */
+        v = (unsigned long)sk_vspace_root();                               /* FUN_00032cd0 -> root */
         ((void (*)(unsigned long, unsigned long))(*(void **)(*(long *)(v + 0xb8) + 0x10)))
             (*(unsigned long *)(v + 0xb0), granule >> 0x1c);
     }
     if (mode == 0) {
         for (int i = 0; i < 6; i++) st[i] = 0;
-        sk_span_lookup_build(st, *(unsigned long *)(region + 0x78), uVar2); /* FUN_00035ba0 */
+        sk_span_lookup_build((unsigned long)st, *(unsigned long *)(region + 0x78)); /* FUN_00035ba0 */
         if (st[0] == 0) {
             uVar1 = st[2] & 0xff;
             if (uVar1 != 0) {
@@ -5913,9 +5930,9 @@ cl4_result_t sk_region_lookup_span(unsigned long region, long addr,
     unsigned long st[10], node, v;
 
     for (int i = 0; i < 10; i++) st[i] = 0;
-    sk_slot_attach(st, region, 0, 0);           /* FUN_0003be88 */
-    node = sk_region_find_span(st, addr);       /* FUN_0003dd68 */
-    sk_slot_detach(st, region);                 /* FUN_0003bfb8 */
+    sk_slot_attach((unsigned long)st, region, 0, 0);  /* FUN_0003be88 */
+    node = sk_region_find_span(st, (unsigned long)addr);  /* FUN_0003dd68 */
+    sk_slot_detach((long *)st, (long)region);            /* FUN_0003bfb8 */
     if (node == 0) {
         r.lo = 0x9b10001; r.hi = 0;
         return r;
@@ -5926,7 +5943,7 @@ cl4_result_t sk_region_lookup_span(unsigned long region, long addr,
     }
     v = 0;
     sk_span_find2(&v, *(unsigned long *)(node + 0x78),
-                  (int)((unsigned long)(addr - *(long *)(sk_vspace_layout_check_big(*(unsigned long *)(node + 0x50)) + 0x28)) >> 0xe) + 1); /* FUN_000287e4 */
+                  (int)((unsigned long)(addr - *(long *)((unsigned long)sk_vspace_root() + 0x28)) >> 0xe) + 1); /* FUN_000287e4 */
     *(unsigned long *)(node + 0x78) = v;
     if (sk_vm_lock_take(node + 0x80) != 0) {
         sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
@@ -5955,18 +5972,18 @@ cl4_result_t sk_region_lookup_span(unsigned long region, long addr,
  * the node pointer or 0.
  * Confidence: high (structural; range tree lookup).
  */
-void sk_region_find_span(unsigned long *tree, unsigned long addr)
+unsigned long sk_region_find_span(unsigned long *tree, unsigned long addr)
 {
     unsigned long cur, off;
 
     if (*tree + 0x2a0 < *tree) goto fault;
-    cur = *(unsigned long *)sk_vspace_layout_check_small();  /* FUN_00032cec */
+    cur = *(unsigned long *)sk_vspace_root();   /* FUN_00032cec -> root */
     do {
-        if (cur == 0) return;
+        if (cur == 0) return 0;
         if (addr < *(unsigned long *)(cur + 8)) off = 0x58;
         else {
             if (addr < *(long *)(cur + 0x10) + *(unsigned long *)(cur + 8)) {
-                if (cur <= cur + 0xb0) return;
+                if (cur <= cur + 0xb0) return cur;
                 goto fault;
             }
             off = 0x60;
@@ -6018,8 +6035,8 @@ cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region,
         return r;
     }
     out[0] = base; out[1] = uVar9; out[2] = region;
-    sk_vspace_root2(6, 0);                      /* FUN_00032514 */
-    v = sk_vspace_layout_check_big();           /* FUN_00032cd0 */
+    (void)sk_vspace_root();                    /* FUN_00032514 */
+    v = (unsigned long)sk_vspace_root();                       /* FUN_00032cd0 -> root */
     if (out[1] != 0) {
         lVar13 = 0;
         uVar9 = 0;
@@ -6029,7 +6046,7 @@ cl4_result_t sk_region_map_pages(unsigned long *out, unsigned long region,
             if (entry != 0) {
                 /* map the page granule */
                 pc = (unsigned long *)entry;
-                r = sk_region_wire_spans((long)*out, 0, 0);   /* FUN_0003ff00 */
+                r.lo = sk_region_wire_spans((char *)*out, 0, 0); r.hi = 0;  /* FUN_0003ff00 */
             }
             uVar10 = uVar10 + 0x2000000;
             uVar9 = uVar9 + 1;
@@ -6073,7 +6090,7 @@ cl4_result_t sk_region_unmap_indirect(long *span, unsigned long offset,
         leaf = *(unsigned long *)(*span + uVar5 * 8);
         if (leaf != 0) {
             w = *(unsigned int *)(span[2] + 0x20);
-            v = sk_vspace_layout_check_big(&DAT_0064c3f0);      /* FUN_00032cd0 */
+            v = (unsigned long)sk_vspace_root();                  /* FUN_00032cd0 -> root */
             iVar3 = sk_granule_index(*(unsigned long *)(span[2] + 0x78)); /* FUN_000368f8 */
             sk_span_lookup_build6(0, *(unsigned long *)(span[2] + 0x78), 0, 0); /* FUN_00035ba0 */
             addr &= 0xffffffffffffc000;
@@ -6125,7 +6142,7 @@ cl4_result_t sk_region_unmap_direct(long region, unsigned long page)
         r.lo = 0x10c40001; r.hi = 0;
         return r;
     }
-    v = sk_vspace_layout_check_big(&DAT_0064c3f0);              /* FUN_00032cd0 */
+    v = (unsigned long)sk_vspace_root();                          /* FUN_00032cd0 -> root */
     for (int i = 0; i < 6; i++) st[i] = 0;
     if (v + 0xd0 < v) goto fault;
     sk_span_lookup_build6(st, *(unsigned long *)(node + 0x78),
@@ -6204,7 +6221,7 @@ unsigned int sk_cap_release(long *obj, unsigned long cap, unsigned long *out)
         v = sk_granule_index(0);                                /* FUN_000368f8 */
         if (obj[2] == (v & 0xffffffff)) {
             for (int i = 0; i < 6; i++) st[i] = 0;
-            v = sk_vspace_layout_check_big(*(unsigned long *)(*obj + 0x50)); /* FUN_00032cd0 */
+            v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
             sk_span_lookup_build6(st, *(unsigned long *)(*obj + 0x78),
                                   (int)((*(long *)(*obj + 8) + (cap & 0xffffffffffffc000)) -
                                         *(long *)(v + 0x28) >> 0xe) + 1);  /* FUN_00035ba0 */
@@ -6339,8 +6356,8 @@ void sk_region_walk_span(unsigned long *out, unsigned long *tree, long region,
     /* walk the region tree */
     {
         /* method table for walk */
-        w = (unsigned long *)sk_vspace_layout_check_small();    /* FUN_00032cec */
-        sk_region_walk_find(*w, end, mask, lo, &sk_region_adjust_method);  /* FUN_0003ed4c */
+        w = (unsigned long *)sk_vspace_root();  /* FUN_00032cec -> root */
+        sk_region_walk_find(*w, end, mask, lo, (long)&sk_region_adjust);  /* FUN_0003ed4c */
     }
     for (i = 0; i < 6; i++) out[i] = local[i + 3];
     sk_obj_unref_block(st[0], 8);                               /* FUN_0004b8d0 */
@@ -6382,7 +6399,7 @@ void sk_region_bind2(unsigned long p1, unsigned long p2, long span)
         sk_vas_abort("VAS abort in function %s at line %d", 0x5b3ce1);
         __builtin_unreachable();
     }
-    v = sk_region_split(0, 0, 0, 0, 0, 0);                     /* FUN_0003ee4c */
+    v = sk_region_split(0, 0, 0, 0, 0, 0).lo;                 /* FUN_0003ee4c */
     v &= 0xff;
     if (v == 0) return;
     if (v >= 0x40 && v <= 0x80) {
@@ -6598,7 +6615,7 @@ cl4_result_t sk_region_split(long tree, unsigned long owner, unsigned long *regi
             }
         }
         if (newspan <= w) {
-            sk_region_attach(tree, (unsigned long)newspan);     /* FUN_0003c2ec */
+            sk_region_attach((unsigned long *)tree, (unsigned long)newspan);  /* FUN_0003c2ec */
             r.lo = 0;
             *lo_out = (unsigned long)region;
             *hi_out = (unsigned long)newspan;
@@ -6654,7 +6671,7 @@ cl4_result_t sk_region_finalize(unsigned long span, unsigned long *base_out,
     unsigned long *tpidr;
     int allow;
 
-    v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+    v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
     w0 = *(unsigned int *)(span + 0x20);
     allow = ((w0 & 0x4000000) == 0) ? 1 : 0;
     uVar8 = *base_out;
@@ -6704,7 +6721,7 @@ unsigned long sk_region_merge2(unsigned long st, unsigned long owner, long a, lo
         sk_vas_abort("VAS abort in function %s at line %d", 0x5b3f6d);
         __builtin_unreachable();
     }
-    v = sk_region_merge(st, owner, a, b, &lo, &hi);             /* FUN_0003f41c */
+    v = sk_region_merge((unsigned long *)st, owner, a, b, &lo, &hi).lo;  /* FUN_0003f41c */
     v &= 0xff;
     if (v == 0) {
         sk_slot_push_d(st, (unsigned long *)lo);
@@ -6768,16 +6785,16 @@ cl4_result_t sk_region_merge(unsigned long *tree, unsigned long owner, long a, l
         } else {
             w1 = *(unsigned long **)(a + 0x70);
             w2 = *(unsigned long **)(b + 0x70);
-            n = sk_slot_pop_f(tree);                            /* FUN_0003e640 */
+            n = sk_slot_pop_f((long)tree);                     /* FUN_0003e640 */
             *(unsigned long *)(a + 0x70) = (unsigned long)n;
             *(unsigned long *)(b + 0x70) = 0;
-            sk_region_desc_fill(a);                             /* FUN_0003ea28 */
-            sk_slot_push_f(tree, w1);                           /* FUN_0003e640 */
+            sk_region_desc_fill((char *)a);                    /* FUN_0003ea28 */
+            sk_slot_push_f((long)tree, (unsigned long *)w1);   /* FUN_0003e640 (push variant) */
             sk_slot_push_f(tree, w2);                           /* FUN_0003e640 */
         }
         if (*tree + 0x2a0 < *tree) goto fault;
         {
-            unsigned long *root = (unsigned long *)sk_vspace_layout_check_small(); /* FUN_00032cec */
+            unsigned long *root = (unsigned long *)sk_vspace_root(); /* FUN_00032cec -> root */
             v = sk_region_tree_remove(root, b);                 /* FUN_0003f6c8 */
             if ((v & 1) == 0) {
                 sk_vas_abort("VAS abort in function %s at line %d", 0x5b40cd);
@@ -6826,9 +6843,9 @@ unsigned long sk_region_tree_remove(long *root, long node)
     lVar3 = *root;
     if (lVar3 == node) { *root = 0; return 1; }
     if (*(unsigned long *)(node + 8) < *(unsigned long *)(lVar3 + 8))
-        v = sk_region_tree_remove(lVar3 + 0x58, node);
+        v = sk_region_tree_remove((long *)(lVar3 + 0x58), node);
     else
-        v = sk_region_tree_remove(lVar3 + 0x60, node);
+        v = sk_region_tree_remove((long *)(lVar3 + 0x60), node);
     lVar4 = *(long *)(lVar3 + 0x58);
     h1 = (lVar4 != 0) ? *(unsigned char *)(lVar4 + 0x24) + 1 : 0;
     lVar3 = *(long *)(lVar3 + 0x60);
@@ -6895,8 +6912,8 @@ void sk_region_tree_rebalance(unsigned long *root, int dir)
         h2 = (lVar8 != 0) ? *(unsigned char *)(lVar8 + 0x24) + 1 : 0;
         if (h1 <= h2) h1 = h2;
         *(char *)(uVar3 + 0x24) = (char)h1;
-        a_recompute(uVar2, lVar9, lVar10);
-        a_recompute(uVar3, lVar5, lVar8);
+        
+        
         return;
     }
 fault:
@@ -6958,7 +6975,7 @@ unsigned long sk_region_map_fault(long span, long addr, unsigned long p3,
     long local[6];
     int err;
 
-    v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+    v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
     if (sk_vm_lock_check((unsigned long)span + 0x80) != 0) {
         sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
         __builtin_unreachable();
@@ -6969,7 +6986,7 @@ unsigned long sk_region_map_fault(long span, long addr, unsigned long p3,
                   (int)((unsigned long)(addr - *(long *)(v + 0x28)) >> 0xe) + 1); /* FUN_000287e4 */
     *(unsigned long *)(span + 0x78) = base;
     if (base != 0) {
-        v = sk_vspace_layout_check_big(*(unsigned long *)(span + 0x50)); /* FUN_00032cd0 */
+        v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
         if (v <= v + 0xd0) {
             uVar9 = sk_obj_method_dispatch3(v, 1, addr);        /* FUN_00042abc */
             err = sk_obj_lookup3(v, uVar9);                     /* FUN_00042c20 */
@@ -6982,9 +6999,9 @@ unsigned long sk_region_map_fault(long span, long addr, unsigned long p3,
                     *tp = 0; __asm__ volatile("hvc #0" ::: "memory");
                 }
                 if (p3 == 0) {
-                    cl4_result_t r2 = sk_region_map_fault2(span, addr, v, base,
-                                                           uVar9, p4, 0);  /* FUN_0003fcc8 */
-                    p3 = r2.lo;
+                    unsigned long r2 = sk_region_map_fault2((char *)span, addr, v, base,
+                                                            uVar9, p4, 0);  /* FUN_0003fcc8 */
+                    p3 = r2;
                     if (p3 != 0) {
                         do { __asm__ volatile("hvc #0" ::: "memory"); } while (base == 1);
                     }
@@ -7038,7 +7055,7 @@ unsigned long sk_region_map_fault2(char *region, unsigned long p2, unsigned long
     if ((v & 0xff) == 4) {
         if (((unsigned char)region[0x23] >> 2 & 1) != 0) {
             /* full span map walk */
-            v = sk_region_wire_spans((long)region, p2, base);   /* FUN_0003ff00 */
+            v = sk_region_wire_spans(region, p2, base);          /* FUN_0003ff00 */
             return v;
         }
         err = sk_obj_attr3(p3, p2);                             /* FUN_000436fc */
@@ -7076,6 +7093,7 @@ unsigned long sk_region_map_fault2(char *region, unsigned long p2, unsigned long
 unsigned long sk_region_wire_spans(char *region, unsigned long start, unsigned long end)
 {
     unsigned long uVar2, uVar8, uVar9, uVar10, v, block, page;
+    unsigned long st_local[4], st_local2[4];
     unsigned long *puVar2, *puVar3;
     void (*f1)(void *, unsigned long, unsigned long, unsigned long);
     void (*f2)(void *, unsigned long, unsigned long, unsigned long);
@@ -7087,7 +7105,7 @@ unsigned long sk_region_wire_spans(char *region, unsigned long start, unsigned l
         sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
         __builtin_unreachable();
     }
-    v = sk_vspace_layout_check_big(*(unsigned long *)(region + 0x50)); /* FUN_00032cd0 */
+    v = (unsigned long)sk_vspace_root();                              /* FUN_00032cd0 -> root */
     uVar2 = 0;
     if ((end & 0x3fff) != 0) uVar2 = 0x4000;
     uVar2 = uVar2 + (end & 0xffffffffffffc000);

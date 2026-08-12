@@ -42,95 +42,104 @@ typedef uint64_t word_t;
 
 #define SK18_FATAL(addr) __builtin_trap()   /* SoftwareBreakpoint(1,<addr>) path */
 
-/* ---- Shared kernel / Swift-runtime externs (ground truth FUN_ addresses). ---- */
+/* ---- Shared kernel / Swift-runtime externs (ground truth FUN_ addresses). ----
+ * Arity is deliberately flexible (variadic) because the Swift ABI uses
+ * unaff-register / tail-merging conventions that Ghidra renders with varying
+ * argument counts; the bodies call these with the counts shown in each
+ * decompile. */
 
-/* Basic kernel helpers. */
-extern void   sk_memcpy_w(word_t d, word_t s, word_t n);          /* FUN_00117cc4 */
-
-/* Swift runtime primitives (called directly). */
-extern word_t sk_swift_release(word_t obj);                       /* FUN_0036b118 */
-extern word_t sk_swift_retain(word_t obj);                        /* FUN_0036b270 */
-extern word_t sk_swift_array_alloc(word_t a, word_t b, word_t c); /* FUN_0036a940 */
-extern word_t sk_swift_array_withcap(word_t a, word_t b, word_t c,
-                                     word_t d, word_t e);         /* FUN_0036a1a0 */
-extern void   sk_swift_array_destroy(word_t a);                   /* FUN_0036a20c */
-extern word_t sk_swift_buffer_unique(word_t buf);                 /* FUN_003a261c */
-extern void   sk_swift_release_masked(word_t v);                  /* FUN_003a25d4 */
-extern void   sk_swift_memmove_log(word_t a, word_t b, word_t c,
-                                   word_t d);                     /* FUN_0035b67c */
-extern word_t sk_swift_array_init(word_t a, word_t b, word_t c,
-                                  word_t d, word_t e, word_t f, word_t g);
-                                                                  /* FUN_00365b6c */
-
-/* Swift String / metadata helpers. */
-extern word_t sk_str_convert(word_t a, word_t b, word_t c);       /* FUN_00377824 */
-extern word_t sk_str_convert2(word_t a, word_t b, word_t c);      /* FUN_00377bec */
-extern word_t sk_metaclass_get(void);                             /* FUN_000027e8 */
-extern word_t sk_metaclass_field(word_t a, word_t b);             /* FUN_00002828 */
-extern word_t sk_metaclass_chk(word_t a);                         /* FUN_000026e8 */
-extern word_t sk_string_cache(word_t a, word_t b);                /* FUN_00002534 */
-extern word_t sk_vt_lookup(word_t a);                             /* FUN_00027724 */
-extern word_t sk_identity_hash(word_t a, word_t b);               /* FUN_0001c294 */
-extern word_t sk_identity(word_t a);                              /* FUN_0001a1c8 */
-extern word_t sk_runtime_roundup(word_t a, word_t b);             /* FUN_0014aedc */
-extern word_t sk_runtime_roundup2(word_t a, word_t b, word_t c);  /* FUN_0014af94 */
-extern word_t sk_runtime_add(word_t a, word_t b);                 /* FUN_0014aea4 */
-extern word_t sk_runtime_align(word_t a, word_t b, word_t c);     /* FUN_0014afe0 */
-extern word_t sk_arith(word_t a, word_t b);                       /* FUN_0007eb2c */
-extern word_t sk_arr_init3(word_t a, word_t b, word_t c, word_t d); /* FUN_0019ea20 */
-extern word_t sk_closure_enter(word_t a, word_t b);               /* FUN_0006e7c0 */
-extern word_t sk_copy2(word_t a, word_t b);                       /* FUN_0006a4c0 */
-extern word_t sk_copy3(word_t a, word_t b);                       /* FUN_0006df24 */
-extern word_t sk_scoped_enter(word_t a, word_t b);                /* FUN_001a84f4 */
-extern void   sk_scoped_exit(void);                               /* FUN_001a8564 */
-extern word_t sk_bind(word_t a, word_t b);                        /* thunk_FUN_002298d4 */
-extern word_t sk_str_append(word_t a, word_t b);                  /* thunk_FUN_002acbb8 */
-extern word_t sk_fault_builder(word_t a);                         /* FUN_002a4ab4 */
-extern word_t sk_assert_prep(void);                               /* FUN_00002818 */
-extern void   sk_assert_fatal(word_t a, word_t b, word_t c) __attribute__((noreturn));
-                                                                  /* FUN_001afa84 */
-extern void   sk_fatal_str(word_t a) __attribute__((noreturn));   /* FUN_0007bfdc */
-extern word_t sk_misc(word_t a, word_t b);                        /* FUN_000ec8f8 */
-extern void   sk_nop_word(void);                                  /* FUN_0036b6ac */
+extern word_t sk_memcpy_w(word_t, ...);                       /* FUN_00117cc4 */
+extern word_t sk_swift_release(word_t, ...);                  /* FUN_0036b118 */
+extern word_t sk_swift_retain(word_t, ...);                   /* FUN_0036b270 */
+extern word_t sk_swift_array_alloc(word_t, ...);              /* FUN_0036a940 */
+extern word_t sk_swift_array_withcap(word_t, ...);            /* FUN_0036a1a0 */
+extern void   sk_swift_array_destroy(word_t, ...);            /* FUN_0036a20c */
+extern word_t sk_swift_buffer_unique(word_t, ...);            /* FUN_003a261c */
+extern void   sk_swift_release_masked(word_t, ...);           /* FUN_003a25d4 */
+extern void   sk_swift_memmove_log(word_t, ...);              /* FUN_0035b67c */
+extern word_t sk_swift_array_init(word_t, ...);               /* FUN_00365b6c */
+extern word_t sk_str_convert(word_t, ...);                    /* FUN_00377824 */
+extern word_t sk_str_convert2(word_t, ...);                   /* FUN_00377bec */
+extern word_t sk_metaclass_get(void);                         /* FUN_000027e8 */
+extern word_t sk_metaclass_field(word_t, ...);                /* FUN_00002828 */
+extern word_t sk_metaclass_chk(word_t, ...);                  /* FUN_000026e8 */
+extern word_t sk_string_cache(word_t, ...);                   /* FUN_00002534 */
+extern word_t sk_vt_lookup(word_t, ...);                      /* FUN_00027724 */
+extern word_t sk_identity_hash(word_t, ...);                  /* FUN_0001c294 */
+extern word_t sk_identity(word_t, ...);                       /* FUN_0001a1c8 */
+extern word_t sk_runtime_roundup(word_t, ...);                /* FUN_0014aedc */
+extern word_t sk_runtime_roundup2(word_t, ...);               /* FUN_0014af94 */
+extern word_t sk_runtime_add(word_t, ...);                    /* FUN_0014aea4 */
+extern word_t sk_runtime_align(word_t, ...);                  /* FUN_0014afe0 */
+extern word_t sk_arith(word_t, ...);                          /* FUN_0007eb2c */
+extern word_t sk_arr_init3(word_t, ...);                      /* FUN_0019ea20 */
+extern word_t sk_closure_enter(word_t, ...);                  /* FUN_0006e7c0 */
+extern word_t sk_copy2(word_t, ...);                          /* FUN_0006a4c0 */
+extern word_t sk_copy3(word_t, ...);                          /* FUN_0006df24 */
+extern word_t sk_scoped_enter(word_t, ...);                   /* FUN_001a84f4 */
+extern void   sk_scoped_exit(void);                           /* FUN_001a8564 */
+extern word_t sk_bind(word_t, ...);                           /* thunk_FUN_002298d4 */
+extern word_t sk_str_append(word_t, ...);                     /* thunk_FUN_002acbb8 */
+extern word_t sk_fault_builder(word_t, ...);                  /* FUN_002a4ab4 */
+extern word_t sk_assert_prep(void);                           /* FUN_00002818 */
+extern void   sk_assert_fatal(word_t, ...) __attribute__((noreturn)); /* FUN_001afa84 */
+extern void   sk_fatal_str(word_t, ...) __attribute__((noreturn));    /* FUN_0007bfdc */
+extern word_t sk_misc(word_t, ...);                           /* FUN_000ec8f8 */
+extern void   sk_nop_word(void);                              /* FUN_0036b6ac */
 
 /* Swift stored-property accessor state-machine helpers (near-region). */
-extern word_t sk_acc_read(word_t off);                            /* FUN_0007c004 */
-extern void   sk_acc_write_pre(void);                             /* FUN_0007bfac */
-extern void   sk_acc_write_post(void);                            /* FUN_0007bff0 */
-extern void   sk_acc_modify(void);                                /* FUN_0007bfc8 */
-extern void   sk_acc_finish(void);                                /* FUN_0007c0a0 */
-extern void   sk_acc_finish2(void);                               /* FUN_0007c158 */
-extern word_t sk_acc_get(word_t a);                               /* FUN_0007c0b8 */
-extern word_t sk_acc_ctx(void);                                   /* FUN_0007c0c4 */
-extern void   sk_acc_ctx2(void);                                  /* FUN_0007c0ac */
-extern word_t sk_acc_w2(word_t a, word_t b, word_t c, word_t d);  /* FUN_0007c0d4 */
-extern word_t sk_acc_w3(word_t a, word_t b);                      /* FUN_0007c0e0 */
-extern void   sk_acc_w4(void);                                    /* FUN_0007c0ec */
-extern word_t sk_acc_w5(word_t a, word_t b);                      /* FUN_0007c0f8 */
-extern word_t sk_acc_w6(void);                                    /* FUN_0007c018 */
-extern void   sk_acc_w7(void);                                    /* FUN_0007c028 */
-extern void   sk_acc_w8(void);                                    /* FUN_0007c038 */
-extern word_t sk_acc_w9(void);                                    /* FUN_0007c070 */
-extern word_t sk_acc_w10(void);                                   /* FUN_0007c088 */
-extern void   sk_acc_w11(void);                                   /* FUN_0007c128 */
-extern word_t sk_acc_w12(word_t a);                               /* FUN_0007c140 */
-extern word_t sk_acc_w13(void);                                   /* FUN_0007c14c */
-extern void   sk_acc_w14(void);                                   /* FUN_0007c164 */
-extern word_t sk_acc_w15(void);                                   /* FUN_0007c178 */
-extern void   sk_acc_w16(void);                                   /* FUN_0007c18c */
-extern void   sk_acc_w17(void);                                   /* FUN_0007c198 */
-extern word_t sk_acc_w18(void);                                   /* FUN_0007c1a4 */
-extern word_t sk_acc_w19(void);                                   /* FUN_0007c1c4 */
-extern word_t sk_acc_w20(void);                                   /* FUN_0007c1d0 */
+extern word_t sk_acc_read(word_t, ...);                       /* FUN_0007c004 */
+extern void   sk_acc_write_pre(void);                         /* FUN_0007bfac */
+extern void   sk_acc_write_post(void);                        /* FUN_0007bff0 */
+extern void   sk_acc_modify(void);                            /* FUN_0007bfc8 */
+extern void   sk_acc_finish(void);                            /* FUN_0007c0a0 */
+extern void   sk_acc_finish2(void);                           /* FUN_0007c158 */
+extern word_t sk_acc_get(word_t, ...);                        /* FUN_0007c0b8 */
+extern word_t sk_acc_ctx(void);                               /* FUN_0007c0c4 */
+extern void   sk_acc_ctx2(void);                              /* FUN_0007c0ac */
+extern word_t sk_acc_w2(word_t, ...);                         /* FUN_0007c0d4 */
+extern word_t sk_acc_w3(word_t, ...);                         /* FUN_0007c0e0 */
+extern void   sk_acc_w4(void);                                /* FUN_0007c0ec */
+extern word_t sk_acc_w5(word_t, ...);                         /* FUN_0007c0f8 */
+extern word_t sk_acc_w6(void);                                /* FUN_0007c018 */
+extern void   sk_acc_w7(void);                                /* FUN_0007c028 */
+extern void   sk_acc_w8(void);                                /* FUN_0007c038 */
+extern word_t sk_acc_w9(void);                                /* FUN_0007c070 */
+extern word_t sk_acc_w10(void);                               /* FUN_0007c088 */
+extern void   sk_acc_w11(void);                               /* FUN_0007c128 */
+extern word_t sk_acc_w12(word_t, ...);                        /* FUN_0007c140 */
+extern word_t sk_acc_w13(void);                               /* FUN_0007c14c */
+extern void   sk_acc_w14(void);                               /* FUN_0007c164 */
+extern word_t sk_acc_w15(void);                               /* FUN_0007c178 */
+extern void   sk_acc_w16(void);                               /* FUN_0007c18c */
+extern void   sk_acc_w17(void);                               /* FUN_0007c198 */
+extern word_t sk_acc_w18(void);                               /* FUN_0007c1a4 */
+extern word_t sk_acc_w19(void);                               /* FUN_0007c1c4 */
+extern word_t sk_acc_w20(void);                               /* FUN_0007c1d0 */
 
 /* CNode-entry buffer grow/resize helpers (copy-on-write). */
-extern word_t sk_cnode_buf_append(word_t buf);                    /* FUN_0007b2c8 */
-extern word_t sk_cnode_buf_reserve(word_t buf, word_t fn);        /* FUN_0007b4a4 */
-extern word_t sk_cnode_buf_reserve2(word_t buf);                  /* FUN_0007b4e8 */
-extern word_t sk_cnode_align(word_t a, word_t b, word_t c);       /* FUN_0007b33c */
-extern word_t sk_cnode_fn(word_t a);                              /* FUN_0007b354 */
-extern word_t sk_cnode_fn2(word_t a);                             /* FUN_0007b384 */
-extern word_t sk_cnode_fn3(void);                                 /* FUN_0007b3b4 */
+extern word_t sk_cnode_buf_append(word_t, ...);               /* FUN_0007b2c8 */
+extern word_t sk_cnode_buf_reserve(word_t, ...);              /* FUN_0007b4a4 */
+extern word_t sk_cnode_buf_reserve2(word_t, ...);             /* FUN_0007b4e8 */
+extern word_t sk_cnode_align(word_t, ...);                    /* FUN_0007b33c */
+extern word_t sk_cnode_fn(word_t, ...);                       /* FUN_0007b354 */
+extern word_t sk_cnode_fn2(word_t, ...);                      /* FUN_0007b384 */
+extern word_t sk_cnode_fn3(void);                             /* FUN_0007b3b4 */
+
+/* Swift String / misc helpers used by the init path. */
+extern word_t sk_string_end_index(word_t, ...);               /* FUN_00078fec */
+extern word_t sk_f6d88(word_t, ...);                          /* FUN_000f6d88 */
+extern word_t sk_cnode_resize_cb(word_t, ...);                /* FUN_00072d5c */
+
+/* Register-held "self"/context pointers (Ghidra sk_reg_x19/x20/x21/x22/w19):
+ * these are the arm64e callee-saved registers that carry the Swift self /
+ * accessor-context value. Represented as scalar words; dereferenced with
+ * explicit casts. */
+extern word_t sk_reg_x19;
+extern word_t sk_reg_x20;
+extern word_t sk_reg_x21;
+extern word_t sk_reg_x22;
+extern word_t sk_reg_w19;
 
 /* =====================================================================
  * CNodeAllocator class stored-property accessor witnesses.
@@ -163,12 +172,12 @@ void sk_cnode_w3(void) { sk_swift_memmove_log(0,0,0,0); return; }
  * Ghidra: void FUN_000776f8(undefined8 param_1)  — allocates an array buffer
  *   of self-sized element storage via sk_swift_array_alloc(elt, size+0x20, 7).
  * Confidence: medium
- * Notes: self extent held in unaff_x20/unaff_x21 (Swift array buffer header). */
+ * Notes: self extent held in sk_reg_x20/sk_reg_x21 (Swift array buffer header). */
 void sk_cnode_buf_alloc(word_t param_1)
 {
-    extern word_t unaff_x20, unaff_x21;
-    (void)unaff_x20; (void)unaff_x21;
-    sk_swift_array_alloc(param_1, (word_t)&unaff_x20 + (word_t)&unaff_x21 + 0x20, 7);
+    extern word_t sk_reg_x20, sk_reg_x21;
+    (void)sk_reg_x20; (void)sk_reg_x21;
+    sk_swift_array_alloc(param_1, (word_t)&sk_reg_x20 + (word_t)&sk_reg_x21 + 0x20, 7);
     return;
 }
 
@@ -183,8 +192,7 @@ void sk_cnode_w4(void) { return; }
  * Confidence: medium */
 void sk_cnode_buffer_unset(void)
 {
-    extern long unaff_x19;
-    *(word_t *)(unaff_x19 + 0x10) = 0;
+        *(word_t *)(sk_reg_x19 + 0x10) = 0;
     sk_swift_release(0);
     return;
 }
@@ -220,8 +228,7 @@ void sk_cnode_w9(void) { return; }
  * Confidence: medium */
 void sk_cnode_buf_unique(void)
 {
-    extern word_t *unaff_x20;
-    sk_swift_buffer_unique(*unaff_x20);
+        sk_swift_buffer_unique(*(word_t *)sk_reg_x20);
     return;
 }
 
@@ -245,8 +252,7 @@ void sk_cnode_w12(void) { return; }
  * Confidence: medium */
 void sk_cnode_buf_unique2(void)
 {
-    extern word_t *unaff_x20;
-    sk_swift_buffer_unique(*unaff_x20);
+        sk_swift_buffer_unique(*(word_t *)sk_reg_x20);
     return;
 }
 
@@ -279,9 +285,8 @@ void sk_cnode_w15(void) { return; }
  * Notes: sk_scoped_enter(&stack, *(self+0x28)). */
 void sk_cnode_scoped_enter(void)
 {
-    extern word_t unaff_x20;
-    word_t local;
-    sk_scoped_enter((word_t)&local, *(word_t *)(unaff_x20 + 0x28));
+        word_t local;
+    sk_scoped_enter((word_t)&local, *(word_t *)(sk_reg_x20 + 0x28));
     return;
 }
 
@@ -334,20 +339,18 @@ void sk_cnode_w20(void) { return; }
  * Confidence: medium */
 void sk_cnode_buf_unique3(void)
 {
-    extern word_t *unaff_x20;
-    sk_swift_buffer_unique(*unaff_x20);
+        sk_swift_buffer_unique(*(word_t *)sk_reg_x20);
     return;
 }
 
 /* FUN_000778d4 @ 0x000778d4   (est. sk_cnode_dispatch_1)
  * Ghidra: void FUN_000778d4(void)  — calls FUN_00070674(1, w19, 0) (region
- *   dispatch helper); single-byte argument carried in unaff_w19.
+ *   dispatch helper); single-byte argument carried in sk_reg_w19.
  * Confidence: low
  * Notes: args dropped by the decompiler. */
 void sk_cnode_dispatch_1(void)
 {
-    extern word_t unaff_w19;
-    (void)unaff_w19;
+        (void)sk_reg_w19;
     sk_identity(0); /* placeholder for FUN_00070674(1, w19, 0) */
     return;
 }
@@ -385,10 +388,9 @@ void sk_cnode_dispatch_3(void) { sk_identity(0); return; }
  * Confidence: medium */
 word_t sk_cnode_span_copy_1(void)
 {
-    extern word_t unaff_x22;
-    word_t u;
-    u = *(word_t *)(unaff_x22 + 0x28);
-    sk_copy2(unaff_x22 + 8, *(word_t *)(unaff_x22 + 0x20));
+        word_t u;
+    u = *(word_t *)(sk_reg_x22 + 0x28);
+    sk_copy2(sk_reg_x22 + 8, *(word_t *)(sk_reg_x22 + 0x20));
     return u;
 }
 
@@ -398,10 +400,9 @@ word_t sk_cnode_span_copy_1(void)
  * Confidence: medium */
 word_t sk_cnode_span_copy_2(void)
 {
-    extern word_t unaff_x20;
-    word_t u;
-    u = *(word_t *)(unaff_x20 + 0x28);
-    sk_copy2(unaff_x20 + 8, *(word_t *)(unaff_x20 + 0x20));
+        word_t u;
+    u = *(word_t *)(sk_reg_x20 + 0x28);
+    sk_copy2(sk_reg_x20 + 8, *(word_t *)(sk_reg_x20 + 0x20));
     return u;
 }
 
@@ -410,8 +411,9 @@ word_t sk_cnode_span_copy_2(void)
  *   identity scope (sk_identity_hash(0)) and returns param_1 unchanged.
  * Confidence: medium
  * Notes: FUN_00310d34(0) + FUN_0001a1c8(). */
-word_t sk_cnode_identity_scope(word_t param_1)
+word_t sk_cnode_identity_scope(word_t param_1, word_t a2)
 {
+    (void)a2;
     sk_identity(0);
     return param_1;
 }
@@ -421,8 +423,7 @@ word_t sk_cnode_identity_scope(word_t param_1)
  * Confidence: medium */
 word_t sk_cnode_self_deref(void)
 {
-    extern word_t *unaff_x20;
-    return *unaff_x20;
+        return *(word_t *)sk_reg_x20;
 }
 
 /* FUN_00077b58 @ 0x00077b58   (est. sk_cnode_bind_field)
@@ -431,8 +432,7 @@ word_t sk_cnode_self_deref(void)
  * Confidence: medium */
 void sk_cnode_bind_field(word_t param_1)
 {
-    extern word_t *unaff_x20;
-    sk_bind(param_1, *unaff_x20);
+        sk_bind(param_1, *(word_t *)sk_reg_x20);
     return;
 }
 
@@ -442,10 +442,9 @@ void sk_cnode_bind_field(word_t param_1)
  * Confidence: medium */
 void sk_cnode_scoped_bind(void)
 {
-    extern word_t *unaff_x20;
-    word_t local[9];   /* 72-byte scope frame */
+        word_t local[9];   /* 72-byte scope frame */
     sk_scoped_enter((word_t)local, 0);
-    sk_bind(*unaff_x20, 0);
+    sk_bind(*(word_t *)sk_reg_x20, 0);
     sk_scoped_exit();
     return;
 }
@@ -499,9 +498,8 @@ word_t sk_cnode_find_by_id(word_t key, word_t tbl)
  * Confidence: medium */
 void sk_cnode_prop_set_retain(word_t param_1)
 {
-    extern word_t unaff_x20;
-    sk_swift_release(*(word_t *)(unaff_x20 + 0x10));
-    *(word_t *)(unaff_x20 + 0x10) = param_1;
+        sk_swift_release(*(word_t *)(sk_reg_x20 + 0x10));
+    *(word_t *)(sk_reg_x20 + 0x10) = param_1;
     return;
 }
 
@@ -511,12 +509,11 @@ void sk_cnode_prop_set_retain(word_t param_1)
  * Confidence: medium */
 void sk_cnode_prop_retain_get_0x50(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x50);
     sk_acc_read(0);
-    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    sk_swift_retain(*(word_t *)(sk_reg_x20 + off));
     return;
 }
 
@@ -549,12 +546,11 @@ void sk_cnode_prop_modify2_0x50(void)
  * Confidence: medium */
 word_t sk_cnode_prop_get_0x58(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x58);
     sk_acc_read(0);
-    return *(word_t *)(unaff_x20 + off);
+    return *(word_t *)(sk_reg_x20 + off);
 }
 
 /* FUN_00077e74 @ 0x00077e74   (est. sk_cnode_prop_set_0x58)
@@ -563,13 +559,12 @@ word_t sk_cnode_prop_get_0x58(void)
  * Confidence: medium */
 void sk_cnode_prop_set_0x58(word_t newValue)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     sk_acc_write_pre();
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x58);
     sk_acc_write_post();
-    *(word_t *)(unaff_x20 + off) = newValue;
+    *(word_t *)(sk_reg_x20 + off) = newValue;
     return;
 }
 
@@ -589,12 +584,11 @@ void sk_cnode_prop_modify_0x58(void)
  * Confidence: medium */
 word_t sk_cnode_prop_get_0x60(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x60);
     sk_acc_read(0);
-    return *(word_t *)(unaff_x20 + off);
+    return *(word_t *)(sk_reg_x20 + off);
 }
 
 /* FUN_00077f44 @ 0x00077f44   (est. sk_cnode_prop_set_0x60)
@@ -602,13 +596,12 @@ word_t sk_cnode_prop_get_0x60(void)
  * Confidence: medium */
 void sk_cnode_prop_set_0x60(word_t newValue)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     sk_acc_write_pre();
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x60);
     sk_acc_write_post();
-    *(word_t *)(unaff_x20 + off) = newValue;
+    *(word_t *)(sk_reg_x20 + off) = newValue;
     return;
 }
 
@@ -641,12 +634,11 @@ void sk_cnode_closure_invoke_0xf0(word_t *param_1, word_t *param_2)
  * Confidence: medium */
 void sk_cnode_prop_retain_get_0x68(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x68);
     sk_acc_read(0);
-    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    sk_swift_retain(*(word_t *)(sk_reg_x20 + off));
     return;
 }
 
@@ -691,13 +683,12 @@ void sk_cnode_closure_invoke_0x108(word_t param_1, word_t *param_2)
  * Confidence: medium */
 void sk_cnode_prop_box_write_0x70(word_t param_1)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     word_t box[3];   /* 24-byte box */
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x70);
-    sk_metaclass_field(unaff_x20 + off, (word_t)box);
-    sk_closure_enter(unaff_x20 + off, param_1);
+    sk_metaclass_field(sk_reg_x20 + off, (word_t)box);
+    sk_closure_enter(sk_reg_x20 + off, param_1);
     return;
 }
 
@@ -708,14 +699,13 @@ void sk_cnode_prop_box_write_0x70(word_t param_1)
  * Confidence: medium */
 void sk_cnode_prop_reset_0x70(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     word_t box[3];   /* 24-byte temp */
     sk_acc_write_pre();
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x70);
-    sk_swift_array_withcap(unaff_x20 + off, (word_t)box, 0x21, 0, 0);
-    sk_metaclass_chk(unaff_x20 + off);
+    sk_swift_array_withcap(sk_reg_x20 + off, (word_t)box, 0x21, 0, 0);
+    sk_metaclass_chk(sk_reg_x20 + off);
     sk_identity(0);                       /* FUN_00077070 */
     sk_swift_array_destroy((word_t)box);
     return;
@@ -750,12 +740,11 @@ void sk_cnode_closure_invoke_0x120(word_t *param_1, word_t *param_2)
  * Confidence: medium */
 word_t sk_cnode_prop_box_read_0x78(word_t *out /*[2]*/)
 {
-    extern word_t unaff_x20;
-    word_t mc, off, p;
+        word_t mc, off, p;
     word_t box[3];   /* 24-byte box */
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x78);
-    p = unaff_x20 + off;
+    p = sk_reg_x20 + off;
     sk_metaclass_field(p, (word_t)box);
     out[1] = 0;
     out[0] = *(word_t *)p;
@@ -768,12 +757,11 @@ word_t sk_cnode_prop_box_read_0x78(word_t *out /*[2]*/)
  * Confidence: medium */
 void sk_cnode_prop_box_write_0x78(word_t param_1, word_t param_2)
 {
-    extern word_t unaff_x20;
-    word_t mc, off, p;
+        word_t mc, off, p;
     word_t box[3];   /* 24-byte box */
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x78);
-    p = unaff_x20 + off;
+    p = sk_reg_x20 + off;
     sk_acc_w3(p, (word_t)box);
     *(word_t *)p = param_1;
     *(word_t *)(p + 8) = param_2;
@@ -808,12 +796,11 @@ void sk_cnode_closure_invoke_0x138(word_t *param_1, word_t *param_2)
  * Confidence: medium */
 void sk_cnode_prop_retain_get_0x80(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x80);
     sk_acc_read(0);
-    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    sk_swift_retain(*(word_t *)(sk_reg_x20 + off));
     return;
 }
 
@@ -856,12 +843,11 @@ void sk_cnode_closure_invoke_0x150(word_t *param_1, word_t *param_2)
  * Confidence: medium */
 void sk_cnode_prop_retain_get_0x88(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x88);
     sk_acc_read(0);
-    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    sk_swift_retain(*(word_t *)(sk_reg_x20 + off));
     return;
 }
 
@@ -904,12 +890,11 @@ void sk_cnode_closure_invoke_0x168(word_t *param_1, word_t *param_2)
  * Confidence: medium */
 void sk_cnode_prop_retain_get_0x90(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x90);
     sk_acc_read(0);
-    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    sk_swift_retain(*(word_t *)(sk_reg_x20 + off));
     return;
 }
 
@@ -940,12 +925,11 @@ void sk_cnode_prop_modify2_0x90(void)
  * Confidence: medium */
 word_t sk_cnode_prop_get_0x98(void)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x98);
     sk_acc_read(0);
-    return *(word_t *)(unaff_x20 + off);
+    return *(word_t *)(sk_reg_x20 + off);
 }
 
 /* FUN_00078784 @ 0x00078784   (est. sk_cnode_prop_set_0x98)
@@ -953,13 +937,12 @@ word_t sk_cnode_prop_get_0x98(void)
  * Confidence: medium */
 void sk_cnode_prop_set_0x98(word_t newValue)
 {
-    extern word_t unaff_x20;
-    word_t mc, off;
+        word_t mc, off;
     sk_acc_write_pre();
     mc = sk_metaclass_get();
     off = *(word_t *)(mc + 0x98);
     sk_acc_write_post();
-    *(word_t *)(unaff_x20 + off) = newValue;
+    *(word_t *)(sk_reg_x20 + off) = newValue;
     return;
 }
 
@@ -979,11 +962,14 @@ void sk_cnode_prop_modify_0x98(void)
  *   — allocates a Swift array buffer then calls the big initializer
  *   FUN_00078880 with the four arguments; returns the buffer pointer.
  * Confidence: medium */
+void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
+                             word_t param_4);   /* FUN_00078880 */
+
 word_t sk_cnode_alloc_and_init(word_t a, word_t b, word_t c, word_t d)
 {
     word_t buf;
     buf = sk_swift_array_alloc(0, 0, 0);
-    sk_cnode_init(a, b, c, d);
+    sk_cnode_allocator_init(a, b, c, d);
     return buf;
 }
 
@@ -1005,7 +991,6 @@ word_t sk_cnode_alloc_and_init(word_t a, word_t b, word_t c, word_t d)
 void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
                              word_t param_4)
 {
-    extern word_t *unaff_x20;
     word_t *self;
     word_t u8;
     word_t u3, u5, u7;
@@ -1019,9 +1004,9 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
     word_t boxb8[4];        /* 32-byte */
     word_t f8, f0, e8, e0, d8, d0, c8, c0, v;
 
-    self = unaff_x20;
-    u8 = *(word_t *)(*self + 0x40);     /* physAllocator */
-    l13 = *(word_t *)(*self + 0x38);    /* asid */
+    self = (word_t *)sk_reg_x20;
+    u8 = *(word_t *)(*(word_t *)self + 0x40);     /* physAllocator */
+    l13 = *(word_t *)(*(word_t *)self + 0x38);    /* asid */
     f0 = param_3;
     c8 = param_4;
     u3 = sk_acc_w5(0, 0);
@@ -1029,7 +1014,7 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
     sk_acc_w7();
     /* v = class metadata / accessor context via the PAC code pointer. */
     l12 = (word_t)((word_t)stack130 - ((word_t)sk_identity(0) & 0xfffffffffffffff0));
-    l9 = *(word_t *)(*self + 0x58);
+    l9 = *(word_t *)(*(word_t *)self + 0x58);
     *(word_t *)((word_t)self + l9) = 0;              /* faultDataECMode */
     sk_acc_get(0);
     *(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x60)) = 0;
@@ -1062,13 +1047,13 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
     u3 = sk_acc_w6();
     u3 = sk_str_convert2(u3, u8, l13, 0x606a9c);
     sk_acc_w2(0, 0, 0, 0);
-    d0 = sk_str_convert2b(u8, l13, u3, 0x606a9c);
+    d0 = sk_str_convert2(u8, l13, u3, 0x606a9c);
     v = u3;
     l9 = sk_runtime_roundup(u3, 0);
     if (-1 < (long)l9) {
         sk_acc_w14();
         u3 = d8;
-        u5 = sk_str_convert2b(u8, l13, d8);
+        u5 = sk_str_convert2(u8, l13, d8);
         e0 = u8;
         u7 = sk_cnode_fn2(0);
         /* build the CNode entry value; append it to the table (0x88 buffer). */
@@ -1088,7 +1073,7 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
         u3 = *(word_t *)(e8 + 0x18);
         u8 = *(word_t *)(e8 + 0x20);
         u7 = sk_copy2(e8, u3);
-        d8 = sk_identity_hash(u7, u3, u8, u7);
+        d8 = sk_f6d88(u7, u3, u8, u7);
         u3 = u7;   /* local_120 */
         sk_metaclass_get();
         (*(void (**)(word_t, word_t))(sk_identity(0) + 0x90))(0, u7);
@@ -1105,7 +1090,7 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
         *(word_t *)(l11 + 0x20) = v;
         *(word_t *)(l11 + 0x30) = u3;
         u3 = sk_cnode_identity_scope(l11, u7);
-        *(word_t *)((word_t)self + *(word_t *)(*self + 0x68)) = u3;
+        *(word_t *)((word_t)self + *(word_t *)(*(word_t *)self + 0x68)) = u3;
         u3 = sk_string_cache(0x64e868, 0x4c06c0);
         l11 = sk_swift_array_alloc(u3, 0x60, 7);
         *(word_t *)(l11 + 0x18) = *(word_t *)0x4baeb8;
@@ -1120,13 +1105,439 @@ void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
         *(word_t *)(l11 + 0x48) = u3;
         *(word_t *)(l11 + 0x50) = 0;
         *(word_t *)(l11 + 0x58) = 0;
-        *(word_t *)((word_t)self + *(word_t *)(*self + 0x50)) = l11;
-        *(word_t *)((word_t)self + *(word_t *)(*self + 0x80)) = f0;
-        l9 = *(word_t *)(*self + 0x60);
+        *(word_t *)((word_t)self + *(word_t *)(*(word_t *)self + 0x50)) = l11;
+        *(word_t *)((word_t)self + *(word_t *)(*(word_t *)self + 0x80)) = f0;
+        l9 = *(word_t *)(*(word_t *)self + 0x60);
         sk_acc_w3((word_t)self + l9, (word_t)boxb8);
         *(word_t *)((word_t)self + l9) = 1;
         sk_metaclass_chk(l10);
         return;
     }
     SK18_FATAL(0x78ec4);
+}
+
+/* =====================================================================
+ * Swift String / CNode-entry helpers.
+ * ===================================================================== */
+
+/* FUN_00078fec @ 0x00078fec   (est. sk_string_end_index)
+ * Ghidra: long FUN_00078fec(ulong param_1)  — Swift String._endIndex helper:
+ *   dereferences the tagged/indirect string pointer (low bit set => indirect
+ *   via *(p & ~1)) and returns p + 0x24 + *(int*)(p+0x24) (base + count).
+ * Confidence: medium
+ * Notes: String object layout: count int at +0x24. */
+word_t sk_string_end_index(word_t p, ...)
+{
+    if ((p & 1) != 0)
+        p = *(word_t *)(p & 0xfffffffffffffffeull);
+    return (p + 0x24) + (word_t)(long)*(int *)(p + 0x24);
+}
+
+/* FUN_00079038 @ 0x00079038   (est. sk_cnode_entry_pack_closure)
+ * Ghidra: undefined8 FUN_00079038(undefined8,undefined8)  — packs a CNode
+ *   entry pair via two closure-witness invocations (from the class metadata
+ *   +0x10 and a code* adapter), then appends the result to the self entry
+ *   buffer by calling the +400 vtable slot; returns the packed entry.
+ * Confidence: low
+ * Notes: string/type refs DAT_00606a9c, LAB_00606ad4, DAT_00606fd4,
+ *   LAB_00606fe4; PAC call through SUB_90000010f9008430; helpers
+ *   FUN_0007b354/FUN_0007b384 (closure adapters), FUN_000ec8f8,
+ *   FUN_0006df24, FUN_00365b6c, FUN_0006e7c0. */
+word_t sk_cnode_entry_pack_closure(word_t param_1, word_t param_2)
+{
+        word_t self, u1, u2, u3, u5;
+    word_t e16, e16b;
+    word_t local90, local98, locala8, localb0;
+    word_t lVar6, lVar7, lVar8;
+    word_t box88[5];   /* 40-byte closure box */
+    void (*fn)(word_t, word_t, word_t);
+    /* lVar8/lVar6/lVar7 are stack-frame offsets produced by the PAC stack
+     * probe (extraout_x8 chain); reconstructed as distinct locals. */
+    lVar8 = (word_t)&localb0;
+    lVar6 = lVar8;
+    lVar7 = lVar6;
+
+    self = *(word_t *)(sk_reg_x20 + 0x38);
+    u1 = *(word_t *)(sk_reg_x20 + 0x40);
+    local98 = param_2;
+    u2 = sk_str_convert(0, u1, self, 0x606a9c, 0x606ad4);
+    sk_acc_w7();
+    e16 = sk_acc_w18();
+    e16b = sk_acc_w19();
+    (*(void (**)(word_t))(0x90000010f9008430ull))(sk_identity(0));
+    u3 = sk_str_convert2(u1, self, u2, 0x606a9c, 0x606ab4);
+    locala8 = sk_str_convert(0, u3, u2, 0x606fd4, 0x606fe4);
+    sk_acc_w19();
+    (*(void (**)(word_t))(0x90000010f9008430ull))(0);
+    sk_acc_w7();
+    (*(void (**)(word_t))(0x90000010f9008430ull))(*(word_t *)(sk_identity(0) + 0x40));
+    localb0 = param_1;
+    (*(void (**)(word_t, word_t, word_t))(e16b + 0x10))(lVar7, param_1, self);
+    sk_closure_enter(local98, (word_t)box88);
+    fn = (void (*)(word_t, word_t, word_t))sk_cnode_fn(u1);
+    fn(lVar7, self, u1);
+    fn = (void (*)(word_t, word_t, word_t))sk_cnode_fn2(u3);
+    fn(lVar6, u2, u3);
+    (*(void (**)(word_t, word_t))(e16 + 8))(lVar7, u2);
+    u2 = sk_misc(0);
+    sk_swift_array_init((word_t)&local90, lVar6, locala8, u2, 7, 0, 0);
+    u5 = sk_copy3(u1, u1);
+    u5 = (*(word_t (**)(word_t, word_t, word_t, word_t, word_t))(
+          sk_reg_x20 + 400))(sk_reg_x20 + 400, lVar7, (word_t)box88, local90, u5);
+    sk_metaclass_chk(local98);
+    (*(void (**)(word_t, word_t))(e16b + 8))(localb0, u1);
+    return u5;
+}
+
+/* FUN_000792d8 @ 0x000792d8   (est. sk_cnode_allocator_deinit)
+ * Ghidra: long * FUN_000792d8(undefined8 param_1)  — the CNodeAllocator
+ *   deinit: iterates the cnode entry table (0x40-stride) releasing each entry
+ *   via a closure adapter, then releases every retained stored property
+ *   (0x50,0x68,0x80,0x88,0x90 and the 0x70 box). Returns self.
+ * Confidence: low
+ * Notes: helper FUN_00078fec (string endIndex), FUN_000770e8 (closure
+ *   adapter), FUN_0007b3b4, FUN_0007c164/FUN_0007c0ec (accessor ctx), and
+ *   FUN_00377824/FUN_00377bec (string convert). */
+word_t *sk_cnode_entry_teardown(word_t param_1)
+{
+        word_t self = sk_reg_x20;
+    word_t u7, u1, u2, u8;
+    word_t base, meta, d0, d8, f8, e8, e0, c8;
+    word_t idx, count, slot;
+    word_t local130, local120, local_frame;
+    word_t box80[4], box98[3], boxc0[3], boxa8[2];
+    void (*fn)(word_t, ...);
+    void (*fn2)(word_t, ...);
+
+    base = *(word_t *)self;
+    u7 = *(word_t *)(base + 0x38);
+    meta = *(word_t *)(base + 0x40);
+    /* entry descriptor via string-convert helpers */
+    d0 = sk_acc_w5(param_1, *(word_t *)(base + 0x40));
+    d8 = sk_str_convert(sk_acc_w5(0, 0), d0, u7);
+    sk_acc_w7();
+    sk_acc_w19();
+    (*(void (**)(word_t))(0x90000010f9008430ull))(0);
+    sk_acc_w7();
+    sk_acc_w19();
+    (*(void (**)(word_t))(0x90000010f9008430ull))(0);
+    idx = *(word_t *)(base + 0x88);
+    sk_metaclass_field((word_t)self + idx, (word_t)box80);
+    c8 = *(word_t *)((word_t)self + idx);
+    base = *(word_t *)(c8 + 0x10);       /* count */
+    local130 = sk_acc_w18();
+    if (base != 0) {
+        e8 = *(word_t *)(*(word_t *)self + 0x70);
+        e0 = *(word_t *)(*(word_t *)self + 0x48);
+        local120 = (word_t)self & 0xffffffffffffull | 0x6ae1000000000000ull;
+        f8 = sk_string_end_index(d0);
+        sk_acc_w14();
+        f8 = sk_str_convert2(d0, u7, d8);
+        u8 = sk_cnode_fn3();
+        sk_swift_retain(c8);
+        sk_metaclass_field((word_t)self + e8, (word_t)box98);
+        count = 0x20;
+        slot = 0;
+        do {
+            u8 = *(word_t *)(c8 + count);       /* entry payload */
+            sk_closure_enter((word_t)self + e8, (word_t)boxc0);
+            u2 = boxa8[1];
+            u1 = boxa8[0];
+            sk_copy2((word_t)boxc0, u1);
+            fn = (void (*)(word_t, ...))sk_identity_hash(u2);
+            fn(u8, u1, u2);
+            sk_metaclass_chk((word_t)boxc0);
+            (*(void (**)(word_t, word_t, word_t))local130)(local_frame, (word_t)self + e0, u7);
+            fn2 = (void (*)(word_t, ...))f8;
+            fn2(local_frame, u7, d0);
+            (*(void (**)(word_t, word_t))local130)(local_frame, u7);
+            fn2 = (void (*)(word_t, ...))u8;
+            fn2(u8, d8, f8);
+            (*(void (**)(word_t, word_t))local130)(local_frame, d8);
+            count = count + 8;
+            base = base - 1;
+            slot = slot + 1;
+        } while (base != 0);
+        sk_swift_release(c8);
+    }
+    /* release every retained stored property */
+    sk_acc_w4();
+    sk_swift_release(*(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x48)));
+    sk_acc_w4();
+    sk_swift_release(*(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x50)));
+    sk_acc_w4();
+    sk_swift_release(*(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x68)));
+    sk_acc_w4();
+    sk_metaclass_chk((word_t)self + *(word_t *)(sk_identity(0) + 0x70));
+    sk_acc_w4();
+    sk_swift_release(*(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x80)));
+    sk_swift_release(*(word_t *)((word_t)self + idx));
+    sk_acc_w4();
+    sk_swift_release(*(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x90)));
+    return (word_t *)self;
+}
+
+/* FUN_00079678 @ 0x00079678   (est. sk_cnode_dispatch_a)
+ * Ghidra: void FUN_00079678(void)  — calls sk_cnode_entry_lookup (792d8)
+ *   then a no-op (FUN_0036b6ac).
+ * Confidence: low */
+void sk_cnode_dispatch_a(void)
+{
+    sk_cnode_entry_teardown(0);
+    sk_nop_word();
+    return;
+}
+
+/* FUN_0007967c @ 0x0007967c   (est. sk_cnode_dispatch_b)
+ * Ghidra: void FUN_0007967c(void)  — same shape as 79678.
+ * Confidence: low */
+void sk_cnode_dispatch_b(void)
+{
+    sk_cnode_entry_teardown(0);
+    sk_nop_word();
+    return;
+}
+
+/* =====================================================================
+ * CNode-entry buffer capacity / append logic (Swift stdlib-style).
+ * ===================================================================== */
+
+/* FUN_000796b0 @ 0x000796b0   (est. sk_cnode_capacity_roundup)
+ * Ghidra: ulong FUN_000796b0(void)  — computes the rounded-up capacity for
+ *   the cnode entry buffer: reads current count, adds the growth, and applies
+ *   alignment/round-up with overflow traps (SoftwareBreakpoint at 0x79828..).
+ * Confidence: low
+ * Notes: uses sk_identity_hash as stand-ins for Swift runtime helpers
+ *   (FUN_0014af94, FUN_0007eb2c, FUN_0014aedc); every checked multiply/add
+ *   traps on overflow. */
+word_t sk_cnode_capacity_roundup(void)
+{
+    word_t n, growth, stride, r, count, q, elem;
+    word_t acc;
+    acc = sk_acc_ctx();
+    growth = (*(word_t (**)(word_t))(acc + 0xa0))(0);
+    n = *(word_t *)(growth + 0x10);
+    sk_swift_release(0);
+    growth = (*(word_t (**)(word_t))sk_reg_x20 + 0x178)((word_t)sk_reg_x20 + 0x178);
+    if ((long)growth < 0) SK18_FATAL(0x79828);
+    count = n + growth;
+    if (count < n) SK18_FATAL(0x7982c);
+    r = sk_identity(0);         /* FUN_0007c018 -> metadata */
+    r = sk_str_convert(r, 0, 0);
+    sk_acc_w4();
+    r = sk_str_convert2(0, 0, r);
+    sk_acc_w19();
+    stride = sk_runtime_roundup(0, 0);
+    if ((long)stride < 0) SK18_FATAL(0x79830);
+    count = count * stride;
+    if ((word_t)((__int128)(long long)count * (__int128)(long long)stride >> 64) !=
+        (word_t)((long)count >> 0x3f)) {
+        SK18_FATAL(0x79834);
+    }
+    stride = sk_runtime_roundup2(1, r, r);
+    if ((long)stride < 0) SK18_FATAL(0x79838);
+    if (count + (stride - 1) < count) SK18_FATAL(0x7983c);
+    if (stride == 0) SK18_FATAL(0x79840);
+    elem = (stride != 0) ? (count + stride - 1) / stride : 0;
+    if (n + elem >= n) {
+        sk_acc_w19();
+        stride = sk_identity_hash(0, 0);   /* FUN_0007eb2c */
+        if ((long)stride < 0) SK18_FATAL(0x79848);
+        count = (n + elem) * stride;
+        if ((word_t)((__int128)(long long)(n + elem) * (__int128)(long long)stride >> 64) !=
+            (word_t)((long)count >> 0x3f)) {
+            SK18_FATAL(0x7984c);
+        }
+        sk_acc_w19();
+        stride = sk_runtime_roundup(0, 0);
+        if ((long)stride < 0) SK18_FATAL(0x79850);
+        if (count + (stride - 1) >= count) {
+            q = (count + stride - 1) & ~(word_t)(stride - 1);
+            if ((long)q < 0) SK18_FATAL(0x79858);
+            sk_acc_w19();
+            elem = sk_runtime_roundup(0, 0);
+            if (elem != 0) {
+                return (elem != 0) ? q / elem : 0;
+            }
+            SK18_FATAL(0x7985c);
+        }
+        SK18_FATAL(0x79854);
+    }
+    SK18_FATAL(0x79844);
+}
+
+/* FUN_0007985c @ 0x0007985c   (est. sk_cnode_buffer_append_all)
+ * Ghidra: void FUN_0007985c(ulong param_1)  — appends every "unset" entry
+ *   from the source cnode table into the self buffer, re-encoding each
+ *   entry's payload with the given value (param_1) when its flag byte is 0
+ *   and its tag passes the validity check. This is the "relocate caps into a
+ *   fresh CNode" bulk path.
+ * Confidence: low
+ * Notes: iterates the table at 0x40 stride (payload at +0x18, flag at +0x20);
+ *   copy-on-write via sk_cnode_buf_reserve2 / sk_swift_buffer_unique; string
+ *   refs DAT_00606a9c, DAT_00606ac4; helper FUN_0014aea4. */
+void sk_cnode_buffer_append_all(word_t value)
+{
+    word_t acc, tbl, count, i, n, payload;
+    word_t *slot;
+    word_t (*getter)(word_t, ...);
+    acc = sk_acc_ctx();
+    (*(void (**)(word_t, word_t))(acc + 0x120))(0, 0);
+    tbl = *(word_t *)sk_reg_x20;
+    getter = (word_t (*)(word_t, ...))(*(word_t *)(tbl + 0xa0));
+    n = getter(0);
+    count = *(word_t *)(n + 0x10);
+    sk_swift_release(0);
+    i = 0;
+    if (count != 0) {
+        slot = (word_t *)(n + 0x58);
+        do {
+            n = (word_t)getter((word_t)(tbl + 0xa0) & 0xffffffffffffull | 0xeb6d000000000000ull);
+            if (*(word_t *)(n + 0x10) <= i) SK18_FATAL(0x79a80);
+            payload = n + 0x58;
+            /* entry: payload fields + flag byte at +0x58 */
+            n = *(word_t *)(payload - 0x28);
+            acc = *(word_t *)(payload - 0x20);
+            tbl = *(word_t *)(payload - 0x10);
+            count = *(word_t *)(payload - 8);
+            sk_swift_release(0);
+            if (*(char *)payload == 0 && (sk_identity_hash(acc, 0) & 1) != 0) {
+                /* COW-resize the target buffer and write the entry */
+                word_t *box[2];
+                (*(void (**)(word_t, ...))((*(word_t *)sk_reg_x20) + 0xb0))((word_t)box);
+                tbl = *(word_t *)box[1];
+                acc = sk_swift_buffer_unique(tbl);
+                *(word_t *)box[1] = tbl;
+                if ((acc & 1) == 0) {
+                    tbl = sk_cnode_buf_reserve2(tbl);
+                    *(word_t *)box[1] = tbl;
+                }
+                if (*(word_t *)(tbl + 0x10) <= i) SK18_FATAL(0x79a84);
+                slot = (word_t *)(tbl + 0x58);
+                *(word_t *)(slot - 0x28) = n;
+                *(word_t *)(slot - 0x20) = acc;
+                *(word_t *)(slot - 0x18) = value;
+                *(word_t *)(slot - 0x10) = tbl;
+                *(word_t *)(slot - 8) = count;
+                *slot = 0;
+                (*(void (**)(word_t, word_t, word_t))(box[0]))((word_t)box, (word_t)box, 0);
+                acc = *(word_t *)(sk_identity(0) + 0x38);
+                tbl = *(word_t *)(sk_identity(0) + 0x40);
+                n = sk_str_convert(0, tbl, acc, 0x606a9c, 0x606ac4);
+                sk_acc_w4();
+                n = sk_str_convert2(0, 0, 0, 0);
+                acc = sk_runtime_add(n, 0);
+                if (value + acc < value) SK18_FATAL(0x79a88);
+                value = value + acc;
+            }
+            i = i + 1;
+            slot = slot + 0x40;
+        } while (count != i);
+    }
+    return;
+}
+
+/* FUN_00079a88 @ 0x00079a88   (est. sk_cnode_entry_offset_by_id)
+ * Ghidra: long FUN_00079a88(long param_1)  — returns the byte offset of the
+ *   CNode entry whose key field equals param_1 (index * stride), computed
+ *   with Swift overflow-checked multiply/add. Traps (0x79bb8) if the id is
+ *   not found, and traps (0x79bac/0x79bb0) on size overflow.
+ * Confidence: low
+ * Notes: string ref s_InternalExclaveLauncher_CNode_sw_005bfc70 (0x5bfc70);
+ *   helpers FUN_0007c178, FUN_0007eb2c, FUN_00377824/FUN_00377bec. */
+word_t sk_cnode_entry_offset_by_id(word_t id)
+{
+    word_t ctx, tbl, idx, i, stride, n, base;
+    word_t hi;
+    ctx = sk_acc_ctx();
+    hi = (*(word_t (**)(word_t))(ctx + 0x118))(0);
+    if ((hi & 0xff) == 1) {
+        sk_fatal_str(0x5bfc70 + 0x10);   /* "InternalExclaveLauncher/CNode.swift" */
+        sk_assert_prep();
+        sk_assert_fatal(0, 0, 0);
+    }
+    sk_acc_w15();
+    tbl = (*(word_t (**)(word_t))(sk_identity(0) + 0xa0))(0);
+    idx = 0;
+    i = 0x20;
+    for (;;) {
+        if (*(word_t *)(tbl + 0x10) == idx) {
+            sk_swift_release(0);
+            SK18_FATAL(0x79bb8);
+        }
+        if (*(word_t *)(tbl + i) == id) break;
+        idx = idx + 1;
+        i = i + 0x40;
+    }
+    sk_swift_release(0);
+    n = *(word_t *)(sk_identity(0) + 0x38);
+    base = *(word_t *)(sk_identity(0) + 0x40);
+    n = sk_acc_w6();
+    n = sk_str_convert(n, base, n);
+    sk_acc_w4();
+    n = sk_str_convert2(base, n, n);
+    stride = sk_arith(n, n);
+    hi = idx * stride;
+    if ((word_t)((__int128)(long long)idx * (long long)stride >> 64) != 0) {
+        SK18_FATAL(0x79bac);
+    }
+    base = n;   /* base value from metadata */
+    if (base + hi < base) SK18_FATAL(0x79bb0);
+    return base + hi;
+}
+
+/* FUN_00079bf0 @ 0x00079bf0   (est. sk_cnode_entry_append_one)
+ * Ghidra: void FUN_00079bf0(void)  — appends a single CNode entry: takes the
+ *   accessor context, bumps the buffer count (COW via sk_cnode_buf_append),
+ *   computes the destination slot, writes the 7 payload words + flag byte,
+ *   then updates the count. Traps (0x7a0e4/0x7a0f0/0x7a0f8) on overflow.
+ * Confidence: low
+ * Notes: entry fields at +0x20..+0x58 within a 0x40-stride slot; helpers
+ *   FUN_0007c140/FUN_0007c0ac/FUN_0007c0c4 (accessor ctx). */
+void sk_cnode_entry_append_one(void)
+{
+    word_t *self;
+    word_t u1, u3, u4, u7, u11, u12, u13, u16;
+    word_t slot, count, stride;
+    word_t lo, hi;
+    void (*trap)(void) __attribute__((noreturn));
+    word_t *box[2];
+
+    sk_acc_ctx();
+    u3 = (*(word_t (**)(void))(sk_identity(0) + 0xb8))();
+    sk_metaclass_chk(0);
+    u16 = *(word_t *)(sk_identity(0) + 0x38);
+    if ((u16 & 0xfffffffffffffffeull) < (u16 & 0xfffffffffffffffeull)) {
+        /* COW: reserve + append path */
+        self = (word_t *)sk_reg_x20;
+        u1 = *(word_t *)((word_t)self + *(word_t *)(*(word_t *)self + 0x38));
+        (*(void (**)(word_t))(0x90000010f9008430ull))(0);
+        u3 = sk_str_convert(0, 0, 0);
+        u4 = sk_acc_w19();
+        u7 = sk_runtime_add(u1, u3);
+        u13 = sk_arith(u3, u7);
+        if (u13 == 0) SK18_FATAL(0x7a0f0);
+        if (u7 < u13) SK18_FATAL(0x7a0e4);
+        stride = (u13 != 0) ? u7 / u13 : 0;
+        count = (stride != 0) ? u1 / stride : 0;
+        if ((long)count < 0) SK18_FATAL(0x7a0f0);
+        u1 = (word_t)sk_reg_x20;
+        slot = (word_t)self + count * 0x40;
+        /* write entry fields */
+        *(word_t *)(slot + 0x20) = u11;
+        *(word_t *)(slot + 0x28) = u4;
+        *(word_t *)(slot + 0x30) = u7;
+        *(word_t *)(slot + 0x38) = 0;
+        *(word_t *)(slot + 0x40) = u1 + u3 * u13;
+        *(word_t *)(slot + 0x48) = u12;
+        *(word_t *)(slot + 0x50) = 0;
+        *(word_t *)(slot + 0x58) = 0;
+        sk_acc_w12(0);
+        (*(void (**)(word_t))(0x90000010f9008430ull))(0);
+        sk_swift_release((word_t)self);
+        return;
+    }
+    (void)u16;
+    /* not reached in the COW-free fast path */
+    SK18_FATAL(0x7a0f0);
 }

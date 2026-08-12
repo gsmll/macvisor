@@ -1664,3 +1664,27 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `FUN_0006562c("sec_transition",&val)`; `thunk_FUN_00114e50(sym,&_DAT_005cf0f4,val)==0`; `sk_xrt_runflags_check(2,1)` result drives the allow/deny decision.
 - **Severity (hypothesis)**: medium — the transition-gate decision is an authorization boundary; a mis-gated comparison could allow or deny Sec transitions. Comparison target _DAT_005cf0f4 is opaque (out of slice) and worth auditing against the canonical string.
 - **Confidence**: low (comparison semantics partly inferred)
+
+## [Sk12] 0x00060728 sk_kernel_init — dispatch-table no-handler panic + "Security assertion failed" gate
+- **Observation**: The per-CPU kernel init / main dispatch-loop entry resolves the dispatch selector into the 0x6b26d8 table (3 slots, via `sk_percpu_tbl`). If a slot's handler pointer is null it panics "No handler set for entry %04hh"; if a handler ever returns it panics "Unexpected thread exit". A separate selector check masks `1<<(uvar24&0x3f)` against `0x40000002c000c000` and, for an invalid selector, calls `FUN_001150E0` with the string "Security assertion failed: %s %f" (a hard noreturn panic), so an unrecognized dispatch kind cannot fall through to arbitrary code.
+- **Evidence**: `sk_percpu_tbl(0x6b26d8,1,2)`; `if (*entry==0) name="No handler set for entry %04hh" else { fn=*entry; uvar17=fn(harg,state,kind); ... name="Unexpected thread exit %04hhX"; } sk_ec_switch(0,name)`. Selector gate: `if ((1ULL<<(uvar24&0x3f)) & 0x40000002c000c000ULL)==0 { if (uvar24!=0) goto bad; uvar24=kind&0xff } else uvar24=0`, and the bad path is `FUN_001150E0("Security assertion failed: %s %f")`.
+- **Severity (hypothesis)**: medium — the dispatch table is per-CPU and writable via `sk_dt_set` (0x6290c); a corrupted table that lost a handler pointer would panic the kernel (DoS), but the security-assertion path fail-closes rather than mis-dispatching.
+- **Confidence**: high (string + structure verified)
+
+## [Sk12] 0x00062474 sk_thread_state_dump — MTE tag-check fault (esr&0x3f==0x11) and apparent stack-overflow detection
+- **Observation**: The panic/thread-state dumper special-cases ESR class 0x11 (Synchronous Tag Check Fault, i.e. an MTE violation) with a dedicated "Synchronous Tag Check Fault" banner, and separately flags an apparent kernel stack overflow when the fault address falls inside the thread's stack window `[*(tcb+0x130), *(tcb+0x130)+0x4000)`. The FAR/ESR are printed in the dump.
+- **Evidence**: `if ((esr & 0x3f) == 0x11) sk_print16(sink, "Synchronous Tag Check Fault", 0x1c, 1)`; `if ((*(tcb+0x130) <= far) && (far < *(tcb+0x130)+0x4000)) sk_printf(sink, "Apparent stack overflow by 0x%04x")`.
+- **Severity (hypothesis)**: medium — MTE tag violations are an intended fault class; explicit detection shows the kernel expects and records memory-tagging faults, consistent with cL4 running with MTE enabled. No weakness, but confirms the fault surface.
+- **Confidence**: high (string + bit decode verified)
+
+## [Sk12] 0x00064108 sk_exc_setup — exception-handling endpoint install + whole-thread walk
+- **Observation**: Installs the kernel exception endpoint once (`*(singleton+0x48)`, panics "exception handling can only be i..." if already set), sets up the shared 0x6ad910 endpoint, then walks every thread (thread-list iterator FUN_000533EC / FUN_004B75E4) delivering the "Set exception handler" request via CallSupervisor(0). If any thread's delivery reports an error (`rsp & 0xff != 0`) it faults. Allocation failure panics "failed to allocate exception endpoint".
+- **Evidence**: `*(s+0x48)=sk_g_exc_endpoint`; `sk_ep_setup(0x6ad910, ep, buf, cfg)`; `th=sk_g_handler_list; thiter=sk_h_000533EC(); ... do { CallSupervisor(0); ... } while (tstate==1)`; per-thread `if ((rsp & 0xff)!=0) { FUN_004B7594(...); goto exc_panic; }`.
+- **Severity (hypothesis)**: low — single-install enforced; per-thread delivery failure panics (fail-closed). The all-thread walk is a boot/init-time operation.
+- **Confidence**: medium
+
+## [Sk12] 0x00062a48 sk_tbplace_get — tightbeam placeholder resource lookup with "No resource" panic
+- **Observation**: Resolves a "tightbeam placeholder" resource by iterating the boot resource iterator (FUN_0004EB44/4EB4C/4ECF0) for a matching kind (0x11/0x13) and reading a packed word from a fixed offset (0, 0xc, or 4 words by selector). If no resource matches it panics "No tightbeam placeholder resource" (noreturn). The word offset selection depends on the caller's selector without a length check on the descriptor.
+- **Evidence**: `res=(uint16_t*)FUN_0004E7B8(uvar12, kind_sel)`; `p = (sel!=2)? res+0xc : res; p2=(sel!=1)?p:res; p3=(sel<0x50)?p2:res+4; word = packed 8-byte read of *p3`; no match → `sk_ec_switch(0,"No tighbeam placeholder resource")`.
+- **Severity (hypothesis)**: low — descriptor content is boot-image (GL1 trust-boundary) input; a malformed descriptor with a valid kind could be read at an unintended offset, but the result is only used to seed config, and no-match panics rather than proceeding.
+- **Confidence**: medium

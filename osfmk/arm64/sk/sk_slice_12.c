@@ -134,14 +134,14 @@ extern void   sk_h_004B7AC8(uint64_t, void *);       /* FUN_004B7AC8 */
 extern uint64_t sk_h_0000178C(uint64_t, uint64_t);   /* FUN_0000178C: strlen variant */
 extern uint64_t sk_h_000359AC(uint64_t);             /* FUN_000359AC */
 extern uint64_t sk_h_0004DFD0(uint64_t, const char *);/* FUN_0004DFD0: fh register */
-extern void   sk_h_0004E774(uint64_t, uint64_t);     /* FUN_0004E774 */
+extern uint64_t sk_h_0004E774(uint64_t, uint64_t);    /* FUN_0004E774 */
 extern uint64_t sk_h_0004E7B8(uint64_t, uint64_t);   /* FUN_0004E7B8: tb placeholder resolve */
 extern uint64_t sk_h_0004E88C(uint64_t);             /* FUN_0004E88C: tb placeholder kind */
 extern uint64_t sk_h_0004EB44(void);                 /* FUN_0004EB44: tb placeholder iter init */
 extern uint64_t sk_h_0004EB4C(uint64_t);             /* FUN_0004EB4C: tb placeholder iter next */
 extern uint64_t sk_h_0004ECF0(uint64_t);             /* FUN_0004ECF0 */
 extern uint64_t sk_h_0004ED48(void);                 /* FUN_0004ED48 */
-extern void   sk_h_0004ED84(void);                   /* FUN_0004ED84 */
+extern uint64_t sk_h_0004ED84(void);                 /* FUN_0004ED84 */
 extern uint64_t sk_h_0004FE80(void);                 /* FUN_0004FE80 */
 extern void   sk_h_00052A04(uint64_t);               /* FUN_00052A04 */
 extern void   sk_h_00052C4C(uint64_t);               /* FUN_00052C4C */
@@ -164,7 +164,7 @@ extern uint64_t sk_h_000556E4(uint64_t);             /* FUN_000556E4 */
 extern uint64_t sk_h_0005AC2C(void);                 /* FUN_0005AC2C: ncpu get */
 extern void   sk_h_0005AD40(void);                   /* FUN_0005AD40 */
 extern void   sk_h_0005B0BC(uint64_t);               /* FUN_0005B0BC */
-extern void   sk_h_0005B860(uint64_t *);             /* FUN_0005B860 */
+extern uint64_t sk_h_0005B860(uint64_t *);           /* FUN_0005B860 */
 extern uint64_t sk_h_0005B8C8(void);                 /* FUN_0005B8C8 */
 extern uint64_t sk_h_0005BA14(void);                 /* FUN_0005BA14: boot uuid source */
 extern void   sk_h_0005BA40(uint64_t);               /* FUN_0005BA40 */
@@ -176,10 +176,10 @@ extern void   sk_h_0005BCE0(uint64_t);               /* FUN_0005BCE0 */
 extern void   sk_h_0005C16C(void);                   /* FUN_0005C16C */
 extern uint64_t sk_h_0005C184(uint64_t, uint64_t);   /* FUN_0005C184 */
 extern void   sk_h_0005CB9C(void);                   /* FUN_0005CB9C */
-extern void   sk_h_0005CDBC(uint64_t *);             /* FUN_0005CDBC */
+extern uint64_t sk_h_0005CDBC(uint64_t *);         /* FUN_0005CDBC */
 extern void   sk_h_0005CE54(uint64_t *);             /* FUN_0005CE54 */
 extern uint64_t sk_h_0005CF18(uint64_t, uint64_t, uint64_t); /* FUN_0005CF18 */
-extern void   sk_h_0005D154(int, uint64_t *);      /* FUN_0005D154 */
+extern uint64_t sk_h_0005D154(int, uint64_t *);    /* FUN_0005D154 */
 extern void   sk_h_0005D5DC(void);                   /* FUN_0005D5DC */
 extern void   sk_h_0005DEB4(uint64_t);               /* FUN_0005DEB4: per-CPU resched */
 extern void   sk_h_0005E0DC(uint64_t, int);          /* FUN_0005E0DC */
@@ -208,7 +208,7 @@ uint64_t sk_tcb_get_a8(uint64_t tcb);                         /* FUN_000603BC */
 uint64_t sk_boot_lookup(void);                                /* FUN_000603C4 */
 void     sk_err_string(uint64_t sink, uint8_t code);          /* FUN_000604CC */
 void     sk_err_string_reg(uint8_t code);                     /* FUN_000604EC */
-void     sk_noop(void);                                       /* FUN_000604F8 */
+void     sk_noop(uint64_t a, uint64_t b);             /* FUN_000604F8 */
 uint64_t sk_counter_inc(void);                                /* FUN_000604FC */
 uint64_t sk_cpu_base(void);                                   /* FUN_00060524 */
 void     sk_boot_platform_setup(void);                        /* FUN_00060530 */
@@ -220,9 +220,9 @@ void     sk_preempt_leave(uint8_t *restore);                  /* FUN_000605F8 */
 void     sk_preempt_drain(void);                              /* FUN_00060650 */
 uint64_t sk_stack_bump(uint64_t tag);                         /* FUN_000606B0 */
 void     sk_kernel_init(uint64_t state, uint64_t kind, uint64_t *a, uint64_t *b, uint64_t arg); /* FUN_00060728 */
-uint64_t sk_msg_call(uint64_t th, uint64_t *msg, uint64_t a, uint64_t b, uint64_t mode, uint64_t c); /* FUN_00060F60 */
+uint64_t sk_msg_call(uint64_t th, uint64_t *msg, uint64_t *words, uint64_t max, uint64_t mode, uint64_t c); /* FUN_00060F60 */
 void     sk_msg_call2(void);                                  /* FUN_00061044 */
-uint64_t sk_msg_send(uint64_t ep, uint64_t *msg, uint64_t a, uint64_t b, uint64_t mode, uint64_t c); /* FUN_0006104C */
+uint64_t sk_msg_send(uint64_t ep, uint64_t *msg, uint64_t *words, uint64_t max, uint64_t mode, uint64_t c); /* FUN_0006104C */
 uint64_t sk_msg_marshal(uint64_t ep, uint64_t *msg, uint64_t *words, uint64_t max, uint64_t mode,
                         uint8_t flag, uint64_t *spare, uint8_t *done); /* FUN_000610B8 */
 void     sk_set_a0(uint64_t obj, uint64_t v);                 /* FUN_000612D8 */
@@ -259,7 +259,7 @@ uint64_t sk_obj_lock2(uint64_t obj, uint64_t k);              /* FUN_000628D8 */
 void     sk_obj_unlock(uint64_t obj, uint64_t k);             /* FUN_000628E0 */
 void     sk_dt_set(uint64_t idx, uint64_t fn, uint64_t arg);  /* FUN_0006290C */
 uint64_t sk_cap_lookup_word(uint64_t word);                   /* FUN_000629FC */
-void     sk_tbplace_get(int sel, uint32_t a);                 /* FUN_00062A48 */
+uint64_t sk_tbplace_get(int sel, uint32_t a);          /* FUN_00062A48 */
 void     sk_err_string_wrap(void);                            /* FUN_00062BDC */
 void     sk_dtor_key_panic(void);                             /* FUN_00062BFC */
 void     sk_dtor_key_panic2(void);                            /* FUN_00062C14 */
@@ -365,6 +365,7 @@ uint64_t sk_altstack_enable(uint64_t th, uint64_t a)
     uint64_t aux = 0;
     int64_t canary = SK_CANARY;
     uint8_t st = 0;
+    uint8_t buf48[0x20];
     uint64_t cpu;
     char cnt;
 
@@ -454,87 +455,6 @@ void sk_altstack_disable(void)
 }
 
 /* ================================================================== *
- * 0005ff04 — FUN_0005FF04  (est. sk_stack_alloc)
- * Ghidra: void FUN_0005FF04(undefined8 *param_1, ulong param_2, uint param_3)
- * Allocates and maps a new kernel/thread stack region of `param_2` bytes
- * plus a 0x4000 guard, returning a 7-word descriptor in *param_1. Uses the
- * object allocator (FUN_00034A2C vtable at +0x30) to create the backing
- * object, maps it, and records base/length/flags. Panics "failed to bump new
- * stack", "failed to allocate stack", or "more than one mapping type".
- * Confidence: medium
- * ================================================================== */
-void sk_stack_alloc(uint64_t *out, uint64_t size, uint32_t flags)
-{
-    uint64_t full = size + 0x4000;
-    uint64_t obj, vtable, res;
-    uint64_t uvar4;
-    uint64_t local_78;
-    uint64_t local_70;
-    uint64_t lstack68;
-    int64_t local_58;
-    int idx;
-    int64_t singleton;
-
-    if (size >= 0xffffffffffffc000) {
-        /* WARNING: does not return */
-        sk_panic0("more than one mapping type speci");
-    }
-    {
-        uint8_t tag[8];
-        tag[0] = 0x11;
-        sk_memset((void*)((uint64_t)tag | 1), 0xf, 0);
-        /* local_48 = 0xc, local_44 = 0x20 */
-        uint32_t mt = flags & 0xf;
-        if ((flags & 0xe) == 0) mt = 1;
-        uint64_t local_50 = full;
-        if ((mt & (mt - 1)) == 0) {
-            uint32_t kind = 0x40c8;
-            if ((flags & 2) != 0) kind = 0x44c8;
-            local_70 = 0;
-            lstack68 = 0;
-            res = sk_obj_get();                /* FUN_00034A2C: {obj,vtable} */
-            vtable = /* hi half */ 0;
-            uvar4 = (*(uint64_t(**)(void))(res_vtable + 0x30))(
-                        res_obj, (uint64_t)((flags & 4) << 0xb |
-                                            ((flags >> 3) & 1) << 9 | kind),
-                        tag, &local_70, 0, tag);
-            uvar4 &= 0xff;
-            if (uvar4 == 0) {
-                local_78 = size;
-                uvar4 = (*(uint64_t(**)(void))(lstack68 + 0x18))(local_70, &local_78);
-                uvar4 &= 0xff;
-                if (uvar4 == 0) {
-                    singleton = sk_singleton();            /* FUN_0005BB68 */
-                    idx = *(int *)(singleton + 0x88);
-                    *(int *)(singleton + 0x88) = idx + 1;
-                    if (idx != -1) {
-                        out[0] = local_70;
-                        out[1] = lstack68;
-                        *(uint32_t *)(out + 2) = flags & 0xffffffdf | (uint32_t)((flags & 0xf) == 0);
-                        *(uint32_t *)((uint8_t*)out + 0x14) = 0;
-                        out[3] = (uint64_t)local_58;
-                        out[4] = (uint64_t)local_58 + full;
-                        out[5] = full;
-                        *(int *)(out + 6) = idx + 1;
-                        *(uint32_t *)((uint8_t*)out + 0x34) = 0;
-                        return;
-                    }
-                    sk_h_004B6FF0();           /* FUN_004B6FF0 */
-                } else if (uvar4 in error table) {
-                    /* WARNING: does not return */
-                    sk_panic0("failed to bump new stack with at");
-                }
-            } else if (uvar4 in error table) {
-                /* WARNING: does not return */
-                sk_panic0("failed to allocate stack with at");
-            }
-            /* WARNING: does not return */
-            SoftwareBreakpoint(0x5519, 0x600f0);
-        }
-    }
-    /* unreachable */
-    sk_panic0("more than one mapping type speci");
-}
 
 /* ================================================================== *
  * 0005ff04 — FUN_0005FF04  (est. sk_stack_alloc)
@@ -665,7 +585,7 @@ uint64_t sk_stack_alloc_call(uint64_t size, uint64_t a, uint64_t b)
  * ================================================================== */
 uint64_t sk_altstack_switch(uint64_t th, uint64_t a, uint64_t b)
 {
-    uint64_t puVar12 = *(uint64_t *)(th + 0x20);
+    uint64_t *puVar12 = (uint64_t *)*(uint64_t *)(th + 0x20);
     uint64_t cpu = sk_cpu_base();                 /* FUN_00060524 */
     uint64_t ret, old168, old170, stack, delta;
     uint32_t flags;
@@ -695,7 +615,7 @@ uint64_t sk_altstack_switch(uint64_t th, uint64_t a, uint64_t b)
     stack = *(uint64_t *)(th + 0x20);
     *(long *)(cpu + 0x168) = *(long *)(th + 0x18) + 0x4000;
     *(uint64_t *)(cpu + 0x170) = stack;
-    ret = sk_h_0005CF18(puVar12, a, b);           /* FUN_0005CF18 */
+    ret = sk_h_0005CF18((uint64_t)puVar12, a, b); /* FUN_0005CF18 */
     *(uint64_t *)(cpu + 0x168) = old168;
     *(uint64_t *)(cpu + 0x170) = old170;
     *(uint32_t *)(cpu + 0x148) = 0;
@@ -708,14 +628,15 @@ uint64_t sk_altstack_switch(uint64_t th, uint64_t a, uint64_t b)
     *(uint32_t *)(cpu + 0x14c) = 0;
     flags = *(uint32_t *)(th + 0x10);
     if ((flags >> 4 & 1) != 0) {
-        uint64_t guard = sk_phys_alloc();         /* FUN_00034F70 */
+        uint64_t guard = sk_phys_alloc(0);        /* FUN_00034F70 */
         uint64_t *puVar11 = (uint64_t *)(*(long *)(th + 0x18) + 0x4000);
         uint64_t uvar3 = 0;
         uint64_t *puVar14 = (uint64_t *)puVar12;
+        uint64_t *puVar13;
         char cVar5 = 1;
         uint64_t uvar10 = 0;
         do {
-            uint64_t *puVar13 = puVar14;
+            puVar13 = puVar14;
             uvar10 = uvar3;
             if ((puVar13 <= puVar11) || (puVar14 = puVar13 - 0x800, puVar14 < puVar11)) break;
             {
@@ -909,8 +830,9 @@ void sk_err_string_reg(uint8_t code)
  * for an empty dispatch slot.
  * Confidence: high (trivially empty)
  * ================================================================== */
-void sk_noop(void)
+void sk_noop(uint64_t a, uint64_t b)
 {
+    (void)a; (void)b;
 }
 
 /* ================================================================== *
@@ -1472,7 +1394,7 @@ sel_table:
                 name = "Unexpected thread exit 04hhX";
             }
             /* WARNING: does not return */
-            sk_ec_switch(0, (int)name);               /* FUN_0005B190 */
+            sk_ec_switch(0, name);               /* FUN_0005B190 */
         }
     }
 bad_sel:
@@ -1493,7 +1415,7 @@ boom:
  * writes the result word back when indicated.
  * Confidence: medium
  * ================================================================== */
-uint64_t sk_msg_call(uint64_t th, uint64_t *msg, uint64_t a, uint64_t b,
+uint64_t sk_msg_call(uint64_t th, uint64_t *msg, uint64_t *words, uint64_t max,
                      uint64_t mode, uint64_t c)
 {
     uint64_t local58;
@@ -1517,7 +1439,7 @@ uint64_t sk_msg_call(uint64_t th, uint64_t *msg, uint64_t a, uint64_t b,
 l_ready:
     local59 = 0;
     if ((uint64_t)(th + 0x118) <= (uint64_t)(th + 0x168)) {
-        ret = sk_msg_marshal(th + 0x118, &local58, a, b, mode, c, 0, &local59); /* FUN_000610B8 */
+        ret = sk_msg_marshal(th + 0x118, &local58, words, max, mode, c, NULL, &local59); /* FUN_000610B8 */
         if ((bVar4 & local59) == 1) {
             *msg = local58;
         }
@@ -1549,7 +1471,7 @@ void sk_msg_call2(void)
  * result word back on completion; otherwise returns 0.
  * Confidence: medium
  * ================================================================== */
-uint64_t sk_msg_send(uint64_t ep, uint64_t *msg, uint64_t a, uint64_t b,
+uint64_t sk_msg_send(uint64_t ep, uint64_t *msg, uint64_t *words, uint64_t max,
                      uint64_t mode, uint64_t c)
 {
     uint64_t local30 = *msg;
@@ -1558,7 +1480,7 @@ uint64_t sk_msg_send(uint64_t ep, uint64_t *msg, uint64_t a, uint64_t b,
     uint64_t ustack28;
     if ((mode & 1) == 0) {
         ustack28 = c;
-        ret = sk_msg_marshal(ep, &local30, a, b, 0, 1, &ustack28, &local31); /* FUN_000610B8 */
+        ret = sk_msg_marshal(ep, &local30, words, max, 0, 1, &ustack28, &local31); /* FUN_000610B8 */
         if (local31 == 1) {
             *msg = local30;
         }
@@ -2556,7 +2478,7 @@ uint64_t sk_cap_lookup_word(uint64_t word)
  * "No tightbeam placeholder resource" if none matches.
  * Confidence: medium
  * ================================================================== */
-void sk_tbplace_get(int sel, uint32_t tag)
+uint64_t sk_tbplace_get(int sel, uint32_t tag)
 {
     uint64_t uvar12;
     uint64_t iter[2];
@@ -2564,7 +2486,7 @@ void sk_tbplace_get(int sel, uint32_t tag)
     int i;
     if ((sk_h_0004FE80() & 1) == 0) {                 /* FUN_0004FE80 */
         sk_h_00053418();                              /* FUN_00053418 */
-        return;
+        return 0;
     }
     if (sel < 0x50) {
         i = 0x11;
@@ -2612,12 +2534,11 @@ go:
                                         (uint16_t)p3[2]) << 0x20));
                 }
             }
-            sk_h_0004E774(marker, word);              /* FUN_0004E774 */
-            return;
+            return sk_h_0004E774(marker, word);      /* FUN_0004E774 */
         }
     }
     /* WARNING: does not return */
-    sk_ec_switch(0, (int)(uintptr_t)"No tighbeam placeholder resource"); /* FUN_0005B190 */
+    sk_ec_switch(0, "No tighbeam placeholder resource"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -2641,7 +2562,7 @@ void sk_err_string_wrap(void)
 void sk_dtor_key_panic(void)
 {
     /* WARNING: does not return */
-    sk_ec_switch(0, (int)(uintptr_t)"setting key lu which is deleted"); /* FUN_0005B190 */
+    sk_ec_switch(0, "setting key lu which is deleted"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -2653,7 +2574,7 @@ void sk_dtor_key_panic(void)
 void sk_dtor_key_panic2(void)
 {
     /* WARNING: does not return */
-    sk_ec_switch(0, (int)(uintptr_t)"setting key lu while destructor"); /* FUN_0005B190 */
+    sk_ec_switch(0, "setting key lu while destructor"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -2712,7 +2633,7 @@ void sk_ep_lock(uint64_t *ep, uint64_t flags, uint64_t *cfg)
         sk_fatal();                                   /* FUN_0011D7E8 */
     }
     /* WARNING: does not return */
-    sk_ec_switch(0, (int)(uintptr_t)"failed to lock new endpoints loc"); /* FUN_0005B190 */
+    sk_ec_switch(0, "failed to lock new endpoints loc"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -2749,7 +2670,7 @@ void sk_ep_return(uint64_t a, uint64_t b)
             (*(void (**)(uint64_t))(*(uint64_t *)(lvar10 + 0x50)))(ep);
         }
         /* WARNING: does not return */
-        sk_ec_switch(0, (int)(uintptr_t)"returned from EP return on endpo"); /* FUN_0005B190 */
+        sk_ec_switch(0, "returned from EP return on endpo"); /* FUN_0005B190 */
     }
 trap:
     /* WARNING: does not return */
@@ -2854,7 +2775,7 @@ void sk_ep_teardown(uint64_t ep, uint64_t count)
             sk_h_0005EEC4(head, 0, ep, 0, 0);         /* FUN_0005EEC4: spawn thread */
             if (*head == 0) {
                 /* WARNING: does not return */
-                sk_ec_switch(0, (int)(uintptr_t)"Failed to create thread for an E"); /* FUN_0005B190 */
+                sk_ec_switch(0, "Failed to create thread for an E"); /* FUN_0005B190 */
             }
             { /* decimal-encode the thread sequence into a name word */
                 uint32_t v = (uint32_t)*(uint16_t *)(ep + 0x30) +
@@ -3362,7 +3283,7 @@ void sk_notify_construct(uint64_t key)
         if ((v != 0) &&
             (v = *(uint64_t *)(reg + 0x210), *(uint64_t *)(reg + 0x210) = v + 1, v == -1)) {
             /* WARNING: does not return */
-            sk_ec_switch(0, (int)(uintptr_t)"constructing deleted key"); /* FUN_0005B190 */
+            sk_ec_switch(0, "constructing deleted key"); /* FUN_0005B190 */
         }
         cnt += 1;
         reg += 8;
@@ -3480,7 +3401,7 @@ uint64_t sk_notify_call(uint64_t *idxp, uint64_t k)
                     (v = *(int64_t *)(reg + idx * 8 + 0x1f8),
                      *(uint64_t *)(reg + idx * 8 + 0x1f8) = (uint64_t)v + 1, v == -1)) {
                     /* WARNING: does not return */
-                    sk_ec_switch(0, (int)(uintptr_t)"constructing deleted key"); /* FUN_0005B190 */
+                    sk_ec_switch(0, "constructing deleted key"); /* FUN_0005B190 */
                 }
                 return 1;
             }
@@ -3559,7 +3480,7 @@ void sk_exc_setup(void)
 
     if (*(uint64_t *)(s + 0x48) != 0) {
         /* WARNING: does not return */
-        sk_ec_switch(0, (int)(uintptr_t)"exception handling can only be i"); /* FUN_0005B190 */
+        sk_ec_switch(0, "exception handling can only be i"); /* FUN_0005B190 */
     }
     /* marker check derived from the "L4_ErrorCodeTruncated" string bytes */
     marker = (uint64_t)0;
@@ -3567,7 +3488,7 @@ void sk_exc_setup(void)
         sk_g_exc_endpoint = sk_alloc_obj(8);          /* FUN_0019AE2C(8) */
         if (sk_g_exc_endpoint == 0) {
             /* WARNING: does not return */
-            sk_ec_switch(0, (int)(uintptr_t)"failed to allocate exception end"); /* FUN_0005B190 */
+            sk_ec_switch(0, "failed to allocate exception end"); /* FUN_0005B190 */
         }
         flag = sk_boot_flag_a();                      /* FUN_00060540 */
         uvar17 = sk_g_exc_endpoint;
@@ -3822,7 +3743,7 @@ void sk_amx_cap_alloc(uint64_t a, uint64_t th, uint64_t *msg)
     return;
 fail:
     /* WARNING: does not return */
-    sk_ec_switch((int)uvar3, (int)(uintptr_t)"failed to allocate AMX capabilit"); /* FUN_0005B190 */
+    sk_ec_switch((int)uvar3, "failed to allocate AMX capabilit"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -3898,7 +3819,7 @@ void sk_sme_cap_alloc(uint64_t a, uint64_t th, uint64_t *msg)
     return;
 fail:
     /* WARNING: does not return */
-    sk_ec_switch((int)uvar3, (int)(uintptr_t)"failed to allocate SME capabilit"); /* FUN_0005B190 */
+    sk_ec_switch((int)uvar3, "failed to allocate SME capabilit"); /* FUN_0005B190 */
 }
 
 /* ================================================================== *
@@ -4003,7 +3924,7 @@ uint64_t sk_exc_dispatch(uint64_t tcb, uint64_t ctx)
     }
     sk_exc_raise(tcb, a, b);                          /* FUN_00064E84 */
     /* WARNING: does not return */
-    sk_ec_switch((int)tcb, (int)(uintptr_t)"Caught exception esr 0x 016zx f"); /* FUN_0005B190 */
+    sk_ec_switch((int)tcb, "Caught exception esr 0x 016zx f"); /* FUN_0005B190 */
     return 0;
 }
 
