@@ -235,3 +235,57 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: remove: `ttb[1] &= ~1; ttb[0] &= ~1;` then `sptm_tlbi(9,1,2,0, ctx<<0x30)` (or `sptm_uat_tlb_invalidate(...,0x1000000000,0x6000000000,0)`); the current-ctx check `if (uat[0x138] + 0x18 == ctx) panic 0x400001d`.
 - **Severity (hypothesis)**: low — TLB invalidation ordering prevents stale UAT translations from being re-used after ctx teardown.
 - **Confidence**: low
+
+## [ringminus1] 000ed6b4 sptm_retype — frame-type transition rule (the security core)
+- **Observation**: A frame may only be retyped along an edge present in its current type's 128-bit transition bitmask; the requested current type must exactly match the FTE's stored type; and the frame must be unreferenced (refcount 0) before retype. Any violation is a hard panic — sptm_retype cannot fail gracefully (per the SDK header).
+- **Evidence**: `if ((sptm_wide_shift(&g_type_params[ft_type], new_type) & 1) == 0) sptm_violation(0x17,...)` (transition-mask edge); `if (ft_type != (current_type & 0xff)) sptm_violation(0x42,...)` (current-type match); `if (rc != 0) sptm_violation(0x3e,...)` (frame must be fresh); per-type pre/retype callbacks (DAT_00095dc0/db8) gate the transition.
+- **Severity (hypothesis)**: informational — this IS the enforcement point; no weakness observed, but any error in the transition-bitmask tables would directly allow illegal type transitions (privilege confusion).
+- **Confidence**: high
+
+## [ringminus1] 000ed6b4 sptm_retype — CPU-page taggability + UAT ctx-id teardown
+- **Observation**: Retyping away a taggable CPU page (class 3, cache-attr 1, byte4 bit2 set) is only allowed if the new type is also a taggable CPU page; and retyping a CPU/user-root page that still holds a UAT context id invalidates that ASID (TLBI) before the id can be reused, sweeping all ctx slots for the 0xc000=0xc000 case.
+- **Evidence**: `if ((g_type_params[ft].class==3) && (g_type_attr[ft].flags) && (g_type_params[ft].cache_attr==1) && (FTE_B4&4)) { require new type also class-3/cache-attr-1 else violation(0x38); }`; UAT ctx-id block issues `SysOp_W(0,9,1,2, cid<<0x30)` (TLBI) and per-slot counters at g_uat_state+0x82..0x103.
+- **Severity (hypothesis)**: low — prevents a live CPU/user root from being silently converted to a non-typed type while its ASID context is still active (stale-translation risk). The teardown ordering (clear present bits, DSB, TLBI, DSB) is correct.
+- **Confidence**: high
+
+## [ringminus1] 000ee278 sptm_map_page — frame-type rule for mappings
+- **Observation**: A leaf PTE is only installed when the leaf table's type permits the data frame's type (128-bit transition bitmask) AND the requested permission bits are allowed for the data type. W+X and (for stage-2 roots) missing-NXS combinations are rejected before the PTE is written.
+- **Evidence**: `if ((sptm_trans_shift(&g_type_params[leaf->type], data_type) & 1) == 0) sptm_violation(0x28,...)`; `if ((g_type_attr[data_type].flags >> perm_idx & 1) == 0) sptm_violation(0x24,...)`; WNX `1ULL << (perm) & 0x2a8` clears bit 55 (0x8000000000000) and `(old & 0x803)==3` asserts for stage-2; `(new_pte & 0xf38b000000000000)` / `(param_3>>0x34 & 1)` encoding rejection.
+- **Severity (hypothesis)**: informational — this is the per-mapping authorization gate; an error in the per-type transition mask would allow mapping a frame into a table type that should not reference it.
+- **Confidence**: high
+
+## [ringminus1] 000ee278 sptm_map_page — mapping to untyped frame rejected (soft violation)
+- **Observation**: The target physical address must be inside the DRAM window OR already carry a nonzero frame type; mapping into an untyped out-of-DRAM address returns a soft violation (0xff000000) rather than installing the PTE. A frame typed XNU_RESTRICTED_IO_TELEMETRY (0x27) is separately rejected (0xff000002).
+- **Evidence**: `if ((pa<g_dram_hi && g_dram_lo<=pa) || (data_ft->type!=0)) { if (data_ft->type==0x27) return 0xff000002; } else return 0xff000000;` then `sptm_soft_violation(...)`.
+- **Severity (hypothesis)**: informational — prevents mapping pages SPTM does not own/type; the 0x27 carve-out keeps telemetry-restricted IO out of general mappings.
+- **Confidence**: high
+
+## [ringminus1] 000f05e4 sptm_unmap_table — kernel root / shared table protection
+- **Observation**: The kernel root table may not be unmapped (guarded by a sentinel root-FTE check), and a user root table (XNU_USER_ROOT_TABLE) may not unmap a shared page table (XNU_PAGE_TABLE_SHARED) — the shared table must be removed via sptm_unnest_region() first.
+- **Evidence**: `if (sptm_tlb_root(root).lo == g_kernel_root_ft) sptm_violation(0,...)`; `if ((root->type==0x12) && (data_ft->type==0x15)) sptm_violation(0,...)`; transition-mask check `assert("incompatible page table type")`.
+- **Severity (hypothesis)**: informational — defense-in-depth on the table hierarchy (kernel table and shared tables are not removable through the ordinary unmap path).
+- **Confidence**: high
+
+## [ringminus1] 000f458c / 000f4eec sptm_nest_region / sptm_unnest_region — shared-table identity + range confinement
+- **Observation**: Nesting requires the shared table to be XNU_PAGE_TABLE_SHARED (0x15), the user and shared roots to reference the same configured shared-region id, and the VA range to lie entirely within the region recorded by sptm_configure_shared_region(); anything else panics. Unnest clears the shared PTEs and flushes the TLB.
+- **Evidence**: `if (data_ft->type != 0x15) sptm_violation(0x28,...)`; `if (id != user_ft->byte4) sptm_violation(0x49,...)`; `if (va < g_shared_region_papt[id] || g_shared_region_size[id]+g_shared_region_papt[id] < size+va) sptm_violation(8,...)`; unnest `sptm_tlb_op(...)` after clearing.
+- **Severity (hypothesis)**: low — bounds the nested shared mapping to the pre-configured region and rejects non-shared tables, preventing a shared-region range from being extended or aliasing arbitrary tables.
+- **Confidence**: high
+
+## [ringminus1] 000f1910 sptm_surt_free — ASID not released in the bitmap
+- **Observation**: sptm_surt_free clears the SURT slot's busy flag and decrements the SURT-frame refcount but does NOT clear the ASID from g_asid_bitmap (set by sptm_surt_alloc). If SURT frames are alloc/free'd without the whole frame being destroyed (where the ASID set is presumably reclaimed), ASIDs would accumulate as busy.
+- **Evidence**: alloc sets `g_asid_bitmap[asid>>6] |= 1<<(asid&0x3f)` and checks `if (bm & bit) violation(0x4b)`; free (FUN_000f1910) only touches byte4/0x50 refcounts and the slot state — no g_asid_bitmap write.
+- **Severity (hypothesis)**: low — potential ASID exhaustion if subpage root tables are recycled without releasing the parent XNU_SUBPAGE_USER_ROOT_TABLES frame; likely intentional (ASIDs reclaimed on frame destroy), needs cross-check against the SURT-frame teardown path.
+- **Confidence**: medium
+
+## [ringminus1] 000f3998 sptm_update_disjoint_multipage — PAPT attr updated with current-type sentinel
+- **Observation**: The per-entry PAPT (physical-aperture) attribute update passes 0xff as the current-type to sptm_set_pte_attr() — the FRAME_TYPE_ANY sentinel — rather than the frame's concrete type. The data frame's type is validated (nonzero attr flags) but the attr write is not scoped to a specific source type.
+- **Evidence**: `sptm_set_pte_attr(op->paddr, 0xff, (op->papt>>2)&7, ...)` in the multipage loop (the retype path passes the concrete `type_params[new].attr` instead). The 0xff value is the FRAME_TYPE_ANY sentinel (sptm_common.h).
+- **Severity (hypothesis)**: informational — 0xff is the documented FRAME_TYPE_ANY "retype entire region regardless of source type" sentinel; the PAPT attr write here is a deliberate catch-all, not an observed weakness. Noted for the audit.
+- **Confidence**: medium
+
+## [ringminus1] 000f1b78 sptm_region_op — twig-boundary confinement
+- **Observation**: The contiguous-region engine refuses a region that crosses a twig-table boundary (checked against the geometry mask at +0x88), and the whole region is processed only after the walk finds the leaf table; a missing leaf table yields a per-page no-op rather than installing PTEs into a non-existent table.
+- **Evidence**: `if (((count*page_size + (va-page_size)) ^ va) & *(uint64_t*)(geom+0x88)) sptm_violation(0x27,...)`; `leaf = sptm_walk(...); if (leaf==NULL) { sptm_ref_release(...); needs_tlbi=0; goto release; }`.
+- **Severity (hypothesis)**: informational — prevents a single region update from silently spanning an unsupported boundary or writing through a missing table level.
+- **Confidence**: high

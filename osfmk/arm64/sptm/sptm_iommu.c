@@ -464,7 +464,7 @@ uint64_t sptm_uat_map_continue(uint64_t ctx)
             }
             flags = *(uint32_t *)(uat_obj + 0x40) & 0x300;
             if (((seg_vaddr >> 0x28 != 1 && flags != 0) ||
-                 ((uint32_t)seg_vaddr >> 0x2a != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) ||
+                 ((seg_vaddr >> 0x2a) != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) ||
                 (((seg_vaddr + size_bytes) >> 0x28 != 1 && flags != 0)) ||
                 ((seg_vaddr + size_bytes) >> 0x2a != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) {
                 sptm_panic(0x4000009, size_bytes, "__s__s__d_____s___llx____s___llx__000111dc");
@@ -671,6 +671,7 @@ skip_lock:
         return;
     }
     sptm_assert_fail("__s__state_guard_release_____llx__0000720b");
+    }
 mismatch:
     sptm_panic(0x300000c, dbg, "__s__s__d_____s___llx__00011410");
 }
@@ -1259,11 +1260,11 @@ void sptm_t8110dart_disable_translation(uint8_t dart_id, uint32_t stream)
         sptm_panic(0x600001f, dbg, "__s__s__d_____s___llx____s___llx__00011690");
     }
     if (((*(uint8_t *)(ctrl + 0xbe3) & 1) == 0) && (*(uint32_t *)(ctrl + 0xba4) != 0)) {
-        uint32_t i = 0;
+        uint32_t i = 0, ndart;
         uint64_t off = 8;
         do {
             sptm_dsb(3, 3, 0);
-            uint32_t ndart = *(uint32_t *)(ctrl + 0xba4);
+            ndart = *(uint32_t *)(ctrl + 0xba4);
             uint8_t *slice = *(uint8_t **)(ctrl + 0x238 + (uint64_t)st * 8);
             if ((*(uint8_t *)(slice + 0x18) & 1) != 0) {
                 if (ndart <= i) goto invalid_dar;
@@ -1611,9 +1612,9 @@ next_stream:
                             uint32_t *s1 = (uint32_t *)(apf_active[2] + n * 0x40);
                             uint32_t *s2 = (uint32_t *)((uint8_t *)apf_active[0] + n * 0x40);
                             if ((((s2[2] & 0xfffffffc) != (s1[2] & 0xfffffffc)) ||
-                                 ((s2[3] & 0xf) != ((uint32_t)(s1[2] >> 32) & 0xf))) ||
+                                 ((s2[3] & 0xf) != ((uint32_t)(*(uint64_t *)(s1 + 2) >> 32) & 0xf))) ||
                                 ((s2[4] & 0xfffffffc) != (s1[4] & 0xfffffffc)) ||
-                                ((s2[5] & 0xf) != ((uint32_t)(s1[4] >> 32) & 0xf))) {
+                                ((s2[5] & 0xf) != ((uint32_t)(*(uint64_t *)(s1 + 4) >> 32) & 0xf))) {
                                 sptm_assert_fail("__s__dart__p___s__u___DART_instan_0000769d");
                             }
                             if ((s2[0] & 0x333) != (s1[0] & 0x333)) {
@@ -2024,7 +2025,7 @@ flush_done:
             if ((apf != NULL) && (apf[0] != NULL) && (*(uint32_t *)apf[1] != 0)) {
                 uint32_t na = *(uint32_t *)(apf[1]);
                 uint32_t k = 0;
-                uint64_t abase = apf[2];
+                uint64_t abase = (uint64_t)(uintptr_t)apf[2];
                 uint32_t ireg = 0x20;
                 do {
                     uint32_t *ap = (uint32_t *)(abase + (uint64_t)k * 0x40);
@@ -2053,24 +2054,25 @@ flush_done:
             *(uint32_t *)(hw2 + (*(uint32_t *)(ctrl + 0xbc4) & 0xfffffffc)) = 0;
             if (*(uint32_t *)(ctrl + 0xba4) <= i) goto invalid_dar;
             if ((*(uint8_t *)(ctrl + 0xbe5) & 1) != 0) {
-                *(uint32_t *)(hw2 + 0x760) = *(uint32_t *)(instp[0xb]);
+                uint8_t *istore = (uint8_t *)instp;
+                *(uint32_t *)(hw2 + 0x760) = (uint32_t)(uintptr_t)instp[0xb];
                 if ((*(uint32_t *)(ctrl + 0xba4) <= i) ||
-                    (*(uint32_t *)(hw2 + 0x764) = *(uint32_t *)(instp + 0x5c),
+                    (*(uint32_t *)(hw2 + 0x764) = *(uint32_t *)(istore + 0x5c),
                      *(uint32_t *)(ctrl + 0xba4) <= i)) goto invalid_dar;
-                *(uint32_t *)(hw2 + 0x768) = *(uint32_t *)(instp + 0x54);
+                *(uint32_t *)(hw2 + 0x768) = *(uint32_t *)(istore + 0x54);
                 if ((*(uint32_t *)(ctrl + 0xba4) <= i) ||
-                    ((*(uint32_t *)(hw2 + 0x770) = *(uint32_t *)(instp + 0x64),
+                    ((*(uint32_t *)(hw2 + 0x770) = *(uint32_t *)(istore + 0x64),
                       *(uint32_t *)(ctrl + 0xba4) <= i))) goto invalid_dar;
-                *(uint32_t *)(hw2 + 0x774) = *(uint32_t *)(instp[0xd]);
+                *(uint32_t *)(hw2 + 0x774) = (uint32_t)(uintptr_t)instp[0xd];
                 if (*(uint32_t *)(ctrl + 0xba4) <= i) goto invalid_dar;
-                *(uint32_t *)(hw2 + 0x778) = *(uint32_t *)(instp[0xc]);
+                *(uint32_t *)(hw2 + 0x778) = (uint32_t)(uintptr_t)instp[0xc];
                 if ((DART_VERSION(ctrl) & 0xfffe) != 0x100) {
                     if ((*(uint32_t *)(ctrl + 0xba4) <= i) ||
-                        (*(uint32_t *)(hw2 + 0x780) = *(uint32_t *)(instp[0xe]),
+                        (*(uint32_t *)(hw2 + 0x780) = (uint32_t)(uintptr_t)instp[0xe],
                          *(uint32_t *)(ctrl + 0xba4) <= i)) goto invalid_dar;
-                    *(uint32_t *)(hw2 + 0x784) = *(uint32_t *)(instp + 0x74);
+                    *(uint32_t *)(hw2 + 0x784) = *(uint32_t *)(istore + 0x74);
                     if (*(uint32_t *)(ctrl + 0xba4) <= i) goto invalid_dar;
-                    *(uint32_t *)(hw2 + 0x788) = *(uint32_t *)(instp + 0x6c);
+                    *(uint32_t *)(hw2 + 0x788) = *(uint32_t *)(istore + 0x6c);
                 }
                 if (*(uint32_t *)(ctrl + 0xba4) <= i) goto invalid_dar;
                 *(uint32_t *)(hw2 + (*(uint32_t *)(ctrl + 0xbc8) & 0xfffffffc)) = 0xffffffff;
@@ -2164,16 +2166,17 @@ void sptm_t8110dart_disable_clock_protection(uint8_t dart_id, uint64_t flags)
                 sptm_dart_save(ctrl, i);
                 if ((*(uint8_t *)(ctrl + 0xbe5) & 1) != 0) {
                     if (*(uint32_t *)(ctrl + 0xba4) <= i) goto invalid_dar;
-                    *(uint32_t *)(instp[0xb]) = *(uint32_t *)(hw + 0x760);
-                    *(uint32_t *)(instp + 0x5c) = *(uint32_t *)(hw + 0x764);
-                    *(uint32_t *)(instp + 0x54) = *(uint32_t *)(hw + 0x768);
-                    *(uint32_t *)(instp + 0x64) = *(uint32_t *)(hw + 0x770);
-                    *(uint32_t *)(instp[0xd]) = *(uint32_t *)(hw + 0x774);
-                    *(uint32_t *)(instp[0xc]) = *(uint32_t *)(hw + 0x778);
+                    uint8_t *istore = (uint8_t *)instp;
+                    *(uint32_t *)(istore + 0x58) = *(uint32_t *)(hw + 0x760);
+                    *(uint32_t *)(istore + 0x5c) = *(uint32_t *)(hw + 0x764);
+                    *(uint32_t *)(istore + 0x54) = *(uint32_t *)(hw + 0x768);
+                    *(uint32_t *)(istore + 0x64) = *(uint32_t *)(hw + 0x770);
+                    *(uint32_t *)(istore + 0x68) = *(uint32_t *)(hw + 0x774);
+                    *(uint32_t *)(istore + 0x60) = *(uint32_t *)(hw + 0x778);
                     if ((DART_VERSION(ctrl) & 0xfffe) != 0x100) {
-                        *(uint32_t *)(instp[0xe]) = *(uint32_t *)(hw + 0x780);
-                        *(uint32_t *)(instp + 0x74) = *(uint32_t *)(hw + 0x784);
-                        *(uint32_t *)(instp + 0x6c) = *(uint32_t *)(hw + 0x788);
+                        *(uint32_t *)(istore + 0x70) = *(uint32_t *)(hw + 0x780);
+                        *(uint32_t *)(istore + 0x74) = *(uint32_t *)(hw + 0x784);
+                        *(uint32_t *)(istore + 0x6c) = *(uint32_t *)(hw + 0x788);
                     }
                     *(uint32_t *)(hw + (*(uint32_t *)(ctrl + 0xbcc) & 0xfffffffc)) = 0;
                 }
@@ -2245,49 +2248,46 @@ flush:
                 if ((be3 & 1) == 0) {
                     if (sptm_ps_wr_mode == 1) {
                         uint8_t old_guard = sptm_ps_wr_guard;
-                        uint8_t ps_idx;
-                        if (*(uint8_t *)(instp + 0x2a / 8 + 0) == 0 && 0) { }
-                        /* Pop ps_wr refcount (field A at instrow+0x28). */
                         uint8_t *instrow = ctrl + 8 + (uint64_t)i * 0x78;
-                        ps_idx = *(uint8_t *)(instrow + 0x28);
-                        if (*(uint8_t *)(instrow + 0x2a) != 0) { /* skip */ }
-                        else if (ps_idx != 0xff) {
-                            cb = sptm_cpu_base();
-                            uint8_t g = sptm_uat_guard(cb);
-                            if (sptm_ps_wr_guard != 0) goto guard_conflict;
-                            sptm_ps_wr_guard = g;
-                            if (sptm_ps_wr_table == NULL) goto null_ptr;
-                            if (sptm_ps_wr_max < ps_idx || sptm_ps_wr_max == ps_idx) goto invalid_ps_wr;
-                            char c = sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4];
-                            if (c == 0) goto ps_underflow;
-                            sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4] = (char)(c - 1);
-                            if (c == 1) {
-                                sptm_dart_ps_refcount(ctrl, ps_idx, 0);
+                        if (*(uint8_t *)(instrow + 0x2a) != 0) {
+                            /* Pop ps_wr refcount (field A at instrow+0x28). */
+                            uint8_t ps_idx = *(uint8_t *)(instrow + 0x28);
+                            if (ps_idx != 0xff) {
+                                cb = sptm_cpu_base();
+                                uint8_t g = sptm_uat_guard(cb);
+                                if (sptm_ps_wr_guard != 0) goto guard_conflict;
+                                sptm_ps_wr_guard = g;
+                                if (sptm_ps_wr_table == NULL) goto null_ptr;
+                                if (sptm_ps_wr_max < ps_idx || sptm_ps_wr_max == ps_idx) goto invalid_ps_wr;
+                                char c = sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4];
+                                if (c == 0) goto ps_underflow;
+                                sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4] = (char)(c - 1);
+                                if (c == 1) {
+                                    sptm_dart_ps_refcount(ctrl, ps_idx, 0);
+                                }
+                                cb = sptm_cpu_base();
+                                if (sptm_ps_wr_guard != sptm_uat_guard(cb)) goto guard_mismatch;
+                                sptm_ps_wr_guard = 0;
                             }
-                            cb = sptm_cpu_base();
-                            if (sptm_ps_wr_guard != sptm_uat_guard(cb)) goto guard_mismatch;
-                            sptm_ps_wr_guard = 0;
-                            if (*(uint8_t *)(instrow + 0x2a) == 0) goto done_pop_a;
-                        }
-                        /* Pop ps_wr refcount (field B at instrow+0x29). */
-                        ps_idx = *(uint8_t *)(instrow + 0x29);
-                        if (ps_idx != 0xff) {
-                            cb = sptm_cpu_base();
-                            uint8_t g = sptm_uat_guard(cb);
-                            if (sptm_ps_wr_guard != 0) goto guard_conflict;
-                            sptm_ps_wr_guard = g;
-                            if (sptm_ps_wr_table == NULL) goto null_ptr;
-                            if (sptm_ps_wr_max < ps_idx || sptm_ps_wr_max == ps_idx) goto invalid_ps_wr;
-                            char c = sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4];
-                            if (c == 0) goto ps_underflow;
-                            sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4] = (char)(c - 1);
-                            if (c == 1) {
-                                sptm_dart_ps_refcount(ctrl, ps_idx, 0);
+                            /* Pop ps_wr refcount (field B at instrow+0x29). */
+                            ps_idx = *(uint8_t *)(instrow + 0x29);
+                            if (ps_idx != 0xff) {
+                                cb = sptm_cpu_base();
+                                uint8_t g = sptm_uat_guard(cb);
+                                if (sptm_ps_wr_guard != 0) goto guard_conflict;
+                                sptm_ps_wr_guard = g;
+                                if (sptm_ps_wr_table == NULL) goto null_ptr;
+                                if (sptm_ps_wr_max < ps_idx || sptm_ps_wr_max == ps_idx) goto invalid_ps_wr;
+                                char c = sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4];
+                                if (c == 0) goto ps_underflow;
+                                sptm_ps_wr_table[(uint64_t)ps_idx * 6 + 4] = (char)(c - 1);
+                                if (c == 1) {
+                                    sptm_dart_ps_refcount(ctrl, ps_idx, 0);
+                                }
+                                cb = sptm_cpu_base();
+                                if (sptm_ps_wr_guard != sptm_uat_guard(cb)) goto guard_mismatch;
                             }
-                            cb = sptm_cpu_base();
-                            if (sptm_ps_wr_guard != sptm_uat_guard(cb)) goto guard_mismatch;
                         }
-done_pop_a:
                         sptm_ps_wr_guard = old_guard;
                         *(uint8_t *)(ctrl + 0x32 + (uint64_t)i * 0x78) = 0;
                     } else if ((sptm_alt_dart_mode & 1) == 0) {
@@ -2418,9 +2418,9 @@ void sptm_t8110dart_map(uint8_t dart_id, uint64_t stream, uint64_t iova,
     if ((ok & 1) == 0) {
         sptm_panic(0x6000009, dbg, "__s__s__d_____s___llx____s___llx__00011690");
     }
-    if ((st < *(uint32_t *)(ctrl + 0xb98)) &&
-        ((uint64_t)slice = (uint64_t)*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238), slice != 0) &&
-        ((*(uint8_t *)(slice + 0x1d) & 1) != 0)) {
+    uint8_t *slice0 = *(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238);
+    if ((st < *(uint32_t *)(ctrl + 0xb98)) && (slice0 != NULL) &&
+        ((*(uint8_t *)(slice0 + 0x1d) & 1) != 0)) {
         sptm_panic(0x600001f, dbg, "__s__s__d_____s___llx____s___llx__00011690");
     }
     if (0x2000000 < size) {

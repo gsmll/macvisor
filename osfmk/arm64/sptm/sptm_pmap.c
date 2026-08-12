@@ -1545,7 +1545,7 @@ sptm_surt_free(sptm_paddr_t surt_frame, uint8_t surt_index)
 sptm_return_t
 sptm_leaf_table_condemn_op(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr, bool condemn)
 {
-	sptm_frame_table_entry_t *root, *leaf_ft, *data_ft, *tmp;
+	sptm_frame_table_entry_t *root, *leaf_ft, *data_ft = NULL, *tmp;
 	sptm_ret2_t r;
 	uint64_t *papt;
 	uint64_t tte, page_size, entries, i, expect, pat;
@@ -1732,7 +1732,6 @@ sptm_region_op(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr,
 	if (g_type_params[root_type].type_class == 1) {
 		sptm_pt_geom_t *geom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(root)];
 		uint64_t page_size = geom->page_size;
-		uint64_t stride = *(uint64_t *)((uint8_t *)&geom->level_stride);
 		if (((count * page_size + (va - page_size)) ^ va) &
 		    *(uint64_t *)((uint8_t *)&geom->rsvd[0] + 0x88)) {
 			sptm_violation(0x27, r.hi, "%s %s %s %d %s %llx %s %s %llx");
@@ -2026,7 +2025,7 @@ sptm_disjoint_op(sptm_paddr_t paddr, sptm_paddr_t ops_pa, unsigned int num_mappi
 	uint64_t i;
 	uint16_t rc;
 	uint32_t needs_tlbi = 0, tlb_op = 5, result;
-	bool ok, nxs_ok = true;
+	bool nxs_ok = true;
 
 	if (preflight == NULL || finalize == NULL) {
 		sptm_assert_fail("preflight or finalize mappin");
@@ -2509,8 +2508,7 @@ sptm_nest_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_pa
 	sptm_frame_table_entry_t *user_ft, *shared_ft, *shared_leaf, *user_leaf, *data_ft, *tmp;
 	sptm_ret2_t r;
 	uint64_t *shared_papt, *user_papt;
-	uint64_t count = 0, va, size, page_size, mask, mask2, n;
-	int64_t i;
+	uint64_t count = 0, va, size, page_size, n;
 	uint8_t id;
 	uint16_t rc;
 
@@ -2672,7 +2670,7 @@ sptm_unnest_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_
 	sptm_frame_table_entry_t *user_ft, *shared_ft, *shared_leaf, *user_leaf, *data_ft, *tmp;
 	sptm_ret2_t r;
 	uint64_t *shared_papt, *user_papt;
-	uint64_t count = 0, va, size, page_size, mask, mask2;
+	uint64_t count = 0, va, size, page_size;
 	uint8_t id, user_attr;
 	uint16_t rc;
 	uint64_t n, i = 0;
