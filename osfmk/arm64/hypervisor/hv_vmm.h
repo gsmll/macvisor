@@ -262,7 +262,7 @@ extern int kernel_mem_validate(void *, void *, uint64_t, uint64_t, uint32_t, uin
 extern int kernel_copyout(uint64_t, uint64_t, uint64_t, int, uint64_t);
 extern int kernel_mem_release(uint64_t, uint64_t, uint64_t);
 extern hv_u128_t kernel_alloc(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, void *);
-extern void kernel_vm_object_batch_dealloc(void);
+extern uint64_t kernel_vm_object_batch_dealloc(void);
 extern void kernel_lock_ref(uint64_t);
 extern void kernel_tlb_flush(void);
 extern void kernel_panic(void);             /* noreturn */

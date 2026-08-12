@@ -1014,3 +1014,61 @@ hypothesis, never a claim, and carries Ghidra evidence.
   and b986d34 (`FUN_fffffe000b793cf4();`).
 - **Severity**: informational (faithfulness note).
 - **Confidence**: high.
+
+## [hv-deps] Full-audit kernel touch-set recreation wave (2026-08-12)
+
+- **Observation**: Per the FULL-AUDIT rule (maintainer-confirmed: "these are
+  recreated"), the hypervisor's DIRECT kernel touch-set was recreated with
+  faithful bodies. Five files (~7150 lines) were produced:
+  - hv_glue_audit_locks.c: lck_mtx_lock (b7f0afc, full futex/waitq core),
+    lck_mtx_unlock (b7f1e80), lock_release (b7f1e4c), kernel_lock_ref
+    (b7f62e8), kernel_spinlock_acquire/release (b7f8738/b7f8a60),
+    kernel_lock_bit_acquire/release/wait4/clear/flush_ack
+    (b7f8d9c/b7f8e50/b7f8ce0/b812380/b812f5c), kernel_owner_mismatch_panic
+    (c0e4d74).
+  - hv_glue_audit_mem.c: kernel_copyin (b8afb18 = vm_map_wire),
+    kernel_copyin2 (b8b122c = vm_map_unwire), kernel_copyout (b8b49e8 =
+    vm_map_protect), kernel_mem_release (b8a8078), kernel_mem_validate
+    (b8b51c8 = vm_map_enter, 11 args), kernel_alloc (b8a6c14, {err,block}),
+    kernel_vm_object_batch_dealloc (b8b6860, no-arg), hv_zone_alloc
+    (b7eb624), kernel_kalloc (b859c38 = XNU zalloc core).
+  - hv_glue_audit_obj.c: os_release (b8afa78), os_ref_retain (b7f089c),
+    zfree_waitq (b793cf4), refcount_dec (b862b6c), kernel_refcount_inc
+    (b8af98c), kernel_obj_release (b78cc20), kernel_region_lock (b78fd40),
+    kernel_obj_lookup (b7e0f30), kernel_obj_lookup_core (b78d064),
+    kernel_fault_post (b7e16f0).
+  - hv_glue_audit_panic.c: kernel_panic (c0f1874), kernel_panic_a (c0f86a4,
+    takes uint *refcount — the no-arg headers drop it), kernel_panic_b
+    (c0f8674), kernel_panic_c (c0e1c3c, 3 real args), kernel_panic_msg_fmt
+    (c0e11ec; kernel_panic_assert/msg2 are ALIASES of this address),
+    kernel_zone_array_panic (c0eae24), kernel_stack_check_panic (c0e0620,
+    found via the 'Kernel stack memory corruption detected' string).
+  - hv_glue_audit_sys.c: per_cpu_base (b866ec4, DISASSEMBLY reconstruction —
+    decompiler collapses to panic c0eae44(3)), kernel_tlb_flush (b96c6d4),
+    kernel_page_validate (c0d7b94), kernel_paddr_type (c0d7c20; DRAM type
+    0x1a, not 0x1b as the earlier note guessed), kernel_memattr_resolve
+    (b94abbc), kernel_preempt_dec (b94172c), kernel_trace (bd30528 wrapper +
+    bd310e8 core), kernel_boot_arg_get (c09cbf0, returns 1 on success not 0),
+    kernel_dt_node_lookup (c09c084), kernel_dt_prop_get (c09c31c).
+- **Evidence**: fresh decompiles of every function (all high confidence
+  except per_cpu_base low, documented assembly fallback per AGENTS.md).
+- **Severity**: high for exploit research — the touch-set (copyin/copyout,
+  locks, alloc/free, refcount, panics) now has auditable bodies confirming
+  what each function does; several names were corrected by the decompiles
+  (kernel_copyin is vm_map_wire, not a copyin; kernel_boot_arg_get returns
+  1 on success; kernel_paddr_type DRAM type is 0x1a).
+- **Confidence**: high (fresh decompile per function; spot-verified
+  lck_mtx_unlock, kernel_panic, zfree_waitq against the decompiles).
+
+## [naming] Zero code-level Ghidra identifiers project-wide (2026-08-12)
+
+- **Observation**: After the hv_el2.c kernel_vm_fault rename and the audit
+  wave, every .c file in the tree now has ZERO code-level Ghidra
+  identifiers (uVar*/local_*/LAB_*/joined_* appear only in comments, which
+  is the documented convention). The audit files' register-reuse
+  transcribers (kernel_alloc, kernel_kalloc, kernel_mem_validate,
+  kernel_copyout) were renamed to English in the same pass (~250 tokens).
+- **Evidence**: stateful comment-aware scan of all 17 .c files: 0 code
+  tokens; all files compile with clang -fsyntax-only, 0 errors.
+- **Severity**: informational (naming/readability mandate complete).
+- **Confidence**: high (mechanical scan + compile).

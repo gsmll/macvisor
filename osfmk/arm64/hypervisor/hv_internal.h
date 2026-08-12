@@ -129,7 +129,7 @@ extern int  kernel_mem_validate(void *vm, void *map_out, uint64_t len,
                                 uint64_t block, int z, int *out1, int *out2,
                                 int k);   /* FUN_fffffe000b8b51c8, vm_map_enter */
 extern int  kernel_mem_release(uint64_t a, uint64_t b, uint64_t c);
-extern void kernel_vm_object_batch_dealloc(void);
+extern uint64_t kernel_vm_object_batch_dealloc(void);
 
 /* ======================================================================== *
  * SHARED GLOBAL NAMING TABLE — one English name per hypervisor global.

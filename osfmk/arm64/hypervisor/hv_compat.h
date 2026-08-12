@@ -101,7 +101,7 @@ typedef struct { uint64_t lo, hi; } hv_u128_t;
 extern hv_u128_t kernel_alloc(uint64_t a, uint64_t size, uint64_t c,
                               uint64_t flags, uint64_t e, void *f);
 extern int  kernel_mem_release(uint64_t vm, uint64_t addr, uint64_t size);
-extern void kernel_vm_object_batch_dealloc(void);
+extern uint64_t kernel_vm_object_batch_dealloc(void);
 
 /* Kernel zone allocator used by hv_vm_create (kernel, not recreated). */
 extern void *hv_zone_alloc(void *zone, int kind); /* est. FUN_fffffe000b7eb624 hv zone alloc */

@@ -2404,7 +2404,7 @@ d1dc:                               /* b89d1dc */
                 }
                 goto a708;
             }
-            goto joined_a74c;
+            goto l_joint;
         }
         if ((hv_trace_flag & 0xfffffff7) == 0) {
             if (cur == 0) goto d210;
@@ -2456,7 +2456,7 @@ a56c:                               /* b89a56c */
         if ((obj_retain2 == 1) && (rc = kernel_vm_fault_callee_f5f18(obj + 1), rc == 0)) {
             kernel_vm_fault_callee_7050(cur_obj + 1);
             obj_retain2 = 2;
-joined_bb5c:                        /* joined_r0xfffffe000b89bb5c */
+l_joint3:                        /* joined_r0xfffffe000b89bb5c */
             if (fault_arg == 0) {
                 *(uint64_t *)(cur + 0x238) = 0;
                 HV_FMT_PAGING_CONCAT();
@@ -2477,7 +2477,7 @@ joined_bb5c:                        /* joined_r0xfffffe000b89bb5c */
             kernel_vm_fault_callee_7050(cur_obj + 1);
             kernel_vm_fault_callee_7050(obj + 1);
             obj_retain = 2;
-            goto joined_bb5c;
+            goto l_joint3;
         }
         swap_mode = false;
         obj_retain = 2;
@@ -2636,7 +2636,7 @@ a708:                               /* b89a708 */
         kernel_vm_fault_callee_e7d4((uint64_t)obj);
     }
     obj_retain = 2;
-joined_a74c:                        /* joined_r0xfffffe000b89a74c */
+l_joint:                        /* joined_r0xfffffe000b89a74c */
     if (fault_arg == 0) {
         *(uint64_t *)(cur + 0x238) = 0;
         HV_FMT_PAGING_CONCAT();
@@ -2878,7 +2878,7 @@ abe4:                               /* b89abe4 */
         if (fault_arg != 0) goto retry;
         *(uint64_t *)(cur + 0x238) = 0;
         HV_FMT_PAGING_CONCAT();
-        goto joined_b110;
+        goto l_joint2;
     }
     if (obj2 == 0) {
         pmap_ok = 1;
@@ -3183,7 +3183,7 @@ done_zero:                          /* b89ca04 */
     if (fault_arg != 0) goto retry;
     *(uint64_t *)(cur + 0x238) = 0;
     HV_FMT_PAGING_CONCAT();
-joined_b110:                        /* joined_r0xfffffe000b89b110 */
+l_joint2:                        /* joined_r0xfffffe000b89b110 */
     if ((state_flags >> 2 & 1) == 0) {
         kernel_vm_fault_callee_1ab24(&paging_state);
     } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {

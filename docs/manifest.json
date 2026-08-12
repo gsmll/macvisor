@@ -278,45 +278,45 @@
     "address": "fffffe000c09c084",
     "ghidra_name": "FUN_fffffe000c09c084",
     "estimated_name": "kernel_dt_node_lookup",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
-    "tree": "support-init",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Kernel DT '/product' node lookup; used by hv_support_init. Not recreated."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "DT path walk (child lookup by 'name' prop). Recreated with body in hv_glue_audit_sys.c; returns 1 on success, 0xffffffff on miss. Calls kernel_dt_prop_get (c09c31c)."
   },
   {
     "address": "fffffe000c09c31c",
     "ghidra_name": "FUN_fffffe000c09c31c",
     "estimated_name": "kernel_dt_prop_get",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
-    "tree": "support-init",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Kernel DT property getter; reads 'apple-isa-vm-quota'. Not recreated."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "DT property getter (returns data ptr+len). Recreated with body in hv_glue_audit_sys.c; returns 1 on match, 0xffffffff otherwise."
   },
   {
     "address": "fffffe000c09cbf0",
     "ghidra_name": "FUN_fffffe000c09cbf0",
     "estimated_name": "kernel_boot_arg_get",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
-    "tree": "support-init",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Kernel boot-arg getter; reads 'hv_apple_isa_vm_quota'. Not recreated."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "Boot-args parser. Recreated with body in hv_glue_audit_sys.c; returns 1 on success (not 0 as the brief guessed), 0 on miss."
   },
   {
     "address": "fffffe000bd30528",
     "ghidra_name": "FUN_fffffe000bd30528",
     "estimated_name": "kernel_trace",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
-    "tree": "support-init",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Kernel trace/log helper used by hv_available (0x10c0015/6). Not recreated."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "Thin no-arg wrapper over the trace core bd310e8 (both branches call it). Real trace body transcribed as kernel_trace_core. Recreated in hv_glue_audit_sys.c."
   },
   {
     "address": "fffffe000b984fd8",
@@ -489,10 +489,10 @@
     "estimated_name": "kernel_mem_validate",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Validates a user/virtual range with a protection word (0x1c100008) + per-arg protections; used by hv_copyin_user/hv_el2_pt_alloc before copying. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "The 11-argument vm_map_enter entry (block is arg7, prot locals out1/out2). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8b51c8)."
   },
   {
     "address": "fffffe000b8afb18",
@@ -500,10 +500,10 @@
     "estimated_name": "kernel_copyin",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Copies a user buffer into the kernel with a fault table (DAT_fffffe0007d813d8 VM_MAP_WIRE/UNWIRE); used by hv_copyin_user. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "vm_map_wire (the 'Copies a user buffer with a fault table' helper). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8afb18)."
   },
   {
     "address": "fffffe000b8a8078",
@@ -511,21 +511,21 @@
     "estimated_name": "kernel_mem_release",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Releases/commits a validated memory range after copyin/out; also thunked @fffffe000b9141a4. Used by hv_copyin_user/hv_vcpu_slot_op. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "Releases/commits a validated range after copyin/out (prot-remove + unmap). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8a8078)."
   },
   {
     "address": "fffffe000b8b6860",
     "ghidra_name": "FUN_fffffe000b8b6860",
-    "estimated_name": "kernel_memzero",
+    "estimated_name": "kernel_vm_object_batch_dealloc",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Zeroes a kernel memory range (used with +0x8000/+0x4000 windows) in hv_vcpu_slot_op/hv_el2_pt_alloc. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "No-arg batch vm-object release draining the global free list (was misnamed kernel_memzero). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8b6860)."
   },
   {
     "address": "fffffe000b8a6c14",
@@ -533,10 +533,10 @@
     "estimated_name": "kernel_alloc",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Allocates a 0x4000-byte EL2 translation block (prot 0x10080) in hv_el2_pt_alloc. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "vm-object allocation returning {error, block} (hv_u128_t, .lo=err, .hi=block). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8a6c14)."
   },
   {
     "address": "fffffe000b8b49e8",
@@ -544,10 +544,10 @@
     "estimated_name": "kernel_copyout",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Copies kernel data out to a guest/virtual address in hv_vcpu_slot_op. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "vm_map_protect (the 'Copies kernel data out' helper). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8b49e8)."
   },
   {
     "address": "fffffe000b8b122c",
@@ -555,10 +555,10 @@
     "estimated_name": "kernel_copyin2",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Second copyin variant with fault table DAT_fffffe0007d81408 (VM_MAP_UNWIRE/WIRE); used by hv_vcpu_slot_op. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "vm_map_unwire (the second copyin variant). Recreated with body in hv_glue_audit_mem.c (verified decompile of b8b122c)."
   },
   {
     "address": "fffffe000b7f62e8",
@@ -566,10 +566,10 @@
     "estimated_name": "kernel_lock_ref",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "DE-GUESS (re-decompiled b7f62e8): name verified. Kernel lock acquire/ref: increments per-cpu nesting (tpidr_el1+0x22c), checks lock word state (param_1+8 & 0xffffffff0001ffff)==0x10000 and param_1+0xc==0 -> set state 2, else slow path FUN_fffffe000b7f6378; stores cpu id at param_1+4; FUN_fffffe000b7f67a0 if DAT_fffffe000c62b3d0. Universal kernel lock; stays stubbed extern (el2-state)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Kernel lock acquire/ref (per-cpu nesting +0x22c, lock-word state check, slow path b7f6378). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f62e8)."
   },
   {
     "address": "fffffe000b96c6d4",
@@ -577,10 +577,10 @@
     "estimated_name": "kernel_tlb_flush",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "EL2 TLB flush invoked when the last per-cpu EL2 reference is released (hv_el2_pt_alloc). Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "EL1 TLB invalidate dispatch: mask A/F/I, check per-cpu flush flag, call flush core b7a56d4. Recreated with body in hv_glue_audit_sys.c."
   },
   {
     "address": "fffffe000c0f1874",
@@ -588,10 +588,10 @@
     "estimated_name": "kernel_panic",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "el2-state",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "noreturn panic on per-cpu counter overflow in hv_el2_pt_alloc. Shared kernel, not recreated (declared extern in hv_vmm.h)."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "noreturn preemption-counter underflow panic; pure tail call to kernel_panic_msg_fmt. Recreated with body in hv_glue_audit_panic.c (verified decompile of c0f1874)."
   },
   {
     "address": "fffffe000b987c44",
@@ -651,13 +651,13 @@
   {
     "address": "fffffe000b866ec4",
     "ghidra_name": "FUN_fffffe000b866ec4",
-    "estimated_name": "current_cpu_datap",
-    "confidence": "medium",
+    "estimated_name": "per_cpu_base",
+    "confidence": "low",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Per-CPU struct getter, direct callee of hv vmapple code; decompiler collapses the body to a single noreturn panic FUN_fffffe000c0eae44(3) with the real body PAC'd/unreachable blocks removed (b866ef0/f10/f34/f40/f54) \u2014 NOT recreatable; used by the whole kernel. Extern in hv_kernel_glue.c."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "Per-CPU struct getter. Decompiler collapses to noreturn panic c0eae44(3) (PAC'd/unreachable blocks b866ef0/f10/f34/f40/f54). DISASSEMBLY-LEVEL reconstruction in hv_glue_audit_sys.c (fallback per AGENTS.md): state=[cpu+0x418], RO-zone bounds at DAT 7d7c988/990, count at 7d82dc8, table at 7d7c9e8, entry==3 check, [state]==cpu, return [state+0x28]. Low confidence."
   },
   {
     "address": "fffffe000b7f0afc",
@@ -666,9 +666,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "XNU mutex acquire on hv lock DAT_fffffe000c62c0b8; 100+ kernel callers, full futex/waitq implementation; universal kernel core, not recreated per glue policy; extern in hv_kernel_glue.c. Identity confirmed 2026-08-12 from fresh decompile (4 args: lock, thread, old, flags; LZCOUNT class table at fffffe000c5b0400) + the s_lck_mtx_t_ilk string at fffffe0007d790b8. Canonical name lck_mtx_lock (was lock_acquire/kernel_lock_acquire)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "XNU mutex acquire (full futex/waitq core; s_lck_mtx_t_ilk string 7d790b8; 4 args lock/thread/old/flags). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f0afc)."
   },
   {
     "address": "fffffe000b7f1e80",
@@ -677,9 +677,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "XNU mutex release; 100+ kernel callers, universal kernel core, not recreated; extern in hv_kernel_glue.c. Identity confirmed 2026-08-12 from fresh decompile (3 args: lock, thread, flags; validates *(thread+0x518)==(flags&0xfffffff) else panic c0e4d74; handles 0x80000000 sentinel; TLB flush b96c6d4 on the interrupt path). Canonical name lck_mtx_unlock (was lock_sync/kernel_lock_release2)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "XNU mutex release (owner validation c0e4d74, 0x80000000 sentinel, waiter wake b8563f8, TLB flush b96c6d4). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f1e80)."
   },
   {
     "address": "fffffe000b8afa78",
@@ -688,9 +688,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "ARC-style object refcount release; universal kernel, not recreated; extern in hv_kernel_glue.c."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "ARC-style object refcount release (tag 0xf validation, refcount +0x88, refcount-1 free b8a9fb0). Recreated with body in hv_glue_audit_obj.c (verified decompile of b8afa78)."
   },
   {
     "address": "fffffe000b793cf4",
@@ -699,9 +699,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Zone free with waitq teardown; universal kernel, not recreated; extern in hv_kernel_glue.c."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Zone free with waitq teardown (tag 0x15 validation, waitq ops +0x14, refcounts +4/+0x88). Recreated with body in hv_glue_audit_obj.c (verified decompile of b793cf4)."
   },
   {
     "address": "fffffe000b862b6c",
@@ -710,9 +710,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Refcount hash decrement + free; universal kernel, not recreated; extern in hv_kernel_glue.c."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Refcount hash decrement + free. Recreated with body in hv_glue_audit_obj.c (verified decompile of b862b6c)."
   },
   {
     "address": "fffffe000b78fb24",
@@ -817,34 +817,34 @@
     "address": "fffffe000c0f86a4",
     "ghidra_name": "FUN_fffffe000c0f86a4",
     "estimated_name": "kernel_panic_a",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "noreturn panic reached from hv_vcpu_create error path; universal kernel, not recreated (extern in hv_kernel_glue.c)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "noreturn os_refcnt overflow/resurrection panic (takes uint *refcount; overflow -> c0f86e8). Recreated with body in hv_glue_audit_panic.c (verified decompile of c0f86a4)."
   },
   {
     "address": "fffffe000c0f8674",
     "ghidra_name": "FUN_fffffe000c0f8674",
     "estimated_name": "kernel_panic_b",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "noreturn panic reached from hv_vcpu_create error path; universal kernel, not recreated (extern in hv_kernel_glue.c)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "noreturn os_refcnt underflow panic; pure tail call to kernel_panic_msg_fmt. Recreated with body in hv_glue_audit_panic.c (verified decompile of c0f8674)."
   },
   {
     "address": "fffffe000c0e1c3c",
     "ghidra_name": "FUN_fffffe000c0e1c3c",
     "estimated_name": "kernel_panic_c",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "noreturn panic reached from hv_vcpu_attach (b986e50) on a container name starting '-'; universal kernel, not recreated (extern in hv_kernel_glue.c)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "noreturn bad-kobject panic (3 real args: name, a, b; == kernel_panic_msg). Recreated with body in hv_glue_audit_panic.c (verified decompile of c0e1c3c)."
   },
   {
     "address": "fffffe000b7f1e4c",
@@ -853,9 +853,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "XNU mutex fast-path release: clears the cpu-owner slot at *(lock+8) when it equals the current CPU id (tpidr_el1+0x518) and returns early if the debug flag DAT_fffffe000c62b3d0 is clear; otherwise falls through to lck_mtx_unlock b7f1e80. Verified 2026-08-12 against fresh decompile (8 lines). Canonical name lock_release (was kernel_lock_release). Declared extern in hv_internal.h."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "XNU mutex fast-path release (clears cpu-owner slot at *(lock+8); else falls to lck_mtx_unlock). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f1e4c)."
   },
   {
     "address": "fffffe000b95af80",
@@ -1323,12 +1323,12 @@
     "address": "fffffe000b7e0f30",
     "ghidra_name": "FUN_fffffe000b7e0f30",
     "estimated_name": "kernel_obj_lookup",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Universal kernel object-lookup (wraps FUN_fffffe000b78d064); validates returned name type byte vs param_3. Direct callee of hv_pmap_resolve_owner (b986b34, hv-pmap). Not recreated."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Object-registry lookup by handle+type (wraps b78d064; validates the name type byte). Recreated with body in hv_glue_audit_obj.c (verified decompile of b7e0f30)."
   },
   {
     "address": "fffffe000b78d064",
@@ -1337,9 +1337,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "DE-GUESS (re-decompiled b78d064): name verified. Kernel object-lookup via IPC: FUN_fffffe000b7968e8 (ipc send) + FUN_fffffe000b798c24 (name validation, param_4&1|2) then teardown b7f7dd8/b798b38/b798bb8. Called directly by hv_vm_map_region (b986ff4). 2+ levels into kernel; stays stubbed extern (hv-deps)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Object-lookup core (SoftwareBreakpoint asserts type<=0x30, live 0x10000, present 0x700; 16-byte {waitq,handle,flags} return). Recreated with body in hv_glue_audit_obj.c (verified decompile of b78d064)."
   },
   {
     "address": "fffffe000b8af98c",
@@ -1348,9 +1348,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Universal kernel refcount-increment with zone-magic (0xf) validation + overflow panic (c0e86a4/c0eae24). Direct callee of hv_pmap_resolve_owner (b986b34). Not recreated."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Refcount increment with zone-magic (0xf) validation + overflow panic. Recreated with body in hv_glue_audit_obj.c (verified decompile of b8af98c)."
   },
   {
     "address": "fffffe0007e34f48",
@@ -1952,10 +1952,10 @@
     "estimated_name": "kernel_kalloc",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "de-guess",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_shims.h",
-    "status": "stubbed",
-    "notes": "DE-GUESS (verified against decompile). Universal XNU kernel helper, NOT recreated; decl kernel_kalloc in hv_kernel_shims.h."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "XNU zalloc core (zone free-list serve + grow with page pool / kernel_alloc). Recreated with body in hv_glue_audit_mem.c (verified decompile of b859c38)."
   },
   {
     "address": "fffffe000b86a2c0",
@@ -2466,13 +2466,13 @@
   {
     "address": "fffffe000c0d7b94",
     "ghidra_name": "FUN_fffffe000c0d7b94",
-    "estimated_name": "kernel_dt_read",
+    "estimated_name": "kernel_page_validate",
     "confidence": "high",
     "category": "shared-dep",
-    "tree": "de-guess",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_shims.h",
-    "status": "stubbed",
-    "notes": "DE-GUESS (verified against decompile). Universal XNU kernel helper, NOT recreated; decl kernel_dt_read in hv_kernel_shims.h."
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "status": "decompiled",
+    "notes": "RENAMED from kernel_dt_read (de-guess). Fresh decompile is a paddr window lookup (2 args, returns translated block), not a DT read. Recreated in hv_glue_audit_sys.c; returns 0 ok / 1 uninit / 2 null-out / 4 no-match."
   },
   {
     "address": "fffffe000c0d83c0",
@@ -2484,5 +2484,214 @@
     "file": "osfmk/arm64/hypervisor/hv_kernel_shims.h",
     "status": "stubbed",
     "notes": "DE-GUESS (verified against decompile). Universal XNU kernel helper, NOT recreated; decl kernel_spl in hv_kernel_shims.h."
+  },
+  {
+    "address": "fffffe000c0d7c20",
+    "ghidra_name": "FUN_fffffe000c0d7c20",
+    "estimated_name": "kernel_paddr_type",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "status": "decompiled",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "notes": "Physical-address memory-type lookup; binary search over region table (7e9e4d8) + type-byte table (7e9e4b0); default type 0x1a. Recreated in hv_glue_audit_sys.c."
+  },
+  {
+    "address": "fffffe000b94abbc",
+    "ghidra_name": "FUN_fffffe000b94abbc",
+    "estimated_name": "kernel_memattr_resolve",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "status": "decompiled",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "notes": "Memory-attribute resolution over PV token list; writes to DAT_fffffe000c5ec610; EL2 MAIR sysreg read; holds preempt counter, TLB flush at tail. Recreated in hv_glue_audit_sys.c."
+  },
+  {
+    "address": "fffffe000b94172c",
+    "ghidra_name": "FUN_fffffe000b94172c",
+    "estimated_name": "kernel_preempt_dec",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "status": "decompiled",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "notes": "Preemption-counter decrement helper (fast/slow paths around hw lock-bit 0x1d). Recreated in hv_glue_audit_sys.c."
+  },
+  {
+    "address": "fffffe000bd310e8",
+    "ghidra_name": "FUN_fffffe000bd310e8",
+    "estimated_name": "kernel_trace_core",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "status": "decompiled",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_sys.c",
+    "notes": "Real kdebug trace core (7-arg) called by kernel_trace bd30528; event filter, per-cpu buffer emit, debug-exception warning. Transcribed in full in hv_glue_audit_sys.c; its callees stay stubbed."
+  },
+  {
+    "address": "fffffe000b7eb624",
+    "ghidra_name": "FUN_fffffe000b7eb624",
+    "estimated_name": "hv_zone_alloc",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "Zone-queue allocation front-end forwarding to hv_percpu_queue_pop (b85e180). Recreated with body in hv_glue_audit_mem.c (verified decompile of b7eb624)."
+  },
+  {
+    "address": "fffffe000b7f8738",
+    "ghidra_name": "FUN_fffffe000b7f8738",
+    "estimated_name": "kernel_spinlock_acquire",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "hw_lock_t spinlock acquire (hw_lock_t string 7d79170). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f8738)."
+  },
+  {
+    "address": "fffffe000b7f8a60",
+    "ghidra_name": "FUN_fffffe000b7f8a60",
+    "estimated_name": "kernel_spinlock_release",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "hw_lock_t spinlock release (depth_leave + underflow panic). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f8a60)."
+  },
+  {
+    "address": "fffffe000b7f8d9c",
+    "ghidra_name": "FUN_fffffe000b7f8d9c",
+    "estimated_name": "kernel_lock_bit_acquire",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Lock-bit acquire under LOAcquire; returns 1 ok / 0 busy. Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f8d9c)."
+  },
+  {
+    "address": "fffffe000b7f8e50",
+    "ghidra_name": "FUN_fffffe000b7f8e50",
+    "estimated_name": "kernel_lock_bit_release",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Lock-bit clear under LORelease. Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f8e50)."
+  },
+  {
+    "address": "fffffe000b7f8ce0",
+    "ghidra_name": "FUN_fffffe000b7f8ce0",
+    "estimated_name": "kernel_lock_bit_wait4",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Lock-bit wait/acquire (4-arg addr/field/name/state form used by hv_el2_guest_pte_check). Recreated with body in hv_glue_audit_locks.c (verified decompile of b7f8ce0)."
+  },
+  {
+    "address": "fffffe000b812380",
+    "ghidra_name": "FUN_fffffe000b812380",
+    "estimated_name": "kernel_lock_bit_clear",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Lock-bit event clear + waitq_block on hv_flush_lock. Recreated with body in hv_glue_audit_locks.c (verified decompile of b812380)."
+  },
+  {
+    "address": "fffffe000b812f5c",
+    "ghidra_name": "FUN_fffffe000b812f5c",
+    "estimated_name": "kernel_lock_flush_ack",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Flush/state event ack (DAIF mask, per-cpu event arrays, spin poll). Recreated with body in hv_glue_audit_locks.c (verified decompile of b812f5c)."
+  },
+  {
+    "address": "fffffe000c0e4d74",
+    "ghidra_name": "FUN_fffffe000c0e4d74",
+    "estimated_name": "kernel_owner_mismatch_panic",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_locks.c",
+    "status": "decompiled",
+    "notes": "Noreturn 'Mutex %p is unexpectedly not owned by thread %p' panic. Recreated with body in hv_glue_audit_locks.c (verified decompile of c0e4d74)."
+  },
+  {
+    "address": "fffffe000b78cc20",
+    "ghidra_name": "FUN_fffffe000b78cc20",
+    "estimated_name": "kernel_obj_release",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Object release called at refcount 1. Recreated with body in hv_glue_audit_obj.c (verified decompile of b78cc20)."
+  },
+  {
+    "address": "fffffe000b78fd40",
+    "ghidra_name": "FUN_fffffe000b78fd40",
+    "estimated_name": "kernel_region_lock",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Region reference lock used by hv_el2_guest_fault_retry. Recreated with body in hv_glue_audit_obj.c (verified decompile of b78fd40)."
+  },
+  {
+    "address": "fffffe000b7e16f0",
+    "ghidra_name": "FUN_fffffe000b7e16f0",
+    "estimated_name": "kernel_fault_post",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_obj.c",
+    "status": "decompiled",
+    "notes": "Posts a fault record (5 args rec/size/type/0/0 from hv_el2_guest_fault_retry). Recreated with body in hv_glue_audit_obj.c (verified decompile of b7e16f0)."
+  },
+  {
+    "address": "fffffe000c0e11ec",
+    "ghidra_name": "FUN_fffffe000c0e11ec",
+    "estimated_name": "kernel_panic_msg_fmt",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "Universal variadic panic wrapper forwarding to the printf-style engine b7af85c (kernel_panic_assert/msg2 are aliases). Recreated with body in hv_glue_audit_panic.c (verified decompile of c0e11ec)."
+  },
+  {
+    "address": "fffffe000c0eae24",
+    "ghidra_name": "FUN_fffffe000c0eae24",
+    "estimated_name": "kernel_zone_array_panic",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "Zone-magic panic (takes the zone id/tag; validates the zone slot then panics). Recreated with body in hv_glue_audit_panic.c (verified decompile of c0eae24)."
+  },
+  {
+    "address": "fffffe000c0e0620",
+    "ghidra_name": "FUN_fffffe000c0e0620",
+    "estimated_name": "kernel_stack_check_panic",
+    "confidence": "high",
+    "category": "shared-dep",
+    "tree": "hv-deps",
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_panic.c",
+    "status": "decompiled",
+    "notes": "Noreturn 'Kernel stack memory corruption detected' panic; pure tail call to kernel_panic_msg_fmt. Recreated with body in hv_glue_audit_panic.c (verified decompile of c0e0620)."
   }
 ]

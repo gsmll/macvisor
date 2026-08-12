@@ -946,3 +946,34 @@ entitlements tree) and copies the normalized 0/1 out via the trap record's
 availability flag (only the four refs above). Files: `osfmk/kern/hv_kernel_iface.c`
 + `.h` (tree kernel-iface).
 
+
+## hv-deps Sys touch-set (hv_glue_audit_sys.c) — call-graph edges
+
+Recreated per FULL-AUDIT (tree hv-deps, category Sys). `→` marks a direct call
+from a recreated body to a stubbed extern (2+ levels into XNU); sibling edges
+(both recreated in the same file) are marked `↔`.
+
+- `fffffe000b96c6d4` kernel_tlb_flush → `fffffe000b7a56d4` (flush core)
+- `fffffe000b94172c` kernel_preempt_dec → `fffffe000b7f8ce0` (lock bit wait),
+  `fffffe000b7f8ed0` (lock bit release), `fffffe000b815288` (preempt adjust),
+  `fffffe000b83f58c` (thread preempt dec), `fffffe000b944b00` (deferred cb)
+- `fffffe000b94abbc` kernel_memattr_resolve → `fffffe000c0fb940` (PV lookup),
+  `fffffe000c0d84b0` (attr trace commit), `fffffe000c0e11ec`/`fffffe000c0f1874`
+  (panics); ↔ `fffffe000b96c6d4` (TLB flush, tail)
+- `fffffe000bd30528` kernel_trace → `fffffe000bd310e8` (kernel_trace_core, both
+  branches; recreated sibling)
+- `fffffe000bd310e8` kernel_trace_core → `fffffe000bd2d774` (buffer acquire),
+  `fffffe000b7f89cc`/`fffffe000b7f8a60` (trace lock), `fffffe000b968948`
+  (restore preempt), `fffffe000b9257c4` (trace emit), `fffffe000b8563f8` (reg
+  write), `fffffe000c0e11ec`/`fffffe000c0f1874` (panics); ↔ `fffffe000b96c6d4`
+- `fffffe000c09cbf0` kernel_boot_arg_get → `fffffe000b760950` (strncmp),
+  `fffffe000b7608d0` (strlen), `fffffe000c09d008` (memfill), `fffffe000c09d080`
+  (value parse), `fffffe000c09d2b0` (isdigit cb)
+- `fffffe000c09c084` kernel_dt_node_lookup → `fffffe000b923854` (strcmp),
+  `fffffe000c09c4b8` (next prop), `fffffe000c0e0620` (stack-check fail),
+  `fffffe000c0e11ec` (panic); ↔ `fffffe000c09c31c` (dt_prop_get)
+- `fffffe000c09c31c` kernel_dt_prop_get → `fffffe000b923854` (strcmp),
+  `fffffe000c0e11ec` (panic)
+- `fffffe000b866ec4` per_cpu_base → `fffffe000c0eae44` (zone_require_ro panic),
+  `fffffe000c0eb104` (tro panic); body reconstructed from disassembly (LOW
+  confidence, see manifest)
