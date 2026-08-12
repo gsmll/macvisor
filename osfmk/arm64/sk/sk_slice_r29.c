@@ -831,6 +831,7 @@ word_t sk_h_48f61c();
 void sk_h_48fe4c();
 void sk_h_4816c4();
 void sk_h_48afec();
+void sk_h_485418();
 /* FUN_00481600 @ 0x00481600   (est. sk_regex_unicode_category_bits)
  * Ghidra: undefined8 FUN_00481600(ulong param_1)
  * Returns a 2-bit Unicode general-category selector derived from bits 16-17 of
@@ -4398,4 +4399,97 @@ void sk_h_48afec(word_t u10, word_t u14, word_t *x20)
     }
 fin:
     sk_h_0008e500(0);
+}
+/* FUN_00485418 @ 0x00485418   (est. sk_regex_execute_step)
+ * Ghidra: void FUN_00485418(void)
+ * Executes one regex-program instruction at the current cursor. The opcode is
+ * the low byte of the tagged word uVar19 (from the instruction stream at
+ * x20[5]): a large switch (1..0x1d) implements
+ *   1/2   store into the back-reference/slot tables
+ *   3/4   advance the cursor (set x20[0xb]/[0xc])
+ *   5/6/0x19  push a backtrack record
+ *   7/8/0xd/0xf/0x16  match a scalar/class and branch (consume helpers)
+ *   9     consume a capture (sk_h_4846dc)
+ *   10    match a literal (sk_h_485010)
+ *   11    match a property/scalar set (sk_h_484374)
+ *   12/0x1a/0x1b/0x1c  char-class / save-state bookkeeping
+ *   14    invoke a callout closure
+ *   16    run a sub-match and splice its range
+ *   17/18/0x13/0x14/0x15  save/restore capture state records
+ *   20/0x1d branch/backtrack terminators
+ * Each step advances the instruction pointer (x20[0xc]) and/or writes the
+ * backtrack stack. Confidence: low (large register-global executor). */
+void sk_h_485418(void)
+{
+    word_t u9 = sk_h_004acb04();
+    word_t ip = 0x0;  /* x20[0xc] - instruction pointer (register-global) */
+    word_t op = 0;    /* tag byte of current instruction (register-global) */
+    switch (op) {
+    case 1: case 2:
+        sk_h_004aca2c();
+        sk_h_004abd38();
+        break;
+    case 3: break;      /* x20[0xb] = frame[uVar17]; x20[0xc]++ */
+    case 4: break;      /* x20[0xc] = uVar17 */
+    case 5: case 6:
+        sk_h_004aca2c();
+        sk_h_004abd38();
+        break;
+    case 7:
+        if (0 == 1) { sk_h_002ae2c0(0, 0, 0, 0, 0); }
+        else { word_t r = sk_h_484aa8(0, 0); if ((r & 1) == 0) { sk_h_004aba34(0); return; } sk_h_004ac108(); }
+        break;
+    case 8:
+        sk_h_004ab68c(0);
+        sk_h_484b34(0, 0, 0, 0, 0, 0);
+        break;
+    case 9:
+        sk_h_4846dc(0, 0, 0, 0, 0, 0, 0);
+        break;
+    case 10:
+        sk_h_004ab68c(0);
+        sk_h_485010(0, 0, 0, 0, 0, 0);
+        break;
+    case 11:
+        sk_h_004ab68c(0);
+        sk_h_484374(0, 0, 0, 0, 0, 0, 0, 0);
+        break;
+    case 12:
+        sk_h_4832a4(0,0,0,0,0,0);
+        sk_h_482d18(0,0,0,0,0,0,0,0);
+        break;
+    case 13:
+        { word_t r = sk_h_4851b4(0, 0); if ((r & 1) == 0) { sk_h_004aba34(0); return; } sk_h_004ac108(); }
+        break;
+    case 14:
+        sk_h_0036b270(0);
+        break;
+    case 15:
+        { word_t r = sk_h_482254(0, 0); if ((r & 1) == 0) { sk_h_004aba34(0); return; } sk_h_004ac108(); }
+        break;
+    case 16:
+        sk_h_004ab68c(0);
+        sk_h_481cc0(0);
+        break;
+    case 17: case 18:
+        sk_h_004acb58();
+        sk_h_0036b270();
+        sk_h_0036b270();
+        sk_h_004aaa20();
+        sk_h_00498b28(0);
+        sk_h_000a6e14();
+        sk_h_00498c1c();
+        sk_h_004ab798(0);
+        break;
+    case 19:
+        sk_h_0049c52c((word_t)&(word_t){0});
+        sk_h_004ab7b8();
+        sk_h_004a4b14((word_t)&(word_t){0});
+        break;
+    default:
+        sk_h_004aba34(0, u9);
+        sk_h_481cc0(0);
+        return;
+    }
+    sk_h_004aba34(u9);
 }

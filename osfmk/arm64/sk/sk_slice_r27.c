@@ -25,21 +25,29 @@ typedef uint64_t (*code)();
 
 #define LZCOUNT(x)     ((unsigned long)__builtin_clzll((unsigned long)(x)))
 #define CL4_FATAL()    __builtin_trap()
+#define SCARRY8(a, b)  (__builtin_add_overflow((a), (b), &(unsigned long){0}))
+#define SBORROW8(a, b) (__builtin_sub_overflow((a), (b), &(unsigned long){0}))
 
 /* Ghidra SoftwareBreakpoint(1, addr) - fail-closed trap, does not return. */
 static inline unsigned long CL4_SWBP(unsigned long addr)
 { (void)addr; __builtin_trap(); }
 
+/* cL4 guarded-entry / exception-return supervisor call. The decompiler renders
+ * the guarded-level entry as an indirect call through the constant address
+ * SUB_54ffff60f100041f; modelled here as an extern thunk (sibling-slice
+ * convention, cf. sk_slice_r26.c). */
+extern word_t sk_svc_call();
+
 /* Out-of-slice callees (bodies reconstructed by their range workers). */
 
-extern word_t FUN_00002534(); /* out of slice 0x2534 */
+extern wpair_t FUN_00002534(); /* out of slice 0x2534 */
 extern word_t FUN_00002818(); /* out of slice 0x2818 */
 extern word_t FUN_00002834(); /* out of slice 0x2834 */
 extern word_t FUN_00002874(); /* out of slice 0x2874 */
 extern word_t FUN_0001612c(); /* out of slice 0x1612c */
 extern word_t FUN_00019858(); /* out of slice 0x19858 */
 extern word_t FUN_0001ba10(); /* out of slice 0x1ba10 */
-extern word_t FUN_0001d4f4(); /* out of slice 0x1d4f4 */
+extern wpair_t FUN_0001d4f4(); /* out of slice 0x1d4f4 */
 extern word_t FUN_0001da84(); /* out of slice 0x1da84 */
 extern word_t FUN_0001dd14(); /* out of slice 0x1dd14 */
 extern word_t FUN_00027724(); /* out of slice 0x27724 */
@@ -57,27 +65,27 @@ extern word_t FUN_00072c0c(); /* out of slice 0x72c0c */
 extern word_t FUN_00073690(); /* out of slice 0x73690 */
 extern word_t FUN_00074a28(); /* out of slice 0x74a28 */
 extern word_t FUN_0007767c(); /* out of slice 0x7767c */
-extern word_t FUN_00077698(); /* out of slice 0x77698 */
+extern wpair_t FUN_00077698(); /* out of slice 0x77698 */
 extern word_t FUN_00077888(); /* out of slice 0x77888 */
 extern word_t FUN_00077894(); /* out of slice 0x77894 */
 extern word_t FUN_0007c028(); /* out of slice 0x7c028 */
 extern word_t FUN_0007c1a4(); /* out of slice 0x7c1a4 */
-extern word_t FUN_0007c1c4(); /* out of slice 0x7c1c4 */
+extern wpair_t FUN_0007c1c4(); /* out of slice 0x7c1c4 */
 extern word_t FUN_00083450(); /* out of slice 0x83450 */
 extern word_t FUN_000839d8(); /* out of slice 0x839d8 */
 extern word_t FUN_000839f8(); /* out of slice 0x839f8 */
 extern word_t FUN_0008409c(); /* out of slice 0x8409c */
 extern word_t FUN_00084174(); /* out of slice 0x84174 */
-extern word_t FUN_00084180(); /* out of slice 0x84180 */
-extern word_t FUN_00084220(); /* out of slice 0x84220 */
+extern wpair_t FUN_00084180(); /* out of slice 0x84180 */
+extern wpair_t FUN_00084220(); /* out of slice 0x84220 */
 extern word_t FUN_00084234(); /* out of slice 0x84234 */
 extern word_t FUN_000867ec(); /* out of slice 0x867ec */
 extern word_t FUN_00086840(); /* out of slice 0x86840 */
 extern word_t FUN_0008e388(); /* out of slice 0x8e388 */
 extern word_t FUN_0008e500(); /* out of slice 0x8e500 */
-extern word_t FUN_0008e518(); /* out of slice 0x8e518 */
+extern wpair_t FUN_0008e518(); /* out of slice 0x8e518 */
 extern word_t FUN_0009461c(); /* out of slice 0x9461c */
-extern word_t FUN_0009e234(); /* out of slice 0x9e234 */
+extern wpair_t FUN_0009e234(); /* out of slice 0x9e234 */
 extern word_t FUN_000a68c4(); /* out of slice 0xa68c4 */
 extern word_t FUN_000a68f4(); /* out of slice 0xa68f4 */
 extern word_t FUN_000a6e14(); /* out of slice 0xa6e14 */
@@ -86,21 +94,21 @@ extern word_t FUN_000a6f88(); /* out of slice 0xa6f88 */
 extern word_t FUN_000a6fe0(); /* out of slice 0xa6fe0 */
 extern word_t FUN_000aa4ec(); /* out of slice 0xaa4ec */
 extern word_t FUN_000b4390(); /* out of slice 0xb4390 */
-extern word_t FUN_000b43d0(); /* out of slice 0xb43d0 */
+extern wpair_t FUN_000b43d0(); /* out of slice 0xb43d0 */
 extern word_t FUN_000b4594(); /* out of slice 0xb4594 */
 extern word_t FUN_000b45b0(); /* out of slice 0xb45b0 */
 extern word_t FUN_000bd3a4(); /* out of slice 0xbd3a4 */
 extern word_t FUN_000dbbe0(); /* out of slice 0xdbbe0 */
-extern word_t FUN_000dbd0c(); /* out of slice 0xdbd0c */
+extern wpair_t FUN_000dbd0c(); /* out of slice 0xdbd0c */
 extern word_t FUN_000e0654(); /* out of slice 0xe0654 */
 extern word_t FUN_000e15d8(); /* out of slice 0xe15d8 */
-extern word_t FUN_000e72b0(); /* out of slice 0xe72b0 */
+extern wpair_t FUN_000e72b0(); /* out of slice 0xe72b0 */
 extern word_t FUN_000ec004(); /* out of slice 0xec004 */
 extern word_t FUN_000ec044(); /* out of slice 0xec044 */
 extern word_t FUN_000f4a9c(); /* out of slice 0xf4a9c */
 extern word_t FUN_000f5e5c(); /* out of slice 0xf5e5c */
 extern word_t FUN_00100c38(); /* out of slice 0x100c38 */
-extern word_t FUN_00100efc(); /* out of slice 0x100efc */
+extern wpair_t FUN_00100efc(); /* out of slice 0x100efc */
 extern word_t FUN_00106e3c(); /* out of slice 0x106e3c */
 extern word_t FUN_00117cc4(); /* out of slice 0x117cc4 */
 extern word_t FUN_00117d14(); /* out of slice 0x117d14 */
@@ -128,19 +136,19 @@ extern word_t FUN_001e3048(); /* out of slice 0x1e3048 */
 extern word_t FUN_001ee018(); /* out of slice 0x1ee018 */
 extern word_t FUN_001f0130(); /* out of slice 0x1f0130 */
 extern word_t FUN_00205844(); /* out of slice 0x205844 */
-extern word_t FUN_00255d4c(); /* out of slice 0x255d4c */
+extern wpair_t FUN_00255d4c(); /* out of slice 0x255d4c */
 extern word_t FUN_00258c60(); /* out of slice 0x258c60 */
 extern word_t FUN_002591b4(); /* out of slice 0x2591b4 */
-extern word_t FUN_00267510(); /* out of slice 0x267510 */
+extern wpair_t FUN_00267510(); /* out of slice 0x267510 */
 extern word_t FUN_00270c08(); /* out of slice 0x270c08 */
 extern word_t FUN_00273fe0(); /* out of slice 0x273fe0 */
 extern word_t FUN_00294cb4(); /* out of slice 0x294cb4 */
 extern word_t FUN_0029c058(); /* out of slice 0x29c058 */
-extern word_t FUN_0029fa0c(); /* out of slice 0x29fa0c */
-extern word_t FUN_0029fb80(); /* out of slice 0x29fb80 */
+extern wpair_t FUN_0029fa0c(); /* out of slice 0x29fa0c */
+extern wpair_t FUN_0029fb80(); /* out of slice 0x29fb80 */
 extern word_t FUN_002a0cf8(); /* out of slice 0x2a0cf8 */
-extern word_t FUN_002a3e64(); /* out of slice 0x2a3e64 */
-extern word_t FUN_002a49a8(); /* out of slice 0x2a49a8 */
+extern wpair_t FUN_002a3e64(); /* out of slice 0x2a3e64 */
+extern wpair_t FUN_002a49a8(); /* out of slice 0x2a49a8 */
 extern word_t FUN_002a4ab4(); /* out of slice 0x2a4ab4 */
 extern word_t FUN_002a9ba8(); /* out of slice 0x2a9ba8 */
 extern word_t FUN_002acbb8(); /* out of slice 0x2acbb8 */
@@ -153,7 +161,7 @@ extern word_t FUN_002b4120(); /* out of slice 0x2b4120 */
 extern word_t FUN_002b439c(); /* out of slice 0x2b439c */
 extern word_t FUN_002b7088(); /* out of slice 0x2b7088 */
 extern word_t FUN_002b723c(); /* out of slice 0x2b723c */
-extern word_t FUN_002b74c0(); /* out of slice 0x2b74c0 */
+extern wpair_t FUN_002b74c0(); /* out of slice 0x2b74c0 */
 extern word_t FUN_002bc2f8(); /* out of slice 0x2bc2f8 */
 extern word_t FUN_002bd848(); /* out of slice 0x2bd848 */
 extern word_t FUN_002bd8f0(); /* out of slice 0x2bd8f0 */
@@ -195,7 +203,7 @@ extern word_t FUN_0034ba68(); /* out of slice 0x34ba68 */
 extern word_t FUN_0034be0c(); /* out of slice 0x34be0c */
 extern word_t FUN_0034c444(); /* out of slice 0x34c444 */
 extern word_t FUN_0034c6d4(); /* out of slice 0x34c6d4 */
-extern word_t FUN_0034cff4(); /* out of slice 0x34cff4 */
+extern wpair_t FUN_0034cff4(); /* out of slice 0x34cff4 */
 extern word_t FUN_0034db28(); /* out of slice 0x34db28 */
 extern word_t FUN_0034dfa4(); /* out of slice 0x34dfa4 */
 extern word_t FUN_0034e5bc(); /* out of slice 0x34e5bc */
@@ -210,36 +218,36 @@ extern word_t FUN_003504a0(); /* out of slice 0x3504a0 */
 extern word_t FUN_003504c4(); /* out of slice 0x3504c4 */
 extern word_t FUN_003504d0(); /* out of slice 0x3504d0 */
 extern word_t FUN_003504e8(); /* out of slice 0x3504e8 */
-extern word_t FUN_003504f4(); /* out of slice 0x3504f4 */
-extern word_t FUN_00350500(); /* out of slice 0x350500 */
-extern word_t FUN_0035050c(); /* out of slice 0x35050c */
+extern wpair_t FUN_003504f4(); /* out of slice 0x3504f4 */
+extern wpair_t FUN_00350500(); /* out of slice 0x350500 */
+extern wpair_t FUN_0035050c(); /* out of slice 0x35050c */
 extern word_t FUN_00350518(); /* out of slice 0x350518 */
-extern word_t FUN_00350524(); /* out of slice 0x350524 */
-extern word_t FUN_00350530(); /* out of slice 0x350530 */
+extern wpair_t FUN_00350524(); /* out of slice 0x350524 */
+extern wpair_t FUN_00350530(); /* out of slice 0x350530 */
 extern word_t FUN_0035053c(); /* out of slice 0x35053c */
 extern word_t FUN_00350548(); /* out of slice 0x350548 */
 extern word_t FUN_00350560(); /* out of slice 0x350560 */
 extern word_t FUN_0035056c(); /* out of slice 0x35056c */
 extern word_t FUN_003505c4(); /* out of slice 0x3505c4 */
-extern word_t FUN_003505e8(); /* out of slice 0x3505e8 */
-extern word_t FUN_0035060c(); /* out of slice 0x35060c */
+extern wpair_t FUN_003505e8(); /* out of slice 0x3505e8 */
+extern wpair_t FUN_0035060c(); /* out of slice 0x35060c */
 extern word_t FUN_00350618(); /* out of slice 0x350618 */
 extern word_t FUN_00350624(); /* out of slice 0x350624 */
 extern word_t FUN_0035063c(); /* out of slice 0x35063c */
-extern word_t FUN_00350738(); /* out of slice 0x350738 */
-extern word_t FUN_00350774(); /* out of slice 0x350774 */
+extern wpair_t FUN_00350738(); /* out of slice 0x350738 */
+extern wpair_t FUN_00350774(); /* out of slice 0x350774 */
 extern word_t FUN_00350798(); /* out of slice 0x350798 */
 extern word_t FUN_003507bc(); /* out of slice 0x3507bc */
-extern word_t FUN_003507e0(); /* out of slice 0x3507e0 */
+extern wpair_t FUN_003507e0(); /* out of slice 0x3507e0 */
 extern word_t FUN_0035084c(); /* out of slice 0x35084c */
 extern word_t FUN_00350878(); /* out of slice 0x350878 */
 extern word_t FUN_00350884(); /* out of slice 0x350884 */
 extern word_t FUN_0035089c(); /* out of slice 0x35089c */
-extern word_t FUN_003508b4(); /* out of slice 0x3508b4 */
-extern word_t FUN_003508cc(); /* out of slice 0x3508cc */
-extern word_t FUN_003508e4(); /* out of slice 0x3508e4 */
+extern wpair_t FUN_003508b4(); /* out of slice 0x3508b4 */
+extern wpair_t FUN_003508cc(); /* out of slice 0x3508cc */
+extern wpair_t FUN_003508e4(); /* out of slice 0x3508e4 */
 extern word_t FUN_003508fc(); /* out of slice 0x3508fc */
-extern word_t FUN_00350914(); /* out of slice 0x350914 */
+extern wpair_t FUN_00350914(); /* out of slice 0x350914 */
 extern word_t FUN_00350968(); /* out of slice 0x350968 */
 extern word_t FUN_00350980(); /* out of slice 0x350980 */
 extern word_t FUN_003509a4(); /* out of slice 0x3509a4 */
@@ -249,7 +257,7 @@ extern word_t FUN_003509c8(); /* out of slice 0x3509c8 */
 extern word_t FUN_003509ec(); /* out of slice 0x3509ec */
 extern word_t FUN_00350a04(); /* out of slice 0x350a04 */
 extern word_t FUN_00350a1c(); /* out of slice 0x350a1c */
-extern word_t FUN_00350a70(); /* out of slice 0x350a70 */
+extern wpair_t FUN_00350a70(); /* out of slice 0x350a70 */
 extern word_t FUN_00350aa0(); /* out of slice 0x350aa0 */
 extern word_t FUN_00350ab8(); /* out of slice 0x350ab8 */
 extern word_t FUN_00350af4(); /* out of slice 0x350af4 */
@@ -266,7 +274,7 @@ extern word_t FUN_00350c98(); /* out of slice 0x350c98 */
 extern word_t FUN_00350d94(); /* out of slice 0x350d94 */
 extern word_t FUN_003510ac(); /* out of slice 0x3510ac */
 extern word_t FUN_003510b8(); /* out of slice 0x3510b8 */
-extern word_t FUN_003510dc(); /* out of slice 0x3510dc */
+extern wpair_t FUN_003510dc(); /* out of slice 0x3510dc */
 extern word_t FUN_00351118(); /* out of slice 0x351118 */
 extern word_t FUN_00351130(); /* out of slice 0x351130 */
 extern word_t FUN_00351178(); /* out of slice 0x351178 */
@@ -278,7 +286,7 @@ extern word_t FUN_00351214(); /* out of slice 0x351214 */
 extern word_t FUN_00351274(); /* out of slice 0x351274 */
 extern word_t FUN_003512c0(); /* out of slice 0x3512c0 */
 extern word_t FUN_00351300(); /* out of slice 0x351300 */
-extern word_t FUN_00351324(); /* out of slice 0x351324 */
+extern wpair_t FUN_00351324(); /* out of slice 0x351324 */
 extern word_t FUN_00351354(); /* out of slice 0x351354 */
 extern word_t FUN_0035136c(); /* out of slice 0x35136c */
 extern word_t FUN_00351384(); /* out of slice 0x351384 */
@@ -286,8 +294,8 @@ extern word_t FUN_00351390(); /* out of slice 0x351390 */
 extern word_t FUN_0035139c(); /* out of slice 0x35139c */
 extern word_t FUN_003513a8(); /* out of slice 0x3513a8 */
 extern word_t FUN_003513b4(); /* out of slice 0x3513b4 */
-extern word_t FUN_00351414(); /* out of slice 0x351414 */
-extern word_t FUN_00351450(); /* out of slice 0x351450 */
+extern wpair_t FUN_00351414(); /* out of slice 0x351414 */
+extern wpair_t FUN_00351450(); /* out of slice 0x351450 */
 extern word_t FUN_0035145c(); /* out of slice 0x35145c */
 extern word_t FUN_00351488(); /* out of slice 0x351488 */
 extern word_t FUN_003514a0(); /* out of slice 0x3514a0 */
@@ -304,7 +312,7 @@ extern word_t FUN_00351774(); /* out of slice 0x351774 */
 extern word_t FUN_00351790(); /* out of slice 0x351790 */
 extern word_t FUN_003517c0(); /* out of slice 0x3517c0 */
 extern word_t FUN_0035193c(); /* out of slice 0x35193c */
-extern word_t FUN_0035199c(); /* out of slice 0x35199c */
+extern wpair_t FUN_0035199c(); /* out of slice 0x35199c */
 extern word_t FUN_00351a50(); /* out of slice 0x351a50 */
 extern word_t FUN_00351aec(); /* out of slice 0x351aec */
 extern word_t FUN_00351b78(); /* out of slice 0x351b78 */
@@ -312,14 +320,14 @@ extern word_t FUN_00351bd4(); /* out of slice 0x351bd4 */
 extern word_t FUN_00351c7c(); /* out of slice 0x351c7c */
 extern word_t FUN_00351cd0(); /* out of slice 0x351cd0 */
 extern word_t FUN_00351d18(); /* out of slice 0x351d18 */
-extern word_t FUN_00351db4(); /* out of slice 0x351db4 */
+extern wpair_t FUN_00351db4(); /* out of slice 0x351db4 */
 extern word_t FUN_00351de4(); /* out of slice 0x351de4 */
 extern word_t FUN_00351dfc(); /* out of slice 0x351dfc */
 extern word_t FUN_00351e3c(); /* out of slice 0x351e3c */
 extern word_t FUN_00351f1c(); /* out of slice 0x351f1c */
 extern word_t FUN_00351f4c(); /* out of slice 0x351f4c */
 extern word_t FUN_00351f88(); /* out of slice 0x351f88 */
-extern word_t FUN_00352290(); /* out of slice 0x352290 */
+extern wpair_t FUN_00352290(); /* out of slice 0x352290 */
 extern word_t FUN_003522c8(); /* out of slice 0x3522c8 */
 extern word_t FUN_003527b8(); /* out of slice 0x3527b8 */
 extern word_t FUN_00352840(); /* out of slice 0x352840 */
@@ -335,7 +343,7 @@ extern word_t FUN_0035300c(); /* out of slice 0x35300c */
 extern word_t FUN_00353208(); /* out of slice 0x353208 */
 extern word_t FUN_00353238(); /* out of slice 0x353238 */
 extern word_t FUN_003532b8(); /* out of slice 0x3532b8 */
-extern word_t FUN_003535a8(); /* out of slice 0x3535a8 */
+extern wpair_t FUN_003535a8(); /* out of slice 0x3535a8 */
 extern word_t FUN_00353960(); /* out of slice 0x353960 */
 extern word_t FUN_00353cfc(); /* out of slice 0x353cfc */
 extern word_t FUN_00353d14(); /* out of slice 0x353d14 */
@@ -344,7 +352,7 @@ extern word_t FUN_003542b8(); /* out of slice 0x3542b8 */
 extern word_t FUN_00354410(); /* out of slice 0x354410 */
 extern word_t FUN_003544c8(); /* out of slice 0x3544c8 */
 extern word_t FUN_00354744(); /* out of slice 0x354744 */
-extern word_t FUN_003548dc(); /* out of slice 0x3548dc */
+extern wpair_t FUN_003548dc(); /* out of slice 0x3548dc */
 extern word_t FUN_00354998(); /* out of slice 0x354998 */
 extern word_t FUN_00354f1c(); /* out of slice 0x354f1c */
 extern word_t FUN_00356370(); /* out of slice 0x356370 */
@@ -359,19 +367,19 @@ extern word_t FUN_0035a8d0(); /* out of slice 0x35a8d0 */
 extern word_t FUN_0035a9b0(); /* out of slice 0x35a9b0 */
 extern word_t FUN_0035b67c(); /* out of slice 0x35b67c */
 extern word_t FUN_00365b6c(); /* out of slice 0x365b6c */
-extern word_t FUN_0036986c(); /* out of slice 0x36986c */
-extern word_t FUN_0036993c(); /* out of slice 0x36993c */
+extern wpair_t FUN_0036986c(); /* out of slice 0x36986c */
+extern wpair_t FUN_0036993c(); /* out of slice 0x36993c */
 extern word_t FUN_0036a940(); /* out of slice 0x36a940 */
 extern word_t FUN_0036a9a0(); /* out of slice 0x36a9a0 */
 extern word_t FUN_0036b118(); /* out of slice 0x36b118 */
-extern word_t FUN_0036b270(); /* out of slice 0x36b270 */
+extern wpair_t FUN_0036b270(); /* out of slice 0x36b270 */
 extern word_t FUN_0036b588(); /* out of slice 0x36b588 */
 extern word_t FUN_0036b6ac(); /* out of slice 0x36b6ac */
 extern word_t FUN_003722e4(); /* out of slice 0x3722e4 */
 extern word_t FUN_0037233c(); /* out of slice 0x37233c */
 extern word_t FUN_00376820(); /* out of slice 0x376820 */
 extern word_t FUN_00377824(); /* out of slice 0x377824 */
-extern word_t FUN_00377bec(); /* out of slice 0x377bec */
+extern wpair_t FUN_00377bec(); /* out of slice 0x377bec */
 extern word_t FUN_00377dcc(); /* out of slice 0x377dcc */
 extern word_t FUN_003a25d4(); /* out of slice 0x3a25d4 */
 extern word_t FUN_003a25e0(); /* out of slice 0x3a25e0 */
@@ -399,7 +407,7 @@ extern word_t FUN_00462aac(); /* out of slice 0x462aac */
 extern word_t FUN_00462b6c(); /* out of slice 0x462b6c */
 extern word_t FUN_004633e0(); /* out of slice 0x4633e0 */
 extern word_t FUN_00463bd4(); /* out of slice 0x463bd4 */
-extern word_t FUN_00463f94(); /* out of slice 0x463f94 */
+extern wpair_t FUN_00463f94(); /* out of slice 0x463f94 */
 extern word_t FUN_0046490c(); /* out of slice 0x46490c */
 extern word_t FUN_00464a44(); /* out of slice 0x464a44 */
 extern word_t FUN_00464ae8(); /* out of slice 0x464ae8 */
@@ -424,8 +432,8 @@ extern word_t FUN_00469918(); /* out of slice 0x469918 */
 extern word_t FUN_00469c50(); /* out of slice 0x469c50 */
 extern word_t FUN_00469dc4(); /* out of slice 0x469dc4 */
 extern word_t FUN_00469f74(); /* out of slice 0x469f74 */
-extern word_t FUN_0046a1b0(); /* out of slice 0x46a1b0 */
-extern word_t FUN_0046a368(); /* out of slice 0x46a368 */
+extern wpair_t FUN_0046a1b0(); /* out of slice 0x46a1b0 */
+extern wpair_t FUN_0046a368(); /* out of slice 0x46a368 */
 extern word_t FUN_0046a5c8(); /* out of slice 0x46a5c8 */
 extern word_t FUN_0047c948(); /* out of slice 0x47c948 */
 extern word_t FUN_0047c9d4(); /* out of slice 0x47c9d4 */
@@ -437,14 +445,14 @@ extern word_t FUN_0047dfc4(); /* out of slice 0x47dfc4 */
 extern word_t FUN_0047e5dc(); /* out of slice 0x47e5dc */
 extern word_t FUN_0047ea18(); /* out of slice 0x47ea18 */
 extern word_t FUN_00481320(); /* out of slice 0x481320 */
-extern word_t FUN_004816b4(); /* out of slice 0x4816b4 */
+extern wpair_t FUN_004816b4(); /* out of slice 0x4816b4 */
 extern word_t FUN_00481780(); /* out of slice 0x481780 */
 extern word_t FUN_0048185c(); /* out of slice 0x48185c */
 extern word_t FUN_004818d8(); /* out of slice 0x4818d8 */
 extern word_t FUN_00481918(); /* out of slice 0x481918 */
 extern word_t FUN_004819ac(); /* out of slice 0x4819ac */
 extern word_t FUN_00481a38(); /* out of slice 0x481a38 */
-extern word_t FUN_00481ac4(); /* out of slice 0x481ac4 */
+extern wpair_t FUN_00481ac4(); /* out of slice 0x481ac4 */
 extern word_t FUN_00481b40(); /* out of slice 0x481b40 */
 extern word_t FUN_00481b9c(); /* out of slice 0x481b9c */
 extern word_t FUN_0048525c(); /* out of slice 0x48525c */
@@ -456,7 +464,7 @@ extern word_t FUN_004950f0(); /* out of slice 0x4950f0 */
 extern word_t FUN_00496f58(); /* out of slice 0x496f58 */
 extern word_t FUN_004974ac(); /* out of slice 0x4974ac */
 extern word_t FUN_004974ec(); /* out of slice 0x4974ec */
-extern word_t FUN_00497504(); /* out of slice 0x497504 */
+extern wpair_t FUN_00497504(); /* out of slice 0x497504 */
 extern word_t FUN_004979bc(); /* out of slice 0x4979bc */
 extern word_t FUN_004979d4(); /* out of slice 0x4979d4 */
 extern word_t FUN_004979f8(); /* out of slice 0x4979f8 */
@@ -481,7 +489,7 @@ extern word_t FUN_00499158(); /* out of slice 0x499158 */
 extern word_t FUN_0049938c(); /* out of slice 0x49938c */
 extern word_t FUN_00499450(); /* out of slice 0x499450 */
 extern word_t FUN_00499a0c(); /* out of slice 0x499a0c */
-extern word_t FUN_00499f0c(); /* out of slice 0x499f0c */
+extern wpair_t FUN_00499f0c(); /* out of slice 0x499f0c */
 extern word_t FUN_00499fcc(); /* out of slice 0x499fcc */
 extern word_t FUN_0049a4a4(); /* out of slice 0x49a4a4 */
 extern word_t FUN_0049a4b8(); /* out of slice 0x49a4b8 */
@@ -491,7 +499,7 @@ extern word_t FUN_0049a644(); /* out of slice 0x49a644 */
 extern word_t FUN_0049a758(); /* out of slice 0x49a758 */
 extern word_t FUN_0049aa14(); /* out of slice 0x49aa14 */
 extern word_t FUN_0049ab00(); /* out of slice 0x49ab00 */
-extern word_t FUN_0049c0e4(); /* out of slice 0x49c0e4 */
+extern wpair_t FUN_0049c0e4(); /* out of slice 0x49c0e4 */
 extern word_t FUN_0049c850(); /* out of slice 0x49c850 */
 extern word_t FUN_0049ca2c(); /* out of slice 0x49ca2c */
 extern word_t FUN_0049ca44(); /* out of slice 0x49ca44 */
@@ -538,7 +546,7 @@ extern word_t FUN_004aa580(); /* out of slice 0x4aa580 */
 extern word_t FUN_004aa594(); /* out of slice 0x4aa594 */
 extern word_t FUN_004aa5ac(); /* out of slice 0x4aa5ac */
 extern word_t FUN_004aa5c4(); /* out of slice 0x4aa5c4 */
-extern word_t FUN_004aa5dc(); /* out of slice 0x4aa5dc */
+extern wpair_t FUN_004aa5dc(); /* out of slice 0x4aa5dc */
 extern word_t FUN_004aa610(); /* out of slice 0x4aa610 */
 extern word_t FUN_004aa67c(); /* out of slice 0x4aa67c */
 extern word_t FUN_004aa6a8(); /* out of slice 0x4aa6a8 */
@@ -587,7 +595,7 @@ extern word_t FUN_004aaee8(); /* out of slice 0x4aaee8 */
 extern word_t FUN_004aaf08(); /* out of slice 0x4aaf08 */
 extern word_t FUN_004aaf38(); /* out of slice 0x4aaf38 */
 extern word_t FUN_004aaf58(); /* out of slice 0x4aaf58 */
-extern word_t FUN_004aaf9c(); /* out of slice 0x4aaf9c */
+extern wpair_t FUN_004aaf9c(); /* out of slice 0x4aaf9c */
 extern word_t FUN_004aafac(); /* out of slice 0x4aafac */
 extern word_t FUN_004aaffc(); /* out of slice 0x4aaffc */
 extern word_t FUN_004ab018(); /* out of slice 0x4ab018 */
@@ -622,12 +630,12 @@ extern word_t FUN_004ab490(); /* out of slice 0x4ab490 */
 extern word_t FUN_004ab49c(); /* out of slice 0x4ab49c */
 extern word_t FUN_004ab4e8(); /* out of slice 0x4ab4e8 */
 extern word_t FUN_004ab510(); /* out of slice 0x4ab510 */
-extern word_t FUN_004ab55c(); /* out of slice 0x4ab55c */
+extern wpair_t FUN_004ab55c(); /* out of slice 0x4ab55c */
 extern word_t FUN_004ab568(); /* out of slice 0x4ab568 */
 extern word_t FUN_004ab5b0(); /* out of slice 0x4ab5b0 */
 extern word_t FUN_004ab5c8(); /* out of slice 0x4ab5c8 */
 extern word_t FUN_004ab5d4(); /* out of slice 0x4ab5d4 */
-extern word_t FUN_004ab618(); /* out of slice 0x4ab618 */
+extern wpair_t FUN_004ab618(); /* out of slice 0x4ab618 */
 extern word_t FUN_004ab624(); /* out of slice 0x4ab624 */
 extern word_t FUN_004ab630(); /* out of slice 0x4ab630 */
 extern word_t FUN_004ab644(); /* out of slice 0x4ab644 */
@@ -642,7 +650,7 @@ extern word_t FUN_004ab858(); /* out of slice 0x4ab858 */
 extern word_t FUN_004ab890(); /* out of slice 0x4ab890 */
 extern word_t FUN_004ab8ac(); /* out of slice 0x4ab8ac */
 extern word_t FUN_004ab910(); /* out of slice 0x4ab910 */
-extern word_t FUN_004ab980(); /* out of slice 0x4ab980 */
+extern wpair_t FUN_004ab980(); /* out of slice 0x4ab980 */
 extern word_t FUN_004ab98c(); /* out of slice 0x4ab98c */
 extern word_t FUN_004ab998(); /* out of slice 0x4ab998 */
 extern word_t FUN_004ab9b0(); /* out of slice 0x4ab9b0 */
@@ -694,7 +702,7 @@ extern word_t FUN_004ac12c(); /* out of slice 0x4ac12c */
 extern word_t FUN_004ac138(); /* out of slice 0x4ac138 */
 extern word_t FUN_004ac150(); /* out of slice 0x4ac150 */
 extern word_t FUN_004ac15c(); /* out of slice 0x4ac15c */
-extern word_t FUN_004ac180(); /* out of slice 0x4ac180 */
+extern wpair_t FUN_004ac180(); /* out of slice 0x4ac180 */
 extern word_t FUN_004ac198(); /* out of slice 0x4ac198 */
 extern word_t FUN_004ac1a4(); /* out of slice 0x4ac1a4 */
 extern word_t FUN_004ac1e0(); /* out of slice 0x4ac1e0 */
@@ -722,8 +730,8 @@ extern word_t FUN_004ac628(); /* out of slice 0x4ac628 */
 extern word_t FUN_004ac634(); /* out of slice 0x4ac634 */
 extern word_t FUN_004ac640(); /* out of slice 0x4ac640 */
 extern word_t FUN_004ac68c(); /* out of slice 0x4ac68c */
-extern word_t FUN_004ac6a4(); /* out of slice 0x4ac6a4 */
-extern word_t FUN_004ac6b0(); /* out of slice 0x4ac6b0 */
+extern wpair_t FUN_004ac6a4(); /* out of slice 0x4ac6a4 */
+extern wpair_t FUN_004ac6b0(); /* out of slice 0x4ac6b0 */
 extern word_t FUN_004ac6bc(); /* out of slice 0x4ac6bc */
 extern word_t FUN_004ac6e4(); /* out of slice 0x4ac6e4 */
 extern word_t FUN_004ac70c(); /* out of slice 0x4ac70c */
@@ -749,7 +757,7 @@ extern word_t FUN_004ac980(); /* out of slice 0x4ac980 */
 extern word_t FUN_004ac9c0(); /* out of slice 0x4ac9c0 */
 extern word_t FUN_004ac9cc(); /* out of slice 0x4ac9cc */
 extern word_t FUN_004ac9f8(); /* out of slice 0x4ac9f8 */
-extern word_t FUN_004aca94(); /* out of slice 0x4aca94 */
+extern wpair_t FUN_004aca94(); /* out of slice 0x4aca94 */
 extern word_t FUN_004acaa0(); /* out of slice 0x4acaa0 */
 extern word_t FUN_004acb6c(); /* out of slice 0x4acb6c */
 extern word_t FUN_004acb94(); /* out of slice 0x4acb94 */
@@ -766,7 +774,7 @@ extern word_t FUN_004b5a74(); /* out of slice 0x4b5a74 */
 
 
 /* FUN_0046ae94 @ 0x0046ae94   (est. sk_bcg_0046ae94)
- * Ghidra: void FUN_0046ae94(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4,
+ * Ghidra: void sk_bcg_0046ae94(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4,
  *                           long p5,long p6,ulong p7,undefined8 p8)
  * Regex ByteCodeGen: builds/emits a matching instruction into the bytecode stream.
  * It wires a freshly-created "consumer" object (lVar6) whose method table is read
@@ -775,7 +783,7 @@ extern word_t FUN_004b5a74(); /* out of slice 0x4b5a74 */
  * (value >> 0xe comparisons) as fail-closed traps. On success it flushes the
  * assembled program through the indirect method slots (lVar18/lVar19 +0x10/+8).
  * Confidence: medium   Notes: SUB_54ffff60f100041f masked trampoline; many
- * FUN_003a25d4 (release) calls; thunk_FUN_002b74c0. */
+ * FUN_003a25d4(release) calls; thunk_FUN_002b74c0. */
 static void sk_bcg_0046ae94(word_t p1, word_t p2, word_t p3, word_t p4,
                             long p5, long p6, word_t p7, word_t p8)
 {
@@ -803,19 +811,19 @@ static void sk_bcg_0046ae94(word_t p1, word_t p2, word_t p3, word_t p4,
     uvar7 = FUN_00377824();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                       /* masked self-modifying/trampoline fn SUB_54ffff60f100041f */
+    sk_svc_call();                       /* masked self-modifying/trampoline fn SUB_54ffff60f100041f */
     FUN_00350428();
     FUN_003509a4();
     FUN_004ac8b4();
     FUN_00100efc();
     FUN_0035053c();
-    uvar8 = FUN_00377bec();
+    uvar8 = FUN_00377bec().lo;
     FUN_004974ec(0xff, uvar7);
     FUN_004aa970();
-    uvar9 = FUN_00497504();
+    uvar9 = FUN_00497504().lo;
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                       /* masked trampoline */
+    sk_svc_call();                       /* masked trampoline */
     FUN_00350428();
     FUN_003509a4();
     pair22 = FUN_00350530();
@@ -823,17 +831,17 @@ static void sk_bcg_0046ae94(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_0037233c(pair22.lo, pair22.hi, p6, p7, 0, 0);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                       /* masked trampoline */
+    sk_svc_call();                       /* masked trampoline */
     l90 = (long)FUN_0034b460();
     iret = *(int *)(l90 + 0x30);
     lvar20 = (long)*(int *)(l90 + 0x40);
     FUN_003514a0(lvar6);
-    (*((code **)0))();                       /* masked trampoline */
+    sk_svc_call();                       /* masked trampoline */
     lvar18 = *(long *)(p6 - 8);
     (**(code **)(lvar18 + 0x10))(lvar6 + iret, pair21.lo, p6);
     lvar19 = *(long *)((long)p7 - 8);
     FUN_00351300(lvar6 + lvar20);
-    (*((code **)0))();                       /* masked trampoline */
+    sk_svc_call();                       /* masked trampoline */
     FUN_00465db0();
     iret2 = (int)FUN_00365b6c(&l28, lvar6);
     uvar13 = ustack_20;
@@ -958,16 +966,16 @@ LAB_0046ba28:
                 }
                 FUN_00319628(lvar6);
                 FUN_00351bd4(consumer, p3);
-                (*((code **)0))();                       /* masked trampoline */
+                sk_svc_call();                       /* masked trampoline */
                 FUN_00469250(outword, pair21.lo, uvar7, p6, uvar8,
                              (word_t)0 /*in60*/, (word_t)0 /*in70*/);
                 FUN_00350bc0((word_t)0);                 /* &auStack_8 */
-                (*((code **)0))(consumer, uvar7);       /* masked trampoline */
+                sk_svc_call(consumer, uvar7);       /* masked trampoline */
                 FUN_0046a5c8((word_t)0 /*x8ret*/, outword, pair21.hi, p4, p5, uvar9,
                              l_c0, p8, 0x687b18, (word_t)0 /*in68*/);
                 FUN_00350bc0(&ustack_30);
                 FUN_003514e8();
-                (*((code **)0))();                       /* masked trampoline */
+                sk_svc_call();                       /* masked trampoline */
                 lvar18 = -0x70;
                 goto LAB_0046bd14;
             }
@@ -1034,7 +1042,7 @@ LAB_0046b7a0:
                     FUN_004ac6a4(0xf);
                     FUN_0001d4f4();
                     FUN_003a25d4(uvar10);
-                    uvar7 = FUN_0001d4f4(0xf, uvar17, ustack_40);
+                    uvar7 = FUN_0001d4f4(0xf, uvar17, ustack_40).lo;
                     FUN_004acbf8();
                     if (uvar11 >> 0xe < uvar13 >> 0xe) {
                         CL4_SWBP(0x46bd60);
@@ -1235,7 +1243,7 @@ LAB_0046b38c:
     l90 = p5;
 LAB_0046bd14:
     FUN_00350bc0((long)&(word_t)0 /*&s50*/ + lvar18);
-    (*((code **)0))(lvar6, l90);        /* masked trampoline */
+    sk_svc_call(lvar6, l90);        /* masked trampoline */
     FUN_0008e500((word_t)0 /*x9ret*/);
     return;
 }
@@ -1243,7 +1251,7 @@ LAB_0046bd14:
 
 
 /* FUN_0046bd78 @ 0x0046bd78   (est. sk_bcg_0046bd78)
- * Ghidra: void FUN_0046bd78(undefined8 p1..p8)
+ * Ghidra: void sk_bcg_0046bd78(undefined8 p1..p8)
  * Regex ByteCodeGen driver: allocates a consumer object (FUN_0034b0b4/003722e4),
  * builds it through the standard prologue, then on success calls FUN_0046ae94 to
  * emit the compiled bytecode into the object stream. A checked-flag (uvar7&1)
@@ -1269,58 +1277,58 @@ static void sk_bcg_0046bd78(word_t p1, word_t p2, word_t p3, word_t p4,
     r4 = FUN_0034b0b4();
     lvar5 = (long)FUN_003722e4(r4, r3, r3);
     FUN_000a6f88();
-    (*((code **)0))(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
     FUN_003493c4();
     FUN_003503f8();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350464();
     FUN_0007c028();
-    (*((code **)0))(*(word_t *)(x8ret2 + 0x40)); /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret2 + 0x40)); /* masked trampoline */
     FUN_0034ab10();
     FUN_0034dfa4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0034ba68();
     FUN_00464f4c();
     FUN_0034be0c(r2);
-    r4 = FUN_00377bec();
+    r4 = FUN_00377bec().lo;
     pair11 = FUN_00350500();
     lvar6 = (long)FUN_00310e08(pair11.lo, pair11.hi, r4);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350428();
     FUN_0035156c(r2);
     FUN_00100efc();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00351750(r2);
     FUN_00100efc();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0035166c(r4);
     FUN_003508cc();
     FUN_003516b4();
-    uvar7 = (word_t)(*((code **)0))();                   /* masked trampoline */
+    uvar7 = (word_t)sk_svc_call();                   /* masked trampoline */
     if ((uvar7 & 1) != 0) {
         pcvar8 = *(code **)(x16ret0 + 0x20);
         (*pcvar8)(x8ret1);
         (*pcvar8)(x8ret1 + *(int *)(lvar5 + 0x30));
         FUN_00351300(x9ret);
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         iret = *(int *)(lvar5 + 0x30);
         pair11 = FUN_003505e8();
         (*pcvar8)(pair11.lo, pair11.hi, r3);
         pcvar9 = *(code **)(x16ret0 + 8);
         (*pcvar9)(x9ret + iret, r3);
         FUN_00351300(*(word_t *)(x16ret + 0x20), x9ret);
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         (*pcvar8)(x8ret3 + *(int *)(lvar6 + 0x24), x9ret + *(int *)(lvar5 + 0x30), r3);
         FUN_00084174();
         (*pcvar9)();
         *(word_t *)(x8ret3 - 0x10) = (word_t)0 /*in68*/;
         *(word_t *)(x8ret3 - 0x18) = (word_t)0 /*in60*/;
         *(word_t *)(x8ret3 - 0x20) = p8;
-        FUN_0046ae94(x8ret, pair10.lo, pair10.hi, x8ret3, p3, p4, p5, p6, p7);
+        sk_bcg_0046ae94(x8ret, pair10.lo, pair10.hi, x8ret3, p3, p4, p5, p6, p7);
         FUN_0035084c(*(word_t *)(x16ret1 + 8));
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         FUN_0008e500(x9ret);
         return;
     }
@@ -1330,7 +1338,7 @@ static void sk_bcg_0046bd78(word_t p1, word_t p2, word_t p3, word_t p4,
 
 
 /* FUN_0046c0cc @ 0x0046c0cc   (est. sk_bcg_0046c0cc)
- * Ghidra: void FUN_0046c0cc(undefined8 p1..p8)
+ * Ghidra: void sk_bcg_0046c0cc(undefined8 p1..p8)
  * Regex ByteCodeGen emit driver, sibling of 0046bd78. Allocates the consumer,
  * emits the compiled bytecode via the object's method table (l60 +0x20/+8),
  * stores spilled args at negative offsets on the code buffer, then invokes
@@ -1366,19 +1374,19 @@ static void sk_bcg_0046c0cc(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_003722e4();
     l50 = (long)FUN_000a6f88();
     l58 = x16ret;
-    (*((code **)0))(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
     FUN_003493c4();
     l70 = x9ret;
     FUN_003503f8();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350464();
     FUN_004ac2b8();
     FUN_0007c028();
     l60 = x16ret0;
-    (*((code **)0))(*(word_t *)(x8ret1 + 0x40)); /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret1 + 0x40)); /* masked trampoline */
     FUN_0034ab10();
     FUN_0034b540();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00464f4c();
     pair10 = FUN_003508cc();
     r4 = FUN_00377bec(pair10.lo, pair10.hi, r3, (word_t)0 /*DAT_0060e208*/);
@@ -1387,28 +1395,28 @@ static void sk_bcg_0046c0cc(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_000a6f88();
     l68 = x16ret1;
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350428();
     l80 = x8ret2;
     FUN_0007c028();
-    (*((code **)0))(*(word_t *)(x8ret3 + 0x40)); /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret3 + 0x40)); /* masked trampoline */
     FUN_000aa4ec();
     lvar6 = x9ret0 - x8ret4;
     l88 = lvar6;
     FUN_00350624();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0035156c(r2);
     FUN_003510ac((long)&lc0 - x12ret);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00351750(r2);
     FUN_003510ac();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0007c1c4(*(word_t *)(x16ret2 + 8));
     l90c = (code *)x8ret5;                  /* l90 */
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0035166c(r4);
     FUN_00352ae4((long)&lc0 - x12ret);
-    uvar7 = (word_t)(*((code **)0))();                   /* masked trampoline */
+    uvar7 = (word_t)sk_svc_call();                   /* masked trampoline */
     if ((uvar7 & 1) != 0) {
         la8 = (long)0 /*in60*/;
         la0 = (long)0 /*in68*/;
@@ -1421,22 +1429,22 @@ static void sk_bcg_0046c0cc(word_t p1, word_t p2, word_t p3, word_t p4,
         (*pcvar8)(l78 + *(int *)(l50 + 0x30));
         lb8 = lvar5;
         pair10 = FUN_000dbd0c();
-        (*((code **)0))(pair10.lo, pair10.hi, lvar1);    /* masked trampoline */
+        sk_svc_call(pair10.lo, pair10.hi, lvar1);    /* masked trampoline */
         lc0 = (long)*(int *)(lvar1 + 0x30);
         FUN_00351dfc(l80);
         (*pcvar8)();
         pcvar9 = *(code **)(l60 + 8);
         (*pcvar9)(l70 + lc0, r3);
         pair10 = FUN_000dbd0c(*(word_t *)(l58 + 0x20));
-        (*((code **)0))(pair10.lo, pair10.hi, lvar1);    /* masked trampoline */
+        sk_svc_call(pair10.lo, pair10.hi, lvar1);    /* masked trampoline */
         (*pcvar8)(l80 + *(int *)(lb8 + 0x24), l70 + *(int *)(lvar1 + 0x30), r3);
         (*pcvar9)(l70, r3);
         *(word_t *)(lvar6 - 0x10) = (word_t)la0;
         *(word_t *)(lvar6 - 0x18) = (word_t)la8;
         *(word_t *)(lvar6 - 0x20) = l38;
-        FUN_0046ae94(u20, pair48.lo, pair48.hi, l80, l30, lb0, p5, p6, p7);
+        sk_bcg_0046ae94(u20, pair48.lo, pair48.hi, l80, l30, lb0, p5, p6, p7);
         FUN_00100efc(*(word_t *)(l68 + 8));
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         FUN_0007c1c4();
         (*l90c)();
         FUN_0008e500(x8ret);
@@ -1446,7 +1454,7 @@ static void sk_bcg_0046c0cc(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_0046c4e0 @ 0x0046c4e0   (est. sk_bcg_0046c4e0)
- * Ghidra: undefined1[16] FUN_0046c4e0(p1..p7); returns wpair_t
+ * Ghidra: undefined1[16] sk_bcg_0046c4e0(p1..p7); returns wpair_t
  * Regex ByteCodeGen leaf: builds a 16-bit packed selector from the input
  * (param_7 tag bits -> kind nibble via >>0x38 & 0xf, and a node-flag bit
  * >>0x3b), calls FUN_0029fa0c to allocate the emitter state, then runs
@@ -1495,7 +1503,7 @@ static wpair_t sk_bcg_0046c4e0(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_0046c600 @ 0x0046c600   (est. sk_bcg_0046c600)
- * Ghidra: void FUN_0046c600(undefined8 p1..p12)
+ * Ghidra: void sk_bcg_0046c600(undefined8 p1..p12)
  * Regex ByteCodeGen dispatcher: captures the current consumer state (l130 /
  * l70 via FUN_00084180), checks the tag/range ordering (>>0xe), and when
  * in-bounds routes to FUN_00469f74 to compile the next node, then closes out
@@ -1514,10 +1522,10 @@ static void sk_bcg_0046c600(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
     r2 = FUN_00027754(p10);
     FUN_0035156c();
     FUN_00084180(l130);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00351750(r2);
     FUN_00084180(l70);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     if (l130[0] >> 0xe <= l70[0] >> 0xe) {
         FUN_00469f74(l130, p2, l130[0], l70[0], p4, p5, p7, p9, r2, p12);
         FUN_004aabe4();
@@ -1535,7 +1543,7 @@ static void sk_bcg_0046c600(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
 }
 
 /* FUN_0046c764 @ 0x0046c764   (est. sk_bcg_0046c764)
- * Ghidra: void FUN_0046c764(void)
+ * Ghidra: void sk_bcg_0046c764(void)
  * Regex ByteCodeGen dispatch shim: reads the builder's begin/end range values
  * (via FUN_00027754 + in30/38), validates the >>0xe tag ordering,
  * then delegates to FUN_0046c600 with a 16-byte pair from FUN_00350914. The
@@ -1551,14 +1559,14 @@ static void sk_bcg_0046c764(void)
     r3 = FUN_00027754((word_t)0 /*in6*/);
     FUN_0035156c();
     FUN_00100efc((word_t)0 /*&s38*/);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     r1 = (word_t)0 /*in38*/;
     FUN_00351750(r3);
     FUN_00100efc((word_t)0 /*&s30*/);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     if (r1 >> 0xe <= (word_t)0 /*in30*/ >> 0xe) {
         pair4 = FUN_00350914(x8ret);
-        FUN_0046c600(pair4.lo, pair4.hi, r1);
+        sk_bcg_0046c600(pair4.lo, pair4.hi, r1);
         FUN_00353238(x9ret);
         return;
     }
@@ -1566,7 +1574,7 @@ static void sk_bcg_0046c764(void)
 }
 
 /* FUN_0046c828 @ 0x0046c828   (est. sk_bcg_0046c828)
- * Ghidra: void FUN_0046c828(undefined8 p1..p4)
+ * Ghidra: void sk_bcg_0046c828(undefined8 p1..p4)
  * Regex ByteCodeGen helper: builds a fresh pair (FUN_00350914), dispatches into
  * FUN_0046c764, and stores the result through the builder's method slot +8 with
  * p4 as an argument. Spills in_stack_00000060 at a negative buffer offset.
@@ -1582,21 +1590,21 @@ static void sk_bcg_0046c828(word_t p1, word_t p2, word_t p3, word_t p4)
     FUN_0008e518();
     r1 = p4;
     FUN_0007c028();
-    (*((code **)0))(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
     FUN_000aa4ec();
     pair2 = FUN_0007c1c4();
-    (*((code **)0))(pair2.lo, pair2.hi, r1);             /* masked trampoline */
+    sk_svc_call(pair2.lo, pair2.hi, r1);             /* masked trampoline */
     *(word_t *)((x9ret - x8ret1) - 0x10) = (word_t)0 /*in60*/;
     pair2 = FUN_00350914();
     FUN_004ab910(pair2.lo, pair2.hi, p3);
-    FUN_0046c764();
+    sk_bcg_0046c764();
     (**(code **)(x16ret + 8))(x9ret - x8ret1, p4);
     FUN_0008e500(x8ret);
     return;
 }
 
 /* FUN_0046c91c @ 0x0046c91c   (est. sk_bcg_0046c91c)
- * Ghidra: void FUN_0046c91c(undefined8 p1..p6)
+ * Ghidra: void sk_bcg_0046c91c(undefined8 p1..p6)
  * Regex ByteCodeGen leaf: builds the consumer state (FUN_00084220 pair), looks
  * up/derives the builder (FUN_004aa4fc/00377824), writes param_3/param_4 into
  * the object at offsets from the metadata structure (l2 +0x24/+0x28), and
@@ -1629,7 +1637,7 @@ static void sk_bcg_0046c91c(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_0046c9f0 @ 0x0046c9f0   (est. sk_bcg_0046c9f0)
- * Ghidra: void FUN_0046c9f0(undefined8 p1,long p2)
+ * Ghidra: void sk_bcg_0046c9f0(undefined8 p1,long p2)
  * Regex ByteCodeGen step: advances the builder by pulling two fields from the
  * AST/metadata object (param_2 +0x18 / +0x10), re-derives the builder, then
  * dispatches param_1 through the method slot +0x10 (a jumptable dispatch that
@@ -1648,7 +1656,7 @@ static void sk_bcg_0046c9f0(word_t p1, long p2)
 }
 
 /* FUN_0046ca44 @ 0x0046ca44   (est. sk_bcg_0046ca44)
- * Ghidra: void FUN_0046ca44(undefined8 p1..p5)
+ * Ghidra: void sk_bcg_0046ca44(undefined8 p1..p5)
  * Regex ByteCodeGen leaf: allocates a consumer (FUN_004a30d4), zeroes two
  * object fields (l2 +0x2c / +0x34), derives the builder and a message string
  * (DAT_0061628c), installs a computed value via FUN_000277b8 into the +0x24
@@ -1681,7 +1689,7 @@ static void sk_bcg_0046ca44(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
     r3 = FUN_00377dcc(0, r3);
     (*pcvar5)(x8ret + iret, r3, r4);
     FUN_00351300(0);
-    r3 = FUN_00497504();
+    r3 = FUN_00497504().lo;
     FUN_00468ce4(x8ret);
     FUN_003509c8(r3);
     (**(code **)(x16ret + 8))(pair6.lo, r3);
@@ -1692,7 +1700,7 @@ static void sk_bcg_0046ca44(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
 }
 
 /* FUN_0046cb54 @ 0x0046cb54   (est. sk_bcg_0046cb54)
- * Ghidra: void FUN_0046cb54(void)
+ * Ghidra: void sk_bcg_0046cb54(void)
  * Regex ByteCodeGen main loop: drives the matching-state machine. Reads the
  * consumer metadata from the 0008e518 pair (+0x10/+0x18), builds the builder,
  * then loops over the AST region advancing via FUN_0046c9f0 and re-emitting
@@ -1732,37 +1740,37 @@ static void sk_bcg_0046cb54(void)
     FUN_004ab9ec(r7, r6);
     lvar8 = (long)FUN_003722e4();
     FUN_000a6f88();
-    (*((code **)0))(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret0 + 0x40));  /* masked trampoline */
     FUN_003493c4();
     FUN_003503f8();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350464();
     FUN_004ac2b8();
     FUN_00464f4c();
     FUN_00350b9c(r5);
-    r7 = FUN_00377bec();
+    r7 = FUN_00377bec().lo;
     lvar9 = (long)FUN_00310e08(0xff, r6);
     FUN_00350500();
     r10 = FUN_00310d68();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0034b460();
     FUN_0007c028();
-    (*((code **)0))(*(word_t *)(x8ret1 + 0x40)); /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret1 + 0x40)); /* masked trampoline */
     FUN_003493c4();
     FUN_003503f8();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0034ba68();
     FUN_0007c028();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0034af20();
     FUN_003504e8();
     r11 = FUN_00377dcc();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350428();
     if ((*(unsigned char *)(u20 + *(int *)(lvar4 + 0x34)) & 1) != 0) {
         r12 = FUN_004aa80c();
@@ -1773,16 +1781,16 @@ static void sk_bcg_0046cb54(void)
         return;
     }
     lvar18 = (long)*(int *)(lvar4 + 0x24);
-    FUN_0046c9f0();
+    sk_bcg_0046c9f0();
     FUN_00351750(r5);
     FUN_003510ac();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     pcvar15 = *(code **)(x12ret + 8);
     (*pcvar15)(x8ret2, r11);
     FUN_00027754(r7);
     pcvar13 = (code *)FUN_0014ae44();
     FUN_00351f4c(u20 + lvar18);
-    r14 = (word_t)(*((code **)0))();                     /* masked trampoline */
+    r14 = (word_t)sk_svc_call();                     /* masked trampoline */
     pcvar19 = *(code **)(x16ret2 + 8);
     FUN_00350ab8();
     (*pcvar19)();
@@ -1799,7 +1807,7 @@ static void sk_bcg_0046cb54(void)
                 FUN_00350884((word_t)0 /*DAT_0060e208*/, 1, lvar9);
                 if (bvar3) break;
                 pair21 = FUN_003508b4(*(word_t *)(x16ret1 + 0x20));
-                (*((code **)0))(pair21.lo, pair21.hi, lvar9);   /* masked trampoline */
+                sk_svc_call(pair21.lo, pair21.hi, lvar9);   /* masked trampoline */
                 bvar3 = (*(char *)(u20 + *(int *)(lvar4 + 0x30)) == '\x01');
                 if (!bvar3) {
 LAB_0046cfc8:
@@ -1807,10 +1815,10 @@ LAB_0046cfc8:
                         CL4_SWBP(0x46d204);
                     }
                     *(long *)(u20 + iret) = lvar17 + 1;
-                    FUN_0046c9f0(x8ret2, lvar4);
+                    sk_bcg_0046c9f0(x8ret2, lvar4);
                     FUN_0035166c(r7);
                     FUN_00351f4c(u20 + lvar18, u27);
-                    r14 = (word_t)(*((code **)0))();             /* masked trampoline */
+                    r14 = (word_t)sk_svc_call();             /* masked trampoline */
                     if ((r14 & 1) == 0) {
                         CL4_SWBP(0x46d208);
                     }
@@ -1819,20 +1827,20 @@ LAB_0046cfc8:
                     FUN_00352c4c(l78 + *(int *)(lvar8 + 0x30));
                     (*pcvar13)();
                     pair21 = FUN_003510dc();
-                    (*((code **)0))(pair21.lo, pair21.hi, lvar8);  /* masked trampoline */
+                    sk_svc_call(pair21.lo, pair21.hi, lvar8);  /* masked trampoline */
                     iret = *(int *)(lvar8 + 0x30);
                     pcvar13 = *(code **)(x16ret2 + 0x20);
                     FUN_00351214(x9ret0);
-                    (*((code **)0))();                            /* masked trampoline */
+                    sk_svc_call();                            /* masked trampoline */
                     (*pcvar19)(x9ret + iret, r6);
                     pair21 = FUN_003510dc(*(word_t *)(x16ret + 0x20));
-                    (*((code **)0))(pair21.lo, pair21.hi, lvar8); /* masked trampoline */
+                    sk_svc_call(pair21.lo, pair21.hi, lvar8); /* masked trampoline */
                     (*pcvar13)(x9ret0 + *(int *)(lvar9 + 0x24), x9ret + *(int *)(lvar8 + 0x30), r6);
                     FUN_00350738();
                     (*pcvar19)();
                     FUN_00319628(r5);
                     FUN_00350c08(x8ret, x9ret0);
-                    (*((code **)0))();                            /* masked trampoline */
+                    sk_svc_call();                            /* masked trampoline */
                     pcvar13 = *(code **)(x16ret1 + 8);
                     FUN_003514e8();
                     (*pcvar13)();
@@ -1841,7 +1849,7 @@ LAB_0046cfc8:
                     r12 = FUN_004aa80c();
                     r12 = FUN_00377824(r12, r5, ld8);
                     FUN_000839d8(x8ret, 0, 1, r12);
-                    FUN_0046d670();
+                    sk_bcg_0046d670();
                     FUN_003508cc();
                     (*pcvar13)();
                     goto LAB_0046d1e8;
@@ -1849,24 +1857,24 @@ LAB_0046cfc8:
                 FUN_00351f4c(u20 + lvar18, u27);
                 r14 = (word_t)(*pcvar13)();
                 if ((r14 & 1) == 0) goto LAB_0046cfc8;
-                FUN_0046d670();
+                sk_bcg_0046d670();
                 (**(code **)(x16ret1 + 8))(u27, lvar9);
             }
             (**(code **)(x16ret0 + 8))((word_t)0 /*DAT_0060e208*/, r10);
         }
     }
-    FUN_0046d208(x8ret);
+    sk_bcg_0046d208(x8ret);
 LAB_0046d1e8:
     FUN_0008e500(pair20.hi);
     return;
 }
 
 /* FUN_0046d208 @ 0x0046d208   (est. sk_bcg_0046d208)
- * Ghidra: void FUN_0046d208(undefined8 p1..p3)
+ * Ghidra: void sk_bcg_0046d208(undefined8 p1..p3)
  * Regex ByteCodeGen continuation: builds the consumer from the 0008e518 pair,
  * derives the builder and message string (DAT_0060e208), sets a flag byte
  * (+0x34 = 1), advances via FUN_0046c9f0 and FUN_0046d670, and finally reports
- * success/failure through FUN_000839d8 (result bit r14-based). Traps at
+ * success/failure through FUN_000839d8(result bit r14-based). Traps at
  * 0x46d670 on the fail-closed path.
  * Confidence: medium   Notes: SUB_54ffff60f100041f masked trampoline; DAT_0060e208;
  * thunk_FUN_001a29a0; indirect method-table calls. */
@@ -1890,7 +1898,7 @@ static void sk_bcg_0046d208(word_t p1, word_t p2, word_t p3)
     FUN_00377824();
     FUN_004ab310();
     FUN_003504a0(p3);
-    r1 = FUN_00377bec();
+    r1 = FUN_00377bec().lo;
     r2 = FUN_004aa770();
     FUN_00350a1c(r2, r1);
     r2 = FUN_00377824();
@@ -1902,53 +1910,53 @@ static void sk_bcg_0046d208(word_t p1, word_t p2, word_t p3)
     FUN_00319308();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00350428();
     FUN_003504e8();
     r3 = FUN_00377dcc();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     pair12 = FUN_00350530();
     lvar4 = (long)FUN_004a30d4(pair12.lo, pair12.hi, p3);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     pair12 = FUN_0034cff4();
     FUN_0007c028(pair12.lo, pair12.hi, x8ret0);
-    (*((code **)0))(*(word_t *)(x8ret3 + 0x40)); /* masked trampoline */
+    sk_svc_call(*(word_t *)(x8ret3 + 0x40)); /* masked trampoline */
     FUN_0034ab10();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     lvar5 = (long)FUN_0034b4c0();
     *(unsigned char *)(pair11.lo + (long)*(int *)(lvar5 + 0x34)) = 1;
     pcvar8 = *(code **)(x16ret2 + 0x10);
     (*pcvar8)();
     FUN_00351118(*(word_t *)(x16ret1 + 0x10), r7);
-    (*((code **)0))();                                   /* masked trampoline */
-    FUN_0046c9f0(x8ret1 - x8ret2, lvar4);
+    sk_svc_call();                                   /* masked trampoline */
+    sk_bcg_0046c9f0(x8ret1 - x8ret2, lvar4);
     pcvar9 = *(code **)(x16ret1 + 8);
     (*pcvar9)(r7, lvar4);
     FUN_00351750(r1);
     FUN_00350a04(x9ret - x12ret);
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_003508fc(*(word_t *)(x16ret0 + 8));
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00027754(r2);
     r1 = FUN_0014ae44();
     FUN_00351414(r1);
-    r6 = (word_t)(*((code **)0))();                      /* masked trampoline */
+    r6 = (word_t)sk_svc_call();                      /* masked trampoline */
     pcvar10 = *(code **)(x16ret2 + 8);
     (*pcvar10)(x9ret - x12ret, x8ret0);
     FUN_003509b0();
     (*pcvar10)();
     if (((r6 & 1) == 0) || ((*(unsigned char *)(pair11.lo + (long)*(int *)(lvar4 + 0x30)) & 1) == 0)) {
         pair11 = FUN_00084180(x8ret4);
-        (*((code **)0))(pair11.lo, pair11.hi, lvar4);    /* masked trampoline */
-        FUN_0046c9f0(x8ret1 - x8ret2, lvar4);
+        sk_svc_call(pair11.lo, pair11.hi, lvar4);    /* masked trampoline */
+        sk_bcg_0046c9f0(x8ret1 - x8ret2, lvar4);
         (*pcvar9)(r7, lvar4);
         (*pcvar8)();
         FUN_003516b4();
-        r6 = (word_t)(*((code **)0))();                  /* masked trampoline */
+        r6 = (word_t)sk_svc_call();                  /* masked trampoline */
         if ((r6 & 1) == 0) {
             CL4_SWBP(0x46d670);
         }
@@ -1958,9 +1966,9 @@ static void sk_bcg_0046d208(word_t p1, word_t p2, word_t p3)
         FUN_00350a1c(x8ret, x8ret1, r3);
         FUN_001d9890();
         FUN_003514e8(*(word_t *)(x16ret + 8));
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         FUN_00350a70();
-        (*((code **)0))();                               /* masked trampoline */
+        sk_svc_call();                               /* masked trampoline */
         r1 = 0;
     }
     else {
@@ -1975,7 +1983,7 @@ static void sk_bcg_0046d208(word_t p1, word_t p2, word_t p3)
 }
 
 /* FUN_0046d670 @ 0x0046d670   (est. sk_bcg_0046d670)
- * Ghidra: void FUN_0046d670(void)
+ * Ghidra: void sk_bcg_0046d670(void)
  * Regex ByteCodeGen step: rebuilds the consumer/builder (FUN_004a30d4), computes
  * field offsets (l4 +0x24), then performs an indirect jumptable dispatch
  * through the builder's method table (l2 -8 +0x18) passing the two computed
@@ -2014,7 +2022,7 @@ static void sk_bcg_0046d670(void)
 }
 
 /* FUN_0046d740 @ 0x0046d740   (est. sk_bcg_0046d740)
- * Ghidra: void FUN_0046d740(undefined8 p1)
+ * Ghidra: void sk_bcg_0046d740(undefined8 p1)
  * Regex ByteCodeGen dispatch shim: builds the consumer (FUN_00497504 pair),
  * runs the masked trampoline prologue, then calls FUN_0046ca44 to compile the
  * node. Passes param_1 through to the method-table slot +0x10.
@@ -2029,17 +2037,17 @@ static void sk_bcg_0046d740(word_t p1)
     pair1 = FUN_00497504();
     FUN_000a6f88(pair1.lo, pair1.hi, pair1.lo);
     FUN_0007c1a4();
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_0034b0c4();
     FUN_00351714(*(word_t *)(x12ret + 0x10));
-    (*((code **)0))();                                   /* masked trampoline */
+    sk_svc_call();                                   /* masked trampoline */
     FUN_00352c40(p1);
-    FUN_0046ca44();
+    sk_bcg_0046ca44();
     return;
 }
 
 /* FUN_0046d810 @ 0x0046d810   (est. sk_bcg_0046d810)
- * Ghidra: void FUN_0046d810(long p1,undefined8 p2,code *p3)
+ * Ghidra: void sk_bcg_0046d810(long p1,undefined8 p2,code *p3)
  * Regex ByteCodeGen dispatch tail: calls the supplied function pointer param_3,
  * then performs an indirect jumptable dispatch through the metadata object's
  * method table (param_1 -8 +8). The second jumptable could not be recovered.
@@ -2073,7 +2081,7 @@ static void     sk_bcg_0046ece8(word_t, word_t, word_t, word_t, word_t);
 static wpair_t  sk_bcg_0046f298(word_t, word_t, long);
 
 /* FUN_0046d860 @ 0x0046d860   (est. sk_bcg_0046d860)
- * Ghidra: void FUN_0046d860(void)
+ * Ghidra: void sk_bcg_0046d860(void)
  * ByteCodeGen emission prologue used when appending one regex alternative:
  * runs the builder initialisation helpers, applies the masked
  * self-modifying/trampoline patch to the current instruction slot, grows the
@@ -2114,7 +2122,7 @@ static void sk_bcg_0046d860(void)
     FUN_0008e500(ret_ctx);
 }
 /* FUN_0046d988 @ 0x0046d988   (est. sk_bcg_0046d988)
- * Ghidra: void FUN_0046d988(undefined8,undefined8,uint,long,undefined8,undefined8,undefined8,undefined8)
+ * Ghidra: void sk_bcg_0046d988(undefined8,undefined8,uint,long,undefined8,undefined8,undefined8,undefined8)
  * Compiles one regex AST node into the bytecode stream. It probes the runtime
  * builder state and, depending on the matched kind, either records the node as
  * a fresh 0x40-byte instruction record (packing the child range, match flags
@@ -2142,7 +2150,7 @@ static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4,
     code *probe_fn, *thunk;         /* extraout_x9, pcVar10 */
     long ctx_a, ctx_b;              /* extraout_x16/_16_00 */
 
-    w12 = FUN_0008e518();
+    w12 = FUN_0008e518().lo;
     v4 = w12.hi;
     l9 = p4;
     v2 = p6;
@@ -2164,7 +2172,7 @@ static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_0007c1a4();
     /* masked self-modifying/trampoline fn (SUB_54ffff60f100041f) */
     ((code)0x54ffff60f100041f)();
-    l3 = FUN_0034cff4();
+    l3 = FUN_0034cff4().lo;
     l11 = (long)*(int *)(l3 + 0x30);
     l3 = *(long *)(p4 - 8);
     FUN_00350624();
@@ -2188,7 +2196,7 @@ static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4,
             w12 = FUN_000e15d8();
             (*thunk)(w12.lo, w12.hi, p5);
             FUN_00027754(p6);
-            w12 = FUN_004aa5dc();
+            w12 = FUN_004aa5dc().lo;
             v5 = FUN_00377824(w12.lo, w12.hi, p4);
             FUN_00356bb0(p7);
             w12 = FUN_003509bc();
@@ -2202,7 +2210,7 @@ static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4,
             *(word_t *)(l3 + 0x38) = v5;
             l9 = p4;
             FUN_00467de4(v7, (word_t)0 /* &DAT_004aa278 */, l3, p4, p6);
-            range_pair = FUN_003535a8();
+            range_pair = FUN_003535a8().lo;
             node_rec = l3;
             saved_cnt = l9;
             /* decompile passed register residue: (slot_b, range_pair,
@@ -2272,7 +2280,7 @@ static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4,
             FUN_0001d4f4();
             FUN_004ac33c();
             FUN_003a25d4(stack_b);
-            w12 = FUN_00351450();
+            w12 = FUN_00351450().lo;
             v4 = sk_bcg_0046df0c(w12.lo, w12.hi, v4);
             FUN_003a25d4(l9);
         }
@@ -2291,7 +2299,7 @@ LAB_0046dedc:
     FUN_0008e500(v2, out_ctx);
 }
 /* FUN_0046df0c @ 0x0046df0c   (est. sk_bcg_0046df0c)
- * Ghidra: undefined8 FUN_0046df0c(undefined8,undefined8,undefined8,byte,ulong,ulong,undefined8,undefined8)
+ * Ghidra: undefined8 sk_bcg_0046df0c(undefined8,undefined8,undefined8,byte,ulong,ulong,undefined8,undefined8)
  * Sub-emitter for a multi-part (group/anchor) regex node. It verifies that the
  * supplied range is ordered (lower <= upper, else fail-closed), then emits a
  * builder record combining the range pair with a 0xe000000000000000 tag-mask
@@ -2310,12 +2318,12 @@ static word_t sk_bcg_0046df0c(word_t p1, word_t p2, word_t p3, word_t p4,
     byte scratch[96];               /* auStack_d8 */
 
     if ((p5 >> 0xe) <= (p6 >> 0xe)) {
-        w6 = FUN_002b74c0(p5, p6, p5, p6, p7, p8);
+        w6 = FUN_002b74c0(p5, p6, p5, p6, p7, p8).lo;
         v3 = p5;
         v4 = p6;
         w7 = FUN_002b3978(0, 0xe000000000000000);
         v5 = v4;
-        w8 = FUN_0001d4f4(0xf, p1, p2);
+        w8 = FUN_0001d4f4(0xf, p1, p2).lo;
         FUN_0046777c(scratch, w7.lo, w7.hi, v3, v4, w8.lo, w8.hi, p2, v5);
         flag = (byte)(p4 & 1);
         lo_span = p5;
@@ -2331,7 +2339,7 @@ static word_t sk_bcg_0046df0c(word_t p1, word_t p2, word_t p3, word_t p4,
     return 0;
 }
 /* FUN_0046e038 @ 0x0046e038   (est. sk_bcg_0046e038)
- * Ghidra: undefined8 FUN_0046e038(undefined8,undefined8,undefined8,undefined8,undefined8,undefined8)
+ * Ghidra: undefined8 sk_bcg_0046e038(undefined8,undefined8,undefined8,undefined8,undefined8,undefined8)
  * Emits a closure/anchor record: after acquiring the builder lock and opening
  * a new sub-emitter with a thunk target, it packs the caller's range pair and
  * flag byte into the record payload, finalises it through sk_bcg_004979f8 and
@@ -2369,7 +2377,7 @@ static word_t sk_bcg_0046e038(word_t p1, word_t p2, word_t p3, word_t p4,
     return p4;
 }
 /* FUN_0046e128 @ 0x0046e128   (est. sk_bcg_0046e128)
- * Ghidra: undefined8 FUN_0046e128(ulong,ulong,undefined8,undefined8,undefined8,byte,ulong,ulong,undefined8,undefined8)
+ * Ghidra: undefined8 sk_bcg_0046e128(ulong,ulong,undefined8,undefined8,undefined8,byte,ulong,ulong,undefined8,undefined8)
  * Sub-emitter for a two-range (source span + target span) regex node. Both
  * ranges are validated as ordered (lower <= upper, else fail-closed), then a
  * builder record is emitted that carries the target span with its tag-mask
@@ -2393,12 +2401,12 @@ static word_t sk_bcg_0046e128(word_t p1, word_t p2, word_t p3, word_t p4,
         CL4_SWBP(0x46e270);
         return 0;
     }
-    w5 = FUN_002b74c0(p7, p8, p7, p8, p9, p10);
+    w5 = FUN_002b74c0(p7, p8, p7, p8, p9, p10).lo;
     v3 = p7;
     v4 = p8;
     w6 = FUN_002b3978(0, 0xe000000000000000);
     if ((p1 >> 0xe) <= (p2 >> 0xe)) {
-        w7 = FUN_002b74c0(p1, p2, p1, p2, p3, p4);
+        w7 = FUN_002b74c0(p1, p2, p1, p2, p3, p4).lo;
         FUN_0046777c(scratch, w6.lo, w6.hi, v3, v4, w7.lo, w7.hi, p1, p2);
         flag = (byte)(p6 & 1);
         lo_span = p7;
@@ -2414,7 +2422,7 @@ static word_t sk_bcg_0046e128(word_t p1, word_t p2, word_t p3, word_t p4,
     return 0;
 }
 /* FUN_0046e274 @ 0x0046e274   (est. sk_bcg_0046e274)
- * Ghidra: undefined8 FUN_0046e274(void)
+ * Ghidra: undefined8 sk_bcg_0046e274(void)
  * Alternative closure/anchor emitter (mirrors sk_bcg_0046e038): opens a new
  * sub-emitter with the thunk target, validates the two register-supplied range
  * halves are ordered, then packs the range pair and flag byte into a record and
@@ -2461,7 +2469,7 @@ static word_t sk_bcg_0046e274(void)
     return 0;
 }
 /* FUN_0046e384 @ 0x0046e384   (est. sk_bcg_0046e384)
- * Ghidra: void FUN_0046e384(undefined8,undefined8,uint,undefined8,undefined8,undefined8,undefined8)
+ * Ghidra: void sk_bcg_0046e384(undefined8,undefined8,uint,undefined8,undefined8,undefined8,undefined8)
  * Top-level AST-to-bytecode compiler driver. It walks the regex node list; for
  * each child either emits it inline or recurses via sk_bcg_0046e7a8, tracking
  * the accumulated range. When a range change or the single-match flag demands
@@ -2490,7 +2498,7 @@ static void sk_bcg_0046e384(word_t p1, word_t p2, word_t p3, word_t p4,
     word_t rec_a, rec_b, rec_c, rec_d; /* local_38, local_30, local_20, local_18 */
     byte scratch[192];              /* auStack_120 */
 
-    w9 = FUN_0008e518();
+    w9 = FUN_0008e518().lo;
     v4 = p6;
     FUN_000a6f68();
     builder = builder_hint;
@@ -2589,7 +2597,7 @@ LAB_0046e438:
     FUN_0008e500(builder, ret_ctx);
 }
 /* FUN_0046e6b0 @ 0x0046e6b0   (est. sk_bcg_0046e6b0)
- * Ghidra: byte FUN_0046e6b0(ulong,ulong *,byte,long *,undefined8,undefined8,undefined8)
+ * Ghidra: byte sk_bcg_0046e6b0(ulong,ulong *,byte,long *,undefined8,undefined8,undefined8)
  * Range-append helper for a single-match node. If the current range already
  * matches the caller's range tag (and the flag is set) it returns 0; otherwise
  * it appends the caller's range to the builder's 0x20-byte-entry array (growing
@@ -2631,7 +2639,7 @@ static byte sk_bcg_0046e6b0(word_t p1, word_t *p2, byte p3, long *p4,
     return p3 ^ 1;
 }
 /* FUN_0046e7a8 @ 0x0046e7a8   (est. sk_bcg_0046e7a8)
- * Ghidra: void FUN_0046e7a8(void)
+ * Ghidra: void sk_bcg_0046e7a8(void)
  * Recursive node emitter: for the current regex node it captures the three
  * source spans (via the two range resolvers), validates they are ordered, and
  * stores the spans plus the node's metadata into a freshly sized 0x90-byte
@@ -2695,7 +2703,7 @@ static void sk_bcg_0046e7a8(void)
     CL4_SWBP(0x46e900);
 }
 /* FUN_0046e900 @ 0x0046e900   (est. sk_bcg_0046e900)
- * Ghidra: bool FUN_0046e900(void)
+ * Ghidra: bool sk_bcg_0046e900(void)
  * Single-match fast-path probe. It resolves the current node's data object and,
  * when a continuation slot is present, re-invokes the node sub-compiler on the
  * resolved pair and disposes of the transient. Returns whether a continuation
@@ -2736,7 +2744,7 @@ static bool sk_bcg_0046e900(void)
     return cont != 0;
 }
 /* FUN_0046ea18 @ 0x0046ea18   (est. sk_bcg_0046ea18)
- * Ghidra: void FUN_0046ea18(void)
+ * Ghidra: void sk_bcg_0046ea18(void)
  * Thin trampoline that forwards to the node-builder clean-up helper
  * (FUN_0049490c). */
 static void sk_bcg_0046ea18(void)
@@ -2744,7 +2752,7 @@ static void sk_bcg_0046ea18(void)
     FUN_0049490c();
 }
 /* FUN_0046ea44 @ 0x0046ea44   (est. sk_bcg_0046ea44)
- * Ghidra: void FUN_0046ea44(void)
+ * Ghidra: void sk_bcg_0046ea44(void)
  * Emits a quantified/counted block. With the count==4 fast path it iterates
  * over the 0x4000-bit-aligned index range, materialising each index into the
  * builder's index table (a bitmap word + 0x10-byte entry + offset table),
@@ -2840,11 +2848,11 @@ static void sk_bcg_0046ea44(void)
         w10 = FUN_002b3f40();
         FUN_003a25d4(count_flag);
     }
-    w11 = FUN_00351450();
+    w11 = FUN_00351450().lo;
     FUN_00353238(w11.lo, w11.hi, w10.lo, w10.hi, result);
 }
 /* FUN_0046ece8 @ 0x0046ece8   (est. sk_bcg_0046ece8)
- * Ghidra: void FUN_0046ece8(undefined8,undefined8,undefined8,undefined8,ulong)
+ * Ghidra: void sk_bcg_0046ece8(undefined8,undefined8,undefined8,undefined8,ulong)
  * Emits an alternation/choice block. It reads the builder's span table, then
  * walks each alternative: for an alternative whose span still overlaps the
  * running range it consumes the source span and advances, otherwise it
@@ -2957,7 +2965,7 @@ LAB_0046ef44:
     FUN_00356370(ret_ctx);
 }
 /* FUN_0046ef90 @ 0x0046ef90   (est. sk_bcg_0046ef90)
- * Ghidra: void FUN_0046ef90(undefined8,undefined8,undefined8,ulong,ulong)
+ * Ghidra: void sk_bcg_0046ef90(undefined8,undefined8,undefined8,ulong,ulong)
  * Alternation/choice walker over a counted span range. Depending on the
  * builder's span table it either single-steps (0x4000-aligned) or iterates the
  * count of remaining spans, matching each source span against the target range
@@ -3028,7 +3036,7 @@ static void sk_bcg_0046ef90(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
                     if ((v11 >> 0xe) < (v2 >> 0xe)) break;
                     FUN_002b439c(v11, v2, v4, v3, v5);
                     FUN_004ac960();
-                    w20 = FUN_00100efc();
+                    w20 = FUN_00100efc().lo;
                     w20 = FUN_002b439c(w20.lo, w20.hi, v14, p3, p4);
                     v15 = w20.hi;
                     if ((w20.lo == w19.lo) && (w20.hi == w19.hi)) {
@@ -3079,7 +3087,7 @@ static void sk_bcg_0046ef90(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
                     l6 = 1;
                 }
                 FUN_002b3f40(p5, l6, v14, v9, v14, p3, p4);
-                v12 = FUN_00351db4();
+                v12 = FUN_00351db4().lo;
                 range_val = p4;
                 v11 = v4;
                 l18 = l17;
@@ -3100,7 +3108,7 @@ LAB_0046f260:
     FUN_00358454(ret_ctx);
 }
 /* FUN_0046f298 @ 0x0046f298   (est. sk_bcg_0046f298)
- * Ghidra: undefined1[16] FUN_0046f298(undefined8,undefined8,long)
+ * Ghidra: undefined1[16] sk_bcg_0046f298(undefined8,undefined8,long)
  * Builds a compressed match record for one alternative: if the given builder
  * has pending entries it reads the head index from the offset table (or a 0
  * when the index set is empty), packs it with the "have entry" flag and
@@ -3137,14 +3145,14 @@ static wpair_t sk_bcg_0046f298(word_t p1, word_t p2, long p3)
  * header; see CONTRACT). Bodies owned by their slice workers. */
 
 extern word_t thunk_FUN_00498708();
-extern word_t thunk_FUN_002b74c0();
+extern wpair_t thunk_FUN_002b74c0();
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_001a29a0();
-extern word_t FUN_0046ea44();
-extern word_t FUN_0046ef90();
+extern word_t sk_bcg_0046ea44();
+extern word_t sk_bcg_0046ef90();
 
 /* FUN_0046f2f0 @ 0x46f2f0  (est. sk_bcg_0046f2f0)
- * Ghidra: void FUN_0046f2f0(undefined8 param_1)
+ * Ghidra: void sk_bcg_0046f2f0(undefined8 param_1)
  * Regex ByteCodeGen entry helper: lays out a 96-byte stack buffer through
  * the byte-copy helper, then forwards its argument to the main body at
  * sk_bcg_0046f334. Thin trampoline wrapper.
@@ -3153,11 +3161,11 @@ static void sk_bcg_0046f2f0(word_t param_1)
 {
     unsigned char buf[96];
     FUN_00117cc4((word_t)buf);      /* byte-copy init of the 96-byte stack buf */
-    FUN_0046f334(param_1);
+    sk_bcg_0046f334(param_1);
 }
 
 /* FUN_0046f334 @ 0x46f334  (est. sk_bcg_0046f334)
- * Ghidra: void FUN_0046f334(undefined8 param_1)
+ * Ghidra: void sk_bcg_0046f334(undefined8 param_1)
  * Passes its single argument through the byte-copy helper. Minimal shim
  * used as a forwarding target from sk_bcg_0046f2f0.
  * Confidence: medium   Notes: FUN_00117cc4 = byte copy. */
@@ -3167,7 +3175,7 @@ static void sk_bcg_0046f334(word_t param_1)
 }
 
 /* FUN_0046f344 @ 0x46f344  (est. sk_bcg_0046f344)
- * Ghidra: void FUN_0046f344(void)
+ * Ghidra: void sk_bcg_0046f344(void)
  * Fetches a 16-byte pair from the pair producer FUN_00463f94 and copies a
  * fixed 0x59-byte region out of it through the byte-copy helper, then
  * calls the teardown helper. Likely reads a regex-instruction payload and
@@ -3181,7 +3189,7 @@ static void sk_bcg_0046f344(void)
 }
 
 /* FUN_0046f37c @ 0x46f37c  (est. sk_bcg_0046f37c)
- * Ghidra: void FUN_0046f37c(void)
+ * Ghidra: void sk_bcg_0046f37c(void)
  * Regex ByteCodeGen emit path: runs the 0x867ec pre-step, pulls a 16-byte
  * pair from FUN_004ab618, byte-copies a 0x59-byte region, then runs the
  * 0x100efc step and the 0x498708 thunk. Companion of sk_bcg_0046f344.
@@ -3197,7 +3205,7 @@ static void sk_bcg_0046f37c(void)
 }
 
 /* FUN_0046f3c8 @ 0x46f3c8  (est. sk_bcg_0046f3c8)
- * Ghidra: void FUN_0046f3c8(undefined1 (*param_1) [16],undefined8 p2,undefined8 p3,undefined1 p4)
+ * Ghidra: void sk_bcg_0046f3c8(undefined1 (*param_1) [16],undefined8 p2,undefined8 p3,undefined1 p4)
  * Fills a 16-byte output pair: the pair half comes from FUN_00467848, and
  * the first byte of the following slot is stamped with the byte p4.
  * Confidence: medium */
@@ -3210,7 +3218,7 @@ static void sk_bcg_0046f3c8(wpair_t *out, word_t p2, word_t p3, word_t p4)
 }
 
 /* FUN_0046f3f4 @ 0x46f3f4  (est. sk_bcg_0046f3f4)
- * Ghidra: void FUN_0046f3f4(p1..p6)
+ * Ghidra: void sk_bcg_0046f3f4(p1..p6)
  * Regex ByteCodeGen dispatch: builds a 16-byte pair via FUN_00084220, folds
  * it plus p3/p4 into a builder call (thunk_FUN_002b74c0) with p5/p6, then
  * performs teardown/emit steps (0x4abf6c, 0x36b270 on ctx+0x38, 0x462b6c,
@@ -3229,12 +3237,12 @@ static void sk_bcg_0046f3f4(word_t p1, word_t p2, word_t p3, word_t p4,
     thunk_FUN_0036b270(*(word_t *)(ctx + 0x38));  /* unaff_x20 + 0x38 */
     FUN_00462b6c(r1);
     FUN_00084234(aux);                            /* unaff_x30 */
-    FUN_0046ea44();
+    sk_bcg_0046ea44();
     (void)p1; (void)p2;
 }
 
 /* FUN_0046f474 @ 0x46f474  (est. sk_bcg_0046f474)
- * Ghidra: void FUN_0046f474(void)
+ * Ghidra: void sk_bcg_0046f474(void)
  * Regex ByteCodeGen state check: if the byte at obj+0x18 is 0x01 it takes
  * the short path (0x19858); otherwise it lays out a 40-byte stack buffer,
  * runs the 0x4ac8c0 step and stores the x8/x9 register outputs back into
@@ -3249,7 +3257,7 @@ static void sk_bcg_0046f474(word_t obj)
     if (*(char *)(obj + 0x18) == '\x01') {
         FUN_00019858();
     } else {
-        FUN_0046ef90((word_t)sbuf);
+        sk_bcg_0046ef90((word_t)sbuf);
         FUN_004ac8c0();
         *(word_t *)(obj + 0x10) = out_x8;        /* extraout_x8 */
         *(unsigned char *)(obj + 0x18) = (unsigned char)out_w9; /* extraout_w9 */
@@ -3257,7 +3265,7 @@ static void sk_bcg_0046f474(word_t obj)
 }
 
 /* FUN_0046f4cc @ 0x46f4cc  (est. sk_bcg_0046f4cc)
- * Ghidra: void FUN_0046f4cc(undefined1 (*param_1) [16],undefined8 *param_2,undefined8 *param_3)
+ * Ghidra: void sk_bcg_0046f4cc(undefined1 (*param_1) [16],undefined8 *param_2,undefined8 *param_3)
  * Regex ByteCodeGen pair builder: gathers two words from in2[2..3], calls
  * sk_bcg_0046f3f4 with the 2x2 word inputs, writes the resulting pair to
  * *out and stamps the following slot with the gathered words.
@@ -3269,14 +3277,14 @@ static void sk_bcg_0046f4cc(wpair_t *out, word_t *in2, word_t *in3)
 
     u1 = in2[2];
     u2 = in2[3];
-    v = FUN_0046f3f4(in2[0], in2[1], u1, u2, in3[0], in3[1]);
+    v = sk_bcg_0046f3f4(in2[0], in2[1], u1, u2, in3[0], in3[1]);
     *out = v;
     out[1].lo = u1;                              /* *(u64*)param_1[1] = uVar1 */
     out[1].hi = (out[1].hi & ~0xFFULL) | (uint8_t)u2; /* param_1[1][8] = (char)uVar2 */
 }
 
 /* FUN_0046f510 @ 0x46f510  (est. sk_bcg_0046f510)
- * Ghidra: void FUN_0046f510(undefined1 (*param_1) [16],undefined8 *param_2,undefined8 param_3)
+ * Ghidra: void sk_bcg_0046f510(undefined1 (*param_1) [16],undefined8 *param_2,undefined8 param_3)
  * Regex ByteCodeGen pair builder: forwards in2[0..3] plus p3 into
  * sk_bcg_0046f474, writes the returned pair to *out and stamps the first
  * byte of the next slot with in2[2].
@@ -3284,13 +3292,13 @@ static void sk_bcg_0046f4cc(wpair_t *out, word_t *in2, word_t *in3)
 static void sk_bcg_0046f510(wpair_t *out, word_t *in2, word_t p3)
 {
     word_t u1 = in2[2];
-    wpair_t v = FUN_0046f474(in2[0], in2[1], u1, in2[3], p3);
+    wpair_t v = sk_bcg_0046f474(in2[0], in2[1], u1, in2[3], p3);
     *out = v;
     out[1].lo = (out[1].lo & ~0xFFULL) | (uint8_t)u1; /* param_1[1][0] = (char)uVar1 */
 }
 
 /* FUN_0046f54c @ 0x46f54c  (est. sk_bcg_0046f54c)
- * Ghidra: void FUN_0046f54c(param_1,param_2,param_3,param_4)
+ * Ghidra: void sk_bcg_0046f54c(param_1,param_2,param_3,param_4)
  * Regex ByteCodeGen emit sequence: folds the two 16-bit payload words
  * (param_3/param_4) through the byte-copy helper and several builder/tramp
  * steps, computes a size from a register pair, and dispatches through
@@ -3316,7 +3324,7 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
 
     FUN_0008e518();
     r7 = x1;                                  /* extraout_x1 */
-    r2 = FUN_00377bec(p4, p3, x1, 0x616214, 0x61621c);  /* &DAT_00616214/1c */
+    r2 = FUN_00377bec(p4, p3, x1, 0x616214, 0x61621c).lo;  /* &DAT_00616214/1c */
     FUN_004aa67c();
     FUN_00351bd4();
     r3 = FUN_00377824();
@@ -3340,8 +3348,8 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
     FUN_0007c1a4();
     ((code)(uintptr_t)0x54ffff60f100041f)();  /* masked tramp */
     FUN_0034b460();
-    FUN_0046f820(lsize - x12b, ctx, p3, p4);  /* extraout_x12_00 */
-    pr = FUN_00350a70();
+    sk_bcg_0046f820(lsize - x12b, ctx, p3, p4);  /* extraout_x12_00 */
+    pr = FUN_00350a70().lo;
     fn9(pr.lo, pr.hi, r5);                    /* extraout_x9_00 indirect */
     FUN_00350884(lsize, 1, r3);
     zr = /* flags from last compare */ 0;
@@ -3359,7 +3367,7 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
     FUN_00351de4();
     status = (*fn8)();                        /* extraout_x8_01 indirect */
     if ((status & 1) != 0) {
-        pr = FUN_0009e234(scratch);
+        pr = FUN_0009e234(scratch).lo;
         thunk_FUN_001a29a0(pr.lo, pr.hi, r7);
         FUN_00407300();
         FUN_001d9890(x8, scratch, x1, r4, r2);
@@ -3373,7 +3381,7 @@ static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4)
 }
 
 /* FUN_0046f820 @ 0x46f820  (est. sk_bcg_0046f820)
- * Ghidra: void FUN_0046f820(undefined8 param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: void sk_bcg_0046f820(undefined8 param_1,undefined8 param_2,undefined8 param_3)
  * Regex ByteCodeGen emit core: runs a long builder sequence (0xff/param_3
  * into 0x3515fc, register folding via 0x77bec/0x77824/0x4aa67c, 0x277b8
  * indirect dispatch on the 0x77dcc value), computes offsets from register
@@ -3403,7 +3411,7 @@ static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3)
     FUN_003515fc(0xff, param_3);
     FUN_00377824();
     FUN_0035053c();
-    r3 = FUN_00377bec();
+    r3 = FUN_00377bec().lo;
     r4 = FUN_004aa67c();
     FUN_0035053c(r4, r3);
     r4 = FUN_00377824();
@@ -3423,7 +3431,7 @@ static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3)
     FUN_00464f4c();
     FUN_003509bc();
     FUN_00351de4();
-    r5 = FUN_00377bec();
+    r5 = FUN_00377bec().lo;
     regB = FUN_00310e08(0, r4, r5);
     FUN_000a6f88();
     FUN_0007c1a4();
@@ -3437,18 +3445,18 @@ static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3)
     FUN_0035084c(x9 - x12);                    /* extraout_x9_00 - extraout_x12 */
     fn9();                                     /* extraout_x9_01 indirect */
     FUN_0035166c(r5);
-    pr = FUN_00351414();
+    pr = FUN_00351414().lo;
     status = fn8(pr.lo, pr.hi, r4, r5);        /* extraout_x8_04 indirect */
     if ((status & 1) != 0) {
         fnp = *(code **)(fnp16 + 0x20);
-        pr = FUN_00351324();
+        pr = FUN_00351324().lo;
         fnp(pr.lo, pr.hi, r4);
         FUN_0035136c(x8 + *(int *)(regA + 0x30));  /* extraout_x8_01 */
         fnp();
         pr = FUN_003510b8();
         fn9(pr.lo, pr.hi, regA);               /* extraout_x9_02 indirect */
         idx = *(int *)(regA + 0x30);
-        pr = FUN_003508b4();
+        pr = FUN_003508b4().lo;
         fnp(pr.lo, pr.hi, r4);
         fnp = *(code **)(fnp16 + 8);
         fnp(x9 + idx, r4);                     /* extraout_x9 + idx */
@@ -3469,7 +3477,7 @@ static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3)
 }
 
 /* FUN_0046fb9c @ 0x46fb9c  (est. sk_bcg_0046fb9c)
- * Ghidra: void FUN_0046fb9c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: void sk_bcg_0046fb9c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
  * Regex ByteCodeGen emit path with a terminal dispatch on FUN_000839f8:
  * builds pairs and runs trampoline steps, calls sk_bcg_0046f820, and on
  * the FUN_000839f8==1 branch finishes via one indirect pointer; on the
@@ -3488,11 +3496,11 @@ static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3)
     wpair_t pr;
     word_t status;
 
-    r3 = FUN_0008e518();
+    r3 = FUN_0008e518().lo;
     FUN_00351b78(0xff, param_3);
     r4 = FUN_00377824();
     FUN_0035056c(param_3);
-    r5 = FUN_00377bec();
+    r5 = FUN_00377bec().lo;
     r6 = FUN_004aa770();
     r6 = FUN_00377824(r6, r5, r4, 0x60e208);    /* &DAT_0060e208 */
     FUN_00464f4c();
@@ -3522,7 +3530,7 @@ static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3)
     ((code)(uintptr_t)0x54ffff60f100041f)();   /* masked tramp */
     FUN_0034cff4();
     pr = FUN_00350af4();
-    FUN_0046f820(pr.lo, pr.hi, param_3);
+    sk_bcg_0046f820(pr.lo, pr.hi, param_3);
     i1 = FUN_000839f8();
     if (i1 == 1) {
         FUN_00350b3c(*(word_t *)(fnp16 + 8));  /* extraout_x16_01 */
@@ -3551,7 +3559,7 @@ static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3)
 }
 
 /* FUN_0046feb0 @ 0x46feb0  (est. sk_bcg_0046feb0)
- * Ghidra: void FUN_0046feb0(void)
+ * Ghidra: void sk_bcg_0046feb0(void)
  * Regex ByteCodeGen emit path: preps via 0x27754 (with in_x3), builds
  * pairs through 0x4aa770/0x77824, runs trampoline steps, calls
  * sk_bcg_0046f820, and branches on the 0x350884 status: the success path
@@ -3576,8 +3584,8 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
     r3 = FUN_00377824();
     FUN_00464f4c();
     FUN_00350b84(r2);
-    r2 = FUN_00377bec();
-    pr = FUN_0035050c();
+    r2 = FUN_00377bec().lo;
+    pr = FUN_0035050c().lo;
     FUN_0031d600(pr.lo, pr.hi, r2);
     r4 = FUN_000a6f88();
     FUN_0007c1a4();
@@ -3593,13 +3601,13 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
     FUN_0007c1a4();
     ((code)(uintptr_t)0x54ffff60f100041f)();   /* masked tramp */
     FUN_004aba28();
-    FUN_0046f820();
+    sk_bcg_0046f820();
     FUN_00350884();
     zr = /* flags from last compare */ 0;
     if (zr) {
         (*(code **)(fnp16 + 8))();             /* indirect at _00+8 */
     } else {
-        pr = FUN_003510dc(*(word_t *)(fnp16 + 0x20));  /* _01+0x20 */
+        pr = FUN_003510dc(*(word_t *)(fnp16 + 0x20)).lo;  /* _01+0x20 */
         fn8(pr.lo, pr.hi, r3);                 /* extraout_x8 indirect */
         FUN_00349fe0(r2);
         status = fn8();                        /* extraout_x8_00 indirect */
@@ -3609,7 +3617,7 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
         pr = FUN_00350618();
         thunk_FUN_001a29a0(pr.lo, pr.hi, r2);
         FUN_0040668c();
-        pr = FUN_003508b4();
+        pr = FUN_003508b4().lo;
         FUN_00273fe0(pr.lo, pr.hi, r4, inreg);
         FUN_003508cc(*(word_t *)(fnp16 + 8));  /* extraout_x16 */
         fn8();                                 /* extraout_x8_01 indirect */
@@ -3618,7 +3626,7 @@ static void sk_bcg_0046feb0(word_t inreg)  /* in_x3 */
 }
 
 /* FUN_004700d4 @ 0x4700d4  (est. sk_bcg_004700d4)
- * Ghidra: void FUN_004700d4(param_1..param_5)
+ * Ghidra: void sk_bcg_004700d4(param_1..param_5)
  * Regex ByteCodeGen slot emitter: preps via 0x633e0, folds param_5 into
  * 0x77824, computes a size from a register pair, lays out a 16-byte stack
  * pair from param_2..param_5 and dispatches through 0x351f1c with the
@@ -3653,7 +3661,7 @@ static void sk_bcg_004700d4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
     FUN_00351f1c(lsize - x12b, FUN_004a4a74, (word_t)stack);  /* extraout_x12_00 */
     FUN_001d80e0();
     if (ctx == 0) {                   /* unaff_x21 */
-        pr = FUN_003508cc();
+        pr = FUN_003508cc().lo;
         fn9(pr.lo, pr.hi, r2);        /* extraout_x9_00 indirect */
         i1 = FUN_000839f8(lsize, 1, x1);
         if (i1 == 1) {
@@ -3673,7 +3681,7 @@ static void sk_bcg_004700d4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p
 }
 
 /* FUN_00470298 @ 0x470298  (est. sk_bcg_00470298)
- * Ghidra: void FUN_00470298(void)
+ * Ghidra: void sk_bcg_00470298(void)
  * Regex ByteCodeGen emit path: builds a pair from 0x53cfc, folds in_x3 via
  * 0x4aa770/0x77824, calls sk_bcg_004700d4, and on unaff_x21==0 runs the
  * teardown chain (0x27754, 0x351f4c), checks the status low bit
@@ -3697,7 +3705,7 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
     FUN_00464f4c();
     pr = FUN_000e15d8();
     r3 = FUN_00377bec(pr.lo, pr.hi, r2, 0x60e208);   /* &DAT_0060e208 */
-    pr = FUN_003508e4();
+    pr = FUN_003508e4().lo;
     FUN_00319308(pr.lo, pr.hi, r3);
     FUN_000a6f88();
     FUN_0007c1a4();
@@ -3708,7 +3716,7 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
     ((code)(uintptr_t)0x54ffff60f100041f)();   /* masked tramp */
     FUN_0034b0d4();
     FUN_00351e3c(pr.lo, pr.hi);
-    FUN_004700d4();
+    sk_bcg_004700d4();
     if (ctx == 0) {                   /* unaff_x21 */
         FUN_00027754(r3);
         r2 = FUN_0014ae44();
@@ -3717,7 +3725,7 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
         if ((status & 1) == 0) {
             CL4_SWBP(0x47042c);  /* SoftwareBreakpoint(1,0x47042c), no return */
         }
-        pr = FUN_00350914(0x60e208);  /* &DAT_0060e208 */
+        pr = FUN_00350914(0x60e208).lo;  /* &DAT_0060e208 */
         thunk_FUN_001a29a0(pr.lo, pr.hi, r3);
         FUN_00407300();
         FUN_00350518();
@@ -3734,15 +3742,15 @@ static void sk_bcg_00470298(word_t inreg)  /* in_x3 */
 
 /* ---- Part 3: extra externs used by this part but absent from the shared
  * header (out-of-slice callees + thunks + masked trampoline). ---- */
-extern word_t FUN_0046e7a8(); /* out of slice */
-extern word_t FUN_0046ea18(); /* out of slice */
-extern word_t FUN_0046f54c(); /* out of slice */
-extern word_t FUN_0046fb9c(); /* out of slice */
-extern word_t FUN_0046feb0(); /* out of slice */
-extern word_t FUN_004700d4(); /* out of slice */
+extern word_t sk_bcg_0046e7a8(); /* out of slice */
+extern word_t sk_bcg_0046ea18(); /* out of slice */
+extern word_t sk_bcg_0046f54c(); /* out of slice */
+extern word_t sk_bcg_0046fb9c(); /* out of slice */
+extern word_t sk_bcg_0046feb0(); /* out of slice */
+extern word_t sk_bcg_004700d4(); /* out of slice */
 extern word_t thunk_FUN_0006f6b4(); /* thunk -> FUN_0006f6b4 */
 extern word_t thunk_FUN_001a29a0(); /* thunk -> FUN_001a29a0 */
-extern word_t thunk_FUN_002b74c0(); /* thunk -> FUN_002b74c0 */
+extern wpair_t thunk_FUN_002b74c0(); /* thunk -> FUN_002b74c0 */
 extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn */
 
 /* Forward declarations of this part's own static functions (cross-calls). */
@@ -3763,7 +3771,7 @@ static void sk_bcg_00471e78(void);
 static void sk_bcg_00471f20(void);
 
 /* FUN_0047042c @ 0x0047042c   (est. sk_bcg_0047042c)
- * Ghidra: void FUN_0047042c(void)
+ * Ghidra: void sk_bcg_0047042c(void)
  * Regex ByteCodeGen setup helper: opens a builder context (FUN_00353cfc),
  * resolves a label/target pair (FUN_00377824), then runs a sequence of
  * codegen fixups through a masked trampoline. When the pending continuation
@@ -3805,7 +3813,7 @@ static void sk_bcg_0047042c(void)
     ((code)&SUB_54ffff60f100041f)();                      /* masked self-modifying/trampoline fn */
     FUN_0034af20();
     FUN_00350a1c(r6.lo, r6.hi);
-    FUN_004700d4();
+    sk_bcg_004700d4();
     if (x21 == 0) {
         FUN_00350624(&DAT_0060e208);      /* DAT_0060e208 */
         ((code)x9_fn)();                  /* (*extraout_x9)() */
@@ -3830,7 +3838,7 @@ static void sk_bcg_0047042c(void)
 }
 
 /* FUN_00470644 @ 0x00470644   (est. sk_bcg_00470644)
- * Ghidra: void FUN_00470644(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4)
+ * Ghidra: void sk_bcg_00470644(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * Regex ByteCodeGen continuation builder: resolves a node id (FUN_00027754),
  * chains label/target + child references, then, when the pending register is
  * clear, performs a fail-closed dispatch through several resolved function
@@ -3864,7 +3872,7 @@ static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4)
     FUN_00350464();
     FUN_00464f4c();
     FUN_003513b4(t2);
-    t4 = (word_t)FUN_00377bec();
+    t4 = FUN_00377bec().lo;
     r11 = (wpair_t)FUN_0035050c();
     l6 = (long)FUN_00310e08(r11.lo, r11.hi, t4);
     FUN_000a6f88();
@@ -3876,7 +3884,7 @@ static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4)
     FUN_0034ab10();
     FUN_0034b540();
     ((code)&SUB_54ffff60f100041f)();                          /* masked trampoline fn */
-    FUN_004700d4(e_x8 - e_x12, r10.lo, r10.hi, p3, t2);       /* args from extraout_x8_00/x12 */
+    sk_bcg_004700d4(e_x8 - e_x12, r10.lo, r10.hi, p3, t2);       /* args from extraout_x8_00/x12 */
     if (x21 == 0) {
         fn_a = (code)FUN_000277b8(t2);
         fn_a(p3, t2);
@@ -3914,7 +3922,7 @@ static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4)
 }
 
 /* FUN_00470998 @ 0x00470998   (est. sk_bcg_00470998)
- * Ghidra: void FUN_00470998(undefined8 p1,...,undefined8 p6)
+ * Ghidra: void sk_bcg_00470998(undefined8 p1,...,undefined8 p6)
  * Regex ByteCodeGen node builder: after a masked-trampoline fixup round it
  * stages a 6-word record (FUN_00499450(0,&record)) and pushes it into the
  * current builder through two resolved function pointers (FUN_00350618 /
@@ -3951,7 +3959,7 @@ static void sk_bcg_00470998(word_t p1, word_t p2, word_t p3, word_t p4,
     r2 = (wpair_t)FUN_00350b3c(*(word_t *)(e_x16 + 0x20));
     x8fn(r2.lo, r2.hi, p3);     /* (*extraout_x8_01)(...) */
     FUN_00350b9c(e_x8);
-    FUN_0046f54c();
+    sk_bcg_0046f54c();
     FUN_00350ab8(*(word_t *)(e_x16b + 8));
     x8fn2();                    /* (*extraout_x8_02)() */
     FUN_0008e500(x30);
@@ -3959,7 +3967,7 @@ static void sk_bcg_00470998(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00470ae4 @ 0x00470ae4   (est. sk_bcg_00470ae4)
- * Ghidra: void FUN_00470ae4(undefined8 p1,...,undefined8 p6)
+ * Ghidra: void sk_bcg_00470ae4(undefined8 p1,...,undefined8 p6)
  * Regex ByteCodeGen node builder (sibling of FUN_00470998): stages a 6-word
  * record via FUN_00499450, resolves two push fns (FUN_003504c4 /
  * FUN_000e72b0) and appends the node, then closes with FUN_00084234.
@@ -3994,7 +4002,7 @@ static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4,
     x9fn(r2.lo, r2.hi, p3);     /* (*extraout_x9)(...) */
     r2 = (wpair_t)FUN_000e72b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r2.lo, r2.hi, p3);     /* (*extraout_x8_00)(...) */
-    FUN_0046fb9c();
+    sk_bcg_0046fb9c();
     FUN_00100c38(*(word_t *)(e_x16b + 8));
     x8fn2();                    /* (*extraout_x8_01)() */
     FUN_00084234(x30);
@@ -4002,7 +4010,7 @@ static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00470c28 @ 0x00470c28   (est. sk_bcg_00470c28)
- * Ghidra: void FUN_00470c28(undefined8 p1,...,undefined8 p6)
+ * Ghidra: void sk_bcg_00470c28(undefined8 p1,...,undefined8 p6)
  * Regex ByteCodeGen node builder: resolves a child id (FUN_00027754), stages
  * the 6-word record, then pushes the node via two resolved fns (FUN_003509b0
  * and a helper behind a masked trampoline). Ends with FUN_0008e500.
@@ -4038,7 +4046,7 @@ static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4,
     r1 = (wpair_t)FUN_003509b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r1.lo, r1.hi, p3);              /* (*extraout_x8_01)(...) */
     FUN_00351178();
-    FUN_0046feb0();
+    sk_bcg_0046feb0();
     FUN_00350b3c(*(word_t *)(e_x16b + 8));
     x8fn2();                             /* (*extraout_x8_02)() */
     FUN_0008e500(x30);
@@ -4046,7 +4054,7 @@ static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00470d88 @ 0x00470d88   (est. sk_bcg_00470d88)
- * Ghidra: void FUN_00470d88(void)
+ * Ghidra: void sk_bcg_00470d88(void)
  * Regex ByteCodeGen range/span helper: registers a range callback
  * (FUN_00270c08 with FUN_004b5a74), builds a span, then — when the in-stack
  * length word is nonzero — performs a fail-closed page-boundary check
@@ -4078,7 +4086,7 @@ static void sk_bcg_00470d88(void)
     FUN_00351178();
     FUN_00377824();
     FUN_0034be0c(&s10, t6);
-    FUN_0046ea18();
+    sk_bcg_0046ea18();
     FUN_0036b118(t5);
     t3 = s30;                   /* uVar3 = in_stack_00000030 */
     if (s18 != 0) {
@@ -4100,7 +4108,7 @@ static void sk_bcg_00470d88(void)
 }
 
 /* FUN_00470ebc @ 0x00470ebc   (est. sk_bcg_00470ebc)
- * Ghidra: void FUN_00470ebc(undefined8 p1,...,undefined8 p6)
+ * Ghidra: void sk_bcg_00470ebc(undefined8 p1,...,undefined8 p6)
  * Regex ByteCodeGen span/range builder (sibling of FUN_00470d88): registers a
  * range callback and builds a span via FUN_0046ea18, then, when the in-stack
  * length is nonzero, re-links the child node through FUN_0031d488 /
@@ -4130,7 +4138,7 @@ static void sk_bcg_00470ebc(word_t p1, word_t p2, word_t p3, word_t p4,
     t5 = (word_t)FUN_004aa95c();
     FUN_00377824(t5, p6, p3);
     r6 = (wpair_t)FUN_00350a04(&s30);
-    FUN_0046ea18(r6.lo, r6.hi, t1, t3, t4);
+    sk_bcg_0046ea18(r6.lo, r6.hi, t1, t3, t4);
     FUN_003a25d4(t3);
     FUN_0036b118(t4);
     t3 = s40;                   /* uVar3 = in_stack_00000040 */
@@ -4154,7 +4162,7 @@ static void sk_bcg_00470ebc(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00470ff8 @ 0x00470ff8   (est. sk_bcg_00470ff8)
- * Ghidra: void FUN_00470ff8(undefined8 p1,undefined8 p2,long p3)
+ * Ghidra: void sk_bcg_00470ff8(undefined8 p1,undefined8 p2,long p3)
  * Regex ByteCodeGen top-level node emitter: reads child/target words at
  * p3+0x10..+0x28, resolves them (FUN_00027754/FUN_00377824), then runs the
  * main emit loop. Each iteration calls the emit fn (FUN_000a68f4) and checks a
@@ -4227,7 +4235,7 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     x9fn();                          /* (*extraout_x9_01)() */
     a15 = (wpair_t)FUN_000e15d8();
     FUN_00407eac(a15.lo, a15.hi, t4);
-    t11 = (word_t)FUN_00377bec();
+    t11 = FUN_00377bec().lo;
     fn = (code)FUN_000a68f4();
     do {
         fn(local_50, t4, t11);       /* (*pcVar7)(local_50,uVar4,uVar11) */
@@ -4245,7 +4253,7 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
         a15 = (wpair_t)FUN_003514e8();
         FUN_0046490c(a15.lo, a15.hi, t5);
         FUN_00464f4c();
-        t12 = (word_t)FUN_00377bec();
+        t12 = FUN_00377bec().lo;
         a15 = (wpair_t)FUN_00350798();
         l8 = (long)FUN_00310e08(a15.lo, a15.hi, t12);
         i1 = *(int *)(l8 + 0x24);
@@ -4289,7 +4297,7 @@ done_00471514: {
 }
 
 /* FUN_0047153c @ 0x0047153c   (est. sk_bcg_0047153c)
- * Ghidra: void FUN_0047153c(undefined8 p1,...,undefined8 p6)
+ * Ghidra: void sk_bcg_0047153c(undefined8 p1,...,undefined8 p6)
  * Regex ByteCodeGen span builder: registers a range callback (FUN_00270c08
  * with FUN_004b5a74), builds a span via FUN_00467678, then writes the 5-word
  * in-stack span record back through an extraout_x8 array pointer.
@@ -4332,7 +4340,7 @@ static void sk_bcg_0047153c(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00471644 @ 0x00471644   (est. sk_bcg_00471644)
- * Ghidra: void FUN_00471644(p1,p2,p3,long param_4,code *param_5,p6..p10)
+ * Ghidra: void sk_bcg_00471644(p1,p2,p3,long param_4,code *param_5,p6..p10)
  * Regex ByteCodeGen main span-emit driver: validates param_4>=0, builds a
  * node record (local_48), registers an emit callback (param_5), and walks a
  * linked list (FUN_0001ba10 / FUN_0019ed3c) emitting each element. Performs
@@ -4385,7 +4393,7 @@ static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4,
     fn2 = (code)FUN_00319628(t3);
     fn2(&local_48, &local_70, p7, t3);
     t6 = (word_t)FUN_003272b8();
-    t7 = (word_t)FUN_00471aec(t2, 0x675c68, p8, s68, t6, s80);
+    t7 = (word_t)sk_bcg_00471aec(t2, 0x675c68, p8, s68, t6, s80);
     FUN_003a25d4(local_30);
     local_70 = t7;
     FUN_004974ac(0xff, p8);
@@ -4464,7 +4472,7 @@ exit_00471ac8: {
 }
 
 /* FUN_00471aec @ 0x00471aec   (est. sk_bcg_00471aec)
- * Ghidra: void FUN_00471aec(undefined8 p1,undefined8 p2,undefined8 p3)
+ * Ghidra: void sk_bcg_00471aec(undefined8 p1,undefined8 p2,undefined8 p3)
  * Regex ByteCodeGen record dumper: initializes a collection (thunk_FUN_0006f6b4),
  * opens two list iterators (FUN_00469c50), and drains the first list by
  * re-adding each element (FUN_001a1854) while lVar-local_20 is nonzero, then
@@ -4490,7 +4498,7 @@ static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3)
     local_f0 = (word_t)thunk_FUN_0006f6b4();
     FUN_000a6e14(auStack_e8);
     FUN_00351e3c();
-    FUN_0046e7a8();
+    sk_bcg_0046e7a8();
     FUN_0035050c();
     t1 = (word_t)FUN_00498c54();
     FUN_00469dc4(auStack_260);
@@ -4517,7 +4525,7 @@ static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3)
 }
 
 /* FUN_00471c14 @ 0x00471c14   (est. sk_bcg_00471c14)
- * Ghidra: void FUN_00471c14(p1..p12)
+ * Ghidra: void sk_bcg_00471c14(p1..p12)
  * Regex ByteCodeGen range-check wrapper: resolves two bound values
  * (FUN_00027754), computes them via FUN_00310924 into local_58/local_60, and
  * dispatches to the emit driver FUN_00471644 when low<=high
@@ -4546,7 +4554,7 @@ static void sk_bcg_00471c14(word_t p1, word_t p2, word_t p3, word_t p4,
 }
 
 /* FUN_00471cfc @ 0x00471cfc   (est. sk_bcg_00471cfc)
- * Ghidra: void FUN_00471cfc(void)
+ * Ghidra: void sk_bcg_00471cfc(void)
  * Regex ByteCodeGen range-check entry: after a masked-trampoline fixup round
  * resolves two bounds (FUN_00027754/FUN_000277b8/FUN_00310924) and, when
  * low<=high, builds via FUN_000e72b0 then dispatches to FUN_00471644; on an
@@ -4586,7 +4594,7 @@ static void sk_bcg_00471cfc(void)
 }
 
 /* FUN_00471e78 @ 0x00471e78   (est. sk_bcg_00471e78)
- * Ghidra: void FUN_00471e78(void)
+ * Ghidra: void sk_bcg_00471e78(void)
  * Regex ByteCodeGen finalize/teardown: resets a builder (FUN_00351488),
  * locates a node field (FUN_0049fcf8, +0x24), resolves a method
  * (FUN_004aa47c) and calls the resolved vtable slot (extraout_x16_00+0x20)
@@ -4619,7 +4627,7 @@ static void sk_bcg_00471e78(void)
 }
 
 /* FUN_00471f20 @ 0x00471f20   (est. sk_bcg_00471f20)
- * Ghidra: void FUN_00471f20(void)
+ * Ghidra: void sk_bcg_00471f20(void)
  * Regex ByteCodeGen finalizer wrapper: resolves a node (FUN_00027754), runs a
  * masked-trampoline fixup round, then resolves a vtable method
  * (FUN_00310e08) and calls it (extraout_x16+0x10) with a string label
@@ -4667,7 +4675,7 @@ static void sk_bcg_00471f20(void)
     fn(&DAT_0061628c, r5.hi + *(int *)(l3 + 0x24), t1);  /* (DAT_0061628c, auVar5_8 + off, uVar1) */
     FUN_00350530();
     FUN_00377dcc();
-    FUN_00471e78(e_x8);
+    sk_bcg_00471e78(e_x8);
     FUN_0008e500(r5.lo);
     return;
 }
@@ -4680,35 +4688,35 @@ static void sk_bcg_00471f20(void)
  * not declared in the shared header above. Signatures reflect the
  * register use observed at the call sites (all default to word_t).
  * ------------------------------------------------------------------ */
-extern word_t FUN_00471f20();   /* other part */
-extern word_t FUN_00475e14();   /* other part */
-extern word_t FUN_00476518();   /* other part */
-extern word_t FUN_004765b0();   /* other part */
-extern word_t FUN_004766ec();   /* other part */
-extern word_t FUN_0047684c();   /* other part */
-extern word_t FUN_004769a4();   /* other part */
-extern word_t FUN_00476c0c();   /* other part */
-extern word_t FUN_00476c58();   /* other part */
-extern word_t FUN_00476cd4();   /* other part */
-extern word_t FUN_00476dd0();   /* other part */
-extern word_t FUN_00476e18();   /* other part */
-extern word_t FUN_00476e74();   /* other part */
-extern word_t FUN_00476e94();   /* other part */
-extern word_t FUN_00476fd0();   /* other part */
-extern word_t FUN_004772d0();   /* other part */
-extern word_t FUN_00477494();   /* other part */
-extern word_t FUN_00477504();   /* other part */
-extern word_t FUN_00477590();   /* other part */
-extern word_t FUN_004775d0();   /* other part */
-extern word_t FUN_00477694();   /* other part */
-extern word_t FUN_004776c4();   /* other part */
-extern word_t FUN_004776ec();   /* other part */
-extern word_t FUN_00477e10();   /* other part */
-extern word_t FUN_00477e8c();   /* other part */
-extern word_t FUN_0047aa0c();   /* other part */
-extern word_t FUN_0047c1b0();   /* other part */
-extern word_t FUN_0047c474();   /* other part */
-extern word_t FUN_0047c4e4();   /* other part */
+extern word_t sk_bcg_00471f20();   /* other part */
+extern word_t sk_bcg_00475e14();   /* other part */
+extern word_t sk_bcg_00476518();   /* other part */
+extern word_t sk_bcg_004765b0();   /* other part */
+extern word_t sk_bcg_004766ec();   /* other part */
+extern word_t sk_bcg_0047684c();   /* other part */
+extern word_t sk_bcg_004769a4();   /* other part */
+extern word_t sk_bcg_00476c0c();   /* other part */
+extern word_t sk_bcg_00476c58();   /* other part */
+extern word_t sk_bcg_00476cd4();   /* other part */
+extern word_t sk_bcg_00476dd0();   /* other part */
+extern word_t sk_bcg_00476e18();   /* other part */
+extern word_t sk_bcg_00476e74();   /* other part */
+extern word_t sk_bcg_00476e94();   /* other part */
+extern word_t sk_bcg_00476fd0();   /* other part */
+extern word_t sk_bcg_004772d0();   /* other part */
+extern word_t sk_bcg_00477494();   /* other part */
+extern word_t sk_bcg_00477504();   /* other part */
+extern word_t sk_bcg_00477590();   /* other part */
+extern word_t sk_bcg_004775d0();   /* other part */
+extern word_t sk_bcg_00477694();   /* other part */
+extern word_t sk_bcg_004776c4();   /* other part */
+extern word_t sk_bcg_004776ec();   /* other part */
+extern word_t sk_bcg_00477e10();   /* other part */
+extern word_t sk_bcg_00477e8c();   /* other part */
+extern word_t sk_bcg_0047aa0c();   /* other part */
+extern word_t sk_bcg_0047c1b0();   /* other part */
+extern word_t sk_bcg_0047c474();   /* other part */
+extern word_t sk_bcg_0047c4e4();   /* other part */
 
 /* Thunk variants referenced by name in the decompiles (jump-stubs to the
  * corresponding FUN_ targets declared in the shared header). */
@@ -4723,7 +4731,7 @@ static void sk_bcg_00475c7c(void);
 static void sk_bcg_00475cf8(void);
 
 /* FUN_004720b8 @ 0x004720b8   (est. sk_bcg_004720b8)
- * Ghidra: void FUN_004720b8(undefined8 param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
+ * Ghidra: void sk_bcg_004720b8(undefined8 param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
  * Regex-ByteCodeGen emission driver: builds a bytecode node for a regex AST
  * atom, threading a size delta and two "builder" pointers (in x16-based
  * closure slots) through a long chain of Swift runtime / trampoline helper
@@ -4760,7 +4768,7 @@ static void sk_bcg_004720b8(word_t param_1, word_t param_2, word_t param_3, word
     v3 = FUN_00377824();
     FUN_004ab310();
     FUN_00351bd4(v2);
-    v2 = FUN_00377bec();
+    v2 = FUN_00377bec().lo;
     FUN_00407ed0();
     FUN_00351214();
     v4 = FUN_00377824();
@@ -4776,7 +4784,7 @@ static void sk_bcg_004720b8(word_t param_1, word_t param_2, word_t param_3, word
     FUN_00464f4c();
     FUN_00350738();
     FUN_003522c8();
-    v5 = FUN_00377bec();
+    v5 = FUN_00377bec().lo;
     ln7 = FUN_00310e08(0xff, v4, v5);
     FUN_00350798();
     FUN_00310d68();
@@ -4894,7 +4902,7 @@ static void sk_bcg_004720b8(word_t param_1, word_t param_2, word_t param_3, word
 }
 
 /* FUN_0047277c @ 0x0047277c   (est. sk_bcg_0047277c)
- * Ghidra: void FUN_0047277c(void)
+ * Ghidra: void sk_bcg_0047277c(void)
  * ByteCodeGen buffer-grow loop: builds a capacity-checked element buffer
  * (used to accumulate regex instruction indices), repeatedly growing it
  * while appending elements, guarding every arithmetic/bounds check with a
@@ -4986,12 +4994,12 @@ static void sk_bcg_0047277c(void)
                     *(unsigned long *)(lStack + 0x10) = v8 + 1;
                     *(long *)(lStack + v8 * 8 + 0x20) = ln3;
                 } else {
-                    v8 = FUN_004ac180();
+                    v8 = FUN_004ac180().lo;
                     av9.hi = 0;
                     av9.lo = v8;
 LAB_00472920:
                     FUN_00351e3c(av9.lo, av9.hi);
-                    FUN_00472f44();
+                    sk_bcg_00472f44();
                 }
                 v7 = v7 + 1;
             } while (v1 != v7);
@@ -5001,7 +5009,7 @@ LAB_00472920:
 }
 
 /* FUN_00472974 @ 0x00472974   (est. sk_bcg_00472974)
- * Ghidra: void FUN_00472974(undefined8 param_1, undefined8 param_2, long param_3, undefined8 param_4, code *param_5)
+ * Ghidra: void sk_bcg_00472974(undefined8 param_1, undefined8 param_2, long param_3, undefined8 param_4, code *param_5)
  * ByteCodeGen element-scan loop with two builder closures: iterates the
  * range [param_3 .. thunk_FUN_0001612c(param_4,v4)) appending bytecode
  * instructions via a masked trampoline, and on completion either emits a
@@ -5031,7 +5039,7 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
     long loc_d8;
     word_t astk_28[5];   /* astk_28 [40] */
 
-    v2 = FUN_0008e518();
+    v2 = FUN_0008e518().lo;
     FUN_004633e0();
     v3 = FUN_00377824(0xff, istk_00000088, istk_00000080);
     v4 = FUN_0034b0b4();
@@ -5062,7 +5070,7 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
         av11 = FUN_00350914();
         FUN_0046490c(av11.lo, av11.hi, v3);
         FUN_00464f4c();
-        v7 = FUN_00377bec();
+        v7 = FUN_00377bec().lo;
         av11 = FUN_00350500();
         FUN_00310e08(av11.lo, av11.hi, v7);
         FUN_00349fe0(v7);
@@ -5143,26 +5151,26 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
 }
 
 /* FUN_00472f00 @ 0x00472f00   (est. sk_bcg_00472f00)
- * Ghidra: void FUN_00472f00(void)
- * Thin trampoline: forwards directly to FUN_00471f20 (the shared
+ * Ghidra: void sk_bcg_00472f00(void)
+ * Thin trampoline: forwards directly to sk_bcg_00471f20(the shared
  * ByteCodeGen entry/teardown helper owned by another part).
  * Confidence: high (trivial thunk) */
 static void sk_bcg_00472f00(void)
 {
-    FUN_00471f20();
+    sk_bcg_00471f20();
 }
 
 /* FUN_00472f04 @ 0x00472f04   (est. sk_bcg_00472f04)
- * Ghidra: void FUN_00472f04(void)
- * Thin trampoline: forwards directly to FUN_00471f20 (shared helper).
+ * Ghidra: void sk_bcg_00472f04(void)
+ * Thin trampoline: forwards directly to sk_bcg_00471f20(shared helper).
  * Confidence: high (trivial thunk) */
 static void sk_bcg_00472f04(void)
 {
-    FUN_00471f20();
+    sk_bcg_00471f20();
 }
 
 /* FUN_00472f44 @ 0x00472f44   (est. sk_bcg_00472f44)
- * Ghidra: void FUN_00472f44(void)
+ * Ghidra: void sk_bcg_00472f44(void)
  * ByteCodeGen range-collector: reads two builder/capacity values and an
  * index from caller-injected registers (ix5/ix6/ix7), then loops
  * appending per-element "range" records into a growing buffer, calling an
@@ -5237,7 +5245,7 @@ static void sk_bcg_00472f44(void)
 }
 
 /* FUN_004730e4 @ 0x004730e4   (est. sk_bcg_004730e4)
- * Ghidra: undefined1[16] FUN_004730e4(undefined8 param_1, undefined8 param_2, long param_3)
+ * Ghidra: undefined1[16] sk_bcg_004730e4(undefined8 param_1, undefined8 param_2, long param_3)
  * Returns a 16-byte pair built from the bytecode-buffer element count at
  * param_3+0x10 (in the low word) with the high word cleared and the pair
  * shifted left 0x40 (a Swift String/Substring-style tagged representation).
@@ -5251,7 +5259,7 @@ static wpair_t sk_bcg_004730e4(word_t param_1, word_t param_2, long param_3)
 }
 
 /* FUN_004730f0 @ 0x004730f0   (est. sk_bcg_004730f0)
- * Ghidra: void FUN_004730f0(long param_1, undefined8 param_2, ulong param_3, undefined8 param_4, code *param_5)
+ * Ghidra: void sk_bcg_004730f0(long param_1, undefined8 param_2, ulong param_3, undefined8 param_4, code *param_5)
  * ByteCodeGen UTF-8/literal-size classifier: validates param_1 (non-negative),
  * resolves a code-unit width from param_3's tagged flags, and either emits a
  * size-class node via an indirect builder or traps. A capture-count check
@@ -5284,7 +5292,7 @@ static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3,
     v4 = v7 == 0;
     FUN_00351b78(0xf, v5);
     (*exx8)();
-    v6 = FUN_00351db4();
+    v6 = FUN_00351db4().lo;
     v2 = v1 << 0x10;
     if (!v4) {
         v2 = v6;
@@ -5302,7 +5310,7 @@ static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3,
 }
 
 /* FUN_004731b8 @ 0x004731b8   (est. sk_bcg_004731b8)
- * Ghidra: undefined1[16] FUN_004731b8(long param_1, long param_2)
+ * Ghidra: undefined1[16] sk_bcg_004731b8(long param_1, long param_2)
  * Range-node builder: checks param_1 non-negative and a capacity lower
  * bound; returns a 16-byte pair {param_2, param_2+0x20} describing a
  * bytecode element region, else traps on the size check.
@@ -5321,7 +5329,7 @@ static wpair_t sk_bcg_004731b8(long param_1, long param_2)
     ln4 = *(long *)(param_2 + 0x10);
     FUN_0035053c(0, param_1);      /* sets Z flag -> zflag */
     FUN_001a9a84();
-    ln3 = FUN_00351db4();
+    ln3 = FUN_00351db4().lo;
     ln1 = ln4;
     if (!zflag) {
         ln1 = ln3;
@@ -5340,7 +5348,7 @@ static wpair_t sk_bcg_004731b8(long param_1, long param_2)
 }
 
 /* FUN_00473244 @ 0x00473244   (est. sk_bcg_00473244)
- * Ghidra: void FUN_00473244(undefined8 param_1, undefined8 param_2, ulong param_3, ulong param_4)
+ * Ghidra: void sk_bcg_00473244(undefined8 param_1, undefined8 param_2, ulong param_3, ulong param_4)
  * The ByteCodeGen node dispatcher: switches on a "node kind" tag (v23,
  * derived from an element value) and for each regex-construct kind emits
  * the corresponding Swift bytecode instructions into the builder buffer
@@ -5423,19 +5431,19 @@ static void sk_bcg_00473244(word_t param_1, word_t param_2, unsigned long param_
     default:
         v26 = *(unsigned long *)(v8 + 0x10);
         FUN_0036b270(v26);
-        FUN_00476fd0();
+        sk_bcg_00476fd0();
         goto LAB_0047419c;
     case 1:
         FUN_004ab4e8();
         v28 = FUN_004ab998();
-        ln20 = FUN_0036b270(*(word_t *)((v28 & x8_2) + 0x10));   /* extraout_x8_02 */
+        ln20 = FUN_0036b270(*(word_t *)((v28 & x8_2) + 0x10)).lo;   /* extraout_x8_02 */
         pv10 = &DAT_00657778;
         ln13 = 0x20;
         for (ln15 = *(long *)(ln20 + 0x10); ln15 != 0; ln15 = ln15 + -1) {
             v28 = *(unsigned long *)(ln20 + ln13);
             FUN_004ac15c();
             FUN_0036b270(v28 & ux22);
-            ln30 = FUN_0047c1b0(v28);
+            ln30 = sk_bcg_0047c1b0(v28);
             FUN_004ab998();
             FUN_0036b118(v28 & ux22);
             v8 = *(unsigned long *)(ln30 + 0x10);
@@ -5532,7 +5540,7 @@ LAB_00473b54:
                         v17 = loc_38;
                         v16 = loc_40;
                         FUN_004aa6c4();
-                        v18 = FUN_00002534();
+                        v18 = FUN_00002534().lo;
                         ln13 = FUN_0036a9a0(v18, astk_70);
                         *(word_t *)(ln13 + 0x18) = v27;
                         *(word_t *)(ln13 + 0x10) = v21;
@@ -5591,7 +5599,7 @@ LAB_00473990:
                     v16 = loc_40;
                     if (bv4) {
                         FUN_004aa6c4();
-                        v18 = FUN_00002534();
+                        v18 = FUN_00002534().lo;
                         ln13 = FUN_0036a9a0(v18, loc_30);
                         *(word_t *)(ln13 + 0x18) = v27;
                         *(word_t *)(ln13 + 0x10) = v21;
@@ -5668,7 +5676,7 @@ LAB_00474524:
             v26 = *(unsigned long *)(pv10 + v8 * 8 + 0x20);
             FUN_004ab998();
             FUN_0036b270(v26 & (unsigned long)ux20);
-            FUN_00473244(v26);
+            sk_bcg_00473244(v26);
             FUN_0036b118(v26 & (unsigned long)ux20);
             if (ux21 != 0) {
                 FUN_0036b118(pv10);
@@ -5699,8 +5707,8 @@ LAB_004745ac:
         v5 = *(word_t *)(x8_8 + 0x28);
         FUN_00351f1c();
         FUN_004a36fc();
-        FUN_004775d0();
-        v8 = FUN_0047c474(v31, v5, v21, v17);
+        sk_bcg_004775d0();
+        v8 = sk_bcg_0047c474(v31, v5, v21, v17);
         FUN_004aa594();
         FUN_00498b28(ux20, x16_0);
         FUN_004ac7a4();
@@ -5711,7 +5719,7 @@ LAB_004745ac:
         FUN_004aa9e8();
         *(unsigned long *)(x9_2 + 0x20) = v8 | 0x1700000000000000;   /* extraout_x9_02 */
         *(word_t *)(ux20 + 8) = x8_9;          /* extraout_x8_09 */
-        av34 = FUN_00473244(v27);
+        av34 = sk_bcg_00473244(v27);
         if (ux21 != 0) {
             FUN_00351f1c(ln13, v16);
             FUN_004a372c();
@@ -5728,7 +5736,7 @@ LAB_004745ac:
         *(unsigned long *)(x9_6 + 0x20) = v8 | 0x1800000000000000;    /* extraout_x9_06 */
         *(word_t *)(ux20 + 8) = x8_17;         /* extraout_x8_17 */
         if ((av34.hi & 0xff) != 1) {             /* av34._8_4_ & 0xff */
-            FUN_0047c4e4(av34.lo, v8);
+            sk_bcg_0047c4e4(av34.lo, v8);
         }
         if (ln13 != 0) {
             ln15 = FUN_0036a940(0x687d70, 0x31, 7);
@@ -5747,7 +5755,7 @@ LAB_004745ac:
     case 3:
         FUN_00117cc4(&loc_3c8, (v8 & 0xffffffffffffffb) + 0x10, 0x51);
         v21 = *(word_t *)((v8 & 0xffffffffffffffb) + 0x68);
-        FUN_004775d0();
+        sk_bcg_004775d0();
         v23 = FUN_0041a868();
         if ((v23 & 0xff) != 2) {
             if ((v23 & 1) == 0) {
@@ -5766,8 +5774,8 @@ LAB_004745ac:
 joined_r0x00474484:
                 if (ux21 == 0) goto LAB_00474e70;
             } else {
-                v27 = FUN_004772d0();
-                v28 = FUN_004772d0();
+                v27 = sk_bcg_004772d0();
+                v28 = sk_bcg_004772d0();
                 FUN_004aa5ac();
                 FUN_00498b28(x16_2);
                 FUN_003509b0();
@@ -5788,7 +5796,7 @@ joined_r0x00474484:
                 *(word_t *)(x9_5 + 0x20) = 0x1100000000000000;   /* extraout_x9_05 */
                 *(word_t *)(ux20 + 8) = x8_15;   /* extraout_x8_15 */
                 FUN_00481918(v27);
-                FUN_00473244(v21);
+                sk_bcg_00473244(v21);
                 if ((v23 >> 8 & 1) == 0) {
                     if (ux21 == 0) {
                         FUN_004aa464();
@@ -5809,7 +5817,7 @@ joined_r0x00474484:
                         FUN_00498c1c();
                         FUN_004aa9e8(*(word_t *)(ux20 + 8));
                         FUN_004aaa38();
-                        FUN_00477494(v27);
+                        sk_bcg_00477494(v27);
 LAB_004749d8:
                         FUN_004aa464();
                         FUN_00498b28(x16_8);
@@ -5817,7 +5825,7 @@ LAB_004749d8:
                         FUN_00498c1c();
                         FUN_004aab88(*(word_t *)(ux20 + 8));
                         FUN_004aaa38();
-                        FUN_00477494(v28);
+                        sk_bcg_00477494(v28);
                         goto LAB_00474e70;
                     }
                 } else if (ux21 == 0) {
@@ -5834,7 +5842,7 @@ LAB_004749d8:
                     FUN_00498c1c();
                     FUN_004aa9e8(*(word_t *)(ux20 + 8));
                     FUN_004aaa38();
-                    FUN_00477494(v27);
+                    sk_bcg_00477494(v27);
                     FUN_004ab478();
                     FUN_00498b28();
                     FUN_00350618();
@@ -5882,11 +5890,11 @@ LAB_004745dc:
             loc_f0 = loc_398;
             loc_e8 = lStack_390;
             if (((byte)ux20[0xd0] & 1) == 0) {
-                FUN_004766ec(&loc_120);
+                sk_bcg_004766ec(&loc_120);
             }
-            FUN_004766ec(&loc_120);
+            sk_bcg_004766ec(&loc_120);
 LAB_00474e54:
-            FUN_00473244(v21);
+            sk_bcg_00473244(v21);
             goto joined_r0x00474484;
         }
         if (loc_378 != 3) goto LAB_00474e54;
@@ -5907,8 +5915,8 @@ LAB_00474e54:
             FUN_004ab490(loc_30);
             goto LAB_004745dc;
         }
-        v27 = FUN_004772d0();
-        v28 = FUN_004772d0();
+        v27 = sk_bcg_004772d0();
+        v28 = sk_bcg_004772d0();
         FUN_00498b28(FUN_00499158);
         v16 = FUN_004aa7a8();
         FUN_00498c1c(v16, FUN_00499158);
@@ -5921,7 +5929,7 @@ LAB_00474e54:
         FUN_004ab7f0();
         FUN_004ab7e0();
         FUN_00481918(v27);
-        FUN_00473244(v21);
+        sk_bcg_00473244(v21);
         if (ux21 != 0) goto LAB_00474e64;
         FUN_00498b28(ux20, FUN_00499158);
         v21 = FUN_004ab018();
@@ -5937,7 +5945,7 @@ LAB_00474e54:
         FUN_004ab7ac();
         FUN_004aa9e8();
         FUN_004ab344();
-        FUN_00477494(v27);
+        sk_bcg_00477494(v27);
         FUN_004ab484();
         FUN_00498b28(FUN_00499158);
         FUN_004ab7ac();
@@ -5955,7 +5963,7 @@ LAB_00474e54:
         FUN_004aab88(*(word_t *)(ux20 + 8));
         *(word_t *)(x9_0 + 0x20) = 0x1d00000000000000;   /* extraout_x9_00 */
         FUN_004abc44();
-        FUN_00477494(v28);
+        sk_bcg_00477494(v28);
 LAB_00474e70:
         FUN_0048525c();
         goto LAB_00474e78;
@@ -5963,7 +5971,7 @@ LAB_00474e70:
         FUN_004ab800();
         v28 = *(unsigned long *)(x8_0 + 0x10);    /* exx8 */
         FUN_0036b270(v28 & (unsigned long)ux20);
-        FUN_00473244(v28);
+        sk_bcg_00473244(v28);
         v26 = v28 & (unsigned long)ux20;
 LAB_0047419c:
         FUN_0036b118(v26);
@@ -5998,9 +6006,9 @@ LAB_0047419c:
         if (bv2 >> 6 != 0) {
             v5 = bv2 >> 6 == 1;
             if (v5) {
-                v28 = FUN_00477694(*(word_t *)ux20, bv2 & 0x3f);
+                v28 = sk_bcg_00477694(*(word_t *)ux20, bv2 & 0x3f);
             } else {
-                v7 = FUN_004776c4(*(word_t *)ux20);
+                v7 = sk_bcg_004776c4(*(word_t *)ux20);
                 v28 = (unsigned long)(v7 & 0xff);
             }
         }
@@ -6027,13 +6035,13 @@ LAB_0047419c:
             v21 = 1;
             v8 = param_3;
 LAB_004744b4:
-            av33 = FUN_004776ec(v27, v28, ln13, v8, v21);
+            av33 = sk_bcg_004776ec(v27, v28, ln13, v8, v21);
             v21 = av33.hi;
             if ((av33.lo & 1) == 0) {
-                v16 = FUN_004772d0();
-                v17 = FUN_004772d0();
-                v18 = FUN_004772d0();
-                v19 = FUN_004772d0();
+                v16 = sk_bcg_004772d0();
+                v17 = sk_bcg_004772d0();
+                v18 = sk_bcg_004772d0();
+                v19 = sk_bcg_004772d0();
                 if (ln13 < 2) {
                     v26 = 0x500000000000000;
                 } else {
@@ -6061,9 +6069,9 @@ LAB_004744b4:
                     v29 = ux25 | 0x500000000000000;
                 }
                 if (((uint)v28 & 0xff) == 2) {
-                    FUN_00477e10();
+                    sk_bcg_00477e10();
                 }
-                FUN_00477494(v16);
+                sk_bcg_00477494(v16);
                 if (ln13 == 0) {
                     v26 = 0x400000000000000;
 LAB_00474b28:
@@ -6082,9 +6090,9 @@ LAB_00474b28:
                     }
                     goto LAB_00474b28;
                 }
-                FUN_00477494(v17);
+                sk_bcg_00477494(v17);
                 if (((byte)ux20[0xd8] & 1) == 0) {
-                    v25 = FUN_00477e8c(v27);
+                    v25 = sk_bcg_00477e8c(v27);
                     iv6 = 0;
                     v9 = 1;
                     v26 = 0x600000000000000;
@@ -6114,7 +6122,7 @@ LAB_00474bac:
                     v9 = 1;
                     v26 = 0x600000000000000;
                 }
-                FUN_00473244(v27);
+                sk_bcg_00473244(v27);
                 v21 = x1_17;         /* extraout_x1_17 */
                 if (ux21 == 0) {
                     if (iv6 != 0) {
@@ -6141,7 +6149,7 @@ LAB_00474bac:
                         FUN_004abc44();
                         FUN_00481918(v16);
                     }
-                    FUN_00477494(v18);
+                    sk_bcg_00477494(v18);
                     pc3 = (code *)ux20;
                     if ((v23 & 0xff) != 1) {
                         if ((long)v8 < 0) {
@@ -6189,7 +6197,7 @@ LAB_00474ed0:
                         FUN_004abc44();
                         FUN_00481918(v17);
                     }
-                    FUN_00477494(v19);
+                    sk_bcg_00477494(v19);
                     v21 = x1_19;     /* extraout_x1_19 */
                 }
             }
@@ -6209,12 +6217,12 @@ LAB_00474ed0:
         FUN_004ab260();
         v26 = *(unsigned long *)(x8_1 + 0x10);    /* extraout_x8_01 */
         bv2 = *(byte *)(x8_1 + 0x18);
-        v21 = FUN_0036b270(v26);
+        v21 = FUN_0036b270(v26).lo;
         v8 = FUN_0047ca18(v21, 0);
         v28 = v26;
         if ((v8 & 1) == 0) {
             FUN_004ac954(v26, bv2);
-            FUN_0047aa0c();
+            sk_bcg_0047aa0c();
             goto LAB_0047419c;
         }
         FUN_0036b118(v26);
@@ -6232,7 +6240,7 @@ LAB_00474ed0:
             goto LAB_00473d2c;
         }
         FUN_004ac954();
-        FUN_00475cf8();
+        sk_bcg_00475cf8();
         v21 = x1_12;         /* extraout_x1_12 */
         break;
     case 8:
@@ -6241,7 +6249,7 @@ LAB_00474ed0:
         FUN_00117cc4();
         FUN_004a36c4(astk_330, &loc_120);
         FUN_004ac954(astk_330);
-        FUN_00475544();
+        sk_bcg_00475544();
         FUN_004a36d4(astk_330);
         v21 = x1_08;         /* extraout_x1_08 */
         break;
@@ -6257,7 +6265,7 @@ LAB_00474ed0:
         v26 = v8 >> 0x38 & 0xf;
         if ((v29 & 1) == 0) {
             ln13 = *(long *)ux20;
-            v9 = FUN_00476c0c(ln13);
+            v9 = sk_bcg_00476c0c(ln13);
             if ((v9 & 1) != 0) {
                 FUN_003507bc();
                 v9 = FUN_0047cadc();
@@ -6281,7 +6289,7 @@ LAB_00474ed0:
             if ((v23 & 1) != 0) goto LAB_00473dd0;
             FUN_003507bc();
             v21 = FUN_00083450();
-            FUN_00476c58(v21, v23 >> 0x10 & 1);
+            sk_bcg_00476c58(v21, v23 >> 0x10 & 1);
             FUN_0036b118(v21);
         } else {
 LAB_00473dd0:
@@ -6463,7 +6471,7 @@ LAB_00474b08:
                     FUN_003a25d4(v8);
                     if (x8_16 == 0) goto LAB_00474c18;
                     FUN_00350518();
-                    FUN_00476cd4();
+                    sk_bcg_00476cd4();
                     if ((param_3 ^ param_4) >> 0xe == 0) {
                         FUN_003a25d4(x1_15);        /* extraout_x1_15 */
                         /* WARNING: Does not return */
@@ -6474,7 +6482,7 @@ LAB_00474b08:
                     FUN_004ac2d0();
                     FUN_003a25d4();
                     FUN_00350518();
-                    av33 = FUN_00476cd4();
+                    av33 = sk_bcg_00476cd4();
                     v26 = param_3 >> 0xe;
                     loc_1d0 = param_3;
                     if (v26 != param_4 >> 0xe) {
@@ -6494,7 +6502,7 @@ LAB_00474b08:
 LAB_00474750:
                                 if ((v8 >> 0x3c & 1) == 0) goto LAB_00474754;
 LAB_00474848:
-                                v29 = FUN_002a49a8(v29 & 0xffffffffffff0000, v28);
+                                v29 = FUN_002a49a8(v29 & 0xffffffffffff0000, v28).lo;
                                 goto switchD_004747a8_caseD_0;
                             }
                             if ((v29 & 0xc) == 4UL << v23) {
@@ -6606,7 +6614,7 @@ LAB_00474c18:
                 stk_108 = x8_20;             /* extraout_x8_20 */
                 thunk_FUN_0036b270(v8);
                 while (FUN_0029fb80(), x1_16 != 0) {   /* extraout_x1_16 */
-                    FUN_00475e14();
+                    sk_bcg_00475e14();
                     FUN_003a25d4(x1_16);
                 }
             }
@@ -6633,7 +6641,7 @@ LAB_00474c68:
     case 0xc:
         FUN_004ab260();
         FUN_004ac954(*(word_t *)(x8_10 + 0x10));   /* extraout_x8_10 */
-        av33 = FUN_00473244();
+        av33 = sk_bcg_00473244();
         v21 = av33.hi;
         if (ux21 == 0) {
             v28 = av33.lo;
@@ -6660,7 +6668,7 @@ LAB_00474c68:
         *(word_t *)(ln13 + 0x18) = *(word_t *)(v8 + 0x20);
         *(word_t *)(ln13 + 0x10) = v27;
         FUN_0036b270(v21);
-        FUN_00477504(FUN_004a369c, ln13);
+        sk_bcg_00477504(FUN_004a369c, ln13);
         FUN_0036b118(ln13);
         v28 = *(unsigned long *)(ux20 + 0x70);
         if (SCARRY8(v28, 1)) {
@@ -6669,7 +6677,7 @@ LAB_00474c68:
         }
         *(unsigned long *)(ux20 + 0x70) = v28 + 1;
         FUN_00350518();
-        FUN_00477590();
+        sk_bcg_00477590();
         v21 = 0;
         goto switchD_00473298_caseD_9;
     case 0xf:
@@ -6697,7 +6705,7 @@ switchD_00473298_caseD_9:
 }
 
 /* FUN_00474fe8 @ 0x00474fe8   (est. sk_bcg_00474fe8)
- * Ghidra: void FUN_00474fe8(long *param_1)
+ * Ghidra: void sk_bcg_00474fe8(long *param_1)
  * ByteCodeGen finalize/emit: consumes a bitmask of set capture groups from
  * a builder at ux20, iterates the set bits (bit-reversal/leading-zero
  * scan) to attach "capture" bytecode entries, then, when no error is
@@ -6806,7 +6814,7 @@ LAB_0047516c:
         if (v7) {
             ln22 = *ux20;
         } else {
-            FUN_00477494(ux20[0x12]);
+            sk_bcg_00477494(ux20[0x12]);
             FUN_004aa464();
             FUN_00498b28(exx16);
             ln24 = *(long *)(*ux20 + 0x10);
@@ -6979,7 +6987,7 @@ LAB_004754c4:
 }
 
 /* FUN_00475544 @ 0x00475544   (est. sk_bcg_00475544)
- * Ghidra: void FUN_00475544(void)
+ * Ghidra: void sk_bcg_00475544(void)
  * ByteCodeGen special-form emitter: reads a decoded Swift "insn" struct from
  * two stack buffers and switches on its tag to emit the bytecode for a
  * backreference / quantifier / capture / error-form. Cases build fatal-message
@@ -7037,7 +7045,7 @@ static void sk_bcg_00475544(void)
     default:
         FUN_0049e2f0(astk_430);
         FUN_000e0654();
-        FUN_00475e14();
+        sk_bcg_00475e14();
         break;
     case 1:
         FUN_0049e2f0(astk_430);
@@ -7046,9 +7054,9 @@ static void sk_bcg_00475544(void)
             /* WARNING: Does not return */
             CL4_SWBP(0x475ba4);
         }
-        v5 = FUN_004ab55c(*pv12);
+        v5 = FUN_004ab55c(*pv12).lo;
         if ((w8_0 >> 0x10 & 1) == 0) {   /* exw8 */
-            FUN_00476518();
+            sk_bcg_00476518();
         } else {
             if (v5 < 0x80) {
                 v11 = (unsigned long)(v5 + 1);
@@ -7065,13 +7073,13 @@ static void sk_bcg_00475544(void)
                 CL4_SWBP(0x475b9c);
             }
             FUN_00294cb4(loc_138);
-            FUN_00475e14();
+            sk_bcg_00475e14();
             FUN_003a25d4(x1_1);     /* extraout_x1_01 */
         }
         break;
     case 2:
         pv13 = (word_t *)FUN_0049e2f0(astk_430);
-        v5 = FUN_00476e94(*ux19, *pv13);
+        v5 = sk_bcg_00476e94(*ux19, *pv13);
         v11 = FUN_00481320(v5 & 0xff01ffff);
         v11 = v11 | 0xc00000000000000;
         goto LAB_00475684;
@@ -7098,7 +7106,7 @@ static void sk_bcg_00475544(void)
                 CL4_SWBP(0x475bac);
             }
             v5 = *(uint *)(ln10 + 0x1c + *(long *)(ln10 + 0x10) * 4);
-            v11 = FUN_00476e74(ln10);
+            v11 = sk_bcg_00476e74(ln10);
             if (*(long *)(ln10 + 0x10) == 0) {
                 /* WARNING: Does not return */
                 CL4_SWBP(0x475bb0);
@@ -7152,8 +7160,8 @@ static void sk_bcg_00475544(void)
                     /* WARNING: Does not return */
                     CL4_SWBP(0x475bc8);
                 }
-                v9 = FUN_004ab55c();
-                FUN_00476dd0(v9, (x8_4 & 0x10000) == 0);   /* extraout_x8_04 */
+                v9 = FUN_004ab55c().lo;
+                sk_bcg_00476dd0(v9, (x8_4 & 0x10000) == 0);   /* extraout_x8_04 */
             } else {
                 if (loc_228 == '\x01') {
                     FUN_004ac4b8();
@@ -7177,7 +7185,7 @@ static void sk_bcg_00475544(void)
                     CL4_SWBP(0x475bb4);
                 }
                 av16 = FUN_004ab55c();
-                FUN_00476e18(av16.lo, av16.hi, (w8_1 >> 0x10 & 1) == 0);  /* extraout_w8_00 */
+                sk_bcg_00476e18(av16.lo, av16.hi, (w8_1 >> 0x10 & 1) == 0);  /* extraout_w8_00 */
                 if (ux21 == 0) {
                     ux21 = 0;
                 }
@@ -7226,8 +7234,8 @@ LAB_00475910:
             /* WARNING: Does not return */
             CL4_SWBP(0x475ba8);
         }
-        v9 = FUN_004ab55c(*pv13);
-        FUN_004765b0(v9, (x8_1 & 0x10000) == 0);   /* extraout_x8_01 */
+        v9 = FUN_004ab55c(*pv13).lo;
+        sk_bcg_004765b0(v9, (x8_1 & 0x10000) == 0);   /* extraout_x8_01 */
         break;
     case 6:
         pv13 = (word_t *)FUN_0049e2f0(astk_430);
@@ -7248,20 +7256,20 @@ LAB_00475910:
             loc_270 = pv13[4];
             stk_258 = pv13[7];
             stk_260 = pv13[6];
-            FUN_004766ec(&loc_290);
+            sk_bcg_004766ec(&loc_290);
         }
-        FUN_004766ec(&loc_380);
+        sk_bcg_004766ec(&loc_380);
         break;
     case 7:
         v9 = FUN_0049e2f0(astk_430);
         bv15 = 0;
         FUN_00117cc4(astk_340, v9);
-        ln10 = FUN_0047684c(*ux19);
+        ln10 = sk_bcg_0047684c(*ux19);
         if (ux21 != 0) goto LAB_00475910;
         if (ln10 == 0) {
             loc_78 = 0;
             stk_70 = 0xe000000000000000;
-            { wpair_t _w = FUN_004769a4(); loc_138[0] = _w.lo; loc_138[1] = _w.hi; }   /* loc_138 = FUN_004769a4() */
+            { wpair_t _w = sk_bcg_004769a4(); loc_138[0] = _w.lo; loc_138[1] = _w.hi; }   /* loc_138 = sk_bcg_004769a4() */
             v9 = loc_138[1];
             loc_128 = bv15 & 1;
             av16 = FUN_00002534(&LAB_00657e08, &DAT_005a4c10);
@@ -7293,13 +7301,13 @@ LAB_00475684:
         ux19[1] = x8_0;       /* extraout_x8_00 */
         break;
     case 8:
-        FUN_00475bf4();
+        sk_bcg_00475bf4();
         break;
     case 9:
-        FUN_00475c7c();
+        sk_bcg_00475c7c();
         break;
     case 10:
-        FUN_00475cf8();
+        sk_bcg_00475cf8();
         goto joined_r0x00475844;
     }
     iv6 = FUN_0049e2d4(astk_1e8);
@@ -7309,7 +7317,7 @@ LAB_00475684:
 }
 
 /* FUN_00475bf4 @ 0x00475bf4   (est. sk_bcg_00475bf4)
- * Ghidra: void FUN_00475bf4(void)
+ * Ghidra: void sk_bcg_00475bf4(void)
  * ByteCodeGen dot-matches-newline helper: if a node/flag descriptor is
  * present (exx9), reads a flag word and appends a kind-tagged
  * instruction (0x700000000010001 or 0x700000000010000 depending on the
@@ -7348,7 +7356,7 @@ static void sk_bcg_00475bf4(void)
 }
 
 /* FUN_00475c7c @ 0x00475c7c   (est. sk_bcg_00475c7c)
- * Ghidra: void FUN_00475c7c(void)
+ * Ghidra: void sk_bcg_00475c7c(void)
  * ByteCodeGen assertion helper (sibling of sk_bcg_00475bf4): appends a
  * kind-tagged assertion instruction (0xd00000000000000 or 0xd00000000000001
  * depending on the 0x10000 flag) into the builder at ux20; traps if no
@@ -7387,7 +7395,7 @@ static void sk_bcg_00475c7c(void)
 }
 
 /* FUN_00475cf8 @ 0x00475cf8   (est. sk_bcg_00475cf8)
- * Ghidra: void FUN_00475cf8(void)
+ * Ghidra: void sk_bcg_00475cf8(void)
  * ByteCodeGen dispatch helper for the "isMatch/matches empty-flag" variant:
  * inspects two flag bits of a decoded element and routes to the assertion
  * (sk_bcg_00475c7c) or dot-matches-newline (sk_bcg_00475bf4) emitter, or
@@ -7412,12 +7420,12 @@ static void sk_bcg_00475cf8(void)
     if (x9 != 0) {
         FUN_004ab55c();
         if ((w8 >> 4 & 1) == 0) {
-            FUN_00475c7c();
+            sk_bcg_00475c7c();
         } else if ((w8 >> 9 & 1) == 0) {
-            FUN_00475bf4();
+            sk_bcg_00475bf4();
         } else {
             FUN_004aa6c4();
-            v2 = FUN_00002534();
+            v2 = FUN_00002534().lo;
             ln3 = FUN_0036a9a0(v2, astk_1d0);
             v2 = _DAT_004c2450;
             *(word_t *)(ln3 + 0x18) = uRam00000000004c2458;   /* DAT_004c2458 */
@@ -7434,7 +7442,7 @@ static void sk_bcg_00475cf8(void)
             FUN_00117cc4(v4 + 0x10, astk_f0, 0xb0);
             *(unsigned long *)(ln3 + 0x28) = v4 | 0x4000000000000000;
             FUN_003509bc();
-            FUN_00476fd0();
+            sk_bcg_00476fd0();
             FUN_0036b588(ln3);
             FUN_004985e0();
             FUN_00002834();
@@ -7450,7 +7458,7 @@ static void sk_bcg_00475cf8(void)
 
 
 /* FUN_00475e14 @ 0x475e14   (est. sk_bcg_00475e14)
- * Ghidra: void FUN_00475e14(void)
+ * Ghidra: void sk_bcg_00475e14(void)
  * Emits a run of compiled bytecode instructions for a regex alternative:
  * walks a UTF-8/UTF-16 input-range iterator (a "grapheme/range cursor"
  * identified by unaff_x20, an emitter context) and appends one encoded
@@ -7601,7 +7609,7 @@ LAB_00476064:
             FUN_00466214();
             if (!(bool)in_ZR) {
                 FUN_003507e0();
-                FUN_00476cd4();
+                sk_bcg_00476cd4();
                 if ((uVar20 ^ in_x3) >> 0xe == 0) {
                     FUN_003a25d4(extraout_x1);
                     /* WARNING: Does not return */
@@ -7611,7 +7619,7 @@ LAB_00476064:
                 uVar7 = FUN_004a3a94();
                 FUN_003a25d4(extraout_x1);
                 FUN_003507e0();
-                auVar26 = (wpair_t)FUN_00476cd4();
+                auVar26 = (wpair_t)sk_bcg_00476cd4();
                 uVar12 = auVar26.hi;
                 uVar8 = auVar26.lo;
                 uVar21 = uVar20 >> 0xe;
@@ -7670,7 +7678,7 @@ LAB_00476064:
                             uVar22 = (uVar22 + extraout_x8_00) * 0x10000 | 5;
                         }
                         else {
-                            uVar22 = FUN_002a49a8(uVar22, uVar8, uVar12);
+                            uVar22 = FUN_002a49a8(uVar22, uVar8, uVar12).lo;
                         }
                         if ((uVar23 != 4L << uVar14) && ((uVar20 & 1) != 0)) {
                             uVar23 = uVar20 >> 0x10;
@@ -7681,7 +7689,7 @@ LAB_00476064:
 LAB_004762d4:
                             if ((uVar11 >> 0x3c & 1) == 0) goto LAB_004762d8;
 LAB_004763d0:
-                            uVar20 = FUN_002a49a8(uVar20 & 0xffffffffffff0000, uVar16, uVar11);
+                            uVar20 = FUN_002a49a8(uVar20 & 0xffffffffffff0000, uVar16, uVar11).lo;
                             goto switchD_0047632c_caseD_0;
                         }
                         if (uVar23 == 4L << uVar14) {
@@ -7814,7 +7822,7 @@ LAB_004760c8:
 }
 
 /* FUN_00476518 @ 0x476518   (est. sk_bcg_00476518)
- * Ghidra: void FUN_00476518(void)
+ * Ghidra: void sk_bcg_00476518(void)
  * Emits a single literal/matched-width instruction for the current regex
  * position: computes the next position token (unaff_x20+8 is the emit-buffer
  * slot), folds the matched-width flag (0x900000000000000 vs 0x980000000000000
@@ -7851,7 +7859,7 @@ static void sk_bcg_00476518(void)
 }
 
 /* FUN_004765b0 @ 0x4765b0   (est. sk_bcg_004765b0)
- * Ghidra: void FUN_004765b0(void)
+ * Ghidra: void sk_bcg_004765b0(void)
  * Prepares/commits an instruction-emission slot: resets the tail counter
  * (0x476dd0(0)), reads the emitter table depth at *ctx+0x10, classifies the
  * current code-point token (0x3a261c validate, 0x499f0c token unpack), and
@@ -7872,7 +7880,7 @@ static void sk_bcg_004765b0(void)
     wpair_t auVar11, auVar12;
 
     uVar3 = FUN_00354744();
-    FUN_00476dd0(0);
+    sk_bcg_00476dd0(0);
     lVar10 = *(long *)(*ctx + 0x10);
     uVar4 = FUN_003a261c(ctx[0x17]);
     lVar9 = ctx[0x17];
@@ -7884,7 +7892,7 @@ static void sk_bcg_004765b0(void)
         /* WARNING: Does not return */
         CL4_SWBP(0x4766dc);
     }
-    uVar5 = FUN_00002534(&DAT_00657e10, &DAT_005a4c18);   /* globals 0x657e10, 0x5a4c18 */
+    uVar5 = FUN_00002534(&DAT_00657e10, &DAT_005a4c18).lo;   /* globals 0x657e10, 0x5a4c18 */
     auVar12 = (wpair_t)FUN_00258c60(uVar4, lVar6 + uVar8, uVar5);
     if ((auVar12.lo & 1) != 0) {
         auVar12 = (wpair_t)FUN_00499f0c(uVar3);
@@ -7911,7 +7919,7 @@ static void sk_bcg_004765b0(void)
 }
 
 /* FUN_004766ec @ 0x4766ec   (est. sk_bcg_004766ec)
- * Ghidra: void FUN_004766ec(long param_1)
+ * Ghidra: void sk_bcg_004766ec(long param_1)
  * Merges character-set (character-class) membership flags into the current
  * instruction word at *ctx+0x1c+count*4. param_1 holds the class descriptor
  * (two sub-tables at +0x18 and +0x38, each with a count at +0x10 and a run of
@@ -8000,7 +8008,7 @@ static void sk_bcg_004766ec(long param_1)
 }
 
 /* FUN_0047684c @ 0x47684c   (est. sk_bcg_0047684c)
- * Ghidra: void FUN_0047684c(undefined8 param_1)
+ * Ghidra: void sk_bcg_0047684c(undefined8 param_1)
  * Dispatches a compiler "handled-here" directive: builds a small context
  * frame (0x117cc4) and switches on the AST-node kind returned by
  * 0x458af8. Kinds 0xe/0xf/0x10 (plus the default) log the
@@ -8060,7 +8068,7 @@ static void sk_bcg_0047684c(u64 param_1)
 }
 
 /* FUN_004769a4 @ 0x4769a4   (est. sk_bcg_004769a4)
- * Ghidra: long FUN_004769a4(void)
+ * Ghidra: long sk_bcg_004769a4(void)
  * Emits the bytecode for a regex zero-width assertion/anchor: switches on the
  * assertion kind from 0x48ee9c and calls the anchor-emitter 0x4aa8f0 with the
  * matching named-string label (e.g. "Anchor_endOfSubjectBeforeNewline" at
@@ -8186,7 +8194,7 @@ switchD_00476b58_caseD_2:
 }
 
 /* FUN_00476c0c @ 0x476c0c   (est. sk_bcg_00476c0c)
- * Ghidra: uint FUN_00476c0c(long param_1)
+ * Ghidra: uint sk_bcg_00476c0c(long param_1)
  * Returns the "is a run of one or more character classes" flag for the
  * instruction at index count (param_1+0x10) of the emission table
  * (param_1+0x1c+count*4): the value is bit 0x10 (>>0x10 & 1) of the stored
@@ -8203,7 +8211,7 @@ static uint sk_bcg_00476c0c(long param_1)
 }
 
 /* FUN_00476c28 @ 0x476c28   (est. sk_bcg_00476c28)
- * Ghidra: void FUN_00476c28(byte *param_1, undefined1 *param_2)
+ * Ghidra: void sk_bcg_00476c28(byte *param_1, undefined1 *param_2)
  * Classifies the code point byte *param_2 via 0x2c0054 and stores the
  * low bit of the result (the "is a single atom" classification) into the
  * out-parameter *param_1.
@@ -8218,7 +8226,7 @@ static void sk_bcg_00476c28(byte *param_1, byte *param_2)
 }
 
 /* FUN_00476c58 @ 0x476c58   (est. sk_bcg_00476c58)
- * Ghidra: void FUN_00476c58(undefined8 param_1, ulong param_2)
+ * Ghidra: void sk_bcg_00476c58(undefined8 param_1, ulong param_2)
  * Emits a wide-literal instruction into the current slot: obtains the literal
  * token via 0x48185c, then chains the append helpers 0x4aa3e4/0x498b28/
  * 0x100efc/0x498c1c and writes the packed word
@@ -8243,7 +8251,7 @@ static void sk_bcg_00476c58(u64 param_1, word_t param_2)
 }
 
 /* FUN_00476cd4 @ 0x476cd4   (est. sk_bcg_00476cd4)
- * Ghidra: undefined1 [16] FUN_00476cd4(ulong param_1, ulong param_2)
+ * Ghidra: undefined1 [16] sk_bcg_00476cd4(ulong param_1, ulong param_2)
  * Normalizes a code-point/position descriptor pair: if the "wide/encoded"
  * flag (bit 0x2000000000000000) of param_2 is set, the effective low half is
  * taken from the top nibble of param_2 (param_2>>0x38 & 0xf) instead of
@@ -8266,7 +8274,7 @@ static wpair_t sk_bcg_00476cd4(word_t param_1, word_t param_2)
 }
 
 /* FUN_00476d44 @ 0x476d44   (est. sk_bcg_00476d44)
- * Ghidra: ulong FUN_00476d44(long param_1)
+ * Ghidra: ulong sk_bcg_00476d44(long param_1)
  * Reads the currently-pending instruction's metadata word: if the emission
  * count (param_1+0x10) is zero it returns the sentinel 0xf000000000000007;
  * otherwise it loads the metadata word at param_1+0x18+count*8 and passes the
@@ -8288,7 +8296,7 @@ static word_t sk_bcg_00476d44(long param_1)
 }
 
 /* FUN_00476d88 @ 0x476d88   (est. sk_bcg_00476d88)
- * Ghidra: undefined1 [16] FUN_00476d88(long param_1)
+ * Ghidra: undefined1 [16] sk_bcg_00476d88(long param_1)
  * Reads the current pending (width,index) pair from the emission context:
  * if the count (param_1+0x10) is zero returns {0,0}; otherwise reads the
  * 16-byte slot at (param_1+0x10)+count*16 (lo=width/label, hi=metadata),
@@ -8318,7 +8326,7 @@ static wpair_t sk_bcg_00476d88(long param_1)
 }
 
 /* FUN_00476dd0 @ 0x476dd0   (est. sk_bcg_00476dd0)
- * Ghidra: void FUN_00476dd0(long param_1, ulong param_2)
+ * Ghidra: void sk_bcg_00476dd0(long param_1, ulong param_2)
  * Emits a compact literal instruction: packs the width (param_1<<0x10) with
  * the low flag bit of param_2 and writes it via the raw emitter 0x4aa494,
  * then chains the append helpers 0x498b28/0x4aaf58 and finalizes with
@@ -8334,7 +8342,7 @@ static void sk_bcg_00476dd0(long param_1, word_t param_2)
 }
 
 /* FUN_00476e18 @ 0x476e18   (est. sk_bcg_00476e18)
- * Ghidra: void FUN_00476e18(undefined8 param_1, undefined8 param_2, uint param_3)
+ * Ghidra: void sk_bcg_00476e18(undefined8 param_1, undefined8 param_2, uint param_3)
  * Emits a repetition/width instruction: forwards param_1/param_2 plus the
  * context field at ctx+0xa0 to 0x41c1d8, then asks 0x351db4 for the next
  * width. If the borrow flag is set it emits via 0x4aa610/0x4acb6c, else it
@@ -8347,7 +8355,7 @@ static void sk_bcg_00476e18(u64 param_1, u64 param_2, uint param_3)
     long ctx = unaff_x20;               /* emitter context (unaff_x20) */
 
     FUN_0041c1d8(param_1, param_2, *(u64 *)(ctx + 0xa0));
-    lVar2 = FUN_00351db4();
+    lVar2 = FUN_00351db4().lo;
     if ((bool)in_ZR) {
         FUN_004aa610();
         FUN_004acb6c();
@@ -8357,13 +8365,13 @@ static void sk_bcg_00476e18(u64 param_1, u64 param_2, uint param_3)
             /* WARNING: Does not return */
             CL4_SWBP(0x476e74);
         }
-        FUN_00476dd0(lVar2 + -1, param_3 & 1);
+        sk_bcg_00476dd0(lVar2 + -1, param_3 & 1);
     }
     return;
 }
 
 /* FUN_00476e74 @ 0x476e74   (est. sk_bcg_00476e74)
- * Ghidra: void FUN_00476e74(long param_1)
+ * Ghidra: void sk_bcg_00476e74(long param_1)
  * Emits a single character-class instruction: when the count (param_1+0x10)
  * is non-zero it forwards the packed instruction word
  * (param_1+0x1c+count*4) to 0x354998 for emission; otherwise it fail-closes
@@ -8382,12 +8390,12 @@ static void sk_bcg_00476e74(long param_1)
 /* ==================== SKR27 function bodies ==================== */
 
 /* Extra out-of-slice / cross-part callees used by part 6 bodies. */
-extern word_t FUN_00476d44();    /* out of part 6 (slice callee) */
-extern word_t FUN_00473244();    /* out of part 6 (slice callee) */
+extern word_t sk_bcg_00476d44();    /* out of part 6 (slice callee) */
+extern word_t sk_bcg_00473244();    /* out of part 6 (slice callee) */
 extern word_t thunk_FUN_0036b270(); /* thunk alias of FUN_0036b270 */
 
 /* FUN_00476e94 @ 0x00476e94   (est. sk_bcg_00476e94)
- * Ghidra: uint FUN_00476e94(undefined8 param_1, ulong param_2)
+ * Ghidra: uint sk_bcg_00476e94(undefined8 param_1, ulong param_2)
  * Regex-bytecode-kind selector. Maps a parsed bytecode/instruction selector
  * (param_2 low byte) to a canonical "kind" tag (uVar3) plus a flag (uVar2)
  * that are handed to FUN_00496f58, which encodes the final bytecode word.
@@ -8457,7 +8465,7 @@ static word_t sk_bcg_00476e94(word_t ctx, word_t selector)
 }
 
 /* FUN_00476fd0 @ 0x00476fd0   (est. sk_bcg_00476fd0)
- * Ghidra: void FUN_00476fd0(undefined8 param_1,undefined8 param_2,ulong param_3,ulong param_4)
+ * Ghidra: void sk_bcg_00476fd0(undefined8 param_1,undefined8 param_2,ulong param_3,ulong param_4)
  * Emits the bytecode for a run of instructions from the regex AST into the
  * context's per-slot vectors. param_3 is the start instruction index and
  * param_4 (shifted >>1) the end; it walks entries in the anchor table
@@ -8472,8 +8480,8 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
     word_t *ctx;            /* unaff_x22 - implicit register context base */
     word_t x23;             /* unaff_x23 - implicit register (arg to FUN_00476d44) */
     word_t slot_val;        /* unaff_x25 - implicit register carried value */
-    wpair_t range;          /* auVar12 = FUN_00477338(1) */
-    word_t anchor;          /* fl4 = FUN_004772d0() */
+    wpair_t range;          /* auVar12 = sk_bcg_00477338(1) */
+    word_t anchor;          /* fl4 = sk_bcg_004772d0() */
     word_t idx;             /* param_3 (current instruction index) */
     word_t end;             /* param_4 >> 1 (end index) */
     word_t e, e2;           /* swA/fl6/uVar10 scratch from FUN_003a261c */
@@ -8485,21 +8493,21 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
     long off;               /* resH / tagB - element offset */
 
     FUN_0035089c();
-    anchor = FUN_004772d0();
-    range = FUN_00477338(1);
+    anchor = sk_bcg_004772d0();
+    range = sk_bcg_00477338(1);
     end = p4 >> 1;
     FUN_0036b270();
     idx = p3;
     for (;;) {
         if (end == idx) {
             FUN_0036b118(range.lo);
-            e = FUN_00476d44(x23);
+            e = sk_bcg_00476d44(x23);
             if (((e ^ 0xffffffffffffffffULL) & 0xf000000000000007ULL) != 0) {
                 FUN_004ab890();
-                FUN_00473244();
+                sk_bcg_00473244();
                 FUN_004a38c8(e);
                 if (end == 0) {
-                    FUN_00477494(anchor);
+                    sk_bcg_00477494(anchor);
                 }
                 return;
             }
@@ -8562,7 +8570,7 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
         FUN_004ab420();
         *(word_t **)(ctx + 0x60 / 8) = slot - off * 0x20;
         FUN_004ab890(e);
-        FUN_00473244();
+        sk_bcg_00473244();
         FUN_004ab4e8();
         FUN_0036b118(e & /* extraout_x8_00 */ (word_t)0);
         if (end != 0) {
@@ -8624,7 +8632,7 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
 }
 
 /* FUN_004772d0 @ 0x004772d0   (est. sk_bcg_004772d0)
- * Ghidra: undefined8 FUN_004772d0(void)
+ * Ghidra: undefined8 sk_bcg_004772d0(void)
  * Appends a fresh "anchor" record to the context's anchor slot (ctx+0x50).
  * Returns the slot's previous element count; stores a new entry at offset
  * unaff_x22 with a zero payload word and a flag byte of 1, then bumps the
@@ -8658,7 +8666,7 @@ static word_t sk_bcg_004772d0(void)
 }
 
 /* FUN_00477338 @ 0x00477338   (est. sk_bcg_00477338)
- * Ghidra: undefined1 [16] FUN_00477338(long param_1,long param_2)
+ * Ghidra: undefined1 [16] sk_bcg_00477338(long param_1,long param_2)
  * Returns a 16-byte {base, data} pair describing a vector whose header is at
  * param_2 (element-array base = param_2+0x20) after a resize/reserve of
  * abs(count - param_1) elements via FUN_0035053c + FUN_001a9a84. The new
@@ -8686,7 +8694,7 @@ static wpair_t sk_bcg_00477338(long delta, word_t vec)
     absd = diff & (((long)diff >> 0x3f) ^ 0xffffffffffffffffULL);   /* |diff| */
     FUN_0035053c(0, absd);
     FUN_001a9a84();
-    n = FUN_00351db4();
+    n = FUN_00351db4().lo;
     u = count;
     if (!zf) {              /* in_ZR clear -> use new count */
         u = n;
@@ -8704,7 +8712,7 @@ static wpair_t sk_bcg_00477338(long delta, word_t vec)
 }
 
 /* FUN_004773a8 @ 0x004773a8   (est. sk_bcg_004773a8)
- * Ghidra: void FUN_004773a8(long,undefined8,undefined8,code*,code*,code*)
+ * Ghidra: void sk_bcg_004773a8(long,undefined8,undefined8,code*,code*,code*)
  * Emits a range/instruction marker into the bytecode via an indirect builder.
  * Calls the caller-supplied function pointers param_4 (a size/getter),
  * param_5 (a 16-byte-returning emit helper, given a tag + flags word derived
@@ -8769,7 +8777,7 @@ static void sk_bcg_004773a8(long p1, word_t p2, word_t p3,
 }
 
 /* FUN_00477494 @ 0x00477494   (est. sk_bcg_00477494)
- * Ghidra: void FUN_00477494(ulong param_1)
+ * Ghidra: void sk_bcg_00477494(ulong param_1)
  * Finalizes the anchor record at index param_1 in the context's anchor slot
  * (ctx+0x50): writes the implicit register unaff_x22 into the record's
  * payload word (+0x20) and clears its flag byte (+0x28). The slot is
@@ -8804,7 +8812,7 @@ static void sk_bcg_00477494(word_t index)
 }
 
 /* FUN_00477504 @ 0x00477504   (est. sk_bcg_00477504)
- * Ghidra: void FUN_00477504(void)
+ * Ghidra: void sk_bcg_00477504(void)
  * Emits a "truncated error" bytecode marker. It reports the L4 error-code
  * truncated condition (string "L4ErrorCodeTruncated" at 0x6886a8) through
  * FUN_00002834, then sequences a series of bytecode emit/acquire helpers and
@@ -8829,7 +8837,7 @@ static void sk_bcg_00477504(void)
 }
 
 /* FUN_00477590 @ 0x00477590   (est. sk_bcg_00477590)
- * Ghidra: void FUN_00477590(ulong param_1,long param_2)
+ * Ghidra: void sk_bcg_00477590(ulong param_1,long param_2)
  * Emits a packed two-field bytecode tag: the low 16 bits come from param_1
  * and the next 16 from param_2 (packed as param_1 | param_2<<16), pushed via
  * FUN_004aa494, then several acquire/append helpers run
@@ -8844,11 +8852,11 @@ static void sk_bcg_00477590(word_t p1, long p2)
 }
 
 /* FUN_004775d0 @ 0x004775d0   (est. sk_bcg_004775d0)
- * Ghidra: void FUN_004775d0(void)
+ * Ghidra: void sk_bcg_004775d0(void)
  * Appends a data word into the bytecode vector at *ctx (unaff_x20): after
- * FUN_00084220/FUN_004abacc (extraout_x8/x9), copies the tag word at
+ * FUN_00084220/FUN_004abacc(extraout_x8/x9), copies the tag word at
  * (extraout_x8 + extraout_x9*4 + 0x1c), registers a callback bundle via
- * FUN_00498b7c (four function pointers), and stores the tag into the grown
+ * FUN_00498b7c(four function pointers), and stores the tag into the grown
  * vector at element unaff_x24 (+0x20). Traps (SWBP 0x477694) when the
  * growth produced no element (extraout_x9 == 0).
  * Confidence: medium   Notes: register artifacts extraout_x8/x8_00/x9,
@@ -8862,7 +8870,7 @@ static void sk_bcg_004775d0(void)
     long x8, x8b;           /* extraout_x8 / extraout_x8_00 */
     long x9;                /* extraout_x9 */
 
-    handle = FUN_00084220();
+    handle = FUN_00084220().lo;
     FUN_004abacc();
     if (x9 != 0) {
         tag = *(unsigned int *)(x8 + x9 * 4 + 0x1c);
@@ -8881,7 +8889,7 @@ static void sk_bcg_004775d0(void)
 }
 
 /* FUN_00477694 @ 0x00477694   (est. sk_bcg_00477694)
- * Ghidra: uint FUN_00477694(long param_1,uint param_2)
+ * Ghidra: uint sk_bcg_00477694(long param_1,uint param_2)
  * Kind-resolution helper over the emitted bytecode vector param_1. If the
  * vector is non-empty and the low byte of param_2 is not the "anchored"
  * selector (2) while the last element's tag has the 0x20 bit set, the
@@ -8904,7 +8912,7 @@ static word_t sk_bcg_00477694(long vec, word_t sel)
 }
 
 /* FUN_004776c4 @ 0x004776c4   (est. sk_bcg_004776c4)
- * Ghidra: uint FUN_004776c4(long param_1)
+ * Ghidra: uint sk_bcg_004776c4(long param_1)
  * Reads a 2-bit mode from the last element's tag of bytecode vector param_1:
  * bit 5 yields 1, and the 0x80000 flag overrides to 2. Empty vector traps
  * SWBP 0x4776ec.
@@ -8929,9 +8937,9 @@ static word_t sk_bcg_004776c4(long vec)
 }
 
 /* FUN_004776ec @ 0x004776ec   (est. sk_bcg_004776ec)
- * Ghidra: void FUN_004776ec(undefined8,undefined8,long,long,ulong)
+ * Ghidra: void sk_bcg_004776ec(undefined8,undefined8,long,long,ulong)
  * Core bytecode-instruction emitter state machine. Iterates instructions
- * produced by FUN_0008e518 (a 16-byte descriptor: lo = opcode/kind word,
+ * produced by FUN_0008e518(a 16-byte descriptor: lo = opcode/kind word,
  * hi = flags), and for each dispatch on the derived kind fl6 emits the
  * corresponding opcode word into the output vector (*ctx + ctx[1]) via the
  * shared emit tail (FUN_004aabf4 / store +0x20). Handles: scalar/ASCII
@@ -9007,7 +9015,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
             swB = *(word_t *)(x8a + 0x10);
             swA = *(word_t *)(x8a + 0x18);    /* flag byte */
             FUN_0036b270(swB);
-            resL = FUN_00478110(vecP, swB, swA);
+            resL = sk_bcg_00478110(vecP, swB, swA);
             FUN_004ac33c();
             FUN_0036b118(swB);
             swA = (resL == 2);
@@ -9073,7 +9081,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
                     FUN_00117cc4(resL + 0x20, /*&local_428*/ (word_t)0, 0x160);
                     FUN_004acca8(/*auStack_2c8*/ (word_t)0);
                     FUN_004acd14(/*auStack_2c8*/ (word_t)0);
-                    resH = FUN_00478110(vecP, resL, 0);
+                    resH = sk_bcg_00478110(vecP, resL, 0);
                     FUN_004ac33c();
                     FUN_0036b588(resL);
                     FUN_004985b4();
@@ -9168,7 +9176,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
             case 7:
                 goto do_ret;                    /* return 0 */
             case 2:                             /* range/kind-2 opcode */
-                op = FUN_00476e94(vecP, *(word_t *)FUN_0049e2f0(/*auStack_b8*/ (word_t)0));
+                op = sk_bcg_00476e94(vecP, *(word_t *)FUN_0049e2f0(/*auStack_b8*/ (word_t)0));
                 swC = (word_t)((uint)op & 0xff);
                 if (((uint)op >> 0x18) != 0) {
                     swC |= 0x200;
@@ -9293,7 +9301,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
 }
 
 /* FUN_00477e10 @ 0x00477e10   (est. sk_bcg_00477e10)
- * Ghidra: void FUN_00477e10(void)
+ * Ghidra: void sk_bcg_00477e10(void)
  * Emits an "anchor" opcode (0x1200000000000000) into the output vector
  * (*ctx). If the cached-anchor flag byte at ctx+0x13 is set, a fresh anchor
  * index is obtained via FUN_004772d0, stashed at ctx[0x12], and the flag
@@ -9310,7 +9318,7 @@ static void sk_bcg_00477e10(void)
     long   x9a;             /* extraout_x9 */
 
     if (*(char *)((char *)ctx + 0x13) == 1) {
-        anchor = FUN_004772d0();
+        anchor = sk_bcg_004772d0();
         ctx[0x12] = anchor;
         *(char *)((char *)ctx + 0x13) = 0;
     } else {
@@ -9328,7 +9336,7 @@ static void sk_bcg_00477e10(void)
 }
 
 /* FUN_00477e8c @ 0x00477e8c   (est. sk_bcg_00477e8c)
- * Ghidra: uint FUN_00477e8c(ulong param_1)
+ * Ghidra: uint sk_bcg_00477e8c(ulong param_1)
  * Recursive bytecode subtree validator / walker. Given a descriptor word
  * param_1 whose low bits select a kind (uVar1), it either accepts, rejects,
  * or descends into child descriptors: kinds 2/3 re-dispatch to nested
@@ -9423,7 +9431,7 @@ static word_t sk_bcg_00477e8c(word_t desc)
             break;                          /* re-dispatch loop */
         case 7:
             FUN_004ac0c0();
-            r = FUN_0036b270(*(word_t *)(x8b + 0x10));
+            r = FUN_0036b270(*(word_t *)(x8b + 0x10)).lo;
             FUN_0047cc98(r, 0);
             FUN_00351d18();
             FUN_0036b118();
@@ -9456,7 +9464,7 @@ walk_default:                               /* LAB_00477efc */
         CL4_SWBP(0x4780d8);
     }
     FUN_004acc0c();
-    r = FUN_00477e8c(x20);
+    r = sk_bcg_00477e8c(x20);
     FUN_0036b118(x20 & x22);
     idx = x24;
     if ((r & 1) == 0) {
@@ -9471,7 +9479,7 @@ walk_case1:                                 /* LAB_00477f8c */
             CL4_SWBP(0x4780dc);
         }
         FUN_004acc0c();
-        r = FUN_00477e8c(x20);
+        r = sk_bcg_00477e8c(x20);
         FUN_0036b118(x20 & x22);
         idx = x24;
         if ((r & 1) != 0) {
@@ -9487,7 +9495,7 @@ ok1:                                        /* LAB_00477fc0 */
 }
 
 /* FUN_00478110 @ 0x00478110   (est. sk_bcg_00478110)
- * Ghidra: void FUN_00478110(undefined8,undefined8,ulong)
+ * Ghidra: void sk_bcg_00478110(undefined8,undefined8,ulong)
  * Builds a character-class bitmask (two 64-bit accumulator words bitLo/bitHi,
  * merged into local_708/local_710) for a parsed regex AST element at
  * elemP (a 0x160-byte element in the vector vecH). Elements of kind 3
@@ -10109,39 +10117,39 @@ reset_acc:                                  /* LAB_004784ac */
 
 
 /* Extra out-of-part/out-of-slice callees used by these functions. */
-extern word_t FUN_004730f0(); /* out of slice */
-extern word_t FUN_00475544(); /* out of slice */
-extern word_t FUN_00475e14(); /* out of slice */
-extern word_t FUN_00476518(); /* out of slice */
-extern word_t FUN_00476d88(); /* out of slice */
-extern word_t FUN_004772d0(); /* out of slice */
-extern word_t FUN_00477338(); /* out of slice */
-extern word_t FUN_004773a8(); /* out of slice */
-extern word_t FUN_00477494(); /* out of slice */
-extern word_t FUN_00478110(); /* out of slice */
-extern word_t FUN_00478a98(); /* out of slice (sibling part) */
-extern word_t FUN_004795b0(); /* out of slice (sibling part) */
-extern word_t FUN_00479c18(); /* out of slice (sibling part) */
-extern word_t FUN_00479fe4(); /* out of slice (sibling part) */
-extern word_t FUN_0047a258(); /* out of slice (sibling part) */
-extern word_t FUN_0047aa0c(); /* out of slice (sibling part) */
-extern word_t FUN_0047b844(); /* out of slice (sibling part) */
-extern word_t FUN_0047bcc8(); /* out of slice (sibling part) */
-extern word_t FUN_0047bd74(); /* out of slice (sibling part) */
-extern word_t FUN_0047be1c(); /* out of slice (sibling part) */
-extern word_t FUN_0047c0dc(); /* out of slice (sibling part) */
-extern word_t FUN_0047c1b0(); /* out of slice (sibling part) */
-extern word_t FUN_0047c3a4(); /* out of slice (sibling part) */
-extern word_t FUN_0047c474(); /* out of slice (sibling part) */
-extern word_t FUN_0047c4e4(); /* out of slice (sibling part) */
+extern word_t sk_bcg_004730f0(); /* out of slice */
+extern word_t sk_bcg_00475544(); /* out of slice */
+extern word_t sk_bcg_00475e14(); /* out of slice */
+extern word_t sk_bcg_00476518(); /* out of slice */
+extern word_t sk_bcg_00476d88(); /* out of slice */
+extern word_t sk_bcg_004772d0(); /* out of slice */
+extern word_t sk_bcg_00477338(); /* out of slice */
+extern word_t sk_bcg_004773a8(); /* out of slice */
+extern word_t sk_bcg_00477494(); /* out of slice */
+extern word_t sk_bcg_00478110(); /* out of slice */
+extern word_t sk_bcg_00478a98(); /* out of slice (sibling part) */
+extern word_t sk_bcg_004795b0(); /* out of slice (sibling part) */
+extern word_t sk_bcg_00479c18(); /* out of slice (sibling part) */
+extern word_t sk_bcg_00479fe4(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047a258(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047aa0c(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047b844(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047bcc8(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047bd74(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047be1c(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047c0dc(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047c1b0(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047c3a4(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047c474(); /* out of slice (sibling part) */
+extern word_t sk_bcg_0047c4e4(); /* out of slice (sibling part) */
 extern word_t thunk_FUN_002acbb8();
-extern word_t thunk_FUN_002b74c0();
+extern wpair_t thunk_FUN_002b74c0();
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_0044f818();
 
 
 /* FUN_00478a98 @ 0x00478a98   (est. sk_bcg_00478a98)
- * Ghidra: void FUN_00478a98(void)
+ * Ghidra: void sk_bcg_00478a98(void)
  * Top-level bytecode-generation dispatcher for the regex AST list held at
  * (root+0x10). Reads each element (0x160-byte nodes at root+0x20) and, based
  * on the element kind tag from FUN_0049df0c, emits the corresponding
@@ -10216,7 +10224,7 @@ static void sk_bcg_00478a98(void)
                     FUN_004ac034(auStack_428);
                     unaff_x20 = (word_t *)FUN_004acd08();
                 }
-                FUN_00479c18(unaff_x20);
+                sk_bcg_00479c18(unaff_x20);
                 FUN_004ac2d0();
                 FUN_0036b118();
                 FUN_004a3918(auStack_2c8);
@@ -10245,7 +10253,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = FUN_00479c18();
+                uVar15 = sk_bcg_00479c18();
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10255,7 +10263,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)FUN_00479c18(unaff_x25);
+                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10279,7 +10287,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = FUN_00479c18();
+                uVar15 = sk_bcg_00479c18();
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10289,7 +10297,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)FUN_00479c18(unaff_x25);
+                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10313,7 +10321,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = FUN_00479c18();
+                uVar15 = sk_bcg_00479c18();
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10323,7 +10331,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)FUN_00479c18(unaff_x25);
+                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10565,7 +10573,7 @@ label_9518:
             }
             if (uVar23 == uVar20) {
                 FUN_0036b118(lVar18);
-                uVar15 = FUN_004795b0(lVar11);
+                uVar15 = sk_bcg_004795b0(lVar11);
                 FUN_0036b118(lVar11);
                 FUN_0049a644(uVar15);
                 goto label_9518;
@@ -10576,7 +10584,7 @@ label_8ea8_case2:
             FUN_004ac520();
 label_8fec:
             if (bVar2) {
-                lVar13 = FUN_004795b0(lVar11);
+                lVar13 = sk_bcg_004795b0(lVar11);
                 FUN_0036b118(lVar11);
                 uVar14 = *(word_t *)(lVar13 + 0x10);
                 lVar11 = *(word_t *)(lVar21 + 0x10) + uVar14;
@@ -10650,7 +10658,7 @@ label_8fec:
 
 
 /* FUN_004795b0 @ 0x004795b0   (est. sk_bcg_004795b0)
- * Ghidra: void FUN_004795b0(undefined8 param_1,undefined8 param_2,code *param_3,code *param_4)
+ * Ghidra: void sk_bcg_004795b0(undefined8 param_1,undefined8 param_2,code *param_3,code *param_4)
  * Emits a sequence/backreference bytecode run: given an input handle and
  * start/end instruction pointers, it either (single-element fast path) builds
  * a fresh AST node from the input handle and appends one instruction, or
@@ -10694,12 +10702,12 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
         FUN_004abb58(pcVar6 + 0x20);
         thunk_FUN_0036b270(uVar5);
     } else {
-        c_pair = FUN_00477338(1, lVar7);   /* 16-byte return */
+        c_pair = sk_bcg_00477338(1, lVar7);   /* 16-byte return */
         pcVar6 = c_pair.hi;
         uVar17 = param_4 >> 1;
         pcVar13 = param_3;
         pcVar14 = param_4;
-        lVar7 = FUN_0036b270(lVar7);
+        lVar7 = FUN_0036b270(lVar7).lo;
         puVar22 = (word_t *)(lVar7 + 0x38);
         uVar1 = param_4 >> 1;
         FUN_000a6fe0();
@@ -10722,13 +10730,13 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             if (uVar21 == 1) {
                 pcVar15 = FUN_001ee018;
                 FUN_003515d8(1);
-                FUN_004773a8();
+                sk_bcg_004773a8();
                 FUN_004acaa0();
                 pcVar13 = param_4;
             } else {
                 FUN_004ab248();
                 FUN_003515d8(1);
-                b_pair = FUN_004730f0();
+                b_pair = sk_bcg_004730f0();
                 pcVar15 = b_pair.hi;
                 uVar8 = b_pair.lo;
                 FUN_00351790();
@@ -10740,7 +10748,7 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
                 }
                 FUN_002b3f40(uVar8, uVar10 & ((long)uVar10 >> 0x3f ^ 0xffffffffffffffff), pcVar15, uVar8,
                             pcVar15, pcVar13, pcVar14);
-                pcVar11 = FUN_00351db4();
+                pcVar11 = FUN_00351db4().lo;
                 pcVar20 = pcVar15;
                 if (!uVar4) {
                     pcVar20 = pcVar11;
@@ -10801,14 +10809,14 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             FUN_003515d8(uVar12 | uVar10 << 0x10);
             FUN_0029c058();
             FUN_003515d8();
-            b_pair = FUN_00267510();
+            b_pair = FUN_00267510().lo;
             FUN_003a25d4(uVar3);
             FUN_0034eb74(uVar2 & 0xffffffffffff);
             if (extraout_x8 == 0) {
                 FUN_003a25d4(uVar5);
                 CL4_SWBP(0x479c14);
             }
-            a_pair = FUN_00267510(0xf, extraout_x1, uVar5);
+            a_pair = FUN_00267510(0xf, extraout_x1, uVar5).lo;
             FUN_003a25d4(uVar5);
             uVar12 = FUN_003a261c(pcVar11);
             pcVar14 = pcVar15;
@@ -10842,18 +10850,18 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             puVar19 = puVar19 + 2;
         }
         FUN_0036b118(c_pair.lo);
-        c_pair = FUN_00476d88(lVar7);
+        c_pair = sk_bcg_00476d88(lVar7);
         lVar7 = c_pair.hi;
         uVar5 = c_pair.lo;
         if (lVar7 == 0) {
             CL4_SWBP(0x479c18);
         }
         FUN_004ab248(lVar7, uVar5, lVar7, uVar5);
-        c_pair = FUN_004730f0(1, uVar5, extraout_x8_00);
+        c_pair = sk_bcg_004730f0(1, uVar5, extraout_x8_00);
         if ((c_pair.lo ^ c_pair.hi) < 0x4000) {
             FUN_003a25d4(pcVar14);
         } else {
-            c_pair = FUN_002a3e64();
+            c_pair = FUN_002a3e64().lo;
             FUN_003a25d4(pcVar14);
             uVar16 = FUN_003a261c(pcVar6);
             if ((uVar16 & 1) == 0) {
@@ -10879,7 +10887,7 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
 
 
 /* FUN_00479c18 @ 0x00479c18   (est. sk_bcg_00479c18)
- * Ghidra: void FUN_00479c18(void)
+ * Ghidra: void sk_bcg_00479c18(void)
  * Walks the bytecode-generator node list (elements of 0x160 bytes at
  * root+0x20). For kind-3 elements it iterates a nested instruction list
  * (via FUN_0029fb80 / FUN_0049ab00) appending 0x160-byte elements into the
@@ -10933,7 +10941,7 @@ static void sk_bcg_00479c18(void)
                 FUN_004a3940(auStack_2d0, auStack_5b0);
                 thunk_FUN_0036b270(uVar5);
                 while (true) {
-                    el_pair = FUN_0029fb80();
+                    el_pair = FUN_0029fb80().lo;
                     lVar7 = el_pair.hi;
                     if (lVar7 == 0) break;
                     thunk_FUN_0036b270(lVar7);
@@ -11028,7 +11036,7 @@ label_ee0:
 
 
 /* FUN_00479fe4 @ 0x00479fe4   (est. sk_bcg_00479fe4)
- * Ghidra: void FUN_00479fe4(void)
+ * Ghidra: void sk_bcg_00479fe4(void)
  * Emits a custom-character / unicode-scalar instruction run. Opens the
  * emitted-instruction list, and while the current scalar page (>>0xe) has
  * not caught up to the target range, records source-span entries into three
@@ -11057,11 +11065,11 @@ static void sk_bcg_00479fe4(void)
     FUN_003509ec();
     FUN_004ab55c();
     if ((extraout_w8 >> 0x10 & 1) == 0) {
-        uVar3 = FUN_004772d0();
+        uVar3 = sk_bcg_004772d0();
         thunk_FUN_0036b270();
         pcVar1 = FUN_0042c5a4;
         FUN_00077894(1);
-        el_pair = FUN_004773a8();
+        el_pair = sk_bcg_004773a8();
         in_stack_00000028 = el_pair.lo;
         uVar7 = el_pair.hi >> 0xe;
         lVar8 = unaff_x21;
@@ -11072,8 +11080,8 @@ static void sk_bcg_00479fe4(void)
                 FUN_001b36ec(unaff_x22, unaff_x21);
                 FUN_0034ecc8();
                 if (!uVar2) {
-                    FUN_00476518();
-                    FUN_00477494(uVar3);
+                    sk_bcg_00476518();
+                    sk_bcg_00477494(uVar3);
                     FUN_00351774(unaff_x30);
                     return;
                 }
@@ -11100,7 +11108,7 @@ static void sk_bcg_00479fe4(void)
             FUN_004ab7f0();
             FUN_004ab7e0();
             FUN_00481918(lVar11);
-            FUN_00476518(lVar4);
+            sk_bcg_00476518(lVar4);
             FUN_00498b28(lVar8);
             uVar5 = FUN_004aab1c();
             FUN_00498c1c(uVar5, lVar8);
@@ -11128,14 +11136,14 @@ static void sk_bcg_00479fe4(void)
         }
         CL4_SWBP(0x47a250);
     }
-    el_pair = FUN_00100efc();
+    el_pair = FUN_00100efc().lo;
     FUN_00351774(el_pair.lo, el_pair.hi, unaff_x30);
-    FUN_00475e14();
+    sk_bcg_00475e14();
 }
 
 
 /* FUN_0047a258 @ 0x0047a258   (est. sk_bcg_0047a258)
- * Ghidra: void FUN_0047a258(void)
+ * Ghidra: void sk_bcg_0047a258(void)
  * Bytecode-generator main instruction emitter switch. Reads the current
  * instruction element kind (FUN_0049df0c) and emits the corresponding
  * bytecode into the output stream (0x20-aligned code slots, 0x10-byte
@@ -11194,25 +11202,25 @@ static void sk_bcg_0047a258(void)
             } else {
                 uVar12 = (word_t)(extraout_w8 + 1);
             }
-            el_pair = FUN_00255d4c(uVar12);
+            el_pair = FUN_00255d4c(uVar12).lo;
             in_stack_00000008 = el_pair.lo;
             if (el_pair.hi < 0) {
                 CL4_SWBP(0x47a9a8);
             }
             FUN_00294cb4(&stack0x00000008);
-            FUN_00479fe4();
+            sk_bcg_00479fe4();
             FUN_003a25d4(extraout_x1_01);
         } else if (iVar6 == 0) {
             FUN_0049e2f0(auStack_b8);
             FUN_000e0654();
-            FUN_00479fe4();
+            sk_bcg_00479fe4();
         } else {
             FUN_004ab890(auStack_168);
-            FUN_00475544();
+            sk_bcg_00475544();
         }
         break;
     case 1:
-        FUN_0047b844(*unaff_x20);
+        sk_bcg_0047b844(*unaff_x20);
         if (unaff_x21 == 0) {
             uVar12 = FUN_00481a38();
             FUN_0036b118(extraout_x1_00);
@@ -11256,7 +11264,7 @@ static void sk_bcg_0047a258(void)
         *(word_t *)(extraout_x9_14 + 0x20) = uVar12 | 0x200000000000000;
         unaff_x20[1] = extraout_x8_10;
         FUN_004ab890(uVar14, uVar4);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         if (unaff_x21 != 0) break;
         FUN_004aa594();
         FUN_00498b28(extraout_x16_06);
@@ -11267,7 +11275,7 @@ static void sk_bcg_0047a258(void)
         unaff_x20[1] = extraout_x8_11;
 label_a908:
         FUN_004ab890(lVar13, uVar3);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         break;
     case 6:
         uVar12 = unaff_x20[0xf];
@@ -11280,7 +11288,7 @@ label_a908:
         uVar3 = *(unsigned char *)(lVar13 + 0x18);
         uVar8 = *(word_t *)(lVar13 + 0x10);
         unaff_x20[0xf] = uVar12 + 1;
-        uVar11 = FUN_004772d0();
+        uVar11 = sk_bcg_004772d0();
         FUN_00498b28(FUN_00499158);
         lVar15 = *(word_t *)(unaff_x20[1] + 0x10);
         uVar14 = FUN_004ab2f8();
@@ -11290,7 +11298,7 @@ label_a908:
         *(word_t *)(lVar13 + lVar15 * 8 + 0x20) = uVar12 | 0x200000000000000;
         unaff_x20[1] = lVar13;
         FUN_004ab890(uVar8, uVar3);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         if (unaff_x21 != 0) break;
         FUN_004aa4ac();
         FUN_00498b28(extraout_x16_00);
@@ -11308,7 +11316,7 @@ label_a908:
         *(word_t *)(extraout_x9_01 + 0x20) = uVar12 | 0x300000000000000;
         unaff_x20[1] = extraout_x8_01;
         FUN_004ab890(uVar16, uVar4);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         FUN_004aa4ac();
         FUN_00498b28(extraout_x16_01);
         FUN_00350518();
@@ -11342,11 +11350,11 @@ label_a908:
             CL4_SWBP(0x47a994);
         }
         unaff_x20[0xf] = uVar17 + 3;
-        FUN_004772d0();
-        uVar8 = FUN_004772d0();
-        uVar9 = FUN_004772d0();
-        uVar10 = FUN_004772d0();
-        uVar11 = FUN_004772d0();
+        sk_bcg_004772d0();
+        uVar8 = sk_bcg_004772d0();
+        uVar9 = sk_bcg_004772d0();
+        uVar10 = sk_bcg_004772d0();
+        uVar11 = sk_bcg_004772d0();
         FUN_004aa5ac();
         FUN_00498b28(extraout_x16_02);
         FUN_003509b0();
@@ -11363,7 +11371,7 @@ label_a908:
         FUN_004ab478();
         FUN_00481918();
         FUN_004ab890(uVar16, uVar4);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         if (unaff_x21 != 0) break;
         FUN_004aa4ac();
         FUN_00498b28(extraout_x16_03);
@@ -11373,7 +11381,7 @@ label_a908:
         *(word_t *)(extraout_x9_04 + 0x20) = 0x1300000000000000;
         unaff_x20[1] = extraout_x8_04;
         FUN_004ab478();
-        FUN_00477494();
+        sk_bcg_00477494();
         FUN_004ab2f8();
         FUN_00498b28();
         FUN_00350518();
@@ -11397,14 +11405,14 @@ label_a908:
         unaff_x20[1] = extraout_x8_07;
         FUN_00481918(uVar8);
         FUN_004ab890(uVar14, uVar3);
-        FUN_0047aa0c();
+        sk_bcg_0047aa0c();
         FUN_004aa5ac();
         FUN_00498b28(extraout_x16_04);
         FUN_004aa9d0();
         FUN_004aa780();
         *(word_t *)(extraout_x9_08 + 0x20) = 0x1300000000000000;
         FUN_004ab328();
-        FUN_00477494(uVar8);
+        sk_bcg_00477494(uVar8);
         FUN_004abe84();
         FUN_004aa9d0();
         FUN_004aa780();
@@ -11433,7 +11441,7 @@ label_a908:
         FUN_004aaa38();
         FUN_00481918(uVar11);
         FUN_004ab478();
-        FUN_00477494();
+        sk_bcg_00477494();
         FUN_004abe84();
         FUN_004aa9d0();
         FUN_004aa780();
@@ -11444,20 +11452,20 @@ label_a908:
         FUN_004aa780();
         FUN_004aaa38();
         FUN_00481918(uVar11);
-        FUN_00477494(uVar10);
+        sk_bcg_00477494(uVar10);
         FUN_004abe84();
         FUN_004aa9d0();
         FUN_004aa780();
         FUN_004aaa38();
 label_a848:
-        FUN_00477494(uVar11);
+        sk_bcg_00477494(uVar11);
     }
     FUN_00353d14(extraout_x1);
 }
 
 
 /* FUN_0047aa0c @ 0x0047aa0c   (est. sk_bcg_0047aa0c)
- * Ghidra: void FUN_0047aa0c(void)
+ * Ghidra: void sk_bcg_0047aa0c(void)
  * Core bytecode-generator that walks the parsed AST list (root at
  * local_508+0x10) and recursively flattens nested lists (0x160-byte
  * elements) into a flat instruction stream in local_430, dispatching each
@@ -11502,21 +11510,21 @@ static void sk_bcg_0047aa0c(void)
     if ((*(unsigned int *)(local_508 + 0x1c + *(word_t *)(local_508 + 0x10) * 4) >> 0x10 & 1) == 0) {
         FUN_0036b270(uVar10);
     } else {
-        uVar10 = FUN_00478a98(uVar10);
+        uVar10 = sk_bcg_00478a98(uVar10);
     }
-    uVar5 = FUN_00479c18(uVar10);
+    uVar5 = sk_bcg_00479c18(uVar10);
     el_pair.hi = el_pair.hi;
     el_pair.lo = uVar5;
     auVar31[0] = el_pair.lo; auVar31[8] = el_pair.hi;
     FUN_0036b118(uVar10);
     uVar12 = (word_t)(el_pair.hi & 1);
     FUN_00350470();
-    lVar6 = FUN_00478110();
+    lVar6 = sk_bcg_00478110();
     if (lVar6 == 2) {
         if ((local_430 & 1) == 0) {
             uVar12 = (word_t)(el_pair.hi & 1);
             FUN_00350470();
-            el_pair = FUN_0047be1c();
+            el_pair = sk_bcg_0047be1c();
             FUN_0036b118(uVar5);
         }
     } else if ((local_430 & 1) == 0) {
@@ -11526,10 +11534,10 @@ static void sk_bcg_0047aa0c(void)
         }
         if ((*(unsigned int *)(local_508 + 0x1c + *(word_t *)(local_508 + 0x10) * 4) >> 0x10 & 1) == 0) {
             FUN_00352c4c((unsigned int)lVar6 & 1);
-            FUN_0047bcc8();
+            sk_bcg_0047bcc8();
         } else {
             FUN_00352c4c((unsigned int)lVar6 & 1);
-            FUN_0047bd74();
+            sk_bcg_0047bd74();
         }
         goto label_b7e0;
     }
@@ -11659,7 +11667,7 @@ label_af2c:
                                                     FUN_004ab5c8(auStack_668);
                                                     FUN_00117cc4();
                                                     FUN_004a3940(auStack_668, auStack_1b08);
-                                                    uVar9 = FUN_0047c0dc();
+                                                    uVar9 = sk_bcg_0047c0dc();
                                                     FUN_004a3918(auStack_668);
                                                     if ((uVar9 & 1) == 0) goto label_af2c;
                                                 }
@@ -11678,7 +11686,7 @@ label_af2c:
                 FUN_004ab980();
                 FUN_004a3918();
             } else {
-                uVar10 = FUN_004ab980();
+                uVar10 = FUN_004ab980().lo;
                 FUN_004a3940(uVar10, auStack_428);
 label_af60:
                 uVar12 = FUN_003a261c(local_430);
@@ -11700,8 +11708,8 @@ label_af60:
     }
     FUN_0036b118(lVar6);
     if ((local_1ba4 & 1) == 0) {
-        uVar10 = FUN_004772d0();
-        uVar5 = FUN_00477338(1, local_430);
+        uVar10 = sk_bcg_004772d0();
+        uVar5 = sk_bcg_00477338(1, local_430);
         in_x3 = in_x3 >> 1;
         FUN_0036b270(local_430);
         lVar6 = 0x160;
@@ -11765,7 +11773,7 @@ label_af60:
             FUN_004ab420();
             *(word_t *)(unaff_x20 + 0x60) = lVar6;
             FUN_004abaa0();
-            FUN_0047a258();
+            sk_bcg_0047a258();
             if (unaff_x21 != 0) {
                 FUN_0036b118(uVar5);
                 FUN_004abaa0();
@@ -11839,22 +11847,22 @@ label_af60:
         if (*(word_t *)(local_430 + 0x10) == 0) {
             CL4_SWBP(0x47b82c);
         }
-        el_pair = FUN_004ab980(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140);
+        el_pair = FUN_004ab980(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140).lo;
         FUN_00117cc4(el_pair.lo, el_pair.hi, 0x160);
-        uVar5 = FUN_004ab980();
+        uVar5 = FUN_004ab980().lo;
         FUN_004a3940(uVar5, auStack_428);
         FUN_004ab980();
-        FUN_0047a258();
+        sk_bcg_0047a258();
         FUN_004ab980();
         FUN_004a3918();
         if (unaff_x21 == 0) {
-            FUN_00477494(uVar10);
+            sk_bcg_00477494(uVar10);
         }
 label_b7c0:
         FUN_0036b118(local_430);
     } else {
-        uVar10 = FUN_004772d0(unaff_x20);
-        uVar5 = FUN_00477338(1, local_430);
+        uVar10 = sk_bcg_004772d0(unaff_x20);
+        uVar5 = sk_bcg_00477338(1, local_430);
         FUN_0036b270(local_430);
         pcVar13 = section_00000158.sectname + 8;
         lVar6 = local_500;
@@ -11915,7 +11923,7 @@ label_b7c0:
             FUN_004ab420();
             *(word_t *)(unaff_x20 + 0x60) = lVar6;
             FUN_004ac138();
-            FUN_0047a258();
+            sk_bcg_0047a258();
             if (unaff_x21 != 0) {
                 FUN_0036b118(uVar5);
                 FUN_0036b118(local_430);
@@ -11975,13 +11983,13 @@ label_b7c0:
             FUN_0036b118(local_430);
             CL4_SWBP(0x47b840);
         }
-        el_pair = FUN_004ac6b0(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140);
+        el_pair = FUN_004ac6b0(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140).lo;
         FUN_00117cc4(el_pair.lo, el_pair.hi, 0x160);
-        uVar5 = FUN_004ac6b0();
+        uVar5 = FUN_004ac6b0().lo;
         FUN_004a3940(uVar5, auStack_168);
         FUN_0036b118(local_430);
         FUN_004ac6b0();
-        FUN_0047a258();
+        sk_bcg_0047a258();
         FUN_004ac6b0();
         FUN_004a3918();
         if (unaff_x21 == 0) {
@@ -11998,7 +12006,7 @@ label_b7c0:
             FUN_004aa9c0(*(word_t *)(unaff_x20 + 8));
             *(word_t *)(extraout_x9_01 + 0x20) = 0x1d00000000000000;
             *(word_t *)(unaff_x20 + 8) = extraout_x8_01;
-            FUN_00477494(uVar10);
+            sk_bcg_00477494(uVar10);
             lVar6 = *(word_t *)(*(word_t *)unaff_x20 + 0x10);
             if (lVar6 == 0) {
                 CL4_SWBP(0x47b844);
@@ -12025,7 +12033,7 @@ label_b7e0:
 
 
 /* FUN_0047b844 @ 0x0047b844   (est. sk_bcg_0047b844)
- * Ghidra: void FUN_0047b844(void)
+ * Ghidra: void sk_bcg_0047b844(void)
  * Emitter for the customCharacter instruction: reads a 0xb0-byte
  * instruction element, and depending on the sub-kind emitted by
  * FUN_0047c3a4 builds the output opcode. For an empty backref it emits a
@@ -12069,7 +12077,7 @@ static void sk_bcg_0047b844(void)
     case 1:
         FUN_00117cc4(auStack_b0, uVar9, 0xb0);
         FUN_00117cc4(auStack_160, uVar9 + 0xb0, 0xb0);
-        el_pair = FUN_0047c3a4();
+        el_pair = sk_bcg_0047c3a4();
         lVar12 = el_pair.hi;
         if (lVar12 == 0) {
             local_348 = 0;
@@ -12092,7 +12100,7 @@ static void sk_bcg_0047b844(void)
 label_bb78:
             puVar11[4] = local_318;
         } else {
-            FUN_0047c3a4();
+            sk_bcg_0047c3a4();
             if (extraout_x1 == 0) {
                 FUN_003a25d4(lVar12);
                 local_348 = 0;
@@ -12197,7 +12205,7 @@ label_baec:
             }
             pauVar10[1][0] = 1;
         }
-        el_pair = FUN_0036986c();
+        el_pair = FUN_0036986c().lo;
 label_case4:
         el_pair = FUN_004aca94(el_pair.lo, el_pair.hi);
         FUN_00353d14(el_pair.lo, el_pair.hi, el_pair.hi);
@@ -12214,7 +12222,7 @@ label_case4:
 
 
 /* FUN_0047bcc8 @ 0x0047bcc8   (est. sk_bcg_0047bcc8)
- * Ghidra: void FUN_0047bcc8(void)
+ * Ghidra: void sk_bcg_0047bcc8(void)
  * Emits an instruction into the code stream with a scalar-range tag:
  * reads the current code-list count, appends an entry whose 0x20 word is
  * the low-byte scalar (from FUN_00350980) tagged 0xb00000000000001, then
@@ -12256,7 +12264,7 @@ static void sk_bcg_0047bcc8(void)
 }
 
 /* FUN_0047bd74 @ 0x0047bd74   (est. sk_bcg_0047bd74)
- * Ghidra: void FUN_0047bd74(void)
+ * Ghidra: void sk_bcg_0047bd74(void)
  * Same shape as 0047bcc8 (scalar-range code entry emitter), differing only
  * in the stored tag constant 0xb00000000000000 instead of
  * 0xb00000000000001. Used on the non-flattened path in the generator.
@@ -12296,7 +12304,7 @@ static void sk_bcg_0047bd74(void)
 }
 
 /* FUN_0047be1c @ 0x0047be1c   (est. sk_bcg_0047be1c)
- * Ghidra: void FUN_0047be1c(undefined8 param_1,undefined8 param_2,uint param_3)
+ * Ghidra: void sk_bcg_0047be1c(undefined8 param_1,undefined8 param_2,uint param_3)
  * Collects a list of 0x160-byte instruction elements from the generator
  * root, partitioning each element between two destination lists depending
  * on whether FUN_0047e5dc classifies it as kind 2, then (when both lists
@@ -12392,7 +12400,7 @@ static void sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3
 
 
 /* FUN_0047c0dc @ 0x0047c0dc   (est. sk_bcg_0047c0dc)
- * Ghidra: bool FUN_0047c0dc(void)
+ * Ghidra: bool sk_bcg_0047c0dc(void)
  * Recursive predicate over the generator node list: reads a node, and
  * returns true if it is kind 4; for a kind-2 (nested list) node it walks
  * the 0x160-byte elements and recurses, returning true iff every element
@@ -12425,7 +12433,7 @@ static bool sk_bcg_0047c0dc(void)
             }
             FUN_00117cc4(auStack_1a0, lVar5, 0x160);
             FUN_004a3940(auStack_1a0, auStack_460);
-            uVar4 = FUN_0047c0dc();
+            uVar4 = sk_bcg_0047c0dc();
             FUN_004a3918(auStack_1a0);
             lVar5 = lVar5 + 0x160;
         } while ((uVar4 & 1) != 0);
@@ -12436,7 +12444,7 @@ static bool sk_bcg_0047c0dc(void)
 }
 
 /* FUN_0047c1b0 @ 0x0047c1b0   (est. sk_bcg_0047c1b0)
- * Ghidra: void FUN_0047c1b0(void)
+ * Ghidra: void sk_bcg_0047c1b0(void)
  * Recursive instruction-sequence collector: given a node, walks its
  * elements (recursing on each) and concatenates the resulting bytecode
  * runs into a growing list, with overflow-carry / bounds SWBP checks
@@ -12459,7 +12467,7 @@ static void sk_bcg_0047c1b0(void)
         FUN_004ac114();
         uVar5 = *(word_t *)((unaff_x20 & unaff_x21) + 0x10);
         FUN_0036b270(uVar5 & unaff_x21);
-        unaff_x19 = FUN_0047c1b0(uVar5);
+        unaff_x19 = sk_bcg_0047c1b0(uVar5);
         FUN_0036b118(uVar5 & unaff_x21);
     } else if (extraout_w8 == 1) {
         FUN_004aba88();
@@ -12473,7 +12481,7 @@ static void sk_bcg_0047c1b0(void)
             }
             uVar7 = *(word_t *)(lVar6 + uVar5 * 8 + 0x20);
             FUN_0036b270(uVar7 & unaff_x24);
-            lVar2 = FUN_0047c1b0(uVar7);
+            lVar2 = sk_bcg_0047c1b0(uVar7);
             FUN_0036b118(uVar7 & unaff_x24);
             uVar8 = *(word_t *)(lVar2 + 0x10);
             uVar10 = *(word_t *)(unaff_x19 + 0x10);
@@ -12545,11 +12553,11 @@ label_c2ac:
 
 
 /* FUN_0047c3a4 @ 0x0047c3a4   (est. sk_bcg_0047c3a4)
- * Ghidra: void FUN_0047c3a4(void)
+ * Ghidra: void sk_bcg_0047c3a4(void)
  * Emits the customCharacter sub-instruction: classifies the parsed element
  * (FUN_0049e2d4) and, for the primary/overloaded case, computes a scalar
  * value via FUN_004ac6bc/FUN_004ac6e4 and produces a code-slot pair via
- * FUN_00255d4c/FUN_00294cb4 (SWBP if the hi word is negative); the empty
+ * FUN_00255d4c/FUN_00294cb4(SWBP if the hi word is negative); the empty
  * case copies the element through FUN_004acd14. Ends with FUN_003507e0.
  * Confidence: medium   Notes: SWBP at 0x47c468; out-of-slice helpers. */
 static void sk_bcg_0047c3a4(void)
@@ -12581,7 +12589,7 @@ static void sk_bcg_0047c3a4(void)
         } else {
             uVar5 = (word_t)(extraout_w8 + 1);
         }
-        el_pair = FUN_00255d4c(uVar5);
+        el_pair = FUN_00255d4c(uVar5).lo;
         local_190[0] = el_pair.lo;
         if (el_pair.hi < 0) {
             CL4_SWBP(0x47c468);
@@ -12597,9 +12605,9 @@ static void sk_bcg_0047c3a4(void)
 }
 
 /* FUN_0047c474 @ 0x0047c474   (est. sk_bcg_0047c474)
- * Ghidra: void FUN_0047c474(void)
+ * Ghidra: void sk_bcg_0047c474(void)
  * Instruction-slot reference/refcount finaliser: refreshes the element
- * value via FUN_0035199c (optionally FUN_0049c0e4) and, when a non-null
+ * value via FUN_0035199c(optionally FUN_0049c0e4) and, when a non-null
  * sibling is present, pushes a dependent value (offset +0xa0) through
  * FUN_00100efc/FUN_0041c1d8. Then increments the +0x88 refcount, trapping
  * on overflow (SWBP 0x47c4e4).
@@ -12610,7 +12618,7 @@ static void sk_bcg_0047c474(void)
     word_t unaff_x20, unaff_x21;
     wpair_t el_pair;
 
-    el_pair = FUN_0035199c();
+    el_pair = FUN_0035199c().lo;
     if ((el_pair.hi & 0xff) != 1) {
         el_pair = FUN_0049c0e4(*(word_t *)(unaff_x20 + 0x88), el_pair.lo);
     }
@@ -12626,7 +12634,7 @@ static void sk_bcg_0047c474(void)
 }
 
 /* FUN_0047c4e4 @ 0x0047c4e4   (est. sk_bcg_0047c4e4)
- * Ghidra: void FUN_0047c4e4(ulong param_1,long param_2)
+ * Ghidra: void sk_bcg_0047c4e4(ulong param_1,long param_2)
  * Tiny emitter that packs two fields into a single opcode word
  * (param_1 | param_2 << 0x10) and appends it to the code stream via
  * FUN_004aa494/FUN_00498b28/FUN_004aaf58/FUN_004aa6a8. Final function of
