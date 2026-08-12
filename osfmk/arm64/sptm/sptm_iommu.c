@@ -1862,7 +1862,7 @@ void sptm_t8110dart_skip_enable_clock_protection_write(uint8_t dart_id, uint64_t
                     } while (m < *(uint32_t *)(ctrl + 0xba8));
                 }
             }
-skip_alt:
+skip_alt: {
             /* Select the register-write variants for this instance. */
             uint64_t lockstat = sptm_dart_lock(ctrl, i);
             uint8_t **instp = (uint8_t **)(ctrl + 8 + (uint64_t)i * 0x78);
@@ -2020,7 +2020,7 @@ skip_alt:
                 wreg(ctrl, i, 0x228, *(uint32_t *)(*instp + 0x228));
                 wreg(ctrl, i, 0x22c, *(uint32_t *)(*instp + 0x22c));
             }
-flush_done:
+flush_done: {
             uint8_t **apf = (uint8_t **)instp[2];
             if ((apf != NULL) && (apf[0] != NULL) && (*(uint32_t *)apf[1] != 0)) {
                 uint32_t na = *(uint32_t *)(apf[1]);
@@ -2094,6 +2094,8 @@ flush_done:
                     *(uint32_t *)(hw2 + 0xc00 + (uint64_t)k * 4) = *(uint32_t *)(ctrl + 0x34 + (uint64_t)k * 4);
                     k++;
                 } while (k < ((*(uint32_t *)(ctrl + 0xb98) + 0x1f) >> 5));
+            }
+            }
             }
             i++;
         } while (i < *(uint32_t *)(ctrl + 0xba4));
@@ -2227,7 +2229,7 @@ disable_streams:
                         } while (st < (int)stream_en);
                     }
                 }
-flush:
+flush: {
                 /* Flush the DART. */
                 uint64_t fdesc[3];
                 fdesc[0] = 0; fdesc[1] = 0;
@@ -2244,6 +2246,7 @@ flush:
                 }
                 int rc;
                 do { rc = sptm_dart_poll(ctrl, 0); } while (rc == 0);
+                }
 
                 if ((be3 & 1) == 0) {
                     if (sptm_ps_wr_mode == 1) {
@@ -2518,24 +2521,25 @@ bad_va:
                 sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
             }
             uint64_t idx = (cur_iova >> 0xe) & 0x7ff;
-            uint64_t newpte = (uint64_t)att | (cur_iova >> 2) << 0x34 | (pa >> 4) & 0x3ffffffc00;
+            uint64_t newpte = (uint64_t)att | ((uint64_t)(cur_iova >> 2) << 0x34) | (pa >> 4) & 0x3ffffffc00;
             uint64_t chunk = 0x4000 - (cur_iova & 0x3fff);
             uint64_t rem = end - cur_iova;
             if (chunk + cur_iova <= end) { rem = chunk; }
             uint64_t entry = newpte | 0xfff0000000001;
             if (rem >> 0xe == 0) {
-                entry = ((uint64_t)((int32_t)((int32_t)rem + (int32_t)cur_iova) << 0x26) +
-                         0xfffc000000000 & 0xfff0000000000) | newpte | 1;
+                entry = ((uint64_t)((int32_t)rem + (int32_t)cur_iova) << 0x26) +
+                         0xfffc000000000 & 0xfff0000000000 | newpte | 1;
             }
             uint64_t old = *(uint64_t *)(tt + idx * 8);
             if ((old & 1) == 0) {
                 sp_count++;
                 uint32_t pa_attr = prev_attr;
-lock_same:
+lock_same: {
                 uint32_t t = 1;
                 if ((entry & 4) == 0) t = 2;
                 sptm_phys_lock(pa, t);
                 prev_attr = pa_attr;
+                }
             } else {
                 if (((old ^ entry) & 0x3ffffffc00) != 0) {
                     if ((memattr < 8) || (((uint32_t)old >> 2 & 1) == 0)) goto attr_mismatch;
@@ -2573,10 +2577,10 @@ attr_mismatch:
         if (prev_attr == 0) t = 2;
         sptm_dsb(3, 3, 0);
         if (!(7 < memattr || (changed ^ 1) == 0)) {
-            if (((end + 0x3fff >> 0x2a & 1) != 0)) {
+            if ((((end + 0x3fff) >> 0x2a) & 1) != 0) {
                 sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
             }
-            sptm_dart_tlb_flush(ctrl, st, iova >> 0xe, (uint32_t)(end + 0x3fff >> 0xe) - 1, 0);
+            sptm_dart_tlb_flush(ctrl, st, iova >> 0xe, (uint32_t)((end + 0x3fff) >> 0xe) - 1, 0);
         }
         for (; mapped != 0; mapped--) {
             sptm_phys_unlock(*win, t);

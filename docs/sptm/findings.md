@@ -289,3 +289,81 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (((count*page_size + (va-page_size)) ^ va) & *(uint64_t*)(geom+0x88)) sptm_violation(0x27,...)`; `leaf = sptm_walk(...); if (leaf==NULL) { sptm_ref_release(...); needs_tlbi=0; goto release; }`.
 - **Severity (hypothesis)**: informational — prevents a single region update from silently spanning an unsupported boundary or writing through a missing table level.
 - **Confidence**: high
+
+## [ringminus1] 000b2d40 sptm_uat_tlb_invalidate — flush permission gate
+- **Observation**: A UAT TLB flush over a VA range is only issued when the state's context-id is live (!=0xffff) and the state permits flushes for the requested mode; otherwise SPTM panics rather than silently skipping the invalidate. The flush granularity (16KB page vs large-page run) is selected by range size, and the large-page count is capped (span clamped to 0x200000) with a hard panic on an out-of-range span before any TLBI is emitted.
+- **Evidence**: `if (mode & *state) == 0` → panic "Attempted a TLB flush on a state that disallows it"; large path computes `span = (npg<0x200001)?npg:0x200000` and panics if `span-2 > 0x1ffffe`; each invalidate dispatched through the op table at DAT_00014408 (indexed by flag).
+- **Severity (hypothesis)**: low — fail-closed flush gating prevents a stale/partial UAT translation from surviving teardown; a skip would leave stale DMA mappings live.
+- **Confidence**: high
+
+## [ringminus1] 000b37fc sptm_uat_unmap_cb_table — FTE ctx-id repatch + shared-release guard
+- **Observation**: The table-entry unmap callback releases the FTE backing each 16KB page: it re-derives the FTE class from the PTE, refuses to touch an FTE whose class is not the shared-table class (panic "Type / class of FTE mismatch"), and for shared FTEs validates the rw-guard refcount before releasing (panic "rw guard release shared" on 0/odd). Per-CPU flush/remove counters (0x161e/0x1607) are bumped to track TLB invalidation progress.
+- **Evidence**: `if (sptm_fte_class[fte[1]*0x90] != 0x03) panic`; shared path `v=*fte; *fte=v-2; if (v==0 || (v&1)) panic`; counters `*(0x161e + cpu_id + 2/10) += 1`.
+- **Severity (hypothesis)**: medium — a double-release or odd refcount on a shared table FTE would corrupt the shared-table refcount and potentially let a live table be freed; the guards make that a panic instead.
+- **Confidence**: high
+
+## [ringminus1] 000b3d90 sptm_uat_unmap_cb_leaf — leaf-present + SAPT bootstrap gating
+- **Observation**: The leaf-entry unmap callback only clears a leaf PTE if it is present (else panic 0x400000e); it also requires the SAPT to be bootstrapped and the expected boot stage to have run (else panic), so an unmap cannot race a not-yet-initialized SAPT. The unmap-list at state+0x248 is bounded to 0x40 entries (no overflow).
+- **Evidence**: `if (~(e&3)&3) panic 0x400000e`; `if (g_sapt_bootstrapped==0) panic "SAPT not bootstrapped"`; `if (!(g_mem_feature>>11 &1)) panic "Expected bootstrap stages"`; list append bounded `if (state[0x248] < 0x40)`.
+- **Severity (hypothesis)**: medium — the boot-stage gate ties UAT unmaps to a fully-initialized SAPT; a bypass could tear down page-table entries while the SAPT ownership table is not yet authoritative.
+- **Confidence**: high
+
+## [ringminus1] 000b6524 sptm_uat_init — DT region validation (carveout/handoff/segment limits)
+- **Observation**: UAT init reads gfx/gpu/handoff/shared-L2 carveout bases+sizes from SecureDT and hard-validates each: 16KB-aligned, >= one page, and (for L2) exactly 16KB; every misaligned/undersized region is a hard panic. Segment limits default to 0x40/0x100 when the DT omits them, and the segment base/size properties are likewise 16KB-aligned checked. The GPU carveout, ASC carveout and handoff region are all covered by IOMMU/device page refs on a 16KB (type 1/2) granularity.
+- **Evidence**: repeated `if (sz<0x4000 || (sz&0x3fff)) panic "The X region is smaller than a page"`; `if (sz != 0x4000) panic "TTBR1 shared L2 must be 16KB"`; segment loop panics "segment base not page-aligned"; refs via sptm_iommu_region_ref(base, npages, type).
+- **Severity (hypothesis)**: low — bounds the carved-out DMA regions to 16KB-aligned, sized ranges; malformed DT data is a hard panic (fail-closed boot).
+- **Confidence**: high
+
+## [ringminus1] 000b6378/000b6400 sptm_uat_retype_from_check / sptm_uat_new_type_check — UAT retype type gates
+- **Observation**: UAT retype validation enforces the source type is XNU_IOMMU (0xb) and the new type is XNU_IOMMU (0x18); the new-type sub-field must be one of {0,1,5} (mask 0x33) and the current type must be in {0,3,4,5,6}. Any other combination is a hard panic (0x4000000), so an unsupported UAT frame type cannot be created by retype.
+- **Evidence**: `if (src_type != 0xb) panic "retyping from XNU IOMMU but not XNU_IOMMU"`; `if (new_type != 0x18) panic "new_type not XNU_IOMMU"`; `if ((1u<<(sub&0x1f)) & 0x33) == 0) panic 0x4000000`.
+- **Severity (hypothesis)**: low — fail-closed retype type/sub-type validation; prevents forging an unsupported UAT frame type.
+- **Confidence**: medium
+
+## [ringminus1] 000b25c0..000b2698 SPTM->SK/TXM entry stubs — dispatch-selector encoding
+- **Observation**: The ten SPTM->SK/TXM entry stubs each hard-code a dispatch selector into x16 before tail-branching to sptm_sk_entry/sptm_txm_sk_entry: SK uses domain 3 (SK_DOMAIN) table 1 endpoints 0-3 (0x000300010000..3), TXM uses domain 2 (TXM_DOMAIN) table 1 endpoints 0-5 (0x000200010000..5). The selector is fixed at build time, so a client cannot steer these stubs to a different guarded-level endpoint — the domain/table/endpoint bits are constant.
+- **Evidence**: `movk x16,#0x3/0x2, LSL#48; movk x16,#0x1, LSL#32; movk x16,#0x0..5; b sptm_sk_entry/sptm_txm_sk_entry` — ten identical 4-instruction prologues differing only in the low 16 bits of the endpoint.
+- **Severity (hypothesis)**: informational — the fixed selectors make these stubs non-callable to arbitrary endpoints; the actual endpoint authorization is enforced inside the shared entry context-save + dispatch engine.
+- **Confidence**: high
+
+## [ringminus1] 000c8fb8 / 000c93d8 sptm_t8110dart_enable_translation / disable_translation — IOMMU translation enable/disable gating
+- **Observation**: These are the DMA translation on/off switches for a DART stream. Enable sets the per-stream enable bit in the +0xc00 register of every DART instance whose slice is enabled; disable sets the +0xc20 (stream disable) bit. Both run under a per-CPU guard (+0xbdf) and reject a stream whose slice carries the already-active bit (panic 0x600001f). Disable additionally issues a DSB(3,3,0) between stream updates and is skipped when the +0xbe3 feature bit is set.
+- **Evidence**: enable: `*(uint32_t*)(inst + (st>>5)*4 + 0xc00) = 1 << (st&0x1f)`; disable: `*(uint32_t*)(inst + (st>>5)*4 + 0xc20) = 1 << (st&0x1f)`; both acquire via sptm_dart_acquire_v1/v2 (FUN_000c92e8/000c9364) and panic 0x600001f on `slice+0x1d & 1`.
+- **Severity (hypothesis)**: high — if an attacker could drive enable without a matching validated map (or disable to drop DMA translation while a device is live), the IOMMU would not constrain DMA. The per-stream guard and the acquire-variant gating (0xbf1) are the only ordering controls.
+- **Confidence**: high (register addresses + guard logic explicit)
+
+## [ringminus1] 000c9728 sptm_t8110dart_init — pre-translation configuration validation
+- **Observation**: DART init validates every instance before any translation can be enabled: instance version must be one of 0x200/0x201/0x202/0x300 (else assert), all instances must agree on the version and the single supported granule (1ULL<<(t4>>0x18)), stream count must be >= the config minimums, window/granule size bounds are checked against +0xb78/+0xb7c, and each stream's PTE is cross-checked against its slice descriptor (STE bit, present bit, and page-size/limit fields). Any inconsistency is a hard assert.
+- **Evidence**: `if ((4 < ver16-0x200) && (1 < ver16-0x100) && ver16 != 0x300) sptm_assert_fail("DART instance ...")`; `if (DART_VERSION != ver16) assert`; `if ((1ULL<<((t4>>0x18)&0x3f)) != ctrl->b80) assert`; per-stream PTE/slice consistency asserts (0x9769e etc).
+- **Severity (hypothesis)**: medium — this is the gate that ensures only a self-consistent DART configuration is made live; an error here would allow an inconsistent (e.g. overlapping) IOMMU window configuration, but everything is fail-closed.
+- **Confidence**: high
+
+## [ringminus1] 000ce144 sptm_t8110dart_map — DMA map bounds + backing-type validation
+- **Observation**: The DART map path rejects a non-canonical IOVA (iova>>0x2a != 0 -> panic 0x6000021), a page index outside the slice window (+0x10..+0x14, unless the 0xbec "non-compliant" bit is set), a map larger than 0x2000000, and a PTE that would change the physical frame/attributes of an already-present entry (panic 0x6000023). It also validates the backing page type against the IO window (in_dart) policy before locking, and records the old physical frame of any replaced entry to release it after the TLB flush.
+- **Evidence**: `if (iova>>0x2a != 0) panic(0x6000021,...)`; `if (size > 0x2000000) panic(0x600000c,...)`; `if (entry != old) { if ((old^entry)&0x3ffffffc00 ... ) ... else panic(0x6000023,...) }`; `if (ptype=='=' ... ) bad_type`; win[mapped]=oldpa recorded for later `sptm_phys_unlock`.
+- **Severity (hypothesis)**: high — this bounds exactly which guest physical frames a DART client can DMA to; the iova canonicality and PTE-attribute checks prevent forging translations to arbitrary physical memory.
+- **Confidence**: high
+
+## [ringminus1] 000cacd0 / 000cc5e8 sptm_t8110dart_(skip_)enable/disable_clock_protection — page-size (ps_wr) refcount + PIO lock
+- **Observation**: Clock-protection (powerup/powerdown) manipulates per-stream page-size registers and is serialized by a per-CPU guard (DAT_001012c0) plus a shared page-size refcount table (DAT_001012b8, stride 6, refcount at +4). Enable increments the refcount for the instance's two page-size fields and underflows/overflow both panic; it rejects re-entrancy (0x6000026) and an invalid page-size index. Powerdown mirrors this with a decrement that must not go below 0 (ps_underflow panic). The PIO (per-instance-override) descriptors are also initialized (enable: bit set + region regs) and cleared (disable).
+- **Evidence**: enable: `table[idx*6+4] = c+1` with `if (c==-1) panic("ps_refcount_overflow")` and `if (c==0) { sptm_dart_ps_refcount(ctrl,idx,1); ... }`; disable: `table[idx*6+4] = c-1` with `if (c==0) panic("ps_refcount_underflow")`; guard `if (sptm_ps_wr_guard != 0) panic(0x6000026,...)`.
+- **Severity (hypothesis)**: medium — these PS writes gate the DMA window page size; a refcount imbalance (via a missing powerdown on a failed path) would leave clock-protection/PS state stale across the enable/disable pair, which the refcount-under/overflow panics are designed to catch.
+- **Confidence**: medium (refcount semantics inferred from the paired inc/dec; panics are explicit)
+
+## [ringminus1] 000b486c sptm_uat_map_continue — IOMMU ownership/type check gated on debug flag
+- **Observation**: In the UAT map path, the FTE presence + IOMMU-type ownership check only runs when `(sptm_debug_flags & (t2||t3)) != 0`, where t2/t3 are memattr-derived type classes. When the debug flag is clear, SPTM skips verifying that the target FTE belongs to a supported IOMMU (sptm_iommu_dart_info bit0) and that its class is 3 before releasing its shared read-write guard. The physical-frame/page-lock logic itself still runs unconditionally.
+- **Evidence**: `if (((flags & 0xc) == 0) && ((sptm_debug_flags & (t2||t3)) != 0)) { fte = sptm_fte_ptr(pa_page); if (!(iommu_dart_info[io_id*0x90]&1)) assert; if (type != 3) assert; ... }` in FUN_000b486c.
+- **Severity (hypothesis)**: medium — the IOMMU-ownership check that normally prevents mapping into an unsupported/unowned DMA window is conditional on a debug/config flag; if that flag is clear in production, the enforcement is skipped (though the base/lock checks remain).
+- **Confidence**: medium
+
+## [ringminus1] 000c1e94 / 000c2908 sptm_nvme_ans_sha_reg / admin_queue_regs — NVMe BAR / queue address confinement
+- **Observation**: NVMe register programming confines every queue base address to either the NVMe BAR range ([+0x760, +0x760+0x768)) or the SPTM guest region ([DAT_00095d18, DAT_00095d20)), requires 4 KiB alignment, records a once-only (0xffffffff sentinel) previous-address consistency check, and locks each accepted page with sptm_phys_lock(.., 2). The ANS SHA base must equal the page-count-derived size, and the combined AQA/IOQA attribute dword is checked against a once-written value.
+- **Evidence**: `if (((paddr < BAR_BASE) || BAR_BASE+BAR_SIZE <= paddr) && (paddr < guest_lo || guest_hi <= paddr)) panic(6,...)`; `if (paddr & 0xfff) panic(0x3000003,...)`; `if (prev != 0xffffffffffffffff && paddr != prev) panic(0x3000008,...)`; `sptm_phys_lock(paddr, 2)`; ANS: `if (paddr != (NVME_PAGES<<0xe)) panic(0x300000e,...)`.
+- **Severity (hypothesis)**: high — these confine NVMe DMA queue pages to the SPTM-owned guest region; a weakness here would let the NVMe controller DMA to arbitrary memory. The checks are complete and fail-closed.
+- **Confidence**: high
+
+## [ringminus1] 000c8554 sptm_t8110dart_query_tlb — serialized DART TLB read-back
+- **Observation**: The TLB query builds a descriptor, serializes access via the LO lock + poll (FUN_000c786c) when the DART is not already in the serialized state (0xbe0 != 2), and writes the resulting translation (inst+0x88/0x90) into the per-CPU result block (cpu+0x1b). A non-serialized concurrent query is rejected ("Not serialized" assert).
+- **Evidence**: `if (ctrl+0xbe0 != 2) { sptm_lock_acquire(); ctrl->c2c |= 1; sptm_lock_release(); if (ctrl->c2c & 1) assert("Not serialized"); memcpy(ctrl+0xbfc, q, 0x18); } do { rc=sptm_dart_poll(ctrl,0); } while(rc==0); result[0]=inst->88; result[1]=inst->90;`
+- **Severity (hypothesis)**: informational — the read-back is serialized and the TLB-lookup descriptor fields are validated against the instance config before issue (panic 0x6000025).
+- **Confidence**: high

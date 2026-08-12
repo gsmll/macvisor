@@ -130,3 +130,48 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - FUN_000f4188 (sptm_set_shared_region) → FUN_000ef4e0 (sptm_root_ft), FUN_000ef8c8, FUN_000b2698 (sptm_shared_bind)
 - FUN_000f458c (sptm_nest_region) → FUN_000ef4e0, FUN_000ef8c8, FUN_000f4d60 (sptm_parse_region2), FUN_000e276c, FUN_000e2480, FUN_000e2c18
 - FUN_000f4eec (sptm_unnest_region) → FUN_000ef4e0, FUN_000ef8c8, FUN_000f4d60, FUN_000e276c, FUN_000e2480, FUN_000e2150, FUN_000d76fc, FUN_000e2c18
+
+## UAT stub region edges (sptm_stubs_uat.c batch)
+
+- 0x000b2014 sptm_uat_get_u64 -> 0x000eb004 (UAT object dispatch entry)
+- 0x000b2020 sptm_uat_obj_set_flag -> 0x000eb004
+- 0x000b211c sptm_uat_obj_op_30 -> 0x000eb004
+- 0x000b2198 sptm_uat_obj_op_38 -> 0x000eb004
+- 0x000b20d0 sptm_uat_counter_bump -> 0x000f8084, 0x000f8214
+- 0x000b2584 sptm_uat_copy_chk -> 0x000ae214 (checked block copy)
+- 0x000b2260 sptm_uat_table_commit_bswap -> 0x000b2584 (copy_chk)
+- 0x000b24c0 sptm_aes_block <- thunk 0x000ae4ec
+- 0x000b2258 sptm_thunk_sha256_compress -> 0x000b0e30 (sha256_compress)
+- 0x000b2d40 sptm_uat_tlb_invalidate -> TLBI op table 0x00014408 (0xb2f00..b2f48)
+- 0x000b3600 sptm_uat_unmap_walk -> 0x000c5784 (uat_va_walk); callback -> 0x000b37fc / 0x000b3d90
+- 0x000b37fc sptm_uat_unmap_cb_table -> 0x000b3adc (uat_cleanup), 0x000b3b34 (uat_walk_entry), 0x000e2480 (fte_acquire)
+- 0x000b3d90 sptm_uat_unmap_cb_leaf -> 0x000b3adc, 0x000b3b34
+- 0x000b52fc sptm_uat_copy_segments -> 0x000c5248 (uat_state_get), 0x000b486c (uat_map_continue)
+- 0x000b6524 sptm_uat_init -> 0x000b79e8 (dt_node), 0x000b7c04 (dt_prop), 0x000e45a8 (iommu_region_ref), 0x000e41bc (alloc), 0x000e4d78 (dart_state_get)
+- SK/TXM entry stubs: 0x000b25c0..0x000b2608 -> 0x000a111c (sptm_sk_entry); 0x000b2620..0x000b2698 -> 0x000a0f7c (sptm_txm_sk_entry)
+
+
+## IOMMU batch edges (sptm_iommu.c) — UAT / NVMe / T8110 DART
+
+- 0x000b4068 sptm_uat_unmap_begin -> 0x000c5248 (uat_state_begin), 0x000f8844 (panic), 0x000f8804 (assert), 0x000e4e74 (kernel_ref), 0x000e5090 (kernel_unref), 0x000e40ec (guest_to_phys), 0x000abeb0 (memcpy), 0x000d8a58, 0x000b32d0 (uat_end)
+- 0x000b4374 sptm_uat_prepare_fw_unmap_continue -> 0x000c5248, 0x000f8804, 0x000b3adc+0x000b3b34 (pte lookup), 0x000b2d40 (tlb_invalidate), 0x000d8a58, 0x000e5090
+- 0x000b46bc sptm_uat_prepare_fw_unmap_begin -> 0x000c5248, 0x000f8844, 0x000c5784 (guest_range_validate), 0x000b4374 (continue), 0x000d8a58, 0x000e5090
+- 0x000b486c sptm_uat_map_continue -> 0x000c5248, 0x000f8844/8804, 0x000c5784, 0x000e2480 (fte_acquire), 0x000e56ac (phys_lock), 0x000e4e74/0x000e53d8/0x000e5090 (kernel_ref family), 0x000d8a58; consults boot_dispatch + iommu_dart_info tables
+- 0x000c1e94 sptm_nvme_ans_sha_reg -> 0x000f8844/8804, 0x000e56ac (phys_lock)
+- 0x000c2248 sptm_nvme_bar_iocq_reg -> 0x000f8844/8804, 0x000e56ac
+- 0x000c24c8 sptm_nvme_bar_iosq_reg -> 0x000f8844/8804, 0x000e56ac
+- 0x000c2734 sptm_nvme_bar_ioqa_reg -> 0x000f8844/8804
+- 0x000c2908 sptm_nvme_bar_admin_queue_regs -> 0x000f8844/8804, 0x000e56ac
+- 0x000c7424 sptm_t8110dart_clear_exception -> 0x000e4d78 (dart_state_get), 0x000d617c (dart_pte_lookup), 0x000c76ac (dart_clear_error), 0x000f8844/8804
+- 0x000c7efc sptm_t8110dart_clamp_tlimits -> 0x000e4d78, 0x000f8844/8804
+- 0x000c8174 sptm_t8110dart_read_smmu_stt_index -> 0x000e4d78, 0x000c7bac (dart_flush), 0x000f8844/8804
+- 0x000c8384 sptm_t8110dart_set_smmu_window -> 0x000e4d78, 0x000f8844/8804
+- 0x000c8554 sptm_t8110dart_query_tlb -> 0x000e4d78, 0x000c786c (dart_poll), 0x000abeb0 (memcpy), LOAcquire/Release, 0x000f8844/8804
+- 0x000c8d04 sptm_t8110dart_clear_err -> 0x000e4d78, 0x000c76ac (dart_clear_error), 0x000f8844/8804
+- 0x000c8fb8 sptm_t8110dart_enable_translation -> 0x000e4d78, 0x000c9364/0x000c92e8 (dart_acquire v2/v1), 0x000f8844/8804
+- 0x000c93d8 sptm_t8110dart_disable_translation -> 0x000e4d78, 0x000c9364/0x000c92e8, 0x000f8844/8804
+- 0x000c9728 sptm_t8110dart_init -> 0x000e4d78, 0x000caa9c (dart_lock), 0x000cabb4 (dart_lock_set), 0x000f8844/8804
+- 0x000cacd0 sptm_t8110dart_skip_enable_clock_protection_write (alias enable_clock_protection/powerup) -> 0x000e4d78, 0x000caa9c, 0x000cc2bc (ps_refcount inc), 0x000c9364/0x000c92e8, 0x000cc540/0x000c7e5c (dart_write_reg v2/v1), 0x000cc490/0x000cc3f8 (dart_write_field v2/v1), 0x000c786c (dart_poll), 0x000abeb0 (memcpy), 0x000cabb4 (dart_lock_set), 0x000f8844/8804
+- 0x000cc5e8 sptm_t8110dart_disable_clock_protection (alias powerdown) -> 0x000e4d78, 0x000c8a14 (dart_save), 0x000cc2bc (ps_refcount dec), 0x000c786c, 0x000abeb0, 0x000f8844/8804
+- 0x000ce144 sptm_t8110dart_map -> 0x000e4d78, 0x000c9364/0x000c92e8, 0x000d617c (dart_pte_lookup), 0x000cd970 (dart_tt_lookup), 0x000cdd0c (dart_tlb_flush), 0x000e3d7c (phys_lookup), 0x000e56ac/0x000e5c80 (phys_lock/unlock), 0x000e4e74/0x000e53d8/0x000e5090 (kernel_ref family), 0x000f8844/8804
+- Shared helpers called by the above: 0x000c5248 uat_state_begin; 0x000b32d0 uat_end; 0x000e4d78 dart_state_get; 0x000d617c dart_pte_lookup; 0x000e40ec guest_to_phys; 0x000e3d7c phys_lookup; 0x000e2480 fte_acquire; 0x000e4e74/0x000e5090/0x000e53d8 kernel_ref/unref/add; 0x000e56ac/0x000e5c80 phys_lock/unlock; 0x000f8844 panic; 0x000f8804 assert; 0x000abeb0 memcpy; 0x000abb60 memset; 0x000d8a58; 0x000c5784 guest_range_validate
