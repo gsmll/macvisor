@@ -408,3 +408,12 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - Page alloc/release: 0x26ba4/0x26a74 (boot free-list DAT_000706b0/b8).
 - Panic family: 0x298ec txm_panic -> 0x29730 txm_panic_msg -> 0x29784 txm_panic_call; 0x29a3c txm_fault; 0x2976c txm_panic_abort; 0x29a98 header write. Terminal secure-channel trap thunk_FUN_0002d230 (code 0xa0 only).
 - Platform init: 0x2940c txm_platform_init (DT setup 0x29ad8, security/version probes 0x29bc8/0x29c9c/0x29d84/0x29e48/0x29f28, version 0x29714).
+
+## Kernel-side SPTM/TXM client interface (kernelcache.arm64.kc, osfmk/arm64/sptm/kernel_client.c) — GENTER stub batch
+- txm_enter (0xfffffe000bdbba20) → txm_enter_genter_core (0xfffffe000c0d7970) [TXM_DOMAIN=2 << 48 | selector] → GENTER
+- txm_enter_genter_core (0xfffffe000c0d7970) ← txm_enter (single caller, verified get_function_callers)
+- sk_enter_genter_core (0xfffffe000c0d7948) → GENTER [SK_DOMAIN=3 << 48 | selector]
+- sptm_guest_va_to_ipa (0xfffffe000c0d993c) ← hv_el2_guest_fault (0xfffffe000b967768) [endpoint 24]
+- sptm_guest_dispatch (0xfffffe000c0d997c) ← FUN_fffffe000b953e14 (guest-entry hub) [endpoint 27]
+- sptm_retype (0xfffffe000c0d83e8) ← FUN_fffffe000b9552c4 (txm_alloc_free_page OOM path: retypes a VM page for TXM) [endpoint 1]
+- Every sptm_* wrapper (0xfffffe000c0d83c0..0xfffffe000c0d8a78) → _sptm_pre_entry_hook (0xfffffe000b75e8e8) → GENTER → _sptm_post_exit_hook (0xfffffe000b75e954)
