@@ -4296,3 +4296,21 @@ Confidence: high
 - **Evidence**: decompile: `FUN_0004b488(s_EASM_C_c_005b8541); pcVar1 = (code *)SoftwareBreakpoint(1,0x4b42e0); (*pcVar1)();` (same shape for all nine).
 - **Severity (hypothesis)**: low (informational) — consistent fail-closed design is good; no bypass observed.
 - **Confidence**: high (all nine bodies deterministic noreturn).
+
+## [SkR45] 0x004b9634 / 0x004b97b4 / 0x004b992c — metadata decoder dispatch selects jump-table slot with no bounds check
+- **Observation**: The Swift/Mach-O metadata decoders index a dispatch table from the top byte of each length-prefixed stream element without validating the selector. `sk_meta_decode_sub` (0x9634) and `sk_meta_decode_merge` (0x97b4) compute `(void(**)[...])((word >> 0x38) * 8 + 0x679ac0)` and call it; `sk_meta_decode_slot` (0x992c) does the same against 0x679c30. The low 56 bits of each word are treated as a length and the top 8 bits as a table index; neither is bounded against the actual table size.
+- **Evidence**: decompile (0x9634): `while (uVar1 >> 0x38 != 0) { (**(code **)((uVar1 >> 0x38) * 8 + 0x679ac0))(param_1,param_2,param_3,param_4); ... }` and (0x97b4): `iVar4 = (*pcVar2)(param_5 + *param_3); ... uVar7 = *puVar6 >> 0x38; if (uVar7 != 0) { (**(code **)(uVar7 * 8 + 0x679ac0))(...); }`.
+- **Severity (hypothesis)**: medium — if any of these metadata streams derive from guest/exclave-controlled payloads (e.g. a hostile Mach-O header or exported metadata), a top-byte value outside the table range yields an out-of-bounds indirect call, i.e. control-flow hijack in the kernel. If the streams are only ever built by trusted kernel code, the risk is low. The provenance of these decoders' inputs (who feeds 0x679ac0-selector words) should be confirmed.
+- **Confidence**: medium (OOB dispatch is unambiguous in the decompile; input provenance not traced from this slice).
+
+## [SkR45] 0x004b97b4 — metadata merge invokes a function pointer read directly from the decoded stream
+- **Observation**: `sk_meta_decode_merge` reads a three-word descriptor and calls the first word as a function pointer (`cmp = (unsigned long (*)(unsigned long))*p; ra = cmp(b + *offset); rb = cmp(a + *offset);`) before any element walk. The descriptor is taken straight from `*stream & 0x7fffffffffffffff` (PAC-stripped), so the comparator is decoded data, not a fixed symbol.
+- **Evidence**: decompile: `puVar8 = (undefined8 *)(*param_2 & 0x7fffffffffffffff); pcVar2 = (code *)*puVar8; ... iVar4 = (*pcVar2)(param_5 + *param_3); iVar5 = (*pcVar2)(param_4 + *param_3);`.
+- **Severity (hypothesis)**: medium — a corrupted/attacker-influenced descriptor word becomes an arbitrary call into a decoded address (note the PAC bit is masked off, so only a low-bit-aligned pointer is usable). Same input-provenance caveat as the 0x679ac0 finding; confirms that this decoder treats stream contents as executable metadata.
+- **Confidence**: medium.
+
+## [SkR45] 0x004b8668 — frame copy validates sizes against limits and fails closed on hash mismatch
+- **Observation**: `sk_region_copy_frames` rejects out-of-range requests (`count >= 0x10001 || limit >= 0x10001` → 0xffffffc1; region already past capacity `region[0x11] >= 0x1000000000001` → 0xffffffc2) before copying, and on a per-frame hash mismatch (FUN_00104180 == 0) it marks the region invalid (`region[0x11] = -1`) and returns 0xffffffc0 rather than continuing. This is a fail-closed design for the copy path.
+- **Evidence**: decompile: `if (param_2 < 0x10001 && param_4 < 0x10001) { if ((*(int *)((undefined8 *)*param_1 + 1) == 0) || ((ulong)param_1[0x11] < 0x1000000000001)) { ... iVar2 = FUN_00104180(...); if (iVar2 == 0) { ... param_1[0x11] = -1; uVar4 = 0xffffffc0; } } }`.
+- **Severity (hypothesis)**: low (informational) — bounds and integrity gates are present and the failure path is deterministic; no bypass observed. The 0x1000000000001 capacity ceiling is unusually large (281 TB), so a 32-bit length overflow in the caller could not realistically trip it; worth confirming the byte-count inputs (`count`, `limit`) are themselves validated upstream.
+- **Confidence**: medium (bounds logic clear; input provenance not traced).

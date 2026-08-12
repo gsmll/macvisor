@@ -609,3 +609,13 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 0x004b2de0 (span alloc) -> 0x00032cd0 (vspace layout) -> 0x00043f28 (span alloc/cleanup) -> 0x0003d438 (region map span); owner status spin at +0x68.
 - 0x004b3538 (span cap callback) -> vtable method *(self+0xb8)+0x10; stores pending ptr into *(*(owner+0x28)+8)+0x18.
 - EASM fatals 0x004b42bc..0x004b43f4 -> 0x0004b488 / 0x0004b478 / 0x00118b28 (EASM_C.c) then SoftwareBreakpoint trap.
+
+## SkR45 (0x004b8238-0x004ba070) — boot/crypto assert + Stackshot + Swift-metadata fatal cluster
+- Boot/cbinfo asserts 0x004b8288..0x004b8498 -> 0x00115424 (noreturn 3-string+line fatal) with boot_untyped_parse/finalize, boot_irq_parse, boot_dart_parse, parse_self_macho, cbinfo_alloc_mngd_phys, cbinfo_get_irq_cap strings.
+- ccrypto init failures 0x004b84c4..0x004b8554 -> 0x004b856c -> 0x00116d60 (reboot). Strings ccrng/ccdrbg/cc_lock/RNG-already-init.
+- Mutex acquire 0x004b8898 -> 0x00118164 (acquire) / 0x0011812c (wait) / 0x00118194 (release); release+broadcast 0x004b895c -> 0x001180e0 (broadcast); failure sink 0x004b89f8 -> 0x00116d60 reboot.
+- StackshotConclaveSupport log: 0x004b8a08 -> 0x001185ec (fmt) -> 0x00118c38 (flush) -> 0x001187f4; ctx set/get 0x00046304 / 0x0016fb80; ctx save/restore 0x0016fa6c; fatal asserts -> 0x004afae4.
+- StackshotDelegate + TB buildroot fatals 0x004b8cf8..0x004b9094 -> printers 0x001724cc/0x001724bc/0x0017244c/0x00172484/0x001724a0/0x00172468/0x0004b488/0x0004b478/0x000179d8/0x00015e2c/0x00118b28 then SoftwareBreakpoint trap.
+- Swift type-descriptor fatals 0x004b90b8..0x004b94e8 -> 0x001b11bc (Swift placeholder-init fatal), pre-fixed by 0x00359434 / 0x0036a9a0; metadata dispatch 0x004b92b8 -> 0x0035310c -> 0x0036a940.
+- Metadata stream decoders 0x004b9568/0x004b9634/0x004b9704/0x004b97b4/0x004b992c/0x004b99dc/0x004b9a28 -> jump-table dispatch 0x679ac0 (0x679c30 in 0x992c), helpers 0x00361308/0x003612f0, memcpy 0x00117cc4/0x00117cc8.
+- Stackshot registry 0x004b9ac8/0x004b9c0c -> 0x0039c740 state store; 0x004b9d68 registry spin on DAT_006c0280; object enter 0x004b9e2c -> 0x00116bb4 lookup + 0x000101a0 raise.
