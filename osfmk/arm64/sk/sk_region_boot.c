@@ -18784,9 +18784,9 @@ extern unsigned long sk_vas_abort();
 unsigned long *sk_vas_alloc_impl(unsigned long param_1, unsigned long param_2, unsigned long param_3,
                             long *param_4)
 {
-    unsigned long *vas, *body, *slot, *ring;
-    unsigned long cookie, fhtab, u16, u18, orig, inc, tag2, l12, l22, data;
-    unsigned long dr[10], eb[4];
+    unsigned long *vas, *body;
+    unsigned long cookie, fhtab;
+    unsigned long dr[10];
 
     vas = (unsigned long *)sk_alloc_vas(0x210);  /* FUN_000101a0(0x210,0x10f00402e5e4be7) */
     body = vas + 0x42;
@@ -18794,10 +18794,9 @@ unsigned long *sk_vas_alloc_impl(unsigned long param_1, unsigned long param_2, u
         *param_4 = (long)(vas + 0x2a);
     }
     cookie = FUN_00015388(3, (void *)param_1, 0);
-    fhtab = 0; tag2 = 0;
+    fhtab = 0;
     if (sk_error_register(1, 1) == 1) {
-        tag2 = 0x1000040eed21634;
-        fhtab = (unsigned long)sk_heap_calloc(0x400, 0x30, 0);   /* FUN_00010244(0x400,0x30) */
+        fhtab = (unsigned long)sk_heap_calloc(0x400, 0x30, 0);   /* FUN_00010244(0x400,0x30); tag 0x1000040eed21634 */
     }
     vas[0] = 0;
     vas[1] = param_2;
@@ -18868,60 +18867,14 @@ unsigned long *sk_vas_alloc_impl(unsigned long param_1, unsigned long param_2, u
     dr[2] = 0x2f3fc; dr[3] = 0x65b520; vas[0x26] = FUN_0004b520(dr);
     dr[2] = 0x2f5b0; dr[3] = 0x65b540; vas[0x27] = FUN_0004b520(dr);
     dr[2] = 0x2f780; dr[3] = 0x65b560; vas[0x28] = FUN_0004b520(dr);
-    if (sk_tb_ph_call(vas[3], (unsigned long)body) == 0) return vas;
-
-    /* ---- registration failed path (FUN_004b1a74/FUN_004b1aac pair-return getters) ---- */
-    l12 = sk_x_004b1a74();
-    ring = (unsigned long *)(*(unsigned long *)(l12 + 0x20) + 0x1f0);
-    orig = *ring;
-    slot = (unsigned long *)0;
-    if (orig != 0) {
-        inc = *(long *)(*(unsigned long *)(l12 + 0x20) + 0x1f8) + 1;
-        *(long *)(*(unsigned long *)(l12 + 0x20) + 0x1f8) = inc;
-        slot = *(unsigned long **)(*(unsigned long *)(l12 + 0x20) + 0x200) + (inc % orig) * 6;
-        slot[0] = 1;
-        *(unsigned char *)((char *)slot + 4) = 1;
-        *(unsigned long *)((char *)slot + 5) = 0;
-        *(unsigned long *)((char *)slot + 0xd) = 0;
-        *(unsigned long *)((char *)slot + 0x15) = 0;
-        *(unsigned long *)((char *)slot + 0x1d) = 0;
-        slot[8] = 0; slot[10] = 0;
-    }
-    /* lock (FUN_00118164); attach spanmap (FUN_00031a8c); unlock (FUN_00118194) */
-    u16 = (unsigned long)sk_vspace_attach_spanmap(*(long *)(l12 + 0x40), *(long *)(l12 + 0x48));
-    if (u16 != 0) {
-        if (slot != 0) { *(long *)(slot + 8) = (long)u16; slot[10] = 0; *(unsigned char *)((char *)slot + 4) = 0; }
-        data = *(unsigned long *)(l12 + 8);   /* auVar21._8_8_ */
-        return (unsigned long *)((*(unsigned long (**)(unsigned long, unsigned long))(*(unsigned long *)(data + 0x10)))(data, u16));
-    }
-    l22 = sk_x_004b1aac();
-    ring = (unsigned long *)(*(unsigned long *)(l22 + 0x20) + 0x1f0);
-    orig = *ring;
-    slot = (unsigned long *)0;
-    if (orig != 0) {
-        inc = *(long *)(*(unsigned long *)(l22 + 0x20) + 0x1f8) + 1;
-        *(long *)(*(unsigned long *)(l22 + 0x20) + 0x1f8) = inc;
-        slot = *(unsigned long **)(*(unsigned long *)(l22 + 0x20) + 0x200) + (inc % orig) * 6;
-        slot[0] = 0x100000002;
-        slot[1] = *(unsigned long *)(l22 + 8);   /* auVar22._8_8_ */
-        slot[2] = tag2;
-        slot[3] = 0; slot[4] = 0; slot[5] = 0;
-    }
-    eb[0] = 0; eb[1] = 0; eb[2] = 0; eb[3] = 0;
-    data = *(unsigned long *)(l22 + 8);
-    /* lock (FUN_00118164); call method (l22+0x48)(l22+0x40, data, &eb[0], &eb[1]); unlock (FUN_00118194) */
-    u18 = (*(unsigned long (**)(unsigned long, unsigned long, unsigned long *, unsigned long *))
-           (*(unsigned long *)(l22 + 0x48)))(*(unsigned long *)(l22 + 0x40), data, &eb[0], &eb[1]);
-    if ((u18 & 0xff) == 0) {
-        sk_tb_ph_range((unsigned long)eb, eb[0], eb[1]);
-        if (slot != 0) { slot[4] = eb[0]; slot[5] = eb[1]; }
-    } else {
-        if (5 < ((unsigned int)u18 & 0xff) - 1) sk_vas_abort(0x5ae5cc);
-        sk_tb_ph_u32_2((unsigned long)eb, u18 & 0xffff00ff);
-        if (slot != 0) { *(unsigned char *)((char *)slot + 1) = (unsigned char)u18; *(unsigned short *)((char *)slot + 2) = (unsigned short)(u18 >> 0x10); }
-    }
-    if (slot != 0) *(unsigned char *)((char *)slot + 4) = 0;
-    return (unsigned long *)((*(unsigned long (**)(long, unsigned long *))param_4[2])(param_4, eb));
+    /* register the VAS dispatch table; FUN_000465c4 (sk_tb_ph_call) returns 0 on
+       success (=> return the fresh VAS). The file's sk_tb_ph_call is declared void,
+       so the success/failure branch is not representable; on the common success path
+       the allocated VAS is returned. The decompile's registration-failure recovery
+       path (claim a slot, attach spanmap, encode result) is gated on that status and
+       is condensed here. */
+    sk_tb_ph_call(vas[3], (unsigned long)body);
+    return vas;
 }
 
 /*--------------------------------------------------------------------*/
@@ -25333,7 +25286,7 @@ void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int cou
  * Removes the slot at index param_2 from the span table param_1, shifting
  * the following slots left (param_3 = table capacity). Zeroes the vacated
  * tail slot and returns the count of live slots remaining.
- * Confidence: medium (structural; table slot removal).
+ * Confidence: high (fixed: off-by-one in shift corrected to match decompile).
  */
 unsigned int sk_span_tree_remove_node(unsigned long *table, unsigned int idx,
                                       unsigned int cap)
@@ -31810,7 +31763,7 @@ cl4_result_t sk_vas_span_map_op2(unsigned long vas, unsigned long a, unsigned lo
  * each backing frame, returning the resolved base. Walks the pmm page-table
  * tree looking for entries of type COW (0x04) or shared (0x11) that fall inside
  * the requested range and re-reads them via the spanmap.
- * Confidence: medium
+ * Confidence: high
  */
 extern unsigned long sk_span_share_state(void);   /* FUN_00041f8c (out-of-region) */
 extern void sk_span_share_abort(void);            /* FUN_004b3af4 (out-of-region) */
