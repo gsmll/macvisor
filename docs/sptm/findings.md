@@ -1912,3 +1912,27 @@ Observation: The reserve computes `cap = count`; when the grow flag is set it do
 Evidence: Decompile: "if ((long)(uVar3 + 0x4000000000000000) < 0) SoftwareBreakpoint(1,0x72d5c)" and "*(undefined8 *)(param_4 + 0x10) = 0; FUN_0036b118(param_4)".
 Severity (hypothesis): informational — overflow-guarded vector growth; standard Swift Array reserve semantics.
 Confidence: high.
+
+## [sk-17] 0x74a28-0x75c50 sk_copy_*_range — overlap-checked ranged element copies
+- **Observation**: The ranged element-copy family copies [from,to) elements of a fixed stride out of a container into a destination range after verifying the source and destination ranges do not overlap; any overlap, negative range, or container-size mismatch is a hard `SoftwareBreakpoint(1,addr)` fatal (never a silent partial copy). The constructed-copy variants route through the element's move-tag (FUN_00002534 tag pair) so non-trivial element types are moved, not byte-copied.
+- **Evidence**: Each body: `if (SBORROW8(to,from)) SoftwareBreakpoint(1,addr)`; then `if (end<=src || src+n*size<=dest) { copy; FUN_0036b118(container); return end; }` else `SoftwareBreakpoint(1,addr)`. Constructed variants call `FUN_0035b67c(dest, src, n, tag)` with tag from `FUN_00002534(DAT_0064xxxx, DAT_004cxxxx)`.
+- **Severity (hypothesis)**: informational — bounds/overlap discipline prevents buffer overlaps in the cap-vector layer; the fatal-on-overlap is fail-closed.
+- **Confidence**: high
+
+## [sk-17] 0x75cb4-0x76d08 sk_vec_insert_* — lock-tagged slot insertion with grow-on-collision
+- **Observation**: Vector/slot insertion is guarded by the lock-tag primitive FUN_00258c60 (an acquire that returns whether the target slot was already live). Each insert re-resolves the slot key a second time after the lock-tag acquire and fatals (FUN_002591b4 / SBP) if the slot's occupancy flag changed between the two resolves — a classic double-checked-lookup against concurrent mutation. On a live slot the displaced element is released (FUN_0036b118 token release or FUN_003a25d4) after the new value is installed, preventing refcount leaks on overwrite.
+- **Evidence**: `r = FUN_00258c60(lock, ...); if (r&1) { st2 = re-resolve; if ((st>>32)&1 != (st2>>32)&1) fatal; }` then on occupied path `old = slot[i]; slot[i]=new; FUN_0036b118(old);`. Count bump at this+0x10 is CARRY-checked (SBP at 0x76cf8/0x76f64).
+- **Severity (hypothesis)**: informational — the double-checked slot resolution plus displaced-element release guards against ABA-style races and refcount leaks in the cap table.
+- **Confidence**: medium
+
+## [sk-17] 0x76ac8 / 0x76d08 sk_slot_iter_*_bitmap — bitmap-slot iteration writes occupancy bit + count
+- **Observation**: The two bitmap iterator cores walk the set bits of a reversed bitmap (standard bit-reverse + LZCOUNT) and, for each selected slot, set the occupancy bit in the container's bitmap (this+0x40) and bump the element count (this+0x10) on the free path, or accumulate the auxiliary count (CARRY-checked) on the collision path. Both count increments and the accumulator are overflow-fatal.
+- **Evidence**: free path `*(bm + 0x40) |= 1<<(idx&0x3f); *(count+0x10) += 1` with `if (CARRY) SoftwareBreakpoint(1,0x76cf8)`; collision path `if (CARRY8(old,aux)) SoftwareBreakpoint(1,0x76cf4)`. Entries retained (thunk_FUN_0036b270) then released (FUN_0036b118 / FUN_003a25d4).
+- **Severity (hypothesis)**: informational — overflow-guarded bitmap slot accounting; no weakness observed.
+- **Confidence**: medium
+
+## [sk-17] 0x76fc0 sk_write_imm64 — raw 64-bit immediate write to global 0x64e038
+- **Observation**: A single function writes a hard-coded 64-bit immediate (0x91181400d00002a0, which decodes to an ARM64 `orr`/instruction-patch constant) into the global at 0x64e038, then returns. Ghidra removed an unreachable block at 0x76fd4, so the write is unconditional in the reachable path. This looks like a one-time patch/initialization of a runtime hook or jump slot.
+- **Evidence**: `uRam000000000064e038 = 0x91181400d00002a0;` (single store); `/* WARNING: Removing unreachable block (ram,0x00076fd4) */`.
+- **Severity (hypothesis)**: low — an unconditional global write of a fixed constant; if 0x64e038 is a code/jump slot the value is fixed at build, so not attacker-influenced here, but worth confirming the target's meaning (potential runtime-patch surface).
+- **Confidence**: low

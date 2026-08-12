@@ -111,7 +111,7 @@ extern word_t sk_rt_once(word_t, ...);          /* FUN_003d3dd8 */
 extern word_t sk_drace_mode_get(word_t, ...);   /* FUN_0035bdf8 */
 extern word_t sk_drace_check2(word_t, ...);             /* FUN_00369b0c */
 extern word_t sk_drace_install(word_t, ...);    /* thunk_FUN_00369b04 */
-extern word_t sk_copy128(word_t, ...);          /* FUN_0040c2d8 */
+extern sk_128_t sk_copy128(word_t, ...);        /* FUN_0040c2d8 */
 extern word_t sk_128_save(word_t, ...);         /* FUN_0040c0f8 */
 extern word_t sk_128_load(word_t, ...);         /* FUN_0040bda0 */
 extern word_t sk_job_clean(word_t, ...);                /* FUN_0040c5d8 */
@@ -247,7 +247,7 @@ static void    sk_l4_once_init2(void);                                       /* 
 static void    sk_job_kind_dispatch(word_t *p);                              /* 409540 */
 static word_t  sk_run_job(word_t self, word_t job, word_t *out, word_t a4,
                           word_t a5, word_t a6);                             /* 4095a0 */
-static word_t  sk_future_get(word_t p);                                      /* 4097cc */
+static sk_128_t sk_future_get(word_t p);                                      /* 4097cc */
 static void    sk_job_teardown(word_t p);                                    /* 409818 */
 static void    sk_job_teardown2(word_t p);                                   /* 40981c */
 static void    sk_job_state_set(word_t p);                                   /* 409858 */
@@ -1093,7 +1093,8 @@ static void sk_job_timer_set(word_t v, word_t *out, int on)
     out[2] = v;
     out[3] = s | v & ~(word_t)0xc;
     local = v;
-    sk_cas_call((word_t)out, (word_t)sk_job_send, (word_t)&local); /* FUN_0040c09c */
+    sk_cas_call((word_t)(uintptr_t)out, (word_t)(uintptr_t)sk_job_send,
+                (word_t)(uintptr_t)&local); /* FUN_0040c09c */
 }
 
 /* FUN_00409210 @ 0x00409210 — sk_job_self_ptr: returns p + 0x50. */
@@ -1161,7 +1162,7 @@ static void sk_clock_resolve2(word_t *a, word_t *b, int id)
 static void sk_rt_dispatch0(word_t a)
 {
     if (sk_rt_dispatch_78 == 0) {
-        sk_rt_is_isolated(); /* FUN_003fc8a0 */
+        sk_rt_is_isolated((word_t)0); /* FUN_003fc8a0 */
         return;
     }
     ((void(*)(word_t, word_t))sk_rt_dispatch_78)(a, 0x409380);
@@ -1171,7 +1172,7 @@ static void sk_rt_dispatch0(word_t a)
 static void sk_rt_dispatch1(word_t a, word_t b)
 {
     if (sk_rt_dispatch_80 == 0) {
-        sk_rt_fallback_1(); /* FUN_0040f9f4 */
+        sk_rt_fallback_1((word_t)0); /* FUN_0040f9f4 */
         return;
     }
     ((void(*)(word_t, word_t, word_t))sk_rt_dispatch_80)(a, b, 0x4093b0);
@@ -1181,7 +1182,7 @@ static void sk_rt_dispatch1(word_t a, word_t b)
 static void sk_rt_dispatch2(word_t a, word_t b)
 {
     if (sk_rt_dispatch_88 == 0) {
-        sk_rt_fallback_2(); /* FUN_0040fa5c */
+        sk_rt_fallback_2((word_t)0); /* FUN_0040fa5c */
         return;
     }
     ((void(*)(word_t, word_t, word_t))sk_rt_dispatch_88)(a, b, 0x4093e0);
@@ -1191,7 +1192,7 @@ static void sk_rt_dispatch2(word_t a, word_t b)
 static void sk_rt_dispatch3(void)
 {
     if (sk_rt_dispatch_98 == 0) {
-        sk_rt_fallback_4(); /* thunk_FUN_00019858 */
+        sk_rt_fallback_4((word_t)0); /* thunk_FUN_00019858 */
         return;
     }
     ((void(*)(word_t))sk_rt_dispatch_98)(0x409440);
@@ -1201,7 +1202,7 @@ static void sk_rt_dispatch3(void)
 static void sk_rt_dispatch4(word_t a, word_t b)
 {
     if (sk_rt_dispatch_a0 == 0) {
-        sk_rt_fallback_3(); /* FUN_0040faac */
+        sk_rt_fallback_3((word_t)0); /* FUN_0040faac */
         return;
     }
     ((void(*)(word_t, word_t, word_t))sk_rt_dispatch_a0)(a, b, 0x409470);
@@ -1213,7 +1214,7 @@ static void sk_rt_dispatch4(word_t a, word_t b)
 static word_t sk_isolating_or_flags(word_t p)
 {
     if ((p != 0) && (*(char *)(p + 0x20) == '\0')) {
-        return sk_job_destroy(p); /* FUN_00409a34 */
+        return sk_combined_read(p); /* FUN_00409a34 */
     }
     return (word_t)*(uint32_t *)(p + 0x24);
 }
@@ -1386,7 +1387,7 @@ static void sk_job_teardown2(word_t p)
 static void sk_job_state_set(word_t p)
 {
     word_t lv;
-    sk_state_lock();               /* FUN_0040b2c8 */
+    sk_state_lock((word_t)0);              /* FUN_0040b2c8 */
     lv = *(word_t *)(p + 0x40);
     if ((*(word_t *)(lv + 0x18) == 0) && (*(word_t *)(lv + 0x18) == 0)) {
         *(word_t *)(lv + 0x18) = 2;
@@ -1435,7 +1436,7 @@ static void sk_job_enqueue(word_t self, word_t job)
                  (word_t)q + off + 0x18 & ~off);
         } else {
             *(word_t *)(lv + 0x10) = q[2];
-            sk_swift_retain(); /* thunk_FUN_0036b270 */
+            sk_swift_retain((word_t)0); /* thunk_FUN_0036b270 */
         }
     }
 }
@@ -1488,12 +1489,12 @@ static void sk_job_copy_state(word_t *d, word_t *s, word_t *t)
 static void sk_job_release(void)
 {
     sk_job_destroy(0);      /* FUN_004099d4() */
-    sk_heap_free();          /* thunk_FUN_00012568() */
+    sk_heap_free((word_t)0); /* thunk_FUN_00012568() */
 }
 static void sk_job_release2(void)
 {
     sk_job_destroy(0);      /* FUN_004099d4() */
-    sk_heap_free();          /* thunk_FUN_00012568() */
+    sk_heap_free((word_t)0); /* thunk_FUN_00012568() */
 }
 
 /* FUN_00409c10 @ 0x00409c10 — sk_job_flags: low byte of p+0x60. */
@@ -1524,7 +1525,7 @@ static void sk_run_inline(word_t out, int *desc, word_t a3, word_t a4)
     sz = (desc == 0) ? 0 : ((word_t)desc + (word_t)*desc);
     {
         int cnt = desc[1];
-        word_t esz = sk_job_build(0, 0, a4, cnt).hi; /* FUN_00409e14(0,0,a4,cnt) */
+        word_t esz = 0; /* FUN_00409e14(0,0,a4,cnt) — void; X1 size register artifact */
         if (esz < 0x1001) {
             scratch_sz = 0x1000;
             ((void(*)(void))sk_alloc_fn_658c88)();   /* DAT_00658c88 */
@@ -1648,7 +1649,7 @@ static sk_128_t sk_job_build(word_t flags, uint8_t *desc, word_t a3,
         flags = sk_err_op_none(); /* FUN_00408898 */
     }
     u12 = (flags != 0) ? flags : 0x15;
-    au24 = (sk_128_t)sk_noop(); /* FUN_00409e14(lvar3,l21,a3,a6) */
+    au24 = sk_128_zero(); /* FUN_00409e14(lvar3,l21,a3,a6) — void, X1 artifact */
     u13 = au24.hi;
     if (l19 == 0) {
         if ((pb == (uint8_t *)0) ||
@@ -1856,7 +1857,7 @@ static void sk_invoke_future(word_t a, word_t job, word_t cb, word_t a4)
 static void sk_job_state_set2(word_t p)
 {
     word_t lv;
-    sk_state_lock();   /* FUN_0040b2c8 */
+    sk_state_lock((word_t)0);   /* FUN_0040b2c8 */
     lv = *(word_t *)(p + 0x40);
     if ((*(word_t *)(lv + 0x18) == 0) && (*(word_t *)(lv + 0x18) == 0)) {
         *(word_t *)(lv + 0x18) = 2;
@@ -1871,7 +1872,7 @@ static void sk_job_state_set2(word_t p)
 static void sk_job_state_set3(word_t p, word_t v)
 {
     word_t lv;
-    sk_state_lock();   /* FUN_0040b2c8 */
+    sk_state_lock((word_t)0);   /* FUN_0040b2c8 */
     lv = *(word_t *)(p + 0x40);
     *(word_t *)(lv + 0x20) = v;
     if ((*(word_t *)(lv + 0x18) == 0) && (*(word_t *)(lv + 0x18) == 0)) {
@@ -1897,7 +1898,7 @@ static word_t *sk_job_alloc(word_t a, word_t b)
     p[2] = a;
     p[3] = b;
     local = &(word_t){0};
-    sk_cas_call((word_t)p, 0x409b700, (word_t)&local); /* FUN_0040c09c */
+    sk_cas_call((word_t)(uintptr_t)p, (word_t)0x409b700, (word_t)(uintptr_t)&local); /* FUN_0040c09c */
     if (flag == 1) {
         ((void(*)(void))p[2])();
         sk_free((word_t)p);   /* FUN_0040bd24 */
@@ -1931,6 +1932,6 @@ static word_t *sk_job_alloc2(word_t a, word_t b)
     if (a != 0) { type = (word_t *)(p + 2); }
     p[2] = a;
     p[3] = b;
-    sk_cas_call((word_t)type, (word_t)p, 0x409b71c); /* FUN_0040c09c */
+    sk_cas_call((word_t)(uintptr_t)type, (word_t)(uintptr_t)p, (word_t)0x409b71c); /* FUN_0040c09c */
     return p;
 }
