@@ -23,7 +23,6 @@ typedef uint64_t word_t;
 #define FUN_000651bc(...) ((word_t)0)   /* no-op helper */
 #define FUN_0006b2dc(...) ((void)0)   /* no-op helper */
 #define FUN_0006b6f4(...) ((void)0)   /* no-op helper */
-#define FUN_0006b6ac(...) ((void)0)   /* no-op helper */
 #define FUN_0006b560(...) ((void)0)   /* no-op helper */
 #define FUN_0006b4d0(...) ((void)0)   /* no-op helper */
 #define FUN_0006b550(...) ((void)0)   /* no-op helper */
@@ -124,7 +123,7 @@ typedef uint64_t word_t;
 #define FUN_0006b374(...) ((word_t)0)   /* opaque helper */
 extern word_t FUN_0001a1c8(word_t);
 #define FUN_000695e4(...) ((word_t)0)   /* opaque helper */
-#define CL4_FATAL() __builtin_trap()   /* SoftwareBreakpoint(1,<addr>) path */
+#define CL4_FATAL() __builtin_trap() /* noreturn */   /* SoftwareBreakpoint(1,<addr>) path */
 
 /* Fixed-address globals (Ghidra DAT_ symbols) used by the DeviceTreeKit
  * region; kept as literal addresses since the binary image base is 0. */
@@ -198,6 +197,8 @@ static void   dtk_scratch_store(void);
 
 static word_t dt_find_entry(word_t list_head, word_t key, word_t *out_payload);
 static word_t dt_range_make(word_t base, word_t size, word_t *out_range);
+static word_t dt_validate_root(word_t base, word_t size, word_t *out);
+static word_t dt_walk_root_cb(word_t base, word_t size, word_t cb, word_t ctx);
 static word_t dt_range_end(word_t *range);
 static word_t dt_range_advance(word_t *range);
 static word_t dt_range_set(word_t base, word_t size, word_t *out_range);
@@ -216,9 +217,7 @@ static word_t dt_list_len(word_t *head);
 static void   dt_overflow_fatal(void);
 static void   dt_nop(void);
 static word_t dt_parse_root(word_t *out_root);
-static word_t dt_validate(word_t base, word_t size, word_t *out);
 static word_t dt_validate_range(word_t base, word_t size, word_t *out);
-static word_t dt_walk_cb(word_t base, word_t size, word_t cb, word_t ctx);
 static word_t dt_integrity_parse(word_t base, word_t size, word_t *out);
 static word_t dt_iterator_next(word_t base, word_t limit, word_t *out_iter);
 static word_t dt_name_compare(word_t *iter, word_t name);
@@ -293,7 +292,7 @@ static word_t dt_build_root_iter(word_t *out)
         word_t rng[2] = { 0, 0 };
         if ((word_t)(0x68a4c8 + 6) + (word_t)0x6b2748 < (word_t)0x6b2748)
             CL4_FATAL();                            /* SoftwareBreakpoint 0x5519 */
-        word_t rc = dt_validate(0x6b2748, *(word_t *)(0x68a4c8 + 6), rng);
+        word_t rc = dt_validate_root(0x6b2748, *(word_t *)(0x68a4c8 + 6), rng);
         if ((int)rc != 0) {
             *(word_t *)0x6b2750 = rng[1];
             *(word_t *)0x6b2748 = rng[0];
@@ -317,7 +316,7 @@ static word_t dt_validate_root(word_t base, word_t size, word_t *out)
         char ctx[16];
         word_t a[2] = { rng[0], rng[1] };
         ctx[0] = 1;
-        dt_walk_cb(rng[0], rng[1], (word_t)dt_integrity_parse, (word_t)&ctx);
+        dt_walk_root_cb(rng[0], rng[1], (word_t)dt_integrity_parse, (word_t)&ctx);
         if (ctx[0] == 1) {
             out[0] = base;
             out[1] = size;
@@ -1328,11 +1327,8 @@ static word_t dtk_lookup_node_fatal(word_t idx)
  * Confidence: medium */
 static word_t dtk_range_of(word_t base)
 {
-    word_t out[2];
     dt_list_len(0);
-    out[1] = 0;
-    out[0] = base;
-    return (word_t)out;
+    return base;   /* pair {base, 0} in regs; caller takes word 0 */
 }
 
 /* FUN_000677f8 @ 0x677f8  (est. dtk_record_store)
@@ -1840,7 +1836,7 @@ static word_t dtk_collect_children(void)
     }
     dtk_children_finalize(vec);
     FUN_0006a468(0, 0, 0);
-    dtk_end_dump(&it);
+    dtk_end_dump(&it, 0, 0);
     if (it[4] != 1) {
         while (1) {
             word_t ca = 0, cb = 0;
@@ -1876,7 +1872,7 @@ static void dtk_children_finalize(word_t vec)
     word_t n = *(word_t *)(vec + 0x10);
     word_t *buf;
     if (n == 0) {
-        buf = DTK_VEC_STORE;
+        buf = (word_t *)DTK_VEC_STORE;
     } else {
         buf = (word_t *)FUN_001fac04(n, 0x64e100);
     }
@@ -1947,7 +1943,7 @@ static word_t dt_compare_key(word_t a, word_t b)
     } else {
         if (*(long *)(a + 0x10) == *(long *)(b + 0x10)) {
             word_t set[2], idx[2];
-            FUN_0006afb4(&set, a);
+            FUN_0006afb4((word_t)set, a);
             FUN_003a25e0(a, 2);
             FUN_0036b270(b);
             /* iterate the sorted index bitmap (decompiler collapsed); bail */
@@ -2052,14 +2048,11 @@ static word_t dtk_vec_split(word_t v)
         FUN_001bea18(x, 0, r);
         FUN_0036b118(r);
         FUN_000026e8(v);
-        out[1] = 0;
-        out[0] = 0;
+        return elems;
     } else {
         FUN_000026e8(v);
-        out[0] = elems;
-        out[1] = 0;
+        return elems;
     }
-    return (word_t)out;
 }
 
 /* FUN_00069428 @ 0x69428  (est. dtk_vec_split_store)
@@ -2324,9 +2317,9 @@ static word_t dtk_collect_names(void)
 {
     word_t it[4];
     word_t vec = (word_t)(word_t)DTK_EMPTY_VEC;
-    word_t *ptr = DTK_VEC_STORE;
+    word_t *ptr = (word_t *)DTK_VEC_STORE;
     word_t room = 0;
-    dtk_end_dump(it);
+    dtk_end_dump(it, 0, 0);
     if (it[4] != 1) {
         while (!(dt_iter_end(it) & 1)) {
             word_t nm[2] = { 0, 0 };
@@ -2377,9 +2370,9 @@ static word_t dtk_collect_props(void)
 {
     word_t it[4];
     word_t vec = (word_t)(word_t)DTK_EMPTY_VEC;
-    word_t *ptr = DTK_VEC_STORE;
+    word_t *ptr = (word_t *)DTK_VEC_STORE;
     word_t room = 0;
-    dtk_begin_dump(it);
+    dtk_begin_dump(it, 0, 0);
     if (it[4] != 1) {
         while (!(dt_iter_end(it) & 1)) {
             word_t a = 0, b = 0, c = 0, d = 0;
@@ -2443,7 +2436,7 @@ static word_t dtk_collect_from_list(word_t head)
 {
     word_t n = dt_list_len((word_t *)head);
     word_t vec = (word_t)(word_t)DTK_EMPTY_VEC;
-    word_t *ptr = DTK_VEC_STORE;
+    word_t *ptr = (word_t *)DTK_VEC_STORE;
     word_t room = 0;
     word_t i = 0;
     while (1) {

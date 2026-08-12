@@ -74,7 +74,7 @@ extern void    FUN_001150e0(const char *msg) __attribute__((noreturn)); /* link-
 extern void    FUN_00116bb4(uint64_t out, uint64_t, const char *fmt, void *); /* error-code print */
 extern void    FUN_00118b28(const char *fmt, ...);   /* console log */
 extern void    FUN_00118b94(const char *fmt, ...);   /* console log */
-extern void    FUN_0011d7e8(...) __attribute__((noreturn)); /* stack-canary failure */
+extern void    FUN_0011d7e8() __attribute__((noreturn)); /* stack-canary failure */
 extern uint64_t FUN_0019ae2c(uint64_t);              /* zero-frame lookup */
 extern void    FUN_0019ae60(uint64_t, uint64_t);     /* zero-frame release */
 extern void    FUN_001a84f4(void *dst, uint64_t);    /* pair init */
@@ -297,9 +297,8 @@ void FUN_0006a75c(long *param_1, uint64_t param_2, uint64_t param_3);
 void FUN_0006a7c8(void);
 void FUN_0006a860(void);
 void FUN_0006abac(uint64_t param_1, uint32_t param_2, long *param_3);
-sk_u128_t FUN_0006ae9c(uint64_t self, uint64_t param_1, uint64_t param_2);
-sk_u128_t FUN_0006af08(uint64_t self, uint64_t param_1, uint64_t param_2,
-                       uint64_t param_3);
+sk_u128_t FUN_0006ae9c(uint64_t param_1, uint64_t param_2);
+sk_u128_t FUN_0006af08(uint64_t param_1, uint64_t param_2, uint64_t param_3);
 void FUN_0006afb4(long *param_1, long param_2);
 uint64_t FUN_0006afec(uint64_t param_1);
 void FUN_0006b1d0(void);
@@ -404,6 +403,11 @@ uint64_t FUN_0006d4fc(void);
 uint64_t FUN_0006d508(void);
 uint64_t FUN_0006d514(void);
 uint64_t FUN_0006d520(void);
+long *FUN_0006a4c0(long *param_1, long param_2);
+uint8_t *FUN_0006b388(void);
+uint16_t *FUN_0006c244(uint16_t param_1);
+long *FUN_0006ce00(long param_1);
+uint64_t FUN_0006d52c(void);
 
 /* ================================================================== *
  * Function bodies (address order as in the SK14 wave batch).
@@ -1497,7 +1501,7 @@ void FUN_0006bbb0(uint64_t *param_1, uint8_t param_2)
         param_1[1] = DAT_004bf008;
         param_1[2] = DAT_004bf010;
         param_1[3] = DAT_004bf018;
-        FUN_0006bcc0(param_1);
+        FUN_0006bcc0((uint64_t)param_1);
         return;
     }
     switch (param_2) {
@@ -1551,7 +1555,7 @@ uint64_t FUN_0006bcf8(uint64_t param_1, uint64_t param_2, uint64_t param_3,
     long canary = SK_CANARY;
     uint64_t uVar4;
     uint64_t uVar5;
-    char *pcVar6;
+    const char *pcVar6;
     uint8_t stk[32];
 
     if ((param_5 & 0xfffffffd) != 0) {
@@ -1695,7 +1699,7 @@ void FUN_0006bfe4(uint64_t param_1, uint64_t param_2)
     long canary = SK_CANARY;
     uint64_t uVar3;
     uint64_t uVar4;
-    char *pcVar5;
+    const char *pcVar5;
     uint64_t local_48[4];
 
     if ((g_zero_frames_active & 1) == 0) {
@@ -1849,18 +1853,19 @@ uint64_t FUN_0006c2b0(long param_1)
         node[0] = 0xaa00;
         g_slot_64e1a2 = 0xaa01;
         if (g_vspace_head == NULL) {
-            *(uint64_t *)(node + 0x10) = 0;
+            *(uint16_t **)((uint8_t *)node + 0x20) = NULL;      /* next @ +0x20 */
             g_vspace_head = node;
-            *(uint64_t **)(node + 0x14) = &g_vspace_head;
-            *(long *)(node + 0xc) = param_1;
+            *(uint16_t ***)((uint8_t *)node + 0x28) = &g_vspace_head; /* prevp @ +0x28 */
+            *(long *)((uint8_t *)node + 0x18) = param_1;        /* key @ +0x18 */
             return 0xffffaa00;
         }
-        if (*(uint64_t **)((long)g_vspace_head + 0x28) == &g_vspace_head) {
-            *(uint16_t **)(node + 0x10) = g_vspace_head;
-            *(uint16_t ***)((long)g_vspace_head + 0x28) = node + 0x10;
+        if (*(uint16_t ***)((uint8_t *)g_vspace_head + 0x28) == &g_vspace_head) {
+            *(uint16_t **)((uint8_t *)node + 0x20) = g_vspace_head;
+            *(uint16_t ***)((uint8_t *)g_vspace_head + 0x28) =
+                (uint16_t **)((uint8_t *)node + 0x20);
             g_vspace_head = node;
-            *(uint64_t **)(node + 0x14) = &g_vspace_head;
-            *(long *)(node + 0xc) = param_1;
+            *(uint16_t ***)((uint8_t *)node + 0x28) = &g_vspace_head;
+            *(long *)((uint8_t *)node + 0x18) = param_1;
             return 0xffffaa00;
         }
         FUN_004b808c();
@@ -2515,9 +2520,9 @@ uint64_t FUN_0006d240(uint64_t param_1, uint64_t param_2)
             if (low != uVar7) {
                 uVar6 = 0;
                 do {
-                    lVar1 = (long)((uVar7 + uVar6 >> 0x1a) * 8);
+                    lVar1 = (long)(((uVar7 + uVar6) >> 0x1a) * 8);
                     uVar9 = g_cboot_pte_bitmap[(uint64_t)lVar1 / 8];
-                    uVar10 = 1ull << (uVar7 + uVar6 >> 0x14 & 0x3f);
+                    uVar10 = 1ull << (((uVar7 + uVar6) >> 0x14) & 0x3f);
                     if ((uVar9 & uVar10) != 0)
                         goto bitmap_conflict;
                     g_cboot_pte_bitmap[(uint64_t)lVar1 / 8] = uVar9 | uVar10;
@@ -2544,9 +2549,9 @@ uint64_t FUN_0006d240(uint64_t param_1, uint64_t param_2)
                 return uVar6;
             uVar5 = 0;
             for (;;) {
-                lVar1 = (long)((uVar9 + uVar5 >> 0x1a) * 8);
+                lVar1 = (long)(((uVar9 + uVar5) >> 0x1a) * 8);
                 uVar7 = g_cboot_pte_bitmap[(uint64_t)lVar1 / 8];
-                uVar8 = 1ull << (uVar9 + uVar5 >> 0x14 & 0x3f);
+                uVar8 = 1ull << (((uVar9 + uVar5) >> 0x14) & 0x3f);
                 if ((uVar7 & uVar8) != 0)
                     break;                          /* conflict */
                 g_cboot_pte_bitmap[(uint64_t)lVar1 / 8] = uVar7 | uVar8;
@@ -2657,4 +2662,13 @@ uint64_t FUN_0006d514(void)
 uint64_t FUN_0006d520(void)
 {
     return g_phys_hint_b_cap;
+}
+
+/* FUN_0006d52c @ 0x0006d52c   (est. sk_cboot_cap_found_get)
+ * Ghidra: undefined8 FUN_0006d52c(void)
+ * Returns the last matching cbootinfo capability (DAT_006be888).
+ * Confidence: high */
+uint64_t FUN_0006d52c(void)
+{
+    return g_cboot_cap_found;
 }

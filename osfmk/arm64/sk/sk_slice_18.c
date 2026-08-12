@@ -1541,3 +1541,576 @@ void sk_cnode_entry_append_one(void)
     /* not reached in the COW-free fast path */
     SK18_FATAL(0x7a0f0);
 }
+
+/* =====================================================================
+ * CNodeEntry constructors (build a packed 0x38-byte CNodeEntry).
+ * ===================================================================== */
+
+/* FUN_0007a718 / 7abe0 forward decls (defined below) + closure callbacks. */
+void sk_cnode_entry_build(word_t *out, word_t *p);        /* FUN_0007a718 */
+void sk_cnode_entry_last(word_t *out, word_t param_2);     /* FUN_0007abe0 */
+void sk_cnode_build_cb_a(word_t a, word_t b, word_t c);   /* FUN_0007b524 */
+void sk_cnode_build_cb_b(word_t a, word_t b, word_t c);   /* FUN_0007b544 */
+
+/* Ghidra byte-concatenation shorthands for the packed entry tail. */
+#define CONCAT71(h, l) (((word_t)(h) << 8) | ((word_t)(l) & 0xff))
+#define CONCAT17(h, l) (((word_t)(h) & 0xff) | ((word_t)(l) << 8))
+
+/* Packs the 7-word CNodeEntry output produced by sk_cnode_entry_build. */
+static void sk_cnode_entry_pack(word_t *out, word_t w0, word_t w1, word_t w2,
+                                word_t w3, word_t w4, word_t hi, word_t tail0,
+                                word_t tail1)
+{
+    out[0] = w0;
+    out[1] = w1;
+    out[2] = w2;
+    out[3] = w3;
+    out[4] = w4;
+    out[5] = hi;
+    *(word_t *)((char *)out + 0x29) = tail0;   /* CONCAT17(uStack_70,uStack_77) */
+    *(word_t *)((char *)out + 0x31) = tail1;   /* uStack_6f */
+}
+
+/* FUN_0007a120 @ 0x0007a120   (est. sk_cnode_entry_ctor_witness_a)
+ * Ghidra: void FUN_0007a120(void)  — a Swift witness initializer: reads a
+ *   value via the class metadata (+0x130), runs the modify/teardown sequence
+ *   (FUN_0007c198/18c/128), invokes a stored closure, releases the value.
+ * Confidence: low */
+void sk_cnode_entry_ctor_witness_a(void)
+{
+    word_t u;
+    sk_metaclass_get();
+    u = (*(word_t (**)(void))(sk_identity(0) + 0x130))();
+    sk_acc_w17();
+    sk_acc_w16();
+    sk_acc_w11();
+    (*(void (**)(void))(sk_identity(0) + 0x0))();
+    sk_swift_release(u);
+    sk_acc_w8();
+    return;
+}
+
+/* FUN_0007a1fc @ 0x0007a1fc   (est. sk_cnode_entry_ctor_0)
+ * Ghidra: void FUN_0007a1fc(undefined8*,undefined8,undefined8,ulong,undefined8,
+ *                           undefined8,ulong)  — CNodeEntry constructor (kind
+ *   0): builds the 6-word parameter tuple [a3, a4&0xff, a5, a6, a7&0xff] +
+ *   kind=0, materializes the entry via sk_cnode_entry_build, packs into out.
+ * Confidence: medium */
+void sk_cnode_entry_ctor_0(word_t *out, word_t a2, word_t a3, word_t a4,
+                           word_t a5, word_t a6, word_t a7)
+{
+    word_t p[6];
+    word_t r[7];
+    (void)a2;
+    p[0] = a3; p[1] = a4 & 0xff; p[2] = a5; p[3] = a6; p[4] = a7 & 0xff; p[5] = 0;
+    sk_cnode_entry_build(r, p);
+    sk_cnode_entry_pack(out, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[6]);
+    return;
+}
+
+/* FUN_0007a274 @ 0x0007a274   (est. sk_cnode_entry_ctor_empty_4)
+ * Ghidra: void FUN_0007a274(undefined8 *param_1)  — CNodeEntry constructor
+ *   with all-zero payload and kind=4.
+ * Confidence: medium */
+void sk_cnode_entry_ctor_empty_4(word_t *out)
+{
+    word_t p[6];
+    word_t r[7];
+    p[0] = 0; p[1] = 0; p[2] = 0; p[3] = 0; p[4] = 0; p[5] = 4;
+    sk_cnode_entry_build(r, p);
+    sk_cnode_entry_pack(out, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[6]);
+    return;
+}
+
+/* FUN_0007a3dc @ 0x0007a3dc   (est. sk_cnode_entry_ctor_2)
+ * Ghidra: void FUN_0007a3dc(undefined8*,undefined8,undefined8,ulong)  —
+ *   CNodeEntry constructor (kind 2): tuple [a3, a4&1, 0, 0, 0].
+ * Confidence: medium */
+void sk_cnode_entry_ctor_2(word_t *out, word_t a2, word_t a3, word_t a4)
+{
+    word_t p[6];
+    word_t r[7];
+    (void)a2;
+    p[0] = a3; p[1] = a4 & 1; p[2] = 0; p[3] = 0; p[4] = 0; p[5] = 2;
+    sk_cnode_entry_build(r, p);
+    sk_cnode_entry_pack(out, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[6]);
+    return;
+}
+
+/* FUN_0007a548 @ 0x0007a548   (est. sk_cnode_entry_ctor_3)
+ * Ghidra: void FUN_0007a548(undefined8*,undefined8,ulong)  — CNodeEntry
+ *   constructor (kind 3): tuple [a3&0xff, 0, 0, 0, 0].
+ * Confidence: medium */
+void sk_cnode_entry_ctor_3(word_t *out, word_t a2, word_t a3)
+{
+    word_t p[6];
+    word_t r[7];
+    (void)a2;
+    p[0] = a3 & 0xff; p[1] = 0; p[2] = 0; p[3] = 0; p[4] = 0; p[5] = 3;
+    sk_cnode_entry_build(r, p);
+    sk_cnode_entry_pack(out, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[6]);
+    return;
+}
+
+/* FUN_0007a6a0 @ 0x0007a6a0   (est. sk_cnode_entry_ctor_1)
+ * Ghidra: void FUN_0007a6a0(undefined8*,undefined8,undefined8,undefined8,
+ *                           undefined8,ulong,undefined8)  — CNodeEntry
+ *   constructor (kind 1): tuple [a3, a4, a5, a6&0xff, a7].
+ * Confidence: medium */
+void sk_cnode_entry_ctor_1(word_t *out, word_t a2, word_t a3, word_t a4,
+                           word_t a5, word_t a6, word_t a7)
+{
+    word_t p[6];
+    word_t r[7];
+    (void)a2;
+    p[0] = a3; p[1] = a4; p[2] = a5; p[3] = a6 & 0xff; p[4] = a7; p[5] = 1;
+    sk_cnode_entry_build(r, p);
+    sk_cnode_entry_pack(out, r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[6]);
+    return;
+}
+
+/* FUN_0007a5c4 @ 0x0007a5c4   (est. sk_cnode_entry_ctor_witness_b)
+ * Ghidra: void FUN_0007a5c4(void)  — Swift witness initializer, same shape as
+ *   7a120 (value via +0x130, teardown sequence, stored closure, release).
+ * Confidence: low */
+void sk_cnode_entry_ctor_witness_b(void)
+{
+    word_t u;
+    sk_metaclass_get();
+    u = (*(word_t (**)(void))(sk_identity(0) + 0x130))();
+    sk_acc_w17();
+    sk_acc_w16();
+    sk_acc_w11();
+    (*(void (**)(void))(sk_identity(0) + 0x0))();
+    sk_swift_release(u);
+    sk_acc_w8();
+    return;
+}
+
+/* FUN_0007a2dc @ 0x0007a2dc   (est. sk_cnode_entry_ctor_closured_a)
+ * Ghidra: void FUN_0007a2dc(undefined8 *param_1)  — CNodeEntry constructor
+ *   that materializes the entry through a closure witness (FUN_0007b524)
+ *   invoked via the accessor context, then packs the result into out.
+ * Confidence: low */
+void sk_cnode_entry_ctor_closured_a(word_t *out)
+{
+    word_t u, w;
+    word_t box[2];
+    sk_metaclass_get();
+    u = (*(word_t (**)(void))(sk_identity(0) + 0x130))();
+    sk_acc_w17();
+    sk_acc_w16();
+    (*(void (**)(word_t, word_t, word_t))(sk_identity(0) + 0x0))((word_t)&w,
+        (word_t)sk_cnode_build_cb_a, (word_t)box);
+    sk_swift_release(u);
+    sk_cnode_entry_pack(out, w, w, w, w, w, w, w, w);
+    return;
+}
+
+/* FUN_0007a454 @ 0x0007a454   (est. sk_cnode_entry_ctor_closured_b)
+ * Ghidra: void FUN_0007a454(undefined8 *param_1)  — CNodeEntry constructor
+ *   via closure witness FUN_0007b544, then packs into out.
+ * Confidence: low */
+void sk_cnode_entry_ctor_closured_b(word_t *out)
+{
+    word_t u, w;
+    word_t box[2];
+    sk_metaclass_get();
+    u = (*(word_t (**)(void))(sk_identity(0) + 0x130))();
+    sk_acc_w17();
+    sk_acc_w16();
+    (*(void (**)(word_t, word_t, word_t))(sk_identity(0) + 0x0))((word_t)&w,
+        (word_t)sk_cnode_build_cb_b, (word_t)box);
+    sk_swift_release(u);
+    sk_cnode_entry_pack(out, w, w, w, w, w, w, w, w);
+    return;
+}
+
+/* FUN_0007a718 @ 0x0007a718   (est. sk_cnode_entry_build)
+ * Ghidra: void FUN_0007a718(undefined8 *param_1,undefined8 *param_2)  — the
+ *   core CNodeEntry builder / "append with relocation" routine. Reads the
+ *   6-word parameter tuple (param_2: 5 payload words + kind byte), validates
+ *   the source and destination table element sizes (with overflow traps at
+ *   0x7aa88/0x7aa8c/0x7aa90/0x7aa94/0x7aa98/0x7aa9c), computes the element
+ *   stride, reserves room (calling sk_cnode_entry_append_one when full),
+ *   writes the 7 payload words + flag byte into the next 0x40-stride slot,
+ *   bumps the count, and returns the packed entry through param_1.
+ * Confidence: low
+ * Notes: heavy Swift ABI; string refs DAT_00606a9c, DAT_0065f380 (type table),
+ *   0x671df8/0x6720e0 (demangled type names), 0x677830/0x677880; helpers
+ *   FUN_0007c0ac/FUN_0007c0c4/FUN_0007c018 (accessor ctx), FUN_0019ea20
+ *   (array init), FUN_0014aedc/FUN_0007eb2c (arith), FUN_0007b33c
+ *   (alignment), FUN_002a4ab4 (fault builder), FUN_0007bfdc/FUN_001afa84
+ *   (fatal paths). */
+void sk_cnode_entry_build(word_t *out, word_t *p)
+{
+    word_t u15, u16, u17, u18, u19, u1, u2, u6, u7, u8, u9, u10, u11;
+    word_t v, meta, stride, count, base, slot;
+    word_t l4, l5, l12;
+    word_t (*fn)(word_t, ...);
+    word_t *box;
+
+    u17 = p[1]; u16 = p[0]; u19 = p[3]; u18 = p[2]; u15 = p[4];
+    u2 = *(word_t *)(p + 5);              /* kind byte */
+    meta = *(word_t *)sk_reg_x20;
+    fn = (word_t (*)(word_t, ...))(*(word_t *)(meta + 0xd0));
+    l4 = fn(0);
+    sk_metaclass_get();
+    fn = (word_t (*)(word_t, ...))(*(word_t *)(sk_identity(0) + 0xa0));
+    l5 = fn(0);
+    l5 = *(word_t *)(l5 + 0x10);
+    sk_swift_release(0);
+    if (l4 != l5) {
+        /* source/dest element-size mismatch -> fatal fault string */
+        u11 = 0xe000000000000000ull;
+        sk_fault_builder(0x21);
+        sk_swift_release_masked(u11);
+        u11 = 0xd00000000000001cull;
+        u15 = 0x80000000005bfec0ull;
+        l4 = fn(0);
+        sk_vt_lookup(0x671df8);
+        sk_identity_hash(0x677830, 0x671df8);
+        sk_str_append(0, 0);
+        sk_swift_release_masked(0);
+        sk_str_append(0x3a, 0xe100000000000000ull);
+        l4 = fn(0);
+        l4 = *(word_t *)(l4 + 0x10);
+        sk_swift_release(0);
+        l4 = 0;
+        sk_vt_lookup(0x6720e0);
+        sk_identity_hash(0x677880, 0x6720e0);
+        sk_str_append(0, 0);
+        sk_swift_release_masked(0);
+        sk_fatal_str(0);              /* noreturn path */
+        sk_assert_fatal(0, 0xb, 2);
+    }
+    u11 = *(word_t *)(meta + 0x38);
+    u1 = *(word_t *)(meta + 0x40);
+    u6 = sk_acc_w6();
+    u6 = sk_str_convert(u6, u1, u11, 0x606a9c);
+    sk_acc_w4();
+    u7 = sk_str_convert2(u1, u11, u6, 0x606a9c);
+    u8 = sk_runtime_roundup(u6, u7);
+    u9 = sk_arith(u6, u7);
+    if (u9 == 0) SK18_FATAL(0x7aa88);
+    u10 = fn(0);
+    if (u8 < u9) SK18_FATAL(0x7aa8c);
+    count = (u9 != 0) ? u8 / u9 : 0;
+    u8 = (count != 0) ? u10 / count : 0;
+    if ((long)u8 < 0) SK18_FATAL(0x7aa90);
+    u9 = fn(0);
+    if ((long)(u9 | count) < 0) SK18_FATAL(0x7aa94);
+    sk_acc_ctx2();
+    u10 = (*(word_t (**)(void))(sk_identity(0) + 0xb8))();
+    if (u10 <= u8) {
+        sk_cnode_entry_append_one();
+        u9 = fn(0);
+        if ((long)u9 < 0) SK18_FATAL(0x7aaa4);
+    }
+    l4 = sk_arith(u6, u7);
+    if ((long)l4 < 0) SK18_FATAL(0x7aa98);
+    u10 = (count != 0) ? u9 / count : 0;
+    l5 = u9 - u10 * count;
+    l12 = l5 * l4;
+    if ((word_t)((__int128)(long long)l5 * (long long)l4 >> 64) !=
+        (word_t)((long)l12 >> 0x3f)) SK18_FATAL(0x7aa9c);
+    sk_acc_ctx2();
+    u6 = (*(word_t (**)(void))(sk_identity(0) + 0xe8))();
+    u11 = sk_cnode_align(0, u11, u1);
+    sk_arr_init3((word_t)&base, u8, u6, u11);
+    sk_swift_release(u6);
+    sk_swift_release(base);
+    if (base == 0) SK18_FATAL(0x7aaa8);
+    l4 = fn(0);
+    u11 = *(word_t *)(l4 + 0x10);
+    sk_swift_release(0);
+    sk_acc_ctx2();
+    box = (word_t *)(*(word_t (**)(word_t))(sk_identity(0) + 0xb0))((word_t)&v);
+    sk_acc_w10();
+    sk_cnode_buf_append((word_t)box);
+    l5 = *(word_t *)(*(word_t *)sk_reg_x20 + 0x10);
+    sk_cnode_buf_reserve(l5, (word_t)box);
+    l4 = *(word_t *)sk_reg_x20;
+    *(word_t *)(l4 + 0x10) = l5 + 1;
+    l4 = l4 + l5 * 0x40;
+    *(word_t *)(l4 + 0x20) = base + l12;
+    *(word_t *)(l4 + 0x28) = u11;
+    *(word_t *)(l4 + 0x38) = u17;
+    *(word_t *)(l4 + 0x30) = u16;
+    *(word_t *)(l4 + 0x48) = u19;
+    *(word_t *)(l4 + 0x40) = u18;
+    *(word_t *)(l4 + 0x50) = u15;
+    *(word_t *)(l4 + 0x58) = u2;
+    (*(void (**)(word_t, word_t, word_t))box)((word_t)&v, (word_t)&v, 0);
+    sk_acc_ctx2();
+    /* epilogue: read last entry and copy it into the packed output */
+    u15 = fn(0);
+    sk_cnode_entry_last(out, 0);
+    sk_swift_release(u15);
+    if (out[7] == (word_t)-1) SK18_FATAL(0x7aaac);
+    return;
+}
+
+/* FUN_0007abe0 @ 0x0007abe0   (est. sk_cnode_entry_last)
+ * Ghidra: void FUN_0007abe0(undefined8 *param_1,long param_2)  — copies the
+ *   last CNode entry (7 payload words + flag byte) from the buffer at param_2
+ *   into the packed output param_1; empty buffer yields a zeroed entry with
+ *   flag byte 0xff.
+ * Confidence: medium */
+void sk_cnode_entry_last(word_t *out, word_t param_2)
+{
+    word_t u2, u3, u4, u5, u6, u7, u8, u9;
+    word_t *e;
+    if (*(word_t *)(param_2 + 0x10) == 0) {
+        u4 = 0; u5 = 0; u3 = 0xff; u6 = 0; u7 = 0; u8 = 0; u9 = 0; u2 = 0;
+    } else {
+        e = (word_t *)(param_2 + *(word_t *)(param_2 + 0x10) * 0x40);
+        u5 = e[-3]; u4 = e[-4]; u7 = e[-1]; u6 = e[-2];
+        u9 = e[1]; u8 = e[0]; u2 = e[2]; u3 = *(word_t *)(e + 3);
+    }
+    out[1] = u5; out[0] = u4; out[3] = u7; out[2] = u6;
+    out[5] = u9; out[4] = u8; out[6] = u2;
+    *(word_t *)(out + 7) = u3;
+    return;
+}
+
+/* FUN_0007ac24 @ 0x0007ac24   (est. sk_cnode_find_value_by_id)
+ * Ghidra: undefined8 FUN_0007ac24(long param_1)  — finds the entry whose key
+ *   equals param_1 in the self buffer and returns its value field (with
+ *   validity tag check); releases the buffer and returns 0 if not found.
+ * Confidence: medium */
+word_t sk_cnode_find_value_by_id(word_t id)
+{
+    word_t tbl, count, i, value;
+    word_t *e;
+    word_t meta, off;
+    sk_metaclass_get();
+    tbl = (*(word_t (**)(word_t))(sk_identity(0) + 0xa0))(0);
+    count = *(word_t *)(tbl + 0x10);
+    value = 0;
+    if (count != 0) {
+        i = 0;
+        e = (word_t *)(tbl + 0x38);
+        do {
+            if (*(word_t *)(tbl + 0x10) <= i) SK18_FATAL(0x7acd8);
+            if (*(word_t *)(e + 0x20) == 0 && *(word_t *)(e + 8) == id) {
+                value = *(word_t *)(e - 0x18);
+                meta = sk_identity_hash(*e, 3);
+                if ((meta & 1) != 0) break;
+            }
+            i = i + 1;
+            e = e + 0x40;
+        } while (count != i);
+    }
+    sk_swift_release(tbl);
+    return value;
+}
+
+/* FUN_0007b0cc @ 0x0007b0cc   (est. sk_cnode_table_contains_id)
+ * Ghidra: undefined1 [16] FUN_0007b0cc(undefined8 param_1,long param_2)  —
+ *   scans the table at param_2 for an entry whose tag matches param_1
+ *   (sk_identity_hash of the flag byte). Returns {index, found:0} on match or
+ *   {0, found:1} when the whole table was scanned.
+ * Confidence: medium */
+word_t sk_cnode_table_contains_id(word_t tag, word_t tbl)
+{
+    word_t i, count;
+    i = 0;
+    count = *(word_t *)(tbl + 0x10);
+    for (;;) {
+        if (count == i) { i = 0; return 1; }   /* not found */
+        if ((sk_identity_hash(*(word_t *)(tbl + 0x20 + i), tag) & 1) != 0)
+            return i;                          /* found at index i */
+        i = i + 1;
+    }
+}
+
+/* FUN_0007b134 @ 0x0007b134   (est. sk_cnode_table_index_of)
+ * Ghidra: undefined1 [16] FUN_0007b134(long *param_1,long param_2)  — returns
+ *   the index of the entry whose key equals *param_1 in the table at param_2;
+ *   returns the sentinel (1<<64) when not found.
+ * Confidence: medium */
+word_t sk_cnode_table_index_of(word_t *key, word_t tbl)
+{
+    word_t i, count;
+    word_t *e;
+    i = 0;
+    e = (word_t *)(tbl + 0x20);
+    for (;;) {
+        if (*(word_t *)(tbl + 0x10) == i) return (word_t)1 << 40;  /* not found */
+        if (*e == *key) break;
+        i = i + 1;
+        e = e + 8;
+    }
+    return i;
+}
+
+/* FUN_0007b178 @ 0x0007b178   (est. sk_string_end_index_b)
+ * Ghidra: long FUN_0007b178(ulong param_1)  — Swift String endIndex helper
+ *   for a string with count field at +0x1c.
+ * Confidence: medium */
+word_t sk_string_end_index_b(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeull);
+    return (p + 0x1c) + (word_t)(long)*(int *)(p + 0x1c);
+}
+
+/* FUN_0007b1c0 @ 0x0007b1c0   (est. sk_string_end_index_c)
+ * Ghidra: long FUN_0007b1c0(ulong param_1)  — Swift String endIndex helper
+ *   for a string with count field at +0x14.
+ * Confidence: medium */
+word_t sk_string_end_index_c(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeull);
+    return (p + 0x14) + (word_t)(long)*(int *)(p + 0x14);
+}
+
+/* FUN_0007acd8 @ 0x0007acd8   (est. sk_cnode_alloc_object_and_cap)
+ * Ghidra: void FUN_0007acd8(undefined8*,undefined8,undefined8,uint,undefined8)
+ *   — CNodeAllocator.allocObjectAndCap: validates the requested object type
+ *   against the "relocated cap" table (fatal string "Cannot give relocated
+ *   cap when filling..." / "allocObjectAndCap is called with wrong object
+ *   type" / "failed to allocate generic entry in a predictable way"), then
+ *   allocates a fresh CNode entry (COW via sk_cnode_buf_append), copies the
+ *   capability value into it, and packs the resulting entry into param_1.
+ * Confidence: low
+ * Notes: string refs 0x5bfca0, 0x5bfce0, 0x5bfd30; helpers FUN_0007b0cc,
+ *   FUN_0007b134, FUN_0007b58c, FUN_0007b5f4, FUN_00077070, FUN_00077088,
+ *   thunk_FUN_0000456c; fatal via sk_fatal_str + sk_assert_fatal. */
+void sk_cnode_alloc_object_and_cap(word_t *out, word_t obj, word_t a3,
+                                   word_t flags, word_t a5)
+{
+    word_t self, tbl, idx, value, off;
+    word_t found;
+    word_t boxf8[3], boxd0[3], boxa8[3];
+    word_t u6, u7;
+    void (*fn)(word_t, ...);
+    void (*trap)(void) __attribute__((noreturn));
+
+    self = *(word_t *)sk_reg_x20;
+    found = sk_cnode_table_contains_id(obj, 0x65f380);
+    if ((found & 0xff) == 1) {
+        sk_fatal_str(0x5bfca0 + 0x20);    /* "Cannot give relocated cap..." */
+        sk_assert_prep();
+        sk_assert_fatal(0, 0, 0);
+    } else {
+        if ((flags & 1) == 0 || (sk_identity_hash(obj, 3) & 1) != 0) {
+            thunk_sk_cnode_probe(*(word_t *)(self + 0x38), *(word_t *)(self + 0x40));
+            sk_acc_w13();
+            (*(void (**)(word_t, word_t, word_t, word_t, word_t))(
+                sk_identity(0) + 0x1b8))((word_t)&a5_ret, obj, 0, 0, a3);
+            if (sk_reg_x21 != 0) return;
+            sk_acc_w13();
+            (*(void (**)(word_t, word_t, word_t))(
+                sk_identity(0) + 0x100))((word_t)boxd0);
+            if (sk_identity(0) != 0) {
+                /* COW-reserve + append the new generic entry */
+                sk_cnode_buf_append((word_t)sk_cnode_resize_cb);
+                tbl = *(word_t *)(*(word_t *)sk_reg_x20 + 0x10);
+                sk_cnode_buf_reserve(tbl, (word_t)sk_cnode_resize_cb);
+                self = *(word_t *)sk_reg_x20;
+                *(word_t *)(self + 0x10) = tbl + 1;
+                *(word_t *)(self + tbl * 8 + 0x20) = value;
+                (*(void (**)(word_t, word_t))(boxf8_0))((word_t)boxd0, 0);
+                sk_acc_w13();
+                fn = (word_t (*)(word_t, ...))(*(word_t *)(sk_identity(0) + 0xa0));
+                tbl = fn(0);
+                idx = sk_cnode_table_index_of((word_t *)&value, tbl);
+                sk_swift_release(tbl);
+                if ((idx & 0xff) == 1) {
+                    sk_metaclass_chk((word_t)boxd0);
+                    sk_cnode_entry_pack(out, a5_ret, boxa8[1], boxa8[0], 0, 0,
+                                        (word_t)0, (word_t)0, (word_t)0);
+                    return;
+                }
+                tbl = fn(0);
+                if ((long)idx < 0) SK18_FATAL(0x7b00c);
+                if (*(word_t *)(tbl + 0x10) <= idx) SK18_FATAL(0x7b010);
+                tbl = tbl + idx * 0x40;
+                /* re-encode the entry in place if the flag byte is set */
+                if (*(word_t *)(tbl + 0x58) == 0) {
+                    sk_acc_w13();
+                    /* COW copy then write */
+                    sk_cnode_buf_reserve2(tbl);
+                    tbl = tbl + idx * 0x40;
+                    *(word_t *)(tbl + 0x30) = u6;
+                    *(word_t *)(tbl + 0x38) = 0;
+                    *(word_t *)(tbl + 0x40) = 0;
+                    *(word_t *)(tbl + 0x48) = 0;
+                    *(word_t *)(tbl + 0x50) = 0;
+                    *(word_t *)(tbl + 0x58) = 0;
+                    sk_metaclass_chk((word_t)boxd0);
+                    sk_cnode_entry_pack(out, a5_ret, boxa8[1], boxa8[0], 0, 0,
+                                        (word_t)0, (word_t)0, (word_t)0);
+                    return;
+                }
+                sk_fatal_str(0x5bfce0 + 0x30);   /* wrong object type */
+            }
+        } else {
+            sk_fatal_str(0x5bfd30 + 0x30);       /* failed to allocate generic */
+        }
+        sk_assert_prep();
+        sk_assert_fatal(0, 0, 0);
+    }
+    (void)self; (void)off; (void)u7;
+}
+
+/* FUN_0007b2c8 @ 0x0007b2c8   (est. sk_cnode_buf_append)
+ * Ghidra: void FUN_0007b2c8(code *param_1)  — generic growable-buffer append
+ *   with copy-on-write: if the buffer is not uniquely owned (COW), rebuild it
+ *   by calling the supplied resize callback param_1(count+1, ...). Updates
+ *   *self to the (possibly new) buffer.
+ * Confidence: medium */
+word_t sk_cnode_buf_append(word_t fn, ...)
+{
+    word_t buf, uniq;
+    word_t (*cb)(word_t, word_t, word_t, word_t);
+    buf = *(word_t *)sk_reg_x20;
+    uniq = sk_swift_buffer_unique(buf);
+    *(word_t *)sk_reg_x20 = buf;
+    if ((uniq & 1) == 0) {
+        cb = (word_t (*)(word_t, word_t, word_t, word_t))fn;
+        buf = cb(0, *(word_t *)(buf + 0x10) + 1, 1, buf);
+        *(word_t *)sk_reg_x20 = buf;
+    }
+    return buf;
+}
+
+/* FUN_0007b1f0 @ 0x0007b1f0   (est. sk_cnode_buf_append_cb_0)
+ * Ghidra: void FUN_0007b1f0(void)  — append with resize callback FUN_00072d5c.
+ * Confidence: low */
+void sk_cnode_buf_append_cb_0(void) { sk_cnode_buf_append(0x72d5c); return; }
+
+/* FUN_0007b208 @ 0x0007b208   (est. sk_cnode_buf_append_cb_1)  FUN_0007340c */
+void sk_cnode_buf_append_cb_1(void) { sk_cnode_buf_append(0x7340c); return; }
+
+/* FUN_0007b220 @ 0x0007b220   (est. sk_cnode_buf_append_cb_2)  FUN_00073498 */
+void sk_cnode_buf_append_cb_2(void) { sk_cnode_buf_append(0x73498); return; }
+
+/* FUN_0007b238 @ 0x0007b238   (est. sk_cnode_buf_append_cb_3)  FUN_000738b0 */
+void sk_cnode_buf_append_cb_3(void) { sk_cnode_buf_append(0x738b0); return; }
+
+/* FUN_0007b250 @ 0x0007b250   (est. sk_cnode_buf_append_cb_4)  FUN_0007393c */
+void sk_cnode_buf_append_cb_4(void) { sk_cnode_buf_append(0x7393c); return; }
+
+/* FUN_0007b268 @ 0x0007b268   (est. sk_cnode_buf_append_cb_5)  FUN_00072c0c */
+void sk_cnode_buf_append_cb_5(void) { sk_cnode_buf_append(0x72c0c); return; }
+
+/* FUN_0007b280 @ 0x0007b280   (est. sk_cnode_buf_append_cb_6)  FUN_00073380 */
+void sk_cnode_buf_append_cb_6(void) { sk_cnode_buf_append(0x73380); return; }
+
+/* FUN_0007b298 @ 0x0007b298   (est. sk_cnode_buf_append_cb_7)  FUN_00073a64 */
+void sk_cnode_buf_append_cb_7(void) { sk_cnode_buf_append(0x73a64); return; }
+
+/* FUN_0007b2b0 @ 0x0007b2b0   (est. sk_cnode_buf_append_cb_8)  FUN_0007499c */
+void sk_cnode_buf_append_cb_8(void) { sk_cnode_buf_append(0x7499c); return; }
+
+/* FUN_0007b324 @ 0x0007b324   (est. sk_cnode_buf_reserve_with_cb)
+ * Ghidra: void FUN_0007b324(undefined8 param_1)  — reserves capacity for the
+ *   buffer using resize callback FUN_00072d5c.
+ * Confidence: medium */
+void sk_cnode_buf_reserve_with_cb(word_t param_1)
+{
+    sk_cnode_buf_reserve(param_1, 0x72d5c);
+    return;
+}

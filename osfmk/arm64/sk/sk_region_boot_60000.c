@@ -869,7 +869,7 @@ void sk_err_rec_fill1(void);
 void sk_err_rec_fill2(void);
 void sk_noop_6c214(void);
 void sk_vspace_table_ready(unsigned char v);
-void sk_vspace_client_find(short tag);
+short *sk_vspace_client_find(short tag);
 sk_word_t sk_vspace_client_add(long addr);
 void sk_vspace_client_clear(void);
 sk_word_t sk_vspace_client_field(void);
@@ -7327,7 +7327,7 @@ void sk_ipmm_setup(void)
                 _DAT_006b2840 = d6;
                 DAT_006b27e8 = 1;
                 *(volatile sk_word_t*)0x64e180 = 1;
-                sk_word_t cap = sk_alloc_ep(0x11);
+                sk_word_t cap = (sk_word_t)sk_alloc_ep(0x11);
                 ok = (*(unsigned char(*)(void*,sk_word_t,sk_word_t))
                      (*(void***)(_DAT_006b2838 + 0x28)[0]))(&DAT_006b2830, 0, cap);
                 if (ok == 0) { sk_ep_release(cap, 0x11); return; }   /* FUN_0019ae60 */
@@ -7404,7 +7404,7 @@ void sk_err_rec_fill(sk_word_t *rec, unsigned char code)
     if (code > 9) {
         rec[0]=_DAT_004bf000; rec[1]=uRam00000000004bf008;
         rec[2]=_DAT_004bf010; rec[3]=uRam00000000004bf018;
-        sk_err_rec_print(rec);              /* FUN_0006bcc0 */
+        sk_err_rec_print((sk_word_t)rec);              /* FUN_0006bcc0 */
         return;
     }
     const char *s = names[code];
@@ -7494,7 +7494,7 @@ mapped:
             goto alloc_bad;
         }
 bad_op:
-        sk_untyped_fail(type);
+        sk_untyped_fail(type, 0);
         sk_panic_bad(0, "ipmm: Operation Invalid: Wrong [type]");
 alloc_bad:
         size = sk_ipmm_abort(entry);             /* FUN_004b7cd4 */
@@ -7617,12 +7617,13 @@ void sk_vspace_table_ready(unsigned char v)
  * Confidence: low
  * Notes: String s__s__vspace_table_not_ready_yet___005befc4; DAT_006ad980/006b2958.
  */
-void sk_vspace_client_find(short tag)
+short *sk_vspace_client_find(short tag)
 {
     short *p = sk_vspace_client_list;        /* _DAT_006ad980 */
     if (sk_vspace_ready == 0)
         sk_panic_bad(0, "%s: vspace table not ready yet");
     for (; p != NULL && *p != tag; p = *(short **)(p + 0x10)) { }
+    return p;
 }
 
 /*--------------------------------------------------------------------*/
@@ -7683,7 +7684,7 @@ void sk_vspace_client_clear(void)
 sk_word_t sk_vspace_client_field(void)
 {
     if (sk_vspace_ready != 0) {
-        sk_word_t c = sk_vspace_client_find(0);
+        sk_word_t c = (sk_word_t)sk_vspace_client_find(0);
         return c ? *(sk_word_t *)(c + 0x18) : 0;
     }
     sk_panic_bad(0, "%s: vspace table not ready yet");
@@ -7848,7 +7849,7 @@ next_list:
     if (_DAT_006be8b4 > 0x40) sk_boot_abort();
     /* resolve __TEXT/__DATA slide bounds from the boot header */
     void *hdr = sk_panic_hooks();                /* FUN_0005ba14 */
-    if (hdr != NULL && *(long*)((char*)hdr + 7*8) != 0 && *hdr == 0) {
+    if (hdr != NULL && *(long*)((char*)hdr + 7*8) != 0 && *(long*)hdr == 0) {
         long text = sk_seg_find(*(void**)((char*)hdr + 7*8), "__TEXT");  /* FUN_00051e5c */
         long data = sk_seg_find(*(void**)((char*)hdr + 7*8), "__DATA");
         if (text != 0 && data != 0) {
@@ -8533,7 +8534,7 @@ void sk_err_rec_fill_b(sk_word_t *rec, unsigned char code)
     if (code > 9) {
         rec[0]=_DAT_004bf170; rec[1]=uRam00000000004bf178;
         rec[2]=_DAT_004bf180; rec[3]=uRam00000000004bf188;
-        sk_err_rec_print(rec);
+        sk_err_rec_print((sk_word_t)rec);
         return;
     }
     const char *s = names[code];

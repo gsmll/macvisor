@@ -1067,42 +1067,42 @@ static void sk_fatal_launcher_emit2(void)
 static sk_u128_t sk_set_next(void)
 {
     uint64_t *it = (uint64_t *)*(uint64_t *)0;
-    uint64_t word, idx, v;
-    uint64_t *slot;
+    uint64_t word, bitpos, v, slot;
+    uint64_t wordidx;
     sk_u128_t out;
 
-    idx = it[3];
+    wordidx = it[3];
     v = it[4];
     if (v == 0) {
         do {
-            idx = idx + 1;
-            if (SCARRY8(idx - 1, 1)) {
-                sk_break(1, 0x71988); /* fatal: index overflow */
+            wordidx = wordidx + 1;
+            if (SCARRY8(wordidx - 1, 1)) {
+                sk_break(1, 0x71988); /* fatal: cursor overflow */
             }
-            if ((int64_t)((it[2] + 0x40) >> 6) <= (int64_t)idx) {
+            if ((int64_t)((it[2] + 0x40) >> 6) <= (int64_t)wordidx) {
                 out.lo = 0;
-                it[3] = idx - 1;
+                it[3] = wordidx - 1;
                 it[4] = 0;
-                out.hi = 0xff;
+                out.hi = 0xff;               /* end sentinel */
                 return out;
             }
-            v = *(uint64_t *)(it[1] + idx * 8);
-            idx = idx + 1;
+            v = *(uint64_t *)(it[1] + wordidx * 8);
+            wordidx = wordidx + 1;
         } while (v == 0);
     }
-    /* bit-reverse of v -> position */
+    /* bit-reverse v to find the highest set bit -> element position */
     word = (v & 0xaaaaaaaaaaaaaaaaULL) >> 1 | (v & 0x5555555555555555ULL) << 1;
     word = (word & 0xccccccccccccccccULL) >> 2 | (word & 0x3333333333333333ULL) << 2;
     word = (word & 0xf0f0f0f0f0f0f0f0ULL) >> 4 | (word & 0xf0f0f0f0f0f0f0fULL) << 4;
     word = (word & 0xff00ff00ff00ff00ULL) >> 8 | (word & 0xff00ff00ff00ffULL) << 8;
     word = (word & 0xffff0000ffff0000ULL) >> 16 | (word & 0xffff0000ffffULL) << 16;
-    idx = LZCOUNT(word >> 32 | word << 32) | (idx - 1) << 6;
-    slot = (uint64_t *)(*(uint64_t *)it[0] + 0x30 + idx * 0x10);
-    out.lo = slot[0];
-    out.hi = *(uint64_t *)(*(uint64_t *)it[0] + 0x38 + idx * 8);
-    it[3] = idx >> 6;
+    bitpos = LZCOUNT(word >> 32 | word << 32) | (wordidx - 1) << 6;
+    slot = *(uint64_t *)(*(uint64_t *)it[0] + 0x30 + bitpos * 0x10);
+    out.lo = slot;
+    out.hi = *(uint64_t *)(*(uint64_t *)it[0] + 0x38 + bitpos * 8);
+    it[3] = wordidx - 1;
     it[4] = v - 1 & v;
-    ((sk_code_t)it[5])(&out.lo, &slot[1]);
+    ((sk_code_t)it[5])(&out.lo, (uint64_t *)(*(uint64_t *)it[0] + 0x30 + bitpos * 0x10 + 8));
     out.hi = (uint64_t)*(uint8_t *)&out.hi;
     return out;
 }
@@ -1548,23 +1548,23 @@ static sk_u128_t sk_set_find(uint64_t key, char tag, uint64_t idx)
     uint64_t *set = (uint64_t *)*(uint64_t *)0;
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     sk_u128_t out;
+    uint64_t found = 0;
     idx &= ~mask;
-    while (1) {
-        uint64_t slot;
-        if ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
+    if ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
+        do {
             uint64_t *ent = (uint64_t *)(*(uint64_t *)(set + 0x30) + idx * 0x10);
             uint64_t k = ent[0];
             char t = (char)(ent[1] & 0xff);
             if (t == '\0') {
-                if (tag == '\0' && (sk_key_hasheq(k, key) & 1) != 0) { slot = 1; break; }
+                if (tag == '\0' && (sk_key_hasheq(k, key) & 1) != 0) { found = 1; break; }
             } else if (t == '\x01') {
-                if (tag == '\x01' && k == key) { slot = 1; break; }
-            } else if (tag == '\x02' && key == 0) { slot = 1; break; }
-        }
-        idx = (idx + 1) & ~mask;
+                if (tag == '\x01' && k == key) { found = 1; break; }
+            } else if (tag == '\x02' && key == 0) { found = 1; break; }
+            idx = (idx + 1) & ~mask;
+        } while ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
     }
-    out.hi = 1;
     out.lo = idx;
+    out.hi = found;
     return out;
 }
 
@@ -1663,7 +1663,7 @@ static sk_u128_t sk_set_find_impl(long key, char tag, uint64_t idx)
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     uint64_t found = 0;
     idx &= ~mask;
-    if ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
+    if ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
         do {
             uint64_t *ent = (uint64_t *)(*(uint64_t *)(set + 0x30) + idx * 0x10);
             uint64_t k = ent[0];
@@ -1674,7 +1674,7 @@ static sk_u128_t sk_set_find_impl(long key, char tag, uint64_t idx)
                 if (tag == '\x01' && (long)k == key) { found = 1; break; }
             } else if (tag == '\x02' && key == 0) { found = 1; break; }
             idx = (idx + 1) & ~mask;
-        } while ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
+        } while ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
     }
     sk_u128_t out; out.lo = idx; out.hi = found; return out;
 }
@@ -1689,7 +1689,7 @@ static sk_u128_t sk_set_find_int(int key, uint64_t idx)
     sk_u128_t out;
     while (1) {
         idx &= ~mask;
-        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8);
+        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
         if (b == 0 || *(int *)(*(uint64_t *)(set + 0x30) + idx * 4) == key) break;
         idx = idx + 1;
     }
@@ -1706,7 +1706,7 @@ static sk_u128_t sk_set_find_pair(long a, long b, long c, long d, uint64_t idx)
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     uint64_t found = 0;
     idx &= ~mask;
-    if ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
+    if ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
         uint64_t base = *(uint64_t *)(set + 0x30);
         do {
             uint64_t *ent = (uint64_t *)(base + idx * 0x20);
@@ -1720,7 +1720,7 @@ static sk_u128_t sk_set_find_pair(long a, long b, long c, long d, uint64_t idx)
                 }
             }
             idx = (idx + 1) & ~mask;
-        } while ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
+        } while ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
     }
     sk_u128_t out; out.lo = idx; out.hi = found; return out;
 }
@@ -1735,7 +1735,7 @@ static sk_u128_t sk_set_find_word(long key, uint64_t idx)
     sk_u128_t out;
     while (1) {
         idx &= ~mask;
-        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8);
+        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
         if (b == 0 || *(int64_t *)(*(uint64_t *)(set + 0x30) + idx * 8) == key) break;
         idx = idx + 1;
     }
@@ -1754,7 +1754,7 @@ static sk_u128_t sk_set_find_obj(uint64_t key, uint64_t idx)
     uint64_t b;
     while (1) {
         idx &= ~mask;
-        b = 1UL << (idx & 0x3f) & *(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8);
+        b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
         if (b == 0) break;
         sk_obj_retain0(0);
         uint64_t v = *(uint64_t *)(*(uint64_t *)(set + 0x30) + idx * 8);
@@ -1776,7 +1776,7 @@ static void sk_set_skip(char c, uint64_t idx)
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     for (; ; idx = idx + 1) {
         idx &= ~mask;
-        if ((1UL << (idx & 0x3f) & *(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8)) == 0) break;
+        if ((1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8)) == 0) break;
         if (*(char *)(*(uint64_t *)(set + 0x30) + idx) == c) break;
     }
 }
@@ -1789,11 +1789,775 @@ static void sk_set_skip_pair(long a, long b, uint64_t idx)
     uint64_t *set = (uint64_t *)*(uint64_t *)0;
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     idx &= ~mask;
-    if ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
+    if ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0) {
         do {
             uint64_t *ent = (uint64_t *)(*(uint64_t *)(set + 0x30) + idx * 0x10);
             if (ent[0] == (uint64_t)a && ent[1] == (uint64_t)b) return;
             idx = (idx + 1) & ~mask;
-        } while ((*(uint64_t *)(set[3] + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
+        } while ((*(uint64_t *)(set + 0x40 + (idx >> 6) * 8) >> (idx & 0x3f) & 1) != 0);
     }
+}
+
+/*============================================================================
+ * 0x72c0c - 0x73af0 : vector reserve + element-copy dispatchers
+ *==========================================================================*/
+
+/* FUN_00072c0c @ 0x72c0c  (est. sk_reserve_u8)
+ * Reserve `count` 0x10-byte elements in a growable vector: on the `grow` flag
+ * check the current count and optionally grow (fatal 0x72c98), then call the
+ * u8-stride allocator and either a no-copy or a copy+release path.
+ * Returns the vector.  Confidence: medium (Swift Array reserve/copy). */
+static sk_u128_t sk_reserve_u8(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1 /* in_NG != in_OV */) {
+            sk_check_ovf();
+            if (1 /* in_NG */) sk_break(1, 0x72c98);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00069770();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00069970();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00072c98 @ 0x72c98  (est. sk_reserve_impl)
+ * Reserve `count` elements with overflow growth checks (fatal 0x72d5c on
+ * capacity overflow); then either copy (no unique) or move-and-release
+ * (unique).  Returns the new vector.  Confidence: medium. */
+static uint64_t sk_reserve_impl(uint64_t unique, uint64_t count, uint64_t grow, uint64_t vec)
+{
+    uint64_t cap = count;
+    uint64_t u, v;
+    if ((grow & 1) != 0) {
+        cap = *(uint64_t *)(vec + 0x18) >> 1;
+        if ((int64_t)cap < (int64_t)count) {
+            if ((int64_t)(cap + 0x4000000000000000) < 0) sk_break(1, 0x72d5c);
+            cap = *(uint64_t *)(vec + 0x18) & 0xfffffffffffffffe;
+            if ((int64_t)cap <= (int64_t)count) cap = count;
+        }
+    }
+    u = *(uint64_t *)(vec + 0x10);
+    v = sk_vec_alloc_0x10(u, cap);
+    if ((unique & 1) == 0) {
+        sk_copy4(0, u, v + 0x20, vec);
+    } else {
+        sk_move_0x04(vec + 0x20, u, v + 0x20);
+        *(uint64_t *)(vec + 0x10) = 0;
+        sk_swift_release(vec);
+    }
+    return v;
+}
+
+/* FUN_00072d5c @ 0x72d5c  (est. sk_reserve_u16) */
+static sk_u128_t sk_reserve_u16(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x72de8);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_000750bc();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000721b0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00072de8 @ 0x72de8  (est. sk_reserve_u32) */
+static sk_u128_t sk_reserve_u32(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x72e74);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074a98();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072150();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00072e74 @ 0x72e74  (est. sk_reserve_ptr2) */
+static sk_u128_t sk_reserve_ptr2(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x72f00);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075c50();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000723c0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00072f00 @ 0x72f00  (est. sk_reserve_pair) */
+static sk_u128_t sk_reserve_pair(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x72f8c);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074b08();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000699a4();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00072f8c @ 0x72f8c  (est. sk_reserve_u16b) */
+static sk_u128_t sk_reserve_u16b(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73018);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_000750bc();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000721b0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073018 @ 0x73018  (est. sk_reserve_u8b) */
+static sk_u128_t sk_reserve_u8b(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x730a4);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074a28();
+    } else {
+        sk_ptr_plus();
+        sk_ext_0007201c();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_000730a4 @ 0x730a4  (est. sk_reserve_ptr3) */
+static sk_u128_t sk_reserve_ptr3(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73140);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075b2c();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000723c0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073140 @ 0x73140  (est. sk_reserve_ptr4) */
+static sk_u128_t sk_reserve_ptr4(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x731dc);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075b2c();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000723c0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_000731dc @ 0x731dc  (est. sk_reserve_u64) */
+static sk_u128_t sk_reserve_u64(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73268);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074b78();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072044();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073268 @ 0x73268  (est. sk_reserve_octo) */
+static sk_u128_t sk_reserve_octo(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x732f4);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075784();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072358();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_000732f4 @ 0x732f4  (est. sk_reserve_ptr5) */
+static sk_u128_t sk_reserve_ptr5(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73380);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074c14();
+    } else {
+        sk_ptr_plus();
+        sk_ext_0007206c();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073380 @ 0x73380  (est. sk_reserve_u16c) */
+static sk_u128_t sk_reserve_u16c(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x7340c);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_000750bc();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000721b0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_0007340c @ 0x7340c  (est. sk_reserve_u64b) */
+static sk_u128_t sk_reserve_u64b(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73498);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074cb8();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072044();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073498 @ 0x73498  (est. sk_reserve_u16d) */
+static sk_u128_t sk_reserve_u16d(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73524);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074d54();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000721b0();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073524 @ 0x73524  (est. sk_reserve_big_u64)
+ * Reserve u64 elements with overflow growth; copy via FUN_000758d8 or move via
+ * 0x72044.  Confidence: medium. */
+static uint64_t sk_reserve_big_u64(uint64_t unique, uint64_t count, uint64_t grow, uint64_t vec)
+{
+    uint64_t cap = count;
+    uint64_t u, v;
+    if ((grow & 1) != 0) {
+        cap = *(uint64_t *)(vec + 0x18) >> 1;
+        if ((int64_t)cap < (int64_t)count) {
+            if ((int64_t)(cap + 0x4000000000000000) < 0) sk_break(1, 0x73604);
+            cap = *(uint64_t *)(vec + 0x18) & 0xfffffffffffffffe;
+            if ((int64_t)cap <= (int64_t)count) cap = count;
+        }
+    }
+    u = *(uint64_t *)(vec + 0x10);
+    v = sk_vec_alloc_0x10(u, cap);
+    if ((unique & 1) == 0) {
+        sk_copy5(0, u, v + 0x20, vec, 0x6728f0);
+    } else {
+        sk_move_0x44(vec + 0x20, u, v + 0x20);
+        sk_release_and_zero();
+    }
+    return v;
+}
+
+/* FUN_00073604 @ 0x73604  (est. sk_reserve_u128) */
+static sk_u128_t sk_reserve_u128(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73690);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074dc8();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000720a8();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073690 @ 0x73690  (est. sk_reserve_quad) */
+static sk_u128_t sk_reserve_quad(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x7371c);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_000697e4();
+    } else {
+        sk_ptr_plus();
+        sk_ext_000699a4();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_0007371c @ 0x7371c  (est. sk_reserve_octo2) */
+static sk_u128_t sk_reserve_octo2(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x737a8);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074e34();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072358();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_000737a8 @ 0x737a8  (est. sk_reserve_flex_wrap) */
+static void sk_reserve_flex_wrap(void)
+{
+    sk_reserve_flex(0, 0, 0, 0, 0, 0, 0);
+}
+
+/* FUN_000737e8 @ 0x737e8  (est. sk_reserve_flex)
+ * Generic vector reserve driven by three function pointers (allocator,
+ * move-copy, copy): compute cap with overflow growth (fatal 0x738b0), call the
+ * allocator, then either the copy or the move+release path.
+ * Confidence: medium. */
+static uint64_t sk_reserve_flex(uint64_t unique, uint64_t count, uint64_t grow, uint64_t vec,
+                                sk_code_t alloc, sk_code_t copyfn, sk_code_t movefn)
+{
+    uint64_t cap = count;
+    uint64_t u, v;
+    if ((grow & 1) != 0) {
+        cap = *(uint64_t *)(vec + 0x18) >> 1;
+        if ((int64_t)cap < (int64_t)count) {
+            if ((int64_t)(cap + 0x4000000000000000) < 0) sk_break(1, 0x738b0);
+            cap = *(uint64_t *)(vec + 0x18) & 0xfffffffffffffffe;
+            if ((int64_t)cap <= (int64_t)count) cap = count;
+        }
+    }
+    u = *(uint64_t *)(vec + 0x10);
+    v = alloc(u, cap);
+    if ((unique & 1) == 0) {
+        copyfn(0, u, v + 0x20, vec);
+    } else {
+        movefn(vec + 0x20, u, v + 0x20);
+        sk_release_and_zero();
+    }
+    return v;
+}
+
+/* FUN_000738b0 @ 0x738b0  (est. sk_reserve_u32b) */
+static sk_u128_t sk_reserve_u32b(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x7393c);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00074f28();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072114();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_0007393c @ 0x7393c  (est. sk_reserve_octo3) */
+static sk_u128_t sk_reserve_octo3(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x739d8);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_000751b4();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072358();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_000739d8 @ 0x739d8  (est. sk_reserve_u32c) */
+static sk_u128_t sk_reserve_u32c(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73a64);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075018();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072178();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073a64 @ 0x73a64  (est. sk_reserve_u32d) */
+static sk_u128_t sk_reserve_u32d(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73af0);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075018();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072178();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
+}
+
+/* FUN_00073af0 @ 0x73af0  (est. sk_reserve_u32e) */
+static sk_u128_t sk_reserve_u32e(uint64_t a, uint64_t b, uint64_t grow)
+{
+    uint64_t u;
+    uint64_t *obj = (uint64_t *)*(uint64_t *)0;
+    (void)a; (void)b;
+    sk_ret0();
+    u = (uint64_t)*(uint64_t *)0;
+    if ((grow & 1) != 0) {
+        sk_ret0b();
+        if (1) {
+            sk_check_ovf();
+            if (1) sk_break(1, 0x73b7c);
+            sk_ret0c();
+            u = (uint64_t)*(uint64_t *)0;
+        }
+    }
+    u = sk_vec_alloc_0x10(obj[1], u);
+    if ((*(uint64_t *)0 & 1) == 0) {
+        sk_ret0d();
+        sk_ext_00075018();
+    } else {
+        sk_ptr_plus();
+        sk_ext_00072178();
+        sk_release_and_zero();
+    }
+    sk_u128_t r; r.lo = u; r.hi = 0; return r;
 }
