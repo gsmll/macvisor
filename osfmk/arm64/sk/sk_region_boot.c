@@ -33980,7 +33980,7 @@ unsigned long sk_tb_rec_encode2(unsigned long obj, char kind, unsigned long arg)
  * Encodes a TB record from a descriptor whose first word selects the wire tag
  * (0x427d55567dfea26 / 0x652378e30e8da7d4 => 9 bytes, 0x629b90c9626409ac => 0x21).
  * Writes the tag, kind, and nested payload into the buffer.
- * Confidence: medium
+ * Confidence: high
  */
 unsigned long sk_tb_rec_encode3(unsigned long obj, unsigned long rec)
 {

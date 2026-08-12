@@ -24785,7 +24785,10 @@ void FUN_0019b528(void)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
  * Confidence: medium (templated Swift runtime body).
- * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
+ * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs.
+ * VERIFIED vs decompile; FIXED: removed ~25 spurious __builtin_trap() that had
+ * replaced real (*pcVarXX)() indirect calls; restored uVar7/(*pcVar6)() result
+ * (was count). Compiles 0 err. */
 
 void FUN_0019b66c(void)
 
@@ -24798,12 +24801,12 @@ void FUN_0019b66c(void)
   unsigned long res;
   unsigned long uVar4;
   unsigned long fatal_v;
-    unsigned long count;
+  unsigned long count;
   long j;
   unsigned long fatal_line;
   long lVar10;
   unsigned long uVar11;
-      unsigned long *puVar14;
+  unsigned long *puVar14;
   long extraout_x1;
   unsigned long extraout_x1_00;
   unsigned long in_x3;
@@ -24864,7 +24867,7 @@ void FUN_0019b66c(void)
   unsigned long unaff_x30;
   unsigned long auVar15;
   unsigned long local_30;
-  
+
   FUN_0008e518();
   fatal_line = in_x3;
   res = FUN_00352c10();
@@ -24895,30 +24898,30 @@ void FUN_0019b66c(void)
   FUN_0034b4c0();
   pcVar6 = (code *)FUN_00310a14(in_x5);
   FUN_0034ef18();
-  __builtin_trap();
-  if ((count & 1) != 0) {
+  uVar1 = (unsigned int)(*pcVar6)();
+  if ((uVar1 & 1) != 0) {
     FUN_00358d58(in_x5);
     FUN_003504c4();
-    j = (*ctx_err)();
+    j = (long)(*ctx_err)();
     FUN_00310984(in_x3);
     fatal_line = FUN_0034b8dc();
-    lVar10 = (*extraout_x8_02)(fatal_line,in_x3);
+    lVar10 = (long)(*extraout_x8_02)(fatal_line,in_x3);
     if (lVar10 < j) {
       FUN_00310b38(in_x3);
       FUN_00351184();
       FUN_0034db08();
       (*extraout_x9)();
       FUN_0034ef18();
-      __builtin_trap();
+      uVar1 = (unsigned int)(*pcVar6)();
       fatal_line = FUN_0034acd0(uVar4);
-      err = (*extraout_x8_03)(fatal_line,uVar4);
+      err = (unsigned int)(*extraout_x8_03)(fatal_line,uVar4);
       count = unaff_x26;
       if (((uVar1 ^ err) & 1) == 0) {
         FUN_003504c4();
-        j = (*ctx_err)();
+        j = (long)(*ctx_err)();
         FUN_0034e15c();
         FUN_003508fc();
-        lVar10 = (*extraout_x8_05)();
+        lVar10 = (long)(*extraout_x8_05)();
         if (lVar10 <= j) {
           FUN_0034e1d0();
           auVar15 = (FUN_003509d4(unaff_x26)).lo;
@@ -24944,21 +24947,21 @@ LAB_0019ba44:
         FUN_00358eac();
         pcVar12 = *(code **)(unaff_x26 + 8);
         FUN_003508cc();
-        __builtin_trap();
+        (*pcVar12)();
         FUN_003509d4();
-        __builtin_trap();
+        (*pcVar12)();
         unaff_x26 = count;
 joined_r0x0019ba84:
         if ((unaff_x28 & 1) == 0) goto LAB_0019bb64;
       }
       else {
         FUN_0034ef18();
-        __builtin_trap();
+        uVar11 = (unsigned long)(*pcVar6)();
         FUN_003504c4();
-        j = (*ctx_err)();
+        j = (long)(*ctx_err)();
         FUN_0034e15c();
         FUN_003508fc();
-        lVar10 = (*extraout_x8_04)();
+        lVar10 = (long)(*extraout_x8_04)();
         if ((uVar11 & 1) == 0) {
           if (j < lVar10) {
             FUN_0035a3b8();
@@ -24996,10 +24999,10 @@ LAB_0019ba14:
           FUN_00358eac();
           pcVar12 = *(code **)(j + 8);
           FUN_003508cc();
-          __builtin_trap();
+          (*pcVar12)();
           if ((fatal_v & 1) == 0) {
             FUN_003509d4();
-            __builtin_trap();
+            (*pcVar12)();
             goto LAB_0019bb64;
           }
           FUN_0034e1d0();
@@ -25012,7 +25015,7 @@ LAB_0019bb18:
 LAB_0019bb34:
           FUN_00351360();
           FUN_00351584();
-          unaff_x28 = (*extraout_x8_11)();
+          unaff_x28 = (unsigned long)(*extraout_x8_11)();
           FUN_000e72b0();
           (*extraout_x9_12)();
           goto joined_r0x0019ba84;
@@ -25034,7 +25037,7 @@ LAB_0019bb34:
         FUN_00348e78(in_x5);
         FUN_00351360();
         FUN_00351584();
-        unaff_x28 = (*extraout_x8_07)();
+        unaff_x28 = (unsigned long)(*extraout_x8_07)();
         FUN_00353c0c();
         FUN_000e72b0();
         (*extraout_x9_06)();
@@ -25055,34 +25058,34 @@ LAB_0019bb34:
 LAB_0019bb64:
   pcVar12 = (code *)FUN_00310a44(in_x5);
   FUN_003504c4();
-  __builtin_trap();
+  j = (long)(*pcVar12)();
   pcVar13 = (code *)FUN_00310984(in_x3);
   FUN_0034db08();
-  __builtin_trap();
+  lVar10 = (long)(*pcVar13)();
   if (j <= lVar10) {
     FUN_003504c4();
-    __builtin_trap();
+    j = (long)(*pcVar12)();
     FUN_0034db08();
-    __builtin_trap();
+    lVar10 = (long)(*pcVar13)();
     if (j != lVar10) goto LAB_0019be24;
     FUN_0034ef18();
-    __builtin_trap();
-    if ((count & 1) != 0) goto LAB_0019be24;
+    uVar1 = (unsigned int)(*pcVar6)();
+    if ((uVar1 & 1) != 0) goto LAB_0019be24;
   }
   FUN_00310aa4(in_x3);
   FUN_0034db08(local_30);
   (*extraout_x9_13)();
   FUN_0035ac40(uVar4);
   FUN_003509e0();
-  __builtin_trap();
+  puVar14 = (unsigned long *)(*pcVar13)();
   FUN_0034ef18();
-  __builtin_trap();
+  uVar1 = (unsigned int)(*pcVar6)();
   if ((((unsigned int)puVar14 ^ uVar1) & 1) == 0) {
     FUN_0034c0d0();
     FUN_003509e0();
-    j = (*extraout_x8_14)();
+    j = (long)(*extraout_x8_14)();
     FUN_003504c4();
-    __builtin_trap();
+    lVar10 = (long)(*pcVar12)();
     if (j < lVar10) goto LAB_0019bdcc;
 LAB_0019bd3c:
     FUN_003511c0(*(unsigned long *)(extraout_x16 + 0x10),unaff_x26);
@@ -25099,7 +25102,7 @@ LAB_0019bd3c:
     FUN_0035a664();
     pcVar6 = (code *)puVar14[1];
     FUN_003509d4();
-    __builtin_trap();
+    (*pcVar6)();
     fatal_v = unaff_x26;
 LAB_0019bdac:
     (*pcVar6)(local_30);
@@ -25115,12 +25118,12 @@ LAB_0019be24:
   }
   else {
     FUN_0034db08();
-    __builtin_trap();
+    puVar14 = (unsigned long *)(*pcVar13)();
     FUN_0034c0d0();
     FUN_003509e0();
-    j = (*extraout_x8_12)();
+    j = (long)(*extraout_x8_12)();
     FUN_003504c4();
-    __builtin_trap();
+    lVar10 = (long)(*pcVar12)();
     if (((unsigned long)puVar14 & 1) == 0) {
       if (lVar10 <= j) {
         FUN_0034ad00();
@@ -25137,7 +25140,7 @@ LAB_0019be24:
         FUN_00351ee0();
         FUN_00350a34();
         FUN_00351584();
-        fatal_v = (*extraout_x8_19)();
+        fatal_v = (unsigned long)(*extraout_x8_19)();
         FUN_00353c0c();
         FUN_00350518();
         (*extraout_x9_21)();
@@ -25161,7 +25164,7 @@ LAB_0019be24:
         FUN_0035a664();
         pcVar6 = *(code **)(unaff_x26 + 8);
         FUN_003509d4();
-        __builtin_trap();
+        (*pcVar6)();
         goto LAB_0019bdac;
       }
 LAB_0019bdcc:
@@ -25172,7 +25175,7 @@ LAB_0019bdcc:
       (*extraout_x9_17)();
       FUN_00348e78(in_x5);
       FUN_003511c0(puVar14);
-      fatal_v = (*extraout_x8_17)();
+      fatal_v = (unsigned long)(*extraout_x8_17)();
       FUN_003529a4();
       FUN_00350518();
       (*extraout_x8_18)();
@@ -25198,10 +25201,10 @@ LAB_0019bdcc:
     puVar14 = (unsigned long *)(extraout_x1 + 8);
     pcVar6 = (code *)*puVar14;
     FUN_003509d4();
-    __builtin_trap();
+    (*pcVar6)();
     if ((fatal_v & 1) == 0) goto LAB_0019bdcc;
     FUN_003505e8();
-    __builtin_trap();
+    (*pcVar6)();
   }
   FUN_00347fb4();
 LAB_0019bf9c:
@@ -39874,26 +39877,113 @@ unsigned long cl4_swift_unicode_scalar_prev(unsigned long idx, unsigned long fla
 }
 
 /*--------------------------------------------------------------------*/
+extern unsigned long FUN_002ab130();  /* FUN_002ab130 (out-of-slice helper) */
+extern unsigned long FUN_002ae098();  /* FUN_002ae098 (out-of-slice helper) */
 /* FUN_001b3984 @ 0x001b3984   (est. cl4_swift_unicode_scalar_step)
  * Ghidra: ulong FUN_001b3984(ulong, ulong, ulong, ulong)
- * Swift StringUnicodeScalarView step: decodes the scalar at the current index
- * (via FUN_002ab130 / FUN_002a9ba8) after validating the (index^base) buffer
- * distance, handling 1/2/3/4-byte UTF-8 encodings. Returns the decoded scalar.
+ * Swift StringUnicodeScalarView step: validates the (index^base) buffer
+ * distance, resolves the scalar position via FUN_002ab130 / FUN_002ae098,
+ * then decodes the 1/2/3/4-byte UTF-8 scalar at the resolved buffer offset
+ * (LZCOUNT continuation-length switch). Returns the decoded scalar.
  * Confidence: low (Swift Unicode scalar view decode).
  */
 unsigned long cl4_swift_unicode_scalar_step(unsigned long idx, unsigned long base,
                                             unsigned long p, unsigned long flags)
 {
-    (void)base;
-    if ((idx ^ p) < 0x4000) return 0x100000000;   /* empty/end sentinel */
-    unsigned long w = sk_swift_utf16_set(idx);     /* FUN_002ab130(idx, p, flags) */
+    unsigned char b;
+    char c;
+    unsigned long w;
+    long buf;
+    unsigned char *pb;
+    unsigned int u;
+    long l7;
+    char *pc;
+    unsigned char l48[16];  /* local_48/40 byte buffer (embedded scalar payload) */
+
+    if ((base ^ idx) < 0x4000) return 0x100000000;   /* empty/end sentinel */
+    w = FUN_002ab130(base, p, flags);
     if (w >> 0xe == 0)
         sk_fatal_error((unsigned long)"Fatal error", 0xb, 2,
                        (unsigned long)"String index is out of bounds", 0x1d, 2,
                        (unsigned long)"Swift/StringUnicodeScalarView.swift", 0x23, 2, 0x84, 1);
-    /* decode 1/2/3/4-byte scalar at buffer + w>>0x10 */
-    unsigned long s = sk_swift_utf8_scalar_at(w, p, flags);  /* FUN_002a9ba8 + LZCOUNT decode */
-    return s;
+    if ((flags >> 0x3c & 1) == 0) {
+        if ((flags >> 0x3d & 1) == 0) {
+            if ((p >> 0x3c & 1) == 0) goto L_b3bc0;
+            buf = (flags & 0xfffffffffffffff) + 0x20;
+            goto L_b39ec;
+        }
+        /* embedded 8-byte scalar payload in flags */
+        u = (unsigned int)*(unsigned char *)((long)&l48 + (w >> 0x10) + 7);
+        /* decompile: uVar6==0xffffffbf || SCARRY4(uVar6,0x41) — signed-carry of byte+0x41 */
+        if (u == 0xffffffbf || (int)(u + 0x41) < 0) {
+            l7 = 1;
+            pc = (char *)((long)&l48 + (w >> 0x10) + 6);
+            do { l7 = l7 + 1; c = *pc; pc = pc - 1; }
+            while (c < -0x40);
+        } else {
+            l7 = 1;
+        }
+    }
+    else {
+        w = FUN_002ae098(w, p, flags);
+L_b3bc0:
+        buf = FUN_002a9ba8(p, flags).lo;
+L_b39ec:
+        l7 = 0;
+        do {
+            pc = (char *)(buf + (w >> 0x10) + -1 + l7);
+            l7 = l7 - 1;
+        } while (*pc < -0x40);
+        l7 = -l7;
+    }
+    w = FUN_002ab4d4(w + l7 * -0x10000 & 0xffffffffffff0000 | 5,
+                     idx, base, p, flags);
+    if ((flags >> 0x3d & 1) == 0) {
+        if ((p >> 0x3c & 1) == 0) {
+            buf = FUN_002a9ba8(p, flags).lo;
+        } else {
+            buf = (flags & 0xfffffffffffffff) + 0x20;
+        }
+        pb = (unsigned char *)(buf + (w >> 0x10));
+        b = *pb;
+        w = (unsigned long)b;
+        if (-1 < (char)b) return w;
+        switch ((int)LZCOUNT((unsigned int)b << 0x18 ^ 0xffffffff)) {
+        default:
+            goto L_caseD1;
+        case 2:
+L_caseD2:
+            return (unsigned long)pb[1] & 0x3f | (w & 0x1f) << 6;
+        case 3:
+L_caseD3:
+            b = pb[2];
+            w = (w & 0xf) << 0xc | ((unsigned long)pb[1] & 0x3f) << 6;
+            break;
+        case 4:
+L_caseD4:
+            b = pb[3];
+            w = (w & 0xf) << 0x12 | ((unsigned long)pb[1] & 0x3f) << 0xc |
+                ((unsigned long)pb[2] & 0x3f) << 6;
+        }
+        w = w | (unsigned long)b & 0x3f;
+L_caseD1:
+        return w;
+    }
+    /* embedded 8-byte scalar payload in flags (second path) */
+    pb = (unsigned char *)((long)&l48 + (w >> 0x10));
+    b = *pb;
+    w = (unsigned long)b;
+    if (-1 < (char)b) return w;
+    switch ((int)LZCOUNT((unsigned int)b << 0x18 ^ 0xffffffff)) {
+    default:
+        goto L_caseD1;
+    case 2:
+        goto L_caseD2;
+    case 3:
+        goto L_caseD3;
+    case 4:
+        goto L_caseD4;
+    }
 }
 
 /*--------------------------------------------------------------------*/

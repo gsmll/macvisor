@@ -5305,3 +5305,15 @@ Confidence: medium.
 - [VB2_7/boot] 0x000114fc sk_buddy_clear_list: bitmap write at bitmap[(units-1+idx)>>6 *0x10 +- 8] computed from caller-supplied idx/units with no range check (faithful to decompile) — potential OOB if idx/units unbounded. Severity: low. Confidence: medium.
 - [VB2_7/boot] 0x0004ffd0 sk_tb_ph_scan: writes relocations into image __PDATA/__DATA segments based on segment extents; pointer-wrap overflow guards not transcribed. Severity: low. Confidence: medium.
 - [VB2_7/boot] 0x00043780: the (u&0xfb)!=0 fast path marshals mask&va + size through tpidrro_el0 words and CallSupervisor(0); retry loop dispatches span-object alloc method via **(vas+0xb8) (trusted VAS method table). Severity: info. Confidence: medium.
+## [VB2_3] 0x0067f8f0 (sk_slice_r71.c) — AES-256 key-expand loop truncated the round-key schedule
+- **Observation**: the transcription's loop counter bug (i-=4 then i-=8 per iteration instead of the decompile's iVar14-=8 with uVar1=iVar14-4 as a copy) produced only 5 iterations / 192 bytes of round keys instead of the required 7 / 240 bytes; the `if(i==4) return` guard never fired. A truncated key schedule yields wrong round keys for round 6+, corrupting AES-256 encryption/decryption.
+- **Severity**: medium hypothesis (crypto correctness). Confidence: high. Corrected to match decompile; file compiles 0 errors.
+
+## [VB2_3] 0x0005fac0 (sk_slice_11.c) — thread_suspend passes CONCAT44 phantom instead of the thread argument
+- **Observation**: same CONCAT44 phantom-arg bug as its sibling suspend_core (0x0005fad8): the `sk_f_0005be84` call passes `CONCAT44(counter_ptr, counter)` as the node while the disassembly shows `x0=thread, w1=1` (node=thread, mode=1). The real thread argument is dropped, so the wrong node would be suspended.
+- **Severity**: low-to-medium hypothesis (wrong thread suspended). Confidence: medium. 0x0005fad8 (suspend_core, in-batch) was fixed; 0x0005fac0 (thread_suspend) observed but outside this batch.
+
+## [VB2_3] 0x003985ec (sk_slice_r51.c) — sk_span_copy dropped the final pack call and callee args
+- **Observation**: the transcription dropped the always-run final pack call (FUN_0037e8e8) on the src==dst equal path and dropped arguments on FUN_0037e58c (3 args incl. dest buffer) and FUN_00117cc8 (4 args); 7 distinct callees were compressed to 5, losing call semantics.
+- **Severity**: low hypothesis (copy semantics). Confidence: high. Rewrote faithful 1:1; fixed extern signatures; file compiles 0 errors.
+
