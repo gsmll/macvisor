@@ -773,8 +773,6 @@ static void sk_rt_459888(word_t slot, word_t str)
     }
 }
 
-/* FUN_004598f8 @ 0x004598f8  (est. sk_rt_dummy) */
-static void sk_rt_4598f8(void) { }
 
 
 /* FUN_00459900 @ 0x00459900  (est. sk_rt_global_init_2db0)

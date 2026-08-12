@@ -552,7 +552,7 @@ static void sk_mr_emit_span_00404ed8(void)
  * Confidence: low. */
 static void sk_mr_span_copy_00404f60(void)
 {
-    word_t *p = (word_t *)sk_x_0035860c();
+    word_t *p = (word_t *)sk_x_0035860c().lo;
     cl4_pair_t v = sk_x_0001a1c8(*p, p[1], *(word_t *)((word_t)0 + 0x10));
     ((cl4_pair_t *)((word_t)0 + 0x10))[0] = v;
 }
@@ -2334,7 +2334,7 @@ static cl4_pair_t sk_ipc_ret_f15_0041cb78(void)
  * Confidence: low. */
 static word_t sk_ipc_frame_compare_0041cb8c(void)
 {
-    sword_t l2 = sk_x_003504d0();
+    sword_t l2 = (sword_t)sk_x_003504d0().lo;
     sword_t l4 = ((sword_t *)((word_t)0 + 0x19))[1];
     if (*(sword_t *)(l2 + 8) == 0) {
         if (l4 != 0) return 0;
@@ -2372,7 +2372,7 @@ static uint sk_ipc_frame_compare2_0041cc48(word_t p1, word_t *p2)
     w[0] = p2[0]; w[1] = p2[1]; w[2] = p2[2]; w[3] = p2[3];
     w[4] = p2[4]; w[5] = p2[5];
     byte tag = *(byte *)(p2 + 6);
-    return sk_ipc_frame_compare_0041cb8c(p1, (word_t *)&w) & 1;
+    return sk_ipc_frame_compare_0041cb8c() & 1;
 }
 
 /* FUN_0041cc98 @ 0x0041cc98   (est. sk_ipc_emit_tag_pair)
@@ -2586,6 +2586,7 @@ static void sk_ipc_encode_payload_0041d180(word_t p1, word_t p2, sword_t p3, wor
                                            uint p5, word_t p6, word_t p7, sword_t *p8)
 {
     cl4_pair_t v = sk_x_00351e20();
+    sword_t l6;
     uint tag = (uint)p4 & 0xff;
     byte u3 = 0;
     if ((p4 & 0xff) == 0) {
@@ -2603,7 +2604,7 @@ static void sk_ipc_encode_payload_0041d180(word_t p1, word_t p2, sword_t p3, wor
         } else {
             sk_x_003523fc(2, *p8);
             sk_ipc_emit_reset_0041d14c(0, 0, 0, 0);
-            sword_t l6 = *p8 + 1;
+            l6 = *p8 + 1;
             if (*p8 == (word_t)-1) CL4_SW_BP(0x41d398);
             *p8 = l6;
             sk_x_00350470();
@@ -2644,7 +2645,7 @@ LAB_enc_memcpy:
             sk_x_00465d3c();
             if (u3) CL4_SW_BP(0x41d210);
         } else {
-            sword_t l6 = *(sword_t *)(v.lo + 0x10);
+            l6 = *(sword_t *)(v.lo + 0x10);
             if ((p5 & 1) == 0) {
                 sk_x_003523fc(5, *p8);
                 sk_ipc_emit_reset_0041d14c(0, 0, 0, 0);
