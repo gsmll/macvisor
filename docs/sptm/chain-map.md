@@ -304,3 +304,14 @@ Call-graph edges discovered while decompiling. Append with both addresses:
   - Region/TLB: 000f4d60 (sptm_parse_region2) → 000f2304 (sptm_parse_region); 000f61c0 (sptm_root_acquire_shared) called by 000f5f2c/000f6368/000f6634/000f6aec; 000f6aec (sptm_region_tlb_flush) → 000f61c0, 000d76fc (sptm_tlb_op); 000f6d54 (sptm_tlb_maintenance) / 000f7108 (sptm_invalid_op) pair
   - GCM (exclave protected-metadata): 000f7ff4 (sptm_gcm_ctx_setup) → 000b0cc8 (gcm_ctx_init), 000b1140 (ghash table), ops->keysched; 000f8084 (sptm_gcm_key_iv_setup); 000f8214 (sptm_gcm_update) → 000b2204 (state adv), 000b0cb4 (ghash_step), 000b20d0 (counter bump), 000afad0 (aes_gcm_core)
   - Panic printers: 000f84e4 (sptm_panic_format) → 000ad278 (snprintf), 000c15b4 (serial), 000ae278 (strlcpy_chk), 000a1374 (sptm_guest_exit_handoff); 000f8804 (sptm_panic) → 000f84e4, 000c5a18 (panicking cpu), 000f8714 (sptm_panic_record), 000e7678 (dispatch name); 000f8844 (sptm_panic_code) / 000f8824 (sptm_panic_fmt) / 000f8834 (sptm_panic_bad_dt); 000f89b4 (sptm_invalid_genter) → 000c59f4, 000f8804
+
+### Reconcile wave (sptm_reconcile.c) — batch-fallthrough functions
+- 000ab9e0 (sptm_dcache_flush, body in sptm_entry_stubs.c) → 000ab964 (sptm_dcache_clean_invalidate_range); called by 000c2dec, 000c3434 (sptm_nvme_map_pages)
+- 000abeb0 (sptm_memcpy) — tree-wide memcpy/memmove thunk (body in sptm_reconcile.c)
+- 000bc75c (sptm_cputrace_state_code, body in sptm_trace_hib.c) — caller set at top of this section
+- 000c15b4 (sptm_dbg_print / sptm_serial_str) → 000ad278 (snprintf), 000abb60 (bzero), 000ae44c (stack_chk); called by 000b8f84, 000bb804, 000bc084, 000f84e4
+- 000cf7a8 (sptm_dart_pte_ref_update) → 000caa9c, 000c7df8; called by 000cef24, 000cfaec (sptm_t8110dart_map_table)
+- 000f57c8 (sptm_switch_root) → 000ef4e0 (sptm_root_ft), 000d7cf8 (sptm_tlbi_va), 000e2150 (sptm_fte_info), 000d8a58 (sptm_get_parent_paddr), 000e233c (sptm_ft_for_pte)
+- 000f6e30 (sptm_batch_sign_user_pointer) → 000d617c (sptm_copy_to_scratch)
+- 000f719c (sptm_tag_op) → 000d617c, 000e0a10 (sptm_cacheattr), 000d7348 (sptm_set_pte_attr), 000d76fc (sptm_tlb_op), 000e40ec (VA translation)
+- 000f7880 (sptm_tag_papt_multipage) → 000f719c; 000f78e0 (sptm_untag_papt_multipage) → 000f719c

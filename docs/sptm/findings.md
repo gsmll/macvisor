@@ -619,3 +619,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: f84e4 body: snprintf into cpu+3 (0xa28), overflow branch prints truncation strings, SCTLR==0x2f selects record base, `for(;;) wfe;`. f8804 recurses with "%s: [%s] %s at pc 0x%016llx lr 0x%016llx" (0xf0b7).
 - **Severity (hypothesis)**: informational — fail-closed formatting; no overflow possible.
 - **Confidence**: medium
+
+## [ringminus1] 000f719c / 000f7880 / 000f78e0 sptm_tag_op / sptm_tag_papt_multipage / sptm_untag_papt_multipage — tag/untag batch bounds + fresh-frame gate
+- **Observation**: The tag/untag batch engine caps the entry count at [1,64] (the `(count-0x41)<0xffffffffffffffc0` idiom), requires each target frame to be fresh (FTE refcount 0, else panic 0x3e) and to have a present type-attr entry (panic 0x41), and only touches class-3 (XNU_TAGGABLE) frames — a non-class-3 frame is a hard "Type %d class of FTE %d" panic. The taggable bit (FTE+2 bit 2) must match the requested direction (untag requires it set, tag requires it clear; 0x35/0x36 panics otherwise). The sptm_set_pte_attr(...) leaf update must return 5 or the batch panics. DEFER_TLBI (flag bit 8) is only honored when the mode bit admits deferred flushes, else panic.
+- **Evidence**: count bound `if (count<1||count>64) sptm_panic(10,...)`; `if (*ft!=0) sptm_panic(0x3e,...)`; `if (g_type_attr[type*0x48]==0) sptm_panic(0x41,...)`; `g_fte_class[type*0x90]!=3` panic; tag/untag bit checks 0x35/0x36; `sptm_set_pte_attr(cur,0xff,sub,0x82)` result must ==5; return `(flags<<0x17)>>0x1f & 5` (bit8→SPTM_UPDATE_DELAYED_TLBI).
+- **Severity (hypothesis)**: informational — fail-closed validation; a non-fresh or non-taggable frame cannot be tagged, and a mismatch is a hard panic, not a silent skip.
+- **Confidence**: high
+
+## [ringminus1] 000cf7a8 sptm_dart_pte_ref_update — DMA paddr bound gate
+- **Observation**: Before programming a DART client PTE reference, the target physical address is checked against the DART's configured upper bound (param_1+0xb80, defaulting to a hard 0x40000000000 cap) — a paddr at/above the bound panics 0x6000021. The whole edit runs under a per-DART guard byte (+0xbdf) derived from the per-CPU handoff magic, and the guard must still match on release (else "state guard release" panic). In the active mode the packed {paddr>>12, count} is verified against the re-read slot ("DART instance mismatch" panic).
+- **Evidence**: `bound = dart+0xb80 ?: 0x40000000000; if (bound<=paddr) panic 0x6000021`; `if (dart+0xbdf!=0) panic 0x6000000`; guard = handoff_magic<<1|1; per-client loop stride 0x78, count at +0xba4; `*(uint*)(slot+8)=packed; if (re-read != packed) panic`.
+- **Severity (hypothesis)**: medium — gates exactly which physical memory a DMA client can reference; a bound error would allow out-of-range DMA.
+- **Confidence**: medium
+
+## [ringminus1] 000f57c8 sptm_switch_root — kernel-root switch requires clean mask
+- **Observation**: Switching to the kernel root (DAT_00095d48) only admits a fully-clean request: any of the low 16 bits set in either the mask or flags panics (code 0x10), so no arbitrary bit flips are possible on the kernel-root path. The user-root path read-locks the root FTE and re-validates its frame class (must be class 1) before reprogramming TCR/SCTLR/TTBR0 and issuing TLB invalidations; the previous root's rw-guard is released (with an underflow/overflow panic on imbalance), and a non-kernel/non-boot old root has its table refcount dropped.
+- **Evidence**: `if ((mask&0xfea4)||(flags&0xfea4)) panic 0x10`; kernel branch `if ((mask&0xffff)||(flags&0xffff)) panic 0x10`; `g_fte_class[ft_type*0x90]!=1` panic; refcount overflow (>0x812) / underflow (old==0) / rw-guard-odd panics; `if ((old_ttbr&~1)!=kernel_root && !=boot_alt) drop table refcnt`.
+- **Severity (hypothesis)**: informational — fail-closed root switch with per-branch validation.
+- **Confidence**: medium

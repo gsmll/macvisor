@@ -4788,12 +4788,12 @@
   "address": "000f57c8",
   "ghidra_name": "FUN_000f57c8",
   "estimated_name": "sptm_switch_root",
-  "confidence": "high",
-  "category": "sptm-fn",
+  "confidence": "medium",
+  "category": "sptm-reconcile",
   "tree": "ringminus1",
-  "file": "",
-  "status": "known",
-  "notes": "Name from SPTM __cstring trace tag at 0x00011d40 (xref from enclosing function); high confidence."
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Switch EL1 root: kernel-root branch programs fixed EL2 regs + boot root; user-root branch read-locks FTE, reprograms ctx-id/ASID, TCR/SCTLR, issues TLBI (ipas2e1is/vmalle1), releases prev root rw-guard. Decompiler truncation at halt_baddata noted. Defined in sptm_reconcile.c."
  },
  {
   "address": "000f5f2c",
@@ -4866,11 +4866,11 @@
   "ghidra_name": "FUN_000f6e30",
   "estimated_name": "sptm_batch_sign_user_pointer",
   "confidence": "high",
-  "category": "sptm-fn",
+  "category": "sptm-reconcile",
   "tree": "ringminus1",
-  "file": "",
-  "status": "known",
-  "notes": "Name from SPTM __cstring trace tag at 0x00011e2a (xref from enclosing function); high confidence."
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Sign batch of 1..64 user pointers (count bound idiom); validates DRAM window + clean flag words, requires DAIF 0x1c0, extracts sig word per 0x18-byte entry under s3_4_c15_c0_4 guard. Defined in sptm_reconcile.c."
  },
  {
   "address": "000f7108",
@@ -4888,33 +4888,33 @@
   "ghidra_name": "FUN_000f719c",
   "estimated_name": "sptm_tag_op",
   "confidence": "high",
-  "category": "sptm-fn",
+  "category": "sptm-reconcile",
   "tree": "ringminus1",
-  "file": "",
-  "status": "known",
-  "notes": "Name from SPTM __cstring trace tag at 0x00011e6d (xref from enclosing function); high confidence."
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Core tag/untag batch: per-entry XNU_TAGGABLE class-3 fresh-frame check, sptm_set_pte_attr(0xff,...,0x82)==5, tag/untag bit + sub-refcount, TLBI or DEFER_TLBI validation, rw-guard release; returns bit8(flags)*5. Defined in sptm_reconcile.c."
  },
  {
   "address": "000f7880",
   "ghidra_name": "FUN_000f7880",
   "estimated_name": "sptm_tag_papt_multipage",
   "confidence": "high",
-  "category": "sptm-fn",
+  "category": "sptm-reconcile",
   "tree": "ringminus1",
-  "file": "",
-  "status": "known",
-  "notes": "Name from SPTM __cstring trace tag at 0x00011ef4 (xref from enclosing function); high confidence."
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Tag batch wrapper: flags must be {0,0x100} else panic 0xe; forwards to sptm_tag_op(mode=1). Defined in sptm_reconcile.c."
  },
  {
   "address": "000f78e0",
   "ghidra_name": "FUN_000f78e0",
   "estimated_name": "sptm_untag_papt_multipage",
   "confidence": "high",
-  "category": "sptm-fn",
+  "category": "sptm-reconcile",
   "tree": "ringminus1",
-  "file": "",
-  "status": "known",
-  "notes": "Name from SPTM __cstring trace tag at 0x00011f2b (xref from enclosing function); high confidence."
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Untag batch wrapper: sptm_tag_op(mode=0,flags=0); nonzero return panics. Defined in sptm_reconcile.c."
  },
  {
   "address": "000f7924",
@@ -5674,5 +5674,60 @@
   "file": "osfmk/arm64/sptm/sptm_region_io.c",
   "status": "decompiled",
   "notes": "Second big bootstrap stage: per-CPU frames, IO-space parse, pmap-io-ranges registration, pmap-io-filters sort/overlap, hibernation descriptors, UAT handoff regions, IOMMU enable, IO-range sort/overlap. HUGE (1310-line decompile); condensed but faithful."
+ },
+ {
+  "address": "000ab9e0",
+  "ghidra_name": "FUN_000ab9e0",
+  "estimated_name": "sptm_dcache_flush",
+  "confidence": "high",
+  "category": "sptm-entry",
+  "tree": "ringminus1",
+  "file": "osfmk/arm64/sptm/sptm_entry_stubs.c",
+  "status": "decompiled",
+  "notes": "Guarded data-cache clean+invalidate of a range (DC CIVAC): toggles EL2 guard bit s3_4_c15_c12_0 bit3, calls FUN_000ab964 range clean, restores. Body ALREADY EXISTS in sptm_entry_stubs.c as sptm_dcache_flush (unclaimed by Wave3b/GuestIo but present); manifest entry added here."
+ },
+ {
+  "address": "000abeb0",
+  "ghidra_name": "FUN_000abeb0",
+  "estimated_name": "sptm_memcpy",
+  "confidence": "high",
+  "category": "sptm-reconcile",
+  "tree": "ringminus1",
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Tree-wide memcpy/memmove thunk (overlap-aware: backward copy when dst in [src,src+n), forward otherwise; word/byte tail). Defined in sptm_reconcile.c."
+ },
+ {
+  "address": "000bc75c",
+  "ghidra_name": "FUN_000bc75c",
+  "estimated_name": "sptm_cputrace_state_code",
+  "confidence": "high",
+  "category": "sptm-trace",
+  "tree": "ringminus1",
+  "file": "osfmk/arm64/sptm/sptm_trace_hib.c",
+  "status": "decompiled",
+  "notes": "Returns cputrace state code active?(available?3:2):(available?1:0) from sptm_cputrace_state(+0x10 available, +0x11 active). DUPLICATE-NAME RESOLUTION: Wave3f marked it 'already decompiled as sptm_cputrace_state_code' but the manifest had NO entry; body exists in sptm_trace_hib.c. Entry added."
+ },
+ {
+  "address": "000c15b4",
+  "ghidra_name": "FUN_000c15b4",
+  "estimated_name": "sptm_dbg_print",
+  "confidence": "high",
+  "category": "sptm-reconcile",
+  "tree": "ringminus1",
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Formatted debug/console writer (snprintf FUN_000ad278 into 0xa28 buf, mask-gated char output to CTRR template; stack-canary FUN_000ae44c). Also aliased sptm_serial_str in sptm_region_pmap.c. Defined in sptm_reconcile.c."
+ },
+ {
+  "address": "000cf7a8",
+  "ghidra_name": "FUN_000cf7a8",
+  "estimated_name": "sptm_dart_pte_ref_update",
+  "confidence": "high",
+  "category": "sptm-reconcile",
+  "tree": "ringminus1",
+  "file": "osfmk/arm64/sptm/sptm_reconcile.c",
+  "status": "decompiled",
+  "notes": "Per-client DART PTE reference update: bounds paddr to DART upper bound (0x40000000000 cap), guard byte +0xbdf, packed {paddr>>12,count} per client (stride 0x78, count +0xba4), state-guard release. Defined in sptm_reconcile.c."
  }
 ]
