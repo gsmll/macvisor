@@ -256,127 +256,131 @@ extern const char sk_str_005bd1af[];   /* s_..._005BD1AF */
 extern const char sk_str_00689ea0[];   /* s_..._00689EA0 */
 
 
-/* Forward declarations (all 120 slice functions). */
-uint64_t sk_f_0005acac();
-void sk_f_0005ace4();
-uint64_t sk_f_0005ad24();
-void sk_f_0005ad40();
-void sk_f_0005ad58();
-void sk_f_0005ae4c();
-void sk_f_0005afe8();
-void sk_f_0005b05c();
-void sk_f_0005b0bc();
-void sk_f_0005b120();
-void sk_f_0005b12c();
-void sk_f_0005b140();
-uint64_t sk_f_0005b160();
-__attribute__((noreturn)) void sk_f_0005b190();
-void sk_f_0005b1b0();
-void sk_f_0005b824();
-uint64_t sk_f_0005b860();
-uint64_t sk_f_0005b89c();
-uint32_t sk_f_0005b8c8();
-uint64_t sk_f_0005ba14();
-void sk_f_0005ba40();
-void sk_f_0005ba5c();
-int64_t sk_f_0005baac();
-void sk_f_0005baf0();
-void sk_f_0005bb68();
-uint64_t * sk_f_0005bb7c();
-uint64_t sk_f_0005bbd8();
-int sk_f_0005bc48();
-void sk_f_0005bce0();
-void sk_f_0005bd10();
-void sk_f_0005bd7c();
-void sk_f_0005be48();
-void sk_f_0005be84();
-void sk_f_0005bf20();
-void sk_f_0005c0ac();
-void sk_f_0005c16c();
-uint64_t sk_f_0005c184();
-uint64_t sk_f_0005c278();
-unsigned long sk_f_0005c380();
-unsigned long sk_f_0005c414();
-unsigned long sk_f_0005c440();
-unsigned long sk_f_0005c468();
-unsigned long sk_f_0005c490();
-unsigned long sk_f_0005c4a8();
-unsigned long sk_f_0005c4c0();
-unsigned long sk_f_0005c510();
-unsigned long sk_f_0005c520();
-unsigned long sk_f_0005c53c();
-unsigned long sk_f_0005c558();
-unsigned long sk_f_0005c570();
-void sk_f_0005c588();
-unsigned long sk_f_0005c5a0();
-int64_t sk_f_0005c5b4();
-void sk_f_0005c614();
-void sk_f_0005c650();
-void sk_f_0005c710();
-void sk_f_0005c764();
-int64_t sk_f_0005c86c();
-int64_t sk_f_0005c924();
-uint64_t sk_f_0005ca20();
-void sk_f_0005cb18();
-void sk_f_0005cb24();
-uint64_t sk_f_0005cb9c();
-uint64_t sk_f_0005cc3c();
-uint64_t sk_f_0005cdbc();
-void sk_f_0005ce54();
-void sk_f_0005cf08();
-unsigned long sk_f_0005cf14();
-void sk_f_0005cf18();
-void sk_f_0005cf4c();
-void sk_f_0005d03c();
-uint64_t sk_f_0005d134();
-uint64_t sk_f_0005d154();
-uint16_t sk_f_0005d38c();
-void sk_f_0005d394();
-void sk_f_0005d470();
-void sk_f_0005d5dc();
-void sk_f_0005d5e8();
-void sk_f_0005d64c();
-uint64_t sk_f_0005d77c();
-void sk_f_0005d7c8();
-void sk_f_0005d84c();
-void sk_f_0005d870();
-uint64_t sk_f_0005dab8();
-void sk_f_0005db7c();
-uint64_t sk_f_0005dc4c();
-void sk_f_0005dc8c();
-void sk_f_0005dcb0();
-void sk_f_0005dd70();
-void sk_f_0005dd94();
-void sk_f_0005deb4();
-void sk_f_0005ded8();
-void sk_f_0005df34();
-cl4_result_t sk_f_0005dfa8();
-void sk_f_0005e0dc();
-void sk_f_0005e100();
-void sk_f_0005e4ac();
-void sk_f_0005e4cc();
-void sk_f_0005e4d8();
-void sk_f_0005e8a4();
-uint64_t sk_f_0005e958();
-int64_t sk_f_0005ea94();
-int64_t sk_f_0005eb78();
-void sk_f_0005ec20();
-uint64_t sk_f_0005ec98();
-void sk_f_0005ed18();
-void sk_f_0005edac();
-uint64_t sk_f_0005ee40();
-uint64_t sk_f_0005ee48();
-uint64_t sk_f_0005ee50();
-uint64_t sk_f_0005ee58();
-void sk_f_0005ee7c();
-void sk_f_0005eec4();
-void sk_f_0005fac0();
-void sk_f_0005fad8();
-void sk_f_0005fbc0();
-void sk_f_0005fbdc();
-void sk_f_0005fc54();
-void sk_f_0005fccc();
-void sk_f_0005fd24();
+/* Forward declarations (full prototypes, all 120 slice functions). */
+uint64_t sk_f_0005acac(uint64_t slot_addr, uint64_t arg2, uint64_t arg3);
+void sk_f_0005ace4(void);
+uint64_t sk_f_0005ad24(void);
+void sk_f_0005ad40(void);
+void sk_f_0005ad58(int64_t trace);
+void sk_f_0005ae4c(uint64_t thread_name, int64_t locks, uint64_t unused_arg, int32_t acquire);
+void sk_f_0005afe8(int64_t obj, uint64_t arg2, uint64_t arg3);
+void sk_f_0005b05c(int64_t obj, uint64_t arg2);
+void sk_f_0005b0bc(int64_t obj);
+void sk_f_0005b120(uint64_t slot);
+void sk_f_0005b12c(uint64_t param);
+void sk_f_0005b140(void);
+uint64_t sk_f_0005b160(void);
+void __attribute__((noreturn)) sk_f_0005b190(uint64_t thread, uint64_t reason);
+void sk_f_0005b1b0(uint64_t thread, uint64_t arg2, uint64_t arg3);
+void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, uint64_t d);
+uint64_t sk_f_0005b860(uint64_t *out_name);
+uint64_t sk_f_0005b89c(void);
+uint32_t sk_f_0005b8c8(void);
+uint64_t sk_f_0005ba14(void);
+void sk_f_0005ba40(uint64_t arg);
+void sk_f_0005ba5c(uint64_t *entry);
+int64_t sk_f_0005baac(int key1, int key2);
+void sk_f_0005baf0(uint64_t *entry);
+void sk_f_0005bb68(void);
+uint64_t sk_f_0005bbd8(uint8_t *thread, int64_t *out_size);
+int sk_f_0005bc48(uint64_t *value_ptr, int32_t mode);
+void sk_f_0005bce0(uint8_t *callback_slot);
+void sk_f_0005bd10(uint64_t *node);
+void sk_f_0005bd7c(void (*callback)(uint64_t), uint64_t callback_arg);
+void sk_f_0005be48(uint64_t arg, uint64_t fn);
+void sk_f_0005be84(uint64_t *node, int32_t mode);
+void sk_f_0005bf20(uint64_t *node);
+void sk_f_0005c0ac(void);
+void sk_f_0005c16c(void);
+uint64_t sk_f_0005c184(uint64_t src, uint64_t count);
+uint64_t sk_f_0005c278(uint64_t dst, uint64_t count);
+unsigned long sk_f_0005c380(const uint8_t *b, uint64_t *lo, uint64_t *hi);
+unsigned long sk_f_0005c414(const uint8_t *b, uint64_t *acc);
+unsigned long sk_f_0005c440(const uint8_t *b, uint16_t *w16, uint32_t *w32);
+unsigned long sk_f_0005c468(const uint8_t *b, uint32_t *out);
+unsigned long sk_f_0005c490(const uint8_t *b, uint64_t *acc);
+unsigned long sk_f_0005c4a8(const uint8_t *b, uint32_t *acc);
+unsigned long sk_f_0005c4c0(const uint8_t *b, uint64_t *lo, uint64_t *hi);
+unsigned long sk_f_0005c510(void);
+unsigned long sk_f_0005c520(void);
+unsigned long sk_f_0005c53c(uint64_t selector);
+unsigned long sk_f_0005c558(void);
+unsigned long sk_f_0005c570(void);
+void sk_f_0005c588(void);
+unsigned long sk_f_0005c5a0(uint64_t sel_hi);
+int64_t sk_f_0005c5b4(uint64_t arg);
+void sk_f_0005c614(uint64_t arg);
+void sk_f_0005c650(uint64_t *out, uint64_t timebase_id);
+void sk_f_0005c710(void);
+void sk_f_0005c764(uint64_t timebase_id, int64_t entry);
+int64_t sk_f_0005c86c(uint64_t timebase_id, uint8_t (*target)[16], uint8_t (*out)[16],
+                      uint64_t flags);
+int64_t sk_f_0005c924(uint64_t timebase_id);
+uint64_t sk_f_0005ca20(uint32_t timebase_id);
+void sk_f_0005cb18(uint8_t value);
+void sk_f_0005cb24(uint64_t token, uint64_t dividend, uint8_t (*out)[16], uint64_t flags);
+uint64_t sk_f_0005cb9c(uint64_t *lock);
+uint64_t sk_f_0005cc3c(uint64_t *lock, uint64_t arg2);
+uint64_t sk_f_0005cdbc(uint64_t *lock);
+void sk_f_0005ce54(uint64_t *lock);
+void sk_f_0005cf08(uint64_t *lock, uint16_t mode);
+unsigned long sk_f_0005cf14(void);
+void sk_f_0005cf18(int64_t sp, uint64_t arg2, uint64_t arg3);
+void sk_f_0005cf4c(int64_t target, uint64_t flags);
+void sk_f_0005d03c(int64_t *slot, uint64_t flags);
+uint64_t sk_f_0005d134(int64_t obj);
+uint64_t sk_f_0005d154(int64_t object, int64_t *out_id);
+uint16_t sk_f_0005d38c(uint64_t *queue, uint64_t queue_token);
+void sk_f_0005d394(uint64_t *queue, int32_t clamp_to_capacity);
+void sk_f_0005d470(uint32_t *slot, void (*completion)(void *), void *callback_arg);
+void sk_f_0005d5dc(void);
+void sk_f_0005d5e8(uint64_t target_thread, uint32_t register_num, uint64_t msg_lo,
+                   uint64_t msg_hi);
+void sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
+                   uint64_t flags);
+uint64_t sk_f_0005d77c(void);
+void sk_f_0005d7c8(int64_t *root_slot);
+void sk_f_0005d84c(void);
+void sk_f_0005d870(int64_t thread, int32_t reporting_enabled);
+uint64_t sk_f_0005dab8(uint64_t (*handler)(int64_t, uint64_t), uint64_t target_thread,
+                       uint8_t *cross_thread_flag, uint64_t arg);
+void sk_f_0005db7c(uint64_t *thread);
+uint64_t sk_f_0005dc4c(uint64_t cpu_index);
+void sk_f_0005dc8c(void);
+void sk_f_0005dcb0(uint32_t selector, uint64_t msg0, uint64_t msg1, uint64_t thread, uint32_t flags);
+void sk_f_0005dd70(void);
+void sk_f_0005dd94(uint32_t wake_idx, uint64_t msg0, uint32_t selector, uint64_t target_thread);
+void sk_f_0005deb4(void);
+void sk_f_0005ded8(uint64_t thread);
+void sk_f_0005df34(uint32_t selector);
+cl4_result_t sk_f_0005dfa8(uint64_t tag, uint16_t *msg);
+void sk_f_0005e0dc(void);
+void sk_f_0005e100(uint64_t cap_arg, uint8_t *selbuf);
+void sk_f_0005e4ac(uint8_t error_code);
+void sk_f_0005e4cc(void);
+void sk_f_0005e4d8(int64_t thread, uint64_t out_lo, uint64_t out_hi, uint64_t flags);
+void sk_f_0005e8a4(uint64_t *out, uint64_t mode, uint64_t fmt);
+uint64_t sk_f_0005e958(uint32_t name);
+int64_t sk_f_0005ea94(uint64_t src, uint64_t size, uint64_t offset, uint32_t nul_flag);
+int64_t sk_f_0005eb78(uint64_t dst, uint64_t size, uint64_t offset);
+void sk_f_0005ec20(uint32_t index, uint64_t value);
+uint64_t sk_f_0005ec98(uint32_t index);
+void sk_f_0005ed18(uint32_t index, uint64_t value);
+void sk_f_0005edac(uint32_t index, uint64_t value);
+uint64_t sk_f_0005ee40(uint64_t value);
+uint64_t sk_f_0005ee48(uint64_t word);
+uint64_t sk_f_0005ee50(uint64_t word);
+uint64_t sk_f_0005ee58(uint64_t low_field, uint64_t mid_field, uint32_t high_field, int32_t enabled);
+void sk_f_0005ee7c(void);
+void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int64_t stack_extra,
+                   int32_t flags);
+void sk_f_0005fac0(int64_t thread);
+void sk_f_0005fad8(uint64_t wake_value);
+void sk_f_0005fbc0(int64_t thread);
+void sk_f_0005fbdc(uint64_t dest, uint64_t value, int64_t cap_count);
+void sk_f_0005fc54(uint64_t dest, uint64_t *value_ptr, uint64_t cap_count);
+void sk_f_0005fccc(int64_t thread);
+void sk_f_0005fd24(int64_t thread);
 
 
 /* FUN_0005acac @ 0x0005acac   (est. lazy_init_global_slot)
@@ -1696,11 +1700,11 @@ fail:
  * formatted table output. Takes no arguments and returns nothing.
  * Confidence: medium
  * Notes: `&stack0x00000018` is a stack scratch buffer; s_L4_ErrorCode__zu_005a8c7b
- * is referenced as sk_str_8c7b. */
+ * is referenced as sk_str_005a8c7b. */
 void sk_f_0005c588(void)
 {
     uint8_t scratch[0x20];   /* &stack0x00000018: scratch buffer for table dump */
-    sk_f_0005b824((uint64_t)(uintptr_t)scratch, 0x20, 0x1f, sk_str_8c7b);
+    sk_f_0005b824((uint64_t)(uintptr_t)scratch, 0x20, 0x1f, sk_str_005a8c7b);
     return;
 }
 
@@ -1829,7 +1833,7 @@ void sk_f_0005c710(void)
  * and entry+0x38, and calls sk_f_0005cb24 to convert 0xffffffffffffffff ticks.
  * For timebase 0 it panics "invalid timebase %u".
  * Confidence: medium
- * Notes: s_invalid_timebase__u_005bc6d7 referenced as sk_str_c6d7; the GCD loop
+ * Notes: s_invalid_timebase__u_005bc6d7 referenced as sk_str_005bc6d7; the GCD loop
  * is a faithful transcription of the decompiled Euclid reduction. */
 void sk_f_0005c764(uint64_t timebase_id, int64_t entry)
 {
@@ -1876,7 +1880,7 @@ void sk_f_0005c764(uint64_t timebase_id, int64_t entry)
         return;
     }
     /* invalid timebase: noreturn panic */
-    sk_f_0005b190(0, sk_str_c6d7);
+    sk_f_0005b190(0, sk_str_005bc6d7);
     __builtin_unreachable();
 }
 
@@ -1943,7 +1947,7 @@ int64_t sk_f_0005c86c(uint64_t timebase_id, uint8_t (*target)[16], uint8_t (*out
  * returns the older read plus the value from FUN_00055AFC (a stable timestamp).
  * For any other id it panics "invalid timebase %u".
  * Confidence: medium
- * Notes: s_invalid_timebase__u_005bc6d7 referenced as sk_str_c6d7; the loop is
+ * Notes: s_invalid_timebase__u_005bc6d7 referenced as sk_str_005bc6d7; the loop is
  * a software-debounced tick read. */
 int64_t sk_f_0005c924(uint64_t timebase_id)
 {
@@ -1962,7 +1966,7 @@ int64_t sk_f_0005c924(uint64_t timebase_id)
         return prev + ext;
     }
     /* invalid timebase: noreturn panic */
-    sk_f_0005b190(0, sk_str_c6d7);
+    sk_f_0005b190(0, sk_str_005bc6d7);
     __builtin_unreachable();
 }
 

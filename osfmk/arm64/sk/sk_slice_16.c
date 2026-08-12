@@ -294,7 +294,7 @@ static sk_u128_t sk_reserve_ptr(uint64_t a, uint64_t b, uint64_t c);
 static sk_u128_t sk_reserve_u16(uint64_t a, uint64_t b, uint64_t c);
 static sk_u128_t sk_reserve_u32(uint64_t a, uint64_t b, uint64_t c);
 static sk_u128_t sk_reserve_u64(uint64_t a, uint64_t b, uint64_t c);
-static void sk_set_probe2(ulong flag);
+static void sk_set_probe2(unsigned long flag);
 static void sk_set_first_probe(uint64_t a, uint64_t b, uint64_t c);
 static void sk_iter_probe(long *out, long set, long a, long b);
 
@@ -406,7 +406,7 @@ static void sk_scope_emit_ctx_r(void)
  * used by the observer/accounting path.  Confidence: medium. */
 static void sk_field_count(void)
 {
-    FUN_00070674(1, 0, 2);
+    sk_vec_counted_insert(1, 0, 2);
     sk_scope_emit_pair(1, 0, 2);
 }
 
@@ -449,7 +449,7 @@ static void sk_vec_pack_init(void)
  * Insert `delta` into the counted array at x20[2] keyed by {key,tag}: look up
  * the pair via sk_set_find (0x724cc); if absent read the current count and
  * add `delta` (fatal 0x70754 on overflow), else 0.  Then reserve a 0x21-byte
- * slot and call FUN_00075cb4(total, key, tag).  Confidence: medium. */
+ * slot and call sk_counted_insert(total, key, tag).  Confidence: medium. */
 static void sk_vec_counted_insert(uint64_t delta, uint64_t key, uint64_t tag)
 {
     uint64_t *vec = (uint64_t *)*(uint64_t *)0;
@@ -457,7 +457,7 @@ static void sk_vec_counted_insert(uint64_t delta, uint64_t key, uint64_t tag)
     sk_u128_t res;
     uint64_t tmp[3];
 
-    FUN_0036a1a0((uint64_t)vec + 0x10, (uint64_t)tmp, 0x20, 0);
+    sk_reserve_slot((uint64_t)vec + 0x10, (uint64_t)tmp, 0x20, 0);
     base = vec[2];
     if (*(uint64_t *)(base + 0x10) == 0) {
         total = 0;
@@ -471,11 +471,11 @@ static void sk_vec_counted_insert(uint64_t delta, uint64_t key, uint64_t tag)
         }
         sk_swift_release_masked(base);
     }
-    FUN_0036a20c((uint64_t)tmp);
+    sk_commit_slot((uint64_t)tmp);
     if (!CARRY8(total, delta)) {
-        FUN_0036a1a0((uint64_t)vec + 0x10, (uint64_t)tmp, 0x21, 0);
-        FUN_00075cb4(total + delta, key, tag);
-        FUN_0036a20c((uint64_t)tmp);
+        sk_reserve_slot((uint64_t)vec + 0x10, (uint64_t)tmp, 0x21, 0);
+        sk_counted_insert(total + delta, key, tag);
+        sk_commit_slot((uint64_t)tmp);
         return;
     }
     sk_break(1, 0x70754); /* fatal: overflow */
@@ -488,10 +488,10 @@ static void sk_vec_retain_push(uint64_t obj)
 {
     uint64_t *vec = (uint64_t *)*(uint64_t *)0;
     uint64_t tmp[3];
-    FUN_0036a1a0((uint64_t)vec + 0x18, (uint64_t)tmp, 0x21, 0);
+    sk_reserve_slot((uint64_t)vec + 0x18, (uint64_t)tmp, 0x21, 0);
     sk_swift_retain(obj);
     sk_vec_push_elem(obj, 0);
-    FUN_0036a20c((uint64_t)tmp);
+    sk_commit_slot((uint64_t)tmp);
 }
 
 /* FUN_000707a8 @ 0x707a8  (est. sk_vec_pair_make)
@@ -1482,9 +1482,10 @@ static sk_u128_t sk_set_find_int(int key, uint64_t idx)
     uint64_t *set = (uint64_t *)*(uint64_t *)0;
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     sk_u128_t out;
+    uint64_t b;
     while (1) {
         idx &= ~mask;
-        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
+        b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
         if (b == 0 || *(int *)(*(uint64_t *)(set + 0x30) + idx * 4) == key) break;
         idx = idx + 1;
     }
@@ -1528,9 +1529,10 @@ static sk_u128_t sk_set_find_word(long key, uint64_t idx)
     uint64_t *set = (uint64_t *)*(uint64_t *)0;
     uint64_t mask = -1L << ((uint64_t)*(uint8_t *)(set + 0x20) & 0x3f);
     sk_u128_t out;
+    uint64_t b;
     while (1) {
         idx &= ~mask;
-        uint64_t b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
+        b = 1UL << (idx & 0x3f) & *(uint64_t *)(set + 0x40 + (idx >> 6) * 8);
         if (b == 0 || *(int64_t *)(*(uint64_t *)(set + 0x30) + idx * 8) == key) break;
         idx = idx + 1;
     }

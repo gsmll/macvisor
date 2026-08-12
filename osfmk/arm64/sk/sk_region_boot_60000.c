@@ -7329,7 +7329,7 @@ void sk_ipmm_setup(void)
                 *(volatile sk_word_t*)0x64e180 = 1;
                 sk_word_t cap = (sk_word_t)sk_alloc_ep(0x11);
                 ok = (*(unsigned char(*)(void*,sk_word_t,sk_word_t))
-                     (*(void***)(_DAT_006b2838 + 0x28)[0]))(&DAT_006b2830, 0, cap);
+                     (*(void***)((char*)(uintptr_t)_DAT_006b2838 + 0x28)[0]))(&DAT_006b2830, 0, cap);
                 if (ok == 0) { sk_ep_release(cap, 0x11); return; }   /* FUN_0019ae60 */
                 sk_panic_bad(0, "IPMM abort in function %s line %d");
             } else {
@@ -7715,7 +7715,7 @@ sk_word_t sk_vspace_client_remove(void)
             } else {
                 if (*(long **)((char*)next + 0x28) != (long *)(c + 0x10))
                     sk_panic_assert("Bad link elm %p next>prev ...");
-                if ((short *)**(void **)(c + 0x14) != c)
+                if ((short *)*(void **)((char*)c + 0x14) != c)
                     sk_panic_assert("Bad link elm %p prev>next ...");
                 *(void **)((char*)next + 0x28) = *(void **)(c + 0x14);
                 prev = *(long **)(c + 0x14);
@@ -9347,7 +9347,7 @@ void sk_obj_state_out(sk_word_t *out)
  */
 void sk_obj_state_in(sk_word_t *in)
 {
-    sk_state_import((char*)unaff_x20 + 0x18, in, 1, 0);   /* FUN_0036a1a0 */
+    sk_state_import((char*)unaff_x20 + 0x18, (sk_word_t)(uintptr_t)in, 1, 0);   /* FUN_0036a1a0 */
     *(sk_word_t*)((char*)unaff_x20 + 0x18) = in[0];
     *(sk_word_t*)((char*)unaff_x20 + 0x20) = in[1];
     *(sk_word_t*)((char*)unaff_x20 + 0x28) = in[2];

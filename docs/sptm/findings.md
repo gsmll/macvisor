@@ -1730,3 +1730,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: writes `self[0x48..0x98]` in sequence interleaved with `FUN_0007c0b8` (accessor ctx); builds entry via `FUN_0036a940(..,0x38,7)` and `FUN_0036a940(..,0x60,7)`; `FUN_00002534(DAT_0064e868, DAT_004c06c0)` string; `self[*self+0x50]`/`self[*self+0x68]`/`self[*self+0x80]` store the cap/space-cap/fault-data; trap 0x78ec4 if `FUN_0014aedc` round-up fails.
 - **Severity (hypothesis)**: informational — single-time capability/root setup for the exclave CNode.
 - **Confidence**: low
+
+## [ringminus1/SK13] 000658f0 dt_integrity_parse
+- **Observation**: The device-tree integrity parser walks node descriptors with explicit bounds checks and panics (via FUN_00115424 assert-style fatal) on a NULL region and on every integer-overflow of its cursor (`FUN_00066204` = "integer overflow"). The cursor is advanced by node size (`+0x24`) and property extent (`(nprop+3)&~3`), each checked for wrap before use. This is fail-closed parsing of attacker- or boot-data-derived DT content.
+- **Evidence**: `FUN_00115424("context is NULL", "__AppleInternal/Library/BuildRoot", "device_tree_integrity_parse_call", 0x90)` on base==0; `0xfffffffffffffff7 < local_30` -> `FUN_00066204()` (overflow) before `*base = cursor+8`; per-node `0xffffffffffffffdb < node` -> overflow; property advance `CARRY8` -> overflow.
+- **Severity (hypothesis)**: informational — the cL4 DT parser fails closed on malformed/oversized descriptors rather than silently mis-parsing; a crafted DT could still force a kernel panic (availability) if it reaches this parser with attacker-controlled bytes.
+- **Confidence**: high
+
+## [ringminus1/SK13] 00065c30 dt_node_next
+- **Observation**: The device-tree node iterator validates every pointer arithmetic against the iterator's {base,limit}: it checks `base+limit < base+8` and `node+0x24 <= base+limit` before returning a descriptor, and masks the node length field to 31 bits (`&0x7fffffff`). On any overlap/overflow it traps via SoftwareBreakpoint 0x5519. This bounds-checks DT-derived offsets before dereference.
+- **Evidence**: `if ((uint*)(base+limit) < puVar5+2 || puVar5+2 < puVar5) goto trap`; `(uVar3-uVar4)-0x24 < (uVar6=(ulong)puVar1[8]&0x7fffffff) -> trap`; node returned only when `puVar1 <= puVar1+9` and `base <= node && node+0x24 <= base+limit`.
+- **Severity (hypothesis)**: informational — defensive parsing; prevents out-of-bounds reads on malformed DT node tables.
+- **Confidence**: high
+
+## [ringminus1/SK13] 00069bdc dtk_collect_props
+- **Observation**: The property collector bounds-checks the per-node property count (`0x1f < local_c8 -> SoftwareBreakpoint`) before indexing, and accumulates `namelen = c+1` and `data+len` with explicit `SCARRY8`/negative-count traps. Property name length and data length come from masked DT header fields.
+- **Evidence**: `if (0x1f < local_c8) trap(1,0x69df4)`; `SCARRY8(local_c8,1)` / `lVar1<0` / `local_d0<0` traps before `ptr[3]=a+d`.
+- **Severity (hypothesis)**: informational — per-node limits enforced; a node with >0x20 properties or negative lengths is rejected, not over-read.
+- **Confidence**: medium

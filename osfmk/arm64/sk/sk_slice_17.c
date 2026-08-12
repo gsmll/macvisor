@@ -102,6 +102,28 @@ extern void   FUN_000699a4(word_t, word_t, word_t); /* move tail */
 extern void   FUN_000699d8(word_t, word_t, word_t); /* move tail */
 extern long   FUN_000737e8(word_t, word_t, word_t, word_t, word_t,
                            word_t, word_t);    /* generic cap factory */
+extern void   FUN_00077718(void);              /* release displaced token */
+extern void   FUN_000721d8(word_t, word_t, word_t); /* move tail (u08b) */
+extern void   FUN_00072358(word_t, word_t, word_t); /* move tail */
+extern void   FUN_00072270(word_t, word_t, word_t); /* move tail */
+extern void   FUN_000722b0(word_t, word_t, word_t); /* move tail */
+extern word_t FUN_000778c0(void);              /* lock snapshot */
+extern void   FUN_00077894(word_t);            /* slot release */
+extern void   FUN_00077794(word_t, word_t);    /* slot release */
+extern word_t FUN_000777b4(word_t, word_t);    /* slot release */
+extern void   FUN_000777e4(void);              /* element probe */
+extern void   FUN_00077928(void);              /* lock snapshot */
+extern void   FUN_000778e8(void);              /* lock snapshot */
+extern void   FUN_0007783c(void);              /* slot release */
+extern void   FUN_00077824(void);              /* insert helper */
+extern void   FUN_0007787c(void);              /* fatal helper */
+extern void   FUN_00077800(void);              /* fatal helper */
+extern void   FUN_000778b4(void);              /* lock probe */
+extern void   FUN_00077708(void);              /* release */
+extern void   FUN_00077764(void);              /* grow probe */
+extern void   FUN_00077778(void);              /* release */
+extern void   FUN_00077770(word_t);            /* table cleanup */
+extern word_t FUN_00081fe0(word_t *, word_t, word_t, word_t);
 extern word_t FUN_00071c4c(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 extern word_t FUN_00071d74(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 extern word_t FUN_00071dbc(word_t, word_t, word_t, word_t); /* alloc dispatcher */
@@ -110,16 +132,19 @@ extern word_t FUN_00071e74(word_t, word_t, word_t, word_t); /* alloc dispatcher 
 extern word_t FUN_00071f54(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 extern word_t FUN_00071f9c(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 
-/* Lock-state / element-vector glue reconstructed in this slice. */
+/* Lock-state / element-vector glue reconstructed in this slice.  The
+ * decompiled helpers are empty (register-flag carriers); we return word_t so
+ * they can be used both as statements and in boolean/value positions, and
+ * return 0 to reflect the empty body. */
 static word_t sk_lock_state_save(void) { return 0; }            /* 7752c */
-static void   sk_lock_state_clear(void) { }                     /* 77550 */
-static void   sk_lock_state_probe(void) { }                     /* 77560 */
-static void   sk_lock_state_enter(void) { }                     /* 77570 */
+static word_t sk_lock_state_clear(void) { return 0; }           /* 77550 */
+static word_t sk_lock_state_probe(void) { return 0; }           /* 77560 */
+static word_t sk_lock_state_enter(void) { return 0; }           /* 77570 */
 static word_t sk_this_tail(word_t thisp) { return thisp + 0x20; } /* 77580 */
-static void   sk_slot_release(word_t thisp, word_t slot) { }    /* 77590 */
-static void   sk_clear_element(word_t thisp) { }                /* 77604 */
-static void   sk_element_probe(void) { }                        /* 77614 */
-static void   sk_overflow_probe(void) { }                       /* 77624 */
+static word_t sk_slot_release(word_t thisp, word_t slot) { return 0; } /* 77590 */
+static word_t sk_clear_element(word_t thisp) { return 0; }      /* 77604 */
+static word_t sk_element_probe(void) { return 0; }              /* 77614 */
+static word_t sk_overflow_probe(void) { return 0; }             /* 77624 */
 
 /* ================================================================== *
  * Cap-type allocation factory wrappers.
@@ -3728,7 +3753,7 @@ static void sk_vec_insert_7667c(word_t value)
         FUN_00077894(idx);
         FUN_00081d14();
     } else {
-        sk_vec_insert_774c8(value, 0);
+        sk_elem_swap_store_774c8(value, 0);
     }
 }
 
