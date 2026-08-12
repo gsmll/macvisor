@@ -117,7 +117,7 @@ hv_vmm_present(hv_trap_record_t *rec)   /* in_x3 */
 }
 
 /* -------------------------------------------------------------------------
- * hv_capabilities @ 0xfffffe000b984fd8  (est. hv_capabilities; op table idx0)
+ * hv_capabilities @ 0xfffffe000b984fd8  (op table idx0)
  * Ghidra: undefined4 hv_capabilities(undefined8 param_1)
  * Builds a hypervisor capabilities/feature report for the caller and copies it
  * out. Reads the calling task's entitlement tier via hv_entitlement_tier
@@ -128,18 +128,18 @@ hv_vmm_present(hv_trap_record_t *rec)   /* in_x3 */
  * caller (copyout). Returns error 0xfae94001 on copyout failure.
  * Matches the Hypervisor.framework capability query: no user copyin, only a
  * kernel-built report copyout.
- * Confidence: medium (identity from the 435-byte feature/ID report + the
- *   entitlement tier input; the entitlements tree also names this
- *   "hv_capabilities").
- * Notes: b985ae4 / b987d9c / b988038 are OWNED and decompiled by the
- *   entitlements tree (hv_entitlements.c) — called here by estimated name;
- *   b95d6f4 is the shared kernel copyout (stubbed). auStack_270 is a 157-byte
- *   caps buffer, auStack_1d3 a 435-byte report buffer. The report includes
- *   feature-mask words, cache block-size shifts and id_aa64* feature regs
- *   (see hv_entitlements.c). No bounds/copyin on the caller side.
+ * Confidence: high (fresh decompile matches body line for line).
+ * Notes: fresh decompile verified 2026-08-12 — body confirmed faithful:
+ *   hv_entitlement_tier() -> hv_caps_feature_mask(caps, tier) ->
+ *   hv_caps_cpu_report(caps, report) -> copyout(report, param_1, 0x1b3)
+ *   (FUN_fffffe000b95d6f4, shared kernel copyout, stubbed), return
+ *   0xfae94001 if copyout nonzero else 0. b985ae4 / b987d9c / b988038 are
+ *   OWNED and decompiled by the entitlements tree (hv_entitlements.c), called
+ *   here by name. auStack_270 is a 157-byte caps buffer, auStack_1d3 a
+ *   435-byte report buffer. No bounds/copyin on the caller side.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_capabilities(hv_trap_record_t *rec __unused)
+hv_capabilities(hv_trap_record_t *rec)
 {
 	uint8_t  caps[157];    /* auStack_270 */
 	uint8_t  report[435];  /* auStack_1d3 */
@@ -341,85 +341,101 @@ hv_vm_create(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_destroy @ 0xfffffe000b985bf0  (est. hv_vm_destroy; op table idx2)
+ * hv_vm_destroy @ 0xfffffe000b985bf0  (op table idx2)
  * Ghidra: undefined8 hv_vm_destroy(void)
- * Destroys the calling thread's hypervisor VM: takes the vm owner block from
- * per-cpu owner+0x628, releases the shared vm lock (DAT_fffffe000c62c0b8),
- * drops a per-cpu "active cpu" reference (clear cpu id at owner+8, sync via
- * lck_mtx_unlock), decrements the vm refcount and LORelease(); when the
- * refcount hits 1 the object release path hv_vcpu_object_release runs and the
- * last releaser panics (kernel_panic_b, no-return).
- * Confidence: medium (per-cpu vm teardown + refcount release pattern).
- * Notes: reads per-cpu id at tpidr_el1+0x518; DAT_fffffe000c62b3d0 is a global
- *   "pending sync" flag; err 0xfae94002/6; current_cpu_datap is the per-cpu
- *   state base; lock/refcount helpers are shared kernel.
+ * Destroys the calling thread's hypervisor VM. Caches the per-cpu id into
+ * hv_cached_cpu_id (DAT_fffffe000c62c0c0) if unset, takes the shared vm lock
+ * (DAT_fffffe000c62c0b8) unless the cache is empty AND the debug flag is
+ * clear, then grabs the vm owner block from per-cpu owner+0x628. It re-syncs
+ * the stored per-cpu owner id (clears it if it matches this cpu), and on a
+ * clean teardown (no pending vm_owner[3] block) zeroes the per-cpu slot,
+ * syncs the lock, decrements vm_owner[1] and LORelease(); at refcount 1 the
+ * hv_vcpu_object_release path runs and the last releaser panics
+ * (kernel_panic_b, no-return) at 0. Returns 0xfae94006 if there is no vm,
+ * 0xfae94002 if a pending block still owns the vm.
+ * Confidence: high (fresh decompile verified; body rewritten to match it).
+ * Notes: rewrote 2026-08-12 from a fresh decompile. Two discrepancies fixed:
+ *   (a) the per-vm lock_acquire condition was `cpu != 0 || pending == 0`,
+ *   correct is `cpu != 0 || pending != 0` (lock taken unless cpu==0 AND
+ *   pending==0); (b) the pending-block (else) branch was missing the tail
+ *   that clears hv_cached_cpu_id low-32 when it equals this cpu and syncs
+ *   &hv_lock. Reads per-cpu id at tpidr_el1+0x518; DAT_fffffe000c62b3d0
+ *   (hv_debug_flag) is the global "pending sync" flag; helpers are shared
+ *   kernel, stubbed: lock_acquire FUN_fffffe000b7f0afc, lock_release
+ *   FUN_fffffe000b7f1e4c, lock_sync FUN_fffffe000b7f1e80, per_cpu_base
+ *   FUN_fffffe000b866ec4, kernel_panic_b FUN_fffffe000c0f8674. err
+ *   0xfae94002/6.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_destroy(void *args __unused)
 {
-	uint64_t u;
-	uint64_t cpu_slot = 0;
-	long    *owner;
-	long    *vm_owner;
-	long    *o;
-	int      cpu, i, pending;
-	uint32_t prev;
+	uint64_t u;            /* uVar4 cached per-cpu id */
+	uint64_t cpu_slot;     /* lVar6 = tpidr_el1 */
+	long    *owner;        /* lVar8 per-cpu state base */
+	long    *vm_owner;     /* plVar11 vm owner block */
+	long    *o;            /* lVar9 / lVar8 */
+	int      pending;      /* iVar7 hv_debug_flag */
+	int      prev, cpu, i; /* iVar3 / iVar7 */
+	int      saved;        /* iVar5 */
 
-	u = hv_cached_cpu_id;   /* DAT_fffffe000c62c0c0 */
+	u = hv_cached_cpu_id;                       /* DAT_fffffe000c62c0c0 */
 	cpu_slot = tpidr_el1;
 	if (hv_cached_cpu_id == 0)
 		hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
-	if (u != 0 || hv_debug_flag != 0)
-		lock_acquire(&hv_lock, cpu_slot, u, 0);  /* est. lock */
+	if (u != 0 || hv_debug_flag != 0)           /* DAT_fffffe000c62b3d0 */
+		lock_acquire(&hv_lock, cpu_slot, u, 0); /* FUN_fffffe000b7f0afc @ DAT_fffffe000c62c0b8 */
 
-	owner = (long *)per_cpu_base(cpu_slot);
+	owner = (long *)per_cpu_base(cpu_slot);     /* FUN_fffffe000b866ec4 */
 	pending = hv_debug_flag;
 	vm_owner = *(long **)(owner + 0x628);
 	if (vm_owner == NULL) {
-		lock_release(&hv_lock);   /* est. unlock */
+		lock_release(&hv_lock);                 /* FUN_fffffe000b7f1e4c */
 		return 0xfae94006;
 	}
 	o = (long *)*vm_owner;
-	cpu = (int)*(uint32_t *)(o + 1);         /* stored per-cpu id */
-	if (cpu == 0) {
+	cpu = (int)*(uint32_t *)(o + 1);            /* stored per-cpu owner id */
+	if (cpu == 0)
 		*(uint32_t *)(o + 1) = *(uint32_t *)(cpu_slot + 0x518);
-	}
-	if (cpu != 0 || pending == 0) {
+	if (cpu != 0 || pending != 0)               /* lock unless (cpu==0 && pending==0) */
 		lock_acquire(o, cpu_slot, (uint64_t)cpu, 0);
-	}
-	o = (long *)vm_owner[3];
+	o = (long *)vm_owner[3];                    /* pending per-cpu block */
 	pending = hv_debug_flag;
 	hv_debug_flag = pending;
 	if (o == NULL) {
+		/* Clean teardown: clear per-cpu slot, sync, drop vm refcount. */
 		*(uint64_t *)(owner + 0x628) = 0;
-		pending = hv_debug_flag;
-		o = (long *)*vm_owner;
-		prev = *(uint32_t *)(o + 1);
+		prev = *(uint32_t *)((long *)*vm_owner + 1);
 		i = *(uint32_t *)(cpu_slot + 0x518);
-		if (prev == (uint32_t)i)
-			*(uint32_t *)(o + 1) = 0;
-		if (prev != (uint32_t)i || pending != 0)
-			lock_sync(o, cpu_slot);          /* est. per-cpu sync */
+		if (prev == i)
+			*(uint32_t *)((long *)*vm_owner + 1) = 0;
+		if (prev != i || pending != 0)
+			lock_sync((void *)*vm_owner, cpu_slot);     /* FUN_fffffe000b7f1e80 */
 		i = (int)hv_cached_cpu_id;
-		if ((int)hv_cached_cpu_id == *(uint32_t *)(cpu_slot + 0x518))
-			hv_cached_cpu_id = (hv_cached_cpu_id & 0xffffffff00000000);
-		if (i != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+		if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
+			hv_cached_cpu_id &= 0xffffffff00000000ULL;  /* CONCAT44(_4_4_, 0) */
+		if (i != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
 			lock_sync(&hv_lock, cpu_slot);
 		i = (int)vm_owner[1];
 		vm_owner[1] = i - 1;
 		LORelease();
 		if (i == 0)
-			kernel_panic_b();                      /* est. panic, no-return */
+			kernel_panic_b();                   /* FUN_fffffe000c0f8674, no-return */
 		if (i == 1)
-			hv_vcpu_object_release(vm_owner);              /* vcpu-core release */
+			hv_vcpu_object_release((uint64_t *)vm_owner);   /* vcpu-core release */
 		return 0;
 	}
-	prev = *(uint32_t *)(o + 1);
+	/* Pending block still owns the vm: sync per-cpu owner id, sync locks, fail. */
+	prev = *(uint32_t *)((long *)*vm_owner + 1);
 	i = *(uint32_t *)(cpu_slot + 0x518);
-	if (prev == (uint32_t)i)
-		*(uint32_t *)(o + 1) = 0;
-	if (prev != (uint32_t)i || pending != 0)
-		lock_sync(o, cpu_slot);
+	if (prev == i)
+		*(uint32_t *)((long *)*vm_owner + 1) = 0;
+	if (prev != i || pending != 0)
+		lock_sync((void *)*vm_owner, cpu_slot);
+	i = (int)hv_cached_cpu_id;
+	if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
+		hv_cached_cpu_id &= 0xffffffff00000000ULL;
+	if (i != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+		lock_sync(&hv_lock, cpu_slot);
 	return 0xfae94002;
 }
 
@@ -452,87 +468,116 @@ hv_vm_unmap(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_map_core @ 0xfffffe000b9868a8  (est. hv_vm_map_core; shared by
- *   idx3/idx5)
+ * hv_vm_map_core @ 0xfffffe000b9868a8  (shared by idx3/idx5)
  * Ghidra: undefined8 hv_vm_map_core(undefined8 param_1,int param_2,int param_3)
- * Common vm-map/unmap core. Copies the 0x28-byte user arg block
- * (copyin), looks up the vm owner via hv_pmap_resolve_owner, then
- * validates the requested range (start/size) against the vm's allowed region
- * bounds (vm+0x28 start, vm+0x30 size) and the address-cap mask derived from
- * the vm cap field at vm+0x44 (1<<(cap&0x3f))-1. For mode==0 && op==0 it maps
- * memory (kernel_mem_validate) with perms 0x80001100001, else unmaps
- * (kernel_copyout) or protects (kernel_mem_release) the range. On
- * validation failure the caller's per-cpu vcpu slot (tpidr_el1+0x4d8) is torn
- * down via os_release and error 0xfae94003 returned.
- * Confidence: medium (clear vm-map range validation + map/unmap helpers).
- * Notes: caps: (1L<<(*(ushort*)(vm+0x44)&0x3f))-1; bounds vm+0x28 / vm+0x30;
- *   addr limit 0x7ffffe000000; err 0xfae94001/3; helper fns b8b51c8/b8b49e8/
- *   b8a8078/b986b34/b8afa78/b793cf4/b8a8078 are shared kernel, not recreated.
+ * Common vm-map/unmap/protect core. Copies the 0x28-byte user arg block
+ * (copyin), looks up the vm owner via hv_pmap_resolve_owner, then validates
+ * the requested range against the vm's allowed region bounds (vm+0x28 start,
+ * vm+0x30 size) and the address-cap mask (1<<(*(ushort*)(vm+0x44)&0x3f))-1,
+ * including unsigned-overflow (CARRY8) checks on (start+size) and (b0+size).
+ * For mode==0 && op==0 it maps (kernel_mem_validate) with perms
+ * 0x80001100001; otherwise op==0 unmaps (kernel_copyout) or op!=0 protects
+ * (kernel_mem_release). The user 5th qword (a0) is passed to
+ * hv_pmap_resolve_owner. On validation failure the caller's per-cpu vcpu slot
+ * (tpidr_el1+0x4d8) is torn down via os_release and error 0xfae94003
+ * returned; map/unmap failures unwind via hv_pmap_unwind -> 0xfae94001.
+ * Confidence: high (fresh decompile verified; body rewritten to match it).
+ * Notes: rewrote 2026-08-12 from a fresh decompile. Discrepancies fixed:
+ *   (a) added the two CARRY8(start,size)/CARRY8(b0,size) overflow checks the
+ *   old body dropped; (b) the 5th user qword (a0) now feeds
+ *   hv_pmap_resolve_owner (old body passed 0); (c) the map-path arg buffers
+ *   are separate locals initialized as the decompile does (off=b0, sync=0).
+ *   Special owner block DAT_fffffe000c62b698 forces high "unrestricted" bit;
+ *   addr limit 0x7ffffe000000; err 0xfae94001/3. Helpers are shared kernel,
+ *   stubbed: copyin FUN_fffffe000b95c144, kernel_mem_validate b8b51c8,
+ *   kernel_copyout b8b49e8, kernel_mem_release b8a8078, os_release b8afa78,
+ *   kernel_panic_msg c0e1c3c, zfree_waitq b793cf4, per_cpu_base b866ec4.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_map_core(void *args, int op, int mode)
 {
-	uint64_t start, size, capmask, addr_limit, perms;
-	uint64_t a, b, c, d;
-	uint64_t offset = 0, prot = 0;
-	uint64_t a0 = 0, b0 = 0, c0 = 0, d0 = 0;
-	void    *vm;
-	char    *ret;
-	uint64_t v;
-	int      r;
-	uint64_t arg0, arg1;
+	struct {                /* 0x28-byte user arg block (5 qwords) */
+		uint64_t start;     /* local_70 (uVar9) */
+		uint64_t b0;        /* uStack_68 */
+		uint64_t size;      /* local_60 (c0) */
+		uint64_t d0;        /* local_58 */
+		uint64_t a0;        /* local_50, fed to resolve_owner */
+	} in;
+	uint64_t start, b0, size, d0, a0;   /* copied fields */
+	uint64_t capmask;       /* uVar6 */
+	uint64_t v;             /* uVar9 adjusted start */
+	uint64_t off;           /* uStack_80 map-path buffer (= b0) */
+	uint64_t sync;          /* local_88 map-path buffer (= 0) */
+	uint64_t per_cpu_val;   /* lVar5 */
+	uint64_t size_arg;      /* uVar2 */
+	void    *vm;            /* lVar4 */
+	char    *ret;           /* local_78 */
+	int      r;             /* iVar3 */
 
-	(void)op;
-	r = copyin(args, &start, 0x28);   /* est. copyin 0x28 bytes */
+	r = copyin(args, &in, 0x28);    /* FUN_fffffe000b95c144 */
 	if (r != 0)
 		return 0xfae94003;
-	vm = (void *)hv_pmap_resolve_owner(a0, &ret);    /* est. vm owner lookup */
+	start = in.start;
+	b0 = in.b0;
+	size = in.size;
+	d0 = in.d0;
+	a0 = in.a0;
+	vm = (void *)hv_pmap_resolve_owner(a0, &ret);   /* est. vm owner lookup */
+	size_arg = size;
 	if (vm == NULL)
 		return 0xfae94003;
-	arg0 = start;
+	v = start;
 	if (*(void **)(vm + 0x58) != NULL) {
-		/* For the special owner block DAT_fffffe000c62b698, force the high
-		 * "unrestricted" bit so the mask check below passes. */
-		v = start & 0xf0ffffffffffffff;
-		if (*(void **)(vm + 0x58) == &hv_special_owner_block)
-			v = start | 0xf00000000000000;
-		arg0 = (start != 0) ? v : 0;
+		/* Special owner block forces the high "unrestricted" bit. */
+		uint64_t adj = start & 0xf0ffffffffffffffULL;
+		if (*(void **)(vm + 0x58) == &hv_special_owner_block)  /* DAT_fffffe000c62b698 */
+			adj = start | 0xf00000000000000ULL;
+		uint64_t sel = 0;
+		if (start != 0)
+			sel = adj;
+		v = sel;    /* *(vm+0x58) != NULL so uVar9 = (start != 0) ? adj : 0 */
 	}
 	capmask = (1ULL << (*(uint16_t *)(vm + 0x44) & 0x3f)) - 1;
-	start = arg0;
-	if (((start & capmask) != 0 || (b0 & capmask) != 0 || (c0 & capmask) != 0 ||
+	start = v;
+	if (((start & capmask) != 0 ||
+	     (b0 & capmask) != 0 ||
+	     (size & capmask) != 0 ||
 	     d0 > 7 ||
-	     (start + c0) > 0x7ffffe000000ULL ||
+	     ((start + size) < start) ||        /* CARRY8(start, size) overflow */
+	     ((b0 + size) < b0) ||              /* CARRY8(b0, size) overflow */
+	     0x7ffffe000000ULL < (size + start) ||
 	     b0 < *(uint64_t *)(vm + 0x28) ||
-	     *(uint64_t *)(vm + 0x30) < (c0 + b0))) {
+	     *(uint64_t *)(vm + 0x30) < (size + b0))) {
 		/* Range rejected: tear down caller's per-cpu vcpu if present. */
-		if (ret != (char *)0xffffffffffffffff) {
+		if (ret != (char *)0xffffffffffffffffULL) {
 			if (ret == NULL) {
 				if (*(long *)(tpidr_el1 + 0x4d8) != 0)
 					return 0xfae94003;
-				os_release(0); /* est. release owner ref (arg unknown) */
+				os_release(0);              /* FUN_fffffe000b8afa78, arg wzr */
 				return 0xfae94003;
 			}
 			if (*ret != '-')
-				kernel_panic_msg(ret, 0, 0x2d); /* est. panic on bad ref */
+				kernel_panic_msg(ret, 0, 0x2d); /* FUN_fffffe000c0e1c3c, no-return */
 		}
-		zfree_waitq(ret);
+		zfree_waitq(ret);                   /* FUN_fffffe000b793cf4 */
 		return 0xfae94003;
 	}
 	if (mode == 0 && op == 0) {
-		offset = 0; addr_limit = 0;
-		addr_limit = tpidr_el1;
-		v = (uint64_t)per_cpu_base(addr_limit);
-		v = (v != 0) ? *(long *)(v + 0x28) : 0;
-		r = kernel_mem_validate(vm, &offset, c0, 0, 0x80001100001ULL,
-		                          v, start, 0, (void *)((long)&addr_limit + 4),
-		                          &addr_limit, 2);          /* est. vm_map */
+		off = b0;                           /* uStack_80 = uStack_68 */
+		sync = 0;                           /* local_88 = 0 */
+		per_cpu_val = (uint64_t)per_cpu_base(tpidr_el1);   /* FUN_fffffe000b866ec4 */
+		per_cpu_val = (per_cpu_val != 0) ? *(long *)(per_cpu_val + 0x28) : 0;
+		r = kernel_mem_validate(vm, &off, size, 0, 0x80001100001ULL,
+		                        per_cpu_val, start, 0, (int *)((long)&sync + 4),
+		                        (int *)&sync, 2);  /* FUN_fffffe000b8b51c8 */
 		if (r == 0) {
-			if (c0 != 0) {
-				r = kernel_copyout((uint64_t)vm, b0, c0 + b0, 1, 7);  /* est. adjust */
-				prot = c0;
+			if (size == 0) {
+				size_arg = 0;
+			} else {
+				r = kernel_copyout((uint64_t)vm, b0, size + b0, 1, 7); /* FUN_fffffe000b8b49e8 */
+				size_arg = size;
 				if (r != 0) {
-					kernel_mem_release((uint64_t)vm, b0, c0);   /* est. unmap on failure */
+					kernel_mem_release((uint64_t)vm, b0, size);   /* FUN_fffffe000b8a8078 */
 					goto fail;
 				}
 			}
@@ -544,12 +589,12 @@ hv_vm_map_core(void *args, int op, int mode)
 	}
 ok:
 	if (op == 0) {
-		if (c0 != 0) {
-			r = kernel_copyout((uint64_t)vm, b0, c0 + b0, 0, (uint32_t)d0 & 7);
+		if (size_arg != 0) {
+			r = kernel_copyout((uint64_t)vm, b0, size_arg + b0, 0, (uint32_t)d0 & 7); /* FUN_fffffe000b8b49e8 */
 			goto join;
 		}
 	} else {
-		r = kernel_mem_release((uint64_t)vm, b0, c0);
+		r = kernel_mem_release((uint64_t)vm, b0, size_arg);   /* FUN_fffffe000b8a8078 */
 join:
 		if (r != 0)
 			goto fail;

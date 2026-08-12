@@ -40,6 +40,7 @@ extern void *mutex_validate_panic(void *mutex); /* FUN_fffffe000c0e4c28: "Invali
 extern void kernel_dtrace_probe(long frame, uint64_t esr);   /* FUN_fffffe000c0d79b8: bti-only stub (disassembled) */
 extern void hv_el2_exception_dispatch(int *frame, uint64_t esr, uint64_t far, int panic_mode); /* FUN_fffffe000b9627e0: full ESR-class dispatch (decompiled; body in fill pass) */
 extern void zone_require_ro_panic(void) __attribute__((noreturn));  /* FUN_fffffe000c0eae44 (decompiled) */
+extern void kernel_zone_array_panic(void *zone) __attribute__((noreturn)); /* FUN_fffffe000c0ea524: "zone %p isn't in the zone_array" */
 extern void hw_error_report(void *, uint64_t, uint32_t, uint64_t); /* FUN_fffffe000b98f304 (stubbed) */
 extern void kernel_trace(uint32_t code, uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_fffffe000bd30528 */
 
@@ -181,7 +182,7 @@ extern uint64_t hv_region_refcount;                       /* DAT_fffffe0007d5407
 extern uint64_t hv_signal_timeout;                        /* hv_signal_timeout */
 extern uint64_t hv_signal_use_table;                      /* hv_signal_use_table */
 extern uint32_t *cpu_table_base;                          /* cpu_table_base */
-extern char *hv_halt_flag;                                /* hv_halt_flag */
+extern char *hv_halt_flag;                                /* DAT_fffffe0007d83758: EL0-exception halt flag */
 extern long cpu_cur_thread_frame;                         /* est. current thread frame */
 
 /* ------------------------------------------------------------------ *
@@ -237,7 +238,7 @@ hv_vm_pool_release(uint32_t *lock, long zone)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b8627ac @ 0xfffffe000b8627ac   (est. hv_cpu_broadcast)
+ * FUN_fffffe000b8627ac @ 0xfffffe000b8627ac   (hv_cpu_broadcast)
  * Ghidra: void FUN_fffffe000b8627ac(long *param_1,long param_2)
  * Broadcasts a per-CPU message: reads the list head and a 16-bit size
  * (uVar3) from *param_1 + 0x34, then, for each of DAT_fffffe0007d7ca20
@@ -245,8 +246,7 @@ hv_vm_pool_release(uint32_t *lock, long zone)
  * per-CPU slots (FUN_fffffe000b758d80 = copy). Finally invokes
  * FUN_fffffe000b85d440(list, param_1[1], param_2, size) — the actual
  * per-CPU notify.
- * Confidence: medium (copy-to-every-cpu-slot pattern; the target fn is
- *   kernel).
+ * Confidence: high (verified against fresh decompile; faithful).
  * Notes: DAT_fffffe0007d7ca20 = cpu count; stride 0x4000 = per-CPU block;
  *   'tco' is toggled around the copy (time-compare override).
  * ------------------------------------------------------------------ */
@@ -277,7 +277,7 @@ hv_cpu_broadcast(long *list, long data)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b8563f8 @ 0xfffffe000b8563f8   (est. hv_flush_lock_op)
+ * FUN_fffffe000b8563f8 @ 0xfffffe000b8563f8   (hv_flush_lock_op)
  * Ghidra: void FUN_fffffe000b8563f8(uint *param_1, ...)
  * Acquires the hypervisor flush lock (DAT_fffffe000c756760, the
  * hv_flush_lock global) with waitq registration. Validates the lock header
@@ -316,7 +316,7 @@ do_acquire:
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b954160 @ 0xfffffe000b954160   (est. hv_debug_reg_write)
+ * FUN_fffffe000b954160 @ 0xfffffe000b954160   (hv_debug_reg_write)
  * Ghidra: void FUN_fffffe000b954160(long param_1,undefined1 param_2)
  * Writes a hardware debug register for a vm/pmap (called by
  * hv_vm_set_trap_debug, op-table idx14). Validates the pmap is stage-2
@@ -349,17 +349,15 @@ hv_debug_reg_apply(long pmap, unsigned char reg, ...)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b7a1dd8 @ 0xfffffe000b7a1dd8   (est. hv_ipc_send)
+ * FUN_fffffe000b7a1dd8 @ 0xfffffe000b7a1dd8   (hv_percpu_notify)
  * Ghidra: undefined8 FUN_fffffe000b7a1dd8(long param_1,undefined8 param_2)
- * Sends an IPC message on a hypervisor port (est. mach_msg_send path used by
- * hv_vm_map_shared's per-cpu notify). Returns 0x10 (MACH_SEND_INVALID_DEST?)
- * when the port is NULL; otherwise sends via FUN_fffffe000b7968e8 and, on
- * success, receives/completes via FUN_fffffe000b7976a4. A send failure
- * panics via FUN_fffffe000c0e0b28.
- * Confidence: low (IPC shape inferred from port/send/receive triple; the
- *   exact message semantics are not visible here).
+ * Sends an IPC message on a hypervisor port: returns 0x10 when the port is
+ * NULL; otherwise sends via FUN_fffffe000b7968e8 (kernel_ipc_send) and, on
+ * success, receives/completes via FUN_fffffe000b7976a4 (kernel_ipc_complete);
+ * a send failure panics via FUN_fffffe000c0e0b28 (kernel_ipc_panic).
+ * Confidence: high (complete decompile).
  * Notes: FUN_fffffe000b7968e8 (send), FUN_fffffe000b7976a4 (recv/completion),
- *   FUN_fffffe000c0e0b28 (panic) — all kernel.
+ *   FUN_fffffe000c0e0b28 (panic) — all kernel, stubbed externs.
  * ------------------------------------------------------------------ */
 uint64_t
 hv_percpu_notify(long port, uint64_t msg)
@@ -380,19 +378,21 @@ hv_percpu_notify(long port, uint64_t msg)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b85e180 @ 0xfffffe000b85e180   (est. hv_percpu_queue_pop)
+ * FUN_fffffe000b85e180 @ 0xfffffe000b85e180   (hv_percpu_queue_pop)
  * Ghidra: undefined1 [16] FUN_fffffe000b85e180(long,long,ulong)
  * Pops an entry from a per-CPU queue while accounting: increments the
  * per-CPU nesting counter (tpidr_el1+0x1c0), walks the per-CPU block array
  * (param_1+0x40, stride 0x4000) for this cpu (index from tpidr_el1+0x1b0),
- * rotates the queue head (NEON_ext 8-byte rotate), accumulates the entry
+ * rotates the queue head (16-byte slot rotate by 8), accumulates the entry
  * size into param_2's counter, pops the queue tail, decrements nesting and
- * fires a TLB flush (FUN_fffffe000b96c6d4) when nesting returns to 0.
- * Returns a 16-byte struct {entry, size, 0}.
- * Confidence: low (queue/accounting shape; the 16-byte return and NEON_ext
- *   rotation are Ghidra artifacts of a 128-bit queue slot).
- * Notes: NEON_ext = 64-bit rotate of a 16-byte slot; TLB flush
- *   FUN_fffffe000b96c6d4; fallback FUN_fffffe000b85e858.
+ * fires a TLB flush (FUN_fffffe000b96c6d4) when nesting returns to 0, then
+ * validates the zone bound (panic c0ea524 when out of the zone_array).
+ * Returns the popped entry (the 16-byte struct {entry, size, 0} is a Ghidra
+ * 128-bit-return artifact; this C keeps the low word).
+ * Confidence: high (complete decompile).
+ * Notes: fallback FUN_fffffe000b85e858 (kernel_queue_fallback); alloc
+ *   FUN_fffffe000b85e2e8 (kernel_queue_alloc); the NEON_ext 8,1 rotate of
+ *   the 16-byte slot is rendered as the equivalent half-swap.
  * ------------------------------------------------------------------ */
 uint64_t
 hv_percpu_queue_pop(long cpu, long buf, uint64_t flags)
@@ -436,11 +436,13 @@ hv_percpu_queue_pop(long cpu, long buf, uint64_t flags)
 		entry = *slot;
 		*slot = 0;
 		if (*(int *)(base + 0x1c0) == 0)
-			kernel_panic_b();                 /* FUN_fffffe000c0f1874 */
+			kernel_panic();                   /* FUN_fffffe000c0f1874 */
 		i = *(int *)(base + 0x1c0) - 1;
 		*(int *)(base + 0x1c0) = i;
 		if ((i == 0) && ((*(uint8_t *)(*(long *)(base + 0x1b8) + 0x4c) >> 2 & 1) != 0))
 			kernel_tlb_flush();               /* FUN_fffffe000b96c6d4 */
+		if ((uint64_t)((uint64_t)cpu + 0x1fff39f7480ULL) >> 7 > 0x40a)
+			kernel_zone_array_panic((void *)cpu); /* FUN_fffffe000c0ea524 */
 		out[0] = entry;
 		out[1] = size;
 		return out[0];
@@ -450,7 +452,7 @@ fallback:
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b9882ac @ 0xfffffe000b9882ac   (est. hv_el2_amx_swap)
+ * FUN_fffffe000b9882ac @ 0xfffffe000b9882ac   (hv_el2_amx_swap)
  * Ghidra: void FUN_fffffe000b9882ac(long param_1)
  * Swaps the AMX/SVE streaming state at EL2 for a vcpu. When the vcpu's
  * EL2-state dirty flag (el2+0x411f bit 1) and the vcpu pending flag
@@ -460,8 +462,7 @@ fallback:
  * (S3_4_15_1_4), locks it (set bit 63), calls __amx_disable()/__amx_enable()
  * based on SVCR, unlocks and ISB; or (b) if streaming SVE IS active, reads
  * SVCR and clears it (S3_4_15_1_3 = 0) with ISB.
- * Confidence: medium (register encodings op1=4 => EL2; S3_4_15_1_3/4 are
- *   Apple AMX/SVCR control; the lock-bit dance is characteristic).
+ * Confidence: high (verified against fresh decompile; faithful).
  * Notes: __amx_disable/__amx_enable are AMX intrinsics (est.);
  *   UnkSytemRegRead/Write(3,4,0xf,1,3) = SVCR_EL2,
  *   (3,4,0xf,1,4) = S3_4_15_1_4 (AMX state control).
@@ -511,7 +512,7 @@ hv_el2_state_activate(long vcpu)
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b987c44 @ 0xfffffe000b987c44   (est. hv_vm_regions_teardown)
+ * FUN_fffffe000b987c44 @ 0xfffffe000b987c44   (hv_vm_regions_teardown)
  * Ghidra: void FUN_fffffe000b987c44(long *param_1)
  * Tears down every mapped region of a VM owner: binds the current cpu into
  * the owner (+8), takes the owner lock, walks the region RB-tree rooted at
@@ -786,23 +787,25 @@ out:
 }
 
 /* ------------------------------------------------------------------ *
- * FUN_fffffe000b75deac @ 0xfffffe000b75deac   (est. el1_sync_handler)
+ * FUN_fffffe000b75deac @ 0xfffffe000b75deac   (el1_sync_handler)
  * Ghidra: void FUN_fffffe000b75deac(long param_1,undefined8,undefined8)
  * EL1 synchronous exception handler (VBAR_EL1 = b75c000, vector +0x600).
  * This is where the guest-exit path erets: on an exception from EL0 it
- * spins in WFE if a flag (hv_halt_flag) is set; from EL1 it asks
- * hv_el2_guest_exc_check (decompiled, hv_el2.c) whether the exception is
- * guest-visible, runs the dtrace probe (FUN_fffffe000c0d79b8) when so,
- * stores ELR/FAR into the frame (+0x108/+0x118), dispatches via
- * FUN_fffffe000b9627e0, and returns through hv_el2_exception_exit.
- * Confidence: medium (frame offsets + dispatch are structural).
+ * spins in WFE if a flag (DAT_fffffe0007d83758, hv_halt_flag) is set;
+ * from EL1 it asks hv_el2_guest_exc_check (decompiled, hv_el2.c) whether
+ * the exception is guest-visible, runs the dtrace probe
+ * (FUN_fffffe000c0d79b8, kernel_dtrace_probe) when so, stores ELR/FAR
+ * into the frame (+0x108/+0x118), dispatches via FUN_fffffe000b9627e0
+ * (hv_el2_exception_dispatch), and returns through hv_el2_exception_exit.
+ * Confidence: high (complete decompile; frame offsets + dispatch match
+ *   verbatim; the guest flag is zeroed for the EL0 path per uVar4 = 0).
  * ------------------------------------------------------------------ */
 void
 el1_sync_handler(long frame, uint64_t esr, uint64_t far)
 {
 	uint64_t elr;
 	uint64_t spsr;
-	long     is_guest;
+	long     is_guest = 0;        /* uVar4: zero for the non-guest path */
 
 	elr = elr_el1;
 	spsr = spsr_el1;

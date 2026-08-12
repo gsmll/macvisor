@@ -96,7 +96,7 @@ hv_nesting_save(hv_vcpu_t *vcpu)
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b989040 @ 0xfffffe000b989040   (est. hv_vcpu_create)
+/* FUN_fffffe000b989040 @ 0xfffffe000b989040   (hv_vcpu_create)
  * Ghidra: ulong hv_vcpu_create(undefined8 param_1)
  * Copies a 16-byte guest request in, validates the vcpu id (< 64), requires
  * that no vcpu is already bound to this CPU, retains the current container
@@ -104,12 +104,18 @@ hv_nesting_save(hv_vcpu_t *vcpu)
  * vcpu id into the container's per-slot table, and binds the vcpu into the
  * per-CPU slot (tpidr_el1 + 0x4d8).  On any failure it unwinds through the
  * error paths (destroy/release) and returns an 0xfae940xx error.
- * Confidence: medium
+ * Confidence: high
  * Notes: copyin copyin(.., 0x10); copyout copyout;
  *   container slot table stride 0x80, valid slot at +0x80, busy flag +0x90,
  *   state word +0x94; object refcount at plVar12[1]; quota flag
  *   DAT_fffffe000c5b83b0; per-cpu id cached in DAT_fffffe000c62c0c0; lock
- *   lck_mtx_lock/1e4c/1e80; panic kernel_panic_a/c0f8674. */
+ *   lck_mtx_lock/1e4c/1e80; panic kernel_panic_a/c0f8674.  Verified against a
+ *   fresh decompile 2026-08-12: body matches the decompile's control flow
+ *   (copyin -> id check -> slot-bind check -> container retain -> alloc_init
+ *   -> field fill -> el2_state_build -> copyout -> slot busy/install -> ref
+ *   drop -> generation bump -> slot bind).  Lock stubs drop the decompiler's
+ *   cached-cpu-id arg (FUN_b7f0afc/FUN_b7f1e80) and the DAT_fffffe000c62c0c0
+ *   cache-clear (CONCAT44) — decompiler artifact, not recreated. */
 uint64_t hv_vcpu_create(void *user_state)
 {
     uint64_t guest[2];                 /* local_58/local_50 : 16-byte request */
@@ -233,18 +239,22 @@ out_release:
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b989390 @ 0xfffffe000b989390   (est. hv_vcpu_alloc_init)
+/* FUN_fffffe000b989390 @ 0xfffffe000b989390   (hv_vcpu_alloc_init)
  * Ghidra: undefined8 hv_vcpu_alloc_init(long *param_1,undefined8 param_2,int param_3)
  * Allocates the 0x100-byte vcpu object and a 0x8000-byte guest-memory
  * mapping (via the zone allocator kernel_alloc and the map-enter
  * kernel_mem_validate against the VM at param_2), then links them and
  * returns the vcpu through param_1.  On failure it unwinds the partial
  * allocations and returns an 0xfae940xx error.
- * Confidence: medium
+ * Confidence: high
  * Notes: alloc calls kernel_alloc(0,0x100,0,0x80,0x1c,0) and
  *   (0,0x8000,0,0x10080,0x1c,zone); two map-enters kernel_mem_validate with
  *   flags 0x1c100008 (0x8000) and 0x1c104001 (0x4000); unwind kernel_mem_release
- *   (dealloc), kernel_lock_ref (lock), kernel_memzero (free). */
+ *   (dealloc), kernel_lock_ref (lock), kernel_memzero (free).  Verified
+ *   2026-08-12 against a fresh decompile: on the FIRST map-enter failure the
+ *   decompile keeps uVar3 = 0xfae94005 (initial) and does NOT dealloc the
+ *   guest — only kfree's it; only the SECOND map-enter failure deallocs the
+ *   (first, 0x8000) mapping and returns 0xfae94001.  Body corrected to match. */
 int hv_vcpu_alloc_init(hv_vcpu_t **out, uint64_t vm, int flag)
 {
     uint64_t vcpu = 0, guest = 0, map = 0;
@@ -261,14 +271,12 @@ int hv_vcpu_alloc_init(hv_vcpu_t **out, uint64_t vm, int flag)
     if (kalloc_zalloc(&guest, 0x8000) != 0)         /* FUN_fffffe000b8a6c14 */
         goto fail_vcpu;
 
-    /* map the guest region into the VM at param_2 */
-    if (vm_map_enter(vm, &map, 0x8000, 0, 0x1c100008) != 0) {  /* FUN_fffffe000b8b51c8 */
-        dealloc((void *)guest, 0x8000);                 /* FUN_fffffe000b8a8078 */
-        rc = 0xfae94001;
+    /* map the guest region into the VM at param_2.
+     * Map-1 (0x8000) failure: rc stays 0xfae94005, no dealloc (decompile). */
+    if (vm_map_enter(vm, &map, 0x8000, 0, 0x1c100008) != 0)  /* FUN_fffffe000b8b51c8 */
         goto fail_guest;
-    }
     if (vm_map_enter(vm, &map, 0x4000, 0, 0x1c104001) != 0) {  /* FUN_fffffe000b8b51c8 */
-        dealloc((void *)guest, 0x8000);
+        dealloc((void *)guest, 0x8000);                 /* unmap the 0x8000 mapping */
         rc = 0xfae94001;
         goto fail_guest;
     }
@@ -288,18 +296,25 @@ fail_vcpu:
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b988e70 @ 0xfffffe000b988e70   (est. hv_vcpu_destroy)
+/* FUN_fffffe000b988e70 @ 0xfffffe000b988e70   (hv_vcpu_destroy)
  * Ghidra: void hv_vcpu_destroy(long *param_1)
  * Frees a vcpu's EL2 state allocations (two 0x4000 regions at param_1+0x18
  * and param_1+0x1a, the 0x8000 guest region at param_1[2], the el2_state
  * region at param_1[0x16], and finally the 0x800-byte vcpu object itself).
  * Clears the corresponding bits in the EL2 dirty/flags word at
  * param_1[0x16]+0x4118 and uses the per-CPU nesting counter tpidr_el1+0x1c0.
- * Confidence: medium
+ * Confidence: high
  * Notes: frees via kernel_mem_release (dealloc) + kernel_memzero
  *   (free) + kernel_lock_ref (lock); flags clear masks 0xffbfffffffffffff
  *   (bit 42) and 0xffffffffffffffef (bit 4); nesting callback
- *   kernel_tlb_flush; panic kernel_panic. */
+ *   kernel_tlb_flush; panic kernel_panic.  Verified 2026-08-12 against a
+ *   fresh decompile: the body previously wrote *(es+0x4150)=0 twice (the
+ *   decompile captures the old value once, then clears once) and called only
+ *   hv_nesting_exit (the --) — the decompile explicitly does nesting++
+ *   (enter) before the bitset-clear and panics if the counter hits 0, then
+ *   the exit --.  The enter + panic check are now modelled; the captured old
+ *   word is consumed only by the stubbed flush/dealloc args and so is not
+ *   held in a variable here. */
 void hv_vcpu_destroy(hv_vcpu_t *vcpu)
 {
     long *p = (long *)vcpu;
@@ -309,10 +324,13 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
     el2 = p[0x18];                                  /* +0xc0 el2 allocation 1 */
     if (el2 != 0) {
         uint64_t es = p[0x16];                      /* el2_state base */
-        /* clear the EL2-dirty bit and release the region */
-        *(uint64_t *)(es + 0x4150) = 0;
+        /* enter the EL2-save nesting region, then clear the dirty bits */
+        *(int *)(cpu + 0x1c0) = *(int *)(cpu + 0x1c0) + 1;   /* nesting++ */
+        p[0x18] = 0;
         *(uint64_t *)(es + 0x4150) = 0;
         *(uint64_t *)(es + 0x4118) &= 0xffbfffffffffffffULL;  /* clear bit 42 */
+        if (*(int *)(cpu + 0x1c0) == 0)
+            kernel_panic();                         /* FUN_fffffe000c0f1874 */
         hv_nesting_exit(cpu);                       /* tpidr_el1+0x1c0 --1 (+TLB flush) */
         dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
         kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
@@ -321,8 +339,12 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
     el2 = p[0x1a];                                  /* +0xd0 el2 allocation 2 */
     if (el2 != 0) {
         uint64_t es = p[0x16];
+        *(int *)(cpu + 0x1c0) = *(int *)(cpu + 0x1c0) + 1;   /* nesting++ */
+        p[0x1a] = 0;
         *(uint64_t *)(es + 0x4148) = 0;
         *(uint64_t *)(es + 0x4118) &= 0xffffffffffffffefULL;  /* clear bit 4 */
+        if (*(int *)(cpu + 0x1c0) == 0)
+            kernel_panic();                         /* FUN_fffffe000c0f1874 */
         hv_nesting_exit(cpu);
         dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
         kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
@@ -334,61 +356,71 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b98533c @ 0xfffffe000b98533c   (est. hv_vcpu_object_release)
+/* FUN_fffffe000b98533c @ 0xfffffe000b98533c   (hv_vcpu_object_release)
  * Ghidra: void hv_vcpu_object_release(undefined8 *param_1)
  * Final release of a vcpu/VM object: updates per-type quota counters
  * (DAT_fffffe000c5b83b0), then walks the 8 per-slot registration arrays
- * (param_1[0x429..0x430], each 0x40 entries of 16 bytes) freeing the guest
- * pages and clearing each entry, frees the object's auxiliary allocations
- * and its header, and unlinks it from the two global lists
- * (DAT_fffffe0007d52478 / DAT_fffffe0007d53e78).
- * Confidence: medium
+ * (param_1[0x429..0x430], each 0x40 entries of stride 0x40 bytes: flag at
+ * +0x8, ptr0 at +0x10, ptr1 at +0x18) freeing the guest pages, frees the
+ * object's auxiliary allocations and its header, and unlinks it from the two
+ * global lists (DAT_fffffe0007d52478 / DAT_fffffe0007d53e78).
+ * Confidence: high
  * Notes: hv_vm_owner_teardown (resource teardown); page ops
  *   kernel_copyin2/8a8078/8b6860; list remove refcount_dec;
  *   os_release(param_1[0x424]), hv_vm_pool_release(*param_1); quota
- *   DAT_fffffe000c5b83b0 indexed by object type (1/2/3). */
+ *   DAT_fffffe000c5b83b0 indexed by object type (1/2/3).  Verified
+ *   2026-08-12 against a fresh decompile — corrected three divergences:
+ *   (1) entry stride is 0x40 (plVar6 += 8), not 0x10, and the flag lives at
+ *   +0x8 with ptr0/ptr1 at +0x10/+0x18; (2) the array base is the VALUE of
+ *   param_1[0x429+i], not the field's address; (3) the type==3 quota update
+ *   indexes counter [0] (lVar9=0), not [2].  When ptr1 != 0 the decompile
+ *   frees ptr0 (0x8000) then frees ptr1 with a size derived from
+ *   param_1[0x433]+0x20/+0x28; when ptr1 == 0 it frees ptr0 with 0x8000.
+ *   Only ptr0/ptr1 are cleared (the flag at +0x8 is left set). */
 void hv_vcpu_object_release(uint64_t *obj)
 {
     int type, i, j;
-    uint64_t *arr;
 
     /* update the quota counters keyed by object type (param_1[0x425]) */
     if (*(uint32_t *)(obj + 0x425) > 1) {
-        type = (*(int *)(obj + 0x425) == 2) ? 1 : 2;
-        if (*(int *)(obj + 0x425) == 3)
-            type = 2;
-        hv_quota_derived[type] += 1;    /* DAT_fffffe000c5b83b0 (estimate of counter table) */
+        int l10 = (*(int *)(obj + 0x425) == 2) ? 1 : 2;
+        type = (*(int *)(obj + 0x425) == 3) ? 0 : l10;
+        hv_quota_derived[type] += 1;    /* DAT_fffffe000c5b83b0 */
     }
 
     /* resource teardown */
     hv_vm_owner_teardown(obj);
 
-    /* free the 8 per-slot registration arrays */
+    /* free the 8 per-slot registration arrays (stride 0x40 per entry) */
     for (i = 0; i < 8; i++) {
-        uint64_t *entries = (uint64_t *)(obj + 0x429 + i);   /* base ptr field */
-        uint64_t base = (uint64_t)entries;
-        if (!base)
-            continue;
-        /* each entry is a {flag, ptr0, ptr1} triplet, stride 16 bytes */
+        uint64_t base = obj[0x429 + i];               /* array base (value) */
+        uint64_t *pl6 = (uint64_t *)(base + 0x10);    /* first entry's ptr0 slot */
         for (j = 0; j < 0x40; j++) {
-            uint64_t *ent = (uint64_t *)(base + j * 0x10);
-            if ((int)ent[0] == 0)
-                continue;
-            if (ent[2] == 0) {
-                kernel_copyin2(0, ent[1], 0x8000 + ent[1], 0,
+            if ((int)*(uint64_t *)(pl6 - 1) != 0) {   /* flag word at +0x8 */
+                uint64_t v, size;
+                uint64_t *free_ptr;
+                if (pl6[1] == 0) {                    /* ptr1 (+0x18) == 0 */
+                    size = 0x8000;
+                    free_ptr = pl6;                   /* ptr0 (+0x10) */
+                } else {
+                    free_ptr = &pl6[1];               /* ptr1 */
+                    kfree((void *)pl6[0], 0x8000);    /* free ptr0 */
+                    size = (uint32_t)(*(uint32_t *)(obj[0x433] + 0x28) +
+                                      *(uint32_t *)(obj[0x433] + 0x20));
+                }
+                v = *free_ptr;
+                kernel_copyin2(0, v, size + v, 0,
                                (uint64_t *)&hv_vm_unwire_fault_table); /* FUN_fffffe000b8b122c */
-                kernel_mem_release(0, ent[1], 0x8000);                 /* FUN_fffffe000b8a8078 */
-            } else {
-                kfree((void *)ent[1], 0x8000);
-                dealloc((void *)ent[1], 0x8000);
+                kernel_mem_release(0, v, size);       /* FUN_fffffe000b8a8078 */
+                pl6[0] = 0;                           /* clear ptr0 */
+                pl6[1] = 0;                           /* clear ptr1 (flag kept) */
             }
-            ent[0] = 0;
-            ent[1] = 0;
-            ent[2] = 0;
+            pl6 += 8;                                 /* next entry (0x40 bytes) */
         }
-        refcount_dec(&hv_slot_list, (void *)obj[i + 0x429]);  /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
-        kfree((void *)obj[i + 0x429], 0);                   /* FUN_fffffe000b862b6c (est.) */
-        obj[i + 0x429] = 0;
+        uint64_t *slot = (uint64_t *)obj[0x429 + i];
+        obj[0x429 + i] = 0;
+        refcount_dec(&hv_slot_list, slot);            /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
+        kfree(slot, 0);
     }
 
     /* free the auxiliary allocations and the object header */
@@ -718,9 +750,12 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
     *(uint8_t *)((char *)vcpu + 0xb8) = (uint8_t)((v >> 0x3e) & 1);
 
     if ((sel >> 0x36 & 1) != 0) {
-        /* AMX/SVE lazy-restore: if the guest wants AMX and it's not enabled,
-         * enable it, run the (SME) state save, then disable again. */
-        uint64_t x = *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xc0) + 0x1400);
+        /* AMX/SVE lazy-restore: read the guest's SME/AMX control register
+         * (3,4,0xf,1,3) into vcpu->c0+0x1400; if non-zero (guest wants AMX),
+         * enable the SVE/AMX bit (3,4,0xf,1,4), run the state-save callback
+         * kernel_cpu_data_init, then clear the enable bit again. */
+        uint64_t x = UnkSytemRegRead(3,4,0xf,1,3);
+        *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xc0) + 0x1400) = x;
         if (x != 0) {
             uint64_t en = UnkSytemRegRead(3,4,0xf,1,4);
             if ((int64_t)en < 0) {   /* already enabled */
@@ -864,8 +899,7 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
         *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0xa28) = UnkSytemRegRead(3,4,0xf,0xe,6);
 
     /* mark the captured groups as clean in the dirty bitset */
-    *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4108) |=
-        *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4108) | sel;
+    *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4108) |= sel;
 }
 
 /* ------------------------------------------------------------------ */

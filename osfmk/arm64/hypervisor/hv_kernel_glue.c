@@ -129,7 +129,7 @@ extern void container_notify_free(void);        /* container notify/free */
 
 /*
  * Waitq-zone object validation — registers a waitq's embedded lock.
- *   waitq_validate @ 0xfffffe000b78fb24   (est. waitq_validate)
+ *   waitq_validate @ 0xfffffe000b78fb24   (waitq_validate)
  * Ghidra: void waitq_validate(ulong param_1)
  * Verifies that `param_1` points at a live waitq-zone object: the zone-header
  * element at (param_1 >> 10) must carry magic 0x15 and the (tagged) address
@@ -140,7 +140,7 @@ extern void container_notify_free(void);        /* container notify/free */
  * Direct callee of hv code: hv_ikot_hypervisor_handler (hv_ikot_hypervisor_handler)
  * calls it on container teardown; ~130 kernel callers total, but the body is
  * tiny and self-contained, so it is recreated here for audit.
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; faithful).
  * Notes: Ghidra decompiles the zone-range test as the never-true conjunction
  *   `(x < 0xffffffffffffff70) && (x == 0xffffffffffffff70)` — a decompiler
  *   artifact of the tagged-address range check; kept faithfully below. Its
@@ -164,7 +164,7 @@ waitq_validate(uint64_t waitq)
 
 /*
  * XNU container/object-registry lookup by handle + type.
- *   hv_object_lookup @ 0xfffffe000b7e0d8c   (est. hv_object_lookup)
+ *   hv_object_lookup @ 0xfffffe000b7e0d8c   (hv_object_lookup)
  * Ghidra: ulong hv_object_lookup(ulong *param_1,ulong param_2,ulong param_3)
  * Resolves an object inside a container registry: `param_1` = container state
  * (a per-container context), `param_2` = handle, `param_3` = object type.
@@ -183,7 +183,7 @@ waitq_validate(uint64_t waitq)
  * The hypervisor calls it directly (hv_ikot_hypervisor_handler uses type 0x2d) to
  * resolve its registered kobjects, so per the FULL-AUDIT rule it is recreated
  * here. Its own callees (b7914c8, c0e1cf4, c0e1cbc, b7f7538) remain stubbed.
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; faithful).
  * Notes: DAT_fffffe0007d78658 = container type table (stride 0x28). The
  *   SoftwareBreakpoint(0xbffc) calls are XNU assert/panic brk points with the
  *   assert address encoded in the operand. Kernel code recreated for audit;

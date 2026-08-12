@@ -58,7 +58,7 @@
   "address": "fffffe000b989a44",
   "ghidra_name": "FUN_fffffe000b989a44",
   "estimated_name": "hv_vcpu_run",
-  "confidence": "medium",
+  "confidence": "high",
   "category": "core",
   "tree": "vcpu-core",
   "file": "osfmk/arm64/hypervisor/hv_vcpu.c",

@@ -169,18 +169,21 @@ static void hv_el2_guest_restore_eret(uint8_t *state)
 }
 
 /*
- * hv_el2_guest_exc_check @ 0xfffffe000b9679c8   (est. hv_el2_guest_exc_check)
+ * hv_el2_guest_exc_check @ 0xfffffe000b9679c8   (hv_el2_guest_exc_check)
  * Ghidra: bool hv_el2_guest_exc_check(ulong param_1,long param_2,ulong param_3,ulong param_4)
  * Pre-dispatch check for a guest synchronous exception. param_1 = ESR,
- * param_2 = ELR, param_3 = FAR, param_4 = SPSR. Walks the dtrace valid-
- * address table (DAT_fffffe0007045690) to decide whether the faulting PC is
- * dtrace-managed (returns true so the caller takes the dtrace path), handles
- * the SVC-ISS 0x11 case, and otherwise returns whether the exception is
- * guest-visible ((SPSR & 0x1c0) != 0 && DAT_fffffe0007e9d348 == -1). Kernel
- * dtrace table referenced; reconstructed as structural notes (low confidence
- * on the dtrace-address semantics). Shared kernel, stub body.
- * Confidence: low
- */
+ * param_2 = ELR, param_3 = FAR, param_4 = SPSR. For EC < 0x3d: the
+ * 0x1000000610002000 class mask returns true (always guest-visible), EC 0
+ * returns false, EC 0x25 walks the dtrace valid-address table
+ * (DAT_fffffe0007045690, 4 qwords/entry, {lo,hi} ranges, terminated by the
+ * "dtrace: %s has an invalid address" string address 0xfffffe00070459d0)
+ * testing the decoded PC (elr + 0x1fff8fba970); inside a range the SVC-ISS
+ * 0x11 case is guest-visible only when the FAR tag and table flags agree.
+ * Otherwise (EC >= 0x3d or table exhausted) returns
+ * (spsr & 0x1c0) != 0 && DAT_fffffe0007e9d348 == -1.
+ * Confidence: high (complete decompile; the dtrace table semantics are the
+ *   walk structure as decompiled — the string boundary doubles as the
+ *   table-end sentinel). Kernel dtrace table referenced, not recreated. */
 bool hv_el2_guest_exc_check(uint64_t esr, uint64_t elr, uint64_t far,
                             uint64_t spsr)
 {

@@ -914,3 +914,37 @@ hypothesis, never a claim, and carries Ghidra evidence.
   (puVar10 != 0)`.
 - **Severity (hypothesis)**: informational.
 - **Confidence**: high.
+
+## [vcpu-classifier] fffffe000b989a44 hub — full ESR-classifier hypercall surface transcribed
+
+- **Observation**: The entire SVC/HVC hypercall dispatch in the run hub was
+  transcribed from disassembly this session: HVC64 0xc3000003/4/5/6, HVC32
+  0xc1000000-0xf, SVC 0xc6000010-0x1a. Attack surface: opcode-count gate
+  (vm+0x2128, count must be 2-4 for HVC32, 3-4 for SVC64), per-op enable
+  gates (vm+0x2190/0x2191), and the per-hypercall enable mask vm+0x2130.
+  Errors surface to the guest as 0xfffffffffae9400X.
+- **Evidence**: instruction-level traces with resolved DATs (e.g. HVC64
+  0x4/6 hashes the guest-chosen slot pointer into the kernel waitq hash
+  table DAT_fffffe0007d7c8e0; SVC 0x1a SIMD-select returns the error vector
+  {0xfffffffffae9400f,0} from rodata DAT_fffffe000700f400; SVC 0x10/0x11/0x19
+  slot-record machinery uses 0x2bad/0xc8a2-tagged slot pointers).
+- **Severity (hypothesis)**: the waitq-hash flush (HVC64 0x4/6) feeds a
+  guest-selected value through a 64-bit hash into a kernel bucket; the slot
+  tables (vm+0x2148, vm+0x2188) are validated (idx <= 7/0x3f, owner cpu
+  check, busy CAS) before use. No unchecked guest index found in the traced
+  leaves.
+- **Confidence**: high (disassembly-verified).
+
+## [vcpu-classifier] fffffe000b989a44 hub — PAC-tagged pointer arithmetic (0x2bad/0xc8a2)
+
+- **Observation**: The slot-table and sub-slot indexing use the Ghidra
+  sign-extension csel idiom: `add` (signed) vs `add` (unsigned) compared,
+  with the mismatch case OR-ing 0x2bad000000000000 (or 0xc8a2000000000000)
+  into the pointer. This is the kernel's address-tagging for pointer
+  validation, not a real PAC operation (autda/autib are used separately for
+  the JOP hashes and the per-cpu map at b98d0f8).
+- **Evidence**: repeated `cmp x10,w10,SXTW; add x11,...; add x16,...; movk
+  x16,#0x2bad,LSL#48; csel` sequences at b98cd88, b98d07c, b98d308, b98d3fc.
+- **Severity (hypothesis)**: informational (a faithful transcription note;
+  the tagged pointers are dereferenced as ordinary addresses).
+- **Confidence**: high.
