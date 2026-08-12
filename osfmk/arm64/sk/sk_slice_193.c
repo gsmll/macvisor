@@ -539,7 +539,7 @@ extern word_t sw_463534(word_t, ...);  /* FUN_00463534 */
 extern word_t sw_463540(word_t, ...);  /* FUN_00463540 */
 extern word_t sw_463590(word_t, ...);  /* FUN_00463590 */
 extern word_t sw_4635c8(word_t, ...);  /* FUN_004635c8 */
-extern word_t sw_4635d4(word_t, ...);  /* FUN_004635d4 */
+extern sw128_t sw_4635d4(word_t, ...);  /* FUN_004635d4 (16-byte pair) */
 extern word_t sw_4635e0(word_t, ...);  /* FUN_004635e0 */
 extern word_t sw_46361c(word_t, ...);  /* FUN_0046361c */
 extern word_t sw_463648(word_t, ...);  /* FUN_00463648 */

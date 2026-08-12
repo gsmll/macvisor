@@ -1630,6 +1630,7 @@ void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
                           unsigned long p4)
 {
     char *self = cl4_ctx;
+    long x21;                 /* unaff_x21: caller-set success flag (callee-saved input) */
     *(unsigned long *)(self + 0x90) = 0;
     cl4_field_reset((unsigned long *)(self + 0x98), 0);
     *(void **)(self + 0xa8) = (void *)cl4_fatal_ep_8a;  *(unsigned long *)(self + 0xb0) = 0;
@@ -1654,7 +1655,7 @@ void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
     unsigned long eh = cl4_handle_fetch(0);
     cl4_zone_alloc(eh, 0x52, 7);
     long ep = cl4_endpoint_new(0xd, (unsigned long *)frame248);
-    if (/* success */ 0) {          /* unaff_x21 == 0 (register success) */
+    if (x21 == 0) {          /* unaff_x21 == 0 (success path) */
         *(long *)(self + 0x80) = ep;
         unsigned long ep48 = *(unsigned long *)(ep + 0x48);
         cl4_slot_store((unsigned long *)p4, (unsigned long)frame248);
@@ -1679,19 +1680,19 @@ void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
         b2 = cl4_binding_describe(0x93a20, cl4_op_call1, 0x65fd88, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b3 = cl4_binding_describe(0x93a28, cl4_op_call0, 0x65fdb0, fetch);
+        b3 = cl4_binding_describe(0x93a28, cl4_op_call1, 0x65fdb0, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b4 = cl4_binding_describe(0x93a30, cl4_ep_send, 0x65fdd8, fetch);
+        b4 = cl4_binding_describe(0x93a30, cl4_op_call0, 0x65fdd8, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b5 = cl4_binding_describe(0x93a38, cl4_ep_send2, 0x65fe00, fetch);
+        b5 = cl4_binding_describe(0x93a38, cl4_ep_send, 0x65fe00, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b6 = cl4_binding_describe(0x93a40, cl4_ep_send3, 0x65fe28, fetch);
+        b6 = cl4_binding_describe(0x93a40, cl4_ep_send2, 0x65fe28, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b7 = cl4_binding_describe(0x93a48, cl4_ep_handler_92774, 0x65fe50, fetch);
+        b7 = cl4_binding_describe(0x93a48, cl4_ep_send3, 0x65fe50, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b8 = cl4_binding_describe(0x93a50, cl4_ep_handler_928c4, 0x65fe78, fetch);
+        b8 = cl4_binding_describe(0x93a50, cl4_ep_handler_92774, 0x65fe78, fetch);
         fetch = cl4_cap_ref_fetch(); cl4_cap_ref_advance();
-        b9 = cl4_binding_describe(0x93a58, cl4_ep_send4, 0x65fea0, fetch);
+        b9 = cl4_binding_describe(0x93a58, cl4_ep_handler_928c4, 0x65fea0, fetch);
 
         cl4_buf_acquire(op3);
         cl4_buf_acquire(b2); cl4_buf_acquire(b3); cl4_buf_acquire(b4);

@@ -4252,7 +4252,7 @@ void skp3_FUN_002187e0( void){
 /* skp3_FUN_00218ae4 @ 0x00218ae4   (est. swift_dispatch8)
  * Ghidra: void skp3_FUN_00218ae4( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 void skp3_FUN_00218ae4( void){
   int v13;

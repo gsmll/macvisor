@@ -33511,7 +33511,8 @@ uint64_t sk_ipc_call_guard(sk_code_t arg1,unsigned long arg2,uint8_t *arg3,uint6
 void sk_msg_release(long arg1);
 uint64_t thunk_FUN_00061638_impl(long arg1);
 uint64_t sk_cpu_array(unsigned long arg1);
-uint64_t sk_lock_dispatch_10(void);
+uint64_t sk_lock_dispatch_10(unsigned long a1, unsigned long *a2, unsigned long a3,
+                             unsigned long a4, unsigned long a5);
 void sk_lock_release_recursive(unsigned int arg1,uint64_t arg2,uint64_t arg3,long arg4,unsigned int arg5);
 void sk_lock_dispatch_18(void);
 void sk_lock_release_recursive2(unsigned int arg1,uint64_t arg2,unsigned int arg3,unsigned long arg4);
@@ -35201,6 +35202,7 @@ uint64_t sk_rebasechain_map(long arg1,unsigned long arg2,long arg3)
   long lStack_78;
   uint8_t *stk1;
   uint64_t stk7;
+  uint8_t stackbuf[16];   /* local_70 = &stack0xfffffffffffffff0 (frame-0x10) */
   
   if (sk_global_041 == '\x01') {
     t16 = sk_ipc_src_map((long)arg1,(unsigned long)arg2,(long)arg3);
@@ -35229,7 +35231,7 @@ LAB_00052570:
         lStack_88 = arg1;
         stk2 = arg2;
         lStack_78 = arg3;
-        stk1 = NULL;
+        stk1 = stackbuf;   /* local_70 = &stack0xfffffffffffffff0 */
         t4 = (uint8_t *)sk_tcb_cur();
         if ((*t4 & 1) == 0) {
           stk4 = 0;
@@ -44096,7 +44098,7 @@ uint64_t sk_lock_acquire_recursive(unsigned long *arg1,uint64_t arg2)
         t2 = (sk_code_t )sk_break(0x5519,0x5cdac);
         (*t2)();
       }
-      t0 = sk_lock_dispatch_10();
+      t0 = sk_lock_dispatch_10(t4 & 0xff, arg1, t6, t7, arg2);
       if (t0 == 1) {
         t5 = 0;
       }
@@ -44460,7 +44462,7 @@ unsigned short sk_lock_acquire_2(unsigned long *arg1,uint64_t arg2)
       goto LAB_0005d2f0;
     }
   }
-  t1 = sk_lock_dispatch_10();
+  t1 = sk_lock_dispatch_10(t9 & 0xff, arg1, t11, 0, 1);
   if (t1 == 3) {
     t12 = 0;
     t6 = t5;
@@ -44473,7 +44475,7 @@ unsigned short sk_lock_acquire_2(unsigned long *arg1,uint64_t arg2)
       t12 = (unsigned short)t0;
       t6 = t7;
       if (t0) break;
-      t1 = sk_lock_dispatch_10();
+      t1 = sk_lock_dispatch_10(t9 & 0xff, arg1, t11, 0, 1);
       t6 = t5;
     } while (t1 != 3);
     t8 = (unsigned int)(t7 >> 0x20);
@@ -44647,7 +44649,7 @@ LAB_0005d584:
           t1 = (sk_code_t )sk_break(0x5519,0x5d5dc);
           (*t1)();
         }
-        sk_lock_dispatch_10();
+        sk_lock_dispatch_10(t3, arg1, t7, t6, 0);
         t2 = *arg1;
       }
     }
@@ -45082,20 +45084,25 @@ uint64_t sk_cpu_array(unsigned long arg1)
 
 /* FUN_0005dc8c @ 0x5dc8c   (est. sk_lock_dispatch_10)
  * Ghidra: void FUN_0005dc8c(void)
- * sk_lock_dispatch_10: cL4 sk lock dispatch 10 operation.
+ * sk_lock_dispatch_10: cL4 sk lock dispatch 10 operation.  Register-forwarding
+ *   thunk: Ghidra sees void(void) because it can't recover the jumptable, but
+ *   all callers pass (type/prio, lock word ptr, cpu array, target, flags)
+ *   which are forwarded to the indirect target at [sk_global_109 + 0x10].
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-uint64_t sk_lock_dispatch_10(void)
+uint64_t sk_lock_dispatch_10(unsigned long a1, unsigned long *a2, unsigned long a3,
+                             unsigned long a4, unsigned long a5)
 {
   if (sk_global_109 == 0) {
     sk_global_109 = 0x65c560;
   }
-                    
-                    
-  return (**(sk_code_t *)(sk_global_109 + 0x10))();
+  /* Register-forwarding dispatch thunk: a1..a5 are the caller-set lock-dispatch
+   * args (type/prio, lock word, cpu array, target, flags) passed through to
+   * the indirect target at [sk_global_109 + 0x10]. */
+  return (**(sk_code_t *)(sk_global_109 + 0x10))(a1, a2, a3, a4, a5);
 }
 
 
@@ -46778,7 +46785,7 @@ void sk_restore_ctx(long arg1)
     t7 = sk_cpu_array(t6);
     t0 = *(int *)(t8 + 0x84);
     while (t0 == 0) {
-      sk_lock_dispatch_10();
+      sk_lock_dispatch_10(t6, t3, t7, 0, 0);
       t7 = sk_cpu_array(t6);
       t0 = *t3;
     }
@@ -46835,7 +46842,7 @@ uint64_t sk_restore_ctx1(uint64_t arg1)
     t8 = sk_cpu_array(t6);
     t0 = *(int *)(t7 + 0x84);
     while (t0 == 0) {
-      sk_lock_dispatch_10();
+      sk_lock_dispatch_10(t6, t3, t8, 0, 0);
       t8 = sk_cpu_array(t6);
       t0 = *t3;
     }

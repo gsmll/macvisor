@@ -699,3 +699,1611 @@ static void sk_vas_op_frame_push(void)
     /* Unrecovered jumptable at 0x003fb918 — indirect call into op runner. */
     ((void (*)(void))jump)();
 }
+
+/* ================================================================== *
+ * 0x003fba88 - 0x003fc8a0 : Swift Concurrency executor / region-op
+ *   helpers (worker SKR12 remainder).  All function names are estimates;
+ *   register-forwarded arguments are modelled as commented locals.
+ * ================================================================== */
+
+/* FUN_003fba88 @ 0x003fba88  (est. sk_ret_thunk_ba88)
+ * Ghidra: void FUN_003fba88(void)
+ * Thin forwarder to FUN_003fbf9c. Confidence: low. */
+static void sk_x_003fba88(void)
+{
+    sk_x_003fbf9c();
+}
+
+/* FUN_003fbaa4 @ 0x003fbaa4  (est. sk_x_003fbaa4)
+ * Ghidra: void FUN_003fbaa4(undefined1 *param_1)
+ * Stores the low byte of FUN_003fbf28() into *param_1. Confidence: low. */
+static void sk_x_003fbaa4(uint8_t *param_1)
+{
+    *param_1 = (uint8_t)sk_x_003fbf28();
+}
+
+/* FUN_003fbaf8 @ 0x003fbaf8  (est. sk_register_region_005a1328)
+ * Ghidra: void FUN_003fbaf8(void)
+ * Resolves a code pointer via FUN_00027724(&DAT_005a1328) and dispatches a
+ * two-word "register region" call. Confidence: low. */
+static void sk_x_003fbaf8(void)
+{
+    code fn = (code)(uintptr_t)sk_x_00027724((uint64_t)&sk_g_005a1328);
+    ((void (*)(uint64_t, uint64_t))fn)(0x67f130, (uint64_t)&sk_g_005a1328);
+}
+
+/* FUN_003fbb48 @ 0x003fbb48  (est. sk_register_region_005a1398)
+ * Ghidra: void FUN_003fbb48(void)
+ * Resolves a code pointer via FUN_00027724(&DAT_005a1398) and dispatches a
+ * two-word "register region" call. Confidence: low. */
+static void sk_x_003fbb48(void)
+{
+    code fn = (code)(uintptr_t)sk_x_00027724((uint64_t)&sk_g_005a1398);
+    ((void (*)(uint64_t, uint64_t))fn)(0x67f0a0, (uint64_t)&sk_g_005a1398);
+}
+
+/* FUN_003fbb98 @ 0x003fbb98  (est. sk_x_003fbb98)
+ * Ghidra: void FUN_003fbb98(void)
+ * Forwarder to FUN_003fc038 (register-forwarded arguments are dropped; the
+ * callee re-derives them from registers). Confidence: low. */
+static void sk_x_003fbb98()
+{
+    sk_x_003fc038();
+}
+
+/* FUN_003fbbdc @ 0x003fbbdc  (est. sk_vas_region_setup_tag_16d8)
+ * Ghidra: void FUN_003fbbdc(undefined8 param_1)
+ * Forwards (param_1, 0x67f130, &DAT_005a16d8) to FUN_003fc158.
+ * Confidence: low. */
+static void sk_x_003fbbdc(uint64_t param_1)
+{
+    sk_x_003fc158(param_1, 0x67f130, (uint64_t)&sk_g_005a16d8);
+}
+
+/* FUN_003fbbe0 @ 0x003fbbe0  (est. sk_vas_region_setup_tag_16d8_b)
+ * Ghidra: void FUN_003fbbe0(undefined8 param_1)
+ * Identical body to FUN_003fbbdc (distinct code address). Confidence: low. */
+static void sk_x_003fbbe0(uint64_t param_1)
+{
+    sk_x_003fc158(param_1, 0x67f130, (uint64_t)&sk_g_005a16d8);
+}
+
+/* FUN_003fbc10 @ 0x003fbc10  (est. sk_x_003fbc10)
+ * Ghidra: void FUN_003fbc10(void)
+ * Forwarder to FUN_003fc274. Confidence: low. */
+static void sk_x_003fbc10(void)
+{
+    sk_x_003fc274();
+}
+
+/* FUN_003fbc14 @ 0x003fbc14  (est. sk_x_003fbc14)
+ * Ghidra: void FUN_003fbc14(void)
+ * Identical body to FUN_003fbc10 (distinct code address). Confidence: low. */
+static void sk_x_003fbc14(void)
+{
+    sk_x_003fc274();
+}
+
+/* FUN_003fbc3c @ 0x003fbc3c  (est. sk_x_003fbc3c)
+ * Ghidra: void FUN_003fbc3c(undefined8 param_1)
+ * Forwards (param_1, *unaff_x20, unaff_x20[1]) to FUN_003fbb98.
+ * Confidence: low (register-forwarded x20). */
+static void sk_x_003fbc3c(uint64_t param_1)
+{
+    uint64_t *x20 = /* unaff_x20 */ 0;
+    sk_x_003fbb98(param_1, *x20, x20[1]);
+}
+
+/* FUN_003fbc40 @ 0x003fbc40  (est. sk_x_003fbc40)
+ * Ghidra: void FUN_003fbc40(undefined8 param_1)
+ * Identical body to FUN_003fbc3c (distinct code address). Confidence: low. */
+static void sk_x_003fbc40(uint64_t param_1)
+{
+    uint64_t *x20 = /* unaff_x20 */ 0;
+    sk_x_003fbb98(param_1, *x20, x20[1]);
+}
+
+/* FUN_003fbc58 @ 0x003fbc58  (est. sk_ns_scale128)
+ * Ghidra: undefined1 [16] FUN_003fbc58(long param_1, ulong param_2)
+ * Scales a (param_1, param_2) pair by 10^9/10^18 into a 128-bit result
+ * (result = param_1*10^18 + param_2*10^9).  Aborts (brk) on 64-bit overflow
+ * of param_2*10^9. Confidence: medium. */
+static cl4_result_t sk_x_003fbc58(int64_t param_1, uint64_t param_2)
+{
+    cl4_result_t result;
+
+    /* 128-bit product of param_2 * 10^9 (auVar1 = 0:param_2 zero-extended). */
+    __uint128_t p2 = (__uint128_t)param_2 * 1000000000ULL;
+    if ((uint64_t)(p2 >> 64) == 0) {
+        /* 128-bit signed product of param_1 * 10^18. */
+        __int128_t p1 = (__int128_t)(int64_t)param_1 * (__int128_t)1000000000000000000LL;
+        uint64_t hi = (uint64_t)((__uint128_t)p1 >> 64);
+        uint64_t a  = (uint64_t)p1;      /* low 64 of param_1*10^18 */
+        uint64_t b  = (uint64_t)p2;      /* low 64 of param_2*10^9 */
+        uint64_t lo = a + b;
+        if (lo < a) {                    /* CARRY8(a, b) */
+            hi += 1;
+        }
+        result.lo = lo;
+        result.hi = hi;
+        return result;
+    }
+    /* WARNING: Does not return */
+    sk_brk_noret();
+    return result;
+}
+
+/* FUN_003fbcd4 @ 0x003fbcd4  (est. sk_canary_clock_09248)
+ * Ghidra: void FUN_003fbcd4(void)
+ * Canary-guarded helper: runs the guarded prelude (FUN_00406a10) and, when the
+ * canary slot matches, performs a clock read via FUN_003fc42c(1, FUN_00409248)
+ * whose register pair is the 16-byte result. On canary mismatch it aborts
+ * through FUN_0011d7e8 (non-returning). Confidence: low. */
+static cl4_result_t sk_x_003fbcd4(void)
+{
+    uint64_t local_18 = SK_CANARY;
+
+    sk_x_00406a10();
+    if (local_18 == (uint64_t)SK_CANARY) {
+        sk_x_003fc42c(1, (uint64_t)sk_x_00409248);
+        return (cl4_result_t){ /* lo (register-forwarded) */ 0,
+                               /* hi (register-forwarded) */ 0 };
+    }
+    /* WARNING: Subroutine does not return */
+    sk_x_0011d7e8();
+    return (cl4_result_t){0, 0};
+}
+
+/* FUN_003fbd2c @ 0x003fbd2c  (est. sk_canary_clock_092d8)
+ * Ghidra: void FUN_003fbd2c(void)
+ * Identical to FUN_003fbcd4 but reads via FUN_003fc42c(1, FUN_004092d8).
+ * Confidence: low. */
+static cl4_result_t sk_x_003fbd2c(void)
+{
+    uint64_t local_18 = SK_CANARY;
+
+    sk_x_00406a10();
+    if (local_18 == (uint64_t)SK_CANARY) {
+        sk_x_003fc42c(1, (uint64_t)sk_x_004092d8);
+        return (cl4_result_t){ 0, 0 };
+    }
+    /* WARNING: Subroutine does not return */
+    sk_x_0011d7e8();
+    return (cl4_result_t){0, 0};
+}
+
+/* FUN_003fbd98 @ 0x003fbd98  (est. sk_abort_prelude_003fbd98)
+ * Ghidra: void FUN_003fbd98(void)
+ * Runs the abort prelude (FUN_00406fd4/FUN_00407030/FUN_003593c0/FUN_00407048)
+ * then raises a non-returning fault (FUN_001afa84). Confidence: low. */
+static void sk_x_003fbd98(void)
+{
+    sk_x_00406fd4();
+    sk_x_00407030();
+    sk_x_003593c0();
+    sk_x_00407048();
+    /* WARNING: Subroutine does not return */
+    sk_x_001afa84();
+}
+
+/* FUN_003fbdf0 @ 0x003fbdf0  (est. sk_clock_read_003fbdf0)
+ * Ghidra: void FUN_003fbdf0(undefined1 (*param_1)[16])
+ * Copies the 16-byte result of FUN_003fbcd4() into *param_1. Confidence: low. */
+static void sk_x_003fbdf0(cl4_result_t *param_1)
+{
+    *param_1 = sk_x_003fbcd4();
+}
+
+/* FUN_003fbe18 @ 0x003fbe18  (est. sk_clock_read_003fbe18)
+ * Ghidra: void FUN_003fbe18(undefined1 (*param_1)[16])
+ * Copies the 16-byte result of FUN_003fbd2c() into *param_1. Confidence: low. */
+static void sk_x_003fbe18(cl4_result_t *param_1)
+{
+    *param_1 = sk_x_003fbd2c();
+}
+
+/* FUN_003fbe40 @ 0x003fbe40  (est. sk_vas_ret_thunk_003fbe40)
+ * Ghidra: void FUN_003fbe40(void)
+ * Runs FUN_00407d74 then the FUN_002d3c28 thunk. Confidence: low. */
+static void sk_x_003fbe40(void)
+{
+    sk_x_00407d74();
+    sk_x_002d3c28();
+}
+
+/* FUN_003fbf28 @ 0x003fbf28  (est. sk_validate_region_type)
+ * Ghidra: uint FUN_003fbf28(long param_1, long param_2)
+ * Validates a region type tag pair; returns 0 when the pair matches the
+ * "vale_" signature, else a folded result of FUN_002a0cf8.  Arguments arrive
+ * register-forwarded (modelled here as commented locals). Confidence: low. */
+static uint sk_x_003fbf28()
+{
+    long param_1 = /* param_1 (register-forwarded) */ 0;
+    long param_2 = /* param_2 (register-forwarded) */ 0;
+    uint uVar1;
+
+    if (param_1 == 0x65756c61765f && param_2 == -0x1a00000000000000LL) {
+        sk_x_003a25d4(param_2);
+        uVar1 = 0;
+    }
+    else {
+        uVar1 = sk_x_002a0cf8(0x65756c61765f, 0xe600000000000000ULL, param_1, param_2, 0);
+        sk_x_003a25d4(param_2);
+        uVar1 = (uVar1 ^ 0xffffffff) & 1;
+    }
+    return uVar1;
+}
+
+/* FUN_003fbf9c @ 0x003fbf9c  (est. sk_vas_op_prelude_003fbf9c)
+ * Ghidra: void FUN_003fbf9c(void)
+ * Runs the VAS-op prelude (FUN_004080b0 / FUN_002298d4(0)) and the finisher
+ * FUN_001a8564. Confidence: low. */
+static void sk_x_003fbf9c(void)
+{
+    sk_x_004080b0();
+    sk_x_002298d4(0);
+    sk_x_001a8564();
+}
+
+/* FUN_003fbff4 @ 0x003fbff4  (est. sk_x_003fbff4)
+ * Ghidra: void FUN_003fbff4(void)
+ * Forwarder to FUN_003fc038. Confidence: low. */
+static void sk_x_003fbff4()
+{
+    sk_x_003fc038();
+}
+
+/* FUN_003fc038 @ 0x003fc038  (est. sk_vas_region_setup_003fc038)
+ * Ghidra: void FUN_003fc038(long param_1, undefined8 param_2, ... , undefined8 param_7)
+ * Region-setup body: dereferences param_1, runs FUN_0006a4c0/FUN_0006a4f0,
+ * forwards to FUN_003513b4, packs a two-word pair and funnels it through
+ * FUN_00002534/FUN_001bdb28.  All parameters are register-forwarded (modelled
+ * as commented locals). Confidence: low. */
+static void sk_x_003fc038()
+{
+    uint64_t param_1 = /* param_1 (register-forwarded) */ 0;
+    uint64_t param_2 = /* param_2 (register-forwarded) */ 0;
+    uint64_t param_3 = /* param_3 (register-forwarded) */ 0;
+    uint64_t param_4 = /* param_4 (register-forwarded) */ 0;
+    uint64_t param_5 = /* param_5 (register-forwarded) */ 0;
+    uint64_t param_6 = /* param_6 (register-forwarded) */ 0;
+    uint64_t param_7 = /* param_7 (register-forwarded) */ 0;
+    uint64_t uVar1;
+    code *extraout_x8;
+    cl4_result_t auVar2;
+    uint64_t local_70 = param_2, uStack_68 = param_3;
+
+    uVar1 = *(uint64_t *)(param_1 + 0x20);
+    sk_x_0006a4c0(param_1, *(uint64_t *)(param_1 + 0x18));
+    uVar1 = sk_x_0006a4f0(uVar1);
+    sk_x_003513b4(uVar1, param_4);
+    uVar1 = ((void (*)(void))(uintptr_t)(extraout_x8 = 0))();
+    auVar2 = sk_x_00002534(param_6, param_7);
+    sk_x_001bdb28(&local_70, auVar2.hi, auVar2.lo, 0x676ea8, 0x66f5e0);
+    sk_x_0036b118(uVar1);
+}
+
+/* FUN_003fc124 @ 0x003fc124  (est. sk_vas_region_setup_a16a8)
+ * Ghidra: void FUN_003fc124(undefined8 param_1)
+ * Forwards (param_1, 0x67f0a0, &DAT_005a16a8) to FUN_003fc158. Confidence: low. */
+static void sk_x_003fc124(uint64_t param_1)
+{
+    sk_x_003fc158(param_1, 0x67f0a0, (uint64_t)&sk_g_005a16a8);
+}
+
+/* FUN_003fc128 @ 0x003fc128  (est. sk_vas_region_setup_a16a8_b)
+ * Ghidra: void FUN_003fc128(undefined8 param_1)
+ * Identical body to FUN_003fc124 (distinct code address). Confidence: low. */
+static void sk_x_003fc128(uint64_t param_1)
+{
+    sk_x_003fc158(param_1, 0x67f0a0, (uint64_t)&sk_g_005a16a8);
+}
+
+/* FUN_003fc158 @ 0x003fc158  (est. sk_vas_region_teardown_003fc158)
+ * Ghidra: void FUN_003fc158(void)
+ * Region-teardown path: resolves the region's continuation, runs
+ * FUN_0006a4c0/FUN_0006a668/FUN_000bd3a4, then either completes the pair via
+ * FUN_00352ae4/FUN_001bea18 or just releases the object (FUN_000026e8);
+ * always ends with FUN_000e15d8.  Called with three register-forwarded args
+ * (tag, DAT pointer) that the body ignores. Confidence: low. */
+static void sk_x_003fc158()
+{
+    long lVar1;
+    uint64_t uVar2;
+    code *extraout_x8;
+    long unaff_x21 = /* unaff_x21 */ 0;
+    uint64_t local_60[2];
+
+    lVar1 = sk_x_0035128c();
+    uVar2 = *(uint64_t *)(lVar1 + 0x20);
+    sk_x_0006a4c0(lVar1, *(uint64_t *)(lVar1 + 0x18));
+    uVar2 = sk_x_0006a668(uVar2);
+    sk_x_000bd3a4(uVar2);
+    uVar2 = ((void (*)(void))(uintptr_t)(extraout_x8 = 0))();
+    if (unaff_x21 == 0) {
+        sk_x_00352ae4(local_60, 0x676ea8);
+        sk_x_001bea18();
+        sk_x_0036b118(uVar2);
+        sk_x_000026e8(lVar1);
+    }
+    else {
+        sk_x_000026e8(lVar1);
+    }
+    sk_x_000e15d8();
+}
+
+/* FUN_003fc248 @ 0x003fc248  (est. sk_x_003fc248)
+ * Ghidra: void FUN_003fc248(void)
+ * Forwarder to FUN_003fc274. Confidence: low. */
+static void sk_x_003fc248(void)
+{
+    sk_x_003fc274();
+}
+
+/* FUN_003fc24c @ 0x003fc24c  (est. sk_x_003fc24c)
+ * Ghidra: void FUN_003fc24c(void)
+ * Identical body to FUN_003fc248 (distinct code address). Confidence: low. */
+static void sk_x_003fc24c(void)
+{
+    sk_x_003fc274();
+}
+
+/* FUN_003fc274 @ 0x003fc274  (est. sk_vas_op_result_probe)
+ * Ghidra: void FUN_003fc274(undefined1 (*param_1)[16])
+ * Probes the in_x3 code pointer; when unaff_x21 == 0 it stores the 16-byte
+ * result into *param_1.  param_1 arrives register-forwarded. Confidence: low. */
+static void sk_x_003fc274()
+{
+    cl4_result_t *param_1 = /* param_1 (register-forwarded) */ 0;
+    uint64_t in_x3 = /* in_x3 (register-forwarded) */ 0;
+    long unaff_x21 = /* unaff_x21 */ 0;
+    cl4_result_t auVar1;
+
+    auVar1 = ((code)(uintptr_t)in_x3)();
+    if (unaff_x21 == 0) {
+        *param_1 = auVar1;
+    }
+}
+
+/* FUN_003fc2a4 @ 0x003fc2a4  (est. sk_x_003fc2a4)
+ * Ghidra: void FUN_003fc2a4(undefined8 param_1)
+ * Forwards (param_1, *unaff_x20, unaff_x20[1]) to FUN_003fbff4.
+ * Confidence: low (register-forwarded x20). */
+static void sk_x_003fc2a4(uint64_t param_1)
+{
+    uint64_t *x20 = /* unaff_x20 */ 0;
+    sk_x_003fbff4(param_1, *x20, x20[1]);
+}
+
+/* FUN_003fc2a8 @ 0x003fc2a8  (est. sk_x_003fc2a8)
+ * Ghidra: void FUN_003fc2a8(undefined8 param_1)
+ * Identical body to FUN_003fc2a4 (distinct code address). Confidence: low. */
+static void sk_x_003fc2a8(uint64_t param_1)
+{
+    uint64_t *x20 = /* unaff_x20 */ 0;
+    sk_x_003fbff4(param_1, *x20, x20[1]);
+}
+
+/* FUN_003fc2c0 @ 0x003fc2c0  (est. sk_canary_clock_09248_2)
+ * Ghidra: void FUN_003fc2c0(void)
+ * Canary-guarded clock read via FUN_003fc42c(2, FUN_00409248). Confidence: low. */
+static cl4_result_t sk_x_003fc2c0(void)
+{
+    uint64_t local_18 = SK_CANARY;
+
+    sk_x_00406a10();
+    if (local_18 == (uint64_t)SK_CANARY) {
+        sk_x_003fc42c(2, (uint64_t)sk_x_00409248);
+        return (cl4_result_t){ 0, 0 };
+    }
+    /* WARNING: Subroutine does not return */
+    sk_x_0011d7e8();
+    return (cl4_result_t){0, 0};
+}
+
+/* FUN_003fc318 @ 0x003fc318  (est. sk_canary_clock_092d8_2)
+ * Ghidra: void FUN_003fc318(void)
+ * Canary-guarded clock read via FUN_003fc42c(2, FUN_004092d8). Confidence: low. */
+static cl4_result_t sk_x_003fc318(void)
+{
+    uint64_t local_18 = SK_CANARY;
+
+    sk_x_00406a10();
+    if (local_18 == (uint64_t)SK_CANARY) {
+        sk_x_003fc42c(2, (uint64_t)sk_x_004092d8);
+        return (cl4_result_t){ 0, 0 };
+    }
+    /* WARNING: Subroutine does not return */
+    sk_x_0011d7e8();
+    return (cl4_result_t){0, 0};
+}
+
+/* FUN_003fc384 @ 0x003fc384  (est. sk_abort_prelude_003fc384)
+ * Ghidra: void FUN_003fc384(void)
+ * Identical to FUN_003fbd98 (abort prelude + non-returning fault). */
+static void sk_x_003fc384(void)
+{
+    sk_x_00406fd4();
+    sk_x_00407030();
+    sk_x_003593c0();
+    sk_x_00407048();
+    /* WARNING: Subroutine does not return */
+    sk_x_001afa84();
+}
+
+/* FUN_003fc3dc @ 0x003fc3dc  (est. sk_clock_read_003fc3dc)
+ * Ghidra: void FUN_003fc3dc(undefined1 (*param_1)[16])
+ * Copies the 16-byte result of FUN_003fc2c0() into *param_1. Confidence: low. */
+static void sk_x_003fc3dc(cl4_result_t *param_1)
+{
+    *param_1 = sk_x_003fc2c0();
+}
+
+/* FUN_003fc404 @ 0x003fc404  (est. sk_clock_read_003fc404)
+ * Ghidra: void FUN_003fc404(undefined1 (*param_1)[16])
+ * Copies the 16-byte result of FUN_003fc318() into *param_1. Confidence: low. */
+static void sk_x_003fc404(cl4_result_t *param_1)
+{
+    *param_1 = sk_x_003fc318();
+}
+
+/* FUN_003fc42c @ 0x003fc42c  (est. sk_clock_read_pair)
+ * Ghidra: void FUN_003fc42c(undefined8 param_1, code *param_2)
+ * Invokes the clock-read callback param_2 with a two-word out buffer, scales
+ * the result via FUN_003fbc58, and checks the stack canary (aborting through
+ * FUN_0011d7e8 on mismatch).  param_2 is a function pointer passed as a word.
+ * Confidence: medium. */
+static void sk_x_003fc42c(uint64_t param_1, uint64_t param_2)
+{
+    uint64_t local_28 = 0, uStack_20 = 0;
+    uint64_t local_18 = SK_CANARY;
+
+    ((void (*)(uint64_t, uint64_t, uint64_t))(uintptr_t)param_2)(&uStack_20, &local_28, param_1);
+    sk_x_003fbc58(uStack_20, local_28);
+    if (local_18 == (uint64_t)SK_CANARY) {
+        return;
+    }
+    /* WARNING: Subroutine does not return */
+    sk_x_0011d7e8();
+}
+
+/* FUN_003fc49c @ 0x003fc49c  (est. sk_x_003fc49c)
+ * Ghidra: void FUN_003fc49c(undefined1 (*param_1)[16], undefined8 param_2, undefined8 param_3)
+ * Replaces the 16-byte record at *param_1 with the FUN_002d3c28 thunk result.
+ * Confidence: low. */
+static void sk_x_003fc49c(cl4_result_t *param_1, uint64_t param_2, uint64_t param_3)
+{
+    cl4_result_t auVar1;
+
+    auVar1 = sk_x_002d3c28(*(uint64_t *)*param_1, *(uint64_t *)(*param_1 + 8), param_2, param_3);
+    *param_1 = auVar1;
+}
+
+/* FUN_003fc4d4 @ 0x003fc4d4  (est. sk_vas_op_teardown_seq)
+ * Ghidra: void FUN_003fc4d4(void)
+ * Sequential teardown prelude: runs a chain of op teardown helpers and the
+ * FUN_002d3c28 thunk. Confidence: low. */
+static void sk_x_003fc4d4(void)
+{
+    sk_x_00077888();
+    sk_x_003509ec();
+    sk_x_00019858();
+    sk_x_0035053c();
+    sk_x_002d4a64();
+    sk_x_00351790();
+    sk_x_00100efc();
+    sk_x_002d3c28();
+}
+
+/* FUN_003fc518 @ 0x003fc518  (est. sk_vas_op_teardown_store)
+ * Ghidra: void FUN_003fc518(void)
+ * Runs the teardown prelude and stores the FUN_002d3c28 thunk result into the
+ * register-forwarded unaff_x21 record. Confidence: low. */
+static void sk_x_003fc518(void)
+{
+    cl4_result_t *unaff_x21 = /* unaff_x21 (register-forwarded) */ 0;
+    cl4_result_t auVar1;
+
+    sk_x_0035098c();
+    sk_x_00019858();
+    sk_x_0035053c();
+    sk_x_002d4a64();
+    sk_x_00351790();
+    sk_x_000e15d8();
+    auVar1 = sk_x_002d3c28();
+    *unaff_x21 = auVar1;
+}
+
+/* FUN_003fc56c @ 0x003fc56c  (est. sk_vas_op_run_teardown)
+ * Ghidra: void FUN_003fc56c(void)
+ * Runs a VAS-op teardown: prelude into a 72-byte frame, then FUN_002d738c and
+ * FUN_001a8564. Confidence: low. */
+static void sk_x_003fc56c(void)
+{
+    uint8_t frame[72];
+
+    sk_x_003504d0();
+    sk_x_004080b0();
+    sk_x_00350624(frame);
+    sk_x_002d738c();
+    sk_x_001a8564();
+}
+
+/* FUN_003fc5c4 @ 0x003fc5c4  (est. sk_x_003fc5c4)
+ * Ghidra: void FUN_003fc5c4(void)
+ * Runs FUN_00407e88 then stores the extraout_x9 result into *unaff_x19.
+ * Confidence: low (register-forwarded x9/x19). */
+static void sk_x_003fc5c4(void)
+{
+    code *extraout_x9 = /* extraout_x9 */ 0;
+    cl4_result_t *unaff_x19 = /* unaff_x19 (register-forwarded) */ 0;
+    cl4_result_t auVar1;
+
+    sk_x_00407e88();
+    auVar1 = ((code)(uintptr_t)extraout_x9)();
+    *unaff_x19 = auVar1;
+}
+
+/* FUN_003fc608 @ 0x003fc608  (est. sk_x_003fc608)
+ * Ghidra: void FUN_003fc608(void)
+ * Identical body to FUN_003fc5c4 (distinct code address). Confidence: low. */
+static void sk_x_003fc608(void)
+{
+    code *extraout_x9 = /* extraout_x9 */ 0;
+    cl4_result_t *unaff_x19 = /* unaff_x19 (register-forwarded) */ 0;
+    cl4_result_t auVar1;
+
+    sk_x_00407e88();
+    auVar1 = ((code)(uintptr_t)extraout_x9)();
+    *unaff_x19 = auVar1;
+}
+
+/* FUN_003fc64c @ 0x003fc64c  (est. sk_vas_op_frame_run)
+ * Ghidra: void FUN_003fc64c(void)
+ * Seeds a 72-byte frame (FUN_001a84f4/FUN_00350548), invokes the in_x3 code
+ * pointer, and finishes with FUN_001a8564. Confidence: low. */
+static void sk_x_003fc64c(void)
+{
+    uint64_t in_x3 = /* in_x3 (register-forwarded) */ 0;
+    uint8_t frame[72];
+
+    sk_x_001a84f4(frame);
+    sk_x_00350548(frame);
+    ((void (*)(void))(uintptr_t)in_x3)();
+    sk_x_001a8564();
+}
+
+/* FUN_003fc6b4 @ 0x003fc6b4  (est. sk_abort_prelude_003fc6b4)
+ * Ghidra: void FUN_003fc6b4(void)
+ * Identical to FUN_003fbd98 (abort prelude + non-returning fault). */
+static void sk_x_003fc6b4(void)
+{
+    sk_x_00406fd4();
+    sk_x_00407030();
+    sk_x_003593c0();
+    sk_x_00407048();
+    /* WARNING: Subroutine does not return */
+    sk_x_001afa84();
+}
+
+/* FUN_003fc70c @ 0x003fc70c  (est. sk_executor_no_executor_fatal)
+ * Ghidra: void FUN_003fc70c(void)
+ * Swift-runtime fatal stub: builds a "There is no executor implementation"
+ * message and raises a non-returning fault (FUN_001afa84). Confidence: high
+ * (string matched). */
+static void sk_x_003fc70c(void)
+{
+    uint64_t uVar1;
+    uint64_t extraout_x8 = /* extraout_x8 */ 0;
+
+    uVar1 = sk_x_0035ac70((uint64_t)sk_str_no_executor);
+    uVar1 = sk_x_003593c0(uVar1, uVar1);
+    /* WARNING: Subroutine does not return */
+    sk_x_001afa84(uVar1, 0xb, 2, 0xd00000000000002aULL,
+                  extraout_x8 | 0x8000000000000000ULL,
+                  (uint64_t)sk_str_unimpl_executor, 0x28, 2);
+}
+
+/* FUN_003fc76c @ 0x003fc76c  (est. sk_executor_no_executor_brk)
+ * Ghidra: void FUN_003fc76c(void)
+ * Swift executor stub: opens the "no executor" message and traps (brk).
+ * Confidence: high (string matched). */
+static void sk_x_003fc76c(void)
+{
+    sk_x_0035ac70((uint64_t)sk_str_no_executor);
+    sk_x_00406eb0();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc79c @ 0x003fc79c  (est. sk_executor_no_executor_brk_b)
+ * Ghidra: void FUN_003fc79c(void)
+ * Identical to FUN_003fc76c (distinct code address). Confidence: high. */
+static void sk_x_003fc79c(void)
+{
+    sk_x_0035ac70((uint64_t)sk_str_no_executor);
+    sk_x_00406eb0();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc7cc @ 0x003fc7cc  (est. sk_executor_dispatch_fatal)
+ * Ghidra: void FUN_003fc7cc(void)
+ * Runs FUN_003fc70c then FUN_003d4f18 (non-returning fatal). Confidence: low. */
+static void sk_x_003fc7cc(void)
+{
+    sk_x_003fc70c();
+    sk_x_003d4f18();
+}
+
+/* FUN_003fc7d0 @ 0x003fc7d0  (est. sk_executor_dispatch_fatal_b)
+ * Ghidra: void FUN_003fc7d0(void)
+ * Identical body to FUN_003fc7cc (distinct code address). Confidence: low. */
+static void sk_x_003fc7d0(void)
+{
+    sk_x_003fc70c();
+    sk_x_003d4f18();
+}
+
+/* FUN_003fc7e0 @ 0x003fc7e0  (est. sk_executor_dispatch_fatal_c)
+ * Ghidra: void FUN_003fc7e0(void)
+ * Runs FUN_003d4f18 (non-returning fatal). Confidence: low. */
+static void sk_x_003fc7e0(void)
+{
+    sk_x_003d4f18();
+}
+
+/* FUN_003fc7f4 @ 0x003fc7f4  (est. sk_executor_dispatch_brk)
+ * Ghidra: void FUN_003fc7f4(void)
+ * Runs FUN_003fc76c then FUN_003d4e84. Confidence: low. */
+static void sk_x_003fc7f4(void)
+{
+    sk_x_003fc76c();
+    sk_x_003d4e84();
+}
+
+/* FUN_003fc7f8 @ 0x003fc7f8  (est. sk_executor_dispatch_brk_b)
+ * Ghidra: void FUN_003fc7f8(void)
+ * Identical body to FUN_003fc7f4 (distinct code address). Confidence: low. */
+static void sk_x_003fc7f8(void)
+{
+    sk_x_003fc76c();
+    sk_x_003d4e84();
+}
+
+/* FUN_003fc80c @ 0x003fc80c  (est. sk_executor_dispatch_brk_c)
+ * Ghidra: void FUN_003fc80c(void)
+ * Runs FUN_003fc79c, opens the "no executor" message with FUN_003fc81c, then
+ * traps (brk). Confidence: low. */
+static void sk_x_003fc80c(void)
+{
+    sk_x_003fc79c();
+    sk_x_0035ac70((uint64_t)sk_str_no_executor, (uint64_t)sk_x_003fc81c);
+    sk_x_00406eb0();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc810 @ 0x003fc810  (est. sk_executor_dispatch_brk_d)
+ * Ghidra: void FUN_003fc810(void)
+ * Identical body to FUN_003fc80c (distinct code address). Confidence: low. */
+static void sk_x_003fc810(void)
+{
+    sk_x_003fc79c();
+    sk_x_0035ac70((uint64_t)sk_str_no_executor, (uint64_t)sk_x_003fc81c);
+    sk_x_00406eb0();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc81c @ 0x003fc81c  (est. sk_executor_dispatch_brk_e)
+ * Ghidra: void FUN_003fc81c(void)
+ * Opens the "no executor" message then traps (brk). Confidence: low. */
+static void sk_x_003fc81c(void)
+{
+    sk_x_0035ac70((uint64_t)sk_str_no_executor);
+    sk_x_00406eb0();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc850 @ 0x003fc850  (est. sk_executor_enqueue_main_fatal)
+ * Ghidra: void FUN_003fc850(void)
+ * Swift enqueueMainExecutor stub: opens the "swift_task_enqueueMainExecutor"
+ * message and traps (brk). Confidence: high (string matched). */
+static void sk_x_003fc850(void)
+{
+    sk_x_003fc81c();
+    sk_x_0035ac70((uint64_t)sk_str_enqueue_main_exec, (uint64_t)sk_x_003fc860);
+    sk_x_00407134();
+    sk_x_004079f4();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc854 @ 0x003fc854  (est. sk_executor_enqueue_main_fatal_b)
+ * Ghidra: void FUN_003fc854(void)
+ * Identical body to FUN_003fc850 (distinct code address). Confidence: high. */
+static void sk_x_003fc854(void)
+{
+    sk_x_003fc81c();
+    sk_x_0035ac70((uint64_t)sk_str_enqueue_main_exec, (uint64_t)sk_x_003fc860);
+    sk_x_00407134();
+    sk_x_004079f4();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc860 @ 0x003fc860  (est. sk_executor_enqueue_main_brk)
+ * Ghidra: void FUN_003fc860(void)
+ * Opens the enqueueMainExecutor message then traps (brk). Confidence: high. */
+static void sk_x_003fc860(void)
+{
+    sk_x_0035ac70((uint64_t)sk_str_enqueue_main_exec);
+    sk_x_00407134();
+    sk_x_004079f4();
+    /* WARNING: Does not return */
+    sk_brk_noret();
+}
+
+/* FUN_003fc8a0 @ 0x003fc8a0  (est. sk_swift_retry_dispatch)
+ * Ghidra: void FUN_003fc8a0(void)
+ * Builds a result via FUN_003d50cc/FUN_003fcbbc/FUN_003504ac, invokes the
+ * extraout_x8 continuation, and releases the pair. Confidence: low. */
+static void sk_x_003fc8a0(void)
+{
+    code *extraout_x8 = /* extraout_x8 */ 0;
+    cl4_result_t auVar2, auVar3;
+    uint64_t uVar1;
+
+    auVar2 = sk_x_003d50cc();
+    uVar1 = sk_x_003fcbbc(auVar2.hi);
+    auVar3 = sk_x_003504ac(uVar1);
+    ((void (*)(uint64_t, uint64_t, uint64_t))(uintptr_t)extraout_x8)(auVar3.lo, auVar3.hi, auVar2.hi);
+    sk_x_0036b118(auVar2.lo);
+}
+
+/* ================================================================== *
+ * 0x003fc90c - 0x003fdf74 : executor dispatch / tagged-metadata accessors
+ *   (worker SKR12 remainder).
+ * ================================================================== */
+
+/* FUN_003fc90c @ 0x003fc90c  (est. sk_executor_core_init)
+ * Ghidra: void FUN_003fc90c(void)
+ * Initialises the executor core globals: DAT_006adf38 = FUN_0036a940(0x6578f8,
+ * 0x10, 7); DAT_006adf40 = 0x67dcb8. Confidence: low. */
+static void sk_x_003fc90c(void)
+{
+    sk_g_006adf38 = sk_x_0036a940(0x6578f8, 0x10, 7);
+    sk_g_006adf40 = 0x67dcb8;
+}
+
+/* FUN_003fc910 @ 0x003fc910  (est. sk_executor_core_init_b)
+ * Ghidra: void FUN_003fc910(void)
+ * Identical body to FUN_003fc90c (distinct code address). Confidence: low. */
+static void sk_x_003fc910(void)
+{
+    sk_g_006adf38 = sk_x_0036a940(0x6578f8, 0x10, 7);
+    sk_g_006adf40 = 0x67dcb8;
+}
+
+/* FUN_003fc950 @ 0x003fc950  (est. sk_executor_core_get)
+ * Ghidra: undefined1 * FUN_003fc950(void)
+ * Lazily initialises the executor core (when DAT_006c0b78 != -1) and returns
+ * &DAT_006adf38. Confidence: low. */
+static uint64_t sk_x_003fc950(void)
+{
+    if (sk_g_006c0b78 != (uint64_t)-1) {
+        sk_x_00407568();
+        sk_x_0039a128();
+    }
+    return (uint64_t)&sk_g_006adf38;
+}
+
+/* FUN_003fc988 @ 0x003fc988  (est. sk_executor_core_release)
+ * Ghidra: void FUN_003fc988(void)
+ * Lazily initialises the executor core then releases DAT_006adf38 via
+ * FUN_0036b270. Confidence: low. */
+static void sk_x_003fc988(void)
+{
+    if (sk_g_006c0b78 != (uint64_t)-1) {
+        sk_x_00407568();
+        sk_x_0039a128();
+    }
+    sk_x_0036b270(sk_g_006adf38);
+}
+
+/* FUN_003fc9d0 @ 0x003fc9d0  (est. sk_executor_deq_init)
+ * Ghidra: void FUN_003fc9d0(void)
+ * Initialises the executor dequeue globals: DAT_006adf50 = FUN_0036a940(
+ * 0x657950, 0x10, 7); DAT_006adf58 = 0x67dd08. Confidence: low. */
+static void sk_x_003fc9d0(void)
+{
+    sk_g_006adf50 = sk_x_0036a940(0x657950, 0x10, 7);
+    sk_g_006adf58 = 0x67dd08;
+}
+
+/* FUN_003fc9d4 @ 0x003fc9d4  (est. sk_executor_deq_init_b)
+ * Ghidra: void FUN_003fc9d4(void)
+ * Identical body to FUN_003fc9d0 (distinct code address). Confidence: low. */
+static void sk_x_003fc9d4(void)
+{
+    sk_g_006adf50 = sk_x_0036a940(0x657950, 0x10, 7);
+    sk_g_006adf58 = 0x67dd08;
+}
+
+/* FUN_003fca14 @ 0x003fca14  (est. sk_executor_deq_get)
+ * Ghidra: undefined1 * FUN_003fca14(void)
+ * Lazily initialises the executor dequeue (when DAT_006c0b50 != -1) and
+ * returns &DAT_006adf50. Confidence: low. */
+static uint64_t sk_x_003fca14(void)
+{
+    if (sk_g_006c0b50 != (uint64_t)-1) {
+        sk_x_00406c3c();
+        sk_x_0039a128();
+    }
+    return (uint64_t)&sk_g_006adf50;
+}
+
+/* FUN_003fca4c @ 0x003fca4c  (est. sk_executor_deq_release)
+ * Ghidra: void FUN_003fca4c(void)
+ * Lazily initialises the executor dequeue then releases DAT_006adf50 via
+ * FUN_0036b270. Confidence: low. */
+static void sk_x_003fca4c(void)
+{
+    if (sk_g_006c0b50 != (uint64_t)-1) {
+        sk_x_00406c3c();
+        sk_x_0039a128();
+    }
+    sk_x_0036b270(sk_g_006adf50);
+}
+
+/* FUN_003fca94 @ 0x003fca94  (est. sk_executor_core_release_indirect)
+ * Ghidra: void FUN_003fca94(void)
+ * Dereferences the core pointer from FUN_003fc950() and releases the word via
+ * FUN_0036b270. Confidence: low. */
+static void sk_x_003fca94(void)
+{
+    uint64_t *puVar1 = (uint64_t *)(uintptr_t)sk_x_003fc950();
+    sk_x_0036b270(*puVar1);
+}
+
+/* FUN_003fcac8 @ 0x003fcac8  (est. sk_executor_deq_release_indirect)
+ * Ghidra: void FUN_003fcac8(void)
+ * Dereferences the dequeue pointer from FUN_003fca14() and releases the word
+ * via FUN_0036b270. Confidence: low. */
+static void sk_x_003fcac8(void)
+{
+    uint64_t *puVar1 = (uint64_t *)(uintptr_t)sk_x_003fca14();
+    sk_x_0036b270(*puVar1);
+}
+
+/* FUN_003fcafc @ 0x003fcafc  (est. sk_meta_field_10)
+ * Ghidra: long FUN_003fcafc(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x10: follows the tagged
+ * pointer when bit0 is set, then returns (p+0x10) + *(int*)(p+0x10).
+ * Confidence: medium (Swift type-metadata pattern). */
+static long sk_x_003fcafc(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x10) + (long)*(int *)(uintptr_t)(param_1 + 0x10);
+}
+
+/* FUN_003fcb2c @ 0x003fcb2c  (est. sk_meta_field_14)
+ * Ghidra: long FUN_003fcb2c(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x14. Confidence: medium. */
+static long sk_x_003fcb2c(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x14) + (long)*(int *)(uintptr_t)(param_1 + 0x14);
+}
+
+/* FUN_003fcb5c @ 0x003fcb5c  (est. sk_meta_field_18)
+ * Ghidra: long FUN_003fcb5c(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x18. Confidence: medium. */
+static long sk_x_003fcb5c(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x18) + (long)*(int *)(uintptr_t)(param_1 + 0x18);
+}
+
+/* FUN_003fcb8c @ 0x003fcb8c  (est. sk_meta_field_c)
+ * Ghidra: long FUN_003fcb8c(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0xc. Confidence: medium. */
+static long sk_x_003fcb8c(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0xc) + (long)*(int *)(uintptr_t)(param_1 + 0xc);
+}
+
+/* FUN_003fcbbc @ 0x003fcbbc  (est. sk_meta_field_8)
+ * Ghidra: long FUN_003fcbbc(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +8. Confidence: medium. */
+static long sk_x_003fcbbc(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 8) + (long)*(int *)(uintptr_t)(param_1 + 8);
+}
+
+/* FUN_003fcc1c @ 0x003fcc1c  (est. sk_meta_field_10_b)
+ * Ghidra: long FUN_003fcc1c(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x10. Confidence: medium. */
+static long sk_x_003fcc1c(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x10) + (long)*(int *)(uintptr_t)(param_1 + 0x10);
+}
+
+/* FUN_003fcc4c @ 0x003fcc4c  (est. sk_meta_field_14_b)
+ * Ghidra: long FUN_003fcc4c(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x14. Confidence: medium. */
+static long sk_x_003fcc4c(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x14) + (long)*(int *)(uintptr_t)(param_1 + 0x14);
+}
+
+/* FUN_003fccc4 @ 0x003fccc4  (est. sk_x_003fccc4)
+ * Ghidra: void FUN_003fccc4(long param_1, undefined8 param_2)
+ * Releases param_2 via FUN_0036b270 when param_1 != 0. Confidence: low. */
+static void sk_x_003fccc4(int64_t param_1, uint64_t param_2)
+{
+    if (param_1 != 0) {
+        sk_x_0036b270(param_2);
+    }
+}
+
+/* FUN_003fccd4 @ 0x003fccd4  (est. sk_x_003fccd4)
+ * Ghidra: void FUN_003fccd4(void)
+ * Forwarder to FUN_00021480. Confidence: low. */
+static void sk_x_003fccd4(void)
+{
+    sk_x_00021480();
+}
+
+/* FUN_003fcd04 @ 0x003fcd04  (est. sk_x_003fcd04)
+ * Ghidra: void FUN_003fcd04(void)
+ * Identical body to FUN_003fccd4 (distinct code address). Confidence: low. */
+static void sk_x_003fcd04(void)
+{
+    sk_x_00021480();
+}
+
+/* FUN_003fcddc @ 0x003fcddc  (est. sk_vas_op_dispatch_cddc)
+ * Ghidra: void FUN_003fcddc(void)
+ * VAS dispatch: reads a five-word context, allocates a frame pair (backlinked
+ * to DAT_00405fa0), resolves the dispatch target from DAT_005a0030 and runs it.
+ * Confidence: low (register-forwarded ABI). */
+static void sk_x_003fcddc(void)
+{
+    uint64_t uVar1, uVar2, uVar3, uVar4, uVar5;
+    uint64_t *puVar6;
+    uint64_t extraout_x1 = /* extraout_x1 */ 0;
+    code *pcVar7;
+    uint64_t extraout_x17 = /* extraout_x17 */ 0;
+    long unaff_x20 = /* unaff_x20 */ 0;
+
+    sk_x_00408058();
+    uVar5 = sk_x_0040700c();
+    uVar1 = *(uint64_t *)(unaff_x20 + 0x10);
+    uVar3 = *(uint64_t *)(unaff_x20 + 0x18);
+    uVar2 = *(uint64_t *)(unaff_x20 + 0x20);
+    uVar4 = *(uint64_t *)(unaff_x20 + 0x28);
+    sk_x_0040bb18(sk_g_005a0034);
+    puVar6 = (uint64_t *)sk_x_00407ac4();
+    *puVar6 = extraout_x17;
+    puVar6[1] = (uint64_t)&sk_g_00405fa0;
+    pcVar7 = (code *)(uintptr_t)((uint64_t)&sk_g_005a0030 + sk_g_005a0030);
+    sk_x_00408044(uVar5, uVar2, uVar4, uVar1, uVar3, (uint64_t)(uintptr_t)pcVar7, extraout_x1);
+    ((void (*)(void))(uintptr_t)pcVar7)();
+}
+
+/* FUN_003fce98 @ 0x003fce98  (est. sk_vas_op_dispatch_ce98)
+ * Ghidra: void FUN_003fce98(void)
+ * VAS dispatch via jumptable: sets up a frame pair (backlinked to DAT_00405fa0),
+ * resolves the jump target from unaff_x27, then performs an unrecovered
+ * indirect jump. Confidence: low. */
+static void sk_x_003fce98(void)
+{
+    uint64_t *puVar1;
+    code *UNRECOVERED_JUMPTABLE;
+    uint64_t extraout_x17 = /* extraout_x17 */ 0;
+    int *unaff_x27 = /* unaff_x27 */ 0;
+    uint64_t unaff_x30 = /* unaff_x30 */ 0;
+
+    sk_x_00408190();
+    sk_x_004070d8();
+    sk_x_0008409c();
+    sk_x_00407e3c();
+    puVar1 = (uint64_t *)sk_x_00407ac4();
+    *puVar1 = extraout_x17;
+    puVar1[1] = (uint64_t)&sk_g_00405fa0;
+    UNRECOVERED_JUMPTABLE = (code *)(uintptr_t)((long)*unaff_x27 + (long)unaff_x27);
+    sk_x_00084180();
+    sk_x_00407f84();
+    sk_x_00408178(unaff_x30);
+    /* WARNING: jumptable at 0x003fcf20 unrecovered; indirect jump as call. */
+    ((void (*)(void))(uintptr_t)UNRECOVERED_JUMPTABLE)();
+}
+
+/* FUN_003fcf28 @ 0x003fcf28  (est. sk_vas_op_accept)
+ * Ghidra: uint FUN_003fcf28(undefined8 param_1, undefined8 param_2)
+ * Classifies a VAS op via FUN_003e33d8 over the unaff_x20 context; returns
+ * bit0 of the result. Confidence: low. */
+static uint sk_x_003fcf28(uint64_t param_1, uint64_t param_2)
+{
+    uint uVar1;
+    long unaff_x20 = /* unaff_x20 */ 0;
+
+    uVar1 = sk_x_003e33d8(param_1, param_2, *(uint64_t *)(unaff_x20 + 0x28),
+                          *(uint64_t *)(unaff_x20 + 0x10), *(uint64_t *)(unaff_x20 + 0x18),
+                          *(uint64_t *)(unaff_x20 + 0x20));
+    return uVar1 & 1;
+}
+
+/* FUN_003fcf48 @ 0x003fcf48  (est. sk_vas_op_dispatch_cf48)
+ * Ghidra: void FUN_003fcf48(void)
+ * VAS dispatch via jumptable; frame pair backlinked to LAB_003fcfd4, target
+ * resolved from unaff_x27. Confidence: low. */
+static void sk_x_003fcf48(void)
+{
+    uint64_t *puVar1;
+    code *UNRECOVERED_JUMPTABLE;
+    uint64_t extraout_x17 = /* extraout_x17 */ 0;
+    int *unaff_x27 = /* unaff_x27 */ 0;
+    uint64_t unaff_x30 = /* unaff_x30 */ 0;
+
+    sk_x_00408190();
+    sk_x_004070d8();
+    sk_x_0008409c();
+    sk_x_00407e3c();
+    puVar1 = (uint64_t *)sk_x_00407ac4();
+    *puVar1 = extraout_x17;
+    puVar1[1] = 0x003fcfd4;   /* LAB_003fcfd4 */
+    UNRECOVERED_JUMPTABLE = (code *)(uintptr_t)((long)*unaff_x27 + (long)unaff_x27);
+    sk_x_00084180();
+    sk_x_00407f84();
+    sk_x_00408178(unaff_x30);
+    /* WARNING: jumptable at 0x003fcfd0 unrecovered; indirect jump as call. */
+    ((void (*)(void))(uintptr_t)UNRECOVERED_JUMPTABLE)();
+}
+
+/* FUN_003fd0bc @ 0x003fd0bc  (est. sk_x_003fd0bc)
+ * Ghidra: void FUN_003fd0bc(void)
+ * Forwarder to FUN_00021480. Confidence: low. */
+static void sk_x_003fd0bc(void)
+{
+    sk_x_00021480();
+}
+
+/* FUN_003fd194 @ 0x003fd194  (est. sk_meta_field_10_c)
+ * Ghidra: long FUN_003fd194(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x10. Confidence: medium. */
+static long sk_x_003fd194(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x10) + (long)*(int *)(uintptr_t)(param_1 + 0x10);
+}
+
+/* FUN_003fd1c4 @ 0x003fd1c4  (est. sk_vas_op_dispatch_d1c4)
+ * Ghidra: void FUN_003fd1c4(void)
+ * VAS dispatch: allocates a frame pair at x22 (backlinked to extraout_x17),
+ * reads a four-word context and forwards it to FUN_003ed340. Confidence: low. */
+static void sk_x_003fd1c4(void)
+{
+    uint64_t uVar1, uVar2, uVar4, uVar5;
+    uint64_t *puVar3;
+    uint64_t extraout_x17 = /* extraout_x17 */ 0;
+    long unaff_x20 = /* unaff_x20 */ 0;
+    long unaff_x22 = /* unaff_x22 */ 0;
+
+    sk_x_00406fd4();
+    uVar1 = *(uint64_t *)(unaff_x20 + 0x10);
+    uVar2 = *(uint64_t *)(unaff_x20 + 0x18);
+    uVar5 = *(uint64_t *)(unaff_x20 + 0x20);
+    sk_x_0040bb18(sk_g_005a0134);
+    puVar3 = (uint64_t *)sk_x_00406fe0();
+    *(uint64_t **)(unaff_x22 + 0x10) = puVar3;
+    *puVar3 = extraout_x17;
+    uVar4 = sk_x_00407d90();
+    sk_x_003ed340(uVar4, uVar2, uVar5, uVar1);
+}
+
+/* FUN_003fd25c @ 0x003fd25c  (est. sk_vas_op_forward_d25c)
+ * Ghidra: void FUN_003fd25c(undefined8 param_1)
+ * Forwards (param_1, *(unaff_x20+0x10)) to FUN_003ed5f8. Confidence: low. */
+static void sk_x_003fd25c(uint64_t param_1)
+{
+    long unaff_x20 = /* unaff_x20 */ 0;
+
+    sk_x_003ed5f8(param_1, *(uint64_t *)(unaff_x20 + 0x10));
+}
+
+/* FUN_003fd260 @ 0x003fd260  (est. sk_vas_op_forward_d260)
+ * Ghidra: void FUN_003fd260(undefined8 param_1)
+ * Identical body to FUN_003fd25c (distinct code address). Confidence: low. */
+static void sk_x_003fd260(uint64_t param_1)
+{
+    long unaff_x20 = /* unaff_x20 */ 0;
+
+    sk_x_003ed5f8(param_1, *(uint64_t *)(unaff_x20 + 0x10));
+}
+
+/* FUN_003fd278 @ 0x003fd278  (est. sk_vas_op_dispatch_d278)
+ * Ghidra: void FUN_003fd278(void)
+ * VAS dispatch via jumptable: allocates a frame pair at x22 (second word =
+ * FUN_003eebf0) and performs an unrecovered indirect jump. Confidence: low. */
+static void sk_x_003fd278(void)
+{
+    uint64_t *puVar1;
+    code *UNRECOVERED_JUMPTABLE;
+    uint64_t extraout_x17 = /* extraout_x17 */ 0;
+    long unaff_x22 = /* unaff_x22 */ 0;
+    uint64_t unaff_x30 = /* unaff_x30 */ 0;
+
+    sk_x_00407924();
+    sk_x_00351a68();
+    sk_x_0040bb18(sk_g_005a014c);
+    puVar1 = (uint64_t *)sk_x_00406fe0();
+    *(uint64_t **)(unaff_x22 + 0x10) = puVar1;
+    *puVar1 = extraout_x17;
+    puVar1[1] = (uint64_t)sk_x_003eebf0;
+    sk_x_004076a8(unaff_x30);
+    /* WARNING: jumptable at 0x003fd350 unrecovered; indirect jump as call. */
+    ((void (*)(void))(uintptr_t)UNRECOVERED_JUMPTABLE)();
+}
+
+/* FUN_003fd3ac @ 0x003fd3ac  (est. sk_vas_op_dispatch_d3ac)
+ * Ghidra: void FUN_003fd3ac(undefined8 param_1)
+ * VAS dispatch: resolves a target via FUN_001ee018 and forwards to
+ * FUN_004ba7ec. Confidence: low. */
+static void sk_x_003fd3ac(uint64_t param_1)
+{
+    uint64_t uVar1, uVar2;
+    long unaff_x20 = /* unaff_x20 */ 0;
+
+    uVar2 = *(uint64_t *)(unaff_x20 + 0x20);
+    uVar1 = sk_x_001ee018(*(uint64_t *)(unaff_x20 + 0x10), *(uint64_t *)(unaff_x20 + 0x18));
+    sk_x_004ba7ec(param_1, uVar1, 1, uVar2);
+}
+
+/* FUN_003fd3fc @ 0x003fd3fc  (est. sk_meta_field_18_b)
+ * Ghidra: long FUN_003fd3fc(ulong param_1)
+ * Tagged-pointer metadata field accessor at offset +0x18. Confidence: medium. */
+static long sk_x_003fd3fc(uint64_t param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(uint64_t *)(param_1 & 0xfffffffffffffffeULL);
+    }
+    return (long)(param_1 + 0x18) + (long)*(int *)(uintptr_t)(param_1 + 0x18);
+}
+
+/* FUN_003fd4ac @ 0x003fd4ac  (est. sk_vas_op_pair_d4ac)
+ * Ghidra: void FUN_003fd4ac(undefined8 param_1, long param_2)
+ * Combines a fresh pair (FUN_004072c0) with param_2 via FUN_00377824, then
+ * funnels through FUN_0006b6f4/FUN_00351e3c/FUN_00377bec and FUN_00406d60.
+ * Confidence: low. */
+static void sk_x_003fd4ac(uint64_t param_1, uint64_t param_2)
+{
+    uint64_t uVar1, uVar2;
+    cl4_result_t auVar3;
+
+    uVar2 = *(uint64_t *)(param_2 + 0x10);
+    auVar3 = sk_x_004072c0();
+    uVar2 = sk_x_00377824(auVar3.lo, auVar3.hi, uVar2, (uint64_t)&sk_g_00614a5c);
+    sk_x_0006b6f4();
+    sk_x_00351e3c();
+    sk_x_00377bec();
+    uVar1 = sk_x_00406d60();
+    sk_x_00377bec(uVar1, uVar2, param_1);
+}
+
+/* FUN_003fd554 @ 0x003fd554  (est. sk_vas_op_pair_d554)
+ * Ghidra: void FUN_003fd554(undefined8 param_1, long param_2)
+ * Identical structure to FUN_003fd4ac (register-renamed locals). Confidence: low. */
+static void sk_x_003fd554(uint64_t param_1, uint64_t param_2)
+{
+    uint64_t uVar1, uVar2;
+    cl4_result_t auVar3;
+
+    uVar1 = *(uint64_t *)(param_2 + 0x10);
+    auVar3 = sk_x_004072c0();
+    uVar1 = sk_x_00377824(auVar3.lo, auVar3.hi, uVar1, (uint64_t)&sk_g_00614a5c);
+    sk_x_0006b6f4();
+    sk_x_00351e3c();
+    sk_x_00377bec();
+    uVar2 = sk_x_00406d60();
+    sk_x_00377bec(uVar2, uVar1, param_1);
+}
+
+/* FUN_003fd7bc @ 0x003fd7bc  (est. sk_vas_op_advance_d7bc)
+ * Ghidra: void FUN_003fd7bc(void)
+ * VAS op advance: steps the descriptor and, on the carry path, copies a
+ * two-word pair out of the extraout_x9_00 descriptor into extraout_x8;
+ * otherwise releases through FUN_0036b270. Confidence: low. */
+static void sk_x_003fd7bc(void)
+{
+    bool in_ZR;
+    uint64_t uVar1, uVar2;
+    uint64_t *extraout_x8 = /* extraout_x8 */ 0;
+    code *extraout_x9 = /* extraout_x9 */ 0;
+    uint64_t *extraout_x9_00 = /* extraout_x9_00 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    uint64_t extraout_x16 = /* extraout_x16 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_0034b57c();
+    sk_x_0035510c(extraout_x16);
+    sk_x_0034c144();
+    if (in_ZR && extraout_x10 < 0x19) {
+        sk_x_00406c08();
+        ((void (*)(void))(uintptr_t)extraout_x9)();
+        sk_x_00349cd0();
+        uVar2 = *extraout_x9_00;
+        if (uVar2 < 0x1000 && (uVar2 & 0xffffffff) != 0xffffffff) {
+            uVar2 = *extraout_x9_00;
+            extraout_x8[1] = extraout_x9_00[1];
+            *extraout_x8 = uVar2;
+            return;
+        }
+        uVar1 = extraout_x9_00[1];
+        *extraout_x8 = uVar2;
+        extraout_x8[1] = uVar1;
+    }
+    else {
+        sk_x_00349a9c();
+    }
+    sk_x_0036b270();
+}
+
+/* FUN_003fd874 @ 0x003fd874  (est. sk_vas_op_advance_d874)
+ * Ghidra: void FUN_003fd874(void)
+ * VAS op advance: runs the vtable continuation (+8), finalizes, and checks the
+ * descriptor bounds. Confidence: low. */
+static void sk_x_003fd874(void)
+{
+    uint64_t uVar1;
+    uint64_t extraout_x8 = /* extraout_x8 */ 0;
+    uint64_t *extraout_x8_00 = /* extraout_x8_00 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+
+    sk_x_003561f4();
+    uVar1 = sk_x_0040654c();
+    uVar1 = sk_x_00377824(uVar1, extraout_x8);
+    sk_x_0034ab20(uVar1, uVar1);
+    ((void (*)(void))(uintptr_t)(*(uint64_t *)(extraout_x16 + 8)))();
+    sk_x_0034de54(*(uint64_t *)(extraout_x16 + 0x40));
+    if (0xfff < *extraout_x8_00 || (*extraout_x8_00 & 0xffffffff) == 0xffffffff) {
+        sk_x_0036b118(extraout_x8_00[1]);
+    }
+}
+
+/* FUN_003fd8f8 @ 0x003fd8f8  (est. sk_vas_op_advance_d8f8)
+ * Ghidra: void FUN_003fd8f8(void)
+ * VAS op advance: runs the vtable continuation (+0x10), and selects one of two
+ * two-word descriptor copies based on the carry/zero flags. Confidence: low. */
+static void sk_x_003fd8f8(void)
+{
+    bool in_ZR, in_CY;
+    uint64_t uVar1;
+    uint64_t *extraout_x8 = /* extraout_x8 */ 0;
+    uint64_t *extraout_x9 = /* extraout_x9 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    long extraout_x11 = /* extraout_x11 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    long unaff_x19 = /* unaff_x19 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    ((void (*)(void))(uintptr_t)(*(uint64_t *)(extraout_x16 + 0x10)))();
+    sk_x_00407800(*(long *)(extraout_x16 + 0x40) + 7 + unaff_x19 & 0xfffffffffffffff8LL);
+    if ((!in_CY || in_ZR) && extraout_x11 != 0xffffffff) {
+        uVar1 = *extraout_x9;
+        extraout_x8[1] = extraout_x9[1];
+        *extraout_x8 = uVar1;
+    }
+    else {
+        uVar1 = extraout_x9[1];
+        *extraout_x8 = extraout_x10;
+        extraout_x8[1] = uVar1;
+        sk_x_0036b270();
+    }
+}
+
+/* FUN_003fd98c @ 0x003fd98c  (est. sk_vas_op_advance_d98c)
+ * Ghidra: void FUN_003fd98c(void)
+ * VAS op advance: runs the vtable continuation (+0x18) and conditionally
+ * releases/re-copies the two-word descriptor. Confidence: low. */
+static void sk_x_003fd98c(void)
+{
+    bool in_ZR;
+    uint64_t uVar1, uVar3;
+    uint64_t extraout_x8 = /* extraout_x8 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    long extraout_x11 = /* extraout_x11 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    uint64_t *puVar2;
+    uint64_t *unaff_x20 = /* unaff_x20 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    puVar2 = (uint64_t *)(extraout_x16 + 0x18);
+    ((void (*)(void))(uintptr_t)(*puVar2))();
+    sk_x_0040767c(*(uint64_t *)(extraout_x16 + 0x40));
+    if (extraout_x10 < 0x1000 && extraout_x11 != 0xffffffff) {
+        if (in_ZR) {
+            uVar1 = unaff_x20[1];
+            *puVar2 = extraout_x8;
+            *(uint64_t *)(extraout_x16 + 0x20) = uVar1;
+            sk_x_0036b270();
+            return;
+        }
+    }
+    else {
+        if (in_ZR) {
+            uVar1 = unaff_x20[1];
+            uVar3 = *(uint64_t *)(extraout_x16 + 0x20);
+            *puVar2 = extraout_x8;
+            *(uint64_t *)(extraout_x16 + 0x20) = uVar1;
+            sk_x_0036b270();
+            sk_x_0036b118(uVar3);
+            return;
+        }
+        sk_x_0036b118(*(uint64_t *)(extraout_x16 + 0x20));
+    }
+    uVar1 = *unaff_x20;
+    *(uint64_t *)(extraout_x16 + 0x20) = unaff_x20[1];
+    *puVar2 = uVar1;
+}
+
+/* FUN_003fda44 @ 0x003fda44  (est. sk_vas_op_advance_da44)
+ * Ghidra: void FUN_003fda44(void)
+ * VAS op advance: runs the vtable continuation (+0x20) and selects one of two
+ * two-word descriptor copies based on the carry/zero flags. Confidence: low. */
+static void sk_x_003fda44(void)
+{
+    bool in_ZR, in_CY;
+    uint64_t uVar1;
+    uint64_t *extraout_x8 = /* extraout_x8 */ 0;
+    uint64_t *extraout_x9 = /* extraout_x9 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    long extraout_x11 = /* extraout_x11 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    long unaff_x19 = /* unaff_x19 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    ((void (*)(void))(uintptr_t)(*(uint64_t *)(extraout_x16 + 0x20)))();
+    sk_x_00407800(*(long *)(extraout_x16 + 0x40) + 7 + unaff_x19 & 0xfffffffffffffff8LL);
+    if ((!in_CY || in_ZR) && extraout_x11 != 0xffffffff) {
+        uVar1 = *extraout_x9;
+        extraout_x8[1] = extraout_x9[1];
+        *extraout_x8 = uVar1;
+    }
+    else {
+        uVar1 = extraout_x9[1];
+        *extraout_x8 = extraout_x10;
+        extraout_x8[1] = uVar1;
+    }
+}
+
+/* FUN_003fdad4 @ 0x003fdad4  (est. sk_vas_op_advance_dad4)
+ * Ghidra: void FUN_003fdad4(void)
+ * VAS op advance: runs the vtable continuation (+0x28) and conditionally
+ * releases/re-copies the two-word descriptor. Confidence: low. */
+static void sk_x_003fdad4(void)
+{
+    bool in_ZR;
+    uint64_t uVar1, uVar2;
+    uint64_t extraout_x8 = /* extraout_x8 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    long extraout_x11 = /* extraout_x11 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    uint64_t *puVar3;
+    uint64_t *unaff_x20 = /* unaff_x20 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    puVar3 = (uint64_t *)(extraout_x16 + 0x28);
+    ((void (*)(void))(uintptr_t)(*puVar3))();
+    sk_x_0040767c(*(uint64_t *)(extraout_x16 + 0x40));
+    if (extraout_x10 < 0x1000 && extraout_x11 != 0xffffffff) {
+        if (in_ZR) {
+            uVar1 = unaff_x20[1];
+            *puVar3 = extraout_x8;
+            *(uint64_t *)(extraout_x16 + 0x30) = uVar1;
+            return;
+        }
+    }
+    else {
+        if (in_ZR) {
+            uVar2 = unaff_x20[1];
+            uVar1 = *(uint64_t *)(extraout_x16 + 0x30);
+            *puVar3 = extraout_x8;
+            *(uint64_t *)(extraout_x16 + 0x30) = uVar2;
+            sk_x_0036b118(uVar1);
+            return;
+        }
+        sk_x_0036b118(*(uint64_t *)(extraout_x16 + 0x30));
+    }
+    uVar1 = *unaff_x20;
+    *(uint64_t *)(extraout_x16 + 0x30) = unaff_x20[1];
+    *puVar3 = uVar1;
+}
+
+/* FUN_003fdb80 @ 0x003fdb80  (est. sk_vas_op_classify)
+ * Ghidra: ulong FUN_003fdb80(void)
+ * VAS op classifier: bounds-checks the descriptor, then returns the object
+ * size/state based on the (register-forwarded) op word, branching on the
+ * element width (1/2/4 bytes). Confidence: low. */
+static unsigned long sk_x_003fdb80(void)
+{
+    uint uVar1, uVar9, uVar2, uVar3;
+    code *pcVar4;
+    bool bVar5, bVar6;
+    uint64_t uVar7, uVar8;
+    uint extraout_w1 = /* extraout_w1 */ 0;
+    uint extraout_w8 = /* extraout_w8 */ 0;
+    uint extraout_w12 = /* extraout_w12 */ 0;
+    uint extraout_w13 = /* extraout_w13 */ 0;
+    long extraout_x8 = /* extraout_x8 */ 0;
+    long extraout_x11 = /* extraout_x11 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    long unaff_x19 = /* unaff_x19 */ 0;
+    uint unaff_w20 = /* unaff_w20 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    uVar7 = sk_x_0034ada0();
+    uVar9 = *(uint *)(extraout_x16 + 0x54);
+    uVar1 = uVar9;
+    if (uVar9 < 0x1000) {
+        uVar1 = 0xfff;
+    }
+    if (unaff_w20 == 0) {
+        return 0;
+    }
+    if (uVar1 < unaff_w20) {
+        sk_x_00407460(*(uint64_t *)(extraout_x8 + 0x40), uVar7, uVar9, uVar7);
+        sk_x_004080bc();
+        uVar3 = extraout_w13;
+        if (extraout_w12 < 0x100) {
+            uVar3 = 1;
+        }
+        uVar2 = 0;
+        if (1 < extraout_w12) {
+            uVar2 = uVar3;
+        }
+        uVar9 = extraout_w1;
+        switch (uVar2) {
+        case 1:
+            if (*(char *)(unaff_x19 + extraout_x11) != '\0') {
+LAB_003fdc34:
+                sk_x_00407d54();
+                uVar8 = sk_x_00356e64();
+                return uVar8;
+            }
+            break;
+        case 2:
+            if (*(short *)(unaff_x19 + extraout_x11) != 0) goto LAB_003fdc34;
+            break;
+        case 3:
+            /* WARNING: Does not return */
+            sk_brk_noret();
+        case 4:
+            if (*(int *)(unaff_x19 + extraout_x11) != 0) goto LAB_003fdc34;
+        }
+    }
+    bVar5 = 0xffe < uVar9;
+    bVar6 = uVar9 == 0xfff;
+    if (!bVar5) {
+        sk_x_0040692c();
+        uVar1 = extraout_w8;
+        if (bVar5 && !bVar6) {
+            uVar1 = 0xffffffff;
+        }
+        uVar9 = 0;
+        if (1 < uVar1 + 1) {
+            uVar9 = uVar1;
+        }
+        return (unsigned long)uVar9;
+    }
+    uVar8 = sk_x_000839f8();
+    return uVar8;
+}
+
+/* FUN_003fde6c @ 0x003fde6c  (est. sk_vas_op_advance_de6c)
+ * Ghidra: void FUN_003fde6c(void)
+ * VAS op advance: steps the descriptor and, on the carry path, runs the
+ * continuation; otherwise releases through FUN_0036b270. Confidence: low. */
+static void sk_x_003fde6c(void)
+{
+    bool in_ZR;
+    code *extraout_x9 = /* extraout_x9 */ 0;
+    uint64_t extraout_x10 = /* extraout_x10 */ 0;
+    uint64_t extraout_x16 = /* extraout_x16 */ 0;
+
+    sk_x_0034d724();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_0034b57c();
+    sk_x_0035510c(extraout_x16);
+    sk_x_0034c144();
+    if (in_ZR && extraout_x10 < 0x19) {
+        sk_x_00406c08();
+        ((void (*)(void))(uintptr_t)extraout_x9)();
+        sk_x_00349cd0();
+        sk_x_003535e4();
+    }
+    else {
+        sk_x_00349a9c();
+    }
+    sk_x_0036b270();
+}
+
+/* FUN_003fdf0c @ 0x003fdf0c  (est. sk_vas_op_advance_df0c)
+ * Ghidra: void FUN_003fdf0c(void)
+ * VAS op advance: runs the vtable continuation (+0x10) and finalizes.
+ * Confidence: low. */
+static void sk_x_003fdf0c(void)
+{
+    long extraout_x16 = /* extraout_x16 */ 0;
+
+    sk_x_0034dbd8();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    ((void (*)(void))(uintptr_t)(*(uint64_t *)(extraout_x16 + 0x10)))();
+    sk_x_00349104(*(uint64_t *)(extraout_x16 + 0x40));
+    sk_x_0034f22c();
+    sk_x_0036b270();
+}
+
+/* FUN_003fdf74 @ 0x003fdf74  (est. sk_vas_op_advance_df74)
+ * Ghidra: void FUN_003fdf74(void)
+ * VAS op advance: runs the vtable continuation (+0x18) and finalizes.
+ * Confidence: low. */
+static void sk_x_003fdf74(void)
+{
+    long extraout_x9 = /* extraout_x9 */ 0;
+    long extraout_x16 = /* extraout_x16 */ 0;
+    uint64_t uVar1;
+
+    sk_x_0034dbd8();
+    sk_x_0040654c();
+    sk_x_00377824();
+    sk_x_00349530();
+    ((void (*)(void))(uintptr_t)(*(uint64_t *)(extraout_x16 + 0x18)))();
+    sk_x_00349104(*(uint64_t *)(extraout_x16 + 0x40));
+    uVar1 = *(uint64_t *)(extraout_x9 + 8);
+    sk_x_0034f22c();
+    sk_x_0036b270();
+    sk_x_0036b118(uVar1);
+}
