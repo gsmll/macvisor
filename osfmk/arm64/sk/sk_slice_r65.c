@@ -26,6 +26,7 @@
 typedef uint64_t word_t;
 typedef uint32_t seL4_Word;
 typedef unsigned char byte;
+typedef unsigned int uint;
 
 /* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1). */
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
@@ -42,9 +43,11 @@ extern word_t sk_obj_resolve_forward(word_t arg, word_t arg2); /* FUN_00376820 *
 extern cL4_w16_t sk_word_copy(word_t *p);                  /* FUN_0034f2f4 */
 extern cL4_w16_t exc_restore_2b20(void);                   /* FUN_00352b20 */
 extern void   *sk_f_0034d454(void);                        /* FUN_0034d454 */
-extern void    sk_sys_stub_04d0(void);                     /* FUN_003504d0 */
+extern void   *sk_sys_stub_04d0(void);                     /* FUN_003504d0 */
+extern void   *sk_003504d0(void);   /* alias */
 extern void    sk_syscall_save_ret(void);                  /* FUN_00350c5c */
 extern cL4_w16_t sk_frame_copy16(void);                    /* FUN_00355938 */
+extern cL4_w16_t sk_00355938(void);   /* alias */
 extern cL4_w16_t sk_pair_make(void);                       /* FUN_00355968 */
 extern void    sk_release_666c0(void);                     /* FUN_004666c0 */
 extern void    swift_runtime_stub_noop(void);              /* FUN_0034f8e4 / FUN_0034f3b4 */
@@ -56,7 +59,7 @@ extern void    sk_store_regs_640d0(word_t a0,word_t a1,word_t a2,word_t a3,word_
 extern void    sk_rt_463154(void);                         /* FUN_00463154 */
 extern void    sk_noop_463504(void);                       /* FUN_00463504 */
 extern void    sk_noop_c444(void);                         /* FUN_0034c444 */
-extern void    sk_rt_46306c(void);                         /* FUN_0046306c */
+extern cL4_w16_t sk_rt_46306c(void);                       /* FUN_0046306c */
 extern void    sk_cmp_462bd8(word_t a);                    /* FUN_00462bd8 */
 extern void    sk_rt_462e54(word_t a);                     /* FUN_00462e54 */
 extern void    sk_noop_462e88(word_t a);                   /* FUN_00462e88 */
@@ -78,7 +81,9 @@ extern void    sk_copy_word_640b8(void);                   /* FUN_004640b8 */
 extern void    sk_copy_word_64504(void);                   /* FUN_00464504 */
 extern void    sk_copy_fields_645d8(void);                 /* FUN_004645d8 */
 extern void    sk_nop_464ae8(void);                        /* FUN_00464ae8 */
-extern void    sk_nop_464b04(void);                        /* FUN_00464b04 */
+extern void   *sk_nop_464b04(void);                        /* FUN_00464b04 */
+extern void    sk_gate_4627d0(void);                       /* FUN_004627d0 */
+extern void    sk_syscall_stub_34db28(void);               /* FUN_0034db28 */
 extern void    sk_copy_field_10_464dcc(void);              /* FUN_00464dcc */
 extern void    sk_fwd_45a4b4_464e9c(void);                 /* FUN_00464e9c */
 extern void    sk_copy2words_53cc(void);                   /* FUN_004653cc */
@@ -97,7 +102,7 @@ extern void    sk_nop_661fc(void);                         /* FUN_004661fc */
 extern void    sk_copy_word_66220(void);                   /* FUN_00466220 */
 extern void    sk_copy_fields_66374(void);                 /* FUN_00466374 */
 extern void    sk_nop_663ec(void);                         /* FUN_004663ec */
-extern void    sk_nop_66408(void);                         /* FUN_00466408 */
+extern cL4_w16_t sk_466408(void);                         /* FUN_00466408 */
 extern void    sk_global_init_gate(void);                  /* FUN_00462758 */
 extern void    sk_global_store(void);                      /* FUN_00460d50 */
 extern void    sk_global_gate2(void);                      /* FUN_004627d0 */
@@ -112,15 +117,15 @@ extern void    sk_5fc8c(void);                             /* FUN_0045fc8c */
 extern void    sk_61dc4(word_t a, word_t b);               /* FUN_00461dc4 */
 extern void    sk_55574(word_t a, word_t b, word_t c, word_t d, word_t e); /* FUN_00455574 */
 extern void    sk_588cc(void);                             /* FUN_004588cc */
-extern void    sk_58940(void);                             /* FUN_00458940 */
-extern void    sk_58b94(void);                             /* FUN_00458b94 */
+extern void    sk_58940(word_t, word_t, word_t, word_t);   /* FUN_00458940 */
+extern void    sk_58b94(word_t, word_t, word_t, word_t);   /* FUN_00458b94 */
 extern void    sk_58bac(void);                             /* FUN_00458bac */
 extern void    sk_4663ec(word_t a, word_t b);              /* FUN_004663ec */
-extern void    sk_464644(word_t a, word_t b, word_t c);    /* FUN_004644cc */
+extern long    sk_464644(word_t a, word_t b, word_t c);    /* FUN_004644cc */
 extern void    sk_46350(void);                             /* FUN_00463504 */
 extern void    sk_4640d0(void);                            /* FUN_004640d0 */
 extern void    sk_464ae8(word_t a, word_t b);              /* FUN_00464ae8 */
-extern void    sk_464b04(word_t a);                        /* FUN_00464b04 */
+extern void   *sk_464b04(word_t a);                        /* FUN_00464b04 */
 extern void    sk_464dcc(void);                            /* FUN_00464dcc */
 extern void    sk_464e9c(void);                            /* FUN_00464e9c */
 extern void    sk_4653cc(void);                            /* FUN_004653cc */
@@ -137,7 +142,6 @@ extern void    sk_466034(void);                            /* FUN_00466034 */
 extern void    sk_4661a4(void);                            /* FUN_004661a4 */
 extern void    sk_466220(void);                            /* FUN_00466220 */
 extern void    sk_466374(void);                            /* FUN_00466374 */
-extern void    sk_466408(void);                            /* FUN_00466408 */
 extern void    sk_4666c0(void);                            /* FUN_004666c0 */
 extern void    sk_4607c4(void *obj, word_t arg, void (*fn)(void)); /* FUN_004607c4 */
 extern void    sk_460d(word_t a);                          /* FUN_00460d50 */
@@ -148,11 +152,60 @@ extern void    sk_46454(word_t a, word_t b, word_t c);     /* FUN_0045545c */
 extern byte DAT_005a2018, DAT_005a2ca8, DAT_005a2db0, DAT_005a26cc, DAT_005a2cb0,
     DAT_005a2e08, DAT_005a2e60, DAT_005a2eb8, DAT_005a2f10, DAT_004ea7c8,
     DAT_004ea794, DAT_004eb028, DAT_004eb078, DAT_004ea760, DAT_004bbe30,
-    DAT_0064c2d8, DAT_0064c2e0;
+    DAT_0064c2d8, DAT_0064c2e0, DAT_0045961c;
+extern void sk_word_copy_3(void);   /* FUN_0034b264 */
+
 
 /* ------------------------------------------------------------------ *
  * Slice R65 function bodies.
  * ------------------------------------------------------------------ */
+
+/* Missing low-level helpers (FUN_ address in comments). */
+extern void    sk_0001a1cc(void);            /* FUN_0001a1cc */
+extern void    sk_00021480(void);            /* FUN_00021480 */
+extern cL4_w16_t sk_00355968(void);          /* FUN_00355968 */
+extern cL4_w16_t sk_00002534(void);          /* FUN_00002534 */
+extern void    sk_003509c8(word_t a, word_t b, word_t c, word_t d); /* FUN_003509c8 */
+extern void    sk_indirect_10(void);         /* indirect call through slot +0x10 */
+extern void    sk_00002850(void);            /* FUN_00002850 */
+extern void    sk_00002834(void);            /* FUN_00002834 */
+extern void    sk_00350af4(word_t a, word_t b, word_t *c); /* FUN_00350af4 */
+extern void    sk_00027754(word_t a);        /* FUN_00027754 */
+extern void    sk_00027614(word_t a, word_t b); /* FUN_00027614 */
+extern cL4_w16_t sk_00027670(void);          /* FUN_00027670 */
+extern void    sk_0006b6f4(word_t a, word_t b, word_t *c); /* FUN_0006b6f4 */
+extern void    sk_0010a9f8(void);            /* FUN_0010a9f8 */
+extern void    sk_464f40(word_t a);          /* FUN_00464f40 */
+extern void    sk_465884(void);              /* FUN_00465884 */
+extern void    sk_00355538(void);            /* FUN_00355538 */
+extern void    sk_00114330(word_t *p, word_t n); /* thunk_FUN_00114330 */
+extern void    sk_global_2cb0_store(word_t v);   /* store into 0x657a60 slot */
+extern cL4_w16_t sk_call_pair_slot(word_t fn);   /* indirect call through pair slot */
+extern void    sk_00002840(void);            /* FUN_00002840 */
+extern void    sk_00355968b(void);           /* unused */
+
+/* Forward declarations of slice-internal statics that call each other. */
+static void sk_rt_458f00(word_t, word_t, word_t, word_t, uint);
+static void sk_rt_458f9c(word_t, word_t, word_t, word_t, uint);
+static void sk_rt_459280(word_t, word_t, word_t, word_t, byte);
+static void sk_rt_4592dc(word_t, word_t, word_t, word_t, byte);
+static void sk_rt_4592f4(word_t, word_t, word_t, word_t, word_t, word_t, word_t, byte);
+static void sk_rt_459138(word_t, word_t, word_t, word_t, word_t, word_t, word_t, word_t, byte);
+static void sk_rt_459888(word_t, word_t);
+static void sk_rt_459768(word_t, word_t, word_t);
+static word_t sk_rt_459698(void);
+static word_t sk_rt_459800(void);
+static void sk_rt_45a1f8(word_t, word_t, word_t, word_t, byte);
+static void sk_rt_45a5fc(word_t, word_t, word_t, word_t, byte);
+static void sk_rt_45a658(word_t, word_t, word_t, word_t, word_t, word_t, word_t, byte);
+static void sk_rt_45a4b4(word_t, word_t, word_t, word_t, word_t, word_t, word_t, word_t, byte);
+static void sk_rt_45b1a0(word_t, word_t, void (*)(void));
+static void sk_rt_459b6c(void);
+static void sk_rt_4593ac(unsigned long);
+static void sk_rt_45aa44(word_t *, uint, uint);
+static void sk_rt_45a904(word_t *, uint, uint);
+
+
 
 /* FUN_00458d68 @ 0x00458d68  (est. sk_rt_destroy_then_copy)
  * Destroy helper: forwards both arguments to the shared copy routine
@@ -382,9 +435,9 @@ static void sk_rt_459138(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5,
     default: p5 = p2; break;
     case 1: case 4: return;
     case 2: sk_refcount_release_b(0); p2 = p8; sk_refcount_release_b(p2); return;
-    case 3: sk_rt_459280(p1, p2); return;
-    case 9: case 10: sk_rt_4592dc(p1, p2); return;
-    case 0xb: sk_rt_4592f4(p1, p2); return;
+    case 3: sk_rt_459280(p1, p2, 0, 0, 0); return;
+    case 9: case 10: sk_rt_4592dc(p1, p2, 0, 0, 0); return;
+    case 0xb: sk_rt_4592f4(p1, p2, 0, 0, 0, 0, 0, 0); return;
     case 0xc: break;
     case 0xd: sk_refcount_release_b(p4); p2 = p8;
               sk_refcount_release_b(p2); return;
@@ -656,7 +709,7 @@ static void sk_rt_459724(void)
  * build a 16-byte value, forwards it through FUN_00350af4, then resolves the
  * object via FUN_00376820 and stores it into the target slot.
  * Confidence: medium (structural). */
-static void sk_rt_459768(word_t *dst)
+static void sk_rt_459768(word_t dst, word_t tramp, word_t str)
 {
     cL4_w16_t pair = exc_restore_2b20();
     word_t v;
@@ -665,7 +718,7 @@ static void sk_rt_459768(word_t *dst)
         pair = sk_call_pair_slot(pair.hi);
         sk_00350af4(pair.lo, pair.hi, &pair.lo);
         v = sk_obj_resolve_forward(0, 0);
-        *dst = v;
+        *(word_t*)dst = v;
     }
 }
 
@@ -986,7 +1039,7 @@ static void sk_rt_459e74(word_t *dst, word_t *src,
     *(word_t*)((char*)dst + 0x18) = v22;
     *(word_t*)((char*)dst + 0x20) = v23;
     *(word_t*)((char*)dst + 0x28) = v24;
-    sk_58940();
+    sk_58940(0, 0, 0, 0);
     *(word_t*)((char*)dst + 0x30) = *(word_t*)((char*)src + 0x30);
     sk_copy_word_66220();
 }
@@ -1126,9 +1179,9 @@ static void sk_rt_45a4b4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5,
     default: p5 = p2; break;
     case 1: case 4: return;
     case 2: sk_refcount_acquire_c(0); p2 = p8; sk_refcount_acquire_c(p2); return;
-    case 3: sk_rt_45a5fc(p1, p2); return;
-    case 9: case 10: sk_rt_45a1f8(p1, p2); return;
-    case 0xb: sk_rt_45a658(p1, p2); return;
+    case 3: sk_rt_45a5fc(p1, p2, 0, 0, 0); return;
+    case 9: case 10: sk_rt_45a1f8(p1, p2, 0, 0, 0); return;
+    case 0xb: sk_rt_45a658(p1, p2, 0, 0, 0, 0, 0, 0); return;
     case 0xc: break;
     case 0xd: sk_refcount_acquire_c(p4); p2 = p8;
               sk_refcount_acquire_c(p2); return;
@@ -1424,7 +1477,7 @@ static void sk_rt_45b1f4(void)
 static void sk_rt_45b330(void)
 {
     cL4_w16_t pair;
-    word_t *box = (word_t*)sk_464b04();
+    word_t *box = (word_t*)sk_464b04(0);
     word_t w[11];
     int i;
     sk_noop_462e88(0);

@@ -6,7 +6,7 @@
  * Slice 0x00663c04-0x0066afe8 (worker SKR68): the cL4 error-code / IPC result
  * stringification layer and its surrounding helpers — per-selector-group L4
  * error-code-to-string tables, string table copies, message-register / result
- * register dispatch, the 16-byte result-pair helpers, and the 
+ * register dispatch, the 16-uint8_t result-pair helpers, and the 
  * function-pointer-table dispatch used by the operation wrappers. Many
  * functions share the same error-string switch pattern with distinct table
  * bases (0x68a080/0x68a0c8/0x68a240/0x68a3c8/0x68a4a8 ...).
@@ -53,130 +53,131 @@ static uint8_t sk_tpidr_area[0x100] __attribute__((aligned(16)));
 /* External callees (outside this slice). Address-based names; each declared
  * `unsigned long` (64-bit ABI word) with an unspecified parameter list so any
  * call site compiles. Ghidra FUN_ address is ground truth. sk_f_ = in-slice
- * (defined below), sk_x_ = out-of-slice extern. 16-byte-return helpers return
+ * (defined below), sk_x_ = out-of-slice extern. 16-uint8_t-return helpers return
  * sk_u128_t. */
 typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
 
-extern unsigned long sk_f_00663c04();   /* FUN_0000663c04 */
-extern unsigned long sk_f_00663d3c();   /* FUN_0000663d3c */
-extern unsigned long sk_f_006642bc();   /* FUN_00006642bc */
-extern unsigned long sk_f_00664304();   /* FUN_0000664304 */
-extern unsigned long sk_f_00664330();   /* FUN_0000664330 */
-extern unsigned long sk_f_006643b8();   /* FUN_00006643b8 */
-extern unsigned long sk_f_0066453c();   /* FUN_000066453c */
-extern unsigned long sk_f_0066455c();   /* FUN_000066455c */
-extern unsigned long sk_f_00664588();   /* FUN_0000664588 */
-extern unsigned long sk_f_006645bc();   /* FUN_00006645bc */
-extern unsigned long sk_f_006645ec();   /* FUN_00006645ec */
-extern unsigned long sk_f_0066469c();   /* FUN_000066469c */
-extern unsigned long sk_f_006646e0();   /* FUN_00006646e0 */
-extern unsigned long sk_f_006646f4();   /* FUN_00006646f4 */
-extern unsigned long sk_f_0066479c();   /* FUN_000066479c */
-extern unsigned long sk_f_006647d0();   /* FUN_00006647d0 */
-extern unsigned long sk_f_006648a8();   /* FUN_00006648a8 */
-extern unsigned long sk_f_006648dc();   /* FUN_00006648dc */
-extern unsigned long sk_f_006649b4();   /* FUN_00006649b4 */
-extern unsigned long sk_f_00664a84();   /* FUN_0000664a84 */
-extern unsigned long sk_f_00664a8c();   /* FUN_0000664a8c */
-extern unsigned long sk_f_00664bd4();   /* FUN_0000664bd4 */
-extern unsigned long sk_f_00664c04();   /* FUN_0000664c04 */
-extern unsigned long sk_f_00664cbc();   /* FUN_0000664cbc */
-extern unsigned long sk_f_0066512c();   /* FUN_000066512c */
-extern unsigned long sk_f_00665354();   /* FUN_0000665354 */
-extern unsigned long sk_f_00665498();   /* FUN_0000665498 */
-extern unsigned long sk_f_006654b8();   /* FUN_00006654b8 */
-extern unsigned long sk_f_00665630();   /* FUN_0000665630 */
-extern unsigned long sk_f_00665660();   /* FUN_0000665660 */
-extern unsigned long sk_f_006657d8();   /* FUN_00006657d8 */
-extern unsigned long sk_f_00665860();   /* FUN_0000665860 */
-extern unsigned long sk_f_0066599c();   /* FUN_000066599c */
-extern unsigned long sk_f_00665a38();   /* FUN_0000665a38 */
-extern sk_u128_t sk_f_00665bd4();   /* FUN_0000665bd4 */
-extern unsigned long sk_f_00665cec();   /* FUN_0000665cec */
-extern unsigned long sk_f_00665d0c();   /* FUN_0000665d0c */
-extern unsigned long sk_f_00665d20();   /* FUN_0000665d20 */
-extern unsigned long sk_f_00665d44();   /* FUN_0000665d44 */
-extern unsigned long sk_f_00665d60();   /* FUN_0000665d60 */
-extern unsigned long sk_f_00665d70();   /* FUN_0000665d70 */
-extern unsigned long sk_f_00665d84();   /* FUN_0000665d84 */
-extern unsigned long sk_f_00665d9c();   /* FUN_0000665d9c */
-extern sk_u128_t sk_f_00665ef8();   /* FUN_0000665ef8 */
-extern unsigned long sk_f_00665f04();   /* FUN_0000665f04 */
-extern unsigned long sk_f_0066609c();   /* FUN_000066609c */
-extern unsigned long sk_f_006661d4();   /* FUN_00006661d4 */
-extern unsigned long sk_f_006661e0();   /* FUN_00006661e0 */
-extern unsigned long sk_f_006661f4();   /* FUN_00006661f4 */
-extern unsigned long sk_f_0066628c();   /* FUN_000066628c */
-extern unsigned long sk_f_00666298();   /* FUN_0000666298 */
-extern unsigned long sk_f_006662ac();   /* FUN_00006662ac */
-extern sk_u128_t sk_f_00666344();   /* FUN_0000666344 */
-extern unsigned long sk_f_00666448();   /* FUN_0000666448 */
-extern unsigned long sk_f_00666800();   /* FUN_0000666800 */
-extern unsigned long sk_f_00666808();   /* FUN_0000666808 */
-extern unsigned long sk_f_00666d84();   /* FUN_0000666d84 */
-extern unsigned long sk_f_00666d90();   /* FUN_0000666d90 */
-extern unsigned long sk_f_00667040();   /* FUN_0000667040 */
-extern unsigned long sk_f_006673ec();   /* FUN_00006673ec */
-extern unsigned long sk_f_0066745c();   /* FUN_000066745c */
-extern unsigned long sk_f_00667530();   /* FUN_0000667530 */
-extern unsigned long sk_f_00667568();   /* FUN_0000667568 */
-extern unsigned long sk_f_00667578();   /* FUN_0000667578 */
-extern unsigned long sk_f_00667588();   /* FUN_0000667588 */
-extern unsigned long sk_f_00667870();   /* FUN_0000667870 */
-extern unsigned long sk_f_00667d74();   /* FUN_0000667d74 */
-extern unsigned long sk_f_00667e54();   /* FUN_0000667e54 */
-extern unsigned long sk_f_00668128();   /* FUN_0000668128 */
-extern unsigned long sk_f_0066834c();   /* FUN_000066834c */
-extern unsigned long sk_f_00668c6c();   /* FUN_0000668c6c */
-extern unsigned long sk_f_00668c78();   /* FUN_0000668c78 */
-extern unsigned long sk_f_00668c94();   /* FUN_0000668c94 */
-extern unsigned long sk_f_00668cb0();   /* FUN_0000668cb0 */
-extern unsigned long sk_f_00668dc4();   /* FUN_0000668dc4 */
-extern unsigned long sk_f_00668dd8();   /* FUN_0000668dd8 */
-extern unsigned long sk_f_00668e24();   /* FUN_0000668e24 */
-extern unsigned long sk_f_006690dc();   /* FUN_00006690dc */
-extern unsigned long sk_f_00669134();   /* FUN_0000669134 */
-extern unsigned long sk_f_0066924c();   /* FUN_000066924c */
-extern unsigned long sk_f_00669298();   /* FUN_0000669298 */
-extern unsigned long sk_f_006692e4();   /* FUN_00006692e4 */
-extern unsigned long sk_f_00669330();   /* FUN_0000669330 */
-extern unsigned long sk_f_00669388();   /* FUN_0000669388 */
-extern unsigned long sk_f_006693d4();   /* FUN_00006693d4 */
-extern unsigned long sk_f_0066942c();   /* FUN_000066942c */
-extern unsigned long sk_f_00669478();   /* FUN_0000669478 */
-extern unsigned long sk_f_006694d0();   /* FUN_00006694d0 */
-extern unsigned long sk_f_0066951c();   /* FUN_000066951c */
-extern unsigned long sk_f_00669578();   /* FUN_0000669578 */
-extern unsigned long sk_f_00669618();   /* FUN_0000669618 */
-extern unsigned long sk_f_006699e8();   /* FUN_00006699e8 */
-extern unsigned long sk_f_00669a48();   /* FUN_0000669a48 */
-extern unsigned long sk_f_00669af8();   /* FUN_0000669af8 */
-extern unsigned long sk_f_00669c3c();   /* FUN_0000669c3c */
-extern unsigned long sk_f_00669c98();   /* FUN_0000669c98 */
-extern unsigned long sk_f_00669cfc();   /* FUN_0000669cfc */
-extern unsigned long sk_f_00669db4();   /* FUN_0000669db4 */
-extern unsigned long sk_f_0066a08c();   /* FUN_000066a08c */
-extern unsigned long sk_f_0066a1cc();   /* FUN_000066a1cc */
-extern unsigned long sk_f_0066a1d4();   /* FUN_000066a1d4 */
-extern unsigned long sk_f_0066a1d8();   /* FUN_000066a1d8 */
-extern unsigned long sk_f_0066a300();   /* FUN_000066a300 */
-extern unsigned long sk_f_0066a404();   /* FUN_000066a404 */
-extern unsigned long sk_f_0066a558();   /* FUN_000066a558 */
-extern unsigned long sk_f_0066a65c();   /* FUN_000066a65c */
-extern unsigned long sk_f_0066a6b4();   /* FUN_000066a6b4 */
-extern unsigned long sk_f_0066a70c();   /* FUN_000066a70c */
-extern unsigned long sk_f_0066a720();   /* FUN_000066a720 */
-extern unsigned long sk_f_0066a768();   /* FUN_000066a768 */
-extern unsigned long sk_f_0066a7b8();   /* FUN_000066a7b8 */
-extern unsigned long sk_f_0066a808();   /* FUN_000066a808 */
-extern sk_u128_t sk_f_0066a8c4();   /* FUN_000066a8c4 */
-extern unsigned long sk_f_0066a8f4();   /* FUN_000066a8f4 */
-extern unsigned long sk_f_0066a988();   /* FUN_000066a988 */
-extern sk_u128_t sk_f_0066a9bc();   /* FUN_000066a9bc */
-extern unsigned long sk_f_0066ab40();   /* FUN_000066ab40 */
-extern unsigned long sk_f_0066ad54();   /* FUN_000066ad54 */
-extern unsigned long sk_f_0066af84();   /* FUN_000066af84 */
-extern unsigned long sk_f_0066afe8();   /* FUN_000066afe8 */
+extern void sk_f_00663c04(uint64_t msg_buf, uint8_t err_code);   /* FUN_0000663c04 */
+extern void sk_f_00663d3c(int64_t obj, uint64_t count);   /* FUN_0000663d3c */
+extern void sk_f_006642bc(uint64_t *obj, uint64_t flags, uint64_t unused, uint64_t *result);   /* FUN_00006642bc */
+extern uint64_t sk_f_00664304(int64_t obj, int64_t index);   /* FUN_0000664304 */
+extern void sk_f_00664330(uint64_t new_owner);   /* FUN_0000664330 */
+extern void sk_f_006643b8(uint64_t new_owner);   /* FUN_00006643b8 */
+extern void sk_f_0066453c(void);   /* FUN_000066453c */
+extern uint64_t sk_f_0066455c(uint64_t obj);   /* FUN_000066455c */
+extern void sk_f_00664588(uint64_t obj);   /* FUN_0000664588 */
+extern uint32_t sk_f_006645bc(uint64_t obj);   /* FUN_00006645bc */
+extern void sk_f_006645ec(uint64_t unused, uint64_t *slot);   /* FUN_00006645ec */
+extern void sk_f_0066469c(void);   /* FUN_000066469c */
+extern void sk_f_006646e0(void);   /* FUN_00006646e0 */
+extern uint64_t sk_f_006646f4(uint64_t slot_value, uint64_t slot_meta, uint64_t register_flag);   /* FUN_00006646f4 */
+extern void sk_f_0066479c(void);   /* FUN_000066479c */
+extern void sk_f_006647d0(int64_t slot_idx, int64_t slot_value, uint64_t slot_meta, int register_flag);   /* FUN_00006647d0 */
+extern void sk_f_006648a8(void);   /* FUN_00006648a8 */
+extern void sk_f_006648dc(int64_t dest);   /* FUN_00006648dc */
+extern void sk_f_006649b4(void);   /* FUN_00006649b4 */
+extern void sk_f_00664a84(uint64_t new_tls);   /* FUN_0000664a84 */
+extern uint64_t sk_f_00664a8c(int64_t *slot_idx, uint64_t table_id);   /* FUN_0000664a8c */
+extern uint64_t sk_f_00664bd4(void);   /* FUN_0000664bd4 */
+extern void sk_f_00664c04(void);   /* FUN_0000664c04 */
+extern void sk_f_00664cbc(void);   /* FUN_0000664cbc */
+extern long sk_f_0066512c(uint64_t arg0, uint64_t fault, int64_t tcb);   /* FUN_000066512c */
+extern void sk_f_00665354(uint64_t buf, uint8_t code);   /* FUN_0000665354 */
+extern uint64_t sk_f_00665498(uint64_t arg0, uint64_t obj);   /* FUN_0000665498 */
+extern void sk_f_006654b8(uint64_t arg0, int64_t cap, int64_t *msg);   /* FUN_00006654b8 */
+extern void sk_f_00665630(uint64_t *node);   /* FUN_0000665630 */
+extern void sk_f_00665660(uint64_t arg0, int64_t cap, int64_t *msg);   /* FUN_0000665660 */
+extern void sk_f_006657d8(int64_t obj);   /* FUN_00006657d8 */
+extern long sk_f_00665860(uint64_t kind);   /* FUN_0000665860 */
+extern uint64_t sk_f_0066599c(uint64_t recv, int64_t tcb);   /* FUN_000066599c */
+extern void sk_f_00665a38(uint64_t who, uint64_t v0, uint64_t v1);   /* FUN_0000665a38 */
+extern sk_u128_t sk_f_00665bd4(void);   /* FUN_0000665bd4 */
+extern void sk_f_00665cec(void);   /* FUN_0000665cec */
+extern void sk_f_00665d0c(void);   /* FUN_0000665d0c */
+extern void sk_f_00665d20(void);   /* FUN_0000665d20 */
+extern void sk_f_00665d44(uint64_t param_1, uint64_t param_2, uint64_t param_3);   /* FUN_0000665d44 */
+extern void sk_f_00665d60(void);   /* FUN_0000665d60 */
+extern void sk_f_00665d70(void);   /* FUN_0000665d70 */
+extern void sk_f_00665d84(void);   /* FUN_0000665d84 */
+extern void sk_f_00665d9c(uint64_t *desc, uint64_t aux_flag, uint64_t *cap_word);   /* FUN_0000665d9c */
+extern sk_u128_t sk_f_00665ef8(const sk_u128_t *src);   /* FUN_0000665ef8 */
+extern uint64_t sk_f_00665f04(void);   /* FUN_0000665f04 */
+extern void sk_f_0066609c(uint64_t msg_buf, uint8_t err_code);   /* FUN_000066609c */
+extern void sk_f_006661d4(uint64_t val);   /* FUN_00006661d4 */
+extern void sk_f_006661e0(uint64_t a, uint64_t b);   /* FUN_00006661e0 */
+extern unsigned long sk_f_006661f4(unsigned long *entry, unsigned long key, unsigned long *out);   /* FUN_00006661f4 */
+extern unsigned long sk_f_0066628c(unsigned long root);   /* FUN_000066628c */
+extern unsigned long sk_f_00666298(unsigned long key, unsigned long out);   /* FUN_0000666298 */
+extern unsigned long sk_f_006662ac(long *obj, unsigned long a, unsigned long b);   /* FUN_00006662ac */
+extern sk_u128_t sk_f_00666344(unsigned long obj, long *out);   /* FUN_0000666344 */
+extern unsigned long sk_f_00666448(unsigned long *out, long *pool, unsigned long key, unsigned long size, int flags);   /* FUN_0000666448 */
+extern unsigned long sk_f_00666800(void);   /* FUN_0000666800 */
+extern unsigned long sk_f_00666808(long *fs, unsigned long *pg, unsigned long tok, unsigned int *ext, int flag);   /* FUN_0000666808 */
+extern unsigned long sk_f_00666d84(void);   /* FUN_0000666d84 */
+extern unsigned long sk_f_00666d90(unsigned int *src, unsigned int *dst, unsigned char *scratch, long len);   /* FUN_0000666d90 */
+extern unsigned long sk_f_00667040(unsigned int *src, unsigned int *out, char *scratch, long budget);   /* FUN_0000667040 */
+extern unsigned long sk_f_006673ec(unsigned long *obj);   /* FUN_00006673ec */
+extern uint64_t * sk_f_0066745c(uint64_t * desc, uint64_t region);   /* FUN_000066745c */
+extern void sk_f_00667530(long buf, long * out);   /* FUN_0000667530 */
+extern bool sk_f_00667568(long buf);   /* FUN_0000667568 */
+extern bool sk_f_00667578(long buf);   /* FUN_0000667578 */
+extern uint64_t sk_f_00667588(long self);   /* FUN_0000667588 */
+extern void sk_f_00667870(long self, uint64_t * item);   /* FUN_0000667870 */
+extern void sk_f_00667d74(long self, long node);   /* FUN_0000667d74 */
+extern void sk_f_00667e54(long self, uint64_t addr);   /* FUN_0000667e54 */
+extern void sk_f_00668128(void);   /* FUN_0000668128 */
+extern void sk_f_0066834c(long self);   /* FUN_000066834c */
+extern uint64_t sk_f_00668c6c(void);   /* FUN_0000668c6c */
+extern void sk_f_00668c78(long ptr);   /* FUN_0000668c78 */
+extern void sk_f_00668c94(int64_t base);   /* FUN_0000668c94 */
+extern void sk_f_00668cb0(uint64_t *out_msg, uint8_t error_code);   /* FUN_0000668cb0 */
+extern void sk_f_00668dc4(uint64_t arg);   /* FUN_0000668dc4 */
+extern void sk_f_00668dd8(void);   /* FUN_0000668dd8 */
+extern uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags);   /* FUN_0000668e24 */
+extern void sk_f_006690dc(uint64_t obj);   /* FUN_00006690dc */
+extern void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj);   /* FUN_0000669134 */
+extern void sk_f_0066924c(void);   /* FUN_000066924c */
+extern void sk_f_00669298(void);   /* FUN_0000669298 */
+extern void sk_f_006692e4(void);   /* FUN_00006692e4 */
+extern void sk_f_00669330(uint64_t obj);   /* FUN_0000669330 */
+extern void sk_f_00669388(void);   /* FUN_0000669388 */
+extern void sk_f_006693d4(uint64_t arg);   /* FUN_00006693d4 */
+extern void sk_f_0066942c(void);   /* FUN_000066942c */
+extern void sk_f_00669478(uint64_t arg);   /* FUN_0000669478 */
+extern void sk_f_006694d0(void);   /* FUN_00006694d0 */
+extern void sk_f_0066951c(uint64_t arg);   /* FUN_000066951c */
+extern void sk_f_00669578(void);   /* FUN_0000669578 */
+extern void sk_f_00669618(void);   /* FUN_0000669618 */
+extern void sk_f_006699e8(int64_t desc);   /* FUN_00006699e8 */
+extern void sk_f_00669a48(void);   /* FUN_0000669a48 */
+extern uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr);   /* FUN_0000669af8 */
+extern void sk_f_00669c3c(void);   /* FUN_0000669c3c */
+extern uint64_t sk_f_00669c98(uint64_t arg);   /* FUN_0000669c98 */
+extern uint64_t sk_f_00669cfc(void);   /* FUN_0000669cfc */
+extern uint64_t *sk_f_00669db4(void);   /* FUN_0000669db4 */
+extern void sk_f_0066a08c(uint64_t param_1);   /* FUN_000066a08c */
+extern void sk_f_0066a1cc(uint64_t param_1);   /* FUN_000066a1cc */
+extern uint64_t sk_f_0066a1d4(void);   /* FUN_000066a1d4 */
+extern uint64_t sk_f_0066a1d8(void);   /* FUN_000066a1d8 */
+extern int64_t sk_f_0066a300(void);   /* FUN_000066a300 */
+extern uint64_t sk_f_0066a404(uint64_t ctx, uint8_t *desc);   /* FUN_000066a404 */
+extern void sk_f_0066a558(uint64_t ctx, int64_t desc, int64_t block);   /* FUN_000066a558 */
+extern void sk_f_0066a65c(void);   /* FUN_000066a65c */
+extern void sk_f_0066a6b4(uint64_t param_1);   /* FUN_000066a6b4 */
+extern void sk_f_0066a70c(uint64_t param_1);   /* FUN_000066a70c */
+extern bool sk_f_0066a720(void);   /* FUN_000066a720 */
+extern void sk_f_0066a768(void);   /* FUN_000066a768 */
+extern void sk_f_0066a7b8(uint64_t value);   /* FUN_000066a7b8 */
+extern int64_t *sk_f_0066a808(int64_t region_base, int64_t region_size, int64_t *descriptor);   /* FUN_000066a808 */
+extern sk_u128_t sk_f_0066a8c4(void);   /* FUN_000066a8c4 */
+extern void sk_f_0066a8f4(uint64_t region, uint64_t arg2, uint64_t arg3);   /* FUN_000066a8f4 */
+extern bool sk_f_0066a988(int64_t region);   /* FUN_000066a988 */
+extern sk_u128_t sk_f_0066a9bc(int64_t region);   /* FUN_000066a9bc */
+extern void sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index);   /* FUN_000066ab40 */
+extern int64_t sk_f_0066ad54(void);   /* FUN_000066ad54 */
+extern void sk_f_0066af84(void);   /* FUN_000066af84 */
+extern void sk_f_0066afe8(uint64_t *flist);   /* FUN_000066afe8 */
+
 extern unsigned long sk_x_0064e07c();   /* FUN_000064e07c */
 extern unsigned long sk_x_0064effc();   /* FUN_000064effc */
 extern unsigned long sk_x_00654cc8();   /* FUN_0000654cc8 */
@@ -195,7 +196,7 @@ extern unsigned long sk_x_0065db84();   /* FUN_000065db84 */
 extern unsigned long sk_x_0065de3c();   /* FUN_000065de3c */
 extern unsigned long sk_x_0065f058();   /* FUN_000065f058 */
 extern unsigned long sk_x_0065fdb8();   /* FUN_000065fdb8 */
-extern unsigned long sk_x_00660ab4();   /* FUN_0000660ab4 */
+extern sk_u128_t sk_x_00660ab4();   /* FUN_0000660ab4 */
 extern unsigned long sk_x_00661318();   /* FUN_0000661318 */
 extern unsigned long sk_x_00661324();   /* FUN_0000661324 */
 extern unsigned long sk_x_00662098();   /* FUN_0000662098 */
@@ -206,8 +207,8 @@ extern unsigned long sk_x_00662628();   /* FUN_0000662628 */
 extern unsigned long sk_x_006626f8();   /* FUN_00006626f8 */
 extern unsigned long sk_x_006631d8();   /* FUN_00006631d8 */
 extern unsigned long sk_x_00663928();   /* FUN_0000663928 */
+extern unsigned long sk_x_0066ad54();   /* FUN_000066ad54 */
 extern unsigned long sk_x_0066b038();   /* FUN_000066b038 */
-extern unsigned long sk_x_0066b520();   /* FUN_000066b520 */
 extern unsigned long sk_x_0066b870();   /* FUN_000066b870 */
 extern unsigned long sk_x_0066b878();   /* FUN_000066b878 */
 extern unsigned long sk_x_0066bce0();   /* FUN_000066bce0 */
@@ -235,7 +236,7 @@ extern unsigned long sk_x_0067d72c();   /* FUN_000067d72c */
 extern unsigned long sk_x_0067f660();   /* FUN_000067f660 */
 extern unsigned long sk_x_006832c8();   /* FUN_00006832c8 */
 extern unsigned long sk_x_006833d4();   /* FUN_00006833d4 */
-extern unsigned long sk_x_00684d1c();   /* FUN_0000684d1c */
+extern sk_u128_t sk_x_00684d1c();   /* FUN_0000684d1c */
 extern unsigned long sk_x_00685234();   /* FUN_0000685234 */
 extern unsigned long sk_x_006853e4();   /* FUN_00006853e4 */
 extern unsigned long sk_x_0068543c();   /* FUN_000068543c */
@@ -283,7 +284,6 @@ extern unsigned long sk_x_00686310();   /* FUN_0000686310 */
 extern unsigned long sk_x_00686348();   /* FUN_0000686348 */
 extern unsigned long sk_x_00686380();   /* FUN_0000686380 */
 extern unsigned long sk_x_006863b8();   /* FUN_00006863b8 */
-
 /* Image-base data globals referenced by this slice (Ghidra DAT_ ground truth). */
 extern uint64_t sk_g_0002007e;   /* DAT_000002007e */
 extern uint64_t sk_g_0066548c;   /* DAT_000066548c */
@@ -447,9 +447,9 @@ extern const char sk_str_0068a4e8[];   /* string at 0x0068a4e8 */
 /* ===== part 0: fragment of SKR68 ===== */
 
 /* FUN_00663c04 @ 0x00663c04   (est. sk_l4_error_string)
- * Ghidra: void FUN_00663c04(undefined8 param_1,byte param_2)
+ * Ghidra: void FUN_00663c04(uint64_t param_1,uint8_t param_2)
  * Emits the human-readable L4 error-code name for a given error code into a
- * fixed 0x20-byte message buffer. Codes 0..9 map to the standard L4 error
+ * fixed 0x20-uint8_t message buffer. Codes 0..9 map to the standard L4 error
  * strings ("L4 ErrorCodeSuccess" ... "L4 ErrorCodePermissionInvalid"); any
  * code above 9 falls through to a generic "unknown error" diagnostic string.
  * The formatted result is written via the shared log-write helper (out-of-slice
@@ -502,11 +502,11 @@ void sk_f_00663c04(uint64_t msg_buf, uint8_t err_code)
 }
 
 /* FUN_00663d3c @ 0x00663d3c   (est. sk_scratchpad_drain_reply)
- * Ghidra: void FUN_00663d3c(long param_1,ulong param_2)
+ * Ghidra: void FUN_00663d3c(long param_1,unsigned long param_2)
  * Drains `param_2` reply slots from a per-object scratch/queue structure at
  * `param_1`, releasing each queued entry (via sk_x_00685234) and the messages
  * referenced in its local/extended message regions (offsets +0xc0..0xe0 and
- * +0xe0..0x100 with per-entry 8-byte stride starting at +0x1c0/+0x1e0),
+ * +0xe0..0x100 with per-entry 8-uint8_t stride starting at +0x1c0/+0x1e0),
  * then zeroing those message-region words. After draining, re-reads the
  * current queue count (sk_x_00661318/sk_x_00684d1c); if the head ran dry it
  * parks the object by registering its wait queue and issues a supervisor call
@@ -753,10 +753,10 @@ bounds_fault:
 }
 
 /* FUN_006642bc @ 0x006642bc   (est. sk_scratch_record_result)
- * Ghidra: void FUN_006642bc(undefined8 *param_1,ulong param_2,undefined8 param_3,undefined8 *param_4)
+ * Ghidra: void FUN_006642bc(uint64_t *param_1,unsigned long param_2,uint64_t param_3,uint64_t *param_4)
  * Records a completed reply/result into a scratch object: first re-arms the
  * object's notification (sk_x_00663928 with a flag bit `param_2|2`), then
- * copies a 24-byte result payload (three 8-byte words from `param_4`) into the
+ * copies a 24-uint8_t result payload (three 8-uint8_t words from `param_4`) into the
  * object's message region at offsets +0x50/+0x58/+0x60. `param_3` is unused.
  * Bounds-checks the destination pointer before writing.
  * Confidence: high
@@ -776,9 +776,9 @@ void sk_f_006642bc(uint64_t *obj, uint64_t flags, uint64_t unused, uint64_t *res
 }
 
 /* FUN_00664304 @ 0x00664304   (est. sk_scratch_peek_reply)
- * Ghidra: undefined8 FUN_00664304(long param_1,long param_2)
- * Returns the 8-byte reply word stored at index `param_2` in the scratch
- * object's reply array (base +0xc0, 8-byte stride). The index is bounds-checked
+ * Ghidra: uint64_t FUN_00664304(long param_1,long param_2)
+ * Returns the 8-uint8_t reply word stored at index `param_2` in the scratch
+ * object's reply array (base +0xc0, 8-uint8_t stride). The index is bounds-checked
  * against the +0xe0 limit; a violation traps via SoftwareBreakpoint.
  * Confidence: high
  * Notes: SoftwareBreakpoint(0x5519,0x664330) on out-of-range index. */
@@ -795,11 +795,11 @@ uint64_t sk_f_00664304(int64_t obj, int64_t index)
 }
 
 /* FUN_00664330 @ 0x00664330   (est. sk_scratch_claim_owner)
- * Ghidra: void FUN_00664330(undefined8 param_1)
+ * Ghidra: void FUN_00664330(uint64_t param_1)
  * Claims ownership of a scratch object on behalf of a new owner `param_1`.
  * Reads the current owner (sk_x_00661318) and the number of held busy slots
  * (bits 6..8 of the +0xb8 owner field); for each busy slot it spins on
- * CallSupervisor(4) until the slot's busy flag (at +0xc0, 8-byte stride) drops
+ * CallSupervisor(4) until the slot's busy flag (at +0xc0, 8-uint8_t stride) drops
  * to a value other than 1. It then stores the new owner at +0xb0 and clears the
  * owner/busy word at +0xb8.
  * Confidence: medium
@@ -831,11 +831,11 @@ void sk_f_00664330(uint64_t new_owner)
 }
 
 /* FUN_006643b8 @ 0x006643b8   (est. sk_scratch_publish_owner)
- * Ghidra: void FUN_006643b8(undefined8 param_1)
+ * Ghidra: void FUN_006643b8(uint64_t param_1)
  * Publishes a scratch object's reply/state into the per-CPU mailbox so a new
  * owner (sk_x_00661318) can take over. For each of the 4 reply slots it copies
  * the busy-slot word (at +0xe0) and the reply word (at +0xc0) into the
- * per-CPU region at +0x1e0/+0x1c0 (8-byte little-endian stores), spinning on
+ * per-CPU region at +0x1e0/+0x1c0 (8-uint8_t little-endian stores), spinning on
  * CallSupervisor(4) for slots still marked busy by the current owner (bits 6..8
  * of +0xb0). Finally it clears the object owner (+0xb0) and stores the new
  * owner at +0xb8.
@@ -915,8 +915,8 @@ void sk_f_0066453c(void)
 }
 
 /* FUN_0066455c @ 0x0066455c   (est. sk_obj_get_link)
- * Ghidra: undefined8 FUN_0066455c(ulong param_1)
- * Returns the 8-byte link/forward pointer at offset +0x58 of an object, but
+ * Ghidra: uint64_t FUN_0066455c(unsigned long param_1)
+ * Returns the 8-uint8_t link/forward pointer at offset +0x58 of an object, but
  * only when the object is valid (non-null) and its flag bit 1 (bit 1 of the
  * word at +0x10) is set; otherwise returns 0. Bounds-checks +0x70 before the
  * read.
@@ -937,7 +937,7 @@ uint64_t sk_f_0066455c(uint64_t obj)
 }
 
 /* FUN_00664588 @ 0x00664588   (est. sk_obj_check_link)
- * Ghidra: void FUN_00664588(ulong param_1)
+ * Ghidra: void FUN_00664588(unsigned long param_1)
  * Validates an object's link range: sign-extends flag bit 1 (bit 1 of the word
  * at +0x10) to a mask, applies it to both the object base and its +0x70 limit,
  * and traps if a non-zero masked base overflows past +0x70. Used as a bounds
@@ -959,13 +959,13 @@ void sk_f_00664588(uint64_t obj)
 }
 
 /* FUN_006645bc @ 0x006645bc   (est. sk_obj_get_code)
- * Ghidra: undefined4 FUN_006645bc(ulong param_1)
+ * Ghidra: uint32_t FUN_006645bc(unsigned long param_1)
  * Returns the 32-bit code/status word at offset +0x60 of an object when the
- * object is valid and its flag bit 1 (bit 1 of the byte at +0x10) is set;
+ * object is valid and its flag bit 1 (bit 1 of the uint8_t at +0x10) is set;
  * otherwise returns the default sentinel 0x4e4f4550. Bounds-checks +0x70.
  * Confidence: high
  * Notes: default 0x4e4f4550 (little-endian bytes 'PEON'); SoftwareBreakpoint
- *   (0x5519,0x6645ec) bounds fault; flag test on *(byte*)(obj+0x10)>>1&1. */
+ *   (0x5519,0x6645ec) bounds fault; flag test on *(uint8_t*)(obj+0x10)>>1&1. */
 uint32_t sk_f_006645bc(uint64_t obj)
 {
     uint32_t code = 0x4e4f4550;
@@ -980,9 +980,9 @@ uint32_t sk_f_006645bc(uint64_t obj)
 }
 
 /* FUN_006645ec @ 0x006645ec   (est. sk_mailbox_swap)
- * Ghidra: void FUN_006645ec(undefined8 param_1,undefined8 *param_2)
- * Swaps an 8-byte value through the per-CPU supervisor mailbox: reads the value
- * at `param_2`, stores it byte-by-byte into the tpidrro_el0 mailbox, issues
+ * Ghidra: void FUN_006645ec(uint64_t param_1,uint64_t *param_2)
+ * Swaps an 8-uint8_t value through the per-CPU supervisor mailbox: reads the value
+ * at `param_2`, stores it uint8_t-by-uint8_t into the tpidrro_el0 mailbox, issues
  * CallSupervisor(0) (which may overwrite the mailbox), then restores the same
  * value into the mailbox and writes it back to `param_2`. `param_1` is unused.
  * Confidence: medium
@@ -1049,7 +1049,7 @@ void sk_f_006646e0(void)
 }
 
 /* FUN_006646f4 @ 0x006646f4   (est. pool_slot_alloc)
- * Ghidra: ulong FUN_006646f4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: unsigned long FUN_006646f4(uint64_t param_1,uint64_t param_2,uint64_t param_3)
  * Allocates the next free slot index (0..0x1f) from the global slot pool,
  * initializing the pool pointer from the TLS block if it is not yet set.
  * The chosen slot is filled via sk_f_006647d0 and committed with
@@ -1112,7 +1112,7 @@ void sk_f_0066479c(void)
 }
 
 /* FUN_006647d0 @ 0x006647d0   (est. pool_slot_fill)
- * Ghidra: void FUN_006647d0(long param_1,long param_2,undefined8 param_3,int param_4)
+ * Ghidra: void FUN_006647d0(long param_1,long param_2,uint64_t param_3,int param_4)
  * Stores the allocated slot entry: writes param_2 into the slot index
  * (param_1) within the pool and param_3 into the adjacent descriptor slot,
  * after bounds-checking both regions of the pool. When both param_2 and
@@ -1296,7 +1296,7 @@ breakpoint:
 }
 
 /* FUN_00664a84 @ 0x00664a84   (est. tls_base_set)
- * Ghidra: void FUN_00664a84(undefined8 param_1)
+ * Ghidra: void FUN_00664a84(uint64_t param_1)
  * Installs the given value as the current thread's TLS base via tpidr_el0.
  * Confidence: medium
  * Notes: writes tpidr_el0. */
@@ -1306,7 +1306,7 @@ void sk_f_00664a84(uint64_t new_tls)
 }
 
 /* FUN_00664a8c @ 0x00664a8c   (est. pool_slot_hook)
- * Ghidra: undefined8 FUN_00664a8c(long *param_1,undefined8 param_2)
+ * Ghidra: uint64_t FUN_00664a8c(long *param_1,uint64_t param_2)
  * Callback invoked for an allocated pool slot: reads the slot index from
  * *param_1, resolves the per-slot function pointer at pool+idx*8 and calls it
  * to derive a value, storing the result into a table produced by
@@ -1358,7 +1358,7 @@ breakpoint:
 }
 
 /* FUN_00664bd4 @ 0x00664bd4   (est. stub_success)
- * Ghidra: undefined8 FUN_00664bd4(void)
+ * Ghidra: uint64_t FUN_00664bd4(void)
  * Trivial stub returning 0.
  * Confidence: medium */
 uint64_t sk_f_00664bd4(void)
@@ -1379,7 +1379,7 @@ void sk_f_00664c04(void)
 /* FUN_00664cbc @ 0x00664cbc   (est. cpu_msg_channel_init)
  * Ghidra: void FUN_00664cbc(void)
  * One-time per-cpu message-channel setup: verifies the cpu context has no
- * channel yet (ctx+0x48), lazily allocates an 8-byte channel object via
+ * channel yet (ctx+0x48), lazily allocates an 8-uint8_t channel object via
  * sk_x_006832c8 and registers it with sk_f_006642bc, then emits a fixed
  * header message through the tpidrro_el0 mailbox via repeated CallSupervisor
  * calls. When the channel kind matches it drains the pending queue
@@ -1387,7 +1387,7 @@ void sk_f_00664c04(void)
  * state change, encoding the cpu value into the mailbox and re-sending.
  * Finally it resets two global linked lists (sk_g_006fe7f8) and returns if
  * the saved  sk_g_006b5ed0 guard is unchanged, otherwise teardown faults.
- * Confidence: low (large body; many byte-level mailbox writes and
+ * Confidence: low (large body; many uint8_t-level mailbox writes and
  * unreachable-block removal; exact protocol semantics inferred)
  * Notes: globals _DAT_006b5ed0, _DAT_006b70db/dd/de/df/e1/e2, _DAT_006fe7f0,
  * _DAT_006fe7f8, _DAT_006b56c8, _DAT_006b56e0, _DAT_006ff0c8, _DAT_006b4368,
@@ -1565,7 +1565,7 @@ fault:
 /* ===== part 2: fragment of SKR68 ===== */
 
 /* FUN_0066512c @ 0x0066512c   (est. sk_l4_fault_dispatch)
- * Ghidra: long FUN_0066512c(undefined8 param_1, ulong param_2, long param_3)
+ * Ghidra: long FUN_0066512c(uint64_t param_1, unsigned long param_2, long param_3)
  * Dispatches an L4 fault/syscall. If the high 16 bits of the fault word select
  * a handler id (==1), it invokes the id bootstrap, resolves the per-id fault
  * handler through a global table (bounds-checked), and returns the id << 16
@@ -1672,9 +1672,9 @@ long sk_f_0066512c(uint64_t arg0, uint64_t fault, int64_t tcb)
 }
 
 /* FUN_00665354 @ 0x00665354   (est. sk_l4_errorcode_str)
- * Ghidra: void FUN_00665354(undefined8 param_1, byte param_2)
+ * Ghidra: void FUN_00665354(uint64_t param_1, uint8_t param_2)
  * Formats an L4 error code into the caller-supplied buffer buf (a fixed
- * 0x20-byte name field). For codes 0..9 it copies the corresponding named
+ * 0x20-uint8_t name field). For codes 0..9 it copies the corresponding named
  * error string (Success, Preempted, Canceled, ...); for any code >9 it copies
  * a generic "invalid error code" string and additionally calls FUN_0064effc to
  * clear the field, signaling the invalid value.
@@ -1726,7 +1726,7 @@ void sk_f_00665354(uint64_t buf, uint8_t code)
 }
 
 /* FUN_00665498 @ 0x00665498   (est. sk_l4_obj_init_wrap)
- * Ghidra: undefined8 FUN_00665498(undefined8 param_1, undefined8 param_2)
+ * Ghidra: uint64_t FUN_00665498(uint64_t param_1, uint64_t param_2)
  * Thin wrapper: initializes the object/capability identified by obj via
  * sk_f_006657d8 (which lazily allocates + wires the backing state) and returns
  * the constant success code 1.
@@ -1739,10 +1739,10 @@ uint64_t sk_f_00665498(uint64_t arg0, uint64_t obj)
 }
 
 /* FUN_006654b8 @ 0x006654b8   (est. sk_l4_send_msg_code3)
- * Ghidra: void FUN_006654b8(undefined8 param_1, long param_2, long *param_3)
+ * Ghidra: void FUN_006654b8(uint64_t param_1, long param_2, long *param_3)
  * Builds and performs an L4 synchronous message send under a preemption guard
  * (sk_g_006b5ed0). When the message header (msg) matches the expected tag
- * (tag==3, kind==0x02), it lazily allocates a 16-byte capability object at
+ * (tag==3, kind==0x02), it lazily allocates a 16-uint8_t capability object at
  * cap+0x108 (tag 0x15), then writes the message code 3 and the object pointer
  * into the TCB message word (tpidrro_el0) and calls the supervisor. On failure
  * it faults (noreturn FUN_0065c2f0). Returns under the guard or traps via
@@ -1804,7 +1804,7 @@ fatal:
 }
 
 /* FUN_00665630 @ 0x00665630   (est. sk_list_splice_push)
- * Ghidra: void FUN_00665630(undefined8 *param_1)
+ * Ghidra: void FUN_00665630(uint64_t *param_1)
  * Walks the global list whose head is sk_g_006fe7f8, tracking the previous
  * node, and splices the new node into the head slot once the walk revisits the
  * node it started from (end/cycle detection). Always terminates and leaves the
@@ -1835,9 +1835,9 @@ void sk_f_00665630(uint64_t *node)
 }
 
 /* FUN_00665660 @ 0x00665660   (est. sk_l4_send_msg_code2)
- * Ghidra: void FUN_00665660(undefined8 param_1, long param_2, long *param_3)
+ * Ghidra: void FUN_00665660(uint64_t param_1, long param_2, long *param_3)
  * L4 synchronous message send (peer of sk_f_006654b8). When the message header
- * matches (tag==3, kind==0x03), lazily allocates a 16-byte capability object at
+ * matches (tag==3, kind==0x03), lazily allocates a 16-uint8_t capability object at
  * cap+0x110 (tag 0x14), writes message code 2 with the object pointer into the
  * TCB message word and calls the supervisor. On failure faults (noreturn).
  * Returns under the preemption guard or traps via FUN_0067f660 if modified.
@@ -1932,10 +1932,10 @@ done:
 }
 
 /* FUN_00665860 @ 0x00665860   (est. sk_l4_alloc_supervisor)
- * Ghidra: long FUN_00665860(undefined8 param_1)
+ * Ghidra: long FUN_00665860(uint64_t param_1)
  * Allocates a new object under the supervisor. Reads the current per-cpu
  * context (sk_x_0065ccc8 + 0x48); when a context is present it allocates via
- * sk_f_0066ad54, builds a 24-byte message (code from sk_g_0068a0a0, high word
+ * sk_f_0066ad54, builds a 24-uint8_t message (code from sk_g_0068a0a0, high word
  * at 0x68a0a8, and kind) in the TCB, and performs CallSupervisor(3). On a null
  * allocation it returns 0; otherwise returns the allocated object and, if a
  * context was retained, hands it to FUN_006860f4 for registration.
@@ -1994,7 +1994,7 @@ long sk_f_00665860(uint64_t kind)
 }
 
 /* FUN_0066599c @ 0x0066599c   (est. sk_l4_method_call)
- * Ghidra: undefined8 FUN_0066599c(undefined8 param_1, long param_2)
+ * Ghidra: uint64_t FUN_0066599c(uint64_t param_1, long param_2)
  * Performs an L4 method call on the object at tcb. First it consults the
  * per-cpu context's method dispatcher (sk_x_0065ccc8 + 0x80): if present and
  * its dispatch callback (at +0x10) returns 1, it short-circuits with the
@@ -2032,10 +2032,10 @@ uint64_t sk_f_0066599c(uint64_t recv, int64_t tcb)
 }
 
 /* FUN_00665a38 @ 0x00665a38   (est. sk_l4_msg_list_send)
- * Ghidra: void FUN_00665a38(undefined8 param_1, undefined8 param_2, undefined8 param_3)
+ * Ghidra: void FUN_00665a38(uint64_t param_1, uint64_t param_2, uint64_t param_3)
  * Walks the global message/notification list (head from sk_x_0065cb74) under a
  * lock acquired via sk_x_00655708(sk_g_006b4368). For each live node (sign bit
- * set on byte +8) it runs a bounds/overflow check (SoftwareBreakpoint on wrap)
+ * set on uint8_t +8) it runs a bounds/overflow check (SoftwareBreakpoint on wrap)
  * and dispatches the node to FUN_00685864. If the list is empty it reports a
  * fatal (FUN_006631d8, string 0x6a852b, code 0x21) and drops the lock if it was
  * acquired. Loops until a NULL node (unreachable terminator).
@@ -2071,8 +2071,8 @@ void sk_f_00665a38(uint64_t who, uint64_t v0, uint64_t v1)
 }
 
 /* FUN_00665bd4 @ 0x00665bd4   (est. sk_l4_bool_supervisor_call)
- * Ghidra: undefined1 [16] FUN_00665bd4(void)
- * Issues an L4 supervisor call that yields a 16-byte {1,0} result (boolean
+ * Ghidra: uint8_t [16] FUN_00665bd4(void)
+ * Issues an L4 supervisor call that yields a 16-uint8_t {1,0} result (boolean
  * "true"). If the per-cpu context (sk_x_0065ccc8 + 0x48) is absent it faults
  * via FUN_0068596c; otherwise it writes the message code 0 with a sub-field 1
  * into the TCB and performs CallSupervisor(0). Afterwards, if no context was
@@ -2116,7 +2116,7 @@ sk_u128_t sk_f_00665bd4(void)
  * by forwarding to sk_f_00665354 (the L4 error-code stringifier). The code
  * argument is not explicitly set here, so it reads whatever is in x1.
  * Confidence: low
- * Notes: &stack0x00000010 is a local 0x20-byte buffer; forwards to FUN_00665354. */
+ * Notes: &stack0x00000010 is a local 0x20-uint8_t buffer; forwards to FUN_00665354. */
 void sk_f_00665cec(void)
 {
     uint8_t local_buf[0x20];
@@ -2149,9 +2149,9 @@ void sk_f_00665d20(void)
 }
 
 /* FUN_00665d44 @ 0x00665d44   (est. sk_tag_write_byte_fields)
- * Ghidra: void FUN_00665d44(undefined8 param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: void FUN_00665d44(uint64_t param_1,uint64_t param_2,uint64_t param_3)
  * Stores tag bytes into a structure addressed through the x9 register (a
- * hidden extra argument): a byte from w8 into offset +4, and the top two
+ * hidden extra argument): a uint8_t from w8 into offset +4, and the top two
  * bytes of param_3 into offsets +7 and +6. A tail fragment of a larger tag
  * builder that relies on register-passed state (x9/w8) rather than stack
  * arguments.
@@ -2160,7 +2160,7 @@ void sk_f_00665d20(void)
  *   register arguments; offsets +4/+6/+7 of the target. */
 void sk_f_00665d44(uint64_t param_1, uint64_t param_2, uint64_t param_3)
 {
-    uint8_t tag_byte;   /* in_w8 — register-sourced byte */
+    uint8_t tag_byte;   /* in_w8 — register-sourced uint8_t */
     uint64_t target;    /* in_x9 — register-sourced target base */
 
     (void)param_1;
@@ -2206,9 +2206,9 @@ void sk_f_00665d84(void)
 }
 
 /* FUN_00665d9c @ 0x00665d9c   (est. sk_cap_type_decode)
- * Ghidra: void FUN_00665d9c(undefined8 *param_1,long param_2,ulong *param_3)
- * Decodes a 16-byte capability word (read as two u64s from cap_word) into a
- * 4-word / 32-byte descriptor buffer at desc. The type field in bits 26..31
+ * Ghidra: void FUN_00665d9c(uint64_t *param_1,long param_2,unsigned long *param_3)
+ * Decodes a 16-uint8_t capability word (read as two u64s from cap_word) into a
+ * 4-word / 32-uint8_t descriptor buffer at desc. The type field in bits 26..31
  * selects the decode; aux_flag is a secondary flag consulted for types 0x3c
  * and 0x3f. Fills the descriptor's words and tag bytes (offsets 0x18 and
  * 0x19) and, for object-bearing kinds, calls the type-address helper
@@ -2298,8 +2298,8 @@ write_tag2:
 }
 
 /* FUN_00665ef8 @ 0x00665ef8   (est. sk_load_u128)
- * Ghidra: undefined1 [16] FUN_00665ef8(undefined1 (*param_1) [16])
- * Loads the 16-byte value pointed to by src and returns it as a 128-bit value
+ * Ghidra: uint8_t [16] FUN_00665ef8(uint8_t (*param_1) [16])
+ * Loads the 16-uint8_t value pointed to by src and returns it as a 128-bit value
  * (lo/hi pair). Pure load-and-return.
  * Confidence: high
  * Notes: returns via sk_u128_t. */
@@ -2309,12 +2309,12 @@ sk_u128_t sk_f_00665ef8(const sk_u128_t *src)
 }
 
 /* FUN_00665f04 @ 0x00665f04   (est. sk_read_utcb_and_supercall)
- * Ghidra: ulong FUN_00665f04(void)
+ * Ghidra: unsigned long FUN_00665f04(void)
  * Reads the current thread's user-tagged control-block base from tpidrro_el0,
  * stamps it with two 64-bit tag values (from globals at 0x68a230/0x68a238),
  * issues a Supervisor call (CallSupervisor(0)) carrying a (handle, 3) tag
- * triple, then clears the block's tag bytes and sets byte 0 to 0x1f. On
- * success (low byte of the returned handle is zero) it recomposes and returns
+ * triple, then clears the block's tag bytes and sets uint8_t 0 to 0x1f. On
+ * success (low uint8_t of the returned handle is zero) it recomposes and returns
  * a 64-bit word assembled from the block's tag bytes at offsets 0x10..0x17,
  * guarded by a stack canary (DAT_006b5ed0). On failure it routes into a
  * non-returning error path.
@@ -2376,8 +2376,8 @@ uint64_t sk_f_00665f04(void)
 }
 
 /* FUN_0066609c @ 0x0066609c   (est. sk_emit_l4_error_string)
- * Ghidra: void FUN_0066609c(undefined8 param_1,byte param_2)
- * Writes the L4 error-code name string for codes 0..9 into the 0x20-byte
+ * Ghidra: void FUN_0066609c(uint64_t param_1,uint8_t param_2)
+ * Writes the L4 error-code name string for codes 0..9 into the 0x20-uint8_t
  * message buffer msg_buf (via the out-of-slice log helper sk_x_0067aa00);
  * codes above 9 get a generic unknown diagnostic plus a fill. Mirrors the
  * sibling error-string emitter elsewhere in this slice.
@@ -2430,7 +2430,7 @@ void sk_f_0066609c(uint64_t msg_buf, uint8_t err_code)
 }
 
 /* FUN_006661d4 @ 0x006661d4   (est. sk_set_current_vm_ptr)
- * Ghidra: void FUN_006661d4(undefined8 param_1)
+ * Ghidra: void FUN_006661d4(uint64_t param_1)
  * Stores the given pointer/value into the global at 0x6fe800 (a saved
  * context/VM pointer consumed later by sk_f_006661e0).
  * Confidence: high
@@ -2442,7 +2442,7 @@ void sk_f_006661d4(uint64_t val)
 }
 
 /* FUN_006661e0 @ 0x006661e0   (est. sk_dispatch_saved_ctx)
- * Ghidra: void FUN_006661e0(undefined8 param_1,undefined8 param_2)
+ * Ghidra: void FUN_006661e0(uint64_t param_1,uint64_t param_2)
  * Forwards the two arguments together with the previously saved global
  * (sk_g_006fe800) to the in-slice helper sk_f_006661f4.
  * Confidence: medium
@@ -2455,7 +2455,7 @@ void sk_f_006661e0(uint64_t a, uint64_t b)
 /* ===== part 4: fragment of SKR68 ===== */
 
 /* FUN_006661f4 @ 0x006661f4   (est. region_entry_lookup)
- * Ghidra: long FUN_006661f4(long *param_1,undefined8 param_2,long *param_3)
+ * Ghidra: long FUN_006661f4(long *param_1,uint64_t param_2,long *param_3)
  * Walks a chain of region/arena entries starting at `entry`, searching for the
  * entry whose per-entry key matches `key`. For each candidate it computes an
  * aligned payload address from a helper result plus the entry base, tests the
@@ -2464,7 +2464,7 @@ void sk_f_006661e0(uint64_t a, uint64_t b)
  * the matched entry's first word into *out when out is non-null), 0 when the
  * chain ends.
  * Confidence: medium
- * Notes: thunk_FUN_0067b220/0067aeb0 helpers; 8-byte alignment; null-chain ends. */
+ * Notes: thunk_FUN_0067b220/0067aeb0 helpers; 8-uint8_t alignment; null-chain ends. */
 unsigned long sk_f_006661f4(unsigned long *entry, unsigned long key, unsigned long *out)
 {
     unsigned long addr;
@@ -2490,7 +2490,7 @@ unsigned long sk_f_006661f4(unsigned long *entry, unsigned long key, unsigned lo
 }
 
 /* FUN_0066628c @ 0x0066628c   (est. set_global_entry_root)
- * Ghidra: void FUN_0066628c(undefined8 param_1)
+ * Ghidra: void FUN_0066628c(uint64_t param_1)
  * Stores the caller-supplied pointer into the global root slot sk_g_006fe808.
  * Confidence: high
  * Notes: _DAT_006fe808 (global root). */
@@ -2501,7 +2501,7 @@ unsigned long sk_f_0066628c(unsigned long root)
 }
 
 /* FUN_00666298 @ 0x00666298   (est. region_entry_lookup_root)
- * Ghidra: void FUN_00666298(undefined8 param_1,undefined8 param_2)
+ * Ghidra: void FUN_00666298(uint64_t param_1,uint64_t param_2)
  * Convenience wrapper: performs sk_f_006661f4 against the global root chain
  * stored in sk_g_006fe808, passing through the key and the optional out pointer.
  * The result is discarded.
@@ -2514,7 +2514,7 @@ unsigned long sk_f_00666298(unsigned long key, unsigned long out)
 }
 
 /* FUN_006662ac @ 0x006662ac   (est. region_init_attach)
- * Ghidra: void FUN_006662ac(long *param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: void FUN_006662ac(long *param_1,uint64_t param_2,uint64_t param_3)
  * Initialises a 5-word region/arena object `obj` (all words cleared), then
  * requests a 5-word bundle from the allocator helper sk_x_0066bce0 keyed by
  * `a`/`b` and a token from sk_f_0066ad54, populating the object from the
@@ -2547,7 +2547,7 @@ unsigned long sk_f_006662ac(long *obj, unsigned long a, unsigned long b)
 }
 
 /* FUN_00666344 @ 0x00666344   (est. region_lookup_twostage)
- * Ghidra: undefined1  [16] FUN_00666344(long param_1,long *param_2)
+ * Ghidra: uint8_t  [16] FUN_00666344(long param_1,long *param_2)
  * Two-stage keyed lookup against an object `obj` (a vtable/interface pointer).
  * Clears a 17-word out structure, records the object, and via vtable slots
  * +0x10 (query), +0x18 (bind/set), +0x20 (release) tries a primary binding at
@@ -2589,7 +2589,7 @@ sk_u128_t sk_f_00666344(unsigned long obj, long *out)
 }
 
 /* FUN_00666448 @ 0x00666448   (est. page_pool_alloc_slot)
- * Ghidra: void FUN_00666448(undefined8 *param_1,long *param_2,undefined8 param_3,ulong param_4,int param_5)
+ * Ghidra: void FUN_00666448(uint64_t *param_1,long *param_2,uint64_t param_3,unsigned long param_4,int param_5)
  * Allocates a slot of `size` bytes from a frame/pool cache object `pool` and
  * binds it to `key`, reporting the result through the 3-word `out`
  * (out[0]=status, out[1]=0, out[2]=allocated node). Handles both a fresh
@@ -2755,7 +2755,7 @@ unsigned long sk_f_00666d84(void)
 }
 
 /* FUN_00666808 @ 0x00666808   (est. frame_set_repack_page)
- * Ghidra: undefined1  [16] FUN_00666808(long *param_1,ulong *param_2,undefined8 param_3,undefined4 *param_4,int param_5)
+ * Ghidra: uint8_t  [16] FUN_00666808(long *param_1,unsigned long *param_2,uint64_t param_3,uint32_t *param_4,int param_5)
  * Repacks / resizes a frame or page object `pg` within its owner set `fs`,
  * updating the owner's accounting (frame count at +0x6c and 0xd, in-use bytes
  * at 0xe/0xf/0x10) and the pool's free-list (list head at fs[0xc], node links
@@ -2963,7 +2963,7 @@ hardfail:
  *   Ghidra NEON_ushl(v, shiftvec, 4) emission; lane shift counts from the low
  *   5 bits of each 32-bit lane of the shift vector). Used only by the two
  *   bitmap codec bodies below.
- * skr68p4_zva: zeroes one 64-byte cache line (DC ZVA), as emitted by the
+ * skr68p4_zva: zeroes one 64-uint8_t cache line (DC ZVA), as emitted by the
  *   decompressor's 0x4321 path. */
 static inline sk_u128_t skr68p4_shl32(sk_u128_t v, sk_u128_t s)
 {
@@ -2984,14 +2984,14 @@ static inline void skr68p4_zva(void *p)
 }
 
 /* FUN_00666d90 @ 0x00666d90   (est. bitmap_page_decompress)
- * Ghidra: void FUN_00666d90(uint *param_1,uint *param_2,byte *param_3,long param_4)
+ * Ghidra: void FUN_00666d90(unsigned int *param_1,unsigned int *param_2,uint8_t *param_3,long param_4)
  * Decompresses / expands a bitmap page. If the source starts with the magic
  * 0x4321 (compressed form) it zeroes a 16 KiB destination then scatters each
- * (4-byte value, 2-byte offset) 6-byte record at its offset. Otherwise it
+ * (4-uint8_t value, 2-uint8_t offset) 6-uint8_t record at its offset. Otherwise it
  * runs the NEON bit-transpose path: a fixed shift+mask permutation turns the
- * source words into a byte stream in the scratch buffer (using the global
- * 128-bit shift vectors and byte masks), then an LZ-style decode loop (codes
- * 0/1/2/3+) with a 16-entry hash table rebuilds the destination uint array.
+ * source words into a uint8_t stream in the scratch buffer (using the global
+ * 128-bit shift vectors and uint8_t masks), then an LZ-style decode loop (codes
+ * 0/1/2/3+) with a 16-entry hash table rebuilds the destination unsigned int array.
  * Confidence: low
  * Notes: DAT_0068aa60/aa70..aa7c/aa80/aa88/aa90..aa9c/aaa0..aadc tables,
  *        DAT_0068a960 hash-class table, magic 0x4321, DC_ZVA, NEON_ushl. */
@@ -3030,7 +3030,7 @@ unsigned long sk_f_00666d90(unsigned int *src, unsigned int *dst, unsigned char 
 
     for (i = 0; i < 16; i++) tbl[i] = 0;
 
-    /* First SIMD pass: src[3..0x103) (1 KiB) -> 4 KiB of byte stream at scratch. */
+    /* First SIMD pass: src[3..0x103) (1 KiB) -> 4 KiB of uint8_t stream at scratch. */
     {
         sk_u128_t shift = *(const sk_u128_t *)&sk_g_0068aa60;
         const unsigned char *mask = (const unsigned char *)&sk_g_0068aa70;
@@ -3102,7 +3102,7 @@ unsigned long sk_f_00666d90(unsigned int *src, unsigned int *dst, unsigned char 
                 } while (more && (n != 0));
             }
             if (-1 < (int)n) {
-                /* one leftover 8-byte word: replicate + shift + mask */
+                /* one leftover 8-uint8_t word: replicate + shift + mask */
                 unsigned long v8 = (unsigned long)*sp;
                 unsigned int u = (unsigned int)v8;
                 sk_u128_t v = { .lo = (unsigned long)u | ((unsigned long)u << 32),
@@ -3197,7 +3197,7 @@ unsigned long sk_f_00666d90(unsigned int *src, unsigned int *dst, unsigned char 
     }
 skip_tail8:
 
-    /* Final decode loop: LZ-style byte codes over the scratch streams. */
+    /* Final decode loop: LZ-style uint8_t codes over the scratch streams. */
     {
         long n = 0x1000;
         unsigned char *bp = scratch + 0x1000;
@@ -3265,14 +3265,14 @@ skip_tail8:
 }
 
 /* FUN_00667040 @ 0x00667040   (est. bitmap_page_compress)
- * Ghidra: ulong FUN_00667040(uint *param_1,uint *param_2,char *param_3,long param_4)
+ * Ghidra: unsigned long FUN_00667040(unsigned int *param_1,unsigned int *param_2,char *param_3,long param_4)
  * Compresses a bitmap page `src` into the output area `out` using a scratch
  * buffer `scratch`, honoring a maximum output budget `budget`. Produces either
- * the compact form (header word 0x4321 followed by 6-byte (value, offset)
+ * the compact form (header word 0x4321 followed by 6-uint8_t (value, offset)
  * records for every non-zero 64-bit source word) or a packed encoding whose
  * first words are the three header words (out[0] length marker / magic,
  * out[1] and out[2] table offsets). Uses a 256-entry class table and a 16-entry
- * hash to code each source word as one of four byte codes. Returns the encoded
+ * hash to code each source word as one of four uint8_t codes. Returns the encoded
  * length on success, 0 for degenerate single-record inputs, and -1 on any
  * budget-overrun or overflow (0xffffffffffffffff).
  * Confidence: low
@@ -3523,12 +3523,12 @@ unsigned long sk_f_00667040(unsigned int *src, unsigned int *out, char *scratch,
 }
 
 /* FUN_006673ec @ 0x006673ec   (est. obj_irqstate_init)
- * Ghidra: undefined8 * FUN_006673ec(undefined8 *param_1)
+ * Ghidra: uint64_t * FUN_006673ec(uint64_t *param_1)
  * Initialises an interrupt/queue state object at `obj`: sets a type/version
  * field at obj[0xb] (0x2001), an IRQ priority at +0x5a (0x20) and a mask at
  * +0x5c (0x7e), clears the first five words, wires the object's internal
  * list/array pointers (obj[1] to obj+0xb, obj[5] to obj+9, obj[6] to obj+0xf),
- * records a code pointer obj[8] = 0x2007e, and zeroes a 16-byte (two-word)
+ * records a code pointer obj[8] = 0x2007e, and zeroes a 16-uint8_t (two-word)
  * work area at obj+9. Returns the object pointer.
  * Confidence: medium
  * Notes: &DAT_0002007e -> &sk_g_0002007e; FUN_0067a7f0 (memset). */
@@ -3554,7 +3554,7 @@ unsigned long sk_f_006673ec(unsigned long *obj)
  * Ghidra FUN_ names + addresses. All names are estimates unless header-matched. */
 
 /* FUN_0066745c @ 0x0066745c   (est. sk_buffer_desc_init)
- * Ghidra: undefined8 * FUN_0066745c(undefined8 *param_1,ulong param_2)
+ * Ghidra: uint64_t * FUN_0066745c(uint64_t *param_1,unsigned long param_2)
  * Initializes a frame-buffer descriptor block at `desc` that points into the
  * 16K-aligned memory region at `region`. It stamps three magic fields into the
  * region header (0x2001 type, 0x20 level, 0x1fe slot count), zero-fills the
@@ -3596,7 +3596,7 @@ uint64_t * sk_f_0066745c(uint64_t * desc, uint64_t region)
  * Ghidra: void FUN_00667530(long param_1,long *param_2)
  * Validates a buffer descriptor at `buf`: if its 16-bit type word at +0x40 is
  * 0x1fe (frame region), stores the descriptor pointer into *out and confirms
- * the +0x18 byte count does not overflow when extended by 0x4000. Any other
+ * the +0x18 uint8_t count does not overflow when extended by 0x4000. Any other
  * type faults through sk_x_00685b50. Traps on the overflow/type check failing.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x667568) on failure. */
@@ -3604,7 +3604,7 @@ void sk_f_00667530(long buf, long * out)
 {
 	if (*(short *)(buf + 0x40) == 0x1fe) {
 		*out = buf;
-		if (*(ulong *)(buf + 0x18) <= *(ulong *)(buf + 0x18) + 0x4000) {
+		if (*(unsigned long *)(buf + 0x18) <= *(unsigned long *)(buf + 0x18) + 0x4000) {
 			return;
 		}
 	} else {
@@ -3636,8 +3636,8 @@ bool sk_f_00667578(long buf)
 }
 
 /* FUN_00667588 @ 0x00667588   (est. sk_buffer_alloc_slot)
- * Ghidra: ulong FUN_00667588(long param_1)
- * Allocates a 0x20-byte slot out of the frame-buffer pool managed by the
+ * Ghidra: unsigned long FUN_00667588(long param_1)
+ * Allocates a 0x20-uint8_t slot out of the frame-buffer pool managed by the
  * container `self`. Walks the pool list at self+0x148, growing it with a new
  * node (sk_f_00669298) as needed and draining a per-container release list
  * (sk_f_00667870). Tracks slot usage with a 64-entry bitmap per node; returns
@@ -3757,7 +3757,7 @@ LAB_006677d4:
 }
 
 /* FUN_00667870 @ 0x00667870   (est. sk_buffer_attach_item)
- * Ghidra: void FUN_00667870(long param_1,undefined8 *param_2)
+ * Ghidra: void FUN_00667870(long param_1,uint64_t *param_2)
  * Attaches the item descriptor `item` into the frame-buffer pool of `self`,
  * placing it in a free slot of a pool node (growing the node list via
  * sk_f_00669298 and draining the per-container pending list). Sets the item
@@ -3959,7 +3959,7 @@ void sk_f_00667d74(long self, long node)
 	if (*(long *)(self + 0x138) != node) {
 		sk_x_006833d4(0x6a902f);
 	}
-	if (*(ushort *)(node + 0x40) <= *(ushort *)(*(long *)(node + 8) + 6)) {
+	if (*(unsigned short *)(node + 0x40) <= *(unsigned short *)(*(long *)(node + 8) + 6)) {
 		uint64_t nwords = (uint64_t)*(uint8_t *)(node + 0x42);
 		if (nwords != 0) {
 			long * word_ptr = *(long **)(node + 0x28);
@@ -3985,8 +3985,8 @@ void sk_f_00667d74(long self, long node)
 }
 
 /* FUN_00667e54 @ 0x00667e54   (est. sk_buffer_mark_slot_used)
- * Ghidra: void FUN_00667e54(long param_1,ulong param_2)
- * Marks the 0x20-byte slot at address `addr` (param_2) as used in the owning
+ * Ghidra: void FUN_00667e54(long param_1,unsigned long param_2)
+ * Marks the 0x20-uint8_t slot at address `addr` (param_2) as used in the owning
  * frame/message pool of `self`. Scans the node list from self+0x148, computes
  * the slot index from the address delta, sets the corresponding bit in the
  * node bitmap (walking the words at node+0x28), and records the node in the
@@ -4032,9 +4032,9 @@ void sk_f_00667e54(long self, uint64_t addr)
 						sk_x_006833d4(0x6a894c);
 					}
 					if ((addr < node_base) ||
-					    (*(uint64_t *)(node + 0x30) + (uint64_t)*(ushort *)(node + 0x40) * 0x20 <= addr)) {
+					    (*(uint64_t *)(node + 0x30) + (uint64_t)*(unsigned short *)(node + 0x40) * 0x20 <= addr)) {
 						sk_x_00685d84();
-					} else if (slot_index < *(ushort *)(*(long *)(node + 8) + 6)) {
+					} else if (slot_index < *(unsigned short *)(*(long *)(node + 8) + 6)) {
 						word = *(uint64_t **)(node + 0x28);
 						word = word + (slot_index >> 6);
 						if (((word < *(uint64_t **)(node + 0x28)) ||
@@ -4130,7 +4130,7 @@ void sk_f_00668128(void)
 }
 
 /* FUN_00668c6c @ 0x00668c6c   (est. sk_buffer_pool_base)
- * Ghidra: undefined8 FUN_00668c6c(void)
+ * Ghidra: uint64_t FUN_00668c6c(void)
  * Returns the fixed base address of the global frame-buffer pool (0x6b5700).
  * Pure accessor; no side effects.
  * Confidence: high
@@ -4409,9 +4409,9 @@ void sk_f_00668c94(int64_t base)
 }
 
 /* FUN_00668cb0 @ 0x00668cb0   (est. sk_error_msg_build)
- * Ghidra: void FUN_00668cb0(undefined8 *param_1,byte param_2)
- * Fills a 32-byte (4 x uint64) message record with the L4 error descriptor for
- * the given error code. For error code > 9 it copies a canned 32-byte record
+ * Ghidra: void FUN_00668cb0(uint64_t *param_1,uint8_t param_2)
+ * Fills a 32-uint8_t (4 x uint64) message record with the L4 error descriptor for
+ * the given error code. For error code > 9 it copies a canned 32-uint8_t record
  * from globals 0068a508..0068a520 and forwards the message to sk_x_0064effc.
  * Otherwise it looks up one of the per-code L4 error strings (records at
  * 0068a3c8..0068a4e8) and copies its 32 bytes into the output.
@@ -4479,7 +4479,7 @@ void sk_f_00668cb0(uint64_t *out_msg, uint8_t error_code)
 }
 
 /* FUN_00668dc4 @ 0x00668dc4   (est. sk_panic_bad_alloc_6a8cdf)
- * Ghidra: void FUN_00668dc4(undefined8 param_1)
+ * Ghidra: void FUN_00668dc4(uint64_t param_1)
  * Fatal-error helper: stores its argument then panics via sk_x_006833d4 with
  * the magic error code 0x6a8cdf. The argument is kept in a scratch slot before
  * the (non-returning) panic.
@@ -4512,11 +4512,11 @@ void sk_f_00668dd8(void)
 }
 
 /* FUN_00668e24 @ 0x00668e24   (est. sk_slab_alloc)
- * Ghidra: ulong * FUN_00668e24(ulong param_1,ushort *param_2,int param_3)
+ * Ghidra: unsigned long * FUN_00668e24(unsigned long param_1,unsigned short *param_2,int param_3)
  * Core fixed-size slab allocator. pool_base identifies the slab; free_list is
  * its free-list header (a stack of free nodes plus a free-count field). When
  * flags is nonzero it first pops a pre-free'd node off the list head; otherwise
- * it walks the free-list and, if empty, replenishes it with a fresh 0x4000-byte
+ * it walks the free-list and, if empty, replenishes it with a fresh 0x4000-uint8_t
  * chunk from sk_f_00669db4, splitting off a block of the requested size
  * (element 0 of the freelist). Returns the allocated node, zeroes it
  * (sk_x_0067a7f0), bumps the alloc count and releases the interrupt spinlock
@@ -4571,7 +4571,7 @@ uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags)
     do {
       node = (uint64_t *)*p8;
       if (node == 0) {
-        /* empty: allocate a fresh 0x4000-byte chunk */
+        /* empty: allocate a fresh 0x4000-uint8_t chunk */
         node = (uint64_t *)sk_f_00669db4();
         end = node + 0x800;
         if (node < end) {
@@ -4644,8 +4644,8 @@ uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags)
 }
 
 /* FUN_006690dc @ 0x006690dc   (est. sk_free_slab_158)
- * Ghidra: void FUN_006690dc(undefined8 param_1)
- * Returns an object into the 0x158-byte slab. Resolves the pool via
+ * Ghidra: void FUN_006690dc(uint64_t param_1)
+ * Returns an object into the 0x158-uint8_t slab. Resolves the pool via
  * sk_x_0065be08(0x6fea40,4,0xd), verifies layout bounds, then hands the object
  * to the freelist pusher sk_f_00669134; traps on bad layout.
  * Confidence: medium
@@ -4665,7 +4665,7 @@ void sk_f_006690dc(uint64_t obj)
 }
 
 /* FUN_00669134 @ 0x00669134   (est. sk_slab_free)
- * Ghidra: void FUN_00669134(ulong param_1,ushort *param_2,undefined8 *param_3)
+ * Ghidra: void FUN_00669134(unsigned long param_1,unsigned short *param_2,uint64_t *param_3)
  * Returns an allocated object to the slab free list. Validates that the object
  * lies within the slab's recorded size (element 0), then links it onto the
  * pending-free stack at the freelist head (free_list+0x10/0x14/0x18), bumps the
@@ -4771,8 +4771,8 @@ void sk_f_006692e4(void)
 }
 
 /* FUN_00669330 @ 0x00669330   (est. sk_free_slab_2a8)
- * Ghidra: void FUN_00669330(undefined8 param_1)
- * Returns an object into the 0x2a8-byte slab (freelist head at pool+0x2a8) via
+ * Ghidra: void FUN_00669330(uint64_t param_1)
+ * Returns an object into the 0x2a8-uint8_t slab (freelist head at pool+0x2a8) via
  * sk_f_00669134. Bounds-checks the pool layout first.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x669388) trap. */
@@ -4815,7 +4815,7 @@ void sk_f_00669388(void)
  * (types, intrinsics, externs) lives in the parent file. */
 
 /* FUN_006693d4 @ 0x006693d4   (est. sk_pool_cfg_slot_2e0)
- * Ghidra: void FUN_006693d4(undefined8 param_1)
+ * Ghidra: void FUN_006693d4(uint64_t param_1)
  * Resolves the 0x6fea40 pool region via the 0x6fea40 slot lookup, validates
  * that the [base+0x2e0, base+0x318) sub-slot is in range, then configures that
  * sub-slot with the given descriptor argument through sk_f_00669134. On a
@@ -4856,7 +4856,7 @@ void sk_f_0066942c(void)
 }
 
 /* FUN_00669478 @ 0x00669478   (est. sk_pool_cfg_slot_318)
- * Ghidra: void FUN_00669478(undefined8 param_1)
+ * Ghidra: void FUN_00669478(uint64_t param_1)
  * Resolves the 0x6fea40 pool region, validates the [base+0x318, base+0x350)
  * sub-slot, then configures it with the given descriptor argument via
  * sk_f_00669134. Bounds failure traps via SoftwareBreakpoint(0x5519, 0x6694d0).
@@ -4896,7 +4896,7 @@ void sk_f_006694d0(void)
 }
 
 /* FUN_0066951c @ 0x0066951c   (est. sk_pool_cfg_slot_350)
- * Ghidra: void FUN_0066951c(undefined8 param_1)
+ * Ghidra: void FUN_0066951c(uint64_t param_1)
  * Resolves the 0x6fea40 pool region, validates the [base+0x350, base+0x388)
  * sub-slot, then configures it with the given descriptor argument via
  * sk_f_00669134. Bounds failure traps via SoftwareBreakpoint(0x5519, 0x669574).
@@ -4937,7 +4937,7 @@ void sk_f_00669578(void)
 
 /* FUN_006699e8 @ 0x006699e8   (est. sk_pool_slot_dispatch)
  * Ghidra: void FUN_006699e8(long param_1)
- * Acquires the 0x6b5a00 pool context via sk_f_0066a9bc (16-byte state), calls
+ * Acquires the 0x6b5a00 pool context via sk_f_0066a9bc (16-uint8_t state), calls
  * the descriptor's virtual method at offset +0x10 with the descriptor pointer,
  * then releases the context via sk_f_0066ab40. A thin dispatch wrapper.
  * Confidence: medium
@@ -4956,7 +4956,7 @@ void sk_f_006699e8(int64_t desc)
  * Ghidra: void FUN_00669618(void)
  * Per-CPU-safe pool table initializer. After a domain gate check
  * (sk_x_0065cc0c(4,0xd)) and cache barrier, it fills two contiguous region
- * descriptors at 0x6fe8e0 and 0x6fe990 (type byte, base, size, end byte, flags)
+ * descriptors at 0x6fe8e0 and 0x6fe990 (type uint8_t, base, size, end uint8_t, flags)
  * from globals 0x6b5a78/0x6b5a80/0x6b5a88/0x6b5a90 (and 0x6b5a40/0x6b5a48/
  * 0x6b5a50/0x6b5a58), links them via 0x6b5aa0/0x6b5a68, then scans three table
  * slots at 0x6b5dc0. Empty slots get filled via sk_x_00678a64; otherwise an
@@ -4965,7 +4965,7 @@ void sk_f_006699e8(int64_t desc)
  * table, committing a free entry through sk_f_00668e24/sk_f_00669134.
  * Confidence: low
  * Notes: WARNING globals starting with '_' overlap smaller symbols; heavy
- *   byte/qword global struct writes (0x6fe8e0..0x6fea40); callbacks
+ *   uint8_t/qword global struct writes (0x6fe8e0..0x6fea40); callbacks
  *   0x669814 passed into sk_f_0066a8f4; panic strings 0x6a9f4f/0x6aa0db; many
  *   SoftwareBreakpoint(0x5519,...) bounds traps; globals 0x6b5dd8/0x6b5dd9
  *   are counters. */
@@ -5119,12 +5119,12 @@ LAB_6699b8:
                 sk_x_00685ea4();
 panic_669f4f:
                 /* WARNING: Subroutine does not return */
-                sk_x_006833d4(sk_str_6a9f4f);
+                sk_x_006833d4(sk_str_006a9f4f);
             }
             *(int64_t *)slot_end = l4;
             if (2 < *slot_ptr) {
                 /* WARNING: Subroutine does not return */
-                sk_x_006833d4(sk_str_6aa0db);
+                sk_x_006833d4(sk_str_006aa0db);
             }
             l4 = 0;
             *slot_ptr = *slot_ptr + 1;
@@ -5176,7 +5176,7 @@ bounds_panic_66997c:
  * [base+0x78, base+0xb0) descriptor it maps the range described by the fields
  * at +0x78/+0x80/+0x88/+0x90 via sk_f_00669af8, stores the result token at
  * +0xa0 and marks it live at +0xa8; then unconditionally maps a fixed
- * 0x10020000-byte region at 0x200000 with kind 4/attr 0xfe into +0xb0. Finally
+ * 0x10020000-uint8_t region at 0x200000 with kind 4/attr 0xfe into +0xb0. Finally
  * it maps the [base+0x40,base+0x50) descriptor into +0x68 and marks +0x70.
  * Bounds failure traps via SoftwareBreakpoint(0x5519, 0x669af8).
  * Confidence: medium
@@ -5212,14 +5212,14 @@ void sk_f_00669a48(void)
 }
 
 /* FUN_00669af8 @ 0x00669af8   (est. sk_pool_region_map)
- * Ghidra: undefined8 FUN_00669af8(undefined1 param_1,long param_2,
- *     undefined8 param_3,undefined1 param_4)
+ * Ghidra: uint64_t FUN_00669af8(uint8_t param_1,long param_2,
+ *     uint64_t param_3,uint8_t param_4)
  * Maps a region described by (kind, base, size, attr) through sk_x_0067203c,
- * which takes a 32-byte config struct plus an out pointer and returns an error
- * code whose low byte selects a slot in a small 0x6b5e50 error-string table.
- * On success (low byte 0) returns the output token. On failure with a nonzero
- * base it hard-panics via sk_x_006833d4(sk_str_6a9c9a); with a zero base it
- * logs sk_str_6a9c4f via sk_x_0067d72c and returns 0; otherwise it traps via
+ * which takes a 32-uint8_t config struct plus an out pointer and returns an error
+ * code whose low uint8_t selects a slot in a small 0x6b5e50 error-string table.
+ * On success (low uint8_t 0) returns the output token. On failure with a nonzero
+ * base it hard-panics via sk_x_006833d4(sk_str_006a9c9a); with a zero base it
+ * logs sk_str_006a9c4f via sk_x_0067d72c and returns 0; otherwise it traps via
  * SoftwareBreakpoint(0x5519, 0x669c3c).
  * Confidence: medium
  * Notes: config struct built on the stack (offsets 0/1/5/8/16/24/25/29);
@@ -5255,13 +5255,13 @@ uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr)
     if (base == 0) {
         if ((tbl_hi < (uint8_t *)0x6b5e91 && tbl_lo <= tbl_hi) &&
             (uint8_t *)0x6b5e4f < tbl_lo) {
-            sk_x_0067d72c(sk_str_6a9c4f);
+            sk_x_0067d72c(sk_str_006a9c4f);
             return 0;
         }
     } else if ((tbl_hi < (uint8_t *)0x6b5e91 && tbl_lo <= tbl_hi) &&
                (uint8_t *)0x6b5e4f < tbl_lo) {
         /* WARNING: Subroutine does not return */
-        sk_x_006833d4(sk_str_6a9c9a);
+        sk_x_006833d4(sk_str_006a9c9a);
     }
     /* WARNING: Does not return */
     ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669c3c))();
@@ -5294,7 +5294,7 @@ void sk_f_00669c3c(void)
 }
 
 /* FUN_00669c98 @ 0x00669c98   (est. sk_pool_dispatch)
- * Ghidra: undefined8 FUN_00669c98(undefined8 param_1)
+ * Ghidra: uint64_t FUN_00669c98(uint64_t param_1)
  * Dispatches a pool operation on the 0x6fea40 object. If sk_f_00667578
  * reports active (bit 0), it configures the [base+0x200, base+0x238) sub-slot
  * with the argument via sk_f_00669134 and returns its result. Otherwise it
@@ -5348,7 +5348,7 @@ bounds_panic_669db4:
 /* ===== part 8: fragment of SKR68 ===== */
 
 /* FUN_00669cfc @ 0x669cfc   (est. sk_alloc_locked)
- * Ghidra: undefined8 FUN_00669cfc(void)
+ * Ghidra: uint64_t FUN_00669cfc(void)
  * Acquires the region lock at context+0x238, then allocates a page block via
  * sk_f_00669db4. If the allocation succeeds, links the locked region with the
  * block through sk_f_0066745c and returns its result; otherwise releases the
@@ -5382,8 +5382,8 @@ fatal_669db0:
 }
 
 /* FUN_00669db4 @ 0x669db4   (est. sk_page_block_alloc)
- * Ghidra: undefined8 * FUN_00669db4(void)
- * Core page-block allocator. Pops a 0x4000-byte (16 KiB) page-aligned block
+ * Ghidra: uint64_t * FUN_00669db4(void)
+ * Core page-block allocator. Pops a 0x4000-uint8_t (16 KiB) page-aligned block
  * off the per-cpu free list anchored at context+0xd0/+0xd8/+0xe0. When the
  * list is empty it prepares a fresh region descriptor (sk_f_0066a404),
  * validates it against the region callback (sk_g_006b6998), and links the new
@@ -5526,7 +5526,7 @@ fatal_669fc4:
 }
 
 /* FUN_0066a08c @ 0x66a08c   (est. sk_page_block_commit)
- * Ghidra: void FUN_0066a08c(undefined8 param_1)
+ * Ghidra: void FUN_0066a08c(uint64_t param_1)
  * Allocates a page block (continuation entry). If allocation is currently
  * permitted (sk_f_00667568 low bit), calls sk_f_00667530 to obtain a block,
  * verifies it is 0x4000-aligned, releases the region lock at +0x238, and links
@@ -5583,7 +5583,7 @@ void sk_f_0066a08c(uint64_t param_1)
 }
 
 /* FUN_0066a1cc @ 0x66a1cc   (est. sk_alloc_defer)
- * Ghidra: void FUN_0066a1cc(undefined8 param_1)
+ * Ghidra: void FUN_0066a1cc(uint64_t param_1)
  * Thin shim that defers/queues an allocation request by forwarding to
  * sk_f_0066b520(param_1, 0x40). No other work is performed.
  * Confidence: high */
@@ -5593,7 +5593,7 @@ void sk_f_0066a1cc(uint64_t param_1)
 }
 
 /* FUN_0066a1d4 @ 0x66a1d4   (est. sk_free_block_pop)
- * Ghidra: ulong FUN_0066a1d4(void)
+ * Ghidra: unsigned long FUN_0066a1d4(void)
  * Pops a free block from the small per-cpu 3-slot cache at context+0x3c0
  * (guarded by flags at +0xc2 bit0 / +0xc1). If all three slots are empty the
  * cache is refilled via sk_x_00686058. On a hit the slot is cleared and the
@@ -5657,7 +5657,7 @@ pop:
 }
 
 /* FUN_0066a1d8 @ 0x66a1d8   (est. sk_free_block_pop)
- * Ghidra: ulong FUN_0066a1d8(void)
+ * Ghidra: unsigned long FUN_0066a1d8(void)
  * Duplicate of sk_f_0066a1d4 (identical decompiled body): pops a free block
  * from the 3-slot cache at context+0x3c0, refilling via sk_x_00686058 when
  * empty, and allocating a fresh region block via sk_f_00668e24 when the
@@ -5757,10 +5757,10 @@ int64_t sk_f_0066a300(void)
 }
 
 /* FUN_0066a404 @ 0x66a404   (est. sk_region_desc_prepare)
- * Ghidra: void FUN_0066a404(ulong param_1, undefined1 *param_2)
+ * Ghidra: void FUN_0066a404(unsigned long param_1, uint8_t *param_2)
  * Prepares a region descriptor (param_2) for its first allocation: checks the
  * guard flag, extends the region end (via sk_f_00669af8 when the arena is
- * exhausted), marks the descriptor active (byte +1 = 1) and sets the current
+ * exhausted), marks the descriptor active (uint8_t +1 = 1) and sets the current
  * end (+0x20) to end - 0x4000. Returns the reserved block base in x0 (Ghidra
  * types the function void but callers consume the return). Panics on overflow
  * or state violations.
@@ -5809,10 +5809,10 @@ panic_6aa2e9:
 }
 
 /* FUN_0066a558 @ 0x66a558   (est. sk_region_desc_release)
- * Ghidra: void FUN_0066a558(ulong param_1,long param_2,long param_3)
+ * Ghidra: void FUN_0066a558(unsigned long param_1,long param_2,long param_3)
  * Reverts a region-descriptor reservation made by sk_f_0066a404: verifies the
  * descriptor's current end (+0x20) still equals the reserved block and that
- * the arena bounds are consistent, then clears the active flag (byte +1).
+ * the arena bounds are consistent, then clears the active flag (uint8_t +1).
  * Recycles via sk_x_006860bc when the descriptor was already inactive, else
  * panics on a state mismatch.
  * Confidence: medium
@@ -5866,7 +5866,7 @@ void sk_f_0066a65c(void)
 }
 
 /* FUN_0066a6b4 @ 0x66a6b4   (est. sk_region_release)
- * Ghidra: void FUN_0066a6b4(undefined8 param_1)
+ * Ghidra: void FUN_0066a6b4(uint64_t param_1)
  * Releases the region lock at context+0x120 via sk_f_00669134(param_1), after
  * overflow guards on the per-cpu context base. Returns silently on success; a
  * failing release hits a SoftwareBreakpoint (fatal). Counterpart of
@@ -5886,7 +5886,7 @@ void sk_f_0066a6b4(uint64_t param_1)
 }
 
 /* FUN_0066a70c @ 0x66a70c   (est. sk_panic_msg)
- * Ghidra: void FUN_0066a70c(undefined8 param_1)
+ * Ghidra: void FUN_0066a70c(uint64_t param_1)
  * Always-panic helper: passes the argument straight through to the message
  * logger sk_x_006833d4 with a fixed message string (0x6a9997) and does not
  * return. The parameter is stored but unused.
@@ -5955,7 +5955,7 @@ void sk_f_0066a768(void)
 }
 
 /* FUN_0066a7b8 @ 0x0066a7b8   (est. page_allocator_set_latch)
- * Ghidra: void FUN_0066a7b8(undefined8 param_1)
+ * Ghidra: void FUN_0066a7b8(uint64_t param_1)
  * One-shot initializer for the allocator init-latch global: records the
  * supplied value into sk_g_00700170 the first time, panicking on any
  * subsequent call (latch already set).
@@ -6026,11 +6026,11 @@ LAB_absent:
 }
 
 /* FUN_0066a8c4 @ 0x0066a8c4   (est. page_allocator_current_region)
- * Ghidra: undefined1 [16] FUN_0066a8c4(void)
- * Loads and returns the 16-byte region descriptor currently recorded in
+ * Ghidra: uint8_t [16] FUN_0066a8c4(void)
+ * Loads and returns the 16-uint8_t region descriptor currently recorded in
  * the allocator state block (offset 0x10) at 0x6fea48.
  * Confidence: medium
- * Notes: calls sk_x_0065be08 (allocator state); 16-byte return via
+ * Notes: calls sk_x_0065be08 (allocator state); 16-uint8_t return via
  * sk_u128_t. */
 sk_u128_t sk_f_0066a8c4(void)
 {
@@ -6041,9 +6041,9 @@ sk_u128_t sk_f_0066a8c4(void)
 }
 
 /* FUN_0066a8f4 @ 0x0066a8f4   (est. page_allocator_region_init)
- * Ghidra: void FUN_0066a8f4(ulong param_1,undefined8 param_2,undefined8 param_3)
+ * Ghidra: void FUN_0066a8f4(unsigned long param_1,uint64_t param_2,uint64_t param_3)
  * Initializes a page-region descriptor at the given address, trapping via
- * SoftwareBreakpoint if the 16-byte header would wrap. Validates the
+ * SoftwareBreakpoint if the 16-uint8_t header would wrap. Validates the
  * region through sk_x_0067cfe0 and, on success, fills the descriptor with
  * an object base (offset 0x10 = 0), a size of 0x100 (offset 0x18), and the
  * two supplied arguments (offsets 0x20, 0x28). Panics on validation
@@ -6090,18 +6090,18 @@ bool sk_f_0066a988(int64_t region)
 }
 
 /* FUN_0066a9bc @ 0x0066a9bc   (est. page_allocator_region_reserve_slot)
- * Ghidra: undefined1 [16] FUN_0066a9bc(long param_1)
- * Reserves a slot out of the page-region at param_1, returning a 16-byte
+ * Ghidra: uint8_t [16] FUN_0066a9bc(long param_1)
+ * Reserves a slot out of the page-region at param_1, returning a 16-uint8_t
  * {kind, index} pair. When the region holds no live object (token
  * mismatch), it validates the region, requires a null object pointer and a
- * low byte of 0 in the size field, then installs the current token as the
+ * low uint8_t of 0 in the size field, then installs the current token as the
  * object (offset 0x10) and bumps the size field by 0x101, returning
  * {kind=0, index=old_size+0x100}. Otherwise the object is live: it
- * validates the size-field low byte is not 0xff or 0, increments the size
+ * validates the size-field low uint8_t is not 0xff or 0, increments the size
  * field by 1, and returns {kind=1, index=size}. Panics on validation or
  * state violations.
  * Confidence: medium
- * Notes: 16-byte return via sk_u128_t (lo=kind, hi=index); calls
+ * Notes: 16-uint8_t return via sk_u128_t (lo=kind, hi=index); calls
  * sk_x_00661318, thunk sk_x_006551c4, sk_x_0067cffc (validate),
  * sk_x_006833d4 (noreturn panic: strings 0x6a8797, 0x6aa97d, 0x6aaa08,
  * 0x6aa8e9, 0x6aa86b). */
@@ -6151,12 +6151,12 @@ sk_u128_t sk_f_0066a9bc(int64_t region)
 }
 
 /* FUN_0066ab40 @ 0x0066ab40   (est. page_allocator_region_release_slot)
- * Ghidra: void FUN_0066ab40(long param_1,byte param_2,ulong param_3)
+ * Ghidra: void FUN_0066ab40(long param_1,uint8_t param_2,unsigned long param_3)
  * Releases a previously reserved slot from the page-region at param_1.
  * Requires the region to hold the current live object (token match) and
- * the size field to equal param_3 + 1, and the low byte of param_3 to
+ * the size field to equal param_3 + 1, and the low uint8_t of param_3 to
  * match the parity bit param_2. If param_2 bit 0 is clear it also verifies
- * the low byte is 0, clears the object pointer and rewinds the size field
+ * the low uint8_t is 0, clears the object pointer and rewinds the size field
  * to param_3, then re-validates the region. Otherwise it just rewinds the
  * size field to param_3. Panics on any mismatch.
  * Confidence: medium
@@ -6354,7 +6354,7 @@ void sk_f_0066af84(void)
 }
 
 /* FUN_0066afe8 @ 0x0066afe8   (est. page_allocator_freelist_push)
- * Ghidra: void FUN_0066afe8(undefined8 *param_1)
+ * Ghidra: void FUN_0066afe8(uint64_t *param_1)
  * Pushes a free-list page onto the allocator's free-list head: zeroes all
  * of the page's fields except the current head pointer (state offset
  * 0x28), which is captured and stored as the new page's forward link

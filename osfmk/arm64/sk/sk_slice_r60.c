@@ -233,6 +233,8 @@ extern unsigned long DAT_006c0b78;   /* 0x6c0b78 - executor A one-time init flag
 extern unsigned long DAT_006c0b50;   /* 0x6c0b50 - executor B one-time init flag */
 extern unsigned long DAT_006578f8;   /* 0x6578f8 - executor A metadata (via FUN_0036a940) */
 extern unsigned long DAT_00657950;   /* 0x657950 - executor B metadata */
+extern unsigned long FUN_00409248();  /* clock-read primitive A (continuation) */
+extern unsigned long FUN_004092d8();  /* clock-read primitive B (continuation) */
 
 /* ================================================================== *
  * 0x3fac14 - 0x3fbff4 : task-enqueue / async-body dispatch helpers
@@ -244,6 +246,167 @@ extern unsigned long DAT_00657950;   /* 0x657950 - executor B metadata */
  * 8-byte return in *out.
  * Confidence: medium
  * Notes: out is a 16-byte indirection slot; task context at param_5+0x10. */
+
+/* Forward declarations for in-slice functions (Swift async ABI: many
+ * cross-calls pass register args the decompiler omits; forward decls let
+ * forwarders reference targets defined later in the file). */
+static void sk_r60_3fac14_task_init_call(uint64_t *out, unsigned long a2,
+                                          unsigned long a3, unsigned long a4,
+                                          long task_ctx);
+static void sk_r60_3fac4c_task_enqueue_indirect(long saved_x19);
+static unsigned long sk_r60_3fad94_task_resume_flag_a(void);
+static unsigned long sk_r60_3fad98_task_resume_flag_b(void);
+static void sk_r60_3fadbc_task_execute_body(unsigned long p1, unsigned long p2,
+                                            unsigned long p3);
+static void sk_r60_3fb028_task_context_capture(uint64_t *out, unsigned long p2,
+                                                unsigned long p3);
+static void sk_r60_3fb0bc_task_context_capture_x20(uint64_t *out, long p2,
+                                                   unsigned long saved_x20);
+static unsigned int sk_r60_3fb2e0_task_dequeue_test(unsigned long p1,
+                                                     unsigned long p2,
+                                                     unsigned long p3,
+                                                     unsigned long p4);
+static void sk_r60_3fb360_task_enqueue_prep(unsigned long p1, unsigned long p2,
+                                            unsigned long p3);
+static void sk_r60_3fb3c4_task_enqueue_prep_wrap(uint64_t *out, unsigned long p2,
+                                                 long p3);
+static void sk_r60_3fb3f0_async_body_dispatch_loop(unsigned long p1,
+                                                    unsigned long p2,
+                                                    unsigned long p3,
+                                                    unsigned long p4);
+static void sk_r60_3fb56c_async_wait_ready(void);
+static void sk_r60_3fb5ec_async_wait_ready_x20(unsigned long p1, long p2,
+                                               unsigned long p3,
+                                               unsigned long saved_x20);
+static void sk_r60_3fb648_task_dequeue_resume(void);
+static void sk_r60_3fb7dc_task_run_new(long tcb, unsigned long arg0,
+                                       unsigned long arg1, int *meta,
+                                       unsigned long saved_x25,
+                                       unsigned long saved_x30);
+static void sk_r60_3fba88_task_kind_check_a(void);
+static void sk_r60_3fbaa4_task_kind_check_store(unsigned char *out);
+static void sk_r60_3fbaf8_register_assoc_meta_a(void);
+static void sk_r60_3fbb48_register_assoc_meta_b(void);
+static void sk_r60_3fbb98_task_enqueue_common(void);
+static void sk_r60_3fbbdc_task_enqueue_desc_a(unsigned long p1);
+static void sk_r60_3fbbe0_task_enqueue_desc_b(unsigned long p1);
+static void sk_r60_3fbc10_task_context_restore_a(void);
+static void sk_r60_3fbc14_task_context_restore_b(void);
+static void sk_r60_3fbc3c_task_enqueue_x20_a(unsigned long p1,
+                                             unsigned long saved_x20);
+static void sk_r60_3fbc40_task_enqueue_x20_b(unsigned long p1,
+                                             unsigned long saved_x20);
+static void sk_r60_3fbc58_secs_nanos_add(long secs, unsigned long nsecs,
+                                         unsigned long out[2]);
+static void sk_r60_3fbcd4_clock_now_get_a(void);
+static void sk_r60_3fbd2c_clock_now_get_b(void);
+static void sk_r60_3fbd98_clock_fatal_missing(void);
+static void sk_r60_3fbdf0_clock_now_wrap_a(unsigned long out[2]);
+static void sk_r60_3fbe18_clock_now_wrap_b(unsigned long out[2]);
+static void sk_r60_3fbe40_task_op_common(void);
+static unsigned int sk_r60_3fbf28_task_kind_validate(long p1, long p2);
+static void sk_r60_3fbf9c_task_kind_setup(void);
+static void sk_r60_3fbff4_task_enqueue_common_b(void);
+static void sk_r60_3fc038_task_enqueue_build(unsigned long p1, unsigned long p2,
+                                             unsigned long p3, unsigned long p4,
+                                             unsigned long p5, unsigned long p6,
+                                             unsigned long p7);
+static void sk_r60_3fc124_enqueue_desc_b_a(unsigned long p1);
+static void sk_r60_3fc128_enqueue_desc_b_b(unsigned long p1);
+static void sk_r60_3fc158_task_enqueue_core(void);
+static void sk_r60_3fc248_task_resume_dispatch_a(void);
+static void sk_r60_3fc24c_task_resume_dispatch_b(void);
+static void sk_r60_3fc274_task_resume_capture(unsigned long out[2],
+                                              unsigned long saved_x21);
+static void sk_r60_3fc2a4_enqueue_x20_b_a(unsigned long p1,
+                                          unsigned long saved_x20);
+static void sk_r60_3fc2a8_enqueue_x20_b_b(unsigned long p1,
+                                          unsigned long saved_x20);
+static void sk_r60_3fc2c0_clock_now_get_2_a(void);
+static void sk_r60_3fc318_clock_now_get_2_b(void);
+static void sk_r60_3fc384_clock_fatal_missing_2(void);
+static void sk_r60_3fc3dc_clock_now_wrap_2_a(unsigned long out[2]);
+static void sk_r60_3fc404_clock_now_wrap_2_b(unsigned long out[2]);
+static void sk_r60_3fc42c_clock_read_dispatch(unsigned long id, void *prim);
+static void sk_r60_3fc49c_task_continuation_step(unsigned long out[2],
+                                                  unsigned long p2,
+                                                  unsigned long p3);
+static void sk_r60_3fc4d4_task_group_op_common(void);
+static void sk_r60_3fc518_task_group_op_x21(unsigned long saved_x21[2]);
+static void sk_r60_3fc56c_task_prepare_run(void);
+static void sk_r60_3fc5c4_task_body_dispatch_x19_a(unsigned long out[2]);
+static void sk_r60_3fc608_task_body_dispatch_x19_b(unsigned long out[2]);
+static void sk_r60_3fc64c_task_body_dispatch_x3(void);
+static void sk_r60_3fc6b4_executor_fatal_missing(void);
+static void sk_r60_3fc70c_executor_unimplemented_fatal(void);
+static void sk_r60_3fc76c_executor_unimpl_break_1(void);
+static void sk_r60_3fc79c_executor_unimpl_break_2(void);
+static void sk_r60_3fc7cc_executor_fatal_then_cleanup_a(void);
+static void sk_r60_3fc7d0_executor_fatal_then_cleanup_b(void);
+static void sk_r60_3fc7e0_executor_cleanup_only(void);
+static void sk_r60_3fc7f4_executor_fatal_cleanup_b_a(void);
+static void sk_r60_3fc7f8_executor_fatal_cleanup_b_b(void);
+static void sk_r60_3fc80c_executor_unimpl_break_3_a(void);
+static void sk_r60_3fc810_executor_unimpl_break_3_b(void);
+static void sk_r60_3fc81c_executor_unimpl_break_4(void);
+static void sk_r60_3fc850_main_executor_enqueue_break_a(void);
+static void sk_r60_3fc854_main_executor_enqueue_break_b(void);
+static void sk_r60_3fc860_main_executor_enqueue_break_c(void);
+static void sk_r60_3fc8a0_task_execute_continuation(void);
+static void sk_r60_3fc90c_executor_global_init_a(void);
+static void sk_r60_3fc910_executor_global_init_b(void);
+static unsigned long sk_r60_3fc950_executor_global_get_a(void);
+static void sk_r60_3fc988_executor_global_release_a(void);
+static void sk_r60_3fc9d0_executor_global_init_b2_a(void);
+static void sk_r60_3fc9d4_executor_global_init_b2_b(void);
+static unsigned long sk_r60_3fca14_executor_global_get_b(void);
+static void sk_r60_3fca4c_executor_global_release_b(void);
+static void sk_r60_3fca94_executor_global_release_a_via_get(void);
+static void sk_r60_3fcac8_executor_global_release_b_via_get(void);
+static long sk_r60_3fcafc_indirect_ret_field_10b(unsigned long v);
+static long sk_r60_3fcb2c_indirect_ret_field_14b(unsigned long v);
+static long sk_r60_3fcb5c_indirect_ret_field_18(unsigned long v);
+static long sk_r60_3fcb8c_indirect_ret_field_c(unsigned long v);
+static long sk_r60_3fcbbc_indirect_ret_data_field(unsigned long v);
+static long sk_r60_3fcc1c_indirect_ret_field_10(unsigned long v);
+static long sk_r60_3fcc4c_indirect_ret_field_14(unsigned long v);
+static void sk_r60_3fccc4_cond_release(long p1, unsigned long p2);
+static void sk_r60_3fccd4_task_destroy_common_a(void);
+static void sk_r60_3fcd04_task_destroy_common_b(void);
+static void sk_r60_3fcddc_task_dispatch_continuation(unsigned long saved_x20);
+static void sk_r60_3fce98_task_dispatch_indirect(int *meta,
+                                                 unsigned long saved_x30);
+static unsigned int sk_r60_3fcf28_task_selector_match(unsigned long p1,
+                                                       unsigned long p2,
+                                                       unsigned long saved_x20);
+static void sk_r60_3fcf48_task_dispatch_indirect_2(int *meta,
+                                                   unsigned long saved_x30);
+static void sk_r60_3fd0bc_task_destroy_common_c(void);
+static long sk_r60_3fd194_indirect_ret_field_10c(unsigned long v);
+static void sk_r60_3fd1c4_task_metadata_init(unsigned long saved_x20,
+                                             long saved_x22);
+static void sk_r60_3fd25c_task_metadata_set_a(unsigned long p1,
+                                              unsigned long saved_x20);
+static void sk_r60_3fd260_task_metadata_set_b(unsigned long p1,
+                                              unsigned long saved_x20);
+static void sk_r60_3fd278_task_metadata_alloc_link(long saved_x22,
+                                                   unsigned long saved_x30);
+static void sk_r60_3fd3ac_task_dispatch_typed(unsigned long p1,
+                                              unsigned long saved_x20);
+static long sk_r60_3fd3fc_indirect_ret_field_18b(unsigned long v);
+static void sk_r60_3fd4ac_task_mode_set_a(unsigned long p1, long p2);
+static void sk_r60_3fd554_task_mode_set_b(unsigned long p1, long p2);
+static void sk_r60_3fd7bc_job_acquire_bounded(void);
+static void sk_r60_3fd874_job_release_checked(void);
+static void sk_r60_3fd8f8_job_enqueue_slot_10(void);
+static void sk_r60_3fd98c_job_enqueue_slot_18(unsigned long saved_x20[2]);
+static void sk_r60_3fda44_job_enqueue_slot_20(void);
+static void sk_r60_3fdad4_job_enqueue_slot_28(unsigned long saved_x20[2]);
+static unsigned long sk_r60_3fdb80_job_count_probe(unsigned int want,
+                                                   long saved_x19);
+static void sk_r60_3fde6c_job_acquire_lite(void);
+static void sk_r60_3fdf0c_job_step_10(void);
+static void sk_r60_3fdf74_job_step_18(void);
 static void sk_r60_3fac14_task_init_call(uint64_t *out, unsigned long a2,
                                           unsigned long a3, unsigned long a4,
                                           long task_ctx)
@@ -314,11 +477,13 @@ static void sk_r60_3fadbc_task_execute_body(unsigned long p1, unsigned long p2,
  * Confidence: medium
  * Notes: result is a 40-byte structure written via consecutive stores
  * (fields at out[0..3], +0x19, +0x21). */
-static void sk_r60_3fb028_task_context_capture(uint64_t *out, unsigned long p2)
+static void sk_r60_3fb028_task_context_capture(uint64_t *out, unsigned long p2,
+                                                unsigned long p3)
 {
     unsigned long u1, u2;
     unsigned long d0, d1, d2, d3, d4, d5;
     unsigned char b1, b2;
+    (void)p3;   /* extra register arg (Swift async ABI) not used in body */
     FUN_00404cf4(0);
     u2 = FUN_00406478();
     FUN_00376820(u2, FUN_00404cf4(0));
@@ -395,7 +560,8 @@ static void sk_r60_3fb360_task_enqueue_prep(unsigned long p1, unsigned long p2,
 static void sk_r60_3fb3c4_task_enqueue_prep_wrap(uint64_t *out, unsigned long p2,
                                                  long p3)
 {
-    out[0] = sk_r60_3fb360_task_enqueue_prep(p2, *(unsigned long *)(p3 + 0x10));
+    out[0] = ((unsigned long (*)(unsigned long, unsigned long))sk_r60_3fb360_task_enqueue_prep)(
+        p2, *(unsigned long *)(p3 + 0x10));
 }
 
 /* FUN_003fb3f0 @ 0x3fb3f0   (est. sk_r60_async_body_dispatch_loop)
@@ -465,7 +631,7 @@ static void sk_r60_3fb56c_async_wait_ready(void)
     FUN_0035098c();
     FUN_004080b0();
     FUN_00350548(frame);
-    sk_r60_3fb3f0_async_body_dispatch_loop();
+    ((void (*)(void))sk_r60_3fb3f0_async_body_dispatch_loop)();
     FUN_001a8564();
 }
 
@@ -483,7 +649,8 @@ static void sk_r60_3fb5ec_async_wait_ready_x20(unsigned long p1, long p2,
     unsigned char frame[72];
     u1 = *(unsigned long *)((p3 & ~1UL) - 8);
     FUN_001a84f4(frame);
-    sk_r60_3fb3f0_async_body_dispatch_loop(frame, saved_x20, *(unsigned long *)(p2 + 0x10), u1);
+    ((void (*)(unsigned long, unsigned long, unsigned long, unsigned long))sk_r60_3fb3f0_async_body_dispatch_loop)(
+        (unsigned long)frame, saved_x20, *(unsigned long *)(p2 + 0x10), u1);
     FUN_001a8564();
 }
 
@@ -497,7 +664,7 @@ static void sk_r60_3fb5ec_async_wait_ready_x20(unsigned long p1, long p2,
 static void sk_r60_3fb648_task_dequeue_resume(void)
 {
     unsigned long (*pc1)(void);
-    unsigned long (*pc3)(unsigned long);
+    void (*pc3)(void);
     unsigned long u2, u4, del1, del2, saved_x21;
     unsigned long cc[2];
 
@@ -511,7 +678,7 @@ static void sk_r60_3fb648_task_dequeue_resume(void)
     del1 = 0 - 0;             /* x9 - x12 delta (decompiler extraout) */
     ((void (*)(void))(DAT_00658c80))();
     del2 = del1 - 0;          /* minus x12_00 */
-    pc3 = (unsigned long (*)(unsigned long))FUN_000a68c4(0);
+    pc3 = (void (*)(void))FUN_000a68c4(0);
     FUN_000dbd0c(del2);
     (*pc3)();
     (*pc1)();
@@ -522,7 +689,7 @@ static void sk_r60_3fb648_task_dequeue_resume(void)
         cc[0] = FUN_00350618();
         cc[1] = FUN_00350618();
         u4 = FUN_00377bec(cc[0], cc[1], u2);
-        sk_r60_3fd3fc_indirect_ret_field_18b();
+        ((void (*)(void))sk_r60_3fd3fc_indirect_ret_field_18b)();
         ((void (*)(unsigned long, unsigned long, unsigned long, unsigned long))
             pc1)(0, del1, u2, u4);
         pc1 = (unsigned long (*)(void))(*(unsigned long *)(0 + 8));
@@ -596,7 +763,10 @@ static void sk_r60_3fba88_task_kind_check_a(void)
  * Confidence: high (pure forwarder). */
 static void sk_r60_3fbaa4_task_kind_check_store(unsigned char *out)
 {
-    *out = (unsigned char)FUN_003fbf28();
+    /* Decompile shows FUN_003fbf28() with no args; the kind-validate helper
+     * takes (kind_a, kind_b) — pass through the two metadata words. */
+    *out = (unsigned char)((unsigned long (*)(unsigned long, unsigned long))
+        sk_r60_3fbf28_task_kind_validate)(0x65756c61765fL, 0xe600000000000000UL);
 }
 
 /* FUN_003fbaf8 @ 0x3fbaf8   (est. sk_r60_register_assoc_meta_a)
@@ -606,8 +776,8 @@ static void sk_r60_3fbaa4_task_kind_check_store(unsigned char *out)
  * Notes: DAT_005a1328 is an associated-type (TaskKind) descriptor. */
 static void sk_r60_3fbaf8_register_assoc_meta_a(void)
 {
-    ((void (*)(unsigned long, unsigned long))FUN_00027724(&DAT_005a1328))(
-        0x67f130, &DAT_005a1328);
+    ((void (*)(unsigned long, unsigned long))FUN_00027724((unsigned long)&DAT_005a1328))(
+        0x67f130, (unsigned long)&DAT_005a1328);
 }
 
 /* FUN_003fbb48 @ 0x3fbb48   (est. sk_r60_register_assoc_meta_b)
@@ -615,8 +785,8 @@ static void sk_r60_3fbaf8_register_assoc_meta_a(void)
  * Confidence: medium */
 static void sk_r60_3fbb48_register_assoc_meta_b(void)
 {
-    ((void (*)(unsigned long, unsigned long))FUN_00027724(&DAT_005a1398))(
-        0x67f0a0, &DAT_005a1398);
+    ((void (*)(unsigned long, unsigned long))FUN_00027724((unsigned long)&DAT_005a1398))(
+        0x67f0a0, (unsigned long)&DAT_005a1398);
 }
 
 /* FUN_003fbb98 @ 0x3fbb98   (est. sk_r60_task_enqueue_common)
@@ -624,7 +794,7 @@ static void sk_r60_3fbb48_register_assoc_meta_b(void)
  * Confidence: high (pure tail call). */
 static void sk_r60_3fbb98_task_enqueue_common(void)
 {
-    sk_r60_3fc038_task_enqueue_build();
+    ((void (*)(void))sk_r60_3fc038_task_enqueue_build)();
 }
 
 /* FUN_003fbbdc @ 0x3fbbdc / 003fbbe0  (est. sk_r60_task_enqueue_desc_a/b)
@@ -632,11 +802,13 @@ static void sk_r60_3fbb98_task_enqueue_common(void)
  * Confidence: high (pure forwarder to 003fc158). */
 static void sk_r60_3fbbdc_task_enqueue_desc_a(unsigned long p1)
 {
-    sk_r60_3fc158_task_enqueue_core(p1, 0x67f130, &DAT_005a16d8);
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fc158_task_enqueue_core)(
+        p1, 0x67f130, (unsigned long)&DAT_005a16d8);
 }
 static void sk_r60_3fbbe0_task_enqueue_desc_b(unsigned long p1)
 {
-    sk_r60_3fc158_task_enqueue_core(p1, 0x67f130, &DAT_005a16d8);
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fc158_task_enqueue_core)(
+        p1, 0x67f130, (unsigned long)&DAT_005a16d8);
 }
 
 /* FUN_003fbc10 @ 0x3fbc10 / 003fbc14  (est. sk_r60_task_context_restore_a/b)
@@ -644,11 +816,11 @@ static void sk_r60_3fbbe0_task_enqueue_desc_b(unsigned long p1)
  * Confidence: high (pure tail call). */
 static void sk_r60_3fbc10_task_context_restore_a(void)
 {
-    sk_r60_3fc274_task_resume_capture();
+    ((void (*)(void))sk_r60_3fc274_task_resume_capture)();
 }
 static void sk_r60_3fbc14_task_context_restore_b(void)
 {
-    sk_r60_3fc274_task_resume_capture();
+    ((void (*)(void))sk_r60_3fc274_task_resume_capture)();
 }
 
 /* FUN_003fbc3c @ 0x3fbc3c / 003fbc40  (est. sk_r60_task_enqueue_x20_a/b)
@@ -657,12 +829,14 @@ static void sk_r60_3fbc14_task_context_restore_b(void)
 static void sk_r60_3fbc3c_task_enqueue_x20_a(unsigned long p1,
                                              unsigned long saved_x20)
 {
-    sk_r60_3fbb98_task_enqueue_common(p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fbb98_task_enqueue_common)(
+        p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
 }
 static void sk_r60_3fbc40_task_enqueue_x20_b(unsigned long p1,
                                              unsigned long saved_x20)
 {
-    sk_r60_3fbb98_task_enqueue_common(p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fbb98_task_enqueue_common)(
+        p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
 }
 
 /* FUN_003fbc58 @ 0x3fbc58   (est. sk_r60_secs_nanos_add)
@@ -713,7 +887,7 @@ static void sk_r60_3fbcd4_clock_now_get_a(void)
     long local18;
     FUN_00406a10();
     if (local18 == -0x2c8502b44bfffed6L) {
-        sk_r60_3fc42c_clock_read_dispatch(1, FUN_00409248);
+        sk_r60_3fc42c_clock_read_dispatch(1, (void *)FUN_00409248);
         return;
     }
     FUN_0011d7e8();              /* noreturn */
@@ -727,7 +901,7 @@ static void sk_r60_3fbd2c_clock_now_get_b(void)
     long local18;
     FUN_00406a10();
     if (local18 == -0x2c8502b44bfffed6L) {
-        sk_r60_3fc42c_clock_read_dispatch(1, FUN_004092d8);
+        sk_r60_3fc42c_clock_read_dispatch(1, (void *)FUN_004092d8);
         return;
     }
     FUN_0011d7e8();              /* noreturn */
@@ -805,7 +979,7 @@ static void sk_r60_3fbf9c_task_kind_setup(void)
  * Confidence: high (pure tail call). */
 static void sk_r60_3fbff4_task_enqueue_common_b(void)
 {
-    sk_r60_3fc038_task_enqueue_build();
+    ((void (*)(void))sk_r60_3fc038_task_enqueue_build)();
 }
 
 /* FUN_003fc038 @ 0x3fc038   (est. sk_r60_task_enqueue_build)
@@ -841,11 +1015,13 @@ static void sk_r60_3fc038_task_enqueue_build(unsigned long p1, unsigned long p2,
  * Confidence: high (pure forwarder to 003fc158). */
 static void sk_r60_3fc124_enqueue_desc_b_a(unsigned long p1)
 {
-    sk_r60_3fc158_task_enqueue_core(p1, 0x67f0a0, &DAT_005a16a8);
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fc158_task_enqueue_core)(
+        p1, 0x67f0a0, (unsigned long)&DAT_005a16a8);
 }
 static void sk_r60_3fc128_enqueue_desc_b_b(unsigned long p1)
 {
-    sk_r60_3fc158_task_enqueue_core(p1, 0x67f0a0, &DAT_005a16a8);
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fc158_task_enqueue_core)(
+        p1, 0x67f0a0, (unsigned long)&DAT_005a16a8);
 }
 
 /* FUN_003fc158 @ 0x3fc158   (est. sk_r60_task_enqueue_core)
@@ -884,11 +1060,11 @@ static void sk_r60_3fc158_task_enqueue_core(void)
  * Confidence: high (pure tail call). */
 static void sk_r60_3fc248_task_resume_dispatch_a(void)
 {
-    sk_r60_3fc274_task_resume_capture();
+    ((void (*)(void))sk_r60_3fc274_task_resume_capture)();
 }
 static void sk_r60_3fc24c_task_resume_dispatch_b(void)
 {
-    sk_r60_3fc274_task_resume_capture();
+    ((void (*)(void))sk_r60_3fc274_task_resume_capture)();
 }
 
 /* FUN_003fc274 @ 0x3fc274   (est. sk_r60_task_resume_capture)
@@ -913,12 +1089,14 @@ static void sk_r60_3fc274_task_resume_capture(unsigned long out[2],
 static void sk_r60_3fc2a4_enqueue_x20_b_a(unsigned long p1,
                                           unsigned long saved_x20)
 {
-    sk_r60_3fbff4_task_enqueue_common_b(p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fbff4_task_enqueue_common_b)(
+        p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
 }
 static void sk_r60_3fc2a8_enqueue_x20_b_b(unsigned long p1,
                                           unsigned long saved_x20)
 {
-    sk_r60_3fbff4_task_enqueue_common_b(p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
+    ((void (*)(unsigned long, unsigned long, unsigned long))sk_r60_3fbff4_task_enqueue_common_b)(
+        p1, saved_x20, *(unsigned long *)(saved_x20 + 8));
 }
 
 /* FUN_003fc2c0 @ 0x3fc2c0   (est. sk_r60_clock_now_get_2_a)
@@ -929,7 +1107,7 @@ static void sk_r60_3fc2c0_clock_now_get_2_a(void)
     long local18;
     FUN_00406a10();
     if (local18 == -0x2c8502b44bfffed6L) {
-        sk_r60_3fc42c_clock_read_dispatch(2, FUN_00409248);
+        sk_r60_3fc42c_clock_read_dispatch(2, (void *)FUN_00409248);
         return;
     }
     FUN_0011d7e8();              /* noreturn */
@@ -943,7 +1121,7 @@ static void sk_r60_3fc318_clock_now_get_2_b(void)
     long local18;
     FUN_00406a10();
     if (local18 == -0x2c8502b44bfffed6L) {
-        sk_r60_3fc42c_clock_read_dispatch(2, FUN_004092d8);
+        sk_r60_3fc42c_clock_read_dispatch(2, (void *)FUN_004092d8);
         return;
     }
     FUN_0011d7e8();              /* noreturn */
@@ -1184,14 +1362,14 @@ static void sk_r60_3fc7f8_executor_fatal_cleanup_b_b(void)
 static void sk_r60_3fc80c_executor_unimpl_break_3_a(void)
 {
     sk_r60_3fc79c_executor_unimpl_break_2();
-    FUN_0035ac70(0x5dc2e0, FUN_003fc81c);
+    FUN_0035ac70(0x5dc2e0, (unsigned long)sk_r60_3fc81c_executor_unimpl_break_4);
     FUN_00406eb0();
     __builtin_trap();            /* SoftwareBreakpoint(1, 0x3fc84c) */
 }
 static void sk_r60_3fc810_executor_unimpl_break_3_b(void)
 {
     sk_r60_3fc79c_executor_unimpl_break_2();
-    FUN_0035ac70(0x5dc2e0, FUN_003fc81c);
+    FUN_0035ac70(0x5dc2e0, (unsigned long)sk_r60_3fc81c_executor_unimpl_break_4);
     FUN_00406eb0();
     __builtin_trap();            /* SoftwareBreakpoint(1, 0x3fc84c) */
 }
@@ -1214,7 +1392,7 @@ static void sk_r60_3fc81c_executor_unimpl_break_4(void)
 static void sk_r60_3fc850_main_executor_enqueue_break_a(void)
 {
     sk_r60_3fc81c_executor_unimpl_break_4();
-    FUN_0035ac70(0x5dc330, FUN_003fc860);
+    FUN_0035ac70(0x5dc330, (unsigned long)sk_r60_3fc860_main_executor_enqueue_break_c);
     FUN_00407134();
     FUN_004079f4();
     __builtin_trap();            /* SoftwareBreakpoint(1, 0x3fc8a0) */
@@ -1222,7 +1400,7 @@ static void sk_r60_3fc850_main_executor_enqueue_break_a(void)
 static void sk_r60_3fc854_main_executor_enqueue_break_b(void)
 {
     sk_r60_3fc81c_executor_unimpl_break_4();
-    FUN_0035ac70(0x5dc330, FUN_003fc860);
+    FUN_0035ac70(0x5dc330, (unsigned long)sk_r60_3fc860_main_executor_enqueue_break_c);
     FUN_00407134();
     FUN_004079f4();
     __builtin_trap();            /* SoftwareBreakpoint(1, 0x3fc8a0) */

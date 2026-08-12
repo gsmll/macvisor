@@ -4642,3 +4642,48 @@ from state transitions and the vtable dispatch is caller-parameterized; the
 region insert is fail-closed via traps but indexes are signed.
 Confidence: medium (merge/swap/vtable logic reconstructed; no-op tail and
 type setters are high-confidence).
+
+## [SKR66] 0x45bdbc-0x4614e4 Swift-runtime metadata/variant copy-destroy tail
+Observation: This slice is the tail of the embedded Swift-runtime metadata /
+variant copy-and-destroy engine: per-field boxed-value copy operators that
+retain/release tagged refcounted fields (0036b270 retain / 0036b118 release,
+with the low 3 tag bits masked off via & 0xfffffffffffffff), the "variant
+release by top-3-bits" dispatchers (0045cdf0 / 0045d0ac, switch on sel>>0x3d
+routing to 20-arg boxed-copy or scalar retain/release), the Swift
+Array/ContiguousArray buffer pop/push helpers (0046128c remove-range,
+0046134c remove-index, 004613d4 remove-last), and the String/Substring slice
+boundary checkers (00460e78, 00460f38, 00460ff4, 004610a8).
+Trust-sensitive spots: (1) The slice-range and array helpers (004610a8,
+0046128c, 0046134c, 004613d4) fail closed with SoftwareBreakpoint(1, addr)
+traps on every overflow/out-of-range invariant (0x46123c-0x46128c,
+0x461270-0x461280, 0x46133c-0x46134c, 0x4613d4, 0x461430) — but the
+bound checks are SIGNED (e.g. 0046128c uses SBORROW8/SCARRY8 and signed
+capacity), and the element count in 00460e78/004610a8 is derived from
+attacker-influenced bit fields (opts>>0x3b, opts>>0x38, opts>>0x3c), so a
+negative or wrapped index reaching the trap path still crashes (DoS) even if
+it cannot corrupt memory; (2) the refcounted-field copy operators
+(0045c2a8/0045c380/0045dab4/0045dbd0 and ~40 more) retain the NEW field value
+and release the OLD one after overwriting the slot — if the source and
+destination alias (same object copy) the retain-then-release ordering could
+drop a live reference (over-release / premature free) when the tagged pointer
+is invalid; (3) 0045f7d0 performs an inlined small-struct copy based on a
+descriptor size (lVar5 = *(d+0x40)) and flag word (*(d+0x50) & 0x1000f8) — if
+the descriptor is attacker-controlled the 8-byte copy at (x19+size&~7) could
+land on an adjacent allocation, but the size must be < 0x19 so the window is
+tiny; (4) 00460ddc builds a 16-byte metadata value via FUN_00371950 using a
+self pointer (unaff_x20+0x10/+0x18) — the object layout is not fully
+reconstructed.
+Evidence: decompiles of FUN_004610a8 (8 SW_BP traps, sk_bounds_1da84 /
+sk_h_2b15d0 resolution, signed range arithmetic), FUN_0046128c (SBORROW8/
+SCARRY8 + signed capacity check, 4 SW_BP traps), FUN_0046134c / FUN_004613d4
+(slot stride 0x10, capability_tag_validity_check on buffer),
+FUN_0045cdf0 / FUN_0045d0ac (variant retain/release dispatchers),
+FUN_0045c2a8 / FUN_0045c380 (retain-new + release-old tagged-field swap),
+FUN_0045f7d0 (inlined copy, flags 0x1000f8 gate). All 120 entries added to
+manifest as sk_slice_r66.c.
+Severity (hypothesis): low-medium — fail-closed traps prevent memory
+corruption but permit DoS on malformed descriptors; retain/release ordering on
+aliased copies is the main potential over-release surface.
+Confidence: medium (refcount ordering and signed-bound semantics
+reconstructed from decompiles; the copy/swap operators are structurally
+high-confidence).

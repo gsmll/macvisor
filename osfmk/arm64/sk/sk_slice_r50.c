@@ -4620,12 +4620,13 @@ extern long FUN_0036e878(unsigned long);              /* on-stack pack build */
 extern void FUN_0036805c(unsigned long *);            /* stringbuf release */
 extern void FUN_003680cc(unsigned long *);            /* stringbuf release free */
 extern unsigned long FUN_0036805c_2(void);
-extern unsigned long FUN_00387868(unsigned long, unsigned long); /* vector grow (16-byte) */
-extern unsigned long FUN_003995cc(unsigned long, unsigned long);  /* vector grow (4-byte) */
+extern cL4_w16_t FUN_00387868(unsigned long, unsigned long); /* vector grow (16-byte) */
+extern cL4_w16_t FUN_003995cc(unsigned long, unsigned long);  /* vector grow (4-byte) */
 extern unsigned long FUN_00365184(unsigned long, unsigned long, unsigned long); /* vec push 16 */
 extern void FUN_00399550(void);                       /* vec push 16-flag (abort) */
 extern unsigned long FUN_00398964(unsigned long);     /* pack length word */
 extern unsigned long FUN_0039bdc0(unsigned long, unsigned long); /* type-decl chain lookup */
+extern cL4_w16_t FUN_0038cbb8(unsigned long, unsigned long);   /* string elem-at pair */
 extern unsigned long FUN_00398474(unsigned long *, unsigned long, unsigned long, unsigned long *); /* type cache lookup */
 extern unsigned long FUN_003987e0(unsigned long);     /* type-decl chain hash resolve */
 extern unsigned long FUN_0039a6fc(unsigned long *, unsigned long, unsigned long, unsigned long, unsigned short, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long); /* type-list materialize */
@@ -7066,7 +7067,7 @@ lb_96fec:
             else {
                 u9 = *pu2;
                 FUN_00112c38(&sbuf, u10 & 0xffffffff, 0x20);
-                FUN_00112e8c(&sbuf, u9, l8);
+                FUN_00112e8c((unsigned long)&sbuf, u9, l8);
                 FUN_001130a0(&sbuf, 0x20);
             }
             u10++;
@@ -7354,7 +7355,7 @@ void sk_type_flatpair_3978b0(long *vec, unsigned int *pair)
         if (0x7ffffffffffffffb < u5) u7 = 0x3fffffffffffffff;
         if (u7 == 0) { v = ZEXT816(0); l3 = l9; }
         else {
-            v = (cL4_w16_t)FUN_003995cc((unsigned long)(vec + 2), u7);
+            v = FUN_003995cc((unsigned long)(vec + 2), u7);
             l2 = *vec;
             l6 = vec[1] - l2 >> 2;
             l3 = vec[1] - l2;
@@ -7381,7 +7382,7 @@ void sk_type_flatpair_3978b0(long *vec, unsigned int *pair)
 unsigned long *sk_type_push98_397998(long *vec, unsigned long *a, unsigned int *b)
 {
     unsigned long *p5, *p7; unsigned int u2; unsigned long u1, u6, u9;
-    long l3, l8, l10; cL4_w16_t v;
+    long l3, l4, l8, l10; cL4_w16_t v;
 
     p5 = (unsigned long *)vec[2];
     p7 = (unsigned long *)vec[1];
@@ -7402,7 +7403,7 @@ unsigned long *sk_type_push98_397998(long *vec, unsigned long *a, unsigned int *
         if (0x7fffffffffffffef < u6) u9 = 0xfffffffffffffff;
         if (u9 == 0) { v = ZEXT816(0); l4 = l10; }
         else {
-            v = (cL4_w16_t)FUN_00387868((unsigned long)(vec + 2), u9);
+            v = FUN_00387868((unsigned long)(vec + 2), u9);
             l3 = *vec;
             l8 = vec[1] - l3 >> 4;
             l4 = vec[1] - l3;
@@ -7440,7 +7441,7 @@ void sk_type_build_bound_397a98(long *out, unsigned long *tree, unsigned long *n
                                 long *gv, long n, unsigned long a)
 {
     unsigned long u1; int i2; unsigned long u3, u5; long l4; unsigned long canary2;
-    unsigned long *pc6; long canary; long pc9; long res; long lvar; long l278;
+    unsigned long *pc6; long canary; unsigned long *pc9; long res; long lvar; long l278;
     unsigned long *gv2, *types; unsigned long local; cL4_w16_t vp;
 
     canary = -0x2c8502b44bfffed6;
@@ -7453,7 +7454,7 @@ void sk_type_build_bound_397a98(long *out, unsigned long *tree, unsigned long *n
         l278 = 0;
         i2 = FUN_00399620((unsigned long)&_DAT_006c0a40, &pc6b, &l278);
         pc9 = 0;
-        if ((i2 != 0) && (l278 != _DAT_006c0a40 + _DAT_006c0a50 * 0x10)) pc9 = *(unsigned long **)(l278 + 8);
+        if ((i2 != 0) && (l278 != _DAT_006c0a40 + _DAT_006c0a50 * 0x10)) pc9 = (unsigned long *)*(unsigned long *)(l278 + 8);
         cL4_release(0x6c0a20);
         if (pc9 != 0) pc6b = (unsigned long *)pc9;
         if (pc6b != 0) {
@@ -7461,18 +7462,18 @@ void sk_type_build_bound_397a98(long *out, unsigned long *tree, unsigned long *n
             gv2 = (unsigned long *)&DAT_004f2710;
             types = (unsigned long *)&DAT_004f2710;
             if (n != 0) {
-                long *pv = gv;
+                long *pv = gv; long *pv2;
                 do {
-                    long *pv2 = pv + 2;
+                    pv2 = pv + 2;
                     FUN_00367ccc((unsigned long *)&gv2, (unsigned long *)*pv, (unsigned long *)(*pv + pv[1] * 8));
                     pv = pv2;
                 } while (pv2 != gv + n * 2);
             }
             sk_type_build_generic_38ad64(&l278, u3, 0, 0, 0, (long *)&types, (long *)&gv2, *tree);
             if (((unsigned long)&types & 1) == 0) {
-                vp = sk_type_elem_at_38cbb8((long)pc6b, a);
+                vp = FUN_0038cbb8((unsigned long)pc6b, a);
                 local = 0;
-                sk_type_lookup_core_3895e0(&res, 0, vp.lo, vp.hi, (unsigned long)&types, (unsigned long)&gv2, (unsigned long)&types);
+                sk_type_lookup_core_3895e0(&res, 0, vp.lo, vp.hi, (unsigned long)&types, &types, &gv2);
                 lvar = res;
                 if (res != 0) lvar = 0;
                 *(unsigned short *)(out + 2) = 0;
@@ -7496,5 +7497,198 @@ void sk_type_build_bound_397a98(long *out, unsigned long *tree, unsigned long *n
     out[1] = (long)FUN_0037f9f4;
     *(unsigned short *)(out + 2) = 1;
 lb_97e54:
+    if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
+}
+
+/* FUN_0038c640 @ 0x38c640   (est. sk_type_waiter_scan)
+ * Ghidra: undefined1 [16] FUN_0038c640(undefined8 *param_1, ulong param_2, ulong param_3, long param_4)
+ * Open-addressed type-decl cache probe: hashes the {key0,key1} pair
+ * (FUN_003a2b38), masks it to the table capacity (element-size byte at the
+ * low tag), and linearly probes (cL4_waiter_next) for a matching entry among
+ * the first param_3 slots of the 0x18-byte-stride table at param_4. Returns
+ * the 16-byte pair {found-entry-or-0, slot-index}.
+ * Confidence: medium */
+cL4_w16_t sk_type_waiter_scan_38c640(unsigned long *key, unsigned long cap,
+                                     unsigned long count, long slots)
+{
+    unsigned long h, u3; int i1; unsigned long *p4; cL4_w16_t r; unsigned long l58;
+
+    l58 = cap;
+    h = FUN_003a2b38(*key, key[1]);
+    u3 = 4;
+    if (((cap & 3) != 0) && ((unsigned char *)(cap & 0xfffffffffffffffc) != 0))
+        u3 = (unsigned long)*(unsigned char *)(cap & 0xfffffffffffffffc);
+    u3 = -1L << (u3 & 0x3f);
+    h = h & (u3 ^ 0xffffffffffffffff);
+    if (h < 2) h = 1;
+    i1 = cL4_waiter_next(&l58, h, 2);
+    if (i1 != 0) {
+        do {
+            if ((unsigned long)(i1 - 1) < count) {
+                p4 = (unsigned long *)(slots + (unsigned long)(i1 - 1) * 0x18);
+                if ((key[1] == p4[1]) &&
+                    ((key[1] == 0 || (i1 = thunk_FUN_001145b0(*key, *p4), i1 == 0)))) {
+                    h = 0; goto lb_8c730;
+                }
+            }
+            h = h + 1 & ~u3;
+            if (h < 2) h = 1;
+            i1 = cL4_waiter_next(&l58, h, 2);
+        } while (i1 != 0);
+    }
+    p4 = 0;
+    h = h & 0xffffffff;
+lb_8c730:
+    r.hi = h; r.lo = (unsigned long)p4;
+    return r;
+}
+
+/* FUN_0038dd44 @ 0x38dd44   (est. sk_err_ctx)
+ * Ghidra: void FUN_0038dd44(undefined8 *param_1, long *param_2)
+ * Builds the TypeDecoder "failed to get parent context" error string into the
+ * string buffer param_1: "<_gatherGenericParameters> context <N>" followed by
+ * the generic-arg indices and the parent context value.
+ * Confidence: medium
+ * Notes: uses FUN_0000456c (arg-count) / FUN_00019850 (identifier string). */
+void sk_err_ctx_38dd44(unsigned long *out, unsigned long *err)
+{
+    unsigned long l5, u2, u3; unsigned short s70; unsigned long l58;
+
+    out[0] = 0; out[1] = 0; out[2] = 0;
+    FUN_00112db4((unsigned long)out, (unsigned long)s__gatherGenericParameters__contex_005d52fa);
+    l5 = *err;
+    if (l5 == 0) l5 = 0;
+    u2 = FUN_0000456c(l5);
+    s70 = (unsigned short)u2;
+    if ((u2 >> 8 & 1) != 0) {
+        u3 = FUN_00019850((unsigned long)&s70);
+        FUN_00112db4((unsigned long)out, u3);
+        FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d021c);
+    }
+    sk_type_utf8_decode_38df24(&l58, (unsigned long)&DAT_005d531e);
+    FUN_00112db4((unsigned long)out, l58);
+    thunk_FUN_00012568(l58);
+    FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d5321);
+    if (err[2] != 0) {
+        l5 = err[2] << 3;
+        {
+            int first = 1;
+            do {
+                if (!first) FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d0c46);
+                sk_type_utf8_decode_38df24(&l58, (unsigned long)&DAT_005d531e);
+                FUN_00112db4((unsigned long)out, l58);
+                first = 0;
+                l5 -= 8;
+            } while (l5 != 0);
+        }
+    }
+    FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d5324);
+    FUN_00112db4((unsigned long)out, (unsigned long)s_parent__005d5327);
+    if (err[3] == 0)
+        FUN_00112db4((unsigned long)out, (unsigned long)s_<null>_005d5330);
+    else
+        FUN_00112db4((unsigned long)out, err[3]);
+    FUN_00112db4((unsigned long)out, (unsigned long)&DAT_005d5337);
+}
+
+/* FUN_00389e8c @ 0x389e8c   (est. sk_type_demangle_resolve)
+ * Ghidra: void FUN_00389e8c(ulong *param_1, ...)
+ * Public demangle+resolve entry: builds a demangle-tree node for the name
+ * (a,b) via FUN_003a32a0, then calls the recursive decoder
+ * sk_type_decode_38f0a8 to materialize metadata, writing {value, vtable,
+ * kind} into out. On success (kind 0) the PAC'd pointer is returned directly;
+ * on failure an error descriptor is built.
+ * Confidence: medium
+ * Notes: PAC entry-point error; canary -0x2c8502b44bfffed6. */
+void sk_type_demangle_resolve_389e8c(unsigned long *out, unsigned long a, unsigned long b,
+                                     unsigned long c, unsigned long d, unsigned long e)
+{
+    long l1; unsigned long res; long canary; unsigned long ctx, n2;
+    unsigned long out3[4]; unsigned short kind;
+
+    canary = -0x2c8502b44bfffed6;
+    {
+        unsigned long frame[2048] = {0};
+        frame[0] = 0x67b938; ctx = 0x67b7d0;
+        l1 = FUN_003a32a0((unsigned long)&frame[0], a, b, &ctx);
+        cL4_zone_get(&ctx);
+        if (l1 == 0) {
+            *(unsigned short *)(out + 2) = 1;
+            *out = (unsigned long)s_Demangling_failed_005d5260;
+            out[1] = (unsigned long)FUN_0037f9f4;
+        } else {
+            sk_strbuf_copy_38ef98((long)&ctx, (void *)d);
+            sk_strbuf_copy_38f020((long)&n2, (void *)e);
+            sk_strbuf_copy_38ef98((long)&n2, (void *)&ctx);
+            sk_strbuf_copy_38f020((long)&n2, (void *)&n2);
+            FUN_0036805c(&n2);
+            FUN_003680cc(&ctx);
+            sk_type_decode_38f0a8(out3, &ctx, l1, 0, 0);
+            res = out3[0]; kind = *(unsigned short *)(out3 + 2);
+            if (kind == 1) {
+                *(unsigned short *)(out + 2) = 1;
+                out[1] = (unsigned long)FUN_0037f9f4;
+                *out = res;
+            } else if (kind == 0 && res != 0) {
+                if ((res & 1) != 0) { *(unsigned short *)(out + 2) = 0; *out = res; }
+                else {
+                    *(unsigned short *)(out + 2) = 1;
+                    *out = (unsigned long)s_This_entry_point_is_only_for_pac_005d5292;
+                    out[1] = (unsigned long)FUN_0037f9f4;
+                }
+            } else {
+                *(unsigned short *)(out + 2) = 1;
+                *out = (unsigned long)s_NULL_type_but_no_error_provided_005d5272;
+                out[1] = (unsigned long)FUN_0037f9f4;
+            }
+            FUN_0036805c(&n2);
+            FUN_003680cc(&ctx);
+        }
+        ctx = 0x67c398; cL4_zone_get(&n2);
+        ctx = 0x67c370; cL4_ipc_obj_publish(0, 0, 0);
+    }
+    if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
+}
+
+/* FUN_0038a234 @ 0x38a234   (est. sk_type_demangle_resolve2)
+ * Ghidra: void FUN_0038a234(undefined8 *param_1, ...)
+ * Variant of sk_type_demangle_resolve_389e8c used for the PAC entry-point
+ * error path: same demangle+decode, but on decode success always reports
+ * kind 0 with the raw value (no PAC check).
+ * Confidence: medium
+ * Notes: canary -0x2c8502b44bfffed6. */
+void sk_type_demangle_resolve2_38a234(unsigned long *out, unsigned long a, unsigned long b,
+                                      unsigned long c, unsigned long d, unsigned long e)
+{
+    long l1; unsigned long res; long canary; unsigned long ctx, n2;
+    unsigned long out3[4]; unsigned short kind;
+
+    canary = -0x2c8502b44bfffed6;
+    {
+        unsigned long frame[2048] = {0};
+        frame[0] = 0x67b938; ctx = 0x67b7d0;
+        l1 = FUN_003a32a0((unsigned long)&frame[0], a, b, &ctx);
+        cL4_zone_get(&ctx);
+        if (l1 == 0) {
+            *(unsigned short *)(out + 2) = 1;
+            *out = (unsigned long)s_Demangling_failed_005d5260;
+            out[1] = (unsigned long)FUN_0037f9f4;
+        } else {
+            sk_strbuf_copy_38ef98((long)&ctx, (void *)d);
+            sk_strbuf_copy_38f020((long)&n2, (void *)e);
+            sk_strbuf_copy_38ef98((long)&n2, (void *)&ctx);
+            sk_strbuf_copy_38f020((long)&n2, (void *)&n2);
+            FUN_0036805c(&n2);
+            FUN_003680cc(&ctx);
+            sk_type_decode_38f0a8(out3, &ctx, l1, 0, 0);
+            res = out3[0];
+            *(unsigned short *)(out + 2) = 0;
+            *out = res;
+            FUN_0036805c(&n2);
+            FUN_003680cc(&ctx);
+        }
+        ctx = 0x67c398; cL4_zone_get(&n2);
+        ctx = 0x67c370; cL4_ipc_obj_publish(0, 0, 0);
+    }
     if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
 }

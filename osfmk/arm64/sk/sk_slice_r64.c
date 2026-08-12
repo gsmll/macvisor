@@ -71,7 +71,7 @@ extern unsigned long sk_x_000a68f4();   /* FUN_000a68f4 */
 extern unsigned long sk_x_000a6f88();   /* FUN_000a6f88 */
 extern unsigned long sk_x_000aa4ec();   /* FUN_000aa4ec */
 extern unsigned long sk_x_000b43d0();   /* FUN_000b43d0 */
-extern unsigned long sk_x_000b43f4();   /* FUN_000b43f4 */
+extern cl4_pair_t sk_x_000b43f4();   /* FUN_000b43f4 */
 extern unsigned long sk_x_00100efc();   /* FUN_00100efc */
 extern unsigned long sk_x_00117cc4();   /* FUN_00117cc4 (memcpy) */
 extern unsigned long sk_x_00117d14();   /* FUN_00117d14 (memmove) */
@@ -162,95 +162,95 @@ extern unsigned long sk_x_0045eb6c();   /* FUN_0045eb6c */
 extern unsigned long sk_x_00460ddc();   /* FUN_00460ddc */
 extern unsigned long sk_x_00461d68();   /* FUN_00461d68 */
 extern unsigned long sk_x_00462ee8();   /* FUN_00462ee8 */
-extern unsigned long sk_x_00463ad4();   /* FUN_00463ad4 */
-extern unsigned long sk_x_00463b08();   /* FUN_00463b08 */
-extern unsigned long sk_x_00463b2c();   /* FUN_00463b2c */
-extern unsigned long sk_x_00463b50();   /* FUN_00463b50 */
-extern unsigned long sk_x_00463b98();   /* FUN_00463b98 */
-extern unsigned long sk_x_00463c18();   /* FUN_00463c18 */
-extern unsigned long sk_x_00463c38();   /* FUN_00463c38 */
-extern unsigned long sk_x_00463c58();   /* FUN_00463c58 */
-extern unsigned long sk_x_00463c78();   /* FUN_00463c78 */
-extern unsigned long sk_x_00463c98();   /* FUN_00463c98 */
-extern unsigned long sk_x_00463cfc();   /* FUN_00463cfc */
-extern unsigned long sk_x_00463d1c();   /* FUN_00463d1c */
-extern unsigned long sk_x_00463d3c();   /* FUN_00463d3c */
-extern unsigned long sk_x_00463d5c();   /* FUN_00463d5c */
-extern unsigned long sk_x_00463d7c();   /* FUN_00463d7c */
-extern unsigned long sk_x_00463d9c();   /* FUN_00463d9c */
-extern unsigned long sk_x_00464000();   /* FUN_00464000 */
-extern unsigned long sk_x_0046414c();   /* FUN_0046414c */
-extern unsigned long sk_x_004641a0();   /* FUN_004641a0 */
-extern unsigned long sk_x_004641b8();   /* FUN_004641b8 */
-extern unsigned long sk_x_004641d0();   /* FUN_004641d0 */
-extern unsigned long sk_x_004643cc();   /* FUN_004643cc */
-extern unsigned long sk_x_004643d8();   /* FUN_004643d8 */
-extern unsigned long sk_x_004643f0();   /* FUN_004643f0 */
-extern unsigned long sk_x_00464408();   /* FUN_00464408 */
-extern unsigned long sk_x_00464420();   /* FUN_00464420 */
-extern unsigned long sk_x_00464438();   /* FUN_00464438 */
-extern unsigned long sk_x_00464450();   /* FUN_00464450 */
-extern unsigned long sk_x_00464468();   /* FUN_00464468 */
-extern unsigned long sk_x_00464480();   /* FUN_00464480 */
-extern unsigned long sk_x_00464688();   /* FUN_00464688 */
-extern unsigned long sk_x_00464694();   /* FUN_00464694 */
-extern unsigned long sk_x_004646ac();   /* FUN_004646ac */
-extern unsigned long sk_x_004646c4();   /* FUN_004646c4 */
-extern unsigned long sk_x_004646dc();   /* FUN_004646dc */
-extern unsigned long sk_x_004646f4();   /* FUN_004646f4 */
-extern unsigned long sk_x_0046470c();   /* FUN_0046470c */
-extern unsigned long sk_x_00464724();   /* FUN_00464724 */
-extern unsigned long sk_x_0046473c();   /* FUN_0046473c */
-extern unsigned long sk_x_00464754();   /* FUN_00464754 */
-extern unsigned long sk_x_0046476c();   /* FUN_0046476c */
-extern unsigned long sk_x_00464784();   /* FUN_00464784 */
-extern unsigned long sk_x_0046479c();   /* FUN_0046479c */
-extern unsigned long sk_x_00464b40();   /* FUN_00464b40 */
-extern unsigned long sk_x_00464b54();   /* FUN_00464b54 */
-extern unsigned long sk_x_00464b68();   /* FUN_00464b68 */
-extern unsigned long sk_x_00464b7c();   /* FUN_00464b7c */
-extern unsigned long sk_x_00464b90();   /* FUN_00464b90 */
-extern unsigned long sk_x_00464ba4();   /* FUN_00464ba4 */
-extern unsigned long sk_x_00464bf4();   /* FUN_00464bf4 */
-extern unsigned long sk_x_00464c08();   /* FUN_00464c08 */
-extern unsigned long sk_x_00464c1c();   /* FUN_00464c1c */
-extern unsigned long sk_x_00464c30();   /* FUN_00464c30 */
-extern unsigned long sk_x_00464c44();   /* FUN_00464c44 */
-extern unsigned long sk_x_00464c58();   /* FUN_00464c58 */
-extern unsigned long sk_x_00464c6c();   /* FUN_00464c6c */
-extern unsigned long sk_x_00464c80();   /* FUN_00464c80 */
-extern unsigned long sk_x_00464c94();   /* FUN_00464c94 */
-extern unsigned long sk_x_00464ca8();   /* FUN_00464ca8 */
-extern unsigned long sk_x_00464cbc();   /* FUN_00464cbc */
-extern unsigned long sk_x_00464cd0();   /* FUN_00464cd0 */
-extern unsigned long sk_x_00464ee4();   /* FUN_00464ee4 */
-extern unsigned long sk_x_00464f04();   /* FUN_00464f04 */
-extern unsigned long sk_x_00464f14();   /* FUN_00464f14 */
-extern unsigned long sk_x_00464f64();   /* FUN_00464f64 */
-extern unsigned long sk_x_00464f74();   /* FUN_00464f74 */
-extern unsigned long sk_x_00464fa4();   /* FUN_00464fa4 */
-extern unsigned long sk_x_00464fb4();   /* FUN_00464fb4 */
-extern unsigned long sk_x_00464fe0();   /* FUN_00464fe0 */
-extern unsigned long sk_x_00464ff0();   /* FUN_00464ff0 */
-extern unsigned long sk_x_00465000();   /* FUN_00465000 */
-extern unsigned long sk_x_00465028();   /* FUN_00465028 */
-extern unsigned long sk_x_004651d4();   /* FUN_004651d4 */
-extern unsigned long sk_x_004651e4();   /* FUN_004651e4 */
-extern unsigned long sk_x_004651f4();   /* FUN_004651f4 */
-extern unsigned long sk_x_00465204();   /* FUN_00465204 */
-extern unsigned long sk_x_00465214();   /* FUN_00465214 */
-extern unsigned long sk_x_00465224();   /* FUN_00465224 */
+extern cl4_pair_t sk_x_00463ad4();   /* FUN_00463ad4 */
+extern cl4_pair_t sk_x_00463b08();   /* FUN_00463b08 */
+extern cl4_pair_t sk_x_00463b2c();   /* FUN_00463b2c */
+extern cl4_pair_t sk_x_00463b50();   /* FUN_00463b50 */
+extern cl4_pair_t sk_x_00463b98();   /* FUN_00463b98 */
+extern cl4_pair_t sk_x_00463c18();   /* FUN_00463c18 */
+extern cl4_pair_t sk_x_00463c38();   /* FUN_00463c38 */
+extern cl4_pair_t sk_x_00463c58();   /* FUN_00463c58 */
+extern cl4_pair_t sk_x_00463c78();   /* FUN_00463c78 */
+extern cl4_pair_t sk_x_00463c98();   /* FUN_00463c98 */
+extern cl4_pair_t sk_x_00463cfc();   /* FUN_00463cfc */
+extern cl4_pair_t sk_x_00463d1c();   /* FUN_00463d1c */
+extern cl4_pair_t sk_x_00463d3c();   /* FUN_00463d3c */
+extern cl4_pair_t sk_x_00463d5c();   /* FUN_00463d5c */
+extern cl4_pair_t sk_x_00463d7c();   /* FUN_00463d7c */
+extern cl4_pair_t sk_x_00463d9c();   /* FUN_00463d9c */
+extern cl4_pair_t sk_x_00464000();   /* FUN_00464000 */
+extern cl4_pair_t sk_x_0046414c();   /* FUN_0046414c */
+extern cl4_pair_t sk_x_004641a0();   /* FUN_004641a0 */
+extern cl4_pair_t sk_x_004641b8();   /* FUN_004641b8 */
+extern cl4_pair_t sk_x_004641d0();   /* FUN_004641d0 */
+extern cl4_pair_t sk_x_004643cc();   /* FUN_004643cc */
+extern cl4_pair_t sk_x_004643d8();   /* FUN_004643d8 */
+extern cl4_pair_t sk_x_004643f0();   /* FUN_004643f0 */
+extern cl4_pair_t sk_x_00464408();   /* FUN_00464408 */
+extern cl4_pair_t sk_x_00464420();   /* FUN_00464420 */
+extern cl4_pair_t sk_x_00464438();   /* FUN_00464438 */
+extern cl4_pair_t sk_x_00464450();   /* FUN_00464450 */
+extern cl4_pair_t sk_x_00464468();   /* FUN_00464468 */
+extern cl4_pair_t sk_x_00464480();   /* FUN_00464480 */
+extern cl4_pair_t sk_x_00464688();   /* FUN_00464688 */
+extern cl4_pair_t sk_x_00464694();   /* FUN_00464694 */
+extern cl4_pair_t sk_x_004646ac();   /* FUN_004646ac */
+extern cl4_pair_t sk_x_004646c4();   /* FUN_004646c4 */
+extern cl4_pair_t sk_x_004646dc();   /* FUN_004646dc */
+extern cl4_pair_t sk_x_004646f4();   /* FUN_004646f4 */
+extern cl4_pair_t sk_x_0046470c();   /* FUN_0046470c */
+extern cl4_pair_t sk_x_00464724();   /* FUN_00464724 */
+extern cl4_pair_t sk_x_0046473c();   /* FUN_0046473c */
+extern cl4_pair_t sk_x_00464754();   /* FUN_00464754 */
+extern cl4_pair_t sk_x_0046476c();   /* FUN_0046476c */
+extern cl4_pair_t sk_x_00464784();   /* FUN_00464784 */
+extern cl4_pair_t sk_x_0046479c();   /* FUN_0046479c */
+extern cl4_pair_t sk_x_00464b40();   /* FUN_00464b40 */
+extern cl4_pair_t sk_x_00464b54();   /* FUN_00464b54 */
+extern cl4_pair_t sk_x_00464b68();   /* FUN_00464b68 */
+extern cl4_pair_t sk_x_00464b7c();   /* FUN_00464b7c */
+extern cl4_pair_t sk_x_00464b90();   /* FUN_00464b90 */
+extern cl4_pair_t sk_x_00464ba4();   /* FUN_00464ba4 */
+extern cl4_pair_t sk_x_00464bf4();   /* FUN_00464bf4 */
+extern cl4_pair_t sk_x_00464c08();   /* FUN_00464c08 */
+extern cl4_pair_t sk_x_00464c1c();   /* FUN_00464c1c */
+extern cl4_pair_t sk_x_00464c30();   /* FUN_00464c30 */
+extern cl4_pair_t sk_x_00464c44();   /* FUN_00464c44 */
+extern cl4_pair_t sk_x_00464c58();   /* FUN_00464c58 */
+extern cl4_pair_t sk_x_00464c6c();   /* FUN_00464c6c */
+extern cl4_pair_t sk_x_00464c80();   /* FUN_00464c80 */
+extern cl4_pair_t sk_x_00464c94();   /* FUN_00464c94 */
+extern cl4_pair_t sk_x_00464ca8();   /* FUN_00464ca8 */
+extern cl4_pair_t sk_x_00464cbc();   /* FUN_00464cbc */
+extern cl4_pair_t sk_x_00464cd0();   /* FUN_00464cd0 */
+extern cl4_pair_t sk_x_00464ee4();   /* FUN_00464ee4 */
+extern cl4_pair_t sk_x_00464f04();   /* FUN_00464f04 */
+extern cl4_pair_t sk_x_00464f14();   /* FUN_00464f14 */
+extern cl4_pair_t sk_x_00464f64();   /* FUN_00464f64 */
+extern cl4_pair_t sk_x_00464f74();   /* FUN_00464f74 */
+extern cl4_pair_t sk_x_00464fa4();   /* FUN_00464fa4 */
+extern cl4_pair_t sk_x_00464fb4();   /* FUN_00464fb4 */
+extern cl4_pair_t sk_x_00464fe0();   /* FUN_00464fe0 */
+extern cl4_pair_t sk_x_00464ff0();   /* FUN_00464ff0 */
+extern cl4_pair_t sk_x_00465000();   /* FUN_00465000 */
+extern cl4_pair_t sk_x_00465028();   /* FUN_00465028 */
+extern cl4_pair_t sk_x_004651d4();   /* FUN_004651d4 */
+extern cl4_pair_t sk_x_004651e4();   /* FUN_004651e4 */
+extern cl4_pair_t sk_x_004651f4();   /* FUN_004651f4 */
+extern cl4_pair_t sk_x_00465204();   /* FUN_00465204 */
+extern cl4_pair_t sk_x_00465214();   /* FUN_00465214 */
+extern cl4_pair_t sk_x_00465224();   /* FUN_00465224 */
 extern unsigned long sk_x_00465240();   /* FUN_00465240 */
 extern unsigned long sk_x_004652d4();   /* FUN_004652d4 */
 extern unsigned long sk_x_00465428();   /* FUN_00465428 */
-extern unsigned long sk_x_004659e0();   /* FUN_004659e0 */
-extern unsigned long sk_x_004659e8();   /* FUN_004659e8 */
-extern unsigned long sk_x_00465a38();   /* FUN_00465a38 */
-extern unsigned long sk_x_00465ab8();   /* FUN_00465ab8 */
-extern unsigned long sk_x_00465b64();   /* FUN_00465b64 */
-extern unsigned long sk_x_00465b98();   /* FUN_00465b98 */
-extern unsigned long sk_x_00465be0();   /* FUN_00465be0 */
-extern unsigned long sk_x_00465bf4();   /* FUN_00465bf4 */
+extern cl4_pair_t sk_x_004659e0();   /* FUN_004659e0 */
+extern cl4_pair_t sk_x_004659e8();   /* FUN_004659e8 */
+extern cl4_pair_t sk_x_00465a38();   /* FUN_00465a38 */
+extern cl4_pair_t sk_x_00465ab8();   /* FUN_00465ab8 */
+extern cl4_pair_t sk_x_00465b64();   /* FUN_00465b64 */
+extern cl4_pair_t sk_x_00465b98();   /* FUN_00465b98 */
+extern cl4_pair_t sk_x_00465be0();   /* FUN_00465be0 */
+extern cl4_pair_t sk_x_00465bf4();   /* FUN_00465bf4 */
 extern cl4_pair_t sk_x_00465ed4();      /* FUN_00465ed4 (16-byte) */
 extern unsigned long sk_x_004661b8();   /* FUN_004661b8 */
 extern unsigned long sk_x_004662b8();   /* FUN_004662b8 */
@@ -1617,4 +1617,1415 @@ static void sk_block_table_build_00451f24(word_t self)
         }
     }
     sk_x_00084234(uVar4, self);
+}
+/* FUN_0045399c @ 0x0045399c   (est. sk_script_name_0045399c)
+ * Ghidra: undefined1[16] FUN_0045399c(undefined2 param_1)
+ * Maps the Character.Unicode.Script / Block enum value to its 16-byte
+ * small-string name. Each case returns either a packed small-string
+ * (the {length<<56|bytes} pair), a helper-built pair (004643d8 / 00464408 /
+ * ... script-name builders), or a name assembled from raw UTF-16 words
+ * (e.g. 0x614c5f6369736142 = "Basic_Latin" tag). Fall-through cases
+ * (those ending in break) use the post-switch builder 004643cc(pcVar4,
+ * 0xd000000000000010). Unknown/default enums yield the 0x42-tagged pair.
+ * Confidence: high (full switch transcribed; every case preserved)
+ * Notes: extraout_x1 words capture the x1 half of the prior 16-byte call. */
+static cl4_pair_t sk_script_name_0045399c(word_t param_1)
+{
+    cl4_pair_t au;
+    const char *pcVar4;
+    word_t uVar1 = 0x614c5f6369736142;  /* "Basic_Latin" low tag */
+    word_t uVar2 = 0xe100000000000000;
+    word_t uVar3 = 0xeb000000006e6974;  /* high tag */
+    switch (param_1) {
+    case default:
+        au.hi = uVar3;
+        au.lo = uVar1;
+        return au;
+    case 1:
+        pcVar4 = s_Latin_1_Supplement_005de210;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 2:
+        pcVar4 = s_Latin_Extended_A_005de230;
+        break;
+    case 3:
+        pcVar4 = s_Latin_Extended_B_005de250;
+        break;
+    case 4:
+        au.hi = 0xee00736e6f69736e;
+        au.lo = 0x657478455f415049;
+        return au;
+    case 5:
+        pcVar4 = s_Spacing_Modifier_Letters_005de270;
+        au = sk_x_00464480(pcVar4);
+        return au;
+    case 6:
+        pcVar4 = s_Combining_Diacritical_Marks_005de290;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 7:
+        pcVar4 = s_Greek_and_Coptic_005de2b0;
+        break;
+    case 8:
+        uVar3 = 0xe800000000000000;
+        uVar2 = 0x6c6c69727943;
+        au.lo = uVar2 | 0x6369000000000000;
+        au.hi = uVar3;
+        return au;
+    case 9:
+        pcVar4 = s_Cyrillic_Supplement_005de2d0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 10:
+        uVar2 = 0x696e656d7241;
+        au.lo = uVar2 | 0x6e61000000000000;
+        au.hi = 0xe800000000000000;
+        return au;
+    case 0xb:
+        au = sk_x_00464ca8();
+        return au;
+    case 0xc:
+        uVar3 = 0x62617241;
+        au = sk_x_00465b64(uVar3,0xe600000000000000);
+        return au;
+    case 0xd:
+        au = sk_x_00464c94();
+        return au;
+    case 0xe:
+        pcVar4 = s_Arabic_Supplement_005de2f0;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0xf:
+        au = sk_x_00464c08();
+        return au;
+    case 0x10:
+        au.hi = 0xe300000000000000;
+        au.lo = 0x6f4b4e;
+        return au;
+    case 0x11:
+        uVar3 = 0x61746972616d6153;
+        au = sk_x_00464ee4(uVar3,0x6e);
+        return au;
+    case 0x12:
+        uVar3 = 0x646e614d;
+        au = sk_x_00464688(uVar3,0xe700000000000000);
+        return au;
+    case 0x13:
+        pcVar4 = s_Syriac_Supplement_005de310;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x14:
+        pcVar4 = s_Arabic_Extended_B_005de330;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x15:
+        pcVar4 = s_Arabic_Extended_A_005de350;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x16:
+        au = sk_x_00463c98();
+        return au;
+    case 0x17:
+        uVar2 = 0x6c61676e6542;
+        au.lo = uVar2 | 0x69000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0x18:
+        au = sk_x_004646ac();
+        return au;
+    case 0x19:
+        au = sk_x_004646c4();
+        return au;
+    case 0x1a:
+        uVar2 = 0x7969724f;
+        au.lo = uVar2 | 0x6100000000;
+        au.hi = 0xe500000000000000;
+        return au;
+    case 0x1b:
+        au = sk_x_00464fb4(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0x1c:
+        au = sk_x_00464bf4();
+        return au;
+    case 0x1d:
+        uVar2 = 0x6e6e614b;
+        uVar2 = uVar2 | 0x646100000000;
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0x1e:
+        au = sk_x_00464ba4(0x614c5f6369736142,0xe90000000000006d);
+        return au;
+    case 0x1f:
+        uVar2 = 0x6c61686e6953;
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0x20:
+        au = sk_x_004651d4();
+        return au;
+    case 0x21:
+        au = sk_x_00464f14();
+        return au;
+    case 0x22:
+        uVar2 = 0x617465626954;
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0x23:
+        uVar3 = 0x616d6e61794d;
+        au = sk_x_00465ab8(uVar3,0xe700000000000000);
+        return au;
+    case 0x24:
+        uVar2 = 0x6967726f6547;
+        LAB_00454d70:
+        au.lo = uVar2 | 0x6e61000000000000;
+        au.hi = 0xe800000000000000;
+        return au;
+    case 0x25:
+        au.hi = 0xeb000000006f6d61;
+        au.lo = 0x4a5f6c75676e6148;
+        return au;
+    case 0x26:
+        uVar3 = 0xe800000000000000;
+        uVar2 = 0x706f69687445;
+        au.lo = uVar2 | 0x6369000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x27:
+        pcVar4 = s_Ethiopic_Supplement_005de370;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x28:
+        au = sk_x_004646dc();
+        return au;
+    case 0x29:
+        au = sk_x_00464420(s_Unified_Canadian_Aboriginal_Syll_005de390);
+        return au;
+    case 0x2a:
+        uVar3 = 0x6168674f;
+        au = sk_x_00465b98(uVar3,0xe500000000000000);
+        return au;
+    case 0x2b:
+        au = sk_x_00464f74(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0x2c:
+        au = sk_x_004641b8();
+        return au;
+    case 0x2d:
+        uVar2 = 0x6f6e756e6148;
+        au.lo = uVar2 | 0x6f000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0x2e:
+        au = sk_x_00465000(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0x2f:
+        au = sk_x_00464724();
+        return au;
+    case 0x30:
+        au = sk_x_00464fe0(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0x31:
+        uVar3 = 0x61696c6f676e6f4d;
+        au = sk_x_00464ee4(uVar3,0x6e);
+        return au;
+    case 0x32:
+        au = sk_x_004643cc(s_Unified_Canadian_Aboriginal_Syll_005de3c0);
+        au.lo = 0xd00000000000002e;
+        return au;
+    case 0x33:
+        au.hi = 0xe500000000000000;
+        au.lo = 0x75626d694c;
+        return au;
+    case 0x34:
+        au = sk_x_00464c58();
+        return au;
+    case 0x35:
+        au = sk_x_00463d7c();
+        return au;
+    case 0x36:
+        uVar2 = 0x5f72656d684b;
+        uVar2 = uVar2 | 0x7953000000000000;
+        uVar3 = 0x736c6f626d;
+    case 0x37:
+        uVar3 = 0x69677542;
+        au = sk_x_00465bf4(uVar3,0xe800000000000000);
+        return au;
+    case 0x38:
+        au = sk_x_00464754();
+        return au;
+    case 0x39:
+        pcVar4 = s_Combining_Diacritical_Marks_Exte_005de400;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000024;
+        return au;
+    case 0x3a:
+        uVar3 = 0x696c6142;
+        au = sk_x_00465bf4(uVar3,0xe800000000000000);
+        return au;
+    case 0x3b:
+        au = sk_x_00464b68(0x614c5f6369736142,0xe900000000000065);
+        return au;
+    case 0x3c:
+        au = sk_x_00464f64(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0x3d:
+        au = sk_x_00464c80();
+        return au;
+    case 0x3e:
+        au = sk_x_004646f4();
+        return au;
+    case 0x3f:
+        pcVar4 = s_Cyrillic_Extended_C_005de430;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x40:
+        pcVar4 = s_Georgian_Extended_005de450;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x41:
+        pcVar4 = s_Sundanese_Supplement_005de470;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0x42:
+        pcVar4 = s_Vedic_Extensions_005de490;
+        break;
+    case 0x43:
+        pcVar4 = s_Phonetic_Extensions_005de4b0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x44:
+        pcVar4 = s_Phonetic_Extensions_Supplement_005de4d0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001e;
+        return au;
+    case 0x45:
+        pcVar4 = s_Combining_Diacritical_Marks_Supp_005de4f0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000026;
+        return au;
+    case 0x46:
+        pcVar4 = s_Latin_Extended_Additional_005de520;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x47:
+        au.hi = 0xee006465646e6574;
+        au.lo = 0x78455f6b65657247;
+        return au;
+    case 0x48:
+        pcVar4 = s_General_Punctuation_005de550;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x49:
+        pcVar4 = s_Superscripts_and_Subscripts_005de570;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x4a:
+        pcVar4 = s_Currency_Symbols_005de590;
+        break;
+    case 0x4b:
+        au = sk_x_00464450(s_Combining_Diacritical_Marks_for__005de5b0,0x614c5f6369736142,
+        0xeb000000006e6974);
+        return au;
+    case 0x4c:
+        pcVar4 = s_Letterlike_Symbols_005de5e0;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0x4d:
+        au.hi = 0xec000000736d726f;
+        au.lo = 0x465f7265626d754e;
+        return au;
+    case 0x4e:
+        au.hi = 0xe600000000000000;
+        au.lo = 0x73776f727241;
+        return au;
+    case 0x4f:
+        pcVar4 = s_Mathematical_Operators_005de610;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x50:
+        pcVar4 = s_Miscellaneous_Technical_005de630;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0x51:
+        pcVar4 = s_Control_Pictures_005de650;
+        break;
+    case 0x52:
+        pcVar4 = s_Optical_Character_Recognition_005de670;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xd;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x53:
+        pcVar4 = s_Enclosed_Alphanumerics_005de690;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x54:
+        au.hi = 0xeb00000000676e69;
+        au.lo = 0x776172445f786f42;
+        return au;
+    case 0x55:
+        au.hi = 0xee0073746e656d65;
+        au.lo = 0x6c455f6b636f6c42;
+        return au;
+    case 0x56:
+        pcVar4 = s_Geometric_Shapes_005de6d0;
+        break;
+    case 0x57:
+        pcVar4 = s_Miscellaneous_Symbols_005de6f0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x58:
+        au.hi = 0xe800000000000000;
+        au.lo = 0x73746162676e6944;
+        return au;
+    case 0x59:
+        pcVar4 = s_Miscellaneous_Mathematical_Symbo_005de710;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000024;
+        return au;
+    case 0x5a:
+        pcVar4 = s_Supplemental_Arrows_A_005de740;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x5b:
+        pcVar4 = s_Braille_Patterns_005de760;
+        break;
+    case 0x5c:
+        pcVar4 = s_Supplemental_Arrows_B_005de780;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x5d:
+        pcVar4 = s_Miscellaneous_Mathematical_Symbo_005de7a0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000024;
+        return au;
+    case 0x5e:
+        pcVar4 = s_Supplemental_Mathematical_Operat_005de7d0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000023;
+        return au;
+    case 0x5f:
+        pcVar4 = s_Miscellaneous_Symbols_and_Arrows_005de800;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000020;
+        return au;
+    case 0x60:
+        uVar3 = 0x74696c6f67616c47;
+        au = sk_x_0046414c(uVar3);
+        return au;
+    case 0x61:
+        pcVar4 = s_Latin_Extended_C_005de830;
+        break;
+    case 0x62:
+        au = sk_x_00465b64(0x74706f43,0xe600000000000000);
+        return au;
+    case 99:
+        pcVar4 = s_Georgian_Supplement_005de850;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 100:
+        uVar3 = 0xe800000000000000;
+        uVar2 = 0x616e69666954;
+        au.lo = uVar2 | 0x6867000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x65:
+        pcVar4 = s_Ethiopic_Extended_005de870;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x66:
+        pcVar4 = s_Cyrillic_Extended_A_005de890;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x67:
+        pcVar4 = s_Supplemental_Punctuation_005de8b0;
+        LAB_00454db4:
+        au = sk_x_00464480(pcVar4);
+        return au;
+    case 0x68:
+        pcVar4 = s_CJK_Radicals_Supplement_005de8d0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0x69:
+        uVar3 = 0xef736c6163696461;
+        uVar2 = 0x6978676e614b;
+        au.lo = uVar2 | 0x525f000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x6a:
+        pcVar4 = s_Ideographic_Description_Characte_005de900;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x6b:
+        pcVar4 = s_CJK_Symbols_and_Punctuation_005de930;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x6c:
+        uVar2 = 0x616761726948;
+        au.lo = uVar2 | 0x616e000000000000;
+        au.hi = 0xe800000000000000;
+        return au;
+    case 0x6d:
+        uVar2 = 0x616b6174614b;
+        LAB_00453de0:
+        au.lo = uVar2 | 0x616e000000000000;
+        au.hi = 0xe800000000000000;
+        return au;
+    case 0x6e:
+        au = sk_x_00464694();
+        return au;
+    case 0x6f:
+        pcVar4 = s_Hangul_Compatibility_Jamo_005de950;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x70:
+        au.hi = 0xe600000000000000;
+        au.lo = 0x6e75626e614b;
+        return au;
+    case 0x71:
+        pcVar4 = s_Bopomofo_Extended_005de980;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x72:
+        au = sk_x_004659e0(0x6f7274535f4b4a43,0x73656b);
+        return au;
+    case 0x73:
+        pcVar4 = s_Katakana_Phonetic_Extensions_005de9a0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001c;
+        return au;
+    case 0x74:
+        pcVar4 = s_Enclosed_CJK_Letters_and_Months_005de9c0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001f;
+        return au;
+    case 0x75:
+        pcVar4 = s_CJK_Compatibility_005de9e0;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x76:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005dea00;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x77:
+        pcVar4 = s_Yijing_Hexagram_Symbols_005dea30;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0x78:
+        pcVar4 = s_CJK_Unified_Ideographs_005dea50;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x79:
+        au.hi = 0xec00000073656c62;
+        au.lo = 0x616c6c79535f6959;
+        return au;
+    case 0x7a:
+        uVar3 = 0xeb00000000736c61;
+        uVar2 = 0x6461525f6959;
+        au.lo = uVar2 | 0x6369000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x7b:
+        au = sk_x_00465214();
+        return au;
+    case 0x7c:
+        au = sk_x_00464f04();
+        return au;
+    case 0x7d:
+        pcVar4 = s_Cyrillic_Extended_B_005dea80;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x7e:
+        uVar3 = 0x756d6142;
+        LAB_00454274:
+        au = sk_x_00465b98(uVar3,0xe500000000000000);
+        return au;
+    case 0x7f:
+        pcVar4 = s_Modifier_Tone_Letters_005deaa0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x80:
+        pcVar4 = s_Latin_Extended_D_005deac0;
+        break;
+    case 0x81:
+        au = sk_x_00463d3c();
+        return au;
+    case 0x82:
+        pcVar4 = s_Common_Indic_Number_Forms_005deae0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x83:
+        au.hi = 0xe800000000000000;
+        au.lo = 0x61705f7367616850;
+        return au;
+    case 0x84:
+        au = sk_x_00465a38(0x736172756153,0xea00000000006172);
+        return au;
+    case 0x85:
+        pcVar4 = s_Devanagari_Extended_005deb10;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x86:
+        au = sk_x_0046476c();
+        return au;
+    case 0x87:
+        au = sk_x_00464cbc();
+        return au;
+    case 0x88:
+        pcVar4 = s_Hangul_Jamo_Extended_A_005deb30;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x89:
+        uVar3 = 0x6176614a;
+        LAB_004547c4:
+        au = sk_x_00465bf4(uVar3,0xe800000000000000);
+        return au;
+    case 0x8a:
+        pcVar4 = s_Myanmar_Extended_B_005deb50;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0x8b:
+        au = sk_x_00465224();
+        return au;
+    case 0x8c:
+        pcVar4 = s_Myanmar_Extended_A_005deb70;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0x8d:
+        au = sk_x_0046473c();
+        return au;
+    case 0x8e:
+        pcVar4 = s_Meetei_Mayek_Extensions_005deb90;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0x8f:
+        pcVar4 = s_Ethiopic_Extended_A_005debb0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x90:
+        pcVar4 = s_Latin_Extended_E_005debd0;
+        break;
+    case 0x91:
+        pcVar4 = s_Cherokee_Supplement_005debf0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x92:
+        au = sk_x_00463d5c();
+        return au;
+    case 0x93:
+        pcVar4 = s_Hangul_Syllables_005dec10;
+        break;
+    case 0x94:
+        pcVar4 = s_Hangul_Jamo_Extended_B_005dec30;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x95:
+        au.hi = 0xef73657461676f72;
+        au.lo = 0x7275535f68676948;
+        return au;
+    case 0x96:
+        pcVar4 = s_High_Private_Use_Surrogates_005dec60;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x97:
+        au.hi = 0xee0073657461676f;
+        au.lo = 0x727275535f776f4c;
+        return au;
+    case 0x98:
+        pcVar4 = s_Private_Use_Area_005dec90;
+        break;
+    case 0x99:
+        pcVar4 = s_CJK_Compatibility_Ideographs_005decb0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001c;
+        return au;
+    case 0x9a:
+        pcVar4 = s_Alphabetic_Presentation_Forms_005decd0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xd;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x9b:
+        pcVar4 = s_Arabic_Presentation_Forms_A_005decf0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x9c:
+        pcVar4 = s_Variation_Selectors_005ded10;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x9d:
+        au.hi = 0xee00736d726f465f;
+        au.lo = 0x6c61636974726556;
+        return au;
+    case 0x9e:
+        pcVar4 = s_Combining_Half_Marks_005ded40;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0x9f:
+        pcVar4 = s_CJK_Compatibility_Forms_005ded60;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0xa0:
+        pcVar4 = s_Small_Form_Variants_005ded80;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0xa1:
+        pcVar4 = s_Arabic_Presentation_Forms_B_005deda0;
+        code_r0x00454e90:
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xb;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0xa2:
+        pcVar4 = s_Halfwidth_and_Fullwidth_Forms_005dedc0;
+        code_r0x00454c5c:
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 0xd;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0xa3:
+        au.hi = 0xe800000000000000;
+        au.lo = 0x736c616963657053;
+        return au;
+    case 0xa4:
+        pcVar4 = s_Linear_B_Syllabary_005dedf0;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0xa5:
+        pcVar4 = s_Linear_B_Ideograms_005dee10;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0xa6:
+        au.hi = 0xee00737265626d75;
+        au.lo = 0x4e5f6e6165676541;
+        return au;
+    case 0xa7:
+        pcVar4 = s_Ancient_Greek_Numbers_005dee40;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0xa8:
+        uVar3 = 0x5f746e6569636e41;
+        au.hi = 0xef736c6f626d7953;
+        au.lo = uVar3;
+        return au;
+    case 0xa9:
+        au.hi = 0xed0000637369445f;
+        au.lo = 0x736f747369616850;
+        return au;
+    case 0xaa:
+        uVar2 = 0x6963794c;
+        au.lo = uVar2 | 0x6e6100000000;
+        au.hi = 0xe600000000000000;
+        return au;
+    case 0xab:
+        uVar2 = 0x69726143;
+        au.lo = uVar2 | 0x6e6100000000;
+        au.hi = 0xe600000000000000;
+        return au;
+    case 0xac:
+        pcVar4 = s_Coptic_Epact_Numbers_005dee80;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0xad:
+        uVar3 = 0x6c6174495f646c4f;
+        au = sk_x_0046414c(uVar3);
+        return au;
+    case 0xae:
+        uVar3 = 0x68746f47;
+        LAB_00454cf4:
+        au = sk_x_00465b64(uVar3,0xe600000000000000);
+        return au;
+    case 0xaf:
+        uVar3 = 0x6d7265505f646c4f;
+        au = sk_x_0046414c(uVar3);
+        return au;
+    case 0xb0:
+        uVar3 = 0xe800000000000000;
+        uVar2 = 0x746972616755;
+        LAB_00454e3c:
+        au.lo = uVar2 | 0x6369000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0xb1:
+        uVar3 = 0x737265505f646c4f;
+        au.hi = 0xeb000000006e6169;
+        au.lo = uVar3;
+        return au;
+    case 0xb2:
+        au = sk_x_004641d0();
+        return au;
+    case 0xb3:
+        uVar2 = 0x616976616853;
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xb4:
+        uVar2 = 0x796e616d734f;
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xb5:
+        au = sk_x_00464ff0(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0xb6:
+        uVar2 = 0x617361626c45;
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xb7:
+        pcVar4 = s_Caucasian_Albanian_005dd990;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0xb8:
+        au = sk_x_0046479c();
+        return au;
+    case 0xb9:
+        au = sk_x_0046470c();
+        return au;
+    case 0xba:
+        pcVar4 = s_Latin_Extended_F_005deea0;
+        break;
+    case 0xbb:
+        pcVar4 = s_Cypriot_Syllabary_005deec0;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0xbc:
+        pcVar4 = s_Imperial_Aramaic_005ddb00;
+        break;
+    case 0xbd:
+        au = sk_x_00464b7c(0x614c5f6369736142,0xe900000000000065);
+        return au;
+    case 0xbe:
+        uVar3 = 0x616561746162614e;
+        LAB_00454e54:
+        au = sk_x_00464ee4(uVar3,0x6e);
+        return au;
+    case 0xbf:
+        uVar2 = 0x72746148;
+        LAB_004543a4:
+        au.lo = uVar2 | 0x6e6100000000;
+        au.hi = 0xe600000000000000;
+        return au;
+    case 0xc0:
+        au = sk_x_00463c78();
+        return au;
+    case 0xc1:
+        uVar3 = 0x6e616964794c;
+        au.hi = 0xe600000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0xc2:
+        pcVar4 = s_Meroitic_Hieroglyphs_005ddcb0;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0xc3:
+        pcVar4 = s_Meroitic_Cursive_005ddc90;
+        break;
+    case 0xc4:
+        au = sk_x_00465a38(0x736f7261684b,0xea00000000006968);
+        return au;
+    case 0xc5:
+        pcVar4 = s_Old_South_Arabian_005dddb0;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0xc6:
+        pcVar4 = s_Old_North_Arabian_005ddd70;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 199:
+        au = sk_x_00463c58();
+        return au;
+    case 200:
+        uVar2 = 0x617473657641;
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xc9:
+        pcVar4 = s_Inscriptional_Parthian_005ddb40;
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0xca:
+        pcVar4 = s_Inscriptional_Pahlavi_005ddb20;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0xcb:
+        au = sk_x_00463b50();
+        return au;
+    case 0xcc:
+        uVar3 = 0x6b7275545f646c4f;
+        LAB_004547fc:
+        au = sk_x_0046414c(uVar3);
+        return au;
+    case 0xcd:
+        au = sk_x_00463b98();
+        return au;
+    case 0xce:
+        uVar3 = 0xef6179676e69686f;
+        uVar2 = 0x6966696e6148;
+        LAB_00453fd8:
+        au.lo = uVar2 | 0x525f000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0xcf:
+        pcVar4 = s_Rumi_Numeral_Symbols_005deee0;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0xd0:
+        au = sk_x_00464c30();
+        return au;
+    case 0xd1:
+        uVar3 = 0x64676f535f646c4f;
+        LAB_00454810:
+        au.hi = 0xeb000000006e6169;
+        au.lo = uVar3;
+        return au;
+    case 0xd2:
+        uVar2 = 0x616964676f53;
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xd3:
+        uVar3 = 0xea00000000007275;
+        uVar2 = 0x79555f646c4f;
+        LAB_00453d44:
+        au.lo = uVar2 | 0x6867000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0xd4:
+        au = sk_x_00463c38();
+        return au;
+    case 0xd5:
+        uVar3 = 0x6d796c45;
+        LAB_00454068:
+        au = sk_x_00464688(uVar3,0xe700000000000000);
+        return au;
+    case 0xd6:
+        au = sk_x_00464c1c();
+        return au;
+    case 0xd7:
+        au = sk_x_00464c6c();
+        return au;
+    case 0xd8:
+        au = sk_x_00463c18();
+        return au;
+    case 0xd9:
+        au = sk_x_00464c44();
+        return au;
+    case 0xda:
+        au = sk_x_00464784();
+        return au;
+    case 0xdb:
+        uVar2 = 0x72616853;
+        LAB_0045495c:
+        uVar2 = uVar2 | 0x646100000000;
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xdc:
+        pcVar4 = s_Sinhala_Archaic_Numbers_005def00;
+        code_r0x00454b68:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000017;
+        return au;
+    case 0xdd:
+        au = sk_x_00464cd0();
+        return au;
+    case 0xde:
+        uVar2 = 0x6e61746c754d;
+        LAB_00454464:
+        au.lo = uVar2 | 0x69000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xdf:
+        au.hi = 0xe900000000000069;
+        au.lo = 0x646177616475684b;
+        return au;
+    case 0xe0:
+        uVar2 = 0x68746e617247;
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xe1:
+        au = sk_x_00465204();
+        return au;
+    case 0xe2:
+        uVar2 = 0x747568726954;
+        LAB_00454c30:
+        au.lo = uVar2 | 0x61000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xe3:
+        au = sk_x_004641a0();
+        return au;
+    case 0xe4:
+        au = sk_x_004651f4();
+        return au;
+    case 0xe5:
+        pcVar4 = s_Mongolian_Supplement_005def20;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0xe6:
+        au = sk_x_00464fa4(0x614c5f6369736142,0xe500000000000000);
+        return au;
+    case 0xe7:
+        au = sk_x_004651e4();
+        return au;
+    case 0xe8:
+        uVar2 = 0x72676f44;
+        LAB_00453f04:
+        au.lo = uVar2 | 0x6100000000;
+        au.hi = 0xe500000000000000;
+        return au;
+    case 0xe9:
+        au = sk_x_00463b08();
+        return au;
+    case 0xea:
+        au = sk_x_00463d9c();
+        return au;
+    case 0xeb:
+        au = sk_x_004659e0(0x67616e69646e614e,&DAT_00697261);
+        return au;
+    case 0xec:
+        pcVar4 = s_Zanabazar_Square_005ddfa0;
+        break;
+    case 0xed:
+        uVar2 = 0x626d6f796f53;
+        LAB_00453d74:
+        au.lo = uVar2 | 0x6f000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xee:
+        au = sk_x_004643cc(s_Unified_Canadian_Aboriginal_Syll_005def40);
+        au.lo = 0xd000000000000030;
+        return au;
+    case 0xef:
+        au = sk_x_00463d1c();
+        return au;
+    case 0xf0:
+        au.hi = 0xe900000000000069;
+        au.lo = 0x6b75736b69616842;
+        return au;
+    case 0xf1:
+        uVar2 = 0x65686372614d;
+        LAB_00454e0c:
+        au.lo = uVar2 | 0x6e000000000000;
+        au.hi = 0xe700000000000000;
+        return au;
+    case 0xf2:
+        uVar2 = 0x5f6d61726173614d;
+        uVar3 = 0x69646e6f47;
+        au = sk_x_000b43f4(uVar2,uVar3);
+        return au;
+    case 0xf3:
+        uVar2 = 0x5f616c616a6e7547;
+        LAB_00454940:
+        uVar3 = 0x69646e6f47;
+        au = sk_x_000b43f4(uVar2,uVar3);
+        return au;
+    case 0xf4:
+        uVar3 = 0x6173616b614d;
+        LAB_00454884:
+        au = sk_x_00465ab8(uVar3,0xe700000000000000);
+        return au;
+    case 0xf5:
+        uVar2 = 0x7573694c;
+        au = sk_x_00465be0(uVar2 | 0x7075535f00000000);
+        return au;
+    case 0xf6:
+        pcVar4 = s_Tamil_Supplement_005def90;
+        break;
+    case 0xf7:
+        au = sk_x_00464b54(0x614c5f6369736142,0xe90000000000006d);
+        return au;
+    case 0xf8:
+        pcVar4 = s_Cuneiform_Numbers_and_Punctuatio_005defb0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000021;
+        return au;
+    case 0xf9:
+        au = sk_x_00464480(s_Early_Dynastic_Cuneiform_005defe0);
+        return au;
+    case 0xfa:
+        au = sk_x_00463cfc();
+        return au;
+    case 0xfb:
+        pcVar4 = s_Egyptian_Hieroglyphs_005dda30;
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0xfc:
+        pcVar4 = s_Egyptian_Hieroglyph_Format_Contr_005df000;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000023;
+        return au;
+    case 0xfd:
+        pcVar4 = s_Anatolian_Hieroglyphs_005dd8e0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0xfe:
+        pcVar4 = s_Bamum_Supplement_005df030;
+        break;
+    case 0xff:
+        au = sk_x_004659e8(0x6f724d);
+        return au;
+    case 0x100:
+        uVar3 = 0x6173676e6154;
+        au.hi = 0xe600000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x101:
+        au = sk_x_00464b40(0x614c5f6369736142,0xe900000000000068);
+        return au;
+    case 0x102:
+        au = sk_x_00463ad4();
+        return au;
+    case 0x103:
+        au = sk_x_00464b90(0x614c5f6369736142,0xeb000000006e6972);
+        return au;
+    case 0x104:
+        uVar3 = 0x6f61694d;
+        au.hi = 0xe400000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x105:
+        pcVar4 = s_Ideographic_Symbols_and_Punctuat_005df050;
+        code_r0x00454d04:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000023;
+        return au;
+    case 0x106:
+        uVar3 = 0x7475676e6154;
+        au.hi = 0xe600000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x107:
+        pcVar4 = s_Tangut_Components_005df080;
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x108:
+        pcVar4 = s_Khitan_Small_Script_005ddbb0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x109:
+        pcVar4 = s_Tangut_Supplement_005df0a0;
+        LAB_00454c40:
+        au = sk_x_00464438(pcVar4);
+        return au;
+    case 0x10a:
+        uVar3 = 0xef425f6465646e65;
+        au.hi = uVar3;
+        au.lo = 0x7478455f616e614b;
+        return au;
+    case 0x10b:
+        uVar2 = 0x616e614b;
+        LAB_0045408c:
+        au = sk_x_00465be0(uVar2 | 0x7075535f00000000);
+        return au;
+    case 0x10c:
+        uVar3 = 0xef415f6465646e65;
+        LAB_004548b8:
+        au.hi = uVar3;
+        au.lo = 0x7478455f616e614b;
+        return au;
+    case 0x10d:
+        pcVar4 = s_Small_Kana_Extension_005df0f0;
+        LAB_00454b04:
+        au = sk_x_00464468(pcVar4);
+        return au;
+    case 0x10e:
+        uVar3 = 0x756873754e;
+        au.hi = 0xe500000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x10f:
+        uVar1 = 0x6e61796f6c707544;
+        uVar3 = 0xe800000000000000;
+    case 0x110:
+        pcVar4 = s_Shorthand_Format_Controls_005df110;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x111:
+        pcVar4 = s_Znamenny_Musical_Notation_005df130;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x112:
+        pcVar4 = s_Byzantine_Musical_Symbols_005df150;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x113:
+        uVar3 = 0x5f6c61636973754d;
+        LAB_00454620:
+        au.hi = 0xef736c6f626d7953;
+        au.lo = uVar3;
+        return au;
+    case 0x114:
+        pcVar4 = s_Ancient_Greek_Musical_Notation_005df180;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001e;
+        return au;
+    case 0x115:
+        au.hi = 0xee00736c6172656d;
+        au.lo = 0x754e5f6e6179614d;
+        return au;
+    case 0x116:
+        pcVar4 = s_Tai_Xuan_Jing_Symbols_005df1b0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x117:
+        pcVar4 = s_Counting_Rod_Numerals_005df1d0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x118:
+        pcVar4 = s_Mathematical_Alphanumeric_Symbol_005df1f0;
+        code_r0x00454828:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000021;
+        return au;
+    case 0x119:
+        pcVar4 = s_Sutton_SignWriting_005df220;
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0x11a:
+        au = sk_x_004643cc(s_Latin_Extended_G_005df240);
+        au.lo = 0xd000000000000010;
+        return au;
+    case 0x11b:
+        pcVar4 = s_Glagolitic_Supplement_005df260;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x11c:
+        pcVar4 = s_Nyiakeng_Puachue_Hmong_005ddd30;
+        LAB_00454d34:
+        au = sk_x_004643f0(pcVar4);
+        return au;
+    case 0x11d:
+        uVar3 = 0x6f746f54;
+        au.hi = 0xe400000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x11e:
+        uVar3 = 0x6f68636e6157;
+        LAB_004542d8:
+        au.hi = 0xe600000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x11f:
+        pcVar4 = s_Ethiopic_Extended_B_005df280;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x120:
+        au = sk_x_00463b2c();
+        return au;
+    case 0x121:
+        uVar3 = 0x6d616c6441;
+        LAB_00454478:
+        au.hi = 0xe500000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x122:
+        pcVar4 = s_Indic_Siyaq_Numbers_005df2a0;
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x123:
+        pcVar4 = s_Ottoman_Siyaq_Numbers_005df2c0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+    case 0x124:
+        pcVar4 = s_Arabic_Mathematical_Alphabetic_S_005df2e0;
+        code_r0x0045472c:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000026;
+        return au;
+    case 0x125:
+        sk_x_004663e0();
+        uVar2 = 0x6e6f6a68614d;
+        uVar3 = au.hi;
+        au.lo = uVar2 | 0x5f67000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x126:
+        au.hi = 0xec00000073656c69;
+        au.lo = 0x545f6f6e696d6f44;
+        return au;
+    case 0x127:
+        sk_x_004663e0();
+        uVar2 = 0x6e6979616c50;
+        uVar3 = au.hi;
+        LAB_00454368:
+        au.lo = uVar2 | 0x5f67000000000000;
+        au.hi = uVar3;
+        return au;
+    case 0x128:
+        pcVar4 = s_Enclosed_Alphanumeric_Supplement_005df330;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000020;
+        return au;
+    case 0x129:
+        pcVar4 = s_Enclosed_Ideographic_Supplement_005df360;
+        code_r0x00454700:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001f;
+        return au;
+    case 0x12a:
+        au = sk_x_00464420(s_Miscellaneous_Symbols_and_Pictog_005df380);
+        return au;
+    case 299:
+        au.hi = 0xe900000000000073;
+        au.lo = 0x6e6f6369746f6d45;
+        return au;
+    case 300:
+        pcVar4 = s_Ornamental_Dingbats_005df3b0;
+        LAB_00454e7c:
+        au = sk_x_00464408(pcVar4);
+        return au;
+    case 0x12d:
+        pcVar4 = s_Transport_and_Map_Symbols_005df3d0;
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x12e:
+        pcVar4 = s_Alchemical_Symbols_005df3f0;
+        LAB_00454d58:
+        au = sk_x_004643d8(pcVar4);
+        return au;
+    case 0x12f:
+        pcVar4 = s_Geometric_Shapes_Extended_005df410;
+        code_r0x004548d8:
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 9;
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x130:
+        pcVar4 = s_Supplemental_Arrows_C_005df430;
+        code_r0x00454bd0:
+        au = sk_x_004643cc(pcVar4);
+        uVar3 = 5;
+        LAB_00454ea4:
+        au = sk_x_00465028(uVar3);
+        return au;
+    case 0x131:
+        pcVar4 = s_Supplemental_Symbols_and_Pictogr_005df450;
+        code_r0x004545ac:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000024;
+        return au;
+    case 0x132:
+        uVar2 = 0x5f7373656843;
+        LAB_004541a0:
+        uVar2 = uVar2 | 0x7953000000000000;
+        uVar3 = 0x736c6f626d;
+        LAB_0045494c:
+        au = sk_x_000b43f4(uVar2,uVar3);
+        return au;
+    case 0x133:
+        pcVar4 = s_Symbols_and_Pictographs_Extended_005df490;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x134:
+        pcVar4 = s_Symbols_for_Legacy_Computing_005df4c0;
+        code_r0x004542ec:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001c;
+        return au;
+    case 0x135:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df4e0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x136:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df510;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x137:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df540;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x138:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df570;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x139:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df5a0;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x13a:
+        au = sk_x_00464450(s_CJK_Compatibility_Ideographs_Sup_005df5d0,0x614c5f6369736142,
+        0xeb000000006e6974);
+        return au;
+    case 0x13b:
+        pcVar4 = s_CJK_Unified_Ideographs_Extension_005df600;
+        code_r0x00454a14:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000022;
+        return au;
+    case 0x13c:
+        uVar3 = 0x73676154;
+        LAB_004542c4:
+        au.hi = 0xe400000000000000;
+        au.lo = uVar3;
+        return au;
+    case 0x13d:
+        pcVar4 = s_Variation_Selectors_Supplement_005df630;
+        code_r0x004543e8:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd00000000000001e;
+        return au;
+    case 0x13e:
+        pcVar4 = s_Supplementary_Private_Use_Area_A_005df650;
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000020;
+        return au;
+    case 0x13f:
+        pcVar4 = s_Supplementary_Private_Use_Area_B_005df680;
+        code_r0x00454574:
+        au = sk_x_004643cc(pcVar4);
+        au.lo = 0xd000000000000020;
+        return au;
+    case 0x140:
+        uVar1 = 0x6b636f6c425f6f4e;
+        LAB_00454448:
+        uVar3 = 0xe800000000000000;
+        switchD_004539e0_caseD_0:
+        au.hi = uVar3;
+        au.lo = uVar1;
+        return au;
+    }
+    au = sk_x_004643cc((word_t)pcVar4, 0xd000000000000010);
+    return au;
 }

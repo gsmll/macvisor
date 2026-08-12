@@ -55,145 +55,6 @@ extern long FUN_006699e8();
 extern long FUN_00669a48();
 extern long FUN_0066a65c();
 extern long FUN_0066a6b4();
-extern long FUN_0066a9bc();
-extern long FUN_0066ab40();
-extern long FUN_0066ad54();
-extern long FUN_0066af84();
-extern long FUN_006766cc();
-extern long FUN_00676a7c();
-extern long FUN_0067728c();
-extern long FUN_00677674();
-extern long FUN_006777d8();
-extern long FUN_006782b4();
-extern long FUN_006786fc();
-extern long FUN_006787a0();
-extern long FUN_0067882c();
-extern long FUN_00678a40();
-extern long FUN_00678ae0();
-extern long FUN_00679784();
-extern long FUN_00679838();
-extern long FUN_00679990();
-extern long FUN_00679b98();
-extern long FUN_00679d44();
-extern long FUN_0067a154();
-extern long FUN_0067a264();
-extern long FUN_0067a334();
-extern long FUN_0067a3dc();
-extern long FUN_0067a444();
-extern long FUN_0067a510();
-extern long FUN_0067a740();
-extern long FUN_0067a760();
-extern long FUN_0067a7f0();
-extern long FUN_0067aa00();
-extern long FUN_0067cb30();
-extern long FUN_0067cfb0();
-extern long FUN_0067cfe0();
-extern long FUN_0067cffc();
-extern long FUN_0067d02c();
-extern long FUN_0067d72c();
-extern long FUN_0067f660();
-extern long FUN_006833d4();
-extern long FUN_006860f4();
-extern long FUN_006863f0();
-extern long FUN_0068642c();
-extern long FUN_00686464();
-extern long FUN_0068649c();
-extern long FUN_006864b4();
-extern long FUN_006864cc();
-extern long FUN_00686544();
-extern long FUN_0068656c();
-extern long FUN_006865a4();
-extern long FUN_006865dc();
-extern long FUN_0068664c();
-extern long FUN_00686730();
-extern long FUN_00686768();
-extern long FUN_006867bc();
-extern long FUN_00686810();
-extern long FUN_00686864();
-extern long FUN_00686890();
-extern long FUN_006868bc();
-extern long FUN_006868e8();
-extern long FUN_00686930();
-extern long FUN_006869bc();
-extern long FUN_006869e4();
-extern long FUN_00686a0c();
-extern long FUN_00686a54();
-extern long FUN_00686a8c();
-extern long FUN_00686b10();
-extern long FUN_00686b64();
-extern long FUN_00686c04();
-extern long FUN_00686c2c();
-extern long FUN_00686c74();
-extern long FUN_00686c8c();
-extern long FUN_00686d10();
-extern long FUN_00686d58();
-extern long FUN_00686d90();
-extern long FUN_00686dc8();
-extern long FUN_00686e00();
-extern long FUN_00686e38();
-extern long FUN_00686e70();
-extern long FUN_00686ea8();
-extern long FUN_00686ee0();
-extern long FUN_00686f08();
-extern long FUN_00686f30();
-extern long FUN_00686f68();
-extern long FUN_00686f94();
-extern long FUN_00686ffc();
-extern long FUN_00687050();
-extern long FUN_00687098();
-extern long FUN_00687124();
-extern long FUN_00687174();
-extern long FUN_006871c4();
-extern long FUN_006871d8();
-extern long FUN_006871ec();
-extern long FUN_00687200();
-extern long FUN_00687214();
-extern long FUN_00687264();
-extern long FUN_006872b4();
-extern long FUN_00687304();
-extern long FUN_00687354();
-extern long FUN_0068739c();
-extern long FUN_006873e4();
-extern long FUN_0068742c();
-extern long FUN_00687464();
-extern long FUN_0068748c();
-/* Out-of-range cL4 helpers (declared extern; the FUN_ address in each comment
- * is ground truth; bodies reconstructed by the range worker that owns them).
- * Unspecified-arg prototypes keep call-site argument counts permissive.
- */
-extern long FUN_0064effc();
-extern long FUN_00655200();
-extern long FUN_00656474();
-extern long FUN_00656634();
-extern long FUN_00656b2c();
-extern long FUN_0065be08();
-extern long FUN_0065c2f0();
-extern long FUN_006662ac();
-extern long FUN_00666344();
-extern long FUN_00666448();
-extern long FUN_00666800();
-extern long FUN_00666d84();
-extern long FUN_00667588();
-extern long FUN_00667e54();
-extern long FUN_00668128();
-extern long FUN_00668c6c();
-extern long FUN_00668c78();
-extern long FUN_00668c94();
-extern long FUN_00668dd8();
-extern long FUN_006690dc();
-extern long FUN_006692e4();
-extern long FUN_00669330();
-extern long FUN_00669388();
-extern long FUN_006693d4();
-extern long FUN_0066942c();
-extern long FUN_00669478();
-extern long FUN_006694d0();
-extern long FUN_0066951c();
-extern long FUN_00669618();
-extern long FUN_006699e8();
-extern long FUN_00669a48();
-extern long FUN_0066a65c();
-extern long FUN_0066a6b4();
 extern sk_pair_t FUN_0066a9bc();
 extern long FUN_0066ab40();
 extern long FUN_0066ad54();
@@ -302,7 +163,7 @@ extern long thunk_FUN_0067aa00();
 static void sk_cap_decode(unsigned long *out, unsigned long cap, unsigned long op,
                           unsigned long size, unsigned int flags);
 static void sk_l4_error_format(unsigned long *out, unsigned char code);
-static void sk_page_tree_lookup(unsigned long key);
+static unsigned long sk_page_tree_lookup(unsigned long key);
 static bool sk_page_bitmap_test_set(unsigned long *block, long addr);
 static void sk_page_tree_insert(unsigned long *rootp, unsigned long node);
 static unsigned long sk_page_block_alloc(long base, unsigned long size, unsigned long count);
@@ -319,8 +180,8 @@ static void sk_cap_bucket_move(unsigned long *out, unsigned long *bucket,
                                unsigned int cap, unsigned long flag);
 static void sk_cap_bucket_free_rec(unsigned long *bucket, sk_fp_t cb);
 
-/* FUN_00674e98 @ 0x00674e98  (est. sk_l4_error_format)
- * Ghidra: void FUN_00674e98(undefined8 *param_1, byte param_2)
+/* sk_l4_error_format @ 0x00674e98  (est. sk_l4_error_format)
+ * Ghidra: void sk_l4_error_format(undefined8 *param_1, byte param_2)
  * Fills the 32-byte (4 x 8) error-report structure param_1 from an L4 error code
  * (param_2). Codes 0..9 map to the L4 error-code string table (Success,
  * Preempted, Canceled, Truncated, CapInvalid, SlotInvalid, MethodInvalid,
@@ -357,8 +218,8 @@ static void sk_l4_error_format(unsigned long *out, unsigned char code)
     out[1] = *(unsigned long *)(s + 8);
 }
 
-/* FUN_0066b884 @ 0x0066b884  (est. sk_cap_decode)
- * Ghidra: void FUN_0066b884(ulong *param_1, ulong param_2, undefined8 param_3,
+/* sk_cap_decode @ 0x0066b884  (est. sk_cap_decode)
+ * Ghidra: void sk_cap_decode(ulong *param_1, ulong param_2, undefined8 param_3,
  *                          ulong param_4, uint param_5)
  * Decodes a raw capability (param_2) into the 5-word capability representation
  * at param_1 (40 bytes), using op (param_3 & 0x3fffff), size param_4 and flags
@@ -406,9 +267,9 @@ set_imm:
         }
         if ((flags & 1) == 0) goto no_create;
         long ctx = FUN_0066a65c();
-        sk_pair_t r1 = FUN_0066c8ac(ctx, cap, 8, 0);
+        sk_pair_t r1 = sk_cap_bucket_insert((unsigned long *)ctx, cap, 8, 0);
         if (((r1.lo & 0xff) != 0) ||
-            (r1 = FUN_0066c8ac(ctx, (unsigned long)(opc << 6 | 1) | size << 0x1c, 8, 0),
+            (r1 = sk_cap_bucket_insert((unsigned long *)ctx, (unsigned long)(opc << 6 | 1) | size << 0x1c, 8, 0),
              (r1.lo & 0xff) != 0)) goto fail_put;
         out[0] = size;
         unsigned long e = (unsigned long)ctx << 0x1c | 10;
@@ -449,7 +310,7 @@ done_short:
             bool small = (unsigned long)((long)cur - (long)bucket) < 0x39;
             if (slot < 8) {
                 if (bucket != 0 && small) goto sb_break;
-                sk_pair_t r = FUN_0066c8ac(bucket, e, 8, 0);
+                sk_pair_t r = sk_cap_bucket_insert(bucket, e, 8, 0);
                 if ((r.lo & 0xff) == 0) {
                     out[0] = size;
                     *(unsigned char *)(out + 1) = 1;
@@ -459,7 +320,8 @@ done_short:
 fail_put:
                 out[0] = 0;
                 out[1] = 0;
-                *(unsigned long (*)[2])(out + 2) = (unsigned long[2]){r1.lo, r1.hi};
+                out[2] = r.lo;
+                out[3] = r.hi;
                 goto finish;
             }
             if (bucket != 0 && small) goto sb_break;
@@ -479,7 +341,7 @@ fail_put:
                     if ((cend < cb) || (cb < chead) ||
                         (cb != 0 && ((unsigned long)((long)cend - (long)cb) < 0x39)))
                         goto sb_break;
-                    sk_pair_t _pc = FUN_0066ca30(cb);
+                    sk_pair_t _pc = sk_cap_bucket_op((long)cb, 0);
                     unsigned long *np = (unsigned long *)_pc.lo;
                     bool ok = np != 0;
                     cb = ok ? np : 0;
@@ -497,7 +359,7 @@ fail_put:
             unsigned long b3 = 0;
             if (b != 0) b3 = b2;
             if ((b3 < b) || (b != 0 && (b3 - b < 0x39))) goto sb_break;
-            sk_pair_t _p = FUN_0066ca30(b, e);
+            sk_pair_t _p = sk_cap_bucket_op((long)b, e);
             long lr = (long)_p.lo;
             e = (unsigned long)(slot * 0x40 + 0x40);
             out[0] = size;
@@ -519,7 +381,7 @@ sb_break:
         if ((cur < bucket) ||
             (bucket != 0 && ((unsigned long)((long)cur - (long)bucket) < 0x39)))
             goto sb_break;
-        sk_pair_t r = FUN_0066c204(bucket, op);
+        sk_pair_t r = sk_cap_bucket_resolve(bucket, op);
         unsigned long *p = (unsigned long *)r.lo;
         if ((r.hi & 0xf8) == 0) {
             unsigned long *e2 = 0;
@@ -532,7 +394,7 @@ sb_break:
             if ((v != 0) && (((unsigned int)*tgt >> 6 & 0x3fffff) == opc)) goto set_imm;
         }
         if ((flags & 1) != 0) {
-            sk_pair_t _p2 = FUN_0066ca30(bucket, (unsigned long)(opc << 6 | 1) | size << 0x1c);
+            sk_pair_t _p2 = sk_cap_bucket_op((long)bucket, (unsigned long)(opc << 6 | 1) | size << 0x1c);
             long lr = (long)_p2.lo;
             unsigned long e = (unsigned long)(tag + 0x40) & 0xfffffc0;
             out[0] = size;
@@ -553,8 +415,8 @@ finish:
     return;
 }
 
-/* FUN_0066c8ac @ 0x0066c8ac  (est. sk_cap_bucket_insert)
- * Ghidra: undefined1 [16] FUN_0066c8ac(ulong *param_1, ulong param_2, uint param_3,
+/* sk_cap_bucket_insert @ 0x0066c8ac  (est. sk_cap_bucket_insert)
+ * Ghidra: undefined1 [16] sk_cap_bucket_insert(ulong *param_1, ulong param_2, uint param_3,
  *                                     uint param_4)
  * Inserts capability param_2 into the capability bucket param_1 (an 8-slot
  * array) at an index derived from param_3, when param_4's low bit is set. On
@@ -579,6 +441,7 @@ static sk_pair_t sk_cap_bucket_insert(unsigned long *bucket, unsigned long cap,
         }
     }
     unsigned long idx = 0;
+    unsigned long pos = 0;
     unsigned long *end = bucket + 8;
     unsigned long *lim = 0;
     if (bucket != 0) lim = end;
@@ -587,7 +450,7 @@ static sk_pair_t sk_cap_bucket_insert(unsigned long *bucket, unsigned long cap,
     unsigned long *p = bucket;
     for (;;) {
         if (((p < bucket) || (lim < p + 1)) || (p + 1 < p)) goto sb_break;
-        unsigned long pos = idx;
+        pos = idx;
         if ((*p & 3) == 0) break;
         unsigned int eop = (unsigned int)*p >> 6 & 0x3fffff;
         if (op == eop) goto done;
@@ -608,20 +471,20 @@ static sk_pair_t sk_cap_bucket_insert(unsigned long *bucket, unsigned long cap,
             status = 0;
             *ins = cap & 0xffffffffffffffc0 | *ins & 0x3c | 1;
 done:
-            sk_pair_t r;
+            { sk_pair_t r;
             r.hi = 0;
             r.lo = status;
-            return r;
+            return r; }
         }
     }
 sb_break:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66c9ec) */
 }
 
-/* FUN_0066ca30 @ 0x0066ca30  (est. sk_cap_bucket_op)
- * Ghidra: void FUN_0066ca30(long param_1, undefined8 param_2)
+/* sk_cap_bucket_op @ 0x0066ca30  (est. sk_cap_bucket_op)
+ * Ghidra: void sk_cap_bucket_op(long param_1, undefined8 param_2)
  * Performs a capability-bucket operation: bounds-checks the bucket, invokes the
- * bucket resolver FUN_0066cac4 with (local, param_1, param_2, 0), and returns.
+ * bucket resolver sk_cap_bucket_move with (local, param_1, param_2, 0), and returns.
  * The decompiler collapses the return value (callers use the .lo pointer); a
  * zeroed pair is returned with a note.
  * Confidence: medium */
@@ -632,7 +495,7 @@ static sk_pair_t sk_cap_bucket_op(long bucket, unsigned long arg)
     if (bucket + 8U <= end) {
         unsigned long local[4] = {0, 0, 0, 0};
         if ((bucket == 0) || (0x38 < end - bucket)) {
-            FUN_0066cac4(local, bucket, arg, 0);
+            sk_cap_bucket_move(local, (unsigned long *)bucket, arg, 0);
             unsigned long nb = local[3] + 0x40;
             if ((local[3] <= nb) && ((local[3] == 0 || (0x38 < (long)(nb - local[3]))))) {
                 unsigned long b2 = 0;
@@ -646,8 +509,8 @@ static sk_pair_t sk_cap_bucket_op(long bucket, unsigned long arg)
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66cac4) */
 }
 
-/* FUN_0066c204 @ 0x0066c204  (est. sk_cap_bucket_resolve)
- * Ghidra: void FUN_0066c204(ulong *param_1, uint param_2)
+/* sk_cap_bucket_resolve @ 0x0066c204  (est. sk_cap_bucket_resolve)
+ * Ghidra: void sk_cap_bucket_resolve(ulong *param_1, uint param_2)
  * Resolves/validates a capability bucket param_1 for op param_2: walks the
  * sorted bucket entries, returns a pair whose lo points at the matching (or
  * insertion) slot and hi holds the slot index/shift. Handles the
@@ -693,8 +556,8 @@ sb_break:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66c354) */
 }
 
-/* FUN_0066c5d0 @ 0x0066c5d0  (est. sk_cap_tag_type)
- * Ghidra: uint FUN_0066c5d0(uint param_1)
+/* sk_cap_tag_type @ 0x0066c5d0  (est. sk_cap_tag_type)
+ * Ghidra: uint sk_cap_tag_type(uint param_1)
  * Extracts the capability tag-type from a raw capability: low 2 bits 0/1 => 1,
  * bits 2..5 (>>2 & 0xf) for type 2, bits 6..27 (>>6 & 0x3fffff) for type 3.
  * Confidence: high */
@@ -710,12 +573,12 @@ static unsigned int sk_cap_tag_type(unsigned int cap)
     return t;
 }
 
-/* FUN_0066c5f8 @ 0x0066c5f8  (est. sk_cap_iterate_free)
- * Ghidra: void FUN_0066c5f8(ulong param_1, code *UNRECOVERED_JUMPTABLE)
+/* sk_cap_iterate_free @ 0x0066c5f8  (est. sk_cap_iterate_free)
+ * Ghidra: void sk_cap_iterate_free(ulong param_1, code *UNRECOVERED_JUMPTABLE)
  * Iterates a capability value (param_1): for the direct (type 0/1) form calls
  * the callback with the tag field; for the type-2 bucket form calls the
  * callback for each occupied slot then frees the bucket; for the type-3 form
- * recursively releases the pointed structure via FUN_0066db74.
+ * recursively releases the pointed structure via sk_cap_bucket_free_rec.
  * Confidence: medium */
 static void sk_cap_iterate_free(unsigned long cap, sk_fp_t cb)
 {
@@ -755,7 +618,7 @@ static void sk_cap_iterate_free(unsigned long cap, sk_fp_t cb)
             unsigned long b2 = 0;
             if (base != 0) b2 = e;
             if ((base <= b2) && ((base == 0 || (0x38 < b2 - base)))) {
-                FUN_0066db74();
+                sk_cap_bucket_free_rec((unsigned long *)0, 0);
                 return;
             }
         }
@@ -764,8 +627,8 @@ sb_break:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66c76c) */
 }
 
-/* FUN_0066c354 @ 0x0066c354  (est. sk_cap_list_get)
- * Ghidra: ulong FUN_0066c354(char *param_1)
+/* sk_cap_list_get @ 0x0066c354  (est. sk_cap_list_get)
+ * Ghidra: ulong sk_cap_list_get(char *param_1)
  * Walks a capability descriptor (param_1: type byte + index byte + bucket
  * pointer) to fetch a capability: type 1 returns the direct slot value once
  * (flagging it); type 2 returns the indexed bucket slot; type 3 follows the
@@ -825,8 +688,8 @@ sb2:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66c470) */
 }
 
-/* FUN_0066c084 @ 0x0066c084  (est. sk_cap_decode_tag)
- * Ghidra: void FUN_0066c084(undefined8 *param_1, ulong param_2, uint param_3)
+/* sk_cap_decode_tag @ 0x0066c084  (est. sk_cap_decode_tag)
+ * Ghidra: void sk_cap_decode_tag(undefined8 *param_1, ulong param_2, uint param_3)
  * Decodes the tag of a raw capability param_2 into a 3-slot descriptor
  * param_1, using op param_3. Direct (type 0/1) forms store the raw capability;
  * the type-3 pointer form resolves via sk_cap_bucket_resolve; the type-2
@@ -857,7 +720,7 @@ fin:
             unsigned long b2 = 0;
             if (base != 0) b2 = e;
             if ((base <= b2) && ((base == 0 || (0x38 < b2 - base)))) {
-                unsigned long p = FUN_0066c204(base).lo;
+                unsigned long p = sk_cap_bucket_resolve((unsigned long *)base, 0).lo;
                 unsigned long pe = 0;
                 if (p != 0) pe = p + 0x40;
                 if ((p <= pe) && ((p == 0 || (0x38 < (long)(pe - p))))) {
@@ -895,8 +758,8 @@ sb2:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66c204) */
 }
 
-/* FUN_0066cac4 @ 0x0066cac4  (est. sk_cap_bucket_move)
- * Ghidra: void FUN_0066cac4(ulong *param_1, ulong *param_2, uint param_3,
+/* sk_cap_bucket_move @ 0x0066cac4  (est. sk_cap_bucket_move)
+ * Ghidra: void sk_cap_bucket_move(ulong *param_1, ulong *param_2, uint param_3,
  *                          ulong param_4)
  * Core capability-bucket manipulation: resolves the target slot for cap
  * param_3 inside bucket param_2 (types 4/8: scanned sub-bucket chain; type 0xc:
@@ -912,6 +775,7 @@ static void sk_cap_bucket_move(unsigned long *out, unsigned long *bucket,
     unsigned long *lim = 0;
     if (bucket != 0) lim = end;
     if (lim < bucket + 1) goto trap;
+    unsigned long lo = 0, hi = 0;
     unsigned long tag = *bucket & 0x3c;
     if (tag == 4 || tag == 8) {
         unsigned long idx = 0;
@@ -976,16 +840,16 @@ static void sk_cap_bucket_move(unsigned long *out, unsigned long *bucket,
         if (((lim < bucket) || (p7 = bucket + 7, end < p7)) || (p7 < lim)) goto trap;
         if ((*lim & 3) == 0) {
             sk_pair_t r = sk_cap_bucket_insert(bucket, cap, 7, 0);
-            unsigned long lo = r.lo;
-            unsigned long hi = r.hi;
+            lo = r.lo;
+            hi = r.hi;
             if ((lo & 0xff) == 0) goto done;
             goto err_store;
         }
         if (p7 < bucket) goto trap;
         unsigned long tail = bucket[7];
         sk_pair_t r = sk_cap_bucket_insert(bucket, cap, 8, 1);
-        unsigned long lo = r.lo;
-        unsigned long hi = r.hi;
+        lo = r.lo;
+        hi = r.hi;
         if ((lo & 0xff) != 0) goto err_store;
         cap = (unsigned int)(tail >> 0x1c);
     } else {
@@ -1099,8 +963,8 @@ trap:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66ccd4) */
 }
 
-/* FUN_0066db74 @ 0x0066db74  (est. sk_cap_bucket_free_rec)
- * Ghidra: void FUN_0066db74(ulong *param_1, code *param_2)
+/* sk_cap_bucket_free_rec @ 0x0066db74  (est. sk_cap_bucket_free_rec)
+ * Ghidra: void sk_cap_bucket_free_rec(ulong *param_1, code *param_2)
  * Recursively frees a capability bucket param_1. For pointer-chain buckets
  * (tag 0xc) invokes the callback param_2 on each occupied slot then frees the
  * bucket; for leaf buckets recurses into each referenced sub-bucket (type-1
@@ -1145,20 +1009,20 @@ trap:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66dc88) */
 }
 
-/* FUN_0066b1fc @ 0x0066b1fc  (est. sk_page_tree_lookup)
- * Ghidra: void FUN_0066b1fc(ulong param_1)
+/* sk_page_tree_lookup @ 0x0066b1fc  (est. sk_page_tree_lookup)
+ * Ghidra: void sk_page_tree_lookup(ulong param_1)
  * Searches the page-block free-tree (root at ctx+0x20) for a node whose key
  * (+0x28) equals (param_1 & ~0x3fff); descends left (+0x38) when the target is
  * lower, right (+0x40) otherwise. Returns via the tree node walk.
  * Confidence: medium */
-static void sk_page_tree_lookup(unsigned long key)
+static unsigned long sk_page_tree_lookup(unsigned long key)
 {
     long ctx = FUN_0065be08(0x6fea48, 4, 8);
     unsigned long node = *(unsigned long *)(ctx + 0x20);
     while (node != 0) {
         if (*(unsigned long *)(node + 0x28) == (key & 0xffffffffffffc000)) {
             if (node <= node + 0x48) {
-                return;
+                return node;
             }
             /* bounds violation -> software breakpoint (noreturn) */
             __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519, 0x66b270) */
@@ -1169,10 +1033,11 @@ static void sk_page_tree_lookup(unsigned long key)
         }
         node = *(unsigned long *)(node + off);
     }
+    return 0;
 }
 
-/* FUN_0066b468 @ 0x0066b468  (est. sk_page_bitmap_test_set)
- * Ghidra: bool FUN_0066b468(ulong *param_1, long param_2)
+/* sk_page_bitmap_test_set @ 0x0066b468  (est. sk_page_bitmap_test_set)
+ * Ghidra: bool sk_page_bitmap_test_set(ulong *param_1, long param_2)
  * Tests-and-sets a single page bit within a block bitmap. block base at
  * param_1[5]; the bit for (param_2 - base)>>12 within the 64-bit word selected
  * by (param_2-base)>>12. Returns true if the bit was previously clear (and now
@@ -1200,8 +1065,8 @@ static bool sk_page_bitmap_test_set(unsigned long *block, long addr)
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519, 0x66b4d4) */
 }
 
-/* FUN_0066b038 @ 0x0066b038  (est. sk_page_tree_insert)
- * Ghidra: void FUN_0066b038(ulong *param_1, ulong param_2)
+/* sk_page_tree_insert @ 0x0066b038  (est. sk_page_tree_insert)
+ * Ghidra: void sk_page_tree_insert(ulong *param_1, ulong param_2)
  * Inserts page-block node param_2 into the ordered free-tree whose root is
  * *param_1, keyed by the block base (+0x28, 16KB-aligned). Duplicate keys are a
  * fatal error. Rebalances via the child balance bytes at +0x22 and updates the
@@ -1210,6 +1075,7 @@ static bool sk_page_bitmap_test_set(unsigned long *block, long addr)
 static void sk_page_tree_insert(unsigned long *rootp, unsigned long node)
 {
     unsigned long cur = *rootp;
+    unsigned long r = 0;
     if (cur == 0) {
         *rootp = node;
         return;
@@ -1224,7 +1090,7 @@ static void sk_page_tree_insert(unsigned long *rootp, unsigned long node)
         goto sb_break;
     }
     /* recursive descent on the child that would hold this key */
-    FUN_0066b038();
+    sk_page_tree_insert(0, 0);
     int bl;
     if (*(long *)(cur + 0x38) == 0) {
         bl = 0;
@@ -1244,7 +1110,7 @@ static void sk_page_tree_insert(unsigned long *rootp, unsigned long node)
     lim = cur + 0x48;
     unsigned long head = cur;
     if ((int)(br + bl) < -1) {
-        unsigned long r = *(unsigned long *)(cur + 0x40);
+        r = *(unsigned long *)(cur + 0x40);
         if (r != 0) {
             *(unsigned long *)(cur + 0x40) = *(unsigned long *)(r + 0x38);
             if (lim < cur) goto sb_break;
@@ -1288,8 +1154,8 @@ sb_break:
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519, 0x66b1c8) */
 }
 
-/* FUN_0066b270 @ 0x0066b270  (est. sk_page_block_alloc)
- * Ghidra: ulong FUN_0066b270(long param_1, ulong param_2, ulong param_3)
+/* sk_page_block_alloc @ 0x0066b270  (est. sk_page_block_alloc)
+ * Ghidra: ulong sk_page_block_alloc(long param_1, ulong param_2, ulong param_3)
  * Allocates param_3 16KB page-blocks starting at (param_1,param_2) from the
  * page allocator. Requires 16KB alignment; allocates each block, sets its
  * bitmap, inserts it into the free-tree, then returns the allocation result.
@@ -1346,7 +1212,7 @@ fatal_align:
                 long addr = base;
                 if (blk + 0x48 < blk) goto sb_break;
                 do {
-                    unsigned long rc = FUN_0066b468(blk, addr);
+                    unsigned long rc = sk_page_bitmap_test_set((unsigned long *)blk, addr);
                     if ((rc & 1) == 0) {
                         FUN_006833d4(0x6ab0ce);   /* fatal: bit already set */
                     }
@@ -1359,7 +1225,7 @@ sb_break:
                 /* bounds violation -> software breakpoint (noreturn) */
                 __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519, 0x66b3fc) */
             }
-            FUN_0066b038(ctx + 4, blk);
+            sk_page_tree_insert(ctx + 4, blk);
             if (*(unsigned short *)(blk + 0x20) < 0x100) {
                 *(long *)(blk + 0x30) = ctx[6];
                 ctx[6] = blk;
@@ -1372,8 +1238,8 @@ sb_break:
     return FUN_0066ab40(*(unsigned long *)(*ctx + 0x10), st.lo, st.hi);
 }
 
-/* FUN_0066b520 @ 0x0066b520  (est. sk_page_block_free)
- * Ghidra: void FUN_0066b520(ulong param_1, long param_2)
+/* sk_page_block_free @ 0x0066b520  (est. sk_page_block_free)
+ * Ghidra: void sk_page_block_free(ulong param_1, long param_2)
  * Frees a region of page-blocks starting at param_1 for param_2 bytes: walks
  * each 16KB block, clears its bitmap bit, and removes it from the free-tree
  * when its count drops to zero.
@@ -1396,14 +1262,14 @@ static void sk_page_block_free(unsigned long base, long size)
         *(unsigned long *)(g + 0x20) = v;
         return;
     }
-    long *blk = (long *)FUN_0066b1fc(base);
+    long *blk = (long *)sk_page_tree_lookup(base);
     if (base < end) {
         long *head = blk + 9;
         long *node = blk;
         do {
             unsigned long next = base + 0x40;
             if (node == 0) {
-                blk = (long *)FUN_0066b1fc(base);
+                blk = (long *)sk_page_tree_lookup(base);
                 head = blk + 9;
                 node = blk;
                 if (blk != 0) goto have;
@@ -1416,7 +1282,7 @@ static void sk_page_block_free(unsigned long base, long size)
             } else {
                 if ((head < node + 9) || (node < blk)) goto sb_break;
                 if (node[5] + 0x4000U <= base) {
-                    blk = (long *)FUN_0066b1fc(base);
+                    blk = (long *)sk_page_tree_lookup(base);
                     head = blk + 9;
                     node = blk;
                     if (blk != 0) goto have;
@@ -1432,7 +1298,7 @@ sb_break:
                     /* bounds violation -> software breakpoint (noreturn) */
                     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519, 0x66b6c4) */
                 }
-                int rc = FUN_0066b468(node, base);
+                int rc = sk_page_bitmap_test_set(node, base);
                 base = next;
                 if (rc != 0 && (short)node[4] == 0x100) {
                     long *p = ctx;
@@ -1464,21 +1330,21 @@ static unsigned long sk_tail_noop0(void)
 /* FUN_0066b878 @ 0x0066b878  (est. sk_tail_cap_decode_wrap)
  * Ghidra: void FUN_0066b878(undefined8 param_1, undefined8 param_2)
  * Thin wrapper over the capability-decode helper sk_tail_cap_decode
- * (FUN_0066b884), passing (param_1, param_2, 0, 0) and a zero op.
+ * (sk_cap_decode), passing (param_1, param_2, 0, 0) and a zero op.
  * Confidence: medium */
 static void sk_tail_cap_decode_wrap(unsigned long a, unsigned long b)
 {
-    FUN_0066b884(a, b, 0, 0, 0);
+    sk_cap_decode((unsigned long *)a, b, 0, 0, 0);
 }
 
 /* FUN_0066bce0 @ 0x0066bce0  (est. sk_tail_cap_decode_wrap0)
  * Ghidra: void FUN_0066bce0(void)
- * Wrapper over the capability-decode helper FUN_0066b884; the decompiler
+ * Wrapper over the capability-decode helper sk_cap_decode; the decompiler
  * dropped all arguments (decodes the caller's current capability context).
  * Confidence: medium */
 static void sk_tail_cap_decode_wrap0(void)
 {
-    FUN_0066b884(0, 0, 0, 0, 0);
+    sk_cap_decode((unsigned long *)0, 0, 0, 0, 0);
 }
 
 /* FUN_0066b728 @ 0x0066b728  (est. sk_tail_store_ctx)
@@ -1573,11 +1439,12 @@ static void sk_tail_noop1(void)
 
 /* FUN_00676630 @ 0x00676630  (est. sk_tail_err_fmt0)
  * Ghidra: void FUN_00676630(void)
- * Wrapper invoking the L4 error-code formatter FUN_00674e98.
+ * Wrapper invoking the L4 error-code formatter sk_l4_error_format.
  * Confidence: medium */
 static void sk_tail_err_fmt0(void)
 {
-    FUN_00674e98();
+    unsigned long buf[4] = {0};
+    sk_l4_error_format(buf, 0);
 }
 
 /* FUN_0067663c @ 0x0067663c  (est. sk_tail_noop2)
@@ -1618,20 +1485,22 @@ static void sk_tail_noop4(void)
 
 /* FUN_006765a4 @ 0x006765a4  (est. sk_tail_err_fmt1)
  * Ghidra: void FUN_006765a4(void)
- * Invokes the L4 error-code formatter FUN_00674e98 on a stack scratch buffer.
+ * Invokes the L4 error-code formatter sk_l4_error_format on a stack scratch buffer.
  * Confidence: medium */
 static void sk_tail_err_fmt1(void)
 {
-    FUN_00674e98(&stack0x00000010);
+    unsigned long buf[4] = {0};
+    sk_l4_error_format(buf, 0);
 }
 
 /* FUN_006765c4 @ 0x006765c4  (est. sk_tail_err_fmt2)
  * Ghidra: void FUN_006765c4(void)
- * Invokes the L4 error-code formatter FUN_00674e98 on a stack scratch buffer.
+ * Invokes the L4 error-code formatter sk_l4_error_format on a stack scratch buffer.
  * Confidence: medium */
 static void sk_tail_err_fmt2(void)
 {
-    FUN_00674e98(&stack0x00000018);
+    unsigned long buf[4] = {0};
+    sk_l4_error_format(buf, 0);
 }
 
 /* FUN_00676660 @ 0x00676660  (est. sk_tail_fatal_2a)
