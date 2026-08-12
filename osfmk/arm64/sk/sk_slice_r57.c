@@ -393,11 +393,11 @@ void sk_slice57_003eb9c8();
 void sk_slice57_003ebbd4();
 void sk_slice57_003ebd9c();
 void sk_slice57_003ebe6c();
-void sk_slice57_003ebf10();
+sk_u128_t sk_slice57_003ebf10();
 void sk_slice57_003ebfe8();
 void sk_slice57_003ec094();
 void sk_slice57_003ec098();
-void sk_slice57_003ec0c4();
+uint8_t * sk_slice57_003ec0c4();
 void sk_slice57_003ec12c();
 void sk_slice57_003ec130();
 void sk_slice57_003ec144();
@@ -420,15 +420,15 @@ void sk_slice57_003ec874();
 void sk_slice57_003ec8a0();
 void sk_slice57_003ec8c8();
 void sk_slice57_003ec918();
-void sk_slice57_003ec9c4();
+int64_t sk_slice57_003ec9c4();
 void sk_slice57_003ecb1c();
 void sk_slice57_003ecb20();
 void sk_slice57_003ecb48();
 void sk_slice57_003ecb4c();
 void sk_slice57_003ecb64();
-void sk_slice57_003ecc18();
+uint64_t sk_slice57_003ecc18();
 void sk_slice57_003eccc4();
-void sk_slice57_003ecd44();
+uint32_t sk_slice57_003ecd44();
 void sk_slice57_003ecd98();
 void sk_slice57_003ecd9c();
 void sk_slice57_003ecddc();
@@ -463,7 +463,7 @@ void sk_slice57_003eeef4();
 
 /* void FUN_003e68f0(void) */
 
-void sk_slice57_003e68f0(void)
+void sk_slice57_003e68f0()
 
 {
   word_t uv1;
@@ -500,7 +500,7 @@ void sk_slice57_003e68f0(void)
       sk_rt_004067b8();
                     /* WARNING: Could not recover jumptable at 0x003e6a3c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-      (*jt)();
+      ((code_t)jt)();
       return;
     }
     uv5 = 1;
@@ -521,7 +521,7 @@ void sk_slice57_003e68f0(void)
   sk_rt_00407e58(auVar7.lo,auVar7.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003e69a8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt0)();
+  ((code_t)jt0)();
   return;
 }
 
@@ -529,8 +529,7 @@ void sk_slice57_003e68f0(void)
 
 /* void FUN_003e6be8(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5) */
 
-void sk_slice57_003e6be8(word_t param_1,word_t param_2,word_t param_3,word_t param_4,
-                 word_t param_5)
+void sk_slice57_003e6be8(word_t  param_1, word_t  param_2, word_t  param_3, word_t  param_4, word_t  param_5)
 
 {
   int64_t *lp1;
@@ -549,7 +548,7 @@ void sk_slice57_003e6be8(word_t param_1,word_t param_2,word_t param_3,word_t par
 
 /* void FUN_003e6cbc(void) */
 
-void sk_slice57_003e6cbc(void)
+void sk_slice57_003e6cbc()
 
 {
   sk_rt_00406574();
@@ -562,7 +561,7 @@ void sk_slice57_003e6cbc(void)
 
 /* void FUN_003e6cf0(void) */
 
-void sk_slice57_003e6cf0(void)
+void sk_slice57_003e6cf0()
 
 {
   sk_slice57_003e6d08();
@@ -573,7 +572,7 @@ void sk_slice57_003e6cf0(void)
 
 /* void FUN_003e6d08(void) */
 
-void sk_slice57_003e6d08(void)
+void sk_slice57_003e6d08()
 
 {
   word_t *stack_addr;
@@ -590,7 +589,7 @@ void sk_slice57_003e6d08(void)
   auVar3 = sk_rt_0034d2b4();
   sk_rt_003509c8(in_r3,auVar3.lo,auVar3.lo);
   (**(code_t **)(xr_x16 + 0x20))(xr_x8,xr_x1,in_r3);
-  ln2 = (*in_r7)(0,stack_addr);
+  ln2 = ((code_t)in_r7)(0,stack_addr);
   wp1 = (word_t *)(xr_x8 + *(int32_t *)(ln2 + 0x34));
   *wp1 = auVar3.hi;
   wp1[1] = in_r24;
@@ -601,7 +600,7 @@ void sk_slice57_003e6d08(void)
 
 /* void FUN_003e6da8(long param_1) */
 
-void sk_slice57_003e6da8(int64_t param_1)
+void sk_slice57_003e6da8(int64_t  param_1)
 
 {
   sk_rt_003591d0((int64_t)*(int32_t *)(param_1 + 0x34));
@@ -613,7 +612,7 @@ void sk_slice57_003e6da8(int64_t param_1)
 
 /* void FUN_003e6dd0(undefined8 param_1,long param_2) */
 
-void sk_slice57_003e6dd0(word_t param_1,int64_t param_2)
+void sk_slice57_003e6dd0(word_t  param_1, int64_t  param_2)
 
 {
   int32_t iv1;
@@ -637,9 +636,7 @@ void sk_slice57_003e6dd0(word_t param_1,int64_t param_2)
 
 /* void FUN_003e6ecc(long param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7,undefined8 param_8, code *param_9) */
 
-void sk_slice57_003e6ecc(int64_t param_1,word_t param_2,word_t param_3,word_t param_4,
-                 word_t param_5,word_t param_6,word_t param_7,word_t param_8,
-                 code_t *param_9)
+void sk_slice57_003e6ecc(int64_t  param_1, word_t  param_2, word_t  param_3, word_t  param_4, word_t  param_5, word_t  param_6, word_t  param_7, word_t  param_8, code_t * param_9)
 
 {
   word_t *wp1;
@@ -656,7 +653,7 @@ void sk_slice57_003e6ecc(int64_t param_1,word_t param_2,word_t param_3,word_t pa
   loc_120 = param_6;
   stack_slot_112 = param_7;
   loc_104 = param_8;
-  ln3 = (*param_9)(0,&stack_slot_128);
+  ln3 = ((code_t)param_9)(0,&stack_slot_128);
   iv2 = *(int32_t *)(ln3 + 0x38);
   auVar4 = sk_rt_00350500();
   sk_rt_00377824(auVar4.lo,auVar4.hi,param_6,(word_t)&sk_d_00614a5c);
@@ -677,7 +674,7 @@ void sk_slice57_003e6ecc(int64_t param_1,word_t param_2,word_t param_3,word_t pa
 
 /* void FUN_003e6fc8(void) */
 
-void sk_slice57_003e6fc8(void)
+void sk_slice57_003e6fc8()
 
 {
   word_t uv1;
@@ -773,7 +770,7 @@ void sk_slice57_003e6fc8(void)
 
 /* void FUN_003e7228(void) */
 
-void sk_slice57_003e7228(void)
+void sk_slice57_003e7228()
 
 {
   int32_t iv1;
@@ -821,13 +818,13 @@ void sk_slice57_003e7228(void)
     sk_rt_00407878(auVar6.lo,auVar6.hi,uv2);
                     /* WARNING: Could not recover jumptable at 0x003e72f0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   *(uint32_t *)(ctx + 0x17c) = *(uint32_t *)(*(int64_t *)(ctx + 0x18) + 0x38);
   *(word_t *)(ctx + 0x110) = *(word_t *)(*(int64_t *)(ctx + 0xe8) + 0x10);
   sk_rt_00408460(auVar6.lo,auVar6.hi,*(word_t *)(ctx + 0xe0));
-  (*xr_x11)();
+  ((code_t)xr_x11)();
   sk_rt_00406420();
   if ((bool)zero_cc) {
     uv5 = *(word_t *)(ctx + 0x50);
@@ -836,7 +833,7 @@ void sk_slice57_003e7228(void)
                  *(word_t *)(ctx + 0xe0));
     *(code_t **)(ctx + 0x138) = xr_x9_00;
     *(word_t *)(ctx + 0x140) = xr_x10;
-    (*xr_x9_00)();
+    ((code_t)xr_x9_00)();
     sk_rt_0040652c();
     sk_rt_00406608();
     sk_rt_004068f4();
@@ -854,7 +851,7 @@ void sk_slice57_003e7228(void)
                           *(word_t *)(ctx + 0xf0));
     *(code_t **)(ctx + 0x118) = xr_x9_01;
     *(word_t *)(ctx + 0x120) = xr_x10_00;
-    (*xr_x9_01)(auVar6.lo,auVar6.hi,uv5);
+    ((code_t)xr_x9_01)(auVar6.lo,auVar6.hi,uv5);
     uv5 = sk_rt_004067f8();
     sk_rt_003fcc1c();
     ln4 = sk_rt_004062c8();
@@ -868,7 +865,7 @@ void sk_slice57_003e7228(void)
   sk_rt_00407878(auVar6.lo,auVar6.hi,uv5,jt,uv2);
                     /* WARNING: Could not recover jumptable at 0x003e7420. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -876,7 +873,7 @@ void sk_slice57_003e7228(void)
 
 /* void FUN_003e74fc(void) */
 
-void sk_slice57_003e74fc(void)
+void sk_slice57_003e74fc()
 
 {
   word_t uv1;
@@ -916,15 +913,15 @@ void sk_slice57_003e74fc(void)
     (**(code_t **)(*(int64_t *)(ctx + 0xf8) + 8))
               (*(word_t *)(ctx + 0x108),*(word_t *)(ctx + 0xd8));
     sk_rt_003507e0(*(word_t *)(ln5 + 8));
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_00407764();
-    (*xr_x8_00)();
+    ((code_t)xr_x8_00)();
     jt0 = *(code_t **)(ctx + 0xd8);
     sk_rt_00350744(*(int64_t *)(ctx + 0x20) + (int64_t)*(int32_t *)(ctx + 0x17c));
     auVar11 = sk_rt_000839d8();
     sk_rt_00406fb0(*(word_t *)(ctx + 0x110),auVar11.lo,auVar11.hi,
                  *(word_t *)(ctx + 0xe0));
-    (*xr_x8_01)();
+    ((code_t)xr_x8_01)();
     sk_rt_00406420();
     if ((bool)zero_cc) {
       ln5 = *(int64_t *)(ctx + 0x58);
@@ -932,7 +929,7 @@ void sk_slice57_003e74fc(void)
                    *(word_t *)(ctx + 0xe0));
       *(code_t **)(ctx + 0x138) = xr_x9;
       *(word_t *)(ctx + 0x140) = xr_x10;
-      (*xr_x9)();
+      ((code_t)xr_x9)();
       sk_rt_0040652c();
       sk_rt_00406608();
       sk_rt_004068f4();
@@ -949,7 +946,7 @@ void sk_slice57_003e74fc(void)
                              *(word_t *)(ctx + 0xf0));
       *(code_t **)(ctx + 0x118) = xr_x9_02;
       *(word_t *)(ctx + 0x120) = xr_x10_00;
-      (*xr_x9_02)(auVar11.lo,auVar11.hi,uv3);
+      ((code_t)xr_x9_02)(auVar11.lo,auVar11.hi,uv3);
       sk_rt_004067f8();
       sk_rt_003fcc1c();
       ln5 = sk_rt_004062c8();
@@ -963,7 +960,7 @@ void sk_slice57_003e74fc(void)
     sk_rt_00407504();
                     /* WARNING: Could not recover jumptable at 0x003e77cc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln9 = (int64_t)*(int32_t *)(ctx + 0x17c);
@@ -975,14 +972,14 @@ void sk_slice57_003e74fc(void)
   wp10 = (word_t *)(*(int64_t *)(ctx + 0xc0) + 0x20);
   jt0 = (code_t *)*wp10;
   sk_rt_00350968(uv1);
-  (*jt0)();
+  ((code_t)jt0)();
   wp4 = (word_t *)(ln5 + 8);
   (*(code_t *)*wp4)(ln8 + ln9,uv6);
   sk_rt_00408440();
-  (*xr_x9_00)();
+  ((code_t)xr_x9_00)();
   sk_rt_00350750(ln8 + ln9);
   sk_rt_0040764c();
-  (*jt0)();
+  ((code_t)jt0)();
   sk_rt_004069ec();
   uv6 = *(word_t *)(ctx + 0x38);
   sk_rt_00406cf0();
@@ -1001,7 +998,7 @@ void sk_slice57_003e74fc(void)
   sk_rt_00407504(auVar11.lo,auVar11.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003e773c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1009,7 +1006,7 @@ void sk_slice57_003e74fc(void)
 
 /* void FUN_003e788c(void) */
 
-void sk_slice57_003e788c(void)
+void sk_slice57_003e788c()
 
 {
   int64_t ln1;
@@ -1037,7 +1034,7 @@ void sk_slice57_003e788c(void)
   uv4 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x70),uv4,*(word_t *)(ctx + 0x68));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_004069ec();
     uv4 = *(word_t *)(ctx + 0x38);
     sk_rt_0040686c();
@@ -1056,13 +1053,13 @@ void sk_slice57_003e788c(void)
     sk_rt_00407878(auVar7.lo,auVar7.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003e7964. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x18);
   ln2 = *(int64_t *)(ctx + 0x20);
   sk_rt_00406bd4(*(word_t *)(ctx + 0x80),*(word_t *)(ctx + 0x88));
-  (*xr_x9_01)();
+  ((code_t)xr_x9_01)();
   sk_rt_004062a8(*(word_t *)(ln2 + *(int32_t *)(ln1 + 0x34)));
   sk_rt_0040bb18(*(uint32_t *)(xr_x8_00 + 4));
   wp5 = (word_t *)sk_rt_00406fe0();
@@ -1074,7 +1071,7 @@ void sk_slice57_003e788c(void)
                uv3);
                     /* WARNING: Could not recover jumptable at 0x003e7a04. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1082,7 +1079,7 @@ void sk_slice57_003e788c(void)
 
 /* void FUN_003e7b14(void) */
 
-void sk_slice57_003e7b14(void)
+void sk_slice57_003e7b14()
 
 {
   word_t uv1;
@@ -1106,11 +1103,11 @@ void sk_slice57_003e7b14(void)
   ln2 = *(int64_t *)(ctx + 0x30);
   uv6 = *(word_t *)(ctx + 0x28);
   auVar7 = sk_rt_00407ce4(uv1,*(word_t *)(ctx + 0x40));
-  (*xr_x9)(auVar7.lo,auVar7.hi,uv6);
+  ((code_t)xr_x9)(auVar7.lo,auVar7.hi,uv6);
   auVar7 = sk_rt_00350518(*(word_t *)(ln2 + 0x10));
-  (*xr_x8)(auVar7.lo,auVar7.hi,uv6);
+  ((code_t)xr_x8)(auVar7.lo,auVar7.hi,uv6);
   sk_rt_004070e4(uv5);
-  (*xr_x9_00)(uv6,uv5);
+  ((code_t)xr_x9_00)(uv6,uv5);
   sk_rt_004068bc();
   sk_rt_00377bec(uv5,uv6,uv4);
   sk_rt_003fcc1c();
@@ -1124,7 +1121,7 @@ void sk_slice57_003e7b14(void)
   sk_rt_004078f4();
                     /* WARNING: Could not recover jumptable at 0x003e7c30. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1132,7 +1129,7 @@ void sk_slice57_003e7b14(void)
 
 /* void FUN_003e7d20(void) */
 
-void sk_slice57_003e7d20(void)
+void sk_slice57_003e7d20()
 
 {
   word_t uv1;
@@ -1173,15 +1170,15 @@ void sk_slice57_003e7d20(void)
     (**(code_t **)(*(int64_t *)(ctx + 0xf8) + 8))
               (*(word_t *)(ctx + 0x100),*(word_t *)(ctx + 0xd8));
     sk_rt_003507e0(*(word_t *)(ln7 + 8));
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_00408410();
-    (*jt0)();
+    ((code_t)jt0)();
     jt0 = *(code_t **)(ctx + 0xd8);
     sk_rt_00350744(*(int64_t *)(ctx + 0x20) + (int64_t)*(int32_t *)(ctx + 0x17c));
     auVar12 = sk_rt_000839d8();
     sk_rt_00406fb0(*(word_t *)(ctx + 0x110),auVar12.lo,auVar12.hi,
                  *(word_t *)(ctx + 0xe0));
-    (*xr_x8_00)();
+    ((code_t)xr_x8_00)();
     sk_rt_00406420();
     if ((bool)zero_cc) {
       ln7 = *(int64_t *)(ctx + 0x58);
@@ -1189,7 +1186,7 @@ void sk_slice57_003e7d20(void)
                    *(word_t *)(ctx + 0xe0));
       *(code_t **)(ctx + 0x138) = xr_x9;
       *(word_t *)(ctx + 0x140) = xr_x10;
-      (*xr_x9)();
+      ((code_t)xr_x9)();
       sk_rt_0040652c();
       sk_rt_00406608();
       sk_rt_004068f4();
@@ -1206,7 +1203,7 @@ void sk_slice57_003e7d20(void)
                              *(word_t *)(ctx + 0xf0));
       *(code_t **)(ctx + 0x118) = xr_x9_01;
       *(word_t *)(ctx + 0x120) = xr_x10_00;
-      (*xr_x9_01)(auVar12.lo,auVar12.hi,uv5);
+      ((code_t)xr_x9_01)(auVar12.lo,auVar12.hi,uv5);
       sk_rt_004067f8();
       sk_rt_003fcc1c();
       ln7 = sk_rt_004062c8();
@@ -1220,7 +1217,7 @@ void sk_slice57_003e7d20(void)
     sk_rt_00407504();
                     /* WARNING: Could not recover jumptable at 0x003e7fe0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   jt0 = *(code_t **)(ctx + 0x138);
@@ -1234,13 +1231,13 @@ void sk_slice57_003e7d20(void)
   wp6 = (word_t *)(*(int64_t *)(ctx + 0xc0) + 0x20);
   fptr10 = (code_t *)*wp6;
   sk_rt_00350968(uv4);
-  (*fptr10)();
-  (*jt0)(uv8,ln11 + ln7,uv3);
+  ((code_t)fptr10)();
+  ((code_t)jt0)(uv8,ln11 + ln7,uv3);
   sk_rt_004083f0();
-  (*xr_x8_01)();
+  ((code_t)xr_x8_01)();
   sk_rt_00350750(ln11 + ln7);
   sk_rt_0040764c();
-  (*fptr10)();
+  ((code_t)fptr10)();
   sk_rt_004069ec();
   uv8 = *(word_t *)(ctx + 0x38);
   sk_rt_00406cf0();
@@ -1259,7 +1256,7 @@ void sk_slice57_003e7d20(void)
   sk_rt_00407504(auVar12.lo,auVar12.hi,uv5);
                     /* WARNING: Could not recover jumptable at 0x003e7f50. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1267,7 +1264,7 @@ void sk_slice57_003e7d20(void)
 
 /* void FUN_003e838c(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4) */
 
-void sk_slice57_003e838c(word_t param_1,word_t param_2,word_t param_3,int64_t param_4)
+void sk_slice57_003e838c(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t param_5)
 
 {
   word_t uv1;
@@ -1392,7 +1389,7 @@ void sk_slice57_003e838c(word_t param_1,word_t param_2,word_t param_3,int64_t pa
   else {
     sk_rt_00407374(param_3);
     sk_rt_00084180();
-    (*xr_x8_08)();
+    ((code_t)xr_x8_08)();
     sk_rt_0008e1ec();
     uv1 = xr_x8_09;
   }
@@ -1408,7 +1405,7 @@ void sk_slice57_003e838c(word_t param_1,word_t param_2,word_t param_3,int64_t pa
 
 /* void FUN_003e86c8(void) */
 
-void sk_slice57_003e86c8(void)
+void sk_slice57_003e86c8()
 
 {
   int32_t iv1;
@@ -1464,13 +1461,13 @@ void sk_slice57_003e86c8(void)
     sk_rt_004075d0(auVar5.lo,auVar5.hi,uv2);
                     /* WARNING: Could not recover jumptable at 0x003e87b0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   *(uint32_t *)(ctx + 0x1e4) = *(uint32_t *)(*(int64_t *)(ctx + 0x28) + 0x38);
   *(word_t *)(ctx + 0x170) = *(word_t *)(*(int64_t *)(ctx + 0x138) + 0x10);
   sk_rt_00408460(auVar5.lo,auVar5.hi,*(word_t *)(ctx + 0x130));
-  (*xr_x11)();
+  ((code_t)xr_x11)();
   sk_rt_00406420();
   if ((bool)zero_cc) {
     ln4 = *(int64_t *)(ctx + 0x68);
@@ -1478,7 +1475,7 @@ void sk_slice57_003e86c8(void)
                  *(word_t *)(ctx + 0x130));
     *(code_t **)(ctx + 0x198) = xr_x9;
     *(word_t *)(ctx + 0x1a0) = xr_x10;
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_0040652c();
     uv2 = sk_rt_00406608();
     *(word_t *)(ctx + 0x1a8) = uv2;
@@ -1499,7 +1496,7 @@ void sk_slice57_003e86c8(void)
                           *(word_t *)(ctx + 0x140));
     *(code_t **)(ctx + 0x178) = xr_x9_00;
     *(word_t *)(ctx + 0x180) = xr_x10_00;
-    (*xr_x9_00)(auVar5.lo,auVar5.hi,uv2);
+    ((code_t)xr_x9_00)(auVar5.lo,auVar5.hi,uv2);
     uv2 = sk_rt_004067f8();
     *(word_t *)(ctx + 0x188) = uv2;
     sk_rt_003fcc4c();
@@ -1514,7 +1511,7 @@ void sk_slice57_003e86c8(void)
   sk_rt_004075d0();
                     /* WARNING: Could not recover jumptable at 0x003e8914. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1522,7 +1519,7 @@ void sk_slice57_003e86c8(void)
 
 /* void FUN_003e89f0(void) */
 
-void sk_slice57_003e89f0(void)
+void sk_slice57_003e89f0()
 
 {
   code_t *fptr1;
@@ -1570,14 +1567,14 @@ void sk_slice57_003e89f0(void)
     (**(code_t **)(*(int64_t *)(ctx + 0x148) + 8))
               (*(word_t *)(ctx + 0x158),*(word_t *)(ctx + 0x128));
     sk_rt_003507e0(*(word_t *)(ln6 + 8));
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_00407764();
-    (*xr_x8_00)();
+    ((code_t)xr_x8_00)();
     sk_rt_00350744(*(int64_t *)(ctx + 0x30) + (int64_t)*(int32_t *)(ctx + 0x1e4));
     auVar17 = sk_rt_000839d8();
     sk_rt_00406fb0(*(word_t *)(ctx + 0x170),auVar17.lo,auVar17.hi,
                  *(word_t *)(ctx + 0x130));
-    (*xr_x8_01)();
+    ((code_t)xr_x8_01)();
     sk_rt_00406420();
     if ((bool)zero_cc) {
       ln6 = *(int64_t *)(ctx + 0x68);
@@ -1585,7 +1582,7 @@ void sk_slice57_003e89f0(void)
                    *(word_t *)(ctx + 0x130));
       *(code_t **)(ctx + 0x198) = xr_x9;
       *(word_t *)(ctx + 0x1a0) = xr_x10;
-      (*xr_x9)();
+      ((code_t)xr_x9)();
       sk_rt_0040652c();
       uv4 = sk_rt_00406608();
       *(word_t *)(ctx + 0x1a8) = uv4;
@@ -1606,7 +1603,7 @@ void sk_slice57_003e89f0(void)
                              *(word_t *)(ctx + 0x140));
       *(code_t **)(ctx + 0x178) = xr_x9_00;
       *(word_t *)(ctx + 0x180) = xr_x10_00;
-      (*xr_x9_00)(auVar17.lo,auVar17.hi,uv4);
+      ((code_t)xr_x9_00)(auVar17.lo,auVar17.hi,uv4);
       uv4 = sk_rt_004067f8();
       *(word_t *)(ctx + 0x188) = uv4;
       sk_rt_003fcc4c();
@@ -1621,7 +1618,7 @@ void sk_slice57_003e89f0(void)
     sk_rt_004075d0();
                     /* WARNING: Could not recover jumptable at 0x003e8d38. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   fptr1 = *(code_t **)(ctx + 0x178);
@@ -1637,13 +1634,13 @@ void sk_slice57_003e89f0(void)
   wp16 = (word_t *)(*(int64_t *)(ctx + 0xe8) + 0x20);
   fptr12 = (code_t *)*wp16;
   sk_rt_00350968(uv14);
-  (*fptr12)();
+  ((code_t)fptr12)();
   wp5 = (word_t *)(ln6 + 8);
   (*(code_t *)*wp5)(ln11 + ln15,uv2);
-  (*fptr1)(uv3,ln11 + ln15,uv8,uv13);
+  ((code_t)fptr1)(uv3,ln11 + ln15,uv8,uv13);
   sk_rt_00350750(ln11 + ln15);
   sk_rt_000839d8();
-  (*fptr12)(uv7,uv14,uv10);
+  ((code_t)fptr12)(uv7,uv14,uv10);
   sk_rt_004066bc();
   sk_rt_00350750();
   sk_rt_000839d8();
@@ -1667,7 +1664,7 @@ void sk_slice57_003e89f0(void)
   sk_rt_004075d0(auVar17.lo,auVar17.hi,uv4);
                     /* WARNING: Could not recover jumptable at 0x003e8ca0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1675,7 +1672,7 @@ void sk_slice57_003e89f0(void)
 
 /* void FUN_003e8e28(void) */
 
-void sk_slice57_003e8e28(void)
+void sk_slice57_003e8e28()
 
 {
   int64_t ln1;
@@ -1710,7 +1707,7 @@ void sk_slice57_003e8e28(void)
   uv4 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x98),uv4,*(word_t *)(ctx + 0x90));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_004066bc();
     sk_rt_00350744();
     sk_rt_000839d8();
@@ -1734,13 +1731,13 @@ void sk_slice57_003e8e28(void)
     sk_rt_004075d0(auVar8.lo,auVar8.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003e8f20. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x28);
   ln2 = *(int64_t *)(ctx + 0x30);
   sk_rt_00406bd4(*(word_t *)(ctx + 0xa8),*(word_t *)(ctx + 0xb0));
-  (*xr_x9_00)();
+  ((code_t)xr_x9_00)();
   sk_rt_004062a8(*(word_t *)(ln2 + *(int32_t *)(ln1 + 0x34)));
   sk_rt_0040bb18(*(uint32_t *)(xr_x8 + 4));
   wp5 = (word_t *)sk_rt_00406fe0();
@@ -1752,7 +1749,7 @@ void sk_slice57_003e8e28(void)
                uv3);
                     /* WARNING: Could not recover jumptable at 0x003e8fc0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1760,7 +1757,7 @@ void sk_slice57_003e8e28(void)
 
 /* void FUN_003e90f4(void) */
 
-void sk_slice57_003e90f4(void)
+void sk_slice57_003e90f4()
 
 {
   word_t uv1;
@@ -1784,11 +1781,11 @@ void sk_slice57_003e90f4(void)
   ln2 = *(int64_t *)(ctx + 0x40);
   uv6 = *(word_t *)(ctx + 0x38);
   auVar7 = sk_rt_00407ce4(uv1,*(word_t *)(ctx + 0x50));
-  (*xr_x9)(auVar7.lo,auVar7.hi,uv6);
+  ((code_t)xr_x9)(auVar7.lo,auVar7.hi,uv6);
   auVar7 = sk_rt_00350518(*(word_t *)(ln2 + 0x10));
-  (*xr_x8)(auVar7.lo,auVar7.hi,uv6);
+  ((code_t)xr_x8)(auVar7.lo,auVar7.hi,uv6);
   sk_rt_004070e4(uv5);
-  (*xr_x9_00)(uv6,uv5);
+  ((code_t)xr_x9_00)(uv6,uv5);
   sk_rt_004068bc();
   uv1 = sk_rt_00377bec(uv5,uv6,uv4);
   *(word_t *)(ctx + 0x1d0) = uv1;
@@ -1805,7 +1802,7 @@ void sk_slice57_003e90f4(void)
   sk_rt_004078f4();
                     /* WARNING: Could not recover jumptable at 0x003e9220. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1813,7 +1810,7 @@ void sk_slice57_003e90f4(void)
 
 /* void FUN_003e9310(void) */
 
-void sk_slice57_003e9310(void)
+void sk_slice57_003e9310()
 
 {
   code_t *fptr1;
@@ -1861,14 +1858,14 @@ void sk_slice57_003e9310(void)
     (**(code_t **)(*(int64_t *)(ctx + 0x148) + 8))
               (*(word_t *)(ctx + 0x150),*(word_t *)(ctx + 0x128));
     sk_rt_003507e0(*(word_t *)(ln9 + 8));
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_00408410();
-    (*fptr1)();
+    ((code_t)fptr1)();
     sk_rt_00350744(*(int64_t *)(ctx + 0x30) + (int64_t)*(int32_t *)(ctx + 0x1e4));
     auVar17 = sk_rt_000839d8();
     sk_rt_00406fb0(*(word_t *)(ctx + 0x170),auVar17.lo,auVar17.hi,
                  *(word_t *)(ctx + 0x130));
-    (*xr_x8_00)();
+    ((code_t)xr_x8_00)();
     sk_rt_00406420();
     if ((bool)zero_cc) {
       ln9 = *(int64_t *)(ctx + 0x68);
@@ -1876,7 +1873,7 @@ void sk_slice57_003e9310(void)
                    *(word_t *)(ctx + 0x130));
       *(code_t **)(ctx + 0x198) = xr_x9;
       *(word_t *)(ctx + 0x1a0) = xr_x10;
-      (*xr_x9)();
+      ((code_t)xr_x9)();
       sk_rt_0040652c();
       uv7 = sk_rt_00406608();
       *(word_t *)(ctx + 0x1a8) = uv7;
@@ -1897,7 +1894,7 @@ void sk_slice57_003e9310(void)
                              *(word_t *)(ctx + 0x140));
       *(code_t **)(ctx + 0x178) = xr_x9_00;
       *(word_t *)(ctx + 0x180) = xr_x10_00;
-      (*xr_x9_00)(auVar17.lo,auVar17.hi,uv7);
+      ((code_t)xr_x9_00)(auVar17.lo,auVar17.hi,uv7);
       uv7 = sk_rt_004067f8();
       *(word_t *)(ctx + 0x188) = uv7;
       sk_rt_003fcc4c();
@@ -1912,7 +1909,7 @@ void sk_slice57_003e9310(void)
     sk_rt_004075d0();
                     /* WARNING: Could not recover jumptable at 0x003e9644. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   fptr1 = *(code_t **)(ctx + 0x198);
@@ -1928,13 +1925,13 @@ void sk_slice57_003e9310(void)
   wp15 = (word_t *)(*(int64_t *)(ctx + 0xe8) + 0x20);
   fptr13 = (code_t *)*wp15;
   sk_rt_00350968(uv6);
-  (*fptr13)();
-  (*fptr1)(uv3,ln16 + ln14,uv5);
+  ((code_t)fptr13)();
+  ((code_t)fptr1)(uv3,ln16 + ln14,uv5);
   wp8 = (word_t *)(ln9 + 0x20);
   (*(code_t *)*wp8)(ln16 + ln14,uv4,uv2);
   sk_rt_00350750(ln16 + ln14);
   sk_rt_000839d8();
-  (*fptr13)(uv10,uv6,uv12);
+  ((code_t)fptr13)(uv10,uv6,uv12);
   sk_rt_004066bc();
   sk_rt_00350750();
   sk_rt_000839d8();
@@ -1958,7 +1955,7 @@ void sk_slice57_003e9310(void)
   sk_rt_004075d0(auVar17.lo,auVar17.hi,uv7);
                     /* WARNING: Could not recover jumptable at 0x003e95ac. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -1966,8 +1963,7 @@ void sk_slice57_003e9310(void)
 
 /* void FUN_003e9c34(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5) */
 
-void sk_slice57_003e9c34(word_t param_1,word_t param_2,word_t param_3,word_t param_4,
-                 word_t param_5)
+void sk_slice57_003e9c34(word_t  param_1, word_t  param_2, word_t  param_3, word_t  param_4, word_t  param_5)
 
 {
   int64_t *lp1;
@@ -1978,7 +1974,7 @@ void sk_slice57_003e9c34(word_t param_1,word_t param_2,word_t param_3,word_t par
   *(int64_t **)(ctx + 0x18) = lp1;
   *lp1 = ctx;
   lp1[1] = (int64_t)(word_t)&sk_d_004060bc;
-  sk_slice57_003e838c(lp1,param_1,param_2,param_3,param_5);
+  sk_slice57_003e838c((word_t)lp1,(word_t)param_1,(word_t)param_2,(word_t)param_3,(word_t)param_5);
   return;
 }
 
@@ -1986,7 +1982,7 @@ void sk_slice57_003e9c34(word_t param_1,word_t param_2,word_t param_3,word_t par
 
 /* void FUN_003e9d04(void) */
 
-void sk_slice57_003e9d04(void)
+void sk_slice57_003e9d04()
 
 {
   code_t *xr_x9;
@@ -2005,10 +2001,10 @@ void sk_slice57_003e9d04(void)
   sk_rt_0034b05c();
   sk_rt_00407100();
   sk_rt_00350518();
-  (*xr_x9)();
+  ((code_t)xr_x9)();
   sk_rt_004082a8((int64_t)*(int32_t *)(in_r21 + 0x34));
   sk_rt_00407700();
-  (*in_r19)();
+  ((code_t)in_r19)();
   sk_rt_00084234(in_r30);
   return;
 }
@@ -2017,7 +2013,7 @@ void sk_slice57_003e9d04(void)
 
 /* void FUN_003e9db0(void) */
 
-void sk_slice57_003e9db0(void)
+void sk_slice57_003e9db0()
 
 {
   sk_rt_00406574();
@@ -2030,7 +2026,7 @@ void sk_slice57_003e9db0(void)
 
 /* void FUN_003e9de0(void) */
 
-void sk_slice57_003e9de0(void)
+void sk_slice57_003e9de0()
 
 {
   sk_slice57_003e9df8();
@@ -2041,7 +2037,7 @@ void sk_slice57_003e9de0(void)
 
 /* void FUN_003e9df8(void) */
 
-void sk_slice57_003e9df8(void)
+void sk_slice57_003e9df8()
 
 {
   word_t *wp1;
@@ -2060,7 +2056,7 @@ void sk_slice57_003e9df8(void)
   sk_rt_003509c8(in_r3,auVar3.lo,auVar3.lo);
   (**(code_t **)(xr_x16 + 0x20))(xr_x8,xr_x1,in_r3);
   sk_rt_0034d004(0);
-  ln2 = (*in_r19)();
+  ln2 = ((code_t)in_r19)();
   wp1 = (word_t *)(xr_x8 + *(int32_t *)(ln2 + 0x2c));
   *wp1 = auVar3.hi;
   wp1[1] = in_r23;
@@ -2072,7 +2068,7 @@ void sk_slice57_003e9df8(void)
 
 /* void FUN_003e9e74(undefined8 param_1,long param_2) */
 
-void sk_slice57_003e9e74(word_t param_1,int64_t param_2)
+void sk_slice57_003e9e74(word_t  param_1, int64_t  param_2)
 
 {
   int64_t xr_x16;
@@ -2090,7 +2086,7 @@ void sk_slice57_003e9e74(word_t param_1,int64_t param_2)
 
 /* void FUN_003e9f40(void) */
 
-void sk_slice57_003e9f40(void)
+void sk_slice57_003e9f40()
 
 {
   int64_t ln1;
@@ -2102,7 +2098,7 @@ void sk_slice57_003e9f40(void)
   sk_rt_00084220();
   sk_rt_0034bb84();
   sk_rt_00407450();
-  ln1 = (*in_r6)();
+  ln1 = ((code_t)in_r6)();
   *(uint8_t *)(in_r24 + *(int32_t *)(ln1 + 0x30)) = 0;
   sk_rt_0040654c();
   sk_rt_00350968();
@@ -2118,7 +2114,7 @@ void sk_slice57_003e9f40(void)
 
 /* void FUN_003e9fcc(void) */
 
-void sk_slice57_003e9fcc(void)
+void sk_slice57_003e9fcc()
 
 {
   word_t uv1;
@@ -2162,7 +2158,7 @@ void sk_slice57_003e9fcc(void)
 
 /* void FUN_003ea0a4(void) */
 
-void sk_slice57_003ea0a4(void)
+void sk_slice57_003ea0a4()
 
 {
   int64_t ln1;
@@ -2187,7 +2183,7 @@ void sk_slice57_003ea0a4(void)
     sk_rt_00407e58(auVar5.lo,auVar5.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003ea118. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x30);
@@ -2203,7 +2199,7 @@ void sk_slice57_003ea0a4(void)
   sk_rt_00406ab4();
                     /* WARNING: Could not recover jumptable at 0x003ea1a0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2211,7 +2207,7 @@ void sk_slice57_003ea0a4(void)
 
 /* void FUN_003ea260(void) */
 
-void sk_slice57_003ea260(void)
+void sk_slice57_003ea260()
 
 {
   int64_t ln1;
@@ -2236,7 +2232,7 @@ void sk_slice57_003ea260(void)
   uv4 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x48),uv4,*(word_t *)(ctx + 0x40));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_00407604();
     sk_rt_00408374();
     sk_rt_00406c5c();
@@ -2245,13 +2241,13 @@ void sk_slice57_003ea260(void)
     sk_rt_00407e58(auVar7.lo,auVar7.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003ea2e0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x18);
   ln2 = *(int64_t *)(ctx + 0x20);
   sk_rt_00406bd4(*(word_t *)(ctx + 0x58),*(word_t *)(ctx + 0x60));
-  (*xr_x9_00)();
+  ((code_t)xr_x9_00)();
   sk_rt_004062a8(*(word_t *)(ln2 + *(int32_t *)(ln1 + 0x2c)));
   sk_rt_0040bb18(*(uint32_t *)(xr_x8 + 4));
   wp5 = (word_t *)sk_rt_00406fe0();
@@ -2261,7 +2257,7 @@ void sk_slice57_003ea260(void)
   sk_rt_00407610(wp5,*(word_t *)(ctx + 0x60));
                     /* WARNING: Could not recover jumptable at 0x003ea37c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2269,7 +2265,7 @@ void sk_slice57_003ea260(void)
 
 /* void FUN_003ea494(void) */
 
-void sk_slice57_003ea494(void)
+void sk_slice57_003ea494()
 
 {
   code_t *jt;
@@ -2282,7 +2278,7 @@ void sk_slice57_003ea494(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003ea4e8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2290,7 +2286,7 @@ void sk_slice57_003ea494(void)
 
 /* void FUN_003ea4ec(void) */
 
-void sk_slice57_003ea4ec(void)
+void sk_slice57_003ea4ec()
 
 {
   code_t *jt;
@@ -2301,7 +2297,7 @@ void sk_slice57_003ea4ec(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ea53c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2309,7 +2305,7 @@ void sk_slice57_003ea4ec(void)
 
 /* void FUN_003ea5a8(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4) */
 
-void sk_slice57_003ea5a8(word_t param_1,word_t param_2,word_t param_3,int64_t param_4)
+void sk_slice57_003ea5a8(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t param_5)
 
 {
   word_t uv1;
@@ -2356,7 +2352,7 @@ void sk_slice57_003ea5a8(word_t param_1,word_t param_2,word_t param_3,int64_t pa
   }
   else {
     sk_rt_00406590();
-    (*xr_x8_02)();
+    ((code_t)xr_x8_02)();
     sk_rt_0008e1ec();
     uv1 = xr_x8_03;
   }
@@ -2372,7 +2368,7 @@ void sk_slice57_003ea5a8(word_t param_1,word_t param_2,word_t param_3,int64_t pa
 
 /* void FUN_003ea6ec(void) */
 
-void sk_slice57_003ea6ec(void)
+void sk_slice57_003ea6ec()
 
 {
   int64_t ln1;
@@ -2400,7 +2396,7 @@ void sk_slice57_003ea6ec(void)
     sk_rt_00407e58(auVar6.lo,auVar6.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003ea76c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x40);
@@ -2418,7 +2414,7 @@ void sk_slice57_003ea6ec(void)
   sk_rt_004067b8();
                     /* WARNING: Could not recover jumptable at 0x003ea804. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2426,7 +2422,7 @@ void sk_slice57_003ea6ec(void)
 
 /* void FUN_003ea8f4(void) */
 
-void sk_slice57_003ea8f4(void)
+void sk_slice57_003ea8f4()
 
 {
   int64_t ln1;
@@ -2451,7 +2447,7 @@ void sk_slice57_003ea8f4(void)
   uv4 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x70),uv4,*(word_t *)(ctx + 0x68));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_00407960();
     uv4 = *(word_t *)(ctx + 0x58);
     sk_rt_004077cc();
@@ -2462,13 +2458,13 @@ void sk_slice57_003ea8f4(void)
     sk_rt_00407e58(auVar7.lo,auVar7.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003ea980. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x28);
   ln2 = *(int64_t *)(ctx + 0x30);
   sk_rt_00406bd4(*(word_t *)(ctx + 0x80),*(word_t *)(ctx + 0x88));
-  (*xr_x9_00)();
+  ((code_t)xr_x9_00)();
   sk_rt_004062a8(*(word_t *)(ln2 + *(int32_t *)(ln1 + 0x2c)));
   sk_rt_0040bb18(*(uint32_t *)(xr_x8 + 4));
   wp5 = (word_t *)sk_rt_00406fe0();
@@ -2478,7 +2474,7 @@ void sk_slice57_003ea8f4(void)
   sk_rt_00407610(wp5,*(word_t *)(ctx + 0x88));
                     /* WARNING: Could not recover jumptable at 0x003eaa1c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2486,7 +2482,7 @@ void sk_slice57_003ea8f4(void)
 
 /* void FUN_003eab58(void) */
 
-void sk_slice57_003eab58(void)
+void sk_slice57_003eab58()
 
 {
   code_t *jt;
@@ -2503,7 +2499,7 @@ void sk_slice57_003eab58(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003eabc0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2511,8 +2507,7 @@ void sk_slice57_003eab58(void)
 
 /* void FUN_003ead6c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5) */
 
-void sk_slice57_003ead6c(word_t param_1,word_t param_2,word_t param_3,word_t param_4,
-                 word_t param_5)
+void sk_slice57_003ead6c(word_t  param_1, word_t  param_2, word_t  param_3, word_t  param_4, word_t  param_5)
 
 {
   int64_t *lp1;
@@ -2523,7 +2518,7 @@ void sk_slice57_003ead6c(word_t param_1,word_t param_2,word_t param_3,word_t par
   *(int64_t **)(ctx + 0x18) = lp1;
   *lp1 = ctx;
   lp1[1] = (int64_t)sk_slice57_003eae24;
-  sk_slice57_003ea5a8(lp1,param_1,param_2,param_3,param_5);
+  sk_slice57_003ea5a8((word_t)lp1,(word_t)param_1,(word_t)param_2,(word_t)param_3,(word_t)param_5);
   return;
 }
 
@@ -2531,7 +2526,7 @@ void sk_slice57_003ead6c(word_t param_1,word_t param_2,word_t param_3,word_t par
 
 /* void FUN_003eae24(void) */
 
-void sk_slice57_003eae24(void)
+void sk_slice57_003eae24()
 
 {
   code_t *xr_x1;
@@ -2558,7 +2553,7 @@ void sk_slice57_003eae24(void)
   }
                     /* WARNING: Could not recover jumptable at 0x003eaed4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2566,7 +2561,7 @@ void sk_slice57_003eae24(void)
 
 /* void FUN_003eaef4(void) */
 
-void sk_slice57_003eaef4(void)
+void sk_slice57_003eaef4()
 
 {
   word_t xr_x1;
@@ -2574,7 +2569,7 @@ void sk_slice57_003eaef4(void)
   
   sk_rt_00407478();
   auVar1 = sk_rt_0035a7e8();
-  sk_slice57_003eaf34(auVar1.lo,auVar1.hi,xr_x1);
+  sk_slice57_003eaf34((word_t)auVar1.lo,(word_t)auVar1.hi,(word_t)xr_x1);
   sk_rt_0036b270(xr_x1);
   return;
 }
@@ -2583,7 +2578,7 @@ void sk_slice57_003eaef4(void)
 
 /* void FUN_003eaf34(void) */
 
-void sk_slice57_003eaf34(void)
+void sk_slice57_003eaf34(word_t param_1, word_t param_2, word_t param_3)
 
 {
   sk_slice57_003eaf4c();
@@ -2594,7 +2589,7 @@ void sk_slice57_003eaf34(void)
 
 /* void FUN_003eaf4c(void) */
 
-void sk_slice57_003eaf4c(void)
+void sk_slice57_003eaf4c()
 
 {
   word_t *wp1;
@@ -2612,7 +2607,7 @@ void sk_slice57_003eaf4c(void)
   sk_rt_003509c8(in_r3,uv2,uv2);
   (**(code_t **)(xr_x16 + 0x20))(xr_x8,xr_x1,in_r3);
   sk_rt_00350548(0);
-  ln3 = (*in_r5)();
+  ln3 = ((code_t)in_r5)();
   wp1 = (word_t *)(xr_x8 + *(int32_t *)(ln3 + 0x24));
   *wp1 = in_r23;
   wp1[1] = ctx;
@@ -2623,7 +2618,7 @@ void sk_slice57_003eaf4c(void)
 
 /* void FUN_003eafc8(undefined8 param_1,long param_2) */
 
-void sk_slice57_003eafc8(word_t param_1,int64_t param_2)
+void sk_slice57_003eafc8(word_t  param_1, int64_t  param_2)
 
 {
   int32_t iv1;
@@ -2645,7 +2640,7 @@ void sk_slice57_003eafc8(word_t param_1,int64_t param_2)
 
 /* void FUN_003eb0a4(void) */
 
-void sk_slice57_003eb0a4(void)
+void sk_slice57_003eb0a4()
 
 {
   int32_t iv1;
@@ -2660,7 +2655,7 @@ void sk_slice57_003eb0a4(void)
   sk_rt_0040679c();
   *xr_x8 = 0;
   sk_rt_00407450();
-  ln2 = (*in_r5)();
+  ln2 = ((code_t)in_r5)();
   iv1 = *(int32_t *)(ln2 + 0x24);
   sk_rt_0040654c();
   sk_rt_00350968();
@@ -2676,7 +2671,7 @@ void sk_slice57_003eb0a4(void)
 
 /* void FUN_003eb120(void) */
 
-void sk_slice57_003eb120(void)
+void sk_slice57_003eb120()
 
 {
   word_t uv1;
@@ -2709,7 +2704,7 @@ void sk_slice57_003eb120(void)
 
 /* void FUN_003eb1d8(void) */
 
-void sk_slice57_003eb1d8(void)
+void sk_slice57_003eb1d8()
 
 {
   int64_t ln1;
@@ -2732,7 +2727,7 @@ void sk_slice57_003eb1d8(void)
     sk_rt_004079b4(auVar4.lo,auVar4.hi,uv2);
                     /* WARNING: Could not recover jumptable at 0x003eb240. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x30);
@@ -2750,7 +2745,7 @@ void sk_slice57_003eb1d8(void)
   sk_rt_004080cc();
                     /* WARNING: Could not recover jumptable at 0x003eb2d8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2758,7 +2753,7 @@ void sk_slice57_003eb1d8(void)
 
 /* void FUN_003eb398(void) */
 
-void sk_slice57_003eb398(void)
+void sk_slice57_003eb398()
 
 {
   int64_t ln1;
@@ -2783,7 +2778,7 @@ void sk_slice57_003eb398(void)
   uv3 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x48),uv3,*(word_t *)(ctx + 0x40));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_00407604();
     sk_rt_0040686c();
     sk_rt_0040bd24(uv5);
@@ -2791,7 +2786,7 @@ void sk_slice57_003eb398(void)
     sk_rt_00407e58(auVar6.lo,auVar6.hi,uv2);
                     /* WARNING: Could not recover jumptable at 0x003eb418. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x18);
@@ -2799,7 +2794,7 @@ void sk_slice57_003eb398(void)
   *(word_t *)(ctx + 0x78) = xr_x9_00;
   *(word_t *)(ctx + 0x80) = xr_x10;
   sk_rt_00350624();
-  (*xr_x9_01)();
+  ((code_t)xr_x9_01)();
   sk_rt_004062e8((int64_t)*(int32_t *)(ln1 + 0x28));
   lp4 = (int64_t *)sk_rt_0040bb18(*(uint32_t *)(xr_x8 + 4));
   *(int64_t **)(ctx + 0x88) = lp4;
@@ -2808,7 +2803,7 @@ void sk_slice57_003eb398(void)
   sk_rt_00406bb4(*(word_t *)(ctx + 0x60));
                     /* WARNING: Could not recover jumptable at 0x003eb4b0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2816,7 +2811,7 @@ void sk_slice57_003eb398(void)
 
 /* void FUN_003eb594(void) */
 
-void sk_slice57_003eb594(void)
+void sk_slice57_003eb594()
 
 {
   uint64_t uv1;
@@ -2829,13 +2824,13 @@ void sk_slice57_003eb594(void)
   sk_rt_00407000();
   if (*(char *)(ctx + 0x98) == '\x01') {
     sk_rt_00407d14(*(word_t *)(ctx + 0x80));
-    uv1 = (*xr_x9)();
+    uv1 = ((code_t)xr_x9)();
     auVar2.hi = 0;
     auVar2.lo = uv1;
   }
   else {
     sk_rt_00408280();
-    (*xr_x9_00)();
+    ((code_t)xr_x9_00)();
     auVar2 = sk_rt_00408354();
   }
   sk_rt_004069b0(auVar2.lo,auVar2.hi);
@@ -2844,7 +2839,7 @@ void sk_slice57_003eb594(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003eb618. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2852,7 +2847,7 @@ void sk_slice57_003eb594(void)
 
 /* void FUN_003eb68c(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4) */
 
-void sk_slice57_003eb68c(word_t param_1,word_t param_2,word_t param_3,int64_t param_4)
+void sk_slice57_003eb68c(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t param_5)
 
 {
   word_t uv1;
@@ -2897,7 +2892,7 @@ void sk_slice57_003eb68c(word_t param_1,word_t param_2,word_t param_3,int64_t pa
   }
   else {
     sk_rt_00406590();
-    (*xr_x8_02)();
+    ((code_t)xr_x8_02)();
     sk_rt_0008e1ec();
     uv1 = xr_x8_03;
   }
@@ -2913,7 +2908,7 @@ void sk_slice57_003eb68c(word_t param_1,word_t param_2,word_t param_3,int64_t pa
 
 /* void FUN_003eb7c4(void) */
 
-void sk_slice57_003eb7c4(void)
+void sk_slice57_003eb7c4()
 
 {
   word_t uv1;
@@ -2939,7 +2934,7 @@ void sk_slice57_003eb7c4(void)
     sk_rt_004079b4(auVar5.lo,auVar5.hi,uv3);
                     /* WARNING: Could not recover jumptable at 0x003eb834. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln2 = *(int64_t *)(ctx + 0x40);
@@ -2959,7 +2954,7 @@ void sk_slice57_003eb7c4(void)
   sk_rt_004080cc();
                     /* WARNING: Could not recover jumptable at 0x003eb8d8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -2967,7 +2962,7 @@ void sk_slice57_003eb7c4(void)
 
 /* void FUN_003eb9c8(void) */
 
-void sk_slice57_003eb9c8(void)
+void sk_slice57_003eb9c8()
 
 {
   int64_t ln1;
@@ -2992,7 +2987,7 @@ void sk_slice57_003eb9c8(void)
   uv3 = sk_rt_00406420();
   if ((bool)zero_cc) {
     sk_rt_0040711c(*(word_t *)(ctx + 0x70),uv3,*(word_t *)(ctx + 0x68));
-    (*xr_x9)();
+    ((code_t)xr_x9)();
     sk_rt_00407960();
     uv3 = *(word_t *)(ctx + 0x58);
     sk_rt_0040686c();
@@ -3002,7 +2997,7 @@ void sk_slice57_003eb9c8(void)
     sk_rt_00407e58(auVar6.lo,auVar6.hi,uv2);
                     /* WARNING: Could not recover jumptable at 0x003eba50. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
+    ((code_t)jt0)();
     return;
   }
   ln1 = *(int64_t *)(ctx + 0x28);
@@ -3010,7 +3005,7 @@ void sk_slice57_003eb9c8(void)
   *(word_t *)(ctx + 0xb8) = xr_x9_00;
   *(word_t *)(ctx + 0xc0) = xr_x10;
   sk_rt_00350624();
-  (*xr_x9_01)();
+  ((code_t)xr_x9_01)();
   sk_rt_004062e8((int64_t)*(int32_t *)(ln1 + 0x28));
   lp4 = (int64_t *)sk_rt_0040bb18(*(uint32_t *)(xr_x8 + 4));
   *(int64_t **)(ctx + 200) = lp4;
@@ -3019,7 +3014,7 @@ void sk_slice57_003eb9c8(void)
   sk_rt_00406bb4(*(word_t *)(ctx + 0x88));
                     /* WARNING: Could not recover jumptable at 0x003ebae8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -3027,7 +3022,7 @@ void sk_slice57_003eb9c8(void)
 
 /* void FUN_003ebbd4(void) */
 
-void sk_slice57_003ebbd4(void)
+void sk_slice57_003ebbd4()
 
 {
   word_t uv1;
@@ -3057,7 +3052,7 @@ void sk_slice57_003ebbd4(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003ebc84. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -3065,8 +3060,7 @@ void sk_slice57_003ebbd4(void)
 
 /* void FUN_003ebd9c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4, undefined8 param_5) */
 
-void sk_slice57_003ebd9c(word_t param_1,word_t param_2,word_t param_3,word_t param_4,
-                 word_t param_5)
+void sk_slice57_003ebd9c(word_t  param_1, word_t  param_2, word_t  param_3, word_t  param_4, word_t  param_5)
 
 {
   int64_t *lp1;
@@ -3077,7 +3071,7 @@ void sk_slice57_003ebd9c(word_t param_1,word_t param_2,word_t param_3,word_t par
   *(int64_t **)(ctx + 0x18) = lp1;
   *lp1 = ctx;
   lp1[1] = (int64_t)(word_t)&sk_d_004060bc;
-  sk_slice57_003eb68c(lp1,param_1,param_2,param_3,param_5);
+  sk_slice57_003eb68c((word_t)lp1,(word_t)param_1,(word_t)param_2,(word_t)param_3,(word_t)param_5);
   return;
 }
 
@@ -3085,7 +3079,7 @@ void sk_slice57_003ebd9c(word_t param_1,word_t param_2,word_t param_3,word_t par
 
 /* void FUN_003ebe6c(void) */
 
-void sk_slice57_003ebe6c(void)
+void sk_slice57_003ebe6c()
 
 {
   code_t *xr_x9;
@@ -3104,10 +3098,10 @@ void sk_slice57_003ebe6c(void)
   sk_rt_0034b05c();
   sk_rt_00407100();
   sk_rt_00350518();
-  (*xr_x9)();
+  ((code_t)xr_x9)();
   sk_rt_004082a8((int64_t)*(int32_t *)(in_r21 + 0x24));
   sk_rt_00407700();
-  (*in_r19)();
+  ((code_t)in_r19)();
   sk_rt_00084234(in_r30);
   return;
 }
@@ -3116,7 +3110,7 @@ void sk_slice57_003ebe6c(void)
 
 /* undefined1 [16] FUN_003ebf10(void) */
 
-sk_u128_t sk_slice57_003ebf10(void)
+sk_u128_t sk_slice57_003ebf10()
 
 {
   int64_t ln1;
@@ -3132,7 +3126,7 @@ sk_u128_t sk_slice57_003ebf10(void)
   }
   else {
     fptr2 = (code_t *)sk_rt_00027724(0x671848);
-    (*fptr2)(0x677790,0x671848);
+    ((code_t)fptr2)(0x677790,0x671848);
     sk_rt_000e72d4();
     sk_rt_003a25d4(0x671848);
     sk_rt_00408108();
@@ -3148,7 +3142,7 @@ sk_u128_t sk_slice57_003ebf10(void)
 
 /* void FUN_003ebfe8(void) */
 
-void sk_slice57_003ebfe8(void)
+void sk_slice57_003ebfe8()
 
 {
   word_t uv1;
@@ -3161,7 +3155,7 @@ void sk_slice57_003ebfe8(void)
   sk_rt_0008409c();
   sk_rt_0031986c(xr_x1);
   sk_rt_0034bcf0();
-  uv1 = (*xr_x8)();
+  uv1 = ((code_t)xr_x8)();
   sk_rt_00350878(0xff);
   sk_rt_00377824();
   sk_rt_003507e0();
@@ -3170,7 +3164,7 @@ void sk_slice57_003ebfe8(void)
   fptr3 = (code_t *)sk_rt_003d4658();
   sk_rt_00350500();
   uv4 = sk_rt_00377dcc();
-  (*fptr3)(uv4,uv2);
+  ((code_t)fptr3)(uv4,uv2);
   sk_rt_0036b118(uv1);
   sk_rt_003507e0();
   return;
@@ -3178,11 +3172,11 @@ void sk_slice57_003ebfe8(void)
 
 
 
-/* /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */ void FUN_003ec094(void) */
+/* void FUN_003ec094(void) */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void sk_slice57_003ec094(void)
+void sk_slice57_003ec094()
 
 {
   sk_d_006adf30 = sk_rt_0036a9d4(0x6578a0,0x6c0b68);
@@ -3191,11 +3185,11 @@ void sk_slice57_003ec094(void)
 
 
 
-/* /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */ void FUN_003ec098(void) */
+/* void FUN_003ec098(void) */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void sk_slice57_003ec098(void)
+void sk_slice57_003ec098()
 
 {
   sk_d_006adf30 = sk_rt_0036a9d4(0x6578a0,0x6c0b68);
@@ -3204,7 +3198,7 @@ void sk_slice57_003ec098(void)
 
 
 
-/* /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */ undefined1 * FUN_003ec0c4(void) */
+/* undefined1 * FUN_003ec0c4(void) */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
@@ -3221,7 +3215,7 @@ uint8_t * sk_slice57_003ec0c4(void)
 
 /* void FUN_003ec12c(void) */
 
-void sk_slice57_003ec12c(void)
+void sk_slice57_003ec12c()
 
 {
   sk_rt_00409414();
@@ -3232,7 +3226,7 @@ void sk_slice57_003ec12c(void)
 
 /* void FUN_003ec130(void) */
 
-void sk_slice57_003ec130(void)
+void sk_slice57_003ec130()
 
 {
   sk_rt_00409414();
@@ -3243,7 +3237,7 @@ void sk_slice57_003ec130(void)
 
 /* void FUN_003ec144(void) */
 
-void sk_slice57_003ec144(void)
+void sk_slice57_003ec144()
 
 {
   word_t *wp1;
@@ -3257,7 +3251,7 @@ void sk_slice57_003ec144(void)
 
 /* void FUN_003ec148(void) */
 
-void sk_slice57_003ec148(void)
+void sk_slice57_003ec148()
 
 {
   word_t *wp1;
@@ -3271,7 +3265,7 @@ void sk_slice57_003ec148(void)
 
 /* void FUN_003ec178(void) */
 
-void sk_slice57_003ec178(void)
+void sk_slice57_003ec178()
 
 {
   uint8_t uv1;
@@ -3293,7 +3287,7 @@ void sk_slice57_003ec178(void)
 
 /* void FUN_003ec20c(void) */
 
-void sk_slice57_003ec20c(void)
+void sk_slice57_003ec20c()
 
 {
   int64_t *ctx;
@@ -3309,7 +3303,7 @@ void sk_slice57_003ec20c(void)
 
 /* void FUN_003ec438(void) */
 
-void sk_slice57_003ec438(void)
+void sk_slice57_003ec438()
 
 {
   sk_u128_t auVar1;
@@ -3317,7 +3311,7 @@ void sk_slice57_003ec438(void)
   auVar1 = sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ec450. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*auVar1.hi)(auVar1.lo & 0xffffffffffff | 0xd707000000000000);
+  ((code_t)auVar1.hi)(auVar1.lo & 0xffffffffffff | 0xd707000000000000);
   return;
 }
 
@@ -3325,7 +3319,7 @@ void sk_slice57_003ec438(void)
 
 /* void FUN_003ec4dc(void) */
 
-void sk_slice57_003ec4dc(void)
+void sk_slice57_003ec4dc()
 
 {
   word_t uv1;
@@ -3357,7 +3351,7 @@ void sk_slice57_003ec4dc(void)
 
 /* void FUN_003ec598(void) */
 
-void sk_slice57_003ec598(void)
+void sk_slice57_003ec598()
 
 {
   code_t *jt;
@@ -3372,7 +3366,7 @@ void sk_slice57_003ec598(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ec5f4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -3380,7 +3374,7 @@ void sk_slice57_003ec598(void)
 
 /* void FUN_003ec6c8(void) */
 
-void sk_slice57_003ec6c8(void)
+void sk_slice57_003ec6c8()
 
 {
   sk_rt_00406fd4();
@@ -3393,7 +3387,7 @@ void sk_slice57_003ec6c8(void)
 
 /* void FUN_003ec708(void) */
 
-void sk_slice57_003ec708(void)
+void sk_slice57_003ec708()
 
 {
   code_t *fptr1;
@@ -3402,14 +3396,14 @@ void sk_slice57_003ec708(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec730);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec730(void) */
 
-void sk_slice57_003ec730(void)
+void sk_slice57_003ec730()
 
 {
   code_t *fptr1;
@@ -3418,14 +3412,14 @@ void sk_slice57_003ec730(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec758);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec758(void) */
 
-void sk_slice57_003ec758(void)
+void sk_slice57_003ec758()
 
 {
   code_t *fptr1;
@@ -3434,14 +3428,14 @@ void sk_slice57_003ec758(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec780);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec780(void) */
 
-void sk_slice57_003ec780(void)
+void sk_slice57_003ec780()
 
 {
   code_t *fptr1;
@@ -3450,14 +3444,14 @@ void sk_slice57_003ec780(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec7a8);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec7bc(void) */
 
-void sk_slice57_003ec7bc(void)
+void sk_slice57_003ec7bc()
 
 {
   sk_rt_00406fd4();
@@ -3470,7 +3464,7 @@ void sk_slice57_003ec7bc(void)
 
 /* void FUN_003ec7fc(void) */
 
-void sk_slice57_003ec7fc(void)
+void sk_slice57_003ec7fc()
 
 {
   code_t *fptr1;
@@ -3479,14 +3473,14 @@ void sk_slice57_003ec7fc(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec824);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec824(void) */
 
-void sk_slice57_003ec824(void)
+void sk_slice57_003ec824()
 
 {
   code_t *fptr1;
@@ -3495,14 +3489,14 @@ void sk_slice57_003ec824(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec84c);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec84c(void) */
 
-void sk_slice57_003ec84c(void)
+void sk_slice57_003ec84c()
 
 {
   code_t *fptr1;
@@ -3511,14 +3505,14 @@ void sk_slice57_003ec84c(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec874);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec874(void) */
 
-void sk_slice57_003ec874(void)
+void sk_slice57_003ec874()
 
 {
   code_t *fptr1;
@@ -3527,14 +3521,14 @@ void sk_slice57_003ec874(void)
   sk_rt_00406490();
                     /* WARNING: Does not return */
   fptr1 = (code_t *)SoftwareBreakpoint(1,0x3ec89c);
-  (*fptr1)();
+  ((code_t)fptr1)();
 }
 
 
 
 /* void FUN_003ec8a0(undefined8 param_1,undefined8 param_2) */
 
-void sk_slice57_003ec8a0(word_t param_1,word_t param_2)
+void sk_slice57_003ec8a0(word_t  param_1, word_t  param_2)
 
 {
   sk_rt_002298d4(param_2);
@@ -3545,7 +3539,7 @@ void sk_slice57_003ec8a0(word_t param_1,word_t param_2)
 
 /* void FUN_003ec8c8(undefined8 param_1) */
 
-void sk_slice57_003ec8c8(word_t param_1)
+void sk_slice57_003ec8c8(word_t  param_1)
 
 {
   sk_rt_004080b0();
@@ -3558,14 +3552,14 @@ void sk_slice57_003ec8c8(word_t param_1)
 
 /* void FUN_003ec918(void) */
 
-void sk_slice57_003ec918(void)
+void sk_slice57_003ec918()
 
 {
   word_t *in_r20;
   uint8_t stack_slot_104 [72];
   
   sk_rt_001a84f4(stack_slot_104);
-  sk_slice57_003ec8a0(stack_slot_104,*in_r20);
+  sk_slice57_003ec8a0((word_t)stack_slot_104,(word_t)*in_r20);
   sk_rt_001a8564();
   return;
 }
@@ -3574,7 +3568,7 @@ void sk_slice57_003ec918(void)
 
 /* long FUN_003ec9c4(int param_1) */
 
-int64_t sk_slice57_003ec9c4(int32_t param_1)
+int64_t sk_slice57_003ec9c4(int32_t  param_1)
 
 {
   uint32_t uv1;
@@ -3614,7 +3608,7 @@ switchD_003eca14_caseD_1:
     sk_rt_002a4ab4(0x10);
     sk_rt_003a25d4(loc_40);
     fptr4 = (code_t *)sk_rt_00027724(0x670738);
-    (*fptr4)((word_t)&sk_u_006775b0,0x670738);
+    ((code_t)fptr4)((word_t)&sk_u_006775b0,0x670738);
     sk_rt_000e72d4();
     sk_rt_003a25d4(0x670738);
     sk_rt_00408108();
@@ -3627,7 +3621,7 @@ switchD_003eca14_caseD_1:
 
 /* void FUN_003ecb1c(void) */
 
-void sk_slice57_003ecb1c(void)
+void sk_slice57_003ecb1c()
 
 {
   sk_rt_001c9a1c();
@@ -3638,7 +3632,7 @@ void sk_slice57_003ecb1c(void)
 
 /* void FUN_003ecb20(void) */
 
-void sk_slice57_003ecb20(void)
+void sk_slice57_003ecb20()
 
 {
   sk_rt_001c9a1c();
@@ -3649,12 +3643,12 @@ void sk_slice57_003ecb20(void)
 
 /* void FUN_003ecb48(undefined8 param_1) */
 
-void sk_slice57_003ecb48(word_t param_1)
+void sk_slice57_003ecb48(word_t  param_1)
 
 {
   uint8_t *in_r20;
   
-  sk_slice57_003ecb64(param_1,*in_r20);
+  sk_slice57_003ecb64((word_t)param_1,(word_t)*in_r20);
   return;
 }
 
@@ -3662,12 +3656,12 @@ void sk_slice57_003ecb48(word_t param_1)
 
 /* void FUN_003ecb4c(undefined8 param_1) */
 
-void sk_slice57_003ecb4c(word_t param_1)
+void sk_slice57_003ecb4c(word_t  param_1)
 
 {
   uint8_t *in_r20;
   
-  sk_slice57_003ecb64(param_1,*in_r20);
+  sk_slice57_003ecb64((word_t)param_1,(word_t)*in_r20);
   return;
 }
 
@@ -3675,7 +3669,7 @@ void sk_slice57_003ecb4c(word_t param_1)
 
 /* void FUN_003ecb64(long param_1,undefined8 param_2) */
 
-void sk_slice57_003ecb64(int64_t param_1,word_t param_2)
+void sk_slice57_003ecb64(int64_t  param_1, word_t  param_2)
 
 {
   word_t uv1;
@@ -3689,10 +3683,10 @@ void sk_slice57_003ecb64(int64_t param_1,word_t param_2)
   uv2 = *(word_t *)(param_1 + 0x20);
   sk_rt_0006a4c0(param_1,uv1);
   fptr3 = (code_t *)sk_rt_000a649c(uv2);
-  (*fptr3)(stack_slot_104,uv1,uv2);
+  ((code_t)fptr3)(stack_slot_104,uv1,uv2);
   sk_rt_000836a4(stack_slot_104,loc_80);
   fptr3 = (code_t *)sk_rt_00319f3c(stack_slot_72);
-  (*fptr3)(param_2,loc_80,stack_slot_72);
+  ((code_t)fptr3)(param_2,loc_80,stack_slot_72);
   sk_rt_000026e8(stack_slot_104);
   return;
 }
@@ -3701,7 +3695,7 @@ void sk_slice57_003ecb64(int64_t param_1,word_t param_2)
 
 /* ulong FUN_003ecc18(void) */
 
-uint64_t sk_slice57_003ecc18(void)
+uint64_t sk_slice57_003ecc18()
 
 {
   int64_t ln1;
@@ -3734,7 +3728,7 @@ uint64_t sk_slice57_003ecc18(void)
 
 /* void FUN_003eccc4(void) */
 
-void sk_slice57_003eccc4(void)
+void sk_slice57_003eccc4()
 
 {
   int64_t ln1;
@@ -3744,11 +3738,11 @@ void sk_slice57_003eccc4(void)
   sk_rt_00350c5c();
   ln1 = sk_rt_0040880c();
   if (ln1 == 0) {
-    (*in_r19)(xr_x8);
+    ((code_t)in_r19)(xr_x8);
   }
   else {
     sk_rt_0036b270();
-    (*in_r19)(xr_x8);
+    ((code_t)in_r19)(xr_x8);
     sk_rt_0036b118(ln1);
   }
   return;
@@ -3758,7 +3752,7 @@ void sk_slice57_003eccc4(void)
 
 /* uint FUN_003ecd44(void) */
 
-uint32_t sk_slice57_003ecd44(void)
+uint32_t sk_slice57_003ecd44()
 
 {
   uint32_t uv1;
@@ -3780,7 +3774,7 @@ uint32_t sk_slice57_003ecd44(void)
 
 /* void FUN_003ecd98(void) */
 
-void sk_slice57_003ecd98(void)
+void sk_slice57_003ecd98()
 
 {
   int64_t ln1;
@@ -3796,7 +3790,7 @@ void sk_slice57_003ecd98(void)
 
 /* void FUN_003ecd9c(void) */
 
-void sk_slice57_003ecd9c(void)
+void sk_slice57_003ecd9c()
 
 {
   int64_t ln1;
@@ -3812,7 +3806,7 @@ void sk_slice57_003ecd9c(void)
 
 /* void FUN_003ecddc(void) */
 
-void sk_slice57_003ecddc(void)
+void sk_slice57_003ecddc()
 
 {
   int32_t iv1;
@@ -3850,7 +3844,7 @@ void sk_slice57_003ecddc(void)
   loc_48 = (code_t *)((int64_t)ip5 + (int64_t)iv1);
                     /* WARNING: Could not recover jumptable at 0x003ecf1c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*loc_48)(uv4,ln2);
+  ((code_t)loc_48)(uv4,ln2);
   return;
 }
 
@@ -3858,7 +3852,7 @@ void sk_slice57_003ecddc(void)
 
 /* void FUN_003ed0a8(void) */
 
-void sk_slice57_003ed0a8(void)
+void sk_slice57_003ed0a8()
 
 {
   word_t uv1;
@@ -3867,7 +3861,7 @@ void sk_slice57_003ed0a8(void)
   
   uv1 = *in_r20;
   sk_rt_001a84f4(stack_slot_104);
-  sk_slice57_003ec8a0(stack_slot_104,uv1);
+  sk_slice57_003ec8a0((word_t)stack_slot_104,(word_t)uv1);
   sk_rt_001a8564();
   return;
 }
@@ -3876,7 +3870,7 @@ void sk_slice57_003ed0a8(void)
 
 /* void FUN_003ed0ec(void) */
 
-void sk_slice57_003ed0ec(void)
+void sk_slice57_003ed0ec()
 
 {
   word_t uv1;
@@ -3893,7 +3887,7 @@ void sk_slice57_003ed0ec(void)
 
 /* void FUN_003ed14c(void) */
 
-void sk_slice57_003ed14c(void)
+void sk_slice57_003ed14c()
 
 {
   word_t xr_x1;
@@ -3903,7 +3897,7 @@ void sk_slice57_003ed14c(void)
   sk_rt_0008409c();
   sk_rt_003fd194(xr_x1);
   sk_rt_0034bcf0();
-  auVar1 = (*xr_x8)();
+  auVar1 = ((code_t)xr_x8)();
   sk_rt_00408c4c(auVar1.lo,auVar1.hi,0);
   return;
 }
@@ -3912,8 +3906,7 @@ void sk_slice57_003ed14c(void)
 
 /* void FUN_003ed1a4(undefined8 param_1,undefined8 param_2,undefined8 param_3,code *param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7) */
 
-void sk_slice57_003ed1a4(word_t param_1,word_t param_2,word_t param_3,code_t *param_4,
-                 word_t param_5,word_t param_6,word_t param_7)
+void sk_slice57_003ed1a4(word_t  param_1, word_t  param_2, word_t  param_3, code_t * param_4, word_t  param_5, word_t  param_6, word_t  param_7)
 
 {
   word_t *stack_addr;
@@ -3926,10 +3919,10 @@ void sk_slice57_003ed1a4(word_t param_1,word_t param_2,word_t param_3,code_t *pa
   uv1 = sk_rt_00027614((word_t)&sk_d_0064c260,(word_t)&sk_d_004bbc30);
   ln2 = sk_rt_0031dc0c(0,param_7,uv1,0x66c1c8);
   ln3 = *(int64_t *)(ln2 + -8);
-  (*sk_d_00658c80)(*(int64_t *)(ln3 + 0x40) + 0xfU & 0xfffffffffffffff0);
+  ((code_t)sk_d_00658c80)(*(int64_t *)(ln3 + 0x40) + 0xfU & 0xfffffffffffffff0);
   wp4 = stack_addr + -xr_x8;
   sk_rt_00409c24(wp4,param_2,param_3,ln2);
-  (*param_4)(param_1,wp4);
+  ((code_t)param_4)(param_1,wp4);
   (**(code_t **)(ln3 + 8))(wp4,ln2);
   return;
 }
@@ -3938,7 +3931,7 @@ void sk_slice57_003ed1a4(word_t param_1,word_t param_2,word_t param_3,code_t *pa
 
 /* void FUN_003ed2dc(undefined8 param_1,undefined8 param_2,undefined8 param_3) */
 
-void sk_slice57_003ed2dc(word_t param_1,word_t param_2,word_t param_3)
+void sk_slice57_003ed2dc(word_t  param_1, word_t  param_2, word_t  param_3)
 
 {
   uint8_t stack_slot_96 [16];
@@ -3952,7 +3945,7 @@ void sk_slice57_003ed2dc(word_t param_1,word_t param_2,word_t param_3)
   loc_48 = param_3;
   stack_slot_40 = param_1;
   loc_32 = param_2;
-  sk_slice57_003ed1a4((word_t)&sk_d_005a0138,stack_slot_64,sk_rt_003fd25c,stack_slot_96,param_3,param_3);
+  sk_slice57_003ed1a4((word_t)(word_t)&sk_d_005a0138,(word_t)stack_slot_64,(word_t)sk_rt_003fd25c,(word_t)stack_slot_96,(word_t)param_3,(word_t)param_3);
   return;
 }
 
@@ -3960,7 +3953,7 @@ void sk_slice57_003ed2dc(word_t param_1,word_t param_2,word_t param_3)
 
 /* void FUN_003ed340(void) */
 
-void sk_slice57_003ed340(void)
+void sk_slice57_003ed340()
 
 {
   word_t uv1;
@@ -3987,7 +3980,7 @@ void sk_slice57_003ed340(void)
   sk_rt_0040838c();
                     /* WARNING: Could not recover jumptable at 0x003ed414. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -3995,7 +3988,7 @@ void sk_slice57_003ed340(void)
 
 /* void FUN_003ed4d4(void) */
 
-void sk_slice57_003ed4d4(void)
+void sk_slice57_003ed4d4()
 
 {
   word_t uv1;
@@ -4021,7 +4014,7 @@ void sk_slice57_003ed4d4(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ed568. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4029,7 +4022,7 @@ void sk_slice57_003ed4d4(void)
 
 /* void FUN_003ed5f8(undefined8 param_1,undefined8 param_2,undefined8 param_3) */
 
-void sk_slice57_003ed5f8(word_t param_1,word_t param_2,word_t param_3)
+void sk_slice57_003ed5f8(word_t  param_1, word_t  param_2, word_t  param_3)
 
 {
   word_t uv1;
@@ -4047,7 +4040,7 @@ void sk_slice57_003ed5f8(word_t param_1,word_t param_2,word_t param_3)
   ((code_t)sk_d_00658c80)();
   sk_rt_00407b80();
   auVar2 = sk_rt_00351384(*(word_t *)(xr_x12 + 0x10));
-  (*xr_x8)(auVar2.lo,auVar2.hi,uv1);
+  ((code_t)xr_x8)(auVar2.lo,auVar2.hi,uv1);
   sk_rt_0027ed7c(param_1,uv1,loc_56);
   return;
 }
@@ -4056,9 +4049,7 @@ void sk_slice57_003ed5f8(word_t param_1,word_t param_2,word_t param_3)
 
 /* void FUN_003ed6d0(undefined8 param_1,undefined8 param_2,undefined8 param_3,int *param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7,undefined8 param_8, long param_9,undefined8 param_10,undefined8 param_11) */
 
-void sk_slice57_003ed6d0(word_t param_1,word_t param_2,word_t param_3,int32_t *param_4,
-                 word_t param_5,word_t param_6,word_t param_7,word_t param_8,
-                 int64_t param_9,word_t param_10,word_t param_11)
+void sk_slice57_003ed6d0(word_t  param_1, word_t  param_2, word_t  param_3, int32_t * param_4, word_t  param_5, word_t  param_6, word_t  param_7, word_t  param_8, int64_t  param_9, word_t  param_10, word_t  param_11)
 
 {
   int32_t iv1;
@@ -4093,7 +4084,7 @@ void sk_slice57_003ed6d0(word_t param_1,word_t param_2,word_t param_3,int32_t *p
 
 /* void FUN_003ed930(void) */
 
-void sk_slice57_003ed930(void)
+void sk_slice57_003ed930()
 
 {
   word_t uv1;
@@ -4107,7 +4098,7 @@ void sk_slice57_003ed930(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003ed980. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4115,7 +4106,7 @@ void sk_slice57_003ed930(void)
 
 /* void FUN_003edad4(void) */
 
-void sk_slice57_003edad4(void)
+void sk_slice57_003edad4()
 
 {
   int64_t ln1;
@@ -4171,7 +4162,7 @@ void sk_slice57_003edad4(void)
 
 /* void FUN_003edf5c(void) */
 
-void sk_slice57_003edf5c(void)
+void sk_slice57_003edf5c()
 
 {
   code_t *jt;
@@ -4182,7 +4173,7 @@ void sk_slice57_003edf5c(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003edfa4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4190,7 +4181,7 @@ void sk_slice57_003edf5c(void)
 
 /* void FUN_003ee090(void) */
 
-void sk_slice57_003ee090(void)
+void sk_slice57_003ee090()
 
 {
   int32_t iv1;
@@ -4220,7 +4211,7 @@ void sk_slice57_003ee090(void)
 
 /* void FUN_003ee234(void) */
 
-void sk_slice57_003ee234(void)
+void sk_slice57_003ee234()
 
 {
   code_t *jt;
@@ -4231,7 +4222,7 @@ void sk_slice57_003ee234(void)
   sk_rt_0040678c();
                     /* WARNING: Could not recover jumptable at 0x003ee27c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4239,7 +4230,7 @@ void sk_slice57_003ee234(void)
 
 /* void FUN_003ee310(void) */
 
-void sk_slice57_003ee310(void)
+void sk_slice57_003ee310()
 
 {
   int64_t ln1;
@@ -4263,7 +4254,7 @@ void sk_slice57_003ee310(void)
 
 /* void FUN_003ee3c8(void) */
 
-void sk_slice57_003ee3c8(void)
+void sk_slice57_003ee3c8()
 
 {
   int64_t ln1;
@@ -4275,7 +4266,7 @@ void sk_slice57_003ee3c8(void)
   word_t in_r20;
   int64_t ctx;
   
-  ln1 = sk_rt_00407000();
+  ln1 = sk_rt_00407000().lo;
   *(int64_t *)(ctx + 0x10) = ln1;
   *(word_t *)(ctx + 0x18) = in_r20;
   *(word_t *)(ctx + 0x20) = *(word_t *)(ln1 + 0x10);
@@ -4298,7 +4289,7 @@ void sk_slice57_003ee3c8(void)
 
 /* void FUN_003ee47c(void) */
 
-void sk_slice57_003ee47c(void)
+void sk_slice57_003ee47c()
 
 {
   int64_t xr_x8;
@@ -4315,7 +4306,7 @@ void sk_slice57_003ee47c(void)
 
 /* void FUN_003ee520(void) */
 
-void sk_slice57_003ee520(void)
+void sk_slice57_003ee520()
 
 {
   word_t uv1;
@@ -4332,13 +4323,13 @@ void sk_slice57_003ee520(void)
   sk_rt_00351d24(auVar4.lo,auVar4.hi,*(word_t *)(ctx + 0x20));
   uv1 = sk_rt_000839f8();
   sk_rt_0040711c(*(word_t *)(ctx + 0x30),uv1,*(word_t *)(ctx + 0x28));
-  (*xr_x9)();
+  ((code_t)xr_x9)();
   if ((int32_t)uv1 == 1) {
     sk_rt_0040bd24(uv3);
     sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ee598. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt)();
+    ((code_t)jt)();
     return;
   }
   sk_rt_00408094();
@@ -4354,8 +4345,7 @@ void sk_slice57_003ee520(void)
 
 /* void FUN_003ee5e8(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7,undefined8 param_8) */
 
-void sk_slice57_003ee5e8(word_t param_1,word_t param_2,word_t param_3,int64_t param_4,
-                 word_t param_5,word_t param_6,word_t param_7,word_t param_8)
+void sk_slice57_003ee5e8(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t  param_5, word_t  param_6, word_t  param_7, word_t  param_8)
 
 {
   word_t uv1;
@@ -4364,7 +4354,7 @@ void sk_slice57_003ee5e8(word_t param_1,word_t param_2,word_t param_3,int64_t pa
   word_t xr_x8_01;
   int64_t ctx;
   
-  uv1 = sk_rt_00406fd4();
+  uv1 = sk_rt_00406fd4().lo;
   *(word_t *)(ctx + 0x128) = param_7;
   *(word_t *)(ctx + 0x130) = param_8;
   *(word_t *)(ctx + 0x118) = uv1;
@@ -4377,7 +4367,7 @@ void sk_slice57_003ee5e8(word_t param_1,word_t param_2,word_t param_3,int64_t pa
     sk_rt_00351da8();
     sk_rt_003d4658(param_5);
     sk_rt_0034bcf0();
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_0008e1ec();
     uv1 = xr_x8_00;
   }
@@ -4392,7 +4382,7 @@ void sk_slice57_003ee5e8(word_t param_1,word_t param_2,word_t param_3,int64_t pa
 
 /* void FUN_003ee688(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE) */
 
-void sk_slice57_003ee688(word_t param_1,word_t param_2,code_t *jt)
+void sk_slice57_003ee688(word_t  param_1, word_t  param_2, code_t * UNRECOVERED_JUMPTABLE)
 
 {
   word_t *wp1;
@@ -4412,7 +4402,7 @@ void sk_slice57_003ee688(word_t param_1,word_t param_2,code_t *jt)
   sk_rt_00407c04();
                     /* WARNING: Could not recover jumptable at 0x003ee71c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4420,7 +4410,7 @@ void sk_slice57_003ee688(word_t param_1,word_t param_2,code_t *jt)
 
 /* void FUN_003ee818(void) */
 
-void sk_slice57_003ee818(void)
+void sk_slice57_003ee818()
 
 {
   word_t *stack_addr;
@@ -4441,7 +4431,7 @@ void sk_slice57_003ee818(void)
 
 /* void FUN_003ee8e4(void) */
 
-void sk_slice57_003ee8e4(void)
+void sk_slice57_003ee8e4()
 
 {
   code_t *jt;
@@ -4452,7 +4442,7 @@ void sk_slice57_003ee8e4(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003ee92c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4460,7 +4450,7 @@ void sk_slice57_003ee8e4(void)
 
 /* void FUN_003eead0(void) */
 
-void sk_slice57_003eead0(void)
+void sk_slice57_003eead0()
 
 {
   code_t *jt;
@@ -4477,7 +4467,7 @@ void sk_slice57_003eead0(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003eeb68. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4485,7 +4475,7 @@ void sk_slice57_003eead0(void)
 
 /* void FUN_003eeb6c(void) */
 
-void sk_slice57_003eeb6c(void)
+void sk_slice57_003eeb6c()
 
 {
   word_t uv1;
@@ -4493,7 +4483,7 @@ void sk_slice57_003eeb6c(void)
   word_t xr_x17;
   sk_u128_t auVar3;
   
-  uv1 = sk_rt_00407000();
+  uv1 = sk_rt_00407000().lo;
   sk_rt_0040bb18(sk_d_005a0194);
   wp2 = (word_t *)sk_rt_00407ac4();
   *wp2 = xr_x17;
@@ -4507,7 +4497,7 @@ void sk_slice57_003eeb6c(void)
 
 /* void FUN_003eebf0(void) */
 
-void sk_slice57_003eebf0(void)
+void sk_slice57_003eebf0()
 
 {
   code_t *jt;
@@ -4519,7 +4509,7 @@ void sk_slice57_003eebf0(void)
   sk_rt_00407128();
                     /* WARNING: Could not recover jumptable at 0x003eec88. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4527,8 +4517,7 @@ void sk_slice57_003eebf0(void)
 
 /* void FUN_003eec90(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4, undefined8 param_5,undefined8 param_6,undefined8 param_7,undefined8 param_8) */
 
-void sk_slice57_003eec90(word_t param_1,word_t param_2,word_t param_3,int64_t param_4,
-                 word_t param_5,word_t param_6,word_t param_7,word_t param_8)
+void sk_slice57_003eec90(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t  param_5, word_t  param_6, word_t  param_7, word_t  param_8)
 
 {
   word_t uv1;
@@ -4537,7 +4526,7 @@ void sk_slice57_003eec90(word_t param_1,word_t param_2,word_t param_3,int64_t pa
   word_t xr_x8_01;
   int64_t ctx;
   
-  uv1 = sk_rt_00406fd4();
+  uv1 = sk_rt_00406fd4().lo;
   *(word_t *)(ctx + 0x128) = param_7;
   *(word_t *)(ctx + 0x130) = param_8;
   *(word_t *)(ctx + 0x118) = uv1;
@@ -4550,7 +4539,7 @@ void sk_slice57_003eec90(word_t param_1,word_t param_2,word_t param_3,int64_t pa
     sk_rt_00351da8();
     sk_rt_003d4658(param_5);
     sk_rt_0034bcf0();
-    (*xr_x8)();
+    ((code_t)xr_x8)();
     sk_rt_0008e1ec();
     uv1 = xr_x8_00;
   }
@@ -4565,7 +4554,7 @@ void sk_slice57_003eec90(word_t param_1,word_t param_2,word_t param_3,int64_t pa
 
 /* void FUN_003eed30(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE) */
 
-void sk_slice57_003eed30(word_t param_1,word_t param_2,code_t *jt)
+void sk_slice57_003eed30(word_t  param_1, word_t  param_2, code_t * UNRECOVERED_JUMPTABLE)
 
 {
   word_t uv1;
@@ -4589,7 +4578,7 @@ void sk_slice57_003eed30(word_t param_1,word_t param_2,code_t *jt)
   sk_rt_00407c04();
                     /* WARNING: Could not recover jumptable at 0x003eedd0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt)();
+  ((code_t)jt)();
   return;
 }
 
@@ -4597,7 +4586,7 @@ void sk_slice57_003eed30(word_t param_1,word_t param_2,code_t *jt)
 
 /* void FUN_003eeef4(void) */
 
-void sk_slice57_003eeef4(void)
+void sk_slice57_003eeef4()
 
 {
   word_t *stack_addr;

@@ -90,9 +90,12 @@ extern void   cL4_vec_grow_u16(word_t *v, word_t *cap, word_t n, word_t esz); /*
 extern void   cL4_vec_push(word_t v, word_t val, word_t packed); /* FUN_00365184 */
 extern void   cL4_vec_push_b(word_t *v); /* FUN_003651f4 */
 extern cL4_w16_t cL4_variant_build_a(word_t *out, word_t *a, word_t b, word_t c, word_t d); /* FUN_0038f0a8 */
-extern cL4_w16_t cL4_variant_build_b(word_t *out, word_t *a, word_t b, word_t c, word_t d); /* FUN_003895e0 */
-extern cL4_w16_t cL4_variant_build_c(word_t *out, word_t *a, word_t b, word_t c, word_t d); /* FUN_0038a234 */
-extern cL4_w16_t cL4_variant_build_d(word_t *out, word_t *a, word_t b, word_t c, word_t d); /* FUN_00389e8c */
+extern word_t cL4_variant_build_b(word_t out, word_t a, word_t b, word_t c, word_t d,
+                                 word_t e, word_t f); /* FUN_003895e0 */
+extern word_t cL4_variant_build_c(word_t out, word_t a, word_t b, word_t c, word_t d,
+                                 word_t e); /* FUN_0038a234 */
+extern word_t cL4_variant_build_d(word_t out, word_t a, word_t b, word_t c, word_t d,
+                                 word_t e); /* FUN_00389e8c */
 extern void   cL4_variant_copy_a(word_t *dst, word_t *src); /* FUN_0038ef98 */
 extern void   cL4_variant_copy_b(word_t *dst, word_t *src); /* FUN_0038f020 */
 extern void   cL4_variant_init(word_t *dst, word_t *src);   /* FUN_0037d1d8 */
@@ -138,7 +141,7 @@ extern void   cL4_pack_sel4(word_t *p, word_t n);           /* FUN_0037eb4c */
 extern void   cL4_pack_sel5(word_t *p, word_t n, word_t t); /* FUN_0037e8e8 */
 extern void   cL4_runtime_warn(word_t msg, int flag);       /* FUN_00361528 */
 extern void   cL4_runtime_warn2(word_t msg, word_t n, const char *s); /* FUN_004b9ed8 */
-extern cL4_w16_t cL4_node_build(word_t base, word_t rel);   /* FUN_003a31d8 */
+extern cL4_w16_t cL4_node_build(word_t node);               /* FUN_003a31d8 — node from relative-tagged pointer */
 extern word_t cL4_decode_meta(word_t kind, word_t val);     /* FUN_00370f2c */
 extern word_t cL4_hash_lock(word_t obj);                    /* FUN_0038ba00 */
 
@@ -150,7 +153,9 @@ static word_t    sk_conform_find(word_t type, word_t proto, word_t *out);
 static word_t    sk_conform_walk(word_t *out, word_t *desc, word_t *type, word_t opts);
 static word_t    sk_conform_check_core(word_t *out, word_t *desc, word_t *type, word_t opts);
 static word_t    sk_conform_lookup(word_t type, word_t proto, byte pass);
-static word_t    sk_req_decoder(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
+static word_t    sk_req_decoder_body(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
+                                     word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10);
+static void      sk_req_decoder(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
                                 word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10);
 static word_t    sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *res, word_t n, int flag);
 static cL4_w16_t sk_conform_resolve(word_t type, word_t proto, byte pass);
@@ -2158,7 +2163,7 @@ static cL4_w16_t sk_conform_major(word_t p)
     cL4_w16_t r;
     if (((*(byte*)(p + 0xe) >> 3) & 1) == 0) return (cL4_w16_t){0,0};
     word_t *pi = (word_t*)sk_conform_desc2(p);
-    return cL4_node_build((word_t)*pi, (word_t)pi);
+    return cL4_node_build((word_t)*pi + (word_t)pi);
 }
 /* FUN_0039c888 @ 0x39c888  (est. sk_conform_next)
  * Return the next conformance in a chain (dereferencing the tagged
@@ -2440,8 +2445,8 @@ static void sk_layout_check(word_t *out, word_t p, word_t type)
     if (kind == 0) {
         if (cL4_conform_pack(type, 0) & 1) { *(byte*)out = 0; return; }
         word_t *pi = (word_t*)(p + 4);
-        cL4_node_build((word_t)*pi, (word_t)pi);
-        word_t nm = cL4_node_build((word_t)*pi, (word_t)pi).lo;
+        cL4_node_build((word_t)*pi + (word_t)pi);
+        word_t nm = cL4_node_build((word_t)*pi + (word_t)pi).lo;
         e = cL4_alloc(0x18, 0x1050c400d13d5ba);
         e[0] = (word_t)(void*)"subject type does not satisfy";
         e[2] = nm;

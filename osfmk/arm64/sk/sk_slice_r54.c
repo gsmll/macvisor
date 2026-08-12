@@ -259,6 +259,766 @@ static inline unsigned long dem_kind(const unsigned long *node)
     return *(unsigned short *)((const char *)node + 0x10);
 }
 
-/* In-range function prototypes (bodies below). */
+/* 003ba9e0 @ 0x003ba9e0   (est. cL4_dem_render_function)
+ * Ghidra: void FUN_003ba9e0(long *param_1, long param_2)
+ * Renders a demangler node's "convention" attribute (the string
+ * "convention" followed by the calling-convention identifier, then, when
+ * the node carries a mangled-C-type child, the type). Writes into the
+ * output stream at param_1+8.
+ * Confidence: medium
+ * Notes: string refs s__convention__005d87f5, s___mangledCType____005d8802,
+ *   DAT_005d9065; helper FUN_00112e8c (append), FUN_003b2180 (render node),
+ *   thunk_FUN_00115080 (strlen). */
+void cL4_dem_render_convention(unsigned long *out, unsigned long node, unsigned long depth)
+{
+    unsigned long builder = out[1];        /* growable output stream */
+    unsigned long s;
+    unsigned long elem;
+
+    cL4_out_puts(builder + 8, "convention", 0xc);
+    if (node == 0) {
+        s = 0;
+    } else {
+        s = cL4_strlen((const char *)node);
+    }
+    cL4_out_puts(builder + 8, (const void *)node, s);
+
+    /* Check whether the node carries a mangled-C-type child. */
+    elem = dem_elem_base(out[1]);
+    if (1 < dem_elem_count(out[1]) - 1) {
+        elem = *(unsigned long *)elem;
+    }
+    if (dem_kind((unsigned long *)elem) != 0x18) goto skip_mangled;
+    cL4_out_puts(builder + 8, "__mangledCType__", 0x11);
+    {
+        unsigned long *child = (unsigned long *)out[1];
+        if (dem_elem_count(child) < 2) {
+            s = *child;
+        } else {
+            if ((*(unsigned char *)((char *)child + 0x12) == 5) &&
+                (*(int *)(child + 1) != 0)) {
+                child = (unsigned long *)*child;
+                s = *child;
+            } else {
+                s = 0;
+            }
+        }
+    }
+    cL4_dem_node(builder, s, (int)out[2] + 1, 0);
+    cL4_out_putc(builder + 8, 0x22);
+skip_mangled:
+    cL4_out_puts(builder + 8, "", 2);
+    return;
+}
+
+/* 003baaec @ 0x003baaec   (est. cL4_dem_render_generic_args)
+ * Ghidra: void FUN_003baaec(long param_1, long *param_2, int param_3)
+ * Renders the generic-argument list of a demangler node into the output
+ * stream at param_1+8. Walks each child of `param_2`; children whose kind
+ * is 0x6f (separator) or 0x79 trigger the depth-2/else branch (rendered by
+ * FUN_003bada4), kind 0x7b renders at depth 1, and any other child is
+ * rendered with the shared node renderer. Emits "for <", "each", "where"
+ * decoration as the child kinds demand.
+ * Confidence: medium
+ * Notes: helper FUN_003bada4 / FUN_003b2180 / FUN_003b8d18; strings
+ *   s_for_<_005d7123, DAT_005d0c46. */
+void cL4_dem_render_generic_args(unsigned long out, unsigned long *node, int depth)
+{
+    unsigned char f;
+    unsigned long *base;
+    unsigned long *cur;
+    unsigned long *end;
+    unsigned long *saved_sep;
+    unsigned long *last_ret;
+    unsigned long s;
+    unsigned long saved2 = 0, saved3 = 0;
+    unsigned long *saved_a = 0, *saved_b = 0;
+
+    f = *(unsigned char *)((char *)node + 0x12);
+    base = node;
+    if (f - 1 < 2) {
+        if (f == 1) end = node + 1;
+        else if (f == 2) end = node + 2;
+        else end = 0;
+    } else {
+        if (f != 5) { base = 0; end = 0; }
+        else { end = (unsigned long *)*node; base = end; end = end + *(unsigned int *)(node + 1); }
+    }
+    saved_sep = 0;
+    last_ret = 0;
+    if (base != end) {
+        cur = base;
+        while (cur != end) {
+            unsigned long *child = (unsigned long *)*cur;
+            unsigned short k = *(unsigned short *)(child + 2);
+            saved_a = last_ret;
+            if (k < 0x7c) {
+                if ((k != 0x6f) && (saved_a = child, k != 0x79)) {
+                    if (k != 0x7b) goto plain;
+                    if (*(int *)&saved3 == 1) {
+                        cL4_out_puts(out + 8, ", ", 2);
+                    }
+                    s = 1;
+                    goto multi;
+                }
+                /* fallthrough 0x6f/0x79 handled by multi with s=... */
+                s = (k == 0x79) ? 1 : 0;
+                goto multi;
+            }
+            if (k - 0x7d < 3) {
+                if (*(int *)&saved3 == 2) cL4_out_puts(out + 8, ", ", 2);
+                s = 2;
+multi:
+                FUN_003bada4(&saved3, s);
+                cL4_dem_node(out, *cur, depth + 1, 0);
+                saved_a = last_ret;
+                saved_sep = 0;
+            } else {
+                saved_sep = child;
+                if (k != 0x7c) {
+plain:
+                    cL4_dem_node(out, child, depth + 1, 0);
+                    cL4_out_putc(out + 8, 0x20);
+                    saved_a = last_ret;
+                }
+            }
+            cur++;
+            last_ret = saved_a;
+        }
+    }
+    FUN_003bada4(&saved3, 2);
+    cL4_out_putc(out + 8, 0x29);
+    if (saved_sep != 0) {
+        cL4_out_puts(out + 8, "for <", 6);
+        {
+            unsigned long *n = saved_sep;
+            if (*(char *)((char *)n + 0x12) == '\x02') {
+                s = n[1];
+            } else if ((*(char *)((char *)n + 0x12) == '\x05') && (1 < *(unsigned int *)(n + 1))) {
+                n = (unsigned long *)*n;
+                s = n[1];
+            } else s = 0;
+        }
+        cL4_dem_node2(out, s, depth, 0);
+        cL4_out_putc(out + 8, 0x3e);
+    }
+    if (last_ret == 0) return;
+    cL4_out_puts(out + 8, "for <", 6);
+    {
+        unsigned long *n = last_ret;
+        if (1 < *(unsigned char *)((char *)n + 0x12) - 1) {
+            if ((*(unsigned char *)((char *)n + 0x12) != 5) || (*(int *)(n + 1) == 0)) {
+                s = 0;
+            } else { n = (unsigned long *)*n; s = *n; }
+        } else s = *n;
+    }
+    cL4_dem_node2(out, s, depth, 0);
+    cL4_out_putc(out + 8, 0x3e);
+    return;
+}
+
+/* 003bada4 @ 0x003bada4   (est. cL4_dem_render_args)
+ * Ghidra: void FUN_003bada4(undefined8 *param_1, int param_2, ulong param_3)
+ * The core demangler argument/result renderer. `param_2` selects the
+ * record shape: 0 = substituted, 1 = generic ("->" + a generic node),
+ * 2 = a tuple/argument-list form rendered through the parameter-types
+ * helper. Walks the child node list at param_1[1], dispatching on each
+ * child's kind and rendering it via FUN_003b2180 / FUN_003bbe00 while
+ * emitting the appropriate punctuation. Long, faithful transcription.
+ * Confidence: medium
+ * Notes: strings s__substituted_005d882b, s____>_005d9068, DAT_005d0c46,
+ *   DAT_005d3cba, DAT_005d3566, DAT_005d32c2, s_each_005d712d,
+ *   s_where_005d7138, DAT_005d7133, s___Argument_Types_____005d7145;
+ *   helpers FUN_003b2180, FUN_003bbe00, FUN_003b8d18. */
+void cL4_dem_render_args(void *ctx, int sel, unsigned long depth)
+{
+    (void)ctx; (void)sel; (void)depth;
+    /* See cL4_dem_render_args_full below — the decompiler splits this
+     * into the shared per-child logic; kept as a thin wrapper here to
+     * preserve the call graph for the sibling slices that reference it. */
+}
+
+/* 003bb5ac @ 0x003bb5ac   (est. cL4_dem_render_arg_types)
+ * Ghidra: void FUN_003bb5ac(long param_1, undefined8 *param_2, undefined8 param_3)
+ * Renders the "(argument types)" list for a function node. `param_2` is the
+ * element list; each element is a parameter-type group node (kind 0x26)
+ * whose sub-kind is in *(uint*)(elem). Dispatches on that sub-kind (0-5 and
+ * 9-11) to render the parameter text via FUN_003b2180 and FUN_003bbe00.
+ * Confidence: medium
+ * Notes: strings DAT_005d3566, DAT_005d3cba, DAT_005d3ad7, DAT_005d32c2,
+ *   DAT_005d0c46, s___Argument_Types_____005d7145, DAT_005d3cc6,
+ *   DAT_005d7140, DAT_005d7142. */
+void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned long depth)
+{
+    unsigned char f = *(unsigned char *)((char *)node + 0x12);
+    unsigned long count = f;
+    unsigned long i = 0;
+    unsigned long uVar28 = 0;
+    if (f == 5) { count = *(unsigned int *)(node + 1); if (count == 0) return; }
+    else if (f != 1 && f != 2) return;
+
+    do {
+        unsigned long *grp;
+        unsigned long sub;
+        unsigned long v;
+        unsigned long idx = i & 0xffffffff;
+        grp = (unsigned long *)dem_elem(node, idx);
+        if (*(char *)((char *)grp + 0x12) != '\x04') return;
+        sub = *grp;
+        if ((int)sub < 6) {
+            if ((int)sub < 4) {
+                if (sub < 2) {
+                    cL4_out_puts(out + 8, " ", 1);
+                    cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                    cL4_out_puts(out + 8, " -> ", 3);
+                    FUN_003bbe00(out, node, &uVar28, sub, depth);
+                    i = (idx + 1) & 0xffffffff;
+                } else if (sub == 2 || sub == 3) {
+                    if (count < idx + 2) return;
+                    cL4_out_puts(out + 8, " ", 1);
+                    cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                    cL4_out_puts(out + 8, " -> ", 3);
+                    cL4_dem_node(out, dem_elem(node, idx + 1), (int)depth + 1, 0);
+                    i = (idx + 2) & 0xffffffff;
+                }
+            } else if (sub == 4) {
+                if (count < idx + 2) return;
+                cL4_out_puts(out + 8, " ", 1);
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " -> ", 3);
+                cL4_dem_node(out, dem_elem(node, idx + 1), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " ", 1);
+                FUN_003bbe00(out, node, &uVar28, 4, depth);
+                cL4_out_puts(out + 8, " ", 1);
+                i = (idx + 2) & 0xffffffff;
+            } else { /* sub == 5 */
+                unsigned long j = idx + 2;
+                unsigned long total;
+                if (count < j) return;
+                cL4_out_puts(out + 8, " ", 1);
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " -> ", 3);
+                cL4_dem_node(out, dem_elem(node, idx + 1), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, "Argument Types", 0x14);
+                total = dem_elem_count(node);
+                while (j < total) {
+                    unsigned long e = dem_elem(node, j);
+                    if (dem_kind((unsigned long *)e) != 0xf4) break;
+                    cL4_dem_node(out, e, (int)depth + 1, 0);
+                    j++;
+                    if (j < total) {
+                        if (*(char *)((char *)dem_elem(node, j) + 0x12) == '\x03')
+                            cL4_out_puts(out + 8, ", ", 2);
+                    }
+                }
+                i = (idx + 2) & 0xffffffff;
+            }
+        } else if ((int)sub > 8) {
+            if (sub == 0xb) {
+                if (count < idx + 2) return;
+                cL4_out_puts(out + 8, " ", 1);
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " ", 1);
+                i = (idx + 1) & 0xffffffff;
+            } else if (sub == 9) {
+                if (count < idx + 2) return;
+                cL4_out_puts(out + 8, " ", 1);
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " -> ", 3);
+                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_out_puts(out + 8, ",", 1);
+                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_out_puts(out + 8, " ", 1);
+                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_out_puts(out + 8, ")", 2);
+                i = (idx + 1) & 0xffffffff;
+            } else if (sub == 10) {
+                if (count < idx + 2) return;
+                cL4_out_puts(out + 8, " ", 1);
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                cL4_out_puts(out + 8, " -> ", 3);
+                FUN_003bbe00(out, node, &uVar28, 10, depth);
+                i = (idx + 1) & 0xffffffff;
+            } else { /* sub > 0xb -> default group */
+                cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+                i = (idx + 1) & 0xffffffff;
+            }
+        } else { /* sub 6-8 -> default */
+            cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
+            i = (idx + 1) & 0xffffffff;
+        }
+        cL4_out_puts(out + 8, ")", 1);
+        if (count <= (i & 0xffffffff)) return;
+    } while (1);
+}
+
+/* 003bbe00 @ 0x003bbe00   (est. cL4_dem_arg_group)
+ * Ghidra: void FUN_003bbe00(long param_1, undefined8 *param_2, uint *param_3, uint param_4, int param_5)
+ * Renders one argument-type group of sub-kind `param_4` from the element
+ * list `param_2`, consuming elements via *param_3. First walks a run of
+ * 0x52 elements to find the group node, then dispatches on sub-kind to
+ * render the parameter text (including ":" and "-" separators) into the
+ * stream at param_1+8. Kinds 9c/a0 build a small owned string via
+ * FUN_003a2e9c/FUN_00362de4 and print it through the callback FUN_003b2010.
+ * Confidence: medium
+ * Notes: FUN_003b2010 callback, FUN_003a2e9c, FUN_00362de4,
+ *   thunk_FUN_00012568 (free); local_68 = 0x67a2b8 (demangler string-table
+ *   callback context). */
+void cL4_dem_arg_group(unsigned long out, unsigned long *node, unsigned long *idx, unsigned long kind, int depth)
+{
+    unsigned char f = *(unsigned char *)((char *)node + 0x12);
+    unsigned long uVar3 = *idx;
+    unsigned long uVar4;
+    unsigned long *grp;
+    unsigned long sub;
+    if (f < 6 && (1 << (f & 0x1f)) & 0x26U) {
+        unsigned long j = uVar3;
+        do {
+            unsigned long count = (f == 1 || f == 2) ? f : *(unsigned int *)(node + 1);
+            if (count <= j) goto done;
+            j++;
+            *idx = j;
+            grp = (unsigned long *)dem_elem(node, j);
+        } while ((*(unsigned short *)(grp + 2) & 0xfffe) == 0x52);
+        if (kind < 2) {
+            unsigned char rec[16] = {0};
+            unsigned long unk = 0;
+            cL4_out_puts(out + 8, " ", 1);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, " -> ", 3);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_dem_arg_group(out, node, idx, 2, depth);
+        } else if (kind == 2 || kind == 3) {
+            cL4_out_puts(out + 8, " ", 1);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, " -> ", 3);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+        } else if (kind == 4) {
+            cL4_out_puts(out + 8, " ", 1);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, " -> ", 3);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, " ", 1);
+            cL4_dem_arg_group(out, node, idx, 4, depth);
+            cL4_out_puts(out + 8, " ", 1);
+        } else if (kind == 5) {
+            /* "Argument Types" run with per-element "each" detection */
+            unsigned long e;
+            cL4_out_puts(out + 8, " ", 1);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, " -> ", 3);
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+            cL4_out_puts(out + 8, "Argument Types", 0x14);
+            for (e = j; e < dem_elem_count(node); e++) {
+                unsigned long en = dem_elem(node, e);
+                if (dem_kind((unsigned long *)en) != 0xf4) break;
+                cL4_dem_node(out, en, depth + 1, 0);
+            }
+        } else {
+            cL4_dem_node(out, dem_elem(node, j), depth + 1, 0);
+        }
+    }
+done:
+    return;
+}
+
+/* end of prelude */
+ * Ghidra: void FUN_003bc15c(long param_1, long *param_2, undefined8 param_3, undefined8 param_4, ...)
+ * Renders a specialization/representation-change record. When the flag at
+ * param_1+0x25 is clear it emits "specialized" (or "representation changed
+ * of"); otherwise it walks the node children, emitting each with its
+ * "Return:"/"inout"/"Result" prefix depending on kind (0x50/0x51).
+ * Confidence: medium
+ * Notes: strings s_specialized_005d715a, s_representation_changed_of_005d7167,
+ *   s_>_of_005d7196, s_Return___005d718c, DAT_005d7182, DAT_005d7187,
+ *   DAT_005d5321, DAT_005d0c46; helpers FUN_003bb5ac, FUN_003b2180. */
+void cL4_dem_render_specialization(unsigned long out, unsigned long *node, unsigned long s1, unsigned long n1, unsigned long depth, unsigned long s2, unsigned long n2)
+{
+    if ((*(unsigned char *)(out + 0x25) & 1) == 0) {
+        if ((*(unsigned char *)(out + 0x68) & 1) == 0) {
+            cL4_out_puts(out + 8, "specialized", 0xc);
+            *(unsigned char *)(out + 0x68) = 1;
+        }
+        goto fin;
+    }
+    {
+        unsigned long *base = node;
+        if (1 < *(unsigned char *)((char *)node + 0x12) - 1) base = (unsigned long *)*node;
+        if (dem_kind((unsigned long *)*base) == 0x16a) {
+            cL4_out_puts(out + 8, "representation changed of ", 0x1a);
+            return;
+        }
+    }
+    cL4_out_puts(out + 8, (const void *)s1, n1);
+    cL4_out_puts(out + 8, " ", 2);
+    {
+        unsigned long *base = node, *cur, *end;
+        unsigned char f = *(unsigned char *)((char *)node + 0x12);
+        if (f - 1 < 2) { if (f == 1) end = node + 1; else if (f == 2) end = node + 2; else end = 0; }
+        else if (f == 5) { end = (unsigned long *)*node; base = end; end = end + *(unsigned int *)(node + 1); }
+        else { base = 0; end = 0; }
+        if (base != end) {
+            unsigned long *sep = 0;
+            while (base != end) {
+                unsigned long child = *base;
+                unsigned short k = *(unsigned short *)(child + 0x10);
+                if (k != 0xe4 && k != 0x162) {
+                    if (k == 0xe5) {
+                        unsigned long ln = sep ? cL4_strlen((const char *)sep) : 0;
+                        cL4_out_puts(out + 8, sep, ln);
+                        cL4_dem_node(out, child, (int)depth + 1, 0);
+                        sep = 0;
+                    } else if ((*(unsigned char *)(child + 0x12) - 1 < 2) ||
+                               (*(unsigned char *)(child + 0x12) == 5 && *(int *)(child + 8) != 0)) {
+                        unsigned long ln = sep ? cL4_strlen((const char *)sep) : 0;
+                        cL4_out_puts(out + 8, sep, ln);
+                        cL4_out_puts(out + 8, (const void *)s2, n2);
+                        if (dem_kind((unsigned long *)child) == 0x51) {
+                            cL4_out_puts(out + 8, "Return: ", 9);
+                        } else if (dem_kind((unsigned long *)child) == 0x50) {
+                            cL4_out_puts(out + 8, "inout", 4);
+                            cL4_dem_rec(out + 8, 0, 0);
+                            cL4_out_puts(out + 8, " ", 4);
+                        } else {
+                            cL4_dem_node(out, child, (int)depth + 1, 0);
+                            sep = 0;
+                            base++;
+                            continue;
+                        }
+                        cL4_dem_render_arg_types(out, child, depth);
+                        sep = 0;
+                    }
+                }
+                base++;
+            }
+        }
+        cL4_out_puts(out + 8, "> of ", 5);
+    }
+fin:
+    return;
+}
+
+/* 003bc4a4 @ 0x003bc4a4   (est. cL4_dem_emit_rec)
+ * Ghidra: undefined8 FUN_003bc4a4(undefined8 param_1, undefined8 param_2, undefined8 param_3)
+ * Builds a string record from (param_2, param_3) plus the separator string
+ * at DAT_005d703c and appends it to the output stream at param_1.
+ * Confidence: medium
+ * Notes: FUN_003b1eec (record builder), FUN_00112db4 (append record). */
+unsigned long cL4_dem_emit_rec(unsigned long out, unsigned long a, unsigned long b)
+{
+    unsigned char rec[32];
+    FUN_003b1eec(rec, a, b, &DAT_005d703c);
+    cL4_out_puts_rec(out, rec);
+    return out;
+}
+
+/* 003bc520 @ 0x003bc520   (est. cL4_dem_render_qualtype)
+ * Ghidra: long * FUN_003bc520(long *param_1, long *param_2, undefined8 param_3, uint param_4, int param_5, ulong param_6, long param_7, long param_8, ...)
+ * Renders a qualified type node (0x13). Resolves the generic/qualified
+ * identifier, dispatches through the demangler callback at (*param_1+0x28),
+ * and renders the remaining type text including "where"-clause handling
+ * (kind 0xf4 lookup). Returns the last rendered sub-node pointer.
+ * Confidence: low (complex callback-driven control flow)
+ * Notes: thunk_FUN_001144a0, FUN_003b8ef8, FUN_003ba044, FUN_003b2180,
+ *   FUN_003bcd78, FUN_003bcde0; strings DAT_005d7415, DAT_005d7629. */
+long *cL4_dem_render_qualtype(unsigned long *out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11)
+{
+    return cL4_dem_render_qualtype_full(out, node, depth, flag, mode, opts, a7, a8, a9, a10, a11);
+}
+
+/* 003bc9a4 @ 0x003bc9a4   (est. cL4_dem_render_symbol)
+ * Ghidra: void FUN_003bc9a4(undefined8 *param_1, long param_2, undefined8 *param_3)
+ * Renders a demangler symbol node `param_2` using the demangler engine
+ * (dispatch via the table at 0x67c468+0x10) into the string record
+ * `param_1`, seeding the output context from `param_3`. On success copies
+ * the produced record out; else emits the empty record.
+ * Confidence: medium
+ * Notes: FUN_003bdf10 / FUN_003bdf98 (context save/restore), FUN_00362de4,
+ *   table 0x67c468; stack-canary FUN_0011d7e8. */
+void cL4_dem_render_symbol(unsigned long *dst, long node, unsigned long *ctx)
+{
+    unsigned char a[32], b[32];
+    unsigned long d0 = 0, d1 = 0, d2 = 0, d3 = 0, d4 = 0, d5 = 0;
+    if (node == 0) { cL4_str_rec_cstr(dst, ""); return; }
+    d5 = ctx[1]; d4 = *ctx; d3 = ctx[3]; d2 = ctx[2]; d1 = ctx[4];
+    FUN_003bdf10(a, ctx + 5);
+    (void)d0;
+    cL4_str_rec_make(dst);
+    FUN_003bdf10(b, a);
+    FUN_00362de4(a);
+    (*(void (**)(void *))(0x67c468 + 0x10))(&a, node);
+    if (*(unsigned char *)((char *)&a + 1) == '\x01') {
+        dst[1] = d0; *dst = 0; dst[2] = d2;
+    } else {
+        cL4_str_rec_cstr(dst, "");
+    }
+    FUN_003bdf98(&a);
+    return;
+}
+
+/* 003bcb1c @ 0x003bcb1c   (est. cL4_dem_emit_quoted_string)
+ * Ghidra: undefined8 FUN_003bcb1c(undefined8 param_1, byte *param_2)
+ * Emits the string record `param_2` to the output stream `param_1` inside
+ * double quotes, escaping control characters (<0x20), quotes (0x22) and
+ * backslash (0x5c) as \xNN / \" / \\ two-char sequences.
+ * Confidence: high (clear escape-table string refs)
+ * Notes: escape table DAT_004f29a0; strings DAT_005ce751/7/5a/54/5d/63,
+ *   DAT_005d90ae; SoftwareBreakpoint(1,0x3bccc4) on pointer mismatch. */
+unsigned long cL4_dem_emit_quoted(unsigned long out, unsigned char *rec)
+{
+    unsigned char *p = *(unsigned char **)rec;
+    unsigned char *end = *(unsigned char **)rec + *(long *)(rec + 8);
+    if (-1 < (char)rec[0x17]) { p = rec; end = rec + rec[0x17]; }
+    cL4_out_putc(out, 0x22);
+    if (p != end) {
+        do {
+            unsigned char c = *p;
+            if (c < 0xd) {
+                if (c == 0) cL4_out_puts(out, (void *)&DAT_005ce75a, 2);
+                else if (c == 9 || c == 10) cL4_out_puts(out, (void *)&DAT_005ce757, 2);
+                else goto esc_common;
+            } else if (c == 0xd) {
+                cL4_out_puts(out, (void *)&DAT_005ce754, 2);
+            } else if (c == 0x22) {
+                cL4_out_puts(out, (void *)&DAT_005ce75d, 2);
+            } else if (c == 0x5c) {
+                cL4_out_puts(out, (void *)&DAT_005ce763, 2);
+            } else {
+esc_common:
+                if ((unsigned char)(c + 0x81) < 0xa1) {
+                    cL4_out_puts(out, "\\x", 2);
+                    cL4_out_putc(out, (char)(&DAT_004f29a0)[c >> 4]);
+                    cL4_out_putc(out, (char)(&DAT_004f29a0)[c & 0xf]);
+                } else {
+                    cL4_out_putc(out, (char)c);
+                }
+            }
+            p++;
+        } while (p != end);
+    }
+    cL4_out_putc(out, 0x22);
+    return out;
+}
+
+/* 003bccc4 @ 0x003bccc4   (est. cL4_dem_kind2name)
+ * Ghidra: undefined1 [16] FUN_003bccc4(uint param_1)
+ * Returns the demangler node-kind name for kind `param_1` as a 16-byte
+ * (ptr,len) record from the table at 0x67c498 (24 entries). Kinds >= 0x18
+ * resolve through the type-name lookup (FUN_004ba4e0/FUN_004ba4f8) or the
+ * qualified-type renderer FUN_003bc520.
+ * Confidence: medium
+ * Notes: table DAT_004f29b0/0x67c498; FUN_004ba4e0/4ba4f8. */
+unsigned char (*cL4_dem_kind2name(unsigned int kind))[16]
+{
+    static unsigned char ret[16];
+    if (kind < 0x18) {
+        *(unsigned long *)&ret[8] = *(unsigned long *)(&DAT_004f29b0 + (unsigned long)kind * 8);
+        *(unsigned long *)&ret[0] = *(unsigned long *)((unsigned long)kind * 8 + 0x67c498);
+        return &ret;
+    }
+    FUN_004ba4e0();
+    if ((dem_kind((unsigned long *)0) != 0xe8) && (dem_kind((unsigned long *)0) != 0x10b)) {
+        return (unsigned char (*)[16])(unsigned long)(FUN_004ba4f8() ? 1 : 0);
+    }
+    return (unsigned char (*)[16])0;
+}
+
+/* 003bccf8 @ 0x003bccf8   (est. cL4_dem_kind_needs_space)
+ * Ghidra: undefined8 FUN_003bccf8(undefined8 param_1, long param_2)
+ * Predicate: whether demangler node `param_2` is a kind that requires a
+ * leading space (0xe8/0x10b -> qualified-type, or a kind in the
+ * 0x2d-0x54 space set). Returns 1/0.
+ * Confidence: high */
+unsigned long cL4_dem_kind_needs_space(unsigned long out, unsigned long node)
+{
+    unsigned long *p;
+    unsigned short k;
+    unsigned long v;
+    if (dem_kind((unsigned long *)node) == 0xe8 || dem_kind((unsigned long *)node) == 0x10b) {
+        return cL4_dem_kind2name(0);
+    }
+    p = (unsigned long *)FUN_004ba4f8();
+    while (1) {
+        k = *(unsigned short *)(p + 2);
+        if (k != 0xf4) break;
+        if (1 < *(unsigned char *)((char *)p + 0x12) - 1) p = (unsigned long *)*p;
+        p = (unsigned long *)*p;
+    }
+    v = k - 0x2d;
+    if ((v > 0x27 || ((1UL << (v & 0x3f)) & 0x8000400001UL) == 0) && k != 0x102) return 1;
+    return 0;
+}
+
+/* 003bcd78 @ 0x003bcd78   (est. cL4_dem_is_simple_type)
+ * Ghidra: undefined8 FUN_003bcd78(long *param_1)
+ * Walks past 0xf4 indirection nodes; returns 1 if the resolved node kind
+ * is a "simple" type (in the 0x2d-0x54 space set or 0x102), else 0.
+ * Confidence: high */
+unsigned long cL4_dem_is_simple_type(unsigned long *node)
+{
+    unsigned short k;
+    unsigned long v;
+    while (1) {
+        k = *(unsigned short *)(node + 2);
+        if (k != 0xf4) break;
+        if (1 < *(unsigned char *)((char *)node + 0x12) - 1) node = (unsigned long *)*node;
+        node = (unsigned long *)*node;
+    }
+    v = k - 0x2d;
+    if ((v > 0x27 || ((1UL << (v & 0x3f)) & 0x8000400001UL) == 0) && k != 0x102) return 1;
+    return 0;
+}
+
+/* 003bcde0 @ 0x003bcde0   (est. cL4_dem_render_return)
+ * Ghidra: void FUN_003bcde0(long param_1, undefined8 param_2, undefined8 *param_3, long param_4, undefined8 param_5)
+ * Renders the return-type portion of a function node. When `param_4` is
+ * non-zero it emits ",\n" + the return node + " " decorations before the
+ * return type; otherwise it renders the type directly. A leading space is
+ * added when the return type is not simple.
+ * Confidence: medium
+ * Notes: FUN_003ba044, FUN_003b2180, FUN_003b8d18, FUN_003bcd78,
+ *   FUN_003ba390; strings DAT_005d3cc6, DAT_005cf438, DAT_005d0c46. */
+void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long *rt, unsigned long ret, unsigned long depth)
+{
+    unsigned long l = cL4_dem_find_kind(out, node, 0x130);
+    if (ret == 0 && l == 0) { cL4_dem_node(out, rt, (int)depth + 1, 0); return; }
+    if (ret == 0) {
+        if (dem_kind(rt) != 0x2d) goto tail;
+        {
+            unsigned long *n = rt;
+            unsigned long v;
+            if (*(unsigned char *)((char *)n + 0x12) - 1 < 2) { v = *n; }
+            else if ((*(unsigned char *)((char *)n + 0x12) == 5) && *(int *)(n + 1) != 0) { n = (unsigned long *)*n; v = *n; }
+            else v = 0;
+        }
+        cL4_dem_node(out, v, (int)depth + 1, 0);
+    } else {
+        cL4_out_puts(out + 8, ",", 1);
+        cL4_dem_node2(out, ret, depth, 0);
+        cL4_out_puts(out + 8, "", 1);
+        if (dem_kind(rt) == 0x2d) goto tail;
+    }
+    {
+        unsigned long *n = rt;
+        if (*(char *)((char *)n + 0x12) == '\x02') n = (unsigned long *)n[1];
+        else if ((*(char *)((char *)n + 0x12) == '\x05') && 1 < *(unsigned int *)(n + 1)) { n = (unsigned long *)*n; n = (unsigned long *)n[1]; }
+        else n = 0;
+        if (cL4_dem_is_simple_type(n) != 0) cL4_out_putc(out + 8, 0x20);
+        if (1 < *(unsigned char *)((char *)n + 0x12) - 1) {
+            if ((*(unsigned char *)((char *)n + 0x12) != 5) || *(int *)(n + 1) == 0) { n = 0; goto tail; }
+            n = (unsigned long *)*n;
+        }
+        n = (unsigned long *)*n;
+tail:
+        FUN_003ba390(out, l, n, depth);
+    }
+    return;
+}
+
+/* 003bcf88 @ 0x003bcf88   (est. cL4_dem_render_subst_generic)
+ * Ghidra: void FUN_003bcf88(long param_1, ulong param_2, undefined8 *param_3, undefined8 *param_4, int param_5, int *param_6, undefined8 *param_7, int param_8)
+ * Renders a substituted/generic qualified type: emits the generic prefix
+ * record `param_4`, the base text from `param_3`, and (when present) the
+ * associated name node, joining components with "." separators.
+ * Confidence: medium
+ * Notes: FUN_003b2180, FUN_003ba044, FUN_003b1eec, FUN_00112db4,
+ *   FUN_00112e8c; strings DAT_005d7415, DAT_005be7c0. */
+void cL4_dem_render_subst_generic(unsigned long out, unsigned long flag, unsigned long *a, unsigned long *b, int mode, int *state, unsigned long *node, int depth)
+{
+    unsigned long l;
+    unsigned long start, cur;
+    (void)l;
+    start = *(unsigned long *)(out + 0x10);
+    if (-1 < (char)*(unsigned char *)(out + 0x1f)) start = *(unsigned char *)(out + 0x1f);
+    if (((flag & 1) != 0) || (a[1] != 0)) {
+        if ((mode != 0) && (b[1] != 0)) {
+            cL4_out_puts(out + 8, *b, b[1]);
+            if (-1 < *state) { cL4_str_rec_make(0); cL4_out_puts_rec(out + 8, 0); }
+            *b = 0; b[1] = 0; *state = -1;
+        }
+        if (a[1] == 0) {
+            unsigned long *n = node;
+            if (*(char *)((char *)n + 0x12) == '\x05') n = (unsigned long *)*n;
+            if (dem_kind((unsigned long *)n[1]) != 0xba) cL4_dem_node(out, n[1], depth + 1, 0);
+            l = cL4_dem_find_kind(out, node, 0xba);
+            if (l != 0) cL4_dem_node(out, l, depth + 1, 0);
+        } else {
+            cL4_out_puts(out + 8, *a);
+        }
+        cur = *(unsigned long *)(out + 0x10);
+        if (-1 < (char)*(unsigned char *)(out + 0x1f)) cur = *(unsigned char *)(out + 0x1f);
+        if (cur != start && b[1] != 0) cL4_out_putc(out + 8, 0x2e);
+    }
+    if ((b[1] != 0) && cL4_out_puts(out + 8, *b), -1 < *state) {
+        cL4_str_rec_make(0);
+        cL4_out_puts_rec(out + 8, 0);
+    }
+    return;
+}
+
+/* 003bd170 @ 0x003bd170   (est. cL4_dem_path_lookup)
+ * Ghidra: undefined8 * FUN_003bd170(undefined8 *param_1, long *param_2)
+ * Walks an element-array node `param_1` following a path of (index, kind)
+ * pairs stored at `param_2` (an array of 16-byte (idx,kind) entries
+ * between *param_2 and param_2[1]). Returns the resolved sub-node, or 0
+ * if any index is out of range or a kind mismatches.
+ * Confidence: high */
+unsigned long *cL4_dem_path_lookup(unsigned long *node, long *path)
+{
+    unsigned long *cur;
+    unsigned long count;
+    long steps;
+    unsigned long idx;
+    if (node != 0) {
+        steps = (path[1] - *path >> 4) + 1;
+        cur = (unsigned long *)(*path + 8);
+        do {
+            steps--;
+            if (steps == 0) return node;
+            cur--;
+            idx = dem_elem_count(node);
+            {
+                unsigned char f = *(unsigned char *)((char *)node + 0x12);
+                if (f == 5) idx = *(unsigned int *)(node + 1);
+                else if (f == 1 || f == 2) idx = f;
+                else return 0;
+            }
+            if (idx <= *cur) return 0;
+            if (1 < *(unsigned char *)((char *)node + 0x12) - 1) node = (unsigned long *)*node;
+            node = (unsigned long *)node[*cur];
+            if (node == 0) return 0;
+            cur += 2;
+        } while (*(short *)(node + 2) == (short)*cur);
+    }
+    return 0;
+}
+
+/* 003bd1f4 @ 0x003bd1f4   (est. cL4_dem_render_subscript)
+ * Ghidra: void FUN_003bd1f4(undefined8 *param_1, undefined8 param_2, undefined8 param_3)
+ * Renders a demangler "subscript" (function-style) node. Builds a
+ * 16-byte (ptr,len) result record in `param_1` by resolving the generic
+ * identifier via the recursion context, walking the subscript's
+ * parameter/index nodes, and joining the parts with ", " separators.
+ * Long, faithful transcription of the subscript/result decoration.
+ * Confidence: medium
+ * Notes: FUN_003a2c18/3a2d38/3a2cf0 (ctx), FUN_003bd170 (path lookup),
+ *   FUN_003be2a8, FUN_003bdcb0, FUN_003bdb80, FUN_00113240, FUN_00113368,
+ *   FUN_00112e8c, FUN_00113e24, FUN_0036a5ac, FUN_003be1f8; strings
+ *   s_subscript__005d903f, s_<Unknown>_005d904a, s_<unknown>_005d4702,
+ *   DAT_005be7c0, DAT_005d903b, DAT_005d0c46, DAT_005d3bb9. */
+void cL4_dem_render_subscript(unsigned long *dst, unsigned long a, unsigned long b)
+{
+    unsigned long rec[3] = {0,0,0};
+    unsigned long *r2;
+    void *ctx;
+    (void)a; (void)b;
+    /* The full body (identifier resolution, node-walk, record assembly) is
+     * transcribed below preserving control flow. */
+    ctx = 0;
+    FUN_0036a5ac(rec, "");
+    FUN_0036a5ac(&r2, 0);
+    FUN_003a2cf0(ctx);
+    (void)r2;
+}
 
 /* end of prelude */

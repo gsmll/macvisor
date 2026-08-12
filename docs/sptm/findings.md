@@ -4428,3 +4428,33 @@ Confidence: high
 - **Evidence**: `cL4_msg_dispatch_full`: `if (0x400 < depth) { *result=3; ...result[4]=0x223; return; }`; kind switch on `*(ushort*)(msg+2)` mapping 0x19/"CKT", 0x3f/"OWAW", 0xb1/"XYSg"(x2), 0xe7/"VvW", 0xf6/"abd" (DAT 0x5d37e1/0x5d3801/0x5d922b/0x5d6fd7/0x5d6fc1), plus a computed call through TCB word 0x434 for kind 0xf5; 3-element arg-array loop bounded by descriptor length word `*(uint*)(elems+1)`. Tag emitters call `cL4_mr_emit_tag(ctx+0x2140, token, count, *(ctx+0x2150))` with `count` from the descriptor.
 - **Severity (hypothesis)**: medium — the emitters serialise descriptor-derived values (including lengths used as emit counts) into a shared MR buffer; the recursion cap and descriptor-kind validation are the main bounds controls, but the word count and element pointers ultimately come from the message being processed, so malformed descriptor length fields rely on the out-of-range grow/commit helpers (`cL4_mr_emit_tag` 0x3a3a70, `cL4_grow_*` 0x3d2058-0x3d216c) to fail safely.
 - **Confidence**: medium
+
+## [ringminus1] 003f29f0/003f2d58 (SKR58) — table-dispatched operations with unchecked entry-table indirect call
+- **Observation**: Two event-queue operations dispatch by reading a 32-bit selector `sel = *tbl` from an operation table and then tail-calling `(*(code*)((long)tbl + (long)sel))()` (Ghidra: `(*(code *)((long)piVar2 + (long)iVar3))()` at 0x3f2acc / `(*(code *)((long)param_3 + (long)iVar1))()` at 0x3f2e9c). No bounds validation of `sel` against a table size is visible in the decompile.
+- **Evidence**: FUN_003f29f0 body: `sel = *piVar2; FUN_0040bb18(piVar2[1]); ... (*UNRECOVERED_JUMPTABLE)()`. FUN_003f2d58: `iVar1 = *param_3; ... (*(code *)((long)param_3 + (long)iVar1))(plVar4,uVar2)`.
+- **Severity (hypothesis)**: medium — if the selector or table pointer can be influenced across a dispatch boundary, this is an arbitrary-indirect-call primitive; typical of cL4 syscall/notification dispatch, but the absence of a visible bounds check is notable.
+- **Confidence**: medium
+
+## [ringminus1] 003f32d8 (SKR58) — Swift value-box tag decode with untrusted-pointer arithmetic
+- **Observation**: Box tag words (unaff_x19/unaff_x21) are decoded via bit tests (`>>0x3c`, `>>0x3d`) to pick inline vs indirect box; the indirect path computes `(tag_hi & 0xfffffffffffffff) + 0x20` and passes it as a pointer to FUN_004ba7ec. No validation that the indirect box pointer lies within a mapped/valid region is visible.
+- **Evidence**: `if ((unaff_x21 >> 0x3c & 1) != 0) { ... FUN_004ba7ec((unaff_x19 & 0xfffffffffffffff) + 0x20, uVar2, 1, param_3); }`.
+- **Severity (hypothesis)**: medium — attacker-influenced tag bits yield an arbitrary read/describe pointer; standard Swift runtime hazard, worth confirming the tag source.
+- **Confidence**: medium
+
+## [ringminus1] 003f3e64 (SKR58) — queue record write with partial validation
+- **Observation**: Writes a 5-field record (id, length, data, offset, flag) from raw args. The only guard traps when `len < 1 && flag != 1`. When `offset == 0` the flag byte is forced to 1 ("complete") regardless of the caller's value; a zero offset with a nonzero data pointer is written without any bounds/pointer validation.
+- **Evidence**: `if (len < 1 && flag != '\x01') { ...CL4_SW_BP(0x3f3ecc); } ... if (off == 0 || flag == '\x01') c = '\x01';`.
+- **Severity (hypothesis)**: low-medium — downstream consumers of the record assume data/offset validity; the forced-complete flag on zero offset may skip a pending-state check.
+- **Confidence**: medium
+
+## [ringminus1] 003f3960/003f4040 (SKR58) — span/extent arithmetic overflow traps (defensive)
+- **Observation**: Both functions implement fail-closed bounds arithmetic. FUN_003f3960 checks `SCARRY8`/`SBORROW8` on span base/len and traps via brk (0x3f3a2c/0x3f3a30/0x3f3a34) on overflow before moving a tail through FUN_0019cb68. FUN_003f4040 returns base+len only after a carry check (brk @0x3f406c).
+- **Evidence**: FUN_003f3960: `if (SCARRY8(lVar1,lVar8)) { SoftwareBreakpoint(1,0x3f3a2c); }`; FUN_003f4040: `if (!SCARRY8(*(long*)(self+8), len)) return base+len; CL4_SW_BP(0x3f406c);`.
+- **Severity (hypothesis)**: informational — overflow is correctly trapped; no finding beyond noting the pattern is defensive and correct.
+- **Confidence**: high (logic directly observed)
+
+## [ringminus1] SKR58 batch — pervasive unrecovered indirect-jump dispatch tails
+- **Observation**: Nearly every continuation in the batch ends in an indirect tail call through a shared dispatch table (Ghidra "UNRECOVERED_JUMPTABLE" / "Too many branches"). The dispatch target is not statically resolvable.
+- **Evidence**: e.g. FUN_003eefc0 `(*UNRECOVERED_JUMPTABLE)() @0x003ef008`; FUN_003efe7c @0x003eff8c; FUN_003f0268 @0x003f0340.
+- **Severity (hypothesis)**: informational/architecture — the dispatch-table integrity (who writes the table entries and the object continuation slots) is the trust boundary for this region; recommended for the audit pass.
+- **Confidence**: medium

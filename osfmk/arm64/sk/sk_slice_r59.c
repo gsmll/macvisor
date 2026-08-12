@@ -2060,3 +2060,855 @@ static void sk_col_fill_003f697c(void)
     sk_x_00406310(sk_x_00350ab8());
     sk_x_001afa84();   /* does not return */
 }
+
+/* FUN_003f6a8c @ 0x003f6a8c   (est. sk_col_rep3_003f6a8c)
+ * Ghidra: void FUN_003f6a8c(undefined8 param_1,...)
+ * The range-replacement core: inserts a run of elements into the middle of
+ * the buffer. Validates the insertion window [uVar13, uVar13+uVar4) against
+ * capacity, shifts the tail, and re-copies through the 0040753c move helper
+ * in up to three segments (head / middle / tail) using the sk_col_* index
+ * helpers to compute each boundary. Raises the range traps (0x1dd/0x1de/
+ * 0x1ff/0x1fd).
+ * Confidence: low (register-fragment heavy; segment math faithful to the
+ *   decompile, element pointers inferred from the +0x48 stride).
+ * Notes: SoftwareBreakpoint(1) overflow traps at 0x3f6d98-0x3f6db8. */
+static void sk_col_rep3_003f6a8c(void)
+{
+    sword_t *buf;
+    sword_t insert, span, lo, hi, n;
+    sword_t a, b;
+
+    insert = (sword_t)sk_x_0035300c() & 0;
+    span = (sword_t)sk_x_00350ab8();
+    if (span < 0) {
+    bad1:
+        sk_x_004070cc();
+        sk_x_00406310(0x1dd);
+        sk_x_001afa84();   /* does not return */
+    }
+    buf = (sword_t *)0;   /* register-fragment: carried in x20 */
+    lo = buf[1];
+    n = lo - span;
+    if (lo < span) goto bad1;
+    if (__builtin_add_overflow(lo, insert, &hi)) {
+        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6d98 */
+    }
+    if (buf[0] < hi) {
+        sk_x_004070cc();
+        sk_x_00406310(0x1de);
+        sk_x_001afa84();   /* does not return */
+    }
+    if (0 < span) {
+        sk_x_00353d70();
+        sk_x_003f5de0(0, 0, 0);
+        if (n <= span) {
+            sk_col_range_003f5de0(0, 0, 0);
+            sk_col_range_003f5de0(0, lo + span, buf);
+            a = (sword_t)sk_col_off_003f5e78(span, buf);
+            sk_x_000bd3a4();
+            sk_x_003f5de0();
+            lo = (sword_t)sk_x_003f3cfc(buf[0], 0);
+            b = (sword_t)sk_x_003f3cfc(buf[0], 0);
+            if (lo < a) {
+                if (b < (sword_t)sk_x_00350ab8()) {
+                    sk_x_00350500();
+                    sk_x_0040753c(0, 0, 0);
+                    sk_x_003f5cf0(0);
+                    span = (sword_t)sk_x_00350ab8();
+                    insert = (sword_t)sk_x_00350ab8() - span;
+                    if (insert < 0) goto bad2;
+                    sk_x_0040753c(insert, 0, span);
+                    n = (n - span) - 0;
+                    if (__builtin_sub_overflow(n, 0, &n)) {
+                        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6c38 */
+                    }
+                }
+                /* fall through to tail move */
+            } else if (b < (sword_t)sk_x_00350ab8()) {
+                lo = (sword_t)sk_x_003f5cf0(0);
+                insert = (sword_t)sk_x_00350ab8() - span;
+                if (insert < 0) goto bad2;
+                sk_x_0040753c(insert, 0, n);
+                n = n - 0;
+                if (__builtin_sub_overflow(n, 0, &n)) {
+                    __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6c94 */
+                }
+            }
+            sk_x_00350738();
+            sk_x_0040753c(0, 0, n);
+            if (__builtin_add_overflow(buf[1], span, &buf[1])) {
+                __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6da4 */
+            }
+            buf[1] = buf[1] + span;
+            goto done;
+        }
+        sk_col_range_003f5de0(0, -span, buf);
+        a = (sword_t)sk_col_off_003f5e78(span, buf);
+        b = (sword_t)sk_col_range_003f5de0(a, -span, buf);
+        lo = (sword_t)sk_x_003f3cfc(buf[0], a);
+        sk_x_003f3cfc(buf[0], b);
+        if (0 <= (sword_t)sk_x_00350ab8()) {
+            /* tail/shrink path */
+            if (lo <= buf[2]) {
+                sk_x_00350798();
+                sk_x_0040753c(0, 0, 0);
+                lo = (sword_t)sk_x_003f5cf0(0);
+                b = lo - span;
+                insert = span;
+                if (-1 < b) goto mov1;
+            } else if (-1 < b - a) {
+                sk_x_0040753c(0, b - a, a);
+                buf[2] = b;
+                goto mov2;
+            }
+        bad2:
+            sk_x_0040633c(b);
+            sk_x_001afa84();   /* does not return */
+        mov1:
+            sk_x_0040753c(b, 0, insert);
+            buf[2] = b;
+            insert = b;
+        mov2:
+            n = n - insert;
+        }
+        sk_x_0040753c(buf[2], (sword_t)sk_x_00350ab8(), n);
+    }
+    buf[2] = (sword_t)sk_x_00350ab8();
+done:
+    buf[1] = buf[1] - span;
+    if (__builtin_sub_overflow(buf[1], span, &buf[1])) {
+        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f73c4 */
+    }
+}
+
+/* FUN_003f6e08 @ 0x003f6e08   (est. sk_col_pop_copy_003f6e08)
+ * Ghidra: void FUN_003f6e08(undefined8 param_1,long param_2,...)
+ * Pops and copies the first element of the buffer (param_2): validates
+ * non-empty (trap 0x25b), copies the element at +0x10 via 001a29a0,
+ * advances the head (sk_col_next_003f5d1c) and decrements the count.
+ * Confidence: low */
+static void sk_col_pop_copy_003f6e08(word_t param_1, sword_t param_2, word_t param_3, word_t param_4)
+{
+    if (*(sword_t *)(param_2 + 8) < 1) {
+        sk_x_004070cc();
+        sk_x_00406310(0x25b);
+        sk_x_001afa84();   /* does not return */
+    }
+    sk_col_index_check_003f5c00(*(word_t *)(param_2 + 0x10), param_2, param_3, param_4);
+    sk_x_001a29a0(param_1, 0, param_4);
+    *(sword_t *)(param_2 + 0x10) =
+        sk_col_next_003f5d1c(*(sword_t *)(param_2 + 0x10), (sword_t *)param_2);
+    if (!__builtin_sub_overflow(*(sword_t *)(param_2 + 8), 1, (long *)&param_2)) {
+        *(sword_t *)(param_2 + 8) = *(sword_t *)(param_2 + 8) + -1;
+        return;
+    }
+    __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6e90 */
+}
+
+/* FUN_003f6ea8 @ 0x003f6ea8   (est. sk_col_pop_003f6ea8)
+ * Ghidra: void FUN_003f6ea8(undefined8 param_1,long param_2,...)
+ * Pops the last element of the buffer: validates non-empty (trap 0x264),
+ * computes the last index (sk_col_off_003f5e78(-1)), copies the element via
+ * 001a29a0 and decrements the count.
+ * Confidence: low */
+static void sk_col_pop_003f6ea8(word_t param_1, sword_t param_2, word_t param_3, word_t param_4)
+{
+    if (*(sword_t *)(param_2 + 8) < 1) {
+        sk_x_004070cc();
+        sk_x_00406310(0x264);
+        sk_x_001afa84();   /* does not return */
+    }
+    sk_x_00352758();
+    sk_col_off_003f5e78(sk_x_00350ab8() + -1, 0);
+    sk_x_003518d0();
+    sk_col_index_check_003f5c00();
+    sk_x_001a29a0(param_1, 0, param_4);
+    if (!__builtin_sub_overflow(*(sword_t *)(0 + 8), 1, (long *)&param_2)) {
+        *(sword_t *)(0 + 8) = *(sword_t *)(0 + 8) + -1;
+        return;
+    }
+    __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6f24 */
+}
+
+/* FUN_003f6f3c @ 0x003f6f3c   (est. sk_col_rm_first_003f6f3c)
+ * Ghidra: void FUN_003f6f3c(long param_1,long param_2,undefined8 param_3)
+ * Removes the first param_1 elements of the buffer (param_2): validates
+ * count (trap 0x26d), repacks the remainder (sk_col_rep2_003f612c after
+ * 003f4164) and advances the head by param_1, decrementing the count.
+ * Confidence: low */
+static void sk_col_rm_first_003f6f3c(sword_t param_1, sword_t param_2, word_t param_3)
+{
+    word_t *buf = (word_t *)param_2;
+    if (*(sword_t *)(param_2 + 8) < param_1) {
+        sk_x_004070cc();
+        sk_x_00406310(0x26d);
+        sk_x_001afa84();   /* does not return */
+    }
+    if (0 < param_1) {
+        sk_x_003504a0(0, 0, param_2, param_3, param_3);
+        sk_col_rep2_003f612c();
+        sk_x_00350798();
+        sk_x_00405830();
+        sk_x_003f4164();
+        sk_x_003504a0(buf[2]);
+        buf[2] = (word_t)sk_col_range_003f5de0(0, 0, 0);
+        if (__builtin_sub_overflow(*(sword_t *)(param_2 + 8), param_1, (long *)&param_2)) {
+            __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f6fd4 */
+        }
+        *(sword_t *)(param_2 + 8) = *(sword_t *)(param_2 + 8) - param_1;
+    }
+}
+
+/* FUN_003f6fec @ 0x003f6fec   (est. sk_col_rm_last_003f6fec)
+ * Ghidra: void FUN_003f6fec(void)
+ * Removes the last unaff_x21 elements of the buffer: validates count (trap
+ * 0x277), repacks the remainder and decrements the count by unaff_x21.
+ * Confidence: low */
+static void sk_col_rm_last_003f6fec(void)
+{
+    sword_t count;
+    word_t *buf;
+
+    buf = (word_t *)sk_x_0008409c();
+    count = (sword_t)buf[1];
+    if (count < (sword_t)buf[0]) {
+        sk_x_004070cc();
+        sk_x_00406310(0x277);
+        sk_x_001afa84();   /* does not return */
+    }
+    if (0 < (sword_t)sk_x_00350ab8()) {
+        if (count < count - (sword_t)buf[0]) {
+            sk_x_00347da8();
+            sk_x_003504b8();
+            sk_x_001afe4c();   /* does not return */
+        }
+        sk_col_rep2_003f612c();
+        sk_x_00350798();
+        sk_x_00405830();
+        sk_x_003f4164();
+        if (__builtin_sub_overflow(*(sword_t *)(0 + 8), (sword_t)sk_x_00350ab8(), (long *)&buf)) {
+            __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7074 */
+        }
+        *(sword_t *)(0 + 8) = *(sword_t *)(0 + 8) - (sword_t)sk_x_00350ab8();
+    }
+}
+
+/* FUN_003f709c @ 0x003f709c   (est. sk_col_clear_003f709c)
+ * Ghidra: void FUN_003f709c(long param_1)
+ * Clears the buffer: when non-empty, repacks (sk_col_rep_003f60e4) then
+ * resets the count (+0x08) and element base (+0x10) to empty.
+ * Confidence: medium */
+static void sk_col_clear_003f709c(sword_t param_1)
+{
+    if (0 < *(sword_t *)(param_1 + 8)) {
+        sk_col_rep_003f60e4(0, 0, 0);
+        sk_x_003504e8();
+        sk_x_00405830();
+        sk_x_003f4164();
+        *(sword_t *)(param_1 + 8) = 0;
+        *(word_t *)(param_1 + 0x10) = 0;
+    }
+}
+
+/* FUN_003f70f8 @ 0x003f70f8   (est. sk_col_rm_range_003f70f8)
+ * Ghidra: void FUN_003f70f8(long param_1,undefined8 param_2,long param_3)
+ * Removes the range [lVar9, lVar7) of length uVar1 from the collection
+ * buffer (unaff_x22) and shifts the tail into place, using the
+ * sk_col_off / sk_col_index_check / 0040754c move helpers to relocate the
+ * elements after the removed window, updating the count (+0x08) and the
+ * element base (+0x10). Handles the three geometric cases (removal at the
+ * end, head-overlap, tail-overlap / disjoint) and the head/tail element
+ * buffers stored at +0x10/+0x18 of the collection descriptor. Validates the
+ * window against capacity (traps 0x292/0x2a0/0x2c0).
+ * Confidence: low (segment-move matrix faithfully preserved; element
+ *   pointers follow the +0x48 stride convention).
+ * Notes: SoftwareBreakpoint(1) overflow traps at 0x3f741c-0x3f7438. */
+static void sk_col_rm_range_003f70f8(sword_t param_1, word_t param_2, sword_t param_3)
+{
+    sword_t *buf = (sword_t *)param_3;
+    cl4_pair_t rng;
+    sword_t lo, hi, span, tail;
+    sword_t offA, offB, rem, mv;
+
+    if ((param_1 < 0) || (sk_x_0035128c(), buf[1] < (sword_t)sk_x_00350ab8())) {
+        sk_x_004070cc();
+        sk_x_00406310(0x292);
+        sk_x_001afa84();   /* does not return */
+    }
+    sk_x_00352700();
+    sk_x_000bd3a4(0);
+    sk_col_rep2_003f612c();
+    sk_x_003504e8();
+    sk_x_00405830();
+    sk_x_003f4164();
+    rng = sk_x_00350518();
+    hi = (sword_t)rng.hi;
+    lo = (sword_t)rng.lo;
+    if ((lo < 0) || (buf[1] < hi)) {
+        sk_x_004070cc();
+        sk_x_00406310(0x2a0);
+        sk_x_001afa84();   /* does not return */
+    }
+    span = hi - lo;
+    if (__builtin_sub_overflow(hi, lo, &span)) {
+        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f741c */
+    }
+    if (span < 1) {
+        return;
+    }
+    offA = (sword_t)sk_col_off_003f5e78(lo, buf);
+    offB = (sword_t)sk_col_off_003f5e78(hi, buf);
+    tail = buf[1] - hi;
+    if (__builtin_sub_overflow(buf[1], hi, &tail)) {
+        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7420 */
+    }
+    if (tail <= lo) {
+        /* removal at the very end: just shrink the window */
+        lo = (sword_t)sk_col_range2_003f5e68(0);
+        if (__builtin_sub_overflow(buf[1], span, &hi)) {
+            __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7424 */
+        }
+        hi = (sword_t)sk_col_off_003f5e78(buf[1] - span, buf);
+        offA = (sword_t)sk_x_003f3cfc(buf[0], lo);
+        sk_x_003f3cfc(buf[0], hi);
+        mv = (sword_t)sk_x_00350ab8();
+        if (tail != 0) {
+            if (offB < offA) {
+                if (mv < offA) {
+                    lo = buf[0] - offA;
+                    if (__builtin_sub_overflow(buf[0], offA, &lo)) {
+                        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f742c */
+                    }
+                    if (tail <= lo) {
+                        sk_x_004070cc();
+                        sk_x_00406310(0x2c0);
+                        sk_x_001afa84();   /* does not return */
+                    }
+                    sk_x_00350470();
+                    offA = (sword_t)sk_x_0040754c(0, 0, lo);
+                    if (__builtin_sub_overflow(tail, lo, &rem)) {
+                        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7438 */
+                    }
+                    mv = rem;
+                    lo = tail - lo;
+                } else {
+                    sk_x_00350470();
+                    lo = tail;
+                }
+            } else {
+                tail = buf[0];
+                if (mv < offA) {
+                    if (__builtin_sub_overflow(tail, offB, &hi)) {
+                        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7430 */
+                    }
+                    sk_x_00350470(mv, 0, tail - offB);
+                    sk_x_0040754c();
+                    sk_x_0035053c(0);
+                    offA = (sword_t)sk_col_replace_003f637c(0, 0, 0, 0, 0, 0);
+                    mv = 0;
+                    lo = hi;
+                } else {
+                    if (__builtin_sub_overflow(tail, offB, &hi)) {
+                        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7434 */
+                    }
+                    sk_x_00350470(mv, 0, tail - offB);
+                    sk_x_0040754c();
+                    mv = 0;
+                }
+            }
+            sk_x_0040754c(mv, 0, lo);
+        }
+        lo = buf[1] - span;
+        if (__builtin_sub_overflow(buf[1], span, &lo)) {
+            __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7428 */
+        }
+        goto finish;
+    }
+    /* disjoint / head-overlap removal: relocate the surviving elements */
+    tail = buf[2];
+    sk_x_00350624(tail);
+    mv = (sword_t)sk_col_range_003f5de0(0, 0, 0);
+    offA = (sword_t)sk_x_003f3cfc(buf[0], offA);
+    offB = (sword_t)sk_x_003f3cfc(buf[0], offB);
+    if (lo != 0) {
+        if (offA <= tail) {
+            if (offB < mv) {
+                sk_x_00350798();
+                sk_x_0040754c(0, 0, offA);
+                offA = (sword_t)sk_col_ck_003f5cf0(0);
+                offB = offA - span;
+                mv = span;
+                if (-1 < offB) goto mov1;
+            } else if (-1 < offB - offA) {
+                sk_x_0040754c(0, offB - offA, offA);
+                tail = buf[2];
+                goto mov2;
+            }
+            sk_x_0040633c(offB);
+            sk_x_001afa84();   /* does not return */
+        }
+        if (offB < mv) {
+            offA = (sword_t)sk_col_ck_003f5cf0(0);
+            offB = offA - span;
+            mv = offB;
+            if (offB < 0) {
+                sk_x_0040633c(offB);
+                sk_x_001afa84();   /* does not return */
+            }
+        mov1:
+            sk_x_0040754c(offB, 0, mv);
+            tail = buf[2];
+            mv = offB;
+        mov2:
+            lo = lo - mv;
+        }
+        sk_x_0040754c(tail, mv, lo);
+    }
+    buf[2] = mv;
+    lo = buf[1] - span;
+    if (__builtin_sub_overflow(buf[1], span, &lo)) {
+        __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f73c4 */
+    }
+finish:
+    buf[1] = lo;
+}
+
+/* FUN_003f7464 @ 0x003f7464   (est. sk_col_foreach_003f7464)
+ * Ghidra: void FUN_003f7464(undefined8 param_1,...)
+ * Runs a foreach over the collection buffer: reads the element layout
+ * (count/base from the 00353cfc context), installs the run via 003f761c,
+ * and iterates applying the per-element callback (through the 00350518 /
+ * 000dbd0c / 0031a14c element protocol) until the 000839f8 end-marker
+ * fires or the 003f7648 append helper indicates exhaustion. Releases the
+ * buffer and ends the run.
+ * Confidence: low */
+static void sk_col_foreach_003f7464(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
+{
+    word_t *ctx;
+    word_t v6, v7, u6;
+
+    ctx = (word_t *)sk_x_00353cfc();
+    sk_x_0007c028();
+    (*(word_t (**)(word_t))DAT_00658c80)(0);
+    sk_x_000aa4ec();
+    sk_x_00407b80();
+    sk_x_00350a64();
+    sk_x_00310d68();
+    sk_x_00351f10();
+    sk_x_0007c1a4();
+    (*(word_t (**)(void))DAT_00658c80)();
+    sk_x_0034b05c();
+    v6 = ctx[3];      /* +0x18 */
+    v7 = ctx[4];      /* +0x20 */
+    sk_x_0006a4c0(0, v6);
+    sk_x_00353ccc();
+    sk_x_000a68c4();
+    sk_x_00310d68(0, v6, v7);
+    sk_x_000e15d8();
+    u6 = (word_t)sk_col_retain_003f761c(0, 0);
+    sk_x_00350500();
+    sk_x_00404b8c();
+    do {
+        sk_col_append_003f7648(v7, 0, 0, 0);
+        sk_x_003518dc();
+        if (sk_x_000839f8() == 1) break;
+        sk_x_000dbd0c(0);
+        sk_x_00310d68(0, 0, param_3);
+        sk_x_000836a4(0, 0);
+        sk_x_0031a14c(0);
+        sk_x_00350518(0);
+        sk_x_00310d68(0, 0, param_4, 0, 0);
+        sk_x_00350518(0);
+        sk_x_00310d68();
+    } while (sk_x_00350ab8() == 0);
+    CL4_OBJ_RELEASE(u6);
+    sk_x_000026e8(0);
+    sk_x_00353d14(0);
+}
+
+/* FUN_003f761c @ 0x003f761c   (est. sk_col_retain_003f761c)
+ * Ghidra: void FUN_003f761c(undefined8 param_1,undefined8 param_2)
+ * Retains the boxed collection and produces a fresh 16-byte descriptor via
+ * sk_col_box_003f7ab8. Used to capture the buffer before iteration.
+ * Confidence: low */
+static cl4_pair_t sk_col_retain_003f761c(word_t param_1, word_t param_2)
+{
+    CL4_OBJ_RETAIN(0);
+    return sk_col_box_003f7ab8(0, param_2);
+}
+
+/* FUN_003f7648 @ 0x003f7648   (est. sk_col_append_003f7648)
+ * Ghidra: void FUN_003f7648(undefined8 param_1,long param_2,...)
+ * Appends one element to the buffer (unaff_x20 layout at +8/+0x10): when the
+ * buffer is full it re-boxes (sk_col_box3_003f7bd8) and takes the grow path
+ * (00350744); otherwise it stores the element at the current cursor via
+ * sk_col_cfg_003f540c with the 00404ba4 closure and bumps the count. Raises
+ * the overflow trap (0x4f) on count overflow.
+ * Confidence: low */
+static void sk_col_append_003f7648(word_t param_1, sword_t param_2, word_t param_3, word_t param_4)
+{
+    sword_t n1, n2;
+    word_t *buf;
+    cl4_pair_t box;
+
+    n1 = *(sword_t *)(0 + 8);
+    n2 = *(sword_t *)(0 + 0x10);
+    if (n1 == n2) {
+        box = sk_col_box3_003f7bd8(param_2);
+        if ((box.lo & 1) == 0) {
+            sk_x_00350744(param_1, box.hi, param_4, *(word_t *)(param_2 + 0x10));
+            sk_x_000839d8();
+            return;
+        }
+        n1 = *(sword_t *)(0 + 8);
+        n2 = *(sword_t *)(0 + 0x10);
+    }
+    if (n1 < n2) {
+        if (-2 < n1) {
+            *(sword_t *)(0 + 8) = n1 + 1;
+            sk_x_00407f54();
+            (*(word_t (**)(void))DAT_00658c80)();
+            sk_x_00350ab8();
+            sk_col_cfg_003f540c(param_1, (word_t)sk_x_00404ba4, 0, param_4, 0, 0, (word_t)sk_x_00404c60);
+            sk_x_0034ba48();
+            sk_x_000839d8();
+            return;
+        }
+        sk_x_0040633c();
+    } else {
+        sk_x_00350d04();
+        sk_x_004063f4(0x4f);
+    }
+    sk_x_001afa84();   /* does not return */
+}
+
+/* FUN_003f7774 @ 0x003f7774   (est. sk_col_foreach2_003f7774)
+ * Ghidra: void FUN_003f7774(undefined8 param_1,long param_2,ulong param_3)
+ * Foreach wrapper: forwards to sk_col_foreach_003f7464 with the boxed
+ * collection, the element base (+0x10) and the tagged layout word
+ * ((param_3 & ~1) - 8).
+ * Confidence: low */
+static void sk_col_foreach2_003f7774(word_t param_1, sword_t param_2, word_t param_3)
+{
+    sk_col_foreach_003f7464(param_1, *(word_t *)0, *(word_t *)(param_2 + 0x10),
+                            *(word_t *)((param_3 & 0xfffffffffffffffeULL) - 8));
+}
+
+/* FUN_003f7778 @ 0x003f7778   (est. sk_col_foreach3_003f7778)
+ * Ghidra: void FUN_003f7778(undefined8 param_1,long param_2,ulong param_3)
+ * Identical foreach wrapper (register-pair twin of 003f7774).
+ * Confidence: low */
+static void sk_col_foreach3_003f7778(word_t param_1, sword_t param_2, word_t param_3)
+{
+    sk_col_foreach_003f7464(param_1, *(word_t *)0, *(word_t *)(param_2 + 0x10),
+                            *(word_t *)((param_3 & 0xfffffffffffffffeULL) - 8));
+}
+
+/* FUN_003f77a0 @ 0x003f77a0   (est. sk_col_pump_003f77a0)
+ * Ghidra: void FUN_003f77a0(void)
+ * Pumps the collection buffer: fetches the run descriptor (0035128c / the
+ * 0006a4c0 context), registers the manager (sk_col_register_003f5268), and
+ * either runs the empty-buffer teardown or iterates the element run with
+ * the 0031a17c / 0031a1ac advance loop, dispatching each element through
+ * sk_col_pump1_003f79a0 / sk_col_pump2_003f79d8. Ends with sk_col_register2_
+ * style teardown.
+ * Confidence: low */
+static void sk_col_pump_003f77a0(void)
+{
+    word_t *run;
+    word_t u2, u4;
+
+    sk_x_00353cfc();
+    sk_x_0035128c();
+    sk_x_0007c028();
+    (*(word_t (**)(word_t))DAT_00658c80)(0);
+    sk_x_000aa4ec();
+    sk_x_00350ab8();
+    sk_x_00350ab8();
+    u2 = (word_t)sk_col_register_003f5268();
+    run = (word_t *)sk_x_00350ab8();
+    u4 = sk_x_0006a4c0(0, run[3]);
+    sk_x_000a68c4(run[4]);
+    sk_x_00350ab8(0);
+    sk_x_00350ab8();
+    if (sk_x_00350ab8() == 0) {
+        sk_x_00407d64();
+        sk_x_0006a4c0();
+        sk_x_00353ccc();
+        u4 = (word_t)sk_x_0031a26c();
+        sk_x_00350a04(u4);
+        sk_x_00350ab8();
+        if ((sk_x_00350ab8() & 0xff) != 1) {
+            sk_x_00350500();
+            u4 = (word_t)sk_x_00404cf4();
+            sk_col_pump1_003f79a0(0, u4);
+        }
+        for (;;) {
+            sk_x_00407d64();
+            sk_x_0006a4c0();
+            sk_x_00353ccc();
+            u4 = (word_t)sk_x_0031a17c();
+            sk_x_00350a04(u4);
+            if ((sk_x_00350ab8() & 1) != 0) break;
+            sk_x_00407d64();
+            sk_x_000836a4();
+            sk_x_00353ccc();
+            sk_x_0031a1ac();
+            sk_x_000bd3a4(0);
+            sk_x_00350ab8();
+            sk_x_00350500();
+            u4 = (word_t)sk_x_00404cf4();
+            sk_col_pump2_003f79d8();
+            (*(void (**)(word_t))(sk_x_00350ab8() + 8))(0);
+        }
+        sk_x_000026e8(0);
+        sk_x_000026e8(run);
+    } else {
+        CL4_OBJ_RELEASE(u2);
+        sk_x_000026e8(run);
+        u2 = u4;
+    }
+    sk_x_00353d14(u2, 0);
+}
+
+/* FUN_003f79a0 @ 0x003f79a0   (est. sk_col_pump1_003f79a0)
+ * Ghidra: void FUN_003f79a0(undefined8 param_1,long param_2)
+ * Pump helper: builds a descriptor from the element base (param_2+0x10),
+ * re-emits it (00351330) and ensures capacity via sk_col_ensure_003f5780.
+ * Confidence: low */
+static void sk_col_pump1_003f79a0(word_t param_1, sword_t param_2)
+{
+    word_t d;
+    d = sk_x_00404d0c(0, *(word_t *)(param_2 + 0x10));
+    sk_x_00351330(d, d, d);
+    sk_col_ensure_003f5780();
+}
+
+/* FUN_003f79d8 @ 0x003f79d8   (est. sk_col_pump2_003f79d8)
+ * Ghidra: void FUN_003f79d8(void)
+ * Pump advance: computes the next index (00407b34 + 1), ensures capacity
+ * and installs the closure thunk (00359024 / 0040755c / 00405088), then
+ * reconfigures via sk_col_cfg_003f540c. Raises overflow trap on index wrap.
+ * Confidence: low */
+static void sk_col_pump2_003f79d8(void)
+{
+    sword_t n;
+
+    n = (sword_t)sk_x_00407b34();
+    if (!__builtin_add_overflow(n, 1, &n)) {
+        sk_x_003504e8();
+        sk_x_00404d0c();
+        sk_col_ensure_003f5780(n + 1, 0, sk_x_00350ab8());
+        sk_x_00407f54();
+        (*(word_t (**)(void))DAT_00658c80)();
+        sk_x_0008e160();
+        *(word_t *)(sk_x_00350ab8() + -0x10) = sk_x_00350ab8();
+        *(word_t *)(sk_x_00350ab8() + -8) = sk_x_00350ab8();
+        sk_x_00359024();
+        sk_x_0040755c((word_t)sk_x_00405088);
+        sk_col_cfg_003f540c();
+        return;
+    }
+    __asm__ volatile("brk #1" ::: "memory");   /* SW BP 0x3f7a80 */
+}
+
+/* FUN_003f7a80 @ 0x003f7a80   (est. sk_col_pump3_003f7a80)
+ * Ghidra: void FUN_003f7a80(undefined8 *param_1,...)
+ * Pump wrapper: runs sk_col_pump_003f77a0 and, on the empty-buffer branch,
+ * stores the result into *param_1.
+ * Confidence: low */
+static void sk_col_pump3_003f7a80(word_t *param_1, word_t param_2, sword_t param_3, word_t param_4)
+{
+    word_t u;
+
+    u = (word_t)sk_col_pump_003f77a0(param_2, *(word_t *)(param_3 + 0x10),
+                                     *(word_t *)((param_4 & 0xfffffffffffffffeULL) - 8));
+    if (sk_x_00350ab8() == 0) {
+        *param_1 = u;
+    }
+}
+
+/* FUN_003f7ab8 @ 0x003f7ab8   (est. sk_col_box_003f7ab8)
+ * Ghidra: undefined1[16] FUN_003f7ab8(void)
+ * Produces a 16-byte boxed collection descriptor: fetches the current
+ * descriptor (003504d0), reconfigures the run (00404b8c -> 0035053c with
+ * the 00404c78 closure) and returns the pair.
+ * Confidence: low */
+static cl4_pair_t sk_col_box_003f7ab8(void)
+{
+    cl4_pair_t p, out;
+    p = sk_x_003504d0();
+    sk_x_00404b8c(0);
+    sk_x_0035053c((word_t)&out, (word_t)sk_x_00404c78, 0);
+    sk_col_cfg_003f540c();
+    sk_x_0036b118();
+    return out;
+}
+
+/* FUN_003f7b44 @ 0x003f7b44   (est. sk_col_box2_003f7b44)
+ * Ghidra: undefined1[16] FUN_003f7b44(undefined8 param_1,...)
+ * Boxed descriptor variant that keeps the three incoming words, configures
+ * the 00405374 closure run and releases param_1.
+ * Confidence: low */
+static cl4_pair_t sk_col_box2_003f7b44(word_t param_1, word_t param_2, word_t param_3)
+{
+    cl4_pair_t out;
+    sk_x_00350a64();
+    sk_x_00404b8c();
+    sk_x_0035053c((word_t)&out, (word_t)sk_x_00405374, 0);
+    sk_col_cfg_003f540c();
+    sk_x_0036b118(param_1);
+    return out;
+}
+
+/* FUN_003f7bd8 @ 0x003f7bd8   (est. sk_col_box3_003f7bd8)
+ * Ghidra: undefined1 FUN_003f7bd8(void)
+ * Single-element box: if the buffer holds one element it retains it and
+ * builds a boxed descriptor via sk_col_cfg_003f540c (00404c08 closure);
+ * otherwise raises the element-count trap (0x3b).
+ * Confidence: low */
+static word_t sk_col_box3_003f7bd8(void)
+{
+    word_t *box;
+    word_t u;
+    word_t out;
+
+    box = (word_t *)sk_x_00350ab8();
+    if (box[1] == box[2]) {
+        u = box[0];
+        (*(word_t (**)(void))DAT_00658c80)();
+        CL4_OBJ_RETAIN(u);
+        sk_x_003504a0((word_t)&out, (word_t)sk_x_00404c08);
+        sk_col_cfg_003f540c();
+        CL4_OBJ_RELEASE(u);
+        return out;
+    }
+    sk_x_00350d04();
+    sk_x_004063f4(0x3b);
+    sk_x_001afa84();   /* does not return */
+}
+
+/* FUN_003f7cc4 @ 0x003f7cc4   (est. sk_col_box4_003f7cc4)
+ * Ghidra: undefined8 FUN_003f7cc4(void)
+ * Boxed-array constructor: reads the count (sk_col_tag2_003f539c), builds
+ * the run via 0040755c with the 0040542c closure and the two metadata tags
+ * (0x674330 / 0x66d208), then returns the run id.
+ * Confidence: low */
+static word_t sk_col_box4_003f7cc4(void)
+{
+    word_t u, count;
+
+    sk_x_003504d0();
+    u = (word_t)sk_col_tag2_003f539c();
+    sk_x_0040755c(u, (word_t)sk_x_0040542c, 0, 0, 0x674330, 0x66d208);
+    u = (word_t)sk_x_001a73cc();
+    sk_x_0036b118();
+    return u;
+}
+
+/* FUN_003f7d48 @ 0x003f7d48   (est. sk_col_copy5_003f7d48)
+ * Ghidra: void FUN_003f7d48(long param_1,...)
+ * Validated memory copy of param_2 elements: requires source (param_3) and
+ * destination (param_1) counts to match and both pointers non-null, then
+ * copies via 0019dadc; on any mismatch raises the fatal copy trap
+ * (003488bc/00407984/0034a2f8).
+ * Confidence: medium */
+static void sk_col_copy5_003f7d48(sword_t param_1, sword_t param_2, sword_t param_3, sword_t param_4)
+{
+    if (param_2 != param_4) {
+        sk_x_004070cc();
+        sk_x_0040677c(0x21);
+        sk_x_00406518();
+        sk_x_001afa84();   /* does not return */
+    }
+    if (0 < param_2) {
+        if ((param_3 != 0) && (param_1 != 0)) {
+            sk_x_0019dadc();
+            return;
+        }
+        sk_x_003488bc(1);
+        sk_x_00407984();
+        sk_x_0034a2f8();
+        sk_x_001afe4c();   /* does not return */
+    }
+}
+
+/* FUN_003f7de0 @ 0x003f7de0   (est. sk_col_box5_003f7de0)
+ * Ghidra: undefined1[16] FUN_003f7de0(...)
+ * Boxed descriptor constructor with the 00405180 closure: captures the
+ * element layout via 00077888, builds the run with 003515b4 / 003722e4 and
+ * reconfigures via sk_col_cfg_003f540c.
+ * Confidence: low */
+static cl4_pair_t sk_col_box5_003f7de0(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
+{
+    cl4_pair_t out;
+    word_t u;
+    sk_x_00077888();
+    u = (word_t)sk_x_00404b8c(0xff, param_4);
+    sk_x_003515b4(0, u, 0x677880);
+    sk_x_003722e4();
+    sk_x_0035053c((word_t)&out, (word_t)sk_x_00405180, 0);
+    sk_col_cfg_003f540c();
+    sk_x_0036b118();
+    return out;
+}
+
+/* FUN_003f7e8c @ 0x003f7e8c   (est. sk_col_slice2_003f7e8c)
+ * Ghidra: void FUN_003f7e8c(void)
+ * Slice of a Swift._UnsafeBufferPointer: validates the buffer bounds
+ * against the requested slice range and copies the sub-range via
+ * 001e4cbc. On an invalid slice it raises the runtime fatal naming
+ * "Invalid slice" / "Swift._UnsafeBufferPointer.swift".
+ * Confidence: medium
+ * Notes: s_Invalid_slice_005cfa58, s_Swift_UnsafeBufferPointer_swift_005cdc10;
+ *   SoftwareBreakpoint(1) at 0x3f80... (via the fatal path). */
+static void sk_col_slice2_003f7e8c(void)
+{
+    sword_t base, len, off;
+    word_t u2, u3;
+
+    sk_x_0034c2e8();
+    sk_x_0031b37c(0xff, 0);
+    u3 = (word_t)sk_x_004066a4();
+    sk_x_00376820(u3, 0);
+    sk_x_00350720(0, 0, 0);
+    sk_x_0031b080();
+    sk_x_0021867c((word_t)&base);
+    if (-1 < base) {
+        sk_x_0022b584((word_t)&len, 0);
+        sk_x_0028c754((word_t)&off, 0);
+        if (len <= off) {
+            u3 = (word_t)sk_x_004066a4();
+            sk_x_00376820(u3, 0);
+            sk_x_00350720(0, 0, 0);
+            u2 = (word_t)sk_x_0031b080();
+            sk_x_0028c754((word_t)&off);
+            len = off;
+            if (off != 0) {
+                sk_x_00408118();
+                sk_x_003522b8(base);
+                len = len + *(sword_t *)(0 + 0x48) * (sword_t)sk_x_00350ab8();
+            }
+            sk_x_0022b584((word_t)&off, u2);
+            sk_x_00408118();
+            sk_x_001e4cbc(len, off - base, 0);
+            return;
+        }
+    }
+    sk_x_003488bc(1);
+    sk_x_001afe4c(0, 0xb, 2, (word_t)s_Invalid_slice_005cfa58, 0xd, 2,
+                  (word_t)s_Swift_UnsafeBufferPointer_swift_005cdc10, 0x1f);
+}
+
+/* FUN_003f8024 @ 0x003f8024   (est. sk_col_emit_003f8024)
+ * Ghidra: void FUN_003f8024(undefined8 param_1,...)
+ * Emits the current element through the 004050b4 closure: sets up the
+ * element layout (00310d68), configures the run via sk_col_cfg_003f540c.
+ * Confidence: low */
+static void sk_col_emit_003f8024(word_t param_1, word_t param_2, word_t param_3,
+                                 word_t param_4, word_t param_5, word_t param_6)
+{
+    sk_x_00310d68(0, param_6);
+    sk_x_003518d0(param_1, (word_t)sk_x_004050b4, 0);
+    sk_col_cfg_003f540c();
+}
