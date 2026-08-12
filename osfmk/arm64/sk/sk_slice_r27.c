@@ -103,7 +103,7 @@ extern word_t FUN_000b45b0(); /* out of slice 0xb45b0 */
 extern word_t FUN_000bd3a4(); /* out of slice 0xbd3a4 */
 extern word_t FUN_000dbbe0(); /* out of slice 0xdbbe0 */
 extern wpair_t FUN_000dbd0c(); /* out of slice 0xdbd0c */
-extern word_t FUN_000e0654(); /* out of slice 0xe0654 */
+extern wpair_t FUN_000e0654(); /* out of slice 0xe0654 */
 extern wpair_t FUN_000e15d8(); /* out of slice 0xe15d8 */
 extern wpair_t FUN_000e72b0(); /* out of slice 0xe72b0 */
 extern word_t FUN_000ec004(); /* out of slice 0xec004 */
@@ -140,7 +140,7 @@ extern word_t FUN_001ee018(); /* out of slice 0x1ee018 */
 extern word_t FUN_001f0130(); /* out of slice 0x1f0130 */
 extern word_t FUN_00205844(); /* out of slice 0x205844 */
 extern wpair_t FUN_00255d4c(); /* out of slice 0x255d4c */
-extern word_t FUN_00258c60(); /* out of slice 0x258c60 */
+extern wpair_t FUN_00258c60(); /* out of slice 0x258c60 */
 extern word_t FUN_002591b4(); /* out of slice 0x2591b4 */
 extern wpair_t FUN_00267510(); /* out of slice 0x267510 */
 extern word_t FUN_00270c08(); /* out of slice 0x270c08 */
@@ -793,6 +793,7 @@ extern word_t DAT_005a5580;
 extern word_t DAT_005a5e3c;
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t DAT_00616214;
 extern word_t DAT_0061628c;
@@ -2992,7 +2993,7 @@ static void sk_bcg_0046ea44(void)
             }
             v6 = FUN_00002534((word_t)0 /* &DAT_00657d18 */,
                               (word_t)0 /* &DAT_005a4ac0 */).lo;
-            v8 = FUN_00258c60(v5, l7 + v8, v6);
+            v8 = FUN_00258c60(v5, l7 + v8, v6).lo;
             if ((v8 & 1) != 0) {
                 FUN_00084180();
                 w12 = FUN_0006ae9c();
@@ -3335,6 +3336,7 @@ extern word_t thunk_FUN_00498708();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_001a29a0();
@@ -3940,6 +3942,7 @@ extern word_t thunk_FUN_001a29a0(); /* thunk -> FUN_001a29a0 */
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00657e08;
 extern word_t LAB_00611b34; /* thunk -> FUN_002b74c0 */
 extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn */
 
@@ -7168,7 +7171,8 @@ static void sk_bcg_00475544(void)
     long ln10;
     unsigned int *pv12;
     word_t *pv13;
-    word_t x1, x1_0, x1_1, x1_2;   /* exx1, _00, _01, _02 */
+    word_t x1, x1_0, x1_1;   /* exx1, _00, _01 */
+    word_t *x1_2;            /* extraout_x1_02 */
     byte bv15;
     uint w8_0, w8_1;               /* exw8, _00 */
     code *x8, *x8_2;               /* exx8, extraout_x8_02 */
@@ -7396,7 +7400,7 @@ LAB_00475910:
             CL4_SWBP(0x475ba8);
         }
         v9 = FUN_004ab55c(*pv13).lo;
-        sk_bcg_004765b0(v9, (x8_1 & 0x10000) == 0);   /* extraout_x8_01 */
+        sk_bcg_004765b0();  /* register-residue args dropped */
         break;
     case 6:
         pv13 = (word_t *)FUN_0049e2f0(astk_430);
@@ -7417,20 +7421,20 @@ LAB_00475910:
             loc_270 = pv13[4];
             stk_258 = pv13[7];
             stk_260 = pv13[6];
-            sk_bcg_004766ec(&loc_290);
+            sk_bcg_004766ec((long)&loc_290);
         }
-        sk_bcg_004766ec(&loc_380);
+        sk_bcg_004766ec((long)&loc_380);
         break;
     case 7:
         v9 = FUN_0049e2f0(astk_430);
         bv15 = 0;
         FUN_00117cc4(astk_340, v9);
-        ln10 = sk_bcg_0047684c(*ux19);
+        sk_bcg_0047684c(*ux19); ln10 = 0;  /* register-residue return */
         if (ux21 != 0) goto LAB_00475910;
         if (ln10 == 0) {
             loc_78 = 0;
             stk_70 = 0xe000000000000000;
-            { wpair_t _w = sk_bcg_004769a4(); loc_138[0] = _w.lo; loc_138[1] = _w.hi; }   /* loc_138 = sk_bcg_004769a4() */
+            loc_138[0] = sk_bcg_004769a4();  /* loc_138 = FUN_004769a4() (lo word) */
             v9 = loc_138[1];
             loc_128 = bv15 & 1;
             av16 = FUN_00002534(&LAB_00657e08, &DAT_005a4c10);
@@ -7640,12 +7644,21 @@ static void sk_bcg_00475e14(void)
     byte  bVar4;
     long  lVar7_16;
     word_t unaff_x20, unaff_x30;            /* register inputs */
-    word_t extraout_w8, extraout_w9, extraout_x16;
-    word_t uVar3;
+    word_t extraout_w8, extraout_w9, extraout_w8_00, extraout_w8_01;
+    word_t extraout_w9_00, extraout_w9_01;
+    word_t extraout_x16, extraout_x16_00;
+    word_t uVar3, uVar10;
+    word_t in_ZR, in_x3;
+    word_t extraout_x1, extraout_x8, extraout_x8_00;
+    word_t extraout_x9, extraout_x9_00;
+    word_t extraout_x16_01;
+    word_t extraout_w8_02, extraout_w8_03, extraout_w8_04, extraout_w10;
+    word_t extraout_w9_02, extraout_w9_03;
+    word_t extraout_x16_02, extraout_x16_03;
+    word_t in_stack_00000060, in_stack_00000068, stack0x00000060;
     long *ctx = (long *)unaff_x20;          /* emitter context (unaff_x20) */
     word_t *cursor;                        /* plVar17 */
     wpair_t auVar25, auVar26;
-    ulong uVar3;
 
     auVar25 = (wpair_t)FUN_0035638c();
     uVar11 = auVar25.hi;
@@ -7788,7 +7801,7 @@ LAB_00476064:
                 uVar8 = auVar26.lo;
                 uVar21 = uVar20 >> 0xe;
                 if (uVar21 != in_x3 >> 0xe) {
-                    uVar13 = auVar26._4_4_ >> 0x1b & 1;   /* auVar26.lo bit 0x1b */
+                    uVar13 = (word_t)(unsigned char)auVar26.lo >> 0x1b & 1;   /* auVar26.lo bit 0x1b */
                     if ((uVar12 & 0x1000000000000000) == 0) {
                         uVar13 = 1;
                     }
@@ -7998,6 +8011,8 @@ LAB_004760c8:
 static void sk_bcg_00476518(void)
 {
     word_t uVar2, uVar3;
+    word_t unaff_x20;
+    word_t extraout_x8, extraout_x8_00, extraout_x9, extraout_x9_00, extraout_x16;
     long ctx = unaff_x20;               /* emitter context (unaff_x20) */
 
     uVar2 = FUN_004abacc();
@@ -8038,20 +8053,21 @@ static void sk_bcg_00476518(void)
 static void sk_bcg_004765b0(void)
 {
     long *plVar1;
-    word_t uVar3, uVar4, uVar5;
+    word_t uVar3, uVar4, uVar5, uVar8;
     long lVar6, lVar7, lVar9, lVar10;
-    long *ctx = unaff_x20;              /* emitter context (unaff_x20) */
+    word_t unaff_x20, unaff_x30;
+    long *ctx = (long *)unaff_x20;              /* emitter context (unaff_x20) */
     wpair_t auVar11, auVar12;
 
     uVar3 = FUN_00354744();
-    sk_bcg_00476dd0(0);
+    sk_bcg_00476dd0(0, 0); /* register-residue arg */
     lVar10 = *(long *)(*ctx + 0x10);
     uVar4 = FUN_003a261c(ctx[0x17]);
     lVar9 = ctx[0x17];
     auVar11 = (wpair_t)FUN_00499f0c(uVar3);
     lVar7 = auVar11.lo;
     lVar6 = *(long *)(lVar9 + 0x10);
-    uVar8 = (word_t)~auVar11.hi_lo & 1;   /* auVar11._8_4_ low bit, negated */
+    uVar8 = (word_t)~(unsigned char)auVar11.hi & 1;   /* auVar11._8_4_ low bit, negated */
     if (SCARRY8(lVar6, uVar8)) {
         /* WARNING: Does not return */
         CL4_SWBP(0x4766dc);
@@ -8059,9 +8075,9 @@ static void sk_bcg_004765b0(void)
     uVar5 = FUN_00002534(&DAT_00657e10, &DAT_005a4c18).lo;   /* globals 0x657e10, 0x5a4c18 */
     auVar12 = (wpair_t)FUN_00258c60(uVar4, lVar6 + uVar8, uVar5);
     if ((auVar12.lo & 1) != 0) {
-        auVar12 = (wpair_t)FUN_00499f0c(uVar3);
+        auVar12 = FUN_00499f0c(uVar3);
         lVar7 = auVar12.lo;
-        if ((auVar11.hi_lo & 1) != (auVar12.hi_lo & 1)) {
+        if (((unsigned char)auVar11.hi & 1) != ((unsigned char)auVar12.hi & 1)) {
             /* WARNING: Subroutine does not return */
             FUN_002591b4(0x686a38);
         }
@@ -8099,7 +8115,8 @@ static void sk_bcg_004766ec(long param_1)
     long lVar1, lVar7, lVar10;
     uint uVar2, uVar3, uVar4, uVar9;
     byte *pbVar8;
-    long *ctx = unaff_x20;              /* emitter context (unaff_x20) */
+    word_t unaff_x20, unaff_x30;
+    long *ctx = (long *)unaff_x20;              /* emitter context (unaff_x20) */
     word_t uVar6, uVar11;
 
     lVar10 = *ctx;
@@ -8119,7 +8136,7 @@ static void sk_bcg_004766ec(long param_1)
                 uVar9 = *(uint *)(lVar1 + uVar11 * 4);
                 pbVar8 = (byte *)(*(long *)(param_1 + 0x18) + 0x20);
                 do {
-                    uVar4 = 1 << (ulong)(*(uint *)(&DAT_005a5e3c + (ulong)*pbVar8 * 4) & 0x1f);
+                    uVar4 = 1 << (word_t)(*(uint *)((word_t)&DAT_005a5e3c + (word_t)*pbVar8 * 4) & 0x1f);
                     uVar3 = uVar9 & 0xfff8ffff;
                     if ((uVar4 & 0x7ff8ffff) != 0) {
                         uVar3 = uVar9;
@@ -8143,7 +8160,7 @@ static void sk_bcg_004766ec(long param_1)
                 uVar9 = *(uint *)(lVar1 + uVar11 * 4);
                 pbVar8 = (byte *)(*(long *)(param_1 + 0x38) + 0x20);
                 do {
-                    uVar4 = 1 << (ulong)(*(uint *)(&DAT_005a5e3c + (ulong)*pbVar8 * 4) & 0x1f);
+                    uVar4 = 1 << (word_t)(*(uint *)((word_t)&DAT_005a5e3c + (word_t)*pbVar8 * 4) & 0x1f);
                     uVar3 = uVar9 & 0xfff7ffdf;
                     if ((uVar4 & 0x7ff7ffdf) != 0) {
                         uVar3 = uVar9;
@@ -8188,8 +8205,11 @@ static void sk_bcg_0047684c(u64 param_1)
     uint uVar1;
     u64 uVar2;
     wpair_t auVar3;
+    word_t extraout_x8, extraout_x8_00, extraout_x8_03, extraout_x8_04;
+    word_t extraout_x8_05, extraout_x8_06;
+    unsigned char stack_d0[160];                /* auStack_d0 */
 
-    FUN_00117cc4(stack_d0);                     /* build directive context frame */
+    FUN_00117cc4((word_t)stack_d0);                     /* build directive context frame */
     uVar1 = FUN_00458af8(stack_d0);
     uVar2 = 0;
     switch (uVar1) {
@@ -8222,7 +8242,7 @@ static void sk_bcg_0047684c(u64 param_1)
         break;
     case 8:
         FUN_00458b14(stack_d0, 0);
-        auVar3 = (wpair_t)FUN_000e0654();
+        auVar3 = FUN_000e0654();
         FUN_0047dee8(auVar3.lo, auVar3.hi, param_1);
         break;
     case 0x11:
@@ -8250,6 +8270,9 @@ static word_t sk_bcg_004769a4(void)
     int iVar3;
     word_t lVar4;
     wpair_t auVar5;
+    word_t extraout_x8, extraout_x8_00, extraout_x8_01, extraout_x8_02, extraout_x8_03;
+    word_t extraout_x8_04, extraout_x8_05, extraout_x8_06, extraout_x8_07;
+    unsigned char stack_b0[160];    /* auStack_b0 */
 
     uVar1 = FUN_0048ee9c();
     lVar4 = 0x2f5e2f;
@@ -10283,6 +10306,7 @@ extern word_t thunk_FUN_002acbb8();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_0044f818();
