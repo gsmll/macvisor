@@ -114,7 +114,7 @@ extern void cL4_msg_three(int *res, unsigned long tcb, unsigned long *msg, unsig
 extern void cL4_msg_parse(unsigned long *res, unsigned long *tcb, unsigned long *msg, unsigned long depth);/* FUN_003d12c8 */
 extern void cL4_msg_emit_pair(unsigned long tcb, unsigned long *msg, unsigned long tag, unsigned char byte); /* FUN_003d154c */
 extern void cL4_msg_dispatch2(int *res, unsigned long tcb, unsigned long msg, unsigned long tag, unsigned long count, unsigned long depth); /* FUN_003d174c */
-extern void cL4_map_put(unsigned long *map, unsigned long key, unsigned long *node); /* FUN_003d28d8 */
+extern unsigned long *cL4_map_put(unsigned long *map, unsigned long key, unsigned long *node); /* FUN_003d28d8 */
 extern long cL4_map_find(unsigned long *map, unsigned long key);  /* FUN_003d27ec */
 extern void cL4_map_destroy(unsigned long *map);                  /* FUN_003d2740 */
 extern unsigned long cL4_map_keyeq(unsigned long *slot, unsigned long *key); /* FUN_003d27a0 */
@@ -2606,7 +2606,7 @@ parse_loop:
                 w = 0;
             }
             if (1 < *(unsigned char *)((long)w + 0x12) - 1) { msg = 0; goto arr_redir; }
-            msg = (unsigned long*)*w;
+            msg = (unsigned long*)w;
         }
         goto parse_loop;
     }
@@ -2681,7 +2681,7 @@ void cL4_msg_emit_pair(unsigned long tcb, unsigned long *msg, unsigned long tag,
     w1 = *(unsigned long *)cur[1];
     if (w0 != 0) {
         tlen = tag ? cL4_strlen((const char*)tag) : 0;
-        cL4_mr_emit_tag(tcb + 0x2140, tag, tlen, *(unsigned long *)(tcb + 0x2150));
+        cL4_mr_emit_tag(tcb + 0x2140, (const void*)tag, tlen, *(unsigned long *)(tcb + 0x2150));
         c = 'd'; cL4_mr_emit_byte(tcb + 0x2140, &c, *(unsigned long *)(tcb + 0x2150));
         cL4_mr_emit_num(tcb, (long)w0 - 1);
         cL4_mr_emit_num(tcb, (long)w1);
@@ -2689,7 +2689,7 @@ void cL4_msg_emit_pair(unsigned long tcb, unsigned long *msg, unsigned long tag,
     }
     if (w1 != 0) {
         tlen = tag ? cL4_strlen((const char*)tag) : 0;
-        cL4_mr_emit_tag(tcb + 0x2140, tag, tlen, *(unsigned long *)(tcb + 0x2150));
+        cL4_mr_emit_tag(tcb + 0x2140, (const void*)tag, tlen, *(unsigned long *)(tcb + 0x2150));
         cL4_mr_emit_num(tcb, (long)w1 - 1);
         return;
     }
@@ -2748,7 +2748,7 @@ void cL4_msg_emit_tc2(int *result, unsigned long tcb, unsigned long *msg, unsign
     if (cur != end) {
         do {
             if (*(short *)(*cur + 0x10) == 0x60) {
-                cL4_msg_arg_index(result, tcb, *cur, 0, depth + 1);
+                cL4_msg_arg_index(result, tcb, (unsigned long*)*cur, 0, depth + 1);
                 if (*result != 0) return;
                 if (first) { c = '_'; cL4_mr_emit_byte(tcb + 0x2140, &c, *(unsigned long *)(tcb + 0x2150)); }
                 first = 0; saw60 = 1;

@@ -683,7 +683,7 @@ static void sk_capop_003e9c34(uint64_t arg1, uint64_t arg2, uint64_t arg3,
     *(int64_t **)(ctx + 0x18) = frame;
     *frame = (int64_t)ctx;
     frame[1] = (int64_t)&sk_g_004060bc;
-    sk_capop_003e838c(frame, arg1, arg2, arg3, arg5);
+    sk_capop_003e838c((uint64_t)frame, arg1, arg2, arg3, arg5);
     return;
 }
 
@@ -1196,7 +1196,7 @@ static void sk_capop_003ebd9c(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint6
     *(int64_t **)(ctx + 0x18) = frame;
     *frame = (int64_t)ctx;
     frame[1] = (int64_t)&sk_g_004060bc;
-    sk_capop_003eb68c(frame, arg1, arg2, arg3, arg5);
+    sk_capop_003eb68c((uint64_t)frame, arg1, arg2, arg3, arg5);
     return;
 }
 
@@ -3324,7 +3324,7 @@ sk_capop_003ead6c(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,
 	*(int64_t **)(ctx + 0x18) = frame;
 	frame[0] = (int64_t)ctx;
 	frame[1] = (int64_t)sk_capop_003eae24;
-	sk_capop_003ea5a8(frame, arg1, arg2, arg3, arg5);
+	sk_capop_003ea5a8((uint64_t)frame, arg1, arg2, arg3, arg5);
 	return;
 }
 
@@ -3491,7 +3491,7 @@ sk_capop_003ed2dc(uint64_t arg1, uint64_t arg2, uint64_t arg3)
 	local30 = arg3;
 	stack28 = arg1;
 	local20 = arg2;
-	sk_capop_003ed1a4(&sk_g_005a0138, stack40, sk_x_003fd25c, stack60, arg3, arg3);
+	sk_capop_003ed1a4((uint64_t)&sk_g_005a0138, (uint64_t)stack40, (uint64_t)sk_x_003fd25c, (uint64_t)stack60, arg3, arg3);
 	return;
 }
 
