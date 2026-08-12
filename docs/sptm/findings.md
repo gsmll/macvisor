@@ -4572,3 +4572,20 @@ Observation: The stream deserializer recognizes a large catalog of Swift concurr
 Evidence: decompiles of FUN_003a6c28 (0x6c/0x75/0x74/0x78 child kinds), FUN_003ac6b4 (type-name table), FUN_003b8ef8 (attr match with context bytes).
 Severity (hypothesis): low — name/attr parser; an unknown/crafted name falls back to NULL/0, no privilege boundary.
 Confidence: medium
+
+## [SKR50] 0x380864-0x397a98 Embedded Swift runtime TypeDecoder + demangler
+Observation: This slice (0x380864-0x397a98, 120 fn claimed) is Apple's embedded Swift
+standard-library / runtime: the recursive `TypeDecoder` (FUN_0038f0a8, ~3863-line
+decompiled switch over node kinds 0x0-0x173), the generic-arg error formatters
+(FUN_0038d9fc/0038e214/0038e458/0038e624/0038e7f0/0038ece8), the type-metadata
+lookup core (FUN_003895e0 + FUN_00389940/00389b64/0038a914) and the inline
+string-buffer/header accessors (FUN_0038c3ac-0038d3b8). All 120 manifest entries
+were claimed-but-bodyless (blanket claim in sk_region_tightbeam.c with no bodies
+present - only extern decls / call refs); verified by grepping the claimed file.
+Evidence: sk_region_tightbeam.c has no function body for these addresses (FUN_%
+08x headers absent); manifest had file=sk_region_tightbeam.c for all 120.
+Severity (hypothesis): medium - this is the runtime type-decoder, not a security
+boundary; but the pack-expansion length handling (FUN_0038d8dc panics on
+non-on-stack packs) and the depth cap at 0x400 are fail-closed.
+Confidence: medium (Swift runtime identified by TypeDecoder.h strings, Bf/Bi
+integer/float type-name literals).

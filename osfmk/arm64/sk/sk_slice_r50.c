@@ -17,7 +17,7 @@
 /* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1). */
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
 extern void cL4_panic_big(void);
-extern void cL4_list_push_363f10(void);
+extern void cL4_list_push_363f10();
 #define CONCAT17(h,l)  ((unsigned long)(h) & 0xff | ((unsigned long)(l) << 8))
 #define CONCAT44(h,l)  (((unsigned long)(l) & 0xffffffff) | ((unsigned long)(h) << 32))
 #define CONCAT71(h,l)  ((unsigned long)(h) & 0x7f | ((unsigned long)(l) << 7))
@@ -287,6 +287,10 @@ extern unsigned long sk_type_pushreq_39951c();
 extern unsigned long sk_hashtable_hash_38ba00();
 extern unsigned long sk_err_ctx_38dd44();
 extern unsigned long sk_err_u64_113a3c();
+
+extern long sk_cap_next_3658e8(unsigned long);
+extern long sk_cap_meta_35eb3c(unsigned long);
+extern void FUN_00114330(unsigned long, unsigned long);
 /* FUN_00380864 @ 0x380864   (est. sk_mr_send_word_replace)
  * Ghidra: void FUN_00380864(ulong *param_1, undefined8 *param_2, long, long)
  * Replaces the message-register word descriptor pointed at by param_2 with a
@@ -4237,7 +4241,7 @@ unsigned short sk_string_flag_0e_38cf50(unsigned long sv)
 unsigned short sk_string_flag_08_38cfd8(unsigned long sv)
 {
     char *s = (char *)sv; char *c = s; unsigned short r; char *p = s;
-    p = c; if (s == 0) p = 0;
+    p = s; if (s == 0) p = 0;
     if (*p < 0) {
         if (s == 0) s = 0;
         if ((*(unsigned short *)(c + 0xe) & 1) != 0) {
@@ -4251,16 +4255,16 @@ unsigned short sk_string_flag_08_38cfd8(unsigned long sv)
 /* FUN_0038d07c @ 0x38d07c   (est. sk_strhdr_entcnt)
  * Reads the entry-count (two packed 16-bit words) from the element array.
  * Confidence: low */
-unsigned int sk_string_entcnt_38d07c(unsigned long s)
+unsigned int sk_string_entcnt_38d07c(unsigned long sv)
 {
     unsigned long base; long off; unsigned short *p; unsigned int lo, hi;
-    char *q; q = s; if (s == 0) q = 0;
+    char *s = (char *)sv; char *q = s; if (s == 0) q = 0;
     if (*q < 0) {
         q = s; if (s == 0) q = 0;
         if ((*(unsigned short *)(q + 0xe) & 1) != 0) {
             if (s == 0) s = 0;
-            base = sk_string_base_38cdb4(s);
-            off = sk_string_flag_10_38cecc(s);
+            base = sk_string_base_38cdb4((unsigned long)s);
+            off = sk_string_flag_10_38cecc((unsigned long)s);
             p = (unsigned short *)(base + off * 0xc);
             lo = (unsigned int)*p;
             hi = (unsigned int)p[1] << 0x10;
@@ -4330,10 +4334,9 @@ unsigned short sk_string_namecnt_38d330(unsigned long sv)
 /* FUN_0038d3b8 @ 0x38d3b8   (est. sk_strhdr_entcnt2)
  * Entry-count: bit2 flag -> FUN_0038d45c.
  * Confidence: low */
-unsigned int sk_string_entcnt_38d3b8(unsigned long s)
+unsigned int sk_string_entcnt_38d3b8(unsigned long sv)
 {
-    unsigned int r; char *p;
-    p = s; if (s == 0) p = 0;
+    char *s = (char *)sv; unsigned int r; char *p = s; if (s == 0) p = 0;
     if (*p < 0) {
         if (s == 0) s = 0;
         if ((*(unsigned short *)(s + 0xe) >> 2 & 1) != 0) {
@@ -4347,10 +4350,9 @@ unsigned int sk_string_entcnt_38d3b8(unsigned long s)
 /* FUN_0038d45c @ 0x38d45c   (est. sk_strhdr_entcnt_raw)
  * Reads the raw entry-count word at the aligned element array.
  * Confidence: low */
-unsigned int sk_string_entcnt2_38d45c(unsigned long s)
+unsigned int sk_string_entcnt2_38d45c(unsigned long sv)
 {
-    unsigned int *p; char *q;
-    q = s; if (s == 0) q = 0;
+    unsigned int *p; char *s = (char *)sv; char *q = s; if (s == 0) q = 0;
     if (*q < 0) {
         q = s; if (s == 0) q = 0;
         if ((*(unsigned short *)(q + 0xe) >> 2 & 1) != 0) {
@@ -4386,14 +4388,14 @@ unsigned long sk_hashtable_index_lookup3_38d690(long a, unsigned long k, int *ke
 /* FUN_0038d6e4 @ 0x38d6e4   (est. sk_string_count_delta)
  * Difference between the total name count and the nested/sub-name count.
  * Confidence: low */
-long sk_type_dbltbl_hash_38d6e4(unsigned long s)
+long sk_type_dbltbl_hash_38d6e4(unsigned long sv)
 {
-    long p; unsigned long n;
+    char *s = (char *)sv; long p; unsigned long n;
     if (-1 < *s) return 0;
-    p = sk_cap_next_3658e8(s + 4);
-    if ((p == 0) || (p = sk_cap_meta_35eb3c(), p == 0)) n = 0;
+    p = sk_cap_next_3658e8((unsigned long)(s + 4));
+    if ((p == 0) || (p = sk_cap_meta_35eb3c((unsigned long)s), p == 0)) n = 0;
     else n = (unsigned long)*(unsigned short *)(p + 4);
-    p = sk_cap_meta_35eb3c(s);
+    p = sk_cap_meta_35eb3c((unsigned long)s);
     return *(unsigned short *)(p + 4) - n;
 }
 
@@ -4520,7 +4522,7 @@ unsigned long *sk_generic_err_incorrect_38d9fc(unsigned long *p, int n, unsigned
             if (-1 < (char)b3[8]) q[0] = (unsigned long)b3[8]; else { q[0] = (unsigned long)&b3; }
             s = (unsigned long *)cL4_strbuf_print(&y[0], (unsigned long)q);
             r[0] = *s; w[0] = s[1]; t[0] = s[2]; s[1] = 0; s[2] = 0; *s = 0;
-            s = (unsigned long *)cL4_strbuf_alloc(&r[0]);
+            s = (unsigned long *)cL4_strbuf_alloc((unsigned long)&r[0]);
             out = s[0];
             if ((long)u < 0) cL4_free((void *)y[0], u & 0x7fffffffffffffff);
             return (unsigned long *)out;
@@ -4534,7 +4536,7 @@ unsigned long *sk_generic_err_incorrect_38d9fc(unsigned long *p, int n, unsigned
             return s;
         }
         if (p == 0) return 0;
-        thunk_FUN_00012568(p, 0x38);
+        thunk_FUN_00012568((unsigned long)p, 0x38);
     }
     return 0;
 }

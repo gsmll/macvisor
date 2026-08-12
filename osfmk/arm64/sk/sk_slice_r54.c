@@ -112,12 +112,19 @@ extern void cL4_msg_parse(unsigned long *result, unsigned long *tcb, unsigned lo
 extern void cL4_msg_args(int *result, unsigned long tcb, unsigned long msg, unsigned long depth);
 /* FUN_003d0bc8 — dispatch a message packet with a byte tag. */
 extern void cL4_msg_dispatch_pkt(int *res, unsigned long tcb, unsigned long msg, unsigned char *byte, unsigned long depth, int flag);
+/* FUN_003cc324 — decode an argument of descriptor kind 0xf7 (sibling). */
+extern void cL4_arg_kind_other_cc324(int *res, unsigned long tcb, unsigned long msg, unsigned long depth);
+/* FUN_003d28d8 — insert a key/node into the descriptor map. */
+extern unsigned long *cL4_map_put(unsigned long *map, unsigned long key, unsigned long *node);
+/* FUN_003d27a0 / 003d27ec — map key compare / find. */
+extern unsigned long cL4_map_keyeq(unsigned long *slot, unsigned long *key);
+extern long cL4_map_find(unsigned long *map, unsigned long key);
 /* FUN_003d174c — dispatch a message with (tcb, msg, tag, count, depth). */
 extern void cL4_msg_dispatch2(int *res, unsigned long tcb, unsigned long msg, unsigned long tag, unsigned long count, unsigned long depth);
 /* FUN_003d1ad4 — emit a symbol from a message word. */
 extern void cL4_msg_emit_sym(unsigned long tcb, unsigned long *msg, int which);
 /* FUN_003d154c — emit a tag byte pair record. */
-extern void cL4_msg_emit_pair(unsigned long tcb, unsigned long *msg, unsigned long tag, unsigned char byte);
+extern void cL4_msg_emit_pair(unsigned long tcb, unsigned long msg, unsigned long tag, unsigned char byte);
 /* FUN_003a3a70 — emit a tagged IPC message-register record into `obj`. */
 extern void cL4_mr_emit_tag(long obj, const void *tag, unsigned long count, unsigned long val);
 /* FUN_003acd3c — emit a single data byte into the outbound object. */
@@ -126,7 +133,7 @@ extern void cL4_mr_emit_byte(long obj, const void *byte, unsigned long val);
 extern void cL4_mr_emit_val2(long obj, long count, unsigned long val);
 /* FUN_003a3430 — IPC object field getter (declared above). */
 /* FUN_003bf898 @ 0x3bf898 — release/commit the temporary output record. */
-extern void cL4_out_commit(unsigned long tcb, long *stack);
+extern void cL4_out_commit(unsigned long tcb, unsigned long *param_2);
 /* FUN_003bf718 / 003bf7e4 — build/read an output descriptor. */
 extern unsigned long cL4_fmt_build(unsigned long tcb, unsigned long msg, unsigned long depth);
 extern unsigned long cL4_fmt_kind(unsigned long tcb, unsigned long param_2);
@@ -168,6 +175,7 @@ extern const char DAT_005d7629[];   /* " " @ 0x5d7629 */
 extern const char DAT_005d3bb9[];   /* " " @ 0x5d3bb9 */
 extern const char DAT_005d7133[];   /* " " @ 0x5d7133 */
 extern const char DAT_005d6ff3[];   /* " " @ 0x5d6ff3 */
+extern const char DAT_005d920e[];   /* "y" @ 0x5d920e */
 extern const char DAT_005d6fcf[];   /* " " @ 0x5d6fcf */
 extern const char DAT_005d6fd3[];   /* " " @ 0x5d6fd3 */
 extern const char DAT_005d6fe5[];   /* " " @ 0x5d6fe5 */
@@ -426,7 +434,7 @@ void cL4_arg_kind_4e(int *res, unsigned long tcb, long *msg, int depth);
 void cL4_arg_decode(int *res, unsigned long tcb, unsigned long word, unsigned long depth);
 void cL4_msg_header(int *res, long *msg, unsigned long ctx);
 int  cL4_msg_kind(long *msg);
-void cL4_out_commit(unsigned long tcb, long *stack);
+void cL4_out_commit(unsigned long tcb, unsigned long *param_2);
 void cL4_fmt_node(unsigned long node, unsigned long ctx, void *out, int depth);
 void cL4_arg_kind1b(int *res, unsigned long tcb, long *msg, int depth);
 void cL4_arg_kind1c(int *res, unsigned long tcb, long *msg, int depth);
@@ -2402,7 +2410,7 @@ void cL4_arg_kind_25(int *res, unsigned long tcb, long *msg, int depth)
         else v = 0;
         {
             int local_58; long local_38; int local_40;
-            cL4_msg_parse(&local_58, &tcb, &v, depth + 1);
+            cL4_msg_parse(&local_58, &tcb, v, depth + 1);
             if (local_58 != 0) return;
             if (local_40 < 0 && local_38 == 0) { /* ok */ }
         }
@@ -2419,7 +2427,7 @@ void cL4_arg_kind_25(int *res, unsigned long tcb, long *msg, int depth)
     else v2 = 0;
     {
         int local_58; long local_38; int local_40;
-        cL4_msg_parse(&local_58, &tcb, &v2, depth + 1);
+        cL4_msg_parse(&local_58, &tcb, v2, depth + 1);
         if (local_58 != 0) return;
         if (local_40 < 0 && local_38 == 0) {
             *res = 1; *(long **)(res + 2) = msg; res[4] = 0x443; return;
@@ -2475,7 +2483,7 @@ void cL4_arg_kind_28(int *res, unsigned long tcb, long *msg, int depth)
         else if ((*(unsigned char *)((char *)m + 0x12) == 5) && (int)m[1] != 0) { m = (long *)*m; v = *m; }
         else v = 0;
         int local_58; long local_38; int local_40;
-        cL4_msg_parse(&local_58, &tcb, &v, depth + 1);
+        cL4_msg_parse(&local_58, &tcb, v, depth + 1);
         if (local_58 != 0) { res[2] = 0; *(unsigned long *)res = local_58; res[4] = 0; return; }
         if (local_40 < 0 && local_38 == 0) {
             *res = 1; *(long **)(res + 2) = msg; res[4] = 0x4ab; return;
@@ -2509,7 +2517,7 @@ void cL4_arg_kind_29(int *res, unsigned long tcb, long *msg, int depth)
             else { m = (long *)*m; v = *m; }
         } else v = *m;
         int local_58; long local_38; int local_40;
-        cL4_msg_parse(&local_58, &tcb, &v, depth + 1);
+        cL4_msg_parse(&local_58, &tcb, v, depth + 1);
         if (local_58 == 0) {
             if ((local_40 < 0) || (local_38 != 0)) {
                 if (local_40 == 0) {
@@ -2541,7 +2549,7 @@ void cL4_arg_kind_2a(int *res, unsigned long tcb, long *msg, int depth)
     else v = 0;
     {
         int local_70; long local_50; int local_58;
-        cL4_msg_parse(&local_70, &tcb, &v, depth + 1);
+        cL4_msg_parse(&local_58, &tcb, v, depth + 1);
         if (local_70 != 0) { res[2] = 0; *(unsigned long *)res = local_70; res[4] = 0; return; }
         if (local_58 < 0 && local_50 == 0) {
             *res = 1; *(long **)(res + 2) = msg; res[4] = 0x4db; return;
@@ -2706,7 +2714,7 @@ void cL4_arg_kind_2d(int *res, unsigned long tcb, unsigned long msg, int depth)
 void cL4_arg_kind_2e(unsigned long *res, unsigned long tcb, unsigned long msg, int depth)
 {
     int local_60; long local_40; int local_48;
-    cL4_msg_parse(&local_60, &tcb, &msg, depth + 1);
+    cL4_msg_parse(&local_60, &tcb, msg, depth + 1);
     if (local_60 != 0) { res[1] = 0; *res = local_60; res[2] = 0; return; }
     if (local_48 == -1) { /* nothing */ }
     else if (local_48 == 1) {
@@ -3647,8 +3655,9 @@ unsigned long cL4_fmt_build(unsigned long tcb, unsigned long param_2, unsigned l
     unsigned long idx = u3 + (param_2 * 0x7fb >> 0xc);
     unsigned long *base = (unsigned long *)(tcb + 8);
     int probe = 8;
+    unsigned long slot;
     while (1) {
-        unsigned long slot = idx & 0x1ff;
+        slot = idx & 0x1ff;
         unsigned long *slotp = base + slot * 2;
         if (slotp[0] < 8) {
             unsigned long h = cL4_str_hash(tcb, (unsigned short *)param_2, 0);
@@ -3707,6 +3716,61 @@ unsigned long cL4_fmt_kind(unsigned long tcb, unsigned long param_2)
         return *(unsigned int *)(r + 0x20);
     }
     return (unsigned long)(p - table) >> 4;
+}
+
+/* 003c3848 @ 0x003c3848   (est. cL4_arg_kind_1)
+ * Ghidra: void FUN_003c3848(int *param_1, long param_2, long *param_3, int param_4)
+ * Decodes a 0x01 descriptor: decodes elements 1 and 0 via FUN_003d0280,
+ * then when the element list holds a third element emits it through
+ * FUN_003cc324, else emits the 'y' byte; then emits tag DAT_005d920e and
+ * clears the result.
+ * Confidence: medium
+ * Notes: FUN_003d0280, FUN_003cc324, FUN_003acd3c, FUN_003a3a70. */
+void cL4_arg_kind_1(int *res, unsigned long tcb, unsigned long msg, unsigned long depth)
+{
+    unsigned char local_31;
+    cL4_msg_arg_index(res, tcb, msg, 1, depth + 1);
+    if ((*res == 0) && (cL4_msg_arg_index(res, tcb, msg, 0, depth + 1), *res == 0)) {
+        if ((*(char *)((char *)msg + 0x12) == '\x05') && 2 < *(unsigned int *)(msg + 1)) {
+            cL4_arg_kind_other_cc324(res, tcb, *(unsigned long *)(msg + 0x10), depth + 1);
+            if (*res != 0) return;
+        } else {
+            local_31 = 'y';
+            cL4_mr_emit_byte(tcb + 0x2140, &local_31, *(unsigned long *)(tcb + 0x2150));
+        }
+        cL4_mr_emit_tag(tcb + 0x2140, (const void *)&DAT_005d920e, 2, *(unsigned long *)(tcb + 0x2150));
+        *res = 0; res[2] = 0; res[3] = 0; res[4] = 0;
+    }
+}
+
+/* 003bf898 @ 0x003bf898   (est. cL4_out_commit)
+ * Ghidra: void FUN_003bf898(long param_1, undefined8 *param_2)
+ * Commits a temporary output record `param_2` (a 16-byte {value0, value1}
+ * descriptor) into the outbound message object `param_1`: appends it to
+ * the small 16-byte-record stack at param_1+0x2008 (count at param_1+0x2108)
+ * when there is room, else inserts it into the associative map at
+ * param_1+0x2110 (FUN_003d28d8).
+ * Confidence: medium
+ * Notes: FUN_003d28d8 (map insert); stack layout at param_1+0x2008. */
+void cL4_out_commit(unsigned long tcb, unsigned long *param_2)
+{
+    unsigned long n = *(unsigned long *)(tcb + 0x2108);
+    if (n < 0x10) {
+        unsigned long *slot = (unsigned long *)(tcb + n * 0x10 + 0x2008);
+        *(unsigned long *)(tcb + 0x2108) = n + 1;
+        unsigned long v = *param_2;
+        slot[1] = param_2[1];
+        slot[0] = v;
+        return;
+    }
+    {
+        int local_20 = *(int *)(tcb + 0x2130) + 0x10;
+        unsigned long uStack_28 = param_2[1];
+        unsigned long local_30 = *param_2;
+        (void)local_20;
+        cL4_map_put((unsigned long *)(tcb + 0x2110), local_30, &local_30);
+        (void)uStack_28;
+    }
 }
 
 /* end of prelude */
