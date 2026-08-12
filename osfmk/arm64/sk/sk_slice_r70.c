@@ -89,7 +89,7 @@ extern void FUN_00687b0c(void);
 extern void FUN_00687b48(void);
 extern void FUN_00687b74(void);
 extern long FUN_00687bac(void);
-extern void FUN_00655650(void);
+extern ulong FUN_00655650(ulong);
 extern cL4_w16_t FUN_006555fc(ulong);
 extern void FUN_0065569c(void);
 extern void FUN_00655774(void);
@@ -2939,21 +2939,21 @@ ulong FUN_0067b454(ulong a, ulong b, int countchildren, long root, ulong cookie,
     ulong p = start.lo;
     ulong count = 0;
     ulong *node;
+    long *c;
     while ((node = (ulong *)(root + p)) != NULL &&
-           (fn == NULL || ((cfi3)fn)(node, 0, cookie) != 0)) {
-        if ((start.hi != 0) && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
-            while (c != NULL && (fn == NULL || ((cfi3)fn)(c, 1, cookie) != 0)) {
-                long *next = (long *)0;
-                if (c[1] != 0) {
-                    if (FUN_00655650(c[1]) != 0) {
-                        count++;
-                        next = (long *)*c;
-                    }
+           (fn == NULL || ((cfi3)fn)((ulong)node, 0, cookie) != 0)) {
+        c = (start.hi != 0) ? (long *)FUN_0067b704((long)node, 0) : NULL;
+        while (c != NULL && (fn == NULL || ((cfi3)fn)((ulong)c, 1, cookie) != 0)) {
+            long *next = (long *)0;
+            if (c[1] != 0) {
+                if (FUN_00655650(c[1]) != 0) {
+                    count++;
+                    next = (long *)*c;
                 }
-                c = next;
             }
-            if (countchildren == 0) break;
+            c = next;
         }
+        if (start.hi != 0 && countchildren == 0) break;
         if (node[1] == 0) break;
         count++;
         p = *node & 0xfffffffffffffff;
@@ -2969,21 +2969,21 @@ ulong FUN_0067b478(ulong p0, int countchildren, int brk, long root, ulong cookie
 {
     ulong count = 0;
     ulong *node;
+    long *c;
     while ((node = (ulong *)(root + p0)) != NULL &&
-           (fn == NULL || ((cfi3)fn)(node, 0, cookie) != 0)) {
-        if (countchildren != 0 && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
-            while (c != NULL && (fn == NULL || ((cfi3)fn)(c, 1, cookie) != 0)) {
-                long *next = (long *)0;
-                if (c[1] != 0) {
-                    if (FUN_00655650(c[1]) != 0) {
-                        count++;
-                        next = (long *)*c;
-                    }
+           (fn == NULL || ((cfi3)fn)((ulong)node, 0, cookie) != 0)) {
+        c = (countchildren != 0) ? (long *)FUN_0067b704((long)node, 0) : NULL;
+        while (c != NULL && (fn == NULL || ((cfi3)fn)((ulong)c, 1, cookie) != 0)) {
+            long *next = (long *)0;
+            if (c[1] != 0) {
+                if (FUN_00655650(c[1]) != 0) {
+                    count++;
+                    next = (long *)*c;
                 }
-                c = next;
             }
-            if (brk == 0) break;
+            c = next;
         }
+        if (countchildren != 0 && brk == 0) break;
         if (node[1] == 0) break;
         count++;
         p0 = *node & 0xfffffffffffffff;
@@ -3020,7 +3020,7 @@ ulong FUN_0067b580(long root, long out, ulong max, unsigned int *plast)
         }
         long nb = FUN_0067b768();
         if (nb == 0) break;
-        ulong v = FUN_00655650();
+        ulong v = FUN_00655650(0);
         if (out != 0) *(ulong *)(out + count * 8) = v;
         FUN_0067b758();
     }
@@ -3036,7 +3036,7 @@ ulong FUN_0067b664(ulong p0, long out, ulong max, long root, code *fn, ulong coo
     if (out == 0) return -1UL;
     ulong count = 0;
     while ((node = (ulong *)(root + p0)) != NULL && count < max && node[1] != 0) {
-        ulong v = (*(ulong (**)(void))fn)(node[1], cookie);
+        ulong v = ((cfu2)fn)(node[1], cookie);
         *(ulong *)(out + count * 8) = v;
         count++;
         p0 = *node & 0xfffffffffffffff;
@@ -3085,7 +3085,7 @@ ulong FUN_0067b768(void)
 ulong FUN_0067bde4(char *buf, ulong ch)
 {
     if (*buf == 1) {
-        FUN_0067d248(ch, *(ulong *)(buf + 8));
+        FUN_0067d248((unsigned int)ch, (ulong *)(*(ulong *)(buf + 8)));
     } else {
         ulong len = *(ulong *)(buf + 0x20);
         ulong n = len + 1;
@@ -3121,21 +3121,21 @@ ulong FUN_0067c628(long buf, unsigned char *fmt, ulong lead, long nlead, ulong m
         long pad = 0;
         if (width + nlead <= (ulong)*(unsigned int *)(fmt + 4))
             pad = (ulong)*(unsigned int *)(fmt + 4) - (width + nlead);
-        if (FUN_0067c778(buf, 0x20, pad) == 0)
+        if (FUN_0067c778((char *)buf, 0x20, pad) == 0)
             return 0;
     }
-    if (FUN_0067c878(buf, lead, nlead) != 0) {
+    if (FUN_0067c878((char *)buf, lead, nlead) != 0) {
         long pad = 0;
         if (nmid <= width)
             pad = width - nmid;
-        if (FUN_0067c778(buf, 0x30, pad) != 0 &&
-            FUN_0067c878(buf, mid, nmid) != 0) {
+        if (FUN_0067c778((char *)buf, 0x30, pad) != 0 &&
+            FUN_0067c878((char *)buf, mid, nmid) != 0) {
             if ((*fmt >> 6 & 1) != 0) {
                 width = len0 + (ulong)*(unsigned int *)(fmt + 4);
                 long tail = 0;
                 if (*(ulong *)(buf + 0x20) <= width)
                     tail = width - *(ulong *)(buf + 0x20);
-                if (FUN_0067c778(buf, 0x20, tail) == 0)
+                if (FUN_0067c778((char *)buf, 0x20, tail) == 0)
                     return 0;
             }
             *fmt = 0;
@@ -3154,7 +3154,7 @@ ulong FUN_0067c778(char *buf, ulong ch, ulong n)
         ulong left = n;
         if (*buf == 1) {
             for (; left != 0; left--)
-                FUN_0067d248(ch, *(ulong *)(buf + 8));
+                FUN_0067d248((unsigned int)ch, (ulong *)(*(ulong *)(buf + 8)));
         } else {
             ulong len = *(ulong *)(buf + 0x20);
             if (len + n < len) return 0;
