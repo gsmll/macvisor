@@ -2070,7 +2070,8 @@ static void sk_bcg_0046d810(long p1, word_t p2, code *p3)
  * of slice R27; forward-declared here so the assembled slice resolves them.
  * Decompiler "register residue" may make some call sites pass fewer/more args
  * than the declared prototype - that is preserved faithfully. */
-static void     sk_bcg_0046c91c(void);
+static void     sk_bcg_0046c91c(word_t p1, word_t p2, word_t p3, word_t p4,
+                                word_t p5, word_t p6);
 static void     sk_bcg_0046d860(void);
 static word_t   sk_bcg_0046df0c(word_t, word_t, word_t, word_t, word_t,
                                 word_t, word_t, word_t);
@@ -2118,7 +2119,7 @@ static void sk_bcg_0046d860(void)
     pair = FUN_000e72b0(*(word_t *)(ctx_b + 0x10));
     (*slot_fn)(pair.lo, pair.hi, r_x4);
     FUN_00350914(res);
-    sk_bcg_0046c91c();
+    sk_bcg_0046c91c(0, 0, 0, 0, 0, 0); /* register-residue args (decompiler dropped them) */
     FUN_0008e500(ret_ctx);
 }
 /* FUN_0046d988 @ 0x0046d988   (est. sk_bcg_0046d988)
