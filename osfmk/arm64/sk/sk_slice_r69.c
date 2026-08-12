@@ -18,6 +18,13 @@ typedef cl4_result_t sk_pair_t;
 /* Generic callable used for opaque vtable dispatch. */
 typedef long (*sk_fp_t)();
 
+
+/* The cL4 supervisor-call entry: the sole way from the Secure Kernel into the
+ * lower guarded level. `n` selects the operation. */
+#define CallSupervisor(n)  __asm__ volatile("hvc #0" ::: "memory")
+
+/* Per-cpu L4 IPC message buffer (the code writes tpidrro_el0 then traps). */
+static unsigned long sk_ipc_msg[8];
 /* Out-of-range cL4 helpers (declared extern; the FUN_ address in each comment
  * is ground truth; bodies reconstructed by the range worker that owns them).
  * Unspecified-arg prototypes keep call-site argument counts permissive.
@@ -124,7 +131,7 @@ extern long FUN_00686b64();
 extern long FUN_00686c04();
 extern long FUN_00686c2c();
 extern long FUN_00686c74();
-extern long FUN_00686c8c();
+extern sk_pair_t FUN_00686c8c();
 extern long FUN_00686d10();
 extern long FUN_00686d58();
 extern long FUN_00686d90();
@@ -158,6 +165,8 @@ extern long FUN_0068742c();
 extern long FUN_00687464();
 extern long FUN_0068748c();
 extern long thunk_FUN_0067aa00();
+extern unsigned long DAT_006fea50;
+extern long thunk_FUN_00655200();
 
 /* In-range static helper forward declarations (definitions follow). */
 static void sk_cap_decode(unsigned long *out, unsigned long cap, unsigned long op,
@@ -186,6 +195,27 @@ static void sk_cap_merge(unsigned long *out, long a, unsigned long b);
 static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long limit);
 static unsigned int sk_cap_bucket_slot_remove(unsigned long *b, unsigned int idx, unsigned int cnt);
 static sk_pair_t sk_cap_bucket_repack(unsigned long *bucket, unsigned int op, sk_fp_t cb);
+static unsigned long FUN_0067203c(unsigned long a, void *b, void *c, unsigned long d, void *e);
+static void FUN_00671ca8(void);
+static unsigned long FUN_00673894(void *a, unsigned long b);
+static void FUN_00671b60(void *a, unsigned long b, unsigned long c, unsigned long d);
+static void FUN_00671bc4(void *a, unsigned long b);
+static unsigned long FUN_00675b48(unsigned long a, unsigned long b, long *c);
+static unsigned long FUN_00675ae8(void *a);
+static sk_pair_t sk_region_query(unsigned long ctx, unsigned long key, int *type, unsigned long *out);
+static unsigned long sk_region_unlock(unsigned long ctx, unsigned long key, int mode);
+static sk_pair_t sk_supervisor_op2(void);
+static sk_pair_t sk_region_destroy(long owner, unsigned long *r);
+static unsigned long sk_region_alloc_advance(long r, unsigned long *out);
+static unsigned long sk_region_map_extend(long r, unsigned long *off, unsigned long *sz);
+static unsigned long FUN_006736ec(unsigned long a, unsigned long b, unsigned long *c, long *d);
+static void FUN_00673914(long a, unsigned long b, ...);
+static unsigned long FUN_00675418(long a, unsigned long b, unsigned long c);
+static void FUN_00674688(void);
+static void FUN_00671f38(long a);
+static void FUN_0066e8b4(void);
+static sk_pair_t sk_region_free(unsigned long r);
+static unsigned long FUN_00674fac(long a, unsigned long b, void *c, int d);
 
 /* sk_l4_error_format @ 0x00674e98  (est. sk_l4_error_format)
  * Ghidra: void sk_l4_error_format(undefined8 *param_1, byte param_2)
@@ -1848,6 +1878,7 @@ static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long
         unsigned long vb2 = sk_cap_value_base(acc);
         unsigned long d2[3] = {0, 0, 0};
         sk_cap_decode_tag(d2, acc, vb2 >> 6 & 0x3fffff);
+        unsigned long r[4] = {0, 0, 0, 0};
         do {
             v = sk_cap_list_get((char *)d2);
             if ((v & 3) == 0) {
@@ -1857,7 +1888,6 @@ static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long
                 out[3] = cap;
                 return;
             }
-            unsigned long r[4] = {0, 0, 0, 0};
             sk_cap_remove(r, cap, v >> 6 & 0x3fffff, 0);
             cap = r[2];
         } while ((char)r[0] == '\0');
@@ -1880,10 +1910,11 @@ static unsigned int sk_cap_bucket_slot_remove(unsigned long *b, unsigned int idx
     unsigned long *lim = 0;
     if (b != 0) lim = b + 8;
     unsigned long *p = b + idx;
+    unsigned int i = 0;
     if ((b <= p && p + 1 <= lim) && p <= p + 1) {
         *p = 0;
         do {
-            unsigned int i = idx;
+            i = idx;
             idx = i + 1;
             if (cnt <= (idx & 0xff)) break;
             p = b + (unsigned char)idx;
@@ -1976,8 +2007,9 @@ static sk_pair_t sk_cap_bucket_repack(unsigned long *bucket, unsigned int op, sk
     long run = 7;
     unsigned long pos = (unsigned long)left;
     bool first = true;
+    bool was = false;
     do {
-        bool was = first;
+        was = first;
         if ((unsigned int)pos < 8) {
             unsigned long *s = bucket + pos;
             if ((s < bucket || lim < s + 1) || s + 1 < s) goto trap;
@@ -2145,6 +2177,8 @@ d3f0:
             }
         }
     }
+    unsigned long *sub = 0;   /* merge candidate bucket (scope widened) */
+    unsigned long *sl = 0;
     FUN_0066a6b4(bucket);
     if (sub + 1 <= sl) {
         if ((*sub & 0x3c) == 8) {
@@ -2203,7 +2237,7 @@ static void sk_page_region_build(unsigned long base, unsigned long *out)
     unsigned long res[2] = {0, 0};
     unsigned long uVar4 = FUN_0067203c(0x148, &d, &res, 0, &d);
     if ((uVar4 & 0xff) == 0) {
-        unsigned long v = CONCAT71(0, d2[1]);   /* hi word artifact */
+        unsigned long v = 0;   /* CONCAT71(uStack_37,uStack_38) artifact: hi word of result */
         if ((v <= v + base) && ((v == 0 || (base <= (v + base) - v)))) {
             out[1] = base;
             out[2] = 0;
@@ -2236,7 +2270,7 @@ static void sk_page_region_resize(long *r, unsigned long need)
     } else if (need <= (unsigned long)r[1]) {
         if ((unsigned long)r[2] < need) {
             unsigned long newsz = need;
-            unsigned long rc = (**(unsigned long **)(r[4] + 0x18))(r[3], &newsz);
+            unsigned long rc = (*(sk_fp_t *)(r[4] + 0x18))(r[3], &newsz);
             if ((rc & 0xff) != 0) {
                 long off = (rc & 0xff) * 8;
                 unsigned char *p = (unsigned char *)(off + 0x6b5e50);
@@ -2268,7 +2302,7 @@ static void sk_page_region_destroy(long *r)
         FUN_006864b4();
         rc = 0;
     } else {
-        rc = (**(unsigned long **)r[4])();
+        rc = (*(sk_fp_t *)r[4])();
         rc = rc & 0xff;
         if (rc == 0) {
             *r = 0;
@@ -2345,8 +2379,9 @@ static sk_pair_t sk_region_register(unsigned long ctx)
     if (st[0] <= st[0] + 0x2a0) {
         unsigned long *pc = (unsigned long *)FUN_00668c94();
         unsigned long v = *pc;
+        unsigned long cur = 0;
         do {
-            unsigned long cur = v;
+            cur = v;
             if (cur == 0) goto found;
             v = *(unsigned long *)(cur + 0x58);
         } while (*(unsigned long *)(cur + 0x58) != 0);
@@ -2361,4 +2396,232 @@ found:
         }
     }
     __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e184) */
+}
+
+/* FUN_0066e19c @ 0x0066e19c  (est. sk_region_query)
+ * Ghidra: undefined1 [16] FUN_0066e19c(undefined8 param_1, undefined8 param_2,
+ *                                     int *param_3, undefined8 *param_4)
+ * Queries a region: resolves the region descriptor for param_2 (FUN_00673894),
+ * copies its type (param_3) and 4-word descriptor (param_4) out, and returns a
+ * pair {descriptor, 0x6b6978 table tag}.
+ * Confidence: medium */
+static sk_pair_t sk_region_query(unsigned long ctx, unsigned long key, int *type, unsigned long *out)
+{
+    unsigned long d[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    FUN_00671b60(d, ctx, 0, 0);
+    unsigned long *r = (unsigned long *)FUN_00673894(d, key);
+    unsigned long table;
+    if (r == 0) {
+        table = 0;
+    } else {
+        if (r + 0x16 < r) {
+            __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e274) */
+        }
+        if (*(int *)(r + 4) == 0) {
+            table = 0;
+            r = 0;
+        } else {
+            if (r + 0x16 <= r) {
+                __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e274) */
+            }
+            if (type != 0) {
+                *type = *(int *)(r + 4);
+            }
+            if (out != 0) {
+                out[1] = r[1];
+                out[0] = r[0];
+                out[3] = r[3];
+                out[2] = r[2];
+            }
+            table = 0x6b6978;
+        }
+    }
+    FUN_00671bc4(d, ctx);
+    return (sk_pair_t){(unsigned long)r, table};
+}
+
+/* FUN_0066e274 @ 0x0066e274  (est. sk_region_unlock)
+ * Ghidra: ulong FUN_0066e274(undefined8 param_1, undefined8 param_2, int param_3)
+ * Unlocks/commits a region: resolves it (FUN_006736ec), then for the unlock
+ * variant (param_3==1) traps via CallSupervisor(3) to release it, returning the
+ * IPC status. Checks the persistent flag and returns 0x9cb0001 if locked.
+ * Confidence: medium */
+static unsigned long sk_region_unlock(unsigned long ctx, unsigned long key, int mode)
+{
+    unsigned long size = 0;
+    long r = 0;
+    unsigned long rc = FUN_006736ec(ctx, key, &size, &r);
+    if ((rc & 0xff) == 0) {
+        if ((mode == 1) && ((*(unsigned char *)(r + 0x20) >> 3 & 1) == 0)) {
+            rc = 0x9cb0001;
+        } else {
+            sk_ipc_msg[0] = (unsigned long)(mode == 1);   /* tpidrro_el0 message word */
+            CallSupervisor(3);
+            if (size == 0) {
+                rc = 0;
+            } else {
+                rc = (size & 0x7fff) << 0x10 | 0x80000001;
+            }
+        }
+    }
+    return rc;
+}
+
+/* FUN_0066e314 @ 0x0066e314  (est. sk_supervisor_op2)
+ * Ghidra: undefined1 [16] FUN_0066e314(void)
+ * Performs a global supervisor operation: resolves the runtime context
+ * (FUN_00668c78) and performs a 3-arg table op (FUN_00677674), then traps via
+ * CallSupervisor(2). Returns the IPC status pair.
+ * Confidence: medium */
+static sk_pair_t sk_supervisor_op2(void)
+{
+    unsigned long ctx = FUN_00668c78();
+    unsigned long rc = FUN_00677674(ctx, 2, 0);
+    unsigned long status;
+    if (rc == 0) {
+        status = 0x9e60004;
+    } else {
+        CallSupervisor(2);
+        status = 0;
+        if (rc != 0) {
+            status = (rc & 0x7fff) << 0x10 | 0x80000001;
+        }
+    }
+    return (sk_pair_t){status, 0};
+}
+
+/* FUN_0066fa04 @ 0x0066fa04  (est. sk_region_destroy)
+ * Ghidra: undefined1 [16] FUN_0066fa04(long param_1, undefined8 *param_2)
+ * Destroys a region object (param_2, 0xc0 bytes): verifies ownership, releases
+ * the child regions (sk_region_free) and runtime allocations, tears down the
+ * lock, and zeroes the descriptor, then returns the zero status pair. Fatal on
+ * a busy flag.
+ * Confidence: medium */
+static sk_pair_t sk_region_destroy(long owner, unsigned long *r)
+{
+    *(unsigned long *)0x70024c = *(unsigned long *)0x70024c + 1;
+    if (r[10] != (unsigned long)owner) {
+        FUN_006833d4(0x6aedb9);   /* fatal: wrong owner */
+    }
+    if (*(char *)((long)r + 0xa1) == '\x01') {
+        FUN_00686c04();   /* fatal-ish cleanup */
+    } else {
+        sk_region_free(r[0xb]);
+        sk_region_free(r[0xe]);
+        FUN_006860f4(r[0x12]);
+        FUN_006860f4(r[0x13]);
+        if (*(char *)(r + 8) != '\x01') {
+            thunk_FUN_00655200(r + 6);   /* lock teardown */
+            r[0x15] = 0; r[0x14] = 0; r[0x17] = 0; r[0x16] = 0;
+            r[0x11] = 0; r[0x10] = 0; r[0x13] = 0; r[0x12] = 0;
+            r[0xd] = 0; r[0xc] = 0; r[0xf] = 0; r[0xe] = 0;
+            r[9] = 0; r[8] = 0; r[0xb] = 0; r[10] = 0;
+            r[5] = 0; r[4] = 0; r[7] = 0; r[6] = 0;
+            r[1] = 0; r[0] = 0; r[3] = 0; r[2] = 0;
+            FUN_0066951c(r);   /* release the object */
+            return (sk_pair_t){0, 0};
+        }
+    }
+    FUN_006833d4(0x6adaed);   /* fatal */
+}
+
+/* FUN_00670178 @ 0x00670178  (est. sk_region_alloc_advance)
+ * Ghidra: ulong FUN_00670178(long param_1, ulong *param_2)
+ * Advances a region's allocation cursor: computes the next 16KB-aligned
+ * boundary at/beyond the given address (via in-register args), validates it
+ * against the region size, and extends the region to cover it (FUN_00670228),
+ * storing the new cursor. Returns 0 or 0x6010001.
+ * Confidence: medium */
+static unsigned long sk_region_alloc_advance(long r, unsigned long *out)
+{
+    unsigned long target = 0 /*in_x10*/ + (0 /*in_x9*/ & 0xffffffffffffc000);
+    unsigned long rc;
+    if (*(unsigned long *)(r + 0x10) < target) {
+        rc = 0x6010001;
+    } else {
+        unsigned long cur = *(unsigned long *)(r + 0x48);
+        long delta = (long)(target - cur);
+        if (target < cur || delta == 0) {
+            rc = 0;
+            *out = cur;
+        } else {
+            if ((0 /*in_w8*/ >> 7 & 1) != 0) {
+                cur = *(unsigned long *)(r + 0x10) - target;
+            }
+            rc = sk_region_map_extend(r, &cur, (unsigned long *)&delta);
+            if ((rc & 0xff) == 0) {
+                rc = 0;
+                *(unsigned long *)(r + 0x48) = target;
+                *out = target;
+            }
+        }
+    }
+    return rc;
+}
+
+/* FUN_00670228 @ 0x00670228  (est. sk_region_map_extend)
+ * Ghidra: void FUN_00670228(long param_1, ulong *param_2, ulong *param_3)
+ * Extends a region's mapping: aligns the requested [*param_2, *param_2+*param_3)
+ * range to 16KB, validates against the region, maps it via FUN_00675418, and on
+ * sub-page or non-alignable cases walks the page table (FUN_00686c8c) and maps
+ * individual pages (FUN_00674fac). Updates the alignment-corrected range.
+ * Confidence: medium */
+static unsigned long sk_region_map_extend(long r, unsigned long *off, unsigned long *sz)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    if (*(unsigned int *)(r + 0x20) != 0 && (*(unsigned int *)(r + 0x20) & 0x81000) == 0) {
+        unsigned long base = *off;
+        if ((base < *(unsigned long *)(r + 0x10)) && (*sz <= *(unsigned long *)(r + 0x10) - base)) {
+            unsigned long pa = (*(long *)(r + 8) + base) & 0xffffffffffffc000;
+            *sz = (*sz + base + *(long *)(r + 8)) - pa;
+            *off = pa - *(long *)(r + 8);
+            long align = 0;
+            if ((*sz & 0x3fff) != 0) align = 0x4000;
+            *sz = align + (*sz & 0xffffffffffffc000);
+            FUN_00673914(r, *off);
+            unsigned long rc = FUN_00675418(r, pa, *sz + pa);
+            unsigned int c = (unsigned int)rc & 0xff;
+            if (c == 2) {
+                /* result 0x68f0002 on collision */
+            } else if (((c != 8) && ((rc & 0xff) != 0)) &&
+                       ((*(unsigned int *)(r + 0x20) >> 0x12 & 1) == 0)) {
+                unsigned char sb[32];
+                sk_pair_t rr = FUN_00686c8c(rc, pa, sb);
+                unsigned long pg = rr.hi;
+                long src = (long)rr.lo;
+                unsigned long cookie2 = *(unsigned long *)0x6b5ed0;
+                if (((*(unsigned char *)(src + 0x21) >> 4 & 1) == 0) || (*(unsigned long *)(src + 0x10) <= pg)) {
+                    rc = 0x6230001;
+                } else {
+                    FUN_00673914(src, pg & 0xffffffffffffc000, 0x4000);
+                    rc = FUN_00674fac(src, *(long *)(src + 8) + pg, sb, 0);
+                    if ((long)rc < 7) {
+                        if (rc == 0) rc = 0;
+                        else if (rc == 2) rc = 0x80020002;
+                        else {
+                            if (rc != 5) goto panicpath;
+                            rc = 0x80050003;
+                        }
+                    } else {
+                        if (((rc != 7) && (rc != 0x307)) && (rc != 0x207)) {
+panicpath:
+                            FUN_00686d10(rc, (unsigned char *)&sb);
+                            FUN_00674688();
+                            return;
+                        }
+                        rc = (rc & 0x7fff) << 0x10 | 0x80000001;
+                    }
+                }
+                if (*(unsigned long *)0x6b5ed0 == cookie2) {
+                    return;
+                }
+                FUN_0067f660(rc, 0);   /* fatal (noreturn) */
+            }
+        }
+    }
+    if (*(unsigned long *)0x6b5ed0 == cookie) {
+        return 0;
+    }
+    FUN_0067f660(0x6800001, 0);   /* fatal (noreturn) */
+    return 0;
 }

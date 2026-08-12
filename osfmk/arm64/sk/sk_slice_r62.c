@@ -499,11 +499,11 @@ static void sk_mr_emit_words_00404dc8(void)
         sk_x_003f6278();
     }
 }
-/* FUN_00404e60 @ 0x00404e60   (est. sk_mr_slot_call)
+/* FUN_00404e60 @ 0x00404e60   (est. sk_r62_00404e60)
  * Ghidra: void FUN_00404e60(undefined8,undefined8,long*)
  * Invokes the dispatch slot at +0x20; if a result register is set, stores it.
  * Confidence: low. */
-static void sk_mr_slot_call_00404e60(word_t a, word_t b, sword_t *out)
+static void sk_r62_00404e60(word_t a, word_t b, sword_t *out)
 {
     (*(word_t (**)(void))((word_t)0 + 0x20))();
     if ((word_t)0 + 0x10 != 0) {
@@ -2262,6 +2262,7 @@ static sword_t sk_ipc_add_checked_0041c29c(sword_t p1, word_t p2, sword_t p3)
         return p1 + p3;
     }
     CL4_SW_BP(0x41c2ac);
+    return 0;   /* unreachable: CL4_SW_BP traps */
 }
 
 /* FUN_0041c2ac @ 0x0041c2ac   (est. sk_ipc_add_pair)

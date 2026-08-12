@@ -284,6 +284,7 @@ extern unsigned long sk_x_00686310();   /* FUN_0000686310 */
 extern unsigned long sk_x_00686348();   /* FUN_0000686348 */
 extern unsigned long sk_x_00686380();   /* FUN_0000686380 */
 extern unsigned long sk_x_006863b8();   /* FUN_00006863b8 */
+extern unsigned long sk_x_0066b520();   /* FUN_000066b520 */
 /* Image-base data globals referenced by this slice (Ghidra DAT_ ground truth). */
 extern uint64_t sk_g_0002007e;   /* DAT_000002007e */
 extern uint64_t sk_g_0066548c;   /* DAT_000066548c */
@@ -625,6 +626,7 @@ void sk_f_00663d3c(int64_t obj, uint64_t count)
                            ((*(uint16_t *)(obj + 0x30) >> 3) / 0x7d) * -1000;
             uint32_t digits = 0x48;
             uint32_t divisor = 1000;
+            bool more;
             do {
                 uint32_t q = divisor / 10;
                 uint32_t d = 0;
@@ -633,7 +635,7 @@ void sk_f_00663d3c(int64_t obj, uint64_t count)
                 }
                 digits = d + 0x30 & 0xffff | digits << 8;
                 val = val - d * q;
-                bool more = 0x13 < divisor;
+                more = 0x13 < divisor;
                 divisor = q;
             } while (more);
             sk_x_00662628(*head, digits);
@@ -1532,13 +1534,16 @@ void sk_f_00664cbc(void)
         }
 done:
         {
+            bool changed;
+
             uint8_t *node = (uint8_t *)0;
+
             do {
                 uint8_t *next = (uint8_t *)sk_g_006fe7f8;
                 if (sk_g_006fe7f8 == (uint64_t)node) {
                     sk_g_006fe7f8 = (uint64_t)&sk_g_006b56c8;
                 }
-                bool changed = (next != node);
+                changed = (next != node);
                 sk_g_006b56c8 = (uint64_t)node;
                 if (changed) {
                     sk_g_006b56c8 = (uint64_t)next;
@@ -1547,13 +1552,16 @@ done:
             } while (changed);
         }
         {
+            bool changed;
+
             uint8_t *node = (uint8_t *)0;
+
             do {
                 uint8_t *next = (uint8_t *)sk_g_006fe7f8;
                 if (sk_g_006fe7f8 == (uint64_t)node) {
                     sk_g_006fe7f8 = (uint64_t)&sk_g_006b56e0;
                 }
-                bool changed = (next != node);
+                changed = (next != node);
                 sk_g_006b56e0 = (uint64_t)node;
                 if (changed) {
                     sk_g_006b56e0 = (uint64_t)next;
@@ -5430,7 +5438,7 @@ uint64_t *sk_f_00669db4(void)
                 ctx = sk_f_00667568();
                 if ((ctx & 1) == 0) {
                     uVar9 = sk_x_00685fe8();
-                    head = (uint64_t *)sk_f_0066b520(uVar9, 0x40);
+                    head = (uint64_t *)sk_x_0066b520(uVar9, 0x40);
                     return head;
                 }
                 err_out = 0;
@@ -5539,7 +5547,7 @@ fatal_669fc4:
  * permitted (sk_f_00667568 low bit), calls sk_f_00667530 to obtain a block,
  * verifies it is 0x4000-aligned, releases the region lock at +0x238, and links
  * the block into the per-cpu free list at +0xd0/+0xd8/+0xe0. Otherwise defers
- * via sk_f_0066b520(uVar5, 0x40). On any invariant violation it panics.
+ * via sk_x_0066b520(uVar5, 0x40). On any invariant violation it panics.
  * Confidence: medium
  * Notes: continuation resume target of FUN_00667568 (see 0x669db4). */
 void sk_f_0066a08c(uint64_t param_1)
@@ -5552,7 +5560,7 @@ void sk_f_0066a08c(uint64_t param_1)
     uVar3 = sk_f_00667568();
     if ((uVar3 & 1) == 0) {
         uVar5 = sk_x_00685fe8();
-        sk_f_0066b520(uVar5, 0x40);
+        sk_x_0066b520(uVar5, 0x40);
         return;
     }
     err_out = 0;
@@ -5593,11 +5601,11 @@ void sk_f_0066a08c(uint64_t param_1)
 /* FUN_0066a1cc @ 0x66a1cc   (est. sk_alloc_defer)
  * Ghidra: void FUN_0066a1cc(uint64_t param_1)
  * Thin shim that defers/queues an allocation request by forwarding to
- * sk_f_0066b520(param_1, 0x40). No other work is performed.
+ * sk_x_0066b520(param_1, 0x40). No other work is performed.
  * Confidence: high */
 void sk_f_0066a1cc(uint64_t param_1)
 {
-    sk_f_0066b520(param_1, 0x40);
+    sk_x_0066b520(param_1, 0x40);
 }
 
 /* FUN_0066a1d4 @ 0x66a1d4   (est. sk_free_block_pop)

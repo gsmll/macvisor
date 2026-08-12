@@ -287,12 +287,20 @@ static long sk_arr_reserve_00456158(long param_1, long param_2);
 static long sk_arr_reserve_004561cc(long param_1, long param_2);
 static long sk_arr_ensure_0045636c(word_t param_1, long param_2, word_t param_3, long param_4);
 static long sk_arr_grow_00456420(word_t param_1, word_t param_2, word_t param_3, long param_4);
-static long sk_arr_ensure2_004564e4(word_t param_1, long param_2, word_t param_3, long param_4);
-static long sk_arr_ensure3_0045659c(word_t param_1, long param_2, word_t param_3, long param_4);
+static long sk_arr_ensure2_004564e4(word_t param_1, long param_2, word_t param_3, long param_4,
+                                    word_t param_5, word_t param_6, word_t param_7);
+static long sk_arr_ensure3_0045659c(word_t param_1, long param_2, word_t param_3, long param_4,
+                                    word_t param_5, word_t param_6, word_t param_7, word_t param_8);
 static long sk_arr_grow2_00456650(word_t param_1, word_t param_2, word_t param_3, long param_4);
 static long sk_arr_grow3_00456714(word_t param_1, word_t param_2, word_t param_3, long param_4);
 static cl4_pair_t sk_str_parse_int_00457bec(byte *param_1, long param_2, long param_3);
 static bool sk_str_eql_00456d90(word_t param_1, word_t param_2, long param_3);
+static void sk_str_guts_init_full_00455778(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static void sk_str_elem_append_00455990(word_t param_1, word_t param_2, word_t param_3);
+static word_t sk_tag_read_45_00458d04(long param_1);
+static void sk_tag_clear_45_00458d10(long param_1);
+static void sk_script_wit_apply5_00458d30(word_t param_1, word_t param_2);
+static word_t sk_script_wit_run5_00458d40(word_t param_1);
 
 /* ===================================================================== *
  * Function bodies (address order)
@@ -1637,7 +1645,7 @@ static cl4_pair_t sk_script_name_0045399c(word_t param_1)
     word_t uVar2 = 0xe100000000000000;
     word_t uVar3 = 0xeb000000006e6974;  /* high tag */
     switch (param_1) {
-    case default:
+    default:
         au.hi = uVar3;
         au.lo = uVar1;
         return au;
@@ -3067,7 +3075,12 @@ static long sk_collection_element_types_check_00455438(void)
     uVar2 = sk_x_00027754(uVar2);
     sk_x_004662b8();
     uVar3 = sk_x_00002534();
-    sk_x_00310c44()(0, 0, 0, uVar3, in_x3, uVar2);
+    {
+        /* 00310c44 yields a closure; invoke it with the element-type pieces. */
+        word_t (*fn)(word_t, word_t, word_t, word_t, word_t, word_t) =
+            (word_t (*)(word_t, word_t, word_t, word_t, word_t, word_t))sk_x_00310c44();
+        fn(0, 0, 0, uVar3, in_x3, uVar2);
+    }
     if (local_58[0] != 0) {
         sk_x_003509c8(in_x3);
         return local_58[0];
@@ -3129,11 +3142,11 @@ static void sk_special_string_init_0045567c(word_t param_1, word_t param_2, word
     sk_x_003504d0();
     sk_x_0046647c();
     sk_x_00027754(param_3);
-    lVar1 = sk_x_000262fc((word_t)sk_x_00455a68, 0);
+    lVar1 = sk_x_000262fc((word_t)sk_str_elem_type_00455a68, 0);
     uVar2 = sk_x_00371950(0, *(word_t *)(lVar1 + 0x10)).lo;
     sk_x_0036b118(lVar1);
     au = sk_x_0007c1c4(0);
-    sk_x_00455778(au.lo, au.hi, uVar2, param_3);
+    sk_str_guts_init_full_00455778(au.lo, au.hi, uVar2, param_3);
     /* virtual dispatch on unaff_x19 witness */
     return;
 }
@@ -3166,7 +3179,7 @@ static void sk_str_guts_init_full_00455778(word_t param_1, word_t param_2,
     /* element loop: while runs remain, build + 00455990 */
     while (1) {
         if (0) break;
-        sk_x_00455990(0, 0, 0);
+        sk_str_elem_append_00455990(0, 0, 0);
         sk_x_000026e8(0);
     }
     sk_x_00077024();
@@ -3234,18 +3247,31 @@ static void sk_utf8_encode_00455ac8(word_t param_1, word_t param_2, word_t param
 {
     cl4_pair_t a, b;
     word_t cur = param_3;
-    while (param_2 >= 5) {
-        sk_x_004665e8();
-        sk_x_00310d68(0xff, cur);
-        sk_x_00310d68(0xff, cur);
+    while (param_2 >= 4) {
+        b.hi = a.hi;
+        b.lo = param_1;
+        cur = a.lo;
+        if (param_2 < 5) {
+            switch (param_2) {
+            case 4: a = sk_x_004665e8(); cur = a.lo; /* fallthrough */
+            case 3: a = sk_x_004665e8(b.lo, b.hi, cur); cur = a.lo; /* fallthrough */
+            case 2: cur = sk_x_004665e8(b.lo, b.hi, cur).lo; /* fallthrough */
+            case 1: sk_x_00310d68(0, cur); return;
+            default: return;
+            }
+        }
+        cur = sk_x_004665e8().lo;
+        cur = sk_x_00310d68(0xff, cur).lo;
+        cur = sk_x_00310d68(0xff, cur).lo;
         a = sk_x_00310d68(0, cur);
         param_1 = a.lo;
         param_2 -= 4;
     }
+    /* param_2 < 4 tail: fall through the <5 switch */
     switch (param_2) {
-    case 4: sk_x_004665e8(); cur = cur; /* fallthrough */
-    case 3: b = sk_x_004665e8(a.lo, a.hi, cur); cur = b.lo; /* fallthrough */
-    case 2: cur = sk_x_004665e8(a.lo, a.hi, cur); /* fallthrough */
+    case 4: a = sk_x_004665e8(); cur = a.lo; /* fallthrough */
+    case 3: a = sk_x_004665e8(a.lo, a.hi, cur); cur = a.lo; /* fallthrough */
+    case 2: cur = sk_x_004665e8(a.lo, a.hi, cur).lo; /* fallthrough */
     case 1: sk_x_00310d68(0, cur); return;
     default: return;
     }
@@ -3547,7 +3573,7 @@ static long sk_arr_grow_00456420(word_t param_1, word_t param_2, word_t param_3,
     elem = *(word_t *)(param_4 + 0x10);
     result = sk_arr_reserve_004561cc(elem, cap);
     if ((param_1 & 1) == 0) {
-        sk_x_004568d8(0, elem, result + 0x20, param_4);
+        sk_buf_copy_020_004568d8(0, elem, result + 0x20, param_4);
     } else {
         sk_x_000699a4(param_4 + 0x20, elem, result + 0x20);
         *(word_t *)(param_4 + 0x10) = 0;
@@ -3576,7 +3602,7 @@ static long sk_arr_ensure2_004564e4(word_t param_1, long param_2, word_t param_3
     sk_x_00354828(elem, param_2);
     result = sk_arr_reserve_004561cc(elem, 0);
     if ((param_1 & 1) == 0) {
-        sk_x_004568d8(0, elem, result + 0x20, param_4);
+        sk_buf_copy_020_004568d8(0, elem, result + 0x20, param_4);
     } else {
         sk_x_000699a4(param_4 + 0x20, elem, result + 0x20);
         *(word_t *)(param_4 + 0x10) = 0;
@@ -3636,7 +3662,7 @@ static long sk_arr_grow2_00456650(word_t param_1, word_t param_2, word_t param_3
     elem = *(word_t *)(param_4 + 0x10);
     result = sk_arr_reserve_00456158(elem, cap);
     if ((param_1 & 1) == 0) {
-        sk_x_00456b28(0, elem, result + 0x20, param_4);
+        sk_buf_copy_018_00456b28(0, elem, result + 0x20, param_4);
     } else {
         sk_x_000699d8(param_4 + 0x20, elem, result + 0x20);
         *(word_t *)(param_4 + 0x10) = 0;
@@ -3666,7 +3692,7 @@ static long sk_arr_grow3_00456714(word_t param_1, word_t param_2, word_t param_3
     elem = *(word_t *)(param_4 + 0x10);
     result = sk_arr_reserve_00456158(elem, cap);
     if ((param_1 & 1) == 0) {
-        sk_x_00456b28(0, elem, result + 0x20, param_4);
+        sk_buf_copy_018_00456b28(0, elem, result + 0x20, param_4);
     } else {
         sk_x_000699d8(param_4 + 0x20, elem, result + 0x20);
         *(word_t *)(param_4 + 0x10) = 0;
@@ -3946,7 +3972,7 @@ static bool sk_str_equal_00456d90(word_t param_1, word_t param_2, long param_3)
             if ((param_2 >> 0x3c & 1) == 0) {
                 if ((param_2 >> 0x3d & 1) == 0) {
                     word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
-                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2);
+                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2).lo;
                     c2 = *(char *)(base + uVar10);
                 } else {
                     c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar10);
@@ -4007,7 +4033,7 @@ static bool sk_str_equal_buf_00456fa8(word_t param_1, word_t param_2, char *para
             if ((param_2 >> 0x3c & 1) == 0) {
                 if ((param_2 >> 0x3d & 1) == 0) {
                     word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
-                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1);
+                    if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1).lo;
                     c2 = *(char *)(base + uVar11);
                 } else {
                     c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar11);
@@ -4061,7 +4087,7 @@ static word_t sk_str_has_prefix_004571b0(char *param_1, char *param_2, word_t pa
             if ((param_4 >> 0x3c & 1) == 0) {
                 if ((param_4 >> 0x3d & 1) == 0) {
                     word_t base = (param_4 & 0xfffffffffffffff) + 0x20;
-                    if ((param_3 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_3, param_4);
+                    if ((param_3 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_3, param_4).lo;
                     c1 = *(char *)(base + uVar13);
                 } else {
                     c1 = *(char *)((word_t)(param_3 & 0xffffffffffff) + uVar13);
@@ -4131,7 +4157,7 @@ static word_t sk_str_contains_equiv_004573b0(byte *param_1, word_t param_2, word
             if ((param_6 >> 0x3c & 1) == 0) {
                 if ((param_6 >> 0x3d & 1) == 0) {
                     word_t base = (param_6 & 0xfffffffffffffff) + 0x20;
-                    if ((param_5 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_5, param_6);
+                    if ((param_5 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_5, param_6).lo;
                     c1 = *(char *)(base + uVar11);
                 } else {
                     c1 = *(char *)((word_t)(param_5 & 0xffffffffffff) + uVar11);
@@ -4217,7 +4243,7 @@ static word_t sk_str_suffix_equiv_00457650(word_t param_1, word_t param_2, byte 
         if ((param_2 >> 0x3c & 1) == 0) {
             if ((param_2 >> 0x3d & 1) == 0) {
                 word_t base = (param_2 & 0xfffffffffffffff) + 0x20;
-                if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2);
+                if ((param_1 >> 0x3c & 1) == 0) base = sk_x_002a9ba8(param_1, param_2).lo;
                 c2 = *(char *)(base + uVar12);
             } else {
                 c2 = *(char *)((word_t)(param_1 & 0xffffffffffff) + uVar12);
@@ -4314,7 +4340,7 @@ static void sk_arr_ensure_param_28_00457a28(long param_1)
 {
     sk_arr_ensure3_0045659c(0, *(word_t *)(param_1 + 0x10), 0, param_1,
                             0x657af0, 0x005a3530, (word_t)sk_x_00069970,
-                            (word_t)sk_x_00456c3c);
+                            (word_t)sk_buf_copy_010_00456c3c);
 }
 
 /* FUN_00457a88 @ 0x00457a88   (est. sk_arr_ensure_param_88)
@@ -4520,7 +4546,7 @@ static long sk_utf32_range_table_00457f5c(void)
     *(long *)(buf + 0x10) = sentinel;
     *(long *)(buf + 0x18) = ((cap - 0x20) / 4) << 1;
     {
-        byte *p = (byte *)sk_x_00458018((word_t)&sentinel, buf + 0x20, sentinel);
+        byte *p = (byte *)sk_utf32_scalar_fill_00458018((word_t)&sentinel, buf + 0x20, sentinel);
         if (sentinel == 0x0010f800) {
             if (p != (byte *)0x0010f800) CL4_SW_BP(0x457ff8);
             return buf;
@@ -4690,23 +4716,23 @@ static void sk_elem_release_0x178_004582e8(word_t param_1, long param_2)
             /* copy the record (00458d04 tag at rec+0x170) */
             sk_x_00117cc4((word_t)&stack[0x376], rec, 0x178);
             sk_x_00117cc4((word_t)&stack[0x1e0], rec, 0x178);
-            switch (sk_x_00458d04((word_t)&stack[0x376])) {
+            switch (sk_tag_read_45_00458d04((word_t)&stack[0x376])) {
             case 1: {
                 /* 0x99-byte sub-record + nested array release */
-                sk_x_00458d10((word_t)&stack[0x1e0]);
-                word_t sub = sk_x_00458d10((word_t)&stack[0x376]);
+                sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
+                word_t sub = sk_tag_clear_45_00458d10((word_t)&stack[0x376]);
                 /* ... inner elements ... */
-                sk_x_00458d40((word_t)&stack[0x376]);
+                sk_script_wit_run5_00458d40((word_t)&stack[0x376]);
                 break;
             }
             case 2:
-                sk_x_00458d10((word_t)&stack[0x1e0]);
+                sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
                 break;
             default:
-                r = (byte *)sk_x_00458d10((word_t)&stack[0x1e0]);
+                r = (byte *)sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
                 a = *(word_t *)(r + 8);
                 b = *(word_t *)(r + 0x10);
-                sk_x_00458d30((word_t)&stack[0x376], (word_t)&stack[0x370]);
+                sk_script_wit_apply5_00458d30((word_t)&stack[0x376], (word_t)&stack[0x370]);
                 sk_x_001b9084(param_1, 0x5b, 0xe100000000000000);
                 sk_x_003a25d4(0xe100000000000000);
                 sk_x_002298d4(a >> 0xe);
@@ -4714,7 +4740,7 @@ static void sk_elem_release_0x178_004582e8(word_t param_1, long param_2)
                 sk_x_004582e8(param_1, *(word_t *)(r + 0x18));
                 break;
             }
-            sk_x_00458d40((word_t)&stack[0x376]);
+            sk_script_wit_run5_00458d40((word_t)&stack[0x376]);
             idx++;
         } while (idx != n);
     }

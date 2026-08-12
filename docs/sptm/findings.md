@@ -4801,3 +4801,27 @@ Confidence: Medium
 - **Evidence**: `if ((long)param_2 < 0) { FUN_003488bc(1); FUN_00349a54(); FUN_001afe4c(); }`; `if (CARRY8(param_1*1e18, param_2*1e9)) lVar3 = lVar3 + 1;`; `SoftwareBreakpoint(1,0x3fbc98)` fallthrough.
 - **Severity (hypothesis)**: informational — negative/overflowing time inputs trap rather than wrap, which is the safe behavior for a scheduler/job-deadline source.
 - **Confidence**: high (explicit bounds checks and carry logic in the decompile).
+
+## [SKR62] 0x0041a0dc sk_ipc_badge_match
+Observation: The IPC badge-matching switch on the message tag (param_1[10]) permits the caller's message type byte to drive cap-object comparison semantics, including the one-hot index 1..10 path that maps directly onto indexed badge words.
+Evidence: decompile 0041a0dc: `switch((char)param_1[10])` with `case '\x01'`/`'\x02'`/`'\x03'`; the tag-3 branch validates the one-hot index `*plVar14 == 1..10` against `FUN_00463558(plVar14[1],plVar14[6],plVar14[8],plVar14[2],plVar14[4])`.
+Severity (hypothesis): Medium — an untrusted caller controls the message tag that selects which object words are compared, so a mismatch between the badge type and the actual cap type could be masked.
+Confidence: Medium (register-fragment path; the `extraout_x8/x9` cross-check registers are unmodelled).
+
+## [SKR62] 0x0041b1d4 sk_ipc_badge_validate
+Observation: The top-3-bits "cap type" (param_2 >> 0x3d) must match the object type (param_6 >> 0x1d); the null-cap sentinel (0xa000000000000000) and the one-hot index cases are checked against 0x9fffffffffffffff/-0x6000000000000000 bounds before returning the "ok" sentinel.
+Evidence: decompile 0041b1d4 `switch(param_2 >> 0x3d)` case 4: `if (-0x6000000000000001 < param_6) return 0;` and case 5 requires `param_6 == -0x6000000000000000`; final `uVar2 = FUN_0006e064()` (ok sentinel).
+Severity (hypothesis): Low-Medium — bounds checks are present but depend on the 14-bit cap-frame shift (`>> 0xe`) reduction being enforced everywhere.
+Confidence: Medium.
+
+## [SKR62] 0x0041c2e4 sk_ipc_obj_release
+Observation: The multi-kind object teardown dispatches on the frame tag (uVar9 >> 0x3c); kinds 0/1/2/3/4 each walk and release element arrays or descriptor words. The callback set (FUN_00455f60/000722b0/00456858/0045636c) is invoked during kind-2 teardown.
+Evidence: decompile 0041c2e4 `switch(uVar9 >> 0x3c)` cases 0..4,10; each `case` releases slot words via FUN_0036b270/FUN_0041c2e4 recursion; kind 2 runs `FUN_004578dc(FUN_00455f60,FUN_000722b0,FUN_00456858,FUN_0045636c)`.
+Severity (hypothesis): Medium — object teardown crosses multiple object kinds; a tag/kind confusion could release a wrong-typed object (classic seL4 object-reclaim bug surface).
+Confidence: Medium.
+
+## [SKR62] 0x0041d180 sk_ipc_encode_payload
+Observation: The payload encoder writes into a caller-supplied destination span with bounds checks in sk_ipc_emit_reset (0041d14c) which trap on out-of-range indices; but the "cannot encode" path (s_Cannot_encode_a_capture_structur_005e1f50) terminates via noreturn FUN_001afa84.
+Evidence: decompile 0041d180 `if (param_3 != 0) { FUN_00002874(...); FUN_003593c0(); FUN_00002818(); FUN_001afa84(); }`; emit via FUN_0041d14c with CL4_SW_BP bounds traps at 0x41d178/0x41d17c/0x41d180.
+Severity (hypothesis): Low — bounds are enforced but only via fail-closed traps; a non-fatal caller misusing the encoder could trigger a fatal abort.
+Confidence: Medium.
