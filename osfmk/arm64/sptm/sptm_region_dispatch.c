@@ -2486,8 +2486,6 @@ static int sptm_hib_is_managed_page(uint64_t page, void *hib_ctx, void *dt)
                                   (img_lo <= page && page < img_hi));
 }
 
-extern void sptm_dt_pmap_io_ranges(void *dt, void *lo, void *hi, void *cb, uint64_t arg);
-
 /* FUN_000ea744 @ 0x000ea744   (est. sptm_dt_pmap_io_ranges)
  * Ghidra: void FUN_000ea744(undefined8 *param_1, ulong *param_2, ulong *param_3,
  *                           code *param_4, undefined8 param_5)
@@ -2624,7 +2622,7 @@ static void *sptm_hib_alloc_page(uint32_t mode, int zero)
     if ((sptm_hib_is_managed_page(page, 0, 0) & 1) == 0)
         sptm_panic_hib("", 0x4c1, "Invalid bitmap page attempted to be used", page, 0);
     if (mode > 1) {
-        cpu = tpidrro_el0;
+        cpu = __builtin_arm_rsr64("tpidrro_el0");
         if (cpu == 0)
             sptm_wait_forever();
         if (*(uint64_t *)(cpu + 0x10) == 0)

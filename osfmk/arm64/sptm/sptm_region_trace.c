@@ -429,7 +429,7 @@ extern uint8_t *sptm_cputrace_state;   /* DAT_00095d40 */
 uint64_t
 sptm_cputrace_carveout_start(void)
 {
-    return *(uint64_t *)(SPTM_CPUTRACE_STATE + 0x18);
+    return *(uint64_t *)(sptm_cputrace_state + 0x18);
 }
 
 /* ============================================================================
@@ -446,7 +446,7 @@ uint64_t
 sptm_cputrace_carveout_init(void)
 {
     uint64_t *secure_dt;
-    uint64_t carveout_bytes;
+    uint64_t carveout_mb;
     uintptr_t node;
     uint32_t *prop_val;
     uint32_t prop_size;
@@ -454,14 +454,13 @@ sptm_cputrace_carveout_init(void)
     uint64_t base;
 
     sptm_subsys_register("CPUTRACE");
-    st = (uint8_t *)sptm_percpu_base(0, 0);
-    /* The carve-out state is stored in the per-CPU DART driver state's
-     * dedicated region (DAT_00095d40). */
-    secure_dt = (uint64_t *)0x94ab8;                 /* DAT_00094ab8 */
+    sptm_cputrace_state = (uint8_t *)sptm_percpu_base(0, 0);   /* DAT_00095d40 */
+
+    secure_dt = (uint64_t *)0x94ab8;                 /* DAT_00094ab8 (SecureDT root) */
     if (secure_dt == 0) {
         sptm_panic_assert("Error getting SecureDT");
     }
-    carveout_bytes = 0;
+    carveout_mb = 0;
     node = 0;
     if (sptm_dt_find_node((uintptr_t)secure_dt, 0, "chosen", &node) == 1) {
         prop_val = 0;
@@ -469,11 +468,11 @@ sptm_cputrace_carveout_init(void)
         if (sptm_dt_get_prop(node, "apt-carveout-size-mb", (uintptr_t *)&prop_val,
                              &prop_size, (uintptr_t)secure_dt[0], secure_dt[1]) == 1 &&
             prop_val != 0 && prop_size == 4) {
-            carveout_bytes = (uint64_t)*prop_val;
+            carveout_mb = (uint64_t)*prop_val;
         }
     }
 
-    st = (uint8_t *)0x95d40;                          /* DAT_00095d40 */
+    st = sptm_cputrace_state;
     *(uint64_t *)(st + 0x20) = 0;
     *(uint64_t *)(st + 0x18) = 0;
     *(uint8_t *)(st + 0x28) = 0;
@@ -485,18 +484,18 @@ sptm_cputrace_carveout_init(void)
     *(uint64_t *)(st + 0x38) = 0;
     *(uint32_t *)(st + 0x48) = 0;
 
-    if (carveout_bytes != 0) {
-        if ((carveout_bytes >> 0x1a) != 0) {
+    if (carveout_mb != 0) {
+        if ((carveout_mb >> 0x1a) != 0) {
             sptm_panic_assert("carveout_nb_frames %llx > limit");
         }
         sptm_alloc_elements(0x24, 0);
         base = (uint64_t)sptm_txm_handoff();          /* resolve a VA for the carve-out */
-        st = (uint8_t *)0x95d40;
+        st = sptm_cputrace_state;
         *(uint64_t *)(st + 0x18) = base;
-        *(uint64_t *)(st + 0x20) = carveout_bytes << 0x14;   /* MiB -> bytes */
+        *(uint64_t *)(st + 0x20) = carveout_mb << 0x14;   /* MiB -> bytes */
     }
-    *(uint8_t *)(st + 0x10) = carveout_bytes != 0;    /* available */
-    *(uint8_t *)(st + 0x11) = carveout_bytes == 0;    /* active */
+    *(uint8_t *)(st + 0x10) = carveout_mb != 0;       /* available */
+    *(uint8_t *)(st + 0x11) = carveout_mb == 0;       /* active */
     return 0;
 }
 
