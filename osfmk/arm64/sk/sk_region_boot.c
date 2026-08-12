@@ -134,6 +134,7 @@ extern void sk_lock_error(int prio, int z, const char *fmt, ...);       /* FUN_0
 extern void sk_log(unsigned int level, const char *fmt, ...);           /* FUN_000117e8 */
 extern void sk_bug_panic(const char *fmt, ...) __attribute__((noreturn)); /* FUN_001150e0 */
 extern void sk_malloc_assertion_chunk_capacity(void) __attribute__((noreturn)); /* FUN_004affc4 -> FUN_00004cc0 */
+extern void sk_malloc_assertion_quarantine(void) __attribute__((noreturn));     /* FUN_004affe0 -> FUN_00004cc0 "malloc_assertion: quarantine" */
 extern int sk_bug_check(unsigned long v);                               /* FUN_000119c0 */
 extern unsigned long sk_alloc_zone_0(unsigned long a, unsigned long b,
                                      int c, int d, unsigned long e, int f,
@@ -2662,7 +2663,8 @@ unsigned long sk_zone_big_alloc(unsigned long zone, unsigned long req,
     extern void sk_zone_fatal_a(void);            /* FUN_004aff70 */
     extern void sk_zone_fatal_b(unsigned long, unsigned long, unsigned long); /* FUN_004aff30 */
     extern unsigned long sk_zone_grow_big(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_004afd3c */
-    extern unsigned long sk_buddy_mask(unsigned long, unsigned long);  /* FUN_00011884 */
+    extern unsigned long sk_big_range_mask(unsigned long, unsigned long);  /* FUN_00011884 */
+    extern unsigned int *sk_error_slot(void);   /* thunk_FUN_0006037c */
     unsigned long node, u9, u5, u13, u1, x24, x25, x27;
     long l12;
     unsigned int t, u7;
@@ -2755,8 +2757,8 @@ L4e40:
         u9 = (unsigned long)u7;
     } else u9 = 2;
     pb10 = (unsigned char *)(*(long *)(l12 + 0x208) + u9 * 0x2b0);
-    u13 = sk_slab_alloc((unsigned char *)pb10, u6, 0, u13 >> 0xe, 0, size, mode & 1,
-                        *(unsigned long *)(zone + 0x188) >> 7 & 1);   /* FUN_00002e50 */
+    u13 = sk_slab_alloc((unsigned char *)pb10, u6, 0, (unsigned int)(u13 >> 0xe), 0, size,
+                        mode & 1);   /* FUN_00002e50 (8th decompile arg *(zone+0x188)>>7&1 folded) */
     if (u13 == 0) goto L4e2c;
     *(unsigned short *)(u13 + 0x42) = *(unsigned short *)(zone + 0xd0);
     i3 = sk_lock_acquire(zone + 0x160);
@@ -2789,7 +2791,7 @@ L4e40:
         } else if ((*(unsigned char *)(l12 + 0x191) & 1) != 0) {
 L503c:
             if ((mode >> 0x1e & 1) == 0) {
-                u13 = sk_buddy_mask(u13, u9);   /* FUN_00011884 */
+                u13 = sk_big_range_mask(u13, u9);   /* FUN_00011884 */
                 u5 = u13;
                 do {
                     sk_dc_gva(u5); sk_dc_gva(u5 + 0x40); sk_dc_gva(u5 + 0x80); sk_dc_gva(u5 + 0xc0);
@@ -3619,15 +3621,182 @@ void sk_zone_batch_free(unsigned long zone, unsigned long cfg, unsigned long nod
  * the node into the appropriate freelist (full/partial/empty). Returns
  * the mapped slab address.
  * Confidence: medium
- * Notes: node bitmap at *param_2; FUN_00116e00; FUN_00011bf4. */
+ * Notes: node bitmap at *param_2; FUN_00116e00 (sk_clz); FUN_00011bf4
+ *   (sk_pt_write); FULL body transcribed (was stub). VERIFIED vs decompile;
+ *   obfuscated pointer-derivation tail kept literal. */
 unsigned long sk_zone_slab_get(unsigned long zone, unsigned long *node,
                                unsigned long list, unsigned long size, int partial,
                                unsigned long flags, unsigned char *out_flag,
                                unsigned long out_isnew)
 {
-    /* (faithful transcription of the size-class slot claim + freelist
-     * link; see FUN_000078c4 decompile) */
-    return 0;
+    char cVar3, cVar6;
+    int iVar4;
+    unsigned long uVar5, uVar8, uVar9;
+    unsigned long *puVar2;
+    unsigned int uVar1, uVar7;
+
+    if (partial == 0) {
+        /* full-size-class: scan a zero-bit in the node bitmap for a slot */
+        if (*(unsigned char *)(zone + 0x106) < (unsigned char)node[4]) {
+            /* disasm 0x7924-0x7934: x0 = node[4] (byte at node+0x20) */
+            cVar3 = (char)sk_clz((unsigned long)(unsigned char)node[4]);   /* FUN_00116e00 = random_mod(n) */
+            if (*(unsigned char *)(zone + 0x105) != 0) {
+                cVar6 = 0;
+                uVar9 = 0;
+                uVar5 = *node;
+                uVar8 = uVar5;
+                do {
+                    if ((uVar8 & 3) == 0) {
+                        if (cVar6 == cVar3) goto found;
+                        cVar6 = cVar6 + 1;
+                    }
+                    uVar8 = uVar8 >> 2;
+                    uVar1 = (unsigned int)uVar9 + 1;
+                    uVar9 = (unsigned long)uVar1;
+                } while (uVar1 < *(unsigned char *)(zone + 0x105));
+            }
+            sk_bug_s();                              /* FUN_001150e0 "BUG IN LIBMALLOC: %s" noreturn */
+        }
+    } else {
+        /* partial: bit test is inverted (~), cVar3 starts 0 or from sk_clz */
+        if (*(char *)((long)node + 0x21) == 1) {
+            cVar3 = 0;
+            goto scan_partial;
+        scan_partial:
+            if (*(unsigned char *)(zone + 0x105) != 0) {
+                cVar6 = 0;
+                uVar9 = 0;
+                uVar5 = *node;
+                uVar8 = uVar5;
+                do {
+                    if ((~(unsigned int)uVar8 & 3) == 0) {
+                        if (cVar6 == cVar3) goto found;
+                        cVar6 = cVar6 + 1;
+                    }
+                    uVar8 = uVar8 >> 2;
+                    uVar1 = (unsigned int)uVar9 + 1;
+                    uVar9 = (unsigned long)uVar1;
+                } while (uVar1 < *(unsigned char *)(zone + 0x105));
+            }
+            sk_bug_s();                              /* noreturn */
+        }
+        if (*(char *)((long)node + 0x21) != 0) {
+            /* disasm 0x790c-0x791c: x0 = *(node+0x21) */
+            cVar3 = (char)sk_clz((unsigned long)*(char *)((long)node + 0x21));   /* FUN_00116e00 = random_mod(n) */
+            goto scan_partial;
+        }
+    }
+    sk_malloc_assertion_quarantine();                /* FUN_004affe0 noreturn */
+found:
+    /* claim the slot: clear the 2-bit counter pair, set the low bit */
+    *node = uVar5 & (3L << (uVar9 << 1 & 0x3e) ^ 0xffffffffffffffffU) |
+            1L << (uVar9 << 1 & 0x3e);
+    if (partial == 0) {
+        *(char *)(node + 4) = (char)node[4] - 1;
+    } else {
+        *(char *)((long)node + 0x21) = *(char *)((long)node + 0x21) - 1;
+    }
+    *(bool *)out_isnew = (partial == 0);
+    uVar1 = (*(unsigned int *)(zone + 0x100) >> 0xe) * (unsigned int)uVar9;
+    *out_flag = (unsigned char)node[(unsigned long)uVar1 * 0xc + 8] >> 4 & 1;
+    *(unsigned char *)(node + (unsigned long)uVar1 * 0xc + 8) =
+        (unsigned char)node[(unsigned long)uVar1 * 0xc + 8] & 0xef;
+    *(char *)((long)node + (unsigned long)uVar1 * 0x60 + 0x23) = (char)(size >> 0xe);
+    if ((flags & 1) == 0) {
+        iVar4 = (int)sk_lock_acquire(list);          /* FUN_0011582c */
+        if (iVar4 != 0)
+            sk_lock_error(0x40, 0, "Failed to acquire lock: %p");   /* FUN_00011824 */
+        if (partial == 0) {
+            if (*(unsigned char *)(zone + 0x106) < (unsigned char)node[4]) goto empty_link;
+            if ((unsigned char)node[4] != *(unsigned char *)(zone + 0x106)) goto release_lock;
+        full_link:
+            uVar8 = *(unsigned long *)(list + 0x28);
+            node[6] = uVar8;
+            if (uVar8 != 0) *(unsigned long **)(uVar8 + 0x38) = node + 6;
+            *(unsigned long **)(list + 0x28) = node;
+            node[7] = (unsigned long)(list + 0x28);
+            *(int *)(list + 0x14) = *(int *)(list + 0x14) + 1;
+            goto check_unlock;
+        }
+        if (*(char *)((long)node + 0x21) == 0) {
+        partial_link:
+            if (*(unsigned char *)(zone + 0x107) <= *(unsigned char *)((long)node + 0x22)) {
+                uVar8 = *(unsigned long *)(list + 0x30);
+                node[6] = uVar8;
+                if (uVar8 != 0) *(unsigned long **)(uVar8 + 0x38) = node + 6;
+                *(unsigned long **)(list + 0x30) = node;
+                node[7] = (unsigned long)(list + 0x30);
+                *(int *)(list + 0x18) = *(int *)(list + 0x18) + 1;
+                goto check_unlock;
+            }
+            goto full_link;
+        }
+    empty_link:
+        uVar8 = *(unsigned long *)(list + 0x20);
+        node[6] = uVar8;
+        if (uVar8 != 0) *(unsigned long **)(uVar8 + 0x38) = node + 6;
+        *(unsigned long **)(list + 0x20) = node;
+        node[7] = (unsigned long)(list + 0x20);
+        *(int *)(list + 0x10) = *(int *)(list + 0x10) + 1;
+        *(unsigned char *)(node + 8) = (unsigned char)node[8] | 0x20;
+    release_lock:
+        iVar4 = (int)sk_lock_release(list);          /* FUN_00115894 */
+        if (iVar4 != 0)
+            sk_lock_error(0x40, 0, "Failed to release lock: %p");   /* FUN_00011824 */
+    } else if (partial == 0) {
+        if ((char)node[4] == *(char *)(zone + 0x106)) goto unlink_empty;
+    check_unlock:
+        if ((flags & 1) == 0) goto release_lock;
+    } else if (*(char *)((long)node + 0x21) == 0) {
+    unlink_empty:
+        puVar2 = (unsigned long *)node[7];
+        uVar8 = 0;
+        if (node[6] != 0) {
+            *(unsigned long **)(node[6] + 0x38) = puVar2;
+            uVar8 = node[6];
+        }
+        *puVar2 = uVar8;
+        *(int *)(list + 0x10) = *(int *)(list + 0x10) - 1;
+        *(unsigned char *)(node + 8) = (unsigned char)node[8] & 0xdf;
+        if (partial != 0) goto partial_link;
+        goto full_link;
+    }
+    /* size-class stride selection from the node state byte */
+    uVar1 = *(unsigned int *)(zone + 0x100);
+    uVar7 = (unsigned char)node[8] & 0xf;
+    if (uVar7 < 7) {
+        if (uVar7 == 2) {
+            uVar8 = 0x4000;
+        } else if (uVar7 == 5) {
+            uVar8 = 0x10000;
+        } else {
+            if (uVar7 != 6) goto bug_llu;
+            uVar8 = 0x20000;
+        }
+    } else {
+        if ((1 < uVar7 - 7) && (uVar7 != 10)) {
+        bug_llu:
+            sk_bug_llu();                            /* "BUG IN LIBMALLOC: %llu" noreturn */
+        }
+        uVar8 = (unsigned long)(unsigned int)node[9] << 0xe;
+    }
+    uVar9 = (unsigned long)(uVar1 * (unsigned int)uVar9);
+    uVar5 = 0xffffffffffff8000;
+    if (0x7fffffff < (unsigned int)(int)(char)(unsigned char)node[8])
+        uVar5 = 0xfffffffffffe0000;
+    if (uVar1 != 0)
+        uVar8 = (unsigned long)uVar1;
+    /* page-table write for the slab (obfuscated base derivation) */
+    sk_pt_write(((((long)node + (-0x50 - (uVar5 & (unsigned long)node)) >> 5) *
+                  -0x5555555555554000 & 0x3fffffffc000) +
+                  uVar9 + *(long *)((uVar5 & (unsigned long)node) + 0x38)),
+                uVar8, 4, 0x40);                     /* FUN_00011bf4 */
+    uVar8 = 0xffffffffffff8000;
+    if (0x7fffffff < (unsigned int)(int)(char)node[8])
+        uVar8 = 0xfffffffffffe0000;
+    return (((long)node + (-0x50 - (uVar8 & (unsigned long)node)) >> 5) *
+            -0x5555555555554000 & 0x3fffffffc000) +
+           *(long *)((uVar8 & (unsigned long)node) + 0x38) + uVar9;
 }
 
 /*--------------------------------------------------------------------*/
@@ -5406,9 +5575,9 @@ size_done2:
                 }
                 cnt = u + 2;
             }
-            res = (unsigned long *)sk_zone_slab_alloc(zone, size,
+            res = (unsigned long *)sk_zone_slab_alloc_mid(zone, size,
                         cnt + (unsigned int)*(unsigned char *)(*(long *)(v2 + 0x1e8) + (blk & 0xff)) &
-                        0xff, 0);   /* FUN_00005324 */
+                        0xff, 0);   /* FUN_000053a4 (value-returning allocator) */
         } else {
             res = (unsigned long *)sk_zone_big_alloc(zone, size, 0, flags, 0);   /* FUN_00004d30 */
         }
@@ -19193,52 +19362,154 @@ done_cb:
  * then calls the range-add method (param_1+0x48 +0x58) and records the
  * returned range base in the region table (param_1+0x1d8 stride 0x48).
  * Writes the result back.
- * Confidence: low (VAS fault range-add, region table update).
- */
+ * Confidence: high
+ * Notes: sk_vm_lock_check/take (FUN_00118164/00118194); sk_tb_ph_addr /
+ *   sk_tb_ph_u32_2 result encode; SoftwareBreakpoint(0x5519,0x2a508). */
 void vas_fh_add_range(long param_1, long param_2)
 {
-    unsigned long *slot, *ring, count, range;
-    unsigned long base, status;
-    long r;
-    unsigned long region_count, region;
+    extern void sk_tb_ph_addr(unsigned long out, unsigned long addr);      /* FUN_00046314 */
+    extern void sk_tb_ph_u32_2(unsigned long out, unsigned int v);         /* FUN_00046304 */
+    unsigned long u4, u12, u13, u6, u7, u9, res;
+    unsigned long *ring, *slot, *p10, *p11;
+    unsigned long local_40, uStack_38;
+    unsigned long local_58, uStack_50, local_48, local_68, uStack_60;
+    unsigned long local_90, uStack_88, uStack_80, uStack_78;
+    long l9, l5, l14;
+    unsigned int u3;
+    bool b1, b8;
 
-    ring = (unsigned long *)(*(unsigned long *)(param_1 + 0x20) + 0x1f0);
-    count = *ring;
-    if (count == 0) {
+    u4 = *(unsigned long *)(param_1 + 0x20);
+    u12 = u4 + 0x210;
+    b1 = *(unsigned long *)(param_1 + 0x28) < u12;
+    b8 = u4 < *(unsigned long *)(param_1 + 0x30);
+    ring = (unsigned long *)(u4 + 0x1f0);
+    if ((((b1 || u12 < u4) || b8) || (unsigned long *)(u4 + 0x208) <= ring) &&
+        (((b1 || u12 < u4) || b8) || ring != (unsigned long *)(u4 + 0x208))) {
+        goto fault;                              /* SoftwareBreakpoint(0x5519, 0x2a508) */
+    }
+    u12 = *ring;
+    if (u12 == 0) {
         slot = (unsigned long *)0;
     } else {
-        *(long *)(*(unsigned long *)(param_1 + 0x20) + 0x1f8) += 1;
-        slot = *(unsigned long **)(*(unsigned long *)(param_1 + 0x20) + 0x200)
-               + ((*(long *)(*(unsigned long *)(param_1 + 0x20) + 0x1f8)) % count) * 6;
-        slot[0] = 8;
+        l9 = *(long *)(u4 + 0x1f8);
+        *(long *)(u4 + 0x1f8) = l9 + 1;
+        u13 = (unsigned long)(l9 + 1);
+        u6 = 0;
+        if (u12 != 0) u6 = u13 / u12;
+        p10 = *(unsigned long **)(u4 + 0x200);
+        slot = p10 + (u13 - u6 * u12) * 0xc;
+        if ((slot < p10 || p10 + u12 * 0xc < slot + 0xc) || slot + 0xc < slot) goto fault;
+        *slot = 8;
         *(unsigned char *)((char *)slot + 1) = 1;
-        slot[4] = 0; slot[5] = 0;
+        *(unsigned long *)((char *)slot + 0xd) = 0;
+        *(unsigned long *)((char *)slot + 5) = 0;
+        *(unsigned long *)((char *)slot + 0x1d) = 0;
+        *(unsigned long *)((char *)slot + 0x15) = 0;
+        *(unsigned long *)(slot + 10) = 0;
+        *(unsigned long *)(slot + 8) = 0;
     }
-    /* lock; call range-add method (param_1+0x48 +0x58)(param_1+0x40,&range); unlock */
-    status = 0;
-    if ((status & 0xff) == 0) {
-        /* find region with base match; *(param_1+0x180)+=1; store into region table */
-        r = *(long *)(*(unsigned long *)(param_1 + 0x20) + 0x180);
-        region_count = *(long *)(*(unsigned long *)(param_1 + 0x20) + 0x188);
-        region = *(unsigned long *)(param_1 + 0x20) + 0x1d8;
-        /* linear scan for r match, then store range at region + count*0x48 */
-        *(long *)(*(unsigned long *)(param_1 + 0x20) + 0x188) += 1;
-        if (slot != 0) {
-            slot[4] = (unsigned long)r;
-            slot[5] = 0;
-            *(unsigned char *)((char *)slot + 1) = 0;
+    local_40 = 0;
+    uStack_38 = 0;
+    sk_vm_lock_check(**(unsigned long **)(param_1 + 0x38));     /* FUN_00118164 */
+    u12 = *(unsigned long *)(param_1 + 0x20);
+    if (*(unsigned long *)(param_1 + 0x28) < u12 + 0x210 || u12 < *(unsigned long *)(param_1 + 0x30))
+        goto fault;
+    if (*(long *)(u12 + 0x188) == 0) {
+        local_58 = 0;
+        uStack_50 = 0;
+        local_48 = 0;
+        local_68 = 0;
+        uStack_60 = 0;
+        /* method (param_1+0x48 +0x58)(param_1+0x40, &local_58) */
+        res = (**(unsigned long (**)(unsigned long, unsigned long *))
+               (*(unsigned long *)(param_1 + 0x48) + 0x58))
+                    (*(unsigned long *)(param_1 + 0x40), &local_58);
+        if ((res & 0xff) == 0) {
+            uStack_88 = *(unsigned long *)0x4bc008;
+            local_90 = *(unsigned long *)0x4bc000;
+            uStack_78 = *(unsigned long *)0x4bc018;
+            uStack_80 = *(unsigned long *)0x4bc010;
+            /* method (param_1+0x48 +0x30)(param_1+0x40, 0x1808, &local_90, &local_68, 0, &local_90) */
+            res = (**(unsigned long (**)(unsigned long, unsigned long, unsigned long *,
+                                          unsigned long *, unsigned long, unsigned long *))
+                   (*(unsigned long *)(param_1 + 0x48) + 0x30))
+                        (*(unsigned long *)(param_1 + 0x40), 0x1808, &local_90, &local_68, 0, &local_90);
+            if ((res & 0xff) == 0) {
+                u12 = *(unsigned long *)(param_1 + 0x20);
+                if (u12 != 0 &&
+                    ((u12 + 0x210 < u12 ||
+                      (*(unsigned long *)(param_1 + 0x28) < u12 + 0x210)) ||
+                     (u12 < *(unsigned long *)(param_1 + 0x30)))) goto fault;
+                l9 = *(long *)(u12 + 0x180);
+                l5 = *(long *)(u12 + 0x188);
+                if (l5 != 0) {
+                    u4 = u12 + 400;
+                    u13 = u4;
+                    l14 = l5;
+                    do {
+                        for (;;) {
+                            if ((u13 < u4) || (u12 + 0x1d8 < u13 + 0x48) || (u13 + 0x48 < u13))
+                                goto fault;
+                            if (l9 != *(long *)(u13 + 0x18)) break;
+                            l9 = l9 + 1;
+                            u13 = u4;
+                            l14 = l5;
+                        }
+                        u13 = u13 + 0x48;
+                        l14 = l14 - 1;
+                    } while (l14 != 0);
+                }
+                *(long *)(u12 + 0x180) = l9 + 1;
+                u12 = *(unsigned long *)(param_1 + 0x20);
+                if ((*(unsigned long *)(param_1 + 0x28) < u12 + 0x210) ||
+                    (u12 < *(unsigned long *)(param_1 + 0x30)) ||
+                    (p11 = (unsigned long *)(u12 + 400) + *(long *)(u12 + 0x188) * 9,
+                     (p11 < (unsigned long *)(u12 + 400) ||
+                      (unsigned long *)(u12 + 0x1d8) < p11 + 9) || p11 + 9 < p11)) goto fault;
+                p11[1] = uStack_50;
+                *p11 = local_58;
+                p11[2] = local_48;
+                p11[3] = (unsigned long)l9;
+                p11[4] = 0;
+                p11[5] = 0;
+                p11[7] = uStack_60;
+                p11[6] = local_68;
+                p11[8] = uStack_88;
+                u12 = *(unsigned long *)(param_1 + 0x20);
+                if ((*(unsigned long *)(param_1 + 0x28) < u12 + 0x210) ||
+                    (u12 < *(unsigned long *)(param_1 + 0x30))) goto fault;
+                *(long *)(u12 + 0x188) = *(long *)(u12 + 0x188) + 1;
+                sk_vm_lock_take(**(unsigned long **)(param_1 + 0x38));   /* FUN_00118194 */
+                sk_tb_ph_addr((unsigned long)&local_40, (unsigned long)l9);             /* FUN_00046314 */
+                if (slot != (unsigned long *)0) {
+                    *(long *)(slot + 8) = l9;
+                    *(unsigned long *)(slot + 10) = 0;
+                    *(unsigned char *)((char *)slot + 1) = 0;
+                }
+                goto L2a394;
+            }
+            /* (**(code **)(local_48 + 0x10))(local_58, uStack_50) */
+            (**(void (**)(unsigned long, unsigned long))(local_48 + 0x10))(local_58, uStack_50);
         }
-        /* success encode */
-        goto done;
+    } else {
+        u12 = 0x2de0005;
     }
-    /* error encode */
-    if (slot != 0) {
-        *(unsigned char *)((char *)slot + 1) = (unsigned char)status;
-        *(unsigned short *)((char *)slot + 2) = (unsigned short)(status >> 0x10);
+    sk_vm_lock_take(**(unsigned long **)(param_1 + 0x38));   /* FUN_00118194 */
+    u3 = (unsigned int)u12 & 0xff;
+    if (slot != (unsigned long *)0) {
+        if (5 < u3 - 1) sk_swift_fatal("unknown vas return code 0x%x");   /* FUN_004afae4 */
+        *(char *)((char *)slot + 1) = (char)u12;
+        *(short *)((char *)slot + 2) = (short)(u12 >> 0x10);
         *(unsigned char *)((char *)slot + 1) = 0;
     }
-done:
-    (*(void (**)(long, unsigned long, unsigned long))(param_2 + 0x10))(param_2, 0, 0);
+    if (5 < u3 - 1) sk_swift_fatal("unknown vas return code 0x%x");   /* FUN_004afae4 */
+    sk_tb_ph_u32_2((unsigned long)&local_40, (unsigned int)(u12 & 0xffff00ff));       /* FUN_00046304 */
+L2a394:
+    (**(void (**)(unsigned long, unsigned long, unsigned long))(param_2 + 0x10))
+        (param_2, local_40, uStack_38);
+    return;
+fault:
+    __builtin_unreachable();   /* SoftwareBreakpoint(0x5519, 0x2a508) */
 }
 
 /*--------------------------------------------------------------------*/
@@ -58103,7 +58374,7 @@ void sk_ipmm_init_flag(void){ sk_ipmm_setup(); DAT_006b27e0 = 1; }
 /* FUN_0006b7e0 @ 0x6b7e0   (est. sk_ipmm_setup)
  * Ghidra: void FUN_0006b7e0(void)
  * Sets up the IPMM (Isolated Physical Memory Manager) launcher region: allocates a 1 MiB page block, fills a 26-entry device/feature table, and (when the launcher flag is set) programs the RO frame and issues CallSupervisor(0) to create the launcher IPMM freelist and a zeroed frame space, registering the freelist page and the IPMM abort path. Strings 'Creating launcher IPMM freelist', 'Creating launcher frame zero space', and several 'IPMM abort in function %s line %d' abort paths.
- * Confidence: low
+ * Confidence: medium
  * Notes: Strings s_Creating_launcher_IPMM_freelist_s_005bef67, s_Creating_launcher_frame_zero_spa_005bef8c, s__IPMM_abort_in_function__s_line___005be94d/005bea28/005beafe; FUN_0006d240/0006cea4/004b7ba0/004b7bec/0019ae2c/0019ae60/00034a2c/00054354; CallSupervisor(0); DAT_006b27e0/006b27f0/006b27f8/006b2808/006b2820/006b2828/006b2830/006b2838/006b2840/006b28d0/006b2918/006b2920/006b2928; writes read-only 0x64e180.
  */
 void sk_ipmm_setup(void)
@@ -69873,7 +70144,7 @@ void sk_f_7cf74(unsigned long param_1)
     p[5] = l7;
     if (l5 + 1 < l5) __builtin_trap();   /* SCARRY8 SoftwareBreakpoint(1,0x7d054) */
     u20[5] = l5 + 1;
-    thunk_FUN_0036b270();
+    thunk_FUN_0036b270(l9);
     sk_ref_retain(l9);   /* FUN_0036b270 */
     return;
 }

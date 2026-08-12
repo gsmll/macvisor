@@ -965,25 +965,56 @@ static void sk_schedule_thread_retry(unsigned short *msg, unsigned long state, u
         *(uint8_t *)((char *)msg + 6) = m4;
     } while (state == 1);
 
-    *(uint8_t *)((char *)msg + 0xe0) = (uint8_t)state;
+    /* little-endian 8-byte store of `state` at byte offset 0x1c0
+     * (decompile's `param_1 + 0xe0` is undefined2* arithmetic = +0x1c0 bytes) */
+    *(uint8_t *)((char *)msg + 0x1c0) = (uint8_t)state;
     *(uint8_t *)((char *)msg + 0x1c5) = (uint8_t)(state >> 0x28);
     *(uint8_t *)((char *)msg + 0x1c3) = (uint8_t)(state >> 0x18);
-    *(uint8_t *)((char *)msg + 0xe1) = (uint8_t)(state >> 0x10);
+    *(uint8_t *)((char *)msg + 0x1c2) = (uint8_t)(state >> 0x10);
     *(uint8_t *)((char *)msg + 0x1c1) = (uint8_t)(state >> 8);
-    *(uint8_t *)((char *)msg + 0xe2) = (uint8_t)(state >> 0x20);
+    *(uint8_t *)((char *)msg + 0x1c4) = (uint8_t)(state >> 0x20);
     *(uint8_t *)((char *)msg + 0x1c7) = (uint8_t)(state >> 0x38);
-    *(uint8_t *)((char *)msg + 0xe3) = (uint8_t)(state >> 0x30);
+    *(uint8_t *)((char *)msg + 0x1c6) = (uint8_t)(state >> 0x30);
 
-    /* check the monitor's method-invalid error sentinel */
+    /* check the monitor's method-invalid error sentinel (L4_ErrorCodeMethodInvalid,
+     * a fixed non-zero constant; the decompile reads the 8 bytes at 0x689e9c..0x689ea3
+     * and ORs 0x10000 — this check never fires, kept faithful as dead-code branch). */
     sentinel = 0x10000UL
-        | ((uint8_t)'d' << 0x10) | ((uint8_t)'i' << 0x18) | (uint8_t)'n' | (uint8_t)'v' << 8
-        | (((unsigned long)((uint8_t)'a') << 0x18) | ((unsigned long)'l' << 0x10) | ((unsigned long)(uint8_t)'i' << 8) | (unsigned long)'d') << 0x20;
+        | ((uint8_t)'E' << 0x18) | ((uint8_t)'_' << 0x10) | ((uint8_t)'4' << 8) | (uint8_t)'L'
+        | (((unsigned long)((uint8_t)'i') << 0x18) | ((unsigned long)'n' << 0x10)
+           | ((unsigned long)(uint8_t)'v' << 8) | (unsigned long)'a') << 0x20;
+    *(uint8_t *)((char *)msg) = 0x40;
+    *(uint8_t *)((char *)msg + 1) = 0;
+    *(uint8_t *)((char *)msg + 4) = 0;   /* param_1+2 (undefined2*) */
+    *(uint8_t *)((char *)msg + 5) = 0;
+    *(uint8_t *)((char *)msg + 2) = 1;   /* param_1+1 */
+    *(uint8_t *)((char *)msg + 3) = 0;
+    *(uint8_t *)((char *)msg + 6) = 0;   /* param_1+3 */
+    *(uint8_t *)((char *)msg + 7) = 0;
+    CallSupervisor(0);
+    *(uint8_t *)((char *)msg) = 0x40;
+    *(uint8_t *)((char *)msg + 7) = 0;
+    *(uint8_t *)((char *)msg + 6) = 0;
+    *(uint8_t *)((char *)msg + 5) = 0;
+    *(uint8_t *)((char *)msg + 4) = 0;
+    *(uint8_t *)((char *)msg + 3) = 0;
+    *(uint8_t *)((char *)msg + 2) = 1;
+    *(uint8_t *)((char *)msg + 1) = 0;
+    *(uint8_t *)((char *)msg + 0x1e5) = 0;
+    *(uint8_t *)((char *)msg + 0x1e3) = 0;
+    *(uint8_t *)((char *)msg + 0x1e2) = 0;  /* param_1+0xf1 */
+    *(uint8_t *)((char *)msg + 0x1e1) = 0;
+    *(uint8_t *)((char *)msg + 0x1e4) = 0;  /* param_1+0xf2 */
+    *(uint8_t *)((char *)msg + 0x1e0) = 0;  /* param_1+0xf0 */
+    *(uint8_t *)((char *)msg + 0x1e7) = 0;
+    *(uint8_t *)((char *)msg + 0x1e6) = 0;  /* param_1+0xf3 */
+
     if (sentinel == 0) {
         *out |= 8;
         return;
     }
     sk_schedule_thread(state);             /* FUN_004b23d8 */
-    sk_obj_panic(0, "couldn't schedule thread");  /* s_couldn_t_schedule_thread_005bc8b1 */
+    sk_obj_panic(0, "couldn't schedule thread");  /* FUN_0005b190 s_couldn_t_schedule_thread_005bc8b1 */
 }
 
 /* FUN_004b6c04 @ 0x004b6c04  (est. sk_assert_fail_report)
