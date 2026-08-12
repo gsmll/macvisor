@@ -1480,7 +1480,7 @@ void cL4_ipc_emit_xg(int *result, unsigned long tcb, unsigned long *msg, unsigne
             w2 = *cur;
         } else if (c == 5) {
             if ((int)msg[1] == 0) { w1 = 0; goto after; }
-            if ((int)msg[1] == 1) { msg = (unsigned long*)*msg; w1 = *msg; goto emit; }
+            if ((int)msg[1] == 1) { msg = (unsigned long*)*msg; w1 = *msg; goto after; }
             cur = (unsigned long*)*msg; w2 = *cur;
         } else {
             w2 = 0;
