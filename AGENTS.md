@@ -71,6 +71,32 @@ Rules:
 - Shared-kernel dependencies are declared as externals in headers with a
   one-line note; NEVER decompile them:
   `extern void *kalloc(size_t); /* kernel, not recreated */`.
+- FULL-AUDIT RULE (branch scope, per maintainer): kernel functions that the
+  hypervisor calls DIRECTLY (its touch set — copyin/copyout, locks, alloc/free,
+  refcount, boot-arg/property getters, per-cpu access, panic, messaging) ARE
+  recreated with bodies into `osfmk/arm64/hypervisor/hv_kernel_glue.c` /
+  `hv_kernel_glue.h` (tree `hv-deps`), each with the standard function header
+  comment and a note that it is kernel code recreated for audit. Their own
+  callees (2+ levels into the kernel, e.g. copyin's fault path) remain stubbed
+  externs — that is the audit boundary; the whole-kernel closure is out of
+  scope. When you stub a direct callee of hypervisor code, add it to the
+  manifest with `category:"shared-dep"` and `tree:"hv-deps"` so the hv-deps
+  sweep picks it up.
+- BOOT-AUDIT RULE (branch scope, per maintainer): the boot path IS audited
+  (decompiled with bodies), not just mapped. Owned by tree `boot-audit`
+  (files `osfmk/kern/startup.c` / `startup.h` for kernel_bootstrap and
+  kernel_bootstrap_thread and their direct boot-step callees; the kernel entry
+  `fffffe000c110000` and `arm_cpu_init` `fffffe000b95af80` are reconstructed
+  with bodies or annotated disassembly in `osfmk/arm64/start.s`).
+  Boot-step callees of `kernel_bootstrap_thread` (`fffffe000b8239e0`) such as
+  idle_thread_create, sched_startup, thread_daemon_init, thread_bind,
+  mapping_adjust, clock_service_create, kdp_init, PE_init_iokit,
+  mac_policy_initmach, dtrace_early_init, code-signing lockdown,
+  provisioning_profile_init, trust_cache_init, OSKextRemoveKextBootstrap,
+  machine_lockdown, PE_lockdown_iokit, hv_support_init are recreated into
+  `osfmk/kern/startup.c` (hv_support_init stays in the hypervisor module).
+  Deeper kernel machinery those steps call (scheduler/VM/IOKit internals)
+  stays stubbed externs — same audit boundary as hv-deps.
 - If the decompiler fails, write assembly-level notes + partial reconstruction,
   set `status:"decompiled"`, `confidence:"low"`, and record the fallback used.
 
@@ -91,3 +117,24 @@ Rules:
 - Never run formatters, linters, or project-wide test suites.
 - Append discovered call-graph edges to `docs/chain-map.md` with both addresses.
 - Work only in your assigned files + `docs/manifest.json` + `docs/chain-map.md`.
+
+## Security findings log (mandatory)
+
+Every agent MUST log security-relevant observations noticed during
+decompilation into `docs/findings.md` (append-only; read the file, add your
+entries, write it back — do not edit others' entries). Each entry:
+
+```markdown
+## [<tree>] <address> <estimated_name>
+- **Observation**: <what you noticed: unchecked index/bounds, missing
+  validation, unverified copyin length, EL2 register not restored, refcount
+  anomaly, shared-state race, weak privilege check, odd constant, etc.>
+- **Evidence**: <Ghidra facts: instruction/offset/global/call, e.g. "no
+  bounds check on idx before `*local + idx*0x80 + 0x80` write in hv_vcpu_create">
+- **Severity (hypothesis)**: informational | low | medium | high
+- **Confidence**: high | medium | low   (how sure you are the observation is real)
+```
+
+Rules: label severity as a *hypothesis*, never a claim; no entry without
+Evidence; if you noticed nothing suspicious in a function, say nothing. These
+feed the final security audit doc (docs/audit.md).
