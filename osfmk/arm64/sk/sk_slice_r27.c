@@ -3967,7 +3967,7 @@ static void sk_bcg_00470998(word_t p1, word_t p2, word_t p3, word_t p4,
     r2 = (wpair_t)FUN_00350b3c(*(word_t *)(e_x16 + 0x20));
     x8fn(r2.lo, r2.hi, p3);     /* (*extraout_x8_01)(...) */
     FUN_00350b9c(e_x8);
-    sk_bcg_0046f54c();
+    sk_bcg_0046f54c(0,0,0,0); /* register-residue args */
     FUN_00350ab8(*(word_t *)(e_x16b + 8));
     x8fn2();                    /* (*extraout_x8_02)() */
     FUN_0008e500(x30);
@@ -4010,7 +4010,7 @@ static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4,
     x9fn(r2.lo, r2.hi, p3);     /* (*extraout_x9)(...) */
     r2 = (wpair_t)FUN_000e72b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r2.lo, r2.hi, p3);     /* (*extraout_x8_00)(...) */
-    sk_bcg_0046fb9c();
+    sk_bcg_0046fb9c(0,0,0); /* register-residue args */
     FUN_00100c38(*(word_t *)(e_x16b + 8));
     x8fn2();                    /* (*extraout_x8_01)() */
     FUN_00084234(x30);
@@ -4054,7 +4054,7 @@ static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4,
     r1 = (wpair_t)FUN_003509b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r1.lo, r1.hi, p3);              /* (*extraout_x8_01)(...) */
     FUN_00351178();
-    sk_bcg_0046feb0();
+    sk_bcg_0046feb0(0); /* register-residue arg */
     FUN_00350b3c(*(word_t *)(e_x16b + 8));
     x8fn2();                             /* (*extraout_x8_02)() */
     FUN_0008e500(x30);
@@ -4401,7 +4401,7 @@ static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4,
     fn2 = (code)FUN_00319628(t3);
     fn2(&local_48, &local_70, p7, t3);
     t6 = (word_t)FUN_003272b8();
-    t7 = (word_t)sk_bcg_00471aec(t2, 0x675c68, p8, s68, t6, s80);
+    t7 = (word_t)sk_bcg_00471aec(t2, 0x675c68, p8); /* register-residue args dropped */
     FUN_003a25d4(local_30);
     local_70 = t7;
     FUN_004974ac(0xff, p8);
