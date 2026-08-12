@@ -731,3 +731,15 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 0066ad54/0066a1d4/0066a1d8/0066a8c4/0066a8f4/0066a988/0066a9bc/0066ab40/0066af84 -> 006fea48 page-frame allocator, 00661318 (token), 006551c4, 0067cffc/0067d02c (frame slot bitmap alloc + release)
 - 006699e8/00669af8/00669c3c/00669c98/00669cfc/0066a08c/0066a300 -> pool region map/dispatch, 00685e44 (object lookup), indirect call at +0x10
 - SKR73 0x685cd8-0x687b48 (__DATA fatal/assert table) -> 006833d4 (central fatal, -> 0065c310 panic printer); abort seqs -> 0067d1f0/0067d83c/0067d3f8 (trace+fault record), 0067f660 (syscall-selector validator -> 0067f9a0), 00674e98 (L4 error-code fill), 006774ac (check); cL4_frame_bitmap_free 0x6860f4 -> 0065be08/0066a9bc/0066b1fc/0066ab40; cL4_map_flush 0x686a8c -> 00668c78/00678ae0/00672f64; 006874b4==006864cc trace_fault_record
+
+## SKR72 (0x006834f0-0x00685ca0) — fatal/abort + log-abort wrappers, list/pool object ops, TLS state builders
+- 006834f0..006839f8 / 00683a20..00683a98 (≈50 fns) -> 0064e030 (sk_abort_fatal, -> 006833d4 -> 0065c310 panic printer) with shared code 0x6a4629
+- 00683ac0/00683ad8/00683af0/00683b08/00683d48/00683e50/00683e68/00683e80/00683ea4/00683ee8/00684f7c/00684f94/00684fac/00684fc4/006850dc/006850f4/00685458/00685b50/00685c2c/00685c64/00685ca0 -> 006833d4 (sk_panic) [codes 0x6a4e7a..0x6a8f3a]
+- 00683f00/00683c2c/00683e08/00685a34 -> 0065c310(0, code, sp) full panic impl
+- 00683ba8/00683cc4/006847a0/0068487c/00684ca4/00684fdc/006851bc/00685470/006859b0/00685acc (log-abort trio) -> 0067d1f0/0067d83c/0067d3f8; callers 00683c64/00683da0/006843ec/006848f4/00684940/00684bc0/00684c0c/00684c58/00684de0/00684e8c/00684f2c/0068510c/00685164/0068538c/006853e4/006854e8/00685538/00685608/00685658/006856a8/00685a6c
+- 00683f74/00684150/00684388 (pool 0x6fc590 list insert/unlink/walk) -> 0065c27c/0065db84/0065de3c/0065beb4/0065bfa8/00661e1c/0067d798/0065c288; SoftwareBreakpoint(0x5519,0x684150/0x684368/0x6843ec); LOAcquire/LORelease
+- 006843ec (L4 error-code printer) -> 0065fa24/0065fd4c/0065d5c8..0065d700 err family, strings s_L4_ErrorCode*_00689a3f..abf, 006847a0, 0067f660
+- 0068498c/00685234/006856a8 (TLS header/state builders) -> tpidrro_el0 (sk_tls_base), CallSupervisor(0), 0063c04/00653/0065d44/0065d70/00653/00685470/006833d4
+- 00684d1c (object teardown) -> 0065c218/0065eafc/0065d080/006832fc (method dispatch tags 0x15/0x14/6)/006860f4 (frame release); CallSupervisor(5)/(4) drain; indirect destructor at obj+0x38
+- 00685588 (export gate) -> 00662628 tag 0x65787074/00660b20; CallSupervisor(5) drain
+- 00684e30/00684e44 -> global event counters 006fe794/006fe790

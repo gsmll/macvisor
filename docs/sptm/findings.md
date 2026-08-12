@@ -4975,3 +4975,51 @@ Observation: The entire batch is a dense table of noreturn abort handlers in the
 Evidence: ram block 0x0-0x69dfcf; file size 0x69e450; message addrs 0x6a9122..0x6b1023 > file size; uniform thunk bodies `FUN_006833d4(<addr>)`.
 Severity (hypothesis): Info — completeness gap for abort-message forensics, not a code defect.
 Confidence: high
+
+## [SKR72] 0x0068498c sk_r72_68498c_tls_header — unsatisfiable magic check (always-abort)
+Observation: The TLS message-header builder's branch guard `(combined | 0x10000) == 0` can never be true (the 0x10000 bit is unconditionally set by the OR), so the "clean" early-return path `*flags |= 8; return;` is dead code and the function always falls through to `sk_frame_release(frame)` followed by the noreturn `sk_abort_code(0, 0x6a6894)`. Either the intended check is on a masked/masked-complement value (decompiler artifact) or this function is a pure fault-handler that never returns.
+Evidence: Decompile of 0x68498c: `if ((uVar12<<0x10 | uVar11<<0x18 | uVar10 | (uVar9<<0x10 | bVar8<<0x18 | uVar5)<<0x20 | 0x10000) == 0) { *param_3 |= 8; return; }` followed by `FUN_006860f4(param_2,0); FUN_0065c2f0(0,0x6a6894);` (noreturn).
+Severity (hypothesis): Info — dead-code / always-abort branch; the shared 0x10000 constant makes the normal path unreachable as transcribed. Flag for verification sweep to confirm the intended mask.
+Confidence: medium
+
+## [SKR72] 0x00683f74 / 0x00684150 / 0x00684388 sk_r72_684f74_insert / sk_r72_684150_unlink / sk_r72_684388_walk_report
+Observation: The pool/list object code guards every pointer advance with a POINTER_OVERFLOW check that traps via noreturn SoftwareBreakpoint(0x5519, <addr>) on overflow, and bounds the pool refcount before use. Pool exhaustion returns error code 3 (`*pool = 3`) rather than overflowing the refcount. The insert path takes a lightweight lock (LOAcquire/LORelease) around the refcount bump and returns 0 on exhaustion; the unlink path emits fault reports (0x6a627a/0x6a62b7) when the feature bit is set and aborts (0x6a629e/0x6a62c0) on a missing entry. This is consistent seL4-style overflow hardening.
+Evidence: Decompiles: `if ((uint64_t)(pool+0x1c) < (uint64_t)pool) SoftwareBreakpoint(0x5519,0x684150);`, `if ((uint64_t)next < (uint64_t)head) SoftwareBreakpoint(0x5519,0x684368);`, `lVar5 = *(long*)(pool+0x14); *(long*)(pool+0x14) = lVar5-1; FUN_0067d798(lVar5,0x6a6449); *pool = 3;`.
+Severity (hypothesis): Low — overflow/OOB on the pool/list is trapped, not corrupted; the 0x6fc590 pool is self-validating.
+Confidence: medium
+
+## [SKR72] 0x00685588 sk_r72_685588_export — capability export gate
+Observation: The export gate tags the capability object with 0x65787074 ("extp"), sets bit 0 of obj+0x48, unrefs it, and returns 1/2 depending on whether the slot at obj+0x50 is non-null (2 when populated). It rejects ranges below the object (returns 0). No checked privilege boundary is visible beyond the tag + busy-bit; the caller relies on the returned slot to finish the export.
+Evidence: Decompile of 0x685588: `FUN_00662628(param_1,0x65787074); *(ulong*)(param_1+0x48) |= 1; FUN_00660b20(param_1); lVar2=*(long*)(param_1+0x50); *param_3=lVar2; uVar1=1; if (lVar2!=0) uVar1=2;`.
+Severity (hypothesis): Low — export is gated by the "extp" tag and busy-bit; the resulting 2-way return drives the caller's slot handling.
+Confidence: medium
+
+## [SKR72] 0x00683f4c sk_r72_683f4c_warn — packed fault descriptor
+Observation: The warn stub passes 0x100004077774924 (a 56-bit packed descriptor) to the warn/diagnostic core FUN_006827a8. The value encodes a fault kind/selector in its low bits; if the low 24 bits (0x774924) are a message-address fragment, this is a compact "code → handler" trap used by the guarded dispatch, not an inline string.
+Evidence: Decompile of 0x683f4c: `FUN_006827a8(0,0x100004077774924);`.
+Severity (hypothesis): Info — packed fault-descriptor constant; no defect observed.
+Confidence: low
+
+## [SKR72] 0x006834f0..0x00685ca0 — dense noreturn abort/panic wrapper table
+Observation: The slice is dominated by noreturn abort/panic wrappers (sk_abort_fatal / sk_panic / sk_abort_code) each carrying a distinct message code in the 0x6a4xxx-0x6a8xxx range, plus a family of log-and-abort trios (log_begin → log_msg → log_flush). The message codes are data-segment addresses beyond the recoverable ram block (see [SKR73] 0x685cd8), so the abort reasons are not resolvable from this payload. Many wrapper bodies are byte-identical (same 0x6a4629 code), indicating the compiler emitted a shared abort thunk for distinct source sites.
+Evidence: Uniform bodies `sk_abort_fatal(0x6a4629);` repeated ~50×; `sk_panic(0x6aXXXX);` variants; log trio `sk_log_begin(ctx,0x6a53b8); sk_log_msg(sk_log_ctx,0x6a536c,&ctx); sk_log_flush(10,sk_log_ctx);` repeated across 10+ helpers.
+Severity (hypothesis): Info — completeness gap for abort-message forensics; no code defect.
+Confidence: high
+
+## [ringminus1] 00687da8 / 00687f34 sk_crypto_absorb / sk_crypto_stream_update — fail-closed phase + length-cap checks
+- **Observation**: The cL4 crypto absorb/stream engine refuses to run unless the context phase field (ctx+0x50) is exactly the expected value (1 for absorb, 3 for streaming) and the block-in-progress flag (ctx+0x52 bit0) is clear; a streaming update additionally rejects offset+len carry overflow and any offset+len above 0xffffffffffe0 (returns 0xffffffbc/-68, 0xffffffbd/-67). Wrong-phase calls are rejected rather than operating on a half-initialized state.
+- **Evidence**: sk_crypto_absorb: `if (*(uint16_t*)(ctx+0x50)!=1 || (*(uint16_t*)(ctx+0x52)&1)) return 0xffffffbc;`; sk_crypto_stream_update: `if (phase!=3) return 0xffffffbc; if (offset+len<offset) return 0xffffffbd; if (0xfffffffe0 < offset+len) return 0xffffffbd;`.
+- **Severity (hypothesis)**: low — fail-closed state machine prevents a caller from driving the primitive through a skipped phase (context/keystream confusion); the hard length cap bounds the block-counter space.
+- **Confidence**: high
+
+## [ringminus1] 00687b74 / 00687bac sk_panic_crypto_region / sk_panic_crypto_state — fail-closed panic on region/state inconsistency
+- **Observation**: Both helpers are noreturn panic sites: they print a fixed message (0x6b0bca / 0x6b0c5c, with source file + line 0x2c0 / 0x2db) via the common panic printer FUN_006833d4 and halt. They are only reached on a fail-closed path from FUN_0067a510 / FUN_0067a740 when a region/page lookup or crypto/region state is inconsistent — there is no recovery branch.
+- **Evidence**: bodies are `sk_panic_fmt(0x6b0bca)` / `sk_panic_fmt(0x6b0c5c)`; callers: FUN_0067a510 at 0067a708, FUN_0067a740 at 0067a75c; disassembly shows the standard message/file/line stack setup before `bl 0x006833d4`.
+- **Severity (hypothesis)**: informational — panic-on-inconsistency is fail-safe (availability only); consistent with cL4's no-recovery invariant.
+- **Confidence**: medium
+
+## [ringminus1] 00687da8 sk_crypto_absorb — 12-byte special case writes a fixed 0x1000000 tag
+- **Observation**: A 12-byte absorb does not run the general block pipeline; it loads an 8-byte word and a 4-byte word from the input into ctx+0x20/+0x28 and writes the constant 0x1000000 into ctx+0x2c (a domain/rate tag), then skips the permutation+padding path. The fixed tag suggests a typed initialization (e.g. a specific key/IV layout) rather than raw message data.
+- **Evidence**: `if (len==0xc) { state_w0=*(ulong*)src; *(uint32*)(ctx+0x28)=*(uint32*)(src+8); *(ulong*)(ctx+0x20)=state_w0; *(uint32*)(ctx+0x2c)=0x1000000; }`.
+- **Severity (hypothesis)**: informational — the fixed tag is a construction constant, not attacker data; no weakness observed.
+- **Confidence**: medium

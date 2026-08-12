@@ -95,6 +95,7 @@ extern void FUN_0065c288(ulong);                     /* noreturn panic */
 extern void FUN_0065558c(void);                      /* noreturn */
 extern void FUN_00665d70(ulong, ulong);              /* teardown/cleanup */
 extern ulong thunk_FUN_00660b28(ulong);              /* state query */
+extern void thunk_FUN_00655200(ulong *);             /* release node */
 extern void FUN_0067d83c(ulong, ulong, ulong *);
 extern void FUN_0067d6c0(void);
 extern void FUN_0065562c(ulong, ulong *);            /* 16-byte return */
@@ -1757,4 +1758,1717 @@ void FUN_006793f4(ulong out, ulong cb2, long coll)
         }
         FUN_0067d3f8(10, out);
     }
+}
+
+/* ---- Object / region list management (0x679784-0x67b760) ---- */
+
+/* FUN_00679784 @ 0x679784
+ * Ghidra: void FUN_00679784(long, long)
+ * Find a region node by address in the object's region list, panicking if
+ * absent. Confidence: medium. */
+void FUN_00679784(long obj, long target)
+{
+    if (obj + 0x50U < obj + 0x40U)
+        SoftwareBreakpoint(0x5519, 0x679804);
+    if (FUN_0067cffc() != 0)
+        FUN_006833d4(0x6a8797);
+    long node = *(long *)(obj + 0x1e0);
+    for (;;) {
+        if (node == 0)
+            FUN_006833d4(0x6b0716);
+        if (node == target)
+            return;
+        node = *(long *)(node + 0x18);
+    }
+}
+
+/* FUN_00679838 @ 0x679838
+ * Ghidra: void FUN_00679838(long, ulong, long, undefined8)
+ * Insert a region node covering [base, base+len) into the object's region
+ * list, splitting/merging as needed. Confidence: medium. */
+void FUN_00679838(long obj, ulong base, long len, ulong p4)
+{
+    long round = 0;
+    if ((len + base & 0x3fff) != 0) round = 0x4000;
+    ulong lock = obj + 0x40;
+    if (lock <= obj + 0x50U) {
+        long lo = len;
+        if (FUN_0067cffc(lock) != 0)
+            FUN_006833d4(0x6a8797);
+        if (len != 0) {
+            ulong end = round + (len + base & 0xffffffffffffc000);
+            if (end == (base & 0xffffffffffffc000)) {
+                /* empty range: allocate a fresh node and recurse */
+                cL4_w16_t r = (cL4_w16_t)FUN_00687a2c();
+                long *node = r.hi;
+                long nbase = r.lo;
+                node[0] = nbase; node[1] = 0; node[2] = 0;
+                node[3] = 0; node[4] = 0; node[5] = 0;
+                node[6] = 0; node[7] = 0; node[8] = 0; node[9] = 0;
+                FUN_0067cfb0(node + 6);
+                FUN_00679838(nbase, (ulong)lo, (long)p4, 0);
+                FUN_00679a68(nbase, node, (ulong)lo, (long)p4, 0);
+                if (nbase + 0x50U < nbase + 0x40U)
+                    SoftwareBreakpoint(0x5519, 0x679a34);
+                if (FUN_0067d02c() == 0)
+                    return;
+                FUN_006833d4(0x6a8797);
+            }
+            while ((long n = *(long *)(obj + 0x1e0)) != 0) {
+                if (end <= base) { FUN_006879f4(); goto done_lbl; }
+                for (;;) {
+                    ulong a = *(ulong *)(n + 8);
+                    if (*(ulong *)(n + 0x10) <= a) { FUN_006879f4(); goto done_lbl; }
+                    bool overlap = a < end;
+                    if (a <= base) overlap = base < *(ulong *)(n + 0x10);
+                    if (overlap) break;
+                    n = *(long *)(n + 0x18);
+                    if (n == 0) return;
+                }
+                *(char *)(n + 0x42) = 1;
+                if (FUN_0067cfc8(n + 0x30, lock) != 0)
+                    FUN_006833d4(0x6a8797);
+            }
+        }
+        return;
+    }
+done_lbl:
+    SoftwareBreakpoint(0x5519, 0x679958);
+}
+
+/* FUN_00679990 @ 0x679990
+ * Ghidra: void FUN_00679990(long, long *, undefined8, undefined8)
+ * Initialise a fresh region node and link it into the object's list. Confidence: medium. */
+void FUN_00679990(long obj, long *node, ulong base, ulong len)
+{
+    node[0] = obj; node[1] = 0; node[2] = 0;
+    node[3] = 0; node[4] = 0; node[5] = 0;
+    node[6] = 0; node[7] = 0; node[8] = 0; node[9] = 0;
+    FUN_0067cfb0(node + 6);
+    FUN_00679838(obj, base, (long)len, 0);
+    FUN_00679a68(obj, node, base, (long)len, 0);
+    if (obj + 0x50U < obj + 0x40U)
+        SoftwareBreakpoint(0x5519, 0x679a34);
+    if (FUN_0067d02c() == 0)
+        return;
+    FUN_006833d4(0x6a8797);
+}
+
+/* FUN_00679a68 @ 0x679a68
+ * Ghidra: void FUN_00679a68(long, long *, ulong, long, uint)
+ * Link a region node into the object's list with the given [base,end)
+ * bounds; validation included. Confidence: medium. */
+void FUN_00679a68(long obj, long *node, ulong base, long len, unsigned int flag)
+{
+    long round = 0;
+    if ((len + base & 0x3fff) != 0) round = 0x4000;
+    ulong end = round + (len + base & 0xffffffffffffc000);
+    if (end <= (base & 0xffffffffffffc000))
+        FUN_006833d4(0x6b0d5a);
+    if (*node != obj)
+        FUN_006833d4(0x6b0dc7);
+    if ((char)node[8] == 1) {
+        FUN_00687a64();
+    } else if (*(unsigned char *)((long)node + 0x41) == (unsigned char)flag) {
+        long head = *(long *)(obj + 0x1e0);
+        node[3] = head;
+        node[1] = base & 0xffffffffffffc000;
+        node[2] = end;
+        *(char *)(node + 8) = 1;
+        *(char *)((long)node + 0x42) = 0;
+        if (head != 0)
+            *(long **)(head + 0x20) = node + 3;
+        *(long **)(obj + 0x1e0) = node;
+        if (obj + 0x1e0U <= obj + 0x1e8U) {
+            node[4] = obj + 0x1e0U;
+            return;
+        }
+        SoftwareBreakpoint(0x5519, 0x679b0c);
+    }
+    FUN_006833d4(0x6b0e7d);
+}
+
+/* FUN_00679b98 @ 0x679b98
+ * Ghidra: void FUN_00679b98(long, long *)
+ * Remove a region node from the object's list and release it. Confidence: medium. */
+void FUN_00679b98(long obj, long *node)
+{
+    ulong lock = obj + 0x40;
+    if (obj + 0x50U < lock)
+        SoftwareBreakpoint(0x5519, 0x679c60);
+    if (FUN_0067cffc(lock) != 0)
+        FUN_006833d4(0x6a8797);
+    if (obj != *node)
+        FUN_006833d4(0x6b0832);
+    if ((*(unsigned char *)(node + 8) & 1) != 0) {
+        long prev = node[3];
+        long *next = (long *)node[4];
+        if (prev != 0)
+            *(long **)(prev + 0x20) = next;
+        *next = prev;
+        *(char *)(node + 8) = 0;
+        char wasmarked = *(char *)((long)node + 0x42);
+        if (FUN_0067d02c(lock) != 0)
+            FUN_006833d4(0x6a8797);
+        if (wasmarked != 0)
+            FUN_0067cf94(node + 6);
+        if ((*(unsigned char *)((long)node + 0x41) & 1) != 0)
+            return;
+        if ((char)node[8] != 1) {
+            thunk_FUN_00655200(node + 6);
+            return;
+        }
+        FUN_006833d4(0x6adaed);
+    }
+    FUN_006833d4(0x6b0887);
+}
+
+/* FUN_00679d44 @ 0x679d44
+ * Ghidra: undefined1 [16] FUN_00679d44(undefined8, long, ulong, ulong, long)
+ * Map an object into a region: choose the leaf page size from the object's
+ * capability flags, allocate the frames, and install the PTEs. Returns a
+ * 16-byte {error, region-node} pair. Confidence: low. */
+cL4_w16_t FUN_00679d44(ulong owner, long obj, ulong psize, ulong base, long len)
+{
+    long round = 0;
+    if ((len + base & 0x3fff) != 0) round = 0x4000;
+    long flags = *(long *)(obj + 8);
+    ulong err = 0xf60001;
+    int ps = (int)psize;
+    if (ps < 2) {
+        if (ps == 0) {
+            unsigned int f = *(unsigned int *)(obj + 0x20);
+            unsigned int s = 1;
+            if ((f & 8) != 0) s = 2;
+            unsigned int s2 = 3;
+            if ((f & 0x10) == 0) s2 = s;
+            unsigned int s3 = 4;
+            if ((f & 0x10000) != 0) s3 = s2;
+            psize = s3;
+        } else if (ps != 1) goto out;
+        goto map;
+    } else {
+        if (ps != 2) {
+            if (ps == 3) {
+                if (((*(unsigned char *)(obj + 0x20) >> 4) & 1) == 0) goto fail;
+                psize = 3;
+            } else if (ps != 4) goto out;
+            goto map;
+        }
+        if ((*(unsigned char *)(obj + 0x20) >> 3 & 1) != 0) {
+            psize = 2;
+            goto map;
+        }
+    }
+fail:
+    err = 0xf60001;
+    goto out;
+map:
+    {
+        ulong end = round + (len + base & 0xffffffffffffc000);
+        if (end <= *(ulong *)(obj + 0x10)) {
+            base = base & 0xffffffffffffc000;
+            long span = end - base;
+            ulong t[5] = {0,0,0,0,0};
+            if ((FUN_00671af0(t, owner, flags + base, span, 0, 0, 0, 1) & 1) == 0) {
+                cL4_w16_t r = (cL4_w16_t)FUN_00687a9c();
+                ulong **head = *(ulong ***)(r.lo + 0x1d8);
+                ulong *node = NULL;
+                if (head != NULL) {
+                    ulong *cur = head, *prev = NULL, *prv_end = NULL;
+                    do {
+                        ulong *np = cur + 6;
+                        if (*cur <= r.hi && r.hi < cur[1] + *cur) {
+                            if (prev != NULL) {
+                                if (prv_end < prev + 6) goto trap2;
+                                prev[5] = cur[5];
+                                cur[5] = (ulong)head;
+                                if (np < cur) goto trap2;
+                                *(ulong ***)(r.lo + 0x1d8) = cur;
+                            }
+                            if (np < cur) { trap2: SoftwareBreakpoint(0x5519, 0x67a0f0); }
+                            node = cur;
+                            break;
+                        }
+                        ulong *nxt = cur + 5;
+                        prev = cur;
+                        prv_end = np;
+                        cur = (ulong *)*nxt;
+                    } while ((ulong *)*nxt != NULL);
+                }
+                cL4_w16_t o = { (ulong)node, 0 };
+                return o;
+            }
+            if (base == 0 && *(long *)(obj + 0x10) == span) {
+                long node = FUN_0067a064(owner, flags);
+                if (*(long *)(node + 0x18) != 0)
+                    FUN_0067a0f0(&t[0]);
+                err = 0;
+                *(long *)(node + 0x18) = 0;
+                *(char *)(node + 0x10) = (char)psize;
+            } else {
+                if (span != 0) {
+                    long rem = span;
+                    do {
+                        ulong va = (span - rem) + flags + base;
+                        if ((FUN_00671398(&t[0], owner, va, rem, 2) & 1) == 0) {
+                            FUN_00687ad4();
+                            FUN_006833d4(0x6b0ed7);
+                        }
+                        long node = FUN_0067a064(owner, flags);
+                        if (node == 0) {
+                            err = 0x1160001;
+                            goto finish;
+                        }
+                        if (node + 0x20U < node + 0x18U) goto trap2;
+                        if ((va & 0x3fff) != 0) {
+                            FUN_00687ad4();
+                            FUN_006833d4(0x6b0ed7);
+                        }
+                        if (va < flags + err) {
+                            long off = 0;
+                            do {
+                                ulong *pg = (ulong *)FUN_0067a1b8(node + 0x18U,
+                                            va + off, &t[0], 1);
+                                if (pg == NULL) break;
+                                ulong idx = (va + off + (ulong)(unsigned int)-(int)pg[0x25])
+                                            >> 0xe & 0x3ffff;
+                                ulong *slot = (ulong *)((long)pg + (idx * 0xc30c30d >> 0x1d & 0x1fff8));
+                                if (slot < pg || pg + 0x25 < slot + 1 || slot + 1 < slot)
+                                    goto trap2;
+                                unsigned int bi = (unsigned int)(((int)idx + (int)(idx / 0x15) * -0x15) * 3);
+                                *slot = *slot & ~(7L << (bi & 0x3f)) |
+                                        (psize & 0xff) << (bi & 0x3f);
+                                off = off + 0x4000;
+                            } while (va + off < flags + err);
+                        } else {
+                            /* no-op advance */
+                        }
+                        rem = rem - off;
+                    } while (rem != 0);
+                }
+                err = 0;
+            }
+finish:
+            FUN_00671bc4(&t[0], owner);
+        }
+    }
+out:
+    return (cL4_w16_t){ err, 0 };
+}
+
+/* FUN_0067a064 @ 0x67a064
+ * Ghidra: ulong * FUN_0067a064(long, ulong)
+ * Look up (and rotate to the front of) the object-list node covering addr. */
+ulong *FUN_0067a064(long owner, ulong addr)
+{
+    ulong *head = *(ulong **)(owner + 0x1d8);
+    if (head != NULL) {
+        ulong *cur = head, *prev = NULL, *prv_end = NULL;
+        do {
+            ulong *np = cur + 6;
+            if (*cur <= addr && addr < cur[1] + *cur) {
+                if (prev != NULL) {
+                    if (prv_end < prev + 6) goto trap3;
+                    prev[5] = cur[5];
+                    cur[5] = (ulong)head;
+                    if (np < cur) goto trap3;
+                    *(ulong **)(owner + 0x1d8) = cur;
+                }
+                if (cur <= np) return cur;
+trap3:
+                SoftwareBreakpoint(0x5519, 0x67a0f0);
+            }
+            ulong *nxt = cur + 5;
+            prev = cur;
+            prv_end = np;
+            cur = (ulong *)*nxt;
+        } while ((ulong *)*nxt != NULL);
+    }
+    return NULL;
+}
+
+/* FUN_0067a0f0 @ 0x67a0f0
+ * Ghidra: void FUN_0067a0f0(undefined8, long)
+ * Release all page objects reachable from a node's page table (32 slots),
+ * then free the node's table. Confidence: medium. */
+void FUN_0067a0f0(ulong owner, long node)
+{
+    long i;
+    for (i = 0; i != 0x20; i++) {
+        long n = *(long *)(node + i * 8);
+        while (n != 0) {
+            n = *(long *)(n + 0x130);
+            FUN_00671320(owner);
+        }
+    }
+    FUN_00671220(owner, node);
+}
+
+/* FUN_0067a154 @ 0x67a154
+ * Ghidra: bool FUN_0067a154(int, int)
+ * Compatibility predicate for level switches. Confidence: low. */
+bool FUN_0067a154(int a, int b)
+{
+    if (b == 2) return a == 3;
+    if (b != 1) {
+        if (b == 0) return a != 4;
+        FUN_006833d4(0x6b0a40);
+    }
+    return a == 2;
+}
+
+/* FUN_0067a1b8 @ 0x67a1b8
+ * Ghidra: ulong FUN_0067a1b8(undefined8 *, ulong, undefined8, int)
+ * Find (or, when alloc!=0, create and insert) a page object covering the
+ * page containing addr within the node's page table. Confidence: medium. */
+ulong FUN_0067a1b8(ulong *headp, ulong addr, ulong owner, int alloc)
+{
+    ulong *head = (ulong *)*headp;
+    if (head == NULL) {
+        if (alloc == 0) return 0;
+        head = (ulong *)FUN_00671150(owner);
+        *headp = head;
+    }
+    for (ulong p = *head; p != 0; p = *(ulong *)(p + 0x130)) {
+        if (*(ulong *)(p + 0x128) == (addr & 0xffffffffffc00000))
+            return p;
+    }
+    if (alloc == 0) return 0;
+    ulong pg = FUN_00671384(owner);
+    if (pg == 0) return 0;
+    *(ulong *)(pg + 0x128) = addr & 0xffffffffffc00000;
+    *(ulong *)(pg + 0x130) = *head;
+    if (pg + 0x138 < pg)
+        SoftwareBreakpoint(0x5519, 0x67a264);
+    *head = pg;
+    return pg;
+}
+
+/* FUN_0067a264 @ 0x67a264
+ * Ghidra: void FUN_0067a264(undefined8, long, undefined8, undefined8, int, long)
+ * Push a new object descriptor onto the owner's mapping stack. Confidence: medium. */
+void FUN_0067a264(ulong owner, long obj, ulong base, ulong len, int psize, long src)
+{
+    if (psize != 4) {
+        if (psize != 0)
+            FUN_006833d4(0x6b0aa9);
+        unsigned int f = *(unsigned int *)(src + 0x20);
+        int s = 1;
+        if ((f & 8) != 0) s = 2;
+        int s2 = 3;
+        if ((f & 0x10) == 0) s2 = s;
+        psize = 4;
+        if ((f & 0x10000) != 0) psize = s2;
+    }
+    ulong *node = (ulong *)FUN_00671018();
+    node[0] = base;
+    node[1] = len;
+    *(char *)(node + 2) = (char)psize;
+    node[3] = 0;
+    node[4] = src;
+    node[5] = *(ulong *)(obj + 0x1d8);
+    if (node + 6 < node)
+        SoftwareBreakpoint(0x5519, 0x67a30c);
+    *(ulong **)(obj + 0x1d8) = node;
+}
+
+/* FUN_0067a334 @ 0x67a334
+ * Ghidra: void FUN_0067a334(undefined8, long, long)
+ * Remove and release the object descriptor whose backing object equals src.
+ * Confidence: medium. */
+void FUN_0067a334(ulong owner, long obj, long src)
+{
+    long *p = (long *)(obj + 0x1d8);
+    if (p <= (long *)(obj + 0x1e0U)) {
+        do {
+            long n = *p;
+            if (n == 0)
+                FUN_006833d4(0x6b0f9e);
+            if (*(long *)(n + 0x20) == src) {
+                *p = *(long *)(n + 0x28);
+                *(long *)(n + 0x28) = 0;
+                if (*(long *)(n + 0x18) != 0)
+                    FUN_0067a0f0(owner);
+                FUN_006710e8(owner, n);
+                return;
+            }
+            p = (long *)(n + 0x28);
+        } while (p <= (long *)(n + 0x30U));
+    }
+    SoftwareBreakpoint(0x5519, 0x67a384);
+}
+
+/* FUN_0067a3dc @ 0x67a3dc
+ * Ghidra: void FUN_0067a3dc(undefined8, undefined8, long, long)
+ * Replace the mapping of src with an adjacent object: drop src then insert
+ * the object whose range begins at src. Confidence: medium. */
+void FUN_0067a3dc(ulong owner, ulong obj, long a, long b)
+{
+    FUN_0067a334(owner, obj, a);
+    FUN_0067a334(owner, obj, b);
+    FUN_0067a264(owner, obj, *(ulong *)(a + 8),
+                 *(long *)(b + 0x10) + *(long *)(a + 0x10), 0, a);
+}
+
+/* FUN_0067a444 @ 0x67a444
+ * Ghidra: void FUN_0067a444(undefined8, undefined8, long, ulong, undefined8)
+ * Split an object mapping at offset len into two adjacent descriptors.
+ * Confidence: medium. */
+void FUN_0067a444(ulong owner, ulong obj, long src, ulong len, ulong dst)
+{
+    if (len == 0) {
+        FUN_00687b0c();
+    } else if (len < *(ulong *)(src + 0x10)) {
+        FUN_0067a334(owner, obj, src);
+        FUN_0067a264(owner, obj, *(ulong *)(src + 8), len, 0, src);
+        FUN_0067a264(owner, obj, *(long *)(src + 8) + len,
+                     *(long *)(src + 0x10) - len, 0, dst);
+        return;
+    }
+    FUN_006833d4(0x6b0b54);
+}
+
+/* FUN_0067a510 @ 0x67a510
+ * Ghidra: bool FUN_0067a510(long, long, ulong, undefined8 *, byte *)
+ * Resolve the page-table byte for a mapped address, populating the pool and
+ * the caller's out params. Confidence: low. */
+bool FUN_0067a510(long owner, long node, ulong addr, ulong *outobj, unsigned char *outps)
+{
+    if ((*(unsigned char *)(node + 0xa1) & 1) == 0) {
+        ulong page = addr & 0xffffffffffffc000;
+        FUN_00679838(owner, page, 0x4000);
+        ulong n = FUN_0067a064(owner, page);
+        if (n == 0) {
+            if (owner + 0x40U <= owner + 0x50U) {
+                if (FUN_0067d02c() != 0)
+                    FUN_006833d4(0x6a8797);
+                return n != 0;
+            }
+            SoftwareBreakpoint(0x5519, 0x67a704);
+        }
+        FUN_00679a68(owner, node, page, 0x4000, 1);
+        *(char *)(node + 0xa1) = 1;
+        *(ulong *)(node + 0xa8) = page;
+        if (n + 0x30 < n) goto trap4;
+        ulong sb = *(ulong *)(*(long *)(n + 0x20) + 8);
+        if (sb <= page && page < *(long *)(*(long *)(n + 0x20) + 0x10) + sb) {
+            unsigned char ps;
+            if (*(ulong **)(n + 0x18) != NULL) {
+                ulong *pg = *(ulong **)(n + 0x18);
+                if (pg != NULL) {
+                    do {
+                        if (pg[0x25] == (addr & 0xffffffffffc00000)) {
+                            ulong *slot = (ulong *)((long)pg + ((ulong)((unsigned int)addr & 0x3fc000) / 0xa800 & 0x78));
+                            if (slot < pg || pg + 0x25 < slot + 1 || slot + 1 < slot) goto trap4;
+                            unsigned int code = ((unsigned int)(addr >> 0xe) & 0xff) * 0x87;
+                            int sa = (int)(addr >> 0xe);
+                            ulong bits = *slot >> ((ulong)((sa + ((sa - (code >> 8) >> 1 & 0x7f) + (code >> 8) >> 4 & 0xf) * -0x15) * 3) & 0x3f);
+                            ps = (unsigned char)bits & 7;
+                            if ((bits & 7) != 0) goto found;
+                            break;
+                        }
+                        pg = (ulong *)pg[0x26];
+                    } while (pg != NULL);
+                }
+            }
+            ps = *(unsigned char *)(n + 0x10);
+found:
+            *(unsigned char *)(node + 0xa3) = ps;
+            *outps = ps;
+            *outobj = *(ulong *)(n + 0x20);
+            if (owner + 0x50U < owner + 0x40U) goto trap4;
+            if (FUN_0067d02c() == 0)
+                return n != 0;
+            goto trap4;
+        }
+        FUN_00687b48();
+    }
+    FUN_00687b74();
+trap4:
+    FUN_006833d4(0x6a8797);
+}
+
+/* FUN_0067a740 @ 0x67a740
+ * Ghidra: ulong FUN_0067a740(undefined8, long)
+ * Tear down a per-node mapped pool (or report its dirty flag). Confidence: low. */
+ulong FUN_0067a740(ulong owner, long node)
+{
+    if ((*(unsigned char *)(node + 0xa1) & 1) != 0) {
+        *(char *)(node + 0xa1) = 0;
+        return FUN_00679b98(owner, node);
+    }
+    long o = FUN_00687bac();
+    if (*(char *)(o + 0x18) == 0x11)
+        return (ulong)(*(unsigned char *)(o + 0x22) & 1);
+    return 0;
+}
+
+/* FUN_0067a760 @ 0x67a760
+ * Ghidra: byte FUN_0067a760(long)
+ * Read the dirty flag of an object. Confidence: medium. */
+unsigned char FUN_0067a760(long obj)
+{
+    if (*(char *)(obj + 0x18) == 0x11)
+        return *(unsigned char *)(obj + 0x22) & 1;
+    return 0;
+}
+
+/* ---- Memory / string primitives (0x67a780-0x67b664) ---- */
+
+/* FUN_0067a780 @ 0x67a780
+ * Ghidra: void FUN_0067a780(undefined8 *, ulong)
+ * Zero-fill a buffer of len bytes (bzero), using DC_ZVA for large blocks.
+ * Confidence: medium. */
+void FUN_0067a780(unsigned char *dst, ulong len)
+{
+    if (len > 0x3f) {
+        if (len > 0x7fff) {
+            /* large: DC_ZVA 64-byte blocks */
+            unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+            ulong n = (len + (ulong)dst) - (d + 0x40);
+            if (d + 0x40 <= len + (ulong)dst && n != 0) {
+                do { DC_ZVA((ulong)d); d += 0x40; n -= 0x40; } while (n > 0x3f && n != 0);
+            }
+            unsigned char *tail = d + n;
+            tail[0]=tail[1]=tail[2]=tail[3]=tail[4]=tail[5]=tail[6]=tail[7]=0;
+            tail[8]=tail[9]=tail[10]=tail[11]=tail[12]=tail[13]=tail[14]=tail[15]=0;
+            tail[16]=tail[17]=tail[18]=tail[19]=tail[20]=tail[21]=tail[22]=tail[23]=0;
+            tail[24]=tail[25]=tail[26]=tail[27]=tail[28]=tail[29]=tail[30]=tail[31]=0;
+            return;
+        }
+        /* mid: 64-byte stores */
+        unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+        ulong n = (len + (ulong)dst) - (d + 8);
+        if (d + 8 <= len + (ulong)dst && n != 0) {
+            do {
+                d[0]=d[1]=d[2]=d[3]=d[4]=d[5]=d[6]=d[7]=0;
+                d[8]=d[9]=d[10]=d[11]=d[12]=d[13]=d[14]=d[15]=0;
+                d[16]=d[17]=d[18]=d[19]=d[20]=d[21]=d[22]=d[23]=0;
+                d[24]=d[25]=d[26]=d[27]=d[28]=d[29]=d[30]=d[31]=0;
+                d += 0x40; n -= 0x40;
+            } while (n > 0x3f && n != 0);
+        }
+        unsigned char *tail = d + n;
+        tail[0]=tail[1]=tail[2]=tail[3]=tail[4]=tail[5]=tail[6]=tail[7]=0;
+        tail[8]=tail[9]=tail[10]=tail[11]=tail[12]=tail[13]=tail[14]=tail[15]=0;
+        tail[16]=tail[17]=tail[18]=tail[19]=tail[20]=tail[21]=tail[22]=tail[23]=0;
+        tail[24]=tail[25]=tail[26]=tail[27]=tail[28]=tail[29]=tail[30]=tail[31]=0;
+        return;
+    }
+    /* small */
+    while (len > 7) { *(ulong *)dst = 0; dst += 8; len -= 8; }
+    for (; len != 0; len--) *dst++ = 0;
+}
+
+/* FUN_0067a7f0 @ 0x67a7f0
+ * Ghidra: void FUN_0067a7f0(long *, ulong, ulong)
+ * Fill a buffer of len bytes with the byte value (memset), using DC_ZVA for
+ * the zero-fill case. Confidence: medium. */
+void FUN_0067a7f0(unsigned char *dst, ulong val, ulong len)
+{
+    ulong word = (val & 0xff) * 0x101010101010101UL;
+    if (len < 0x40) {
+        while (len > 7) { *(ulong *)dst = word; dst += 8; len -= 8; }
+        for (; len != 0; len--) *dst++ = (unsigned char)word;
+        return;
+    }
+    if (len < 0x8000) {
+        unsigned char *d = dst;
+        for (ulong i = 0; i < 0x40 && (ulong)(d - dst) < len; i += 8)
+            *(ulong *)(d + i) = word;
+        unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+        ulong n = (len + (ulong)dst) - (p + 8);
+        if (p + 8 <= len + (ulong)dst && n != 0) {
+            do {
+                *(ulong *)(p+0)=word; *(ulong *)(p+8)=word; *(ulong *)(p+16)=word;
+                *(ulong *)(p+24)=word; *(ulong *)(p+32)=word; *(ulong *)(p+40)=word;
+                *(ulong *)(p+48)=word; *(ulong *)(p+56)=word;
+                p += 0x40; n -= 0x40;
+            } while (n > 0x3f && n != 0);
+        }
+        unsigned char *tail = p + n;
+        for (ulong i = 0; i < 0x40 && (ulong)(tail + i - dst) < len; i += 8)
+            *(ulong *)(tail + i) = word;
+        return;
+    }
+    /* large */
+    if (word != 0) {
+        for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = word;
+        unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+        ulong n = (len + (ulong)dst) - (p + 8);
+        if (p + 8 <= len + (ulong)dst && n != 0) {
+            do {
+                *(ulong *)(p+0)=word; *(ulong *)(p+8)=word; *(ulong *)(p+16)=word;
+                *(ulong *)(p+24)=word; *(ulong *)(p+32)=word; *(ulong *)(p+40)=word;
+                *(ulong *)(p+48)=word; *(ulong *)(p+56)=word;
+                p += 0x40; n -= 0x40;
+            } while (n > 0x3f && n != 0);
+        }
+        unsigned char *tail = p + n;
+        for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(tail + i) = word;
+        return;
+    }
+    /* zero fill via DC_ZVA */
+    for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = 0;
+    unsigned char *z = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+    ulong n = (len + (ulong)dst) - (z + 0x40);
+    if (z + 0x40 <= len + (ulong)dst && n != 0) {
+        do { DC_ZVA((ulong)z); z += 0x40; n -= 0x40; } while (n > 0x3f && n != 0);
+    }
+    unsigned char *tail = z + n;
+    for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(tail + i) = 0;
+}
+
+/* FUN_0067a900 @ 0x67a900
+ * Ghidra: long FUN_0067a900(ulong, char, long)
+ * Find the first occurrence of byte c within [s, s+len) (memchr), scanning
+ * 16 bytes at a time with SIMD. Returns offset or NULL. Confidence: low. */
+long FUN_0067a900(ulong s, char c, long len)
+{
+    if (len != 0) {
+        if (len < 0) {
+            /* backward scan (len<0 path) */
+            unsigned long *p = (unsigned long *)(s & ~0xfUL);
+            ulong a = p[1], b = p[0];
+            /* XOR each byte with c, detect any zero byte via the uminv trick */
+            ulong o = 0;
+            while (1) {
+                if ((b == c) ) return (long)(p + 0) + 0;
+                if ((a == c)) return (long)(p + 0) + 1;
+                /* SIMD uminv over 16 bytes; detect presence */
+                b = p[2]; a = p[3];
+                p += 2;
+                o += 0x10;
+            }
+        } else {
+            unsigned long *p = (unsigned long *)(s & ~0xfUL);
+            ulong a = p[1], b = p[0];
+            ulong rem = (ulong)len + (s & 0xf);
+            ulong o = 0;
+            while (1) {
+                if (b == c) { long off = (ulong)o; if (off < (long)rem) return (long)p + 0; return 0; }
+                if (a == c) { long off = (ulong)o + 1; if (off < (long)rem) return (long)p + 1; return 0; }
+                if (rem < 0x10 || rem - 0x10 == 0) break;
+                b = p[2]; a = p[3];
+                p += 2; rem -= 0x10; o += 0x10;
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0067aa00 @ 0x67aa00
+ * Ghidra: void FUN_0067aa00(undefined8 *, undefined8 *, ulong)
+ * Copy len bytes, handling overlapping regions (memmove). Confidence: low. */
+void FUN_0067aa00(unsigned char *dst, const unsigned char *src, ulong len)
+{
+    if ((ulong)((long)dst - (long)src) < len) {
+        /* overlap: copy backwards */
+        if (dst != src) {
+            unsigned char *de = dst + len;
+            const unsigned char *se = src + len;
+            while (len > 7) { de -= 8; se -= 8; *(ulong *)de = *(const ulong *)se; len -= 8; }
+            for (; len != 0; len--) { de--; se--; *de = *se; }
+        }
+        return;
+    }
+    /* forward copy */
+    while (len > 7) { *(ulong *)dst = *(const ulong *)src; dst += 8; src += 8; len -= 8; }
+    for (; len != 0; len--) *dst++ = *src++;
+}
+
+/* FUN_0067ad00 @ 0x67ad00
+ * Ghidra: void FUN_0067ad00(ulong *, ulong *, ulong)
+ * Fill a buffer with a repeated 8-byte pattern (memset pattern). Confidence: low. */
+void FUN_0067ad00(unsigned char *dst, unsigned long pat, ulong len)
+{
+    if (len < 0x40) {
+        while (len > 0xf) { *(ulong *)dst = pat; *(ulong *)(dst+8) = pat; dst += 0x10; len -= 0x10; }
+        for (; len != 0; len--) { *dst = (unsigned char)pat; dst++; }
+        return;
+    }
+    for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = pat;
+    unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
+    ulong n = (len + (ulong)dst) - (p + 8);
+    if (p + 8 <= len + (ulong)dst && n != 0) {
+        do {
+            for (int i = 0; i < 8; i++) *(ulong *)(p + i*8) = pat;
+            p += 0x40; n -= 0x40;
+        } while (n > 0x3f && n != 0);
+    }
+    unsigned char *tail = p + n;
+    for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(tail + i) = pat;
+}
+
+/* FUN_0067aeb0 @ 0x67aeb0
+ * Ghidra: long FUN_0067aeb0(byte *, byte *)
+ * strcmp: compare two NUL-terminated strings, 16 bytes at a time. Confidence: low. */
+long FUN_0067aeb0(const unsigned char *a, const unsigned char *b)
+{
+    while ((ulong)a & 0xf) {
+        unsigned char ca = *a;
+        long d = (ulong)ca - (ulong)*b;
+        a++; b++;
+        if (d != 0 || ca == 0) return d;
+    }
+    /* aligned 16-byte compare */
+    for (;;) {
+        unsigned long x0 = *(const unsigned long *)(a + 0);
+        unsigned long x1 = *(const unsigned long *)(a + 8);
+        unsigned long y0 = *(const unsigned long *)(b + 0);
+        unsigned long y1 = *(const unsigned long *)(b + 8);
+        /* detect a differing or NUL byte */
+        unsigned char c0 = (unsigned char)x0, c1 = (unsigned char)(x0>>8),
+                      c2 = (unsigned char)(x0>>16), c3 = (unsigned char)(x0>>24),
+                      c4 = (unsigned char)(x0>>32), c5 = (unsigned char)(x0>>40),
+                      c6 = (unsigned char)(x0>>48), c7 = (unsigned char)(x0>>56);
+        unsigned char d0 = (unsigned char)x1, d1 = (unsigned char)(x1>>8),
+                      d2 = (unsigned char)(x1>>16), d3 = (unsigned char)(x1>>24),
+                      d4 = (unsigned char)(x1>>32), d5 = (unsigned char)(x1>>40),
+                      d6 = (unsigned char)(x1>>48), d7 = (unsigned char)(x1>>56);
+        if (c0!=y0||c1!=(unsigned char)(y0>>8)||c2!=(unsigned char)(y0>>16)||
+            c3!=(unsigned char)(y0>>24)||c4!=(unsigned char)(y0>>32)||
+            c5!=(unsigned char)(y0>>40)||c6!=(unsigned char)(y0>>48)||
+            c7!=(unsigned char)(y0>>56)) {
+            long i = 0;
+            while (1) {
+                unsigned char ca = a[i], cb = b[i];
+                long d = (ulong)ca - (ulong)cb;
+                if (d != 0 || ca == 0) return d;
+                i++;
+                if (i == 16) break;
+            }
+        }
+        if (c0==0||c1==0||c2==0||c3==0||c4==0||c5==0||c6==0||c7==0||
+            d0==0||d1==0||d2==0||d3==0||d4==0||d5==0||d6==0||d7==0)
+            return 0;
+        a += 16; b += 16;
+    }
+}
+
+/* FUN_0067aff0 @ 0x67aff0
+ * Ghidra: long FUN_0067aff0(byte *, byte *, ulong)
+ * strncmp: compare up to len bytes. Confidence: low. */
+long FUN_0067aff0(const unsigned char *a, const unsigned char *b, ulong len)
+{
+    if (len == 0) return 0;
+    while ((ulong)a & 0xf) {
+        long d = (ulong)*a - (ulong)*b;
+        if (d != 0 || *a == 0) return d;
+        len--; b++; a++;
+        if (len == 0) return 0;
+    }
+    while (len >= 0x10) {
+        unsigned long x0 = *(const unsigned long *)(a + 0);
+        unsigned long x1 = *(const unsigned long *)(a + 8);
+        unsigned long y0 = *(const unsigned long *)(b + 0);
+        unsigned long y1 = *(const unsigned long *)(b + 8);
+        int diff = (x0 != y0) || (x1 != y1);
+        unsigned char c0=(unsigned char)x0,c1=(unsigned char)(x0>>8),c2=(unsigned char)(x0>>16),
+                      c3=(unsigned char)(x0>>24),c4=(unsigned char)(x0>>32),c5=(unsigned char)(x0>>40),
+                      c6=(unsigned char)(x0>>48),c7=(unsigned char)(x0>>56);
+        unsigned char d0=(unsigned char)x1,d1=(unsigned char)(x1>>8),d2=(unsigned char)(x1>>16),
+                      d3=(unsigned char)(x1>>24),d4=(unsigned char)(x1>>32),d5=(unsigned char)(x1>>40),
+                      d6=(unsigned char)(x1>>48),d7=(unsigned char)(x1>>56);
+        int nul = c0==0||c1==0||c2==0||c3==0||c4==0||c5==0||c6==0||c7==0||
+                  d0==0||d1==0||d2==0||d3==0||d4==0||d5==0||d6==0||d7==0;
+        if (diff || nul) {
+            long i = 0;
+            while (i < (long)len) {
+                unsigned char ca = a[i], cb = b[i];
+                long d = (ulong)ca - (ulong)cb;
+                if (d != 0 || ca == 0) return d;
+                i++;
+            }
+            return 0;
+        }
+        a += 16; b += 16; len -= 16;
+    }
+    for (; len != 0; len--) {
+        long d = (ulong)*a - (ulong)*b;
+        if (d != 0 || *a == 0) return d;
+        a++; b++;
+    }
+    return 0;
+}
+
+/* FUN_0067b180 @ 0x67b180
+ * Ghidra: long FUN_0067b180(ulong, long)
+ * strlen with optional length bound. Confidence: low. */
+long FUN_0067b180(ulong s, long max)
+{
+    if (max >= 0) {
+        if (max == 0) return 0;
+        unsigned long *p = (unsigned long *)(s & ~0xfUL);
+        ulong off = max + (s & 0xf);
+        ulong i = 0;
+        for (;;) {
+            unsigned long x0 = p[0], x1 = p[1];
+            unsigned char c0=(unsigned char)x0,c1=(unsigned char)(x0>>8),c2=(unsigned char)(x0>>16),
+                          c3=(unsigned char)(x0>>24),c4=(unsigned char)(x0>>32),c5=(unsigned char)(x0>>40),
+                          c6=(unsigned char)(x0>>48),c7=(unsigned char)(x0>>56);
+            unsigned char d0=(unsigned char)x1,d1=(unsigned char)(x1>>8),d2=(unsigned char)(x1>>16),
+                          d3=(unsigned char)(x1>>24),d4=(unsigned char)(x1>>32),d5=(unsigned char)(x1>>40),
+                          d6=(unsigned char)(x1>>48),d7=(unsigned char)(x1>>56);
+            ulong z = 0;
+            if (c0==0) z=0; else if (c1==0) z=1; else if (c2==0) z=2; else if (c3==0) z=3;
+            else if (c4==0) z=4; else if (c5==0) z=5; else if (c6==0) z=6; else if (c7==0) z=7;
+            else if (d0==0) z=8; else if (d1==0) z=9; else if (d2==0) z=10; else if (d3==0) z=11;
+            else if (d4==0) z=12; else if (d5==0) z=13; else if (d6==0) z=14; else if (d7==0) z=15;
+            else { p += 2; i += 0x10; if (i >= off) return (long)((ulong)p + (off - 1) - s) >= 0 ? (long)p + (long)off - (long)s : (long)p + (long)(off - 1) - (long)s; continue; }
+            if (z <= off) { ulong o = z; return (long)p + (long)o - (long)s; }
+            return (long)p + (long)off - (long)s;
+        }
+    }
+    /* max < 0: unbounded */
+    unsigned long *p = (unsigned long *)(s & ~0xfUL);
+    for (;;) {
+        unsigned long x0 = p[0], x1 = p[1];
+        unsigned char c0=(unsigned char)x0,c1=(unsigned char)(x0>>8),c2=(unsigned char)(x0>>16),
+                      c3=(unsigned char)(x0>>24),c4=(unsigned char)(x0>>32),c5=(unsigned char)(x0>>40),
+                      c6=(unsigned char)(x0>>48),c7=(unsigned char)(x0>>56);
+        unsigned char d0=(unsigned char)x1,d1=(unsigned char)(x1>>8),d2=(unsigned char)(x1>>16),
+                      d3=(unsigned char)(x1>>24),d4=(unsigned char)(x1>>32),d5=(unsigned char)(x1>>40),
+                      d6=(unsigned char)(x1>>48),d7=(unsigned char)(x1>>56);
+        ulong z = 0;
+        if (c0==0) z=0; else if (c1==0) z=1; else if (c2==0) z=2; else if (c3==0) z=3;
+        else if (c4==0) z=4; else if (c5==0) z=5; else if (c6==0) z=6; else if (c7==0) z=7;
+        else if (d0==0) z=8; else if (d1==0) z=9; else if (d2==0) z=10; else if (d3==0) z=11;
+        else if (d4==0) z=12; else if (d5==0) z=13; else if (d6==0) z=14; else if (d7==0) z=15;
+        else { p += 2; continue; }
+        return (long)p + (long)z - (long)s;
+    }
+}
+
+/* FUN_0067b220 @ 0x67b220
+ * Ghidra: long FUN_0067b220(ulong)
+ * strlen (unbounded). Confidence: low. */
+long FUN_0067b220(ulong s)
+{
+    return FUN_0067b180(s, -1);
+}
+
+/* FUN_0067b280 @ 0x67b280
+ * Ghidra: void FUN_0067b280(undefined8 param_1)
+ * Fatal: report a range/overflow error with param_1 via the formatter. Confidence: low. */
+void FUN_0067b280(ulong msg)
+{
+    (void)msg;
+    FUN_0065562c(msg, (ulong *)0);
+    FUN_0067b37c((unsigned char *)0, 0, 0);
+}
+
+/* FUN_0067b2ac @ 0x67b2ac
+ * Ghidra: char * FUN_0067b2ac(char *, int, long)
+ * memchr scalar fallback. Confidence: medium. */
+char *FUN_0067b2ac(char *s, int c, long len)
+{
+    char *p = s + len;
+    char *cur = s;
+    for (;;) {
+        char *cur2 = cur;
+        if (len == 0) return NULL;
+        if (p <= cur2 || cur2 < s) break;
+        len--;
+        cur = cur2 + 1;
+        if (c == *cur2) return cur2;
+    }
+    SoftwareBreakpoint(0x5519, 0x67b2e8);
+}
+
+/* FUN_0067b2e8 @ 0x67b2e8
+ * Ghidra: void FUN_0067b2e8(undefined1 *, undefined1 *, ulong)
+ * memmove scalar fallback. Confidence: medium. */
+void FUN_0067b2e8(unsigned char *dst, const unsigned char *src, ulong len)
+{
+    unsigned char *de = dst + len;
+    const unsigned char *se = src + len;
+    if ((ulong)((long)dst - (long)src) < len) {
+        /* overlapping: copy backwards */
+        unsigned char *d = dst + len;
+        const unsigned char *s = src + len;
+        while (len != 0) {
+            if (s <= src || src + len <= s || d <= dst || dst + len <= d) goto trap5;
+            *--d = *--s;
+            len--;
+        }
+    } else {
+        for (; len != 0; len--) {
+            if (se <= src + len || src + len < src) goto trap5;
+            if (de <= dst + len || dst + len < dst) goto trap5;
+            dst[len-1] = src[len-1];
+        }
+    }
+    if (dst <= de) return;
+trap5:
+    SoftwareBreakpoint(0x5519, 0x67b37c);
+}
+
+/* FUN_0067b37c @ 0x67b37c
+ * Ghidra: void FUN_0067b37c(undefined1 *, undefined1, long)
+ * memset scalar fallback. Confidence: medium. */
+void FUN_0067b37c(unsigned char *dst, unsigned char c, long len)
+{
+    unsigned char *de = dst + len;
+    unsigned char *p = dst;
+    for (; len != 0; len--) {
+        if (de <= p || p < dst) goto trap6;
+        *p = c;
+        p++;
+    }
+    if (dst <= de) return;
+trap6:
+    SoftwareBreakpoint(0x5519, 0x67b3b0);
+}
+
+/* FUN_0067b3b0 @ 0x67b3b0
+ * Ghidra: int FUN_0067b3b0(byte *, byte *)
+ * strcmp scalar fallback. Confidence: medium. */
+int FUN_0067b3b0(const unsigned char *a, const unsigned char *b)
+{
+    unsigned char ca, cb;
+    for (;;) {
+        ca = *a;
+        cb = *b;
+        if (ca != *b || (cb = ca, *a == 0)) break;
+        a++; b++;
+    }
+    return (int)ca - (int)cb;
+}
+
+/* FUN_0067b3e4 @ 0x67b3e4
+ * Ghidra: long FUN_0067b3e4(long)
+ * strlen scalar fallback. Confidence: medium. */
+long FUN_0067b3e4(long s)
+{
+    long i = 0;
+    while (*(char *)(s + i) != '\0') i++;
+    return i;
+}
+
+/* FUN_0067b3fc @ 0x67b3fc
+ * Ghidra: int FUN_0067b3fc(byte *, byte *, long)
+ * strncmp scalar fallback. Confidence: medium. */
+int FUN_0067b3fc(const unsigned char *a, const unsigned char *b, long len)
+{
+    for (;;) {
+        if (len == 0) return 0;
+        if ((unsigned int)*a - (unsigned int)*b != 0) break;
+        unsigned char ca = *a;
+        len--;
+        a++; b++;
+        if (ca == 0) return 0;
+    }
+    return (unsigned int)*a - (unsigned int)*b;
+}
+
+/* FUN_0067b42c @ 0x67b42c
+ * Ghidra: long FUN_0067b42c(long, long)
+ * strnlen scalar fallback. Confidence: medium. */
+long FUN_0067b42c(long s, long max)
+{
+    long i;
+    for (i = 0; (long)i != max && *(char *)(s + i) != '\0'; i++) {}
+    return i;
+}
+
+/* ---- Object-list iterators (0x67b454-0x67b768) ---- */
+
+/* FUN_0067b454 @ 0x67b454
+ * Ghidra: ulong FUN_0067b454(undefined8, undefined8, int, long, undefined8, code *)
+ * Count elements in a linked structure (optionally filtered by a callback),
+ * counting child nodes too. Confidence: low. */
+ulong FUN_0067b454(ulong a, ulong b, int countchildren, long root, ulong cookie, code *fn)
+{
+    cL4_w16_t start = (cL4_w16_t)FUN_006555fc(0x6b108f);
+    ulong p = start.lo;
+    ulong count = 0;
+    ulong *node;
+    while ((node = (ulong *)(root + p)) != NULL &&
+           (fn == NULL || (*(int (**)(void))fn)(node, 0, cookie) != 0)) {
+        if ((start.hi != 0) && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
+            while (c != NULL && (fn == NULL || (*(int (**)(void))fn)(c, 1, cookie) != 0)) {
+                long *next = (long *)0;
+                if (c[1] != 0) {
+                    if (FUN_00655650(c[1]) != 0) {
+                        count++;
+                        next = (long *)*c;
+                    }
+                }
+                c = next;
+            }
+            if (countchildren == 0) break;
+        }
+        if (node[1] == 0) break;
+        count++;
+        p = *node & 0xfffffffffffffff;
+    }
+    return count & ((long)count >> 0x3f ^ -1UL);
+}
+
+/* FUN_0067b478 @ 0x67b478
+ * Ghidra: ulong FUN_0067b478(ulong, int, int, long, undefined8, code *)
+ * Count elements from an offset in a linked structure with optional filter.
+ * Confidence: low. */
+ulong FUN_0067b478(ulong p0, int countchildren, int brk, long root, ulong cookie, code *fn)
+{
+    ulong count = 0;
+    ulong *node;
+    while ((node = (ulong *)(root + p0)) != NULL &&
+           (fn == NULL || (*(int (**)(void))fn)(node, 0, cookie) != 0)) {
+        if (countchildren != 0 && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
+            while (c != NULL && (fn == NULL || (*(int (**)(void))fn)(c, 1, cookie) != 0)) {
+                long *next = (long *)0;
+                if (c[1] != 0) {
+                    if (FUN_00655650(c[1]) != 0) {
+                        count++;
+                        next = (long *)*c;
+                    }
+                }
+                c = next;
+            }
+            if (brk == 0) break;
+        }
+        if (node[1] == 0) break;
+        count++;
+        p0 = *node & 0xfffffffffffffff;
+    }
+    return count & ((long)count >> 0x3f ^ -1UL);
+}
+
+/* FUN_0067b580 @ 0x67b580
+ * Ghidra: ulong FUN_0067b580(long, long, ulong, undefined4 *)
+ * Flatten a linked structure into an array, returning the element count.
+ * Confidence: low. */
+ulong FUN_0067b580(long root, long out, ulong max, unsigned int *plast)
+{
+    long *node;
+    if (root == 0) return -1UL;
+    if (plast != NULL) *plast = 0;
+    ulong count;
+    for (count = 0; root != 0 && count < max; count++) {
+        ulong *n = (ulong *)FUN_0067b704(root, plast);
+        if (n != NULL) {
+            while (n != NULL && count < max) {
+                ulong *next = NULL;
+                if (n[1] != 0) {
+                    long v = FUN_00655650(n[1]);
+                    if (v != 0) {
+                        if (out != 0) *(long *)(out + count * 8) = v + 1;
+                        count++;
+                        next = (ulong *)*n;
+                    }
+                }
+                n = next;
+            }
+            break;
+        }
+        long nb = FUN_0067b768();
+        if (nb == 0) break;
+        ulong v = FUN_00655650();
+        if (out != 0) *(ulong *)(out + count * 8) = v;
+        FUN_0067b758();
+    }
+    return count & ((long)count >> 0x3f ^ -1UL);
+}
+
+/* FUN_0067b664 @ 0x67b664
+ * Ghidra: ulong FUN_0067b664(ulong, long, ulong, long, code *, undefined8)
+ * Map a linked structure through a callback into an array. Confidence: low. */
+ulong FUN_0067b664(ulong p0, long out, ulong max, long root, code *fn, ulong cookie)
+{
+    ulong *node;
+    if (out == 0) return -1UL;
+    ulong count = 0;
+    while ((node = (ulong *)(root + p0)) != NULL && count < max && node[1] != 0) {
+        ulong v = (*(ulong (**)(void))fn)(node[1], cookie);
+        *(ulong *)(out + count * 8) = v;
+        count++;
+        p0 = *node & 0xfffffffffffffff;
+    }
+    return count;
+}
+
+/* FUN_0067b704 @ 0x67b704
+ * Ghidra: undefined8 FUN_0067b704(long, undefined4 *)
+ * Fetch a node from the per-thread list, returning its payload (or 0).
+ * Confidence: low. */
+ulong FUN_0067b704(long node, unsigned int *pinfo)
+{
+    if ((*(unsigned char *)(node + 7) >> 4 & 1) != 0) {
+        long *tp = (long *)tpidr_el0;
+        long *slot = tp + 6;
+        if (slot < tp || tp + 0x1f < tp + 7 || tp + 7 < slot)
+            SoftwareBreakpoint(0x5519, 0x67b758);
+        if (*slot != 0) {
+            if (pinfo != NULL) *pinfo = *(unsigned int *)(*slot + 0x24);
+            return *(ulong *)(node - 8);
+        }
+    }
+    return 0;
+}
+
+/* FUN_0067b758 @ 0x67b758
+ * Ghidra: void FUN_0067b758(void)
+ * No-op (list release stub). Confidence: medium. */
+void FUN_0067b758(void) { }
+
+/* FUN_0067b768 @ 0x67b768
+ * Ghidra: undefined8 FUN_0067b768(void)
+ * Read the next list element from a register-resident pointer. Confidence: low. */
+ulong FUN_0067b768(void)
+{
+    return 0;   /* unaff_x22 + 8 */
+}
+
+/* ---- printf / FILE writer (0x67b774-0x67d440) ---- */
+
+/* FUN_0067bde4 @ 0x67bde4
+ * Ghidra: undefined8 FUN_0067bde4(char *, undefined8)
+ * Append a single char to the output buffer, growing it if needed.
+ * Confidence: medium. */
+ulong FUN_0067bde4(char *buf, ulong ch)
+{
+    if (*buf == 1) {
+        FUN_0067d248(ch, *(ulong *)(buf + 8));
+    } else {
+        ulong len = *(ulong *)(buf + 0x20);
+        ulong n = len + 1;
+        if (n < len) return 0;              /* overflow */
+        ulong cap = *(ulong *)(buf + 0x10);
+        if (n < cap) {
+            unsigned char *p = *(unsigned char **)(buf + 8);
+            if (p + cap <= p + len || p + len < p)
+                SoftwareBreakpoint(0x5519, 0x67bea4);
+            p[len] = (char)ch;
+        } else if (cap == n) {
+            unsigned char *p = *(unsigned char **)(buf + 8);
+            if (p + n <= p + len || p + len < p)
+                SoftwareBreakpoint(0x5519, 0x67bea4);
+            p[len] = 0;
+        }
+    }
+    *(long *)(buf + 0x20) = *(long *)(buf + 0x20) + 1;
+    return 1;
+}
+
+/* FUN_0067c628 @ 0x67c628
+ * Ghidra: undefined8 FUN_0067c628(long, byte *, undefined8, long, undefined8, ulong)
+ * Pad then write: fill leading/trailing padding to the field width, then
+ * copy the payload and any suffix. Confidence: low. */
+ulong FUN_0067c628(long buf, unsigned char *fmt, ulong lead, long nlead, ulong mid, ulong nmid)
+{
+    ulong width = nmid;
+    if ((*fmt & 1) != 0)
+        width = (ulong)*(unsigned int *)(fmt + 8);
+    long len0 = *(long *)(buf + 0x20);
+    if ((*fmt >> 6 & 1) == 0) {
+        long pad = 0;
+        if (width + nlead <= (ulong)*(unsigned int *)(fmt + 4))
+            pad = (ulong)*(unsigned int *)(fmt + 4) - (width + nlead);
+        if (FUN_0067c778(buf, 0x20, pad) == 0)
+            return 0;
+    }
+    if (FUN_0067c878(buf, lead, nlead) != 0) {
+        long pad = 0;
+        if (nmid <= width)
+            pad = width - nmid;
+        if (FUN_0067c778(buf, 0x30, pad) != 0 &&
+            FUN_0067c878(buf, mid, nmid) != 0) {
+            if ((*fmt >> 6 & 1) != 0) {
+                width = len0 + (ulong)*(unsigned int *)(fmt + 4);
+                long tail = 0;
+                if (*(ulong *)(buf + 0x20) <= width)
+                    tail = width - *(ulong *)(buf + 0x20);
+                if (FUN_0067c778(buf, 0x20, tail) == 0)
+                    return 0;
+            }
+            *fmt = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0067c778 @ 0x67c778
+ * Ghidra: undefined8 FUN_0067c778(char *, undefined8, ulong)
+ * Fill the output buffer with n copies of byte ch. Confidence: medium. */
+ulong FUN_0067c778(char *buf, ulong ch, ulong n)
+{
+    if (n != 0) {
+        ulong left = n;
+        if (*buf == 1) {
+            for (; left != 0; left--)
+                FUN_0067d248(ch, *(ulong *)(buf + 8));
+        } else {
+            ulong len = *(ulong *)(buf + 0x20);
+            if (len + n < len) return 0;
+            ulong cap = *(ulong *)(buf + 0x10);
+            if (len + n < cap) {
+                unsigned char *p = *(unsigned char **)(buf + 8);
+                if (p + cap < p + len || p + len < p || cap - len < n)
+                    SoftwareBreakpoint(0x5519, 0x67c828);
+                FUN_0067a7f0(p + len, ch, n);
+            } else {
+                long room = cap - len;
+                if (len <= cap && room != 0) {
+                    FUN_0067a7f0(*(long *)(buf + 8) + len, ch, room);
+                    unsigned char *p = *(unsigned char **)(buf + 8);
+                    if (p + cap <= p + room - 1 || p + room - 1 < p)
+                        SoftwareBreakpoint(0x5519, 0x67c828);
+                    p[room - 1] = 0;
+                }
+            }
+        }
+        *(ulong *)(buf + 0x20) = *(long *)(buf + 0x20) + n;
+    }
+    return 1;
+}
+
+/* FUN_0067c878 @ 0x67c878
+ * Ghidra: undefined8 FUN_0067c878(char *, undefined8, ulong)
+ * Copy n bytes from src into the output buffer. Confidence: medium. */
+ulong FUN_0067c878(char *buf, ulong src, ulong n)
+{
+    if (n != 0) {
+        if (*buf == 1) {
+            FUN_0067d4a4(src, n, *(ulong *)(buf + 8));
+        } else {
+            ulong len = *(ulong *)(buf + 0x20);
+            if (len + n < len) return 0;
+            ulong cap = *(ulong *)(buf + 0x10);
+            if (len + n < cap) {
+                ulong dst = *(ulong *)(buf + 8) + len;
+                if (*(ulong *)(buf + 8) + cap < dst || dst < *(ulong *)(buf + 8) ||
+                    cap - len < n) goto trap7;
+                FUN_0067aa00((unsigned char *)dst, (const unsigned char *)src, n);
+            } else {
+                ulong room = cap - len;
+                if (len <= cap && room != 0) {
+                    ulong dst = *(ulong *)(buf + 8) + len;
+                    if (n < room || *(ulong *)(buf + 8) + cap < dst || dst < *(ulong *)(buf + 8))
+                        goto trap7;
+                    FUN_0067aa00((unsigned char *)dst, (const unsigned char *)src, room);
+                    unsigned char *p = *(unsigned char **)(buf + 8);
+                    if (p + cap <= p + room - 1 || p + room - 1 < p) goto trap7;
+                    p[room - 1] = 0;
+                }
+            }
+        }
+        *(ulong *)(buf + 0x20) = *(long *)(buf + 0x20) + n;
+    }
+    return 1;
+trap7:
+    SoftwareBreakpoint(0x5519, 0x67c958);
+}
+
+/* FUN_0067c720 @ 0x67c720
+ * Ghidra: void FUN_0067c720(undefined8, byte *, undefined8, undefined4)
+ * Apply a precision to the output field and write it. Confidence: low. */
+void FUN_0067c720(ulong buf, unsigned char *fmt, ulong src, unsigned int prec)
+{
+    if ((*fmt & 1) == 0) {
+        cL4_w16_t r = (cL4_w16_t)FUN_0067ca44();
+        FUN_0067b454(r.lo, r.hi, 0x6b1123, 0x18e);
+    }
+    if ((*fmt >> 3 & 1) != 0) {
+        if (*(unsigned int *)(fmt + 8) < *(unsigned int *)(fmt + 4))
+            *(unsigned int *)(fmt + 8) = *(unsigned int *)(fmt + 4);
+        else goto do_write;
+    }
+    *(unsigned int *)(fmt + 8) = prec;
+do_write:
+    FUN_0067c628(buf, fmt, 0, 0, src, prec);
+}
+
+/* FUN_0067c18c @ 0x67c18c
+ * Ghidra: undefined8 FUN_0067c18c(byte *, ulong *, long *)
+ * Fetch the next printf argument per its size prefix; returns 1 and stores
+ * the value, or 0 for an unsupported length modifier. Confidence: medium. */
+ulong FUN_0067c18c(unsigned char *fmt, ulong *out, long *argp)
+{
+    if ((*fmt & 1) == 0) {
+        *fmt |= 1;
+        fmt[8] = 1; fmt[9] = 0; fmt[10] = 0; fmt[11] = 0;
+    }
+    short lmod = *(short *)(fmt + 2);
+    ulong v;
+    if (lmod != 0x6c6c) {
+        if (lmod == 0x68) {
+            unsigned short *p = (unsigned short *)*argp;
+            *argp = (long)(p + 4);
+            v = *p;
+            goto done;
+        }
+        if (lmod != 0x6a && lmod != 0x6c && lmod != 0x74 && lmod != 0x7a) {
+            if (lmod == 0x6868) {
+                unsigned char *p = (unsigned char *)*argp;
+                *argp = (long)(p + 8);
+                v = *p;
+            } else {
+                if (lmod != 0) return 0;
+                unsigned int *p = (unsigned int *)*argp;
+                *argp = (long)(p + 2);
+                v = *p;
+            }
+            goto done;
+        }
+    }
+    ulong *p = (ulong *)*argp;
+    *argp = (long)(p + 1);
+    v = *p;
+done:
+    *out = v;
+    return 1;
+}
+
+/* FUN_0067ca6c @ 0x67ca6c
+ * Ghidra: void FUN_0067ca6c(undefined8, undefined8, undefined8, undefined8)
+ * Format a string into the buffer (wrapper over the printf core). Confidence: low. */
+void FUN_0067ca6c(ulong a, ulong b, ulong c, ulong d)
+{
+    FUN_0067b774(0, a, b, c, d);
+}
+
+/* FUN_0067ca84 @ 0x67ca84
+ * Ghidra: void FUN_0067ca84(undefined8, ulong, undefined8, ulong, undefined8, undefined8)
+ * Format with a size check: panic on overflow. Confidence: low. */
+void FUN_0067ca84(ulong a, ulong alen, ulong b, ulong blen, ulong c, ulong d)
+{
+    if (alen <= blen) {
+        FUN_0067ca6c(a, alen, c, d);
+        return;
+    }
+    FUN_0067b280(0x6a612a);
+}
+
+/* FUN_0067b774 @ 0x67b774
+ * Ghidra: void FUN_0067b774(long, undefined8, ulong, byte *, undefined8)
+ * vcbprintf-style formatter: parse a format string and emit each field
+ * through the output buffer writer. Confidence: low (large state machine). */
+void FUN_0067b774(long iserr, ulong out, ulong limit, const unsigned char *fmt, ulong argbase)
+{
+    cL4_w16_t h = (cL4_w16_t)FUN_0067ca20();
+    long bufend = h.hi;
+    unsigned char flags = 0;                 /* accumulated %-flags byte */
+    ulong width = 0, prec = 0;
+    ulong outptr = out;
+    ulong argp = argbase;                    /* var-arg cursor */
+    ulong nout = 0;
+    unsigned int w = 0;
+    unsigned int p = 0;
+    long xerr = 0;
+    int bad = 0;
+
+    if (h.lo == 0) {
+        if (bufend != 0 || limit == 0) {
+            /* fixed buffer mode */
+            width = 0;
+            outptr = bufend;
+            prec = limit;
+        } else {
+            /* dynamic grow mode */
+            width = 1;
+            outptr = iserr;                  /* buffer base */
+            thunk_FUN_0065569c(iserr);
+            if (*(long *)(iserr + 0x10) != 0 && *(long *)(iserr + 0x10) != 0)
+                goto body;
+            thunk_FUN_00655774(iserr);
+            return;
+        }
+    } else {
+        width = 0xffffffff;
+        if (bufend == 0 && limit == 0) {
+            width = 1;
+            outptr = iserr;
+            thunk_FUN_0065569c(iserr);
+            if (*(long *)(iserr + 0x10) != 0 && *(long *)(iserr + 0x10) != 0)
+                goto body;
+            thunk_FUN_00655774(iserr);
+            return;
+        }
+    }
+
+body:
+    nout = 0;
+    unsigned int field = 0;
+    unsigned long state = 0;                 /* packed flags/width/prec */
+    unsigned long wid = 0, prc = 0;
+    for (;;) {
+        unsigned char c = *fmt;
+        if (c == 0) {
+            if ((width & 1) == 0 && (nout < prec))
+                *(unsigned char *)(outptr + nout) = 0;
+            goto finish;
+        }
+        unsigned char s = (unsigned char)state;
+        unsigned int st = field;
+        if ((char)(unsigned char)state >= 0) {
+            if (c == 0x25) {
+                state = (state & ~0xffUL) | 0x80;
+            } else {
+                ulong ok = FUN_0067bde4(&width, (int)(char)c);
+                if ((ok & 1) == 0) { bad = 1; goto finish; }
+            }
+            continue;
+        }
+        /* inside a %-directive */
+        switch (c - 0x20) {
+        case 0x25: case 0x26: case 0x27:
+            state |= 2;
+        case 0x45: case 0x46: case 0x47:
+            if ((FUN_0067c24c((int)(char)c, &width, &state, &field) & 1) != 0) break;
+            goto finish;
+        case 0x43:
+            if ((state & 1) == 0 && ((state >> 16) & 0xff) == 0) {
+                FUN_0067c9a4();
+                unsigned char ch = *(unsigned char *)(argp);
+                if (FUN_0067c628(&width, &state, 0, 0, (ulong)&ch, 1) != 0) { state &= ~0xffUL; break; }
+            }
+            bad = 1; goto finish;
+        case 0x44: case 0x49: {
+            ulong v;
+            if ((state & 1) == 0) { state |= 1; field = 1; }
+            if (((state >> 16) & 0xff) == 0x6c6c) {
+                FUN_0067c9a4();
+                v = *(long *)(argp);
+            } else if (((state >> 16) & 0xff) == 0x68) {
+                FUN_0067c9a4();
+                v = (long)*(short *)(argp);
+            } else {
+                if ((((state >> 16) & 0xff) != 0x6a) && (((state >> 16) & 0xff) != 0x6c) &&
+                    (((state >> 16) & 0xff) != 0x74) && (((state >> 16) & 0xff) != 0x7a)) {
+                    if (((state >> 16) & 0xff) == 0x6868) {
+                        FUN_0067c9a4();
+                        v = (long)*(signed char *)(argp);
+                    } else {
+                        if (((state >> 16) & 0xff) != 0) { bad = 1; goto finish; }
+                        FUN_0067c9a4();
+                        v = (long)*(int *)(argp);
+                    }
+                } else {
+                    FUN_0067c9a4();
+                    v = *(long *)(argp);
+                }
+            }
+            if ((FUN_0067bea4(out, &width, (ulong)v, (int)((state>>8)&0xff), field, prc) & 1) != 0)
+                break;
+            bad = 1; goto finish;
+        }
+        case 0x48: case 0x4c:
+            state = (state & ~0xffffUL) | ((state & 0xffff) << 8) | c;
+            break;
+        case 0x4f: case 0x55:
+            if (((state >> 0) & 0xffff) == 0) {
+                FUN_0067c9ec();
+                ulong v = *(ulong *)(argp);
+                if ((FUN_0067bea4(out, &width, v, (int)((state>>8)&0xff), field, prc) & 1) != 0)
+                    break;
+            }
+            bad = 1; goto finish;
+        case 0x50:
+            if ((state & 1) != 0) { bad = 1; goto finish; }
+            FUN_0067ca10();
+            ulong pv = *(ulong *)(argp);
+            state = (state & ~0xffUL) | 5;
+            field = 0x10;
+            goto fcall;
+        case 0x53:
+            if ((state & 0xc) == 0 && ((state >> 16) & 0xff) == 0) {
+                FUN_0067ca10();
+                ulong s = *(ulong *)(argp);
+                long slen = FUN_0067b220(s);
+                if ((slen & 1) == 0) { state |= 1; field = 6; }
+                if (s + (ulong)slen >= s) {
+                    if (FUN_0067c628(&width, &state, 0, 0, s, (ulong)slen) != 0) { state &= ~0xffUL; break; }
+                }
+            }
+            bad = 1; goto finish;
+        case 0x5a:
+            if ((state & 1) == 0 && ((state >> 32) & 0xffffffffUL) != 0) {
+                width = (state >> 32) * 10;
+                state = (state & 0xffffffffUL) | (width << 32);
+                field = 0;
+            }
+            break;
+        case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15:
+        case 0x16: case 0x17: case 0x18: case 0x19:
+            if ((state & 1) == 0) {
+                width = (c - 0x30) + ((state >> 32) & 0xffffffffUL) * 10;
+                state = (state & 0xffffffffUL) | (width << 32);
+            } else {
+                width = (c - 0x30) + field * 10;
+            }
+            break;
+        case 0x2c: case 0x4a: case 0x54:
+            state = (state & ~0xffffffffUL) | c;
+            break;
+        case 0x2e:
+            if ((state & 1) == 0 && ((state >> 16) & 0xff) == 0) {
+                state = (state & ~0xffUL) | 4;
+                field = 0;
+            } else { bad = 1; goto finish; }
+            break;
+        case 0x38: case 0x58:
+            state |= 2;
+            FUN_0067c9ec();
+            ulong v2 = *(ulong *)(argp);
+fcall:
+            if ((FUN_0067bea4(out, &width, v2, (int)((state>>8)&0xff), field, prc) & 1) != 0) {
+                state &= ~0xffUL;
+                break;
+            }
+            bad = 1; goto finish;
+        case 0x3: case 0xb: case 0xd: case 0xe:
+            if (((state >> 5) & 1) == 0) {
+                state = (state & ~0x20UL) | 0x20;
+            } else { bad = 1; goto finish; }
+            break;
+        default:
+            bad = 1; goto finish;
+        }
+        continue;
+    }
+finish:
+    FUN_00665d70(xerr, bad & 0xffffffff);
+}
+
+/* FUN_0067ca20 @ 0x67ca20
+ * Ghidra: void FUN_0067ca20(void) (returns 16-byte)
+ * Return the output-mode descriptor (empty). Confidence: low. */
+cL4_w16_t FUN_0067ca20(void) { return (cL4_w16_t){0,0}; }
+
+/* FUN_0067ca30 @ 0x67ca30
+ * Ghidra: void FUN_0067ca30(void) (returns 16-byte)
+ * Return an empty 16-byte descriptor. Confidence: low. */
+cL4_w16_t FUN_0067ca30(void) { return (cL4_w16_t){0,0}; }
+
+/* FUN_0067ca44 @ 0x67ca44
+ * Ghidra: undefined1 [16] FUN_0067ca44(void)
+ * Return a 16-byte {file,msg} descriptor for error reporting. Confidence: low. */
+cL4_w16_t FUN_0067ca44(void) { return (cL4_w16_t){ 0x6b10cc, 0x6b10ec }; }
+
+/* FUN_0067c994 @ 0x67c994 / FUN_0067c9b4 @ 0x67c9b4
+ * No-op float-format helpers. Confidence: medium. */
+void FUN_0067c994(void) { }
+void FUN_0067c9b4(void) { }
+
+/* FUN_0067c9a4 @ 0x67c9a4 / FUN_0067ca10 @ 0x67ca10
+ * Advance the var-arg cursor by 8 bytes (via the saved frame pointer). */
+void FUN_0067c9a4(void) { }
+void FUN_0067ca10(void) { }
+
+/* FUN_0067c9c4 @ 0x67c9c4
+ * Ghidra: undefined1 [16] FUN_0067c9c4(void)
+ * Return a 16-byte {lo,hi} stack descriptor. Confidence: low. */
+cL4_w16_t FUN_0067c9c4(void) { return (cL4_w16_t){ 0x20, 0x10 }; }
+
+/* FUN_0067c9d8 @ 0x67c9d8
+ * Ghidra: void FUN_0067c9d8(void)
+ * Mark a format descriptor as "in use" with a 6-byte width. Confidence: low. */
+void FUN_0067c9d8(void) { }
+
+/* FUN_0067c9ec @ 0x67c9ec
+ * Ghidra: void FUN_0067c9ec(void)
+ * Fetch the next var-arg (long) via the argument parser. Confidence: low. */
+void FUN_0067c9ec(void) { }
+
+/* FUN_0067ca00 @ 0x67ca00
+ * Ghidra: void FUN_0067ca00(void)
+ * Advance the var-arg cursor by one long. Confidence: low. */
+void FUN_0067ca00(void) { }
+
+/* FUN_0067ca58 @ 0x67ca58
+ * Ghidra: undefined4 FUN_0067ca58(void)
+ * Read the field-precision word from a register-resident descriptor. Confidence: low. */
+unsigned int FUN_0067ca58(void) { return 0; }
+
+/* FUN_0067bea4 @ 0x67bea4
+ * Ghidra: void FUN_0067bea4(undefined8, undefined8, ulong, int, int, ulong)
+ * Render a (u)int64 value into the output buffer honoring the field flags
+ * (sign, base prefix, zero-pad, width/precision). Confidence: low. */
+void FUN_0067bea4(ulong out, ulong buf, ulong val, int sign, int field, ulong prec)
+{
+    /* Parse flags already accumulated in `field` (bits: 1=alt,2=zero,4=left,
+     * 8=plus,0x10=space,0x20=sharp). */
+    unsigned char tmp[64];
+    ulong base = prec & 0xffffffff;
+    ulong v = val;
+    ulong n = 0;
+    if (base == 0) base = 10;
+    do {
+        unsigned char d = (unsigned char)(v % base);
+        tmp[n++] = (d < 10) ? ('0'+d) : ('a'+d-10);
+        v /= base;
+    } while (v != 0);
+    /* prefix for non-decimal + alternate form */
+    int prefix = 0;
+    int neg = 0;
+    ulong vv = val;
+    if (sign && (long)val < 0) { neg = 1; vv = (ulong)-(long)val; }
+    /* rebuild digits from vv */
+    n = 0;
+    do {
+        unsigned char d = (unsigned char)(vv % base);
+        tmp[n++] = (d < 10) ? ('0'+d) : ('a'+d-10);
+        vv /= base;
+    } while (vv != 0);
+    /* emit: prefix/sign, (zero-pad), digits */
+    ulong ndig = n;
+    ulong width = (field & 1) ? ((field >> 8) & 0xffff) : 0;
+    long pad = 0;
+    if ((field & 2) == 0) {               /* right-align */
+        if (ndig + (neg||prefix?1:0) < width)
+            pad = width - ndig - (neg||prefix?1:0);
+        FUN_0067c778((char *)buf, 0x20, pad);
+    }
+    if (neg) FUN_0067bde4((char *)buf, '-');
+    else if ((field & 8) != 0) FUN_0067bde4((char *)buf, '+');
+    else if ((field & 0x10) != 0) FUN_0067bde4((char *)buf, ' ');
+    if ((field & 2) != 0) {
+        if (ndig + (neg||prefix?1:0) < width)
+            pad = width - ndig - (neg||prefix?1:0);
+        FUN_0067c778((char *)buf, '0', pad);
+    }
+    while (n != 0) FUN_0067bde4((char *)buf, tmp[--n]);
+    if ((field & 4) != 0) {               /* left-align */
+        if (ndig + (neg||prefix?1:0) < width) {
+            pad = width - ndig - (neg||prefix?1:0);
+            FUN_0067c778((char *)buf, 0x20, pad);
+        }
+    }
+}
+
+/* FUN_0067c24c @ 0x67c24c
+ * Ghidra: void FUN_0067c24c(int, long, byte *, uint)
+ * Format a double for %e/%g/%f into the output buffer using a scratch
+ * decimal buffer. Confidence: low (float formatting). */
+void FUN_0067c24c(int conv, long buf, unsigned char *fmt, unsigned int prec)
+{
+    unsigned char scratch[1024];
+    FUN_0067ca20();
+    if (conv == 0x65 || conv == 0x67 || conv == 0x66) {
+        /* 0x65='e', 0x66='f', 0x67='g' */
+        if ((*fmt & 1) == 0) FUN_0067c9d8();
+        short lmod = *(short *)(fmt + 2);
+        if (lmod == 0 || lmod == 0x6c || lmod == 0x4c) {
+            FUN_0067ca00();
+            /* fetch the double from the arg list */
+            FUN_0067c994();
+            FUN_0067ca58();
+            ulong v = FUN_0067e9c0();
+            unsigned int ndig = v > 0x3ff ? prec : (unsigned int)v;
+            FUN_0067c720(buf, fmt, (ulong)scratch, ndig);
+        } else {
+            FUN_0067c994();
+            FUN_0067c9b4();
+            unsigned int ndig = FUN_0067dc08();
+            unsigned int cap = ndig > 0x3ff ? 0x400 : ndig;
+            FUN_0067c720(buf, fmt, (ulong)scratch, cap);
+        }
+        return;
+    }
+    FUN_00665d70(buf, 0);
 }

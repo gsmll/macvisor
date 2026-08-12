@@ -98,8 +98,8 @@ extern int64_t  sk_copy_out(uint64_t a, uint64_t n, uint64_t c, uint32_t d); /* 
 extern uint64_t sk_read_u64(uint64_t a, uint64_t b, uint32_t c, int d);      /* FUN_0065fd4c */
 extern uint64_t sk_cap_lookup(uint64_t a, void *b, void *c, int d, int e);   /* FUN_00661e1c */
 extern void     sk_tag_export(uint64_t obj, uint32_t tag);         /* FUN_00662628 */
-extern uint64_t sk_pool_lock(uint64_t *lock);                      /* FUN_0065db84 */
-extern void     sk_pool_unlock(uint64_t *lock);                    /* FUN_0065de3c */
+extern uint64_t sk_pool_lock(void *lock);                          /* FUN_0065db84 */
+extern void     sk_pool_unlock(void *lock);                        /* FUN_0065de3c */
 extern void     sk_flush_icache(void);                             /* FUN_0067cc18 */
 
 /* Shared kernel globals. */
@@ -120,6 +120,7 @@ __attribute__((noreturn))
 static void sk_assert_trap(uint32_t chk, uint32_t addr)
 {
     /* SoftwareBreakpoint(chk, addr) — assertion failure trap; never returns. */
+    (void)chk; (void)addr;
     __builtin_trap();
 }
 
@@ -139,7 +140,7 @@ static void sk_fault_log_abort_f(uint64_t ctx);  /* 0x00684fdc */
 static void sk_fault_log_abort_g(uint64_t ctx);  /* 0x006851bc */
 static void sk_fault_log_abort_h(uint64_t ctx);  /* 0x00685470 */
 static void sk_fault_log_abort_i(uint64_t ctx);  /* 0x006859b0 */
-static void sk_fault_log_abort_j(uint64_t ctx);  /* 0x00685acc */
+void sk_fault_log_abort_j(uint64_t ctx);  /* 0x00685acc */
 
 /* ================================================================== */
 /* 0x006834f0 .. 0x006839f8 : fatal-abort stubs (sk_abort_fatal path) */
@@ -521,6 +522,7 @@ void sk_r72_683b08_panic(void)
  * Notes: spin loop is svc(4) busy-wait; param_3 released via sk_cap_release. */
 void sk_r72_683b20_drain_release(uint64_t ref, uint64_t a, uint64_t obj)
 {
+    (void)a;   /* decompiler-unused arg 2 */
     do {
         sk_svc(4);
     } while (ref == 1);
@@ -554,7 +556,8 @@ static void sk_fault_log_abort_a(uint64_t ctx)
  * Confidence: high */
 static void sk_panic_5376(void)
 {
-    sk_panic_impl(0, 0x6a5376, (void *)&ctx_dummy);   /* does not return */
+    uint8_t sp[8];
+    sk_panic_impl(0, 0x6a5376, (void *)sp);   /* does not return */
 }
 
 /* FUN_00683c64 @ 0x00683c64
@@ -752,15 +755,16 @@ uint64_t sk_r72_683f74_insert(uint64_t obj, uint64_t key, uint64_t payload)
 {
     uint32_t *pool;
     uint64_t slot;
-    int64_t *node, *head, *walk;
+    int64_t *node, *head;
+    int64_t lvar;
     uint64_t lookup;
     uint64_t local;
 
     if (((*(uint8_t *)(obj + 0x48) >> 4) & 1) == 0) {
         pool = (uint32_t *)sk_pool_alloc(0x6fc590);        /* FUN_0065c27c */
         do {
-            walk = *(int64_t **)(pool + 0x16);
-            if (walk == (int64_t *)0x0) {
+            node = *(int64_t **)(pool + 0x16);
+            if (node == (int64_t *)0x0) {
                 sk_lox_acquire();                           /* LOAcquire() */
                 slot = *(uint64_t *)(pool + 0x14);
                 *(uint64_t *)(pool + 0x14) = slot + 1;
@@ -775,9 +779,9 @@ uint64_t sk_r72_683f74_insert(uint64_t obj, uint64_t key, uint64_t payload)
                         sk_pool_release((uint64_t)pool);    /* FUN_0065beb4 */
                     }
                 } else {
-                    node = (int64_t *)*(uint64_t *)(pool + 0x14);
-                    *(uint64_t *)(pool + 0x14) = (uint64_t)(node - 1);
-                    sk_log_fmt((uint64_t)node, 0x6a6449);  /* FUN_0067d798 */
+                    lvar = (int64_t)*(uint64_t *)(pool + 0x14);
+                    *(uint64_t *)(pool + 0x14) = (uint64_t)(lvar - 1);
+                    sk_log_fmt((uint64_t)lvar, 0x6a6449);  /* FUN_0067d798 */
                     *pool = 3;
                 }
                 sk_pool_unlock(pool + 4);                   /* FUN_0065de3c */
@@ -789,13 +793,13 @@ uint64_t sk_r72_683f74_insert(uint64_t obj, uint64_t key, uint64_t payload)
                 head = node + 8;
                 goto link_node;
             }
-            head = walk + 8;
-            if ((uint64_t)head < (uint64_t)walk) {
+            head = node + 8;
+            if ((uint64_t)head < (uint64_t)node) {
                 sk_assert_trap(0x5519, 0x684150);
             }
-        } while (*(int64_t **)(pool + 0x16) != walk);
-        *(int64_t *)(pool + 0x16) = *walk;
-        *walk = 0;
+        } while (*(int64_t **)(pool + 0x16) != node);
+        *(int64_t *)(pool + 0x16) = *node;
+        *node = 0;
 link_node:
         local = key;
         if ((uint64_t)(head) < (uint64_t)(node + 8) || (uint64_t)(node + 8) < (uint64_t)node) {
@@ -819,12 +823,13 @@ link_node:
             if (*node != 0) {
                 sk_abort_simple(0x6a61a9);      /* FUN_0065c288 — does not return */
             }
-            if (*head != 0) {
-                sk_abort_simple(0x6a61a9);
+            lvar = *head;
+            *node = lvar;
+            if ((uint64_t)(obj + 0x68) < (uint64_t)head) {
+                sk_assert_trap(0x5519, 0x684150);
             }
-            /* single-element list: node already points into head's chain */
-            *head = (int64_t)node;
-        } while (0);
+        } while (*head != lvar);
+        *head = (int64_t)node;
     }
     return 1;
 }
@@ -840,6 +845,7 @@ link_node:
 void sk_r72_684150_unlink(uint64_t obj, int64_t key)
 {
     int64_t *head, *prev, *node, *next, *tmp;
+    int64_t slot_val;
     uint64_t fl;
     int b_f, b_v;
 
@@ -918,13 +924,13 @@ reuse_pool:
                 sk_abort_simple(0x6a61a9);      /* does not return */
             }
             tmp = (int64_t *)sk_pool_alloc(0x6fc590);
-            node = (int64_t *)*(int64_t *)(tmp + 0x58);
-            *head = node;
+            slot_val = *(int64_t *)(tmp + 0x58);
+            *head = slot_val;
             tmp = (int64_t *)sk_pool_alloc(0x6fc590);
             if ((uint64_t)next < (uint64_t)head) {
                 sk_assert_trap(0x5519, 0x684368);
             }
-        } while (*(int64_t *)(tmp + 0x58) != node);
+        } while (*(int64_t *)(tmp + 0x58) != slot_val);
         *(int64_t *)(tmp + 0x58) = (int64_t)head;
     }
 }
@@ -940,7 +946,7 @@ void sk_r72_684388_walk_report(uint64_t obj)
     uint64_t *node;
 
     node = *(uint64_t **)(obj + 0x60);
-    while (true) {
+    while (1) {
         if (node == (uint64_t *)0x0) {
             return;
         }
@@ -1101,6 +1107,7 @@ dump_flush2:
 dump_second:
     sk_err_x3();
 dump_done:
+    (void)local38; (void)ustack30; (void)ustack40; (void)local48;   /* decompiler-sampled stack slots */
     sk_fault_log_abort_c(sk_log_ctx);           /* 0x006847a0 */
     if (sk_fault_state != saved_state) {
         sk_log_poll(0, 0, 0);                   /* FUN_0067f660 — does not return */
@@ -1190,7 +1197,7 @@ void sk_r72_684940_fault_dump(void)
  * Notes: the combined magic = u32<<32 | (u16/u32 sub-fields) | 0x10000. */
 void sk_r72_68498c_tls_header(uint8_t *hdr, int64_t frame, uint64_t *flags)
 {
-    uint8_t b0, b1, b2, b3, b4, b5, b6, b7;
+    uint8_t b0, b1, b2, b3, b4, b6, b7;
     uint16_t w0, w1;
     uint32_t m0, m1;
 
@@ -1575,7 +1582,7 @@ void sk_r72_685234_fault_header(int64_t obj)
 {
     uint64_t saved_state, tag;
     uint16_t *tls;
-    uint8_t b0, b1, b2, b3, b4, b5, b6, b7;
+    uint8_t b0, b1, b2, b3;
     uint16_t w0, w1;
     uint8_t buf[32];
 
@@ -1756,7 +1763,7 @@ void sk_r72_685658_fault_dump(void)
 void sk_r72_6856a8_state_swap(int64_t obj, uint64_t *src, uint64_t val)
 {
     uint8_t *tls;
-    uint64_t v, hi, lo, type;
+    uint64_t v, type;
     uint8_t buf[32];
 
     tls = sk_tls_base();
@@ -1879,7 +1886,7 @@ void sk_r72_685a6c_fault_print(uint64_t val, uint8_t *buf)
  * Ghidra: void FUN_00685acc(undefined8 param_1)
  * Log-and-abort trio; message 0x6a981c.
  * Confidence: medium */
-static void sk_fault_log_abort_j(uint64_t ctx)
+void sk_fault_log_abort_j(uint64_t ctx)
 {
     sk_log_begin(ctx, 0x6a53b8);
     sk_log_msg(sk_log_ctx, 0x6a981c, &ctx);
@@ -1902,6 +1909,7 @@ void sk_r72_685b50_panic(void)
  * Confidence: medium */
 void sk_r72_685b88_print_panic(uint8_t *arg)
 {
+    (void)arg;   /* decompiler-unused arg */
     sk_log_puts(0x6a88bb);              /* FUN_0067d72c */
     sk_log_puts(0x6a88c4);              /* FUN_0067d72c */
     sk_log_nl(10);                      /* FUN_0067d82c */

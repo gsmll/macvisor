@@ -58,13 +58,24 @@ extern void sk_crypto_advance_phase(unsigned char *ctx);
 /* noreturn panic printer: FUN_006833d4(msg) -> FUN_0065c310(0, msg, &stack). */
 extern void sk_panic_fmt(unsigned long msg) __attribute__((noreturn));
 
-/* Stack-guard mismatch handler: FUN_0067f660(err). noreturn on mismatch. */
-extern void sk_stack_check_fail(unsigned long err);
+/* Crypto key-size validator/dispatch: FUN_0067f660 — admits only 128/192/256-bit
+ * (0x80/0x100/0xc0) key sizes, else returns 0xfffffff9 (-7); valid sizes tail to
+ * the key-schedule core FUN_0067f9a0. Ghidra resolves the stack-canary epilogue
+ * of the absorb functions to this routine (call with the return value); treated
+ * as extern. */
+extern unsigned long sk_crypto_keysize(unsigned long a, unsigned long b,
+                                       unsigned long key_size);
 
 /* 64-bit byte-reversal (bswap64). */
 static inline unsigned long bswap64(unsigned long v)
 {
     return __builtin_bswap64(v);
+}
+
+/* Swap the two 32-bit halves of a 64-bit value. */
+static inline unsigned long swap32(unsigned long v)
+{
+    return (v >> 0x20) | (v << 0x20);
 }
 
 /* ------------------------------------------------------------------ */
@@ -155,7 +166,7 @@ long sk_crypto_ctx_init(unsigned char *ctx, unsigned char *out)
 long sk_crypto_absorb(unsigned char *ctx, unsigned long len, const unsigned char *src)
 {
     unsigned long guard;
-    unsigned long state_w1, state_w0, local_lo, local_hi;
+    unsigned long state_w0, local_lo, local_hi;
     unsigned long i;
 
     guard = sk_stack_guard;
@@ -179,7 +190,9 @@ long sk_crypto_absorb(unsigned char *ctx, unsigned long len, const unsigned char
         local_lo = 0;
         local_hi = 0;
         sk_crypto_load_bytes(8, &local_lo);         /* absorb 8 bytes into lo word */
-        local_hi = bswap64(len << 3);               /* bit-length padding, byte-swapped */
+        /* bit-length padding: byte-reverse of len<<3, then swap the 32-bit
+         * halves (matches the decompile's two-stage byte-order fixup) */
+        local_hi = swap32(bswap64(len << 3));
         sk_crypto_load_bytes(0x10, ctx + 0x20);     /* absorb 16 bytes into state */
 
         if (len < 0x10) {
@@ -223,7 +236,7 @@ long sk_crypto_absorb(unsigned char *ctx, unsigned long len, const unsigned char
     *(uint16_t *)(ctx + 0x50) = 2;
 
     if (sk_stack_guard != guard) {
-        sk_stack_check_fail(0);
+        sk_crypto_keysize(0, 0, 0);
     }
     return 0;
 }
@@ -247,7 +260,7 @@ long sk_crypto_absorb(unsigned char *ctx, unsigned long len, const unsigned char
 long sk_crypto_stream_update(unsigned char *ctx, unsigned long len,
                              const unsigned char *src, unsigned char *dst)
 {
-    unsigned long offset, off_nib, fill, i;
+    unsigned long offset, off_nib, fill, i, tail_base, done;
 
     offset = *(unsigned long *)(ctx + 0x60);
     sk_crypto_advance_phase(ctx);   /* FUN_00681e08: phase 2 -> 3 */
@@ -264,18 +277,15 @@ long sk_crypto_stream_update(unsigned char *ctx, unsigned long len,
     }
 
     off_nib = offset & 0xf;
+    tail_base = off_nib;
     if ((offset & 0xf) != 0) {
         /* complete the partially-filled first block */
         fill = 0x10 - off_nib;
         if (len < fill) {
-            /* won't fill the block: XOR everything into the tail */
-            i = len;
-            do {
-                dst[len - 1] = ctx[off_nib + len + 0x3f] ^ src[len - 1];
-                len--;
-            } while (len != 0);
-            i = off_nib + 0;                 /* (offset nibble index for the tail) */
-            goto done_partial;
+            /* won't fill the block: fall through to the tail with
+             * tail_base = off_nib (no block is permuted/advanced) */
+            tail_base = off_nib;
+            goto tail;
         }
         /* fill the first partial block, permute, advance */
         i = fill;
@@ -295,6 +305,10 @@ long sk_crypto_stream_update(unsigned char *ctx, unsigned long len,
         *(unsigned long *)(ctx + 0x60) = *(long *)(ctx + 0x60) + (0x10 - off_nib);
         sk_crypto_bump_counter(ctx);
     }
+
+    /* the block was filled/advanced: the tail base is 0 (uVar2 = 0 in the
+     * decompile before LAB_00688118) */
+    tail_base = 0;
 
     if (0xf < len) {
         /* bulk: whole 16-byte blocks through the stream transform */
@@ -328,18 +342,22 @@ long sk_crypto_stream_update(unsigned char *ctx, unsigned long len,
         }
     }
 
-done_partial:
-    /* trailing partial block (len < 0x10) XORed into the tail */
+tail:
+    /* trailing partial block (len < 0x10) XORed into the tail; base is
+     * off_nib when the block was never filled, else 0 */
     if (len != 0) {
+        done = len;
         i = len;
         do {
-            dst[len - 1] = ctx[off_nib + len + 0x3f] ^ src[len - 1];
+            dst[len - 1] = ctx[tail_base + len + 0x3f] ^ src[len - 1];
             len--;
         } while (len != 0);
-        i = off_nib + 0;                     /* tail offset within the state */
+        len = done;
         do {
-            ctx[i + len + 0xf] ^= dst[len - 1];
-        } while (0);                         /* placeholder, unreachable */
+            ctx[tail_base + len + 0xf] ^= dst[len - 1];
+            len--;
+        } while (len != 0);
+        *(unsigned long *)(ctx + 0x60) = *(long *)(ctx + 0x60) + done;
     }
     return 0;
 }
