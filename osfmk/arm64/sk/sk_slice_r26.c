@@ -46,7 +46,7 @@ extern unsigned long FUN_00310e08();                 /* swift_runtime_thunk */
 extern unsigned long FUN_00310d68();                 /* swift_runtime_thunk */
 extern unsigned long FUN_00319308();                 /* syscall arg build */
 extern unsigned long FUN_00319628();                 /* syscall arg build */
-extern void         FUN_0031d678();                  /* syscall post */
+extern unsigned long FUN_0031d678();                  /* syscall post */
 extern void         FUN_0031e0d4();                  /* syscall pre */
 extern unsigned long FUN_00310924();                 /* fn-pointer carrier */
 extern unsigned long FUN_00310954();                 /* fn-pointer carrier */
@@ -203,7 +203,7 @@ extern void  FUN_0011aa70();
 extern unsigned long FUN_0014ae44();
 extern unsigned long FUN_00206770();
 extern void  FUN_00270c08();                         /* sk_string_insert_check */
-extern void  FUN_0029fa0c();                         /* obj_slice_02 page-walk step */
+extern cl4_pair_t FUN_0029fa0c();                    /* obj_slice_02 page-walk step */
 extern unsigned long FUN_002a0cf8();                 /* obj_slice_02 compare */
 extern void  FUN_002a4ab4();                         /* obj_slice_03 */
 extern void  FUN_002a55a4();
@@ -290,6 +290,10 @@ extern void         FUN_004b5a74();
 
 /* 0x0041-0x0046 earlier-slice helpers. */
 extern unsigned long FUN_00407ed0();
+extern void FUN_00407eac();
+extern void FUN_00407300();
+extern cl4_pair_t FUN_003504c4();
+extern void thunk_FUN_001a29a0();
 extern void FUN_00407ab8();
 extern void FUN_0041d180();
 extern void FUN_0042ec68();
@@ -2218,10 +2222,13 @@ cl4_pair_t FUN_00467de4()
  * Confidence: medium
  * Notes: span stride 16 bytes; callback returns bit 0 to stop; breakpoints
  * 0x4680e4/0x468104/0x46813c/0x468140/0x468144. */
-cl4_pair_t FUN_00467e44(word_t base, uint64_t base_hi, word_t p3, word_t p4,
-                        uint64_t cur, uint64_t cur_hi, word_t slots,
-                        word_t slots_hi, code_fn cb)
+cl4_pair_t FUN_00467e44()
 {
+    word_t base = 0, p3 = 0, p4 = 0;
+    uint64_t base_hi = 0, cur = 0, cur_hi = 0;
+    word_t slots = 0, slots_hi = 0;
+    code_fn cb = 0;   /* register args */
+    (void)p3; (void)p4;
     uint64_t count, idx, si;
     uint64_t pn;            /* current page number */
     uint64_t pn_hi;         /* limit page */
@@ -3076,9 +3083,10 @@ finish:
  * register artifacts into +0x90..+0xb8.
  * Confidence: low
  * Notes: register fragments (in_x5/in_x6, unaff_x21..x25). */
-void FUN_0046989c(word_t in_x5, word_t in_x6, word_t x21, word_t x22,
-                  word_t x23, word_t x24, word_t x25)
+void FUN_0046989c()
 {
+    word_t in_x5 = 0, in_x6 = 0, x21 = 0, x22 = 0, x23 = 0, x24 = 0, x25 = 0; /* reg */
+    (void)in_x6; (void)x21; (void)x22; (void)x23; (void)x24; (void)x25;
     uint8_t frame[0xe0];
     word_t out;
 
@@ -3277,8 +3285,9 @@ out:
  * stores the tag byte param_4 at buffer+0x10.
  * Confidence: low
  * Notes: writes param_1[0] and param_1[1][0]. */
-void FUN_00469d58(uint8_t *param_1, word_t p2, word_t p3, uint8_t p4)
+void FUN_00469d58()
 {
+    uint8_t *param_1 = 0; word_t p2 = 0, p3 = 0; uint8_t p4 = 0; /* reg args */
     cl4_pair_t r;
 
     r = FUN_00469b50();
@@ -3772,7 +3781,7 @@ z:
                 FUN_004ac8b4();
                 img = FUN_003504c4();
                 FUN_00377bec(img.lo, img.hi, u7);
-                img = FUN_00027754();
+                img.lo = FUN_00027754(); img.hi = 0;
                 FUN_003512c0(img.lo, img.hi, img.lo);
                 FUN_00353208();
                 fc12();

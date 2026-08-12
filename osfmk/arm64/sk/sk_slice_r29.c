@@ -3934,7 +3934,7 @@ void sk_h_48ef24(void)
     if (d.lo > 0x10) goto done;
     switch (d.lo) {
     default: sk_h_00458b14((word_t)&(word_t[20]){0}); sk_h_004589e8(); break;
-    case 1: { word_t c = *(word_t *)sk_h_00458b14((word_t)&(word_t[20]){0}); sk_h_48d990(); sk_h_00351e08(); break; }
+    case 1: { word_t c = *(word_t *)(word_t)sk_h_00458b14((word_t)&(word_t[20]){0}); sk_h_48d990(); sk_h_00351e08(); break; }
     case 2:
         sk_h_00458b14((word_t)&(word_t[20]){0});
         sk_h_000e0654();
@@ -4018,6 +4018,7 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
     word_t kind = node >> 0x3c;
     word_t child = 0x8000000000000000;
     word_t out = 0;
+    long nv = 0;
     switch (kind) {
     case 0: case 1: {
         long l18 = *(long *)(node + 0x10);
@@ -4059,7 +4060,7 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
         if (child >> 0x3c == 0xb) { sk_h_0036b118(child & 0xfffffffffffffff); }
         else { sk_h_004aa794(); word_t u = sk_h_0036a940(); *(word_t *)(u + 0x10) = node & 0xfffffffffffffff; *(word_t *)(u + 0x18) = child; out = u | 0x6000000000000000; }
         sk_h_004aada4();
-        long nv_a = (long)sk_h_0036a940();
+        nv = (long)sk_h_0036a940();
         *(word_t *)(nv + 0x10) = 0;
         *(word_t *)(nv + 0x18) = 0;
         *(word_t *)(nv + 0x20) = 0;
@@ -4087,7 +4088,7 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
         if ((0 & 0xfffffffe | 0) == 0xc) { sk_h_0036b118(c2 & 0xfffffffffffffff); }
         else { sk_h_004aa794(); word_t u = sk_h_0036a940(); *(word_t *)(u + 0x10) = 0; *(word_t *)(u + 0x18) = c2; }
         sk_h_004ac8fc(0x687bb8);
-        long nv_b = (long)sk_h_0036a940();
+        nv = (long)sk_h_0036a940();
         sk_h_00117cc4(nv + 0x10, (word_t)&(word_t){0}, 0x80);
         *(word_t *)(nv + 0x90) = node & 0xfffffffffffffff;
         *(word_t *)(nv + 0x98) = 0;
@@ -4115,7 +4116,7 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
         word_t a = *(word_t *)((node & 0xfffffffffffffff) + 0x10);
         word_t b = *(word_t *)((node & 0xfffffffffffffff) + 0x18);
         sk_h_004aad30();
-        long nv_c = (long)sk_h_0036a940();
+        nv = (long)sk_h_0036a940();
         *(word_t *)(nv + 0x10) = a;
         *(word_t *)(nv + 0x18) = b;
         child = (kind == 5) ? 0x5000000000000000 : 0x4000000000000004;
@@ -4158,11 +4159,11 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
                 if (n != m) SK_TRAP(0x48fcf4);
             }
             sk_h_004aa83c();
-            long nv_d = (long)sk_h_0036a940();
+            nv = (long)sk_h_0036a940();
             *(word_t *)(nv + 0x10) = 0;
         } else {
             sk_h_004aa7bc();
-            long nv_e = (long)sk_h_0036a940();
+            nv = (long)sk_h_0036a940();
             sk_h_004589e8((word_t)&(word_t[22]){0}, (word_t)&(word_t){0});
             sk_h_48fe4c((word_t)&(word_t[22]){0});
             sk_h_004589f8((word_t)&(word_t[22]){0});
@@ -4186,7 +4187,7 @@ word_t sk_h_48f61c(word_t p1, word_t p2, word_t x21)
         break;
     }
     sk_h_00353d14(sk_h_004aca94(), d.hi);
-    return;
+    return out;
 trap:
     sk_h_001ee9f4(x21, 0, 0x25, 1, 0x6d);   /* s_StringProcessing_ASTConversion__005e21e0 */
 }
@@ -4216,11 +4217,11 @@ void sk_h_48fe4c(word_t p1)
         return;
     }
     sk_h_00117cc4((word_t)&(long[20]){0}, (word_t)&(word_t[20]){0}, 0x99);
-    word_t k2 = sk_h_00458af8((word_t)&(word_t[20]){0});
+    word_t k2 = sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     if (k2 > 0xe) { sk_h_004accfc((word_t)&(word_t[22]){0}); sk_h_004accfc((word_t)&(word_t){0}); sk_h_0049c838((word_t)&(word_t){0}); sk_h_004a31ec((word_t)&(word_t[22]){0}, (word_t)&(word_t){0}); }
     else {
         switch (k2) {
-        case 1: { word_t c = *(word_t *)sk_h_00458b14((word_t)&(long[20]){0}); sk_h_0049ca44((word_t)&(word_t){c}); break; }
+        case 1: { word_t c = *(word_t *)(word_t)sk_h_00458b14((word_t)&(long[20]){0}); sk_h_0049ca44((word_t)&(word_t){c}); break; }
         case 4: { sk_r29_pair_t v = sk_h_00458b14((word_t)&(long[20]){0}); d0 = v.lo; break; }
         case 9: { word_t *src = (word_t *)sk_h_00458b14((word_t)&(long[20]){0}); sk_h_00117cc4((word_t)&(word_t){0}, (word_t)src, 0x60); sk_h_004a3214((word_t)&(word_t){0}); break; }
         case 13: { word_t *src = (word_t *)sk_h_00458b14((word_t)&(long[20]){0}); word_t v = src[3]; word_t w = src[7]; sk_h_004a31fc((word_t)&(word_t){0}); sk_h_00117cc4((word_t)&(word_t){0}, (word_t)&(word_t){0}, 0xb0); sk_h_0036b270(v); sk_h_0036b270(w); break; }
@@ -4340,7 +4341,7 @@ void sk_h_48afec(word_t u10, word_t u14, word_t *x20)
         case 6: {
             sk_h_004ab4e8();
             node &= 0;
-            sk_h_48c284();
+            sk_h_48c284(0);
             sk_h_0036b270(0);
             sk_h_00464e34(); sk_h_002acbb8();
             sk_h_0035084c(); sk_h_002acbb8();
@@ -4352,7 +4353,7 @@ void sk_h_48afec(word_t u10, word_t u14, word_t *x20)
             } else sk_h_003a25d4(0);
             if (!(-0x6000000000000001 < 0)) {
                 word_t k = (0 >> 0x3b) & 0x1e | (0 >> 2) & 1;
-                if (k == 7) { word_t c = *(word_t *)(0 + 0x10); word_t f = *(word_t *)(0 + 0x18); word_t ref = sk_h_0036b270(c); if (sk_h_48d400(ref, 0) & 1) { sk_h_48c644(c, f); sk_h_0036b118(c); } }
+                if (k == 7) { word_t c = *(word_t *)(0 + 0x10); word_t f = *(word_t *)(0 + 0x18); word_t ref = sk_h_0036b270(c); if (sk_h_48d400() & 1) { sk_h_48c644(c, f); sk_h_0036b118(c); } }
                 else if (k == 8) { sk_h_004ac12c(0, (word_t)&(word_t){0}); sk_h_00117cc4(); sk_h_004a36c4((word_t)&(word_t){0}, (word_t)&(word_t){0}); sk_h_48ce80(); sk_h_004ac960(); sk_h_004a36d4((word_t)&(word_t){0}); }
                 else if (k == 0xc) { sk_h_004ab4e8(); word_t c = *(word_t *)(0 + 0x10); if (((c >> 0x3b) & 0x1e | (c >> 2) & 1) == 7) sk_h_48c718(*(word_t *)(c + 0x10), *(word_t *)(c + 0x18), 1, 1); }
                 sk_h_003a25d4(0);
