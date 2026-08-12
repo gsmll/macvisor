@@ -4566,3 +4566,9 @@ Confidence: high
 - **Evidence**: `capture/restore of offsets 0x38-0x70, 0x218, 0x220 with no locking` (FUN_003a3d18/003a3de4, chunk-5 transcription).
 - **Severity (hypothesis)**: low — correctness/TOCTOU if the object is concurrently mutated; not a direct memory-safety issue.
 - **Confidence**: low.
+
+## [sk] 0x3a8868 / 0x3b8ef8  sk_parse_named_special / sk_attr_match_check
+Observation: The stream deserializer recognizes a large catalog of Swift concurrency/actor type names (TaskGroup, Executor, SerialExecutor, MainActor, UnsafeContinuation, CheckedContinuation, _UnownedSerialExecutor, async/actor attribute runes) and maps each to an internal tag (0xbf/0xe7/0x19/0x3f). 0x3b8ef8 additionally matches exact-name attributes (`__C`, `Swift`, `__llbd_e`/`__xpr_`) and returns context flags (+0x30/0x31/0x32) that gate how the emitter renders them.
+Evidence: decompiles of FUN_003a6c28 (0x6c/0x75/0x74/0x78 child kinds), FUN_003ac6b4 (type-name table), FUN_003b8ef8 (attr match with context bytes).
+Severity (hypothesis): low — name/attr parser; an unknown/crafted name falls back to NULL/0, no privilege boundary.
+Confidence: medium

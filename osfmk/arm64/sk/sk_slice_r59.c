@@ -140,7 +140,7 @@ extern unsigned long sk_x_00350488();   /* FUN_00350488 (16-byte) */
 extern unsigned long sk_x_003504a0();   /* FUN_003504a0 */
 extern unsigned long sk_x_003504ac();   /* FUN_003504ac */
 extern unsigned long sk_x_003504b8();   /* FUN_003504b8 */
-extern unsigned long sk_x_003504d0();   /* FUN_003504d0 (16-byte) */
+extern cl4_pair_t sk_x_003504d0();   /* FUN_003504d0 (16-byte) */
 extern unsigned long sk_x_003504e8();   /* FUN_003504e8 */
 extern unsigned long sk_x_00350500();   /* FUN_00350500 (16-byte) */
 extern unsigned long sk_x_0035050c();   /* FUN_0035050c (16-byte) */
@@ -378,7 +378,7 @@ static void sk_col_precond_003f4d48(word_t a, word_t b, word_t c, word_t d, word
 static void sk_col_assert_003f4ff4(void);
 static void sk_col_setup_003f50fc(void);
 static cl4_pair_t sk_col_descr_003f5190(void);
-static void sk_col_register_003f5268(void);
+static word_t sk_col_register_003f5268(void);
 static void sk_col_register2_003f52cc(void);
 static word_t sk_col_tag_003f5338(void);
 static word_t sk_col_tag2_003f539c(void);
@@ -386,8 +386,8 @@ static void sk_col_cfg_003f540c();
 static word_t sk_col_reserve_003f54b0(word_t param_1);
 static void sk_col_grow_003f54dc(word_t param_1);
 static word_t sk_col_wrap_003f55a0(word_t *param_1, word_t param_2, word_t param_3);
-static sword_t sk_col_grow1_5_003f568c(void);
-static void sk_col_ensure_003f5780(void);
+static sword_t sk_col_grow1_5_003f568c(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static void sk_col_ensure_003f5780(word_t param_1, word_t param_2, word_t param_3);
 static void sk_col_reserve_n_003f5998(void);
 static word_t sk_col_insert_hdr_003f5ad4(void);
 static word_t sk_col_index_check_003f5c00(word_t param_1, word_t *param_2, word_t param_3, word_t param_4);
@@ -406,7 +406,7 @@ static void sk_col_rep_003f60e4(word_t param_1, word_t param_2, word_t param_3);
 static void sk_col_rep2_003f612c(void);
 static void sk_col_push_003f6174(word_t param_1, word_t param_2, word_t param_3);
 static void sk_col_move_003f6278(sword_t param_1, word_t param_2, sword_t param_3, sword_t *param_4, word_t param_5, word_t param_6, word_t param_7, word_t fn);
-static void sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t param_3, sword_t *param_4, word_t param_5, word_t param_6);
+static sword_t sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t param_3, sword_t *param_4, word_t param_5, word_t param_6);
 static void sk_col_pushback_003f648c(void);
 static void sk_col_pushback1_003f6560(word_t param_1, sword_t param_2, word_t param_3, word_t param_4);
 static void sk_col_pushback2_003f6668(word_t param_1, word_t param_2, sword_t *param_3);
@@ -425,7 +425,7 @@ static cl4_pair_t sk_col_retain_003f761c(word_t param_1, word_t param_2);
 static void sk_col_append_003f7648(word_t param_1, sword_t param_2, word_t param_3, word_t param_4);
 static void sk_col_foreach2_003f7774(word_t param_1, sword_t param_2, word_t param_3);
 static void sk_col_foreach3_003f7778(word_t param_1, sword_t param_2, word_t param_3);
-static void sk_col_pump_003f77a0(void);
+static word_t sk_col_pump_003f77a0(word_t param_1, word_t param_2, word_t param_3);
 static void sk_col_pump1_003f79a0(word_t param_1, sword_t param_2);
 static void sk_col_pump2_003f79d8(void);
 static void sk_col_pump3_003f7a80(word_t *param_1, word_t param_2, sword_t param_3, word_t param_4);
@@ -700,7 +700,7 @@ static void sk_col_iter_003f441c(void)
                 }
                 (*(void (**)(word_t, word_t))(sk_x_00350ab8() + 0x20))(
                     ((word_t)sk_x_00350ab8() & 0xffffffffffffULL) | 0x48d8000000000000ULL,
-                    base + sk_x_00350ab8() + 0x48 * n);
+                    (word_t)base + sk_x_00350ab8() + 0x48 * n);
                 n++;
             }
             sk_x_00084180(0);
@@ -993,14 +993,14 @@ static cl4_pair_t sk_col_descr_003f5190(void)
  * (DAT_006adf70) and finishes with the buffer-finalise helpers
  * (00407710 -> 00251c40).
  * Confidence: medium */
-static void sk_col_register_003f5268(void)
+static word_t sk_col_register_003f5268(void)
 {
     if (DAT_006c0b80 != -1) {
         sk_x_0039a128((word_t)&DAT_006c0b80, (word_t)sk_x_003f3b58);
     }
     CL4_OBJ_RETAIN(DAT_006adf70);
     sk_x_00407710();
-    sk_x_00251c40();
+    return sk_x_00251c40();
 }
 
 /* FUN_003f52cc @ 0x003f52cc   (est. sk_col_register2_003f52cc)
@@ -1145,13 +1145,14 @@ static word_t sk_col_wrap_003f55a0(word_t *param_1, word_t param_2, word_t param
  * the fatal growth-overflow trap (003488bc/003493d8) on NaN/too-large.
  * Confidence: medium
  * Notes: DAT_004e7cd0 is the growth bound; 9.223372036854776e+18 = 2^63. */
-static sword_t sk_col_grow1_5_003f568c(void)
+static sword_t sk_col_grow1_5_003f568c(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
 {
     sword_t lVar1;
     double dVar2;
+    (void)param_1; (void)param_2; (void)param_3; (void)param_4;
 
     sk_x_00350c5c();
-    lVar1 = (sword_t)sk_col_tag_003f5338(0, 0);
+    lVar1 = (sword_t)sk_col_tag_003f5338();
     if ((sk_x_00350ab8() & 1) != 0) {
     grow_ret:
         {
@@ -1190,14 +1191,15 @@ static sword_t sk_col_grow1_5_003f568c(void)
  * growth happened and the reserve-flag state. The low bit of param_2 selects
  * growth semantics.
  * Confidence: low */
-static void sk_col_ensure_003f5780(void)
+static void sk_col_ensure_003f5780(word_t param_1, word_t param_2, word_t param_3)
 {
     word_t *box;
     word_t elem, count;
     word_t v, v2, fmt, init;
+    (void)param_1; (void)param_2;
 
     if ((sk_col_reserve_003f54b0(0) & 1) != 0 &&
-        (sword_t)(count = sk_col_tag2_003f539c(*box, *(word_t *)(0 + 0x10))) >= 0 &&
+        (sword_t)(count = sk_col_tag2_003f539c()) >= 0 &&
         (sword_t)count >= (sword_t)sk_x_00350ab8()) {
         return;
     }
@@ -1729,8 +1731,8 @@ static void sk_col_move_003f6278(sword_t param_1, word_t param_2, sword_t param_
  * the +0x48 layout word. Repacks with 0007c1c4. Raises the range traps
  * (0xe0/0xe1/0xe2).
  * Confidence: medium */
-static void sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t param_3,
-                                    sword_t *param_4, word_t param_5, word_t param_6)
+static sword_t sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t param_3,
+                                       sword_t *param_4, word_t param_5, word_t param_6)
 {
     word_t dst, src;
 
@@ -1761,7 +1763,7 @@ static void sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t pa
                     sk_col_range_003f5de0(0, 0, param_4);
                 }
                 sk_x_0007c1c4();
-                return;
+                return (sword_t)src;
             }
             sk_x_004070cc();
             sk_x_00406310(0xe2);
@@ -2453,7 +2455,7 @@ static void sk_col_foreach_003f7464(word_t param_1, word_t param_2, word_t param
     sk_x_000a68c4();
     sk_x_00310d68(0, v6, v7);
     sk_x_000e15d8();
-    u6 = (word_t)sk_col_retain_003f761c(0, 0);
+    u6 = sk_col_retain_003f761c(0, 0).lo;
     sk_x_00350500();
     sk_x_00404b8c();
     do {
@@ -2482,7 +2484,7 @@ static void sk_col_foreach_003f7464(word_t param_1, word_t param_2, word_t param
 static cl4_pair_t sk_col_retain_003f761c(word_t param_1, word_t param_2)
 {
     CL4_OBJ_RETAIN(0);
-    return sk_col_box_003f7ab8(0, param_2);
+    return sk_col_box_003f7ab8();
 }
 
 /* FUN_003f7648 @ 0x003f7648   (est. sk_col_append_003f7648)
@@ -2502,7 +2504,8 @@ static void sk_col_append_003f7648(word_t param_1, sword_t param_2, word_t param
     n1 = *(sword_t *)(0 + 8);
     n2 = *(sword_t *)(0 + 0x10);
     if (n1 == n2) {
-        box = sk_col_box3_003f7bd8(param_2);
+        box.lo = sk_col_box3_003f7bd8();
+        box.hi = 0;
         if ((box.lo & 1) == 0) {
             sk_x_00350744(param_1, box.hi, param_4, *(word_t *)(param_2 + 0x10));
             sk_x_000839d8();
@@ -2561,10 +2564,11 @@ static void sk_col_foreach3_003f7778(word_t param_1, sword_t param_2, word_t par
  * sk_col_pump1_003f79a0 / sk_col_pump2_003f79d8. Ends with sk_col_register2_
  * style teardown.
  * Confidence: low */
-static void sk_col_pump_003f77a0(void)
+static word_t sk_col_pump_003f77a0(word_t param_1, word_t param_2, word_t param_3)
 {
     word_t *run;
     word_t u2, u4;
+    (void)param_1; (void)param_2; (void)param_3;
 
     sk_x_00353cfc();
     sk_x_0035128c();
@@ -2573,7 +2577,7 @@ static void sk_col_pump_003f77a0(void)
     sk_x_000aa4ec();
     sk_x_00350ab8();
     sk_x_00350ab8();
-    u2 = (word_t)sk_col_register_003f5268();
+    u2 = sk_col_register_003f5268();
     run = (word_t *)sk_x_00350ab8();
     u4 = sk_x_0006a4c0(0, run[3]);
     sk_x_000a68c4(run[4]);
@@ -2617,6 +2621,7 @@ static void sk_col_pump_003f77a0(void)
         u2 = u4;
     }
     sk_x_00353d14(u2, 0);
+    return u2;
 }
 
 /* FUN_003f79a0 @ 0x003f79a0   (est. sk_col_pump1_003f79a0)
@@ -2629,7 +2634,7 @@ static void sk_col_pump1_003f79a0(word_t param_1, sword_t param_2)
     word_t d;
     d = sk_x_00404d0c(0, *(word_t *)(param_2 + 0x10));
     sk_x_00351330(d, d, d);
-    sk_col_ensure_003f5780();
+    sk_col_ensure_003f5780(0, 0, 0);
 }
 
 /* FUN_003f79d8 @ 0x003f79d8   (est. sk_col_pump2_003f79d8)

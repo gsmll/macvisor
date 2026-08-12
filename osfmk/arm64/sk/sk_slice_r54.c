@@ -128,8 +128,8 @@ extern void cL4_mr_emit_val2(long obj, long count, unsigned long val);
 /* FUN_003bf898 @ 0x3bf898 — release/commit the temporary output record. */
 extern void cL4_out_commit(unsigned long tcb, long *stack);
 /* FUN_003bf718 / 003bf7e4 — build/read an output descriptor. */
-extern unsigned char (*cL4_fmt_build(unsigned long tcb, unsigned long msg, unsigned long depth))[16];
-extern int cL4_fmt_kind(unsigned long tcb, unsigned char (*desc)[16]);
+extern unsigned long cL4_fmt_build(unsigned long tcb, unsigned long msg, unsigned long depth);
+extern unsigned long cL4_fmt_kind(unsigned long tcb, unsigned long param_2);
 /* FUN_003bea1c — demangler arg-kind-flag predicate. */
 extern int cL4_dem_flags(unsigned long a);
 /* FUN_003ba044 @ 0x3ba044 — find/emit a named demangler node by kind. */
@@ -417,14 +417,16 @@ void cL4_arg_kind_162(unsigned int *res, unsigned long tcb, long *msg);
 void cL4_arg_kind_172(unsigned int *res, unsigned long tcb, long *msg);
 void cL4_arg_kind_c9(int *res, unsigned long tcb, long *msg, unsigned long depth);
 void cL4_arg_kind_generic(int *res, unsigned long tcb, long *msg, unsigned long depth);
+unsigned long cL4_fmt_build(unsigned long tcb, unsigned long msg, unsigned long depth);
+unsigned long cL4_fmt_kind(unsigned long tcb, unsigned long param_2);
+void cL4_arg_kind_18(unsigned int *res, unsigned long tcb, unsigned long *p3);
+void cL4_arg_kind_4e(int *res, unsigned long tcb, long *msg, int depth);
 
 /* ---- arg-kind decoder forwards ---- */
 void cL4_arg_decode(int *res, unsigned long tcb, unsigned long word, unsigned long depth);
 void cL4_msg_header(int *res, long *msg, unsigned long ctx);
 int  cL4_msg_kind(long *msg);
 void cL4_out_commit(unsigned long tcb, long *stack);
-unsigned char (*cL4_fmt_build(unsigned long tcb, unsigned long msg, unsigned long depth))[16];
-int  cL4_fmt_kind(unsigned long tcb, unsigned char (*desc)[16]);
 void cL4_fmt_node(unsigned long node, unsigned long ctx, void *out, int depth);
 void cL4_arg_kind1b(int *res, unsigned long tcb, long *msg, int depth);
 void cL4_arg_kind1c(int *res, unsigned long tcb, long *msg, int depth);
@@ -2019,7 +2021,7 @@ void cL4_arg_kind_e(int *res, unsigned long tcb, unsigned long *msg, int depth)
                 if (*(char *)((char *)mm + 0x12) == '\x02') v = mm[1];
                 else if ((*(char *)((char *)mm + 0x12) == '\x05') && 1 < *(unsigned int *)(mm + 1)) { mm = (unsigned long *)*mm; v = mm[1]; }
                 else v = 0;
-                cL4_msg_one(res, tcb, &v, depth + 1);
+                cL4_msg_one(res, tcb, v, depth + 1);
                 if (*res != 0) return;
                 cL4_mr_emit_tag(tcb + 0x2140, (const void *)&DAT_005d922e, 2, *(unsigned long *)(tcb + 0x2150));
                 cL4_out_commit(tcb, (long *)&local_40);
@@ -2039,12 +2041,12 @@ void cL4_arg_kind_e(int *res, unsigned long tcb, unsigned long *msg, int depth)
  * Confidence: medium
  * Notes: FUN_003d0358, FUN_003c3264, FUN_003c6b94, FUN_003d0bc8,
  *   FUN_003acd3c, FUN_003bf898; bytes 'y','G'. */
-void cL4_arg_kind_13(int *res, unsigned long *tcb, unsigned long msg, int depth)
+void cL4_arg_kind_13(int *res, unsigned long tcb, unsigned long msg, int depth)
 {
     unsigned long local_48 = 0, uStack_40 = 0;
     if (cL4_fmt_build(tcb, msg, 0) == 0) {
         int hdr;
-        cL4_msg_header(&hdr, (long *)msg, *tcb);
+        cL4_msg_header(&hdr, (long *)msg, tcb);
         if (hdr != 0) {
             res[2] = 0; *(unsigned long *)res = hdr; res[4] = 0;
             return;
@@ -2058,7 +2060,7 @@ void cL4_arg_kind_13(int *res, unsigned long *tcb, unsigned long msg, int depth)
         }
         {
             unsigned char b = 'G';
-            cL4_mr_emit_byte(tcb + 0x428, &b, tcb[0x42a]);
+            cL4_mr_emit_byte(tcb + 0x428, &b, *(unsigned long *)(tcb + 0x42a * 8));
         }
         cL4_out_commit(tcb, (long *)&local_48);
     }
@@ -2183,7 +2185,7 @@ fallback:
             if ((*(unsigned char *)((char *)msg + 0x12) != 5) || (int)msg[1] == 0) v = 0;
             else msg = (long *)*msg, v = *msg;
         } else v = *msg;
-        cL4_arg_kind_18(res, tcb, v);
+        cL4_arg_kind_18((unsigned int *)res, tcb, (unsigned long *)v);
     }
 }
 
@@ -2227,7 +2229,7 @@ void cL4_arg_kind1b(int *res, unsigned long tcb, long *msg, int depth)
     if (*(unsigned char *)((char *)m + 0x12) - 1 < 2) v = *m;
     else if ((*(unsigned char *)((char *)m + 0x12) == 5) && (int)m[1] != 0) { m = (long *)*m; v = *m; }
     else v = 0;
-    cL4_msg_one(res, tcb, &v, depth + 2);
+    cL4_msg_one(res, tcb, v, depth + 2);
     if (*res != 0) return;
     m = msg;
     if (*(char *)((char *)m + 0x12) != '\x02') {
@@ -2332,7 +2334,7 @@ void cL4_arg_kind_23(int *res, unsigned long tcb, long *msg, int depth)
     if (*(unsigned char *)((char *)m + 0x12) - 1 < 2) v = *m;
     else if ((*(unsigned char *)((char *)m + 0x12) == 5) && (int)m[1] != 0) { m = (long *)*m; v = *m; }
     else v = 0;
-    cL4_msg_one(res, tcb, &v, depth + 2);
+    cL4_msg_one(res, tcb, v, depth + 2);
     if (*res != 0) return;
     m = msg;
     if (*(char *)((char *)m + 0x12) != '\x02') {
@@ -2736,7 +2738,7 @@ void cL4_arg_kind30(int *res, unsigned long tcb, long *msg, int depth)
     if (*(unsigned char *)((char *)m + 0x12) - 1 < 2) v = *m;
     else if ((*(unsigned char *)((char *)m + 0x12) == 5) && (int)m[1] != 0) { m = (long *)*m; v = *m; }
     else v = 0;
-    cL4_msg_one(res, tcb, &v, depth + 2);
+    cL4_msg_one(res, tcb, v, depth + 2);
     if (*res != 0) return;
     m = msg;
     if (*(char *)((char *)m + 0x12) != '\x02') {
@@ -2825,7 +2827,7 @@ void cL4_arg_kind33(int *res, unsigned long tcb, long *msg, int depth)
     if (*(char *)((char *)m + 0x12) == '\x02') l2 = m[1];
     else if ((*(char *)((char *)m + 0x12) == '\x05') && 1 < *(unsigned int *)(m + 1)) { m = (long *)*m; l2 = m[1]; }
     else l2 = 0;
-    cL4_msg_one(res, tcb, &l2, depth + 2);
+    cL4_msg_one(res, tcb, l2, depth + 2);
     if (*res != 0) return;
     cL4_mr_emit_tag(tcb + 0x2140, (const void *)&DAT_005d9293, 2, *(unsigned long *)(tcb + 0x2150));
     code = 0; res[0] = 0; res[2] = 0; res[4] = code;
@@ -3453,7 +3455,7 @@ void cL4_arg_decode(int *res, unsigned long tcb, unsigned long msg, unsigned lon
     if (*(unsigned short *)(msg + 0x10) > 0x179) { *res = 4; *(unsigned long *)(res + 2) = msg; res[4] = 0x196; return; }
 
     switch (*(unsigned short *)(msg + 0x10)) {
-    default: /* kind 0 */
+    case 0: /* kind 0 */
         cL4_arg_decode_other(res, tcb, msg, depth, 0x43);
         return;
     case 1:  cL4_arg_kind_1(res, tcb, msg, depth); return;
@@ -3628,5 +3630,83 @@ copy:
     *(unsigned char *)((char *)p + n) = 0;
 }
 
+
+/* 003bf718 @ 0x003bf718   (est. cL4_fmt_build)
+ * Ghidra: undefined1 [16] FUN_003bf718(long param_1, ulong param_2, uint param_3)
+ * Looks up/builds an output descriptor record in the 16-byte-per-slot hash
+ * table at param_1+8 (indexed by `param_2 * 0x7fb >> 0xc` with open
+ * addressing). When the slot is empty (count < 8) it stores a new entry
+ * {param_2 | param_3, hash} and returns it; when the slot matches
+ * `param_2` and the param_3 bit agrees it returns the stored record.
+ * Returns a 16-byte value {descriptor_word, hash}.
+ * Confidence: medium
+ * Notes: FUN_003bf5a8 (hash); descriptor bit layout param_2&~7 | param_3. */
+unsigned long cL4_fmt_build(unsigned long tcb, unsigned long param_2, unsigned long param_3)
+{
+    unsigned long u3 = (param_3 == 0) ? 0 : 4;
+    unsigned long idx = u3 + (param_2 * 0x7fb >> 0xc);
+    unsigned long *base = (unsigned long *)(tcb + 8);
+    int probe = 8;
+    while (1) {
+        unsigned long slot = idx & 0x1ff;
+        unsigned long *slotp = base + slot * 2;
+        if (slotp[0] < 8) {
+            unsigned long h = cL4_str_hash(tcb, (unsigned short *)param_2, 0);
+            slotp[0] = (param_2 & 0xfffffffffffffffbUL) | u3 | (slotp[0] & 3);
+            slotp[1] = h;
+            return slotp[0];
+        }
+        if ((param_2 == (slotp[0] & 0xfffffffffffffff8UL)) &&
+            (((param_3 ^ (unsigned int)(slotp[0] >> 2) & 1) & 1) == 0)) break;
+        idx++;
+        probe--;
+        if (probe == 0) {
+            unsigned long h = cL4_str_hash(tcb, (unsigned short *)param_2, 0);
+            unsigned long w = u3 | param_2 & 0xfffffffffffffffbUL;
+            return w;
+        }
+    }
+    return base[slot * 2 + 1];
+}
+
+/* 003bf7e4 @ 0x003bf7e4   (est. cL4_fmt_kind)
+ * Ghidra: ulong FUN_003bf7e4(long param_1, undefined8 param_2)
+ * Looks up the descriptor record for key `param_2` in the small 16-byte
+ * table at param_1+0x2008 (count at param_1+0x2108), returning its slot
+ * index, or falls back to the associative map at param_1+0x2110
+ * (FUN_003d27a0 / FUN_003d27ec) returning the stored kind at +0x20.
+ * Confidence: medium
+ * Notes: FUN_003d27a0, FUN_003d27ec. */
+unsigned long cL4_fmt_kind(unsigned long tcb, unsigned long param_2)
+{
+    unsigned long *table = (unsigned long *)(tcb + 0x2008);
+    unsigned long count = *(unsigned long *)(tcb + 0x2108);
+    unsigned long *p;
+    unsigned long res;
+    if (count == 0) {
+        res = 0;
+        p = table;
+    } else {
+        unsigned long n = count << 4;
+        p = table;
+        while (1) {
+            unsigned long v = cL4_dem_ctx_snapshot(); /* FUN_003d27a0 */
+            (void)v;
+            /* FUN_003d27a0(table, key) */
+            if ((cL4_map_key_eq_simple((unsigned long *)p, (unsigned long *)param_2) & 1) != 0) break;
+            p += 2;
+            n -= 0x10;
+            if (n == 0) { p = table + count * 2; break; }
+        }
+        count = *(unsigned long *)(tcb + 0x2108);
+    }
+    if (p == table + count * 2) {
+        unsigned long r = cL4_dem_find_kind(0, 0, 0); /* FUN_003d27ec */
+        (void)r;
+        if (r == 0) return 0xffffffff;
+        return *(unsigned int *)(r + 0x20);
+    }
+    return (unsigned long)(p - table) >> 4;
+}
 
 /* end of prelude */

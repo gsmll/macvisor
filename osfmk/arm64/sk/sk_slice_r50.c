@@ -16,6 +16,8 @@
 
 /* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1). */
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
+extern void cL4_panic_big(void);
+extern void cL4_list_push_363f10(void);
 #define CONCAT17(h,l)  ((unsigned long)(h) & 0xff | ((unsigned long)(l) << 8))
 #define CONCAT44(h,l)  (((unsigned long)(l) & 0xffffffff) | ((unsigned long)(h) << 32))
 #define CONCAT71(h,l)  ((unsigned long)(h) & 0x7f | ((unsigned long)(l) << 7))
@@ -26,7 +28,8 @@ typedef struct { unsigned long lo, hi; } cL4_w16_t;
  * these bodies (they live elsewhere in the kernel image).
  * ------------------------------------------------------------------ */
 extern void *cL4_alloc(unsigned long size, unsigned long tag);   /* FUN_00111890 */
-extern void cL4_free(void *p, unsigned long size);               /* thunk_FUN_00012568 */
+extern void cL4_free(void *p, unsigned long size);
+extern void thunk_FUN_00012568(unsigned long, ...);               /* thunk_FUN_00012568 */
 extern void cL4_stack_fail(void) __attribute__((noreturn));      /* FUN_0011d7e8 */
 extern void cL4_ref_acquire(unsigned long obj);                  /* FUN_0037a48c */
 extern void cL4_ref_release(unsigned long obj);                  /* FUN_0037aed8 */
@@ -184,73 +187,106 @@ extern cL4_w16_t sk_type_name_split_38cbb8();
 extern long sk_type_waiter_scan_38c640();
 extern unsigned long sk_type_waiter_hash2_38c750();
 extern unsigned long sk_type_capcmp_387fbc();
-extern unsigned long sk_type_dbltbl_hash_38d6e4();
 extern cL4_w16_t sk_type_read_3a31d8();
 extern unsigned long sk_type_cap_build_3a32a0();
 extern unsigned long *sk_vector_grow_399094(unsigned long, unsigned long, unsigned long);
 
 
 
-/* Forward prototypes for in-file R50 helper functions. */
-long sk_hashtable_chain_find_38c750(unsigned int *h);
-unsigned long sk_hashtable_index_lookup2_38cae4(long a, unsigned long k, int *key);
-unsigned long sk_hashtable_index_lookup3_38d690(long a, unsigned long k, int *key);
-unsigned long sk_hashtable_index_lookup_38c920(long a, unsigned long k, int *key);
-void sk_hashtable_unlink_38bf8c(int *entry);
-unsigned long sk_mangled_scan_valid_389da0(unsigned char *s, long len);
-void sk_mr_send_scan_match_380930(long *list, unsigned long word, unsigned long count, long *out_slot);
-void sk_mr_send_word_replace_380864(unsigned long *out, unsigned long *slot, unsigned long w0, unsigned long w1);
-unsigned long sk_pack_length_38d8dc(unsigned long *p);
-long sk_strbuf_copy_38ef98(long dst, void *srcp);
-long sk_strbuf_copy_38f020(long dst, void *srcp);
-long sk_string_align_38cd54(unsigned long a);
-void sk_string_alloc_38c584(long a);
-unsigned long sk_string_base_38cdb4(unsigned int *s);
-void sk_string_bucket_18_38c7bc(long a);
-void sk_string_bucket_60_38c87c(long a);
-void sk_string_bucket_60_38d52c(long a);
-void sk_string_bucket_a8_38c980(long a);
-void sk_string_bucket_a8_38d5ec(long a);
-void sk_string_bucket_f0_38ca40(long a);
-void sk_string_elem_at_38cbb8(long base, unsigned long idx);
-unsigned int sk_string_entcnt2_38d45c(char *s);
-unsigned int sk_string_entcnt_38d07c(char *s);
-unsigned int sk_string_entcnt_38d3b8(char *s);
-long sk_string_fixed_38ccf8(unsigned long a);
-unsigned short sk_string_flag_08_38cfd8(char *s);
-unsigned short sk_string_flag_0e_38cf50(char *s);
-unsigned short sk_string_flag_10_38cecc(char *s);
-unsigned short sk_string_flag_h17c_38d17c(char *s);
-long sk_string_hdr_38cc7c(unsigned long a);
-unsigned short sk_string_len8_38ce48(char *s);
-unsigned long sk_string_namebytes_38d204(long a);
-unsigned short sk_string_namecnt_38d330(char *s);
-cL4_w16_t sk_string_namedesc_38d294(long a);
-long sk_string_tbl_base_38cc2c(unsigned long a);
-unsigned long sk_stringbuf_data_38c460(unsigned int *s);
-cL4_w16_t sk_stringbuf_get_small_38c3ac(char *s);
-unsigned short sk_stringbuf_len_38c4f4(char *s);
-void sk_stringbuf_release_free2_38cb38(unsigned long *buf);
-void sk_stringbuf_release_free_38c32c(unsigned long *buf);
-void sk_tail_call_dispatch_38b4cc(unsigned long *fn, unsigned long a, unsigned long *args, long n);
-void sk_type_ctx_init_389130(unsigned long *ctx);
-long sk_type_dbltbl_hash_38d6e4(char *s);
-void sk_type_decode_38f0a8(void *outp, unsigned long *ctx, unsigned long nodev, unsigned long depth, unsigned long flag);
-unsigned long sk_type_lookup_389940(unsigned long a, unsigned long b, unsigned long c, unsigned long d);
-bool sk_type_lookup_check_3885e4(unsigned long a, long b, unsigned long c);
-void sk_type_lookup_core_3895e0(unsigned long *out, unsigned long flags, long name, unsigned long len, unsigned long err, void *b6, void *b7);
-void sk_type_lookup_dispatch2_389910(unsigned long a, unsigned long b, long c);
-void sk_type_lookup_dispatch3_389b4c(unsigned long a, unsigned long b, unsigned long c);
-cL4_w16_t sk_type_lookup_name_38a914(unsigned long a, long name, unsigned long b);
-unsigned long sk_type_lookup_quiet_389b64(unsigned long flags, unsigned long a, unsigned long b, long len, unsigned long d);
-void sk_type_resolve_38a518(unsigned long *out, unsigned long flags, unsigned long node, unsigned long *ctx, unsigned long err, unsigned long b6, unsigned long b7);
-void sk_vec_alloc_38d9b4(unsigned long a, unsigned long n);
-void sk_vec_append_range_38e114(long *vec, unsigned long *start, unsigned long *end);
-void sk_vec_reserve_38d974(long *vec, unsigned long n);
-void sk_vec_resize_38e198(long *vec, unsigned long n);
-void sk_vector_push_back_38b814(long *vec, unsigned long val);
-void sk_wordlist_append_389370(long *list, unsigned int w);
 
+
+/* Forward declarations (old-style) for in-file R50 functions. */
+extern long sk_hashtable_chain_find_38c750();
+extern unsigned long sk_hashtable_index_lookup2_38cae4();
+extern unsigned long sk_hashtable_index_lookup3_38d690();
+extern unsigned long sk_hashtable_index_lookup_38c920();
+extern void sk_hashtable_unlink_38bf8c();
+extern unsigned long sk_mangled_scan_valid_389da0();
+extern void sk_mr_send_scan_match_380930();
+extern void sk_mr_send_word_replace_380864();
+extern unsigned long sk_pack_length_38d8dc();
+extern long sk_strbuf_copy_38ef98();
+extern long sk_strbuf_copy_38f020();
+extern long sk_string_align_38cd54();
+extern void sk_string_alloc_38c584();
+extern unsigned long sk_string_base_38cdb4();
+extern void sk_string_bucket_18_38c7bc();
+extern void sk_string_bucket_60_38c87c();
+extern void sk_string_bucket_60_38d52c();
+extern void sk_string_bucket_a8_38c980();
+extern void sk_string_bucket_a8_38d5ec();
+extern void sk_string_bucket_f0_38ca40();
+extern void sk_string_elem_at_38cbb8();
+extern unsigned int sk_string_entcnt2_38d45c();
+extern unsigned int sk_string_entcnt_38d07c();
+extern unsigned int sk_string_entcnt_38d3b8();
+extern long sk_string_fixed_38ccf8();
+extern unsigned short sk_string_flag_08_38cfd8();
+extern unsigned short sk_string_flag_0e_38cf50();
+extern unsigned short sk_string_flag_10_38cecc();
+extern unsigned short sk_string_flag_h17c_38d17c();
+extern long sk_string_hdr_38cc7c();
+extern unsigned short sk_string_len8_38ce48();
+extern unsigned long sk_string_namebytes_38d204();
+extern unsigned short sk_string_namecnt_38d330();
+extern cL4_w16_t sk_string_namedesc_38d294();
+extern long sk_string_tbl_base_38cc2c();
+extern unsigned long sk_stringbuf_data_38c460();
+extern cL4_w16_t sk_stringbuf_get_small_38c3ac();
+extern unsigned short sk_stringbuf_len_38c4f4();
+extern void sk_stringbuf_release_free2_38cb38();
+extern void sk_stringbuf_release_free_38c32c();
+extern void sk_tail_call_dispatch_38b4cc();
+extern void sk_type_ctx_init_389130();
+extern long sk_type_dbltbl_hash_38d6e4();
+extern void sk_type_decode_38f0a8();
+extern unsigned long sk_type_lookup_389940();
+extern bool sk_type_lookup_check_3885e4();
+extern void sk_type_lookup_core_3895e0();
+extern void sk_type_lookup_dispatch2_389910();
+extern void sk_type_lookup_dispatch3_389b4c();
+extern cL4_w16_t sk_type_lookup_name_38a914();
+extern unsigned long sk_type_lookup_quiet_389b64();
+extern void sk_type_resolve_38a518();
+extern void sk_vec_alloc_38d9b4();
+extern void sk_vec_append_range_38e114();
+extern void sk_vec_reserve_38d974();
+extern void sk_vec_resize_38e198();
+extern void sk_vector_push_back_38b814();
+extern void sk_wordlist_append_389370();
+
+extern unsigned long sk_type_field_set_3a3460();
+extern unsigned long sk_type_build_sig_395f3c();
+extern unsigned long sk_type_materialize_exist_39517c();
+extern unsigned long sk_type_materialize_exist_3950a4();
+extern unsigned long sk_type_generic_args_396440();
+extern unsigned long sk_type_build_bound_generic_396784();
+extern unsigned long sk_type_metadata_of_3bf904();
+extern unsigned long sk_type_unpack_pair_37364c();
+extern unsigned long sk_type_materialize_394c40();
+extern unsigned long sk_type_materialize_397358();
+extern unsigned long sk_type_build_pair_397e94();
+extern unsigned long sk_type_decode_sig_394404();
+extern unsigned long sk_type_build_func_394724();
+extern unsigned long sk_type_build_protocol_3973e4();
+extern unsigned long sk_type_decode_sig_394734();
+extern unsigned long sk_type_build_func_3952c4();
+extern unsigned long sk_type_build_owned_395dec();
+extern unsigned long sk_type_decl_record_39779c();
+extern unsigned long sk_type_list_push_363f10();
+extern unsigned long sk_type_push8_39780c();
+extern unsigned long sk_type_field_push_39787c();
+extern unsigned long sk_type_flatpair_3978b0();
+extern unsigned long sk_type_push98_397998();
+extern unsigned long sk_type_build_bound_397a98();
+extern unsigned long sk_type_materialize_req_3972cc();
+extern unsigned long sk_type_materialize_req2_3971e8();
+extern unsigned long sk_type_build_reqlist_396f78();
+extern unsigned long sk_type_65184_365184();
+extern unsigned long sk_type_pushreq_39951c();
+extern unsigned long sk_hashtable_hash_38ba00();
+extern unsigned long sk_err_ctx_38dd44();
+extern unsigned long sk_err_u64_113a3c();
 /* FUN_00380864 @ 0x380864   (est. sk_mr_send_word_replace)
  * Ghidra: void FUN_00380864(ulong *param_1, undefined8 *param_2, long, long)
  * Replaces the message-register word descriptor pointed at by param_2 with a
@@ -3907,7 +3943,7 @@ void sk_vector_push_back_38b814(long *vec, unsigned long val)
 {
     unsigned long *slot; unsigned long *src; unsigned long w0, w1, w2;
 
-    src = (unsigned long *)sk_vector_grow_399094(vec, val, 1);
+    src = (unsigned long *)sk_vector_grow_399094((unsigned long)vec, val, 1);
     slot = (unsigned long *)(*vec + (unsigned long)*(unsigned int *)(vec + 1) * 0x20);
     w0 = *src; w1 = src[3]; w2 = src[2];
     slot[1] = src[1]; *slot = w0; slot[3] = w1; slot[2] = w2;
@@ -3958,11 +3994,10 @@ void sk_stringbuf_release_free_38c32c(unsigned long *buf)
  * Returns the 16-byte descriptor of an inline (small) Swift string: the
  * data pointer from FUN_0038c460, the 2-byte length (param_1+0xe), zero pad.
  * Confidence: medium */
-cL4_w16_t sk_stringbuf_get_small_38c3ac(char *s)
+cL4_w16_t sk_stringbuf_get_small_38c3ac(unsigned long sv)
 {
     cL4_w16_t r;
-    char *p;
-    p = s;
+    char *s = (char *)sv; char *p = s;
     if (s == 0) p = 0;
     if (*p < 0) {
         if (s == 0) s = 0;
@@ -3979,9 +4014,9 @@ cL4_w16_t sk_stringbuf_get_small_38c3ac(char *s)
  * Computes the aligned data pointer of an inline Swift string buffer:
  * base + flags-derived offset (param_1[0]>>7 & 1 adds 8) rounded to 4.
  * Confidence: medium */
-unsigned long sk_stringbuf_data_38c460(unsigned int *s)
+unsigned long sk_stringbuf_data_38c460(unsigned long sv)
 {
-    unsigned long n; unsigned int *p;
+    unsigned long n; unsigned int *s = (unsigned int *)sv; unsigned int *p;
     p = s + 3;
     if (p == 0) p = 0;
     if (s == 0) s = 0;
@@ -3993,10 +4028,9 @@ unsigned long sk_stringbuf_data_38c460(unsigned int *s)
  * Ghidra: undefined2 FUN_0038c4f4(char *param_1)
  * Returns the length field (param_1+0xc) of an inline Swift string.
  * Confidence: low */
-unsigned short sk_stringbuf_len_38c4f4(char *s)
+unsigned short sk_stringbuf_len_38c4f4(unsigned long sv)
 {
-    char *p;
-    p = s;
+    char *s = (char *)sv; char *p = s;
     if (s == 0) p = 0;
     if (*p < 0) {
         if (s == 0) s = 0;
@@ -4128,7 +4162,7 @@ long sk_string_hdr_38cc7c(unsigned long a)
     long base; unsigned long nb; unsigned long cnt; unsigned long r[2];
     base = sk_string_fixed_38ccf8();
     nb = sk_string_namebytes_38d204(a);
-    r[0] = sk_string_namedesc_38d294(a);
+    { cL4_w16_t _d = sk_string_namedesc_38d294(a); r[0]=_d.lo; r[1]=_d.hi; }
     if (r[1] == 0) cnt = 0;
     else cnt = (unsigned long)*(unsigned short *)(r[0] + r[1] * 2 - 2);
     return (base + (nb & 0xffffffff) * 2 + 3 & 0xfffffffffffffffc) + cnt * 0xc;
@@ -4157,9 +4191,9 @@ long sk_string_align_38cd54(unsigned long a)
  * Ghidra: ulong FUN_0038cdb4(uint *param_1)
  * Aligned base pointer of the string header (like FUN_0038c460).
  * Confidence: low */
-unsigned long sk_string_base_38cdb4(unsigned int *s)
+unsigned long sk_string_base_38cdb4(unsigned long sv)
 {
-    unsigned long n; unsigned int *p;
+    unsigned long n; unsigned int *s = (unsigned int *)sv; unsigned int *p;
     p = s + 2;
     if (p == 0) p = 0;
     if (s == 0) s = 0;
@@ -4170,9 +4204,9 @@ unsigned long sk_string_base_38cdb4(unsigned int *s)
 /* FUN_0038ce48 @ 0x38ce48   (est. sk_strhdr_len8)
  * Length field at param_1+8.
  * Confidence: low */
-unsigned short sk_string_len8_38ce48(char *s)
+unsigned short sk_string_len8_38ce48(unsigned long sv)
 {
-    char *p; p = s; if (s == 0) p = 0;
+    char *s = (char *)sv; char *p = s; if (s == 0) p = 0;
     if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 8); }
     return 0;
 }
@@ -4180,33 +4214,33 @@ unsigned short sk_string_len8_38ce48(char *s)
 /* FUN_0038cecc @ 0x38cecc   (est. sk_strhdr_count10)
  * Count field at param_1+10 (element count).
  * Confidence: low */
-unsigned short sk_string_flag_10_38cecc(char *s)
+unsigned short sk_string_flag_10_38cecc(unsigned long sv)
 {
-    char *p; p = s; if (s == 0) p = 0;
-    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 10); }
+    char *s = (char *)sv; char *c = s; char *p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(c + 10); }
     return 0;
 }
 
 /* FUN_0038cf50 @ 0x38cf50   (est. sk_strhdr_namecnt)
  * Name-count field: bit0 of the 0xe flags word.
  * Confidence: low */
-unsigned short sk_string_flag_0e_38cf50(char *s)
+unsigned short sk_string_flag_0e_38cf50(unsigned long sv)
 {
-    char *p; p = s; if (s == 0) p = 0;
-    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) & 1; }
+    char *s = (char *)sv; char *c = s; char *p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(c + 0xe) & 1; }
     return 0;
 }
 
 /* FUN_0038cfd8 @ 0x38cfd8   (est. sk_strhdr_entcnt_present)
  * Returns the entry-count when the 0xe bit0 is set (via FUN_0038d07c).
  * Confidence: low */
-unsigned short sk_string_flag_08_38cfd8(char *s)
+unsigned short sk_string_flag_08_38cfd8(unsigned long sv)
 {
-    unsigned short r; char *p;
-    p = s; if (s == 0) p = 0;
+    char *s = (char *)sv; char *c = s; unsigned short r; char *p = s;
+    p = c; if (s == 0) p = 0;
     if (*p < 0) {
         if (s == 0) s = 0;
-        if ((*(unsigned short *)(s + 0xe) & 1) != 0) {
+        if ((*(unsigned short *)(c + 0xe) & 1) != 0) {
             r = sk_string_entcnt_38d07c();
             return r;
         }
@@ -4217,7 +4251,7 @@ unsigned short sk_string_flag_08_38cfd8(char *s)
 /* FUN_0038d07c @ 0x38d07c   (est. sk_strhdr_entcnt)
  * Reads the entry-count (two packed 16-bit words) from the element array.
  * Confidence: low */
-unsigned int sk_string_entcnt_38d07c(char *s)
+unsigned int sk_string_entcnt_38d07c(unsigned long s)
 {
     unsigned long base; long off; unsigned short *p; unsigned int lo, hi;
     char *q; q = s; if (s == 0) q = 0;
@@ -4239,10 +4273,10 @@ unsigned int sk_string_entcnt_38d07c(char *s)
 /* FUN_0038d17c @ 0x38d17c   (est. sk_strhdr_flag17c)
  * Flags field: bit1 of the 0xe word.
  * Confidence: low */
-unsigned short sk_string_flag_h17c_38d17c(char *s)
+unsigned short sk_string_flag_h17c_38d17c(unsigned long sv)
 {
-    char *p; p = s; if (s == 0) p = 0;
-    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) >> 1 & 1; }
+    char *s = (char *)sv; char *c = s; char *p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(c + 0xe) >> 1 & 1; }
     return 0;
 }
 
@@ -4250,7 +4284,7 @@ unsigned short sk_string_flag_h17c_38d17c(char *s)
  * When the 0xe bit1 flag is set, popcounts the packed name-byte lengths to
  * derive the name-bytes count.
  * Confidence: low */
-unsigned long sk_string_namebytes_38d204(long a)
+unsigned long sk_string_namebytes_38d204(unsigned long a)
 {
     unsigned long f; unsigned short *p; long x; char c;
     x = a; if (a == 0) x = 0;
@@ -4267,7 +4301,7 @@ unsigned long sk_string_namebytes_38d204(long a)
 /* FUN_0038d294 @ 0x38d294   (est. sk_strhdr_namedesc)
  * Returns the {data,count} pair describing the name array.
  * Confidence: low */
-cL4_w16_t sk_string_namedesc_38d294(long a)
+cL4_w16_t sk_string_namedesc_38d294(unsigned long a)
 {
     int f; unsigned long d; unsigned long n; cL4_w16_t r; long x;
     x = a; if (a == 0) x = 0;
@@ -4286,17 +4320,17 @@ cL4_w16_t sk_string_namedesc_38d294(long a)
 /* FUN_0038d330 @ 0x38d330   (est. sk_strhdr_namecnt2)
  * Name-count: bit2 of the 0xe flags word.
  * Confidence: low */
-unsigned short sk_string_namecnt_38d330(char *s)
+unsigned short sk_string_namecnt_38d330(unsigned long sv)
 {
-    char *p; p = s; if (s == 0) p = 0;
-    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) >> 2 & 1; }
+    char *s = (char *)sv; char *c = s; char *p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(c + 0xe) >> 2 & 1; }
     return 0;
 }
 
 /* FUN_0038d3b8 @ 0x38d3b8   (est. sk_strhdr_entcnt2)
  * Entry-count: bit2 flag -> FUN_0038d45c.
  * Confidence: low */
-unsigned int sk_string_entcnt_38d3b8(char *s)
+unsigned int sk_string_entcnt_38d3b8(unsigned long s)
 {
     unsigned int r; char *p;
     p = s; if (s == 0) p = 0;
@@ -4313,7 +4347,7 @@ unsigned int sk_string_entcnt_38d3b8(char *s)
 /* FUN_0038d45c @ 0x38d45c   (est. sk_strhdr_entcnt_raw)
  * Reads the raw entry-count word at the aligned element array.
  * Confidence: low */
-unsigned int sk_string_entcnt2_38d45c(char *s)
+unsigned int sk_string_entcnt2_38d45c(unsigned long s)
 {
     unsigned int *p; char *q;
     q = s; if (s == 0) q = 0;
@@ -4352,7 +4386,7 @@ unsigned long sk_hashtable_index_lookup3_38d690(long a, unsigned long k, int *ke
 /* FUN_0038d6e4 @ 0x38d6e4   (est. sk_string_count_delta)
  * Difference between the total name count and the nested/sub-name count.
  * Confidence: low */
-long sk_type_dbltbl_hash_38d6e4(char *s)
+long sk_type_dbltbl_hash_38d6e4(unsigned long s)
 {
     long p; unsigned long n;
     if (-1 < *s) return 0;
