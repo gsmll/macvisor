@@ -3571,3 +3571,21 @@ Confidence: medium
 - **Evidence**: sk_f_0005eec4: `if (counter < 0x400) { … }` with `*counter_ptr = counter+1`; `thread = sk_f_0005c0ac()` (free-list pop, traps 0x5c11c on `next+0x178<next` overflow); `avail = (stack_low - stack_top) + stack_size; if (0x1ffff < avail) goto panic_path("Thread stack allocation size…")`. Counter decremented on the decrement: path.
 - **Severity (hypothesis)**: low — the 0x400 cap bounds per-registry concurrent threads (prevents TCB/slot exhaustion); the wrap traps close integer-overflow paths on TCB/stack accounting.
 - **Confidence**: high (explicit cap constant and overflow guards in the transcription).
+
+## [SK189-ringminus1] 0040d098 sk_task_group_add_child
+- **Observation**: The TaskGroup child-add path (0040d098/0040d99c/0040de9c) guards group completion with a CAS'd live-child counter (group+5) under LOAcquire/LORelease and a doubly-linked waiting-task list (group+6). Child result delivery is validated against the record kind: kind 1 ("only errors can be stored by a d..." 0x5dca22/0x5dc9d2) and a NULL waiting task ("Claimed NULL waitingTask!" 0x5dca72) each hit a noreturn fatal. The child result is retained (FUN_0036b270) before storing.
+- **Evidence**: traps/panics at 0x40e9e4/0x40e10c/0x40e104; string refs 0x5dca22/0x5dc9d2/0x5dca72; LOAcquire/LORelease around group[5]; waiting-list group[6]; result ring via FUN_0040e258/FUN_0040e2f0.
+- **Severity (hypothesis)**: medium — the task-group result store is a shared cross-task data structure; a failure to drain or a race in the waiter list could let a child completion be lost or double-delivered.
+- **Confidence**: medium
+
+## [SK189-ringminus1] 0040f9f4 sk_actor_executor_enqueue
+- **Observation**: Actor-executor enqueue (0040f9f4) requires a non-NULL job AND non-NULL executor; any null operand aborts with "Incorrect actor executor assumption" (0x5dd036). The dequeue variant (0040faac) returns 0 and the check-enqueue variant (0040fa5c) returns 0xff on null operands rather than aborting. This is a fail-closed guard on the executor ABI: a nil executor can never be enqueued onto.
+- **Evidence**: `if ((param_1 != 0) && (param_2 != 0)) {...} else { ...FUN_004ba640(0,0x5dd036) }` for 0040f9f4; `return 0xff` / `return 0` for 0040fa5c / 0040faac.
+- **Severity (hypothesis)**: low — defensive precondition; prevents a nil-executor enqueue from corrupting the scheduler. Availability-only if reachable with attacker-controlled nil.
+- **Confidence**: high
+
+## [SK189-ringminus1] 0040b724 sk_registry_add
+- **Observation**: The continuation registry is a Swift-style open-addressing/chained hash set: inserts keyed by sk_swift_hash8 with load-factor growth (FUN_0037d700) and a SoftwareBreakpoint trap (0x40b96c) when the bucket index exceeds capacity. Every insertion into the registry is thus bounds-checked; a corrupted registry (index out of range) traps rather than over-writing.
+- **Evidence**: `if ((ulong)set[2] <= idx) SoftwareBreakpoint(1,0x40b96c)`; node alloc FUN_00111890(0x18); growth when `load_factor * count < size+1`; rehash FUN_0037d700.
+- **Severity (hypothesis)**: low — the registry holds outstanding kernel continuations; the bounds trap is defensive, but a collision-chain hash collision could degrade to O(n) lookup (availability).
+- **Confidence**: medium

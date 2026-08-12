@@ -186,7 +186,7 @@ extern word_t DAT_006c0c78;
 extern word_t DAT_006adfb0;
 extern word_t DAT_005a17f0;
 extern word_t lRam00000000005a17f8;
-extern word_t *DAT_0068a6d8;
+extern word_t (*DAT_0068a6d8)();
 extern word_t DAT_006c0c80;
 extern word_t FUN_004ba704(word_t *);
 extern word_t FUN_004ba780(word_t *);
@@ -259,7 +259,7 @@ word_t sk_cont_suspend_and_check(long task);
 word_t sk_cont_suspend_simple(word_t task);
 void sk_cont_teardown_block(long task, long ctx, word_t param_3);
 void sk_cont_wake_cb(word_t *rec, word_t status, word_t param_3);
-uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg, ...);
+uint sk_cont_wake_loop(long task, word_t state, word_t rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_wake_task(word_t arg, long task);
 void sk_cont_wake_task2(word_t arg, long task);
 void sk_continuation_create(word_t kind_hi, word_t param_2);
@@ -310,7 +310,7 @@ void sk_task_local_release_all(word_t *store, word_t task);
 void sk_task_local_release_all2(word_t task);
 word_t sk_task_local_set_alloc(word_t block, word_t flags, int kind);
 void sk_task_local_set_value(word_t key, word_t value, long meta);
-bool sk_task_local_value_release(uint *value, long block);
+bool sk_task_local_value_release(uint *value, long block, ...);
 word_t sk_task_record_alloc(word_t size, ...);
 void sk_task_resume_trampoline(void);
 uint sk_task_suspend_switch(word_t a, long b, word_t c, uint d, word_t e, long f, word_t g, uint h);
@@ -324,6 +324,9 @@ void sk_vtable_dispatch_10(word_t *obj);
 void sk_vtable_dispatch_20(word_t *obj);
 
 /* ---- Tiny region helpers used before their definitions. ---- */
+word_t sk_task_local_store(word_t store, ...);
+word_t sk_cont_buf_destroy(word_t buf, ...);
+
 long sk_ptr_offset_8(long p);
 ulong sk_status_high(long p);
 long sk_task_local_root(word_t task);
@@ -412,7 +415,7 @@ long sk_task_continuation_init(long task, word_t flags)
                 word_t slot_hi = *(word_t *)(owner + 0x68);
                 word_t *arr = (word_t *)&node;
                 word_t *pair = (word_t *)&slot;
-                sk_cont_wake_loop(owner, (word_t)node, &slot, 0x40af00, &arr);
+                sk_cont_wake_loop(owner, (word_t)node, (word_t)&slot, 0x40af00, (word_t)&arr);
                 sk_swift_destroy_small(owner + 0x50);
                 sk_ctx_restore(0);
                 sk_ctx_save(0);
@@ -448,7 +451,7 @@ long sk_task_continuation_init(long task, word_t flags)
                 if (-1 < DAT_006c0c78) {
                         sk_once_gate(&DAT_006c0c78, 0x40b408);
                 }
-                sk_registry_add(0x6c0c48, &wake_slot, &wake_slot);
+                sk_registry_add((word_t *)0x6c0c48, &wake_slot, &wake_slot);
                 if ((extraout_x1 & 1) == 0) {
                         sk_precond_fatal(0, 0x5dc8ec); /* "Initializing continuation for ta..." */
                 }
@@ -1181,7 +1184,7 @@ void sk_cont_record_alloc(word_t *block, word_t *rec)
 
         next = *block;
         if (next != 0 && (word_t *)(next + 0x10) == rec) {
-                word_t hdr = *next;
+                word_t hdr = next;
                 *(int *)(hdr + 0x14) = ((int)next - (int)hdr) - 0x20;
                 *block = hdr;
                 return;
@@ -1212,7 +1215,7 @@ void sk_cont_record_free(word_t block, word_t rec)
  * set, fall through to the suspend path (FUN_0040bed0 with the callbacks
  * FUN_0040cc24/FUN_0040cc28). Returns bit0 of the outcome.
  * Confidence: low */
-uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
+uint sk_cont_wake_loop(long task, word_t state, word_t rec, word_t cb,
                        word_t cb_arg, ...)
 {
         word_t s_lo, s_hi;
@@ -1224,21 +1227,22 @@ uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
         word_t *cb_slot;
         word_t newstate;
 
-        s_lo = (ulong)(uint)*rec;
+        word_t *recp2 = (word_t *)rec;
+        s_lo = (ulong)(uint)*recp2;
         newstate = state;
         cb_slot = (word_t *)cb;
         cb_arg2 = cb_arg;
-        if (((uint)*rec >> 9 & 1) == 0) {
-                s_hi = rec[1];
+        if (((uint)*recp2 >> 9 & 1) == 0) {
+                s_hi = recp2[1];
                 do {
                         *(ulong *)(newstate + 8) = s_hi;
                         slot = (word_t *)(s_lo & 0xffffffff);
-                        result = ((vcode)cb_slot)(cb_arg2, *rec, rec[1], (word_t)&slot);
+                        result = ((vcode)cb_slot)(cb_arg2, *recp2, recp2[1], (word_t)&slot);
                         if (result == 0) {
                                 goto wake_done;
                         }
-                        s_old = *rec;
-                        w = rec[1];
+                        s_old = *recp2;
+                        w = recp2[1];
                         s_lo = *(ulong *)(task + 0x60);
                         s_hi = *(ulong *)(task + 0x68);
                         if ((s_lo == w) && (s_hi == s_old)) {
@@ -1248,12 +1252,12 @@ uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
                         if (s_lo == s_old && s_hi == w) {
                                 goto wake_done;
                         }
-                        *rec = s_lo;
-                        rec[1] = s_hi;
+                        *recp2 = s_lo;
+                        recp2[1] = s_hi;
                 } while (((uint)s_lo >> 9 & 1) == 0);
         } else {
-                s_lo = *rec;
-                s_hi = rec[1];
+                s_lo = *recp2;
+                s_hi = recp2[1];
         }
         flag = 0;
         slot = &newstate;
@@ -1393,7 +1397,7 @@ uint sk_cont_record_commit(word_t rec, word_t cb, word_t cb_arg, ...)
         task = sk_swift_current_task();
         state_lo = *(word_t *)(task + 0x60);
         state_hi = *(word_t *)(task + 0x68);
-        result = sk_cont_wake_loop(task, rec, &state_lo, cb, cb_arg);
+        result = sk_cont_wake_loop(task, rec, (word_t)&state_lo, cb, cb_arg);
         return result & 1;
 }
 
@@ -1481,8 +1485,7 @@ void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t ar
         st2 = arg5;
         s = cb;
         s2 = cb_arg;
-        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68),
-                        0x40cd08, &pair, 0x40cdac, &flag);
+        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68), 0x40cd08, (word_t)&pair, 0x40cdac, (word_t)&flag);
         return;
 }
 
@@ -1527,8 +1530,7 @@ word_t sk_cont_suspend_and_check(long task)
         value = 0;
         status = 0;
         slot = &value;
-        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68),
-                        0x40cde8, &local, 0);
+        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68), 0x40cde8, (word_t)&local, 0);
         return (status << 8) | value;   /* 16-byte {lo,hi} register pair */
 }
 
@@ -1548,7 +1550,7 @@ word_t sk_cont_suspend_simple(word_t task)
         flag = 0;
         slot = &flag;
         value = &out;
-        sk_cont_dequeue(task, 0x40ce18, &slot, 0);
+        sk_cont_dequeue(task, 0x40ce18, (word_t)&slot, 0, 0);
         return out;
 }
 
@@ -1577,7 +1579,7 @@ void sk_cont_enqueue_record(long task, word_t a2, word_t a3, int enable)
         }
         state_lo = *(word_t *)(task + 0x60);
         state_hi = *(word_t *)(task + 0x68);
-        sk_cont_wake_loop(task, rec, &state_lo, 0x40ce4c, &flag);
+        sk_cont_wake_loop(task, (word_t)rec, (word_t)&state_lo, 0x40ce4c, (word_t)&flag);
         return;
 }
 
@@ -1597,7 +1599,7 @@ void sk_cont_cancel(word_t task)
         flag = 0;
         slot = &flag;
         recp = &rec;
-        sk_cont_dequeue(task, 0x40ce60, &slot, 0);
+        sk_cont_dequeue(task, 0x40ce60, (word_t)&slot, 0, 0);
         long recv = rec;
         if ((*(byte *)(rec + 0x10) & 1) != 0) {
                 sk_swift_release(*(word_t *)(rec + 0x18));
@@ -1632,7 +1634,7 @@ void sk_cont_enqueue_str(long task, word_t str)
         rec[2] = copy;
         state_lo = *(word_t *)(task + 0x60);
         state_hi = *(word_t *)(task + 0x68);
-        sk_cont_wake_loop(task, rec, &state_lo, 0x40ce94, &flag);
+        sk_cont_wake_loop(task, (word_t)rec, (word_t)&state_lo, 0x40ce94, (word_t)&flag);
         return;
 }
 
@@ -1653,7 +1655,7 @@ void sk_cont_exception(long task)
                 flag = 0;
                 slot = &flag;
                 recp = &rec;
-                sk_cont_dequeue(task, 0x40ce9c, &slot, 0);
+                sk_cont_dequeue(task, 0x40ce9c, (word_t)&slot, 0, 0);
                 long recv = rec;
                 sk_cont_record_free(task, *(word_t *)(rec + 0x10));
                 sk_cont_record_free(task, recv);
@@ -1678,8 +1680,7 @@ word_t sk_cont_exception_check(long task)
         slot = &value;
         value = 0;
         recp = &slot;
-        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68),
-                        0x40ced0, &recp, 0);
+        sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68), 0x40ced0, (word_t)&recp, 0);
         return value;
 }
 
@@ -1728,8 +1729,7 @@ void sk_cont_wake_task(word_t arg, long task)
         recp2 = &slot;
         rec = task;
         arg = argv;
-        sk_cont_suspend(rq, *(word_t *)(rq + 0x60), *(word_t *)(rq + 0x68),
-                        0x40cf00, &recp2, 0);
+        sk_cont_suspend(rq, *(word_t *)(rq + 0x60), *(word_t *)(rq + 0x68), 0x40cf00, (word_t)&recp2, 0);
         return;
 }
 
@@ -1810,8 +1810,7 @@ void sk_task_local_check_wake(word_t arg, long task)
         if (*(long *)(root + 0x10) != 0) {
                 slot = &value;
                 recp = &slot;
-                sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68),
-                                0x40cf14, &recp, 0);
+                sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68), 0x40cf14, (word_t)&recp, 0);
         }
         return;
 }
@@ -1831,7 +1830,7 @@ void sk_record_commit(long rec, word_t a2, word_t param_3)
                 return;
         }
         if (*(int *)(rec + 0x20) == 1) {
-                sk_cont_set_status(*(word_t *)(rec + 0x10), param_3);
+                sk_cont_set_status(*(word_t *)(rec + 0x10), param_3, 0, 0);
                 return;
         }
         return;
@@ -1911,8 +1910,7 @@ void sk_cont_wake_task2(word_t arg, long task)
         recp2 = &slot;
         rec = task;
         arg = argv;
-        sk_cont_suspend(rq, *(word_t *)(rq + 0x60), *(word_t *)(rq + 0x68),
-                        0x40ca3c, &recp2, 0);
+        sk_cont_suspend(rq, *(word_t *)(rq + 0x60), *(word_t *)(rq + 0x68), 0x40ca3c, (word_t)&recp2, 0);
         return;
 }
 
@@ -1935,8 +1933,7 @@ byte sk_task_has_waiters(void)
                 flag = 0;
                 slot = &flag;
                 recp = &slot;
-                sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68),
-                                0x40ca84, &recp, 0);
+                sk_cont_suspend(task, *(word_t *)(task + 0x60), *(word_t *)(task + 0x68), 0x40ca84, (word_t)&recp, 0);
         }
         return flag & 1;
 }
@@ -2022,8 +2019,10 @@ void sk_task_local_pop(long task, long node)
 {
         long cur;
         long next;
+        long prev;
 
         cur = *(long *)(task + 0x18);
+        prev = 0;
         if (node == *(long *)(task + 0x18)) {
                 next = *(long *)(node + 200);
                 *(long *)(task + 0x18) = next;
@@ -2032,17 +2031,16 @@ void sk_task_local_pop(long task, long node)
                         return;
                 }
         } else {
-                do {
-                        long prev = cur;
-                        if (prev == 0) {
+                while (cur != 0 && cur != node) {
+                        prev = cur;
+                        cur = *(long *)(cur + 200);
+                }
+                if (cur == node) {
+                        *(word_t *)(prev + 200) = *(word_t *)(node + 200);
+                        if (node == *(long *)(task + 0x20)) {
+                                *(long *)(task + 0x20) = prev;
                                 return;
                         }
-                        cur = *(long *)(prev + 200);
-                } while (*(long *)(prev + 200) != node);
-                *(word_t *)(prev + 200) = *(word_t *)(node + 200);
-                if (node == *(long *)(task + 0x20)) {
-                        *(long *)(task + 0x20) = prev;
-                        return;
                 }
         }
         return;
@@ -2106,7 +2104,7 @@ void sk_task_group_init(word_t *group, word_t parent)
         group[1] = 2;
         slot = &rec;
         rec = group;
-        sk_cont_record_commit(group + 1, 0x40ea3c, &slot);
+        sk_cont_record_commit((word_t)(group + 1), 0x40ea3c, (word_t)&slot);
         return;
 }
 
@@ -2118,7 +2116,7 @@ void sk_task_group_init(word_t *group, word_t parent)
  * Confidence: low */
 void sk_task_group_init_variant(word_t a, word_t b, word_t c)
 {
-        sk_task_group_init_full(c, a, b);
+        sk_task_group_init_full(c, a, (word_t *)b);
         return;
 }
 
@@ -2189,7 +2187,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
         LOAcquire();
         st = *cnt;
         *cnt = st | 0x4000000000000000;
-        live = (*(vcode *)(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))((word_t)group);
         mask = 0x3fffffffffffffff;
         if (live == 0) {
                 mask = 0x7fffffff;
@@ -2201,7 +2199,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                         if ((st & 0x3fffffff80000000) != 0) {
                                 mask = st | 0x4000000000000000;
                                 do {
-                                        live = (*(vcode *)(*group + 0x18))(group);
+                                        live = (*(vcode *)(*group + 0x18))((word_t)group);
                                         long delta = -0x4000000000000001;
                                         if (live == 0) {
                                                 delta = -0x4000000080000001;
@@ -2237,14 +2235,14 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                                                                 }
                                                         } else {
                                                                 token = *(word_t *)(task + 0xa0);
-                                                                sk_cont_resume_async(task, token, &rec_lo, 0x4090d8, &slot);
+                                                                sk_cont_resume_async(task, token, &rec_lo, 0x4090d8, (word_t)&slot);
                                                                 sk_cont_record_free(task, token);
                                                                 *(word_t *)(task + 0xa0) = 0;
                                                         }
                                                         sk_ctx_restore2(task);
                                                         sk_swift_deinit_small(task + 0x50);
                                                 }
-                                                sk_cont_record_pop(group + 7, &rec_lo);
+                                                sk_cont_record_pop((long)(group + 7), (word_t)&rec_lo);
                                                 recv = rec_lo & 3;
                                                 if (recv == 1) {
                                                         sk_precond_fatal(0, 0x5dca8c);
@@ -2282,13 +2280,13 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                                 node[1] = 0;
                                 *(uint *)(node + 4) = 3;
                                 node[5] = task;
-                                node[2] = group;
+                                node[2] = (word_t)group;
                                 *(word_t **)(task + 0xa0) = node;
                                 rec_lo = *(ulong *)(task + 0x60);
                                 rec_hi = *(ulong *)(task + 0x68);
                                 slot = &node;
                                 pair = &rec_lo;
-                                sk_cont_wake_loop(task, node, &rec_lo, 0x40af00, &slot);
+                                sk_cont_wake_loop(task, (word_t)node, (word_t)&rec_lo, 0x40af00, (word_t)&slot);
                                 sk_swift_destroy_small(task + 0x50);
                                 sk_ctx_restore(0);
                         }
@@ -2309,7 +2307,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                         LOAcquire();
                         st = group[5];
                         group[5] = st | 0x4000000000000000;
-                        live = (*(vcode *)(*group + 0x18))(group);
+                        live = (*(vcode *)(*group + 0x18))((word_t)group);
                         mask = 0x3fffffffffffffff;
                         if (live == 0) {
                                 mask = 0x7fffffff;
@@ -2326,13 +2324,13 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
 drain:
         rec_lo = mask;
         rec2 = st;
-        sk_cont_result_dispatch(result, &rec_lo);
+        sk_cont_result_dispatch((long)result, (word_t)&rec_lo);
         if (st != 0) {
-                sk_cont_wake_task(group, st);
+                sk_cont_wake_task((word_t)group, (long)st);
                 sk_swift_release(st);
         }
         cb = *(word_t **)(task + 0x38);
-        (*cb)(cb, task + 0x38 & 0xffffffffffff | 0x2c42000000000000);
+        ((vcode)cb)((word_t)cb, task + 0x38 & 0xffffffffffff | 0x2c42000000000000);
         return;
 }
 
@@ -2387,18 +2385,18 @@ uint sk_task_group_end(long *group, word_t accepting)
         count = group[5];
         group[5] = count + 1;
         bits = count + 1;
-        i = (*(vcode *)(*group + 0x18))();
+        i = ((vcode)(*(word_t *)(*group + 0x18)))(0);
         mask = 0x3fffffffffffffff;
         if (i == 0) {
                 mask = 0x7fffffff;
         }
-        i = (*(vcode *)(*group + 0x18))(group);
+        i = (*(vcode *)(*group + 0x18))((word_t)group);
         v = 0x3fffffffffffffff;
         if (i == 0) {
                 v = 0x7fffffff;
         }
         if ((mask & bits) == v) {
-                (*(vcode *)(*group + 0x18))(group);
+                (*(vcode *)(*group + 0x18))((word_t)group);
                 fmt[0] = 0;
                 fmt[1] = 0;
                 fmt[2] = 0;
@@ -2415,7 +2413,7 @@ uint sk_task_group_end(long *group, word_t accepting)
                         p = (word_t *)0x5d6ff3;
                 }
                 sk_str_append2(&fmt, p);
-                mask = (*(vcode *)(*group + 0x18))(group);
+                mask = (*(vcode *)(*group + 0x18))((word_t)group);
                 if ((mask & 1) == 0) {
                         sk_str_append2(&fmt, 0x5dcb81);
                         sk_error_fmt3(&fmt2, bits >> 0x1f & 0x7fffffff);
@@ -2431,7 +2429,7 @@ uint sk_task_group_end(long *group, word_t accepting)
                         }
                 }
                 sk_str_append2(&fmt, 0x5dcb85);
-                i = (*(vcode *)(*group + 0x18))(group);
+                i = (*(vcode *)(*group + 0x18))((word_t)group);
                 mask = 0x3fffffffffffffff;
                 if (i == 0) {
                         mask = 0x7fffffff;
@@ -2545,7 +2543,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
         result[3] = child;
         group_tail = group[0xd];
         pending = group[5];
-        live = (*(vcode *)(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))((word_t)group);
         mask = 0x3fffffffffffffff;
         if (live == 0) {
                 mask = 0x7fffffff;
@@ -2554,7 +2552,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                 first = false;
                 do {
                         if ((want_result != 0) &&
-                            (live = (*(vcode *)(*group + 0x18))(group), live != 0) &&
+                            (live = (*(vcode *)(*group + 0x18))((word_t)group), live != 0) &&
                             (group[0xc] == 0)) {
                                 sk_task_group_store(group + 7, want_result | 1);
                         }
@@ -2565,13 +2563,13 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                                 nodeptr[1] = 0;
                                 *(uint *)(nodeptr + 4) = 3;
                                 nodeptr[5] = task;
-                                nodeptr[2] = group;
+                                nodeptr[2] = (word_t)group;
                                 *(word_t **)(task + 0xa0) = nodeptr;
                                 rec_lo = *(ulong *)(task + 0x60);
                                 rec_hi = *(ulong *)(task + 0x68);
                                 slot = &nodeptr;
                                 pair = &rec_lo;
-                                sk_cont_wake_loop(task, nodeptr, &rec_lo, 0x40af00, &slot);
+                                sk_cont_wake_loop(task, (word_t)nodeptr, (word_t)&rec_lo, 0x40af00, (word_t)&slot);
                                 sk_swift_destroy_small(task + 0x50);
                                 sk_ctx_restore(0);
                         }
@@ -2593,7 +2591,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                         sk_task_resume(group[3], 0, 0);
                         sk_ctx_save2(token);
                         pending = group[5];
-                        live = (*(vcode *)(*group + 0x18))(group);
+                        live = (*(vcode *)(*group + 0x18))((word_t)group);
                         mask = 0x3fffffffffffffff;
                         if (live == 0) {
                                 mask = 0x7fffffff;
@@ -2601,12 +2599,12 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                         first = true;
                 } while ((mask & pending) != 0);
         }
-        live = (*(vcode *)(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))((word_t)group);
         if (live == 0) {
                 mask = 0;
                 pending = 0;
         } else {
-                live = sk_cont_record_pop(group + 7, &rec_lo);
+                live = sk_cont_record_pop((long)(group + 7), (word_t)&rec_lo);
                 if (live == 0) {
                         mask = 0;
                         pending = 0;
@@ -2637,13 +2635,13 @@ done_pop:
                 rec_hi = mask;
                 tmp = group_tail;
                 rec = recv;
-                sk_cont_result_dispatch(result, &rec_lo);
+                sk_cont_result_dispatch((long)result, (word_t)&rec_lo);
         } else {
                 result[2] = want_result;
                 sk_swift_retain(want_result);
         }
         if (recv != 0) {
-                sk_cont_wake_task(group, recv);
+                sk_cont_wake_task((word_t)group, (long)recv);
                 sk_swift_release(recv);
         }
         (**(void (**)(word_t))(task + 0x38))(task + 0x38 & 0xffffffffffff | 0x2c42000000000000);
@@ -2684,7 +2682,7 @@ void sk_task_group_init_full(word_t parent, uint flags, word_t *group)
         *group = meta;
         slot = &rec;
         rec = group;
-        sk_cont_record_commit(group + 1, 0x40ea3c, &slot);
+        sk_cont_record_commit((word_t)(group + 1), 0x40ea3c, (word_t)&slot);
         return;
 }
 
@@ -2696,7 +2694,7 @@ void sk_task_local_deinit_a(void)
 {
         word_t store;
 
-        store = (word_t)sk_task_local_store((word_t *)0);
+        store = sk_task_local_store(0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -2709,7 +2707,7 @@ void sk_task_local_deinit_b(void)
 {
         word_t store;
 
-        store = (word_t)sk_task_local_store((word_t *)0);
+        store = sk_task_local_store(0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -2721,8 +2719,8 @@ void sk_task_local_deinit_b(void)
  * Confidence: low */
 void sk_task_local_invoke(word_t *obj)
 {
-        sk_cont_resume_record(obj + 1, 0);
-        (*(vcode *)*obj)(obj);
+        sk_cont_resume_record((word_t)(obj + 1), 0, 0);
+        (*(vcode *)*obj)((word_t)obj);
         return;
 }
 
@@ -2761,7 +2759,7 @@ void sk_task_group_child_end(long *group, long child, long body)
                 if ((st >> 0x3e & 1) == 0) {
                         goto no_wait;
                 }
-                live = (*(vcode *)(*group + 0x18))(group);
+                live = (*(vcode *)(*group + 0x18))((word_t)group);
                 mask = 0x3fffffffffffffff;
                 if (live == 0) {
                         mask = 0x7fffffff;
@@ -2773,9 +2771,9 @@ void sk_task_group_child_end(long *group, long child, long body)
                 waiting = group[6];
                 group[6] = tail;
                 if (waiting != 0) {
-                        live = sk_cont_record_pop(group + 7, &rec);
+                        live = sk_cont_record_pop((long)(group + 7), (word_t)&rec);
                         if (live != 0) {
-                                sk_cont_wake_task(group, child);
+                                sk_cont_wake_task((word_t)group, (long)child);
                                 if ((rec & 3) != 3) {
                                         if ((rec & 3) != 1) {
                                                 fatal = (char *)0x5dca22;
@@ -2799,7 +2797,7 @@ void sk_task_group_child_end(long *group, long child, long body)
                 sk_task_local_check_wake(child, token);
         }
         if ((st >> 0x3e & 1) != 0) {
-                live = (*(vcode *)(*group + 0x18))(group);
+                live = (*(vcode *)(*group + 0x18))((word_t)group);
                 mask = 0x3fffffffffffffff;
                 if (live == 0) {
                         mask = 0x7fffffff;
@@ -2809,8 +2807,8 @@ void sk_task_group_child_end(long *group, long child, long body)
                         waiting = group[6];
                         group[6] = tail;
                         if (waiting != 0) {
-                                live = sk_cont_record_pop(group + 7, &rec);
-                                sk_cont_wake_task(group, child);
+                                live = sk_cont_record_pop((long)(group + 7), (word_t)&rec);
+                                sk_cont_wake_task((word_t)group, (long)child);
                                 if (live == 0) {
                                         sk_cont_deliver(group, child, 1);
                                         return;
@@ -2832,7 +2830,7 @@ void sk_task_group_child_end(long *group, long child, long body)
                 return;
         }
 no_wait:
-        sk_cont_wake_task(group, child);
+        sk_cont_wake_task((word_t)group, (long)child);
         return;
 deliver_rec:
         sk_cont_deliver(group, rec & 0xfffffffffffffffc, 1);
@@ -2853,7 +2851,7 @@ fatal_deliver:
 void sk_task_group_store2(word_t group, word_t result)
 {
         sk_swift_retain(result);
-        sk_task_group_store(sk_reg_x10 + 0x38, sk_reg_x9 | 3);
+        sk_task_group_store((word_t *)(sk_reg_x10 + 0x38), sk_reg_x9 | 3);
         return;
 }
 
@@ -2879,7 +2877,7 @@ word_t sk_task_local_store(word_t store, ...)
         while ((diff >> 3) > 2) {
                 sk_free(*end, 0x1000, 7);
                 p = (word_t *)stp[9];
-                end = (word_t *)(store[8] + 8);
+                end = (word_t *)((word_t *)stp[8] + 8);
                 stp[8] = (word_t)end;
                 diff = (long)p - (long)end;
         }
@@ -2930,7 +2928,7 @@ bool sk_cont_record_pop(long queue, word_t out)
         if (count != 0) {
                 buf = *(word_t **)(queue + 8);
                 idx = *(ulong *)(queue + 0x20);
-                *out = *(word_t *)(buf[idx >> 9] + (idx & 0x1ff) * 8);
+                *(word_t *)out = *(word_t *)(buf[idx >> 9] + (idx & 0x1ff) * 8);
                 if (*(long *)(queue + 0x28) == 0) {
                         SK189_FATAL(0x40e2f0);
                 }
@@ -3009,7 +3007,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                                         count = (word_t)begin;
                                         q = (word_t *)q;
                                         dst = (word_t *)len;
-                                        sk_cont_buf_destroy(&old);
+                                        sk_cont_buf_destroy((word_t)&old);
                                         src = q;
                                 } else {
                                         count = ((long)len >> 3) + 1;
@@ -3078,7 +3076,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                         queue[3] = (word_t)head;
                         newbuf = begin;
                         dst = end;
-                        sk_cont_buf_destroy(&old);
+                        sk_cont_buf_destroy((word_t)&old);
                         goto write_slot;
                 }
                 begin = (word_t *)sk_swift_alloc(0x1000, 7);
@@ -3114,7 +3112,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                                         dst = (word_t *)queue[3];
                                         queue[2] = (word_t)head;
                                         queue[3] = len + cap * 8;
-                                        sk_cont_buf_destroy(&old);
+                                        sk_cont_buf_destroy((word_t)&old);
                                         end = (word_t *)queue[2];
                                 } else {
                                         count = (((long)(cap - len) >> 3) + 1) / 2;
@@ -3128,7 +3126,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                                         queue[1] = cap + count * -8;
                                 }
                         }
-                        *end = begin;
+                        *end = (word_t)begin;
                         queue[2] = (word_t)(end + 1);
                         goto write_slot;
                 }
@@ -3167,12 +3165,12 @@ void sk_task_group_store(word_t *queue, word_t record)
                                         } while (count != 0);
                                 }
                                 old = (word_t *)*queue;
-                                *queue = q;
+                                *queue = (word_t)q;
                                 queue[1] = (word_t)end;
                                 dst = (word_t *)queue[3];
                                 queue[2] = (word_t)head;
-                                queue[3] = q + count * 8;
-                                sk_cont_buf_destroy(&old);
+                                queue[3] = (word_t)(q + count * 8);
+                                sk_cont_buf_destroy((word_t)&old);
                                 len = queue[1];
                         }
                 }
@@ -3184,7 +3182,7 @@ void sk_task_group_store(word_t *queue, word_t record)
                 old = (word_t *)*begin;
                 queue[1] = (word_t)(begin + 1);
         }
-        sk_cont_buf_destroy(queue, &old);
+        sk_cont_buf_destroy((word_t)queue, (word_t)&old);
 write_slot:
         *(word_t *)(*(long *)(queue[1] + (queue[5] + queue[4] >> 9) * 8) +
                     (queue[5] + queue[4] & 0x1ff) * 8) = record;
@@ -3241,7 +3239,7 @@ void sk_cont_buf_append(word_t *buf, word_t *value)
                         cap = buf[3];
                         buf[2] = (word_t)q;
                         buf[3] = base + cap * 8;
-                        sk_cont_buf_destroy(&old);
+                        sk_cont_buf_destroy((word_t)&old);
                         end = (word_t *)buf[2];
                 } else {
                         off = (((long)(start - base) >> 3) + 1) / 2;
@@ -3288,7 +3286,7 @@ void sk_task_local_deinit_c(void)
 {
         word_t store;
 
-        store = (word_t)sk_task_local_store((word_t *)0);
+        store = sk_task_local_store(0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -3301,7 +3299,7 @@ void sk_task_local_deinit_d(void)
 {
         word_t store;
 
-        store = (word_t)sk_task_local_store((word_t *)0);
+        store = sk_task_local_store(0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -3312,8 +3310,8 @@ void sk_task_local_deinit_d(void)
  * Confidence: low */
 void sk_task_local_invoke2(word_t *obj)
 {
-        sk_cont_resume_record(obj + 1, 0);
-        (*(vcode *)*obj)(obj);
+        sk_cont_resume_record((word_t)(obj + 1), 0, 0);
+        (*(vcode *)*obj)((word_t)obj);
         return;
 }
 
@@ -3341,7 +3339,7 @@ void sk_task_group_store3(word_t group, word_t result)
         if (low_flag != 0) {
                 kind = 3;
         }
-        sk_task_group_store(sk_reg_x11 + 0x38, kind | sk_reg_x10);
+        sk_task_group_store((word_t *)(sk_reg_x11 + 0x38), kind | sk_reg_x10);
         return;
 }
 
@@ -3359,7 +3357,7 @@ void sk_task_group_store4(word_t group, word_t result)
         if (low_flag2 != 0) {
                 kind = 3;
         }
-        sk_task_group_store(sk_reg_x11 + 0x38, kind | sk_reg_x10);
+        sk_task_group_store((word_t *)(sk_reg_x11 + 0x38), kind | sk_reg_x10);
         return;
 }
 
@@ -3389,19 +3387,21 @@ void sk_task_resume_trampoline(void)
  * Confidence: low */
 void sk_cont_result_dispatch(long consumer, word_t rec)
 {
+        word_t *rp = (word_t *)rec;
         word_t kind;
         word_t value;
         word_t hook;
+        uint flag;
 
-        kind = *rec;
+        kind = *rp;
         if (kind == 0) {
                 value = *(word_t *)(consumer + 0x18);
-                hook = *(word_t *)(*(long *)(rec[2] + -8) + 0x38);
-                uint flag = 1;
+                hook = *(word_t *)(*(long *)(rp[2] + -8) + 0x38);
+                flag = 1;
         } else {
                 if (kind != 2) {
                         if (kind == 3) {
-                                value = rec[1];
+                                value = rp[1];
                                 *(long *)(consumer + 0x10) = value;
                                 sk_swift_retain(value);
                                 return;
@@ -3409,9 +3409,9 @@ void sk_cont_result_dispatch(long consumer, word_t rec)
                         return;
                 }
                 value = *(word_t *)(consumer + 0x18);
-                (**(void (**)(word_t, word_t))(*(long *)(rec[2] + -8) + 0x10))(value, rec[1]);
-                hook = *(word_t *)(*(long *)(rec[2] + -8) + 0x38);
-                uint flag = 0;
+                (**(void (**)(word_t, word_t))(*(long *)(rp[2] + -8) + 0x10))(value, rp[1]);
+                hook = *(word_t *)(*(long *)(rp[2] + -8) + 0x38);
+                flag = 0;
         }
         (**(void (**)(word_t, uint, int))hook)(value, flag, 1);
         return;
@@ -3428,12 +3428,12 @@ void sk_task_group_error(word_t *out)
         int rc;
         long buf;
 
-        rc = sk_error_str(0, 0, 0x5dcac1, &stack);
+        rc = sk_error_str(0, 0, 0x5dcac1, (word_t)0);
         *out = 0;
         if (-1 < rc) {
                 buf = sk_heap_alloc(rc + 1, 0x100004077774924);
                 if (buf != 0) {
-                        rc = sk_error_str(buf, rc + 1, 0x5dcac1, &stack);
+                        rc = sk_error_str(buf, rc + 1, 0x5dcac1, (word_t)0);
                         if (rc < 0) {
                                 sk_free(buf);
                         } else {
@@ -3631,16 +3631,16 @@ void sk_task_local_collect(word_t *out, word_t task, long store)
                                 }
                                 goto finalize;
                         }
-                        sk_tl_buf_insert(&slot, node + 1, node + 1);
+                        sk_tl_buf_insert((word_t)&slot, (word_t *)(node + 1), (word_t *)(node + 1));
                         if ((extraout_x1 & 1) != 0) {
-                                sk_task_local_destructure(node, task);
+                                sk_task_local_destructure((long)node, task);
                         }
                         node = (word_t *)(*node & 0xfffffffffffffff8);
                 } while (node != 0);
                 node = 0;
 finalize:
                 *out = *out & 7 | (word_t)node;
-                sk_tl_buf_destroy(&slot, value);
+                sk_tl_buf_destroy((word_t)&slot, (word_t *)value);
         }
         return;
 }
@@ -3711,7 +3711,7 @@ word_t sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag)
         cell = (word_t *)(*DAT_0068a6d8)(task);
         value = (word_t *)*cell;
         if (extraout_x8 != 0) {
-                value = extraout_x9;
+                value = (word_t *)extraout_x9;
         }
         v = *value;
         pad = (ulong)*(byte *)(*(long *)(meta - 8) + 0x50);
@@ -3739,7 +3739,7 @@ word_t sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag)
  * continuation block if param_2 is non-null, else via sk_free).  Returns
  * whether the value kind was 2 (self-contained task-local).
  * Confidence: low */
-bool sk_task_local_value_release(uint *value, long block)
+bool sk_task_local_value_release(uint *value, long block, ...)
 {
         uint kind;
         word_t pad;
@@ -3753,7 +3753,7 @@ bool sk_task_local_value_release(uint *value, long block)
         if (block == 0) {
                 sk_free(value);
         } else {
-                sk_cont_record_free(block, value);
+                sk_cont_record_free(block, (word_t)value);
         }
         return kind == 2;
 }
@@ -3803,15 +3803,15 @@ void sk_task_local_release_all(word_t *store, word_t task)
         hi = 0;
         for (node = (word_t *)*store; node != 0; node = (word_t *)(*node & 0xfffffffffffffff8)) {
                 if (((uint)*node >> 2 & 1) == 0) {
-                        sk_tl_buf_insert(&slot, node + 1, node + 1);
+                        sk_tl_buf_insert((word_t)&slot, (word_t *)(node + 1), (word_t *)(node + 1));
                         if ((extraout_x1 & 1) != 0) {
-                                sk_task_local_destructure(node, task);
+                                sk_task_local_destructure((long)node, task);
                         }
                 } else if ((~(uint)*node & 6) == 0) {
                         break;
                 }
         }
-        sk_tl_buf_destroy(&slot, value);
+        sk_tl_buf_destroy((word_t)&slot, (word_t *)value);
         return;
 }
 
@@ -3839,7 +3839,7 @@ void sk_task_local_set_value(word_t key, word_t value, long meta)
                 if (store_root == 0) {
                         store_root = (word_t *)sk_heap_alloc(8, 0x2004093837f09);
                         *store_root = 0;
-                        *store = store_root;
+                        *store = (word_t)store_root;
                 }
                 task = 0;
         } else {
@@ -3916,7 +3916,7 @@ void sk_task_local_clear(void)
         task = sk_swift_current_task();
         if (task != 0) {
                 *(ulong *)(task + 0x88) = **(ulong **)(task + 0x88) & 0xfffffffffffffff8;
-                sk_task_local_value_release();
+                sk_task_local_value_release((uint *)0, 0);
                 return;
         }
         store = (word_t *)(*DAT_0068a6d8)();
@@ -3952,7 +3952,7 @@ void sk_task_local_release_all2(word_t task)
                 v = extraout_x9;
         }
         if (v != 0) {
-                sk_task_local_release_all(v, task);
+                sk_task_local_release_all((word_t *)v, task);
                 return;
         }
         return;
@@ -3968,12 +3968,12 @@ void sk_task_local_error(word_t *out)
         int rc;
         long buf;
 
-        rc = sk_error_str(0, 0, 0x5dcb89, &stack);
+        rc = sk_error_str(0, 0, 0x5dcb89, (word_t)0);
         *out = 0;
         if (-1 < rc) {
                 buf = sk_heap_alloc(rc + 1, 0x100004077774924);
                 if (buf != 0) {
-                        rc = sk_error_str(buf, rc + 1, 0x5dcb89, &stack);
+                        rc = sk_error_str(buf, rc + 1, 0x5dcb89, (word_t)0);
                         if (rc < 0) {
                                 sk_free(buf);
                         } else {
@@ -3992,8 +3992,8 @@ void sk_task_local_error(word_t *out)
 void sk_tl_buf_destroy(word_t buf, word_t *node)
 {
         if (node != 0) {
-                sk_tl_buf_destroy(buf, *node);
-                sk_tl_buf_destroy(buf, node[1]);
+                sk_tl_buf_destroy(buf, (word_t *)*node);
+                sk_tl_buf_destroy(buf, (word_t *)node[1]);
                 sk_free(node, 0x28, 7);
                 return;
         }
@@ -4038,7 +4038,7 @@ word_t sk_tl_buf_insert(word_t tree, word_t *key, word_t *node)
 link:
         p = (word_t *)sk_swift_alloc(0x28, 7);
         p[4] = *node;
-        sk_tl_buf_link(tree, q, p, p);
+        sk_tl_buf_link((word_t *)tree, (word_t)q, (word_t *)p, (word_t *)p);
         inserted = 1;
         p = p;
 found:
@@ -4057,11 +4057,11 @@ void sk_tl_buf_link(word_t *tree, word_t parent, word_t *where, word_t *node)
         *node = 0;
         node[1] = 0;
         node[2] = parent;
-        *where = node;
+        *where = (word_t)node;
         if (*(long *)*tree != 0) {
                 *tree = *(long *)*tree;
         }
-        sk_tl_rb_rebalance(tree[1], node);
+        sk_tl_rb_rebalance((word_t *)tree[1], (word_t *)node);
         tree[2] = tree[2] + 1;
         return;
 }
@@ -4146,9 +4146,9 @@ void sk_tl_rb_rebalance(word_t *tree, word_t *node)
                                         sib = (word_t *)grand[2];
                                         parent[2] = (word_t)sib;
                                         if (grand == (word_t *)*sib) {
-                                                *sib = parent;
+                                                *sib = (word_t)parent;
                                         } else {
-                                                sib[1] = parent;
+                                                sib[1] = (word_t)parent;
                                         }
                                         *parent = (word_t)grand;
                                         grand[2] = (word_t)parent;
@@ -4173,9 +4173,9 @@ recolor:
         sib = (word_t *)grand[2];
         uncle[2] = (word_t)sib;
         if (grand == (word_t *)*sib) {
-                *sib = uncle;
+                *sib = (word_t)uncle;
         } else {
-                sib[1] = uncle;
+                sib[1] = (word_t)uncle;
         }
         uncle[1] = (word_t)grand;
         grand[2] = (word_t)uncle;
@@ -4564,7 +4564,7 @@ long sk_cont_block_alloc(word_t *block, long size)
                         if (need + 0x10 + free_space <= (ulong)*(uint *)(p + 2)) {
                                 goto alloc_from_page;
                         }
-                        free_space = sk_cont_free_nodes(block);
+                        free_space = sk_cont_free_nodes((long)block, 0);
                         if (need <= free_space) {
                                 used = free_space;
                         }
@@ -4594,16 +4594,16 @@ long sk_cont_block_alloc(word_t *block, long size)
         if (head != 0) {
                 page = head;
         }
-        page[1] = p;
+        page[1] = (word_t)p;
         *(int *)(block + 2) = *(int *)(block + 2) + 2;
         page = (word_t *)*block;
         free_space = (ulong)*(uint *)((long)p + 0x14);
 alloc_from_page:
         head = (word_t *)((long)p + free_space + 0x20);
-        *head = page;
+        *head = (word_t)page;
         *(word_t **)((long)p + free_space + 0x28) = p;
         *(int *)((long)p + 0x14) = (int)need + (int)free_space + 0x10;
-        *block = head;
+        *block = (word_t)head;
         return (long)p + free_space + 0x30;
 }
 

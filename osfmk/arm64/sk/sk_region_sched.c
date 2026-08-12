@@ -12,6 +12,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "sk_internal.h"
+typedef struct { uint64_t lo; uint64_t hi; } reg16;
+typedef struct { uint64_t lo; uint32_t hi; } reg12;
+typedef struct sk_r4_u128 {
+    uint64_t lo;
+    uint64_t hi;
+} sk_r4_u128_t;
 extern uint8_t *per_cpu;
 extern uint64_t per_cpu_err;
 extern uint64_t stack_arg;
@@ -140,7 +146,7 @@ extern cl4_16_t FUN_0036993c(); /* 0x0036993c */
 extern uint64_t FUN_0036a940(); /* 0x0036a940 */
 extern uint64_t FUN_0036b118(); /* 0x0036b118 */
 extern uint64_t FUN_0036b270(); /* 0x0036b270 */
-extern uint64_t FUN_003a25d4(); /* 0x003a25d4 */
+extern reg16 FUN_003a25d4(); /* 0x003a25d4 */
 extern uint64_t FUN_0065a550(); /* 0x0065a550 */
 extern uint64_t FUN_00669298(); /* 0x00669298 */
 extern uint64_t FUN_0066a720(); /* 0x0066a720 */
@@ -628,7 +634,7 @@ extern unsigned long FUN_00027788();
 extern unsigned long FUN_000277b8();
 extern unsigned long FUN_000277e8();
 extern unsigned long FUN_00027818();
-extern unsigned long FUN_00041138();
+extern reg16 FUN_00041138();
 extern unsigned long FUN_0006b3f4();
 extern unsigned long FUN_0006b42c();
 extern unsigned long FUN_0006b6f4();
@@ -642,14 +648,14 @@ extern unsigned long FUN_0007791c();
 extern unsigned long FUN_0007c028();
 extern unsigned long FUN_0007c1a4();
 extern unsigned long FUN_000839d8();
-extern unsigned long FUN_0008409c();
+extern reg16 FUN_0008409c();
 extern unsigned long FUN_0008412c();
-extern unsigned long FUN_00084180();
-extern unsigned long FUN_00084220();
+extern reg16 FUN_00084180();
+extern reg16 FUN_00084220();
 extern unsigned long FUN_00084234();
 extern unsigned long FUN_0008e500();
 extern unsigned long FUN_0008e518();
-extern unsigned long FUN_0009e234();
+extern reg16 FUN_0009e234();
 extern unsigned long FUN_000a6e14();
 extern unsigned long FUN_000a6f68();
 extern unsigned long FUN_000a6f88();
@@ -659,7 +665,7 @@ extern unsigned long FUN_000dbf08();
 extern unsigned long FUN_000e15d8();
 extern unsigned long FUN_000e72b0();
 extern unsigned long FUN_000feb10();
-extern unsigned long FUN_00100c38();
+extern reg16 FUN_00100c38();
 extern unsigned long FUN_00100efc();
 extern unsigned long FUN_00117cc4();
 extern unsigned long FUN_00117d14();
@@ -669,7 +675,7 @@ extern unsigned long FUN_001a0754();
 extern unsigned long FUN_001a0774();
 extern unsigned long FUN_001a16e8();
 extern unsigned long FUN_001a1894();
-extern unsigned long FUN_001a26e0();
+extern reg16 FUN_001a26e0();
 extern unsigned long FUN_001a894c();
 extern unsigned long FUN_001afe4c();
 extern unsigned long FUN_001b89a4();
@@ -702,10 +708,10 @@ extern unsigned long FUN_00310ca4();
 extern unsigned long FUN_00310cd4();
 extern unsigned long FUN_00310d04();
 extern unsigned long FUN_00310d1c();
-extern unsigned long FUN_00310d34();
+extern reg16 FUN_00310d34();
 extern unsigned long FUN_00310d4c();
 extern unsigned long FUN_00310d68();
-extern unsigned long FUN_00310d80();
+extern reg16 FUN_00310d80();
 extern unsigned long FUN_00310d98();
 extern unsigned long FUN_00310da8();
 extern unsigned long FUN_00310dd8();
@@ -731,7 +737,7 @@ extern unsigned long FUN_003489c0();
 extern unsigned long FUN_00348a80();
 extern unsigned long FUN_00348abc();
 extern unsigned long FUN_00348b5c();
-extern unsigned long FUN_00348b94();
+extern reg16 FUN_00348b94();
 extern unsigned long FUN_00348bbc();
 extern unsigned long FUN_00348bd8();
 extern unsigned long FUN_00348ce8();
@@ -856,66 +862,66 @@ extern unsigned long FUN_0034fe64();
 extern unsigned long FUN_0034feb0();
 extern unsigned long FUN_0034fec0();
 extern unsigned long FUN_0034fed0();
-extern unsigned long FUN_003501fc();
+extern reg16 FUN_003501fc();
 extern unsigned long FUN_003502a8();
 extern unsigned long FUN_003503f8();
 extern unsigned long FUN_00350410();
 extern unsigned long FUN_00350428();
 extern unsigned long FUN_00350464();
 extern unsigned long FUN_00350470();
-extern unsigned long FUN_00350488();
+extern reg16 FUN_00350488();
 extern unsigned long FUN_00350494();
 extern unsigned long FUN_003504a0();
 extern unsigned long FUN_003504b8();
-extern unsigned long FUN_003504c4();
-extern unsigned long FUN_003504d0();
+extern reg16 FUN_003504c4();
+extern reg16 FUN_003504d0();
 extern unsigned long FUN_003504e8();
 extern unsigned long FUN_00350518();
 extern unsigned long FUN_00350530();
 extern unsigned long FUN_00350548();
 extern unsigned long FUN_00350560();
 extern unsigned long FUN_003505e8();
-extern unsigned long FUN_0035060c();
+extern reg16 FUN_0035060c();
 extern unsigned long FUN_00350618();
 extern unsigned long FUN_00350624();
-extern unsigned long FUN_00350630();
+extern reg16 FUN_00350630();
 extern unsigned long FUN_0035063c();
 extern unsigned long FUN_003506cc();
 extern unsigned long FUN_00350704();
 extern unsigned long FUN_00350780();
 extern unsigned long FUN_003507d4();
-extern unsigned long FUN_003507e0();
+extern reg16 FUN_003507e0();
 extern unsigned long FUN_00350810();
 extern unsigned long FUN_003508c0();
-extern unsigned long FUN_003508cc();
+extern reg16 FUN_003508cc();
 extern unsigned long FUN_003508fc();
-extern unsigned long FUN_00350944();
+extern reg16 FUN_00350944();
 extern unsigned long FUN_00350968();
 extern unsigned long FUN_00350974();
 extern unsigned long FUN_0035098c();
 extern unsigned long FUN_003509bc();
-extern unsigned long FUN_003509d4();
-extern unsigned long FUN_003509e0();
+extern reg16 FUN_003509d4();
+extern reg16 FUN_003509e0();
 extern unsigned long FUN_00350a10();
-extern unsigned long FUN_00350a34();
+extern reg16 FUN_00350a34();
 extern unsigned long FUN_00350a64();
 extern unsigned long FUN_00350a7c();
 extern unsigned long FUN_00350aa0();
 extern unsigned long FUN_00350adc();
-extern unsigned long FUN_00350b00();
+extern reg16 FUN_00350b00();
 extern unsigned long FUN_00350b24();
 extern unsigned long FUN_00350b48();
 extern unsigned long FUN_00350b54();
 extern unsigned long FUN_00350b90();
 extern unsigned long FUN_00350b9c();
 extern unsigned long FUN_00350bcc();
-extern unsigned long FUN_00350bf0();
+extern reg16 FUN_00350bf0();
 extern unsigned long FUN_00350c50();
 extern unsigned long FUN_00350db4();
 extern unsigned long FUN_00350ea4();
 extern unsigned long FUN_00351048();
 extern unsigned long FUN_003510c4();
-extern unsigned long FUN_003510dc();
+extern reg16 FUN_003510dc();
 extern unsigned long FUN_00351100();
 extern unsigned long FUN_00351118();
 extern unsigned long FUN_00351124();
@@ -979,7 +985,7 @@ extern unsigned long FUN_00352e0c();
 extern unsigned long FUN_00352e18();
 extern unsigned long FUN_00352ecc();
 extern unsigned long FUN_00352ee4();
-extern unsigned long FUN_00352efc();
+extern reg16 FUN_00352efc();
 extern unsigned long FUN_0035308c();
 extern unsigned long FUN_003531c0();
 extern unsigned long FUN_003531f0();
@@ -997,7 +1003,7 @@ extern unsigned long FUN_00353c0c();
 extern unsigned long FUN_00353c48();
 extern unsigned long FUN_00353c54();
 extern unsigned long FUN_00353efc();
-extern unsigned long FUN_003542e8();
+extern reg16 FUN_003542e8();
 extern unsigned long FUN_0035430c();
 extern unsigned long FUN_00354318();
 extern unsigned long FUN_00354364();
@@ -1007,7 +1013,7 @@ extern unsigned long FUN_00354714();
 extern unsigned long FUN_00354828();
 extern unsigned long FUN_003549c0();
 extern unsigned long FUN_003549d8();
-extern unsigned long FUN_00354a34();
+extern reg16 FUN_00354a34();
 extern unsigned long FUN_00354d20();
 extern unsigned long FUN_00354db8();
 extern unsigned long FUN_00354ef8();
@@ -1035,7 +1041,7 @@ extern unsigned long FUN_00357a9c();
 extern unsigned long FUN_00357bc4();
 extern unsigned long FUN_00357c44();
 extern unsigned long FUN_00357c74();
-extern unsigned long FUN_00357ca0();
+extern reg16 FUN_00357ca0();
 extern unsigned long FUN_00357cb4();
 extern unsigned long FUN_00358134();
 extern unsigned long FUN_00358238();
@@ -1269,13 +1275,10 @@ void FUN_0019e6bc();
 void FUN_0019e728();
 void FUN_0019e760();
 typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
-typedef struct { uint64_t lo; uint64_t hi; } reg16;
-typedef struct { uint64_t lo; uint32_t hi; } reg12;
 typedef void (*code_fn)();
 extern void *sk_alloc(unsigned long size, unsigned long tag);               /* FUN_0036a908 */
 extern void *sk_alloc_special(unsigned long a, unsigned long b, unsigned long tag); /* FUN_0036a940 */
-extern unsigned long sk_object_lock(unsigned long a, unsigned long b,
-                                    unsigned long c, void *dbg1, void *dbg2); /* FUN_00377824 */
+extern unsigned long sk_object_lock();
 extern unsigned long sk_lock_ref(); /* FUN_00377bec */
 extern unsigned long sk_lzcount(); /* LZCOUNT intrinsic */
 extern reg16 sk_cpu_current(); /* FUN_0008e518 */
@@ -1287,6 +1290,12 @@ extern void *swift_array_init();                                        /* FUN_0
 extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* FUN_003a261c */
 extern void *sk_current_tcb();                                          /* FUN_000867ec */
 extern void sk_schedule_yield(); /* FUN_00084180 */
+static inline uint64_t CONCAT17(uint64_t a, uint64_t b){ return (a<<8)|(b&0xff); }
+static inline uint64_t CONCAT71(uint64_t a, uint64_t b){ return (a<<7)|(b&0x7f); }
+static inline uint64_t SBORROW8(uint64_t a, uint64_t b){ return ((int64_t)a < (int64_t)b); }
+static inline uint64_t SCARRY8(uint64_t a, uint64_t b){ return (((uint64_t)a + (uint64_t)b) < (uint64_t)a); }
+static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v & 0xff); }
+static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
 uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01, stack_60, x1_01;
 reg16 cpu_leak, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
 uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
@@ -2439,10 +2448,6 @@ void cl4_swift_string_append4(); /* FUN_001bd6dc */
 void cl4_swift_string_append6(); /* FUN_001be528 */
 extern unsigned long cl4_swift_utf8_bounds2(); /* FUN_001b798c */
 extern unsigned long sk_swift_gstate_global;    /* DAT_006ade68 */
-typedef struct sk_r4_u128 {
-    uint64_t lo;
-    uint64_t hi;
-} sk_r4_u128_t;
 typedef uint64_t undefined8;
 typedef uint8_t undefined1;
 typedef uint64_t undefined7;
@@ -15203,8 +15208,13 @@ void FUN_0018dcdc(void)
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t FUN_0018dd04(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5)
+uint64_t FUN_0018dd04()
 {
+  uint64_t p1;
+  uint64_t p2;
+  uint64_t p3;
+  uint64_t p4;
+  uint64_t p5;
   uint64_t msgbuf2;
   uint64_t msgbuf3;
   uint64_t *cpu;
@@ -15253,8 +15263,15 @@ void FUN_0018ddb0(void)
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void FUN_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5, uint64_t p6, uint64_t p7)
+void FUN_0018ddd8()
 {
+  uint64_t * p1;
+  uint64_t p2;
+  uint64_t p3;
+  uint64_t * p4;
+  uint64_t p5;
+  uint64_t p6;
+  uint64_t p7;
   uint64_t msgbuf3;
   long err;
   uint32_t msgbuf2;
@@ -25206,8 +25223,7 @@ LAB_0019bf9c:
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c03c(void)
-
+void FUN_0019c03c()
 {
   code *UNRECOVERED_JUMPTABLE;
   
@@ -25232,9 +25248,11 @@ void FUN_0019c03c(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long param_3)
-
+void FUN_0019c078()
 {
+  unsigned long param_1;
+  unsigned long param_2;
+  unsigned long param_3;
   code *pcVar1;
     unsigned long err;
   long lVar3;
@@ -25307,8 +25325,7 @@ void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long para
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c20c(void)
-
+void FUN_0019c20c()
 {
   long unaff_x20;
   
@@ -25338,8 +25355,7 @@ void FUN_0019c20c(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-long FUN_0019c258(void)
-
+long FUN_0019c258()
 {
   unsigned long uVar1;
   long lVar2;
@@ -25406,8 +25422,7 @@ void FUN_0019c2b0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c2fc(void)
-
+void FUN_0019c2fc()
 {
   long unaff_x20;
   
@@ -25965,9 +25980,11 @@ void FUN_0019cbd4(unsigned long param_1,long param_2,unsigned long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019cc64(unsigned long param_1,long param_2,unsigned long param_3)
-
+void FUN_0019cc64()
 {
+  unsigned long param_1;
+  long param_2;
+  unsigned long param_3;
   if (param_2 < 0) {
                     /* WARNING: Subroutine does not return */
     sk_swift_fatal_error_2(sk_fatal_error_str,0xb,2,s_UnsafeMutablePointer_moveInitial_005cd790,0x37,2,
@@ -26076,9 +26093,11 @@ void FUN_0019cdf8(unsigned long param_1,long param_2,unsigned long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019ce60(unsigned long param_1,long param_2,unsigned long param_3)
-
+void FUN_0019ce60()
 {
+  unsigned long param_1;
+  long param_2;
+  unsigned long param_3;
   unsigned long uVar1;
   long extraout_x16;
   long unaff_x20;
@@ -26649,8 +26668,7 @@ void FUN_0019d960(unsigned long param_1,long param_2,unsigned long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3)
-
+void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3, ...)
 {
   unsigned long auVar1;
   
@@ -26819,7 +26837,7 @@ void FUN_0019dca8(long param_1,long param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019dd10(void)
+void FUN_0019dd10()
 {
   unsigned long uVar1;
   code *extraout_x8;
@@ -27325,8 +27343,7 @@ void FUN_0019e538(param_1, param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned long FUN_0019e578(void)
-
+unsigned long FUN_0019e578()
 {
   code *extraout_x8;
   
@@ -28326,8 +28343,7 @@ void FUN_0019f148(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019f1ec(unsigned long param_1)
-
+void FUN_0019f1ec(unsigned long param_1, ...)
 {
   unsigned long uVar1;
   unsigned long in_x3;
@@ -28883,9 +28899,11 @@ unsigned long FUN_0019fa54(unsigned long param_1,unsigned long param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019fa60(unsigned long param_1,unsigned long param_2,unsigned long param_3)
-
+void FUN_0019fa60()
 {
+  unsigned long param_1;
+  unsigned long param_2;
+  unsigned long param_3;
   code *pcVar5;
   code *pcVar6;
   int iVar1;
@@ -29025,8 +29043,7 @@ bool FUN_0019fcd4(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019fd10(void)
-
+void FUN_0019fd10()
 {
   unsigned long uVar1;
   long extraout_x8;
@@ -84539,5 +84556,7 @@ done:
     FUN_003596e4();
     FUN_00357c74(extraout_x1);
 }
+
+
 
 
