@@ -339,6 +339,16 @@ Direct kernel callees of the hv code were evaluated for body recreation
   hv_kernel_glue.c): copyin b95c144, copyout b95d6f4, panics c0f86a4/c0f8674/
   c0e1c3c, lock variant b7f1e4c. All externs documented with Ghidra addresses.
   Reported to Main; a future branch may recreate the XNU lock/alloc core.
+  **UPDATE 2026-08-12 (FULL-AUDIT): this scope decision was superseded — the
+  maintainer confirmed "these are recreated". The direct touch-set listed
+  above as externs is now recreated with faithful bodies in
+  `osfmk/arm64/hypervisor/hv_glue_audit_{locks,mem,obj,panic,sys}.c`
+  (lck_mtx_lock/unlock, lock_release, os_release, zfree_waitq, refcount_dec,
+  the panics, DT/boot-arg getters, kernel_tlb_flush, kernel_page_validate,
+  kernel_paddr_type, kernel_memattr_resolve, kernel_preempt_dec, kernel_trace
+  + core). Remaining externs: copyin b95c144 / copyout b95d6f4 (2+ levels,
+  fault machinery), cache_type_lookup b95fe60, cred_has_entitlement c0f8cfc,
+  and per_cpu_base b866ec4 (disassembly reconstruction, low confidence).**
 
 ## entitlements tree (hv_entitlements.c)
 
@@ -421,6 +431,16 @@ Both already decompiled by their owning trees; documented here, not recreated.
   tree uses table record handlers instead.
 
 ## hv-deps edges (from hv-deps agent, 2026-08-11)
+
+**UPDATE 2026-08-12 (FULL-AUDIT): the "Kept as externs" table below is
+stale — every function in it except copyin b95c144 / copyout b95d6f4 /
+cache_type_lookup b95fe60 / cred_has_entitlement c0f8cfc was recreated with
+a faithful body in `osfmk/arm64/hypervisor/hv_glue_audit_{locks,mem,obj,
+panic,sys}.c` this session (per the maintainer-confirmed FULL-AUDIT rule).
+The manifest entries for those functions now point at the audit files with
+status `decompiled`; per_cpu_base b866ec4 is a disassembly-level
+reconstruction (low confidence). See the new `hv-deps Sys touch-set` section
+below for the current call-graph edges.**
 
 Direct kernel callees of hv code, with the caller edge each was verified
 against (`get_function_callers`). Every address below has a manifest entry

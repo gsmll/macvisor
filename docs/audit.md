@@ -142,6 +142,7 @@ kernel entry fffffe000c110000
 | `osfmk/arm64/hypervisor/hv_entitlements.c` / `.h` | entitlements | entitlement tier, capability mask/report |
 | `osfmk/arm64/hypervisor/hv_vm.h` | structs-audit | **consolidated** `hv_vm_t` (owner), `hv_vm_percpu_t`, region node |
 | `osfmk/arm64/hypervisor/hv_kernel_glue.c` / `.h` | hv-deps | recreated direct kernel callees (current_task, waitq_validate, hv_object_lookup) |
+| `osfmk/arm64/hypervisor/hv_glue_audit_{locks,mem,obj,panic,sys}.c` | hv-deps | FULL-AUDIT kernel touch-set recreation (2026-08-12): locks (lck_mtx_lock/unlock core, lock bits, spinlocks), mem (vm_map_wire/unwire/protect/enter, kernel_alloc {err,block}, zalloc core), obj (os_release/zfree_waitq/refcounts/obj-lookup), panics, sys (per_cpu_base disasm fallback, tlb_flush, paddr_type, memattr, trace, dt/boot-arg) |
 | `osfmk/arm64/hypervisor/hv_internal.h` | shared-utils | shared kernel deps + cross-file prototypes + global naming table |
 | `osfmk/kern/startup.c` / `startup.h`, `osfmk/arm64/start.s` | boot-audit | boot path recreation |
 | `docs/chain-map.md` | — | boot chain, op-table map, per-tree edges |

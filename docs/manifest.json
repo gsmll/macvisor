@@ -740,12 +740,12 @@
     "address": "fffffe000b9860bc",
     "ghidra_name": "FUN_fffffe000b9860bc",
     "estimated_name": "hv_rbtree_unlink",
-    "confidence": "low",
+    "confidence": "high",
     "category": "core",
     "tree": "vmapple-deep",
     "file": "osfmk/arm64/hypervisor/hv_vmapple.c",
     "status": "decompiled",
-    "notes": "RB-tree node-removal used by hv container teardown; called by b985e38 (vmapple-deep), b986ff4 (trap-dispatch), b987c44 (vcpu-core). Full decompile in Ghidra is a large three-case RB-delete; reconstructed here as a structural outline (partial), confidence low. vmapple-deep confirms no vmapple-specific callers beyond the IKOT teardown."
+    "notes": "RB-tree node-removal (full classic RB-delete transcription in hv_vmapple.c, verified 2026-08-12): splice-successor, single-red-child, double-black rebalance walk with left/right rotations; owner-cpu validation panic c0e4d74; node count decrement at root_slot[0x428]. Called by b985e38 (vmapple-deep), b986ff4 (trap-dispatch), b987c44 (vcpu-core)."
   },
   {
     "address": "fffffe000b987d9c",
@@ -938,12 +938,12 @@
     "address": "fffffe000c09e430",
     "ghidra_name": "FUN_fffffe000c09e430",
     "estimated_name": "pe_init_iokit",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "boot",
     "tree": "boot-audit",
     "file": "osfmk/kern/startup.c",
     "status": "decompiled",
-    "notes": "Early PE/iokit: iBoot banners, /chosen/memory-map BootCLUT+Pict-FailedBoot, -restore/-noprogress progress config, /chosen/iBoot timing trace, finalize."
+    "notes": "Early PE/iokit (rewritten 2026-08-12 \u2014 boot-arg results checked separately + progress-width adjustment loop added; header high): iBoot banners, /chosen/memory-map BootCLUT+Pict-FailedBoot, -restore/-noprogress/-noprogressonce progress config (each checked independently), /chosen/iBoot timing trace, finalize."
   },
   {
     "address": "fffffe000b9da910",
@@ -1015,12 +1015,12 @@
     "address": "fffffe000bf748bc",
     "ghidra_name": "FUN_fffffe000bf748bc",
     "estimated_name": "pe_lockdown_iokit",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "boot",
     "tree": "boot-audit",
     "file": "osfmk/kern/startup.c",
     "status": "decompiled",
-    "notes": "IOKit lockdown after PE: trace, IOService-match finalization via vtable; panics if match fails."
+    "notes": "IOKit lockdown after PE (verified against full disassembly bf748bc-bf74984; header high): trace 0x61f0004, IOService-match finalization via vtable; the second IOService call is a PAC-signed tail call (braa at bf74968), so the function does not return after it; panics if match fails."
   },
   {
     "address": "fffffe000b760b94",
@@ -1092,23 +1092,23 @@
     "address": "fffffe000b967768",
     "ghidra_name": "FUN_fffffe000b967768",
     "estimated_name": "hv_el2_guest_fault",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "core",
     "tree": "guest-fault",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Guest data/instruction abort handler: reason 0x18->hw-error b98f304; aborts resolve guest IPA (FAR direct when in-guest/EA clear, else FAR[11:0]|(HPFAR_EL2[31:4]<<12)) into state+0x4028, disable debug (b968948), validate via hv_el2_guest_pte_check (b94b450) then kernel_vm_fault (b89988c) with retry via hv_el2_guest_fault_retry (b9879b8); exit code to state+0x4008 (6/9/5). FULL-AUDIT: the vm_fault family recreated with bodies in hv_el2.c."
+    "notes": "Guest data/instruction abort handler (verified 2026-08-12 against fresh decompile; header high). reason 0x18->hw-error b98f304; aborts resolve guest IPA (FAR direct when in-guest/EA clear, else FAR[11:0]|(HPFAR_EL2[31:4]<<12)) into state+0x4028, disable debug (b968948), validate via hv_el2_guest_pte_check (b94b450) then kernel_vm_fault (b89988c) with retry via hv_el2_guest_fault_retry (b9879b8); exit code to state+0x4008 (6/9/5). FULL-AUDIT: the vm_fault family recreated with bodies in hv_el2.c."
   },
   {
     "address": "fffffe000b967004",
     "ghidra_name": "FUN_fffffe000b967004",
     "estimated_name": "hv_el2_guest_irq",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "core",
     "tree": "el2-vectors",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Guest IRQ: IMPDEF pending check (3,5,0xf,1,1), irq ack b966dd8, timer dispatch b95f388/b97ad74, deferred irq DAT_fffffe000c68aee0, CNTVCT_EL2 clock accounting. Summarized body."
+    "notes": "Guest IRQ (verified 2026-08-12; full faithful body, not a summary): IMPDEF pending check (3,5,0xf,1,1), irq ack b966dd8, timer dispatch b95f388/b97ad74, deferred irq DAT_fffffe000c68aee0, CNTVCT_EL2 clock accounting."
   },
   {
     "address": "fffffe000b966c74",
@@ -1125,12 +1125,12 @@
     "address": "fffffe000b9679c8",
     "ghidra_name": "FUN_fffffe000b9679c8",
     "estimated_name": "hv_el2_guest_exc_check",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "core",
     "tree": "el2-vectors",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Pre-dispatch guest-exc check: full faithful body. EC(esr>>26&0x3f) <0x3d mask 0x1000000610002000 -> true; EC 0x25 walks dtrace table DAT_fffffe0007045690 ({lo,hi} ranges, 4 qwords/entry, end-sentinel = string addr fffffe00070459d0) vs decoded PC (elr+0x1fff8fba970); SVC-ISS 0x11 handling; default guest-visible = (spsr&0x1c0)!=0 && DAT_fffffe0007e9d348==-1."
+    "notes": "Pre-dispatch guest-exc check (verified 2026-08-12; header high): full faithful body. EC(esr>>26&0x3f) <0x3d mask 0x1000000610002000 -> true; EC 0x25 walks dtrace table DAT_fffffe0007045690 ({lo,hi} ranges, 4 qwords/entry, end-sentinel = string addr fffffe00070459d0) vs decoded PC (elr+0x1fff8fba970); SVC-ISS 0x11 handling; default guest-visible = (spsr&0x1c0)!=0 && DAT_fffffe0007e9d348==-1."
   },
   {
     "address": "fffffe000b75e468",
@@ -1147,23 +1147,23 @@
     "address": "fffffe000b75e5cc",
     "ghidra_name": "FUN_fffffe000b75e5cc",
     "estimated_name": "hv_el2_eret_fast",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "core",
     "tree": "el2-vectors",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Fast-path return-to-guest tail: full faithful body = DAIF raise + hv_el2_guest_restore_eret (JOP verify b760444, reg/SVE restore, PAC re-arm, ExceptionReturn). Leaf of b75e468. Frame in x21 (signature void* state)."
+    "notes": "Fast-path return-to-guest tail (verified 2026-08-12 against fresh decompile b75e5cc; header high): full faithful body = DAIF raise + hv_el2_guest_restore_eret (JOP verify b760444, reg/SVE restore, PAC re-arm, ExceptionReturn). Leaf of b75e468. Frame in x21 (signature void* state)."
   },
   {
     "address": "fffffe000b75e420",
     "ghidra_name": "FUN_fffffe000b75e420",
     "estimated_name": "hv_el2_exception_exit",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "core",
     "tree": "el2-vectors",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Exception-exit tail: full faithful body. When (spsr&0xc)==0: pending-work drain loop (per-cpu+0x224, preempt b7a574c, b8078cc/b9708b8/b96ead8, actlr + (3,6,c15,c8,3)/(3,6,c15,c2,5) writes). Else if bit7 clear: eret_fast path. Else DAIF raise. Shared hv_el2_guest_restore_eret tail (JOP verify b760444). Called from el1_sync/fiq/irq/error handlers (frame passed)."
+    "notes": "Exception-exit tail (verified 2026-08-12; header high): full faithful body. When (spsr&0xc)==0: pending-work drain loop (per-cpu+0x224, preempt b7a574c, b8078cc/b9708b8/b96ead8, actlr + (3,6,c15,c8,3)/(3,6,c15,c2,5) writes). Else if bit7 clear: eret_fast path. Else DAIF raise. Shared hv_el2_guest_restore_eret tail (JOP verify b760444). Called from el1_sync/fiq/irq/error handlers (frame passed)."
   },
   {
     "address": "fffffe000b75e8a8",
@@ -1246,34 +1246,34 @@
     "address": "fffffe000b94b450",
     "ghidra_name": "FUN_fffffe000b94b450",
     "estimated_name": "hv_el2_guest_pte_check",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "guest-fault",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Stage-2 guest page-table walk + attribute check (direct callee of hv_el2_guest_fault). Walks per-owner EL2 translation table (pmap[4] level descriptors, root pmap[0]); returns 0=present/correct, 5=not-present, 2=wrong attr/perm. Compressed-PTE integrity panic. FULL-AUDIT: body recreated in hv_el2.c; deeper primitives (c0d7b94/c0d7c20 paddr, b94abbc memattr, lock bits b7f8*, TLB b96c6d4) stubbed."
+    "notes": "Stage-2 guest page-table walk + attribute check (rewritten + verified 2026-08-12 against fresh decompile b94b450; header high). Walks per-owner EL2 translation table (pmap[4] level descriptors, root pmap[0]); returns 0=present/correct, 5=not-present, 2=wrong attr/perm. Compressed-PTE integrity panic. FULL-AUDIT: body recreated in hv_el2.c; deeper primitives (c0d7b94/c0d7c20 paddr, b94abbc memattr, lock bits b7f8*, TLB b96c6d4) stubbed."
   },
   {
     "address": "fffffe000b89988c",
     "ghidra_name": "FUN_fffffe000b89988c",
     "estimated_name": "kernel_vm_fault",
-    "confidence": "low",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "guest-fault",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "XNU vm_fault entry (direct callee of hv_el2_guest_fault). Page-mask + special-map tag, per-CPU fault flags, calls vm_fault_enter (b89d5f8), retry loop; returns 0=success/5=KERN_FAILURE(panic)/0xe=VM_MEMORY_ERROR(exit9). FULL-AUDIT: faithful structural body (top-level flow + fault-type dispatch) recreated in hv_el2.c; deep vm_object/paging internals stubbed."
+    "notes": "XNU vm_fault entry (FAITHFUL FULL 1889-line translation, verified 2026-08-12; header high): entry guard, page-mask computation, vm_fault_enter (b89d5f8) with per-CPU free-list/paging bookkeeping, COW/zero-fill/paging loops, retry loop at b899ca8, common fault_done exit at b89ca08. Returns 0=success/5=KERN_FAILURE/9/0xe/0x1e. Its ~93 deeper callees stay stubbed externs (FULL-AUDIT boundary)."
   },
   {
     "address": "fffffe000b9879b8",
     "ghidra_name": "FUN_fffffe000b9879b8",
     "estimated_name": "hv_el2_guest_fault_retry",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "guest-fault",
     "file": "osfmk/arm64/hypervisor/hv_el2.c",
     "status": "decompiled",
-    "notes": "Guest-fault retry helper (direct callee of hv_el2_guest_fault): re-looks-up vm region rbtree (vm+0x427) for region covering [addr,addr+size), posts a fault record (b7e16f0) on match; on success caller advances guest PC by 4. FULL-AUDIT: body recreated in hv_el2.c; deeper callees (b78fd40/b7e16f0/b78cc20/LORelease) stubbed."
+    "notes": "Guest-fault retry helper (rewritten + verified 2026-08-12 against fresh decompile b9879b8; header high): owner-block lock binding, rbtree region lookup (vm+0x427) for region covering [addr,addr+size), 0x40-byte fault record {0x4000000013,...,2} posted via b7e16f0, region ref released (b78cc20 at refcount 1, panic c0f8674 at 0); on success caller advances guest PC by 4. FULL-AUDIT: body recreated in hv_el2.c; deeper callees (b78fd40/b7e16f0/b78cc20/LORelease) stubbed."
   },
   {
     "address": "fffffe000b966dd8",
@@ -1355,7 +1355,7 @@
   {
     "address": "fffffe0007e34f48",
     "ghidra_name": "DAT_fffffe0007e34f48",
-    "estimated_name": "coredump_docmd_hvg",
+    "estimated_name": "hv_coredump_docmd_hvg",
     "confidence": "medium",
     "category": "shared-dep",
     "tree": "kernel-iface",
@@ -1366,7 +1366,7 @@
   {
     "address": "fffffe0007e34f98",
     "ghidra_name": "DAT_fffffe0007e34f98",
-    "estimated_name": "coredump_docmd_trigger_kernel_coredump",
+    "estimated_name": "hv_coredump_docmd_trigger_kernel_coredump",
     "confidence": "medium",
     "category": "shared-dep",
     "tree": "kernel-iface",
