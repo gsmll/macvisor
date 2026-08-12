@@ -28096,7 +28096,7 @@ unsigned long sk_boot_call(unsigned long ep, unsigned long out, unsigned long re
 void sk_boot_ep(unsigned long out, int mode);
 void sk_boot_parse(unsigned long p, unsigned long out);
 unsigned long sk_boot_string(unsigned long ep, unsigned long size);
-void sk_cap_release(unsigned long cap);
+void sk_cap_release_0004b664(unsigned long cap);
 void sk_cap_release_cb(unsigned long obj);
 void sk_cap_release_rt(unsigned long cap, unsigned int kind);
 void sk_cap_release_t(unsigned long p, unsigned long obj);
@@ -31206,13 +31206,13 @@ unsigned long sk_cap_retain(unsigned long cap)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_0004b664 @ 0x0004b664   (est. sk_cap_release)
+/* FUN_0004b664 @ 0x0004b664   (est. sk_cap_release_0004b664)
  * Ghidra: void FUN_0004b664(long param_1)
  * Releases a capability object, decrementing its refcount and invoking the
  * release callback at zero. Non-tagged objects are ignored.
  * Confidence: medium
  */
-void sk_cap_release(unsigned long cap)
+void sk_cap_release_0004b664(unsigned long cap)
 {
     unsigned int u;
     int d;
@@ -31295,7 +31295,7 @@ void sk_cap_retype(unsigned long outp, unsigned long cap, unsigned int kind)
 /* FUN_0004b8d0 @ 0x0004b8d0   (est. sk_cap_release_rt)
  * Ghidra: void FUN_0004b8d0(long param_1,uint param_2)
  * Releases a capability by its kind: kind 3 is a direct call, kind 7 releases
- * via sk_cap_release, kinds 0x18/8 release the object's backing capability.
+ * via sk_cap_release_0004b664, kinds 0x18/8 release the object's backing capability.
  * Confidence: medium
  */
 void sk_cap_release_rt(unsigned long cap, unsigned int kind)
@@ -31307,7 +31307,7 @@ void sk_cap_release_rt(unsigned long cap, unsigned int kind)
     kind &= 0x9f;
     if (kind < 8) {
         if (kind == 3) { sk_x_004b5aa0(); return; }
-        if (kind == 7) { sk_cap_release(cap); return; }
+        if (kind == 7) { sk_cap_release_0004b664(cap); return; }
     } else if ((kind == 0x18 || kind == 8) &&
             (lv = *(unsigned long *)(cap + 8), (*(unsigned int *)(lv + 0x10) >> 0x18 & 1) != 0)) {
         if ((*(unsigned int *)(lv + 0x10) & 0xfffe) == 0) { sk_x_004b5a78(); return; }
@@ -32079,7 +32079,7 @@ unsigned long sk_tb_ph_alloc(unsigned int kind, unsigned long obj, unsigned long
  */
 void sk_tb_ph_free(unsigned long d)
 {
-    if (*(unsigned long *)(d + 0x10) != 0) sk_cap_release(d + 0x10);
+    if (*(unsigned long *)(d + 0x10) != 0) sk_cap_release_0004b664(d + 0x10);
     sk_free_tagged(d);
 }
 
@@ -33262,7 +33262,7 @@ long sk_macho_bind(unsigned long arg1,long *arg2,long arg3,long arg4,long arg5);
 void sk_dump_rebasechains(void);
 unsigned long sk_rebasechain_walk(long arg1,unsigned long arg2);
 uint64_t sk_rebasechain_map(long arg1,unsigned long arg2,long arg3);
-void sk_boot_finish(uint64_t arg1);
+void sk_boot_finish_00052718(uint64_t arg1);
 void sk_domain_notify(int arg1,uint64_t arg2);
 void sk_init_stage(void);
 void sk_init_stage2(uintptr_t arg1);
@@ -33543,7 +33543,7 @@ uint64_t sk_cap_resolve_name(long arg1,long *arg2);
 unsigned short sk_lock_acquire(unsigned long *arg1,uint64_t arg2);
 void sk_lock_release(unsigned long *arg1, unsigned int arg2);
 void sk_register_cb2(unsigned int *arg1,sk_code_t arg2,uint64_t arg3);
-void sk_msg_init(void);
+void sk_msg_init_0005d5dc(void);
 void sk_msg_send2(uint64_t arg1,unsigned int arg2,uint64_t arg3,uint64_t arg4);
 long sk_msg_send(long arg1,uint16_t arg2,uint64_t *arg3,unsigned long arg4);
 uint64_t sk_ipc_retrieve(void);
@@ -35372,15 +35372,15 @@ LAB_0005256c:
 
 
 
-/* FUN_00052718 @ 0x52718   (est. sk_boot_finish)
+/* FUN_00052718 @ 0x52718   (est. sk_boot_finish_00052718)
  * Ghidra: void FUN_00052718(undefined8 arg1)
- * sk_boot_finish: cL4 sk boot finish operation.
+ * sk_boot_finish_00052718: cL4 sk boot finish operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_boot_finish(uint64_t arg1)
+void sk_boot_finish_00052718(uint64_t arg1)
 {
   uint8_t *t3;
   int t0;
@@ -44711,15 +44711,15 @@ LAB_0005d584:
 
 
 
-/* FUN_0005d5dc @ 0x5d5dc   (est. sk_msg_init)
+/* FUN_0005d5dc @ 0x5d5dc   (est. sk_msg_init_0005d5dc)
  * Ghidra: void FUN_0005d5dc(void)
- * sk_msg_init: cL4 sk msg init operation.
+ * sk_msg_init_0005d5dc: cL4 sk msg init operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_msg_init(void)
+void sk_msg_init_0005d5dc(void)
 {
   sk_register_global((long *)0x64dca0);
   return;
@@ -47325,6 +47325,7 @@ typedef struct { sk_word_t v0, v1; } sk_ctx_frame_t;
 #define __builtin_thread_pointer_ro() ((volatile unsigned char *)__builtin_thread_pointer())
 static inline void wr64(volatile unsigned char *p, sk_word_t v){ p[0]=(unsigned char)v; p[1]=(unsigned char)(v>>8); p[2]=(unsigned char)(v>>16); p[3]=(unsigned char)(v>>24); p[4]=(unsigned char)(v>>32); p[5]=(unsigned char)(v>>40); p[6]=(unsigned char)(v>>48); p[7]=(unsigned char)(v>>56); }
 static inline sk_word_t rd64(const unsigned char *p){ return (sk_word_t)p[0]|(sk_word_t)p[1]<<8|(sk_word_t)p[2]<<16|(sk_word_t)p[3]<<24|(sk_word_t)p[4]<<32|(sk_word_t)p[5]<<40|(sk_word_t)p[6]<<48|(sk_word_t)p[7]<<56; }
+#undef LZCOUNT
 static inline unsigned int LZCOUNT(sk_word_t v){ return v?__builtin_clzll(v):64; }
 
 /* Ghidra CONCAT/bit-vector helpers (mostly no-ops for syntax purposes). */
@@ -47940,7 +47941,7 @@ long sk_vspace_freeze(void *a, sk_word_t mode, void *obj);
 void sk_error_str_out3(char *out, unsigned char code);
 sk_word_t sk_amx_cap_alloc_fwd(void *a, void *obj);
 sk_word_t sk_amx_cap_alloc(void *a, void *obj, long *req);
-void sk_list_push(void **node);
+void sk_list_push_00064a7c(void **node);
 sk_word_t sk_sme_cap_alloc(void *a, void *obj, long *req);
 void sk_amx_cap_alloc2(void *obj);
 long sk_amx_ep_alloc(sk_word_t a);
@@ -50669,13 +50670,13 @@ sk_word_t sk_amx_cap_alloc(void *a, void *obj, long *req)
 
 /*--------------------------------------------------------------------*/
 
-/* FUN_00064a7c @ 0x64a7c   (est. sk_list_push)
+/* FUN_00064a7c @ 0x64a7c   (est. sk_list_push_00064a7c)
  * Ghidra: void FUN_00064a7c(undefined8*)
  * Prepends the given node to the global handler chain (DAT_006b2728), splicing it in and preserving the existing head.
  * Confidence: medium
  * Notes: DAT_006b2728.
  */
-void sk_list_push(void **node)
+void sk_list_push_00064a7c(void **node)
 {
     *node = NULL;
     void **prev = NULL;
@@ -58424,7 +58425,7 @@ void sk_map_grow8m();
 void sk_map_grow8n();
 void sk_map_grow8o();
 void sk_map_grow_generic();
-void sk_noop();
+void sk_noop_00077550();
 void sk_noop_1();
 void sk_noop_10();
 void sk_noop_11();
@@ -62821,17 +62822,17 @@ void sk_f_77540(unsigned long param_1, unsigned long param_2, unsigned long para
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77550 @ 0x00077550   (est. sk_noop)
+/* FUN_77550 @ 0x00077550   (est. sk_noop_00077550)
  * Ghidra: void FUN_77550(void)
  * empty leaf / placeholder hook
  * Confidence: low
  */
-void sk_noop(void)
+void sk_noop_00077550(void)
 {
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77560 @ 0x00077560   (est. sk_noop)
+/* FUN_77560 @ 0x00077560   (est. sk_noop_00077550)
  * Ghidra: void FUN_77560(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62841,7 +62842,7 @@ void sk_noop_1(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77570 @ 0x00077570   (est. sk_noop)
+/* FUN_77570 @ 0x00077570   (est. sk_noop_00077550)
  * Ghidra: void FUN_77570(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62863,7 +62864,7 @@ void sk_obj_base(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77590 @ 0x00077590   (est. sk_noop)
+/* FUN_77590 @ 0x00077590   (est. sk_noop_00077550)
  * Ghidra: void FUN_77590(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62873,7 +62874,7 @@ void sk_noop_3(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_775b8 @ 0x000775b8   (est. sk_noop)
+/* FUN_775b8 @ 0x000775b8   (est. sk_noop_00077550)
  * Ghidra: void FUN_775b8(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62883,7 +62884,7 @@ void sk_noop_4(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_775c8 @ 0x000775c8   (est. sk_noop)
+/* FUN_775c8 @ 0x000775c8   (est. sk_noop_00077550)
  * Ghidra: void FUN_775c8(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62906,7 +62907,7 @@ void sk_f_775dc(unsigned long param_1)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77604 @ 0x00077604   (est. sk_noop)
+/* FUN_77604 @ 0x00077604   (est. sk_noop_00077550)
  * Ghidra: void FUN_77604(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62916,7 +62917,7 @@ void sk_noop_6(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77614 @ 0x00077614   (est. sk_noop)
+/* FUN_77614 @ 0x00077614   (est. sk_noop_00077550)
  * Ghidra: void FUN_77614(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62926,7 +62927,7 @@ void sk_noop_7(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77624 @ 0x00077624   (est. sk_noop)
+/* FUN_77624 @ 0x00077624   (est. sk_noop_00077550)
  * Ghidra: void FUN_77624(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62962,7 +62963,7 @@ void sk_f_7764c(unsigned long param_1, unsigned long param_2, unsigned long para
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7765c @ 0x0007765c   (est. sk_noop)
+/* FUN_7765c @ 0x0007765c   (est. sk_noop_00077550)
  * Ghidra: void FUN_7765c(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62984,7 +62985,7 @@ void sk_f_7766c(unsigned long param_1)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7767c @ 0x0007767c   (est. sk_noop)
+/* FUN_7767c @ 0x0007767c   (est. sk_noop_00077550)
  * Ghidra: void FUN_7767c(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -62994,7 +62995,7 @@ void sk_noop_10(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77698 @ 0x00077698   (est. sk_noop)
+/* FUN_77698 @ 0x00077698   (est. sk_noop_00077550)
  * Ghidra: void FUN_77698(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63004,7 +63005,7 @@ void sk_noop_11(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_776b4 @ 0x000776b4   (est. sk_noop)
+/* FUN_776b4 @ 0x000776b4   (est. sk_noop_00077550)
  * Ghidra: void FUN_776b4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63014,7 +63015,7 @@ void sk_noop_12(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_776c0 @ 0x000776c0   (est. sk_noop)
+/* FUN_776c0 @ 0x000776c0   (est. sk_noop_00077550)
  * Ghidra: void FUN_776c0(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63024,7 +63025,7 @@ void sk_noop_13(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_776cc @ 0x000776cc   (est. sk_noop)
+/* FUN_776cc @ 0x000776cc   (est. sk_noop_00077550)
  * Ghidra: void FUN_776cc(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63034,7 +63035,7 @@ void sk_noop_14(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_776d8 @ 0x000776d8   (est. sk_noop)
+/* FUN_776d8 @ 0x000776d8   (est. sk_noop_00077550)
  * Ghidra: void FUN_776d8(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63070,7 +63071,7 @@ void sk_f_776f8(unsigned long param_1)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77708 @ 0x00077708   (est. sk_noop)
+/* FUN_77708 @ 0x00077708   (est. sk_noop_00077550)
  * Ghidra: void FUN_77708(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63093,7 +63094,7 @@ void sk_f_77718(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77724 @ 0x00077724   (est. sk_noop)
+/* FUN_77724 @ 0x00077724   (est. sk_noop_00077550)
  * Ghidra: void FUN_77724(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63103,7 +63104,7 @@ void sk_noop_17(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77744 @ 0x00077744   (est. sk_noop)
+/* FUN_77744 @ 0x00077744   (est. sk_noop_00077550)
  * Ghidra: void FUN_77744(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63113,7 +63114,7 @@ void sk_noop_18(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77764 @ 0x00077764   (est. sk_noop)
+/* FUN_77764 @ 0x00077764   (est. sk_noop_00077550)
  * Ghidra: void FUN_77764(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63123,7 +63124,7 @@ void sk_noop_19(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77770 @ 0x00077770   (est. sk_noop)
+/* FUN_77770 @ 0x00077770   (est. sk_noop_00077550)
  * Ghidra: void FUN_77770(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63133,7 +63134,7 @@ void sk_noop_20(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77778 @ 0x00077778   (est. sk_noop)
+/* FUN_77778 @ 0x00077778   (est. sk_noop_00077550)
  * Ghidra: void FUN_77778(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63156,7 +63157,7 @@ void sk_obj_mth_0(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_777b4 @ 0x000777b4   (est. sk_noop)
+/* FUN_777b4 @ 0x000777b4   (est. sk_noop_00077550)
  * Ghidra: void FUN_777b4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63166,7 +63167,7 @@ void sk_noop_22(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_777c4 @ 0x000777c4   (est. sk_noop)
+/* FUN_777c4 @ 0x000777c4   (est. sk_noop_00077550)
  * Ghidra: void FUN_777c4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63176,7 +63177,7 @@ void sk_noop_23(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_777d4 @ 0x000777d4   (est. sk_noop)
+/* FUN_777d4 @ 0x000777d4   (est. sk_noop_00077550)
  * Ghidra: void FUN_777d4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63223,7 +63224,7 @@ void sk_shared_map_ptr(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77824 @ 0x00077824   (est. sk_noop)
+/* FUN_77824 @ 0x00077824   (est. sk_noop_00077550)
  * Ghidra: void FUN_77824(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63298,7 +63299,7 @@ void sk_f_7787c(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_77888 @ 0x00077888   (est. sk_noop)
+/* FUN_77888 @ 0x00077888   (est. sk_noop_00077550)
  * Ghidra: void FUN_77888(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63308,7 +63309,7 @@ void sk_noop_26(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_77894 @ 0x00077894   (est. sk_noop)
+/* FUN_77894 @ 0x00077894   (est. sk_noop_00077550)
  * Ghidra: void FUN_77894(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -63329,7 +63330,7 @@ void sk_shared_map(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_778b4 @ 0x000778b4   (est. sk_noop)
+/* FUN_778b4 @ 0x000778b4   (est. sk_noop_00077550)
  * Ghidra: void FUN_778b4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65476,7 +65477,7 @@ void sk_f_7bf54(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7bf80 @ 0x0007bf80   (est. sk_noop)
+/* FUN_7bf80 @ 0x0007bf80   (est. sk_noop_00077550)
  * Ghidra: void FUN_7bf80(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65486,7 +65487,7 @@ void sk_noop_29(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7bf94 @ 0x0007bf94   (est. sk_noop)
+/* FUN_7bf94 @ 0x0007bf94   (est. sk_noop_00077550)
  * Ghidra: void FUN_7bf94(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65496,7 +65497,7 @@ void sk_noop_30(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7bfac @ 0x0007bfac   (est. sk_noop)
+/* FUN_7bfac @ 0x0007bfac   (est. sk_noop_00077550)
  * Ghidra: void FUN_7bfac(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65568,7 +65569,7 @@ void sk_zero(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c028 @ 0x0007c028   (est. sk_noop)
+/* FUN_7c028 @ 0x0007c028   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c028(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65590,7 +65591,7 @@ void sk_f_7c038(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c070 @ 0x0007c070   (est. sk_noop)
+/* FUN_7c070 @ 0x0007c070   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c070(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65600,7 +65601,7 @@ void sk_noop_33(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c088 @ 0x0007c088   (est. sk_noop)
+/* FUN_7c088 @ 0x0007c088   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c088(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65610,7 +65611,7 @@ void sk_noop_34(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c0a0 @ 0x0007c0a0   (est. sk_noop)
+/* FUN_7c0a0 @ 0x0007c0a0   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0a0(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65620,7 +65621,7 @@ void sk_noop_35(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c0ac @ 0x0007c0ac   (est. sk_noop)
+/* FUN_7c0ac @ 0x0007c0ac   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0ac(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65630,7 +65631,7 @@ void sk_noop_36(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c0b8 @ 0x0007c0b8   (est. sk_noop)
+/* FUN_7c0b8 @ 0x0007c0b8   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0b8(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65640,7 +65641,7 @@ void sk_noop_37(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c0c4 @ 0x0007c0c4   (est. sk_noop)
+/* FUN_7c0c4 @ 0x0007c0c4   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0c4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65650,7 +65651,7 @@ void sk_noop_38(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c0d4 @ 0x0007c0d4   (est. sk_noop)
+/* FUN_7c0d4 @ 0x0007c0d4   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0d4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65673,7 +65674,7 @@ void sk_f_7c0e0(unsigned long param_1, unsigned long param_2)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c0ec @ 0x0007c0ec   (est. sk_noop)
+/* FUN_7c0ec @ 0x0007c0ec   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c0ec(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65694,7 +65695,7 @@ void sk_zero2(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c128 @ 0x0007c128   (est. sk_noop)
+/* FUN_7c128 @ 0x0007c128   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c128(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65716,7 +65717,7 @@ void sk_f_7c140(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c14c @ 0x0007c14c   (est. sk_noop)
+/* FUN_7c14c @ 0x0007c14c   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c14c(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65739,7 +65740,7 @@ void sk_f_7c158(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c164 @ 0x0007c164   (est. sk_noop)
+/* FUN_7c164 @ 0x0007c164   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c164(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65749,7 +65750,7 @@ void sk_noop_43(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c178 @ 0x0007c178   (est. sk_noop)
+/* FUN_7c178 @ 0x0007c178   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c178(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65759,7 +65760,7 @@ void sk_noop_44(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c18c @ 0x0007c18c   (est. sk_noop)
+/* FUN_7c18c @ 0x0007c18c   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c18c(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65769,7 +65770,7 @@ void sk_noop_45(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c198 @ 0x0007c198   (est. sk_noop)
+/* FUN_7c198 @ 0x0007c198   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c198(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65779,7 +65780,7 @@ void sk_noop_46(void)
     return;
 }
 /*--------------------------------------------------------------------*/
-/* FUN_7c1a4 @ 0x0007c1a4   (est. sk_noop)
+/* FUN_7c1a4 @ 0x0007c1a4   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c1a4(void)
  * empty leaf / placeholder hook
  * Confidence: low
@@ -65801,7 +65802,7 @@ void sk_f_7c1b0(unsigned long param_1)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_7c1c4 @ 0x0007c1c4   (est. sk_noop)
+/* FUN_7c1c4 @ 0x0007c1c4   (est. sk_noop_00077550)
  * Ghidra: void FUN_7c1c4(void)
  * empty leaf / placeholder hook
  * Confidence: low

@@ -3655,3 +3655,21 @@ Observation: The comparison dispatch switches on the object type tag (lo>>0x3c) 
 Evidence: 0041001c switch(uVar6>>0x3c) with cases comparing `*(obj+0x10)`, `*(obj+0x18)`; case 5-7 `if ((uVar6^uVar8)>>0xe==0)`; FUN_00413b68 invokes FUN_00462adc(s_changeMatchingOptions_005dd0c0) and FUN_00086840(s_absent_function_005dd080) paths.
 Severity (hypothesis): Info (Swift runtime semantics).
 Confidence: Medium.
+
+## [sk] SK193 0x42af18-0x439a5c Swift regex-literal parser — many bounded-buffer record-append paths
+- **Observation**: The whole SK193 region is the Swift `_StringProcessing` regex-literal parser embedded in the cL4 kernel. Its AST builders (sk_re_diag_rec 0x42ec68, sk_re_diag_extend 0x42ed6c, sk_re_diag_merge 0x42ee6c) append 0x49-byte records to a growable list at (+0x10 count, +0x20 first slot, stride 0x50), with explicit overflow traps on every count bump and capacity check (SW_FATAL at 0x42ee5c/0x42ee68/0x42ee60/0x42ee6c). Every index write is bounds-gated, so a corrupted record can only trap, not over-write.
+- **Evidence**: sk_re_diag_extend: `if (count + n < count) trap(0x42ee5c)`; `if (avail < n) trap(0x42ee68)` before `memcpy 0x50-strided`. sk_re_diag_merge: `if ((long)(total>>1) <= n) trap(0x42f020)` before the 0x50-strided copy loop.
+- **Severity (hypothesis)**: low — the record appenders are bounds-checked; a malformed record from an attacker-controlled regex could at most trap (availability), not corrupt memory.
+- **Confidence**: high (explicit trap addresses and capacity checks transcribed).
+
+## [sk] SK193 0x42c958 sk_re_parse_delim_body — delimiters/#-mode scanner
+- **Observation**: The delimiter scanner counts a leading run of '#' extended-mode markers and matches each candidate delimiter option in the regex record. The option list lives at rec+0x10 (count) / rec+0x20 (bytes); every option access is bounds-checked against the count with traps (0x42d014), and the closing-run compare loops are guarded by end-pointer checks (0x42d018/0x42d034/0x42d048). No unguarded read of the pattern span was found.
+- **Evidence**: `if (*(rec+0x10) <= i) trap(0x42d014)`; `if (end < start+hash+adv) trap(0x42d048)`.
+- **Severity (hypothesis)**: low — the scanner is bounds-checked; at most a malformed delimiter produces a diagnostic (tag 2, "no valid delimiters").
+- **Confidence**: medium.
+
+## [sk] SK193 0x42f020/0x42f1f0 newline scanners — unguarded byte loads flagged by decompiler
+- **Observation**: The UTF-8 newline scanners (sk_re_parse_scalar 0x42f020, sk_re_parse_scalar2 0x42f1f0) read bytes from an inlined 2-word local (`local_70/uStack_68` = the String head) when the 'small string' flag (0x2000000000000000) is set, using the low 14 bits of the head as the inline byte span. The decompiler's register-spill model makes the exact bound unclear; the span is masked to `&0xffffffffffff` (or `>>0x38 &0xf` for small strings), so the read length is bounded by the flag-implied capacity, not by an external count.
+- **Evidence**: `pbVar4 = (byte*)((long)&local_70 + lVar5); uVar2 = *pbVar4;` with `local_70=param_1; uStack_68=param_2 & 0xffffffffffffff`.
+- **Severity (hypothesis)**: low — inline-String loads are bounded by the String's own length encoding; the risk is limited to a logic error in the length decode, not an attacker-writable over-read.
+- **Confidence**: low (decompiler warning: "Type propagation algorithm not settling").

@@ -1750,7 +1750,7 @@ void sk_re_emit_kind(void)
         sw_8409c(0);
         sw_4080b0(0);
         sw_2298d4(0);
-        sw_3504a0(__builtin_frame_address(0));
+        sw_3504a0((word_t)__builtin_frame_address(0));
         sw_1b9084(0);
         sw_1a8564(0);
 }
@@ -1775,7 +1775,7 @@ void sk_re_write_kind2(void)
 {
         sw_1a84f4((word_t)__builtin_frame_address(0));
         sw_2298d4(0);
-        sw_350878(__builtin_frame_address(0));
+        sw_350878((word_t)__builtin_frame_address(0));
         sw_1b9084(0);
         sw_1a8564(0);
 }
@@ -1875,7 +1875,7 @@ void sk_re_write_rec2(void)
  * DAT_00657778.  Confidence: low. */
 void sk_re_write_rec3(void)
 {
-        sw_e46d0(&sw_657778);
+        sw_e46d0((word_t)&(sw_657778));
 }
 
 
@@ -2309,7 +2309,7 @@ uint sk_re_diag_match2(word_t a, word_t b)
                 sw_2acbb8(0);
                 sw_2acbb8(0x27, 0xe100000000000000);
                 sk_re_diag_rec(&r0);
-                sw_461430(&r0);
+                sw_461430((word_t)&(r0));
         } else {
                 sw_1ee018(a, b);
                 sk_re_diag_complete();
@@ -2359,7 +2359,7 @@ word_t sk_re_append_match2(word_t a, word_t b)
                 sw_2acbb8(t.lo, t.hi);
                 sw_2acbb8(0x27, 0xe100000000000000);
                 sk_re_diag_rec(&r0);
-                sw_461430(&r0);
+                sw_461430((word_t)&(r0));
         } else {
                 sw_3a25d4(t.hi);
                 sw128_t s2 = sw_29fa0c(rec[2], rec[3], rec[0], rec[1]);
@@ -3005,7 +3005,7 @@ sw128_t sk_re_parse_group_number(word_t tag)
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
                 sw128_t v = sk_re_write_delim5();
                 sk_re_diag_rec(&res);
-                sw_461430(&res);
+                sw_461430((word_t)&(res));
                 r.lo = 0; r.hi = 0;
         } else {
                 r.lo = res[0];
@@ -3412,7 +3412,7 @@ void sk_re_parse_escape(word_t a, word_t b, word_t c, uint mode, word_t flags)
                 if (0 == 0) {
                         r0 = 0; r1 = 0xe000000000000000;
                         sk_re_diag_rec(&r0);
-                        sw_461430(&r0);
+                        sw_461430((word_t)&(r0));
                 }
         }
         word_t lo = r0 & 0xffffffffffff;
@@ -3422,7 +3422,7 @@ void sk_re_parse_escape(word_t a, word_t b, word_t c, uint mode, word_t flags)
                 sw_464040(0);
                 r1 = 0xd00000000000001b;
                 sk_re_diag_rec(&r0);
-                sw_461430(&r0);
+                sw_461430((word_t)&(r0));
         }
         if ((flags & 1) != 0) {
                 sw_462f7c(0);
@@ -3964,13 +3964,13 @@ void sk_re_parse_capture_name(word_t a, word_t b, word_t c, word_t d)
                 sw_2acbb8(0, r1);
                 sw_3a25d4(r1);
                 sk_re_diag_rec(&r0);
-                sw_461430(&r0);
+                sw_461430((word_t)&(r0));
         } else {
                 sw_4664a4(0);
                 sw_462870(0); sw_84174(0); sw_462af0(0); sw_15e4f8(0); sw_356b5c(0);
                 sw_3a25d4(0);
                 if ((s.hi & 1) != 0) goto single;
-                sw_464b20(&r0);
+                sw_464b20((word_t)&(r0));
                 sk_re_peek_char2();
                 if (0 == 0) SW_FATAL(0x436fc4);
                 sw_16749c(0);
@@ -3992,7 +3992,7 @@ void sk_re_parse_capture_name(word_t a, word_t b, word_t c, word_t d)
                         sw_4635d4(0);
                         sw_2acbb8(0);
                         sk_re_diag_rec(&id);
-                        sw_461430(&id);
+                        sw_461430((word_t)&(id));
                 }
                 sw_68e14(0);
                 sw128_t s2 = sk_re_parse_suffix();
@@ -4007,7 +4007,7 @@ void sk_re_parse_capture_name(word_t a, word_t b, word_t c, word_t d)
                 sw_2acbb8(0xd00000000000002a, 0x80000000005dfaf0);
                 sw_465304(0);
                 sk_re_diag_rec(&x);
-                sw_461430(&x);
+                sw_461430((word_t)&(x));
                 sw_3a25d4(0);
                 /* loop over ident chars */
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
@@ -4122,7 +4122,7 @@ void sk_re_record_select(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t
                 sel = 0;
         } else {
                 if (*(word_t*)(rec + 0x10) >> 0xe < pos >> 0xe) SW_FATAL(0x4372d0);
-                sw_352498(&r);
+                sw_352498((word_t)&(r));
                 sw_4653fc(0);
                 sk_re_diag_match2(0, 0xe100000000000000);
                 sel = 1;
@@ -4159,7 +4159,7 @@ void sk_re_record_join(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t p
         if (sel == 0xff) {
                 sw_4658fc(0);
                 sw_464818(0);
-                sw_461cb8(&h);
+                sw_461cb8((word_t)&(h));
                 v1 = *(word_t*)(__builtin_frame_address(0) + 0x50);
                 sw_464adc(0);
                 sw_36b270(v1);
@@ -4365,7 +4365,7 @@ void sk_re_parse_backref_or_scalar(void)
                 sw_35292c(0);
                 if (!(v.lo & 1)) {
                         sw_3534e0(0);
-                        sw_464134(&value);
+                        sw_464134((word_t)&(value));
                         sk_re_parse_number();
                         if (((byte*)&v)[0] != '\\x01') {
                                 /* negative value */
@@ -4375,7 +4375,7 @@ void sk_re_parse_backref_or_scalar(void)
                 }
         } else {
                 sw_3534e0(0);
-                sw_464134(&value);
+                sw_464134((word_t)&(value));
                 sw128_t r2 = sk_re_parse_number();
                 if (((byte*)&r2)[0] == '\\x01') {
                         /* whole-pattern reference */
@@ -4569,7 +4569,7 @@ void sk_re_parse_alternation(word_t a, word_t b, word_t c)
                 if (((byte*)&h)[16] == 0xff) {
                         /* flush and parse alternatives */
                         sw_464818(0);
-                        sw_461cb8(&h);
+                        sw_461cb8((word_t)&(h));
                         word_t v = *(word_t*)(__builtin_frame_address(0) + 0x50);
                         sw_464adc(0);
                         sw_36b270(v);
