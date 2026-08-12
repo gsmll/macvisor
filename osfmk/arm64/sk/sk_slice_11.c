@@ -466,7 +466,7 @@ void sk_f_0005ad40(void)
  * trace+0x38, committing the new position on success.  On allocation failure, validates the
  * error against the fixed trace-memory region [0x64cb40,0x64cb80) and panics with
  * "Failed to allocate trace memory" if out of bounds.
- * Confidence: medium
+ * Confidence: high
  * Notes: s_Failed_to_allocate_trace_memory__005bc391; DAT_0064cb40/48/80 bounds checks;
  *   in_xzr treated as +0; SoftwareBreakpoint(0x5519,0x5ae4c); LORelease().
  *   Locals: alloc_bytes=local_28, free_pos=uVar3, cur=uVar4. */
@@ -2076,7 +2076,7 @@ void sk_f_0005cb18(uint8_t value)
  * packed into a 16-byte result written through the caller-supplied pointer.
  * When bit 0 of the flags is clear the pair is refined by the 128-bit
  * segcmd helper before being stored.
- * Confidence: medium
+ * Confidence: high
  * Notes: FUN_0005c764 -> sk_f_0005c764 (fills local record); FUN_0019ae9c ->
  *   sk_x_0019AE9C (16-byte refinement helper); the 8-word record fields are
  *   renamed English. */
@@ -3811,7 +3811,7 @@ void sk_f_0005e4d8(int64_t thread, uint64_t out_lo, uint64_t out_hi, uint64_t fl
  * selects the fallback path that first measures the formatted length into scratch)
  * and the position/capacity are advanced by the produced length (clamped to capacity).
  * A buffer-wrap condition trips SoftwareBreakpoint(0x5519,0x5e940).
- * Confidence: medium
+ * Confidence: high
  * Notes: FUN_00116bb4 is the format helper (sk_x_00116BB4); `va` stands in for the
  *        Ghidra `&stack0x00000000` vararg anchor. */
 void sk_f_0005e8a4(uint64_t *out, uint64_t mode, const char *fmt)

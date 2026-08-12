@@ -2291,7 +2291,7 @@ static uint8_t sk_region_bitset_test(uint64_t region, uint64_t va)
  * Scans the shared region table for an entry whose owner equals region and
  * whose covered range fits size, returning its address. Fatal on a corrupt
  * entry or an overfull slot.
- * Confidence: medium
+ * Confidence: high
  * Notes: uses the file-local region table set by sk_region_init; the bounds
  * check reproduces the decompiler's overlapping-symbol (_DAT_006af8xx)
  * range/overflow arithmetic. */
@@ -3800,7 +3800,7 @@ static void sk_cnode_advance(long p)
  * separator checked with sk_x_001187f4; sk_x_0011883c advances the scanner.
  * Returns early (partial sum) on exhaustion, on a short token, or on a -1
  * separator result. A malformed buffer layout trips the fatal breakpoint.
- * Confidence: medium
+ * Confidence: high
  * Notes: sk_x_001144a0 is called with 2 and 3 arguments (variadic helper);
  * a/d are opaque context handles threaded to the parser helpers. */
 static int sk_parse_dec(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
