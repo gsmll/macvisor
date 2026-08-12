@@ -4117,3 +4117,62 @@ Confidence: Medium.
 - **Evidence**: decompile 0x4ab5ec — `FUN_0036b270(in_x9 + 0x10 & (in_x9 ^ 0xffffffffffffffff))`.
 - **Severity (hypothesis)**: low — this is a Swift-runtime teardown call where x9 is a caller-set register; the mask clears the low bits of x9, but if x9 is attacker-influenced and the target indexes a table, it is a candidate out-of-range index.
 - **Confidence**: low (register artifact obscures the true argument source).
+
+## [SKR39] 0x4ad3f8 cL4_tb_ad3f8 (frame/region-map request)
+Observation: The region-map marshaller allocates mapping descriptors via a raw allocator
+(cL4_alloc tag 0x10e0040dfc0d2aa) and transfers the descriptor pointer out on success,
+while error paths return 0 with a (0,0) error pair. Callers (cL4_tb_ad388) treat a
+nonzero result with an overflow check (r+0x80 < r) before using it as a buffer.
+Evidence: FUN_004ad3f8 returns the heap descriptor; FUN_004ad388 checks
+`if ((uVar2 != 0) && (uVar2 + 0x80 < uVar2)) SoftwareBreakpoint`.
+Severity: low (hypothesis) — descriptor lifetime/aliasing between the call hub and the
+caller buffer is not fully reconstructed.
+Confidence: medium
+
+## [SKR39] 0x4ae460 cL4_tb_ae460 (SegAccess MappingGetFrame callback)
+Observation: On a mapping-result reply, the callback invokes an indirect method at
+(**(ctx+0x28)+0x68)+0x28 with an offset argument `*(ctx+0x30) << 14` (a page-shifted
+frame index) and, if it returns 0 (success), frees the mapped frame via cL4_free. A
+mapping that fails the indirect check falls through to a "condition failed" panic.
+Evidence: decompile shows the indirect call and `FUN_004b23d8(*plVar3)` free path, plus
+string s_map__p__SegAccess_MappingGetFram_005e3cd0.
+Severity: low (hypothesis) — frame-reclaim path depends on the not-yet-recreated
+SegAccess method table.
+Confidence: medium
+
+## [SKR39] 0x4af988 cL4_tb_af988 (tightbeam fatal trampoline)
+Observation: The fatal-error trampoline reads an error word from a global, and on a
+non-success code invokes the panic/log helpers with the "Unexpected L4 Error" format
+string after a `CallSupervisor(0)` / spin loop on a 48-bit state value. The supervisor
+call inside the error path is notable: an L4 error escalates through a supervisor call.
+Evidence: decompile shows `CallSupervisor(0)` inside a do-while on `uVar3 == 1` before
+the panic, and string s_Unexpected_L4_Error___s__zu__err_005a8a27.
+Severity: low (hypothesis) — control-flow / supervisor-use on the error path.
+Confidence: medium
+
+## [SKR39] 0x4ace08 cL4_tb_char_type (Unicode table lookup)
+Observation: The character classifier binary-searches a 0x6ac-entry (start,limit)
+table at DAT_005a5ee8 and returns a packed type code; out-of-range returns 0xff. The
+range table is large (static data) and the boundary index 0x6ac maps to a sentinel
+limit 0x10ffff (top of Unicode). No bounds issue observed in the search itself.
+Evidence: FUN_004ace08 loop over 0x6ac with sentinel limit 0x10ffff at mid==0x6ac.
+Severity: informational
+Confidence: high
+
+## [SkR38] 0x004ac0a4-0x004ac830 — field-swap accessors with inconsistent retain-vs-release discipline
+- **Observation**: This 120-entry cluster of leaf utility/accessor stubs includes sibling field-swap helpers that handle the displaced field value inconsistently: some install the new value and `retain` it while silently dropping the old value (0x4ac43c `swapa8_retain`, 0x4ac484 `swap98_metadata_chain`), others install the new value and `release` it (0x4ac49c `swap88_release` — releases the value just installed, discarding the displaced old in x21), and others correctly release the displaced old value (0x4ac42c `swap28_release`, 0x4ac3fc/0x4ac40c/0x4ac4d0). The retain-vs-release choice differs between what look like structurally identical accessors, so a caller that reuses these interchangeably could leak (retain path never drops the old) or under-release (release path drops the just-installed ref).
+- **Evidence**: disassembly — 0x4ac43c `ldr x0,[x20,#0xa8]; ldr x21,[x19,#0xa8]; str x0,[x19,#0xa8]; b 0x0036b270` (retain new, x21=old discarded); 0x4ac49c `ldr x0,[x20,#0x88]; ldr x21,[x19,#0x88]; str x0,[x19,#0x88]; b 0x0036b118` (release new=x0, old in x21 discarded); 0x4ac42c `ldr x0,[x19,#0x28]; str [x20,#0x28]→[x19,#0x28]; b 0x0036b118` (release old). Refcount helpers: retain FUN_0036b270, release FUN_0036b118.
+- **Severity (hypothesis)**: low — the differing discipline most likely reflects genuinely different slot semantics (borrowed vs owned vs handoff) rather than a bug, and no cross-caller reuse was traced; but the 0x4ac49c "release the value just installed" pattern is the one that would most plausibly corrupt a refcount if the slot is an owned pointer.
+- **Confidence**: low (register-artifact bodies obscure ownership; no owning caller traced).
+
+## [SkR38] 0x004ac3f0 / 0x004ac5a4 — panic shims with fixed tagged codes
+- **Observation**: Two fail-closed panic entry stubs tail-call the common panic routine with fixed tagged codes: 0x4ac3f0 uses code 0x5b with a signed-tag value 0xe100000000000000; 0x4ac5a4 uses code 0x28656e4f with 0xe400000000000000. These are deterministic abort paths (no caller input reaches the code), so they terminate the microkernel region rather than returning.
+- **Evidence**: disassembly — 0x4ac3f0 `mov w0,#0x5b; mov x1,#-0x1f00000000000000; b 0x0044ca08`; 0x4ac5a4 `mov w0,#0x6e4f; movk w0,#0x2865,LSL#16; mov x1,#-0x1c00000000000000; b 0x0044ca08`; callee 0x44ca08 = thunk_FUN_002acbb8.
+- **Severity (hypothesis)**: low — fixed-code panics; the 0xe1/0xe4 high-bit tags are consistent with cL4's signed-scalar "valid value" encoding, not attacker data.
+- **Confidence**: medium (fixed constants + noreturn tail-call).
+
+## [SkR38] 0x004ac2ac / 0x004ac2b8 / 0x004ac36c — direct stack-pointer install fragments
+- **Observation**: Three register-setup fragments assign sp directly from a register value (0x4ac2ac `mov sp,x9-x8`, 0x4ac2b8/0x4ac36c `mov sp,x8` after spilling x8 to a frame slot). If any of these is reachable with an attacker-influenced register it is a stack pivot; they are assumed to be frame/free-list allocation setups inside a larger caller-controlled prologue.
+- **Evidence**: disassembly — 0x4ac2ac `sub x23,x9,x8; mov sp,x23`; 0x4ac2b8 `stur x8,[x29,#-0xc8]; mov sp,x8`; 0x4ac36c `stur x8,[x29,#-0xa0]; mov sp,x8`.
+- **Severity (hypothesis)**: low — these are non-standard-ABI prologue fragments where the caller has already validated x8/x9; no external input path observed into the register.
+- **Confidence**: low (register artifacts; no caller traced).

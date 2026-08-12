@@ -83,12 +83,12 @@ extern int  cL4_tb_obj_check(void);
  * FUN_0004b8d0 - release a reference / free a buffer (ptr, n).
  */
 extern uint64_t cL4_alloc(uint64_t count, uint64_t size, uint64_t tag);
-extern void cL4_panic(int unused, const char *fmt, ...);
-extern void cL4_panicv(int unused, const char *fmt, void *ap);
+extern void cL4_panic(int unused, const char *fmt, ...) __attribute__((noreturn));
+extern void cL4_panicv(int unused, const char *fmt, void *ap) __attribute__((noreturn));
 extern void cL4_free(void *ptr, uint64_t n);
 
 /* FUN_00118b28 - noreturn "TB_FATAL: invalid value" diagnostic printer. */
-extern void cL4_tb_fatal(const char *fmt, ...);
+extern void cL4_tb_fatal(const char *fmt, ...) __attribute__((noreturn));
 /* FUN_0011d7e8 - noreturn stack-canary failure handler. */
 extern void cL4_stack_chk_fail(void);
 /* FUN_000f5e5c, FUN_00458db4, FUN_0044ca60, FUN_00484374, FUN_00472974,
@@ -113,6 +113,16 @@ uint64_t cL4_tb_rank(uint32_t id, uint64_t *bits, long table);
 int      cL4_tb_char_type(uint32_t cp);
 void     cL4_tb_err(int n);
 void     cL4_tb_cond(void);
+char    *cL4_tb_ae6c4(char *desc, uint64_t emit);
+uint64_t cL4_tb_aeae0(uint64_t src, uint8_t *out);
+skr39_u128 cL4_tb_ae050(uint64_t map, uint64_t off, uint64_t *out);
+uint64_t cL4_tb_af6a4(uint64_t *obj, uint64_t key, uint64_t val, uint64_t call);
+void     cL4_tb_ae564(uint64_t src, uint8_t *out);
+void     cL4_tb_ae964(uint64_t src, uint8_t *out);
+void     cL4_tb_ae460(uint64_t ctx, uint64_t a, uint64_t b);
+skr39_u128 cL4_tb_d29c(int code);
+void     cL4_tb_cf98(uint64_t *src, uint64_t *dst);
+uint64_t cL4_tb_ad9ac(uint64_t ctx, uint64_t reply, uint64_t *out);
 
 
 /* ================================================================== *
@@ -794,7 +804,7 @@ uint64_t cL4_tb_ad7e8(uint64_t map, uint64_t off, uint64_t len, uint64_t *out) {
  * Confidence: medium */
 void cL4_tb_ad908(uint64_t ctx, uint8_t *reply) {
     (void)ctx;
-    cL4_tb_ae6c4(reply + 8, 0);
+    cL4_tb_ae6c4((char *)(reply + 8), 0);
 }
 
 /* FUN_004ad9ac @ 0x004ad9ac - marshals a frame-mapping reply into the range
@@ -804,7 +814,7 @@ void cL4_tb_ad908(uint64_t ctx, uint8_t *reply) {
  * Confidence: medium */
 uint64_t cL4_tb_ad9ac(uint64_t ctx, uint64_t reply, uint64_t *out) {
     (void)ctx;
-    cL4_tb_ae6c4(reply, 0);
+    cL4_tb_ae6c4((char *)reply, 0);
     *out = 0;
     return 0;
 }
@@ -1121,11 +1131,9 @@ void cL4_tb_ae964(uint64_t src, uint8_t *out) {
  * sub-descriptors (via cL4_tb_ae964) for the mapping-attribute and the
  * frame. Records (obj, method) pairs and flag bytes. Panics on overrun.
  * Confidence: medium */
-void cL4_tb_aeae0(uint64_t src, uint8_t *out) {
+uint64_t cL4_tb_aeae0(uint64_t src, uint8_t *out) {
     uint8_t *p = out + 0x30;
     if (out <= p) {
-        /* cL4_tb_ae964() -> first sub-descriptor; if error, *p=0 and return */
-        if (1) return; /* placeholder: first sub fails -> *p=0 */
         uint8_t *p2 = out + 0x58;
         if (p <= p2) {
             uint64_t method = 0;
@@ -1134,7 +1142,7 @@ void cL4_tb_aeae0(uint64_t src, uint8_t *out) {
             if ((out + 0x40 <= p3) && (p3 <= out + 0x50)) {
                 uint64_t call;
                 int rc = cL4_tb_msg_method(src, out + 0x40, p3, &call);
-                if (rc != 0) { *p = 0; return; }
+                if (rc != 0) { *p = 0; return 0; }
                 *(uint64_t *)(out + 0x38) = src;
                 *(uint64_t *)(out + 0x50) = method;
                 out[0x30] = 2;
@@ -1152,7 +1160,7 @@ void cL4_tb_aeae0(uint64_t src, uint8_t *out) {
                         } else {
                             *p2 = 0;
                         }
-                        return;
+                        return 0;
                     }
                 }
             }
@@ -1240,4 +1248,252 @@ uint64_t cL4_tb_aed34(uint64_t *obj, uint64_t call) {
         cL4_tb_msg_end(*obj, buf + 1);
     }
     return err;
+}
+
+/* FUN_004aefb0 @ 0x004aefb0 - marshals a mapping request (the frame-map
+ * call). Builds a message with a 128-bit or 64-bit descriptor (depending on
+ * the tag byte of param_3), sends it, and dispatches the reply to the
+ * callback at param_4+0x10. Handles both the mapping and error-code reply
+ * forms via cL4_tb_aeae0. Returns the L4-style error code.
+ * Confidence: medium */
+uint64_t cL4_tb_aefb0(uint64_t *obj, uint64_t type, char *desc, uint64_t call) {
+    uint64_t len = (*desc == 1) ? 0x1a : 10;
+    uint64_t buf[32];
+    memset(buf, 0, sizeof buf);
+    uint64_t err = cL4_tb_msg_begin(*obj, buf + 1, 0, len, 0);
+    if ((int)err != 0) return err;
+    cL4_tb_buf_reset(buf + 1, len);
+    cL4_tb_buf_u64(buf + 1, 0x5828149e5418c733ULL);
+    if (((uint32_t)type & 0xfe) != 0x10) goto badval;
+    cL4_tb_buf_u8(buf + 1, type);
+    if (*desc == 1) {
+        cL4_tb_buf_u8(buf + 1, 1);
+        cL4_tb_buf_u64(buf + 1, *(uint64_t *)(desc + 8));
+        cL4_tb_buf_u64(buf + 1, *(uint64_t *)(desc + 0x10));
+    } else {
+        cL4_tb_buf_u8(buf + 1, 0);
+    }
+    cL4_tb_buf_seal(buf + 1);
+    buf[0] = 0;
+    err = cL4_tb_msg_send(*obj, buf + 1, buf, 2);
+    uint64_t rep = buf[0];
+    if (((int)err == 0) || ((int)err == 9)) {
+        if (buf[0] == 0) { cL4_tb_msg_end(*obj, buf + 1); return 4; }
+        uint8_t r[0x20];
+        memset(r, 0, sizeof r);
+        uint64_t tag = 0;
+        cL4_tb_rd_u8(rep, &tag);
+        if ((char)tag == 0) {
+            err = cL4_tb_aeae0(rep, (uint8_t *)((uint64_t)&r | 8));
+            if (((int)err != 9) && ((int)err != 0)) { cL4_tb_msg_end(*obj, buf + 1); return err; }
+        } else {
+            if ((char)tag != 1) goto badval;
+            uint32_t code = 0;
+            cL4_tb_rd_u32(rep, &code);
+            if (9 < (int)code - 0x41) goto badval;
+        }
+        /* dispatch decoded reply to callback at (call+0x10) */
+        (void)call;
+        err = 0;
+    }
+    cL4_tb_msg_end(*obj, buf + 1);
+    return err;
+badval:
+    cL4_tb_fatal("TB_FATAL: invalid value, unexpected");
+}
+
+/* FUN_004af26c @ 0x004af26c - marshals a single-word mapping-attribute
+ * request. Sends a message with a descriptor {key, u32, u64} and dispatches
+ * the reply (a word + error code) to the callback at param_4+0x10.
+ * Confidence: medium */
+uint64_t cL4_tb_af26c(uint64_t *obj, uint64_t key, uint64_t val, uint64_t call) {
+    uint64_t buf[16];
+    memset(buf, 0, sizeof buf);
+    uint64_t err = cL4_tb_msg_begin(*obj, buf + 1, 0, 0x14, 1);
+    if ((int)err != 0) return err;
+    cL4_tb_buf_reset(buf + 1, 0x14);
+    cL4_tb_buf_u64(buf + 1, 0x35a9b26b7b19f547ULL);
+    cL4_tb_buf_u32(buf + 1, key);
+    cL4_tb_buf_u64(buf + 1, val);
+    cL4_tb_buf_seal(buf + 1);
+    buf[0] = 0;
+    err = cL4_tb_msg_send(*obj, buf + 1, buf, 2);
+    uint64_t rep = buf[0];
+    if (((int)err == 0) || ((int)err == 9)) {
+        if (buf[0] == 0) { cL4_tb_msg_end(*obj, buf + 1); return 4; }
+        uint64_t a = 0, b = 0;
+        cL4_tb_rd_u8(rep, &a);
+        if ((char)a == 0) {
+            err = cL4_tb_msg_recv(rep, &b);
+            if (((int)err != 9) && ((int)err != 0)) { cL4_tb_msg_end(*obj, buf + 1); return err; }
+        } else {
+            if ((char)a != 1) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+            uint32_t code = 0;
+            cL4_tb_rd_u32(rep, &code);
+            if (9 < (int)code - 0x41) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+            b = code;
+        }
+        /* dispatch reply (a, b) to callback at (call+0x10) */
+        (void)call;
+        err = 0;
+    }
+    cL4_tb_msg_end(*obj, buf + 1);
+    return err;
+}
+
+/* FUN_004af468 @ 0x004af468 - marshals a mapping-attribute pair request.
+ * Sends a message with a descriptor {key, u64, u64} and dispatches the
+ * reply (via cL4_tb_aeae0) to the callback at param_4+0x10.
+ * Confidence: medium */
+uint64_t cL4_tb_af468(uint64_t *obj, uint64_t key, uint64_t *val, uint64_t call) {
+    uint64_t buf[32];
+    memset(buf, 0, sizeof buf);
+    uint64_t err = cL4_tb_msg_begin(*obj, buf + 1, 0, 0x1c, 0);
+    if ((int)err != 0) return err;
+    cL4_tb_buf_reset(buf + 1, 0x1c);
+    cL4_tb_buf_u64(buf + 1, 0x9acebd52b1e9d4a1ULL);
+    cL4_tb_buf_u32(buf + 1, key);
+    cL4_tb_buf_u64(buf + 1, val[0]);
+    cL4_tb_buf_u64(buf + 1, val[1]);
+    cL4_tb_buf_seal(buf + 1);
+    buf[0] = 0;
+    err = cL4_tb_msg_send(*obj, buf + 1, buf, 2);
+    uint64_t rep = buf[0];
+    if (((int)err == 0) || ((int)err == 9)) {
+        if (buf[0] == 0) { cL4_tb_msg_end(*obj, buf + 1); return 4; }
+        uint8_t r[0x20];
+        memset(r, 0, sizeof r);
+        uint64_t tag = 0;
+        cL4_tb_rd_u8(rep, &tag);
+        if ((char)tag == 0) {
+            err = cL4_tb_aeae0(rep, (uint8_t *)((uint64_t)&r | 8));
+            if (((int)err != 9) && ((int)err != 0)) { cL4_tb_msg_end(*obj, buf + 1); return err; }
+        } else {
+            if ((char)tag != 1) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+            uint32_t code = 0;
+            cL4_tb_rd_u32(rep, &code);
+            if (9 < (int)code - 0x41) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+        }
+        /* dispatch decoded reply to callback at (call+0x10) */
+        (void)call;
+        err = 0;
+    }
+    cL4_tb_msg_end(*obj, buf + 1);
+    return err;
+}
+
+/* FUN_004af6a4 @ 0x004af6a4 - marshals a region-map request (variant of
+ * 0x4aefb0). Sends a message with a {key, u32, u64} descriptor and
+ * dispatches the reply to the callback at param_4+0x10.
+ * Confidence: medium */
+uint64_t cL4_tb_af6a4(uint64_t *obj, uint64_t key, uint64_t val, uint64_t call) {
+    uint64_t buf[16];
+    memset(buf, 0, sizeof buf);
+    uint64_t err = cL4_tb_msg_begin(*obj, buf + 1, 0, 0x14, 0);
+    if ((int)err == 0) {
+        cL4_tb_buf_reset(buf + 1, 0x14);
+        cL4_tb_buf_u64(buf + 1, 0x78c3ffc0141b605fULL);
+        cL4_tb_buf_u32(buf + 1, key);
+        cL4_tb_buf_u64(buf + 1, val);
+        cL4_tb_buf_seal(buf + 1);
+        buf[0] = 0;
+        err = cL4_tb_msg_send(*obj, buf + 1, buf, 2);
+        uint64_t rep = buf[0];
+        if (((int)err == 0) || ((int)err == 9)) {
+            if (buf[0] == 0) { cL4_tb_msg_end(*obj, buf + 1); return 4; }
+            uint64_t a = 0, b = 0;
+            cL4_tb_rd_u8(rep, &a);
+            if ((char)a == 1) {
+                uint32_t code = 0;
+                cL4_tb_rd_u32(rep, &code);
+                if (9 < (int)code - 0x41) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+                b = code;
+            } else {
+                if ((char)a != 0) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
+                cL4_tb_rd_u64(rep, &b);
+            }
+            /* dispatch reply (a, b) to callback at (call+0x10) */
+            (void)call;
+            err = 0;
+        }
+        cL4_tb_msg_end(*obj, buf + 1);
+    }
+    return err;
+}
+
+/* FUN_004af8a4 @ 0x004af8a4 - initialises a message object at param_1 from
+ * param_2: seeds it, reads its id, and validates the tag; on success stores
+ * the id into *param_1.
+ * Confidence: medium */
+void cL4_tb_af8a4(uint64_t *obj, uint64_t src) {
+    cL4_tb_obj_seed(src, 0x7151359897ded024ULL);
+    uint64_t id = cL4_tb_obj_id(src);
+    int ok = cL4_tb_obj_check();
+    if (ok == 0) *obj = id;
+}
+
+/* FUN_004af8f8 @ 0x004af8f8 - copies *param_1 into *param_2 (single-word
+ * copy). Confidence: high (trivial) */
+void cL4_tb_af8f8(uint64_t *src, uint64_t *dst) { *dst = *src; }
+
+/* FUN_004af90c @ 0x004af90c - drains a marshalled stream: reads and
+ * discards *(param_1+0x20) 16-byte entries from the stream at param_1+0x28.
+ * Returns 0.
+ * Confidence: medium */
+uint64_t cL4_tb_af90c(uint64_t p) {
+    uint64_t n = *(uint64_t *)(p + 0x20);
+    uint64_t src = *(uint64_t *)(p + 0x28);
+    for (uint64_t i = 0; i < n; i++) {
+        uint64_t a = 0, b = 0;
+        cL4_tb_rd_skip(src, 0x10);
+        cL4_tb_rd_word(src, &a);
+        cL4_tb_rd_word(src, &b);
+    }
+    return 0;
+}
+
+/* FUN_004af988 @ 0x004af988 - the tightbeam fatal-error trampoline: reads
+ * the current error code from a global, and if it is not the success code
+ * (low byte == 0) invokes the panic/log helpers (FUN_004afa6c,
+ * FUN_004afae4) with the "Unexpected L4 Error" format string. Used on the
+ * fatal-IPC path.
+ * Confidence: medium */
+void cL4_tb_af988(void) {
+    uint64_t *g = (uint64_t *)0x690000; /* FUN_0006ce00(&DAT_00690000) */
+    uint64_t err = *g;
+    if ((err & 0xff) == 0) return;
+    cL4_panicv(0, "Unexpected L4 Error: %s, %zu", 0);
+}
+
+/* FUN_004afa6c @ 0x004afa6c (callee) - panic formatter. */
+void cL4_tb_afa6c(uint64_t tag) {
+    (void)tag;
+    cL4_panicv(0, "%s: %s %d: %s", 0);
+}
+
+/* FUN_004afae4 @ 0x004afae4 - noreturn panic with a single format argument.
+ * Confidence: high */
+void cL4_tb_afae4(uint64_t fmt) { (void)fmt; cL4_panicv(0, "%s", 0); }
+
+/* FUN_004afb14 @ 0x004afb14 - tightbeam fatal-error entry: reports the
+ * current error code and panics with "Unexpected L4 Error".
+ * Confidence: medium */
+void cL4_tb_afb14(void) {
+    cL4_tb_afa6c(0xeb1a02bf914012baULL);
+    cL4_tb_afae4(0x5a8cac);
+}
+
+/* FUN_004afb6c @ 0x004afb6c - tightbeam fatal-error entry (variant):
+ * reports the current error code and panics with "Unexpected L4 Error".
+ * Confidence: medium */
+void cL4_tb_afb6c(void) {
+    cL4_tb_afa6c(0xeb1a02bf914012baULL);
+    cL4_tb_afae4(0x5a8b89);
+}
+
+/* FUN_004ac9d8 @ 0x004ac9d8 - register-window thunk: returns (x21 + x9)
+ * (forwards an offset-added coroutine register value).
+ * Confidence: medium */
+uint64_t cL4_tb_9d8(void) {
+    uint64_t r; __asm__ volatile("add %0, x21, x9" : "=r"(r)); return r;
 }

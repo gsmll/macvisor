@@ -809,7 +809,7 @@ static word_t sk_r30_00490174(word_t unaff_x20, word_t unaff_x22 /* unaff_x22: d
         do {
             FUN_00117cc4(auStack_178, lVar6, 0x178);
             FUN_00458d30(auStack_178, auStack_458);
-            FUN_00490268(auStack_2d8, auStack_178);
+            FUN_00490268((word_t)auStack_2d8, (word_t)auStack_178);
             FUN_00458d40(auStack_178);
             uVar1 = *(word_t *)(unaff_x22 + 0x10);
             if (*(word_t *)(unaff_x22 + 0x18) >> 1 <= uVar1) {
@@ -903,7 +903,7 @@ static word_t sk_r30_0049115c(word_t param_1, word_t param_2, word_t param_3, wo
     auVar1[15] = 0;
     /* 00100efc returns 16 bytes (x0:x1); split into two words */
     *(word_t *)auVar1 = FUN_00100efc();
-    FUN_00491704(*(word_t *)auVar1, *(word_t *)(auVar1 + 8), param_3, param_4);
+    FUN_00491704();
     return 0;
 }
 
@@ -995,9 +995,9 @@ static word_t sk_r30_00491c84(word_t in_x8, word_t in_x9, word_t in_x16,
     *(word_t *)(lVar3 + 0x18) = unaff_x20;
     FUN_0035056c(*(word_t *)(in_x16 + 0x20), lVar3 + uVar4);
     ((code)in_x8)();                           /* indirect call through extraout_x8_00 */
-    *(word_t *)(unaff_x25 + 0x18) = FUN_0049c7fc;
+    *(word_t *)(unaff_x25 + 0x18) = (word_t)FUN_0049c7fc;
     *(word_t *)(unaff_x25 + 0x20) = lVar3;
-    uVar1 = FUN_0049153c(unaff_x25 | 0x7000000000000000, uVar1);
+    uVar1 = FUN_0049153c();
     FUN_0008e500(uVar1, unaff_x30);
     return 0;
 }
@@ -1370,7 +1370,9 @@ LAB_00493f74:
  * Confidence: high */
 static word_t sk_r30_004947e4(void)
 {
-    FUN_00494810();
+    /* Delegates to the 9-param in-slice teardown; register/stack artifacts
+     * (callback, buffers, context) are undefined in this thin wrapper. */
+    FUN_00494810(0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -1382,7 +1384,7 @@ static word_t sk_r30_004947e4(void)
 static word_t sk_r30_00494cc4(byte param_1)
 {
     FUN_004ab65c();
-    FUN_00494b44(8, param_1 == 0x01);
+    FUN_00494b44(8, param_1 == 0x01, 0, 0);
     return 0;
 }
 
@@ -1423,7 +1425,7 @@ static word_t sk_r30_0049552c(word_t param_1, byte param_2, word_t param_3)
     uVar1 = FUN_0036a940();
     *(word_t *)(uVar1 + 0x10) = param_1;
     *(byte *)(uVar1 + 0x18) = param_2;
-    uVar2 = FUN_0049153c(uVar1 | 0x3000000000000004, param_3);
+    uVar2 = FUN_0049153c();
     FUN_0036b270(param_1);
     return uVar2;
 }
@@ -1457,7 +1459,7 @@ static word_t sk_r30_004959d8(void)
     FUN_004ab5d4(in_x4);
     FUN_00084180();
     ((code)in_x4)();                          /* indirect call through extraout_x8 */
-    FUN_00491644();
+    FUN_00491644(0);
     FUN_00351d18();
     FUN_0036b118();
     *(word_t *)(uVar1 + 0x30) = *(word_t *)auVar2;
@@ -1466,7 +1468,7 @@ static word_t sk_r30_004959d8(void)
     *(word_t *)(uVar1 + 0x50) = 0;
     *(word_t *)(uVar1 + 0x48) = 0;
     *(byte *)(uVar1 + 0x58) = 0;
-    FUN_0049153c(uVar1 | 0x1000000000000000);
+    FUN_0049153c();
     return 0;
 }
 /* ==================== SKR30 chunk 1 (part_1.c) ==================== */
@@ -1483,7 +1485,8 @@ static word_t sk_r30_004959d8(void)
 static word_t sk_r30_00490268(word_t arg_a, word_t arg_b)
 {
     word_t uVar1, lVar2, lVar8, lVar9, lVar11, uVar6;
-    word_t puVar4, ppuVar7, puVar10;
+    word_t puVar4, puVar10;
+    word_t *ppuVar7;   /* decompile: undefined **ppuVar7 (pointer into local_8b0/local_a10) */
     uint uVar3;
     byte extraout_w1;             /* low byte carried from FUN_00490174 */
     word_t extraout_x8;           /* pointer leftover from a prior call */
@@ -1500,7 +1503,7 @@ static word_t sk_r30_00490268(word_t arg_a, word_t arg_b)
     byte local_178;
 
     auVar12 = ((wpair_t (*)())&FUN_0008e518)();
-    ppuVar7 = auVar12.lo;
+    ppuVar7 = (word_t *)auVar12.lo;
     FUN_00117cc4(auStack_478, ppuVar7, 0x178);
     uVar3 = FUN_00458d04(auStack_478);
     switch (uVar3) {
@@ -1512,7 +1515,7 @@ static word_t sk_r30_00490268(word_t arg_a, word_t arg_b)
         local_300[2] = *(word_t *)((char *)puVar4 + 16);
         local_300[5] = *(word_t *)((char *)puVar4 + 40);
         local_300[4] = *(word_t *)((char *)puVar4 + 32);
-        local_180[0] = sk_r30_00490174();
+        local_180[0] = sk_r30_00490174(arg_a, arg_b);
         local_178 = extraout_w1 & 1;
         FUN_004a3390(&local_180);
         goto LAB_00490348;
@@ -1569,7 +1572,7 @@ LAB_00490364:
             do {
                 FUN_00117cc4(&local_180, lVar9, 0x178);
                 FUN_00458d30(&local_180, &local_300);
-                sk_r30_00490268(auStack_738, (word_t)&local_180);
+                sk_r30_00490268((word_t)auStack_738, (word_t)&local_180);
                 FUN_00458d40(&local_180);
                 uVar1 = *(word_t *)((char *)puVar10 + 0x10);
                 local_8b0[0] = (unsigned char *)puVar10;
@@ -1579,7 +1582,7 @@ LAB_00490364:
                     FUN_0049a550();
                 }
                 puVar10 = (word_t)local_8b0[0];
-                ppuVar7 = (word_t)local_8b0;
+                ppuVar7 = (word_t *)local_8b0;
                 *(word_t *)((char *)puVar10 + 0x10) = uVar1 + 1;
                 FUN_00117cc4(local_8b0[0] + uVar1 * 0x160 + 0x20, auStack_738, 0x160);
                 lVar9 = lVar9 + 0x178;
@@ -1593,11 +1596,11 @@ LAB_00490364:
             FUN_000840b8();
             FUN_0049a550();
             lVar11 = lVar11 + 0x20;
-            ppuVar7 = (word_t)local_a10[0];
+            ppuVar7 = (word_t *)local_a10[0];
             do {
                 FUN_00117cc4(&local_300, lVar11, 0x178);
                 FUN_00458d30(&local_300, local_8b0);
-                sk_r30_00490268(auStack_5d8, (word_t)&local_300);
+                sk_r30_00490268((word_t)auStack_5d8, (word_t)&local_300);
                 FUN_00458d40(&local_300);
                 puVar10 = ppuVar7[2];
                 local_a10[0] = (word_t **)ppuVar7;
@@ -1606,8 +1609,8 @@ LAB_00490364:
                     FUN_000dbed0();
                     FUN_0049a550();
                 }
-                ppuVar7 = (word_t)local_a10[0];
-                local_a10[0][2] = puVar10 + 1;
+                ppuVar7 = (word_t *)local_a10[0];
+                local_a10[0][2] = (word_t *)(puVar10 + 1);
                 FUN_00117cc4(local_a10[0] + puVar10 * 0x2c + 4, auStack_5d8, 0x160);
                 lVar11 = lVar11 + 0x178;
                 lVar9 = lVar9 - 1;
@@ -1702,7 +1705,7 @@ static word_t sk_r30_004911b0(word_t param_1, word_t param_2, word_t param_3,
     FUN_003a25d4(param_2);
     if (unaff_x21 == 0) {
         auVar2 = ((wpair_t (*)())&FUN_000e15d8)();
-        unaff_x23 = sk_r30_0049115c(auVar2.lo, auVar2.hi, param_3);
+        unaff_x23 = sk_r30_0049115c(auVar2.lo, auVar2.hi, param_3, param_4, 0);
         auVar2 = ((wpair_t (*)())&FUN_00491288)(unaff_x23, param_4);
         if ((auVar2.lo & 1) == 0) {
             FUN_0036b118(unaff_x23);
@@ -1729,7 +1732,7 @@ static word_t sk_r30_00491704(void)
     FUN_000dce50();
     uVar1 = FUN_0036a940();
     FUN_00100efc();
-    sk_r30_00491abc();
+    sk_r30_00491abc(0, 0, 0, uVar1);
     return uVar1;
 }
 
@@ -1894,7 +1897,7 @@ static word_t sk_r30_00492e18(word_t *pair_out /* 16-byte result buffer */,
     FUN_002a4ab4(0x2b);
     FUN_003a25d4(local_38);
     FUN_00086840((word_t)(char *)0x5e31a0);      /* s_<transform_argument_type_ */
-    FUN_00208418(*unaff_x20, 0);
+    FUN_00208418(*(word_t *)unaff_x20, 0);
     FUN_002acbb8();
     FUN_003a25d4(extraout_x1);
     FUN_002acbb8(0x5f746c7573657220, 0xed00003d65707974);   /* " user" / "type=" */
@@ -2005,7 +2008,7 @@ static word_t sk_r30_00493fa0(word_t unaff_x20 /* context */, word_t reg_x8,
  * Confidence: high   Notes: trivial tail forward. */
 static word_t sk_r30_004947e8(void)
 {
-    sk_r30_00494810();
+    sk_r30_00494810(0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -2017,7 +2020,7 @@ static word_t sk_r30_00494d1c(word_t param_1, word_t param_2,
                               word_t param_3, word_t param_4)
 {
     FUN_004ab65c();
-    sk_r30_00494b44(param_4, param_1);
+    sk_r30_00494b44(param_4, param_1, 0, 0);
     return 0;
 }
 
@@ -2070,11 +2073,11 @@ static word_t sk_r30_00495598(word_t unaff_x20 /* self/context */, word_t in_x4,
     FUN_004ab5d4(in_x4);
     FUN_00084180();
     ((word_t (*)())reg_x8)();
-    sk_r30_00491644();
+    sk_r30_00491644(uVar1);
     FUN_00351d18();
     FUN_0036b118();
     *(word_t *)(uVar1 + 0x58) = unaff_x20;
-    sk_r30_0049153c(uVar1 | 0x3000000000000000);
+    sk_r30_0049153c();
     return 0;
 }
 
@@ -2084,7 +2087,7 @@ static word_t sk_r30_00495598(word_t unaff_x20 /* self/context */, word_t in_x4,
  * Confidence: high   Notes: trivial tail forward. */
 static word_t sk_r30_00495a74(void)
 {
-    sk_r30_00495aec();
+    sk_r30_00495aec(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 /* FUN_00490600 @ 0x00490600  (est. sk_r30_lookup_table_byte)
@@ -2248,7 +2251,7 @@ static word_t sk_r30_00491288(word_t unaff_x30 /* context register-global */)
         FUN_0036b118(lVar6);
         if (*(long *)((byte *)puVar8 + 0x10) == 1) {
             FUN_003a25d4(uVar12);
-            FUN_0049341c(uVar11);
+            FUN_0049341c(uVar11, 0 /* uncaptured unaff_x21 mask register-global */);
             uVar13 = FUN_004ab034();
             if (extraout_w8 == 0xe) {
                 uVar13 = *(word_t *)((uVar13 & 0xffffffffffffffb) + 0x10);
@@ -2314,7 +2317,7 @@ static word_t sk_r30_0049174c(word_t unaff_x30 /* context register-global */)
     FUN_004630c4();
     FUN_003a25d4(uVar2);
     FUN_003505c4(uVar1);
-    uVar1 = sk_r30_0049115c();
+    uVar1 = sk_r30_0049115c(0, 0, 0, 0, 0 /* params 1-5: uncaptured forwarder args */);
     FUN_00354ef8(uVar1, unaff_x30);
     return 0;
 }
@@ -2378,7 +2381,7 @@ static word_t sk_r30_00491f48(void)
     word_t local_48[4];
     byte local_28;
 
-    local_48[0] = FUN_00492038() & 0xff;
+    local_48[0] = FUN_00492038(0 /* uncaptured table index register arg */) & 0xff;
     local_48[1] = 0;
     local_48[2] = 0;
     local_48[3] = 0;
@@ -2474,7 +2477,7 @@ static word_t sk_r30_00492eec(word_t param_1, word_t param_2, word_t param_3,
                     FUN_0041c2c8();
                     FUN_004ab1b4();
                     FUN_004acab4(uVar10);
-                    sk_r30_00492eec();
+                    sk_r30_00492eec(param_1, param_2, param_3, unaff_x19, unaff_x30);
                     FUN_0036b118(uVar10 & 0xffffffffffffffb);
                     lVar7 = lVar7 + 8;
                     lVar11 = lVar11 + -1;
@@ -2504,7 +2507,7 @@ caseD7:
                     FUN_0036b270(uVar10 & 0xffffffffffffffb);
                     FUN_004abc6c();
                     FUN_000e72b0();
-                    sk_r30_00492eec();
+                    sk_r30_00492eec(param_1, param_2, param_3, unaff_x19, unaff_x30);
                     FUN_0036b118(uVar10 & 0xffffffffffffffb);
                     lVar7 = lVar7 + 8;
                     lVar11 = lVar11 + -1;
@@ -2518,7 +2521,7 @@ caseD7:
             uVar5 = *(word_t *)(extraout_x8_00 + 0x30);
             if (*(long *)(extraout_x8_00 + 0x38) == 0) {
                 FUN_0036b270(*(word_t *)(extraout_x8_00 + 0x18));
-                FUN_0049341c(uVar5);
+                FUN_0049341c(uVar5, 0 /* uncaptured unaff_x21 mask register-global */);
                 FUN_004ab034();
                 if (extraout_w8 == 0xe) {
                     FUN_0036b118();
@@ -2549,7 +2552,7 @@ caseD7:
             uVar9 = *(word_t *)(extraout_x8_03 + 0x10);
             auVar12.lo = FUN_0036b270(uVar9 & unaff_x19);
             FUN_0008e388(auVar12.lo, auVar12.hi, (uint)param_3 & 1);
-            sk_r30_00492eec();
+            sk_r30_00492eec(param_1, param_2, param_3, unaff_x19, unaff_x30);
             uVar9 = uVar9 & unaff_x19;
             goto lab_4930f0;
         case 5:
@@ -2574,13 +2577,13 @@ caseD7:
             FUN_0041c2c8();
             FUN_004ab1b4();
             FUN_004acab4(uVar5);
-            sk_r30_00492eec();
+            sk_r30_00492eec(param_1, param_2, param_3, unaff_x19, unaff_x30);
             FUN_004aafc8();
             FUN_0041c2c8();
             FUN_004ab1b4();
             FUN_004acab4(uVar2);
 lab_4932f4:
-            sk_r30_00492eec();
+            sk_r30_00492eec(param_1, param_2, param_3, unaff_x19, unaff_x30);
             goto caseD7;
         case 6:
             FUN_004ab260();
@@ -2646,7 +2649,7 @@ lab_4930f0:
  * storage (FUN_0006b42c/0049a624) and appending. Then calls FUN_00455b88 to
  * validate the result: on success invokes a completion hook, else re-decodes the
  * matched entry and runs FUN_0047c62c.
- * Confidence: low   Notes: heavy extraout_x8_0 / extraout_x9 (from
+ * Confidence: low   Notes: heavy extraout_x8_0 and extraout_x9 (from
  * FUN_0007c028/FUN_003509a4) and the SUB_54ffff60f100041f code-pointer artifact
  * are transcribed mechanically; unaff_x20 = context array register-global,
  * unaff_x30 = context. */
@@ -2744,7 +2747,7 @@ lab_494454:
     /* auVar16_hi (byte 8 of the 12-byte return, x1) is not captured by the shim. */
     FUN_0036b118(unaff_x20);
     if ((auVar16_hi & 0xff) == 1) {   /* auVar16._8_4_ & 0xff */
-        FUN_00493fa0(local_110, auVar14.hi);
+        FUN_00493fa0(local_110, auVar14.hi, 0 /* uncaptured reg_x16 */);
         FUN_0024c9c0(extraout_x8, local_110, plVar5);
         FUN_00350bc0(auStack_8);
         FUN_003508fc();
@@ -2816,7 +2819,8 @@ static word_t sk_r30_00494d68(char kind)
         FUN_004ab65c();
         uVar1 = 0x12;
     }
-    FUN_00494b44(uVar1, kind == '\x02' || kind == '\x01');
+    FUN_00494b44(uVar1, kind == '\x02' || kind == '\x01',
+                 0, 0 /* uncaptured param_3 and unaff_x30 register-globals */);
     return 0;
 }
 
@@ -2839,21 +2843,21 @@ static word_t sk_r30_0049516c(word_t param_1, word_t param_2, word_t param_3,
     pcVar2 = (code)FUN_0049747c(param_3);
     FUN_00084180();
     uVar3 = (*pcVar2)();
-    uVar4 = FUN_00491644();
+    uVar4 = FUN_00491644(unaff_x19 /* inferred self/context, uncaptured in decompile */);
     FUN_0036b118(uVar3);
     uVar5 = FUN_004921bc(uVar4);
     FUN_0036b118(uVar4 & 0xffffffffffffffb);
     if ((uVar5 & 1) == 0) {
         FUN_00084180();
         (*pcVar2)();
-        FUN_00491644();
+        FUN_00491644(unaff_x19 /* inferred self/context, uncaptured in decompile */);
         FUN_0035310c();
         FUN_0036b118();
     } else {
         uVar4 = FUN_0036a940(0x686200, 0x18, 7);
         FUN_00084180();
         (*pcVar2)();
-        FUN_00491644();
+        FUN_00491644(unaff_x19 /* inferred self/context, uncaptured in decompile */);
         FUN_00351d18();
         FUN_0036b118();
         *(word_t *)(uVar4 + 0x10) = uVar1;
@@ -2898,7 +2902,7 @@ static word_t sk_r30_00495634(word_t unaff_x20 /* context register-global */,
     FUN_004ab5d4();
     FUN_00100efc();
     extraout_x8();
-    FUN_00491644();
+    FUN_00491644(unaff_x20 /* inferred self/context, uncaptured in decompile */);
     FUN_00351d18();
     FUN_0036b118();
     *(word_t *)(unaff_x24 + 0x58) = unaff_x20;
@@ -2913,7 +2917,9 @@ static word_t sk_r30_00495634(word_t unaff_x20 /* context register-global */,
  * Confidence: high   Notes: trivial one-call body. */
 static word_t sk_r30_00495ab0(void)
 {
-    sk_r30_00495aec();
+    /* Void(void) forwarder: callee's 17 register/stack args are uncaptured in
+     * the decompile; passed as 0 placeholders to satisfy the in-slice prototype. */
+    sk_r30_00495aec(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 /* ============================ part_3.c (SKR30 chunk 3) ============================ */
@@ -3004,7 +3010,14 @@ static word_t sk_r30_0049063c(word_t param_1, word_t param_2, word_t param_3, wo
                     local_78 = 0x675c68;
                     FUN_00355538(0x686160);
                     local_90[0] = (long)FUN_0036a940();
-                    *(unsigned char (*)[16])(local_90[0] + 0x10) = auVar11;
+                    {
+                        /* 16-byte aggregate copy: arrays are not assignable in C */
+                        unsigned char *dst = (unsigned char *)(local_90[0] + 0x10);
+                        int copy_i;
+                        for (copy_i = 0; copy_i < 16; copy_i++) {
+                            dst[copy_i] = auVar11[copy_i];
+                        }
+                    }
                     *(char **)(local_90[0] + 0x20) = puVar7;
                     *(char **)(local_90[0] + 0x28) = puVar8;
                     if (local_168 != 0) {
@@ -3079,9 +3092,10 @@ static word_t sk_r30_00490e40(word_t param_1, word_t param_2, word_t *param_3,
     word_t extraout_w1;   /* carried (w1) stored into *(unaff_x19+1) */
     word_t agg_lo;        /* FUN_00351124 x0 (auVar2._0_8_) */
     word_t agg_hi4;       /* FUN_00351124 x1 high 4 (auVar2._8_4_) */
+    word_t out_hi;        /* upper word of 16-byte result (dropped by Ghidra) */
 
     agg_lo = FUN_00351124();
-    uVar1 = FUN_00490b98(agg_lo, agg_hi4, *param_3, unaff_x20[0], unaff_x20[1], unaff_x20[2]);
+    uVar1 = FUN_00490b98(agg_lo, agg_hi4, *param_3, unaff_x20[0], unaff_x20[1], unaff_x20[2], &out_hi);
     *unaff_x19 = uVar1;
     *(unsigned char *)((char *)unaff_x19 + 8) = (unsigned char)extraout_w1;
     return 0;
@@ -3095,7 +3109,7 @@ static word_t sk_r30_0049153c(void)
 {
     FUN_0049d1ec(0);
     FUN_00351d18();
-    sk_r30_00491b58();
+    sk_r30_00491b58(FUN_00351d18());   /* param_1 = result of preceding FUN_00351d18 */
     return 0;
 }
 
@@ -3116,7 +3130,7 @@ static word_t sk_r30_004917d8(word_t unaff_x30 /* register-global */)
     FUN_004630c4();
     FUN_003a25d4(uVar2);
     FUN_003505c4();
-    uVar1 = sk_r30_0049115c();
+    uVar1 = sk_r30_0049115c(0, 0, 0, 0, 0);   /* 5 args dropped by Ghidra (unmodeled regs) */
     FUN_00354ef8(uVar1, unaff_x30);
     return 0;
 }
@@ -3203,7 +3217,7 @@ static word_t sk_r30_00493354(word_t param_1)
     unsigned char auStack_58[56];
 
     uVar1 = FUN_0006f6b4();
-    sk_r30_0049341c(param_1);
+    sk_r30_0049341c(param_1, 0);   /* unaff_x21 (mask register-global) unmodeled in caller */
     uVar2 = FUN_004ab034();
     if (extraout_w8 == 0xe) {
         uVar3 = *(word_t *)((uVar2 & 0xffffffffffffffb) + 0x10);
@@ -3282,7 +3296,8 @@ static word_t sk_r30_0049466c(word_t param_1, long param_2, word_t param_3, word
  * Confidence: low */
 static word_t sk_r30_004948e0(void)
 {
-    sk_r30_0049490c();
+    /* 9 params (register-globals / stack-passed) all unmodeled in this thin forwarder */
+    sk_r30_0049490c(0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -3300,7 +3315,7 @@ static word_t sk_r30_00494dd0(char param_1)
     } else {
         uVar1 = 0xf;
     }
-    sk_r30_00494b44(uVar1, 1);
+    sk_r30_00494b44(uVar1, 1, 0, 0);   /* param_3 + unaff_x30 dropped by Ghidra */
     return 0;
 }
 
@@ -3323,12 +3338,12 @@ static word_t sk_r30_00495298(word_t in_x5 /* register */, word_t in_x6 /* regis
     FUN_004ab5d4(in_x5);
     FUN_00351274();
     uVar1 = (*((code *)0))();        /* (extraout_x8_00)() carried indirect target */
-    uVar2 = FUN_00491644();
+    uVar2 = FUN_00491644(uVar1);     /* param_1 = preceding indirect-call result */
     FUN_0036b118(uVar1);
     FUN_004ab5d4(in_x6);
     FUN_00351384();
     uVar1 = (*((code *)0))();        /* (extraout_x8_01)() carried indirect target */
-    uVar3 = FUN_00491644();
+    uVar3 = FUN_00491644(uVar1);     /* param_1 = preceding indirect-call result */
     FUN_0036b118(uVar1);
     FUN_000e15d8();
     (*((code *)in_x7))();
@@ -3371,10 +3386,10 @@ static word_t sk_r30_004956c0(word_t param_1, word_t param_2, word_t param_3, wo
     FUN_004ab5d4(param_5);
     FUN_00100efc();
     uVar2 = (*((code *)0))();        /* (extraout_x8)() carried indirect target */
-    uVar3 = FUN_00491644();
+    uVar3 = FUN_00491644(uVar2);     /* param_1 = preceding indirect-call result */
     FUN_0036b118(uVar2);
     *(word_t *)(uVar1 + 0x58) = uVar3;
-    sk_r30_0049153c(uVar1 | 0x3000000000000000);
+    sk_r30_0049153c();               /* void signature; tagged-pointer arg dropped */
     return 0;
 }
 
@@ -3415,7 +3430,7 @@ static word_t sk_r30_00495aec(word_t param_1, word_t param_2, uint param_3, word
     FUN_004ab5d4(in_stack_000000a8);
     FUN_00350a04();
     (*((code *)0))();        /* (extraout_x8_00)() carried indirect target */
-    FUN_00491644();
+    FUN_00491644((*((code *)0))());   /* param_1 = preceding indirect-call result */
     FUN_004ac2d0();
     FUN_0036b118();
     *(long *)(uVar3 + 0x30) = (long)auVar4.lo;
@@ -3439,9 +3454,10 @@ static word_t sk_r30_00495aec(word_t param_1, word_t param_2, uint param_3, word
  * Confidence: low   Notes: unaff_x20 register-global modeled as trailing param */
 static word_t sk_r30_00490970(word_t unaff_x20 /* unaff_x20: self/context register-global */)
 {
-    undefined1 local_60[16];
-    undefined1 auStack_50[24];
+    byte local_60[16];
+    byte auStack_50[24];
     long local_38;
+    wpair_t auVar1;
 
     FUN_004ab128();
     FUN_004a4ac4(unaff_x20 + 8, local_60);
@@ -3450,10 +3466,9 @@ static word_t sk_r30_00490970(word_t unaff_x20 /* unaff_x20: self/context regist
         FUN_004a4b14(local_60);
         FUN_00019858();
     } else {
-        undefined1 auVar1[16];
         FUN_0034cc24();
-        auVar1 = FUN_004a4b14(auStack_50);
-        FUN_003507e0(auVar1[0], auVar1[1],
+        auVar1 = ((wpair_t (*)())&FUN_004a4b14)(auStack_50);
+        FUN_003507e0(auVar1.lo, auVar1.hi,
                      *(word_t *)(unaff_x20 + 0x58),
                      *(word_t *)(unaff_x20 + 0x60));
         FUN_0029fa0c();
@@ -3470,11 +3485,11 @@ static word_t sk_r30_00490970(word_t unaff_x20 /* unaff_x20: self/context regist
 static word_t sk_r30_00490c44(word_t unaff_x19 /* unaff_x19: store pointer register-global */,
                               word_t unaff_x20 /* unaff_x20: key/value context register-global */)
 {
-    undefined1 auVar2[16];
+    wpair_t auVar2;
     word_t uVar1;
 
-    auVar2 = FUN_00351124();
-    uVar1 = sk_r30_00490b78(auVar2[0], auVar2[1],
+    auVar2 = ((wpair_t (*)())&FUN_00351124)();
+    uVar1 = sk_r30_00490b78(auVar2.lo, auVar2.hi,
                             *(word_t *)unaff_x20, *(word_t *)(unaff_x20 + 1),
                             *(word_t *)(unaff_x20 + 2));
     *(word_t *)unaff_x19 = uVar1;
@@ -3545,9 +3560,11 @@ static word_t sk_r30_00491864(word_t unaff_x20 /* unaff_x20: element value regis
     uVar2 = FUN_0036a940();
     *(word_t *)(uVar2 + 0x10) = uVar1;
     *(word_t *)(uVar2 + 0x18) = unaff_x20;
-    sk_r30_0049153c(uVar2 | 0x5000000000000000);
+    sk_r30_0049153c();
     return 0;
 }
+
+/* FUN_00491b88 @ 0x00491b88  (est. sk_r30_set_destroy_bucket)
 
 /* FUN_00491b88 @ 0x00491b88  (est. sk_r30_set_destroy_bucket)
  * Ghidra: void FUN_00491b88(void)
@@ -3589,7 +3606,7 @@ static word_t sk_r30_00492850(word_t param_1,
     long lVar2;
 
     lVar2 = *(long *)(in_x7 + -8);
-    (*(code *)&0x54ffff60f100041f)(*(word_t *)(lVar2 + 0x40));
+    (*(code *)0x54ffff60f100041fULL)(*(word_t *)(lVar2 + 0x40));
     (*(code *)in_x4)(&((long *)0)[-1] - (extraout_x8 + 0xf & 0xfffffffffffffff0));
     if (unaff_x21 == 0) {
         *(long *)(param_1 + 0x18) = in_x7;
@@ -3614,7 +3631,7 @@ static word_t sk_r30_0049341c(word_t param_1, word_t unaff_x21 /* unaff_x21: mas
 
     FUN_004ab26c();
     if ((extraout_w8 & 0xfffffffe | (uint)param_1 >> 2 & 1) - 3 < 2) {
-        lVar2 = sk_r30_004922d8(param_1);
+        lVar2 = sk_r30_004922d8(param_1, 0, 0, 0);
         if (*(long *)(lVar2 + 0x10) == 0) {
             CL4_SWBP(0x4934a8);
         }
@@ -3636,7 +3653,7 @@ static word_t sk_r30_0049341c(word_t param_1, word_t unaff_x21 /* unaff_x21: mas
  * Confidence: low   Notes: trampoline body */
 static word_t sk_r30_0049478c(void)
 {
-    sk_r30_00494810();
+    sk_r30_00494810((code)0, NULL, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -3646,7 +3663,7 @@ static word_t sk_r30_0049478c(void)
  * Confidence: low   Notes: trampoline body */
 static word_t sk_r30_004948e4(void)
 {
-    sk_r30_0049490c();
+    sk_r30_0049490c(NULL, NULL, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -3663,9 +3680,9 @@ static word_t sk_r30_00494e2c(void)
 
     FUN_0049c874(0);
     FUN_00351390(0x13);
-    uVar1 = sk_r30_00494b44();
+    uVar1 = sk_r30_00494b44(0, 0, 0, 0);
     FUN_00351390(0x10);
-    uVar2 = sk_r30_00494b44();
+    uVar2 = sk_r30_00494b44(0, 0, 0, 0);
     FUN_0036b118(uVar1);
     return uVar2;
 }
@@ -3685,7 +3702,7 @@ static word_t sk_r30_00495388(uint param_1, word_t param_2)
     local_e0[0] = param_1;
     FUN_0049ca14(local_e0);
     FUN_004ac61c(uVar1 + 0x10);
-    sk_r30_0049153c(uVar1 | 0x4000000000000000, param_2);
+    sk_r30_0049153c();
     return 0;
 }
 
@@ -3702,21 +3719,21 @@ static word_t sk_r30_00495768(word_t param_1, word_t param_2, word_t param_3,
                               word_t unaff_x30 /* unaff_x30: context register-global */)
 {
     code *extraout_x8;
-    undefined1 auVar1[16];
+    wpair_t auVar1;
 
     FUN_00084220();
     FUN_00407ab8();
     FUN_004ab5d4(param_7);
     FUN_00084180();
     (*extraout_x8)();
-    sk_r30_00491644();
+    sk_r30_00491644(0);
     FUN_00351d18();
     FUN_0036b118();
-    auVar1 = FUN_00350618();
-    sk_r30_00493dfc(auVar1[0], auVar1[1], param_3, param_4);
+    auVar1 = ((wpair_t (*)())&FUN_00350618)();
+    sk_r30_00493dfc(auVar1.lo, auVar1.hi, param_3, param_4, unaff_x30);
     FUN_0036b118(param_4 & 0xffffffffffffffb);
-    auVar1 = FUN_003504ac();
-    FUN_00084234(auVar1[0], auVar1[1], unaff_x30);
+    auVar1 = ((wpair_t (*)())&FUN_003504ac)();
+    FUN_00084234(auVar1.lo, auVar1.hi, unaff_x30);
     sk_r30_0049153c();
     return 0;
 }
@@ -3730,7 +3747,7 @@ static word_t sk_r30_00495768(word_t param_1, word_t param_2, word_t param_3,
 static word_t sk_r30_00495bcc(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
 {
     word_t uVar2;
-    undefined1 auVar3[16];
+    byte auVar3[16];
     word_t local_50;
     word_t uStack_48;
     word_t local_40;
@@ -3791,7 +3808,7 @@ static word_t sk_r30_00490a04(word_t *unaff_x20 /* unaff_x20: self/context regis
             FUN_003625e4(uVar1, local_88, 1);
             FUN_000026e8(auStack_a0);
             FUN_0007c1c4();
-            uVar1 = FUN_004916f4();
+            uVar1 = FUN_004916f4(unaff_x20, 0);
             FUN_0034cc24();
             FUN_004a4b14(auStack_50);
             return uVar1;
@@ -3877,7 +3894,7 @@ static word_t sk_r30_00491600(word_t unaff_x20 /* unaff_x20: self/context regist
 {
     long lVar1;
 
-    FUN_00491644();
+    FUN_00491644(unaff_x20);
     FUN_00351d18();
     FUN_0036b118();
     FUN_004ac830();
@@ -3912,7 +3929,7 @@ static word_t sk_r30_004918ac(void)
  * Confidence: low */
 static word_t sk_r30_00491bb4(void)
 {
-    FUN_00491b88();
+    FUN_00491b88(0);
     FUN_000dce50();
     FUN_0036b6ac();
     return 0;
@@ -3952,7 +3969,7 @@ static word_t sk_r30_00492920(long param_1, word_t param_2, code *param_3,
     unsigned char auStack_70[32];
 
     extraout_x8 = FUN_0007c028();
-    ((code *)(uintptr_t)0x54ffff60f100041f)(*(word_t *)(extraout_x8 + 0x40));
+    (*(code *)(uintptr_t)0x54ffff60f100041f)(*(word_t *)(extraout_x8 + 0x40));
     uVar1 = FUN_000aa4ec();
     FUN_00319808(uVar1, auStack_70);
     FUN_00351f34();
@@ -4206,7 +4223,7 @@ switchD_004934fc_caseD_7:
  * Confidence: low */
 static word_t sk_r30_00494790(void)
 {
-    FUN_00494810();
+    FUN_00494810(0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -4280,7 +4297,7 @@ static word_t sk_r30_00495400(code *unaff_x19 /* unaff_x19: callback register-gl
     local_e0[0] = uVar1;
     (*unaff_x19)(local_e0);
     FUN_004ac61c(uVar2 + 0x10);
-    FUN_0049153c(uVar2 | 0x4000000000000000);
+    FUN_0049153c();
     return 0;
 }
 
@@ -4314,11 +4331,11 @@ static word_t sk_r30_00495810(code *extraout_x8 /* register carry-over */,
     FUN_004ab5d4();
     FUN_00100efc();
     (*extraout_x8)();
-    FUN_00491644();
+    FUN_00491644(unaff_x24);
     FUN_00351d18();
     FUN_0036b118();
     *(long *)(unaff_x24 + 0x68) = auVar2.lo;
-    FUN_0049153c(unaff_x24 | 0x1000000000000004, auVar2.hi);
+    FUN_0049153c();
     return 0;
 }
 
@@ -4365,7 +4382,8 @@ static word_t sk_r30_00490cb8(word_t *param_1, word_t *param_2, word_t *unaff_x2
 
     box = FUN_0036a908(0x68, 0xebae);
     *param_1 = box;
-    sk_r30_00490b14(box, *param_2, unaff_x20[0], unaff_x20[1], unaff_x20[2]);
+    sk_r30_00490b14(box, *param_2, unaff_x20[0], unaff_x20[1], unaff_x20[2],
+                    0 /* unaff_x19 */, (word_t)unaff_x20 /* unaff_x20 */);
     return (word_t)sk_r30_00490d28;
 }
 
@@ -4453,7 +4471,7 @@ static word_t sk_r30_004918ec(word_t *unaff_x20 /* unaff_x20: self */)
  * Confidence: low   Notes: chain of teardown helpers. */
 static word_t sk_r30_00491bb8(void)
 {
-    sk_r30_00491b88();
+    sk_r30_00491b88(0 /* unaff_x20: not carried in this frame */);
     FUN_000dce50();
     FUN_0036b6ac();
     return 0;
@@ -4548,7 +4566,9 @@ static word_t sk_r30_00493d30(word_t param_1, word_t param_2, word_t param_3, wo
  * Confidence: medium   Notes: single in-slice call. */
 static word_t sk_r30_004947b8(void)
 {
-    sk_r30_00494810();
+    sk_r30_00494810(0 /* in_x4 */, 0 /* extraout_x8 */, 0 /* unaff_x21 */,
+                    0 /* unaff_x30 */, 0 /* in_98 */, 0 /* in_a0 */, 0 /* in_a8 */,
+                    0 /* in_b0 */, 0 /* in_b8 */);
     return 0;
 }
 
@@ -4571,7 +4591,7 @@ static word_t sk_r30_00494a1c(word_t param_1, word_t param_2, word_t param_3, wo
 
     FUN_0035638c();
     FUN_004ab5d4(param_5);
-    uVar6 = extraout_x8_00(param_3, param_5);
+    uVar6 = (*extraout_x8_00)(param_3, param_5);
     FUN_00356bb0(param_4);
     FUN_00270c08(&in28, param_6, 0, extraout_x1);
     uVar2 = in40;
@@ -4579,7 +4599,7 @@ static word_t sk_r30_00494a1c(word_t param_1, word_t param_2, word_t param_3, wo
     uVar7 = FUN_004aa95c();
     FUN_00377824(uVar7, param_5, param_3);
     FUN_00351dfc(&in48, uVar1);
-    param_7();
+    (*param_7)();
     uVar5 = in68;
     uVar4 = in60;
     uVar3 = in58;
@@ -4608,7 +4628,7 @@ static word_t sk_r30_00494ef0(code *in_x3, word_t *unaff_x20 /* unaff_x20: self 
 
     uVar1 = *unaff_x20;
     FUN_001a84f4(auStack_68);
-    in_x3(auStack_68, uVar1);
+    (*in_x3)(auStack_68, uVar1);
     FUN_001a8564();
     return 0;
 }
@@ -4629,7 +4649,7 @@ static word_t sk_r30_00495464(void)
     local_e0 = uVar1;
     FUN_0049ca44(&local_e0);
     FUN_004ac61c(uVar2 + 0x10);
-    FUN_0049153c(uVar2 | 0x4000000000000000);
+    FUN_0049153c();
     FUN_0035310c();
     FUN_0036b270();
     return 0;
@@ -4660,8 +4680,8 @@ static word_t sk_r30_004958a8(word_t in_x3)
     *(word_t *)(lVar4 + 0x10) = uVar1;
     FUN_004ab5d4(in_x3);
     FUN_00084180();
-    extraout_x8();
-    sk_r30_00491644();
+    (*extraout_x8)();
+    sk_r30_00491644(0 /* param_1: not carried in this frame */);
     FUN_00351d18();
     FUN_0036b118();
     *(word_t *)(lVar4 + 0x20) = uVar2;
@@ -4695,53 +4715,53 @@ static word_t sk_r30_00495ca4(word_t param_1, word_t param_2, word_t param_3, wo
     word_t *local_88;
 
     local_90 = *(long *)(param_3 - 8);
-    ((code *)0x54ffff60f100041f)(*(word_t *)(local_90 + 0x40));
+    ((code)0x54ffff60f100041f)(*(word_t *)(local_90 + 0x40));
     local_88 = (word_t *)(auStack_d0 + -(extraout_x8 + 0xfU & ~0xfU));
     uVar3 = FUN_00027754(param_4);
     lVar4 = FUN_00377824(0xff, uVar3, param_3, &DAT_0060e208, &DAT_0060e230);
     lVar5 = FUN_003722e4(0, lVar4, lVar4, s_lower_upper_005e1f90, 0);
     local_98 = *(long *)(lVar5 - 8);
-    ((code *)0x54ffff60f100041f)(*(word_t *)(local_98 + 0x40));
+    ((code)0x54ffff60f100041f)(*(word_t *)(local_98 + 0x40));
     lVar10 = (long)(auStack_d0 + -(extraout_x8 + 0xfU & ~0xfU)) -
              (extraout_x8_00 + 0xfU & ~0xfU);
-    ((code *)0x54ffff60f100041f)();
+    ((code)0x54ffff60f100041f)();
     lVar9 = lVar10 - extraout_x12;
     local_a0 = *(long *)(lVar4 - 8);
-    ((code *)0x54ffff60f100041f)(*(word_t *)(local_a0 + 0x40));
+    ((code)0x54ffff60f100041f)(*(word_t *)(local_a0 + 0x40));
     lVar11 = lVar9 - (extraout_x8_01 + 0xfU & ~0xfU);
-    ((code *)0x54ffff60f100041f)();
+    ((code)0x54ffff60f100041f)();
     lVar13 = lVar11 - extraout_x12_00;
     uVar6 = FUN_00377bec(uVar3, param_3, lVar4, &DAT_0060e208, (word_t)0x0060e218);
     local_a8 = FUN_00310e08(0, lVar4, uVar6);
     local_b0 = *(long *)(local_a8 - 8);
-    ((code *)0x54ffff60f100041f)((*(long *)(local_b0 + 0x40) + 0xfU) & ~0xfU);
+    ((code)0x54ffff60f100041f)((*(long *)(local_b0 + 0x40) + 0xfU) & ~0xfU);
     local_b8 = lVar13 - extraout_x8_02;
     pcVar7 = (code *)FUN_000277b8(uVar3);
-    pcVar7(lVar13, param_3, uVar3);
+    (*pcVar7)(lVar13, param_3, uVar3);
     pcVar7 = (code *)FUN_00310924(uVar3);
-    pcVar7(lVar11, param_3, uVar3);
+    (*pcVar7)(lVar11, param_3, uVar3);
     pcVar7 = (code *)FUN_00310e20(uVar6);
-    uVar8 = pcVar7(lVar13, lVar11, lVar4, uVar6);
+    uVar8 = (*pcVar7)(lVar13, lVar11, lVar4, uVar6);
     lVar1 = local_a0;
     if ((uVar8 & 1) != 0) {
         pcVar12 = *(code **)(local_a0 + 0x20);
         local_c0 = uVar3;
-        pcVar12(lVar9, lVar13, lVar4);
-        pcVar12(lVar9 + *(int *)(lVar5 + 0x30), lVar11, lVar4);
+        (*pcVar12)(lVar9, lVar13, lVar4);
+        (*pcVar12)(lVar9 + *(int *)(lVar5 + 0x30), lVar11, lVar4);
         lVar13 = local_98;
         (**(code **)(local_98 + 0x10))(lVar10, lVar9, lVar5);
         lVar11 = local_b8;
         local_c8 = (long)*(int *)(lVar5 + 0x30);
-        pcVar12(local_b8, lVar10, lVar4);
+        (*pcVar12)(local_b8, lVar10, lVar4);
         pcVar7 = *(code **)(lVar1 + 8);
-        pcVar7(lVar10 + local_c8, lVar4);
+        (*pcVar7)(lVar10 + local_c8, lVar4);
         (**(code **)(lVar13 + 0x20))(lVar10, lVar9, lVar5);
         lVar9 = local_a8;
-        pcVar12(lVar11 + *(int *)(local_a8 + 0x24), lVar10 + *(int *)(lVar5 + 0x30), lVar4);
-        pcVar7(lVar10, lVar4);
+        (*pcVar12)(lVar11 + *(int *)(local_a8 + 0x24), lVar10 + *(int *)(lVar5 + 0x30), lVar4);
+        (*pcVar7)(lVar10, lVar4);
         uVar3 = local_c0;
         pcVar7 = (code *)FUN_0031b050(local_c0);
-        pcVar7(param_2, lVar11, param_3, uVar3);
+        (*pcVar7)(param_2, lVar11, param_3, uVar3);
         lVar1 = local_b0;
         (**(code **)(local_b0 + 8))(lVar11, lVar9);
         (**(code **)(local_90 + 0x10))(local_88, unaff_x20, param_3);
@@ -4795,7 +4815,7 @@ static word_t sk_r30_004910bc(word_t param_1, word_t param_2, word_t param_3,
                               uint unaff_w24 /* unaff_w24: self/context register-global */)
 {
     word_t uVar1;
-    wpair_t auVar2;
+    word_t auVar2;   /* lo half of the 16-byte pair; hi not recoverable from word_t extern */
     uVar1 = FUN_00019850();
     FUN_000f5e08();
     FUN_004ab920();
@@ -4808,8 +4828,11 @@ static word_t sk_r30_004910bc(word_t param_1, word_t param_2, word_t param_3,
         FUN_00002534();
         FUN_00359018();
         auVar2 = FUN_0036a940();
-        FUN_003505c4(uVar1, auVar2.hi, param_3, unaff_w24 & 1, auVar2.lo);
-        FUN_004919f0();
+        /* hi word of the pair not independently recoverable from the word_t extern */
+        FUN_003505c4(uVar1, 0, param_3, unaff_w24 & 1, auVar2);
+        /* in-slice prototype demands 4 args; caller decompile shows none (register-passed,
+           unobservable) — pass 0 placeholders */
+        FUN_004919f0(0, 0, 0, 0);
     }
     return 0;
 }
@@ -4828,7 +4851,9 @@ static word_t sk_r30_00491688(long param_1, word_t param_2, word_t param_3)
     FUN_0036b118(param_1);
     FUN_000b43d0();
     uVar1 = FUN_0049153c();
-    uVar2 = FUN_00491288(uVar1, param_3);
+    /* in-slice prototype sk_r30_00491288 takes a single arg (context register);
+       decompile passes (uVar1, param_3) — param_3 dropped to match the 1-arg prototype */
+    uVar2 = FUN_00491288(uVar1);
     if ((uVar2 & 1) == 0) {
         FUN_0036b118(uVar1);
         uVar1 = 0;
@@ -5051,7 +5076,10 @@ static word_t sk_r30_00493d7c(word_t param_1, word_t param_2, word_t param_3, wo
  * Confidence: medium */
 static word_t sk_r30_004947bc(void)
 {
-    FUN_00494810();
+    /* in-slice prototype sk_r30_00494810 takes 9 args (x4 callback, result buffer,
+       x21/x30 context regs, in_98..in_b8 stack args); caller decompile shows none
+       (register/stack-passed, unobservable) — pass 0 placeholders */
+    FUN_00494810(0, 0, 0, 0, 0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -5078,7 +5106,8 @@ static word_t sk_r30_00494b44(word_t param_1, word_t param_2, word_t param_3,
     ulong uVar9;
     word_t extraout_x1;
     code *extraout_x8;
-    wpair_t auVar11;
+    word_t uVar10;
+    word_t auVar11;   /* lo half of the 16-byte pair; hi (flag) not recoverable from word_t extern */
     wpair_t r_1a1c8;
     word_t stack_args[8];
     auVar11 = FUN_000b4594();   /* 16-byte pair; hi word holds a flag */
@@ -5090,7 +5119,7 @@ static word_t sk_r30_00494b44(word_t param_1, word_t param_2, word_t param_3,
     *(word_t *)(lVar8 + 0x10) = uVar7;
     FUN_0041cb78();
     FUN_00351790();
-    FUN_00351488(auVar11.lo);
+    FUN_00351488(auVar11);
     r_1a1c8.lo = FUN_0001a1c8();   /* hi word not recoverable; kept as 0 */
     r_1a1c8.hi = 0;
     uVar6 = r_1a1c8.lo;
@@ -5098,7 +5127,8 @@ static word_t sk_r30_00494b44(word_t param_1, word_t param_2, word_t param_3,
     *(word_t *)(lVar8 + 0x20) = uVar6;
     *(word_t *)(lVar8 + 0x28) = extraout_x1;
     *(word_t *)(lVar8 + 0x30) = uVar10;
-    if ((auVar11.hi & 1) == 0) {
+    /* hi (flag) word of the pair not recoverable from the word_t extern — modeled as 0 */
+    if ((0 & 1) == 0) {
         FUN_0041aff0(&stack_args[0], lVar8);
     }
     else {
@@ -5131,7 +5161,9 @@ static word_t sk_r30_00494b44(word_t param_1, word_t param_2, word_t param_3,
     FUN_0035056c(0);
     FUN_00377824();
     FUN_0035310c();
-    uVar10 = FUN_00491644();
+    /* in-slice prototype sk_r30_00491644 takes 1 arg; caller decompile shows none
+       (register-passed, unobservable) — pass 0 placeholder */
+    uVar10 = FUN_00491644(0);
     FUN_0036b118(uVar7);
     *(word_t *)(uVar9 + 0x68) = uVar10;
     FUN_000b45b0(uVar9 | 0x1000000000000004, param_3, unaff_x30);
@@ -5281,7 +5313,8 @@ static word_t sk_r30_004954d0(void)
     uVar1 = FUN_0036a940();
     FUN_0049ca58(stack_buf);
     FUN_004ac61c(uVar1 + 0x10);
-    FUN_0049153c(uVar1 | 0x4000000000000000);
+    /* in-slice prototype sk_r30_0049153c is void; tagged-arg dropped to match */
+    FUN_0049153c();
     return 0;
 }
 
@@ -5310,7 +5343,9 @@ static word_t sk_r30_00495940(word_t in_x3 /* in_x3: input register x3 */)
     FUN_00084180();
     extraout_x8 = (code)FUN_00084180();   /* code pointer carried in x8 */
     (*extraout_x8)();
-    FUN_00491644();
+    /* in-slice prototype sk_r30_00491644 takes 1 arg; caller decompile shows none
+       (register-passed, unobservable) — pass 0 placeholder */
+    FUN_00491644(0);
     FUN_00351d18();
     FUN_0036b118();
     *(word_t *)(uVar2 + 0x30) = uVar1;
@@ -5319,7 +5354,8 @@ static word_t sk_r30_00495940(word_t in_x3 /* in_x3: input register x3 */)
     *(word_t *)(uVar2 + 0x50) = 0;
     *(word_t *)(uVar2 + 0x48) = 0;
     *(unsigned char *)(uVar2 + 0x58) = 0;
-    FUN_0049153c(uVar2 | 0x1000000000000000);
+    /* in-slice prototype sk_r30_0049153c is void; tagged-arg dropped to match */
+    FUN_0049153c();
     return 0;
 }
 

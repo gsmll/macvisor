@@ -911,7 +911,7 @@ static void sk_bcg_00476dd0(long param_1, word_t param_2);
 static void sk_bcg_00476e18(u64 param_1, u64 param_2, uint param_3);
 static void sk_bcg_00476e74(long param_1);
 static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4);
-static void sk_bcg_004773a8(long p1, word_t p2, word_t p3, code *size_fn, code *emit_fn, code *finalize_fn);
+static void sk_bcg_004773a8(long p1, word_t p2, word_t p3, code size_fn, wpair_t (*emit_fn)(), code finalize_fn);
 static void sk_bcg_00477494(word_t index);
 static void sk_bcg_00477504(void);
 static void sk_bcg_00477590(word_t p1, long p2);
@@ -8912,7 +8912,7 @@ static wpair_t sk_bcg_00477338(long delta, word_t vec)
  * Confidence: medium   Notes: indirect (code*) calls; 16-byte return from
  * param_5; SBORROW8 is the ARM signed-borrow (no-underflow) condition. */
 static void sk_bcg_004773a8(long p1, word_t p2, word_t p3,
-                            code size_fn, code emit_fn, code finalize_fn)
+                            code size_fn, wpair_t (*emit_fn)(), code finalize_fn)
 {
     word_t base;            /* lVar4 = FUN_00350b54() */
     word_t size;            /* lVar5 = (*size_fn)() */
@@ -9204,7 +9204,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
             swB = *(word_t *)(x8a + 0x10);
             swA = *(word_t *)(x8a + 0x18);    /* flag byte */
             FUN_0036b270(swB);
-            resL = sk_bcg_00478110(vecP, swB, swA);
+            sk_bcg_00478110((word_t)vecP, swB, swA); resL = 0; /* register-residue return */
             FUN_004ac33c();
             FUN_0036b118(swB);
             swA = (resL == 2);
@@ -9270,7 +9270,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
                     FUN_00117cc4(resL + 0x20, /*&local_428*/ (word_t)0, 0x160);
                     FUN_004acca8(/*auStack_2c8*/ (word_t)0);
                     FUN_004acd14(/*auStack_2c8*/ (word_t)0);
-                    resH = sk_bcg_00478110(vecP, resL, 0);
+                    sk_bcg_00478110((word_t)vecP, resL, 0); resH = 0; /* register-residue return */
                     FUN_004ac33c();
                     FUN_0036b588(resL);
                     FUN_004985b4();
@@ -9365,7 +9365,7 @@ static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
             case 7:
                 goto do_ret;                    /* return 0 */
             case 2:                             /* range/kind-2 opcode */
-                op = sk_bcg_00476e94(vecP, *(word_t *)FUN_0049e2f0(/*auStack_b8*/ (word_t)0));
+                op = sk_bcg_00476e94((word_t)vecP, *(word_t *)FUN_0049e2f0(/*auStack_b8*/ (word_t)0));
                 swC = (word_t)((uint)op & 0xff);
                 if (((uint)op >> 0x18) != 0) {
                     swC |= 0x200;
@@ -9612,7 +9612,7 @@ static word_t sk_bcg_00477e8c(word_t desc)
             f40  = *(word_t *)(x8d + 0x40);
             desc = *(word_t *)(x8d + 0x58);
             FUN_0041bfb4();
-            child = (word_t *)FUN_00351db4();
+            child = (word_t *)FUN_00351db4().lo;
             x20 = s20; x22 = s22; x24 = s24;
             if (is_twelve || ((long)child < 1)) {
                 return 0;
@@ -10345,14 +10345,14 @@ static void sk_bcg_00478a98(void)
     int iVar8;
     unsigned char uVar4, uVar5;
     word_t uVar6;
-    unsigned char auVar24[16], auVar25[16];
+    wpair_t auVar24, auVar25;
     word_t auStack_2c8[44];
     unsigned char auStack_428[352];
     unsigned char auStack_168[360];
     word_t local_4e0[22];
 
-    auVar24[0] = (unsigned char)FUN_0008e518();   /* 16-byte x0:x1 */
-    lVar21 = *(word_t *)(*(word_t *)&auVar24[0] + 0x10);
+    auVar24 = FUN_0008e518();
+    lVar21 = *(word_t *)(auVar24.lo + 0x10);
     FUN_000a6f68();
     local_430 = extraout_x8;
     lVar18 = extraout_x8;
@@ -10528,7 +10528,7 @@ label_dc0:
 label_9510:
         FUN_0036b118(lVar18);
 label_9518:
-        FUN_0008e500(local_430, auVar24[8]);
+        FUN_0008e500(local_430, auVar24.hi);
         return;
     }
     bVar2 = false;

@@ -759,3 +759,662 @@ void *sk_r38_memcpy_99(void *dst, word_t x23)
     return cL4_memcpy_v((word_t)dst, x23, 0x99);
 }
 
+
+/* FUN_004ac640 @ 0x004ac640   (est. sk_r38_load_pair_from_fp_b)
+ * Loads a pair: x0 = [x29-0x60], x1 = [x29-0x108].
+ * Confidence: medium
+ * Notes: `ldur x26,[x29,#-0x60]; mov x0,x26; sub x10,x29,#0x8; ldur x1,[x10,#-0x100]`. */
+cL4_w16_t sk_r38_load_pair_from_fp_b(word_t x29)
+{
+    cL4_w16_t r;
+    r.lo = *(const word_t *)(x29 - 0x60);
+    r.hi = *(const word_t *)(x29 - 0x108);
+    return r;
+}
+
+/* FUN_004ac654 @ 0x004ac654   (est. sk_r38_glob_5e23b0)
+ * Returns the address 0x5e23b0 (a global data/string descriptor) in x5.
+ * Confidence: medium
+ * Notes: `adrp x5,0x5e2000; add x5,x5,#0x3b0`. */
+word_t sk_r38_glob_5e23b0(void)
+{
+    return 0x5e23b0;
+}
+
+/* FUN_004ac660 @ 0x004ac660   (est. sk_r38_copy_byte_b0)
+ * Copies the byte at +0xb0 from source (x20) to destination (x19).
+ * Confidence: medium
+ * Notes: `ldrb w8,[x20,#0xb0]; strb w8,[x19,#0xb0]`. */
+void sk_r38_copy_byte_b0(void *dst, const void *src)
+{
+    *((byte *)dst + 0xb0) = *((const byte *)src + 0xb0);
+}
+
+/* FUN_004ac66c @ 0x004ac66c   (est. sk_r38_extract_tag_or_head)
+ * Loads (x20,x24) = [x0]; if bit 0x2000000000000000 of x24 is clear, returns
+ * x20, else returns (x24>>56) & 0xf (an extracted 4-bit tag).
+ * Confidence: medium
+ * Notes: `ldp x20,x24,[x0]; ubfx x8,x24,#0x38,#0x4; tst x24,#0x2000000000000000; csel x8,x20,x8,eq`. */
+word_t sk_r38_extract_tag_or_head(const cL4_w16_t *p)
+{
+    word_t head = p->lo, tagword = p->hi;
+    word_t tag = (tagword >> 56) & 0xf;
+    return (tagword & R38_TAG_MASK) ? tag : head;
+}
+
+/* FUN_004ac680 @ 0x004ac680   (est. sk_r38_const_ea00000000003e23)
+ * Materialises the constant 0xea00000000003e23 into x19.
+ * Confidence: medium
+ * Notes: `mov x19,#0x3e23; movk x19,#0xea00,LSL#48`. */
+word_t sk_r38_const_ea00000000003e23(void)
+{
+    return 0xea00000000003e23UL;
+}
+
+/* FUN_004ac68c @ 0x004ac68c   (est. sk_r38_inc_cmp_half)
+ * Computes x25 = x22+1 and compares x22 against x8>>1, returning the
+ * comparison flags.
+ * Confidence: medium
+ * Notes: `add x25,x22,#1; cmp x22,x8,LSR#1`. */
+long sk_r38_inc_cmp_half(word_t x22, word_t x8)
+{
+    word_t x25 = x22 + 1;
+    (void)x25;
+    return (long)x22 - (long)(x8 >> 1);
+}
+
+/* FUN_004ac698 @ 0x004ac698   (est. sk_r38_cset_gt1)
+ * Returns 1 if the value in x20 is greater than 1, else 0.
+ * Confidence: medium
+ * Notes: `cmp x20,#1; cset w0,hi`. */
+word_t sk_r38_cset_gt1(word_t x20)
+{
+    return (x20 > 1) ? 1 : 0;
+}
+
+/* FUN_004ac6a4 @ 0x004ac6a4   (est. sk_r38_load_fp_a0)
+ * Loads x1 = [x29-0x1a0].
+ * Confidence: medium
+ * Notes: `sub x8,x29,#0xa0; ldur x1,[x8,#-0x100]`. */
+word_t sk_r38_load_fp_a0(word_t x29)
+{
+    return *(const word_t *)(x29 - 0x1a0);
+}
+
+/* FUN_004ac6b0 @ 0x004ac6b0   (est. sk_r38_stackptr_1288)
+ * Returns the stack pointer offset by 0x1288 (sp + 0x1000 + 0x288) — a fixed
+ * stack slot used as a scratch buffer address.
+ * Confidence: medium
+ * Notes: Ghidra renders as `return &stack0x00001288`. */
+void *sk_r38_stackptr_1288(word_t sp)
+{
+    return (void *)(sp + 0x1288);
+}
+
+/* FUN_004ac6bc @ 0x004ac6bc   (est. sk_r38_csel_8181e1)
+ * If w11 != 0, returns w9 + 0x8181e1, else returns w8.
+ * Confidence: medium
+ * Notes: `add w9,w9,#0x818,LSL#12; add w9,w9,#0x1e1; cmp w11,#0; csel w0,w8,w9,ne`. */
+word_t sk_r38_csel_8181e1(word_t w8, word_t w9, word_t w11)
+{
+    word_t alt = (w9 & 0xffffffff) + 0x8181e1;
+    return (w11 != 0) ? alt : w8;
+}
+
+/* FUN_004ac6d0 @ 0x004ac6d0   (est. sk_r38_load_pair_predec)
+ * Pre-decrements x13 by 8, loads [x13-8] into x9, and returns (x16=x9,
+ * x17=x13) — a 2-word (ptr, value) result.
+ * Confidence: medium
+ * Notes: `mov x13,x0; ldr x9,[x13,#-8]!; mov x16,x9; mov x17,x13`. */
+cL4_w16_t sk_r38_load_pair_predec(word_t x0)
+{
+    cL4_w16_t r;
+    word_t x13 = x0 - 8;
+    r.lo = *(const word_t *)x13;   /* x9 -> x16 */
+    r.hi = x13;                    /* x17 */
+    return r;
+}
+
+/* FUN_004ac6e4 @ 0x004ac6e4   (est. sk_r38_hash_step)
+ * Returns (w8>>6) + w9 + 0x81c1 — a hash/checksum accumulator step.
+ * Confidence: medium
+ * Notes: `lsr w8,w8,#6; mov w10,#0x81c1; add w8,w8,w9; add w0,w8,w10`. */
+word_t sk_r38_hash_step(word_t w8, word_t w9)
+{
+    return ((w8 >> 6) & 0xffffffff) + w9 + 0x81c1;
+}
+
+/* FUN_004ac6f8 @ 0x004ac6f8   (est. sk_r38_load_head_kind)
+ * Returns a pair: x0 = [x20], w1 = byte[x20+0x8]; also sets w2=1, w3=0.
+ * Confidence: medium
+ * Notes: `ldr x0,[x20]; ldrb w1,[x20,#0x8]; mov w2,#1; mov w3,#0`. */
+cL4_w16_t sk_r38_load_head_kind(const void *obj)
+{
+    cL4_w16_t r;
+    r.lo = *(const word_t *)obj;
+    r.hi = *(const byte *)((const byte *)obj + 0x8);
+    word_t w2 = 1, w3 = 0;
+    (void)w2; (void)w3;
+    return r;
+}
+
+/* FUN_004ac70c @ 0x004ac70c   (est. sk_r38_mask48_extract)
+ * If bit 0x2000000000000000 of x9 is clear, returns x8 masked to 48 bits,
+ * else returns (x9>>56) & 0xf.
+ * Confidence: medium
+ * Notes: `and x8,x8,#0xffffffffffff; ubfx x10,x9,#0x38,#0x4; tst x9,#0x2000000000000000; csel x8,x8,x10,eq`. */
+word_t sk_r38_mask48_extract(word_t x8, word_t x9)
+{
+    word_t masked = x8 & 0xffffffffffffUL;
+    word_t tag = (x9 >> 56) & 0xf;
+    return (x9 & R38_TAG_MASK) ? tag : masked;
+}
+
+/* FUN_004ac720 @ 0x004ac720   (est. sk_r38_mask_lsl)
+ * Returns -1 shifted left by x9 (a bitmask builder).
+ * Confidence: medium
+ * Notes: `mov x10,#-1; lsl x9,x10,x9`. */
+word_t sk_r38_mask_lsl(word_t x9)
+{
+    word_t x10 = ~0UL;
+    return x10 << (x9 & 63);
+}
+
+/* FUN_004ac72c @ 0x004ac72c   (est. sk_r38_clz)
+ * Returns (w9 = clz(w8), w10 = 4) — a leading-zero-count plus a small const.
+ * Confidence: medium
+ * Notes: `clz w9,w8; mov w10,#4`. */
+cL4_w16_t sk_r38_clz(word_t w8)
+{
+    cL4_w16_t r;
+    r.lo = __builtin_clz((unsigned)(w8 & 0xffffffff)); /* clz w9,w8 */
+    r.hi = 4;                                          /* mov w10,#4 */
+    return r;
+}
+
+/* FUN_004ac738 @ 0x004ac738   (est. sk_r38_setup_x4x5)
+ * Register-setup fragment: x4 = x28, x5 = x23.
+ * Confidence: medium
+ * Notes: `mov x4,x28; mov x5,x23`. */
+void sk_r38_setup_x4x5(word_t x28, word_t x23)
+{
+    word_t x4 = x28, x5 = x23;
+    (void)x4; (void)x5;
+}
+
+/* FUN_004ac744 @ 0x004ac744   (est. sk_r38_copy_bytes_08_09)
+ * Copies the two bytes at +0x8 and +0x9 from source (x20) to destination (x19).
+ * Confidence: medium
+ * Notes: `ldrb w8,[x20,#0x8]; strb w8,[x19,#0x8]; ldrb w8,[x20,#0x9]; strb w8,[x19,#0x9]`. */
+void sk_r38_copy_bytes_08_09(void *dst, const void *src)
+{
+    *((byte *)dst + 0x8) = *((const byte *)src + 0x8);
+    *((byte *)dst + 0x9) = *((const byte *)src + 0x9);
+}
+
+/* FUN_004ac758 @ 0x004ac758   (est. sk_r38_setup_and_lo)
+ * Register-setup fragment: w3 = w21 & 1; x0 = x22, x1 = x19, x2 = x20.
+ * Confidence: medium
+ * Notes: `and w3,w21,#1; mov x0,x22; mov x1,x19; mov x2,x20`. */
+void sk_r38_setup_and_lo(word_t w21, word_t x22, word_t x19, word_t x20)
+{
+    word_t w3 = w21 & 1, x0 = x22, x1 = x19, x2 = x20;
+    (void)w3; (void)x0; (void)x1; (void)x2;
+}
+
+/* FUN_004ac76c @ 0x004ac76c   (est. sk_r38_xor_lsr)
+ * Returns (x0 ^ x1) >> 0xe — a hash/index computation.
+ * Confidence: medium
+ * Notes: `eor x8,x0,x1; lsr x8,x8,#0xe`. */
+word_t sk_r38_xor_lsr(word_t x0, word_t x1)
+{
+    return (x0 ^ x1) >> 0xe;
+}
+
+/* FUN_004ac778 @ 0x004ac778   (est. sk_r38_field_18_half)
+ * Returns [x0+0x18] >> 1 — a size/count accessor halving a field.
+ * Confidence: medium
+ * Notes: `ldr x8,[x0,#0x18]; lsr x8,x8,#1`. */
+word_t sk_r38_field_18_half(const void *obj)
+{
+    return *(const word_t *)((const byte *)obj + 0x18) >> 1;
+}
+
+/* FUN_004ac784 @ 0x004ac784   (est. sk_r38_pair_x10_x15)
+ * Returns (x16=x10, x17=x15) — a 2-word result pass-through.
+ * Confidence: medium
+ * Notes: `mov x16,x10; mov x17,x15`. */
+cL4_w16_t sk_r38_pair_x10_x15(word_t x10, word_t x15)
+{
+    cL4_w16_t r;
+    r.lo = x10;
+    r.hi = x15;
+    return r;
+}
+
+/* FUN_004ac790 @ 0x004ac790   (est. sk_r38_load_pair_predec_b)
+ * Pre-decrements x14 by 8, loads [x14-8] into x9, and returns (x16=x9,
+ * x17=x14).
+ * Confidence: medium
+ * Notes: `mov x14,x0; ldr x9,[x14,#-8]!; mov x16,x9; mov x17,x14`. */
+cL4_w16_t sk_r38_load_pair_predec_b(word_t x0)
+{
+    cL4_w16_t r;
+    word_t x14 = x0 - 8;
+    r.lo = *(const word_t *)x14;
+    r.hi = x14;
+    return r;
+}
+
+/* FUN_004ac7a4 @ 0x004ac7a4   (est. sk_r38_load_deref_08)
+ * Returns [ [sp+0x68] + 0x8 ] — a double dereference (indirect vtable field).
+ * Confidence: medium
+ * Notes: `ldr x8,[sp,#0x68]; ldr x8,[x8,#0x8]`. */
+word_t sk_r38_load_deref_08(word_t sp)
+{
+    word_t p = *(const word_t *)(sp + 0x68);
+    return *(const word_t *)(p + 0x8);
+}
+
+/* FUN_004ac7b0 @ 0x004ac7b0   (est. sk_r38_pair_sp_160)
+ * Returns (x0=sp+0x160, x1=sp).
+ * Confidence: medium
+ * Notes: `add x0,sp,#0x160; mov x1,sp`. */
+cL4_w16_t sk_r38_pair_sp_160(word_t sp)
+{
+    cL4_w16_t r;
+    r.lo = sp + 0x160;
+    r.hi = sp;
+    return r;
+}
+
+/* FUN_004ac7bc @ 0x004ac7bc   (est. sk_r38_cmp_byte2_b)
+ * Masks w1 to its low byte and compares it against 2, returning the
+ * comparison flags.
+ * Confidence: medium
+ * Notes: `and w8,w1,#0xff; cmp w8,#0x2`. */
+long sk_r38_cmp_byte2_b(word_t w1)
+{
+    return (long)(w1 & 0xff) - 2;
+}
+
+/* FUN_004ac7c8 @ 0x004ac7c8   (est. sk_r38_pair_x9_x12)
+ * Returns (x16=x9, x17=x12) — a 2-word result pass-through.
+ * Confidence: medium
+ * Notes: `mov x16,x9; mov x17,x12`. */
+cL4_w16_t sk_r38_pair_x9_x12(word_t x9, word_t x12)
+{
+    cL4_w16_t r;
+    r.lo = x9;
+    r.hi = x12;
+    return r;
+}
+
+/* FUN_004ac7d4 @ 0x004ac7d4   (est. sk_r38_load_deref_10)
+ * Returns [ [x27] + 0x10 ] — an indirect function/table pointer load.
+ * Confidence: medium
+ * Notes: `ldr x8,[x27]; ldr x9,[x8,#0x10]`. */
+word_t sk_r38_load_deref_10(word_t x27)
+{
+    word_t p = *(const word_t *)x27;
+    return *(const word_t *)(p + 0x10);
+}
+
+/* FUN_004ac7e0 @ 0x004ac7e0   (est. sk_r38_load_deref_10_b)
+ * Returns [ [x20] + 0x10 ] into x22.
+ * Confidence: medium
+ * Notes: `ldr x8,[x20]; ldr x22,[x8,#0x10]`. */
+word_t sk_r38_load_deref_10_b(word_t x20)
+{
+    word_t p = *(const word_t *)x20;
+    return *(const word_t *)(p + 0x10);
+}
+
+/* FUN_004ac7ec @ 0x004ac7ec   (est. sk_r38_cmp_byte_1a)
+ * Masks w8 to its low byte and compares it against 0x1a.
+ * Confidence: medium
+ * Notes: `and w8,w8,#0xff; cmp w8,#0x1a`. */
+long sk_r38_cmp_byte_1a(word_t w8)
+{
+    return (long)(w8 & 0xff) - 0x1a;
+}
+
+/* FUN_004ac7f8 @ 0x004ac7f8   (est. sk_r38_cmp_head_a0d)
+ * Loads (x20,x23)=[x0] and compares x20 against 0xa0d.
+ * Confidence: medium
+ * Notes: `ldp x20,x23,[x0]; cmp x20,#0xa0d`. */
+long sk_r38_cmp_head_a0d(const cL4_w16_t *p)
+{
+    return (long)p->lo - 0xa0d;
+}
+
+/* FUN_004ac804 @ 0x004ac804   (est. sk_r38_cinc_if_zero)
+ * If w9 == 0, returns x10+1, else returns x10.
+ * Confidence: medium
+ * Notes: `cmp w9,#0; cinc x9,x10,eq`. */
+word_t sk_r38_cinc_if_zero(word_t w9, word_t x10)
+{
+    return (w9 == 0) ? x10 + 1 : x10;
+}
+
+/* FUN_004ac810 @ 0x004ac810   (est. sk_r38_pair_glob_6163e4)
+ * Returns (x3=0x6163e4, x4=0x6163ec) — two adjacent global descriptors.
+ * Confidence: medium
+ * Notes: `adrp x3,0x616000; add x3,x3,#0x3e4; adrp x4,0x616000; add x4,x4,#0x3ec`. */
+cL4_w16_t sk_r38_pair_glob_6163e4(void)
+{
+    cL4_w16_t r;
+    r.lo = 0x6163e4;
+    r.hi = 0x6163ec;
+    return r;
+}
+
+/* FUN_004ac824 @ 0x004ac824   (est. sk_r38_const_05000001)
+ * Returns the constant 0x05000001.
+ * Confidence: medium
+ * Notes: `mov w0,#1; movk w0,#0x500,LSL#16`. */
+word_t sk_r38_const_05000001(void)
+{
+    return 0x05000001;
+}
+
+/* FUN_004ac830 @ 0x004ac830   (est. sk_r38_pair_glob_657c00)
+ * Returns (x0=0x657c00, x1=0x5a3ca8) — two global/string descriptors.
+ * Confidence: medium
+ * Notes: `adrp x0,0x657000; add x0,x0,#0xc00; adrp x1,0x5a3000; add x1,x1,#0xca8`. */
+cL4_w16_t sk_r38_pair_glob_657c00(void)
+{
+    cL4_w16_t r;
+    r.lo = 0x657c00;
+    r.hi = 0x5a3ca8;
+    return r;
+}
+
+
+/* FUN_004ac0a4 @ 0x004ac0a4   (est. sk_r38_boot_init_dispatch)
+ * Register-shuffle thunk: forwards six context values (loaded into x0-x5 from
+ * callee-saved x20/x21/x26/x27) to the shared boot/init routine at 0x00346718.
+ * Confidence: medium
+ * Notes: tail-call `b 0x00346718` = thunk_FUN_002b74c0. */
+void sk_r38_boot_init_dispatch(word_t x20, word_t x27, word_t x26, word_t x21)
+{
+    /* b 0x00346718 : mov x0,x20; x1,x27; x2,x20; x3,x27; x4,x26; x5,x21 */
+    cL4_346718(x20, x27, x20, x27, x26, x21);
+}
+
+/* FUN_004ac0c0 @ 0x004ac0c0   (est. sk_r38_tag_mask_ptr)
+ * Clears the top nibble (bits 60-63) and bit 2 of the value in x8 — a pointer
+ * tag/flag mask — leaving the result in x8. (Ghidra collapses to bare return.)
+ * Confidence: medium
+ * Notes: `and x8,x8,#0xfffffffffffffff ; and x8,x8,#-0x5`. */
+word_t sk_r38_tag_mask_ptr(word_t x8)
+{
+    return x8 & R38_OBJ_MASK;
+}
+
+/* FUN_004ac0cc @ 0x004ac0cc   (est. sk_r38_347480_dispatch)
+ * Forwards argument (x1 -> x21) and a stack pointer (sp+0x10 -> x20) to the
+ * dispatch routine at 0x00347480.
+ * Confidence: medium
+ * Notes: tail-call `b 0x00347480`. */
+void sk_r38_347480_dispatch(word_t x1, word_t sp)
+{
+    /* mov x21,x1 ; add x20,sp,#0x10 ; b 0x00347480 */
+    cL4_347480(x1, sp + 0x10);
+}
+
+/* FUN_004ac0d8 @ 0x004ac0d8   (est. sk_r38_copy_d0d8)
+ * Copies a 1-byte field at +0xd0 and an 8-byte field at +0xd8 from source
+ * (x20) to destination (x19); returns the destination pointer.
+ * Confidence: medium
+ * Notes: reads/writes through callee-saved x19 (dst) / x20 (src). */
+void *sk_r38_copy_d0d8(void *dst, const void *src)
+{
+    /* ldrb w8,[x20,#0xd0]; strb w8,[x19,#0xd0]; ldr x8,[x20,#0xd8]; str x8,[x19,#0xd8] */
+    ((byte *)dst)[0xd0] = ((const byte *)src)[0xd0];
+    *(word_t *)((byte *)dst + 0xd8) = *(const word_t *)((const byte *)src + 0xd8);
+    return dst; /* mov x0,x19 */
+}
+
+/* FUN_004ac0f0 @ 0x004ac0f0   (est. sk_r38_copy_6870)
+ * Copies 8-byte fields at +0x68 and +0x70 from source (x20) to destination
+ * (x19); also loads the +0x78 field (kept in x8 for the caller).
+ * Confidence: medium
+ * Notes: writes through callee-saved x19 (dst) / x20 (src). */
+void sk_r38_copy_6870(void *dst, const void *src)
+{
+    /* ldr x8,[x20,#0x68]; str x8,[x19,#0x68]; ldr x8,[x20,#0x70]; str x8,[x19,#0x70] */
+    *(word_t *)((byte *)dst + 0x68) = *(const word_t *)((const byte *)src + 0x68);
+    *(word_t *)((byte *)dst + 0x70) = *(const word_t *)((const byte *)src + 0x70);
+    /* ldr x8,[x20,#0x78] — result left in scratch x8 */
+}
+
+/* FUN_004ac108 @ 0x004ac108   (est. sk_r38_field_60_plus_one)
+ * Loads the 8-byte field at +0x60 of the object in x19 and returns it plus
+ * one (a read-only size/count accessor; no store).
+ * Confidence: medium
+ * Notes: `ldr x8,[x19,#0x60]; adds x8,x8,#0x1`. */
+word_t sk_r38_field_60_plus_one(const void *obj)
+{
+    return *(const word_t *)((const byte *)obj + 0x60) + 1;
+}
+
+/* FUN_004ac114 @ 0x004ac114   (est. sk_r38_mask_const)
+ * Materialises the pointer-tag mask constant 0x0ffffffffffffffb into x21.
+ * Confidence: medium
+ * Notes: `mov x21,#-0x5 ; movk x21,#0xfff,LSL#48`. */
+word_t sk_r38_mask_const(void)
+{
+    return R38_OBJ_MASK;
+}
+
+/* FUN_004ac120 @ 0x004ac120   (est. sk_r38_cmp_field_10)
+ * Compares x28 against the 8-byte field at +0x10 of the object in x23,
+ * returning the signed difference (comparison flags).
+ * Confidence: medium
+ * Notes: `cmp x28,[x23,#0x10]`. */
+long sk_r38_cmp_field_10(word_t x28, const void *obj)
+{
+    return (long)x28 - (long)*(const word_t *)((const byte *)obj + 0x10);
+}
+
+/* FUN_004ac12c @ 0x004ac12c   (est. sk_r38_setup_copy_10_b0)
+ * Register-setup fragment: loads x1 = x8 + 0x10 and w2 = 0xb0 (176) — the
+ * src/size for a caller-driven memcpy — then returns.
+ * Confidence: medium
+ * Notes: `add x1,x8,#0x10 ; mov w2,#0xb0`. */
+void sk_r38_setup_copy_10_b0(word_t x8)
+{
+    word_t x1 = x8 + 0x10, w2 = 0xb0;
+    (void)x1; (void)w2;
+}
+
+/* FUN_004ac138 @ 0x004ac138   (est. sk_r38_stackptr_13e8)
+ * Returns the stack pointer offset by 0x13e8 (sp + 0x1000 + 0x3e8) — a fixed
+ * stack slot used as a scratch buffer address.
+ * Confidence: medium
+ * Notes: Ghidra renders as `return &stack0x000013e8`. */
+void *sk_r38_stackptr_13e8(word_t sp)
+{
+    return (void *)(sp + 0x13e8);
+}
+
+/* FUN_004ac144 @ 0x004ac144   (est. sk_r38_cmp_byte2)
+ * Masks w2 to its low byte and compares it against 2, returning the
+ * comparison flags (modelled as a difference).
+ * Confidence: medium
+ * Notes: `and w9,w2,#0xff ; cmp w9,#0x2`. */
+long sk_r38_cmp_byte2(word_t w2)
+{
+    return (long)(w2 & 0xff) - 2;
+}
+
+/* FUN_004ac150 @ 0x004ac150   (est. sk_r38_ubfiz_cmp_800)
+ * Computes w9 = (w8 & 0x3f) << 8 and compares w8 against 0x800.
+ * Confidence: medium
+ * Notes: `ubfiz w9,w8,#8,#6` extracts a 6-bit field and shifts left 8. */
+void sk_r38_ubfiz_cmp_800(word_t w8)
+{
+    word_t w9 = (w8 & 0x3f) << 8;
+    (void)w9;
+}
+
+/* FUN_004ac15c @ 0x004ac15c   (est. sk_r38_mask_const_b)
+ * Materialises the pointer-tag mask constant 0x0ffffffffffffffb into x22.
+ * Confidence: medium
+ * Notes: same constant as 004ac114, delivered in x22. */
+word_t sk_r38_mask_const_b(void)
+{
+    return R38_OBJ_MASK;
+}
+
+/* FUN_004ac168 @ 0x004ac168   (est. sk_r38_and_add_ptr)
+ * Computes (x10 + x19) & ~x9 into x0, also returning x8 in x1 and x20 in x2 —
+ * a multi-word (object pointer + extra words) result.
+ * Confidence: medium
+ * Notes: `mvn x9,x9 ; add x10,x10,x19 ; and x0,x10,x9 ; mov x1,x8 ; mov x2,x20`. */
+cL4_w16_t sk_r38_and_add_ptr(word_t x9, word_t x10, word_t x19, word_t x8, word_t x20)
+{
+    cL4_w16_t r;
+    r.lo = (x10 + x19) & ~x9;
+    r.hi = x8;                 /* mov x1,x8 */
+    (void)x20;                 /* mov x2,x20 — third word left in x2 */
+    return r;
+}
+
+/* FUN_004ac180 @ 0x004ac180   (est. sk_r38_setup_store_sp)
+ * Register-setup fragment: stores x19 to [sp], computes x5/x6/x7 = sp + 0x38/
+ * 0x30/0x28, and returns x20 in x0.
+ * Confidence: medium
+ * Notes: `str x19,[sp]; add x5,sp,#0x38; add x6,sp,#0x30; add x7,sp,#0x28; mov x0,x20`. */
+void sk_r38_setup_store_sp(word_t sp, word_t x19, word_t x20)
+{
+    *(word_t *)sp = x19;
+    word_t x5 = sp + 0x38, x6 = sp + 0x30, x7 = sp + 0x28, x0 = x20;
+    (void)x5; (void)x6; (void)x7; (void)x0;
+}
+
+/* FUN_004ac198 @ 0x004ac198   (est. sk_r38_tag_bits_from_hi)
+ * Shifts x0 right by 0x3b (59) and masks to 0x1e, extracting a 5-bit tag
+ * field from the top of the value into w16.
+ * Confidence: medium
+ * Notes: `lsr x8,x0,#0x3b ; and w16,w8,#0x1e`. */
+word_t sk_r38_tag_bits_from_hi(word_t x0)
+{
+    return (x0 >> 0x3b) & 0x1e;
+}
+
+/* FUN_004ac1a4 @ 0x004ac1a4   (est. sk_r38_call_49df18)
+ * PAC-protected thunk that calls 0x0049df18() with no arguments and returns
+ * its result (also retained in x20).
+ * Confidence: medium
+ * Notes: prologue pacibsp/retab; `bl 0x0049df18 ; mov x20,x0`. */
+word_t sk_r38_call_49df18(void)
+{
+    word_t result = cL4_49df18();
+    return result; /* mov x20,x0 */
+}
+
+/* FUN_004ac1bc @ 0x004ac1bc   (est. sk_r38_load_pair_from_fp)
+ * Loads two 8-byte frame slots into x0/x1: x0 = [x29-0x120], x1 = [x29-0x128].
+ * Confidence: medium
+ * Notes: `ldur x0,[x29,#-0x120] ; ldur x1,[x29,#-0x128]`. */
+cL4_w16_t sk_r38_load_pair_from_fp(word_t x29)
+{
+    cL4_w16_t r;
+    r.lo = *(const word_t *)(x29 - 0x120);
+    r.hi = *(const word_t *)(x29 - 0x128);
+    return r;
+}
+
+/* FUN_004ac1d4 @ 0x004ac1d4   (est. sk_r38_copy_16_a0)
+ * Copies the 16-byte (Q) field at +0xa0 from source (x20) to destination (x19).
+ * Confidence: medium
+ * Notes: `ldr q0,[x20,#0xa0] ; str q0,[x19,#0xa0]`. */
+void sk_r38_copy_16_a0(void *dst, const void *src)
+{
+    __builtin_memcpy((byte *)dst + 0xa0, (const byte *)src + 0xa0, 16);
+}
+
+/* FUN_004ac1e0 @ 0x004ac1e0   (est. sk_r38_orr_chain_add)
+ * OR-combines (x21<<0x1b) | x8 | x9 | x10, then adds [sp+0x8], returning the
+ * sum in x8.
+ * Confidence: medium
+ * Notes: `adds` also sets flags. */
+word_t sk_r38_orr_chain_add(word_t x8, word_t x21, word_t x9, word_t x10, word_t sp)
+{
+    word_t acc = x8 | (x21 << 0x1b) | x9 | x10;
+    return *(const word_t *)(sp + 0x8) + acc;
+}
+
+/* FUN_004ac1f8 @ 0x004ac1f8   (est. sk_r38_setup_6args)
+ * Register-setup fragment: loads x2-x6 from callee-saved x28/x20/x23/x24/x25.
+ * Confidence: medium
+ * Notes: `mov x2,x28 ; mov x3,x20 ; mov x4,x23 ; mov x5,x24 ; mov x6,x25`. */
+void sk_r38_setup_6args(word_t x28, word_t x20, word_t x23, word_t x24, word_t x25)
+{
+    word_t x2 = x28, x3 = x20, x4 = x23, x5 = x24, x6 = x25;
+    (void)x2; (void)x3; (void)x4; (void)x5; (void)x6;
+}
+
+/* FUN_004ac210 @ 0x004ac210   (est. sk_r38_call_49e2d4_cmp7)
+ * PAC-protected thunk: calls 0x0049e2d4() and compares its result against 7.
+ * Confidence: medium
+ * Notes: `bl 0x0049e2d4 ; cmp w0,#7`. */
+long sk_r38_call_49e2d4_cmp7(void)
+{
+    return (long)(cL4_49e2d4(0) & 0xffffffff) - 7;
+}
+
+/* FUN_004ac228 @ 0x004ac228   (est. sk_r38_zero_0x68)
+ * Zero-initialises a 0x68-byte (104-byte) object at x19: writes 0 to +0x60
+ * and clears the 16-byte-aligned region [0x00,0x60) with four Q stores.
+ * Confidence: high (unambiguous zeroing loop)
+ * Notes: disasm confirms vectorised zeroing. */
+void sk_r38_zero_0x68(void *obj)
+{
+    __builtin_memset((byte *)obj, 0, 0x68);
+}
+
+/* FUN_004ac240 @ 0x004ac240   (est. sk_r38_init_node_pair)
+ * Initialises two linked nodes: destination object at x0 gets fields +0x10/
+ * +0x18/+0x20/+0x28 = x21,x19,x23,x22; the node at x20 gets +0x00/+0x08/
+ * +0x10/+0x18 = x21,x19,x24,x0 and a byte +0x20 = w25.
+ * Confidence: medium
+ * Notes: double-list/object-embedding init; writes through x19/x20/x21-x24. */
+void sk_r38_init_node_pair(void *dst, void *node, word_t x19, word_t x21,
+                           word_t x22, word_t x23, word_t x24, word_t w25)
+{
+    *(word_t *)((byte *)dst + 0x10) = x21;
+    *(word_t *)((byte *)dst + 0x18) = x19;
+    *(word_t *)((byte *)dst + 0x20) = x23;
+    *(word_t *)((byte *)dst + 0x28) = x22;
+    *(word_t *)((byte *)node + 0x00) = x21;
+    *(word_t *)((byte *)node + 0x08) = x19;
+    *(word_t *)((byte *)node + 0x10) = x24;
+    *(word_t *)((byte *)node + 0x18) = (word_t)dst;
+    *((byte *)node + 0x20) = (byte)w25;
+}
+
+/* FUN_004ac258 @ 0x004ac258   (est. sk_r38_clear_byte_30)
+ * Writes a zero byte at +0x30 of the object in x8 and returns x22 (a saved
+ * object pointer).
+ * Confidence: medium
+ * Notes: `strb wzr,[x8,#0x30] ; mov x0,x22`. */
+word_t sk_r38_clear_byte_30(void *obj, word_t x22)
+{
+    *((byte *)obj + 0x30) = 0;
+    return x22;
+}
+
+/* FUN_004ac264 @ 0x004ac264   (est. sk_r38_copy_head_cmp_30)
+ * Copies the first 8 bytes of *x1 into *x0, then compares [x0+0x30] against 1
+ * (a refcount/kind test returning flags).
+ * Confidence: medium
+ * Notes: `ldr x8,[x1],#8 ; str x8,[x0] ; ldr x8,[x0,#0x30] ; cmp x8,#1`. */
+long sk_r38_copy_head_cmp_30(word_t *dst, const word_t *src)
+{
+    *dst = *src;
+    return (long)*(const word_t *)((byte *)dst + 0x30) - 1;
+}
+
