@@ -16,6 +16,10 @@
 
 /* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1). */
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
+#define CONCAT17(h,l)  ((unsigned long)(h) & 0xff | ((unsigned long)(l) << 8))
+#define CONCAT44(h,l)  (((unsigned long)(l) & 0xffffffff) | ((unsigned long)(h) << 32))
+#define CONCAT71(h,l)  ((unsigned long)(h) & 0x7f | ((unsigned long)(l) << 7))
+#define CONCAT11(h,l)  ((unsigned long)(h) & 0xff | ((unsigned long)(l) << 8))
 
 /* ------------------------------------------------------------------ *
  * Externs for the shared cL4 runtime / Swift metadata helpers called by
@@ -23,7 +27,6 @@ typedef struct { unsigned long lo, hi; } cL4_w16_t;
  * ------------------------------------------------------------------ */
 extern void *cL4_alloc(unsigned long size, unsigned long tag);   /* FUN_00111890 */
 extern void cL4_free(void *p, unsigned long size);               /* thunk_FUN_00012568 */
-extern void thunk_FUN_00012568(unsigned long, ...); /* free w/ size tag 0x12568 */
 extern void cL4_stack_fail(void) __attribute__((noreturn));      /* FUN_0011d7e8 */
 extern void cL4_ref_acquire(unsigned long obj);                  /* FUN_0037a48c */
 extern void cL4_ref_release(unsigned long obj);                  /* FUN_0037aed8 */
@@ -151,7 +154,6 @@ extern void (*FUN_00397f0c)(void);
 extern void (*FUN_00397fc0)(void);
 extern void (*FUN_00398108)(void);
 extern void (*FUN_00398074)(void);
-extern unsigned long sk_type_metadata_get_3963b8(unsigned long, unsigned long, unsigned long);
 
 /* Swift runtime TypeDecoder error / string-buffer primitives. */
 extern void *cL4_strbuf_alloc(long size);                        /* FUN_00112db4 */
@@ -166,72 +168,88 @@ extern void cL4_printf2(unsigned long a, unsigned long b);       /* FUN_004b9ed8
  * variadic so the reconstruction compiles against call sites whose exact
  * Ghidra signatures were not all recovered. */
 extern unsigned long sk_type_lookup_389940(unsigned long, unsigned long, unsigned long, unsigned long);
-extern void sk_type_lookup_core_3895e0();
 extern long sk_strbuf_copy_38ef98();
 extern long sk_strbuf_copy_38f020();
-extern void sk_type_resolve_38a518();
 extern long sk_type_field_get_3a3430();
-extern void sk_type_field_set_3a3460();
-extern unsigned long sk_type_strfield_3a63f70(unsigned long, ...);
+extern unsigned long sk_type_strfield_3a63f70();
 extern long sk_type_a32a0_3a32a0();
-extern void sk_type_decode_38f0a8();
-extern unsigned long FUN_00377dcc(unsigned long, ...);
-extern void FUN_003a2578();
-extern void cL4_panic_big();
-extern void cL4_list_push_363f10();
-extern unsigned long sk_type_metadata_get_3963b8(unsigned long, ...);
-extern void sk_type_materialize_exist_39517c();
-extern void sk_type_materialize_exist_3950a4();
-extern void sk_type_build_sig_395f3c();
-extern void sk_type_build_owned_395dec();
-extern void sk_type_generic_args_396440();
-extern void sk_type_build_bound_generic_396784();
-extern void sk_type_metadata_of_3bf904();
-extern void sk_type_unpack_pair_37364c();
-extern void sk_type_materialize_394c40();
-extern void sk_type_materialize_397358();
-extern void sk_type_build_pair_397e94();
-extern void sk_type_decode_sig_394404();
-extern void sk_type_build_func_394724();
-extern unsigned long sk_type_parse_signature_395638(unsigned long, ...);
-extern void sk_type_build_protocol_3973e4();
-extern void sk_type_decode_sig_394734();
-extern void sk_type_build_func_3952c4();
-extern void sk_type_decl_record_39779c();
-extern void sk_type_push8_39780c();
-extern void sk_type_field_push_39787c();
-extern unsigned long sk_type_realloc_38d9b4(unsigned long, ...);
-extern void sk_type_flatpair_3978b0();
-extern void sk_type_push98_397998();
-extern void sk_type_build_bound_397a98();
-extern unsigned long sk_type_lookup_field_398f40(unsigned long, ...);
-extern void sk_type_materialize_req_3972cc();
-extern void sk_type_materialize_req2_3971e8();
-extern void sk_type_build_reqlist_396f78();
-extern void sk_type_65184_365184();
-extern void sk_type_pushreq_39951c();
+extern unsigned long FUN_00377dcc();
+extern unsigned long sk_type_metadata_get_3963b8();
+extern unsigned long sk_type_parse_signature_395638();
+extern unsigned long sk_type_realloc_38d9b4();
+extern unsigned long sk_type_lookup_field_398f40();
 extern long sk_type_decode_param_396aec();
 extern long sk_type_decode_result_396d48();
-extern void sk_type_wordlist_grow_3a294c();
-extern void sk_type_build_decl_39779c();
 extern cL4_w16_t sk_type_name_split_38cbb8();
 extern long sk_type_waiter_scan_38c640();
-extern unsigned long sk_type_waiter_hash2_38c750(unsigned long, ...);
-extern unsigned long sk_type_capcmp_387fbc(unsigned long, ...);
-extern void sk_type_dbltbl_grow_38d90c();
-extern unsigned long sk_type_dbltbl_hash_38d6e4(unsigned long, ...);
-extern void sk_type_insert_38c3ac();
+extern unsigned long sk_type_waiter_hash2_38c750();
+extern unsigned long sk_type_capcmp_387fbc();
+extern unsigned long sk_type_dbltbl_hash_38d6e4();
 extern cL4_w16_t sk_type_read_3a31d8();
-extern unsigned long sk_type_cap_build_3a32a0(unsigned long, ...);
-extern void sk_type_wordlist_append_389370();
-extern void FUN_0038e214();
-extern void FUN_0038e458();
-extern void FUN_0038e624();
-extern void FUN_0038e7f0();
-extern void FUN_0038ece8();
-extern void FUN_0038d9fc();
-extern void sk_type_dbltbl_op_38d90c();
-extern void sk_type_release_obj();
+extern unsigned long sk_type_cap_build_3a32a0();
+extern unsigned long *sk_vector_grow_399094(unsigned long, unsigned long, unsigned long);
+
+
+
+/* Forward prototypes for in-file R50 helper functions. */
+long sk_hashtable_chain_find_38c750(unsigned int *h);
+unsigned long sk_hashtable_index_lookup2_38cae4(long a, unsigned long k, int *key);
+unsigned long sk_hashtable_index_lookup3_38d690(long a, unsigned long k, int *key);
+unsigned long sk_hashtable_index_lookup_38c920(long a, unsigned long k, int *key);
+void sk_hashtable_unlink_38bf8c(int *entry);
+unsigned long sk_mangled_scan_valid_389da0(unsigned char *s, long len);
+void sk_mr_send_scan_match_380930(long *list, unsigned long word, unsigned long count, long *out_slot);
+void sk_mr_send_word_replace_380864(unsigned long *out, unsigned long *slot, unsigned long w0, unsigned long w1);
+unsigned long sk_pack_length_38d8dc(unsigned long *p);
+long sk_strbuf_copy_38ef98(long dst, void *srcp);
+long sk_strbuf_copy_38f020(long dst, void *srcp);
+long sk_string_align_38cd54(unsigned long a);
+void sk_string_alloc_38c584(long a);
+unsigned long sk_string_base_38cdb4(unsigned int *s);
+void sk_string_bucket_18_38c7bc(long a);
+void sk_string_bucket_60_38c87c(long a);
+void sk_string_bucket_60_38d52c(long a);
+void sk_string_bucket_a8_38c980(long a);
+void sk_string_bucket_a8_38d5ec(long a);
+void sk_string_bucket_f0_38ca40(long a);
+void sk_string_elem_at_38cbb8(long base, unsigned long idx);
+unsigned int sk_string_entcnt2_38d45c(char *s);
+unsigned int sk_string_entcnt_38d07c(char *s);
+unsigned int sk_string_entcnt_38d3b8(char *s);
+long sk_string_fixed_38ccf8(unsigned long a);
+unsigned short sk_string_flag_08_38cfd8(char *s);
+unsigned short sk_string_flag_0e_38cf50(char *s);
+unsigned short sk_string_flag_10_38cecc(char *s);
+unsigned short sk_string_flag_h17c_38d17c(char *s);
+long sk_string_hdr_38cc7c(unsigned long a);
+unsigned short sk_string_len8_38ce48(char *s);
+unsigned long sk_string_namebytes_38d204(long a);
+unsigned short sk_string_namecnt_38d330(char *s);
+cL4_w16_t sk_string_namedesc_38d294(long a);
+long sk_string_tbl_base_38cc2c(unsigned long a);
+unsigned long sk_stringbuf_data_38c460(unsigned int *s);
+cL4_w16_t sk_stringbuf_get_small_38c3ac(char *s);
+unsigned short sk_stringbuf_len_38c4f4(char *s);
+void sk_stringbuf_release_free2_38cb38(unsigned long *buf);
+void sk_stringbuf_release_free_38c32c(unsigned long *buf);
+void sk_tail_call_dispatch_38b4cc(unsigned long *fn, unsigned long a, unsigned long *args, long n);
+void sk_type_ctx_init_389130(unsigned long *ctx);
+long sk_type_dbltbl_hash_38d6e4(char *s);
+void sk_type_decode_38f0a8(void *outp, unsigned long *ctx, unsigned long nodev, unsigned long depth, unsigned long flag);
+unsigned long sk_type_lookup_389940(unsigned long a, unsigned long b, unsigned long c, unsigned long d);
+bool sk_type_lookup_check_3885e4(unsigned long a, long b, unsigned long c);
+void sk_type_lookup_core_3895e0(unsigned long *out, unsigned long flags, long name, unsigned long len, unsigned long err, void *b6, void *b7);
+void sk_type_lookup_dispatch2_389910(unsigned long a, unsigned long b, long c);
+void sk_type_lookup_dispatch3_389b4c(unsigned long a, unsigned long b, unsigned long c);
+cL4_w16_t sk_type_lookup_name_38a914(unsigned long a, long name, unsigned long b);
+unsigned long sk_type_lookup_quiet_389b64(unsigned long flags, unsigned long a, unsigned long b, long len, unsigned long d);
+void sk_type_resolve_38a518(unsigned long *out, unsigned long flags, unsigned long node, unsigned long *ctx, unsigned long err, unsigned long b6, unsigned long b7);
+void sk_vec_alloc_38d9b4(unsigned long a, unsigned long n);
+void sk_vec_append_range_38e114(long *vec, unsigned long *start, unsigned long *end);
+void sk_vec_reserve_38d974(long *vec, unsigned long n);
+void sk_vec_resize_38e198(long *vec, unsigned long n);
+void sk_vector_push_back_38b814(long *vec, unsigned long val);
+void sk_wordlist_append_389370(long *list, unsigned int w);
 
 /* FUN_00380864 @ 0x380864   (est. sk_mr_send_word_replace)
  * Ghidra: void FUN_00380864(ulong *param_1, undefined8 *param_2, long, long)
@@ -865,7 +883,7 @@ void sk_type_resolve_38a518(unsigned long *out, unsigned long flags, unsigned lo
     s78 = 0; v68 = 0; v60 = 0; v70 = 0;
     cL4_release((unsigned long)s100);
     cL4_release((unsigned long)se0);
-    sk_type_decode_38f0a8(&meta, &c0, ctx, 0, 0);
+    sk_type_decode_38f0a8(&meta, &c0, (unsigned long)ctx, 0, 0);
     if (kind == 0) {
         if (meta == 0) goto null_err;
         if ((meta & 1) == 0) {
@@ -929,13 +947,13 @@ out:
  * Confidence: medium
  * Notes: recursion bounded by param_4 (depth); helper callees 0x3895e0-style
  *   node decoders, 0x39xxxx materializers; DAT_005be7c0 = null text sentinel. */
-void sk_type_decode_38f0a8(unsigned long *out, unsigned long *ctx, unsigned long *node,
+void sk_type_decode_38f0a8(void *outp, unsigned long *ctx, unsigned long nodev,
                            unsigned long depth, unsigned long flag)
 {
     char c; short s; unsigned int u; unsigned char *pb; bool b5; bool b6; int i7;
     long l8; unsigned long **pp9; unsigned long *pu10; unsigned long *pu11;
     unsigned long u13; unsigned int u14; unsigned int u15; unsigned short *pu16;
-    unsigned long u17; char *pc18; void (*pc19)(unsigned long, int, unsigned long);
+    unsigned long u17; char *pc18; void (*pc19)(void);
     short *ps20; unsigned int *pu21; unsigned char b22; unsigned char u23;
     unsigned long *pu24; unsigned short *pu25; unsigned short *pu26; unsigned long u27;
     unsigned long u28; short *ps29; unsigned char *pu30; unsigned int u31; long *pl32;
@@ -953,8 +971,10 @@ void sk_type_decode_38f0a8(unsigned long *out, unsigned long *ctx, unsigned long
     unsigned long **local_210; unsigned long **stk_208; unsigned long **local_200;
     unsigned long **local_1f8; unsigned long local_1e8; char c1e1; unsigned long **local_100;
     unsigned long **stk_f8; unsigned long local_f0; long canary;
-    unsigned long **pp12; unsigned long u3; unsigned char *pu4;
+    unsigned long **pp12; unsigned long **pp52; unsigned long u3; unsigned char *pu4;
     unsigned long local_1f0; unsigned long u_v51;
+    unsigned long *out = (unsigned long *)outp;
+    unsigned long *node = (unsigned long *)nodev;
 
     canary = -0x2c8502b44bfffed6;
     if (0x400 < (unsigned int)depth) {
@@ -1042,7 +1062,7 @@ l92654:
                     goto l93930;
             goto l93930;
 l93930:
-            ((void (*)(unsigned long, int, unsigned long))pc19)(pp9, 3, 0);
+            ((void (*)(unsigned long, int, unsigned long))pc19)((unsigned long)(unsigned long)pp9, 3, 0);
             goto fin;
                 }
                 stk_208 = (unsigned long **)DAT_004f2710;
@@ -1088,7 +1108,7 @@ l926f4:
                 if (local_100 != &local_f0) cL4_free(0, 0);
                 if ((unsigned long **)local_210 != &local_200) cL4_free(0, 0);
                 pp9 = local_2a0;
-                pc19 = (void (*)(unsigned long, int, unsigned long))stk_298;
+                pc19 = (void (*)(void))stk_298;
                 s = (short)local_290[0];
                 goto joined_32e0;
             }
@@ -1211,7 +1231,7 @@ l8f78c:
             else u37 = 0;
             if (b22 == 5) {
                 pu26 = *(unsigned short **)node;
-                if (*(int *)(node + 4) == 0) pd34 = (unsigned int *)&__thread_bss.ncmds;
+                if (*(int *)(node + 4) == 0) pd34 = (unsigned int *)0;
                 else pd34 = (unsigned int *)(*(long *)pu26 + 0x10);
                 b5 = (short)*pd34 == 0x18;
                 b6 = *(short *)(*(long *)(pu26 + (unsigned long)b5 * 4) + 0x10) != 0x89;
@@ -1414,10 +1434,10 @@ l91b70:
                     if ((char)local_f0 == 1) {
                         *(unsigned short *)(out + 2) = 1;
                         out[1] = (unsigned long)stk_f8;
-                        l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 2, 0);
+                        l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
                         *out = l8;
 l92810:
-                        ((void (*)(unsigned long, int, unsigned long))pp42)(pp12, 3, 0);
+                        ((void (*)(unsigned long, int, unsigned long))pp42)((unsigned long)pp12, 3, 0);
                     } else {
                         u43 = ((unsigned short *)node)[8];
                         u17 = 0x4000000;
@@ -1443,7 +1463,7 @@ l92724:
                             local_2a0 = 0;
                             stk_298 = (unsigned long **)FUN_0037f9f8;
 l927f0:
-                            ((void (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 3, 0);
+                            ((void (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 3, 0);
                         } else {
                             u27 = u46 | u37 | u38 | u51 | (unsigned long)pp9 & 0xf9ffffff | u33 << 0x19 | u17 | u27;
                             if (u36 != 0) u27 = u27 | 0x80000000;
@@ -1631,7 +1651,7 @@ l925e4:
                 u43 = ((unsigned short *)node)[8];
                 if ((char)((unsigned short *)node)[9] == 3) { u47 = *(unsigned int *)(node + 4); pu48 = *(unsigned char **)node; }
                 else { u47 = 0; pu48 = (unsigned char *)&DAT_005be7c0; }
-                u14 = local_200[0];
+                u14 = (unsigned int)(unsigned long)local_200;
                 pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
                 *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d558c;
                 *(unsigned int *)(pu10 + 1) = 0x30f;
@@ -1690,7 +1710,7 @@ l924d0:
                     sk_type_build_pair_397e94(out, pp9, pp12);
                     if ((short)local_f0 != 1) goto l9391c;
                 }
-                ((void (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 3, 0);
+                ((void (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 3, 0);
                 goto l9391c;
             }
             goto l92550;
@@ -1704,9 +1724,9 @@ case_19:
             if ((char)local_200 == 1) {
                 *(unsigned short *)(out + 2) = 1;
                 out[1] = (unsigned long)stk_208;
-                l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_208)(local_210, 2, 0);
+                l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_208)((unsigned long)local_210, 2, 0);
                 *out = l8;
-                ((void (*)(unsigned long, int, unsigned long))pp12)(pp9, 3, 0);
+                ((void (*)(unsigned long, int, unsigned long))pp12)((unsigned long)pp9, 3, 0);
             } else {
                 sk_type_build_func_394724(out, *ctx, local_100, local_2a0);
             }
@@ -1795,7 +1815,7 @@ l92528:
             }
 l9391c:
             pp9 = local_210;
-            pc19 = (void (*)(unsigned long, int, unsigned long))stk_208;
+            pc19 = (void (*)(void))stk_208;
             s = (short)local_200;
             goto joined_32e0;
         }
@@ -1927,9 +1947,9 @@ l9156c:
             if ((char)local_f0 == 1) {
                 *(unsigned short *)(out + 2) = 1;
                 out[1] = (unsigned long)stk_f8;
-                l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 2, 0);
+                l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
                 *out = l8;
-                ((void (*)(unsigned long, int, unsigned long))pp12)(pp9, 3, 0);
+                ((void (*)(unsigned long, int, unsigned long))pp12)((unsigned long)pp9, 3, 0);
             } else {
                 sk_type_build_func_3952c4(out, l8, local_210, (unsigned long)stk_208 & 0xffffffff);
             }
@@ -2764,7 +2784,7 @@ l8ffe4:
     *(unsigned int *)((long)pu10 + 0xc) = u44;
     *(unsigned int *)(pu10 + 2) = u47;
     pu10[3] = (unsigned long)pu48;
-    break;
+    goto fin;
 l90d60:
     pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
     *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
@@ -2773,7 +2793,7 @@ l91948:
     pu10[1] = u13;
     *(unsigned int *)(pu10 + 2) = u47;
     pu10[3] = (unsigned long)pu48;
-    break;
+    goto fin;
 l91b14:
     pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
     *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
@@ -2808,9 +2828,11 @@ l92960:
     pu11[4] = pu10[4];
     *out = (unsigned long)pu11;
 l92984:
-    if (canary == -0x2c8502b44bfffed6) { u13 = 0x28; goto l929a4; }l92984:
     if (canary == -0x2c8502b44bfffed6) { u13 = 0x28; goto l929a4; }
     goto canary_fail;
+l929a4:
+    cL4_free(pu10, u13);
+    return;
 l92ed0:
     b22 = *(unsigned char *)((long)pu11 + 0x12);
     u17 = (unsigned long)b22;
@@ -3257,17 +3279,17 @@ l90420:
                 if (b22 == 2) {
                     u13 = *pu10;
                     sk_type_decode_38f0a8(&local_100, ctx, pu10[1], i41 + 1, 1);
-                    pc19 = (void (*)(unsigned long, int, unsigned long))stk_f8;
+                    pc19 = (void (*)(void))stk_f8;
                     if ((short)local_f0 == 1) {
-                        node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 2, 0);
+                        node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
                         b6 = false; b5 = true;
                     } else {
                         pp9 = local_100;
                         if ((short)local_f0 != 0) pp9 = 0;
                         l8 = sk_type_lookup_field_398f40(*ctx, pp9);
-                        if (l8 == 0) { b5 = false; pc19 = (void (*)(unsigned long, int, unsigned long))0; }
+                        if (l8 == 0) { b5 = false; pc19 = (void (*)(void))0; }
                         else {
-                            l49 = 0; b5 = false; pc19 = (void (*)(unsigned long, int, unsigned long))0;
+                            l49 = 0; b5 = false; pc19 = (void (*)(void))0;
                             do {
                                 l35 = *(long *)(*ctx + 0x58);
                                 if (*(long *)(*ctx + 0x50) == l35) goto l94250;
@@ -3276,15 +3298,15 @@ l90420:
                                 pp9 = stk_298;
                                 s = (short)local_290[0];
                                 if ((short)local_290[0] == 1) {
-                                    node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 2, 0);
+                                    node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 2, 0);
                                     b5 = true;
-                                    pc19 = (void (*)(unsigned long, int, unsigned long))pp9;
+                                    pc19 = (void (*)(void))pp9;
                                 } else {
                                     pp9 = local_2a0;
                                     if ((short)local_290[0] != 0) pp9 = 0;
                                     cL4_list_push_363f10(&local_210, pp9);
                                 }
-                                if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 3, 0);
+                                if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 3, 0);
                                 if (s == 1) { b6 = false; goto l9063c; }
                                 l49 = l49 + 1;
                             } while (l8 != l49);
@@ -3295,7 +3317,7 @@ l90420:
                         b6 = true;
                     }
 l9063c:
-                    if ((short)local_f0 == 1) ((void (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 3, 0);
+                    if ((short)local_f0 == 1) ((void (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 3, 0);
                     if (b6) goto l90660;
                     if (b5) goto l92018;
                     goto l9066c;
@@ -3322,23 +3344,23 @@ l9063c:
 l92018:
             *(unsigned short *)(out + 2) = 1;
             out[1] = (unsigned long)pc19;
-            l8 = ((unsigned long (*)(unsigned long, int, unsigned long))pc19)(node, 2, 0);
+            l8 = ((unsigned long (*)(unsigned long, int, unsigned long))pc19)((unsigned long)node, 2, 0);
             *out = l8;
-            ((void (*)(unsigned long, int, unsigned long))pc19)(node, 3, 0);
+            ((void (*)(unsigned long, int, unsigned long))pc19)((unsigned long)node, 3, 0);
             goto l92054;
         }
-        sk_type_decode_38f0a8(&local_100, ctx, pu10, i41 + 1, 0);
-        pc19 = (void (*)(unsigned long, int, unsigned long))stk_f8;
+        sk_type_decode_38f0a8(&local_100, ctx, (unsigned long)pu10, i41 + 1, 0);
+        pc19 = (void (*)(void))stk_f8;
         s = (short)local_f0;
         if ((short)local_f0 == 1) {
-            node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 2, 0);
+            node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
         } else {
             pp9 = local_100;
             if ((short)local_f0 != 0) pp9 = 0;
             cL4_list_push_363f10(&local_210, pp9);
-            pc19 = (void (*)(unsigned long, int, unsigned long))0;
+            pc19 = (void (*)(void))0;
         }
-        if ((short)local_f0 == 1) ((void (*)(unsigned long, int, unsigned long))stk_f8)(local_100, 3, 0);
+        if ((short)local_f0 == 1) ((void (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 3, 0);
         if (s == 1) goto l92018;
 l90660:
         node = (unsigned short *)((unsigned long)node & 0xffffffffffffff00);
@@ -3450,7 +3472,7 @@ l92d30:
             sk_type_decode_38f0a8(&local_2a0, ctx, pu10[1], i41 + 1, 1);
             pp12 = stk_298;
             if ((short)local_290[0] == 1) {
-                local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 2, 0);
+                local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 2, 0);
                 b5 = true;
                 goto l91f0c;
             } else {
@@ -3468,7 +3490,7 @@ l92d30:
                         s = local_320[0];
                         pp12 = local_328;
                         if (local_320[0] == 1) {
-                            local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))local_328)(local_330, 2, 0);
+                            local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))local_328)((unsigned long)local_330, 2, 0);
                             b5 = true;
                         } else {
                             pp12 = local_330;
@@ -3476,7 +3498,7 @@ l92d30:
                             cL4_list_push_363f10(&local_100, pp12);
                             sk_type_65184_365184(&local_210, local_360, stk_358);
                         }
-                        if (local_320[0] == 1) ((void (*)(unsigned long, int, unsigned long))local_328)(local_330, 3, 0);
+                        if (local_320[0] == 1) ((void (*)(unsigned long, int, unsigned long))local_328)((unsigned long)local_330, 3, 0);
                         if (s == 1) goto l91f0c;
                         l49 = l49 + 1;
                     } while (l8 != l49);
@@ -3486,21 +3508,21 @@ l92d30:
                 *(long *)(l8 + 0x58) = *(long *)(l8 + 0x58) + -0x10;
                 b6 = true;
             }
-            if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 3, 0);
+            if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 3, 0);
             if (b6) goto l91f38;
             if (b5) goto l93610;
         } else {
-            sk_type_decode_38f0a8(&local_2a0, ctx, pu10, i41 + 1, 0);
+            sk_type_decode_38f0a8(&local_2a0, ctx, (unsigned long)pu10, i41 + 1, 0);
             pp12 = stk_298;
             s = (short)local_290[0];
             if ((short)local_290[0] == 1) {
-                local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 2, 0);
+                local_3d8 = (unsigned long *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 2, 0);
             } else {
                 pp12 = local_2a0;
                 if ((short)local_290[0] != 0) pp12 = 0;
                 sk_type_pushreq_39951c(&local_3c0, pp12);
             }
-            if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)(local_2a0, 3, 0);
+            if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 3, 0);
             if (s == 1) {
 l93610:
                 *(unsigned short *)(out + 2) = 1;
@@ -3524,6 +3546,262 @@ l93664:
     if (pp12 == pp9) goto fin;
 l9366c:
     cL4_free(0, 0);
+joined_32e0:
+    if (s == 1) goto l93930;
+    goto fin;
+l922b0:
+    u43 = *(unsigned short *)(pu10 + 2);
+    if (b22 != 3) { u47 = 0; pu48 = (unsigned char *)&DAT_005be7c0; goto l922b0_set; }
+    u47 = *(unsigned int *)(pu10 + 1); pu48 = (unsigned char *)*pu10;
+l922b0_set:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
+    *(unsigned int *)(pu10 + 1) = 0x3d9;
+    *(unsigned int *)((long)pu10 + 0xc) = (unsigned int)u43;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pc18 = (char *)s_Global_actor_node_is_missing_chi_005d56cd;
+    pu10[3] = (unsigned long)pu48;
+    pu10[4] = (unsigned long)pc18;
+    *(unsigned short *)(out + 2) = 1;
+    out[1] = (unsigned long)FUN_00397f0c;
+    pu11 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    u13 = *pu10; u53 = pu10[3]; u28 = pu10[2];
+    pu11[1] = pu10[1]; *pu11 = u13; pu11[3] = u53; pu11[2] = u28;
+    pu11[4] = pu10[4];
+    *out = (unsigned long)pu11;
+    goto fin;
+l93148:
+    u43 = *(unsigned short *)(pu10 + 2);
+    if (b22 != 3) { u47 = 0; pu48 = (unsigned char *)&DAT_005be7c0; goto l93148_set; }
+    u47 = *(unsigned int *)(pu10 + 1); pu48 = (unsigned char *)*pu10;
+l93148_set:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
+    *(unsigned int *)(pu10 + 1) = 0x413;
+    *(unsigned int *)((long)pu10 + 0xc) = (unsigned int)u43;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pc18 = (char *)s_Thrown_error_node_is_missing_chi_005d56f0;
+    pu10[3] = (unsigned long)pu48;
+    pu10[4] = (unsigned long)pc18;
+    *(unsigned short *)(out + 2) = 1;
+    out[1] = (unsigned long)FUN_00397f0c;
+    pu11 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    u13 = *pu10; u53 = pu10[3]; u28 = pu10[2];
+    pu11[1] = pu10[1]; *pu11 = u13; pu11[3] = u53; pu11[2] = u28;
+    pu11[4] = pu10[4];
+    *out = (unsigned long)pu11;
+    goto fin;
+l8f3dc:
+    node = (unsigned short *)*node;
+    goto l8f3e4;
+l8f3e0:
+    node = (unsigned short *)(node + 4);
+    goto l8f3e4;
+l8f298:
+    pu26 = *(unsigned short **)node;
+    goto l8f298_cont;
+l8f298_cont:
+    goto follow_child;
+l8f6cc:
+    stk_208 = (unsigned long **)DAT_004f2710;
+    goto l8f6cc_cont;
+l8f6cc_cont:
+    goto follow_child;
+l8fdb8:
+    if (u17 <= u37) goto l8fdd8;
+    pu26 = (unsigned short *)node;
+    if (1 < u36 - 1) pu26 = *(unsigned short **)node;
+    pl45 = *(long **)(pu26 + u37 * 4);
+    goto l8fdd8;
+l8fe84:
+    if (*(short *)(*pl32 + 0x10) == 0x76) {
+        if (u36 < 2) {
+            if (*(char *)(*pl45 + 0x12) != 3) { u47 = 0; pu48 = (unsigned char *)&DAT_005be7c0; goto l93bdc; }
+        } else if (*(char *)(*(long *)*pl45 + 0x12) != 3) goto l8ff88;
+        goto fin;
+    }
+    goto l8ff88;
+l90104:
+    if (b22 == 1) pu16 = (unsigned short *)node + 4;
+    else {
+        pu16 = (unsigned short *)node + 8;
+        if (b22 != 2) {
+            if (b22 == 5) { pu16 = *(unsigned short **)node; goto l90120; }
+            pu16 = 0;
+        }
+    }
+    goto l90120;
+l904bc:
+    u13 = *pu10;
+    sk_type_decode_38f0a8(&local_100, ctx, pu10[1], i41 + 1, 1);
+    pc19 = (void (*)(void))stk_f8;
+    if ((short)local_f0 == 1) {
+        node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
+        b6 = false; b5 = true;
+    } else {
+        pp9 = local_100;
+        if ((short)local_f0 != 0) pp9 = 0;
+        l8 = sk_type_lookup_field_398f40(*ctx, pp9);
+        if (l8 == 0) { b5 = false; pc19 = (void (*)(void))0; }
+        else {
+            l49 = 0; b5 = false; pc19 = (void (*)(void))0;
+            do {
+                l35 = *(long *)(*ctx + 0x58);
+                if (*(long *)(*ctx + 0x50) == l35) goto l94250;
+                *(long *)(l35 + -8) = l49;
+                sk_type_decode_38f0a8(&local_2a0, ctx, u13, i41 + 1, 1);
+                pp9 = stk_298;
+                s = (short)local_290[0];
+                if ((short)local_290[0] == 1) {
+                    node = (unsigned short *)((unsigned long (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 2, 0);
+                    b5 = true; pc19 = (void (*)(void))pp9;
+                } else {
+                    pp9 = local_2a0;
+                    if ((short)local_290[0] != 0) pp9 = 0;
+                    cL4_list_push_363f10(&local_210, (unsigned long)pp9);
+                }
+                if ((short)local_290[0] == 1) ((void (*)(unsigned long, int, unsigned long))stk_298)((unsigned long)local_2a0, 3, 0);
+                if (s == 1) { b6 = false; goto l9063c; }
+                l49 = l49 + 1;
+            } while (l8 != l49);
+        }
+        l8 = *ctx;
+        if (*(long *)(l8 + 0x50) == *(long *)(l8 + 0x58)) goto l94260;
+        *(long *)(l8 + 0x58) = *(long *)(l8 + 0x58) + -0x10;
+        b6 = true;
+    }
+    goto l9063c;
+l91324:
+    sk_type_build_owned_395dec(out, local_210, (unsigned long)stk_208 & 0xffffffff, l8, b5);
+    goto l9248c;
+l913ac:
+    *out = (unsigned long)s_unknown_error_005d5481;
+    out[1] = (unsigned long)FUN_0037f9f4;
+    *(unsigned short *)(out + 2) = 1;
+    goto fin;
+l914d0:
+    if (b22 == 1) pu25 = (unsigned short *)node + 4;
+    else if (b22 == 2) pu25 = (unsigned short *)node + 8;
+    else {
+        if (b22 == 5) { pu25 = *(unsigned short **)node; goto l914ec; }
+        pu25 = 0;
+    }
+    goto l914ec;
+l91810:
+    pu48 = pu4;
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
+    pu10[1] = DAT_004f2810;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pc18 = (char *)s_no_children_005d55ed;
+    goto l93508;
+l91f0c:
+    b6 = false;
+    goto l91f38;
+l92550:
+    pp9 = 0;
+    *(unsigned short *)(out + 2) = 1;
+    out[1] = (unsigned long)stk_208;
+    *out = (unsigned long)local_210;
+    pc19 = (void (*)(void))FUN_0037f9f8;
+    local_210 = 0;
+    stk_208 = (unsigned long **)FUN_0037f9f8;
+    goto l93930;
+l92e54:
+    b5 = true;
+    sk_type_decode_38f0a8(out, ctx, *(unsigned long *)(node + 4), i41 + 1, 1);
+    if ((short)out[2] != 1) {
+        if ((short)out[2] == 0) l8 = *out; else l8 = 0;
+        goto l91324;
+    }
+    goto l9248c;
+l92f48:
+    if (u17 <= u37) goto l92f68;
+    pu10 = pu11;
+    if (1 < u36 - 1) pu10 = (unsigned long *)*pu11;
+    ps20 = (short *)pu10[u37];
+    goto l92f68;
+l92fa8:
+    if (b22 == 1) ps29 = ps20 + 4;
+    else if (b22 != 2) {
+        if (b22 == 5) { ps29 = *(short **)ps20; goto l92fc4; }
+        ps29 = 0;
+    }
+    goto l92fc4;
+l93308:
+    if (b22 == 1) pu26 = (unsigned short *)node + 4;
+    else if (b22 != 2) {
+        if (b22 == 5) { pu26 = *(unsigned short **)node; goto l93324; }
+        pu26 = 0;
+    }
+    goto l93324;
+l93428:
+    pu10[1] = u13;
+    *(unsigned int *)(pu10 + 2) = 0;
+    pc18 = (char *)s_expected_text_005d5763;
+    pu10[3] = (unsigned long)&DAT_005be7c0;
+    pu10[4] = (unsigned long)pc18;
+    *(unsigned short *)(out + 2) = 1;
+    out[1] = (unsigned long)FUN_00397f0c;
+    pu11 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+    u13 = *pu10; u53 = pu10[3]; u28 = pu10[2];
+    pu11[1] = pu10[1]; *pu11 = u13; pu11[3] = u53; pu11[2] = u28;
+    pu11[4] = pu10[4];
+    *out = (unsigned long)pu11;
+    goto fin;
+l935c0:
+    local_3d8 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *local_3d8 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    local_3d8[1] = DAT_004f2858;
+    *(unsigned int *)(local_3d8 + 2) = u47;
+    local_3d8[3] = (unsigned long)pu48;
+    local_3d8[4] = u37;
+    goto l93610;
+l93710:
+    if (b22 == 1) pu25 = (unsigned short *)pu26 + 4;
+    else if (b22 != 2) {
+        if (b22 == 5) { pu25 = *(unsigned short **)pu26; goto l93f7c; }
+        pu25 = 0;
+    }
+    goto l93f7c;
+l93ef4:
+    u13 = 0x1050c400dfe80cb;
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d5915;
+    pu10[1] = DAT_004f2808;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pu10[3] = (unsigned long)pu48;
+    pu10[4] = 0;
+    *(unsigned short *)(out + 2) = 1;
+    pc19 = (void (*)(void))FUN_00397fc0;
+    goto l93524;
+l9412c:
+    if (u17 <= u37) goto l9414c;
+    pu11 = pu10;
+    if (1 < u15 - 1) pu11 = (unsigned long *)*pu10;
+    u13 = pu11[u37];
+    goto l9414c;
+l8f5bc:
+    l8 = *(long *)(pu26 + 4);
+l8f5c0:
+    stk_208 = (unsigned long **)DAT_004f2710;
+    local_210 = &local_200;
+    sk_type_decode_sig_394734(&local_100, ctx, l8, i41 + 1, &local_210);
+    if ((char)local_f0 == 1) {
+        *(unsigned short *)(out + 2) = 1;
+        out[1] = (unsigned long)stk_f8;
+        l8 = ((unsigned long (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 2, 0);
+        *out = l8;
+        ((void (*)(unsigned long, int, unsigned long))stk_f8)((unsigned long)local_100, 3, 0);
+        goto fin;
+    }
+    sk_type_build_owned_395dec(out, &local_210, (unsigned long)stk_208 & 0xffffffff, 0, 0);
+    goto fin;
+l8f564:
+    *(unsigned short *)(out + 2) = 0;
+    *out = (unsigned long)pp9;
+    if (pp9 == 0) goto l913ac;
+    goto fin;
 fin:
     if (canary == -0x2c8502b44bfffed6) return;
 canary_fail:
@@ -3570,11 +3848,659 @@ cL4_w16_t sk_type_lookup_name_38a914(unsigned long a, long name, unsigned long b
     }
     u = 0;
 out_lbl:
-    cL4_release(&c[0]);
-    cL4_release(&out);
+    cL4_release(c[0]);
+    cL4_release(out);
     if (pkeep != stack) thunk_FUN_00012568(0);
     if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
     r.hi = (unsigned long)pc;
     r.lo = u;
     return r;
+}
+
+/* FUN_0038a1bc @ 0x38a1bc   (est. sk_stringbuf_release)
+ * Ghidra: undefined8 * FUN_0038a1bc(undefined8 *param_1)
+ * Releases the two ownership objects (0x67c398 / 0x67c370 vtables) of a
+ * string-buffer object and clears the child flag. Returns the buffer.
+ * Confidence: medium */
+unsigned long *sk_stringbuf_release_38a1bc(unsigned long *buf)
+{
+    *buf = 0x67c398;
+    cL4_zone_get((long *)(buf + 0x44));
+    *buf = 0x67c370;
+    cL4_ipc_obj_publish((long *)buf[3], 0, 0);
+    if (buf[5] != 0) *(unsigned char *)(buf[5] + 0x30) = 0;
+    return buf;
+}
+
+/* FUN_0038b4cc @ 0x38b4cc   (est. sk_tail_call_dispatch)
+ * Ghidra: void FUN_0038b4cc(undefined8 *param_1, undefined8, undefined8 *param_3, long)
+ * Tail-call dispatcher: invokes the function pointer *param_1 with 0..3
+ * arguments extracted from param_3 (or a lone pointer for the 1-arg form).
+ * A trampoline used by the decoder's dynamic calls.
+ * Confidence: low */
+void sk_tail_call_dispatch_38b4cc(unsigned long *fn, unsigned long a, unsigned long *args, long n)
+{
+    void (*f)(void);
+    if (n < 2) {
+        if (n == 0) { ((void (*)(unsigned long))*fn)(a); return; }
+        if (n == 1) {
+            args = (unsigned long *)*args;
+            f = (void (*)(void))*fn;
+            ((void (*)(unsigned long, unsigned long *))f)(a, args);
+            return;
+        }
+    } else {
+        if (n == 2) { ((void (*)(unsigned long, unsigned long, unsigned long))*fn)(a, *args, args[1]); return; }
+        if (n == 3) { ((void (*)(unsigned long, unsigned long, unsigned long, unsigned long))*fn)(a, *args, args[1], args[2]); return; }
+    }
+    f = (void (*)(void))*fn;
+    ((void (*)(unsigned long, unsigned long *))f)(a, args);
+}
+
+/* FUN_0038b814 @ 0x38b814   (est. sk_vector_push_back)
+ * Ghidra: void FUN_0038b814(long *param_1, undefined8 param_2)
+ * Appends a 4-word element to the growable vector described by param_1
+ * (buffer at *param_1, count at param_1[1], stride 0x20), growing via
+ * FUN_00399094 and copying the 4 words.
+ * Confidence: medium */
+void sk_vector_push_back_38b814(long *vec, unsigned long val)
+{
+    unsigned long *slot; unsigned long *src; unsigned long w0, w1, w2;
+
+    src = (unsigned long *)sk_vector_grow_399094(vec, val, 1);
+    slot = (unsigned long *)(*vec + (unsigned long)*(unsigned int *)(vec + 1) * 0x20);
+    w0 = *src; w1 = src[3]; w2 = src[2];
+    slot[1] = src[1]; *slot = w0; slot[3] = w1; slot[2] = w2;
+    *(int *)(vec + 1) = (int)vec[1] + 1;
+}
+
+/* FUN_0038bf8c @ 0x38bf8c   (est. sk_hashtable_unlink)
+ * Ghidra: void FUN_0038bf8c(int *param_1)
+ * Removes the element referenced by param_1 from a pointer-chained hash
+ * bucket (relative-offset links): splices it out of its chain and, when the
+ * low bit isn't set, splices its next pointer into the free-list head.
+ * Confidence: low */
+void sk_hashtable_unlink_38bf8c(int *entry)
+{
+    long *node; long *next; long *freelist;
+
+    node = (long *)(((long)*entry & 0xfffffffffffffffe) + (long)entry);
+    if (((((long)*entry & 1) == 0) || (node = *(long **)node, node != 0)) && (node != 0)) {
+        next = (long *)((long)*node + (long)node);
+        if (((*(unsigned char *)(entry + 3) & 1) == 0) && (freelist = (long *)next[1], freelist != 0)) {
+            next[1] = freelist[1];
+            *next = *freelist;
+        }
+        freelist = (long *)((long)entry[2] + (long)(entry + 2));
+        *freelist = *next;
+        freelist[1] = next[1];
+        next[1] = (long)freelist;
+        *next = (long)entry[1] + (long)(entry + 1);
+    }
+}
+
+/* FUN_0038c32c @ 0x38c32c   (est. sk_stringbuf_release_free)
+ * Ghidra: void FUN_0038c32c(undefined8 *param_1)
+ * Like FUN_0038a1bc but additionally frees the 0x240-byte buffer block.
+ * Confidence: medium */
+void sk_stringbuf_release_free_38c32c(unsigned long *buf)
+{
+    *buf = 0x67c398;
+    cL4_zone_get((long *)(buf + 0x44));
+    *buf = 0x67c370;
+    cL4_ipc_obj_publish((long *)buf[3], 0, 0);
+    if (buf[5] != 0) *(unsigned char *)(buf[5] + 0x30) = 0;
+    cL4_free(buf, 0x240);
+}
+
+/* FUN_0038c3ac @ 0x38c3ac   (est. sk_stringbuf_get_small)
+ * Ghidra: undefined1[16] FUN_0038c3ac(char *param_1)
+ * Returns the 16-byte descriptor of an inline (small) Swift string: the
+ * data pointer from FUN_0038c460, the 2-byte length (param_1+0xe), zero pad.
+ * Confidence: medium */
+cL4_w16_t sk_stringbuf_get_small_38c3ac(char *s)
+{
+    cL4_w16_t r;
+    char *p;
+    p = s;
+    if (s == 0) p = 0;
+    if (*p < 0) {
+        if (s == 0) s = 0;
+        r.lo = sk_stringbuf_data_38c460(s);
+        r.hi = *(unsigned short *)(s + 0xe);
+        return r;
+    }
+    r.lo = 0; r.hi = 0;
+    return r;
+}
+
+/* FUN_0038c460 @ 0x38c460   (est. sk_stringbuf_data)
+ * Ghidra: ulong FUN_0038c460(uint *param_1)
+ * Computes the aligned data pointer of an inline Swift string buffer:
+ * base + flags-derived offset (param_1[0]>>7 & 1 adds 8) rounded to 4.
+ * Confidence: medium */
+unsigned long sk_stringbuf_data_38c460(unsigned int *s)
+{
+    unsigned long n; unsigned int *p;
+    p = s + 3;
+    if (p == 0) p = 0;
+    if (s == 0) s = 0;
+    n = *s;
+    return (long)p + sk_stringbuf_len_38c4f4() + ((unsigned long)(n >> 7) & 1) * 8 + 3 & 0xfffffffffffffffc;
+}
+
+/* FUN_0038c4f4 @ 0x38c4f4   (est. sk_stringbuf_len)
+ * Ghidra: undefined2 FUN_0038c4f4(char *param_1)
+ * Returns the length field (param_1+0xc) of an inline Swift string.
+ * Confidence: low */
+unsigned short sk_stringbuf_len_38c4f4(char *s)
+{
+    char *p;
+    p = s;
+    if (s == 0) p = 0;
+    if (*p < 0) {
+        if (s == 0) s = 0;
+        return *(unsigned short *)(s + 0xc);
+    }
+    return 0;
+}
+
+/* FUN_0038c584 @ 0x38c584   (est. sk_string_alloc)
+ * Ghidra: void FUN_0038c584(long param_1)
+ * Allocates a 0x10-byte small-string node holding the owner word from
+ * param_1+8, tagged with the 0x67b7d0 vtable.
+ * Confidence: low */
+void sk_string_alloc_38c584(long a)
+{
+    unsigned long *n;
+    n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6);
+    *n = 0x67b7d0;
+    n[1] = *(unsigned long *)(a + 8);
+}
+
+/* FUN_0038c750 @ 0x38c750   (est. sk_hashtable_chain_find)
+ * Ghidra: long FUN_0038c750(uint *param_1)
+ * Walks a hash-bucket header to find the chained element whose tag matches,
+ * following the (offset) link in the low-2-bit-tagged first word.
+ * Confidence: low */
+long sk_hashtable_chain_find_38c750(unsigned int *h)
+{
+    unsigned long w; long r;
+    w = *h;
+    if ((w & 3) == 1) {
+        r = *(long *)(((long)(int)w & 0xfffffffffffffffc) + (long)h);
+        if (r != 0) return r;
+    } else if (((w & 3) == 0) &&
+               (r = ((long)(int)w & 0xfffffffffffffffc) + (long)h, r != 0)) {
+        return r;
+    }
+    return 0;
+}
+
+/* FUN_0038c7bc @ 0x38c7bc / 0x38c87c / 0x38c980 / 0x38ca40  (est. sk_string_bucket)
+ * Ghidra: void FUN_0038c7bc(long) etc.
+ * Family of small-string constructors: allocate a 0x10-byte node tagged with
+ * a distinct string-bucket vtable (0x67b818/0x67b860/0x67b8a8/0x67b8f0) and
+ * store the owner word from param_1+8.
+ * Confidence: medium */
+void sk_string_bucket_18_38c7bc(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b818; n[1] = *(unsigned long *)(a + 8); }
+void sk_string_bucket_60_38c87c(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b860; n[1] = *(unsigned long *)(a + 8); }
+void sk_string_bucket_a8_38c980(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b8a8; n[1] = *(unsigned long *)(a + 8); }
+void sk_string_bucket_f0_38ca40(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b8f0; n[1] = *(unsigned long *)(a + 8); }
+
+/* FUN_0038c920 @ 0x38c920 / 0x38cae4  (est. sk_hashtable_index_lookup)
+ * Ghidra: undefined8 FUN_0038c920(long, undefined8, int *param_3)
+ * Looks up an element in the hash table whose owner is at param_1+8: hashes
+ * the key (FUN_0038ba00) and returns the word at the (base + index*8) slot,
+ * or 0 when the bucket array is null.
+ * Confidence: low */
+unsigned long sk_hashtable_index_lookup_38c920(long a, unsigned long k, int *key)
+{
+    int i; unsigned long r; long tbl;
+    tbl = *(long *)(a + 8);
+    if (*(long *)(tbl + 0x10) == 0) return 0;
+    i = *key;
+    sk_hashtable_hash_38ba00(tbl);
+    r = *(unsigned long *)(*(long *)(tbl + 0x10) +
+        (unsigned long)(unsigned int)(*(int *)(tbl + 0x128) + i + *(int *)(tbl + 300)) * 8);
+    return r;
+}
+unsigned long sk_hashtable_index_lookup2_38cae4(long a, unsigned long k, int *key)
+{
+    int i; unsigned long r; long tbl;
+    tbl = *(long *)(a + 8);
+    if (*(long *)(tbl + 0x10) == 0) return 0;
+    i = *key;
+    sk_hashtable_hash_38ba00(tbl);
+    r = *(unsigned long *)(*(long *)(tbl + 0x10) +
+        (unsigned long)(unsigned int)(*(int *)(tbl + 0x128) + i + *(int *)(tbl + 300)) * 8);
+    return r;
+}
+
+/* FUN_0038cb38 @ 0x38cb38   (est. sk_stringbuf_release_free2)
+ * Ghidra: void FUN_0038cb38(undefined8 *param_1)
+ * Like FUN_0038c32c but frees a 0xa40-byte buffer block.
+ * Confidence: medium */
+void sk_stringbuf_release_free2_38cb38(unsigned long *buf)
+{
+    *buf = 0x67c398;
+    cL4_zone_get((long *)(buf + 0x44));
+    *buf = 0x67c370;
+    cL4_ipc_obj_publish((long *)buf[3], 0, 0);
+    if (buf[5] != 0) *(unsigned char *)(buf[5] + 0x30) = 0;
+    cL4_free(buf, 0xa40);
+}
+
+/* FUN_0038cbb8 @ 0x38cbb8   (est. sk_string_elem_at)
+ * Ghidra: void FUN_0038cbb8(long param_1, ulong param_2)
+ * Returns the string element at index param_2 by resolving the relative
+ * offset table (FUN_0038cc2c) and decoding the element via FUN_003a31d8.
+ * Confidence: low */
+void sk_string_elem_at_38cbb8(long base, unsigned long idx)
+{
+    int *slot; int v; long r;
+    if (base == 0) base = 0;
+    r = sk_string_tbl_base_38cc2c(base);
+    slot = (int *)(r + (idx & 0xffffffff) * 4);
+    v = *slot;
+    r = 0;
+    if (v != 0) r = (long)v + (long)slot;
+    sk_type_read_3a31d8((unsigned long)r);
+}
+
+/* FUN_0038cc2c @ 0x38cc2c   (est. sk_string_tbl_base)
+ * Ghidra: long FUN_0038cc2c(undefined8 param_1)
+ * Computes the element table base offset: header size + name-count*4 +
+ * entry-count*4.
+ * Confidence: low */
+long sk_string_tbl_base_38cc2c(unsigned long a)
+{
+    return sk_string_hdr_38cc7c() + sk_string_namecnt_38d330(a) * 4 + sk_string_entcnt_38d3b8(a) * 4;
+}
+
+/* FUN_0038cc7c @ 0x38cc7c   (est. sk_string_hdr)
+ * Ghidra: long FUN_0038cc7c(undefined8 param_1)
+ * Computes the string-table header size: aligned (fixed + name-bytes*2) plus
+ * the element-count*0xc array.
+ * Confidence: low */
+long sk_string_hdr_38cc7c(unsigned long a)
+{
+    long base; unsigned long nb; unsigned long cnt; unsigned long r[2];
+    base = sk_string_fixed_38ccf8();
+    nb = sk_string_namebytes_38d204(a);
+    r[0] = sk_string_namedesc_38d294(a);
+    if (r[1] == 0) cnt = 0;
+    else cnt = (unsigned long)*(unsigned short *)(r[0] + r[1] * 2 - 2);
+    return (base + (nb & 0xffffffff) * 2 + 3 & 0xfffffffffffffffc) + cnt * 0xc;
+}
+
+/* FUN_0038ccf8 @ 0x38ccf8   (est. sk_strhdr_namebytes_off)
+ * Ghidra: long FUN_0038ccf8(undefined8)
+ * name-bytes offset = fixed-hdr + namebytes*2.
+ * Confidence: low */
+long sk_string_fixed_38ccf8(unsigned long a)
+{
+    return sk_string_align_38cd54() + (sk_string_flag_h17c_38d17c(a) & 0xffffffff) * 2;
+}
+
+/* FUN_0038cd54 @ 0x38cd54   (est. sk_strhdr_fixed)
+ * Ghidra: long FUN_0038cd54(undefined8)
+ * fixed header size = base + elem*0xc + namecnt*4 + entcnt*8.
+ * Confidence: low */
+long sk_string_align_38cd54(unsigned long a)
+{
+    return sk_string_base_38cdb4() + sk_string_flag_10_38cecc(a) * 0xc +
+           sk_string_flag_0e_38cf50(a) * 4 + sk_string_flag_08_38cfd8(a) * 8;
+}
+
+/* FUN_0038cdb4 @ 0x38cdb4   (est. sk_strhdr_base)
+ * Ghidra: ulong FUN_0038cdb4(uint *param_1)
+ * Aligned base pointer of the string header (like FUN_0038c460).
+ * Confidence: low */
+unsigned long sk_string_base_38cdb4(unsigned int *s)
+{
+    unsigned long n; unsigned int *p;
+    p = s + 2;
+    if (p == 0) p = 0;
+    if (s == 0) s = 0;
+    n = *s;
+    return (long)p + sk_string_len8_38ce48() + ((unsigned long)(n >> 7) & 1) * 8 + 3 & 0xfffffffffffffffc;
+}
+
+/* FUN_0038ce48 @ 0x38ce48   (est. sk_strhdr_len8)
+ * Length field at param_1+8.
+ * Confidence: low */
+unsigned short sk_string_len8_38ce48(char *s)
+{
+    char *p; p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 8); }
+    return 0;
+}
+
+/* FUN_0038cecc @ 0x38cecc   (est. sk_strhdr_count10)
+ * Count field at param_1+10 (element count).
+ * Confidence: low */
+unsigned short sk_string_flag_10_38cecc(char *s)
+{
+    char *p; p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 10); }
+    return 0;
+}
+
+/* FUN_0038cf50 @ 0x38cf50   (est. sk_strhdr_namecnt)
+ * Name-count field: bit0 of the 0xe flags word.
+ * Confidence: low */
+unsigned short sk_string_flag_0e_38cf50(char *s)
+{
+    char *p; p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) & 1; }
+    return 0;
+}
+
+/* FUN_0038cfd8 @ 0x38cfd8   (est. sk_strhdr_entcnt_present)
+ * Returns the entry-count when the 0xe bit0 is set (via FUN_0038d07c).
+ * Confidence: low */
+unsigned short sk_string_flag_08_38cfd8(char *s)
+{
+    unsigned short r; char *p;
+    p = s; if (s == 0) p = 0;
+    if (*p < 0) {
+        if (s == 0) s = 0;
+        if ((*(unsigned short *)(s + 0xe) & 1) != 0) {
+            r = sk_string_entcnt_38d07c();
+            return r;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0038d07c @ 0x38d07c   (est. sk_strhdr_entcnt)
+ * Reads the entry-count (two packed 16-bit words) from the element array.
+ * Confidence: low */
+unsigned int sk_string_entcnt_38d07c(char *s)
+{
+    unsigned long base; long off; unsigned short *p; unsigned int lo, hi;
+    char *q; q = s; if (s == 0) q = 0;
+    if (*q < 0) {
+        q = s; if (s == 0) q = 0;
+        if ((*(unsigned short *)(q + 0xe) & 1) != 0) {
+            if (s == 0) s = 0;
+            base = sk_string_base_38cdb4(s);
+            off = sk_string_flag_10_38cecc(s);
+            p = (unsigned short *)(base + off * 0xc);
+            lo = (unsigned int)*p;
+            hi = (unsigned int)p[1] << 0x10;
+            return hi | lo;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0038d17c @ 0x38d17c   (est. sk_strhdr_flag17c)
+ * Flags field: bit1 of the 0xe word.
+ * Confidence: low */
+unsigned short sk_string_flag_h17c_38d17c(char *s)
+{
+    char *p; p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) >> 1 & 1; }
+    return 0;
+}
+
+/* FUN_0038d204 @ 0x38d204   (est. sk_strhdr_namebytes)
+ * When the 0xe bit1 flag is set, popcounts the packed name-byte lengths to
+ * derive the name-bytes count.
+ * Confidence: low */
+unsigned long sk_string_namebytes_38d204(long a)
+{
+    unsigned long f; unsigned short *p; long x; char c;
+    x = a; if (a == 0) x = 0;
+    f = sk_string_flag_h17c_38d17c(x);
+    if ((int)f != 0) {
+        if (a == 0) a = 0;
+        p = (unsigned short *)sk_string_align_38cd54(a);
+        c = (char)((unsigned short)*p >> 8);
+        f = (unsigned long)CONCAT11(c, __builtin_popcount((char)*p) + c);
+    }
+    return f;
+}
+
+/* FUN_0038d294 @ 0x38d294   (est. sk_strhdr_namedesc)
+ * Returns the {data,count} pair describing the name array.
+ * Confidence: low */
+cL4_w16_t sk_string_namedesc_38d294(long a)
+{
+    int f; unsigned long d; unsigned long n; cL4_w16_t r; long x;
+    x = a; if (a == 0) x = 0;
+    f = sk_string_flag_h17c_38d17c(x);
+    if (f == 0) { d = 0; n = 0; }
+    else {
+        x = a; if (a == 0) x = 0;
+        d = sk_string_fixed_38ccf8(x);
+        n = sk_string_namebytes_38d204(a);
+        n = n & 0xffffffff;
+    }
+    r.lo = d; r.hi = n;
+    return r;
+}
+
+/* FUN_0038d330 @ 0x38d330   (est. sk_strhdr_namecnt2)
+ * Name-count: bit2 of the 0xe flags word.
+ * Confidence: low */
+unsigned short sk_string_namecnt_38d330(char *s)
+{
+    char *p; p = s; if (s == 0) p = 0;
+    if (*p < 0) { if (s == 0) s = 0; return *(unsigned short *)(s + 0xe) >> 2 & 1; }
+    return 0;
+}
+
+/* FUN_0038d3b8 @ 0x38d3b8   (est. sk_strhdr_entcnt2)
+ * Entry-count: bit2 flag -> FUN_0038d45c.
+ * Confidence: low */
+unsigned int sk_string_entcnt_38d3b8(char *s)
+{
+    unsigned int r; char *p;
+    p = s; if (s == 0) p = 0;
+    if (*p < 0) {
+        if (s == 0) s = 0;
+        if ((*(unsigned short *)(s + 0xe) >> 2 & 1) != 0) {
+            r = sk_string_entcnt2_38d45c();
+            return r;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0038d45c @ 0x38d45c   (est. sk_strhdr_entcnt_raw)
+ * Reads the raw entry-count word at the aligned element array.
+ * Confidence: low */
+unsigned int sk_string_entcnt2_38d45c(char *s)
+{
+    unsigned int *p; char *q;
+    q = s; if (s == 0) q = 0;
+    if (*q < 0) {
+        q = s; if (s == 0) q = 0;
+        if ((*(unsigned short *)(q + 0xe) >> 2 & 1) != 0) {
+            if (s == 0) s = 0;
+            p = (unsigned int *)sk_string_hdr_38cc7c((unsigned long)s);
+            return *p;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0038d52c @ 0x38d52c / 0x38d5ec  (est. sk_string_bucket2)
+ * Small-string constructors tagged 0x67b960 / 0x67b9a8.
+ * Confidence: medium */
+void sk_string_bucket_60_38d52c(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b960; n[1] = *(unsigned long *)(a + 8); }
+void sk_string_bucket_a8_38d5ec(long a) { unsigned long *n; n = (unsigned long *)cL4_alloc(0x10, 0xa1c40bd48d6d6); *n = 0x67b9a8; n[1] = *(unsigned long *)(a + 8); }
+
+/* FUN_0038d690 @ 0x38d690   (est. sk_hashtable_index_lookup3)
+ * Duplicate of FUN_0038c920 (hash-table index lookup).
+ * Confidence: low */
+unsigned long sk_hashtable_index_lookup3_38d690(long a, unsigned long k, int *key)
+{
+    int i; unsigned long r; long tbl;
+    tbl = *(long *)(a + 8);
+    if (*(long *)(tbl + 0x10) == 0) return 0;
+    i = *key;
+    sk_hashtable_hash_38ba00(tbl);
+    r = *(unsigned long *)(*(long *)(tbl + 0x10) +
+        (unsigned long)(unsigned int)(*(int *)(tbl + 0x128) + i + *(int *)(tbl + 300)) * 8);
+    return r;
+}
+
+/* FUN_0038d6e4 @ 0x38d6e4   (est. sk_string_count_delta)
+ * Difference between the total name count and the nested/sub-name count.
+ * Confidence: low */
+long sk_type_dbltbl_hash_38d6e4(char *s)
+{
+    long p; unsigned long n;
+    if (-1 < *s) return 0;
+    p = sk_cap_next_3658e8(s + 4);
+    if ((p == 0) || (p = sk_cap_meta_35eb3c(), p == 0)) n = 0;
+    else n = (unsigned long)*(unsigned short *)(p + 4);
+    p = sk_cap_meta_35eb3c(s);
+    return *(unsigned short *)(p + 4) - n;
+}
+
+/* FUN_0038d8dc @ 0x38d8dc   (est. sk_pack_length)
+ * Returns the length of an on-stack pack (bit0 tagged) or panics.
+ * Confidence: low */
+unsigned long sk_pack_length_38d8dc(unsigned long *p)
+{
+    if ((*p & 1) != 0) return *(unsigned long *)((*p & 0xfffffffffffffffe) - 8);
+    cL4_stack_fail();
+}
+
+/* FUN_0038d90c @ 0x38d90c   (est. sk_vec_from_range)
+ * Builds a growable vector over the element range [param_2, param_3).
+ * Confidence: low */
+unsigned long *sk_type_dbltbl_grow_38d90c(unsigned long *vec, unsigned long *start, unsigned long *end)
+{
+    unsigned long *p; unsigned long *q; unsigned long *n;
+    *vec = 0; vec[1] = 0; vec[2] = 0;
+    if ((long)end - (long)start != 0) {
+        sk_vec_reserve_38d974(vec, (long)end - (long)start >> 3);
+        p = (unsigned long *)vec[1];
+        do {
+            q = start + 1; n = p + 1;
+            *p = *start;
+            p = n; start = q;
+        } while (q != end);
+        vec[1] = (unsigned long)n;
+    }
+    return vec;
+}
+
+/* FUN_0038d974 @ 0x38d974   (est. sk_vec_reserve)
+ * Reserves capacity for a vector (grows via FUN_0038d9b4).
+ * Confidence: low */
+void sk_vec_reserve_38d974(long *vec, unsigned long n)
+{
+    unsigned long r[2]; long p;
+    if (n >> 0x3d == 0) {
+        r[0] = sk_type_realloc_38d9b4(vec + 2);
+        p = r[0];
+        *vec = p;
+        vec[1] = p;
+        vec[2] = p + r[1] * 8;
+        return;
+    }
+    cL4_panic_big();
+}
+
+/* FUN_0038d9b4 @ 0x38d9b4   (est. sk_vec_alloc)
+ * Allocates the element backing array for a vector.
+ * Confidence: low */
+void sk_vec_alloc_38d9b4(unsigned long a, unsigned long n)
+{
+    if (n >> 0x3d == 0) {
+        cL4_alloc(n << 3, 0xc0c00b8aa526d);
+        return;
+    }
+    cL4_panic_big();
+}
+
+/* FUN_0038e114 @ 0x38e114   (est. sk_vec_append_range)
+ * Appends the element range [param_2,param_3) to the vector, growing via
+ * FUN_003a294c, then bumps the count.
+ * Confidence: medium */
+void sk_vec_append_range_38e114(long *vec, unsigned long *start, unsigned long *end)
+{
+    unsigned long n; unsigned long total; unsigned long *dst; unsigned long *src;
+    n = (unsigned long)*(unsigned int *)(vec + 1);
+    total = n + ((long)end - (long)start >> 3);
+    if (*(unsigned int *)((long)vec + 0xc) < total) {
+        cL4_wordlist_grow(vec, vec + 2, total, 8);
+        n = (unsigned long)*(unsigned int *)(vec + 1);
+    }
+    if (start != end) {
+        dst = (unsigned long *)(*vec + n * 8);
+        src = start;
+        do { *dst = *src; dst++; src++; } while (src != end);
+    }
+    *(int *)(vec + 1) = (int)n + (int)((unsigned long)((long)end - (long)start) >> 3);
+}
+
+/* FUN_0038e198 @ 0x38e198   (est. sk_vec_resize)
+ * Resizes the vector to exactly param_2 elements, zero-filling newly added
+ * slots (FUN_00114330).
+ * Confidence: low */
+void sk_vec_resize_38e198(long *vec, unsigned long n)
+{
+    unsigned long cur;
+    cur = (unsigned long)*(unsigned int *)(vec + 1);
+    if (cur <= n) {
+        if (n == cur) return;
+        if (*(unsigned int *)((long)vec + 0xc) < n) {
+            cL4_wordlist_grow(vec, vec + 2, n, 8);
+            cur = (unsigned long)*(unsigned int *)(vec + 1);
+        }
+        if (n - cur != 0) {
+            FUN_00114330(*vec + cur * 8, (n - cur) * 8);
+        }
+    }
+    *(int *)(vec + 1) = (int)n;
+}
+
+/* FUN_0038d9fc @ 0x38d9fc   (est. sk_generic_err_incorrect_args)
+ * Ghidra: undefined8 * FUN_0038d9fc(undefined8 *param_1, int param_2, undefined8)
+ * Builds the "incorrect number of generic args" diagnostic string by
+ * concatenating the gather-generic-parameters context with the actual count,
+ * using the string-buffer helpers (FUN_00112db4/00112e8c). For param_2==2 it
+ * copies the descriptor; otherwise frees it. Decompiler removed unreachable
+ * blocks (0x38dbfc/0x38dbb4/0x38dbe4/0x38dc2c).
+ * Confidence: low */
+unsigned long *sk_generic_err_incorrect_38d9fc(unsigned long *p, int n, unsigned long a)
+{
+    unsigned long *s; unsigned long x[2]; unsigned long sb[2]; unsigned long out;
+    unsigned long q[2]; unsigned long r[2]; unsigned long t[2]; unsigned long u;
+    unsigned long v[2]; unsigned long w[2]; unsigned long y[2]; unsigned long z;
+    unsigned char b[16]; unsigned char b2[16]; unsigned char b3[16]; unsigned long canary;
+    if (n < 2) {
+        if (n == 0) {
+            sk_err_ctx_38dd44(x, p);
+            s = (unsigned long *)cL4_strbuf_alloc((unsigned long)x);
+            y[0] = *s; z = s[1]; u = s[2]; s[1] = 0; s[2] = 0; *s = 0;
+            sk_err_u64_113a3c(&b3, p[4]);
+            if (-1 < (char)b3[8]) q[0] = (unsigned long)b3[8]; else { q[0] = (unsigned long)&b3; }
+            s = (unsigned long *)cL4_strbuf_print(&y[0], (unsigned long)q);
+            r[0] = *s; w[0] = s[1]; t[0] = s[2]; s[1] = 0; s[2] = 0; *s = 0;
+            s = (unsigned long *)cL4_strbuf_alloc(&r[0]);
+            out = s[0];
+            if ((long)u < 0) cL4_free((void *)y[0], u & 0x7fffffffffffffff);
+            return (unsigned long *)out;
+        }
+        thunk_FUN_00012568(a);
+    } else {
+        if (n == 2) {
+            s = (unsigned long *)cL4_alloc(0x38, 0x1060c40d29be02f);
+            s[0] = p[0]; s[1] = p[1]; s[2] = p[2]; s[3] = p[3];
+            s[4] = p[4]; s[5] = p[5]; s[6] = p[6];
+            return s;
+        }
+        if (p == 0) return 0;
+        thunk_FUN_00012568(p, 0x38);
+    }
+    return 0;
 }

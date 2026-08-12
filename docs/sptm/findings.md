@@ -4524,3 +4524,45 @@ Confidence: high
 - **Evidence**: `if (-1 < param_1) { ... } else { FUN_0035ac70(s_Can_t_prefix_a_negative_number_o_005dbf40); FUN_00406aa4(); FUN_0040697c(); /* WARNING: Subroutine does not return */ FUN_001afa84(); }` — the else branch is fail-closed.
 - **Severity (hypothesis)**: low — a defensive validation; malformed negative counts do not proceed into the dispatch engine.
 - **Confidence**: high (explicit branch + non-returning call).
+
+## [ringminus1] 0039fcc4-003a0440 (SKR52) sk_syscall_dispatch_* — selector-tag dispatch with fail-closed traps
+- **Observation**: The dispatcher family reads a 32-bit message-tag word from `*msg` (must be `< 0x800`) and routes to handler tables at literal object-store addresses 0x67c0d0 / 0x67c1c8 / 0x67c230 / 0x67c068. Unrecognized/unsupported tags hit `SoftwareBreakpoint` brk#1 traps (0x39fd58, 0x39ffa8, 0x3a01fc, 0x3a0438, 0x3a0690, 0x3a0960, 0x3a0968, 0x3a0720, 0x3a0fc0, 0x3a11c0) — unknown syscall tags cannot silently reach a handler. The 0x300 (privileged) tag additionally requires the object pointer to equal the literal root 0x67b0a8 AND to pass a range check (`**(long**)*aux - 0x800U`) before any privileged handling; failures return 0 or trap.
+- **Evidence**: `if (*tag_ptr < 0x800) { ret = *tag_ptr & 0xffffffff; }` (FUN_0039fcc4); `if ((obj != (unsigned long *)0x67b0a8) || (0xfffffffffffff800 < **(long **)*msg_hi - 0x800U)) { return 0; }` (FUN_0039fcd8).
+- **Severity (hypothesis)**: medium — the syscall-tag surface is guest-controlled; the deny-by-default + fail-closed posture is sound, but the handler-table indirection (via object-store slots) is the trust boundary worth a follow-up.
+- **Confidence**: high (explicit branch + brk#1 traps; literal table addresses).
+
+## [ringminus1] 003a11c0 / 003a2cf0 / 003a5518 (SKR52) sk_table_method_invoke / sk_vtable_method_invoke / sk_token_emit_ext — unvalidated indirect control-flow dispatch
+- **Observation**: Several helpers dispatch through function pointers stored in object vtables / method tables: `(**(code **)(*obj + 0x10/0x18))(...)` and `(**(code **)(*(long *)(*(long *)(param_1 + 8) + -8) + 0x58))()` and a 5-arg dispatch through a context-slot function pointer (param_1+0x238). The target is fetched from the object/context vtable with no type/validity check beyond non-null. A spoofed or guest-corrupted object/context could redirect control flow into the kernel.
+- **Evidence**: `(**(code **)(*param_1 + 0x18))();` (FUN_003a12d8); `uVar2 = (**(code **)(*(long *)(*(long *)(param_1 + 8) + -8) + 0x58))();` (FUN_003a1cbc); 5-arg context-slot dispatch in FUN_003a5518 (param_1+0x238).
+- **Severity (hypothesis)**: medium — indirect call through vtable slots is a classic control-flow hijack surface if an object pointer is attacker-controllable; worth confirming the objects here are always kernel-allocated, never guest-shaped.
+- **Confidence**: medium (dispatch structure is clear; target provenance is not).
+
+## [ringminus1] 003a26e8 (SKR52) code_stub_emitter — hand-encoded AArch64 stub written into a writable buffer
+- **Observation**: FUN_003a26e8 emits a raw, hand-encoded AArch64 instruction stub (code words such as 0x52808001, 0x910023e0, 0x940001df, 0x940001af) into a writable buffer and hands it to thunk_FUN_00369b04 — a JIT / code-patch primitive inside the kernel. The emitted stub and its execution-context permissions (W^X) are worth auditing.
+- **Evidence**: `*(unsigned long *)buf = 0x52808001910023e0; ...` (stub word writes) followed by `thunk_FUN_00369b04(...)` (FUN_003a26e8).
+- **Severity (hypothesis)**: medium — an in-kernel JIT primitive is a prime W^X / ROP-gadget surface if the emitted bytes are ever influenced by guest input.
+- **Confidence**: medium (raw code words + writable buffer + thunk handoff are visible; execution permissions are not).
+
+## [ringminus1] 003a31d8 (SKR52) walk_length_prefixed_string — length-advanced string walk with no buffer bound
+- **Observation**: FUN_003a31d8 advances a pointer by an encoded length with no bound against the buffer's actual end. A non-NUL-terminated or malformed string can read past the end of its buffer (out-of-bounds read).
+- **Evidence**: `walk advances by the length-prefix with no end-pointer check` (FUN_003a31d8 body, per chunk-4 transcription).
+- **Severity (hypothesis)**: low — OOB read confined to the length-prefixed descriptor region; severity depends on whether the buffer is guest- or kernel-owned.
+- **Confidence**: low (walk structure clear; buffer provenance not).
+
+## [ringminus1] 003a4f5c / 003a33cc (SKR52) sk_node_resolve / validate_capability_chain — unbounded recursive walk over attacker-shaped lists
+- **Observation**: FUN_003a4f5c walks attacker-shaped node lists (kind bytes 1/2/5) with no explicit depth bound before a 0x130-byte emit; FUN_003a33cc walks a capability chain with a NULL-head guard but no cycle detection. A deep or self-referential list could drive unbounded recursion / long iteration.
+- **Evidence**: `walk of kind-byte node lists with no depth limit` (FUN_003a4f5c); `chain walker guards NULL head but has no cycle detection` (FUN_003a33cc).
+- **Severity (hypothesis)**: low — resource-exhaustion / DoS if the list length or cycle is guest-controlled; fail-closed only on the 0xed tag (FUN_003a3628).
+- **Confidence**: low (structure clear; depth/ownership not).
+
+## [ringminus1] 003a599c / 003a68a4 (SKR52) parse_qualified_selector / parse_numeric_or_identifier — parser state with offset-based struct access
+- **Observation**: The type/expression parser operates on a context struct with raw offset access (string at +0x38, node stack at +0x58, result list at +0x68, identifier table at +0x78, depth at +0x60). The stack depth is decremented only on tag matches; malformed input could leave the depth inconsistent (parser-state corruption). FUN_003a68a4 interns identifier substrings as non-owning pointers into the input buffer (lifetime must outlive the table) with no source-length validation.
+- **Evidence**: `depth at +0x60 decremented only on tag match`; `identifier interning as raw pointers into the input buffer` (FUN_003a68a4, chunk-7 transcription).
+- **Severity (hypothesis)**: low — parser-state / lifetime concern; malformed input could corrupt internal state (worth fuzzing the grammar).
+- **Confidence**: low.
+
+## [ringminus1] 003a3d18 / 003a3de4 (SKR52) object_state_snapshot_capture / _restore — state capture/restore with no locking
+- **Observation**: FUN_003a3d18 captures a mutable object-state region (offsets 0x38-0x70, 0x218, 0x220) and FUN_003a3de4 restores it, with no apparent locking around the capture/restore — a TOCTOU / re-entrancy risk if the object is shared while a snapshot is held.
+- **Evidence**: `capture/restore of offsets 0x38-0x70, 0x218, 0x220 with no locking` (FUN_003a3d18/003a3de4, chunk-5 transcription).
+- **Severity (hypothesis)**: low — correctness/TOCTOU if the object is concurrently mutated; not a direct memory-safety issue.
+- **Confidence**: low.

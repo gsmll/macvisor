@@ -114,12 +114,42 @@ extern char s_TaskGroup_005d6d2c[]; extern char s_ThrowingTaskGroup_005d6d36[]; 
 extern char s_AsyncIteratorProtocol_005d6d55[]; extern char s_AsyncSequence_005d6d6b[]; extern char s_UnownedJob_005d6d79[];
 extern char s_TaskPriority_005d6d8e[]; extern char s_AsyncStream_005d6d9b[]; extern char s_AsyncThrowingStream_005d6da7[];
 extern char s_UnsafeCurrentTask_005d6dbb[]; extern char DAT_005d4ec0[]; extern char s_MainActor_005d6d84[];
+extern char s__thin_005d6ed4[]; extern char s__objc_metatype_005d6ee1[]; extern char s__thick_005d6eda[];
+extern char DAT_005d6fc9[]; extern char DAT_005d6fcb[]; extern char DAT_005d6fc3[];
+extern char DAT_005d6fd5[]; extern char DAT_005d6fc1[]; extern char DAT_005d6fc7[];
+extern char DAT_005d6fcd[]; extern char DAT_005d6fc5[]; extern char DAT_005d6fe3[];
+extern char DAT_005d6fdf[]; extern char DAT_005d37e9[]; extern char DAT_005d37dc[];
+extern char DAT_005d6fd3[]; extern char DAT_005d356c[]; extern char DAT_005d6b7d[];
+extern char DAT_005d6fe9[]; extern char DAT_005d37cb[]; extern char DAT_005d356e[];
+extern char DAT_005d6fe7[]; extern char DAT_005d6fef[]; extern char DAT_005d37c9[];
+extern char DAT_005c9984[]; extern char DAT_005d6fe1[]; extern char DAT_005d6ff5[];
+extern char DAT_005d6ff7[]; extern char DAT_005d356a[]; extern char DAT_005d6ff3[];
+extern char DAT_005d3810[]; extern char DAT_005d6fed[]; extern char DAT_005d3801[];
+extern char DAT_005d6fd7[]; extern char DAT_005d6feb[]; extern char DAT_005d6ff1[];
+extern char DAT_005d37d0[]; extern char DAT_005d3568[]; extern char DAT_005d37d2[];
+extern char DAT_005d6fcf[]; extern char DAT_005d37c4[]; extern char DAT_005d6fdb[];
+extern char DAT_005d6fe5[]; extern char DAT_005d6fd9[]; extern char DAT_005d37e3[];
+extern char DAT_005d6fd1[]; extern char DAT_005d6c15[]; extern char DAT_005d6fdd[];
+extern char DAT_005d37eb[]; extern char DAT_005d702c[]; extern char DAT_005d6ff9[];
+extern char DAT_005d7008[]; extern char DAT_005d700e[]; extern char DAT_005d7020[];
+extern char DAT_005d701d[]; extern char DAT_005d7026[]; extern char DAT_005d7014[];
+extern char DAT_005d7023[]; extern char DAT_005d701a[]; extern char DAT_005d700b[];
+extern char DAT_005d7002[]; extern char DAT_005d7011[]; extern char DAT_005d702f[];
+extern char DAT_005d6fff[]; extern char DAT_005d6ffc[]; extern char DAT_005d7029[];
+extern char DAT_005d7005[]; extern char DAT_005d7017[];
+extern char DAT_005d7032[]; extern char DAT_005d7037[]; extern char DAT_005d703c[];
+extern char DAT_005d3cc6[]; extern char DAT_005d0c46[]; extern char DAT_005cf438[]; extern char DAT_005d7041[]; extern char DAT_005d021c[];
+extern char DAT_005d3bb7[]; extern char DAT_005ce788[]; extern char DAT_005d706d[]; extern char DAT_005d3566[]; extern char DAT_005d3cba[]; extern char DAT_005d32c2[]; extern char DAT_005dd27a[]; extern char DAT_005d3a39[];
+extern void sk_004ba498(uint64_t p); /* FUN_004ba498 */
+extern char s_ImplicitlyUnwrappedOptional_005d7051[];
 
 extern uint64_t sk_003a6090(uint64_t *st, uint64_t tag); /* FUN_003a6090 */
 extern int sk_memcmp(const void *a, const void *b, unsigned long n); /* thunk_FUN_001145b0 */
 extern void sk_vec_byte_append(uint64_t *vec, uint8_t byte);        /* FUN_001130a0 */
 extern uint64_t sk_vec_grow(uint64_t *vec, uint64_t need);          /* FUN_003b10a8 (returns new base) */
 extern uint64_t sk_00363f70(uint64_t *st, uint64_t tag, void *arg); /* FUN_00363f70 */
+extern void sk_00362ea4(uint64_t *p); /* FUN_00362ea4 */
+extern void *sk_alloc_tagged(unsigned long n, unsigned long tag); /* FUN_000101a0 / 00111890 */
 extern uint64_t DAT_004f2960[];                                    /* 0x154 lookup table */
 extern void sk_memmove_fast(void *d, const void *s, unsigned long n); /* FUN_00117cc4 */
 extern uint64_t sk_ctx_op2_v(uint64_t *a, uint64_t *b); /* FUN_003a4f5c (returns node) */
@@ -216,14 +246,14 @@ static void sk_003b0b28(uint64_t *obj); /* FUN_003b0b28 */
 static uint64_t * sk_003b0b7c(uint64_t *lock); /* FUN_003b0b7c */
 static void sk_003b0be0(uint64_t * st, uint16_t *param_2, void *param_3, uint64_t p4); /* FUN_003b0be0 */
 static uint8_t sk_003b0d64(uint64_t *buf); /* FUN_003b0d64 */
-extern uint64_t sk_003b0e1c(uint64_t * st, uint64_t p2); /* FUN_003b0e1c */
+static uint64_t sk_003b0e1c(uint64_t * st, uint64_t p2); /* FUN_003b0e1c */
 static uint64_t sk_003b0ec4(uint64_t a, uint8_t *b); /* FUN_003b0ec4 */
 static uint64_t sk_003b0f48(uint64_t * st, uint64_t p2); /* FUN_003b0f48 */
 static uint64_t sk_003b0fb8(uint64_t * st, uint64_t p2); /* FUN_003b0fb8 */
-static uint64_t * sk_003b1034(uint64_t *obj); /* FUN_003b1034 */
+static uint64_t * sk_003b1034(uint64_t *obj, uint64_t p2); /* FUN_003b1034 */
 static void sk_003b10a8(uint64_t * st, uint64_t p2); /* FUN_003b10a8 */
 static uint64_t sk_003b10f0(uint8_t *p, uint64_t n); /* FUN_003b10f0 */
-static uint64_t sk_003b1178(uint64_t * st); /* FUN_003b1178 */
+static uint64_t sk_003b1178(uint64_t p1); /* FUN_003b1178 */
 static void sk_003b12cc(uint64_t *a, char *b, uint64_t c); /* FUN_003b12cc */
 static void sk_003b1328(uint64_t *a, uint64_t *b, uint64_t c, int32_t d); /* FUN_003b1328 */
 static uint64_t sk_003b1e74(uint64_t * st, uint64_t p2, uint64_t p3); /* FUN_003b1e74 */
@@ -4071,4 +4101,1848 @@ l83c:
         }
     }
     return 0;
+}
+
+/* FUN_003af99c @ 0x3af99c   (est. sk_parse_spec_node)
+ * Builds a node with the given tag and appends a set of 0x52/0x53
+ * attribute children parsed from a coded character sequence: 'C' gives a
+ * 0x52(0xb) + decimal 0x53; 'd'/'D' gives a 0x40/0xc0/0x440 mask with
+ * optional 'G'/'O'/'X' bits; 'g' 0x80/0x180; 'o' 0x200/0x300; 'p' recurses a
+ * run of 'S'/'d'/'f'/'g'/'i'/'k'/'s'/'b'/'c'/'w' items via aff04; 'i' 6,
+ * 'r' 8, 's' 7, 'x' 0x100, default 5. Returns the node (or NULL for some).
+ * Confidence: medium */
+static uint64_t sk_003af99c(uint64_t *st, uint16_t p2)
+{
+    uint64_t *l4 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l4, p2); NODE_SETSUBT(l4, 0);
+    uint64_t end = STREAM_END(st);
+    uint64_t pos = STREAM_POS(st);
+    if (end <= pos) return 0;
+    uint64_t npos = pos + 1;
+    STREAM_POS(st) = npos;
+    uint32_t u3 = STREAM_DATA(st)[pos];
+    if (0x15 < u3 - 99) {
+        if (u3 != 'C') return 0;
+        uint64_t *s = sk_node_alloc(st, 1);
+        NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+        s[0] = 0xb;
+        sk_node_add(l4, s, st);
+        int32_t v = sk_003ac430(st);
+        if (v < 0) return 0;
+        uint64_t *s2 = sk_node_alloc(st, 1);
+        NODE_SETTAG(s2, 0x53); NODE_SETSUBT(s2, 4);
+        s2[0] = (uint64_t)v;
+        goto emit_scalar;
+    }
+    uint64_t *pu6;
+    switch (u3) {
+    default:
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pos = 5;
+        break;
+    case 'd': {
+        uint64_t p = npos;
+        if ((p < end) && STREAM_DATA(st)[p] == 'G') {
+            p = pos + 2;
+            STREAM_POS(st) = p;
+            u3 = 0xc0;
+        } else {
+            u3 = 0x40;
+        }
+        goto mask_common;
+    }
+    case 'e': {
+        uint64_t p = npos;
+        if ((p < end) && STREAM_DATA(st)[p] == 'D') {
+            p = pos + 2;
+            STREAM_POS(st) = p;
+            u3 = 0x440;
+        } else {
+            u3 = 0x400;
+        }
+        if ((p < end) && STREAM_DATA(st)[p] == 'G') {
+            p = p + 1;
+            STREAM_POS(st) = p;
+            u3 = u3 | 0x80;
+        }
+    mask_common:
+        if ((p < end) && STREAM_DATA(st)[p] == 'O') {
+            p = p + 1;
+            STREAM_POS(st) = p;
+            u3 = u3 | 0x200;
+        }
+        if ((p < end) && STREAM_DATA(st)[p] == 'X') {
+            STREAM_POS(st) = p + 1;
+            u3 = u3 | 0x100;
+        }
+        pos = u3;
+        goto mask_node;
+    }
+    case 'f': case 'h': case 'j': case 'k': case 'l': case 'm':
+    case 'q': case 't': case 'u': case 'v': case 'w':
+        return 0;
+    case 'g':
+        if ((npos < end) && STREAM_DATA(st)[npos] == 'X') {
+            STREAM_POS(st) = pos + 2;
+            pos = 0x180;
+        } else {
+            pos = 0x80;
+        }
+        goto mask_node;
+    case 'i':
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pos = 6;
+        break;
+    case 'n':
+        goto return_l4;
+    case 'o':
+        if ((npos < end) && STREAM_DATA(st)[npos] == 'X') {
+            STREAM_POS(st) = pos + 2;
+            pos = 0x300;
+        } else {
+            pos = 0x200;
+        }
+    mask_node:
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pu6[0] = pos;
+        goto emit_scalar;
+    case 'p': {
+        if (end <= npos) goto lfd2c;
+        do {
+            npos = npos + 1;
+            STREAM_POS(st) = npos;
+            uint8_t b = STREAM_DATA(st)[npos - 1];
+            uint64_t *s;
+            if (b < 0x67) {
+                if (b == 'S') {
+                    s = sk_node_alloc(st, 1);
+                    NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+                    s[0] = 10;
+                } else if (b == 'd') {
+                    uint64_t *r = (uint64_t *)sk_003aff04(st, (uint64_t)l4, 3);
+                    if (r == 0) return 0;
+                    goto cont;
+                } else if (b != 'f') goto lfd28;
+                else {
+                    s = sk_node_alloc(st, 1);
+                    NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+                    s[0] = 0;
+                }
+            } else {
+                if (b < 0x6b) {
+                    if (b == 'g') {
+                        s = sk_node_alloc(st, 1);
+                        NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+                        s[0] = 1;
+                        goto lfd08;
+                    }
+                    if (b != 'i') goto lfd28;
+                    uint64_t *r = (uint64_t *)sk_003aff04(st, (uint64_t)l4, 2);
+                    if (r == 0) return 0;
+                    goto cont;
+                }
+                if (b != 'k') {
+                    if (b == 's') {
+                        if (end <= npos) return 0;
+                        STREAM_POS(st) = npos + 1;
+                        char c2 = STREAM_DATA(st)[npos];
+                        char *label;
+                        if (c2 == 'b') label = (char *)0x5d6ec8;
+                        else if (c2 == 'c') label = (char *)0x5d6ecf;
+                        else {
+                            if (c2 != 'w') return 0;
+                            label = (char *)0x5d6ecb;
+                        }
+                        s = sk_node_alloc(st, 1);
+                        NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+                        s[0] = 4;
+                        sk_node_add(l4, s, st);
+                        s = sk_node_alloc(st, 1);
+                        NODE_SETTAG(s, 0x53); NODE_SETSUBT(s, 3);
+                        s[0] = (uint64_t)label;
+                        s[1] = (uint64_t)sk_len_query((uint64_t)label);
+                        goto lfd08;
+                    }
+                    goto lfd28;
+                }
+                s = sk_node_alloc(st, 1);
+                NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+                s[0] = 9;
+            }
+        lfd08:
+            sk_node_add(l4, s, st);
+        cont:
+            end = STREAM_END(st);
+            npos = STREAM_POS(st);
+            if (end <= npos) goto lfd28;
+        } while (true);
+    }
+    case 'r':
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pos = 8;
+        break;
+    case 's':
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pos = 7;
+        break;
+    case 'x':
+        pu6 = sk_node_alloc(st, 1);
+        NODE_SETTAG(pu6, 0x52); NODE_SETSUBT(pu6, 4);
+        pos = 0x100;
+    }
+    pu6[0] = pos;
+emit_scalar:
+    sk_node_add(l4, pu6, st);
+return_l4:
+    return (uint64_t)l4;
+lfd28:
+    pos = pos - 1;
+lfd2c:
+    STREAM_POS(st) = pos;
+    return (uint64_t)l4;
+}
+
+/* FUN_003aff04 @ 0x3aff04   (est. sk_parse_number_attr)
+ * Adds a 0x52 attribute holding param_3, then parses a run of ASCII decimal
+ * digits into a byte vector and appends it as a 0x53 child of param_2 (which
+ * must be non-NULL). Returns param_2 or 0.
+ * Confidence: medium */
+static uint64_t sk_003aff04(uint64_t *st, uint64_t p2v, uint64_t p3)
+{
+    uint64_t *p2 = (uint64_t *)p2v;
+    uint64_t *s = sk_node_alloc(st, 1);
+    NODE_SETTAG(s, 0x52); NODE_SETSUBT(s, 4);
+    s[0] = p3 & 0xffffffff;
+    sk_node_add(p2, s, st);
+    uint64_t local40 = 0, local38 = 0;
+    uint64_t pos = STREAM_POS(st);
+    if (pos < STREAM_END(st)) {
+        do {
+            if (9 < STREAM_DATA(st)[pos] - 0x30) break;
+            STREAM_POS(st) = pos + 1;
+            uint8_t c = STREAM_DATA(st)[pos];
+            sk_003acd3c((uint64_t *)&local40, &c, st);
+            pos = STREAM_POS(st);
+        } while (pos < STREAM_END(st));
+        if ((int32_t)local38 != 0) {
+            uint64_t *s3 = sk_node_alloc(st, 1);
+            NODE_SETTAG(s3, 0x53); NODE_SETSUBT(s3, 3);
+            s3[0] = local40;
+            s3[1] = local38 & 0xffffffff;
+            if (p2 == 0) return 0;
+            sk_node_add(p2, s3, st);
+            return (uint64_t)p2;
+        }
+    }
+    return 0;
+}
+
+/* FUN_003b0004 @ 0x3b0004   (est. sk_emit_15d)
+ * Pops a 0xf4 element; for 'G' with a trailing 0x2c element builds a 0x15d
+ * pair, else pushes 0x15d over the element. Returns nothing.
+ * Confidence: medium */
+static uint64_t sk_003b0004(uint64_t *st, int32_t p2)
+{
+    uint32_t cnt = STACK_CNT(st);
+    uint64_t *e = 0;
+    if (cnt != 0) {
+        uint32_t i = cnt - 1;
+        e = STACK_ELEM(st, i);
+        if (NODE_TAG(e) == 0xf4) {
+            STACK_CNT(st) = i;
+            cnt = i;
+        } else {
+            e = 0;
+        }
+        if (p2 == 'G' && cnt != 0) {
+            uint64_t *e2 = STACK_ELEM(st, cnt - 1);
+            if (NODE_TAG(e2) == 0x2c) {
+                STACK_CNT(st) = cnt - 1;
+                return (uint64_t)sk_node_push2(st, 0x15d, e2, e);
+            }
+        }
+    }
+    return (uint64_t)sk_node_push(st, 0x15d, e);
+}
+
+/* FUN_003b0078 @ 0x3b0078   (est. sk_parse_161_chain)
+ * Builds an 0xf7 node draining all 0xf4 stack elements, finalizes, then if the
+ * top is a 0x15f/0x160 element builds an 0x161 node (via 4c14 when an 0xf4
+ * run was found) pushed as 0xf4. Returns the node or 0.
+ * Confidence: medium */
+static uint64_t sk_003b0078(uint64_t *st)
+{
+    uint64_t l2 = (uint64_t)sk_003ad67c(0);
+    uint64_t *l3 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l3, 0xf7); NODE_SETSUBT(l3, 0);
+    for (;;) {
+        if (STACK_CNT(st) == 0) break;
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *e = STACK_ELEM(st, i);
+        if (NODE_TAG(e) != 0xf4) break;
+        STACK_CNT(st) = i;
+        sk_node_add(l3, e, st);
+    }
+    sk_node_finalize(l3, 0);
+    if (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *e = STACK_ELEM(st, i);
+        STACK_CNT(st) = i;
+        if (e != 0 && (NODE_TAG(e) - 0x15f < 2)) {
+            uint64_t u4;
+            if (l2 == 0) u4 = (uint64_t)sk_node_push2(st, 0x161, e, l3);
+            else u4 = (uint64_t)sk_ctx_op2_v(st, (uint64_t *)0);
+            return (uint64_t)sk_node_push(st, 0xf4, (uint64_t *)u4);
+        }
+    }
+    return 0;
+}
+
+/* FUN_003b0174 @ 0x3b0174   (est. sk_parse_metatype_attr)
+ * Reads 't'/'o'/'T' and returns a 0x9b 3-subtype node holding the thin /
+ * objc-metatype / thick label string and its length. NULL on other letters.
+ * Confidence: high (string-matched) */
+static uint64_t *sk_003b0174(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    if (STREAM_END(st) <= pos) return 0;
+    STREAM_POS(st) = pos + 1;
+    char c = STREAM_DATA(st)[pos];
+    char *label;
+    uint64_t len;
+    if (c == 't') { label = s__thin_005d6ed4; len = 5; }
+    else if (c == 'o') { label = s__objc_metatype_005d6ee1; len = 0xe; }
+    else {
+        if (c != 'T') return 0;
+        label = s__thick_005d6eda; len = 6;
+    }
+    uint64_t *n = sk_node_alloc(st, 1);
+    NODE_SETTAG(n, 0x9b); NODE_SETSUBT(n, 3);
+    n[0] = (uint64_t)label;
+    n[1] = len;
+    return n;
+}
+
+/* FUN_003b0220 @ 0x3b0220   (est. sk_parse_56_collect)
+ * Builds a 0x56 node, draining stack elements (each passing the b0a64 test)
+ * bounded by a 0x121 terminator; finalizes and returns it. Returns 0 on empty.
+ * Confidence: medium */
+static uint64_t sk_003b0220(uint64_t *st)
+{
+    uint64_t *l4 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l4, 0x56); NODE_SETSUBT(l4, 0);
+    uint16_t s1;
+    do {
+        uint32_t cnt = STACK_CNT(st);
+        if (cnt == 0) return 0;
+        uint32_t i = cnt - 1;
+        s1 = NODE_TAG(STACK_ELEM(st, i));
+        if (s1 == 0x121) {
+            STACK_CNT(st) = i;
+            cnt = i;
+            if (i == 0) return 0;
+        }
+        uint64_t *e = STACK_ELEM(st, cnt - 1);
+        if (sk_003b0a64(NODE_TAG(e)) == 0) return 0;
+        STACK_CNT(st) = cnt - 1;
+        sk_node_add(l4, e, st);
+    } while (s1 != 0x121);
+    sk_node_finalize(l4, 0);
+    return (uint64_t)l4;
+}
+
+/* FUN_003b02dc @ 0x3b02dc   (est. sk_parse_c9_seq)
+ * Builds a 0xc9 node wrapping an 0xf7 collection; drains values (663c) bounded
+ * by 0x120/0x121 terminators; finalizes the 0xf7 and returns the 0xc9 node.
+ * Confidence: medium */
+static uint64_t sk_003b02dc(uint64_t *st)
+{
+    uint64_t *l2 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l2, 0xf7); NODE_SETSUBT(l2, 0);
+    uint64_t u3 = (uint64_t)sk_node_push(st, 0xc9, l2);
+    if (STACK_CNT(st) != 0 &&
+        NODE_TAG(STACK_ELEM(st, STACK_CNT(st) - 1)) == 0x120) {
+        STACK_CNT(st) = STACK_CNT(st) - 1;
+    } else {
+        bool b5;
+        do {
+            if (STACK_CNT(st) != 0 &&
+                NODE_TAG(STACK_ELEM(st, STACK_CNT(st) - 1)) == 0x121) {
+                b5 = false;
+                STACK_CNT(st) = STACK_CNT(st) - 1;
+            } else {
+                b5 = true;
+            }
+            uint64_t v = sk_val_get(st);
+            if (v == 0) return 0;
+            sk_node_add(l2, (uint64_t *)v, st);
+        } while (b5);
+        sk_node_finalize(l2, 0);
+    }
+    return u3;
+}
+
+/* FUN_003b03c0 @ 0x3b03c0   (est. sk_parse_attr_letter)
+ * Parses a single-letter attribute after the current node: 'G'(0x66),
+ * 'M'(0xa1), 'W'(0x35), and a set of lowercase letters map to fixed tags via
+ * node_push; some ('m','s' 0xe3/0x96, default, 'l', lowercase-default) read a
+ * second byte to select among sub-tags. Returns the pushed node, or param_2
+ * (zeroed) on no match.
+ * Confidence: medium */
+static uint64_t sk_003b03c0(uint64_t *st, uint64_t p2)
+{
+    uint64_t end = STREAM_END(st);
+    uint64_t pos = STREAM_POS(st);
+    if (pos < end) {
+        uint64_t npos = pos + 1;
+        STREAM_POS(st) = npos;
+        uint64_t base = STREAM_DATA(st)[pos];
+        uint32_t u7 = (uint32_t)base;
+        if (base < 0x61) {
+            if (u7 == 'G') return (uint64_t)sk_node_push(st, 0x66, 0);
+            if (u7 == 'M') return (uint64_t)sk_node_push(st, 0xa1, 0);
+            if (u7 == 'W') return (uint64_t)sk_node_push(st, 0x35, 0);
+        } else if (u7 - 0x61 < 0x1a) {
+            uint64_t tag = 0x96;
+            switch (u7) {
+            case 'b': return (uint64_t)sk_node_push(st, 0x178, 0);
+            case 'c': case 'd': case 'e': case 'f': case 'h': case 'j':
+            case 'k': case 'n': case 'o': case 'q': case 't': case 'u':
+            case 'v':
+                break;
+            case 'g': return (uint64_t)sk_node_push(st, 100, 0);
+            case 'i': return (uint64_t)sk_node_push(st, 0x83, 0);
+            case 'l': {
+                if (npos < end) {
+                    STREAM_POS(st) = pos + 2;
+                    uint8_t b2 = STREAM_DATA(st)[npos];
+                    if (0x6f < b2) {
+                        if (b2 == 'p') return (uint64_t)sk_node_push(st, 0xa6, 0);
+                        if (b2 != 'u') return 0;
+                        return (uint64_t)sk_node_push(st, 0x107, 0);
+                    }
+                    if (b2 == 'O') return (uint64_t)sk_node_push(st, 0xb2, 0);
+                    if (b2 != 'o') return 0;
+                    return (uint64_t)sk_node_push(st, 0xa4, 0);
+                }
+                break;
+            }
+            case 'p': goto case_70;
+            case 'r': return (uint64_t)sk_node_push(st, 0xd7, 0);
+            case 's': tag = 0xe3; /* fallthrough */
+            case 'm':
+                return (uint64_t)sk_node_push(st, (int)tag, 0);
+            case 'w': return (uint64_t)sk_node_push(st, 0x10e, 0);
+            case 'x': return (uint64_t)sk_node_push(st, 0xa2, 0);
+            case 'y': return (uint64_t)sk_node_push(st, 0xd8, 0);
+            case 'z': return (uint64_t)sk_node_push(st, 0x179, 0);
+            default: {
+                if (npos < end) {
+                    STREAM_POS(st) = pos + 2;
+                    uint8_t b2 = STREAM_DATA(st)[npos];
+                    if (0x6e < b2) {
+                        if (b2 == 'u') return (uint64_t)sk_node_push(st, 0x108, 0);
+                        if (b2 != 'o') return 0;
+                        return (uint64_t)sk_node_push(st, 0xa5, 0);
+                    }
+                    if (b2 == 'O') return (uint64_t)sk_node_push(st, 0xb3, 0);
+                    if (b2 != 'P') return 0;
+                    return (uint64_t)sk_node_push(st, 0xa7, 0);
+                }
+                break;
+            }
+            }
+        }
+    }
+    p2 = 0;
+case_70:
+    return p2;
+}
+
+/* FUN_003b05c8 @ 0x3b05c8   (est. sk_emit_typed_pair)
+ * Pops a 0xf4 element; builds a 4c14 node (or 4ca8 variant) from it, a
+ * printable element and the popped element, then runs acfb4. Returns nothing.
+ * Confidence: medium */
+static void sk_003b05c8(uint64_t *st, uint64_t p2)
+{
+    uint64_t *l5;
+    if (STACK_CNT(st) == 0) { l5 = 0; }
+    else {
+        uint32_t i = STACK_CNT(st) - 1;
+        l5 = STACK_ELEM(st, i);
+        if (NODE_TAG(l5) != 0xf4) l5 = 0;
+        else STACK_CNT(st) = i;
+    }
+    uint64_t l3 = (uint64_t)sk_ctx_op2_v(st, l5);
+    uint64_t *l6 = 0;
+    if (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        l6 = STACK_ELEM(st, i);
+        if (sk_003acda0(NODE_TAG(l6)) != 0) { STACK_CNT(st) = i; goto l650; }
+    }
+    l6 = 0;
+l650:
+    uint64_t u4 = (uint64_t)sk_003ace50(st);
+    if (l3 == 0) u4 = (uint64_t)sk_ctx_op(st, p2, (uint64_t *)u4, l6, l5);
+    else u4 = (uint64_t)sk_ctx_op2_v(st, 0);
+    sk_003acfb4(st, u4, (uint64_t)l5, *(uint8_t *)((char *)st + 0x51));
+}
+
+/* FUN_003b06ac @ 0x3b06ac   (est. sk_parse_94_construct)
+ * Parses a construct starting with an 'a'..'x' letter or 'X': 'X' reads two
+ * idents into 0x68 scalars and builds a 0x94 node; most letters select a tag
+ * (0x8/0xc/0x1d/0x4a/0x4c/0x97/0xb6/0xb8/0x98/0x95) and pop a configurable
+ * set of stack elements (0x67/0xba/printable) into the node. Returns node.
+ * Confidence: low */
+static uint64_t sk_003b06ac(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    if (STREAM_END(st) <= pos) return 0;
+    uint64_t result = 0;
+    STREAM_POS(st) = pos + 1;
+    uint32_t u11 = (uint32_t)STREAM_DATA(st)[pos];
+    if (0x14 < u11 - 0x61) {
+        if (u11 != 'X') return 0;
+        int32_t i4 = sk_003ac4a4(st);
+        int32_t i5 = sk_003ac4a4(st);
+        uint64_t *s1 = sk_node_alloc(st, 1);
+        NODE_SETTAG(s1, 0x68); NODE_SETSUBT(s1, 4);
+        s1[0] = (uint64_t)i4;
+        uint64_t *s2 = sk_node_alloc(st, 1);
+        NODE_SETTAG(s2, 0x68); NODE_SETSUBT(s2, 4);
+        s2[0] = (uint64_t)i5;
+        uint32_t cnt = STACK_CNT(st);
+        uint64_t *l10 = 0, *l9;
+        if (cnt == 0) {
+            l10 = 0;
+            goto x_e0;
+        }
+        uint32_t i = cnt - 1;
+        l10 = STACK_ELEM(st, i);
+        if (NODE_TAG(l10) == 0x67) {
+            STACK_CNT(st) = i;
+            cnt = i;
+            if (i == 0) goto x_e0;
+        } else {
+            l10 = 0;
+        }
+        l9 = STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG(l9) == 0x67) {
+            STACK_CNT(st) = cnt - 1;
+            goto x_e4;
+        }
+    x_e0:
+        l9 = 0;
+    x_e4:
+        result = (uint64_t)sk_ctx_op2_v(st, 0);
+        result = (uint64_t)sk_node_push2(st, 0x94, (uint64_t *)result, (uint64_t *)l9);
+        return result;
+    }
+    uint64_t tag = 8;
+    bool b3 = true, b2 = false;
+    uint64_t *l8 = 0, *l14 = 0, *l9 = 0, *l10 = 0;
+    uint64_t u15, u16;
+    switch (u11) {
+    case 'b': tag = 0xc; break;
+    case 'c': tag = 0x1d; break;
+    case 'd': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+    case 'n': case 'o': case 's': case 't':
+        goto ret;
+    case 'e': tag = 0x4a; break;
+    case 'f':
+        b3 = false;
+        u11 = STACK_CNT(st);
+        tag = 0x4c;
+        if (u11 != 0) { b2 = true; goto l82c; }
+        l10 = 0; l14 = 0; l9 = 0;
+        goto l928;
+    case 'm': tag = 0x97; break;
+    case 'p': tag = 0xb6; break;
+    case 'q': tag = 0xb8; break;
+    case 'r': tag = 0x98; break;
+    case 'u':
+        b3 = false;
+        tag = 0x95;
+    }
+    u11 = STACK_CNT(st);
+    if (u11 == 0) {
+        l14 = 0;
+    l898:
+        u15 = 0;
+    l8a4:
+        l10 = 0;
+        u16 = u15;
+        if (b3) goto l8ac;
+    joined_e0:
+        b3 = false;
+        l9 = 0;
+        if (u16 != 0) goto l8fc;
+    l928:
+        l8 = (uint64_t *)sk_003ace50(st);
+    } else {
+        b2 = false;
+    l82c:
+        u15 = u11 - 1;
+        l14 = STACK_ELEM(st, u15);
+        if (NODE_TAG(l14) != 0x67) {
+            l14 = 0;
+            u15 = u11;
+            if (b2) goto l864;
+            goto l8a4;
+        }
+        STACK_CNT(st) = u15;
+        u11 = u15;
+        if (!b2) goto l8a4;
+    l864:
+        if (u11 == 0) goto l898;
+        u16 = u11 - 1;
+        l10 = STACK_ELEM(st, u16);
+        u15 = u11;
+        if (NODE_TAG(l10) != 0xba) goto l8a4;
+        STACK_CNT(st) = u16;
+        if (!b3) goto joined_e0;
+    l8ac:
+        if (u16 == 0) { l9 = 0; b3 = true; goto l928; }
+        u11 = u16 - 1;
+        l9 = STACK_ELEM(st, u11);
+        if (sk_003acda0(NODE_TAG(l9)) == 0) { l9 = 0; b3 = true; }
+        else {
+            STACK_CNT(st) = u11;
+            b3 = true;
+            u16 = u11;
+            if (u11 == 0) goto l928;
+        }
+    l8fc:
+        l8 = STACK_ELEM(st, u16 - 1);
+        if (sk_003b0aa4(NODE_TAG(l8)) == 0) goto l928;
+        STACK_CNT(st) = u16 - 1;
+    }
+    u13:
+    result = (uint64_t)sk_003ac52c(st);
+    if (b3 && l9 != 0) {
+        result = (uint64_t)sk_node_push2(st, (int)tag, l8, l9);
+        result = (uint64_t)sk_node_push2(st, (int)tag, (uint64_t *)result, l14);
+    } else {
+        result = (uint64_t)sk_ctx_op(st, tag, l8, l14, (uint64_t *)result);
+    }
+    if (l10 != 0) sk_node_add((uint64_t *)result, l10, st);
+ret:
+    return result;
+}
+
+/* FUN_003b0a64 @ 0x3b0a64   (est. sk_tag_is_collectable)
+ * Returns true if the tag is in the collectable set (mask over tags <0x2c)
+ * or is 0x171/0x174.
+ * Confidence: high */
+static bool sk_003b0a64(uint32_t p1)
+{
+    if ((p1 < 0x2c) && (((1ULL << (p1 & 0x3f)) & 0xf2000000000ULL) != 0)) return true;
+    return p1 == 0x171 || p1 == 0x174;
+}
+
+/* FUN_003b0aa4 @ 0x3b0aa4   (est. sk_tag_in_94_range)
+ * Returns true if the tag falls in two mask ranges or equals 8.
+ * Confidence: high */
+static bool sk_003b0aa4(int32_t p1)
+{
+    if (((0x22 < (uint32_t)(p1 - 0x94)) ||
+         (((1ULL << ((uint32_t)(p1 - 0x94) & 0x3f)) & 0x400000019ULL) == 0)) &&
+        ((0x2f < (uint32_t)(p1 - 0x1d)) ||
+         (((1ULL << ((uint32_t)(p1 - 0x1d) & 0x3f)) & 0xa00000000001ULL) == 0))) {
+        return p1 == 8;
+    }
+    return true;
+}
+
+/* FUN_003b0b08 @ 0x3b0b08   (est. sk_release_small_ctx)
+ * Releases a small (0x38-byte) context obtained from b0b7c via sk_lock.
+ * Returns nothing.
+ * Confidence: high */
+static void sk_003b0b08(void)
+{
+    uint64_t v = (uint64_t)sk_003b0b7c(0);
+    sk_lock((void *)v, 0x38);
+}
+
+/* FUN_003b0b0c @ 0x3b0b0c   (est. sk_release_small_ctx2)
+ * Same as b0b08: releases a small context via b0b7c + sk_lock.
+ * Returns nothing.
+ * Confidence: high */
+static void sk_003b0b0c(void)
+{
+    uint64_t v = (uint64_t)sk_003b0b7c(0);
+    sk_lock((void *)v, 0x38);
+}
+
+/* FUN_003b0b28 @ 0x3b0b28   (est. sk_ctx_destroy)
+ * Tags the context with magic 0x67c398, reinitializes its +0x220 sub-object
+ * (via 362ea4), then releases a 0x240-byte block from b0b7c. Returns nothing.
+ * Confidence: medium */
+static void sk_003b0b28(uint64_t *p)
+{
+    *p = 0x67c398;
+    sk_00362ea4(p + 0x44);
+    uint64_t v = (uint64_t)sk_003b0b7c(p);
+    sk_lock((void *)v, 0x240);
+}
+
+/* FUN_003b0b7c @ 0x3b0b7c   (est. sk_ctx_teardown)
+ * Tags the context with magic 0x67c370, walks and frees its link list, zeroes
+ * a byte at +0x30 of the +0x28 object, and returns the context pointer.
+ * Confidence: medium */
+static uint64_t *sk_003b0b7c(uint64_t *p)
+{
+    *p = 0x67c370;
+    uint64_t *cur = (uint64_t *)p[3];
+    while (cur != 0) {
+        cur = (uint64_t *)*cur;
+        sk_lock((void *)0, 0);
+    }
+    if (p[5] != 0) *(uint8_t *)(p[5] + 0x30) = 0;
+    return p;
+}
+
+/* FUN_003b0be0 @ 0x3b0be0   (est. sk_walk_emit_165)
+ * Recursively walks a node tree, invoking param_3 (a callback) on each
+ * qualifying child and emitting a 0x165 node wrapping the callback result via
+ * 363f70, added to the parent. Skips tags 0x4e, 0xe8, 0x10b; for 0x143 with a
+ * 0x165 leaf child it also returns early. Returns nothing.
+ * Confidence: medium */
+static void sk_003b0be0(uint64_t *st, uint16_t *p2, void *p3, uint64_t p4)
+{
+    uint16_t u3 = *(uint16_t *)(p2 + 8);   /* tag at +0x10 as ushort offset */
+    if (u3 < 0x10b) {
+        if (u3 == 0x4e) return;
+        if (u3 == 0xe8) return;
+    } else {
+        if (u3 == 0x10b) return;
+        if (u3 == 0x143) {
+            char c = *(uint8_t *)((char *)p2 + 0x12);   /* sub-type at +0x12 */
+            uint16_t *pu6 = p2;
+            uint64_t l5;
+            if (c == 0x01) l5 = 0;
+            else if (c == 0x02) l5 = 1;
+            else {
+                if (c != 0x05 || *(uint32_t *)(p2 + 4) == 0) goto lce0;
+                l5 = (uint64_t)*(uint32_t *)(p2 + 4) - 1;
+                pu6 = *(uint16_t **)p2;
+            }
+            if (NODE_TAG((uint64_t *)*(uint64_t *)((uint64_t *)pu6 + l5 * 4) ) == 0x165) return;
+        lce0:
+            {
+                /* call the callback: (*param_3)(param_4) returns 16 bytes */
+                uint64_t cb[2];
+                ((void (*)(uint64_t, uint64_t *))p3)(p4, cb);
+                uint64_t v = (uint64_t)sk_00363f70(st, 0x165, (void *)cb[0]);
+                sk_node_add((uint64_t *)p2, (uint64_t *)v, st);
+                return;
+            }
+        }
+    }
+    uint8_t b2 = *(uint8_t *)((char *)p2 + 0x12);
+    uint16_t *pu7 = p2;
+    uint16_t *pu6;
+lc98:
+    if (b2 - 1 < 2) {
+        if (b2 == 1) { pu6 = p2 + 4; goto ld48; }
+        if (b2 == 2) goto ld34;
+        if (b2 != 5) { pu6 = 0; goto ld48; }
+        pu6 = *(uint16_t **)p2;
+    } else {
+        if (b2 != 5) { pu7 = 0; goto lc98; }
+        pu6 = *(uint16_t **)p2;
+        pu7 = pu6;
+    }
+    pu6 = pu6 + (uint64_t)*(uint32_t *)(p2 + 4) * 4;
+ld48:
+    for (; pu7 != pu6; pu7 = pu7 + 4) {
+    ld34:
+        sk_003b0be0(st, *(uint16_t **)pu7, p3, p4);
+    }
+}
+
+/* FUN_003b0d64 @ 0x3b0d64   (est. sk_ctx_get_str)
+ * Returns the (data,length) pair of a string field: if the field's length
+ * flag at +0x17 is negative it uses the stored count, else the byte count;
+ * returns the string pointer + length as a 16-byte struct.
+ * Confidence: medium */
+static uint8_t sk_003b0d64(uint64_t *p)
+{
+    /* Returns the low byte of the string data pointer (caller reads the
+     * 16-byte {data,len} struct via the ABI); faithfully resolves the
+     * indirect string: the field at +0x17 is a length flag, negative meaning
+     * a stored 64-bit count else a byte count. */
+    uint64_t *pu2 = (uint64_t *)*p;
+    int64_t l3 = *(int8_t *)((char *)pu2 + 0x17);
+    int64_t l5 = l3;
+    if (l3 < 0) l5 = (int64_t)pu2[1];
+    uint64_t *pu4;
+    if (l5 == 0) {
+        pu2 = (uint64_t *)*p;
+        int64_t c = *(int8_t *)((char *)pu2 + 0x17);
+        pu4 = (uint64_t *)*pu2;
+        if (c >= 0) pu4 = pu2;
+        if (c >= 0) l5 = c;
+        else l5 = (int64_t)pu2[1];
+    } else {
+        pu4 = (uint64_t *)*pu2;
+        l5 = (int64_t)pu2[1];
+        if (*(int8_t *)((char *)pu2 + 0x17) >= 0) {
+            pu4 = pu2;
+            l5 = l3;
+        }
+    }
+    return (uint8_t)(uint64_t)pu4;
+}
+
+/* FUN_003b0e1c @ 0x3b0e1c   (est. sk_buf_reserve_grow)
+ * Reserves param_2*8 bytes in a growable buffer (param_1[1]=count aligned,
+ * [2]=cap, [0x18]=base ptr, [0x20]=capacity), growing via alloc when needed.
+ * Returns nothing.
+ * Confidence: medium */
+static uint64_t sk_003b0e1c(uint64_t *st, uint64_t p2)
+{
+    uint64_t add = p2 * 8;
+    uint64_t cnt = (*(uint64_t *)(st + 1) + 7) & 0xfffffffffffffff8;
+    *(uint64_t *)(st + 1) = cnt;
+    if (cnt == 0 || *(uint64_t *)(st + 2) < cnt + add) {
+        uint64_t cap = *(uint64_t *)(st + 4) * 2;
+        uint64_t need = add + 8;
+        if (cap < need || cap - need == 0) cap = need;
+        *(uint64_t *)(st + 4) = cap;
+        uint64_t *blk = (uint64_t *)sk_alloc_tagged(cap + 8, 0x2004093837f09);
+        *blk = *(uint64_t *)(st + 3);
+        uint64_t nb = ((uint64_t)blk + 0xf) & 0xfffffffffffffff8;
+        *(uint64_t *)(st + 2) = (uint64_t)blk + cap + 8;
+        *(uint64_t *)(st + 3) = (uint64_t)blk;
+        cnt = nb;
+    }
+    cnt = cnt + add;
+    *(uint64_t *)(st + 1) = cnt;
+    return cnt;
+}
+
+/* FUN_003b0ec4 @ 0x3b0ec4   (est. sk_utoa_rev)
+ * Converts a 32-bit unsigned integer to a decimal string in param_2
+ * (reversed then reversed in place), returns the digit count. Uses '0' for 0.
+ * Confidence: high */
+static uint64_t sk_003b0ec4(uint64_t p1, uint8_t *p2)
+{
+    if ((int32_t)p1 == 0) {
+        p2[0] = '0';
+        p2[1] = 0;
+        return 1;
+    }
+    uint64_t l3 = 0;
+    uint8_t *pb5 = p2;
+    uint8_t *pb6;
+    uint32_t u4;
+    do {
+        pb6 = pb5;
+        u4 = (uint32_t)p1;
+        pb5 = pb6 + 1;
+        *pb6 = (uint8_t)((char)p1 + (char)((p1 & 0xffffffff) / 10) * -10) | 0x30;
+        l3 = l3 + 1;
+        p1 = (p1 & 0xffffffff) / 10;
+    } while (9 < u4);
+    *pb5 = 0;
+    if (p2 < pb5) {
+        bool b2;
+        do {
+            uint8_t t = *pb6;
+            *pb6 = *p2;
+            *p2 = t;
+            b2 = p2 + 1 < pb6;
+            p2 = p2 + 1;
+            pb6 = pb6 - 1;
+        } while (b2);
+    }
+    return l3;
+}
+
+/* FUN_003b0f48 @ 0x3b0f48   (est. sk_ctx_adopt_parent)
+ * Adopts a parent context: if param_2's parent is null, clears own parent;
+ * if it is param_2 itself, points own parent at self and invokes the parent
+ * vtable re-parent hook; else copies the grandparent and clears param_2's
+ * parent. Returns param_1.
+ * Confidence: medium */
+static uint64_t sk_003b0f48(uint64_t *st, uint64_t p2v)
+{
+    uint64_t *p2 = (uint64_t *)p2v;
+    uint64_t parent = *(uint64_t *)(p2 + 3);
+    if (parent == 0) {
+        *(uint64_t *)(st + 3) = 0;
+    } else if (parent == (uint64_t)p2) {
+        *(uint64_t *)(st + 3) = (uint64_t)st;
+        ((void (*)(uint64_t *, uint64_t *))(**(uint64_t **)(*(uint64_t **)(p2 + 3)) + 0x18))
+            (*(uint64_t **)(p2 + 3), st);
+    } else {
+        *(uint64_t *)(st + 3) = parent;
+        *(uint64_t *)(p2 + 3) = 0;
+    }
+    return (uint64_t)st;
+}
+
+/* FUN_003b0fb8 @ 0x3b0fb8   (est. sk_ctx_init_adopt)
+ * Initializes param_1 (via b1034) then adopts param_2's parent (same logic as
+ * b0f48). Returns param_1.
+ * Confidence: medium */
+static uint64_t sk_003b0fb8(uint64_t *st, uint64_t p2v)
+{
+    uint64_t *p2 = (uint64_t *)p2v;
+    sk_003b1034(st, 0);
+    uint64_t parent = *(uint64_t *)(p2 + 3);
+    if (parent == 0) {
+        *(uint64_t *)(st + 3) = 0;
+    } else if (parent == (uint64_t)p2) {
+        *(uint64_t *)(st + 3) = (uint64_t)st;
+        ((void (*)(uint64_t *, uint64_t *))(**(uint64_t **)(*(uint64_t **)(p2 + 3)) + 0x18))
+            (*(uint64_t **)(p2 + 3), st);
+    } else {
+        *(uint64_t *)(st + 3) = parent;
+        *(uint64_t *)(p2 + 3) = 0;
+    }
+    return (uint64_t)st;
+}
+
+/* FUN_003b1034 @ 0x3b1034   (est. sk_ctx_release_link)
+ * Detaches param_1[3]; if it was param_1 invokes the vtable release hook at
+ * +0x20, else (non-null) the +0x28 hook. Returns param_1.
+ * Confidence: medium */
+static uint64_t *sk_003b1034(uint64_t *p, uint64_t p2)
+{
+    uint64_t *link = (uint64_t *)p[3];
+    p[3] = 0;
+    if (link == p) {
+        ((void (*)(void))(**(uint64_t **)(*link + 0x20)))();
+    } else if (link != 0) {
+        ((void (*)(void))(**(uint64_t **)(*link + 0x28)))();
+    }
+    return p;
+}
+
+/* FUN_003b10a8 @ 0x3b10a8   (est. sk_vec_grow_alloc)
+ * Allocates param_2*8 bytes (bounded) via 111890; panics (fatal) on overflow.
+ * Returns nothing (alloc result in x0).
+ * Confidence: medium */
+static void sk_003b10a8(uint64_t *st, uint64_t p2)
+{
+    if (p2 >> 0x3d == 0) {
+        sk_alloc_tagged(p2 << 3, 0x20c0093837f09);
+        return;
+    }
+    sk_fatal();
+}
+
+/* FUN_003b10f0 @ 0x3b10f0   (est. sk_ident_validate)
+ * Validates a length-prefixed identifier: the first byte must be a letter
+ * (case-insensitive), '_' or '$'; subsequent bytes may also be digits.
+ * Returns 0 if valid/empty, 1 if a character is invalid.
+ * Confidence: high */
+static uint64_t sk_003b10f0(uint8_t *p, uint64_t n)
+{
+    if (n == 0) return 0;
+    uint8_t b = *p;
+    if (((uint8_t)((b & 0xdf) + 0xbf) < 0x1a) || b == '_' || b == '$') {
+        do {
+            n = n - 1;
+            if (n == 0) return 0;
+            p = p + 1;
+            b = *p;
+        } while (((b & 0xffffffdf) - 0x41 < 0x1a) || (b == '$') ||
+                 (b == '_' || (b - 0x30 < 10)));
+    }
+    return 1;
+}
+
+/* FUN_003b1178 @ 0x3b1178   (est. sk_punct_mnemonic)
+ * Maps a punctuation character to a single-letter mnemonic (e.g. '*'->'m',
+ * '+'->'p', '-'->'s', '.'->'z', '/'->'d', '<'->'l', '='->'e', '>'->'g',
+ * '?'->'q', '@'->'c', '%'->'r', '^'->'x', '|'->'o', '~'->'t'); unhandled
+ * punctuation and printable chars map to themselves (or 'n' default).
+ * Confidence: high */
+static uint64_t sk_003b1178(uint64_t p1)
+{
+    int32_t v = (int32_t)p1;
+    if (v < 0x5e) {
+        if ((uint32_t)(v - 0x21) < 0x20) {
+            switch (v) {
+            default: return 'n';
+            case 0x22: case 0x23: case 0x24: case 0x27: case 0x28: case 0x29:
+            case 0x2c: case 0x30: case 0x31: case 0x32: case 0x33: case 0x34:
+            case 0x35: case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a:
+            case 0x3b:
+                break;
+            case 0x25: return 'r';
+            case 0x26: goto id26;
+            case 0x2a: return 'm';
+            case 0x2b: return 'p';
+            case 0x2d: return 's';
+            case 0x2e: return 'z';
+            case 0x2f: return 'd';
+            case 0x3c: return 'l';
+            case 0x3d: return 'e';
+            case 0x3e: return 'g';
+            case 0x3f: return 'q';
+            case 0x40: return 'c';
+            }
+        }
+    } else {
+        if (v == 0x5e) return 'x';
+        if (v == 0x7c) return 'o';
+        if (v == 0x7e) return 't';
+    }
+id26:
+    return p1;
+}
+
+/* FUN_003b12cc @ 0x3b12cc   (est. sk_ident_mnemonize)
+ * Initializes a byte vector and appends the single-letter mnemonic of each
+ * character of param_2 (via b1178) using FUN_001130a0. Returns nothing.
+ * Confidence: high */
+static void sk_003b12cc(uint64_t *v, char *s, uint64_t n)
+{
+    v[0] = 0; v[1] = 0; v[2] = 0;
+    for (; n != 0; n = n - 1) {
+        uint64_t m = sk_003b1178((uint64_t)*s);
+        sk_vec_byte_append(v, (uint8_t)m);
+        s = s + 1;
+    }
+}
+
+/* FUN_003b1328 @ 0x3b1328   (est. sk_protocol_name_map)
+ * Maps a type/protocol name (param_2, length param_3) to a canonical string
+ * label stored in param_1 (a {data,len,flag} struct). It matches known Swift
+ * protocol names via memcmp against a large table and emits the short label
+ * (sub-flag 1) or a fallback protocol-family label (sub-flag 2). Sets the
+ * struct's flag byte. Returns nothing.
+ * Confidence: high (string-matched) */
+static void sk_003b1328(uint64_t *p1, uint64_t *p2, uint64_t p3, int32_t p4)
+{
+    char *label;
+    int32_t iret;
+    if (0x1e < p3 - 3U) goto c_case;
+    switch (p3) {
+    default:
+        iret = sk_memcmp(p2, &DAT_005d6a55, p3);
+        if (iret == 0) label = &DAT_005d6fc9;
+        else {
+            iret = sk_memcmp(p2, &DAT_005d6a68, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d6fcb;
+        }
+        break;
+    case 4:
+        iret = sk_memcmp(p2, &DAT_005d6a38, p3);
+        if (iret == 0) label = &DAT_005d6fc3;
+        else {
+            iret = sk_memcmp(p2, &DAT_005d6afc, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d6fd5;
+        }
+        break;
+    case 5:
+        iret = sk_memcmp(p2, s_Array_005d6a32, p3);
+        if (iret == 0) label = &DAT_005d6fc1;
+        else {
+            iret = sk_memcmp(p2, s_Float_005d6a4f, p3);
+            if (iret == 0) label = &DAT_005d6fc7;
+            else {
+                iret = sk_memcmp(p2, s_Range_005d6a82, p3);
+                if (iret != 0) goto c_case;
+                label = &DAT_005d6fcd;
+            }
+        }
+        break;
+    case 6:
+        iret = sk_memcmp(p2, s_Double_005d6a48, p3);
+        if (iret == 0) label = &DAT_005d6fc5;
+        else {
+            iret = sk_memcmp(p2, s_String_005d6aeb, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d37d7;
+        }
+        break;
+    case 7:
+        iret = sk_memcmp(p2, s_Numeric_005d6bb6, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d6fe3;
+        break;
+    case 8:
+        iret = sk_memcmp(p2, s_Optional_005d4e8b, p3);
+        if (iret == 0) label = &DAT_005d6fdf;
+        else {
+            iret = sk_memcmp(p2, s_Hashable_005d6bad, p3);
+            if (iret == 0) label = &DAT_005d37e9;
+            else {
+                iret = sk_memcmp(p2, s_Sequence_005d6c3c, p3);
+                if (iret != 0) goto c_case;
+                label = &DAT_005d37e5;
+            }
+        }
+        break;
+    case 9:
+        iret = sk_memcmp(p2, s_Character_005d6a6c, p3);
+        if (iret == 0) label = &DAT_005d37dc;
+        else {
+            iret = sk_memcmp(p2, s_Substring_005d6af2, p3);
+            if (iret == 0) label = &DAT_005d6fd3;
+            else {
+                iret = sk_memcmp(p2, s_Encodable_005d6b73, p3);
+                if (iret == 0) label = &DAT_005d356c;
+                else if (*p2 == 0x6c6261646f636544 && (char)p2[1] == 'e') label = &DAT_005d6b7d;
+                else {
+                    iret = sk_memcmp(p2, s_Equatable_005d6c32, p3);
+                    if (iret != 0) goto c_case;
+                    label = &DAT_005d6fe9;
+                }
+            }
+        }
+        break;
+    case 10:
+        iret = sk_memcmp(p2, s_Dictionary_005d6a3d, p3);
+        if (iret == 0) label = &DAT_005d37cb;
+        else {
+            iret = sk_memcmp(p2, s_Comparable_005d6bed, p3);
+            if (iret == 0) label = &DAT_005d356e;
+            else if (*p2 == 0x697463656c6c6f43 && (int16_t)p2[1] == 0x6e6f) label = &DAT_005d6fe7;
+            else {
+                iret = sk_memcmp(p2, s_Strideable_005d6c76, p3);
+                if (iret != 0) goto c_case;
+                label = &DAT_005d6fef;
+            }
+        }
+        break;
+    case 0xb:
+        iret = sk_memcmp(p2, s_ClosedRange_005d6a76, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d37c9;
+        break;
+    case 0xc: case 0x12: case 0x18: case 0x19: case 0x1b: case 0x1c:
+    case 0x1e: case 0x1f: case 0x20:
+        goto c_case;
+    case 0xd:
+        iret = sk_memcmp(p2, s_UnsafePointer_005d6a99, p3);
+        if (iret == 0) label = &DAT_005c9984;
+        else {
+            iret = sk_memcmp(p2, s_FloatingPoint_005d6b89, p3);
+            if (iret == 0) label = &DAT_005d6fe1;
+            else {
+                iret = sk_memcmp(p2, s_SignedInteger_005d6ca1, p3);
+                if (iret == 0) label = &DAT_005d6ff5;
+                else {
+                    if (*p2 != 0x6e497972616e6942 ||
+                        *(int64_t *)((char *)p2 + 5) != 0x72656765746e4979) goto c_case;
+                    label = &DAT_005d6ff7;
+                }
+            }
+        }
+        break;
+    case 0xe:
+        iret = sk_memcmp(p2, s_DefaultIndices_005d6a59, p3);
+        if (iret == 0) label = &DAT_005d356a;
+        else {
+            iret = sk_memcmp(p2, s_StringProtocol_005d6c92, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d6ff3;
+        }
+        break;
+    case 0xf:
+        iret = sk_memcmp(p2, s_UnsignedInteger_005d6c56, p3);
+        if (iret == 0) label = &DAT_005d3810;
+        else {
+            if (*p2 != 0x70784565676e6152 ||
+                *(int64_t *)((char *)p2 + 7) != 0x6e6f697373657270) goto c_case;
+            label = &DAT_005d6fed;
+        }
+        break;
+    case 0x10:
+        iret = sk_memcmp(p2, s_ObjectIdentifier_005d6a88, p3);
+        if (iret == 0) label = &DAT_005d3801;
+        else {
+            iret = sk_memcmp(p2, s_UnsafeRawPointer_005d6b01, p3);
+            if (iret == 0) label = &DAT_005d6fd7;
+            else {
+                iret = sk_memcmp(p2, s_IteratorProtocol_005d6c45, p3);
+                if (iret == 0) label = &DAT_005d6feb;
+                else {
+                    iret = sk_memcmp(p2, s_RawRepresentable_005d6c81, p3);
+                    if (iret != 0) goto c_case;
+                    label = &DAT_005d6ff1;
+                }
+            }
+        }
+        break;
+    case 0x11:
+        iret = sk_memcmp(p2, s_MutableCollection_005d6c03, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d37d0;
+        break;
+    case 0x13:
+        iret = sk_memcmp(p2, s_UnsafeBufferPointer_005d6abc, p3);
+        if (iret == 0) label = &DAT_005d3568;
+        else {
+            iret = sk_memcmp(p2, s_BinaryFloatingPoint_005d6b5f, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d37d2;
+        }
+        break;
+    case 0x14:
+        iret = sk_memcmp(p2, s_UnsafeMutablePointer_005d6aa7, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d6fcf;
+        break;
+    case 0x15:
+        iret = sk_memcmp(p2, s_RandomNumberGenerator_005d6b97, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d37c4;
+        break;
+    case 0x16:
+        iret = sk_memcmp(p2, s_UnsafeRawBufferPointer_005d6b2a, p3);
+        if (iret == 0) label = &DAT_005d6fdb;
+        else {
+            iret = sk_memcmp(p2, s_RandomAccessCollection_005d6bd6, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d6fe5;
+        }
+        break;
+    case 0x17:
+        iret = sk_memcmp(p2, s_UnsafeMutableRawPointer_005d6b12, p3);
+        if (iret == 0) label = &DAT_005d6fd9;
+        else {
+            iret = sk_memcmp(p2, s_BidirectionalCollection_005d6bbe, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d37e3;
+        }
+        break;
+    case 0x1a:
+        iret = sk_memcmp(p2, s_UnsafeMutableBufferPointer_005d6ad0, p3);
+        if (iret == 0) label = &DAT_005d6fd1;
+        else {
+            iret = sk_memcmp(p2, s_RangeReplaceableCollection_005d6c17, p3);
+            if (iret != 0) goto c_case;
+            label = &DAT_005d6c15;
+        }
+        break;
+    case 0x1d:
+        iret = sk_memcmp(p2, s_UnsafeMutableRawBufferPointer_005d6b41, p3);
+        if (iret != 0) goto c_case;
+        label = &DAT_005d6fdd;
+        break;
+    case 0x21:
+        iret = sk_memcmp(p2, s_AutoreleasingUnsafeMutablePointe_005d6a10, 0x21);
+        if (iret == 0) {
+            *p1 = (uint64_t)&DAT_005d37eb;
+            p1[1] = 1;
+            p1[2] = (uint8_t)1;
+            return;
+        }
+        goto c_case;
+    }
+    *p1 = (uint64_t)label;
+    p1[1] = 1;
+    p1[2] = (uint8_t)1;
+    return;
+c_case:
+    if (p4 == 0 || 0x11 < p3 - 4U) {
+    c_case6:
+        *p1 = 0;
+        *(uint8_t *)p1 = 0;
+        p1[2] = (uint8_t)0;
+        return;
+    }
+    switch (p3) {
+    default:
+        iret = sk_memcmp(p2, &DAT_005d4ec0, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d702c;
+        break;
+    case 5:
+        if ((int32_t)*p2 != 0x6f746341 || *(char *)((char *)p2 + 4) != 'r') goto c_case6;
+        label = &DAT_005d6ff9;
+        break;
+    case 6: case 7: case 0xf: case 0x10: case 0x14:
+        goto c_case6;
+    case 8:
+        iret = sk_memcmp(p2, s_Executor_005d6d14, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d7008;
+        break;
+    case 9:
+        iret = sk_memcmp(p2, s_TaskGroup_005d6d2c, p3);
+        if (iret == 0) label = &DAT_005d700e;
+        else {
+            iret = sk_memcmp(p2, s_MainActor_005d6d84, p3);
+            if (iret != 0) goto c_case6;
+            label = &DAT_005d7020;
+        }
+        break;
+    case 10:
+        iret = sk_memcmp(p2, s_UnownedJob_005d6d79, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d701d;
+        break;
+    case 0xb:
+        iret = sk_memcmp(p2, s_AsyncStream_005d6d9b, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d7026;
+        break;
+    case 0xc:
+        iret = sk_memcmp(p2, s_TaskExecutor_005d6d48, p3);
+        if (iret == 0) label = &DAT_005d7014;
+        else {
+            iret = sk_memcmp(p2, s_TaskPriority_005d6d8e, p3);
+            if (iret != 0) goto c_case6;
+            label = &DAT_005d7023;
+        }
+        break;
+    case 0xd:
+        iret = sk_memcmp(p2, s_AsyncSequence_005d6d6b, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d701a;
+        break;
+    case 0xe:
+        iret = sk_memcmp(p2, s_SerialExecutor_005d6d1d, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d700b;
+        break;
+    case 0x11:
+        iret = sk_memcmp(p2, s_CancellationError_005d6cec, p3);
+        if (iret == 0) label = &DAT_005d7002;
+        else {
+            iret = sk_memcmp(p2, s_ThrowingTaskGroup_005d6d36, p3);
+            if (iret == 0) label = &DAT_005d7011;
+            else {
+                iret = sk_memcmp(p2, s_UnsafeCurrentTask_005d6dbb, p3);
+                if (iret != 0) goto c_case6;
+                label = &DAT_005d702f;
+            }
+        }
+        break;
+    case 0x12:
+        iret = sk_memcmp(p2, s_UnsafeContinuation_005d6cd9, p3);
+        if (iret != 0) goto c_case6;
+        label = &DAT_005d6fff;
+        break;
+    case 0x13:
+        iret = sk_memcmp(p2, s_CheckedContinuation_005d6cc3, p3);
+        if (iret == 0) label = &DAT_005d6ffc;
+        else {
+            iret = sk_memcmp(p2, s_AsyncThrowingStream_005d6da7, p3);
+            if (iret != 0) goto c_case6;
+            label = &DAT_005d7029;
+        }
+        break;
+    case 0x15:
+        iret = sk_memcmp(p2, s_UnownedSerialExecutor_005d6cfe, p3);
+        if (iret == 0) label = &DAT_005d7005;
+        else {
+            iret = sk_memcmp(p2, s_AsyncIteratorProtocol_005d6d55, p3);
+            if (iret != 0) goto c_case6;
+            label = &DAT_005d7017;
+        }
+    }
+    *p1 = (uint64_t)label;
+    p1[1] = 2;
+    p1[2] = (uint8_t)1;
+}
+
+/* FUN_003b1e74 @ 0x3b1e74   (est. sk_log_msg_spec1)
+ * Builds a log message from (p2,p3) using a spec string (b1eec) and emits it
+ * via log_msg. Verifies the stack canary; returns param_1.
+ * Confidence: medium */
+static uint64_t sk_003b1e74(uint64_t *st, uint64_t p2, uint64_t p3)
+{
+    uint64_t scratch[4];
+    uint64_t canary = (uint64_t)-0x2c8502b44bfffed6;
+    sk_003b1eec((uint64_t *)scratch, p2, p3, (uint64_t)&DAT_005d7032);
+    sk_log_msg(st, scratch);
+    if (canary == (uint64_t)-0x2c8502b44bfffed6) return (uint64_t)st;
+    sk_canary_panic();
+}
+
+/* FUN_003b1eec @ 0x3b1eec   (est. sk_log_format)
+ * Calls obj_lock(0x20) with a format specifier, initializing a message
+ * buffer. Returns nothing.
+ * Confidence: medium */
+static void sk_003b1eec(uint64_t *st, uint64_t p2, uint64_t p3, uint64_t p4)
+{
+    sk_obj_lock((uint64_t)st, 0x20);
+}
+
+/* FUN_003b1f20 @ 0x3b1f20   (est. sk_log_msg_spec2)
+ * Same as b1e74 but with spec DAT_005d7037. Returns param_1.
+ * Confidence: medium */
+static uint64_t sk_003b1f20(uint64_t *st, uint64_t p2, uint64_t p3)
+{
+    uint64_t scratch[4];
+    uint64_t canary = (uint64_t)-0x2c8502b44bfffed6;
+    sk_003b1eec((uint64_t *)scratch, p2, p3, (uint64_t)&DAT_005d7037);
+    sk_log_msg(st, scratch);
+    if (canary == (uint64_t)-0x2c8502b44bfffed6) return (uint64_t)st;
+    sk_canary_panic();
+}
+
+/* FUN_003b1f98 @ 0x3b1f98   (est. sk_log_msg_spec3)
+ * Same as b1e74 but with spec DAT_005d703c. Returns param_1.
+ * Confidence: medium */
+static uint64_t sk_003b1f98(uint64_t *st, uint64_t p2, uint64_t p3)
+{
+    uint64_t scratch[4];
+    uint64_t canary = (uint64_t)-0x2c8502b44bfffed6;
+    sk_003b1eec((uint64_t *)scratch, p2, p3, (uint64_t)&DAT_005d703c);
+    sk_log_msg(st, scratch);
+    if (canary == (uint64_t)-0x2c8502b44bfffed6) return (uint64_t)st;
+    sk_canary_panic();
+}
+
+/* FUN_003b2010 @ 0x3b2010   (est. sk_bijective_label)
+ * Converts param_3 to a bijective-base-26 column label (A, B, ..., Z, AA,
+ * ...) appended via byte-append, then optionally emits an extra spec message
+ * (b1eec) when param_2 is set, storing the resulting {ptr,count,cap} into
+ * param_1. Returns nothing.
+ * Confidence: medium */
+static void sk_003b2010(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4)
+{
+    uint64_t canary = (uint64_t)-0x2c8502b44bfffed6;
+    uint64_t local80 = 0, stk78 = 0, local70 = 0;
+    bool b;
+    do {
+        sk_vec_byte_append(&local80, (uint8_t)((char)p3 + (char)(p3 / 0x1a) * -0x1a + 'A'));
+        b = 0x19 < p3;
+        p3 = p3 / 0x1a;
+    } while (b);
+    if (p2 != 0) {
+        uint64_t scratch[4];
+        sk_003b1eec((uint64_t *)scratch, 0, p4, (uint64_t)&DAT_005d7032);
+        sk_log_msg((uint64_t *)&local80, scratch);
+    }
+    p1[1] = stk78;
+    p1[0] = local80;
+    p1[2] = local70;
+    if (canary == (uint64_t)-0x2c8502b44bfffed6) return;
+    sk_canary_panic();
+}
+
+/* FUN_003b20f4 @ 0x3b20f4   (est. sk_emit_child_list)
+ * Iterates param_2..param_3 (exclusive), pretty-printing each node via b2180
+ * at depth param_4+1, and when param_5 (a separator) is set, emits it between
+ * items. Returns nothing.
+ * Confidence: medium */
+static void sk_003b20f4(uint64_t *st, uint64_t *p2, uint64_t *p3, int32_t p4, uint64_t p5)
+{
+    while (p2 != p3) {
+        uint64_t *next = p2 + 1;
+        sk_003b2180((uint64_t *)st, (uint64_t *)*p2, (uint64_t)(p4 + 1), 0);
+        p2 = next;
+        if (p5 != 0 && next != p3) {
+            uint64_t len = (uint64_t)sk_len_query(p5);
+            sk_out_str((uint64_t *)((char *)st + 8), (const char *)p5, (long)len);
+        }
+    }
+}
+
+/* FUN_003b8d18 @ 0x3b8d18   (est. sk_emit_child_list_walk)
+ * Walks a node's child pointer range (based on its sub-type) and emits each
+ * child via b20f4. Returns nothing.
+ * Confidence: medium */
+static void sk_003b8d18(uint64_t *st, uint64_t *p2, uint64_t p3, uint64_t p4)
+{
+    if (p2 == 0) return;
+    uint8_t b = NODE_SUBT(p2);
+    uint64_t *pl2 = p2;
+    uint64_t end;
+    if (1 < b - 1) {
+        if (b == 5) {
+            pl2 = (uint64_t *)*p2;
+            end = (uint64_t)pl2;
+            goto l8d70;
+        }
+        pl2 = 0;
+    }
+    if (b == 1) {
+        sk_003b20f4(st, pl2, p2 + 1, (int32_t)p3, p4);
+        return;
+    }
+    if (b == 2) {
+        sk_003b20f4(st, pl2, p2 + 2, (int32_t)p3, p4);
+        return;
+    }
+    if (b != 5) {
+        sk_003b20f4(st, pl2, 0, (int32_t)p3, p4);
+        return;
+    }
+    end = *p2;
+l8d70:
+    sk_003b20f4(st, pl2, (uint64_t *)(end + (uint64_t)*(uint32_t *)(p2 + 1) * 8),
+                (int32_t)p3, p4);
+}
+
+/* FUN_003b8d94 @ 0x3b8d94   (est. sk_emit_2elem_tuple)
+ * Emits a two-element tuple: prints the first element via b2180, a separator
+ * (DAT_005d3cc6), the remaining children via b8d18, and a closing marker.
+ * Returns nothing.
+ * Confidence: medium */
+static void sk_003b8d94(uint64_t *st, uint64_t *p2, uint64_t p3)
+{
+    if (NODE_SUBT(p2) != 2) {
+        if (NODE_SUBT(p2) != 5 || (uint32_t)p2[1] < 2) return;
+        p2 = (uint64_t *)*p2;
+    }
+    uint64_t v1 = p2[1];
+    sk_003b2180(st, (uint64_t *)*p2, (uint64_t)((int32_t)p3 + 1), 0);
+    sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d3cc6, 1);
+    sk_003b8d18(st, (uint64_t *)v1, p3, (uint64_t)&DAT_005d0c46);
+    sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005cf438, 1);
+}
+
+/* FUN_003b8e48 @ 0x3b8e48   (est. sk_emit_subtype4_msg)
+ * If the node's sub-type is 4, emits a '[' + formatted message + ']' around
+ * it. Returns nothing.
+ * Confidence: medium */
+static void sk_003b8e48(uint64_t *st, uint64_t p2)
+{
+    uint64_t canary = (uint64_t)-0x2c8502b44bfffed6;
+    if (NODE_SUBT((uint64_t *)p2) == 4) {
+        sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d7041, 1);
+        uint64_t scratch[4];
+        sk_003b1eec((uint64_t *)scratch, 0, 0, 0);
+        sk_log_msg((uint64_t *)((char *)st + 8), scratch);
+        sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d021c, 1);
+    }
+    if (canary == (uint64_t)-0x2c8502b44bfffed6) return;
+    sk_canary_panic();
+}
+
+/* FUN_003b8ef8 @ 0x3b8ef8   (est. sk_attr_match_check)
+ * Checks whether a 0xa3 attribute node matches the current context's expected
+ * kind: returns the context byte (at +0x30/+0x31/+0x32) for the
+ * __llbd_e/__xpr_/_Swift/__C kinds, a memcmp result for exact-length kinds,
+ * else 1. Returns the match byte.
+ * Confidence: medium */
+static uint8_t sk_003b8ef8(uint64_t *st, uint64_t *p2)
+{
+    if (*(uint8_t *)((char *)st + 0x21) != 1) {
+        return 0;
+    }
+    if (NODE_TAG(p2) != 0xa3) return 1;
+    uint64_t *data = (uint64_t *)*p2;
+    uint64_t len = p2[1];
+    if (len == 3) {
+        if (NODE_TAG(data) == 0x5f5f && *(uint8_t *)((char *)data + 2) == 'C') {
+            return *(uint8_t *)((char *)st + 0x32);
+        }
+        if (*(uint64_t *)((char *)st + 0x40) == 3) goto l8fb8;
+    } else {
+        if (len == 5) {
+            if ((int32_t)*data == 0x66697753 && *(uint8_t *)((char *)data + 4) == 't') {
+                return *(uint8_t *)((char *)st + 0x31);
+            }
+            if (*(uint64_t *)((char *)st + 0x40) != 5) goto l9000;
+        l8fb8:
+            if (sk_memcmp(data, *(void **)((char *)st + 0x38), len) == 0) return 0;
+        } else if (len == *(uint64_t *)((char *)st + 0x40)) {
+            if (len != 0) goto l8fb8;
+            return 0;
+        }
+        if (0xb < len && *data == 0x655f62646c6c5f5f && (int32_t)data[1] == 0x5f727078) {
+            return *(uint8_t *)((char *)st + 0x30);
+        }
+    }
+l9000:
+    return 1;
+}
+
+/* FUN_003b903c @ 0x3b903c   (est. sk_query_flag)
+ * Tests a node's shape: returns 1 for scalar/leaf tags (0xc9 empty, 0xcb
+ * empty, and a set of printable tags), 0 for a 0xf4 wrapper, and recurses
+ * into wrapped elements. Returns the classification flag.
+ * Confidence: medium */
+static uint64_t sk_003b903c(uint64_t p1, uint64_t *p2)
+{
+    uint64_t *pl2 = p2;
+    uint64_t r = 0;
+    uint64_t l3 = 0;
+    for (;;) {
+        pl2 = p2;
+        if (0x179 < NODE_TAG(pl2)) {
+            /* bad tag: fatal path */
+            sk_004ba498(p1);
+        }
+        p1 = 0;
+        switch (NODE_TAG(pl2)) {
+        default: return p1;
+        case 0xc9: {
+            uint64_t *e = pl2;
+            if (1 < NODE_SUBT(pl2) - 1) {
+                if (NODE_SUBT(pl2) != 5 || (int32_t)pl2[1] == 0) { l3 = 0; goto l917c; }
+                e = (uint64_t *)*pl2;
+            }
+            l3 = (uint64_t)*e;
+        l917c:
+            if (NODE_SUBT((uint64_t *)l3) != 5) return (uint64_t)(NODE_SUBT((uint64_t *)l3) != 2);
+            return (uint64_t)(*(uint32_t *)(l3 + 8) < 2);
+        }
+        case 0xcb: {
+            uint64_t *e = pl2;
+            if (NODE_SUBT(pl2) - 1 < 2) { e = (uint64_t *)*e; goto l90d4; }
+            if (NODE_SUBT(pl2) == 5 && (int32_t)pl2[1] != 0) { e = (uint64_t *)*e; goto l90d4; }
+            e = 0;
+        l90d4:
+            l3 = 0;
+            if (NODE_SUBT(e) - 1 < 2) l3 = (uint64_t)*e;
+            else if (NODE_SUBT(e) == 5 && (int32_t)e[1] != 0) { e = (uint64_t *)*e; l3 = (uint64_t)*e; }
+            if (NODE_SUBT((uint64_t *)l3) - 1 < 2) return 0;
+            if (NODE_SUBT((uint64_t *)l3) == 5) return (uint64_t)(*(int32_t *)(l3 + 8) == 0);
+            return p1;
+        }
+        case 4: case 5: case 0xd: case 0xe: case 0xf: case 0x10: case 0x11:
+        case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x19:
+        case 0x27: case 0x2d: case 0x2e: case 0x3b: case 0x3f: case 0x41:
+        case 0x47: case 0x56: case 0x57: case 0x9a: case 0x9b: case 0xa3:
+        case 0xb1: case 0xbf: case 0xc0: case 0xdb: case 0xde: case 0xdf:
+        case 0xe7: case 0xeb: case 0xed: case 0xee: case 0xef: case 0xf0:
+        case 0xf5: case 0xf6: case 0xf7: case 0x130: case 0x135: case 0x136:
+        case 0x137: case 0x138: case 0x139: case 0x172: case 0x173:
+            p1 = 1;
+            return p1;
+        case 0xf4:
+            break;
+        }
+        if (1 < NODE_SUBT(pl2) - 1) {
+            p2 = 0;
+            if (NODE_SUBT(pl2) == 5 && (int32_t)pl2[1] != 0) {
+                pl2 = (uint64_t *)*pl2;
+                p2 = (uint64_t *)*pl2;
+            }
+        } else {
+            p2 = (uint64_t *)*pl2;
+        }
+    }
+}
+
+/* FUN_003b9794 @ 0x3b9794   (est. sk_emit_wrapped_val)
+ * Emits a value via b2180; if b903c flags it as non-simple, wraps with
+ * brackets ('[' and ']'). Returns nothing.
+ * Confidence: medium */
+static void sk_003b9794(uint64_t *st, uint64_t p2, int32_t p3)
+{
+    if ((sk_003b903c(0, 0) & 1) != 0) {
+        sk_003b2180(st, (uint64_t *)p2, (uint64_t)(p3 + 1), 0);
+        return;
+    }
+    sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d3bb7, 1);
+    sk_003b2180(st, (uint64_t *)p2, (uint64_t)(p3 + 1), 0);
+    sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005ce788, 1);
+}
+
+/* FUN_003b982c @ 0x3b982c   (est. sk_container_kind)
+ * Classifies a container node: returns 1 for Optional, 2 for
+ * ImplicitlyUnwrappedOptional, 3 for Array, 4 for Dictionary, else 0, by
+ * inspecting the wrapped 0xe/0xf5/0xf4 structure and matching protocol names.
+ * Confidence: medium */
+static uint64_t sk_003b982c(uint64_t *st, uint64_t *p2)
+{
+    uint64_t *pu6 = p2;
+    for (;;) {
+        uint8_t b = NODE_SUBT(pu6);
+        uint32_t u8 = b;
+        if (u8 != 1) {
+            if (u8 != 5) {
+                if (b != 2) return 0;
+                goto l98c4;
+            }
+            if ((int32_t)pu6[1] != 1) goto l98b8;
+        }
+        if (NODE_TAG(pu6) == 0xf4) {
+            if (1 < u8 - 1) goto code_r;
+            goto l9890;
+        }
+        if (b != 2) {
+            if (b != 5) return 0;
+            if ((int32_t)pu6[1] != 2) return 0;
+            b = 5;
+        }
+    l98c4:
+        {
+            uint16_t t = NODE_TAG(pu6);
+            if ((t & 0xfffe) != 0xe) return 0;
+            uint64_t *pu9 = pu6;
+            if (b == 2) { pu9 = (uint64_t *)*pu9; goto l98f4; }
+            if (b == 5 && (int32_t)pu6[1] != 0) { pu9 = (uint64_t *)*pu6; goto l98f4; }
+            pu9 = 0;
+        l98f4:
+            if (NODE_SUBT(pu9) - 1 < 2) pu9 = (uint64_t *)*pu9;
+            else if (NODE_SUBT(pu9) == 5 && (int32_t)pu9[1] != 0) { pu9 = (uint64_t *)*pu9; pu9 = (uint64_t *)*pu9; }
+            else pu9 = 0;
+            uint64_t l10;
+            if (b == 2) l10 = pu6[1];
+            else if (b == 5 && 1 < (uint32_t)pu6[1]) { pu6 = (uint64_t *)*pu6; l10 = pu6[1]; }
+            else l10 = 0;
+            char c = NODE_SUBT(pu9);
+            if ((t & 0xfffe) == 0xe) {
+                /* Optional family */
+                uint64_t u4;
+                if (c == 2) u4 = pu9[1];
+                else if (c == 5 && 1 < (uint32_t)pu9[1]) { pu9 = (uint64_t *)*pu9; u4 = pu9[1]; }
+                else u4 = 0;
+                if (sk_003b9c14((uint64_t *)u4, (uint64_t)s_Optional_005d4e8b, 8) != 0 &&
+                    (NODE_SUBT((uint64_t *)l10) == 1 || (NODE_SUBT((uint64_t *)l10) == 5 && *(int32_t *)(l10 + 8) == 1))) {
+                    uint64_t v = (NODE_SUBT(pu9) - 1 < 2) ? (uint64_t)*pu9 :
+                        (NODE_SUBT(pu9) == 5 && (int32_t)pu9[1] != 0) ? (uint64_t)*(uint64_t *)*pu9 : 0;
+                    if ((sk_003b9c6c((uint64_t *)v) & 1) != 0) return 1;
+                }
+                uint64_t u4b;
+                if (c == 2) u4b = pu9[1];
+                else if (c == 5 && 1 < (uint32_t)pu9[1]) { pu9 = (uint64_t *)*pu9; u4b = pu9[1]; }
+                else u4b = 0;
+                if (sk_003b9c14((uint64_t *)u4b, (uint64_t)s_ImplicitlyUnwrappedOptional_005d7051, 0x1b) == 0) return 0;
+                if (NODE_SUBT((uint64_t *)l10) != 1) {
+                    if (NODE_SUBT((uint64_t *)l10) != 5) return 0;
+                    if (*(int32_t *)(l10 + 8) != 1) return 0;
+                }
+                uint64_t v2 = (NODE_SUBT(pu9) - 1 < 2) ? (uint64_t)*pu9 :
+                    (NODE_SUBT(pu9) == 5 && (int32_t)pu9[1] != 0) ? (uint64_t)*(uint64_t *)*pu9 : 0;
+                if ((sk_003b9c6c((uint64_t *)v2) & 1) == 0) return 0;
+                return 2;
+            }
+            /* Array / Dictionary */
+            uint64_t u4c;
+            if (c == 2) u4c = pu9[1];
+            else if (c == 5 && 1 < (uint32_t)pu9[1]) { pu9 = (uint64_t *)*pu9; u4c = pu9[1]; }
+            else u4c = 0;
+            if (sk_003b9c14((uint64_t *)u4c, (uint64_t)s_Array_005d6a32, 5) != 0 &&
+                (NODE_SUBT((uint64_t *)l10) == 1 || (NODE_SUBT((uint64_t *)l10) == 5 && *(int32_t *)(l10 + 8) == 1))) {
+                uint64_t v3 = (NODE_SUBT(pu9) - 1 < 2) ? (uint64_t)*pu9 :
+                    (NODE_SUBT(pu9) == 5 && (int32_t)pu9[1] != 0) ? (uint64_t)*(uint64_t *)*pu9 : 0;
+                if ((sk_003b9c6c((uint64_t *)v3) & 1) != 0) return 3;
+            }
+            uint64_t u4d;
+            if (c == 2) u4d = pu9[1];
+            else if (c == 5 && 1 < (uint32_t)pu9[1]) { pu9 = (uint64_t *)*pu9; u4d = pu9[1]; }
+            else u4d = 0;
+            if (sk_003b9c14((uint64_t *)u4d, (uint64_t)s_Dictionary_005d6a3d, 10) == 0) return 0;
+            if (NODE_SUBT((uint64_t *)l10) != 2) {
+                if (NODE_SUBT((uint64_t *)l10) != 5) return 0;
+                if (*(int32_t *)(l10 + 8) != 2) return 0;
+            }
+            uint64_t v4 = (NODE_SUBT(pu9) - 1 < 2) ? (uint64_t)*pu9 :
+                (NODE_SUBT(pu9) == 5 && (int32_t)pu9[1] != 0) ? (uint64_t)*(uint64_t *)*pu9 : 0;
+            if ((sk_003b9c6c((uint64_t *)v4) & 1) == 0) return 0;
+            return 4;
+        }
+    l98b8:
+        if ((int32_t)pu6[1] != 2) return 0;
+        b = 5;
+        goto l98c4;
+    code_r:
+        p2 = 0;
+        if (b == 5 && (int32_t)pu6[1] != 0) {
+            pu6 = (uint64_t *)*pu6;
+            p2 = (uint64_t *)*pu6;
+        }
+        goto l9890;
+    l9890:
+        p2 = (uint64_t *)*pu6;
+    }
+}
+
+/* FUN_003b9c14 @ 0x3b9c14   (est. sk_str_eq_67)
+ * Returns true if param_1 is a 0x67 scalar holding the string param_2 of
+ * length param_3. Confidence: high */
+static bool sk_003b9c14(uint64_t *p1, uint64_t p2, uint64_t p3)
+{
+    if (NODE_TAG(p1) == 0x67 && p1[1] == p3) {
+        if (p1[1] != 0) {
+            return sk_memcmp((void *)*p1, (const void *)p2, p3) == 0;
+        }
+        return true;
+    }
+    return false;
+}
+
+/* FUN_003b9c6c @ 0x3b9c6c   (est. sk_is_swift_attr)
+ * Returns true if param_1 is a 0xa3 scalar of length 5 holding "Swift".
+ * Confidence: high */
+static bool sk_003b9c6c(uint64_t *p1)
+{
+    if (NODE_TAG(p1) == 0xa3 && p1[1] == 5) {
+        return *(int32_t *)*p1 == 0x66697753 && (char)((int32_t *)*p1)[1] == 't';
+    }
+    return false;
+}
+
+/* FUN_003b9cb4 @ 0x3b9cb4   (est. sk_emit_container)
+ * Emits a container node: two-element tuples via b8d94; tag 0x10 pairs via
+ * b8d18 + ' -> ' + b2180; and typed containers (kind from b982c) with their
+ * element/separator rendering. Returns nothing.
+ * Confidence: medium */
+static void sk_003b9cb4(uint64_t *st, uint64_t *p2, uint64_t p3)
+{
+    char c = NODE_SUBT(p2);
+    if (c != 2) {
+        if (c != 5 || (uint32_t)p2[1] < 2) return;
+        if ((uint32_t)p2[1] != 2) goto l9d28;
+    }
+    if (*(uint8_t *)((char *)st + 0x20) != 1) goto l9d28;
+    {
+        int32_t depth = (int32_t)p3;
+        if (NODE_TAG(p2) == 0x10) {
+            uint64_t *pl6 = p2;
+            uint64_t u3;
+            if (c == 2) u3 = *(uint64_t *)((char *)pl6 + 8);
+            else if (c == 5 && 1 < (uint32_t)p2[1]) { pl6 = (uint64_t *)*p2; u3 = *(uint64_t *)((char *)pl6 + 8); }
+            else u3 = 0;
+            sk_003b8d18(st, (uint64_t *)u3, p3, 0);
+            sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d706d, 4);
+            uint64_t v2 = (NODE_SUBT(p2) - 1 < 2) ? (uint64_t)*p2 :
+                (NODE_SUBT(p2) == 5 && (int32_t)p2[1] != 0) ? (uint64_t)*(uint64_t *)*p2 : 0;
+            sk_003b2180(st, (uint64_t *)v2, (uint64_t)(depth + 1), 0);
+            return;
+        }
+        if (NODE_TAG(p2) == 0xd) goto l9d28;
+        int32_t kind = (int32_t)sk_003b982c(st, p2);
+        if (2 < kind) {
+            uint64_t u3, u8;
+            const char *sep;
+            uint64_t seplen;
+            if (kind == 3) {
+                uint64_t *pl6 = (c == 2) ? (uint64_t *)p2[1] : (c == 5 && 1 < (uint32_t)p2[1]) ? (uint64_t *)*(uint64_t *)*p2 : 0;
+                u8 = (NODE_SUBT(pl6) - 1 < 2) ? (uint64_t)*pl6 :
+                    (NODE_SUBT(pl6) == 5 && (int32_t)pl6[1] != 0) ? (uint64_t)*(uint64_t *)*pl6 : 0;
+                sep = &DAT_005d3566; seplen = 1;
+            } else {
+                uint64_t *pl6 = (c == 2) ? (uint64_t *)p2[1] : (c == 5 && 1 < (uint32_t)p2[1]) ? (uint64_t *)*(uint64_t *)*p2 : 0;
+                u3 = (NODE_SUBT(pl6) - 1 < 2) ? (uint64_t)*pl6 :
+                    (NODE_SUBT(pl6) == 5 && (int32_t)pl6[1] != 0) ? (uint64_t)*(uint64_t *)*pl6 : 0;
+                uint64_t *pu5 = (c == 2) ? (uint64_t *)p2[1] : (c == 5 && 1 < (uint32_t)p2[1]) ? (uint64_t *)*(uint64_t *)*p2 : 0;
+                uint64_t u8b = (NODE_SUBT(pu5) == 2) ? pu5[1] :
+                    (NODE_SUBT(pu5) == 5 && 1 < (uint32_t)pu5[1]) ? (uint64_t)*(uint64_t *)*pu5 : 0;
+                sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d3566, 1);
+                sk_003b2180(st, (uint64_t *)u3, (uint64_t)(depth + 1), 0);
+                sep = &DAT_005d3cba; seplen = 3;
+                u8 = u8b;
+            }
+            sk_out_str((uint64_t *)((char *)st + 8), sep, seplen);
+            sk_003b2180(st, (uint64_t *)u8, (uint64_t)(depth + 1), 0);
+            sk_out_str((uint64_t *)((char *)st + 8), (const char *)&DAT_005d32c2, 1);
+            return;
+        }
+        if (1 < (uint32_t)(kind - 1)) goto l9d28;
+        {
+            uint64_t *pu5 = (c == 2) ? (uint64_t *)((char *)p2 + 8) : (c == 5 && 1 < (uint32_t)p2[1]) ? (uint64_t *)*(uint64_t *)*p2 : 0;
+            uint64_t u3 = (NODE_SUBT(pu5) - 1 < 2) ? (uint64_t)*pu5 :
+                (NODE_SUBT(pu5) == 5 && (int32_t)pu5[1] != 0) ? (uint64_t)*(uint64_t *)*pu5 : 0;
+            sk_003b9794(st, u3, p3);
+            sk_out_str((uint64_t *)((char *)st + 8), (const char *)((kind != 1) ? &DAT_005d3a39 : &DAT_005dd27a), 1);
+            return;
+        }
+    }
+l9d28:
+    sk_003b8d94(st, p2, p3);
 }

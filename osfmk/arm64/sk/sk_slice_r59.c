@@ -144,7 +144,7 @@ extern unsigned long sk_x_003504d0();   /* FUN_003504d0 (16-byte) */
 extern unsigned long sk_x_003504e8();   /* FUN_003504e8 */
 extern unsigned long sk_x_00350500();   /* FUN_00350500 (16-byte) */
 extern unsigned long sk_x_0035050c();   /* FUN_0035050c (16-byte) */
-extern unsigned long sk_x_00350518();   /* FUN_00350518 (16-byte) */
+extern cl4_pair_t sk_x_00350518();   /* FUN_00350518 (16-byte) */
 extern unsigned long sk_x_00350524();   /* FUN_00350524 */
 extern unsigned long sk_x_0035053c();   /* FUN_0035053c */
 extern unsigned long sk_x_00350548();   /* FUN_00350548 */
@@ -374,7 +374,7 @@ static void sk_col_run_003f41b8(word_t a, word_t b);
 static void sk_col_loop_003f4210(void);
 static void sk_col_iter_003f441c(void);
 static void sk_col_ins_003f4828(void);
-static void sk_col_precond_003f4d48(void);
+static void sk_col_precond_003f4d48(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f);
 static void sk_col_assert_003f4ff4(void);
 static void sk_col_setup_003f50fc(void);
 static cl4_pair_t sk_col_descr_003f5190(void);
@@ -382,22 +382,23 @@ static void sk_col_register_003f5268(void);
 static void sk_col_register2_003f52cc(void);
 static word_t sk_col_tag_003f5338(void);
 static word_t sk_col_tag2_003f539c(void);
-static void sk_col_cfg_003f540c(void);
-static void sk_col_reserve_003f54b0(word_t param_1);
+static void sk_col_cfg_003f540c();
+static word_t sk_col_reserve_003f54b0(word_t param_1);
 static void sk_col_grow_003f54dc(word_t param_1);
 static word_t sk_col_wrap_003f55a0(word_t *param_1, word_t param_2, word_t param_3);
 static sword_t sk_col_grow1_5_003f568c(void);
 static void sk_col_ensure_003f5780(void);
 static void sk_col_reserve_n_003f5998(void);
 static word_t sk_col_insert_hdr_003f5ad4(void);
+static word_t sk_col_index_check_003f5c00(word_t param_1, word_t *param_2, word_t param_3, word_t param_4);
 static void sk_col_copy1_003f5c54(word_t *param_1, word_t param_2);
 static void sk_col_copy2_003f5c64(word_t param_1, word_t param_2, sword_t *param_3, word_t param_4, word_t param_5);
 static void sk_col_copy3_003f5cc4(void);
-static void sk_col_ck_003f5cf0(sword_t *param_1);
+static sword_t sk_col_ck_003f5cf0(sword_t *param_1);
 static sword_t sk_col_next_003f5d1c(sword_t param_1, sword_t *param_2);
 static sword_t sk_col_prev_003f5d80(sword_t param_1, sword_t *param_2);
-static void sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *param_3);
-static void sk_col_range2_003f5e68(sword_t param_1);
+static sword_t sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *param_3);
+static sword_t sk_col_range2_003f5e68(sword_t param_1);
 static sword_t sk_col_off_003f5e78(sword_t param_1, sword_t *param_2);
 static void sk_col_slice_003f5ee8(word_t param_1, word_t param_2, word_t param_3);
 static void sk_col_copy4_003f5fc4(sword_t param_1, sword_t param_2, sword_t *param_3);
@@ -547,7 +548,7 @@ static void sk_col_loop_003f4210(void)
     (*(word_t (**)(void))DAT_00658c80)();
     sk_x_0034aee4();
     sk_x_0007c028();
-    (*(word_t (**)(word_t))DAT_00658c80)(sk_x_00350ab8);
+    (*(word_t (**)(word_t))DAT_00658c80)(sk_x_00350ab8());
     sk_x_000aa4ec();
 
     first = 0;
@@ -578,7 +579,7 @@ static void sk_col_loop_003f4210(void)
             return;
         }
     advance:
-        (*(void (**)(void))sk_x_000a68f4(0))(0, 0);
+        (*(void (**)(word_t, word_t))sk_x_000a68f4(0))(0, 0);
         sk_x_003518dc();
         sk_x_00350884();
         if (again) {
@@ -591,8 +592,8 @@ static void sk_col_loop_003f4210(void)
             }
         } else {
             word_t *slot = (word_t *)(sk_x_00350ab8() + 0x20);
-            void (*emit)(word_t, word_t, word_t) = (void (*)(word_t, word_t, word_t))*slot;
-            emit(slot[0], slot[1], run[0]);
+            void (*emit)(word_t, word_t, word_t, word_t) = (void (*)(word_t, word_t, word_t, word_t))*slot;
+            emit(slot[0], slot[1], run[0], 0);
             if (idx == 0) {
                 sk_x_00350410();
                 sk_x_003488bc();
@@ -697,7 +698,7 @@ static void sk_col_iter_003f441c(void)
                     sk_x_0034a2f8();
                     sk_x_001afe4c();   /* does not return */
                 }
-                (*(void (**)(word_t))(sk_x_00350ab8() + 0x20))(
+                (*(void (**)(word_t, word_t))(sk_x_00350ab8() + 0x20))(
                     ((word_t)sk_x_00350ab8() & 0xffffffffffffULL) | 0x48d8000000000000ULL,
                     base + sk_x_00350ab8() + 0x48 * n);
                 n++;
@@ -1054,7 +1055,7 @@ static word_t sk_col_tag2_003f539c(void)
  * the in_x3/in_x4 values, runs the element-setup (0034a210, 00002534) and
  * installs the run via 00252024(extra, in_x5, stack-block).
  * Confidence: low */
-static void sk_col_cfg_003f540c(void)
+static void sk_col_cfg_003f540c()
 {
     word_t v3, v4, v5;
     word_t stack[2];
@@ -1073,10 +1074,10 @@ static void sk_col_cfg_003f540c(void)
  * thunk_FUN_001f2ec4.
  * Confidence: medium
  * Notes: 0x67f000 is the array-buffer metadata tag. */
-static void sk_col_reserve_003f54b0(word_t param_1)
+static word_t sk_col_reserve_003f54b0(word_t param_1)
 {
     sk_x_00332168(0, 0x67f000, *(word_t *)(param_1 + 0x10));
-    sk_x_001f2ec4();
+    return sk_x_001f2ec4();
 }
 
 /* FUN_003f54dc @ 0x003f54dc   (est. sk_col_grow_003f54dc)
@@ -1092,11 +1093,11 @@ static void sk_col_grow_003f54dc(word_t param_1)
     word_t *box;
     word_t newcfg;
 
-    if ((sk_x_003f54b0() & 1) != 0) {
+    if ((sk_col_reserve_003f54b0(param_1) & 1) != 0) {
         return;
     }
     box = (word_t *)sk_x_00350ab8();
-    sk_x_003f540c((word_t)&newcfg, (word_t)sk_x_0040621c, 0, box[0],
+    sk_col_cfg_003f540c((word_t)&newcfg, (word_t)sk_x_0040621c, 0, box[0],
                   *(word_t *)(param_1 + 0x10), param_1, (word_t)sk_x_00404c60);
     CL4_OBJ_RELEASE(box[0]);
     *box = newcfg;
@@ -1195,7 +1196,7 @@ static void sk_col_ensure_003f5780(void)
     word_t elem, count;
     word_t v, v2, fmt, init;
 
-    if ((sk_x_003f54b0(0) & 1) != 0 &&
+    if ((sk_col_reserve_003f54b0(0) & 1) != 0 &&
         (sword_t)(count = sk_col_tag2_003f539c(*box, *(word_t *)(0 + 0x10))) >= 0 &&
         (sword_t)count >= (sword_t)sk_x_00350ab8()) {
         return;
@@ -1205,10 +1206,10 @@ static void sk_col_ensure_003f5780(void)
     count = *(word_t *)(0 + 0x10);
     sk_x_003504ac();
     sk_col_tag2_003f539c();
-    sk_x_003f54b0(0);
+    sk_col_reserve_003f54b0(0);
     if ((sword_t)count < (sword_t)sk_x_00350ab8()) {
         sk_col_grow1_5_003f568c((word_t)sk_x_00350ab8(), (word_t)(sk_x_00350ab8() & 1), elem, count);
-        if ((sk_x_003f54b0(0) & 1) != 0) {
+        if ((sk_col_reserve_003f54b0(0) & 1) != 0) {
             (*(word_t (**)(void))DAT_00658c80)();
             v = sk_x_0008e160();
             v2 = sk_x_00350ab8();
@@ -1225,7 +1226,7 @@ static void sk_col_ensure_003f5780(void)
         *(word_t *)(sk_x_00350ab8() + -8) = sk_x_00350ab8();
         fmt = (word_t)sk_x_00404d24;
     } else {
-        if ((sk_x_003f54b0(0) & 1) != 0) {
+        if ((sk_col_reserve_003f54b0(0) & 1) != 0) {
             sk_x_00350d04();
             sk_x_0040677c(0xa7);
             sk_x_00406518();
@@ -1320,6 +1321,26 @@ static word_t sk_col_insert_hdr_003f5ad4(void)
     sk_x_001afa84();   /* does not return */
 }
 
+/* FUN_003f5c00 @ 0x003f5c00   (est. sk_col_index_check_003f5c00)
+ * Ghidra: long FUN_003f5c00(long param_1,long *param_2,long param_3,long param_4)
+ * Bounds-checked index -> element-address helper: validates param_1 is within
+ * [0, *param_2] (the collection count), then returns the element address
+ * param_3 + stride(param_4-8 -> +0x48) * param_1; out of range raises the
+ * index trap (0x46) via the noreturn fatal path.
+ * Confidence: high */
+static word_t sk_col_index_check_003f5c00(word_t param_1, word_t *param_2,
+                                          word_t param_3, word_t param_4)
+{
+    word_t stride;
+    if (((sword_t)param_1 >= 0) && ((sword_t)param_1 <= (sword_t)*param_2)) {
+        stride = *(word_t *)(*(word_t *)(param_4 - 8) + 0x48);
+        return param_3 + stride * param_1;
+    }
+    sk_x_004070cc();
+    sk_x_00406310(0x46);
+    sk_x_001afa84();   /* does not return */
+}
+
 /* FUN_003f5c54 @ 0x003f5c54   (est. sk_col_copy1_003f5c54)
  * Ghidra: void FUN_003f5c54(undefined8 *param_1,undefined8 param_2)
  * Single-element copy shim: runs 001a26e0(param_2, *param_1) to copy one
@@ -1369,10 +1390,10 @@ static void sk_col_copy3_003f5cc4(void)
  * Negativity check on a count: returns silently if *param_1 >= 0, else
  * raises the negative-count trap (0040633c -> noreturn 001afa84).
  * Confidence: high */
-static void sk_col_ck_003f5cf0(sword_t *param_1)
+static sword_t sk_col_ck_003f5cf0(sword_t *param_1)
 {
     if (-1 < *param_1) {
-        return;
+        return *param_1;
     }
     sk_x_0040633c();
     sk_x_001afa84();   /* does not return */
@@ -1441,7 +1462,7 @@ static sword_t sk_col_prev_003f5d80(sword_t param_1, sword_t *param_2)
  * trap (0x74, or 0040633c negative) when out of range. Central bounds guard
  * for the buffer arithmetic.
  * Confidence: high */
-static void sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *param_3)
+static sword_t sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *param_3)
 {
     sword_t n, w;
 
@@ -1456,7 +1477,7 @@ static void sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *par
         }
         if (param_2 < 0) {
             if (-1 < n) {
-                return;
+                return n;
             }
             n = n + w;
             if (__builtin_add_overflow(n, w, &n)) {
@@ -1469,7 +1490,7 @@ static void sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *par
             }
         }
         if (-1 < n) {
-            return;
+            return n;
         }
         sk_x_0040633c(n);
     }
@@ -1481,9 +1502,9 @@ static void sk_col_range_003f5de0(sword_t param_1, sword_t param_2, sword_t *par
  * Bounds-guard shim over the collection descriptor at param_1: applies
  * sk_col_range_003f5de0 to the count (+0x08) and element base (+0x10).
  * Confidence: medium */
-static void sk_col_range2_003f5e68(sword_t param_1)
+static sword_t sk_col_range2_003f5e68(sword_t param_1)
 {
-    sk_col_range_003f5de0(*(sword_t *)(param_1 + 0x10), *(sword_t *)(param_1 + 8), 0);
+    return sk_col_range_003f5de0(*(sword_t *)(param_1 + 0x10), *(sword_t *)(param_1 + 8), 0);
 }
 
 /* FUN_003f5e78 @ 0x003f5e78   (est. sk_col_off_003f5e78)
@@ -1535,10 +1556,10 @@ static void sk_col_slice_003f5ee8(word_t param_1, word_t param_2, word_t param_3
     used = (sword_t)buf[0] - (sword_t)buf[2];
     count = (sword_t)buf[1];
     sk_x_003513b4();
-    sk_x_003f5c00();
+    sk_col_index_check_003f5c00(0, 0, 0, 0);
     if (used < count) {
         sk_x_00350500();
-        sk_x_003f5c00(0, 0, 0, param_3);
+        sk_col_index_check_003f5c00(0, 0, 0, param_3);
         sk_x_004072cc();
         sk_x_00100efc();
         sk_x_003f3ecc();
@@ -1567,13 +1588,13 @@ static void sk_col_copy4_003f5fc4(sword_t param_1, sword_t param_2, sword_t *par
         sk_x_00351384();
         hi = (sword_t)sk_col_off_003f5e78(0, param_3);
         sk_x_0034d004(lo);
-        sk_col_index_check_003f5c00();
+        sk_col_index_check_003f5c00(0, 0, 0, 0);
         if ((param_2 - lo == 0) || (lo < hi)) {
             sk_x_001e4cbc(0, param_2 - lo);
             sk_x_00408428();
         } else {
             sk_x_0034d004(0);
-            sk_x_003f5c00();
+            sk_col_index_check_003f5c00(0, 0, 0, 0);
             sk_x_004072cc();
             sk_x_000dbd0c(0);
             sk_x_003f3ecc();
@@ -1652,7 +1673,7 @@ static void sk_col_push_003f6174(word_t param_1, word_t param_2, word_t param_3)
         sk_col_copy3_003f5cc4();
     } else {
         sk_x_0034d004(idx);
-        sk_col_index_check_003f5c00();
+        sk_col_index_check_003f5c00(0, 0, 0, 0);
         sk_x_001a26e0(0, 0, param_3);
     }
     sk_x_00408428();
@@ -1685,7 +1706,7 @@ static void sk_col_move_003f6278(sword_t param_1, word_t param_2, sword_t param_
         sk_x_001afa84();   /* does not return */
     }
     if (0 < param_3) {
-        base = sk_x_003f5c00(param_1, (word_t)param_4, param_5, param_6);
+        base = sk_col_index_check_003f5c00(param_1, (word_t *)param_4, param_5, param_6);
         if (param_2 == 0) {
             sk_x_00407984((word_t)s_Fatal_error_005accd0);
             sk_x_0034a2f8();
@@ -1730,10 +1751,10 @@ static void sk_col_replace_003f637c(sword_t param_1, sword_t param_2, sword_t pa
             if (param_2 + param_3 <= *param_4) {
                 if (param_3 != 0) {
                     sk_x_003507e0();
-                    dst = sk_x_003f5c00(0, 0, param_5, param_6);
+                    dst = sk_col_index_check_003f5c00(0, 0, param_5, param_6);
                     sk_x_0006b6f4();
                     sk_x_00352ae4();
-                    src = sk_x_003f5c00();
+                    src = sk_col_index_check_003f5c00(0, 0, 0, 0);
                     sk_x_0019ce60(src, param_3, dst, param_6);
                     sk_col_range_003f5de0(param_1, param_3, param_4);
                     sk_x_003504ac();
@@ -1814,8 +1835,8 @@ static void sk_col_pushback1_003f6560(word_t param_1, sword_t param_2, word_t pa
         sk_x_00406310(0x171);
         sk_x_001afa84();   /* does not return */
     }
-    sk_x_003f5e68(param_2);
-    sk_col_index_check_003f5c00();
+    sk_col_range2_003f5e68(param_2);
+    sk_col_index_check_003f5c00(0, 0, 0, 0);
     sk_x_00407d44();
     sk_x_00351384();
     sk_x_00310d68(0, 0, param_4);
@@ -1894,7 +1915,7 @@ static void sk_col_pushfront_003f6738(word_t param_1, word_t param_2, word_t par
         sk_x_001afa84();   /* does not return */
     }
     head = (word_t)sk_col_prev_003f5d80(*(sword_t *)(buf + 2), (sword_t *)buf);
-    sk_col_index_check_003f5c00();
+    sk_col_index_check_003f5c00(0, 0, 0, 0);
     sk_x_00407d44();
     sk_x_00351384();
     sk_x_00310d68(0, 0, param_4);
@@ -1926,14 +1947,14 @@ static void sk_col_rm_003f684c(sword_t param_1, sword_t param_2, sword_t *param_
         sk_x_00406310(0x1c4);
     } else {
         if (param_2 <= *param_3) {
-            sk_col_index_check_003f5c00();
+            sk_col_index_check_003f5c00(0, 0, 0, 0);
             if (param_1 < param_2) {
                 sk_x_001a26e0(0, param_2 - param_1, param_5);
                 sk_x_00408428();
             } else {
                 n = *param_3;
                 sk_x_0035050c();
-                sk_x_003f5c00(0, 0, param_4, param_5);
+                sk_col_index_check_003f5c00(0, 0, param_4, param_5);
                 sk_x_0040761c(0, 0, n - param_1, 0);
                 sk_x_003f3ecc();
                 sk_x_00407dd0();
@@ -2027,20 +2048,20 @@ static void sk_col_rep3_003f6a8c(void)
     }
     if (0 < span) {
         sk_x_00353d70();
-        sk_x_003f5de0(0, 0, 0);
+        sk_col_range_003f5de0(0, 0, 0);
         if (n <= span) {
             sk_col_range_003f5de0(0, 0, 0);
             sk_col_range_003f5de0(0, lo + span, buf);
             a = (sword_t)sk_col_off_003f5e78(span, buf);
             sk_x_000bd3a4();
-            sk_x_003f5de0();
+            sk_col_range_003f5de0(0, 0, 0);
             lo = (sword_t)sk_x_003f3cfc(buf[0], 0);
             b = (sword_t)sk_x_003f3cfc(buf[0], 0);
             if (lo < a) {
                 if (b < (sword_t)sk_x_00350ab8()) {
                     sk_x_00350500();
                     sk_x_0040753c(0, 0, 0);
-                    sk_x_003f5cf0(0);
+                    sk_col_ck_003f5cf0(0);
                     span = (sword_t)sk_x_00350ab8();
                     insert = (sword_t)sk_x_00350ab8() - span;
                     if (insert < 0) goto bad2;
@@ -2052,7 +2073,7 @@ static void sk_col_rep3_003f6a8c(void)
                 }
                 /* fall through to tail move */
             } else if (b < (sword_t)sk_x_00350ab8()) {
-                lo = (sword_t)sk_x_003f5cf0(0);
+                lo = (sword_t)sk_col_ck_003f5cf0(0);
                 insert = (sword_t)sk_x_00350ab8() - span;
                 if (insert < 0) goto bad2;
                 sk_x_0040753c(insert, 0, n);
@@ -2079,7 +2100,7 @@ static void sk_col_rep3_003f6a8c(void)
             if (lo <= buf[2]) {
                 sk_x_00350798();
                 sk_x_0040753c(0, 0, 0);
-                lo = (sword_t)sk_x_003f5cf0(0);
+                lo = (sword_t)sk_col_ck_003f5cf0(0);
                 b = lo - span;
                 insert = span;
                 if (-1 < b) goto mov1;
@@ -2121,7 +2142,7 @@ static void sk_col_pop_copy_003f6e08(word_t param_1, sword_t param_2, word_t par
         sk_x_00406310(0x25b);
         sk_x_001afa84();   /* does not return */
     }
-    sk_col_index_check_003f5c00(*(word_t *)(param_2 + 0x10), param_2, param_3, param_4);
+    sk_col_index_check_003f5c00(*(word_t *)(param_2 + 0x10), (word_t *)param_2, param_3, param_4);
     sk_x_001a29a0(param_1, 0, param_4);
     *(sword_t *)(param_2 + 0x10) =
         sk_col_next_003f5d1c(*(sword_t *)(param_2 + 0x10), (sword_t *)param_2);
@@ -2148,7 +2169,7 @@ static void sk_col_pop_003f6ea8(word_t param_1, sword_t param_2, word_t param_3,
     sk_x_00352758();
     sk_col_off_003f5e78(sk_x_00350ab8() + -1, 0);
     sk_x_003518d0();
-    sk_col_index_check_003f5c00();
+    sk_col_index_check_003f5c00(0, 0, 0, 0);
     sk_x_001a29a0(param_1, 0, param_4);
     if (!__builtin_sub_overflow(*(sword_t *)(0 + 8), 1, (long *)&param_2)) {
         *(sword_t *)(0 + 8) = *(sword_t *)(0 + 8) + -1;
