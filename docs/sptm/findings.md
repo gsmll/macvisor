@@ -1526,3 +1526,39 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: manifest.json entries: `000268a0 -> txm_region_entry.c: txm_data_dac8`, `00027614 -> txm_region_runtime.c: txm_obj_free`, `00028a78 -> txm_region_runtime.c: txm_slab_alloc_0x1000`, etc. — none of which are plausible names for the tightbeam method-table resolver (000268a0 = offset-8 Swift witness resolver) or the VAS lock-and-alloc (00027614).
 - **Severity (hypothesis)**: informational — manifest bookkeeping; the SK functions are decompiled in sk_slice_05.c but the entries point to unrelated txm files, so a downstream audit would misattribute them.
 - **Confidence**: high (addresses verified in sk_slice_05.c with English bodies).
+
+## [sk] 0016e000-0017fff8 StackshotConclaveSupport — guest stackshot serialization surface (SkWave3 tail)
+- **Observation**: The whole 0x16e000-0x17fff8 region is the StackshotConclaveSupport service: guest stackshot capture (16e558/16ea28), ASID/text-layout binding (16f4ec/16f89c), and the crash-backtrace IPC surface (getConclaveCrashBacktrace 173be8, takeConclaveCrash 173644/175d08, getCrashBuffer 176914, getAddressSpaceInfo 17e8d0, runStackshot/runStackshotRedacted 17fdd8). It serializes guest-supplied records via a tagged byte-stream (tag-1/2/3 values) into the kernel scratch array (DAT_00657778/88/90/98) and hashes them (FUN_00025704).
+- **Evidence**: String anchors throughout: s_StackshotConclaveSupport__* (005ca74a..005cae6b), s_getConclaveCrashBacktrace_scid___005cb960, s_takeConclaveCrash_scids___005cb540, s_getCrashBuffer___005cbb90, s_runStackshot_threw_an_unexpected_005cbed0; hash constants 0xeb1a02bf914012ba (16fb80) and 0xdeadcafebeefbabe (177630); fatal path FUN_001afa84(...,"StackshotConclaveSupport...",0x37,2,line,0).
+- **Severity (hypothesis)**: informational — this is the guest->kernel crash-dump data path; the serialization length/size helpers (17d29c/17d380/17d3e4/17d850/17d22c) are saturated with SCARRY8 overflow checks that trap via SoftwareBreakpoint(1, ...) rather than wrapping, so the buffer accounting is fail-closed on overflow.
+- **Confidence**: high (string anchors + consistent hash/format machinery).
+
+## [sk] 0017d29c/0017d850/0017e8d0 size-accumulators — overflow fail-closed on all serialized-length math
+- **Observation**: The serialized-record size computations add per-record widths with explicit carry detection and trap (SoftwareBreakpoint(1, 0x17d2f0/0x17d324/.../0x17da8c)) whenever the 64-bit accumulator overflows, rather than allowing a wraparound that could under-allocate the output buffer.
+- **Evidence**: `bVar5 = SCARRY8(lVar6, lVar2 + uVar9); lVar6 = lVar6 + lVar2 + uVar9; if (bVar5) SoftwareBreakpoint(1, 0x17d2f0);` (17d29c); the same SCARRY8+SoftwareBreakpoint pattern at 0x17d958/17da20/17da48..17da8c in 17d850; size pass in 17e8d0 uses lVar14/lVar11 with SCARRY8 guards.
+- **Severity (hypothesis)**: informational — overflow in size math would otherwise be a classic buffer-overrun primitive (mis-sized allocation); the explicit carry traps close it.
+- **Confidence**: high (SCARRY8 macros + SoftwareBreakpoint on every accumulation).
+
+## [sk] 00173368/00173be8 crash-frame bitmap walk — LZCOUNT bit-reverse iteration of scid bitmap
+- **Observation**: The crash collector walks a guest-scid bitmap by bit-reversing the word (LZCOUNT of the byte-swapped value) to enumerate set bits in address order, dereferencing `puVar23[6] + LZCOUNT(...)*8 + lVar33*0x200` to fetch each scid's crash record. Every dereference re-validates the frame/crash object via the vtable resolve path (177084/1773c8) and traps on a null/abnormal result.
+- **Evidence**: `uVar17 = LZCOUNT(uVar17 >> 0x20 | uVar17 << 0x20); puVar39 = *(uint64_t**)(puVar23[6] + uVar17*8 + lVar33*0x200);` (173be8); bitmap bounds `if ((*(ulong*)(puVar18[(uVar17>>6)+7] >> (uVar17&0x3f) & 1) != 0)` in the dedup hash (173be8/17b588).
+- **Severity (hypothesis)**: low — the scid bitmap iteration and per-entry lookups are bounds-checked and trap on invalid indices (SoftwareBreakpoint 0x5519/1 at 173a80/173500/175c70..175c98); a mis-typed guest scid cannot walk past the bitmap.
+- **Confidence**: low (173be8 is a 1000-line structural reconstruction; LZCOUNT usage inferred from the bit-twiddle block).
+
+## [sk] 0017e8d0/0017fdd8 dispatch selectors — selector-hash switch is fail-closed on unknown tags
+- **Observation**: The IPC-stack/run-stackshot readers switch on a 64-bit selector hash (FUN_00021904) rather than a trusted integer id, mapping to a small set of known values (0x5a2e2d0c3bc3e9cd, 0x784a6e3b19f9800a, -0x7e823a91a48e8fae, -0x3de3ed447c24c24b in 178c0c; 0x7e2ceb7445c093c5, 0x6282921a0bf58ff1, 0x7e4f1803cc77363 in 177a34). Any unknown hash triggers a fatal ("TB_FATAL: unrecognized selector" 005ba347 / "Fatal error" 005cbee0/005cbd40) rather than dispatching to a default.
+- **Evidence**: `if (lVar1 != 0x7e2ceb7445c093c5) { ... FUN_001afa84(s_Fatal_error_005accd0,...,0x4db,0); }` (17770c); `default: FUN_00118b28("TB_FATAL: unrecognized selector"); SoftwareBreakpoint(1, 0x1717d8)` (1713f4).
+- **Severity (hypothesis)**: informational — hash-based dispatch is fail-closed; an unrecognized selector cannot reach a wrong handler.
+- **Confidence**: high (selector hash values + fatal string anchors).
+
+## [sk] 0017e8d0 getAddressSpaceInfo/getIPCStackEntry — cpu-bound, capability-validated reads
+- **Observation**: The address-space-info and IPC-stack readers are bound to the current cpu (FUN_0005b89c) and validate the guest's capability before reading (16fe34 rejects a cpu mismatch with error 1; 16e468/16e3a0 reject a non-local proxy with error 2). The resolved capability token (16f1b8) is range-checked against the region table before use.
+- **Evidence**: `if (param_1 != lVar3) { FUN_00046304(param_3,1); return; }` (16fe34 cpu check); `if (target != _DAT_006bff08) { FUN_00118b94("...Proxy..."); FUN_00046304(&rec,2); }` (16e3a0); region-table bounds SoftwareBreakpoint(0x5519, 0x16f278) in 16f1b8.
+- **Severity (hypothesis)**: low — the guest-facing read path enforces cpu binding and proxy-identity checks, limiting cross-context data disclosure to the local (current-cpu) guest.
+- **Confidence**: medium (identity/cpu checks reconstructed; DAT_006bff08 proxy anchor).
+
+## [sk] 0017e3a0/0017f9a4 build/begin-hash validation — stream integrity checks before parse
+- **Observation**: Several readers validate a fixed hash at the start of the serialized stream (FUN_00021904 == 0x4159b862aecab4d9 in 178348 "begin", 0x6f9215ea767e2712/0x752da4ce868ca6dd/0x672c65b98d5d43f7 in 17884c/1789b8/178dcc) before parsing guest data; a mismatch is fatal, not ignored.
+- **Evidence**: `if (FUN_00021904() == 0x4159b862aecab4d9) return; FUN_001afa84(s_Fatal_error_005accd0,...,0x519,0);` (178348).
+- **Severity (hypothesis)**: informational — the tagged stream format is integrity-checked at well-defined boundaries; malformed input aborts rather than being misparsed.
+- **Confidence**: high (fixed hash compares + noreturn fatal).

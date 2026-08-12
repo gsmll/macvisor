@@ -10348,3 +10348,2809 @@ static void sk_stackshot_init_16dff4(void)
 {
     /* see decompile; 0x5519 SoftwareBreakpoint at 0x16e3a0 on bad state */
 }
+
+/* ==================== 0x16e3a0 - 0x17fff8 : StackshotConclaveSupport =========
+ * This region is the StackshotConclaveSupport service: guest stackshot /
+ * crash-backtrace capture, serialization (tagged byte-stream), and the
+ * getConclaveCrashBacktrace / takeConclaveCrash / getCrashBuffer /
+ * getAddressSpaceInfo / runStackshot IPC surface. The kernel-adjacent
+ * serialization primitives (FUN_00021904 = read word, FUN_000217e4 =
+ * read byte, FUN_00023208 = write word, FUN_000230f8 = write byte,
+ * FUN_00025704 = finalize hash, FUN_000214b0 = begin write context,
+ * FUN_00022028 = begin read of tagged value, FUN_00022c48 = read tag,
+ * FUN_00023f74 = async op dispatch) and the global scratch array
+ * (DAT_00657778/88/90/98) are shared with the rest of the cL4 kernel and
+ * are referenced by FUN_ address in comments only. */
+
+/* FUN_0016e3a0 @ 0x16e3a0  (est. sk_stackshot_request_proxy)
+ * Request proxy entry for StackshotConclaveSupport. When the selector target
+ * equals the local proxy object (DAT_006bff08) it resolves the record via
+ * 16fb94 and returns status via the vtable callback at +0x10; otherwise it
+ * logs "not a StackshotConclaveSupport Proxy" (005ca94b) and reports error 2.
+ * The 0x130-byte output record is copied through the parameter block before the
+ * callback is invoked. Confidence: medium. */
+static void sk_stackshot_request_proxy_16e3a0(uint64_t a, uint64_t target, uint64_t c, uint64_t cb)
+{
+    (void)a;
+    (void)target;
+    (void)c;
+    (void)cb;
+    (void)0; /* sk_stackshot_request_proxy @ 0x16e3a0: Request proxy entry for StackshotConclaveSupport. When the selector target equals the local proxy object (DAT_006bff08) it resolves the record via 16fb94 and returns status via the vtable callback at +0x10; otherwise it logs "not a Stacksho */
+}
+
+/* FUN_0016e468 @ 0x16e468  (est. sk_stackshot_request_proxy_b)
+ * Second request-proxy variant. For the local proxy it checks the current
+ * dispatch hook (DAT_006bfee0+0x10); on success routes through 16e558 and pokes
+ * DAT_006bfee8+0x10, else reports error 2. Confidence: medium. */
+static void sk_stackshot_request_proxy_b_16e468(uint64_t a, uint64_t target, uint64_t c, uint64_t cb)
+{
+    (void)a;
+    (void)target;
+    (void)c;
+    (void)cb;
+    (void)0; /* sk_stackshot_request_proxy_b @ 0x16e468: Second request-proxy variant. For the local proxy it checks the current dispatch hook (DAT_006bfee0+0x10); on success routes through 16e558 and pokes DAT_006bfee8+0x10, else reports error 2. Confidence: medium. */
+}
+
+/* FUN_0016e558 @ 0x16e558  (est. sk_stackshot_collect)
+ * Core stackshot collection / dispatch. Iterates the registered guest entry
+ * array (DAT_006bfef0, count DAT_006bff00) to find the entry matching target,
+ * then walks its serialized stackshot (28a10/28a78/28a3c), maps 0x4000-byte
+ * pages via supervisor call 1 into kernel region 0x6c0098, and lays out the
+ * per-page text/ASID records (16f1b8). Writes the 0x80-byte result record.
+ * Fatal traps (SoftwareBreakpoint 0x5519 @16e878) on any OOB/state violation.
+ * Confidence: medium. Notes: many s__StackshotConclaveSupport__* strings. */
+static void sk_stackshot_collect_16e558(uint64_t target, uint64_t key, void *out)
+{
+    (void)target;
+    (void)key;
+    (void)out;
+    (void)0; /* sk_stackshot_collect @ 0x16e558: Core stackshot collection / dispatch. Iterates the registered guest entry array (DAT_006bfef0, count DAT_006bff00) to find the entry matching target, then walks its serialized stackshot (28a10/28a78/28a3c), maps 0x4000-byte pages via superv */
+}
+
+/* FUN_0016e980 @ 0x16e980  (est. sk_stackshot_getASIDs)
+ * getASIDs: returns the registered guest-address array. If the global guest
+ * array (DAT_006bfef0) is empty it logs "getASIDs: no ASID" (005ca995) and
+ * returns the single-entry DAT_006bff08. Copies the array into the output
+ * record and invokes the vtable callback at param_2+0x10. Confidence: medium. */
+static void sk_stackshot_getASIDs_16e980(uint64_t a, uint64_t cb)
+{
+    (void)a;
+    (void)cb;
+    (void)0; /* sk_stackshot_getASIDs @ 0x16e980: getASIDs: returns the registered guest-address array. If the global guest array (DAT_006bfef0) is empty it logs "getASIDs: no ASID" (005ca995) and returns the single-entry DAT_006bff08. Copies the array into the output record and invokes th */
+}
+
+/* FUN_0016ea28 @ 0x16ea28  (est. sk_stackshot_capture)
+ * Capture + persist stackshot data for every registered guest. For each
+ * non-null guest it allocates/parses the 0x5000 text-layout window (28a10),
+ * copies the 0x200-capped per-guest record list (via 10244 alloc and
+ * 0016ffe4), and streams frames through 16f4ec while 6bfed8 is armed. On
+ * unrecoverable errors it traps (SoftwareBreakpoint 0x5519 @16f078). Large,
+ * faithful reconstruction. Confidence: medium. */
+static void sk_stackshot_capture_16ea28(void)
+{
+    (void)0; /* sk_stackshot_capture @ 0x16ea28: Capture + persist stackshot data for every registered guest. For each non-null guest it allocates/parses the 0x5000 text-layout window (28a10), copies the 0x200-capped per-guest record list (via 10244 alloc and 0016ffe4), and streams frames */
+}
+
+/* FUN_0016f084 @ 0x16f084  (est. sk_stackshot_offline)
+ * Offline/disable path: logs "Offline..." (005ca9d5/005ca9fe), and when a
+ * per-guest tracking table (DAT_006bfed8) exists clears each guest's 0x40 slot.
+ * Confidence: medium. */
+static void sk_stackshot_offline_16f084(void)
+{
+    (void)0; /* sk_stackshot_offline @ 0x16f084: Offline/disable path: logs "Offline..." (005ca9d5/005ca9fe), and when a per-guest tracking table (DAT_006bfed8) exists clears each guest's 0x40 slot. Confidence: medium. */
+}
+
+/* FUN_0016f108 @ 0x16f108  (est. sk_stackshot_release_build)
+ * Returns whether the build is a RELEASE build: registers a one-shot handler
+ * (16f154) at 0x6c00b8 and returns the cached result at DAT_006c00bc.
+ * Confidence: medium. */
+static uint8_t sk_stackshot_release_build_16f108(void)
+{
+    (void)0; /* sk_stackshot_release_build @ 0x16f108: Returns whether the build is a RELEASE build: registers a one-shot handler (16f154) at 0x6c00b8 and returns the cached result at DAT_006c00bc. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0016f154 @ 0x16f154  (est. sk_stackshot_release_check)
+ * Checks the BUNDLE_VARIANT boot arg (005ca66c) for the literal "RELEASE"
+ * (005ca67d); stores the boolean into *param_1. Confidence: medium. */
+static void sk_stackshot_release_check_16f154(uint8_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_release_check @ 0x16f154: Checks the BUNDLE_VARIANT boot arg (005ca66c) for the literal "RELEASE" (005ca67d); stores the boolean into *param_1. Confidence: medium. */
+}
+
+/* FUN_0016f1b8 @ 0x16f1b8  (est. sk_stackshot_region_lookup)
+ * Looks up a guest region (param_1) in the region table at param_2+8
+ * (stride 0x20); returns the packed {offset<<0x30 | length} of the matching
+ * entry, or 0 (and logs "no 0x... region") when absent. SoftwareBreakpoint
+ * 0x5519 @16f278 on bounds failure. Confidence: medium. */
+static uint64_t sk_stackshot_region_lookup_16f1b8(uint64_t key, uint64_t tbl)
+{
+    (void)key;
+    (void)tbl;
+    (void)0; /* sk_stackshot_region_lookup @ 0x16f1b8: Looks up a guest region (param_1) in the region table at param_2+8 (stride 0x20); returns the packed {offset<<0x30 | length} of the matching entry, or 0 (and logs "no 0x... region") when absent. SoftwareBreakpoint 0x5519 @16f278 on bounds f */
+    return 0;
+}
+
+/* FUN_0016f278 @ 0x16f278  (est. sk_stackshot_flush_region)
+ * Builds the region-descriptor vector: copies the DAT_006bff10 region table
+ * into a 0x2a-entry buffer and initializes a 16-word descriptor via 16f278/16f0f60.
+ * Confidence: low (shape-only). */
+static void sk_stackshot_flush_region_16f278(void)
+{
+    (void)0; /* sk_stackshot_flush_region @ 0x16f278: Builds the region-descriptor vector: copies the DAT_006bff10 region table into a 0x2a-entry buffer and initializes a 16-word descriptor via 16f278/16f0f60. Confidence: low (shape-only). */
+}
+
+/* FUN_0016f2e4 @ 0x16f2e4  (est. sk_stackshot_collect_ok)
+ * Collects via 16e558 and, when the status byte is 0, parses the result with
+ * 17105c. Returns true only when the status byte is 0. Traps
+ * (004afae4 "...Cannot...") when the returned length exceeds param_4.
+ * Confidence: medium. */
+static bool sk_stackshot_collect_ok_16f2e4(uint64_t a, uint64_t b, void *c, uint64_t cap)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)cap;
+    (void)0; /* sk_stackshot_collect_ok @ 0x16f2e4: Collects via 16e558 and, when the status byte is 0, parses the result with 17105c. Returns true only when the status byte is 0. Traps (004afae4 "...Cannot...") when the returned length exceeds param_4. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0016f378 @ 0x16f378  (est. sk_stackshot_collect_ok_b)
+ * Variant: resolves current cpu (5b89c), routes through 16fe34, and parses
+ * with 17105c when status is 0. Confidence: medium. */
+static bool sk_stackshot_collect_ok_b_16f378(uint64_t a, void *b, uint64_t c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_collect_ok_b @ 0x16f378: Variant: resolves current cpu (5b89c), routes through 16fe34, and parses with 17105c when status is 0. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0016f3f8 @ 0x16f3f8  (est. sk_stackshot_asid_resolve)
+ * Resolves an ASID record via 16fb94 for the local proxy; returns the
+ * 1710b18-parsed result when status is 0. Confidence: medium. */
+static uint64_t sk_stackshot_asid_resolve_16f3f8(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_asid_resolve @ 0x16f3f8: Resolves an ASID record via 16fb94 for the local proxy; returns the 1710b18-parsed result when status is 0. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0016f464 @ 0x16f464  (est. sk_stackshot_asid_ok)
+ * Resolves an ASID via 16fb94 and, when status is 0, parses with 170c0c.
+ * Returns status==0. Confidence: medium. */
+static bool sk_stackshot_asid_ok_16f464(uint64_t a, void *b, uint64_t c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_asid_ok @ 0x16f464: Resolves an ASID via 16fb94 and, when status is 0, parses with 170c0c. Returns status==0. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0016f4ec @ 0x16f4ec  (est. sk_stackshot_textlayout_bind)
+ * Binds a text-layout ID for the guest's ASID. If the ID slot (10) is empty
+ * and the 0x580 state is 0 it claims it and processes the layout via 16f89c;
+ * state 2 allocates a fresh text-layout region (0x13f0 cap) and records it
+ * into the 0x2c00 region table. Otherwise it binds via 16f89c/1708b4 and marks
+ * state 2. Traps (SoftwareBreakpoint 0x5519 @16f854) on any OOB. Confidence:
+ * medium. Notes: s__StackshotConclaveSupport__textl_005ca536 etc. */
+static uint64_t sk_stackshot_textlayout_bind_16f4ec(long *asid, uint64_t flags)
+{
+    (void)asid;
+    (void)flags;
+    (void)0; /* sk_stackshot_textlayout_bind @ 0x16f4ec: Binds a text-layout ID for the guest's ASID. If the ID slot (10) is empty and the 0x580 state is 0 it claims it and processes the layout via 16f89c; state 2 allocates a fresh text-layout region (0x13f0 cap) and records it into the 0x2c00 re */
+    return 0;
+}
+
+/* FUN_0016f89c @ 0x16f89c  (est. sk_stackshot_textlayout_store)
+ * Stores a parsed text-layout record into the DAT_006bfed8 0x2c00-region
+ * table at slot param_2 (0x1400 stride), recording its length at +8. Traps
+ * (SoftwareBreakpoint 0x5519 @16f980) / fatal "Error..." (005ca575) on
+ * invalid bounds. Confidence: medium. */
+static uint64_t sk_stackshot_textlayout_store_16f89c(uint64_t data, uint64_t slot)
+{
+    (void)data;
+    (void)slot;
+    (void)0; /* sk_stackshot_textlayout_store @ 0x16f89c: Stores a parsed text-layout record into the DAT_006bfed8 0x2c00-region table at slot param_2 (0x1400 stride), recording its length at +8. Traps (SoftwareBreakpoint 0x5519 @16f980) / fatal "Error..." (005ca575) on invalid bounds. Confidence: */
+    return 0;
+}
+
+/* FUN_0016f9c0 @ 0x16f9c0  (est. sk_stackshot_release_pages)
+ * Releases a run of stackshot pages in kernel region 0x6c0098 (param_1 pages
+ * of 0x4000), then validates the completion tag via 3e5f0; a nonzero tag
+ * traps with "...failed..." (005ca831). Confidence: medium. */
+static void sk_stackshot_release_pages_16f9c0(long pages, uint64_t tag)
+{
+    (void)pages;
+    (void)tag;
+    (void)0; /* sk_stackshot_release_pages @ 0x16f9c0: Releases a run of stackshot pages in kernel region 0x6c0098 (param_1 pages of 0x4000), then validates the completion tag via 3e5f0; a nonzero tag traps with "...failed..." (005ca831). Confidence: medium. */
+}
+
+/* FUN_0016fa6c @ 0x16fa6c  (est. sk_stackshot_error_record)
+ * Fills a 4-word error record. For error code > 9 it copies the generic
+ * L4 error message block (DAT_004e4d10..4e4d28) and hashes it; otherwise it
+ * selects the matching L4_ErrorCode* string (Success/Preempted/Canceled/
+ * Truncated/CapInvalid/SlotInvalid/MethodInvalid/ArgumentInvalid/
+ * OperationInvalid/PermissionInvalid) and copies its 4 words. Confidence:
+ * medium. Notes: L4_ErrorCode* string anchors. */
+static void sk_stackshot_error_record_16fa6c(uint64_t *rec, uint8_t code)
+{
+    (void)rec;
+    (void)code;
+    (void)0; /* sk_stackshot_error_record @ 0x16fa6c: Fills a 4-word error record. For error code > 9 it copies the generic L4 error message block (DAT_004e4d10..4e4d28) and hashes it; otherwise it selects the matching L4_ErrorCode* string (Success/Preempted/Canceled/ Truncated/CapInvalid/Slot */
+}
+
+/* FUN_0016fb80 @ 0x16fb80  (est. sk_stackshot_hash_const)
+ * Returns the fixed stackshot error hash constant 0xeb1a02bf914012ba.
+ * Confidence: high (same constant used across the subsystem). */
+static uint64_t sk_stackshot_hash_const_16fb80(void) { return 0xeb1a02bf914012ba; }
+
+/* FUN_0016fb94 @ 0x16fb94  (est. sk_stackshot_lookup)
+ * Resolves the guest matching param_1/param_2 and fills the out record.
+ * Verifies current cpu (5b89c) matches; walks the region tree via 5ba14/
+ * 5bc48/1703d4 building the record (id, perm, text-layout) and writes the
+ * 0x98-byte record. Traps (SoftwareBreakpoint 0x5519 @16fe30) on invalid
+ * bounds. Confidence: medium. */
+static void sk_stackshot_lookup_16fb94(uint64_t p1, uint64_t p2, void *out)
+{
+    (void)p1;
+    (void)p2;
+    (void)out;
+    (void)0; /* sk_stackshot_lookup @ 0x16fb94: Resolves the guest matching param_1/param_2 and fills the out record. Verifies current cpu (5b89c) matches; walks the region tree via 5ba14/ 5bc48/1703d4 building the record (id, perm, text-layout) and writes the 0x98-byte record. Traps (So */
+}
+
+/* FUN_0016fe34 @ 0x16fe34  (est. sk_stackshot_lookup2)
+ * Second lookup variant. Rejects a cpu mismatch with error 1; for an empty
+ * guest it resolves the empty record via 4b8ccc. Otherwise it parses guest
+ * capability info (6198c/61664/619c8/5bc48), computes the 0x80-byte record
+ * size, and fills out. Traps (SoftwareBreakpoint 0x5519 @16ffb0) on OOB.
+ * Confidence: medium. Notes: DAT_006add18. */
+static void sk_stackshot_lookup2_16fe34(uint64_t cpu, uint64_t guest, void *out)
+{
+    (void)cpu;
+    (void)guest;
+    (void)out;
+    (void)0; /* sk_stackshot_lookup2 @ 0x16fe34: Second lookup variant. Rejects a cpu mismatch with error 1; for an empty guest it resolves the empty record via 4b8ccc. Otherwise it parses guest capability info (6198c/61664/619c8/5bc48), computes the 0x80-byte record size, and fills out.  */
+}
+
+/* FUN_0016ffe4 @ 0x16ffe4  (est. sk_stackshot_set_bool)
+ * Writes a tagged boolean record: *param_1 = (param_2 != 0), and when
+ * param_2 is non-null stores *param_2 into the 4-byte value at param_1+4.
+ * Confidence: high (tiny). */
+static void sk_stackshot_set_bool_16ffe4(long out, uint32_t *val)
+{
+    *(uint8_t *)out = val != 0;
+    if (val != 0) *(uint32_t *)(out + 4) = *val;
+}
+
+/* FUN_00170004 @ 0x170004  (est. sk_stackshot_tag_lookup)
+ * Tag lookup for the stackshot serialization type table (DAT_004e4d30):
+ * returns the 8-byte handler for tag index (tag-1); traps with
+ * "TB_FATAL: invalid tag in ...Stack..." (005cab66) for out-of-range tags.
+ * Confidence: medium. */
+static uint64_t sk_stackshot_tag_lookup_170004(uint8_t *tag)
+{
+    (void)tag;
+    (void)0; /* sk_stackshot_tag_lookup @ 0x170004: Tag lookup for the stackshot serialization type table (DAT_004e4d30): returns the 8-byte handler for tag index (tag-1); traps with "TB_FATAL: invalid tag in ...Stack..." (005cab66) for out-of-range tags. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170060 @ 0x170060  (est. sk_stackshot_serialize_stack)
+ * Serializes a "Stack" tagged value (tag 1/2/3) into the byte stream via
+ * the writer callback at param_2+0x10. Tag 3 iterates the frame array
+ * (stride 0x28) forwarding each frame; tag 2 forwards through 15a44 (the
+ * common frame-forwarder); tag 1 serializes the frame data through
+ * 1552c/1586c/18600/18ac8/18f38/18a4c and 15984. Confidence: medium. */
+static char *sk_stackshot_serialize_stack_170060(char *val, uint64_t w)
+{
+    (void)val;
+    (void)w;
+    (void)0; /* sk_stackshot_serialize_stack @ 0x170060: Serializes a "Stack" tagged value (tag 1/2/3) into the byte stream via the writer callback at param_2+0x10. Tag 3 iterates the frame array (stride 0x28) forwarding each frame; tag 2 forwards through 15a44 (the common frame-forwarder); tag 1 */
+    return 0;
+}
+
+/* FUN_001703d4 @ 0x1703d4  (est. sk_stackshot_make_regionlist)
+ * Builds a serialized region-list tagged value. Computes the total size over
+ * the param_2 array (0x28-stride, tag 1 vs 0x19/0x21), allocates the buffer via
+ * 157dc, serializes each region's 0x10-byte id + flags through 1552c/1586c/
+ * 185b8/18984/18e60/15964, and fills the record (tag=1, ptr, len, count).
+ * Traps (SoftwareBreakpoint 0x5519 @170498) on OOB. Confidence: medium. */
+static void sk_stackshot_make_regionlist_1703d4(void *out, uint64_t list, uint64_t n)
+{
+    (void)out;
+    (void)list;
+    (void)n;
+    (void)0; /* sk_stackshot_make_regionlist @ 0x1703d4: Builds a serialized region-list tagged value. Computes the total size over the param_2 array (0x28-stride, tag 1 vs 0x19/0x21), allocates the buffer via 157dc, serializes each region's 0x10-byte id + flags through 1552c/1586c/ 185b8/18984/1 */
+}
+
+/* FUN_001705e0 @ 0x1705e0  (est. sk_stackshot_tag3)
+ * Writes a tag-3 (raw data) record: *out=3, ptr, len, 0. Tiny helper.
+ * Confidence: high. */
+static void sk_stackshot_tag3_1705e0(void *out, uint64_t ptr, uint64_t len)
+{
+    *(uint8_t *)out = 3;
+    *(uint64_t *)(out + 8) = ptr;
+    *(uint64_t *)(out + 0x10) = len;
+    *(uint64_t *)(out + 0x18) = 0;
+}
+
+/* FUN_001705f4 @ 0x1705f4  (est. sk_stackshot_sizef)
+ * Computes the serialized size of a region-list tagged value at param_1+0x30
+ * (stride 0x28): base = tag-1 elem count * 0x28, +5 if first byte non-zero else
+ * +1, plus 0x10. Traps (SoftwareBreakpoint 0x5519 @170664) on invalid bounds.
+ * Confidence: medium. */
+static long sk_stackshot_sizef_1705f4(long rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_sizef @ 0x1705f4: Computes the serialized size of a region-list tagged value at param_1+0x30 (stride 0x28): base = tag-1 elem count * 0x28, +5 if first byte non-zero else +1, plus 0x10. Traps (SoftwareBreakpoint 0x5519 @170664) on invalid bounds. Confidence: */
+    return 0;
+}
+
+/* FUN_00170668 @ 0x170668  (est. sk_stackshot_serialize_uint64array)
+ * Serializes a UInt64Array (tag 0) value: computes size (1705f4-style),
+ * allocates via 1552c, writes tag + count, then serializes each entry through
+ * 170060 (region-list serializer). Returns 0 on success. Confidence: medium. */
+static uint64_t sk_stackshot_serialize_uint64array_170668(uint64_t *val)
+{
+    (void)val;
+    (void)0; /* sk_stackshot_serialize_uint64array @ 0x170668: Serializes a UInt64Array (tag 0) value: computes size (1705f4-style), allocates via 1552c, writes tag + count, then serializes each entry through 170060 (region-list serializer). Returns 0 on success. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170858 @ 0x170858  (est. sk_stackshot_tag_lookup_uint8)
+ * UInt8 tag lookup against DAT_004e4d30; traps "TB_FATAL: invalid tag in
+ * ...UInt8..." (005cadd6) on out-of-range. Confidence: medium. */
+static uint64_t sk_stackshot_tag_lookup_uint8_170858(uint8_t *tag)
+{
+    (void)tag;
+    (void)0; /* sk_stackshot_tag_lookup_uint8 @ 0x170858: UInt8 tag lookup against DAT_004e4d30; traps "TB_FATAL: invalid tag in ...UInt8..." (005cadd6) on out-of-range. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001708b4 @ 0x1708b4  (est. sk_stackshot_serialize_uint8array)
+ * Serializes a UInt8Array value via the writer callback; tag 1 forwards
+ * bytes one at a time, tag 2 through 15a44, tag 3 through 1552c/1586c/18a4c.
+ * Confidence: medium. */
+static char *sk_stackshot_serialize_uint8array_1708b4(char *val, uint64_t w)
+{
+    (void)val;
+    (void)w;
+    (void)0; /* sk_stackshot_serialize_uint8array @ 0x1708b4: Serializes a UInt8Array value via the writer callback; tag 1 forwards bytes one at a time, tag 2 through 15a44, tag 3 through 1552c/1586c/18a4c. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170b18 @ 0x170b18  (est. sk_stackshot_asid_size)
+ * Computes the serialized size of an ASID record at param_1 (0x90 bytes).
+ * Returns sum of fixed + variable components (tag-1 count * 0x28, flags,
+ * plus 0x20). Traps (SoftwareBreakpoint 0x5519 @170c04) on invalid bounds.
+ * Confidence: medium. */
+static long sk_stackshot_asid_size_170b18(char *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_asid_size @ 0x170b18: Computes the serialized size of an ASID record at param_1 (0x90 bytes). Returns sum of fixed + variable components (tag-1 count * 0x28, flags, plus 0x20). Traps (SoftwareBreakpoint 0x5519 @170c04) on invalid bounds. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170c0c @ 0x170c0c  (est. sk_stackshot_asid_parse)
+ * Parses/serializes an ASID record: writes id, UInt8Array, perm flags, and
+ * region-list via 170060. Returns 0 on success. Confidence: medium. */
+static uint64_t sk_stackshot_asid_parse_170c0c(char *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_asid_parse @ 0x170c0c: Parses/serializes an ASID record: writes id, UInt8Array, perm flags, and region-list via 170060. Returns 0 on success. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170f04 @ 0x170f04  (est. sk_stackshot_tag_lookup_stack)
+ * Stack tag lookup; traps "TB_FATAL: invalid tag in ...Stack..." (005cae11).
+ * Confidence: medium. */
+static uint64_t sk_stackshot_tag_lookup_stack_170f04(uint8_t *tag)
+{
+    (void)tag;
+    (void)0; /* sk_stackshot_tag_lookup_stack @ 0x170f04: Stack tag lookup; traps "TB_FATAL: invalid tag in ...Stack..." (005cae11). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00170f60 @ 0x170f60  (est. sk_stackshot_serialize_stackrec)
+ * Serializes a Stack record (0x90-byte tagged value): writes id, flags, and
+ * the per-frame array (via 170f04 count, 1722fc). Traps (SoftwareBreakpoint
+ * 0x5519 @171054) on OOB. Confidence: medium. */
+static long sk_stackshot_serialize_stackrec_170f60(char *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_serialize_stackrec @ 0x170f60: Serializes a Stack record (0x90-byte tagged value): writes id, flags, and the per-frame array (via 170f04 count, 1722fc). Traps (SoftwareBreakpoint 0x5519 @171054) on OOB. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017105c @ 0x17105c  (est. sk_stackshot_parse)
+ * Parses a stackshot record into the caller buffer (used by the collect_ok
+ * path): serializes via 1722fc/170f04 and returns the size. Confidence: medium. */
+static uint64_t sk_stackshot_parse_17105c(char *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_parse @ 0x17105c: Parses a stackshot record into the caller buffer (used by the collect_ok path): serializes via 1722fc/170f04 and returns the size. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001712c8 @ 0x1712c8  (est. sk_stackshot_tag_lookup_cb)
+ * Tag lookup (Stack variant); traps "...Stack..." (005cae6b). Confidence:
+ * medium. */
+static uint64_t sk_stackshot_tag_lookup_cb_1712c8(uint8_t *tag)
+{
+    (void)tag;
+    (void)0; /* sk_stackshot_tag_lookup_cb @ 0x1712c8: Tag lookup (Stack variant); traps "...Stack..." (005cae6b). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00171324 @ 0x171324  (est. sk_stackshot_dispatch_thunk)
+ * Thunk that forwards to 17134c. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_thunk_171324(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_dispatch_thunk @ 0x171324: Thunk that forwards to 17134c. Confidence: high (trivial). */
+}
+
+/* FUN_0017134c @ 0x17134c  (est. sk_stackshot_dispatch)
+ * Sets up a vtable dispatch (0x6ad3a8/0x667e48) with the 1713f4 handler and
+ * invokes it via 147a0; stores the result. Confidence: medium. */
+static void sk_stackshot_dispatch_17134c(uint64_t a, uint64_t *out, uint64_t b)
+{
+    (void)a;
+    (void)out;
+    (void)b;
+    (void)0; /* sk_stackshot_dispatch @ 0x17134c: Sets up a vtable dispatch (0x6ad3a8/0x667e48) with the 1713f4 handler and invokes it via 147a0; stores the result. Confidence: medium. */
+}
+
+/* FUN_001713f4 @ 0x1713f4  (est. sk_stackshot_object_method)
+ * Method dispatcher on the StackshotConclaveSupport object: reads a selector
+ * hash from the message, and routes among the four selector callbacks in the
+ * object's vtable (offset 0x20+0x0/8/10/18) — 1717fc, 171994, 171dc0 — passing
+ * the serialized args. On selector-1 tag it deserializes a UInt8Array and
+ * stores it; tag-2 forwards via 15ce4; tag-3 via 18eb0. Traps
+ * "TB_FATAL: unrecognized selector" (005ba347) / SoftwareBreakpoint 0x5519 on
+ * bad state. Large, faithful reconstruction. Confidence: medium. */
+static uint64_t sk_stackshot_object_method_1713f4(long obj, uint64_t msg, uint64_t args)
+{
+    (void)obj;
+    (void)msg;
+    (void)args;
+    (void)0; /* sk_stackshot_object_method @ 0x1713f4: Method dispatcher on the StackshotConclaveSupport object: reads a selector hash from the message, and routes among the four selector callbacks in the object's vtable (offset 0x20+0x0/8/10/18) — 1717fc, 171994, 171dc0 — passing the serialize */
+    return 0;
+}
+
+/* FUN_001717fc @ 0x1717fc  (est. sk_stackshot_obj_sel1)
+ * Selector-1 handler: reads a UInt8Array from args and stores it into the
+ * object's buffer (offset +0x20). Confidence: medium. */
+static uint64_t sk_stackshot_obj_sel1_1717fc(long obj, uint64_t *args)
+{
+    (void)obj;
+    (void)args;
+    (void)0; /* sk_stackshot_obj_sel1 @ 0x1717fc: Selector-1 handler: reads a UInt8Array from args and stores it into the object's buffer (offset +0x20). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00171994 @ 0x171994  (est. sk_stackshot_obj_sel2)
+ * Selector-2 handler: reads a larger argument record, allocates via 14f90,
+ * and serializes the nested UInt8Array/Stack values into the object's buffer
+ * (offset +0x20), releasing transient refs (12568/4b664). Confidence: medium. */
+static uint64_t sk_stackshot_obj_sel2_171994(long obj, uint64_t *args)
+{
+    (void)obj;
+    (void)args;
+    (void)0; /* sk_stackshot_obj_sel2 @ 0x171994: Selector-2 handler: reads a larger argument record, allocates via 14f90, and serializes the nested UInt8Array/Stack values into the object's buffer (offset +0x20), releasing transient refs (12568/4b664). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00171dc0 @ 0x171dc0  (est. sk_stackshot_obj_sel3)
+ * Selector-3 handler: serializes a different argument shape (ids + optional
+ * Stack), allocates via 14f90, writes the record, and releases transient refs.
+ * Confidence: medium. */
+static uint64_t sk_stackshot_obj_sel3_171dc0(long obj, uint64_t *args)
+{
+    (void)obj;
+    (void)args;
+    (void)0; /* sk_stackshot_obj_sel3 @ 0x171dc0: Selector-3 handler: serializes a different argument shape (ids + optional Stack), allocates via 14f90, writes the record, and releases transient refs. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00172154 @ 0x172154  (est. sk_stackshot_serialize_uuid)
+ * Serializes a 16-byte UUID (+ optional flags) into the object's stream via
+ * 18e60/18984, then clears the completion flag at vtable+8+0x18. Confidence:
+ * medium. */
+static void sk_stackshot_serialize_uuid_172154(long obj, uint64_t a, long uuid)
+{
+    (void)obj;
+    (void)a;
+    (void)uuid;
+    (void)0; /* sk_stackshot_serialize_uuid @ 0x172154: Serializes a 16-byte UUID (+ optional flags) into the object's stream via 18e60/18984, then clears the completion flag at vtable+8+0x18. Confidence: medium. */
+}
+
+/* FUN_00172200 @ 0x172200  (est. sk_stackshot_serialize_uint8)
+ * Serializes a UInt8Array value by tag: tag1 copies 16 bytes+val, tag2 via
+ * 15ce4, tag3 copies val bytes via 189d0. Traps "TB_FATAL: invalid tag in
+ * ...UInt8..." on bad tag / SoftwareBreakpoint 0x5519 on OOB. Confidence:
+ * medium. */
+static void sk_stackshot_serialize_uint8_172200(uint64_t w, char *val)
+{
+    (void)w;
+    (void)val;
+    (void)0; /* sk_stackshot_serialize_uint8 @ 0x172200: Serializes a UInt8Array value by tag: tag1 copies 16 bytes+val, tag2 via 15ce4, tag3 copies val bytes via 189d0. Traps "TB_FATAL: invalid tag in ...UInt8..." on bad tag / SoftwareBreakpoint 0x5519 on OOB. Confidence: medium. */
+}
+
+/* FUN_001722fc @ 0x1722fc  (est. sk_stackshot_serialize_stackref)
+ * Serializes a Stack tagged value (tag1 present / absent). Writes presence
+ * byte, count via 170f04, then per-tag copies. Traps "TB_FATAL: invalid tag in
+ * ...Stack..." (005cae11) on bad tag. Confidence: medium. */
+static void sk_stackshot_serialize_stackref_1722fc(uint64_t w, char *val)
+{
+    (void)w;
+    (void)val;
+    (void)0; /* sk_stackshot_serialize_stackref @ 0x1722fc: Serializes a Stack tagged value (tag1 present / absent). Writes presence byte, count via 170f04, then per-tag copies. Traps "TB_FATAL: invalid tag in ...Stack..." (005cae11) on bad tag. Confidence: medium. */
+}
+
+/* FUN_0017244c @ 0x17244c  (est. sk_stackshot_trap_overflow_a)
+ * Overflow trap with build-arg line 0x191 and message "...overflow detected
+ * when..." (005aae93). Confidence: high (trap stub). */
+static void sk_stackshot_trap_overflow_a_17244c(void)
+{
+    (void)0; /* sk_stackshot_trap_overflow_a @ 0x17244c: Overflow trap with build-arg line 0x191 and message "...overflow detected when..." (005aae93). Confidence: high (trap stub). */
+}
+
+/* FUN_00172468 @ 0x172468  (est. sk_stackshot_trap_overflow_b)
+ * Overflow trap line 0x519. Confidence: high. */
+static void sk_stackshot_trap_overflow_b_172468(void)
+{
+    (void)0; /* sk_stackshot_trap_overflow_b @ 0x172468: Overflow trap line 0x519. Confidence: high. */
+}
+
+/* FUN_00172484 @ 0x172484  (est. sk_stackshot_trap_overflow_c)
+ * Overflow trap line 0x330, message "...overflow..." (005abd5d). Confidence:
+ * high. */
+static void sk_stackshot_trap_overflow_c_172484(void)
+{
+    (void)0; /* sk_stackshot_trap_overflow_c @ 0x172484: Overflow trap line 0x330, message "...overflow..." (005abd5d). Confidence: high. */
+}
+
+/* FUN_001724a0 @ 0x1724a0  (est. sk_stackshot_trap_overflow_d)
+ * Overflow trap line 0x51a. Confidence: high. */
+static void sk_stackshot_trap_overflow_d_1724a0(void)
+{
+    (void)0; /* sk_stackshot_trap_overflow_d @ 0x1724a0: Overflow trap line 0x51a. Confidence: high. */
+}
+
+/* FUN_001724bc @ 0x1724bc  (est. sk_stackshot_log_a)
+ * Logs the diagnostic at DAT_005cacd6 with param_1. Confidence: medium. */
+static void sk_stackshot_log_a_1724bc(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_log_a @ 0x1724bc: Logs the diagnostic at DAT_005cacd6 with param_1. Confidence: medium. */
+}
+
+/* FUN_001724cc @ 0x1724cc  (est. sk_stackshot_log_b)
+ * Logs the diagnostic at DAT_005cad83. Confidence: medium. */
+static void sk_stackshot_log_b_1724cc(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_log_b @ 0x1724cc: Logs the diagnostic at DAT_005cad83. Confidence: medium. */
+}
+
+/* FUN_001724dc @ 0x1724dc  (est. sk_stackshot_free_ctx_1724dc)
+ * Frees a prepared context (36b118 releases, 276c vtable reset). Confidence:
+ * low. */
+static void sk_stackshot_free_ctx_1724dc(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_1724dc @ 0x1724dc: Frees a prepared context (36b118 releases, 276c vtable reset). Confidence: low. */
+}
+
+/* FUN_001724e0 @ 0x1724e0  (est. sk_stackshot_free_ctx_1724e0)
+ * Frees a prepared context (36b118 releases, 276c vtable reset). Confidence:
+ * low. */
+static void sk_stackshot_free_ctx_1724e0(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_1724e0 @ 0x1724e0: Frees a prepared context (36b118 releases, 276c vtable reset). Confidence: low. */
+}
+
+/* FUN_00172530 @ 0x172530  (est. sk_stackshot_free_ctx_b_172530)
+ * Frees a prepared context + teardown (36b6ac). Confidence: low. */
+static void sk_stackshot_free_ctx_b_172530(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_b_172530 @ 0x172530: Frees a prepared context + teardown (36b6ac). Confidence: low. */
+}
+
+/* FUN_00172534 @ 0x172534  (est. sk_stackshot_free_ctx_b_172534)
+ * Frees a prepared context + teardown (36b6ac). Confidence: low. */
+static void sk_stackshot_free_ctx_b_172534(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_b_172534 @ 0x172534: Frees a prepared context + teardown (36b6ac). Confidence: low. */
+}
+
+/* FUN_00172584 @ 0x172584  (est. sk_stackshot_dispatcher)
+ * Generic dispatcher: resolves the current dispatch frame (via 36b270-style
+ * stack walk), invokes the three callbacks (param_5/6/7) and the vtable entry.
+ * Confidence: low (shape-only). */
+static void sk_stackshot_dispatcher_172584(uint64_t a, uint64_t b, uint64_t c, uint64_t d,
+                          void (*f1)(uint64_t), void (*f2)(void*), void (*f3)(void*, uint64_t))
+{
+    (void)0; /* sk_stackshot_dispatcher @ 0x172584: Generic dispatcher: resolves the current dispatch frame (via 36b270-style stack walk), invokes the three callbacks (param_5/6/7) and the vtable entry. Confidence: low (shape-only). */
+}
+
+/* FUN_00172688 @ 0x172688  (est. sk_stackshot_fatal_format)
+ * The shared "fatal StackshotConclaveSupport error" formatter. Builds a
+ * vtable context (0x671df8 logger, 0x677830), emits the format string with
+ * args via thunk_FUN_002acbb8/3a25d4, and runs the crash log. This is the
+ * recurring pattern behind every FUN_00172688(...) call in the subsystem.
+ * Confidence: medium. Notes: string s_takeConclaveCrash_scids_* etc. */
+static void sk_stackshot_fatal_format_172688(uint64_t a, uint64_t b, const char *fmt, uint64_t n, uint64_t x, uint64_t line)
+{
+    (void)a;
+    (void)b;
+    (void)fmt;
+    (void)n;
+    (void)x;
+    (void)line;
+    (void)0; /* sk_stackshot_fatal_format @ 0x172688: The shared "fatal StackshotConclaveSupport error" formatter. Builds a vtable context (0x671df8 logger, 0x677830), emits the format string with args via thunk_FUN_002acbb8/3a25d4, and runs the crash log. This is the recurring pattern behind  */
+}
+
+/* FUN_00172828 @ 0x172828  (est. sk_stackshot_alloc_vec)
+ * Allocates a 0x10-capacity vector (36a940/36a804) and zeroes it via 18148.
+ * Confidence: low. */
+static long sk_stackshot_alloc_vec_172828(void)
+{
+    (void)0; /* sk_stackshot_alloc_vec @ 0x172828: Allocates a 0x10-capacity vector (36a940/36a804) and zeroes it via 18148. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172874 @ 0x172874  (est. sk_stackshot_alloc_vec_x20)
+ * Allocates a 0x10 vector and stores it at x20+0x10. Confidence: low. */
+static void sk_172874(void)
+{
+    (void)0; /* sk_stackshot_alloc_vec_x20 @ 0x172874: Allocates a 0x10 vector and stores it at x20+0x10. Confidence: low. */
+}
+
+/* FUN_00172878 @ 0x172878  (est. sk_stackshot_alloc_vec_x20)
+ * Allocates a 0x10 vector and stores it at x20+0x10. Confidence: low. */
+static void sk_172878(void)
+{
+    (void)0; /* sk_stackshot_alloc_vec_x20 @ 0x172878: Allocates a 0x10 vector and stores it at x20+0x10. Confidence: low. */
+}
+
+/* FUN_001728a4 @ 0x1728a4  (est. sk_stackshot_free_vec)
+ * Releases the vector at x20+0x10 (53aa0 then 12568). Confidence: low. */
+static void sk_1728a4(void)
+{
+    (void)0; /* sk_stackshot_free_vec @ 0x1728a4: Releases the vector at x20+0x10 (53aa0 then 12568). Confidence: low. */
+}
+
+/* FUN_001728a8 @ 0x1728a8  (est. sk_stackshot_free_vec)
+ * Releases the vector at x20+0x10 (53aa0 then 12568). Confidence: low. */
+static void sk_1728a8(void)
+{
+    (void)0; /* sk_stackshot_free_vec @ 0x1728a8: Releases the vector at x20+0x10 (53aa0 then 12568). Confidence: low. */
+}
+
+/* FUN_001728d4 @ 0x1728d4  (est. sk_stackshot_free_vec_b)
+ * Releases the vector at x20+0x10 and runs 36b6ac teardown. Confidence: low. */
+static void sk_1728d4(void)
+{
+    (void)0; /* sk_stackshot_free_vec_b @ 0x1728d4: Releases the vector at x20+0x10 and runs 36b6ac teardown. Confidence: low. */
+}
+
+/* FUN_001728d8 @ 0x1728d8  (est. sk_stackshot_free_vec_b)
+ * Releases the vector at x20+0x10 and runs 36b6ac teardown. Confidence: low. */
+static void sk_1728d8(void)
+{
+    (void)0; /* sk_stackshot_free_vec_b @ 0x1728d8: Releases the vector at x20+0x10 and runs 36b6ac teardown. Confidence: low. */
+}
+
+/* FUN_00172910 @ 0x172910  (est. sk_stackshot_vtable_call)
+ * Resolves the type at 0x6542d0/004e4d68 and invokes its +0x10 method with
+ * (param_2, param_1, type); returns param_2. Confidence: low. */
+static uint64_t sk_stackshot_vtable_call_172910(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_vtable_call @ 0x172910: Resolves the type at 0x6542d0/004e4d68 and invokes its +0x10 method with (param_2, param_1, type); returns param_2. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172978 @ 0x172978  (est. sk_stackshot_mkobj_a)
+ * Constructs a StackshotConclaveSupport object: allocates the 0x18 header,
+ * the 0x10 buffer, resolves type (004e4d88), and forwards to 176e8c init.
+ * Confidence: low. */
+static uint64_t sk_stackshot_mkobj_a_172978(uint64_t a, uint64_t b, long c, uint64_t d)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_mkobj_a @ 0x172978: Constructs a StackshotConclaveSupport object: allocates the 0x18 header, the 0x10 buffer, resolves type (004e4d88), and forwards to 176e8c init. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172a30 @ 0x172a30  (est. sk_stackshot_mkobj_b)
+ * Constructs the object with type DAT_004e4da0 (0018fbe8). Confidence: low. */
+static uint64_t sk_stackshot_mkobj_b_172a30(uint64_t a, uint64_t b, long c, uint64_t d)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_mkobj_b @ 0x172a30: Constructs the object with type DAT_004e4da0 (0018fbe8). Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172ae8 @ 0x172ae8  (est. sk_stackshot_mkobj_c)
+ * Constructs the object (no a-release). Confidence: low. */
+static uint64_t sk_stackshot_mkobj_c_172ae8(uint64_t a, long b, uint64_t c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_mkobj_c @ 0x172ae8: Constructs the object (no a-release). Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172b8c @ 0x172b8c  (est. sk_stackshot_mkobj_d)
+ * Constructs the object (no header alloc). Confidence: low. */
+static uint64_t sk_stackshot_mkobj_d_172b8c(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_mkobj_d @ 0x172b8c: Constructs the object (no header alloc). Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172bf8 @ 0x172bf8  (est. sk_stackshot_vtable_and)
+ * Calls the vtable method at +0x20 and returns its result & 1. Confidence:
+ * low. */
+static uint32_t sk_stackshot_vtable_and_172bf8(long obj)
+{
+    (void)obj;
+    (void)0; /* sk_stackshot_vtable_and @ 0x172bf8: Calls the vtable method at +0x20 and returns its result & 1. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172c38 @ 0x172c38  (est. sk_stackshot_vtable_call2)
+ * Calls the vtable method at +0x20 (no result use). Confidence: low. */
+static void sk_stackshot_vtable_call2_172c38(long obj)
+{
+    (void)obj;
+    (void)0; /* sk_stackshot_vtable_call2 @ 0x172c38: Calls the vtable method at +0x20 (no result use). Confidence: low. */
+}
+
+/* FUN_00172c78 @ 0x172c78  (est. sk_stackshot_prep_context)
+ * Prepares a StackshotConclaveSupport context from x20 fields: resolves the
+ * request type (0x654448, 0xad, 7), gathers the vtable/args (via 172910,
+ * 6e7c0, 173644), and returns the type result. Confidence: low. */
+static uint64_t sk_stackshot_prep_context_172c78(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_prep_context @ 0x172c78: Prepares a StackshotConclaveSupport context from x20 fields: resolves the request type (0x654448, 0xad, 7), gathers the vtable/args (via 172910, 6e7c0, 173644), and returns the type result. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172d1c @ 0x172d1c  (est. sk_stackshot_prep_ctx_b)
+ * Simpler context prep forwarding to 173644. Confidence: low. */
+static uint64_t sk_stackshot_prep_ctx_b_172d1c(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)0; /* sk_stackshot_prep_ctx_b @ 0x172d1c: Simpler context prep forwarding to 173644. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00172d9c @ 0x172d9c  (est. sk_stackshot_free_ctx)
+ * Frees a prepared context (36b118 releases, 276c vtable reset). Confidence:
+ * low. */
+static void sk_172d9c(void)
+{
+    (void)0; /* sk_stackshot_free_ctx @ 0x172d9c: Frees a prepared context (36b118 releases, 276c vtable reset). Confidence: low. */
+}
+
+/* FUN_00172da0 @ 0x172da0  (est. sk_stackshot_free_ctx)
+ * Frees a prepared context (36b118 releases, 276c vtable reset). Confidence:
+ * low. */
+static void sk_172da0(void)
+{
+    (void)0; /* sk_stackshot_free_ctx @ 0x172da0: Frees a prepared context (36b118 releases, 276c vtable reset). Confidence: low. */
+}
+
+/* FUN_00172de4 @ 0x172de4  (est. sk_stackshot_free_ctx_b)
+ * Frees the context and runs teardown (36b6ac). Confidence: low. */
+static void sk_172de4(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_b @ 0x172de4: Frees the context and runs teardown (36b6ac). Confidence: low. */
+}
+
+/* FUN_00172de8 @ 0x172de8  (est. sk_stackshot_free_ctx_b)
+ * Frees the context and runs teardown (36b6ac). Confidence: low. */
+static void sk_172de8(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_b @ 0x172de8: Frees the context and runs teardown (36b6ac). Confidence: low. */
+}
+
+/* FUN_00172e38 @ 0x172e38  (est. sk_stackshot_crash_scid)
+ * getConclaveCrashBacktrace(scid): fetches the guest by scid (176800),
+ * collects via 16f2e4, and on success resolves the crash backtrace; on failure
+ * emits the "stackshot of executing..." fatal (005cb920). Returns the packed
+ * result record. Confidence: medium. Notes: 0x2f/0xe4 line refs, DAT_004bbff0. */
+static void sk_stackshot_crash_scid_172e38(uint64_t *out, uint64_t scid)
+{
+    (void)out;
+    (void)scid;
+    (void)0; /* sk_stackshot_crash_scid @ 0x172e38: getConclaveCrashBacktrace(scid): fetches the guest by scid (176800), collects via 16f2e4, and on success resolves the crash backtrace; on failure emits the "stackshot of executing..." fatal (005cb920). Returns the packed result record. Conf */
+}
+
+/* FUN_0017310c @ 0x17310c  (est. sk_stackshot_crash_ecid)
+ * getConclaveCrashBacktrace variant for own-ECID (16f378 collect); emits
+ * "stackshot own ecid executing..." (005cb8d0) fatal on failure. Confidence:
+ * medium. */
+static void sk_stackshot_crash_ecid_17310c(uint64_t *out, uint64_t a)
+{
+    (void)out;
+    (void)a;
+    (void)0; /* sk_stackshot_crash_ecid @ 0x17310c: getConclaveCrashBacktrace variant for own-ECID (16f378 collect); emits "stackshot own ecid executing..." (005cb8d0) fatal on failure. Confidence: medium. */
+}
+
+/* FUN_00173330 @ 0x173330  (est. sk_stackshot_free_buf)
+ * Releases the buffer at x20+0x10 (if non-null) and runs teardown. Confidence:
+ * low. */
+static void sk_173330(void)
+{
+    (void)0; /* sk_stackshot_free_buf @ 0x173330: Releases the buffer at x20+0x10 (if non-null) and runs teardown. Confidence: low. */
+}
+
+/* FUN_00173334 @ 0x173334  (est. sk_stackshot_free_buf)
+ * Releases the buffer at x20+0x10 (if non-null) and runs teardown. Confidence:
+ * low. */
+static void sk_173334(void)
+{
+    (void)0; /* sk_stackshot_free_buf @ 0x173334: Releases the buffer at x20+0x10 (if non-null) and runs teardown. Confidence: low. */
+}
+
+/* FUN_00173368 @ 0x173368  (est. sk_stackshot_frame_list)
+ * Serializes a frame list (0x28-stride, count at x20+0x28) into a growable
+ * array (0x657778), resolving each frame via 177068 and building 16-byte
+ * entries via 1a1c8/1762cc. Confidence: medium. */
+static void sk_stackshot_frame_list_173368(void)
+{
+    (void)0; /* sk_stackshot_frame_list @ 0x173368: Serializes a frame list (0x28-stride, count at x20+0x28) into a growable array (0x657778), resolving each frame via 177068 and building 16-byte entries via 1a1c8/1762cc. Confidence: medium. */
+}
+
+/* FUN_00173500 @ 0x173500  (est. sk_stackshot_finalize_frames)
+ * Finalizes a frame array: when param_5 >= 0 walks the frame list into the
+ * global 0x657788 array and computes the final hash via 177ee8 (or returns
+ * 785cc on error). Confidence: medium. */
+static uint64_t sk_stackshot_finalize_frames_173500(long a, uint64_t b, uint64_t c, uint64_t flags, long err)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)flags;
+    (void)err;
+    (void)0; /* sk_stackshot_finalize_frames @ 0x173500: Finalizes a frame array: when param_5 >= 0 walks the frame list into the global 0x657788 array and computes the final hash via 177ee8 (or returns 785cc on error). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00173644 @ 0x173644  (est. sk_stackshot_teardown)
+ * The large context teardown / capture orchestration: allocates the buffer
+ * (16f278), resolves the token, registers crash-scid callbacks (16f108), walks
+ * the guest list building per-guest crash records (17368/177ed0/17e380), and
+ * drives the final serialization (16ea28/173500). Confidence: medium. */
+static long sk_stackshot_teardown_173644(uint64_t a, uint64_t b, uint64_t c, uint64_t d, long e, long f)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)0; /* sk_stackshot_teardown @ 0x173644: The large context teardown / capture orchestration: allocates the buffer (16f278), resolves the token, registers crash-scid callbacks (16f108), walks the guest list building per-guest crash records (17368/177ed0/17e380), and drives the fina */
+    return 0;
+}
+
+/* FUN_00173acc @ 0x173acc  (est. sk_stackshot_vtable_call3)
+ * Calls the vtable method at +0x20 with param_2. Confidence: low. */
+static uint64_t sk_stackshot_vtable_call3_173acc(long obj, uint64_t p)
+{
+    (void)obj;
+    (void)p;
+    (void)0; /* sk_stackshot_vtable_call3 @ 0x173acc: Calls the vtable method at +0x20 with param_2. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00173b1c @ 0x173b1c  (est. sk_stackshot_free_ctx_c)
+ * Frees the capture context (16f084 offline + releases). Confidence: low. */
+static void sk_173b1c(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_c @ 0x173b1c: Frees the capture context (16f084 offline + releases). Confidence: low. */
+}
+
+/* FUN_00173b20 @ 0x173b20  (est. sk_stackshot_free_ctx_c)
+ * Frees the capture context (16f084 offline + releases). Confidence: low. */
+static void sk_173b20(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_c @ 0x173b20: Frees the capture context (16f084 offline + releases). Confidence: low. */
+}
+
+/* FUN_00173b7c @ 0x173b7c  (est. sk_stackshot_free_ctx_d)
+ * Frees the capture context + teardown. Confidence: low. */
+static void sk_173b7c(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_d @ 0x173b7c: Frees the capture context + teardown. Confidence: low. */
+}
+
+/* FUN_00173b80 @ 0x173b80  (est. sk_stackshot_free_ctx_d)
+ * Frees the capture context + teardown. Confidence: low. */
+static void sk_173b80(void)
+{
+    (void)0; /* sk_stackshot_free_ctx_d @ 0x173b80: Frees the capture context + teardown. Confidence: low. */
+}
+
+/* FUN_00173be8 @ 0x173be8  (est. sk_stackshot_crash_collect)
+ * The largest function in this region: getConclaveCrashBacktrace(scids) full
+ * collector. Resolves each scid, serializes the crash backtrace frames into
+ * growable arrays (0x657778/0x6577e0), walks the crash-scid bitmap (bit-twiddle
+ * reverse), fetches per-scid crash info via the vtable (0x5c... strings),
+ * resolves address-space (16f3f8/16f464), and drives takeConclaveCrash
+ * serialization via 173500/177ee8/175d08/177158. Traps/fatal
+ * (StackshotConclaveSupport_Stacksh_005cb4a0) on any inconsistency.
+ * Confidence: medium. Notes: strings getConclaveCrashBacktrace_scid___005cb960,
+ * takeConclaveCrash_scids___005cb540, own_addressspace_wantRawAddresse_005cb750;
+ * __thread_bss Mach-O header fields (magic/cputype/cpusubtype/filetype/ncmds). */
+static void sk_stackshot_crash_collect_173be8(long p)
+{
+    (void)p;
+    (void)0; /* sk_stackshot_crash_collect @ 0x173be8: The largest function in this region: getConclaveCrashBacktrace(scids) full collector. Resolves each scid, serializes the crash backtrace frames into growable arrays (0x657778/0x6577e0), walks the crash-scid bitmap (bit-twiddle reverse), fet */
+}
+
+/* FUN_00175d08 @ 0x175d08  (est. sk_stackshot_crash_write)
+ * Serializes a crash backtrace batch: resolves the scid context (176800),
+ * formats via 205844/72688, and forwards the collected record triple to
+ * 17b4d8; on non-zero status re-drives through a 65a550 callback (36993c).
+ * Confidence: medium. */
+static void sk_stackshot_crash_write_175d08(uint64_t a, uint64_t b, uint64_t *rec)
+{
+    (void)a;
+    (void)b;
+    (void)rec;
+    (void)0; /* sk_stackshot_crash_write @ 0x175d08: Serializes a crash backtrace batch: resolves the scid context (176800), formats via 205844/72688, and forwards the collected record triple to 17b4d8; on non-zero status re-drives through a 65a550 callback (36993c). Confidence: medium. */
+}
+
+/* FUN_00176014 @ 0x176014  (est. sk_stackshot_vec20)
+ * Allocates a 0x20-stride growable vector (type 0x654508/004e4f20) of
+ * capacity param_2 (bounded by param_1), with initial cap from 126e8.
+ * Confidence: medium. */
+static void *sk_stackshot_vec20_176014(long a, long b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_vec20 @ 0x176014: Allocates a 0x20-stride growable vector (type 0x654508/004e4f20) of capacity param_2 (bounded by param_1), with initial cap from 126e8. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176098 @ 0x176098  (est. sk_stackshot_vec28)
+ * Allocates a 0x28-stride growable vector (0x654500/004e4f10). Confidence:
+ * medium. */
+static void *sk_stackshot_vec28_176098(long a, long b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_vec28 @ 0x176098: Allocates a 0x28-stride growable vector (0x654500/004e4f10). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176128 @ 0x176128  (est. sk_stackshot_vec38)
+ * Allocates a 0x38-stride growable vector (param_3/param_4 type). Confidence:
+ * medium. */
+static void *sk_stackshot_vec38_176128(long a, long b, uint64_t t3, uint64_t t4)
+{
+    (void)a;
+    (void)b;
+    (void)t3;
+    (void)t4;
+    (void)0; /* sk_stackshot_vec38 @ 0x176128: Allocates a 0x38-stride growable vector (param_3/param_4 type). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001761b8 @ 0x1761b8  (est. sk_stackshot_vec18)
+ * Allocates a 0x18-stride growable vector (0x6544d0/004e4ee0). Confidence:
+ * medium. */
+static void *sk_stackshot_vec18_1761b8(long a, long b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_vec18 @ 0x1761b8: Allocates a 0x18-stride growable vector (0x6544d0/004e4ee0). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176248 @ 0x176248  (est. sk_stackshot_vec10)
+ * Allocates a 0x10-stride growable vector (0x6544e0/004e4ee8). Confidence:
+ * medium. */
+static void *sk_stackshot_vec10_176248(long a, long b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_vec10 @ 0x176248: Allocates a 0x10-stride growable vector (0x6544e0/004e4ee8). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001762cc @ 0x1762cc  (est. sk_stackshot_vec20_grow)
+ * Growable 0x20-vector reallocate: if param_3 bit0 set, double capacity
+ * bounded by the 0x18 field; allocates via 176014, copies old elements (0x20
+ * stride, 35b67c), and releases the old vector. Returns the new vector.
+ * Confidence: medium. */
+static long sk_stackshot_vec20_grow_1762cc(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec20_grow @ 0x1762cc: Growable 0x20-vector reallocate: if param_3 bit0 set, double capacity bounded by the 0x18 field; allocates via 176014, copies old elements (0x20 stride, 35b67c), and releases the old vector. Returns the new vector. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001763a0 @ 0x1763a0  (est. sk_stackshot_vec28_grow)
+ * Growable 0x28-vector reallocate via 176098 (copy via 117cc4). Confidence:
+ * medium. */
+static long sk_stackshot_vec28_grow_1763a0(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec28_grow @ 0x1763a0: Growable 0x28-vector reallocate via 176098 (copy via 117cc4). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017646c @ 0x17646c  (est. sk_stackshot_vec38_grow)
+ * Growable 0x38-vector reallocate via 176128 (type 0x6544f0/004e4f00).
+ * Confidence: medium. */
+static long sk_stackshot_vec38_grow_17646c(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec38_grow @ 0x17646c: Growable 0x38-vector reallocate via 176128 (type 0x6544f0/004e4f00). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176564 @ 0x176564  (est. sk_stackshot_vec38b_grow)
+ * Growable 0x38-vector (type 0x6544d8/004e5920). Confidence: medium. */
+static long sk_stackshot_vec38b_grow_176564(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec38b_grow @ 0x176564: Growable 0x38-vector (type 0x6544d8/004e5920). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017664c @ 0x17664c  (est. sk_stackshot_vec18_grow)
+ * Growable 0x18-vector via 1761b8. Confidence: medium. */
+static long sk_stackshot_vec18_grow_17664c(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec18_grow @ 0x17664c: Growable 0x18-vector via 1761b8. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176724 @ 0x176724  (est. sk_stackshot_vec10_grow)
+ * Growable 0x10-vector via 176248. Confidence: medium. */
+static long sk_stackshot_vec10_grow_176724(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_vec10_grow @ 0x176724: Growable 0x10-vector via 176248. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176800 @ 0x176800  (est. sk_stackshot_context_or_fatal)
+ * Returns param_4 when non-null; otherwise emits the fatal context error
+ * (0xd00000000000003a/0x80000000005cb4c0) and aborts via 1afa84
+ * (StackshotConclaveSupport_Stacksh_005cb4a0, line 0x2a). Confidence: medium. */
+static long sk_stackshot_context_or_fatal_176800(uint64_t a, uint64_t b, uint64_t c, long ctx)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)ctx;
+    (void)0; /* sk_stackshot_context_or_fatal @ 0x176800: Returns param_4 when non-null; otherwise emits the fatal context error (0xd00000000000003a/0x80000000005cb4c0) and aborts via 1afa84 (StackshotConclaveSupport_Stacksh_005cb4a0, line 0x2a). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00176914 @ 0x176914  (est. sk_stackshot_get_crash_buffer)
+ * getCrashBuffer: allocates/validates the crash buffer region. Resolves the
+ * region (DAT_004e4ba8 x2, DAT_004e4ba0), tries to allocate via 5ab88, and on
+ * failure emits the fatal "...getCrashBuffer..." diagnostics (005cbb90 etc.).
+ * Large, faithful reconstruction. Confidence: medium. Notes: strings
+ * s_getCrashBuffer___005cbb90. */
+static void sk_stackshot_get_crash_buffer_176914(void)
+{
+    (void)0; /* sk_stackshot_get_crash_buffer @ 0x176914: getCrashBuffer: allocates/validates the crash buffer region. Resolves the region (DAT_004e4ba8 x2, DAT_004e4ba0), tries to allocate via 5ab88, and on failure emits the fatal "...getCrashBuffer..." diagnostics (005cbb90 etc.). Large, faithfu */
+}
+
+/* FUN_00176e8c @ 0x176e8c  (est. sk_stackshot_construct)
+ * Constructs a StackshotConclaveSupport object: allocates the 0x18 header +
+ * 0x10 buffer, registers the crash-buffer callback (176914), sets up the two
+ * vtable dispatch entries (172bf8/172c38), and initializes via 16dff4.
+ * Confidence: medium. */
+static void sk_stackshot_construct_176e8c(long obj, uint64_t rec, uint64_t b)
+{
+    (void)obj;
+    (void)rec;
+    (void)b;
+    (void)0; /* sk_stackshot_construct @ 0x176e8c: Constructs a StackshotConclaveSupport object: allocates the 0x18 header + 0x10 buffer, registers the crash-buffer callback (176914), sets up the two vtable dispatch entries (172bf8/172c38), and initializes via 16dff4. Confidence: medium. */
+}
+
+/* FUN_00177068 @ 0x177068  (est. sk_stackshot_frame_pack)
+ * Packs a frame {offset, type} into a single word: (off - len) & 0xffffffff
+ * ffff | type << 0x30. Confidence: high (tiny). */
+static uint64_t sk_stackshot_frame_pack_177068(long a, long b, long c)
+{
+    return (a - c) & 0xffffffffffff | (uint64_t)b << 0x30;
+}
+
+/* FUN_00177084 @ 0x177084  (est. sk_stackshot_fptr_resolve)
+ * Resolves a tagged function pointer (bit0 set => deref masked ptr) and
+ * returns the code address (base+4 + *(int*)(base+4)). Confidence: high. */
+static long sk_stackshot_fptr_resolve_177084(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_001770b4 @ 0x1770b4  (est. sk_stackshot_release_res)
+ * Releases the resource at x20+0x10 (26e8) + teardown (36b21c). Confidence:
+ * low. */
+static void sk_1770b4(void)
+{
+    (void)0; /* sk_stackshot_release_res @ 0x1770b4: Releases the resource at x20+0x10 (26e8) + teardown (36b21c). Confidence: low. */
+}
+
+/* FUN_001770b8 @ 0x1770b8  (est. sk_stackshot_release_res)
+ * Releases the resource at x20+0x10 (26e8) + teardown (36b21c). Confidence:
+ * low. */
+static void sk_1770b8(void)
+{
+    (void)0; /* sk_stackshot_release_res @ 0x1770b8: Releases the resource at x20+0x10 (26e8) + teardown (36b21c). Confidence: low. */
+}
+
+/* FUN_001770e0 @ 0x1770e0  (est. sk_stackshot_vtable_indirect)
+ * Indirect vtable call: resolves fptr from x20+0x30 via 177084 and calls it
+ * with (param_1, x20+0x10, x20+0x30). Confidence: low. */
+static void sk_stackshot_vtable_indirect_1770e0(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_vtable_indirect @ 0x1770e0: Indirect vtable call: resolves fptr from x20+0x30 via 177084 and calls it with (param_1, x20+0x10, x20+0x30). Confidence: low. */
+}
+
+/* FUN_00177158 @ 0x177158  (est. sk_stackshot_collect_region)
+ * Collects a region's frames (from param_1 to param_2, stride param_3,
+ * plus param_4 offset) into the 0x657778 growable array via 177490/34a2c
+ * resolution. Confidence: medium. */
+static void *sk_stackshot_collect_region_177158(uint64_t a, long b, long c, long d)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_collect_region @ 0x177158: Collects a region's frames (from param_1 to param_2, stride param_3, plus param_4 offset) into the 0x657778 growable array via 177490/34a2c resolution. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001773c8 @ 0x1773c8  (est. sk_stackshot_fptr_resolve2)
+ * Tagged fptr resolve (base+4 + *(int*)(base+4)). Confidence: high. */
+static long sk_stackshot_fptr_resolve2_1773c8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_00177490 @ 0x177490  (est. sk_stackshot_indirect_call)
+ * Indirect call through the object vtable (+0x30 dispatch via first word).
+ * Confidence: low. */
+static void sk_stackshot_indirect_call_177490(uint64_t a, uint64_t *vt, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a;
+    (void)vt;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_indirect_call @ 0x177490: Indirect call through the object vtable (+0x30 dispatch via first word). Confidence: low. */
+}
+
+/* FUN_001774ac @ 0x1774ac  (est. sk_stackshot_is_idle)
+ * Returns true when the object at x20+0x10's +0x10 field is empty (via
+ * 1817c). Confidence: low. */
+static bool sk_stackshot_is_idle_1774ac(void)
+{
+    (void)0; /* sk_stackshot_is_idle @ 0x1774ac: Returns true when the object at x20+0x10's +0x10 field is empty (via 1817c). Confidence: low. */
+    return 0;
+}
+
+/* FUN_001774dc @ 0x1774dc  (est. sk_stackshot_region_call)
+ * Indirect region call: invokes (param_2+0x30)(param_1, 0x8928, ...).
+ * Confidence: low. */
+static void sk_stackshot_region_call_1774dc(uint64_t a, long vt, uint64_t b, uint64_t c)
+{
+    (void)a;
+    (void)vt;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_region_call @ 0x1774dc: Indirect region call: invokes (param_2+0x30)(param_1, 0x8928, ...). Confidence: low. */
+}
+
+/* FUN_00177504 @ 0x177504  (est. sk_stackshot_noop)
+ * No-op. Confidence: high. */
+static void sk_stackshot_noop_177504(void) { }
+
+/* FUN_0017750c @ 0x17750c  (est. sk_stackshot_store7)
+ * Stores 7 packed words/flags into a record. Confidence: high (tiny). */
+static void sk_stackshot_store7_17750c(uint64_t *r, uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint8_t e, uint64_t f, uint8_t g)
+{
+    r[0]=a; r[1]=b; r[2]=c; r[3]=d; *(uint8_t*)(r+4)=e; r[5]=f; *(uint8_t*)(r+6)=g;
+}
+
+/* FUN_00177528 @ 0x177528  (est. sk_stackshot_log_byte)
+ * Logs via 22995c with the byte at x20+1. Confidence: low. */
+static void sk_stackshot_log_byte_177528(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_log_byte @ 0x177528: Logs via 22995c with the byte at x20+1. Confidence: low. */
+}
+
+/* FUN_0017758c @ 0x17758c  (est. sk_stackshot_hash_write)
+ * Writes via 208478 with the 004e4fa0 type + current hash. Confidence: low. */
+static void sk_stackshot_hash_write_17758c(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_hash_write @ 0x17758c: Writes via 208478 with the 004e4fa0 type + current hash. Confidence: low. */
+}
+
+/* FUN_001775e0 @ 0x1775e0  (est. sk_stackshot_ctx_begin)
+ * Begins a serialization context: 1a84f4 init, 2298d4 hash-constant seed
+ * (0xdeadcafebeefbabe), 1a8564 finalize. Confidence: medium. */
+static void sk_stackshot_ctx_begin_1775e0(void)
+{
+    (void)0; /* sk_stackshot_ctx_begin @ 0x1775e0: Begins a serialization context: 1a84f4 init, 2298d4 hash-constant seed (0xdeadcafebeefbabe), 1a8564 finalize. Confidence: medium. */
+}
+
+/* FUN_00177630 @ 0x177630  (est. sk_stackshot_hash_seed)
+ * Seeds the hash with 0xdeadcafebeefbabe. Confidence: medium. */
+static void sk_stackshot_hash_seed_177630(void)
+{
+    (void)0; /* sk_stackshot_hash_seed @ 0x177630: Seeds the hash with 0xdeadcafebeefbabe. Confidence: medium. */
+}
+
+/* FUN_00177664 @ 0x177664  (est. sk_stackshot_ctx_begin_b)
+ * Begins a serialization context (no explicit 0 arg). Confidence: medium. */
+static void sk_stackshot_ctx_begin_b_177664(void)
+{
+    (void)0; /* sk_stackshot_ctx_begin_b @ 0x177664: Begins a serialization context (no explicit 0 arg). Confidence: medium. */
+}
+
+/* FUN_0017770c @ 0x17770c  (est. sk_stackshot_build_check_a)
+ * Checks the build variant hash (21904): returns true for 0xEE9DFACDA...=
+ * -0x11a26510235f57d3 (DEBUG?), false for 0x7e2ceb7445c093c5, else fatal
+ * "Fatal error" (005cbf10, 0x4db). Confidence: medium. */
+static uint64_t sk_stackshot_build_check_a_17770c(void)
+{
+    (void)0; /* sk_stackshot_build_check_a @ 0x17770c: Checks the build variant hash (21904): returns true for 0xEE9DFACDA...= -0x11a26510235f57d3 (DEBUG?), false for 0x7e2ceb7445c093c5, else fatal "Fatal error" (005cbf10, 0x4db). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00177854 @ 0x177854  (est. sk_stackshot_collect_words)
+ * Collects a run of words (21904 count) from the stream into the 0x657788
+ * growable array via 17933c, returning the array. Confidence: medium. */
+static void *sk_stackshot_collect_words_177854(void)
+{
+    (void)0; /* sk_stackshot_collect_words @ 0x177854: Collects a run of words (21904 count) from the stream into the 0x657788 growable array via 17933c, returning the array. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00177980 @ 0x177980  (est. sk_stackshot_async_a)
+ * Async wrapper: 36a940 + 17d464 then vtable +8 call (release). Confidence:
+ * low. */
+static uint64_t sk_stackshot_async_a_177980(uint64_t a, uint64_t b, uint64_t c, long d, uint64_t e, uint64_t f, uint64_t g)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)g;
+    (void)0; /* sk_stackshot_async_a @ 0x177980: Async wrapper: 36a940 + 17d464 then vtable +8 call (release). Confidence: low. */
+    return 0;
+}
+
+/* FUN_00177a34 @ 0x177a34  (est. sk_stackshot_selector_id)
+ * Maps a selector hash to an id (0..4): -0x11a26510235f57d3=>4,
+ * -0x783acd52da9b9cc=>1, 0x7e2ceb7445c093c5=>2, 0x6282921a0bf58ff1=>3,
+ * 0x7e4f1803cc77363=>0, else fatal (005cbee0, 0x503). Confidence: medium. */
+static uint64_t sk_stackshot_selector_id_177a34(void)
+{
+    (void)0; /* sk_stackshot_selector_id @ 0x177a34: Maps a selector hash to an id (0..4): -0x11a26510235f57d3=>4, -0x783acd52da9b9cc=>1, 0x7e2ceb7445c093c5=>2, 0x6282921a0bf58ff1=>3, 0x7e4f1803cc77363=>0, else fatal (005cbee0, 0x503). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00177bd4 @ 0x177bd4  (est. sk_stackshot_emit_stackrecs)
+ * Emits a list of Stack records (0x18-length check, 0x20..0x37 byte fields)
+ * into the serialized stream via 23208/230f8. Confidence: medium. */
+static void sk_stackshot_emit_stackrecs_177bd4(long rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_stackrecs @ 0x177bd4: Emits a list of Stack records (0x18-length check, 0x20..0x37 byte fields) into the serialized stream via 23208/230f8. Confidence: medium. */
+}
+
+/* FUN_00177e24 @ 0x177e24  (est. sk_stackshot_async_b)
+ * Async wrapper: 36a940 + 17d5a8 then vtable +8 release. Confidence: low. */
+static uint64_t sk_stackshot_async_b_177e24(uint64_t a, uint64_t b, long c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)0; /* sk_stackshot_async_b @ 0x177e24: Async wrapper: 36a940 + 17d5a8 then vtable +8 release. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00177ed0 @ 0x177ed0  (est. sk_stackshot_store5)
+ * Stores 5 packed words/flags into a record. Confidence: high (tiny). */
+static void sk_stackshot_store5_177ed0(uint64_t *r, uint64_t a, uint64_t b, uint8_t c, uint64_t d, uint8_t e)
+{
+    r[0]=a; r[1]=b; *(uint8_t*)(r+2)=c; r[3]=d; *(uint8_t*)(r+4)=e;
+}
+
+/* FUN_00177ee4 @ 0x177ee4  (est. sk_stackshot_mkobj_e)
+ * Object header alloc + buffer alloc + vtable via 262ec/260e0. Confidence:
+ * low. */
+static long sk_stackshot_mkobj_e_177ee4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_mkobj_e @ 0x177ee4: Object header alloc + buffer alloc + vtable via 262ec/260e0. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00177ee8 @ 0x177ee8  (est. sk_stackshot_finalize_hash)
+ * Finalizes the serialized stream: computes the total size over the region
+ * table (param_1), hashes it via 25ebc/24068/23208/780b0/22c48/25f44/214b0,
+ * and returns the hash (21904) or the error via 65a550. Confidence: medium. */
+static uint64_t sk_stackshot_finalize_hash_177ee8(long rec, uint64_t b, uint64_t c, uint64_t flags)
+{
+    (void)rec;
+    (void)b;
+    (void)c;
+    (void)flags;
+    (void)0; /* sk_stackshot_finalize_hash @ 0x177ee8: Finalizes the serialized stream: computes the total size over the region table (param_1), hashes it via 25ebc/24068/23208/780b0/22c48/25f44/214b0, and returns the hash (21904) or the error via 65a550. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001780b0 @ 0x1780b0  (est. sk_stackshot_emit_ctx)
+ * Emits a region-context into the hash stream: writes the region list (each
+ * 0x10-length record's 16 bytes + flags) via 23208/230f8, then the trailing
+ * flags byte. Confidence: medium. */
+static void sk_stackshot_emit_ctx_1780b0(uint64_t a, long rec, uint64_t flags)
+{
+    (void)a;
+    (void)rec;
+    (void)flags;
+    (void)0; /* sk_stackshot_emit_ctx @ 0x1780b0: Emits a region-context into the hash stream: writes the region list (each 0x10-length record's 16 bytes + flags) via 23208/230f8, then the trailing flags byte. Confidence: medium. */
+}
+
+/* FUN_00178348 @ 0x178348  (est. sk_stackshot_begin_check)
+ * Validates the begin-hash (21904) equals 0x4159b862aecab4d9, else fatal
+ * (005cbdf0, 0x519). Confidence: medium. */
+static void sk_stackshot_begin_check_178348(void)
+{
+    (void)0; /* sk_stackshot_begin_check @ 0x178348: Validates the begin-hash (21904) equals 0x4159b862aecab4d9, else fatal (005cbdf0, 0x519). Confidence: medium. */
+}
+
+/* FUN_00178450 @ 0x178450  (est. sk_stackshot_collect_framevec)
+ * Collects a frame vector (count via 21904, each via 178ef0) into the
+ * 0x657788 array, returning the packed {array, count}. Confidence: medium. */
+static void sk_stackshot_collect_framevec_178450(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_collect_framevec @ 0x178450: Collects a frame vector (count via 21904, each via 178ef0) into the 0x657788 array, returning the packed {array, count}. Confidence: medium. */
+}
+
+/* FUN_001785cc @ 0x1785cc  (est. sk_stackshot_fatal)
+ * Fatal-error path: computes the serialized size over the frame array
+ * (param_1), hashes via the same stream machinery, and returns the hash (or
+ * the 65a550 error). Confidence: medium. */
+static uint64_t sk_stackshot_fatal_1785cc(long rec, uint64_t b, uint64_t c, uint64_t flags)
+{
+    (void)rec;
+    (void)b;
+    (void)c;
+    (void)flags;
+    (void)0; /* sk_stackshot_fatal @ 0x1785cc: Fatal-error path: computes the serialized size over the frame array (param_1), hashes via the same stream machinery, and returns the hash (or the 65a550 error). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017884c @ 0x17884c  (est. sk_stackshot_check_fatal_hash)
+ * Checks the fatal hash (21904) equals 0x6f9215ea767e2712 (true) or
+ * -0x8211813efa9c46 (false), else fatal (005cbdb0, 0x520). Confidence: medium. */
+static uint64_t sk_stackshot_check_fatal_hash_17884c(void)
+{
+    (void)0; /* sk_stackshot_check_fatal_hash @ 0x17884c: Checks the fatal hash (21904) equals 0x6f9215ea767e2712 (true) or -0x8211813efa9c46 (false), else fatal (005cbdb0, 0x520). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_001789b8 @ 0x1789b8  (est. sk_stackshot_check_hash_c)
+ * Checks hash == 0x752da4ce868ca6dd, else fatal (005cbd70, 0x527).
+ * Confidence: medium. */
+static void sk_stackshot_check_hash_c_1789b8(void)
+{
+    (void)0; /* sk_stackshot_check_hash_c @ 0x1789b8: Checks hash == 0x752da4ce868ca6dd, else fatal (005cbd70, 0x527). Confidence: medium. */
+}
+
+/* FUN_00178ae0 @ 0x178ae0  (est. sk_stackshot_log_byte_ctx)
+ * Logs the byte at x20+1 within a serialization context. Confidence: low. */
+static void sk_stackshot_log_byte_ctx_178ae0(void)
+{
+    (void)0; /* sk_stackshot_log_byte_ctx @ 0x178ae0: Logs the byte at x20+1 within a serialization context. Confidence: low. */
+}
+
+/* FUN_00178b28 @ 0x178b28  (est. sk_stackshot_log_byte_ctx_b)
+ * Logs the byte at x20+1 (no explicit 0 arg). Confidence: low. */
+static void sk_stackshot_log_byte_ctx_b_178b28(void)
+{
+    (void)0; /* sk_stackshot_log_byte_ctx_b @ 0x178b28: Logs the byte at x20+1 (no explicit 0 arg). Confidence: low. */
+}
+
+/* FUN_00178b6c @ 0x178b6c  (est. sk_stackshot_tag32)
+ * Maps a 32-bit value through the 0x40302010005 nibble table (17d32c) and
+ * stores the byte result. Confidence: medium. */
+static void sk_stackshot_tag32_178b6c(uint8_t *out, uint32_t *v)
+{
+    (void)out;
+    (void)v;
+    (void)0; /* sk_stackshot_tag32 @ 0x178b6c: Maps a 32-bit value through the 0x40302010005 nibble table (17d32c) and stores the byte result. Confidence: medium. */
+}
+
+/* FUN_00178b98 @ 0x178b98  (est. sk_stackshot_hash_write_b)
+ * Writes via 208478 with type 004e5158. Confidence: low. */
+static void sk_stackshot_hash_write_b_178b98(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_hash_write_b @ 0x178b98: Writes via 208478 with type 004e5158. Confidence: low. */
+}
+
+/* FUN_00178c0c @ 0x178c0c  (est. sk_stackshot_selector_id2)
+ * Maps selector hash to id (0..3): -0x7e823a91a48e8fae=>1,
+ * -0x3de3ed447c24c24b=>2, 0x5a2e2d0c3bc3e9cd=>3, 0x784a6e3b19f9800a=>0,
+ * else fatal (005cbd40, 0x54c). Confidence: medium. */
+static uint64_t sk_stackshot_selector_id2_178c0c(void)
+{
+    (void)0; /* sk_stackshot_selector_id2 @ 0x178c0c: Maps selector hash to id (0..3): -0x7e823a91a48e8fae=>1, -0x3de3ed447c24c24b=>2, 0x5a2e2d0c3bc3e9cd=>3, 0x784a6e3b19f9800a=>0, else fatal (005cbd40, 0x54c). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_00178dcc @ 0x178dcc  (est. sk_stackshot_check_hash_d)
+ * Checks hash == 0x672c65b98d5d43f7, else fatal (005cbca0, 0x553).
+ * Confidence: medium. */
+static void sk_stackshot_check_hash_d_178dcc(void)
+{
+    (void)0; /* sk_stackshot_check_hash_d @ 0x178dcc: Checks hash == 0x672c65b98d5d43f7, else fatal (005cbca0, 0x553). Confidence: medium. */
+}
+
+/* FUN_00178ef0 @ 0x178ef0  (est. sk_stackshot_read_frame)
+ * Reads a 0x10-byte frame from the stream into the 0x657788 array, returning
+ * the packed {hash, array}. Confidence: medium. */
+static void sk_stackshot_read_frame_178ef0(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_frame @ 0x178ef0: Reads a 0x10-byte frame from the stream into the 0x657788 array, returning the packed {hash, array}. Confidence: medium. */
+}
+
+/* FUN_00178ff0 @ 0x178ff0  (est. sk_stackshot_read_record5)
+ * Reads a 5-field record: id, UInt8Array (count + bytes), and two optional
+ * flags. Fills out. Confidence: medium. */
+static void sk_stackshot_read_record5_178ff0(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_record5 @ 0x178ff0: Reads a 5-field record: id, UInt8Array (count + bytes), and two optional flags. Fills out. Confidence: medium. */
+}
+
+/* FUN_00179174 @ 0x179174  (est. sk_stackshot_read_record6)
+ * Reads a 6-field record (id, cap, UInt8Array, three flags). Fills out.
+ * Confidence: medium. */
+static void sk_stackshot_read_record6_179174(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_record6 @ 0x179174: Reads a 6-field record (id, cap, UInt8Array, three flags). Fills out. Confidence: medium. */
+}
+
+/* FUN_0017933c @ 0x17933c  (est. sk_stackshot_read_frame18)
+ * Reads an 0x18-byte frame into the 0x657788 array, returning packed
+ * {hash, array}. Confidence: medium. */
+static void sk_stackshot_read_frame18_17933c(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_frame18 @ 0x17933c: Reads an 0x18-byte frame into the 0x657788 array, returning packed {hash, array}. Confidence: medium. */
+}
+
+/* FUN_0017940c @ 0x17940c  (est. sk_stackshot_emit_record5)
+ * Emits a 5-field record: id, UInt8Array bytes, perm flags. Confidence:
+ * medium. */
+static void sk_stackshot_emit_record5_17940c(uint64_t *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_record5 @ 0x17940c: Emits a 5-field record: id, UInt8Array bytes, perm flags. Confidence: medium. */
+}
+
+/* FUN_001794d0 @ 0x1794d0  (est. sk_stackshot_emit_record6)
+ * Emits a 6-field record: id, cap, UInt8Array, flags, nested array.
+ * Confidence: medium. */
+static void sk_stackshot_emit_record6_1794d0(uint64_t *rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_record6 @ 0x1794d0: Emits a 6-field record: id, cap, UInt8Array, flags, nested array. Confidence: medium. */
+}
+
+/* FUN_001795b0 @ 0x1795b0  (est. sk_stackshot_emit_uuid_rec)
+ * Emits a UUID record (0x10 bytes) + an optional value, within a
+ * serialization context. Confidence: medium. */
+static void sk_stackshot_emit_uuid_rec_1795b0(uint64_t a, long rec, uint64_t v, uint64_t w, char flag)
+{
+    (void)a;
+    (void)rec;
+    (void)v;
+    (void)w;
+    (void)flag;
+    (void)0; /* sk_stackshot_emit_uuid_rec @ 0x1795b0: Emits a UUID record (0x10 bytes) + an optional value, within a serialization context. Confidence: medium. */
+}
+
+/* FUN_00179850 @ 0x179850  (est. sk_stackshot_collect_frame_buf)
+ * Collects a frame buffer via 178ef0 and stores param_4/param_5 into the
+ * record; finalizes hash. Confidence: medium. */
+static void sk_stackshot_collect_frame_buf_179850(uint8_t (*out)[16], uint64_t b, uint32_t *st, uint64_t v, uint8_t f)
+{
+    (void)b;
+    (void)st;
+    (void)v;
+    (void)f;
+    (void)0; /* sk_stackshot_collect_frame_buf @ 0x179850: Collects a frame buffer via 178ef0 and stores param_4/param_5 into the record; finalizes hash. Confidence: medium. */
+}
+
+/* FUN_00179920 @ 0x179920  (est. sk_stackshot_async_c)
+ * Async dispatch: 19aac + 23f74 with the 181088 handler + 67b148 type.
+ * Confidence: low. */
+static uint64_t sk_stackshot_async_c_179920(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_c @ 0x179920: Async dispatch: 19aac + 23f74 with the 181088 handler + 67b148 type. Confidence: low. */
+    return 0;
+}
+
+/* FUN_001799e0 @ 0x1799e0  (est. sk_stackshot_async_store)
+ * Async result store: 23f74 with 179850 handler; stores the packed result.
+ * Confidence: low. */
+static void sk_stackshot_async_store_1799e0(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store @ 0x1799e0: Async result store: 23f74 with 179850 handler; stores the packed result. Confidence: low. */
+}
+
+/* FUN_00179ab4 @ 0x179ab4  (est. sk_stackshot_emit_ctx2)
+ * Emits a region context (179ab4): 24068 begin + 1780b0 emit + 25704.
+ * Confidence: medium. */
+static void sk_stackshot_emit_ctx2_179ab4(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_emit_ctx2 @ 0x179ab4: Emits a region context (179ab4): 24068 begin + 1780b0 emit + 25704. Confidence: medium. */
+}
+
+/* FUN_00179b74 @ 0x179b74  (est. sk_stackshot_collect_framev_buf)
+ * Collects a frame vector via 178450 and stores the packed (lo/hi) flags.
+ * Confidence: medium. */
+static void sk_stackshot_collect_framev_buf_179b74(uint8_t (*out)[16], uint64_t b, uint32_t *st, uint64_t v)
+{
+    (void)b;
+    (void)st;
+    (void)v;
+    (void)0; /* sk_stackshot_collect_framev_buf @ 0x179b74: Collects a frame vector via 178450 and stores the packed (lo/hi) flags. Confidence: medium. */
+}
+
+/* FUN_00179c50 @ 0x179c50  (est. sk_stackshot_async_d)
+ * Async dispatch with 181010 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_d_179c50(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_d @ 0x179c50: Async dispatch with 181010 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_00179d10 @ 0x179d10  (est. sk_stackshot_async_store_b)
+ * Async store with 179b74 handler. Confidence: low. */
+static void sk_stackshot_async_store_b_179d10(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_b @ 0x179d10: Async store with 179b74 handler. Confidence: low. */
+}
+
+/* FUN_00179de4 @ 0x179de4  (est. sk_stackshot_emit_rec5)
+ * Emits a 5-field record (17940c) within context + hash. Confidence: medium. */
+static void sk_stackshot_emit_rec5_179de4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_emit_rec5 @ 0x179de4: Emits a 5-field record (17940c) within context + hash. Confidence: medium. */
+}
+
+/* FUN_00179e8c @ 0x179e8c  (est. sk_stackshot_parse_own_as)
+ * Parses the own-address-space record via 23f74 with 179f70 handler.
+ * Confidence: medium. */
+static void sk_stackshot_parse_own_as_179e8c(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)0; /* sk_stackshot_parse_own_as @ 0x179e8c: Parses the own-address-space record via 23f74 with 179f70 handler. Confidence: medium. */
+}
+
+/* FUN_00179f70 @ 0x179f70  (est. sk_stackshot_parse_as_cb)
+ * Parses the address-space record callback: reads the 178ff0 record, emits
+ * it, and finalizes. Confidence: medium. */
+static void sk_stackshot_parse_as_cb_179f70(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_parse_as_cb @ 0x179f70: Parses the address-space record callback: reads the 178ff0 record, emits it, and finalizes. Confidence: medium. */
+}
+
+/* FUN_0017a038 @ 0x17a038  (est. sk_stackshot_async_e)
+ * Async dispatch with 180fbc handler. Confidence: low. */
+static uint64_t sk_stackshot_async_e_17a038(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_e @ 0x17a038: Async dispatch with 180fbc handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017a100 @ 0x17a100  (est. sk_stackshot_async_store_c)
+ * Async store with 179f70 handler. Confidence: low. */
+static void sk_stackshot_async_store_c_17a100(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_c @ 0x17a100: Async store with 179f70 handler. Confidence: low. */
+}
+
+/* FUN_0017a1e4 @ 0x17a1e4  (est. sk_stackshot_emit_rec5_ctx)
+ * Emits a 5-field record + region context + hash. Confidence: medium. */
+static void sk_stackshot_emit_rec5_ctx_17a1e4(uint64_t a, long rec)
+{
+    (void)a;
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_rec5_ctx @ 0x17a1e4: Emits a 5-field record + region context + hash. Confidence: medium. */
+}
+
+/* FUN_0017a2a4 @ 0x17a2a4  (est. sk_stackshot_collect_combined)
+ * Collects the combined record: 178ff0 + 178450, stores packed result.
+ * Confidence: medium. */
+static void sk_stackshot_collect_combined_17a2a4(uint64_t *out, uint64_t b, uint32_t *st, uint64_t v)
+{
+    (void)out;
+    (void)b;
+    (void)st;
+    (void)v;
+    (void)0; /* sk_stackshot_collect_combined @ 0x17a2a4: Collects the combined record: 178ff0 + 178450, stores packed result. Confidence: medium. */
+}
+
+/* FUN_0017a3c8 @ 0x17a3c8  (est. sk_stackshot_size_rec5_ctx)
+ * Computes the serialized size of a record (17d380 + 17d29c). Confidence:
+ * medium. */
+static long sk_stackshot_size_rec5_ctx_17a3c8(long rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_size_rec5_ctx @ 0x17a3c8: Computes the serialized size of a record (17d380 + 17d29c). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017a428 @ 0x17a428  (est. sk_stackshot_async_f)
+ * Async dispatch with 180fa4 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_f_17a428(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_f @ 0x17a428: Async dispatch with 180fa4 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017a4f0 @ 0x17a4f0  (est. sk_stackshot_async_store_d)
+ * Async store with 17a2a4 handler. Confidence: low. */
+static void sk_stackshot_async_store_d_17a4f0(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_d @ 0x17a4f0: Async store with 17a2a4 handler. Confidence: low. */
+}
+
+/* FUN_0017a5c4 @ 0x17a5c4  (est. sk_stackshot_emit_rec6_ctx)
+ * Emits a 6-field record (1794d0) + hash. Confidence: medium. */
+static void sk_stackshot_emit_rec6_ctx_17a5c4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_emit_rec6_ctx @ 0x17a5c4: Emits a 6-field record (1794d0) + hash. Confidence: medium. */
+}
+
+/* FUN_0017a66c @ 0x17a66c  (est. sk_stackshot_parse_rec6_cb)
+ * Parses a 6-field record (179174) + hash. Confidence: medium. */
+static void sk_stackshot_parse_rec6_cb_17a66c(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_parse_rec6_cb @ 0x17a66c: Parses a 6-field record (179174) + hash. Confidence: medium. */
+}
+
+/* FUN_0017a73c @ 0x17a73c  (est. sk_stackshot_async_g)
+ * Async dispatch with 180f8c handler. Confidence: low. */
+static uint64_t sk_stackshot_async_g_17a73c(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_g @ 0x17a73c: Async dispatch with 180f8c handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017a804 @ 0x17a804  (est. sk_stackshot_async_store_e)
+ * Async store with 17a66c handler. Confidence: low. */
+static void sk_stackshot_async_store_e_17a804(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_e @ 0x17a804: Async store with 17a66c handler. Confidence: low. */
+}
+
+/* FUN_0017a8f0 @ 0x17a8f0  (est. sk_stackshot_emit_pair)
+ * Emits a 2-word record + hash. Confidence: medium. */
+static void sk_stackshot_emit_pair_17a8f0(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_emit_pair @ 0x17a8f0: Emits a 2-word record + hash. Confidence: medium. */
+}
+
+/* FUN_0017a950 @ 0x17a950  (est. sk_stackshot_read_pair)
+ * Reads a 2-word record + hash. Confidence: medium. */
+static void sk_stackshot_read_pair_17a950(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_pair @ 0x17a950: Reads a 2-word record + hash. Confidence: medium. */
+}
+
+/* FUN_0017a9b0 @ 0x17a9b0  (est. sk_stackshot_dispatch_b)
+ * Thunk into the shared dispatcher 17b36c. Confidence: high (trivial). */
+static void sk_17a9b0(void)
+{
+    (void)0; /* sk_stackshot_dispatch_b @ 0x17a9b0: Thunk into the shared dispatcher 17b36c. Confidence: high (trivial). */
+}
+
+/* FUN_0017a9b4 @ 0x17a9b4  (est. sk_stackshot_dispatch_b)
+ * Thunk into the shared dispatcher 17b36c. Confidence: high (trivial). */
+static void sk_17a9b4(void)
+{
+    (void)0; /* sk_stackshot_dispatch_b @ 0x17a9b4: Thunk into the shared dispatcher 17b36c. Confidence: high (trivial). */
+}
+
+/* FUN_0017a9dc @ 0x17a9dc  (est. sk_stackshot_async_store_f)
+ * Async store with 17a950 handler. Confidence: low. */
+static void sk_stackshot_async_store_f_17a9dc(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_f @ 0x17a9dc: Async store with 17a950 handler. Confidence: low. */
+}
+
+/* FUN_0017aaa0 @ 0x17aaa0  (est. sk_stackshot_emit_rec6_ctx_b)
+ * Emits a 6-field record + optional nested pair + hash. Confidence: medium. */
+static void sk_stackshot_emit_rec6_ctx_b_17aaa0(uint64_t a, long rec)
+{
+    (void)a;
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_rec6_ctx_b @ 0x17aaa0: Emits a 6-field record + optional nested pair + hash. Confidence: medium. */
+}
+
+/* FUN_0017ab8c @ 0x17ab8c  (est. sk_stackshot_parse_crash)
+ * Parses a crash record via 23f74 with 17ac60 handler. Confidence: medium. */
+static void sk_stackshot_parse_crash_17ab8c(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)0; /* sk_stackshot_parse_crash @ 0x17ab8c: Parses a crash record via 23f74 with 17ac60 handler. Confidence: medium. */
+}
+
+/* FUN_0017ac60 @ 0x17ac60  (est. sk_stackshot_parse_crash_cb)
+ * Parses the crash record callback: reads 179174 record + optional pair,
+ * emits. Confidence: medium. */
+static void sk_stackshot_parse_crash_cb_17ac60(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_parse_crash_cb @ 0x17ac60: Parses the crash record callback: reads 179174 record + optional pair, emits. Confidence: medium. */
+}
+
+/* FUN_0017ad94 @ 0x17ad94  (est. sk_stackshot_size_rec6_ctx)
+ * Computes the serialized size of a record (17d3e4 + flag byte). Confidence:
+ * medium. */
+static long sk_stackshot_size_rec6_ctx_17ad94(long rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_size_rec6_ctx @ 0x17ad94: Computes the serialized size of a record (17d3e4 + flag byte). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017addc @ 0x17addc  (est. sk_stackshot_async_h)
+ * Async dispatch with 180f74 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_h_17addc(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_h @ 0x17addc: Async dispatch with 180f74 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017aea4 @ 0x17aea4  (est. sk_stackshot_async_store_g)
+ * Async store with 17ac60 handler. Confidence: low. */
+static void sk_stackshot_async_store_g_17aea4(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_g @ 0x17aea4: Async store with 17ac60 handler. Confidence: low. */
+}
+
+/* FUN_0017af78 @ 0x17af78  (est. sk_stackshot_emit_rec_batch)
+ * Emits a batch of per-scid records (0x38-stride) into the stream, each with
+ * a nested region-context (stride 0x38 sub-array). Confidence: medium. */
+static void sk_stackshot_emit_rec_batch_17af78(uint64_t a, uint64_t b, long rec)
+{
+    (void)a;
+    (void)b;
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_rec_batch @ 0x17af78: Emits a batch of per-scid records (0x38-stride) into the stream, each with a nested region-context (stride 0x38 sub-array). Confidence: medium. */
+}
+
+/* FUN_0017b184 @ 0x17b184  (est. sk_stackshot_read_rec_batch)
+ * Reads a batch of per-scid records (each via 179174) into the 0x657778
+ * array. Confidence: medium. */
+static void sk_stackshot_read_rec_batch_17b184(uint64_t *out, uint64_t b, uint32_t *st)
+{
+    (void)out;
+    (void)b;
+    (void)st;
+    (void)0; /* sk_stackshot_read_rec_batch @ 0x17b184: Reads a batch of per-scid records (each via 179174) into the 0x657778 array. Confidence: medium. */
+}
+
+/* FUN_0017b340 @ 0x17b340  (est. sk_stackshot_dispatch_c)
+ * Thunk into 17b36c. Confidence: high (trivial). */
+static void sk_17b340(void)
+{
+    (void)0; /* sk_stackshot_dispatch_c @ 0x17b340: Thunk into 17b36c. Confidence: high (trivial). */
+}
+
+/* FUN_0017b344 @ 0x17b344  (est. sk_stackshot_dispatch_c)
+ * Thunk into 17b36c. Confidence: high (trivial). */
+static void sk_17b344(void)
+{
+    (void)0; /* sk_stackshot_dispatch_c @ 0x17b344: Thunk into 17b36c. Confidence: high (trivial). */
+}
+
+/* FUN_0017b36c @ 0x17b36c  (est. sk_stackshot_dispatch_generic)
+ * Generic async dispatcher: 23f74 with the caller-provided handler (param_5).
+ * Confidence: low. */
+static uint64_t sk_stackshot_dispatch_generic_17b36c(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t h)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)h;
+    (void)0; /* sk_stackshot_dispatch_generic @ 0x17b36c: Generic async dispatcher: 23f74 with the caller-provided handler (param_5). Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017b410 @ 0x17b410  (est. sk_stackshot_async_store_h)
+ * Async store with 17b184 handler. Confidence: low. */
+static void sk_stackshot_async_store_h_17b410(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_h @ 0x17b410: Async store with 17b184 handler. Confidence: low. */
+}
+
+/* FUN_0017b4d4 @ 0x17b4d4  (est. sk_stackshot_thunk_total_size)
+ * Thunk wrapper for the total serialized-size accumulator 17d850.
+ * Confidence: low. */
+static long sk_stackshot_thunk_total_size_17b4d4(long a, long b, long c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_thunk_total_size @ 0x17b4d4: Thunk wrapper for the total serialized-size accumulator 17d850. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017b4d8 @ 0x17b4d8  (est. sk_stackshot_async_i)
+ * Async dispatch with 17db8c handler. Confidence: low. */
+static uint64_t sk_stackshot_async_i_17b4d8(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)0; /* sk_stackshot_async_i @ 0x17b4d8: Async dispatch with 17db8c handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017b588 @ 0x17b588  (est. sk_stackshot_emit_rec_batch_full)
+ * Emits a full batch record (crash-scid entries + region contexts +
+ * per-scid records) into the stream. Confidence: medium. */
+static void sk_stackshot_emit_rec_batch_full_17b588(uint64_t a, long b, long c, long d)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_emit_rec_batch_full @ 0x17b588: Emits a full batch record (crash-scid entries + region contexts + per-scid records) into the stream. Confidence: medium. */
+}
+
+/* FUN_0017b994 @ 0x17b994  (est. sk_stackshot_read_batch_full)
+ * Reads the full batch record (crash-scids + per-scid nested records) into
+ * three growable arrays (0x657778 variants). Confidence: medium. */
+static void sk_stackshot_read_batch_full_17b994(uint64_t *out, uint64_t b, uint32_t *st, uint64_t c, uint64_t d)
+{
+    (void)out;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)d;
+    (void)0; /* sk_stackshot_read_batch_full @ 0x17b994: Reads the full batch record (crash-scids + per-scid nested records) into three growable arrays (0x657778 variants). Confidence: medium. */
+}
+
+/* FUN_0017c00c @ 0x17c00c  (est. sk_stackshot_async_j)
+ * Async dispatch with 180fd4 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_j_17c00c(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_j @ 0x17c00c: Async dispatch with 180fd4 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017c0c4 @ 0x17c0c4  (est. sk_stackshot_async_store_i)
+ * Async store with 17b994 handler. Confidence: low. */
+static void sk_stackshot_async_store_i_17c0c4(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_i @ 0x17c0c4: Async store with 17b994 handler. Confidence: low. */
+}
+
+/* FUN_0017c190 @ 0x17c190  (est. sk_stackshot_emit_uuid_rec_b)
+ * Emits a UUID record (0x18 bytes) + value. Confidence: medium. */
+static void sk_stackshot_emit_uuid_rec_b_17c190(uint64_t a, long rec, uint64_t v)
+{
+    (void)a;
+    (void)rec;
+    (void)v;
+    (void)0; /* sk_stackshot_emit_uuid_rec_b @ 0x17c190: Emits a UUID record (0x18 bytes) + value. Confidence: medium. */
+}
+
+/* FUN_0017c450 @ 0x17c450  (est. sk_stackshot_collect_frame18_buf)
+ * Collects an 0x18-byte frame (17933c) and stores it. Confidence: medium. */
+static void sk_stackshot_collect_frame18_buf_17c450(uint8_t (*out)[16], uint64_t b, uint32_t *st)
+{
+    (void)b;
+    (void)st;
+    (void)0; /* sk_stackshot_collect_frame18_buf @ 0x17c450: Collects an 0x18-byte frame (17933c) and stores it. Confidence: medium. */
+}
+
+/* FUN_0017c538 @ 0x17c538  (est. sk_stackshot_async_k)
+ * Async dispatch with 180ef8 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_k_17c538(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_k @ 0x17c538: Async dispatch with 180ef8 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017c5e8 @ 0x17c5e8  (est. sk_stackshot_async_store_j)
+ * Async store with 17c450 handler. Confidence: low. */
+static void sk_stackshot_async_store_j_17c5e8(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_j @ 0x17c5e8: Async store with 17c450 handler. Confidence: low. */
+}
+
+/* FUN_0017c6ac @ 0x17c6ac  (est. sk_stackshot_emit_stackrecs_ctx)
+ * Emits stack records (177bd4) + hash. Confidence: medium. */
+static void sk_stackshot_emit_stackrecs_ctx_17c6ac(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_emit_stackrecs_ctx @ 0x17c6ac: Emits stack records (177bd4) + hash. Confidence: medium. */
+}
+
+/* FUN_0017c754 @ 0x17c754  (est. sk_stackshot_collect_words_buf)
+ * Collects a word array (177854) and stores it. Confidence: medium. */
+static void sk_stackshot_collect_words_buf_17c754(uint64_t *out, uint64_t b, uint32_t *st)
+{
+    (void)out;
+    (void)b;
+    (void)st;
+    (void)0; /* sk_stackshot_collect_words_buf @ 0x17c754: Collects a word array (177854) and stores it. Confidence: medium. */
+}
+
+/* FUN_0017c814 @ 0x17c814  (est. sk_stackshot_async_l)
+ * Async dispatch with 180ff8 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_l_17c814(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_l @ 0x17c814: Async dispatch with 180ff8 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017c8c0 @ 0x17c8c0  (est. sk_stackshot_async_store_k)
+ * Async store with 17c754 handler. Confidence: low. */
+static void sk_stackshot_async_store_k_17c8c0(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_k @ 0x17c8c0: Async store with 17c754 handler. Confidence: low. */
+}
+
+/* FUN_0017c984 @ 0x17c984  (est. sk_stackshot_emit_tagrec)
+ * Emits a tagged record: 2307c byte + optional flags. Confidence: medium. */
+static void sk_stackshot_emit_tagrec_17c984(uint64_t a, uint8_t *rec)
+{
+    (void)a;
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_tagrec @ 0x17c984: Emits a tagged record: 2307c byte + optional flags. Confidence: medium. */
+}
+
+/* FUN_0017ca50 @ 0x17ca50  (est. sk_stackshot_read_tagrec)
+ * Reads a tagged record (21738 byte + optional flags + word). Confidence:
+ * medium. */
+static void sk_stackshot_read_tagrec_17ca50(uint8_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_tagrec @ 0x17ca50: Reads a tagged record (21738 byte + optional flags + word). Confidence: medium. */
+}
+
+/* FUN_0017cb68 @ 0x17cb68  (est. sk_stackshot_async_m)
+ * Async dispatch with 180f5c handler. Confidence: low. */
+static uint64_t sk_stackshot_async_m_17cb68(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_m @ 0x17cb68: Async dispatch with 180f5c handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017cc28 @ 0x17cc28  (est. sk_stackshot_async_store_l)
+ * Async store with 17ca50 handler. Confidence: low. */
+static void sk_stackshot_async_store_l_17cc28(uint8_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_l @ 0x17cc28: Async store with 17ca50 handler. Confidence: low. */
+}
+
+/* FUN_0017cd14 @ 0x17cd14  (est. sk_stackshot_emit_tagrec_b)
+ * Emits a 2-flag tagged record. Confidence: medium. */
+static void sk_stackshot_emit_tagrec_b_17cd14(uint64_t a, uint64_t *rec)
+{
+    (void)a;
+    (void)rec;
+    (void)0; /* sk_stackshot_emit_tagrec_b @ 0x17cd14: Emits a 2-flag tagged record. Confidence: medium. */
+}
+
+/* FUN_0017cdd4 @ 0x17cdd4  (est. sk_stackshot_read_tagrec_b)
+ * Reads a 2-flag tagged record. Confidence: medium. */
+static void sk_stackshot_read_tagrec_b_17cdd4(uint64_t *out)
+{
+    (void)out;
+    (void)0; /* sk_stackshot_read_tagrec_b @ 0x17cdd4: Reads a 2-flag tagged record. Confidence: medium. */
+}
+
+/* FUN_0017cec4 @ 0x17cec4  (est. sk_stackshot_async_n)
+ * Async dispatch with 180f44 handler. Confidence: low. */
+static uint64_t sk_stackshot_async_n_17cec4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_async_n @ 0x17cec4: Async dispatch with 180f44 handler. Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017cf84 @ 0x17cf84  (est. sk_stackshot_async_store_m)
+ * Async store with 17cdd4 handler. Confidence: low. */
+static void sk_stackshot_async_store_m_17cf84(uint64_t *out, uint64_t a, uint64_t b, uint32_t *st, uint64_t c)
+{
+    (void)out;
+    (void)a;
+    (void)b;
+    (void)st;
+    (void)c;
+    (void)0; /* sk_stackshot_async_store_m @ 0x17cf84: Async store with 17cdd4 handler. Confidence: low. */
+}
+
+/* FUN_0017d060 @ 0x17d060  (est. sk_stackshot_grow_17d060)
+ * Growable-vector growth wrapper: invokes the 17d140 vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d060(void)
+{
+    (void)0; /* sk_stackshot_grow_17d060 @ 0x17d060: Growable-vector growth wrapper: invokes the 17d140 vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d080 @ 0x17d080  (est. sk_stackshot_grow_17d080)
+ * Growable-vector growth wrapper: invokes the 1762cc vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d080(void)
+{
+    (void)0; /* sk_stackshot_grow_17d080 @ 0x17d080: Growable-vector growth wrapper: invokes the 1762cc vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d0a0 @ 0x17d0a0  (est. sk_stackshot_grow_17d0a0)
+ * Growable-vector growth wrapper: invokes the 1763a0 vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d0a0(void)
+{
+    (void)0; /* sk_stackshot_grow_17d0a0 @ 0x17d0a0: Growable-vector growth wrapper: invokes the 1763a0 vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d0c0 @ 0x17d0c0  (est. sk_stackshot_grow_17d0c0)
+ * Growable-vector growth wrapper: invokes the 17646c vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d0c0(void)
+{
+    (void)0; /* sk_stackshot_grow_17d0c0 @ 0x17d0c0: Growable-vector growth wrapper: invokes the 17646c vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d0e0 @ 0x17d0e0  (est. sk_stackshot_grow_17d0e0)
+ * Growable-vector growth wrapper: invokes the 176564 vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d0e0(void)
+{
+    (void)0; /* sk_stackshot_grow_17d0e0 @ 0x17d0e0: Growable-vector growth wrapper: invokes the 176564 vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d100 @ 0x17d100  (est. sk_stackshot_grow_17d100)
+ * Growable-vector growth wrapper: invokes the 17664c vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d100(void)
+{
+    (void)0; /* sk_stackshot_grow_17d100 @ 0x17d100: Growable-vector growth wrapper: invokes the 17664c vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d120 @ 0x17d120  (est. sk_stackshot_grow_17d120)
+ * Growable-vector growth wrapper: invokes the 176724 vector-grow helper and
+ * stores the new pointer into x20. Confidence: high (trivial wrapper). */
+static void sk_17d120(void)
+{
+    (void)0; /* sk_stackshot_grow_17d120 @ 0x17d120: Growable-vector growth wrapper: invokes the 176724 vector-grow helper and stores the new pointer into x20. Confidence: high (trivial wrapper). */
+}
+
+/* FUN_0017d140 @ 0x17d140  (est. sk_stackshot_grow_vec10_d)
+ * Growable 0x10-vector via 13d1a4 (type 0x654d28/004e5928). Confidence:
+ * medium. */
+static long sk_stackshot_grow_vec10_d_17d140(uint64_t keep, uint64_t want, uint64_t grow, long old)
+{
+    (void)keep;
+    (void)want;
+    (void)grow;
+    (void)old;
+    (void)0; /* sk_stackshot_grow_vec10_d @ 0x17d140: Growable 0x10-vector via 13d1a4 (type 0x654d28/004e5928). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017d22c @ 0x17d22c  (est. sk_stackshot_total_size_b)
+ * Computes the serialized size of a list of Stack records: 8 + sum over
+ * each record (0x10-stride) of its element width. Confidence: medium. */
+static long sk_stackshot_total_size_b_17d22c(long rec)
+{
+    (void)rec;
+    (void)0; /* sk_stackshot_total_size_b @ 0x17d22c: Computes the serialized size of a list of Stack records: 8 + sum over each record (0x10-stride) of its element width. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017d29c @ 0x17d29c  (est. sk_stackshot_ctx)
+ * Computes the serialized size of a region-context (param_1, stride 0x20):
+ * 8 + sum over records of (flag?0x11:9 + min(len,0x10)), plus the trailing
+ * flags byte (1 if (param_2&0xff00000000)==0x100000000 else 5). Confidence:
+ * medium. */
+static long sk_stackshot_ctx_17d29c(long rec, uint64_t flags)
+{
+    (void)rec;
+    (void)flags;
+    (void)0; /* sk_stackshot_ctx @ 0x17d29c: Computes the serialized size of a region-context (param_1, stride 0x20): 8 + sum over records of (flag?0x11:9 + min(len,0x10)), plus the trailing flags byte (1 if (param_2&0xff00000000)==0x100000000 else 5). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017d32c @ 0x17d32c  (est. sk_stackshot_nibble_tag)
+ * Maps a small index to a nibble-tag via the 0x40302010005 table (clamped
+ * at 5). Confidence: medium. */
+static uint32_t sk_stackshot_nibble_tag_17d32c(uint64_t v)
+{
+    uint32_t t = (uint32_t)(0x40302010005 >> ((v & 7) << 3));
+    if (5 < (uint32_t)v) t = 5;
+    return t;
+}
+
+/* FUN_0017d350 @ 0x17d350  (est. sk_stackshot_release_typed)
+ * Releases a typed object via thunk 35d334 (type 0x668140). Confidence:
+ * low. */
+static uint64_t sk_stackshot_release_typed_17d350(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_release_typed @ 0x17d350: Releases a typed object via thunk 35d334 (type 0x668140). Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017d380 @ 0x17d380  (est. sk_stackshot_size)
+ * Computes the serialized size of a record: 0x18 + flags bytes (1 if the
+ * flag chars are 1 else 9). Confidence: medium. */
+static long sk_stackshot_size_17d380(long rec, char f1, char f2)
+{
+    (void)rec;
+    (void)f1;
+    (void)f2;
+    (void)0; /* sk_stackshot_size @ 0x17d380: Computes the serialized size of a record: 0x18 + flags bytes (1 if the flag chars are 1 else 9). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017d3e4 @ 0x17d3e4  (est. sk_stackshot_size_rec)
+ * Computes the serialized size of a record: base (0x11/0x19) + flags + the
+ * nested array size (param_3: 0x10-stride words + 8). Confidence: medium. */
+static long sk_stackshot_size_rec_17d3e4(char f1, char f2, long rec)
+{
+    (void)f1;
+    (void)f2;
+    (void)rec;
+    (void)0; /* sk_stackshot_size_rec @ 0x17d3e4: Computes the serialized size of a record: base (0x11/0x19) + flags + the nested array size (param_3: 0x10-stride words + 8). Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017d464 @ 0x17d464  (est. sk_stackshot_async_body)
+ * Async body: sets up the async frame (param_4 metadata), allocates the
+ * async object via 36a940, and invokes 27b10 with the type, storing into
+ * x20+0x10. Confidence: low. */
+static void sk_stackshot_async_body_17d464(uint64_t a, uint32_t b, uint64_t c, long d, uint64_t e, uint64_t f, uint64_t g)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)g;
+    (void)0; /* sk_stackshot_async_body @ 0x17d464: Async body: sets up the async frame (param_4 metadata), allocates the async object via 36a940, and invokes 27b10 with the type, storing into x20+0x10. Confidence: low. */
+}
+
+/* FUN_0017d5a8 @ 0x17d5a8  (est. sk_stackshot_async_body_b)
+ * Async body variant: allocates the async object and stores into x20+0x10.
+ * Confidence: low. */
+static void sk_stackshot_async_body_b_17d5a8(uint64_t a, uint64_t b, long c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)d;
+    (void)e;
+    (void)f;
+    (void)0; /* sk_stackshot_async_body_b @ 0x17d5a8: Async body variant: allocates the async object and stores into x20+0x10. Confidence: low. */
+}
+
+/* FUN_0017d710 @ 0x17d710  (est. sk_stackshot_emit_uuid_dispatch)
+ * Dispatches UUID emission with args from x20. Confidence: low. */
+static void sk_stackshot_emit_uuid_dispatch_17d710(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_uuid_dispatch @ 0x17d710: Dispatches UUID emission with args from x20. Confidence: low. */
+}
+
+/* FUN_0017d734 @ 0x17d734  (est. sk_stackshot_dispatch_d)
+ * Thunk into 17e580. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_d_17d734(void)
+{
+    (void)0; /* sk_stackshot_dispatch_d @ 0x17d734: Thunk into 17e580. Confidence: high (trivial). */
+}
+
+/* FUN_0017d74c @ 0x17d74c  (est. sk_stackshot_emit_rec5_dispatch)
+ * Dispatches 179de4 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_rec5_dispatch_17d74c(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_rec5_dispatch @ 0x17d74c: Dispatches 179de4 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017d768 @ 0x17d768  (est. sk_stackshot_emit_rec5ctx_dispatch)
+ * Dispatches 17a1e4 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_rec5ctx_dispatch_17d768(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_rec5ctx_dispatch @ 0x17d768: Dispatches 17a1e4 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017d850 @ 0x17d850  (est. sk_stackshot_total_size)
+ * Computes the total serialized size of the combined crash record
+ * (param_1=scid list, param_2=region context, param_3=per-scid records).
+ * Accumulates with carry checks; SoftwareBreakpoint on any overflow.
+ * Confidence: medium. */
+static long sk_stackshot_total_size_17d850(long a, long b, long c)
+{
+    (void)a;
+    (void)b;
+    (void)c;
+    (void)0; /* sk_stackshot_total_size @ 0x17d850: Computes the total serialized size of the combined crash record (param_1=scid list, param_2=region context, param_3=per-scid records). Accumulates with carry checks; SoftwareBreakpoint on any overflow. Confidence: medium. */
+    return 0;
+}
+
+/* FUN_0017db0c @ 0x17db0c  (est. sk_stackshot_emit_rec6_dispatch)
+ * Dispatches 17a5c4 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_rec6_dispatch_17db0c(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_rec6_dispatch @ 0x17db0c: Dispatches 17a5c4 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017db28 @ 0x17db28  (est. sk_stackshot_emit_pair_dispatch)
+ * Dispatches 17a8f0 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_pair_dispatch_17db28(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_pair_dispatch @ 0x17db28: Dispatches 17a8f0 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017db54 @ 0x17db54  (est. sk_stackshot_emit_rec6ctx_dispatch)
+ * Dispatches 17aaa0 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_rec6ctx_dispatch_17db54(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_rec6ctx_dispatch @ 0x17db54: Dispatches 17aaa0 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017db70 @ 0x17db70  (est. sk_stackshot_emit_recbatch_dispatch)
+ * Dispatches 17af78 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_recbatch_dispatch_17db70(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_recbatch_dispatch @ 0x17db70: Dispatches 17af78 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017db8c @ 0x17db8c  (est. sk_stackshot_emit_batchfull_dispatch)
+ * Dispatches 17b588 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_batchfull_dispatch_17db8c(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_batchfull_dispatch @ 0x17db8c: Dispatches 17b588 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017dbac @ 0x17dbac  (est. sk_stackshot_emit_uuid_dispatch_b)
+ * Dispatches 17c190 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_uuid_dispatch_b_17dbac(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_uuid_dispatch_b @ 0x17dbac: Dispatches 17c190 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017dbc8 @ 0x17dbc8  (est. sk_stackshot_emit_stackrecs_dispatch)
+ * Dispatches 17c6ac. Confidence: low. */
+static void sk_stackshot_emit_stackrecs_dispatch_17dbc8(void)
+{
+    (void)0; /* sk_stackshot_emit_stackrecs_dispatch @ 0x17dbc8: Dispatches 17c6ac. Confidence: low. */
+}
+
+/* FUN_0017dbe4 @ 0x17dbe4  (est. sk_stackshot_emit_tagrec_dispatch)
+ * Dispatches 17c984 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_tagrec_dispatch_17dbe4(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_tagrec_dispatch @ 0x17dbe4: Dispatches 17c984 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017dc10 @ 0x17dc10  (est. sk_stackshot_emit_tagrec_b_dispatch)
+ * Dispatches 17cd14 with args from x20. Confidence: low. */
+static void sk_stackshot_emit_tagrec_b_dispatch_17dc10(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_emit_tagrec_b_dispatch @ 0x17dc10: Dispatches 17cd14 with args from x20. Confidence: low. */
+}
+
+/* FUN_0017e350 @ 0x17e350  (est. sk_stackshot_type_ref_a)
+ * Returns the type ref 0x6547d0. Confidence: high (trivial). */
+static uint64_t sk_stackshot_type_ref_a_17e350(void) { return 0x6547d0; }
+
+/* FUN_0017e380 @ 0x17e380  (est. sk_stackshot_type_ref_b)
+ * Returns the type ref 0x6548f8. Confidence: high (trivial). */
+static uint64_t sk_stackshot_type_ref_b_17e380(void) { return 0x6548f8; }
+
+/* FUN_0017e580 @ 0x17e580  (est. sk_stackshot_dispatch)
+ * Dispatches 179ab4 with args from x20 (incl. packed flags). Confidence: low. */
+static void sk_stackshot_dispatch_17e580(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_dispatch @ 0x17e580: Dispatches 179ab4 with args from x20 (incl. packed flags). Confidence: low. */
+}
+
+/* FUN_0017e5ac @ 0x17e5ac  (est. sk_stackshot_fptr_resolve_b)
+ * Tagged fptr resolve (base+4 + *(int*)(base+4)). Confidence: high. */
+static long sk_stackshot_fptr_resolve_b_17e5ac(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_0017e5dc @ 0x17e5dc  (est. sk_stackshot_dispatch_e)
+ * Thunk into 17e5f4. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_e_17e5dc(void)
+{
+    (void)0; /* sk_stackshot_dispatch_e @ 0x17e5dc: Thunk into 17e5f4. Confidence: high (trivial). */
+}
+
+/* FUN_0017e5f4 @ 0x17e5f4  (est. sk_stackshot_read_ips)
+ * Reads an IPC-stack record: validates the begin hash (178dcc), resolves the
+ * selector via 17e5ac, reads a value, and builds the result record from the
+ * 21838-parsed tag. Confidence: medium. */
+static void sk_stackshot_read_ips_17e5f4(uint64_t *out, uint64_t *rec, uint32_t *st)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)0; /* sk_stackshot_read_ips @ 0x17e5f4: Reads an IPC-stack record: validates the begin hash (178dcc), resolves the selector via 17e5ac, reads a value, and builds the result record from the 21838-parsed tag. Confidence: medium. */
+}
+
+/* FUN_0017e7a0 @ 0x17e7a0  (est. sk_stackshot_read_ips_a)
+ * Reads the address-space-info record (17e8d0, tags 0x3f3/0x3ff).
+ * Confidence: medium. */
+static void sk_17e7a0(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_read_ips_a @ 0x17e7a0: Reads the address-space-info record (17e8d0, tags 0x3f3/0x3ff). Confidence: medium. */
+}
+
+/* FUN_0017e7a4 @ 0x17e7a4  (est. sk_stackshot_read_ips_a)
+ * Reads the address-space-info record (17e8d0, tags 0x3f3/0x3ff).
+ * Confidence: medium. */
+static void sk_17e7a4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_read_ips_a @ 0x17e7a4: Reads the address-space-info record (17e8d0, tags 0x3f3/0x3ff). Confidence: medium. */
+}
+
+/* FUN_0017e7c0 @ 0x17e7c0  (est. sk_stackshot_fptr_resolve_c)
+ * Tagged fptr resolve (base+0xc + *(int*)(base+0xc)). Confidence: high. */
+static long sk_stackshot_fptr_resolve_c_17e7c0(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0xc) + (long)*(int *)(p + 0xc);
+}
+
+/* FUN_0017e7f0 @ 0x17e7f0  (est. sk_stackshot_release_typed_b)
+ * Releases a typed object (type 0x668bb8). Confidence: low. */
+static uint64_t sk_stackshot_release_typed_b_17e7f0(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_release_typed_b @ 0x17e7f0: Releases a typed object (type 0x668bb8). Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017e820 @ 0x17e820  (est. sk_stackshot_fptr_resolve_d)
+ * Tagged fptr resolve (base+8 + *(int*)(base+8)). Confidence: high. */
+static long sk_stackshot_fptr_resolve_d_17e820(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 8) + (long)*(int *)(p + 8);
+}
+
+/* FUN_0017e850 @ 0x17e850  (est. sk_stackshot_release_typed_c)
+ * Releases a typed object (type 0x668b28). Confidence: low. */
+static uint64_t sk_stackshot_release_typed_c_17e850(uint64_t a)
+{
+    (void)a;
+    (void)0; /* sk_stackshot_release_typed_c @ 0x17e850: Releases a typed object (type 0x668b28). Confidence: low. */
+    return 0;
+}
+
+/* FUN_0017e880 @ 0x17e880  (est. sk_stackshot_fptr_resolve_e)
+ * Tagged fptr resolve (base+4). Confidence: high. */
+static long sk_stackshot_fptr_resolve_e_17e880(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_0017e8b0 @ 0x17e8b0  (est. sk_stackshot_read_ipc_b)
+ * Reads the IPC-stack record (17e8d0, tags 0x3bd/0x3c9). Confidence: medium. */
+static void sk_17e8b0(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_read_ipc_b @ 0x17e8b0: Reads the IPC-stack record (17e8d0, tags 0x3bd/0x3c9). Confidence: medium. */
+}
+
+/* FUN_0017e8b4 @ 0x17e8b4  (est. sk_stackshot_read_ipc_b)
+ * Reads the IPC-stack record (17e8d0, tags 0x3bd/0x3c9). Confidence: medium. */
+static void sk_17e8b4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_read_ipc_b @ 0x17e8b4: Reads the IPC-stack record (17e8d0, tags 0x3bd/0x3c9). Confidence: medium. */
+}
+
+/* FUN_0017e8d0 @ 0x17e8d0  (est. sk_stackshot_read_asinfo)
+ * Reads an address-space-info / IPC-stack record. Selects among four
+ * sub-handlers by a variant selector (178c0c): id 0 reads via 17e880, id 1 via
+ * 17e820 (with 17d380/17d29c sizing), id 2 via a6be8, id 3 via 17e7c0 (with
+ * 17d3e4 sizing). Each path reads the tagged value, resolves the current cpu,
+ * and builds the 7-word result record. Emits the "getAddressSpaceInfo threw an
+ * unexpected..." / "getIPCStackEntry threw an unexpe..." (005cbd20/005cbcf0)
+ * fatal on error. Large, faithful reconstruction. Confidence: medium. */
+static void sk_stackshot_read_asinfo_17e8d0(uint64_t *out, uint64_t *rec, uint32_t *st, uint64_t t1, uint64_t t2)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)t1;
+    (void)t2;
+    (void)0; /* sk_stackshot_read_asinfo @ 0x17e8d0: Reads an address-space-info / IPC-stack record. Selects among four sub-handlers by a variant selector (178c0c): id 0 reads via 17e880, id 1 via 17e820 (with 17d380/17d29c sizing), id 2 via a6be8, id 3 via 17e7c0 (with 17d3e4 sizing). Each p */
+}
+
+/* FUN_0017f158 @ 0x17f158  (est. sk_stackshot_fptr_resolve_f)
+ * Tagged fptr resolve (base+4). Confidence: high. */
+static long sk_stackshot_fptr_resolve_f_17f158(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_0017f188 @ 0x17f188  (est. sk_stackshot_dispatch_f)
+ * Thunk into 17f1a0. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_f_17f188(void)
+{
+    (void)0; /* sk_stackshot_dispatch_f @ 0x17f188: Thunk into 17f1a0. Confidence: high (trivial). */
+}
+
+/* FUN_0017f1a0 @ 0x17f1a0  (est. sk_stackshot_read_ipcrec)
+ * Reads an IPC-stack record: validates hash (1789b8), resolves via 17f158,
+ * reads a value, and emits the tagged record via 17d380-style sizing, building
+ * the 7-word result. Confidence: medium. */
+static void sk_stackshot_read_ipcrec_17f1a0(uint64_t *out, uint64_t *rec, uint32_t *st)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)0; /* sk_stackshot_read_ipcrec @ 0x17f1a0: Reads an IPC-stack record: validates hash (1789b8), resolves via 17f158, reads a value, and emits the tagged record via 17d380-style sizing, building the 7-word result. Confidence: medium. */
+}
+
+/* FUN_0017f3d8 @ 0x17f3d8  (est. sk_stackshot_fptr_resolve_g)
+ * Tagged fptr resolve (base+8). Confidence: high. */
+static long sk_stackshot_fptr_resolve_g_17f3d8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 8) + (long)*(int *)(p + 8);
+}
+
+/* FUN_0017f408 @ 0x17f408  (est. sk_stackshot_dispatch_g)
+ * Thunk into 17f420. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_g_17f408(void)
+{
+    (void)0; /* sk_stackshot_dispatch_g @ 0x17f408: Thunk into 17f420. Confidence: high (trivial). */
+}
+
+/* FUN_0017f420 @ 0x17f420  (est. sk_stackshot_read_runrec)
+ * Reads a run-stackshot record: branches on the fatal flag (17884c), reads
+ * the per-frame array (0x28-stride, 17d0a0 grow), then resolves via 17f3d8 or
+ * 17f95c + 178450 frame-vector, emitting and building the 7-word result.
+ * Confidence: medium. */
+static void sk_stackshot_read_runrec_17f420(uint64_t *out, uint64_t *rec, uint32_t *st, uint64_t p4)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)p4;
+    (void)0; /* sk_stackshot_read_runrec @ 0x17f420: Reads a run-stackshot record: branches on the fatal flag (17884c), reads the per-frame array (0x28-stride, 17d0a0 grow), then resolves via 17f3d8 or 17f95c + 178450 frame-vector, emitting and building the 7-word result. Confidence: medium. */
+}
+
+/* FUN_0017f95c @ 0x17f95c  (est. sk_stackshot_fptr_resolve_h)
+ * Tagged fptr resolve (base+4). Confidence: high. */
+static long sk_stackshot_fptr_resolve_h_17f95c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 4) + (long)*(int *)(p + 4);
+}
+
+/* FUN_0017f98c @ 0x17f98c  (est. sk_stackshot_dispatch_h)
+ * Thunk into 17f9a4. Confidence: high (trivial). */
+static void sk_stackshot_dispatch_h_17f98c(void)
+{
+    (void)0; /* sk_stackshot_dispatch_h @ 0x17f98c: Thunk into 17f9a4. Confidence: high (trivial). */
+}
+
+/* FUN_0017f9a4 @ 0x17f9a4  (est. sk_stackshot_read_runredact)
+ * Reads a redacted run-stackshot record: validates begin hash (178348),
+ * reads the word array (0x8-stride, 00082484 grow), collects the frame vector
+ * (178450), resolves via 17f95c, and builds the 7-word result. Confidence:
+ * medium. */
+static void sk_stackshot_read_runredact_17f9a4(uint64_t *out, uint64_t *rec, uint32_t *st, uint64_t p4)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)p4;
+    (void)0; /* sk_stackshot_read_runredact @ 0x17f9a4: Reads a redacted run-stackshot record: validates begin hash (178348), reads the word array (0x8-stride, 00082484 grow), collects the frame vector (178450), resolves via 17f95c, and builds the 7-word result. Confidence: medium. */
+}
+
+/* FUN_0017fca0 @ 0x17fca0  (est. sk_stackshot_run_a)
+ * Runs a stackshot (17fdd8, lines 0x1ee/0x1fb/0x216). Confidence: medium. */
+static void sk_17fca0(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_run_a @ 0x17fca0: Runs a stackshot (17fdd8, lines 0x1ee/0x1fb/0x216). Confidence: medium. */
+}
+
+/* FUN_0017fca4 @ 0x17fca4  (est. sk_stackshot_run_a)
+ * Runs a stackshot (17fdd8, lines 0x1ee/0x1fb/0x216). Confidence: medium. */
+static void sk_17fca4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_run_a @ 0x17fca4: Runs a stackshot (17fdd8, lines 0x1ee/0x1fb/0x216). Confidence: medium. */
+}
+
+/* FUN_0017fcc4 @ 0x17fcc4  (est. sk_stackshot_fptr_resolve_g2)
+ * Tagged fptr resolve (base+0x8). Confidence: high. */
+static long sk_sk_stackshot_fptr_resolve_g2_17fcc4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0x8) + (long)*(int *)(p + 0x8);
+}
+
+/* FUN_0017fcf4 @ 0x17fcf4  (est. sk_stackshot_fptr_resolve_e2)
+ * Tagged fptr resolve (base+0x4). Confidence: high. */
+static long sk_sk_stackshot_fptr_resolve_e2_17fcf4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0x4) + (long)*(int *)(p + 0x4);
+}
+
+/* FUN_0017fd24 @ 0x17fd24  (est. sk_stackshot_fptr_resolve_i)
+ * Tagged fptr resolve (base+0x10). Confidence: high. */
+static long sk_sk_stackshot_fptr_resolve_i_17fd24(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0x10) + (long)*(int *)(p + 0x10);
+}
+
+/* FUN_0017fd54 @ 0x17fd54  (est. sk_stackshot_fptr_resolve_j)
+ * Tagged fptr resolve (base+0xc). Confidence: high. */
+static long sk_sk_stackshot_fptr_resolve_j_17fd54(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0xc) + (long)*(int *)(p + 0xc);
+}
+
+/* FUN_0017fd84 @ 0x17fd84  (est. sk_stackshot_fptr_resolve_k)
+ * Tagged fptr resolve (base+0x8). Confidence: high. */
+static long sk_sk_stackshot_fptr_resolve_k_17fd84(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & 0xfffffffffffffffe);
+    return (long)(p + 0x8) + (long)*(int *)(p + 0x8);
+}
+
+/* FUN_0017fdb4 @ 0x17fdb4  (est. sk_stackshot_run_b)
+ * Runs a redacted stackshot (17fdd8, lines 0x1a6/0x1b3/0x1ce). Confidence:
+ * medium. */
+static void sk_17fdb4(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_run_b @ 0x17fdb4: Runs a redacted stackshot (17fdd8, lines 0x1a6/0x1b3/0x1ce). Confidence: medium. */
+}
+
+/* FUN_0017fdb8 @ 0x17fdb8  (est. sk_stackshot_run_b)
+ * Runs a redacted stackshot (17fdd8, lines 0x1a6/0x1b3/0x1ce). Confidence:
+ * medium. */
+static void sk_17fdb8(uint64_t a, uint64_t b)
+{
+    (void)a;
+    (void)b;
+    (void)0; /* sk_stackshot_run_b @ 0x17fdb8: Runs a redacted stackshot (17fdd8, lines 0x1a6/0x1b3/0x1ce). Confidence: medium. */
+}
+
+/* FUN_0017fdd8 @ 0x17fdd8  (est. sk_stackshot_run)
+ * runStackshot / runStackshotRedacted top-level: dispatches on the
+ * selector id (177a34) among five collection modes (fptr resolves 17fd24/
+ * 17fd54/17fcf4/17fd84/17fcc4), each emitting a different serialized record
+ * shape and building the 7-word result. Emits "enableDynamicConclaveTextLayout
+ * t..." (005cbe90), "runStackshot threw an unexpected..." (005cbed0),
+ * "runStackshotRedacted threw an un..." (005cbe50) fatals on error. Very large,
+ * faithful reconstruction. Confidence: medium. */
+static void sk_stackshot_run_17fdd8(uint64_t *out, uint64_t *rec, uint32_t *st, uint64_t l1, uint64_t l2, uint64_t l3)
+{
+    (void)out;
+    (void)rec;
+    (void)st;
+    (void)l1;
+    (void)l2;
+    (void)l3;
+    (void)0; /* sk_stackshot_run @ 0x17fdd8: runStackshot / runStackshotRedacted top-level: dispatches on the selector id (177a34) among five collection modes (fptr resolves 17fd24/ 17fd54/17fcf4/17fd84/17fcc4), each emitting a different serialized record shape and building the 7-word */
+}

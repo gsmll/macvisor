@@ -568,8 +568,8 @@ void sk_tcb_aj(uint64_t arg1,uint64_t arg2);
 uint64_t sk_tcb_ak(unsigned int arg1);
 uint64_t sk_tcb_al(unsigned int arg1);
 uint64_t sk_tcb_am(unsigned int arg1);
-void sk_tcb_an(void);
-void sk_tcb_ao(void);
+uint64_t sk_tcb_an(void);
+uint64_t sk_tcb_ao(void);
 uint64_t sk_tcb_ap(void);
 uint8_t sk_tcb_aq(void);
 bool sk_tcb_ar(long arg1,long arg2);
@@ -662,7 +662,7 @@ void thunk_FUN_000558c0(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint32_t sk_error_register(unsigned long arg1,unsigned int arg2);
 unsigned long sk_error_get(void);
 uintptr_t sk_global_get(uintptr_t arg1, uint64_t arg2, uint64_t arg3);
-void sk_error_clear(void);
+uint64_t sk_error_clear(void);
 uint64_t sk_error_status(void);
 void sk_error_reset(void);
 void sk_error_set(long arg1);
@@ -676,13 +676,13 @@ void sk_error_sync(void);
 uint64_t sk_error_flag(void);
 void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...);
 void sk_panic(unsigned long arg1,uint64_t arg2,uint64_t arg3);
-void sk_format_vsnprintf(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4);
+void sk_format_vsnprintf(void *arg1,uint64_t arg2,uint64_t arg3,void *arg4);
 uint64_t sk_kernel_state_get(uint64_t *arg1);
 uint64_t sk_kernel_field_40(void);
-void sk_format_uuid(void);
+uint32_t sk_format_uuid(void);
 uint64_t sk_kernel_head(void);
 void sk_register_global_3(uint64_t arg1);
-void sk_register_global(uintptr_t arg1, ...);
+void sk_register_global(long *arg1);
 long sk_lookup_thread_obj(int arg1,int arg2);
 void sk_list_push(unsigned long *arg1);
 void sk_kernel_get(void);
@@ -726,7 +726,7 @@ void sk_cap_record(uint64_t arg1,unsigned long arg2,uint8_t (*arg3) [16],unsigne
 uint64_t sk_lock_prepare(unsigned long *arg1);
 uint64_t sk_lock_acquire_recursive(unsigned long *arg1,uint64_t arg2);
 uint64_t sk_lock_try(unsigned long *arg1);
-void sk_unlock(uintptr_t arg1, ...);
+void sk_unlock(unsigned long *arg1);
 void sk_lock_set_mode(uint64_t *arg1,uint16_t arg2);
 void sk_lock_init(void);
 void sk_lock_record(long arg1,uint64_t arg2,uint64_t arg3);
@@ -748,7 +748,7 @@ uint64_t sk_ipc_call_guard(sk_code_t arg1,unsigned long arg2,uint8_t *arg3,uint6
 void sk_msg_release(long arg1);
 uint64_t thunk_FUN_00061638(long arg1);
 uint64_t sk_cpu_array(unsigned long arg1);
-void sk_lock_dispatch_10(void);
+uint64_t sk_lock_dispatch_10(void);
 void sk_lock_release_recursive(unsigned int arg1,uint64_t arg2,uint64_t arg3,long arg4,unsigned int arg5);
 void sk_lock_dispatch_18(void);
 void sk_lock_release_recursive2(unsigned int arg1,uint64_t arg2,unsigned int arg3,unsigned long arg4);
@@ -4738,7 +4738,7 @@ uint8_t * sk_setup_cpu_regs(long arg1)
   sk_global_086 = t3;
                     
                     
-  sk_register_global(0x64ccb8);
+  sk_register_global((long *)0x64ccb8);
                     
                     
   puRam000000000064ccf0 = &sk_global_047;
@@ -6241,15 +6241,14 @@ uint64_t sk_tcb_am(unsigned int arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_tcb_an(void)
+uint64_t sk_tcb_an(void)
 {
   long t0;
   
   t0 = sk_global_ensure();
                     
                     
-  (**(sk_code_t *)(t0 + 0x198))();
-  return;
+  return (**(sk_code_t *)(t0 + 0x198))();
 }
 
 
@@ -6263,15 +6262,14 @@ void sk_tcb_an(void)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_tcb_ao(void)
+uint64_t sk_tcb_ao(void)
 {
   long t0;
   
   t0 = sk_global_ensure();
                     
                     
-  (**(sk_code_t *)(t0 + 0x1a0))();
-  return;
+  return (**(sk_code_t *)(t0 + 0x1a0))();
 }
 
 
@@ -8530,15 +8528,15 @@ bool sk_cap_cmp8(long arg1,long arg2)
     *(uint8_t **)(arg2 + 0x40) = (void *)0x0005a010;
     *(uint8_t **)(arg2 + 0x48) = (void *)0x0005a028;
     *(uint8_t **)(arg2 + 0x50) = (void *)0x0005a040;
-    *(sk_code_t *)(arg2 + 0x58) = svc_repeat_on_suspend_1;
+    *(sk_code_t *)(arg2 + 0x58) = (sk_code_t)svc_repeat_on_suspend_1;
     *(uint8_t **)(arg2 + 0x60) = (void *)0x0005a05c;
-    *(sk_code_t *)(arg2 + 0x68) = svc_repeat_on_suspend_2;
+    *(sk_code_t *)(arg2 + 0x68) = (sk_code_t)svc_repeat_on_suspend_2;
     *(uint8_t **)(arg2 + 0x70) = (void *)0x0005a074;
     *(uint8_t **)(arg2 + 0x78) = (void *)0x0005a0ac;
     *(uint8_t **)(arg2 + 0x80) = (void *)0x0005a0c4;
     *(uint8_t **)(arg2 + 0x88) = (void *)0x0005a0dc;
     *(uint8_t **)(arg2 + 0x90) = (void *)0x0005a104;
-    *(sk_code_t *)(arg2 + 0x98) = svc_repeat_on_suspend_3;
+    *(sk_code_t *)(arg2 + 0x98) = (sk_code_t)svc_repeat_on_suspend_3;
     *(uint8_t *)(arg2 + 0xa0) = 1;
     *(uint32_t *)(arg2 + 0xa4) = 4;
     *(uint8_t **)(arg2 + 0xa8) = (void *)0x0005a128;
@@ -8556,15 +8554,15 @@ bool sk_cap_cmp8(long arg1,long arg2)
     *(uint8_t **)(arg2 + 0x108) = (void *)0x0005a19c;
     *(uint8_t **)(arg2 + 0x110) = (void *)0x0005a1b4;
     *(uint8_t **)(arg2 + 0x118) = (void *)0x0005a1bc;
-    *(sk_code_t *)(arg2 + 0x120) = svc_dispatch_3arg;
-    *(sk_code_t *)(arg2 + 0x128) = svc_repeat_on_suspend_4;
+    *(sk_code_t *)(arg2 + 0x120) = (sk_code_t)svc_dispatch_3arg;
+    *(sk_code_t *)(arg2 + 0x128) = (sk_code_t)svc_repeat_on_suspend_4;
     *(uint8_t **)(arg2 + 0x130) = (void *)0x0005a1f0;
-    *(sk_code_t *)(arg2 + 0x138) = svc_repeat_on_suspend_5;
+    *(sk_code_t *)(arg2 + 0x138) = (sk_code_t)svc_repeat_on_suspend_5;
     *(uint16_t *)(arg2 + 0x149) = 0x1701;
     *(uint32_t *)(arg2 + 0x14c) = 1;
     *(uint8_t **)(arg2 + 0x150) = (void *)0x0005a20c;
     *(uint8_t **)(arg2 + 0x158) = (void *)0x0005a22c;
-    *(sk_code_t *)(arg2 + 0x160) = svc_set_arg_repeat_on_suspend;
+    *(sk_code_t *)(arg2 + 0x160) = (sk_code_t)svc_set_arg_repeat_on_suspend;
     *(uint8_t **)(arg2 + 0x168) = (void *)0x0005a24c;
     *(uint8_t **)(arg2 + 0x170) = (void *)0x0005a294;
     *(uint8_t *)(arg2 + 0x140) = 1;
@@ -8782,15 +8780,15 @@ bool fill_cap_dispatch_table(long arg1,long arg2)
     *(uint8_t **)(arg2 + 0x40) = (void *)0x0005a78c;
     *(uint8_t **)(arg2 + 0x48) = (void *)0x0005a7a4;
     *(uint8_t **)(arg2 + 0x50) = (void *)0x0005a7bc;
-    *(sk_code_t *)(arg2 + 0x58) = svc_repeat_on_suspend_6;
+    *(sk_code_t *)(arg2 + 0x58) = (sk_code_t)svc_repeat_on_suspend_6;
     *(uint8_t **)(arg2 + 0x60) = (void *)0x0005a7d8;
-    *(sk_code_t *)(arg2 + 0x68) = svc_repeat_on_suspend_7;
+    *(sk_code_t *)(arg2 + 0x68) = (sk_code_t)svc_repeat_on_suspend_7;
     *(uint8_t **)(arg2 + 0x70) = (void *)0x0005a7f0;
     *(uint8_t **)(arg2 + 0x78) = (void *)0x0005a828;
     *(uint8_t **)(arg2 + 0x80) = (void *)0x0005a840;
     *(uint8_t **)(arg2 + 0x88) = (void *)0x0005a858;
     *(uint8_t **)(arg2 + 0x90) = (void *)0x0005a880;
-    *(sk_code_t *)(arg2 + 0x98) = svc_repeat_on_suspend_8;
+    *(sk_code_t *)(arg2 + 0x98) = (sk_code_t)svc_repeat_on_suspend_8;
     *(uint8_t *)(arg2 + 0xa0) = 1;
     *(uint32_t *)(arg2 + 0xa4) = 4;
     *(uint8_t **)(arg2 + 0xa8) = (void *)0x0005a8a4;
@@ -8808,15 +8806,15 @@ bool fill_cap_dispatch_table(long arg1,long arg2)
     *(uint8_t **)(arg2 + 0x108) = (void *)0x0005a918;
     *(uint8_t **)(arg2 + 0x110) = (void *)0x0005a930;
     *(uint8_t **)(arg2 + 0x118) = (void *)0x0005a938;
-    *(sk_code_t *)(arg2 + 0x120) = svc_dispatch_3arg_b;
-    *(sk_code_t *)(arg2 + 0x128) = svc_repeat_on_suspend_9;
+    *(sk_code_t *)(arg2 + 0x120) = (sk_code_t)svc_dispatch_3arg_b;
+    *(sk_code_t *)(arg2 + 0x128) = (sk_code_t)svc_repeat_on_suspend_9;
     *(uint8_t **)(arg2 + 0x130) = (void *)0x0005a96c;
-    *(sk_code_t *)(arg2 + 0x138) = svc_repeat_on_suspend_10;
+    *(sk_code_t *)(arg2 + 0x138) = (sk_code_t)svc_repeat_on_suspend_10;
     *(uint16_t *)(arg2 + 0x149) = 0x1701;
     *(uint32_t *)(arg2 + 0x14c) = 1;
     *(uint8_t **)(arg2 + 0x150) = (void *)0x0005a988;
     *(uint8_t **)(arg2 + 0x158) = (void *)0x0005a9a8;
-    *(sk_code_t *)(arg2 + 0x160) = svc_set_arg_repeat_on_suspend_b;
+    *(sk_code_t *)(arg2 + 0x160) = (sk_code_t)svc_set_arg_repeat_on_suspend_b;
     *(uint8_t **)(arg2 + 0x168) = (void *)0x0005a9c8;
     *(uint8_t **)(arg2 + 0x170) = (void *)0x0005aa10;
     *(uint8_t *)(arg2 + 0x140) = 1;
@@ -9021,7 +9019,7 @@ void svc_set_arg_repeat_on_suspend_b(long arg1,uint64_t arg2)
 
 void sk_syscall_boot(void)
 {
-  sk_boot_done(1);
+  sk_boot_done();
   return;
 }
 
@@ -9164,7 +9162,7 @@ uintptr_t sk_global_get(uintptr_t arg1, uint64_t arg2, uint64_t arg3){
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_error_clear(void)
+uint64_t sk_error_clear(void)
 {
   sk_code_t t1;
   long t0;
@@ -9179,7 +9177,7 @@ void sk_error_clear(void)
     sk_panic_msg(t3,(uint64_t)(void *)sk_str_40);
   }
   if (t2 <= t2 + 0x30) {
-    return;
+    return t2;
   }
                     
   t1 = (sk_code_t )sk_break(0x5519,0x5ad14);
@@ -9318,7 +9316,7 @@ void sk_error_emit(uint64_t arg1,long arg2,uint64_t arg3,int arg4)
       t0 = sk_range_lookup(&stk2,1);
       if (t0 == 0) break;
       stk3 = 0;
-      sk_cnode_revoke(*t2,&stk3);
+      sk_cnode_revoke(*t2,(uint64_t)&stk3);
       sk_log_str(sk_str_78);
       t3 = t3 + 1;
       t2 = t2 + 1;
@@ -9488,7 +9486,7 @@ uint64_t sk_error_flag(void)
 
 void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...){
                     
-  sk_panic(arg1,arg2,NULL);
+  sk_panic(arg1,arg2,(uint64_t)NULL);
 }
 
 
@@ -9593,7 +9591,7 @@ void sk_panic(unsigned long arg1,uint64_t arg2,uint64_t arg3)
       sk_format_vsnprintf(stk0,0x130,0x40,t2);
       t1 = sk_global_get(0x6b2568,1,1);
       stk14 = *(uint64_t *)(t1 + 0x40);
-      stk13 = sk_macho_uuid(t12);
+      stk13 = (uint64_t)sk_macho_uuid(t12);
       stk12 = *(uint64_t *)(arg1 + 0x10);
       stk11 = sk_format_uuid();
       stk10 = sk_macho_uuid2(t12);
@@ -9719,8 +9717,8 @@ void sk_panic(unsigned long arg1,uint64_t arg2,uint64_t arg3)
         t2 = sk_str_72;
       }
       sk_panic_log(0xeb1a02bf914012ba,t2);
-      sk_syscall_print(stk1,0x6b04d0,0x2000,0);
-      sk_boot_puts(sk_str_57,0x6b04d0,0x2000,0xeb1a02bf914012ba);
+      sk_syscall_print((long)stk1,0x6b04d0,0x2000,0);
+      sk_boot_puts((uint64_t)sk_str_57,0x6b04d0,0x2000,0xeb1a02bf914012ba);
       t1 = 0;
       while (t1 != 0x2000) {
         t2 = (char *)(t1 + 0x6b04d0);
@@ -9771,7 +9769,7 @@ LAB_0005b820:
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_format_vsnprintf(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4)
+void sk_format_vsnprintf(void *arg1,uint64_t arg2,uint64_t arg3,void *arg4)
 {
   sk_vsnprintf(arg1,arg3,0,arg2,arg4,NULL);
   return;
@@ -9829,7 +9827,7 @@ uint64_t sk_kernel_field_40(void)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_format_uuid(void)
+uint32_t sk_format_uuid(void)
 {
   uint8_t *t2;
   sk_code_t t3;
@@ -9851,16 +9849,16 @@ void sk_format_uuid(void)
   stk2 = 0;
   stk3 = (unsigned long)(uint8_t)sk_str_00[2] << 0x10 |
              (unsigned long)(uint8_t)sk_str_00[3] << 0x18 |
-             (unsigned long)(unsigned short)sk_str_00._0_2_ |
+             (unsigned long)(unsigned short)*(unsigned short *)&sk_str_00[0] |
              (unsigned long)((unsigned int)(uint8_t)sk_str_00[6] << 0x10 |
                      (unsigned int)(uint8_t)sk_str_00[7] << 0x18 |
-                    (unsigned int)(unsigned short)sk_str_00._4_2_) << 0x20;
+                    (unsigned int)(unsigned short)*(unsigned short *)&sk_str_00[4]) << 0x20;
   stk4 = (unsigned long)(uint8_t)sk_str_00[10] << 0x10 |
               (unsigned long)(uint8_t)sk_str_00[0xb] << 0x18 |
-              (unsigned long)(unsigned short)sk_str_00._8_2_ |
+              (unsigned long)(unsigned short)*(unsigned short *)&sk_str_00[8] |
               (unsigned long)((unsigned int)(uint8_t)sk_str_00[0xe] << 0x10 |
                       (unsigned int)(uint8_t)sk_str_00[0xf] << 0x18 |
-                     (unsigned int)(unsigned short)sk_str_00._12_2_) << 0x20;
+                     (unsigned int)(unsigned short)*(unsigned short *)&sk_str_00[12]) << 0x20;
   while( true ) {
     t2 = (uint8_t *)((long)&stk3 + (t5 & 0xf));
     if ((stk0 <= t2) || (t2 < &stk3)) break;
@@ -9869,7 +9867,7 @@ void sk_format_uuid(void)
     t1 = t1 + 8;
     if (t1 == 0x20) {
       if (stk1 == -0x2c8502b44bfffed6) {
-        return;
+        return t4;
       }
                     
       sk_noreturn_error(t4);
@@ -9930,7 +9928,7 @@ void sk_register_global_3(uint64_t arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_register_global(uintptr_t arg1, ...){
+void sk_register_global(long *arg1){
   sk_code_t t1;
   long *t2;
   long t0;
@@ -10171,7 +10169,7 @@ void sk_register_cb(long arg1)
   sk_code_t t0;
   
   if (arg1 + 8U <= arg1 + 0xcU) {
-    sk_register_cb2(arg1 + 8U,sk_list_push_28);
+    sk_register_cb2((unsigned int *)(arg1 + 8U),(sk_code_t)sk_list_push_28,0);
     return;
   }
                     
@@ -10325,7 +10323,7 @@ void sk_waitq_enqueue(unsigned long *arg1,int arg2)
   }
                     
                     
-  (*sk_global_107)(arg1,1);
+  ((sk_code_t)sk_global_107)(arg1,1);
   return;
 }
 
@@ -10411,7 +10409,7 @@ LAB_0005c06c:
   sk_tlb_flush();
   *arg1 = 0;
   if (sk_global_107 != (sk_code_t )0x0) {
-    (*sk_global_107)(arg1,0);
+    ((sk_code_t)sk_global_107)(arg1,0);
   }
   return;
 }
@@ -10836,7 +10834,7 @@ long sk_cap_word_lookup(uint64_t arg1)
   t0 = sk_vspace_op2();
   if (t0 != 0) {
     stk0 = sk_boot_heap();
-    t1 = (*(sk_code_t )*stk0.hi)(stk0.lo,arg1,t0,t0,0);
+    t1 = (*(sk_code_t *)stk0.hi)(stk0.lo,arg1,t0,t0,0);
     if (t1 != 0) {
       sk_xrt_init(t0);
       t0 = 0;
@@ -10895,7 +10893,7 @@ void sk_error_from_code(uintptr_t code, ...){
 
     lo = 0;
     hi = 0;
-    sk_dispatch_record(code, &lo);
+    sk_dispatch_record(code, (long)&lo);
     sk_error_classify(code, &lo, 0, 1);
 
     /* 128-bit payload: the classified error code lands in the message result
@@ -10987,7 +10985,7 @@ void sk_dispatch_record(unsigned long arg1,long arg2)
     }
     *(unsigned long *)(arg2 + 0x30) = t4;
     *(unsigned long *)(arg2 + 0x38) = t3;
-    sk_cap_record(arg1,0xffffffffffffffff,arg2 + 0x10,0);
+    sk_cap_record(arg1,0xffffffffffffffff,(uint8_t (*)[16])(arg2 + 0x10),0);
     return;
   }
                     
@@ -11034,12 +11032,12 @@ long sk_error_classify(uint64_t arg1,uint8_t (*arg2) [16],uint8_t (*arg3) [16], 
   stk8 = 0;
   stk10 = 0;
   stk4 = 0;
-  sk_dispatch_record(arg1,&stk4);
+  sk_dispatch_record(arg1,(long)&stk4);
   t4 = stk9;
   t3 = stk3;
   t0 = sk_macho_dysymtab(*(uint64_t *)*arg2,*(uint64_t *)(*arg2 + 8),stk3,stk9);
   if (t0 < 1) {
-    stk0 = *arg2;
+    stk0 = *(sk_u128_t *)*arg2;
     if ((arg4 & 1) == 0) {
       stk0 = sk_macho_symtab(*(uint64_t *)*arg2,*(uint64_t *)(*arg2 + 8),stk4,stk10
                            );
@@ -11053,7 +11051,7 @@ long sk_error_classify(uint64_t arg1,uint8_t (*arg2) [16],uint8_t (*arg3) [16], 
   else {
     if (arg3 != (uint8_t (*) [16])0x0) {
       stk0 = sk_macho_symtab(*(uint64_t *)*arg2,*(uint64_t *)(*arg2 + 8),t3,t4);
-      *arg3 = stk0;
+      *(sk_u128_t *)*arg3 = stk0;
     }
     t1 = -1;
   }
@@ -11177,7 +11175,7 @@ LAB_0005cb14:
 uintptr_t sk_set_cap_class(uint8_t arg1, ...){
                     
   sk_global_130 = arg1;
-  return;
+  return arg1;
 }
 
 
@@ -11217,7 +11215,7 @@ void sk_cap_record(uint64_t arg1,unsigned long arg2,uint8_t (*arg3) [16],unsigne
   stk7 = 0;
   stk9 = 0;
   stk4 = 0;
-  sk_dispatch_record(arg1,&stk4);
+  sk_dispatch_record(arg1,(long)&stk4);
   t0 = 0;
   if (stk2 != 0) {
     t0 = arg2 / stk2;
@@ -11231,7 +11229,7 @@ void sk_cap_record(uint64_t arg1,unsigned long arg2,uint8_t (*arg3) [16],unsigne
   if ((arg4 & 1) == 0) {
     stk0 = sk_macho_segcmd(t0,t1,stk4,stk9);
   }
-  *arg3 = stk0;
+  *(sk_u128_t *)*arg3 = stk0;
   return;
 }
 
@@ -11274,7 +11272,7 @@ uint64_t sk_lock_prepare(unsigned long *arg1)
     *arg1 = t1 >> 0xe & 0xffffff;
     if (*(short *)((long)arg1 + 0xc) == 0) {
 LAB_0005cc0c:
-      sk_error_fmt(t1,arg1,NULL);
+      sk_error_fmt(t1,(uint64_t)arg1,(uint64_t)NULL);
       return 0;
     }
   }
@@ -11346,7 +11344,7 @@ uint64_t sk_lock_acquire_recursive(unsigned long *arg1,uint64_t arg2)
         t2 = (sk_code_t )sk_break(0x5519,0x5cdac);
         (*t2)();
       }
-      t0 = sk_lock_dispatch_10(t4 & 0xff,arg1,t6,t7,arg2);
+      t0 = sk_lock_dispatch_10();
       if (t0 == 1) {
         t5 = 0;
       }
@@ -11363,7 +11361,7 @@ uint64_t sk_lock_acquire_recursive(unsigned long *arg1,uint64_t arg2)
   }
 LAB_0005ccc8:
   t6 = sk_current_thread();
-  sk_error_fmt(t6,arg1,NULL);
+  sk_error_fmt(t6,(uint64_t)arg1,(uint64_t)NULL);
   return 1;
 }
 
@@ -11408,7 +11406,7 @@ uint64_t sk_lock_try(unsigned long *arg1)
     *arg1 = t1 >> 0xe & 0xffffff;
     if (*(short *)((long)arg1 + 0xc) == 0) {
 LAB_0005ce2c:
-      sk_error_fmt(t1,arg1,NULL);
+      sk_error_fmt(t1,(uint64_t)arg1,(uint64_t)NULL);
       return 1;
     }
   }
@@ -11426,7 +11424,7 @@ LAB_0005ce2c:
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_unlock(uintptr_t arg1, ...){
+void sk_unlock(unsigned long *arg1){
   unsigned int t0;
   unsigned long t1;
   uint64_t t2;
@@ -11918,7 +11916,7 @@ LAB_0005d584:
 
 void sk_msg_init(void)
 {
-  sk_register_global(0x64dca0);
+  sk_register_global((long *)0x64dca0);
   return;
 }
 
@@ -12338,15 +12336,14 @@ uint64_t sk_cpu_array(unsigned long arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_lock_dispatch_10(void)
+uint64_t sk_lock_dispatch_10(void)
 {
   if (sk_global_109 == 0) {
     sk_global_109 = 0x65c560;
   }
                     
                     
-  (**(sk_code_t *)(sk_global_109 + 0x10))();
-  return;
+  return (**(sk_code_t *)(sk_global_109 + 0x10))();
 }
 
 

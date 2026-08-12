@@ -1,55 +1,7 @@
-osfmk/arm64/sk/sk_region_sched_5.c:2283:21: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:2284:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:2718:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:2793:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:2868:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:4598:14: error: redefinition of 'stk00000018'
-osfmk/arm64/sk/sk_region_sched_5.c:4599:14: error: redefinition of 'stk00000020'
-osfmk/arm64/sk/sk_region_sched_5.c:4600:14: error: redefinition of 'stk00000028'
-osfmk/arm64/sk/sk_region_sched_5.c:4601:14: error: redefinition of 'stk00000038'
-osfmk/arm64/sk/sk_region_sched_5.c:4847:14: error: redefinition of 'stk00000000'
-osfmk/arm64/sk/sk_region_sched_5.c:4848:14: error: redefinition of 'stk00000008'
-osfmk/arm64/sk/sk_region_sched_5.c:4849:14: error: redefinition of 'stk00000018'
-osfmk/arm64/sk/sk_region_sched_5.c:4850:14: error: redefinition of 'stk00000020'
-osfmk/arm64/sk/sk_region_sched_5.c:4851:14: error: redefinition of 'stk00000028'
-osfmk/arm64/sk/sk_region_sched_5.c:4852:14: error: redefinition of 'stk00000040'
-osfmk/arm64/sk/sk_region_sched_5.c:4948:16: error: use of undeclared identifier 'stk00000018'; did you mean 'sv00000008'?
-osfmk/arm64/sk/sk_region_sched_5.c:5049:50: error: use of undeclared identifier 'stk00000008'; did you mean 'sv00000008'?
-osfmk/arm64/sk/sk_region_sched_5.c:5049:49: error: incompatible pointer to integer conversion passing 'long *' to parameter of type 'undefined8' (aka 'unsigned long long') [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:5065:22: error: use of undeclared identifier 'stk00000028'; did you mean 'sv00000008'?
-osfmk/arm64/sk/sk_region_sched_5.c:5068:22: error: use of undeclared identifier 'stk00000040'
-osfmk/arm64/sk/sk_region_sched_5.c:5103:22: error: use of undeclared identifier 'stk00000020'
-osfmk/arm64/sk/sk_region_sched_5.c:5108:22: error: use of undeclared identifier 'stk00000000'; did you mean 'sv00000008'?
-osfmk/arm64/sk/sk_region_sched_5.c:6390:14: error: redefinition of 'stk00000000'
-osfmk/arm64/sk/sk_region_sched_5.c:6391:14: error: redefinition of 'stk00000008'
-osfmk/arm64/sk/sk_region_sched_5.c:6392:14: error: redefinition of 'stk00000010'
-osfmk/arm64/sk/sk_region_sched_5.c:6393:14: error: redefinition of 'stk00000018'
-osfmk/arm64/sk/sk_region_sched_5.c:6394:14: error: redefinition of 'stk00000028'
-osfmk/arm64/sk/sk_region_sched_5.c:6395:14: error: redefinition of 'stk00000030'
-osfmk/arm64/sk/sk_region_sched_5.c:7230:14: error: redefinition of 'stk00000010'
-osfmk/arm64/sk/sk_region_sched_5.c:7231:14: error: redefinition of 'stk00000030'
-osfmk/arm64/sk/sk_region_sched_5.c:7232:14: error: redefinition of 'stk00000040'
-osfmk/arm64/sk/sk_region_sched_5.c:7524:48: error: use of undeclared identifier 'stk00000010'
-osfmk/arm64/sk/sk_region_sched_5.c:7553:24: error: use of undeclared identifier 'stk00000030'
-osfmk/arm64/sk/sk_region_sched_5.c:8256:70: error: member reference base type 'unsigned char[]' is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:8257:82: error: member reference base type 'unsigned char[]' is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:8271:64: error: member reference base type 'unsigned char[]' is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:8272:73: error: member reference base type 'unsigned char[]' is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:8586:36: error: use of undeclared identifier 'stk00000040'
-osfmk/arm64/sk/sk_region_sched_5.c:8811:8: error: call to undeclared function 'sk_001dcd98'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-osfmk/arm64/sk/sk_region_sched_5.c:8818:12: error: conflicting types for 'sk_001dcd98'
-osfmk/arm64/sk/sk_region_sched_5.c:8831:13: error: incompatible pointer to integer conversion assigning to 'undefined8' (aka 'unsigned long long') from 'unsigned long *' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9096:8: error: incompatible pointer to integer conversion assigning to 'long' from 'undefined *' (aka 'unsigned long long *') [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9107:31: error: incompatible function pointer types passing 'void (long)' to parameter of type 'unsigned long (*)()' [-Wincompatible-function-pointer-types]
-osfmk/arm64/sk/sk_region_sched_5.c:9485:14: error: redefinition of 'stk00000030'
-osfmk/arm64/sk/sk_region_sched_5.c:9486:14: error: redefinition of 'stk00000050'
-osfmk/arm64/sk/sk_region_sched_5.c:9487:14: error: redefinition of 'stk00000070'
-osfmk/arm64/sk/sk_region_sched_5.c:9519:28: error: operand of type 'void' where arithmetic or pointer type is required
-osfmk/arm64/sk/sk_region_sched_5.c:9824:45: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9843:45: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:10223:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable
-osfmk/arm64/sk/sk_region_sched_5.c:10415:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable
-osfmk/arm64/sk/sk_region_sched_5.c:10847:23: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:10935:23: error: member reference base type 'ulong' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:10937:23: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
-osfmk/arm64/sk/sk_region_sched_5.c:10983:35: error: incompatible pointer to integer conversion passing 'undefined1[16]' (aka 'unsigned char[16]') to parameter of type 'undefined8' (aka 'unsigned long long') [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9167:5: error: non-void function 'sk_001dd58c' should return a value [-Wreturn-mismatch]
+osfmk/arm64/sk/sk_region_sched_5.c:9174:3: error: non-void function 'sk_001dd58c' should return a value [-Wreturn-mismatch]
+osfmk/arm64/sk/sk_region_sched_5.c:9803:35: error: incompatible pointer to integer conversion passing 'unsigned long (*)()' to parameter of type 'long' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9803:77: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9822:35: error: incompatible pointer to integer conversion passing 'unsigned long (*)()' to parameter of type 'long' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9822:77: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:10394:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable

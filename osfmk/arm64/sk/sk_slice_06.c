@@ -75,7 +75,6 @@ static void sk_vas_check_result(uint64_t code)
 #include "sk_slice_06_frag_spanmap.c"
 #include "sk_slice_06_frag_pagetable.c"
 #include "sk_slice_06_frag_desc.c"
-#include "sk_slice_06_frag_pagealloc.c"
 #include "sk_slice_06_frag_rebuild.c"
 #include "sk_slice_06_frag_vasinit.c"
 #include "sk_slice_06_frag_pool.c"

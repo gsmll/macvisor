@@ -85,7 +85,8 @@ extern const char s_iterator_gt_node_size[];
 extern const char s_InternalExclaveLauncher_Commpage[];
 extern sk_word_t DAT_004be938, DAT_004bed40, DAT_004bee78, DAT_004ea504, DAT_005a4b80;
 /* Stray reconstruction locals (declared globally for -fsyntax-only). */
-extern sk_word_t bit, ctx, dp, entry, keep, local88, local_30, local_b0, q, uStack_28, val;
+extern sk_word_t bit, ctx, dp, entry, keep, local_30, local_b0, q, uStack_28, val;
+extern sk_word_t *local88;
 extern sk_word_t unaff_x19;
 
 extern sk_word_t DAT_006be46c, DAT_006be674, DAT_006be660, DAT_006be868;
@@ -669,21 +670,21 @@ void sk_dt_lookup_global2(sk_word_t a, void *b);
 sk_word_t sk_dt_property_get(sk_word_t *out);
 void sk_dt_parse(sk_word_t base, sk_word_t size, sk_word_t *out);
 sk_word_t sk_dt_lookup_region(sk_word_t base, sk_word_t size, sk_word_t *out);
-void sk_dt_integrity_parse(sk_word_t a, sk_word_t b);
+void sk_dt_integrity_parse(sk_word_t a, sk_word_t b, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg);
 sk_word_t sk_dt_parse_cb(sk_word_t *ctx, sk_word_t p2);
 sk_word_t sk_dt_validate_range(long base, sk_word_t size, long *out);
-bool sk_dt_next(void);
-sk_word_t sk_dt_walk(long ctx);
+bool sk_dt_next(void *ctx);
+sk_word_t sk_dt_walk(void *ctx);
 void sk_dt_node_init(long base, sk_word_t size, long *out);
-bool sk_dt_child(sk_word_t dt, sk_word_t *addr, sk_word_t *len);
+bool sk_dt_child(sk_word_t *dt, sk_word_t *addr, sk_word_t *len);
 sk_word_t sk_dt_name_cmp(void);
-bool sk_dt_prop(sk_word_t dt, sk_word_t *ptr, sk_word_t *len);
+bool sk_dt_prop(sk_word_t *dt, sk_word_t *ptr, sk_word_t *len);
 sk_word_t sk_dt_prop_lookup(long base, sk_word_t size, const char *name, sk_word_t *ptr, sk_word_t *len);
 bool sk_dt_eof(sk_word_t *dt);
 sk_word_t sk_dt_advance(sk_word_t *dt);
 sk_word_t sk_dt_node_children(long *ctx, sk_word_t *out);
 sk_word_t sk_dt_cursor(sk_word_t *dt);
-sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, void (*cb)(sk_word_t,sk_word_t*), sk_word_t cbarg);
+sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg);
 bool sk_dt_list_get(long *list, sk_word_t idx, sk_word_t *out);
 sk_word_t sk_dt_list_count(long *list);
 void sk_dt_overflow_panic(void) __attribute__((noreturn));
@@ -3185,11 +3186,11 @@ void sk_exc_ep_setup(void)
         sk_panic_bad(0, "exception handling can only be i[n one context]");
     /* derive a check constant from the 'Truncated' string — nonzero if a marker present */
     if (sk_exc_marker == 0) {
-        sk_exc_ep = sk_alloc_ep(8);              /* FUN_0019ae2c */
+        sk_exc_ep = (sk_word_t)sk_alloc_ep(8);              /* FUN_0019ae2c */
         if (sk_exc_ep == 0)
             sk_panic_bad(0, "failed to allocate exception end[point]");
         if ((sk_flag_get() & 1) == 0) {
-            sk_ep_activate_id(sk_exc_ep, 8);     /* FUN_0005e0dc */
+            sk_ep_activate_id((void*)(uintptr_t)sk_exc_ep, 8);     /* FUN_0005e0dc */
         }
     }
     *(sk_word_t *)((char*)tcb + 0x48) = sk_exc_ep;
@@ -3210,7 +3211,7 @@ void sk_exc_ep_setup(void)
             if (cur != 0) {
                 sk_per_cpu_base();
                 if ((sk_word_t)node + 0x178 < (sk_word_t)node) break;
-                sk_fmt(0xeb1a02bf914012ba, "%s 0x%06x Set exception handl[er]");
+                sk_fmt((char*)0xeb1a02bf914012ba, "%s 0x%06x Set exception handl[er]");
                 sk_word_t h = (sk_word_t)cur;
                 sk_ro_frame_write(h);            /* write cur into RO frame */
                 CallSupervisor(0);
@@ -3266,7 +3267,7 @@ long sk_vspace_freeze(void *a, sk_word_t mode, void *obj)
         sk_per_cpu_base();
         if ((sk_word_t)(0x64cb40 + r) >= (sk_word_t)0x64cb40
             && 0x64cb48 + r <= 0x64cb80 && 0x64cb40 + r <= 0x64cb48 + r) {
-            sk_fmt(0xeb1a02bf914012ba, "%s 0x%06x vas freeze failed w[ith]");
+            sk_fmt((char*)0xeb1a02bf914012ba, "%s 0x%06x vas freeze failed w[ith]");
             return r << 0x10;
         }
         sk_breakpoint(0x5519, 0x647a0);
@@ -3277,7 +3278,7 @@ long sk_vspace_freeze(void *a, sk_word_t mode, void *obj)
         sk_word_t w1 = rd64(tp + 0x10);
         sk_word_t cls[4] = {0,0,0,0};
         sk_exc_classify((sk_word_t*)&cls, &w0, (sk_word_t*)&cls[2]);
-        sk_exc_classify_init((sk_word_t*)&cls, obj, (sk_word_t*)&cls[2]);  /* FUN_000651e8 */
+        sk_exc_classify((sk_word_t*)&cls, obj, (sk_word_t*)&cls[2]);  /* FUN_000651e8 */
         void **head = *(void ***)((char*)obj + 0x98);
         int rc = 0;
         void **cur = head;
@@ -3332,7 +3333,7 @@ void sk_error_str_out3(char *out, unsigned char code)
  * Confidence: medium
  * Notes: FUN_00064c24.
  */
-sk_word_t sk_amx_cap_alloc_fwd(void *a, void *obj){ sk_amx_cap_alloc(obj); return 1; }
+sk_word_t sk_amx_cap_alloc_fwd(void *a, void *obj){ sk_amx_cap_alloc(a, obj, 0); return 1; }
 
 /*--------------------------------------------------------------------*/
 
@@ -3440,7 +3441,7 @@ void sk_amx_cap_alloc2(void *obj)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
     if (*(long *)((char*)obj + 0x88) == 0) {
-        long cap = sk_amx_ep_alloc();            /* FUN_00064cac */
+        long cap = sk_amx_ep_alloc(0);            /* FUN_00064cac */
         *(long *)((char*)obj + 0x88) = cap;
         if (cap != 0) sk_amx_setup(obj, (long*)((char*)obj + 0x88));   /* FUN_004b7704 */
     }
@@ -3492,8 +3493,8 @@ sk_word_t sk_exc_default(void *a, sk_word_t *cls)
     sk_word_t esr = 0, far = 0;
     void **p = *(void ***)(cls + 0x10/8);
     if (p != NULL) { esr = (sk_word_t)p[0]; far = (sk_word_t)p[1]; }
-    sk_exc_report(a, esr, far);                  /* FUN_00064e84 */
-    sk_panic_bad(a, "Caught exception: esr 0x%016zx f[ar]");
+    sk_exc_report((sk_word_t)(uintptr_t)a, esr, far);                  /* FUN_00064e84 */
+    sk_panic_bad((int)(uintptr_t)a, "Caught exception: esr 0x%016zx f[ar]");
 }
 
 /*--------------------------------------------------------------------*/
@@ -3541,7 +3542,7 @@ sk_word_t sk_xrt_freeze(void)
     CallSupervisor(0);
     if (ep == 0) {
         sk_per_cpu_base();
-        sk_fmt(0xeb1a02bf914012ba, "%s 0x%06x xrt freeze: freeze o[f]");
+        sk_fmt((char*)0xeb1a02bf914012ba, "%s 0x%06x xrt freeze: freeze o[f]");
     } else {
         sk_freeze_ep(ep, 0);                     /* FUN_004b7984 */
     }
@@ -3746,7 +3747,7 @@ void sk_dt_table_set(sk_word_t t){ sk_dt_table = t; }
  * Confidence: medium
  * Notes: FUN_00065640.
  */
-void sk_dt_lookup_global(sk_word_t a, void *b){ sk_dt_lookup(sk_dt_table, a, b); }
+void sk_dt_lookup_global(sk_word_t a, void *b){ sk_dt_lookup((long*)(uintptr_t)sk_dt_table, a, b); }
 
 /*--------------------------------------------------------------------*/
 
@@ -3788,7 +3789,7 @@ void sk_dt_table_set2(sk_word_t t){ sk_dt_table2 = t; }
  * Confidence: medium
  * Notes: FUN_00065640.
  */
-void sk_dt_lookup_global2(sk_word_t a, void *b){ sk_dt_lookup(sk_dt_table2, a, b); }
+void sk_dt_lookup_global2(sk_word_t a, void *b){ sk_dt_lookup((long*)(uintptr_t)sk_dt_table2, a, b); }
 
 /*--------------------------------------------------------------------*/
 
@@ -3828,17 +3829,19 @@ sk_word_t sk_dt_property_get(sk_word_t *out)
  * Confidence: medium
  * Notes: FUN_00065838/000658c4/000658f0.
  */
-void sk_dt_parse(sk_word_t base, sk_word_t size, sk_word_t *out)
+sk_word_t sk_dt_parse(sk_word_t base, sk_word_t size, sk_word_t *out)
 {
     sk_word_t got[2] = {0,0};
     if (sk_dt_lookup_region(base, size, &got) != 0) {   /* FUN_00065838 */
         sk_word_t rec[2] = { got[0], got[1] };
-        sk_dt_integrity_parse(got[0], got[1], sk_dt_parse_cb, &rec);   /* FUN_000658c4 + 000658f0 */
+        sk_dt_integrity_parse(got[0], got[1], sk_dt_parse_cb, (sk_word_t)(uintptr_t)&rec);   /* FUN_000658c4 + 000658f0 */
         if (rec[0] == 0x1) {
             out[0] = base;
             out[1] = size;
+            return 1;
         }
     }
+    return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -3869,10 +3872,10 @@ sk_word_t sk_dt_lookup_region(sk_word_t base, sk_word_t size, sk_word_t *out)
  * Confidence: medium
  * Notes: FUN_000660bc.
  */
-void sk_dt_integrity_parse(sk_word_t a, sk_word_t b)
+void sk_dt_integrity_parse(sk_word_t a, sk_word_t b, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg)
 {
     sk_word_t ctx[2] = { a, b };
-    sk_dt_parse_driver(0, &ctx);               /* FUN_000660bc */
+    sk_dt_parse_driver(0, ctx, cb, cbarg);               /* FUN_000660bc */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3948,7 +3951,7 @@ sk_word_t sk_dt_validate_range(long base, sk_word_t size, long *out)
  * Confidence: medium
  * Notes: FUN_00066030.
  */
-bool sk_dt_next(void){ return sk_dt_walk_end() == 0; }
+bool sk_dt_next(void *ctx){ return sk_dt_walk_end() == 0; }
 
 /*--------------------------------------------------------------------*/
 
@@ -3958,7 +3961,7 @@ bool sk_dt_next(void){ return sk_dt_walk_end() == 0; }
  * Confidence: medium
  * Notes: FUN_00065f48/00065a3c/00065ad0/00066204.
  */
-sk_word_t sk_dt_walk(long ctx)
+sk_word_t sk_dt_walk(void *ctx)
 {
     sk_word_t base = 0, size = 0;
     if (sk_dt_node(ctx, &base) == 0) return 1;    /* FUN_00065f48 */
@@ -4001,9 +4004,9 @@ void sk_dt_node_init(long base, sk_word_t size, long *out)
  * Confidence: medium
  * Notes: FUN_00065c30; SoftwareBreakpoint(0x5519,0x65c30).
  */
-bool sk_dt_child(sk_word_t dt, sk_word_t *addr, sk_word_t *len)
+bool sk_dt_child(sk_word_t *dt, sk_word_t *addr, sk_word_t *len)
 {
-    sk_word_t node = sk_dt_node_hdr(dt);          /* FUN_00065c30 */
+    sk_word_t node = (sk_word_t)sk_dt_node_hdr(dt);          /* FUN_00065c30 */
     if (node != 0) {
         if ((node + 0x24 < node) || (len = thunk_len(node, 0x20), 0x20 < *len))
             sk_breakpoint(0x5519, 0x65c30);
@@ -4082,9 +4085,9 @@ sk_word_t sk_dt_name_cmp(void)
  * Confidence: medium
  * Notes: FUN_00065c30; SoftwareBreakpoint(0x5519,0x65dec).
  */
-bool sk_dt_prop(sk_word_t dt, sk_word_t *ptr, sk_word_t *len)
+bool sk_dt_prop(sk_word_t *dt, sk_word_t *ptr, sk_word_t *len)
 {
-    sk_word_t node = sk_dt_node_hdr(&dt);
+    sk_word_t node = (sk_word_t)sk_dt_node_hdr(dt);
     if (node != 0) {
         if (node + 0x24 < node) sk_breakpoint(0x5519, 0x65dec);
         unsigned int l = *(unsigned int *)(node + 0x20);
@@ -4224,10 +4227,10 @@ sk_word_t sk_dt_cursor(sk_word_t *dt)
  * Confidence: low
  * Notes: FUN_00065a3c/00065ad0/00065af0/00065f48.
  */
-sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, void (*cb)(sk_word_t,sk_word_t*), sk_word_t cbarg)
+sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, sk_word_t (*cb)(sk_word_t*, sk_word_t), sk_word_t cbarg)
 {
     sk_word_t local_40 = ctx0;
-    sk_word_t r = cb(cbarg, &local_40);
+    sk_word_t r = cb(&local_40, cbarg);
     if ((r & 1) == 0) {
         sk_word_t c[4] = {0,0,0,0};
         r = sk_dt_validate_range(*root, root[1], &c);
@@ -4239,7 +4242,7 @@ sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, void (*cb)(sk_word
                 sk_word_t ch[2] = {0,0};
                 r = sk_dt_node_children(&c, &ch);
                 if ((int)r == 0) return r;
-                r = sk_dt_parse_driver(&local_40, &ch, cb, cbarg);
+                r = sk_dt_parse_driver(local_40, &ch, cb, cbarg);
                 if ((r & 1) != 0) break;
                 sk_dt_walk(&c);
                 more = sk_dt_next(&c);
@@ -4351,7 +4354,7 @@ void sk_dt_lookup_region_fwd(void){ sk_dt_lookup_region(0,0,0); }
  * Forwarder to 0x658c4 (device-tree integrity parse).
  * Confidence: medium
  */
-void sk_dt_integrity_fwd(void){ sk_dt_integrity_parse(0,0); }
+void sk_dt_integrity_fwd(void){ sk_dt_integrity_parse(0,0,0,0); }
 
 /*--------------------------------------------------------------------*/
 
@@ -4451,7 +4454,7 @@ void sk_dt_range_fwd(void){ sk_dt_validate_range(0,0,0); }
  * Forwarder to 0x65ad0 (device-tree next).
  * Confidence: medium
  */
-void sk_dt_next_fwd(void){ sk_dt_next(); }
+void sk_dt_next_fwd(void){ sk_dt_next(0); }
 
 /*--------------------------------------------------------------------*/
 
@@ -4580,11 +4583,11 @@ unsigned int sk_boot_dt_integrity_check(void *a, void *b, sk_word_t c, sk_word_t
     *(void **)((char*)o1 + 0x10) = a;
     *(void **)((char*)o1 + 0x18) = b;
     void *o2 = sk_alloc_obj(0x65c930, 0x20, 7);
-    *(void (**)(void))(o2 + 0x10) = sk_dt_boot_ok;   /* FUN_00066690 */
+    *(void (**)(void))(o2 + 0x10) = (void(*)(void))sk_dt_boot_ok;   /* FUN_00066690 */
     *(long *)((char*)o2 + 0x18) = (long)o1;
-    void (*cb)(sk_word_t,sk_word_t*) = sk_dt_paged_call;
-    sk_alloc_pages(o1, 0);
-    unsigned int r = sk_dt_integrity_parse(c, d, sk_dt_boot_cb, &cb);  /* FUN_0006626c */
+    sk_word_t (*cb)(sk_word_t*, sk_word_t) = sk_dt_paged_call;
+    sk_alloc_pages((sk_word_t)o1, 0);
+    unsigned int r = sk_dt_integrity_parse(c, d, (sk_word_t(*)(sk_word_t*, sk_word_t))sk_dt_boot_cb, (sk_word_t)(uintptr_t)&cb);  /* FUN_0006626c */
     sk_free(o2);
     sk_word_t f = sk_boot_feature(o1, 0x5be7c0, 0xd3, 0x5d, 9, 0);     /* FUN_003a26e8 */
     sk_free(o1);

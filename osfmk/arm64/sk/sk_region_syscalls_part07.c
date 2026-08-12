@@ -33,7 +33,7 @@ extern void FUN_00348ce8(word_t, ...);
 extern void FUN_00348e00(word_t, ...);
 extern void FUN_00348f14(word_t, ...);
 extern void FUN_00349104(word_t, ...);
-extern void FUN_00349394(word_t, ...);
+extern cl4_result_t FUN_00349394(word_t, ...);
 extern void FUN_00349530(word_t, ...);
 extern void FUN_00349734(word_t, ...);
 extern word_t FUN_00349830(word_t, ...);
@@ -88,7 +88,7 @@ extern cl4_result_t FUN_0034cdf8(word_t, ...);
 extern void FUN_0034d034(word_t, ...);
 extern void FUN_0034d1c0(word_t, ...);
 extern void FUN_0034d3d4(word_t, ...);
-extern cl4_result_t FUN_0034d454(word_t, ...);
+extern word_t FUN_0034d454(word_t, ...);
 extern void FUN_0034d4d4(word_t, ...);
 extern void FUN_0034d5b8(word_t, ...);
 extern word_t FUN_0034d5d8(word_t, ...);
@@ -112,7 +112,7 @@ extern void FUN_0034e7e0(word_t, ...);
 extern void FUN_0034e850(word_t, ...);
 extern void FUN_0034e888(word_t, ...);
 extern void FUN_0034e974(word_t, ...);
-extern void FUN_0034e9a4(word_t, ...);
+extern word_t FUN_0034e9a4(word_t, ...);
 extern void FUN_0034ebe0(word_t, ...);
 extern void FUN_0034ece8(word_t, ...);
 extern void FUN_0034ee88(word_t, ...);
@@ -121,7 +121,7 @@ extern void FUN_0034f20c(word_t, ...);
 extern void FUN_0034f22c(word_t, ...);
 extern void FUN_0034f2f4(word_t, ...);
 extern void FUN_0034f828(word_t, ...);
-extern cl4_result_t FUN_0034f8f4(word_t, ...);
+extern word_t FUN_0034f8f4(word_t, ...);
 extern cl4_result_t FUN_0034f924(word_t, ...);
 extern void FUN_0034fa0c(word_t, ...);
 extern void FUN_0034fc7c(word_t, ...);
@@ -136,7 +136,7 @@ extern void FUN_00350500(word_t, ...);
 extern void FUN_00350548(word_t, ...);
 extern cl4_result_t FUN_0035060c(word_t, ...);
 extern void FUN_00350624(word_t, ...);
-extern void FUN_00350630(word_t, ...);
+extern cl4_result_t FUN_00350630(word_t, ...);
 extern void FUN_00350798(word_t, ...);
 extern cl4_result_t FUN_003507e0(word_t, ...);
 extern void FUN_00350878(word_t, ...);
@@ -167,7 +167,7 @@ extern void FUN_00351930(word_t, ...);
 extern cl4_result_t FUN_0035193c(word_t, ...);
 extern void FUN_00351978(word_t, ...);
 extern void FUN_003519fc(word_t, ...);
-extern cl4_result_t FUN_00351a38(word_t, ...);
+extern word_t FUN_00351a38(word_t, ...);
 extern cl4_result_t FUN_00351d24(word_t, ...);
 extern void FUN_00351d30(word_t, ...);
 extern void FUN_00351e20(word_t, ...);
@@ -200,7 +200,7 @@ extern void FUN_00353a00(word_t, ...);
 extern cl4_result_t FUN_00353af8(word_t, ...);
 extern void FUN_00353b7c(word_t, ...);
 extern void FUN_00353c0c(word_t, ...);
-extern cl4_result_t FUN_00353fac(word_t, ...);
+extern word_t FUN_00353fac(word_t, ...);
 extern void FUN_00353fb8(word_t, ...);
 extern void FUN_00354034(word_t, ...);
 extern cl4_result_t FUN_00354070(word_t, ...);
@@ -4533,13 +4533,14 @@ void sk_msg_slot_write(word_t p1, word_t p2, uint count)
             top = /* w11 */0;
             sh = /* w8 */0;
             a = /* w10 */0;
-            if (/* w13 */0;
+            if (/* w13 */0 < 0x100) set = (1 < /* w13 */0);
         } else {
             set = true;
         }
     }
-    char cv;
-    if (top < /* w20 */0 + ~top;
+    char cv = 0;
+    if (top < /* w20 */0) {
+        uint diff = /* w20 */0 + ~top;
         if (p < 4) {
             cv = (char)(diff >> (sh & 0x1f)) + '\x01';
             if (p != 0) {
@@ -4552,13 +4553,15 @@ void sk_msg_slot_write(word_t p1, word_t p2, uint count)
         } else {
             FUN_003507e0(0);
             FUN_00114330(0);
-            0 = diff;
+            *(uint *)/* x19 */0 = diff;
             cv = '\x01';
         }
         if (set) *(char *)((long)/* x19 */0 + off) = cv;
     } else {
         if (set) *(und1_t *)((long)/* x19 */0 + off) = 0;
-        if (/* w20 */0 & ~sel);
+        if (/* w20 */0 != 0) {
+            if (lim < a) {
+                uint *p2 = (uint *)(base + (long)/* x19 */0 & ~sel);
                 if (a < /* w20 */0) {
                     FUN_003535cc(0);
                     if (/* w1 */0 != 0) {
@@ -4572,7 +4575,7 @@ void sk_msg_slot_write(word_t p1, word_t p2, uint count)
                     }
                     goto tail;
                 }
-                cl4_result_t r = { .lo = (word_t)p2, .hi = (uint)/* w20 */0 + 1, };
+                cl4_result_t r = { .lo = (word_t)p2, .hi = (uint)/* w20 */0 + 1 };
                 FUN_0008e500(r.lo, r.hi);
                 FUN_000839d8(0);
                 return;
@@ -4634,7 +4637,8 @@ void sk_pair_store_release(void)
 {
     word_t *cur = (word_t *)FUN_0034d454(0);
     word_t w = *cur;
-    0 = /* x8 */0;
+    /* *x20 = x8 (store frame word) */
+    *(word_t *)/* x20 */0 = /* x8 */0;
     FUN_0036b118(w);
     FUN_003566cc(0);
 }
@@ -4676,9 +4680,9 @@ void sk_syscall_msg_write_g(word_t p1, word_t p2, long frame)
     long dst = base + (ulong)(byte)*(uint *)/* table+0x50 */0;
     FUN_0034df04(0);
     ulong sel = (ulong)*(uint *)/* table2+0x50 */0 & 0xff;
-    word_t u2b = FUN_00352e90(0);
-    if (((sel | /* x9 */0x100000 & 0) == 0) &&
-        (ulong)(/* x11 */0) < 0x19) {
+    word_t u2b = FUN_00352e90(0).lo;
+    if (((sel | /* x9 */0) < 8 && ((/* w13 */0 | /* w10 */0) & 0x100000) == 0)
+        && (ulong)(/* x11 */0 + *(long *)/* table+0x40 */0) < 0x19) {
         void *pc = 0;
         cl4_result_t a = FUN_0035060c(0);
         ((void (*)(word_t, word_t, word_t))pc)(a.lo, a.hi, u2b);
@@ -4689,12 +4693,14 @@ void sk_syscall_msg_write_g(word_t p1, word_t p2, long frame)
             ((dst + (long)/* x25 */0) + dst2 & ~sel,
              (dst + (long)/* x19 */0) + dst2 & ~sel, u1);
     } else {
-        0 = 0;
-        long r2 = FUN_00358bb4(0);
-        /* x25 */0);
+        /* *x25 = *x19 */
+        *(word_t *)/* x25 */0 = *(word_t *)/* x19 */0;
+        long r2 = FUN_00358bb4(0).lo;
+        /* x25 = r2 + x8_00 */
+        *(word_t *)/* x25 */0 = r2 + /* x8_00 */0;
         FUN_0036b270(0);
     }
-    FUN_00351d30(/* x25 */0);
+    FUN_00351d30(/* x25 */0, /* x30 */0);
 }
 
 /* FUN_00337d78 @ 0x337d78 (est. sk_syscall_msg_read_f)
@@ -4704,8 +4710,8 @@ void sk_syscall_msg_write_g(word_t p1, word_t p2, long frame)
 void sk_syscall_msg_read_f(long p1, long frame)
 {
     word_t u1 = *(word_t *)(frame + 0x10);
-    word_t w = FUN_00348d94(*(word_t *)(frame + 0x18));
-    w = FUN_00377824(w, /* x8 */0, u1);
+    word_t w = FUN_00348d94(*(word_t *)(frame + 0x18)).lo;
+    w = FUN_00377824(w, /* x8 */0, u1).lo;
     FUN_0034ab20(0);
     void *pc = 0;
     ((void (*)(long, word_t))pc)(p1, w);
@@ -4737,7 +4743,7 @@ void sk_syscall_cap_copy7_18(word_t p1, word_t p2, long frame)
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
     ((void (*)(word_t, word_t, word_t))0)
-        (addr + /* x24 */0 & ~sel, u1);
+        (addr + /* x24 */0 & ~sel, addr + /* x19 */0 & ~sel, u1);
     FUN_00084234(0);
 }
 
@@ -4759,7 +4765,7 @@ void sk_syscall_cap_copy7_20(word_t p1, word_t p2, long frame)
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
     ((void (*)(word_t, word_t, word_t))0)
-        (addr + /* x24 */0 & ~sel, u1);
+        (addr + /* x24 */0 & ~sel, addr + /* x19 */0 & ~sel, u1);
     FUN_00084234(0);
 }
 
@@ -4781,7 +4787,7 @@ void sk_syscall_cap_copy7_28(word_t p1, word_t p2, long frame)
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
     ((void (*)(word_t, word_t, word_t))0)
-        (addr + /* x24 */0 & ~sel, u1);
+        (addr + /* x24 */0 & ~sel, addr + /* x19 */0 & ~sel, u1);
     FUN_00084234(0);
 }
 
@@ -4794,15 +4800,17 @@ ulong sk_msg_slot_read_c(word_t p1, word_t p2, long frame)
     word_t w = FUN_00351a38(0);
     long u = *(long *)(frame + 0x10);
     cl4_result_t r = FUN_00348d94(w, *(word_t *)(frame + 0x18));
-    long d = FUN_00377824(r.lo, r.hi, u);
+    long d = FUN_00377824(r.lo, r.hi, u).lo;
     long dst = *(long *)(d + -8);
     long src = *(long *)(u + -8);
     uint lim1 = *(uint *)(src + 0x54);
     uint lim2 = *(uint *)(dst + 0x54);
-    if (lim1 <= lim2) lim1 = lim2;   /* max of the two limits 0 == 0) return 0;
-    if (/* w21 */0 - lim1 == 0) goto out;
+    if (lim1 <= lim2) lim1 = lim2;   /* lim1 = max of the two limits */
+    if (/* w21 */0 == 0) return 0;
+    if (/* w21 */0 < lim1 || /* w21 */0 - lim1 == 0) goto out;
     long off = (*(long *)(dst + 0x40) + (ulong)*(byte *)(src + 0x50) +
-                (*(long *)(dst + 0x40) + (ulong)*(byte *)(dst + 0x50) & ~(ulong)*(byte *)(dst + 0x50)) &
+                (*(long *)(dst + 0x40) + (ulong)*(byte *)(dst + 0x50) &
+                 ~(ulong)*(byte *)(dst + 0x50)) &
                 ~(ulong)*(byte *)(src + 0x50)) + *(long *)(src + 0x40);
     uint p = (uint)off;
     uint sh = p << 3;
@@ -4810,7 +4818,8 @@ ulong sk_msg_slot_read_c(word_t p1, word_t p2, long frame)
     if (p < 4) {
         uint n = ((/* w21 */0 - lim1) + ~(-1 << (sh & 0x1f)) >> (sh & 0x1f)) + 1;
         if (0xff < n) {
-            v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off);
+            v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off)
+                                 : *(uint *)((long)/* x19 */0 + off);
             goto chk;
         }
         if (1 < n) goto byt;
@@ -4821,18 +4830,21 @@ chk:
         if (v != 0) {
             uint bit = (p < 4) ? v - 1 << (sh & 0x1f) : 0;
             uint val;
+            uint top = 0;
             if (p == 0) {
                 val = 0;
             } else {
                 FUN_003538d4(0);
-                uint e8 = /* w8 */0;
-                switch (/* w9 */0; break;
-                case 2:  val = (uint)(ushort)0; break;
-                case 3:  FUN_0035376c(0); val = /* w9_00 */0; bit = /* w8_00 */0; e13 = /* w13_00 */0; break;
-                case 4:  val = 0; break;
+                bit = /* w8 */0;
+                top = /* w13 */0;
+                switch (/* w9 */0) {
+                default: val = (uint)(byte)*((uint *)/* x19 */0); break;
+                case 2:  val = (uint)(ushort)*((uint *)/* x19 */0); break;
+                case 3:  FUN_0035376c(0); bit = /* w8_00 */0; val = /* w9_00 */0; top = /* w13_00 */0; break;
+                case 4:  val = *((uint *)/* x19 */0); break;
                 }
-                return (ulong)(e13 + (val | bit) + 1);
             }
+            return (ulong)(top + (val | bit) + 1);
         }
     }
     if (lim1 == 0) return 0;
@@ -4877,7 +4889,7 @@ void sk_syscall_msg_write_h(word_t p1, word_t p2, long frame)
     cl4_result_t r0 = FUN_0035193c(0);
     word_t *buf = (word_t *)r0.lo;
     word_t u2 = *(word_t *)(frame + 0x10);
-    FUN_00349b00(buf, *(word_t *)(frame + 0x18));
+    FUN_00349b00((word_t)buf, *(word_t *)(frame + 0x18));
     long base = *(long *)/* x8+0x40 */0;
     uint sel1 = *(uint *)/* table+0x50 */0;
     ulong s1 = (ulong)sel1 & 0xff;
@@ -4895,7 +4907,7 @@ void sk_syscall_msg_write_h(word_t p1, word_t p2, long frame)
          (base + (ulong)(byte)sel2 + (long)pd & ~s2) & ~(s1 | 7))) {
         ulong m = ~s1;
         void *pc = 0;
-        FUN_00350624(buf);
+        FUN_00350624((word_t)buf);
         ((void (*)(void))pc)();
         FUN_0034dfc4(0);
         cl4_result_t a = ((cl4_result_t (*)(void))0)();
@@ -4908,7 +4920,7 @@ void sk_syscall_msg_write_h(word_t p1, word_t p2, long frame)
         *(und1_t *)(src1 + 1) = b;
         ((void (*)(word_t, word_t, word_t))0)(s1 + 9 + (long)src1 & m, s1 + 9 + (long)src2 & m, u2);
     } else {
-        *buf = *r0.hi_word;
+        *buf = *(word_t *)r0.hi;
         FUN_003592b0(0);
         buf = pd;
     }
@@ -4930,7 +4942,7 @@ void sk_dispatch8_10(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a708(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_0008e500(0);
@@ -4951,7 +4963,7 @@ void sk_dispatch8_18(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a708(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_0008e500(0);
@@ -4972,7 +4984,7 @@ void sk_dispatch8_20(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a708(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_0008e500(0);
@@ -4993,7 +5005,7 @@ void sk_dispatch8_28(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a708(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_0008e500(0);
@@ -5014,27 +5026,30 @@ void sk_msg_slot_read_d(void)
     FUN_0034cb60(0);
     cl4_result_t r = FUN_00353af8(0);
     word_t cnt = r.hi;
-    if (/* w22 */0 <= /* w10 */0) goto out;
+    if (/* w22 */0 != 0) {
+        if (/* w22 */0 <= /* w10 */0) goto out;
         FUN_0035a4a8(/* x11 */0, r.lo, cnt, r.lo);
-        long off = (/* x12_00 */0) + /* x11_00 */0 | 7) + /* x13 */0 & ~(/* x12_00 */0 | 7));
+        long off = (/* x12_00 */0 + 9 & ~/* x12_00 */0) + /* x11_00 */0
+                   + ((/* x12_00 */0 | 7) + /* x13 */0 + /* x14 */0 & ~(/* x12_00 */0 | 7));
         uint p = (uint)off << 3;
         uint v;
         if ((uint)off < 4) {
             uint n = ((uint)(/* w15 */0 + ~(-1 << (p & 0x1f))) >> (p & 0x1f)) + 1;
             if (0xff < n) {
-                v = (n >> 0x10 == 0) ? (uint)*(ushort *)(/* x19 */0 + off);
+                v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off)
+                                     : *(uint *)((long)/* x19 */0 + off);
                 goto chk;
             }
             if (1 < n) goto byt;
         } else {
 byt:
-            v = (uint)*(byte *)(/* x19 */0 + off);
+            v = (uint)*(byte *)((long)/* x19 */0 + off);
 chk:
             if (v != 0) {
                 FUN_0035a464(0);
                 if (/* w13 */0 != 0) {
                     uint sel = 4;
-                    if (/* w13 */0;
+                    if (/* w13 */0 < 4) sel = /* w13 */0;
                     switch (sel) { default: case 2: case 3: FUN_0034e32c(0); case 4: break; }
                 }
                 cnt = FUN_00351538(0);
@@ -5092,7 +5107,7 @@ void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
     cl4_result_t r0 = FUN_0035193c(0);
     word_t *buf = (word_t *)r0.lo;
     word_t u8 = *(word_t *)(frame + 0x10);
-    FUN_00349b00(buf, *(word_t *)(frame + 0x18));
+    FUN_00349b00((word_t)buf, *(word_t *)(frame + 0x18));
     long base = *(long *)/* x8+0x40 */0;
     uint sel1 = *(uint *)/* table+0x50 */0;
     ulong s1 = (ulong)sel1 & 0xff;
@@ -5110,7 +5125,7 @@ void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
               (base + (ulong)(byte)sel2 + (dst & ~s1) & ~s2) & ~(s1 | 7)) + 1 < 0x19) {
         ulong m = ~s1;
         void *pc = 0;
-        FUN_00350bb4(buf);
+        FUN_00350bb4((word_t)buf);
         cl4_result_t a = ((cl4_result_t (*)(void))pc)();
         FUN_00350630(a.lo, a.hi, u8);
         ((void (*)(void))pc)();
@@ -5125,7 +5140,7 @@ void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
         ((void (*)(word_t, word_t, word_t))pc)((long)dst2 + (long)s2p & m, (long)dst2 + (long)s1p & m, u8);
         *(und1_t *)((long)s2p + d3) = *(und1_t *)((long)s1p + d3);
     } else {
-        *buf = *r0.hi_word;
+        *buf = *(word_t *)r0.hi;
         FUN_003592b0(0);
         buf = (word_t *)dst2;
     }
@@ -5155,7 +5170,8 @@ void sk_syscall_msg_read_g(void)
     ulong sel2 = (ulong)*(byte *)/* table2+0x50 */0;
     ulong addr = (dst + /* x21 */0 + sel & ~sel) + dst + sel2 & ~sel2;
     ((void (*)(ulong))0)(addr);
-    FUN_00357c74(sel + (*(long *)/* table2+0x40 0, /* x30 */0);
+    FUN_00357c74(sel + (*(long *)/* table2+0x40 */0 + (sel | 7) + addr & ~(sel | 7)) + 9 & ~sel,
+                 u3, (word_t)jt, /* x16+8 */0, /* x30 */0);
     ((void (*)(void))jt)();   /* indirect jump */
 }
 
@@ -5174,7 +5190,7 @@ void sk_dispatch9_18(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a6c4(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     word_t w2 = FUN_0034f8f4(0);
@@ -5196,7 +5212,7 @@ void sk_dispatch9_20(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a6c4(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     word_t w2 = FUN_0034f8f4(0);
@@ -5218,7 +5234,7 @@ void sk_dispatch9_28(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x24 */0 & ~sel, addr + /* x23 */0 & ~sel);
     FUN_0034a6c4(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     word_t w2 = FUN_0034f8f4(0);
@@ -5240,72 +5256,78 @@ void sk_msg_slot_read_e(void)
     FUN_0034c11c(0);
     FUN_003559c8(0);
     cl4_result_t r = FUN_00352e90(0);
-    int res;
+    int res = 0;
     if (/* w22 */0 == 0) {
         res = 0;
     } else {
         ulong mask = /* x14 */0 | 7;
         long o2 = mask + *(long *)/* table2+0x40 */0;
-        long o3 = (/* x14 */0) + /* x11 */0;
-        uint diff = /* w22 */0;
-        if (/* w22 */0 || diff == 0) {
-            if (limit == /* w10 */0) {
-                FUN_0034bf1c(diff, r.hi, r.lo);
-                FUN_00084234(0);
-                FUN_000839f8(0);
-                return;
+        long o3 = (/* x14 */0 + 9 & ~/* x14 */0) + /* x11 */0;
+        uint vv = /* w10 */0;
+        uint diff = /* w22 */0 - /* w10 */0;
+        if (/* w22 */0 < /* w10 */0 || diff == 0) {
+            /* fault2 path */
+            if (limit == /* w10 */0) { FUN_0034bf1c(0); FUN_00084234(0); FUN_000839f8(0); return; }
+            if (r.hi != /* w10 */0) {
+                ulong sub = ((ulong)(/* x11 */0 + /* x14 */0 + (long)/* x19 */0) & ~/* x14 */0) + /* x11 */0 + /* x9 */0 & ~/* x9 */0;
+                uint b = (uint)*(byte *)(o2 + (sub & ~mask) + o3);
+                if (b < 2) { res = 0; goto out; }
+                vv = b + 0x7ffffffe & 0x7fffffff;
+                res = vv + 1;
+                goto out;
             }
-            if (r.hi == /* w10 */0) goto finish;
-            uint b = (uint)*(byte *)((o2 + ((ulong)(/* x11 */0 + (long)/* x19 */0) + /* x11 */0 & ~/* x9 */0) & ~mask) + o3);
-            if (b < 2) { res = 0; goto out; }
-            b = b + 0x7ffffffe & 0x7fffffff;
+            res = 0;
+            goto out;
         } else {
-            long off = o3 + (o2 + (/* x11 */0 + (/* x11 */0 & ~/* x14 */0) & ~mask) + 1;
+            long off = o3 + (o2 + (/* x11 */0 + /* x9 */0 + (/* x11 */0 + /* x14 */0 & ~/* x14 */0) & ~/* x9 */0) & ~mask) + 1;
             uint p = (uint)off;
             uint sh = p << 3;
-            uint v;
+            uint v = 0;
+            int fast = 1;
             if (p < 4) {
                 uint n = (diff + ~(-1 << (sh & 0x1f)) >> (sh & 0x1f)) + 1;
                 if (n < 0x100) {
-                    if (n < 2) { goto fault2; }
-                    v = (uint)*(byte *)((long)/* x19 */0 + off);
+                    if (n < 2) fast = 0;
+                    else v = (uint)*(byte *)((long)/* x19 */0 + off);
                 } else {
-                    v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off);
+                    v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off)
+                                         : *(uint *)((long)/* x19 */0 + off);
                 }
             } else {
                 v = (uint)*(byte *)((long)/* x19 */0 + off);
             }
-            uint bit = 0;
-            if (v == 0) goto fault2;
-            bit = (p < 4) ? v - 1 << (sh & 0x1f) : 0;
-            uint vv = /* w10 */0;
-            uint val;
-            if (p == 0) {
-                val = 0;
-            } else {
-                val = 4;
-                if (p < 4) val = p;
-                switch (val) {
-                default: val = (uint)(byte)0; break;
-                case 2:  val = (uint)(ushort)0; break;
-                case 3:  FUN_0034e32c(0); bit = /* w8 */0; val = /* w9 */0; vv = /* w10_00 */0; break;
-                case 4:  val = 0; break;
+            if (fast && v != 0) {
+                uint bit = (p < 4) ? v - 1 << (sh & 0x1f) : 0;
+                uint val;
+                if (p == 0) {
+                    val = 0;
+                } else {
+                    val = 4;
+                    if (p < 4) val = p;
+                    switch (val) {
+                    default: val = (uint)(byte)*((uint *)/* x19 */0); break;
+                    case 2:  val = (uint)(ushort)*((uint *)/* x19 */0); break;
+                    case 3:  FUN_0034e32c(0); bit = /* w8 */0; val = /* w9 */0; vv = /* w10_00 */0; break;
+                    case 4:  val = *((uint *)/* x19 */0); break;
+                    }
                 }
+                vv = vv + (val | bit);
+                res = vv + 1;
+                goto out;
             }
-            vv = vv + (val | bit);
-            res = vv + 1;
-            goto out;
+            /* fast-path failed: fall through to fault2 */
+            if (limit == /* w10 */0) { FUN_0034bf1c(0); FUN_00084234(0); FUN_000839f8(0); return; }
+            if (r.hi != /* w10 */0) {
+                ulong sub = ((ulong)(/* x11 */0 + /* x14 */0 + (long)/* x19 */0) & ~/* x14 */0) + /* x11 */0 + /* x9 */0 & ~/* x9 */0;
+                uint b = (uint)*(byte *)(o2 + (sub & ~mask) + o3);
+                if (b < 2) { res = 0; goto out; }
+                vv = b + 0x7ffffffe & 0x7fffffff;
+                res = vv + 1;
+                goto out;
+            }
+            res = 0;
         }
-fault2:
-        if (limit == /* w10 */0) { FUN_0034bf1c(0); FUN_00084234(0); FUN_000839f8(0); return; }
-        if (r.hi != /* w10 */0) {
-            /* read byte at computed addr; treat as count 0 + /* off */0);
-            if (b >= 2) { res = (int)(b + 0x7ffffffe & 0x7fffffff); goto out; }
-        }
-        res = 0;
     }
-finish:
-    res = 0;
 out:
     FUN_00084234(res, /* x30 */0);
 }

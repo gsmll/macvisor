@@ -11,6 +11,14 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+/* compile-fix core types (must precede the extern block). */
+typedef uint64_t undefined8; typedef uint8_t undefined1; typedef uint64_t undefined;
+typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
+typedef uint64_t code;
+typedef struct { uint64_t lo; uint64_t hi; } reg16;
+typedef struct { uint64_t lo; uint32_t hi; } reg12;
+typedef void (*code_fn)();
+
 /* ------------------------------------------------------------------ *
  * Shared kernel / out-of-range helpers (FUN_ address in comment; bodies
  * reconstructed by sibling range workers). Names are estimates.
@@ -46,7 +54,6 @@ extern void sk_schedule_yield();                                        /* FUN_0
 typedef uint64_t undefined8; typedef uint8_t undefined1; typedef uint64_t undefined;
 typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
 typedef uint64_t code;
-typedef struct { uint64_t lo; uint64_t hi; } reg16;
 typedef void (*code_fn)();
 
 /* Ghidra CONCAT / borrow-carry / sign-extend helpers. */
@@ -58,18 +65,22 @@ static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v
 static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
 
 /* Leaked register / pseudo-stack identifiers (compile-fix globals). */
-uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, reg12, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01;
+uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01, stack_60, x1_01;
 reg16 cpu, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
 uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
 uint64_t (*entry)(), (*fn)(), (*fn1)(), (*fn10)(), (*fn12)(), (*fn14)(), (*fn17)(), (*fn2)(), (*fn3)(), (*fn5)(), (*fn5b)(), (*fn5c)(), (*fn6)(), (*fn6b)(), (*fn7)(), (*fn8)(), (*fn9)(), (*is_b8)(), (*jumptable)(), (*x19_fn)(), (*x20_fn)(), (*x24_fn)(), (*x25_fn)(), (*x26_fn)(), (*x27_fn)(), (*x8_00_fn)(), (*x8_01_fn)(), (*x8_02_fn)(), (*x8_03_fn)(), (*x8_04_fn)(), (*x8_05_fn)(), (*x8_06_fn)(), (*x8_07_fn)(), (*x8_08_fn)(), (*x8_09_fn)(), (*x8_10_fn)(), (*x8_11_fn)(), (*x8_12_fn)(), (*x8_13_fn)(), (*x8_14_fn)(), (*x8_15_fn)(), (*x8_16_fn)(), (*x8_17_fn)(), (*x8_18_fn)(), (*x8_19_fn)(), (*x8_20_fn)(), (*x8_21_fn)(), (*x8_fn)(), (*x9_00_fn)(), (*x9_01_fn)(), (*x9_02_fn)(), (*x9_03_fn)(), (*x9_04_fn)(), (*x9_05_fn)(), (*x9_06_fn)(), (*x9_07_fn)(), (*x9_08_fn)(), (*x9_09_fn)(), (*x9_10_fn)(), (*x9_11_fn)(), (*x9_12_fn)(), (*x9_13_fn)(), (*x9_14_fn)(), (*x9_fn)();
 
 /* Swift fatal/string constants (extern char arrays). */
-extern char s_Fatal_error[]; extern char s_array_slice_with_unsafe_mut[]; extern char s_array_with_unsafe_mut[]; extern char s_buf_has_null[]; extern char s_cant_construct_array[]; extern char s_cant_remove_empty[]; extern char s_cant_remove_first[]; extern char s_cant_remove_last[]; extern char s_cant_remove_more[]; extern char s_cant_remove_more2[]; extern char s_count_must_not_neg[]; extern char s_identity_cast_wrong_type[]; extern char s_index_oob[]; extern char s_index_out_of_range[]; extern char s_insufficient_space[]; extern char s_invalid_less_than[]; extern char s_invalid_more_than[]; extern char s_num_to_remove[]; extern char s_range_requires[]; extern char s_reversed_key[]; extern char s_string_index_oob[]; extern char s_swift_array[]; extern char s_swift_array_slice[]; extern char s_swift_builtin[]; extern char s_swift_collection[]; extern char s_swift_contig_buf[]; extern char s_swift_optional[]; extern char s_swift_range[]; extern char s_swift_range_replaceable[]; extern char s_swift_span[]; extern char s_swift_string_utf16[]; extern char s_swift_unicode_helpers[]; extern char s_swift_unsafe_buf[]; extern char s_swift_valid_utf8[]; extern char s_unexpected_nil[]; extern char s_unsafe_mut_buf[]; extern char s_unsafely_unwrapped_nil[];
+extern char s_Fatal_error[]; extern char s_array_slice_with_unsafe_mut[]; extern char s_array_with_unsafe_mut[]; extern char s_buf_has_null[]; extern char s_cant_construct_array[]; extern char s_cant_remove_empty[]; extern char s_cant_remove_first[]; extern char s_cant_remove_last[]; extern char s_cant_remove_more[]; extern char s_cant_remove_more2[]; extern char s_count_must_not_neg[]; extern char s_identity_cast_wrong_type[]; extern char s_index_oob[]; extern char s_index_out_of_range[]; extern char s_insufficient_space[]; extern char s_invalid_less_than[]; extern char s_invalid_more_than[]; extern char s_num_to_remove[]; extern char s_range_requires[]; extern char s_string_index_oob[]; extern char s_swift_array[]; extern char s_swift_array_slice[]; extern char s_swift_builtin[]; extern char s_swift_collection[]; extern char s_swift_contig_buf[]; extern char s_swift_optional[]; extern char s_swift_range[]; extern char s_swift_range_replaceable[]; extern char s_swift_span[]; extern char s_swift_string_utf16[]; extern char s_swift_unicode_helpers[]; extern char s_swift_unsafe_buf[]; extern char s_swift_valid_utf8[]; extern char s_unexpected_nil[]; extern char s_unsafe_mut_buf[]; extern char s_unsafely_unwrapped_nil[];
 /* Data / memory symbols. */
-extern uint64_t DAT_004baeb0, DAT_004c08a0, DAT_006adf10, DAT_006adf18, section_00000068, sk_array_metatype, sk_cstring, sk_empty_array, uRam_4baeb8, uRam_4c08a8;
-extern uint64_t FUN_00072c0c, FUN_001a0d1c, FUN_002a9d64, FUN_00310d34, FUN_00319380, FUN_0031940c, FUN_00346744;
+extern uint64_t DAT_004baeb0, DAT_004c08a0, DAT_006adf10, DAT_006adf18, sk_array_metatype, sk_cstring, sk_empty_array, uRam_4baeb8, uRam_4c08a8;
+extern struct { char *segname; } section_00000068;
+extern struct { uint64_t _0_8_; uint64_t _16_8_; } s_reversed_key;
+extern uint64_t FUN_00072c0c, FUN_00319380, FUN_0031940c, FUN_00346744;
 
 /* Forward declarations of in-file functions (used before definition). */
+void *swift_array_alloc(long count);
+void swift_array_iterator_dispatch(void);
 void sk_lock_guarded();
 void sk_sched_queue_foreach();
 void sk_swift_array_dispatch_impl();
@@ -144,8 +155,8 @@ extern reg16 FUN_00100c38();
 extern uint64_t FUN_00100efc();
 extern uint64_t FUN_0011e71c();
 extern uint64_t FUN_0014ae44();
-extern reg16 FUN_00167404();
-extern reg16 FUN_0016749c();
+extern uint64_t FUN_00167404();
+extern uint64_t FUN_0016749c();
 extern uint64_t FUN_001676cc();
 extern uint64_t FUN_0019c03c();
 extern uint64_t FUN_0019c078();
@@ -164,11 +175,11 @@ extern uint64_t FUN_0019da34();
 extern uint64_t FUN_0019dadc();
 extern uint64_t FUN_0019dd10();
 extern uint64_t FUN_0019e538();
-extern reg16 FUN_0019e578();
+extern uint64_t FUN_0019e578();
 extern uint64_t FUN_0019e644();
-extern reg16 FUN_0019e93c();
+extern uint64_t FUN_0019e93c();
 extern uint64_t FUN_0019ea20();
-extern reg16 FUN_0019ed3c();
+extern uint64_t FUN_0019ed3c();
 extern uint64_t FUN_0019f1ec();
 extern uint64_t FUN_0019fa60();
 extern uint64_t FUN_0019fd10();
@@ -183,14 +194,14 @@ extern uint64_t FUN_001a0c98();
 extern uint64_t FUN_001a0d1c();
 extern uint64_t FUN_001a0dac();
 extern uint64_t FUN_001a0fa4();
-extern reg16 FUN_001a10d4();
+extern uint64_t FUN_001a10d4();
 extern reg16 FUN_001a10e4();
 extern uint64_t FUN_001a1138();
 extern uint64_t FUN_001a16e8();
 extern uint64_t FUN_001a2128();
 extern reg16 FUN_001a26e0();
 extern uint64_t FUN_001a2740();
-extern reg16 FUN_001a27f0();
+extern uint64_t FUN_001a27f0();
 extern uint64_t FUN_001a4554();
 extern uint64_t FUN_001a4bbc();
 extern uint64_t FUN_001a5110();
@@ -212,7 +223,7 @@ extern uint64_t FUN_001a8564();
 extern uint64_t FUN_001a894c();
 extern reg16 FUN_001a89a8();
 extern uint64_t FUN_001a8b9c();
-extern reg16 FUN_001a8cf0();
+extern uint64_t FUN_001a8cf0();
 extern uint64_t FUN_001a9064();
 extern uint64_t FUN_001a91c4();
 extern uint64_t FUN_001a9640();
@@ -244,25 +255,25 @@ extern uint64_t FUN_001ab07c();
 extern uint64_t FUN_001ab1ac();
 extern uint64_t FUN_001ab52c();
 extern uint64_t FUN_001ab924();
-extern reg16 FUN_001ab9e0();
+extern uint64_t FUN_001ab9e0();
 extern uint64_t FUN_001abe00();
 extern uint64_t FUN_001ad190();
 extern uint64_t FUN_001ad494();
 extern uint64_t FUN_001ad668();
 extern uint64_t FUN_001ad6e0();
-extern reg16 FUN_001ad884();
+extern uint64_t FUN_001ad884();
 extern uint64_t FUN_001adf20();
 extern uint64_t FUN_001ae254();
 extern uint64_t FUN_001aeab4();
-extern reg16 FUN_001af990();
+extern uint64_t FUN_001af990();
 extern uint64_t FUN_001afa84();
 extern uint64_t FUN_001afd38();
 extern uint64_t FUN_001b012c();
 extern uint64_t FUN_001b0174();
 extern uint64_t FUN_001b05d8();
 extern uint64_t FUN_001d2d1c();
-extern reg16 FUN_001d96e0();
-extern reg16 FUN_001d974c();
+extern uint64_t FUN_001d96e0();
+extern uint64_t FUN_001d974c();
 extern uint64_t FUN_001d9b18();
 extern uint64_t FUN_001dd614();
 extern uint64_t FUN_001de6c4();
@@ -274,7 +285,7 @@ extern uint64_t FUN_001defc8();
 extern uint64_t FUN_001df334();
 extern uint64_t FUN_001df428();
 extern reg16 FUN_001dff60();
-extern reg16 FUN_001e3730();
+extern uint64_t FUN_001e3730();
 extern uint64_t FUN_001e5438();
 extern uint64_t FUN_001e67d8();
 extern uint64_t FUN_001e74ac();
@@ -284,7 +295,7 @@ extern uint64_t FUN_002060d4();
 extern uint64_t FUN_0020c1bc();
 extern uint64_t FUN_0020c5b0();
 extern uint64_t FUN_0020c634();
-extern reg16 FUN_0021398c();
+extern uint64_t FUN_0021398c();
 extern uint64_t FUN_00228e78();
 extern uint64_t FUN_00254fb4();
 extern uint64_t FUN_00255324();
@@ -375,7 +386,7 @@ extern uint64_t FUN_003195c8();
 extern uint64_t FUN_003195f8();
 extern uint64_t FUN_00319688();
 extern uint64_t FUN_00319808();
-extern reg16 FUN_003198cc();
+extern uint64_t FUN_003198cc();
 extern uint64_t FUN_0031997c();
 extern uint64_t FUN_003199ac();
 extern uint64_t FUN_00319a4c();
@@ -690,7 +701,7 @@ extern uint64_t FUN_00350624();
 extern reg16 FUN_00350630();
 extern uint64_t FUN_0035063c();
 extern uint64_t FUN_00350648();
-extern reg16 FUN_0035066c();
+extern uint64_t FUN_0035066c();
 extern uint64_t FUN_003506b0();
 extern uint64_t FUN_003506cc();
 extern uint64_t FUN_00350720();
@@ -736,7 +747,7 @@ extern uint64_t FUN_00350a4c();
 extern uint64_t FUN_00350a64();
 extern uint64_t FUN_00350a70();
 extern uint64_t FUN_00350a7c();
-extern reg16 FUN_00350a88();
+extern uint64_t FUN_00350a88();
 extern uint64_t FUN_00350a94();
 extern uint64_t FUN_00350aa0();
 extern uint64_t FUN_00350ab8();
@@ -1086,7 +1097,7 @@ extern uint64_t FUN_00357a34();
 extern uint64_t FUN_00357ab4();
 extern uint64_t FUN_00357b20();
 extern uint64_t FUN_00357bf8();
-extern reg16 FUN_00357c20();
+extern uint64_t FUN_00357c20();
 extern uint64_t FUN_00357c38();
 extern uint64_t FUN_00357c44();
 extern reg16 FUN_00357ca0();
@@ -1160,13 +1171,13 @@ extern uint64_t FUN_0035a8fc();
 extern uint64_t FUN_0035ace8();
 extern uint64_t FUN_00365b6c();
 extern uint64_t FUN_0036a940();
-extern reg16 FUN_0036a9a0();
+extern uint64_t FUN_0036a9a0();
 extern uint64_t FUN_0036b118();
 extern uint64_t FUN_0036b2d0();
 extern uint64_t FUN_0036b588();
 extern uint64_t FUN_0036b6ac();
 extern uint64_t FUN_003722e4();
-extern reg16 FUN_00377824();
+extern uint64_t FUN_00377824();
 extern uint64_t FUN_00377bec();
 extern reg16 FUN_003a25d4();
 extern uint64_t FUN_003a2610();
@@ -1274,7 +1285,7 @@ extern uint64_t sk_sched_tick_shared();
 extern uint64_t sk_sched_touch();
 extern uint64_t sk_spin_irqsave();
 extern uint64_t sk_tick_b();
-extern uint64_t swift_array_alloc();
+extern void *swift_array_alloc();
 extern uint64_t swift_array_touch_ret();
 extern uint64_t swift_collection_reserve_r();
 extern uint64_t swift_utf8_decode();
@@ -1291,9 +1302,9 @@ extern reg16 FUN_001aaba8();
 extern reg16 FUN_001aea6c();
 extern reg16 FUN_001dd408();
 extern reg16 FUN_001e4cbc();
-extern reg16 FUN_0029f368();
-extern reg16 FUN_002ae2c0();
-extern reg16 FUN_002b3f40();
+extern reg12 FUN_0029f368();
+extern reg12 FUN_002ae2c0();
+extern reg12 FUN_002b3f40();
 extern reg16 FUN_0034b8cc();
 extern reg16 FUN_0034cc94();
 extern reg16 FUN_0035012c();
@@ -1323,6 +1334,9 @@ extern uint64_t FUN_00310bc8();
 extern uint64_t FUN_00353274();
 extern uint64_t FUN_00358da0();
 extern code_fn sk_vtable_resolve();
+extern uint64_t FUN_001a0d1c();
+extern uint64_t FUN_002a9d64();
+extern reg16 FUN_00310d34();
 /* ==================================================================== */
 /*--------------------------------------------------------------------*/
 /* FUN_001a002c @ 0x001a002c   (est. swift_array_construct_dispatch)
@@ -1701,7 +1715,7 @@ void sk_sched_queue_reserve_fn(long need, uint flags, void *(*alloc_fn)(uint64_t
     if (ok == 0 || (*(unsigned long *)(*q + 0x18) >> 1) < (unsigned long)need) {
         long cap = *(long *)(*q + 0x10);
         if (*(long *)(*q + 0x10) <= need) cap = need;
-        *q = alloc_fn(ok, cap, flags & 1, *q);
+        *q = (long)alloc_fn(ok, cap, flags & 1, *q);
         *x20 = *q;
     }
 }
@@ -1823,14 +1837,14 @@ uint64_t swift_string_reserve(void)
 {
     sk_ow_check();                  /* FUN_00077570 */
     uint64_t u = x1;
-    if ((x20 & 1) != 0 && (sk_ow_borrow(), (x1 = x1, NG != OV))) {
+    if (((uint64_t)x20 & 1) != 0 && (sk_ow_borrow(), (x1 = x1, NG != OV))) {
         sk_ow_force();              /* FUN_00077624 */
         if (NG) __builtin_trap();   /* SoftwareBreakpoint(1,0x1a0908) */
         sk_ow_norm();               /* FUN_00077550 */
         u = x1_00;
     }
     u = sk_elem_reserve_str(*(uint64_t *)(x19 + 0x10), u, &sk_cstring, (void*)0x004be910); /* FUN_0019c258 */
-    if ((x20 & 1) == 0) {
+    if (((uint64_t)x20 & 1) == 0) {
         sk_ow_done();               /* FUN_00077580 */
         sk_elem_retain_b();         /* FUN_0019d40c */
     } else {
@@ -2014,17 +2028,17 @@ long swift_array_reserve_variant5(uint64_t flags, uint64_t need, uint64_t uniq, 
 uint64_t swift_string_reserve_variant(void)
 {
     uint64_t v = sk_ow_check();                 /* FUN_00077570 */
-    reg16 vv = { v, x8 };
-    if ((x20 & 1) != 0 && (vv = sk_ow_borrow(), NG != OV)) {
+    reg16 vv = { v, (uint64_t)x8 };
+    if (((uint64_t)x20 & 1) != 0 && (vv.lo = sk_ow_borrow(), NG != OV)) {
         sk_ow_force();                          /* FUN_00077624 */
         if (NG) __builtin_trap();               /* SoftwareBreakpoint(1,0x1a0d1c) */
-        vv = sk_ow_norm();                      /* FUN_00077550 */
+        vv.lo = sk_ow_norm();                      /* FUN_00077550 */
     }
     uint64_t e = *(uint64_t *)(x19 + 0x10);
     sk_elem_prep2(vv.lo, vv.hi);                /* FUN_003556e0 */
     uint64_t ret = sk_elem_reserve_c(e);        /* FUN_0019c2fc */
     sk_ow_done();                               /* FUN_00077580 */
-    if ((x20 & 1) == 0)
+    if (((uint64_t)x20 & 1) == 0)
         sk_elem_retain_d();                     /* FUN_0019d15c */
     else {
         sk_obj_release2();                      /* FUN_00069970 */
@@ -2044,8 +2058,8 @@ uint64_t swift_string_reserve_variant(void)
 uint64_t swift_string_reserve_variant2(void)
 {
     sk_ow_check();                              /* FUN_00077570 */
-    uint64_t u = x8;
-    if ((x20 & 1) != 0 && (sk_ow_borrow(), (u = x1, NG != OV))) {
+    uint64_t u = (uint64_t)x8;
+    if (((uint64_t)x20 & 1) != 0 && (sk_ow_borrow(), (u = x1, NG != OV))) {
         sk_ow_force();                          /* FUN_00077624 */
         if (NG) __builtin_trap();               /* SoftwareBreakpoint(1,0x1a0dac) */
         sk_ow_norm();                           /* FUN_00077550 */
@@ -2053,7 +2067,7 @@ uint64_t swift_string_reserve_variant2(void)
     }
     u = sk_elem_reserve_str(*(uint64_t *)(x19 + 0x10), u, (void*)0x0064c040, (void*)0x004bbf40); /* FUN_0019c3a4 */
     sk_ow_done();                               /* FUN_00077580 */
-    if ((x20 & 1) == 0)
+    if (((uint64_t)x20 & 1) == 0)
         sk_elem_retain_e();                     /* FUN_0019d6d0 */
     else {
         sk_elem_destroy();                      /* FUN_0019ccec */
@@ -2073,8 +2087,8 @@ uint64_t swift_string_reserve_variant2(void)
 uint64_t swift_string_reserve_variant3(void)
 {
     sk_ow_check();                              /* FUN_00077570 */
-    uint64_t u = x8;
-    if ((x20 & 1) != 0 && (sk_ow_borrow(), (u = x1, NG != OV))) {
+    uint64_t u = (uint64_t)x8;
+    if (((uint64_t)x20 & 1) != 0 && (sk_ow_borrow(), (u = x1, NG != OV))) {
         sk_ow_force();                          /* FUN_00077624 */
         if (NG) __builtin_trap();               /* SoftwareBreakpoint(1,0x1a0e3c) */
         sk_ow_norm();                           /* FUN_00077550 */
@@ -2082,7 +2096,7 @@ uint64_t swift_string_reserve_variant3(void)
     }
     u = sk_elem_reserve(*(uint64_t *)(x19 + 0x10), u, (void*)0x0064e838, (void*)0x004c0690); /* FUN_0019c2b0 */
     sk_ow_done();                               /* FUN_00077580 */
-    if ((x20 & 1) == 0)
+    if (((uint64_t)x20 & 1) == 0)
         sk_elem_retain_f();                     /* FUN_0019d7ac */
     else {
         sk_elem_destroy();                      /* FUN_0019cc64 */
@@ -2230,7 +2244,7 @@ reg16 sk_sched_queue_node_alloc(uint64_t a, uint64_t b)
     long node = (long)sk_alloc_special(0x678d78, 0x20, 7);   /* FUN_0036a940 */
     *(uint64_t *)(node + 0x10) = a;
     *(uint64_t *)(node + 0x18) = b;
-    return (reg16){ FUN_0001a1c8, node };
+    return (reg16){ (uintptr_t)FUN_0001a1c8, node };
 }
 
 /*--------------------------------------------------------------------*/
@@ -2463,7 +2477,7 @@ void sk_sched_queue_append_pair(void)
     FUN_0008409c();
     sk_sched_queue_foreach(FUN_00072c0c);       /* FUN_001a157c */
     long len = *(long *)(*x20 + 0x10);
-    sk_sched_queue_grow_if_needed(len, FUN_00072c0c);   /* FUN_001a1648 */
+    sk_sched_queue_grow_if_needed(len, (void *(*)(uint64_t, long, uint64_t))(uintptr_t)FUN_00072c0c);   /* FUN_001a1648 */
     long q = *x20;
     *(long *)(q + 0x10) = len + 1;
     long tail = q + len * 0x10;
@@ -2484,7 +2498,7 @@ void sk_sched_queue_append_elems(uint64_t elem)
 {
     sk_sched_queue_foreach(FUN_001a0d1c);       /* FUN_001a157c */
     long len = *(long *)(*x20 + 0x10);
-    sk_sched_queue_grow_if_needed(len, FUN_001a0d1c);   /* FUN_001a1648 */
+    sk_sched_queue_grow_if_needed(len, (void *(*)(uint64_t, long, uint64_t))FUN_001a0d1c);   /* FUN_001a1648 */
     long q = *x20;
     *(long *)(q + 0x10) = len + 1;
     FUN_00310d98(elem, q + len * 0x20 + 0x20);  /* FUN_00310d98 */
@@ -2590,7 +2604,7 @@ void sk_sched_queue_merge(void)
     reg16 src = FUN_000b4594();
     long n = *(long *)(src.lo + 0x10);
     FUN_00353c48();
-    if (SCARRY8(x8, n)) __builtin_trap();               /* 0x1a1b98 */
+    if (SCARRY8((uint64_t)x8, n)) __builtin_trap();               /* 0x1a1b98 */
     FUN_001a0640(x8 + n, 1, FUN_00072c0c);
     long q = *x20;
     long avail = (*(uint64_t *)(q + 0x18) >> 1) - *(long *)(q + 0x10);
@@ -2709,7 +2723,7 @@ void sk_sched_queue_append_str(void)
     long src = s.lo;
     uint64_t n = *(uint64_t *)(src + 0x10);
     FUN_00353c48();
-    if (SCARRY8(x8, n)) __builtin_trap();               /* 0x1a1de0 */
+    if (SCARRY8((uint64_t)x8, n)) __builtin_trap();               /* 0x1a1de0 */
     FUN_001a0640(x8 + n, 1, FUN_001a0d1c);
     FUN_00358024();
     uint64_t avail = x9 - x8_00;
@@ -2765,7 +2779,7 @@ void sk_sched_queue_append_str2(void)
     long src = s.lo;
     uint64_t n = *(uint64_t *)(src + 0x10);
     FUN_00353c48();
-    if (SCARRY8(x8, n)) __builtin_trap();               /* 0x1a1f0c */
+    if (SCARRY8((uint64_t)x8, n)) __builtin_trap();               /* 0x1a1f0c */
     FUN_001a0640(x8 + n, 1, FUN_00072c0c);
     FUN_00358024();
     uint64_t avail = x9 - x8_00;
@@ -3228,7 +3242,7 @@ void swift_buffer_init_pair(void)
     sk_alloc_special(0, 0, 0);          /* FUN_0036a940 */
     FUN_00077630();
     *(uint64_t *)(x20 + 0x10) = 2;
-    *(long *)(x20 + 0x18) = x8 / 8 << 1;
+    *(long *)(x20 + 0x18) = (uint64_t)x8 / 8 << 1;
     FUN_00353208(&stack, x20 + 0x20, 2);
     long n = FUN_00281cc0();
     if (is_28 == 2) {
@@ -3237,11 +3251,11 @@ void swift_buffer_init_pair(void)
             return;
         }
         FUN_003488bc(1);
-        fatal_str = s_Fatal_error;
+        fatal_str = (uint64_t)(uintptr_t)s_Fatal_error;
     } else {
         x19_fn(is_28, is_18, is_20);
         FUN_0035047c();
-        fatal_str = s_Fatal_error;
+        fatal_str = (uint64_t)(uintptr_t)s_Fatal_error;
     }
     FUN_00349ee0(fatal_str);
     FUN_00351a8c();
@@ -3692,7 +3706,7 @@ void swift_buffer_init_single(uint64_t v)
     sk_alloc_special(0, 0, 0);          /* FUN_0036a940 */
     FUN_00077630();
     *(uint64_t *)(x20 + 0x10) = 1;
-    *(long *)(x20 + 0x18) = x8 / 8 << 1;
+    *(long *)(x20 + 0x18) = (uint64_t)x8 / 8 << 1;
     *(uint64_t *)(x20 + 0x20) = v;
 }
 
@@ -3850,12 +3864,12 @@ long swift_array_dedupe(long src)
     long n = *(long *)(src + 0x10);
     if (n == 0) {
         FUN_000776cc();
-        return x20;
+        return (long)x20;
     }
     FUN_003556e0();
     long dst = FUN_0019c2fc(n, 0);
     FUN_0035063c(&sv_58, dst + 0x20);
-    long m = FUN_00284148();
+    long m = FUN_00284148().lo;
     if (sv_38 == 0) {
         do {
             long i = ls_40 + 1;
@@ -3935,7 +3949,7 @@ void sk_sched_queue_rebuild(uint64_t p1, uint64_t p2, uint64_t p3)
     FUN_0008e388();
     long n = x8_00_fn();                    /* indirect */
     if (n == 0) {
-        long v = FUN_0006f6b4();
+        long v = FUN_0006f6b4().lo;
         goto rebuild_done;
     }
     FUN_0019c44c(n, 0, x1);
@@ -4705,7 +4719,7 @@ void sk_sched_queue_ctx_init(uint64_t *out, uint32_t p2, uint8_t p3, uint64_t p4
 void sk_sched_queue_ctx_alloc(void)
 {
     reg16 v = FUN_000b4594();
-    is_40 = v;
+    is_40 = v.lo;
     FUN_00353178(&stack_40);
     FUN_002db6b8();
     FUN_0034dd14();
@@ -4713,7 +4727,7 @@ void sk_sched_queue_ctx_alloc(void)
     sk_alloc_special(0, 0, 0);              /* FUN_0036a940 */
     FUN_00352444();
     FUN_00359418();
-    is_30 = v;
+    is_30 = v.lo;
     FUN_0034f9b4();
     FUN_003582b8();
     int ok = FUN_00356ff4();
@@ -5167,7 +5181,7 @@ void swift_collection_apply_meta2(uint64_t a, uint64_t b)
  */
 void sk_sched_runqueue_walk(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
-    reg16 x15 = { x22, x24 };
+    reg16 x15 = { (uint64_t)x22, x24 };
     sk_cpu_current();                       /* FUN_0008e518 */
     reg16 v14 = FUN_00358864();
     uint64_t v10 = v14.hi;
@@ -5213,11 +5227,11 @@ void sk_sched_runqueue_walk(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
             FUN_003a25d4();
             goto walk_empty;
         }
-        if ((x25 >> 0x3d & 1) == 0) {
+        if (((uint64_t)x25 >> 0x3d & 1) == 0) {
             FUN_00356798();
             goto walk_lock;
         }
-        if ((x22 >> 0x3d & 1) == 0) goto walk_lock;
+        if (((uint64_t)x22 >> 0x3d & 1) == 0) goto walk_lock;
         FUN_003509e0();
         FUN_0034a148();
         v13 = x1;
@@ -5234,13 +5248,13 @@ void sk_sched_runqueue_walk(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
         FUN_00351a5c();
         FUN_003a25d4(0xe000000000000000);
         FUN_0034c094(v10 & 0xffffffffffff);
-        if ((x8_00 == 0) && (((v10 & (x22 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
+        if ((x8_00 == 0) && (((v10 & ((uint64_t)x22 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
             FUN_00354b50(&stack);
             thunk_FUN_0036b270();
             FUN_003a25d4();
             x24 = v8;
         } else {
-            if (((x22 >> 0x3d & 1) != 0) && ((v10 >> 0x3d & 1) != 0)) {
+            if ((((uint64_t)x22 >> 0x3d & 1) != 0) && ((v10 >> 0x3d & 1) != 0)) {
                 x15 = FUN_00350af4();
                 FUN_0034b89c(x15.lo, x15.hi, v8);
                 if (!ZR) {
@@ -5253,10 +5267,11 @@ void sk_sched_runqueue_walk(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
             x15 = FUN_003515cc();
             FUN_002a4c98(x15.lo, x15.hi, 0);
             x24 = v10;
-            v10 = x22;
+            v10 = (uint64_t)x22;
         }
+walk_lock:
 walk_merge:
-        v14 = { x24, v10 };
+        v14 = (reg16){ x24, v10 };
         x15 = FUN_00355fa0((void*)0x005d3ebd);
         uint64_t v6 = x15.hi;
         v8 = x15.lo;
@@ -5269,7 +5284,7 @@ walk_merge:
             } else if ((v6 >> 0x3d & 1) != 0) {
                 FUN_000dbe70(x24);
                 FUN_0034b1a0();
-                x15 = { v8, x1_01 };
+                x15 = (reg16){ v8, x1_01 };
                 if (!ZR) {
                     FUN_00356b5c();
                     FUN_003a25d4();
@@ -5293,7 +5308,7 @@ walk_empty:
             FUN_00354bb0();
             goto walk_after;
         }
-        if ((x25 >> 0x3d & 1) == 0) {
+        if (((uint64_t)x25 >> 0x3d & 1) == 0) {
             FUN_00359a84(x15.lo & 0xffffffffffff);
             goto walk_lock2;
         }
@@ -5304,6 +5319,7 @@ walk_empty:
         if (!ZR) {
             FUN_00351a50();
             FUN_003a25d4();
+walk_lock2:
 walk_done:
             FUN_003a25d4();
             v13 = x1;
@@ -5396,7 +5412,7 @@ walk_after:
                 FUN_002a4c98();
                 FUN_003a25d4(v8);
                 iter = v6b;
-                slot_ptr = &stack_e8;
+                slot_ptr = (uint64_t)(uintptr_t)&stack_e8;
             }
         }
 walk_node:
@@ -5414,7 +5430,7 @@ walk_node:
         uint64_t v6c = x15.hi;
         uint64_t v7c = x15.lo;
         FUN_0034f030();
-        x15 = { x1_02, v7c };
+        x15 = (reg16){ x1_02, v7c };
         reg16 a2 = { x1_02, v7c };
         reg16 a1 = { x1_02, v7c };
         FUN_003509f8(iter);
@@ -5498,7 +5514,7 @@ void swift_collection_init_from(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t 
 {
     sv_50 = p4;
     us_48 = p2;
-    sv_40 = p3;
+    sv_40 = (uint64_t *)p3;
     FUN_0034a210();
     uint64_t u1 = FUN_00002534();
     sv_28 = FUN_001a73cc(p1, FUN_0031940c, aus_60, p4, u1, 0x66c1c8, &sv_28);
@@ -5531,8 +5547,8 @@ uint64_t swift_buffer_build(uint64_t p1, void (*cb)(void), uint64_t p3, uint64_t
     uint64_t hi = v.hi;
     uint64_t lo = v.lo;
     sv_70 = 0;
-    sv_80 = FUN_001a26e0(hi, p1);
-    cb(sv_80, &sv_70, stack_aligned);
+    sv_80 = FUN_001a26e0(hi, p1).lo;
+    ((void (*)())cb)(sv_80, &sv_70, stack_aligned);
     if (x21 == 0) {
         FUN_001ded00(&sv_70, p1, sv_80, &hi, &lo, p4, p5, sv_88);
     } else {
@@ -5586,7 +5602,7 @@ void sk_sched_queue_advance(uint64_t p1, uint64_t p2, uint64_t p3)
     long stride = *(long *)(x16 + 0x48);
     FUN_00310fc4();
     FUN_0035133c();
-    FUN_0034d334(base + stride * x22);
+    FUN_0034d334(base + stride * (uint64_t)x22);
     x9_fn();
 }
 
@@ -5624,7 +5640,7 @@ void swift_buffer_foreach_elem(uint64_t p1, void (*cb)(void), uint64_t p3, long 
     uint64_t off = (uint64_t)*(uint8_t *)(*(long *)(p5 - 8) + 0x50);
     reg16 v = FUN_001e4cbc(p4 + (off + 0x20 & (off ^ 0xffffffffffffffff)),
                            *(uint64_t *)(p4 + 0x10));
-    cb(p1, v.lo, v.hi, stack_aligned);
+    ((void (*)())cb)(p1, v.lo, v.hi, stack_aligned);
     if (x21 != 0)
         (**(code_fn **)(desc + 0x20))(p9, stack_aligned, p7);
 }
@@ -5754,7 +5770,7 @@ void sk_sched_queue_foreach_slot(void)
     FUN_00348f38();
     thunk_FUN_002298d4(*(uint64_t *)(x1 + 0x10));
     if (*(long *)(x22 + 0x10) != 0) {
-        code_fn *fn = (code_fn *)FUN_0031945c();
+        code_fn fn = (code_fn)(uintptr_t)FUN_0031945c();
         long i = 0;
         do {
             FUN_0034d7dc();
@@ -5944,7 +5960,7 @@ void sk_sched_queue_meta_set(void)
     FUN_0034ed08();
     uint64_t u = FUN_003194e0();
     x20[3] = u;
-    x20[4] = (void*)0x004f18d8;
+    x20[4] = (uint64_t)(uintptr_t)(void*)0x004f18d8;
     *x20 = x19;
 }
 
@@ -6237,7 +6253,7 @@ uint64_t sk_sha256_compress_round(void)
     uint64_t o = m ^ (l >> 0x2b | l << 0x15);
     uint64_t p = (k >> 0x20 | k << 0x20) + o ^ (o >> 0x30 | o << 0x10);
     FUN_00353fd4((n >> 0x20 | n << 0x20) + p ^ (p >> 0x2b | p << 0x15));
-    uint64_t r3 = x10 ^ (x8 >> 0x2b | x8 << 0x15);
+    uint64_t r3 = x10 ^ ((uint64_t)x8 >> 0x2b | (uint64_t)x8 << 0x15);
     x20[3] = x12 >> 0x20 | x12 << 0x20;
     x20[4] = r3;
     x20[1] = x10;
@@ -6505,7 +6521,7 @@ void sk_sched_queue_swap(void)
     uint64_t *head = (uint64_t *)FUN_0034c034();
     uint64_t u1 = head[1];
     FUN_003598a0(*head);
-    if ((x9 == 0) && (((x8 & (u1 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
+    if ((x9 == 0) && (((((uint64_t)x8 & (u1 ^ 0xffffffffffffffff))) >> 0x3d & 1) == 0)) {
         thunk_FUN_0036b270();
         FUN_003a25d4(u1);
         *x20 = x21;
@@ -6557,9 +6573,9 @@ void sk_sched_runqueue_advance(uint64_t p1, uint64_t p2, uint64_t p3, long p4,
     FUN_0035156c();
     FUN_0035145c(&sv_10);
     uint64_t u7 = x9_fn();
-    if (!SBORROW8(cur, sv_10)) {
-        dispatch_slot(u7, cur - sv_10);              /* DAT_00658c00 */
-        sv_40 = p5;
+    if (!SBORROW8(cur, (uint64_t)sv_10)) {
+        dispatch_slot(u7, cur - (uint64_t)sv_10);              /* DAT_00658c00 */
+        sv_40 = (uint64_t *)p5;
         us_38 = p6;
         sv_30 = p7;
         us_28 = p8;
@@ -6581,7 +6597,7 @@ void sk_sched_runqueue_advance(uint64_t p1, uint64_t p2, uint64_t p3, long p4,
  * Confidence: medium
  * Notes: FUN_00355684 / FUN_001a9064.
  */
-void sk_sched_queue_node_alloc(void)
+void sk_sched_queue_node_alloc8cf0(void)
 {
     FUN_00355684();
     FUN_001a9064();
@@ -6607,11 +6623,11 @@ void swift_range_copy_elements(long dst, long count, uint64_t p3, uint64_t p4,
     long d1 = FUN_00377824(0, u3, p4, (void*)0x00611b24, (void*)0x00611b34);
     long t1 = *(long *)(d1 - 8);
     dispatch_slot(*(long *)(t1 + 0x40) + 0xf & 0xfffffffffffffff0); /* DAT_00658c00 */
-    long base = (long)&sv_b0 - x8;
+    long base = (long)&sv_b0 - (uint64_t)x8;
     long d2 = FUN_00377824(0, p7, p5, (void*)0x0060e208, (void*)0x0060e230);
     long t2 = *(long *)(d2 - 8);
     dispatch_slot(*(long *)(t2 + 0x40) + 0xf & 0xfffffffffffffff0); /* DAT_00658c00 */
-    long nbytes = ((long)&sv_b0 - x8) - x8_00;
+    long nbytes = ((long)&sv_b0 - (uint64_t)x8) - x8_00;
     fn5 = (code_fn *)FUN_000277b8(p7);
     fn5(nbytes, p5, p7);
     if (count < 0) {
@@ -6632,14 +6648,14 @@ void swift_range_copy_elements(long dst, long count, uint64_t p3, uint64_t p4,
                                s_swift_array, 0x11, 2, 0x136, 1);
             }
             fn5b = (code_fn *)FUN_000277e8(p7);
-            reg16 v = fn5b(stack, nbytes, p5, p7);
+            reg16 v = (reg16){ fn5b(stack, nbytes, p5, p7), 0 };
             long d1c = d1;
             long basec = base;
             sv_b0 = p3;
             sv_a8 = t2;
             us_a0 = p5;
             (**(code_fn **)(t1 + 0x10))(base, v.hi, d1);
-            (*v.lo)(stack, stack, 0);
+            (*(code_fn)(uintptr_t)v.lo)(stack, stack, 0);
             p5 = us_a0;
             t2 = sv_a8;
             p3 = sv_b0;
@@ -6678,7 +6694,7 @@ void sk_sched_queue_enqueue_core(void)
     FUN_00027754(x4);
     FUN_00027754();
     reg16 v = FUN_00348b94();
-    v = FUN_00377824(v.lo, v.hi, x3);
+    v = (reg16){ FUN_00377824(v.lo, v.hi, x3), 0 };
     FUN_0009461c(v.lo, v.hi, v.lo);
     FUN_00084234();
     FUN_0019c44c();
@@ -6839,7 +6855,7 @@ walk_advance_done:
         FUN_00319568(p4);
         v5 = FUN_0035066c();
         x8_05_fn(v5, x1, p4);
-        v5 = x20;
+        v5 = (uint64_t)x20;
     }
 }
 
@@ -6870,7 +6886,7 @@ void sk_sched_queue_reset(void)
     FUN_00349a18();
     sk_free((void *)*x20);                          /* FUN_0036b118 */
     *x20 = x23;
-    x20[1] = x22;
+    x20[1] = (uint64_t)x22;
     x20[2] = x21;
     x20[3] = x19;
 }
@@ -6939,7 +6955,7 @@ long swift_array_capacity_fit(uint64_t p1, uint64_t p2, long need, uint64_t cap)
         long cur = FUN_0035362c();
         long n = *(long *)(cur + 0x10);
         long stride = *(long *)(x8 + 0x48);
-        if (x22 + stride * x20 + stride * room ==
+        if ((uint64_t)x22 + stride * (uint64_t)x20 + stride * room ==
             cur + ((uint64_t)*(uint8_t *)(x16 + 0x50) + 0x20 &
                    ((uint64_t)*(uint8_t *)(x16 + 0x50) ^ 0xffffffffffffffff)) + stride * n) {
             uint64_t c2 = *(uint64_t *)(cur + 0x18);
@@ -6975,7 +6991,7 @@ void swift_array_reserve_meta(void)
         u3 = FUN_00359810((int32_t)u4, x1, u4);
         FUN_0019c078(u3, u1);
         x20[1] = us_38;
-        *x20 = sv_40;
+        *x20 = (uint64_t)sv_40;
         x20[3] = us_28;
         x20[2] = us_30;
     }
@@ -7062,8 +7078,8 @@ void swift_array_iterator_init(reg16 *out, uint64_t p2, long p3)
     uint64_t tag = 0x66fa18;
     reg16 v = FUN_001a9a30(p2, u3);
     *out = v;
-    *(uint64_t *)out[1] = u1;
-    *(uint64_t *)(out[1] + 8) = tag;
+    *(uint64_t *)&out[1] = u1;
+    *(uint64_t *)((char *)&out[1] + 8) = tag;
 }
 
 /*--------------------------------------------------------------------*/
@@ -7137,7 +7153,7 @@ reg16 swift_array_slice_elem(void)
     FUN_001a97d4();
     FUN_0035a858();
     FUN_003597d8();
-    return (reg16){ FUN_0001a1c8, x23 + *(long *)(x16 + 0x48) * x21 };
+    return (reg16){ (uintptr_t)FUN_0001a1c8, x23 + *(long *)(x16 + 0x48) * x21 };
 }
 
 /*--------------------------------------------------------------------*/
@@ -7234,9 +7250,9 @@ void swift_array_assign_range(uint64_t p1, uint64_t p2, long p3, uint64_t p4,
     }
     is_40 = p3;
     is_48 = p4;
-    is_30 = v;
+    is_30 = v.lo;
     uint64_t u1 = FUN_00348d00();
-    v = sk_metatype(u1, p7);                /* FUN_00376820 */
+    v = (reg16){ sk_metatype(u1, p7), 0 };                /* FUN_00376820 */
     FUN_00100efc(v.lo, v.hi, &stack_30);
     FUN_001a9dd8();
     FUN_000b45b0(x30);
@@ -7335,7 +7351,7 @@ void swift_array_replace_alloc(void)
 void swift_array_replace_dispatch(void)
 {
     reg16 v = FUN_00084220();
-    uint64_t *head = (uint64_t *)*v.lo;
+    uint64_t *head = (uint64_t *)*(uint64_t *)(uintptr_t)v.lo;
     if ((v.hi & 1) == 0) {
         FUN_0034be0c(*head);
         FUN_0035a3a0();
@@ -7413,18 +7429,18 @@ reg16 swift_array_iterator_build(long *out, uint64_t *p2, uint64_t p3)
 {
     reg16 *obj = (reg16 *)sk_alloc(0x40, 0x118b);  /* FUN_0036a908 */
     *out = (long)obj;
-    *(uint64_t **)obj[2] = x20;
-    *(uint64_t *)(obj[2] + 8) = p3;
+    *(uint64_t **)&obj[2] = x20;
+    *(uint64_t *)((char *)&obj[2] + 8) = p3;
     uint64_t u2 = p2[1];
-    *(uint64_t *)obj[3] = *p2;
-    *(uint64_t *)(obj[3] + 8) = u2;
+    *(uint64_t *)&obj[3] = *p2;
+    *(uint64_t *)((char *)&obj[3] + 8) = u2;
     uint64_t u2b = *x20;
     uint64_t u3 = x20[1];
     reg16 v = FUN_001a9bf0();
     *obj = v;
-    *(uint64_t *)obj[1] = u2b;
-    *(uint64_t *)(obj[1] + 8) = u3;
-    return (reg16){ FUN_001aa200, obj };
+    *(uint64_t *)&obj[1] = u2b;
+    *(uint64_t *)((char *)&obj[1] + 8) = u3;
+    return (reg16){ (uintptr_t)swift_array_iterator_dispatch, (uintptr_t)obj };
 }
 
 /*--------------------------------------------------------------------*/
@@ -7439,7 +7455,7 @@ reg16 swift_array_iterator_build(long *out, uint64_t *p2, uint64_t p3)
 void swift_array_iterator_dispatch(void)
 {
     reg16 v = FUN_00084220();
-    uint64_t *head = (uint64_t *)*v.lo;
+    uint64_t *head = (uint64_t *)*(uint64_t *)(uintptr_t)v.lo;
     if ((v.hi & 1) == 0) {
         FUN_0034c444(*head);
         FUN_0035a3a0();
@@ -7503,7 +7519,7 @@ void sk_sched_key_stage3_thunk(void) { FUN_001aa330(); }
 void sk_sched_key_stage3(uint64_t p1, uint64_t p2, uint64_t p3)
 {
     FUN_0035ace8();
-    code_fn *fn = (code_fn *)FUN_003586fc();
+    code_fn fn = (code_fn)(uintptr_t)FUN_003586fc();
     if (!SBORROW8(x9, x8_00)) {
         FUN_001a97d4(p3);
         FUN_003571a4(*(uint64_t *)(x20 + 8));
@@ -7604,11 +7620,11 @@ reg16 swift_array_iterator_core(long *out, uint64_t p2, uint64_t p3, uint64_t p4
     long t = *(long *)(p7 - 8);
     *out = p7;
     out[1] = t;
-    reg16 v = sk_alloc_special(*(uint64_t *)(t + 0x40), 0, 0xb8e7);  /* FUN_0036a908 */
+    reg16 v = (reg16){ (uintptr_t)sk_alloc_special(*(uint64_t *)(t + 0x40), 0, 0xb8e7), 0 };  /* FUN_0036a908 */
     long obj = v.lo;
     out[2] = obj;
     FUN_001a9ac8(obj, p2, v.hi, p4, p5, p6, p7);
-    return (reg16){ (void*)0x003471a8, obj };
+    return (reg16){ (uint64_t)(uintptr_t)(void*)0x003471a8, obj };
 }
 
 /*--------------------------------------------------------------------*/
@@ -7624,8 +7640,8 @@ void swift_array_iterator_build2(reg16 *out, uint64_t *p2, long p3)
     uint64_t u2 = x20[1];
     reg16 v = FUN_001a9bf0(*p2, p2[1], u1, u2, x20[2], x20[3], *(uint64_t *)(p3 + 0x10));
     *out = v;
-    *(uint64_t *)out[1] = u1;
-    *(uint64_t *)(out[1] + 8) = u2;
+    *(uint64_t *)&out[1] = u1;
+    *(uint64_t *)((char *)&out[1] + 8) = u2;
 }
 
 /*--------------------------------------------------------------------*/
@@ -7851,8 +7867,8 @@ void swift_array_init_from_words2(reg16 *out, uint64_t p2, long p3, uint64_t p4,
 {
     reg16 v = FUN_001aaabc(p2, *(uint64_t *)(p3 + 0x10));
     *out = v;
-    *(uint64_t *)out[1] = p4;
-    *(uint64_t *)(out[1] + 8) = p5;
+    *(uint64_t *)&out[1] = p4;
+    *(uint64_t *)((char *)&out[1] + 8) = p5;
 }
 
 /*--------------------------------------------------------------------*/
@@ -8000,7 +8016,7 @@ uint64_t sk_sched_queue_dealloc(long count)
         FUN_00350c5c();
         reg16 v = FUN_001aab58(x1);
         if (x19 == 0) {
-            return FUN_0006f6b4(v.lo, v.hi, 0);
+            return FUN_0006f6b4(v.lo, v.hi, 0).lo;
         }
         FUN_0009461c();
         FUN_001aad30();
@@ -8033,9 +8049,9 @@ void swift_array_subrange(reg16 *out, uint64_t p2, uint64_t p3, long base, uint6
     reg16 v = FUN_003597d8();
     long stride = *(long *)(x16 + 0x48);
     *out = v;
-    *(long *)out[1] = base;
-    *(uint64_t *)(out[1] + 8) = p5;
-    *(long *)out[2] = v.hi + stride * base;
+    *(long *)&out[1] = base;
+    *(uint64_t *)((char *)&out[1] + 8) = p5;
+    *(long *)&out[2] = v.hi + stride * base;
 }
 
 /*--------------------------------------------------------------------*/
@@ -8078,7 +8094,7 @@ void swift_array_reserve_realloc(void)
     FUN_00348e9c(u6, u6);
     FUN_0019fa60(&sv_80, l2);
     FUN_003561dc(sv_80, us_78);
-    v = FUN_00357c20(*(uint8_t *)(x16 + 0x50));
+    v = (reg16){ FUN_00357c20(*(uint8_t *)(x16 + 0x50)), 0 };
     FUN_003527e0(v.lo, v.hi, l5 + x8);
     FUN_001ab008();
     FUN_0034d7dc();
@@ -8107,12 +8123,12 @@ long swift_array_copy_elements(uint64_t p1, uint64_t p2, long p3, uint64_t p4, l
 {
     FUN_0035089c();
     sk_free((void *)p4);                                /* FUN_0036b118 */
-    if (!SBORROW8(x22, x23)) {
+    if (!SBORROW8((uint64_t)x22, (uint64_t)x23)) {
         FUN_0034b518();
         long stride = *(long *)(x16 + 0x48);
         FUN_0035056c(p5 + stride * x23);
         FUN_0019dadc();
-        return p3 + stride * (x22 - x23);
+        return p3 + stride * ((uint64_t)x22 - (uint64_t)x23);
     }
     __builtin_trap();                           /* 0x1ab07c */
 }
@@ -8159,8 +8175,8 @@ void swift_array_push_elem(uint64_t p1)
     uint64_t ok = FUN_0008f5f4();
     if ((ok & 1) != 0) return;
     FUN_003586fc();
-    if (!SBORROW8(x9, x8)) {
-        FUN_001ab07c(x9 - x8, p1);
+    if (!SBORROW8((uint64_t)x9, (uint64_t)x8)) {
+        FUN_001ab07c((uint64_t)x9 - (uint64_t)x8, p1);
         return;
     }
     __builtin_trap();                           /* 0x1ab150 */
@@ -8425,7 +8441,7 @@ void swift_array_reset_or_grow(void)
         FUN_001aab58(u5);
         sk_free((void *)*x20);                      /* FUN_0036b118 */
         FUN_000a6f68();
-        *x20 = x8;
+        *x20 = (uint64_t)x8;
         x20[1] = x1;
         u5 = DAT_004c08a0;
         x20[3] = uRam_4c08a8;
@@ -8496,13 +8512,13 @@ void swift_buffer_apply_cb(void)
  */
 uint64_t swift_array_capacity_check(void)
 {
-    if ((x3 & 1) != 0) {
+    if (((uint64_t)x3 & 1) != 0) {
         FUN_00357a34();
         long l2 = FUN_002dc564();
         l2 = *(long *)(l2 + 0x10);
         sk_free(NULL);                      /* FUN_0036b118 */
-        if (SBORROW8(x3 >> 1, x20)) __builtin_trap();   /* 0x1aba44 */
-        if (l2 == (x3 >> 1) - x20) return FUN_002dc564();
+        if (SBORROW8((uint64_t)x3 >> 1, (uint64_t)x20)) __builtin_trap();   /* 0x1aba44 */
+        if (l2 == ((uint64_t)x3 >> 1) - (uint64_t)x20) return FUN_002dc564();
     }
     return 0;
 }
@@ -8538,8 +8554,8 @@ void swift_array_remove_all(reg16 *out, uint64_t p2, uint64_t p3, long p4, uint6
     uint64_t u1 = *(uint64_t *)(p4 + 0x10);
     reg16 v = FUN_001aaba8();
     *out = v;
-    *(uint64_t *)out[1] = u1;
-    *(uint64_t *)(out[1] + 8) = p5;
+    *(uint64_t *)&out[1] = u1;
+    *(uint64_t *)((char *)&out[1] + 8) = p5;
 }
 
 /*--------------------------------------------------------------------*/
@@ -8553,8 +8569,8 @@ void swift_array_iterator_init2(reg16 *out, uint64_t p2, uint64_t p3, uint64_t p
 {
     reg16 v = FUN_001a9a30(p2, *(uint64_t *)(p5 + 0x10));
     *out = v;
-    *(uint64_t *)out[1] = p3;
-    *(uint64_t *)(out[1] + 8) = p4;
+    *(uint64_t *)&out[1] = p3;
+    *(uint64_t *)((char *)&out[1] + 8) = p4;
 }
 
 /*--------------------------------------------------------------------*/
@@ -8593,7 +8609,7 @@ uint64_t swift_string_remove_suffix(long n)
     if ((r.hi & 0xff) != 1) {
         if (u1 >> 0xe <= r.lo >> 0xe) {
             reg16 v = FUN_002ab5bc(u1, r.lo, u1, u3, u2, u4);
-            *x20 = v;
+            *x20 = v.lo;
             *(uint64_t *)x20[1] = u2;
             *(uint64_t *)(x20[1] + 8) = u4;
             return 1;
@@ -8624,7 +8640,7 @@ uint64_t swift_string_remove_suffix2(long n)
     if ((r.hi & 0xff) != 1) {
         if (u1 >> 0xe <= r.lo >> 0xe) {
             reg16 v = FUN_002ab5bc(u1, r.lo, u1, u3, u2, u4);
-            *x20 = v;
+            *x20 = v.lo;
             *(uint64_t *)x20[1] = u2;
             *(uint64_t *)(x20[1] + 8) = u4;
             return 1;
@@ -8794,7 +8810,7 @@ uint64_t swift_string_remove_all(void)
     if (u6 >> 0xe <= u3 >> 0xe) {
         FUN_003a25d4(u4);
         reg16 v = FUN_002ab5bc(u6, u3, u1, u3, u2, u4);
-        *x20 = v;
+        *x20 = v.lo;
         *(uint64_t *)x20[1] = u2;
         *(uint64_t *)(x20[1] + 8) = u4;
         return u5;
@@ -8825,7 +8841,7 @@ reg16 swift_string_remove_all2(void)
     uint64_t u6 = FUN_002b3b84(u5, u1, u3, u2, u4);
     if (u6 >> 0xe <= u3 >> 0xe) {
         reg16 v8 = FUN_002ab5bc(u6, u3, u1, u3, u2, u4);
-        *x20 = v8;
+        *x20 = v8.lo;
         *(uint64_t *)x20[1] = u2;
         *(uint64_t *)(x20[1] + 8) = u4;
         return v7;
@@ -8858,7 +8874,7 @@ void swift_string_remove_prefix(long n)
     if ((r.hi & 0xff) != 1) {
         if (r.lo >> 0xe <= u1 >> 0xe) {
             reg16 v = FUN_002ab5bc(r.lo, u1, u4, u1, u7, u2);
-            *x20 = v;
+            *x20 = v.lo;
             *(uint64_t *)x20[1] = u7;
             *(uint64_t *)(x20[1] + 8) = u2;
             return;
@@ -8892,7 +8908,7 @@ void swift_string_remove_prefix2(long n)
     if ((r.hi & 0xff) != 1) {
         if (r.lo >> 0xe <= u1 >> 0xe) {
             reg16 v = FUN_002ab5bc(r.lo, u1, u4, u1, u7, u2);
-            *x20 = v;
+            *x20 = v.lo;
             *(uint64_t *)x20[1] = u7;
             *(uint64_t *)(x20[1] + 8) = u2;
             return;
@@ -9069,7 +9085,7 @@ void swift_collection_init_full(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t 
     us_88 = p4;
     sv_70 = p3;
     us_68 = p4;
-    sv_80 = a0;
+    sv_80 = a0.lo;
     FUN_00353540();
     uint64_t u1 = FUN_00310df0();
     uint64_t u2 = FUN_00348d00();
@@ -9149,7 +9165,7 @@ void swift_buffer_foreach_elem2(uint64_t p1, void (*cb)(void), uint64_t p3, uint
     if (!SBORROW8(p7 >> 1, p6)) {
         reg16 v = FUN_001e4cbc(p5 + *(long *)(*(long *)(p8 - 8) + 0x48) * p6,
                                (p7 >> 1) - p6);
-        cb(p1, v.lo, v.hi, stack_aligned);
+        ((void (*)())cb)(p1, v.lo, v.hi, stack_aligned);
         if (x21 != 0)
             (**(code_fn **)(desc + 0x20))(p12, stack_aligned, p10);
         return;
@@ -9384,7 +9400,7 @@ void swift_range_replace_loop(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4
                 fn14();
                 fn14 = (code_fn *)*pu1;
                 FUN_00350738();
-                v19 = fn14();
+                v19 = (reg16){ fn14(), 0 };
                 if ((ok5 & 1) != 0) goto loop_done_break;
 loop_mid:
                 u10 = v19.lo;
@@ -9457,11 +9473,10 @@ loop_mid:
                 }
                 FUN_00351c7c(sv_10, u10);
                 FUN_000839d8();
-                cur_src = x25;
+                cur_src = (uint64_t)x25;
             }
 loop_done_break:
             fn14(sv_10, x25);
-            break;
 loop_exit2:
 loop_exit:
             u10 = 0;
@@ -9513,7 +9528,7 @@ void swift_range_apply_loop(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4,
     if (SBORROW8(cap, u3)) __builtin_trap();        /* 0x1ae040 */
     thunk_FUN_002298d4(cap - u3);
     if (p4 != cap) {
-        fn2 = (code_fn *)FUN_0031945c(p7);
+        fn2 = (uint64_t (*)())(uintptr_t)FUN_0031945c(p7);
         u3 = p4;
         do {
             reg16 v = FUN_00352e3c();
@@ -9576,7 +9591,7 @@ void swift_range_apply_meta(uint64_t p1, long p2, uint64_t p3)
 void swift_array_apply_push(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
     FUN_003586fc();
-    if (!SBORROW8(x9, x8)) {
+    if (!SBORROW8((uint64_t)x9, (uint64_t)x8)) {
         FUN_003537fc();
         FUN_001a97d4(p4);
         FUN_003571a4(*(uint64_t *)(x20 + 8));
@@ -9688,7 +9703,7 @@ void sk_sched_queue_foreach_apply(uint64_t p1, uint64_t p2, void (*cb)(uint64_t)
     FUN_00355b74();
     FUN_00357e44();
     for (;;) {
-        cb(x22);
+        ((void (*)())cb)((uint64_t)x22);
         FUN_0034c4bc();
         if (ZR) {
             FUN_00352260();
@@ -9862,7 +9877,7 @@ uint64_t swift_unicode_scalar_decode(uint64_t data, uint64_t disc)
                      s_swift_unicode_helpers, 0x1a, 2, 0xfd, 1);
     if ((disc >> 0x3d & 1) == 0) {
         if ((data >> 0x3c & 1) == 0) {
-            r = FUN_002a9ba8(data, disc);
+            r = FUN_002a9ba8(data, disc).lo;
         } else {
             r = (disc & 0xfffffffffffffff) + 0x20;
         }
@@ -9874,7 +9889,7 @@ uint64_t swift_unicode_scalar_decode(uint64_t data, uint64_t disc)
 }
 
 /* helper: decode one UTF-8 scalar from a byte pointer */
-static uint64_t swift_utf8_decode(const uint8_t *p)
+uint64_t swift_utf8_decode(const uint8_t *p)
 {
     uint8_t b0 = *p;
     if ((int8_t)b0 >= 0) return (uint64_t)b0;
@@ -10469,7 +10484,7 @@ void swift_string_fatal_precondition(uint64_t p1, uint64_t p2, uint64_t p3, uint
         }
         if ((0x10 < u3 >> 0x10) || (0xfffffffffffff7ff < u3 - 0xe000)) goto invalid;
         int len;
-        if (u3 < 0x80) len = v.lo4 + 1;
+        if (u3 < 0x80) len = (uint32_t)v.lo + 1;
         else {
             FUN_00357d0c(x8);
             len = w9;
@@ -10477,7 +10492,7 @@ void swift_string_fatal_precondition(uint64_t p1, uint64_t p2, uint64_t p3, uint
         }
         is_28 = FUN_00255d4c(len);
         uint64_t u4 = 0x1afb10;
-        reg16 v2 = thunk_FUN_0036b270(p5);  /* alloc pages */
+        reg16 v2 = (reg16){ thunk_FUN_0036b270(p5), 0 };  /* alloc pages */
         if ((p5 >> 0x3c & 1) == 0) {
             if ((p5 >> 0x3d & 1) != 0) goto inline_path;
             goto heap_path;
@@ -10489,7 +10504,7 @@ void swift_string_fatal_precondition(uint64_t p1, uint64_t p2, uint64_t p3, uint
         if ((out.hi >> 0x3d & 1) == 0) goto heap_path;
 inline_path:
         is_20 = out.hi & 0xffffffffffffff;
-        v2 = { &stack_18, out.hi >> 0x38 & 0xf };
+        v2 = (reg16){ (uintptr_t)&stack_18, out.hi >> 0x38 & 0xf };
         goto format;
     }
     if (u3 == 0) goto invalid;
@@ -10498,7 +10513,7 @@ inline_path:
         sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     u4 = 0x1afb44;
-    v2 = thunk_FUN_0036b270(p5);            /* alloc pages */
+    v2 = (reg16){ thunk_FUN_0036b270(p5), 0 };            /* alloc pages */
     if ((p5 >> 0x3c & 1) == 0) {
         if ((p5 >> 0x3d & 1) != 0) goto inline_path2;
         goto heap_path2;
@@ -10510,7 +10525,7 @@ inline_path:
     if ((out.hi >> 0x3d & 1) == 0) goto heap_path2;
 inline_path2:
     is_20 = out.hi & 0xffffffffffffff;
-    v2 = { &stack_18, out.hi >> 0x38 & 0xf };
+    v2 = (reg16){ (uintptr_t)&stack_18, out.hi >> 0x38 & 0xf };
     goto format;
 heap_path:
     u3 = out.lo;
@@ -10523,7 +10538,7 @@ heap_path:
         u4 = FUN_00356364(v2.lo, u4);
         out.hi = out.hi;
         out.lo = is_18;
-        v2 = { u4, u3 & 0xffffffffffff };
+        v2 = (reg16){ u4, u3 & 0xffffffffffff };
     }
     goto format;
 heap_path2:
@@ -10537,7 +10552,7 @@ heap_path2:
         u4 = FUN_00356364(v2.lo, u4);
         out.hi = out.hi;
         out.lo = is_18;
-        v2 = { u4, u3 & 0xffffffffffff };
+        v2 = (reg16){ u4, u3 & 0xffffffffffff };
     }
 format:
     u4 = out.hi;
@@ -10573,7 +10588,7 @@ void swift_string_precondition(void)
 {
     FUN_00077698();
     FUN_003542e8();
-    code_fn *fn = (code_fn *)FUN_00358da0();
+    uint64_t (*fn)() = (uint64_t (*)())(uintptr_t)FUN_00358da0();
     uint64_t ok = fn();
     if ((ok & 1) != 0) {
         FUN_0007767c(x8);
@@ -10597,8 +10612,8 @@ void swift_string_precondition(void)
 void swift_string_fatal_dispatch(void)
 {
     FUN_00357cb4();
-    code_fn *fn = (code_fn *)FUN_00353274();
-    reg16 v = fn();
+    uint64_t (*fn)() = (uint64_t (*)())(uintptr_t)FUN_00353274();
+    reg16 v = (reg16){ fn(), 0 };
     FUN_00357c38(v.lo, v.hi, 0x1afdf4);
     FUN_0006f768(s_Fatal_error);
     FUN_001afa84();                         /* noreturn */
@@ -10618,9 +10633,9 @@ void swift_string_fatal_dispatch(void)
 void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...)
 {
     FUN_00354a34();
-    uint64_t u5 = x8;
+    uint64_t u5 = (uint64_t)x8;
     reg16 v = FUN_00356c84();
-    uint64_t *msg = v.lo;
+    uint64_t *msg = (uint64_t *)(uintptr_t)v.lo;
     if ((p3 & 1) == 0) {
         if (msg != NULL) {
             if (v.hi < 0) {
@@ -10694,7 +10709,7 @@ void sk_sched_queue_tick_step(void)
     FUN_00351aa4(x16_00);
     FUN_00350810();
     x9_fn();
-    *(char *)(x27 + *(int *)(x24 + 0x30)) = v[8];
+    *(char *)(x27 + *(int *)(x24 + 0x30)) = ((uint8_t *)&v)[8];
     FUN_00352474();
     FUN_00351ab0();
     x9_00_fn();
