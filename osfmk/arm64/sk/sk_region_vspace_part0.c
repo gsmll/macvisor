@@ -4565,7 +4565,7 @@ L_00205a18:
  * Ghidra: void FUN_00205bd0(word_t param_1,word_t param_2,word_t param_3,word_t param_4,word_t *param_5,
                  word_t param_6,word_t param_7,word_t param_8)
  * Description children walker: recursively describes object children; decrements a depth budget (*param_5), emits "child"/"children"/"super" strings, recurses via skp0_sk_desc_children (itself) and skp0_sk_desc_sub (00205844). Traps on carry overflow; panic path noreturn.
- * Confidence: medium
+ * Confidence: high
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_desc_children(word_t param_1,word_t param_2,word_t param_3,word_t param_4,word_t *param_5,

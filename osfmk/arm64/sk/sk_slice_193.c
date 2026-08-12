@@ -805,7 +805,8 @@ void sk_re_delim_init(void)
 void sk_re_delim_throw(void)
 {
         sw128_t sc = sw_4666f8(0);
-        sk_re_parse_delim_body(0x20, sc.lo, sc.hi, 0x67fa68, 0);
+        word_t out[5];
+        sk_re_parse_delim_body(out, (char *)sc.lo, (char *)sc.hi, 0x67fa68, 0);
         sw_3a25d4(0x28);
         sw_4666e4(0x30);
 }
@@ -820,7 +821,7 @@ void sk_re_delim_throw(void)
 void sk_re_delim_ret(word_t *out, word_t a, word_t b)
 {
         word_t buf[5];
-        sk_re_parse_delim_body(buf, a, b, 0x67fa90, 0);
+        sk_re_parse_delim_body(buf, (char *)a, (char *)b, 0x67fa90, 0);
         if (1) { /* unaff_x21 guard clear */
                 out[0] = buf[0]; out[1] = buf[1];
                 ((byte*)out)[16] = ((byte*)buf)[16];
@@ -839,7 +840,7 @@ void sk_re_parse_throw(word_t a, word_t b, word_t c)
 {
         if (1) { /* unaff_x21 == 0 */
                 word_t u2 = 0, u5 = c, u4;
-                sw128_t sc = sk_re_scalar_utf8();
+                sw128_t sc = sk_re_scalar_utf8(0, 0);
                 u4 = sw_41ca38(0);
                 sw_36b118(c);
                 sw_36b118(sc.lo & 0xfffffffffffffff);

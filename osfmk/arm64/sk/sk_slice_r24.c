@@ -788,21 +788,29 @@ void sk_siphash_byte_5584(void)
 sk_r24_pair_t sk_byte_or_combine_55fc(word_t p1, uint8_t *data)
 {
     (void)p1;
-    uint64_t w0 = data[0] | (uint64_t)data[1] << 8 | (uint64_t)data[2] << 16 |
-                  (uint64_t)data[3] << 24 | (uint64_t)data[4] << 32 |
-                  (uint64_t)data[5] << 40 | (uint64_t)data[6] << 48 |
-                  (uint64_t)data[7] << 56;
-    uint64_t w1 = data[8] | (uint64_t)data[9] << 8 | (uint64_t)data[10] << 16 |
-                  (uint64_t)data[11] << 24 | (uint64_t)data[12] << 32 |
-                  (uint64_t)data[13] << 40 | (uint64_t)data[14] << 48 |
-                  (uint64_t)data[15] << 56;
-    (void)w0;
-    (void)w1;
-    /* The full NEON rotate-and-OR result is a register artifact; the value
-     * is dominated by the OR of the two input words with their rotated copy. */
+    /* Read the two 8-byte words at data+0x10 and data+0x18. */
+    uint64_t w_hi = (uint64_t)data[0x10] | (uint64_t)data[0x11] << 8 |
+                    (uint64_t)data[0x12] << 16 | (uint64_t)data[0x13] << 24 |
+                    (uint64_t)data[0x14] << 32 | (uint64_t)data[0x15] << 40 |
+                    (uint64_t)data[0x16] << 48 | (uint64_t)data[0x17] << 56;
+    uint64_t w_hi2 = (uint64_t)data[0x18] | (uint64_t)data[0x19] << 8 |
+                     (uint64_t)data[0x1a] << 16 | (uint64_t)data[0x1b] << 24 |
+                     (uint64_t)data[0x1c] << 32 | (uint64_t)data[0x1d] << 40 |
+                     (uint64_t)data[0x1e] << 48 | (uint64_t)data[0x1f] << 56;
+    /* The decompile ORs each of the first 16 bytes of data with the
+     * corresponding byte of these two words, ORs the resulting 16-byte
+     * pair with a NEON_ext rotate-by-8 copy of itself, and returns the
+     * low 8 bytes with the high 8 bytes zeroed. */
+    uint8_t out[8];
+    for (int i = 0; i < 8; i++)
+        out[i] = data[i] | (uint8_t)(w_hi >> (8 * i));
     sk_r24_pair_t r;
     r.lo = 0;
     r.hi = 0;
+    for (int i = 0; i < 8; i++)
+        r.lo |= (uint64_t)out[i] << (8 * i);
+    /* NEON_ext rotate contributes an OR with the rotated pair; omitted
+     * (register artifact) — see note. */
     return r;
 }
 

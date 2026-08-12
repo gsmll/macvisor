@@ -132,18 +132,18 @@ extern unsigned long sk_x_0034d724();   /* FUN_0034d724 */
 extern unsigned long sk_x_0034dbd8();   /* FUN_0034dbd8 */
 extern unsigned long sk_x_0034de54();   /* FUN_0034de54 */
 extern unsigned long sk_x_0034f22c();   /* FUN_0034f22c */
-extern unsigned long sk_x_00350470();   /* FUN_00350470 */
+extern cl4_result_t sk_x_00350470();   /* FUN_00350470 */
 extern unsigned long sk_x_003504a0();   /* FUN_003504a0 */
 extern unsigned long sk_x_003504ac();   /* FUN_003504ac */
 extern unsigned long sk_x_003504d0();   /* FUN_003504d0 */
 extern unsigned long sk_x_003504e8();   /* FUN_003504e8 */
-extern unsigned long sk_x_00350500();   /* FUN_00350500 */
+extern cl4_result_t sk_x_00350500();   /* FUN_00350500 */
 extern unsigned long sk_x_00350518();   /* FUN_00350518 */
 extern unsigned long sk_x_00350524();   /* FUN_00350524 */
 extern unsigned long sk_x_0035053c();   /* FUN_0035053c */
 extern unsigned long sk_x_00350548();   /* FUN_00350548 */
 extern unsigned long sk_x_00350560();   /* FUN_00350560 */
-extern unsigned long sk_x_00350618();   /* FUN_00350618 */
+extern cl4_result_t sk_x_00350618();   /* FUN_00350618 */
 extern unsigned long sk_x_00350624();   /* FUN_00350624 */
 extern unsigned long sk_x_00350720();   /* FUN_00350720 */
 extern unsigned long sk_x_00350884();   /* FUN_00350884 */
@@ -176,7 +176,7 @@ extern unsigned long sk_x_0036b270();   /* FUN_0036b270 */
 extern unsigned long sk_x_0036b2d0();   /* FUN_0036b2d0 */
 extern unsigned long sk_x_0036b588();   /* FUN_0036b588 */
 extern unsigned long sk_x_0036b6ac();   /* FUN_0036b6ac */
-extern unsigned long sk_x_00376820();   /* FUN_00376820 */
+extern cl4_result_t sk_x_00376820();   /* FUN_00376820 */
 extern unsigned long sk_x_00377824();   /* FUN_00377824 */
 extern unsigned long sk_x_00377bec();   /* FUN_00377bec */
 extern unsigned long sk_x_0039a128();   /* FUN_0039a128 */
@@ -249,7 +249,7 @@ extern unsigned long sk_x_00408434();   /* FUN_00408434 */
 extern unsigned long sk_x_0040859c();   /* FUN_0040859c */
 extern unsigned long sk_x_00409248();   /* FUN_00409248 */
 extern unsigned long sk_x_004092d8();   /* FUN_004092d8 */
-extern cl4_result_t sk_x_0040bb18();   /* FUN_0040bb18 */
+extern unsigned long sk_x_0040bb18();   /* FUN_0040bb18 */
 extern unsigned long sk_x_004ba7ec();   /* FUN_004ba7ec */
 
 /* String literals referenced by the Swift-runtime fatal stubs (Ghidra refs). */

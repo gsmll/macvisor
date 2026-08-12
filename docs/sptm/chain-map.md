@@ -549,3 +549,4 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - async task setup: 003d62dc/003d71b8/003d85b8/003d93f8 -> 00377824 (job build, metadata 00614a5c) -> 003d5a4c/003d69f8/003d7c18/003d8cc0 (suite enter/run)
 - async completion/fatal: 003d4d0c/003d4dbc/003d4f18/003d4f78 -> 001afa84 (cL4_runtime_fatal, noreturn)
 - executor permits: 003d6418/003d72f0 -> 003d6470 (post-release) -> 003dd540; negative count traps
+- SKR22 fragment helpers: 0x464090/0x464918 -> FUN_0029fa0c / FUN_00461894 (vspace/page-walk); 0x4645a4/0x464630/0x464890/0x4647f4 -> FUN_00117cc4 (memcpy); 0x464354/0x464550 -> thunk_FUN_0036b270 (retain); 0x464224/0x4645f8 -> thunk_FUN_002acbb8 (report emit); 0x464268/0x4642a8 -> FUN_0042ec68; 0x464520/0x464538 -> FUN_002a4ab4; 0x4644e8/0x4648fc -> FUN_001a84f4

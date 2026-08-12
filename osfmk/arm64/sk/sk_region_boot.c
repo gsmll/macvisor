@@ -32945,6 +32945,7 @@ extern unsigned long sk_thread_state();
 extern uint64_t sk_global_000;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_001;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_002;  /* Ghidra DAT_/global */
+extern const uint32_t sk_cnode_kinds[6];  /* DAT_004bcce0: cnode kind byte per cnode_type */
 extern uint64_t sk_global_004;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_005;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_006;  /* Ghidra DAT_/global */
@@ -36750,29 +36751,20 @@ uint64_t sk_cnode_create(unsigned long *out, unsigned long base,
     if (*slot != 0) goto fail;
 
     err = 0x11;                       /* capability-badge tag */
-    kind = (cnode_type - 1 < 6) ? *(uint32_t *)((char *)sk_global_002 + (cnode_type-1)*4)
-                                : 2;
-    rec_lo = 0;                        /* start building the 64-bit record word */
-/* Encode record: type/badge fields via byte-packing helpers. */
-    {
-        uint16_t *rw = (uint16_t *)((char *)&rec_lo + 0);
-        *rw = (uint16_t)((0x20000000u << 8) | kind);
-    }
-    {
-        uint8_t *rw = (uint8_t *)((char *)&rec_lo + 0);
-        *rw = (uint8_t)((uint64_t)(((uint64_t)(num_caps)<<8) | (rec_lo & 0xff)) & 0xff);
-    }
-    rec_lo = (rec_lo & 0xffffffffffff0000) | (((uint64_t)0x2000 << 16) | (rec_lo & 0xffff));
+    kind = (cnode_type - 1 < 6) ? sk_cnode_kinds[cnode_type - 1] : 2;
+    /* Record word (rec_lo; disasm local at sp+0x28): byte0=kind,
+     * byte2=num_caps, byte4=0x20.  byte1 (the "shared" flag) is set below
+     * only in the shared-vspace path and cleared in the internal case. */
+    rec_lo = (uint64_t)kind
+           | ((uint64_t)num_caps << 16)
+           | ((uint64_t)0x20 << 32);
     root_pg = base;
 
     if (((opts >> 3) & 1) == 0) {
         attr = 0;
-        rec_lo = (rec_lo & 0xffffffff00000000) |
-                 (((rec_lo >> 0x10) & 0xffff) << 16) |
-                 ((((opts & 0x10) == 0) << 8) | kind);
-        rec_lo = (rec_lo & 0xffffffffffffffff);
+        rec_lo |= (uint64_t)((opts & 0x10) == 0) << 8;      /* byte1 = flag */
         if (((base >> 0x1e) == 0) && ((opts & 0x10) == 0)) {
-            rec_lo = (rec_lo & 0xffffffffffff0000) | (rec_lo & 0xffff);
+            rec_lo &= ~((uint64_t)0xff << 8);               /* clear byte1 */
             if (sk_global_002 == 0) {
                 uint64_t a1=0x4000, a2=0x2000000102, a3=0x11, a4=0;
                 vops = sk_vspace_get_ops();
