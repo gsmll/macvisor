@@ -595,3 +595,8 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 004aff30 -> FUN_00007530, FUN_0011582c (validate), FUN_0001018c (error handler)
 - 004b0744 (supervisor wait) -> CL4_CALLSV/4, FUN_004b23d8, FUN_00034a2c, thunk_FUN_00012568 @0x125b0
 - ~114 fail-closed abort shims -> report helpers FUN_00004cc0 / FUN_00118b28 / FUN_00115424 / FUN_001150e0 / FUN_00015e2c / FUN_000179c8-9f8 / FUN_00019800-840, each then SWBP-trap
+
+## SkR43 (TightBeam trap table, wave SKR43)
+- 120 trap thunks 0x004b4424..0x004b5744 -> 4 report/trap printers: 0x0004b478 ("unexpected tb_error_t returned"), 0x0004b488 ("completion block must be called"), 0x0004b454 ("invalid value: unexpected case value"), 0x00118b28 (generic message report).
+- 0x00118b28 -> 0x00118c38 -> 0x001158cc (report/log core). Printers 0x0004b478/488/454 wrap 0x00118b28 with a fixed message.
+- Message strings 0x005b854a..0x005ba950 (TB_ASSERT server->method vtable-NULL / TB_FATAL invalid-error-return / capability-decode asserts) document the TightBeam server method surface.

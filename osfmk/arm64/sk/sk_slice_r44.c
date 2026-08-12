@@ -1832,8 +1832,8 @@ static void sk_bad_list_head_panic(void)
  * Confidence: low */
 static void sk_overflow_report(void)
 {
-    unsigned long v = sk_overflow_detected_panic2();
-    sk_log_start(v, "  %s: %s: %d: %s");      /* s___s____s__d____s___005a8c67 */
+    sk_overflow_detected_panic2();
+    sk_log_start(0, "  %s: %s: %d: %s");      /* s___s____s__d____s___005a8c67 */
     sk_log_append(0xeb1a02bf914012baULL, 0, (void *)0xfffffffffffffff0ULL);
     sk_log_end(10, 0xeb1a02bf914012baULL);
 }
