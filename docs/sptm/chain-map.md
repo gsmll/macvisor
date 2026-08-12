@@ -509,3 +509,21 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 0034f9b4 -> 00002534 (0x6560e8,&DAT_004e7ed0)
 - 0034fadc -> 003246ec, 003722e4
 - 0034fb14 -> 001fab14 (cl4_sched_grow_capacity)
+
+## SkGap18 (0x00357bf8-0x0035841c, frame-fragment / forwarding-stub region)
+- 00357bf8 -> 00365b6c (tail-call forwarding stub)
+- 00357c04 -> 00027754 (x3 triple init/teardown sequence)
+- 00357c2c -> 000026e8 ([stack+8] slot init)
+- 00357c58 -> 00310a74, 0001df60 (two-phase state transition)
+- 00357c88 -> 000a6b64 (tail-call forwarding stub)
+- 003581d4 -> 002298d4 (thunk, x3)
+- 003581fc -> 00376820 (tail-call forwarding stub)
+- 00358318 -> 001a0354 (0,1)
+- 00358358 -> 001b7524 (param, x29-0x80)
+- 00358388 -> 00377bec (three caller-frame words)
+- 003583a4 -> 00312d08 (reordered 7-arg dispatch)
+- 003583c0 -> 001da714 (x29-0xd0)
+- 00358404 -> 00117d14 (tail-call forwarding stub)
+- 00358410 -> 00377824 (0xff)
+- 00357cc8 -> data s_Swift_ExistentialCollection_swif_005cf680 (Swift existential pair ctor)
+- 00357f34 / 003580a4: pte->canonical fixup + capability-word masking leaves
