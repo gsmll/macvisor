@@ -134,7 +134,7 @@ extern unsigned long sk_x_0034de54();   /* FUN_0034de54 */
 extern unsigned long sk_x_0034f22c();   /* FUN_0034f22c */
 extern cl4_result_t sk_x_00350470();   /* FUN_00350470 */
 extern unsigned long sk_x_003504a0();   /* FUN_003504a0 */
-extern unsigned long sk_x_003504ac();   /* FUN_003504ac */
+extern cl4_result_t sk_x_003504ac();   /* FUN_003504ac */
 extern unsigned long sk_x_003504d0();   /* FUN_003504d0 */
 extern unsigned long sk_x_003504e8();   /* FUN_003504e8 */
 extern cl4_result_t sk_x_00350500();   /* FUN_00350500 */
@@ -183,7 +183,7 @@ extern unsigned long sk_x_0039a128();   /* FUN_0039a128 */
 extern unsigned long sk_x_003a25d4();   /* FUN_003a25d4 */
 extern unsigned long sk_x_003d4e84();   /* FUN_003d4e84 */
 extern unsigned long sk_x_003d4f18();   /* FUN_003d4f18 */
-extern unsigned long sk_x_003d50cc();   /* FUN_003d50cc */
+extern cl4_result_t sk_x_003d50cc();   /* FUN_003d50cc */
 extern unsigned long sk_x_003e33d8();   /* FUN_003e33d8 */
 extern cl4_result_t sk_x_003ed340();   /* FUN_003ed340 */
 extern unsigned long sk_x_003ed5f8();   /* FUN_003ed5f8 */
@@ -218,7 +218,7 @@ extern unsigned long sk_x_00407048();   /* FUN_00407048 */
 extern unsigned long sk_x_004070c0();   /* FUN_004070c0 */
 extern unsigned long sk_x_004070d8();   /* FUN_004070d8 */
 extern unsigned long sk_x_00407134();   /* FUN_00407134 */
-extern unsigned long sk_x_004072c0();   /* FUN_004072c0 */
+extern cl4_result_t sk_x_004072c0();   /* FUN_004072c0 */
 extern unsigned long sk_x_00407460();   /* FUN_00407460 */
 extern unsigned long sk_x_00407568();   /* FUN_00407568 */
 extern unsigned long sk_x_004075ec();   /* FUN_004075ec */
@@ -241,6 +241,7 @@ extern unsigned long sk_x_00408044();   /* FUN_00408044 */
 extern unsigned long sk_x_00408058();   /* FUN_00408058 */
 extern unsigned long sk_x_004080bc();   /* FUN_004080bc */
 extern unsigned long sk_x_004080b0();   /* FUN_004080b0 */
+extern unsigned long sk_x_004080cc();   /* FUN_004080cc */
 extern unsigned long sk_x_00408160();   /* FUN_00408160 */
 extern unsigned long sk_x_00408178();   /* FUN_00408178 */
 extern unsigned long sk_x_00408190();   /* FUN_00408190 */
@@ -257,6 +258,113 @@ extern unsigned long sk_x_004ba7ec();   /* FUN_004ba7ec */
 extern const char sk_str_no_executor[];      /* s_There_is_no_executor_implementat_005dc2e0 */
 extern const char sk_str_unimpl_executor[];  /* s__Concurrency_UnimplementedExecut_005dc2b0 */
 extern const char sk_str_enqueue_main_exec[];/* s_swift_task_enqueueMainExecutor___005dc330 */
+
+/* Forward declarations of the in-slice (batch) functions transcribed below.
+ * Cross-references between them are forward; register-forwarded ABI means
+ * several take/ignore extra args, so a few are prototype-less (). */
+static void sk_x_003fba88(void);
+static void sk_x_003fbaa4(uint8_t *param_1);
+static void sk_x_003fbaf8(void);
+static void sk_x_003fbb48(void);
+static void sk_x_003fbb98();
+static void sk_x_003fbbdc(uint64_t param_1);
+static void sk_x_003fbbe0(uint64_t param_1);
+static void sk_x_003fbc10(void);
+static void sk_x_003fbc14(void);
+static void sk_x_003fbc3c(uint64_t param_1);
+static void sk_x_003fbc40(uint64_t param_1);
+static cl4_result_t sk_x_003fbc58(int64_t param_1, uint64_t param_2);
+static cl4_result_t sk_x_003fbcd4(void);
+static cl4_result_t sk_x_003fbd2c(void);
+static void sk_x_003fbd98(void);
+static void sk_x_003fbdf0(cl4_result_t *param_1);
+static void sk_x_003fbe18(cl4_result_t *param_1);
+static void sk_x_003fbe40(void);
+static unsigned int sk_x_003fbf28();
+static void sk_x_003fbf9c(void);
+static void sk_x_003fbff4();
+static void sk_x_003fc038();
+static void sk_x_003fc124(uint64_t param_1);
+static void sk_x_003fc128(uint64_t param_1);
+static void sk_x_003fc158();
+static void sk_x_003fc248(void);
+static void sk_x_003fc24c(void);
+static void sk_x_003fc274();
+static void sk_x_003fc2a4(uint64_t param_1);
+static void sk_x_003fc2a8(uint64_t param_1);
+static cl4_result_t sk_x_003fc2c0(void);
+static cl4_result_t sk_x_003fc318(void);
+static void sk_x_003fc384(void);
+static void sk_x_003fc3dc(cl4_result_t *param_1);
+static void sk_x_003fc404(cl4_result_t *param_1);
+static void sk_x_003fc42c(uint64_t param_1, uint64_t param_2);
+static void sk_x_003fc49c(cl4_result_t *param_1, uint64_t param_2, uint64_t param_3);
+static void sk_x_003fc4d4(void);
+static void sk_x_003fc518(void);
+static void sk_x_003fc56c(void);
+static void sk_x_003fc5c4(void);
+static void sk_x_003fc608(void);
+static void sk_x_003fc64c(void);
+static void sk_x_003fc6b4(void);
+static void sk_x_003fc70c(void);
+static void sk_x_003fc76c(void);
+static void sk_x_003fc79c(void);
+static void sk_x_003fc7cc(void);
+static void sk_x_003fc7d0(void);
+static void sk_x_003fc7e0(void);
+static void sk_x_003fc7f4(void);
+static void sk_x_003fc7f8(void);
+static void sk_x_003fc80c(void);
+static void sk_x_003fc810(void);
+static void sk_x_003fc81c(void);
+static void sk_x_003fc850(void);
+static void sk_x_003fc854(void);
+static void sk_x_003fc860(void);
+static void sk_x_003fc8a0(void);
+static void sk_x_003fc90c(void);
+static void sk_x_003fc910(void);
+static uint64_t sk_x_003fc950(void);
+static void sk_x_003fc988(void);
+static void sk_x_003fc9d0(void);
+static void sk_x_003fc9d4(void);
+static uint64_t sk_x_003fca14(void);
+static void sk_x_003fca4c(void);
+static void sk_x_003fca94(void);
+static void sk_x_003fcac8(void);
+static long sk_x_003fcafc(uint64_t param_1);
+static long sk_x_003fcb2c(uint64_t param_1);
+static long sk_x_003fcb5c(uint64_t param_1);
+static long sk_x_003fcb8c(uint64_t param_1);
+static long sk_x_003fcbbc(uint64_t param_1);
+static long sk_x_003fcc1c(uint64_t param_1);
+static long sk_x_003fcc4c(uint64_t param_1);
+static void sk_x_003fccc4(int64_t param_1, uint64_t param_2);
+static void sk_x_003fccd4(void);
+static void sk_x_003fcd04(void);
+static void sk_x_003fcddc(void);
+static void sk_x_003fce98(void);
+static unsigned int sk_x_003fcf28(uint64_t param_1, uint64_t param_2);
+static void sk_x_003fcf48(void);
+static void sk_x_003fd0bc(void);
+static long sk_x_003fd194(uint64_t param_1);
+static void sk_x_003fd1c4(void);
+static void sk_x_003fd25c(uint64_t param_1);
+static void sk_x_003fd260(uint64_t param_1);
+static void sk_x_003fd278(void);
+static void sk_x_003fd3ac(uint64_t param_1);
+static long sk_x_003fd3fc(uint64_t param_1);
+static void sk_x_003fd4ac(uint64_t param_1, uint64_t param_2);
+static void sk_x_003fd554(uint64_t param_1, uint64_t param_2);
+static void sk_x_003fd7bc(void);
+static void sk_x_003fd874(void);
+static void sk_x_003fd8f8(void);
+static void sk_x_003fd98c(void);
+static void sk_x_003fda44(void);
+static void sk_x_003fdad4(void);
+static unsigned long sk_x_003fdb80(void);
+static void sk_x_003fde6c(void);
+static void sk_x_003fdf0c(void);
+static void sk_x_003fdf74(void);
 
 /* ================================================================== *
  * 0x003fac14 - 0x003fbf28 : VAS/region-operation dispatch wrappers
@@ -912,15 +1020,15 @@ static void sk_x_003fbe40(void)
 }
 
 /* FUN_003fbf28 @ 0x003fbf28  (est. sk_validate_region_type)
- * Ghidra: uint FUN_003fbf28(long param_1, long param_2)
+ * Ghidra: unsigned int FUN_003fbf28(long param_1, long param_2)
  * Validates a region type tag pair; returns 0 when the pair matches the
  * "vale_" signature, else a folded result of FUN_002a0cf8.  Arguments arrive
  * register-forwarded (modelled here as commented locals). Confidence: low. */
-static uint sk_x_003fbf28()
+static unsigned int sk_x_003fbf28()
 {
     long param_1 = /* param_1 (register-forwarded) */ 0;
     long param_2 = /* param_2 (register-forwarded) */ 0;
-    uint uVar1;
+    unsigned int uVar1;
 
     if (param_1 == 0x65756c61765f && param_2 == -0x1a00000000000000LL) {
         sk_x_003a25d4(param_2);
@@ -977,7 +1085,7 @@ static void sk_x_003fc038()
     sk_x_0006a4c0(param_1, *(uint64_t *)(param_1 + 0x18));
     uVar1 = sk_x_0006a4f0(uVar1);
     sk_x_003513b4(uVar1, param_4);
-    uVar1 = ((void (*)(void))(uintptr_t)(extraout_x8 = 0))();
+    uVar1 = ((uint64_t (*)(void))(uintptr_t)(extraout_x8 = 0))();
     auVar2 = sk_x_00002534(param_6, param_7);
     sk_x_001bdb28(&local_70, auVar2.hi, auVar2.lo, 0x676ea8, 0x66f5e0);
     sk_x_0036b118(uVar1);
@@ -1019,7 +1127,7 @@ static void sk_x_003fc158()
     sk_x_0006a4c0(lVar1, *(uint64_t *)(lVar1 + 0x18));
     uVar2 = sk_x_0006a668(uVar2);
     sk_x_000bd3a4(uVar2);
-    uVar2 = ((void (*)(void))(uintptr_t)(extraout_x8 = 0))();
+    uVar2 = ((uint64_t (*)(void))(uintptr_t)(extraout_x8 = 0))();
     if (unaff_x21 == 0) {
         sk_x_00352ae4(local_60, 0x676ea8);
         sk_x_001bea18();
@@ -1059,7 +1167,7 @@ static void sk_x_003fc274()
     long unaff_x21 = /* unaff_x21 */ 0;
     cl4_result_t auVar1;
 
-    auVar1 = ((code)(uintptr_t)in_x3)();
+    auVar1 = ((cl4_result_t (*)(void))(uintptr_t)in_x3)();
     if (unaff_x21 == 0) {
         *param_1 = auVar1;
     }
@@ -1158,7 +1266,7 @@ static void sk_x_003fc42c(uint64_t param_1, uint64_t param_2)
     uint64_t local_28 = 0, uStack_20 = 0;
     uint64_t local_18 = SK_CANARY;
 
-    ((void (*)(uint64_t, uint64_t, uint64_t))(uintptr_t)param_2)(&uStack_20, &local_28, param_1);
+    ((void (*)(uint64_t *, uint64_t *, uint64_t))(uintptr_t)param_2)(&uStack_20, &local_28, param_1);
     sk_x_003fbc58(uStack_20, local_28);
     if (local_18 == (uint64_t)SK_CANARY) {
         return;
@@ -1175,7 +1283,7 @@ static void sk_x_003fc49c(cl4_result_t *param_1, uint64_t param_2, uint64_t para
 {
     cl4_result_t auVar1;
 
-    auVar1 = sk_x_002d3c28(*(uint64_t *)*param_1, *(uint64_t *)(*param_1 + 8), param_2, param_3);
+    auVar1 = sk_x_002d3c28(param_1->lo, param_1->hi, param_2, param_3);
     *param_1 = auVar1;
 }
 
@@ -1240,7 +1348,7 @@ static void sk_x_003fc5c4(void)
     cl4_result_t auVar1;
 
     sk_x_00407e88();
-    auVar1 = ((code)(uintptr_t)extraout_x9)();
+    auVar1 = ((cl4_result_t (*)(void))(uintptr_t)extraout_x9)();
     *unaff_x19 = auVar1;
 }
 
@@ -1254,7 +1362,7 @@ static void sk_x_003fc608(void)
     cl4_result_t auVar1;
 
     sk_x_00407e88();
-    auVar1 = ((code)(uintptr_t)extraout_x9)();
+    auVar1 = ((cl4_result_t (*)(void))(uintptr_t)extraout_x9)();
     *unaff_x19 = auVar1;
 }
 
@@ -1741,12 +1849,12 @@ static void sk_x_003fce98(void)
 }
 
 /* FUN_003fcf28 @ 0x003fcf28  (est. sk_vas_op_accept)
- * Ghidra: uint FUN_003fcf28(undefined8 param_1, undefined8 param_2)
+ * Ghidra: unsigned int FUN_003fcf28(undefined8 param_1, undefined8 param_2)
  * Classifies a VAS op via FUN_003e33d8 over the unaff_x20 context; returns
  * bit0 of the result. Confidence: low. */
-static uint sk_x_003fcf28(uint64_t param_1, uint64_t param_2)
+static unsigned int sk_x_003fcf28(uint64_t param_1, uint64_t param_2)
 {
-    uint uVar1;
+    unsigned int uVar1;
     long unaff_x20 = /* unaff_x20 */ 0;
 
     uVar1 = sk_x_003e33d8(param_1, param_2, *(uint64_t *)(unaff_x20 + 0x28),
@@ -2164,25 +2272,25 @@ static void sk_x_003fdad4(void)
  * element width (1/2/4 bytes). Confidence: low. */
 static unsigned long sk_x_003fdb80(void)
 {
-    uint uVar1, uVar9, uVar2, uVar3;
+    unsigned int uVar1, uVar9, uVar2, uVar3;
     code *pcVar4;
     bool bVar5, bVar6;
     uint64_t uVar7, uVar8;
-    uint extraout_w1 = /* extraout_w1 */ 0;
-    uint extraout_w8 = /* extraout_w8 */ 0;
-    uint extraout_w12 = /* extraout_w12 */ 0;
-    uint extraout_w13 = /* extraout_w13 */ 0;
+    unsigned int extraout_w1 = /* extraout_w1 */ 0;
+    unsigned int extraout_w8 = /* extraout_w8 */ 0;
+    unsigned int extraout_w12 = /* extraout_w12 */ 0;
+    unsigned int extraout_w13 = /* extraout_w13 */ 0;
     long extraout_x8 = /* extraout_x8 */ 0;
     long extraout_x11 = /* extraout_x11 */ 0;
     long extraout_x16 = /* extraout_x16 */ 0;
     long unaff_x19 = /* unaff_x19 */ 0;
-    uint unaff_w20 = /* unaff_w20 */ 0;
+    unsigned int unaff_w20 = /* unaff_w20 */ 0;
 
     sk_x_0034d724();
     sk_x_0040654c();
     sk_x_00377824();
     uVar7 = sk_x_0034ada0();
-    uVar9 = *(uint *)(extraout_x16 + 0x54);
+    uVar9 = *(unsigned int *)(extraout_x16 + 0x54);
     uVar1 = uVar9;
     if (uVar9 < 0x1000) {
         uVar1 = 0xfff;

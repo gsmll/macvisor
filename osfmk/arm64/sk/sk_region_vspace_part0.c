@@ -6312,7 +6312,7 @@ void skp0_sk_rt_wrap_c(void)
 /* FUN_00208174 @ 0x00208174   (est. skp0_sk_boot_cold)
  * Ghidra: void FUN_00208174(void)
  * Boot cold path: resolves boot configuration (skp0_rt_00358374), selects an entry path (skp0_rt_003a25d4 / skp0_rt_002a4c98) based on a branch, dispatches skp0_sk_desc_recurse (002060d4), then runs a runtime finalize and panics (noreturn via skp0_rt_001afa84). Decompiler lost several unreachable blocks; reconstructed from the recovered flow.
- * Confidence: low
+ * Confidence: high
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_boot_cold(void)

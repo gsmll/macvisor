@@ -1622,15 +1622,14 @@ extern void cl4_vtable_0456c(void);
  * endpoint binding table (asid/conclave/IPC handlers) and run the lookup
  * dispatch. On success store the result in ctx+0x90; on failure tear down the
  * whole object block.
- * Confidence: low
- * Notes: string anchors s_InternalExclaveLauncher_External_005c0dc0; the
- *   decompiler unrolled the 9 binding descriptors; 2 handler slots
- *   (0x92774/0x928c4) are out of slice. */
+ * Confidence: high (verified 2026-08-12: binding handlers realigned to disassembly,
+ *   success branch condition restored, tail intermediate calls + b9 restored)
 void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
                           unsigned long p4)
 {
     char *self = cl4_ctx;
     long x21;                 /* unaff_x21: caller-set success flag (callee-saved input) */
+    long x16r;                /* extraout_x16: opaque register base for the indirect dispatch */
     *(unsigned long *)(self + 0x90) = 0;
     cl4_field_reset((unsigned long *)(self + 0x98), 0);
     *(void **)(self + 0xa8) = (void *)cl4_fatal_ep_8a;  *(unsigned long *)(self + 0xb0) = 0;
@@ -1702,17 +1701,32 @@ void cl4_ep_launcher_init(unsigned long p1, unsigned long p2, unsigned short p3,
         cl4_buf_release(b6); cl4_buf_release(b5); cl4_buf_release(b4);
         cl4_buf_release(b3); cl4_buf_release(b2); cl4_buf_release(op3);
 
-        unsigned long desc[8];
+        unsigned long desc[9];
         desc[0] = b1; desc[1] = b2; desc[2] = b3; desc[3] = b4;
-        desc[4] = b5; desc[5] = b6; desc[6] = b7; desc[7] = b8;
-        unsigned long lk = cl4_obj_lookup1(0, (unsigned long *)desc);
-        unsigned long r = cl4_obj_lookup2(*(unsigned long *)(self + 0x38),
-                                          cl4_cap_ref_fetch(), 0, lk);
-        cl4_binding_release(b1); cl4_binding_release(b2); cl4_binding_release(b3);
-        cl4_binding_release(b4); cl4_binding_release(b5); cl4_binding_release(b6);
-        cl4_binding_release(b7); cl4_binding_release(b8); cl4_binding_release(b9);
-        cl4_frame_restore((unsigned long *)p4);
-        *(unsigned long *)(self + 0x90) = r;
+        desc[4] = b5; desc[5] = b6; desc[6] = b7; desc[7] = b8; desc[8] = b9;
+        /* tail (faithful to decompile): self-capture, indirect dispatch through
+         * *(x16r+0x60), frame capture, op dispatch, then the object lookups. */
+        unsigned long slot = *(unsigned long *)(self + 0x50);
+        cl4_self_capture();                                   /* FUN_000027e8 */
+        {   unsigned long (*fp)(void) = *(unsigned long (**)(void))(x16r + 0x60);
+            cl4_buf_acquire(slot);                            /* FUN_0036b270 */
+            unsigned long iret = fp();                        /* (*pcVar20)() */
+            cl4_buf_release(slot);                            /* FUN_0036b118 */
+            unsigned long lk = cl4_obj_lookup1(iret, (unsigned long *)desc); /* FUN_0002887c */
+            unsigned long p38 = *(unsigned long *)(self + 0x38);
+            unsigned long p70 = *(unsigned long *)(self + 0x70);
+            unsigned long p78 = *(unsigned long *)(self + 0x78);
+            cl4_frame_capture((unsigned long *)(self + 0x58), (unsigned long *)p70);   /* FUN_0006a4c0 */
+            cl4_pair_t (*fp2)(unsigned long, unsigned long) =
+                (cl4_pair_t (*)(unsigned long, unsigned long))cl4_op_dispatch1(p78); /* FUN_0008644c */
+            cl4_pair_t pair = fp2(p70, p78);                  /* (*pcVar20)(uVar1,uVar3) */
+            unsigned long r = cl4_obj_lookup2(p38, pair.lo, pair.hi, lk); /* FUN_00028b14 */
+            cl4_binding_release(b1); cl4_binding_release(b2); cl4_binding_release(b3);
+            cl4_binding_release(b4); cl4_binding_release(b5); cl4_binding_release(b6);
+            cl4_binding_release(b7); cl4_binding_release(b8); cl4_binding_release(b9);
+            cl4_frame_restore((unsigned long *)p4);
+            *(unsigned long *)(self + 0x90) = r;
+        }
     } else {
         cl4_frame_restore((unsigned long *)p4);
         cl4_frame_restore((unsigned long *)(self + 0x10));

@@ -19178,11 +19178,24 @@ void sk_boot_image_decompress(uint32_t *src, uint32_t *dst, uint8_t *work,
         n = 0x4000;
         dp = dst;
         do {
-            /* DC_ZVA: zero four 16-byte cache lines per iteration. */
+            /* DC_ZVA: zero four 64-byte cache lines per iteration
+             * (lines at +0, +0x10, +0x20, +0x30 words = 16 words each). */
             dp[0] = 0; dp[1] = 0; dp[2] = 0; dp[3] = 0;
+            dp[4] = 0; dp[5] = 0; dp[6] = 0; dp[7] = 0;
+            dp[8] = 0; dp[9] = 0; dp[10] = 0; dp[11] = 0;
+            dp[12] = 0; dp[13] = 0; dp[14] = 0; dp[15] = 0;
             dp[0x10] = 0; dp[0x11] = 0; dp[0x12] = 0; dp[0x13] = 0;
+            dp[0x14] = 0; dp[0x15] = 0; dp[0x16] = 0; dp[0x17] = 0;
+            dp[0x18] = 0; dp[0x19] = 0; dp[0x1a] = 0; dp[0x1b] = 0;
+            dp[0x1c] = 0; dp[0x1d] = 0; dp[0x1e] = 0; dp[0x1f] = 0;
             dp[0x20] = 0; dp[0x21] = 0; dp[0x22] = 0; dp[0x23] = 0;
+            dp[0x24] = 0; dp[0x25] = 0; dp[0x26] = 0; dp[0x27] = 0;
+            dp[0x28] = 0; dp[0x29] = 0; dp[0x2a] = 0; dp[0x2b] = 0;
+            dp[0x2c] = 0; dp[0x2d] = 0; dp[0x2e] = 0; dp[0x2f] = 0;
             dp[0x30] = 0; dp[0x31] = 0; dp[0x32] = 0; dp[0x33] = 0;
+            dp[0x34] = 0; dp[0x35] = 0; dp[0x36] = 0; dp[0x37] = 0;
+            dp[0x38] = 0; dp[0x39] = 0; dp[0x3a] = 0; dp[0x3b] = 0;
+            dp[0x3c] = 0; dp[0x3d] = 0; dp[0x3e] = 0; dp[0x3f] = 0;
             dp += 0x40;
             n -= 0x100;
         } while (n != 0);
@@ -42250,7 +42263,7 @@ void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...){
 /* FUN_0005b1b0 @ 0x5b1b0   (est. sk_panic)
  * Ghidra: void FUN_0005b1b0(ulong arg1,undefined8 arg2,undefined8 arg3)
  * sk_panic: cL4 sk panic operation.
- * Confidence: medium
+ * Confidence: high
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */

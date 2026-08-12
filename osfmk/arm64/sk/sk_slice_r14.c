@@ -63,17 +63,19 @@ extern void sk_h_003f9234(void);                                     /* FUN_003f
 extern cl4_result_t sk_h_0001a1c8(word_t a, word_t b, word_t c);     /* thunk_FUN_0001a1c8 */
 extern word_t sk_h_0025177c(void);                                   /* FUN_0025177c */
 extern void sk_h_0035860c(void);                                     /* FUN_0035860c */
+extern cl4_result_t sk_h_0035860c_pair(void);                        /* FUN_0035860c (16-byte reg pair) */
+extern word_t sk_h_003f5c64();                                       /* FUN_003f5c64 (capacity probe) */
 extern void sk_h_0034bb84(void);                                     /* FUN_0034bb84 */
 extern void sk_h_001a8564(void);                                     /* FUN_001a8564 */
 extern void sk_h_00351db4(void);                                     /* FUN_00351db4 */
 
 /* Message-buffer getters / capacity checks. */
-extern void sk_h_003f5ee8(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f5ee8 */
+extern word_t sk_h_003f5ee8(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f5ee8 */
 extern void sk_h_003f60e4(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f60e4 */
 extern word_t sk_h_003f5cf0(void);                                   /* FUN_003f5cf0 (capacity cap) */
 extern word_t sk_h_003f5e68(void);                                   /* FUN_003f5e68 */
 extern word_t sk_h_003f5e78(word_t a, word_t b);                     /* FUN_003f5e78 */
-extern word_t sk_h_003f5c00(word_t a);                               /* FUN_003f5c00 */
+extern word_t sk_h_003f5c00();                                /* FUN_003f5c00 (varargs) */
 extern void sk_h_003f5c54(void);                                     /* FUN_003f5c54 */
 extern cl4_result_t sk_h_003f5cc4(void);                             /* FUN_003f5cc4 (16-byte) */
 extern void sk_h_003f55a0(word_t a, word_t b, word_t c);             /* FUN_003f55a0 */
@@ -100,7 +102,7 @@ extern void sk_h_0040633c(void);                                     /* FUN_0040
 extern void sk_h_00406310(word_t code);                              /* FUN_00406310 (error trap w/ code) */
 extern void sk_h_004063f4(word_t code);                              /* FUN_004063f4 (error trap w/ code) */
 extern void sk_h_004070cc(void);                                     /* FUN_004070cc */
-extern void sk_h_00408238(void);                                     /* FUN_00408238 (context/cap getter) */
+extern word_t sk_h_00408238(void);                                     /* FUN_00408238 (context/cap getter) */
 extern void sk_h_00347da8(void);                                     /* FUN_00347da8 (fatal prelude) */
 extern void sk_h_003504b8(void);                                     /* FUN_003504b8 (fatal prelude) */
 extern void sk_h_001afa84(void) __attribute__((noreturn));           /* FUN_001afa84 (fatal, noreturn) */
@@ -154,8 +156,10 @@ void sk_f_00404ac0(word_t param_1, word_t param_2, word_t *param_3,
                    word_t param_4, word_t param_5)
 {
     cl4_result_t key;
-    word_t out1, out8, out9, out16;
+    word_t out1, out8, out16;
     word_t out12;
+    void (*out9)(void);    /* extraout_x9 (register-held code ptr) */
+    void (*out8p)(void);   /* extraout_x8_00 (register-held code ptr) */
 
     key = sk_h_00351da8();
     sk_h_0034b7e4(key.hi, key.lo, key.lo);
@@ -165,9 +169,11 @@ void sk_f_00404ac0(word_t param_1, word_t param_2, word_t *param_3,
     /* spill to a 16-byte-aligned frame; offset depends on out12 register. */
     (void)out12;
     sk_h_00350624((void *)(out12 & ~0xfU));
-    sk_h_00407d44_out9(out9);
+    /* indirect tail calls through register-held code pointers (extraout_x9 /
+     * extraout_x8_00) */
+    out9();
     sk_h_003504c4(*(word_t *)(out16 + 0x20));
-    sk_h_00407d44_out8(out8);
+    out8p();
 }
 
 /* FUN_00404b8c @ 0x00404b8c  (est. sk_f_00404b8c_reserved_syscall)
@@ -191,14 +197,17 @@ void sk_f_00404b8c(void)
  */
 void sk_f_00404ba4(void)
 {
-    word_t info = sk_h_0035860c_msg_info(NULL);
-    word_t info2 = 0, val;
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    long x16;                    /* extraout_x16 (vtable, register artifact) */
+    word_t info, val;
+    void (*vcall)(word_t, word_t, word_t); /* (**(code **)(x16+0x10)) */
 
     sk_h_00407170();
-    info = sk_h_0035860c_get(ctx + 0x10);
-    val = sk_h_003f5c00(sk_h_0035860c_get(ctx + 0x18));
+    info = *(word_t *)(ctx + 0x10);
+    val = sk_h_003f5c00(*(word_t *)(ctx + 0x18));
     sk_h_003509c8(info, val, val);
-    sk_h_00407d44_vtable_x16_10(info);
+    vcall = *(void (**)(word_t, word_t, word_t))(x16 + 0x10);
+    vcall(0, 0, info);           /* (**(code **)(x16+0x10))(x8,x1,info) */
 }
 
 /* FUN_00404c08 @ 0x00404c08  (est. sk_f_00404c08)
@@ -211,11 +220,14 @@ void sk_f_00404ba4(void)
  */
 void sk_f_00404c08(void)
 {
-    long *slot = (long *)(ctx + 0x18);
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    uint8_t *out_x22;            /* unaff_x22 (output byte ptr, register artifact) */
+    long *slot;
     word_t candidate;
     uint8_t flag;
 
     sk_h_0035860c();
+    slot = (long *)(ctx + 0x18);
     candidate = sk_h_003f5e68();
     if (candidate == 0 || candidate == *(word_t *)(slot + 1)) {
         flag = 0;
@@ -232,6 +244,7 @@ void sk_f_00404c08(void)
  * Thin wrapper that forwards to FUN_00404e60 (message-cap transfer).
  * Confidence: medium
  */
+void sk_f_00404e60(word_t param_1, word_t param_2, word_t *param_3); /* fwd */
 void sk_f_00404c60(void)
 {
     sk_f_00404e60(0, 0, NULL);
@@ -250,12 +263,13 @@ void sk_f_00404c60(void)
  */
 void sk_f_00404c78(word_t *param_1, word_t *param_2)
 {
+    long ctx;                              /* unaff_x20 (context, register artifact) */
     long offset = (long)param_2[2];          /* @ +0x10 */
-    ulong total = (ulong)param_2[1] + (ulong)offset;  /* base @ +8 */
+    unsigned long total = (unsigned long)param_2[1] + (unsigned long)offset;  /* base @ +8 */
 
     if ((long)total >= 0) {
         word_t cap = *(word_t *)(ctx + 0x18);
-        ulong size = sk_h_003f5cf0();
+        unsigned long size = sk_h_003f5cf0();
         if (total <= size) {
             size = total;
         }
@@ -329,6 +343,7 @@ void sk_f_00404d54(word_t param_1, word_t param_2, word_t param_3)
  */
 void sk_f_00404d84(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     cl4_result_t v;
 
     v = sk_h_0035860c_pair();
@@ -374,6 +389,7 @@ void sk_f_00404dc8(void)
  */
 void sk_f_00404e60(word_t param_1, word_t param_2, word_t *param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t x21 = ((void (*)(void))(*(word_t *)(ctx + 0x20)))();
     if (x21 != 0) {
         *param_3 = x21;
@@ -388,6 +404,8 @@ void sk_f_00404e60(word_t param_1, word_t param_2, word_t *param_3)
  */
 void sk_f_00404e98(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    word_t *out_x22;             /* unaff_x22 (output ptr, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
     word_t cap;
 
@@ -408,6 +426,7 @@ void sk_f_00404e98(void)
  */
 void sk_f_00404ed8(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     long slot = *(long *)(ctx + 0x18);
     word_t w0[4];
     uint8_t more = 0;
@@ -434,12 +453,14 @@ void sk_f_00404ed8(void)
  */
 void sk_f_00404f60(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    cl4_result_t *out_x22_pair;  /* unaff_x22 (16-byte output ptr, reg artifact) */
     word_t *ctx_words = (word_t *)ctx;
     cl4_result_t r;
 
     sk_h_0035860c();
     r = sk_h_0001a1c8(ctx_words[0], ctx_words[1], *(word_t *)(ctx + 0x10));
-    out_x22_pair = r;
+    out_x22_pair[0] = r;
 }
 
 /* FUN_00404f98 @ 0x00404f98  (est. sk_f_00404f98)
@@ -450,6 +471,8 @@ void sk_f_00404f60(void)
  */
 void sk_f_00404f98(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    word_t *out_x22;             /* unaff_x22 (output ptr, register artifact) */
     long slot = *(long *)(ctx + 0x10);
     word_t cap;
 
@@ -473,6 +496,7 @@ void sk_f_00404f98(void)
  */
 void sk_f_00404fdc(word_t param_1)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t w0[4];
     uint8_t more = 0;
     word_t g;
@@ -502,6 +526,7 @@ void sk_f_00404fdc(word_t param_1)
  */
 void sk_f_00405088(word_t param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t out1 = 0;
 
     sk_h_00407170();
@@ -523,11 +548,15 @@ void sk_f_00405088(word_t param_1, word_t param_2, word_t param_3)
  */
 void sk_f_004050b4(word_t param_1, word_t param_2, word_t *param_3)
 {
-    long ctxbuf = (long)(ctx + 0x10);
-    long end = (long)param_3[1] + *(long *)(ctxbuf);
+    long ctx;                    /* unaff_x20 (context, register artifact) */
+    long ctxbuf;                 /* lVar3 from FUN_00408238 (context getter) */
+    long end;
     word_t flag = 0;
     word_t out8;
+    word_t x21;                  /* unaff_x21 (callee-saved register result) */
 
+    ctxbuf = (long)sk_h_00408238();
+    end = (long)param_3[1] + *(long *)(ctxbuf + 0x10);
     if (end < 0) {
         sk_h_0040633c();
         sk_h_001afa84();      /* noreturn */
@@ -536,15 +565,14 @@ void sk_f_004050b4(word_t param_1, word_t param_2, word_t *param_3)
         word_t slot_cap = *(word_t *)(ctx + 0x18);
         if ((long)*param_3 < end) {
             flag = 1;
-        } else if (end < *(long *)(ctxbuf)) {
+        } else if (end < *(long *)(ctxbuf + 0x10)) {
             sk_h_00347da8();
             sk_h_003504b8();
             sk_h_001afe4c();  /* noreturn */
         } else {
             void (*handler)(word_t) = *(void (**)(word_t))(ctx + 0x20);
-            word_t x21;
             sk_h_003f5c64();
-            x21 = handler(out8);
+            handler(out8);
             if (x21 != 0) {
                 return;
             }

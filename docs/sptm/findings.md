@@ -3835,3 +3835,9 @@ Confidence: Medium.
 - **Evidence**: decompiles (curl 127.0.0.1:8089): 59 bodies are `return;`; ASCII literals 0x6963676e61726177 (warangic) etc.; the rest are store/copy patterns over unaff_x19/x20 offsets and one-word forwards to the listed callees. Compiles 0 errors.
 - **Severity (hypothesis)**: informational — a static data/accessor table in the GL1 microkernel's string layer; the script-name constants are inert. No observed weakness; the region is a low-value audit target.
 - **Confidence**: high
+
+## [cL4-sk] 0x00091550 cl4_ep_launcher_init — endpoint binding handlers misaligned in recreation
+- **Observation**: The recreated endpoint-launcher registered its 9 bindings with handlers shifted by one from binding 4 onward (b3 got cl4_op_call0 when both b2/b3 use the caller-set d8 handler; b4-b8 each got the NEXT binding's handler; b9 referenced an undefined cl4_ep_send4). The success branch was also dead-coded (`if(0)` instead of `unaff_x21==0`) and the descriptor dropped b9. Binding an endpoint to the wrong dispatch handler would route capability/object operations to the wrong callback.
+- **Evidence**: disassembly of FUN_00091550 binding loop: B1 handler 0x91f8c; B2/B3 `stur d8` (caller-set, same value); B4=0x92270, B5=0x92394, B6=0x924d4, B7=0x9261c, B8=0x92774, B9=0x928c4 (adrp/add pacia'd loads); tags 0x939fc..0x93a58 and strings 0x65fd60..0x65fea0. Fixed in sk_region_caps_04.c.
+- **Severity (hypothesis)**: medium — a mis-registered endpoint binding could invoke the wrong handler for a launcher op; recreation-correctness issue now aligned to ground truth.
+- **Confidence**: high (ground truth is the disassembly constant loads).

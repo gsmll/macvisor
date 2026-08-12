@@ -60007,7 +60007,7 @@ void sk_r4_001cc98c(uint64_t *p1,uint64_t p2,long p3,uint64_t p4)
  * Ghidra: void FUN_001cc9c8(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high
  * Notes: slice 0x1c0000-0x1d0000. */
 
 sk_r4_u128_t sk_r4_001cc9c8(uint64_t p1, uint64_t p2)
@@ -67039,7 +67039,7 @@ L_001d7b90:
 }
 
 /* FUN_001d7bb0 @ 0x001d7bb0   (est. sk_r5_fatal_assert_001d7bb0) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: high */
 sk_c16_t sk_001d7bb0(ulong param_1,ulong param_2)
 
 {

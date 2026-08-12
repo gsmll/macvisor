@@ -791,15 +791,15 @@ void exclave_region_load(unsigned long *component, unsigned long *table, unsigne
         }
         cL4_page_store(base, vaddr, page);
         unsigned long lr = cL4_log_begin();
-        cL4_log_msg(&LAB_000f6488, 0, s__AppleInternal_Library_BuildRoot_005c1d70, 0xfa, 2, 0x145, lr, 0);
+        unsigned long lr_hi = reg_x1;
+        cL4_log_msg(&LAB_000f6488, 0, s__AppleInternal_Library_BuildRoot_005c1d70, 0xfa, 2, 0x145, lr, lr_hi);
         (**(void (**)(unsigned long, unsigned long))(*pages + 0x90))(off, page);
         cL4_page_release(page);
         cL4_page_teardown(page);
         off += 0x4000;
     }
-    unsigned long pair[2] = {(**(unsigned long (**)(void))(*pages + 0xe0))(),
-                             (**(unsigned long (**)(void))(*pages + 0xe4))()};
-    unsigned long lo = pair[0], hi = pair[1];
+    cl4_result_t range_res = (**(cl4_result_t (**)(void))(*pages + 0xe0))();
+    unsigned long lo = range_res.lo, hi = range_res.hi;
     if ((long)hi < 0)
         __builtin_trap();           /* 0xa4da8 */
     unsigned long range_end;
@@ -886,13 +886,14 @@ void exclave_region_load(unsigned long *component, unsigned long *table, unsigne
         return;
     }
     cL4_obj_retain(si);
-    unsigned long mag = cL4_hash_pair(0x4e454e4153415f5f, 0xed000044454c4241);
-    if ((mag & 1) == 0) {
+    unsigned long mag_lo = cL4_hash_pair(0x4e454e4153415f5f, 0xed000044454c4241);
+    unsigned long mag_hi = reg_x1;
+    if ((mag_hi & 1) == 0) {
         cL4_error_tag(si, 2);
         cL4_obj_release(0);
         return;
     }
-    long owner = *(long *)(*(long *)(si + 0x38) + mag * 0x20);
+    long owner = *(long *)(*(long *)(si + 0x38) + mag_lo * 0x20);
     cL4_obj_retain(owner);
     cL4_error_tag(si, 2);
     if (owner == 0) {
@@ -902,22 +903,20 @@ void exclave_region_load(unsigned long *component, unsigned long *table, unsigne
     cL4_obj_release(owner);
     if ((**(unsigned long (**)(void))(*table + 0xa0))() & 1) {
         void (*ctxfn)(void) = *(void (**)(void))(*node + 0xd8);
-        unsigned long ctxpair[2] = {((unsigned long (*)(unsigned long))ctxfn)((unsigned long)node & 0xffffffffffff | 0x6ae1000000000000),
-                                    ((unsigned long (*)(unsigned long))ctxfn)((unsigned long)node & 0xffffffffffff | 0x6ae1000000000000 + 8)};
+        cl4_result_t ctxpair = ((cl4_result_t (*)(unsigned long))ctxfn)((unsigned long)node & 0xffffffffffff | 0x6ae1000000000000);
         cL4_macho_walk(&local_frame);
         unsigned long cmd = cL4_macho_cmd_a();
         unsigned long magic = cL4_macho_magic();
         unsigned long ctx = cL4_ctx_handle_alt();
         ctx = cL4_block_alloc(ctx, 0x48, 7);
-        unsigned long c1 = cL4_exclave_ctx(ctxpair[0], ctxpair[1], elems, cmd, magic, have_saned, ctx);
+        unsigned long c1 = cL4_exclave_ctx(ctxpair.lo, ctxpair.hi, elems, cmd, magic, have_saned, ctx);
         cL4_obj_retain(0);
-        unsigned long epair[2] = {((unsigned long (*)(void))ctxfn)(),
-                                  ((unsigned long (*)(void))ctxfn)()};
+        cl4_result_t epair = ((cl4_result_t (*)(void))ctxfn)();
         cL4_msg_copy(task_ctx + 0x30, &local_frame, 0x21, 0);
-        unsigned long bind = cL4_exclave_bind(c1, epair[0], epair[1]);
+        unsigned long bind = cL4_exclave_bind(c1, epair.lo, epair.hi);
         cL4_msg_finish(&local_frame);
         cL4_obj_release(pages);
-        cL4_error_tag(epair[1]);
+        cL4_error_tag(epair.hi);
         cL4_obj_release(c1);
         cL4_obj_release(bind);
         return;
