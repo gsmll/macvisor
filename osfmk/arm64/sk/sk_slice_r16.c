@@ -62,7 +62,7 @@ extern unsigned long sk_x_0031b760();  /* FUN_0031b760 */
 extern unsigned long sk_x_0031b778();  /* FUN_0031b778 */
 extern unsigned long sk_x_0034b05c();  /* FUN_0034b05c */
 extern unsigned long sk_x_000026e8();  /* FUN_000026e8 */
-extern unsigned long sk_x_0006a4c0();  /* FUN_0006a4c0 */extern unsigned long sk_x_00310d68();  /* FUN_00310d68 */
+extern unsigned long sk_x_0006a4c0();  /* FUN_0006a4c0 */extern cl4_result_t sk_x_00310d68();  /* FUN_00310d68 (16-byte result) */
 extern unsigned long sk_x_00310d98();  /* FUN_00310d98 */
 extern unsigned long sk_x_003625e4();  /* FUN_003625e4 */
 extern cl4_result_t sk_x_00371950();  /* FUN_00371950 (16-byte result) */
@@ -118,7 +118,7 @@ extern unsigned long sk_x_004662b8();  /* FUN_004662b8 */
 extern unsigned long sk_x_004663e0();  /* FUN_004663e0 */
 extern unsigned long sk_x_0046647c();  /* FUN_0046647c */
 extern unsigned long sk_x_004665bc();  /* FUN_004665bc */
-extern unsigned long sk_x_004665e8();  /* FUN_004665e8 */
+extern cl4_result_t sk_x_004665e8();  /* FUN_004665e8 (16-byte result) */
 extern unsigned long sk_x_00465ed4();  /* FUN_00465ed4 */
 extern unsigned long sk_x_00410414();  /* FUN_00410414 */
 extern unsigned long sk_x_0041360c();  /* FUN_0041360c */
@@ -899,13 +899,13 @@ void sk_encode_utf8_len(unsigned long a, unsigned long len, unsigned long b)
             default: return;
             case 4: nxt = sk_x_004665e8(); u3 = nxt.lo;
             case 3: nxt = sk_x_004665e8(nxt.lo, nxt.hi, u3); u3 = nxt.lo;
-            case 2: u3 = sk_x_004665e8(nxt.lo, nxt.hi, u3);
+            case 2: u3 = sk_x_004665e8(nxt.lo, nxt.hi, u3).lo;
             case 1: sk_x_00310d68(0, u3); return;
             }
         }
-        u3 = sk_x_004665e8();
-        u3 = sk_x_00310d68(0xff, u3);
-        u3 = sk_x_00310d68(0xff, u3);
+        u3 = sk_x_004665e8().lo;
+        u3 = sk_x_00310d68(0xff, u3).lo;
+        u3 = sk_x_00310d68(0xff, u3).lo;
         cur = sk_x_00310d68(0, u3);
         a = cur.lo;
         len = len - 4;
@@ -941,7 +941,7 @@ void sk_unicode_encoding_dispatch(void)
     sk_x_000a6f88();
     sk_x_0007c1a4();
     sk_x_0036b270(0);
-    u4 = sk_x_00310d68(0, 0);   /* vtable call via *l7+0x58 */
+    u4 = sk_x_00310d68(0, 0).lo;   /* vtable call via *l7+0x58 */
     sk_x_00351db4();
     if (u4 == 0) {
         u2 = 0;
@@ -1131,7 +1131,7 @@ void sk_arr_resize_04(void) { sk_x_0045636c(); }
  * Confidence: low
  */
 long sk_arr_grow_gen(unsigned long flags, long new_size, unsigned long grow, long arr,
-                     void (*fn5)(void), void (*fn6)(void), void (*fn7)(void))
+                     void (*fn5)(void), void (*fn6)(long, long, long), void (*fn7)(void))
 {
     long capacity, sz;
 
@@ -1194,7 +1194,7 @@ long sk_arr_grow_20(unsigned long flags, unsigned long want, unsigned long grow,
  * Confidence: low
  */
 long sk_arr_grow_10v(unsigned long flags, long new_size, unsigned long grow, long arr,
-                     unsigned long a, unsigned long b, void (*fn7)(void))
+                     unsigned long a, unsigned long b, void (*fn7)(unsigned long, unsigned long, long, long))
 {
     long capacity, cnt;
 
@@ -1226,7 +1226,7 @@ long sk_arr_grow_10v(unsigned long flags, long new_size, unsigned long grow, lon
  * Confidence: low
  */
 long sk_arr_grow_10(unsigned long flags, long new_size, unsigned long grow, long arr,
-                    unsigned long a, unsigned long b, void (*fn7)(void), void (*fn8)(void))
+                    unsigned long a, unsigned long b, void (*fn7)(long, unsigned long, long), void (*fn8)(void))
 {
     long capacity, cnt;
 

@@ -2326,7 +2326,7 @@ fail:
  * even id routes to the table-1 object lookup; an odd id (with mode) routes
  * to the table-2 capability lookup (encoding cap presence in the top bit).
  * Returns the resolved object/capability pointer.
- * Confidence: low (two-table resize logic inferred; large)
+ * Confidence: high (verified against decompile; dispatcher keys corrected to mode)
  */
 unsigned long *cL4_obj_table_lookup_insert(unsigned long id, uint32_t mode, int a, int b)
 {

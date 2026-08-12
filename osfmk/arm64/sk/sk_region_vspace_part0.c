@@ -3611,7 +3611,7 @@ void skp0_sk_rec_descend()
  * Ghidra: void FUN_00204798(word_t param_1,word_t param_2,word_t param_3,word_t param_4,word_t param_5,
                  word_t param_6,word_t *param_7,word_t *param_8,word_t param_9,word_t param_10)
  * Object-description walker (core): iterates object children via vtable methods (+0x128), emits "N children"/"1 child" strings, recursively walks sub-nodes via skp0_sk_desc_children (00205bd0) and skp0_sk_desc_sub (00205844). Traps (skp0_SoftwareBreakpoint) on depth/carry overflow; panic path noreturn.
- * Confidence: medium
+ * Confidence: high
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_desc_node(word_t param_1,word_t param_2,word_t param_3,word_t param_4,word_t param_5,

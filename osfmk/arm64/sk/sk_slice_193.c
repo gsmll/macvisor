@@ -1576,12 +1576,14 @@ void sk_re_write_delim4(void)
 void sk_re_write_delim5(void)
 {
         /* Inputs arrive in preserved register x20 (unaff_x20): a 5-word
-         * record whose low byte of word 4 selects the diagnostic kind. */
-        word_t k1;      /* uVar11 = unaff_x20[0] */
-        word_t k2;      /* uVar1  = unaff_x20[1] */
-        word_t k3;      /* uVar6  = unaff_x20[2] */
-        word_t k4;      /* uVar2  = unaff_x20[3] */
-        byte kind;      /* (char)unaff_x20[4] */
+         * record whose low byte of word 4 selects the diagnostic kind. The
+         * x20 record is recovered here from the caller frame (as the
+         * decompiler's unaff_x20 register has no C expression). */
+        word_t k1 = *(word_t*)(__builtin_frame_address(0) + 0);
+        word_t k2 = *(word_t*)(__builtin_frame_address(0) + 8);
+        word_t k3 = *(word_t*)(__builtin_frame_address(0) + 0x10);
+        word_t k4 = *(word_t*)(__builtin_frame_address(0) + 0x18);
+        byte kind = *(byte*)(__builtin_frame_address(0) + 0x20);
         word_t uVar7;
         word_t uVar12;
         word_t uVar10;
@@ -1590,10 +1592,7 @@ void sk_re_write_delim5(void)
         sw128_t auVar3;
         word_t uVar4 = sw_466568(0);
 
-        (void)k4; (void)auVar14;
-        /* k1..k4 + kind loaded from the x20 record (transcribed as the
-         * caller-passed record; exact load-site is the decompiler's x20). */
-        k1 = 0; k2 = 0; k3 = 0; k4 = 0; kind = 0;
+        (void)uVar12; (void)uVar10; (void)auVar3; (void)uVar7;
 
         switch (kind) {
         default:
@@ -1877,8 +1876,8 @@ e1e8:
                         goto e444;
                 }
                 if (k1 == 2 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
-                        /* falls through to e554 */
-                        goto e554;
+e554:
+                        sw_463944(0);
                 } else {
                         if (k1 == 3 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
                                 sw_463944(0);
@@ -1940,11 +1939,10 @@ e1e8:
                                         }
                                         goto e444;
                                 }
+                                sw_463944(0);   /* k1 == 0x11 && all-zero */
                         }
-                        sw_463944(0);
+                        sw_463944(0);   /* k1 == 7 && all-zero (skip inner if) */
                 }
-e554:
-                sw_463944(0);
                 goto e444;
         }
         sw_462ed8(0);

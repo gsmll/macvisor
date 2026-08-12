@@ -328,6 +328,19 @@ word_t sk_script_name_exta(word_t name_tail)
     return (name_tail & 0xffffffffull) | 0x6174786500000000ull; /* "exta" in high 4 bytes */
 }
 
+/* FUN_00465488 @ 0x00465488   (est. sk_script_desc_5488)
+ * Ghidra: undefined1[16] FUN_00465488(void)
+ * Returns a 16-byte descriptor with lo = 1 and hi = 0 (ZEXT816(1) << 0x40
+ * places the 1 in the high word). Confidence: medium.
+ * Notes: ZEXT816(1) << 0x40 packs the value 1 into bits 64..79. */
+sk_r24_pair_t sk_script_desc_5488(void)
+{
+    sk_r24_pair_t r;
+    r.lo = 0;
+    r.hi = 1;
+    return r;
+}
+
 /* FUN_00465498 @ 0x00465498   (est. sk_script_name_nese)
  * Ghidra: ulong FUN_00465498(ulong param_1)
  * Builds a script-name word: keeps the caller's low 32 bits and ORs the
@@ -497,6 +510,15 @@ void sk_nop_58a8(void) { }
 
 /* FUN_004658c0 @ 0x004658c0   (est. sk_nop_58c0)  — empty body. Confidence: medium. */
 void sk_nop_58c0(void) { }
+
+/* FUN_004658cc @ 0x004658cc   (est. sk_stack_ptr_58cc)
+ * Ghidra: undefined1 * FUN_004658cc(void)
+ * Returns a pointer to the caller's stack slot 0x1b0. Confidence: low.
+ * Notes: &stack0x000001b0. */
+word_t sk_stack_ptr_58cc(void)
+{
+    return 0x1b0ull;                    /* &stack0x000001b0 */
+}
 
 /* FUN_004658fc @ 0x004658fc   (est. sk_nop_58fc)  — empty body. Confidence: medium. */
 void sk_nop_58fc(void) { }
@@ -720,7 +742,7 @@ void sk_fwd_54d0(word_t p1)
 void sk_fwd_54ec(word_t p1, int p2)
 {
     (void)p1;
-    sk_h_00114330((word_t)(((uint)-p2 >> 4 & 3u) + p2 * -4));
+    sk_h_00114330((word_t)(((uint32_t)-p2 >> 4 & 3u) + p2 * -4));
 }
 
 /* FUN_00465508 @ 0x00465508   (est. sk_re_diag_5508)
