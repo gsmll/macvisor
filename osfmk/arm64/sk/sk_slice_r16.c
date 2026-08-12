@@ -20,7 +20,7 @@
  * their bodies are reconstructed by the range worker that owns them. ---- */
 extern unsigned long sk_x_001e9c78();  /* FUN_001e9c78 */
 extern unsigned long sk_x_0022d2f4();  /* FUN_0022d2f4 */
-extern unsigned long sk_x_0029ba8();   /* FUN_002a9ba8 */
+extern unsigned long sk_x_002a9ba8();  /* FUN_002a9ba8 */
 extern unsigned long sk_x_002b141c();  /* FUN_002b141c */
 extern unsigned long sk_x_002b5ba0();  /* FUN_002b5ba0 */
 extern unsigned long sk_x_002298d4();  /* FUN_002298d4 (release/mark) */
@@ -158,6 +158,14 @@ extern unsigned long sk_x_0045d2e4();  /* FUN_0045d2e4 */
 
 /* Software breakpoint for guard-rail traps (Ghidra SoftwareBreakpoint(1, addr)). */
 extern void sk_sw_breakpoint(unsigned long, unsigned long); /* brk #imm */
+
+/* Forward declarations for functions defined later in this file (called
+ * before their definitions below). */
+void sk_unicode_language_apply(unsigned long a, unsigned long b, unsigned long c, unsigned long d);
+void sk_unicode_language_row(unsigned long a, unsigned long *b, unsigned long c);
+unsigned long sk_arr_move_20(long start, long end, unsigned long dst, long arr);
+unsigned long sk_arr_move_18(long start, long end, unsigned long dst, long arr);
+static char sk_class_byte(unsigned long a, unsigned long b, unsigned long cur, unsigned long idx);
 
 /* ===================================================================== *
  * 0x451a10-0x451f24 — Unicode general-category / block-name table layer.

@@ -78,7 +78,7 @@ extern unsigned long sk_x_001a26e0();
 extern unsigned long sk_x_001a8564();
 extern unsigned long sk_x_001afa84();
 extern unsigned long sk_x_001b1780();
-extern unsigned long sk_x_001d88fc();
+extern cl4_result_t sk_x_001d88fc();
 extern unsigned long sk_x_001ee018();
 extern unsigned long sk_x_00208418();
 extern unsigned long sk_x_00213834();
@@ -135,7 +135,8 @@ extern unsigned long sk_x_0036a940();
 extern unsigned long sk_x_0036b118();
 extern unsigned long sk_x_0036b270();
 extern unsigned long sk_x_0036b6ac();
-extern unsigned long sk_x_00376820();
+extern unsigned long sk_x_003f3960();
+extern cl4_result_t sk_x_00376820();
 extern unsigned long sk_x_003a25d4();
 extern unsigned long sk_x_003d4658();
 extern unsigned long sk_x_003eeb6c();
@@ -179,7 +180,7 @@ extern unsigned long sk_x_00407248();
 extern unsigned long sk_x_004072c0();
 extern unsigned long sk_x_00407374();
 extern unsigned long sk_x_00407444();
-extern unsigned long sk_x_00407484();
+extern cl4_result_t sk_x_00407484();
 extern unsigned long sk_x_00407520();
 extern unsigned long sk_x_0040752c();
 extern unsigned long sk_x_0040755c();
@@ -770,7 +771,7 @@ static void sk_op_003efcd0(void)
     uint64_t *frame;
     uint64_t extraout_x17 = 0;   /* extraout_x17 */
 
-    uVar1 = sk_x_00407000();
+    uVar1 = sk_x_00407000().lo;
     sk_x_004081a8();
     frame = (uint64_t *)sk_x_00407ac4();
     *frame = extraout_x17;
@@ -1331,7 +1332,7 @@ static void sk_op_003f0d70(void)
     *frame = extraout_x17;
     frame[1] = (uint64_t)sk_op_003f0e4c;
     sk_op_003efc1c(*(uint64_t *)(ctx + 0x60), *(uint64_t *)(ctx + 0x20),
-                   *(uint64_t *)(ctx + 0x28));
+                   *(uint64_t *)(ctx + 0x28), /* param_4 (register-forwarded) */ 0);
 }
 
 /* FUN_003f0e4c @ 0x003f0e4c   (est. sk_op_003f0e4c)
@@ -1511,7 +1512,7 @@ static void sk_op_003f1534(void)
     *frame = extraout_x17;
     frame[1] = 0x003f15f4;   /* internal continuation label */
     /* UNRECOVERED_JUMPTABLE at 0x003f15f0 */
-    ((void (*)(uint64_t, uint64_t))__builtin_unreachable)(*(uint64_t *)(ctx + 0x140), (uint64_t)(ctx + 0x138));
+    __builtin_unreachable();
 }
 
 /* FUN_003f1744 @ 0x003f1744   (est. sk_op_003f1744)
@@ -1590,7 +1591,7 @@ static void sk_op_003f1a98(void)
     *frame = extraout_x17;
     frame[1] = 0x003f1b58;   /* internal continuation label */
     /* UNRECOVERED_JUMPTABLE at 0x003f1b54 */
-    ((void (*)(uint64_t, uint64_t))__builtin_unreachable)(*(uint64_t *)(ctx + 400), (uint64_t)(ctx + 0x138));
+    __builtin_unreachable();
 }
 
 /* FUN_003f1c40 @ 0x003f1c40   (est. sk_op_003f1c40)
@@ -2083,7 +2084,7 @@ static void sk_op_003f2d58(uint64_t p1, uint64_t p2, int *param_3)
     *frame = (long)ctx;
     frame[1] = (long)0x003f2ea0;   /* internal continuation label */
     /* UNRECOVERED_JUMPTABLE at 0x003f2e9c */
-    ((void (*)(long *, uint64_t))__builtin_unreachable)(frame, uVar2);
+    __builtin_unreachable();
 }
 
 /* FUN_003f3058 @ 0x003f3058   (est. sk_trace_003f3058)
@@ -2250,7 +2251,7 @@ static void sk_trace_003f32d8(uint64_t p1, uint64_t p2, uint64_t p3)
     uint64_t x21 = /* unaff_x21 */ 0;
     uint64_t stackcell = 0;
 
-    sk_x_0040840c(); /* no such call; placeholder removed */
+    sk_x_0008409c(); /* FUN_0008409c — first call of the decompile */
     (void)uVar1;
     uVar2 = 0;
     if (sk_x_0040c9d0() & 1) {
@@ -2765,7 +2766,7 @@ static cl4_result_t sk_trace_003f3a58(void)
     sk_x_002acbb8();
     sk_x_003a25d4(extraout_x1);
     sk_x_002acbb8(0x3e, 0xe100000000000000ULL);
-    sk_trace_003f3b9c(*puVar2, puVar2[1], puVar2[2]);
+    sk_trace_003f3b9c();
     sk_x_002acbb8();
     sk_x_003a25d4(extraout_x1_00);
     result.hi = 0xee003c656761726fULL;

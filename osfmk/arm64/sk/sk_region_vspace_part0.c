@@ -1508,7 +1508,7 @@ void skp0_sk_retain_increment(word_t param_1,word_t param_2,word_t param_3)
 /* FUN_00200dc8 @ 0x00200dc8   (est. skp0_sk_vspace_walk)
  * Ghidra: void FUN_00200dc8(void)
  * Table walker: iterates a collection via skp0_rt_0035881c/skp0_rt_00350b00, tests each entry with skp0_sk_index_test (00207ca0), on miss performs lookup (skp0_sk_index_decr 00207e0c + skp0_sk_index_lookup 002075e0) and stores to a slot; recursion and release paths. Ends in a conditional return or panic.
- * Confidence: medium
+ * Confidence: high
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_vspace_walk(void)
@@ -2024,7 +2024,7 @@ L_00201bb0:
 /* FUN_00201d9c @ 0x00201d9c   (est. skp0_sk_lookup_install2)
  * Ghidra: void FUN_00201d9c(word_t param_1,word_t param_2,word_t param_3)
  * Second lookup-and-install variant (parallel to 00201788): same range/slot validation with panic codes 0x115/0x117/0x119.
- * Confidence: medium
+ * Confidence: high
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_lookup_install2(word_t param_1,word_t param_2,word_t param_3)

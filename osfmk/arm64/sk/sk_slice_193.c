@@ -791,7 +791,7 @@ void sk_re_delim_init(void)
         word_t *arg = (word_t *)__builtin_frame_address(0);
         rec[0] = arg[0]; rec[1] = arg[1]; rec[2] = arg[2];
         rec[3] = arg[3]; rec[4] = arg[4];
-        sw_369efc(rec, 0x685578, 0x682b88);
+        sw_369efc((word_t)(uintptr_t)rec, 0x685578, 0x682b88);
 }
 
 

@@ -44702,7 +44702,7 @@ LAB_001c0788:
       av23 = av25;
     }
 LAB_001c0ae8:
-    sk_swift_release(&stack0xffffffffffffff20);
+    sk_000026e8(&stack0xffffffffffffff20);
     stk_f8 = pppppppuStack_78;
     ax22 = stk_80;
     ax23 = (uint64_t *******)ppppppuStack_88;
