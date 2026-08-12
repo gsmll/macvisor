@@ -600,3 +600,12 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 120 trap thunks 0x004b4424..0x004b5744 -> 4 report/trap printers: 0x0004b478 ("unexpected tb_error_t returned"), 0x0004b488 ("completion block must be called"), 0x0004b454 ("invalid value: unexpected case value"), 0x00118b28 (generic message report).
 - 0x00118b28 -> 0x00118c38 -> 0x001158cc (report/log core). Printers 0x0004b478/488/454 wrap 0x00118b28 with a fixed message.
 - Message strings 0x005b854a..0x005ba950 (TB_ASSERT server->method vtable-NULL / TB_FATAL invalid-error-return / capability-decode asserts) document the TightBeam server method surface.
+
+## SkR42 (0x004b2780-0x004b43f4) — VAS fault/freezer/span-map abort cluster
+- 0x004b2820 / 0x004b3a58 (L4-error prefix printer) -> fmt engine 0x001185ec (format) -> 0x00118c38 (flush) -> 0x001187f4 (newline). Every "Unexpected L4_Error" panic in the slice calls one of these two printers.
+- ~40 VAS-abort shims -> 0x004afae4 (noreturn "VAS abort in function %s at line %d" fatal), each with a distinct invariant message string (0x005b1d3f..0x005b84d5): freezer-bump/revoke, spanmap-change, prepop-missing, fault-entry, rangelock, split-span, etc.
+- Function-name abort shims -> 0x00041184 / 0x00041198 / 0x000411ac / 0x00041170 / 0x000410e4 / 0x00044828 / 0x0004483c / 0x000447f8 / 0x000447dc (noreturn per-source reporters for _handle_fault, _startfault_impl_{managed,cow}, _faulthandler_destroy, _span_asan_usable, vascore__span_holder_get_cap, vas_core_shadow_space_{setup,cap,populate,populate_table}, _alloc_temp_cap, alloc_heap_cap).
+- Supervisor-wait real functions 0x004b2c84/0x004b2eb8/0x004b363c -> CallSupervisor(4) loop on status word; success fast-path 0x000410f8, fail path -> 0x004afae4.
+- 0x004b2de0 (span alloc) -> 0x00032cd0 (vspace layout) -> 0x00043f28 (span alloc/cleanup) -> 0x0003d438 (region map span); owner status spin at +0x68.
+- 0x004b3538 (span cap callback) -> vtable method *(self+0xb8)+0x10; stores pending ptr into *(*(owner+0x28)+8)+0x18.
+- EASM fatals 0x004b42bc..0x004b43f4 -> 0x0004b488 / 0x0004b478 / 0x00118b28 (EASM_C.c) then SoftwareBreakpoint trap.

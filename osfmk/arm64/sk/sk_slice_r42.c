@@ -394,7 +394,7 @@ void sk_r42_004b3768(void)
  * Confidence: high (deterministic counter increment). */
 void sk_r42_004b377c(void)
 {
-    DAT_006ad328 = DAT_006ad328 + 1;
+    sk_stat_cow8 = sk_stat_cow8 + 1;   /* DAT_006ad328 */
 }
 
 /* FUN_004b3790 @ 0x004b3790   (est. sk_vas_stat_006ad324)

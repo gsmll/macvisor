@@ -4278,3 +4278,21 @@ Confidence: high
 - **Evidence**: decompile: `uVar1 = extraout_x9 | extraout_x8<<0x20; if (uVar1 != 0) { FUN_000639a0(...); ... switch(extraout_x16_00){ case 5: "L4 Error: SlotInvalid" ... case 9: "L4 Error: PermissionInvalid" } }`; trailing `FUN_0011d7e8()` stack-check.
 - **Severity (hypothesis)**: low — the decode selects only diagnostic strings (no indirect control flow, no memory access keyed on status), so it is informational; but a status value 10+ bypasses the switch and lands in the default/`FUN_0005c414`/`FUN_0005c4c0` path that re-enters the fault handler — if an out-of-range status can be injected it would re-enter the fault handler rather than panic, an error-recovery divergence worth a caller trace.
 - **Confidence**: low (register-artifact body; decode semantics inferred).
+
+## [SkR42] 0x004b3f24 — spanmap capability probe bounds semantics
+- **Observation**: `sk_vas_spanmap_cap_probe` copies a capability word from `base + *p2` (+1 element) into `*out` only when the element range lies fully inside `[base, end)`, then returns `true` when it is out of bounds. The success-store and the return value use the *negated* bounds test, so on an in-bounds probe the caller receives `false` and the cap is written; on out-of-bounds the caller receives `true` and `*out` is left untouched. Because the caller must already hold the spanmap lock (the `CallSupervisor(4)` wait on the status word), an unchecked `*p2` index would read past `end` — the bounds gate is the only thing preventing an out-of-range cap read.
+- **Evidence**: decompile: `puVar2 = param_3 + *param_2; puVar1 = puVar2 + 1; if ((puVar2 >= param_3 && param_4 >= puVar1) && puVar1 >= puVar2) { *param_5 = *puVar2; } return (puVar2 < param_3 || param_4 < puVar1) || puVar1 < puVar2;`
+- **Severity (hypothesis)**: low — the bounds check is present and correctly gates both the store and the return; no bypass observed. The +1 element (`puVar1`) is only used for the bounds comparison, not dereferenced, so there is no out-of-bounds read. Worth confirming the index `*p2` is itself derived from validated caller input in the fault-table walk.
+- **Confidence**: medium (bounds-check logic unambiguous; index provenance not traced).
+
+## [SkR42] 0x004b2de0 — freezer span allocation without holding a stat lock
+- **Observation**: `sk_vas_span_alloc_bump` does a non-atomic `DAT_006ad398 = DAT_006ad398 + 1` on the freezer-span counter, then allocates a 16 KiB span (FUN_00043f28 + FUN_0003d438) and spins on `CallSupervisor(4)` until the owner's status word at +0x68 clears. The counter increment is a plain read-modify-write on a global with no atomic/fence, so concurrent freezer bumps from multiple vCPUs could lose increments (statistics only, not security control).
+- **Evidence**: decompile: `_DAT_006ad398 = _DAT_006ad398 + 1; uVar1 = FUN_00032cd0(); FUN_00043f28(uVar1,*param_2,0x4000,1,0); FUN_0003d438(*param_2,0x4000,*param_3,0,0); do { CallSupervisor(4); } while (*(long *)(param_4 + 0x68) == 1);`
+- **Severity (hypothesis)**: low — statistics counter; no integrity impact. The status-word spin is the actual synchronization and is correct.
+- **Confidence**: high (global increment + supervisor-wait clearly rendered).
+
+## [SkR42] 0x004b42bc..0x004b43f4 — EASM_C.c fatal path uses SoftwareBreakpoint fail-closed
+- **Observation**: The nine EASM fatal shims each report via an EASM_C.c reporter (FUN_0004b488 / FUN_0004b478 / FUN_00118b28) and then execute `SoftwareBreakpoint(1, <return-addr>)` — a fail-closed trap that never returns. All abort/panic shims in this slice (VAS abort, Unexpected L4_Error, function-name reporters) are noreturn and end in a fatal reporter; none return a recoverable error to a caller, so an invariant violation in the VAS fault/freezer layer terminates the faulting context rather than continuing with a corrupted span map.
+- **Evidence**: decompile: `FUN_0004b488(s_EASM_C_c_005b8541); pcVar1 = (code *)SoftwareBreakpoint(1,0x4b42e0); (*pcVar1)();` (same shape for all nine).
+- **Severity (hypothesis)**: low (informational) — consistent fail-closed design is good; no bypass observed.
+- **Confidence**: high (all nine bodies deterministic noreturn).
