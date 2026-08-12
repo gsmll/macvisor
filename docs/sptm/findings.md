@@ -3943,3 +3943,27 @@ Confidence: Medium.
 - **Evidence**: decompile 0xdfe2c: `uVar7 = *(puVar5+0x10); ... *(local_148[0]+0x10)=uVar7+1; *(local_148[0]+uVar7*8+0x20)=local_100[0];`; grow `if (*(puVar5+0x18)>>1 <= uVar7)`; second loop `uVar9 = (*pcVar12)(); ... FUN_0036b118(uVar9)`.
 - **Severity (hypothesis)**: medium — off-by-one/offset error in the per-region descriptor list could corrupt the mapped-region bookkeeping (EC vspace map).
 - **Confidence**: high (ground truth is the decompile offsets; fix compiles).
+
+## [SkR26] 0x00468ee4 sk_span_build_68ee4 — span-index growth/capacity bookkeeping via SoftwareBreakpoint traps
+- **Observation**: The span-index builder maintains a growing index array (FUN_0001dd14) with capacity at desc+0x18 and count at desc+0x10. It performs dense bounds/overflow invariant checks (`if (cap>>1 <= count) grow;`, `if (*(src+0x10) <= idx) panic`) on every element access, and traps (SoftwareBreakpoint 0x469230-0x469250) whenever an index/count goes out of range. These are the cL4 kernel's internal span-list memory-safety invariants.
+- **Evidence**: decompile 0x468ee4 — repeated `if (*(ulong *)(lVar5+0x10) <= local_88) SoftwareBreakpoint(1,0x469230)` guards; `if (uVar9 >> 1 <= local_b0) goto grow` for capacity doubling; offset math `desc + uVar9*8 + 0x20` for the entry store.
+- **Severity (hypothesis)**: low — the guards themselves are defensive; no confirmed vuln, but the span-index (used by the vspace/EC region map) is a correctness-critical structure.
+- **Confidence**: medium (decompile-faithful; register-artifact offsets for the walk were partially inferred).
+
+## [SkR26] 0x00467e44 sk_span_search_67e44 — span walker bounds discipline + loop-underflow panics
+- **Observation**: The vspace span-search walker iterates a span array (stride 16 bytes at slots+0x28, count at slots+0x10) and traps (SoftwareBreakpoint 0x4680e4/0x468104/0x46813c/0x468140/0x468144) on every out-of-range index and on the `si--` loop underflow. The page-number step is `>>0xe` (16 KiB granule); the walk validates `pn>>0xe >= cur>>0xe` on entry.
+- **Evidence**: decompile 0x467e44 — `if (*(ulong *)(param_8+0x10) <= uVar7) SoftwareBreakpoint(1,0x468140)`; `if (bVar3) SoftwareBreakpoint(1,0x4680e4)` (SBORROW underflow after `uVar8--`); `if (uVar5>>0xe < uVar6) SoftwareBreakpoint(1,0x468144)`.
+- **Severity (hypothesis)**: low — defensive invariants; confirms the span array is strictly bounds-checked, which bounds the callback-driven span iteration.
+- **Confidence**: medium.
+
+## [SkR26] 0x0046a368 sk_span_build_6a368 — descriptor range validation + unsigned-overflow traps
+- **Observation**: The span-build entry validates the descriptor's address range (`hi>>0xe >= lo>>0xe`, else SoftwareBreakpoint 0x46a5c8) and each loop iteration checks `cur>>0xe` against the limit (0x46a5bc) and the "last" page against the iteration page (0x46a5c0); the iteration counter also traps on unsigned overflow (0x46a52c). These are the cL4 kernel's range/overflow invariants on the span walk.
+- **Evidence**: decompile 0x46a368 — `if (uVar20 < uVar1>>0xe) SoftwareBreakpoint(1,0x46a5c8)`; `if (uVar20 < uVar12>>0xe) SoftwareBreakpoint(1,0x46a5bc)`; `if (bVar11) SoftwareBreakpoint(1,0x46a52c)` (SCARRY on iter++).
+- **Severity (hypothesis)**: low — defensive; no confirmed vuln.
+- **Confidence**: medium.
+
+## [SkR26] 0x0046a5c8 sk_syscall_dispatch_6a5c8 — register-artifact-heavy error dispatcher (decompilation-fidelity gap)
+- **Observation**: The largest dispatchers (0x46a5c8, 0x466a68, 0x466f18, 0x468144, 0x468888) call hundreds of out-of-range runtime helpers (FUN_0035xxxx/FUN_004aabxx) and dispatch through register-carried object/function pointers (Ghidra `extraout_x8/x9/x16`, `unaff_x24/x25`). Because the exact register provenance is a decompiler artifact, the exact method-slot and argument binding of several indirect calls is only partially reconstructed (modeled via SK_VMETHOD/code_fn casts). This is a recreation-fidelity gap, not a confirmed runtime flaw, but the error-report paths (L4_ErrorCodeOperationInvalid/ArgumentInvalid/CapInvalid) should be re-verified against disassembly before trusting the reconstructed control flow.
+- **Evidence**: decompile 0x46a5c8 — `(*(code *)&SUB_54ffff60f100041f)(*(undefined8 *)(extraout_x8_00 + 0x40))` (guarded-entry supervisor calls) and dozens of `(*extraout_xN)(...)`/`(**(code **)(extraout_x16+0x20))(...)` indirect dispatches whose targets depend on untracked registers.
+- **Severity (hypothesis)**: medium — the cL4 syscall error dispatch is a trust boundary; a misbound method/arg in the reconstruction could mask or alter the real error path. Verify against disassembly.
+- **Confidence**: low (register artifacts; bodies are faithful to the decompile but the chained indirect dispatch is best-effort).

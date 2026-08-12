@@ -972,6 +972,7 @@ cL4_w16_t cL4_ipc_send_recv_loop(unsigned long *msg, unsigned long *obj, unsigne
             msg[5] = (unsigned long)cL4_mr_copy_slot18;
             msg[6] = (unsigned long)cL4_mr_copy_slot20;
             msg[7] = (unsigned long)cL4_mr_copy_slot28;
+            msg[8] = (unsigned long)cL4_mr_copy_slot8b;   /* param_1[8] = &LAB_00381c38 */
             if (extra_x1 == 1) { r = cL4_msg_collect((long)(msg + 0xe)); u12 = r.lo; u7=(u12==0)?4:3; u8=u7; *(char*)((char*)obj+0x11)=(char)u7; goto after_classify; }
             if (extra_x1 == 0) {
                 r.lo = msg[0xe]; r.hi = 0;   /* auVar16 = auVar4 << 0x40 with x21 */
@@ -985,6 +986,7 @@ cL4_w16_t cL4_ipc_send_recv_loop(unsigned long *msg, unsigned long *obj, unsigne
             r.lo = u12; r.hi = 1;
         }
 after_classify:
+        if (u12 == 0) goto LAB_publish;   /* joined_r0x00381484: empty msg -> publish */
         u2 = (unsigned long)u8;
         if (u2v < 0x3f) {
             if ((opts & 0xff) != 0) {
