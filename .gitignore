@@ -1,3 +1,4 @@
-.DS_Store
-*.pyc
-__pycache__/
+ringminus1/ghidra/
+ringminus1/bin/__pycache__/
+ringminus1/logs/
+ringminus1/bin/*.pyc
