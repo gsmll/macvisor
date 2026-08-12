@@ -779,7 +779,7 @@ unsigned long sk_shift_multi(unsigned long arg1,unsigned long arg2,unsigned int 
 void sk_shift_dispatch(void);
 void sk_syscall_cap_dispatch(unsigned long *arg1,uint64_t arg2,unsigned long arg3,long arg4,int arg5);
 void sk_restore_ctx(long arg1);
-void sk_restore_ctx1(uint64_t arg1);
+uint64_t sk_restore_ctx1(uint64_t arg1);
 void sk_restore_ctx2(long arg1);
 void sk_save_ctx(uint64_t arg1,uint64_t arg2,long arg3);
 void sk_save_ctx2(uint64_t arg1,uint64_t *arg2,uint64_t arg3);
@@ -828,8 +828,8 @@ LAB_00050440:
     }
     if (*(char *)(t1 + 1) < '\0') {
       t6 = t1[7];
-      ((uint8_t *)stk1[1]stk1)[1] = 0;
-      ((uint8_t *)stk1[0]stk1)[0] = t4;
+      stk1[1] = 0;
+      stk1[0] = t4;
       t2 = (unsigned short *)sk_msg_iter(stk1);
       if (t2 != (unsigned short *)0x0) {
         t3 = t6 + 0x20;
@@ -4194,10 +4194,10 @@ uint64_t sk_cnode_op(unsigned long arg1,unsigned long arg2,uint8_t (*arg3) [16],
   }
   t3 = stk0.hi;
   t5 = stk0.lo;
-  ((uint8_t *)stk1[2]stk1)[2] = 0;
-  ((uint8_t *)stk1[1]stk1)[1] = 0;
-  ((uint8_t *)stk1[4]stk1)[4] = 0;
-  ((uint8_t *)stk1[3]stk1)[3] = 0;
+  stk1[2] = 0;
+  stk1[1] = 0;
+  stk1[4] = 0;
+  stk1[3] = 0;
   if (t5 == 0) {
 LAB_00054210:
     t7 = (uint32_t *)sk_thread_state();
@@ -4209,11 +4209,11 @@ LAB_00054220:
   else {
     if (t3 == 0) goto LAB_0005434c;
     t9 = (**(sk_code_t *)(t3 + 8))(t5,stk1 + 1);
-    if ((((arg1 < ((uint8_t *)stk1[2]stk1)[2]) || (((uint8_t *)stk1[3]stk1)[3] < arg2)) ||
-        (((uint8_t *)stk1[3]stk1)[3] + ((uint8_t *)stk1[2]stk1)[2] <= arg1)) || (((uint8_t *)stk1[3]stk1)[3] + ((uint8_t *)stk1[2]stk1)[2] < arg2 + arg1))
+    if ((((arg1 < stk1[2]) || (stk1[3] < arg2)) ||
+        (stk1[3] + stk1[2] <= arg1)) || (stk1[3] + stk1[2] < arg2 + arg1))
     goto LAB_00054210;
-    t8 = arg1 - ((uint8_t *)stk1[2]stk1)[2] & 0xffffffffffffc000;
-    t4 = (arg2 + 0x3fff + (arg1 - ((uint8_t *)stk1[2]stk1)[2]) & 0xffffffffffffc000) - t8;
+    t8 = arg1 - stk1[2] & 0xffffffffffffc000;
+    t4 = (arg2 + 0x3fff + (arg1 - stk1[2]) & 0xffffffffffffc000) - t8;
     if ((arg4 & 0xc) == 0) {
 LAB_000542e8:
       if ((arg4 & 3) == 0) {
@@ -4225,9 +4225,9 @@ LAB_000542e8:
           t2 = 0x30;
         }
         stk2 = t4;
-        ((uint8_t *)stk1[0]stk1)[0] = t8;
+        stk1[0] = t8;
         t0 = (**(sk_code_t *)(t3 + t2))(t5,stk1,&stk2);
-        if ((((uint8_t *)stk1[0]stk1)[0] != t8) || (stk2 != t4)) {
+        if ((stk1[0] != t8) || (stk2 != t4)) {
           sk_rt_sync2();
 LAB_0005434c:
                     
@@ -13860,14 +13860,14 @@ LAB_0005f584:
                           t12[0x2c] = 0;
                           t12[0x2f] = 0;
                           t12[0x2e] = 0;
-                          t12[0x35] = ((uint8_t *)stk1[5]stk1)[5];
-                          t12[0x30] = ((uint8_t *)stk1[0]stk1)[0];
-                          t12[0x31] = ((uint8_t *)stk1[1]stk1)[1];
-                          t12[0x33] = ((uint8_t *)stk1[3]stk1)[3];
-                          t12[0x32] = ((uint8_t *)stk1[2]stk1)[2];
-                          t12[0x34] = ((uint8_t *)stk1[4]stk1)[4];
-                          t12[0x37] = ((uint8_t *)stk1[7]stk1)[7];
-                          t12[0x36] = ((uint8_t *)stk1[6]stk1)[6];
+                          t12[0x35] = ((uint8_t *)&stk1)[5];
+                          t12[0x30] = ((uint8_t *)&stk1)[0];
+                          t12[0x31] = ((uint8_t *)&stk1)[1];
+                          t12[0x33] = ((uint8_t *)&stk1)[3];
+                          t12[0x32] = ((uint8_t *)&stk1)[2];
+                          t12[0x34] = ((uint8_t *)&stk1)[4];
+                          t12[0x37] = ((uint8_t *)&stk1)[7];
+                          t12[0x36] = ((uint8_t *)&stk1)[6];
                           t12[0x3d] = (char)((unsigned long)t11 >> 0x28);
                           t12[0x38] = (char)t11;
                           t12[0x39] = (char)((unsigned long)t11 >> 8);
@@ -14016,7 +14016,7 @@ void sk_restore_ctx(long arg1)
   long t1;
   
   (**(sk_code_t *)(arg1 + 0x18))(*(uint64_t *)(arg1 + 0x20));
-  t7 = sk_restore_ctx1();
+  t7 = sk_restore_ctx1((uint64_t)arg1);
   t8 = sk_current_thread();
   if (t8 <= t8 + 0x178) {
     sk_error_broadcast(0);
@@ -14039,10 +14039,10 @@ void sk_restore_ctx(long arg1)
       t4 = (unsigned short *)(t1 + 0x38);
       t5 = *t4;
       *t4 = t5 - 1;
-      sk_waitq_enqueue(CONCAT44((int)((unsigned long)t4 >> 0x20),(unsigned int)t5),t8,1);
+      sk_waitq_enqueue((unsigned long *)CONCAT44((int)((unsigned long)t4 >> 0x20),(unsigned int)t5),t8);
     }
     sk_current_thread();
-    sk_msg_release();
+    sk_msg_release(0);
                     
     sk_panic_msg(0,(uint64_t)(void *)sk_str_108);
   }
@@ -14062,7 +14062,7 @@ void sk_restore_ctx(long arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_restore_ctx1(uint64_t arg1)
+uint64_t sk_restore_ctx1(uint64_t arg1)
 {
   int *t3;
   unsigned short *t4;
@@ -14096,10 +14096,10 @@ void sk_restore_ctx1(uint64_t arg1)
       t4 = (unsigned short *)(t1 + 0x38);
       t5 = *t4;
       *t4 = t5 - 1;
-      sk_waitq_enqueue(CONCAT44((int)((unsigned long)t4 >> 0x20),(unsigned int)t5),t7,1);
+      sk_waitq_enqueue((unsigned long *)CONCAT44((int)((unsigned long)t4 >> 0x20),(unsigned int)t5),t7);
     }
     sk_current_thread();
-    sk_msg_release();
+    sk_msg_release(0);
                     
     sk_panic_msg(0,(uint64_t)(void *)sk_str_108);
   }
@@ -14174,7 +14174,7 @@ void sk_save_ctx2(uint64_t arg1,uint64_t *arg2,uint64_t arg3)
   t0 = sk_error_to_word(2);
   sk_cap_record(2,t0,(uint8_t (*)[16])&stk0,0);
   stk0 = sk_macho_segcmd(stk0.lo,stk0.hi,*arg2,arg2[1]);
-  sk_save_ctx(arg1,stk0,arg3);
+  sk_save_ctx(arg1,stk0.lo,arg3);
   return;
 }
 
@@ -14488,3 +14488,5 @@ void sk_alloc_frame(uint64_t *arg1,unsigned long arg2,unsigned int arg3)
 
 
 
+
+#endif /* _SK_REGION_BOOT_50000_H_ */

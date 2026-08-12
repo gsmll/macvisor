@@ -1653,8 +1653,10 @@ static void sk_tb_ph_map_subgraph(long *out)
     if (out == 0) {
         return;
     }
+    long t_out = 0; uint64_t t_a = 0, t_b = 0;
     sk_range_t rng = sk_tb_ph_range2();
-    total = sk_tb_ph_get();
+    (void)sk_tb_ph_get(&t_out, &t_a, &t_b);
+    total = (uint64_t)t_out;
     if ((total == 0) || (total <= total + 8)) {
         cursor[0] = total;
         cursor[1] = 0;
@@ -1716,7 +1718,7 @@ static void sk_tb_ph_map_subgraph(long *out)
                     if (owner == 0) {
                         sk_x_00054354();
                     }
-                    ((void (*)(void *, void *))(*(void **)(owner + 8)))(block, kind);
+                    ((void (*)(void *, void *))(*(void **)(owner + 8)))((void *)block, kind);
                     {
                         uint64_t add = (uint64_t)(uint8_t)elem[1] << 0x10 |
                                        (uint64_t)*(uint8_t *)((long)elem + 3) << 0x18 | (uint64_t)*elem |
@@ -1860,7 +1862,7 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
         if (owner == 0) {
             sk_x_00054354();
         }
-        ((void (*)(void *, void *))(*(void **)(owner + 8)))(block, kind);
+        ((void (*)(void *, void *))(*(void **)(owner + 8)))((void *)block, kind);
         buf = msg_scratch;
     }
     idx = (uint64_t)(uint8_t)d_c2 | (uint64_t)d_185 << 8 |
@@ -2165,6 +2167,7 @@ static uint64_t sk_reloc_bind(uint64_t region, uint64_t va, uint64_t target)
     uint16_t *slot;
     long l10;
     long reloc_va;
+    ulong *next;
 
     if (region != 0) {
         if ((va & 0x3fff) != 0) {
@@ -2203,7 +2206,6 @@ static uint64_t sk_reloc_bind(uint64_t region, uint64_t va, uint64_t target)
                                 uint64_t val = *q;
                                 uint64_t f = (val >> 0x33) & 0x7ff;
                                 long delta = (long)(f << shift);
-                                ulong *next;
                                 if (f == 0) {
                                     next = 0;
                                     if ((long)val >= 0) {

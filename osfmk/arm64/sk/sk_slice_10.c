@@ -1551,15 +1551,38 @@ static void sk_svc_1_marsh2_0005ab54(word_t param_1, word_t param_2)
 static bool sk_svc_class_2_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 2) {
+    *((word_t *)(param_2 + 0x8)) = 2;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 1;
+    *((word_t *)(param_2 + 0x1c)) = 2;
+    *((word_t *)(param_2 + 0x20)) = 0x18;
     *((word_t *)(param_2 + 0x28)) = (word_t)0x00055e24  /* inline method stub */;
+    *((word_t *)(param_2 + 0x30)) = 0;
+    *((word_t *)(param_2 + 0x34)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x40)) = 0;
+    *((word_t *)(param_2 + 0x48)) = 0;
+    *((word_t *)(param_2 + 0x50)) = 0;
+    *((word_t *)(param_2 + 0x58)) = 0;
+    *((word_t *)(param_2 + 0x60)) = 0;
+    *((word_t *)(param_2 + 0x68)) = 0;
+    *((word_t *)(param_2 + 0x70)) = 0;
+    *((word_t *)(param_2 + 0x78)) = 0;
+    *((word_t *)(param_2 + 0x80)) = 0;
+    *((word_t *)(param_2 + 0x88)) = 0;
+    *((word_t *)(param_2 + 0x90)) = 0;
+    *((word_t *)(param_2 + 0x98)) = 0;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 3;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00055e44  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00055e4c  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00055e54  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00055e5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00055e64  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00055e6c  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00055e74  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00055e7c  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00055e9c  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00055eb8  /* inline method stub */;
@@ -1569,15 +1592,25 @@ static bool sk_svc_class_2_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056004;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x00055f0c  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00056034;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 1;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00055f28  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00055f48  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00056064;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00055f68  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00055fb0  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcd10  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcdd8  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x19;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcd10  /* DAT_004bcd10 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcdd8  /* DAT_004bcdd8 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d198  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x00055ff0  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00055ff8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 0;
+    *((word_t *)(param_2 + 0x1b8)) = (int)0x004bccf8  /* DAT_004bccf8 value */;
     }
     return param_1 == 2;
 }
@@ -1593,7 +1626,15 @@ static bool sk_svc_class_2_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 1) {
+    *((word_t *)(param_2 + 0x8)) = 1;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00056410  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00056428  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x00056440  /* inline method stub */;
@@ -1606,13 +1647,18 @@ static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x000564dc  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00056504  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00056748;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00056528  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00056530  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00056538  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00056540  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00056548  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00056550  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00056558  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00056560  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00056580  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x0005659c  /* inline method stub */;
@@ -1622,15 +1668,25 @@ static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056778;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x000565f0  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000567a8;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x0005660c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x0005662c  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000567d8;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x0005664c  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00056694  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcea0  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcf70  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcea0  /* DAT_004bcea0 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcf70  /* DAT_004bcf70 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d260  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x000566d4  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000566dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 0;
     }
     return param_1 == 1;
 }
@@ -1646,7 +1702,15 @@ static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x100000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x100000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00056b88  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00056ba0  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x00056bb8  /* inline method stub */;
@@ -1659,13 +1723,18 @@ static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x00056c54  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00056c7c  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00056ec0;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00056ca0  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00056ca8  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00056cb0  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00056cb8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00056cc0  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00056cc8  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00056cd0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00056cd8  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00056cf8  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00056d14  /* inline method stub */;
@@ -1675,15 +1744,25 @@ static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056ef0;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x00056d68  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00056f20;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00056d84  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00056da4  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00056f50;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00056dc4  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00056e0c  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd040  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd110  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd040  /* DAT_004bd040 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd110  /* DAT_004bd110 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d330  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x00056e4c  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00056e54  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 0;
     }
     return param_1 == 0x100000001;
 }
@@ -1699,7 +1778,15 @@ static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x200000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x200000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x0005730c  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00057324  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x0005733c  /* inline method stub */;
@@ -1712,13 +1799,18 @@ static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x000573d8  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00057400  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00057644;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00057424  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005742c  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00057434  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005743c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00057444  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005744c  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00057454  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005745c  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x0005747c  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00057498  /* inline method stub */;
@@ -1728,15 +1820,25 @@ static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00057674;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x000574ec  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000576a4;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00057508  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00057528  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000576d4;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00057548  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00057590  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd1e0  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd2b0  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd1e0  /* DAT_004bd1e0 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd2b0  /* DAT_004bd2b0 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d400  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x000575d0  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000575d8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = (int)0x004bcd08  /* DAT_004bcd08 value */;
     }
     return param_1 == 0x200000001;
 }
@@ -1752,7 +1854,15 @@ static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x300000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x300000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00057a90  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00057aa8  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x00057ac0  /* inline method stub */;
@@ -1765,13 +1875,18 @@ static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x00057b5c  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00057b84  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00057dc8;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00057ba8  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00057bb0  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00057bb8  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00057bc0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00057bc8  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00057bd0  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00057bd8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00057be0  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00057c00  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00057c1c  /* inline method stub */;
@@ -1781,15 +1896,25 @@ static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00057df8;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x00057c70  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00057e28;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00057c8c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00057cac  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00057e58;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00057ccc  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00057d14  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd380  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd450  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd380  /* DAT_004bd380 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd450  /* DAT_004bd450 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d4d0  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x00057d54  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00057d5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = (int)0x004bcd08  /* DAT_004bcd08 value */;
     }
     return param_1 == 0x300000001;
 }
@@ -1805,7 +1930,15 @@ static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x400000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x400000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00058210  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00058228  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x00058240  /* inline method stub */;
@@ -1818,13 +1951,18 @@ static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x000582dc  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00058304  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00058548;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00058328  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00058330  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00058338  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00058340  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00058348  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00058350  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00058358  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00058360  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00058380  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x0005839c  /* inline method stub */;
@@ -1834,15 +1972,25 @@ static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00058578;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x000583f0  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000585a8;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x0005840c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x0005842c  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000585d8;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x0005844c  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00058494  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd520  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd5f0  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd520  /* DAT_004bd520 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd5f0  /* DAT_004bd5f0 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d5a0  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x000584d4  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000584dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 1;
     }
     return param_1 == 0x400000001;
 }
@@ -1858,7 +2006,15 @@ static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x500000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x500000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00058990  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x000589a8  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x000589c0  /* inline method stub */;
@@ -1871,13 +2027,18 @@ static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x00058a5c  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00058a84  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00058cc8;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00058aa8  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00058ab0  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00058ab8  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00058ac0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00058ac8  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00058ad0  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00058ad8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00058ae0  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00058b00  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00058b1c  /* inline method stub */;
@@ -1887,15 +2048,25 @@ static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00058cf8;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x00058b70  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00058d28;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00058b8c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00058bac  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00058d58;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00058bcc  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00058c14  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd6c0  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd790  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd6c0  /* DAT_004bd6c0 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd790  /* DAT_004bd790 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d670  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x00058c54  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00058c5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 1;
     }
     return param_1 == 0x500000001;
 }
@@ -1911,7 +2082,15 @@ static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x600000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x600000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00059110  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x00059128  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x00059140  /* inline method stub */;
@@ -1924,13 +2103,18 @@ static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x000591dc  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00059204  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00059448;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x00059228  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x00059230  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x00059238  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x00059240  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x00059248  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x00059250  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x00059258  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x00059260  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00059280  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x0005929c  /* inline method stub */;
@@ -1940,15 +2124,25 @@ static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00059478;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x000592f0  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000594a8;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x0005930c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x0005932c  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000594d8;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x0005934c  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00059394  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd860  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd930  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd860  /* DAT_004bd860 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd930  /* DAT_004bd930 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d740  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x000593d4  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000593dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 1;
     }
     return param_1 == 0x600000001;
 }
@@ -1964,7 +2158,15 @@ static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x700000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x700000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x00059890  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x000598a8  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x000598c0  /* inline method stub */;
@@ -1977,13 +2179,18 @@ static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x0005995c  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x00059984  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00059bc8;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x000599a8  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x000599b0  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x000599b8  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x000599c0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x000599c8  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x000599d0  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x000599d8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x000599e0  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x00059a00  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x00059a1c  /* inline method stub */;
@@ -1993,15 +2200,25 @@ static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00059bf8;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x00059a70  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00059c28;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x00059a8c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x00059aac  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00059c58;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x00059acc  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x00059b14  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bda00  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdad0  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bda00  /* DAT_004bda00 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdad0  /* DAT_004bdad0 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d810  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x00059b54  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00059b5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 1;
     }
     return param_1 == 0x700000001;
 }
@@ -2017,7 +2234,15 @@ static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x800000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x800000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x0005a010  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x0005a028  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x0005a040  /* inline method stub */;
@@ -2030,13 +2255,18 @@ static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x0005a0dc  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x0005a104  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_0005a348;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x0005a128  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005a130  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x0005a138  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005a140  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x0005a148  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005a150  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x0005a158  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005a160  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x0005a180  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x0005a19c  /* inline method stub */;
@@ -2046,15 +2276,25 @@ static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_0005a378;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x0005a1f0  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_0005a3a8;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x0005a20c  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x0005a22c  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_0005a3d8;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x0005a24c  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x0005a294  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdba0  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdc70  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdba0  /* DAT_004bdba0 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdc70  /* DAT_004bdc70 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d8e0  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x0005a2d4  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x0005a2dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 1;
     }
     return param_1 == 0x800000001;
 }
@@ -2070,7 +2310,15 @@ static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x900000001) {
+    *((word_t *)(param_2 + 0x8)) = 0x900000001;
     *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x18)) = 0;
+    *((word_t *)(param_2 + 0x1c)) = 0xffffffff;
+    *((word_t *)(param_2 + 0x20)) = 0;
+    *((word_t *)(param_2 + 0x28)) = 0;
+    *((word_t *)(param_2 + 0x30)) = 1;
+    *((word_t *)(param_2 + 0x34)) = 3;
+    *((word_t *)(param_2 + 0x38)) = (int)0x004bcd00  /* DAT_004bcd00 value */;
     *((word_t *)(param_2 + 0x40)) = (word_t)0x0005a78c  /* inline method stub */;
     *((word_t *)(param_2 + 0x48)) = (word_t)0x0005a7a4  /* inline method stub */;
     *((word_t *)(param_2 + 0x50)) = (word_t)0x0005a7bc  /* inline method stub */;
@@ -2083,13 +2331,18 @@ static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x88)) = (word_t)0x0005a858  /* inline method stub */;
     *((word_t *)(param_2 + 0x90)) = (word_t)0x0005a880  /* inline method stub */;
     *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_0005aac4;
+    *((word_t *)(param_2 + 0xa0)) = 1;
+    *((word_t *)(param_2 + 0xa4)) = 4;
     *((word_t *)(param_2 + 0xa8)) = (word_t)0x0005a8a4  /* inline method stub */;
     *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005a8ac  /* inline method stub */;
     *((word_t *)(param_2 + 0xb8)) = (word_t)0x0005a8b4  /* inline method stub */;
     *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005a8bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd0)) = 0xc;
     *((word_t *)(param_2 + 0xd8)) = (word_t)0x0005a8c4  /* inline method stub */;
     *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005a8cc  /* inline method stub */;
     *((word_t *)(param_2 + 0xe8)) = (word_t)0x0005a8d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf0)) = 0x1601;
+    *((word_t *)(param_2 + 0xf4)) = 3;
     *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005a8dc  /* inline method stub */;
     *((word_t *)(param_2 + 0x100)) = (word_t)0x0005a8fc  /* inline method stub */;
     *((word_t *)(param_2 + 0x108)) = (word_t)0x0005a918  /* inline method stub */;
@@ -2099,15 +2352,25 @@ static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
     *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_0005aaf4;
     *((word_t *)(param_2 + 0x130)) = (word_t)0x0005a96c  /* inline method stub */;
     *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_0005ab24;
+    *((word_t *)(param_2 + 0x140)) = 1;
+    *((word_t *)(param_2 + 0x144)) = 5;
+    *((word_t *)(param_2 + 0x148)) = 0;
+    *((word_t *)(param_2 + 0x149)) = 0x1701;
+    *((word_t *)(param_2 + 0x14c)) = 1;
     *((word_t *)(param_2 + 0x150)) = (word_t)0x0005a988  /* inline method stub */;
     *((word_t *)(param_2 + 0x158)) = (word_t)0x0005a9a8  /* inline method stub */;
     *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_0005ab54;
     *((word_t *)(param_2 + 0x168)) = (word_t)0x0005a9c8  /* inline method stub */;
     *((word_t *)(param_2 + 0x170)) = (word_t)0x0005aa10  /* inline method stub */;
-    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdd40  /* data table */;
-    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bde10  /* data table */;
+    *((word_t *)(param_2 + 0x178)) = 0x1a;
+    *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdd40  /* DAT_004bdd40 table */;
+    *((word_t *)(param_2 + 0x188)) = (word_t)0x004bde10  /* DAT_004bde10 table */;
+    *((word_t *)(param_2 + 0x190)) = (word_t)0x64d9b0  /* dispatch code table */;
     *((word_t *)(param_2 + 0x198)) = (word_t)0x0005aa50  /* inline method stub */;
     *((word_t *)(param_2 + 0x1a0)) = (word_t)0x0005aa58  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a8)) = 1;
+    *((word_t *)(param_2 + 0x1b0)) = 1;
+    *((word_t *)(param_2 + 0x1b8)) = 0;
     }
     return param_1 == 0x900000001;
 }
@@ -2117,12 +2380,11 @@ static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
  * ================================================================== */
 
 /* FUN_0005ab88 @ 0x5ab88  (est. sk_runflag_gate)
- * Invoke the boot/runflag gate check FUN_00053568 with selector 1
- * (tail-call). Takes no arguments; the selector is a literal.
+ * Invoke the boot/runflag gate check FUN_00053568 with selector 1.
  * Confidence: medium (thin wrapper; callee out of slice) */
-static void sk_runflag_gate(void)
+static void sk_runflag_gate(word_t param_1)
 {
-    FUN_00053568(1);   /* tail-call, selector 1 */
+    FUN_00053568(1);
 }
 
 /* FUN_0005ab94 @ 0x5ab94  (est. sk_xrt_runflags_check)

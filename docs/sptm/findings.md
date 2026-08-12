@@ -1628,3 +1628,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: insert sets `*(node+0x68) = max(child extents, own size)`; remove computes `lh = (l?*(l+0x24)+1:0)` and calls `sk_span_tree_rebalance(root, bal2 + bal)` with `bal2 = ~rh`; every tree node pointer is bounds-checked (`node+0xb0 < node` faults).
 - **Severity (hypothesis)**: informational — a height/extent inconsistency could cause the extent-based free-space search (sk_span_tree_find_free) to skip or double-report a free window, but no invariant break observed.
 - **Confidence**: medium
+
+## [Sk09] 0x0004eec0 / 0x0004f258 sk_tb_ph_dump / sk_tb_ph_dump2 — unchecked resource kind + offset arithmetic
+- **Observation**: The tbplaceholder serializer validates the resource kind (`kind > 0x1c` panics) but then multiplies a 32-bit packed size field by 0x40 and adds it to the region base with only a `size < region_size` bound check, after a separate `>>2`-overflow guard on the same field.
+- **Evidence**: `sk_tb_ph_dump` reads the 4-byte size at `elem+0x108/0x10c`, panics if `*(elem+0x10f)>>2 != 0` (overflow), then `sz *= 0x40; if (sz < region[1]) off = sz + region[0] else 0`. Same pattern in `sk_tb_ph_dump2` (stride 0x287) and `sk_tb_ph_addr2` (0x4f890). Region bounds come from the caller-supplied `long *param_3 = {base,size}`.
+- **Severity (hypothesis)**: medium — a corrupted tbplaceholder descriptor with a valid top-2-bits kind but an oversized packed size could compute an out-of-range region offset; the `size < region[1]` check bounds the final offset against the caller-provided region, so impact is confined to that region's span.
+- **Confidence**: medium
+
+## [Sk09] 0x000508e8 sk_tb_ph_map_subgraph — device-tree subgraph mapping without origin validation
+- **Observation**: The subgraph mapper derives the mapping base as `range.lo + (packed idx * 0x40)` with only a `range.hi <= idx<<6` check deciding whether to zero the base, and maps the full aligned `size` via the ep object vtable `+0x30` (frame alloc) / `+0x28` (map) dispatch.
+- **Evidence**: `u10 = idx packed; region = range.lo + u10*0x40; if (range.hi <= u10<<6) region = 0; sk_region_map_frames(region, block, owner, u13);` then `((*(fn))(owner+8))(block, kind)`. Frame alloc via `ep.hi+0x30` (0x1800 size). Errors route to `s_Failed_to_map_memory_for_subgrap` panic / `SoftwareBreakpoint(0x5519,0x50c84)`.
+- **Severity (hypothesis)**: medium — an out-of-range packed index yields `region = 0` (mapping base 0) rather than failing; whether that is reachable depends on the boot descriptor integrity (GL1 trust boundary input).
+- **Confidence**: medium
+
+## [Sk09] 0x00054624 sk_cfg_init — config bootstrap writes many writable image globals from boot params
+- **Observation**: Parses a 0x400-byte boot-parameter table (`lVar3` stride 0x10) and writes each tag's value into the `DAT_006b03xx` / `0x6b03xx` config globals, including a code-flag byte (`DAT_006b0348`), without a bounds check beyond `(lVar5 - 1) < 0x2b` on the tag id.
+- **Evidence**: switch on `lVar5` with 40+ cases writing distinct `_DAT_006b03xx` slots; `DAT_006b0348 = (uVar4 == 0)`, `_DAT_006b0440 = param_1`, `lRam_0064ccd0 = param_1`. Unknown/default tags write `_DAT_006b0350`. Loop runs 0x400/0x10 = 64 iterations.
+- **Severity (hypothesis)**: informational — tag ids are bounded to <0x2c and each writes a fixed global; no linear write derived from attacker-controlled length. Boot-time only.
+- **Confidence**: low

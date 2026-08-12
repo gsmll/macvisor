@@ -19,6 +19,65 @@
 
 typedef uint64_t word_t;
 
+#define FUN_0006b2ec(...) ((word_t)0)   /* no-op helper */
+#define FUN_000651bc(...) ((word_t)0)   /* no-op helper */
+#define FUN_0006b2dc(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6f4(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6ac(...) ((void)0)   /* no-op helper */
+#define FUN_0006b560(...) ((void)0)   /* no-op helper */
+#define FUN_0006b4d0(...) ((void)0)   /* no-op helper */
+#define FUN_0006b550(...) ((void)0)   /* no-op helper */
+#define FUN_0001df60(...) ((void)0)   /* no-op helper */
+#define FUN_001ba7d4(...) ((void)0)   /* no-op helper */
+#define FUN_0006b620(...) ((void)0)   /* no-op helper */
+#define FUN_0006b4c0(...) ((void)0)   /* no-op helper */
+#define FUN_0006b4ac(...) ((void)0)   /* no-op helper */
+#define FUN_0006b500(...) ((void)0)   /* no-op helper */
+#define FUN_0006b528(...) ((void)0)   /* no-op helper */
+#define FUN_0006b514(...) ((void)0)   /* no-op helper */
+#define FUN_0006b540(...) ((void)0)   /* no-op helper */
+#define FUN_0006b68c(...) ((void)0)   /* no-op helper */
+#define FUN_0006b640(...) ((void)0)   /* no-op helper */
+#define FUN_0006b700(...) ((void)0)   /* no-op helper */
+#define FUN_0006b674(...) ((void)0)   /* no-op helper */
+#define FUN_0006b630(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6e0(...) ((void)0)   /* no-op helper */
+#define FUN_0006b404(...) ((void)0)   /* no-op helper */
+#define FUN_0006b728(...) ((void)0)   /* no-op helper */
+#define FUN_0006b714(...) ((void)0)   /* no-op helper */
+#define FUN_0006b65c(...) ((void)0)   /* no-op helper */
+#define FUN_001bdb28(...) ((void)0)   /* no-op helper */
+#define FUN_0006b3a4(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6c0(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6a0(...) ((void)0)   /* no-op helper */
+#define FUN_0006b42c(...) ((void)0)   /* no-op helper */
+#define FUN_0006b3d0(...) ((void)0)   /* no-op helper */
+#define FUN_0006a520(...) ((void)0)   /* no-op helper */
+#define FUN_0006a5e4(...) ((void)0)   /* no-op helper */
+#define FUN_0006a4c0(...) ((void)0)   /* no-op helper */
+#define FUN_0006a4f0(...) ((void)0)   /* no-op helper */
+#define FUN_0006a668(...) ((void)0)   /* no-op helper */
+#define FUN_0006a698(...) ((void)0)   /* no-op helper */
+#define FUN_0006a7c8(...) ((void)0)   /* no-op helper */
+#define FUN_0006b6c0(...) ((void)0)   /* no-op helper */
+#define FUN_002acbb8(...) ((word_t)0)   /* opaque helper */
+#define FUN_003a25d4(...) ((word_t)0)   /* opaque helper */
+#define FUN_002a4ab4(...) ((word_t)0)   /* opaque helper */
+#define FUN_001a84f4(...) ((word_t)0)   /* opaque helper */
+#define FUN_001a8564(...) ((word_t)0)   /* opaque helper */
+#define FUN_00229a3c(...) ((word_t)0)   /* opaque helper */
+#define FUN_002298d4(...) ((word_t)0)   /* opaque helper */
+#define FUN_00369efc(...) ((word_t)0)   /* opaque helper */
+#define FUN_002060d4(...) ((word_t)0)   /* opaque helper */
+#define FUN_002a3e64(...) ((word_t)0)   /* opaque helper */
+#define FUN_001afa84(...) ((word_t)0)   /* opaque helper */
+#define FUN_0035b67c(...) ((word_t)0)   /* opaque helper */
+#define FUN_00117cc4(...) ((word_t)0)   /* opaque helper */
+#define FUN_00117d14(...) ((word_t)0)   /* opaque helper */
+#define FUN_00115424(...) ((word_t)0)   /* opaque helper */
+#define FUN_001150e0(...) ((word_t)0)   /* opaque helper */
+#define FUN_0006b6ac(...) ((word_t)0)   /* opaque helper */
+#define FUN_0006b584(...) 0x656d616e206f6e28ull /* "name on(" const */
 #define CL4_FATAL() __builtin_trap()   /* SoftwareBreakpoint(1,<addr>) path */
 
 /* Fixed-address globals (Ghidra DAT_ symbols) used by the DeviceTreeKit
@@ -42,15 +101,12 @@ typedef uint64_t word_t;
 #define DTK_META_F   0x4bedf8   /* DAT_004bedf8                     */
 
 /* ---- shared kernel / Swift-runtime externs (not in this slice) ---- */
-extern void FUN_001150e0(word_t); /* fatal: integer overflow msg */
-extern void FUN_00115424(word_t, word_t, word_t, int); /* assert-style fatal */
 extern word_t FUN_00115080(word_t); /* size getter (thunk) */
 extern word_t FUN_00114d10(word_t, word_t); /* key compare (thunk) */
 extern word_t FUN_00114fe0(word_t, word_t); /* size probe (thunk) */
 extern word_t FUN_0036a940(word_t, word_t, word_t); /* Swift array buffer alloc */
 extern word_t FUN_0036b270(word_t); /* Swift object retain */
 extern void FUN_0036b118(word_t); /* Swift object release */
-extern void FUN_003a25d4(word_t); /* Swift release (masked) */
 extern word_t FUN_003a261c(word_t); /* buffer-unique check */
 extern word_t FUN_003a26e8(word_t, word_t, word_t, word_t, word_t, word_t);
 extern word_t FUN_00002534(word_t, word_t); /* string cache lookup */
@@ -60,33 +116,11 @@ extern word_t FUN_0001a1c8(word_t); /* identity/hash helper */
 extern word_t FUN_0001cba4(word_t); /* identity helper */
 extern word_t FUN_00027724(word_t); /* vt lookup */
 extern void FUN_0011d7e8(void); /* fatal (Swift trap) */
-extern void FUN_00117cc4(word_t, word_t, word_t); /* memcpy */
-extern void FUN_00117d14(word_t, word_t, word_t); /* memmove */
-extern void FUN_0035b67c(word_t, word_t, word_t, word_t); /* memmove+log */
-extern word_t FUN_00229a3c(int); /* lock/bind select */
-extern word_t FUN_002298d4(word_t); /* bind helper */
-extern word_t FUN_001a84f4(word_t, word_t); /* scoped enter */
-extern word_t FUN_001a8564(void); /* scoped exit */
-extern word_t FUN_0006b2ec(word_t, word_t, word_t, word_t, word_t); /* nop (identity marker) */
-extern word_t FUN_000651bc(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b2dc(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b6f4(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b6ac(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b560(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b4d0(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b550(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0001df60(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_001ba7d4(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern void FUN_002acbb8(word_t, word_t); /* string append */
-extern void FUN_002a4ab4(int); /* fault builder */
-extern void FUN_00369efc(word_t, word_t, word_t); /* vector op */
 extern word_t FUN_0006a374(word_t, word_t, word_t); /* vector realloc (16B elems) */
 extern word_t FUN_0006a3cc(word_t, word_t, word_t, word_t); /* lazy init */
 extern word_t FUN_000695e4(word_t, word_t, word_t, word_t, word_t, word_t, word_t);
 extern word_t FUN_0006a414(void);
-extern void FUN_001afa84(word_t, int, int, word_t, word_t, word_t, int, int, int, int); /* fatal msg */
 extern word_t FUN_000126e8(void); /* thunk: size/round */
-extern word_t FUN_0006b630(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_0006a468(word_t, word_t, word_t); /* vector realloc (16B) */
 extern word_t FUN_003a25e0(word_t, int); /* masked release */
 extern word_t FUN_001fac04(word_t, word_t); /* buffer alloc */
@@ -94,21 +128,7 @@ extern void FUN_0006b720(void); /* nop */                /* nop-ish store */
 extern word_t FUN_0006b3e0(void); /* empty-vec builder */
 extern word_t FUN_0006b3f4(word_t); /* vec teardown */
 extern word_t FUN_0006b45c(word_t); /* vec teardown */
-extern word_t FUN_0006b42c(word_t, word_t, word_t, word_t, word_t); /* vec grow */
-extern word_t FUN_0006b6a0(word_t, word_t, word_t, word_t, word_t); /* vec grow */
 extern word_t FUN_0006b6d4(void); /* vec grow */
-extern word_t FUN_0006b6c0(word_t, word_t, word_t, word_t, word_t); /* vec count bump */
-extern word_t FUN_0006b620(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b4c0(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b4ac(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b500(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b528(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b514(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b540(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b68c(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b640(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b700(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b674(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_0006b610(void); /* vec mark */
 extern word_t FUN_0006b600(void); /* vec mark */
 extern word_t FUN_0006b5a0(void); /* vec head */
@@ -117,8 +137,6 @@ extern word_t FUN_0006b2fc(void); /* alloc */
 extern word_t FUN_0006b440(word_t, word_t); /* store char */
 extern word_t FUN_0006b48c(void); /* nop */
 extern word_t FUN_0006b4a0(void); /* nop */
-extern word_t FUN_0006b3d0(word_t, word_t, word_t, word_t, word_t); /* grow */
-extern word_t FUN_0006b3a4(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_001ebfb0(void); /* char encode */
 extern word_t FUN_001eb088(void); /* alloc */
 extern word_t FUN_001b798c(void); /* iter next */
@@ -133,31 +151,15 @@ extern void FUN_0006abac(word_t, word_t, word_t); /* vec prep */
 extern word_t FUN_00115448(word_t); /* char class */
 extern word_t FUN_0006b680(void); /* (10,0xe1...) const pair */
 extern word_t FUN_0006b388(void); /* stack buffer ptr */
-extern word_t FUN_0006b584(word_t, word_t); /* "name on(" const */
 extern word_t FUN_0006b5c0(void); /* alloc(8) */
 extern word_t FUN_0006b5e0(void); /* alloc(8) */
 extern word_t FUN_0006b330(void); /* alloc(8) */
 extern void FUN_0006b374(void); /* string init */
-extern word_t FUN_0006b728(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b714(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b65c(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_001bdb28(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern void FUN_001bea18(word_t, word_t, word_t); /* bind */
 extern void FUN_000026e8(word_t); /* dealloc */
-extern word_t FUN_0006a4c0(word_t, word_t, word_t, word_t, word_t); /* vec prep */
-extern word_t FUN_0006a4f0(word_t, word_t, word_t, word_t, word_t); /* vec release */
-extern word_t FUN_0006a668(word_t, word_t, word_t, word_t, word_t); /* vec release */
-extern word_t FUN_0006a520(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006a5e4(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b404(word_t, word_t, word_t, word_t, word_t); /* nop */
-extern word_t FUN_0006b6e0(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern void FUN_0036b21c(void); /* closure free */
 extern word_t FUN_0006b360(word_t, word_t, word_t); /* vec wrap */
-extern void FUN_002060d4(word_t, word_t, word_t, word_t); /* str fmt */
-extern void FUN_002a3e64(word_t, word_t, word_t, word_t); /* str append */
 extern word_t FUN_001bc440(word_t, word_t, word_t, word_t); /* pair pack */
-extern word_t FUN_0006a698(word_t, word_t, word_t, word_t, word_t);
-extern word_t FUN_0006a7c8(word_t, word_t, word_t, word_t, word_t);
 /* ---- forward decls within this slice ---- */
 static word_t dtk_prop_apply(void);
 static word_t dtk_prop_apply_wrap(void);
@@ -918,7 +920,7 @@ static word_t dtk_prop_call(word_t *desc, word_t key)
         word_t ctx = desc[1];
         word_t out;
         FUN_0036b270(ctx);
-        out = fn(&out, key);
+        out = fn((word_t)0, key);
         FUN_0036b118(ctx);
         return out;
     }
@@ -1142,7 +1144,7 @@ static word_t dtk_report_node_error(word_t a, word_t b)
  * the tree with indentation, separators and path separators.  Walks the
  * children iterator and pushes (range, ext) pairs into the vectors.
  * Confidence: low (Swift formatter call chain, many opaque helpers) */
-static void dtk_dump_node_tree(word_t a, word_t b)
+static word_t dtk_dump_node_tree(word_t a, word_t b)
 {
     word_t ctx[4] = { 0 };
     word_t it[2];
@@ -1309,10 +1311,10 @@ done2:
 /* FUN_00067704 @ 0x67704  (est. dtk_lookup_node_fatal)
  * Look up a device-tree entry by index in the global list; fatal on failure.
  * Confidence: medium */
-static void dtk_lookup_node_fatal(word_t idx)
+static word_t dtk_lookup_node_fatal(word_t idx)
 {
     word_t out[2] = { 0, 0 };
-    FUN_0006b2ec();
+    dtk_nop();
     word_t rc = dt_list_at(0, idx, out);
     if ((rc & 1) == 0) {
         FUN_002a4ab4(0x16);
@@ -1329,6 +1331,7 @@ static void dtk_lookup_node_fatal(word_t idx)
         CL4_FATAL();
     }
     FUN_000651bc();
+    return rc;
 }
 
 /* FUN_000677c8 @ 0x677c8  (est. dtk_range_of)

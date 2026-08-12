@@ -299,6 +299,8 @@ unsigned char *sk_boot_strings(void);  /* FUN_00054610 */
 unsigned char sk_flag_1;  /* DAT_006b26c8 */
 unsigned char sk_flag_2;  /* DAT_006b26c9 */
 unsigned char sk_perm_flag(void);  /* FUN_00084dc8 */
+unsigned char sk_byte_ident(unsigned char b);  /* FUN_0006e6dc: identity */
+unsigned int sk_u32_ident(unsigned int v);  /* FUN_0006e744: identity */
 unsigned int *sk_dt_node_hdr(sk_word_t*);  /* FUN_00065c30 */
 unsigned long DAT_00657778;  /* empty buf */
 unsigned long DAT_00657788;  /* console count */
@@ -1000,7 +1002,7 @@ void sk_pac_commit_fwd(void);
 void sk_pac_commit_fwd2(void);
 void sk_pac_register_fwd(void);
 void sk_pac_register_fwd2(void);
-void sk_pac_lookup(sk_word_t a, sk_word_t b);
+sk_word_t sk_pac_lookup(sk_word_t a, sk_word_t b);
 sk_word_t sk_pac_token(void);
 void sk_pac_link(sk_word_t lo, sk_word_t hi, long obj);
 void sk_noop_6fd6c(void);
@@ -5662,18 +5664,18 @@ sk_word_t sk_report_cmp(sk_word_t a0, sk_word_t b0)
         if ((r2[1] & 1) == 0) { sk_report_unref(&ctx); break; }
         long other2 = *(long *)(*(long *)((char*)b + 0x38) + r2[0] * 8);
         if (*(long *)((char*)other2 + 0x10) != *(long *)((char*)other + 0x10)) {
-            sk_free(other); sk_report_unref(&ctx); break;
+            sk_free((void*)(uintptr_t)other); sk_report_unref(&ctx); break;
         }
         /* compare strings */
         long n = *(long *)((char*)other2 + 0x10);
         if (n != 0 && other2 != other) {
             for (long i = 0x20; i < 0x20 + n; i++)
                 if (*(char*)((char*)other2 + i) != *(char*)((char*)other + i)) {
-                    sk_alloc_pages(other2,0); sk_report_unref(&ctx); sk_free(other2);
-                    sk_free(other); break;
+                    sk_alloc_pages(other2,0); sk_report_unref(&ctx); sk_free((void*)(uintptr_t)other2);
+                    sk_free((void*)(uintptr_t)other); break;
                 }
         }
-        sk_free(other);
+        sk_free((void*)(uintptr_t)other);
         if (bitmap == 0) break;
     }
     do {
@@ -5706,11 +5708,11 @@ unsigned int sk_report_cmp2(sk_word_t a0, sk_word_t b0)
             sk_word_t b0 = pb[-1], b1 = *pb;
             sk_alloc_pages(a0,0); sk_alloc_pages(a1,0); sk_alloc_pages(b0,0); sk_alloc_pages(b1,0);
             if ((sk_report_cmp3(a0, b0) & 1) == 0) {
-                sk_free(a1); sk_report_free(a0); sk_free(b1); sk_report_free(b0);
+                sk_free((void*)(uintptr_t)a1); sk_report_free(a0); sk_free((void*)(uintptr_t)b1); sk_report_free(b0);
                 return 0;
             }
             unsigned int r = sk_report_cmp2(a1, b1);
-            sk_free(a1); sk_report_free(a0); sk_free(b1); sk_report_free(b0);
+            sk_free((void*)(uintptr_t)a1); sk_report_free(a0); sk_free((void*)(uintptr_t)b1); sk_report_free(b0);
             if ((r & 1) == 0) break;
             pa += 2; pb += 2;
         }
@@ -5745,7 +5747,7 @@ void sk_report_flush_line(void *rec)
         sk_report_lock2();
         sk_panic_halt2();
     }
-    sk_free(r);
+    sk_free((void*)(uintptr_t)r);
 }
 
 /*--------------------------------------------------------------------*/
@@ -5773,7 +5775,7 @@ sk_word_t sk_report_process_rec(void *rec)
         sk_report_proc7();                                 /* FUN_0006a7c8 */
         sk_report_lock3();
         sk_report_cat2(b, 0, r);
-        sk_free(r);
+        sk_free((void*)(uintptr_t)r);
         sk_report_finish(rec);                             /* FUN_000026e8 */
         return (sk_word_t)unaff_x21 << 40 | (sk_word_t)local_38;
     }
@@ -5903,7 +5905,7 @@ long sk_buf_resize(sk_word_t mode, sk_word_t need, sk_word_t grow, long buf,
     } else {
         movef((char*)buf + 0x20, cur, r + 0x20);
         *(sk_word_t *)((char*)buf + 0x10) = 0;
-        sk_free(buf);
+        sk_free((void*)(uintptr_t)buf);
     }
     return r;
 }
@@ -5935,7 +5937,7 @@ long sk_buf_resize10(sk_word_t mode, sk_word_t need, sk_word_t grow, long buf,
     else {
         movef((char*)buf + 0x20, cur, r + 0x20);
         *(sk_word_t *)((char*)buf + 0x10) = 0;
-        sk_free(buf);
+        sk_free((void*)(uintptr_t)buf);
     }
     return r;
 }
@@ -5957,7 +5959,7 @@ sk_word_t sk_buf_copy10(long src, long cnt, sk_word_t dst, long srcbuf)
         sk_word_t to = dst + n*0x10;
         if (to <= from || from + n*0x10 <= dst) {
             sk_buf_memcpy(dst, from, n, 0x6753a0);   /* FUN_0035b67c */
-            sk_free(srcbuf);
+            sk_free((void*)(uintptr_t)srcbuf);
             return to;
         }
         sk_breakpoint(1, 0x697e4);
@@ -5982,7 +5984,7 @@ sk_word_t sk_buf_copy20(long src, long cnt, sk_word_t dst, long srcbuf)
         sk_word_t to = dst + n*0x20;
         if (to <= from || from + n*0x20 <= dst) {
             sk_buf_memcpy(dst, from, n, 0x675c68);
-            sk_free(srcbuf);
+            sk_free((void*)(uintptr_t)srcbuf);
             return to;
         }
         sk_breakpoint(1, 0x69858);
@@ -6007,7 +6009,7 @@ sk_word_t sk_buf_copy16(long src, long cnt, sk_word_t dst, long srcbuf)
         sk_word_t to = dst + n*0x10;
         if (to <= from || from + n*0x10 <= dst) {
             sk_buf_memcpy(dst, from, n, 0x65cf58);
-            sk_free(srcbuf);
+            sk_free((void*)(uintptr_t)srcbuf);
             return to;
         }
         sk_breakpoint(1, 0x698cc);
@@ -6033,7 +6035,7 @@ sk_word_t sk_buf_copy18(long src, long cnt, sk_word_t dst, long srcbuf)
         if (to <= from || from + n*0x18 <= dst) {
             sk_word_t key = sk_boot_enter();
             sk_buf_memcpy(dst, from, n, key);
-            sk_free(srcbuf);
+            sk_free((void*)(uintptr_t)srcbuf);
             return to;
         }
         sk_breakpoint(1, 0x69970);
@@ -6574,8 +6576,8 @@ void sk_report_build_index(void *rec, unsigned int flags, long **index)
             if ((r3 & 1) == 0) {
                 sk_free(rec);
                 sk_report_free(k1);
-                sk_free(v);
-                sk_free(w[0]);
+                sk_free((void*)(uintptr_t)v);
+                sk_free((void*)(uintptr_t)w[0]);
                 return;
             }
             sk_report_lock(0x1e);
@@ -9046,21 +9048,21 @@ void sk_get4_85754(unsigned int *o, unsigned int *a){ *o = sk_h_85754(*a, *unaff
  * Confidence: low
  * Notes: FUN_001a84f4/0022995c/001a8564.
  */
-void sk_ctx_call(sk_word_t a){ sk_ctx_save(0); sk_ctx_call_h(a); sk_ctx_restore(); }
+void sk_ctx_call(sk_word_t a){ sk_ctx_save(0); sk_ctx_call_h(a, 0); sk_ctx_restore(); }
 /* FUN_0006e608 @ 0x6e608   (est. sk_ctx_call_h)
  * Ghidra: void FUN_0006e608(undefined8,undefined8)
  * Runs the helper with the second argument.
  * Confidence: low
  * Notes: FUN_0022995c.
  */
-void sk_ctx_call_h(sk_word_t a, sk_word_t b){ sk_ctx_call_h(b); }
+void sk_ctx_call_h(sk_word_t a, sk_word_t b){ sk_ctx_call_h(b, 0); }
 /* FUN_0006e638 @ 0x6e638   (est. sk_ctx_call2)
  * Ghidra: void FUN_0006e638(undefined8,undefined8)
  * Saves the context, runs the helper with the second argument, restores.
  * Confidence: low
  * Notes: FUN_001a84f4/0022995c/001a8564.
  */
-void sk_ctx_call2(sk_word_t a, sk_word_t b){ sk_ctx_save(0); sk_ctx_call_h(b); sk_ctx_restore(); }
+void sk_ctx_call2(sk_word_t a, sk_word_t b){ sk_ctx_save(0); sk_ctx_call_h(b, 0); sk_ctx_restore(); }
 /* FUN_0006e688 @ 0x6e688   (est. sk_get4_aae60)
  * Ghidra: void FUN_0006e688(undefined4*)
  * Fetches a 32-bit value via 0xaae60.
@@ -9407,21 +9409,21 @@ void sk_state_err_fwd(void){ sk_state_error_rec(); }
  * Confidence: low
  * Notes: FUN_0036a940.
  */
-void sk_obj_state_alloc(sk_word_t *in){ long o = sk_alloc_obj(0, 0, 0); *(sk_word_t*)((char*)o+0x10)=in[0]; *(sk_word_t*)((char*)o+0x18)=in[1]; *(sk_word_t*)((char*)o+0x20)=in[2]; *(sk_word_t*)((char*)o+0x28)=in[3]; *(sk_word_t*)((char*)o+0x30)=in[4]; *(sk_word_t*)((char*)o+0x38)=in[5]; *(char*)((char*)o+0x39)=*(char*)((char*)in+0x29); *(char*)((char*)o+0x41)=*(char*)((char*)in+0x31); }
+void sk_obj_state_alloc(sk_word_t *in){ long o = (long)sk_alloc_obj(0, 0, 0); *(sk_word_t*)((char*)o+0x10)=in[0]; *(sk_word_t*)((char*)o+0x18)=in[1]; *(sk_word_t*)((char*)o+0x20)=in[2]; *(sk_word_t*)((char*)o+0x28)=in[3]; *(sk_word_t*)((char*)o+0x30)=in[4]; *(sk_word_t*)((char*)o+0x38)=in[5]; *(char*)((char*)o+0x39)=*(char*)((char*)in+0x29); *(char*)((char*)o+0x41)=*(char*)((char*)in+0x31); }
 /* FUN_0006fb1c @ 0x6fb1c   (est. sk_pac_register)
  * Ghidra: void FUN_0006fb1c(long*)
  * Registers a PAC-resource context: queries the resource capability, and on failure raises the 'InternalExclaveLauncher.PacResou[rce]' fatal; otherwise stores the resource fields into the context and links it.
  * Confidence: low
  * Notes: Strings s_Fatal_error_005accd0, s_InternalExclaveLauncher_PacResou_005bfbb0; FUN_0006fce8/0006fd7c/0006fd4c/0036b270; indirect call via *param_1+0x1b8.
  */
-void sk_pac_register(long *res){ sk_word_t out[6]={0,0,0,0,0,0}; (*(void(**)(sk_word_t*,int,int,int,int,int))(*res + 0x1b8))(&out[0],0x12,0,0,0,0); if (unaff_x21 == 0) { long l = sk_pac_lookup(*(sk_word_t*)((char*)unaff_x20+0x10), out[0]);  /* FUN_0006fce8 */ if (l != 0) sk_fatal(s_Fatal_error,0xb,2,0xd000000000000016,0x80000000005bfbc0,s_InternalExclaveLauncher_PacResou,0x29,2,0x46,0); long o = sk_pac_obj();  /* FUN_0006fd7c */ *(sk_word_t*)((char*)o+0x20)=out[1]; *(sk_word_t*)((char*)o+0x18)=out[0]; *(long*)((char*)o+0x10)=(long)unaff_x20; *(sk_word_t*)((char*)o+0x30)=out[3]; *(sk_word_t*)((char*)o+0x28)=out[2]; *(sk_word_t*)((char*)o+0x40)=out[4]; *(sk_word_t*)((char*)o+0x38)=out[5]; sk_pac_link(out[5], 0);  /* FUN_0006fd4c */ sk_alloc_pages(o,0); } }
+void sk_pac_register(long *res){ sk_word_t out[6]={0,0,0,0,0,0}; (*(void(**)(sk_word_t*,int,int,int,int,int))(*res + 0x1b8))(&out[0],0x12,0,0,0,0); if (unaff_x21 == 0) { long l = (long)sk_pac_lookup(*(sk_word_t*)((char*)unaff_x20+0x10), out[0]);  /* FUN_0006fce8 */ if (l != 0) sk_fatal(s_Fatal_error,0xb,2,0xd000000000000016,0x80000000005bfbc0,s_InternalExclaveLauncher_PacResou,0x29,2,0x46,0); long o = (long)sk_pac_obj();  /* FUN_0006fd7c */ *(sk_word_t*)((char*)o+0x20)=out[1]; *(sk_word_t*)((char*)o+0x18)=out[0]; *(long*)((char*)o+0x10)=(long)unaff_x20; *(sk_word_t*)((char*)o+0x30)=out[3]; *(sk_word_t*)((char*)o+0x28)=out[2]; *(sk_word_t*)((char*)o+0x40)=out[4]; *(sk_word_t*)((char*)o+0x38)=out[5]; sk_pac_link(out[5], 0, o);  /* FUN_0006fd4c */ sk_alloc_pages((sk_word_t)o,0); } }
 /* FUN_0006fc24 @ 0x6fc24   (est. sk_pac_commit)
  * Ghidra: void FUN_0006fc24(void)
  * Commits a PAC-resource context: allocates the object and copies the caller's resource fields into it, then links it.
  * Confidence: low
  * Notes: FUN_0006fd7c/0006fd4c/0036b270.
  */
-void sk_pac_commit(void){ long o = sk_pac_obj(); *(sk_word_t*)((char*)o+0x20)=*(sk_word_t*)((char*)unaff_x20+0x18); *(sk_word_t*)((char*)o+0x18)=*(sk_word_t*)((char*)unaff_x20+0x10); *(long*)((char*)o+0x10)=(long)unaff_x20; *(sk_word_t*)((char*)o+0x30)=*(sk_word_t*)((char*)unaff_x20+0x28); *(sk_word_t*)((char*)o+0x28)=*(sk_word_t*)((char*)unaff_x20+0x20); *(sk_word_t*)((char*)o+0x40)=*(sk_word_t*)((char*)unaff_x20+0x38); *(sk_word_t*)((char*)o+0x38)=*(sk_word_t*)((char*)unaff_x20+0x30); sk_pac_link(*(sk_word_t*)((char*)unaff_x20+0x39), 0); sk_alloc_pages(o,0); }
+void sk_pac_commit(void){ long o = (long)sk_pac_obj(); *(sk_word_t*)((char*)o+0x20)=*(sk_word_t*)((char*)unaff_x20+0x18); *(sk_word_t*)((char*)o+0x18)=*(sk_word_t*)((char*)unaff_x20+0x10); *(long*)((char*)o+0x10)=(long)unaff_x20; *(sk_word_t*)((char*)o+0x30)=*(sk_word_t*)((char*)unaff_x20+0x28); *(sk_word_t*)((char*)o+0x28)=*(sk_word_t*)((char*)unaff_x20+0x20); *(sk_word_t*)((char*)o+0x40)=*(sk_word_t*)((char*)unaff_x20+0x38); *(sk_word_t*)((char*)o+0x38)=*(sk_word_t*)((char*)unaff_x20+0x30); sk_pac_link(*(sk_word_t*)((char*)unaff_x20+0x39), 0, o); sk_alloc_pages((sk_word_t)o,0); }
 /* FUN_0006fcb0 @ 0x6fcb0   (est. sk_pac_commit_fwd)
  * Ghidra: void FUN_0006fcb0(void)
  * Forwarder to 0x6fc24.
@@ -9456,7 +9458,7 @@ void sk_pac_register_fwd2(void){ sk_pac_register(0); }
  * Confidence: low
  * Notes: CallSupervisor(3).
  */
-void sk_pac_lookup(sk_word_t a, sk_word_t b){ volatile sk_word_t *tp=(volatile sk_word_t*)__builtin_thread_pointer_ro(); *tp=0; CallSupervisor(3); return 0; }
+sk_word_t sk_pac_lookup(sk_word_t a, sk_word_t b){ volatile sk_word_t *tp=(volatile sk_word_t*)__builtin_thread_pointer_ro(); *tp=0; CallSupervisor(3); return (sk_word_t)tp[0]; }
 /* FUN_0006fd3c @ 0x6fd3c   (est. sk_pac_token)
  * Ghidra: undefined1[16] FUN_0006fd3c(void)
  * Returns the PAC context token 0x64e508.
