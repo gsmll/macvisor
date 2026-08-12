@@ -43,7 +43,6 @@ extern uint64_t tcr_el1;              /* TCR_EL1 */
 extern uint64_t ttbr0_el1;            /* TTBR0_EL1 */
 extern uint64_t sctlr_el1;            /* SCTLR_EL1 */
 extern uint64_t vbar_el1;             /* VBAR_EL1 */
-extern uint64_t midr_el1;             /* MIDR_EL1 */
 extern uint64_t currentel;            /* CurrentEL */
 extern uint64_t id_aa64pfr0_el1;      /* ID_AA64PFR0_EL1 */
 extern uint64_t id_aa64pfr1_el1;      /* ID_AA64PFR1_EL1 */
@@ -54,15 +53,22 @@ extern uint64_t id_aa64isar1_el1;     /* ID_AA64ISAR1_EL1 */
 extern int sptm_snprintf(void *buf, uint64_t size, uint64_t unused,
     uint64_t limit, const char *fmt, void *ap);                          /* FUN_000ad278 */
 extern void sptm_bzero(void *dst, uint64_t n);                            /* FUN_000abb60 */
-extern void sptm_save_late_const(uintptr_t pc);                           /* thunk_FUN_000abeb0 */
-extern void sptm_install_boot_vectors(uintptr_t base);                    /* thunk_FUN_000abb60 */
 extern void sptm_el2_enable(uint64_t selector, uintptr_t ctx);            /* FUN_000ab8dc */
 extern void sptm_memmap_available(const char *name, uint32_t a,
     uint32_t b);                                                          /* FUN_000d9be8 */
 extern void sptm_hib_teardown_a(uint64_t val);                            /* FUN_000c1b70 */
 extern void sptm_hib_teardown_b(void);                                    /* FUN_000c1cc4 */
-extern void sptm_txm_handoff(uint8_t *out, uintptr_t *in);                /* FUN_000d8a58 */
+extern uintptr_t sptm_txm_handoff(void *in);                              /* FUN_000d8a58 */
 extern uintptr_t sptm_va_lookup(uintptr_t pa);                            /* FUN_000e40ec */
+
+/* GCM flush/chunk barrier helpers used by the trace/HIB driver setup. */
+extern void sptm_gcm_flush_barr(uintptr_t obj, uintptr_t args);           /* FUN_000ae8b4 */
+extern void sptm_gcm_chunk_barr(uintptr_t obj, uintptr_t args,
+    uint64_t n, uintptr_t *out);                                          /* FUN_000aeaa4 */
+
+/* DT copy / relocation thunks (arities from this decompile). */
+extern void sptm_dt_copy(uintptr_t dst, uintptr_t src, uintptr_t len);    /* thunk_FUN_000abeb0 */
+extern void sptm_dt_reloc(uintptr_t base, uintptr_t len);                 /* thunk_FUN_000abb60 */
 
 /* Claimed by other trees (addresses in comments; names to confirm on link).
  * FUN_000b2620 is the SPTM->TXM guarded call stub; FUN_000bf298 registers a
@@ -84,100 +90,104 @@ extern uintptr_t sptm_dt_state[2];
 /* DAT_001012d8 — SPTM bootstrap-stage bitmask (defined in sptm_init.c). */
 extern uint64_t sptm_boot_stages;
 
-/* DAT_00094938 — pointer to the root DT node of the /chosen memory-map
- * ("memory-map") node discovered by sptm_boot_fixups. */
+/* DAT_00094938 — pointer to the root DT node of the /chosen "memory-map"
+ * node discovered by sptm_boot_fixups. */
 extern uintptr_t sptm_dt_memory_map;
 
-/* DAT_00094500 / DAT_000944f8 — the DT blob's end / base addresses. */
-extern uintptr_t sptm_dt_blob_end;   /* DAT_00094500 */
+/* DT blob bounds. */
 extern uintptr_t sptm_dt_blob_base;  /* DAT_000944f8 */
+extern uintptr_t sptm_dt_blob_end;   /* DAT_00094500 */
 
-/* DAT_00094358 — maximum "die-id" seen while iterating /cpus (init_sched). */
-extern uint32_t sptm_max_die_id;
+/* Scalar globals (u64 values) referenced across the init helpers. */
+extern uint64_t sptm_ro_base;        /* DAT_000944a8 */
+extern uint64_t sptm_ro_end;         /* DAT_000944b0 */
+extern uint64_t sptm_cpu_count;      /* DAT_00100728 */
+extern uint64_t sptm_dbg_flag;       /* DAT_00100db8 */
+extern uint64_t sptm_hib_state;      /* DAT_00100e00 */
+extern uint64_t sptm_boot_flag_cfg;  /* DAT_00100df8 */
+extern uint64_t sptm_dt_end_cur;     /* DAT_001012e8 */
+extern uint64_t sptm_boot_root_ft;   /* DAT_00095d48 — bootstrap root FTE value */
+extern uint64_t sptm_region_a;       /* DAT_00095d18 */
+extern uint64_t sptm_region_b;       /* DAT_00095d20 */
+extern uint64_t sptm_frame_base;     /* DAT_00095118 */
+extern uint64_t sptm_frame_step;     /* DAT_00095108 */
+extern uint64_t sptm_va_base_off;    /* DAT_00095110 */
+extern uint64_t sptm_cursor_end;     /* DAT_00101f80 */
+extern uint64_t sptm_percpu_a;       /* DAT_00095440 */
+extern uint64_t sptm_percpu_b;       /* DAT_00095444 */
+extern uint64_t sptm_percpu_c;       /* DAT_00095448 */
+extern uint64_t sptm_percpu_d;       /* DAT_00095450 */
+extern uint64_t sptm_percpu_e;       /* DAT_00095460 */
+extern uint64_t sptm_boot_table_b;   /* DAT_000952d8 */
+extern uint64_t sptm_boot_table_c;   /* DAT_000952e0 */
+extern uint64_t sptm_frame_f;        /* DAT_000950d0 */
+extern uint64_t sptm_frame_g;        /* DAT_000950d8 */
+extern uint64_t sptm_phase;          /* DAT_00012f30 */
+extern uint64_t sptm_boot_fte_alt;   /* DAT_00095d10 */
+extern uint64_t sptm_boot_fte_alt2;  /* DAT_00095d3c */
+extern uint64_t sptm_frame_d;        /* DAT_00095178 */
+extern uint64_t sptm_frame_e;        /* DAT_00095270 */
+extern uint64_t sptm_frame_h;        /* DAT_000950c0 */
+extern uint64_t sptm_frame_i;        /* DAT_000950c8 */
+extern uint64_t sptm_sk_src0;        /* DAT_00094950 */
+extern uint64_t sptm_sk_src1;        /* DAT_00094960 */
+extern uint64_t sptm_sk_dst0;        /* DAT_00094470 */
+extern uint64_t sptm_sk_dst1;        /* DAT_00094478 */
 
-/* DAT_00094360..000943a8 — SK bootstrap region globals (sptm_start_sk). */
-extern uint64_t sptm_sk_boot0;      /* DAT_00094360 */
-extern uint64_t sptm_sk_boot1;      /* DAT_00094368 */
-extern uint64_t sptm_sk_boot2;      /* DAT_00094370 */
-extern uint64_t sptm_sk_rx;         /* DAT_00094378 */
-extern uint64_t sptm_sk_ro;         /* DAT_00094380 */
-extern uint64_t sptm_sk_rw;         /* DAT_00094388 */
-extern uint64_t sptm_sk_le;         /* DAT_00094390 */
-extern uint64_t sptm_dt_devicetree; /* DAT_00094398 */
-extern uint64_t sptm_sk_dt_end;     /* DAT_000943a0 */
-extern uint64_t sptm_sk_handoff;    /* DAT_000943a8 */
+/* Boot region globals written by sptm_start_sk. */
+extern uint64_t sptm_sk_boot0;       /* DAT_00094360 */
+extern uint64_t sptm_sk_boot1;       /* DAT_00094368 */
+extern uint64_t sptm_sk_boot2;       /* DAT_00094370 */
+extern uint64_t sptm_sk_rx;          /* DAT_00094378 */
+extern uint64_t sptm_sk_ro;          /* DAT_00094380 */
+extern uint64_t sptm_sk_rw;          /* DAT_00094388 */
+extern uint64_t sptm_sk_le;          /* DAT_00094390 */
+extern uint64_t sptm_dt_devicetree;  /* DAT_00094398 */
+extern uint64_t sptm_sk_dt_end;      /* DAT_000943a0 */
+extern uint64_t sptm_sk_handoff;     /* DAT_000943a8 */
 
-/* Boot flag / memory-attribute constants. */
-extern uint32_t sptm_boot_flag_0;   /* DAT_00094480 */
-extern uint32_t sptm_boot_flag_1;   /* DAT_00094481 */
-extern uint32_t sptm_boot_attr_0;   /* DAT_00094482 */
-extern uint32_t sptm_boot_attr_1;   /* DAT_00094483 */
+/* CTRR (Core Trace Register) core/cluster region {begin,end} pairs. */
+extern uint64_t sptm_nc_begin;       /* DAT_00094a50 */
+extern uint64_t sptm_nc_end;         /* DAT_00094a58 */
+extern uint64_t sptm_nc2_begin;      /* DAT_00094a60 */
+extern uint64_t sptm_nc2_end;        /* DAT_00094a68 */
+extern uint64_t sptm_nc3_begin;      /* DAT_00094a70 */
+extern uint64_t sptm_nc3_end;        /* DAT_00094a78 */
+extern uint64_t sptm_nc4_begin;      /* DAT_00094a80 */
+extern uint64_t sptm_nc4_end;        /* DAT_00094a88 */
+extern uint64_t sptm_nc5_begin;      /* DAT_00094a90 */
+extern uint64_t sptm_nc5_end;        /* DAT_00094a98 */
+extern uint64_t sptm_nc6_begin;      /* DAT_00094aa0 */
+extern uint64_t sptm_nc6_end;        /* DAT_00094aa8 */
 
-/* Misc region/table bases used to derive handoff VAs. */
-extern uint64_t sptm_ro_base;       /* DAT_000944a8 */
-extern uint64_t sptm_ro_end;        /* DAT_000944b0 */
-extern uint64_t sptm_nc_begin;      /* DAT_00094a50 */
-extern uint64_t sptm_nc_end;        /* DAT_00094a58 */
-extern uint64_t sptm_nc2_begin;     /* DAT_00094a60 */
-extern uint64_t sptm_nc2_end;       /* DAT_00094a68 */
-extern uint64_t sptm_nc3_begin;     /* DAT_00094a70 */
-extern uint64_t sptm_nc3_end;       /* DAT_00094a78 */
-extern uint64_t sptm_nc4_begin;     /* DAT_00094a80 */
-extern uint64_t sptm_nc4_end;       /* DAT_00094a88 */
-extern uint64_t sptm_nc5_begin;     /* DAT_00094a90 */
-extern uint64_t sptm_nc5_end;       /* DAT_00094a98 */
-extern uint64_t sptm_nc6_begin;     /* DAT_00094aa0 */
-extern uint64_t sptm_nc6_end;       /* DAT_00094aa8 */
+/* u32 boot flags / memattr constants. */
+extern uint32_t sptm_boot_flag_0;    /* DAT_00094480 */
+extern uint32_t sptm_boot_flag_1;    /* DAT_00094481 */
+extern uint32_t sptm_boot_attr_0;    /* DAT_00094482 */
+extern uint32_t sptm_boot_attr_1;    /* DAT_00094483 */
+extern uint32_t sptm_hib_opt;        /* DAT_000950dc */
+extern uint32_t sptm_max_die_id;     /* DAT_00094358 */
 
-/* DT/boot tables and per-CPU records (opaque byte arrays; addresses taken). */
-extern uint8_t sptm_boot_root_ft[];   /* DAT_00095d48 — bootstrap root FTE */
-extern uint8_t sptm_boot_va_table[];  /* DAT_00095280 */
-extern uint8_t sptm_region_table[];   /* DAT_00095d50 */
-extern uint8_t sptm_region_a[];       /* DAT_00095d18 */
-extern uint8_t sptm_region_b[];       /* DAT_00095d20 */
-extern uint8_t sptm_frame_table_a[];  /* DAT_00095118 */
-extern uint8_t sptm_frame_table_b[];  /* DAT_00095108 */
-extern uint8_t sptm_frame_table_c[];  /* DAT_00095110 */
-extern uint8_t sptm_frame_table_d[];  /* DAT_00095178 */
-extern uint8_t sptm_frame_table_e[];  /* DAT_00095270 */
-extern uint8_t sptm_frame_table_f[];  /* DAT_000950d0 */
-extern uint8_t sptm_frame_table_g[];  /* DAT_000950d8 */
-extern uint8_t sptm_frame_table_h[];  /* DAT_000950c0 */
-extern uint8_t sptm_frame_table_i[];  /* DAT_000950c8 */
-extern uint8_t sptm_boot_table_a[];   /* DAT_000952d0 */
-extern uint8_t sptm_boot_table_b[];   /* DAT_000952d8 */
-extern uint8_t sptm_boot_table_c[];   /* DAT_000952e0 */
-extern uint8_t sptm_boot_table_d[];   /* DAT_00095220 */
-extern uint8_t sptm_boot_table_e[];   /* DAT_00095180 */
-extern uint8_t sptm_boot_table_f[];   /* DAT_000951d0 */
-extern uint8_t sptm_percpu_table_a[]; /* DAT_00095440 */
-extern uint8_t sptm_percpu_table_b[]; /* DAT_00095444 */
-extern uint8_t sptm_percpu_table_c[]; /* DAT_00095448 */
-extern uint8_t sptm_percpu_table_d[]; /* DAT_00095450 */
-extern uint8_t sptm_percpu_table_e[]; /* DAT_00095460 */
-extern uint8_t sptm_boot_fte_alt[];   /* DAT_00095d10 */
-extern uint8_t sptm_boot_fte_alt2[];  /* DAT_00095d3c */
-extern uint8_t sptm_handoff_region[]; /* DAT_00101ac8: count, then 24-byte entries */
-extern uint8_t sptm_cursor_end[];     /* DAT_00101f80 — end cursor */
-extern uint8_t sptm_common;           /* __common */
-extern uint8_t sptm_debug_a[];        /* DAT_0010000c */
-extern uint8_t sptm_debug_b[];        /* DAT_0010000e */
-extern uint8_t sptm_hw_table[];       /* DAT_000a5000 */
-extern uint8_t sptm_const_table[];    /* DAT_00019c68 */
-extern uint8_t sptm_phase_table[];    /* DAT_00012f30 */
-extern uint8_t sptm_kc_end[];         /* DAT_00094504 */
+/* Pointer global. DAT_00095cf8 holds the bootstrap VBAR source pointer. */
+extern uint64_t *sptm_boot_vbar;     /* DAT_00095cf8 */
 
-/* Per-cpu / bootstrap-state globals. */
-extern uintptr_t sptm_cpu_count;      /* DAT_00100728 */
-extern uint64_t sptm_dbg_flag;        /* DAT_00100db8 */
-extern uint64_t sptm_hib_state;       /* DAT_00100e00 */
-extern uint64_t sptm_boot_flag_cfg;   /* DAT_00100df8 */
-extern uintptr_t sptm_dt_end_cur;     /* DAT_001012e8 */
-extern uintptr_t sptm_percpu_frames;  /* DAT_00095168 (via frame base) */
-extern uintptr_t sptm_fte_end;        /* DAT_00095cf8 */
-extern uint32_t sptm_hib_opt;         /* DAT_000950dc */
+/* Data tables whose addresses are taken (opaque byte arrays). */
+extern uint8_t sptm_boot_va_table[];    /* DAT_00095280 */
+extern uint8_t sptm_kc_end[];           /* DAT_00094504 */
+extern uint8_t sptm_common;             /* __common */
+extern uint8_t sptm_region_table[];     /* DAT_00095d50 */
+extern uint8_t sptm_const_table[];      /* DAT_00019c68 */
+extern uint8_t sptm_debug_a[];          /* DAT_0010000c */
+extern uint8_t sptm_debug_b[];          /* DAT_0010000e */
+extern uint8_t sptm_boot_table_e[];     /* DAT_00095180 */
+extern uint8_t sptm_boot_table_d[];     /* DAT_00095220 */
+extern uint8_t sptm_boot_table_f[];     /* DAT_000951d0 */
+extern uint8_t sptm_hw_table[];         /* DAT_000a5000 */
+extern uint8_t sptm_boot_table_a[];     /* DAT_000952d0 */
+extern uint64_t sptm_region_count;      /* DAT_00101ac8 — region-table count */
+extern uint64_t sptm_region_entries[];  /* DAT_00101ad0 — 24-byte entries */
 
-/* Trace / HIB setup scratch. */
+/* Trace / HIB setup scratch globals. */
 extern uintptr_t sptm_trace_r0;       /* DAT_00100f50 */
 extern uintptr_t sptm_trace_r1;       /* DAT_00100f58 */
 extern uintptr_t sptm_trace_r2;       /* DAT_00100f60 */
@@ -257,9 +267,11 @@ typedef struct {
     uint64_t frame_g;           /* +0x138 (DAT_00100238) */
     uint64_t debug_b;           /* +0x140 (DAT_00100240) */
     uint64_t boot_table_e;      /* +0x148 (DAT_00100248) */
+    uint64_t pad_150[0x58 / 8]; /* +0x150 .. +0x1a7 */
     uint64_t id_isar0;          /* +0x1a8 (DAT_001002a8) */
     uint64_t id_isar1;          /* +0x1b0 (DAT_001002b0) */
     uint64_t cache_line;        /* +0x1b8 (DAT_001002b8) */
+    uint64_t pad_1c0[0x310 / 8];/* +0x1c0 .. +0x4cf */
     uint64_t hib_opt;           /* +0x4d0 (DAT_001005d0) */
 } sptm_txm_context_t;
 extern sptm_txm_context_t sptm_txm_context;   /* base DAT_00100100 */
@@ -280,16 +292,10 @@ typedef struct {
     uint64_t bootkc_le_va;      /* +0x058 (DAT_00100318) */
     uint64_t hw_table;          /* +0x060 (DAT_00100320) */
     uint64_t fte_class;         /* +0x068 (DAT_00100328) */
-    uint64_t kc_rw_va;          /* +0x2e8 (DAT_001005a8) */
-    uint64_t kc_ro_va;          /* +0x2f0 (DAT_001005b0) */
-    uint64_t kc_le_va;          /* +0x2f8 (DAT_001005b8) */
-    uint64_t hib_state_ptr;     /* +0x318 (DAT_001005d8) */
-    uint64_t mem_map;           /* +0x320 (DAT_001005e0) */
-    uint64_t frame_f;           /* +0x328 (DAT_001005e8) */
-    uint64_t frame_g;           /* +0x330 (DAT_001005f0) */
-    uint64_t frame_h;           /* +0x338 (DAT_001005f8) */
-    uint64_t frame_i;           /* +0x340 (DAT_00100600) */
+    uint64_t pad_070[0x110 / 8];/* +0x070 .. +0x17f */
     uint64_t boot_flag;         /* +0x180 (DAT_00100440) */
+    uint64_t pad_188[0x10 / 8]; /* +0x188 .. +0x197 */
+    uint64_t common;            /* +0x198 (DAT_00100458) */
     uint64_t count2;            /* +0x1a0 (DAT_00100460) */
     uint64_t region_count;      /* +0x1a8 (DAT_00100468) */
     uint64_t region_base;       /* +0x1b0 (DAT_00100470) */
@@ -317,10 +323,21 @@ typedef struct {
     uint64_t frame_g2;          /* +0x268 (DAT_00100528) */
     uint64_t debug_b;           /* +0x270 (DAT_00100530) */
     uint64_t boot_table_e;      /* +0x278 (DAT_00100538) */
-    uint64_t common;            /* +0x198 (DAT_00100458) */
+    uint64_t pad_280[0x58 / 8]; /* +0x280 .. +0x2d7 */
     uint64_t boot_a2;           /* +0x2d8 (DAT_00100598) */
     uint64_t boot_b2;           /* +0x2e0 (DAT_001005a0) */
+    uint64_t kc_rw_va;          /* +0x2e8 (DAT_001005a8) */
+    uint64_t kc_ro_va;          /* +0x2f0 (DAT_001005b0) */
+    uint64_t kc_le_va;          /* +0x2f8 (DAT_001005b8) */
+    uint64_t sk_sysreg;         /* +0x300 (DAT_001005c0) */
     uint64_t hib_opt;           /* +0x308 (DAT_001005c8) */
+    uint64_t pad_310;           /* +0x310 */
+    uint64_t hib_state_ptr;     /* +0x318 (DAT_001005d8) */
+    uint64_t mem_map;           /* +0x320 (DAT_001005e0) */
+    uint64_t frame_f;           /* +0x328 (DAT_001005e8) */
+    uint64_t frame_g;           /* +0x330 (DAT_001005f0) */
+    uint64_t frame_h;           /* +0x338 (DAT_001005f8) */
+    uint64_t frame_i;           /* +0x340 (DAT_00100600) */
     uint64_t flags_348;         /* +0x348 (DAT_00100608) */
 } sptm_sk_context_t;
 extern sptm_sk_context_t sptm_sk_context;    /* base DAT_001002c0 */
@@ -758,20 +775,21 @@ sptm_boot_region(const char *name, int required)
  * Ghidra: void FUN_000b8154(void)
  * Announce the device-tree blob {DAT_000944f8, DAT_00094500} into the DT
  * state, resolve the /chosen "memory-map" node into DAT_00094938, and
- * advance the bootstrap-stage bitmask by the "DT ready" bit (bit 1). The
- * release barrier (LORelease) orders the writes before the stage check; a
- * re-announce of the same stage panics.
+ * advance the bootstrap-stage bitmask. The release barrier (LORelease)
+ * orders the writes before the stage check; a re-announce of the same stage
+ * panics.
  * Confidence: medium
- * Notes: stage bits = DAT_001012d8; the re-announce panic is
- *   "Attempted to announce bootstrap stage twice". */
+ * Notes: stage bits = DAT_001012d8; new bit = (stages&2)+2 (bit 1 or 2); the
+ *   re-announce panic is "Attempted to announce bootstrap stage twice". */
 void
 sptm_boot_fixups(void)
 {
     uint64_t prev;
+    uint64_t bit;
     uintptr_t node = 0;
     int rc;
 
-    if (sptm_dt_state[0] + (uintptr_t)sptm_dt_blob_end < sptm_dt_blob_base)
+    if (sptm_dt_blob_base + sptm_dt_blob_end < sptm_dt_blob_base)
         sptm_panic_bad_dt();
     sptm_dt_state[0] = sptm_dt_blob_base;
     sptm_dt_state[1] = sptm_dt_blob_end;
@@ -782,9 +800,10 @@ sptm_boot_fixups(void)
         sptm_panic("DT memory map is NULL");
     sptm_dt_memory_map = node;
     prev = sptm_boot_stages;
-    sptm_boot_stages = sptm_boot_stages | ((sptm_boot_stages & 2) + 2);
+    bit = (sptm_boot_stages & 2) + 2;
+    sptm_boot_stages = sptm_boot_stages | bit;
     sptm_membar_release();
-    if ((prev & 2) != 0)
+    if ((prev & bit) != 0)
         sptm_panic("Attempted to announce bootstrap stage twice");
 }
 
@@ -806,7 +825,7 @@ void
 sptm_dispatch_engine_init(void)
 {
     uint64_t prev;
-    uintptr_t args0 = 0, args1 = 0, args2 = 0, args3 = 0;
+    uintptr_t args[4] = { 0, 0, 0, 0 };
 
     sptm_memmap_available("SPTM_ro", 2, 3);
     sptm_memmap_available("DeviceTree", 2, 0x23);
@@ -833,13 +852,9 @@ sptm_dispatch_engine_init(void)
              * call (+0x38) and region commit. */
             sptm_gcm_flush_barr(sptm_obj, sptm_obj_args);
             sptm_gcm_chunk_barr(sptm_obj, sptm_obj_args, 0x1a8, &sptm_trace_cfg);
-            args0 = 0;
-            args1 = 0;
-            args2 = 0;
-            args3 = 0;
             (*(void (**)(uintptr_t, uintptr_t, uintptr_t *))(sptm_obj + 0x38))(
-                sptm_obj, sptm_obj_args, &args0);
-            sptm_region_commit(&sptm_trace_cpu, &args0, &sptm_trace_tbl);
+                sptm_obj, sptm_obj_args, args);
+            sptm_region_commit(&sptm_trace_cpu, args, &sptm_trace_tbl);
             sptm_trace_cpu1 = 0;
             sptm_trace_cpu = 0;
             sptm_trace_cpu3 = 0;
@@ -940,8 +955,8 @@ sptm_init_kc_regions(void)
  * Ghidra: ulong FUN_000ba950(undefined8 name, ulong len, undefined8 out)
  * Read the /chosen node property named by `name` (the random-seed / SK
  * entropy source), copy its bytes into `out` and return the length. The value
- * is both copied (sptm_save_late_const) and re-fixed-up (sptm_install_boot_
- * vectors). A missing property or a size larger than `len` panics.
+ * is copied (sptm_dt_copy) and then relocated (sptm_dt_reloc). A missing
+ * property or a size larger than `len` panics.
  * Confidence: high
  * Notes: /chosen lookup via sptm_dt_find_node; property fetch via
  *   sptm_dt_get_prop. */
@@ -960,10 +975,8 @@ sptm_get_random(const char *name, uintptr_t len, uintptr_t out)
         sptm_dt_state[0], sptm_dt_state[1]);
     if (rc == 1) {
         if (val != 0 && size != 0 && (uintptr_t)size <= len) {
-            sptm_save_late_const(out);
-            sptm_save_late_const(val);
-            sptm_install_boot_vectors(val);
-            sptm_install_boot_vectors(size);
+            sptm_dt_copy(out, val, size);
+            sptm_dt_reloc(val, size);
             return size;
         }
         sptm_panic("random_seed %p size mismatch", (void *)val);
@@ -1000,13 +1013,13 @@ sptm_start_sk(void)
     sptm_sk_rw = (uintptr_t)*region;
     region = sptm_boot_region("CL4_le", 1);
     sptm_sk_le = (uintptr_t)*region;
-    sptm_sk_handoff = sptm_txm_handoff(&sptm_kc_end[0], &sptm_common);
+    sptm_sk_handoff = sptm_txm_handoff((void *)sptm_kc_end);
     region = sptm_boot_region("DeviceTree", 1);
     sptm_dt_devicetree = (uintptr_t)*region;
     sptm_sk_dt_end = sptm_dt_blob_end;
-    sptm_sk_boot0 = sptm_region_a[0];  /* DAT_00094470 = DAT_00094950 */
-    sptm_sk_boot1 = sptm_region_a[1];  /* DAT_00094478 = DAT_00094960 */
-    sptm_sk_boot2 = sptm_sysreg_read(3, 3, 0xe, 0, 6);
+    sptm_sk_dst0 = sptm_sk_src0;      /* DAT_00094470 = DAT_00094950 */
+    sptm_sk_dst1 = sptm_sk_src1;      /* DAT_00094478 = DAT_00094960 */
+    sptm_txm_context.hib_opt = sptm_sysreg_read(3, 3, 0xe, 0, 6);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1033,15 +1046,15 @@ sptm_start_txm(void)
         cpu = sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
     sptm_txm_context.dispatch_fn = *(uintptr_t *)(cpu + 0xa58);
     sptm_txm_context.count = 10;
-    sptm_txm_context.fte_class = (uint32_t)sptm_region_table[0];
+    sptm_txm_context.fte_class = (uint32_t)sptm_boot_fte_alt2;
     sptm_txm_context.dt_begin = sptm_dt_blob_base;
     sptm_txm_context.dt_end = sptm_dt_blob_end;
     sptm_txm_context.id_pfr0 = id_aa64pfr0_el1;
     sptm_txm_context.id_pfr1 = id_aa64pfr1_el1;
     sptm_txm_context.num_cpus = sptm_cpu_count;
-    sptm_txm_context.root_ft = (uint64_t)sptm_boot_root_ft;
+    sptm_txm_context.root_ft = sptm_boot_root_ft;
     sptm_txm_context.va_table = (uint64_t)sptm_boot_va_table;
-    sptm_txm_context.phase = (uint64_t)sptm_phase_table;
+    sptm_txm_context.phase = sptm_phase;
     sptm_txm_context.reserved_058 = 0;
     sptm_txm_context.kc_end = (uint64_t)sptm_kc_end;
     sptm_txm_context.common = (uint64_t)&sptm_common;
@@ -1049,22 +1062,22 @@ sptm_start_txm(void)
     sptm_txm_context.id_isar1 = id_aa64isar1_el1;
     sptm_txm_context.cache_line = sptm_sysreg_read(3, 0, 0, 6, 2);
     sptm_txm_context.count2 = 10;
-    sptm_txm_context.region_count = (uint64_t)sptm_handoff_region;
-    sptm_txm_context.region_base = (uint64_t)sptm_handoff_region;
-    sptm_txm_context.region_a = (uint64_t)sptm_region_a;
-    sptm_txm_context.region_b = (uint64_t)sptm_region_b;
-    sptm_txm_context.frame_table = (uint64_t)sptm_frame_table_a;
-    sptm_txm_context.cursor_end = (uint64_t)sptm_cursor_end;
-    sptm_txm_context.root_ft2 = (uint64_t)sptm_boot_root_ft;
-    sptm_txm_context.percpu_table = (uint64_t)sptm_percpu_table_e;
+    sptm_txm_context.region_count = (uint64_t)&sptm_region_count;
+    sptm_txm_context.region_base = (uint64_t)sptm_region_entries;
+    sptm_txm_context.region_a = sptm_region_a;
+    sptm_txm_context.region_b = sptm_region_b;
+    sptm_txm_context.frame_table = sptm_frame_base;
+    sptm_txm_context.cursor_end = sptm_cursor_end;
+    sptm_txm_context.root_ft2 = sptm_boot_root_ft;
+    sptm_txm_context.percpu_table = sptm_percpu_e;
     sptm_txm_context.fte_class_tbl = (uint64_t)sptm_region_table;
     sptm_txm_context.const_table = (uint64_t)sptm_const_table;
-    sptm_txm_context.percpu_a = (uint64_t)sptm_percpu_table_a;
-    sptm_txm_context.percpu_b = (uint64_t)sptm_percpu_table_c;
+    sptm_txm_context.percpu_a = sptm_percpu_a;
+    sptm_txm_context.percpu_b = sptm_percpu_c;
     if ((sptm_boot_flag_1 & 1) == 0) {
         sptm_txm_context.flags_118 |= 1;
-        sptm_txm_context.boot_a = (uint64_t)sptm_boot_table_b;
-        sptm_txm_context.boot_b = (uint64_t)sptm_boot_table_c;
+        sptm_txm_context.boot_a = sptm_boot_table_b;
+        sptm_txm_context.boot_b = sptm_boot_table_c;
     }
     sptm_txm_context.debug_a = (uint64_t)sptm_debug_a;
     sptm_txm_context.flags_c8 = 0;
@@ -1072,10 +1085,10 @@ sptm_start_txm(void)
     sptm_txm_context.boot_table_cnt = 10;
     sptm_txm_context.boot_table_ptr = (uint64_t)sptm_boot_table_d;
     sptm_txm_context.flags_118 |= 8;
-    sptm_txm_context.percpu_c = (uint64_t)sptm_percpu_table_d;
-    sptm_txm_context.percpu_d = (uint64_t)sptm_percpu_table_b;
-    sptm_txm_context.frame_f = (uint64_t)sptm_frame_table_f;
-    sptm_txm_context.frame_g = (uint64_t)sptm_frame_table_g;
+    sptm_txm_context.percpu_c = sptm_percpu_d;
+    sptm_txm_context.percpu_d = sptm_percpu_b;
+    sptm_txm_context.frame_f = sptm_frame_f;
+    sptm_txm_context.frame_g = sptm_frame_g;
     sptm_txm_context.debug_b = (uint64_t)sptm_debug_b;
     sptm_txm_context.boot_table_e = (uint64_t)sptm_boot_table_f;
     sptm_txm_context.hib_opt = sptm_sysreg_read(3, 3, 0xe, 0, 6);
@@ -1095,17 +1108,36 @@ sptm_start_txm(void)
  * Notes: VA translation helper: base + (region_pa - DAT_00095d18) + DAT_00095110
  *   when stage bit 0x100 clear; otherwise a per-entry scan of DAT_00101ac8
  *   (count) / DAT_00101ad0 (24-byte entries), else sptm_va_lookup. */
+
+/* Translate a boot-region physical address to its runtime virtual address,
+ * using either the static frame base or the region table. */
+static uintptr_t
+sptm_region_va_translate(uintptr_t pa)
+{
+    if (((uint32_t)sptm_boot_stages >> 8 & 1) == 0)
+        return (pa - sptm_region_a) + sptm_va_base_off;
+    {
+        uint64_t n = sptm_region_count;
+        uint64_t *e = sptm_region_entries;
+        while (n != 0) {
+            if (e[0] <= pa && pa < e[0] + (uintptr_t)e[2] * 0x4000)
+                return (pa - e[0]) + e[1];
+            e += 3;
+            n--;
+        }
+    }
+    return sptm_va_lookup(pa);
+}
+
 void
 sptm_start_sk_ctx(void)
 {
     uintptr_t cpu = 0;
-    uintptr_t pa, va;
-    uint64_t entries;
-    uintptr_t *entry;
+    uintptr_t pa;
+    long *region;
     int rc;
     uintptr_t aux = 0;
     uint32_t aux_size = 0;
-    long *region;
 
     cpu = sptm_sysreg_read(3, 6, 0xf, 8, 0);
     if (cpu == 0)
@@ -1113,42 +1145,21 @@ sptm_start_sk_ctx(void)
     else
         cpu = sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
     sptm_sk_context.handoff_magic = *(uintptr_t *)(cpu + 0x15b0);
-    sptm_sk_context.frame_table = (uint64_t)sptm_frame_table_a;
-    sptm_sk_context.dt_begin = sptm_dt_end_cur + (uintptr_t)sptm_frame_table_b[0] * 0x4000;
+    sptm_sk_context.frame_table = sptm_frame_base;
+    sptm_sk_context.dt_begin = sptm_dt_end_cur + sptm_frame_step * 0x4000;
     sptm_sk_context.num_cpus = sptm_cpu_count;
     sptm_sk_context.hw_table = (uint64_t)sptm_hw_table;
 
     /* translate the DT base to its runtime VA */
-    if (((uint32_t)sptm_boot_stages >> 8 & 1) == 0) {
-        sptm_sk_context.va_base = (sptm_dt_blob_base - (uintptr_t)sptm_region_a[0]) +
-            (uintptr_t)sptm_frame_table_c[0];
-    } else {
-        va = 0;
-        entries = (uint64_t)sptm_handoff_region[0];
-        if (entries != 0) {
-            entry = (uintptr_t *)&sptm_handoff_region[1];
-            do {
-                if (entry[0] <= sptm_dt_blob_base &&
-                    sptm_dt_blob_base < entry[0] + (uintptr_t)entry[2] * 0x4000) {
-                    va = (sptm_dt_blob_base - entry[0]) + entry[1];
-                    break;
-                }
-                entry += 3;
-                entries--;
-            } while (entries != 0);
-        }
-        if (va == 0)
-            va = sptm_va_lookup(sptm_dt_blob_base);
-        sptm_sk_context.va_base = va;
-    }
+    sptm_sk_context.va_base = sptm_region_va_translate(sptm_dt_blob_base);
 
     region = sptm_boot_region("TXM_ro", 1);
     sptm_sk_context.txm_ro_va =
         ((uintptr_t)*region - sptm_ro_base + 0x3fff) & ~(uintptr_t)0x3fff;
     sptm_sk_context.va_table = (uint64_t)sptm_boot_va_table;
     sptm_sk_context.count = 10;
-    sptm_sk_context.frame_d = (uint64_t)sptm_frame_table_d;
-    sptm_sk_context.frame_e = (uint64_t)sptm_frame_table_e;
+    sptm_sk_context.frame_d = sptm_frame_d;
+    sptm_sk_context.frame_e = sptm_frame_e;
 
     pa = (uintptr_t)*sptm_boot_region("BootKC_ro", 1);
     sptm_sk_context.bootkc_ro_va = sptm_region_va_translate(pa);
@@ -1156,10 +1167,10 @@ sptm_start_sk_ctx(void)
     sptm_sk_context.bootkc_le_va = sptm_region_va_translate(pa);
 
     sptm_sk_context.boot_flag = sptm_boot_flag_0 & 1;
-    sptm_sk_context.fte_class = (uint64_t)sptm_region_table[0];
+    sptm_sk_context.fte_class = (uint64_t)sptm_boot_fte_alt2;
     sptm_sk_context.common = (uint64_t)&sptm_common;
     sptm_sk_context.boot_a2 = (uint64_t)sptm_boot_table_a;
-    sptm_sk_context.boot_b2 = (uint64_t)sptm_boot_table_b;
+    sptm_sk_context.boot_b2 = sptm_boot_table_b;
     sptm_sk_context.flags_1f8 = 0;
 
     /* AuxKC_rw / AuxKC_ro / AuxKC_le present only when /chosen AuxKC_rw */
@@ -1187,27 +1198,27 @@ sptm_start_sk_ctx(void)
 
     sptm_sk_context.hib_state_ptr = (uint64_t)&sptm_hib_state;
     sptm_sk_context.mem_map = sptm_dt_memory_map;
-    sptm_sk_context.frame_f = (uint64_t)sptm_frame_table_f;
-    sptm_sk_context.frame_g = (uint64_t)sptm_frame_table_g;
-    sptm_sk_context.frame_h = (uint64_t)sptm_frame_table_h;
-    sptm_sk_context.frame_i = (uint64_t)sptm_frame_table_i;
+    sptm_sk_context.frame_f = sptm_frame_f;
+    sptm_sk_context.frame_g = sptm_frame_g;
+    sptm_sk_context.frame_h = sptm_frame_h;
+    sptm_sk_context.frame_i = sptm_frame_i;
     sptm_sk_context.count2 = 10;
-    sptm_sk_context.region_count = (uint64_t)sptm_handoff_region;
-    sptm_sk_context.region_base = (uint64_t)sptm_handoff_region;
-    sptm_sk_context.region_a = (uint64_t)sptm_region_a;
-    sptm_sk_context.region_b = (uint64_t)sptm_region_b;
-    sptm_sk_context.frame_table2 = (uint64_t)sptm_frame_table_a;
-    sptm_sk_context.cursor_end = (uint64_t)sptm_cursor_end;
-    sptm_sk_context.root_ft = (uint64_t)sptm_boot_root_ft;
-    sptm_sk_context.percpu_table = (uint64_t)sptm_percpu_table_e;
+    sptm_sk_context.region_count = (uint64_t)&sptm_region_count;
+    sptm_sk_context.region_base = (uint64_t)sptm_region_entries;
+    sptm_sk_context.region_a = sptm_region_a;
+    sptm_sk_context.region_b = sptm_region_b;
+    sptm_sk_context.frame_table2 = sptm_frame_base;
+    sptm_sk_context.cursor_end = sptm_cursor_end;
+    sptm_sk_context.root_ft = sptm_boot_root_ft;
+    sptm_sk_context.percpu_table = sptm_percpu_e;
     sptm_sk_context.fte_class_tbl = (uint64_t)sptm_region_table;
     sptm_sk_context.const_table = (uint64_t)sptm_const_table;
-    sptm_sk_context.percpu_a = (uint64_t)sptm_percpu_table_a;
-    sptm_sk_context.percpu_b = (uint64_t)sptm_percpu_table_c;
+    sptm_sk_context.percpu_a = sptm_percpu_a;
+    sptm_sk_context.percpu_b = sptm_percpu_c;
     if ((sptm_boot_flag_1 & 1) == 0) {
         sptm_sk_context.flags_248 |= 1;
-        sptm_sk_context.boot_a = (uint64_t)sptm_boot_table_b;
-        sptm_sk_context.boot_b = (uint64_t)sptm_boot_table_c;
+        sptm_sk_context.boot_a = sptm_boot_table_b;
+        sptm_sk_context.boot_b = sptm_boot_table_c;
     }
     sptm_sk_context.debug_a = (uint64_t)sptm_debug_a;
     sptm_sk_context.boot_table = (uint64_t)sptm_boot_table_e;
@@ -1215,12 +1226,13 @@ sptm_start_sk_ctx(void)
     sptm_sk_context.boot_table_cnt = 10;
     sptm_sk_context.boot_table_ptr = (uint64_t)sptm_boot_table_d;
     sptm_sk_context.flags_248 |= 8;
-    sptm_sk_context.percpu_c = (uint64_t)sptm_percpu_table_d;
-    sptm_sk_context.percpu_d = (uint64_t)sptm_percpu_table_b;
-    sptm_sk_context.frame_f2 = (uint64_t)sptm_frame_table_f;
-    sptm_sk_context.frame_g2 = (uint64_t)sptm_frame_table_g;
+    sptm_sk_context.percpu_c = sptm_percpu_d;
+    sptm_sk_context.percpu_d = sptm_percpu_b;
+    sptm_sk_context.frame_f2 = sptm_frame_f;
+    sptm_sk_context.frame_g2 = sptm_frame_g;
     sptm_sk_context.debug_b = (uint64_t)sptm_debug_b;
     sptm_sk_context.boot_table_e = (uint64_t)sptm_boot_table_f;
+    sptm_sk_context.sk_sysreg = sptm_sysreg_read(3, 3, 0xe, 0, 6);
     sptm_sk_context.hib_opt = sptm_sysreg_read(3, 3, 0xe, 0, 6);
     sptm_sk_context.flags_348 |= 0x10;
 }
@@ -1233,17 +1245,49 @@ sptm_start_sk_ctx(void)
  * Full per-CPU EL2/EL1 bootstrap: install the EL1 MMU (TCR/TTBR0), set
  * tpidr_el2 to the per-CPU state, choose VBAR/SCTLR, scan /cpus for the
  * largest die-id, validate the six CTRR (Core Trace Register) core/cluster
- * regions against the expected bounds, and finally call sptm_el2_enable with
- * the computed EL2 configuration selector. Panics on any region mismatch.
+ * regions against the expected bounds, and — when the per-CPU micro_magic
+ * field is set — validate the CTRR register configuration and call
+ * sptm_el2_enable with the computed EL2 configuration selector. Panics on any
+ * region or configuration mismatch.
  * Confidence: medium
  * Notes: per-CPU "micro_magic" short at +0x1438 selects the EL2
  *   configuration selector (0x8000000000000010/0x11); /cpus iteration uses
  *   sptm_dt_iterate; the CTRR register encodings are read via
  *   sptm_sysreg_read(3,0,0xb,..)/(3,4,0xf,..). */
-void
-sptm_init_sched(uintptr_t param_1)
+
+/* Read the per-CPU base address (tpidr_el2 idiom used throughout). */
+static uintptr_t
+sptm_per_cpu_base(void)
 {
-    uint64_t prev;
+    uintptr_t base = sptm_sysreg_read(3, 6, 0xf, 8, 0);
+    if (base == 0)
+        return tpidr_el2;
+    return sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
+}
+
+/* Validate that a CTRR region begin/end pair is sane (begin > 1, end > 1,
+ * begin <= end). On failure panics. */
+static void
+sptm_validate_ctrr_region(uint64_t begin, uint64_t end, const char *name)
+{
+    if (0xfffffffffffffffd < begin - 1)
+        sptm_panic("CTRR %s begin invalid: %llx", name, begin);
+    if (0xfffffffffffffffd < end - 1)
+        sptm_panic("CTRR %s end invalid: %llx", name, end);
+    if (end < begin)
+        sptm_panic("CTRR %s begin > end: %llx > %llx", name, begin, end);
+}
+
+/* Check whether a CTRR begin/end pair matches the expected region bounds. */
+static int
+sptm_ctrr_region_matches(uint64_t begin, uint64_t end, uint64_t rb, uint64_t re)
+{
+    return begin == rb && (end & 0xfffffffffffff000) == re;
+}
+
+void
+sptm_init_sched(uintptr_t cpu_state)
+{
     uintptr_t cpu;
     uint16_t micro_magic;
     uint64_t sel;
@@ -1253,56 +1297,37 @@ sptm_init_sched(uintptr_t param_1)
     sptm_sysreg_write(3, 4, 0xf, 0xe, 6, 3);
     sptm_isb();
     if ((sptm_dbg_flag & 1) == 0) {
-        cpu = sptm_sysreg_read(3, 6, 0xf, 8, 0);
-        if (cpu == 0) {
-            cpu = tpidr_el2;
-            if (*(uint16_t *)(cpu + 0x1438) == 0)
-                goto check_init_flag;
-            goto install_mmu;
+        cpu = sptm_per_cpu_base();
+        if (*(uint16_t *)(cpu + 0x1438) == 0) {
+            if ((*(uint8_t *)(cpu_state + 1) & 1) == 0)
+                goto skip_mmu;
         }
-        cpu = sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
-        if (*(uint16_t *)(cpu + 0x1438) != 0)
-            goto install_mmu;
-check_init_flag:
-        if ((*(uint8_t *)(param_1 + 1) & 1) != 0)
-            goto install_mmu;
-    } else {
-install_mmu:
-        tcr_el1 = 0x310800336511a511;
-        sptm_dsb(2, 3, 0);
-        if (ttbr0_el1 != (sptm_boot_fte_alt[0] & 0xfffffffffffe)) {
-            ttbr0_el1 = sptm_boot_fte_alt[0] & 0xfffffffffffe;
-        }
-        sptm_isb();
-        sptm_sysop_write(0, 9, 7, 0, 0);
-        sptm_dsb(1, 3, 1);
-        sptm_isb();
     }
-    tpidr_el2 = param_1;
+    /* install the EL1 stage-1 MMU */
+    tcr_el1 = 0x310800336511a511;
+    sptm_dsb(2, 3, 0);
+    if (ttbr0_el1 != (sptm_boot_fte_alt & 0xfffffffffffe))
+        ttbr0_el1 = sptm_boot_fte_alt & 0xfffffffffffe;
+    sptm_isb();
+    sptm_sysop_write(0, 9, 7, 0, 0, 0);
+    sptm_dsb(1, 3, 1);
+    sptm_isb();
+skip_mmu:
+    tpidr_el2 = cpu_state;
     if (((uint32_t)sptm_boot_stages >> 0x11 & 1) != 0)
-        vbar_el1 = sptm_fte_end[0];
+        vbar_el1 = *sptm_boot_vbar;
     if ((sptm_boot_flag_1 & 1) == 0) {
         sctlr_el1 = sctlr_el1 | 0xd4000000000;
         sptm_isb();
     }
-    cpu = sptm_sysreg_read(3, 6, 0xf, 8, 0);
-    if (cpu == 0)
-        cpu = tpidr_el2;
-    else
-        cpu = sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
-    /* second per-cpu read for micro_magic */
-    {
-        uintptr_t cpu2 = sptm_sysreg_read(3, 6, 0xf, 8, 0);
-        if (cpu2 == 0)
-            micro_magic = *(uint16_t *)(tpidr_el2 + 0x1438);
-        else
-            micro_magic = *(uint16_t *)(sptm_sysreg_read(3, 6, 0xf, 0xb, 1) + 0x1438);
-    }
+    cpu = sptm_per_cpu_base();
+    micro_magic = *(uint16_t *)(cpu + 0x1438);
     if (micro_magic == 0 && (*(uint8_t *)(cpu + 1) & 1) == 0) {
         sptm_dt_iter_t iter;
         uintptr_t node = 0;
         uintptr_t cpus = 0;
-        uint32_t die_id;
+        uint32_t *val = 0;
+        uint32_t sz = 0;
 
         rc = sptm_dt_find_node(sptm_dt_state[0], 0, "/cpus", &cpus);
         if (rc != 1)
@@ -1312,15 +1337,13 @@ install_mmu:
         memset(&iter, 0, sizeof(iter));
         iter.parent = cpus != 0 ? cpus : sptm_dt_state[0];
         while (sptm_dt_iterate(sptm_dt_state[0], &iter, &node) != 0) {
-            uint32_t *val = 0;
-            uint32_t sz = 0;
             rc = sptm_dt_get_prop(node, "die-id", (uintptr_t *)&val, &sz,
                 sptm_dt_state[0], sptm_dt_state[1]);
             if (rc == 1 && *val > sptm_max_die_id)
                 sptm_max_die_id = *val;
         }
     }
-    if ((*(uint8_t *)(param_1 + 1) & 1) == 0) {
+    if ((*(uint8_t *)(cpu_state + 1) & 1) == 0) {
         sel = 0x30300;
         if ((sptm_hib_opt & 1) == 0)
             sel = 0x3030000ffff00;
@@ -1334,101 +1357,138 @@ install_mmu:
     sptm_validate_ctrr_region(sptm_nc4_begin, sptm_nc4_end, "nc4");
     sptm_validate_ctrr_region(sptm_nc5_begin, sptm_nc5_end, "nc5");
     sptm_validate_ctrr_region(sptm_nc6_begin, sptm_nc6_end, "nc6");
-    cpu = sptm_sysreg_read(3, 6, 0xf, 8, 0);
-    if (cpu == 0)
-        micro_magic = *(uint16_t *)(tpidr_el2 + 0x1438);
-    else
-        micro_magic = *(uint16_t *)(sptm_sysreg_read(3, 6, 0xf, 0xb, 1) + 0x1438);
-    if (micro_magic != 0)
-        sptm_validate_ctrr_registers();
+    cpu = sptm_per_cpu_base();
+    micro_magic = *(uint16_t *)(cpu + 0x1438);
+    if (micro_magic != 0) {
+        uint64_t a, b, c;
+
+        /* Block 1: EL1 CTRR register configuration */
+        a = sptm_sysreg_read(3, 0, 0xb, 1, 4);
+        b = sptm_sysreg_read(3, 0, 0xb, 0, 0);
+        c = sptm_sysreg_read(3, 0, 0xb, 0, 1);
+        if (a != 0x8000000000000001)
+            goto panic_config;
+        if (!sptm_ctrr_region_matches(sptm_nc_begin, sptm_nc_end, b, c))
+            goto panic_bounds;
+        if ((sptm_boot_flag_cfg & 1) == 0) {
+            a = sptm_sysreg_read(3, 0, 0xb, 1, 5);
+            b = sptm_sysreg_read(3, 0, 0xb, 0, 2);
+            c = sptm_sysreg_read(3, 0, 0xb, 0, 3);
+            if (a != 0x8000000000000001)
+                goto panic_config;
+            if (!sptm_ctrr_region_matches(sptm_nc2_begin, sptm_nc2_end, b, c))
+                goto panic_bounds;
+        }
+        a = sptm_sysreg_read(3, 0, 0xb, 5, 2);
+        b = sptm_sysreg_read(3, 0, 0xb, 2, 2);
+        c = sptm_sysreg_read(3, 0, 0xb, 2, 3);
+        if (a != 0xC000000000AA019A)
+            goto panic_config;
+        if (!sptm_ctrr_region_matches(sptm_nc3_begin, sptm_nc3_end, b, c))
+            goto panic_bounds;
+        a = sptm_sysreg_read(3, 0, 0xb, 5, 3);
+        b = sptm_sysreg_read(3, 0, 0xb, 2, 4);
+        c = sptm_sysreg_read(3, 0, 0xb, 2, 5);
+        if (a != 0xC0000000009A02AA)
+            goto panic_config;
+        if (!sptm_ctrr_region_matches(sptm_nc4_begin, sptm_nc4_end, b, c))
+            goto panic_bounds;
+        a = sptm_sysreg_read(3, 0, 0xb, 5, 4);
+        b = sptm_sysreg_read(3, 0, 0xb, 2, 6);
+        c = sptm_sysreg_read(3, 0, 0xb, 2, 7);
+        if (a != 0xC000000000AA026A)
+            goto panic_config;
+        if (!sptm_ctrr_region_matches(sptm_nc5_begin, sptm_nc5_end, b, c))
+            goto panic_bounds;
+        a = sptm_sysreg_read(3, 0, 0xb, 5, 5);
+        b = sptm_sysreg_read(3, 0, 0xb, 3, 0);
+        c = sptm_sysreg_read(3, 0, 0xb, 3, 1);
+        if (a != 0xC000000000AA02A9)
+            goto panic_config;
+        if (!sptm_ctrr_region_matches(sptm_nc6_begin, sptm_nc6_end, b, c))
+            goto panic_bounds;
+        if (currentel != 8)
+            goto common;
+        /* Block 2: EL2 CTRR register configuration */
+        a = sptm_sysreg_read(3, 0, 0xb, 8, 2);
+        b = sptm_sysreg_read(3, 0, 0xb, 6, 6);
+        c = sptm_sysreg_read(3, 0, 0xb, 6, 7);
+        if (a == 0x8000000000000001) {
+            if (sptm_ctrr_region_matches(sptm_nc_begin, sptm_nc_end, b, c)) {
+                if ((sptm_boot_flag_cfg & 1) == 0) {
+                    a = sptm_sysreg_read(3, 0, 0xb, 8, 3);
+                    b = sptm_sysreg_read(3, 0, 0xb, 7, 0);
+                    c = sptm_sysreg_read(3, 0, 0xb, 7, 1);
+                    if (a != 0x8000000000000001)
+                        goto panic_config;
+                    if (!sptm_ctrr_region_matches(sptm_nc2_begin, sptm_nc2_end, b, c))
+                        goto panic_bounds;
+                }
+                a = sptm_sysreg_read(3, 0, 0xb, 8, 4);
+                b = sptm_sysreg_read(3, 0, 0xb, 7, 2);
+                c = sptm_sysreg_read(3, 0, 0xb, 7, 3);
+                if (a != 0xC000000000AA019A)
+                    goto panic_config;
+                if (sptm_ctrr_region_matches(sptm_nc3_begin, sptm_nc3_end, b, c)) {
+                    a = sptm_sysreg_read(3, 0, 0xb, 8, 5);
+                    b = sptm_sysreg_read(3, 0, 0xb, 7, 4);
+                    c = sptm_sysreg_read(3, 0, 0xb, 7, 5);
+                    if (a != 0xC0000000009A02AA)
+                        goto panic_config;
+                    if (sptm_ctrr_region_matches(sptm_nc4_begin, sptm_nc4_end, b, c)) {
+                        a = sptm_sysreg_read(3, 0, 0xb, 8, 6);
+                        b = sptm_sysreg_read(3, 0, 0xb, 7, 6);
+                        c = sptm_sysreg_read(3, 0, 0xb, 7, 7);
+                        if (a != 0xC000000000AA026A)
+                            goto panic_config;
+                        if (sptm_ctrr_region_matches(sptm_nc5_begin, sptm_nc5_end, b, c)) {
+                            a = sptm_sysreg_read(3, 0, 0xb, 8, 7);
+                            b = sptm_sysreg_read(3, 0, 0xb, 8, 0);
+                            c = sptm_sysreg_read(3, 0, 0xb, 8, 1);
+                            if (a != 0xC000000000AA02A9)
+                                goto panic_config;
+                            if (sptm_ctrr_region_matches(sptm_nc6_begin, sptm_nc6_end, b, c)) {
+                                a = sptm_sysreg_read(3, 4, 0xf, 2, 5);
+                                if (a != 0x8000000000000001) {
+                                    sptm_sysreg_read(3, 4, 0xf, 2, 5);
+                                    sptm_panic("CTRR_A per core register not set");
+                                }
+                                a = sptm_sysreg_read(3, 4, 0xf, 2, 2);
+                                if (a != 0x8000000000000001) {
+                                    sptm_sysreg_read(3, 4, 0xf, 2, 2);
+                                    sptm_panic("CTRR_B per core register not set");
+                                }
+                                a = sptm_sysreg_read(3, 4, 0xf, 0xb, 4);
+                                if (a != 0x8000000000000001) {
+                                    sptm_sysreg_read(3, 4, 0xf, 0xb, 4);
+                                    sptm_panic("CTRR_A per cluster register not set");
+                                }
+                                a = sptm_sysreg_read(3, 4, 0xf, 0xb, 5);
+                                if (a != 0x8000000000000001) {
+                                    sptm_sysreg_read(3, 4, 0xf, 0xb, 5);
+                                    sptm_panic("CTRR_B per cluster register not set");
+                                }
+                                goto common;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        goto panic_bounds;
+    }
+common:
     sptm_isb();
-    cpu = sptm_sysreg_read(3, 6, 0xf, 8, 0);
-    if (cpu == 0)
-        cpu = tpidr_el2;
-    else
-        cpu = sptm_sysreg_read(3, 6, 0xf, 0xb, 1);
+    cpu = sptm_per_cpu_base();
     sel = 0x8000000000000010;
     if (*(uint16_t *)(cpu + 0x1438) != 0)
         sel = 0x8000000000000011;
     sptm_sysreg_write(3, 4, 0xf, 1, 2, sel);
     sptm_isb();
-    sptm_el2_enable(sel, *(uintptr_t *)(param_1 + 0xa50));
-}
-
-/* Validate that a CTRR region begin/end pair is sane (begin > 1, end > 1,
- * begin <= end). On failure panics. */
-static void
-sptm_validate_ctrr_region(uint64_t begin, uint64_t end, const char *name)
-{
-    (void)name;
-    if (0xfffffffffffffffd < begin - 1)
-        sptm_panic("CTRR %s begin invalid: %llx", name, begin);
-    if (0xfffffffffffffffd < end - 1)
-        sptm_panic("CTRR %s end invalid: %llx", name, end);
-    if (end < begin)
-        sptm_panic("CTRR %s begin > end: %llx > %llx", name, begin, end);
-}
-
-/* Read and cross-check the per-core/per-cluster CTRR registers against the
- * expected configuration and region bounds. Panics on any mismatch. */
-static void
-sptm_validate_ctrr_registers(void)
-{
-    uint64_t v;
-    uintptr_t cpu;
-
-    /* per-core CTRR */
-    v = sptm_sysreg_read(3, 0, 0xb, 1, 4);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 0, 0xb, 1, 4);
-        sptm_panic("CTRR_A per core register not set");
-    }
-    v = sptm_sysreg_read(3, 0, 0xb, 1, 5);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 0, 0xb, 1, 5);
-        sptm_panic("CTRR_B per core register not set");
-    }
-    /* per-cluster CTRR */
-    v = sptm_sysreg_read(3, 0, 0xb, 5, 2);
-    if (v != 0xc0000000aa01999a) {
-        sptm_sysreg_read(3, 0, 0xb, 5, 2);
-        sptm_panic("CTRR_A per cluster register not set");
-    }
-    v = sptm_sysreg_read(3, 0, 0xb, 5, 3);
-    if (v != 0xc0000000aa028aaa) {
-        sptm_sysreg_read(3, 0, 0xb, 5, 3);
-        sptm_panic("CTRR_B per cluster register not set");
-    }
-    v = sptm_sysreg_read(3, 0, 0xb, 5, 4);
-    if (v != 0xc0000000aa026a6a) {
-        sptm_sysreg_read(3, 0, 0xb, 5, 4);
-        sptm_panic("CTRR_A per cluster register not set");
-    }
-    v = sptm_sysreg_read(3, 0, 0xb, 5, 5);
-    if (v != 0xc0000000aa026aaa) {
-        sptm_sysreg_read(3, 0, 0xb, 5, 5);
-        sptm_panic("CTRR_B per cluster register not set");
-    }
-    /* per-core / per-cluster CTRR present at EL2 */
-    v = sptm_sysreg_read(3, 4, 0xf, 2, 5);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 4, 0xf, 2, 5);
-        sptm_panic("CTRR_A per core register not set");
-    }
-    v = sptm_sysreg_read(3, 4, 0xf, 2, 2);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 4, 0xf, 2, 2);
-        sptm_panic("CTRR_B per core register not set");
-    }
-    v = sptm_sysreg_read(3, 4, 0xf, 0xb, 4);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 4, 0xf, 0xb, 4);
-        sptm_panic("CTRR_A per cluster register not set");
-    }
-    v = sptm_sysreg_read(3, 4, 0xf, 0xb, 5);
-    if (v != 0x8000000000000001) {
-        sptm_sysreg_read(3, 4, 0xf, 0xb, 5);
-        sptm_panic("CTRR_B per cluster register not set");
-    }
-    (void)cpu;
+    sptm_el2_enable(sel, *(uintptr_t *)(cpu_state + 0xa50));
+    return;
+panic_config:
+    sptm_panic("configuration not as expected");
+panic_bounds:
+    sptm_panic("core region bounds");
 }

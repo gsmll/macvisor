@@ -175,3 +175,70 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 0x000cc5e8 sptm_t8110dart_disable_clock_protection (alias powerdown) -> 0x000e4d78, 0x000c8a14 (dart_save), 0x000cc2bc (ps_refcount dec), 0x000c786c, 0x000abeb0, 0x000f8844/8804
 - 0x000ce144 sptm_t8110dart_map -> 0x000e4d78, 0x000c9364/0x000c92e8, 0x000d617c (dart_pte_lookup), 0x000cd970 (dart_tt_lookup), 0x000cdd0c (dart_tlb_flush), 0x000e3d7c (phys_lookup), 0x000e56ac/0x000e5c80 (phys_lock/unlock), 0x000e4e74/0x000e53d8/0x000e5090 (kernel_ref family), 0x000f8844/8804
 - Shared helpers called by the above: 0x000c5248 uat_state_begin; 0x000b32d0 uat_end; 0x000e4d78 dart_state_get; 0x000d617c dart_pte_lookup; 0x000e40ec guest_to_phys; 0x000e3d7c phys_lookup; 0x000e2480 fte_acquire; 0x000e4e74/0x000e5090/0x000e53d8 kernel_ref/unref/add; 0x000e56ac/0x000e5c80 phys_lock/unlock; 0x000f8844 panic; 0x000f8804 assert; 0x000abeb0 memcpy; 0x000abb60 memset; 0x000d8a58; 0x000c5784 guest_range_validate
+
+## SART + T8110 DART driver region (osfmk/arm64/sptm/sptm_region_dart.c)
+- 0x000c60e4 sptm_sart_validate_region -> 0x000f8844 (panic), DAT_00094cc8/95d18/95d20
+- 0x000c6364 sptm_sart_region_lookup -> 0x000f8804 (assert), DAT_00094cc8, 00094cc0
+- 0x000c64b4 sptm_sart_region_add -> 0x000c60e4, 0x000c68e4, 0x000e56ac (iommu_page_ref), 0x000f8844/8804, sysreg guard (state+0x24a)
+- 0x000c68e4 sptm_sart_region_program -> 0x000f8804
+- 0x000c6a54 sptm_sart_program_regions -> 0x000c6364, 0x000c68e4, 0x000f8844/8804
+- 0x000c6e30 sptm_sart_state_init -> 0x000e4424, 0x000e4d78, 0x000b7898 (dt_next_node), 0x000b79e8 (dt_find_node), 0x000b7c04 (dt_get_prop), 0x000e63c8 (phys_map_va), 0x000e45a8 (va_to_phys), 0x000f8804
+- 0x000c72f0 sptm_dart_disable -> 0x000e4d78, 0x000f8844/8804
+- 0x000c76ac sptm_dart_clear_error -> 0x000c786c (dart_poll), 0x000abeb0 (memcpy), 0x000f8804/8844
+- 0x000c786c sptm_dart_poll -> 0x000c7bac (dart_flush), LOAcquire/Release, 0x000f8804
+- 0x000c7bac sptm_dart_flush -> 0x000c7df8 (dart_read_reg), 0x000c7e5c (dart_write_reg_v1), 0x000f8804, DSB+WFE+CNTPCT wait
+- 0x000c8960 sptm_dart_save_all -> 0x000e4d78, 0x000c8a14 (dart_save), 0x000f8844
+- 0x000c8a14 sptm_dart_save -> 0x000f8804
+- 0x000c8ba0 sptm_dart_ctrl_write -> 0x000e4d78, 0x000f8844/8804
+- 0x000c92e8 sptm_dart_acquire_v1 -> 0x000f8804
+- 0x000c9364 sptm_dart_acquire_v2 (alias sptm_dart_instance_lookup) -> 0x000f8804
+- 0x000caa9c sptm_dart_lock -> 0x000f8804
+- 0x000cabb4 sptm_dart_lock_set -> 0x000f8804
+- 0x000cc2bc sptm_dart_ps_refcount -> 0x000f8804, DAT_001012b4/001012b8
+- 0x000cc3f8 sptm_dart_write_field_v1 -> 0x000f8804
+- 0x000cc490 sptm_dart_write_field_v2 -> 0x000f8804
+- 0x000cc540 sptm_dart_write_reg_v2 -> 0x000f8804
+- 0x000cd970 sptm_dart_tt_lookup (alias sptm_dart_va_to_pte) -> 0x000e40ec (va_lookup), 0x000f8804/8844, DAT_000130d8/130f8, 001012d8/00101ac8/00101ad0
+- 0x000cdd0c sptm_dart_tlb_flush (alias sptm_dart_tlb_invalidate) -> 0x000c786c, 0x000ce0b4 (dart_flush_cmd), 0x000abeb0, 0x000f8804/8844, DAT_00012f40/12f48
+- 0x000ce0b4 sptm_dart_flush_cmd -> 0x000c786c, 0x000abeb0, 0x000f8804
+
+## DT / region-init helper edges (region-init batch)
+
+- FUN_000b79e8 (sptm_dt_find_node) → FUN_000b7c04 (sptm_dt_get_prop), FUN_000b7cfc (sptm_dt_next_sibling)
+- FUN_000b7dc8 (sptm_dt_iterate) → FUN_000b7cfc (sptm_dt_next_sibling)
+- FUN_000b7cfc (sptm_dt_next_sibling) → FUN_000b7cfc (recursive over children)
+- FUN_000b7898 (sptm_dt_find_by_name_recursive) → FUN_000b7898 (recursive DFS)
+- FUN_000b7784 (sptm_dt_gpu_iouat_present) → FUN_000b79e8, FUN_000b7c04
+- FUN_000b8154 (sptm_boot_fixups) → FUN_000b79e8 (find /chosen/memory-map)
+- FUN_000b807c (sptm_boot_region) → FUN_000b7c04
+- FUN_000b8230 (sptm_dispatch_engine_init) → FUN_000d9be8, FUN_000c1b70, FUN_000bf298, FUN_000bf4bc, FUN_000ae8b4, FUN_000aeaa4
+- FUN_000b8470 (sptm_init_kc_regions) → FUN_000b2620 (TXM enter), FUN_000d9be8, FUN_000c1cc4, FUN_000bf298
+- FUN_000ba950 (sptm_get_random) → FUN_000b79e8, FUN_000b7c04, thunk_FUN_000abeb0, thunk_FUN_000abb60
+- FUN_000baa60 (sptm_init_sched) → FUN_000b79e8, FUN_000b7dc8, FUN_000b7c04, FUN_000ab8dc (sptm_el2_enable)
+- FUN_000bb51c (sptm_start_sk) → FUN_000b807c, FUN_000d8a58 (sptm_txm_handoff)
+- FUN_000bb9f0 (sptm_start_sk_ctx) → FUN_000b807c, FUN_000b7c04, FUN_000e40ec (sptm_va_lookup)
+
+## hib/nvme/amcc/uat region (osfmk/arm64/sptm/sptm_region_nvme.c)
+- FUN_000c0874 (sptm_hib_hash_nonwired) → FUN_000ae8b4 (sptm_sha_reset), FUN_000aeaa4 (sptm_sha_update), FUN_000bf874 (sptm_ace_finalize), FUN_000ad2dc (sptm_bsearch over DAT_000950d0, cmp 0xd649c), FUN_000f8844/8804 (panic), FUN_000ae44c (stack_chk_fail)
+- FUN_000c1430 (sptm_hib_nonwired_hash_guard) → FUN_000d6524 (sptm_dram_write dispatch)
+- FUN_000c1688 (sptm_announce_bootstrap) → sptm_panic_str; sets stage bit 0x800000 + LORelease
+- FUN_000c172c (sptm_amcc_ctrr_program) → 12x sysreg (3,0,0xb,*) + TLBI alle1 + DSB + ISB
+- FUN_000c1ab0 (sptm_amcc_ctrr_program_protected) → 12x sysreg (3,0,0xb,5,2..5) + TLBI
+- FUN_000c1b70 (sptm_amcc_cache_enable) → FUN_000c4c68 (sptm_amcc_lock_check 2/3), FUN_000c44ac (sptm_amcc_lock_regs_parse), FUN_000c4d8c (sptm_amcc_memcache_enable 2), sptm_reg_read/write CTRR C/D, TLBI
+- FUN_000c1cc4 (sptm_amcc_cache_disable) → FUN_000c4c68 (3), FUN_000c44ac, FUN_000c4d8c (3), FUN_000d977c (sptm_papt_op_b unmap)
+- FUN_000c2ccc (sptm_nvme_validate_queue_entries) → FUN_000f8844 (panic 0x3000005/a/b)
+- FUN_000c3b94 (sptm_nvme_bar_setup) → FUN_000d8a58 (sptm_kvtophys), FUN_000f8844
+- FUN_000c3c78 (sptm_nvme_init) → FUN_000e63c8 (sptm_dt_io_translate), FUN_000e45a8 (sptm_frame_alloc), FUN_000e41bc (sptm_boot_alloc_frames), FUN_000d8a58 (sptm_kvtophys), FUN_000b79e8/000b7c04 (DT), FUN_000c446c (sptm_format_region_id), FUN_000f8844/8804
+- FUN_000c446c (sptm_format_region_id) → FUN_000ad278 (sptm_snprintf)
+- FUN_000c44ac (sptm_amcc_lock_regs_parse) → FUN_000b79e8/000b7c04 (DT), FUN_000ae158 (sptm_memcpy), FUN_000c48e0 (sptm_dt_get_reg_pair), FUN_000c4adc (sptm_amcc_ctrr_parse x4)
+- FUN_000c48e0 (sptm_dt_get_reg_pair) → FUN_000b7748 (sptm_dt_prop_name), FUN_000b7c04 (DT)
+- FUN_000c4adc (sptm_amcc_ctrr_parse) → FUN_000b79e8 (DT), FUN_000c48e0 (x5)
+- FUN_000c4c68 (sptm_amcc_lock_check) → FUN_000c44ac
+- FUN_000c4d8c (sptm_amcc_memcache_enable) → FUN_000b79e8/000b7c04 (DT), FUN_000c44ac, FUN_000ab994 (sptm_dcache_flush), per-CPU CPM via sptm_percpu_state
+- FUN_000c5248 (sptm_uat_state_get) → FUN_000e4e74 (sptm_paddr_validate), FUN_000e3d7c (sptm_phystokv), FUN_000c5550 (sptm_uat_fte_get), FUN_000e40ec (sptm_phystokv_outside_window), FUN_000d8a58 (sptm_kvtophys), FUN_000f8844
+- FUN_000c5550 (sptm_uat_fte_get) → FUN_000e3d7c
+- FUN_000c55cc (sptm_uat_table_translate) → FUN_000e4e74, FUN_000e3d7c, FUN_000c5550, FUN_000f8844
+- FUN_000c5784 (sptm_uat_va_walk) → FUN_000f8844
+- FUN_000c59b8 (sptm_snprintf_wrap) → FUN_000ad278
+- FUN_000c59f4 (sptm_uat_handoff_magic) → reads handoff magic at sptm_uat_driver_state+cpu+10 (FUN_000f89b4 callee)
+- FUN_000c5a18 (sptm_hang_spin) → infinite `mov x0,#0x9898; b .` fail-stop

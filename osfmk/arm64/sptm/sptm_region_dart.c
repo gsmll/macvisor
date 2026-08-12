@@ -372,20 +372,20 @@ sptm_sart_region_add(uint64_t paddr, uint64_t size, uint32_t mode, uint32_t flag
             (*(uint32_t *)(st + 0x10 + (uint64_t)idx * 0x14 + 0x4) == 0)) {
             uint32_t *e = (uint32_t *)(st + 0x10 + (uint64_t)idx * 0x14);
             uint8_t b2, b3, b4, b5, b6;
+            uint32_t ival = 2u + (mode == 1);
 
-            e[0] = (uint32_t)(va >> 0xc);
+            e[0] = (uint32_t)(va >> 0xc);          /* va>>12 */
             b2 = *(uint8_t *)(desc + 0x11);
             b3 = *(uint8_t *)(desc + 0x10);
             b4 = *(uint8_t *)(desc + 0xe);
             b5 = *(uint8_t *)(desc + 0xf);
             b6 = *(uint8_t *)(desc + 0xd);
-            e[1] = mode;
-            e[2] = flags;
-            e[3] = (uint32_t)(sz >> 0xc);
-            e[4] = (1u << (b3 & 0x1f)) | (1u << (b2 & 0x1f)) |
-                   (2u + (mode == 1) << (b4 & 0x1f)) |
-                   (2u + (mode == 1) << (b5 & 0x1f)) |
-                   (2u + (mode == 1) << (b6 & 0x1f));
+            e[1] = (uint32_t)(sz >> 0xc);          /* sz>>12 */
+            e[2] = (1u << (b3 & 0x1f)) | (1u << (b2 & 0x1f)) |
+                   (ival << (b4 & 0x1f)) | (ival << (b5 & 0x1f)) |
+                   (ival << (b6 & 0x1f));          /* perm bits */
+            e[3] = mode;
+            e[4] = flags;
             sptm_sart_region_program(idx);
 
             /* Bump and bound the live region count. */
@@ -409,8 +409,9 @@ sptm_sart_region_add(uint64_t paddr, uint64_t size, uint32_t mode, uint32_t flag
  * and the offset/flag words into the auxiliary/size slots, OR-ing the size
  * field. Panics on an invalid SART offset.
  * Confidence: medium
- * Notes: region entry layout at DAT_00094cc8+0x10 (stride 0x14): +0x18 size,
- *   +0x14 offset, +0x1c perm; DAT_00094cc0 gates the size decrement. */
+ * Notes: region entry layout at DAT_00094cc8+0x10 (stride 0x14): e[0]=va>>12,
+ *   e[1]=sz>>12, e[2]=perm, e[3]=mode, e[4]=flags; DAT_00094cc0 gates the size
+ *   decrement. */
 void
 sptm_sart_region_program(uint32_t id)
 {
@@ -418,25 +419,28 @@ sptm_sart_region_program(uint32_t id)
     uint8_t *desc = *(uint8_t **)(st + 0x238);
     uint32_t map_size = *(uint32_t *)(st + 0x200);
     uint32_t *map = *(uint32_t **)(st + 0x1f8);
-    uint32_t *e = (uint32_t *)(st + 0x10 + (uint64_t)id * 0x14);
     uint32_t prim = *(int32_t *)(desc + 8) + id * *(uint8_t *)(desc + 0xc);
     uint32_t aux, size_slot;
-    uint8_t shift;
-    uint32_t mask;
     uint32_t size_word;
 
     if (((prim & 3) != 0) || (prim >= map_size)) {
         sptm_assert_fail("Invalid SART offset %x");
     }
-    map[prim / 4] = e[1];   /* +0x18 word -> primary slot */
+    /* Region entry stride 0x14 from st+0x10: e[0]=va>>12, e[1]=sz>>12,
+     * e[2]=perm, e[3]=mode, e[4]=flags. */
+    uint32_t *e = (uint32_t *)(st + 0x10 + (uint64_t)id * 0x14);
+
+    map[prim / 4] = e[2];   /* perm word -> primary slot */
 
     aux = *(int32_t *)(desc + 0x20) + id * *(uint8_t *)(desc + 0x24);
     if (((aux & 3) != 0) || (aux >= map_size)) {
         sptm_assert_fail("Invalid SART offset %x");
     }
-    map[aux / 4] = (*(uint32_t *)(desc + 0x28) & e[2]) << (*(uint8_t *)(desc + 0x25) & 0x1f);
+    map[aux / 4] = (*(uint32_t *)(desc + 0x28) & e[0]) <<
+        (*(uint8_t *)(desc + 0x25) & 0x1f);
 
-    size_word = (*(uint32_t *)(desc + 0x1c) & e[0]) << (*(uint8_t *)(desc + 0x19) & 0x1f);
+    size_word = (*(uint32_t *)(desc + 0x1c) & e[1]) <<
+        (*(uint8_t *)(desc + 0x19) & 0x1f);
     if ((sptm_sart_exclusive_bounds & 1) != 0) {
         if (size_word == 0) {
             sptm_assert_fail("Invalid SART size region %d");
@@ -448,7 +452,7 @@ sptm_sart_region_program(uint32_t id)
         if (((size_slot & 3) != 0) || (size_slot >= map_size)) {
             sptm_assert_fail("Invalid SART offset %x");
         }
-        size_word = size_word | e[1];
+        size_word = size_word | e[2];
     } else {
         size_slot = *(int32_t *)(desc + 0x14) + id * *(uint8_t *)(desc + 0x18);
         if (((size_slot & 3) != 0) || (size_slot >= map_size)) {
@@ -578,15 +582,11 @@ int
 sptm_sart_state_init(void)
 {
     uint8_t *st;
-    uint32_t regs_size, thr_size;
-    uint32_t *pu;
+    uint32_t regs_size;
     uint32_t ver;
     uint32_t thr_ver;
     uint32_t thr_off;
-    uint32_t pc_off;
-    uintptr_t node = 0, out = 0;
-    uintptr_t *desc = NULL;
-    uint32_t sz = 0;
+    uintptr_t out = 0;
     uint64_t va, va_pc;
 
     sptm_helper_e4424("SART state init");
@@ -595,7 +595,7 @@ sptm_sart_state_init(void)
     *(st + 0x24a) = 0;
     *(uint32_t *)(st + 0x1f0) = 0;
 
-    if (sptm_dt_state == NULL || sptm_dt_state[0] == 0) {
+    if (sptm_dt_state[0] == 0) {
         sptm_assert_fail("error %d looking up %s");
     }
     out = sptm_dt_state[0];
@@ -608,88 +608,88 @@ sptm_sart_state_init(void)
         sptm_assert_fail("error %d looking up %s");
     }
     uintptr_t sart_node = out;
+    uint32_t *prop = NULL;
+    uintptr_t *regs = NULL;
+    uint32_t sz = 0;
 
-    pu = NULL;
-    sz = 0;
-    if (sptm_dt_get_prop(out, "sart-version", &out, &sz,
+    if (sptm_dt_get_prop(sart_node, "sart-version", (uintptr_t *)&prop, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) != 1) {
         sptm_assert_fail("error %d looking up %s");
     }
     if (sz != 4) {
         sptm_assert_fail("DT property %s has illegal");
     }
-    *(uint32_t *)(st + 500) = *(uint32_t *)out;
+    *(uint32_t *)(st + 500) = *prop;
 
-    if (sptm_dt_get_prop(out, "sart-throttle-version", &out, &sz,
+    if (sptm_dt_get_prop(sart_node, "sart-throttle-version", (uintptr_t *)&prop, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) == 1) {
         if (sz != 4) {
             sptm_assert_fail("DT property %s has illegal");
         }
-        pu = (uint32_t *)out;
     } else {
-        pu = (uint32_t *)(st + 500);
+        prop = (uint32_t *)(st + 500);
     }
-    *(uint32_t *)(st + 0x204) = *pu;
+    *(uint32_t *)(st + 0x204) = *prop;
 
-    if (sptm_dt_get_prop(out, "sart-throttle-offset", &out, &sz,
+    if (sptm_dt_get_prop(sart_node, "sart-throttle-offset", (uintptr_t *)&prop, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) == 1) {
         if (sz != 4) {
             sptm_assert_fail("DT property %s has illegal");
         }
-        thr_off = *(uint32_t *)out;
+        thr_off = *prop;
     } else {
         thr_off = 0;
     }
     *(uint32_t *)(st + 0x208) = thr_off;
 
-    *(bool *)(st + 0x224) =
-        sptm_dt_get_prop(out, "power-canary-offset", &out, &sz,
+    *(uint8_t *)(st + 0x224) =
+        sptm_dt_get_prop(sart_node, "power-canary-offset", (uintptr_t *)&prop, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) == 1;
 
-    desc = NULL;
-    if (sptm_dt_get_prop(out, "regs", &desc, &sz,
+    regs = NULL;
+    if (sptm_dt_get_prop(sart_node, "regs", (uintptr_t *)&regs, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) != 1) {
         sptm_assert_fail("error %d looking up %s");
     }
-    if (sz < (*(st + 0x224) & 1) ? 0x20 : 0x10) {
+    if (sz < ((*(st + 0x224) & 1) ? 0x20 : 0x10)) {
         sptm_assert_fail("DT property %s has illegal");
     }
 
-    regs_size = (uint32_t)desc[1];
+    regs_size = (uint32_t)regs[1];
     *(uint32_t *)(st + 0x200) = regs_size;
     if (regs_size >> 0xe == 0) {
         sptm_assert_fail("Illegal SART Register Size");
     }
-    va = sptm_phys_map_va((uintptr_t)sptm_percpu_base(0, NULL), desc[0],
-        (uint32_t)desc[1]);
+    va = sptm_phys_map_va((uintptr_t)sptm_percpu_base(0, NULL), regs[0],
+        (uint32_t)regs[1]);
 
     if ((*(st + 0x224) & 1) != 0) {
-        uint32_t pc_size = (uint32_t)desc[3];
+        uint32_t pc_size = (uint32_t)regs[3];
         *(uint32_t *)(st + 0x218) = pc_size;
         if (pc_size >> 0xe == 0) {
             sptm_assert_fail("Illegal SART Register Size");
         }
-        va_pc = sptm_phys_map_va((uintptr_t)sptm_percpu_base(0, NULL), desc[2],
-            (uint32_t)desc[3]);
+        va_pc = sptm_phys_map_va((uintptr_t)sptm_percpu_base(0, NULL), regs[2],
+            (uint32_t)regs[3]);
         uint64_t pc_va = sptm_va_to_phys(va_pc, pc_size >> 0xe, 0);
         *(uint64_t *)(st + 0x210) = pc_va;
         if (pc_va == 0xffffffff) {
             sptm_assert_fail("%s invalid papt returned by");
         }
-        uint32_t *pco = NULL;
-        if (sptm_dt_get_prop(out, "power-canary-offset", &pco, &sz,
+        prop = NULL;
+        if (sptm_dt_get_prop(sart_node, "power-canary-offset", (uintptr_t *)&prop, &sz,
                 sptm_dt_state[0], sptm_dt_state[1]) != 1) {
             sptm_assert_fail("error %d looking up %s");
         }
         if (sz != 4) {
             sptm_assert_fail("DT property %s has illegal");
         }
-        *(uint32_t *)(st + 0x21c) = *pco;
+        *(uint32_t *)(st + 0x21c) = *prop;
     }
 
     /* "exclusive-bounds" absent => set DAT_00094cc0. */
     sptm_sart_exclusive_bounds =
-        sptm_dt_get_prop(out, "exclusive-bounds", &desc, &sz,
+        sptm_dt_get_prop(sart_node, "exclusive-bounds", (uintptr_t *)&regs, &sz,
             sptm_dt_state[0], sptm_dt_state[1]) != 1;
 
     uint64_t map_va = sptm_va_to_phys(va, regs_size >> 0xe, 0);
@@ -716,16 +716,17 @@ sptm_sart_state_init(void)
  * T8110 DART register / TLB helpers.
  * ------------------------------------------------------------------ */
 
-/* DART per-client hardware base: ctrl+0x8 + idx*0x78, PAC-checked. */
+/* DART per-client hardware base: the 64-bit slot at ctrl+0x8 + idx*0x78
+ * (PAC-checked) holds the client's register-block base address. */
 static inline uint32_t *
 sptm_dart_client_hw(uint8_t *ctrl, uint32_t idx)
 {
     uintptr_t p = (uintptr_t)(ctrl + 8 + (uint64_t)idx * 0x78);
     /* PAC address-mask: restore the pointer-authenticated tag. */
-    if (((uintptr_t)ctrl + 8 ^ p) & 0xffc0000000000000) {
+    if (((uintptr_t)(ctrl + 8) ^ p) & 0xffc0000000000000) {
         p = (p & 0xffffffffffffULL) | 0xc8a2000000000000ULL;
     }
-    return (uint32_t *)p;
+    return *(uint32_t **)p;
 }
 
 /* FUN_000c72f0 @ 0x000c72f0   (sptm_dart_disable)
@@ -889,7 +890,7 @@ sptm_dart_poll(void *ctrl, uint64_t phase)
         LORelease();
     }
     uint8_t *rec = c + 0xbfc + (uint64_t)sel * 0x18;
-    if ((*(uintptr_t)(c + 0xbfc) ^ (uintptr_t)rec) & 0xffc0000000000000) {
+    if (((uintptr_t)(c + 0xbfc) ^ (uintptr_t)rec) & 0xffc0000000000000) {
         rec = (uint8_t *)(((uintptr_t)rec & 0xffffffffffffULL) | 0xc8a2000000000000ULL);
     }
 
@@ -1005,14 +1006,14 @@ sptm_dart_flush(void *ctrl, uint32_t client, uint32_t policy, uint64_t flags)
             if (*(uint32_t *)(c + 0xba4) <= client) {
                 sptm_assert_fail("dart %s %d %s %u Invalid DART");
             }
-            if ((*(uint32_t *)(*hw + 0x604) & 1) == 0) {
+            if ((*(uint32_t *)((uint8_t *)hw + 0x604) & 1) == 0) {
                 return 0;
             }
         } else {
             if (*(uint32_t *)(c + 0xba4) <= client) {
                 sptm_assert_fail("dart %s %d %s %u Invalid DART");
             }
-            if (*(int32_t *)(*hw + 0x80) >= 0) {
+            if (*(int32_t *)((uint8_t *)hw + 0x80) >= 0) {
                 return 0;
             }
         }
@@ -1405,7 +1406,7 @@ sptm_dart_write_field_v1(void *ctrl, uint32_t client, uint32_t reg, uint32_t val
     }
     hw = *(uint32_t **)(c + (uint64_t)client * 0x78 + 0x18);
     if (hw != NULL) {
-        *(uint32_t *)(*hw + (reg & 0xfffffffc)) = val;
+        *(uint32_t *)((uint8_t *)hw + (reg & 0xfffffffc)) = val;
         return;
     }
     sptm_assert_fail("dart %s %d %s %u Invalid DAP");
@@ -1428,7 +1429,7 @@ sptm_dart_write_field_v2(void *ctrl, uint32_t client, uint32_t reg, uint32_t wan
     if (c == NULL) {
         sptm_assert_fail("dart %s %s %d %s %d %s NULL");
     }
-    if ((*(uint32_t *)(**(uint32_t **)(c + (uint64_t)client * 0x78 + 0x18) + (reg & 0xfffffffc)) &
+    if ((*(uint32_t *)((uint8_t *)*(uint32_t **)(c + (uint64_t)client * 0x78 + 0x18) + (reg & 0xfffffffc)) &
          mask) == (mask & want)) {
         return;
     }
@@ -1651,7 +1652,7 @@ void
 sptm_dart_flush_cmd(void *ctrl, void *cmd)
 {
     uint8_t *c = (uint8_t *)ctrl;
-    ushort m;
+    uint16_t m;
     int rc;
 
     if (*(int8_t *)(c + 0xbe0) != 2) {

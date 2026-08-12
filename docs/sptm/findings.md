@@ -367,3 +367,75 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (ctrl+0xbe0 != 2) { sptm_lock_acquire(); ctrl->c2c |= 1; sptm_lock_release(); if (ctrl->c2c & 1) assert("Not serialized"); memcpy(ctrl+0xbfc, q, 0x18); } do { rc=sptm_dart_poll(ctrl,0); } while(rc==0); result[0]=inst->88; result[1]=inst->90;`
 - **Severity (hypothesis)**: informational — the read-back is serialized and the TLB-lookup descriptor fields are validated against the instance config before issue (panic 0x6000025).
 - **Confidence**: high
+
+## [ringminus1] 000c7bac sptm_dart_flush — flush-timeout path re-arms DART error signaling then panics
+- **Observation**: The per-client DART TLB-invalidate poll loop, on persistent non-completion (after `flags&1` or 5 failed WFE-timeout retries), reads the client's +0x210 error-enable register, ORs bit0 in (`0x210 |= 1`), writes it back, and then panics. Setting that bit re-arms the DART to signal faults to SPTM as a fail-closed response to a stuck flush.
+- **Evidence**: `000c7bac`: `uVar5 = FUN_000c7df8(param_1,param_2,0x210); FUN_000c7e5c(param_1,param_2,0x210,uVar5|1); FUN_000f8804("dart ... DART instance ...");` inside the `((flags&1)==0)` branch after the `deadline = cntfrq/10000000 + CNTPCT` wait loop.
+- **Severity (hypothesis)**: low — the error-enable re-arm happens only after the timeout, i.e. on an already-failing device; it turns a hang into a panic (fail-closed). A guest able to stall its DART could force an SPTM panic (DoS), but the error path is gated behind the timeout.
+- **Confidence**: medium
+
+## [ringminus1] 000cc2bc/000cc3f8/000cc490/000cc540 sptm_dart_ps_refcount / write_field / write_reg — register writes gated only by client-index bounds, not register-offset permission
+- **Observation**: The low-level DART register helpers write or verify 32-bit registers at a caller-supplied byte offset `reg` (only 4-aligned, mask `0xfffffffc`) with the sole guard being the client index against `ctrl+0xba4`; there is no check that `reg` falls inside the DART's actual register window. `sptm_dart_ps_refcount` additionally derives `{offset, ctrl-idx, bit}` from the global DAT_001012b8 descriptor table and writes `*(*(ctrl + desc[1]*8 + 0x228) + desc[0])` with only a descriptor-count (`DAT_001012b4`) check — no range validation of the target block/offset against the register window.
+- **Evidence**: `000c7e5c` writes `*(*(long*)(ctrl+8+idx*0x78) + (reg&0xfffffffc)) = val` after `idx < *(uint*)(ctrl+0xba4)`; `000cc3f8` identical via the +0x18 sub-handle; `000cc2bc` computes `puVar1 = *(long*)(param_1 + desc[1]*8 + 0x228) + *desc` and sets/clears `*puVar1 |= 1<<desc[3]` (panics only on set/clear failure or `ps >= DAT_001012b4`).
+- **Severity (hypothesis)**: medium — if any caller passes an unvalidated register offset (or a corrupt PS descriptor table is reachable), this is arbitrary 32-bit access into the DART MMIO window, bypassing the SPTM's page-table-owner role (the IOMMU permission path). Mitigating factor: these are internal helpers whose callers (000caa9c/000cacd0/000cc5e8 etc.) appear to pass validated constants/instance fields.
+- **Confidence**: low (whether an untrusted register offset can reach these is not established from this batch)
+
+## [ringminus1] 000c72f0/000c8960/000c8a14 sptm_dart_disable / save_all / save — DART fault/error registers written with masking values
+- **Observation**: Disabling a DART instance (000c72f0) writes 0xffffffff to each client's error register (offset +0xbc4) and 0 to the fault register (offset +0xbcc); the per-client save path (000c8a14) re-arms the error register at offset +0xbc8 with 0xffffffff after flushing. Writing 0xffffffff/0 to these registers is a fault/error masking (acknowledge) operation — it can clear or suppress IOMMU fault indicators.
+- **Evidence**: `000c72f0`: `*(undefined4*)(*plVar + (*(uint*)(ctrl+0xbc4)&0xfffffffc)) = 0xffffffff; *(undefined4*)(*plVar + (*(uint*)(ctrl+0xbcc)&0xfffffffc)) = 0;` per client; `000c8a14` tail: `*(undefined4*)(client_hw + (*(uint*)(ctrl+0xbc8)&0xfffffffc)) = 0xffffffff`.
+- **Severity (hypothesis)**: low — these are teardown/save (expected) writes on the fault/error side; masking is the intended DART behavior. Only becomes notable if a teardown path is reachable while the guest still uses the DART, which would hide faults.
+- **Confidence**: medium
+
+## [ringminus1] 000b7c04 sptm_dt_get_prop — DT property value bounds check lacks carry detection
+- **Observation**: The property value range check `(uintptr_t)val + size < blob_base || blob_end < (uintptr_t)val + size` computes the end address with no carry (overflow) guard on `val + size`. A property `size` field near 0xffffffff would wrap the sum; a wrapped value landing inside [base,end] would pass the check and the cursor then advances by `align4(36+size)` (sptm_dt_prop_next), walking to a garbage location before the next iteration's own bounds check panics.
+- **Evidence**: `sptm_dt_get_prop`: `if ((uintptr_t)val + size < blob_base || blob_end < (uintptr_t)val + size) sptm_panic_bad_dt();` — no CARRY8-equivalent on the addition (contrast with `sptm_dt_next_sibling`/`sptm_dt_find_node` which do check `CARRY8` on the same `size+0x27` advance).
+- **Severity (hypothesis)**: low — the DT blob is trusted boot data (fixed at boot), so a malicious size field requires a corrupted/attacker-supplied DT; the mis-walk is still caught by the next property/entry bounds check (fail-closed panic).
+- **Confidence**: medium
+
+## [ringminus1] 000b7898 sptm_dt_find_by_name_recursive — unbounded value read via strcmp
+- **Observation**: The "name"-property match compares the property VALUE region (starting at entry+36) against "arm-io" with a plain byte loop that terminates only on NUL. If a property's value is a prefix of "arm-io" (e.g. "arm-i") the compare breaks on mismatch; but if the value equals "arm-io" and is not NUL-terminated inside its `size` bytes, the loop reads past the value into adjacent properties (still within the bound-checked blob walk, but past the logical value).
+- **Evidence**: `if (strcmp((const char *)p, "name") == 0 && strcmp((const char *)(p + 36), "arm-io") == 0)` where `p+36` is the value pointer and the value length is not consulted; Ghidra shows the same byte-at-a-time compare with no size bound.
+- **Severity (hypothesis)**: low — reads stay within the (bounds-checked) blob, so no OOB of the blob; a crafted DT value could only cause a spurious node match or an over-read within the blob.
+- **Confidence**: medium
+
+## [ringminus1] 000b79e8 sptm_dt_find_node — silent truncation of >63-byte path components
+- **Observation**: When parsing a path component, the 64-byte scratch buffer is truncated at index 0x3f by resetting the write cursor to the buffer start (`dst = component`), so a component longer than 63 bytes is silently truncated and matched against a truncated name — a long name can be matched by a short lookup (or vice-versa) without any error.
+- **Evidence**: `if (dst - component == 0x3f) { dst = component; break; }` in sptm_dt_find_node's component parser; the truncated component is then compared via strcmp against the node "name" property.
+- **Severity (hypothesis)**: informational — a lookup-only parser quirk; node names in the boot DT are short, and a mismatch would just return -1 (no node found) rather than panic.
+- **Confidence**: medium
+
+## [ringminus1] 000b807c / 000bb9f0 sptm_boot_region / sptm_start_sk_ctx — boot-region property size enforced
+- **Observation**: Boot-region lookups strictly require the memory-map property to be exactly 0x10 bytes (a {base,size} pair); a property of any other size panics ("DT property %s has illegal size"). This bounds the region pointers handed to the SK/TXM context construction.
+- **Evidence**: `if (size != 0x10) sptm_panic("DT property %s has illegal size", name);` in sptm_boot_region, and the same check in sptm_init_kc_regions / sptm_start_sk_ctx for AuxKC_ro / AuxKC_rw.
+- **Severity (hypothesis)**: informational — defensive enforcement of the fixed {base,size} property layout before its pointer is dereferenced.
+- **Confidence**: high
+
+## [ringminus1] 000c0874 sptm_hib_hash_nonwired — non-wired hash sweep is DRAM-window confined + reloc-table bound
+- **Observation**: The non-wired hibernation hash sweep iterates every 16 KiB DRAM page in [g_mem_phys_base, g_mem_phys_end) but only admits a page into the hash when its FTE is active (type-table bit0), it is not in the immutable list, it is not already hashed, it is not the last hib page, and it lies inside a pmap IO range (bsearch over DAT_000950d0 with comparator 0xd649c). A page failing the IO-range membership panics (0x5b). It then validates the relocation/hash-track table (each entry end == base+count, else panic 0x5c).
+- **Evidence**: `if ((sptm_res_type_table[desc[2]*0x90] & 1)==0) skip`; immutable loop over DAT_000949b4; `if ((g_io_range_count==0)||(page<*g_io_ranges)) panic 0x5b`; bsearch(key{page,0x4000,0}, g_io_ranges, 0x18, &0xd649c); `if (ent[2]!=ent[1]+ent[0]) panic 0x5c`; re-seed `sptm_sha_update(obj,ctx,4,&DAT_00012f68)`.
+- **Severity (hypothesis)**: medium — the sweep is the integrity gate over writable DRAM; a page outside the pmap IO ranges is hard-refused (fail-closed) rather than silently skipped, preventing a shadow/aliased region from being omitted from the image digest.
+- **Confidence**: high
+
+## [ringminus1] 000c172c sptm_amcc_ctrr_program — CTRR begin/end validated before programming
+- **Observation**: AMCC CTRR region-lock registers are only programmed after each begin<=end and neither value is 0xffffffffffffffff; an invalid pair panics "CTRR %s begin > end". No CTRR can be written with a nonsensical (empty/wrapped) region window.
+- **Evidence**: per-pair `if (b[i]-1 >= 0xfffffffffffffffe) panic "begin/end invalid"`; `if (b[i] > b[i+1]) panic "CTRR %s begin > end"`; 12 sysreg writes (3,0,0xb,...); trailing ISB+TLBI alle1+DSB+ISB.
+- **Severity (hypothesis)**: low — bounds-checked cache-region programming; prevents an empty/inverted AMCC region from being armed.
+- **Confidence**: high
+
+## [ringminus1] 000c1b70 sptm_amcc_cache_enable — CTRR C/D double-lock guard
+- **Observation**: Enabling the AMCC cache refuses to proceed if the CTRR C (3,0,0xb,1,4) or D (3,0,0xb,1,5) registers are already locked (sign bit set), panicking "CTRR C/D already locked". This prevents re-enabling cache after a partial/unbalanced lock and keeps the cache-enable state machine single-shot.
+- **Evidence**: `if (sptm_reg_read(3,0,0xb,1,4) >> 63) panic "CTRR C already locked"`; same for D; then lock_check(2/3) + lock_regs_parse + memcache_enable(2); final `sptm_reg_write(3,0,0xb,1,4,0x8000000000000001)`.
+- **Severity (hypothesis)**: low — fail-closed against re-locking an already-armed cache region (availability/state-consistency).
+- **Confidence**: high
+
+## [ringminus1] 000c3c78 sptm_nvme_init — NVMe queue/TCB bounds validated from DT
+- **Observation**: NVMe init rejects a zero queue-entries count ("Zero TCB entries per queue") and any count > 0x101 ("Too many TCB entries per queue"); the ANS register region must be >= 0xb pages and the /arm-io ans-reg property >= 0x40 bytes. All frame allocations are hard-checked (==0xffffffff → panic "%s invalid papt returned by"), so a missing/unmappable register frame cannot be used.
+- **Evidence**: `if (entries==0) panic "Zero TCB entries"; if (entries>0x101) panic "Too many TCB entries"`; `if (ans_size>>14 < 0xb) panic "Unexpected ANS register size"`; every `sptm_frame_alloc(...)` result compared to 0xffffffff with goto alloc_fail panic; queue buffer `sptm_boot_alloc_frames(10, ...)` must be nonzero.
+- **Severity (hypothesis)**: low — bounds the NVMe DMA/queue configuration from DT; prevents an undersized/oversized queue from being armed (defense-in-depth on a DMA-capable endpoint).
+- **Confidence**: high
+
+## [ringminus1] 000c5248 sptm_uat_state_get — UAT state paddr validated before use
+- **Observation**: The UAT state getter validates the id (a physical address) is 16 KiB aligned within the state stride and, for a non-current state, that its FTE refcount is 0 before returning it; the resolved state's type byte must match the requested mode and its FTE flags must admit the permission mask, else panics 0x4000002/0x4000004.
+- **Evidence**: `sptm_paddr_validate(id,0x18)`; alignment `if (off != q*stride || 0x4000 < stride+off) panic 0x4000005`; `if (*(int*)(va+4) != 0) { fte_get(id); panic 0x4000000; }`; `if ((*state & mask)==0) panic 0x4000002`; `if (b != mode) panic 0x4000004`.
+- **Severity (hypothesis)**: low — prevents acquiring a UAT state backed by a referenced (in-use) or misaligned frame (state-confusion between UAT roots).
+- **Confidence**: high

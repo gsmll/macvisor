@@ -2403,9 +2403,9 @@
     "category": "hib",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "non-wired DRAM page hashing sweep for hib integrity",
+    "notes": "DRAM non-wired page hashing sweep; gated on g_sha_phase==2; per-page FTE-active/immutable/io-range checks (panics 0x58/0x5b/0x5c); re-seeds SHA with DAT_00012f68 salt; SHA phase->3.",
     "address": "000c0874"
   },
   {
@@ -2458,9 +2458,9 @@
     "category": "hib",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "guard acquire + dispatch to FUN_000d6524",
+    "notes": "sets hib state BUSY then dispatches FUN_000d6524 (sptm_dram_write); panics on state_guard_release mismatch.",
     "address": "000c1430"
   },
   {
@@ -2469,9 +2469,9 @@
     "category": "hib",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "high",
-    "notes": "noreturn: panic 'Unexpected bootstrap stages reached'",
+    "notes": "noreturn panic 'Unexpected bootstrap stages reached'; shared tail for stage-seq checks.",
     "address": "000c1544"
   },
   {
@@ -2480,9 +2480,9 @@
     "category": "hib",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "set feature bit 0x800000, LORelease",
+    "notes": "sets bootstrap stage bit 0x800000 + LORelease; panics if already announced.",
     "address": "000c1688"
   },
   {
@@ -2491,9 +2491,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "write 12 CTRR begin/end regs from DAT_00094a50..",
+    "notes": "programs 12 AMCC CTRR begin/end sysregs (3,0,0xb,...) from DAT_00094a50; begin<=end checks; ISB+TLBI+DSB.",
     "address": "000c172c"
   },
   {
@@ -2502,9 +2502,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "CTRR 5,2..5 protection round",
+    "notes": "3-phase CTRR 5,2..5 programming (flush/attr/protect) with TLBI barriers.",
     "address": "000c1ab0"
   },
   {
@@ -2513,9 +2513,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "CTRR C/D lock + AMCC cache enable",
+    "notes": "CTRR C/D unlock check + plane lock + memcache force-flush; sets CTRR C; handoff-magic gated.",
     "address": "000c1b70"
   },
   {
@@ -2524,9 +2524,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "CTRR D lock + unmap regions",
+    "notes": "unlock CTRR D + unmap aperture planes (carve-out validated); sets CTRR D.",
     "address": "000c1cc4"
   },
   {
@@ -2590,9 +2590,9 @@
     "category": "nvme",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "validate nvme queue entries",
+    "notes": "validates NVMe queue-entries count (state+0x10) and linear-SQ mode; panics 0x3000005/a/b.",
     "address": "000c2ccc"
   },
   {
@@ -2623,9 +2623,9 @@
     "category": "nvme",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "NVMe ANS BAR setup",
+    "notes": "writes ANS reg frame physical addrs into per-queue block +0x100..0x114; ORs state flags 0x10/6.",
     "address": "000c3b94"
   },
   {
@@ -2634,9 +2634,9 @@
     "category": "nvme",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "NVMe driver init (DT props, frame map, TCB alloc)",
+    "notes": "full NVMe/ANS driver init: DT props, ANS reg frame map, secure reg block, SL/PA/VA + VDMA frames, TCB/queue alloc.",
     "address": "000c3c78"
   },
   {
@@ -2645,9 +2645,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "high",
-    "notes": "snprintf 'region_id_%d'",
+    "notes": "snprintf 'region_id_%d' into 0x20 buffer.",
     "address": "000c446c"
   },
   {
@@ -2656,9 +2656,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "parse chosen/lock_regs DT",
+    "notes": "parse /chosen lock_regs (aperture/plane/phys-addr) + cache_status + CTRR A-D; validates counts<=16.",
     "address": "000c44ac"
   },
   {
@@ -2667,9 +2667,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "read 1-3 u32 regs from DT node",
+    "notes": "read u32 DT reg property (reg_offset/reg_value/reg_count) into dst; 1-3 values.",
     "address": "000c48e0"
   },
   {
@@ -2678,9 +2678,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "parse CTRR node props",
+    "notes": "parse one AMCC CTRR set: page_size_shift, lower/upper limit, region, enable, write_disable.",
     "address": "000c4adc"
   },
   {
@@ -2689,9 +2689,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "check lock group for already-locked regions",
+    "notes": "check lock group for already-locked aperture/plane regions (CTRR lo/hi masks); panic on hit.",
     "address": "000c4c68"
   },
   {
@@ -2700,9 +2700,9 @@
     "category": "amcc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "early memcache enable / force flush / CTRR write",
+    "notes": "early memcache enable + force-flush + mc_hint_cpm_impl + plane CTRR value program.",
     "address": "000c4d8c"
   },
   {
@@ -2711,9 +2711,9 @@
     "category": "uat",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "UAT state get/acquire by id",
+    "notes": "acquire UAT driver state by id (paddr); validates 16K-align/stride/FTE-refcount; permission-mask check; returns state ptr.",
     "address": "000c5248"
   },
   {
@@ -2722,9 +2722,9 @@
     "category": "uat",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "FTE field lookup helper",
+    "notes": "return FTE refcount field ptr for a paddr (desc+8 / out-of-window +4).",
     "address": "000c5550"
   },
   {
@@ -2733,9 +2733,9 @@
     "category": "uat",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "validate/translate UAT table paddr",
+    "notes": "validate UAT table paddr FTE type match; returns paddr; panics 0x4000000/9.",
     "address": "000c55cc"
   },
   {
@@ -2744,20 +2744,20 @@
     "category": "uat",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "walk UAT tables for a VA",
+    "notes": "walk UAT tables to validate [va,va+size) within state root window; root-bit via state+0x1a1; panic 0x4000008.",
     "address": "000c5784"
   },
   {
     "ghidra_name": "FUN_c59b8",
-    "estimated_name": "sptm_snprintf",
+    "estimated_name": "sptm_snprintf_wrap",
     "category": "libc",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "high",
-    "notes": "snprintf wrapper",
+    "notes": "thin snprintf wrapper forwarding to FUN_000ad278.",
     "address": "000c59b8"
   },
   {
@@ -2766,9 +2766,9 @@
     "category": "uat",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "medium",
-    "notes": "read per-cpu handoff magic",
+    "notes": "read per-CPU handoff-region magic u16 (state+cpu+10).",
     "address": "000c59f4"
   },
   {
@@ -2777,9 +2777,9 @@
     "category": "hib",
     "tree": "ringminus1",
     "file": "osfmk/arm64/sptm/sptm_region_nvme.c",
-    "status": "claimed",
+    "status": "decompiled",
     "confidence": "high",
-    "notes": "infinite spin (mov x0,#0x9898)",
+    "notes": "infinite self-spin mov x0,#0x9898; fail-stop hang.",
     "address": "000c5a18"
   },
   {
@@ -2794,6 +2794,83 @@
     "notes": "SART unmap region: region guard, zero 3 parallel SART tables, restore perms, power canary magic check, free 20B entry + unref 16KB granules."
   },
   {
+    "address": "000c60e4",
+    "ghidra_name": "FUN_c60e4",
+    "estimated_name": "sptm_sart_validate_region",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "SART region request validation: paddr 16K-aligned within [mem_low,mem_high), size within regs-map; out_va=paddr out_paddr=size; panics on violation."
+  },
+  {
+    "address": "000c6364",
+    "ghidra_name": "FUN_c6364",
+    "estimated_name": "sptm_sart_region_lookup",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Look up SART region by id: returns primary/aux/size words from the +0x1f8 map via +0x238 descriptors; DAT_00094cc0 gates size validity."
+  },
+  {
+    "address": "000c64b4",
+    "ghidra_name": "FUN_c64b4",
+    "estimated_name": "sptm_sart_region_add",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Program new SART region: validate, per-CPU guard, power-canary + iommu_page_ref per 16K block, fill free region entry, bump live count (+0x7c)."
+  },
+  {
+    "address": "000c68e4",
+    "ghidra_name": "FUN_c68e4",
+    "estimated_name": "sptm_sart_region_program",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Write a SART region entry into the +0x1f8 register map (primary/aux/size slots); DAT_00094cc0 gates size decrement."
+  },
+  {
+    "address": "000c6a54",
+    "ghidra_name": "FUN_c6a54",
+    "estimated_name": "sptm_sart_program_regions",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Enable/disable SART region programming; bootloader-region + throttle-config path; per-CPU guard."
+  },
+  {
+    "address": "000c6e30",
+    "ghidra_name": "FUN_c6e30",
+    "estimated_name": "sptm_sart_state_init",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Init SART driver state from DT: arm-io-sart node props (sart-version/throttle-version/offset/power-canary/regs); maps reg window; sets DAT_00094cc0; returns 0."
+  },
+  {
+    "address": "000c72f0",
+    "ghidra_name": "FUN_c72f0",
+    "estimated_name": "sptm_dart_disable",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Disable a DART instance: per-client clear error(+0xbc4) and fault(+0xbcc) regs; validates instance id against DAT_00094ec0."
+  },
+  {
     "address": "000c7424",
     "ghidra_name": "FUN_000c7424",
     "estimated_name": "sptm_t8110dart_clear_exception",
@@ -2803,6 +2880,61 @@
     "file": "osfmk/arm64/sptm/sptm_iommu.c",
     "status": "decompiled",
     "notes": "Decompiled (Iommu batch) into osfmk/arm64/sptm/sptm_iommu.c; name from SPTM __cstring trace tag; confidence high."
+  },
+  {
+    "address": "000c76ac",
+    "ghidra_name": "FUN_c76ac",
+    "estimated_name": "sptm_dart_clear_error",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Clear a DART error: per-CPU guard, serialize flush machinery, poll completion; refuses on 0x100 flush-unlocked revision."
+  },
+  {
+    "address": "000c786c",
+    "ghidra_name": "FUN_c786c",
+    "estimated_name": "sptm_dart_poll",
+    "confidence": "low",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "DART TLB-flush state machine: per-client invalidate via 000c7bac, phase-bit toggling, program client status regs from flush record; returns 1 when complete."
+  },
+  {
+    "address": "000c7bac",
+    "ghidra_name": "FUN_c7bac",
+    "estimated_name": "sptm_dart_flush",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Per-client DART TLB invalidate with DSB+CNTPCT timeout poll; escalates (clear 0x210 err-enable, panic) on timeout; also named sptm_dart_client_tlb_invalidate."
+  },
+  {
+    "address": "000c7df8",
+    "ghidra_name": "FUN_c7df8",
+    "estimated_name": "sptm_dart_read_reg",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Read a 32-bit DART client register at byte offset reg; panics on invalid client index."
+  },
+  {
+    "address": "000c7e5c",
+    "ghidra_name": "FUN_c7e5c",
+    "estimated_name": "sptm_dart_write_reg_v1",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Write a 32-bit DART client register at byte offset reg; panics on NULL ctrl / invalid index."
   },
   {
     "address": "000c7efc",
@@ -2849,6 +2981,39 @@
     "notes": "Decompiled (Iommu batch) into osfmk/arm64/sptm/sptm_iommu.c; name from SPTM __cstring trace tag; confidence high."
   },
   {
+    "address": "000c8960",
+    "ghidra_name": "FUN_c8960",
+    "estimated_name": "sptm_dart_save_all",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Save/disable every client of a DART instance via sptm_dart_save; validates instance id."
+  },
+  {
+    "address": "000c8a14",
+    "ghidra_name": "FUN_c8a14",
+    "estimated_name": "sptm_dart_save",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Save a DART client: re-write +0x100 control / +0x1c0 status (rev<0x202) or whole reg block; re-arm error reg +0xbc8."
+  },
+  {
+    "address": "000c8ba0",
+    "ghidra_name": "FUN_c8ba0",
+    "estimated_name": "sptm_dart_ctrl_write",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Write per-client control bits (mask 0x777) at +0xbc8 offset; validates instance and client."
+  },
+  {
     "address": "000c8d04",
     "ghidra_name": "FUN_000c8d04",
     "estimated_name": "sptm_t8110dart_clear_err",
@@ -2871,6 +3036,28 @@
     "notes": "Decompiled (Iommu batch) into osfmk/arm64/sptm/sptm_iommu.c; name from SPTM __cstring trace tag; confidence high."
   },
   {
+    "address": "000c92e8",
+    "ghidra_name": "FUN_c92e8",
+    "estimated_name": "sptm_dart_acquire_v1",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Client present+enabled check (instance +0x18 bit0x80 clear); also named sptm_dart_acquire_v1 (3-arg dbg form)."
+  },
+  {
+    "address": "000c9364",
+    "ghidra_name": "FUN_c9364",
+    "estimated_name": "sptm_dart_acquire_v2",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Client instance-present check (ctrl+0x238 + idx*8 non-NULL); also named sptm_dart_instance_lookup / sptm_dart_acquire_v2."
+  },
+  {
     "address": "000c93d8",
     "ghidra_name": "FUN_000c93d8",
     "estimated_name": "sptm_t8110dart_disable_translation",
@@ -2891,6 +3078,28 @@
     "file": "osfmk/arm64/sptm/sptm_iommu.c",
     "status": "decompiled",
     "notes": "Decompiled (Iommu batch) into osfmk/arm64/sptm/sptm_iommu.c; name from SPTM __cstring trace tag; confidence high."
+  },
+  {
+    "address": "000caa9c",
+    "ghidra_name": "FUN_caa9c",
+    "estimated_name": "sptm_dart_lock",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Acquire/validate DART client lock: rev-dependent status mask vs lock word (+0x200 & +0x208); returns bit0 locked state."
+  },
+  {
+    "address": "000cabb4",
+    "ghidra_name": "FUN_cabb4",
+    "estimated_name": "sptm_dart_lock_set",
+    "confidence": "low",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Validate a DART client lock-set configuration against its instance entry; panics on misconfiguration."
   },
   {
     "address": "000cacd0",
@@ -2926,6 +3135,50 @@
     "notes": "Decompiled (Iommu batch) into osfmk/arm64/sptm/sptm_iommu.c; name from SPTM __cstring trace tag; confidence high."
   },
   {
+    "address": "000cc2bc",
+    "ghidra_name": "FUN_cc2bc",
+    "estimated_name": "sptm_dart_ps_refcount",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Adjust DART power-state refcount bit (DAT_001012b8 stride-6 descriptor) set/clear; panics on failure."
+  },
+  {
+    "address": "000cc3f8",
+    "ghidra_name": "FUN_cc3f8",
+    "estimated_name": "sptm_dart_write_field_v1",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Raw write via client +0x18 sub-handle at byte offset reg; declared mask arg unused."
+  },
+  {
+    "address": "000cc490",
+    "ghidra_name": "FUN_cc490",
+    "estimated_name": "sptm_dart_write_field_v2",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Read-back verification via +0x18 sub-handle: assert (cur&mask)==(mask&want); panics on mismatch."
+  },
+  {
+    "address": "000cc540",
+    "ghidra_name": "FUN_cc540",
+    "estimated_name": "sptm_dart_write_reg_v2",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Read-back verification: assert client reg == val; panics on mismatch."
+  },
+  {
     "address": "000cc5e8",
     "ghidra_name": "FUN_000cc5e8",
     "estimated_name": "sptm_t8110dart_powerdown",
@@ -2957,6 +3210,39 @@
     "file": "osfmk/arm64/sptm/sptm_guest_io.c",
     "status": "decompiled",
     "notes": "T8110 DART unmap: clear 16KB blocks in range (reject mixed WR + absent unless flag), TLB invalidate, release block pages + leaf table."
+  },
+  {
+    "address": "000cd970",
+    "ghidra_name": "FUN_cd970",
+    "estimated_name": "sptm_dart_tt_lookup",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Walk DART tables for a VA -> leaf PTE table VA (+ leaf paddr out); 2/3-level per geometry bit3; also named sptm_dart_va_to_pte / sptm_dart_tt_lookup."
+  },
+  {
+    "address": "000cdd0c",
+    "ghidra_name": "FUN_cdd0c",
+    "estimated_name": "sptm_dart_tlb_flush",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "DART TLB flush over VA range (full or range cmd + 0x18-byte record, poll); legacy 2-word invalidate on rev<0x300; also named sptm_dart_tlb_invalidate / sptm_dart_tlb_flush."
+  },
+  {
+    "address": "000ce0b4",
+    "ghidra_name": "FUN_ce0b4",
+    "estimated_name": "sptm_dart_flush_cmd",
+    "confidence": "medium",
+    "category": "sptm-io",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_dart.c",
+    "status": "decompiled",
+    "notes": "Issue a 0x18-byte DART flush command record at +0xbfc and poll completion; serialize-first unless mode 2."
   },
   {
     "address": "000ce144",
@@ -4794,5 +5080,181 @@
     "file": "osfmk/arm64/sptm/sptm_init.c",
     "status": "decompiled",
     "notes": "noreturn early-abort panic wrapper"
+  },
+  {
+    "address": "000b7748",
+    "ghidra_name": "FUN_000b7748",
+    "estimated_name": "sptm_dt_snprintf",
+    "confidence": "low",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "thin snprintf wrapper: formats into a 0x20-byte buffer with size=limit=0x20 guard; forwards to sptm_snprintf(FUN_000ad278); vararg tail passed through"
+  },
+  {
+    "address": "000b7784",
+    "ghidra_name": "FUN_000b7784",
+    "estimated_name": "sptm_dt_gpu_iouat_present",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "DT probe: /arm-io/sgx node + /chosen gpu-iouat nonzero u32; leaf, no callers"
+  },
+  {
+    "address": "000b7898",
+    "ghidra_name": "FUN_000b7898",
+    "estimated_name": "sptm_dt_find_by_name_recursive",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "recursive DFS for a node whose 'name' property value == 'arm-io' (DAT_00007790/0000e72c); cursor-based"
+  },
+  {
+    "address": "000b79e8",
+    "ghidra_name": "FUN_000b79e8",
+    "estimated_name": "sptm_dt_find_node",
+    "confidence": "high",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "resolve slash-path of node names via children 'name' props; sptm_dt_get_prop + sptm_dt_next_sibling"
+  },
+  {
+    "address": "000b7c04",
+    "ghidra_name": "FUN_000b7c04",
+    "estimated_name": "sptm_dt_get_prop",
+    "confidence": "high",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "DT property lookup; returns 1/-1, panics on OOB walk; prop layout {name[32];u32 size;value[]}"
+  },
+  {
+    "address": "000b7cfc",
+    "ghidra_name": "FUN_000b7cfc",
+    "estimated_name": "sptm_dt_next_sibling",
+    "confidence": "high",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "address past a node's subtree (next sibling); recurses over children"
+  },
+  {
+    "address": "000b7dc8",
+    "ghidra_name": "FUN_000b7dc8",
+    "estimated_name": "sptm_dt_iterate",
+    "confidence": "high",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "DT child iterator; {+8 parent,+0x10 current,+0x20 index}; returns 1/0"
+  },
+  {
+    "address": "000b807c",
+    "ghidra_name": "FUN_000b807c",
+    "estimated_name": "sptm_boot_region",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "/chosen memory-map named region lookup; {base,size} pair; panics on bad size"
+  },
+  {
+    "address": "000b8154",
+    "ghidra_name": "FUN_000b8154",
+    "estimated_name": "sptm_boot_fixups",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "announce DT blob, resolve /chosen/memory-map, set stage bit 1/2; LORelease ordering"
+  },
+  {
+    "address": "000b8230",
+    "ghidra_name": "FUN_000b8230",
+    "estimated_name": "sptm_dispatch_engine_init",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "register SPTM_ro/DeviceTree, HIB teardown, trace/HIB driver+GCM region, stage bit 0x2000"
+  },
+  {
+    "address": "000b8470",
+    "ghidra_name": "FUN_000b8470",
+    "estimated_name": "sptm_init_kc_regions",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "enter TXM, register TXM_ro/BootKC_ro/BootKC_rs/AuxKC_ro-rx, stage bit 0x20000"
+  },
+  {
+    "address": "000ba950",
+    "ghidra_name": "FUN_000ba950",
+    "estimated_name": "sptm_get_random",
+    "confidence": "high",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "/chosen <name> entropy: copy+relocate property bytes, return size"
+  },
+  {
+    "address": "000baa60",
+    "ghidra_name": "FUN_000baa60",
+    "estimated_name": "sptm_init_sched",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "per-CPU EL2/EL1 bootstrap: MMU install, /cpus die-id scan, CTRR region+register validation, sptm_el2_enable"
+  },
+  {
+    "address": "000bb51c",
+    "ghidra_name": "FUN_000bb51c",
+    "estimated_name": "sptm_start_sk",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "populate SK region globals from CL4_*/DeviceTree; TXM handoff; per-CPU sysreg"
+  },
+  {
+    "address": "000bb61c",
+    "ghidra_name": "FUN_000bb61c",
+    "estimated_name": "sptm_start_txm",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "build TXM handoff context block (DAT_00100100) from per-CPU + DT/frame globals"
+  },
+  {
+    "address": "000bb9f0",
+    "ghidra_name": "FUN_000bb9f0",
+    "estimated_name": "sptm_start_sk_ctx",
+    "confidence": "medium",
+    "category": "sptm-region-init",
+    "tree": "ringminus1",
+    "file": "osfmk/arm64/sptm/sptm_region_init.c",
+    "status": "decompiled",
+    "notes": "build SK context (DAT_001002c0/000440) with boot-region VA translation; SK runtime flag"
   }
 ]

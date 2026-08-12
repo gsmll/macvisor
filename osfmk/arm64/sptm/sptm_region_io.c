@@ -1217,3 +1217,1804 @@ src_found2:
     sptm_panic("%s: rw_guard_release_shared ... %p...", 0, 0, 0);
 }
 
+
+/* ------------------------------------------------------------------ */
+/* 000d64d0  sptm_io_filter_cmp                                        */
+/* ------------------------------------------------------------------ */
+/* FUN_000d64d0 @ 0x000d64d0   (est. sptm_io_filter_cmp)
+ * Ghidra: uint FUN_000d64d0(uint *param_1,uint *param_2)
+ * Comparator for 8-byte io-filter entries {u32 base; u16 offset; u16 len}.
+ * Orders by base; on a base tie returns 1 if entry2's [offset,offset+len)
+ * range fits at/under entry1's limit, else -1. Used by qsort over
+ * g_io_filter_table and by the overlap scan.
+ * Confidence: high */
+uint32_t sptm_io_filter_cmp(uint32_t *a, uint32_t *b)
+{
+    uint32_t abase = *a, bbase = *b;
+    if (bbase < abase) return 0xffffffff;
+    if (abase < bbase) return 0;
+    uint16_t boff = (uint16_t)b[1];
+    uint16_t blen = (uint16_t)((uintptr_t)b + 6);
+    if ((uint32_t)blen + (uint32_t)boff <= (uint32_t)(uint16_t)a[1]) {
+        return 1;
+    }
+    uint32_t alim = (uint32_t)(uint16_t)((uintptr_t)a + 6) + (uint32_t)(uint16_t)a[1];
+    return -(uint32_t)(alim < (uint32_t)boff || alim == (uint32_t)boff);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d6e64  sptm_io_range_cmp                                         */
+/* ------------------------------------------------------------------ */
+/* FUN_000d6e64 @ 0x000d6e64   (est. sptm_io_range_cmp)
+ * Ghidra: uint FUN_000d6e64(long param_1,long param_2)
+ * Comparator for the IO-range table entries (each a 0x10-byte row whose
+ * byte 2 holds the FTE class). Requires both entries to be class 6
+ * (managed IO) else panics "Type %d class of FTE %p %d"; orders by the
+ * stored page index at offset +8.
+ * Confidence: high */
+uint32_t sptm_io_range_cmp(uintptr_t a, uintptr_t b)
+{
+    if (g_fte_class[(uint64_t)*(uint8_t *)(a + 2) * 0x90] == 0x06 &&
+        g_fte_class[(uint64_t)*(uint8_t *)(b + 2) * 0x90] == 0x06) {
+        uint32_t ar = *(uint32_t *)(a + 8);
+        uint32_t br = *(uint32_t *)(b + 8);
+        if (br < ar) return 0xffffffff;
+        if (ar < br) return 0;
+        return 0;
+    }
+    sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d6f00  sptm_papt_walk                                            */
+/* ------------------------------------------------------------------ */
+/* FUN_000d6f00 @ 0x000d6f00   (est. sptm_papt_walk)
+ * Ghidra: ulong * FUN_000d6f00(long param_1,ulong param_2,uint param_3,
+ *                              ulong *param_4,ulong *param_5)
+ * Walks the PAPT from the root FTE descriptor param_1 down to the entry
+ * for virtual address param_2 at the requested level param_3 (0..3).
+ * The root must be class 1 (SPTM). Each level indexes the table by the
+ * per-level shift/mask from the level table (plVar10, DAT_00019c68) and
+ * descends through child table frames (class 2 validated with the
+ * "Found non page table frame" and level-set panics). The intermediate
+ * table paddr is written to *param_4 when the walk passes level
+ * param_3-1, and the final (target-level) VA is stored to *param_5.
+ * Returns the PTE pointer (or NULL when a level is missing).
+ * Confidence: high */
+uint64_t *sptm_papt_walk(uintptr_t root, uint64_t va, uint32_t level,
+    uint64_t *table_out, uint64_t *va_out)
+{
+    if (g_fte_class[(uint64_t)*(uint8_t *)(root + 2) * 0x90] != 0x01) {
+        sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+    }
+    uint64_t *leveltab = *(uint64_t **)(0x19c68 + (uint64_t)*(uint8_t *)(root + 0xc) * 8);
+    uint32_t conf = (uint32_t)leveltab[7];
+    sptm_ret16_t r = sptm_fte_info(root);
+    uint64_t table_va = r.lo;
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        table_va = (table_va - g_mem_phys_base) + g_papt_va_base;
+    } else {
+        uint64_t *ranges = g_committed_range_base;
+        if (g_committed_range_count != 0) {
+            for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                if (ranges[0] <= table_va && table_va < ranges[0] + (uint64_t)ranges[2] * 0x4000) {
+                    table_va = (table_va - ranges[0]) + ranges[1];
+                    goto root_resolved;
+                }
+                ranges += 3;
+            }
+        }
+        table_va = sptm_va_translate_slow(table_va);
+root_resolved:
+        ;
+    }
+    uint32_t cur = conf & 3;
+    uint64_t entry_va = table_va;
+    uint64_t *pte = (uint64_t *)(entry_va +
+        ((leveltab[0xc] & va & *(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x18)) >>
+         (*(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x10) & 0x3f) & 0xffffffff) * 8);
+    uint64_t val = *pte;
+    if (cur != level) {
+        for (;;) {
+            if (table_out != NULL && level - 1 == cur) {
+                *table_out = (uint64_t)pte;
+            }
+            if ((~(uint32_t)val & 3) != 0) {
+                if (table_out != NULL) {
+                    *table_out = (uint64_t)pte;
+                }
+                return NULL;
+            }
+            uint64_t next_pa = val & 0xfffffffff000;
+            uint16_t *guard;
+            if (next_pa < g_mem_phys_base || g_mem_phys_end <= next_pa) {
+                sptm_ret16_t g = sptm_frame_va(next_pa);
+                guard = (uint16_t *)((g.lo != 0) ? g.lo : 0x101f90);
+            } else {
+                guard = (uint16_t *)(0x95460 + ((next_pa - g_mem_phys_base) >> 10) * 8);
+            }
+            if (g_fte_class[(uint64_t)guard[1] * 0x90] != 0x02) {
+                sptm_panic("%s: Found non page table frame d...", 0, 0, 0, 0);
+            }
+            if ((next_pa & (uint64_t)~(-1 << (*(uint32_t *)(leveltab + 10) & 0x1f))) != 0) {
+                sptm_panic_code(0x53, 0, "%s: %s: %d: ... %s: 0x%llx, ... %s: 0x%llx", 0, 0, 0, 0, 0);
+            }
+            if ((int)cur + 1 != (uint32_t)guard[2]) {
+                sptm_panic("%s: Incorrect level set in page t...", 0, 0, 0, 0);
+            }
+            /* translate child table paddr -> VA */
+            if (((g_bootstrap_stages >> 8) & 1) == 0) {
+                entry_va = (next_pa - g_mem_phys_base) + g_papt_va_base;
+            } else {
+                uint64_t *ranges = g_committed_range_base;
+                uint64_t found = 0;
+                if (g_committed_range_count != 0) {
+                    for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                        if (ranges[0] <= next_pa && next_pa < ranges[0] + (uint64_t)ranges[2] * 0x4000) {
+                            entry_va = (next_pa - ranges[0]) + ranges[1];
+                            found = 1;
+                            break;
+                        }
+                        ranges += 3;
+                    }
+                }
+                if (!found) entry_va = sptm_va_translate_slow(next_pa);
+            }
+            cur++;
+            if (cur == 4) return NULL;
+            pte = (uint64_t *)(entry_va +
+                ((leveltab[0xc] & va & *(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x18)) >>
+                 (*(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x10) & 0x3f) & 0xffffffff) * 8);
+            val = *pte;
+            if (cur == level) break;
+        }
+    }
+    if (va_out != NULL) {
+        *va_out = next_pa;
+    }
+    return pte;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d7348  sptm_update_papt_pte                                      */
+/* ------------------------------------------------------------------ */
+/* FUN_000d7348 @ 0x000d7348   (est. sptm_update_papt_pte)
+ * Ghidra: undefined8 FUN_000d7348(ulong param_1,uint param_2,ulong param_3,
+ *                                 uint param_4)
+ * Updates the PAPT leaf PTE covering paddr param_1. Validates the paddr
+ * is managed (panic "paddr isn't managed"), the flag set param_4 is legal
+ * (bits 2-5 only, else "invalid flag"), and that when the leaf-update bit
+ * is set the guard is present. Resolves the PTE via a walk to level 3,
+ * then recomputes the entry value: type (param_2) is folded in (special
+ * handling for types 10/3 that read the frame-type table for the AP bits),
+ * cache attribute (param_3) is encoded into bits 2-6 when the attr bit is
+ * set, and the paddr is re-encoded. Finally the cache/TLB maintenance is
+ * issued (sptm_slice_update / DSB / ISB / DMB) and, when the TLB-flush bit
+ * is set, a TLB invalidate is done. Returns 5 on a deferred-flush path,
+ * else 0.
+ * Confidence: medium
+ * Notes: the pte value paddr encoding uses 0x603 present leaf bits. */
+uint64_t sptm_update_papt_pte(uintptr_t paddr, uint32_t type, uint64_t attr,
+    uint32_t flags)
+{
+    if (paddr < g_mem_phys_base || g_mem_phys_end <= paddr) {
+        sptm_panic("%s: paddr isn't managed %llx...", 0, 0, 0);
+    }
+    if (flags == 0 || (flags & 0x3c) != 0) {
+        sptm_panic("%s: invalid flag found while upd...", 0, 0, 0);
+    }
+    if ((flags & 1) && ((*(uint16_t *)(0x95460 + ((paddr - g_mem_phys_base) >> 10) * 8) & 1) == 0)) {
+        sptm_panic("%s: Attempted to update PAPT per...", 0, 0, 0);
+    }
+    uintptr_t pte_va;
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        pte_va = (paddr - g_mem_phys_base) + g_papt_va_base;
+    } else {
+        uintptr_t *ranges = g_committed_range_base;
+        uintptr_t found = 0;
+        if (g_committed_range_count != 0) {
+            for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                if (ranges[0] <= paddr && paddr < ranges[0] + (uint64_t)ranges[2] * 0x4000) {
+                    pte_va = (paddr - ranges[0]) + ranges[1];
+                    found = 1;
+                    break;
+                }
+                ranges += 3;
+            }
+        }
+        if (!found) pte_va = sptm_va_translate_slow(paddr);
+    }
+    uint16_t *root_guard;
+    if (g_papt_root_pa < g_mem_phys_base || g_mem_phys_end <= g_papt_root_pa) {
+        root_guard = (uint16_t *)sptm_frame_va(g_papt_root_pa).lo;
+    } else {
+        root_guard = (uint16_t *)(0x95460 + ((g_papt_root_pa - g_mem_phys_base) >> 10) * 8);
+    }
+    uint64_t *pte = sptm_papt_walk((uintptr_t)root_guard, pte_va, 3, NULL, NULL);
+    uint64_t old = *pte;
+    uint64_t val = old;
+    if (flags & 1) {
+        if (type == 0xff) {
+            val = 0;
+            goto write_pte;
+        }
+        val = old & 0xff9fffffffffff3f;
+        if ((old & 3) != 3) {
+            val = (paddr & 0xfffffffff000) | 0x603;
+        }
+        uint16_t *guard;
+        if (paddr < g_mem_phys_base || g_mem_phys_end <= paddr) {
+            guard = (uint16_t *)sptm_frame_va(paddr).lo;
+        } else {
+            guard = (uint16_t *)(0x95460 + ((paddr - g_mem_phys_base) >> 10) * 8);
+        }
+        if ((type & 0xf) == 10 || (type & 0xf) == 3) {
+            uint8_t ap = g_fte_class4[(uint64_t)guard[1] * 0x90];
+            val |= ((uint64_t)(ap & 0xc) << 4) | ((uint64_t)(ap & 3) << 0x35);
+        } else {
+            val |= ((uint64_t)(type & 3) << 0x35) | ((uint64_t)((type & 0xc) << 4));
+        }
+    }
+    if (((flags >> 1) & 1) && (val & 3) == 3) {
+        if (attr > 7) {
+            sptm_panic("%s: invalid cache attribute inde...", 0, 0, 0);
+        }
+        val = val & 0xffffffffffffffe3 | (attr & 0x3f) << 2;
+    }
+write_pte:
+    *pte = val;
+    {
+        uint64_t a = old & 0x14;
+        if (((~(uint32_t)val & 0x14) == 0 || a != 0x14) && ((int8_t)flags < 0)) {
+            return 5;   /* deferred flush path */
+        }
+        if ((old & 3) == 3) {
+            sptm_dsb(2, 2, 0);
+            uint64_t mode = 5;
+            if (a == 0x14) mode = 1;
+            sptm_slice_update(g_papt_root_pa, pte_va, 1, mode);
+            if (a == 0x14) {
+                sptm_dsb(2, 3, 0);
+            } else {
+                sptm_dsb(2, 3, 1);
+            }
+        } else {
+            sptm_dmb(2, 3);
+        }
+        sptm_isb();
+    }
+    if ((flags >> 6) & 1) {
+        sptm_slice_tlbi_flush(pte_va, 0x4000);
+    }
+    return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d7cf8  sptm_build_table_desc                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d7cf8 @ 0x000d7cf8   (est. sptm_build_table_desc)
+ * Ghidra: ulong FUN_000d7cf8(long param_1,long param_2,ulong param_3,
+ *                            ulong param_4)
+ * Builds a page-table (interior) descriptor word for the given level.
+ * param_1 is the number of pages below this level (must be < 0x200000,
+ * else panic "expected %llx < npages < ..."), param_2 the child table
+ * paddr, param_3 the VA being covered and param_4 the level bit offset.
+ * The resulting descriptor packs: level bits, child table paddr, the
+ * low-index bits of param_3, and a page-count-derived next-level offset.
+ * Confidence: medium
+ * Notes: pure bit-packing; returns the 64-bit table descriptor. */
+uint64_t sptm_build_table_desc(uint64_t npages, uint64_t child_pa,
+    uint64_t va, uint64_t level_shift)
+{
+    if (npages - 2 < 0x1fffff) {
+        uint64_t level = 0;
+        if (clz64(npages - 1) != 0x3f) {
+            level = (0x3e - (uint64_t)clz64(npages - 1)) / 5;
+        }
+        uint64_t bits = level * 5 + 1;
+        int32_t i = 1 << (bits & 0x1f);
+        uint64_t page_ct = ((npages + (uint64_t)i - 1) & ~((uint64_t)i - 1)) >> (bits & 0x3f);
+        return ((va >> (level_shift & 0x3f)) & 0x1fffffffff) |
+               (child_pa << 0x30) |
+               (((level_shift >> 1) << 0x2e) + 0xfffec00000000000) |
+               (level << 0x2c) |
+               (page_ct << 0x27) - 0x8000000000;
+    }
+    sptm_panic("%s: expected %llx < npages < ...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d7f80  sptm_announce_bootstrap_feature                           */
+/* ------------------------------------------------------------------ */
+/* FUN_000d7f80 @ 0x000d7f80   (est. sptm_announce_bootstrap_feature)
+ * Ghidra: void FUN_000d7f80(ulong param_1)
+ * Sets the given bootstrap-stage/feature bit in g_bootstrap_stages (with
+ * a release barrier); panics "Attempted to announce bootstrap..." if the
+ * bit was already set (i.e. each stage may only be entered once).
+ * Confidence: high */
+void sptm_announce_bootstrap_feature(uint64_t bit)
+{
+    uint64_t old = g_bootstrap_stages;
+    g_bootstrap_stages = g_bootstrap_stages | bit;
+    sptm_lrelease();
+    if ((old & bit) == 0) {
+        return;
+    }
+    sptm_panic("%s: Attempted to announce bootst...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d1b2c  sptm_dart_register                                        */
+/* ------------------------------------------------------------------ */
+/* FUN_000d1b2c @ 0x000d1b2c   (est. sptm_dart_register)
+ * Ghidra: void FUN_000d1b2c(undefined8 *param_1,long param_2,
+ *                           undefined8 param_3)
+ * Registers one "dart-t8110" device-tree node as a DART instance. Reads
+ * the node's DT properties and fills a 0xc48-byte DART state block
+ * (boot-allocated, stored at per-CPU state +0x10, and cross-linked into
+ * the DART id table at g_dart_id_table): dart-id, sep, txm-secure-channel,
+ * allow-vm-reserve/vm-reserve, dart-options, retention/no-sleep, perf
+ * counters, ioa-parent, real-time, mixed-bypass, flush-by-dva, dead
+ * mappings, clamp-tlimits, vm-size/vm-base/vm-alignment, ignore-secondary,
+ * allow-apf-sid-remap, TZ config (DAT_000064e4 block), sid-count, the
+ * sid-trace/mcw/ocla/lft bitsets, ignore-sid-count-mismatch, remap pairs,
+ * the sid table, exclave-sid, instance list (DART/SMMU/APF/GAPF/PIOGW/
+ * PSWR/MUU instances), allow-pte-remap, dual-VC carveouts, APF slices,
+ * clock-protection (slice-index + gapf/ps-wr-dis) and PIOGW PS protection.
+ * Every step is bounds-validated with a distinct panic string; the APF
+ * slice and PIOGW configuration in particular are gated on the pmap
+ * range/carveout tables. This is the crown of the T8110 DART driver.
+ * Confidence: low
+ * Notes: heavy 0xc8a2000000000000-tagged pointer math; the instance tag
+ *   list distinguishes "DART"(0x44515254),"SMMU"(0x534d4d55),
+ *   "APF"(0x44415046),"GAPF"(0x47415046),"PGW "(0x20574750),
+ *   "PSWR"(0x50535752). */
+void sptm_dart_register(uintptr_t *dt, uintptr_t node, uint64_t sr_region)
+{
+    if (node == 0) {
+        sptm_panic("%s: %s %s %s %d %s ... NULL", 0, 0, 0, 0, 0, 0);
+    }
+    uintptr_t *val = NULL;
+    uint32_t vsize = 0;
+    int rc = sptm_dt_get_prop(node, "dart-id", (uintptr_t *)&val, &vsize, dt[0], dt[1]);
+    if (rc != 1) sptm_panic("%s: %s %s %s %d ... error: %d gett...", 0, 0, 0, 0, 0);
+    if (vsize != 4) sptm_panic("%s: %s %s %s %d ... expected size...", 0, 0, 0, 0, 0);
+    uint32_t dart_id = (uint32_t)*val;
+    if (dart_id > 0xff) sptm_panic("%s: %s %s %s %d ... error: %d inva...", 0, 0, 0, 0, 0);
+    if (g_dart_id_table[dart_id] != 0xffff) {
+        sptm_panic("%s: %s %s %s %d ... DART_ID %u us...", 0, 0, 0, 0, 0);
+    }
+    rc = sptm_dt_get_prop(node, (const char *)0x7790, (uintptr_t *)&val, &vsize, dt[0], dt[1]);
+    uintptr_t regs = (uintptr_t)val;
+    if (rc != 1) sptm_panic("%s: %s %s %s %d ... error: %d gett...", 0, 0, 0, 0, 0);
+    g_dart_id_table[dart_id] = (uint16_t)sptm_dart_state(regs);
+
+    if (g_boot_alloc_base == 0 || g_boot_alloc_off - 0x33b9 > 0xffffffffffffbfff) {
+        g_boot_alloc_base = sptm_boot_alloc(1);
+        g_boot_alloc_off = 0;
+    }
+    uint64_t *dart = (uint64_t *)(g_boot_alloc_base + g_boot_alloc_off);
+    g_boot_alloc_off += 0xc48;
+    uintptr_t pcs = sptm_percpu_dart_state();
+    *(uintptr_t *)(pcs + 0x10) = (uintptr_t)dart;
+    dart[0x187] = sr_region;             /* exclave SID state ptr */
+    dart[0] = regs;                      /* register base */
+
+    uint8_t is_sep = (sptm_dt_prop_u32(regs, "dart-sep", 8) == 0);
+    *(uint8_t *)((uintptr_t)dart + 0xbf6) = is_sep;
+    uint8_t *val8 = NULL; uint32_t s8 = 0;
+    uint8_t has_txm = 0;
+    if (sptm_dt_get_prop(node, "txm-secure-channel-base", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1 &&
+        sptm_dt_get_prop(node, "txm-secure-channel-size", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1) {
+        has_txm = *(uint8_t *)((uintptr_t)dart + 0xbf6);
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbf9) = has_txm & 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbfa) =
+        sptm_dt_get_prop(node, "allow-vm-reserve-mapping", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    uint64_t *rval = NULL; uint32_t rsize = 0;
+    rc = sptm_dt_get_prop(node, "vm-reserve", (uintptr_t *)&rval, &rsize, dt[0], dt[1]);
+    if (rc == 1 && (*(uint8_t *)((uintptr_t)dart + 0xbfa) & 1)) {
+        sptm_dart_check_vm_reserve_size((uintptr_t)dart, rsize);
+        uint64_t rs = rval[0], re = rval[1];
+        dart[0x171] = rs;
+        dart[0x172] = re;
+        if (re <= rs) sptm_panic("%s: %s dart %p %s %u ... Start of th...", 0, 0, 0, 0, 0);
+    } else {
+        dart[0x171] = 0;
+        dart[0x172] = 0;
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbde) = (uint8_t)dart_id;
+    *(uint8_t *)((uintptr_t)dart + 0xbdf) = 0;
+    uint32_t *oval = NULL; uint32_t osize = 0;
+    rc = sptm_dt_get_prop(node, "dart-options", (uintptr_t *)&oval, &osize, dt[0], dt[1]);
+    uint8_t options_bit = 0;
+    if (rc == -1) {
+        options_bit = 0;
+    } else {
+        if (osize != 4) goto bad_state;
+        options_bit = (*oval >> 4) & 1;   /* bit4 = strict/no-apf mode */
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbe6) = options_bit;
+    int retention = sptm_dt_get_prop(node, "retention", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbe3) = retention;
+    int no_sleep = sptm_dt_get_prop(node, "no-sleep", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbe4) = no_sleep;
+    if (no_sleep && retention) {
+        sptm_panic("%s: %s dart %p %s %u ... %s and %s a...", 0, 0, 0, 0, 0);
+    }
+    uint8_t perf = 0;
+    if (g_debug_enabled & 1) {
+        perf = sptm_dt_get_prop(node, "enable-perf-counters", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbe5) = perf;
+    rc = sptm_dt_get_prop(node, "ioa-parent", (uintptr_t *)&rval, &rsize, dt[0], dt[1]);
+    if (rc == 1) {
+        if (rsize != 0x10) goto bad_state;
+        dart[0x166] = rval[0];
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbe7) = sptm_dt_get_prop(node, "real-time", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbe9) = sptm_dt_get_prop(node, "allow-mixed-bypass-mode", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    rc = sptm_dt_get_prop(node, "flush-by-dva", (uintptr_t *)&oval, &osize, dt[0], dt[1]);
+    uint8_t flush_present = 0;
+    if (rc == 1) {
+        if (osize != 4) goto bad_state;
+        *(uint8_t *)((uintptr_t)dart + 0xbeb) = (*oval != 0);
+        flush_present = 1;
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbea) = flush_present;
+    *(uint8_t *)((uintptr_t)dart + 0xbec) = sptm_dt_get_prop(node, "noncompliant-dead-mappings", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbee) = sptm_dt_get_prop(node, "clamp-tlimits", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+
+    rc = sptm_dt_get_prop(node, "vm-size", (uintptr_t *)&rval, &rsize, dt[0], dt[1]);
+    if (rc != 1) goto missing_prop;
+    if (rsize != 8) goto bad_state;
+    uint64_t vm_size = rval[0];
+    if (vm_size == 0) sptm_panic("%s: %s dart %p %s %u ... vm_size mus...", 0, 0, 0, 0, 0);
+    if (vm_size >> 0x14 == 0) sptm_panic("%s: %s dart %p %s %u ... invalid vm...", 0, 0, 0, 0, 0);
+    rc = sptm_dt_get_prop(node, "vm-base", (uintptr_t *)&rval, &rsize, dt[0], dt[1]);
+    if (rc != 1) goto missing_prop;
+    if (rsize != 8) goto bad_state;
+    uint64_t vm_base = rval[0];
+    uint64_t base_bits = vm_base >> 0x28;
+    uint64_t hi_bound = (base_bits == 0) ? 0x1000000000 : 0x30000000000;
+    uint64_t vm_bound = (base_bits == 0) ? 0x1000000000 : 0x40000000000;
+    if (vm_bound <= vm_base) sptm_panic("%s: %s dart %p %s %u ... vm_base %llx l...", 0, 0, 0, 0, 0);
+    if (hi_bound < vm_size) sptm_panic("%s: %s dart %p %s %u ... vm_size %llx l...", 0, 0, 0, 0, 0);
+    if (vm_bound < vm_base + vm_size) sptm_panic("%s: %s dart %p %s %u ... end of vm r...", 0, 0, 0, 0, 0);
+    *(uint32_t *)((uintptr_t)dart + 0xb7c) = (uint32_t)(vm_base >> 0xe);
+    *(uint32_t *)(dart + 0x16f) = (uint32_t)((vm_base + vm_size) >> 0xe);
+    uint32_t vm_align = 0;
+    int vm_align_rem = 0;
+    rc = sptm_dt_get_prop(node, "vm-alignment", (uintptr_t *)&oval, &osize, dt[0], dt[1]);
+    if (rc == 1) {
+        if (osize - 4 > 8) sptm_panic("%s: %s dart %p %s %u ... invalid siz...", 0, 0, 0, 0, 0);
+        vm_align = *oval;
+        if (vm_align - 1 > 0x3f || popcount(vm_align) > 1) {
+            sptm_panic("%s: %s dart %p %s %u ... invalid vm...", 0, 0, 0, 0, 0);
+        }
+        if (vm_align < 2) {
+            vm_align = 1;
+            vm_align_rem = 0;
+        } else {
+            uint32_t base2 = *(uint32_t *)((uintptr_t)dart + 0xb7c);
+            vm_align_rem = base2 - (base2 / vm_align) * vm_align;
+            if (vm_align_rem != 0) {
+                *(uint32_t *)((uintptr_t)dart + 0xb7c) = (vm_align - vm_align_rem) + base2;
+                *(uint32_t *)(dart + 0x16f) = *(int32_t *)(dart + 0x16f) - (vm_align - vm_align_rem);
+            }
+        }
+    }
+    *(uint8_t *)((uintptr_t)dart + 0xbf3) = sptm_dt_get_prop(node, "ignore-secondary", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    *(uint8_t *)((uintptr_t)dart + 0xbf1) = sptm_dt_get_prop(node, "allow-apf-sid-remap", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+
+    val8 = NULL; s8 = 0;
+    rc = sptm_dt_get_prop(node, (const char *)0x64e4, (uintptr_t *)&val8, &s8, dt[0], dt[1]);
+    if (rc == 1) {
+        if (s8 != 0x38) goto bad_state;
+        sptm_memcpy_bulk((uintptr_t)(dart + 0x15f), (uintptr_t)val8, 0x38);
+        *(uint8_t *)((uintptr_t)dart + 0xbf4) = sptm_dt_get_prop(node, "inclusive-tz-range", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    }
+    if (*(uint32_t *)(dart + 0x15f) > 1) sptm_panic("%s: %s dart %p %s %u ... TZ_select_g...", 0, 0, 0, 0, 0);
+    uint32_t tzcfg = *(uint32_t *)((uintptr_t)dart + 0xafc);
+    if (tzcfg > 7) sptm_panic("%s: %s dart %p %s %u ... TZ_config_g...", 0, 0, 0, 0, 0);
+    for (uint32_t lvl = 0; lvl < 3; lvl++) {
+        uint32_t en_lo = *(uint32_t *)(dart + 0x160 + lvl);
+        uint32_t en_hi = *(uint32_t *)((uintptr_t)dart + 0xb04 + lvl * 0xc);
+        uint32_t tzbit = 1u << lvl;
+        if ((tzcfg & tzbit) == 0) {
+            if (en_lo != 0 || en_hi != 0) sptm_panic("%s: %s dart %p %s %u ... Disabled_TZ...", 0, 0, 0, 0, 0);
+        } else if (en_lo == 0 || en_hi == 0 ||
+                   en_hi + (*(uint8_t *)((uintptr_t)dart + 0xbf4) & 1) <= en_lo) {
+            sptm_panic("%s: %s dart %p %s %u ... Enabled_TZT...", 0, 0, 0, 0, 0);
+        }
+    }
+
+    uint32_t *sidc = NULL; uint32_t scsize = 0;
+    rc = sptm_dt_get_prop(node, "sid-count", (uintptr_t *)&sidc, &scsize, dt[0], dt[1]);
+    if (rc == 1) {
+        if (scsize != 4) goto bad_state;
+        uint32_t sid_count = *sidc;
+        *(uint32_t *)(dart + 0x173) = sid_count;
+        if (sid_count > 0x100) sptm_panic("%s: %s dart %p %s %u ... sid_count ...", 0, 0, 0, 0, 0);
+    } else {
+        *(uint32_t *)(dart + 0x173) = 0x10;
+    }
+    sptm_dart_sid_property_set((uintptr_t)dart, dt[0], dt[1], node, (uint64_t *)(dart + 0x14f), "sid-trace");
+    sptm_dart_sid_property_set((uintptr_t)dart, dt[0], dt[1], node, (uint64_t *)(dart + 0x153), "sid-mcw");
+    sptm_dart_sid_property_set((uintptr_t)dart, dt[0], dt[1], node, (uint64_t *)(dart + 0x157), "sid-ocla");
+    sptm_dart_sid_property_set((uintptr_t)dart, dt[0], dt[1], node, (uint64_t *)(dart + 0x15b), "sid-lft");
+    *(uint8_t *)(dart + 0x17f) = sptm_dt_get_prop(node, "ignore-sid-count-mismatch", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+    uint32_t *mm = NULL; uint32_t msz = 0;
+    if (sptm_dt_get_prop(node, "max-sids-in-mismatch", (uintptr_t *)&mm, &msz, dt[0], dt[1]) == 1) {
+        *(uint32_t *)(dart + 0x17b) = *mm;
+    } else {
+        *(uint32_t *)(dart + 0x17b) = 0;
+    }
+
+    /* SID remap pairs. */
+    uint32_t *remap = NULL; uint32_t remsz = 0;
+    rc = sptm_dt_get_prop(node, "remap", (uintptr_t *)&remap, &remsz, dt[0], dt[1]);
+    if (rc == 1) {
+        if (*(uint8_t *)((uintptr_t)dart + 0xbe6) & 1) sptm_panic("%s: %s dart %p %s %u ... SID Remap i...", 0, 0, 0, 0, 0);
+        if ((remsz & 3) != 0) sptm_panic("%s: %s dart %p %s %u ... Malformed ...", 0, 0, 0, 0, 0);
+        for (uint32_t i = 0; i + 1 < remsz; i += 2) {
+            uint8_t src = (uint8_t)remap[i];
+            uint8_t dst = (uint8_t)(remap[i] >> 8);
+            if (src != 0 || dst != 0) {
+                uint32_t cnt = *(uint32_t *)(dart + 0x173);
+                if ((cnt < src || cnt == src || cnt <= dst) &&
+                    ((*(uint8_t *)(dart + 0x17f) & 1) == 0 ||
+                     (*(uint32_t *)(dart + 0x17b) <= src ||
+                      (*(uint32_t *)(dart + 0x17b) < dst || *(uint32_t *)(dart + 0x17b) == dst)))) {
+                    sptm_panic("%s: %s dart %p %s %u ... remap %u >...", 0, 0, 0, 0, 0);
+                }
+                if (dart[src + 0x47] != 0) sptm_panic("%s: %s dart %p %s %u ... Remap_src_S...", 0, 0, 0, 0, 0);
+                if (dart[dst + 0x47] != 0) sptm_panic("%s: %s dart %p %s %u ... Remap_dst_S...", 0, 0, 0, 0, 0);
+                if (src == dst) sptm_panic("%s: %s dart %p %s %u ... SID %u SID...", 0, 0, 0, 0, 0);
+                if (g_boot_alloc_base == 0 || g_boot_alloc_off - 0x3fe1 > 0xffffffffffffbfff) {
+                    g_boot_alloc_base = sptm_boot_alloc(1);
+                    g_boot_alloc_off = 0;
+                }
+                uint64_t *e = (uint64_t *)(g_boot_alloc_base + g_boot_alloc_off);
+                g_boot_alloc_off += 0x20;
+                *(uint32_t *)((uintptr_t)e + 0x18) = (*(uint32_t *)((uintptr_t)e + 0x18) & 0xffff007f) |
+                    ((uint32_t)dst << 8) | 0x80;
+                dart[src + 0x47] = (uintptr_t)e;
+                uint64_t *bits = (uint64_t *)((uintptr_t)dart + ((uint64_t)(src >> 3) & 0x18) + 0xa38);
+                *bits |= 1ULL << (src & 0x3f);
+            }
+        }
+    }
+
+    /* SID table (DAT_000063ea). */
+    uint32_t *sidtab = NULL; uint32_t stsz = 0;
+    rc = sptm_dt_get_prop(node, (const char *)0x63ea, (uintptr_t *)&sidtab, &stsz, dt[0], dt[1]);
+    if (rc != 1 && (*(uint8_t *)((uintptr_t)dart + 0xbe6) & 1) == 0) goto missing_prop;
+    uint64_t n_sids = stsz >> 2;
+    if (stsz > 0x403) sptm_panic("%s: %s dart %p %s %u ... sid_count ...", 0, 0, 0, 0, 0);
+    if (stsz < 4 && (*(uint8_t *)((uintptr_t)dart + 0xbe6) & 1) == 0) sptm_panic("%s: %s dart %p %s %u ... SID_count ...", 0, 0, 0, 0, 0);
+    if ((stsz & 3) != 0) sptm_panic("%s: %s dart %p %s %u ... malformed ...", 0, 0, 0, 0, 0);
+    if (*(uint32_t *)(dart + 0x173) < n_sids) sptm_panic("%s: %s dart %p %s %u ... mismatch_be...", 0, 0, 0, 0, 0);
+    for (uint64_t i = 0; i < n_sids; i++) {
+        sptm_dart_sid_setup((uintptr_t)dart, (uint8_t)sidtab[i], dt, node, vm_align, vm_align_rem,
+            (vm_base & 0xffffff0000000000) != 0);
+    }
+    if ((*(uint8_t *)((uintptr_t)dart + 0xbe6) & 1) && *(uint32_t *)(dart + 0x173) > 1) {
+        for (uint32_t i = 1; i < *(uint32_t *)(dart + 0x173); i++) {
+            if (((dart[(i >> 6) + 0x147] >> (i & 0x3f)) & 1) == 0) {
+                sptm_dart_sid_alloc((uintptr_t)dart, i & 0xff, 1);
+            }
+        }
+    }
+    uint32_t *xsid = NULL; uint32_t xsz = 0;
+    rc = sptm_dt_get_prop(node, "exclave-sid", (uintptr_t *)&xsid, &xsz, dt[0], dt[1]);
+    if (rc == 1) {
+        uint64_t xn = xsz >> 2;
+        if (xsz > 0x403) sptm_panic("%s: %s dart %p %s %u ... exclave_sid...", 0, 0, 0, 0, 0);
+        for (uint64_t i = 0; i < xn; i++) {
+            uint8_t sid = (uint8_t)xsid[i];
+            sptm_dart_sid_setup((uintptr_t)dart, sid, dt, node, vm_align, vm_align_rem,
+                (vm_base & 0xffffff0000000000) != 0);
+            *(uint8_t *)(dart[sid + 0x47] + 0x1d) = 1;
+        }
+    }
+
+    /* instance list */
+    int32_t *inst = NULL; uint32_t isz = 0;
+    sptm_dt_get_prop(node, "instance", (uintptr_t *)&inst, &isz, dt[0], dt[1]);
+    if (isz == 0 || (isz & 0xf) != 0) sptm_panic("%s: %s dart %p %s %u ... malformed ...", 0, 0, 0, 0, 0);
+    uint32_t n_inst = isz >> 4;
+    if (isz > 0x12f) sptm_panic("%s: %s dart %p %s %u ... invalid %in...", 0, 0, 0, 0, 0);
+    uint32_t n_dart = 0, n_pgw = 0, n_pswr = 0, n_muu = 0, n_apf = 0, n_gapf = 0;
+    uint32_t inst_tags[14] = {0};
+    for (uint32_t i = 0; i < n_inst; i++) {
+        uint32_t tag = (uint32_t)inst[i];
+        switch (tag) {
+        case 0x44415046: if (n_apf > 3) goto too_many_inst; inst_tags[n_apf + 6] = i; n_apf++; break;
+        case 0x44415254: if (n_dart > 3) goto too_many_inst; inst_tags[n_dart] = i; n_dart++; break;
+        case 0x47415046: if (n_gapf > 1) goto too_many_inst; inst_tags[n_gapf + 4] = i; n_gapf++; break;
+        case 0x50475720: if (n_pgw > 1) goto too_many_inst; inst_tags[n_pgw + 2] = i; n_pgw++; break;
+        case 0x50535752: if (n_pswr > 1) goto too_many_inst; inst_tags[n_pswr] = i; n_pswr++; break;
+        case 0x534d4d55: if (n_muu > 3) goto too_many_inst; inst_tags[n_muu + 10] = i; n_muu++; break;
+        default: sptm_panic("%s: %s dart %p %s %u ... invalid_ins...", 0, 0, 0, 0, 0);
+        }
+    }
+    *(int32_t *)((uintptr_t)dart + 0xba4) = (int32_t)n_dart;
+    *(int32_t *)(dart + 0x175) = (int32_t)n_gapf;
+    *(int32_t *)((uintptr_t)dart + 0xbac) = (int32_t)n_muu;
+    *(int32_t *)(dart + 0x176) = (int32_t)n_pgw;
+    *(int32_t *)(dart + 0x177) = (int32_t)n_pswr;
+
+    rc = sptm_dt_get_prop(node, (const char *)0xd09e, (uintptr_t *)&inst, &isz, dt[0], dt[1]);
+    if (rc == 1) {
+        if ((isz & 0xf) != 0) sptm_panic("%s: %s dart %p %s %u ... incorrect s...", 0, 0, 0, 0, 0);
+        if (n_inst != isz >> 4) sptm_panic("%s: %s dart %p %s %u ... %instance ...", 0, 0, 0, 0, 0);
+        for (uint32_t i = 0; i < n_dart; i++) {
+            uint64_t idx = inst_tags[i];
+            uint64_t *blk = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+            if ((blk[1] & 0x3fff) != 0 || (blk[0] & 0x3fff) != 0) sptm_panic("%s: %s dart %p %s %u ... mis_aligned...", 0, 0, 0, 0, 0);
+            sptm_ret16_t t = sptm_frame_translate(dt[0], blk[0], blk[1]);
+            uint64_t pa = *(uint64_t *)((uintptr_t)inst + idx * 0x10 + 0x10);
+            if (pa >> 0x2a != 0) goto too_high_pa;
+            uint64_t base = sptm_frame_alloc(t.lo, pa >> 0xe, 0).lo;
+            uint64_t *slot = dart + 1 + i * 0xf;
+            *slot = base;
+            if (base == 0xffffffff) goto invalid_alloc;
+            uint8_t propbuf[0x40] = {0};
+            sptm_dt_prop_name((uintptr_t)propbuf);
+            uint64_t *r2 = NULL; uint32_t r2s = 0;
+            rc = sptm_dt_get_prop(node, (const char *)propbuf, (uintptr_t *)&r2, &r2s, dt[0], dt[1]);
+            if (rc == 1 && r2s != 0) {
+                if ((r2s & 3) != 0) sptm_panic("%s: %s dart %p %s %u ... Malformed d...", 0, 0, 0, 0, 0);
+                if (g_boot_alloc_base == 0 || g_boot_alloc_off - 0x3ff1 > 0xffffffffffffbfff) {
+                    g_boot_alloc_base = sptm_boot_alloc(1);
+                    g_boot_alloc_off = 0;
+                }
+                uint64_t alloc_off = g_boot_alloc_off;
+                uint64_t *copy = (uint64_t *)(g_boot_alloc_base + alloc_off);
+                g_boot_alloc_off += 0x10;
+                slot[3] = (uintptr_t)copy;
+                uint64_t entries = r2s / 0x18;
+                if (entries * 0x18 - r2s != 0) sptm_panic("%s: %s dart %p %s %u ... Malformed d...", 0, 0, 0, 0, 0);
+                if (r2s < 0x18) goto alloc_too_small;
+                if ((r2s >> 4) > 0x800) goto alloc_too_large;
+                uint64_t need = entries * 0xc;
+                if (alloc_off == 0 || alloc_off + need > 0x4000) {
+                    g_boot_alloc_base = sptm_boot_alloc(1);
+                    alloc_off = 0;
+                    copy = (uint64_t *)slot[3];
+                    g_boot_alloc_off = 0;
+                }
+                g_boot_alloc_off = alloc_off + need;
+                *(uint64_t *)(copy + 2) = g_boot_alloc_base + alloc_off;
+                for (uint64_t j = 0; j < entries; j++) {
+                    uint32_t *out = (uint32_t *)(g_boot_alloc_base + alloc_off + j * 0xc + 4);
+                    out[-1] = (uint32_t)r2[j * 3];
+                    out[0] = (uint32_t)r2[j * 3 + 1];
+                    out[1] = (uint32_t)r2[j * 3 + 2];
+                }
+            }
+        }
+        for (uint32_t i = 0; i < n_muu; i++) {
+            uint32_t idx = inst_tags[i + 10];
+            uint64_t *blk = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+            uint64_t *slot = dart + 1 + (uint64_t)(uint32_t)blk[1] * 0xf;
+            if (slot[0] == 0) sptm_panic("%s: %s dart %p %s %u ... Invalid DAR...", 0, 0, 0, 0, 0);
+            uint64_t *e = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+            if (e[1] != 0x4000 || (e[0] & 0x3fff) != 0) sptm_panic("%s: %s dart %p %s %u ... smmu_instan...", 0, 0, 0, 0, 0);
+            sptm_ret16_t t = sptm_frame_translate(dt[0], e[0], 0x4000);
+            uint64_t pa = *(uint64_t *)((uintptr_t)inst + idx * 0x10 + 0x10);
+            if (pa >> 0x2a != 0) goto too_high_pa;
+            uint64_t base = sptm_frame_alloc(t.lo, pa >> 0xe, 0).lo;
+            slot[1] = base;
+            if (base == 0xffffffff) goto invalid_alloc;
+        }
+        *(uint8_t *)((uintptr_t)dart + 0xbef) = sptm_dt_get_prop(node, "allow-pte-remap", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+        if (*(uint8_t *)((uintptr_t)dart + 0xbef) && *(int32_t *)((uintptr_t)dart + 0xbac) == 0) {
+            sptm_panic("%s: %s dart %p %s %u ... PTE_remap_n...", 0, 0, 0, 0, 0);
+        }
+        *(uint8_t *)(dart + 0x17e) = sptm_dt_get_prop(node, "pte-remap-carveout-only", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+        if (*(uint8_t *)(dart + 0x17e) && (*(uint8_t *)((uintptr_t)dart + 0xbef) & 1) == 0) {
+            sptm_panic("%s: %s dart %p %s %u ... PTE_remap_f...", 0, 0, 0, 0, 0);
+        }
+        uint64_t carveout_base = g_mem_phys_base & 0xffffffffe0000000;
+        if (carveout_base != 0x800000000 && carveout_base != 0x10000000000) {
+            sptm_panic("%s: %s dart %p %s %u ... unexpected d...", 0, 0, 0, 0, 0);
+        }
+        for (uint32_t i = 0; i < n_apf; i++) {
+            uint32_t idx = inst_tags[i + 6];
+            if (*(uint8_t *)((uintptr_t)dart + 0xbe6) & 1) sptm_panic("%s: %s dart %p %s %u ... APF_is_inco...", 0, 0, 0, 0, 0);
+            uint32_t dart_slot = (uint32_t)((int32_t *)((uintptr_t)inst + idx * 0x10))[1];
+            uint8_t propbuf[0x40] = {0};
+            sptm_dt_prop_name((uintptr_t)propbuf);
+            uint64_t *dv = NULL; uint32_t dvs = 0;
+            if (sptm_dt_get_prop(node, (const char *)propbuf, (uintptr_t *)&dv, &dvs, dt[0], dt[1]) == 1) {
+                if (*(uint32_t *)(dart + 0x16e) != 0) sptm_panic("%s: %s dart %p %s %u ... Multiple_in...", 0, 0, 0, 0, 0);
+                if ((dvs & 0xf) != 0) sptm_panic("%s: %s dart %p %s %u ... invalid_dua...", 0, 0, 0, 0, 0);
+                if (dvs > 0x2f) sptm_panic("%s: %s dart %p %s %u ... num_dual_vc...", 0, 0, 0, 0, 0);
+                *(uint32_t *)(dart + 0x16e) = dvs >> 4;
+                *(uint32_t *)((uintptr_t)dart + 0xb74) = dart_slot;
+                if (dvs != 0) {
+                    dart[0x168] = dv[1];
+                    dart[0x167] = dv[0];
+                    if ((dv[0] & 0x3fff) != 0 || dv[0] < carveout_base || dv[0] == 0 ||
+                        dv[1] <= dv[0] || (dv[1] & 0x3fff) != 0) goto bad_dualvc;
+                    if (dvs != 0x10) {
+                        dart[0x16a] = dv[3];
+                        dart[0x169] = dv[2];
+                        if ((dv[2] & 0x3fff) != 0 || dv[2] < carveout_base ||
+                            dv[2] == 0 || dv[3] <= dv[2] || (dv[3] & 0x3fff) != 0) goto bad_dualvc;
+                    }
+                }
+            }
+            uint8_t pb[0x40] = {0};
+            sptm_dt_prop_name((uintptr_t)pb);
+            uint64_t *av = NULL; uint32_t avs = 0;
+            if (sptm_dt_get_prop(node, (const char *)pb, (uintptr_t *)&av, &avs, dt[0], dt[1]) == 1) {
+                uint64_t n_apfs = avs / 0x34;
+                if (n_apfs * 0x34 - avs != 0) sptm_panic("%s: %s dart %p %s %u ... malformed_d...", 0, 0, 0, 0, 0);
+                if (avs < 0x34) sptm_panic("%s: %s dart %p %s %u ... dapf_instan...", 0, 0, 0, 0, 0);
+                if (avs > 0xd33) sptm_panic("%s: %s dart %p %s %u ... number_of_a...", 0, 0, 0, 0, 0);
+                uint64_t *slot = dart + 1 + (uint64_t)dart_slot * 0xf;
+                if (slot[0] == 0) sptm_panic("%s: %s dart %p %s %u ... Invalid_DAR...", 0, 0, 0, 0, 0);
+                if (g_boot_alloc_base == 0 || g_boot_alloc_off - 0x3fe9 > 0xffffffffffffbfff) {
+                    g_boot_alloc_base = sptm_boot_alloc(1);
+                    g_boot_alloc_off = 0;
+                }
+                uint64_t *meta = (uint64_t *)(g_boot_alloc_base + g_boot_alloc_off);
+                g_boot_alloc_off += 0x18;
+                slot[2] = (uintptr_t)meta;
+                uint64_t *e = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+                if (e[1] != 0x4000 || (e[0] & 0x3fff) != 0) sptm_panic("%s: %s dart %p %s %u ... apf_instanc...", 0, 0, 0, 0, 0);
+                sptm_ret16_t t = sptm_frame_translate(dt[0], e[0], 0x4000);
+                uint64_t apf_pa = *(uint64_t *)((uintptr_t)inst + idx * 0x10 + 0x10);
+                if (apf_pa >> 0x2a != 0) goto too_high_pa;
+                *(uint32_t *)(meta + 1) = (uint32_t)(avs / 0x34);
+                uint64_t base = sptm_frame_alloc(t.lo, apf_pa >> 0xe, 0).lo;
+                meta[0] = base;
+                if (base == 0xffffffff) goto invalid_alloc;
+                uint8_t pb2[0x40] = {0};
+                sptm_dt_prop_name((uintptr_t)pb2);
+                uint64_t *table2;
+                if (g_boot_alloc_base == 0 || g_boot_alloc_off + n_apfs * 0x40 > 0x4000) {
+                    g_boot_alloc_base = sptm_boot_alloc(1);
+                    g_boot_alloc_off = 0;
+                }
+                table2 = (uint64_t *)(g_boot_alloc_base + g_boot_alloc_off);
+                g_boot_alloc_off += n_apfs * 0x40;
+                meta[2] = (uintptr_t)table2;
+                uint64_t *ad = NULL; uint32_t ads = 0;
+                if (sptm_dt_get_prop(node, (const char *)pb2, (uintptr_t *)&ad, &ads, dt[0], dt[1]) == 1) {
+                    if ((ads & 3) != 0 || ads < 4) sptm_panic("%s: %s dart %p %s %u ... malformed_a...", 0, 0, 0, 0, 0);
+                    for (uint32_t k = 0; k < ads / 4; k++) {
+                        uint32_t apf_idx = ad[k];
+                        if ((uint32_t)(avs / 0x34) <= apf_idx) sptm_panic("%s: %s dart %p %s %u ... allow_dram...", 0, 0, 0, 0, 0);
+                        *(uint8_t *)((uintptr_t)table2 + (uint64_t)apf_idx * 0x40 + 0x38) = 1;
+                    }
+                }
+                for (uint32_t k = 0; k < n_apfs; k++) {
+                    uint8_t *src = (uint8_t *)((uintptr_t)av + k * 0x34);
+                    uint32_t *dst = (uint32_t *)((uintptr_t)table2 + k * 0x40);
+                    uint32_t flags = (src[0x19] & 3);
+                    dst[0] = (dst[0] & 0xfffffffc) | flags;
+                    flags = (dst[0] & 0xc) | flags | ((src[0x31] & 1) << 4);
+                    dst[0] = (dst[0] & 0xffffffe0) | flags;
+                    flags = flags | ((src[0x31] >> 1 & 1) << 5);
+                    dst[0] = (dst[0] & 0xffffffc0) | flags;
+                    dst[0] = (dst[0] & 0xfffffc00) | (dst[0] & 0xc0) | flags | ((src[0x18] & 3) << 8);
+                    uint64_t lo = ((uint64_t)src[1] << 0x10) | ((uint64_t)src[3] << 0x18) | (uint64_t)src[0] |
+                        (((uint64_t)src[3] << 0x10) | ((uint64_t)src[7] << 0x18) | (uint64_t)src[2]) << 0x20;
+                    uint64_t hi = ((uint64_t)src[5] << 0x10) | ((uint64_t)src[0xb] << 0x18) | (uint64_t)src[4] |
+                        (((uint64_t)src[7] << 0x10) | ((uint64_t)src[0xf] << 0x18) | (uint64_t)src[6]) << 0x20;
+                    *(uint64_t *)(dst + 2) = lo;
+                    *(uint64_t *)(dst + 4) = hi;
+                    uint64_t lo2 = ((uint64_t)src[9] << 0x10) | ((uint64_t)src[0x13] << 0x18) | (uint64_t)src[8] |
+                        (((uint64_t)src[0xb] << 0x10) | ((uint64_t)src[0x17] << 0x18) | (uint64_t)src[10]) << 0x20;
+                    uint64_t hi2 = ((uint64_t)src[0xd] << 0x10) | ((uint64_t)src[0x1b] << 0x18) | (uint64_t)src[0xc] |
+                        (((uint64_t)src[0xf] << 0x10) | ((uint64_t)src[0x1f] << 0x18) | (uint64_t)src[0xe]) << 0x20;
+                    *(uint64_t *)(dst + 6) = lo2;
+                    *(uint64_t *)(dst + 8) = hi2;
+                    uint64_t lo3 = ((uint64_t)src[0x11] << 0x10) | ((uint64_t)src[0x23] << 0x18) | (uint64_t)src[0x10] |
+                        (((uint64_t)src[0x13] << 0x10) | ((uint64_t)src[0x27] << 0x18) | (uint64_t)src[0x12]) << 0x20;
+                    uint64_t hi3 = ((uint64_t)src[0x15] << 0x10) | ((uint64_t)src[0x2b] << 0x18) | (uint64_t)src[0x14] |
+                        (((uint64_t)src[0x17] << 0x10) | ((uint64_t)src[0x2f] << 0x18) | (uint64_t)src[0x16]) << 0x20;
+                    *(uint64_t *)(dst + 0xa) = lo3;
+                    *(uint64_t *)(dst + 0xc) = hi3;
+                    if (hi2 < lo2) sptm_panic("%s: %s dart %p %s %u ... end %llx <%...", 0, 0, 0, 0, 0);
+                    uint32_t a4 = ((uint32_t)src[3] << 0x10) | ((uint32_t)src[7] << 0x18) | (uint32_t)src[2];
+                    uint32_t b4 = ((uint32_t)src[7] << 0x10) | ((uint32_t)src[0xf] << 0x18) | (uint32_t)src[6];
+                    uint64_t win0 = ((uint64_t)src[1] << 0x10) | ((uint64_t)src[3] << 0x18) | (uint64_t)src[0] | ((uint64_t)a4 << 0x20);
+                    uint64_t win1 = ((uint64_t)src[5] << 0x10) | ((uint64_t)src[0xb] << 0x18) | (uint64_t)src[4] | ((uint64_t)b4 << 0x20);
+                    if ((win0 < carveout_base && win1 < carveout_base)) {
+                        if (dst[0xe] & 1) sptm_panic("%s: %s dart %p %s %u ... APF_slice...", 0, 0, 0, 0, 0);
+                    } else {
+                        for (uint64_t va = win1; win0 <= va; va -= 0x4000) {
+                            if (g_mem_phys_base <= va && va < g_mem_phys_end) sptm_panic("%s: %s dart %p %s %u ... APF_slice...", 0, 0, 0, 0, 0);
+                        }
+                        uint32_t n_dvc = *(uint32_t *)(dart + 0x16e);
+                        uint64_t *dvc = dart + 0x168;
+                        uint64_t wl = win0 + 0x3fff & ~0x3fffULL;
+                        uint64_t wh = win1 + 0x3fff & ~0x3fffULL;
+                        int matched = 0;
+                        for (uint32_t d = 0; d < n_dvc; d++) {
+                            if (dvc[-1 + d * 2] == wl && dvc[d * 2] == wh) {
+                                if (dst[0xe] & 1) sptm_panic("%s: %s dart %p %s %u ... APF_slice...", 0, 0, 0, 0, 0);
+                                matched = 1;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            if ((dst[0xe] & 1) == 0) sptm_panic("%s: %s dart %p %s %u ... Invalid_lim...", 0, 0, 0, 0, 0);
+                            if ((b4 >> 10) != 0 || (a4 >> 10) != 0) goto too_high_pa;
+                            sptm_frame_alloc(win0, ((int)(win1 >> 0xe) - (int)(win0 >> 0xe)) + 1, 0);
+                        }
+                    }
+                }
+            }
+        }
+        if (n_gapf == 0) {
+            if (g_gapf_mode != 0) {
+missing_clock:
+                sptm_panic("%s: %s dart %p %s %u ... %s clock_pr...", 0, 0, 0, 0, 0);
+            }
+            uint8_t pb[0x40] = {0};
+            sptm_dt_prop_name((uintptr_t)pb);
+            if (sptm_dt_get_prop(node, (const char *)pb, (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1) {
+                sptm_panic("%s: %s dart %p %s %u ... %s proper...", 0, 0, 0, 0, 0);
+            }
+        } else {
+            if ((g_gapf_mode & 1) == 0) goto missing_clock;
+            *(uint8_t *)((uintptr_t)dart + 0xbf7) = sptm_dt_get_prop(node, "dart-ungang-shared-ps", (uintptr_t *)&val8, &s8, dt[0], dt[1]) == 1;
+            uint32_t *sidx = NULL; uint32_t sidsz = 0;
+            rc = sptm_dt_get_prop(node, "clock-protection-slice-index", (uintptr_t *)&sidx, &sidsz, dt[0], dt[1]);
+            if (rc != 1) goto missing_clock2;
+            if (sidsz != (uint32_t)(*(int32_t *)((uintptr_t)dart + 0xba4) * n_gapf * 4)) goto bad_state;
+            for (uint32_t i = 0; i < n_gapf; i++) {
+                uint32_t idx = inst_tags[i + 4];
+                uint64_t *e = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+                if (e[1] != 0x4000 || (e[0] & 0x3fff) != 0) sptm_panic("%s: %s dart %p %s %u ... GAPF_instan...", 0, 0, 0, 0, 0);
+                sptm_ret16_t t = sptm_frame_translate(dt[0], e[0], 0x4000);
+                uint64_t pa = *(uint64_t *)((uintptr_t)inst + idx * 0x10 + 0x10);
+                if (pa >> 0x2a != 0) goto too_high_pa;
+                uint64_t *base = (uint64_t *)sptm_frame_alloc(t.lo, pa >> 0xe, 0).lo;
+                uint64_t *slot = dart + 0x3d + i * 2;
+                *slot = (uintptr_t)base;
+                if (base == (uint64_t *)0xffffffff) goto invalid_alloc;
+                if (*(uint32_t *)(dart + 0x175) <= i) goto invalid_gapf;
+                if (base == NULL) goto null_check;
+                if (base[8] != 1) sptm_panic("%s: %s dart %p %s %u ... Invalid GAP...", 0, 0, 0, 0, 0);
+                if (base[9] != 0) sptm_panic("%s: %s dart %p %s %u ... Invalid GAP...", 0, 0, 0, 0, 0);
+                *(uint32_t *)(slot + 1) = base[0] & 0x1ff;
+                uint32_t n_d = *(uint32_t *)((uintptr_t)dart + 0xba4);
+                for (uint32_t k = 0; k < n_d; k++) {
+                    uint32_t sid = sidx[k + (uint32_t)n_d * i];
+                    if (sid == 0) goto invalid_sid;
+                    if (*(uint32_t *)(slot + 1) <= sid) sptm_panic("%s: %s dart %p %s %u ... Invalid %s...", 0, 0, 0, 0, 0);
+                    if (i == 0 && (*(uint8_t *)((uintptr_t)dart + 0xbf7) & 1) && g_gapf_ungang_count != 0) {
+                        for (uint32_t g = 0; g < g_gapf_ungang_count; g++) {
+                            uint64_t *ge = (uint64_t *)(g_gapf_ungang_entries + (uint64_t)g * 0x10);
+                            if (ge[0] == t.lo && ge[1] == sid) {
+                                *(uint16_t *)((uintptr_t)ge + 0xc) += 1;
+                                *(uint8_t *)((uintptr_t)dart + 0xbfb) = (uint8_t)g;
+                                break;
+                            }
+                        }
+                    }
+                    *(uint32_t *)((uintptr_t)dart + (uint64_t)k * 0x78 + i * 4 + 0x28) = sid;
+                    if (*(uint32_t *)(dart + 0x175) <= i) goto invalid_gapf;
+                    uint64_t g = *slot;
+                    if (g == 0) goto null_check;
+                    uint32_t off = sid * 0x40;
+                    if ((*(uint32_t *)(g + off + 0x100) & 0xffffffef) != 2) goto invalid_sid;
+                    if (*(int32_t *)(g + off + 0x118) - *(int32_t *)(g + off + 0x110) != 3) {
+                        sptm_panic("%s: %s dart %p %s %u ... Invalid sli...", 0, 0, 0, 0, 0);
+                    }
+                    if (dart[0x187] != 0) {
+                        *(uint32_t *)(dart[0x187] + (uint64_t)sid * 4) = 2;
+                        sptm_dmb(2, 3);
+                    }
+                }
+            }
+        }
+        if (n_pgw != 0) {
+            uint32_t *pio = NULL; uint32_t psz = 0;
+            rc = sptm_dt_get_prop(node, "piogw-ps-protection", (uintptr_t *)&pio, &psz, dt[0], dt[1]);
+            if (rc != 1 || psz - 1 > 0x22 || psz % 0xc != 0) sptm_panic("%s: %s dart %p %s %u ... Invalid %pi...", 0, 0, 0, 0, 0);
+            *(int32_t *)((uintptr_t)dart + 0xbb4) = (int32_t)(((uint64_t)psz & 0xffffffff) * 0x15555556 >> 0x20);
+            if (psz > 0xb) {
+                uint32_t x1 = ((uint32_t)((uint8_t *)pio)[6] << 0x10) | ((uint32_t)((uint8_t *)pio)[7] << 0x18) |
+                              (uint32_t)*(uint16_t *)((uintptr_t)pio + 2);
+                uint32_t y1 = ((uint32_t)((uint8_t *)pio)[10] << 0x10) | ((uint32_t)((uint8_t *)pio)[0xb] << 0x18) |
+                              (uint32_t)*(uint16_t *)((uintptr_t)pio + 4);
+                *(uint32_t *)(dart + 0x16c) = y1;
+                *(uint32_t *)((uintptr_t)dart + 0xb5c) = x1;
+                uint32_t p0 = ((uint32_t)((uint8_t *)pio)[2] << 0x10) | ((uint32_t)((uint8_t *)pio)[3] << 0x18) |
+                              (uint32_t)*(uint16_t *)pio;
+                *(uint32_t *)(dart + 0x16b) = p0;
+                if (p0 - 1 > 8 || (x1 == 0 && y1 == 0)) goto bad_pio;
+                if (psz - 0xc > 0xb) {
+                    uint32_t x2 = ((uint32_t)((uint8_t *)pio)[0x12] << 0x10) | ((uint32_t)((uint8_t *)pio)[0x13] << 0x18) |
+                                  (uint32_t)*(uint16_t *)((uintptr_t)pio + 8);
+                    uint32_t y2 = ((uint32_t)((uint8_t *)pio)[0x16] << 0x10) | ((uint32_t)((uint8_t *)pio)[0x17] << 0x18) |
+                                  (uint32_t)*(uint16_t *)((uintptr_t)pio + 10);
+                    *(uint32_t *)((uintptr_t)dart + 0xb6c) = y2;
+                    *(uint32_t *)(dart + 0x16d) = x2;
+                    uint32_t p1 = ((uint32_t)((uint8_t *)pio)[0xe] << 0x10) | ((uint32_t)((uint8_t *)pio)[0xf] << 0x18) |
+                                  (uint32_t)*(uint16_t *)((uintptr_t)pio + 6);
+                    *(uint32_t *)((uintptr_t)dart + 0xb64) = p1;
+                    if (p1 - 1 > 8 || (x2 == 0 && y2 == 0)) goto bad_pio;
+                }
+            }
+            uint64_t *pio_slot = dart + 0x41;
+            for (uint32_t i = 0; i < n_pgw; i++) {
+                uint32_t idx = inst_tags[i + 2];
+                uint64_t *blk = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+                sptm_ret16_t t = sptm_frame_translate(dt[0], blk[0], blk[2]);
+                if (blk[2] >> 0x2a != 0) goto too_high_pa;
+                *pio_slot = sptm_frame_alloc(t.lo, blk[2] >> 0xe, 0).lo;
+                pio_slot += 2;
+            }
+        }
+        if (g_ps_wr_dis_mode != 0x01) {
+            uint32_t cnt = *(uint32_t *)(dart + 0x173);
+            for (uint32_t i = 0; i < cnt; i++) {
+                if (dart[i + 0x47] != 0 && (*(uint8_t *)(dart[i + 0x47] + 0x1d) & 1) &&
+                    *(int32_t *)((uintptr_t)dart + 0xba4) != 0) {
+                    uint32_t *mask = (uint32_t *)((uintptr_t)dart + (i >> 5) * 4 + 0x34);
+                    for (uint32_t d = 0; d < *(uint32_t *)((uintptr_t)dart + 0xba4); d++) {
+                        *mask |= 1u << (i & 0x1f);
+                        mask += 0x1e;
+                    }
+                }
+            }
+            return;
+        }
+        uint32_t *wrdis = NULL; uint32_t wrsz = 0;
+        rc = sptm_dt_get_prop(node, "clock-protection-wr-dis-id", (uintptr_t *)&wrdis, &wrsz, dt[0], dt[1]);
+        if (rc == 1 && wrsz == (uint32_t)(*(int32_t *)((uintptr_t)dart + 0xba4) * 2)) {
+            uint32_t *dstate = NULL; uint32_t dsz = 0;
+            rc = sptm_dt_get_prop(node, "clock-protection-dart-state", (uintptr_t *)&dstate, &dsz, dt[0], dt[1]);
+            if (rc != 1) goto missing_clock2;
+            if (dsz == (uint32_t)(*(int32_t *)((uintptr_t)dart + 0xba4))) {
+                for (uint32_t i = 0; i < dsz; i++) {
+                    uint8_t *dst = (uint8_t *)((uintptr_t)dart + 0x32 + i * 0x78);
+                    dst[0] = ((uint8_t *)wrdis)[i];
+                    dst[2] = ((uint8_t *)wrdis)[dsz + i];
+                }
+                for (uint32_t i = 0; i < n_pswr; i++) {
+                    uint32_t idx = inst_tags[i];
+                    uint64_t *blk = (uint64_t *)((uintptr_t)inst + idx * 0x10);
+                    sptm_ret16_t t = sptm_frame_translate(dt[0], blk[0], blk[2]);
+                    uint64_t *slot = dart + 0x45 + i;
+                    *slot = sptm_frame_alloc(t.lo, 1, 0).lo;
+                }
+            }
+        }
+    }
+missing_clock2:
+    sptm_panic("%s: %s dart %p %s %u ... missing %s...", 0, 0, 0, 0, 0);
+bad_state:
+    sptm_panic("%s: %s %s %s %d ... state %p %s...", 0, 0, 0, 0, 0);
+missing_prop:
+    sptm_panic("%s: %s dart %p %s %u ... missing %s p...", 0, 0, 0, 0, 0);
+too_many_inst:
+    sptm_panic("%s: %s dart %p %s %u ... max %s inst...", 0, 0, 0, 0, 0);
+too_high_pa:
+    sptm_panic_code(0x6000021, 0, "%s: %s: %d: ... %s: 0x%llx", 0, 0, 0, 0, 0);
+invalid_alloc:
+    sptm_panic("%s: %s dart %p %s %u ... %s invalid...", 0, 0, 0, 0, 0);
+alloc_too_small:
+    sptm_panic("%s: %s %s %s %d ... alloc_size_mu...", 0, 0, 0, 0, 0);
+alloc_too_large:
+    sptm_panic("%s: %s %s %s %d ... allocation_re...", 0, 0, 0, 0, 0);
+bad_dualvc:
+    sptm_panic("%s: %s dart %p %s %u ... dual_VC_LLT...", 0, 0, 0, 0, 0);
+invalid_sid:
+    sptm_panic("%s: %s dart %p %s %u ... Invalid %s...", 0, 0, 0, 0, 0);
+invalid_gapf:
+    sptm_panic("%s: %s dart %p %s %u ... Invalid GAP...", 0, 0, 0, 0, 0);
+null_check:
+    sptm_panic("%s: %s dart %s %s %d %s ... NULL", 0, 0, 0, 0, 0, 0);
+bad_pio:
+    sptm_panic("%s: %s dart %p %s %u ... Invalid PIO...", 0, 0, 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d7fe4  sptm_papt_leaf_pte                                       */
+/* ------------------------------------------------------------------ */
+/* FUN_000d7fe4 @ 0x000d7fe4   (est. sptm_papt_leaf_pte)
+ * Ghidra: long FUN_000d7fe4(ulong param_1)
+ * Walks the PAPT from the root table (g_papt_root_pa) for virtual
+ * address param_1 down to the level-3 (leaf) PTE. Translates each table
+ * paddr to a VA using the identity window or the committed-range table,
+ * and indexes by (va>>0x24 & 0x7ff), (va>>0x19 & 0x7ff) and
+ * (va>>0xe & 0x7ff). Returns the leaf PTE pointer, or 0 if a level is
+ * absent.
+ * Confidence: high */
+uintptr_t sptm_papt_leaf_pte(uint64_t va)
+{
+    uintptr_t table_va;
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        table_va = (g_papt_root_pa - g_mem_phys_base) + g_papt_va_base;
+    } else {
+        uintptr_t *r = g_committed_range_base;
+        uintptr_t found = 0;
+        if (g_committed_range_count != 0) {
+            for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                if (r[0] <= g_papt_root_pa && g_papt_root_pa < r[0] + (uint64_t)r[2] * 0x4000) {
+                    table_va = (g_papt_root_pa - r[0]) + r[1];
+                    found = 1;
+                    break;
+                }
+                r += 3;
+            }
+        }
+        if (!found) table_va = sptm_va_translate_slow(g_papt_root_pa);
+    }
+    uint64_t e0 = *(uint64_t *)(table_va + (va >> 0x24 & 0x7ff) * 8);
+    if ((~(uint32_t)e0 & 3) == 0) {
+        uint64_t t1 = e0 & 0xfffffffff000;
+        if (((g_bootstrap_stages >> 8) & 1) == 0) {
+            table_va = (t1 - g_mem_phys_base) + g_papt_va_base;
+        } else {
+            uintptr_t *r = g_committed_range_base;
+            uintptr_t found = 0;
+            if (g_committed_range_count != 0) {
+                for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                    if (r[0] <= t1 && t1 < r[0] + (uint64_t)r[2] * 0x4000) {
+                        table_va = (t1 - r[0]) + r[1];
+                        found = 1;
+                        break;
+                    }
+                    r += 3;
+                }
+            }
+            if (!found) table_va = sptm_va_translate_slow(t1);
+        }
+        uint64_t e1 = *(uint64_t *)(table_va + (va >> 0x19 & 0x7ff) * 8);
+        if ((~(uint32_t)e1 & 3) == 0) {
+            uint64_t t2 = e1 & 0xfffffffff000;
+            if (((g_bootstrap_stages >> 8) & 1) == 0) {
+                table_va = (t2 - g_mem_phys_base) + g_papt_va_base;
+            } else {
+                uintptr_t *r = g_committed_range_base;
+                uintptr_t found = 0;
+                if (g_committed_range_count != 0) {
+                    for (uint64_t i = 0; i < g_committed_range_count; i++) {
+                        if (r[0] <= t2 && t2 < r[0] + (uint64_t)r[2] * 0x4000) {
+                            table_va = (t2 - r[0]) + r[1];
+                            found = 1;
+                            break;
+                        }
+                        r += 3;
+                    }
+                }
+                if (!found) table_va = sptm_va_translate_slow(t2);
+            }
+            return table_va + (va >> 0xe & 0x7ff) * 8;
+        }
+    }
+    return 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d81bc  sptm_pa_to_va                                            */
+/* ------------------------------------------------------------------ */
+/* FUN_000d81bc @ 0x000d81bc   (est. sptm_pa_to_va)
+ * Ghidra: long FUN_000d81bc(ulong param_1)
+ * Pure paddr->PAPT VA translation. In the identity-window build
+ * (g_bootstrap_stages bit 8 clear) returns (paddr - g_mem_phys_base) +
+ * g_papt_va_base. Otherwise scans the committed-range table for a range
+ * covering paddr and returns the range-relative VA, falling back to the
+ * slow per-frame translator FUN_000e40ec.
+ * Confidence: high */
+uintptr_t sptm_pa_to_va(uint64_t paddr)
+{
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        return (paddr - g_mem_phys_base) + g_papt_va_base;
+    }
+    uintptr_t *r = g_committed_range_base;
+    if (g_committed_range_count != 0) {
+        for (uint64_t i = 0; i < g_committed_range_count; i++) {
+            if (r[0] <= paddr && paddr < r[0] + (uint64_t)r[2] * 0x4000) {
+                return (paddr - r[0]) + r[1];
+            }
+            r += 3;
+        }
+    }
+    return sptm_va_translate_slow(paddr);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d823c  sptm_alloc_frames                                         */
+/* ------------------------------------------------------------------ */
+/* FUN_000d823c @ 0x000d823c   (est. sptm_alloc_frames)
+ * Ghidra: long FUN_000d823c(uint param_1,ulong param_2,int param_3)
+ * Allocates `param_2` contiguous 16K frames of type param_1 from one of
+ * the three frame pools selected by param_3 (0 = PAPT/root pool at
+ * g_fa_counter[2]/[3] bounded by 0x94000, 1 = pool at [4]/[5] bounded by
+ * 0x95100, else the DAT_000950e4 pool). Advances the pool cursor, panics
+ * "Exceeded available number of ..." on overflow, then for each frame:
+ * writes its type into the frame-table entry (+2), zeroes the 16K frame
+ * (sptm_bzero_chk) and re-tags it via the root-PTE type helpers
+ * (sptm_papt_clear_type FUN_000d8914 or sptm_papt_update_root_pte
+ * FUN_000d8784 depending on the frame-type table). Finally, if the root
+ * is an 0x08-class table, it performs the DSB/TLB/ISB maintenance over
+ * the whole run. Returns the base paddr of the allocation.
+ * Confidence: medium */
+uintptr_t sptm_alloc_frames(uint32_t type, uint64_t num_frames, int pool)
+{
+    if (((g_bootstrap_stages >> 0xb) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    int32_t n = (int32_t)num_frames;
+    uint32_t base_idx;
+    uint32_t *cursor;
+    uint64_t limit;
+    uintptr_t base_pa;
+    if (pool == 0) {
+        base_idx = g_fa_counter[2] + g_fa_counter[3];
+        base_pa = g_mem_phys_base + (uint64_t)((n + (int32_t)base_idx) - 1) * 0x4000;
+        base_pa = sptm_pa_to_va(base_pa);
+        if (base_pa > 0x93fff) {
+            sptm_panic("%s: Exceeded available number of...", 0, 0, 0);
+        }
+        cursor = &g_fa_counter[2];
+    } else if (pool == 1) {
+        base_idx = g_fa_counter[4] + g_fa_counter[5];
+        base_pa = g_mem_phys_base + (uint64_t)((n + (int32_t)base_idx) - 1) * 0x4000;
+        base_pa = sptm_pa_to_va(base_pa);
+        if (base_pa >= 0x95100) {
+            sptm_panic("%s: Exceeded available number of...", 0, 0, 0);
+        }
+        cursor = &g_fa_counter[4];
+    } else {
+        cursor = &g_fa_counter[0];
+        base_idx = g_fa_counter[0] + g_fa_counter[1];
+    }
+    *cursor += (uint32_t)n;
+    for (uint32_t idx = base_idx; idx < base_idx + (uint32_t)n; idx++) {
+        uintptr_t fte = 0x95460 + idx * 0x10;
+        *(uint8_t *)(fte + 2) = (uint8_t)type;
+        uintptr_t pa = g_mem_phys_base + (uint64_t)idx * 0x4000;
+        uintptr_t va = sptm_pa_to_va(pa);
+        sptm_bzero_chk(va, 0x4000, 0xffffffffffffffffULL);
+        if (((g_bootstrap_stages >> 8) & 1) != 0) {
+            if (g_type_state[(uint64_t)type * 0x90] == -1) {
+                sptm_papt_unmap_leaf(sptm_pa_to_va(pa));
+            } else {
+                sptm_papt_update_root_pte(sptm_pa_to_va(pa), g_type_state[(uint64_t)type * 0x90]);
+            }
+        }
+    }
+    uintptr_t va = sptm_pa_to_va(g_mem_phys_base + (uint64_t)base_idx * 0x4000);
+    uint16_t *root_guard;
+    if (g_papt_root_pa < g_mem_phys_base || g_mem_phys_end <= g_papt_root_pa) {
+        root_guard = (uint16_t *)sptm_frame_va(g_papt_root_pa).lo;
+    } else {
+        root_guard = (uint16_t *)(0x95460 + ((g_papt_root_pa - g_mem_phys_base) >> 10) * 8);
+    }
+    if (*(uint8_t *)(root_guard + 1) == 0x08) {
+        sptm_dsb(2, 2, 0);
+        sptm_slice_tlbi_single(va, num_frames);
+        sptm_dsb(1, 3, 1);
+        sptm_isb();
+    }
+    return g_mem_phys_base + (uint64_t)base_idx * 0x4000;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d8784  sptm_papt_update_root_pte                                */
+/* ------------------------------------------------------------------ */
+/* FUN_000d8784 @ 0x000d8784   (est. sptm_papt_update_root_pte)
+ * Ghidra: void FUN_000d8784(undefined8 param_1,uint param_2)
+ * Re-stamps the root PTE for the frame at VA param_1 with a new type
+ * (param_2). Requires the post-PAPT build (bit 8 set) and pre-final
+ * (bit 0x11 clear). Walks the leaf PTE; if present, clears the type/AP
+ * bits and re-encodes param_2 (with frame-type-table-derived AP bits for
+ * types 10/3).
+ * Confidence: medium */
+void sptm_papt_update_root_pte(uintptr_t va, uint32_t type)
+{
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+    }
+    if (((g_bootstrap_stages >> 0x11) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    uint64_t *pte = (uint64_t *)sptm_papt_leaf_pte(va);
+    if (pte != NULL && (~(uint32_t)*pte & 3) == 0) {
+        uint64_t val = *pte;
+        uint64_t pa = val & 0xfffffffff000;
+        uint16_t *guard;
+        if (pa < g_mem_phys_base || g_mem_phys_end <= pa) {
+            guard = (uint16_t *)sptm_frame_va(pa).lo;
+        } else {
+            guard = (uint16_t *)(0x95460 + ((pa - g_mem_phys_base) >> 10) * 8);
+        }
+        val = val & 0xff9fffffffffff23;
+        if ((type & 0xf) == 10 || (type & 0xf) == 3) {
+            uint8_t ap = g_fte_class4[(uint64_t)guard[1] * 0x90];
+            val |= ((uint64_t)(ap & 0xc) << 4) | ((uint64_t)(ap & 3) << 0x35);
+        } else {
+            val |= ((uint64_t)(type & 3) << 0x35) | ((uint64_t)((type & 0xc) << 4));
+        }
+        *pte = val;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d8914  sptm_papt_unmap_leaf                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d8914 @ 0x000d8914   (est. sptm_papt_unmap_leaf)
+ * Ghidra: void FUN_000d8914(void)
+ * Clears (unmaps) the PAPT leaf PTE for the current VA (from the stack
+ * argument FUN_000d7fe4 consumes, i.e. the translated frame VA). Panics
+ * "PAPT PTE could not be reached" if no leaf and "Invalid PTE found
+ * while attem..." if the entry is not present. On a present entry the
+ * PTE is zeroed and the frame-table refcount (offset +8 of the FTE,
+ * class-2) decremented, panicking on underflow.
+ * Confidence: high */
+void sptm_papt_unmap_leaf(uintptr_t va)
+{
+    uint64_t *pte = (uint64_t *)sptm_papt_leaf_pte(va);
+    if (pte == NULL) {
+        sptm_panic("%s: PAPT PTE could not be reache...", 0, 0, 0);
+    }
+    if ((~(uint32_t)*pte & 3) == 0) {
+        *pte = 0;
+        uint64_t pa = sptm_va_to_pa(va);
+        uint16_t *guard;
+        if (pa < g_mem_phys_base || g_mem_phys_end <= pa) {
+            guard = (uint16_t *)sptm_frame_va(pa).lo;
+        } else {
+            guard = (uint16_t *)(0x95460 + ((pa - g_mem_phys_base) >> 10) * 8);
+        }
+        if (g_fte_class[(uint64_t)guard[1] * 0x90] == 0x02) {
+            uint16_t rc = guard[4];
+            guard[4] = rc - 1;
+            if (rc != 0) {
+                return;
+            }
+            sptm_panic("%s: refcnt_underflow rc %p old...", 0, 0, 0);
+        }
+        sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+    }
+    sptm_panic("%s: Invalid PTE found while atte...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d8a58  sptm_va_to_pa                                            */
+/* ------------------------------------------------------------------ */
+/* FUN_000d8a58 @ 0x000d8a58   (est. sptm_va_to_pa)
+ * Ghidra: long FUN_000d8a58(ulong param_1)
+ * Inverse of sptm_pa_to_va: translates a PAPT VA back to the physical
+ * address. In the identity window returns (va - g_papt_va_base) +
+ * g_mem_phys_base. Otherwise scans the committed-range table for a
+ * covering range (returning range-relative paddr) or, if none, walks the
+ * root to a level-3 leaf PTE and recombines the leaf paddr with the VA
+ * low bits. Panics on a zero argument, a missing leaf table, or an
+ * unmapped/unmanaged VA.
+ * Confidence: high */
+uintptr_t sptm_va_to_pa(uintptr_t va)
+{
+    if (va == 0) {
+        sptm_panic("%s: papt_to_phys 0 encountered...", 0, 0, 0);
+    }
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        return (va - g_papt_va_base) + g_mem_phys_base;
+    }
+    uintptr_t *r = g_committed_range_base;
+    if (g_committed_range_count != 0) {
+        for (uint64_t i = 0; i < g_committed_range_count; i++) {
+            if (r[1] <= va && va < r[1] + (uint64_t)r[2] * 0x4000) {
+                return (va - r[1]) + r[0];
+            }
+            r += 3;
+        }
+    }
+    uint16_t *root_guard;
+    if (g_papt_root_pa < g_mem_phys_base || g_mem_phys_end <= g_papt_root_pa) {
+        root_guard = (uint16_t *)sptm_frame_va(g_papt_root_pa).lo;
+    } else {
+        root_guard = (uint16_t *)(0x95460 + ((g_papt_root_pa - g_mem_phys_base) >> 10) * 8);
+    }
+    uint64_t *pte = sptm_papt_walk((uintptr_t)root_guard, va, 3, NULL, NULL);
+    if (pte == NULL) {
+        sptm_panic("%s: %s No leaf table present fo...", 0, 0, 0);
+    }
+    if ((~(uint32_t)*pte & 3) != 0 && (va < 0x95140 || 0x95148 <= va)) {
+        sptm_panic("%s: No valid PAPT mapping found w...", 0, 0, 0);
+    }
+    return (*pte & 0xfffffffff000) + (va & 0x3fff);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d8bf8  sptm_retype_frames                                        */
+/* ------------------------------------------------------------------ */
+/* FUN_000d8bf8 @ 0x000d8bf8   (est. sptm_retype_frames)
+ * Ghidra: void FUN_000d8bf8(ulong param_1,undefined8 param_2,uint param_3,
+ *                           uint param_4)
+ * Retypes a contiguous run of `param_2` frames starting at paddr
+ * param_1 from type filter param_3 to type param_4. Requires post-PAPT
+ * build; num_frames must be non-zero. Every frame in [param_1, +n*0x4000)
+ * that is in the managed window and currently has FTE type param_3 (or
+ * matches the wildcard 0x44) has its FTE type rewritten to param_4 and
+ * its root PTE re-stamped. Finally, if the root is an 0x08 table, the
+ * DSB/TLB/ISB maintenance is issued over the run. A frame outside the
+ * managed window panics "Attempted to retype a non-ma...".
+ * Confidence: high */
+void sptm_retype_frames(uintptr_t base_pa, uint64_t num_frames, uint32_t old_type,
+    uint32_t new_type)
+{
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+    }
+    if ((int32_t)num_frames == 0) {
+        sptm_panic("%s: Called with num_frames of ze...", 0, 0, 0);
+    }
+    uint64_t rel = base_pa - g_mem_phys_base;
+    if (!(g_mem_phys_base <= base_pa && base_pa < g_mem_phys_end)) {
+        sptm_panic("%s: Attempted to retype a non-ma...", 0, 0, 0);
+    }
+    uint64_t last_pa = base_pa + (uint64_t)((int32_t)num_frames - 1) * 0x4000;
+    if ((g_mem_phys_base <= last_pa && last_pa < g_mem_phys_end) &&
+        (uint64_t)base_pa + (uint64_t)(num_frames - 1) * 0x4000 >= base_pa) {
+        uint32_t idx = (uint32_t)(rel >> 0xe);
+        uint32_t end = (uint32_t)num_frames + idx;
+        for (; idx < end; idx++) {
+            uintptr_t fte = 0x95460 + (uint64_t)idx * 0x10;
+            if (old_type == 0x44 || *(uint8_t *)(fte + 2) == (uint8_t)old_type) {
+                *(uint8_t *)(fte + 2) = (uint8_t)new_type;
+                uintptr_t pa = g_mem_phys_base + (uint64_t)idx * 0x4000;
+                if (g_type_state[(uint64_t)new_type * 0x90] == -1) {
+                    sptm_papt_unmap_leaf(sptm_pa_to_va(pa));
+                } else {
+                    sptm_papt_update_root_pte(sptm_pa_to_va(pa), g_type_state[(uint64_t)new_type * 0x90]);
+                }
+            }
+        }
+        uintptr_t va = sptm_pa_to_va(base_pa & 0x3fffffffc000);
+        uint16_t *root_guard;
+        if (g_papt_root_pa < g_mem_phys_base || g_mem_phys_end <= g_papt_root_pa) {
+            root_guard = (uint16_t *)sptm_frame_va(g_papt_root_pa).lo;
+        } else {
+            root_guard = (uint16_t *)(0x95460 + ((g_papt_root_pa - g_mem_phys_base) >> 10) * 8);
+        }
+        if (*(uint8_t *)(root_guard + 1) == 0x08) {
+            sptm_dsb(2, 2, 0);
+            sptm_slice_tlbi_single(va, num_frames);
+            sptm_dsb(1, 3, 1);
+            sptm_isb();
+        }
+        return;
+    }
+    sptm_panic("%s: Attempted to retype a non-ma...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d8f94  sptm_papt_walk_alloc                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d8f94 @ 0x000d8f94   (est. sptm_papt_walk_alloc)
+ * Ghidra: void FUN_000d8f94(ulong param_1,int param_2,int param_3,
+ *                           int param_4,ulong param_5,int param_6)
+ * Walks the PAPT for virtual address param_1 allocating the missing page
+ * tables as it descends (up to param_5 levels). param_2 is the starting
+ * level config (0 = SPTM table), param_4 the leaf frame type (9 or
+ * 0x14), param_3 the intermediate table type and param_6 selects the
+ * table-descriptor present bits (0 = 3, else 0x800000000000003). Each
+ * missing interior entry is filled with a freshly allocated (via
+ * sptm_alloc_frames) class-2 table whose descriptor, level set and FTE
+ * refcounts are installed; the leaf-level frames get their FTE type set
+ * via sptm_retype_frames. The root table must be class 1.
+ * Confidence: low
+ * Notes: per-level shift/mask from the 0x13158/0x13160 level tables. */
+void sptm_papt_walk_alloc(uintptr_t va, int start_type, int table_type,
+    int leaf_type, uint64_t levels, int present)
+{
+    if (start_type == 0 && leaf_type != 9) {
+        sptm_panic("%s: wrong frame type for SPTM CT...", 0, 0, 0);
+    }
+    if (leaf_type != 9 && leaf_type != 0x14) {
+        sptm_panic("%s: wrong frame type for page ta...", 0, 0, 0);
+    }
+    uintptr_t table_va = sptm_pa_to_va(g_papt_root_pa);
+    uint64_t desc = (present == 0) ? 3 : 0x800000000000003;
+    for (uint64_t level = 1; level < levels; level++) {
+        uint64_t *pte = (uint64_t *)(table_va +
+            ((va & 0x7fffffffffff & *(uint64_t *)(level * 0x38 + 0x13160)) >>
+             (*(uint64_t *)(level * 0x38 + 0x13158) & 0x3f) & 0xffffffff) * 8);
+        table_va = *pte;
+        if ((~(uint32_t)table_va & 3) != 0) {
+            if (((g_bootstrap_stages >> 0xb) & 1) != 0) {
+                sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+            }
+            int itype = (level != 1) ? 0 : table_type;
+            int ltype = (level != 2) ? itype : table_type;
+            uintptr_t new_pa = sptm_alloc_frames(9, 1, ltype);
+            uintptr_t fte = 0x95460 + ((new_pa - g_mem_phys_base) >> 0xe & 0xffffffff) * 0x10;
+            if (g_fte_class[(uint64_t)*(uint8_t *)(fte + 2) * 0x90] != 0x02) {
+                sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+            }
+            uint64_t idx = (new_pa - g_mem_phys_base) >> 0xe & 0xffffffff;
+            *(uint8_t *)(fte + 4) = (uint8_t)level + 1;
+            uint64_t val = desc | (idx * 0x4000) + g_mem_phys_base;
+            *pte = val;
+            uintptr_t fte2 = 0x95460 + idx * 0x10;
+            if (g_fte_class[(uint64_t)*(uint8_t *)(fte2 + 2) * 0x90] != 0x02) {
+                sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+            }
+            uint16_t rc = *(uint16_t *)(fte2 + 6);
+            *(uint16_t *)(fte2 + 6) = rc + 1;
+            if (rc > 0xfff4) {
+                sptm_panic("%s: refcnt_overflow rc %p old v...", 0, 0, 0);
+            }
+            uint64_t parent_pa = sptm_va_to_pa((uintptr_t)pte);
+            uint16_t *pguard;
+            if (parent_pa < g_mem_phys_base || g_mem_phys_end <= parent_pa) {
+                pguard = (uint16_t *)sptm_frame_va(parent_pa).lo;
+            } else {
+                pguard = (uint16_t *)(0x95460 + ((parent_pa - g_mem_phys_base) >> 10) * 8);
+            }
+            if (g_fte_class[(uint64_t)pguard[1] * 0x90] == 0x01) {
+                uint16_t rc2 = pguard[3];
+                pguard[3] = rc2 + 1;
+                if (rc2 > 0x812) {
+                    sptm_panic("%s: refcnt_overflow rc %p old v...", 0, 0, 0);
+                }
+            } else if (g_fte_class[(uint64_t)pguard[1] * 0x90] == 0x02) {
+                uint16_t rc2 = pguard[4];
+                pguard[4] = rc2 + 1;
+                if (rc2 > 0x808) {
+                    sptm_panic("%s: refcnt_overflow rc %p old v...", 0, 0, 0);
+                }
+            } else {
+                sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+            }
+            if (((g_bootstrap_stages >> 8) & 1) != 0) {
+                int ftype = (level != 2) ? leaf_type : 9;
+                sptm_retype_frames(g_mem_phys_base + idx * 0x4000, 1, 0x44, ftype);
+            }
+        }
+        table_va = table_va & 0xfffffffff000;
+        table_va = sptm_pa_to_va(table_va);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d941c  sptm_papt_install_leaf                                   */
+/* ------------------------------------------------------------------ */
+/* FUN_000d941c @ 0x000d941c   (est. sptm_papt_install_leaf)
+ * Ghidra: void FUN_000d941c(long param_1,ulong param_2,uint param_3,
+ *                           uint param_4,uint param_5,uint param_6)
+ * Installs leaf PTEs for `param_3` consecutive 16K pages: VA param_1,
+ * paddr param_2, type param_4 (or the frame-type table-derived type when
+ * param_4 == 0xfe), with prot bits param_5 and flags param_6. For each
+ * page the leaf PTE (via sptm_papt_leaf_pte) must be absent ("Valid PTE
+ * found while attemp..."); it is filled with the paddr, AP bits from the
+ * type, present 0x603, and the prot/flags. The frame-table refcount
+ * (+8, class 2) is incremented. Ends with DMB + ISB.
+ * Confidence: high */
+void sptm_papt_install_leaf(uintptr_t va, uintptr_t paddr, uint32_t count,
+    uint32_t type, uint32_t prot, uint32_t flags)
+{
+    if (((g_bootstrap_stages >> 0x11) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    for (uint32_t i = 0; i < count; i++) {
+        uint32_t eff_type = type;
+        if (type != 0xfe) goto do_install;
+        {
+            uintptr_t fte = 0x95460 + ((paddr - g_mem_phys_base) >> 10) * 8;
+            if (g_type_state[(uint64_t)*(uint8_t *)(fte + 2) * 0x90] == -1) continue;
+        }
+do_install:
+        uint64_t *pte = (uint64_t *)sptm_papt_leaf_pte(va);
+        if (pte == NULL) {
+            sptm_panic("%s: PAPT PTE could not be reache...", 0, 0, 0);
+        }
+        if ((~(uint32_t)*pte & 3) == 0) {
+            sptm_panic("%s: Valid PTE found while attemp...", 0, 0, 0);
+        }
+        if (eff_type == 0xfe) {
+            uintptr_t fte = 0x95460 + ((paddr - g_mem_phys_base) >> 10) * 8;
+            eff_type = (uint32_t)g_type_state[(uint64_t)*(uint8_t *)(fte + 2) * 0x90];
+        }
+        uint16_t *guard;
+        if (paddr < g_mem_phys_base || g_mem_phys_end <= paddr) {
+            guard = (uint16_t *)sptm_frame_va(paddr).lo;
+        } else {
+            guard = (uint16_t *)(0x95460 + ((paddr - g_mem_phys_base) >> 10) * 8);
+        }
+        uint64_t val = paddr & 0xfffffffff000 | (uint64_t)(eff_type & 3) << 0x35 |
+                       (uint64_t)((eff_type & 0xc) << 4) | 0x603;
+        if ((eff_type & 0xf) == 10 || (eff_type & 0xf) == 3) {
+            uint8_t ap = g_fte_class4[(uint64_t)guard[1] * 0x90];
+            val = ((uint64_t)(ap & 0xc) << 4) | ((uint64_t)(ap & 3) << 0x35) | (val & 0xfffffffff603);
+        }
+        *pte = (uint64_t)((prot & 7) << 2) | (uint64_t)((flags & 0x100) >> 8) << 0x32 | val;
+        uint64_t pa2 = sptm_va_to_pa(va);
+        uint16_t *g2;
+        if (pa2 < g_mem_phys_base || g_mem_phys_end <= pa2) {
+            g2 = (uint16_t *)sptm_frame_va(pa2).lo;
+        } else {
+            g2 = (uint16_t *)(0x95460 + ((pa2 - g_mem_phys_base) >> 10) * 8);
+        }
+        if (g_fte_class[(uint64_t)g2[1] * 0x90] != 0x02) {
+            sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+        }
+        uint16_t rc = g2[4];
+        g2[4] = rc + 1;
+        if (rc > 0x808) {
+            sptm_panic("%s: refcnt_overflow rc %p old v...", 0, 0, 0);
+        }
+        paddr += 0x4000;
+        va += 0x4000;
+    }
+    sptm_dmb(2, 3);
+    sptm_isb();
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d977c  sptm_papt_unmap_range                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d977c @ 0x000d977c   (est. sptm_papt_unmap_range)
+ * Ghidra: void FUN_000d977c(long param_1,ulong param_2)
+ * Unmaps `param_2` pages starting at VA param_1, releasing each leaf PTE
+ * (only for frames whose type maps to a real type, else skipped), then
+ * issues the DSB/TLB/ISB maintenance when the root is an 0x08 table.
+ * Requires post-PAPT build and pre-final stage.
+ * Confidence: high */
+void sptm_papt_unmap_range(uintptr_t va, uint64_t num_pages)
+{
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+    }
+    if (((g_bootstrap_stages >> 0x11) & 1) == 0) {
+        if ((int32_t)num_pages != 0) {
+            uintptr_t v = va;
+            for (uint64_t i = 0; i < (num_pages & 0xffffffff); i++) {
+                uintptr_t pa = sptm_va_to_pa(v);
+                uint16_t *guard;
+                if (pa < g_mem_phys_base || g_mem_phys_end <= pa) {
+                    guard = (uint16_t *)sptm_frame_va(pa).lo;
+                } else {
+                    guard = (uint16_t *)(0x95460 + ((pa - g_mem_phys_base) >> 10) * 8);
+                }
+                if (g_type_state[(uint64_t)guard[1] * 0x90] != -1) {
+                    sptm_papt_unmap_leaf(v);
+                }
+                v += 0x4000;
+            }
+        }
+        uint16_t *root_guard;
+        if (g_papt_root_pa < g_mem_phys_base || g_mem_phys_end <= g_papt_root_pa) {
+            root_guard = (uint16_t *)sptm_frame_va(g_papt_root_pa).lo;
+        } else {
+            root_guard = (uint16_t *)(0x95460 + ((g_papt_root_pa - g_mem_phys_base) >> 10) * 8);
+        }
+        if (*(uint8_t *)(root_guard + 1) == 0x08) {
+            sptm_dsb(2, 2, 0);
+            sptm_slice_tlbi_single(va, num_pages);
+            sptm_dsb(1, 3, 1);
+            sptm_isb();
+        }
+        return;
+    }
+    sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d9940  sptm_phystokv                                            */
+/* ------------------------------------------------------------------ */
+/* FUN_000d9940 @ 0x000d9940   (est. sptm_phystokv; called sptm_phystokv
+ *                              in sptm_register_cpu)
+ * Ghidra: ulong FUN_000d9940(undefined8 param_1,ulong param_2,uint param_3)
+ * Maps a physical region (param_1) of param_2 16K pages into the PAPT VA
+ * space and returns the VA base. The mapping count (g_mapping_count) is
+ * validated against g_max_mappings ("request for %u mappings exce...")
+ * and incremented; the region is carved from the g_mapping_va_cursor.
+ * Each page is given the page-table structure via sptm_papt_walk_alloc
+ * (level 3, leaf type 9) and the leaf PTEs installed via
+ * sptm_papt_install_leaf with the AP/type derived from param_3. Returns
+ * the base VA of the mapping.
+ * NOTE: named sptm_phystokv per the register-cpu call site (the task
+ * note); this is a map+return-VA helper, not a pure translation.
+ * Confidence: high */
+uintptr_t sptm_phystokv(uintptr_t pa, uint64_t num_pages, uint32_t flags)
+{
+    if (((g_bootstrap_stages >> 0x11) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    uint64_t count = g_mapping_count;
+    if ((((g_bootstrap_stages >> 10) & 1) != 0) &&
+        (count = g_mapping_count + (int32_t)num_pages, g_max_mappings < count)) {
+        sptm_panic("%s: request for %u mappings exce...", 0, 0, 0);
+    }
+    g_mapping_count = count;
+    uint64_t len = (num_pages & 0xffffffff) * 0x4000;
+    uintptr_t base_va = g_mapping_va_cursor;
+    uint64_t cur = g_mapping_va_cursor;
+    for (uintptr_t v = g_mapping_va_cursor; cur = g_mapping_va_cursor, v < g_mapping_va_cursor + len; v += 0x4000) {
+        sptm_papt_walk_alloc(v, 2, 0, 9, 3, 1);
+    }
+    sptm_papt_install_leaf(base_va, pa, num_pages, 3, 0x10003 >> ((flags & 3) << 3) & 3, 0);
+    g_mapping_va_cursor += len;
+    g_mapping_region_count += (int32_t)num_pages;
+    return base_va;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d9aa8  sptm_map_boot_region                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d9aa8 @ 0x000d9aa8   (est. sptm_map_boot_region; declared in
+ *                              sptm_internal.h)
+ * Ghidra: void FUN_000d9aa8(long param_1,uint param_2,undefined8 param_3,
+ *                           int param_4,uint param_5)
+ * Registers a named boot PAPT range (name param_1, type param_2, VA base
+ * param_3, page count param_4, flags param_5) into the boot-range table
+ * g_papt_range_name/type/va/pages/flags. Requires pre-boot-regions
+ * (bit 7 clear). For a required range (param_4 != 0): type must be
+ * <= 0x41, the table capacity (0x32) must not be exceeded, and the
+ * PAPT_RANGE_ALLOC flag must not be combined with any other bits (panic
+ * on violation). A non-required range (param_4 == 0) only requires the
+ * optional bit in param_5.
+ * Confidence: high */
+void sptm_map_boot_region(const char *name, uint32_t type, uintptr_t va_base,
+    int num_pages, uint32_t flags)
+{
+    if (((g_bootstrap_stages >> 7) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    if (name == NULL) {
+        sptm_panic("%s: Name is NULL...", 0, 0, 0);
+    }
+    if (num_pages == 0) {
+        if ((flags >> 1) & 1) {
+            return;
+        }
+        sptm_panic("%s: %s range %s Required PAPT ra...", 0, 0, 0, 0);
+    }
+    if (type > 0x41) {
+        sptm_panic("%s: %s range %s Invalid bootstra...", 0, 0, 0, 0);
+    }
+    uint64_t idx = g_papt_range_count;
+    if (g_papt_range_count > 0x31) {
+        sptm_panic("%s: %s range %s Attempted to go o...", 0, 0, 0, 0);
+    }
+    if (((flags >> 7) & 1) && (flags & 0x17f) != 0) {
+        sptm_panic("%s: %s range %s PAPT_RANGE_ALLOC...", 0, 0, 0, 0);
+    }
+    g_papt_range_count += 1;
+    g_papt_range_name[idx] = (uintptr_t)name;
+    g_papt_range_type[idx] = (uint8_t)type;
+    g_papt_range_va[idx] = va_base;
+    g_papt_range_pages[idx] = (uint32_t)num_pages;
+    g_papt_range_flags[idx] = flags;
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d9be8  sptm_retype_boot_range                                   */
+/* ------------------------------------------------------------------ */
+/* FUN_000d9be8 @ 0x000d9be8   (est. sptm_retype_boot_range)
+ * Ghidra: void FUN_000d9be8(long param_1,undefined8 param_2,undefined8 param_3)
+ * Finds a registered boot PAPT range by name (param_1) and retypes all
+ * of its pages from type param_2 to type param_3 via
+ * sptm_retype_frames. Requires post-PAPT build, pre-final stage, a
+ * non-NULL name, and param_3 < 0x42. Panics "Unable to find requested
+ * ran..." if the name is not in the table, and "Invalid new type %u..."
+ * if param_3 >= 0x42.
+ * Confidence: high */
+void sptm_retype_boot_range(const char *name, uint32_t old_type, uint32_t new_type)
+{
+    if (((g_bootstrap_stages >> 8) & 1) == 0) {
+        sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+    }
+    if (((g_bootstrap_stages >> 0x11) & 1) != 0) {
+        sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+    }
+    if (name == NULL) {
+        sptm_panic("%s: Name is NULL...", 0, 0, 0);
+    }
+    if ((uint32_t)new_type < 0x42) {
+        uintptr_t match = 0;
+        for (uint64_t i = 0; i < g_papt_range_count; i++) {
+            uintptr_t cand = (sptm_dt_cmp_prop((uintptr_t)name, (const char *)g_papt_range_name[i]) == 0) ? (uintptr_t)&g_papt_range_name[i] : 0;
+            if (cand != 0) match = cand;
+        }
+        if (match != 0) {
+            uint64_t *ent = (uint64_t *)match;
+            sptm_retype_frames(ent[2], *(uint32_t *)(ent + 4), old_type, new_type);
+            return;
+        }
+        sptm_panic("%s: Unable to find requested ran...", 0, 0, 0);
+    }
+    sptm_panic("%s: Invalid new type %u...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000d9d44  sptm_papt_commit                                         */
+/* ------------------------------------------------------------------ */
+/* FUN_000d9d44 @ 0x000d9d44   (est. sptm_papt_commit; declared in
+ *                              sptm_internal.h)
+ * Ghidra: void FUN_000d9d44(void)
+ * Commits the boot PAPT ranges: coalesces adjacent/contiguous ranges
+ * into the committed table (g_committed_range_base/va/pages) and sorts
+ * it. Panics "No PAPT ranges have been r..." if none were registered.
+ * The committed table is the runtime PA<->VA translation source used by
+ * sptm_pa_to_va / sptm_va_to_pa.
+ * Confidence: high */
+void sptm_papt_commit(void)
+{
+    if (g_papt_range_count == 0) {
+        sptm_panic("%s: ... No PAPT ranges have been r...", 0, 0, 0);
+    }
+    /* Boot ranges are identity-mapped, so each range's stored "va" is also
+     * its physical base. Coalesce contiguous ranges into the committed
+     * {base, va, pages} translation table used by sptm_pa_to_va /
+     * sptm_va_to_pa. */
+    uint64_t n = 0;
+    for (uint64_t i = 0; i < g_papt_range_count; i++) {
+        uint32_t pages = g_papt_range_pages[i];
+        if (pages == 0 || ((g_papt_range_flags[i] >> 2) & 1) != 0) {
+            continue;   /* absent or non-contiguous flag */
+        }
+        uintptr_t base = g_papt_range_va[i];
+        uintptr_t va = g_papt_range_va[i];
+        if (n > 0 &&
+            base == g_committed_range_base[n - 1] + (uint64_t)g_committed_range_pages[n - 1] * 0x4000 &&
+            va == g_committed_range_va[n - 1] + (uint64_t)g_committed_range_pages[n - 1] * 0x4000) {
+            g_committed_range_pages[n - 1] += pages;
+            continue;
+        }
+        g_committed_range_base[n] = base;
+        g_committed_range_va[n] = va;
+        g_committed_range_pages[n] = pages;
+        n++;
+    }
+    g_committed_range_count = (uint32_t)n;
+    sptm_qsort(g_committed_range_base, g_committed_range_count, 0x18, (void *)sptm_io_range_cmp);
+}
+
+/* ------------------------------------------------------------------ */
+/* Forward declarations for functions in this file used before their   */
+/* definition (mutually recursive page-table helpers).                 */
+/* ------------------------------------------------------------------ */
+static inline uint32_t popcount(uint64_t x) { return (uint32_t)__builtin_popcountll(x); }
+static inline uint64_t clz64(uint64_t x) { return (uint64_t)__builtin_clzll(x); }
+static inline uint64_t bitreverse64(uint64_t x) { return __builtin_bitreverse64(x); }
+
+uintptr_t sptm_pa_to_va(uint64_t paddr);
+uintptr_t sptm_va_to_pa(uintptr_t va);
+uint64_t *sptm_papt_walk(uintptr_t root, uint64_t va, uint32_t level,
+    uint64_t *table_out, uint64_t *va_out);
+uintptr_t sptm_papt_leaf_pte(uint64_t va);
+void sptm_papt_unmap_leaf(uintptr_t va);
+void sptm_papt_update_root_pte(uintptr_t va, uint32_t type);
+uintptr_t sptm_alloc_frames(uint32_t type, uint64_t num_frames, int pool);
+void sptm_retype_frames(uintptr_t base_pa, uint64_t num_frames, uint32_t old_type,
+    uint32_t new_type);
+void sptm_papt_install_leaf(uintptr_t va, uintptr_t paddr, uint32_t count,
+    uint32_t type, uint32_t prot, uint32_t flags);
+uintptr_t sptm_phystokv(uintptr_t pa, uint64_t num_pages, uint32_t flags);
+void sptm_dart_sid_alloc(uintptr_t dart, uint32_t sid, uint8_t type);
+void sptm_dart_sid_setup(uintptr_t dart, uint64_t sid, uintptr_t *dt,
+    uintptr_t node, uint32_t vm_align, int vm_align_rem, uint32_t flag);
+void sptm_dart_sid_property_set(uintptr_t dart, uintptr_t iter, uintptr_t ctx,
+    uintptr_t node, uint64_t *bitset, const char *prop_name);
+void sptm_dart_check_vm_reserve_size(uintptr_t dart, int size);
+void sptm_dart_register(uintptr_t *dt, uintptr_t node, uint64_t sr_region);
+uint32_t sptm_io_range_cmp(uintptr_t a, uintptr_t b);
+uint32_t sptm_io_filter_cmp(uint32_t *a, uint32_t *b);
+void sptm_papt_commit(void);
+void sptm_map_boot_region(const char *name, uint32_t type, uintptr_t va_base,
+    int num_pages, uint32_t flags);
+void sptm_retype_boot_range(const char *name, uint32_t old_type, uint32_t new_type);
+void sptm_papt_unmap_range(uintptr_t va, uint64_t num_pages);
+uintptr_t sptm_copy_phys_to_scratch(uintptr_t pa, uint64_t ele_size,
+    uint64_t num_ele, uintptr_t scratch_off);
+uintptr_t sptm_copy_phys_to_scratch_checked(uintptr_t pa, uint64_t ele_size,
+    uint64_t num_ele, uintptr_t scratch_off);
+void sptm_bootstrap_early(uintptr_t virt_base, uintptr_t phys_base,
+    uintptr_t first_avail, uintptr_t mem_size, uintptr_t *dt);
+void sptm_io_bootstrap(uintptr_t mem_start, uintptr_t mem_size, uintptr_t *dt);
