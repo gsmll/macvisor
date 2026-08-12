@@ -3481,3 +3481,354 @@ void FUN_0046a118(word_t in_x3)
     FUN_0019e578();
     return;
 }
+
+/* FUN_0046a1b0 @ 0x0046a1b0   (est. sk_span_iterate_6a1b0)
+ * Ghidra: undefined1 [16] FUN_0046a1b0(...,long,ulong,ulong,undefined8,undefined8)
+ * Iterates a span list up to param_9 entries: releases the pair, builds a
+ * dispatch frame via FUN_0046777c, copies the 0x59-byte block, and loops
+ * through FUN_0046ef90 reformatting each entry (page-range check against
+ * param_10) until the stop flag or the count is exhausted. Returns the
+ * {lo, hi} pair (hi tagged 0xe0) on success; traps at SoftwareBreakpoint
+ * 0x46a360/0x46a364/0x46a368.
+ * Confidence: low
+ * Notes: 13 register/stack args; breakpoints 0x46a360/0x46a364/0x46a368. */
+cl4_pair_t FUN_0046a1b0()
+{
+    long param_9 = 0;            /* count limit (register/stack) */
+    uint64_t param_10 = 0, param_11 = 0;
+    word_t param_1 = 0, param_2 = 0, param_3 = 0, param_4 = 0;
+    word_t param_5 = 0, param_6 = 0, param_7 = 0, param_8 = 0;
+    word_t param_12 = 0, param_13 = 0;
+    char flag;                  /* cVar1 */
+    uint64_t v;                 /* uVar2 */
+    uint64_t v5;                /* uVar5 */
+    long i;                     /* lVar4 */
+    cl4_pair_t r;               /* auVar6 */
+    uint64_t w138, w130, w128, w120, w78;
+    char w70;
+    uint8_t c8[80], buf[0x59];
+    uint64_t lo, hi;
+
+    if (param_9 < 0) {
+        SK_PANIC("neg");        /* breakpoint 0x46a364 */
+    }
+    lo = 0;
+    hi = 0xe000000000000000ULL;
+    thunk_FUN_0036b270(param_13);
+    thunk_FUN_0036b270(param_4);
+    r = FUN_000e15d8((word_t)c8);
+    FUN_0046777c(r.lo, r.hi, param_12, (uint8_t)param_13, param_1, param_2, param_3, param_4);
+    FUN_00117cc4((word_t)buf, (word_t)c8, 0x59);
+    v5 = w78;
+    flag = w70;
+    for (i = 0; i < param_9 && flag != 1; i = i + 1) {
+        param_13 = w120;
+        FUN_0046ef90((word_t)&lo, (word_t)buf, w130, w128, w120, v5);
+        flag = (char)w128;
+        v5 = w138;
+        v = (uint64_t)w78;
+        if ((char)w138 == 1) break;
+        if (lo >> 0xe < param_10 >> 0xe) {
+            SK_PANIC("lo");     /* breakpoint 0x46a360 */
+        }
+        FUN_003511f0(param_10);
+        thunk_FUN_002b74c0();
+        FUN_002a55a4();
+        FUN_003a25d4(param_13);
+        param_13 = param_8;
+        FUN_002a55a4(param_5, param_6, param_7);
+        param_10 = v;
+    }
+    FUN_00497994((word_t)buf);
+    if (param_10 >> 0xe <= param_11 >> 0xe) {
+        FUN_00350a70();
+        FUN_003511f0();
+        thunk_FUN_002b74c0();
+        FUN_002a55a4();
+        FUN_003a25d4(param_13);
+        r.hi = hi;
+        r.lo = lo;
+        return r;
+    }
+    SK_PANIC("span");           /* breakpoint 0x46a368 */
+}
+
+/* FUN_0046a368 @ 0x0046a368   (est. sk_span_build_6a368)
+ * Ghidra: undefined1 [16] FUN_0046a368(ulong*,undefined8,undefined8,long,undefined8,undefined*)
+ * Builds a span-walk descriptor: validates the range, reads the seven
+ * descriptor words from param_1, iterates the span search (FUN_00467e44)
+ * building per-entry report pairs, and returns the final {lo, hi} pair.
+ * Traps at SoftwareBreakpoint 0x46a52c/0x46a5bc/0x46a5c0/0x46a5c4/0x46a5c8.
+ * Confidence: low
+ * Notes: descriptor at param_1[0..7]; breakpoints 0x46a52c..0x46a5c8. */
+cl4_pair_t FUN_0046a368()
+{
+    uint64_t *param_1 = 0;      /* register args */
+    word_t param_2 = 0, param_3 = 0, param_5 = 0;
+    long param_4 = 0;
+    void *param_6 = 0;
+    uint64_t a0, a1, a2, a3, a4, a5, a6, a7, cur, curhi, tag, last;
+    long iter;
+    bool done, scarry;
+    cl4_pair_t r, lr;
+
+    if (param_4 < 0) {
+        SK_PANIC("neg");        /* breakpoint 0x46a5c4 */
+    }
+    a0 = *param_1;
+    a1 = param_1[1];
+    curhi = a1 >> 0xe;
+    if (curhi < a0 >> 0xe) {
+        SK_PANIC("range");      /* breakpoint 0x46a5c8 */
+    }
+    a2 = param_1[4];
+    a3 = param_1[5];
+    a4 = param_1[6];
+    a5 = param_1[7];
+    FUN_004a4ac4((word_t)param_1, (word_t)&lr, 0x00657e48);
+    iter = 0;
+    done = false;
+    last = 0xf;
+    cur = a0;
+    while (!done) {
+        if (curhi < cur >> 0xe) {
+            SK_PANIC("ovf");    /* breakpoint 0x46a5bc */
+        }
+        r = FUN_00467e44(a0, a1, (word_t)0, (word_t)0, cur, a1, a2, a3, a4, a5);
+        if ((r.lo & 0xff) == 1) break;
+        if ((r.lo >> 0xe) == (r.hi >> 0xe)) {
+            if ((r.lo >> 0xe) == curhi) {
+                done = true;
+                cur = 0;
+            } else {
+                cur = FUN_002b3b50(r.hi, a0, a1, (word_t)0, (word_t)0);
+                done = false;
+            }
+        } else {
+            done = false;
+            cur = r.hi;
+        }
+        if (param_4 == iter) break;
+        if ((r.lo >> 0xe) < (last >> 0xe)) {
+            SK_PANIC("sp");     /* breakpoint 0x46a5c0 */
+        }
+        lr = FUN_0029fa0c(last, r.lo);
+        FUN_002a74f8(lr, 0x675c68, 0x66e6e0);
+        FUN_003a25d4(lr.hi);
+        lr.lo = param_2;
+        lr.hi = param_3;
+        FUN_002a74f8(lr, 0x6753a0, 0x66e0d8);
+        scarry = (uint64_t)iter == UINT64_MAX;
+        iter = iter + 1;
+        last = r.hi;
+        if (scarry) {
+            SK_PANIC("ovf2");   /* breakpoint 0x46a52c */
+        }
+    }
+    FUN_0036b118(a5);
+    FUN_0036b118(a3);
+    FUN_0036b118(a2);
+    FUN_003a25d4((word_t)0);
+    lr = FUN_0001d4f4(last, param_5);
+    FUN_002a74f8(lr, 0x675c68, 0x66e6e0);
+    FUN_003a25d4(lr.hi);
+    r.hi = 0xe000000000000000ULL;
+    r.lo = 0;
+    return r;
+}
+
+/* FUN_0046a5c8 @ 0x0046a5c8   (est. sk_syscall_dispatch_6a5c8)
+ * Ghidra: void FUN_0046a5c8(...,long,undefined8,undefined8,long,undefined8,long)
+ * Large eight-argument syscall/error dispatcher: marshals the launch image and
+ * error descriptors, runs a guarded loop over the error candidates (fn-pointer
+ * carrier FUN_000a68f4), dispatching each match through the object vtable and
+ * the report helpers, until the loop count (param_3) is reached or the scan
+ * succeeds (bit 0). Reports via FUN_0008e500. Traps at SoftwareBreakpoint
+ * 0x46ad7c/0x46ae8c/0x46ae90/0x46ae94.
+ * Confidence: low
+ * Notes: register-carried pointers (extraout_x8/x9/x16); SUB supervisor
+ * calls; breakpoints 0x46ad7c/0x46ae8c/0x46ae90/0x46ae94. */
+void FUN_0046a5c8()
+{
+    word_t param_1 = 0, param_2 = 0, param_4 = 0, param_5 = 0, param_7 = 0;
+    long param_3 = 0, param_6 = 0, param_8 = 0;
+    cl4_pair_t img, t2;
+    uint64_t u3, u4, u6, u7, u8, u11, u14, walk;
+    long l5, l9, l10, l15, l16, l17;
+    word_t cx8, cx9, cx16, cx16a, cx16b, cx16c;
+    code_fn f8, f9, fc12, fc18, fc20;
+    word_t x24, x30;
+    uint64_t local_120, local_d8, local_c0, ustack_78, local_28, local_20;
+    long local_18, local_10;
+    int i1;
+    uint64_t lvar19;
+
+    img = FUN_0008e518();
+    local_28 = cx8;
+    local_20 = param_7;
+    u3 = FUN_00027754(param_7);
+    FUN_004aa67c();
+    FUN_003511d8();
+    u4 = FUN_00377824();
+    FUN_00464f4c();
+    t2 = FUN_000b4390();
+    l5 = FUN_00377bec(t2.lo, t2.hi, u4).lo;
+    t2 = FUN_003508e4();
+    u6 = FUN_00319308(t2.lo, t2.hi, l5);
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    SK_SVC_CALL();
+    FUN_00350428();
+    FUN_003509a4();
+    l15 = *(long *)(param_6 - 8);
+    SK_SVC_CALL();                      /* arg from (lVar15+0x40) */
+    FUN_000aa4ec();
+    l16 = cx9 - cx8;
+    FUN_004aac68();
+    FUN_003511d8();
+    u7 = FUN_00377824();
+    FUN_0034ab20();
+    FUN_0007c1a4();
+    SK_SVC_CALL();
+    FUN_00350428();
+    FUN_004ac2b8();
+    u8 = FUN_0034b0b4();
+    FUN_004ab9ec(u8, u4);
+    l9 = FUN_003722e4();
+    FUN_000a6f88();
+    SK_SVC_CALL();                      /* arg from (extraout_x8_01+0x40) */
+    FUN_003493c4();
+    FUN_003503f8();
+    SK_SVC_CALL();
+    FUN_00350464();
+    FUN_003509a4();
+    t2 = FUN_003508e4();
+    l10 = FUN_00310e08(t2.lo, t2.hi, l5);
+    FUN_000a6f88();
+    SK_SVC_CALL();                      /* arg from (extraout_x8_02+0x40) */
+    FUN_003493c4();
+    FUN_003503f8();
+    SK_SVC_CALL();
+    FUN_0034b4c0();
+    FUN_00310d68(0, l10);
+    FUN_0007c1a4();
+    SK_SVC_CALL();
+    FUN_0007c028();
+    SK_SVC_CALL();                      /* arg from (extraout_x8_04+0x40) */
+    FUN_000aa4ec();
+    FUN_00407eac();
+    local_18 = param_8;
+    FUN_00377824(0, param_8, param_5);
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    SK_SVC_CALL();
+    FUN_004ac2ac();
+    FUN_0007c028();
+    FUN_0007c1a4();
+    SK_SVC_CALL();
+    u8 = FUN_0034b0c4();
+    if (param_3 < 0) {
+        SK_PANIC("neg");        /* breakpoint 0x46ae90 */
+    }
+    FUN_0031e0d4(local_20);
+    FUN_00100efc(local_28);
+    f9();
+    FUN_0035156c(u3);
+    FUN_00100efc();
+    f9();
+    SK_VMETHOD(cx16b, 0x10, (word_t)(cx9 - cx8), img.lo, param_5);
+    FUN_000a68c4(local_18);
+    FUN_00100efc(param_8);
+    f9();
+    FUN_00407eac();
+    t2 = FUN_000b4390();
+    u11 = FUN_00377bec(t2.lo, t2.hi, u8).lo;
+    fc12 = (code_fn)FUN_000a68f4();
+    lvar19 = 0;
+    local_10 = l10;
+    FUN_004ab624();
+    l17 = l16 - cx8;
+    do {
+        fc12(l17, u8, u11);
+        FUN_00350884(l17, 1, l10);
+        if (/* in_ZR */ 1) {
+z:
+            FUN_00350bc0((word_t)&local_28);
+            f8(param_8, u8);
+            FUN_00349fe0(l5);
+            FUN_00351f4c(x24, x24);
+            walk = f8();
+            if ((walk & 1) != 0) {
+                img = FUN_00350738(local_120);
+                thunk_FUN_001a29a0(img.lo, img.hi, l5);
+                FUN_00407300();
+                img = FUN_000b4390(ustack_78);
+                FUN_001d9890(img.lo, img.hi, u6, u3);
+                FUN_00350bc0((word_t)&local_18);
+                FUN_00084180();
+                f8();
+                fc12 = (code_fn)FUN_0031d678(local_20);
+                FUN_0046490c();
+                FUN_004ac8b4();
+                img = FUN_003504c4();
+                FUN_00377bec(img.lo, img.hi, u7);
+                img = FUN_00027754();
+                FUN_003512c0(img.lo, img.hi, img.lo);
+                FUN_00353208();
+                fc12();
+                FUN_0008e500(cx9);
+                return;
+            }
+            SK_PANIC("scan");   /* breakpoint 0x46ae94 */
+        }
+        SK_VMETHOD(cx16a, 0x20, (word_t)l5, l17, l10);
+        if (param_3 == (long)lvar19) {
+            FUN_003509b0(*(uint64_t *)(cx16a + 8));
+            f8();
+            goto z;
+        }
+        FUN_0035166c(l5);
+        FUN_003510dc();
+        FUN_00351f4c();
+        walk = f8();
+        if ((walk & 1) == 0) {
+            SK_PANIC("scan2");  /* breakpoint 0x46ae8c */
+        }
+        fc18 = *(code_fn *)(cx16c + 0x20);
+        local_18 = lvar19;
+        FUN_00351214(local_c0);
+        fc18();
+        fc18(local_c0 + *(int *)(l9 + 0x30), l5, u4);
+        SK_VMETHOD(cx16, 0x10, (word_t)0, local_c0, l9);
+        i1 = *(int *)(l9 + 0x30);
+        FUN_00351214(cx9);
+        fc18();
+        fc20 = *(code_fn *)(cx16c + 8);
+        fc20(cx9 + i1, u4);
+        SK_VMETHOD(cx16, 0x20, (word_t)cx9, local_c0, l9);
+        fc18(cx9 + *(int *)(local_10 + 0x24), cx9 + *(int *)(l9 + 0x30), u4);
+        FUN_00350738();
+        fc20();
+        FUN_00319628(u3);
+        FUN_0035139c(ustack_78, cx9);
+        f9();
+        SK_VMETHOD(cx16a, 8, (word_t)cx9, local_10);
+        u14 = local_20;
+        fc20 = (code_fn)FUN_0031d678(local_20);
+        FUN_0046490c(u3, param_4, u7);
+        FUN_004ac8b4();
+        FUN_00377bec();
+        u14 = FUN_00027754();
+        fc20(ustack_78, u7, u14, param_4, local_20);
+        SK_VMETHOD(l15, 0x10, (word_t)l16, img.hi, param_6);
+        u14 = FUN_00027754(0);
+        l10 = local_10;
+        fc20(l16, param_6, u14, param_4, local_20);
+        fc18(x24, l5 + *(int *)(l10 + 0x24), u4);
+        lvar19 = local_18 + 1;
+        l17 = local_d8;
+        if (local_18 == INT64_MAX) {
+            SK_PANIC("ovf");    /* breakpoint 0x46ad7c */
+        }
+    } while (1);
+}

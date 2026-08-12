@@ -1247,7 +1247,11 @@ void sk_re_task_flush(void)
  * The master regex-literal parser: counts leading '#' delimiters, walks the
  * delimiter-mode options in the record, splits the pattern, and finally
  * reports the parsed result (tag 2, "no valid delimiters" if unmatched).
- * Confidence: low. */
+ * Confidence: low.
+ * Notes: skeleton reconstruction; several sw_* helper args dropped to 0
+ *   (FUN_002b5ba0/0001d7a0/0041e0a0 register args).  File sk_slice_193.c has
+ *   pre-existing errors in ~14 other functions (lines 858-2549) outside this
+ *   batch. */
 void sk_re_parse_delim_body(word_t *out, char *start, char *end, long rec, char *ext)
 {
         if (end < start) SW_FATAL(0x42d02c);
