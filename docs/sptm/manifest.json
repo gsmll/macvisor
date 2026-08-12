@@ -6492,13 +6492,13 @@
  {
   "address": "0004e300",
   "ghidra_name": "FUN_0004e300",
-  "estimated_name": null,
+  "estimated_name": "txm_ct_associate_wrap",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 wrapper/thunk"
  },
  {
   "address": "0004e30c",
@@ -7977,13 +7977,13 @@
  {
   "address": "000511f0",
   "ghidra_name": "FUN_000511f0",
-  "estimated_name": null,
+  "estimated_name": "txm_digest_hex_report_thunk",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 wrapper/thunk"
  },
  {
   "address": "000511f8",
@@ -9407,277 +9407,277 @@
  {
   "address": "00054f00",
   "ghidra_name": "FUN_00054f00",
-  "estimated_name": null,
+  "estimated_name": "txm_get_boot_nonce",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055048",
   "ghidra_name": "FUN_00055048",
-  "estimated_name": null,
+  "estimated_name": "txm_entangle_kernel_nonce",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055244",
   "ghidra_name": "FUN_00055244",
-  "estimated_name": null,
+  "estimated_name": "txm_get_cryptex0_root",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055344",
   "ghidra_name": "FUN_00055344",
-  "estimated_name": null,
+  "estimated_name": "txm_check_boot_manifest_name",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "000553bc",
   "ghidra_name": "FUN_000553bc",
-  "estimated_name": null,
+  "estimated_name": "txm_err_2d_c",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "000553c8",
   "ghidra_name": "FUN_000553c8",
-  "estimated_name": null,
+  "estimated_name": "txm_certificate_status",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "000555b0",
   "ghidra_name": "FUN_000555b0",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_property_get",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "000556e8",
   "ghidra_name": "FUN_000556e8",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_property_get_v2",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "000557c4",
   "ghidra_name": "FUN_000557c4",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_property_get_v3",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055b3c",
   "ghidra_name": "FUN_00055b3c",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_manifest_digest",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055c78",
   "ghidra_name": "FUN_00055c78",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_props_ptr",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055c88",
   "ghidra_name": "FUN_00055c88",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_manifest_pad",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055cb8",
   "ghidra_name": "FUN_00055cb8",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_manifest_lock",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055cec",
   "ghidra_name": "FUN_00055cec",
-  "estimated_name": null,
+  "estimated_name": "txm_lock_fault36",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055d1c",
   "ghidra_name": "FUN_00055d1c",
-  "estimated_name": null,
+  "estimated_name": "txm_lock_fault38",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055d20",
   "ghidra_name": "FUN_00055d20",
-  "estimated_name": null,
+  "estimated_name": "txm_lock_fault38_b",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055d34",
   "ghidra_name": "FUN_00055d34",
-  "estimated_name": null,
+  "estimated_name": "txm_panic_illegal_property",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055d5c",
   "ghidra_name": "FUN_00055d5c",
-  "estimated_name": null,
+  "estimated_name": "txm_panic_int_cast_overflow",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055d70",
   "ghidra_name": "FUN_00055d70",
-  "estimated_name": null,
+  "estimated_name": "txm_panic_int_cast_overflow_b",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055da4",
   "ghidra_name": "FUN_00055da4",
-  "estimated_name": null,
+  "estimated_name": "txm_chip_ops_load",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055ddc",
   "ghidra_name": "FUN_00055ddc",
-  "estimated_name": null,
+  "estimated_name": "txm_global_buffer",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055dec",
   "ghidra_name": "FUN_00055dec",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_obj_init",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055ecc",
   "ghidra_name": "FUN_00055ecc",
-  "estimated_name": null,
+  "estimated_name": "txm_obj_size_check",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055f00",
   "ghidra_name": "FUN_00055f00",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_obj_chain_init",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "00055f88",
   "ghidra_name": "FUN_00055f88",
-  "estimated_name": null,
+  "estimated_name": "txm_boot_obj_dispatch",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 boot-nonce/boot-property region"
  },
  {
   "address": "0005602c",

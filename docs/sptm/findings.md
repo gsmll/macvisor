@@ -865,3 +865,27 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: 0x3737c checks `(long)end-(long)np < 1/2/3/4` before each long-form; 0x37584 returns 0 on `prev >> 0x39` or `>> 0x36` overflow; 0x3780c/0x37900 return 0 when `start+len > end`. This is the parser TXM uses to walk code-signing and trust-cache structures.
 - **Severity (hypothesis)**: low — defense-in-depth; a parser bug here could mis-parse an attacker-controlled DER blob (availability/confusion), but all paths are fail-closed (return 0 / trap 0x19).
 - **Confidence**: high (standard DER decode + explicit bounds)
+
+## [ringminus1] 0x4b80c / 0x4c7b8 txm_ct_parse_blob / txm_ct_apply_policy — trust-cache hash-type to CS-policy-bit map
+- **Observation**: The trust-cache parser maps per-entry CDHash algorithm selectors (DER OIDs) to distinct code-signing policy bits in a fixed flag word. The SHA-256 vs SHA-384 family selectors set entirely different bit ranges (e.g. 0x100008 vs 0x58600003f0d0 vs 0x8000000000), so the set of granted policy bits is determined by which hash algorithm the manifest declares — a manifest that can get its hash type accepted under a different algorithm could carry different (possibly broader) policy semantics than intended.
+- **Evidence**: FUN_0004c7b8: `if (memcmp(sel,0xa252,10)==0) *flags|=0x800000100000;` `0xa25c -> 0x58600003f0d0`, `0xa197 -> 0x800000000000`, SHA-384 family (0xa14b/0xa155/0xa168) sets 0x2400000/0x400000/0x8004000000. Hash-type tags at 0xa135..0xa144 (0x551d0f/13/23/0e/25).
+- **Severity (hypothesis)**: low — policy bits are additive per recognized algorithm and the selectors are length-checked (9/10/11 bytes); an unknown selector falls through without setting bits, so the risk is limited to a misclassified-but-recognized OID.
+- **Confidence**: medium
+
+## [ringminus1] 0x53cd4 txm_trap_copy_input — trap input length gate
+- **Observation**: Every image4 trap handler first copies the trap input through a strict length validator: the input length must exactly equal the expected constant (0x10/0x20/0x2c/0x40...). A mismatch returns error 0x54 and logs "trap input has unexpected length" — it does NOT panic, so a caller can probe handler behavior with wrong-size inputs.
+- **Evidence**: FUN_00053cd4: `if (param_4 == param_6) { copy; return 0; } else return 0x54 + log(...0x42f5);`; callers (0x53728/538a8/539ec/53ba4/53604) pass fixed sizes.
+- **Severity (hypothesis)**: informational — bounds enforcement at the trap boundary; the 0x54 error path is non-fatal so malformed calls are rejected cleanly rather than corrupting state.
+- **Confidence**: high
+
+## [ringminus1] 0x54228 txm_ecid_parse — ECID format strictness
+- **Observation**: The ECID parser is strict: the input must be exactly 0x24 (36) characters, digits/hex with mandatory '-' separators only at the fixed positions (bitmask 0x842100), and the trailing 6 hex fields must each be <= 3 chars. Any deviation returns 0xffffffff (malformed) rather than partially decoding. The ECID is then re-packed into a 20-byte big-endian blob.
+- **Evidence**: `if (thunk_FUN_0002dc80() != 0x24) return 0xffffffff;`; separator mask `0x842100`; hex valid set `0x7e0000007e03ff`; per-field length cap 3.
+- **Severity (hypothesis)**: informational — rejects malformed ECIDs, which otherwise could carry inconsistent chip-identity bits.
+- **Confidence**: high
+
+## [ringminus1] 0x54784/0x54848 txm_lock_entry / txm_lock_subsystem — single-writer TXM locks
+- **Observation**: TXM entry and subsystem access are guarded by single-writer lock bytes (obj+0x29 and +0x2a). Lock faults 0x36 if already held (double-lock); unlock faults 0x38 if not held (spurious unlock). The lock is a plain byte set to -1 — a lock that is never released (e.g. a fault mid-transaction) would deadlock, but there is no timeout/owner tracking.
+- **Evidence**: `if (*lock != 0) FUN_000298ec(0x36,0); *lock = -1;` and unlock `if (*lock != -1) FUN_000298ec(0x38,0); lock[0..3]=0`. Set/cleared via tag 0x7472786d ("trxm") state transitions.
+- **Severity (hypothesis)**: low — the locks protect the boot/subsystem context from re-entrant modification; a fault inside a locked region leaves the lock held (availability), but there is no privilege-confusion vector observed.
+- **Confidence**: high

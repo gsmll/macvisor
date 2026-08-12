@@ -6236,6 +6236,20 @@ static uint64_t txm_cert_status_special(uint64_t obj, uint64_t a, uint32_t *v)
     (void)obj; (void)a; (void)v;
 }
 
+/* FUN_0004e300 @ 0x0004e300   (est. txm_ct_associate_wrap)
+ * Ghidra: void FUN_0004e300(void)
+ * Thin wrapper calling txm_ct_associate (FUN_0004dfb0) with no args.
+ * Confidence: high
+ */
+static void txm_ct_associate_wrap(void) { txm_ct_associate(0, 0, 0, 0); }
+
+/* thunk_FUN_00051014 @ 0x000511f0   (est. txm_digest_hex_report_thunk)
+ * Ghidra: void thunk_FUN_00051014(void)
+ * Thunk that forwards to txm_digest_hex_report (FUN_00051014).
+ * Confidence: high
+ */
+static void txm_digest_hex_report_thunk(void) { txm_digest_hex_report(0, 0, 0, 0); }
+
 #undef txm_fault
 #define txm_fault(code, addr) txm_fault_impl(code, addr)
 #endif /* __ASSEMBLER__ */
