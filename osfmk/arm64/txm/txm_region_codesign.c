@@ -880,7 +880,7 @@ void txm_region_policy_commit(uint64_t *ctx, uint64_t base, uint64_t size)
 
 	kind = 0;
 	txm_buf_fill(base, size, &kind, (long)&kind + 1);
-	txm_region_digest(kind, base, size & 0xffffffff, digest);  /* FUN_000325b0 */
+	txm_region_digest(kind, base, size & 0xffffffff, (uint64_t *)digest);  /* FUN_000325b0 */
 	if (*(uint8_t *)((uint8_t *)&kind + 1) > 0x30) {
 		txm_fault(0x19);
 	}
@@ -1799,10 +1799,10 @@ void txm_bn_window_build(uint8_t *win, uint64_t bits, uint64_t *limbs, uint64_t 
 	uint64_t i = 0;
 	*(uint64_t *)(win + 8) = (uint64_t)limbs2;   /* window tail limbs */
 	*(uint64_t *)(win + 0x10) = (uint64_t)limbs; /* window head limbs */
-	win[0] = (uint8_t)((((limbs[(bits - 1 >> 6)] >> (bits - 1 & 0x3f)) & 1) << 3) |
-	                   (((limbs[(bits - 2 >> 6)] >> (bits - 2 & 0x3f)) & 1) << 2) |
-	                   (((limbs[(bits - 3 >> 6)] >> (bits - 3 & 0x3f)) & 1) << 1) |
-	                   (((limbs[(bits - 4 >> 6)] >> (bits - 4 & 0x3f)) & 1)));
+	win[0] = (uint8_t)((((limbs[(bits - 1) >> 6] >> ((bits - 1) & 0x3f)) & 1) << 3) |
+	                   (((limbs[(bits - 2) >> 6] >> ((bits - 2) & 0x3f)) & 1) << 2) |
+	                   (((limbs[(bits - 3) >> 6] >> ((bits - 3) & 0x3f)) & 1) << 1) |
+	                   (((limbs[(bits - 4) >> 6] >> ((bits - 4) & 0x3f)) & 1)));
 	(void)i;
 }
 
@@ -1829,7 +1829,7 @@ void txm_bn_window_next(uint8_t *win, uint64_t bit, int32_t *digit)
 	} else {
 		b4 = (uint8_t)((*(uint64_t *)(limb + ((bit - 5) >> 6) * 8) >> (bit - 5 & 0x3f)) & 1);
 	}
-	if (n0 < (uint8_t)(&txm_bn_win_tbl)[n1]) {
+	if (n0 < txm_bn_win_tbl[n1]) {
 		v = 0;
 	} else {
 		b4 |= 0x20;
@@ -4094,7 +4094,7 @@ uint64_t txm_bn_export_be(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t ds
 		return (uint64_t)-7;
 	}
 	bits = txm_bn_bitlen(n, limbs);
-	if ((bits + 7U >> 3) > nbytes) {
+	if (((bits + 7U) >> 3) > nbytes) {
 		return (uint64_t)-7;
 	}
 	if (cap < nbytes) {
@@ -4120,7 +4120,7 @@ uint64_t txm_bn_export_be(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t ds
 			rem--;
 		} while (rem != 0);
 	}
-	return (int)(cap - (bits + 7U >> 3)) + (int)(bits + 7U >> 3) - (int)(bits + 7U >> 3);
+	return (int)(cap - ((bits + 7U) >> 3)) + (int)((bits + 7U) >> 3) - (int)((bits + 7U) >> 3);
 }
 
 /* FUN_0003e8a0 @ 0x0003e8a0   (est. txm_bn_muladd2)
@@ -4235,7 +4235,7 @@ uint64_t txm_der_bytes_import(uint64_t n, uint64_t *out, uint64_t len, uint8_t *
 	if (len < 8) {
 		nlimbs = 0;
 	} else {
-		nlimbs = (len - 8 >> 3) + 1;
+		nlimbs = ((len - 8) >> 3) + 1;
 		for (i = 0; i < nlimbs; i++) {
 			p -= 8;
 			out[i] = __builtin_bswap64(*(uint64_t *)p);
@@ -4689,6 +4689,7 @@ void txm_ec_pt_double3(uint64_t ctx, uint64_t desc, uint64_t out, uint64_t pt)
 
 /* FUN_00038b34 / 0x38b68 @ 0x00038b34 (est. txm_bn_mul_thunk4/5)
  * Ghidra: void FUN_00038b34(void) — thunks to FUN_00043650. */
+/* 0x00038b68 */
 void txm_bn_mul_thunk4(void) { txm_bn_mul(0, 0, 0, 0, 0); }
 void txm_bn_mul_thunk5(void) { txm_bn_mul(0, 0, 0, 0, 0); }
 
@@ -5024,6 +5025,7 @@ uint64_t txm_bn_exp_window(uint64_t ctx, uint64_t desc, uint64_t out,
 /* FUN_0003d7fc / 0x3d804 @ 0x0003d7fc (est. thunks to txm_bn_bitlen /
  * txm_bn_cmp). */
 void txm_bn_bitlen_thunk(void) { txm_bn_bitlen(0, 0); }
+/* 0x0003d804 */
 void txm_bn_cmp_thunk(void) { txm_bn_cmp(0, 0, 0); }
 
 /* FUN_0003d80c @ 0x0003d80c   (est. txm_bn_normalize)
@@ -5148,6 +5150,7 @@ void txm_bn_divmod(uint64_t ctx, uint64_t n, uint64_t out, uint64_t m,
 /* FUN_0003df28 / 0x3df30 @ 0x0003df28 (thunks to txm_bn_muladd /
  * txm_bn_last_nonzero). */
 void txm_bn_muladd2_thunk(void) { txm_bn_muladd2(0, 0, 0, 0); }
+/* 0x0003df30 */
 void txm_bn_last_nonzero_thunk(void) { txm_bn_last_nonzero(0, 0); }
 
 /* FUN_0003df38 @ 0x0003df38   (est. txm_nop_df38) — no-op. */
@@ -5211,6 +5214,7 @@ void txm_ec_pt_op_wrap1(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
 {
 	txm_bn_mul_full(a, (uint64_t *)b, (uint64_t *)c, (uint64_t *)d);
 }
+/* 0x0003e27c */
 void txm_ec_pt_op_wrap2(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
 {
 	txm_bn_mul_full(a, (uint64_t *)b, (uint64_t *)d, (uint64_t *)d);
@@ -5265,7 +5269,9 @@ void txm_p256_b_mul(uint64_t ctx, uint64_t out, uint64_t a, uint64_t b)
 }
 
 /* FUN_0003e718 / 0x3e72c (est. txm_nop_e718 / txm_nop_e72c) — no-ops. */
+/* 0x0003e718 */
 void txm_nop_e718(void) { }
+/* 0x0003e72c */
 void txm_nop_e72c(void) { }
 
 /* FUN_0003e984 @ 0x0003e984   (est. txm_bn_csub_prng)
@@ -5296,7 +5302,7 @@ void txm_bn_csub_prng(uint64_t n, uint64_t sel, uint64_t *out, uint64_t *a)
  * Ghidra: long FUN_0003ea18(void) — (bitlen + 7 >> 3) + 1. */
 uint64_t txm_bn_bytelen_p1(uint64_t *desc)
 {
-	return (txm_bn_bitlen(desc[0], desc + 1) + 7U >> 3) + 1;
+	return ((txm_bn_bitlen(desc[0], desc + 1) + 7U) >> 3) + 1;
 }
 
 /* FUN_0003ea3c @ 0x0003ea3c   (est. txm_der_oid_count)

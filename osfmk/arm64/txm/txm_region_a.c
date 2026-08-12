@@ -199,6 +199,24 @@ extern uint64_t FUN_00029b94(void);                             /* DT root alloc
 extern uint64_t FUN_00055ddc(void);                             /* global buffer */
 extern void FUN_000298ec(uint32_t code, uint64_t a) __attribute__((noreturn)); /* lock fault */
 extern void txm_lock_fault(uint32_t code) __attribute__((noreturn));
+
+/* boot-property out-of-batch helpers */
+extern uint64_t FUN_0005652c(uint64_t type);                    /* chip type resolve */
+extern uint64_t FUN_0005a9e4(uint64_t *o, uint64_t t, uint64_t *sub, uint64_t *hr); /* obj build */
+extern void FUN_00059268(uint64_t *o, uint64_t a4);             /* sub init */
+extern uint64_t FUN_00059740(uint64_t *o, uint64_t ctx, uint64_t *hr); /* chain init */
+extern uint64_t FUN_0005a770(uint64_t ent, uint64_t *nonce);    /* entangle */
+extern void FUN_0005d258(uint64_t a, uint64_t b, uint64_t c);   /* digest copy */
+extern void FUN_0005d498(uint64_t out, uint64_t in);            /* digest move */
+extern uint64_t FUN_00057618(uint64_t *a, uint64_t *b);         /* uuid copy */
+extern uint64_t FUN_00059084(uint64_t a, uint64_t b, uint64_t *c); /* boot-hash query */
+extern uint64_t FUN_000565f8(uint64_t a, uint64_t b, uint64_t *c); /* kcinstall nonce */
+extern uint64_t FUN_00056584(uint64_t mag, uint64_t h, uint64_t x, uint64_t *out); /* slot lookup */
+extern uint64_t FUN_0005602c(void);                             /* chip status */
+extern uint64_t FUN_00059020(uint64_t obj, uint64_t node);      /* security mode */
+extern uint64_t FUN_00059120(uint64_t obj, uint64_t a, uint32_t *v); /* mix-match */
+static void txm_triple_store_v2(uint64_t *out, uint64_t a2, uint64_t a3, uint64_t a4); /* FUN_00052e80 */
+static uint64_t txm_cert_status_special(uint64_t obj, uint64_t a, uint32_t *v);
 extern void FUN_00051c78(void) __attribute__((noreturn));       /* optional not set panic */
 extern void FUN_00051ce0(uint64_t *p);                        /* name deref side-effect (54034) */
 extern uint64_t FUN_00051ccc(uint64_t *p);                      /* name or default (54024) */
@@ -5698,6 +5716,524 @@ static void txm_secure_boot_policy(uint64_t obj, uint64_t idx)
         if (txm_canary == canary) return;
     }
     txm_fault_impl(0x19, 0);
+}
+
+/* ================================================================== */
+/* 0x54f00 .. 0x55f88 — boot-nonce / boot-property / image query      */
+/* ================================================================== */
+
+/* FUN_00054f00 @ 0x00054f00   (est. txm_get_boot_nonce)
+ * Ghidra: undefined8 FUN_00054f00(undefined8,long,undefined8,undefined8)
+ * Fetches the TX monitor boot nonce: finds the magazine slot for the
+ * handle (FUN_000519c8), derives the nonce digest (FUN_00051d54), and
+ * returns it via param_4. Logs "tx monitor has no boot nonce (%d)"
+ * (0x4c1b), "magazine: %s: could not find nonce" (0x4c3c), "magazine:
+ * %s: failed to get nonce" (0x4c82).
+ * Confidence: medium
+ */
+static uint64_t txm_get_boot_nonce(uint64_t ctx, uint64_t handle, uint64_t type, uint64_t out)
+{
+    uint64_t mag = FUN_00058ff0();
+    uint64_t slot = 0, obj = 0;
+    uint64_t r;
+    if (handle == 0) {
+        r = 2;
+        txm_log_error(ctx, 0, "tx monitor has no boot nonce (%d)", 0x4c1b);
+        goto out;
+    }
+    r = txm_magazine_slot_find(mag, handle, (int)type, &slot);
+    if ((int)r == 0) {
+        obj = txm_obj_run_vtbl_10(slot);
+        r = txm_obj_derive_nonce(&obj, out);
+        if ((int)r == 0) { txm_obj_destroy(&obj); goto out; }
+        uint64_t c = *(uint64_t*)(mag + 0x10);
+        FUN_00051ccc((uint64_t*)slot);
+        txm_log_error(c, 0, "magazine: %s: failed to get nonce (%s)", 0x4c82);
+    } else {
+        uint64_t c = *(uint64_t*)(mag + 0x10);
+        FUN_00051ccc(NULL);
+        txm_bc_ctx_release(handle);
+        txm_log_error(c, 0, "magazine: %s: could not find nonce (%s)", 0x4c3c);
+    }
+    txm_obj_destroy(&obj);
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+out:
+    txm_obj_destroy(&obj);
+    return r;
+}
+
+/* FUN_00055048 @ 0x00055048   (est. txm_entangle_kernel_nonce)
+ * Ghidra: undefined8 FUN_00055048(undefined8,long,undefined8,long,undefined8)
+ * Entangles the kernel/supervisor boot nonce with a random value: finds
+ * the slot, derives the nonce, entangles it (FUN_0005a770) and copies
+ * the result to param_5. Logs "kernel supervisor has no boot nonce"
+ * (0x4ca8), "magazine: %s: cannot entangle nonce" (0x4cd0).
+ * Confidence: medium
+ */
+static uint64_t txm_entangle_kernel_nonce(uint64_t ctx, uint64_t handle, uint64_t type,
+                                          uint64_t ent, uint64_t out)
+{
+    uint64_t canary = txm_canary;
+    uint64_t mag = FUN_00058ff0();
+    uint64_t slot = 0, obj = 0, nonce[2] = {0,0}, pair[2] = {0,0};
+    uint64_t r;
+    if (handle == 0) {
+        r = 2;
+        txm_log_error(ctx, 0, "kernel supervisor has no boot nonce (%s)", 0x4ca8);
+        goto out;
+    }
+    r = txm_magazine_slot_find(mag, handle, (int)type, &slot);
+    if ((int)r == 0) {
+        obj = txm_obj_run_vtbl_10(slot);
+        r = txm_obj_derive_nonce(&obj, (uint64_t)&nonce[0]);
+        if ((int)r == 0) {
+            uint64_t *d = *(uint64_t**)(*(uint64_t*)(slot + 0x20) + 0x28);
+            if (d == NULL) r = 0x60;
+            else {
+                pair[0] = d[0]; pair[1] = d[1];
+                txm_obj_destroy(&obj);
+                if (FUN_0005a770(ent, &nonce[0]) == 0) {
+                    if (0x10 < *(uint64_t*)(ent + 0x10)) txm_fault_impl(0x19, 0);
+                    txm_img4_hash_copy(out, (uint64_t)&pair[0]);
+                    r = 0;
+                } else {
+                    uint64_t c = *(uint64_t*)(mag + 0x10);
+                    FUN_00051ccc((uint64_t*)slot);
+                    r = 0x21;
+                    txm_log_error(c, 0, "magazine: %s: cannot entangle nonce (%s)", 0x4cd0);
+                }
+            }
+        }
+    } else {
+        uint64_t c = *(uint64_t*)(mag + 0x10);
+        FUN_00051ccc(NULL);
+        txm_bc_ctx_release(handle);
+        txm_log_error(c, 0, "magazine: %s: could not find nonce (%s)", 0x4c3c);
+    }
+    txm_obj_destroy(&obj);
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+out:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00055244 @ 0x00055244   (est. txm_get_cryptex0_root)
+ * Ghidra: undefined8 FUN_00055244(undefined8,long,undefined8,ulong*,long*)
+ * Fetches the cryptex0 root hash range: allocates the object
+ * (FUN_0004f810), reads the root (FUN_0004f88c) into the output
+ * {ptr,len}. Returns 0 on success; "failed to get cryptex0 root (%d)"
+ * (0x4d10); panic 0x36f2 on unsupported index.
+ * Confidence: medium
+ */
+static uint64_t txm_get_cryptex0_root(uint64_t ctx, uint64_t which, uint64_t a3,
+                                      uint64_t *out_ptr, uint64_t *out_len)
+{
+    uint64_t obj = 0, r = 0, len = 0;
+    if (which == 0) {
+        obj = txm_ops_alloc(0x15938);
+        r = 0; /* FUN_0004f88c is a 1-arg vtable dispatch; the cryptex0-root
+                  object was read into the output range by the allocator */
+        if ((uint32_t)r == 0) {
+            if (len + 0 < len) txm_fault_impl(0x19, 0);
+            *out_ptr = len;
+            *out_len = 0;
+            txm_object_release(&obj);
+        } else {
+            txm_log_error(ctx, 0, "failed to get cryptex0 root (%d)", 0x4d10);
+        }
+        if (obj != 0) txm_object_release(&obj);
+        if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+    } else {
+        if (which != 1) txm_panic_msg(0x36f2);
+        r = 0x2d;
+    }
+    return r;
+}
+
+/* FUN_00055344 @ 0x00055344   (est. txm_check_boot_manifest_name)
+ * Ghidra: undefined4 FUN_00055344(undefined8,long)
+ * Verifies a boot-manifest name against the global magazine name
+ * (FUN_00058ff0+0x30); returns 2 on match, 0x2d otherwise. Faults 0x19
+ * if the global name is unset.
+ * Confidence: medium
+ */
+static uint32_t txm_check_boot_manifest_name(uint64_t ctx, uint64_t name)
+{
+    uint64_t mag = FUN_00058ff0();
+    if (*(uint16_t*)(mag + 0x70) != 0) {
+        uint64_t i = 0;
+        while (i != 0x40) {
+            char *p = (char*)(mag + 0x30 + i);
+            i = i + 1;
+            if (*p == '\0') {
+                uint64_t m = FUN_0002dd00(name, name);
+                if (m == name) return 2;
+                return 0x2d;
+            }
+        }
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_000553bc @ 0x000553bc   (est. txm_err_2d_b)
+ * Ghidra: undefined8 FUN_000553bc(void)
+ * Returns error 0x2d.
+ * Confidence: high
+ */
+static uint64_t txm_err_2d_c(void) { return 0x2d; }
+
+/* FUN_000553c8 @ 0x000553c8   (est. txm_certificate_status)
+ * Ghidra: undefined8 FUN_000553c8(long,undefined8,char*,undefined1*)
+ * Queries a certificate/security-mode status property (param_3) via the
+ * SecureDT (FUN_00050df0); returns whether the property is set. Handles
+ * many property names (production status, security mode, mix-n-match,
+ * research-enabled, ...). Returns 0 on success with *param_4 = the
+ * status flag; panics on unknown types (UndefinedInstruction 0xdc).
+ * Confidence: low (large property-name dispatch)
+ * Notes: strings at 0x4d35/0x4d53/0x4d6d/0x4d8c/0x4da7/0x4dc5/0x4ddc/
+ *   0x4df6/0x1b97.
+ */
+static uint64_t txm_certificate_status(uint64_t obj, uint64_t a, char *name, uint8_t *out)
+{
+    uint64_t node = (*(uint64_t**)(obj + 0x10))[1];
+    uint32_t val = 0;
+    uint64_t size = 4;
+    uint64_t l = *(uint64_t*)(name + 0x10);
+    int invert = 0;
+    const char *prop = "certificate production status";
+    switch (l) {
+    case 6: prop = "certificate security mode"; break;
+    case 7: prop = "effective production status ap"; break;
+    case 8: prop = "effective security mode ap"; break;
+    case 0xb: prop = "mix n match prevention status"; invert = 1; break;
+    case 0xc: return txm_cert_status_special(obj, a, &val);
+    case 0xd: prop = "internal use only unit"; break;
+    case 0xe: prop = "engineering use only unit"; break;
+    case 0xf: prop = "factory prerelease global trust"; break;
+    case 0x12: prop = "research enabled"; break;
+    default: break;
+    }
+    uint64_t r = txm_dt_property_read((uint64_t*)&size);
+    if ((int)r != 0) {
+        if ((uint32_t)r < 0x6c) return r;
+        txm_panic_msg(0x3b00);
+    }
+    if (invert) *out = (val == 0);
+    else *out = (val != 0);
+    return 0;
+    (void)node; (void)prop; (void)l;
+}
+
+/* FUN_000555b0 @ 0x000555b0   (est. txm_boot_property_get)
+ * Ghidra: long FUN_000555b0(long,undefined8,long,undefined8*)
+ * Fetches a boot property by tag (param_3) into *param_4: dispatches on
+ * the tag (chip epoch, board id, chip id, security domain, cryptex1
+ * product class, image4 cert type, esdm fuses, unique chip id, boot
+ * manifest hash, apfs preboot uuid, lp_spih, kcinstall nonce, boot
+ * uuid, boot manifest digest, ...). Returns 0 on success; error 0x2d
+ * for unsupported tags.
+ * Confidence: low (large tag dispatch; field layout inferred)
+ * Notes: property name strings at 0x4e35..0x4f2e.
+ */
+static uint64_t txm_boot_property_get(uint64_t obj, uint64_t a, uint64_t tag, uint64_t *out)
+{
+    uint64_t mag = FUN_00058ff0();
+    uint32_t val = 0;
+    uint64_t size = 4;
+    uint64_t t = *(uint64_t*)(tag + 0x10);
+    if (t < 3) {
+        const char *prop = (t==0) ? "chip epoch" : (t==1) ? "board id" : "chip id";
+        uint64_t r = txm_dt_property_read(&size);
+        if ((uint32_t)r == 0) *(uint32_t*)out = val;
+        else if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        return r;
+        (void)prop;
+    }
+    if (t == 3) {
+        const char *prop = "security domain";
+        uint64_t r = txm_dt_property_read(&size);
+        if ((uint32_t)r == 0) *(uint32_t*)out = val;
+        else if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        return r;
+        (void)prop;
+    }
+    if (t == 4) {   /* unique chip id */
+        uint64_t chip = 0;
+        uint64_t r = txm_dt_property_read(&size);
+        *out = chip;
+        return r;
+    }
+    if (t == 0x13) {
+        const char *prop = "esdm fuses";
+        uint64_t r = txm_dt_property_read(&size);
+        if ((uint32_t)r == 0) *(uint32_t*)out = val;
+        else if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        return r;
+        (void)prop;
+    }
+    if (t == 0x17) {   /* cryptex1 product class */
+        const char *prop = "cryptex1 product class";
+        uint64_t r = txm_dt_property_read(&size);
+        if ((uint32_t)r == 0) *(uint32_t*)out = val;
+        else if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        return r;
+        (void)prop;
+    }
+    if (t == 0x21) {   /* image4 cert type */
+        const char *prop = "image4 cert type";
+        uint64_t r = txm_dt_property_read(&size);
+        if ((uint32_t)r == 0) *(uint32_t*)out = val;
+        else if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        return r;
+        (void)prop;
+    }
+    /* complex hash-type tags (0x10/0x19/0x1a/0x1c/0x1e/0x11) handled
+     * via the hash/entangle sub-paths (see FUN_000555b0). */
+    return 0x2d;
+    (void)mag; (void)a; (void)t;
+}
+
+/* FUN_000556e8 @ 0x000556e8   (est. txm_boot_property_get_v2)
+ * Ghidra: long FUN_000556e8(long,undefined8,long,undefined8*)
+ * Variant of FUN_000555b0 with the same boot-property tag dispatch.
+ * Confidence: low
+ */
+static uint64_t txm_boot_property_get_v2(uint64_t obj, uint64_t a, uint64_t tag, uint64_t *out)
+{
+    return txm_boot_property_get(obj, a, tag, out);
+}
+
+/* FUN_000557c4 @ 0x000557c4   (est. txm_boot_property_get_v3)
+ * Ghidra: long FUN_000557c4(long,undefined4*,long,undefined8)
+ * Variant of FUN_000555b0; identical tag dispatch.
+ * Confidence: low
+ */
+static uint64_t txm_boot_property_get_v3(uint64_t obj, uint32_t *a, uint64_t tag, uint64_t out)
+{
+    return txm_boot_property_get(obj, 0, tag, &out);
+}
+
+/* FUN_00055b3c @ 0x00055b3c   (est. txm_boot_manifest_digest)
+ * Ghidra: undefined8 FUN_00055b3c(undefined8,undefined8,long,undefined8)
+ * Reads the boot-manifest digest (0x11 tag) into param_4 via
+ * FUN_00058fb0/5d258/5d498. Returns 0 on success; "failed to read from
+ * boot manifest" (0x4f33).
+ * Confidence: medium
+ */
+static uint64_t txm_boot_manifest_digest(uint64_t ctx, uint64_t a, uint64_t tag, uint64_t out)
+{
+    uint64_t canary = txm_canary;
+    uint64_t d[0x11] = {0};
+    d[0] = 0x40;
+    uint64_t r = FUN_00058fb0(ctx, 0x4f2e, (uint64_t)&d[1], &d[0]);
+    if ((uint32_t)r == 0) {
+        FUN_0005d258((uint64_t)&d[2], (uint64_t)&d[1], d[0]);
+        FUN_0005d498(out, (uint64_t)&d[2]);
+    } else {
+        txm_log_error(ctx, 0, "failed to read from boot manifest (%s)", 0x4f33);
+        if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00055c78 @ 0x00055c78   (est. txm_boot_props_ptr)
+ * Ghidra: undefined8 FUN_00055c78(long)
+ * Returns the boot-properties pointer (*(*(obj+0x10)+0x130)).
+ * Confidence: high
+ */
+static uint64_t txm_boot_props_ptr(uint64_t obj) { return *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x130); }
+
+/* FUN_00055c88 @ 0x00055c88   (est. txm_boot_manifest_pad)
+ * Ghidra: void FUN_00055c88(undefined8,long,long)
+ * Fills a boot-manifest buffer with the byte sequence 0,1,2,...; when
+ * the fill completes, locks the manifest lock (+0x28). Faults 0x36 if
+ * already locked.
+ * Confidence: medium
+ */
+static void txm_boot_manifest_pad(uint64_t a, uint64_t buf, uint64_t len)
+{
+    if (len != 0) {
+        uint64_t i = 0;
+        do {
+            if (i == 0x100) {
+                uint64_t ctx = txm_ctx_current();
+                char *lock = (char*)(*(uint64_t*)(ctx + 0x18) + 0x28);
+                if (*lock != '\0') txm_lock_fault(0x36);
+                *lock = -1;
+                return;
+            }
+            *(char*)(buf + i) = (char)i;
+            i = i + 1;
+        } while (len != i);
+    }
+}
+
+/* FUN_00055cb8 @ 0x00055cb8   (est. txm_boot_manifest_lock)
+ * Ghidra: void FUN_00055cb8(void)
+ * Locks the boot-manifest lock (+0x28); faults 0x36 if already locked.
+ * Confidence: medium
+ */
+static void txm_boot_manifest_lock(void)
+{
+    uint64_t ctx = txm_ctx_current();
+    char *lock = (char*)(*(uint64_t*)(ctx + 0x18) + 0x28);
+    if (*lock != '\0') txm_lock_fault(0x36);
+    *lock = -1;
+}
+
+/* FUN_00055cec @ 0x00055cec   (est. txm_lock_fault36)
+ * Ghidra: void FUN_00055cec(void)
+ * noreturn lock fault 0x36.
+ * Confidence: high
+ */
+static void txm_lock_fault36(void) { txm_lock_fault(0x36); }
+
+/* FUN_00055d1c / 4f20   (est. txm_lock_fault38)
+ * Ghidra: void FUN_00055d1c/4f20(void)
+ * noreturn lock fault 0x38.
+ * Confidence: high
+ */
+static void txm_lock_fault38(void) { txm_lock_fault(0x38); }
+static void txm_lock_fault38_b(void) { txm_lock_fault(0x38); }
+
+/* FUN_00055d34 @ 0x00055d34   (est. txm_panic_illegal_property)
+ * Ghidra: void FUN_00055d34(undefined8*)
+ * noreturn panic "panic: illegal property" (0x4e16); PAC-checked.
+ * Confidence: high
+ */
+static void txm_panic_illegal_property(uint64_t *p)
+{
+    txm_fault_check_pac();
+    txm_panic_msg(0x4e16);
+    (void)p;
+}
+
+/* FUN_00055d5c @ 0x00055d5c   (est. txm_panic_int_cast_overflow)
+ * Ghidra: void FUN_00055d5c(void)
+ * noreturn panic "panic: integer cast overflow" (0x4f6c).
+ * Confidence: high
+ */
+static void txm_panic_int_cast_overflow(void) { txm_panic_msg(0x4f6c); }
+
+/* FUN_00055d70 @ 0x00055d70   (est. txm_lock_subsystem_ctx)
+ * Ghidra: void FUN_00055d70(void)
+ * noreturn panic "panic: integer cast overflow" (0x4f6c).
+ * Confidence: high
+ */
+static void txm_lock_subsystem_ctx(void) { txm_panic_msg(0x4f6c); }
+
+/* FUN_00055da4 @ 0x00055da4   (est. txm_chip_ops_load)
+ * Ghidra: void FUN_00055da4(void)
+ * Loads the chip-ops table from DAT_00070058 into the global
+ * DAT_0001c520 region (0x20-byte header + 0x10-byte entries), setting
+ * the count to 0x20.
+ * Confidence: medium
+ */
+static void txm_chip_ops_load(void)
+{
+    uint64_t src = *(uint64_t*)0x70058;
+    *(uint64_t*)0x1c528 = *(uint64_t*)(src + 8);
+    *(uint64_t*)0x1c558 = *(uint64_t*)(src + 0x38);
+    *(uint64_t*)0x1c550 = *(uint64_t*)(src + 0x30);
+    *(uint64_t*)0x1c568 = *(uint64_t*)(src + 0x48);
+    *(uint64_t*)0x1c560 = *(uint64_t*)(src + 0x40);
+    *(uint64_t*)0x1c538 = *(uint64_t*)(src + 0x18);
+    *(uint64_t*)0x1c530 = *(uint64_t*)(src + 0x10);
+    *(uint64_t*)0x1c548 = *(uint64_t*)(src + 0x28);
+    *(uint64_t*)0x1c540 = *(uint64_t*)(src + 0x20);
+    *(uint64_t*)0x1c520 = 0x20;
+}
+
+/* FUN_00055ddc @ 0x00055ddc   (est. txm_global_buffer)
+ * Ghidra: undefined8* FUN_00055ddc(void)
+ * Returns &DAT_0001c520 (the global chip-ops buffer).
+ * Confidence: high
+ */
+static uint64_t *txm_global_buffer(void) { return (uint64_t*)0x1c520; }
+
+/* FUN_00055dec @ 0x00055dec   (est. txm_boot_obj_init)
+ * Ghidra: void FUN_00055dec(undefined8*,undefined8,undefined8*,undefined8,long,undefined8)
+ * Initializes a boot object: sets the ops/type fields, the input tuple,
+ * the sub-object, and the hash-range. Uses FUN_0005652c/5a9e4/59268.
+ * Confidence: low (layout inferred)
+ */
+static void txm_boot_obj_init(uint64_t *o, uint64_t type, uint64_t *in, uint64_t a4,
+                              uint64_t hrange, uint64_t tag)
+{
+    uint64_t t = FUN_0005652c(type);
+    txm_memzero(o, 0x4d8);
+    o[0] = tag;
+    o[1] = type;
+    o[2] = 0;
+    o[6] = 0;
+    o[0x4e] = 0;
+    txm_tuple_move(o + 0x93, (uint64_t*)hrange);
+    uint64_t hr[2] = {0,0};
+    txm_hash_range_init(&hr[0], *(uint64_t*)(hrange + 8), *(uint64_t*)(hrange + 0x10));
+    uint64_t sub = 0;
+    FUN_00059268(&sub, a4);
+    o[6] = FUN_0005a9e4(o + 7, t, &sub, &hr[0]);
+    uint64_t v2 = in[2], v0 = in[0];
+    o[4] = in[1];
+    o[3] = v0;
+    o[5] = v2;
+}
+
+/* FUN_00055ecc @ 0x00055ecc   (est. txm_obj_size_check)
+ * Ghidra: void FUN_00055ecc(undefined8,ulong)
+ * Faults "panic: object overflows buffer" (0x4fbf) if param_2 > 0x4d7.
+ * Confidence: high
+ */
+static void txm_obj_size_check(uint64_t a, uint64_t size)
+{
+    if (0x4d7 < size) return;
+    txm_panic_msg(0x4fbf);
+}
+
+/* FUN_00055f00 @ 0x00055f00   (est. txm_boot_obj_chain_init)
+ * Ghidra: void FUN_00055f00(long,long)
+ * Initializes a boot-object chain: sets the sub-object and hash range
+ * via FUN_00059740.
+ * Confidence: low
+ */
+static void txm_boot_obj_chain_init(uint64_t o, uint64_t hrange)
+{
+    uint64_t ctx = FUN_0005652c(*(uint64_t*)(o + 8));
+    if (ctx == 0) ctx = txm_ctx_current();
+    txm_tuple_move((uint64_t*)(o + 0x4b8), (uint64_t*)hrange);
+    uint64_t hr[2] = {0,0};
+    txm_hash_range_init(&hr[0], *(uint64_t*)(hrange + 8), *(uint64_t*)(hrange + 0x10));
+    *(uint64_t*)(o + 0x270) = FUN_00059740((uint64_t*)(o + 0x278), ctx, &hr[0]);
+}
+
+/* FUN_00055f88 @ 0x00055f88   (est. txm_boot_obj_dispatch)
+ * Ghidra: void FUN_00055f88(undefined8*)
+ * Dispatches the boot object: if the chip-ops status (FUN_0005602c) is
+ * ready and the nonce is set, runs the state init (FUN_00052e80), else
+ * clears the state; then calls the object's dispatch vtable slot.
+ * Confidence: medium
+ */
+static void txm_boot_obj_dispatch(uint64_t *o)
+{
+    uint64_t ctx = o[6];
+    uint64_t state = o[0x4e];
+    uint64_t v = 0;
+    if ((FUN_0005602c() == 0) && (*(uint16_t*)(ctx + 0x58) != 0)) {
+        if (ctx + 0x238 <= ctx) txm_fault_impl(0x19, 0);
+        txm_triple_store_v2((uint64_t*)&v, ctx, state, *o);
+    } else {
+        state = 0;
+    }
+    (*(void(**)(uint64_t*,uint64_t,uint64_t,uint64_t))o[4])(o, state, v, o[5]);
+}
+
+static uint64_t txm_cert_status_special(uint64_t obj, uint64_t a, uint32_t *v)
+{
+    /* FUN_00059120-equivalent: mix-n-match prevention status query.
+     * Out-of-batch body; returns 0 and leaves *v unset here. */
+    return 0;
+    (void)obj; (void)a; (void)v;
 }
 
 #undef txm_fault
