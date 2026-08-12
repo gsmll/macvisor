@@ -578,3 +578,20 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - Dense in-slice call cluster: sk_r30_00490268 ↔ 00490174/0049341c/0049153c/00491644/00494b44/00494810/0049490c/004934a8 (collection copy + recursive type-value walker).
 - Shared Swift-runtime callees across the slice: FUN_0036b118 (release), FUN_0036b270 (retain), FUN_0036a940 (alloc/emplace), FUN_00117cc4 (memcpy), FUN_003a25d4/FUN_0049153c (dispatch).
 - Guarded-entry supervisor calls rendered as `((code)0x54ffff60f100041f)(...)` (GENTER-style opaque SUB_54ffff60f100041f).
+
+## cL4 SKR41 slice (0x004b10c0-0x004b2748) — VAS abort / TB-fatal trap stubs + one release routine (120 fns)
+- `osfmk/arm64/sk/sk_slice_r41.c` (manifest: 120/120 decompiled).
+- TB-FATAL / Swift-runtime fatal trap thunks 0x4b10c0-0x4b1a50 → helper printers: FUN_00019800 (size-0-buffer), FUN_00019810 (TB size-0 buffer), FUN_00019820, FUN_00019830 (overflow-decode), FUN_00019840 (overflow-encode), FUN_00015e2c (overflow-detected), FUN_000179d8 (overflow-detected alt); then `brk #1`. All helpers funnel into FUN_00118b28 (printf core, tag 0xb4000769f84206c9) → FUN_00118c38 → FUN_001158cc.
+- VAS abort stubs 0x4b1a74-0x4b270c (43) → FUN_004afae4 (vas_abort) → FUN_0005b1b0. Named wrappers: FUN_00032e1c / FUN_00032e30 / FUN_00034874 (each re-arms the "VAS abort in function '%s' at line %d" formatter).
+- 0x4b1c84 sk_vas_report_unmap_readonly → FUN_001185ec / FUN_00118c38 / FUN_001187f4 (printf trio).
+- 0x4b1d40 sk_vas_abort_bitmap_dump → FUN_00118b28 / FUN_00118c28 then FUN_004afae4.
+- 0x4b20e8 sk_security_assert_fail → FUN_001150e0 ("Security assertion failed: %s, %f").
+- 0x4b23d8 sk_vas_page_release (only real body) → FUN_0005acac (global @0x6af188), FUN_00034bd8 (txn open), FUN_00035418 (region lookup), FUN_004afae4 (aborts), FUN_00034d5c (txn commit); `CallSupervisor(4)` spin when tag==1.
+
+## SKR40 (0x004afbc4-0x004b109c) — tightbeam/large-transport abort + decode cluster
+- 004afbc4 (L4 error fatal) -> FUN_000017cc, FUN_004afa6c (r39), FUN_004afae4 (r39 "Unexpected L4 Error" panic)
+- 004afd3c (large-transport decoder) -> FUN_00002e50 (allocator), FUN_00007d00 (commit)
+- 004afe60 (span resize) -> FUN_00003788 (memmove tail)
+- 004aff30 -> FUN_00007530, FUN_0011582c (validate), FUN_0001018c (error handler)
+- 004b0744 (supervisor wait) -> CL4_CALLSV/4, FUN_004b23d8, FUN_00034a2c, thunk_FUN_00012568 @0x125b0
+- ~114 fail-closed abort shims -> report helpers FUN_00004cc0 / FUN_00118b28 / FUN_00115424 / FUN_001150e0 / FUN_00015e2c / FUN_000179c8-9f8 / FUN_00019800-840, each then SWBP-trap
