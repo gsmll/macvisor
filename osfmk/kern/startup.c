@@ -1210,8 +1210,8 @@ void arm_cpu_init(unsigned short *param_1, long *param_2)
     if (*(int *)(&cpu_started + i) != 2) {
         kernel_spinlock_acquire(&cpu_start_lock);  /* lock, kernel */
         *(unsigned int *)(&cpu_started + (unsigned int)(*(unsigned int *)(param_1 + 0xf8)) * 4) = 2;
-        hv_flush_lock_op(&hv_flush_lock, &cpu_started +
-                             (unsigned long)*(unsigned int *)(param_1 + 0xf8) * 4, 0, 0, 0xffffffff); /* kernel */
+        hv_flush_lock_op(&hv_flush_lock, (uint64_t)(&cpu_started +
+                             (unsigned long)*(unsigned int *)(param_1 + 0xf8) * 4), 0, 0, 0xffffffff); /* kernel */
         kernel_spinlock_release(&cpu_start_lock);  /* unlock, kernel */
     }
 

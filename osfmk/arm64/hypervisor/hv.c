@@ -84,6 +84,7 @@
 #include "hv_internal.h"
 #include "hv_pmap.h"           /* hv_pmap_resolve_owner / hv_pmap_unwind */
 #include "hv_vmm.h"            /* kernel_copyout / kernel_mem_* (est. helpers) */
+#include "hv_helpers.h"        /* hv_vm_pool_release / cpu_signal / hv_debug_reg_apply / ... */
 
 /* -------------------------------------------------------------------------
  * hv_vmm_present @ 0xfffffe000be39fd0  (est. hv_vmm_present)
@@ -194,7 +195,7 @@ hv_vm_create(void *args)
 				owner[0x427] = 0;
 				r = (int)hv_vcpu_map_memory(owner, in, out, size & 0xffffffff, 0); /* FUN_fffffe000b9866d0 */
 				if (r != 0) {
-					hv_vm_pool_release(vm, &hv_vm_pool); /* DAT_fffffe000c5d7068 */
+					hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool); /* DAT_fffffe000c5d7068 */
 					refcount_dec(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
 					refcount_dec(&hv_owner_list, owner); /* DAT_fffffe0007d53f38 */
 					return r;
@@ -206,7 +207,7 @@ hv_vm_create(void *args)
 					if (owner[0x429 + j] == 0)
 						goto unwind;
 				}
-				owner[0x410] = hv_addr_width(u, u, 0xa004); /* est. addr width */
+				owner[0x410] = hv_percpu_queue_pop(u, u, 0xa004); /* est. per-cpu queue pop */
 				hv_caps_feature_mask((uint64_t *)(owner + 0x411), tier); /* b987d9c */
 				lock_acquire(&hv_lock, 0);
 				if ((*(long *)(vm + 0x628) != 0)) {
@@ -242,7 +243,7 @@ hv_vm_create(void *args)
 				}
 			}
 			hv_vm_owner_teardown(owner);
-			hv_vm_pool_release(vm, &hv_vm_pool); /* DAT_fffffe000c5d7068 */
+			hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool); /* DAT_fffffe000c5d7068 */
 			refcount_dec(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
 		}
 		refcount_dec(&hv_vm_rel_zone, owner); /* DAT_fffffe0007d53ff8 */
@@ -531,7 +532,7 @@ hv_vcpu_destroy_trap(void *args __unused)
 	if (u != 0 || pending != 0)
 		lock_acquire(v, cpu_slot, u, 0);   /* est. lock */
 	*(int *)(cpu_slot + 0x1c0) += 1;               /* critical-section depth */
-	hv_el2_state_activate(vcpu);                    /* est. EL2 state activate */
+	hv_el2_state_activate((long)vcpu);                    /* est. EL2 state activate */
 	if (*(int *)(cpu_slot + 0x1c0) == 0)
 		kernel_panic();                    /* est. panic, no-return */
 	i = *(int *)(cpu_slot + 0x1c0) - 1;
@@ -702,7 +703,7 @@ hv_trap_op_10(uint64_t mask)
 						*(uint64_t *)(a + 1) = *(uint32_t *)(cpu_slot + 0x518);
 					if (u != 0 || pending != 0)
 						lock_acquire((void *)a, cpu_slot, u, 0);
-					hv_flush_lock_op(&hv_flush_lock, (void *)*slot, 0, 0, 1);  /* DAT_fffffe000c756760 */
+					hv_flush_lock_op((uint32_t *)&hv_flush_lock, (uint64_t)(void *)*slot, 0, 0, 1);  /* DAT_fffffe000c756760 */
 					pending = hv_debug_flag;
 					a = *owner;
 					if (*(uint32_t *)(a + 1) == *(uint32_t *)(cpu_slot + 0x518)) {
@@ -715,7 +716,7 @@ hv_trap_op_10(uint64_t mask)
 				}
 			l_flush:
 				if (a != 0)
-					hv_flush(a, 0, 0, 0, 0);   /* est. flush */
+					cpu_signal(a, 0, 0, 0, 0);   /* est. cpu_signal / flush (b95ecd8) */
 			}
 			mask &= ~(1ULL << (idx & 0x3f));
 		} while (mask != 0);
@@ -766,7 +767,7 @@ hv_vm_map_shared(void *args)
 	cpu_slot = tpidr_el1;
 	o = (long *)per_cpu_base(cpu_slot);
 	o = (o != 0) ? *(long **)(o + 0x318) : 0;
-	hv_percpu_notify(o, result & 0xffffffff);           /* per-cpu notify */
+	hv_percpu_notify((long)o, result & 0xffffffff);           /* per-cpu notify */
 	return 0xfae94003;
 }
 
@@ -809,7 +810,7 @@ hv_vm_set_trap_debug(void *args)
 	if (vm == NULL)
 		return 0xfae94003;
 	if (*(void **)(vm + 0x58) != NULL)
-		hv_debug_reg_apply(*(void **)(vm + 0x58), idx, a1); /* set trap-debug slot */
+		hv_debug_reg_apply((long)*(void **)(vm + 0x58), idx, a1); /* set trap-debug slot */
 	if (ret != (char *)0xffffffffffffffff) {
 		if (ret == NULL) {
 			cpu_slot = tpidr_el1;

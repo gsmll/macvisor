@@ -73,10 +73,15 @@ typedef unsigned short ushort;   /* Ghidra type */
 
 /* Ghidra pseudo-functions / registers from the decompiles (est.). */
 extern void __amx_disable(void);   /* AMX unit disable (intrinsic) */
+extern void __amx_enable(void);    /* AMX unit enable (intrinsic) */
 extern uint64_t svcr;              /* SVCR_EL2 streaming-SVE control (est.) */
+extern uint64_t elr_el1;           /* ELR_EL1 (est.) */
+extern uint64_t spsr_el1;          /* SPSR_EL1 (est.) */
 extern void halt_baddata(void) __attribute__((noreturn));  /* bad-instruction halt */
 extern void sveStreamingModeStop(void);  /* SVE streaming-mode stop (intrinsic) */
 #define bitrev64(x) __builtin_bitreverse64((uint64_t)(x))
+#define SendEventLocally()   __asm__ volatile("sevl")
+#define WaitForEvent()       __asm__ volatile("wfe")
 
 /* Ghidra POPCOUNT used in cache-geometry arithmetic (est.). */
 #define POPCOUNT(x) __builtin_popcountll((uint64_t)(x))

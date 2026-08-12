@@ -254,7 +254,6 @@ extern uintptr_t vm_pages_array;       /* PTR_DAT_fffffe0007d7ffe0 : vm pages ar
  * old-style declarations so the tree compiles; NOT recreated) ---- */
 extern int cs_features_enabled();
 extern int early_machine_lockdown();
-extern int hv_flush_lock_op();
 extern int iokit_finalize();
 extern int kdp_init_part1();
 extern int kdp_magic_init();
@@ -317,8 +316,9 @@ extern int kdp_callback_b();
 extern int kdp_callback_c();
 extern int kdp_callback_d();
 
-/* ---- Mach-O artifacts from the kernel image (est., from Ghidra) ---- */
-struct segment_command {
+extern void hv_flush_lock_op(uint32_t *lock, uint64_t a, uint64_t b, uint32_t c, uint64_t d); /* decompiled in hv_helpers.c (FUN_fffffe000b8563f8) */
+
+/* ---- Mach-O artifacts from the kernel image (est., from Ghidra) ---- */struct segment_command {
     uint32_t cmd;          /* LC_SEGMENT_64 = 0x19 */
     uint32_t cmdsize;
     char     segname[16];

@@ -190,5 +190,8 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
 void hv_el2_return_to_guest(void *state);  /* FUN_fffffe000b75e468/5e5cc */
 void hv_el2_guest_irq(void);      /* FUN_fffffe000b967004 (est.) */
 void hv_el2_guest_fiq(void);      /* FUN_fffffe000b966c74 (est.) */
+bool hv_el2_guest_exc_check(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr); /* FUN_fffffe000b9679c8 */
+void hv_el2_exception_exit(void); /* FUN_fffffe000b75e420 */
+void hv_el2_preemption_panic(void) __attribute__((noreturn)); /* est. */
 
 #endif /* _HV_EL2_H_ */

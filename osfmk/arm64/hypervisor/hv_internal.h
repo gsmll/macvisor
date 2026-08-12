@@ -246,21 +246,12 @@ uint8_t hv_entitlement_tier(void);
 
 /* ---- raw kernel/boot helpers referenced as calls (identity uncertain;
  * old-style declarations so the tree compiles; NOT recreated) ---- */
-extern int hv_vm_pool_release();
-extern int hv_flush();
-extern int hv_flush_lock_op();
 extern int LOAcquire();
 extern void refcount_dec(void *ref, void *free_fn);  /* typed (hv_kernel_glue.h) */
-extern int hv_addr_width();
-extern int hv_percpu_notify();
-extern int hv_debug_reg_apply();
 extern int kernel_obj_lookup_core();
 extern int hv_rbtree_insert();
 extern int hv_vm_unwind();
-extern int hv_vm_owner_teardown();
-extern int hv_el2_state_activate();
 extern int hv_vcpu_slot_clear();
-extern int hv_obj_list_op();
 extern int kernel_daemon_plumbing_b();
 extern int kernel_snprintf();
 extern int kernel_thread_create();

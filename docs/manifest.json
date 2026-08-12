@@ -586,12 +586,12 @@
     "address": "fffffe000b987c44",
     "ghidra_name": "FUN_fffffe000b987c44",
     "estimated_name": "hv_vm_owner_teardown",
-    "confidence": "low",
+    "confidence": "high",
     "category": "core",
-    "tree": "shared-utils",
-    "file": "docs/chain-map.md",
-    "status": "stubbed",
-    "notes": "Hypervisor-region helper (hv cluster 0xfffffe000b98xxxx) referenced by >=2 trees: hv_vm_create (FUN_fffffe000b985588, trap-dispatch) unwind and hv_vcpu_object_release (FUN_fffffe000b98533c, vcpu-core) teardown. Not yet decompiled; shared-utils stubs it for cross-tree visibility. Candidate to claim+decompile under vcpu-core or trap-dispatch."
+    "tree": "hv-helpers",
+    "file": "osfmk/arm64/hypervisor/hv_helpers.c",
+    "status": "decompiled",
+    "notes": "VM region RB-tree teardown (root owner+0x427): full unlink loop, os_release + zfree(node[4]) + refcount_dec per node; owner lock held. Decompiled in hv_helpers.c (was stubbed core)."
   },
   {
     "address": "fffffe000b985ae4",
@@ -1170,44 +1170,44 @@
     "ghidra_name": "FUN_fffffe000b75deac",
     "estimated_name": "el1_sync_handler",
     "confidence": "medium",
-    "category": "shared-dep",
-    "tree": "el2-vectors",
-    "file": "osfmk/arm64/hypervisor/hv_el2.c",
-    "status": "stubbed",
-    "notes": "EL1 kernel synchronous exception handler (VBAR_EL1 0xfffffe000b75c000 vector); reached from EL2 common dispatch via b75df48; calls b9679c8 (guest exc check), b9627e0, then exception-exit b75e420. Kernel exception vector, documented in hv_el2.c, not recreated."
+    "category": "core",
+    "tree": "hv-helpers",
+    "file": "osfmk/arm64/hypervisor/hv_helpers.c",
+    "status": "decompiled",
+    "notes": "EL1 kernel synchronous exception handler (VBAR_EL1 0xfffffe000b75c000 vector); reached from EL2 common dispatch via b75df48; calls b9679c8 (guest exc check), dtrace probe c0d79b8, dispatch b9627e0, then exception-exit b75e420. Decompiled in hv_helpers.c (was stubbed)."
   },
   {
     "address": "fffffe000b75df7c",
     "ghidra_name": "FUN_fffffe000b75df7c",
     "estimated_name": "el1_fiq_handler",
     "confidence": "medium",
-    "category": "shared-dep",
-    "tree": "el2-vectors",
-    "file": "osfmk/arm64/hypervisor/hv_el2.c",
-    "status": "stubbed",
-    "notes": "EL1 kernel FIQ handler; reached from EL2 common dispatch via b75dfcc; calls b966c74 (guest FIQ). Kernel, documented not recreated."
+    "category": "core",
+    "tree": "hv-helpers",
+    "file": "osfmk/arm64/hypervisor/hv_helpers.c",
+    "status": "decompiled",
+    "notes": "EL1 kernel FIQ handler; reached from EL2 common dispatch via b75dfcc; calls b966c74 (guest FIQ); nesting dec + preemption panic, SendEventLocally, hv_el2_exception_exit. Decompiled in hv_helpers.c (was stubbed)."
   },
   {
     "address": "fffffe000b75e000",
     "ghidra_name": "FUN_fffffe000b75e000",
     "estimated_name": "el1_irq_handler",
     "confidence": "medium",
-    "category": "shared-dep",
-    "tree": "el2-vectors",
-    "file": "osfmk/arm64/hypervisor/hv_el2.c",
-    "status": "stubbed",
-    "notes": "EL1 kernel IRQ handler; reached from EL2 common dispatch via b75e04c; calls b967004 (guest IRQ). Kernel, documented not recreated."
+    "category": "core",
+    "tree": "hv-helpers",
+    "file": "osfmk/arm64/hypervisor/hv_helpers.c",
+    "status": "decompiled",
+    "notes": "EL1 kernel IRQ handler; reached from EL2 common dispatch via b75e04c; calls b967004 (guest IRQ); nesting dec + preemption panic, SendEventLocally, hv_el2_exception_exit. Decompiled in hv_helpers.c (was stubbed)."
   },
   {
     "address": "fffffe000b75e058",
     "ghidra_name": "FUN_fffffe000b75e058",
     "estimated_name": "el1_error_handler",
     "confidence": "medium",
-    "category": "shared-dep",
-    "tree": "el2-vectors",
-    "file": "osfmk/arm64/hypervisor/hv_el2.c",
-    "status": "stubbed",
-    "notes": "EL1 kernel error/Serror handler; reached from EL2 common dispatch (error vector return target). Kernel, documented not recreated."
+    "category": "core",
+    "tree": "hv-helpers",
+    "file": "osfmk/arm64/hypervisor/hv_helpers.c",
+    "status": "decompiled",
+    "notes": "EL1 kernel error/Serror handler; reached from EL2 common dispatch (error vector return target); FUN_fffffe000b9671b4 then hv_el2_exception_exit. Decompiled in hv_helpers.c (was stubbed)."
   },
   {
     "address": "fffffe000b98f304",
@@ -1373,5 +1373,13 @@
     "file": "osfmk/kern/hv_kernel_iface.c",
     "status": "decompiled",
     "notes": "hv availability flag. get_xrefs_to enumerates ALL consumers: WRITE by kernel_bootstrap_thread (b8239e0) from hv_support_init return; READ by hv_available (b984ed8) only; DATA refs 0x7e2bda8 + 0x7e41dd0 = hv_support/hv_disable boot-arg descriptors whose value-storage target IS the flag. Presence is ALSO reported via IOKit 'vmm-present' (hv_vmm_present be39fd0). No hibernation/power/vm subsystem reads the flag. Cross-tree analysis summarized in hv_kernel_iface.c (ownership of the functions stays with support-init/trap-dispatch)."
-  }
+  },
+  {"address":"fffffe000b7f09dc","ghidra_name":"FUN_fffffe000b7f09dc","estimated_name":"hv_vm_pool_release","confidence":"high","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Mutex destroy + zone free (Mutex to destroy still has waiters panic); header validation; free FUN_fffffe000b7f007c; per-cpu lock."},
+  {"address":"fffffe000b8627ac","ghidra_name":"FUN_fffffe000b8627ac","estimated_name":"hv_cpu_broadcast","confidence":"medium","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Per-CPU broadcast: copies size bytes into each 0x4000-stride cpu slot (count DAT_fffffe0007d7ca20), then kernel notify FUN_fffffe000b85d440."},
+  {"address":"fffffe000b8563f8","ghidra_name":"FUN_fffffe000b8563f8","estimated_name":"hv_flush_lock_op","confidence":"high","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Flush-lock acquire (waitq + DAIF): validates lock header, raises DAIF 0x1c0, waitq register FUN_fffffe000b7f78ec, slow acquire FUN_fffffe000b8547cc. Lock = DAT_fffffe000c756760."},
+  {"address":"fffffe000b954160","ghidra_name":"FUN_fffffe000b954160","estimated_name":"hv_debug_reg_apply","confidence":"high","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Hardware debug-register write for hv_vm_set_trap_debug: stage-1 pmap panic, DAIF raise, write FUN_fffffe000c0d994c(pmap+8, reg), restore FUN_fffffe000b968948."},
+  {"address":"fffffe000b7a1dd8","ghidra_name":"FUN_fffffe000b7a1dd8","estimated_name":"hv_percpu_notify","confidence":"low","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"IPC send on an hv port (est.): 0x10 when port NULL; send FUN_fffffe000b7968e8 + complete FUN_fffffe000b7976a4; panic FUN_fffffe000c0e0b28. Used by hv_vm_map_shared."},
+  {"address":"fffffe000b85e180","ghidra_name":"FUN_fffffe000b85e180","estimated_name":"hv_percpu_queue_pop","confidence":"low","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Per-CPU queue pop with nesting counter (tpidr_el1+0x1c0), NEON_ext head rotate, size accumulation, TLB flush on nesting 0. Returns 16-byte {entry,size}."},
+  {"address":"fffffe000b9882ac","ghidra_name":"FUN_fffffe000b9882ac","estimated_name":"hv_el2_state_activate","confidence":"medium","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"AMX/SVE EL2 state swap: SVCR_EL2 (S3_4_15_1_3) + AMX ctl (S3_4_15_1_4) lock-bit dance, __amx_disable/__amx_enable, ISB."},
+  {"address":"fffffe000b95ecd8","ghidra_name":"FUN_fffffe000b95ecd8","estimated_name":"cpu_signal","confidence":"high","category":"core","tree":"hv-helpers","file":"osfmk/arm64/hypervisor/hv_helpers.c","status":"decompiled","notes":"Cross-call/IPI (cpu_signal): signal slots +0x180/0x188 & +0x190/0x198, CNTPCT deadline, cross-call timeout panic, Apple IPI reg S3_5_15_0_0/1 write with MPIDR affinity."}
 ]

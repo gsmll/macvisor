@@ -11,6 +11,7 @@
  */
 
 #include "hv_pmap.h"   /* os_release(uint64_t) typed decl */
+#include "hv_helpers.h"   /* hv_cpu_broadcast / hv_vm_owner_teardown / hv_vm_pool_release */
 #include "hv_vcpu.h"
 
 /* FATAL: kernel panic helper (FUN_fffffe000c0f86a4 / c0f8674 / c0f1874). */
@@ -337,9 +338,9 @@ void hv_vcpu_object_release(uint64_t *obj)
     }
 
     /* free the auxiliary allocations and the object header */
-    hv_obj_list_op(0, obj[0x410]);
+    hv_cpu_broadcast(0, obj[0x410]);
     os_release(obj[0x424]);
-    hv_vm_pool_release(*obj, &hv_vm_pool);   /* DAT_fffffe000c5d7068 */
+    hv_vm_pool_release((uint32_t *)*obj, (long)&hv_vm_pool);   /* DAT_fffffe000c5d7068 */
     list_remove(&hv_vm_list, obj);             /* DAT_fffffe0007d52478 */
     list_remove(&hv_obj_list, obj);            /* DAT_fffffe0007d53e78 */
 }
