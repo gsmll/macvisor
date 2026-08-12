@@ -625,6 +625,56 @@ void sk_reg_75c(word_t arg)
  * Multi-register output setters (x1/x2/x3/x5/x7/w8 etc.); void.
  * ================================================================== */
 
+/* FUN_003505c4 @ 0x003505c4
+ * Ghidra: void FUN_003505c4(void)  [decompiler dropped body]
+ * Sets x1=x22, x2=x23. Confidence: low. disasm: mov x1,x22; mov x2,x23; ret */
+void sk_reg_5c4(void)
+{
+    word_t t;
+    __asm__ volatile("mov %0, x22" : "=r"(t)); (void)t;
+    __asm__ volatile("mov %0, x23" : "=r"(t)); (void)t;
+}
+
+/* FUN_00350768 @ 0x00350768
+ * Ghidra: void FUN_00350768(void)  [decompiler dropped body]
+ * Sets x1=x23, x2=x19. Confidence: low. disasm: mov x1,x23; mov x2,x19; ret */
+void sk_reg_768(void)
+{
+    word_t t;
+    __asm__ volatile("mov %0, x23" : "=r"(t)); (void)t;
+    __asm__ volatile("mov %0, x19" : "=r"(t)); (void)t;
+}
+
+/* FUN_003508c0 @ 0x003508c0
+ * Ghidra: void FUN_003508c0(void)  [decompiler dropped body]
+ * Sets x1=x25, x2=x19. Confidence: low. disasm: mov x1,x25; mov x2,x19; ret */
+void sk_reg_8c0(void)
+{
+    word_t t;
+    __asm__ volatile("mov %0, x25" : "=r"(t)); (void)t;
+    __asm__ volatile("mov %0, x19" : "=r"(t)); (void)t;
+}
+
+/* FUN_003508d8 @ 0x003508d8
+ * Ghidra: void FUN_003508d8(void)  [decompiler dropped body]
+ * Sets x1=x24, x2=x19. Confidence: low. disasm: mov x1,x24; mov x2,x19; ret */
+void sk_reg_8d8(void)
+{
+    word_t t;
+    __asm__ volatile("mov %0, x24" : "=r"(t)); (void)t;
+    __asm__ volatile("mov %0, x19" : "=r"(t)); (void)t;
+}
+
+/* FUN_00350a1c @ 0x00350a1c
+ * Ghidra: void FUN_00350a1c(void)  [decompiler dropped body]
+ * Sets x2=x19, x3=x22. Confidence: low. disasm: mov x2,x19; mov x3,x22; ret */
+void sk_reg_a1c(void)
+{
+    word_t t;
+    __asm__ volatile("mov %0, x19" : "=r"(t)); (void)t;
+    __asm__ volatile("mov %0, x22" : "=r"(t)); (void)t;
+}
+
 /* FUN_003504a0 @ 0x003504a0
  * Ghidra: void FUN_003504a0(void)  [decompiler dropped body]
  * Sets x1=x21, x2=x19 as output registers. Confidence: low.
