@@ -4589,3 +4589,20 @@ boundary; but the pack-expansion length handling (FUN_0038d8dc panics on
 non-on-stack packs) and the depth cap at 0x400 are fail-closed.
 Confidence: medium (Swift runtime identified by TypeDecoder.h strings, Bf/Bi
 integer/float type-name literals).
+
+## [SKR54] 0x3ba9e0-0x3c7a24 Embedded Swift demangler + IPC arg marshaller
+Observation: This slice (0x3ba9e0-0x3c7a24, 120 fn) is the Embedded Swift
+demangler/type-description printer plus the IPC message-register argument
+marshaller hub. The central FUN_003bfae4 (cL4_arg_decode) dispatches over
+descriptor kinds 0x0-0x179 with a recursion-depth cap at 0x400 (error code
+0x18d on overflow) — fail-closed. The per-kind decoders (003c3xxx-003c7xxx)
+emit 2-3 char tag records into the outbound buffer at +0x2140. Kind 0x14
+(003c42d0) matches "Builtin.*" identifier strings against a fixed table and
+falls back to error code 0x558 for unknown builtin tags.
+Evidence: decompiles of FUN_003bfae4 (depth cap 0x400, dispatch), FUN_003c42d0
+(Builtin.* table), FUN_003c3848 (kind 1), FUN_003bf898 (out_commit stack cap
+0x10 then map). The manifest entries were claimed-but-bodyless in
+sk_region_tightbeam.c (no bodies present); all 120 flipped to sk_slice_r54.c.
+Severity (hypothesis): low - demangler/arg-formatter; depth cap 0x400 and
+out-commit stack cap 0x10 are fail-closed; unknown tags return NULL/error.
+Confidence: medium.
