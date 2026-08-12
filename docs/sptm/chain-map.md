@@ -619,3 +619,15 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - Swift type-descriptor fatals 0x004b90b8..0x004b94e8 -> 0x001b11bc (Swift placeholder-init fatal), pre-fixed by 0x00359434 / 0x0036a9a0; metadata dispatch 0x004b92b8 -> 0x0035310c -> 0x0036a940.
 - Metadata stream decoders 0x004b9568/0x004b9634/0x004b9704/0x004b97b4/0x004b992c/0x004b99dc/0x004b9a28 -> jump-table dispatch 0x679ac0 (0x679c30 in 0x992c), helpers 0x00361308/0x003612f0, memcpy 0x00117cc4/0x00117cc8.
 - Stackshot registry 0x004b9ac8/0x004b9c0c -> 0x0039c740 state store; 0x004b9d68 registry spin on DAT_006c0280; object enter 0x004b9e2c -> 0x00116bb4 lookup + 0x000101a0 raise.
+
+## SkR49 (0x0065d804-0x00663ac8) — clock/timer/scheduling-dispatch subsystem
+- Clock/timer table (stride 0x50 at 0x6b5250, 0x50 entries): 0x0065d804 (config, computes ns-per-tick) -> 0x00656c28 (raw tick) -> 0x0065db0c (time div); read path 0x0065d90c -> 0x0065da08 (timer-tbl read) -> 0x0065be80/0x0065be40 (per-cpu sched) -> 0x0065eeb0 (err frame). Fast flag DAT_006b5248.
+- Timer wait/signal: 0x0065e370 (wait) -> 0x0065de3c (release) -> 0x0065c1b8 (dequeue); 0x0065e378 (signal) -> 0x0065ecec (dispatch +0x18); 0x0065db84/0x0065dda4 (dec) -> 0x0065dc24 (acquire loop) -> 0x0065c144 (enqueue).
+- Indirect dispatch table behind _DAT_006fe760 (init to 0x6b6518): 0x0065e7cc (+0), 0x0065f058 (+8), 0x0065ec08 (+0x10), 0x0065ecec (+0x18), 0x0065ee30 (+0x20).
+- Message-region helpers over tpidrro_el0: 0x0065fbb0/0x0065fc28 (slots <0x37), 0x0065fca8 (secondary <4), 0x0065fa24/0x0065fb08 (reg build/copy), 0x0065ef24 (CallSupervisor(0) send), 0x006623d0 (recv), 0x00662754 (send2).
+- Slot/block allocator on _DAT_006fe7e0 pool: 0x00661488, 0x0066204c, 0x00662158, 0x006621f4, 0x00662264, 0x006622d8; big thread-create 0x0065fdb8 -> 0x0066204c/0x00662158/0x006621f4/0x0066ad54 (alloc node) + CallSupervisor(0).
+- Preemption lock: 0x00661348 (acquire, LOAcquire + DAT_006ff0a8), 0x006613d0 (release, drain dispatch 0x0065ee30), 0x00661428 (drain).
+- Nested/stack checks: 0x00660c44/0x00660ca4 (+0x69 nested count), 0x00660b28 (stack bounds), 0x00661178 (stack tail), 0x00660f60 (frame save around 0x0065defc).
+- Boot log/err-string: 0x0065f468 (boot log) -> 0x0065f834 (strbuf) -> 0x0065f8e8 (tag sanitize); err mappers 0x0065f428/0x006612c0/0x00662a40 -> sk_memmove; panics 0x0065c2f0/0x0067f660/0x006833d4.
+- Int-vector read/print: 0x00662f0c (CallSupervisor(0) read) -> 0x006630f8 (print) -> 0x0067d1f0/0x0067d3f8; caps dump 0x00662bf0 -> 0x00661d38 (msg word) -> 0x00661e24 (extract) -> 0x0067b478/0x0067b664/0x0067b580.
+- Timer publish/callback: 0x00663928 (publish, CallSupervisor(0)) -> 0x00663ac8 (timer cb) -> 0x00645d88 node teardown; 0x0065e6fc (one-shot) -> 0x0065e748 (alloc).

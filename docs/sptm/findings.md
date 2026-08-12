@@ -4350,3 +4350,51 @@ Confidence: high
 - **Evidence**: decompile FUN_0065bcf0: `if (local_28 < (param_1 & 0xffffffff)) { panic(0x6a60da) } pcVar1 = (char *)(lVar3 + (param_1 & 0xffffffff)); if ((char *)(lVar3 + local_28) <= pcVar1) { SoftwareBreakpoint }`.
 - **Severity (hypothesis)**: low (informational) — feature gating appears bounds-safe; the per-cpu byte gate means the feature state is per-core.
 - **Confidence**: medium.
+
+## [ringminus1] 0065d804 sk_clock_cfg_65d804 / 0065da08 sk_timer_tbl_read_65da08 — timer-table index bounds
+- **Observation**: The clock-config and timer-table-read helpers bound the timer-table index before touching the stride-0x50 table at 0x6b5250: both validate `entry >= 0x6b5250 && entry+0x50 <= 0x6b5390` (i.e. index < 0x50) and otherwise take a SoftwareBreakpoint(0x5519) hard trap. The read path also re-validates the per-cpu timer id (FUN_0065be40 id match) before dereferencing a lazily-filled read head.
+- **Evidence**: FUN_0065d804: `if ((uVar4<0x6b5250||0x6b5390<uVar5)||uVar5<uVar4) SoftwareBreakpoint(0x5519,0x65d8f8)`; FUN_0065da08 same pattern with `lVar4+0x6b5250/0x6b5390` and `*(int*)(lVar4+0x6b5298)` sentinel.
+- **Severity (hypothesis)**: informational — OOB index is a hard panic, not an OOB write; the 0x6b5250..0x6b5390 table (0x50 entries) is never indexed out of range.
+- **Confidence**: high
+
+## [ringminus1] 0065f834 sk_strbuf_append_65f834 — bounded string-buffer advance
+- **Observation**: The boot-log string-buffer append computes the new head as `head+len` and hard-traps (SoftwareBreakpoint 0x65f8d0) if that wraps or exceeds the recorded buffer capacity (ptr+len bounds). The drain path (mode bit 0) validates the pending character before consuming it.
+- **Evidence**: `if (uVar2+uVar3 < uVar1 || uVar1 < uVar2) SoftwareBreakpoint(0x5519,0x65f8d0)` before `param_1[0]=uVar1`.
+- **Severity (hypothesis)**: informational — fail-closed on format/overflow; a corrupt length cannot make the log buffer advance past its window.
+- **Confidence**: high
+
+## [ringminus1] 0065fa24/0065fb08/0065fbb0/0065fc28/0065fca8 — message-register bounds
+- **Observation**: All tpidrro_el0 message-region get/put helpers bound the slot index (< 0x37 for the primary 8-byte slots over 0x1b8 bytes; < 4 for the 0x1c0..0x1e0 secondary region) and hard-panic (0x6a6e6f/0x6a6e43/0x6a6db3/0x6a6de3/0x6a6e13) on an out-of-range index or a write that would exceed the region, rather than writing out of bounds.
+- **Evidence**: `if (param_1 < 0x37) { ... } else sk_panic_2(0,0x6a6db3)`; reg-build `if (param_2+param_4 <= param_3*-8+0x1b8) ... else sk_panic_2(0,0x6a6e6f)`; secondary `if (3 < param_1) sk_panic_2(0,0x6a6e13)`.
+- **Severity (hypothesis)**: informational — the per-thread IPC message area cannot be overflowed by an in-range caller.
+- **Confidence**: high
+
+## [ringminus1] 00661348/006613d0 sk_lock_acq_65_61348 / sk_lock_rel_65_613d0 — preemption-counter integrity
+- **Observation**: The global preemption lock is a per-TCB busy byte (+0x68) plus a global counter (DAT_006ff0a8). Acquire increments the counter and sets the byte under LOAcquire; release decrements and drains queued preemption work while `(DAT_006ff0a8 & 0x3ff) != 0`. The counter is used to detect a mismatched/unsynchronized lock acquire (the drain loop re-reads tpidr_el0 each iteration).
+- **Evidence**: acquire: `LOAcquire(); _DAT_006ff0a8++; *(byte*)(tcb+0x68)=1; *(long*)(tcb+0x58)++`; release: `while((_DAT_006ff0a8&0x3ff)!=0){ tcb=tpidr_el0; dispatch(tcb+8); } _DAT_006ff0a8+=0x400` then `_DAT_006ff0a8--` when the low bits drained.
+- **Severity (hypothesis)**: low — the counter guards re-entrancy of the preemption lock; a stuck high counter would spin the CPU (availability), but the acquire/release are paired in the transcribed paths.
+- **Confidence**: medium
+
+## [ringminus1] 0065fdb8 sk_thread_create_65fdb8 — thread-create error accounting
+- **Observation**: The thread-create path (largest function in the slice) is fail-closed: every allocator/install failure (FUN_0066ad54, FUN_006832c8, the CallSupervisor(0) frame sends) either increments a dedicated failure counter (DAT_006fe774/77c/784/788) and unwinds, or panics (0x6a7135/0x6a7162). The created TCB's 0x48 flag and stack window are validated against the pool (_DAT_006fe7e0) bounds before use, and the block pointer math is checked for wrap.
+- **Evidence**: `if (uVar22+0x178 < uVar22) SoftwareBreakpoint(0x5519,0x66047c)`; `if (0x1ffff < uVar24) sk_panic_2(0,0x6a7162)`; per-stage `_DAT_006fe774/_DAT_006fe77c/_DAT_006fe784/_DAT_006fe788` counters incremented on failed allocator-node or cap install.
+- **Severity (hypothesis)**: informational — new-thread creation cannot silently fail with a half-constructed TCB; failures are counted and teardown proceeds.
+- **Confidence**: medium (control flow faithfully transcribed; tail label structure simplified with a sink).
+
+## [ringminus1] 0065e370/0065e378 sk_notif_wait_65e370 / sk_notif_signal_65e378 — notification word locking
+- **Observation**: The notification wait/signal helpers manipulate the 64-bit notification word (generation in bits 32-47, priority bits 48-63, sequence in low 32) with CAS-style retry loops and a busy bit (0x1000000), then release the timer via sk_timer_release_65de3c. The signal path dispatches a wake (code 4/6) only when the low wait count is exceeded.
+- **Evidence**: `do { uVar12=*param_1; } while(*param_1 != uVar11); *param_1 = (uVar11&0xffff000000000000)|...|(uVar13&0xffff)<<0x20` (read-modify-write retry); signal `if ((uint)uVar4 < (uVar6&0xffff)) dispatch_18(...,6 or 4,0)`.
+- **Severity (hypothesis)**: informational — the wait/signal word is updated with retry loops, and timer release is only taken after the word is settled; a lost-wake would be a correctness issue but the pattern matches the cL4 notif idiom.
+- **Confidence**: medium
+
+## [ringminus1] 0065e454 sk_notif_slot_65e454 — one-shot notif slot generation stamping
+- **Observation**: The one-shot notification slot stamps `*slot = (generation & 0x3fffffc) | 1`, runs the callback, and on the armed+triggered pattern (== gen|3) dispatches a wake; on the un-stamped 0xffffffff sentinel it does nothing. A slot observed mid-transition chains onto the per-cpu dispatch.
+- **Evidence**: `if (*param_1 != 0xffffffff) { ... *param_1 = uVar1|1; (*cb)(arg); uVar5=*param_1; *param_1=0xffffffff; if (uVar5==(uVar1|3)) dispatch_18(...,6,0); }`.
+- **Severity (hypothesis)**: informational — the generation stamp prevents a stale interrupt from being re-delivered after the slot is recycled.
+- **Confidence**: medium
+
+## [ringminus1] 0065d90c/0065da08 clock read fast-path — per-clock generation coalescing
+- **Observation**: The clock-now read (mode 1/2) spins until two consecutive timer-table reads agree, then adds the per-cpu counter offset; the fast-path flag (DAT_006b5248) toggles between the spin and the per-cpu-schedule lookup. A clock id > 3 panics (0x6a66ba).
+- **Evidence**: `for(;;){ lVar3=lVar2; lVar4=counter(); lVar2=tbl_read(id); if (lVar2==lVar3) return lVar3+lVar4; }`; `if (1 < ((iVar1-1)&0xff)) sk_panic_2(0,0x6a66ba)`.
+- **Severity (hypothesis)**: informational — the read is consistent (double-read), and an unsupported clock id is a hard panic.
+- **Confidence**: medium

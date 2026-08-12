@@ -40,21 +40,21 @@ typedef struct sk_u128 { word_t lo; word_t hi; } sk_u128_t;
  * in the cL4 tree; FUN_ address preserved in the trailing comment) ---- */
 extern void   sk_memmove(void *dst, const void *src, unsigned long n);   /* FUN_0067aa00 */
 extern void   sk_memzero(void *dst, unsigned long n);                    /* FUN_0067a780 */
-extern void   sk_panic_2(unsigned long a, unsigned long b);              /* FUN_0065c2f0 noreturn */
-extern void   sk_fatal(unsigned long code, ...);                         /* FUN_0067f660 noreturn */
-extern void   sk_fatal_code(unsigned long msg);                          /* FUN_006833d4 noreturn */
+extern __attribute__((noreturn)) void sk_panic_2(unsigned long a, unsigned long b); /* FUN_0065c2f0 */
+extern __attribute__((noreturn)) void sk_fatal(unsigned long code, ...); /* FUN_0067f660 */
+extern __attribute__((noreturn)) void sk_fatal_code(unsigned long msg);  /* FUN_006833d4 */
 extern void   sk_fatal_6a612a(unsigned long msg);                        /* FUN_0067b280 noreturn */
 extern void   sk_ret_ctx_restore(unsigned long a, unsigned long b);      /* FUN_0065c310 noreturn */
-extern void   sk_percpu_ptr(unsigned long a);                            /* FUN_00655848: per-cpu base */
+extern unsigned long sk_percpu_ptr(unsigned long a);                     /* FUN_00655848: per-cpu base */
 extern unsigned long sk_percpu_108(void);                                       /* FUN_0065be80: read +0x108 */
 extern unsigned long sk_percpu_40(void);                                        /* FUN_0065be40 */
-extern void   sk_bucket_lookup(unsigned long *inout, int which);         /* FUN_0065cda8 */
+extern unsigned long sk_bucket_lookup(unsigned long *inout, int which);  /* FUN_0065cda8 */
 extern unsigned long sk_bucket_base(void);                               /* FUN_0065ccc8: timer/clock base */
 extern unsigned long sk_clock_reg_read(unsigned long idx);               /* FUN_0065ebc8 */
 extern int    sk_clock_reg_inc(unsigned long idx, unsigned long *w,
                                unsigned long a, unsigned long b,
                                unsigned long c);                         /* FUN_0065ec08 indirect */
-extern void   sk_clock_dispatch_18(unsigned long a, unsigned long b,
+extern void   sk_clock_dispatch_18(unsigned long a, void *b,
                                    unsigned long c, unsigned long d);    /* FUN_0065ecec */
 extern void   sk_clock_dispatch_20(void);                                /* FUN_0065ee30 */
 extern void   sk_clock_dispatch_00(void);                                /* FUN_0065e7cc */
@@ -121,81 +121,89 @@ extern unsigned long DAT_006b6fdb;     /* clock global */
 
 
 
-extern unsigned long sk_rt_00650af8(unsigned long, ...); /* FUN_00650af8 */
-extern unsigned long sk_rt_00650b3c(unsigned long, ...); /* FUN_00650b3c */
-extern unsigned long sk_rt_00650c10(unsigned long, ...); /* FUN_00650c10 */
-extern unsigned long sk_rt_00650ec8(unsigned long, ...); /* FUN_00650ec8 */
-extern unsigned long sk_rt_00650ed0(unsigned long, ...); /* FUN_00650ed0 */
-extern unsigned long sk_rt_00651074(unsigned long, ...); /* FUN_00651074 */
-extern unsigned long sk_rt_006510cc(unsigned long, ...); /* FUN_006510cc */
-extern unsigned long sk_rt_00651108(unsigned long, ...); /* FUN_00651108 */
-extern unsigned long sk_rt_00652204(unsigned long, ...); /* FUN_00652204 */
-extern unsigned long sk_rt_006542e0(unsigned long, ...); /* FUN_006542e0 */
-extern unsigned long sk_rt_00654528(unsigned long, ...); /* FUN_00654528 */
-extern unsigned long sk_rt_00654cf4(unsigned long, ...); /* FUN_00654cf4 */
-extern unsigned long sk_rt_0065558c(unsigned long, ...); /* FUN_0065558c */
-extern unsigned long sk_rt_0065585c(unsigned long, ...); /* FUN_0065585c */
-extern unsigned long sk_rt_00655d7c(unsigned long, ...); /* FUN_00655d7c */
-extern unsigned long sk_rt_00655d9c(unsigned long, ...); /* FUN_00655d9c */
-extern unsigned long sk_rt_00655dbc(unsigned long, ...); /* FUN_00655dbc */
-extern unsigned long sk_rt_00655e1c(unsigned long, ...); /* FUN_00655e1c */
-extern unsigned long sk_rt_00655e7c(unsigned long, ...); /* FUN_00655e7c */
-extern unsigned long sk_rt_00655e84(unsigned long, ...); /* FUN_00655e84 */
-extern unsigned long sk_rt_00656744(unsigned long, ...); /* FUN_00656744 */
-extern unsigned long sk_rt_0065be9c(unsigned long, ...); /* FUN_0065be9c */
-extern unsigned long sk_rt_0065c218(unsigned long, ...); /* FUN_0065c218 */
-extern unsigned long sk_rt_0065c9c0(unsigned long, ...); /* FUN_0065c9c0 */
-extern unsigned long sk_rt_0065ca28(unsigned long, ...); /* FUN_0065ca28 */
-extern unsigned long sk_rt_0065cba0(unsigned long, ...); /* FUN_0065cba0 */
-extern unsigned long sk_rt_0065ce40(unsigned long, ...); /* FUN_0065ce40 */
-extern unsigned long sk_rt_0065d20c(unsigned long, ...); /* FUN_0065d20c */
-extern unsigned long sk_rt_0065d2cc(unsigned long, ...); /* FUN_0065d2cc */
-extern unsigned long sk_rt_0065d2e4(unsigned long, ...); /* FUN_0065d2e4 */
-extern unsigned long sk_rt_00664330(unsigned long, ...); /* FUN_00664330 */
-extern unsigned long sk_rt_006643b8(unsigned long, ...); /* FUN_006643b8 */
-extern unsigned long sk_rt_00664588(unsigned long, ...); /* FUN_00664588 */
-extern unsigned long sk_rt_006645bc(unsigned long, ...); /* FUN_006645bc */
-extern unsigned long sk_rt_0066469c(unsigned long, ...); /* FUN_0066469c */
-extern unsigned long sk_rt_006646e0(unsigned long, ...); /* FUN_006646e0 */
-extern unsigned long sk_rt_006649b4(unsigned long, ...); /* FUN_006649b4 */
-extern unsigned long sk_rt_00664a84(unsigned long, ...); /* FUN_00664a84 */
-extern unsigned long sk_rt_00664bd4(unsigned long, ...); /* FUN_00664bd4 */
-extern unsigned long sk_rt_00664cbc(unsigned long, ...); /* FUN_00664cbc */
-extern unsigned long sk_rt_006657d8(unsigned long, ...); /* FUN_006657d8 */
-extern unsigned long sk_rt_0067a7f0(unsigned long, ...); /* FUN_0067a7f0 */
-extern unsigned long sk_rt_0067ad00(unsigned long, ...); /* FUN_0067ad00 */
-extern unsigned long sk_rt_0067b478(unsigned long, ...); /* FUN_0067b478 */
-extern unsigned long sk_rt_0067b580(unsigned long, ...); /* FUN_0067b580 */
-extern unsigned long sk_rt_0067b664(unsigned long, ...); /* FUN_0067b664 */
-extern unsigned long sk_rt_0067ca6c(unsigned long, ...); /* FUN_0067ca6c */
-extern unsigned long sk_rt_0067d014(unsigned long, ...); /* FUN_0067d014 */
-extern unsigned long sk_rt_0067d02c(unsigned long, ...); /* FUN_0067d02c */
-extern unsigned long sk_rt_0067d1f0(unsigned long, ...); /* FUN_0067d1f0 */
-extern unsigned long sk_rt_0067d3f8(unsigned long, ...); /* FUN_0067d3f8 */
-extern unsigned long sk_rt_0067d440(unsigned long, ...); /* FUN_0067d440 */
-extern unsigned long sk_rt_0067d6c0(unsigned long, ...); /* FUN_0067d6c0 */
-extern unsigned long sk_rt_0067f608(unsigned long, ...); /* FUN_0067f608 */
-extern unsigned long sk_rt_006832c8(unsigned long, ...); /* FUN_006832c8 */
-extern unsigned long sk_rt_006833bc(unsigned long, ...); /* FUN_006833bc */
-extern unsigned long sk_rt_006848f4(unsigned long, ...); /* FUN_006848f4 */
-extern unsigned long sk_rt_00684bc0(unsigned long, ...); /* FUN_00684bc0 */
-extern unsigned long sk_rt_00684c0c(unsigned long, ...); /* FUN_00684c0c */
-extern unsigned long sk_rt_00684c58(unsigned long, ...); /* FUN_00684c58 */
-extern unsigned long sk_rt_00684de0(unsigned long, ...); /* FUN_00684de0 */
-extern unsigned long sk_rt_00684e44(unsigned long, ...); /* FUN_00684e44 */
-extern unsigned long sk_rt_00684f2c(unsigned long, ...); /* FUN_00684f2c */
-extern unsigned long sk_rt_00684f7c(unsigned long, ...); /* FUN_00684f7c */
-extern unsigned long sk_rt_00684f94(unsigned long, ...); /* FUN_00684f94 */
-extern unsigned long sk_rt_00684fac(unsigned long, ...); /* FUN_00684fac */
-extern unsigned long sk_rt_00684fc4(unsigned long, ...); /* FUN_00684fc4 */
-extern unsigned long sk_rt_00685054(unsigned long, ...); /* FUN_00685054 */
-extern unsigned long sk_rt_00685084(unsigned long, ...); /* FUN_00685084 */
-extern unsigned long sk_rt_006850dc(unsigned long, ...); /* FUN_006850dc */
-extern unsigned long sk_rt_006850f4(unsigned long, ...); /* FUN_006850f4 */
-extern unsigned long sk_rt_00685164(unsigned long, ...); /* FUN_00685164 */
-extern unsigned long sk_rt_0068538c(unsigned long, ...); /* FUN_0068538c */
+extern unsigned long sk_rt_00650af8(); /* FUN_00650af8 */
+extern unsigned long sk_rt_00650b3c(); /* FUN_00650b3c */
+extern unsigned long sk_rt_00650c10(); /* FUN_00650c10 */
+extern sk_u128_t sk_rt_00650ec8(); /* FUN_00650ec8 */
+extern unsigned long sk_rt_00650ed0(); /* FUN_00650ed0 */
+extern unsigned long sk_rt_00651074(); /* FUN_00651074 */
+extern unsigned long sk_rt_006510cc(); /* FUN_006510cc */
+extern sk_u128_t sk_rt_00651108(); /* FUN_00651108 */
+extern unsigned long sk_rt_00652204(); /* FUN_00652204 */
+extern unsigned long sk_rt_006542e0(); /* FUN_006542e0 */
+extern unsigned long sk_rt_00654528(); /* FUN_00654528 */
+extern unsigned long sk_rt_00654cf4(); /* FUN_00654cf4 */
+extern unsigned long sk_rt_0065558c(); /* FUN_0065558c */
+extern unsigned long sk_rt_0065585c(); /* FUN_0065585c */
+extern unsigned long sk_rt_00655d7c(); /* FUN_00655d7c */
+extern unsigned long sk_rt_00655d9c(); /* FUN_00655d9c */
+extern unsigned long sk_rt_00655dbc(); /* FUN_00655dbc */
+extern unsigned long sk_rt_00655e1c(); /* FUN_00655e1c */
+extern unsigned long sk_rt_00655e7c(); /* FUN_00655e7c */
+extern unsigned long sk_rt_00655e84(); /* FUN_00655e84 */
+extern unsigned long sk_rt_00656744(); /* FUN_00656744 */
+extern unsigned long sk_rt_0065be9c(); /* FUN_0065be9c */
+extern unsigned long sk_rt_0065c218(); /* FUN_0065c218 */
+extern unsigned long sk_rt_0065c9c0(); /* FUN_0065c9c0 */
+extern unsigned long sk_rt_0065ca28(); /* FUN_0065ca28 */
+extern unsigned long sk_rt_0065cba0(); /* FUN_0065cba0 */
+extern unsigned long sk_rt_0065ce40(); /* FUN_0065ce40 */
+extern unsigned long sk_rt_0065d20c(); /* FUN_0065d20c */
+extern unsigned long sk_rt_0065d2cc(); /* FUN_0065d2cc */
+extern unsigned long sk_rt_0065d2e4(); /* FUN_0065d2e4 */
+extern unsigned long sk_rt_00664330(); /* FUN_00664330 */
+extern unsigned long sk_rt_006643b8(); /* FUN_006643b8 */
+extern unsigned long sk_rt_00664588(); /* FUN_00664588 */
+extern unsigned long sk_rt_006645bc(); /* FUN_006645bc */
+extern unsigned long sk_rt_0066469c(); /* FUN_0066469c */
+extern unsigned long sk_rt_006646e0(); /* FUN_006646e0 */
+extern unsigned long sk_rt_006649b4(); /* FUN_006649b4 */
+extern unsigned long sk_rt_00664a84(); /* FUN_00664a84 */
+extern unsigned long sk_rt_00664bd4(); /* FUN_00664bd4 */
+extern unsigned long sk_rt_00664cbc(); /* FUN_00664cbc */
+extern unsigned long sk_rt_006657d8(); /* FUN_006657d8 */
+extern unsigned long sk_rt_0067a7f0(); /* FUN_0067a7f0 */
+extern unsigned long sk_rt_0067ad00(); /* FUN_0067ad00 */
+extern unsigned long sk_rt_0067b478(); /* FUN_0067b478 */
+extern unsigned long sk_rt_0067b580(); /* FUN_0067b580 */
+extern unsigned long sk_rt_0067b664(); /* FUN_0067b664 */
+extern unsigned long sk_rt_0067ca6c(); /* FUN_0067ca6c */
+extern unsigned long sk_rt_0067d014(); /* FUN_0067d014 */
+extern unsigned long sk_rt_0067d02c(); /* FUN_0067d02c */
+extern unsigned long sk_rt_0067d1f0(); /* FUN_0067d1f0 */
+extern unsigned long sk_rt_0067d3f8(); /* FUN_0067d3f8 */
+extern unsigned long sk_rt_0067d440(); /* FUN_0067d440 */
+extern unsigned long sk_rt_0067d6c0(); /* FUN_0067d6c0 */
+extern unsigned long sk_rt_0067f608(); /* FUN_0067f608 */
+extern unsigned long sk_rt_006832c8(); /* FUN_006832c8 */
+extern unsigned long sk_rt_006833bc(); /* FUN_006833bc */
+extern unsigned long sk_rt_006848f4(); /* FUN_006848f4 */
+extern unsigned long sk_rt_00684bc0(); /* FUN_00684bc0 */
+extern unsigned long sk_rt_00684c0c(); /* FUN_00684c0c */
+extern unsigned long sk_rt_00684c58(); /* FUN_00684c58 */
+extern unsigned long sk_rt_00684de0(); /* FUN_00684de0 */
+extern unsigned long sk_rt_00684e44(); /* FUN_00684e44 */
+extern unsigned long sk_rt_00684f2c(); /* FUN_00684f2c */
+extern unsigned long sk_rt_00684f7c(); /* FUN_00684f7c */
+extern unsigned long sk_rt_00684f94(); /* FUN_00684f94 */
+extern unsigned long sk_rt_00684fac(); /* FUN_00684fac */
+extern unsigned long sk_rt_00684fc4(); /* FUN_00684fc4 */
+extern unsigned long sk_rt_00685054(); /* FUN_00685054 */
+extern unsigned long sk_rt_00685084(); /* FUN_00685084 */
+extern unsigned long sk_rt_006850dc(); /* FUN_006850dc */
+extern unsigned long sk_rt_006850f4(); /* FUN_006850f4 */
+extern sk_u128_t sk_rt_00685164(); /* FUN_00685164 */
+extern unsigned long sk_rt_0068538c(); /* FUN_0068538c */
 
 extern unsigned char *sk_lock_acq_65_61348(unsigned char *flag); /* FUN_00661348 */
+
+
+extern unsigned long _DAT_006fe774;   /* thread-create failure counter */
+extern unsigned long _DAT_006fe77c;   /* thread-create counter */
+extern unsigned long _DAT_006fe780;   /* thread-create counter */
+extern unsigned long _DAT_006fe784;   /* thread-create counter */
+extern unsigned long _DAT_006fe788;   /* thread-create counter */
+extern unsigned long _DAT_006fe78c;   /* thread-create counter */
 
 /* plain (non-underscore) globals referenced directly in this slice */
 extern unsigned long DAT_006b5248;
@@ -237,7 +245,7 @@ unsigned long sk_timer_acquire_65dc24(unsigned long *param_1, unsigned long para
 unsigned long sk_timer_dec_alt_65dda4(unsigned long *param_1);
 void sk_timer_release_65de3c(unsigned long *param_1);
 void sk_wait_init_65def0(unsigned long *param_1, unsigned short param_2);
-void sk_msg_dispatch_65defc(unsigned long param_1, unsigned long param_2, unsigned long param_3);
+unsigned long sk_msg_dispatch_65defc(unsigned long param_1, unsigned long param_2, unsigned long param_3);
 void sk_notify_walk_65df30(unsigned long param_1, unsigned long param_2);
 void sk_tree_walk_65e020(long *param_1, unsigned long param_2);
 unsigned long sk_call_ind_65e118(unsigned long param_1);
@@ -250,7 +258,9 @@ unsigned long sk_notif_oneshot_65e6fc(void);
 void sk_timer_alloc_65e748(long *param_1);
 void sk_dispatch_slot0_65e7cc(void);
 void sk_sched_msg_send_65e7f0(unsigned long param_1, int param_2);
-unsigned long sk_exec_in_ctx_65ea38(unsigned long (*param_1)(unsigned long, unsigned long),                                     unsigned long param_2, unsigned char *param_3,                                     unsigned long param_4);
+unsigned long sk_exec_in_ctx_65ea38(sk_u128_t (*param_1)(unsigned long, unsigned long),
+                                     unsigned long param_2, unsigned char *param_3,
+                                     unsigned long param_4);
 void sk_thread_unblock_65eafc(unsigned long param_1);
 void sk_dispatch_slot10_65ec08(void);
 void sk_dispatch_slot18_65ecec(void);
@@ -345,7 +355,8 @@ void sk_timer_publish_65_63928(unsigned long *param_1, unsigned long param_2, lo
 void sk_timer_cb_65_63ac8(unsigned long param_1, unsigned long param_2);
 unsigned long sk_clock_reg_read_65_ebc8(unsigned long param_1);
 unsigned long sk_err_frame_11_65_eeb0(unsigned int param_1);
-void sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigned long *param_3,                           unsigned long param_4);
+unsigned long sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigned long *param_3,
+                           unsigned long param_4);
 /*--------------------------------------------------------------------*/
 /* FUN_0065d804 @ 0x0065d804
  * Ghidra: void FUN_0065d804(ulong param_1, long param_2)
@@ -747,12 +758,13 @@ void sk_wait_init_65def0(unsigned long *param_1, unsigned short param_2)
  * jump table at param_1 (message-copy trampoline). The saved x29/x30/sp are
  * written to the target frame at param_1-0x20..-8.
  * Confidence: low (register-artifact; indirect dispatch FUN_006611a8). */
-void sk_msg_dispatch_65defc(unsigned long param_1, unsigned long param_2, unsigned long param_3)
+unsigned long sk_msg_dispatch_65defc(unsigned long param_1, unsigned long param_2, unsigned long param_3)
 {
     *(unsigned long *)(param_1 - 0x10) = (unsigned long)__builtin_frame_address(0);
     *(unsigned long *)(param_1 - 8) = (unsigned long)__builtin_return_address(0);
     *(unsigned long *)(param_1 - 0x20) = 0x8; /* register0x00000008 */
-    sk_ind_call_65_611a8(param_2, param_3);
+    sk_ind_call_65_611a8((unsigned long (*)(unsigned long))param_2, param_3);
+    return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -807,7 +819,7 @@ void sk_tree_walk_65e020(long *param_1, unsigned long param_2)
             if (param_1[0] == 0x706c6174) {
                 (*(void (**)(void))param_1[1])();
             } else {
-                sk_buf_copy_65_60eec(0x40000, &DAT_0065e114, (unsigned long)param_1);
+                sk_buf_copy_65_60eec(0x40000, (unsigned long)DAT_0065e114, (unsigned long)param_1);
             }
             param_1[4] = 1;
         }
@@ -879,7 +891,7 @@ unsigned short sk_notif_wait_65e370(unsigned long *param_1, unsigned long param_
     if (*param_1 == uVar10) {
         *param_1 = (uVar10 & 0xffff000000000000UL) | (uVar10 & 0xffffffff) |
                    (unsigned long)(uVar13 & 0xffff) << 0x20;
-        sk_timer_release_65de3c(param_2);
+        sk_timer_release_65de3c((unsigned long *)param_2);
         uVar12 = uVar10;
     } else {
         unsigned long uVar11;
@@ -890,7 +902,7 @@ unsigned short sk_notif_wait_65e370(unsigned long *param_1, unsigned long param_
         } while (*param_1 != uVar11);
         *param_1 = (uVar11 & 0xffff000000000000UL) | (uVar11 & 0xffffffff) |
                    (unsigned long)(uVar13 & 0xffff) << 0x20;
-        sk_timer_release_65de3c(param_2);
+        sk_timer_release_65de3c((unsigned long *)param_2);
         uVar12 = uVar11;
         if ((int)uVar11 != iVar9) {
             uVar8 = 1;
@@ -944,7 +956,7 @@ settle:
             }
         } while (1);
     }
-    sk_timer_dec_65db84(param_2);
+    sk_timer_dec_65db84((unsigned long *)param_2);
     return uVar8;
 }
 
@@ -1086,7 +1098,9 @@ void sk_timer_slot_clear_65e5c0(void)
  * Confidence: high (thin forward) */
 unsigned long sk_notif_oneshot_65e6fc(void)
 {
-    sk_notif_slot_65e454((unsigned int *)&DAT_006fe750, sk_timer_alloc_65e748, (unsigned long)&_DAT_006fe758);
+    sk_notif_slot_65e454((unsigned int *)&DAT_006fe750,
+                             (void (*)(unsigned long))sk_timer_alloc_65e748,
+                             (unsigned long)&_DAT_006fe758);
     return _DAT_006fe758;
 }
 
@@ -1191,7 +1205,7 @@ void sk_sched_msg_send_65e7f0(unsigned long param_1, int param_2)
  * protection domain (FUN_00660ba8) and, when the flag byte param_3 is given,
  * marks it busy and spins on CallSupervisor(4) while the callee re-schedules.
  * Confidence: medium */
-unsigned long sk_exec_in_ctx_65ea38(unsigned long (*param_1)(unsigned long, unsigned long),
+unsigned long sk_exec_in_ctx_65ea38(sk_u128_t (*param_1)(unsigned long, unsigned long),
                                     unsigned long param_2, unsigned char *param_3,
                                     unsigned long param_4)
 {
@@ -1216,7 +1230,8 @@ unsigned long sk_exec_in_ctx_65ea38(unsigned long (*param_1)(unsigned long, unsi
     }
     lVar5 = *(long *)(uVar4 + 0x28);
 invoke:
-    unsigned long uVar3 = (*param_1)(lVar5, param_4);
+    sk_u128_t r3 = (*param_1)(lVar5, param_4);
+    unsigned long uVar3 = r3.lo;
     uVar2 = sk_cur_tcb_65_61318();
     if ((param_3 != 0) && (param_2 != uVar2)) {
         do {
@@ -1245,7 +1260,7 @@ void sk_thread_unblock_65eafc(unsigned long param_1)
         } else {
             int iVar1;
             do {
-                iVar1 = sk_lock_acq_65_61348(&local_39);
+                iVar1 = (int)sk_lock_acq_65_61348(&local_39);
             } while (iVar1 == 0);
             sk_err_frame_65_e5cc(param_1, 0xc, (unsigned long *)&local_39, 1);
             *(unsigned long *)(param_1 + 0x48) &= 0xfffffffffffffff7;
@@ -1907,7 +1922,7 @@ void sk_clock_init_65fd70(void)
     if ((DAT_006fe770 & 1) == 0) {
         unsigned int uVar2 = sk_flag_799_65_61330();
         if ((uVar2 & 1) == 0) {
-            sk_rt_00664cbc();
+            sk_rt_00664cbc(0);
         }
         long lVar1 = sk_bucket_base();
         *(short *)(lVar1 + 0x38) = *(short *)(lVar1 + 0x38) + 1;
@@ -1930,7 +1945,7 @@ void sk_strbuf_append_65f834(unsigned long *param_1, unsigned long param_2, unsi
         if ((param_2 & 1) == 0) {
             uVar6 = param_1[1];
         } else {
-            unsigned int uVar5 = sk_rt_0067ca6c((unsigned char *)0, 1, param_3, (void *)0);
+            unsigned int uVar5 = sk_rt_0067ca6c((unsigned long)0, 1, param_3, (unsigned long)0);
             if ((int)uVar5 < 0) {
                 return;
             }
@@ -1963,20 +1978,23 @@ void sk_strbuf_append_65f834(unsigned long *param_1, unsigned long param_2, unsi
  * Confidence: medium (tag sanitize; SoftwareBreakpoint 0x65fa24). */
 unsigned long sk_tag_sanitize_65f8e8(unsigned int param_1)
 {
-    unsigned char bVar2;
-    long lVar4 = 0;
     unsigned int local_10 = param_1;
     unsigned int uStack_c = 0;
-    unsigned char *pbVar8;
+    long lVar4 = 0;
+    /* Sanitize the 4 tag bytes in place: any byte that is not alphanumeric /
+     * '_' / '-' / '~' becomes '?'. A NUL byte terminates (only when it is the
+     * first byte is the whole field zero-filled). */
     do {
-        bVar2 = *(unsigned char *)((char *)&local_10 + lVar4);
+        unsigned char bVar2 = *(unsigned char *)((char *)&local_10 + lVar4);
         if (bVar2 == 0) {
-            if (lVar4 == 0) {
-                lVar4 = 4;
-                long lVar5 = 4;
-                unsigned int *puVar7 = &local_10;
-                goto fill;
+            if (lVar4 != 0) {
+                break;
             }
+            /* leading NUL: fill all 4 bytes with '?' */
+            for (long i = 0; i < 4; i++) {
+                *(unsigned char *)((char *)&local_10 + i) = 0x3f;
+            }
+            lVar4 = 4;
             break;
         }
         unsigned int uVar6 = (unsigned int)bVar2;
@@ -1988,52 +2006,31 @@ unsigned long sk_tag_sanitize_65f8e8(unsigned int param_1)
         }
         lVar4 += 1;
     } while (lVar4 != 4);
-    goto finish;
-fill:
-    while (1) {
-        *(unsigned char *)puVar7 = 0x3f;
-        lVar5 -= 1;
-        puVar7 = (unsigned int *)((char *)puVar7 + 1);
-        if (lVar5 == 0) break;
-        if (((unsigned char *)((char *)&uStack_c + 1) <= (unsigned char *)puVar7) ||
-            ((unsigned char *)puVar7 < (unsigned char *)&local_10)) {
-            SoftwareBreakpoint(0x5519, 0x65fa24); /* does not return */
-        }
+    /* NUL-terminate at the current position. */
+    *(unsigned char *)((char *)&local_10 + lVar4) = 0;
+    /* Byte-reverse the (up to 4) tag bytes into the return value. */
+    unsigned long local_8 = 0;
+    unsigned char *dst = (unsigned char *)&local_8;
+    unsigned char *src = (unsigned char *)&local_10 + lVar4;
+    while (lVar4 != 0) {
+        *dst = *src;
+        lVar4 -= 1;
+        src -= 1;
+        dst += 1;
     }
-finish:
-    unsigned long result = 0;
-    unsigned char *pbVar1 = (unsigned char *)&local_10 + lVar4;
-    if ((pbVar1 < (unsigned char *)((char *)&uStack_c + 1)) && ((unsigned char *)&local_10 <= pbVar1)) {
-        *pbVar1 = 0;
-        unsigned long local_8 = 0;
-        unsigned char *dst = (unsigned char *)&local_8;
-        unsigned char *src = (unsigned char *)&local_10 + lVar4;
-        while (1) {
-            if ((((unsigned char *)((char *)&uStack_c + 1) <= src) || (src < (unsigned char *)&local_10)) ||
-                ((((unsigned char *)&local_8 | 5) <= dst) || (dst < (unsigned char *)&local_8))) {
-                SoftwareBreakpoint(0x5519, 0x65fa24); /* does not return */
-            }
-            *dst = *src;
-            lVar4 -= 1;
-            dst += 1;
-            if (lVar4 == 0) {
-                return local_8;
-            }
-        }
-    }
-    SoftwareBreakpoint(0x5519, 0x65fa24); /* does not return */
+    return local_8;
 }
 
 /*--------------------------------------------------------------------*/
 /* FUN_0065fdb8 @ 0x0065fdb8
  * Ghidra: void FUN_0065fdb8(ulong *param_1, undefined8 param_2, ulong param_3,
  *                          long param_4, int param_5)
- * The cL4 thread-create path. Allocates a TCB block (via FUN_0066204c /
- * FUN_00662158 / the _DAT_006fe7e0 pool), maps it through the per-cpu
- * allocator table, installs the message/thread fields, builds the boot
- * parameter frame (CallSupervisor(0) with the "0x0c000000" / entry-vector
- * words), starts the scheduler entry, and returns the new TCB in *param_1.
- * On failure panics via FUN_0065c2f0 with 0x6a7135.
+ * The cL4 thread-create path. Allocates a TCB stack block (via the allocator
+ * table behind FUN_0066a8c4 and the _DAT_006fe7e0 pool), maps it through the
+ * per-cpu allocator, installs the message/thread fields (0x130/0x138/0x140/
+ * 0x168/0x170 window), sends the boot Capability and entry frames through
+ * CallSupervisor(0) with the tpidrro_el0 message region, and returns the new
+ * TCB in *param_1. On failure panics via FUN_0065c2f0 with 0x6a7135.
  * Confidence: low (very large frame builder; SoftwareBreakpoint 0x66047c). */
 void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsigned long param_3,
                              unsigned long param_4, int param_5)
@@ -2044,19 +2041,18 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
     unsigned short uVar3 = *puVar32;
     *puVar32 = uVar3 + 1;
     if (uVar3 < 0x400) {
-        unsigned long uVar22 = sk_rt_0065d20c();
+        unsigned long uVar22 = sk_rt_0065d20c(0);
         if (uVar22 != 0) {
             sk_thread_unblock_65eafc(uVar22);
             goto done;
         }
-        /* allocate the TCB stack block */
         long local_80 = 0x24000;
         unsigned long uStack_78 = 0x200000000c;
         unsigned long local_90 = 0x11;
         long local_88 = 0;
         unsigned long local_c0 = 0;
         unsigned long *local_b8 = 0;
-        int iVar20 = sk_rt_00655e7c();
+        int iVar20 = (int)sk_rt_00655e7c(0);
         unsigned int uVar2 = 0x40c8;
         if (iVar20 == 0) {
             uVar2 = 0x41140c8;
@@ -2064,18 +2060,20 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
         sk_u128_t auVar33 = sk_rt_0066a8c4();
         char cVar17 = (*(char (**)(unsigned long, unsigned int, void *, void *, int, void *))(
             auVar33.hi + 0x30))(auVar33.lo, uVar2, &local_90, &local_c0, 0, 0);
-        uVar22 = sk_rt_00655e7c();
-        if (((uVar22 & 1) == 0) &&
-            (char cVar18 = (*(char (**)(unsigned long, int, int, int))(local_b8[10]))(
-                 local_c0, 0, 0x4000, 0x20000), cVar18 != '\0')) {
-            sk_panic_2(0, 0x6a7135); /* does not return */
+        uVar22 = sk_rt_00655e7c(0);
+        if ((uVar22 & 1) == 0) {
+            char cVar18 = (*(char (**)(unsigned long, int, int, int))(local_b8[10]))(
+                local_c0, 0, 0x4000, 0x20000);
+            if (cVar18 != '\0') {
+                sk_panic_2(0, 0x6a7135); /* does not return */
+            }
         }
         if (cVar17 != '\0') {
             _DAT_006fe774 += 1;
             goto dec;
         }
         if (local_b8 == 0) {
-            sk_rt_0065558c(); /* does not return */
+            sk_rt_0065558c(0); /* does not return */
         }
         (*(void (**)(unsigned long, void *))local_b8[1])(local_c0, &local_90);
         uVar22 = sk_stack_alloc_65_6204c(local_88, local_80);
@@ -2086,7 +2084,7 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
             sk_panic_2(0, 0x6a7162); /* does not return */
         }
         unsigned long local_c8 = uVar24;
-        iVar20 = sk_rt_00655e7c();
+        iVar20 = (int)sk_rt_00655e7c(0);
         if (iVar20 != 0) {
             local_c8 = 0x20000;
         }
@@ -2114,7 +2112,7 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
                     if (lVar25 == 0) {
                         _DAT_006fe784 += 1;
                     } else {
-                        unsigned long uVar24 = sk_rt_006832c8(6);
+                        unsigned long uVar24 = sk_rt_006832c8(0, 6);
                         *(unsigned long *)(uVar22 + 0x28) = uVar24;
                         if (uVar24 == 0) {
                             _DAT_006fe788 += 1;
@@ -2153,7 +2151,7 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
                                 if (lVar25 == 0) {
                                     unsigned long uVar24 = sk_rt_006657d8(uVar22, 9);
                                     if ((uVar24 & 1) == 0) {
-                                        sk_rt_00684e44();
+                                        sk_rt_00684e44(0);
                                     } else {
                                         long lVar25 = sk_boot_param_65_611b8();
                                         if (lVar25 == 0) {
@@ -2169,11 +2167,12 @@ void sk_thread_create_65fdb8(unsigned long *param_1, unsigned long param_2, unsi
                 }
             }
         }
-        /* ... long tail (scheduler entry, param frame) elided structurally ... */
         breakpoint:
         SoftwareBreakpoint(0x5519, 0x66047c); /* does not return */
         seq:
         sk_thread_unblock_65eafc(uVar22);
+        setseq:
+        ; /* (scheduler-entry tail; label sink) */
     }
 dec:
     *puVar32 -= 1;
@@ -2195,7 +2194,8 @@ done:
 void sk_sched_wake_65_609b4(unsigned long param_1)
 {
     (*(void (**)(unsigned long))(param_1 + 0x18))(*(unsigned long *)(param_1 + 0x20));
-    unsigned long uVar7 = sk_wake_alloc_65_609cc();
+    sk_wake_alloc_65_609cc(param_1);
+    unsigned long uVar7 = 0;
     unsigned long uVar8 = sk_cur_tcb_65_61318();
     if (uVar8 <= uVar8 + 0x178) {
         sk_rt_0065c218();
@@ -2211,7 +2211,7 @@ void sk_sched_wake_65_609b4(unsigned long param_1)
             uVar7b = sk_clock_reg_read(uVar5);
             iVar4 = *piVar1;
         }
-        sk_clock_dispatch_18(((unsigned int)(uVar8 + 0x80) >> 4) & 0xf, uVar8 + 0x80, 5, 0);
+        sk_clock_dispatch_18(((unsigned int)(uVar8 + 0x80) >> 4) & 0xf, (void *)(uVar8 + 0x80), 5, 0);
         if (iVar4 == 2) {
             sk_rt_0065d080(uVar8);
             long lVar9 = sk_bucket_base();
@@ -2250,7 +2250,7 @@ void sk_wake_alloc_65_609cc(unsigned long param_1)
             uVar8 = sk_clock_reg_read(uVar5);
             iVar4 = *piVar1;
         }
-        sk_clock_dispatch_18(((unsigned int)(uVar7 + 0x80) >> 4) & 0xf, uVar7 + 0x80, 5, 0);
+        sk_clock_dispatch_18(((unsigned int)(uVar7 + 0x80) >> 4) & 0xf, (void *)(uVar7 + 0x80), 5, 0);
         if (iVar4 == 2) {
             sk_rt_0065d080(uVar7);
             long lVar9 = sk_bucket_base();
@@ -2274,7 +2274,7 @@ void sk_wake_alloc_65_609cc(unsigned long param_1)
 void sk_wake_settle_65_60ab4(unsigned long param_1)
 {
     *(unsigned int *)(param_1 + 0x84) = 2;
-    sk_clock_dispatch_18(((unsigned int)(param_1 + 0x84) >> 4) & 0xf, param_1 + 0x84, 5, 0);
+    sk_clock_dispatch_18(((unsigned int)(param_1 + 0x84) >> 4) & 0xf, (void *)(param_1 + 0x84), 5, 0);
 }
 
 /*--------------------------------------------------------------------*/
@@ -2324,13 +2324,13 @@ long sk_preempt_acq_65_60ba8(unsigned long param_1, unsigned long param_2)
 {
     unsigned long local_38 = _DAT_006b5ed0;
     unsigned char local_59 = 0;
-    long lVar1 = sk_lock_acq_65_61348(&local_59);
+    long lVar1 = (long)(uintptr_t)sk_lock_acq_65_61348(&local_59);
     if ((int)lVar1 == 0) {
         goto done;
     }
     CallSupervisor(2);
     if ((*(unsigned long *)(param_1 + 0x28) & 0xff) == 0) {
-        sk_lock_rel_65_613d0(&local_59, param_2);
+        sk_lock_rel_65_613d0(&local_59);
         goto done;
     }
     sk_rt_00684f2c(*(unsigned long *)(param_1 + 0x28), (unsigned char *)0);
@@ -2404,7 +2404,7 @@ void sk_buf_alloc_65_60d00(unsigned long *param_1, unsigned long param_2, unsign
     long lVar1 = param_2 + 0x4000;
     if (param_2 < 0xffffffffffffc000) {
         unsigned char local_60[8] = { 0x11 };
-        sk_memzero((unsigned long)local_60 | 1, 0xf);
+        sk_memzero((void *)((unsigned long)local_60 | 1), 0xf);
         unsigned int local_48 = 0xc;
         unsigned int local_44 = 0x20;
         unsigned int uVar7 = param_3 & 0xf;
@@ -2433,6 +2433,7 @@ void sk_buf_alloc_65_60d00(unsigned long *param_1, unsigned long param_2, unsign
                     int iVar4 = *(int *)(lVar6 + 0x88);
                     *(int *)(lVar6 + 0x88) = iVar4 + 1;
                     if (iVar4 != -1) {
+                        unsigned long local_58 = param_2;
                         param_1[0] = local_70;
                         param_1[1] = lStack_68;
                         *(unsigned int *)(param_1 + 2) =
@@ -2504,7 +2505,7 @@ unsigned long sk_buf_exec_65_60f60(unsigned long param_1, unsigned long param_2,
     unsigned long uVar7 = *(unsigned long *)(param_1 + 0x20);
     *(long *)(lVar6 + 0x168) = *(long *)(param_1 + 0x18) + 0x4000;
     *(unsigned long *)(lVar6 + 0x170) = uVar7;
-    unsigned long result = sk_msg_dispatch_65defc(puVar12, param_2, param_3);
+    unsigned long result = sk_msg_dispatch_65defc((unsigned long)puVar12, param_2, param_3);
     *(unsigned long *)(lVar6 + 0x168) = uVar1;
     *(unsigned long *)(lVar6 + 0x170) = uVar2;
     *(unsigned int *)(lVar6 + 0x148) = 0;
@@ -2516,18 +2517,20 @@ unsigned long sk_buf_exec_65_60f60(unsigned long param_1, unsigned long param_2,
     *(unsigned int *)(lVar6 + 0x154) = 0;
     *(unsigned int *)(lVar6 + 0x14c) = 0;
     unsigned int uVar9 = *(unsigned int *)(param_1 + 0x10);
+    unsigned long *puVar13 = 0;
+    unsigned long uVar10 = 0;
     if ((uVar9 >> 4 & 1) != 0) {
         long lVar6b = sk_rt_0066ad54();
         unsigned long *puVar11 = (unsigned long *)(*(long *)(param_1 + 0x18) + 0x4000);
         unsigned long uVar3 = 0;
         unsigned long *puVar14 = puVar12;
+        char cVar5;
         do {
-            unsigned long *puVar13 = puVar14;
-            unsigned long uVar10 = uVar3;
+            puVar13 = puVar14;
+            uVar10 = uVar3;
             if ((puVar13 <= puVar11) || (puVar14 = puVar13 - 0x800, puVar14 < puVar11)) break;
-            unsigned char auVar15[16];
             sk_u128_t auVar15t = sk_rt_0066a8c4();
-            char cVar5 = (*(char (**)(unsigned long, unsigned long *, int, long))(
+            cVar5 = (*(char (**)(unsigned long, unsigned long *, int, long))(
                 auVar15t.hi + 0x40))(auVar15t.lo, puVar14, 0, lVar6b);
             do {
                 CallSupervisor(4);
@@ -2543,22 +2546,22 @@ unsigned long sk_buf_exec_65_60f60(unsigned long param_1, unsigned long param_2,
                 if ((puVar12 < puVar13) || ((unsigned long)((unsigned long)puVar12 - (unsigned long)puVar13) < uVar3b)) {
                     SoftwareBreakpoint(0x5519, 0x661154); /* does not return */
                 }
-                sk_memzero((unsigned long)puVar13);
+                sk_memzero((void *)puVar13, uVar3b);
                 uVar9 = *(unsigned int *)(param_1 + 0x10);
             } else if (7 < uVar3b) {
-                unsigned long uVar10 = uVar10 >> 3;
+                unsigned long uVar10b = uVar10 >> 3;
                 unsigned long *puVar11b = puVar13;
-                if (uVar10 < 2) {
-                    uVar10 = 1;
+                if (uVar10b < 2) {
+                    uVar10b = 1;
                 }
                 do {
                     if ((puVar11b < puVar13) || (puVar12 < puVar11b + 1)) {
                         SoftwareBreakpoint(0x5519, 0x661154); /* does not return */
                     }
                     *puVar11b = 0;
-                    uVar10 -= 1;
+                    uVar10b -= 1;
                     puVar11b += 1;
-                } while (uVar10 != 0);
+                } while (uVar10b != 0);
             }
         }
     }
@@ -2602,20 +2605,19 @@ void sk_ind_call_65_611a8(unsigned long (*fn)(unsigned long), unsigned long para
  * Confidence: low (boot-info parse; SoftwareBreakpoint 0x6612c0). */
 unsigned long sk_boot_param_65_611b8(void)
 {
+    unsigned char local_30[16] = {0};
     int iVar3 = sk_rt_00652204();
     if (iVar3 != 0) {
         unsigned long uVar4 = sk_rt_006510cc();
         if (uVar4 != 0) {
-            unsigned char local_30[16] = {0};
             if (uVar4 + 8 < uVar4) {
                 SoftwareBreakpoint(0x5519, 0x6612c0); /* does not return */
             }
         }
-        unsigned char local_30[16];
         sk_u128_t lt = sk_rt_00650ec8();
         local_30[0] = (unsigned char)lt.lo;
         local_30[8] = (unsigned char)lt.hi;
-        unsigned long uVar4 = sk_rt_00651074((unsigned long)local_30);
+        uVar4 = sk_rt_00651074((unsigned long)local_30);
         if ((uVar4 & 1) == 0) {
             unsigned short *puVar6 = 0;
             do {
@@ -2623,7 +2625,7 @@ unsigned long sk_boot_param_65_611b8(void)
                 if ((uVar4 != 0) && (uVar4 + 0xc < uVar4)) {
                     SoftwareBreakpoint(0x5519, 0x6612c0); /* does not return */
                 }
-                int iVar3 = sk_rt_00650c10(uVar4);
+                iVar3 = sk_rt_00650c10(uVar4);
                 if (iVar3 == 0x1c) {
                     puVar6 = (unsigned short *)sk_rt_00650b3c(uVar4, 0);
                 }
@@ -2789,7 +2791,8 @@ unsigned char *sk_lock_acq_65_61348(unsigned char *param_1)
                 pbVar3 = (unsigned char *)sk_rt_00685084();
                 while ((_DAT_006ff0a8 & 0x3ff) != 0) {
                     lVar5 = tpidr_el0;
-                    pbVar3 = (unsigned char *)sk_dispatch_slot20_65ee30(*(unsigned long *)(lVar5 + 8));
+                    sk_dispatch_slot20_65ee30();
+                    pbVar3 = (unsigned char *)0;
                 }
                 _DAT_006ff0a8 += 0x400;
                 return pbVar3;
@@ -2842,7 +2845,7 @@ void sk_lock_rel_65_613d0(unsigned char *param_1)
         sk_rt_00685084();
         while ((_DAT_006ff0a8 & 0x3ff) != 0) {
             lVar2 = tpidr_el0;
-            sk_dispatch_slot20_65ee30(*(unsigned long *)(lVar2 + 8));
+            sk_dispatch_slot20_65ee30();
         }
         _DAT_006ff0a8 += 0x400;
         return;
@@ -2869,7 +2872,7 @@ void sk_lock_drain_65_61428(void)
 {
     while ((_DAT_006ff0a8 & 0x3ff) != 0) {
         long lVar1 = tpidr_el0;
-        sk_dispatch_slot20_65ee30(*(unsigned long *)(lVar1 + 8));
+        sk_dispatch_slot20_65ee30();
     }
     _DAT_006ff0a8 += 0x400;
 }
@@ -2922,10 +2925,10 @@ void sk_thread_boot_65_61500(unsigned long param_1, unsigned long param_2,
         uVar23 = ((unsigned long)puVar22 - (unsigned long)lVar12) & 0xfffffffffffffff0;
         if (uVar23 + (unsigned long)lVar12 < uVar23) goto overflow;
         unsigned long uVar13 = (unsigned long)param_4 & 0xffffffffffffc000;
-        sk_memzero((unsigned long)auStack_188, 0x118);
-        sk_memmove(uVar23 - 0x178, auStack_188, 0x118);
+        sk_memzero((void *)auStack_188, 0x118);
+        sk_memmove((void *)(uVar23 - 0x178), auStack_188, 0x118);
         *(unsigned int *)(uVar23 - 0x60) = local_190;
-        sk_memmove(uVar23 - 0x5c, &local_1a8, 0x14);
+        sk_memmove((void *)(uVar23 - 0x5c), &local_1a8, 0x14);
         *(unsigned long *)(uVar23 - 0x48) = uVar13;
         *(unsigned long *)(uVar23 - 0x40) = (unsigned long)puVar20 - uVar13;
         *(unsigned long **)(uVar23 - 0x38) = param_4;
@@ -2949,6 +2952,7 @@ void sk_thread_boot_65_61500(unsigned long param_1, unsigned long param_2,
         unsigned long uVar13 = sk_rt_006646e0();
         long lVar14 = sk_rt_0066469c();
         lVar12 = tpidr_el0;
+        long lVar11;
         if (*(long *)(lVar12 + 0x10) != uVar23 - 400) {
             if ((*(long *)(lVar12 + 0x10) != 0) ||
                 (lVar11 = *(long *)(lVar14 + 0x208), *(long *)(lVar14 + 0x208) = lVar11 + 1, lVar11 != -1)) {
@@ -2967,7 +2971,7 @@ mapped:
             sk_rt_00654528(*(unsigned long *)(lVar12 + 0x18));
         }
         sk_rt_00656744();
-        unsigned char *pbVar15 = (unsigned char *)sk_percpu_ptr();
+        unsigned char *pbVar15 = (unsigned char *)sk_percpu_ptr(0);
         sk_rt_0065d2cc();
         if ((*pbVar15 & 1) != 0) {
             /* ... boot-image load tail ... */
@@ -2979,7 +2983,7 @@ mapped:
             if (uVar24 != *(unsigned long *)(pbVar15 + 0x40)) {
                 sk_rt_006850dc();
             }
-            sk_memzero(uVar13, uVar24);
+            sk_memzero((void *)uVar13, uVar24);
             goto proceed;
         }
         sk_rt_006850f4();
@@ -2995,10 +2999,10 @@ done:
     /* mode switch via the dispatcher table */
     unsigned long *puVar25 = (unsigned long *)sk_rt_0065be08(0x6fe7a8, 1, 2);
     unsigned long *puVar20 = puVar25 + (uVar23 & 0xff) * 2;
-    if ((code *)*puVar20 == (code *)0) {
+    if (*puVar20 == 0) {
         sk_panic_2(0, 0x6a79dd); /* does not return */
     }
-    (*(code *)*puVar20)(puVar20[1], param_1, param_2);
+    ((void (*)(unsigned long, unsigned long, unsigned long))*puVar20)(puVar20[1], param_1, param_2);
     sk_panic_2(0, 0x6a79ff); /* does not return */
 overflow:
     SoftwareBreakpoint(0x5519, 0x6616b4); /* does not return */
@@ -3041,7 +3045,7 @@ unsigned long sk_msg_word_65_61d38(unsigned long param_1, unsigned long *param_2
     bVar4 = 0;
 go:
     if (param_1 + 0x118 <= param_1 + 0x168) {
-        unsigned long uVar3 = sk_msg_extract_65_61e24(param_1 + 0x118, &local_58, param_3, param_4,
+        unsigned long uVar3 = sk_msg_extract_65_61e24(param_1 + 0x118, &local_58, (unsigned long *)param_3, param_4,
                                              param_5, param_6, 0, &local_59);
         if ((bVar4 & local_59) == 1) {
             *param_2 = local_58;
@@ -3509,7 +3513,7 @@ void sk_msg_clear_65_6272c(unsigned long *param_1, unsigned long param_2)
     param_1[3] = 0; param_1[4] = 0; param_1[1] = 0; param_1[2] = 0; *param_1 = 0;
     unsigned long lVar1 = tpidr_el0;
     if (param_2 != *(long *)(lVar1 + 8)) {
-        sk_msg_send2_65_62754(*(unsigned long *)(param_2 + 0x28));
+        sk_msg_send2_65_62754((unsigned long *)0, *(unsigned long *)(param_2 + 0x28));
         return;
     }
 }
@@ -3700,7 +3704,7 @@ void sk_caps_dump_65_62bf0(unsigned long param_1, unsigned long param_2)
     if ((local_100 + 0x10 < puVar10) || (puVar10 < local_100)) {
         SoftwareBreakpoint(0x5519, 0x662f08); /* does not return */
     }
-    unsigned long lVar5 = sk_msg_word_65_61d38(param_2, local_130, puVar10, 0x10 - lVar4, 0, 0);
+    unsigned long lVar5 = sk_msg_word_65_61d38(param_2, local_130, (unsigned long)puVar10, 0x10 - lVar4, 0, 0);
     unsigned long uVar7 = lVar5 + lVar4;
     if (uVar7 != 0) {
         unsigned long lVar4b = 0;
@@ -3735,7 +3739,7 @@ void sk_caps_dump_65_62bf0(unsigned long param_1, unsigned long param_2)
             } while (uVar9 != 0);
             if (uVar7 < 0x11) break;
             lVar4b = uVar1 + lVar4b;
-            uVar7 = sk_msg_word_65_61d38(param_2, local_130, local_100, 0x10, 0, 0);
+            uVar7 = sk_msg_word_65_61d38(param_2, local_130, (unsigned long)local_100, 0x10, 0, 0);
         } while (uVar7 != 0);
     }
     if (_DAT_006b5ed0 != local_78) {
@@ -3754,9 +3758,10 @@ bool sk_intvec_read_65_62f0c(unsigned long param_1, unsigned long param_2)
 {
     unsigned long uVar9 = 0;
     unsigned long lVar4;
+    unsigned int uVar8 = 0;
     unsigned short *puVar2 = (unsigned short *)tpidrro_el0;
     do {
-        unsigned int uVar8 = (unsigned int)uVar9;
+        uVar8 = (unsigned int)uVar9;
         lVar4 = *(long *)(param_1 + 0x28);
         unsigned long uVar1 = 0x36;
         if (0x32 < (uVar8 & 0xffff)) {
@@ -3811,7 +3816,7 @@ bool sk_intvec_read_65_62f0c(unsigned long param_1, unsigned long param_2)
 void sk_intvec_print_65_630f8(unsigned long param_1, unsigned long param_2)
 {
     unsigned char local_398[840];
-    sk_memzero((unsigned long)local_398, 0x200);
+    sk_memzero((void *)local_398, 0x200);
     int iVar1 = sk_intvec_read_65_62f0c(param_2, (unsigned long)local_398);
     if (iVar1 == 0) {
         sk_rt_0067d1f0(param_1, 0x6a7694);
@@ -3865,6 +3870,7 @@ void sk_boot_dump_65_631d8(unsigned long param_1, unsigned long param_2, unsigne
     sk_rt_00655dbc(&local_78);
     sk_rt_0067d1f0(param_3, 0x6a772a);
     sk_pad_print_65_634c0(param_3, param_2, 0);
+    unsigned char auStack_8c[20];
     sk_boot_print_65_62630(param_4, (unsigned long)auStack_8c);
     long lVar1b = *(long *)(param_4 + 0x130);
     sk_rt_0067d1f0(param_3, 0x6a7796);
@@ -4056,16 +4062,17 @@ scan:
     uVar12 = sk_rt_00651074((unsigned long)local_50);
     if ((uVar12 & 1) == 0) {
         unsigned short *puVar14 = 0;
+        int iVar11;
         do {
             uVar12 = sk_rt_00650ed0((unsigned long)local_50);
             if ((uVar12 != 0) && (uVar12 + 0xc < uVar12)) {
                 SoftwareBreakpoint(0x5519, 0x6638c4); /* does not return */
             }
-            int iVar11 = sk_rt_00650c10(uVar12);
+            iVar11 = (int)sk_rt_00650c10(uVar12);
             if (iVar11 == iVar15) {
                 puVar14 = (unsigned short *)sk_rt_00650b3c(uVar12, uVar13);
             }
-            iVar11 = sk_rt_00651074((unsigned long)local_50);
+            iVar11 = (int)sk_rt_00651074((unsigned long)local_50);
         } while (iVar11 == 0);
         if (puVar14 != 0) {
             unsigned short *puVar1 = puVar14 + 0xc;
@@ -4142,7 +4149,7 @@ void sk_panic_785c_65_63910(void)
 void sk_timer_publish_65_63928(unsigned long *param_1, unsigned long param_2, long *param_3)
 {
     unsigned long local_48 = _DAT_006b5ed0;
-    sk_memzero((unsigned long)param_1, 0x50);
+    sk_memzero((void *)param_1, 0x50);
     if (param_1 + 2 < param_1) {
         SoftwareBreakpoint(0x5519, 0x663aac); /* does not return */
     }
@@ -4151,10 +4158,10 @@ void sk_timer_publish_65_63928(unsigned long *param_1, unsigned long param_2, lo
         param_1[2] = param_2;
         sk_memmove(param_1 + 4, param_3, 0x28);
         param_1[3] = 0;
-        unsigned long (*pcVar11)(unsigned long, unsigned long);
+        void (*pcVar11)(unsigned long, unsigned long);
         if (*param_3 == 0) {
-            unsigned long lVar10 = sk_percpu_ptr();
-            pcVar11 = *(unsigned long (**)(unsigned long, unsigned long))(lVar10 + 0xe0);
+            unsigned long lVar10 = sk_percpu_ptr(0);
+            pcVar11 = (void (*)(unsigned long, unsigned long))*(unsigned long *)(lVar10 + 0xe0);
             param_2 = param_1[2];
         } else {
             pcVar11 = sk_timer_cb_65_63ac8;
@@ -4165,7 +4172,7 @@ void sk_timer_publish_65_63928(unsigned long *param_1, unsigned long param_2, lo
         if ((param_2 & 0xfd) == 0) {
             unsigned long uVar9b = param_1[6];
             param_1[6] = 0;
-            sk_rt_00663d3c(param_1, uVar9b);
+            sk_rt_00663d3c((unsigned long)param_1, uVar9b);
             if (_DAT_006b5ed0 == local_48) {
                 sk_timer_release_65de3c(param_1);
                 return;
@@ -4236,9 +4243,10 @@ unsigned long sk_err_frame_11_65_eeb0(unsigned int param_1)
     sk_err_frame_65_e5cc(sk_cur_tcb_65_61318(), (unsigned short)((param_1 & 0xf) << 0xc | 0x11),
                    &local_38, 0);
     if (_DAT_006b5ed0 == local_28) {
-        return;
+        return 0;
     }
     sk_fatal(0); /* does not return */
+    return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -4250,7 +4258,7 @@ unsigned long sk_err_frame_11_65_eeb0(unsigned int param_1)
  * callback FUN_0065ef24 through FUN_0065ea38, and faults via FUN_0067f660 when
  * the result differs from the expected (local_58 or 5).
  * Confidence: low (frame builder; _DAT_006b5ed0 canary check). */
-void sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigned long *param_3,
+unsigned long sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigned long *param_3,
                           unsigned long param_4)
 {
     unsigned long local_28 = _DAT_006b5ed0;
@@ -4261,9 +4269,9 @@ void sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigne
     unsigned short local_70 = param_2;
     bool bVar1 = false;
     char *pcVar5 = 0;
+    unsigned char local_71 = 0;
     if ((param_4 & 1) != 0) {
         unsigned long lVar2 = sk_cur_tcb_65_61318();
-        unsigned char local_71 = 0;
         pcVar5 = (char *)&local_71;
         bVar1 = param_1 != lVar2;
         if (!bVar1) {
@@ -4272,7 +4280,7 @@ void sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigne
         local_50 = (unsigned long)bVar1;
         local_71 = '\0';
     }
-    unsigned long uVar3 = sk_exec_in_ctx_65ea38(sk_msg_send_65ef24, param_1, (unsigned char *)pcVar5,
+    unsigned long uVar3 = sk_exec_in_ctx_65ea38((sk_u128_t (*)(unsigned long, unsigned long))sk_msg_send_65ef24, param_1, (unsigned char *)pcVar5,
                                          (unsigned long)&local_70);
     unsigned long uVar4;
     if ((uVar3 & 0xff) == 0) {
@@ -4281,7 +4289,7 @@ void sk_err_frame_65_e5cc(unsigned long param_1, unsigned short param_2, unsigne
             uVar4 = local_58;
         }
         if (_DAT_006b5ed0 == local_28) {
-            return;
+            return 0;
         }
     } else {
         uVar4 = sk_rt_006848f4(uVar3, (unsigned char *)0);
