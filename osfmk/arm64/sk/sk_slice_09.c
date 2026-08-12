@@ -4108,7 +4108,7 @@ static uint64_t sk_mmap(uint64_t *out, uint64_t addr, uint32_t len, int prot, lo
                 rq2 = 0x11;
                 lo = 0;
                 { sk_ep_pair_t _p = sk_ep_obj_get(); ep[0]=_p.lo; ep[1]=_p.hi; }
-                invoke = *(uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) *)(ep[1] + 0x30);
+                invoke = *(uint64_t (**)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t))(ep[1] + 0x30);
                 v = invoke(ep[0], 8, (uint64_t)&rq2, 0x6b0330, 0, (uint64_t)&rq2);
                 v = v & 0xff;
                 if (v != 0) {
@@ -4155,20 +4155,20 @@ static uint64_t sk_mmap(uint64_t *out, uint64_t addr, uint32_t len, int prot, lo
 do_map:
     if (addr <= UINT64_MAX - v) {               /* !CARRY8(v, addr) */
         { sk_ep_pair_t _p = sk_ep_obj_get(); ep[0]=_p.lo; ep[1]=_p.hi; }
-        invoke = *(uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) *)(ep[1] + 0x30);
+        invoke = *(uint64_t (**)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t))(ep[1] + 0x30);
         ok = (uint8_t)invoke(ep[0], acc | ((o & 4) << 0x14), (uint64_t)&req, (uint64_t)extra, 0, 0);
         if (ok != '\0') {
             return sk_mmap_err((int)ok);
         }
         if (extra[1] != 0) {
-            ((void (*)(uint64_t, uint64_t))(extra[1] + 8))(*extra, &req);
+            ((void (*)(uint64_t, uint64_t))(extra[1] + 8))(*extra, (uint64_t)&req);
             *out = page;
             errno_ptr = (int *)sk_errno_ptr();
             *errno_ptr = 0;
             return 1;
         }
         /* WARNING: Subroutine does not return */
-        sk_x_00054354(0);
+        sk_abort();
     }
 fail_einval:
     errno_ptr = (int *)sk_errno_ptr();
@@ -4258,7 +4258,7 @@ static uint64_t sk_munmap(long a, long b, uint8_t (*frame)[16])
         if (reg[1] == (uint64_t)a && reg[2] == (uint64_t)b) {
             ok = ((char (*)(uint64_t))((uint64_t *)vtable)[0])(obj);
             if (ok != 0) {
-                return sk_x_00054034();
+                return sk_mmap_err(0);
             }
             *((int *)sk_errno_ptr()) = 0;
             return 1;
@@ -5033,7 +5033,7 @@ static void sk_map_sym(uint64_t a, uint64_t b)
         if (*(uint64_t *)(sym + 0x60) >> 4 < *(uint64_t *)(sym + 0x58)) {
             SoftwareBreakpoint(0x5519, 0x54cfc); /* noreturn */
         }
-        sk_x_000520f0(sym_name, b, *(uint64_t *)(sym + 0x58),
+        sk_x_000520f0(sym_name, (uint64_t *)b, *(uint64_t *)(sym + 0x58),
                       *(uint64_t *)(sym + 0x68), *(uint64_t *)(sym + 0x70));
     }
     return;
@@ -5152,7 +5152,8 @@ static long sk_putc(long fd, char *buf, long n)
     struct { uint64_t lo; uint64_t hi; } fc;
 
     if ((fd != 0x64cd78) || (fl = sk_x_0004cdc0(buf, n), fl != 0)) {
-        fc = sk_x_000533ec();
+        fc.lo = sk_x_000533ec();
+        fc.hi = 0;
         flusher = fc.hi;
         flush_lo = fc.lo;
         regs = (uint8_t *)tpidrro_el0;

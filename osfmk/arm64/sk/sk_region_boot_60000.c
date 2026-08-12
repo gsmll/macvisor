@@ -757,8 +757,8 @@ void sk_report_type_byte(unsigned char *out);
 sk_word_t sk_report_end_val(void);
 void sk_report_emit_indirect(void);
 sk_word_t sk_report_cmp_pair(sk_word_t a, sk_word_t b, sk_word_t c, sk_word_t d);
-sk_word_t sk_report_cmp(long *a, long *b);
-unsigned int sk_report_cmp2(long *a, long *b);
+sk_word_t sk_report_cmp(sk_word_t a, sk_word_t b);
+unsigned int sk_report_cmp2(sk_word_t a, sk_word_t b);
 void sk_report_flush_line(void *rec);
 sk_word_t sk_report_process_rec(void *rec);
 void sk_report_process_wrap(sk_word_t *out);
@@ -5636,8 +5636,9 @@ sk_word_t sk_report_cmp_pair(sk_word_t a, sk_word_t b, sk_word_t c, sk_word_t d)
  * Confidence: low
  * Notes: FUN_0006afb4/0006ae9c/0006afec/0036b270/003a25e0/0036b118; bit-reverse walk; SoftwareBreakpoint(1,0x690f0).
  */
-sk_word_t sk_report_cmp(long *a, long *b)
+sk_word_t sk_report_cmp(sk_word_t a0, sk_word_t b0)
 {
+    long *a = (long*)(uintptr_t)a0, *b = (long*)(uintptr_t)b0;
     if (a == b) return 1;
     if (*(long *)((char*)a + 0x10) != *(long *)((char*)b + 0x10)) return 0;
     sk_word_t ctx[4];
@@ -5692,8 +5693,9 @@ sk_word_t sk_report_cmp(long *a, long *b)
  * Confidence: low
  * Notes: FUN_00068ef8/0036b270/0036b118/003a25d4.
  */
-unsigned int sk_report_cmp2(long *a, long *b)
+unsigned int sk_report_cmp2(sk_word_t a0, sk_word_t b0)
 {
+    long *a = (long*)(uintptr_t)a0, *b = (long*)(uintptr_t)b0;
     long n = *(long *)((char*)a + 0x10);
     if (n == *(long *)((char*)b + 0x10)) {
         if (n == 0 || a == b) return 1;

@@ -67,16 +67,16 @@ extern word_t FUN_00229a3c(int); /* lock/bind select */
 extern word_t FUN_002298d4(word_t); /* bind helper */
 extern word_t FUN_001a84f4(word_t, word_t); /* scoped enter */
 extern word_t FUN_001a8564(void); /* scoped exit */
-extern word_t FUN_0006b2ec(void); /* nop (identity marker) */
-extern void FUN_000651bc(void); /* nop */
-extern void FUN_0006b2dc(void); /* nop */
-extern word_t FUN_0006b6f4(void); /* nop */
-extern void FUN_0006b6ac(void); /* nop */
-extern void FUN_0006b560(void); /* nop */
-extern void FUN_0006b4d0(void); /* nop */
-extern void FUN_0006b550(void); /* nop */
-extern void FUN_0001df60(void); /* nop */
-extern void FUN_001ba7d4(void); /* nop */
+extern word_t FUN_0006b2ec(word_t, word_t, word_t, word_t, word_t); /* nop (identity marker) */
+extern word_t FUN_000651bc(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b2dc(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b6f4(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b6ac(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b560(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b4d0(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b550(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0001df60(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_001ba7d4(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern void FUN_002acbb8(word_t, word_t); /* string append */
 extern void FUN_002a4ab4(int); /* fault builder */
 extern void FUN_00369efc(word_t, word_t, word_t); /* vector op */
@@ -86,7 +86,7 @@ extern word_t FUN_000695e4(word_t, word_t, word_t, word_t, word_t, word_t, word_
 extern word_t FUN_0006a414(void);
 extern void FUN_001afa84(word_t, int, int, word_t, word_t, word_t, int, int, int, int); /* fatal msg */
 extern word_t FUN_000126e8(void); /* thunk: size/round */
-extern void FUN_0006b630(void); /* nop */
+extern word_t FUN_0006b630(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_0006a468(word_t, word_t, word_t); /* vector realloc (16B) */
 extern word_t FUN_003a25e0(word_t, int); /* masked release */
 extern word_t FUN_001fac04(word_t, word_t); /* buffer alloc */
@@ -94,21 +94,21 @@ extern void FUN_0006b720(void); /* nop */                /* nop-ish store */
 extern word_t FUN_0006b3e0(void); /* empty-vec builder */
 extern word_t FUN_0006b3f4(word_t); /* vec teardown */
 extern word_t FUN_0006b45c(word_t); /* vec teardown */
-extern word_t FUN_0006b42c(void); /* vec grow */
-extern word_t FUN_0006b6a0(void); /* vec grow */
+extern word_t FUN_0006b42c(word_t, word_t, word_t, word_t, word_t); /* vec grow */
+extern word_t FUN_0006b6a0(word_t, word_t, word_t, word_t, word_t); /* vec grow */
 extern word_t FUN_0006b6d4(void); /* vec grow */
-extern word_t FUN_0006b6c0(void); /* vec count bump */
-extern word_t FUN_0006b620(void); /* nop */
-extern word_t FUN_0006b4c0(void); /* nop */
-extern word_t FUN_0006b4ac(void); /* nop */
-extern word_t FUN_0006b500(void); /* nop */
-extern word_t FUN_0006b528(void); /* nop */
-extern word_t FUN_0006b514(void); /* nop */
-extern word_t FUN_0006b540(void); /* nop */
-extern word_t FUN_0006b68c(void); /* nop */
-extern word_t FUN_0006b640(void); /* nop */
-extern word_t FUN_0006b700(void); /* nop */
-extern word_t FUN_0006b674(void); /* nop */
+extern word_t FUN_0006b6c0(word_t, word_t, word_t, word_t, word_t); /* vec count bump */
+extern word_t FUN_0006b620(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b4c0(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b4ac(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b500(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b528(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b514(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b540(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b68c(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b640(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b700(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b674(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_0006b610(void); /* vec mark */
 extern word_t FUN_0006b600(void); /* vec mark */
 extern word_t FUN_0006b5a0(void); /* vec head */
@@ -117,8 +117,8 @@ extern word_t FUN_0006b2fc(void); /* alloc */
 extern word_t FUN_0006b440(word_t, word_t); /* store char */
 extern word_t FUN_0006b48c(void); /* nop */
 extern word_t FUN_0006b4a0(void); /* nop */
-extern word_t FUN_0006b3d0(void); /* grow */
-extern word_t FUN_0006b3a4(void); /* nop */
+extern word_t FUN_0006b3d0(word_t, word_t, word_t, word_t, word_t); /* grow */
+extern word_t FUN_0006b3a4(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern word_t FUN_001ebfb0(void); /* char encode */
 extern word_t FUN_001eb088(void); /* alloc */
 extern word_t FUN_001b798c(void); /* iter next */
@@ -138,27 +138,61 @@ extern word_t FUN_0006b5c0(void); /* alloc(8) */
 extern word_t FUN_0006b5e0(void); /* alloc(8) */
 extern word_t FUN_0006b330(void); /* alloc(8) */
 extern void FUN_0006b374(void); /* string init */
-extern word_t FUN_0006b728(void); /* nop */
-extern word_t FUN_0006b714(void); /* nop */
-extern void FUN_0006b65c(void); /* nop */
-extern void FUN_001bdb28(void); /* nop */
+extern word_t FUN_0006b728(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b714(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b65c(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_001bdb28(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern void FUN_001bea18(word_t, word_t, word_t); /* bind */
 extern void FUN_000026e8(word_t); /* dealloc */
-extern void FUN_0006a4c0(word_t, word_t); /* vec prep */
-extern void FUN_0006a4f0(word_t); /* vec release */
-extern void FUN_0006a668(word_t); /* vec release */
-extern void FUN_0006a520(void); /* nop */
-extern void FUN_0006a5e4(void); /* nop */
-extern void FUN_0006b404(void); /* nop */
-extern word_t FUN_0006b6e0(void); /* nop */
+extern word_t FUN_0006a4c0(word_t, word_t, word_t, word_t, word_t); /* vec prep */
+extern word_t FUN_0006a4f0(word_t, word_t, word_t, word_t, word_t); /* vec release */
+extern word_t FUN_0006a668(word_t, word_t, word_t, word_t, word_t); /* vec release */
+extern word_t FUN_0006a520(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006a5e4(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b404(word_t, word_t, word_t, word_t, word_t); /* nop */
+extern word_t FUN_0006b6e0(word_t, word_t, word_t, word_t, word_t); /* nop */
 extern void FUN_0036b21c(void); /* closure free */
 extern word_t FUN_0006b360(word_t, word_t, word_t); /* vec wrap */
 extern void FUN_002060d4(word_t, word_t, word_t, word_t); /* str fmt */
 extern void FUN_002a3e64(word_t, word_t, word_t, word_t); /* str append */
 extern word_t FUN_001bc440(word_t, word_t, word_t, word_t); /* pair pack */
-extern void FUN_0006a698(word_t);
-extern void FUN_0006a7c8(word_t);
+extern word_t FUN_0006a698(word_t, word_t, word_t, word_t, word_t);
+extern word_t FUN_0006a7c8(word_t, word_t, word_t, word_t, word_t);
 /* ---- forward decls within this slice ---- */
+static word_t dtk_prop_apply(void);
+static word_t dtk_prop_apply_wrap(void);
+static word_t dt_name_resolve_id(word_t table, word_t name);
+static void   dtk_scope_enter(void);
+static void   dtk_scope_close(void);
+static word_t dt_compare_key(word_t a, word_t b);
+static word_t dt_compare_val(word_t a, word_t b);
+static word_t dtk_lookup_node_fatal(word_t idx);
+static word_t dtk_dump_child(void);
+static void   dtk_dump_next(word_t *out);
+static void   dtk_begin_dump(word_t *out, word_t a, word_t b);
+static void   dtk_end_dump(word_t *out, word_t a, word_t b);
+static word_t dtk_vec_alloc16(word_t count, word_t cap, word_t tag, word_t meta);
+static word_t dtk_vec_reserve16(word_t flags, word_t count, word_t grow, word_t vec,
+                                word_t tag, word_t meta, word_t copy, word_t freefn);
+static word_t dtk_dump_node_tree(word_t a, word_t b);
+static void   dtk_children_finalize(word_t vec);
+static word_t dtk_collect_children(void);
+static word_t dtk_collect_props(void);
+static word_t dtk_collect_names(void);
+static word_t dtk_collect_from_list(word_t head);
+static void   dtk_vec_store_realloc(void);
+static word_t dtk_classify_report_child(word_t a, word_t b);
+static void   dtk_classify_store(word_t *out);
+static word_t dtk_hash_fn(void);
+static void   dtk_vec_release_twice(word_t v);
+static word_t dtk_vec_split(word_t v);
+static word_t dtk_vec_alloc32(word_t count, word_t cap);
+static word_t dtk_vec_alloc24(word_t count, word_t cap);
+static word_t dtk_vec_reserve(word_t flags, word_t count, word_t grow, word_t vec,
+                              word_t alloc, word_t copy, word_t freefn);
+static void   dtk_lazy_init_once(word_t *slot, word_t a, word_t b, word_t c);
+static void   dtk_scratch_store(void);
+
 static word_t dt_find_entry(word_t list_head, word_t key, word_t *out_payload);
 static word_t dt_range_make(word_t base, word_t size, word_t *out_range);
 static word_t dt_range_end(word_t *range);
@@ -674,7 +708,7 @@ static word_t dt_iter_current(word_t *iter)
 static word_t dt_walk(word_t root, word_t *iter, word_t cb, word_t ctx)
 {
     word_t region = root;
-    word_t rc = ((word_t (*)(word_t, word_t))cb)(ctx, &region);
+    word_t rc = ((word_t (*)(word_t, word_t *))cb)(ctx, &region);
     if ((rc & 1) == 0) {
         word_t rng[4] = { 0, 0, 0, 0 };
         rc = dt_range_make(iter[0], iter[1], rng);
@@ -753,49 +787,58 @@ static void dt_nop(void)
 }
 
 /* FUN_00066224 @ 0x66224  (est. dt_thunk_build_root_iter) */
-static void dt_thunk_build_root_iter(void) { dt_build_root_iter(); }
+static word_t dt_thunk_build_root_iter(word_t *out) { return dt_build_root_iter(out); }
 
 /* FUN_0006623c @ 0x6623c  (est. dt_thunk_validate_root) */
-static void dt_thunk_validate_root(void) { dt_validate_root(); }
+static word_t dt_thunk_validate_root(word_t base, word_t size, word_t *out)
+{ return dt_validate_root(base, size, out); }
 
 /* FUN_00066254 @ 0x66254  (est. dt_thunk_validate_range) */
-static void dt_thunk_validate_range(void) { dt_validate_range(); }
+static word_t dt_thunk_validate_range(word_t base, word_t size, word_t *out)
+{ return dt_validate_range(base, size, out); }
 
 /* FUN_0006626c @ 0x6626c  (est. dt_thunk_walk_root_cb) */
-static void dt_thunk_walk_root_cb(void) { dt_walk_root_cb(); }
+static word_t dt_thunk_walk_root_cb(word_t base, word_t size, word_t cb, word_t ctx)
+{ return dt_walk_root_cb(base, size, cb, ctx); }
 
 /* FUN_00066284 @ 0x66284  (est. dt_thunk_list_at) */
-static void dt_thunk_list_at(void) { dt_list_at(); }
+static word_t dt_thunk_list_at(word_t *head, word_t idx, word_t *out)
+{ return dt_list_at(head, idx, out); }
 
 /* FUN_000662a0 @ 0x662a0  (est. dt_thunk_find_child) */
-static void dt_thunk_find_child(void) { dt_find_child(); }
+static word_t dt_thunk_find_child(word_t *iter, word_t name, word_t *out_node, word_t *out_nprop)
+{ return dt_find_child(iter, name, out_node, out_nprop); }
 
 /* FUN_000662b8 @ 0x662b8  (est. dt_thunk_range_set) */
-static void dt_thunk_range_set(void) { dt_range_set(); }
+static word_t dt_thunk_range_set(word_t base, word_t size, word_t *out)
+{ return dt_range_set(base, size, out); }
 
 /* FUN_000662d0 @ 0x662d0  (est. dt_thunk_iter_advance) */
-static void dt_thunk_iter_advance(void) { dt_iter_advance(); }
+static word_t dt_thunk_iter_advance(word_t *iter) { return dt_iter_advance(iter); }
 
 /* FUN_000662e8 @ 0x662e8  (est. dt_thunk_iter_end) */
-static void dt_thunk_iter_end(void) { dt_iter_end(); }
+static word_t dt_thunk_iter_end(word_t *iter) { return dt_iter_end(iter); }
 
 /* FUN_00066300 @ 0x66300  (est. dt_thunk_node_get) */
-static void dt_thunk_node_get(void) { dt_node_get(); }
+static word_t dt_thunk_node_get(word_t *iter, word_t *out_node, word_t *out_size)
+{ return dt_node_get(iter, out_node, out_size); }
 
 /* FUN_00066318 @ 0x66318  (est. dt_thunk_node_name_propcount) */
-static void dt_thunk_node_name_propcount(void) { dt_node_name_propcount(); }
+static word_t dt_thunk_node_name_propcount(word_t *iter, word_t *out_name, word_t *out_nprop)
+{ return dt_node_name_propcount(iter, out_name, out_nprop); }
 
 /* FUN_00066330 @ 0x66330  (est. dt_thunk_range_make) */
-static void dt_thunk_range_make(void) { dt_range_make(); }
+static word_t dt_thunk_range_make(word_t base, word_t size, word_t *out)
+{ return dt_range_make(base, size, out); }
 
 /* FUN_00066348 @ 0x66348  (est. dt_thunk_range_end) */
-static void dt_thunk_range_end(void) { dt_range_end(); }
+static word_t dt_thunk_range_end(word_t *range) { return dt_range_end(range); }
 
 /* FUN_00066360 @ 0x66360  (est. dt_thunk_range_advance) */
-static void dt_thunk_range_advance(void) { dt_range_advance(); }
+static word_t dt_thunk_range_advance(word_t *range) { return dt_range_advance(range); }
 
 /* FUN_00066378 @ 0x66378  (est. dt_thunk_children) */
-static void dt_thunk_children(void) { dt_children(); }
+static word_t dt_thunk_children(word_t *node, word_t *out_iter) { return dt_children(node, out_iter); }
 
 /*============================================================================
  * DeviceTreeKit node-name / property services

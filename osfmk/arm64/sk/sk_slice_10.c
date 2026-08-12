@@ -28,6 +28,19 @@
 
 #define CL4_FATAL() __builtin_trap()
 
+/* Host compile shims for the arm64 per-thread syscall register / svc trap.
+ * tpidrro_el0 (read-only thread pointer) holds the pointer to the current
+ * thread's syscall-argument buffer; `svc 0` is the cL4 syscall trap. These
+ * are defined here only so the recreation compiles standalone; on device
+ * they map to the actual register / instruction. */
+#if defined(__aarch64__)
+#define CL4_SVC_BUF()   ((word_t *)__builtin_thread_pointer())
+#else
+extern word_t *cl4_svc_buf(void);   /* per-thread syscall buffer */
+#define CL4_SVC_BUF()   cl4_svc_buf()
+#endif
+#define CallSupervisor(n)  __asm__ volatile("svc %0" :: "i"(n) : "memory")
+
 /* ================================================================== *
  * Shared kernel dependencies (declared extern; bodies owned by other
  * range workers — out of slice).
@@ -50,9 +63,9 @@ extern word_t FUN_00060524(void);
 extern void FUN_0005b190(word_t msg, word_t arg);
 /* FUN_00054610: singleton table variant getter (global 0x6b04a8). */
 extern word_t FUN_00054610(void);
+/* FUN_0005ab94: xrt runflags capability check (in-slice, below). */
 /* FUN_00053568(sel): boot/runflag gate check (tail-called with selector). */
 extern word_t FUN_00053568(word_t sel);
-/* FUN_0005ab94: xrt runflags capability check (in-slice, below). */
 /* thunk_FUN_00114e50: string/byte compare (sym vs DAT_005cf0f4). */
 extern word_t thunk_FUN_00114e50(word_t sym, void *cmp, word_t val);
 extern unsigned char _DAT_005cf0f4[];   /* comparison data for sec_transition */
@@ -439,10 +452,10 @@ static unsigned char sk_svc_get_1b8(void)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_00055ee0(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -454,9 +467,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00056004(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -468,9 +481,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_00056034(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -483,9 +496,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_00056064(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -499,10 +512,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_000565c4(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -514,9 +527,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_000566e8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -528,9 +541,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00056718(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -542,9 +555,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00056748(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -556,9 +569,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00056778(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -570,9 +583,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_000567a8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -585,9 +598,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_000567d8(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -601,10 +614,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_00056d3c(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -616,9 +629,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00056e60(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -630,9 +643,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00056e90(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -644,9 +657,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00056ec0(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -658,9 +671,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00056ef0(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -672,9 +685,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_00056f20(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -687,9 +700,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_00056f50(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -703,10 +716,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_000574c0(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -718,9 +731,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_000575e4(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -732,9 +745,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00057614(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -746,9 +759,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00057644(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -760,9 +773,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00057674(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -774,9 +787,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_000576a4(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -789,9 +802,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_000576d4(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -805,10 +818,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_00057c44(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -820,9 +833,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00057d68(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -834,9 +847,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00057d98(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -848,9 +861,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00057dc8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -862,9 +875,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00057df8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -876,9 +889,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_00057e28(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -891,9 +904,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_00057e58(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -907,10 +920,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_000583c4(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -922,9 +935,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_000584e8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -936,9 +949,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00058518(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -950,9 +963,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00058548(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -964,9 +977,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00058578(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -978,9 +991,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_000585a8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -993,9 +1006,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_000585d8(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1009,10 +1022,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_00058b44(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -1024,9 +1037,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00058c68(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1038,9 +1051,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00058c98(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1052,9 +1065,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00058cc8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1066,9 +1079,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00058cf8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1080,9 +1093,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_00058d28(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -1095,9 +1108,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_00058d58(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1111,10 +1124,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_000592c4(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -1126,9 +1139,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_000593e8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1140,9 +1153,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00059418(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1154,9 +1167,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00059448(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1168,9 +1181,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00059478(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1182,9 +1195,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_000594a8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -1197,9 +1210,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_000594d8(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1213,10 +1226,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_00059a44(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -1228,9 +1241,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00059b68(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1242,9 +1255,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00059b98(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1256,9 +1269,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_00059bc8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1270,9 +1283,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_00059bf8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1284,9 +1297,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_00059c28(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -1299,9 +1312,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_00059c58(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1315,10 +1328,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_0005a1c4(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -1330,9 +1343,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_0005a2e8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1344,9 +1357,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_0005a318(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1358,9 +1371,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_0005a348(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1372,9 +1385,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_0005a378(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1386,9 +1399,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_0005a3a8(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -1401,9 +1414,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_0005a3d8(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1417,10 +1430,10 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
  * per-thread syscall buffer at tpidrro_el0[0..2] — issues `svc 0`, then
  * restores buffer slot 0.
  * Confidence: high (structural) */
-static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
+static void sk_svc_2_marsh4_0005a940(word_t param_1, word_t param_2,
                                 word_t param_3, word_t param_4)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     buf[1] = param_3;
     buf[2] = param_4;
@@ -1432,9 +1445,9 @@ static void sk_svc_2_marsh4(word_t param_1, word_t param_2,
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_0005aa64(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1446,9 +1459,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_0005aa94(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1460,9 +1473,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 1): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh1(word_t param_1)
+static void sk_svc_1_marsh1_0005aac4(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1474,9 +1487,9 @@ static void sk_svc_1_marsh1(word_t param_1)
  * Syscall wrapper (selector 3): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_3_marsh1(word_t param_1)
+static void sk_svc_3_marsh1_0005aaf4(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 3 in w1 */
@@ -1488,9 +1501,9 @@ static void sk_svc_3_marsh1(word_t param_1)
  * Syscall wrapper (selector 5): saves buffer slot 0, issues `svc 0`,
  * restores slot 0, and retries while the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_5_marsh1(word_t param_1)
+static void sk_svc_5_marsh1_0005ab24(word_t param_1)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     word_t saved = buf[0];
     do {
         CallSupervisor(0);   /* svc 0, selector 5 in w1 */
@@ -1503,9 +1516,9 @@ static void sk_svc_5_marsh1(word_t param_1)
  * syscall buffer slot 0, issues `svc 0`, restores slot 0, and retries while
  * the kernel returns 1.
  * Confidence: high (structural) */
-static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
+static void sk_svc_1_marsh2_0005ab54(word_t param_1, word_t param_2)
 {
-    word_t *buf = (word_t *)tpidrro_el0;
+    word_t *buf = CL4_SVC_BUF();
     buf[0] = param_2;
     do {
         CallSupervisor(0);   /* svc 0, selector 1 in w1 */
@@ -1538,33 +1551,33 @@ static void sk_svc_1_marsh2(word_t param_1, word_t param_2)
 static bool sk_svc_class_2_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 2) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x28)) = &LAB_00055e24;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00055e44;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00055e4c;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00055e54;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00055e5c;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00055e64;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00055e6c;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00055e74;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00055e7c;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00055e9c;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00055eb8;
-    *((word_t *)(param_2 + 0x110)) = &LAB_00055ed0;
-    *((word_t *)(param_2 + 0x118)) = &LAB_00055ed8;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_00055f0c;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00055f28;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00055f48;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00055f68;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00055fb0;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x28)) = (word_t)0x00055e24  /* inline method stub */;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00055e44  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00055e4c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00055e54  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00055e5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00055e64  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00055e6c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00055e74  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00055e7c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00055e9c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00055eb8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x00055ed0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x00055ed8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_00055ee0;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056004;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x00055f0c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00056034;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00055f28  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00055f48  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00056064;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00055f68  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00055fb0  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcd10  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcdd8  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_00055ff0;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_00055ff8;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x00055ff0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00055ff8  /* inline method stub */;
     }
     return param_1 == 2;
 }
@@ -1580,44 +1593,44 @@ static bool sk_svc_class_2_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 1) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00056410;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00056428;
-    *((word_t *)(param_2 + 0x50)) = &LAB_00056440;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_0005645c;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00056474;
-    *((word_t *)(param_2 + 0x78)) = &LAB_000564ac;
-    *((word_t *)(param_2 + 0x80)) = &LAB_000564c4;
-    *((word_t *)(param_2 + 0x88)) = &LAB_000564dc;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00056504;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00056528;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00056530;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00056538;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00056540;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00056548;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00056550;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00056558;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00056560;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00056580;
-    *((word_t *)(param_2 + 0x108)) = &LAB_0005659c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_000565b4;
-    *((word_t *)(param_2 + 0x118)) = &LAB_000565bc;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_000565f0;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_0005660c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_0005662c;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_0005664c;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00056694;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00056410  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00056428  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x00056440  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_000566e8;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x0005645c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00056718;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00056474  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x000564ac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x000564c4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x000564dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00056504  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00056748;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00056528  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00056530  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00056538  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00056540  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00056548  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00056550  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00056558  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00056560  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00056580  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x0005659c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x000565b4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x000565bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_000565c4;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056778;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x000565f0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000567a8;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x0005660c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x0005662c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000567d8;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x0005664c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00056694  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bcea0  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bcf70  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_000566d4;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_000566dc;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x000566d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000566dc  /* inline method stub */;
     }
     return param_1 == 1;
 }
@@ -1633,44 +1646,44 @@ static bool sk_svc_class_1_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x100000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00056b88;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00056ba0;
-    *((word_t *)(param_2 + 0x50)) = &LAB_00056bb8;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_00056bd4;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00056bec;
-    *((word_t *)(param_2 + 0x78)) = &LAB_00056c24;
-    *((word_t *)(param_2 + 0x80)) = &LAB_00056c3c;
-    *((word_t *)(param_2 + 0x88)) = &LAB_00056c54;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00056c7c;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00056ca0;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00056ca8;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00056cb0;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00056cb8;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00056cc0;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00056cc8;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00056cd0;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00056cd8;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00056cf8;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00056d14;
-    *((word_t *)(param_2 + 0x110)) = &LAB_00056d2c;
-    *((word_t *)(param_2 + 0x118)) = &LAB_00056d34;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_00056d68;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00056d84;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00056da4;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00056dc4;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00056e0c;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00056b88  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00056ba0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x00056bb8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_00056e60;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x00056bd4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00056e90;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00056bec  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x00056c24  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x00056c3c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x00056c54  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00056c7c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00056ec0;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00056ca0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00056ca8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00056cb0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00056cb8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00056cc0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00056cc8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00056cd0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00056cd8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00056cf8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00056d14  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x00056d2c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x00056d34  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_00056d3c;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00056ef0;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x00056d68  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00056f20;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00056d84  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00056da4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00056f50;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00056dc4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00056e0c  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd040  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd110  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_00056e4c;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_00056e54;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x00056e4c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00056e54  /* inline method stub */;
     }
     return param_1 == 0x100000001;
 }
@@ -1686,44 +1699,44 @@ static bool sk_svc_class_0x100000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x200000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_0005730c;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00057324;
-    *((word_t *)(param_2 + 0x50)) = &LAB_0005733c;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_00057358;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00057370;
-    *((word_t *)(param_2 + 0x78)) = &LAB_000573a8;
-    *((word_t *)(param_2 + 0x80)) = &LAB_000573c0;
-    *((word_t *)(param_2 + 0x88)) = &LAB_000573d8;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00057400;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00057424;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_0005742c;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00057434;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_0005743c;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00057444;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_0005744c;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00057454;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_0005745c;
-    *((word_t *)(param_2 + 0x100)) = &LAB_0005747c;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00057498;
-    *((word_t *)(param_2 + 0x110)) = &LAB_000574b0;
-    *((word_t *)(param_2 + 0x118)) = &LAB_000574b8;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_000574ec;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00057508;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00057528;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00057548;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00057590;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x0005730c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00057324  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x0005733c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_000575e4;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x00057358  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00057614;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00057370  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x000573a8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x000573c0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x000573d8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00057400  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00057644;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00057424  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005742c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00057434  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005743c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00057444  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005744c  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00057454  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005745c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x0005747c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00057498  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x000574b0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x000574b8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_000574c0;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00057674;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x000574ec  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000576a4;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00057508  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00057528  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000576d4;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00057548  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00057590  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd1e0  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd2b0  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_000575d0;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_000575d8;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x000575d0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000575d8  /* inline method stub */;
     }
     return param_1 == 0x200000001;
 }
@@ -1739,44 +1752,44 @@ static bool sk_svc_class_0x200000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x300000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00057a90;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00057aa8;
-    *((word_t *)(param_2 + 0x50)) = &LAB_00057ac0;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_00057adc;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00057af4;
-    *((word_t *)(param_2 + 0x78)) = &LAB_00057b2c;
-    *((word_t *)(param_2 + 0x80)) = &LAB_00057b44;
-    *((word_t *)(param_2 + 0x88)) = &LAB_00057b5c;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00057b84;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00057ba8;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00057bb0;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00057bb8;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00057bc0;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00057bc8;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00057bd0;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00057bd8;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00057be0;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00057c00;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00057c1c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_00057c34;
-    *((word_t *)(param_2 + 0x118)) = &LAB_00057c3c;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_00057c70;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00057c8c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00057cac;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00057ccc;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00057d14;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00057a90  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00057aa8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x00057ac0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_00057d68;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x00057adc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00057d98;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00057af4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x00057b2c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x00057b44  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x00057b5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00057b84  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00057dc8;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00057ba8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00057bb0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00057bb8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00057bc0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00057bc8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00057bd0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00057bd8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00057be0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00057c00  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00057c1c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x00057c34  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x00057c3c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_00057c44;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00057df8;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x00057c70  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00057e28;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00057c8c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00057cac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00057e58;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00057ccc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00057d14  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd380  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd450  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_00057d54;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_00057d5c;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x00057d54  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00057d5c  /* inline method stub */;
     }
     return param_1 == 0x300000001;
 }
@@ -1792,44 +1805,44 @@ static bool sk_svc_class_0x300000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x400000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00058210;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00058228;
-    *((word_t *)(param_2 + 0x50)) = &LAB_00058240;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_0005825c;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00058274;
-    *((word_t *)(param_2 + 0x78)) = &LAB_000582ac;
-    *((word_t *)(param_2 + 0x80)) = &LAB_000582c4;
-    *((word_t *)(param_2 + 0x88)) = &LAB_000582dc;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00058304;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00058328;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00058330;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00058338;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00058340;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00058348;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00058350;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00058358;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00058360;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00058380;
-    *((word_t *)(param_2 + 0x108)) = &LAB_0005839c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_000583b4;
-    *((word_t *)(param_2 + 0x118)) = &LAB_000583bc;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_000583f0;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_0005840c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_0005842c;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_0005844c;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00058494;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00058210  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00058228  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x00058240  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_000584e8;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x0005825c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00058518;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00058274  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x000582ac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x000582c4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x000582dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00058304  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00058548;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00058328  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00058330  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00058338  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00058340  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00058348  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00058350  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00058358  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00058360  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00058380  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x0005839c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x000583b4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x000583bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_000583c4;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00058578;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x000583f0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000585a8;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x0005840c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x0005842c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000585d8;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x0005844c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00058494  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd520  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd5f0  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_000584d4;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_000584dc;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x000584d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000584dc  /* inline method stub */;
     }
     return param_1 == 0x400000001;
 }
@@ -1845,44 +1858,44 @@ static bool sk_svc_class_0x400000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x500000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00058990;
-    *((word_t *)(param_2 + 0x48)) = &LAB_000589a8;
-    *((word_t *)(param_2 + 0x50)) = &LAB_000589c0;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_000589dc;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_000589f4;
-    *((word_t *)(param_2 + 0x78)) = &LAB_00058a2c;
-    *((word_t *)(param_2 + 0x80)) = &LAB_00058a44;
-    *((word_t *)(param_2 + 0x88)) = &LAB_00058a5c;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00058a84;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00058aa8;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00058ab0;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00058ab8;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00058ac0;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00058ac8;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00058ad0;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00058ad8;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00058ae0;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00058b00;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00058b1c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_00058b34;
-    *((word_t *)(param_2 + 0x118)) = &LAB_00058b3c;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_00058b70;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00058b8c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00058bac;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00058bcc;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00058c14;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00058990  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x000589a8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x000589c0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_00058c68;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x000589dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00058c98;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x000589f4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x00058a2c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x00058a44  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x00058a5c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00058a84  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00058cc8;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00058aa8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00058ab0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00058ab8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00058ac0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00058ac8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00058ad0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00058ad8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00058ae0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00058b00  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00058b1c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x00058b34  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x00058b3c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_00058b44;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00058cf8;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x00058b70  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00058d28;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00058b8c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00058bac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00058d58;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00058bcc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00058c14  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd6c0  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd790  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_00058c54;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_00058c5c;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x00058c54  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00058c5c  /* inline method stub */;
     }
     return param_1 == 0x500000001;
 }
@@ -1898,44 +1911,44 @@ static bool sk_svc_class_0x500000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x600000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00059110;
-    *((word_t *)(param_2 + 0x48)) = &LAB_00059128;
-    *((word_t *)(param_2 + 0x50)) = &LAB_00059140;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_0005915c;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_00059174;
-    *((word_t *)(param_2 + 0x78)) = &LAB_000591ac;
-    *((word_t *)(param_2 + 0x80)) = &LAB_000591c4;
-    *((word_t *)(param_2 + 0x88)) = &LAB_000591dc;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00059204;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_00059228;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_00059230;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_00059238;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_00059240;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_00059248;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_00059250;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_00059258;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_00059260;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00059280;
-    *((word_t *)(param_2 + 0x108)) = &LAB_0005929c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_000592b4;
-    *((word_t *)(param_2 + 0x118)) = &LAB_000592bc;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_000592f0;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_0005930c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_0005932c;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_0005934c;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00059394;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00059110  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x00059128  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x00059140  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_000593e8;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x0005915c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00059418;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x00059174  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x000591ac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x000591c4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x000591dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00059204  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00059448;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x00059228  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x00059230  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x00059238  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x00059240  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x00059248  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x00059250  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x00059258  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x00059260  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00059280  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x0005929c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x000592b4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x000592bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_000592c4;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00059478;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x000592f0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_000594a8;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x0005930c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x0005932c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_000594d8;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x0005934c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00059394  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bd860  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bd930  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_000593d4;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_000593dc;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x000593d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x000593dc  /* inline method stub */;
     }
     return param_1 == 0x600000001;
 }
@@ -1951,44 +1964,44 @@ static bool sk_svc_class_0x600000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x700000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_00059890;
-    *((word_t *)(param_2 + 0x48)) = &LAB_000598a8;
-    *((word_t *)(param_2 + 0x50)) = &LAB_000598c0;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_000598dc;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_000598f4;
-    *((word_t *)(param_2 + 0x78)) = &LAB_0005992c;
-    *((word_t *)(param_2 + 0x80)) = &LAB_00059944;
-    *((word_t *)(param_2 + 0x88)) = &LAB_0005995c;
-    *((word_t *)(param_2 + 0x90)) = &LAB_00059984;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_000599a8;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_000599b0;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_000599b8;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_000599c0;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_000599c8;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_000599d0;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_000599d8;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_000599e0;
-    *((word_t *)(param_2 + 0x100)) = &LAB_00059a00;
-    *((word_t *)(param_2 + 0x108)) = &LAB_00059a1c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_00059a34;
-    *((word_t *)(param_2 + 0x118)) = &LAB_00059a3c;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_00059a70;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_00059a8c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_00059aac;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_00059acc;
-    *((word_t *)(param_2 + 0x170)) = &LAB_00059b14;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x00059890  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x000598a8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x000598c0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_00059b68;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x000598dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_00059b98;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x000598f4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x0005992c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x00059944  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x0005995c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x00059984  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_00059bc8;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x000599a8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x000599b0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x000599b8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x000599c0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x000599c8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x000599d0  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x000599d8  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x000599e0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x00059a00  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x00059a1c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x00059a34  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x00059a3c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_00059a44;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_00059bf8;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x00059a70  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_00059c28;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x00059a8c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x00059aac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_00059c58;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x00059acc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x00059b14  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bda00  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdad0  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_00059b54;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_00059b5c;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x00059b54  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x00059b5c  /* inline method stub */;
     }
     return param_1 == 0x700000001;
 }
@@ -2004,44 +2017,44 @@ static bool sk_svc_class_0x700000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x800000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_0005a010;
-    *((word_t *)(param_2 + 0x48)) = &LAB_0005a028;
-    *((word_t *)(param_2 + 0x50)) = &LAB_0005a040;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_0005a05c;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_0005a074;
-    *((word_t *)(param_2 + 0x78)) = &LAB_0005a0ac;
-    *((word_t *)(param_2 + 0x80)) = &LAB_0005a0c4;
-    *((word_t *)(param_2 + 0x88)) = &LAB_0005a0dc;
-    *((word_t *)(param_2 + 0x90)) = &LAB_0005a104;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_0005a128;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_0005a130;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_0005a138;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_0005a140;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_0005a148;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_0005a150;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_0005a158;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_0005a160;
-    *((word_t *)(param_2 + 0x100)) = &LAB_0005a180;
-    *((word_t *)(param_2 + 0x108)) = &LAB_0005a19c;
-    *((word_t *)(param_2 + 0x110)) = &LAB_0005a1b4;
-    *((word_t *)(param_2 + 0x118)) = &LAB_0005a1bc;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_0005a1f0;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_0005a20c;
-    *((word_t *)(param_2 + 0x158)) = &LAB_0005a22c;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_0005a24c;
-    *((word_t *)(param_2 + 0x170)) = &LAB_0005a294;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x0005a010  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x0005a028  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x0005a040  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_0005a2e8;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x0005a05c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_0005a318;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x0005a074  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x0005a0ac  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x0005a0c4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x0005a0dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x0005a104  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_0005a348;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x0005a128  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005a130  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x0005a138  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005a140  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x0005a148  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005a150  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x0005a158  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005a160  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x0005a180  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x0005a19c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x0005a1b4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x0005a1bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_0005a1c4;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_0005a378;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x0005a1f0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_0005a3a8;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x0005a20c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x0005a22c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_0005a3d8;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x0005a24c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x0005a294  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdba0  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bdc70  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_0005a2d4;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_0005a2dc;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x0005a2d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x0005a2dc  /* inline method stub */;
     }
     return param_1 == 0x800000001;
 }
@@ -2057,44 +2070,44 @@ static bool sk_svc_class_0x800000001_build(word_t param_1, word_t param_2)
 static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
 {
     if (param_1 == 0x900000001) {
-    *((word_t *)(param_2 + 0x10)) = "Redacted";
-    *((word_t *)(param_2 + 0x40)) = &LAB_0005a78c;
-    *((word_t *)(param_2 + 0x48)) = &LAB_0005a7a4;
-    *((word_t *)(param_2 + 0x50)) = &LAB_0005a7bc;
-    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0x60)) = &LAB_0005a7d8;
-    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x70)) = &LAB_0005a7f0;
-    *((word_t *)(param_2 + 0x78)) = &LAB_0005a828;
-    *((word_t *)(param_2 + 0x80)) = &LAB_0005a840;
-    *((word_t *)(param_2 + 0x88)) = &LAB_0005a858;
-    *((word_t *)(param_2 + 0x90)) = &LAB_0005a880;
-    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1;
-    *((word_t *)(param_2 + 0xa8)) = &LAB_0005a8a4;
-    *((word_t *)(param_2 + 0xb0)) = &LAB_0005a8ac;
-    *((word_t *)(param_2 + 0xb8)) = &LAB_0005a8b4;
-    *((word_t *)(param_2 + 0xc0)) = &LAB_0005a8bc;
-    *((word_t *)(param_2 + 0xd8)) = &LAB_0005a8c4;
-    *((word_t *)(param_2 + 0xe0)) = &LAB_0005a8cc;
-    *((word_t *)(param_2 + 0xe8)) = &LAB_0005a8d4;
-    *((word_t *)(param_2 + 0xf8)) = &LAB_0005a8dc;
-    *((word_t *)(param_2 + 0x100)) = &LAB_0005a8fc;
-    *((word_t *)(param_2 + 0x108)) = &LAB_0005a918;
-    *((word_t *)(param_2 + 0x110)) = &LAB_0005a930;
-    *((word_t *)(param_2 + 0x118)) = &LAB_0005a938;
-    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4;
-    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1;
-    *((word_t *)(param_2 + 0x130)) = &LAB_0005a96c;
-    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1;
-    *((word_t *)(param_2 + 0x150)) = &LAB_0005a988;
-    *((word_t *)(param_2 + 0x158)) = &LAB_0005a9a8;
-    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2;
-    *((word_t *)(param_2 + 0x168)) = &LAB_0005a9c8;
-    *((word_t *)(param_2 + 0x170)) = &LAB_0005aa10;
+    *((word_t *)(param_2 + 0x10)) = (word_t)"Redacted";
+    *((word_t *)(param_2 + 0x40)) = (word_t)0x0005a78c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x48)) = (word_t)0x0005a7a4  /* inline method stub */;
+    *((word_t *)(param_2 + 0x50)) = (word_t)0x0005a7bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x58)) = (word_t)sk_svc_1_marsh1_0005aa64;
+    *((word_t *)(param_2 + 0x60)) = (word_t)0x0005a7d8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x68)) = (word_t)sk_svc_3_marsh1_0005aa94;
+    *((word_t *)(param_2 + 0x70)) = (word_t)0x0005a7f0  /* inline method stub */;
+    *((word_t *)(param_2 + 0x78)) = (word_t)0x0005a828  /* inline method stub */;
+    *((word_t *)(param_2 + 0x80)) = (word_t)0x0005a840  /* inline method stub */;
+    *((word_t *)(param_2 + 0x88)) = (word_t)0x0005a858  /* inline method stub */;
+    *((word_t *)(param_2 + 0x90)) = (word_t)0x0005a880  /* inline method stub */;
+    *((word_t *)(param_2 + 0x98)) = (word_t)sk_svc_1_marsh1_0005aac4;
+    *((word_t *)(param_2 + 0xa8)) = (word_t)0x0005a8a4  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb0)) = (word_t)0x0005a8ac  /* inline method stub */;
+    *((word_t *)(param_2 + 0xb8)) = (word_t)0x0005a8b4  /* inline method stub */;
+    *((word_t *)(param_2 + 0xc0)) = (word_t)0x0005a8bc  /* inline method stub */;
+    *((word_t *)(param_2 + 0xd8)) = (word_t)0x0005a8c4  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe0)) = (word_t)0x0005a8cc  /* inline method stub */;
+    *((word_t *)(param_2 + 0xe8)) = (word_t)0x0005a8d4  /* inline method stub */;
+    *((word_t *)(param_2 + 0xf8)) = (word_t)0x0005a8dc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x100)) = (word_t)0x0005a8fc  /* inline method stub */;
+    *((word_t *)(param_2 + 0x108)) = (word_t)0x0005a918  /* inline method stub */;
+    *((word_t *)(param_2 + 0x110)) = (word_t)0x0005a930  /* inline method stub */;
+    *((word_t *)(param_2 + 0x118)) = (word_t)0x0005a938  /* inline method stub */;
+    *((word_t *)(param_2 + 0x120)) = (word_t)sk_svc_2_marsh4_0005a940;
+    *((word_t *)(param_2 + 0x128)) = (word_t)sk_svc_3_marsh1_0005aaf4;
+    *((word_t *)(param_2 + 0x130)) = (word_t)0x0005a96c  /* inline method stub */;
+    *((word_t *)(param_2 + 0x138)) = (word_t)sk_svc_5_marsh1_0005ab24;
+    *((word_t *)(param_2 + 0x150)) = (word_t)0x0005a988  /* inline method stub */;
+    *((word_t *)(param_2 + 0x158)) = (word_t)0x0005a9a8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x160)) = (word_t)sk_svc_1_marsh2_0005ab54;
+    *((word_t *)(param_2 + 0x168)) = (word_t)0x0005a9c8  /* inline method stub */;
+    *((word_t *)(param_2 + 0x170)) = (word_t)0x0005aa10  /* inline method stub */;
     *((word_t *)(param_2 + 0x180)) = (word_t)0x004bdd40  /* data table */;
     *((word_t *)(param_2 + 0x188)) = (word_t)0x004bde10  /* data table */;
-    *((word_t *)(param_2 + 0x198)) = &LAB_0005aa50;
-    *((word_t *)(param_2 + 0x1a0)) = &LAB_0005aa58;
+    *((word_t *)(param_2 + 0x198)) = (word_t)0x0005aa50  /* inline method stub */;
+    *((word_t *)(param_2 + 0x1a0)) = (word_t)0x0005aa58  /* inline method stub */;
     }
     return param_1 == 0x900000001;
 }
@@ -2104,11 +2117,12 @@ static bool sk_svc_class_0x900000001_build(word_t param_1, word_t param_2)
  * ================================================================== */
 
 /* FUN_0005ab88 @ 0x5ab88  (est. sk_runflag_gate)
- * Invoke the boot/runflag gate check FUN_00053568 with selector 1.
+ * Invoke the boot/runflag gate check FUN_00053568 with selector 1
+ * (tail-call). Takes no arguments; the selector is a literal.
  * Confidence: medium (thin wrapper; callee out of slice) */
-static void sk_runflag_gate(word_t param_1)
+static void sk_runflag_gate(void)
 {
-    FUN_00053568(1);
+    FUN_00053568(1);   /* tail-call, selector 1 */
 }
 
 /* FUN_0005ab94 @ 0x5ab94  (est. sk_xrt_runflags_check)
@@ -2145,9 +2159,9 @@ static unsigned int sk_xrt_runflags_check(unsigned long param_1, unsigned int pa
  * (offset 0x1b8) to be non-zero, and the byte at FUN_00054610() to have bit
  * 0 clear (i.e. not already in a transition). It then looks up the
  * "sec_transition" symbol; if missing or its stored value equals
- * DAT_005cf0f4 it clears the "xrt__runflags" bit via sk_xrt_runflags_check
+ * _DAT_005cf0f4 it clears the "xrt__runflags" bit via sk_xrt_runflags_check
  * (2,1) and returns (that result == 1). Otherwise it returns 1.
- * Confidence: medium (string-matched "sec_transition"; DAT_005cf0f4
+ * Confidence: medium (string-matched "sec_transition"; _DAT_005cf0f4
  *   comparison via thunk_FUN_00114e50 is a string/byte compare) */
 static unsigned long sk_sec_transition_allowed(void)
 {
@@ -2158,7 +2172,7 @@ static unsigned long sk_sec_transition_allowed(void)
         if ((*pb & 1) == 0) {
             word_t val = 0;
             long sym = FUN_0006562c("sec_transition", &val);
-            if (sym == 0 || (word_t)thunk_FUN_00114e50(sym, &DAT_005cf0f4, val) == 0) {
+            if (sym == 0 || (word_t)thunk_FUN_00114e50(sym, &_DAT_005cf0f4, val) == 0) {
                 r = (unsigned long)(sk_xrt_runflags_check(2, 1) == 1);
             } else {
                 r = 1;
