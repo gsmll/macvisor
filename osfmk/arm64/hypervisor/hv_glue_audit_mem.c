@@ -130,7 +130,7 @@ extern uint64_t kernel_map_enter_pre(uint64_t map, uint64_t flags,
 extern uint64_t kernel_map_enter_insert(uint64_t map, uint64_t size,
                                         uint64_t param3, uint64_t tag,
                                         uint64_t *block_out);                /* FUN_fffffe000b8a748c */
-extern uint64_t kernel_page_unlink(uint64_t *blocks, uint64_t flags);        /* FUN_fffffe000b8f6e54 */
+extern void kernel_queue_free_walk();  /* FUN_fffffe000b8f6e54 (was misnamed kernel_page_unlink/kernel_vm_free_pages here; manifest-verified name = kernel_queue_free_walk; decompile walks *param_1 list, frees each elem; dropped-arg prototype per hv_kernel_shims.h) */
 extern uint64_t kernel_va_tag(uint64_t a, uint64_t b, uint64_t c);           /* FUN_fffffe000b990e5c */
 extern uint64_t kernel_random_va(uint64_t *buf, uint64_t n, void **out,
                                  uint64_t flags);                            /* FUN_fffffe000b7a5cc0 */
@@ -229,7 +229,6 @@ extern uint64_t kernel_vm_alloc_prep(void *map, uint64_t flags, uint64_t a,
                                      uint64_t *o);                          /* FUN_fffffe000b8a730c */
 extern void     kernel_vm_markclean(void *map, void *obj);                  /* FUN_fffffe000b917524 */
 extern uint64_t kernel_vm_alloc_phys(uint64_t a, uint64_t b, uint64_t c);   /* FUN_fffffe000b990e5c */
-extern void     kernel_vm_free_pages(void *pg, uint64_t n);                 /* FUN_fffffe000b8f6e54 */
 extern uint64_t kernel_ktrace(void *buf, uint64_t a, uint64_t b, uint64_t c); /* FUN_fffffe000b7a5cc0 */
 extern void     kernel_alloc_panic(void *a, uint64_t b, uint64_t c) __attribute__((noreturn)); /* FUN_fffffe000c0ecf34 */
 extern hv_u128_t kernel_alloc_panic2(void *a, uint64_t b);                  /* FUN_fffffe000c0ecf68 */
@@ -2089,7 +2088,7 @@ l_fail2:
                 *pg0 = (long)phys_blocks[0];
                 phys_blocks[0] = pg0;
 l_unlink:
-                kernel_page_unlink(phys_blocks[0], 0);                  /* FUN_fffffe000b8f6e54 */
+                kernel_queue_free_walk(phys_blocks[0], 0);                  /* FUN_fffffe000b8f6e54 */
             }
             tag = 0;
             result_lo = (ulong)size_ref & 0xffffffff;
@@ -2963,7 +2962,7 @@ l_zone_commit:
                                    ((pg_idx != 0 || (DAT_fffffe000c67f9b0 <= DAT_fffffe000c649450))))
                                     break;
                                 if ((avail & 2) != 0) {
-                                    kernel_page_unlink(page_slot, 0);       /* FUN_fffffe000b8f6e54 */
+                                    kernel_queue_free_walk(page_slot, 0);       /* FUN_fffffe000b8f6e54 */
                                     if (count_hi != 0) {
                                         elem = (ushort *)elem;
                                         kernel_page_trace(*(uint64_t *)(cur + 0x4e8),

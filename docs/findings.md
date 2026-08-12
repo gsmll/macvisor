@@ -16,8 +16,9 @@ hypothesis, never a claim, and carries Ghidra evidence.
   tier is still current; the caller's cred is read fresh each call via
   per_cpu_base(FUN_fffffe000b866ec4) + FUN_fffffe000b8663e8 (current_task),
   but the tier value returned is used by the caller to size capabilities.
-- **Evidence**: three `(**(code **)(DAT_fffffe0007e93310 + 0x1c0))(cred,
-  "<entitlement>")` probes against com.apple.security.hypervisor (level 1),
+- **Evidence**: three `(*(uint64_t **)DAT_fffffe0007e93310)[0x38](cred,
+  "<entitlement>")` probes — i.e. the double deref `*(*(0x7e93310)+0x1c0)`,
+  a boot-resolved probe — against com.apple.security.hypervisor (level 1),
   com.apple.private.hypervisor.vmapple (level 3), com.apple.private.hypervisor
   (level 4 with DAT_fffffe0007e255f8 & 0x1010). No bounds/TOCTOU check on the
   returned tier between probe and use.
@@ -633,8 +634,8 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: low — the conditional gates are directly observed; a real save-miss is not demonstrated.
 
 ## [vcpu-core] fffffe000b989a44 hv_vcpu_run — synthetic register blob injected into guest on HVC/SVC emulation
-- **Observation**: On the HVC (0xc1000001..0xc100000f, 0xc3000003..0xc3000006) and IABT (0x83000000) handlers the hub stores hypervisor-chosen constant vectors (loaded from DAT tables into q0/q1 at sp+0x50/0x60/0x70/0x80/0x90 and the fixed magic 0xfedefacafeadfad9) into the guest-visible save area es+0x8/0x18/0x28. These become the guest-visible x0..x3/PC-style register state after return-to-guest. The injected values are constants in the traced disassembly, but any future code path that mixes guest-controlled data into these blobs would be a register-injection / privilege bug; the fixed magic also fingerprints the hypervisor emulation to the guest.
-- **Evidence**: disasm 0xfffffe000b98bd1c (stores q0/q1 from sp+0x50 to es[0x8]/[0x18], magic 0xfedefacafeadfad9 to es[0x28]); 0xfffffe000b98c464/0xfffffe000b98c50c/0xfffffe000b98c5b4/0xfffffe000b98c648 (same magic family writes); 0xfffffe000b98a7d8 (rev-swapped 32-bit pair stores for the HVC hint handler).
+- **Observation**: On the HVC (0xc1000001..0xc100000f, 0xc3000003..0xc3000006) and IABT (0x83000000) handlers the hub stores hypervisor-chosen constant vectors (loaded from DAT tables into q0/q1 at sp+0x50/0x60/0x70/0x80/0x90 and the fixed magic 0xfeedfacefeedfad9 — verified 2026-08-12 from the movk chain at b98bd28-34: `mov #0xfad9; movk #0xfeed<<16; movk #0xface<<32; movk #0xfeed<<48`; the earlier 0xfedefacafeadfad9 transcription was wrong) into the guest-visible save area es+0x8/0x18/0x28. These become the guest-visible x0..x3/PC-style register state after return-to-guest. The injected values are constants in the traced disassembly, but any future code path that mixes guest-controlled data into these blobs would be a register-injection / privilege bug; the fixed magic also fingerprints the hypervisor emulation to the guest.
+- **Evidence**: disasm 0xfffffe000b98bd1c (stores q0/q1 from sp+0x50 to es[0x8]/[0x18], magic 0xfeedfacefeedfad9 to es[0x28]); 0xfffffe000b98c464/0xfffffe000b98c50c/0xfffffe000b98c5b4/0xfffffe000b98c648 (same magic family writes); 0xfffffe000b98a7d8 (rev-swapped 32-bit pair stores for the HVC hint handler).
 - **Severity (hypothesis)**: informational/low — observed values are constant; no guest influence in the traced paths.
 - **Confidence**: high — the injection writes are directly observed; the 'no guest influence' part is limited to the traced constant paths.
 
@@ -967,6 +968,10 @@ hypothesis, never a claim, and carries Ghidra evidence.
   (puVar10 != 0)`.
 - **Severity (hypothesis)**: informational.
 - **Confidence**: high.
+- **2026-08-12 correction**: hv_glue_audit_mem.c had declared this address
+  under two additional wrong names (`kernel_page_unlink`, `kernel_vm_free_pages`)
+  for the zalloc-core free paths; unified to `kernel_queue_free_walk` per this
+  finding (prototype-less decl matching hv_kernel_shims.h).
 
 ## [vcpu-classifier] fffffe000b989a44 hub — full ESR-classifier hypercall surface transcribed
 
