@@ -169,8 +169,7 @@ static cL4_w16_t sk_seqlock_retain(word_t *p, word_t op);
 static word_t *  sk_hash_insert(word_t *tbl, word_t key, word_t key2);
 static word_t *  sk_hash_get_or_insert(word_t *tbl, word_t *key);
 static void      sk_hash_copy(word_t *tbl, word_t *src, word_t *end);
-static void      sk_alloc_vec_10(word_t n, word_t unused);
-static void      sk_conform_table_drain(word_t *p, word_t v);
+static void *    sk_alloc_vec_10(word_t n);static void      sk_conform_table_drain(word_t *p, word_t v);
 static word_t    sk_conform_table_probe(word_t key);
 static word_t *  sk_conform_desc_init(word_t *out, word_t p);
 static cL4_w16_t sk_proto_desc_10(word_t *p);
@@ -883,9 +882,9 @@ static void sk_alloc_vec_4(word_t n, word_t unused)
 
 /* FUN_0039904c @ 0x39904c  (est. sk_alloc_vec_10)
  * Allocate a 0x10-element vector of `n` entries (tag 0x1000c00451b5be8). */
-static void sk_alloc_vec_10(word_t n, word_t unused)
+static void *sk_alloc_vec_10(word_t n)
 {
-    if (n >> 0x3c == 0) { cL4_alloc(n << 4, 0x1000c00451b5be8); return; }
+    if (n >> 0x3c == 0) return cL4_alloc(n << 4, 0x1000c00451b5be8);
     cL4_alloc_overflow();
 }
 
@@ -1414,7 +1413,7 @@ static word_t sk_pack_push(word_t *v, word_t val)
             base = *(word_t**)(v + 0x50);
             cnt = ((word_t)hi - (word_t)base) >> 4;
         } else {
-            np = (word_t*)sk_alloc_vec_10((word_t*)(v + 0x60), cap); 
+            np = (word_t*)sk_alloc_vec_10(cap); 
             base = *(word_t**)(v + 0x50);
             cnt = ((word_t)hi - (word_t)base) >> 4;
         }
@@ -1442,14 +1441,16 @@ static word_t sk_conform_desc(word_t *p)
     unsigned k = *(unsigned*)(p + 0xc) >> 3 & 7;
     word_t r;
     if (k - 2 > 1) {
+        word_t (*fn)(word_t);
         if (k > 1) { CL4_SW_BP(0x39a2a4); }
-        word_t *f = (word_t*)cL4_deref_field(p + 4, 0);
+        word_t *f = (word_t*)cL4_deref_field((word_t)(p + 4), 0);
         if (!f) return 0;
         unsigned w = *f;
         if (((w >> 4 & 1) == 0) || !f) {
             if ((w & 0x1f) == 3 && f) return cL4_conform_desc2((word_t)f);
-        } else if (((w >> 7 & 1) == 0) && (w = f[3], w != 0)) {
-            return (word_t)(*(word_t **)((word_t)(f + 3) + (long)(int)w))(0xff);
+        } else if (((w >> 7 & 1) == 0) && (w = (unsigned)f[3], w != 0)) {
+            fn = (word_t (*)(word_t))((word_t)(f + 3) + (long)(int)w);
+            return fn(0xff);
         }
     }
     return 0;
@@ -1479,7 +1480,7 @@ static bool sk_type_same_shape(word_t *a, word_t *b)
             } while (0x7fe < *a - 1U);
         }
     } else if (0xfffffffffffff800 < *b - 0x800U) {
-        return cL4_conform_equal(a, b) != 0;
+        return cL4_conform_equal((word_t)a, (word_t)b) != 0;
     }
     return false;
 }
@@ -1492,7 +1493,7 @@ static word_t sk_type_step(word_t *p, word_t mode, word_t flag, int dir)
 {
     if (*p - 1U < 0x7ff) return cL4_conform_step(p);
     if ((flag & 1) == 0) { cL4_conform_step3(0x100, p); }
-    if (mode == 1) { word_t v = p[1]; if (!v) v = 0; cL4_conform_step3(0x100, v); return v; }
+    if (mode == 1) { word_t v = p[1]; if (!v) v = 0; cL4_conform_step3(0x100, &v); return v; }
     if (mode == 0) { return p[1]; }
     if (dir == 0) return 0;
     return cL4_conform_step2(0x1ff, p);
@@ -1507,9 +1508,9 @@ static word_t sk_type_step(word_t *p, word_t mode, word_t flag, int dir)
 static word_t sk_hash_lookup_20(byte *tbl, word_t key, word_t *slot)
 {
     word_t *entry, *cur; byte *base;
-    int mask, i = 1;
+    int cap, i = 1;
     if ((*tbl & 1) == 0) {
-        int cap = *(int*)(tbl + 0x10);
+        cap = *(int*)(tbl + 0x10);
         if (cap == 0) { *slot = 0; return 0; }
         base = *(byte**)(tbl + 8);
     } else { cap = 4; base = tbl + 8; }

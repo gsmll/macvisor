@@ -30,6 +30,129 @@ static inline void sk_break(uint64_t a, uint64_t b) __attribute__((noreturn))
 #define SK_CANARY (-0x2c8502b44bfffed6LL)
 
 static uint8_t sk_tpidr_area[0x100] __attribute__((aligned(16)));
+
+/* Forward declarations of the in-slice functions (definition order). */
+static void sk_capop_003e68f0(void);
+static void sk_capop_003e6be8(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
+static void sk_capop_003e6cbc(void);
+static void sk_capop_003e6cf0(void);
+static void sk_capop_003e6d08(void);
+static void sk_capop_003e6da8(uint64_t arg1);
+static void sk_capop_003e6dd0(uint64_t arg1, int64_t arg2);
+static void sk_capop_003e6ecc(long param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5, uint64_t param_6, uint64_t param_7, uint64_t param_8, uint64_t (*param_9);
+static void sk_capop_003e6fc8(void);
+static void sk_capop_003e7228(void);
+static void sk_capop_003e74fc(void);
+static void sk_capop_003e788c(void);
+static void sk_capop_003e7b14(void);
+static void sk_capop_003e7d20(void);
+static void sk_capop_003e838c(uint64_t param_1, uint64_t param_2, uint64_t param_3, int64_t param_4);
+static void sk_capop_003e86c8(void);
+static void sk_capop_003e89f0(void);
+static void sk_capop_003e8e28(void);
+static void sk_capop_003e90f4(void);
+static void sk_capop_003e9310(void);
+static void sk_capop_003e9c34(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
+static void sk_capop_003e9d04(void);
+static void sk_capop_003e9db0(void);
+static void sk_capop_003e9de0(void);
+static void sk_capop_003e9df8(void);
+static void sk_capop_003e9e74(uint64_t arg1, uint64_t arg2);
+static void sk_capop_003e9f40(void);
+static void sk_capop_003e9fcc(void);
+static void sk_capop_003ea0a4(void);
+static void sk_capop_003ea260(void);
+static void sk_capop_003ea494(void);
+static void sk_capop_003ea4ec(void);
+static void sk_capop_003ea5a8(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4);
+static void sk_capop_003ea6ec(void);
+static void sk_capop_003ea8f4(void);
+static void sk_capop_003eab58(void);
+static void sk_capop_003ead6c(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
+static void sk_capop_003eae24(void);
+static void sk_capop_003eaef4(void);
+static void sk_capop_003eaf34(void);
+static void sk_capop_003eaf4c(void);
+static void sk_capop_003eafc8(uint64_t arg1, int64_t arg2);
+static void sk_capop_003eb0a4(void);
+static void sk_capop_003eb120(void);
+static void sk_capop_003eb1d8(void);
+static void sk_capop_003eb398(void);
+static void sk_capop_003eb594(void);
+static void sk_capop_003eb68c(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4);
+static void sk_capop_003eb7c4(void);
+static void sk_capop_003eb9c8(void);
+static void sk_capop_003ebbd4(void);
+static void sk_capop_003ebd9c(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
+static void sk_capop_003ebe6c(void);
+static cl4_result_t sk_capop_003ebf10(void);
+static void sk_capop_003ebfe8(void);
+static void sk_capop_003ec094(void);
+static void sk_capop_003ec098(void);
+static uint8_t *sk_capop_003ec0c4(void);
+static void sk_capop_003ec12c(void);
+static void sk_capop_003ec130(void);
+static void sk_capop_003ec144(void);
+static void sk_capop_003ec148(void);
+static void sk_capop_003ec178(void);
+static void sk_capop_003ec20c(void);
+static void sk_capop_003ec438(void);
+static void sk_capop_003ec4dc(void);
+static void sk_capop_003ec598(void);
+static void sk_capop_003ec6c8(void);
+static void sk_capop_003ec708(void);
+static void sk_capop_003ec730(void);
+static void sk_capop_003ec758(void);
+static void sk_capop_003ec780(void);
+static void sk_capop_003ec7bc(void);
+static void sk_capop_003ec7fc(void);
+static void sk_capop_003ec824(void);
+static void sk_capop_003ec84c(void);
+static void sk_capop_003ec874(void);
+static void sk_capop_003ec8a0(uint64_t param_1, uint64_t param_2);
+static void sk_capop_003ec8c8(uint64_t param_1);
+static void sk_capop_003ec918(void);
+static int64_t sk_capop_003ec9c4(int arg1);
+static void sk_capop_003ecb1c(void);
+static void sk_capop_003ecb20(void);
+static void sk_capop_003ecb48(uint64_t param_1);
+static void sk_capop_003ecb4c(uint64_t param_1);
+static void sk_capop_003ecb64(uint64_t arg1, uint64_t arg2);
+static uint64_t sk_capop_003ecc18(void);
+static void sk_capop_003eccc4(void);
+static uint32_t sk_capop_003ecd44(void);
+static void sk_capop_003ecd98(void);
+static void sk_capop_003ecd9c(void);
+static void sk_capop_003ecddc(void);
+static void sk_capop_003ed0a8(void);
+static void sk_capop_003ed0ec(void);
+static void sk_capop_003ed14c(void);
+static void sk_capop_003ed1a4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7);
+static void sk_capop_003ed2dc(uint64_t arg1, uint64_t arg2, uint64_t arg3);
+static void sk_capop_003ed340(void);
+static void sk_capop_003ed4d4(void);
+static void sk_capop_003ed5f8(uint64_t param_1, uint64_t param_2, uint64_t param_3);
+static void sk_capop_003ed6d0(uint64_t arg1, uint64_t arg2, uint64_t arg3, int *arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7, uint64_t arg8, int64_t arg9, uint64_t arg10, uint64_t arg11);
+static void sk_capop_003ed930(void);
+static void sk_capop_003edad4(void);
+static void sk_capop_003edf5c(void);
+static void sk_capop_003ee090(void);
+static void sk_capop_003ee234(void);
+static void sk_capop_003ee310(void);
+static void sk_capop_003ee3c8(void);
+static void sk_capop_003ee47c(void);
+static void sk_capop_003ee520(void);
+static void sk_capop_003ee5e8(uint64_t arg1, uint64_t arg2, uint64_t arg3, int64_t arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7, uint64_t arg8);
+static void sk_capop_003ee688(uint64_t arg1, uint64_t arg2, uint64_t (*tail);
+static void sk_capop_003ee818(void);
+static void sk_capop_003ee8e4(void);
+static void sk_capop_003eead0(void);
+static void sk_capop_003eeb6c(void);
+static void sk_capop_003eebf0(void);
+static void sk_capop_003eec90(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5, uint64_t param_6, uint64_t param_7, uint64_t param_8);
+static void sk_capop_003eed30(uint64_t param_1, uint64_t param_2, void (*UNRECOVERED_JUMPTABLE);
+static void sk_capop_003eeef4(void);
+
 #define tpidr_el0    ((uint8_t *)sk_tpidr_area)
 #define tpidrro_el0  ((uint8_t *)sk_tpidr_area)
 
@@ -64,13 +187,13 @@ extern uint8_t  sk_g_005dc0d0;          /* string s_Unavailable_in_Exclaves_005d
 extern unsigned long sk_x_00002534();   /* FUN_00002534 */
 extern unsigned long sk_x_000026e8();   /* FUN_000026e8 */
 extern unsigned long sk_x_00019858();   /* FUN_00019858 */
-extern unsigned long sk_x_00027614();   /* FUN_00027614 */
+extern cl4_result_t sk_x_00027614();   /* FUN_00027614 */
 extern unsigned long sk_x_00027724();   /* FUN_00027724 */
 extern unsigned long sk_x_0006a4c0();   /* FUN_0006a4c0 */
 extern unsigned long sk_x_0007c028();   /* FUN_0007c028 */
 extern unsigned long sk_x_0007c1a4();   /* FUN_0007c1a4 */
 extern unsigned long sk_x_000836a4();   /* FUN_000836a4 */
-extern unsigned long sk_x_000839d8();   /* FUN_000839d8 */
+extern cl4_result_t sk_x_000839d8();   /* FUN_000839d8 */
 extern unsigned long sk_x_000839f8();   /* FUN_000839f8 */
 extern unsigned long sk_x_0008409c();   /* FUN_0008409c */
 extern unsigned long sk_x_00084180();   /* FUN_00084180 */
@@ -107,7 +230,7 @@ extern unsigned long sk_x_0034d2b4();   /* FUN_0034d2b4 */
 extern unsigned long sk_x_00350404();   /* FUN_00350404 */
 extern unsigned long sk_x_00350500();   /* FUN_00350500 */
 extern unsigned long sk_x_0035050c();   /* FUN_0035050c */
-extern unsigned long sk_x_00350518();   /* FUN_00350518 */
+extern cl4_result_t sk_x_00350518();   /* FUN_00350518 */
 extern unsigned long sk_x_00350548();   /* FUN_00350548 */
 extern unsigned long sk_x_00350624();   /* FUN_00350624 */
 extern unsigned long sk_x_00350744();   /* FUN_00350744 */
@@ -132,10 +255,10 @@ extern unsigned long sk_x_00352efc();   /* FUN_00352efc */
 extern unsigned long sk_x_00353080();   /* FUN_00353080 */
 extern unsigned long sk_x_00353498();   /* FUN_00353498 */
 extern unsigned long sk_x_00353930();   /* FUN_00353930 */
-extern unsigned long sk_x_00356b98();   /* FUN_00356b98 */
+extern cl4_result_t sk_x_00356b98();   /* FUN_00356b98 */
 extern unsigned long sk_x_003591d0();   /* FUN_003591d0 */
 extern unsigned long sk_x_003593c0();   /* FUN_003593c0 */
-extern unsigned long sk_x_0035a7e8();   /* FUN_0035a7e8 */
+extern cl4_result_t sk_x_0035a7e8();   /* FUN_0035a7e8 */
 extern unsigned long sk_x_0035ac70();   /* FUN_0035ac70 */
 extern unsigned long sk_x_00369340();   /* FUN_00369340 */
 extern unsigned long sk_x_0036986c();   /* FUN_0036986c */
@@ -175,14 +298,14 @@ extern unsigned long sk_x_00406608();   /* FUN_00406608 */
 extern unsigned long sk_x_004066bc();   /* FUN_004066bc */
 extern unsigned long sk_x_00406704();   /* FUN_00406704 */
 extern unsigned long sk_x_0040676c();   /* FUN_0040676c */
-extern unsigned long sk_x_0040678c();   /* FUN_0040678c */
+extern cl4_result_t sk_x_0040678c();   /* FUN_0040678c */
 extern unsigned long sk_x_0040679c();   /* FUN_0040679c */
 extern unsigned long sk_x_004067b8();   /* FUN_004067b8 */
 extern unsigned long sk_x_004067f8();   /* FUN_004067f8 */
 extern unsigned long sk_x_0040683c();   /* FUN_0040683c */
 extern unsigned long sk_x_0040684c();   /* FUN_0040684c */
 extern unsigned long sk_x_0040686c();   /* FUN_0040686c */
-extern unsigned long sk_x_00406894();   /* FUN_00406894 */
+extern cl4_result_t sk_x_00406894();   /* FUN_00406894 */
 extern unsigned long sk_x_004068bc();   /* FUN_004068bc */
 extern unsigned long sk_x_004068f4();   /* FUN_004068f4 */
 extern unsigned long sk_x_0040691c();   /* FUN_0040691c */
@@ -202,7 +325,7 @@ extern unsigned long sk_x_00406cf0();   /* FUN_00406cf0 */
 extern unsigned long sk_x_00406d70();   /* FUN_00406d70 */
 extern unsigned long sk_x_00406dd0();   /* FUN_00406dd0 */
 extern unsigned long sk_x_00406e34();   /* FUN_00406e34 */
-extern unsigned long sk_x_00406e64();   /* FUN_00406e64 */
+extern cl4_result_t sk_x_00406e64();   /* FUN_00406e64 */
 extern unsigned long sk_x_00406e8c();   /* FUN_00406e8c */
 extern unsigned long sk_x_00406ee4();   /* FUN_00406ee4 */
 extern unsigned long sk_x_00406f08();   /* FUN_00406f08 */
@@ -268,7 +391,7 @@ extern unsigned long sk_x_00407c04();   /* FUN_00407c04 */
 extern unsigned long sk_x_00407c78();   /* FUN_00407c78 */
 extern unsigned long sk_x_00407c8c();   /* FUN_00407c8c */
 extern unsigned long sk_x_00407ca0();   /* FUN_00407ca0 */
-extern unsigned long sk_x_00407ce4();   /* FUN_00407ce4 */
+extern cl4_result_t sk_x_00407ce4();   /* FUN_00407ce4 */
 extern unsigned long sk_x_00407d14();   /* FUN_00407d14 */
 extern unsigned long sk_x_00407db0();   /* FUN_00407db0 */
 extern unsigned long sk_x_00407e10();   /* FUN_00407e10 */
@@ -286,7 +409,7 @@ extern unsigned long sk_x_004081b4();   /* FUN_004081b4 */
 extern unsigned long sk_x_00408280();   /* FUN_00408280 */
 extern unsigned long sk_x_004082a8();   /* FUN_004082a8 */
 extern unsigned long sk_x_00408328();   /* FUN_00408328 */
-extern unsigned long sk_x_00408354();   /* FUN_00408354 */
+extern cl4_result_t sk_x_00408354();   /* FUN_00408354 */
 extern unsigned long sk_x_00408374();   /* FUN_00408374 */
 extern unsigned long sk_x_0040838c();   /* FUN_0040838c */
 extern unsigned long sk_x_004083c0();   /* FUN_004083c0 */
@@ -350,7 +473,7 @@ static void sk_capop_003e68f0(void)
     uint64_t extraout_x17 = /* extraout_x17 */ 0;
     uint64_t r6;
     uint8_t *ctx = /* unaff_x22: current op context */ 0;
-    struct { uint64_t lo, hi; } auVar7;
+    cl4_result_t auVar7;
 
     r3 = sk_x_00407ca0();
     sk_x_0040700c();
@@ -437,7 +560,7 @@ static void sk_capop_003e74fc(void)
     uint8_t *ctx = /* unaff_x22: current op context */ 0;
     int64_t v9;
     uint64_t *sl_10;
-    struct { uint64_t lo, hi; } auVar11;
+    cl4_result_t auVar11;
 
     r3 = sk_x_0040785c();
     sk_x_00407adc();
@@ -451,7 +574,7 @@ static void sk_capop_003e74fc(void)
         (*extraout_x8)();
         sk_x_00407764();
         (*extraout_x8_00)();
-        tail_00 = *(uint64_t (*)(void) *)(ctx + 0xd8);
+        tail_00 = *(uint64_t (**)(void))(ctx + 0xd8);
         sk_x_00350744(*(int64_t *)(ctx + 0x20) + (int64_t)*(int *)(ctx + 0x17c));
         auVar11 = sk_x_000839d8();
         sk_x_00406fb0(*(uint64_t *)(ctx + 0x110), auVar11.lo, auVar11.hi,
@@ -462,7 +585,7 @@ static void sk_capop_003e74fc(void)
             v5 = *(int64_t *)(ctx + 0x58);
             sk_x_00353930(*(uint64_t *)(ctx + 0xe8), *(uint64_t *)(ctx + 0xf0),
                           *(uint64_t *)(ctx + 0xe0));
-            *(uint64_t (*)(void) *)(ctx + 0x138) = extraout_x9;
+            *(uint64_t (**)(void))(ctx + 0x138) = extraout_x9;
             *(uint64_t *)(ctx + 0x140) = extraout_x10;
             (*extraout_x9)();
             sk_x_0040652c();
@@ -479,9 +602,9 @@ static void sk_capop_003e74fc(void)
             r3 = *(uint64_t *)(ctx + 0xd8);
             auVar11 = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
                                     *(uint64_t *)(ctx + 0xf0));
-            *(uint64_t (*)(void) *)(ctx + 0x118) = extraout_x9_02;
+            *(uint64_t (**)(void))(ctx + 0x118) = extraout_x9_02;
             *(uint64_t *)(ctx + 0x120) = extraout_x10_00;
-            (*extraout_x9_02)(auVar11.lo, auVar11.hi, r3);
+            ((void (*)(uint64_t, uint64_t, uint64_t))extraout_x9_02)(auVar11.lo, auVar11.hi, r3);
             sk_x_004067f8();
             sk_x_003fcc1c();
             v5 = sk_x_004062c8();
@@ -634,7 +757,7 @@ static void sk_capop_003ebbd4(void)
     uint64_t r2;
     uint64_t (*tail)(void);
     uint8_t *ctx = /* unaff_x22: current op context */ 0;
-    struct { uint64_t lo, hi; } auVar3;
+    cl4_result_t auVar3;
 
     sk_x_00406fd4();
     if (*(char *)(ctx + 0xd8) == '\x01') {
@@ -745,7 +868,7 @@ static int64_t sk_capop_003ec9c4(int arg1)
         sk_x_003a25d4(local_28);
         {
             void (*trap)(uint64_t, uint64_t) = (void (*)(uint64_t, uint64_t))sk_x_00027724(0x670738);
-            (*trap)(&sk_g_006775b0, 0x670738);
+            (*trap)((uint64_t)&sk_g_006775b0, 0x670738);
         }
         sk_x_000e72d4();
         sk_x_003a25d4(0x670738);
@@ -918,7 +1041,7 @@ static void sk_capop_003e788c(void)
     uint64_t extraout_x17 = /* extraout_x17 */ 0;
     uint64_t r6;
     uint8_t *ctx = /* unaff_x22: current op context */ 0;
-    struct { uint64_t lo, hi; } auVar7;
+    cl4_result_t auVar7;
 
     r3 = sk_x_00407b18();
     sk_x_00407fcc();
@@ -989,7 +1112,7 @@ static void sk_capop_003e9d04(void)
     sk_x_00377824();
     sk_x_00351f10();
     sk_x_0007c1a4();
-    (*sk_g_00658c80)();
+    ((void (*)(void))sk_g_00658c80)();
     sk_x_0034b05c();
     sk_x_00407100();
     sk_x_00350518();
@@ -1103,8 +1226,8 @@ static void sk_capop_003ec780(void)
     sk_x_00407030();
     sk_x_00406490();
     /* WARNING: Does not return */
-    brk = (uint64_t (*)(void))SoftwareBreakpoint(1, 0x3ec7a8);
-    (*brk)();
+    /* WARNING: Does not return */
+    SoftwareBreakpoint(1, 0x3ec7a8);
 }
 
 /* FUN_003ecb1c @ 0x003ecb1c   (est. sk_capop_003ecb1c)
@@ -1267,7 +1390,7 @@ static void sk_capop_003e7b14(void)
     uint64_t ctx_90;
     uint64_t ctx_28;
     uint8_t *ctx = /* unaff_x22: current op context */ 0;
-    struct { uint64_t lo, hi; } auVar7;
+    cl4_result_t auVar7;
     void (*extraout_x9)(uint64_t, uint64_t, uint64_t) = 0; /* extraout_x9 */
     void (*extraout_x8)(uint64_t, uint64_t, uint64_t) = 0; /* extraout_x8 */
     void (*extraout_x9_00)(uint64_t, uint64_t) = 0; /* extraout_x9_00 */
@@ -4362,7 +4485,7 @@ static void sk_capop_003e7228(void)
     uint64_t ret_x17 = 0;        /* extraout_x17 */
     uint64_t ret_x17_00 = 0;     /* extraout_x17_00 */
     uint8_t *ctx = 0;            /* unaff_x22: current op context */
-    struct { uint64_t lo, hi; } result_pair;  /* auVar6 16-byte pair */
+    cl4_result_t result_pair;  /* auVar6 16-byte pair */
     uint64_t jt;                 /* UNRECOVERED_JUMPTABLE */
 
     v2 = sk_x_00407b18();
@@ -4480,7 +4603,7 @@ static void sk_capop_003e9310(void)
     long idx;
     uint64_t *vtable_slot;
     long base_off;
-    struct { uint64_t lo, hi; } result_pair;  /* auVar17 16-byte pair */
+    cl4_result_t result_pair;  /* auVar17 16-byte pair */
     uint64_t spill0 = 0;         /* in_stack_00000000 */
     uint64_t spill8 = 0;         /* in_stack_00000008 */
     uint64_t jt_hi;              /* UNRECOVERED_JUMPTABLE_00 */
@@ -4619,7 +4742,7 @@ static void sk_capop_003ea260(void)
     uint64_t ret_x17 = 0;        /* extraout_x17 */
     uint64_t v6;
     uint8_t *ctx = 0;            /* unaff_x22: current op context */
-    struct { uint64_t lo, hi; } result_pair;  /* auVar7 16-byte pair */
+    cl4_result_t result_pair;  /* auVar7 16-byte pair */
     uint64_t jt_lo;              /* UNRECOVERED_JUMPTABLE */
 
     v3 = sk_x_00407ca0();
@@ -4691,7 +4814,7 @@ static void sk_capop_003eb9c8(void)
     uint64_t ret_x10 = 0;        /* extraout_x10 */
     uint64_t v5;
     uint8_t *ctx = 0;            /* unaff_x22: current op context */
-    struct { uint64_t lo, hi; } result_pair;  /* auVar6 16-byte pair */
+    cl4_result_t result_pair;  /* auVar6 16-byte pair */
     uint64_t jt_lo;              /* UNRECOVERED_JUMPTABLE */
 
     v2 = sk_x_00407ca0();
@@ -4812,7 +4935,7 @@ static void sk_capop_003ed5f8(uint64_t param_1, uint64_t param_2, uint64_t param
     uint64_t ret_x8 = 0;         /* extraout_x8 */
     long ret_x12 = 0;            /* extraout_x12 */
     uint8_t reply_slot[8];       /* local_38 reply-slot buffer */
-    struct { uint64_t lo, hi; } result_pair;  /* auVar2 16-byte pair */
+    cl4_result_t result_pair;  /* auVar2 16-byte pair */
 
     sk_x_0034a210();
     result_pair = sk_x_00027614();
@@ -4847,7 +4970,7 @@ static void sk_capop_003ee520(void)
     uint64_t ret_x17 = 0;        /* extraout_x17 */
     uint64_t v3;
     uint8_t *ctx = 0;            /* unaff_x22: current op context */
-    struct { uint64_t lo, hi; } result_pair;  /* auVar4 16-byte pair */
+    cl4_result_t result_pair;  /* auVar4 16-byte pair */
 
     result_pair = sk_x_00407000();
     v3 = *(uint64_t *)(ctx + 0x38);

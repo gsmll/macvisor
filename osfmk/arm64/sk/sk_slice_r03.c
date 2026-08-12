@@ -1,11 +1,4 @@
 
-extern char DAT_005d37d2[]; extern char DAT_005d37e1[]; extern char DAT_005d37cb[];
-extern char DAT_005d356c[]; extern char DAT_005d37d0[]; extern char DAT_005d37c9[];
-extern char DAT_005d3568[]; extern char DAT_005d37d7[]; extern char DAT_005d37e5[];
-extern char DAT_005d3810[]; extern char DAT_005d6b7d[]; extern char DAT_005d6c15[];
-
-extern void sk_write_data3(void *st, void *tag, void *fn, void *out); /* FUN_003b0be0 */
-extern void sk_write_data4(uint64_t *out);                            /* FUN_003b0d64 */
 /* Recreated from cl4_kernel.raw (cL4 Secure Kernel, arm64e, image base 0) —
  * the cL4 microkernel (GL1). Ground truth: Ghidra FUN_ names + addresses in
  * the cl4_kernel.raw program. All names are estimates unless string/header
@@ -71,6 +64,12 @@ extern void sk_ctx_op2(uint64_t *a, ...);                     /* FUN_003a4f5c / 
 extern void sk_obj_lock(uint64_t obj, long op);               /* FUN_00116bb4 */
 extern uint64_t *sk_val_get_alt(uint64_t *st, uint32_t tag);  /* FUN_003a6874 */
 extern uint64_t *sk_003a3a70(uint64_t *st, void *src, uint64_t n, uint64_t *len); /* FUN_003a3a70 */
+extern void sk_write_data3(void *st, void *tag, void *fn, void *out); /* FUN_003b0be0 */
+extern void sk_write_data4(uint64_t *out);                            /* FUN_003b0d64 */
+extern char DAT_005d37d2[]; extern char DAT_005d37e1[]; extern char DAT_005d37cb[];
+extern char DAT_005d356c[]; extern char DAT_005d37d0[]; extern char DAT_005d37c9[];
+extern char DAT_005d3568[]; extern char DAT_005d37d7[]; extern char DAT_005d37e5[];
+extern char DAT_005d3810[]; extern char DAT_005d6b7d[]; extern char DAT_005d6c15[];
 
 /* ------------------------------------------------------------------ *
  * Forward declarations for this slice (exact signatures; st = stream ctx).
@@ -874,7 +873,7 @@ dispatch:
                 } else {
                     if (STACK_CNT(st) != 0) {
                         uint32_t i = STACK_CNT(st) - 1;
-                        v = STACK_BASE(st)[i];
+                        v = STACK_ELEM(st, i);
                         if (NODE_TAG(v) == 0xf4) { STACK_CNT(st) = i; goto emit25; }
                     }
                     v = 0;
@@ -884,12 +883,12 @@ dispatch:
             }
             if (k != 2) {
                 if (STACK_CNT(st) == 0) v = 0;
-                else { uint32_t i = STACK_CNT(st) - 1; v = STACK_BASE(st)[i];
+                else { uint32_t i = STACK_CNT(st) - 1; v = STACK_ELEM(st, i);
                        if (NODE_TAG(v) != 0xf4) v = 0; else STACK_CNT(st) = i; }
                 return (uint64_t)sk_node_push2(st, 0x29, (uint64_t *)built, v);
             }
             if (STACK_CNT(st) == 0) v = 0;
-            else { uint32_t i = STACK_CNT(st) - 1; v = STACK_BASE(st)[i];
+            else { uint32_t i = STACK_CNT(st) - 1; v = STACK_ELEM(st, i);
                    if (NODE_TAG(v) != 0xf4) v = 0; else STACK_CNT(st) = i; }
             return (uint64_t)sk_node_push2(st, 0x28, (uint64_t *)built, v);
         }
@@ -934,7 +933,7 @@ dispatch:
         }
         if (k == 6) return (uint64_t)sk_node_push2(st, 0x171, (uint64_t *)built, a);
         if (STACK_CNT(st) == 0) v = 0;
-        else { uint32_t i = STACK_CNT(st) - 1; v = STACK_BASE(st)[i];
+        else { uint32_t i = STACK_CNT(st) - 1; v = STACK_ELEM(st, i);
                if (NODE_TAG(v) != 0xf4) v = 0; else STACK_CNT(st) = i; }
         return (uint64_t)sk_node_push2(st, 0x174, (uint64_t *)built, v);
     }
@@ -989,7 +988,7 @@ static uint64_t sk_003ae414(uint64_t *st, uint64_t p2)
     if (p2 == 0) {
         if (STACK_CNT(st) != 0) {
             uint32_t i = STACK_CNT(st) - 1;
-            v = STACK_BASE(st)[i];
+            v = STACK_ELEM(st, i);
             if (NODE_TAG(v) == 0xf4) { STACK_CNT(st) = i; goto have; }
         }
         v = 0;

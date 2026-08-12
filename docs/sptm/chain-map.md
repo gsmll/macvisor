@@ -538,3 +538,14 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 00351fd0 <- 0022ceac, 0022cf60, 0022cff0, 0022d080, 0022d118, 002a4ab4 (tagged-ptr build)
 - 0035239c <- 002b45a8, 002b7808, 002b7830 (pair builder)
 - 003521a4 -> &DAT_00657778 (global address init)
+
+## SkR07 (0x3d2f10-0x3d952c, Swift stdlib + _Concurrency async/executor runtime)
+- 003d2f10 -> 0038df24 (str_format) + 004b9d68 (ref_take) + 00012568 (print thunk) + 003d2e80 (print dispatch)
+- 003d2ffc / 003d3dd8 (once token) -> 003d3e94 (mtx_lock) + 003d3ed0 (mtx_unlock) + 001180e0/0011812c (cnd_broadcast/wait on 0x6c0b40)
+- 003d3f0c (once init) -> 00118148 (mtx_init) + 001180fc (cnd_init) on globals 0x6c0b30/0x6c0b40
+- 003d3200 (nan/snan token detect) <- 003d3130/003d30c4 (float/double parser) <- 003d319c (float parse)
+- Unicode property index: 003d326c/003d3398 (bitmap/popcount) <- 003d3470/351c/3550/35b0/35f0/37a4/37f0/3838/38c4/3c1c/3c88
+- 003d3964 (lowercase mapping) uses DAT_0050a214/DAT_00532a14/DAT_0056adec/DAT_005781a0
+- async task setup: 003d62dc/003d71b8/003d85b8/003d93f8 -> 00377824 (job build, metadata 00614a5c) -> 003d5a4c/003d69f8/003d7c18/003d8cc0 (suite enter/run)
+- async completion/fatal: 003d4d0c/003d4dbc/003d4f18/003d4f78 -> 001afa84 (cL4_runtime_fatal, noreturn)
+- executor permits: 003d6418/003d72f0 -> 003d6470 (post-release) -> 003dd540; negative count traps

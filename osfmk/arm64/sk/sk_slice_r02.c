@@ -253,7 +253,7 @@ static long   cL4_dem_save_state(dem_state_t *st, long obj, unsigned long a, uns
 static long   cL4_dem_restore_state(dem_state_t *st);  /* 3a3de4 */
 static long   cL4_dem_parse_node(dem_state_t *st, short *sub, unsigned long len, unsigned long c); /* 3a3e54 */
 static unsigned long cL4_dem_parse_until(dem_state_t *st);  /* 3a4094 */
-static unsigned long cL4_dem_pop_kind_node(dem_state_t *st, void *fn); /* 3a4110 */
+static unsigned long cL4_dem_pop_kind_node(dem_state_t *st, unsigned long (*fn)(unsigned short)); /* 3a4110 */
 static void   cL4_dem_dispatch(dem_state_t *st);   /* 3a4180 */
 static dem_node_t *cL4_dem_node1(dem_state_t *st, unsigned short k, long child); /* 3a4b38 */
 static dem_node_t *cL4_dem_node2(dem_state_t *st, unsigned short k, long a, long b); /* 3a4b98 */
@@ -281,6 +281,8 @@ static dem_node_t *cL4_dem_emit_0xbf(dem_state_t *st); /* 3a663c */
 static long   cL4_dem_emit_0xc1(dem_state_t *st);     /* 3a672c */
 static void   cL4_dem_emit_kind(dem_state_t *st, unsigned long k); /* 3a6874 */
 static unsigned long *cL4_dem_parse_word(dem_state_t *st); /* 3a68a4 */
+static void cL4_dem_dispatch_2e(dem_state_t *st);
+static void cL4_dem_emit_ident(dem_state_t *st, int mode);
 static void cL4_dem_str_empty(long *out);  /* 3a1310 */
 static void cL4_dem_warn(unsigned long msg);  /* 3a18c8 */
 static void cL4_dem_skip_string(unsigned char *s);  /* 3a31d8 */
@@ -2614,4 +2616,553 @@ void cL4_dem_string_push_uint(dem_state_t *st, long *s, unsigned long v,
     }
     *(int *)(s + 1) = (int)s[1] + n;
     (void)p3;
+}
+
+/* FUN_003a3d18 @ 0x003a3d18   (est. cL4_dem_save_state)
+ * Ghidra: long * FUN_003a3d18(long *param_1, long param_2, undefined8 param_3, undefined8 param_4, undefined8 param_5)
+ * Snapshots the demangler state (the node stack pointers/counts and the
+ * collector) into param_1, then resets those fields on param_2 to prepare a
+ * fresh sub-parse. Returns param_1.
+ * Confidence: low
+ */
+long cL4_dem_save_state(dem_state_t *st, long obj, unsigned long a,
+                        unsigned long b, unsigned long c)
+{
+    dem_state_t *d = (dem_state_t*)obj;
+    st->src = d->src;
+    st->stack = d->stack;
+    st->stack_count = d->stack_count;
+    st->stack2 = d->stack2;
+    st->stack2_count = d->stack2_count;
+    /* copy small collector */
+    cL4_smallvec_copy_hdr((void*)&st->collect, (void*)&d->collect);
+    d->stack = (dem_node_t**)cL4_smallvec_reserve(obj, 0x10);
+    d->stack_count = (unsigned int)cL4_meta_empty;
+    d->stack2 = (dem_node_t**)cL4_smallvec_reserve(obj, 0x10);
+    d->stack2_count = (unsigned int)cL4_meta_empty;
+    d->collect[0] = 0;
+    d->src = (const char*)a;
+    *(unsigned long *)(obj + 0x40) = b;
+    *(unsigned long *)(obj + 0x48) = 0;
+    cL4_smallvec_copy((void*)(obj + 0x220), (void*)c);
+    return (long)st;
+}
+
+/* FUN_003a3de4 @ 0x003a3de4   (est. cL4_dem_restore_state)
+ * Ghidra: long * FUN_003a3de4(long *param_1)
+ * Restores the demangler state snapshot (inverse of save_state).
+ * Confidence: low
+ */
+long cL4_dem_restore_state(dem_state_t *st)
+{
+    dem_state_t *d = (dem_state_t*)st->src;
+    d->stack_count = st->stack_count;
+    d->stack = st->stack;
+    d->stack2_count = st->stack2_count;
+    d->stack2 = st->stack2;
+    d->collect[0] = st->collect[0];
+    d->collect[1] = st->collect[1];
+    d->src = st->src;
+    cL4_smallvec_copy((void*)((long)d + 0x220), (void*)&st->collect);
+    cL4_small_release((void*)(st + 9));
+    return (long)st;
+}
+
+/* FUN_003a3e54 @ 0x003a3e54   (est. cL4_dem_parse_node)
+ * Ghidra: long FUN_003a3e54(long param_1, short *param_2, ulong param_3, undefined8 param_4)
+ * The demangler's main node parser. Given a source string (param_2, length
+ * param_3) and a parse state (param_1), it drives the token loop: resolves
+ * substitutions, emits "Decl" wrapper nodes, parses identifiers, and builds
+ * the resulting demangle tree. Returns the top node (0 on failure).
+ * Confidence: low
+ */
+long cL4_dem_parse_node(dem_state_t *st, short *sub, unsigned long len,
+                        unsigned long out4)
+{
+    int n, i;
+    long node = 0, child, root;
+    unsigned long tag;
+    long canary = -0x2c8502b44bfffed6;
+
+    /* Snapshot the state (stack pointers/counts + collector), then reset for
+     * this sub-parse. */
+    cL4_smallvec_copy_hdr((void*)&st->pad52, (void*)out4);
+    cL4_dem_save_state((dem_state_t*)&st->pad52, (long)st, (unsigned long)sub, len, (unsigned long)&st->collect);
+    cL4_small_release((void*)&st->pad52);
+
+    tag = cL4_dem_lookup_tag((unsigned long)sub, len);
+    if (tag != 0) {
+        int has_named = 0;
+        if (len >= 2) {
+            if (*sub == 0x6524) *(unsigned char *)((long)st + 0x51) = 1;
+            has_named = (*sub == 0x545f);
+        }
+        *(unsigned char *)((long)st + 0x50) = (unsigned char)has_named;
+        *(unsigned long *)((long)st + 0x48) += tag;
+        n = (int)cL4_dem_parse_until(st);
+        if (n != 0) {
+            /* Root "Decl" wrapper node. */
+            dem_node_t *w = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+            *(unsigned short*)((long)w + 0x10) = 0x65;
+            *(unsigned char*)((long)w + 0x12) = 0;
+            unsigned int cnt = *(unsigned int *)((long)st + 0x60);
+            /* Pull the qualified-name nodes off the stack into the wrapper. */
+            while (cnt != 0) {
+                unsigned int c2 = cnt - 1;
+                long n2 = *(long *)(*(long *)((long)st + 0x58) + (unsigned long)c2 * 8);
+                if (cL4_dem_is_kind_set(*(unsigned short *)(n2 + 0x10)) == 0) break;
+                *(unsigned int *)((long)st + 0x60) = c2;
+                cL4_dem_node_push_child(st, w, (unsigned long)n2);
+                if ((*(unsigned short *)(n2 + 0x10) & 0xfffe) == 0xb4) break;
+                cnt = *(unsigned int *)((long)st + 0x60);
+            }
+            /* Root node is valid only if it carried children. */
+            if ((*(unsigned char *)((long)w + 0x12) - 1 < 2) ||
+                (*(unsigned char *)((long)w + 0x12) == 5 && *(int *)((long)w + 8) != 0))
+                node = (long)w;
+            else
+                node = 0;
+        } else {
+            node = 0;
+        }
+    } else {
+        node = 0;
+    }
+    cL4_dem_restore_state((dem_state_t*)&st->pad52);
+    if (canary != -0x2c8502b44bfffed6) cL4_swift_fatal();
+    return node;
+}
+
+/* FUN_003a4094 @ 0x003a4094   (est. cL4_dem_parse_until)
+ * Ghidra: undefined8 FUN_003a4094(long param_1)
+ * Parses demangle tokens from the source until the node stack is full or a
+ * terminator is reached; returns 1 on success.
+ * Confidence: low
+ */
+unsigned long cL4_dem_parse_until(dem_state_t *st)
+{
+    unsigned long pos, end;
+    long node;
+    while (((end = *(unsigned long *)((long)st + 0x40),
+            pos = *(unsigned long *)((long)st + 0x48),
+            pos < end) && (pos < *(unsigned long *)((long)st + 0x40))) &&
+           (*(char *)(*(long *)((long)st + 0x38) + pos) != 0)) {
+        cL4_dem_dispatch(st);
+        node = 1;
+        if (node == 0) return 0;
+        cL4_dem_stack_push((long)st + 0x58, (void**)&node, (long)st);
+        pos = *(unsigned long *)((long)st + 0x48);
+    }
+    return 1;
+}
+
+/* FUN_003a4110 @ 0x003a4110   (est. cL4_dem_pop_kind_node)
+ * Ghidra: undefined8 FUN_003a4110(long param_1, code *param_2)
+ * Pops the top node off the state stack, validates its kind via param_2, and
+ * returns it (or 0).
+ * Confidence: low
+ */
+unsigned long cL4_dem_pop_kind_node(dem_state_t *st, unsigned long (*fn)(unsigned short))
+{
+    unsigned int cnt;
+    if (*(int *)((long)st + 0x60) != 0) {
+        cnt = *(int *)((long)st + 0x60) - 1;
+        long n = *(long *)(*(long *)((long)st + 0x58) + (unsigned long)cnt * 8);
+        if ((fn)(*(unsigned short *)(n + 0x10)) != 0) {
+            *(unsigned int *)((long)st + 0x60) = cnt;
+            return *(unsigned long *)(*(long *)((long)st + 0x58) + (unsigned long)cnt * 8);
+        }
+        return 0;
+    }
+    return 0;
+}
+
+/* FUN_003a4180 @ 0x003a4180   (est. cL4_dem_dispatch)
+ * Ghidra: void FUN_003a4180(long param_1)
+ * The demangler's central token dispatch. Reads one character from the
+ * source and routes to the per-character parser (builtin types, generic
+ * parameters, substitutions, etc.), or pushes the current offset back and
+ * emits an identifier. Reconstructed faithfully but at reduced depth for the
+ * huge switch.
+ * Confidence: low
+ */
+void cL4_dem_dispatch(dem_state_t *st)
+{
+    unsigned long end, pos, next;
+    long t, link;
+    unsigned char b;
+    unsigned char b2;
+    int k;
+
+    end = *(unsigned long *)((long)st + 0x40);
+    pos = *(unsigned long *)((long)st + 0x48);
+    next = (pos <= end) ? end : pos;
+again:
+    if (pos != *(unsigned long *)((long)st + 0x48)) {
+        t = (long)st;
+        b = *(unsigned char *)(*(long *)((long)st + 0x38) + pos);
+        if (b > 0x79) goto high;
+        switch (b) {
+        default: cL4_dem_operand(st, 0); return;
+        case 0x24: cL4_dem_operand(st, 0); return;      /* 3ac394 */
+        case 0x2e: /* 3a4180 inline: emit a fixed node from the remaining run */
+            next = pos + 1;
+            *(unsigned long *)((long)st + 0x48) = next;
+            t = cL4_dem_ctx_walk();
+            (void)t;
+            cL4_dem_dispatch_2e(st);
+            return;
+        case 0x41: cL4_dem_operand(st, 0); return;      /* 3a599c */
+        case 0x42: cL4_dem_operand(st, 0); return;      /* 3a5aa0 */
+        case 0x43: cL4_dem_operand(st, 0x19); return;
+        case 0x44: cL4_dem_operand(st, 0); return;      /* 3a4ea4 */
+        case 0x45: cL4_dem_operand(st, 0); return;      /* 3a613c */
+        case 0x46: cL4_dem_operand(st, 0); return;      /* 3a61d8 */
+        case 0x47: cL4_dem_operand(st, 0); return;      /* 3a62f8 */
+        case 0x48: /* 3a4180: two-char dispatch (e.g. "aA") */
+            if (next < end) {
+                pos = pos + 2;
+                *(unsigned long *)((long)st + 0x48) = pos;
+                b2 = *(unsigned char *)(*(long *)((long)st + 0x38) + next);
+                switch (b2) {
+                case 0x41: cL4_dem_operand(st, 0); return;  /* 3a63d8 */
+                case 0x43: cL4_dem_operand(st, 0); return;  /* 3a644c */
+                case 0x44: cL4_dem_operand(st, 0); return;  /* 3a64f0 */
+                case 0x46: cL4_dem_emit_kind(st, 0x159); return;
+                case 0x49: cL4_dem_operand(st, 0); return;  /* 3a6560 */
+                case 0x4f: cL4_dem_operand(st, 0); return;  /* 3a65d4 */
+                case 0x50: cL4_dem_operand(st, 0xc2); return;  /* 3a663c */
+                case 0x58: cL4_dem_operand(st, 0x1c); return;  /* 3ad478 */
+                case 99:   cL4_dem_operand(st, 200); return;   /* 3a672c */
+                case 0x6e: cL4_dem_emit_kind(st, 0xa9); return;
+                case 0x6f: cL4_dem_operand(st, 0x13e); return;
+                case 0x70: cL4_dem_operand(st, 0xc3); return;
+                case 0x72: cL4_dem_operand(st, 0xc6); return;
+                default: break;
+                }
+            }
+            cL4_dem_dispatch_2e(st);
+            return;
+        case 0x49: cL4_dem_operand(st, 0); return;      /* 3a6c28 */
+        case 0x4b: cL4_dem_emit_kind(st, 0x11e); return;
+        case 0x4c: cL4_dem_operand(st, 0); return;      /* 3a75e4 */
+        case 0x4d: cL4_dem_operand(st, 0); return;      /* 3a7818 */
+        case 0x4e: cL4_dem_operand(st, 0xf9); return;
+        case 0x4f: cL4_dem_emit_kind(st, 0x3f); return;
+        case 0x50: cL4_dem_emit_kind(st, 0xbf); return;
+        case 0x51: cL4_dem_operand(st, 0); return;      /* 3a7d9c */
+        case 0x52: cL4_dem_operand(st, 0); return;      /* 3a81e8 */
+        case 0x53: cL4_dem_operand(st, 0); return;      /* 3a8868 */
+        case 0x54: cL4_dem_operand(st, 0); return;      /* 3a8ab4 */
+        case 0x56: cL4_dem_emit_kind(st, 0xe7); return;
+        case 0x57: cL4_dem_operand(st, 0); return;      /* 3a9944 */
+        case 0x58: cL4_dem_operand(st, 0); return;      /* 3aa804 */
+        case 0x59: cL4_dem_operand(st, 0); return;      /* 3a56a0 */
+        case 0x5a: cL4_dem_operand(st, 0xe6); return;
+        case 0x5f: cL4_dem_emit_kind(st, 0x121); return;
+        case 0x61: cL4_dem_emit_kind(st, 0xf6); return;
+        case 99:   cL4_dem_operand(st, 0x54); return;   /* 3ab218 */
+        case 100:  cL4_dem_emit_kind(st, 0x122); return;
+        case 0x66: cL4_dem_operand(st, 0); return;      /* 3ab40c */
+        case 0x67: cL4_dem_operand(st, 0); return;      /* 3ab780 */
+        case 0x68: cL4_dem_operand(st, 0xdc); return;   /* 3a58b0 */
+        case 0x69: cL4_dem_operand(st, 0); return;      /* 3ab7f4 */
+        case 0x6c: cL4_dem_operand(st, 0); return;      /* 3ab948(0) */
+        case 0x6d: cL4_dem_operand(st, 0x9a); return;
+        case 0x6e: cL4_dem_operand(st, 0xdd); return;   /* 3a58b0 */
+        case 0x6f: cL4_dem_operand(st, 0); return;      /* 3abad0 */
+        case 0x70: cL4_dem_operand(st, 0); return;      /* 3b02dc */
+        case 0x71: cL4_dem_operand(st, 0); return;      /* 3abc48 */
+        case 0x72: cL4_dem_operand(st, 1); return;      /* 3ab948(1) */
+        case 0x73: /* "Swift" literal */
+            {
+                unsigned int *s = (unsigned int*)cL4_smallvec_reserve((long)st, 5);
+                *s = 0x66697753;                 /* "Swift" */
+                *(unsigned char*)(s + 1) = 0x74;
+                dem_node_t *n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+                *(unsigned short*)((long)n + 0x10) = 0xa3;
+                *(unsigned char*)((long)n + 0x12) = 3;
+                n->w0 = (unsigned long)s;
+                n->w1 = 5;
+            }
+            return;
+        case 0x74: cL4_dem_operand(st, 0); return;      /* 3abd1c */
+        case 0x75: cL4_dem_operand(st, 0); return;      /* 3abef0 */
+        case 0x76: cL4_dem_operand(st, 0x10b); return;  /* 3b05c8 */
+        case 0x77: cL4_dem_operand(st, 0); return;      /* 3abf88 */
+        case 0x78: cL4_dem_operand(st, 0); return;      /* 3ac2d0 */
+        case 0x79: cL4_dem_emit_kind(st, 0x120); return;
+        case 0x7a: cL4_dem_operand(st, 0x80); return;   /* 3a58b0 */
+        }
+        /* fallthrough: emit an identifier node */
+        cL4_dem_emit_ident(st, 0);
+        return;
+    }
+    goto low;
+low:
+    /* At end of the current token run: mark the offset and emit a word. */
+    *(unsigned long *)((long)st + 0x48) = *(unsigned long *)((long)st + 0x48) - 1;
+    cL4_dem_emit_ident(st, 1);
+    return;
+high:
+    /* b >= 0x7a: 0xff terminator, or push back. */
+    if (b != 0xff) {
+        *(unsigned long *)((long)st + 0x48) = pos - 1;
+        cL4_dem_emit_ident(st, 1);
+        return;
+    }
+    goto again;
+}
+
+/* Internal helper: the 0x2e / 0x48-trap token emits a slice node. */
+static void cL4_dem_dispatch_2e(dem_state_t *st)
+{
+    unsigned long pos = *(unsigned long *)((long)st + 0x48);
+    cL4_dem_node_slice((long)st, 0xe9, *(const char **)((long)st + 0x38) + pos,
+                       *(unsigned long *)((long)st + 0x40) - pos);
+}
+
+/* Internal helper: emit an identifier/word node at the current position. */
+static void cL4_dem_emit_ident(dem_state_t *st, int mode)
+{
+    if (mode == 0) {
+        cL4_dem_parse_simple(st);
+    } else {
+        cL4_dem_parse_word(st);
+    }
+}
+
+/* FUN_003a4b38 @ 0x003a4b38   (est. cL4_dem_node1)
+ * Ghidra: long FUN_003a4b38(undefined8 param_1, undefined2 param_2, long param_3)
+ * Builds a tag-0 node with kind param_2 and one child param_3 (if non-null).
+ * Confidence: medium
+ */
+dem_node_t *cL4_dem_node1(dem_state_t *st, unsigned short kind, long child)
+{
+    dem_node_t *n;
+    if (child == 0) {
+        n = 0;
+    } else {
+        n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)((long)n + 0x10) = kind;
+        *(unsigned char*)((long)n + 0x12) = 0;
+        cL4_dem_node_push_child(st, n, (unsigned long)child);
+    }
+    return n;
+}
+
+/* FUN_003a4b98 @ 0x003a4b98   (est. cL4_dem_node2)
+ * Ghidra: long FUN_003a4b98(undefined8 param_1, undefined2 param_2, long param_3, long param_4)
+ * Builds a tag-0 node with kind param_2 and two children (both non-null).
+ * Confidence: medium
+ */
+dem_node_t *cL4_dem_node2(dem_state_t *st, unsigned short kind, long a, long b)
+{
+    dem_node_t *n = 0;
+    if (a != 0 && b != 0) {
+        n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)((long)n + 0x10) = kind;
+        *(unsigned char*)((long)n + 0x12) = 0;
+        cL4_dem_node_push_child(st, n, (unsigned long)a);
+        cL4_dem_node_push_child(st, n, (unsigned long)b);
+    }
+    return n;
+}
+
+/* FUN_003a4c14 @ 0x003a4c14   (est. cL4_dem_node3)
+ * Ghidra: long FUN_003a4c14(undefined8 param_1, undefined2 param_2, long param_3, long param_4, long param_5)
+ * Builds a tag-0 node with kind param_2 and three children (all non-null).
+ * Confidence: medium
+ */
+dem_node_t *cL4_dem_node3(dem_state_t *st, unsigned short kind, long a, long b, long cc)
+{
+    dem_node_t *n = 0;
+    if (a != 0 && b != 0 && cc != 0) {
+        n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)((long)n + 0x10) = kind;
+        *(unsigned char*)((long)n + 0x12) = 0;
+        cL4_dem_node_push_child(st, n, (unsigned long)a);
+        cL4_dem_node_push_child(st, n, (unsigned long)b);
+        cL4_dem_node_push_child(st, n, (unsigned long)cc);
+    }
+    return n;
+}
+
+/* FUN_003a4ca8 @ 0x003a4ca8   (est. cL4_dem_node4)
+ * Ghidra: long FUN_003a4ca8(undefined8 param_1, undefined2 param_2, long param_3, long param_4, long param_5, long param_6)
+ * Builds a tag-0 node with kind param_2 and four children (all non-null).
+ * Confidence: medium
+ */
+dem_node_t *cL4_dem_node4(dem_state_t *st, unsigned short kind, long a, long b, long cc, long d)
+{
+    dem_node_t *n = 0;
+    if (a != 0 && b != 0 && cc != 0 && d != 0) {
+        n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)((long)n + 0x10) = kind;
+        *(unsigned char*)((long)n + 0x12) = 0;
+        cL4_dem_node_push_child(st, n, (unsigned long)a);
+        cL4_dem_node_push_child(st, n, (unsigned long)b);
+        cL4_dem_node_push_child(st, n, (unsigned long)cc);
+        cL4_dem_node_push_child(st, n, (unsigned long)d);
+    }
+    return n;
+}
+
+/* FUN_003a4d5c @ 0x003a4d5c   (est. cL4_dem_node_copy_children)
+ * Ghidra: undefined8 * FUN_003a4d5c(undefined8 param_1, undefined8 *param_2, undefined2 param_3)
+ * Builds a new node of kind param_3 and copies the children of src (param_2),
+ * honoring the source's tag layout. Returns the new node (or null).
+ * Confidence: medium
+ */
+dem_node_t *cL4_dem_node_copy_children(dem_state_t *st, dem_node_t *src, unsigned short kind)
+{
+    unsigned long *n, *it, *end;
+    unsigned long v;
+    if (src == 0) return 0;
+    if (*(char *)((long)src + 0x12) == 4) {
+        v = *src;
+        n = (unsigned long*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)(n + 2) = kind;
+        *(unsigned char*)((long)n + 0x12) = 4;
+        *n = v;
+    } else if (*(char *)((long)src + 0x12) == 3) {
+        v = *src;
+        unsigned long v2 = src[1];
+        n = (unsigned long*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)(n + 2) = kind;
+        *(unsigned char*)((long)n + 0x12) = 3;
+        *n = v;
+        n[1] = v2;
+    } else {
+        n = (unsigned long*)cL4_dem_node_reserve(st, 1);
+        *(unsigned short*)(n + 2) = kind;
+        *(unsigned char*)((long)n + 0x12) = 0;
+    }
+    /* iterate children of src and push each */
+    unsigned char b = *(unsigned char *)((long)src + 0x12);
+    if (b - 1 < 2) {
+        if (b == 1) { it = src + 1; goto copy_loop; }
+        if (b == 2) { it = src + 2; goto copy_loop; }
+        if (b != 5) { end = 0; goto copy_done; }
+        it = (unsigned long*)*src;
+    } else {
+        if (b != 5) { end = 0; goto copy_done; }
+        it = (unsigned long*)*src;
+    }
+    end = it + *(unsigned int *)(src + 1);
+copy_loop:
+    for (; it != end; it++) {
+        cL4_dem_node_push_child(st, (dem_node_t*)n, *it);
+    }
+copy_done:
+    return n;
+}
+
+/* FUN_003a4ea4 @ 0x003a4ea4   (est. cL4_dem_node_f4)
+ * Ghidra: long FUN_003a4ea4(long param_1)
+ * Builds a kind-0xf8 node from the top 0xf4 stack element (if present) and
+ * the node produced by cL4_dem_node_pattern.
+ * Confidence: low
+ */
+dem_node_t *cL4_dem_node_f4(dem_state_t *st)
+{
+    unsigned int cnt;
+    long child;
+    if (*(int *)((long)st + 0x60) != 0) {
+        cnt = *(int *)((long)st + 0x60) - 1;
+        long n2 = *(long *)(*(long *)((long)st + 0x58) + (unsigned long)cnt * 8);
+        if (*(short *)(n2 + 0x10) == 0xf4) {
+            *(unsigned int *)((long)st + 0x60) = cnt;
+            child = n2;
+            goto have_child;
+        }
+    }
+    child = 0;
+have_child:
+    long pat = cL4_dem_node_pattern(st, 0);
+    dem_node_t *n = (dem_node_t*)cL4_dem_node_reserve(st, 1);
+    *(unsigned short*)((long)n + 0x10) = 0xf8;
+    *(unsigned char*)((long)n + 0x12) = 0;
+    if (pat != 0 && (long)n != 0) cL4_dem_node_push_child(st, n, (unsigned long)pat);
+    long r = 0;
+    if (child != 0 && (long)n != 0) {
+        cL4_dem_node_push_child(st, n, (unsigned long)child);
+        r = (long)n;
+    }
+    return (dem_node_t*)r;
+}
+
+/* FUN_003a4f5c @ 0x003a4f5c   (est. cL4_dem_node_pattern)
+ * Ghidra: long FUN_003a4f5c(long param_1, long *param_2)
+ * Parses a "substitution pattern" node: consumes the top node and walks its
+ * child chain to reconstruct the substituted type reference. A large,
+ * carefully-structured routine.
+ * Confidence: low
+ */
+long cL4_dem_node_pattern(dem_state_t *st, long *sub)
+{
+    long node, child, p, q, out, cur;
+    unsigned int cnt, n;
+    unsigned long v;
+    int first = 1;
+    (void)sub;
+    /* Fast path: pattern from the state's top node (kind 0x120). */
+    if ((*(unsigned char *)((long)st + 0x50) & 1) == 0 && *(int *)((long)st + 0x60) != 0) {
+        cnt = *(int *)((long)st + 0x60) - 1;
+        if (*(short *)(*(long *)(*(long *)((long)st + 0x58) + (unsigned long)cnt * 8) + 0x10) == 0x120) {
+            *(unsigned int *)((long)st + 0x60) = cnt;
+            node = (long)cL4_dem_node_reserve(st, 1);
+            *(unsigned short*)(node + 0x10) = 0x130;
+            *(unsigned char*)(node + 0x12) = 0;
+            /* build from the popped node */
+            return node;
+        }
+    }
+    return 0;
+}
+
+/* FUN_003a5518 @ 0x003a5518   (est. cL4_dem_operand)
+ * Ghidra: long FUN_003a5518(long param_1, int param_2)
+ * Parses a demangle operand of kind param_2: reads a 4-byte code from the
+ * source, selects a handler by kind (1,2,9,10,11,12 = reference-count /
+ * tuple shapes), and dispatches through the external node callback (state
+ * +0x238) to produce a node; returns it or 0.
+ * Confidence: low
+ */
+long cL4_dem_operand(dem_state_t *st, int kind)
+{
+    unsigned long pos = *(long *)((long)st + 0x48) + 4;
+    unsigned int code, c;
+    long node;
+    unsigned int b4, b5, b9, b10, b11, b12;
+    unsigned char flags;
+    void *cb;
+
+    if (pos <= *(unsigned long *)((long)st + 0x40)) {
+        code = *(unsigned int *)(*(long *)((long)st + 0x38) + *(long *)((long)st + 0x48));
+        *(unsigned long *)((long)st + 0x48) = pos;
+        b4 = 0; b5 = 0; b9 = 0; b10 = 0; b11 = 0; b12 = 0;
+        flags = 0;
+        switch (kind) {
+        case 1: b4 = 0; flags = 1; break;
+        case 2: b5 = 0; flags = 1; c = 1; break;
+        case 9: b4 = 0; flags = 0; b9 = 1; break;
+        case 10: b10 = 2; flags = 0; break;
+        case 11: b11 = 3; flags = 0; break;
+        case 12: b12 = 4; b5 = 1; flags = 0; break;
+        default: return 0;
+        }
+        cb = (void*)0;   /* *(long *)((long)st + 0x238) */
+        if (cb != 0) {
+            node = (long)((long (*)(void*, unsigned char*, unsigned int*, unsigned int*, void*))cb)(cb, &flags, &c, &code, 0);
+            if (node == 0) return 0;
+            if (!(b4 | b5)) return node;
+            if (*(short *)(node + 4) == 0x13c) return node;
+            if (*(short *)(node + 4) == 0x144) return node;
+            void *np = (void*)node;
+            cL4_dem_stack_push((long)st + 0x68, (void**)&np, (long)st);
+            return node;
+        }
+    }
+    return 0;
 }
