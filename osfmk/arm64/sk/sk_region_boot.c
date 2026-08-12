@@ -2659,46 +2659,155 @@ void sk_bug_malloc2(unsigned long a)
 unsigned long sk_zone_big_alloc(unsigned long zone, unsigned long req,
                                 unsigned long size, unsigned long flags, unsigned int mode)
 {
-    unsigned long node, v, bucket, bsz, idx;
-    unsigned int t;
-    long *l;
+    extern void sk_zone_fatal_a(void);            /* FUN_004aff70 */
+    extern void sk_zone_fatal_b(unsigned long, unsigned long, unsigned long); /* FUN_004aff30 */
+    extern unsigned long sk_zone_grow_big(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_004afd3c */
+    extern unsigned long sk_buddy_mask(unsigned long, unsigned long);  /* FUN_00011884 */
+    unsigned long node, u9, u5, u13, u1, x24, x25, x27;
+    long l12;
+    unsigned int t, u7;
+    unsigned char b2;
+    unsigned char *pb10;
+    unsigned int *err;
+    int i3;
+    unsigned short c62;
+    unsigned char b8;
+    unsigned long u6;
 
-    /* Fast path for < 4MiB requests from the size-class cache. */
-    {
-        unsigned long round = req + 0x3fff;
-        if (size < 0x100001 && (v = round & 0xffffffffffffc000) < 0x200001) {
-            if (*(long *)(zone + 0xe8) != 0) {
-                unsigned long need = (size <= v) ? v : size;
-                if (need < 0x10001) need = 0x10000;
-                l = (long *)(*(long *)(zone + 0xe8)
-                             + (0x30 - (unsigned int)sk_lzcount64(need - 1) & 0xffffffff) * 0x110);
-                if (size <= *(unsigned int *)(l + 0x100)) {
-                    if ((*(char *)(zone + 400) == 1) && (0x8000 < *(unsigned long *)(zone + 0x198)))
-                        goto bucket_path;
-                    else {
-                        v = zone;
-                        if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
-                        if (flags >> 0x30 == 0x100 || *(char *)(v + 0x1bb) == 2)
-                            t = (*(char *)(v + 0x1b9) >> 4 & 1) != 0;
-                        else t = 2;
-                        /* (size-class cache slot lookup via FUN_000078c4) */
-                        node = 0;
-                        goto done_cache;
-                    }
+    u13 = req + 0x3fff;
+    if ((size < 0x100001) && (u9 = u13 & 0xffffffffffffc000, u9 < 0x200001)) {
+        if (*(long *)(zone + 0xe8) != 0) {
+            u5 = size;
+            if (size <= u9) u5 = u9;
+            if (u5 < 0x10001) u5 = 0x10000;
+            l12 = *(long *)(zone + 0xe8) + (0x30 - sk_lzcount64(u5 - 1) & 0xffffffff) * 0x110;
+            if (size <= *(unsigned int *)(l12 + 0x100)) {
+                c62 = 0;
+                if ((*(char *)(zone + 400) == 1) && (0x8000 < *(unsigned long *)(zone + 0x198))) {
+                    sk_zone_fatal_a();   /* FUN_004aff70 */
+                } else {
+                    l12 = zone;
+                    if (*(long *)(zone + 0xf8) != 0) l12 = *(long *)(zone + 0xf8);
+                    if ((flags >> 0x30 == 0x100) || (*(char *)(l12 + 0x1bb) == 2)) {
+                        u7 = (unsigned int)(*(unsigned char *)(l12 + 0x1b9) >> 4 & 1);
+                        if ((*(char *)(zone + 0x191) == 1) && (*(unsigned long *)(zone + 0x198) < 0x8001))
+                            u7 = 1;
+                        x27 = (unsigned long)u7;
+                    } else x27 = 2;
+                    x24 = (unsigned long)*(unsigned char *)(l12 + 0x269);
+                    x25 = (unsigned long)(l12 + x27 * 0x40);
+                    i3 = sk_lock_acquire(x25);
+                    if (i3 != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+                    if ((*(int *)(x25 + 0x10) != 0) ||
+                        (*(unsigned int *)(x25 + 0x18) < (unsigned int)*(unsigned char *)(l12 + 0x26a)))
+                        goto L5110;
                 }
+                sk_zone_fatal_b(zone, (unsigned long)l12, x25);   /* FUN_004aff30 */
+L5110:
+                u13 = *(unsigned long *)(x25 + 0x20);
+                if (u13 == 0) u5 = 0;
+                else u5 = sk_zone_slab_get((unsigned long)l12, (unsigned long *)u13, x25, u9,
+                                           (int)x24, 1, (unsigned char *)&c62 + 1, (unsigned long)&c62);
+                i3 = sk_lock_release(x25);
+                if (i3 != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+                if (u5 == 0) {
+                    l12 = zone;
+                    if (*(long *)(zone + 0xf8) != 0) l12 = *(long *)(zone + 0xf8);
+                    l12 = *(long *)(l12 + 0x208) + (x27 & 0xffffffff) * 0x2b0;
+                    u13 = sk_zone_grow_big(zone, (unsigned long)l12, (unsigned long)l12, x24);   /* FUN_004afd3c */
+                    if (u13 == 0) return 0;
+                    u5 = sk_zone_slab_get((unsigned long)l12, (unsigned long *)u13, x25, u9,
+                                          (int)x24, 0, (unsigned char *)&c62 + 1, (unsigned long)&c62);
+                } else {
+                    u1 = 0xffffffffffff8000;
+                    if (0x7fffffff < (unsigned int)(int)*(char *)(u13 + 0x40)) u1 = 0xfffffffffffe0000;
+                    l12 = *(long *)((u1 & u13) + 0x10);
+                }
+                if ((char)c62 == 1) {
+                    u1 = 0xffffffffffff8000;
+                    if (0x7fffffff < (unsigned int)(int)*(char *)(u13 + 0x40)) u1 = 0xfffffffffffe0000;
+                    u7 = 0;
+                    if ((unsigned long)*(unsigned int *)(l12 + 0x100) != 0)
+                        u7 = (unsigned int)((u5 - ((((u13 - (u1 & u13)) - 0x50 >> 5) * -0x5555555555554000
+                              & 0x3fffffffc000) + *(long *)((u1 & u13) + 0x38))) /
+                              (unsigned long)*(unsigned int *)(l12 + 0x100));
+                    sk_zone_bitmap_update(zone, (unsigned long)l12, u13, 0,
+                                          1 << (u7 & 0x1f), 0);   /* FUN_00002c70 */
+                }
+                if ((mode & 1) == 0) return u5;
+                if ((c62 & 0x100) != 0) return u5;
+                sk_zone_pmo_free((unsigned long)l12, u5, u9);   /* FUN_00002df4 */
+                return u5;
+            }
+            goto L4e40;
+        }
+        b8 = 0; u6 = 7;
+    } else {
+        if (u13 >> 0x2e != 0) goto L4e2c;
+L4e40:
+        u6 = 8; b8 = 1;
+    }
+    l12 = zone;
+    if (*(long *)(zone + 0xf8) != 0) l12 = *(long *)(zone + 0xf8);
+    if (((flags >> 0x30 == 0x100) || b8) || (*(char *)(l12 + 0x1bb) == 2)) {
+        u7 = (unsigned int)(*(unsigned char *)(l12 + 0x1b9) >> 4 & 1);
+        if ((*(char *)(zone + 0x191) == 1) && (*(unsigned long *)(zone + 0x198) < 0x8001)) u7 = 1;
+        u9 = (unsigned long)u7;
+    } else u9 = 2;
+    pb10 = (unsigned char *)(*(long *)(l12 + 0x208) + u9 * 0x2b0);
+    u13 = sk_slab_alloc((unsigned char *)pb10, u6, 0, u13 >> 0xe, 0, size, mode & 1,
+                        *(unsigned long *)(zone + 0x188) >> 7 & 1);   /* FUN_00002e50 */
+    if (u13 == 0) goto L4e2c;
+    *(unsigned short *)(u13 + 0x42) = *(unsigned short *)(zone + 0xd0);
+    i3 = sk_lock_acquire(zone + 0x160);
+    if (i3 != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+    l12 = *(long *)(zone + 0x180);
+    *(long *)(u13 + 0x30) = l12;
+    if (l12 != 0) *(long **)(l12 + 0x38) = (long *)(u13 + 0x30);
+    *(unsigned long *)(zone + 0x180) = u13;
+    *(unsigned long **)(u13 + 0x38) = (unsigned long *)(zone + 0x180);
+    i3 = sk_lock_release(zone + 0x160);
+    if (i3 != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+    u7 = (unsigned int)*(unsigned char *)(u13 + 0x40) & 0xf;
+    if (u7 < 7) {
+        if (u7 == 2) u9 = 0x4000;
+        else if (u7 == 5) u9 = 0x10000;
+        else { if (u7 != 6) goto L5304; u9 = 0x20000; }
+    } else {
+        if (1 < u7 - 7 && u7 != 10) { L5304: sk_bug_llu(); }
+        u9 = (unsigned long)*(unsigned int *)(u13 + 0x48) << 0xe;
+    }
+    b2 = *pb10;
+    if (3 < (unsigned long)b2) sk_bug_llu();
+    u13 = (((u13 & 0x7fff) - 0x50 >> 5) * -0x5555555555554000 & 0x3fffffffc000) +
+          *(long *)((u13 & 0xffffffffffff8000) + 0x38);
+    u5 = 0x8001;
+    if ((b2 - 1 & 0xfe) != 0) u5 = 0x10;
+    if ((u5 <= u9) && (l12 = *(long *)(pb10 + 0x38), *(char *)(l12 + 400) == 1)) {
+        if ((*(unsigned long *)(l12 + 0x198) < u9) || ((0xcU >> ((unsigned long)b2 & 0xf) & 1) != 0)) {
+            if (u9 <= *(unsigned long *)(l12 + 0x198)) goto L503c;
+        } else if ((*(unsigned char *)(l12 + 0x191) & 1) != 0) {
+L503c:
+            if ((mode >> 0x1e & 1) == 0) {
+                u13 = sk_buddy_mask(u13, u9);   /* FUN_00011884 */
+                u5 = u13;
+                do {
+                    sk_dc_gva(u5); sk_dc_gva(u5 + 0x40); sk_dc_gva(u5 + 0x80); sk_dc_gva(u5 + 0xc0);
+                    sk_dc_gva(u5 + 0x100); sk_dc_gva(u5 + 0x140); sk_dc_gva(u5 + 0x180); sk_dc_gva(u5 + 0x1c0);
+                    u5 = u5 + 0x200;
+                } while (u5 < u13 + u9);
+            } else {
+                u13 = u13 & 0xf0ffffffffffffff;
+                for (u5 = u13 + 0x3f & 0xffffffffffffffc0;
+                     u5 < (u13 + u9 & 0xffffffffffffffc0); u5 = u5 + 0x40) sk_dc_gva(u5);
             }
         }
     }
-bucket_path:
-    node = sk_slab_alloc((unsigned char *)zone, 0, 0, 0, 0, size, mode & 1);
-done_cache:
-    if (node == 0) {
-        /* grow zone and retry (FUN_004afd3c) */
-        node = 0;
-    }
-    if (node == 0) return 0;
-    /* (mark node, link into alloc list, cache-clean) */
-    return node;
+    if (u13 != 0) return u13;
+L4e2c:
+    err = sk_error_slot();   /* thunk_FUN_0006037c */
+    *err = 0xc;
+    return 0;
 }
 
 /*--------------------------------------------------------------------*/
