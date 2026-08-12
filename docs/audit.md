@@ -219,8 +219,10 @@ Dispatcher `FUN_fffffe000b984ed8` → op table `PTR_FUN_fffffe0007e0d750`.
 
 - `hv_vm_set_trap_debug` `FUN_fffffe000b986f1c` — selector 0..9 bound, but the
   vm-resource deref in `b954160` is unconditional (NULL-fault finding).
-- `hv_trap_op_10` `FUN_fffffe000b98e488` — unbounded 0..63 slot index from a
-  guest bitmask into the owner block (HIGH severity finding).
+- `hv_trap_op_10` `FUN_fffffe000b98e488` — CTZ-derived slot index 0..63 into
+  the 64-entry per-CPU slot table (bounded at create by `0x3f < guest[0]` in
+  b989040); CORRECTED 2026-08-12 — in-bounds, severity downgraded to
+  informational (was HIGH on a wrong ~8-entry table premise).
 
 ### 3.8 EL2 register restore / save
 
@@ -256,7 +258,7 @@ Severity is a **hypothesis**, not a claim (per `AGENTS.md`).
 | hv-pmap | `b986b34` | resolve_owner map-pointer trust | informational/low |
 | hv-pmap | `b9868a8`/`b986d34` | unwind releases owner only when unbound | informational |
 | hv-pmap | EL2 stage-2 table | fixed small table, descriptor unobserved | informational |
-| op-table-id | **`b98e488`** | **hv_trap_op_10 unbounded slot index** | **high** |
+| op-table-id | `b98e488` | hv_trap_op_10 slot index (in-bounds; corrected 2026-08-12) | informational |
 | op-table-id | `b986f1c` | hv_vm_set_trap_debug NULL deref | medium |
 | op-table-id | `b986da4` | hv_vm_map_shared mapping persists on copyout fail | low |
 | op-table-id | `b986d84` | hv_vm_protect bare stub | informational |

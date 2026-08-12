@@ -415,7 +415,7 @@
     "tree": "trap-dispatch",
     "file": "osfmk/arm64/hypervisor/hv.c",
     "status": "decompiled",
-    "notes": "DE-GUESS re-decompiled (b98e488): body confirmed faithful against decompile. Bitmask-driven per-CPU vcpu-slot flush: reverse-bits+LZCOUNT -> per-cpu slot index, tag dirty, owner lock + busy flag |=4, flush state, DMB, hv_el2_state_finalize. Public-API name still unidentified (no match to hv_vcpu_exec/hv_vm_map/unmap/shmem); kept descriptive hv_trap_op_10. err 0xfae94006."
+    "notes": "DE-GUESS re-decompiled (b98e488): body confirmed faithful against decompile. Bitmask-driven per-CPU vcpu-slot flush: idx = CTZ(mask) (disasm ctz x11,x10 / ctz x28,x19) -> per-cpu slot index 0..63, tag dirty byte owner+idx*0x80+0x90, busy word |=4 owner+idx*0x80+0x94 (ldsetal; byte arithmetic — the project body's busy-word access was fixed 2026-08-12 from 8x element arithmetic), slot ptr owner+idx*0x80+0x80, signal cpu at +0x88, DMB, hv_el2_state_finalize. Slot table is 64 entries (b989040 bounds id by 0x3f < guest[0]), so idx 0..63 is in-bounds (earlier ~8-entry/OOB premise corrected). Public-API name still unidentified; kept descriptive hv_trap_op_10. err 0xfae94006."
   },
   {
     "address": "fffffe000b986da4",

@@ -441,30 +441,44 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: low — the EL2 block layout offsets are observed; the absence
   of a software walker is a search-negative, not proof.
 
-## [op-table-id] fffffe000b98e488 hv_trap_op_10 — unbounded CPU-bitmask slot index
+## [op-table-id] fffffe000b98e488 hv_trap_op_10 — CPU-bitmask slot index (CORRECTED 2026-08-12: in-bounds, NOT an OOB write)
 
 - **Observation**: The op takes the raw 64-bit trap arg as a CPU/vcpu-slot
-  bitmask (no copyin). For every set bit it derives `idx = LZCOUNT(bitrev64(mask))`
-  — a value in 0..63 with NO upper bound check — and then writes into the vm
-  owner block at `owner + idx*0x10 + 0x12` (slot-dirty tag) and reads/writes
-  `owner + idx*0x80 + 0x94` (`|= 4` busy flag), plus `plVar3 = owner + idx*0x10
-  + 0x10` deref. The owner's per-slot registration table is only ~8 entries
-  (7 slots allocated in hv_vm_create at `owner[0x429+j]`; 8 arrays walked in
-  hv_vcpu_object_release). A guest that sets a high bit (e.g. bit 63 -> idx 63,
-  writing `owner + 0x1e60 + 0x12`) indexes far past the 8-slot table.
-- **Evidence**: decompile of FUN_fffffe000b98e488: `idx = LZCOUNT(uVar10 >> 0x20
-  | uVar10 << 0x20); *(undefined1 *)(plVar11 + idx*0x10 + 0x12) = 1;` and later
-  `puVar4 = (uint *)((long)plVar11 + idx*0x80 + 0x94); *puVar4 |= 4;` with no
-  `idx < 8` / `idx < ncpu` guard before either write. param_1 is the guest trap
-  arg (dispatcher FUN_fffffe000b984ed8 passes cmd+8).
-- **Severity (hypothesis)**: high — guest-controlled out-of-bounds write into
-  the vm owner block (dirty-tag byte + busy-flag word + a slot pointer read),
-  potentially corrupting adjacent owner state, if the slot table is indeed ~8
-  entries and the bitmask is not pre-masked to the physical CPU count.
-- **Confidence**: medium — the unbounded 0..63 index and the two writes are
-  directly observed; the ~8-entry slot-table size is inferred from the create /
-  object_release paths and should be confirmed against the owner block layout
-  (hv_vm_create b985588 / hv_vcpu_object_release b98533c).
+  bitmask (no copyin). For every set bit it derives `idx = CTZ(mask)` — a
+  value in 0..63 — and then touches the vm owner block's per-CPU slot
+  metadata at byte offsets `owner + idx*0x80 + 0x80` (slot-pointer read),
+  `+0x90` (dirty-tag byte = 1), `+0x94` (busy word |= 4, atomic ldsetal),
+  plus the cpu-to-signal qword at `+0x88`. **CORRECTED**: the earlier "~8
+  entries" premise was wrong — it conflated the 8 page-registration array
+  POINTERS (`owner[0x429..0x430]`, walked in hv_vcpu_object_release) with
+  the inline per-CPU vcpu slot table. The slot table is **64 entries**:
+  hv_vcpu_create (b989040) bounds the vcpu id with `if (0x3f < local_58)
+  return 0xfae94003;` and installs at `*owner + id*0x80 + 0x80` for id in
+  0..63 (verified in the fresh decompile). CTZ(mask) ∈ 0..63 therefore
+  indexes the table in-bounds for every mask value; no OOB write exists.
+- **Evidence**: disassembly of FUN_fffffe000b98e488 loops: `ctz x11, x10`
+  (0xdac0194b) / `ctz x28, x19` (0xdac01a7c); tag store
+  `strb w9, [x11]` with x11 = (owner+0x90) + idx*0x80 (add x8,x21,#0x90;
+  add x11,x8,x11,lsl #7); busy `ldsetal w9,w8,[x8]` with x8 =
+  (owner+0x94) + idx*0x80 (add x24,x21,#0x94); slot read `ldr x1,[x26]`
+  with x26 = (owner+0x80) + idx*0x80. No `idx < 8`/`idx < ncpu` guard —
+  but none is needed: bind-path writes at the same offsets for id 0..63
+  (b989040 decompile) prove the 64-entry table.
+- **Residual (informational/low)**: the mask is not validated against the
+  number of *bound* slots or the physical CPU count. With all 64 slots
+  bound, an all-ones mask makes the op lock + flush + signal every slot
+  (a broadcast flush — expensive but functional; empty slots are skipped by
+  the `*slot != 0 && vcpu != *slot` guard). From an entitled caller this is
+  at most a self-inflicted performance/robustness note, not memory
+  corruption. RECREATION NOTE: the project body originally transcribed the
+  busy-word access with long* element arithmetic (8x too far) — fixed to
+  byte arithmetic per the disassembly; the finding that survives is the
+  fidelity lesson, not a kernel OOB.
+- **Severity (hypothesis)**: informational — the earlier high was based on
+  an incorrect slot-table-size inference.
+- **Confidence**: high — index function and table size both verified at
+  instruction/decompile level (CTZ decode via llvm-objdump; 64-entry bound
+  from the b989040 decompile).
 
 ## [op-table-id] fffffe000b986f1c hv_vm_set_trap_debug — NULL vm resource deref in b954160
 

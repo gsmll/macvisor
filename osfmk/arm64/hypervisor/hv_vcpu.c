@@ -134,7 +134,7 @@ uint64_t hv_vcpu_create(void *user_state)
     /* copyin(user_state, guest, 0x10) — FUN_fffffe000b95c144 */
     if (copyin(user_state, guest, 0x10) != 0)
         return 0xfae94003;
-    if ((guest[0] & 0xff) > 0x3f)      /* vcpu id must be in [0, 64) */
+    if (guest[0] > 0x3f)             /* vcpu id (low byte of guest[0]) must be in [0, 64): decompile compares the FULL qword, 0x3f < local_58 */
         return 0xfae94003;
 
     cpu = tpidr_el1;

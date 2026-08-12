@@ -856,11 +856,11 @@ hv_trap_op_10(uint64_t mask)
 			u = bitrev64(mask);
 			u = (u >> 0x20) | (u << 0x20);
 			idx = __builtin_clzll(u);
-			slot = (long *)(owner + idx * 0x10 + 0x10);
+			slot = (long *)(owner + idx * 0x10 + 0x10);   /* byte offset idx*0x80 + 0x80 */
 			if (*slot != 0 && vcpu != (long *)*slot) {
-				prev = *(uint32_t *)(owner + idx * 0x80 + 0x94);
+				prev = *(uint32_t *)((uint8_t *)owner + idx * 0x80 + 0x94);   /* busy word; BYTE arithmetic per disasm x24=owner+0x94, [x24+x28*0x80] */
 				LOAcquire();
-				*(uint32_t *)(owner + idx * 0x80 + 0x94) = prev | 4;
+				*(uint32_t *)((uint8_t *)owner + idx * 0x80 + 0x94) = prev | 4;
 				pending = hv_debug_flag;
 				LORelease();
 				if ((prev & 1) == 0) {
