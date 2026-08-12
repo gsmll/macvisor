@@ -45426,7 +45426,7 @@ void sk_syscall_entry(void)
 /* FUN_0005e100 @ 0x5e100   (est. sk_syscall_handler)
  * Ghidra: void FUN_0005e100(ulong arg1,uint8_t *arg2)
  * sk_syscall_handler: cL4 sk syscall handler operation.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep)
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */

@@ -4670,7 +4670,12 @@ word_t sk_re_backref_check(long *p)
  * Parses a character class: handles '[' with a leading '^' (negation),
  * 'R' (any) or '\\'-escapes, accumulates scalar runs and ranges, and appends
  * the class record.  This is one of the largest functions in the region.
- * Confidence: low. */
+ * Confidence: low.
+ * Notes: skeleton reconstruction — several data-dependent branch conditions
+ *   are placeholder `if (0 == 0)` (ground-truth: lVar11==0 from FUN_00430040,
+ *   and ~(uStack_48f:local_490)&0xff==0), and many sw_* helper args are
+ *   dropped to 0.  File sk_slice_193.c has pre-existing errors in ~14 other
+ *   functions (lines 858-2549) outside this batch. */
 void sk_re_parse_char_class(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);

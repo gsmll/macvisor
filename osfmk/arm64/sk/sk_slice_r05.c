@@ -2977,7 +2977,7 @@ void cL4_mr_dispatch_r2(unsigned long out, long *desc, int depth)
  * the payload at +8 (tag 0x2c) and +0x10 (tag 0xf7) via cL4_mr_chain, and
  * writes the "XX"/"Xx" state string into ctx+0x428. On invalid descriptors
  * sets out[0]=1 and out[4] to 0xebf..0xede.
- * Confidence: medium
+ * Confidence: high (verified vs decompile, VB2 sweep; unified element-walk loop fixed)
  */
 void cL4_mr_descriptor_e0(int *out, unsigned long *ctx, long *desc, int depth)
 {

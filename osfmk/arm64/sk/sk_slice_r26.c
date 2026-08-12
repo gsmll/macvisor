@@ -3178,3 +3178,306 @@ void FUN_00469918(uint64_t *out)
     }
     return;
 }
+
+/* FUN_00469b50 @ 0x00469b50   (est. sk_cap_describe_69b50)
+ * Ghidra: undefined1 [16] FUN_00469b50(long param_1)
+ * Builds a capability/name descriptor pair: reads the object word at
+ * (param_1 + 0x10), fills a local pair via FUN_00469c50, reports the pair,
+ * and returns the 16-byte descriptor produced by FUN_0035056c.
+ * Confidence: low
+ * Notes: 16-byte return; report via thunk_FUN_0024d9ac. */
+cl4_pair_t FUN_00469b50()
+{
+    long param_1 = 0;   /* register-passed object */
+    uint64_t v2, v1;
+    word_t cx16;
+    uint64_t l0, l1, l2, l3, l4;
+    cl4_pair_t out;     /* local_70 */
+
+    v2 = *(uint64_t *)(param_1 + 0x10);
+    FUN_003504e8();
+    FUN_00498c6c();
+    FUN_00469c50((word_t)&l0);
+    l3 = l1;
+    l0 = l0;
+    l4 = l2;
+    FUN_003542b8();
+    FUN_004974ac();
+    FUN_00352efc();
+    v1 = FUN_00310d68();
+    FUN_004aaf6c();
+    FUN_0035056c((word_t)&out, 0x004a3050);
+    FUN_001d88fc();
+    FUN_0036b118(v2);
+    FUN_003509c8(v1);
+    SK_VMETHOD(cx16, 8, (word_t)&l0, v1);
+    return out;
+}
+
+/* FUN_00469c50 @ 0x00469c50   (est. sk_state_read_69c50)
+ * Ghidra: void FUN_00469c50(void)
+ * Reads five state words from the object (callee-saved x20): if the flag byte
+ * at +0x168 is clear, copies the +0x90 state block and, when a valid pointer
+ * is returned, runs the decode helpers (FUN_004877a0/FUN_00351db4) with a
+ * page-range check; otherwise zeroes the output. Stores the five words into
+ * the caller's buffer. Traps at SoftwareBreakpoint 0x469d58.
+ * Confidence: low
+ * Notes: unaff_x20; breakpoint 0x469d58; in_ZR flag test. */
+void FUN_00469c50()
+{
+    word_t x20 = 0;     /* unaff_x20 (source object) */
+    word_t cx8;
+    cl4_pair_t img;
+    uint64_t w0, w1, w2, w3, w4;
+    uint64_t a;
+    uint64_t v;
+
+    img = FUN_0008e518();
+    if ((*(uint8_t *)(x20 + 0x168) & 1) == 0) {
+        uint8_t s90[144];
+        FUN_00117cc4((word_t)s90);
+        FUN_0048736c((word_t)&w0, (word_t)s90, x20 + 0x90,
+                     *(uint64_t *)(img.lo + 0x10));
+        if (w1 != 0) {
+            uint8_t s200[224];
+            FUN_00117cc4((word_t)s200);
+            FUN_0008e388();
+            FUN_004877a0();
+            v = FUN_00351db4();
+            if (/* in_ZR */ 1) {
+                *(uint8_t *)(x20 + 0x168) = 1;   /* extraout_w8 */
+            } else {
+                if (v >> 0xe < v >> 0xe) {
+                    SK_PANIC("range");  /* breakpoint 0x469d58 */
+                }
+                FUN_00484910(v, v);
+            }
+            goto out;
+        }
+    } else {
+        w1 = 0;
+    }
+    w0 = 0;
+    w2 = 0;
+    w3 = 0;
+    w4 = 0;
+out:
+    *(uint64_t *)(cx8 + 0)  = w0;
+    *(uint64_t *)(cx8 + 8)  = w1;
+    *(uint64_t *)(cx8 + 16) = w2;
+    *(uint64_t *)(cx8 + 24) = w3;
+    *(uint64_t *)(cx8 + 32) = w4;
+    FUN_0008e500(img.hi);
+    return;
+}
+
+/* FUN_00469d58 @ 0x00469d58   (est. sk_state_copy_69d58)
+ * Ghidra: void FUN_00469d58(undefined1 (*)[16],undefined8,undefined8,undefined1)
+ * Copies a 16-byte descriptor from FUN_00469b50 into the caller's buffer and
+ * stores the tag byte param_4 at buffer+0x10.
+ * Confidence: low
+ * Notes: writes param_1[0] and param_1[1][0]. */
+void FUN_00469d58(uint8_t *param_1, word_t p2, word_t p3, uint8_t p4)
+{
+    cl4_pair_t r;
+
+    r = FUN_00469b50();
+    *(cl4_pair_t *)param_1 = r;
+    param_1[0x10] = p4;
+    return;
+}
+
+/* FUN_00469d84 @ 0x00469d84   (est. sk_state_export_69d84)
+ * Ghidra: void FUN_00469d84(undefined8 param_1)
+ * Builds a 0x169-byte state block via FUN_00469dc4 and copies it to param_1.
+ * Confidence: low
+ * Notes: memcpy of 0x169. */
+void FUN_00469d84(word_t param_1)
+{
+    uint8_t buf[0x198];
+
+    FUN_00469dc4((word_t)buf);
+    FUN_00117cc4(param_1, (word_t)buf, 0x169);
+    return;
+}
+
+/* FUN_00469dc4 @ 0x00469dc4   (est. sk_state_build_69dc4)
+ * Ghidra: void FUN_00469dc4(long param_1)
+ * Builds a state/descriptor block into param_1: marshals the object's +0x90
+ * words and +0x38 sub-block through the pair helpers, then fills the
+ * 0x170-byte output with fields (flags, pointers, copied sub-block, tail
+ * counters).
+ * Confidence: low
+ * Notes: unaff_x20 source object; large field layout. */
+void FUN_00469dc4(long param_1)
+{
+    word_t x20 = 0;     /* unaff_x20 */
+    word_t cx8;
+    uint64_t v1, v2;
+    uint8_t w200[144], s150[80], sf8[144];
+    uint64_t e8[17], w160, w158, w100;
+
+    FUN_00117cc4((word_t)e8);
+    e8[1] = *(uint64_t *)(x20 + 0x98);
+    e8[0] = *(uint64_t *)(x20 + 0x90);
+    e8[3] = *(uint64_t *)(x20 + 0xa8);
+    e8[2] = *(uint64_t *)(x20 + 0xa0);
+    v1 = *(uint64_t *)(x20 + 0xb0);
+    v2 = *(uint64_t *)(x20 + 0xb8);
+    w158 = e8[0];
+    FUN_00117cc4((word_t)s150, x20 + 0x38, 0x50);
+    w100 = w160;
+    FUN_00117cc4((word_t)sf8);
+    FUN_004a4ab4((word_t)e8, (word_t)w200);
+    FUN_000f5d84((word_t)&w158, (word_t)w200);
+    FUN_004ab7cc();
+    FUN_004a4ac4((word_t)&w158, (word_t)w200);
+    FUN_004ac7b0();
+    FUN_004a34f0();
+    FUN_004ab784();
+    FUN_004a4ac4((word_t)&w100, (word_t)w200);
+    FUN_00117cc4(param_1, (word_t)sf8, 0xb0);
+    *(uint8_t *)(param_1 + 0xb0) = 1;
+    *(uint64_t *)(param_1 + 0xc0) = 0;
+    *(uint64_t *)(param_1 + 200) = 0;
+    *(uint64_t *)(param_1 + 0xb8) = e8[0];
+    *(uint8_t *)(param_1 + 0xd0) = 1;
+    *(uint64_t *)(param_1 + 0xd8) = v1;
+    *(uint64_t *)(param_1 + 0xe0) = v2;
+    *(uint64_t *)(param_1 + 0xe8) = v1;
+    *(uint64_t *)(param_1 + 0xf0) = 0;
+    FUN_00117cc4(param_1 + 0xf8, x20 + 0x38, 0x50);
+    FUN_000a6f68();
+    *(uint64_t *)(param_1 + 0x148) = cx8;
+    *(uint64_t *)(param_1 + 0x150) = w160;
+    *(uint8_t *)(param_1 + 0x158) = 0;
+    *(uint64_t *)(param_1 + 0x160) = 0;
+    *(uint8_t *)(param_1 + 0x168) = 0;
+    return;
+}
+
+/* FUN_00469ee8 @ 0x00469ee8   (est. sk_state_init_69ee8)
+ * Ghidra: void FUN_00469ee8(void)
+ * Initializes a state block: runs FUN_004ac5c4, builds the block via
+ * FUN_00469d84, then dispatches a vtable method and a memcpy.
+ * Confidence: low
+ * Notes: register artifact (extraout_x16). */
+void FUN_00469ee8()
+{
+    word_t cx16;
+    uint8_t s260[368], sf0[192];
+
+    FUN_004ac5c4();
+    FUN_00469d84((word_t)s260);
+    FUN_003509c8();
+    SK_VMETHOD(cx16, 8, (word_t)sf0);
+    FUN_00117cc4();
+    return;
+}
+
+/* FUN_00469f58 @ 0x00469f58   (est. sk_pair_calls_69f58)
+ * Ghidra: void FUN_00469f58(void)
+ * Runs two helpers in sequence (FUN_003580e4, FUN_001b58b0).
+ * Confidence: low
+ * Notes: two calls. */
+void FUN_00469f58(void)
+{
+    FUN_003580e4();
+    FUN_001b58b0();
+    return;
+}
+
+/* FUN_00469f74 @ 0x00469f74   (est. sk_syscall_report_69f74)
+ * Ghidra: void FUN_00469f74(void)
+ * Report helper: prepares the report frame, dispatches through
+ * FUN_0046989c (0xc0-byte frame) and reports via FUN_004aba34.
+ * Confidence: low
+ * Notes: register artifacts (in_x5/in_x7, extraout_x8/x9). */
+void FUN_00469f74()
+{
+    word_t in_x5 = 0, in_x7 = 0, s150 = 0, cx8 = 0, cx9 = 0;  /* reg args */
+    cl4_pair_t p;
+
+    FUN_004acb04();
+    FUN_0034d090();
+    FUN_00407ab8();
+    p = FUN_004abfb8();
+    FUN_00270c08(p.lo, p.hi, in_x5, in_x7);
+    FUN_004ab5d4(s150);
+    FUN_003510ac();
+    ((code_fn)cx8)();
+    FUN_00350ab8((word_t)s150);
+    FUN_00352ae4();
+    FUN_0046989c();
+    FUN_00117cc4(cx8, (word_t)s150, 0xc0);
+    FUN_004aba34(cx9);
+    return;
+}
+
+/* FUN_0046a01c @ 0x0046a01c   (est. sk_range_check_6a01c)
+ * Ghidra: void FUN_0046a01c(void)
+ * Performs a guarded address-range check: loads two addresses via the
+ * fn-pointer carriers, verifies (lo>>0xe) >= (hi>>0xe), then dispatches the
+ * report through FUN_00469f74. Traps at SoftwareBreakpoint 0x46a114/0x46a118.
+ * Confidence: low
+ * Notes: breakpoints 0x46a114/0x46a118. */
+void FUN_0046a01c()
+{
+    word_t in_x3 = 0, s10 = 0, s18 = 0, cx8 = 0, x30 = 0;  /* reg args */
+    uint64_t v1, v2;
+    code_fn f1, f2;
+    cl4_pair_t p;
+
+    FUN_004acae8();
+    FUN_0035199c();
+    f1 = (code_fn)FUN_000277b8(in_x3);
+    FUN_00350560((word_t)&s18);
+    f1();
+    v2 = s18;
+    f2 = (code_fn)FUN_00310924();
+    FUN_00350560((word_t)&s10);
+    f2();
+    v1 = s10;
+    if (s10 >> 0xe < v2 >> 0xe) {
+        SK_PANIC("lo");     /* breakpoint 0x46a114 */
+    }
+    FUN_00350560((word_t)&s18);
+    f1();
+    v2 = s18;
+    FUN_00350560((word_t)&s10);
+    f2();
+    if (v2 >> 0xe <= s10 >> 0xe) {
+        p = FUN_00350738((word_t)&s18);
+        FUN_00469f74(p.lo, p.hi, v1, v2);
+        FUN_00117cc4(cx8, (word_t)&s18, 0xc0);
+        FUN_004acacc(x30);
+        return;
+    }
+    SK_PANIC("hi");         /* breakpoint 0x46a118 */
+}
+
+/* FUN_0046a118 @ 0x0046a118   (est. sk_syscall_enter_6a118)
+ * Ghidra: void FUN_0046a118(void)
+ * Syscall entry: prepares the frame, runs the range check (FUN_0046a01c), and
+ * dispatches the report through FUN_004979bc / FUN_004ab618.
+ * Confidence: low
+ * Notes: register artifact (in_x3). */
+void FUN_0046a118(word_t in_x3)
+{
+    cl4_pair_t p;
+    uint8_t s100[192];
+
+    FUN_0034b318();
+    FUN_00356bb0(in_x3);
+    FUN_00077894((word_t)s100);
+    FUN_0046a01c();
+    FUN_004aaf6c();
+    FUN_004aabe4();
+    FUN_00350878(0xff);
+    FUN_00377824();
+    FUN_00352efc();
+    p = FUN_004979bc();
+    FUN_004ab618(p.lo, p.hi, p.lo, 0x687af0);
+    FUN_0019e578();
+    return;
+}

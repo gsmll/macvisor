@@ -5704,7 +5704,7 @@ long sk_slice_002e5370()
 /*--------------------------------------------------------------------*/
 /* FUN_002e53cc @ 0x002e53cc  (est. sk_swift_runtime) */
 /* Ghidra: undefined8 FUN_002e53cc(uint param_1,long *arg2) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified vs decompile, VB2 sweep) */
 unsigned long sk_slice_002e53cc()
 {
     unsigned int arg1;
