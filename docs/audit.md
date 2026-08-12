@@ -250,7 +250,7 @@ Severity is a **hypothesis**, not a claim (per `AGENTS.md`).
 | boot-audit | `bdbb37c` | code_signing_monitor_lockdown | informational |
 | boot-audit | `bf2413c` | oskext_remove_kext_bootstrap | informational/low |
 | boot-audit | `b95af80` | arm_cpu_init (EL2 control) | informational |
-| el2-vectors | `b96743c` | unknown EC → panic | **medium** |
+| el2-vectors | `b96743c` | classifier host-abort / SMC-ISS host panics (attribution corrected 2026-08-12) | **medium** |
 | el2-vectors | `b967768` | HPFAR_EL2 IPA synthesis | low |
 | el2-vectors | `b760b94..b7615bc` | guest-state PAC "JOP hash" | informational |
 | el2-vectors | `b96743c` | SVC ISS passthrough | informational |

@@ -267,27 +267,37 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: medium — the gate is directly observed; whether a zero
   DAT_fffffe0007e0da68 can actually occur on supported hardware is inferred.
 
-## [el2-vectors] fffffe000b96743c hv_el2_guest_esr_classify — unknown EC -> panic
+## [el2-vectors] fffffe000b96743c hv_el2_guest_esr_classify — guest-triggerable host panics (CORRECTED 2026-08-12 attribution)
 
-- **Observation**: The guest synchronous-exception classifier panics the whole
-  kernel on any ESR exception class it does not explicitly handle (EC > 0x34,
-  or EC in a gap of the dispatch table), via the noreturn assert
-  FUN_fffffe000c0e11ec with "Unrecognized guest trap exception, state=%p,
-  esr=%#llx @%s:%d". A guest that can trigger an unhandled EC therefore turns
-  a guest bug into a host panic (availability), not a host compromise. The
-  handled set is only {0x18 SVC, 0x1d, 0x20 IABT, 0x24 DABT, 0x3f SMC-ish};
-  everything else falls through to the panic (after a host-abort bit check).
-- **Evidence**: `if ((0x34 < uVar6) || ((1L << uVar7 & 0x10001100000000U) == 0))
-  uVar5 = 0;` then for the not-handled path
-  `FUN_fffffe000c0e11ec("Unrecognized guest trap exception, state=%p,
-  esr=%#llx @%s:%d")` at fffffe000b967748; also "Unexpected host abort from
-  guest context" (FUN_fffffe000c0f0fa4) when guest pstate bit3 (EA) is set on
-  a non-handled EC. Exit word written at state+0x4008.
-- **Severity (hypothesis)**: medium — an unhandled EC aborts the hypervisor
-  (denial of service against co-tenants), but the panic is fail-closed (no
-  silent wrong handling), so it is not a privilege escalation.
-- **Confidence**: high — the panic strings and the EC dispatch structure are
-  directly observed in the decompile.
+- **Observation**: The guest synchronous-exception classifier has two
+  guest-triggerable host-panic paths of its own, and the earlier claim that
+  ANY unhandled EC panics here was wrong (fresh decompile of b96743c): the
+  `"Unrecognized guest trap exception, state=%p, esr=%#llx @%s:%d"` panic
+  (c0e11ec) fires ONLY in the EC==0x3f (SMC) ISS sub-dispatch for
+  unrecognized ISS values (b967748); the `"Unexpected host abort from guest
+  context"` panic (c0f0fa4) fires when a non-handled EC has the guest
+  pstate EA bit (bit 3) set. For OTHER unhandled ECs the classifier stores
+  `handled = 0` at state+0x4020, writes NO exit word (0x4008 stays 0) and
+  returns — the run hub (b989a44) then receives exit 0 and its own
+  unhandled/invariant panics fire (see the separate b989a44 finding). So a
+  guest bug on an unhandled EC turns into a host panic (availability, all
+  co-tenants) — fail-closed, not a host compromise — but the panic site is
+  split between the classifier (host-abort / SMC-ISS) and the hub
+  (everything else).
+- **Evidence**: fresh decompile of b96743c: `if ((0x34 < uVar6) ||
+  ((1L << uVar7 & 0x10001100000000U) == 0)) uVar5 = 0;` stored to
+  param_1[0x1008] (+0x4020); dispatch handles EC {0x18, 0x1d, 0x20, 0x24,
+  0x3f}; LAB_fffffe000b9675ac (non-handled default) checks guest pstate bit
+  20 (0x100000) then bit 3 (0x8) → c0f0fa4 "Unexpected host abort from
+  guest context"; LAB_fffffe000b967748 (EC 0x3f, bad ISS) → c0e11ec
+  "Unrecognized guest trap exception". Exit word written at state+0x4008.
+- **Severity (hypothesis)**: medium — an unhandled EC / host-abort aborts the
+  hypervisor (denial of service against co-tenants), but the panics are
+  fail-closed (no silent wrong handling), so it is not a privilege
+  escalation. Guest reachability of the exact panic conditions is inferred
+  (the generic unhandled path's exit 0 flows into the hub's own panics).
+- **Confidence**: high — the panic strings, the EC dispatch structure, and
+  the pstate EA check are directly observed in the fresh decompile.
 
 ## [el2-vectors] fffffe000b967768 hv_el2_guest_fault — IPA synthesis from HPFAR_EL2
 
