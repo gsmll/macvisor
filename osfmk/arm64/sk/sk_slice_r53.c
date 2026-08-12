@@ -90,6 +90,8 @@ extern char s__owned_005d5f18[]; extern char s__unowned_005d5f1f[];
 extern char s__inout_aliasable_005d5f07[];
 extern uint64_t DAT_004f2740;
 extern uint64_t FUN_003a33cc(uint64_t *node);
+extern uint64_t sk_003a6090(uint64_t *st, uint64_t tag); /* FUN_003a6090 */
+extern uint64_t sk_ctx_op2_v(uint64_t *a, uint64_t *b); /* FUN_003a4f5c (returns node) */
 
 
 /* Forward declarations (all 120 slice functions; st = stream ctx). */
@@ -128,7 +130,7 @@ static uint64_t sk_003acefc(void); /* FUN_003acefc */
 static uint64_t sk_003acf38(uint32_t tag); /* FUN_003acf38 */
 static uint64_t sk_003acfb4(uint64_t * st, uint64_t p2, uint64_t p3, uint8_t p4); /* FUN_003acfb4 */
 static uint64_t * sk_003ad048(uint64_t * st); /* FUN_003ad048 */
-static void sk_003ad0f0(uint64_t * st, uint64_t p2); /* FUN_003ad0f0 */
+static uint64_t sk_003ad0f0(uint64_t * st, uint64_t p2); /* FUN_003ad0f0 */
 static uint64_t sk_003ad188(uint64_t * st); /* FUN_003ad188 */
 static uint64_t sk_003ad278(uint64_t * st); /* FUN_003ad278 */
 static uint64_t sk_003ad3a0(uint64_t * st); /* FUN_003ad3a0 */
@@ -167,7 +169,7 @@ static uint64_t sk_003af6ac(uint64_t * st); /* FUN_003af6ac */
 static uint64_t sk_003af7a4(uint64_t * st); /* FUN_003af7a4 */
 static uint64_t sk_003af99c(uint64_t * st, uint16_t p2); /* FUN_003af99c */
 static uint64_t sk_003aff04(uint64_t * st, uint64_t p2, uint64_t p3); /* FUN_003aff04 */
-static void sk_003b0004(uint64_t * st, int32_t p2); /* FUN_003b0004 */
+static uint64_t sk_003b0004(uint64_t * st, int32_t p2); /* FUN_003b0004 */
 static uint64_t sk_003b0078(uint64_t * st); /* FUN_003b0078 */
 static uint64_t * sk_003b0174(uint64_t * st); /* FUN_003b0174 */
 static uint64_t sk_003b0220(uint64_t * st); /* FUN_003b0220 */
@@ -492,7 +494,7 @@ static uint64_t *sk_003ad048(uint64_t *st)
  * Pops the top element: 0xf4 kept as-is; 0x120 replaced by a fresh 0xeb node
  * pushed as 0xf4. Pushes the result under the given tag.
  * Confidence: medium */
-static void sk_003ad0f0(uint64_t *st, uint64_t p2)
+static uint64_t sk_003ad0f0(uint64_t *st, uint64_t p2)
 {
     uint64_t *v;
     if (STACK_CNT(st) != 0) {
@@ -509,7 +511,7 @@ static void sk_003ad0f0(uint64_t *st, uint64_t p2)
     }
     v = 0;
 emit:
-    sk_node_push(st, (int)p2, v);
+    return (uint64_t)sk_node_push(st, (int)p2, v);
 }
 
 /* FUN_003ad188 @ 0x3ad188   (est. sk_parse_ee)
@@ -2025,4 +2027,931 @@ static uint64_t sk_003a9944(uint64_t *st)
         pu12 = (uint64_t)sk_stream_dispatch(st);
         return (uint64_t)sk_node_push2(st, 10, (uint64_t *)pu12, (uint64_t *)l14);
     }
+}
+
+/* FUN_003ab218 @ 0x3ab218   (est. sk_emit_type_annotated)
+ * Builds a node with the given 16-bit tag, optionally appends a parsed string
+ * (ad048) child, then pops and appends a run of "annotation" stack elements
+ * whose tags are one of 0x89, 0x87/0x88, 0x45, 0x46, 0x11e/0x11f, 0x44,
+ * 0x11d. Finally pushes two more children from ad0f0(3) and ad0f0(0xdb) and
+ * pushes the whole thing as 0xf4.
+ * Confidence: medium */
+static void sk_003ab218(uint64_t *st, uint16_t p2, int32_t p3)
+{
+    uint64_t *n = sk_node_alloc(st, 1);
+    NODE_SETTAG(n, p2); NODE_SETSUBT(n, 0);
+    if (p3 != 0) {
+        uint64_t *s = sk_003ad048(st);
+        if (s != 0) sk_node_add(n, s, st);
+    }
+    int32_t cnt = STACK_CNT(st);
+    if (cnt != 0) {
+        uint64_t *e;
+        e = STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG(e) == 0x89) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+            cnt = STACK_CNT(st);
+            if (cnt == 0) goto done;
+        }
+        e = STACK_ELEM(st, cnt - 1);
+        uint32_t u = NODE_TAG(e);
+        if ((u - 0x87 < 2) || (u == 0x45)) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+            cnt = STACK_CNT(st);
+            if (cnt == 0) goto done;
+        }
+        e = STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG(e) == 0x46) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+            cnt = STACK_CNT(st);
+            if (cnt == 0) goto done;
+        }
+        e = STACK_ELEM(st, cnt - 1);
+        if ((NODE_TAG(e) & 0xfffe) == 0x11e) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+            cnt = STACK_CNT(st);
+            if (cnt == 0) goto done;
+        }
+        e = STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG(e) == 0x44) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+            cnt = STACK_CNT(st);
+            if (cnt == 0) goto done;
+        }
+        e = STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG(e) == 0x11d) {
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(n, e, st);
+        }
+    }
+done:
+    {
+        uint64_t *a = (uint64_t *)sk_003ad0f0(st, 3);
+        if (a == 0) n = 0;
+        else sk_node_add(n, a, st);
+        uint64_t *b = (uint64_t *)sk_003ad0f0(st, 0xdb);
+        if (n != 0 && b != 0) {
+            sk_node_add(n, b, st);
+            sk_node_push(st, 0xf4, n);
+        }
+    }
+}
+
+/* FUN_003aa804 @ 0x3aa804   (est. sk_parse_annotated_letter)
+ * Parses a one-letter annotated construct. Most letters select a tag and push
+ * the popped 0xf4 element (or a pair) under it; 'G'/'g' delegate to b0004;
+ * 'J' delegates to af3c4/af238/af4d4 based on the next letter; 'M'/'m'/'P'
+ * build via b0174/b0220 + 4b98; 'S' parses an inner letter mapping to tags
+ * 0x136-0x139; 'X'/'x' build an 0xe0 child collection (0xdf wrapper); 'Z'
+ * builds a 3-child node via ad3a0/ace50; 'z' selects 0x17/0xaf. Returns node.
+ * Confidence: medium */
+/* Pop the top two 0xf4 stack elements (if present): *first = top, *second =
+ * the one below. Mirrors the aa804 'S'/'A' two-element unwind. */
+static void sk_pop_f4_pair(uint64_t *st, uint64_t *first, uint64_t *second)
+{
+    *first = 0; *second = 0;
+    int32_t cnt = STACK_CNT(st);
+    if (cnt == 0) return;
+    uint32_t i = cnt - 1;
+    uint64_t e = (uint64_t)STACK_ELEM(st, i);
+    if (NODE_TAG((uint64_t *)e) == 0xf4) {
+        STACK_CNT(st) = i;
+        *first = e;
+        if (i == 0) return;
+        uint64_t e2 = (uint64_t)STACK_ELEM(st, i - 1);
+        if (NODE_TAG((uint64_t *)e2) == 0xf4) { STACK_CNT(st) = i - 1; *second = e2; }
+    } else {
+        *first = 0;
+        uint64_t e2 = (uint64_t)STACK_ELEM(st, i - 1);
+        if (NODE_TAG((uint64_t *)e2) == 0xf4) { STACK_CNT(st) = i - 1; *second = e2; }
+    }
+}
+
+static uint64_t sk_003aa804(uint64_t *st)
+{
+    uint64_t end = STREAM_END(st);
+    uint64_t pos = STREAM_POS(st);
+    if (end <= pos) return 0;
+    uint64_t npos = pos + 1;
+    STREAM_POS(st) = npos;
+    uint8_t b = STREAM_DATA(st)[pos];
+    if (0x39 < b - 0x41) return 0;
+    uint64_t tag, l12 = 0, l10 = 0, l13 = 0;
+    switch (b) {
+    default: tag = 0x42; break;
+    case 'B': tag = 0xaf; break;
+    case 'C': tag = 0x17; break;
+    case 'D':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x3b, (uint64_t *)l12);
+    case 'E': tag = 0x43; break;
+    case 'F': case 'H': case 'I': case 'J': case 'N': case 'O': case 'Q':
+    case 'R': case 'T': case 'V': case 'W': case '[': case '\\': case ']':
+    case '^': case '_': case '`': case 'a': case 'd': case 'h': case 'i':
+    case 'k': case 'n': case 'q': case 'r': case 's': case 't': case 'v':
+    case 'y':
+        return 0;
+    case 'G': case 'g':
+        return (uint64_t)sk_003b0004(st, (int)(char)b);
+    case 'K': tag = 0xb; break;
+    case 'L': tag = 0xb0; break;
+    case 'M':
+        l12 = (uint64_t)sk_003b0174(st);
+        if (STACK_CNT(st) == 0) l10 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l10 = 0;
+            else { STACK_CNT(st) = i; l10 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push2(st, 0x9a, (uint64_t *)l12, (uint64_t *)l10);
+    case 'P':
+        l10 = (uint64_t)sk_003b0220(st);
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push2(st, 0x55, (uint64_t *)l12, (uint64_t *)l10);
+    case 'S': {
+        if (end <= npos) return 0;
+        STREAM_POS(st) = pos + 2;
+        uint8_t c2 = STREAM_DATA(st)[npos];
+        if (c2 < 0x61) {
+            uint64_t first, second;
+            if (c2 == 'A') {
+                sk_pop_f4_pair(st, &first, &second);
+                return (uint64_t)sk_node_push2(st, 0x138, (uint64_t *)second, (uint64_t *)first);
+            }
+            if (c2 != 'D') return 0;
+            sk_pop_f4_pair(st, &first, &second);
+            return (uint64_t)sk_node_push2(st, 0x137, (uint64_t *)second, (uint64_t *)first);
+        }
+        if (c2 != 'a') {
+            if (c2 != 'p') {
+                if (c2 != 'q') return 0;
+                if (STACK_CNT(st) == 0) l12 = 0;
+                else {
+                    uint32_t i = STACK_CNT(st) - 1;
+                    uint64_t *e = STACK_ELEM(st, i);
+                    if (NODE_TAG(e) != 0xf4) l12 = 0;
+                    else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+                }
+                return (uint64_t)sk_node_push(st, 0x135, (uint64_t *)l12);
+            }
+            if (STACK_CNT(st) == 0) l12 = 0;
+            else {
+                uint32_t i = STACK_CNT(st) - 1;
+                uint64_t *e = STACK_ELEM(st, i);
+                if (NODE_TAG(e) != 0xf4) l12 = 0;
+                else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+            }
+            return (uint64_t)sk_node_push(st, 0x139, (uint64_t *)l12);
+        }
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x136, (uint64_t *)l12);
+    }
+    case 'U': tag = 0x102; break;
+    case 'X': {
+        if (STACK_CNT(st) == 0) return 0;
+        uint32_t i = STACK_CNT(st) - 1;
+        l13 = (uint64_t)STACK_ELEM(st, i);
+        if (NODE_TAG((uint64_t *)l13) != 0x2c) return 0;
+        STACK_CNT(st) = i;
+        l12 = (uint64_t)sk_003ad3a0(st);
+        if (l12 == 0) return 0;
+    }
+    /* fallthrough 'x' */
+    case 'x': {
+        uint64_t *p3 = (uint64_t *)sk_003ad3a0(st);
+        if (p3 == 0) return 0;
+        uint64_t *l4 = sk_node_alloc(st, 1);
+        NODE_SETTAG(l4, 0xe0); NODE_SETSUBT(l4, 0);
+        uint8_t sub = NODE_SUBT(p3);
+        uint64_t u15 = sub;
+        if (sub == 1) {
+            goto loop;
+        } else if (sub == 5) {
+            u15 = (uint64_t)(uint32_t)p3[1];
+            if ((uint32_t)p3[1] != 0) goto loop;
+        } else if (sub == 2) {
+            u15 = 2;
+            goto loop;
+        }
+        {
+            uint64_t *l10 = sk_node_alloc(st, 1);
+            NODE_SETTAG(l10, 0xdf); NODE_SETSUBT(l10, 0);
+            sk_node_add(l10, l4, st);
+            if (l13 != 0) {
+                sk_node_add(l10, (uint64_t *)l13, st);
+                sk_node_add(l10, (uint64_t *)l12, st);
+            }
+            return (uint64_t)sk_node_push(st, 0xf4, l10);
+        }
+    loop:
+        {
+            uint64_t i16 = 0;
+            do {
+                uint8_t s2 = NODE_SUBT(p3);
+                uint64_t u8 = s2;
+                uint32_t u7 = s2;
+                uint64_t *pl14;
+                if (u7 == 1) {
+                    if (u8 <= i16) { pl14 = 0; }
+                    uint64_t *p9 = p3;
+                    if (1 < u7 - 1) p9 = (uint64_t *)NODE_DATA(p3);
+                    pl14 = (uint64_t *)p9[i16];
+                } else {
+                    if (u7 == 5) { u8 = (uint64_t)(uint32_t)p3[1]; goto l_aac2; }
+                    if (s2 == 2) { u8 = 2; goto l_aac2; }
+                    pl14 = 0;
+                }
+                goto l_after;
+            l_aac2:
+                if (u8 <= i16) pl14 = 0;
+                else {
+                    uint64_t *p9 = p3;
+                    if (1 < u7 - 1) p9 = (uint64_t *)NODE_DATA(p3);
+                    pl14 = (uint64_t *)p9[i16];
+                }
+            l_after:
+                {
+                    uint32_t u7b = NODE_SUBT(pl14) - 1;
+                    uint64_t *pl11 = pl14;
+                    if (1 < u7b) pl11 = (uint64_t *)NODE_DATA(pl14);
+                    uint64_t *pu9;
+                    if (NODE_TAG(pl11) == 0x80) {
+                        if (u7b < 2) {
+                            pu9 = (uint64_t *)NODE_DATA(pl14);
+                        } else {
+                            if ((NODE_SUBT(pl14) == 5) && ((int64_t)pl14[1] != 0)) {
+                                pl14 = (uint64_t *)NODE_DATA(pl14);
+                                pu9 = (uint64_t *)NODE_DATA(pl14);
+                            } else {
+                                pu9 = 0;
+                            }
+                        }
+                        uint64_t u5;
+                        if (NODE_SUBT(pu9) - 1 < 2) u5 = (uint64_t)NODE_DATA(pu9);
+                        else {
+                            if ((NODE_SUBT(pu9) == 5) && ((int64_t)pu9[1] != 0)) {
+                                pu9 = (uint64_t *)NODE_DATA(pu9);
+                                u5 = (uint64_t)NODE_DATA(pu9);
+                            } else {
+                                u5 = 0;
+                            }
+                        }
+                        pl14 = (uint64_t *)sk_node_push(st, 0xf4, (uint64_t *)u5);
+                        tag = 0xe1;
+                    } else {
+                        tag = 0xe2;
+                    }
+                    uint64_t *l10 = sk_node_alloc(st, 1);
+                    NODE_SETTAG(l10, (uint16_t)tag); NODE_SETSUBT(l10, 0);
+                    sk_node_add(l10, pl14, st);
+                    sk_node_add(l4, l10, st);
+                    i16 = i16 + 1;
+                }
+            } while (u15 != i16);
+        }
+        {
+            uint64_t *l10 = sk_node_alloc(st, 1);
+            NODE_SETTAG(l10, 0xdf); NODE_SETSUBT(l10, 0);
+            sk_node_add(l10, l4, st);
+            if (l13 != 0) {
+                sk_node_add(l10, (uint64_t *)l13, st);
+                sk_node_add(l10, (uint64_t *)l12, st);
+            }
+            return (uint64_t)sk_node_push(st, 0xf4, l10);
+        }
+    }
+    case 'Y': return (uint64_t)sk_003a6090(st, 0xb1);
+    case 'Z': {
+        l12 = (uint64_t)sk_003ad3a0(st);
+        l10 = 0;
+        if (STACK_CNT(st) != 0) {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) == 0x67) { STACK_CNT(st) = i; l10 = (uint64_t)e; }
+        }
+        l13 = (uint64_t)sk_003ace50(st);
+        uint64_t *l4 = sk_node_alloc(st, 1);
+        NODE_SETTAG(l4, 1); NODE_SETSUBT(l4, 0);
+        if (l10 == 0 || l4 == 0) return 0;
+        sk_node_add(l4, (uint64_t *)l10, st);
+        if (l13 == 0) return 0;
+        sk_node_add(l4, (uint64_t *)l13, st);
+        if (l12 == 0) return 0;
+        sk_node_add(l4, (uint64_t *)l12, st);
+        return (uint64_t)l4;
+    }
+    case 'b':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0xde, (uint64_t *)l12);
+    case 'c':
+        if (STACK_CNT(st) == 0) l10 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l10 = 0;
+            else { STACK_CNT(st) = i; l10 = (uint64_t)e; }
+        }
+        l12 = (uint64_t)sk_003b02dc(st);
+        return (uint64_t)sk_node_push2(st, 0xca, (uint64_t *)l12, (uint64_t *)l10);
+    case 'e': {
+        uint64_t *l10 = sk_node_alloc(st, 1);
+        NODE_SETTAG(l10, 0x41); NODE_SETSUBT(l10, 0);
+        return (uint64_t)sk_node_push(st, 0xf4, l10);
+    }
+    case 'f': tag = 0xea; break;
+    case 'j': return (uint64_t)sk_003b0078(st);
+    case 'l':
+        l12 = (uint64_t)sk_003b02dc(st);
+        return (uint64_t)sk_node_push(st, 0xcb, (uint64_t *)l12);
+    case 'm':
+        l12 = (uint64_t)sk_003b0174(st);
+        if (STACK_CNT(st) == 0) l10 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l10 = 0;
+            else { STACK_CNT(st) = i; l10 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push2(st, 0x47, (uint64_t *)l12, (uint64_t *)l10);
+    case 'o':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x105, (uint64_t *)l12);
+    case 'p':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x47, (uint64_t *)l12);
+    case 'u':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x106, (uint64_t *)l12);
+    case 'w':
+        if (STACK_CNT(st) == 0) l12 = 0;
+        else {
+            uint32_t i = STACK_CNT(st) - 1;
+            uint64_t *e = STACK_ELEM(st, i);
+            if (NODE_TAG(e) != 0xf4) l12 = 0;
+            else { STACK_CNT(st) = i; l12 = (uint64_t)e; }
+        }
+        return (uint64_t)sk_node_push(st, 0x104, (uint64_t *)l12);
+    case 'z':
+        if (end <= npos) return 0;
+        STREAM_POS(st) = pos + 2;
+        if (STREAM_DATA(st)[npos] == 'C') tag = 0x17;
+        else if (STREAM_DATA(st)[npos] != 'B') return 0;
+        else tag = 0xaf;
+        sk_003ab218(st, (uint16_t)tag, 1);
+        return 0;
+    }
+    /* default / single-tag pushes */
+    if (b == 'F' || b == 'H' || b == 'I' || b == 'J' || b == 'N' || b == 'O' ||
+        b == 'Q' || b == 'R' || b == 'T' || b == 'V' || b == 'W') return 0;
+    sk_003ab218(st, (uint16_t)tag, 0);
+    return 0;
+}
+
+/* FUN_003ab40c @ 0x3ab40c   (est. sk_parse_binop)
+ * Parses a one-letter binary/operator construct. 'A' builds a 0x22 node over
+ * an ident (ac52c) plus a popped element; 'C'/'c' (0x1e) pop a 0xba+0xf4 pair
+ * via 4f5c into a node; 'D'(0x20),'E'(0x6a),'F'(0xbd),'P'(0xbc),'W'(0xbe),
+ * 'Z'(0x85),'d'(0x34),'e'(0x69),'i'(0x82) build a node over a popped 0xf4;
+ * 'M'(b06ac),'m'(0x93),'p'(0x113) delegate to b05c8/b06ac; 'U'(0x48) and 'u'
+ * (0x7a) build an extra child over an ident. Returns the node.
+ * Confidence: medium */
+static uint64_t sk_003ab40c(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    if (STREAM_END(st) <= pos) return 0;
+    STREAM_POS(st) = pos + 1;
+    uint8_t b = STREAM_DATA(st)[pos];
+    uint64_t tag, l4, l6, l7, l10, pop;
+    uint64_t u9 = 0;
+    if (b < 0x57) {
+        if (0x45 < b) {
+            if (b < 0x50) {
+                if (b != 'F') {
+                    if (b == 'M') return (uint64_t)sk_003b06ac(st);
+                    return 0;
+                }
+                u9 = 0xbd;
+                goto push_pop;
+            }
+            if (b == 'P') { u9 = 0xbc; goto push_pop; }
+            if (b != 'U') return 0;
+            u9 = 0x48;
+            goto build_ident;
+        }
+        if (0x43 < b) {
+            if (b == 'D') u9 = 0x20;
+            else {
+                if (b != 'E') return 0;
+                u9 = 0x6a;
+            }
+            goto push_pop;
+        }
+        if (b != 'A') {
+            if (b != 'C') return 0;
+            u9 = 0x1e;
+            goto c_case;
+        }
+        /* 'A': ident + popped under 0x22 */
+        l10 = (uint64_t)sk_003ac52c(st);
+        pop = (uint64_t)sk_003ace50(st);
+        l6 = (uint64_t)sk_node_push(st, 0x22, (uint64_t *)pop);
+        l4 = 0;
+        l7 = l6;
+        if (l10 == 0) return 0;
+    } else {
+        if (100 < b) {
+            if (b < 0x6d) {
+                if (b == 'e') u9 = 0x69;
+                else {
+                    if (b != 'i') return 0;
+                    u9 = 0x82;
+                }
+                goto push_pop;
+            }
+            if (b == 'm') { sk_003b05c8(st, 0x93); return 0; }
+            if (b == 'p') { sk_003b05c8(st, 0x113); return 0; }
+            if (b != 'u') return 0;
+            u9 = 0x7a;
+            goto build_ident;
+        }
+        if (b < 99) {
+            if (b == 'W') u9 = 0xbe;
+            else {
+                if (b != 'Z') return 0;
+                u9 = 0x85;
+            }
+            goto push_pop;
+        }
+        if (b != 99) {
+            if (b != 'd') return 0;
+            u9 = 0x34;
+            goto push_pop;
+        }
+        u9 = 0x1e;
+    c_case: {
+        uint32_t cnt = STACK_CNT(st);
+        if (cnt == 0) { l10 = 0; l6 = 0; goto c_after; }
+        uint32_t i = cnt - 1;
+        l10 = (uint64_t)STACK_ELEM(st, i);
+        if (NODE_TAG((uint64_t *)l10) == 0xba) {
+            STACK_CNT(st) = i;
+            cnt = i;
+            if (i == 0) { l6 = 0; goto c_after; }
+        } else {
+            l10 = 0;
+        }
+        l6 = (uint64_t)STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG((uint64_t *)l6) != 0xf4) { l6 = 0; goto c_after; }
+        STACK_CNT(st) = cnt - 1;
+    c_after:
+        l7 = (uint64_t)sk_ctx_op2_v(st, (uint64_t *)l6);
+        pop = (uint64_t)sk_003ace50(st);
+        l4 = (uint64_t)sk_node_push(st, (int)u9, (uint64_t *)pop);
+        if (l7 != 0 && l4 != 0) sk_node_add((uint64_t *)l4, (uint64_t *)l7, st);
+        if (l6 == 0) return 0;
+        if (l4 == 0) return 0;
+        sk_node_add((uint64_t *)l4, (uint64_t *)l6, st);
+        l6 = l4;
+        l7 = l10;
+        goto finish;
+    }
+    }
+    /* fallthrough for 'A' path: attach l10 child */
+    if (l7 == 0) return l4;
+    sk_node_add((uint64_t *)l6, (uint64_t *)l10, st);
+    return l6;
+finish:
+    if (l7 == 0) return l4;
+    sk_node_add((uint64_t *)l6, (uint64_t *)l10, st);
+    return l6;
+push_pop:
+    pop = (uint64_t)sk_003ace50(st);
+    return (uint64_t)sk_node_push(st, (int)u9, (uint64_t *)pop);
+build_ident:
+    l4 = (uint64_t)sk_003ac52c(st);
+    l10 = 0;
+    if (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *e = STACK_ELEM(st, i);
+        if (NODE_TAG(e) == 0xf4) { STACK_CNT(st) = i; l10 = (uint64_t)e; }
+    }
+    pop = (uint64_t)sk_003ace50(st);
+    l6 = (uint64_t)sk_node_push(st, (int)u9, (uint64_t *)pop);
+    if (l4 == 0) return 0;
+    if (l6 == 0) return 0;
+    sk_node_add((uint64_t *)l6, (uint64_t *)l4, st);
+    if (l10 == 0) return 0;
+    sk_node_add((uint64_t *)l6, (uint64_t *)l10, st);
+    return l6;
+}
+static void sk_003ab780(uint64_t *st)
+{
+    uint64_t u2 = (uint64_t)sk_003ac52c(st);
+    uint64_t *top = 0;
+    if (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *e = STACK_ELEM(st, i);
+        uint16_t t = NODE_TAG(e);
+        if (t < 0x34 && ((1ULL << (t & 0x3f)) & 0xf000018000000ULL) != 0) {
+            STACK_CNT(st) = i;
+            top = e;
+        }
+    }
+    sk_node_push2(st, 0xda, (uint64_t *)u2, top);
+}
+
+/* FUN_003ab7f4 @ 0x3ab7f4   (est. sk_parse_e8_annotated)
+ * Pops a 0xba + 0xf4 pair (via 4f5c) and a printable element; builds an 0xe8
+ * node collecting the printable, the pair result, the 0xf4 element and the
+ * 0xba element as children; then runs acfb4 + b03c0. Returns b03c0's value.
+ * Confidence: low */
+static uint64_t sk_003ab7f4(uint64_t *st)
+{
+    uint32_t cnt = STACK_CNT(st);
+    uint64_t l8 = 0, l9;
+    if (cnt != 0) {
+        uint32_t i = cnt - 1;
+        l8 = (uint64_t)STACK_ELEM(st, i);
+        if (NODE_TAG((uint64_t *)l8) == 0xba) {
+            STACK_CNT(st) = i;
+            cnt = i;
+            if (i == 0) goto l868;
+        } else {
+            l8 = 0;
+        }
+        l9 = (uint64_t)STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG((uint64_t *)l9) == 0xf4) {
+            STACK_CNT(st) = cnt - 1;
+            goto l86c;
+        }
+    }
+l868:
+    l9 = 0;
+l86c:
+    uint64_t l2 = (uint64_t)sk_ctx_op2_v(st, (uint64_t *)l9);
+    uint64_t l3 = (uint64_t)sk_003ace50(st);
+    if (l9 == 0) return 0;
+    uint64_t *l4 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l4, 0xe8); NODE_SETSUBT(l4, 0);
+    uint64_t l6 = 0;
+    if (l3 != 0 && l4 != 0) {
+        sk_node_add(l4, (uint64_t *)l3, st);
+        if (l2 != 0) sk_node_add(l4, (uint64_t *)l2, st);
+        sk_node_add(l4, (uint64_t *)l9, st);
+        l6 = (uint64_t)l4;
+        if (l8 != 0) sk_node_add(l4, (uint64_t *)l8, st);
+    }
+    uint64_t u5 = (uint64_t)sk_003acfb4(st, l6, l9, *(uint8_t *)((char *)st + 0x51));
+    return (uint64_t)sk_003b03c0(st, u5);
+}
+
+/* FUN_003ab948 @ 0x3ab948   (est. sk_parse_2c_list)
+ * Builds a 0x2c list node; when the flag is set, repeatedly parses idents
+ * ('z' = 0, 'l' = exit, else '_N_' +1) into 0x26 scalar children until
+ * 'l'/end; otherwise a single 0x26 with value 1. Then drains printable stack
+ * elements (b0a64 test) as children, finalizes with the sub-type count, and
+ * returns the node.
+ * Confidence: medium */
+static uint64_t sk_003ab948(uint64_t *st, int32_t p2)
+{
+    uint64_t *l6 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l6, 0x2c); NODE_SETSUBT(l6, 0);
+    if (p2 != 0) {
+        for (;;) {
+            uint64_t pos = STREAM_POS(st);
+            uint32_t uv;
+            if (pos < STREAM_END(st)) {
+                char c = STREAM_DATA(st)[pos];
+                if (c == 'l') { STREAM_POS(st) = pos + 1; break; }
+                if (c == 'z') { STREAM_POS(st) = pos + 1; uv = 0; }
+                else {
+                    int32_t v = sk_003ac4a4(st);
+                    if (v < -1) return 0;
+                    uv = (uint32_t)(v + 1);
+                }
+            } else {
+                int32_t v = sk_003ac4a4(st);
+                if (v < -1) return 0;
+                uv = (uint32_t)(v + 1);
+            }
+            uint64_t *s = sk_node_alloc(st, 1);
+            NODE_SETTAG(s, 0x26); NODE_SETSUBT(s, 4);
+            s[0] = (uint64_t)uv;
+            sk_node_add(l6, s, st);
+        }
+    } else {
+        uint64_t *s = sk_node_alloc(st, 1);
+        NODE_SETTAG(s, 0x26); NODE_SETSUBT(s, 4);
+        s[0] = 1;
+        sk_node_add(l6, s, st);
+    }
+    uint8_t sub = NODE_SUBT(l6);
+    uint32_t u9 = sub;
+    if (sub != 1) {
+        if (sub == 5) u9 = (uint32_t)l6[1];
+        else {
+            u9 = 0;
+            if (sub == 2) u9 = 2;
+        }
+    }
+    while (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *e = STACK_ELEM(st, i);
+        if (sk_003b0a64(NODE_TAG(e)) == 0) break;
+        STACK_CNT(st) = i;
+        sk_node_add(l6, e, st);
+    }
+    sk_node_finalize(l6, (int)u9);
+    return (uint64_t)l6;
+}
+
+/* FUN_003abad0 @ 0x3abad0   (est. sk_parse_ident_scalar)
+ * If the stack top is a 0x67 scalar, validates each character against an
+ * identifier charset table, copies them into a growing buffer, then reads a
+ * trailing 'P'/'p'/'i' to select tag 0xb7/0xb9/0x81 and returns a 3-subtype
+ * string node over the copied bytes. Returns NULL on invalid input.
+ * Confidence: medium */
+static uint64_t *sk_003abad0(uint64_t *st)
+{
+    if (STACK_CNT(st) == 0) return NULL;
+    uint32_t i = STACK_CNT(st) - 1;
+    uint64_t *e = STACK_ELEM(st, i);
+    if (NODE_TAG(e) != 0x67) return NULL;
+    STACK_CNT(st) = i;
+    uint64_t local50 = 0, local48 = 0;
+    int64_t len = (int64_t)e[1];
+    char *p = (char *)e[0];
+    while (len != 0) {
+        char c = *p;
+        if (c >= 0) {
+            uint32_t u = (uint32_t)c - 0x61;
+            if (0x19 < u) return NULL;
+            if (((1ULL << (u & 0x3f)) & 0x17007a2ULL) != 0) return NULL;
+            /* charset table maps invalid chars -> reject; valid pass through */
+        }
+        sk_003acd3c((uint64_t *)&local50, (uint8_t *)&c, st);
+        p = p + 1;
+        len = len - 1;
+    }
+    uint64_t pos = STREAM_POS(st);
+    if (pos < STREAM_END(st)) {
+        STREAM_POS(st) = pos + 1;
+        char c = STREAM_DATA(st)[pos];
+        uint16_t tag;
+        if (c == 'P') tag = 0xb7;
+        else if (c == 'p') tag = 0xb9;
+        else {
+            if (c != 'i') return NULL;
+            tag = 0x81;
+        }
+        uint64_t *n = sk_node_alloc(st, 1);
+        NODE_SETTAG(n, tag); NODE_SETSUBT(n, 3);
+        n[0] = local50;
+        n[1] = local48 & 0xffffffff;
+        return n;
+    }
+    return NULL;
+}
+
+/* FUN_003abc48 @ 0x3abc48   (est. sk_parse_ident_seq)
+ * Parses an identifier sequence into a node via ac2d0: 'z' -> (0,0),
+ * 's' -> tag 0x57 node, 'd' -> two idents (i2+1, i3), otherwise a single
+ * ident. Returns nothing (push only).
+ * Confidence: medium */
+static uint64_t sk_003abc48(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    uint32_t i2, i3;
+    if (pos < STREAM_END(st)) {
+        char c = STREAM_DATA(st)[pos];
+        if (c == 'z') {
+            STREAM_POS(st) = pos + 1;
+            i2 = 0; i3 = 0;
+            goto go;
+        }
+        if (c == 's') {
+            STREAM_POS(st) = pos + 1;
+            uint64_t *n = sk_node_alloc(st, 1);
+            NODE_SETTAG(n, 0x57); NODE_SETSUBT(n, 0);
+            return (uint64_t)n;
+        }
+        if (c == 'd') {
+            STREAM_POS(st) = pos + 1;
+            i2 = (uint32_t)sk_003ac4a4(st);
+            i3 = (uint32_t)sk_003ac4a4(st);
+            i2 = i2 + 1;
+            goto go;
+        }
+    }
+    i2 = (uint32_t)sk_003ac4a4(st);
+    i3 = (uint32_t)(i2 + 1);
+    i2 = 0;
+go:
+    return (uint64_t)sk_003ac2d0(st, (int32_t)i2, (uint32_t)i3);
+}
+
+/* FUN_003abd1c @ 0x3abd1c   (est. sk_parse_eb_sequence)
+ * Builds an 0xeb node; unless the stack top is a 0x120 terminator, drains a
+ * run of 0xec items (each optionally prefixed by 0x122, a 0x67->0xed
+ * conversion, and a mandatory 0xf4 child) terminated by 0x121; finalizes
+ * with 0 and pushes as 0xf4. Returns the pushed node.
+ * Confidence: medium */
+static uint64_t sk_003abd1c(uint64_t *st)
+{
+    uint64_t *l3 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l3, 0xeb); NODE_SETSUBT(l3, 0);
+    if (STACK_CNT(st) != 0 &&
+        NODE_TAG(STACK_ELEM(st, STACK_CNT(st) - 1)) == 0x120) {
+        STACK_CNT(st) = STACK_CNT(st) - 1;
+    } else {
+        bool b9;
+        do {
+            if (STACK_CNT(st) != 0 &&
+                NODE_TAG(STACK_ELEM(st, STACK_CNT(st) - 1)) == 0x121) {
+                b9 = false;
+                STACK_CNT(st) = STACK_CNT(st) - 1;
+            } else {
+                b9 = true;
+            }
+            uint64_t *l4 = sk_node_alloc(st, 1);
+            NODE_SETTAG(l4, 0xec); NODE_SETSUBT(l4, 0);
+            int32_t cnt = STACK_CNT(st);
+            if (cnt == 0) return 0;
+            uint64_t *l6 = STACK_ELEM(st, cnt - 1);
+            if (NODE_TAG(l6) == 0x122) {
+                STACK_CNT(st) = cnt - 1;
+                sk_node_add(l4, l6, st);
+                cnt = STACK_CNT(st);
+                if (cnt == 0) return 0;
+            }
+            uint64_t *e = STACK_ELEM(st, cnt - 1);
+            if (NODE_TAG(e) == 0x67) {
+                STACK_CNT(st) = cnt - 1;
+                uint64_t *conv = sk_node_alloc(st, 1);
+                NODE_SETTAG(conv, 0xed); NODE_SETSUBT(conv, 3);
+                conv[0] = e[0];
+                conv[1] = e[1];
+                sk_node_add(l4, conv, st);
+                cnt = STACK_CNT(st);
+                if (cnt == 0) return 0;
+            }
+            l6 = STACK_ELEM(st, cnt - 1);
+            if (NODE_TAG(l6) != 0xf4) return 0;
+            STACK_CNT(st) = cnt - 1;
+            sk_node_add(l4, l6, st);
+            sk_node_add(l3, l4, st);
+        } while (b9);
+        sk_node_finalize(l3, 0);
+    }
+    return (uint64_t)sk_node_push(st, 0xf4, l3);
+}
+
+/* FUN_003abef0 @ 0x3abef0   (est. sk_emit_2d_pair)
+ * Pops a 0x2c + 0xf4 pair from the stack, builds a 0x2d node from them and
+ * pushes it as 0xf4. Returns nothing.
+ * Confidence: medium */
+static void sk_003abef0(uint64_t *st)
+{
+    uint32_t cnt = STACK_CNT(st);
+    uint64_t l3 = 0, l4;
+    if (cnt != 0) {
+        uint32_t i = cnt - 1;
+        l3 = (uint64_t)STACK_ELEM(st, i);
+        if (NODE_TAG((uint64_t *)l3) == 0x2c) {
+            STACK_CNT(st) = i;
+            cnt = i;
+            if (i == 0) goto lf5c;
+        } else {
+            l3 = 0;
+        }
+        l4 = (uint64_t)STACK_ELEM(st, cnt - 1);
+        if (NODE_TAG((uint64_t *)l4) == 0xf4) {
+            STACK_CNT(st) = cnt - 1;
+            goto lf60;
+        }
+    }
+lf5c:
+    l4 = 0;
+lf60:
+    uint64_t u2 = (uint64_t)sk_node_push2(st, 0x2d, (uint64_t *)l3, (uint64_t *)l4);
+    sk_node_push(st, 0xf4, (uint64_t *)u2);
+}
+
+/* FUN_003abf88 @ 0x3abf88   (est. sk_parse_109_code)
+ * Reads two bytes from the stream and maps the big-endian pair to a code
+ * (0..0x17) via a lookup table ("al","ac","at","de","xx","XX","xX","CP",
+ * "Cp","cp","Tk","tk","pr","TK","Cc","Tt","tT","sx","gx","gu","pu","iu",
+ * "et","st"). Builds a 0x109 node holding the code scalar plus the popped
+ * 0xf4 element. Returns the node.
+ * Confidence: high */
+static uint64_t sk_003abf88(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    uint8_t c0, c1;
+    if (pos < STREAM_END(st)) {
+        STREAM_POS(st) = pos + 1;
+        c0 = STREAM_DATA(st)[pos];
+        pos = pos + 1;
+    } else {
+        c0 = 0;
+    }
+    if (pos < STREAM_END(st)) {
+        STREAM_POS(st) = pos + 1;
+        c1 = STREAM_DATA(st)[pos];
+    } else {
+        c1 = 0;
+    }
+    uint16_t pair = (uint16_t)((c0 << 8) | c1);
+    uint64_t code;
+    switch (pair) {
+    case 0x6c61: code = 0; break;    /* "al" */
+    case 0x6163: code = 1; break;    /* "ac" */
+    case 0x6174: code = 2; break;    /* "at" */
+    case 0x6564: code = 3; break;    /* "de" */
+    case 0x7878: code = 4; break;    /* "xx" */
+    case 0x5858: code = 5; break;    /* "XX" */
+    case 0x7858: code = 6; break;    /* "xX" */
+    case 0x5043: code = 7; break;    /* "CP" */
+    case 0x7043: code = 8; break;    /* "Cp" */
+    case 0x7063: code = 9; break;    /* "cp" */
+    case 0x6b54: code = 10; break;   /* "Tk" */
+    case 0x6b74: code = 11; break;   /* "tk" */
+    case 0x7270: code = 12; break;   /* "pr" */
+    case 0x4b54: code = 13; break;   /* "TK" */
+    case 0x6343: code = 14; break;   /* "Cc" */
+    case 0x7454: code = 15; break;   /* "Tt" */
+    case 0x5474: code = 16; break;   /* "tT" */
+    case 0x7378: code = 17; break;   /* "xs" */
+    case 0x6778: code = 18; break;   /* "xg" */
+    case 0x6775: code = 19; break;   /* "ug" */
+    case 0x7075: code = 20; break;   /* "up" */
+    case 0x6975: code = 21; break;   /* "ui" */
+    case 0x7465: code = 22; break;   /* "et" */
+    case 0x7374: code = 23; break;   /* "st" */
+    default: return 0;
+    }
+    uint64_t *l2 = sk_node_alloc(st, 1);
+    NODE_SETTAG(l2, 0x109); NODE_SETSUBT(l2, 0);
+    uint64_t *s = sk_node_alloc(st, 1);
+    NODE_SETTAG(s, 0x68); NODE_SETSUBT(s, 4);
+    s[0] = code;
+    sk_node_add(l2, s, st);
+    if (STACK_CNT(st) != 0) {
+        uint32_t i = STACK_CNT(st) - 1;
+        uint64_t *l4 = STACK_ELEM(st, i);
+        if (NODE_TAG(l4) == 0xf4) {
+            STACK_CNT(st) = i;
+            sk_node_add(l2, l4, st);
+            return (uint64_t)l2;
+        }
+    }
+    return 0;
 }

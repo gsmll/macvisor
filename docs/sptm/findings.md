@@ -4458,3 +4458,57 @@ Confidence: high
 - **Evidence**: e.g. FUN_003eefc0 `(*UNRECOVERED_JUMPTABLE)() @0x003ef008`; FUN_003efe7c @0x003eff8c; FUN_003f0268 @0x003f0340.
 - **Severity (hypothesis)**: informational/architecture — the dispatch-table integrity (who writes the table entries and the object continuation slots) is the trust boundary for this region; recommended for the audit pass.
 - **Confidence**: medium
+
+## [ringminus1] 003ed0ec (SKR57) — "Unavailable in Exclaves" swift fatal error path
+- **Observation**: Calls `sk_rt_0035ac70(s_Unavailable_in_Exclaves_005dc0d0)` then a noreturn swift-fatal-format helper with `0xd000000000000017` and the `s__Concurrency_Task_swift_005dc0b0` source string. A task-priority/scheduling operation reaching this path terminates the thread with a swift runtime error.
+- **Evidence**: `FUN_003ed0ec: ... FUN_001afa84(...,0xd000000000000017,...,s__Concurrency_Task_swift_005dc0b0,0x17,2)`.
+- **Severity (hypothesis)**: informational — a controlled denial path for unsupported concurrency-task operations in an Exclave; confirms cL4 surfaces swift task-priority semantics and panics when unavailable.
+- **Confidence**: medium (string + fatal-call matched)
+
+## [ringminus1] 003ec9c4 (SKR57) — task-priority -> scheduler-code mapping
+- **Observation**: Small switch mapping a priority value to scheduler codes, logging `s_TaskPriority_low/medium/high` strings. Fallthrough (default / case 1) lands in a fault/abort path calling a debugger break (0x670738 table) and returns `-0x2fffffffffffffe9`.
+- **Evidence**: `switch(uVar2 | uVar1 & 0xff) { case 2: FUN_004078c0(s_TaskPriority_low_005dc090); ... default/1: FUN_000b430c(); FUN_002a4ab4(0x10); ... lVar3 = -0x2fffffffffffffe9; }`.
+- **Severity (hypothesis)**: informational — malformed priority maps to a negative (fault) code; the huge negative constant looks like a tagged error. No memory-safety concern observed.
+- **Confidence**: medium
+
+## [ringminus1] SKR57 batch — pervasive unrecovered indirect-jump dispatch tails
+- **Observation**: Nearly every continuation in the batch ends in an indirect tail call through a shared dispatch table (Ghidra "UNRECOVERED_JUMPTABLE" / "Too many branches"). The dispatch target is not statically resolvable; bodies are register-artifact shaped (in_rN/xr_xN live-outs).
+- **Evidence**: e.g. FUN_003e68f0 `(*jt)() @0x003e6a3c`; FUN_003e7228 `(*jt)() @0x003e7420`; FUN_003e86c8 `(*jt)() @0x003e8914`.
+- **Severity (hypothesis)**: informational/architecture — the dispatch-table integrity (who writes the object continuation slots / message-frame handler slots in the x22 context block) is the trust boundary for this IPC region; recommended for the audit pass. The ctx-block offsets (0x80/0xc0/0xf8 code-slot + 8 dispatch) are reused across the whole slice.
+- **Confidence**: medium
+
+## [ringminus1] 003ee818/003eeef4 (SKR57) — tagged-pointer block-release with 0xc31a tag
+- **Observation**: Both embed the tagged constant `&stack... & 0xffffffffffff | 0xc31a000000000000` into a `sk_rt_0040bd24` (refcount/block release) call, together with a slot read from `ctx+0x150/0x160`. The 0xc31a top-tag marks a live stack-block pointer for the block-copying runtime.
+- **Evidence**: `FUN_003ee818: FUN_0040bd24((ulong)&stack0xffffffffffffffe8 & 0xffffffffffff | 0xc31a000000000000, *(ctx+0x150));`.
+- **Severity (hypothesis)**: informational — the tag is the standard Swift/ARM64 block marker; consistent release discipline, no leak/UAF observed.
+- **Confidence**: medium
+
+## [ringminus1] 003e6da8/003e9e74/003eafc8 (SKR57) — register-artifact IPC send tails
+- **Observation**: These send-tail helpers index the context/param block by an int loaded from a table (`*(int*)(param+0x34)` etc.) and tail-dispatch through `(*(code**)(x16+0x10))(param_1, base+offset, result)`. The offset is attacker-visible if the frame/table is guest-controlled; no bounds check is present in the recovered body.
+- **Evidence**: `FUN_003e6dd0: iVar1 = *(int*)(param_2+0x38); ... (**(code**)(extraout_x16+0x10))(param_1, unaff_x20 + iVar1, uVar2);`.
+- **Severity (hypothesis)**: low — message/endpoint dispatch offset arithmetic on guest-supplied frame state; bounds trust resides in the 0x40xxxx IPC core, worth an audit of the slot-limit checks.
+- **Confidence**: low (register artifacts; offsets only partially recovered)
+
+## [ringminus1] 0039a6fc (SKR51) sk_req_decoder — generic-requirement decoder with unvalidated pack-index writes
+- **Observation**: The generic-requirements decoder walks guest/serialised requirement records (12 bytes each) and, for pack-length (kind 5) and pack-array (0x1f) requirements, writes into a u16 bit-vector indexed by a record-supplied pack index. The vector is grown on demand with `sk_bytevec_reserve`, but the 0xffff "entire pack" sentinel path iterates the subject pack by a length read from `*(pack-8)` (a tagged pack buffer) with no upper-bound validation against the requirement record's own length, then folds each element through `sk_invertible_check`/`sk_layout_check`. A malformed pack element count could drive an oversized iteration.
+- **Evidence**: `uVar20 = (ulong)(ushort)param_4[2]; if (uVar20 == 0xffff) { puVar6 = pack&~1; for (lVar23 = ((pack&~1))[-1]; lVar23 != 0; lVar23--) FUN_0039bf68(param_1, *puVar6, u16); }` and `*(ushort*)(local_170 + uVar20*2) |= *(ushort*)(param_4+10)` with `if (local_168 <= uVar20) FUN_0039d2fc(&local_170, (uVar20-local_168)+1, 0)`.
+- **Severity (hypothesis)**: medium — pack index into the u16 mark vector is record-supplied; growth bounds it, but the element-count-driven loops trust the tagged pack's `[-1]` length. Worth an audit of the pack metadata construction for a bounds guarantee.
+- **Confidence**: medium
+
+## [ringminus1] 0039f27c / 0039f16c (SKR51) sk_proto_desc_12/_11 — pack descriptor read with unchecked tail
+- **Observation**: `sk_proto_desc_12` builds a 16-byte descriptor from a pack pointer: it adds a low-bit-selected 4-byte offset (`(*puVar2 >> 7) & 1 * 4`) to `pack+7` and reads `pack[9]` as a short, zero-filling the tail. The offset select and element index come from the pack's header bits; there is no length check that pack[9] is within the described element extent.
+- **Evidence**: `auVar3._0_8_ = puVar1 + ((ulong)(*puVar2 >> 7) & 1) * 4; auVar3._8_2_ = (short)param_1[9]; auVar3._10_6_ = 0;` (FUN_0039f27c).
+- **Severity (hypothesis)**: low — reads a fixed short at a fixed offset; the only variable is a 1-bit offset select. Bounded, but the descriptor is guest-visible.
+- **Confidence**: medium
+
+## [ringminus1] 0039dc4c (SKR51) sk_conform_resolve — conformance-table walk with tagged-pointer deref under a lock
+- **Observation**: The conformance resolver acquires a global spinlock (0x6c0a80) around a multi-table probe (0x6c0b00 TLS check, 0x6c0a70/64/68 chained probe via `sk_conform_table_probe`), masking the subject type's low bit (`t & ~1`) before probing and caching results. The masked-pointer dereference follows a guest-supplied type metadata pointer; a failure path falls through the probe chain. Lock ordering and the single-global-table structure are the audit concern.
+- **Evidence**: `if (-1 < _DAT_006c0b00) cL4_tls_check(...); guard = _DAT_006c0a70; CL4_LO_ACQUIRE(); _DAT_006c0a60++; ... word_t *tt = (word_t*)((word_t)t & 0xfffffffffffffffd); if ((_DAT_006c0a70 && ...) && (found = sk_conform_table_probe(tt)))`.
+- **Severity (hypothesis)**: low — the probe dereferences a tagged type pointer; the masking only clears bit0, so a bogus pointer still faults. Single-writer table under spinlock is consistent.
+- **Confidence**: low
+
+## [ringminus1] 0039f914 / 0039f8b8 (SKR51) sk_seqlock_get / sk_seqlock_retain — seqlock read with optional allocation
+- **Observation**: `sk_seqlock_get` reads a sequence counter and, when the seqlock's generation differs, optionally allocates (op/alloc flag) and installs a fresh node; `sk_seqlock_retain` implements the copy/retain/release box dispatcher. The retain path (op 2) allocates a clone of `size` bytes and copies the payload; the size is caller-supplied and not cross-checked against a stored bound.
+- **Evidence**: box dispatcher `op==0 unwrap; op==1 release boxed; op==2 alloc+clone of size; else release container` (header doc + bodies).
+- **Severity (hypothesis)**: low — clone size is a caller-controlled argument; any mismatch is a caller bug, not a guest-facing boundary here.
+- **Confidence**: medium

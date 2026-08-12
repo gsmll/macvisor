@@ -284,8 +284,8 @@ void cL4_dem_render_convention(unsigned long *out, unsigned long node, unsigned 
     cL4_out_puts(builder + 8, (const void *)node, s);
 
     /* Check whether the node carries a mangled-C-type child. */
-    elem = dem_elem_base(out[1]);
-    if (1 < dem_elem_count(out[1]) - 1) {
+    elem = dem_elem_base((const unsigned long *)out[1]);
+    if (1 < dem_elem_count((const unsigned long *)out[1]) - 1) {
         elem = *(unsigned long *)elem;
     }
     if (dem_kind((unsigned long *)elem) != 0x18) goto skip_mangled;
@@ -369,7 +369,7 @@ void cL4_dem_render_generic_args(unsigned long out, unsigned long *node, int dep
                 if (*(int *)&saved3 == 2) cL4_out_puts(out + 8, ", ", 2);
                 s = 2;
 multi:
-                FUN_003bada4(&saved3, s);
+                cL4_dem_render_args(&saved3, s);
                 cL4_dem_node(out, *cur, depth + 1, 0);
                 saved_a = last_ret;
                 saved_sep = 0;
@@ -386,7 +386,7 @@ plain:
             last_ret = saved_a;
         }
     }
-    FUN_003bada4(&saved3, 2);
+    cL4_dem_render_args(&saved3, 2);
     cL4_out_putc(out + 8, 0x29);
     if (saved_sep != 0) {
         cL4_out_puts(out + 8, "for <", 6);
@@ -418,7 +418,7 @@ plain:
 }
 
 /* 003bada4 @ 0x003bada4   (est. cL4_dem_render_args)
- * Ghidra: void FUN_003bada4(undefined8 *param_1, int param_2, ulong param_3)
+ * Ghidra: void cL4_dem_render_args(undefined8 *param_1, int param_2, ulong param_3)
  * The core demangler argument/result renderer. `param_2` selects the
  * record shape: 0 = substituted, 1 = generic ("->" + a generic node),
  * 2 = a tuple/argument-list form rendered through the parameter-types
@@ -471,7 +471,7 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
                     cL4_out_puts(out + 8, " ", 1);
                     cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
                     cL4_out_puts(out + 8, " -> ", 3);
-                    FUN_003bbe00(out, node, &uVar28, sub, depth);
+                    cL4_dem_arg_group(out, node, &uVar28, sub, depth);
                     i = (idx + 1) & 0xffffffff;
                 } else if (sub == 2 || sub == 3) {
                     if (count < idx + 2) return;
@@ -488,7 +488,7 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
                 cL4_out_puts(out + 8, " -> ", 3);
                 cL4_dem_node(out, dem_elem(node, idx + 1), (int)depth + 1, 0);
                 cL4_out_puts(out + 8, " ", 1);
-                FUN_003bbe00(out, node, &uVar28, 4, depth);
+                cL4_dem_arg_group(out, node, &uVar28, 4, depth);
                 cL4_out_puts(out + 8, " ", 1);
                 i = (idx + 2) & 0xffffffff;
             } else { /* sub == 5 */
@@ -525,11 +525,11 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
                 cL4_out_puts(out + 8, " ", 1);
                 cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
                 cL4_out_puts(out + 8, " -> ", 3);
-                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_dem_arg_group(out, node, &uVar28, 9, depth);
                 cL4_out_puts(out + 8, ",", 1);
-                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_dem_arg_group(out, node, &uVar28, 9, depth);
                 cL4_out_puts(out + 8, " ", 1);
-                FUN_003bbe00(out, node, &uVar28, 9, depth);
+                cL4_dem_arg_group(out, node, &uVar28, 9, depth);
                 cL4_out_puts(out + 8, ")", 2);
                 i = (idx + 1) & 0xffffffff;
             } else if (sub == 10) {
@@ -537,7 +537,7 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
                 cL4_out_puts(out + 8, " ", 1);
                 cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
                 cL4_out_puts(out + 8, " -> ", 3);
-                FUN_003bbe00(out, node, &uVar28, 10, depth);
+                cL4_dem_arg_group(out, node, &uVar28, 10, depth);
                 i = (idx + 1) & 0xffffffff;
             } else { /* sub > 0xb -> default group */
                 cL4_dem_node(out, dem_elem(node, idx), (int)depth + 1, 0);
@@ -553,7 +553,7 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
 }
 
 /* 003bbe00 @ 0x003bbe00   (est. cL4_dem_arg_group)
- * Ghidra: void FUN_003bbe00(long param_1, undefined8 *param_2, uint *param_3, uint param_4, int param_5)
+ * Ghidra: void cL4_dem_arg_group(long param_1, undefined8 *param_2, uint *param_3, uint param_4, int param_5)
  * Renders one argument-type group of sub-kind `param_4` from the element
  * list `param_2`, consuming elements via *param_3. First walks a run of
  * 0x52 elements to find the group node, then dispatches on sub-kind to
@@ -622,7 +622,7 @@ done:
     return;
 }
 
-/* end of prelude */
+/* 003bc15c @ 0x003bc15c   (est. cL4_dem_render_specialization)
  * Ghidra: void FUN_003bc15c(long param_1, long *param_2, undefined8 param_3, undefined8 param_4, ...)
  * Renders a specialization/representation-change record. When the flag at
  * param_1+0x25 is clear it emits "specialized" (or "representation changed
@@ -1019,6 +1019,322 @@ void cL4_dem_render_subscript(unsigned long *dst, unsigned long a, unsigned long
     FUN_0036a5ac(&r2, 0);
     FUN_003a2cf0(ctx);
     (void)r2;
+}
+
+/* 003bdb80 @ 0x003bdb80   (est. cL4_str_rec_cat_grow)
+ * Ghidra: void FUN_003bdb80(long *param_1, undefined8 *param_2)
+ * Appends the 24-byte string record `param_2` onto the growable record
+ * array `param_1` (elements of 24 bytes), growing the backing buffer via
+ * FUN_003be364 when full and transferring the (ptr,len) fields from
+ * `param_2` (which is zeroed on adoption).
+ * Confidence: medium
+ * Notes: FUN_003be364 (grow), FUN_00117cc4 (memcpy), FUN_003be3bc (free
+ *   old buffer), FUN_004b89f8 (size overflow panic). */
+void cL4_str_rec_cat_grow(unsigned long *arr, unsigned long *rec)
+{
+    unsigned long *p = (unsigned long *)arr[1];
+    if (p < (unsigned long *)*(&arr[2])) {
+        unsigned long b = rec[1], a = *rec;
+        p[2] = rec[2]; p[1] = b; *p = a;
+        rec[1] = 0; rec[2] = 0; *rec = 0;
+        p += 3;
+    } else {
+        /* grow path */
+        unsigned long *g = (unsigned long *)cL4_str_rec_grow(1);
+        (void)g;
+        unsigned long b = rec[1], a = *rec;
+        unsigned long *np = (unsigned long *)cL4_alloc(0x18, 0x1012c00ec159624UL);
+        np[2] = rec[2]; np[1] = b; *np = a;
+        rec[1] = 0; rec[2] = 0; *rec = 0;
+        p = np + 3;
+    }
+    arr[1] = (unsigned long)p;
+}
+
+/* 003bdcb0 @ 0x003bdcb0   (est. cL4_str_rec_from_node)
+ * Ghidra: void FUN_003bdcb0(undefined8 *param_1, undefined8 *param_2)
+ * Builds a 24-byte string record in `param_1` from the demangler node
+ * `param_2`. Kind 0x92 carries a (ptr,len) field plus a generated index
+ * suffix (via FUN_00113c30 / FUN_00112e8c); kind 0x67 is a bare string
+ * (ptr,len) pair copied through FUN_003be2a8. Other kinds produce the
+ * "<unknown>" record.
+ * Confidence: medium
+ * Notes: FUN_003be2a8, FUN_00113c30, FUN_00112e8c, FUN_00112db4,
+ *   FUN_0036a5ac, thunk_FUN_00012568; strings DAT_005d3bdd,
+ *   s_<unknown>_005d4702. */
+void cL4_str_rec_from_node(unsigned long *dst, unsigned long *node)
+{
+    if (*(short *)(node + 2) == 0x92) {
+        unsigned long rec[3];
+        if (*(char *)((char *)node + 0x12) == '\x05') node = (unsigned long *)*node;
+        unsigned long a = *(unsigned long *)node[1];
+        cL4_dem_rec(dst, 0, &a);
+        (void)rec;
+    } else if (*(short *)(node + 2) == 0x67) {
+        unsigned long b = node[1], a = *node;
+        cL4_dem_rec(dst, 0, &a);
+        dst[1] = b;
+    } else {
+        cL4_str_rec_cstr(dst, "<unknown>");
+    }
+}
+
+/* 003bde18 @ 0x003bde18   (est. cL4_str_rec_copy_from)
+ * Ghidra: void FUN_003bde18(undefined8 *param_1, undefined8 *param_2, undefined8 param_3)
+ * Copies the string record `param_2` (a (ptr,len) record, using the
+ * short-form when flag at +0x17 >= 0) into a fresh 24-byte record in
+ * `param_1` via FUN_00113240, clearing the source record on adoption.
+ * Confidence: high */
+void cL4_str_rec_copy_from(unsigned long *dst, unsigned long *src, unsigned long ctx)
+{
+    unsigned long n = src[1];
+    unsigned long *p = (unsigned long *)*src;
+    if (-1 < (char)*(unsigned char *)((char *)src + 0x17)) { n = *(unsigned char *)((char *)src + 0x17); p = src; }
+    unsigned long *r = (unsigned long *)cL4_str_rec_push((void *)ctx, 0, p, n);
+    unsigned long a = *r;
+    dst[1] = r[1]; dst[0] = a; dst[2] = r[2];
+    *r = 0; r[1] = 0; r[2] = 0;
+}
+
+/* 003bde74 @ 0x003bde74   (est. cL4_str_rec_get)
+ * Ghidra: void FUN_003bde74(undefined8 *param_1, undefined8 *param_2, ulong param_3)
+ * Returns element `param_3` of the 24-byte record array `param_2` into
+ * `param_1` (copying the (ptr,len,flag) triple), or the "<unknown>"
+ * record when out of range.
+ * Confidence: high
+ * Notes: FUN_00113368, FUN_0036a5ac, s_<unknown>_005d4702. */
+void cL4_str_rec_get(unsigned long *dst, unsigned long *arr, unsigned long i)
+{
+    long base = *(long *)*arr;
+    if ((unsigned long)((((long *)*arr)[1] - base >> 3) * -0x5555555555555555UL) <= i) {
+        cL4_str_rec_cstr(dst, "<unknown>");
+        return;
+    }
+    unsigned long *p = (unsigned long *)(base + i * 0x18);
+    if (-1 < *(char *)((char *)p + 0x17)) {
+        dst[2] = p[2]; dst[1] = p[1]; dst[0] = *p;
+        return;
+    }
+    cL4_str_rec_push2(dst, *p, p[1]);
+}
+
+/* 003bdedc @ 0x003bdedc   (est. cL4_str_rec_free_ctx)
+ * Ghidra: void FUN_003bdedc(void)
+ * Frees the 0x70-byte context block returned by FUN_003bdf98. */
+void cL4_str_rec_free_ctx(void)
+{
+    unsigned long p = cL4_dem_ctx_snapshot();
+    cL4_free((void *)p, 0x70);
+}
+void cL4_str_rec_free_ctx2(void)
+{
+    unsigned long p = cL4_dem_ctx_snapshot();
+    cL4_free((void *)p, 0x70);
+}
+
+/* 003bdf10 @ 0x003bdf10   (est. cL4_dem_ctx_link)
+ * Ghidra: long FUN_003bdf10(long param_1, long *param_2)
+ * Links `param_1` into the demangler recursion-context chain rooted at
+ * `param_2`, recording the parent context pointer at param_1+0x18.
+ * Confidence: medium
+ * Notes: dispatch via (*(*ctx+0x18)) / (*(*ctx+0x10)); chain head test. */
+unsigned long cL4_dem_ctx_link(unsigned long dst, unsigned long *ctx)
+{
+    unsigned long *head = (unsigned long *)ctx[3];
+    if (head == 0) {
+        *(unsigned long *)(dst + 0x18) = 0;
+    } else if (head == ctx) {
+        *(unsigned long *)(dst + 0x18) = dst;
+        (**(void (**)(unsigned long *, unsigned long))(*((unsigned long *)ctx[3]) + 0x18))(head, dst);
+    } else {
+        unsigned long p = (**(unsigned long (**)(void))(*head + 0x10))();
+        *(unsigned long *)(dst + 0x18) = p;
+    }
+    return dst;
+}
+
+/* 003bdf98 @ 0x003bdf98   (est. cL4_dem_ctx_make)
+ * Ghidra: undefined8 * FUN_003bdf98(undefined8 *param_1)
+ * Initialises a demangler recursion context record at `param_1`: seeds the
+ * engine pointer at 0x67c468, releases the sub-record at param_1+9 via
+ * FUN_00362de4, and frees any owned string at param_1+1.
+ * Confidence: medium
+ * Notes: engine table 0x67c468, FUN_00362de4, thunk_FUN_00012568. */
+unsigned long *cL4_dem_ctx_make(unsigned long *ctx)
+{
+    *ctx = 0x67c468;
+    cL4_str_own_free(ctx + 9);
+    if (*(char *)((char *)ctx + 0x1f) < '\0') {
+        cL4_free((void *)ctx[1], ctx[3] & 0x7fffffffffffffffUL);
+    }
+    return ctx;
+}
+
+/* 003bdff4 @ 0x003bdff4   (est. cL4_dem_emit_ctor_or_dtor)
+ * Ghidra: void FUN_003bdff4(undefined8 *param_1, undefined8 param_2)
+ * Emits a demangler initializer/deinitializer suffix into the stream at
+ * param_1+1. When the mode byte at *param_1 is not 1, it looks up the node
+ * kind 0xed via FUN_003ba044 and emits its text (or a fallback separator).
+ * When the mode is 1 it renders the target node and appends ": " before
+ * the underlying type via FUN_003b2180.
+ * Confidence: medium
+ * Notes: FUN_003ba044, FUN_003b2180, FUN_0037364c, FUN_0036a5ac,
+ *   FUN_00112e8c, FUN_001130a0; strings DAT_005d3fb6, DAT_005d3fb4,
+ *   DAT_005d920c. */
+void cL4_dem_emit_ctor_or_dtor(unsigned long *ctx, unsigned long node)
+{
+    unsigned long out = ctx[1];
+    if (*(char *)ctx != '\x01') {
+        if ((*(unsigned char *)ctx[4] & 1) == 0) {
+            unsigned long *n = (unsigned long *)cL4_dem_find_kind(ctx, node, 0xed);
+            if (n == 0) {
+                cL4_out_puts(out + 8, (void *)&DAT_005d3fb6, 2);
+            } else {
+                cL4_out_puts(out + 8, *n, n[1]);
+                cL4_out_puts(out + 8, (void *)&DAT_005d3fb4, 1);
+            }
+        }
+        goto fin;
+    }
+    {
+        unsigned long *n = (unsigned long *)**((unsigned long **)ctx[2]);
+        unsigned long v;
+        if (*(unsigned int *)ctx[3] < dem_elem_count(n)) {
+            v = dem_elem(n, *(unsigned int *)ctx[3]);
+        } else v = 0;
+        if (dem_kind((unsigned long *)v) == 0x67) {
+            unsigned long a = *(unsigned long *)v;
+            FUN_0037364c(ctx + 5, &a);
+        } else {
+            cL4_str_rec_cstr(ctx + 5, "");
+        }
+        cL4_out_puts(out + 8, ctx + 5, 0);
+        cL4_out_putc(out + 8, 0x3a);
+        if (*(char *)((char *)ctx + 1) < 0) cL4_free((void *)ctx[5], 0);
+    }
+fin:
+    if ((*(char *)ctx == '\x01') && (*(char *)ctx[4] == '\x01')) cL4_out_putc(out + 8, 0x20);
+    *(int *)ctx[3] = *(int *)ctx[3] + 1;
+    if (*(char *)ctx[4] == '\x01') cL4_dem_node(out, node, *(int *)ctx[5] + 1, 0);
+}
+
+/* 003be1c4 @ 0x003be1c4   (est. cL4_str_rec_free_chain)
+ * Ghidra: void FUN_003be1c4(long param_1)
+ * Releases the string-record chain owned by the context at `param_1`:
+ * invokes the chain destructor at (+0x30) when a parent exists, otherwise
+ * drains the current snapshot's record list.
+ * Confidence: medium
+ * Notes: FUN_00360e28, FUN_003be248, thunk_FUN_00012568. */
+void cL4_str_rec_free_chain(unsigned long ctx)
+{
+    if (*(unsigned long *)(ctx + 0x18) != 0) {
+        (**(void (**)(void))(**(unsigned long **)(ctx + 0x18) + 0x30))();
+        return;
+    }
+    unsigned long *p = (unsigned long *)cL4_dem_ctx_snapshot();
+    if (*(long *)*p != 0) {
+        cL4_str_rec_pop();
+        unsigned long base = *(long *)*p;
+        cL4_free((void *)base, ((long *)*p)[2] - base);
+    }
+}
+
+/* 003be1f8 @ 0x003be1f8   (est. cL4_str_rec_list_free)
+ * Ghidra: void FUN_003be1f8(undefined8 *param_1)
+ * Frees the string-record list whose head pointer is at *param_1.
+ * Confidence: high
+ * Notes: FUN_003be248, thunk_FUN_00012568. */
+void cL4_str_rec_list_free(unsigned long *head)
+{
+    if (*(long *)*head != 0) {
+        cL4_str_rec_pop();
+        unsigned long base = *(long *)*head;
+        cL4_free((void *)base, ((long *)*head)[2] - base);
+    }
+}
+
+/* 003be248 @ 0x003be248   (est. cL4_str_rec_pop)
+ * Ghidra: void FUN_003be248(long param_1, long param_2)
+ * Pops the record list at param_1+8 back to `param_2` (walks the 0x18-byte
+ * stride until the head equals param_2, then stores it).
+ * Confidence: high */
+void cL4_str_rec_pop2(unsigned long *p, unsigned long target)
+{
+    unsigned long h = *(unsigned long *)(p + 1);
+    while (target != h) h = h - 0x18;
+    *(unsigned long *)(p + 1) = target;
+}
+
+/* 003be2a8 @ 0x003be2a8   (est. cL4_dem_rec_from_pair)
+ * Ghidra: long * FUN_003be2a8(long *param_1, undefined8 *param_2)
+ * Builds a 24-byte string record in `param_1` from the (ptr,len) pair at
+ * `param_2` (short inline form when len < 0x17, else an owned buffer).
+ * Confidence: high
+ * Notes: FUN_00117d14 (memcpy), FUN_00111890 (alloc), SoftwareBreakpoint
+ *   on negative length, FUN_004b89f8 on overflow. */
+unsigned long *cL4_dem_rec_from_pair(unsigned long *dst, unsigned long *pair)
+{
+    unsigned long n = pair[1];
+    unsigned long *p;
+    if ((long)n < 0) { __asm__ volatile("brk #1" ::: "memory"); }
+    if (n > 0x7ffffffffffffff6UL) cL4_panic_big();
+    unsigned long a = *pair;
+    if (n < 0x17) {
+        *(char *)((char *)dst + 0x17) = (char)n;
+        p = dst;
+        if (n != 0) goto copy;
+    } else {
+        unsigned long cap = 0x19;
+        if ((n | 7) != 0x17) cap = (n | 7) + 1;
+        p = (unsigned long *)cL4_alloc(cap, 0x1000c0077774924UL);
+        dst[1] = n;
+        dst[2] = cap | 0x8000000000000000UL;
+        dst[0] = (unsigned long)p;
+    }
+copy:
+    cL4_memcpy(p, (void *)a, n);
+    *(unsigned char *)((char *)p + n) = 0;
+    return dst;
+}
+
+/* 003be364 @ 0x003be364   (est. cL4_str_rec_grow)
+ * Ghidra: void FUN_003be364(undefined8 param_1, ulong param_2)
+ * Allocates a growable-buffer block of `param_2 * 0x18` bytes (or panics
+ * on size overflow).
+ * Confidence: high
+ * Notes: FUN_00111890, FUN_004b89f8. */
+void *cL4_str_rec_grow(unsigned long n)
+{
+    if (n < 0xaaaaaaaaaaaaaabUL) {
+        return cL4_alloc(n * 0x18, 0x1012c00ec159624UL);
+    }
+    cL4_panic_big();
+    return 0;
+}
+
+/* 003be3bc @ 0x003be3bc   (est. cL4_str_rec_destroy)
+ * Ghidra: long * FUN_003be3bc(long *param_1)
+ * Destroys the string-record array at `param_1`: releases its records via
+ * FUN_003be3fc and frees the backing buffer.
+ * Confidence: high
+ * Notes: FUN_003be3fc, thunk_FUN_00012568. */
+unsigned long *cL4_str_rec_destroy(unsigned long *arr)
+{
+    cL4_str_rec_release(arr, arr[1]);
+    unsigned long base = *arr;
+    if (base != 0) cL4_free((void *)base, arr[3] - base);
+    return arr;
+}
+
+/* 003be3fc @ 0x003be3fc   (est. cL4_str_rec_release)
+ * Ghidra: void FUN_003be3fc(long param_1, long param_2)
+ * Releases the record array at param_1+0x10 back to `param_2`, stepping
+ * the tail pointer down by 0x18 per released record.
+ * Confidence: high */
+void cL4_str_rec_release(unsigned long *arr, unsigned long target)
+{
+    unsigned long h = *(unsigned long *)((char *)arr + 0x10);
+    while (target != h) { h = h - 0x18; *(unsigned long *)((char *)arr + 0x10) = h; }
 }
 
 /* end of prelude */

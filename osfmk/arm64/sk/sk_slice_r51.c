@@ -111,6 +111,7 @@ extern word_t cL4_mr_block(word_t tcb);                     /* FUN_0035bd48 */
 extern word_t cL4_deref_field(word_t base, word_t kind);    /* FUN_003873c0 */
 extern word_t cL4_deref_tagged(word_t *p);                  /* FUN_00377800 */
 extern word_t cL4_lock_hash(word_t obj);                    /* FUN_0038ba00 */
+extern word_t cl4_obj_unmask_check(word_t p1, word_t p2, word_t obj, word_t *out, word_t p5); /* FUN_003624f0 */
 extern word_t cL4_conform_lookup(word_t type, word_t proto); /* FUN_00376838 */
 extern word_t cL4_conform_check(word_t type, word_t proto); /* FUN_003723a0 */
 extern void   cL4_conform_check2(word_t *buf, word_t *p);   /* FUN_00387e60 */
@@ -153,8 +154,6 @@ static word_t    sk_conform_find(word_t type, word_t proto, word_t *out);
 static word_t    sk_conform_walk(word_t *out, word_t *desc, word_t *type, word_t opts);
 static word_t    sk_conform_check_core(word_t *out, word_t *desc, word_t *type, word_t opts);
 static word_t    sk_conform_lookup(word_t type, word_t proto, byte pass);
-static word_t    sk_req_decoder_body(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
-                                     word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10);
 static void      sk_req_decoder(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
                                 word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10);
 static word_t    sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *res, word_t n, int flag);
@@ -202,8 +201,6 @@ static void      sk_layout_check(word_t *out, word_t p, word_t type);
 static void      sk_mtx_lock(word_t *m);
 static void      sk_mtx_unlock(word_t *m);
 static cL4_w16_t sk_hash_probe_10(word_t *tbl, word_t k, word_t n, word_t *slots);
-static word_t    sk_req_decoder_body(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
-                                     word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10);
 
 /* ================================================================== *
  * Slice helper bodies reclaimed from stale tightbeam claims.
@@ -2420,20 +2417,567 @@ static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
 
 /* FUN_0039a6fc @ 0x39a6fc  (est. sk_req_decoder)
  * The generic-requirements decoder: walks a serialised generic-requirement
- * descriptor (a stream of 12-byte records, `param_5` of them) and, for each,
+ * descriptor (a stream of 12-byte records, p5 of them) and, for each,
  * checks the requirement against the subject generic arguments. Handles
  * same-type (0), superclass (1), same-conformance (2), layout (3),
  * same-shape (4), pack-length (5), and pack-array (0x1f) requirements,
  * building the appropriate error record on a failed check. Also folds
  * pack-expansion bits from the generic parameter metadata into the
- * requirement stream.
- * Confidence: low (large dispatch, many error paths) */
-static word_t sk_req_decoder(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
-                             word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10)
+ * requirement stream. `out` is a 3-word error record {obj, dtor, flag}.
+ * Confidence: medium (large dispatch, many error paths) */
+static void sk_req_decoder(word_t *out, word_t p2, word_t p3, word_t *p4, word_t p5,
+                           word_t *p6, word_t p7, word_t p8, word_t p9, word_t p10)
 {
-    return 0; /* faithful body is split below; see sk_req_decoder_body */
+    /* --- locals mirroring the decompile --- */
+    word_t canary = 0xd37ad4bb44b0f2aUL;         /* local_80 stack canary */
+    word_t *req = (word_t*)p4;                   /* requirement stream */
+    word_t nreq = p5;
+    word_t *ctx = p6;
+    word_t subject = p7, genparams = p8, expected = p9, extra = p10;
+    /* u16 bit-vector of pack-length marks (local_170/168/158). */
+    word_t bvec = 0; word_t bvec_len = 0;
+    byte   bvec_inline[8]; word_t *bvec_ptr = (word_t*)bvec_inline;
+    word_t ok = 0; word_t err = 0; word_t dtor = 0;
+
+    /* scratch variant buffers (32-byte each) */
+    word_t sb[4], eb[4];
+    word_t a0[4], c0[4];
+    word_t d0[4], f0[4];
+    word_t v150, v120, v100, ve0;
+    word_t d148, d118, df8, dd8;
+    short  s138, s110, sf0, sc8;
+
+    if (nreq != 0) {
+        word_t *puVar26 = req + nreq * 3;
+        do {
+            unsigned hdr = (unsigned)req[0];
+            if (((hdr >> 5) & 1) == 0) {
+                if (((hdr >> 8) & 1) == 0) {
+                    /* --- bit5==0, bit8==0: type requirement --- */
+                    cL4_variant_copy_a(sb, (word_t*)subject);
+                    cL4_variant_copy_b(eb, (word_t*)expected);
+                    if ((hdr & 0x1f) < 6 || (hdr & 0x1f) == 0x1f) {
+                        word_t *pu16 = req + 1;
+                        cL4_w16_t n1 = cL4_node_build((word_t)(int)req[1] + (word_t)(req + 1));
+                        cL4_variant_copy_a(a0, sb);
+                        cL4_variant_copy_b(c0, eb);
+                        cL4_variant_build_b((word_t)&v150, 0xff, n1.lo, n1.hi, *ctx, (word_t)a0, (word_t)c0);
+                        cL4_small_release_a(c0);
+                        cL4_small_release_b(a0);
+                        v150 = (word_t)(word_t*)&v150;
+                        word_t pu9 = (word_t)(word_t*)v150;
+                        if (s138 == 0) {
+                            unsigned u3 = hdr; unsigned k = u3 & 0x1f;
+                            if (k < 3) {
+                                if (k == 0) {
+                                    /* same-type */
+                                    word_t e0 = 0;
+                                    word_t lv = (word_t)sk_tagged_deref((unsigned*)(req + 2));
+                                    word_t u20 = cl4_obj_unmask_check(0, pu9, lv, (word_t*)&e0, extra);
+                                    lv = (word_t)sk_tagged_deref((unsigned*)(req + 2));
+                                    if ((u20 & 1) == 0) {
+                                        word_t nm = lv;
+                                        if (nm == 0 || (nm = nm & 0xfffffffffffffffe) == 0) nm = 0;
+                                        err = (word_t)cL4_alloc(0x20, 0x1050c404daac892);
+                                        ((word_t*)err)[0] = (word_t)(void*)"subject type '%s' does not conform";
+                                        ((word_t*)err)[2] = n1.lo;
+                                        ((word_t*)err)[3] = nm;
+                                        dtor = (word_t)(void*)sk_box_20_a;
+                                        ok = 1;
+                                    } else {
+                                        cL4_variant_emit(ctx, e0, 0);
+                                        ok = 0;
+                                        *(byte*)out = 0;
+                                    }
+                                } else if (k == 1) {
+                                    /* superclass */
+                                    word_t *pu18 = req + 2;
+                                    cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                                    cL4_variant_copy_a(&v100, sb);
+                                    cL4_variant_copy_b(&v120, eb);
+                                    cL4_variant_build_b((word_t)&ve0, 0xff, n2.lo, n2.hi, *ctx, (word_t)&v100, (word_t)&v120);
+                                    cL4_small_release_b(&v120);
+                                    cL4_small_release_a(&v100);
+                                    word_t pu11 = (word_t)&ve0;
+                                    if (sc8 != 0) {
+                                        if (sc8 != 1) { pu11 = 0; goto lab_b5d8; }
+                                        out[1] = dd8;
+                                        err = (word_t)((word_t(*)(word_t,int,word_t))dd8)((word_t)(word_t*)&ve0, 2, 0);
+                                        goto lab_b668;
+                                    }
+                                lab_b5d8:
+                                    if (pu9 != pu11) {
+                                        err = (word_t)cL4_alloc(0x28, 0x1050c40229b2414);
+                                        ((word_t*)err)[0] = (word_t)(void*)"subject type '%s' does not match";
+                                        ((word_t*)err)[2] = n1.lo;
+                                        ((word_t*)err)[4] = n2.lo;
+                                        dtor = (word_t)(void*)sk_box_28_f;
+                                        goto lab_b668;
+                                    }
+                                    ok = 0;
+                                    *(byte*)out = 0;
+                                } else {
+                                    /* k == 2 same-conformance */
+                                    word_t *pu18 = req + 2;
+                                    cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                                    cL4_variant_copy_a(&v100, sb);
+                                    cL4_variant_copy_b(&v120, eb);
+                                    cL4_variant_build_b((word_t)&ve0, 0xff, n2.lo, n2.hi, *ctx, (word_t)&v100, (word_t)&v120);
+                                    cL4_small_release_b(&v120);
+                                    cL4_small_release_a(&v100);
+                                    word_t pu11 = (word_t)&ve0;
+                                    if (sc8 != 0) {
+                                        if (sc8 == 1) { out[1] = dd8; err = (word_t)((word_t(*)(word_t,int,word_t))dd8)((word_t)(word_t*)&ve0, 2, 0); goto lab_b668; }
+                                        pu11 = 0;
+                                    }
+                                    {
+                                        word_t u20 = sk_type_same_shape((word_t*)pu9, (word_t*)pu11);
+                                        if ((u20 & 1) != 0) { ok = 0; *(byte*)out = 0; }
+                                        else {
+                                            err = (word_t)cL4_alloc(0x28, 0x1050c40229b2414);
+                                            ((word_t*)err)[0] = (word_t)(void*)"'%s' is not subclass of '%s'";
+                                            ((word_t*)err)[2] = n1.lo;
+                                            ((word_t*)err)[4] = n2.lo;
+                                            dtor = (word_t)(void*)sk_box_28_f;
+                                        }
+                                    }
+                                }
+                            lab_b668:
+                                out[0] = err;
+                                out[1] = dtor;
+                                ok = 1;
+                            } else if (k < 5) {
+                                if (k == 3) {
+                                    /* layout */
+                                    *(byte*)out = 0;
+                                    *(byte*)(out + 2) = 0;
+                                } else if (k == 4) {
+                                    /* same-shape */
+                                    err = (word_t)cL4_alloc(8, 0x50c40ee9192b6);
+                                    ((word_t*)err)[0] = (word_t)(void*)"can't have same shape requirement";
+                                    dtor = (word_t)(void*)sk_box_08_b;
+                                    out[1] = dtor;
+                                    goto lab_b0fc;
+                                } else {
+                                    /* unknown kind */
+                                    err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                                    ((word_t*)err)[0] = (word_t)(void*)"unknown generic requirement kind";
+                                    *(word_t*)((word_t*)err + 1) = k;
+                                    dtor = (word_t)(void*)sk_box_10_b;
+                                    out[1] = dtor;
+                                    goto lab_b0fc;
+                                }
+                            } else if (k == 5) {
+                                /* pack-length */
+                                word_t u20 = (word_t)(unsigned short)req[2];
+                                if (u20 != 0xffff) {
+                                    if (bvec_len <= u20) sk_bytevec_reserve((word_t*)&bvec_ptr, u20 - bvec_len + 1, 0);
+                                    *(unsigned short*)(bvec_ptr + u20) |= (unsigned short)(req[1] >> 16 & 0xffff);
+                                    *(byte*)out = 0;
+                                    *(byte*)(out + 2) = 0;
+                                } else {
+                                    sk_invertible_check(out, (word_t*)pu9, (word_t)(unsigned short)(req[1] >> 16));
+                                }
+                            } else {
+                                /* k == 0x1f pack-array */
+                                sk_layout_check(out, (word_t)req, (word_t)pu9);
+                            }
+                            *(byte*)(out + 2) = ok;
+                            if (s138 == 1) ((word_t(*)(word_t,int,word_t))d148)((word_t)(word_t*)&v150, 3, 0);
+                        } else {
+                            if (s138 != 1) { pu9 = 0; }
+                            else { out[1] = d148; err = (word_t)((word_t(*)(word_t,int,word_t))d148)((word_t)(word_t*)&v150, 2, 0); }
+                        lab_b0fc:
+                            out[0] = err;
+                            ok = 1;
+                        lab_b104:
+                            *(byte*)(out + 2) = ok;
+                        }
+                        if (s138 == 1) ((word_t(*)(word_t,int,word_t))d148)((word_t)(word_t*)&v150, 3, 0);
+                    } else {
+                        out[0] = (word_t)(void*)"unknown kind";
+                        out[1] = (word_t)(void*)cL4_variant_dtor_a;
+                        *(byte*)(out + 2) = 1;
+                    }
+                    cL4_small_release_b(eb);
+                    subject = (word_t)sb;
+                } else {
+                    /* --- bit5==0, bit8!=0: value requirement --- */
+                    cL4_variant_copy_a(d0, (word_t*)subject);
+                    cL4_variant_copy_b(f0, (word_t*)expected);
+                    if ((hdr & 0x1f) < 6 || (hdr & 0x1f) == 0x1f) {
+                        cL4_w16_t n1 = cL4_node_build((word_t)(int)req[1] + (word_t)(req + 1));
+                        cL4_variant_copy_a(&v150, d0);
+                        cL4_variant_copy_b(a0, f0);
+                        cL4_variant_build_c((word_t)&v100, n1.lo, n1.hi, *ctx, (word_t)&v150, (word_t)a0);
+                        cL4_small_release_b(a0);
+                        cL4_small_release_a(&v150);
+                        word_t pu9 = (word_t)&v100;
+                        if (sf0 == 1) {
+                            out[1] = df8;
+                            err = (word_t)((word_t(*)(word_t,int,word_t))df8)((word_t)(word_t*)&v100, 2, 0);
+                            out[0] = err;
+                            *(byte*)(out + 2) = 1;
+                        } else {
+                            if (sf0 != 0) pu9 = 0;
+                            unsigned k = hdr & 0x1f;
+                            if (k != 1) {
+                                err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                                ((word_t*)err)[0] = (word_t)(void*)"unknown value generic requirement";
+                                *(word_t*)((word_t*)err + 1) = k;
+                                out[1] = (word_t)(void*)sk_box_10_b;
+                                out[0] = err;
+                                *(byte*)(out + 2) = 1;
+                            } else {
+                                cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                                cL4_variant_copy_a(c0, d0);
+                                cL4_variant_copy_b(&ve0, f0);
+                                cL4_variant_build_c((word_t)&v120, n2.lo, n2.hi, *ctx, (word_t)c0, (word_t)&ve0);
+                                cL4_small_release_b(&ve0);
+                                cL4_small_release_a(c0);
+                                word_t pu11 = (word_t)&v120;
+                                if (s110 == 1) {
+                                    out[1] = d118;
+                                    err = (word_t)((word_t(*)(word_t,int,word_t))d118)((word_t)(word_t*)&v120, 2, 0);
+                                    out[0] = err;
+                                    ok = 1;
+                                } else {
+                                    if (s110 != 0) pu11 = 0;
+                                    if (pu9 != pu11) {
+                                        err = (word_t)cL4_alloc(0x18, 0x1050c40e4aaa758);
+                                        ((word_t*)err)[0] = (word_t)(void*)"subject value %li does not match";
+                                        ((word_t*)err)[1] = pu9;
+                                        ((word_t*)err)[2] = pu11;
+                                        out[1] = (word_t)(void*)sk_box_18_c;
+                                        out[0] = err;
+                                        ok = 1;
+                                    } else {
+                                        ok = 0;
+                                        *(byte*)out = 0;
+                                    }
+                                }
+                                *(byte*)(out + 2) = ok;
+                                if (s110 == 1) ((word_t(*)(word_t,int,word_t))d118)((word_t)(word_t*)&v120, 3, 0);
+                            }
+                        }
+                        if (sf0 == 1) ((word_t(*)(word_t,int,word_t))df8)((word_t)(word_t*)&v100, 3, 0);
+                    } else {
+                        out[0] = (word_t)(void*)"unknown kind";
+                        out[1] = (word_t)(void*)cL4_variant_dtor_a;
+                        *(byte*)(out + 2) = 1;
+                    }
+                    cL4_small_release_b(f0);
+                    subject = (word_t)d0;
+                }
+            } else {
+                /* --- bit5!=0: pack requirement --- */
+                cL4_variant_copy_a(&v150, (word_t*)subject);
+                cL4_variant_copy_b(a0, (word_t*)expected);
+                if ((hdr & 0x1f) < 6 || (hdr & 0x1f) == 0x1f) {
+                    word_t *pu16 = req + 1;
+                    cL4_w16_t n1 = cL4_node_build((word_t)(int)req[1] + (word_t)(req + 1));
+                    cL4_variant_copy_a(c0, &v150);
+                    cL4_variant_copy_b(a0, a0);
+                    cL4_variant_build_d((word_t)&v120, n1.lo, n1.hi, *ctx, (word_t)c0, (word_t)a0);
+                    cL4_small_release_b(a0);
+                    cL4_small_release_a(c0);
+                    word_t pu9 = (word_t)&v120;
+                    if (s110 == 1) {
+                        out[1] = d118;
+                        err = (word_t)((word_t(*)(word_t,int,word_t))d118)((word_t)(word_t*)&v120, 2, 0);
+                        out[0] = err;
+                        *(byte*)(out + 2) = 1;
+                        goto lab_a930;
+                    }
+                    if (s110 != 0) pu9 = 0;
+                    unsigned k = hdr & 0x1f;
+                    if (k < 3) {
+                        if (k == 0) {
+                            /* pack same-type: iterate elements */
+                            if (((word_t)pu9 & 1) == 0) goto lab_bb18;
+                            word_t *pu = (word_t*)(pu9 & 0xfffffffffffffffe);
+                            word_t n = ((word_t*)pu)[-1];
+                            word_t i = 0;
+                            if (n != 0) {
+                                do {
+                                    word_t el = pu[i];
+                                    word_t e0 = 0;
+                                    word_t lv = (word_t)sk_tagged_deref((unsigned*)(req + 2));
+                                    word_t u20 = cl4_obj_unmask_check(0, el, lv, (word_t*)&e0, extra);
+                                    if ((u20 & 1) == 0) {
+                                        err = (word_t)cL4_alloc(0x28, 0x1050c402607123c);
+                                        ((word_t*)err)[0] = (word_t)(void*)"subject type '%s' does not conform";
+                                        ((word_t*)err)[2] = n1.lo;
+                                        ((word_t*)err)[3] = lv;
+                                        ((word_t*)err)[4] = i;
+                                        out[0] = err;
+                                        out[1] = (word_t)(void*)sk_box_28_d;
+                                        *(byte*)(out + 2) = 1;
+                                        goto lab_a930;
+                                    }
+                                    cL4_variant_emit(&v100, e0, 0);
+                                    i++;
+                                } while (n != i);
+                            }
+                            *(byte*)out = 0;
+                            *(byte*)(out + 2) = 0;
+                        } else if (k == 1) {
+                            /* pack superclass: compare pack lengths */
+                            word_t *pu18 = req + 2;
+                            cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                            cL4_variant_copy_a(&v100, &v150);
+                            cL4_variant_copy_b(&ve0, a0);
+                            cL4_variant_build_d((word_t)&v100, n2.lo, n2.hi, *ctx, (word_t)&v150, (word_t)a0);
+                            cL4_small_release_b(a0);
+                            cL4_small_release_a(&v150);
+                            word_t pu11 = (word_t)&v100;
+                            if (sf0 == 1) {
+                                out[1] = df8;
+                                err = (word_t)((word_t(*)(word_t,int,word_t))df8)((word_t)(word_t*)&v100, 2, 0);
+                                out[0] = err;
+                                ok = 1;
+                            } else {
+                                if (sf0 != 0) pu11 = 0;
+                                if (((pu9 & 1) == 0) || ((pu11 & 1) == 0)) goto lab_bb18;
+                                word_t u10 = pu9 & 0xfffffffffffffffe;
+                                word_t u20 = pu11 & 0xfffffffffffffffe;
+                                word_t l23 = *(word_t*)(u10 - 8);
+                                word_t l17 = *(word_t*)(u20 - 8);
+                                if (l23 != l17) {
+                                    err = (word_t)cL4_alloc(0x28, 0x1050c409a01e8c7);
+                                    ((word_t*)err)[0] = (word_t)(void*)"mismatched pack lengths in same-";
+                                    ((word_t*)err)[2] = n1.lo;
+                                    ((word_t*)err)[3] = l23;
+                                    ((word_t*)err)[4] = l17;
+                                    out[1] = (word_t)(void*)sk_box_28_e;
+                                    out[0] = err;
+                                    ok = 1;
+                                } else if (l23 != 0) {
+                                    word_t i = 0;
+                                    do {
+                                        if (*(word_t*)(u10 + i * 8) != *(word_t*)(u20 + i * 8)) {
+                                            err = (word_t)cL4_alloc(0x30, 0x1050c405416ca85);
+                                            ((word_t*)err)[0] = (word_t)(void*)"subject type '%s' does not match";
+                                            ((word_t*)err)[2] = n1.lo;
+                                            ((word_t*)err)[4] = n2.lo;
+                                            ((word_t*)err)[5] = i;
+                                            out[1] = (word_t)(void*)sk_box_30_a;
+                                            out[0] = err;
+                                            ok = 1;
+                                            break;
+                                        }
+                                        i++;
+                                    } while (l23 != i);
+                                    if (ok == 0) { ok = 0; *(byte*)out = 0; }
+                                }
+                            }
+                            *(byte*)(out + 2) = ok;
+                            subject = (word_t)&v100;
+                            if (sf0 == 1) ((word_t(*)(word_t,int,word_t))df8)((word_t)(word_t*)&v100, 3, 0);
+                        } else {
+                            /* k == 2 pack same-conformance */
+                            word_t *pu18 = req + 2;
+                            cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                            cL4_variant_copy_a(&ve0, &v150);
+                            cL4_variant_copy_b(&v100, a0);
+                            cL4_variant_build_b((word_t)&v150, 0xff, n2.lo, n2.hi, *ctx, (word_t)&ve0, (word_t)&v100);
+                            cL4_small_release_b(&v100);
+                            cL4_small_release_a(&ve0);
+                            word_t pu11 = (word_t)&v150;
+                            if (s138 == 0) goto lab_b380;
+                            if (s138 != 1) { pu11 = 0; goto lab_b380; }
+                            out[1] = d148;
+                            err = (word_t)((word_t(*)(word_t,int,word_t))d148)((word_t)(word_t*)&v150, 2, 0);
+                            out[0] = err;
+                            ok = 1;
+                            goto lab_b734;
+                        lab_b380:
+                            if ((pu9 & 1) == 0) goto lab_bb18;
+                            word_t *pu = (word_t*)(pu9 & 0xfffffffffffffffe);
+                            word_t n = ((word_t*)pu)[-1];
+                            word_t i = 0;
+                            if (n != 0) {
+                                do {
+                                    word_t u20 = sk_type_same_shape((word_t*)pu[i], (word_t*)pu11);
+                                    if ((u20 & 1) == 0) {
+                                        err = (word_t)cL4_alloc(0x30, 0x1050c405416ca85);
+                                        ((word_t*)err)[0] = (word_t)(void*)"'%s' is not subclass of '%s' at p";
+                                        ((word_t*)err)[2] = n1.lo;
+                                        ((word_t*)err)[4] = n2.lo;
+                                        ((word_t*)err)[5] = i;
+                                        out[1] = (word_t)(void*)sk_box_30_a;
+                                        goto lab_b734;
+                                    }
+                                    i++;
+                                } while (n != i);
+                            }
+                            ok = 0;
+                            *(byte*)out = 0;
+                        lab_b734:
+                            out[0] = err;
+                            ok = 1;
+                            *(byte*)(out + 2) = ok;
+                            subject = (word_t)&v150;
+                            if (s138 == 1) ((word_t(*)(word_t,int,word_t))d148)((word_t)(word_t*)&v150, 3, 0);
+                        }
+                    } else if (k < 5) {
+                        if (k == 3) {
+                            *(byte*)out = 0;
+                            *(byte*)(out + 2) = 0;
+                        } else if (k == 4) {
+                            /* pack same-shape */
+                            cL4_w16_t n2 = cL4_node_build((word_t)(int)req[2] + (word_t)(req + 2));
+                            cL4_variant_copy_a(&v100, &v150);
+                            cL4_variant_copy_b(&ve0, a0);
+                            cL4_variant_build_d((word_t)&v100, n2.lo, n2.hi, *ctx, (word_t)&v150, (word_t)a0);
+                            cL4_small_release_b(a0);
+                            cL4_small_release_a(&v150);
+                            word_t pu11 = (word_t)&v100;
+                            if (sf0 != 0) pu11 = 0;
+                            if (((pu9 & 1) == 0) || ((pu11 & 1) == 0)) goto lab_bb18;
+                            word_t l23 = *(word_t*)((pu9 & 0xfffffffffffffffe) - 8);
+                            word_t l17 = *(word_t*)((pu11 & 0xfffffffffffffffe) - 8);
+                            if (l23 == l17) {
+                                ok = 0;
+                                *(byte*)out = 0;
+                            } else {
+                                err = (word_t)cL4_alloc(0x18, 0x1050c40e4aaa758);
+                                ((word_t*)err)[0] = (word_t)(void*)"same shape requirement unsatisfi";
+                                ((word_t*)err)[1] = l23;
+                                ((word_t*)err)[2] = l17;
+                                out[0] = err;
+                                out[1] = (word_t)(void*)sk_box_18_b;
+                                ok = 1;
+                            }
+                            *(byte*)(out + 2) = ok;
+                            subject = (word_t)&v100;
+                            if (sf0 == 1) ((word_t(*)(word_t,int,word_t))df8)((word_t)(word_t*)&v100, 3, 0);
+                        } else {
+                            goto lab_af48; /* unknown kind */
+                        }
+                    } else if (k == 5) {
+                        /* pack pack-length */
+                        word_t u20 = (word_t)(unsigned short)req[2];
+                        if (u20 == 0xffff) {
+                            if ((pu9 & 1) == 0) goto lab_bb18;
+                            word_t *pu = (word_t*)(pu9 & 0xfffffffffffffffe);
+                            word_t n = ((word_t*)pu)[-1];
+                            for (; n != 0; n--) {
+                                sk_invertible_check(out, (word_t*)pu[0], (word_t)(unsigned short)(req[1] >> 16));
+                                if ((*(byte*)(out + 2) & 1) != 0) goto lab_a930;
+                                pu++;
+                            }
+                        } else {
+                            if (bvec_len <= u20) sk_bytevec_reserve((word_t*)&bvec_ptr, u20 - bvec_len + 1, 0);
+                            *(unsigned short*)(bvec_ptr + u20) |= (unsigned short)(req[1] >> 16 & 0xffff);
+                        }
+                    } else {
+                        if (k != 0x1f) goto lab_af48;
+                        /* pack-array */
+                        if ((pu9 & 1) == 0) goto lab_bb18;
+                        word_t *pu = (word_t*)(pu9 & 0xfffffffffffffffe);
+                        word_t n = ((word_t*)pu)[-1];
+                        for (; n != 0; n--) {
+                            sk_layout_check(out, (word_t)req, pu[0]);
+                            if ((*(byte*)(out + 2) & 1) != 0) goto lab_a930;
+                            pu++;
+                        }
+                    }
+                    *(byte*)out = 0;
+                    *(byte*)(out + 2) = 0;
+                    goto lab_skip_release;
+                lab_a930:
+                    if (s110 == 1) ((word_t(*)(word_t,int,word_t))d118)((word_t)(word_t*)&v120, 3, 0);
+                    goto lab_skip_release;
+                lab_af48: { /* unknown generic-requirement kind error box */
+                    err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                    ((word_t*)err)[0] = (word_t)(void*)"unknown generic requirement kind";
+                    *(word_t*)((word_t*)err + 1) = k;
+                    out[0] = err;
+                    out[1] = (word_t)(void*)sk_box_10_b;
+                    *(byte*)(out + 2) = 1;
+                    goto lab_a930;
+                }
+                lab_bb18: /* noreturn fatal: on-stack pack length access */
+                    cL4_fatal_msg(0, "Cannot get length of on-stack pack");
+                lab_skip_release:
+                    ;
+                } else {
+                    out[0] = (word_t)(void*)"unknown kind";
+                    out[1] = (word_t)(void*)cL4_variant_dtor_a;
+                    *(byte*)(out + 2) = 1;
+                }
+                cL4_small_release_b(a0);
+                subject = (word_t)&v150;
+            }
+            cL4_small_release_b((void*)subject);
+            if ((*(byte*)(out + 2) & 1) != 0) goto lab_ba38;
+            req += 3;
+        } while (req != puVar26);
+    }
+    /* --- second phase: fold pack-expansion kinds from generic-param stream --- */
+    if ((p3 & 0xffffffff) != 0) {
+        word_t u20 = 0; word_t i21 = 0;
+        do {
+            if (*(char*)(p2 + u20) < 0) {
+                word_t u22 = (u20 < bvec_len) ? *(unsigned short*)(bvec_ptr + u20) : 0;
+                word_t u10 = sk_box_30_dispatch(genparams, (int)u20, (word_t)i21);
+                byte b1 = *(byte*)(p2 + u20) & 0x3f;
+                if (b1 != 2) {
+                    if (b1 != 1) {
+                        if ((*(byte*)(p2 + u20) & 0x3f) == 0) {
+                            if (u10 != 0 && (u10 & 1) == 0) {
+                                sk_invertible_check(out, (word_t*)u10, u22);
+                                if ((*(byte*)(out + 2) & 1) == 0) goto lab_ba1c;
+                                goto lab_ba38;
+                            }
+                            err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                            ((word_t*)err)[0] = (word_t)(void*)"unexpected pack for generic parameter";
+                        } else {
+                            err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                            ((word_t*)err)[0] = (word_t)(void*)"unknown generic parameter kind";
+                        }
+                        *(word_t*)((word_t*)err + 1) = u20;
+                        out[0] = err;
+                        out[1] = (word_t)(void*)sk_box_10_b;
+                        *(byte*)(out + 2) = 1;
+                        goto lab_ba38;
+                    }
+                    if (u10 != 0) {
+                        if ((u10 & 1) == 0) {
+                            err = (word_t)cL4_alloc(0x10, 0x1050c40db1d6c16);
+                            ((word_t*)err)[0] = (word_t)(void*)"unexpected metadata for generic parameter";
+                            *(word_t*)((word_t*)err + 1) = u20;
+                            out[0] = err;
+                            out[1] = (word_t)(void*)sk_box_10_b;
+                            *(byte*)(out + 2) = 1;
+                            goto lab_ba38;
+                        }
+                        word_t *pu = (word_t*)(u10 & 0xfffffffffffffffe);
+                        if (pu != 0 && pu[-1] != 0) {
+                            word_t n = pu[-1] << 3;
+                            do {
+                                sk_invertible_check(out, pu, u22);
+                                if ((*(byte*)(out + 2) & 1) != 0) goto lab_ba38;
+                                n -= 8; pu++;
+                            } while (n != 0);
+                        }
+                    }
+                }
+            lab_ba1c:
+                i21++;
+            }
+            u20++;
+        } while (u20 != (p3 & 0xffffffff));
+    }
+    *(byte*)out = 0;
+    *(byte*)(out + 2) = 0;
+lab_ba38:
+    if (bvec_ptr != (word_t*)bvec_inline) cL4_free((void*)bvec_ptr, 0);
+    if (canary != 0xd37ad4bb44b0f2aUL) cL4_runtime_fatal();
+    (void)subject; (void)expected; (void)genparams;
+    return;
 }
-/* The full decoder body — see FUN_0039a6fc body below. */
 
 /* FUN_0039ce74 @ 0x39ce74  (est. sk_layout_check)
  * Check a layout requirement against a subject type: on a layout-kind 0

@@ -23,6 +23,7 @@ typedef struct { unsigned long lo, hi; } cL4_w16_t;
  * ------------------------------------------------------------------ */
 extern void *cL4_alloc(unsigned long size, unsigned long tag);   /* FUN_00111890 */
 extern void cL4_free(void *p, unsigned long size);               /* thunk_FUN_00012568 */
+extern void thunk_FUN_00012568(unsigned long, ...); /* free w/ size tag 0x12568 */
 extern void cL4_stack_fail(void) __attribute__((noreturn));      /* FUN_0011d7e8 */
 extern void cL4_ref_acquire(unsigned long obj);                  /* FUN_0037a48c */
 extern void cL4_ref_release(unsigned long obj);                  /* FUN_0037aed8 */
@@ -30,7 +31,7 @@ extern void cL4_release(unsigned long obj);                      /* FUN_0037a978
 extern unsigned long *cL4_obj_alloc(void);                       /* FUN_0037a7f8 */
 extern void cL4_node_wait_init(unsigned long *wq, unsigned long v); /* FUN_0037a850 */
 extern void cL4_obj_hw_init(void);                               /* FUN_0036c3e0 */
-extern long cL4_zone_get(void);                                  /* FUN_00362ea4 */
+extern long *cL4_zone_get(long *obj);                            /* FUN_00362ea4 */
 extern void cL4_ipc_obj_publish(long *d, long a, long b);        /* FUN_003a3814 */
 extern void cL4_percpu_ctx_table(void *out);                     /* FUN_0036e878 */
 extern long cL4_mr_ctx_init2(void *ctx);                         /* FUN_0037e528 */
@@ -40,6 +41,8 @@ extern unsigned long cL4_mr_copy6(unsigned long reg, unsigned long acc0, unsigne
 extern void cL4_simd_copy_begin(void *ctx, void *p, unsigned long imm); /* FUN_0037e58c */
 extern void cL4_simd_copy_loop(void *ctx, void *p);             /* FUN_0037e614 */
 extern long cL4_obj_copy_simple(long dst, long src, unsigned long op); /* FUN_00117cc4 */
+extern void cL4_obj_copy2(unsigned long *, unsigned long, unsigned long);   /* FUN_00117cc8 */
+extern unsigned long FUN_00380ad4(void *, ...); /* MR copy6 0x380ad4 */
 extern int cL4_waiter_next(unsigned long *word, unsigned long start, int mode); /* FUN_0035b178 */
 extern unsigned long cL4_waiter_hash(unsigned long key);        /* FUN_0035b588 */
 extern int thunk_FUN_00114e50(unsigned long a, unsigned long b, long c);
@@ -49,9 +52,14 @@ extern void cL4_wordlist_grow(long *list, long *slot, unsigned long n, unsigned 
 /* Binary globals referenced by these bodies (declared extern; they live in the
  * kernel image at the given addresses). */
 extern volatile unsigned long _DAT_006adee0;
+#define DAT_006adee0 _DAT_006adee0
 extern volatile unsigned char DAT_006aded1;
 extern unsigned char DAT_003697c0[1];
 extern unsigned long DAT_004f2710;
+extern unsigned long _DAT_004f2700;
+extern unsigned long uRam00000000004f2708;
+extern unsigned long __thread_bss_dummy;
+#define __thread_bss __thread_bss_dummy
 extern volatile unsigned long _DAT_006c0970;
 extern volatile unsigned long _DAT_006c0910;
 extern volatile unsigned long _DAT_006c0900;
@@ -76,7 +84,6 @@ extern unsigned long DAT_006c0940;
 extern unsigned long DAT_006c0938;
 extern unsigned long DAT_006c0920;
 extern unsigned char DAT_0036e518[1];
-extern unsigned long _DAT_006c08e0;
 
 /* Mangled-name / error string literals. */
 extern const char s_failed_type_lookup_for____s___s_005d523f[];
@@ -87,31 +94,144 @@ extern const char s_This_entry_point_is_only_for_pac_005d5292[];
 extern const char s_Cannot_demangle_a_free_standing_p_005d545c[];
 extern const char s___mtx_init__handle_mutex____mtx__005d3f10[];
 extern const char s___mtx_lock__handle_mutex__failed_005d3ee0[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d54b8[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d54f0[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d553f[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d558c[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d568b[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d5713[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d587a[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d5915[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d5989[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d59f4[];
+extern const char s_TypeDecoder_h__u__Node_kind__u___005d5a51[];
+extern const char s_Mangled_type_is_too_complex_005d548f[];
+extern const char s_Node_is_NULL_005d54ab[];
+extern const char s_is_not_requirement_list_005d5673[];
+extern const char s_Metatype_ExistentialMetatype_Nod_005d55f9[];
+extern const char s_Global_actor_node_is_missing_chi_005d56cd[];
+extern const char s_Thrown_error_node_is_missing_chi_005d56f0[];
+extern const char s_unexpected_kind_005d586a[];
+extern const char s_unexpected_kind_or_no_index_005d59d8[];
+extern const char s_not_enough_children_005d5640[];
+extern const char s_no_children_005d55ed[];
+extern const char s_no_children__005d54e3[];
+extern const char s_failed_to_decode_protocol_type_005d5654[];
+extern const char s_failed_to_decode_coroutine_kind_005d57c4[];
+extern const char s_failed_to_decode_function_parame_005d57e4[];
+extern const char s_failed_to_decode_function_result_005d5829[];
+extern const char s_failed_to_decode_function_yields_005d5808[];
+extern const char s_failed_to_decode_function_part_005d584b[];
+extern const char s_expected_text_005d5763[];
+extern const char s_expected_grandchildren_005d5771[];
+extern const char s_expected_convention_name_005d5788[];
+extern const char s_expected_type_list_005d58dd[];
+extern const char s_expected_dependent_generic_signa_005d58f0[];
+extern const char s_expected_layout_005d5964[];
+extern const char s_unhandled_field_type_005d5974[];
+extern const char s_pack_expansion_type_in_unsupport_005d58b1[];
+extern const char s_advancePackExpansion___without_b_005d5db6[];
+extern const char s_endPackExpansion___without_begin_005d5deb[];
+extern const char s_wrong_node_kind_or_no_text_005d55d2[];
+extern unsigned char DAT_005be7c0[1];
+extern unsigned long DAT_004f2700;
+extern unsigned long DAT_004f2710;
+extern unsigned long DAT_004f2718;
+extern unsigned long DAT_004f2740;
+extern unsigned long DAT_004f27d0, DAT_004f27d8, DAT_004f27e0, DAT_004f27e8, DAT_004f27f0;
+extern unsigned long DAT_004f27f8, DAT_004f2800, DAT_004f2808, DAT_004f2810, DAT_004f2818;
+extern unsigned long DAT_004f2820, DAT_004f2828, DAT_004f2830, DAT_004f2838, DAT_004f2840;
+extern unsigned long DAT_004f2848, DAT_004f2850, DAT_004f2858, DAT_004f2860, DAT_004f2868;
+extern unsigned long DAT_004f2870, DAT_004f2878, DAT_004f2880, DAT_004f2888, DAT_004f2890;
+extern unsigned long DAT_004f2898, DAT_004f28a0, DAT_004f28a8, DAT_004f28b0, DAT_004f28b8;
+extern unsigned long DAT_004f28c0, DAT_004f28c8, DAT_004f28d0, DAT_004f28d8, DAT_004f28e0;
+extern unsigned long DAT_004f28e8, DAT_004f28f0, DAT_004f2900[8];
+extern void (*FUN_0037f9f8)(void);
+extern void (*FUN_00397f0c)(void);
+extern void (*FUN_00397fc0)(void);
+extern void (*FUN_00398108)(void);
+extern void (*FUN_00398074)(void);
+extern unsigned long sk_type_metadata_get_3963b8(unsigned long, unsigned long, unsigned long);
 
 /* Swift runtime TypeDecoder error / string-buffer primitives. */
 extern void *cL4_strbuf_alloc(long size);                        /* FUN_00112db4 */
 extern void *cL4_strbuf_print(void *buf, unsigned long v);       /* FUN_00112e8c */
-extern unsigned long cL4_strbuf_join(unsigned long a, unsigned long b); /* FUN_0037f9f4 */
+extern unsigned long (*FUN_0037f9f4)(void); /* vtable slot 0x37f9f4 */
 extern void cL4_log_printf(unsigned long a, unsigned long b);    /* FUN_004b9ed8 */
 extern void cL4_diag_log(unsigned long *c, unsigned long *s, unsigned long x); /* FUN_003d3dd8 */
 extern void cL4_printf2(unsigned long a, unsigned long b);       /* FUN_004b9ed8 */
 
-/* In-slice forward declarations (defined later in this file). */
+/* In-slice forward declarations (defined later in this file). These are
+ * opaque cross-references between the R50 decoder functions; declared
+ * variadic so the reconstruction compiles against call sites whose exact
+ * Ghidra signatures were not all recovered. */
 extern unsigned long sk_type_lookup_389940(unsigned long, unsigned long, unsigned long, unsigned long);
-extern void sk_type_lookup_core_3895e0(unsigned long *, unsigned long, long, unsigned long,
-                                       unsigned long, unsigned long *, unsigned long *);
-extern long sk_strbuf_copy_38ef98(long, long *);
-extern long sk_strbuf_copy_38f020(long, long *);
-extern void sk_type_resolve_38a518(unsigned long *, unsigned long, unsigned long,
-                                   unsigned long *, unsigned long, unsigned long, unsigned long);
-extern long sk_type_field_get_3a3430(unsigned long *, unsigned long);
-extern void sk_type_field_set_3a3460(unsigned long, unsigned long, unsigned long *);
-extern unsigned long sk_type_strfield_3a63f70(unsigned long *, unsigned long, unsigned long, unsigned long);
-extern long sk_type_a32a0_3a32a0(unsigned long *, unsigned long, unsigned long, unsigned long *);
+extern void sk_type_lookup_core_3895e0(unsigned long *, unsigned long, long, unsigned long, unsigned long, void *, void *);
+extern long sk_strbuf_copy_38ef98(long, void *);
+extern long sk_strbuf_copy_38f020(long, void *);
+extern void sk_type_resolve_38a518(unsigned long *, unsigned long, unsigned long, unsigned long *, unsigned long, unsigned long, unsigned long);
+extern long sk_type_field_get_3a3430(unsigned long, ...);
+extern void sk_type_field_set_3a3460(unsigned long, ...);
+extern unsigned long sk_type_strfield_3a63f70(unsigned long, ...);
+extern long sk_type_a32a0_3a32a0(unsigned long, ...);
 extern void sk_type_decode_38f0a8(unsigned long *, unsigned long *, unsigned long *, unsigned long, unsigned long);
-extern unsigned long FUN_00377dcc(unsigned long);
-extern void FUN_003a2578(const char *);   /* noreturn panic printer */
-EOF
+extern unsigned long FUN_00377dcc(unsigned long, ...);
+extern void FUN_003a2578(unsigned long, ...);
+extern void cL4_panic_big(unsigned long, ...);
+extern void cL4_list_push_363f10(unsigned long, ...);
+extern unsigned long sk_type_metadata_get_3963b8(unsigned long, ...);
+extern void sk_type_materialize_exist_39517c(unsigned long, ...);
+extern void sk_type_materialize_exist_3950a4(unsigned long, ...);
+extern void sk_type_build_sig_395f3c(unsigned long, ...);
+extern void sk_type_build_owned_395dec(unsigned long, ...);
+extern void sk_type_generic_args_396440(unsigned long, ...);
+extern void sk_type_build_bound_generic_396784(unsigned long, ...);
+extern void sk_type_metadata_of_3bf904(unsigned long, ...);
+extern void sk_type_unpack_pair_37364c(unsigned long, ...);
+extern void sk_type_materialize_394c40(unsigned long, ...);
+extern void sk_type_materialize_397358(unsigned long, ...);
+extern void sk_type_build_pair_397e94(unsigned long, ...);
+extern void sk_type_decode_sig_394404(unsigned long, ...);
+extern void sk_type_build_func_394724(unsigned long, ...);
+extern unsigned long sk_type_parse_signature_395638(unsigned long, ...);
+extern void sk_type_build_protocol_3973e4(unsigned long, ...);
+extern void sk_type_decode_sig_394734(unsigned long, ...);
+extern void sk_type_build_func_3952c4(unsigned long, ...);
+extern void sk_type_decl_record_39779c(unsigned long, ...);
+extern void sk_type_push8_39780c(unsigned long, ...);
+extern void sk_type_field_push_39787c(unsigned long, ...);
+extern unsigned long sk_type_realloc_38d9b4(unsigned long, ...);
+extern void sk_type_flatpair_3978b0(unsigned long, ...);
+extern void sk_type_push98_397998(unsigned long, ...);
+extern void sk_type_build_bound_397a98(unsigned long, ...);
+extern unsigned long sk_type_lookup_field_398f40(unsigned long, ...);
+extern void sk_type_materialize_req_3972cc(unsigned long, ...);
+extern void sk_type_materialize_req2_3971e8(unsigned long, ...);
+extern void sk_type_build_reqlist_396f78(unsigned long, ...);
+extern void sk_type_65184_365184(unsigned long, ...);
+extern void sk_type_pushreq_39951c(unsigned long, ...);
+extern long sk_type_decode_param_396aec(unsigned long, ...);
+extern long sk_type_decode_result_396d48(unsigned long, ...);
+extern void sk_type_wordlist_grow_3a294c(unsigned long, ...);
+extern void sk_type_build_decl_39779c(unsigned long, ...);
+extern cL4_w16_t sk_type_name_split_38cbb8(unsigned long, ...);
+extern long sk_type_waiter_scan_38c640(unsigned long, ...);
+extern unsigned long sk_type_waiter_hash2_38c750(unsigned long, ...);
+extern unsigned long sk_type_capcmp_387fbc(unsigned long, ...);
+extern void sk_type_dbltbl_grow_38d90c(unsigned long, ...);
+extern unsigned long sk_type_dbltbl_hash_38d6e4(unsigned long, ...);
+extern void sk_type_insert_38c3ac(unsigned long, ...);
+extern cL4_w16_t sk_type_read_3a31d8(unsigned long, ...);
+extern unsigned long sk_type_cap_build_3a32a0(unsigned long, ...);
+extern void sk_type_wordlist_append_389370(unsigned long, ...);
+extern void FUN_0038e214(unsigned long, ...);
+extern void FUN_0038e458(unsigned long, ...);
+extern void FUN_0038e624(unsigned long, ...);
+extern void FUN_0038e7f0(unsigned long, ...);
+extern void FUN_0038ece8(unsigned long, ...);
+extern void FUN_0038d9fc(unsigned long, ...);
+extern void sk_type_dbltbl_op_38d90c(unsigned long, ...);
+extern void sk_type_release_obj(unsigned long, ...);
 
 /* FUN_00380864 @ 0x380864   (est. sk_mr_send_word_replace)
  * Ghidra: void FUN_00380864(ulong *param_1, undefined8 *param_2, long, long)
@@ -268,7 +388,7 @@ unsigned int *sk_mr_copy6_word_store_3810c4(unsigned int *ctx, long *adv,
         next = (unsigned int *)((long)ctx + (4 - n));
         p = ctx;
         if (next <= end) {
-            cL4_obj_copy_simple((long)ctx, (long)&local_34 + n);
+            cL4_obj_copy2((unsigned long *)ctx, (unsigned long)&local_34 + n, 0);
             next = p;
         }
     } else {
@@ -405,17 +525,17 @@ unsigned long sk_type_lookup_389940(unsigned long a, unsigned long b, unsigned l
     desc1 = d;
     pkeep = stack;
     sk_type_lookup_core_3895e0(&out, 0, a, b, d, &ctx[1], &ctx[0]);
-    cL4_release(&ctx[0]);
-    cL4_release(&ctx[1]);
+    cL4_release(ctx[0]);
+    cL4_release(ctx[1]);
     if (kind == 1) {
         if (-1 < _DAT_006adee0) {
             cL4_diag_log(&DAT_006adee0, &DAT_003697c0, 0);
         }
         if (DAT_006aded1 == 1) {
             pdiag = (unsigned int *)fn;
-            if (kind != 1) pdiag = (unsigned int *)&__thread_bss.cpusubtype;
+            if (kind != 1) pdiag = (unsigned int *)&__thread_bss_dummy;
             r = (*(unsigned long (**)(unsigned long, int, unsigned long))pdiag)(out, 0, 0);
-            cL4_log_printf(0, s_failed_type_lookup_for____s___s_005d523f);
+            cL4_log_printf(0, (unsigned long)s_failed_type_lookup_for____s___s_005d523f);
             (*(unsigned long (**)(unsigned long, int, unsigned long))pdiag)(out, 1, r);
             r = 0;
             goto out;
@@ -459,15 +579,15 @@ unsigned long sk_type_lookup_quiet_389b64(unsigned long flags, unsigned long a,
     desc1 = d;
     pkeep = stack;
     sk_type_lookup_core_3895e0(&out, flags & 0xfffffffffffffeff, a, b, d, &ctx[1], &ctx[0]);
-    cL4_release(&ctx[0]);
-    cL4_release(&ctx[1]);
+    cL4_release(ctx[0]);
+    cL4_release(ctx[1]);
     if (kind == 1) {
         if (-1 < _DAT_006adee0) cL4_diag_log(&DAT_006adee0, &DAT_003697c0, 0);
         if (DAT_006aded1 == 1) {
             pdiag = (unsigned int *)fn;
-            if (kind != 1) pdiag = (unsigned int *)&__thread_bss.cpusubtype;
+            if (kind != 1) pdiag = (unsigned int *)&__thread_bss_dummy;
             r = (*(unsigned long (**)(unsigned long, int, unsigned long))pdiag)(out, 0, 0);
-            cL4_log_printf(0, s_failed_type_lookup_for____s___s_005d523f);
+            cL4_log_printf(0, (unsigned long)s_failed_type_lookup_for____s___s_005d523f);
             (*(unsigned long (**)(unsigned long, int, unsigned long))pdiag)(out, 1, r);
             r = 0;
             goto out;
@@ -502,7 +622,7 @@ unsigned long sk_mangled_scan_valid_389da0(unsigned char *s, long len)
         if (n == 0) {
             ctx = 0;
             stk_88[0] = 0;
-            sk_type_lookup_core_3895e0(&out, 0, s, len, 0, stk_68, stk_88);
+            sk_type_lookup_core_3895e0(&out, 0, (long)s, len, 0, stk_68, stk_88);
             if (kind == 1) {
                 fn(out, 3, 0);
                 r = 0;
@@ -510,8 +630,8 @@ unsigned long sk_mangled_scan_valid_389da0(unsigned char *s, long len)
                 r = 0;
                 if (kind == 0) r = out;
             }
-            cL4_release(stk_88);
-            cL4_release(stk_68);
+            cL4_release((unsigned long)stk_88);
+            cL4_release((unsigned long)stk_68);
             if (canary == -0x2c8502b44bfffed6) return r;
             cL4_stack_fail();
         }
@@ -538,8 +658,8 @@ unsigned long sk_mangled_scan_valid_389da0(unsigned char *s, long len)
  * Confidence: medium
  * Notes: the 0x67b938 object vtable; _DAT_004f2700/_004f2708 read. */
 void sk_type_lookup_core_3895e0(unsigned long *out, unsigned long flags, long name,
-                                unsigned long len, unsigned long err, unsigned long *b6,
-                                unsigned long *b7)
+                                unsigned long len, unsigned long err, void *b6,
+                                void *b7)
 {
     unsigned long w; bool dot; long p; unsigned long q; unsigned long r; unsigned long s;
     unsigned long t; unsigned long u; unsigned char b08[32]; unsigned char b28[32];
@@ -560,8 +680,8 @@ void sk_type_lookup_core_3895e0(unsigned long *out, unsigned long flags, long na
     unsigned char e88[24]; unsigned long e60; unsigned char e58[2048]; unsigned long canary;
 
     canary = -0x2c8502b44bfffed6;
-    sk_strbuf_copy_38ef98(b08, b6);
-    sk_strbuf_copy_38f020(b28, b7);
+    sk_strbuf_copy_38ef98((long)b08, b6);
+    sk_strbuf_copy_38f020((long)b28, b7);
     a78 = uRam00000000004f2708;
     a80 = _DAT_004f2700;
     v = 0;
@@ -608,25 +728,25 @@ void sk_type_lookup_core_3895e0(unsigned long *out, unsigned long flags, long na
         t = s;
     } while (s < len);
     if (q == 0xffffffffffffffff) goto unknown;
-    p = sk_type_field_get_3a3430(&ctx, 0x19);
+    p = sk_type_field_get_3a3430((unsigned long)&ctx, 0x19);
     w = len;
     if (q <= len) w = q;
-    r = sk_type_strfield_3a63f70(&ctx, 0xa3, name, w);
+    r = sk_type_strfield_3a63f70((unsigned long)&ctx, 0xa3, (unsigned long)name, w);
     w = len;
     if (q + 1 <= len) w = q + 1;
-    s = sk_type_strfield_3a63f70(&ctx, 0x67, name + w, len - w);
-    sk_type_field_set_3a3460(p, r, &ctx);
-    sk_type_field_set_3a3460(p, s, &ctx);
+    s = sk_type_strfield_3a63f70((unsigned long)&ctx, 0x67, (unsigned long)(name + w), len - w);
+    sk_type_field_set_3a3460((unsigned long)p, r, (unsigned long)&ctx);
+    sk_type_field_set_3a3460((unsigned long)p, s, (unsigned long)&ctx);
     /* fall through to resolution */
-    res = sk_type_resolve_38a518(out, flags, &ctx, p, err, &a90, ae8);
-    cL4_release(ae8);
-    cL4_release(&a90);
+    sk_type_resolve_38a518((unsigned long (*)[16])out, flags, (unsigned long)&ctx, (unsigned long *)&ctx, err, (unsigned long)&a90, (unsigned long)ae8);
+    cL4_release((unsigned long)ae8);
+    cL4_release((unsigned long)&a90);
     goto done;
 unknown:
     a90 = 0x67b7d0;
     pstack = &ctx;
-    res = sk_type_a32a0_3a32a0(&ctx, name, len, &a90);
-    cL4_zone_get(&a90);
+    res = sk_type_a32a0_3a32a0((unsigned long)&ctx, (unsigned long)name, len, (unsigned long)&a90);
+    cL4_zone_get((long *)&a90);
     if (res == 0) {
         *(unsigned char *)(out + 2) = 0;
         *out = (unsigned long)s_unknown_error_005d5481;
@@ -634,19 +754,19 @@ unknown:
         *(unsigned short *)(out + 3) = 1;
         goto done;
     }
-    sk_strbuf_copy_38ef98(&a90, b08);
-    sk_strbuf_copy_38f020(ae8, b28);
-    res = sk_type_resolve_38a518(out, flags, &ctx, p, err, &a90, ae8);
-    cL4_release(ae8);
-    cL4_release(&a90);
+    sk_strbuf_copy_38ef98((long)&a90, b08);
+    sk_strbuf_copy_38f020((long)ae8, b28);
+    sk_type_resolve_38a518((unsigned long (*)[16])out, flags, (unsigned long)&ctx, (unsigned long *)&ctx, err, (unsigned long)&a90, (unsigned long)ae8);
+    cL4_release((unsigned long)ae8);
+    cL4_release((unsigned long)&a90);
 done:
     ctx = 0x67c398;
-    cL4_zone_get(e88);
+    cL4_zone_get((long *)e88);
     ctx = 0x67c370;
     cL4_ipc_obj_publish((long *)a80, 0, 0);
     if (v != 0) *(unsigned char *)(v + 0x30) = 0;
-    cL4_release(b28);
-    cL4_release(b08);
+    cL4_release((unsigned long)b28);
+    cL4_release((unsigned long)b08);
     if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
 }
 
@@ -657,18 +777,18 @@ done:
  * (keeps the buffer at param_1 and notifies via the object's +0x18 vtable
  * slot), and shared-owner (dereferences the owner's +0x10 slot).
  * Confidence: medium */
-long sk_strbuf_copy_38ef98(long dst, long *src)
+long sk_strbuf_copy_38ef98(long dst, void *srcp)
 {
-    long *owner; unsigned long v;
+    long *owner; unsigned long v; long *src = (long *)srcp;
 
     owner = (long *)src[3];
     if (owner == (long *)0) {
         *(unsigned long *)(dst + 0x18) = 0;
     } else if (owner == src) {
         *(long *)(dst + 0x18) = dst;
-        (**(code **)(*(long *)src[3] + 0x18))((long *)src[3], dst);
+        ((void (*)(long *, long))((*(unsigned long **)src[3])[3]))(src, dst);
     } else {
-        v = (**(code **)(*owner + 0x10))();
+        v = ((unsigned long (*)(void))((*(unsigned long **)owner)[2]))();
         *(unsigned long *)(dst + 0x18) = v;
     }
     return dst;
@@ -679,18 +799,18 @@ long sk_strbuf_copy_38ef98(long dst, long *src)
  * Identical storage-kind dispatch to FUN_0038ef98 (shared string-copy
  * helper); a separate symbol for the second buffer in each pair.
  * Confidence: medium */
-long sk_strbuf_copy_38f020(long dst, long *src)
+long sk_strbuf_copy_38f020(long dst, void *srcp)
 {
-    long *owner; unsigned long v;
+    long *owner; unsigned long v; long *src = (long *)srcp;
 
     owner = (long *)src[3];
     if (owner == (long *)0) {
         *(unsigned long *)(dst + 0x18) = 0;
     } else if (owner == src) {
         *(long *)(dst + 0x18) = dst;
-        (**(code **)(*(long *)src[3] + 0x18))((long *)src[3], dst);
+        ((void (*)(long *, long))((*(unsigned long **)src[3])[3]))(src, dst);
     } else {
-        v = (**(code **)(*owner + 0x10))();
+        v = ((unsigned long (*)(void))((*(unsigned long **)owner)[2]))();
         *(unsigned long *)(dst + 0x18) = v;
     }
     return dst;
@@ -709,82 +829,84 @@ long sk_strbuf_copy_38f020(long dst, long *src)
  * "NULL type" error strings.
  * Confidence: medium
  * Notes: FUN_0038f0a8 = the recursive type decoder; 0x13a = direct kind. */
-void sk_type_resolve_38a518(unsigned long (*out)[16], unsigned long flags, unsigned long node,
+void sk_type_resolve_38a518(unsigned long *out, unsigned long flags, unsigned long node,
                             unsigned long *ctx, unsigned long err, unsigned long b6,
                             unsigned long b7)
 {
-    long r; unsigned long v; char *msg; unsigned long rv[16]; unsigned char s138[32];
-    unsigned char s158[32]; unsigned long meta; unsigned long (*fn)(unsigned long, int, unsigned long);
-    short kind; unsigned char s100[32]; unsigned char se0[32]; unsigned long c0; unsigned char sb8[32];
-    unsigned char s98[32]; unsigned char s78; long v70; long v68; long v60; long canary;
+    /* out is the 3-word result slot {value, vtable, kind}; the decompile models
+     * it as undefined1[16] with kind at +2 (short). */
+    long r; unsigned long v; char *msg; unsigned char s138[32]; unsigned char s158[32];
+    unsigned long meta; unsigned long (*fn)(unsigned long, int, unsigned long);
+    short kind; unsigned char s100[32]; unsigned char se0[32]; unsigned long c0;
+    unsigned char sb8[32]; unsigned char s98[32]; unsigned char s78;
+    long v70; long v68; long v60; long canary;
 
     canary = -0x2c8502b44bfffed6;
-    sk_strbuf_copy_38ef98(s138, b6);
-    sk_strbuf_copy_38f020(s158, b7);
+    sk_strbuf_copy_38ef98((long)s138, (void *)b6);
+    sk_strbuf_copy_38f020((long)s158, (void *)b7);
     if (*(short *)(ctx + 2) == 0x13a) {
         r = (*(unsigned long (**)(unsigned long))(*ctx))(flags);
-        *(unsigned short *)((*out)[1] + 8) = 0;
-        *(long *)*out = r;
-        *(unsigned long *)(*out + 8) = 0;
-        (*out)[1][0] = 0;
+        *(unsigned short *)(out + 2) = 0;
+        *(long *)out = r;
+        out[1] = 0;
+        s78 = 0;
         if (r == 0) {
-            *(char **)*out = (char *)s_unknown_error_005d5481;
-            *(unsigned long (**)(void))(*out + 8) = FUN_0037f9f4;
-            *(unsigned short *)((*out)[1] + 8) = 1;
+            *(char **)out = (char *)s_unknown_error_005d5481;
+            out[1] = (unsigned long)FUN_0037f9f4;
+            *(unsigned short *)(out + 2) = 1;
         }
         goto out;
     }
-    sk_strbuf_copy_38ef98(se0, s138);
-    sk_strbuf_copy_38f020(s100, s158);
+    sk_strbuf_copy_38ef98((long)se0, (void *)s138);
+    sk_strbuf_copy_38f020((long)s100, (void *)s158);
     c0 = node;
-    sk_strbuf_copy_38ef98(sb8, se0);
-    sk_strbuf_copy_38f020(s98, s100);
+    sk_strbuf_copy_38ef98((long)sb8, (void *)se0);
+    sk_strbuf_copy_38f020((long)s98, (void *)s100);
     s78 = 0; v68 = 0; v60 = 0; v70 = 0;
-    cL4_release(s100);
-    cL4_release(se0);
+    cL4_release((unsigned long)s100);
+    cL4_release((unsigned long)se0);
     sk_type_decode_38f0a8(&meta, &c0, ctx, 0, 0);
     if (kind == 0) {
         if (meta == 0) goto null_err;
         if ((meta & 1) == 0) {
-            rv[0] = FUN_00377dcc(flags);
-            *(unsigned short *)((*out)[1] + 8) = 0;
-            *out = rv[0];
-            (*out)[1][0] = s78;
-            if (rv[0] == 0) {
-                *(char **)*out = (char *)s_unknown_error_005d5481;
-                *(unsigned long (**)(void))(*out + 8) = FUN_0037f9f4;
-                *(unsigned short *)((*out)[1] + 8) = 1;
+            *(unsigned long *)out = FUN_00377dcc(flags);
+            *(unsigned short *)(out + 2) = 0;
+            out[1] = s78;
+            if (*(unsigned long *)out == 0) {
+                *(char **)out = (char *)s_unknown_error_005d5481;
+                out[1] = (unsigned long)FUN_0037f9f4;
+                *(unsigned short *)(out + 2) = 1;
             }
             goto fin;
         }
-        *(unsigned short *)((*out)[1] + 8) = 1;
+        *(unsigned short *)(out + 2) = 1;
         msg = (char *)s_Cannot_demangle_a_free_standing_p_005d545c;
 err_set:
-        *(char **)*out = msg;
-        *(unsigned long (**)(void))(*out + 8) = FUN_0037f9f4;
+        *(char **)out = msg;
+        out[1] = (unsigned long)FUN_0037f9f4;
     } else {
         if (kind != 1) {
 null_err:
-            *(unsigned short *)((*out)[1] + 8) = 1;
+            *(unsigned short *)(out + 2) = 1;
             msg = (char *)s_NULL_type_but_no_error_provided_005d5272;
             goto err_set;
         }
-        *(unsigned short *)((*out)[1] + 8) = 1;
-        *(unsigned long (**)(void))(*out + 8) = fn;
+        *(unsigned short *)(out + 2) = 1;
+        out[1] = (unsigned long)fn;
         v = fn(meta, 2, 0);
-        *(unsigned long *)*out = v;
+        *(unsigned long *)out = v;
     }
 fin:
     if (kind == 1) fn(meta, 3, 0);
     if (v70 != 0) {
         v68 = v70;
-        thunk_FUN_00012568(v70, v60 - v70);
+        thunk_FUN_00012568((unsigned long)v70, (unsigned long)(v60 - v70));
     }
-    cL4_release(s98);
-    cL4_release(sb8);
+    cL4_release((unsigned long)s98);
+    cL4_release((unsigned long)sb8);
 out:
-    cL4_release(s158);
-    cL4_release(s138);
+    cL4_release((unsigned long)s158);
+    cL4_release((unsigned long)s138);
     if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
 }
 
@@ -3319,4 +3441,53 @@ fin:
     if (canary == -0x2c8502b44bfffed6) return;
 canary_fail:
     cL4_stack_fail();
+}
+
+/* FUN_0038a914 @ 0x38a914   (est. sk_type_lookup_name)
+ * Ghidra: undefined1[16] FUN_0038a914(undefined8, long, undefined8)
+ * Looks up a type by name: resolves the (possibly dotted) name via
+ * FUN_0038cbb8, then drives the generic lookup core FUN_003895e0 with the
+ * 0x67b960/0x67b9a8 string buckets, returning the 16-byte {metadata,error}
+ * pair. On error (kind!=0) returns a null pair.
+ * Confidence: medium */
+cL4_w16_t sk_type_lookup_name_38a914(unsigned long a, long name, unsigned long b)
+{
+    unsigned long u; void (*fn)(unsigned long, int, unsigned long); cL4_w16_t r;
+    unsigned long c[2]; unsigned int *p0; unsigned long *s1; unsigned long x; unsigned int *p2;
+    unsigned long *s3; unsigned long out; void (*pc)(unsigned long, int, unsigned long);
+    short kind; unsigned int state[2]; long v; unsigned long w; unsigned char *pkeep;
+    unsigned long meta; unsigned char stack[256]; unsigned long scratch; long canary;
+
+    if ((name == 0) || (name == 0)) name = 0;
+    canary = -0x2c8502b44bfffed6;
+    r = sk_type_name_split_38cbb8(name, b);
+    if (name == 0) name = 0;
+    state[0] = 0;
+    p0 = state;
+    meta = DAT_004f2710;
+    scratch = 0;
+    s3 = &out;
+    out = 0x67b960;
+    s1 = &c[0];
+    c[0] = 0x67b9a8;
+    p2 = p0;
+    v = name;
+    w = a;
+    pkeep = stack;
+    sk_type_lookup_core_3895e0(&x, 0, r.lo, r.hi, a, &out, &c[0]);
+    if (kind == 1) pc(x, 3, 0);
+    else {
+        u = x;
+        pc = (void (*)(unsigned long, int, unsigned long))0;
+        if (kind == 0) goto out_lbl;
+    }
+    u = 0;
+out_lbl:
+    cL4_release(&c[0]);
+    cL4_release(&out);
+    if (pkeep != stack) thunk_FUN_00012568(0);
+    if (canary != -0x2c8502b44bfffed6) cL4_stack_fail();
+    r.hi = (unsigned long)pc;
+    r.lo = u;
+    return r;
 }
