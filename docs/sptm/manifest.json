@@ -2070,46 +2070,46 @@
   {
     "address": "000bc084",
     "ghidra_name": "FUN_bc084",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_sk_bootstrap_complete",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "SK->TXM bootstrap complete: slide record, UAT handoff magic check, per-CPU state 5/0/5 + enter TXM domain; else teardown EL2 alloc, map handoff pages, dispatch_engine_init, start TXM. brk 0xbc19c/0xbc140 noreturn."
   },
   {
     "address": "000bc19c",
     "ghidra_name": "FUN_bc19c",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_boot_stage_bootkc",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Announces BootKC stage: memmap BootKC_rx, publish vbar_el1 to xnu_el2_exception_vector if inside BootKC_rx PAPT range (stride-5 table 0x10012f8), set stage bit 0x10, enable SCTLR_EL1 bit0. Panics on re-announce or missing PAPT range."
   },
   {
     "address": "000bc338",
     "ghidra_name": "FUN_bc338",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_boot_stage_txm",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Announces TXM stage: memmap TXM_rx (0x2b,5), set bootstrap stage bit 0xe. Panics on re-announce."
   },
   {
     "address": "000bc3d0",
     "ghidra_name": "FUN_bc3d0",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_boot_stage_sk_handoff",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Per-CPU handoff: requires stage bit 0x11; sptm_cpu_init(handoff magic), sptm_init_sched, mark cpu ready; if DT flag set do txm_handoff + sk_entry_early; per-CPU state 5/0/5 + enter TXM domain. brk 0xbc4c0."
   },
   {
     "address": "000bc4c0",
@@ -2235,13 +2235,13 @@
   {
     "address": "000bdd34",
     "ghidra_name": "FUN_bdd34",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_cputrace_carveout_start",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Getter returning cputrace carve-out start (*(DAT_00095d40+0x18))."
   },
   {
     "address": "000bdd48",
@@ -2257,101 +2257,101 @@
   {
     "address": "000bddd0",
     "ghidra_name": "FUN_bddd0",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_cputrace_carveout_init",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Init cputrace carve-out: read /chosen apt-carveout-size-mb from SecureDT, alloc 0x24 frames, set carveout_start/size at DAT_00095d40+0x18/0x20, avail/active flags."
   },
   {
     "address": "000bdf54",
     "ghidra_name": "FUN_bdf54",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_trace_region_add",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Register a 16K-aligned trace region {base>>14,size>>14} into table at 0x949b0 (count 0x94978, max 10). Requires stage bit 0x14 clear; only when stage bit 0x13 or hib disabled."
   },
   {
     "address": "000be044",
     "ghidra_name": "FUN_be044",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_dt_key_read",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Read named byte-string prop from /chosen/hibernation with expected size; returns value ptr or 0; size/NULL mismatch routed to caller error cb (sptm_panic_hib)."
   },
   {
     "address": "000be150",
     "ghidra_name": "FUN_be150",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_memmove",
+    "confidence": "high",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Overlap-aware byte copy (memmove): backward from end when src<=dst or disjoint, forward from start otherwise; 32-byte + 8-byte + 1-byte loops."
   },
   {
     "address": "000becd0",
     "ghidra_name": "FUN_becd0",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_dt_key_copy",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Read DT key via sptm_dt_key_read and copy exp_size bytes into out; reject all-zero key; memmove copy + bzero tail."
   },
   {
     "address": "000bf298",
     "ghidra_name": "FUN_bf298",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_sha_hash_range",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Hash [start,end) 16K pages into g_sha_obj after 4-byte tag; zero-page class hashed from zero scratch, else from translated VA (linear offset or reloc table); finalize SHA digest + sptm_crypto_finalize."
   },
   {
     "address": "000bf4bc",
     "ghidra_name": "FUN_bf4bc",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_crypto_finalize",
+    "confidence": "low",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "Crypto-engine finalize: get ACE ctx, gcm update 0x30 + sha absorb 0x20 + gcm finalize to out; bzero scratch. Wrap for sptm_sha_hash_range."
   },
   {
     "address": "000bf5d0",
     "ghidra_name": "FUN_bf5d0",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_nvram",
+    "confidence": "medium",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "SK-HIB begin (name inherited from sptm_init.c; body is SK-HIB begin): set g_hib_state=8, sha reset+phase salt 0x12f70, phase=5, drain per-CPU FTE refcnts (underflow panic), zero callback list, per-CPU state 4/1/0xc, SK HIB patchup if bit 0xc."
   },
   {
     "address": "000bf874",
     "ghidra_name": "FUN_bf874",
-    "estimated_name": "",
-    "confidence": "",
+    "estimated_name": "sptm_ace_finalize",
+    "confidence": "high",
     "category": "trace",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": ""
+    "file": "osfmk/arm64/sptm/sptm_region_trace.c",
+    "status": "decompiled",
+    "notes": "ACE crypto finalize producing image digest: validate seed/keys, write 0x20-byte digest to +0x200, wait busy, copy 0x30-byte result from +0x100 to out. Referenced by sptm_trace_hib.c."
   },
   {
     "address": "000bf9dc",

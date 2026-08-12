@@ -2022,7 +2022,7 @@ void sptm_dispatch_route(uint64_t selector, uint64_t arg)
         evt = 3;
     } else {
         if (domain != 3) {
-            __builtin_arm_rsr64("s3_6_c15_c11_1");
+            (void)__builtin_arm_rsr64("s3_6_c15_c11_1");
             sptm_panic(0x29, arg, "%s: %s %d %s 0x%llx %s 0x%llx");
         }
         evt = 4;
@@ -2531,7 +2531,7 @@ void sptm_dt_pmap_io_ranges(void *dt, uint64_t *lo, uint64_t *hi,
                 *lo = addr;
             if (hi != 0 && (*hi == 0 || *hi < addr + len - 1))
                 *hi = addr + len - 1;
-            if (cb != 0 && (*cb)(buf, arg) == 0)
+            if (cb != 0 && (*cb)(buf, (void *)(uintptr_t)arg) == 0)
                 return;
         }
     }
