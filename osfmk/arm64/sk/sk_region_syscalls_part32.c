@@ -222,7 +222,7 @@ extern uint64_t FUN_00387868(void);
 extern uint64_t FUN_00381fac(void *p, uint64_t v);
 extern uint64_t FUN_003800cc(void *p, uint64_t v);
 extern uint64_t FUN_0036b118(uint64_t v);
-extern uint64_t FUN_00367dd4(void *p);
+extern uint64_t FUN_00367dd4(void *p, ...);
 extern uint64_t FUN_0035bd48_(void);
 extern uint64_t FUN_0039c49c(void *p, void *q);
 extern bool FUN_00377cc0(int *p1, int *p2);
@@ -4078,7 +4078,7 @@ void sk_hashset_grow(long *param_1, ulong param_2)
             long lVar3 = *param_1;
             *param_1 = 0;
             param_1[2] = -1;
-            if (lVar3 != 0) thunk_FUN_00012568(lVar3, param_1[1] << 3);
+            if (lVar3 != 0) thunk_FUN_00012568((void *)lVar3, param_1[1] << 3);
             param_1[1] = 0;
             return;
         }
@@ -4089,7 +4089,7 @@ void sk_hashset_grow(long *param_1, ulong param_2)
         ulong uVar11 = 0xffffffffffffffff;
         param_1[2] = -1;
         if (lVar4 != 0) {
-            thunk_FUN_00012568(lVar4, param_1[1] << 3);
+            thunk_FUN_00012568((void *)lVar4, param_1[1] << 3);
             uVar11 = param_1[2];
         }
         ulong uVar5 = 0;
@@ -4213,7 +4213,7 @@ long *sk_hashset_destroy(long *param_1)
     long lVar2 = *param_1;
     *param_1 = 0;
     param_1[2] = -1;
-    if (lVar2 != 0) thunk_FUN_00012568(lVar2, param_1[1] << 3);
+    if (lVar2 != 0) thunk_FUN_00012568((void *)lVar2, param_1[1] << 3);
     return param_1;
 }
 

@@ -550,7 +550,11 @@ SIG_OVERRIDE = {
 "0x5ba5c": "void sk_register_global(uintptr_t arg1, ...)",
 "0x5b190": "void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...)",
 "0x51e5c": "unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...)",
-"0x51e0c": "int * sk_macho_seg(uintptr_t arg1, int *arg2, ...)"
+"0x51e0c": "int * sk_macho_seg(uintptr_t arg1, int *arg2, ...)",
+"0x53598": "unsigned long * sk_boot_arg(uintptr_t arg1, ...)",
+"0x5ce54": "void sk_unlock(uintptr_t arg1, ...)",
+"0x54354": "void sk_tcb_abort(uintptr_t arg1, ...)",
+"0x5d394": "void sk_lock_release(uintptr_t arg1, ...)"
 }
 for a, sig in SIG_OVERRIDE.items():
     if a in func_sigs:
@@ -654,6 +658,9 @@ def post_fix(text):
     text = text.replace("sk_init_stage2()", "sk_init_stage2(0)")
     text = text.replace("sk_register_global()", "sk_register_global(0)")
     text = text.replace("sk_error_broadcast()", "sk_error_broadcast(0)")
+    text = re.sub(r"sk_boot_arg\(\)", "sk_boot_arg(0)", text)
+    text = re.sub(r"sk_unlock\(\)", "sk_unlock(0)", text)
+    text = re.sub(r"sk_tcb_abort\(0\)", "sk_tcb_abort(0)", text)
     text = text.replace("t2 = (uintptr_t)sk_global_062 + 1", "t2 = (unsigned int *)((uintptr_t)sk_global_062 + 1)")
     text = re.sub(r't(\d+) = \(uint64_t \*\)sk_boot_arg\(\)', r't\1 = (uint64_t *)(uintptr_t)sk_boot_arg()', text)
     text = re.sub(r't(\d+) = \(unsigned long \*\)sk_boot_arg\(\)', r't\1 = (unsigned long *)(uintptr_t)sk_boot_arg()', text)

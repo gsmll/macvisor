@@ -218,7 +218,8 @@ unsigned long lite_zone_alloc_large(long zone, long param_2, unsigned long param
                                     unsigned long param_4, unsigned int param_5);
 void lite_zone_alloc_class(long zone, unsigned long size, unsigned long param_3,
                            unsigned long param_4);
-void lite_zone_alloc_round();
+void lite_zone_alloc_round(unsigned long zone, unsigned long param_2, unsigned long param_3,
+                           unsigned long param_4, unsigned int param_5, ...);
 void lite_zone_free_block(unsigned char *zone, unsigned long block, unsigned long param_3,
                           int param_4);
 void lite_zone_free_small(long zone, unsigned long *ptr);

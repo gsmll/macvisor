@@ -2239,7 +2239,7 @@ static long sk_tb_alloc_by_kind(uint64_t a)
 	if (kind == 0xd) {
 		tb = sk_cap_claim(a);
 	} else if (kind == 3) {
-		tb = sk_zone_alloc_obj(1, 0x118, 0x1082040eda8e2daull);
+		tb = (long)sk_zone_alloc_obj(1, 0x118, 0x1082040eda8e2daull);
 		if (tb != 0) {
 			sk_tb_init(a, tb);
 			return tb;
@@ -2294,9 +2294,9 @@ static void sk_tb_obj_free(uint64_t *w)
 static long sk_tb_obj_create(uint64_t a, uint64_t b)
 {
 	uint64_t *w = sk_tb_obj_alloc(0);
-	uint64_t k = sk_obj_retain(b);
+	uint64_t k = (uint64_t)sk_obj_retain(b);
 	*(uint64_t *)(w + 0x10) = k;
-	sk_tb_set_sender(a, sk_tb_obj_dispatch, (uint64_t)w);
+	sk_tb_set_sender(a, (uint64_t)(void *)sk_tb_obj_dispatch, (uint64_t)w);
 	*(uint64_t *)(w + 0x38) = sk_registry_alloc();
 	return (long)w;
 }

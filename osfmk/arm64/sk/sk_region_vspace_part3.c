@@ -6988,7 +6988,7 @@ void FUN_0021cad0(uint64_t param_1, uint64_t param_2, long param_3, long param_4
       rt_00352ecc(param_4);
       v76 = rt_00356864();
       v76 = rt16_mklo((*v56)(v76.lo,v76.hi,v8));
-      v3 = (uint64_t)v76.lo;
+      v3 = (code *)v76.lo;
       v1 = (code *)*v5;
       (*v1)(v73,v76.hi,v10);
       rt_00351cac();
@@ -11043,7 +11043,7 @@ LBL_00222690:
         rt_0034ad00();
         v13 = rt_00352584(v310);
         v22 = v281;
-        v8 = (code *)rt_00377bec(v13.lo,v281,v251);
+        v8 = (code *)rt_00377bec(v13,v281,v251);
         v1 = (code *)rt_0008f728();
         rt_00351a74();
         v13 = rt_00351af8(&v304);
@@ -12005,7 +12005,7 @@ void FUN_00224180(uint64_t param_1, uint64_t param_2, code * param_3, code * par
   uint64_t v153;
   
   v159 = rt_0008e518();
-  v3 = (uint64_t)v159.hi;
+  v3 = (code *)v159.hi;
   v18 = (uint64_t)v159.lo;
   rt_00359338(param_4);
   rt_00352f54();
@@ -13414,7 +13414,7 @@ void FUN_00226320(uint64_t param_1, uint64_t param_2, code * param_3, uint64_t p
   v244 = param_7;
   v220 = param_6;
   v246 = rt_00358a44();
-  v234 = (uint64_t)v246.hi;
+  v234 = (code *)v246.hi;
   v232 = (uint64_t)v246.lo;
   v20 = rt_0008f6c0(param_6);
   rt_00352968();
@@ -13859,8 +13859,8 @@ LBL_00227220:
             if (((unsigned long)v4 & 1) == 0) {
               rt_0034b4d0();
               v246 = rt_00350b00();
-              v201 = (uint64_t)v246.lo;
-              v8 = (uint64_t)v246.hi;
+              v201 = (code *)v246.lo;
+              v8 = (code *)v246.hi;
               v10 = v95;
               goto LBL_002273a0;
             }
@@ -14859,7 +14859,7 @@ void FUN_00228914( void){
   
   rt_00355018();
   rt_0035a080();
-  FUN_00226320(v2);
+  ((code)FUN_00226320)(v2);
   rt_00350bcc();
                     /* WARNING: Could not recover jumptable at 0x0022896c. Too many branches */
                     /* WARNING: Treating indirect jump as call */

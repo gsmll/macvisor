@@ -477,7 +477,7 @@ uint64_t sk_cpu_irq5(long arg1);
 uint64_t sk_cpu_irq6(void);
 uint64_t sk_cpu_irq_slot(long arg1,uint64_t *arg2,uint8_t *arg3);
 uint64_t sk_boot_done(void);
-unsigned long sk_boot_arg(long arg1);
+unsigned long * sk_boot_arg(uintptr_t arg1, ...);
 void sk_boot_triple(unsigned long *arg1,long *arg2,unsigned long *arg3);
 void sk_boot_state(void);
 unsigned long * sk_boot_list(void);
@@ -500,7 +500,7 @@ bool sk_cnode_check(int arg1);
 uint64_t sk_cnode_resolve(long arg1,long arg2,uint8_t (*arg3) [16]);
 uint64_t sk_cnode_op(unsigned long arg1,unsigned long arg2,uint8_t (*arg3) [16],unsigned int arg4);
 uint64_t thunk_FUN_0005fd2c(unsigned long arg1);
-void sk_tcb_abort(void);
+void sk_tcb_abort(uintptr_t arg1, ...);
 void sk_tcb_x(uint64_t arg1);
 void sk_tcb_y(uint64_t arg1,uint64_t arg2);
 void thunk_FUN_0006037c(void);
@@ -725,7 +725,7 @@ void sk_cap_record(uint64_t arg1,unsigned long arg2,uint8_t (*arg3) [16],unsigne
 uint64_t sk_lock_prepare(unsigned long *arg1);
 uint64_t sk_lock_acquire_recursive(unsigned long *arg1,uint64_t arg2);
 uint64_t sk_lock_try(unsigned long *arg1);
-void sk_unlock(uint64_t *arg1);
+void sk_unlock(uintptr_t arg1, ...);
 void sk_lock_set_mode(uint64_t *arg1,uint16_t arg2);
 void sk_lock_init(void);
 void sk_lock_record(long arg1,uint64_t arg2,uint64_t arg3);
@@ -734,7 +734,7 @@ void sk_notify_domain_slot(long *arg1,unsigned long arg2);
 uint64_t sk_cap_lookup_slot(long arg1);
 uint64_t sk_cap_resolve_name(long arg1,long *arg2);
 unsigned short sk_lock_acquire(unsigned long *arg1,uint64_t arg2);
-void sk_lock_release(unsigned long *arg1,int arg2);
+void sk_lock_release(uintptr_t arg1, ...);
 void sk_register_cb2(unsigned int *arg1,sk_code_t arg2,uint64_t arg3);
 void sk_msg_init(void);
 void sk_msg_send2(uint64_t arg1,unsigned int arg2,uint64_t arg3,uint64_t arg4);
@@ -3197,7 +3197,7 @@ switchD_00052e18_caseD_1:
           else if (t11 == t13) {
             if (t5 < t9) goto LAB_000532f0;
             sk_tcb_ai((uint64_t)(uintptr_t)t9);
-            t7 = (unsigned long *)(uintptr_t)sk_boot_arg();
+            t7 = (unsigned long *)sk_boot_arg(0);
             if (t7 + 1 < t7) goto LAB_000532f0;
             *t7 = (unsigned long)(uint8_t)t9[1] << 0x10 | (unsigned long)*(uint8_t *)((long)t9 + 3) << 0x18
                        | (unsigned long)*t9 | (unsigned long)*(uint64_t *)(t9 + 2) << 0x20;
@@ -3405,7 +3405,7 @@ uint64_t sk_boot_done(void)
   uint64_t *t1;
   uint64_t t2;
   
-  t1 = (uint64_t *)(uintptr_t)sk_boot_arg();
+  t1 = (uint64_t *)sk_boot_arg(0);
   t2 = 0;
   if (t1 != (uint64_t *)0x0) {
     if (t1 + 1 < t1) {
@@ -3422,15 +3422,14 @@ uint64_t sk_boot_done(void)
 
 
 /* FUN_00053598 @ 0x53598   (est. sk_boot_arg)
- * Ghidra: ulong FUN_00053598(long arg1)
+ * Ghidra: ulong * FUN_00053598(uintptr_t arg1, ...)
  * sk_boot_arg: cL4 sk boot arg operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-unsigned long sk_boot_arg(long arg1)
-{
+unsigned long * sk_boot_arg(uintptr_t arg1, ...){
   unsigned long t3;
   sk_code_t t2;
   long t0;
@@ -3943,7 +3942,7 @@ uint64_t sk_cpu_wait(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_unlock();
+    sk_unlock(0);
     return 0;
   }
                     
@@ -4329,15 +4328,14 @@ uint64_t thunk_FUN_0005fd2c(unsigned long arg1)
 
 
 /* FUN_00054354 @ 0x54354   (est. sk_tcb_abort)
- * Ghidra: void FUN_00054354(void)
+ * Ghidra: void FUN_00054354(uintptr_t arg1, ...)
  * sk_tcb_abort: cL4 sk tcb abort operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_tcb_abort(void)
-{
+void sk_tcb_abort(uintptr_t arg1, ...){
   int t0;
   uint64_t t1;
   
@@ -11452,15 +11450,14 @@ LAB_0005ce2c:
 
 
 /* FUN_0005ce54 @ 0x5ce54   (est. sk_unlock)
- * Ghidra: void FUN_0005ce54(undefined8 *arg1)
+ * Ghidra: void FUN_0005ce54(uintptr_t arg1, ...)
  * sk_unlock: cL4 sk unlock operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_unlock(uint64_t *arg1)
-{
+void sk_unlock(uintptr_t arg1, ...){
   unsigned int t0;
   unsigned long t1;
   uint64_t t2;
@@ -11795,15 +11792,14 @@ LAB_0005d2f0:
 
 
 /* FUN_0005d394 @ 0x5d394   (est. sk_lock_release)
- * Ghidra: void FUN_0005d394(ulong *arg1,int arg2)
+ * Ghidra: void FUN_0005d394(uintptr_t arg1, ...)
  * sk_lock_release: cL4 sk lock release operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_lock_release(unsigned long *arg1,int arg2)
-{
+void sk_lock_release(uintptr_t arg1, ...){
   bool t0;
   unsigned int t5;
   unsigned int t6;

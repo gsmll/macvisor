@@ -2311,7 +2311,7 @@ void tb_msg_capref_handler(unsigned long rec, unsigned long cb, unsigned int *ms
     unsigned long out[5] = {0};
     unsigned long v2 = *(unsigned long *)(data + 0x10);
     unsigned long end = tb_transport_end((unsigned long)msg);
-    FUN_00014bd4(v2, &out, region, end, 0);
+    FUN_00014bd4(v2, (unsigned long)&out, (unsigned long)region, end, 0);
     if (msg[0] != 4) {
         FUN_00118b28(TB_ASSERT_IN_MSG_STATE);
         SoftwareBreakpoint(1, 0x17e74);
@@ -2325,18 +2325,18 @@ void tb_msg_capref_handler(unsigned long rec, unsigned long cb, unsigned int *ms
         FUN_0004b710(bad[0] + 0x20, *(unsigned long *)(bad[1] + 0x20), 7);
         return;
     }
-    FUN_0001574c(rm, tm);
+    FUN_0001574c((unsigned long)rm, (unsigned long)tm);
     tb_message_state_transition(&out);
     unsigned long which = 0;
     if (kind == 0) which = 2;
-    int r2 = FUN_0001485c(v3, &out, &region[0], which);
+    int r2 = FUN_0001485c(v3, (unsigned long)&out, &region[0], which);
     if (r2 == 0) {
         if ((*data & 1) == 0 &&
             (r2 = (**(unsigned int (***)(unsigned long, unsigned char *, unsigned long, int))(vtable + 0x10))(vtable, data, region[0], 0), r2 != 0)) {
             unsigned long e2 = tb_transport_end((unsigned long)&out);
             FUN_00014f90(*(unsigned long *)(data + 8), (unsigned long)msg, e2, 0);
             unsigned long *tm2 = (unsigned long *)tb_get_transport((unsigned long)msg);
-            FUN_0001574c(tm2, region);
+            FUN_0001574c((unsigned long)tm2, (unsigned long)region);
             *(unsigned long *)(tm2 + 0x10) = *(unsigned long *)(tm2 + 0x18);
             tb_message_state_transition(msg);
         }
@@ -2346,7 +2346,7 @@ void tb_msg_capref_handler(unsigned long rec, unsigned long cb, unsigned int *ms
         msg = 0;
         if (region[0] == 0) return;
     }
-    FUN_00015630(u, region);
+    FUN_00015630(u, (unsigned long)region);
     if (canary == -0x2c8502b44bfffed6) {
         return;
     }
