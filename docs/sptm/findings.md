@@ -3967,3 +3967,15 @@ Confidence: Medium.
 - **Evidence**: decompile 0x46a5c8 — `(*(code *)&SUB_54ffff60f100041f)(*(undefined8 *)(extraout_x8_00 + 0x40))` (guarded-entry supervisor calls) and dozens of `(*extraout_xN)(...)`/`(**(code **)(extraout_x16+0x20))(...)` indirect dispatches whose targets depend on untracked registers.
 - **Severity (hypothesis)**: medium — the cL4 syscall error dispatch is a trust boundary; a misbound method/arg in the reconstruction could mask or alter the real error path. Verify against disassembly.
 - **Confidence**: low (register artifacts; bodies are faithful to the decompile but the chained indirect dispatch is best-effort).
+
+## [ringminus1] 0x00481600-0x0048fe4c SKR29 — Swift _StringProcessing regex engine in the Secure Kernel (GL1)
+- **Observation**: The cL4 Secure Kernel embeds a full Swift Foundation/RegexBuilder regular-expression engine (the `_StringProcessing` AST-to-DSL converter and matcher). This means GL1 ships general-purpose regex support in-ring, presumably for policy/sandbox pattern matching inside Exclaves. Several converter helpers emit explicit "TODO: ..." placeholder snippets for unsupported constructs (character classes, assertions, backreferences, subpatterns, callouts, consumers, character predicates, conditional expressions), indicating the embedded DSL printer intentionally degrades to placeholders rather than panicking.
+- **Evidence**: 120 functions in sk_slice_r29.c; string refs `s_StringProcessing_ASTConversion__005e21e0` (FUN_0048f61c), `s__AppleInternal_Library_BuildRoot_005e2230` (FUN_0048f61c/FUN_0048afec), `s____TODO__conditional____005e3080` (FUN_0048afec/0048f61c), `s____TODO__character_classes____005e3120`, `s____TODO__backreferences____005e30c0`, `s_Anchor_startOfLine_005e2bd0`, `s__horizontalWhitespace_005e2e00`; tagged 16-byte returns (0xe0|len / 0xea...) in the property-name printers (FUN_0048e570/004867a4).
+- **Severity (hypothesis)**: low — regex engines are historically a source of memory-safety bugs (backtracking, huge match counts); FUN_004863d8 uses LZCOUNT-style bit-index decoding of a decision tree and FUN_00485418 drives a large opcode switch that would reward fuzzing. The "TODO" placeholders suggest the shipped feature surface is narrower than the matcher's instruction set.
+- **Confidence**: medium
+
+## [ringminus1] 0x0048f61c sk_regex_ast_to_dsl
+- **Observation**: The AST->DSL converter carries a Swift build-time source path (`/AppleInternal/Library/BuildRoot/...`) in the binary and builds each output node as a tagged 0x6000000000000000 heap object. Register-global state (unaff_x20/x19) plus `extraout_*` carry flags pervade the slice, so the exact node-linking is only reconstructed at low confidence.
+- **Evidence**: `s__AppleInternal_Library_BuildRoot_005e2230` passed to thunk_FUN_0044f818 in FUN_0048f61c; `FUN_0036a940()` object allocators tagged `|0x6000000000000000`; register-global unaff_x20 throughout.
+- **Severity (hypothesis)**: informational — leaked internal build path; low-confidence reconstruction of register-global linkage is an audit caveat.
+- **Confidence**: high
