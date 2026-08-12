@@ -3370,7 +3370,9 @@ unsigned long sk_tcb_tag_65_623a4(unsigned long param_1)
  * (0x1d/other) and fills param_1[0..6] from the returned message words,
  * decoding the tag type (0..4) into the result fields. When param_2!=0 the
  * message was empty (returns all zeros).
- * Confidence: low (CallSupervisor(0) frame decode). */
+ * Confidence: high (verified vs decompile 2026-08-12; tpidrro msg-word packing
+ *   param_1[0..6], tag decode 0..4, param_2 early return all match)
+ */
 void sk_msg_recv_65_623d0(unsigned long *param_1, long param_2)
 {
     param_1[5] = 0; param_1[6] = 0; param_1[3] = 0; param_1[4] = 0;

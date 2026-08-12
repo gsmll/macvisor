@@ -18892,7 +18892,9 @@ LAB_00193ea0:
  * Ghidra: uint FUN_00193f7c(undefined8 param_1,undefined8 param_2,undefined1 *param_3)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified vs decompile 2026-08-12; SCARRY8 trap, type hash
+ *   0xd94ea1976e2c6fe1, CONCAT packing, cVar6==1/0 branches, fatal 0x1040,
+ *   count&1 return)
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00194210) */
@@ -20030,7 +20032,9 @@ void FUN_00195f6c(unsigned long param_1)
  * Ghidra: ulong FUN_00196204(long param_1)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified vs decompile 2026-08-12; bound 0x10, type hash
+ *   0xcfadb651d44886e2, precond 0x3b/0x11/0x37, fatal 0xc0e, 16x elem_append,
+ *   buf/error/string build, else-path release exact)
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 unsigned long FUN_00196204(long param_1)
@@ -45437,7 +45441,8 @@ void sk_r4_001c1700(void)
  * Ghidra: void FUN_001c1730(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; hook table via sk_rt_hook_b
+ *   0x1754..0x1c40 x33 + sk_h_00348758, fatal 001afa84 tail)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c1730(void)
@@ -49597,7 +49602,7 @@ void sk_r4_001c3bb0(void)
  * Ghidra: void FUN_001c3bd4(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3bd4(void)

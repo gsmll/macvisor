@@ -459,7 +459,8 @@ static void sk_notif_dispatch_all(int preempt, unsigned int flags)
  * param_2 is set, only type-0 (badge word 0) notifications are pre-dispatched; every
  * non-zero-type notification is then dispatched. Same 0x6a53cc / 0x6a597e dispatch
  * endpoints.
- * Confidence: medium */
+ * Confidence: high (verified vs decompile 2026-08-12; trap 0x6527c8, byte-packing
+ *   size/type, 0x6a53cc/0x6a597e endpoints, select_zero logic all match) */
 static void sk_notif_dispatch_all2(int preempt, int select_zero)
 {
     long *node;

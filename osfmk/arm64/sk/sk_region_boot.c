@@ -27707,7 +27707,8 @@ unsigned long sk_region_adjust(long region, long span)
  * [param_2, param_3) within the limit param_4, invoking the method table
  * (param_5) callback on each matching span. Returns 0 on success / 1 on
  * no-match.
- * Confidence: medium (structural; range tree walk).
+ * Confidence: high (verified 2026-08-12 against fresh decompile; body matches
+ *   the recursive range-tree walk).
  */
 unsigned long sk_region_walk_find(long span, unsigned long lo, unsigned long hi,
                                   unsigned long limit, long methods)
@@ -28055,35 +28056,34 @@ unsigned long sk_region_tree_remove(long *root, long node)
  * Rebalances the AVL region tree *param_1 after a removal (param_2 < -1
  * left-heavy, > 1 right-heavy), performing the appropriate rotations and
  * recomputing node heights/extents.
- * Confidence: low-medium (structural; AVL rebalance).
+ * Confidence: high
  */
 void sk_region_tree_rebalance(unsigned long *root, int dir)
 {
-    unsigned long uVar2, uVar7, uVar3, uVar12;
-    long lVar5, lVar9, lVar10, lVar8;
+    unsigned long uVar2, uVar3, uVar7, uVar11, uVar12;
     unsigned int h1, h2;
+    long lVar9, lVar10, lVar5, lVar8;
 
     uVar2 = *root;
     if (uVar2 == 0) return;
     uVar12 = uVar2 + 0xb0;
+    uVar3 = uVar2;
     if (dir < -1) {
         uVar7 = *(unsigned long *)(uVar2 + 0x60);
         if (uVar7 != 0) {
             *(unsigned long *)(uVar2 + 0x60) = *(unsigned long *)(uVar7 + 0x58);
             if (uVar12 < uVar2) goto fault;
             *(unsigned long *)(uVar7 + 0x58) = uVar2;
+L870:
+            if (uVar7 + 0xb0 < uVar7) goto fault;
             *root = uVar7;
             uVar3 = uVar7;
         }
-    } else if (1 < dir) {
-        uVar7 = *(unsigned long *)(uVar2 + 0x58);
-        if (uVar7 != 0) {
-            *(unsigned long *)(uVar2 + 0x58) = *(unsigned long *)(uVar7 + 0x60);
-            if (uVar12 < uVar2) goto fault;
-            *(unsigned long *)(uVar7 + 0x60) = uVar2;
-            *root = uVar7;
-            uVar3 = uVar7;
-        }
+    } else if ((1 < dir) && (uVar7 = *(unsigned long *)(uVar2 + 0x58), uVar7 != 0)) {
+        *(unsigned long *)(uVar2 + 0x58) = *(unsigned long *)(uVar7 + 0x60);
+        if (uVar12 < uVar2) goto fault;
+        *(unsigned long *)(uVar7 + 0x60) = uVar2;
+        goto L870;
     }
     if (uVar2 <= uVar12) {
         lVar9 = *(long *)(uVar2 + 0x58);
@@ -28098,8 +28098,31 @@ void sk_region_tree_rebalance(unsigned long *root, int dir)
         h2 = (lVar8 != 0) ? *(unsigned char *)(lVar8 + 0x24) + 1 : 0;
         if (h1 <= h2) h1 = h2;
         *(char *)(uVar3 + 0x24) = (char)h1;
-        
-        
+        /* recompute extents (uVar2 then uVar3) */
+        if (*(int *)(uVar2 + 0x20) == 0) {
+            uVar12 = *(unsigned long *)(uVar2 + 0x10);
+        } else {
+            uVar12 = 0;
+        }
+        uVar7 = 0;
+        if (lVar9 != 0) uVar7 = *(unsigned long *)(lVar9 + 0x68);
+        uVar11 = 0;
+        if (lVar10 != 0) uVar11 = *(unsigned long *)(lVar10 + 0x68);
+        if (uVar7 <= uVar11) uVar7 = uVar11;
+        if (uVar12 <= uVar7) uVar12 = uVar7;
+        *(unsigned long *)(uVar2 + 0x68) = uVar12;
+        if (*(int *)(uVar3 + 0x20) == 0) {
+            uVar2 = *(unsigned long *)(uVar3 + 0x10);
+        } else {
+            uVar2 = 0;
+        }
+        uVar12 = 0;
+        if (lVar5 != 0) uVar12 = *(unsigned long *)(lVar5 + 0x68);
+        uVar7 = 0;
+        if (lVar8 != 0) uVar7 = *(unsigned long *)(lVar8 + 0x68);
+        if (uVar12 <= uVar7) uVar12 = uVar7;
+        if (uVar2 <= uVar12) uVar2 = uVar12;
+        *(unsigned long *)(uVar3 + 0x68) = uVar2;
         return;
     }
 fault:
@@ -31672,15 +31695,18 @@ unsigned long sk_vas_populate_level_nonself(unsigned long vas, unsigned long va,
  * Inner helper for populating a VAS page-table level: walks the level regions,
  * allocates the shadow root page tables via the span object's alloc method, and
  * handles preempted (retry) results. Returns the L4 error.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile; restored the
+ *   dropped (u&0xfb) fast path with tpidrro_el0 marshalling, the retry loop,
+ *   the L4-error panic path and the level recursion).
  */
 unsigned long sk_vas_populate_level_inner(unsigned long vas, unsigned long va, unsigned long level,
         unsigned long size)
 {
-    unsigned long span, u, res, eb[4];
+    unsigned long u, u5, span, res, r, lv, mask, eb[4], stk[4];
+    unsigned long flags;
     unsigned char t;
-    unsigned int flags;
-    unsigned long lv;
+    cl4_result_t op;
+    unsigned long canary = -0x2c8502b44bfffed6;
 
     if (vas == *(unsigned long *)(sk_cpu_get(0x6af2b0, 4, 0xb) + 0xf8))
         sk_vas_abort(0x5b745c);
@@ -31688,19 +31714,73 @@ unsigned long sk_vas_populate_level_inner(unsigned long vas, unsigned long va, u
     if (t == 0) u = 2;
     else if (t == 2) u = 3;
     else {
-        lv = sk_vas_cfg();
+        if (t != 1) sk_vas_abort(0x5b6400);
+        lv = sk_vas_cfg();                               /* FUN_00041f8c */
         u = ((unsigned long)*(unsigned char *)(lv + 1) - 0xe) / 0xb;
         if (((unsigned long)*(unsigned char *)(lv + 1) - 0xe) % 0xb) u++;
     }
     if (level == u) sk_vas_abort(0x5b74b9);
-    span = sk_spanmap_lookup(vas, level, 0);
-    res = sk_spanmap_commit(vas, span);
+    mask = -1L << ((level * -3) + ((level + 1) * 0xe) & 0x3f);
+    span = sk_spanmap_lookup(vas, level, mask & va);     /* FUN_00042abc */
+    res = sk_spanmap_commit(vas, span);                  /* FUN_00042d04 */
     CallSupervisor(1);
     (void)res;
-    /* (condensed) walk regions, alloc page tables via span object method */
-    flags = sk_vas_pt_alloc_flags(vas, level);
-    (void)flags;
-    return 0;
+    u = span;
+    if (u != 5) {
+        if ((u & 0xfb) != 0) {
+            r = sk_x_004b3d54(u, stk);                   /* FUN_004b3d54 */
+            u = r;
+            t = *(char *)(r + 0x98);
+            if (t == 2) u = 4;
+            else {
+                if (t == 1) { u = sk_x_000555ac(u, mask & va, size); return u; }  /* FUN_000555ac */
+                if (t != 0) sk_vas_abort(0x5b6400);
+                { unsigned long *tp = sk_tpidrro();      /* tpidrro_el0 */
+                  *tp = mask & va; tp[1] = size; tp[2] = 0; tp[3] = 0;
+                  CallSupervisor(0);
+                  *tp = mask & va; }
+            }
+            return u;
+        }
+        u5 = sk_spanmap_lookup(vas, level + 1, mask & va);   /* FUN_00042abc */
+        while (1) {
+            flags = sk_vas_pt_alloc_flags(vas, level);       /* FUN_00042754 */
+            r = (*(unsigned long (**)(unsigned long, unsigned long, unsigned long,
+                                      unsigned long, unsigned long))
+                    **(unsigned long **)(vas + 0xb8))
+                    (*(unsigned long *)(vas + 0xb0), flags & 0xff, u, u,
+                     *(unsigned int *)(vas + 0xc0));
+            if (r != 0) {
+                /* L4 error: decorate + log, then abort (s_Unexpected_L4_Error__s__zu__err) */
+                sk_l4_err_string((unsigned long)eb, 0);      /* FUN_00042640 */
+                sk_x_004b3a58(0xeb1a02bf914012ba,
+                              (unsigned long)sk_vas_pt_alloc_flags(vas, level),
+                              (unsigned long)0x5b6571, 0x593, (unsigned long)0x5b7444,
+                              (unsigned long)0x5b7510, 0, 0, (unsigned long)eb, r >> 8,
+                              (unsigned long)0, u, *(unsigned int *)(vas + 0xc0), r);  /* FUN_004b3a58 */
+                sk_l4_err_string((unsigned long)eb, (unsigned char)r);  /* FUN_00042640 */
+                sk_vas_abort(0x5b010f);
+            }
+            op = sk_vas_span_map_op(vas, u5, u, mask & va);   /* FUN_00043b44 */
+            if ((op.lo & 0xff) != 4) goto lab_439ac;
+            if (*(char *)(vas + 0x98) != 1 || (*(unsigned int *)(vas + 0xc0) & 1) != 0) break;
+            *(unsigned int *)(vas + 0xc0) |= 1;
+            (*(void (**)(unsigned long, unsigned long))(*(long *)(vas + 0xb8) + 0x10))
+                (*(unsigned long *)(vas + 0xb0), u);
+        }
+        lv = sk_vas_populate_level_inner(vas, mask & va, level + 1, size);   /* recursion */
+        if (lv != 0) {
+            op = sk_vas_span_map_op(vas, lv, u, mask & va);
+lab_439ac:
+            if (op.lo == 0) goto lab_439c8;
+        }
+        (*(void (**)(unsigned long, unsigned long))(*(long *)(vas + 0xb8) + 0x10))
+            (*(unsigned long *)(vas + 0xb0), u);
+        u = 0;
+    }
+lab_439c8:
+    if (canary != -0x2c8502b44bfffed6) sk_boot_fatal();   /* FUN_0011d7e8 */
+    return u;
 }
 
 /*--------------------------------------------------------------------*/
@@ -32859,7 +32939,6 @@ void sk_tb_enc_rec(unsigned long s, unsigned long rec)
  * Confidence: high
  * Notes: TB_FATAL strings 0x5ba47e/0x5ba4bc; SoftwareBreakpoint 0x5519
  *   @ 0x46238 bounds guards; rec+0x29 via sk_msg_region_get8 (FUN_00018878). */
- */
 void sk_tb_dec_rec(unsigned long s, unsigned long rec)
 {
     unsigned long tag;
@@ -33570,51 +33649,74 @@ unsigned long sk_tb_rec_encode3(unsigned long obj, unsigned long rec)
  * Ghidra: undefined8 FUN_00049b48(long param_1,ulong param_2)
  * Encodes a chained TB record: writes the tag/kind, then recurses through the
  * method table to encode up to 3 nested record levels. Returns the L4 error.
- * Confidence: medium
+ * Confidence: medium (3-level recursion reconstructed; level-2/3 field access
+ * uses 16-byte struct-return spill bytes (_10_4_/_12_4_) beyond the register
+ * return — opaquely approximated).
  */
 unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg)
 {
-    unsigned long lv, out, w, u, k, r;
+    typedef struct { unsigned long lo, hi; } sk_tb_meta_t;
+    extern sk_tb_meta_t sk_x_004b53cc_meta(unsigned long);   /* FUN_004b53cc, 16-byte {desc,kind} */
+    unsigned long lv, lv2, out, w, u, u7, u11;
+    sk_tb_meta_t au, au2;
+    unsigned long *pu8;
 
+    /* ---- level 1 ---- */
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519,0x49c3c) */
     u = 4;
     if ((arg & 0xff) != 1) u = 0;
-    k = arg & 0xff;
     if ((arg & 0xff) == 0) u = 1;
     out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
     if ((int)out != 0) return out;
     w = *(unsigned long *)(lv + 0x28);
-    if (k == 1) {
-        u = arg >> 0x10;
+    if ((arg & 0xff) == 1) {
+        u11 = arg >> 0x10;
         sk_tb_tag(w, 1);
         sk_tb_put_len(w, 3);
-        if (((arg >> 0x10) - 1 & 0xff) < 6) {
-            sk_tb_put_u8(w, arg >> 0x10 & 0xff);
-            sk_tb_put_u16(w, arg >> 0x20 & 0xffff);
-        } else sk_tb_fatal(0x5ba47e);
-    } else {
-        if ((arg & 0xff) == 0) {
-            sk_tb_tag(w, 0);
-            *(unsigned char *)(lv + 0x20) = 1;
-            return out;
+        if (((int)(arg >> 0x10) - 1 & 0xff) < 6) {
+            sk_tb_put_u8(w, (arg >> 0x10) & 0xff);
+            sk_tb_put_u16(w, (arg >> 0x20) & 0xffff);
+            goto l1done;
         }
-        sk_tb_bad4();
+    } else {
+        if ((arg & 0xff) == 0) { sk_tb_tag(w, 0); goto l1done; }
+        sk_tb_bad4();   /* FUN_004b5624 */
     }
-    /* recurse through method table for the nested record (condensed) */
-    r = sk_tb_meta(u);
-    lv = *(unsigned long *)(*(unsigned long *)(r + 0x20) + 8);
-    if (sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0) == 0) {
-        w = *(unsigned long *)(lv + 0x28);
-        if ((r & 0xff) == 1) {
-            sk_tb_tag(w, 1);
-            sk_tb_put_len(w, 3);
-        } else if ((r & 0xff) == 0) {
-            sk_tb_tag(w, 0);
-            *(unsigned char *)(lv + 0x20) = 1;
-            return 0;
-        } else sk_tb_bad5();
+    /* ---- level 2 ---- */
+    au = sk_x_004b53cc_meta(u11);   /* FUN_004b53cc -> 16-byte {desc,kind} */
+    u7 = au.hi;
+    lv2 = *(unsigned long *)(*(unsigned long *)(au.lo + 0x20) + 8);
+    if (lv2 + 0x30 < lv2 + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519,0x49d3c) */
+    u = 4;
+    if (((unsigned int)au.hi & 0xff) != 1) u = 0;
+    if ((u7 & 0xff) == 0) u = 1;
+    out = sk_tb_encode_get(*(unsigned long *)(lv2 + 0x18), *(unsigned long *)(lv2 + 0x28), u, 0);
+    if ((int)out != 0) return out;
+    w = *(unsigned long *)(lv2 + 0x28);
+    if (((unsigned int)au.hi & 0xff) == 1) {
+        u11 = u7 >> 0x10;
+        sk_tb_tag(w, 1);
+        sk_tb_put_len(w, 3);
+        if (((((unsigned int)au.hi >> 0x10) & 0xffff) - 1) & 0xff) < 6) {
+            sk_tb_put_u8(w, ((unsigned int)au.hi >> 0x10) & 0xff);
+            sk_tb_put_u16(w, ((unsigned int)au.hi >> 0x20) & 0xffff);
+            goto l2done;
+        }
+    } else {
+        if ((u7 & 0xff) == 0) { sk_tb_tag(w, 0); goto l2done; }
+        sk_tb_bad5();   /* FUN_004b5654 */
     }
-    return 0;
+    /* ---- level 3: inlines FUN_00049d48 (sk_tb_rec_encode5) on the nested record ---- */
+    au2 = sk_x_004b53cc_meta(u11);   /* FUN_004b53cc */
+    pu8 = (unsigned long *)au2.hi;
+    return sk_tb_rec_encode5(au2.lo, (unsigned long)pu8);
+l2done:
+    *(unsigned char *)(lv2 + 0x20) = 1;
+    return out;
+l1done:
+    *(unsigned char *)(lv + 0x20) = 1;
+    return out;
 }
 
 /*--------------------------------------------------------------------*/
@@ -34694,36 +34796,198 @@ unsigned long sk_reloc_one(unsigned long in)
  */
 void sk_reloc_init(void)
 {
-    unsigned long img, span, u, i, n;
-    cl4_result_t r;
+    unsigned long *img;
+    unsigned long u, u16, u17, u18, u22, u25, u28, n, l26;
+    unsigned long local90[2], local80[2], au29[2];
+    unsigned long *p19, *p27, *pf;
+    unsigned short *pu19, *pu27;
+    long l23, it;
+    unsigned int i14, u15;
+    unsigned char b1, b2, b3, b4, b5, b6;
+    unsigned short u7, u8, u9, u10, u11, u12;
+    unsigned char au29b[16];
+    long canary;
 
-    if (sk_cfg_geo_c != 1) return;
-    img = sk_x_0005ba14();
-    u = sk_tb_ph_avail();
-    r = sk_tb_ph_range2();
-    while (img != 0) {
-        if (*(char *)(img + 8) < 0) {
-            /* walk TB placeholders and register ranges (condensed) */
-        }
-        img = *(unsigned long *)img;
-    }
-    n = sk_global_cfg();
-    u = *(unsigned long *)(n + 0x110);
-    if (u < *(unsigned long *)(n + 0x118)) {
-        do {
-            r.lo = sk_vm_obj_alloc();
-            i = (**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long))
-                    (r.lo + 0x38))(r.lo, u, 0, 0);
-            if (i == 0) {
-                sk_x_004b5d40(u);
-                r.lo = sk_vm_obj_alloc();
-                i = (**(unsigned long (**)(unsigned long,unsigned long))(r.lo + 0x58))(r.lo, 0x6af2c8);
-                if ((i & 0xff) == 0) { sk_init_done(0x64cc30); return; }
-                sk_vas_abort(0x5bb24f);
+    canary = 0;
+    if (*(volatile unsigned char *)0x6ad6e8 == 1) {      /* DAT_006ad6e8 */
+        img = (unsigned long *)sk_x_0005ba14();
+        u16 = sk_tb_ph_avail();
+        if (u16 != 0 && u16 + 8 < u16) goto trap;
+        local80[0] = sk_tb_ph_range2().lo;   /* FUN_0004ed84 */
+        local80[1] = sk_tb_ph_range2().hi;
+        for (; img != (unsigned long *)0; img = (unsigned long *)*img) {
+            if (*(char *)(img + 1) < 0) {
+                local90[0] = 0; local90[1] = 0;
+                sk_tb_ph_iter_init();        /* FUN_0004eb44 (state via regs) */
+                u17 = sk_tb_ph_iter_next((unsigned long)local90);
+                while (u17 != 0) {
+                    if (u17 + 0xc < u17) goto trap;
+                    u7 = *(unsigned short *)(u17 + 4);
+                    b1 = *(unsigned char *)(u17 + 7);
+                    b2 = *(unsigned char *)(u17 + 6);
+                    u9 = *(unsigned short *)(u17 + 8);
+                    b3 = *(unsigned char *)(u17 + 0xb);
+                    b4 = *(unsigned char *)(u17 + 10);
+                    i14 = sk_tb_ph_kind(u17);   /* FUN_0004e88c */
+                    if (i14 == 0x1b) {
+                        u25 = 0;
+                        while (1) {
+                            u18 = sk_tb_ph_count(u17);   /* FUN_0004e8b0 */
+                            u22 = *(unsigned long *)0x6af2e0;  /* _DAT_006af2e0 */
+                            if (u18 <= u25) break;
+                            if (0x13 < *(unsigned long *)0x6af2e0) {
+                                sk_x_004b5d28();
+                                u22 = *(unsigned long *)0x6af2e0;
+                                if (((unsigned long)0x64cb3f < (unsigned long)0x64cb40 + u22 &&
+                                     ((unsigned long)0x64cb48 + u22 < (unsigned long)0x64cb81)) &&
+                                    ((unsigned long)0x64cb40 + u22 <= (unsigned long)0x64cb48 + u22))
+                                    sk_vas_abort(0x5bb27e);
+                                goto trap;
+                            }
+                            pu19 = (unsigned short *)sk_tb_ph_resolve(u17, u25);  /* FUN_0004e7b8 */
+                            /* uVar20 = FUN_0004e774(local80, <ph val>) */
+                            (void)sk_tb_ph_addr_off((unsigned long)local80,
+                                (unsigned long)(unsigned char)pu19[0xd] << 0x10 |
+                                (unsigned long)*(unsigned char *)((long)pu19 + 0x1b) << 0x18 |
+                                (unsigned long)pu19[0xc] |
+                                (unsigned long)((unsigned int)(unsigned char)pu19[0xf] << 0x10 |
+                                    (unsigned int)*(unsigned char *)((long)pu19 + 0x1f) << 0x18 |
+                                    (unsigned int)pu19[0xe]) << 0x20);
+                            u18 = (unsigned long)(unsigned char)pu19[9] << 0x10 |
+                                  (unsigned long)*(unsigned char *)((long)pu19 + 0x13) << 0x18 |
+                                  (unsigned long)pu19[8] |
+                                  (unsigned long)((unsigned int)(unsigned char)pu19[0xb] << 0x10 |
+                                      (unsigned int)*(unsigned char *)((long)pu19 + 0x17) << 0x18 |
+                                      (unsigned int)pu19[10]) << 0x20;
+                            u8 = pu19[4];
+                            b5 = *(unsigned char *)((long)pu19 + 0xb);
+                            u11 = pu19[5];
+                            u10 = pu19[6];
+                            b6 = *(unsigned char *)((long)pu19 + 0xf);
+                            u12 = pu19[7];
+                            u28 = (unsigned long)(unsigned char)pu19[1] << 0x10 |
+                                  (unsigned long)*(unsigned char *)((long)pu19 + 3) << 0x18 |
+                                  (unsigned long)*pu19 |
+                                  (unsigned long)((unsigned int)(unsigned char)pu19[3] << 0x10 |
+                                      (unsigned int)*(unsigned char *)((long)pu19 + 7) << 0x18 |
+                                      (unsigned int)pu19[2]) << 0x20;
+                            l26 = u22 * 0x40;
+                            sk_x_00052248(u28, u18);
+                            *(unsigned long *)(l26 + 0x6af2e8) = u28;
+                            *(unsigned long *)(l26 + 0x6af2f0) =
+                                (unsigned long)(unsigned char)u11 << 0x10 |
+                                (unsigned long)b5 << 0x18 | (unsigned long)u8 |
+                                (unsigned long)((unsigned int)u12 << 0x10 |
+                                    (unsigned int)b6 << 0x18 | (unsigned int)u10) << 0x20;
+                            *(unsigned long *)(l26 + 0x6af2f8) = u18;
+                            *(unsigned long *)(l26 + 0x6af300) = 0;  /* uVar20 */
+                            *(char *)(l26 + 0x6af308) = (char)u22;
+                            *(unsigned long *)(l26 + 0x6af310) = sk_x_00052248(u28, u18);
+                            *(unsigned long *)(l26 + 0x6af318) = 0;
+                            *(unsigned long *)(l26 + 0x6af320) = 0;
+                            *(unsigned long *)0x6af2e0 = *(unsigned long *)0x6af2e0 + 1;
+                            au29[0] = sk_vas_init_map(u28, u18, 0x90808, 0x11).lo;
+                            au29[1] = sk_vas_init_map(u28, u18, 0x90808, 0x11).hi;
+                            u22 = sk_region_config(au29[0], au29[1], (unsigned long *)0x65bf58,
+                                                   (unsigned long)(l26 + 0x6af2e8));
+                            u22 = u22 & 0xff;
+                            if (u22 != 0) {
+                                if ((unsigned long)0x64cb3f < (unsigned long)0x64cb40 + u22 &&
+                                    ((unsigned long)0x64cb48 + u22 < (unsigned long)0x64cb81) &&
+                                    ((unsigned long)0x64cb40 + u22 <= (unsigned long)0x64cb48 + u22))
+                                    sk_vas_abort(0x5bb27e);
+                                goto trap;
+                            }
+                            *(unsigned long *)(l26 + 0x6af318) = au29[0];
+                            *(unsigned long *)(l26 + 0x6af320) = au29[1];
+                            u25 = u25 + 1;
+                            if (((unsigned long)b2 << 0x10 | (unsigned long)b1 << 0x18 |
+                                 (unsigned long)u7 |
+                                 (unsigned long)((unsigned int)b4 << 0x10 |
+                                     (unsigned int)b3 << 0x18 | (unsigned int)u9) << 0x20) <
+                                ((unsigned long)*(unsigned char *)(u17 + 6) << 0x10 |
+                                 (unsigned long)*(unsigned char *)(u17 + 7) << 0x18 |
+                                 (unsigned long)*(unsigned short *)(u17 + 4) |
+                                 (unsigned long)((unsigned int)*(unsigned char *)(u17 + 10) << 0x10 |
+                                     (unsigned int)*(unsigned char *)(u17 + 0xb) << 0x18 |
+                                     (unsigned int)*(unsigned short *)(u17 + 8)) << 0x20))
+                                goto trap;
+                        }
+                    }
+                    u17 = sk_tb_ph_iter_next((unsigned long)local90);
+                }
             }
-            u = *(unsigned long *)(n + 0x110);
-        } while (u < *(unsigned long *)(n + 0x118));
+        }
     }
+    l23 = (long)sk_boot_image_info();
+    l26 = *(long *)(l23 + 0x138);
+    if (l26 != 0) {
+        pu27 = *(unsigned short **)(l23 + 0x130);
+        l23 = l26 * 0x10;
+        pu19 = pu27;
+        do {
+            if ((pu27 + l23 < pu19 + 0x10 || pu19 + 0x10 < pu19) || pu19 < pu27) goto trap;
+            pf = (unsigned long *)
+                 ((((unsigned long)(unsigned char)pu19[1] << 0x10 |
+                    (unsigned long)*(unsigned char *)((long)pu19 + 3) << 0x18 |
+                    (unsigned long)*pu19) << 0xe) |
+                  ((unsigned long)*(unsigned int *)((long)pu19 + 4) << 0x2e));
+            u16 = ((unsigned long)(unsigned char)pu19[5] << 0x10 |
+                   (unsigned long)*(unsigned char *)((long)pu19 + 0xb) << 0x18 |
+                   (unsigned long)pu19[4]) << 0xe |
+                  ((unsigned long)*(unsigned int *)((long)pu19 + 0xc) << 0x2e);
+            au29[0] = sk_vas_init_map((unsigned long)pf, u16,
+                         (unsigned int)(unsigned char)pu19[9] << 0x10 |
+                         (unsigned int)*(unsigned char *)((long)pu19 + 0x13) << 0x18 |
+                         (unsigned int)pu19[8],
+                         (unsigned char)pu19[0xc]).lo;
+            au29[1] = sk_vas_init_map((unsigned long)pf, u16,
+                         (unsigned int)(unsigned char)pu19[9] << 0x10 |
+                         (unsigned int)*(unsigned char *)((long)pu19 + 0x13) << 0x18 |
+                         (unsigned int)pu19[8],
+                         (unsigned char)pu19[0xc]).hi;
+            if ((unsigned long)pf <= 0xfffffffffffffff0 &&
+                0xfffffffffffffff0 < (unsigned long)pf + u16) {
+                sk_x_00061614(sk_cpu_boot_info(), au29[0], au29[1],
+                              (unsigned long)pf, u16);
+            }
+            pu19 = pu19 + 0x10;
+            l26 = l26 - 1;
+        } while (l26 != 0);
+    }
+    l26 = (long)sk_boot_image_info();
+    u16 = *(unsigned long *)(l26 + 0x110);
+    if (u16 < *(unsigned long *)(l26 + 0x118)) {
+        do {
+            local90[0] = local90[0] & 0xffffffff00000000;
+            local80[1] = 0; local80[0] = 0;
+            au29[0] = 0; au29[1] = 0;
+            it = 0;
+            au29[0] = (unsigned long)sk_boot_object();
+            l23 = (**(long (**)(unsigned long, unsigned long, unsigned long, unsigned long))
+                     (*(unsigned long *)(au29[0] + 8) + 0x38))
+                     (*(unsigned long *)au29[0], u16, local90[0], local80[0]);
+            if (l23 == 0) {
+                sk_x_004b5d40(u16);
+                au29[0] = (unsigned long)sk_boot_object();
+                u16 = (**(unsigned long (**)(unsigned long, unsigned long))
+                         (*(unsigned long *)(au29[0] + 8) + 0x58))
+                         (*(unsigned long *)au29[0], 0x6af2c8);
+                u16 = u16 & 0xff;
+                if (u16 == 0) { sk_init_done(0x64cc30); return; }
+                if ((unsigned long)0x64cb40 <= (unsigned long)0x64cb40 + u16 &&
+                    (unsigned long)0x64cb48 + u16 <= (unsigned long)0x64cb80 &&
+                    (unsigned long)0x64cb40 + u16 <= (unsigned long)0x64cb48 + u16)
+                    sk_vas_abort(0x5bb24f);
+                goto trap;
+            }
+            u16 = it + local80[1];
+        } while (u16 < *(unsigned long *)(l26 + 0x118));
+    }
+    return;
+trap:
+    sk_break(0x5519, 0x4d8e4);
+    __builtin_unreachable();
 }
 
 /*--------------------------------------------------------------------*/
@@ -36793,7 +37057,7 @@ long sk_ipc_send2(uint64_t arg1,unsigned long arg2)
 /* FUN_00050838 @ 0x50838   (est. sk_ipc_fault)
  * Ghidra: undefined8 FUN_00050838(long *arg1,undefined8 *arg2,ulong *arg3)
  * sk_ipc_fault: cL4 sk ipc fault operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -37792,7 +38056,7 @@ unsigned long sk_macho_vmrange(long arg1)
 /* FUN_00051dc0 @ 0x51dc0   (est. sk_macho_vmrange2)
  * Ghidra: ulong FUN_00051dc0(long arg1)
  * sk_macho_vmrange2: cL4 sk macho vmrange2 operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -38060,7 +38324,7 @@ LAB_00052074:
 /* FUN_000520f0 @ 0x520f0   (est. sk_macho_bind)
  * Ghidra: long FUN_000520f0(ulong arg1,long *arg2,long arg3,long arg4,long arg5)
  * sk_macho_bind: cL4 sk macho bind operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -40554,9 +40818,10 @@ uintptr_t sk_global_ensure(void)
 /* FUN_000549c0 @ 0x549c0   (est. sk_cnode_walk)
  * Ghidra: void FUN_000549c0(ulong arg1,long arg2)
  * sk_cnode_walk: cL4 sk cnode walk operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
- *   Ghidra identifiers renamed to English in body.
+ *   Ghidra identifiers renamed to English in body; sk_cnode_map is invoked
+ *   with a benign trailing 0 arg (decompiler drops the 6th arg).
  */
 
 void sk_cnode_walk(unsigned long arg1,long arg2)
@@ -46054,7 +46319,7 @@ void sk_kernel_set_70(uint64_t arg1,uint64_t arg2)
 /* FUN_0005be84 @ 0x5be84   (est. sk_waitq_enqueue)
  * Ghidra: void FUN_0005be84(ulong *arg1,int arg2)
  * sk_waitq_enqueue: cL4 sk waitq enqueue operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -46093,7 +46358,9 @@ void sk_waitq_enqueue(unsigned long *arg1,int arg2)
 /* FUN_0005bf20 @ 0x5bf20   (est. sk_waitq_dequeue)
  * Ghidra: void FUN_0005bf20(ulong *arg1)
  * sk_waitq_dequeue: cL4 sk waitq dequeue operation.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; waitq dequeue: preempt
+ *   disable loop, 0x2f/0x178 bounds, 0x25-tag walk, 0xfff000.. merge, traps
+ *   0x5c0ac, enable+tlb flush, hook sk_global_107)
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -47801,7 +48068,7 @@ uint64_t sk_ipc_retrieve(void)
 /* FUN_0005d7c8 @ 0x5d7c8   (est. sk_msg_push)
  * Ghidra: void FUN_0005d7c8(long *arg1)
  * sk_msg_push: cL4 sk msg push operation.
- * Confidence: medium
+ * Confidence: high (verified 2026-08-12 against fresh decompile).
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
