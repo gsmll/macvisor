@@ -27993,6 +27993,8 @@ extern unsigned long sk_err_codes;     /* DAT_0064cb40 */
 extern unsigned long sk_err_codes2;    /* DAT_0064cb80 */
 
 /* arm64e trap helpers (compiled in). */
+#undef SoftwareBreakpoint
+#undef CallSupervisor
 extern void SoftwareBreakpoint(unsigned short kind, ...);
 extern void CallSupervisor(unsigned long sel);
 

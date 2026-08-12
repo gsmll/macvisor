@@ -41,11 +41,28 @@ typedef struct sk_parser {
 
 typedef uint8_t byte;
 
+void sk_noop(void);
+
 /* Shared globals referenced by this slice (decompiler _DAT symbols). */
 extern word_t _DAT_005a18a0, _DAT_005a18a8, _DAT_005a1870, _DAT_005a1878;
 extern word_t _DAT_005a1890, _DAT_005a1898, _DAT_004c2450, _DAT_004c2458;
 extern word_t _DAT_00594e41, _DAT_004c554e, _DAT_00504355, _DAT_005a35c0, _DAT_005a35f8;
 extern word_t _DAT_005a1880, _DAT_005a1888;
+extern word_t DAT_004be900, DAT_004e824c;
+extern word_t DAT_00657778, DAT_00657788, DAT_004c05b0, DAT_004baeb0, DAT_004baeb8;
+extern word_t DAT_006577e0;
+extern word_t DAT_005a19a0, DAT_0064e7d8, DAT_005a35c8;
+extern word_t thunk_FUN_0036b270(word_t);
+extern sk_pair_t thunk_FUN_002acbb8();
+extern sk_pair_t FUN_001bc440();
+extern sk_pair_t FUN_0044bdc8();
+extern sk_pair_t FUN_00463f94();
+extern sk_pair_t FUN_00464140();
+extern sk_pair_t FUN_00463e04();
+extern word_t (*DAT_00658cf0)(word_t);      /* token format vtable */
+extern sk_pair_t thunk_FUN_002b74c0();
+extern word_t   thunk_FUN_0024d9ac(word_t);
+extern word_t   thunk_FUN_0045027c();
 
 #define CL4_FATAL() __builtin_trap()   /* SoftwareBreakpoint(1,<addr>) path */
 
@@ -176,16 +193,14 @@ extern void   FUN_003510b8(void);              /* parser advance */
 extern sk_pair_t FUN_002b3b50(void);           /* pair advance */
 extern void   FUN_003504ac(void);              /* parser settle */
 extern void   FUN_00462b54(void);              /* vector enter */
-extern void   FUN_004578dc(word_t, word_t);    /* vector grow+cb */
 extern void   FUN_003505e8(void);              /* vector step */
-extern void   FUN_003511cc(void);              /* vector step */
-extern void   FUN_00457994(word_t, ...);       /* vector settle */
+extern word_t FUN_003511cc();              /* vector step */
 extern void   FUN_0046418c(void);              /* vec store */
 extern void   FUN_00465160(word_t);             /* vec store */
 extern void   FUN_003508fc(void);              /* parse apply */
 extern void   FUN_0042fe0c(void);              /* parse helper */
 extern void   FUN_00352840(word_t);            /* parse helper */
-extern void   FUN_002a3e64(void);              /* scan helper */
+extern word_t FUN_002a3e64();              /* scan helper */
 extern void   FUN_00351a50(void);              /* consume helper */
 extern void   FUN_00462974(word_t);            /* buf discard */
 extern word_t FUN_00466468();   /* was word_t(void) */
@@ -197,23 +212,23 @@ extern void   FUN_003514e8(void);              /* parse reject */
 extern void   FUN_00351d18(void);              /* parse finalise */
 extern void   FUN_004628f4(void);              /* token apply */
 extern void   FUN_0046389c(void);              /* trace */
-extern void   FUN_0046589c(void);              /* trace */
+extern sk_pair_t FUN_0046589c();              /* trace */
 extern void   FUN_00464d74(word_t);            /* vec count bump */
 extern word_t FUN_00462ba8();   /* was word_t(void) */
-extern void   FUN_00350878(word_t);            /* settle */
+extern word_t FUN_00350878();            /* settle */
 extern void   FUN_00464ae8(word_t);            /* frame leave */
 extern void   FUN_00463648(void);              /* record enter */
 extern sk_pair_t FUN_00463444(word_t *);       /* record pair */
-extern void   FUN_0042f584(word_t, word_t, word_t, word_t); /* state push */
+extern word_t FUN_0042f584();  /* state push */
 extern void   FUN_00351b38(word_t);            /* parse token */
 extern void   FUN_000abad0(void);              /* parse helper */
 extern void   FUN_00350b3c(void);              /* parse advance */
 extern sk_pair_t FUN_00350af4(void);           /* pair advance */
 extern void   FUN_00462a5c(void);              /* token consume */
 extern void   FUN_004655a8(void);              /* frame helper */
-extern void   FUN_00463014(word_t);            /* unknown-group printf */
+extern word_t FUN_00463014();            /* unknown-group printf */
 extern void   FUN_00463290(void);              /* obj probe */
-extern void   FUN_00461cb8(word_t *);          /* obj store */
+extern word_t FUN_00461cb8();          /* obj store */
 extern void   FUN_00461a10(word_t *);          /* result classify */
 extern void   FUN_00459024(word_t *, word_t *);/* elem fetch */
 extern void   FUN_0045904c(word_t *);          /* elem store */
@@ -233,9 +248,7 @@ extern void   FUN_00461a9c(word_t *);          /* record end */
 extern void   FUN_00463970(void);              /* elem check */
 extern void   FUN_0046527c(void);              /* elem check */
 extern void   FUN_00462f5c(void);              /* elem guard */
-extern void   FUN_00463f74(void);              /* elem guard */
 extern void   FUN_00462b2c(void);              /* elem guard */
-extern void   FUN_00463f74(void);              /* elem guard */
 extern void   FUN_00461a60(word_t *);          /* result empty */
 extern void   FUN_00461a38(word_t *);          /* result merge */
 extern void   FUN_00461a24(word_t *);          /* result copy */
@@ -287,15 +300,15 @@ extern sk_pair_t thunk_pair(void);             /* thunk_FUN_002b74c0 */
 extern sk_pair_t FUN_00465920(void);           /* pair fetch */
 extern sk_pair_t FUN_00437d54(void);           /* pair fetch */
 extern word_t   FUN_0045636c();                /* vec grow (unspecified) */
-extern void     FUN_00350a04(void);            /* parse enter */
+extern sk_pair_t FUN_00350a04();            /* parse enter */
 extern void     FUN_00464b20(word_t *);        /* frame init */
 extern void     FUN_00462710(word_t);          /* buf discard */
-extern void     FUN_0006b3f4(void);            /* vec state op */
-extern void     FUN_0008e500(void);            /* exit */
-extern void     FUN_0008e518(void);            /* entry */
+extern word_t   FUN_0006b3f4();                 /* vec state op */
+extern word_t   FUN_0008e500();                 /* exit */
+extern sk_pair_t FUN_0008e518();
 extern word_t FUN_0015e4f8();   /* was word_t() */
 extern sk_pair_t FUN_004339a8(void);           /* state build pair */
-extern void   FUN_000dbed0(void);              /* vec grow */
+extern word_t FUN_000dbed0();              /* vec grow */
 
 /* Shared in-slice mutators (defined below / cross-referenced). */
 extern void   sk_parse_begin(void);            /* FUN_00462d0c */
@@ -326,7 +339,7 @@ extern word_t FUN_0007c1c4();   /* was word_t() */
 extern word_t FUN_0008409c();   /* was word_t() */
 extern word_t FUN_00084174();   /* was word_t() */
 extern word_t FUN_00084180();   /* was word_t() */
-extern word_t FUN_00084220();   /* was word_t() */
+extern sk_pair_t FUN_00084220();   /* was word_t() */
 extern word_t FUN_00084234();   /* was word_t() */
 extern word_t FUN_0009461c();   /* was word_t() */
 extern word_t FUN_0009e218();   /* was word_t() */
@@ -360,7 +373,7 @@ extern word_t FUN_001a8564();   /* was word_t() */
 extern word_t FUN_001ae8a8();   /* was word_t() */
 extern word_t FUN_001b1780();   /* was word_t() */
 extern word_t FUN_001b9084();   /* was word_t() */
-extern word_t FUN_001bc440();   /* was word_t() */
+extern sk_pair_t FUN_001bc440();   /* was word_t() */
 extern word_t FUN_001ee018();   /* was word_t() */
 extern word_t FUN_00205844();   /* was word_t() */
 extern word_t FUN_002298d4();   /* was word_t() */
@@ -368,8 +381,8 @@ extern word_t FUN_0022d2f4();   /* was word_t() */
 extern word_t FUN_0024917c();   /* was word_t() */
 extern word_t FUN_0024d9ac();   /* was word_t() */
 extern word_t FUN_002a4ab4();   /* was word_t() */
-extern word_t FUN_002aca00();   /* was word_t() */
-extern word_t FUN_002acbb8();   /* was word_t() */
+extern sk_pair_t FUN_002aca00();   /* was word_t() */
+extern sk_pair_t FUN_002acbb8();   /* was word_t() */
 extern word_t FUN_002b74c0();   /* was word_t() */
 extern word_t FUN_002bc2dc();   /* was word_t() */
 extern word_t FUN_002bd724();   /* was word_t() */
@@ -421,7 +434,7 @@ extern word_t FUN_00351238();   /* was word_t() */
 extern word_t FUN_00351274();   /* was word_t() */
 extern word_t FUN_00351354();   /* was word_t() */
 extern word_t FUN_003516d8();   /* was word_t() */
-extern word_t FUN_00351714();   /* was word_t() */
+extern sk_pair_t FUN_00351714();
 extern word_t FUN_003517c0();   /* was word_t() */
 extern word_t FUN_0035187c();   /* was word_t() */
 extern word_t FUN_0035199c();   /* was word_t() */
@@ -447,25 +460,25 @@ extern word_t FUN_00356c6c();   /* was word_t() */
 extern word_t FUN_00359018();   /* was word_t() */
 extern word_t FUN_0035aba4();   /* was word_t() */
 extern word_t FUN_00365b6c();   /* was word_t() */
-extern word_t FUN_0036993c();   /* was word_t() */
+extern sk_pair_t FUN_0036993c();   /* was word_t() */
 extern word_t FUN_0036b340();   /* was word_t() */
 extern word_t FUN_00377824();   /* was word_t() */
 extern word_t FUN_00377bec();   /* was word_t() */
 extern word_t FUN_003a25e0();   /* was word_t() */
-extern word_t FUN_003f8224();   /* was word_t() */
+extern sk_pair_t FUN_003f8224();   /* was word_t() */
 extern word_t FUN_004080b0();   /* was word_t() */
 extern word_t FUN_0040feac();   /* was word_t() */
 extern word_t FUN_0040ff40();   /* was word_t() */
 extern word_t FUN_004107e4();   /* was word_t() */
 extern word_t FUN_004108a0();   /* was word_t() */
-extern word_t FUN_00411a54();   /* was word_t() */
+extern sk_pair_t FUN_00411a54();   /* was word_t() */
 extern word_t FUN_00411bbc();   /* was word_t() */
 extern word_t FUN_00411bfc();   /* was word_t() */
 extern word_t FUN_00411c8c();   /* was word_t() */
 extern word_t FUN_00411cc4();   /* was word_t() */
 extern word_t FUN_00412694();   /* was word_t() */
 extern word_t FUN_00412d5c();   /* was word_t() */
-extern word_t FUN_00413b68();   /* was word_t() */
+extern sk_pair_t FUN_0044c918();   /* was word_t() */
 extern word_t FUN_00414644();   /* was word_t() */
 extern word_t FUN_0041465c();   /* was word_t() */
 extern word_t FUN_004176ec();   /* was word_t() */
@@ -477,13 +490,13 @@ extern word_t FUN_0041c1d8();   /* was word_t() */
 extern word_t FUN_0041ca38();   /* was word_t() */
 extern word_t FUN_00429430();   /* was word_t() */
 extern word_t FUN_00429984();   /* was word_t() */
-extern word_t FUN_0042c060();   /* was word_t() */
+extern sk_pair_t FUN_0042c060(); /* was word_t() */
 extern word_t FUN_0042c11c();   /* was word_t() */
 extern word_t FUN_0042c5a4();   /* was word_t() */
 extern word_t FUN_0042dc90();   /* was word_t() */
 extern word_t FUN_0042e930();   /* was word_t() */
 extern word_t FUN_0042ed6c();   /* was word_t() */
-extern word_t FUN_0042f020();   /* was word_t() */
+extern sk_pair_t FUN_0042f020();   /* was word_t() */
 extern word_t FUN_0042f1f0();   /* was word_t() */
 extern word_t FUN_0042f514();   /* was word_t() */
 extern word_t FUN_0042ffac();   /* was word_t() */
@@ -496,11 +509,12 @@ extern word_t FUN_004327c4();   /* was word_t() */
 extern word_t FUN_00432c48();   /* was word_t() */
 extern word_t FUN_00432ed4();   /* was word_t() */
 extern word_t FUN_00433938();   /* was word_t() */
-extern word_t FUN_00434054();   /* was word_t() */
+extern sk_pair_t FUN_0042fc4c();
 extern word_t FUN_004340b0();   /* was word_t() */
 extern word_t FUN_004345a4();   /* was word_t() */
 extern word_t FUN_00434af4();   /* was word_t() */
-extern word_t FUN_00435110();   /* was word_t() */
+extern sk_pair_t FUN_00434054();
+extern sk_pair_t FUN_00435110();
 extern word_t FUN_004372d4();   /* was word_t() */
 extern word_t FUN_004379bc();   /* was word_t() */
 extern word_t FUN_00438328();   /* was word_t() */
@@ -542,7 +556,7 @@ extern word_t FUN_00445588();   /* was word_t() */
 extern word_t FUN_004455f8();   /* was word_t() */
 extern word_t FUN_00445724();   /* was word_t() */
 extern word_t FUN_0044587c();   /* was word_t() */
-extern word_t FUN_004458b0();   /* was word_t() */
+extern sk_pair_t FUN_004458b0();   /* was word_t() */
 extern word_t FUN_00445e64();   /* was word_t() */
 extern word_t FUN_00445eec();   /* was word_t() */
 extern word_t FUN_00446028();   /* was word_t() */
@@ -613,7 +627,10 @@ extern word_t FUN_0044bac4();   /* was word_t() */
 extern word_t FUN_0044bcdc();   /* was word_t() */
 extern word_t FUN_0044bd08();   /* was word_t() */
 extern word_t FUN_0044bd44();   /* was word_t() */
-extern word_t FUN_0044bdc8();   /* was word_t() */
+extern sk_pair_t FUN_0044bdc8();
+extern sk_pair_t FUN_00463f94();
+extern sk_pair_t FUN_00464140();
+extern sk_pair_t FUN_00463e04();   /* was word_t() */
 extern word_t FUN_0044be8c();   /* was word_t() */
 extern word_t FUN_0044bec4();   /* was word_t() */
 extern word_t FUN_0044bfc0();   /* was word_t() */
@@ -625,11 +642,11 @@ extern word_t FUN_0044c4d4();   /* was word_t() */
 extern word_t FUN_0044c50c();   /* was word_t() */
 extern word_t FUN_0044c5d8();   /* was word_t() */
 extern word_t FUN_0044c8e8();   /* was word_t() */
-extern word_t FUN_0044c918();   /* was word_t() */
+extern sk_pair_t FUN_0046589c();   /* was word_t() */
 extern word_t FUN_0044c9c4();   /* was word_t() */
 extern word_t FUN_0044ca08();   /* was word_t() */
 extern word_t FUN_0044ca2c();   /* was word_t() */
-extern word_t FUN_0044e55c();   /* was word_t() */
+extern sk_pair_t FUN_0044e55c();   /* was word_t() */
 extern word_t FUN_0045027c();   /* was word_t() */
 extern word_t FUN_00455d8c();   /* was word_t() */
 extern word_t FUN_00455fe4();   /* was word_t() */
@@ -701,14 +718,11 @@ extern word_t FUN_0046295c();   /* was word_t() */
 extern word_t FUN_004629b4();   /* was word_t() */
 extern word_t FUN_004629cc();   /* was word_t() */
 extern word_t FUN_004629e0();   /* was word_t() */
-extern word_t FUN_00462a1c();   /* was word_t() */
 extern word_t FUN_00462a34();   /* was word_t() */
 extern word_t FUN_00462a84();   /* was word_t() */
 extern word_t FUN_00462a98();   /* was word_t() */
 extern word_t FUN_00462abc();   /* was word_t() */
 extern word_t FUN_00462b40();   /* was word_t() */
-extern word_t FUN_00462b6c();   /* was word_t() */
-extern word_t FUN_00462c04();   /* was word_t() */
 extern word_t FUN_00462cb0();   /* was word_t() */
 extern word_t FUN_00462cd4();   /* was word_t() */
 extern word_t FUN_00462e9c();   /* was word_t() */
@@ -720,16 +734,16 @@ extern word_t FUN_00462fd4();   /* was word_t() */
 extern word_t FUN_004630b0();   /* was word_t() */
 extern word_t FUN_004630c4();   /* was word_t() */
 extern word_t FUN_00463144();   /* was word_t() */
-extern word_t FUN_00463194();   /* was word_t() */
+extern sk_pair_t FUN_00463194();
 extern word_t FUN_004631a8();   /* was word_t() */
 extern word_t FUN_004631fc();   /* was word_t() */
 extern word_t FUN_00463210();   /* was word_t() */
 extern word_t FUN_00463268();   /* was word_t() */
 extern word_t FUN_004632a4();   /* was word_t() */
-extern word_t FUN_004632e0();   /* was word_t() */
+extern sk_pair_t FUN_004632e0();   /* was word_t() */
 extern word_t FUN_004632f4();   /* was word_t() */
 extern word_t FUN_004633e0();   /* was word_t() */
-extern word_t FUN_004634d4();   /* was word_t() */
+extern sk_pair_t FUN_004634d4();   /* was word_t() */
 extern word_t FUN_00463520();   /* was word_t() */
 extern word_t FUN_004635a4();   /* was word_t() */
 extern word_t FUN_004635d4();   /* was word_t() */
@@ -749,7 +763,6 @@ extern word_t FUN_00463824();   /* was word_t() */
 extern word_t FUN_00463830();   /* was word_t() */
 extern word_t FUN_00463844();   /* was word_t() */
 extern word_t FUN_00463864();   /* was word_t() */
-extern word_t FUN_00463890();   /* was word_t() */
 extern word_t FUN_004638a8();   /* was word_t() */
 extern word_t FUN_004638c0();   /* was word_t() */
 extern word_t FUN_0046397c();   /* was word_t() */
@@ -766,9 +779,9 @@ extern word_t FUN_00463cc8();   /* was word_t() */
 extern word_t FUN_00463dd4();   /* was word_t() */
 extern word_t FUN_00463de0();   /* was word_t() */
 extern word_t FUN_00463df8();   /* was word_t() */
-extern word_t FUN_00463e04();   /* was word_t() */
+extern sk_pair_t FUN_00413b68();   /* was word_t() */
 extern word_t FUN_00463f64();   /* was word_t() */
-extern word_t FUN_00463f94();   /* was word_t() */
+extern sk_pair_t FUN_00463f94();
 extern word_t FUN_00463fb8();   /* was word_t() */
 extern word_t FUN_00463fd0();   /* was word_t() */
 extern word_t FUN_00463fe8();   /* was word_t() */
@@ -777,7 +790,7 @@ extern word_t FUN_00464040();   /* was word_t() */
 extern word_t FUN_004640a4();   /* was word_t() */
 extern word_t FUN_004640f0();   /* was word_t() */
 extern word_t FUN_00464134();   /* was word_t() */
-extern word_t FUN_00464140();   /* was word_t() */
+extern sk_pair_t FUN_003512c0();
 extern word_t FUN_0046414c();   /* was word_t() */
 extern word_t FUN_00464234();   /* was word_t() */
 extern word_t FUN_00464248();   /* was word_t() */
@@ -857,7 +870,7 @@ extern word_t FUN_00465680();   /* was word_t() */
 extern word_t FUN_004656bc();   /* was word_t() */
 extern word_t FUN_004656f8();   /* was word_t() */
 extern word_t FUN_00465764();   /* was word_t() */
-extern word_t FUN_00465788();   /* was word_t() */
+extern sk_pair_t FUN_00465788();
 extern word_t FUN_004657ac();   /* was word_t() */
 extern word_t FUN_004657b8();   /* was word_t() */
 extern word_t FUN_00465800();   /* was word_t() */
@@ -965,7 +978,6 @@ extern sk_pair_t FUN_004339a8();
 extern sk_pair_t FUN_00437d54();
 extern word_t FUN_0043a300();   /* was word_t() */
 extern word_t FUN_00462ba8();   /* was word_t() */
-extern word_t FUN_00462d88();   /* was word_t() */
 extern word_t FUN_00462f6c();   /* was word_t() */
 extern word_t FUN_00462fd4c();
 extern word_t FUN_0046322c();   /* was word_t() */
@@ -980,21 +992,21 @@ extern void   FUN_00002834();
 extern void   FUN_00002850();
 extern void   FUN_000a6f68();
 extern void   FUN_000abad0();
-extern void   FUN_000dbed0();
+extern word_t FUN_000dbed0();
 extern word_t FUN_0015e4f8();   /* was word_t() */
-extern void   FUN_002a3e64();
+extern word_t FUN_002a3e64();
 extern void   FUN_003504ac();
 extern void   FUN_00350518();
 extern void   FUN_003505e8();
-extern void   FUN_00350878();
+extern word_t FUN_00350878();
 extern void   FUN_003508fc();
-extern void   FUN_00350a04();
+extern sk_pair_t FUN_00350a04();
 extern void   FUN_00350b3c();
 extern void   FUN_00350bfc();
 extern void   FUN_003510b8();
 extern void   FUN_003511a8();
-extern void   FUN_003511cc();
-extern void   FUN_003512c0();
+extern word_t FUN_003511cc();
+extern sk_pair_t FUN_003512c0();
 extern void   FUN_003514e8();
 extern void   FUN_00351744();
 extern void   FUN_00351790();
@@ -1021,9 +1033,9 @@ extern void   FUN_0036b588();
 extern void   FUN_0036b6ac();
 extern void   FUN_0041653c();
 extern void   FUN_0042ec68();
-extern void   FUN_0042f584();
-extern void   FUN_0042fc4c();
-extern void   FUN_0042fd4c();
+extern word_t FUN_0042f584();
+extern sk_pair_t FUN_0042fc4c();
+extern word_t FUN_0042fd4c();
 extern void   FUN_0042fe0c();
 extern void   FUN_0042ffec();
 extern void   FUN_00430040();
@@ -1032,7 +1044,6 @@ extern void   FUN_00435ecc();
 extern void   FUN_004368c0();
 extern void   FUN_00437eec();
 extern void   FUN_00455db8();
-extern void   FUN_004578dc();
 extern void   FUN_00458bc4();
 extern void   FUN_00458c50();
 extern void   FUN_00458c60();
@@ -1053,7 +1064,7 @@ extern void   FUN_00461aa8();
 extern void   FUN_00461ab0();
 extern void   FUN_00461ac4();
 extern void   FUN_00461ad8();
-extern void   FUN_00461cb8();
+extern word_t FUN_00461cb8();
 extern void   FUN_00462710();
 extern void   FUN_00462788();
 extern void   FUN_004627f4();
@@ -1069,7 +1080,6 @@ extern void   FUN_00462a5c();
 extern void   FUN_00462aac();
 extern void   FUN_00462adc();
 extern void   FUN_00462af0();
-extern void   FUN_00462b00();
 extern void   FUN_00462b2c();
 extern void   FUN_00462b54();
 extern void   FUN_00462b80();
@@ -1082,7 +1092,7 @@ extern void   FUN_00462f24();
 extern void   FUN_00462f3c();
 extern void   FUN_00462f5c();
 extern void   FUN_00462f890();
-extern void   FUN_00463014();
+extern word_t FUN_00463014();
 extern void   FUN_00463290();
 extern void   FUN_004634f4();
 extern void   FUN_00463514();
@@ -1101,7 +1111,6 @@ extern void   FUN_00463bc8();
 extern void   FUN_00463c0c();
 extern void   FUN_00463dbc();
 extern void   FUN_00463f4c();
-extern void   FUN_00463f74();
 extern void   FUN_00463fac();
 extern void   FUN_00464000();
 extern void   FUN_004640c4();
@@ -1132,11 +1141,21 @@ extern void   FUN_00465540();
 extern void   FUN_004655a8();
 extern void   FUN_004657d0();
 extern void   FUN_00465890();
-extern void   FUN_0046589c();
+extern sk_pair_t FUN_0046589c();
 extern void   FUN_004659bc();
 extern void   FUN_00465d48();
 extern void   FUN_00465da4();
 extern void   FUN_00465ddc();
+
+extern word_t FUN_004578dc();
+extern word_t FUN_00457994();
+extern word_t FUN_00462a1c();
+extern word_t FUN_00462b00();
+extern word_t FUN_00462b6c();
+extern word_t FUN_00462c04();
+extern word_t FUN_00462d88();
+extern word_t FUN_00463890();
+extern word_t FUN_00463f74();
 
 /* ================================================================== *
  * Slice 194 functions
@@ -1994,4 +2013,4027 @@ emit2:
     out[4] = 0;
     out[5] = r5;
     FUN_0008e500();
+}
+
+
+/* FUN_0043f4ec @ 0x43f4ec  (est. sk_collect_selector_groups)
+ * Repeatedly classify a selector via sk_parse_group_selector and append
+ * each 6-word result (0x30-byte stride) into the growable vector at
+ * `vec`, growing when the count reaches capacity. Stops when the
+ * selector reports the terminal marker (mode>>1 == 0xffffffff). If no
+ * entry was collected the vector is released and nulled.
+ * Confidence: medium
+ * Notes: element stride 0x30; FUN_000b45b0 closes the collection */
+word_t sk_collect_selector_groups(word_t vec, word_t thisp, word_t flags)
+{
+    word_t entry = FUN_000b4594();
+    word_t sel[6];
+    FUN_000a6fe0();
+    while (1) {
+        sk_parse_group_selector(sel, (word_t *)thisp, flags);
+        if (sel[1] >> 1 == 0xffffffff) break;
+        if ((FUN_003a261c(vec) & 1) == 0) {
+            FUN_0006b3f4(*(word_t *)(vec + 0x10));
+            vec = FUN_0045636c();
+        }
+        word_t n = *(word_t *)(vec + 0x10);
+        if (*(word_t *)(vec + 0x18) >> 1 <= n) {
+            FUN_0006b42c();
+            FUN_000dbc98();
+            vec = FUN_0045636c();
+        }
+        *(word_t *)(vec + 0x10) = n + 1;
+        word_t base = vec + n * 0x30;
+        *(word_t *)(base + 0x20) = sel[0];
+        *(word_t *)(base + 0x28) = sel[1];
+        *(word_t *)(base + 0x38) = sel[3];
+        *(word_t *)(base + 0x30) = sel[2];
+        *(word_t *)(base + 0x48) = sel[5];
+        *(word_t *)(base + 0x40) = sel[4];
+    }
+    if (*(long *)(vec + 0x10) == 0) {
+        FUN_0036b118(vec);
+        vec = 0;
+    }
+    FUN_000b45b0(vec, entry);
+    return vec;
+}
+
+/* FUN_0044b35c @ 0x44b35c  (est. sk_callout_format)
+ * Format an Oniguruma-style callout diagnostic (string
+ * s_oniguruma_callout_of_contents___005dd7a0) into a 16-byte pair
+ * returned by value. Emits the contents string, an optional '[' class
+ * suffix from thisp+0x50 when the flag at +0x58 is set, and the
+ * callout type byte from +0x80.
+ * Confidence: low
+ * Notes: error kind 0xd00000000000001f; '[' token 0x5b; helpers
+ * FUN_00463fe8/FUN_00463df8/FUN_00462728/FUN_00205844 */
+sk_pair_t sk_callout_format(word_t thisp)
+{
+    word_t lo = 0, hi = 0xe000000000000000ull;
+    FUN_002a4ab4(0x22);
+    FUN_003a25d4(hi);
+    lo = 0xd00000000000001full;
+    hi = FUN_00086840();
+    FUN_002acbb8(*(word_t *)(thisp + 0x10), *(word_t *)(thisp + 0x18));
+    FUN_00463878();
+    FUN_002acbb8();
+    if (*(long *)(thisp + 0x58) != 0) {
+        word_t c = 0x5b, ct = 0xe100000000000000ull;
+        FUN_002acbb8(*(word_t *)(thisp + 0x50));
+        FUN_004640c4();
+        FUN_002acbb8();
+        FUN_002acbb8(c, ct);
+        FUN_003a25d4(ct);
+    }
+    word_t c2 = 0, ct2 = 0xe000000000000000ull;
+    FUN_00463fe8();
+    word_t p = FUN_002acbb8();
+    byte c3 = *(byte *)(thisp + 0x80);
+    FUN_00463df8(p, 0, 0x683da8);
+    FUN_00462728();
+    FUN_00205844(&c3, &c2);
+    FUN_002acbb8(c2, ct2);
+    FUN_003a25d4(ct2);
+    sk_pair_t r = { lo, hi };
+    return r;
+}
+
+/* FUN_0044a9a0 @ 0x44a9a0  (est. sk_token_build_long)
+ * Build a token with a long argument value. Invokes the token-format
+ * machinery FUN_00365b6c; on the failure branch zeroes the 5-word
+ * token and emits an error token; on success reads the argument
+ * through FUN_004107e4, retains it, and returns the value or 0.
+ * Confidence: low
+ * Notes: vtable calls (*DAT_00658cf0) and indirect (*pcVar5);
+ * format string 0x682e08 */
+long sk_token_build_long(word_t param1)
+{
+    word_t local70[6];
+    word_t x8r, x9r, x12r, x12r2, x16r, x8r2;
+    FUN_000a6f88();
+    DAT_00658cf0(*(word_t *)(x8r + 0x40));
+    FUN_0034ab10();
+    DAT_00658cf0(0);
+    long len = (x9r - x12r) - x12r2;
+    word_t fn = *(word_t *)(x16r + 0x10);
+    FUN_00350624(len);
+    ((void (*)(void))fn)();
+    word_t u3 = FUN_00466540();
+    int i2 = FUN_00365b6c(local70, len, param1, u3, 6);
+    long result = 0;
+    if (i2 == 0) {
+        local70[4] = 0; local70[1] = 0; local70[0] = 0; local70[3] = 0; local70[2] = 0;
+        FUN_00466168();
+        FUN_00461cb8(local70);
+        word_t p = FUN_003509bc();
+        ((void (*)(word_t, word_t, word_t))fn)(p, 0, param1);
+        i2 = FUN_00365b6c(local70, x9r - x12r, param1, 0x682e08, 6);
+        word_t u1 = local70[0];
+        if (i2 != 0) {
+            long v = FUN_004107e4(local70[0]);
+            FUN_0036b118(u1 & 0xfffffffffffffff);
+            if (v != 0) return v;
+        }
+        result = 0;
+    } else {
+        FUN_0034e1ec(local70);
+        FUN_003507e0(FUN_00458ac8(local70[4]));
+        result = ((long (*)(void))x8r2)();
+        FUN_000026e8(local70);
+    }
+    return result;
+}
+
+/* FUN_00448aac @ 0x448aac  (est. sk_emit_group_sep)
+ * Emit a group separator for a parsed token stream. In char mode
+ * prints a '[' opener (FUN_00466014 + thunk) and scans the token
+ * range; otherwise FUN_00466314 scans without opening bracket. Each
+ * element is visited through callback `cb`.
+ * Confidence: low
+ * Notes: SoftwareBreakpoint(1,0x448c18/.1c) on size shrink */
+void sk_emit_group_sep(word_t p1, byte mode, word_t cb, word_t p4,
+                       word_t p5, word_t p6, word_t p7, word_t p8,
+                       word_t x22, word_t x23, word_t x27)
+{
+    FUN_00354828(p7, p8);
+    sk_pair_t p = FUN_0029fa0c();
+    if (mode == 1) {
+        if (p.hi >> 0xe < p.lo >> 0xe) CL4_FATAL();   /* 0x448c1c */
+        FUN_00466014();
+        thunk_FUN_002b74c0();
+        FUN_004630b0();
+        FUN_003a25d4(p4);
+    } else {
+        FUN_00466314();
+        FUN_0042c060();
+        FUN_004630b0();
+    }
+    word_t v = x22;
+    word_t v2 = x23 >> 0xe;
+    while (v >> 0xe != x23 >> 0xe) {
+        FUN_0034be0c(v);
+        FUN_002b439c();
+        ((void (*)(void))cb)();
+        FUN_00464e7c();
+        v2 = v >> 0xe;
+        if ((x27 & 1) == 0) break;
+        FUN_0034be0c(v);
+        v = FUN_002b3b50().lo;
+    }
+    if (v2 < x22 >> 0xe) CL4_FATAL();                /* 0x448c18 */
+    FUN_00462e9c();
+    p = thunk_FUN_002b74c0();
+    word_t u2 = p.lo;
+    FUN_00465088();
+    FUN_003a25d4();
+    if ((u2 ^ p.hi) < 0x4000) {
+        FUN_003a25d4(p4);
+        u2 = 0;
+        FUN_00464d5c();
+    }
+    FUN_003505c4(u2);
+}
+
+/* FUN_0043f634 @ 0x43f634  (est. sk_close_group)
+ * Close a parsed group: look up the last selector group (via
+ * sk_collect_selector_groups) and copy the closing byte into
+ * thisp+0x48, then validate the opener/closer against the 'balance'
+ * table. A mismatched closer emits the
+ * s_closing_____does_not_balance_any_005dfb40 diagnostic.
+ * Confidence: low
+ * Notes: error kind 0xd000000000000030; balance strings 0x5e03e0 */
+void sk_close_group(word_t thisp, word_t x23)
+{
+    word_t grp;
+    FUN_004666f8();
+    grp = FUN_0043f4ec();
+    if (grp != 0) {
+        long n = *(long *)(grp + 0x10) + 1;
+        word_t *slot = (word_t *)(grp + *(long *)(grp + 0x10) * 0x30 + 0x20);
+        do {
+            n--;
+            if (n == 0) goto done;
+            slot -= 6;
+        } while (*(slot + 1) >> 0x3d != 3);
+        *(char *)(thisp + 0x48) = (char)*slot;
+    }
+done:
+    FUN_0043f770();
+    FUN_004659c8();
+    FUN_004651b8();
+    byte ok = (thisp ^ x23) == 0x4000;
+    if (0x3fff < (thisp ^ x23)) {
+        FUN_00462f3c();
+        FUN_0042ffec();
+        FUN_0035292c();
+        word_t d[4];
+        if (ok) {
+            FUN_0042f584(0xd00000000000001full, 0x80000000005e03e0,
+                         *(word_t *)(thisp + 0x10), *(word_t *)(thisp + 0x10));
+        } else {
+            d[0] = 1;
+            d[1] = 0xd000000000000030ull;
+            d[2] = FUN_00086840();
+            d[3] = 10;
+        }
+        FUN_0042ec68();
+        FUN_00461430(d);
+    }
+    FUN_0036b270(*(word_t *)(thisp + 0x50));
+    FUN_00350968(FUN_0043f770());
+    FUN_004666e4();
+}
+
+/* FUN_00448934 @ 0x448934  (est. sk_emit_range_token)
+ * Emit a range/interval token for a parsed stream (like
+ * sk_emit_group_sep but with an extra thunk_FUN_0024d9ac element
+ * conversion and trailing FUN_00351d30). Each element is visited and
+ * passed through FUN_0024917c.
+ * Confidence: low
+ * Notes: SoftwareBreakpoint(1,0x448aa8/.ac) on shrink */
+void sk_emit_range_token(word_t x22, word_t x23, word_t x3, word_t x4,
+                         word_t x5, word_t x6, word_t w1)
+{
+    FUN_00351e20();
+    sk_pair_t p = FUN_0029fa0c(x4, x5);
+    if ((w1 & 0xff) == 1) {
+        if (p.hi >> 0xe < p.lo >> 0xe) CL4_FATAL();   /* 0x448aac */
+        FUN_00466014();
+        thunk_FUN_002b74c0();
+        FUN_004630b0();
+        FUN_003a25d4(x3);
+    } else {
+        FUN_00466314();
+        FUN_0042c060();
+        FUN_004630b0();
+    }
+    word_t v = x22;
+    word_t v2 = x23 >> 0xe;
+    while (v >> 0xe != x23 >> 0xe) {
+        FUN_0034be0c(v);
+        p = FUN_002b439c();
+        word_t xe = thunk_FUN_0024d9ac(x6);
+        FUN_0024917c(xe, &p.lo);
+        FUN_003a25d4(p.hi);
+        FUN_0036b118(xe);
+        v2 = v >> 0xe;
+        if ((x3 & 1) == 0) break;
+        FUN_0034be0c(v);
+        v = FUN_002b3b50().lo;
+    }
+    if (v2 < x22 >> 0xe) CL4_FATAL();                /* 0x448aa8 */
+    FUN_00462e9c();
+    p = thunk_FUN_002b74c0();
+    word_t u2 = p.lo;
+    FUN_00465088();
+    FUN_003a25d4();
+    if ((u2 ^ p.hi) >> 0xe == 0) {
+        FUN_003a25d4(x3);
+        u2 = 0;
+        FUN_00464d5c();
+    }
+    FUN_003505c4(u2);
+    FUN_00351d30();
+}
+
+/* FUN_00448758 @ 0x448758  (est. sk_scan_group_body)
+ * Scan a '{'-delimited group body between two token ranges and return
+ * the surviving range pair. In char mode the opener is the thunk;
+ * otherwise the FUN_0042c060 path. Iterates FUN_002b439c elements
+ * until a '{' (0x7b) with the 0xe1 tag is found.
+ * SoftwareBreakpoint(1,0x448930/.34) guards the shrink check.
+ * Confidence: low
+ * Notes: '{' token 0x7b; tag 0xe1; FUN_002a0cf8 state check */
+sk_pair_t sk_scan_group_body(word_t p1, byte mode, word_t p3, word_t p4,
+                             word_t p5, word_t p6)
+{
+    sk_pair_t r = FUN_0029fa0c(p5, p6);
+    word_t hi = r.hi, lo = r.lo;
+    if (mode == 1) {
+        if (hi >> 0xe < lo >> 0xe) CL4_FATAL();      /* 0x448934 */
+        r = thunk_FUN_002b74c0();
+        FUN_003a25d4(p4);
+    } else {
+        r = FUN_0042c060(p1, lo, hi, p3, p4);
+        r.lo = p3;
+        r.hi = hi;
+    }
+    word_t c = r.hi, b = r.lo, e = r.hi, a = r.lo;
+    word_t cur = a, last = a;
+    while (cur >> 0xe != c >> 0xe) {
+        sk_pair_t q = FUN_002b439c();
+        word_t qh = q.hi;
+        if (q.lo == 0x7b && qh == 0xe100000000000000ull) {
+            FUN_003a25d4(qh);
+        } else {
+            word_t ok = FUN_002a0cf8(q.lo, qh, 0x7b, 0xe100000000000000ull, 0);
+            FUN_003a25d4(qh);
+            last = cur >> 0xe;
+            if ((ok & 1) == 0) break;
+        }
+        cur = FUN_002b3b50().lo;
+    }
+    if (a >> 0xe <= last) {
+        r = thunk_FUN_002b74c0();
+        FUN_003a25d4(b);
+        if ((r.lo ^ r.hi) >> 0xe == 0) {
+            FUN_003a25d4(c);
+            r.lo = 0; r.hi = 0;
+        }
+        return r;
+    }
+    CL4_FATAL();                                     /* 0x448930 */
+}
+
+/* FUN_0044bac4 @ 0x44bac4  (est. sk_format_open_paren)
+ * Format a group/quantifier opening marker into a 16-byte pair based
+ * on the object kind (thisp[5]>>0x3d). Kinds 3/4 emit specific
+ * '...' / 'z...' label words; other kinds emit the '=>'/'::' style
+ * openers via FUN_00465448. Returns the label pair by value.
+ * Confidence: low
+ * Notes: label words like 0x6f4d724f6f72657a ('zeroOrMo' reversed) */
+sk_pair_t sk_format_open_paren(word_t *thisp, word_t x8, word_t x16,
+                               word_t x13, word_t x11, word_t x1)
+{
+    word_t kind = thisp[5];
+    byte is4 = kind >> 0x3d == 4;
+    word_t lo = 0, hi = 0;
+    switch (kind >> 0x3d) {
+    case 3:
+        FUN_004636cc();
+        word_t u4 = FUN_00465170();
+        if (!is4) {
+            FUN_00462740();
+            FUN_00027724(x16);
+            u4 = FUN_00462a84();
+            word_t plo = ((word_t (*)(word_t, word_t))x8)(u4, x16);
+            hi = x16;
+            u4 = plo;
+        }
+        FUN_002acbb8(u4, hi);
+        FUN_003a25d4(hi);
+        FUN_002acbb8(0x2e2e2e, 0xe300000000000000ull);
+        if ((kind & 0xff) != 1) {
+            FUN_000f4ae8();
+            FUN_00027724(x16);
+            FUN_0046295c();
+            ((void (*)(void))x8)();
+            FUN_00352c80();
+        }
+        goto out;
+    case 4:
+        FUN_004640f0(thisp[0]);
+        byte zero = is4 && x13 == 0;
+        if (zero) {
+            hi = 0xea00000000006572ull;
+            lo = 0x6f4d724f6f72657aull;
+        } else {
+            FUN_00465f00();
+            lo = 0x726f4d724f656e6full;
+            if (!zero || kind != x11) lo = 0x6e4f724f6f72657aull;
+            hi = 0xe900000000000065ull;
+        }
+        goto out2;
+    default:
+        break;
+    }
+    FUN_00465448();
+    if (is4) {
+        FUN_00464a98();
+        hi = 0xe90000000000003eull;
+    } else {
+        FUN_000f4ae8();
+        FUN_00027724(x16);
+        FUN_0046295c();
+        ((void (*)(void))x8)();
+        hi = x1;
+    }
+out:
+    FUN_002acbb8();
+    FUN_003a25d4(hi);
+    FUN_00463e10();
+    FUN_002acbb8();
+out2:
+    sk_pair_t r = { lo, hi };
+    return r;
+}
+
+/* FUN_004452a8 @ 0x452a8  (est. sk_char_class_parse)
+ * Parse a character-class definition into a 0xb0-byte descriptor.
+ * Switches on the class kind (FUN_00458d04): handles 'subtraction' /
+ * 'invalid bound' diagnostics, negative/positive ranges, and
+ * disjunction cases; emits the appropriate error or range descriptor
+ * through the x8 result buffer.
+ * Confidence: low
+ * Notes: error strings s_subtraction_with_____is_unsuppor_005dfbe0,
+ * s_invalid_bound_for_character_clas_005dfc20 */
+void sk_char_class_parse(word_t p1, word_t p2, word_t p3,
+                         word_t x8, word_t x30, word_t x1, word_t x2)
+{
+    word_t stack_a[47], stack_b[24], stack_c[24];
+    word_t lo = 0, hi = 0, c = 0;
+    FUN_0008e518();
+    FUN_004654a8(stack_a);
+    word_t kind = FUN_00458d04(stack_a);
+    switch (kind) {
+    default:
+        FUN_00458d10(stack_a);
+        FUN_00419d98();
+        if ((x1 & 1) == 0) {
+            c = 1;
+            hi = FUN_00086840();
+            lo = 0xd000000000000035ull;
+        } else {
+            c = 1;
+            hi = FUN_00086840();
+            lo = 0xd000000000000027ull;
+        }
+        break;
+    case 1:
+    case 5:
+        FUN_00458d10(stack_a);
+        c = *(word_t *)(p3 + 0x10);
+        lo = 0x6c20646573726150ull;
+        hi = 0xec00000072657461ull;
+        goto push;
+    case 2:
+        FUN_00458d10(stack_a);
+        FUN_00117cc4((word_t)stack_b, FUN_00458d10(stack_a), 0xb0);
+        FUN_0001a1c8(stack_b);
+        FUN_004654a8(&lo);
+        FUN_00458d10(&lo);
+        FUN_004589e8(x2, stack_c);
+        FUN_00117cc4((word_t)stack_c, (word_t)stack_b, 0xb0);
+        goto emit;
+    case 3:
+        FUN_00458d10(stack_a);
+        FUN_00419d98();
+        FUN_003535a8();
+        lo = 0;
+        hi = 0xe000000000000000ull;
+        FUN_002a4ab4(0x1d);
+        FUN_003a25d4(hi);
+        lo = 0xd00000000000001aull;
+        hi = 0x80000000005e04e0;
+        FUN_00462cb0();
+        FUN_002acbb8(0xd00000000000001bull, x8 | 0x8000000000000000);
+        c = 1;
+        break;
+    case 4:
+        FUN_00458d10(stack_a);
+        c = *(word_t *)(p3 + 0x10);
+        lo = 0xd000000000000021ull;
+        hi = 0x80000000005e04b0;
+push:
+        FUN_0042f584(&lo, lo, hi, c, c);
+    }
+    FUN_0042ec68(&lo);
+    FUN_00461430(&lo);
+    FUN_00461820(stack_b);
+emit:
+    FUN_00117cc4(x8, (word_t)stack_b, 0xb0);
+    FUN_0008e500(0);
+}
+
+/* FUN_0044b8d0 @ 0x44b8d0  (est. sk_format_close_paren)
+ * Format a group/quantifier closing marker into a 16-byte pair based
+ * on the object kind (thisp[5]>>0x3d). Kinds 1/3/4 emit specific
+ * '},'/'...'/'*+-?' label words; default emits the '=>' style via
+ * FUN_00465448. Returns the label pair by value.
+ * Confidence: low
+ * Notes: label words 0x7d2c ('},'), 0x2a/0x2b/0x3f ('*','+','?') */
+sk_pair_t sk_format_close_paren(word_t *thisp, word_t x8, word_t x16,
+                                word_t x13, word_t x11, word_t x1)
+{
+    word_t kind = thisp[5];
+    byte is4 = kind >> 0x3d == 4;
+    word_t lo = 0, hi = 0;
+    word_t q = 0;
+    switch (kind >> 0x3d) {
+    case 1:
+        FUN_00465448();
+        if (is4) FUN_004636b0();
+        else { FUN_000f4ae8(); FUN_00027724(x16); FUN_0046295c(); ((void (*)(void))x8)(); hi = x1; }
+        FUN_00466618();
+        FUN_003a25d4(hi);
+        lo = 0x7d2c; hi = 0xe200000000000000ull;
+        goto out2;
+    case 2:
+        break;
+    case 3:
+        FUN_004636cc();
+        word_t u4 = FUN_00465170();
+        if (!is4) {
+            FUN_00462740();
+            FUN_00027724(x16);
+            u4 = FUN_00462a84();
+            word_t plo = ((word_t (*)(word_t, word_t))x8)(u4, x16);
+            hi = x16;
+            u4 = plo;
+        }
+        FUN_002acbb8(u4, hi);
+        FUN_003a25d4(hi);
+        FUN_0046589c();
+        FUN_002acbb8();
+        if ((kind & 0xff) != 1) {
+            FUN_000f4ae8();
+            FUN_00027724(x16);
+            FUN_0046295c();
+            ((void (*)(void))x8)();
+            FUN_00352c80();
+        }
+        goto out;
+    case 4:
+        FUN_004640f0(thisp[0]);
+        byte zero = is4 && x13 == 0;
+        if (zero) {
+            lo = 0x2a; hi = 0xe100000000000000ull;      /* '*' */
+        } else {
+            FUN_00465f00();
+            lo = 0x2b;                                  /* '+' */
+            if (!zero || kind != x11) lo = 0x3f;        /* '?' */
+            hi = 0xe100000000000000ull;
+        }
+        goto out2;
+    default:
+        break;
+    }
+    FUN_00465448();
+    if (is4) FUN_004636b0();
+    else { FUN_000f4ae8(); FUN_00027724(x16); FUN_0046295c(); ((void (*)(void))x8)(); hi = x1; }
+out:
+    FUN_002acbb8();
+    FUN_003a25d4(hi);
+    FUN_00463878();
+out2:
+    FUN_002acbb8(q, 0);
+    sk_pair_t r = { lo, hi };
+    return r;
+}
+
+/* FUN_00440fb0 @ 0x440fb0  (est. sk_sync_region_flags)
+ * Adjust the region flag word at param_2+0x40 based on the two
+ * branches of param_1. If the first branch is not type 1 and the
+ * "needs-update" bit (0x80) is set, clear it; scan param_1+0x18's
+ * element list for a '\x03' marker and if found set bit 0x80. Then
+ * scan param_1+0x38's list; if a '\x03' marker is found and bit 0x80
+ * is set, clear it.
+ * Confidence: high (structural)
+ * Notes: element stride 0x18, first byte is the type marker */
+void sk_sync_region_flags(word_t param1, word_t param2)
+{
+    if (*(char *)(param1 + 0x10) != 1 &&
+        ((*(word_t *)(param2 + 0x40) >> 7) & 1) != 0)
+        *(word_t *)(param2 + 0x40) &= 0xffffffffffffff7full;
+    long n = *(long *)(*(long *)(param1 + 0x18) + 0x10) + 1;
+    char *p = (char *)(*(long *)(param1 + 0x18) + 0x20);
+    for (;;) {
+        n--;
+        if (n == 0) break;
+        if (*p == 3) { *(word_t *)(param2 + 0x40) |= 0x80; break; }
+        p += 0x18;
+    }
+    n = *(long *)(*(long *)(param1 + 0x38) + 0x10) + 1;
+    p = (char *)(*(long *)(param1 + 0x38) + 0x20);
+    for (;;) {
+        n--;
+        if (n == 0) return;
+        if (*p == 3) {
+            if ((*(word_t *)(param2 + 0x40) >> 7) & 1)
+                *(word_t *)(param2 + 0x40) &= 0xffffffffffffff7full;
+            return;
+        }
+        p += 0x18;
+    }
+}
+
+
+/* FUN_00441034 @ 0x441034  (est. sk_parse_range_region)
+ * Parse one range/region record (0x68-byte descriptor) out of the
+ * current token stream at thisp. Reads the record header words, bumps
+ * the record counter at thisp+0x28, and fills the output descriptor.
+ * Region kind 2 (both branches present) syncs flags via
+ * sk_sync_region_flags and probes the '\x03' set-marker; when both
+ * branch-type bits clear it folds the value through
+ * FUN_004108a0/FUN_0006a4c0. SoftwareBreakpoint guards the counter
+ * and count checks.
+ * Confidence: low
+ * Notes: header words a0/a1/a2/a3/a7/a10; 0x68-byte output; region
+ * kind byte at +0x11 */
+void sk_parse_range_region(word_t thisp, word_t x30)
+{
+    word_t local_150[16], local_148, local_138, uStack_130, stack_b[16];
+    word_t x8_ret, x9_ret, u9, u6, cnt, a0, a1, a3, a7, flag0, d0, d1, d3, d7;
+    byte a2, a10, d2;
+
+    sk_pair_t entry = FUN_0008e518();
+    word_t *src = (word_t *)entry.hi;
+    if ((long)(*(long *)(thisp + 0x28)) == 0x7fffffffffffffff) CL4_FATAL(); /* carry */
+    a0 = src[0];
+    a1 = src[1];
+    a2 = *(char *)(src + 2);
+    a3 = src[3];
+    a7 = src[7];
+    a10 = *(char *)(src + 10);
+    *(long *)(thisp + 0x28) += 1;
+    if (a10 == 0 || (a10 == 1 && a1 != 0)) {
+        FUN_0036b270(a1);
+        FUN_00350998(local_150);
+        FUN_000b2260();
+        FUN_003a25d4(local_148);
+    }
+    flag0 = *(word_t *)(thisp + 0x40);
+    if (a10 == 2) {
+        d0 = a0; d1 = a1; d2 = a2; d3 = a3; d7 = a7;
+        sk_sync_region_flags((word_t)&d0, thisp);
+        if (a2 != 1 && (*(word_t *)(thisp + 0x40) & 3) != 0)
+            *(word_t *)(thisp + 0x40) &= 0xfffffffffffffffcull;
+        long n = *(long *)(a3 + 0x10) + 1;
+        byte *q = (byte *)(a3 + 0x20);
+        for (;;) {
+            n--;
+            if (n == 0) break;
+            if ((*q & 0xfe) == 6) { *(word_t *)(thisp + 0x40) |= 3; break; }
+            q += 0x18;
+        }
+        n = *(long *)(a7 + 0x10) + 1;
+        q = (byte *)(a7 + 0x20);
+        for (;;) {
+            n--;
+            if (n == 0) break;
+            if ((*q & 0xfe) == 6) {
+                if ((*(word_t *)(thisp + 0x40) & 3) != 0)
+                    *(word_t *)(thisp + 0x40) &= 0xfffffffffffffffcull;
+                break;
+            }
+            q += 0x18;
+        }
+    }
+    byte both = 0;
+    if ((~flag0 & 3) == 0) both = ((~*(word_t *)(thisp + 0x40) & 3) != 0);
+    u6 = FUN_0043f770();
+    FUN_00100e34();
+    if ((FUN_0042f670() & 1) == 0) {
+        word_t c2 = *(word_t *)(thisp + 0x10);
+        FUN_004627f4();
+        local_150[0] = x8_ret; local_148 = x9_ret;
+        FUN_00100e34();
+        FUN_002acbb8();
+        FUN_00463514();
+        FUN_002acbb8();
+        word_t d[6];
+        d[0]=1; d[1]=local_150[0]; d[2]=local_148; d[3]=c2; d[4]=c2; d[5]=3;
+        FUN_0042ec68(d);
+        FUN_00461430(d);
+    }
+    cnt = *(word_t *)(thisp + 0x10);
+    if (cnt >> 0xe < entry.lo >> 0xe) CL4_FATAL();       /* 0x44136c */
+    if (both && (*(byte *)(thisp + 0x40) >> 6 & 1) != 0) {
+        FUN_004108a0(local_150, u6);
+        FUN_0006a4c0(local_150, local_138);
+        u9 = FUN_00458e50(uStack_130);
+        FUN_00350944(u9);
+        sk_pair_t p = ((sk_pair_t (*)(void))x8_ret)();
+        FUN_000026e8(local_150);
+        FUN_003511cc(p.lo, p.hi);
+        FUN_0029fa0c();
+        FUN_0042f1f0();
+        FUN_000b4528();
+    }
+    FUN_00117cc4((word_t)local_150, (word_t)src, 0x68);
+    *(word_t *)(thisp + 0x40) = flag0;
+    FUN_004637b4();
+    FUN_0045908c(src, stack_b);
+    FUN_00117cc4(x8_ret, (word_t)local_150, 0x68);
+    *(word_t *)(x8_ret + 0x68) = u6;
+    *(word_t *)(x8_ret + 0x70) = entry.lo;
+    *(word_t *)(x8_ret + 0x78) = cnt;
+    FUN_0008e500(x30);
+}
+
+/* FUN_0044136c @ 0x44136c  (est. sk_parse_absent_or_pair)
+ * Parse an absent-tag or expression-pair node. When the flag byte is
+ * non-zero, resolve the two branches via FUN_0043f770 (releasing and
+ * retaining the ref pair, 2-element fast path). Otherwise validate the
+ * opening token and fall through to the same "absent" analysis.
+ * Writes an 8-word result to param_1.
+ * SoftwareBreakpoint(1,0x44167c..688) guards the count checks.
+ * Confidence: low
+ * Notes: error kind 0x34; ')' token 0x29; result written to param_1 */
+void sk_parse_absent_or_pair(word_t *param1, byte param2, word_t param3,
+                             word_t param4, word_t thisp, word_t x24)
+{
+    word_t local_118, local_110, local_100_lo, local_100_hi;
+    word_t local_168, local_160, stack_c8[16];
+    word_t x8_ret, x9_ret, x1_ret, u9, u3 = 0, u8 = 0, x28 = 0, x25 = 0, v4 = 0;
+
+    FUN_00117cc4((word_t)stack_c8, 0, 0);
+    FUN_0042fc4c();
+    if (x1_ret == 0) {
+        u3 = FUN_0043f770();
+        if (u3 >> 0x3c == 0) {
+            word_t l5 = *(word_t *)(u3 + 0x10);
+            word_t l7 = *(word_t *)(l5 + 0x10);
+            if (l7 == 0) CL4_FATAL();               /* 0x441680 */
+            word_t l6 = *(word_t *)(u3 + 0x18);
+            if (*(word_t *)(l6 + 0x10) == 0) CL4_FATAL(); /* 0x441684 */
+            if (l7 == 1) CL4_FATAL();               /* 0x441688 */
+            x28 = *(word_t *)(l6 + 0x20);
+            x25 = *(word_t *)(l6 + 0x28);
+            v4 = *(word_t *)(l5 + 0x20);
+            u8 = *(word_t *)(l5 + 0x28);
+            if (l7 == 2) {
+                FUN_0036b270(u8 & 0xfffffffffffffff);
+                FUN_0036b270(v4 & 0xfffffffffffffff);
+                FUN_0036b118(u3);
+                u8 |= 2;
+                u3 = v4;
+            } else {
+                FUN_004108a0(&local_118, u3);
+                FUN_0006a4c0(&local_118);
+                word_t fn = FUN_00458e50(local_100_hi);
+                FUN_0036b270(u8 & 0xfffffffffffffff);
+                FUN_0036b270(v4 & 0xfffffffffffffff);
+                sk_pair_t p = ((sk_pair_t (*)(word_t, word_t))fn)(local_100_lo, local_100_hi);
+                FUN_000026e8(&local_118);
+                local_118 = 0;
+                local_110 = 0xe000000000000000ull;
+                FUN_002a4ab4(0x34);
+                FUN_004643cc();
+                FUN_002acbb8(0xd000000000000032ull);
+                local_168 = l7;
+                u9 = FUN_00462abc(0x6720e0);
+                ((word_t (*)(word_t, word_t))x8_ret)(u9, 0x6720e0);
+                FUN_002acbb8();
+                FUN_003a25d4(x1_ret);
+                local_100_lo = p.lo; local_100_hi = p.hi;
+                FUN_0042ec68(&local_118);
+                FUN_00461430(&local_118);
+                FUN_0036b118(u3);
+                u8 |= 2;
+                u3 = v4;
+            }
+        } else {
+            FUN_004655f0();
+            u8 = 4;
+        }
+    } else {
+        sk_pair_t p = FUN_00465920();
+        if (param2 != 0 && p.hi == 0xe100000000000000ull) {
+            FUN_003a25d4(0);
+        } else {
+            FUN_00463540(p.lo, 0, 0x29);
+            FUN_002a0cf8();
+            FUN_00465c68();
+            if ((x24 & 1) == 0) {
+                u3 = FUN_0043f770();
+                if (u3 >> 0x3c == 0) {
+                    word_t l5 = *(word_t *)(u3 + 0x10);
+                    word_t l7 = *(word_t *)(l5 + 0x10);
+                    if (l7 == 0) CL4_FATAL();
+                    word_t l6 = *(word_t *)(u3 + 0x18);
+                    if (*(word_t *)(l6 + 0x10) == 0) CL4_FATAL();
+                    if (l7 == 1) CL4_FATAL();
+                    x28 = *(word_t *)(l6 + 0x20);
+                    x25 = *(word_t *)(l6 + 0x28);
+                    v4 = *(word_t *)(l5 + 0x20);
+                    u8 = *(word_t *)(l5 + 0x28);
+                    if (l7 == 2) {
+                        FUN_0036b270(u8 & 0xfffffffffffffff);
+                        FUN_0036b270(v4 & 0xfffffffffffffff);
+                        FUN_0036b118(u3);
+                        u8 |= 2;
+                        u3 = v4;
+                    } else {
+                        FUN_004108a0(&local_118, u3);
+                        FUN_0006a4c0(&local_118);
+                        word_t fn = FUN_00458e50(local_100_hi);
+                        FUN_0036b270(u8 & 0xfffffffffffffff);
+                        FUN_0036b270(v4 & 0xfffffffffffffff);
+                        sk_pair_t p2 = ((sk_pair_t (*)(word_t, word_t))fn)(local_100_lo, local_100_hi);
+                        FUN_000026e8(&local_118);
+                        local_118 = 0;
+                        local_110 = 0xe000000000000000ull;
+                        FUN_002a4ab4(0x34);
+                        FUN_004643cc();
+                        FUN_002acbb8(0xd000000000000032ull);
+                        local_168 = l7;
+                        u9 = FUN_00462abc(0x6720e0);
+                        ((word_t (*)(word_t, word_t))x8_ret)(u9, 0x6720e0);
+                        FUN_002acbb8();
+                        FUN_003a25d4(x1_ret);
+                        local_100_lo = p2.lo; local_100_hi = p2.hi;
+                        FUN_0042ec68(&local_118);
+                        FUN_00461430(&local_118);
+                        FUN_0036b118(u3);
+                        u8 |= 2;
+                        u3 = v4;
+                    }
+                } else {
+                    FUN_004655f0();
+                    u8 = 4;
+                }
+            }
+        }
+        if (p.hi != 0xe100000000000000ull || param2 == 0) {
+            /* fall through to shared absent analysis */
+            FUN_004655f0();
+        }
+    }
+    FUN_00100e34();
+    if ((FUN_0042f670() & 1) == 0) {
+        word_t c2 = *(word_t *)(thisp + 0x10);
+        FUN_004627f4();
+        local_168 = x8_ret; local_160 = x9_ret;
+        FUN_00100e34();
+        FUN_002acbb8();
+        FUN_00463514();
+        FUN_002acbb8();
+        word_t d[6];
+        d[0]=1; d[1]=local_168; d[2]=local_160; d[3]=c2; d[4]=c2; d[5]=3;
+        FUN_0042ec68(&local_168);
+        FUN_00461430(&local_168);
+    }
+    word_t cnt = *(word_t *)(thisp + 0x10);
+    if (param3 >> 0xe <= cnt >> 0xe) {
+        param1[0] = param3;
+        param1[1] = param4;
+        param1[2] = u3;
+        param1[3] = x28;
+        param1[4] = x25;
+        param1[5] = u8;
+        param1[6] = param3;
+        param1[7] = cnt;
+        return;
+    }
+    CL4_FATAL();                                     /* 0x44167c */
+}
+
+/* Shared tail: finalise a ref-list (growable 0x10-element vector) and
+ * emit the surrounding '(' value ',' ... ')' callout. Used by the
+ * pair-list formatter family (0044a128/0044a420/0044948c/00449808/
+ * 00449acc). Returns the final 16-byte pair by value. */
+static sk_pair_t sk_ref_list_emit(word_t list, sk_pair_t value)
+{
+    for (;;) {
+        if (*(long *)(list + 0x10) == 0) {
+            FUN_0036b118(list);
+            return value;
+        }
+        if (*(long *)(list + 0x10) == 1) {
+            word_t u = value.lo & 0xffffffffffff;
+            if ((value.hi & 0x2000000000000000) != 0) u = value.hi >> 0x38 & 0xf;
+            if (u == 0) {
+                FUN_003a25d4(value.hi);
+                if (*(long *)(list + 0x10) == 0) CL4_FATAL();
+                value.lo = *(word_t *)(list + 0x20);
+                value.hi = *(word_t *)(list + 0x28);
+                thunk_FUN_0036b270(value.hi);
+                continue;
+            }
+        }
+        thunk_FUN_002acbb8(0x28, 0xe100000000000000ull);   /* '(' */
+        word_t t1 = FUN_00002534((word_t)&FUN_0064e030, (word_t)&DAT_004be900);
+        word_t t2 = FUN_00460d50(0x64e038, (word_t)&FUN_0064e030, (word_t)&DAT_004be900,
+                                 (word_t)&DAT_004e824c);
+        sk_pair_t r = FUN_001bc440(0x2c, 0xe100000000000000ull, t1, t2); /* ',' */
+        FUN_0036b118(list);
+        thunk_FUN_002acbb8(r.lo, r.hi);
+        FUN_003a25d4(r.hi);
+        thunk_FUN_002acbb8(0x29, 0xe100000000000000ull);   /* ')' */
+        return value;
+    }
+}
+
+/* FUN_0044948c @ 0x44948c  (est. sk_flatten_ref_list)
+ * Recursively flatten a reference tree (param_1) into a growable
+ * 0x10-element ref-list, then emit the '(' ... ')' callout via
+ * sk_ref_list_emit. When the node has no direct value (FUN_004107e4
+ * returns 0) it is expanded through the FUN_004108a0/FUN_0006a4c0
+ * machinery. Returns the final pair by value.
+ * Confidence: medium
+ * Notes: growable list seed DAT_00657778; grow fn FUN_0045659c */
+sk_pair_t sk_flatten_ref_list(word_t param1)
+{
+    sk_pair_t result;
+    word_t list = (word_t)&DAT_00657778;
+    if (FUN_004107e4() == 0) {
+        word_t local_88[16], local_70, uStack_68;
+        FUN_004108a0(local_88, param1);
+        FUN_0006a4c0(local_88, local_70);
+        word_t u4 = FUN_00027754(uStack_68);
+        word_t fn = FUN_000a6bb8();
+        result = ((sk_pair_t (*)(word_t, word_t))fn)(local_70, u4);
+        FUN_000026e8(local_88);
+        return result;
+    }
+    word_t l2 = FUN_004107e4();
+    word_t n = *(word_t *)(l2 + 0x10);
+    word_t i = 0;
+    for (;;) {
+        if (n == i) break;
+        if (*(word_t *)(l2 + 0x10) <= i) CL4_FATAL();     /* 0x449804 */
+        word_t v = *(word_t *)(l2 + i * 8 + 0x20);
+        if (v >> 0x3c != 6) {
+            FUN_0036b270(v & 0xfffffffffffffff);
+            sk_pair_t sub = sk_flatten_ref_list(v);
+            word_t hi = sub.hi;
+            FUN_0036b118(v & 0xfffffffffffffff);
+            v = sub.lo & 0xffffffffffff;
+            if ((hi & 0x2000000000000000) != 0) v = hi >> 0x38 & 0xf;
+            if (v != 0) {
+                if ((FUN_003a261c(list) & 1) == 0)
+                    list = FUN_0045659c(0, *(long *)(list + 0x10) + 1, 1, list,
+                                        0x64e110, (word_t)&DAT_004c05b0,
+                                        (word_t)FUN_00069970, (word_t)FUN_00069770);
+                word_t c = *(word_t *)(list + 0x10);
+                if (*(word_t *)(list + 0x18) >> 1 <= c)
+                    list = FUN_0045659c(1 < *(word_t *)(list + 0x18), c + 1, 1, list,
+                                        0x64e110, (word_t)&DAT_004c05b0,
+                                        (word_t)FUN_00069970, (word_t)FUN_00069770);
+                i++;
+                *(word_t *)(list + 0x10) = c + 1;
+                *(sk_pair_t *)(list + c * 0x10 + 0x20) = sub;
+                continue;
+            }
+            FUN_003a25d4(hi);
+        }
+        i++;
+    }
+    FUN_0036b118(l2);
+    {
+        word_t local_88[16], local_70, uStack_68;
+        FUN_004108a0(local_88, param1);
+        FUN_0006a4c0(local_88, local_70);
+        word_t u4 = FUN_00027754(uStack_68);
+        word_t fn = FUN_000a6bb8();
+        result = ((sk_pair_t (*)(word_t, word_t))fn)(local_70, u4);
+        FUN_000026e8(local_88);
+    }
+    return sk_ref_list_emit(list, result);
+}
+
+/* FUN_0044a128 @ 0x44a128  (est. sk_format_callout_value)
+ * Format a callout argument value: build the value object (type tag
+ * 0x6579c8), and when its ref-kind is not 6 flatten it through
+ * sk_flatten_ref_list and append the pair to the shared ref-list,
+ * then emit the '(' ... ')' callout. Returns the final pair.
+ * Confidence: medium
+ * Notes: object build FUN_00002534/FUN_0036a9a0; ref-list grow
+ * FUN_0045659c */
+sk_pair_t sk_format_callout_value(word_t thisp)
+{
+    word_t local_a0[16], auStack_90[40], local_68;
+    word_t t = FUN_00002534(0x6579c8, (word_t)&DAT_005a19a0);
+    word_t obj = FUN_0036a9a0(t, auStack_90);
+    *(word_t *)(obj + 0x18) = DAT_004baeb8;
+    *(word_t *)(obj + 0x10) = DAT_004baeb0;
+    local_68 = *(word_t *)(thisp + 0x68);
+    *(word_t *)(obj + 0x20) = local_68;
+    FUN_00460dcc(&local_68, local_a0);
+    word_t list = (word_t)&DAT_00657778;
+    word_t v = *(word_t *)(obj + 0x20);
+    sk_pair_t out = { 0, 0 };
+    if (v >> 0x3c != 6) {
+        FUN_0036b270(v & 0xfffffffffffffff);
+        sk_pair_t p = sk_flatten_ref_list(v);
+        word_t hi = p.hi;
+        FUN_0036b118(v & 0xfffffffffffffff);
+        v = p.lo & 0xffffffffffff;
+        if ((hi & 0x2000000000000000) != 0) v = hi >> 0x38 & 0xf;
+        if (v == 0) {
+            FUN_003a25d4(hi);
+        } else {
+            if ((FUN_003a261c(list) & 1) == 0)
+                list = FUN_0045659c(0, DAT_00657788 + 1, 1, list, 0x64e110,
+                                    (word_t)&DAT_004c05b0, (word_t)FUN_00069970,
+                                    (word_t)FUN_00069770);
+            word_t c = *(word_t *)(list + 0x10);
+            if (*(word_t *)(list + 0x18) >> 1 <= c)
+                list = FUN_0045659c(1 < *(word_t *)(list + 0x18), c + 1, 1, list,
+                                    0x64e110, (word_t)&DAT_004c05b0,
+                                    (word_t)FUN_00069970, (word_t)FUN_00069770);
+            *(word_t *)(list + 0x10) = c + 1;
+            *(sk_pair_t *)(list + c * 0x10 + 0x20) = p;
+        }
+    }
+    FUN_0036b588(obj);
+    FUN_00455d8c();
+    FUN_0036b6ac(FUN_00455d8c(), 0x20, 7);
+    sk_pair_t tail = FUN_0044bdc8();
+    return sk_ref_list_emit(list, tail);
+}
+
+/* FUN_0044a420 @ 0x44a420  (est. sk_format_callout_group)
+ * Like sk_format_callout_value but with the group-prefix token
+ * 0x5f70756f7267 ('group_') appended, emitted via FUN_0044b4ec.
+ * Returns the final pair by value.
+ * Confidence: medium
+ * Notes: group token 0x5f70756f7267 */
+sk_pair_t sk_format_callout_group(word_t thisp)
+{
+    word_t local_a0[16], auStack_90[40], local_68, x1_ret;
+    word_t t = FUN_00002534(0x6579c8, (word_t)&DAT_005a19a0);
+    word_t obj = FUN_0036a9a0(t, auStack_90);
+    *(word_t *)(obj + 0x18) = DAT_004baeb8;
+    *(word_t *)(obj + 0x10) = DAT_004baeb0;
+    local_68 = *(word_t *)(thisp + 0x68);
+    *(word_t *)(obj + 0x20) = local_68;
+    FUN_00460dcc(&local_68, local_a0);
+    word_t list = (word_t)&DAT_00657778;
+    word_t v = *(word_t *)(obj + 0x20);
+    if (v >> 0x3c != 6) {
+        FUN_0036b270(v & 0xfffffffffffffff);
+        sk_pair_t p = sk_flatten_ref_list(v);
+        word_t hi = p.hi;
+        FUN_0036b118(v & 0xfffffffffffffff);
+        v = p.lo & 0xffffffffffff;
+        if ((hi & 0x2000000000000000) != 0) v = hi >> 0x38 & 0xf;
+        if (v == 0) {
+            FUN_003a25d4(hi);
+        } else {
+            if ((FUN_003a261c(list) & 1) == 0)
+                list = FUN_0045659c(0, DAT_00657788 + 1, 1, list, 0x64e110,
+                                    (word_t)&DAT_004c05b0, (word_t)FUN_00069970,
+                                    (word_t)FUN_00069770);
+            word_t c = *(word_t *)(list + 0x10);
+            if (*(word_t *)(list + 0x18) >> 1 <= c)
+                list = FUN_0045659c(1 < *(word_t *)(list + 0x18), c + 1, 1, list,
+                                    0x64e110, (word_t)&DAT_004c05b0,
+                                    (word_t)FUN_00069970, (word_t)FUN_00069770);
+            *(word_t *)(list + 0x10) = c + 1;
+            *(sk_pair_t *)(list + c * 0x10 + 0x20) = p;
+        }
+    }
+    FUN_0036b588(obj);
+    FUN_00455d8c();
+    FUN_0036b6ac(FUN_00455d8c(), 0x20, 7);
+    local_a0[0] = 0x5f70756f7267;                 /* 'group_' */
+    local_a0[1] = 0xe600000000000000ull;
+    FUN_0044b4ec();
+    FUN_002acbb8();
+    FUN_003a25d4(x1_ret);
+    sk_pair_t tail = { local_a0[0], local_a0[1] };
+    return sk_ref_list_emit(list, tail);
+}
+
+/* FUN_0044a73c @ 0x44a73c  (est. sk_iterate_callout_args)
+ * Iterate a callout's argument list (from sk_token_build_long),
+ * flattening each non-empty entry into the shared ref-list; then emit
+ * the callout tail. Guards index bounds with SoftwareBreakpoint.
+ * Confidence: medium
+ * Notes: bounds checks 0x44a99c; ref-kind 6 is a leaf */
+void sk_iterate_callout_args(void)
+{
+    word_t x27_ret, x26_ret, x8_ret;
+    FUN_00351e20();
+    FUN_003509ec();
+    long l1 = sk_token_build_long(0);
+    if (l1 == 0) {
+        word_t fn = FUN_000a6bb8();
+        FUN_00100efc();
+        FUN_00351d30();
+        ((void (*)(void))fn)();
+        return;
+    }
+    word_t i = 0;
+    word_t n = *(word_t *)(l1 + 0x10);
+    word_t list = (word_t)&DAT_00657778;
+    FUN_000a6fe0();
+    while (n != i) {
+        if (*(word_t *)(l1 + 0x10) <= i) CL4_FATAL();     /* 0x44a99c */
+        word_t v = *(word_t *)(l1 + i * 8 + 0x20);
+        if (v >> 0x3c == 6) {
+            i++;
+            continue;
+        }
+        FUN_0036b270(v & 0xfffffffffffffff);
+        sk_pair_t p = sk_flatten_ref_list(v);
+        FUN_00355a58();
+        FUN_0036b118(v & 0xfffffffffffffff);
+        v = x27_ret & 0xffffffffffff;
+        if ((x26_ret & 0x2000000000000000) != 0) v = x26_ret >> 0x38 & 0xf;
+        if (v == 0) {
+            FUN_003a25d4();
+            i++;
+            continue;
+        }
+        if ((FUN_003a261c(list) & 1) == 0) {
+            FUN_0006b3f4(*(word_t *)(list + 0x10));
+            list = FUN_00465b80();
+        }
+        word_t c = *(word_t *)(list + 0x10);
+        word_t nc = c + 1;
+        if (*(word_t *)(list + 0x18) >> 1 <= c) {
+            FUN_00465ed4();
+            FUN_00465f14();
+            list = FUN_00465b80();
+            nc = x8_ret;
+        }
+        i++;
+        *(long *)(list + 0x10) = nc;
+        word_t base = list + c * 0x10;
+        *(word_t *)(base + 0x20) = x27_ret;
+        *(word_t *)(base + 0x28) = x26_ret;
+    }
+    FUN_0036b118(l1);
+    FUN_000a6bb8();
+    FUN_00100efc();
+    sk_pair_t tail = ((sk_pair_t (*)(void))x8_ret)();
+    sk_ref_list_emit(list, tail);
+    FUN_00351d30(FUN_000b43d0());
+}
+
+/* FUN_00449808 @ 0x449808  (est. sk_flatten_ref_list_owned)
+ * Flatten a reference tree (param_1) into the shared ref-list
+ * (skipping 6-kind leaves) and emit the callout tail with the
+ * FUN_00411a54 result as the value. Returns the final pair.
+ * Confidence: medium
+ * Notes: bounds check 0x449ac8 */
+sk_pair_t sk_flatten_ref_list_owned(word_t param1)
+{
+    word_t n = *(word_t *)(param1 + 0x10);
+    FUN_0036b270();
+    word_t i = 0;
+    word_t list = (word_t)&DAT_00657778;
+    while (n != i) {
+        if (n <= i) CL4_FATAL();                  /* 0x449ac8 */
+        word_t v = *(word_t *)(param1 + i * 8 + 0x20);
+        if (v >> 0x3c == 6) {
+            i++;
+            continue;
+        }
+        FUN_0036b270(v & 0xfffffffffffffff);
+        sk_pair_t sub = sk_flatten_ref_list(v);
+        word_t hi = sub.hi;
+        FUN_0036b118(v & 0xfffffffffffffff);
+        v = sub.lo & 0xffffffffffff;
+        if ((hi & 0x2000000000000000) != 0) v = hi >> 0x38 & 0xf;
+        if (v == 0) {
+            FUN_003a25d4(hi);
+            i++;
+            continue;
+        }
+        if ((FUN_003a261c(list) & 1) == 0)
+            list = FUN_0045659c(0, *(long *)(list + 0x10) + 1, 1, list, 0x64e110,
+                                (word_t)&DAT_004c05b0, (word_t)FUN_00069970,
+                                (word_t)FUN_00069770);
+        word_t c = *(word_t *)(list + 0x10);
+        if (*(word_t *)(list + 0x18) >> 1 <= c)
+            list = FUN_0045659c(1 < *(word_t *)(list + 0x18), c + 1, 1, list,
+                                0x64e110, (word_t)&DAT_004c05b0,
+                                (word_t)FUN_00069970, (word_t)FUN_00069770);
+        i++;
+        *(word_t *)(list + 0x10) = c + 1;
+        *(sk_pair_t *)(list + c * 0x10 + 0x20) = sub;
+    }
+    FUN_0036b118(param1);
+    sk_pair_t val = FUN_00411a54(param1);
+    return sk_ref_list_emit(list, val);
+}
+
+/* FUN_00449acc @ 0x449acc  (est. sk_flatten_ref_list_tail)
+ * Flatten a reference tree (param_1) into the shared ref-list and
+ * emit the callout tail, returning the surviving pair directly.
+ * Confidence: medium
+ * Notes: bounds check 0x449d70 */
+sk_pair_t sk_flatten_ref_list_tail(word_t param1)
+{
+    word_t n = *(word_t *)(param1 + 0x10);
+    FUN_0036b270();
+    word_t i = 0;
+    word_t list = (word_t)&DAT_00657778;
+    for (;;) {
+        if (n == i) {
+            FUN_0036b118(param1);
+            return sk_ref_list_emit(list, (sk_pair_t){0, 0xe000000000000000ull});
+        }
+        if (n <= i) CL4_FATAL();                  /* 0x449d70 */
+        word_t v = *(word_t *)(param1 + i * 8 + 0x20);
+        if (v >> 0x3c == 6) {
+            i++;
+            continue;
+        }
+        FUN_0036b270(v & 0xfffffffffffffff);
+        sk_pair_t sub = sk_flatten_ref_list(v);
+        word_t hi = sub.hi;
+        FUN_0036b118(v & 0xfffffffffffffff);
+        v = sub.lo & 0xffffffffffff;
+        if ((hi & 0x2000000000000000) != 0) v = hi >> 0x38 & 0xf;
+        if (v == 0) {
+            FUN_003a25d4(hi);
+            i++;
+            continue;
+        }
+        if ((FUN_003a261c(list) & 1) == 0)
+            list = FUN_0045659c(0, *(long *)(list + 0x10) + 1, 1, list, 0x64e110,
+                                (word_t)&DAT_004c05b0, (word_t)FUN_00069970,
+                                (word_t)FUN_00069770);
+        word_t c = *(word_t *)(list + 0x10);
+        if (*(word_t *)(list + 0x18) >> 1 <= c)
+            list = FUN_0045659c(1 < *(word_t *)(list + 0x18), c + 1, 1, list,
+                                0x64e110, (word_t)&DAT_004c05b0,
+                                (word_t)FUN_00069970, (word_t)FUN_00069770);
+        i++;
+        *(word_t *)(list + 0x10) = c + 1;
+        *(sk_pair_t *)(list + c * 0x10 + 0x20) = sub;
+    }
+}
+
+/* FUN_00440ce8 @ 0x440ce8  (est. sk_parse_condition_branches)
+ * Parse a 2-branch condition node. Resolves the branch value via
+ * FUN_0043f770; the 2-element fast path retains and releases the two
+ * branches; otherwise it runs the FUN_004108a0 machinery and emits the
+ * s_expected_2_branches_in_condition_005dfe30 diagnostic. Builds a
+ * 0x90-byte descriptor (plus tag words) into a freshly allocated
+ * object and returns it. SoftwareBreakpoint(1,0x440fa4..fb0) guards
+ * the branch-count checks.
+ * Confidence: low
+ * Notes: error kind 0x29; object tag 0x3; out written via unaff_x19 */
+word_t sk_parse_condition_branches(word_t thisp, word_t x21, word_t x19)
+{
+    word_t local_198[16], x8_ret, x1_ret, u8, u9, local_180, uStack_178;
+    FUN_0008409c();
+    word_t u2 = FUN_0043f770();
+    word_t u10 = 0, u11 = 0, u4, u3, v9 = 0;
+    if (u2 >> 0x3c == 0) {
+        word_t l5 = *(word_t *)(u2 + 0x18);
+        if (*(word_t *)(l5 + 0x10) == 0) CL4_FATAL();   /* 0x440fa8 */
+        word_t l7 = *(word_t *)(u2 + 0x10);
+        word_t n = *(word_t *)(l7 + 0x10);
+        if (n == 0) CL4_FATAL();                        /* 0x440fac */
+        if (n == 1) CL4_FATAL();                        /* 0x440fb0 */
+        u10 = *(word_t *)(l5 + 0x20);
+        u11 = *(word_t *)(l5 + 0x28);
+        u4 = *(word_t *)(l7 + 0x20);
+        u3 = *(word_t *)(l7 + 0x28);
+        if (n == 2) {
+            FUN_0036b270(u3 & 0xfffffffffffffff);
+            FUN_0036b270(u4 & 0xfffffffffffffff);
+            FUN_0036b118(u2);
+            v9 = 0;
+            u2 = u4;
+        } else {
+            word_t local_198[16], local_180, uStack_178;
+            FUN_004108a0(local_198, u2);
+            FUN_0006a4c0(local_198, local_180);
+            word_t fn = FUN_00458e50(uStack_178);
+            FUN_0036b270(u3 & 0xfffffffffffffff);
+            FUN_0036b270(u4 & 0xfffffffffffffff);
+            FUN_000dbd0c();
+            ((void (*)(void))fn)();
+            FUN_000778b4();
+            FUN_000026e8(local_198);
+            local_198[0] = 0;
+            local_198[1] = 0xe000000000000000ull;
+            FUN_002a4ab4(0x2b);
+            FUN_003a25d4(local_198[1]);
+            FUN_00086840();
+            local_198[0] = 0xd000000000000029ull;
+            word_t d[2]; d[0] = n;
+            FUN_004638c0();
+            FUN_00462abc();
+            ((void (*)(word_t, word_t))x8_ret)(u8, fn);
+            FUN_002acbb8();
+            FUN_003a25d4(x1_ret);
+            FUN_004642e8(local_198[0]);
+            word_t d2[5];
+            d2[0]=local_180; d2[1]=uStack_178; d2[2]=0; d2[3]=0; d2[4]=n;
+            FUN_0042ec68(d2);
+            FUN_00461430(d2);
+            FUN_0036b118(u2);
+            v9 = 0;
+            u2 = u4;
+        }
+    } else {
+        FUN_00002834(0x685b78);
+        u3 = FUN_0036a940();
+        u10 = 0; u11 = 0;
+        u4 = *(word_t *)(thisp + 0x10);
+        *(word_t *)(u3 + 0x10) = u4;
+        *(word_t *)(u3 + 0x18) = u4;
+        u3 |= 0xb000000000000000ull;
+        v9 = 1;
+    }
+    FUN_00100e34();
+    if ((FUN_0042f670() & 1) == 0) {
+        u4 = *(word_t *)(thisp + 0x10);
+        FUN_004627f4();
+        local_198[0] = x8_ret;
+        FUN_00100e34();
+        FUN_002acbb8();
+        FUN_00463514();
+        FUN_002acbb8();
+        FUN_00465304(local_198[0]);
+        word_t d[2]; d[0]=u4; d[1]=u4;
+        FUN_00465908(_DAT_005a1870);
+        FUN_0042ec68();
+        FUN_00461430(0);
+    }
+    FUN_00466124(0x685d08);
+    u4 = FUN_0036a940();
+    u3 = *(word_t *)(thisp + 0x10);
+    if (x21 >> 0xe <= u3 >> 0xe) {
+        *(word_t *)(u4 + 0x10) = x21;
+        *(word_t *)(u4 + 0x18) = u3;
+        FUN_00117cc4(u4 + 0x20, x19, 0x90);
+        *(word_t *)(u4 + 0xb0) = u2;
+        *(word_t *)(u4 + 0xb8) = u10;
+        *(word_t *)(u4 + 0xc0) = u11;
+        *(byte *)(u4 + 200) = v9;
+        *(word_t *)(u4 + 0xd0) = u3;
+        FUN_00458c98(x19, &local_198);
+        return u4 | 0x3000000000000000ull;
+    }
+    CL4_FATAL();                                     /* 0x440fa4 */
+}
+
+/* FUN_00440820 @ 0x440820  (est. sk_parse_expression)
+ * Parse an expression node. Dispatches on the region kind: for kind 2
+ * it classifies the sub-kind (through FUN_0043ed70 / FUN_00440fb0 /
+ * FUN_00441688) and builds the corresponding object; other kinds map
+ * to the 'normal' / 'last' / 'backtrack' factories. Scans the branch
+ * element lists for the 6-kind set marker to set the thisp+0x40 flag
+ * word. Emits the s_extended_syntax_may_not_be_disab_005dfa00
+ * diagnostic when extended syntax is disabled mid-scan.
+ * Confidence: low
+ * Notes: error kinds 0x36/0x4b; extended-syntax strings 0x5dfa00/50 */
+word_t sk_parse_expression(word_t thisp)
+{
+    word_t local_270[22], auStack_5b0[22], auStack_1c0[22], auStack_320[22];
+    word_t auStack_3d0[22], auStack_660[22], auStack_e8[22], auStack_438[22];
+    word_t auStack_520[22], auStack_4b8[22], auStack_3d0b[22];
+    word_t local_4d0, local_3e8, uStack_3d8, local_3e0, uStack_4c0, local_4c8;
+    word_t uStack_268, uStack_258, uStack_248, local_250, local_260, uStack_238;
+    word_t local_240, uStack_298, local_2a0, uStack_440, local_448;
+    word_t u12 = *(word_t *)(thisp + 0x10);
+    FUN_00438328(auStack_5b0);
+    FUN_00117cc4((word_t)auStack_1c0, (word_t)auStack_5b0, 0x90);
+    int kind = FUN_00461bd4(auStack_1c0);
+    word_t result;
+    if (kind == 1) {
+        FUN_00438f54(auStack_520);
+        if ((~local_4d0 & 0xff) == 0) {
+            word_t k2 = FUN_00439348();
+            if (k2 == 2) {
+                FUN_004372d4(auStack_438);
+                if ((~local_3e8 & 0xff) == 0) {
+                    word_t k3 = FUN_0043942c();
+                    byte is2 = k3 == 2;
+                    if (is2) {
+                        FUN_0043ed70(auStack_3d0);
+                        FUN_00117cc4((word_t)auStack_320, (word_t)auStack_3d0, 0xb0);
+                        FUN_00464918(auStack_320);
+                        if (is2) {
+                            result = 0xf000000000000007ull;
+                        } else {
+                            FUN_00117cc4((word_t)&local_270, (word_t)auStack_320, 0xb0);
+                            FUN_00117cc4((word_t)auStack_e8, (word_t)auStack_320, 0x99);
+                            int r = FUN_00458af8(auStack_e8);
+                            if (r == 0xd) {
+                                word_t b = FUN_00465b04(auStack_e8);
+                                word_t b16 = *(word_t *)(b + 0x10);
+                                word_t b18 = *(word_t *)(b + 0x18);
+                                word_t b28 = *(word_t *)(b + 0x28);
+                                word_t b20 = *(word_t *)(b + 0x20);
+                                word_t b30 = *(word_t *)(b + 0x30);
+                                word_t b38 = *(word_t *)(b + 0x38);
+                                FUN_00117cc4((word_t)auStack_660, (word_t)auStack_3d0, 0xb0);
+                                FUN_004589e8(auStack_660, local_270);
+                                FUN_00440fb0();
+                                word_t f = *(word_t *)(thisp + 0x40);
+                                if (((f >> 6) & 1) == 0) {
+                                    if ((f & 3) != 0 && *(char *)b16 != 1) {
+                                        f &= 0xffffffffffffffbcull;
+                                        *(word_t *)(thisp + 0x40) = f;
+                                    }
+                                    long n = *(long *)(b18 + 0x10) + 1;
+                                    byte *q = (byte *)(b18 + 0x20);
+                                    for (;;) {
+                                        n--;
+                                        if (n == 0) break;
+                                        if ((*q & 0xfe) == 6) { f |= 3; *(word_t *)(thisp + 0x40) = f; break; }
+                                        q += 0x18;
+                                    }
+                                    n = *(long *)(b38 + 0x10) + 1;
+                                    q = (byte *)(b38 + 0x20);
+                                    for (;;) {
+                                        n--;
+                                        if (n == 0) break;
+                                        if ((*q & 0xfe) == 6) {
+                                            if ((f & 3) != 0) *(word_t *)(thisp + 0x40) = f & 0xfffffffffffffffcull;
+                                            break;
+                                        }
+                                        q += 0x18;
+                                    }
+                                } else {
+                                    long n = *(long *)(b38 + 0x10) + 1;
+                                    byte *q = (byte *)(b38 + 0x20);
+                                    for (;;) {
+                                        n--;
+                                        if (n == 0) {
+                                            if (*(char *)b16 == 1) break;
+                                            FUN_00086840();
+                                            result = 0xe;
+                                            goto err;
+                                        }
+                                        if ((*q & 0xfe) == 6) { result = 0xd; goto err; }
+                                        q += 0x18;
+                                    }
+                                }
+                                FUN_00464804();
+                                FUN_00350968(&b18);
+                                FUN_00461cb8();
+                                FUN_00350968(&b38);
+                                FUN_00461cb8();
+err:
+                                FUN_00466290(result);
+                                FUN_0042ec68();
+                                FUN_00461430();
+                            }
+                            FUN_00466104(0x685c90);
+                            result = FUN_0036a940();
+                            FUN_00117cc4(result + 0x10, (word_t)&local_270, 0xb0);
+                            result |= 0x8000000000000000ull;
+                        }
+                    } else {
+                        FUN_00002850(0x685cb8);
+                        result = FUN_0036a940();
+                        FUN_00350878(&local_270, k3);
+                        FUN_00441688();
+                        *(word_t *)(result + 0x18) = uStack_268;
+                        *(word_t *)(result + 0x10) = local_270[0];
+                        *(word_t *)(result + 0x28) = uStack_258;
+                        *(word_t *)(result + 0x20) = local_260;
+                        *(word_t *)(result + 0x38) = uStack_248;
+                        *(word_t *)(result + 0x30) = local_250;
+                        result |= 0x9000000000000000ull;
+                    }
+                } else {
+                    FUN_00117cc4((word_t)auStack_320, (word_t)auStack_438, 0x50);
+                    word_t d[3]; d[0]=local_3e8; d[1]=uStack_3d8; d[2]=local_3e0;
+                    FUN_00465884((word_t)&FUN_0067f9a0);
+                    result = FUN_0036a940();
+                    FUN_00441034(&local_270, u12, auStack_320);
+                    FUN_00466148();
+                    FUN_00461cb8(auStack_438);
+                    FUN_00117cc4(result + 0x10, (word_t)&local_270, 0x80);
+                    result |= 0x2000000000000000ull;
+                }
+            } else {
+                FUN_00465128(0x685ce0);
+                result = FUN_0036a940();
+                FUN_003511d8(&local_270, k2);
+                FUN_0044136c();
+                *(word_t *)(result + 0x18) = uStack_268;
+                *(word_t *)(result + 0x10) = local_270[0];
+                *(word_t *)(result + 0x28) = uStack_258;
+                *(word_t *)(result + 0x20) = local_260;
+                *(word_t *)(result + 0x38) = uStack_248;
+                *(word_t *)(result + 0x30) = local_250;
+                *(word_t *)(result + 0x48) = uStack_238;
+                *(word_t *)(result + 0x40) = local_240;
+                result |= 0xa000000000000000ull;
+            }
+        } else {
+            FUN_00117cc4((word_t)local_270, (word_t)auStack_520, 0x50);
+            word_t d[3]; d[0]=local_4d0; d[1]=uStack_4c0; d[2]=local_4c8;
+            FUN_00441034(auStack_4b8, local_4c8, local_270);
+            FUN_00466148();
+            FUN_00461cb8(auStack_520);
+            FUN_00117cc4((word_t)auStack_660, (word_t)auStack_4b8, 0x80);
+            FUN_00461590(auStack_660);
+            uStack_298 = uStack_440;
+            local_2a0 = local_448;
+            FUN_00117cc4((word_t)auStack_320, (word_t)auStack_660, 0x80);
+            FUN_00117cc4((word_t)&local_270, (word_t)auStack_320, 0x90);
+            result = sk_parse_condition_branches(u12, (word_t)&local_270, 0);
+            FUN_00458e28(&local_270);
+        }
+    } else {
+        FUN_00117cc4((word_t)&local_270, (word_t)auStack_1c0, 0x90);
+        result = sk_parse_condition_branches(u12, (word_t)&local_270, 0);
+        FUN_00461cb8(auStack_5b0);
+    }
+    return result;
+}
+
+/* FUN_00441ff8 @ 0x441ff8  (est. sk_parse_char_class_body)
+ * Parse the body of a custom character class. Either consumes a
+ * ']'-terminated token range or dispatches to the sub-kind parsers
+ * (FUN_0043ed70 / FUN_00441688) and folds the result into a 0x178-byte
+ * class descriptor. SoftwareBreakpoint guards the size checks.
+ * Confidence: low
+ * Notes: ']' token 0x5d */
+void sk_parse_char_class_body(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    byte cy_flag = 0, zr_flag = 0;
+    word_t x22;
+    word_t auStack_218[22], auStack_278[22], auStack_4a0[47], auStack_1b8[47];
+    word_t local_328[8], local_618[22], uStack_608, local_600, local_5f8, uStack_5f0;
+    word_t local_320, uStack_318, local_310, local_308, uStack_300;
+    sk_pair_t p;
+    FUN_004649fc();
+    FUN_00465288();
+    FUN_00351a5c();
+    FUN_003a25d4(p4);
+    FUN_004644dc();
+    if (cy_flag) {
+        FUN_00464b20(auStack_218);
+        p = FUN_0042fc4c();
+        word_t hi = p.hi;
+        if (hi == 0) {
+            goto parse_subkind;
+        }
+        if (p.lo == 0x5d && hi == 0xe100000000000000ull) {
+            FUN_003a25d4(hi);
+        } else {
+            p3 = 0x5d;
+            FUN_00463540(p.lo, hi);
+            FUN_002a0cf8();
+            FUN_00356b5c();
+            FUN_003a25d4();
+            if ((x22 & 1) == 0) goto parse_subkind;
+        }
+    }
+    goto empty;
+parse_subkind:
+    FUN_00464b20(auStack_278);
+    FUN_00439530();
+    FUN_0046511c();
+    if (zr_flag) {
+        word_t k = FUN_0043942c();
+        byte is2 = k == 2;
+        if (is2) {
+            p = FUN_00434054();
+            if (p.hi == 0) {
+                p = FUN_00435110();
+                if (p.hi == 0) {
+                    FUN_0043ed70(local_328);
+                    FUN_00464918(local_328);
+                    if (is2) goto empty;
+                    FUN_00117cc4((word_t)local_618, (word_t)local_328, 0xb0);
+                    FUN_00461708(local_618);
+                } else {
+                    uStack_608 = p3;
+                    local_600 = p4;
+                    local_618[0] = p.lo; local_618[1] = p.hi;
+                    FUN_00461738(local_618);
+                }
+            } else {
+                uStack_608 = p3;
+                local_600 = p4;
+                local_618[0] = p.lo; local_618[1] = p.hi;
+                FUN_00461768(local_618);
+            }
+        } else {
+            FUN_00441688(local_328);
+            local_618[0] = local_328[0];
+            uStack_608 = uStack_318;
+            local_618[1] = local_320;
+            local_600 = local_310;
+            uStack_5f0 = uStack_300;
+            local_5f8 = local_308;
+            FUN_00461798(local_618);
+        }
+        p = FUN_00465788();
+        FUN_00117cc4(p.lo, p.hi, 0x178);
+        FUN_0001a1c8(auStack_4a0);
+        FUN_00117cc4((word_t)auStack_1b8, (word_t)auStack_4a0, 0x178);
+        goto emit;
+    }
+empty:
+    FUN_00461854(auStack_1b8);
+emit:
+    FUN_00117cc4();
+}
+
+/* FUN_00441688 @ 0x441688  (est. sk_parse_custom_class_ops)
+ * Parse a custom character class's operator sequence ('&&'/'||'/'~~'
+ * combined with ',' and per-class fallbacks). Builds the parsed class
+ * object, appends each resolved sub-class into the output vector
+ * (0x178-byte stride) and finally emits the result descriptor.
+ * SoftwareBreakpoint(1,0x441b2c..b30) guards the count checks.
+ * Confidence: low
+ * Notes: operator tokens 0x2626 '&&', 0x7e7e '~~', 0x2d2d '--';
+ * result kind 0x24; vector at thisp+0x50 */
+void sk_parse_custom_class_ops(word_t p1, word_t p2, word_t p3, word_t x30)
+{
+    word_t local_110, local_288, local_280, local_278, local_270, local_268;
+    word_t x8_ret, x1_ret, local_b8, local_a0, local_b0, x8_ret_out[6];
+    byte zr_flag = 0;
+    word_t local_290, local_2b8, local_58[8], local_108[8];
+    word_t uStack_28, local_20, uStack_18, local_10, uStack_48, uStack_38, local_30;
+    word_t uVar2, uVar3, local_260, local_250, uStack_258, uStack_248, local_240;
+    word_t thisp = p1;
+    word_t x21;
+    byte uVar1 = *(byte *)(thisp + 0x20);
+    *(byte *)(thisp + 0x20) = 1;
+    FUN_000a6f68();
+    word_t local_110b = x8_ret;
+    FUN_00441b40(&local_110b);
+    word_t l10 = *(word_t *)(local_110b + 0x10);
+    word_t l11 = 0x20;
+    for (;;) {
+        word_t l12 = local_110b;
+        if (l10 == 0) {
+            /* no elements: error descriptor */
+            word_t d[6];
+            d[0]=1; d[1]=0xd000000000000027; d[2]=0x80000000005dfc30;
+            d[3]=0x80000000005dfc30; d[4]=7; d[5]=0x24;
+            FUN_0042ec68(d);
+            FUN_00461430(d);
+            uVar2 = DAT_004baeb8;
+            uVar3 = DAT_004baeb0;
+            for (;;) {
+                word_t u14 = *(word_t *)(thisp + 0x10);
+                FUN_00117cc4((word_t)&local_b8, 0, 0);
+                word_t u7 = FUN_00439530();
+                l11 = 0x2d2d;
+                switch (u7) {
+                case 1: l11 = 0x2626; break;
+                case 2: l11 = 0x7e7e; break;
+                case 3:
+                    FUN_004640c4();
+                    if ((FUN_0042f670() & 1) == 0) {
+                        u14 = *(word_t *)(thisp + 0x10);
+                        FUN_004628f4();
+                        local_288 = x8_ret;
+                        FUN_0046389c();
+                        local_280 = x8_ret;
+                        FUN_004640c4();
+                        FUN_002acbb8();
+                        FUN_00463514();
+                        FUN_002acbb8();
+                        word_t d2[6];
+                        d2[0]=1; d2[1]=local_288; d2[2]=local_280; d2[3]=u14; d2[4]=u14; d2[5]=3;
+                        FUN_0042ec68(d2);
+                        FUN_00461430(d2);
+                    }
+                    u14 = *(word_t *)(thisp + 0x10);
+                    if (x1_ret >> 0xe <= u14 >> 0xe) {
+                        *(byte *)(thisp + 0x20) = uVar1;
+                        x8_ret_out[0] = x8_ret;
+                        x8_ret_out[1] = x1_ret;
+                        x8_ret_out[2] = p3;
+                        x8_ret_out[3] = l12;
+                        x8_ret_out[4] = x1_ret;
+                        x8_ret_out[5] = u14;
+                        FUN_0008e500(x30);
+                        return;
+                    }
+                    CL4_FATAL();                         /* 0x441b30 */
+                }
+                FUN_0029fa0c(u14, local_a0, local_b8, local_b0);
+                FUN_00462a98();
+                FUN_00462884(l11);
+                word_t u8 = FUN_0015e4f8();
+                FUN_003a25d4(x21);
+                if ((u8 & 1) == 0) {
+                    local_280 = 0xe200000000000000ull;
+                    local_288 = l11;
+                    FUN_004627b8();
+                    FUN_00464d50(&local_288);
+                    sk_pair_t q = FUN_002aca00();
+                    x21 = q.lo;
+                    FUN_004628f4();
+                    local_288 = x8_ret;
+                    FUN_0046389c();
+                    local_280 = x8_ret;
+                    FUN_002acbb8();
+                    FUN_00463514();
+                    FUN_002acbb8();
+                    word_t d3[6];
+                    d3[0]=1; d3[1]=local_288; d3[2]=local_280; d3[3]=u14; d3[4]=u14; d3[5]=3;
+                    FUN_0042ec68(d3);
+                    FUN_00461430(d3);
+                } else {
+                    FUN_001ee018(l11, 0xe200000000000000ull);
+                    FUN_003a25d4(0xe200000000000000ull);
+                    FUN_0042fd4c(FUN_001ee018(l11, 0xe200000000000000ull));
+                }
+                word_t u13 = *(word_t *)(thisp + 0x10);
+                word_t u8b = u13 >> 0xe;
+                byte same = u8b == u14 >> 0xe;
+                if (u8b < u14 >> 0xe) CL4_FATAL();       /* 0x441b2c */
+                FUN_000a6f68();
+                local_290 = x8_ret;
+                FUN_00441b40(&local_290);
+                l11 = 0x20;
+                for (l10 = *(word_t *)(local_290 + 0x10); l10 != 0; l10--) {
+                    FUN_00117cc4((word_t)&local_288, local_290 + l11, 0x178);
+                    FUN_004652ac(&local_288);
+                    if (!same) goto out;
+                    l11 += 0x178;
+                }
+                local_288 = 1;
+                local_280 = -0x2fffffffffffffd9ull;
+                local_278 = local_2b8;
+                local_260 = 7;
+                local_250 = 0;
+                uStack_248 = 0;
+                uStack_258 = 0;
+                local_240 = 0x24;
+                local_270 = x1_ret;
+                local_268 = p3;
+                if (*(char *)(thisp + 0x58) == 1) {
+                    FUN_00461430(&local_288);
+                } else {
+                    FUN_00463fd0();
+                    FUN_004578dc(x21, (word_t)FUN_00072178, (word_t)FUN_0045694c, (word_t)FUN_0045636c);
+                    word_t lv = *(word_t *)(*(word_t *)(thisp + 0x50) + 0x10);
+                    FUN_00457994(lv, x21, (word_t)FUN_00072178, (word_t)FUN_0045694c, (word_t)FUN_0045636c);
+                    word_t lvb = *(word_t *)(thisp + 0x50);
+                    FUN_00464d74(lv + 1);
+                    FUN_004647f4(lvb + lv * 0x178);
+                    *(word_t *)(thisp + 0x50) = lvb;
+                }
+out:
+                FUN_00002534(0x657b20, (word_t)&DAT_005a35c8);
+                word_t l11b = FUN_0036a940(FUN_00002534(0x657b20, (word_t)&DAT_005a35c8), 0x198, 7);
+                *(word_t *)(l11b + 0x18) = uVar2;
+                *(word_t *)(l11b + 0x10) = uVar3;
+                local_280 = u7;
+                local_268 = local_290;
+                local_288 = l12;
+                local_278 = u14;
+                local_270 = u13;
+                FUN_004616d4(&local_288);
+                FUN_00117cc4(l11b + 0x20, (word_t)&local_288, 0x178);
+                l12 = l11b;
+            }
+        }
+        FUN_00117cc4((word_t)&local_288, local_110b + l11, 0x178);
+        FUN_004652ac(&local_288);
+        if (!zr_flag) {
+            FUN_00086840();
+            local_2b8 = x8_ret;
+            uVar2 = DAT_004baeb8;
+            uVar3 = DAT_004baeb0;
+            continue;
+        }
+        l11 += 0x178;
+        l10--;
+    }
+}
+
+/* FUN_00441b40 @ 0x441b40  (est. sk_parse_custom_class)
+ * Parse a custom character-class element sequence into a 0x178-byte
+ * class descriptor, dispatching on the sub-kind (2 => nested
+ * FUN_0043ed70 / per-element paths; else FUN_00441688). Appends each
+ * resolved descriptor into the vector at *unaff_x21 (0x178 stride).
+ * SoftwareBreakpoint(1,0x441fdc..ff8) guards the count checks.
+ * Confidence: low
+ * Notes: operator tokens 0x2d2d/0x7e7e/0x2626; ']' token 0x5d; result
+ * written through unaff_x21 */
+void sk_parse_custom_class(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    word_t local_498[16], local_320[16], uStack_488, local_480;
+    word_t local_318, local_198[8], uStack_188, local_190, auStack_b8[22];
+    word_t u5, x9_ret, x1_ret, u9;
+    word_t *x21;
+    word_t local_478, uStack_470, auStack_310[47], auStack_168[22];
+    word_t uStack_488b, local_180, uStack_170, local_178;
+    word_t thisp = p1;
+    word_t x19, x28, x22;
+    FUN_0008e518();
+    FUN_00464a38();
+    word_t u4 = *(word_t *)(x19 + 8);
+    word_t u11 = *(word_t *)(x19 + 0x18);
+    sk_pair_t p = FUN_00463194();
+    word_t u6 = p.hi;
+    FUN_003a25d4(p4);
+    while ((p.lo ^ u6) >> 0xe != 0) {
+        p.lo = x28;
+        p.hi = u6;
+        FUN_00463194();
+        u6 = p4;
+        FUN_004635c8();
+        if (x9_ret == 0) {
+            FUN_003a25d4(p4);
+        } else {
+            FUN_00462788();
+            p = FUN_002b439c();
+            word_t hi = p.hi;
+            FUN_003a25d4(p4);
+            if (p.lo == 0x5d && hi == 0xe100000000000000ull) {
+                FUN_003a25d4(hi);
+                break;
+            }
+            p3 = 0;
+            FUN_00463540(p.lo, hi);
+            FUN_002a0cf8();
+            FUN_00464e7c();
+            if ((p4 & 1) != 0) break;
+        }
+        x28 = p.lo;
+        FUN_00463194();
+        FUN_004629cc();
+        FUN_00462884(0x2d2d);
+        FUN_0015e4f8();
+        FUN_00464e7c();
+        if ((p4 & 1) != 0) break;
+        FUN_00463194();
+        FUN_004629cc();
+        FUN_00462884(0x7e7e);
+        FUN_0015e4f8();
+        FUN_00464e7c();
+        if ((p4 & 1) != 0) break;
+        FUN_00463194();
+        FUN_00462870();
+        FUN_00462884(0x2626);
+        FUN_0015e4f8();
+        FUN_00465314();
+        if ((u4 & 1) != 0) break;
+        u4 = FUN_0043942c();
+        byte gt1 = 1 < u4;
+        byte is2 = u4 == 2;
+        if (is2) {
+            u4 = *(word_t *)(x19 + 0x10);
+            FUN_004340b0(local_320);
+            if (local_318 == 0) {
+                u4 = *(word_t *)(x19 + 0x10);
+                FUN_00434af4(local_498);
+                if (local_498[1] == 0) {
+                    word_t u9 = u6;
+                    if ((*(byte *)(x19 + 0x40) & 1) != 0) {
+                        word_t u5 = FUN_00466600();
+                        u4 = FUN_00463864();
+                        FUN_0029fa0c();
+                        FUN_004659bc();
+                        if (!gt1) CL4_FATAL();            /* 0x441ff4 */
+                        FUN_00462f24();
+                        thunk_FUN_002b74c0();
+                        FUN_003534e0();
+                        word_t u7 = u6;
+                        FUN_003a25d4(x28);
+                        u9 = p.hi >> 0xe;
+                        x28 = u11;
+                        while (x28 >> 0xe != u9) {
+                            FUN_00350b3c();
+                            FUN_00353c30();
+                            p = FUN_002b439c();
+                            local_498[0] = p.lo; local_498[1] = p.hi;
+                            FUN_0024917c(&local_320, local_498);
+                            FUN_003a25d4(p.hi);
+                            u9 = x28 >> 0xe;
+                            if ((local_320[0] & 1) == 0) break;
+                            FUN_00350b3c();
+                            FUN_00353c30();
+                            x28 = FUN_002b3b50().lo;
+                        }
+                        byte eq = u9 == u11 >> 0xe;
+                        if (u9 < u11 >> 0xe) CL4_FATAL(); /* 0x441ff8 */
+                        FUN_00351cd0(u11, x28);
+                        u11 = thunk_FUN_002b74c0().lo;
+                        FUN_00465da4();
+                        u9 = u7;
+                        FUN_003a25d4(u6);
+                        FUN_0036b118(u5);
+                        if ((u11 ^ p3) >> 0xe != 0) {
+                            FUN_00352c4c(u11);
+                            FUN_002b4120();
+                            FUN_0042fe0c();
+                            p = FUN_00350a04();
+                            u11 = u7;
+                            FUN_002a3e64(p.lo, p.hi, x28);
+                            FUN_00354410();
+                            FUN_003a25d4(u7);
+                            u9 = *(word_t *)(x19 + 0x10);
+                            if (u9 >> 0xe < u4 >> 0xe) CL4_FATAL(); /* 0x441fdc */
+                            goto store;
+                        }
+                        FUN_003a25d4(u7);
+                    }
+                    FUN_0043ed70(auStack_168);
+                    FUN_00117cc4((word_t)auStack_b8, (word_t)auStack_168, 0xb0);
+                    FUN_00464918(auStack_b8);
+                    if (is2) break;
+                    FUN_00117cc4((word_t)local_498, (word_t)auStack_b8, 0xb0);
+                    FUN_00461708(local_498);
+                    u6 = u9;
+                } else {
+                    u9 = *(word_t *)(x19 + 0x10);
+                    u11 = u6;
+                    word_t hi = local_498[1];
+                    u6 = local_498[0];
+                    if (u9 >> 0xe < u4 >> 0xe) CL4_FATAL(); /* 0x441ff0 */
+store:
+                    local_498[0] = u6;
+                    local_498[1] = hi;
+                    uStack_488 = u4;
+                    local_480 = u9;
+                    FUN_00461738(local_498);
+                    u6 = u11;
+                }
+            } else {
+                if (*(word_t *)(x19 + 0x10) >> 0xe < u4 >> 0xe) CL4_FATAL(); /* 0x441fec */
+                local_498[0] = local_320[0];
+                local_498[1] = local_318;
+                uStack_488 = u4;
+                local_480 = *(word_t *)(x19 + 0x10);
+                FUN_00461768(local_498);
+            }
+        } else {
+            FUN_00441688(local_198);
+            local_498[0] = local_198[0];
+            uStack_488 = uStack_188;
+            local_498[1] = local_190;
+            local_480 = local_180;
+            uStack_470 = uStack_170;
+            local_478 = local_178;
+            FUN_00461798(local_498);
+        }
+        FUN_00117cc4((word_t)auStack_310, (word_t)local_498, 0x178);
+        word_t u9 = *x21;
+        word_t probe = FUN_003a261c(u9);
+        p4 = u6;
+        u4 = u9;
+        if ((probe & 1) == 0) {
+            FUN_00463fb8(*(word_t *)(u9 + 0x10));
+            FUN_0006b3f4();
+            u4 = FUN_0045636c();
+            p4 = u9;
+        }
+        u11 = *(word_t *)(u4 + 0x10);
+        if (*(word_t *)(u4 + 0x18) >> 1 <= u11) {
+            u5 = FUN_0006b42c();
+            FUN_00351c7c(u5, u11 + 1);
+            u4 = FUN_0045636c();
+        }
+        *(word_t *)(u4 + 0x10) = u11 + 1;
+        p3 = 0;
+        FUN_00117cc4(u4 + u11 * 0x178 + 0x20, (word_t)auStack_310, 0x178);
+        *x21 = u4;
+        FUN_00353abc();
+        FUN_004421ac();
+        u4 = *(word_t *)(x19 + 8);
+        u11 = *(word_t *)(x19 + 0x18);
+        p = FUN_00463194();
+        u6 = p.hi;
+        FUN_003a25d4(p4);
+    }
+    FUN_0008e500(x1_ret);
+}
+
+/* FUN_0043f454 @ 0x43f454  (est. sk_check_group_open)
+ * Validate that the current token is a group-opening pair (kind
+ * matching '\r\n' 0xa0d with tag 0xe2). Returns 1 when the opener is
+ * valid, 0 otherwise, and 1 when a balanced-group fallback matches.
+ * SoftwareBreakpoint(1,0x43f4e8/.ec) guards.
+ * Confidence: low
+ * Notes: opener token 0xa0d (CRLF), tag 0xe200000000000000 */
+word_t sk_check_group_open(void)
+{
+    word_t x20_cur, x19_tag;
+    FUN_003504d0();
+    long k = FUN_0042c5a4();
+    byte is2 = k == 2;
+    if (1 < k) {
+        FUN_0007c1c4();
+        FUN_001ae8a8();
+        word_t v = FUN_0034ecc8();
+        if (is2) CL4_FATAL();                      /* 0x43f4e8 */
+        if ((v & 0xffffff80) == 0 &&
+            !(x20_cur == 0xa0d && x19_tag == 0xe200000000000000ull)) {
+            FUN_0007c1c4();
+            v = FUN_00465ba0();
+            if ((v & 1) == 0) {
+                FUN_0007c1c4();
+                v = FUN_002bdc7c();
+                if ((v & 1) == 0) {
+                    FUN_0007c1c4();
+                    FUN_0016749c();
+                    FUN_0034ecc8();
+                    if (!is2) {
+                        FUN_002bd724();
+                        FUN_0046511c();
+                        return 0;
+                    }
+                    CL4_FATAL();                   /* 0x43f4ec */
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/* FUN_0043f770 @ 0x43f770  (est. sk_resolve_group_value)
+ * Resolve the current group/absent node into a value object. Bumps the
+ * nesting counter at thisp+0x38 (guarded against overflow). For shallow
+ * nesting (<0x40) either returns the singleton leaf or parses a '|'
+ * separated pair group, appending each side into growable lists; deep
+ * nesting emits the s_group_is_too_deeply_nested_005df750 diagnostic.
+ * SoftwareBreakpoint(1,0x43fcac..d00) guards the counter checks.
+ * Confidence: low
+ * Notes: '|' token 0x7c; deep-nest string 0x5df750; error kind 0x24 */
+word_t sk_resolve_group_value(word_t thisp, word_t x22)
+{
+    word_t x20_cur, x19_tag, x9_ret, x3, x8_ret, x8_ret2, is1, vec, lv7, lv10;
+    word_t v3 = FUN_00466408();
+    long nest = *(long *)(thisp + 0x38);
+    long n1 = nest + 1;
+    if ((long)nest == 0x7fffffffffffffff) CL4_FATAL();  /* 0x43fcf0 */
+    *(long *)(thisp + 0x38) = n1;
+    word_t start = *(word_t *)(thisp + 0x10);
+    word_t result;
+    if (n1 < 0x40) {
+        FUN_0046400c();
+        FUN_0029fa0c(start);
+        FUN_00351a5c();
+        FUN_003a25d4(0);
+        if ((thisp ^ x22) >> 0xe == 0) {
+            FUN_00002834(0x685b78);
+            result = FUN_0036a940();
+            *(word_t *)(result + 0x10) = start;
+            *(word_t *)(result + 0x18) = start;
+            if (n1 == 0) CL4_FATAL();               /* 0x43fcf8 */
+            result |= 0xb000000000000000ull;
+        } else {
+            FUN_004639fc();
+            FUN_00359018();
+            word_t obj = FUN_0036a940();
+            *(word_t *)(obj + 0x18) = DAT_004baeb8;
+            *(word_t *)(obj + 0x10) = DAT_004baeb0;
+            *(word_t *)(obj + 0x20) = FUN_0043fd04();
+            start = *(word_t *)(thisp + 0x10);
+            if ((FUN_0042f670(0x7c, 0xe100000000000000ull) & 1) != 0) { /* '|' */
+                FUN_004653b0();
+                FUN_00466244();
+                /* append left side into growable list at x22 */
+                word_t lv = *(word_t *)(thisp + 0x10);
+                if (lv >> 0xe < start >> 0xe) CL4_FATAL();   /* 0x43fce8 */
+                if ((FUN_003a261c(x22) & 1) == 0) {
+                    FUN_00462974(*(word_t *)(x22 + 0x10));
+                    x22 = FUN_00466594();
+                }
+                word_t c = *(word_t *)(x22 + 0x10);
+                if (*(word_t *)(x22 + 0x18) >> 1 <= c) {
+                    FUN_0006b42c();
+                    FUN_00352480(FUN_0006b42c(), c + 1);
+                    x22 = FUN_00466594();
+                }
+                *(word_t *)(x22 + 0x10) = c + 1;
+                word_t base = x22 + c * 0x10;
+                *(word_t *)(base + 0x20) = start;
+                *(word_t *)(base + 0x28) = lv;
+                word_t side = FUN_0043fd04();
+                start = *(word_t *)(obj + 0x10);
+                if (*(word_t *)(obj + 0x18) >> 1 <= start) {
+                    FUN_0006b42c();
+                    obj = FUN_00464cf4(FUN_0006b42c(), start + 1);
+                }
+                *(word_t *)(obj + 0x10) = start + 1;
+                *(long *)(obj + start * 8 + 0x20) = side;
+                word_t u12 = *(word_t *)(thisp + 0x10);
+                word_t u4 = *(word_t *)(thisp + 0x18);
+                FUN_004632a4();
+                FUN_0029fa0c();
+                FUN_004635c8();
+                if (x9_ret != 0) {
+                    FUN_00462788();
+                    FUN_002b439c();
+                    FUN_00354410();
+                    FUN_003a25d4(0);
+                    word_t hi = lv10;
+                    if (lv7 == 0x7c && hi == 0xe100000000000000ull) {
+                        FUN_003a25d4(hi);
+                    } else {
+                        sk_pair_t q = FUN_00351714();
+                        FUN_00463540(q.lo, q.hi, 0x7c);
+                        FUN_002a0cf8();
+                        FUN_00465314();
+                        if ((x3 & 1) == 0) goto right_missing;
+                    }
+                    FUN_004632a4();
+                    FUN_0029fa0c();
+                    FUN_00462a5c();
+                    FUN_00462b00(u12, 1, u4);
+                    sk_pair_t s = FUN_002b3f40();
+                    word_t s0 = s.lo;
+                    FUN_003a25d4(0);
+                    byte is1 = (s.hi & 0xff) == 1;
+                    if (is1) goto emit_pair;
+                    if (u4 >> 0xe < s0 >> 0xe) CL4_FATAL(); /* 0x43fcec */
+                    *(word_t *)(thisp + 0x10) = s0;
+                    *(word_t *)(thisp + 0x18) = u4;
+                    goto commit;
+                }
+                FUN_003a25d4(0);
+right_missing:
+                ; /* fall through to collapse */
+            }
+            FUN_00466244();
+            /* collapse: single side -> return it, else build pair object */
+            long cnt = *(long *)(obj + 0x10);
+            if (cnt == 1) {
+                FUN_0036b118(x22);
+                if (*(long *)(obj + 0x10) == 0) CL4_FATAL(); /* 0x43fcfc */
+                word_t v = *(word_t *)(obj + 0x20);
+                FUN_0036b270(v & 0xfffffffffffffff);
+                FUN_0036b118(obj);
+                n1 = *(long *)(thisp + 0x38) - 1;
+                if (*(long *)(thisp + 0x38) == 0) CL4_FATAL();  /* 0x43fcac */
+                result = v;
+            } else {
+                FUN_00002834(0x685ba0);
+                result = FUN_0036a940();
+                if (cnt == 0) CL4_FATAL();         /* 0x43fd00 */
+                if (*(long *)(x22 + 0x10) != cnt - 1) CL4_FATAL(); /* 0x43fd04 */
+                *(long *)(result + 0x10) = obj;
+                *(word_t *)(result + 0x18) = x22;
+                n1 = *(long *)(thisp + 0x38) - 1;
+                if (*(long *)(thisp + 0x38) == 0) CL4_FATAL();  /* 0x43fce4 */
+                result |= 0xb000000000000000ull;
+            }
+        }
+    } else {
+        /* too deeply nested */
+        word_t d[6];
+        d[0]=1; d[1]=0xd000000000000024ull; d[2]=0; d[3]=start; d[4]=start; d[5]=0x24;
+        FUN_00463014();
+        FUN_0042ec68();
+        FUN_00461430(d);
+        *(byte *)(thisp + 0x58) = 1;
+        FUN_00002834(0x685b78);
+        result = FUN_0036a940();
+        *(word_t *)(result + 0x10) = start;
+        *(word_t *)(result + 0x18) = start;
+        result |= 0xb000000000000000ull;
+    }
+commit:
+    *(long *)(thisp + 0x38) = n1;
+    FUN_004663ec(result, v3);
+    return result;
+emit_pair:
+    /* emit the '|' pair record */
+    FUN_00464608();
+    word_t d[6];
+    d[0]=0; d[1]=x8_ret; d[2]=0xed0000203a454c42ull; d[3]=start; d[4]=start;
+    FUN_002acbb8(0xd000000000000015, x8_ret2 | 0x8000000000000000);
+    FUN_00462a48(d);
+    FUN_00463890();
+    if (is1) {
+        FUN_00461430(d);
+    } else {
+        word_t vec = *(word_t *)(thisp + 0x50);
+        FUN_00459024(d, d);
+        if ((FUN_003a261c(vec) & 1) == 0) {
+            FUN_00462710(*(word_t *)(vec + 0x10));
+            FUN_0006b3f4();
+            vec = FUN_0045636c();
+        }
+        word_t c = *(word_t *)(vec + 0x10);
+        if (*(word_t *)(vec + 0x18) >> 1 <= c) {
+            FUN_0006b42c();
+            FUN_00351c7c(FUN_0006b42c(), c + 1);
+            vec = FUN_0045636c();
+        }
+        *(word_t *)(vec + 0x10) = c + 1;
+        FUN_00117cc4(vec + c * 0x50 + 0x20, (word_t)d, 0x49);
+        *(word_t *)(thisp + 0x50) = vec;
+    }
+    FUN_004632a4();
+    FUN_0029fa0c();
+    FUN_00351790();
+    FUN_002b4120();
+    FUN_003519a8();
+    FUN_003a25d4();
+    if (0 < (long)vec) {
+        FUN_004632a4();
+        FUN_0029fa0c();
+        FUN_00462a5c();
+        sk_pair_t q = FUN_003512c0();
+        FUN_00462b00(q.lo, q.hi, start);
+        sk_pair_t s = FUN_002b3f40();
+        word_t s0 = s.lo;
+        FUN_003a25d4(0);
+        if ((s.hi & 0xff) != 1) {
+            if (start >> 0xe < s0 >> 0xe) CL4_FATAL();     /* 0x43fcf4 */
+            *(word_t *)(thisp + 0x10) = s0;
+            *(word_t *)(thisp + 0x18) = start;
+        }
+    }
+    goto commit_after;
+commit_after:
+    *(long *)(thisp + 0x38) = n1;
+    FUN_004663ec(result, v3);
+    return result;
+}
+
+/* FUN_0044ac3c @ 0x44ac3c  (est. sk_emit_group_prefix)
+ * Fetch a 16-byte pair from FUN_00463f94 and copy 0x90 bytes through
+ * it, then call FUN_00411bbc. */
+void sk_emit_group_prefix(void)
+{
+    sk_pair_t p = FUN_00463f94();
+    FUN_00117cc4(p.lo, p.hi, 0x90);
+    FUN_00411bbc();
+}
+
+/* FUN_0044ac7c @ 0x44ac7c  (est. sk_format_group_value)
+ * Format a group value marker into a 16-byte pair. Emits '=>' (0x3d3e)
+ * style labels; when the flag at thisp+8 is set, use the 0x3e kind via
+ * FUN_00462abc. Confidence: low
+ * Notes: label 0xe90000000000003e */
+sk_pair_t sk_format_group_value(word_t thisp)
+{
+    word_t x8_ret, x16_ret;
+    word_t lo = 0xe90000000000003eull, hi = 0;
+    FUN_004636cc();
+    if (*(char *)(thisp + 8) != 1) {
+        lo = FUN_00462abc(0x6720e0);
+        sk_pair_t p = ((sk_pair_t (*)(word_t, word_t))x8_ret)(lo, 0x6720e0);
+        lo = p.lo;
+        hi = p.hi;
+    }
+    FUN_004649cc();
+    FUN_002acbb8();
+    if (*(char *)(thisp + 0x28) != 1) {
+        FUN_000f4ae8();
+        FUN_00027724(x16_ret);
+        FUN_0046295c();
+        ((void (*)(void))x8_ret)();
+        FUN_00352c80();
+    }
+    FUN_00084180();
+    FUN_002acbb8();
+    FUN_003a25d4();
+    sk_pair_t r = { lo, hi };
+    return r;
+}
+
+/* FUN_0044ad60 @ 0x44ad60  (est. sk_emit_group_prefix_small)
+ * Fetch a 0x50-byte descriptor via FUN_00463f94 and forward it to
+ * sk_format_group_value. */
+void sk_emit_group_prefix_small(void)
+{
+    sk_pair_t p = FUN_00463f94();
+    FUN_00117cc4(p.lo, p.hi, 0x50);
+    sk_format_group_value(0);
+}
+
+/* FUN_0044ad98 @ 0x44ad98  (est. sk_format_revision)
+ * Format a 'REVISION' marker (token 0x4e4f4953524556) with a '=>' or
+ * '=' separator based on the byte at unaff_x19. Returns the pair.
+ * Confidence: low
+ * Notes: token 0x4e4f4953524556 'REVISION' */
+sk_pair_t sk_format_revision(void)
+{
+    char *unaff_x19 = (char *)0; word_t x8_ret;
+    FUN_004644f8();
+    FUN_002acbb8(0x4e4f4953524556ull, 0xe700000000000000ull);
+    word_t lo = 0x3d3e;
+    if (*unaff_x19 != 1) lo = 0x3d;
+    word_t hi = 0xe200000000000000ull;
+    if (*unaff_x19 != 1) hi = 0xe100000000000000ull;
+    FUN_002acbb8(lo, hi);
+    FUN_003a25d4(hi);
+    FUN_0044ac7c();
+    FUN_00465294();
+    FUN_003a25d4((word_t)(unaff_x19 + 0x18));
+    sk_pair_t r = { x8_ret, 0 };
+    return r;
+}
+
+/* FUN_0044ae38 @ 0x44ae38  (est. sk_emit_revision)
+ * Fetch a 0x68-byte descriptor via FUN_00464140 and forward to
+ * sk_format_revision. */
+void sk_emit_revision(void)
+{
+    sk_pair_t p = FUN_00464140();
+    FUN_00117cc4(p.lo, p.hi, 0x68);
+    sk_format_revision();
+}
+
+/* FUN_0044ae70 @ 0x44ae70  (est. sk_format_end_group)
+ * Format an end-of-group marker. Emits the '=>'/'::' style label; when
+ * the +0x30 flag is set uses the 0x3e kind; otherwise the label from
+ * thisp+0x28. Returns the pair by value.
+ * Confidence: low
+ * Notes: label 0xe90000000000003e */
+sk_pair_t sk_format_end_group(word_t thisp)
+{
+    word_t x8_ret, x16_ret, x1_ret, x30_ret;
+    word_t lo = 0, hi = 0xe000000000000000ull;
+    sk_pair_t p = FUN_004632e0();
+    FUN_00463df8(p.lo, p.hi, 0x6833c8);
+    FUN_00462728();
+    FUN_00205844(&lo, &lo);
+    word_t lo2 = lo;
+    word_t hi2 = hi;
+    if (*(char *)(thisp + 0x48) != 1) {
+        word_t v;
+        if (*(char *)(thisp + 0x30) == 1) {
+            v = 0xe90000000000003eull;
+            FUN_00464a98();
+        } else {
+            lo = *(word_t *)(thisp + 0x28);
+            FUN_000f4ae8();
+            FUN_00462abc(x16_ret);
+            ((void (*)(void))x8_ret)();
+            v = x1_ret;
+        }
+        FUN_00465c74();
+        FUN_003a25d4(v);
+        lo = lo2;
+        hi = hi2;
+    }
+    sk_pair_t r = { lo, hi };
+    return r;
+}
+
+/* FUN_0044af28 @ 0x44af28  (est. sk_emit_group_close)
+ * Emit a group-close marker: either the 0x3e label (via FUN_00464a98)
+ * or the folded label via FUN_000f4ae8/FUN_00027724. */
+void sk_emit_group_close(void)
+{
+    word_t x8_ret, x16_ret, x30_ret; byte zr_flag = 0;
+    sk_pair_t p = FUN_00351db4();
+    if (zr_flag) {
+        FUN_00464a98(p.lo, 0xe90000000000003eull, x30_ret);
+        return;
+    }
+    FUN_000f4ae8();
+    FUN_00027724(x16_ret);
+    FUN_0046295c();
+    ((void (*)(void))x8_ret)();
+}
+
+/* FUN_0044afa0 @ 0x44afa0  (est. sk_emit_group_close_ff)
+ * Forward the current 4-word descriptor to sk_emit_group_close. */
+void sk_emit_group_close_ff(word_t *thisp)
+{
+    (void)thisp;
+    sk_emit_group_close();
+}
+
+/* FUN_0044afa4 @ 0x44afa4  (est. sk_emit_group_close_ff2)
+ * Identical to sk_emit_group_close_ff. */
+void sk_emit_group_close_ff2(word_t *thisp)
+{
+    (void)thisp;
+    sk_emit_group_close();
+}
+
+/* FUN_0044afc8 @ 0x44afc8  (est. sk_emit_group_suffix)
+ * Fetch a 0x99-byte descriptor via FUN_00463f94 and call FUN_00411bfc. */
+void sk_emit_group_suffix(void)
+{
+    sk_pair_t p = FUN_00463f94();
+    FUN_00117cc4(p.lo, p.hi, 0x99);
+    FUN_00411bfc();
+}
+
+/* FUN_004421ac @ 0x4421ac  (est. sk_parse_custom_class_main)
+ * Main custom-character-class parser. Walks the class's element
+ * sequence, dispatching each parsed element kind (cases 0..5) to its
+ * append/merge routine, growing the output vectors (0x178-byte stride)
+ * as needed. Handles the '|'-alternation, quantifier, and nested-class
+ * sub-cases, and folds sub-descriptors through sk_parse_char_class_body
+ * / sk_char_class_parse. SoftwareBreakpoint guards all size-shrink and
+ * index-bound checks (0x4451f4..5268).
+ * Confidence: low
+ * Notes: 3000+ line decompile; dominant control-flow hub for the
+ * custom-class feature; element kinds routed by FUN_00463144 switch */
+void sk_parse_custom_class_main(void)
+{
+    word_t *thisp = 0; word_t pcVar18 = 0, x8_ret = 0, x1_ret = 0, u8_flag = 0, iVar9 = 0;
+    word_t x23 = 0, x22 = 0, x12_hi = 0, x33_hi = 0, x30_ret = 0;
+    word_t stack_b[47], stack_c[47], stack_d[22], stack_f[22];
+    word_t local_ab8[47], local_8c8[16];
+    byte zr_flag = 0, cy_flag = 0;
+    FUN_0008e518();
+    word_t pc = (*DAT_00658cf0)(0);
+    word_t obj = *(word_t *)pc;
+    word_t count = *(word_t *)(obj + 2);
+    if (count != 0) {
+        /* walk the class element table, dispatching each element kind */
+        word_t *slot = (word_t *)(obj + (count - 1) * 0x2f - 0x2b);
+        for (;;) {
+            if ((*(word_t *)(thisp + 4) & 1) != 0) break;
+            FUN_0046400c();
+            FUN_0029fa0c(slot);
+            FUN_00462870();
+            FUN_004635e0();
+            FUN_00462af0();
+            FUN_0015e4f8();
+            FUN_000b4528();
+            if ((count & 1) == 0) break;
+            FUN_004635e0();
+            FUN_001ee018();
+            FUN_0042fd4c();
+            /* nested element loop with kind dispatch */
+            for (;;) {
+                sk_pair_t tokp = FUN_002aca00(); word_t tok = tokp.lo;
+                FUN_004648a0();
+                FUN_00351714();
+                FUN_0029fa0c();
+                FUN_00465198();
+                FUN_00465ff4();
+                if (x8_ret == 0) {
+                    /* append element into thisp+0x50 vector */
+                    word_t d[7];
+                    d[0]=0; d[1]=0; d[2]=0; d[3]=tok; d[4]=count; d[5]=3;
+                    FUN_0042dc90();
+                    FUN_00465038();
+                    if (zr_flag) {
+                        FUN_004644c0();
+                        FUN_00461430();
+                    } else {
+                        word_t vec = thisp[10];
+                        if ((FUN_004665d0() & 1) == 0) {
+                            FUN_00462710(vec + 0x10);
+                            FUN_0006b3f4();
+                            vec = FUN_0045636c();
+                        }
+                        FUN_00463a78();
+                        if (cy_flag) {
+                            FUN_0006b42c();
+                            FUN_004636f8();
+                            vec = FUN_0045636c();
+                        }
+                        *(word_t *)(vec + 16) = count;
+                        sk_pair_t q = FUN_004634d4(vec + x22 * 10);
+                        FUN_00117cc4(q.lo, q.hi, 0x49);
+                        thisp[10] = vec;
+                    }
+                } else {
+                    /* resolve via FUN_00462af0 and continue */
+                    FUN_00351714(FUN_003a25d4(count));
+                    FUN_0029fa0c();
+                    FUN_00462870();
+                    FUN_00100e34();
+                    FUN_00462af0();
+                    FUN_0015e4f8();
+                    FUN_000b4528();
+                    if ((count & 1) != 0) {
+                        FUN_00100e34();
+                        FUN_001ee018();
+                        FUN_0042fd4c();
+                        break;
+                    }
+                }
+                FUN_00463864();
+                FUN_0029fa0c();
+                if (FUN_00462d88() == 0) break;
+                FUN_00462788();
+                FUN_002b439c();
+                FUN_00463f74();
+                FUN_003a25d4();
+                FUN_004635a4();
+                FUN_00462a08();
+                FUN_003524b0();
+                FUN_004628c4();
+                sk_pair_t s = FUN_002b3f40();
+                FUN_00464ce4();
+                /* dispatch on the element kind byte */
+                word_t kind = x23;
+                if (kind == 1) {
+                    /* alternation / quantifier element */
+                    FUN_00463864();
+                    FUN_0029fa0c();
+                    FUN_00463144();
+                    if (u8_flag) goto element_done;
+                    FUN_00462788();
+                    FUN_002b439c();
+                    FUN_0035aba4();
+                    FUN_003a25d4(0);
+                    if (tok == 0x0a && s.hi == 0xe100000000000000ull) {
+                        FUN_003a25d4(s.hi);
+                    } else {
+                        FUN_00100efc();
+                        FUN_00463540(0, 0, 10);
+                        FUN_002a0cf8();
+                        FUN_00465578();
+                        if ((count & 1) == 0) goto element_done;
+                    }
+                    /* commit thisp+0x50 element with kind marker */
+                    FUN_00350518(0, 0, thisp[0]);
+                    FUN_0029fa0c();
+                    FUN_00462a98();
+                    FUN_00462a1c(thisp[2]);
+                    FUN_002b3f40();
+                    FUN_00463f64();
+                    if (iVar9 == 1) {
+                        FUN_00464378();
+                        FUN_0001a1c8();
+                        FUN_00463dd4();
+                        word_t vec = thisp[2];
+                        FUN_00462c04();
+                        FUN_00463890();
+                        if (!u8_flag) {
+                            /* grow vector and memcpy 0x49-byte element */
+                            FUN_004627a0();
+                            FUN_004578dc(0, (word_t)FUN_00072178, (word_t)FUN_0045694c,
+                                          (word_t)FUN_0045636c);
+                            FUN_00462cd4();
+                            FUN_004640a4();
+                            FUN_00462908();
+                            FUN_00117cc4(0, 0, 0x49);
+                        }
+                        FUN_00350518(0, 0, thisp[0]);
+                        FUN_0029fa0c();
+                        FUN_00462ba8();
+                        FUN_00356328();
+                        FUN_003a25d4();
+                    } else {
+                        FUN_00464588();
+                        if (!iVar9) CL4_FATAL();
+                    }
+                } else if (kind == 3) {
+                    /* group element: build the fold object */
+                    FUN_0046322c();
+                    FUN_00465128();
+                    FUN_0036a940();
+                    word_t g = FUN_00466348();
+                    *(word_t *)(g + 0x20) = x8_ret;
+                    *(word_t *)(g + 0x28) = 0xe100000000000000ull;
+                    *(word_t *)(g + 0x30) = 10;
+                    *(word_t *)(g + 0x38) = 0xe100000000000000ull;
+                    *(word_t *)(g + 0x40) = 0xa0d;
+                    *(word_t *)(g + 0x48) = 0xe200000000000000ull;
+                    FUN_00430040();
+                    FUN_004666a8();
+                    FUN_00455db8();
+                    FUN_00002834();
+                    FUN_0036b6ac();
+                } else if (kind == 4) {
+                    /* continuation element */
+                    FUN_00463864();
+                    FUN_0029fa0c();
+                    FUN_00463144();
+                    if (!u8_flag) goto element_done;
+                    FUN_00462788();
+                    FUN_002b439c();
+                    FUN_000b43e8();
+                    FUN_003a25d4(0);
+                    FUN_000b4390();
+                    FUN_002bd9cc();
+                    FUN_00351a44();
+                    FUN_003a25d4();
+                    if ((count & 1) != 0) {
+                        FUN_00464e1c();
+                        FUN_0042fd4c();
+                        goto next;
+                    }
+                } else if (kind == 5) {
+                    FUN_00463864();
+                    FUN_0029fa0c();
+                    FUN_00463144();
+                    if (!u8_flag) goto element_done;
+                    FUN_00462788();
+                    FUN_002b439c();
+                    FUN_0035aba4();
+                    FUN_003a25d4(0);
+                    if (tok == 0 && s.hi == 0xe100000000000000ull) {
+                        FUN_003a25d4(s.hi);
+                    } else {
+                        FUN_00100efc();
+                        FUN_00463540(0, 0, 0);
+                        FUN_002a0cf8();
+                        FUN_00465578();
+                        if ((count & 1) == 0) goto element_done;
+                    }
+                    FUN_00350518(0, 0, thisp[0]);
+                    FUN_0029fa0c();
+                    FUN_00462a98();
+                    FUN_00462a1c(thisp[2]);
+                    FUN_002b3f40();
+                    FUN_00463f64();
+                    if (iVar9 == 1) {
+                        FUN_004639c8();
+                        FUN_0042f584(thisp[2], 0, x8_ret | 0x8000000000000000, thisp[2],
+                                     thisp[2]);
+                        FUN_00463890();
+                        if (!u8_flag) {
+                            FUN_004627a0();
+                            FUN_004578dc(0, (word_t)FUN_00072178, (word_t)FUN_0045694c,
+                                          (word_t)FUN_0045636c);
+                            FUN_00462cd4();
+                            FUN_004640a4();
+                            word_t vec = thisp[10];
+                            *(word_t *)(vec + 0x10) = s.lo + 1;
+                            FUN_00117cc4(vec + (s.lo * 10 + 4) * 8, 0, 0x49);
+                        }
+                        FUN_00350518(0, 0, thisp[0]);
+                        FUN_0029fa0c();
+                        FUN_00462ba8();
+                        FUN_00356328();
+                        FUN_003a25d4();
+                    } else {
+                        FUN_00464588();
+                        if (!iVar9) CL4_FATAL();
+                    }
+                }
+element_done:
+                thisp[2] = count;
+                thisp[3] = s.hi;
+next:
+                if (x12_hi >> 0xe <= x33_hi >> 0xe) goto outer_next;
+                CL4_FATAL();                          /* 0x44521c */
+            }
+        }
+        /* fold nested class descriptors into the output vector */
+        FUN_00441ff8(stack_b);
+        FUN_00117cc4((word_t)stack_c, (word_t)stack_b, 0x178);
+        int r = FUN_004617d4(stack_c);
+        if (r != 1) {
+            FUN_00117cc4((word_t)&local_ab8, (word_t)stack_c, 0x178);
+            FUN_00458d30(&local_ab8, &local_8c8);
+            FUN_00462fd4();
+            FUN_004578dc(pcVar18, (word_t)FUN_00456cd8, (word_t)FUN_004567d8,
+                         (word_t)FUN_0045636c);
+            word_t lv = *(word_t *)(*(word_t *)pc + 0x10);
+            FUN_00462b6c(lv);
+            FUN_00457994();
+            word_t outv = *(word_t *)pc;
+            *(word_t *)(outv + 0x10) = lv + 1;
+            FUN_00117cc4(outv + lv * 0x178 + 0x20, (word_t)&local_ab8, 0x178);
+            /* parse the class via sk_char_class_parse and emit */
+            FUN_00465764();
+            FUN_004452a8(0, 1);
+            FUN_00465764();
+            FUN_00458d40();
+            FUN_00117cc4((word_t)stack_d, (word_t)stack_f, 0xb0);
+            FUN_00464918(stack_d);
+        }
+    }
+outer_next:
+    FUN_0008e500(x1_ret);
+}
+
+/* FUN_00445518 @ 0x445518  (est. sk_ref_range_slice)
+ * Slice a sub-range out of a reference collection. Given the base
+ * (param_2) and a negative offset, removes -param_1 leading elements
+ * via FUN_003f8224 and returns the surviving (base, base+0x20) pair.
+ * SoftwareBreakpoint(1,0x445580..588) guards the count bounds.
+ * Confidence: medium */
+sk_pair_t sk_ref_range_slice(word_t param1, word_t param2)
+{
+    if ((long)param1 < 0) CL4_FATAL();           /* 0x445580 */
+    word_t n = *(word_t *)(param2 + 0x10);
+    sk_pair_t r = FUN_003f8224(n, -(long)param1, 0, param2);
+    word_t v = 0;
+    if ((r.hi & 0xff) != 1) v = r.lo;
+    if (v <= n) {
+        if (-1 < (long)v) {
+            sk_pair_t out = { param2, param2 + 0x20 };
+            return out;
+        }
+        CL4_FATAL();                             /* 0x445588 */
+    }
+    CL4_FATAL();                                 /* 0x445584 */
+}
+
+/* FUN_00445588 @ 0x445588  (est. sk_ref_range_shrink)
+ * Shrink a reference collection by -param_1 leading elements, using
+ * FUN_0046128c. Guards the count bounds with SoftwareBreakpoint.
+ * Confidence: medium */
+void sk_ref_range_shrink(word_t param1)
+{
+    word_t *unaff_x20 = (word_t *)0;
+    if (param1 == 0) return;
+    if ((long)param1 < 0) CL4_FATAL();           /* 0x4455f0 */
+    word_t n = *(word_t *)(*unaff_x20 + 0x10);
+    sk_pair_t r = FUN_003f8224(n, -(long)param1, 0);
+    if ((r.hi & 0xff) == 1) CL4_FATAL();         /* 0x4455f8 */
+    if (r.lo <= n) {
+        FUN_0046128c(r.lo, n);
+        return;
+    }
+    CL4_FATAL();                                 /* 0x4455f4 */
+}
+
+/* FUN_004455f8 @ 0x4455f8  (est. sk_format_ref_pair)
+ * Format a reference pair (param_1, param_2) through FUN_0022d2f4,
+ * closing with sk_close_group and emitting via sk_format_ref_append.
+ * Returns the final pair.
+ * Confidence: medium
+ * Notes: format strings 0x66e240 / 0x66e0d8 */
+sk_pair_t sk_format_ref_pair(word_t param1, word_t param2, word_t param3)
+{
+    
+    word_t local_b0[16], local_a0, uStack_98, local_90, local_88, local_78, uStack_70;
+    word_t uVar1 = 0x66e240, uVar2 = 0x66e0d8;
+    local_b0[0] = param1; local_b0[1] = param2;
+    thunk_FUN_0036b270(param2);
+    FUN_0022d2f4(local_b0, 0x6753a0, 0x66e240);
+    sk_noop();
+    local_a0 = 0xf;
+    local_90 = 0;
+    local_88 = 0;
+    local_78 = 0;
+    uStack_98 = uVar2;
+    uStack_70 = param3;
+    FUN_0043f634();
+    FUN_0045904c(local_b0);
+    sk_pair_t r = FUN_004458b0(0, 0, uVar1, (uint32_t)uVar2 & 1);
+    FUN_0036b118(uVar1);
+    return r;
+}
+
+/* FUN_00445724 @ 0x445724  (est. sk_emit_group_ref_pair)
+ * Emit a group reference pair: acquire the lock, run the token-format
+ * machinery, build the reference via FUN_0022d2f4, close the group
+ * with sk_close_group, and release the lock. */
+void sk_emit_group_ref_pair(void)
+{
+    word_t x8_ret, x8_ret2, x12_ret, x9_ret, x3_ret, x19_ret;
+    word_t local_60[16], local_50, uStack_48, local_40, local_38, local_28;
+    FUN_00084220();
+    FUN_00356c6c();
+    FUN_0007c028();
+    (*DAT_00658cf0)(*(word_t *)(x8_ret + 0x40));
+    FUN_000aa4ec();
+    ((void (*)(word_t))(*((word_t **)x12_ret + 2)))(x9_ret - x8_ret2);
+    word_t u1 = FUN_0031e030(x3_ret);
+    FUN_00027754(x3_ret);
+    FUN_00027754();
+    word_t u2 = FUN_00027754();
+    word_t pe = FUN_00100efc();
+    FUN_0022d2f4(pe, 0, u1);
+    FUN_0044587c();
+    FUN_000a6f68();
+    local_50 = 0xf;
+    local_40 = 0;
+    local_38 = 0;
+    local_28 = 0;
+    uStack_48 = u2;
+    FUN_0043f634();
+    FUN_00351a50();
+    FUN_0045904c(local_60);
+    pe = FUN_0009461c();
+    FUN_004458b0(pe, 0, u1);
+    FUN_003535a8();
+    FUN_0036b118(u1);
+    FUN_0036b118(x19_ret & 0xfffffffffffffff);
+    FUN_0036b118(local_60[0]);
+    FUN_0034d868();
+    FUN_00084234();
+}
+
+void sk_noop(void);
+
+/* FUN_0044587c @ 0x44587c  (est. sk_noop)
+ * No-op stub (empty function body in the decompile). Present as a
+ * named slot in the option/format dispatch table.
+ * Confidence: high (exact) */
+void sk_noop(void)
+{
+}
+
+/* FUN_00445e64 @ 0x445e64  (est. sk_emit_ref_pair_opt)
+ * Emit a reference pair with option handling: forward to
+ * sk_emit_group_ref_pair, then apply the option and release refs. */
+void sk_emit_ref_pair_opt(word_t p1, word_t p2, word_t p3)
+{
+    word_t x21_ret, x20_ret; (void)p1; (void)p2;
+    FUN_00445724();
+    FUN_00351e08();
+    FUN_0040ff40(p3, 0);
+    if (x21_ret != 0) {
+        FUN_0036b118(p3);
+        FUN_0036b118(x20_ret & 0xfffffffffffffff);
+        FUN_0036b118();
+    }
+    FUN_0007c1c4();
+}
+
+/* FUN_00445eec @ 0x445eec  (est. sk_emit_quantifier)
+ * Emit a quantifier token. Resolves the '{' / '=' / 'C' style based
+ * on the token kind and argument count, then emits via
+ * sk_format_ref_pair / FUN_0042f020.
+ * Confidence: low
+ * Notes: tokens 0x3d '=', 0x43 'C' */
+void sk_emit_quantifier(void)
+{
+    word_t x8_ret, x8_ret2, x12_ret, x9_ret, x3_ret, x1_ret; uint32_t u1;
+    sk_pair_t p;
+    word_t u2 = FUN_00350a28();
+    FUN_0007c028(u2, u2);
+    (*DAT_00658cf0)(*(word_t *)(x8_ret + 0x40));
+    FUN_000aa4ec();
+    ((void (*)(word_t))(*((word_t **)x12_ret + 2)))(x9_ret - x8_ret2);
+    u1 = FUN_0031e030();
+    FUN_00027754();
+    FUN_00027754();
+    word_t l3 = FUN_00027754();
+    FUN_000b43d0();
+    FUN_0022d2f4();
+    FUN_0042c11c();
+    FUN_00351e08();
+    p.lo = FUN_003a25d4(x1_ret); p.hi = 0;
+    word_t v;
+    if ((u1 & 0xff) == 1) {
+        v = 0x3d;
+    } else {
+        if (0 < l3) {
+            FUN_0007c1c4();
+            p = FUN_0042f020();
+            if ((p.lo & 1) != 0) {
+                v = 0x43;
+                goto emit;
+            }
+        }
+        v = 0;
+    }
+emit:
+    FUN_0007c1c4(p.lo, p.hi, v);
+    FUN_004455f8();
+    FUN_00350b90();
+    FUN_003a25d4();
+    FUN_00462ee8();
+}
+
+/* FUN_00446028 @ 0x46028  (est. sk_emit_capture_group)
+ * Emit a capture-group prefix using the token-format machinery and
+ * the capture-name lookup. Guards the recursion counter.
+ * Confidence: low
+ * Notes: FUN_0045027c is a thunk */
+void sk_emit_capture_group(word_t x30)
+{
+    
+    FUN_00084220();
+    word_t l2 = FUN_00350980();
+    word_t l3 = thunk_FUN_0045027c();
+    FUN_003511d8(0xff);
+    word_t u4 = FUN_00377824();
+    FUN_00464f4c();
+    FUN_000b4390();
+    FUN_003516d8();
+    word_t u5 = FUN_00377bec();
+    word_t l6 = FUN_00310e08(0, u4, u5);
+    FUN_00077894(l2 + *(int *)(l6 + 0x24));
+    l2 = thunk_FUN_0045027c();
+    if (l3 <= l2) {
+        FUN_00084234(l3, l2, x30);
+        return;
+    }
+    CL4_FATAL();                                 /* 0x4460cc */
+}
+
+/* FUN_004460cc @ 0x460cc  (est. sk_emit_named_group)
+ * Emit a named capture-group prefix via the token machinery, folding
+ * the group name through FUN_000277b8/FUN_0031afcc. */
+void sk_emit_named_group(word_t p1, word_t p2, word_t p3)
+{
+    word_t x8_ret, x8_ret2, x9_ret, x9_ret2, x12_ret, x16_ret, x30_ret;
+    FUN_00084220();
+    word_t u1 = p3;
+    FUN_003509ec();
+    FUN_004633e0();
+    u1 = FUN_00377824(0, u1);
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658cf0)(0);
+    word_t l2 = 0 - x8_ret2;
+    FUN_000277b8(p3);
+    FUN_00084180(l2);
+    ((void (*)(void))x9_ret)();
+    FUN_0031afcc(p3);
+    FUN_00077894(x8_ret, l2);
+    ((void (*)(void))x9_ret2)();
+    ((void (*)(word_t, word_t))(*((word_t **)x16_ret + 1)))(l2, u1);
+    FUN_00084234(x30_ret);
+}
+
+/* FUN_004461bc @ 0x461bc  (est. sk_format_capture_ref)
+ * Format a capture-group reference token. Builds the token buffer via
+ * FUN_00365b6c; on failure emits an error token, on success emits the
+ * group-ref formatter. Returns the built pair via x8.
+ * Confidence: low */
+void sk_format_capture_ref(word_t p1, word_t p2, word_t p3)
+{
+    word_t x30_ret;
+    word_t auStack_28[10], auStack_30[8];
+    word_t x8_ret, x8_ret2, x12_ret, x13_ret;
+    sk_pair_t p;
+    word_t u2;
+    FUN_0008e518();
+    FUN_003509ec();
+    FUN_0007c028();
+    (*DAT_00658cf0)(*(word_t *)(x8_ret + 0x40));
+    (*DAT_00658cf0)(0);
+    word_t fn = *(word_t *)(x12_ret + 0x10);
+    FUN_00351274();
+    ((void (*)(void))fn)();
+    FUN_00464234();
+    u2 = FUN_00002534();
+    int i1 = FUN_00365b6c(auStack_28, 0 - (x8_ret2 + 0xf & 0xfffffffffffffff0) - x13_ret,
+                          p3, u2, 0xe);
+    if (i1 == 0) {
+        FUN_00350518();
+        word_t pe = 0;
+        ((void (*)(word_t, word_t, word_t))fn)(pe, 0, p3);
+        FUN_00350968(0);
+        FUN_00459074();
+        FUN_00463a58();
+        p = FUN_0036993c();
+        u2 = p.lo;
+        FUN_00077894(p.hi, 0 - (x8_ret2 + 0xf & 0xfffffffffffffff0));
+        FUN_00448dd8();
+    } else {
+        FUN_000026e8(auStack_28);
+        FUN_0009461c();
+        FUN_0035187c();
+        sk_pair_t p = FUN_0036993c();
+        u2 = p.lo;
+        ((void (*)(word_t))fn)(p.hi);
+    }
+    FUN_0008e500(u2, x30_ret);
+}
+
+/* FUN_00446b64 @ 0x446b64  (est. sk_emit_conditional_error)
+ * Emit a conditional-group diagnostic when the value cannot be
+ * resolved: builds the 'expected ...' error token via FUN_0035063c
+ * and commits it. */
+void sk_emit_conditional_error(void)
+{
+    word_t thisp = 0, x9_ret;
+    word_t auStack_80[10];
+    FUN_0008409c();
+    word_t v = FUN_0040feac(*(word_t *)(thisp + 0x10), 0);
+    if ((v & 1) == 0) {
+        FUN_00464248();
+        FUN_0035063c(auStack_80, 0xd00000000000001e, x9_ret | 0x8000000000000000);
+        FUN_0042f584();
+        FUN_0042ec68(auStack_80);
+        FUN_00461430(auStack_80);
+    }
+}
+
+/* FUN_004458b0 @ 0x4458b0  (est. sk_format_group_options)
+ * Emit the group-option / newline-mode specifier. Iterates the option
+ * list, formatting each newline-matching-mode entry (kinds 3/4/5 and
+ * the default 'newline_sequence' path) into a growable descriptor
+ * vector, then emits the closing ref-set and returns.
+ * Confidence: low
+ * Notes: strings s_newline_sequence_matching_mode_005e0190 and
+ * s_newline_matching_mode_005e01b0; option element stride 0x30 */
+sk_pair_t sk_format_group_options(word_t p1, word_t p2, word_t p3, byte p4)
+{
+    word_t local_108[16], local_f8, local_f0, local_e8, local_d0, local_c8;
+    word_t local_b8, local_b0, lStack_a8, local_a0, lStack_98, local_90, lStack_88;
+    word_t local_80, uStack_78, local_70;
+    word_t thisp = 0, x21, x22, x20, x8_ret, x8_ret2;
+    byte unaff_w24;
+    word_t uVar5 = p3;
+    local_f0 = p4;
+    FUN_0035098c();
+    local_108[0] = FUN_00466244();
+    local_f8 = uVar5;
+    FUN_0036b270(local_108[1]);
+    FUN_0036b270(p3);
+    FUN_0036b270(x21 & 0xfffffffffffffff);
+    local_e8 = FUN_0041ca38();
+    word_t src = x22;
+    if (x20 != 0) src = x20;
+    word_t n = *(word_t *)(src + 0x10);
+    if (n == 0) {
+        FUN_00356328();
+        FUN_0036b270();
+        FUN_0036b118(src);
+    } else {
+        FUN_00086840();
+        FUN_00086840();
+        FUN_0036b270();
+        word_t list = (word_t)&DAT_00657778;
+        word_t *slot = (word_t *)(src + 0x48);
+        do {
+            word_t v7 = *(slot - 2);
+            word_t kind = *(slot - 1) >> 0x3d;
+            byte is5 = *(slot - 1) >> 0x3d == 5;
+            switch (*(slot - 1) >> 0x3d) {
+            case 3:
+                FUN_00464ed0();
+                FUN_003a25d4(local_c8);
+                FUN_00463824();
+                FUN_004635d4(0, 0x80000000005df890);
+                FUN_002acbb8();
+                FUN_004639e4();
+                FUN_00465680();
+                if (!is5) {
+                    if ((FUN_003a261c(list) & 1) == 0) {
+                        FUN_00462710(*(word_t *)(list + 0x10));
+                        FUN_0006b3f4();
+                        list = FUN_0045636c();
+                    }
+                    word_t c = *(word_t *)(list + 0x10);
+                    if (*(word_t *)(list + 0x18) >> 1 > c) {
+                        *(long *)(list + 0x10) = c + 1;
+                        FUN_00465150(list + c * 0x50);
+                        x22 = list;
+                        break;
+                    }
+                    word_t g = FUN_0006b42c();
+                    list = FUN_00464cf4(g, c + 1);
+                    *(long *)(list + 0x10) = c + 1;
+                    FUN_00465150(list + c * 0x50);
+                    x22 = list;
+                } else {
+                    FUN_00461430(&local_b8);
+                }
+                break;
+            case 4:
+                FUN_00464ed0();
+                FUN_003a25d4(local_c8);
+                FUN_00463824();
+                FUN_004635d4(0, 0x80000000005df890);
+                FUN_002acbb8();
+                FUN_004639e4();
+                break;
+            case 5:
+                /* newline-sequence mode */
+                break;
+            default:
+                FUN_00464ed0();
+                FUN_003a25d4(local_c8);
+                FUN_00463824();
+                FUN_004635d4(0, 0x80000000005df890);
+                FUN_002acbb8();
+                FUN_004639e4();
+            }
+            FUN_00465680();
+            if (is5) {
+                FUN_00461430(&local_b8);
+            } else {
+                if ((FUN_003a261c(list) & 1) == 0) {
+                    FUN_00462710(*(word_t *)(list + 0x10));
+                    FUN_0006b3f4();
+                    list = FUN_0045636c();
+                }
+                word_t c = *(word_t *)(list + 0x10);
+                if (*(word_t *)(list + 0x18) >> 1 <= c) {
+                    word_t g = FUN_0006b42c();
+                    list = FUN_00464cf4(g, c + 1);
+                }
+                *(long *)(list + 0x10) = c + 1;
+                FUN_00465150(list + c * 0x50);
+                x22 = list;
+            }
+            n--;
+            slot += 6;
+        } while (n != 0);
+        FUN_0036b118(src);
+        x21 = local_e8;
+    }
+    word_t clist = (word_t)&DAT_006577e0;
+    word_t n2 = *(word_t *)(x21 + 0x10);
+    if (n2 != 0) {
+        word_t *sl = (word_t *)(x21 + 0x20);
+        FUN_00463824();
+        do {
+            word_t v8 = sl[1];
+            if (v8 != 0) {
+                FUN_003a25e0(v8, 3);
+                FUN_00077894(&local_d0);
+                FUN_000b2260();
+                FUN_003a25d4(local_c8);
+                if ((FUN_000b2260() & 1) == 0) {
+                    FUN_004647c0();
+                    word_t d[6];
+                    d[0]=1; d[1]=x8_ret; d[2]=0; d[3]=sl[4]; d[4]=sl[5];
+                    d[5]=sl[0]; 
+                    FUN_002acbb8();
+                    FUN_002acbb8(x8_ret2 - 0xb, 0x80000000005df7f0);
+                    d[0]=1; d[5]=0x21;
+                    FUN_0042ec68(local_108, &local_b8);
+                    FUN_00461430(&local_b8);
+                } else {
+                    FUN_003a25d4(v8);
+                }
+            }
+            sl += 7;
+            FUN_003a25d4(v8);
+            n2--;
+        } while (n2 != 0);
+    }
+    FUN_003a25d4(clist);
+    word_t u5 = local_108[0];
+    FUN_0036b270(local_108[0] & 0xfffffffffffffff);
+    FUN_0044632c(u5);
+    FUN_0036b118(u5 & 0xfffffffffffffff);
+    if (local_f0 == 1) {
+        FUN_0036b270(local_108[1]);
+        FUN_0036b270(local_f8);
+        FUN_0036b270(u5 & 0xfffffffffffffff);
+    } else {
+        FUN_0036b270(local_108[1]);
+        FUN_0036b270(local_f8);
+        FUN_0036b270(x22);
+        FUN_0036b270(u5 & 0xfffffffffffffff);
+        FUN_0042ed6c(x22);
+    }
+    FUN_0036b118(x22);
+    FUN_0036b118(local_e8);
+    FUN_0036b118(local_f8);
+    FUN_0036b118(local_108[1]);
+    FUN_0036b118(u5 & 0xfffffffffffffff);
+    FUN_003507e0();
+    sk_pair_t out = {0,0};
+    return out;
+}
+
+/* FUN_00446bd4 @ 0x446bd4  (est. sk_emit_group_sequence)
+ * Emit a group's element sequence. Iterates the two element lists
+ * (at auVar14+0x18 and +0x38), formatting each element kind (case
+ * values 1/8/d/e/f/10/11 and the default path) into a 0x50-byte
+ * record appended to the output vector at thisp+0x28. Guards via the
+ * token helpers. SoftwareBreakpoint guards.
+ * Confidence: low
+ * Notes: two near-identical loops over the two lists; element record
+ * stride 0x50 */
+void sk_emit_group_sequence(void)
+{
+    word_t auVar14[16];
+    word_t thisp = 0, x8_ret, x8_ret2, x9_ret, x10_ret, x11_ret;
+    word_t lVar11, lVar12, uVar9, uVar10, uVar8, uVar7, uVar6;
+    word_t in_stack_00000050, in_stack_00000070, in_stack_00000078;
+    word_t in_stack_00000080, in_stack_00000088, in_stack_00000090, in_stack_00000098;
+    byte bVar4;
+    FUN_00465540();
+    word_t l12 = *(word_t *)(*(word_t *)(auVar14[0] + 0x18) + 0x10);
+    if (l12 != 0) {
+        FUN_00464f24();
+        FUN_00464040();
+        FUN_00463cc8();
+        FUN_00464040();
+        word_t *slot = (word_t *)(x8_ret + 0x30);
+        FUN_00463824();
+        do {
+            word_t a = *(slot - 2);
+            word_t b = *(slot - 1);
+            word_t c = *slot;
+            slot += 3;
+            byte kind = a;
+            byte is13 = kind == 0x13;
+            switch (kind) {
+            case 1:
+            case 8:
+            case 0xd:
+            case 0xe:
+            case 0xf:
+            case 0x10:
+            case 0x11:
+                FUN_004631fc();
+                FUN_003a25d4(in_stack_00000050);
+                FUN_00463824();
+                FUN_004635d4(uVar8, x9_ret - 0x20 | 0x8000000000000000);
+                FUN_002acbb8();
+                FUN_0046373c();
+                in_stack_00000080 = x8_ret2;
+                in_stack_00000088 = uVar7;
+                break;
+            default:
+                break;
+            }
+            in_stack_00000050 = in_stack_00000088;
+            in_stack_00000090 = 0;
+            in_stack_00000098 = 0;
+            in_stack_00000070 = b;
+            in_stack_00000078 = c;
+            FUN_00465e2c();
+            if (is13) {
+                FUN_00461430(0);
+            } else {
+                word_t buf = *(word_t *)(thisp + 0x28);
+                if ((FUN_003a261c(buf) & 1) == 0) {
+                    FUN_00462710(*(word_t *)(buf + 0x10));
+                    FUN_0006b3f4();
+                    buf = FUN_0045636c();
+                }
+                word_t cnt = *(word_t *)(buf + 0x10);
+                if (*(word_t *)(buf + 0x18) >> 1 <= cnt) {
+                    uVar10 = FUN_0006b42c();
+                    FUN_00351c7c(uVar10, cnt + 1);
+                    buf = FUN_0045636c();
+                }
+                *(word_t *)(buf + 0x10) = cnt + 1;
+                FUN_004647f4(buf + cnt * 0x50);
+                *(word_t *)(thisp + 0x28) = buf;
+            }
+            l12--;
+        } while (l12 != 0);
+    }
+    l12 = *(word_t *)(*(word_t *)(auVar14[0] + 0x38) + 0x10);
+    if (l12 != 0) {
+        FUN_00464f24();
+        FUN_00464040();
+        FUN_00463cc8();
+        FUN_00464040();
+        word_t *slot = (word_t *)(x8_ret + 0x30);
+        FUN_00463824();
+        do {
+            byte kind = *(slot - 2);
+            word_t b = *(slot - 1);
+            word_t c = *slot;
+            slot += 3;
+            byte is13 = kind == 0x13;
+            byte gt12 = 0x12 < kind;
+            switch (kind) {
+            case 1:
+            case 8:
+            case 0xd:
+            case 0xe:
+            case 0xf:
+            case 0x10:
+            case 0x11:
+                FUN_004631fc();
+                FUN_003a25d4(in_stack_00000050);
+                FUN_00463824();
+                FUN_004635d4(uVar8, x9_ret - 0x20 | 0x8000000000000000);
+                FUN_002acbb8();
+                FUN_0046373c();
+                in_stack_00000080 = x8_ret2;
+                in_stack_00000088 = uVar7;
+                break;
+            default:
+                break;
+            }
+            in_stack_00000050 = in_stack_00000088;
+            in_stack_00000090 = 0;
+            in_stack_00000098 = 0;
+            in_stack_00000070 = b;
+            in_stack_00000078 = c;
+            FUN_00465e2c();
+            if (is13) {
+                FUN_00461430(0);
+            } else {
+                word_t buf = *(word_t *)(thisp + 0x28);
+                if ((FUN_003a261c(buf) & 1) == 0) {
+                    FUN_00462710(*(word_t *)(buf + 0x10));
+                    FUN_0006b3f4();
+                    buf = FUN_0045636c();
+                }
+                word_t cnt = *(word_t *)(buf + 0x10);
+                FUN_00465d98(*(word_t *)(buf + 0x18));
+                if (gt12) {
+                    FUN_0006b42c();
+                    FUN_004636f8();
+                    buf = FUN_0045636c();
+                }
+                *(word_t *)(buf + 0x10) = c;
+                FUN_004647f4(buf + cnt * 0x50);
+                *(word_t *)(thisp + 0x28) = buf;
+            }
+            l12--;
+        } while (l12 != 0);
+    }
+    FUN_00465524(auVar14[1]);
+}
+
+/* FUN_0044632c @ 0x44632c  (est. sk_dump_regex_tree)
+ * Recursively dump a regex AST node into the human-readable format.
+ * Dispatches on the node kind (default/1..10): prints 'branch reset
+ * group', 'non-atomic lookahead', 'conditional', 'interpolation',
+ * 'unsupported expression', 'script run', 'lookbehind' diagnostics,
+ * recursively dumps child nodes, and folds range/quantifier nodes.
+ * Confidence: low
+ * Notes: strings s_branch_reset_group_005e0210, s_non_atomic_
+ * lookahead_005e01f0, s_conditional_005a18f0, s_interpolation_
+ * 005a18e0, s_expression_is_not_quantifiable_005df770,
+ * s_script_run_005a1900, s_lookbehind_005a1910 */
+void sk_dump_regex_tree(void)
+{
+    word_t x8_ret, x9_ret;
+    word_t local_368, local_360, local_358, uStack_350, local_348, local_340;
+    word_t uStack_338, local_330, local_320, local_300, local_2f8, uStack_2f0;
+    word_t local_1f0, local_1e8, local_1e0, local_1d8, local_1d0, local_1c8;
+    word_t uStack_1c0, local_1b8, local_1b0, local_1a8, local_1a0, local_188;
+    word_t local_70[16], local_60, uStack_58, local_50, uStack_48, local_40;
+    word_t uStack_38, local_30, local_28, uStack_20, local_18, uStack_10, local_8;
+    word_t local_78[8];
+    word_t uVar13;
+    sk_pair_t auVar16 = FUN_00084220();
+    local_70[0] = 0; local_70[1] = 0;
+    uVar13 = auVar16.lo;
+    switch (uVar13 >> 0x3c) {
+    default:
+    case 1:
+        /* recursively dump the child list */
+        {
+            word_t l12 = *(word_t *)((uVar13 & 0xfffffffffffffff) + 0x10);
+            word_t n = *(word_t *)(l12 + 0x10);
+            local_70[0] = 0; local_70[1] = 0;
+            if (n != 0) {
+                FUN_0036b270(l12);
+                word_t off = 0x20;
+                do {
+                    word_t child = *(word_t *)(l12 + off);
+                    FUN_0036b270(child & 0xfffffffffffffff);
+                    FUN_00466388();
+                    sk_dump_regex_tree();
+                    FUN_0036b118(child & 0xfffffffffffffff);
+                    off += 8;
+                    n--;
+                } while (n != 0);
+            }
+            FUN_00084234(l12, auVar16.hi);
+            FUN_0036b118();
+            return;
+        }
+    case 2:
+        FUN_00117cc4((word_t)&local_1f0, (uVar13 & 0xfffffffffffffff) + 0x10, 0x80);
+        FUN_00465788();
+        FUN_00458a90();
+        /* dispatch on the node type byte */
+        if (local_1a0 == 1) {
+            /* branch reset group */
+            word_t pc = (word_t)"branch reset group";
+            FUN_004638a8();
+            FUN_003a25d4(local_360);
+            FUN_00463824();
+            local_340 = x8_ret - 0xb;
+            goto emit_tag;
+        }
+        if (local_1a0 == 2) {
+            FUN_00446bd4(&local_368);
+            break;
+        }
+        if (local_1a0 == 3) {
+            /* non-atomic lookahead / lookbehind / script run / unsupported */
+            if (local_1f0 == 6) {
+                local_368 = 0;
+                local_360 = 0xe000000000000000ull;
+                FUN_002a4ab4(0x1d);
+                FUN_003a25d4(local_360);
+                local_368 = 0xd000000000000014;
+                local_360 = 0x80000000005e01d0;
+                FUN_004629e0();
+                FUN_004635d4();
+                FUN_002acbb8();
+                FUN_00463268();
+                local_340 = 0xd000000000000014;
+                uStack_338 = 0x80000000005e01d0;
+                local_320 = 0x1d;
+            } else {
+                FUN_004638a8();
+                FUN_003a25d4(local_360);
+                local_368 = 0x7220747069726373;
+                local_360 = 0xea00000000006e75;
+                FUN_004629e0();
+                FUN_004635d4();
+                FUN_002acbb8();
+                FUN_00463268();
+                local_340 = 0; uStack_338 = 0;
+                local_320 = 0;
+            }
+emit_tag:
+            uStack_338 = local_340 | 0x8000000000000000;
+            local_320 = 0;
+            FUN_0042ec68(&local_368);
+            FUN_00461430(&local_368);
+            break;
+        }
+        /* unsupported quantifiable expression */
+        FUN_004108a0(&local_1f0, local_300);
+        FUN_0006a4c0(&local_1f0, local_1d8);
+        FUN_00351a44();
+        FUN_00458e50();
+        FUN_000b4390();
+        ((void (*)(void))x8_ret)();
+        FUN_00350b90();
+        FUN_000026e8(&local_1f0);
+        local_1f0 = 1;
+        FUN_00462a34((word_t)"expression is not quantifiable");
+        local_1e8 = x9_ret + 3;
+        local_1d0 = local_1d8;
+        local_1c8 = 0x13;
+        uStack_1c0 = 0;
+        local_1b8 = 0;
+        local_1b0 = 0;
+        local_1a8 = 0x24;
+        local_1d8 = uVar13 & 0xfffffffffffffff;
+        FUN_0042ec68(&local_1f0);
+        FUN_00461430(&local_1f0);
+        break;
+    case 3:
+        FUN_00464538();
+        FUN_003a25d4(local_1e8);
+        local_1f0 = 0x6f697469646e6f63;
+        local_1e8 = 0xeb000000006c616e;
+        FUN_004629e0();
+        FUN_004635d4();
+        FUN_002acbb8();
+        FUN_004639b0();
+        local_1c8 = 0; uStack_1c0 = 0;
+        goto emit_block;
+    case 7:
+        FUN_00464538();
+        FUN_003a25d4(local_1e8);
+        FUN_00465054();
+        local_1e8 = x9_ret & 0xffffffff | 0xed00006e00000000;
+        local_1f0 = x8_ret;
+        FUN_004629e0();
+        FUN_004635d4();
+        FUN_002acbb8();
+        FUN_004639b0();
+        local_1c8 = 0; uStack_1c0 = 0;
+        goto emit_block;
+    case 10:
+        FUN_00464538();
+        FUN_003a25d4(local_1e8);
+        local_1f0 = 0x6620746e65736261;
+        local_1e8 = 0xef6e6f6974636e75;
+        FUN_004629e0();
+        FUN_004635d4();
+        FUN_002acbb8();
+        FUN_004639b0();
+        local_1c8 = 0; uStack_1c0 = 0;
+emit_block:
+        local_1b8 = 0;
+        local_1b0 = 0;
+        local_1a8 = 0;
+        FUN_0042ec68(&local_1f0);
+        FUN_00461430(&local_1f0);
+        break;
+    case 8:
+        FUN_00117cc4((word_t)&local_1f0, (uVar13 & 0xfffffffffffffff) + 0x10, 0xb0);
+        FUN_00465788();
+        FUN_004589e8();
+        FUN_0044791c(&local_1f0, 0);
+        FUN_004589f8(&local_1f0);
+        break;
+    case 9:
+        {
+            word_t l12 = *(word_t *)((uVar13 & 0xfffffffffffffff) + 0x28);
+            word_t n = *(word_t *)(l12 + 0x10);
+            local_70[0] = 0; local_70[1] = 0;
+            if (n != 0) {
+                FUN_0036b270(l12);
+                word_t off = 0x20;
+                do {
+                    FUN_00117cc4((word_t)&local_1f0, l12 + off, 0x178);
+                    FUN_00465788();
+                    FUN_00458d30();
+                    FUN_00448298(&local_1f0);
+                    FUN_00458d40(&local_1f0);
+                    off += 0x178;
+                    n--;
+                } while (n != 0);
+                FUN_0036b118(l12);
+            }
+            break;
+        }
+    case 4:
+    case 5:
+    case 6:
+    case 0xb:
+        break;
+    }
+    FUN_00084234(auVar16.hi);
+}
+
+/* FUN_0044ab14 @ 0x44ab14  (est. sk_format_oniguruma_callout)
+ * Format an Oniguruma-style callout marker: when a pending value
+ * exists, emit it via sk_flatten_ref_list; then flush the ref-list.
+ * Returns the 16-byte pair by value.
+ * Confidence: medium
+ * Notes: string s_oniguruma_callout_of_contents via FUN_0044c918 */
+sk_pair_t sk_format_oniguruma_callout(word_t param1)
+{
+    sk_pair_t out = { 0, 0 };
+    sk_pair_t x1_ret = FUN_00463e04();
+    if (x1_ret.lo != 0) {
+        sk_pair_t p = FUN_0044c918(x1_ret.lo);
+        FUN_00463fe8();
+        FUN_002acbb8();
+        FUN_002acbb8(p.lo, p.hi);
+        FUN_003a25d4(p.hi);
+    }
+    sk_flatten_ref_list(param1);
+    FUN_000e72d4();
+    FUN_003a25d4(param1);
+    return out;
+}
+
+/* FUN_0044abb0 @ 0x44abb0  (est. sk_emit_callout_value)
+ * Emit a callout value: expand it via the FUN_004108a0 machinery and
+ * apply through the vtable callback. */
+void sk_emit_callout_value(void)
+{
+    word_t x8_ret;
+    word_t auStack_58[24], local_40;
+    FUN_004108a0(auStack_58);
+    FUN_0006a4c0(auStack_58, local_40);
+    FUN_00356328();
+    FUN_00027754();
+    word_t u1 = FUN_000a6bb8();
+    FUN_003504ac(u1);
+    ((void (*)(void))x8_ret)();
+    FUN_00351a50();
+    FUN_000026e8(auStack_58);
+    FUN_0009461c();
+}
+
+/* FUN_0044b000 @ 0x44b000  (est. sk_format_balanced_capture)
+ * Format a balanced-capture marker. Emits the 'CAPTURE balance:'
+ * label (token 0x6c61632045524350 / 0xed00002074756f6c) followed by
+ * the capture descriptor fields, and returns the pair.
+ * Confidence: medium
+ * Notes: label words 0x6c61632045524350 'CAPTURE cal' / 0xed0000 2074 756f6c */
+sk_pair_t sk_format_balanced_capture(void)
+{
+    word_t x8_ret;
+    word_t local_60, uStack_58, uStack_50, uStack_48, local_30, uStack_28;
+    word_t *x19 = (word_t *)0;
+    FUN_004644f8();
+    local_30 = 0;
+    uStack_28 = x8_ret;
+    sk_pair_t p = FUN_002acbb8(0x6c61632045524350ull, 0xed00002074756f6cull);
+    uStack_58 = x19[1];
+    local_60 = x19[0];
+    uStack_48 = x19[3];
+    uStack_50 = x19[2];
+    FUN_00463df8(p.lo, p.hi, 0x683b78);
+    FUN_00462728();
+    FUN_00205844(&local_60, &local_30);
+    sk_pair_t r = { local_30, uStack_28 };
+    return r;
+}
+
+/* FUN_0044b088 @ 0x44b088  (est. sk_emit_balanced_capture)
+ * Emit the balanced-capture marker via sk_format_balanced_capture. */
+void sk_emit_balanced_capture(void)
+{
+    FUN_00463778();
+    sk_format_balanced_capture();
+}
+
+/* FUN_0044b0c4 @ 0x44b0c4  (est. sk_emit_quantifier_value)
+ * Emit a quantifier value via FUN_004632f4/FUN_00411c8c. */
+void sk_emit_quantifier_value(void)
+{
+    FUN_004632f4();
+    FUN_00411c8c();
+}
+
+/* FUN_0044b0f0 @ 0x44b0f0  (est. sk_format_group_open_set)
+ * Format a group-open set: append each 0x10-byte element of the
+ * vector at x20+0x10 into the growable list at x19, then emit the
+ * '{' ... '}' wrapper via FUN_001bc440. Returns the '{' pair.
+ * Confidence: medium
+ * Notes: '{' token 0x7b; FUN_000a6fe0; element stride 0x10 */
+sk_pair_t sk_format_group_open_set(void)
+{
+    word_t x19 = 0, x20 = 0;
+    word_t l6 = *(word_t *)(x20 + 0x10);
+    word_t n = *(word_t *)(l6 + 0x10);
+    FUN_000a6fe0();
+    if (n != 0) {
+        FUN_004651a8();
+        word_t *slot = (word_t *)(l6 + 0x28);
+        do {
+            word_t a = *(slot - 1);
+            word_t b = *slot;
+            word_t cnt = *(word_t *)(x19 + 0x10);
+            word_t cap = *(word_t *)(x19 + 0x18);
+            thunk_FUN_0036b270(b);
+            if (cap >> 1 <= cnt) {
+                FUN_000dbed0(1 < cap);
+                FUN_0006a374();
+            }
+            slot += 4;
+            *(word_t *)(x19 + 0x10) = cnt + 1;
+            word_t base = x19 + cnt * 0x10;
+            *(word_t *)(base + 0x20) = a;
+            *(word_t *)(base + 0x28) = b;
+            n--;
+        } while (n != 0);
+    }
+    FUN_00463210();
+    FUN_00462898();
+    sk_pair_t p = FUN_0046589c();
+    FUN_001bc440(p.lo, p.hi, l6);
+    FUN_000b43e8();
+    FUN_0036b118(x19);
+    FUN_000b4390();
+    FUN_002acbb8();
+    FUN_003a25d4(l6);
+    FUN_00463878();
+    FUN_002acbb8();
+    sk_pair_t r = { 0x7b, 0xe100000000000000ull };
+    return r;
+}
+
+/* FUN_0044b200 @ 0x44b200  (est. sk_emit_group_open_set)
+ * Emit the group-open set via sk_format_group_open_set. */
+void sk_emit_group_open_set(void)
+{
+    sk_format_group_open_set();
+}
+
+/* FUN_0044b23c @ 0x44b23c  (est. sk_format_named_callout)
+ * Format a named Oniguruma callout: emits the
+ * s_named_oniguruma_callout_005dd780 label, the callout contents, and
+ * any '[' class / sub-callout suffixes. Returns the pair.
+ * Confidence: medium
+ * Notes: error kind 0xd000000000000018; '[' token 0x5b */
+sk_pair_t sk_format_named_callout(void)
+{
+    word_t uStack_58, x8_ret;
+    word_t *x20 = (word_t *)0;
+    sk_pair_t r;
+    FUN_000b430c();
+    FUN_002a4ab4(0x1a);
+    FUN_003a25d4(uStack_58);
+    FUN_00086840();
+    FUN_002acbb8(x20[0], x20[1]);
+    if (x20[7] != 0) {
+        FUN_00465800(0x5b, x20[6]);
+        FUN_002acbb8();
+        FUN_004640c4();
+        FUN_002acbb8();
+        FUN_002acbb8(0xd000000000000018, x8_ret);
+        FUN_003a25d4(x8_ret);
+    }
+    if (x20[0xe] != 0) {
+        sk_format_group_open_set();
+        FUN_00465294();
+        FUN_003a25d4();
+    }
+    r.lo = 0xd000000000000018;
+    r.hi = x8_ret;
+    return r;
+}
+
+/* FUN_0044b324 @ 0x44b324  (est. sk_emit_named_callout)
+ * Emit a named callout via sk_format_named_callout. */
+void sk_emit_named_callout(void)
+{
+    sk_pair_t p = FUN_00464140();
+    FUN_00117cc4(p.lo, p.hi, 0x88);
+    sk_format_named_callout();
+}
+
+/* FUN_0044b478 @ 0x44b478  (est. sk_emit_callout_class)
+ * Emit a callout class via sk_callout_format. */
+void sk_emit_callout_class(void)
+{
+    sk_pair_t p = FUN_00464140();
+    FUN_00117cc4(p.lo, p.hi, 0x98);
+    sk_callout_format(0);
+}
+
+/* FUN_0044b4b4 @ 0x44b4b4  (est. sk_emit_end_group_fmt)
+ * Emit an end-group format via sk_format_end_group. */
+void sk_emit_end_group_fmt(void)
+{
+    sk_pair_t p = FUN_00463f94();
+    FUN_00117cc4(p.lo, p.hi, 0x60);
+    sk_format_end_group(0);
+}
+
+/* FUN_0044b4ec @ 0x44b4ec  (est. sk_resolve_forward_kind)
+ * Resolve a forward/backward assertion kind from the 11-word
+ * descriptor at thisp. Maps the kind byte to the label ('capture' /
+ * 'balanced capture' / 'nonCaptur' / 'condition' / 'nonAtomic
+ * lookbehind' / 'script run' / 'atomic' / 'lookahead'/'lookbehind')
+ * and returns it.
+ * Confidence: medium
+ * Notes: kind strings s_balanced_capture_005dd860,
+ * s_changeMatchingOptions<_005dd0c0, s_negativeLookahead_005dd820,
+ * s_nonAtomicLookbehind_005dd7c0 */
+word_t sk_resolve_forward_kind(word_t *thisp)
+{
+    word_t x8_ret;
+    word_t l1 = thisp[0], l6 = thisp[1], l2 = thisp[2], l7 = thisp[3];
+    word_t l3 = thisp[4], l8 = thisp[5], l4 = thisp[6], l9 = thisp[7];
+    word_t l5 = thisp[8], l10 = thisp[9];
+    switch ((char)thisp[10]) {
+    case 1:
+        FUN_00466300();
+        FUN_00100c04();
+        FUN_002a4ab4(0x13);
+        FUN_003a25d4(0);
+        FUN_00086840();
+        return 0xd000000000000011;
+    case 2:
+        FUN_00466300();
+        FUN_00100c04();
+        FUN_002a4ab4(0x19);
+        FUN_003a25d4(0);
+        FUN_00086840();
+        return 0xd000000000000016;
+    case 3:
+        if ((l1==0 && l6==0 && l2==0 && l7==0 && l3==0 && l8==0 && l4==0 && l9==0 && l5==0 && l10==0))
+            return 0x65727574706163;                /* 'capture' */
+        if (l1 == 1) return 0x75747061436e6f6e;     /* 'nonCaptu' */
+        if (l1 == 2) return 0x75747061436e6f6e;
+        if (l1 == 3 && l2==0 && l6==0 && l7==0 && l3==0 && l8==0 && l4==0 && l9==0 && l5==0 && l10==0) {
+            FUN_004658c0();
+            return x8_ret;
+        }
+        if (l1 == 4) return 0x616568616b6f6f6c;     /* 'lookahea' */
+        if (l1 == 5) {
+            FUN_004643cc(0, 5, 0xe900000000000064ull);
+            FUN_004658c0();
+            return x8_ret - 1;
+        }
+        if (l1 == 6) { FUN_004658c0(); return x8_ret; }
+        if (l1 == 7) { FUN_00465d84(); return x8_ret; }
+        if (l1 == 8) { FUN_004658c0(); return x8_ret; }
+        if (l1 == 9) {
+            FUN_004643cc(0, 9, 0xe900000000000064ull);
+            FUN_004658c0();
+            return x8_ret | 1;
+        }
+        if (l1 == 10) return 0x7552747069726373;    /* 'scriptRu' */
+        return 0x635363696d6f7461;                  /* 'atomicSc' */
+    default:
+        FUN_00465800(0x3c65727574706163);
+        FUN_002acbb8();
+        FUN_00463e10();
+        FUN_002acbb8();
+        return 0;
+    }
+}
+
+/* FUN_0044b80c @ 0x44b80c  (est. sk_emit_forward_kind)
+ * Emit a forward-kind marker via sk_resolve_forward_kind. */
+void sk_emit_forward_kind(void)
+{
+    sk_pair_t p = FUN_00464140();
+    FUN_00117cc4(p.lo, p.hi, 0x51);
+    sk_resolve_forward_kind(0);
+}
+
+/* FUN_0044b844 @ 0x44b844  (est. sk_format_group_suffix)
+ * Emit the group suffix: resolve the forward kind, then return the
+ * 'group_' token pair. */
+sk_pair_t sk_format_group_suffix(void)
+{
+    sk_resolve_forward_kind(0);
+    FUN_00465294();
+    FUN_003a25d4();
+    sk_pair_t r = { 0x5f70756f7267, 0xe600000000000000ull };
+    return r;
+}
+
+/* FUN_0044b894 @ 0x44b894  (est. sk_emit_callout_group_suffix)
+ * Emit a callout group suffix via sk_format_callout_group. */
+void sk_emit_callout_group_suffix(void)
+{
+    sk_pair_t p = FUN_00463f94();
+    FUN_00117cc4(p.lo, p.hi, 0x80);
+    sk_format_callout_group(0);
+}
+
+/* FUN_0044bcdc @ 0x44bcdc  (est. sk_emit_open_paren)
+ * Emit an open-paren format via sk_format_open_paren. */
+void sk_emit_open_paren(void)
+{
+    FUN_004632f4();
+    sk_format_open_paren(0, 0, 0, 0, 0, 0);
+}
+
+/* FUN_0044bd08 @ 0x44bd08  (est. sk_quantifier_char)
+ * Map a quantifier mode byte to the '?' / '+' / '*' marker char.
+ * Confidence: high */
+byte sk_quantifier_char(char mode)
+{
+    if (mode == 0) return 0;
+    if (mode != 1) return 0x2b;   /* '+' */
+    return 0x3f;                  /* '?' */
+}
+
+/* FUN_0044bd44 @ 0x44bd44  (est. sk_format_lazy_quant)
+ * Format a lazy quantifier: emit the close-paren then the '?'/'+'
+ * marker based on the byte at x19+0x50. Returns the pair.
+ * Confidence: low
+ * Notes: '?' 0x3f / '+' 0x2b */
+sk_pair_t sk_format_lazy_quant(void)
+{
+    word_t local_40[16];
+    word_t x19 = 0;
+    FUN_004650c8();
+    sk_format_close_paren(0, 0, 0, 0, 0, 0);
+    FUN_00465944();
+    FUN_002acbb8();
+    FUN_003a25d4();
+    char c = *(char *)(x19 + 0x50);
+    byte m = 0x3f;
+    if (c != 1) m = 0x2b;
+    byte v = 0;
+    if (c != 0) v = m;
+    word_t t = 0xe000000000000000ull;
+    if (c != 0) t = 0xe100000000000000ull;
+    FUN_00465c74(v);
+    FUN_003a25d4(t);
+    return (sk_pair_t){0, 0};
+}
+
+/* FUN_0044bdc8 @ 0x44bdc8  (est. sk_format_relative_ref)
+ * Format a relative/forward reference: emits the '_' marker and the
+ * 'relucnat'/'possessiv'/'ageer' label based on the byte at x19+0x50.
+ * Returns the pair.
+ * Confidence: low
+ * Notes: label words 0x6e617463756c6572 'relucnat' / 0x6973736573736f70 */
+sk_pair_t sk_format_relative_ref(void)
+{
+    word_t local_40[16];
+    word_t x19 = 0;
+    FUN_004650c8();
+    sk_format_open_paren(0, 0, 0, 0, 0, 0);
+    FUN_00465944();
+    FUN_002acbb8();
+    FUN_003a25d4();
+    FUN_002acbb8(0x5f, 0xe100000000000000ull);    /* '_' */
+    char c = *(char *)(x19 + 0x50);
+    word_t tag = 0xe900000000000074;
+    word_t lo = 0x6e617463756c6572;
+    if (c != 1) { tag = 0xea00000000006576; lo = 0x6973736573736f70; }
+    word_t hi = 0x7265676165;
+    if (c != 0) hi = lo;
+    word_t t = 0xe500000000000000ull;
+    if (c != 0) t = tag;
+    FUN_00465c74(hi);
+    FUN_003a25d4(t);
+    return (sk_pair_t){0, 0};
+}
+
+/* FUN_0044be8c @ 0x44be8c  (est. sk_emit_callout_value_fmt)
+ * Emit a callout value format via sk_format_callout_value. */
+void sk_emit_callout_value_fmt(void)
+{
+    sk_pair_t p = FUN_00464140();
+    FUN_00117cc4(p.lo, p.hi, 0x88);
+    sk_format_callout_value(0);
+}
+
+/* FUN_0044bec4 @ 0x44bec4  (est. sk_format_custom_class)
+ * Format a custom character class: emits the
+ * s_customCharacterClass_inverted__005dd880 label with the 'false'/
+ * 'true' inversion marker and the class descriptor.
+ * Confidence: medium
+ * Notes: label words 0x65757274 'true' / 0x65736c6166 'false' */
+sk_pair_t sk_format_custom_class(void)
+{
+    word_t auStack_60[8], local_58, local_48;
+    word_t x8_ret;
+    char *x20 = (char *)0;
+    FUN_000b430c();
+    FUN_002a4ab4(0x26);
+    FUN_003a25d4(local_58);
+    FUN_00086840();
+    word_t u1 = 0x65757274;
+    if (*x20 != 1) u1 = 0x65736c6166;
+    word_t u2 = 0xe400000000000000ull;
+    if (*x20 != 1) u2 = 0xe500000000000000ull;
+    FUN_002acbb8(u1, u2);
+    FUN_003a25d4(u2);
+    FUN_002acbb8(0x202c, 0xe200000000000000ull);   /* ', ' */
+    FUN_00419f24(auStack_60);
+    FUN_001a6a8c(local_48, 0x684390);
+    FUN_0006b674();
+    FUN_004589bc(auStack_60);
+    FUN_003507e0();
+    FUN_002acbb8();
+    FUN_003a25d4(u2);
+    FUN_00100e34();
+    FUN_002acbb8();
+    sk_pair_t r = { 0xd00000000000001f, x8_ret };
+    return r;
+}
+
+/* FUN_0044bfc0 @ 0x44bfc0  (est. sk_emit_custom_class)
+ * Emit a custom class via sk_format_custom_class. */
+void sk_emit_custom_class(void)
+{
+    FUN_00463778();
+    sk_format_custom_class();
+}
+
+/* FUN_0044bff0 @ 0x44bff0  (est. sk_parse_forward_assert)
+ * Parse a forward/backward assertion node. Dispatches on the node
+ * kind (FUN_00458d04): default and kinds 1-5 emit the assertion label
+ * or fold a nested group; kind 5 additionally appends the 0x178-byte
+ * sub-elements into the vector. SoftwareBreakpoint(1,0x44c3b0/.b4)
+ * guards the element bounds.
+ * Confidence: low
+ * Notes: kind 5 element stride 0x178; ' pop' token 0x20706f */
+void sk_parse_forward_assert(void)
+{
+    word_t x8_ret, x9_ret;
+    word_t auStack_520[47], auStack_3a8[47], auStack_170[22];
+    word_t local_230, lStack_228, local_220, lStack_218, local_210, lStack_208;
+    word_t local_b0, uStack_a8;
+    sk_pair_t uvar5 = FUN_0008e518();
+    FUN_00117cc4((word_t)auStack_3a8, 0, 0);
+    word_t u4 = FUN_00458d04(auStack_3a8);
+    word_t *pl = (word_t *)FUN_00458d10(auStack_3a8);
+    sk_pair_t result = { 0, 0xe000000000000000ull };
+    switch (u4) {
+    default:
+        lStack_228 = pl[1]; local_230 = pl[0];
+        lStack_218 = pl[3]; local_220 = pl[2];
+        lStack_208 = pl[5]; local_210 = pl[4];
+        result = sk_format_custom_class();
+        break;
+    case 1:
+        FUN_00117cc4((word_t)&local_230, (word_t)pl, 0x178);
+        FUN_00117cc4((word_t)&local_b0, (word_t)pl, 0xb0);
+        result = FUN_00413b68();
+        FUN_00463de0();
+        FUN_002acbb8();
+        FUN_00117cc4((word_t)auStack_520, (word_t)auStack_170, 0xb0);
+        FUN_00413b68();
+        FUN_000e72d4();
+        FUN_003a25d4((word_t)pl);
+        break;
+    case 2:
+        FUN_00117cc4((word_t)&local_230, (word_t)pl, 0xb0);
+        result = FUN_00413b68();
+        break;
+    case 3:
+        FUN_004657b8(pl[0], pl[1]);
+        local_230 = x8_ret;
+        lStack_228 = x9_ret;
+        FUN_002acbb8();
+        FUN_004657ac();
+        FUN_002acbb8();
+        result.lo = local_230; result.hi = lStack_228;
+        break;
+    case 4:
+        break;
+    case 5:
+        {
+            word_t l11 = pl[0];
+            word_t l1 = pl[1];
+            word_t l10 = pl[4];
+            local_b0 = 0;
+            uStack_a8 = 0xe000000000000000ull;
+            FUN_002acbb8(0x20706f, 0xe300000000000000ull);   /* ' pop' */
+            word_t i = 0;
+            word_t n = *(word_t *)(l11 + 0x10);
+            FUN_000a6fe0();
+            while (n != i) {
+                byte eq = i == n;
+                if (n <= i) CL4_FATAL();            /* 0x44c3b0 */
+                FUN_004654a8(&local_230);
+                FUN_004652ac(&local_230);
+                if (eq) { i++; continue; }
+                FUN_00458d30(&local_230, auStack_520);
+                word_t c = pl[2];
+                if ((FUN_003a261c((word_t)pl) & 1) == 0) {
+                    FUN_000dbbe0(0, c + 1);
+                    FUN_00456238();
+                }
+                if ((word_t)pl[3] >> 1 <= c) {
+                    FUN_00456238(1 < (word_t)pl[3], c + 1, 1);
+                }
+                i++;
+                pl[2] = c + 1;
+                FUN_00117cc4((word_t)pl + c * 0x2f * 8 + 4 * 8, (word_t)&local_230, 0x178);
+            }
+            FUN_001a6a8c((word_t)pl, 0x684390);
+            FUN_000b43e8();
+            FUN_0036b118((word_t)pl);
+            FUN_000b4390();
+            FUN_002acbb8();
+            FUN_003a25d4(n);
+            FUN_00463fe8();
+            result = FUN_002acbb8();
+            local_230 = (word_t)l1;
+            FUN_00463df8(result.lo, result.hi, 0x6844a8);
+            FUN_00462728();
+            FUN_00205844(&local_230, &local_b0);
+            FUN_00463fe8();
+            FUN_002acbb8();
+            i = 0;
+            n = *(word_t *)(l10 + 0x10);
+            FUN_000a6fe0();
+            while (n != i) {
+                byte eq = i == n;
+                if (n <= i) CL4_FATAL();            /* 0x44c3b4 */
+                FUN_004654a8(&local_230);
+                FUN_004652ac(&local_230);
+                if (eq) { i++; continue; }
+                FUN_00458d30(&local_230, auStack_520);
+                word_t c = pl[2];
+                if ((FUN_003a261c((word_t)pl) & 1) == 0) {
+                    FUN_000dbbe0(0, c + 1);
+                    FUN_00456238();
+                }
+                if ((word_t)pl[3] >> 1 <= c) {
+                    FUN_00465f14(1 < (word_t)pl[3]);
+                    FUN_00456238();
+                }
+                i++;
+                pl[2] = c + 1;
+                FUN_00117cc4((word_t)pl + c * 0x2f * 8 + 4 * 8, (word_t)&local_230, 0x178);
+            }
+            FUN_001a6a8c((word_t)pl, 0x684390);
+            FUN_000b43e8();
+            FUN_0036b118((word_t)pl);
+            FUN_000b4390();
+            FUN_002acbb8();
+            FUN_003a25d4(n);
+            result.lo = local_b0; result.hi = uStack_a8;
+            break;
+        }
+    }
+    FUN_0008e500(result.lo, result.hi, uvar5.lo);
 }

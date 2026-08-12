@@ -3637,3 +3637,21 @@ Confidence: medium
 - **Evidence**: string refs `s_javaIdentifierIgnorable_005dd110`, `s_javaJavaIdentifierPart_005dd150`, `s_javaJavaIdentifierStart_005dd170`, `s_javaLetterOrDigit_005dd1a0`, `s_javaUnicodeIdentifierPart_005dd1f0`, `s_javaUnicodeIdentifierStart_005dd210`; packed words `0x696665446176616a` ("javaDefi...").
 - **Severity (hypothesis)**: informational — documents attack surface (Java class-file parsing in the TCB).
 - **Confidence**: high (string-matched)
+
+## [Sk190] 0041465c sk_syscall_number_decode — syscall-number dispatch index table
+Observation: A linear syscall-number->dispatch-index decoder. It walks a fixed sequence of syscall IDs (0x61='a', 0x65='e', 0x66='f', 0x6e='n', 0x72='r', 0x74='t', 'd', 'D', 'h', 'H', 's', 'S', 'v', 'V', 'w', 'W', 'b', 'C', 'N', 'R', 'X', 'B', 'A', 'Z', 'z', 'G', 'K', 'O', 'y', 'Y', ...) via per-ID probing helpers (FUN_00462b80 + FUN_002a0cf8) and returns the matched index. An unknown/unmatched syscall falls through to return 0x1f (31) — a single catch-all default index, with no bounds/validity rejection on the returned table index.
+Evidence: Decompile 0041465c: for each candidate, `if (unaff_x20 != id || unaff_x19 != -0x1f00000000000000) { FUN_00462b80(id); u= FUN_002a0cf8(); if (u&1) return idx; }` ; final `return 0x1f;`. Pair constant -0x1f00000000000000 is the cL4 syscall tag.
+Severity (hypothesis): Medium — the index feeds a dispatch table; a fallthrough to index 31 relies on the caller validating the table bounds.
+Confidence: Medium.
+
+## [Sk190] 0040fd2c / 00411e40 / 00411f48 / 00411f4c — register-passed wrapper chain
+Observation: Several small object-service wrappers read their arguments from callee-saved registers (unaff_x20/x19) rather than the ABI arg registers. Ghidra renders the same values as explicit args at some call sites and as unaff registers at the callee definition, i.e. the decompiler is internally inconsistent about argument passing across this region. All such functions were modelled by adding explicit params and padding under-argued calls with 0.
+Evidence: 0040fd2c reads `*unaff_x20, unaff_x20[1..2]`; 00411e40 passes `(s78, r1, r2, r3)` to 00411d94 whose own body reads only unaff_x19/x20.
+Severity (hypothesis): Low (analysis fidelity, not a runtime flaw).
+Confidence: High (decompiler inconsistency is directly observable).
+
+## [Sk190] 0041001c sk_obj_object_compare_dispatch — Swift object equality over type tags
+Observation: The comparison dispatch switches on the object type tag (lo>>0x3c) and compares payloads. It invokes sibling comparators and, on the "type kinds" path (cases 5-7), compares (kind, size) pairs and XORs key words; result threshold `< 0x4000`. Swift runtime "absent_function" and "changeMatchingOptions" error strings (s_absent_function_005dd080 / s_changeMatchingOptions_005dd0c0) are referenced by the deeper typed handler FUN_00413b68.
+Evidence: 0041001c switch(uVar6>>0x3c) with cases comparing `*(obj+0x10)`, `*(obj+0x18)`; case 5-7 `if ((uVar6^uVar8)>>0xe==0)`; FUN_00413b68 invokes FUN_00462adc(s_changeMatchingOptions_005dd0c0) and FUN_00086840(s_absent_function_005dd080) paths.
+Severity (hypothesis): Info (Swift runtime semantics).
+Confidence: Medium.

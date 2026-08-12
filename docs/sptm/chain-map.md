@@ -488,3 +488,12 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - IPC/transport: sk_ipc_msg_dispatch 0x60f60 → sk_ipc_transfer 0x610b8; tightbeam transport init 0x20134 → append 0x20448 → decoder 0x259c0 / encoder 0x22d60.
 - Capability: sk_cap_validate 0x3e440 / release 0x3e4c0 / revoke 0x3e5f0; sk_cnode_alloc_cap 0x7acd8 (strings CNodeAllocator); roottask metadata serialize/deserialize 0x7cb88/0x7d3e8.
 - Boot-phase barrier: sk_boot_phase_enter 0x60570 / notify 0x605f8 / drain 0x60650 (DAT_006ad900); sk_boot_main 0x60728 (handler table DAT_006b26d8).
+
+## Sk190 (0x40fd2c-0x4158ac, Swift object-service region)
+- 0041001c -> 0041144c, 00411930, 00411d40, 00412248 (object compare dispatch)
+- 00410414 -> 0041360c, 0041235c, 00413b68 (per-type dispatch)
+- 004108a0 -> 00413b68 family (service descriptor build)
+- 00411cc4 -> 00413b68 (root dispatcher -> typed handler)
+- 0041465c -> 00462b80, 002a0cf8 (syscall-number decode)
+- 00413b68 -> 00414dec, 00414bf4, 004150e8 (typed Swift value encoding)
+- cross-region helpers: 0036b270/0036b118 (alloc/free), 002a0cf8 (flag check), 002298d4 (logger)
