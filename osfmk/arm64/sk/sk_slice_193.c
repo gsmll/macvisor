@@ -1956,6 +1956,12 @@ e43c:
 e444:
         auVar14 = sw_3507e0(0);
         sw_466528(auVar14.lo, auVar14.hi, uVar4);
+        return;
+        /* e438 is a goto-only target (LAB_0042e438: FUN_00463bbc(uVar6);
+         * goto LAB_0042e43c); kept off the fall-through path. */
+e438:
+        sw_463bbc(k3);
+        goto e43c;
 }
 
 

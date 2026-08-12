@@ -2908,7 +2908,7 @@ extern sk_r4_u128_t sk_h_00350798(); /* FUN_00350798 out-of-slice */
 extern sk_r4_u128_t sk_h_003507c8(); /* FUN_003507c8 out-of-slice */
 extern void sk_h_0035084c(); /* FUN_0035084c out-of-slice */
 extern void sk_h_00350884(); /* FUN_00350884 out-of-slice */
-extern void sk_h_003508b4(); /* FUN_003508b4 out-of-slice */
+extern sk_r4_u128_t sk_h_003508b4(); /* FUN_003508b4 out-of-slice (returns x0:x1 pair) */
 extern void sk_h_003508cc(); /* FUN_003508cc out-of-slice */
 extern void sk_h_003508d8(); /* FUN_003508d8 out-of-slice */
 extern void sk_h_003508e4(); /* FUN_003508e4 out-of-slice */
@@ -65830,8 +65830,8 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
     (*pc6)();
     sk_00350a34();
     (*pc6)();
-    at9._0_8_ = (undefined8)(sk_0008e388());
-    at9._8_8_ = 0;
+    { sk_r4_u128_t _p = sk_h_0008e388();
+      at9._0_8_ = _p.lo; at9._8_8_ = _p.hi; }
     (*eo9_01)(at9._0_8_,at9._8_8_,t4);
     sk_0034c4bc(eo13);
     if ((bool)t2) {
@@ -65859,8 +65859,8 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
       sk_00351300(v70 + *(int *)(rx28 + 0x30));
       (*pc8)();
       sk_00351e84();
-      at9._0_8_ = (undefined8)(sk_003508b4());
-      at9._8_8_ = 0;
+      { sk_r4_u128_t _p = sk_h_003508b4();
+        at9._0_8_ = _p.lo; at9._8_8_ = _p.hi; }
       (*eo9_04)(at9._0_8_,at9._8_8_,rx28);
       iv1 = *(int *)(rx28 + 0x30);
       sk_00350b6c();

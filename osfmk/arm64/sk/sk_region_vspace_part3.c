@@ -3044,7 +3044,7 @@ void skp3_FUN_00217100( void){
 /* skp3_FUN_002171a8 @ 0x002171a8   (est. swift_string_index_next)
  * Ghidra: uint32_t skp3_FUN_002171a8( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 uint32_t skp3_FUN_002171a8( void){
   uint8_t v17;
