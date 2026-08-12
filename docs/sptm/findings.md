@@ -637,3 +637,39 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if ((mask&0xfea4)||(flags&0xfea4)) panic 0x10`; kernel branch `if ((mask&0xffff)||(flags&0xffff)) panic 0x10`; `g_fte_class[ft_type*0x90]!=1` panic; refcount overflow (>0x812) / underflow (old==0) / rw-guard-odd panics; `if ((old_ttbr&~1)!=kernel_root && !=boot_alt) drop table refcnt`.
 - **Severity (hypothesis)**: informational — fail-closed root switch with per-branch validation.
 - **Confidence**: medium
+
+## [ringminus1] 0002089c txm_page_enforcement — executable-mapping authority gate
+- **Observation**: This is the single authorization point deciding whether a mapping may be executable or writable-debug. It is a policy gate that mostly DENIES by default and logs "page enforcement failed" (0xbdd) on any error, but the writable-debug path permits execution when the profile holds com.apple.private.cs.debugger (0xc79) OR the association object's debug flag (+0x30 bit0) is set, gated on the global code-limits flag DAT_00071034. The comm-page region (0x1f) is always allowed if the profile +0x50 bit0 is set. The association (0xe) path computes an allowed page-entry count as `0x4000/dictsize` from the embedded DER entitlements dictionary and validates every indexed entry — an attacker-controlled DER dict that yields dictsize=0 would force a 0x4000/0 division-panic path, and an overflowing page count panics 0x93.
+- **Evidence**: `if ((DAT_00071034&1)==0) {FUN_00025c6c(0xc41); err=0x1c;}`; `err=txm_entitlement_check(obj,0xc79,0); if ((err&1)==0 && (*(byte*)(obj+0x30)&1)==0) {FUN_00025c6c(0xc97); err=0x1e;}`; `u16 = dictsize ? 0x4000/dictsize : 0`; `if (0x4000 < dictsize) panic 0x91`; `if (~u16 <= hi) panic 0x93`; tail gate `bVar3 = !(err!=0x1e & err!=0 & DAT_000107f4)`.
+- **Severity (hypothesis)**: high (hypothesis) — the correctness of these boolean gates IS the code-execution policy; an error in the cs.debugger / debug-flag / comm-page bits would allow disallowed executable mappings. No weakness observed, but the surface is the highest-value target in TXM.
+- **Confidence**: high
+
+## [ringminus1] 00021ddc txm_rb_insert — code-region interval overlap detector
+- **Observation**: Code regions are tracked in a red-black interval tree keyed by [start+0x28, end+0x30). Insertion REFUSES (returns the colliding node, no insert) when the new interval overlaps or touches an existing one — a region cannot double-register. This prevents a second association from silently shadowing a code range.
+- **Evidence**: `if (key < RB_KEY(cur) && end <= RB_KEY(cur)) go left; else if (key < RB_END(cur)) return cur; if (end <= RB_END(cur)) return cur;` — overlap/containment returns the existing node.
+- **Severity (hypothesis)**: informational — data-structure integrity; duplicate-region rejection is defense-in-depth.
+- **Confidence**: high
+
+## [ringminus1] 00020e24 txm_asid_table_init — single-init ASID bitmap
+- **Observation**: The ASID allocation bitmap is created once (single-slot DAT_000104f8/f4); a second init panics 0xcce. The table is 8 bytes per ASID rounded up to 16 KiB; a count that does not fit the rounded size panics 0x19. Boot-provided count bounds (0x13/0x14 panics) prevent an undersized/oversized ASID table from being installed.
+- **Evidence**: `if (DAT_000104f8 != 0) panic 0xcce`; `size=(count*8+0x3fff)&0xfc000; if (count<<3 <= size)` else panic 0x19.
+- **Severity (hypothesis)**: low — single-write global; prevents ASID table reconfiguration / overflow.
+- **Confidence**: high
+
+## [ringminus1] 00060c64 txm_ce_parse_typed_data — length-tag validation (fail-closed on over/under-length)
+- **Observation**: The CoreEntitlements typed-data parser validates the on-disk length-tag against the object's actual size before copying any payload: kind 1 requires a 4-byte tag, kind 2 a tag of exactly 8, kind 3/4 require the declared length to equal the object byte-size rounded to words. An over-long/under-long or malformed tag returns a distinct error code (0xffffff54/55/56/5f/60) rather than copying. This bounds the copied region to the validated size.
+- **Evidence**: `if (param_4 != (sz+7)>>3) return 0xffffff54` (kind 4); `if (*param_5 != 4) return 0xffffff56` (kind 1); `d=*param_5-8; if (d>=0xfffffffe) return 0xffffff55` (kind 2); payload copied only after `FUN_0003df58` (hash verify) passes.
+- **Severity (hypothesis)**: medium — the length-tag gate is what prevents the CE blob from declaring a larger payload than the backing buffer; a bypass here could cause an out-of-bounds read/copy into the CE object.
+- **Confidence**: medium
+
+## [ringminus1] 00061ea4 txm_phys_to_virt — physmap confined to TXM-owned ranges + PTE page-state gate
+- **Observation**: The TXM physical→virtual translation only resolves a physical address through the boot range table (base+size*0x4000 stride) or the physmap page table; every resolution path requires the target PTE's low page-state bits to be 0 (present/valid) before forming the VA (`if (~(uint)uVar4 & 3) == 0`). An unmapped or invalid page returns 4 (not a VA) — the translation cannot fabricate a mapping for memory TXM does not own.
+- **Evidence**: boot-range loop `if (base<=pa && pa<base+npg*0x4000) { va=(pa-base)+r[-1]; return 0; }`; PTE path `if ((~(uint)uVar4 & 3) == 0) { va=(uVar4&0xfffffffff000)+(pa&0x3fff); }`; else returns 4.
+- **Severity (hypothesis)**: low — a bogus translation would require a forged PTE; the low-bit present/valid check plus range confinement make that a hard failure.
+- **Confidence**: medium
+
+## [ringminus1] 00060088 txm_ce_object_lookup — name-table value offsets not re-validated
+- **Observation**: The CoreEntitlements name lookup trusts the table entry's stored value offset (high 32 bits of each 8-byte sorted entry) when forming the returned value descriptor: `vbase = base + voff` is not re-bounds-checked against the string-buffer size before being returned to the caller. The key offset (low 32) IS used for the memcmp, but the value pointer returned to the caller is taken on trust from the table.
+- **Evidence**: `voff = ent>>0x20; vbase = base+voff; out[0]=vbase; out[1]=size-voff;` — no `voff <= size` guard before use (the surrounding overflow trap 0x5519 fires only on the `name+len` addition, not on this offset).
+- **Severity (hypothesis)**: medium — if the name table itself is attacker-influenced (corrupted/stale), a value offset beyond the buffer would be returned as a valid descriptor, potentially leading the caller to read out of bounds. Depends on the table being trusted (it is built at parse time), so likely low in practice.
+- **Confidence**: low (offset-trust is explicit in the decompile; exploitability depends on table provenance)

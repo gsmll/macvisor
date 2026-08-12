@@ -315,3 +315,19 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 000f6e30 (sptm_batch_sign_user_pointer) → 000d617c (sptm_copy_to_scratch)
 - 000f719c (sptm_tag_op) → 000d617c, 000e0a10 (sptm_cacheattr), 000d7348 (sptm_set_pte_attr), 000d76fc (sptm_tlb_op), 000e40ec (VA translation)
 - 000f7880 (sptm_tag_papt_multipage) → 000f719c; 000f78e0 (sptm_untag_papt_multipage) → 000f719c
+
+### TXM region tail (osfmk/arm64/txm/txm_region_tail.c) — CoreEntitlements/IMG4 validator (00060000-0006228c)
+- 00060088 (txm_ce_object_lookup) → 0005e960 (hash-subrange), 0005f5a4 (linear fallback), 0005ef74/0005ed6c/0005efe0 (name-lookup helpers); called by 00031388/00031424/000314b0/00032104/000321dc/00034420/00034cf4/00034d68/00034e90/00034f24/00034ff8 + __text 00020000
+- 0006037c (txm_ce_validate_dictionary) → 00060608 (txm_ce_validate_string_type), 0006066c (txm_ce_validate_value), 00025c6c (log); string 0x6b80 "CoreEntitlements validation"
+- 0006066c (txm_ce_validate_value) → 00060230 (txm_ce_parse_dict_or_array), 0006037c (dict recurse), 0004443c/0004447c/000444fc/00044580 (int getters)
+- 00060230 (txm_ce_parse_dict_or_array) → 000448ac (ce_parse), 00044580, 00044178; template DAT_0000dc40
+- 000612e0 (txm_ce_parse_im4p, magic IM4P) → 00061268 (txm_ce_validate_small_dict), 00061394 (txm_ce_parse_payp); template DAT_00007990
+- 00061418 (txm_ce_parse_cryptex) → 000612e0, 000447e4 (ce_parse_magic), 00061268; template DAT_00007900
+- 00061cbc (txm_ce_verify_cryptex) → 000455b8 (ce_parse_im4c, magic IM4C), 00061570 (txm_ce_parse_cryptex_dict); ops callbacks at *param_9
+- 00061570 (txm_ce_parse_cryptex_dict) → 000448ac; templates DAT_00007b10 "CTRP", 00007b40
+- 0006151c/00061538/00061554 (cryptex wrappers) → 00044e28/00044e54 (ce_manifest_parse); string 0x3429 "Cryptex1 boot verification VMA2"
+- 00061ea4 (txm_phys_to_virt) → 0004ed7c (pa_is_mapped), 0004f2b4 (pa_walk); globals DAT_000153a8/b0/b8/c0/c8/d0/d8/e0/e8, 00015400/408/410
+- 00062260/00062264 → 00050750 (txm_antireplay_write) then 00050d70 (txm_panic "panic: writing anti replay state" @0x37f4); 00062274/00062288/0006228c → 00050d70 directly
+- 00061b9c (txm_ce_foreach_entry) → 00044c6c (ce_entry), 000446f4/00044724 (iter), 00045708 (ctx)
+- 00061880/00061960 (ctx copy) → 00045760/00045750/00045708/000457b8 (ctx accessors)
+- 00061a80/00061ae4/00061b48 (ce getters) → 00045718 (ctx_state), 0004577c (ctx_set), 0004447c/000444fc/0004443c
