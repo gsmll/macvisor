@@ -2233,8 +2233,8 @@ void sk_meta_drain_deferred(int *param_1)
         uint64_t *puVar2 = *(uint64_t **)(param_1 + 0xc);
         while (puVar2 != 0) {
             uint64_t *puVar1 = (uint64_t *)*puVar2;
-            thunk_FUN_00012568(puVar2[1]);
-            thunk_FUN_00012568(puVar2);
+            thunk_FUN_00012568((void *)puVar2[1]);
+            thunk_FUN_00012568((void *)puVar2);
             puVar2 = puVar1;
         }
         param_1[0xc] = 0;
@@ -2625,7 +2625,7 @@ void sk_meta_resolve_full(long param_1, uint64_t *param_2, uint32_t param_3)
                     p[3] = lStack_a8; p[2] = local_b0;
                     long old = *(long *)(local_e0 + 0x20);
                     *(long **)(local_e0 + 0x20) = p;
-                    if (old != 0) thunk_FUN_00012568(old, 0x20);
+                    if (old != 0) thunk_FUN_00012568((void *)old, 0x20);
                 }
                 break;
             }
@@ -2756,10 +2756,10 @@ void sk_meta_payload_copy(uint64_t *param_1, long *param_2)
                 puVar9[2] = 0;
                 long old = *(long *)(uVar5 + 0x20);
                 *(uint64_t *)(uVar5 + 0x20) = uVar7;
-                if (old != 0) thunk_FUN_00012568(old, 0x20);
+                if (old != 0) thunk_FUN_00012568((void *)old, 0x20);
                 ulong uVar4 = *(ulong *)param_1[4];
                 *(ulong *)param_1[4] = (ulong)puVar9;
-                if (uVar4 != 0) FUN_0037b054();
+                if (uVar4 != 0) FUN_0037b054(0);
             }
         }
         *puVar2 = *(ulong *)*param_1 & 7 | uVar5 | 8;
@@ -2893,7 +2893,7 @@ void sk_meta_promote(uint64_t param_1, long *param_2)
         plVar7[4] = 0;
         long lVar4 = plVar3[4];
         plVar3[4] = lVar5;
-        if (lVar4 != 0) thunk_FUN_00012568(lVar4, 0x20);
+        if (lVar4 != 0) thunk_FUN_00012568((void *)lVar4, 0x20);
     }
     long lVar4 = *(long *)plVar1[1];
     plVar3[6] = ((long *)plVar1[1])[1];
@@ -2924,7 +2924,7 @@ long sk_meta_cleanup(long param_1)
             *(uint64_t *)(lVar2 + 0x20) = 0;
             if (lVar1 != 0) thunk_FUN_00012568((void *)lVar1, 0x20);
             thunk_FUN_00053aa0(lVar2 + 0x10);
-            thunk_FUN_00012568(lVar2, 0x40, 0xf);
+            thunk_FUN_00012568((void *)lVar2, 0x40, 0xf);
         }
     }
     return param_1;
@@ -3109,7 +3109,7 @@ uint16_t sk_tm_count_flag(char *param_1)
 ulong sk_tm_popcount(long param_1)
 {
     long lVar3 = param_1 ? param_1 : 0;
-    ulong uVar1 = FUN_0037b908((char *)lVar3);
+    ulong uVar1 = FUN_0037b908((uint64_t)(uintptr_t)lVar3);
     if ((int)uVar1 != 0) {
         if (param_1 == 0) param_1 = 0;
         uint16_t *puVar2 = (uint16_t *)FUN_0037b4e0( (uint64_t)(uintptr_t)param_1 );
@@ -3128,7 +3128,7 @@ ulong sk_tm_popcount(long param_1)
 sk_pair_t sk_tm_field_table(long param_1)
 {
     long lVar3 = param_1 ? param_1 : 0;
-    if (FUN_0037b908((char *)lVar3) == 0) return SKPAIR2(0,0);
+    if (FUN_0037b908((uint64_t)(uintptr_t)lVar3) == 0) return SKPAIR2(0,0);
     long lVar3b = param_1 ? param_1 : 0;
     ulong uVar2 = FUN_0037b484( (uint64_t)(uintptr_t)lVar3b );
     ulong uVar4 = FUN_0037b990( (uint64_t)(uintptr_t)param_1 ) & 0xffffffff;
@@ -3363,7 +3363,7 @@ uint16_t sk_tm2_count_flag(char *param_1)
 ulong sk_tm2_popcount(long param_1)
 {
     long lVar3 = param_1 ? param_1 : 0;
-    ulong uVar1 = FUN_0037c1fc((char *)lVar3);
+    ulong uVar1 = FUN_0037c1fc((uint64_t)(uintptr_t)lVar3);
     if ((int)uVar1 != 0) {
         if (param_1 == 0) param_1 = 0;
         uint16_t *puVar2 = (uint16_t *)FUN_0037bdd4( (uint64_t)(uintptr_t)param_1 );
@@ -3382,7 +3382,7 @@ ulong sk_tm2_popcount(long param_1)
 sk_pair_t sk_tm2_field_table(long param_1)
 {
     long lVar3 = param_1 ? param_1 : 0;
-    if (FUN_0037c1fc((char *)lVar3) == 0) return SKPAIR2(0,0);
+    if (FUN_0037c1fc((uint64_t)(uintptr_t)lVar3) == 0) return SKPAIR2(0,0);
     long lVar3b = param_1 ? param_1 : 0;
     ulong uVar2 = FUN_0037bd78( (uint64_t)(uintptr_t)lVar3b );
     ulong uVar4 = FUN_0037c284( (uint64_t)(uintptr_t)param_1 ) & 0xffffffff;
@@ -3517,8 +3517,8 @@ void sk_meta_parse_desc(uint64_t *param_1, long param_2)
         ? *(uint32_t *)(uVar4 + (ulong)*(ushort *)(param_2 + 6) * 0xc) : 0;
     uint64_t uVar1 = FUN_003658a0(param_2);
     uint32_t uVar6 = ((*(ushort *)(param_2 + 10) >> 2 & 1) != 0)
-        ? *(uint32_t *)FUN_0037c8e4(param_2) : 0;
-    uint64_t uVar3 = FUN_0037c88c(param_2);
+        ? *(uint32_t *)FUN_0037c8e4((uint64_t)(uintptr_t)param_2) : 0;
+    uint64_t uVar3 = FUN_0037c88c((uint64_t)(uintptr_t)param_2);
     param_1[0] = *(uint64_t *)(param_2 + 4);
     param_1[1] = param_2 + 0xc;
     param_1[2] = uVar4;
@@ -3561,14 +3561,14 @@ sk_pair_t sk_meta_subfield_tab(long param_1)
     long lVar2 = 0;
     ulong uVar3 = 0;
     if ((*(ushort *)(param_1 + 10) >> 2 & 1) != 0) {
-        uint32_t *puVar1 = (uint32_t *)FUN_0037c8e4();
+        uint32_t *puVar1 = (uint32_t *)FUN_0037c8e4(0);
         uVar3 = *puVar1;
         if (*puVar1 != 0) {
-            lVar2 = FUN_0037c8e4(param_1);
+            lVar2 = FUN_0037c8e4((uint64_t)(uintptr_t)param_1);
             lVar2 = lVar2 + (*(ushort *)(param_1 + 10) & 4);
         }
     }
-    return (uVar3 << 32) | lVar2;
+    return SKPAIR2(lVar2, uVar3);
 }
 
 /*--------------------------------------------------------------------*/

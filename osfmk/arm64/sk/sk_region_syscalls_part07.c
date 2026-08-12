@@ -2978,7 +2978,9 @@ void sk_entry_copy_commit(void)
     cl4_result_t r = FUN_0034b57c(0);
     ulong sel = (ulong)*(uint *)/* table+0x50 */0 & 0xff;
     long base = *(long *)/* x9+0x40 */0 + 7;
-    if ((sel < 8 && (/*...0 = *(und1_t *)/* x20 */0;
+    if ((sel < 8 && (/*...*/0 & 0x100000) == 0) &&
+        (base + (sel + 1 & ~sel) & 0xfffffffffffffff8) + 0x10 < 0x19) {
+        */* x19 */0 = *(uint1_t *)/* x20 */0;
         FUN_0006b6f4(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
         FUN_003535e4(base + ((ulong)(/* x19 */0 + sel + 1) & ~sel) & 0xfffffffffffffff8);
@@ -3088,16 +3090,20 @@ word_t sk_msg_slot_read_b(void)
         uint v = (1 < sv) ? size : 0;
         switch (v) {
         case 1:
-            if (*(byte *)((long)/* x19 */0 + off) - 1;
+            if (*(byte *)((long)/* x19 */0 + off) != 0) {
+                int i = (off & 0xfffffff8) ? 0 : (int)*(byte *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i, w, lim, w);
             }
             break;
         case 2:
-            if (*(ushort *)((long)/* x19 */0 + off) - 1;
+            if (*(ushort *)((long)/* x19 */0 + off) != 0) {
+                int i = (off & 0xfffffff8) ? 0 : (int)*(ushort *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i, w, lim, w);
             }
             break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x333384) 0 + off) != 0) {
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x333384) */
+        case 4:
+            if (*(uint *)((long)/* x19 */0 + off) != 0) {
                 int i = (off & 0xfffffff8) ? 0 : (int)*(uint *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i, w, lim, w);
             }

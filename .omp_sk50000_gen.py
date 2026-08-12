@@ -546,7 +546,7 @@ SIG_OVERRIDE = {
 "0x5ba5c": "void sk_register_global(uintptr_t arg1, ...)",
 "0x5b190": "void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...)",
 "0x51e5c": "unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...)",
-"0x51e0c": "int * sk_macho_seg(uintptr_t a, int *b, ...)"
+"0x51e0c": "int * sk_macho_seg(uintptr_t arg1, int *arg2, ...)"
 }
 for a, sig in SIG_OVERRIDE.items():
     if a in func_sigs:
