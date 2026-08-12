@@ -3979,3 +3979,33 @@ Confidence: Medium.
 - **Evidence**: `s__AppleInternal_Library_BuildRoot_005e2230` passed to thunk_FUN_0044f818 in FUN_0048f61c; `FUN_0036a940()` object allocators tagged `|0x6000000000000000`; register-global unaff_x20 throughout.
 - **Severity (hypothesis)**: informational — leaked internal build path; low-confidence reconstruction of register-global linkage is an audit caveat.
 - **Confidence**: high
+
+## [sk] 0x0049a91c sk_set_lookup_insert_word
+- **Observation**: Open-addressing set probe/index built from `value >> 0xe` (page index) with the occupancy bitmap as a probe validity check. The insert path calls `FUN_003a261c` (retain) on the shared set before growing, and the grow/commit helpers (`FUN_0049ac48`/`0049ae44`) panic via `FUN_0025bddc(0x675628/0x6740f8/0x6728f0)` on duplicate insert — evidence of integrity asserts rather than silent overwrite.
+- **Evidence**: `FUN_0049ac48` calls `FUN_0025bddc(0x675628)` (panic) if a live slot already matches `param_1>>0xe`; `FUN_0049ad48`→`0x6740f8`; `FUN_0049ae44`→`0x6728f0`. Bitmap at `set+0x38`, value array at `set+0x30`, length at `set+0x10`.
+- **Severity (hypothesis)**: informational — the set logic is a generic object-table; the panic-on-duplicate confirms the kernel rejects collisions rather than corrupting its table.
+- **Confidence**: medium
+
+## [sk] 0x0049af70 sk_set_grow_rehash_word
+- **Observation**: The hash-set grow/rehash uses a bit-reversed occupancy bitmap scan to find the first free slot (LZCOUNT on a byte-swapped word). Any wrap-scan hitting a full table aborts at SoftwareBreakpoint 0x49b180/38c/390/5b8 — the capacity-check path is a noreturn trap, so an over-committed set cannot silently overflow.
+- **Evidence**: SoftwareBreakpoint(1, 0x49b180) and analogues at 0x49b390/0x49b5b8 in the probe-wrap loop; `FUN_0025a840`/`FUN_0025b994` allocate the new bucket array.
+- **Severity (hypothesis)**: informational — robust bounds enforcement on a core table primitive.
+- **Confidence**: medium
+
+## [sk] 0x0049c200 sk_vec_remove_range_0x48
+- **Observation**: Vector range-removal (`[param_1,param_2)`) does a full set of signed overflow/bounds checks (param_1>=0, param_2<=length, SBORROW8/SCARRY8 on every delta) before memmoving the tail down, each aborting to a distinct SoftwareBreakpoint (0x49c288..49c358). No unchecked arithmetic on the length or index path.
+- **Evidence**: SBORROW8/SCARRY8 guards at 0x49c290/294/298/348/350/354/358 in FUN_0049c200.
+- **Severity (hypothesis)**: informational — well-formed range validation; no overflow reachable.
+- **Confidence**: medium
+
+## [sk] 0x0049c5f8 sk_queue_pop_0x38
+- **Observation**: Queue pop of a 0x38-byte element validates the read pointer against `size>>1` and the head before copying out; an empty queue is signaled by the marker byte `x20+0x38 == 1` and zeroes the 16-word out record rather than reading garbage. Aborts at SoftwareBreakpoint 0x49c700/704 on any out-of-bounds read pointer.
+- **Evidence**: `*(char *)(x20+0x38)=='\x01'` empty path; SoftwareBreakpoint(1,0x49c700) when `read_ptr >= size>>1` or `< head`.
+- **Severity (hypothesis)**: informational — bounded queue access, empty state explicitly handled.
+- **Confidence**: medium
+
+## [sk] 0x0049e300 sk_meta_store_count
+- **Observation**: Metadata count/tag store distinguishes small counts (<8, packed into the top byte of +0x13) from large ones (body zeroed with thunk_FUN_00114330, grow bit 0x8000000000000000 set). The 0x90-byte region is unconditionally cleared on the large path, so stale pointer data cannot leak into a resized object.
+- **Evidence**: `thunk_FUN_00114330(param_1+1, 0x90)` and `param_1[0x14]=param_1[0x15]=0` on the `param_2>=8` branch.
+- **Severity (hypothesis)**: informational — safe re-initialization of resized metadata.
+- **Confidence**: medium

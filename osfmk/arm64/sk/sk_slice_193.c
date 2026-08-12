@@ -64,7 +64,7 @@ void sk_re_write_delim(void);	/* FUN_0042dbf0 @ 0x0042dbf0 */
 void sk_re_write_delim2(void);	/* FUN_0042dc20 @ 0x0042dc20 */
 void sk_re_write_delim3(void);	/* FUN_0042dc24 @ 0x0042dc24 */
 void sk_re_write_delim4(void);	/* FUN_0042dc50 @ 0x0042dc50 */
-void sk_re_write_delim5(void);	/* FUN_0042dc90 @ 0x0042dc90 */
+sw128_t sk_re_write_delim5(void);	/* FUN_0042dc90 @ 0x0042dc90 */
 void sk_re_write_delim6(void);	/* FUN_0042e7e0 @ 0x0042e7e0 */
 void sk_re_emit_kind(void);	/* FUN_0042e820 @ 0x0042e820 */
 void sk_re_write_kind(void);	/* FUN_0042e874 @ 0x0042e874 */
@@ -91,21 +91,21 @@ void sk_re_diag_rec_e(void);	/* FUN_0042f514 @ 0x0042f514 */
 void sk_re_diag_init(void);	/* FUN_0042f584 @ 0x0042f584 */
 void sk_re_diag_rec_f(void);	/* FUN_0042f5f8 @ 0x0042f5f8 */
 void sk_re_diag_rec_g(void);	/* FUN_0042f630 @ 0x0042f630 */
-void sk_re_diag_emit_str(void);	/* FUN_0042f670 @ 0x0042f670 */
+word_t sk_re_diag_emit_str(void);	/* FUN_0042f670 @ 0x0042f670 */
 uint sk_re_diag_match(word_t a, word_t b);	/* FUN_0042f7d4 @ 0x0042f7d4 */
 uint sk_re_diag_match2(word_t a, word_t b);	/* FUN_0042f890 @ 0x0042f890 */
 bool sk_re_append_match(void);	/* FUN_0042f9dc @ 0x0042f9dc */
 word_t sk_re_append_match2(word_t a, word_t b);	/* FUN_0042fa98 @ 0x0042fa98 */
-void sk_re_peek_char(void);	/* FUN_0042fc4c @ 0x0042fc4c */
+sw128_t sk_re_peek_char(void);	/* FUN_0042fc4c @ 0x0042fc4c */
 void sk_re_peek_char2(void);	/* FUN_0042fca8 @ 0x0042fca8 */
-void sk_re_diag_complete(void);	/* FUN_0042fd4c @ 0x0042fd4c */
+sw128_t sk_re_diag_complete(void);	/* FUN_0042fd4c @ 0x0042fd4c */
 word_t sk_re_parse_scalar_adv(word_t a, word_t b);	/* FUN_0042fe0c @ 0x0042fe0c */
 void sk_re_peek_scalar(void);	/* FUN_0042fea0 @ 0x0042fea0 */
 void sk_re_parse_quant_star(void);	/* FUN_0042ffac @ 0x0042ffac */
 sw128_t sk_re_peek_scalar2(void);	/* FUN_0042ffec @ 0x0042ffec */
 sw128_t sk_re_record_append_diag(word_t a);	/* FUN_00430040 @ 0x00430040 */
 sw128_t sk_re_str_slice(word_t a, word_t b, word_t *p);	/* FUN_004301e0 @ 0x004301e0 */
-void sk_re_parse_suffix(word_t a, word_t b, word_t *p, word_t c);	/* FUN_004302a0 @ 0x004302a0 */
+sw128_t sk_re_parse_suffix(void);	/* FUN_004302a0 @ 0x004302a0 */
 void sk_re_parse_suffix2(void);	/* FUN_00430338 @ 0x00430338 */
 void sk_re_parse_scalar_str(void);	/* FUN_004303c4 @ 0x004303c4 */
 uint sk_re_is_scalar_class(void);	/* FUN_004304e0 @ 0x004304e0 */
@@ -115,9 +115,9 @@ void sk_re_bool_uni_prop(byte *out, word_t *p);	/* FUN_00430604 @ 0x00430604 */
 byte sk_re_scalar_to_utf8(word_t a, word_t b, word_t c);	/* FUN_00430644 @ 0x00430644 */
 void sk_re_bool_scalar2(void);	/* FUN_004306a0 @ 0x004306a0 */
 void sk_re_bool_scalar3(void);	/* FUN_004306a4 @ 0x004306a4 */
-void sk_re_parse_scalar_seq(void);	/* FUN_004306bc @ 0x004306bc */
+word_t sk_re_parse_scalar_seq(void);	/* FUN_004306bc @ 0x004306bc */
 void sk_re_diag_inv_scalar(word_t a, word_t b, word_t c, word_t d);	/* FUN_00430bf4 @ 0x00430bf4 */
-void sk_re_parse_number(void);	/* FUN_00430d08 @ 0x00430d08 */
+sw128_t sk_re_parse_number(void);	/* FUN_00430d08 @ 0x00430d08 */
 void sk_re_parse_number_radix(word_t *out);	/* FUN_00431210 @ 0x00431210 */
 sw128_t sk_re_parse_group_number(word_t tag);	/* FUN_0043152c @ 0x0043152c */
 sw128_t sk_re_parse_ref_number(long expected);	/* FUN_00431604 @ 0x00431604 */
@@ -137,7 +137,7 @@ word_t sk_re_diag_finalize(void);	/* FUN_00435110 @ 0x00435110 */
 void sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d);	/* FUN_0043519c @ 0x0043519c */
 void sk_re_parse_option_block(word_t a, word_t b, word_t c, word_t *out);	/* FUN_004356f0 @ 0x004356f0 */
 void sk_re_parse_option_end(void);	/* FUN_00435ecc @ 0x00435ecc */
-void sk_re_parse_lookaround(void);	/* FUN_004361a4 @ 0x004361a4 */
+sw128_t sk_re_parse_lookaround(void);	/* FUN_004361a4 @ 0x004361a4 */
 void sk_re_parse_capture_name(word_t a, word_t b, word_t c, word_t d);	/* FUN_004368c0 @ 0x004368c0 */
 word_t sk_re_is_ident_start(void);	/* FUN_00436fc8 @ 0x00436fc8 */
 void sk_re_bool_ident(byte *out, word_t *p);	/* FUN_0043703c @ 0x0043703c */
@@ -155,7 +155,7 @@ void sk_re_parse_concat(void);	/* FUN_00439348 @ 0x00439348 */
 sw128_t sk_re_parse_anchor(void);	/* FUN_0043942c @ 0x0043942c */
 uint sk_re_parse_operator(void);	/* FUN_00439530 @ 0x00439530 */
 void sk_re_parse_expr(void);	/* FUN_004395fc @ 0x004395fc */
-void sk_re_parse_sequence(void);	/* FUN_00439a5c @ 0x00439a5c */
+sw128_t sk_re_parse_sequence(void);	/* FUN_00439a5c @ 0x00439a5c */
 
 /* ---- Out-of-region helper externs (used by this slice; FUN_ addr in comment) ---- */
 extern word_t sw_002534(word_t, ...);  /* FUN_00002534 */
@@ -856,12 +856,12 @@ void sk_re_parse_throw(word_t a, word_t b, word_t c)
                 sw_3a25d4(0xe000000000000000);
                 sw_86840(0x5dd300);   /* "cannot parse regular expression: ..." */
                 sw_34a210(0);
-                sk_re_parse_scalar(); sw_465db0(0); sw_46299c(0);
+                sw_002534(0); sw_465db0(0); sw_46299c(0);
                 sw_205844(0, 0, 0);
                 sw_2acbb8(0, 0xe000000000000000);
                 sw_3a25d4(0xe000000000000000);
                 sw_464234(0);
-                sk_re_parse_scalar();
+                sw_002534(0);
                 sw_365b6c(0, 0, 0, 0, 0xe);
                 sw_461cb8(0, 0x657a10, 0x5a19f8);
                 sw_463a58(0x684eb8);
@@ -1579,7 +1579,7 @@ void sk_re_write_delim4(void)
  * kind bytes, range bounds, branch-count fields). The uVar6 operand in the
  * decompile corresponds to k3, uVar1 to k2, uVar11 to k1, uVar2 to k4.
  * Confidence: low. */
-void sk_re_write_delim5(void)
+sw128_t sk_re_write_delim5(void)
 {
         /* Inputs arrive in preserved register x20 (unaff_x20): a 5-word
          * record whose low byte of word 4 selects the diagnostic kind. The
@@ -1961,7 +1961,7 @@ e43c:
 e444:
         auVar14 = sw_3507e0(0);
         sw_466528(auVar14.lo, auVar14.hi, uVar4);
-        return;
+        return auVar14;
         /* e438 is a goto-only target (LAB_0042e438: FUN_00463bbc(uVar6);
          * goto LAB_0042e43c); kept off the fall-through path. */
 e438:
@@ -2452,7 +2452,7 @@ void sk_re_diag_rec_g(void)
  * reads the current 16-byte head (0xb4594), splits via 0x2b3f40, advances
  * the record position, and reconstructs the 16-byte scalar value.
  * Confidence: low. */
-void sk_re_diag_emit_str(void)
+word_t sk_re_diag_emit_str(void)
 {
         sw128_t sc = sw_b4594(0);
         word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
@@ -2501,6 +2501,7 @@ void sk_re_diag_emit_str(void)
         }
 done:
         sw_b45b0(0, 0);
+        return 0;
 }
 
 
@@ -2622,7 +2623,7 @@ word_t sk_re_append_match2(word_t a, word_t b)
  * Peeks the next char from the input String: reads via 0x465288/0x4635c8,
  * and on the fallback path decodes a scalar via 0x2b439c; then resets via
  * 0x6b6f4.  Confidence: low. */
-void sk_re_peek_char(void)
+sw128_t sk_re_peek_char(void)
 {
         sw_465288(0);
         sw_4635c8(0);
@@ -2636,6 +2637,7 @@ void sk_re_peek_char(void)
                 sw_3a25d4(0);
         }
         sw_6b6f4(0);
+        return (sw128_t){0,0};
 }
 
 
@@ -2673,7 +2675,7 @@ void sk_re_peek_char2(void)
  * Completes a diagnostic: if the diagnostic count is positive runs the
  * formatting pipeline and commits the position; else re-initializes the
  * diagnostic record and reports a 'position' error.  Confidence: low. */
-void sk_re_diag_complete(void)
+sw128_t sk_re_diag_complete(void)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
         sw128_t c = sw_4666f8(0);
@@ -2704,6 +2706,7 @@ void sk_re_diag_complete(void)
         sk_re_parse_scalar_adv(0);
 out:
         sw_4666e4(c.hi);
+        return (sw128_t){0,0};
 }
 
 
@@ -2898,10 +2901,11 @@ sw128_t sk_re_str_slice(word_t a, word_t b, word_t *p)
  * Parses a suffix: on a non-empty string advances through the slice helpers
  * (0x48934, 0x4630b0, 0x351790, 0x2b4120, 0x42fe0c, 0x34d868, 0x2a3e64)
  * and commits; else resets.  Confidence: low. */
-void sk_re_parse_suffix(word_t a, word_t b, word_t *p, word_t c)
+sw128_t sk_re_parse_suffix(void)
 {
+        word_t *p = (word_t*)__builtin_frame_address(0);
         word_t s1 = p[1];
-        sw_48934(a, b, p[0], s1, p[2], p[3], c);
+        sw_48934(p[0], p[1], p[0], s1, p[2], p[3], p[1]);
         if (s1 == 0) {
                 sw_464d5c(0);
         } else {
@@ -2917,6 +2921,8 @@ void sk_re_parse_suffix(word_t a, word_t b, word_t *p, word_t c)
                 if (0 == 0) SW_FATAL(0x430314);
         }
         sw_e15d8(0);
+        sw128_t r = {0,0};
+        return r;
 }
 
 
@@ -3072,7 +3078,7 @@ void sk_re_bool_scalar3(void)
  * selector from the caller's byte): handles an optional +/- sign, then
  * accumulates digit values with overflow checks, reporting the result as a
  * (value, kind) pair through 0x356f80.  Confidence: low. */
-void sk_re_parse_scalar_seq(void)
+word_t sk_re_parse_scalar_seq(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         sw_356f9c(0);
@@ -3116,6 +3122,7 @@ void sk_re_parse_scalar_seq(void)
                 adv = step;
         }
         sw_356f80((value & 0xffffffff) | ((word_t)adv << 0x20), 0);
+        return (value & 0xffffffff) | ((word_t)adv << 0x20);
 }
 
 
@@ -3153,7 +3160,7 @@ void sk_re_diag_inv_scalar(word_t a, word_t b, word_t c, word_t d)
  * current scalar, chooses base (8/10/16 from the caller's record), decodes
  * the digit run with overflow trapping, and writes the (value, kind) result
  * through the record.  Confidence: low. */
-void sk_re_parse_number(void)
+sw128_t sk_re_parse_number(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         sw128_t s = sw_356f9c(0);
@@ -3188,6 +3195,7 @@ void sk_re_parse_number(void)
                 }
         }
         sw_356f80(s.hi);
+        return (sw128_t){s.lo, s.hi};
 }
 
 
@@ -3430,6 +3438,7 @@ void sk_re_parse_group_body(void)
         word_t pos = start;
         if ((m & 1) == 0) {
                 sw_462d0c(0);
+                word_t ok;
                 do {
                         word_t p = *(word_t*)(__builtin_frame_address(0) + 0x10);
                         word_t e = *(word_t*)(__builtin_frame_address(0) + 0x18);
@@ -3498,7 +3507,7 @@ commit:
                         sw_2aca00(0);
                         sw_350944(0); sw_351aec(0); sw_29fa0c(0);
                         sw_4651b8(0); sw_465fd4(0);
-                        word_t ok = sw_15e4f8(0);
+                        ok = sw_15e4f8(0);
                         sw_3a25d4(0);
                 } while ((ok & 1) == 0);
                 sw_1ee018(h.lo, h.hi);
@@ -3539,7 +3548,7 @@ void sk_re_parse_group_end(word_t a, word_t b, word_t c, word_t d)
  * Ghidra: void FUN_00432ed4(void)
  * Parses a regex quantifier: reads the repetition count and bound records
  * (0x429fa8-based builders), parses the {n,m} brace form (0x431210), applies
- * the quantifier suffix (*/+/?) via the scalar peek, and commits the result
+ * the quantifier suffix (* + / ?) via the scalar peek, and commits the result
  * to the caller's record with optionality/emptiness flags.  Confidence: low. */
 void sk_re_parse_quantifier(void)
 {
@@ -3839,7 +3848,7 @@ commit:
  *                          word_t param_4, word_t param_5)
  * Parses a '#' comment / extended-mode fragment: if the comment flag is set
  * and the '#' is present, scans the fragment (0x434e98) and appends it;
- * also handles the /* */ comment form.  Writes the 16-byte result.
+ * also handles the slash-star comment form.  Writes the 16-byte result.
  * Confidence: low. */
 void sk_re_parse_comment(sw128_t *out, long rec, word_t a, word_t b, word_t c)
 {
@@ -4088,7 +4097,7 @@ void sk_re_parse_option_end(void)
  * (0x5e1df0 "positive lookahead", 0x5e1e10 "negative lookahead",
  * 0x5e1e30 "positive lookbehind", 0x5e1e50/0x5e1e70 "non-atomic ...").
  * Confidence: low. */
-void sk_re_parse_lookaround(void)
+sw128_t sk_re_parse_lookaround(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         sw_8e518(0);
@@ -4177,6 +4186,7 @@ void sk_re_parse_lookaround(void)
         *(byte*)(out + 10) = (byte)kind;
         sw_117cc4(0, out, 0x50);
         sw_8e500(0);
+        return (sw128_t){out[0], (word_t)kind};
 }
 
 
@@ -4196,11 +4206,12 @@ void sk_re_parse_capture_name(word_t a, word_t b, word_t c, word_t d)
         word_t h0 = *(word_t*)(base + 0x10);
         sw128_t s = sw_4664a4(0);
         sw_3a25d4(d);
+        word_t r0 = 0, r1 = 0;
         if ((s.lo ^ s.hi) < 0x4000) {
                 /* single char name */
                 sw_4647c0(0);
-                word_t r0 = 0x6465746365707865;   /* "expected" */
-                word_t r1 = 0xe900000000000020;
+                r0 = 0x6465746365707865;   /* "expected" */
+                r1 = 0xe900000000000020;
                 if ((d & 0xff) == 1) r1 = 0xec000000656d616e;  /* "name" */
                 else if ((d & 0xff) != 2) r1 = 0xeb00000000676174;  /* "tag" */
                 sw_2acbb8(0, r1);
@@ -4994,8 +5005,9 @@ void sk_re_parse_expr(void)
         sw_4614cc(0, 0);
         sw_463764(0);
         word_t *buf = (word_t*)__builtin_frame_address(0);
+        sw128_t r;
         do {
-                sw128_t r = sk_re_parse_comment(buf, 0);
+                r = sk_re_parse_comment(buf, 0);
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
                 if (r.hi == 0) {
                         if ((buf[1] & 1) == 0) {
@@ -5040,7 +5052,7 @@ void sk_re_parse_expr(void)
  * Parses a sequence: reads a '[' or the anchor token, handles a leading '^'
  * (negation), accumulates the parsed scalar runs and appends them to the
  * record, committing the final position.  Confidence: low. */
-void sk_re_parse_sequence(void)
+sw128_t sk_re_parse_sequence(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         word_t task = sw_8e518(0);
@@ -5095,4 +5107,5 @@ void sk_re_parse_sequence(void)
         out[4] = kind;
         out[5] = 0; out[6] = 0;
         sw_8e500(task);
+        return (sw128_t){0, (word_t)kind};
 }

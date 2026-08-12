@@ -550,3 +550,15 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - async completion/fatal: 003d4d0c/003d4dbc/003d4f18/003d4f78 -> 001afa84 (cL4_runtime_fatal, noreturn)
 - executor permits: 003d6418/003d72f0 -> 003d6470 (post-release) -> 003dd540; negative count traps
 - SKR22 fragment helpers: 0x464090/0x464918 -> FUN_0029fa0c / FUN_00461894 (vspace/page-walk); 0x4645a4/0x464630/0x464890/0x4647f4 -> FUN_00117cc4 (memcpy); 0x464354/0x464550 -> thunk_FUN_0036b270 (retain); 0x464224/0x4645f8 -> thunk_FUN_002acbb8 (report emit); 0x464268/0x4642a8 -> FUN_0042ec68; 0x464520/0x464538 -> FUN_002a4ab4; 0x4644e8/0x4648fc -> FUN_001a84f4
+
+## SKR32 (0x0049a51c-0x0049ee70) — object-table / hash-set layer
+- 0x0049a91c set-lookup-word → 0x0049ac48 commit-word → 0x000b3910 set-mark
+- 0x0049aa14 set-lookup-int → 0x0049ad48 commit-int → 0x0049c0a8 set-mark-int
+- 0x0049ab00 map-lookup-pair → 0x0049ae44 commit-pair → 0x000b394c set-mark-pair
+- grow/rehash: 0x0049af70 (word) / 0x0049b180 (int) / 0x0049b390 (pair); compact: 0x0049b5b8/0x0049b6fc/0x0049b840; in-place: 0x0049b99c/0x0049bbf0/0x0049be44
+- grow allocators: 0x0025a840 (array grow), 0x0025b994 (bucket realloc), 0x00258c60 (grow)
+- 0x0049c0e4 dict insert → 0x00499f0c (key pair) / 0x00499fcc (release) / 0x00258c60
+- 0x0049c200 vec remove → 0x0049a348 / 0x00498500 (memmove) / 0x0035bc70 (memset)
+- teardown dispatchers: 0x0049c904 / 0x0049d538 / 0x0049d320 / 0x0049d690 → 0x004592dc/0x00459138/0x0045a1f8/0x0045a4b4
+- big dispatch: 0x004aac88 (12-16 w) / 0x004ab67c (6-8 w) / 0x004abb1c (4 w)
+- launch-image pipeline: 0x0049d8a8/0x0049dac8 → 0x0008e518 (launch pair) → 0x0008e500 (report)
