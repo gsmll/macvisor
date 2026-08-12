@@ -20,6 +20,7 @@
 #include <string.h>
 
 typedef uint64_t word_t;
+typedef unsigned long long u64;
 typedef unsigned char byte;
 typedef unsigned int uint;
 typedef struct { uint64_t lo, hi; } wpair_t;   /* 16-byte (x0:x1) returns */
@@ -217,7 +218,7 @@ extern word_t FUN_00350428(); /* out of slice 0x350428 */
 extern word_t FUN_00350464(); /* out of slice 0x350464 */
 extern word_t FUN_00350470(); /* out of slice 0x350470 */
 extern word_t FUN_003504a0(); /* out of slice 0x3504a0 */
-extern word_t FUN_003504c4(); /* out of slice 0x3504c4 */
+extern wpair_t FUN_003504c4(); /* out of slice 0x3504c4 */
 extern word_t FUN_003504d0(); /* out of slice 0x3504d0 */
 extern wpair_t FUN_003504e8(); /* out of slice 0x3504e8 */
 extern wpair_t FUN_003504f4(); /* out of slice 0x3504f4 */
@@ -238,7 +239,7 @@ extern word_t FUN_00350624(); /* out of slice 0x350624 */
 extern word_t FUN_0035063c(); /* out of slice 0x35063c */
 extern wpair_t FUN_00350738(); /* out of slice 0x350738 */
 extern wpair_t FUN_00350774(); /* out of slice 0x350774 */
-extern word_t FUN_00350798(); /* out of slice 0x350798 */
+extern wpair_t FUN_00350798(); /* out of slice 0x350798 */
 extern word_t FUN_003507bc(); /* out of slice 0x3507bc */
 extern wpair_t FUN_003507e0(); /* out of slice 0x3507e0 */
 extern word_t FUN_0035084c(); /* out of slice 0x35084c */
@@ -253,11 +254,11 @@ extern wpair_t FUN_00350914(); /* out of slice 0x350914 */
 extern word_t FUN_00350968(); /* out of slice 0x350968 */
 extern word_t FUN_00350980(); /* out of slice 0x350980 */
 extern word_t FUN_003509a4(); /* out of slice 0x3509a4 */
-extern word_t FUN_003509b0(); /* out of slice 0x3509b0 */
+extern wpair_t FUN_003509b0(); /* out of slice 0x3509b0 */
 extern wpair_t FUN_003509bc(); /* out of slice 0x3509bc */
 extern word_t FUN_003509c8(); /* out of slice 0x3509c8 */
 extern word_t FUN_003509ec(); /* out of slice 0x3509ec */
-extern word_t FUN_00350a04(); /* out of slice 0x350a04 */
+extern wpair_t FUN_00350a04(); /* out of slice 0x350a04 */
 extern word_t FUN_00350a1c(); /* out of slice 0x350a1c */
 extern wpair_t FUN_00350a70(); /* out of slice 0x350a70 */
 extern word_t FUN_00350aa0(); /* out of slice 0x350aa0 */
@@ -301,7 +302,7 @@ extern wpair_t FUN_00351450(); /* out of slice 0x351450 */
 extern wpair_t FUN_0035145c(); /* out of slice 0x35145c */
 extern word_t FUN_00351488(); /* out of slice 0x351488 */
 extern word_t FUN_003514a0(); /* out of slice 0x3514a0 */
-extern word_t FUN_003514e8(); /* out of slice 0x3514e8 */
+extern wpair_t FUN_003514e8(); /* out of slice 0x3514e8 */
 extern word_t FUN_0035156c(); /* out of slice 0x35156c */
 extern word_t FUN_00351584(); /* out of slice 0x351584 */
 extern word_t FUN_003515d8(); /* out of slice 0x3515d8 */
@@ -772,7 +773,185 @@ extern word_t FUN_004acd08(); /* out of slice 0x4acd08 */
 extern word_t FUN_004acd14(); /* out of slice 0x4acd14 */
 extern word_t FUN_004b5a74(); /* out of slice 0x4b5a74 */
 
+extern word_t DAT_004aa278;
+extern word_t DAT_004baeb0;
+extern word_t DAT_004baeb8;
+extern word_t DAT_004c0740;
+extern word_t DAT_004c2450;
+extern word_t DAT_004c2458;
+extern word_t DAT_004e8214;
+extern word_t DAT_004e8268;
+extern word_t DAT_005a3c68;
+extern word_t DAT_005a3c70;
+extern word_t DAT_005a3c78;
+extern word_t DAT_005a3c80;
+extern word_t DAT_005a4ac0;
+extern word_t DAT_005a4b20;
+extern word_t DAT_005a4c10;
+extern word_t DAT_005a4c18;
+extern word_t DAT_005a5580;
+extern word_t DAT_005a5e3c;
+extern word_t DAT_0060e208;
+extern word_t DAT_00611b24;
+extern word_t LAB_00611b34;
+extern word_t DAT_00616214;
+extern word_t DAT_0061628c;
+extern word_t DAT_00657678;
+extern word_t DAT_00657778;
+extern word_t DAT_006577e0;
+extern word_t DAT_00657d18;
+extern word_t DAT_00657e10;
+extern word_t DAT_00657e48;
+extern word_t DAT_00688af0;
+extern word_t _DAT_004baeb0;
+extern word_t _DAT_004c2450;
+extern word_t s_Anchor_endOfLine_005e2bb0;
+extern word_t s_Anchor_endOfSubjectBeforeNewline_005e2b00;
+extern word_t s_Anchor_firstMatchingPositionInSu_005e2a80;
+extern word_t s_Anchor_startOfLine_005e2bd0;
+extern word_t s_Fatal_error_005accd0;
+extern word_t s_Handled_in_ByteCodeGen_or_earlie_005e2e20;
+extern word_t s_Handled_in__emitCustomCharacterC_005e28c0;
+extern word_t s_L4_ErrorCodeTruncated_006886a8;
+extern word_t s_Removed_in__flatteningCustomChar_005e2850;
+extern word_t s_TODO__Assertion_resetStartOfMatc_005e2a50;
+extern word_t s__AppleInternal_Library_BuildRoot_;
+extern word_t s__StringProcessing_ByteCodeGen_sw_005e2820;
+extern word_t str_backreference_kind_5e2a10;
+extern word_t str_backwards_assertions_5e27b0;
+extern word_t str_build_root_5e2560;
+extern word_t str_character_predicates_5e2660;
+extern word_t str_cstring_0064c108;
+extern word_t str_must_have_lower_bound_5e27d0;
+extern word_t str_reset_keep_assertion_5e29f0;
+extern word_t str_these_should_produce_capture_5e2780;
+extern word_t uRam00000000004baeb8;
+extern word_t uRam00000000004c2458;
+
 /* ==================== SKR27 function bodies ==================== */
+
+
+/* Forward declarations for all in-slice static functions (defined later in file). */
+static bool sk_bcg_0046e900(void);
+static bool sk_bcg_0047c0dc(void);
+static byte sk_bcg_0046e6b0(word_t p1, word_t *p2, byte p3, long *p4, word_t p5, word_t p6, word_t p7);
+static uint sk_bcg_00476c0c(long param_1);
+static void sk_bcg_0046ae94(word_t p1, word_t p2, word_t p3, word_t p4, long p5, long p6, word_t p7, word_t p8, word_t p9);
+static void sk_bcg_0046bd78(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8);
+static void sk_bcg_0046c0cc(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8);
+static void sk_bcg_0046c600(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8, word_t p9, word_t p10, word_t p11, word_t p12);
+static void sk_bcg_0046c764(void);
+static void sk_bcg_0046c828(word_t p1, word_t p2, word_t p3, word_t p4);
+static void sk_bcg_0046c91c(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_0046c9f0(word_t p1, long p2);
+static void sk_bcg_0046ca44(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
+static void sk_bcg_0046cb54(void);
+static void sk_bcg_0046d208(word_t p1, word_t p2, word_t p3);
+static void sk_bcg_0046d670(void);
+static void sk_bcg_0046d740(word_t p1);
+static void sk_bcg_0046d810(long p1, word_t p2, code *p3);
+static void sk_bcg_0046d860(void);
+static void sk_bcg_0046d988(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8);
+static void sk_bcg_0046e384(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7);
+static void sk_bcg_0046e7a8(void);
+static void sk_bcg_0046ea18(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
+static void sk_bcg_0046ea44(void);
+static void sk_bcg_0046ece8(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
+static void sk_bcg_0046ef90(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
+static void sk_bcg_0046f2f0(word_t param_1);
+static void sk_bcg_0046f334(word_t param_1);
+static void sk_bcg_0046f344(void);
+static void sk_bcg_0046f37c(void);
+static void sk_bcg_0046f3c8(wpair_t *out, word_t p2, word_t p3, word_t p4);
+static void sk_bcg_0046f4cc(wpair_t *out, word_t *in2, word_t *in3);
+static void sk_bcg_0046f510(wpair_t *out, word_t *in2, word_t p3);
+static void sk_bcg_0046f54c(word_t p1, word_t p2, word_t p3, word_t p4);
+static void sk_bcg_0046f820(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static void sk_bcg_0046fb9c(word_t param_1, word_t param_2, word_t param_3);
+static void sk_bcg_0046feb0(word_t inreg);
+static void sk_bcg_004700d4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5);
+static void sk_bcg_00470298(word_t inreg);
+static void sk_bcg_0047042c(void);
+static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4);
+static void sk_bcg_00470998(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470d88(void);
+static void sk_bcg_00470ebc(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3);
+static void sk_bcg_0047153c(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4, code *param_5, word_t p6, word_t p7, word_t p8, word_t p9, word_t param_10);
+static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3);
+static void sk_bcg_00471c14(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8, word_t p9, word_t p10, word_t p11, word_t p12);
+static void sk_bcg_00471cfc(void);
+static void sk_bcg_00471e78(void);
+static void sk_bcg_00471f20(void);
+static void sk_bcg_004720b8(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static void sk_bcg_0047277c(void);
+static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t param_4, code *param_5);
+static void sk_bcg_00472f00(void);
+static void sk_bcg_00472f04(void);
+static void sk_bcg_00472f44(void);
+static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3, word_t param_4, code *param_5);
+static void sk_bcg_00473244(word_t param_1, word_t param_2, unsigned long param_3, unsigned long param_4);
+static void sk_bcg_00474fe8(long *param_1);
+static void sk_bcg_00475544(void);
+static void sk_bcg_00475bf4(void);
+static void sk_bcg_00475c7c(void);
+static void sk_bcg_00475cf8(void);
+static void sk_bcg_00475e14(void);
+static void sk_bcg_00476518(void);
+static void sk_bcg_004765b0(void);
+static void sk_bcg_004766ec(long param_1);
+static void sk_bcg_0047684c(u64 param_1);
+static void sk_bcg_00476c28(byte *param_1, byte *param_2);
+static void sk_bcg_00476c58(u64 param_1, word_t param_2);
+static void sk_bcg_00476dd0(long param_1, word_t param_2);
+static void sk_bcg_00476e18(u64 param_1, u64 param_2, uint param_3);
+static void sk_bcg_00476e74(long param_1);
+static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4);
+static void sk_bcg_004773a8(long p1, word_t p2, word_t p3, code *size_fn, code *emit_fn, code *finalize_fn);
+static void sk_bcg_00477494(word_t index);
+static void sk_bcg_00477504(void);
+static void sk_bcg_00477590(word_t p1, long p2);
+static void sk_bcg_004775d0(void);
+static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5);
+static void sk_bcg_00477e10(void);
+static void sk_bcg_00478110(word_t vec, word_t val, word_t flag);
+static void sk_bcg_00478a98(void);
+static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
+static void sk_bcg_00479c18(void);
+static void sk_bcg_00479fe4(void);
+static void sk_bcg_0047a258(void);
+static void sk_bcg_0047aa0c(void);
+static void sk_bcg_0047b844(void);
+static void sk_bcg_0047bcc8(void);
+static void sk_bcg_0047bd74(void);
+static void sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3);
+static word_t sk_bcg_0047c1b0(word_t p1);
+static void sk_bcg_0047c3a4(void);
+static void sk_bcg_0047c474(void);
+static void sk_bcg_0047c4e4(word_t param_1, word_t param_2);
+static word_t sk_bcg_0046df0c(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8);
+static word_t sk_bcg_0046e038(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static word_t sk_bcg_0046e128(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8, word_t p9, word_t p10);
+static word_t sk_bcg_0046e274(void);
+static word_t sk_bcg_004769a4(void);
+static word_t sk_bcg_00476d44(long param_1);
+static word_t sk_bcg_00476e94(word_t ctx, word_t selector);
+static word_t sk_bcg_004772d0(void);
+static word_t sk_bcg_00477694(long vec, word_t sel);
+static word_t sk_bcg_004776c4(long vec);
+static word_t sk_bcg_00477e8c(word_t desc);
+static wpair_t sk_bcg_0046c4e0(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7);
+static wpair_t sk_bcg_0046f298(word_t p1, word_t p2, long p3);
+static wpair_t sk_bcg_0046f3f4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static wpair_t sk_bcg_0046f474(word_t obj, word_t p2, word_t p3, word_t p4, word_t p5);
+static wpair_t sk_bcg_004730e4(word_t param_1, word_t param_2, long param_3);
+static wpair_t sk_bcg_004731b8(long param_1, long param_2);
+static wpair_t sk_bcg_00476cd4(word_t param_1, word_t param_2);
+static wpair_t sk_bcg_00476d88(long param_1);
+static wpair_t sk_bcg_00477338(long delta, word_t vec);
 
 
 /* FUN_0046ae94 @ 0x0046ae94   (est. sk_bcg_0046ae94)
@@ -3156,6 +3335,7 @@ extern word_t thunk_FUN_00498708();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_001a29a0();
 
@@ -3759,7 +3939,8 @@ extern word_t thunk_FUN_0006f6b4(); /* thunk -> FUN_0006f6b4 */
 extern word_t thunk_FUN_001a29a0(); /* thunk -> FUN_001a29a0 */
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
-extern word_t DAT_00611b24; /* thunk -> FUN_002b74c0 */
+extern word_t DAT_00611b24;
+extern word_t LAB_00611b34; /* thunk -> FUN_002b74c0 */
 extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn */
 
 /* Forward declarations of this part's own static functions (cross-calls). */
@@ -4006,7 +4187,7 @@ static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_0007c1a4();
     ((code)&SUB_54ffff60f100041f)();                          /* masked trampoline fn */
     FUN_0034aee4();
-    r2 = (wpair_t)FUN_003504c4();
+    r2 = FUN_003504c4();
     x9fn(r2.lo, r2.hi, p3);     /* (*extraout_x9)(...) */
     r2 = (wpair_t)FUN_000e72b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r2.lo, r2.hi, p3);     /* (*extraout_x8_00)(...) */
@@ -4051,7 +4232,7 @@ static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_0034af20();
     FUN_0035139c(e_x9 - e_x8b);          /* arg = extraout_x9 - extraout_x8_00 */
     x9fn();                              /* (*extraout_x9_00)() */
-    r1 = (wpair_t)FUN_003509b0(*(word_t *)(e_x16 + 0x20));
+    r1 = FUN_003509b0(*(word_t *)(e_x16 + 0x20));
     x8fn(r1.lo, r1.hi, p3);              /* (*extraout_x8_01)(...) */
     FUN_00351178();
     sk_bcg_0046feb0(0); /* register-residue arg */
@@ -4107,7 +4288,7 @@ static void sk_bcg_00470d88(void)
         }
         r7 = (wpair_t)FUN_00350af4();
         FUN_00352c40(r7.lo, r7.hi, t6);
-        t6 = (word_t)thunk_FUN_002b74c0();
+        t6 = thunk_FUN_002b74c0().lo;
         FUN_003a25d4(t2);
     }
     FUN_0034be0c(t6);
@@ -4145,7 +4326,7 @@ static void sk_bcg_00470ebc(word_t p1, word_t p2, word_t p3, word_t p4,
     t4 = x8fn();                /* uVar4 = (*extraout_x8)() */
     t5 = (word_t)FUN_004aa95c();
     FUN_00377824(t5, p6, p3);
-    r6 = (wpair_t)FUN_00350a04(&s30);
+    r6 = FUN_00350a04(&s30);
     sk_bcg_0046ea18(r6.lo, r6.hi, t1, t3, t4);
     FUN_003a25d4(t3);
     FUN_0036b118(t4);
@@ -4193,7 +4374,8 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     word_t e_x9, e_x9b;         /* extraout_x9 / x9_00 */
     word_t e_x12, e_x16, e_x16b; /* extraout_x12/x16/x16_00 */
     word_t e_x16c;              /* extraout_x16_01 */
-    code x8fn1, x8fn2, x8fn3, x8fn4, x8fn5, x8fn6, x8fn7, x8fn8, x8fn9; /* extraout_x8_0* */
+    code x8fn1, x8fn2, x8fn3, x8fn4, x8fn6, x8fn7, x8fn8, x8fn9; /* extraout_x8_0* */
+    wpair_t (*x8fn5)();  /* extraout_x8_06: 16-byte pair return */
     code x9fn;                  /* extraout_x9_01 */
     word_t x20 = 0, x30 = 0;    /* unaff_x20/x30 */
     word_t local_50;            /* local_50 */
@@ -4205,7 +4387,7 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     t13 = *(word_t *)(p3 + 0x20);
     t2 = (word_t)FUN_00027754(t13);
     t14 = *(word_t *)(p3 + 0x10);
-    t2 = (word_t)FUN_00377824(0xff, t2, t14, &DAT_00611b24, &LAB_00611b34);
+    t2 = FUN_00377824(0xff, t2, t14, &DAT_00611b24, &LAB_00611b34).lo;
     FUN_003508e4();
     t3 = (word_t)FUN_00310d68();
     FUN_000a6f88();
@@ -4225,13 +4407,13 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
     FUN_000aa4ec();
     t11 = *(word_t *)(p3 + 0x28);
     FUN_003505c4(0);
-    t4 = (word_t)FUN_00377824();
+    t4 = FUN_00377824().lo;
     FUN_000a6f88();
     FUN_0007c1a4();
     ((code)&SUB_54ffff60f100041f)();                           /* masked trampoline fn */
     FUN_0034cff4();
     t5 = (word_t)FUN_004aa47c();
-    t5 = (word_t)FUN_00377824(t5, t13, t14);
+    t5 = FUN_00377824(t5, t13, t14).lo;
     FUN_000a6f88();
     FUN_0007c1a4();
     ((code)&SUB_54ffff60f100041f)();                           /* masked trampoline fn */
@@ -4258,11 +4440,11 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
         }
         a15 = (wpair_t)FUN_0008e388(*(word_t *)(e_x16 + 0x20));
         x8fn4(a15.lo, a15.hi, t2);   /* (*extraout_x8_05)(...) */
-        a15 = (wpair_t)FUN_003514e8();
+        a15 = FUN_003514e8();
         FUN_0046490c(a15.lo, a15.hi, t5);
         FUN_00464f4c();
         t12 = FUN_00377bec().lo;
-        a15 = (wpair_t)FUN_00350798();
+        a15 = FUN_00350798();
         l8 = (long)FUN_00310e08(a15.lo, a15.hi, t12);
         i1 = *(int *)(l8 + 0x24);
         t12 = (word_t)FUN_00027754(t12);
@@ -4275,7 +4457,7 @@ static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3)
         }
         t12 = (word_t)FUN_000277e8(t13);
         FUN_00350a1c(t12, auStack_28, l6);
-        a15 = (wpair_t)x8fn5();      /* auVar15 = (*extraout_x8_06)() */
+        a15 = x8fn5();      /* auVar15 = (*extraout_x8_06)() */
         (**(code **)(e_x16 + 0x10))(e_x9, a15.hi, t2);
         ((code)a15.lo)(auStack_28, auStack_28, 0);   /* (*auVar15._0_8_)(...) */
         t12 = (word_t)FUN_0014ae44(*(word_t *)(p3 + 0x30));
@@ -4329,7 +4511,7 @@ static void sk_bcg_0047153c(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_004ab5d4(p6);
     FUN_00350560();
     t7 = x8fn();                /* uVar7 = (*extraout_x8_00)() */
-    r8 = (wpair_t)FUN_00350a04(&s28);
+    r8 = FUN_00350a04(&s28);
     FUN_00467678(r8.lo, r8.hi, t1, t4, t7, p3);
     t6 = s48;                   /* uVar6 = in_stack_00000048 */
     t5 = s40;                   /* uVar5 = in_stack_00000040 */
@@ -4401,7 +4583,7 @@ static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4,
     fn2 = (code)FUN_00319628(t3);
     fn2(&local_48, &local_70, p7, t3);
     t6 = (word_t)FUN_003272b8();
-    t7 = (word_t)sk_bcg_00471aec(t2, 0x675c68, p8); /* register-residue args dropped */
+    sk_bcg_00471aec(t2, 0x675c68, p8); t7 = 0; /* void call; register-residue */
     FUN_003a25d4(local_30);
     local_70 = t7;
     FUN_004974ac(0xff, p8);
@@ -4545,7 +4727,7 @@ static void sk_bcg_00471c14(word_t p1, word_t p2, word_t p3, word_t p4,
 {
     code fn, fn2;               /* extraout_x9 / x9_00 */
     word_t t2;                  /* uVar2 */
-    ulong local_60, local_58;   /* bounds */
+    word_t local_60, local_58;   /* bounds */
 
     t2 = (word_t)FUN_00027754(p10);
     FUN_000277b8();
@@ -4555,7 +4737,7 @@ static void sk_bcg_00471c14(word_t p1, word_t p2, word_t p3, word_t p4,
     FUN_003511a8(&local_60);
     fn2();                      /* (*extraout_x9_00)() */
     if ((local_58 >> 0xe) <= (local_60 >> 0xe)) {
-        sk_bcg_00471644(p1, p2, local_58, local_60, (code)p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);
+        sk_bcg_00471644(p1, p2, local_58, local_60, (code)p3, p4, p5, p6, p7, p8); /* 1 register-residue arg dropped */ /* 4 register-residue args dropped */
         return;
     }
     CL4_SWBP(0x471cfc);         /* SoftwareBreakpoint(1,0x471cfc) */
@@ -4577,7 +4759,7 @@ static void sk_bcg_00471cfc(void)
     code x9fn;                  /* extraout_x9 */
     word_t x21 = 0;             /* unaff_x21 */
     word_t s0 = 0;              /* in_stack_00000000 */
-    ulong local_60, local_58;
+    word_t local_60, local_58;
 
     FUN_0007c028();
     ((code)&SUB_54ffff60f100041f)(*(word_t *)(e_x8 + 0x40));  /* masked; *(extraout_x8+0x40) */
@@ -4590,7 +4772,7 @@ static void sk_bcg_00471cfc(void)
     fn2(&local_60, in_x4, t1);
     if ((local_58 >> 0xe) <= (local_60 >> 0xe)) {
         FUN_000e72b0();
-        sk_bcg_00471644();
+        sk_bcg_00471644(0,0,0,0,0,0,0,0,0,0); /* register-residue args */
         if (x21 == 0) {
             FUN_0007c1c4();
             ((code)x9fn)();             /* (*extraout_x9)() */
@@ -4660,7 +4842,7 @@ static void sk_bcg_00471f20(void)
     FUN_00077894(t1);
     FUN_00377bec();
     FUN_00077894(0);
-    t1 = (word_t)FUN_00377824();
+    t1 = FUN_00377824().lo;
     FUN_000a6f88();
     FUN_0007c1a4();
     ((code)&SUB_54ffff60f100041f)();      /* masked trampoline fn */
@@ -4683,7 +4865,7 @@ static void sk_bcg_00471f20(void)
     fn(&DAT_0061628c, r5.hi + *(int *)(l3 + 0x24), t1);  /* (DAT_0061628c, auVar5_8 + off, uVar1) */
     FUN_00350530();
     FUN_00377dcc();
-    sk_bcg_00471e78(e_x8);
+    sk_bcg_00471e78(); /* register-residue arg dropped */
     FUN_0008e500(r5.lo);
     return;
 }
@@ -4716,7 +4898,7 @@ static void sk_bcg_00475cf8(void);
  * calls. Branch on a carry/zero flag from a buffer-growth check decides
  * whether to append a new instruction or re-emit through a second builder.
  * Confidence: medium   Notes: many SUB_54ffff60f100041f masked trampoline
- * calls and extraout_*/zflag register artifacts. */
+ * calls and extraout_* / zflag register artifacts. */
 static void sk_bcg_004720b8(word_t param_1, word_t param_2, word_t param_3, word_t param_4)
 {
     wpair_t av18;    /* 16-byte pair */
@@ -5001,7 +5183,8 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
     word_t v2, v3, v4, v7;
     long ln5, ln6;
     unsigned long v8;
-    code *pc9, *pc10;
+    wpair_t (*pc9)();   /* returns 16-byte pair (auVar11) */
+    code *pc10;
     /* extraout_* register artifacts */
     long x8_0, x8_1, x8_2;
     word_t x8_3;
@@ -5031,7 +5214,7 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
     FUN_003509a4();
     FUN_00027754(istk_00000088);
     av11 = FUN_004aa5dc();
-    v4 = FUN_00377824(av11.lo, av11.hi, istk_00000080);
+    v4 = FUN_00377824(av11.lo, av11.hi, istk_00000080).lo;
     FUN_000a6f88();
     (*((code *)(uintptr_t)0x54ffff60f100041f))(*(word_t *)(x8_2 + 0x40));  /* masked trampoline */
     FUN_003493c4();
@@ -5056,10 +5239,10 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
         v8 = (*x8_5)();                          /* extraout_x8_03 */
         if ((v8 & 1) != 0) break;
         FUN_0019ea20(x8_3, param_3, param_4, v4);   /* extraout_x8_02 */
-        pc9 = (code *)FUN_000277e8(istk_00000088);
+        pc9 = (wpair_t (*)())FUN_000277e8(istk_00000088);
         av11 = (*pc9)(astk_28);
         (**(code **)(x16_1 + 0x10))(x9_1, av11.hi, v4);   /* extraout_x16_00, extraout_x9_01 */
-        (*av11.lo)(astk_28, astk_28, 0);   /* indirect call via av11._0_8_ */
+        ((code)av11.lo)(astk_28, astk_28, 0);   /* indirect call via av11._0_8_ */
         FUN_0009e234();
         v8 = (*param_5)();
         pc9 = *(code **)(x16_1 + 8);
@@ -5080,7 +5263,7 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
         FUN_0046490c();
         FUN_00464f4c();
         av11 = FUN_00350914();
-        v2 = FUN_00377bec(av11.lo, av11.hi, v3);
+        v2 = FUN_00377bec(av11.lo, av11.hi, v3).lo;
         FUN_0035166c();
         FUN_000b4390();
         FUN_0035053c();
@@ -5180,7 +5363,7 @@ static void sk_bcg_00472f44(void)
     (*((code *)(uintptr_t)0x54ffff60f100041f))(*(word_t *)(x8_0 + 0x40));  /* masked trampoline */
     FUN_0034ab10();
     FUN_0034b540();
-    av6 = (*((code *)(uintptr_t)0x54ffff60f100041f))();   /* masked trampoline */
+    av6.lo = sk_svc_call(); av6.hi = 0;   /* masked trampoline (SUB_54ffff60f100041f) */
     loc_8 = av6.lo;
     if (SCARRY8(loc_8, av6.hi)) {
         /* WARNING: Does not return */
@@ -5409,13 +5592,13 @@ static void sk_bcg_00473244(word_t param_1, word_t param_2, unsigned long param_
     default:
         v26 = *(unsigned long *)(v8 + 0x10);
         FUN_0036b270(v26);
-        sk_bcg_00476fd0();
+        sk_bcg_00476fd0(0,0,0,0); /* register-residue args */
         goto LAB_0047419c;
     case 1:
         FUN_004ab4e8();
         v28 = FUN_004ab998();
         ln20 = FUN_0036b270(*(word_t *)((v28 & x8_2) + 0x10)).lo;   /* extraout_x8_02 */
-        pv10 = &DAT_00657778;
+        pv10 = (word_t)DAT_00657778;
         ln13 = 0x20;
         for (ln15 = *(long *)(ln20 + 0x10); ln15 != 0; ln15 = ln15 + -1) {
             v28 = *(unsigned long *)(ln20 + ln13);
@@ -5494,7 +5677,7 @@ LAB_004737ec:
         if (v28 != 0) {
             bv4 = false;
             v8 = 0;
-            pv12 = &DAT_00657778;
+            pv12 = (word_t)DAT_00657778;
             v26 = v28 - 1;
             do {
                 if (v28 <= v8) {
@@ -5654,7 +5837,7 @@ LAB_00474524:
             v26 = *(unsigned long *)(pv10 + v8 * 8 + 0x20);
             FUN_004ab998();
             FUN_0036b270(v26 & (unsigned long)ux20);
-            sk_bcg_00473244(v26);
+            sk_bcg_00473244(v26, 0, 0, 0); /* register-residue args */
             FUN_0036b118(v26 & (unsigned long)ux20);
             if (ux21 != 0) {
                 FUN_0036b118(pv10);
@@ -5686,7 +5869,7 @@ LAB_004745ac:
         FUN_00351f1c();
         FUN_004a36fc();
         sk_bcg_004775d0();
-        v8 = sk_bcg_0047c474(v31, v5, v21, v17);
+        sk_bcg_0047c474(); v8 = 0; /* register-residue args/return */
         FUN_004aa594();
         FUN_00498b28(ux20, x16_0);
         FUN_004ac7a4();
@@ -5697,7 +5880,7 @@ LAB_004745ac:
         FUN_004aa9e8();
         *(unsigned long *)(x9_2 + 0x20) = v8 | 0x1700000000000000;   /* extraout_x9_02 */
         *(word_t *)(ux20 + 8) = x8_9;          /* extraout_x8_09 */
-        av34 = sk_bcg_00473244(v27);
+        sk_bcg_00473244(v27, 0, 0, 0); av34.lo = 0; av34.hi = 0; /* register-residue */
         if (ux21 != 0) {
             FUN_00351f1c(ln13, v16);
             FUN_004a372c();
@@ -5774,7 +5957,7 @@ joined_r0x00474484:
                 *(word_t *)(x9_5 + 0x20) = 0x1100000000000000;   /* extraout_x9_05 */
                 *(word_t *)(ux20 + 8) = x8_15;   /* extraout_x8_15 */
                 FUN_00481918(v27);
-                sk_bcg_00473244(v21);
+                sk_bcg_00473244(v21, 0, 0, 0); /* register-residue args */
                 if ((v23 >> 8 & 1) == 0) {
                     if (ux21 == 0) {
                         FUN_004aa464();
@@ -5867,12 +6050,12 @@ LAB_004745dc:
             loc_f8 = lStack_3a0;
             loc_f0 = loc_398;
             loc_e8 = lStack_390;
-            if (((byte)ux20[0xd0] & 1) == 0) {
-                sk_bcg_004766ec(&loc_120);
+            if ((*(byte *)((word_t)ux20 + 0xd0) & 1) == 0) {
+                sk_bcg_004766ec((long)&loc_120);
             }
-            sk_bcg_004766ec(&loc_120);
+            sk_bcg_004766ec((long)&loc_120);
 LAB_00474e54:
-            sk_bcg_00473244(v21);
+            sk_bcg_00473244(v21, 0, 0, 0); /* register-residue args */
             goto joined_r0x00474484;
         }
         if (loc_378 != 3) goto LAB_00474e54;
@@ -5907,7 +6090,7 @@ LAB_00474e54:
         FUN_004ab7f0();
         FUN_004ab7e0();
         FUN_00481918(v27);
-        sk_bcg_00473244(v21);
+        sk_bcg_00473244(v21, 0, 0, 0); /* register-residue args */
         if (ux21 != 0) goto LAB_00474e64;
         FUN_00498b28(ux20, FUN_00499158);
         v21 = FUN_004ab018();
@@ -5949,7 +6132,7 @@ LAB_00474e70:
         FUN_004ab800();
         v28 = *(unsigned long *)(x8_0 + 0x10);    /* exx8 */
         FUN_0036b270(v28 & (unsigned long)ux20);
-        sk_bcg_00473244(v28);
+        sk_bcg_00473244(v28, 0, 0, 0); /* register-residue args */
         v26 = v28 & (unsigned long)ux20;
 LAB_0047419c:
         FUN_0036b118(v26);
@@ -6013,7 +6196,7 @@ LAB_0047419c:
             v21 = 1;
             v8 = param_3;
 LAB_004744b4:
-            av33 = sk_bcg_004776ec(v27, v28, ln13, v8, v21);
+            sk_bcg_004776ec(v27, v28, ln13, v8, v21); av33.lo = 0; av33.hi = 0; /* register-residue return */
             v21 = av33.hi;
             if ((av33.lo & 1) == 0) {
                 v16 = sk_bcg_004772d0();
@@ -6069,7 +6252,7 @@ LAB_00474b28:
                     goto LAB_00474b28;
                 }
                 sk_bcg_00477494(v17);
-                if (((byte)ux20[0xd8] & 1) == 0) {
+                if ((*(byte *)((word_t)ux20 + 0xd8) & 1) == 0) {
                     v25 = sk_bcg_00477e8c(v27);
                     iv6 = 0;
                     v9 = 1;
@@ -6100,7 +6283,7 @@ LAB_00474bac:
                     v9 = 1;
                     v26 = 0x600000000000000;
                 }
-                sk_bcg_00473244(v27);
+                sk_bcg_00473244(v27, 0, 0, 0); /* register-residue args */
                 v21 = x1_17;         /* extraout_x1_17 */
                 if (ux21 == 0) {
                     if (iv6 != 0) {
@@ -6449,7 +6632,7 @@ LAB_00474b08:
                     FUN_003a25d4(v8);
                     if (x8_16 == 0) goto LAB_00474c18;
                     FUN_00350518();
-                    sk_bcg_00476cd4();
+                    sk_bcg_00476cd4(0, 0); /* register-residue args */
                     if ((param_3 ^ param_4) >> 0xe == 0) {
                         FUN_003a25d4(x1_15);        /* extraout_x1_15 */
                         /* WARNING: Does not return */
@@ -6460,7 +6643,7 @@ LAB_00474b08:
                     FUN_004ac2d0();
                     FUN_003a25d4();
                     FUN_00350518();
-                    av33 = sk_bcg_00476cd4();
+                    av33 = sk_bcg_00476cd4(0, 0); /* register-residue args */
                     v26 = param_3 >> 0xe;
                     loc_1d0 = param_3;
                     if (v26 != param_4 >> 0xe) {
@@ -6619,7 +6802,7 @@ LAB_00474c68:
     case 0xc:
         FUN_004ab260();
         FUN_004ac954(*(word_t *)(x8_10 + 0x10));   /* extraout_x8_10 */
-        av33 = sk_bcg_00473244();
+        sk_bcg_00473244(0, 0, 0, 0); av33.lo = 0; av33.hi = 0; /* register-residue */
         v21 = av33.hi;
         if (ux21 == 0) {
             v28 = av33.lo;
@@ -6646,7 +6829,7 @@ LAB_00474c68:
         *(word_t *)(ln13 + 0x18) = *(word_t *)(v8 + 0x20);
         *(word_t *)(ln13 + 0x10) = v27;
         FUN_0036b270(v21);
-        sk_bcg_00477504(FUN_004a369c, ln13);
+        sk_bcg_00477504(); /* register-residue args dropped */
         FUN_0036b118(ln13);
         v28 = *(unsigned long *)(ux20 + 0x70);
         if (SCARRY8(v28, 1)) {
@@ -6655,7 +6838,7 @@ LAB_00474c68:
         }
         *(unsigned long *)(ux20 + 0x70) = v28 + 1;
         FUN_00350518();
-        sk_bcg_00477590();
+        sk_bcg_00477590(0, 0); /* register-residue args */
         v21 = 0;
         goto switchD_00473298_caseD_9;
     case 0xf:
@@ -6916,7 +7099,7 @@ LAB_004754c4:
         av38 = FUN_0036b270(ln23);
         FUN_00350530(av38.lo, av38.hi, (word_t)"\x00" + 8, &DAT_004c0740);   /* str_cstring_0064c108 + 8 */
         ln17 = FUN_00481b40();
-        loc_e8 = &DAT_00688af0;
+        loc_e8 = (word_t)DAT_00688af0;
         av38 = FUN_00481ac4(&loc_100, ln24);
         FUN_004abd64(av38.lo, av38.hi, &DAT_00657678, &DAT_005a4b20);
         ln9 = FUN_00481b40();
@@ -7084,7 +7267,7 @@ static void sk_bcg_00475544(void)
                 CL4_SWBP(0x475bac);
             }
             v5 = *(uint *)(ln10 + 0x1c + *(long *)(ln10 + 0x10) * 4);
-            v11 = sk_bcg_00476e74(ln10);
+            sk_bcg_00476e74(ln10); v11 = 0; /* register-residue return */
             if (*(long *)(ln10 + 0x10) == 0) {
                 /* WARNING: Does not return */
                 CL4_SWBP(0x475bb0);
@@ -7420,7 +7603,7 @@ static void sk_bcg_00475cf8(void)
             FUN_00117cc4(v4 + 0x10, astk_f0, 0xb0);
             *(unsigned long *)(ln3 + 0x28) = v4 | 0x4000000000000000;
             FUN_003509bc();
-            sk_bcg_00476fd0();
+            sk_bcg_00476fd0(0,0,0,0); /* register-residue args */
             FUN_0036b588(ln3);
             FUN_004985e0();
             FUN_00002834();
@@ -7456,6 +7639,9 @@ static void sk_bcg_00475e14(void)
     uint  uVar13, uVar14, uVar15, uVar18;
     byte  bVar4;
     long  lVar7_16;
+    word_t unaff_x20, unaff_x30;            /* register inputs */
+    word_t extraout_w8, extraout_w9, extraout_x16;
+    word_t uVar3;
     long *ctx = (long *)unaff_x20;          /* emitter context (unaff_x20) */
     word_t *cursor;                        /* plVar17 */
     wpair_t auVar25, auVar26;
@@ -7587,7 +7773,7 @@ LAB_00476064:
             FUN_00466214();
             if (!(bool)in_ZR) {
                 FUN_003507e0();
-                sk_bcg_00476cd4();
+                sk_bcg_00476cd4(0, 0); /* register-residue args */
                 if ((uVar20 ^ in_x3) >> 0xe == 0) {
                     FUN_003a25d4(extraout_x1);
                     /* WARNING: Does not return */
@@ -7597,7 +7783,7 @@ LAB_00476064:
                 uVar7 = FUN_004a3a94();
                 FUN_003a25d4(extraout_x1);
                 FUN_003507e0();
-                auVar26 = (wpair_t)sk_bcg_00476cd4();
+                auVar26 = (wpair_t)sk_bcg_00476cd4(0, 0); /* register-residue args */
                 uVar12 = auVar26.hi;
                 uVar8 = auVar26.lo;
                 uVar21 = uVar20 >> 0xe;
@@ -8480,7 +8666,7 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
             e = sk_bcg_00476d44(x23);
             if (((e ^ 0xffffffffffffffffULL) & 0xf000000000000007ULL) != 0) {
                 FUN_004ab890();
-                sk_bcg_00473244();
+                sk_bcg_00473244(0, 0, 0, 0); /* register-residue args */
                 FUN_004a38c8(e);
                 if (end == 0) {
                     sk_bcg_00477494(anchor);
@@ -8546,7 +8732,7 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
         FUN_004ab420();
         *(word_t **)(ctx + 0x60 / 8) = slot - off * 0x20;
         FUN_004ab890(e);
-        sk_bcg_00473244();
+        sk_bcg_00473244(0, 0, 0, 0); /* register-residue args */
         FUN_004ab4e8();
         FUN_0036b118(e & /* extraout_x8_00 */ (word_t)0);
         if (end != 0) {
@@ -10097,6 +10283,7 @@ extern word_t thunk_FUN_002acbb8();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
 extern word_t thunk_FUN_0044f818();
 
@@ -11334,7 +11521,7 @@ label_a908:
         *(word_t *)(extraout_x9_04 + 0x20) = 0x1300000000000000;
         unaff_x20[1] = extraout_x8_04;
         FUN_004ab478();
-        sk_bcg_00477494();
+        sk_bcg_00477494(0); /* register-residue arg */
         FUN_004ab2f8();
         FUN_00498b28();
         FUN_00350518();
@@ -11394,7 +11581,7 @@ label_a908:
         FUN_004aaa38();
         FUN_00481918(uVar11);
         FUN_004ab478();
-        sk_bcg_00477494();
+        sk_bcg_00477494(0); /* register-residue arg */
         FUN_004abe84();
         FUN_004aa9d0();
         FUN_004aa780();
@@ -12405,7 +12592,7 @@ static bool sk_bcg_0047c0dc(void)
  * a new root is required. Used to assemble sequence/backreference bodies.
  * Confidence: medium   Notes: _DAT_004baeb0, uRam00000000004baeb8 globals;
  * recursive; many emitters. */
-static void sk_bcg_0047c1b0(void)
+static word_t sk_bcg_0047c1b0(word_t p1)
 {
     word_t pcVar1;
     word_t in_ZR;
@@ -12413,6 +12600,7 @@ static void sk_bcg_0047c1b0(void)
     word_t uVar3, uVar4, uVar5, uVar7, uVar8, uVar9, uVar10;
     word_t extraout_x1, extraout_w8, extraout_x8;
     word_t unaff_x19, unaff_x20, unaff_x21, unaff_x24;
+    (void)p1;  /* register-residue arg */
 
     FUN_0008e518();
     FUN_004aae2c();
@@ -12502,6 +12690,7 @@ label_c2ac:
         FUN_0036b270(unaff_x20 & 0xffffffffffffffb);
     }
     FUN_0008e500(unaff_x19, extraout_x1);
+    return unaff_x19;   /* register-carried return value */
 }
 
 

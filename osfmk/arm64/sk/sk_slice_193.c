@@ -88,7 +88,7 @@ void sk_re_diag_rec_b(word_t a, word_t b, uint c);	/* FUN_0042f418 @ 0x0042f418 
 void sk_re_diag_rec_c(word_t a, uint b);	/* FUN_0042f448 @ 0x0042f448 */
 void sk_re_diag_rec_d(void);	/* FUN_0042f4ac @ 0x0042f4ac */
 void sk_re_diag_rec_e(void);	/* FUN_0042f514 @ 0x0042f514 */
-void sk_re_diag_init(void);	/* FUN_0042f584 @ 0x0042f584 */
+void sk_re_diag_init(word_t, ...);	/* FUN_0042f584 @ 0x0042f584 */
 void sk_re_diag_rec_f(void);	/* FUN_0042f5f8 @ 0x0042f5f8 */
 void sk_re_diag_rec_g(void);	/* FUN_0042f630 @ 0x0042f630 */
 word_t sk_re_diag_emit_str(void);	/* FUN_0042f670 @ 0x0042f670 */
@@ -100,7 +100,7 @@ sw128_t sk_re_peek_char(void);	/* FUN_0042fc4c @ 0x0042fc4c */
 void sk_re_peek_char2(void);	/* FUN_0042fca8 @ 0x0042fca8 */
 sw128_t sk_re_diag_complete(void);	/* FUN_0042fd4c @ 0x0042fd4c */
 word_t sk_re_parse_scalar_adv(word_t a, word_t b);	/* FUN_0042fe0c @ 0x0042fe0c */
-void sk_re_peek_scalar(void);	/* FUN_0042fea0 @ 0x0042fea0 */
+sw128_t sk_re_peek_scalar(void);	/* FUN_0042fea0 @ 0x0042fea0 */
 void sk_re_parse_quant_star(void);	/* FUN_0042ffac @ 0x0042ffac */
 sw128_t sk_re_peek_scalar2(void);	/* FUN_0042ffec @ 0x0042ffec */
 sw128_t sk_re_record_append_diag(word_t a);	/* FUN_00430040 @ 0x00430040 */
@@ -134,7 +134,7 @@ void sk_re_parse_balanced(void);	/* FUN_004345a4 @ 0x004345a4 */
 void sk_re_parse_comment(sw128_t *out, long rec, word_t a, word_t b, word_t c);	/* FUN_00434af4 @ 0x00434af4 */
 void sk_re_parse_atom(long rec, word_t a, word_t b, word_t c);	/* FUN_00434e98 @ 0x00434e98 */
 word_t sk_re_diag_finalize(void);	/* FUN_00435110 @ 0x00435110 */
-void sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d);	/* FUN_0043519c @ 0x0043519c */
+word_t sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d);	/* FUN_0043519c @ 0x0043519c */
 void sk_re_parse_option_block(word_t a, word_t b, word_t c, word_t *out);	/* FUN_004356f0 @ 0x004356f0 */
 void sk_re_parse_option_end(void);	/* FUN_00435ecc @ 0x00435ecc */
 sw128_t sk_re_parse_lookaround(void);	/* FUN_004361a4 @ 0x004361a4 */
@@ -2409,7 +2409,7 @@ void sk_re_diag_rec_e(void)
  * Ghidra: void FUN_0042f584(void)
  * Initializes a diagnostic record buffer: runs the reset helpers, releases
  * a value, and zeroes the record with a -1 terminator byte.  Confidence: low. */
-void sk_re_diag_init(void)
+void sk_re_diag_init(word_t a, ...)
 {
         sw_350980(0);
         sw_464608(0);
@@ -2483,7 +2483,7 @@ word_t sk_re_diag_emit_str(void)
                 if (((r.hi >> 0) & 0xff) == 1) {
                         sw_463648(0);
                         sw128_t s = sw_463444(0);
-                        sk_re_diag_init();
+                        sk_re_diag_init(0);
                         sw_466648(0);
                         sw_461430(0);
                         sw_34c444(pos);
@@ -2592,7 +2592,7 @@ word_t sk_re_append_match2(word_t a, word_t b)
 {
         word_t r0 = a, r1 = b;
         sw_36b270(b);
-        sw128_t t = sw_2aca00(&r0, 0x6753a0, 0x66e0d8);
+        sw128_t t = sw_2aca00((word_t)&r0, 0x6753a0, 0x66e0d8);
         word_t *rec = (word_t*)__builtin_frame_address(0);
         sw128_t s = sw_29fa0c(rec[2], rec[3], rec[0], rec[1]);
         sw_3a25d4(rec[1]);
@@ -2694,7 +2694,7 @@ sw128_t sk_re_diag_complete(void)
         sw_463648(0);
         word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
         sw128_t s = sw_463444(0);
-        sk_re_diag_init();
+        sk_re_diag_init(0);
         sw_466648(0);
         sw_461430(0);
         sw_46400c(0);
@@ -2747,7 +2747,7 @@ word_t sk_re_parse_scalar_adv(word_t a, word_t b)
  * Peeks the next scalar from the input: reads the head, folds and splits it;
  * on the scalar path commits the new position, else re-initializes the
  * diagnostic.  Confidence: low. */
-void sk_re_peek_scalar(void)
+sw128_t sk_re_peek_scalar(void)
 {
         sw128_t sc = sw_b4594(0);
         word_t *rec = (word_t*)__builtin_frame_address(0);
@@ -2776,7 +2776,7 @@ void sk_re_peek_scalar(void)
                 if (w == 1) {
                         sw_463648(0);
                         sw128_t s = sw_463444(0);
-                        sk_re_diag_init();
+                        sk_re_diag_init(0);
                         sw_466648(0);
                         sw_461430(0);
                         sw_34db28(pos);
@@ -2793,6 +2793,7 @@ void sk_re_peek_scalar(void)
         }
         sw128_t s2 = sw_b4390(0);
         sw_b45b0(s2.lo, s2.hi, sc.lo);
+        return s2;
 }
 
 
@@ -2887,7 +2888,7 @@ sw128_t sk_re_str_slice(word_t a, word_t b, word_t *p)
         else {
                 sw_2b4120(r.lo, r.hi, r.lo, r.hi, s0, s1);
                 sk_re_parse_scalar_adv(0, 0);
-                out = sw_2a3e64(r.lo, r.hi, s0, s1);
+                out.lo = sw_2a3e64(r.lo, r.hi, s0, s1);
                 sw_3a25d4(s1);
                 if (p[2] >> 0xe < s2 >> 0xe) SW_FATAL(0x430274);
         }
@@ -2958,7 +2959,7 @@ void sk_re_parse_suffix2(void)
 void sk_re_parse_scalar_str(void)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
-        word_t c = sw_4666f8(0);
+        word_t c = sw_4666f8(0).lo;
         word_t start = *(word_t*)(__builtin_frame_address(0) + 0x10);
         sk_re_peek_scalar();
         if (0 == 0) {
@@ -3048,7 +3049,7 @@ byte sk_re_scalar_to_utf8(word_t a, word_t b, word_t c)
         sw_3504d0(0);
         word_t t = sw_24d9ac(c);
         byte r;
-        sw_24917c(&r, __builtin_frame_address(0));
+        sw_24917c((word_t)&r, (word_t)__builtin_frame_address(0));
         sw_36b118(t);
         return r;
 }
@@ -3143,7 +3144,7 @@ void sk_re_diag_inv_scalar(word_t a, word_t b, word_t c, word_t d)
                         sw_3a25d4(0);
                         sw_86840(0x5e0590);   /* "Invalid scalar value U+..." */
                         sw_863bc(0);
-                        sw_1ebfb0(&v, 0x10, 1, 0x6776f0, 0);
+                        sw_1ebfb0((word_t)&v, 0x10, 1, 0x6776f0, 0);
                         sw_2acbb8(0);
                         sw_3a25d4(0);
                         sk_re_diag_rec(0);
@@ -3249,7 +3250,7 @@ sw128_t sk_re_parse_group_number(word_t tag)
 {
         word_t res[3];
         sw_117cc4((word_t)res);
-        sk_re_parse_number(&res);
+        sk_re_parse_number();
         sw128_t r;
         if (((byte*)res)[0] == '\\x01') {
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
@@ -3287,7 +3288,7 @@ sw128_t sk_re_parse_ref_number(long expected)
         sw_3a25d4(0);
         word_t v = rec[2];
         sw128_t out = sw_350518(0);
-        out = sk_re_diag_inv_scalar(out.lo, out.hi, rec[2], v, 2);
+        sk_re_diag_inv_scalar(out.lo, out.hi, rec[2], v);
         sw_3a25d4(0);
         return out;
 }
@@ -3411,7 +3412,7 @@ void sk_re_parse_quote(word_t a, word_t b, word_t c)
                 } else {
 is_u:                   sw_463590(0x75);
                 }
-                word_t v = sk_re_parse_ref_number(c);
+                sw128_t v = sk_re_parse_ref_number(c);
                 sk_re_diag_rec(0);
         }
         sw_1a1c8(0);
@@ -3434,7 +3435,7 @@ void sk_re_parse_group_body(void)
         sw128_t h = sw_466408(0);
         word_t start = *(word_t*)(__builtin_frame_address(0) + 0x10);
         sw_4657d0(0);
-        word_t m = sk_re_append_match2();
+        word_t m = sk_re_append_match2(0, 0);
         word_t pos = start;
         if ((m & 1) == 0) {
                 sw_462d0c(0);
@@ -3641,7 +3642,7 @@ void sk_re_parse_escape(word_t a, word_t b, word_t c, uint mode, word_t flags)
         sw128_t task = sw_8e518(0);
         sw_36b270(task.hi);
         sw128_t ch = sw_350518(0);
-        ch = sw_1ed960(ch.lo, ch.hi, c);
+        ch.lo = sw_1ed960(ch.lo, ch.hi, c);
         word_t r0 = 0, r1 = 0xe000000000000000;
         word_t *in = (word_t*)__builtin_frame_address(0);
         sw_29fa0c(in[2], in[3], in[0], in[1]);
@@ -3681,7 +3682,7 @@ void sk_re_parse_escape(word_t a, word_t b, word_t c, uint mode, word_t flags)
                 sw_463514(0);
                 sw_2acbb8(0);
                 sw_3a25d4(0);
-                sk_re_parse_escape();
+                sk_re_parse_escape(0, 0, 0, 0, 0);
                 sw_8e500(0);
         }
         sw_3a25d4(0);
@@ -3698,7 +3699,7 @@ void sk_re_parse_escape(word_t a, word_t b, word_t c, uint mode, word_t flags)
 word_t sk_re_diag_done(void)
 {
         word_t out[2];
-        sk_re_parse_quoted_seq(&out);
+        sk_re_parse_quoted_seq(&out, 0);
         if (out[1] == 0) {
                 out[0] = sw_46615c(0);
         } else {
@@ -3757,7 +3758,7 @@ void sk_re_parse_balanced(void)
         sw_463cb8(0);
         sw_117cc4(0);
         sw_462d98(0); sw_29fa0c(0); sw_4630c4(0);
-        sw_4614cc(&start, 0);
+        sw_4614cc((word_t)&start, 0);
         sw_4636a0(0x7b3c, 0xe200000000000000, start);
         sw_15e4f8(0);
         sw_466678(0);
@@ -3860,7 +3861,8 @@ void sk_re_parse_comment(sw128_t *out, long rec, word_t a, word_t b, word_t c)
                 sw_1ee018(0);
                 sk_re_diag_complete();
                 sw128_t r = sw_100e34(0);
-                *out = sk_re_parse_group_body();
+                sk_re_parse_group_body();
+                *out = r;
         } else {
 done:           /* '#' comment in extended mode */
                 sw_463534(0x23);
@@ -3922,7 +3924,7 @@ void sk_re_parse_atom(long rec, word_t a, word_t b, word_t c)
                                 sw_3a25d4(s.lo);
                                 if (((r.hi >> 0) & 0xff) == 1) {
                                         sw_463648(0);
-                                        sk_re_diag_init();
+                                        sk_re_diag_init(0);
                                         sk_re_diag_rec(0);
                                         sw_461430(0);
                                 } else {
@@ -3949,7 +3951,7 @@ void sk_re_parse_atom(long rec, word_t a, word_t b, word_t c)
 word_t sk_re_diag_finalize(void)
 {
         word_t out[2];
-        sk_re_parse_comment(&out, 0);
+        sk_re_parse_comment(&out, 0, 0, 0, 0);
         if (out[1] == 0) {
                 if ((*(byte*)(__builtin_frame_address(0) + 0x40) & 1) == 0) {
                         out[0] = sw_46615c(0, 0);
@@ -3975,7 +3977,7 @@ word_t sk_re_diag_finalize(void)
  * 'w'->8, 'D'->9, 'P'->10, 'S'->11, 'W'->12, 'y'->13, 'X'->15, 'u'->16,
  * 'b'->17; unknown ->0x14 (with a diagnostic).  Writes the mode byte.
  * Confidence: low. */
-void sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
+word_t sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
 {
         byte *out = (byte*)__builtin_frame_address(0);
         sw_353b10(0);
@@ -4016,6 +4018,7 @@ void sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
         else { sw_463130(0x62); sw_b4528(0); mode = 0x14; }
         *out = mode;
         sw_466510(0);
+        return (word_t)mode;
 }
 
 
@@ -4035,13 +4038,13 @@ void sk_re_parse_option_block(word_t a, word_t b, word_t c, word_t *out)
         sw_463cb8(0);
         sk_re_peek_char();
         if (0 == 0) {
-                sw128_t s = sk_re_peek_scalar2(0x5e, 0xe100000000000000);
+                sw128_t s = sk_re_peek_scalar2();
                 /* collect mode options */
-                word_t mode = sk_re_parse_mode_option();
+                word_t mode = sk_re_parse_mode_option(0, 0, 0, 0);
                 while (mode != 0x14) {
                         /* append (option, span) record */
                         sw_45904c(0);
-                        word_t m = sk_re_parse_mode_option();
+                        word_t m = sk_re_parse_mode_option(0, 0, 0, 0);
                         if (m == 0x14) break;
                 }
         } else {
@@ -4077,7 +4080,7 @@ void sk_re_parse_option_end(void)
                 sw_464ab8(0);
                 sw_1ee018(0);
                 sk_re_diag_complete();
-                sk_re_parse_option_block(&rec);
+                sk_re_parse_option_block(0, 0, 0, (word_t*)&rec);
         } else {
                 sw_4658fc(0);
         }
@@ -4321,18 +4324,18 @@ void sk_re_bool_ident(byte *out, word_t *p)
 void sk_re_parse_backref(word_t *out, word_t a)
 {
         word_t rec[10];
-        sw_463f80(&rec[0]);
-        sk_re_record_select();
+        sw_463f80((word_t)&rec[0]);
+        sk_re_record_select((sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0});
         if (rec[9] == -1) {
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
-                sw_3524a4(&rec[2]);
+                sw_3524a4((word_t)&rec[2]);
                 sw_4653fc(0);
                 word_t hi = rec[3];
                 word_t lo = rec[2];
                 sw_36b270(hi);
-                sw_350518(&rec[2]);
+                sw_350518((word_t)&rec[2]);
                 sw_3511cc(0);
-                sk_re_record_select();
+                sk_re_record_select((sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0},(sw128_t){0,0});
                 sw_3a25d4(hi);
                 if (rec[9] == -1) {
                         sk_re_diag_match2(a, 0xe100000000000000);
@@ -4371,7 +4374,7 @@ void sk_re_record_select(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t
         sw128_t r;
         byte sel;
         if ((ok & 1) == 0) {
-                r = sw_465dbc(0xff, 0);
+                r.lo = sw_465dbc(0xff, 0);
                 sel = 0;
         } else {
                 if (*(word_t*)(rec + 0x10) >> 0xe < pos >> 0xe) SW_FATAL(0x4372d0);
@@ -4405,7 +4408,7 @@ void sk_re_record_join(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t p
         sw_463cb8(0);
         sw_464adc(0);
         sw_4614cc(0, 0);
-        sw128_t h = sk_re_parse_group_header();
+        sw128_t h = sk_re_parse_group_header(0, 0, 0);
         word_t sel = (word_t)((byte*)&h)[16];
         sw128_t r;
         word_t v1, v2;
@@ -4419,7 +4422,7 @@ void sk_re_record_join(sw128_t p2, sw128_t p3, sw128_t p4, sw128_t p5, sw128_t p
                 sw_45904c(0);
                 /* slot flush loop */
                 sw_36b118(v1);
-                r = sw_465dbc(0, 0);
+                r.lo = sw_465dbc(0, 0);
         } else {
                 sw_45904c(0);
                 r.lo = h.lo; r.hi = h.hi;
@@ -4493,8 +4496,8 @@ sw128_t sk_re_parse_group_header(word_t a, word_t b, word_t c)
                                                                 sw_463534(0x2a);
                                                                 if ((sk_re_diag_emit_str() & 1) == 0) {
                                                                         /* option block */
-                                                                        sk_re_parse_option_block();
-                                                                        sk_re_parse_backref();
+                                                                        sk_re_parse_option_block(0, 0, 0, 0);
+                                                                        sk_re_parse_backref(0, 0);
                                                                         goto done;
                                                                 }
                                                         }
@@ -4542,7 +4545,7 @@ word_t sk_re_parse_group_kind(void)
         if ((m & 1) == 0) {
                 /* '(?P<...>' named group */
                 sw_36a9a0(0, 0);
-                sk_re_record_append_diag();
+                sk_re_record_append_diag(0);
                 sw_4666a8(0);
                 sw_455db8(0);
                 sw_2834(0);
@@ -4550,14 +4553,14 @@ word_t sk_re_parse_group_kind(void)
         } else {
                 /* '(?P=...>' named backref */
                 sw_36a9a0(0, 0);
-                sk_re_record_append_diag();
+                sk_re_record_append_diag(0);
                 sw_4666a8(0);
                 sw_455db8(0);
                 sw_2834(0);
                 sw_36b6ac(0);
         }
         sw_3a25d4(0xe100000000000000);
-        sk_re_diag_merge(0, 0);
+        sk_re_diag_merge(0, 0, 0, 0);
         sw_45904c(0);
         return 1;
 }
@@ -4608,7 +4611,7 @@ void sk_re_parse_backref_or_scalar(void)
         sw_463cb8(0);
         sw_464adc(0);
         sw_4614cc(0, 0);
-        sw128_t s = sk_re_peek_scalar2(0x2b, 0xe100000000000000);
+        sw128_t s = sk_re_peek_scalar2();
         sw_35292c(0);
         word_t kind = 0, value = 0, hi = 0, lo2 = 0, sel = 0xff;
         if ((s.lo & 1) != 0) {
@@ -4656,7 +4659,7 @@ void sk_re_parse_backref_or_scalar(void)
         word_t *out = (word_t*)sw_350b54(0);
         out[0] = value; out[1] = kind;
         out[2] = 0; out[3] = 0; out[4] = sel;
-        sw_8e500(task);
+        sw_8e500(task.lo);
 }
 
 
@@ -4715,7 +4718,7 @@ void sk_re_parse_char_class(void)
                         sw_46322c(0);
                         sk_re_parse_char_class();
                         sw_36a940(0);
-                        sk_re_record_append_diag();
+                        sk_re_record_append_diag(0);
                         sw_36b588(0);
                         sw_455db8(0);
                         sw_2834(0);
@@ -4725,12 +4728,12 @@ void sk_re_parse_char_class(void)
                                 sw_4649c0(0); sw_462af0(0); sw_15e4f8(0); sw_464e7c(0);
                                 if (0 == 0) {
                                         /* scalar / range accumulation */
-                                        sk_re_parse_backref_or_scalar(&start, 0, 1);
+                                        sk_re_parse_backref_or_scalar();
                                         if ((0 & 0xff) == 0) {
                                                 sw_464b20(0);
                                                 sw_4614cc(0, 0);
                                                 sw_4636e8(0);
-                                                sk_re_parse_capture_name();
+                                                sk_re_parse_capture_name(0, 0, 0, 0);
                                                 word_t e = *(word_t*)(__builtin_frame_address(0) + 0x10);
                                                 sw_117cc4(0, 0, 0x60);
                                                 sw_461bf4(0);
@@ -4754,15 +4757,15 @@ void sk_re_parse_char_class(void)
                                 sk_re_diag_unhandled(0, 0);
                                 sw_351f28(0);
                                 sw_3a25d4(0);
-                                sk_re_parse_backref_or_scalar(&start, 0, 0);
+                                sk_re_parse_backref_or_scalar();
                                 if (((byte*)&start)[16] == -1) {
                                         sw_8e388(0);
-                                        sk_re_parse_capture_name();
-                                        sk_re_diag_match2();
+                                        sk_re_parse_capture_name(0, 0, 0, 0);
+                                        sk_re_diag_match2(0, 0);
                                         sw_3a25d4(0);
                                 } else {
                                         sw_3504c4(0);
-                                        sk_re_diag_match2();
+                                        sk_re_diag_match2(0, 0);
                                         sw_3a25d4(0);
                                 }
                                 sw_458cd4(0);
@@ -4781,7 +4784,7 @@ void sk_re_parse_char_class(void)
                                 }
                         } else {
                                 sw_4636e8(0);
-                                sk_re_parse_capture_name();
+                                sk_re_parse_capture_name(0, 0, 0, 0);
                         }
                         sw_461c90(0);
                 }
@@ -4823,7 +4826,7 @@ void sk_re_parse_alternation(word_t a, word_t b, word_t c)
                 sw_464adc(0);
                 sw_464adc(0);
                 sw_4614cc(0, 0);
-                sw128_t h = sk_re_parse_group_header();
+                sw128_t h = sk_re_parse_group_header(0, 0, 0);
                 if (((byte*)&h)[16] == 0xff) {
                         /* flush and parse alternatives */
                         sw_464818(0);
@@ -4925,7 +4928,7 @@ sw128_t sk_re_parse_anchor(void)
         sw_461ba0(r.lo, r.hi, 0, 0, 0, 0, 0);
         sw128_t out;
         if ((r.lo & 0xff00) == 0x200) {
-                sk_re_diag_merge(0, 0);
+                sk_re_diag_merge(0, 0, 0, 0);
                 sw_45904c(0);
                 sw_463534(0x5b);
                 word_t m = sk_re_diag_emit_str();
@@ -4940,7 +4943,7 @@ sw128_t sk_re_parse_anchor(void)
         } else {
                 sw_463f80(0);
                 sw_461ba0(0);
-                sk_re_diag_merge(0, 0);
+                sk_re_diag_merge(0, 0, 0, 0);
                 sw_45904c(0);
         }
         out.lo = 0;
@@ -5007,7 +5010,8 @@ void sk_re_parse_expr(void)
         word_t *buf = (word_t*)__builtin_frame_address(0);
         sw128_t r;
         do {
-                r = sk_re_parse_comment(buf, 0);
+                sk_re_parse_comment(buf, 0, 0, 0, 0);
+                r.lo = buf[0]; r.hi = buf[1];
                 word_t pos = *(word_t*)(__builtin_frame_address(0) + 0x10);
                 if (r.hi == 0) {
                         if ((buf[1] & 1) == 0) {
@@ -5041,7 +5045,7 @@ void sk_re_parse_expr(void)
                 }
         } while (r.hi != 0);
         sk_re_parse_anchor();
-        sk_re_diag_merge(rec, 0);
+        sk_re_diag_merge((word_t)rec, 0, 0, 0);
         sw_45904c(0);
         sw_b4390(0);
 }
