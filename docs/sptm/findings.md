@@ -4398,3 +4398,27 @@ Confidence: high
 - **Evidence**: `for(;;){ lVar3=lVar2; lVar4=counter(); lVar2=tbl_read(id); if (lVar2==lVar3) return lVar3+lVar4; }`; `if (1 < ((iVar1-1)&0xff)) sk_panic_2(0,0x6a66ba)`.
 - **Severity (hypothesis)**: informational — the read is consistent (double-read), and an unsupported clock id is a hard panic.
 - **Confidence**: medium
+
+## [ringminus1] 00652254/00652354/00652550 sk_syscall_dispatch / sk_notif_dispatch_all — syscall index and write-range validation
+- **Observation**: The capability/syscall dispatcher decodes a 28-bit index (0..0x1c) from a notification badge word, validates `0x1c < idx` against a global stride-0x30 dispatch table at 0x6b5f40, and only calls the handler when the owning domain (FUN_0064fbc4) and the resolved region (FUN_0064fc4c) are live. The guest write range `base + [region+0x20, +0x28]` is bounds-checked for overflow/underflow before jumping through the handler; the notif-dispatch walkers apply the same range guard on every iteration.
+- **Evidence**: `if (0x1c < slot) sk_fatal_msg(...)`; `end = *(region+0x20)+base; if (end < base+*(region+0x20) || end-*(region+0x20) < *(region+0x28)) SoftwareBreakpoint(0x5519,0x652304)`; handler invoked only after both `FUN_0064fbc4` and `FUN_0064fc4c` return nonzero.
+- **Severity (hypothesis)**: medium — the dispatch table index is a user-supplied badge field; the out-of-range guard and per-region write-range check are the only bounds protection before an indirect call. A forged badge index is rejected (panic), and the write range is validated, but the handlers themselves are not audited here.
+- **Confidence**: medium
+
+## [ringminus1] 00653490/00653670/00653c98 sk_vas_translate / sk_vas_any_mapped / sk_vas_lookup — vspace page-table walk with indirect-entry chaining
+- **Observation**: The vspace page-table walk resolves 16K-granule frame descriptors, following indirect entries (0xfffe list) and leaf descriptors (kind 7/0xc) through the __data slide base. The walk has extensive pointer-integrity checks (`np < p || p+count < np+1`, region-window bounds, `off+0x16` boundary tests) and falls to the software store path when DAT_006fec92 is set.
+- **Evidence**: `if (idx+1 < idx || region+0x16+(ulong)total*2 < idx+1) SoftwareBreakpoint(0x5519,0x65366c)`; 0xfffe/0xffff sentinels; indirect list walk `for (i<count) { if (off == *p1) sk_vas_walk_commit(...) }`.
+- **Severity (hypothesis)**: medium — the walk translates guest-controlled addresses into kernel frame descriptors; the bounds checks appear comprehensive, but the 0xfffe indirect list entry range and the `(u8 == 0xfffe)` vs `0xffff` distinction are security-sensitive.
+- **Confidence**: medium
+
+## [ringminus1] 00654530 sk_object_store_build — tag-dispatch store builder with strict tag validation
+- **Observation**: The object-store builder walks kernel-object buckets and dispatches each entry by a 16-bit tag (0..0x11 plus type-matched slots). Every slot write validates its pointer against the store window (`slotp < base || base+0x238 < slotp+2`), and an invalid entry or inconsistent store state (0x278/0x27a flags, high-water relation) is a hard panic (0x6a5da6/0x6a5de8/0x6a5d4e).
+- **Evidence**: `if ((slotp < (reg+0x38)) || ((reg+0x238) < slotp+2)) goto invalid_store`; capacity path `if (0x3ff < addr-word) { ... set state=1; return; } else sk_fatal_6a5de8()`.
+- **Severity (hypothesis)**: medium — store entries are trusted boot-time data, but the tag switch and pointer validation are the integrity boundary; a malformed bucket entry is trapped (panic) rather than corrupting the store.
+- **Confidence**: medium
+
+## [ringminus1] 00655eec sk_debug_write — per-byte supervisor-call output loop
+- **Observation**: The debug-output writer emits each byte through the per-CPU message area with a CallSupervisor(0) per byte (retried while the reply word == 1), restoring the message area's prior 16-byte context afterwards. The two dispatch targets (0x6b4448 / 0x6b4708) gate whether the reply word is reflected.
+- **Evidence**: `do { CallSupervisor(0); m[0]=(char)reply; ... } while (reply == 1)`; `if (src+n <= src+i || src+i < src) goto bounds_fault`.
+- **Severity (hypothesis)**: low — a debug/console output primitive; the byte bounds are checked and the message area is saved/restored, so the risk is limited to a per-byte supervisor-call cost (availability under heavy logging).
+- **Confidence**: medium

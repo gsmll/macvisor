@@ -631,3 +631,13 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - Boot log/err-string: 0x0065f468 (boot log) -> 0x0065f834 (strbuf) -> 0x0065f8e8 (tag sanitize); err mappers 0x0065f428/0x006612c0/0x00662a40 -> sk_memmove; panics 0x0065c2f0/0x0067f660/0x006833d4.
 - Int-vector read/print: 0x00662f0c (CallSupervisor(0) read) -> 0x006630f8 (print) -> 0x0067d1f0/0x0067d3f8; caps dump 0x00662bf0 -> 0x00661d38 (msg word) -> 0x00661e24 (extract) -> 0x0067b478/0x0067b664/0x0067b580.
 - Timer publish/callback: 0x00663928 (publish, CallSupervisor(0)) -> 0x00663ac8 (timer cb) -> 0x00645d88 node teardown; 0x0065e6fc (one-shot) -> 0x0065e748 (alloc).
+
+## SkR47 (0x00652254-0x006580b8) — syscall-dispatch / vspace page-table / object-store layer
+- Syscall dispatch: 0x00652254 (sk_syscall_dispatch, stride-0x30 table at 0x6b5f40) -> 0x0064fbc4/0x0064fc4c (domain/region resolve) -> 0x0065c2f0 (panic); notif walkers 0x00652354/0x00652550/0x006527c8 -> 0x00652254 + 0x00650ed0 (next notif) + 0x0065df30 (msg send).
+- IPC reply: 0x00652a38 (copyout) -> 0x00652e34 (commit, CallSupervisor(0)) -> 0x0065558c (abort); 0x006530a0 (L4 error str).
+- Vspace page-table: 0x00653490 (translate) -> 0x0064f7e8 (walk commit); 0x00653670 (any-mapped), 0x00653bb8 (present), 0x00653c98 (lookup); store 0x00653808 (init) -> 0x00653490, 0x00653a8c (enable), 0x00653718 (region find), 0x00653b74 (count), 0x0065505c (build_b).
+- Object store: 0x00654530 (build) -> 0x00656868/0x00656a14/0x00656adc (type getters) + 0x00656af8 (type3 hook) + 0x0065505c; 0x006542e0 (relocate), 0x0065585c (descriptor parse, DAT_006fc4xx window), 0x00655b98 (register), 0x00655be4 (store get).
+- Store method table (desc init): 0x00656ce4 (desc2) / 0x00657200 (desc1) / 0x00657974 (desc0x100000001) -> method fns 0x00657048/0x0065716c/0x0065719c/0x006571cc/0x0065772c/0x00657850/0x00657880/0x006578b0/0x006578e0/0x00657910/0x00657940/0x00657ea4/0x00657fc8/0x00657ff8/0x00658028/0x00658058/0x00658088/0x006580b8 (all CallSupervisor(0) loops); validate 0x00656744 -> desc4-11 (0x6580ec..0x65b574).
+- Object retain/dispatch: 0x00656284 (retain) -> 0x006561fc/0x00656240 (vtable slots); 0x00656474 (dispatch) -> 0x00656284 + 0x006827a8 (alloc) + 0x006823d4 (free); 0x00656634 (release dispatch).
+- Teardown: 0x0065403c -> 0x006557e0 (rt clr) + 0x006541d4 (notif broadcast) + 0x006825bc (cache flush) + 0x00660eec (sched pin); store teardown 0x00655bf8 -> 0x00655c84 (dispatch) + 0x0065cc50 (bucket release).
+- Debug/PRNG: 0x00655eec (debug write, CallSupervisor(0) per byte) -> 0x00654cc8/0x00654cf4/0x00654d20 (store getters); 0x0065564c (PRNG fill, xorshift DAT_006feb88/feb90).
