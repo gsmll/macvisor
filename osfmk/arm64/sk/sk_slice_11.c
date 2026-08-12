@@ -56,7 +56,7 @@ typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
 
 extern unsigned long sk_x_0000178C();   /* FUN_0000178C */
 extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
-extern unsigned long sk_x_00034A2C();   /* FUN_00034A2C */
+extern sk_u128_t sk_x_00034A2C();   /* FUN_00034A2C (16-byte pair) */
 extern unsigned long sk_x_00034F70();   /* FUN_00034F70 */
 extern unsigned long sk_x_0004BA18();   /* FUN_0004BA18 */
 extern unsigned long sk_x_000533EC();   /* FUN_000533EC */
@@ -287,7 +287,7 @@ void sk_f_0005ba40(uint64_t arg);
 void sk_f_0005ba5c(uint64_t *entry);
 int64_t sk_f_0005baac(int key1, int key2);
 void sk_f_0005baf0(uint64_t *entry);
-void sk_f_0005bb68(void);
+uint64_t sk_f_0005bb68(void);
 uint64_t sk_f_0005bbd8(uint8_t *thread, int64_t *out_size);
 int sk_f_0005bc48(uint64_t *value_ptr, int32_t mode);
 void sk_f_0005bce0(uint8_t *callback_slot);
@@ -296,7 +296,7 @@ void sk_f_0005bd7c(void (*callback)(uint64_t), uint64_t callback_arg);
 void sk_f_0005be48(uint64_t arg, uint64_t fn);
 void sk_f_0005be84(uint64_t *node, int32_t mode);
 void sk_f_0005bf20(uint64_t *node);
-void sk_f_0005c0ac(void);
+uint64_t sk_f_0005c0ac(void);
 void sk_f_0005c16c(void);
 uint64_t sk_f_0005c184(uint64_t src, uint64_t count);
 uint64_t sk_f_0005c278(uint64_t dst, uint64_t count);
@@ -352,10 +352,10 @@ uint64_t sk_f_0005dab8(uint64_t (*handler)(int64_t, uint64_t), uint64_t target_t
                        uint8_t *cross_thread_flag, uint64_t arg);
 void sk_f_0005db7c(uint64_t *thread);
 uint64_t sk_f_0005dc4c(uint64_t cpu_index);
-uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t *queue, uint64_t *ref,
-                       uint64_t owner, uint64_t flag);
+uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t arg1, uint64_t arg2,
+                       uint64_t arg3, uint64_t arg4);
 void sk_f_0005dcb0(uint32_t selector, uint64_t msg0, uint64_t msg1, uint64_t thread, uint32_t flags);
-void sk_f_0005dd70(uint64_t selector, uint64_t *queue, uint64_t wake, uint64_t flag);
+void sk_f_0005dd70(uint64_t selector, uint64_t arg1, uint64_t arg2, uint64_t arg3);
 void sk_f_0005dd94(uint32_t wake_idx, uint64_t msg0, uint32_t selector, uint64_t target_thread);
 void sk_f_0005deb4(void);
 void sk_f_0005ded8(uint64_t thread);
@@ -1163,10 +1163,9 @@ void sk_f_0005baf0(uint64_t *entry)
  * bare entry/no-op initializer on the registry path.
  * Confidence: medium
  * Notes: arg 0x6b2568 is the image-base registry descriptor passed to FUN_0005acac. */
-void sk_f_0005bb68(void)
+uint64_t sk_f_0005bb68(void)
 {
-    sk_f_0005acac(0x6b2568, 1, 1);
-    return;
+    return sk_f_0005acac(0x6b2568, 1, 1);
 }
 
 /* FUN_0005bb7c @ 0x0005bb7c   (est. registry_find_first_thread)
@@ -1515,7 +1514,7 @@ done:
  * returns. Empty stack returns immediately; wrapping addresses trap.
  * Confidence: medium
  * Notes: registry +0x20 is the stack head; next is masked to its 36-bit pointer. */
-void sk_f_0005c0ac(void)
+uint64_t sk_f_0005c0ac(void)
 {
     uint64_t registry;
     uint64_t *node;
@@ -1525,14 +1524,14 @@ void sk_f_0005c0ac(void)
     while (true) {
         node = *(uint64_t **)(registry + 0x20);
         if (node == 0) {
-            return;
+            return 0;
         }
         if ((node + 0x2f < node) ||
             (next = *node & 0xfffffffff, next + 0x178 < next)) break;
         if (*(uint64_t **)(registry + 0x20) == node) {
             *(uint64_t *)(registry + 0x20) = next;
             *node = 0;
-            return;
+            return next;
         }
     }
     SoftwareBreakpoint(0x5519, 0x5c11c);
@@ -2230,7 +2229,7 @@ uint64_t sk_f_0005cc3c(uint64_t *lock, uint64_t arg2)
             if (owner + 0x178 < owner) {
                 SoftwareBreakpoint(0x5519, 0x0005cdac);
             }
-            rc = sk_f_0005dc8c(idx & 0xff, lock, cpu_array, owner, arg2);
+            rc = sk_f_0005dc8c(idx & 0xff, (uint64_t)(uintptr_t)lock, (uint64_t)(uintptr_t)cpu_array, owner, arg2);
             if (rc == 1) {
                 spin = 0;
             } else if (rc == 2) {
@@ -2543,7 +2542,7 @@ uint16_t sk_f_0005d38c(uint64_t *queue, uint64_t queue_token)
             goto finish;
         }
     }
-    decouple_result = sk_f_0005dc8c(queue_index & 0xff, queue, queue_ref, 0, 1);
+    decouple_result = sk_f_0005dc8c(queue_index & 0xff, (uint64_t)(uintptr_t)queue, (uint64_t)(uintptr_t)queue_ref, 0, 1);
     if (decouple_result == 3) {
         waiter_delta = 0;
         previous_word = queue_word;
@@ -2555,7 +2554,7 @@ uint16_t sk_f_0005d38c(uint64_t *queue, uint64_t queue_token)
             waiter_delta = (uint16_t)changed;
             previous_word = current_word;
             if (changed) break;
-            decouple_result = sk_f_0005dc8c(queue_index & 0xff, queue, queue_ref, 0, 1);
+            decouple_result = sk_f_0005dc8c(queue_index & 0xff, (uint64_t)(uintptr_t)queue, (uint64_t)(uintptr_t)queue_ref, 0, 1);
             previous_word = queue_word;
         } while (decouple_result != 3);
         ticket = (uint32_t)(current_word >> 0x20);
@@ -2662,7 +2661,7 @@ void sk_f_0005d394(uint64_t *queue, int32_t clamp_to_capacity)
         if (clamp_to_capacity == 0) {
             wake_selector = 4;
         }
-        sk_f_0005dd70(queue_index & 0xff, queue, wake_selector, 0);
+        sk_f_0005dd70(queue_index & 0xff, (uint64_t)(uintptr_t)queue, wake_selector, 0);
         return;
     }
     return;
@@ -2707,7 +2706,7 @@ void sk_f_0005d470(uint32_t *slot, void (*completion)(void *), void *callback_ar
             *slot = 0xffffffff;
             LORelease();
             if (slot_value == (owner_tag | 3)) {
-                sk_f_0005dd70(slot_index, slot, 6, 0);
+                sk_f_0005dd70(slot_index, (uint64_t)(uintptr_t)slot, 6, 0);
                 return;
             }
         } else {
@@ -2727,7 +2726,7 @@ reacquire:
                 if (timebase + 0x178 < timebase) {
                     SoftwareBreakpoint(0x5519, 0x5d5dc);
                 }
-                sk_f_0005dc8c(slot_index, slot, queue_ref, timebase, 0);
+                sk_f_0005dc8c(slot_index, (uint64_t)(uintptr_t)slot, (uint64_t)(uintptr_t)queue_ref, timebase, 0);
                 owner_tag = *slot;
             }
         }
@@ -2742,7 +2741,7 @@ reacquire:
  * Notes: literal 0x64dca0 is a global object address passed to the reset helper. */
 void sk_f_0005d5dc(void)
 {
-    sk_f_0005ba5c(0x64dca0);
+    sk_f_0005ba5c((uint64_t *)(uintptr_t)0x64dca0);
     return;
 }
 
@@ -3130,8 +3129,8 @@ uint64_t sk_f_0005dc4c(uint64_t cpu_index)
  * Confidence: low
  * Notes: _DAT_006b2690 holds the dispatch-table address; 0x65c560 is the default
  * table image address. Sibling handlers dispatch at +0x08/+0x18/+0x20. */
-uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t *queue, uint64_t *ref,
-                       uint64_t owner, uint64_t flag)
+uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t arg1, uint64_t arg2,
+                       uint64_t arg3, uint64_t arg4)
 {
     uint64_t (*handler)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
 
@@ -3140,7 +3139,7 @@ uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t *queue, uint64_t *ref,
     }
     handler = *(uint64_t (**)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t))
               (sk_g_006b2690 + 0x10);
-    return handler(selector, (uint64_t)queue, (uint64_t)ref, owner, flag);
+    return handler(selector, arg1, arg2, arg3, arg4);
 }
 
 /* FUN_0005dcb0 @ 0x0005dcb0   (est. sync_wait)
@@ -3201,7 +3200,7 @@ void sk_f_0005dcb0(uint32_t selector, uint64_t msg0, uint64_t msg1, uint64_t thr
  * that table (indirect call). Returns after the handler returns.
  * Confidence: low
  * Notes: _DAT_006b2690 dispatch-table address; default table at 0x65c560. */
-void sk_f_0005dd70(uint64_t selector, uint64_t *queue, uint64_t wake, uint64_t flag)
+void sk_f_0005dd70(uint64_t selector, uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
     void (*handler)(uint64_t, uint64_t, uint64_t, uint64_t);
 
@@ -3209,7 +3208,7 @@ void sk_f_0005dd70(uint64_t selector, uint64_t *queue, uint64_t wake, uint64_t f
         sk_g_006b2690 = 0x65c560;
     }
     handler = *(void (**)(uint64_t, uint64_t, uint64_t, uint64_t))(sk_g_006b2690 + 0x18);
-    handler(selector, (uint64_t)queue, wake, flag);
+    handler(selector, arg1, arg2, arg3);
 }
 
 /* FUN_0005dd94 @ 0x0005dd94   (est. sync_wake)
@@ -4003,7 +4002,7 @@ int64_t sk_f_0005eb78(uint64_t dst, uint64_t size, uint64_t offset)
   if (offset < 0x37) {
     remaining = offset * -8 + 0x1b8;
     if (size <= (uint64_t)remaining) {
-      thread_base = tpidrro_el0;
+      thread_base = (uint64_t)(uintptr_t)tpidrro_el0;
       sk_x_00117CC4((uint8_t *)dst, (uint8_t *)(thread_base + offset * 8 + 8), size);
       if (dst <= dst + size) {
         return (int64_t)(offset + (size + 7 >> 3));
@@ -4031,7 +4030,7 @@ void sk_f_0005ec20(uint32_t index, uint64_t value)
   uint8_t *slot;
 
   if (index < 0x37) {
-    thread_base = tpidrro_el0;
+    thread_base = (uint64_t)(uintptr_t)tpidrro_el0;
     slot = (uint8_t *)(thread_base + (uint64_t)index * 8);
     slot[8] = (uint8_t)value;
     slot[0xd] = (uint8_t)(value >> 0x28);
@@ -4061,7 +4060,7 @@ uint64_t sk_f_0005ec98(uint32_t index)
   uint8_t *slot;
 
   if (index < 0x37) {
-    thread_base = tpidrro_el0;
+    thread_base = (uint64_t)(uintptr_t)tpidrro_el0;
     slot = (uint8_t *)(thread_base + (uint64_t)index * 8);
     return (uint64_t)slot[10] << 0x10 | (uint64_t)slot[0xb] << 0x18 |
            (uint64_t)*(uint16_t *)(slot + 8) |
@@ -4091,7 +4090,7 @@ void sk_f_0005ed18(uint32_t index, uint64_t value)
     sk_f_0005b190(0, sk_str_005bce30);   /* s_set_src_cap_register__d_out_of_b_005bce30 */
     __builtin_unreachable();
   }
-  thread_base = tpidrro_el0;
+  thread_base = (uint64_t)(uintptr_t)tpidrro_el0;
   slot = (uint8_t *)(thread_base + (uint64_t)index * 8);
   if ((uint8_t *)(slot + 0x1c8) <= (uint8_t *)(thread_base + 0x1e0) &&
       (uint8_t *)(slot + 0x1c0) <= (uint8_t *)(slot + 0x1c8)) {
@@ -4127,7 +4126,7 @@ void sk_f_0005edac(uint32_t index, uint64_t value)
     sk_f_0005b190(0, sk_str_005bce60);   /* s_set_dst_cap_register__d_out_of_b_005bce60 */
     __builtin_unreachable();
   }
-  thread_base = tpidrro_el0;
+  thread_base = (uint64_t)(uintptr_t)tpidrro_el0;
   slot = (uint8_t *)(thread_base + (uint64_t)index * 8);
   if ((uint8_t *)(slot + 0x1e8) <= (uint8_t *)(thread_base + 0x200) &&
       (uint8_t *)(slot + 0x1e0) <= (uint8_t *)(slot + 0x1e8)) {
@@ -4270,16 +4269,17 @@ void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int6
     uint16_t *counter_ptr = (uint16_t *)(registry + 0x38);
     uint16_t counter = *counter_ptr;
     *counter_ptr = (uint16_t)(counter + 1);
+    uint64_t thread = 0;                            /* raw TCB (hoisted for register_thread) */
+    uint64_t priority = 0x11;                       /* default thread priority */
 
     if (counter < 0x400) {
-        uint64_t thread = sk_f_0005c0ac();          /* allocate raw TCB */
+        thread = sk_f_0005c0ac();          /* allocate raw TCB */
         if (thread != 0) {
-            sk_f_0005db7c();
+            sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
             goto register_thread;
         }
 
         int64_t stack_size = 0x24000;
-        uint64_t priority = 0x11;
         int64_t stack_low = 0;
         uint64_t alloc_ctx = 0;
         uint64_t *rt_ops = (uint64_t *)0x0;   /* thread ops table */
@@ -4289,7 +4289,7 @@ void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int6
         if (is_kernel_thread == 0) {
             alloc_flags = 0x41140c8;
         }
-        cl4_result_t alloc = sk_x_00034A2C();       /* 16-byte pair: lo=cookie, hi=allocator ops */
+        sk_u128_t alloc = sk_x_00034A2C();       /* 16-byte pair: lo=cookie, hi=allocator ops */
         uint8_t **alloc_ops = (uint8_t **)alloc.hi;
         char ok = ((int (*)(uint64_t, uint64_t, void *, void *, uint64_t, uint64_t))
                    alloc_ops[6])(alloc.lo, alloc_flags, &priority, &alloc_ctx, 0, 0);
@@ -4457,6 +4457,7 @@ register_thread:
         uint32_t digits_val = (uint32_t)now + ((((uint32_t)now >> 3) & 0x1fff) / 0x7d) * -1000;
         uint32_t packed = 0x54;                       /* leading 'T' */
         uint32_t scale = 1000;
+        bool more;
         do {
             uint32_t divisor = scale / 10;
             uint32_t digit = 0;
@@ -4465,7 +4466,7 @@ register_thread:
             }
             packed = ((digit + 0x30) & 0xffff) | (packed << 8);
             digits_val = digits_val - digit * divisor;
-            bool more = 0x13 < scale;
+            more = 0x13 < scale;
             scale = divisor;
         } while (more);
         *(uint32_t *)(thread + 0x118) = packed;
@@ -4609,11 +4610,11 @@ void sk_f_0005fac0(int64_t thread)
         uint64_t word = sk_f_0005dc4c(reg_id);
         int32_t wval = *wait_reg;
         while (wval == 0) {
-            sk_f_0005dc8c(reg_id, wait_reg, word, 0, 0);
+            sk_f_0005dc8c(reg_id, (uint64_t)(uintptr_t)wait_reg, (uint64_t)(uintptr_t)word, 0, 0);
             word = sk_f_0005dc4c(reg_id);
             wval = *wait_reg;
         }
-        sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), thread + 0x80, 5, 0);
+        sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), (uint64_t)(uintptr_t)(thread + 0x80), 5, 0);
         if (wval == 2) {
             sk_f_0005bf20(thread);
             uint64_t registry = sk_f_0005bb68();
@@ -4624,7 +4625,7 @@ void sk_f_0005fac0(int64_t thread)
                           (uint64_t)counter, thread, 1);
         }
         sk_x_00060524();
-        sk_f_0005db7c();
+        sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
         sk_f_0005b190(0, (uint64_t)sk_str_005bd02d);   /* noreturn panic */
     }
     SoftwareBreakpoint(0x5519, 0x5fbc0);
@@ -4651,11 +4652,11 @@ void sk_f_0005fad8(uint64_t wake_value)
         uint64_t word = sk_f_0005dc4c(reg_id);
         int32_t wval = *wait_reg;
         while (wval == 0) {
-            sk_f_0005dc8c(reg_id, wait_reg, word, 0, 0);
+            sk_f_0005dc8c(reg_id, (uint64_t)(uintptr_t)wait_reg, (uint64_t)(uintptr_t)word, 0, 0);
             word = sk_f_0005dc4c(reg_id);
             wval = *wait_reg;
         }
-        sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), thread + 0x80, 5, 0);
+        sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), (uint64_t)(uintptr_t)(thread + 0x80), 5, 0);
         if (wval == 2) {
             sk_f_0005bf20(thread);
             uint64_t registry = sk_f_0005bb68();
@@ -4666,7 +4667,7 @@ void sk_f_0005fad8(uint64_t wake_value)
                           (uint64_t)counter, thread, 1);
         }
         sk_x_00060524();
-        sk_f_0005db7c();
+        sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
         sk_f_0005b190(0, (uint64_t)sk_str_005bd02d);   /* noreturn panic */
     }
     SoftwareBreakpoint(0x5519, 0x5fbc0);
@@ -4681,7 +4682,7 @@ void sk_f_0005fad8(uint64_t wake_value)
 void sk_f_0005fbc0(int64_t thread)
 {
     *(uint32_t *)(thread + 0x84) = 2;
-    sk_f_0005dd70((((uint32_t)(thread + 0x84) >> 4) & 0xf), thread + 0x84, 5, 0);
+    sk_f_0005dd70((((uint32_t)(thread + 0x84) >> 4) & 0xf), (uint64_t)(uintptr_t)(thread + 0x84), 5, 0);
     return;
 }
 

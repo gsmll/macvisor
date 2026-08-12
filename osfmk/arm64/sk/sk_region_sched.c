@@ -12,18 +12,14 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "sk_internal.h"
-
 extern uint8_t *per_cpu;
 extern uint64_t per_cpu_err;
-
 extern uint64_t stack_arg;
 extern uint64_t dat_004e6548;
 extern uint64_t dat_004e64c8;
 extern uint64_t dat_004e6468;
 extern uint64_t dat_004e65c8;
-
 typedef uint64_t (*code_fn_t)();  /* unspecified params: any arity */
-
 typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define _0_8_ lo
 #define _8_8_ hi
@@ -40,7 +36,6 @@ typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define CL4_VOID_U64(fn_call)  ((fn_call), 0ull)
 #define CL4_VOID_16(fn_call)   ((cl4_16_t)((fn_call), 0ull))
 #define cl4_break(addr) __asm__ volatile("brk #1" : : : "memory")
-
 extern uint64_t FUN_00002534();  /* 0x00002534 */
 extern uint64_t FUN_00019aac();  /* 0x00019aac */
 extern uint64_t FUN_0002142c();  /* 0x0002142c */
@@ -152,17 +147,12 @@ extern uint64_t FUN_0066a720();  /* 0x0066a720 */
 extern uint64_t thunk_FUN_00024068();  /* 0x00024068 */
 extern uint64_t thunk_FUN_002298d4();  /* 0x002298d4 */
 extern uint64_t thunk_FUN_002acbb8();  /* 0x002acbb8 */
-
-
 extern char s_Fatal_error_005accd0[];
 extern char s_StackshotConclaveSupport_Stacksh_005cbc40[];
 extern char s_XnuProxyStackshotSupport_Stacksh_005cbf60[];
 extern char s_XnuUpcallsV2_XnuUpcallsV2_Swift__005ccbc0[];
 extern char s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0[];
 extern char s_XnuUpcalls_XnuUpcalls_swift_005cbfa0[];
-
-
-
 void FUN_001807a4(uint64_t p1, uint64_t p2);
 void FUN_001807a8(uint64_t p1, uint64_t p2);
 void FUN_001807c0(uint64_t p1, uint64_t p2);
@@ -496,7 +486,6 @@ void FUN_0018fcb0(uint64_t p1);
 uint64_t FUN_0018fcd8(long p1);
 #define cpu per_cpu
 #define err per_cpu_err
-
 extern uint64_t dat_004bbc30;
 extern uint64_t dat_004e6154;
 extern uint64_t dat_004e6528;
@@ -515,10 +504,8 @@ extern uint64_t dat_006695e0;
 extern uint64_t dat_006695f8;
 #define SBORROW8(a, b) (__builtin_sub_overflow((a), (b), &(unsigned long){0}))
 #define ZEXT816(x) ((unsigned long)(unsigned short)(x))
-
 typedef unsigned long (*code)();
 typedef uint64_t undefined;
-
 extern void *sk_swift_frame_init(void *out, unsigned long size, unsigned long a, void *err_out); /* FUN_00025ebc */
 extern void *sk_swift_string_begin(void *out);                        /* thunk_FUN_00024068 -> FUN_00024068 */
 extern unsigned long sk_swift_type_hash(unsigned long hash);          /* FUN_00023208 */
@@ -620,9 +607,6 @@ extern unsigned long FUN_0018c594();
 extern unsigned char DAT_0000118f;
 extern unsigned char DAT_00001197;
 extern unsigned long *DAT_004e7a18;
-
-
-
 extern void FUN_0019ea20();                       /* defined in this file @ 0x0019ea20 */
 extern void FUN_0019f658();                       /* defined in this file @ 0x0019f658 */
 extern void FUN_0019f698();                       /* defined in this file @ 0x0019f698 */
@@ -1284,16 +1268,10 @@ void FUN_0019e690();
 void FUN_0019e6bc();
 void FUN_0019e728();
 void FUN_0019e760();
-void FUN_0019e814(long param_1,long param_2)
-
-typedef uint64_t undefined8; typedef uint8_t undefined1; typedef uint64_t undefined;
 typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
-typedef uint64_t code;
 typedef struct { uint64_t lo; uint64_t hi; } reg16;
 typedef struct { uint64_t lo; uint32_t hi; } reg12;
 typedef void (*code_fn)();
-
-
 extern void *sk_alloc(unsigned long size, unsigned long tag);               /* FUN_0036a908 */
 extern void *sk_alloc_special(unsigned long a, unsigned long b, unsigned long tag); /* FUN_0036a940 */
 extern unsigned long sk_object_lock(unsigned long a, unsigned long b,
@@ -1303,27 +1281,27 @@ extern unsigned long sk_lzcount(uint32_t v);                                /* L
 extern reg16 sk_cpu_current();                                   /* FUN_0008e518 */
 extern void sk_thread_epilogue();                                       /* FUN_0008e500 */
 extern void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...);
-
 extern void *swift_array_alloc_with_count(uint64_t a, void *b);             /* FUN_003a25d4 */
 extern void *swift_objc_metatype();                                     /* FUN_00376820 */
 extern void *swift_array_init();                                        /* FUN_001a042c */
 extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* FUN_003a261c */
-
 extern void *sk_current_tcb();                                          /* FUN_000867ec */
 extern void sk_schedule_yield();                                        /* FUN_00084180 */
-
 static inline uint64_t CONCAT17(uint64_t a, uint64_t b){ return (a<<8)|(b&0xff); }
-
+static inline uint64_t CONCAT71(uint64_t a, uint64_t b){ return (a<<7)|(b&0x7f); }
+static inline uint64_t SBORROW8(uint64_t a, uint64_t b){ return ((int64_t)a < (int64_t)b); }
+static inline uint64_t SCARRY8(uint64_t a, uint64_t b){ return (((uint64_t)a + (uint64_t)b) < (uint64_t)a); }
+static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v & 0xff); }
+static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
 uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01, stack_60, x1_01;
-reg16 cpu, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
+reg16 cpu_leak, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
 uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
-
+uint64_t (*entry)(), (*fn)(), (*fn1)(), (*fn10)(), (*fn12)(), (*fn14)(), (*fn17)(), (*fn2)(), (*fn3)(), (*fn5)(), (*fn5b)(), (*fn5c)(), (*fn6)(), (*fn6b)(), (*fn7)(), (*fn8)(), (*fn9)(), (*is_b8)(), (*jumptable)(), (*x19_fn)(), (*x20_fn)(), (*x24_fn)(), (*x25_fn)(), (*x26_fn)(), (*x27_fn)(), (*x8_00_fn)(), (*x8_01_fn)(), (*x8_02_fn)(), (*x8_03_fn)(), (*x8_04_fn)(), (*x8_05_fn)(), (*x8_06_fn)(), (*x8_07_fn)(), (*x8_08_fn)(), (*x8_09_fn)(), (*x8_10_fn)(), (*x8_11_fn)(), (*x8_12_fn)(), (*x8_13_fn)(), (*x8_14_fn)(), (*x8_15_fn)(), (*x8_16_fn)(), (*x8_17_fn)(), (*x8_18_fn)(), (*x8_19_fn)(), (*x8_20_fn)(), (*x8_21_fn)(), (*x8_fn)(), (*x9_00_fn)(), (*x9_01_fn)(), (*x9_02_fn)(), (*x9_03_fn)(), (*x9_04_fn)(), (*x9_05_fn)(), (*x9_06_fn)(), (*x9_07_fn)(), (*x9_08_fn)(), (*x9_09_fn)(), (*x9_10_fn)(), (*x9_11_fn)(), (*x9_12_fn)(), (*x9_13_fn)(), (*x9_14_fn)(), (*x9_fn)();
 extern char s_Fatal_error[]; extern char s_array_slice_with_unsafe_mut[]; extern char s_array_with_unsafe_mut[]; extern char s_buf_has_null[]; extern char s_cant_construct_array[]; extern char s_cant_remove_empty[]; extern char s_cant_remove_first[]; extern char s_cant_remove_last[]; extern char s_cant_remove_more[]; extern char s_cant_remove_more2[]; extern char s_count_must_not_neg[]; extern char s_identity_cast_wrong_type[]; extern char s_index_oob[]; extern char s_index_out_of_range[]; extern char s_insufficient_space[]; extern char s_invalid_less_than[]; extern char s_invalid_more_than[]; extern char s_num_to_remove[]; extern char s_range_requires[]; extern char s_string_index_oob[]; extern char s_swift_array[]; extern char s_swift_array_slice[]; extern char s_swift_builtin[]; extern char s_swift_collection[]; extern char s_swift_contig_buf[]; extern char s_swift_optional[]; extern char s_swift_range[]; extern char s_swift_range_replaceable[]; extern char s_swift_span[]; extern char s_swift_string_utf16[]; extern char s_swift_unicode_helpers[]; extern char s_swift_unsafe_buf[]; extern char s_swift_valid_utf8[]; extern char s_unexpected_nil[]; extern char s_unsafe_mut_buf[]; extern char s_unsafely_unwrapped_nil[];
 extern uint64_t DAT_004baeb0, DAT_004c08a0, DAT_006adf10, DAT_006adf18, sk_array_metatype, sk_cstring, sk_empty_array, uRam_4baeb8, uRam_4c08a8;
 extern struct { char *segname; } section_00000068;
 extern struct { uint64_t _0_8_; uint64_t _16_8_; } s_reversed_key;
 extern uint64_t FUN_00072c0c, FUN_00319380, FUN_0031940c, FUN_00346744;
-
 void *swift_array_alloc(long count);
 void swift_array_iterator_dispatch(void);
 void sk_lock_guarded();
@@ -1331,6 +1309,7 @@ void sk_sched_queue_foreach();
 void sk_swift_array_dispatch_impl();
 void swift_array_destroy();
 void swift_array_init_core();
+extern uint64_t CONCAT17();
 extern uint64_t CONCAT71();
 extern uint64_t FUN_00002688();
 extern uint64_t FUN_000026e8();
@@ -2293,7 +2272,6 @@ extern uint64_t swift_utf8_decode();
 extern uint64_t thunk_FUN_00012568();
 extern uint64_t thunk_FUN_00200b38();
 extern uint64_t thunk_FUN_0036b270();
-
 extern reg16 FUN_001a9a30();
 extern reg16 FUN_001aaabc();
 extern reg16 FUN_001aaba8();
@@ -2324,8 +2302,6 @@ extern reg16 FUN_0035a758();
 extern reg16 sk_cpu_ctx();
 extern uint64_t FUN_00358da0();
 extern code_fn sk_vtable_resolve();
-void swift_array_construct_dispatch(uint64_t param_1)
-
 extern void sk_fatal_error(); __attribute__((noreturn)) /* FUN_001afe4c */
 extern unsigned long sk_swift_state(); /* FUN_00348e00 */
 extern unsigned long sk_swift_state2(); /* FUN_00355538 */
@@ -2387,7 +2363,6 @@ extern void thunk_FUN_00213834(void);                            /* 0x213834 */
 extern long thunk_FUN_00284424(void *a, long b, long c, void *d, void *e); /* 0x284424 */
 extern unsigned long sk_swift_badlock(); /* FUN_00347fb4 */
 extern unsigned long sk_swift_shift(); /* FUN_00356340 */
-
 extern unsigned long sk_sync_ops_1(); /* FUN_00354a34 */
 extern unsigned long sk_sync_ops_2(); /* FUN_0035694c */
 extern unsigned long sk_bad_pointer(); /* FUN_0034846c */
@@ -2451,7 +2426,6 @@ extern unsigned long sk_swift_reserve(); /* FUN_00352c58 */
 extern unsigned long sk_swift_scan(); /* FUN_00357cec */
 extern unsigned long sk_swift_get_cap(); /* FUN_002a9ba8 */
 extern unsigned long sk_swift_set_cap(); /* FUN_002af618 */
-
 void cl4_swift_dispatch_msg2(void *a, void *b, unsigned long len, long cap, unsigned long flags);
 void cl4_swift_validate_msg(long a, unsigned long b, long cap, unsigned long len,
                             long c, unsigned long d, unsigned long count);
@@ -2471,14 +2445,10 @@ void cl4_swift_string_append4();       /* FUN_001bd6dc */
 void cl4_swift_string_append6();       /* FUN_001be528 */
 extern unsigned long cl4_swift_utf8_bounds2();  /* FUN_001b798c */
 extern unsigned long sk_swift_gstate_global;    /* DAT_006ade68 */
-
-void cl4_fatal_abort(void)
-
 typedef struct sk_r4_u128 {
     uint64_t lo;
     uint64_t hi;
 } sk_r4_u128_t;
-
 typedef uint64_t undefined8;
 typedef uint8_t undefined1;
 typedef uint64_t undefined7;
@@ -2517,9 +2487,6 @@ extern uint64_t LAB_0031a02c;  /* Ghidra label (code address) */
 extern uint64_t LAB_0031a05c;  /* Ghidra label (code address) */
 extern uint64_t LAB_0031a08c;  /* Ghidra label (code address) */
 extern uint64_t LAB_005ce9e0;  /* Ghidra label (code address) */
-
-
-
 extern void sk_rt_hook_a();   /* FUN_00354440 no-op */
 extern void sk_rt_hook_b();   /* FUN_00354428 no-op */
 extern sk_r4_u128_t sk_rt_hook_c();   /* FUN_00353cfc no-op */
@@ -2555,7 +2522,6 @@ extern uint64_t sk_rt_desc();                                       /* FUN_00002
 extern uint64_t sk_rt_slot();                                        /* FUN_0007c1a4 */
 extern uint64_t sk_rt_slot2();                                       /* FUN_0034b7c8 */
 extern uint64_t sk_rt_slot3();                                       /* FUN_0034a390 */
-
 extern void sk_h_00019858();  /* FUN_00019858 out-of-slice */
 extern uint64_t sk_h_0006a4c0();  /* FUN_0006a4c0 out-of-slice */
 extern void sk_h_0006a4f0();  /* FUN_0006a4f0 out-of-slice */
@@ -3349,10 +3315,8 @@ extern void sk_h_0036b6ac();  /* FUN_0036b6ac out-of-slice */
 extern long sk_h_003722e4();  /* FUN_003722e4 out-of-slice */
 extern void sk_h_003a25e0();  /* FUN_003a25e0 out-of-slice */
 extern uint64_t sk_h_003a261c();  /* FUN_003a261c out-of-slice */
-
 extern void sk_h_00319f3c();  /* FUN_00319f3c fn-ptr */
 extern void sk_h_0031a20c();  /* FUN_0031a20c fn-ptr */
-
 extern uint64_t _DAT_004baeb0;
 extern uint64_t uRam00000000004baeb8;
 extern uint64_t datum_004e7f10;
@@ -3364,9 +3328,7 @@ extern uint64_t datum_004f18a8;
 extern uint64_t datum_00657798;
 extern uint64_t datum_006577e0;
 extern void (*datum_00658c00)();        /* function-pointer global */
-
 extern void sk_h_002060d4();           /* FUN_002060d4 out-of-slice */
-
 extern void sk_r4_001c050c(uint64_t, uint64_t);
 extern sk_r4_u128_t sk_r4_001c0528(void);
 extern void sk_r4_001c11b4(void);
@@ -3837,7 +3799,6 @@ typedef struct { undefined8 _0_8_; undefined8 _8_8_; undefined8 _8_4_; } sk_c16_
 typedef uint32_t undefined4;
 #define concat(a,b) ((uint64_t)((uint64_t)(a) << 32) | (uint32_t)(b))
 #define ovf(a,b) ({ unsigned long long _ovf_out; __builtin_add_overflow((unsigned long long)(a),(unsigned long long)(b),&_ovf_out); })
-
 extern unsigned long sk_00002534(); /* FUN_00002534 (out-of-slice helper) */
 extern unsigned long sk_000026e8(); /* FUN_000026e8 (out-of-slice helper) */
 extern unsigned long sk_00019858(); /* FUN_00019858 (out-of-slice helper) */
@@ -4894,9 +4855,7 @@ extern unsigned long sk_t_002298d4(); /* FUN_t_002298d4 (out-of-slice helper) */
 extern void sk_t_0026c2a0(undefined8 param_1,long param_2); /* FUN_t_0026c2a0 (out-of-slice helper) */
 extern unsigned long sk_t_002a2698(); /* FUN_t_002a2698 (out-of-slice helper) */
 extern unsigned long sk_t_0036b270(); /* FUN_t_0036b270 (out-of-slice helper) */
-
 extern unsigned long sk_breakpoint(); /* SoftwareBreakpoint (noreturn trap) */
-
 extern unsigned long _g_004baeb0; /* Ghidra global */
 extern unsigned long g_003471a4; /* Ghidra global */
 extern unsigned long g_003471a8; /* Ghidra global */
@@ -4928,6 +4887,7 @@ extern unsigned char L_0060e218; extern unsigned char L_00611b34;
 extern unsigned long g_0064c260; /* Ghidra global */
 extern unsigned long g_0064e888; /* Ghidra global */
 extern unsigned long g_00657778; /* Ghidra global */
+extern unsigned long (*g_00658c00)(); /* Ghidra global (function pointer) */
 extern unsigned long ram00000000004baeb8; /* Ghidra global */
 extern unsigned char Can_t_construct_ContiguousArray_w_005cedd0_str[]; /* Ghidra string s_Can_t_construct_ContiguousArray_w_005cedd0 */
 extern unsigned char Can_t_reassign_buffer_in_Array_u_005d39b0_str[]; /* Ghidra string s_Can_t_reassign_buffer_in_Array_u_005d39b0 */
@@ -4953,8 +4913,6 @@ extern unsigned char UnsafeRawBufferPointer_has_a_nil_005cdf20_str[]; /* Ghidra 
 extern unsigned char lower_upper_005e1f90_str[]; /* Ghidra string s_lower_upper_005e1f90 */
 extern unsigned char uespemosmodnarodarenegylsetybdet_004e7a30_str[]; /* Ghidra string s_uespemosmodnarodarenegylsetybdet_004e7a30 */
 extern unsigned char unsafelyUnwrapped_of_nil_optiona_005ce1c0_str[]; /* Ghidra string s_unsafelyUnwrapped_of_nil_optiona_005ce1c0 */
-
-
 void sk_001d0100(void);
 void sk_001d01f4(void);
 ulong sk_001d02e8(undefined8 param_1,undefined8 param_2,undefined8 param_3);
@@ -5251,13 +5209,8 @@ void sk_001dfc88(undefined8 param_1,unsigned long (*param_2)(),undefined8 param_
 void sk_001dfec0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4);
 void sk_001dff60(long param_1,long param_2);
 void sk_001dffa0(void);
-
 undefined8 sk_001dcd98(long *param_1,undefined8 param_2,undefined8 param_3,long param_4);
-
-typedef uint32_t uint;
-typedef uint64_t undefined8;
 typedef uint64_t (*code_fn_t)(long, ...);
-
 extern void sk_cpu_get(void);                            /* FUN_0008e518 */
 extern void sk_obj_methods_table(void);                  /* FUN_00377824 / DAT_00658c00 obj-method table */
 extern void sk_lock_release(void);                       /* FUN_00377dcc */
@@ -5275,19 +5228,13 @@ extern void sk_objc_msgSend(void);                                /* FUN_003a25d
 extern void sk_swift_collection_insert(void);                     /* FUN_0026bdc4 */
 extern void sk_swift_collection_append(void);                     /* FUN_001dffa0 */
 extern void sk_memcpy(void *, const void *, unsigned long);       /* FUN_00117d14 */
-
 extern uint64_t sk_dict_bucket_init(long *out, uint64_t p2, long p3, uint64_t p4, uint64_t p5); /* FUN_001e312c */
 extern long sk_swift_str_distance(long p1, long p2, uint p3);                                  /* FUN_001e67d8 */
 extern uint sk_dict_contains_key_impl(void);                                                    /* FUN_001e4938 */
-
-uint sk_sched_flag_check(void)
-
 typedef uint64_t word_t;
 typedef uint64_t cap_t;
 typedef uint64_t vptr_t;
 typedef uint64_t pptr_t;
-
-typedef uint64_t ulong;
 typedef unsigned __int128 uint128_t;
 #define INFINITY (__builtin_inf())
 #define NAN(x)   ((x) != (x))
@@ -5299,7 +5246,6 @@ extern char s_range_005cf420[];
 extern unsigned long FUN_003535f4();
 extern unsigned long FUN_00357e24();
 extern unsigned long in_CY;
-
 void cl4_sched_op_c();
 void thunk_FUN_001fca54();
 extern unsigned long FUN_00019858();
@@ -6051,13 +5997,266 @@ extern char s_Swift_UnsafeRawBufferPointer_swi_005cde40[];
 extern char s___rangeOffset__005cf428[];
 extern char s_key_value_005cea2a[];
 extern char s_uespemosmodnarodarenegylsetybdet_004e7a30[];
-
 static word_t base;
-
+static word_t extraout_x8;
+static word_t extraout_x8_00;
+static word_t extraout_x8_01;
+static word_t extraout_x8_02;
+static word_t extraout_x8_03;
+static word_t extraout_x8_04;
+static word_t extraout_x8_05;
+static word_t extraout_x8_06;
+static word_t extraout_x8_07;
+static word_t extraout_x8_08;
+static word_t extraout_x8_09;
+static word_t extraout_x8_10;
+static word_t extraout_x8_11;
+static word_t extraout_x8_12;
+static word_t extraout_x8_13;
+static word_t extraout_x8_14;
+static word_t extraout_x8_15;
+static word_t extraout_x8_16;
+static word_t extraout_x8_17;
+static word_t extraout_x8_18;
+static word_t extraout_x8_19;
+static word_t extraout_x8_20;
+static word_t extraout_x9;
+static word_t extraout_x9_00;
+static word_t extraout_x9_01;
+static word_t extraout_x9_02;
+static word_t extraout_x9_03;
+static word_t extraout_x9_04;
+static word_t extraout_x9_05;
+static word_t extraout_x9_06;
+static word_t extraout_x9_07;
+static word_t extraout_x9_08;
+static word_t in_x4;
+static word_t *local_10;
+static word_t *local_20;
+static word_t *local_28;
+static word_t *local_30;
+static word_t *local_58;
+static word_t *local_70;
+static word_t *local_d8;
+static word_t *local_e0;
+static word_t *local_e8;
+static word_t next;
+static word_t pc10;
+static word_t pc13;
+static word_t pc8;
+static word_t pc9;
+static word_t pc9b;
+static word_t pu3;
+static word_t *unaff_x19;
+static word_t *unaff_x20;
+static word_t *unaff_x21;
+static word_t *unaff_x22;
+static word_t *unaff_x23;
+static word_t *unaff_x24;
+static word_t *unaff_x27;
+static word_t auStack_108;
+static word_t auStack_138;
+static word_t auStack_170;
+static word_t auStack_188;
+static word_t auStack_198;
+static word_t auStack_1b0;
+static word_t auStack_1d8;
+static word_t auStack_28;
+static word_t auStack_30;
+static word_t auStack_38;
+static word_t auStack_40;
+static word_t auStack_48;
+static word_t auStack_50;
+static word_t auStack_58;
+static word_t auStack_68;
+static word_t auStack_70;
+static word_t auStack_78;
+static word_t auStack_8;
+static word_t auStack_88;
+static word_t auStack_90;
+static word_t auStack_98;
+static word_t auStack_a0;
+static word_t auStack_a8;
+static word_t auStack_b0;
+static word_t auStack_b8;
+static word_t auStack_d8;
+static word_t auStack_e8;
+static word_t auVar8;
+static word_t b3;
+static word_t bVar5;
+static word_t changed;
+static word_t extraout_w1;
+static word_t extraout_w10;
+static word_t extraout_w1_00;
+static word_t extraout_w8;
+static word_t extraout_w9;
+static word_t extraout_x1;
+static word_t extraout_x10;
+static word_t extraout_x10_00;
+static word_t extraout_x10_01;
+static word_t extraout_x11;
+static word_t extraout_x12;
+static word_t extraout_x16;
+static word_t extraout_x16_00;
+static word_t extraout_x16_01;
+static word_t extraout_x16_02;
+static word_t extraout_x16_03;
+static word_t extraout_x1_00;
+static word_t extraout_x1_01;
+static word_t extraout_x1_02;
+static word_t extraout_x8_21;
+static word_t in_OV;
+static word_t in_ZR;
+static word_t in_stack_00000008;
+static word_t in_stack_00000010;
+static word_t in_stack_00000018;
+static word_t in_stack_00000020;
+static word_t in_stack_00000028;
+static word_t in_stack_00000030;
+static word_t in_stack_00000038;
+static word_t in_stack_00000040;
+static word_t in_stack_00000048;
+static word_t in_stack_00000050;
+static word_t in_stack_00000058;
+static word_t in_stack_00000078;
+static word_t in_stack_ffffffffffffff00;
+static word_t in_stack_ffffffffffffff08;
+static word_t in_w3;
+static word_t in_x3;
+static word_t in_x5;
+static word_t in_x6;
+static word_t in_x7;
+static word_t l1;
+static word_t l2;
+static word_t l4;
+static word_t l5;
+static word_t l5b;
+static word_t l6;
+static word_t l7;
+static word_t lStack_10;
+static word_t lStack_118;
+static word_t lStack_18;
+static word_t lStack_20;
+static word_t lStack_28;
+static word_t lStack_38;
+static word_t lStack_50;
+static word_t lStack_60;
+static word_t lStack_70;
+static word_t lStack_78;
+static word_t lStack_80;
+static word_t lStack_88;
+static word_t lStack_90;
+static word_t lStack_98;
+static word_t lStack_f8;
+static word_t lVar3;
+static word_t local_100;
+static word_t local_108;
+static word_t local_110;
+static word_t local_120;
+static word_t local_130;
+static word_t local_140;
+static word_t local_148;
+static word_t local_150;
+static word_t local_158;
+static word_t local_160;
+static word_t local_170;
+static word_t local_18;
+static word_t local_180;
+static word_t local_198;
+static word_t local_37;
+static word_t local_38;
+static word_t local_40;
+static word_t local_41;
+static word_t local_48;
+static word_t local_50;
+static word_t local_60;
+static word_t local_67;
+static word_t local_68;
+static word_t local_78;
+static word_t local_8;
+static word_t local_80;
+static word_t local_88;
+static word_t local_90;
+static word_t local_98;
+static word_t local_a0;
+static word_t local_a8;
+static word_t local_b0;
+static word_t local_b8;
+static word_t local_c0;
+static word_t local_c8;
+static word_t local_d0;
+static word_t local_f0;
+static word_t local_f8;
+static word_t p6;
+static word_t pcStack_28;
+static word_t puStack_18;
+static word_t stack0x00000000;
+static word_t stack0x00000008;
+static word_t stack0x00000010;
+static word_t stack0x00000018;
+static word_t stack0x00000020;
+static word_t stack0x00000028;
+static word_t stack0x00000030;
+static word_t stack0x00000038;
+static word_t stack0x00000040;
+static word_t stack0x00000048;
+static word_t stack0x00000058;
+static word_t u1;
+static word_t u11;
+static word_t u12;
+static word_t u13;
+static word_t u14;
+static word_t u2;
+static word_t u26;
+static word_t u3;
+static word_t u4;
+static word_t u5;
+static word_t u6;
+static word_t u7;
+static word_t uRam00000000004baeb8;
+static word_t uStack_100;
+static word_t uStack_108;
+static word_t uStack_128;
+static word_t uStack_148;
+static word_t uStack_168;
+static word_t uStack_178;
+static word_t uStack_18;
+static word_t uStack_190;
+static word_t uStack_28;
+static word_t uStack_2f;
+static word_t uStack_30;
+static word_t uStack_38;
+static word_t uStack_40;
+static word_t uStack_48;
+static word_t uStack_50;
+static word_t uStack_58;
+static word_t uStack_5f;
+static word_t uStack_60;
+static word_t uStack_68;
+static word_t uStack_70;
+static word_t uStack_78;
+static word_t uStack_80;
+static word_t uStack_90;
+static word_t uStack_b8;
+static word_t uStack_c0;
+static word_t uStack_c8;
+static word_t uStack_d0;
+static word_t uStack_e0;
+static word_t uStack_f0;
+static word_t uVar2;
+static word_t uVar7;
+static word_t uVar8;
+static word_t unaff_w28;
+static word_t unaff_x25;
+static word_t unaff_x26;
+static word_t unaff_x28;
+static word_t unaff_x30;
 typedef struct { word_t lo; word_t hi; } cl4_desc_t;
 typedef struct { word_t index; ulong found; } cl4_find_t;
 cl4_desc_t thunk_FUN_00355354();
 #define LZCOUNT(x)          ((unsigned)__builtin_clzll((unsigned long long)(x)))
+static inline word_t bitrev_word(word_t x) {
+    x = (x & 0xaaaaaaaaaaaaaaaa) >> 1 | (x & 0x5555555555555555) << 1;
     x = (x & 0xcccccccccccccccc) >> 2 | (x & 0x3333333333333333) << 2;
     x = (x & 0xf0f0f0f0f0f0f0f0) >> 4 | (x & 0xf0f0f0f0f0f0f0f) << 4;
     x = (x & 0xff00ff00ff00ff00) >> 8 | (x & 0xff00ff00ff00ff) << 8;
@@ -6071,9 +6270,8 @@ extern word_t FUN_0031b560();              /* 0x31b560 */
 extern unsigned long FUN_001f99f4(); /* 0x1f99f4 (this range) */
 extern void FUN_001f0700();              /* 0x1f0700 (this range) */
 
-void cl4_thread_free_cb(long *obj)
-
 /* ===================== function bodies (all slices) ===================== */
+void FUN_001807a4(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -16547,6 +16745,7 @@ LAB_0019007c:
 
 
 
+void FUN_0019e814(long param_1,long param_2)
 {
   if (*(long *)(param_2 + 0x10) < param_1) {
     FUN_003488bc(1);
@@ -29075,6 +29274,7 @@ void FUN_0019fffc(void)
 
 
 
+void swift_array_construct_dispatch(uint64_t param_1)
 {
     uint64_t meta = sk_objc_metatype(&sk_array_metatype, param_1); /* FUN_00376820 */
     sk_swift_array_dispatch_impl(param_1, meta);                   /* FUN_001a0194 */
@@ -38456,6 +38656,7 @@ void sk_sched_queue_tick_step(void)
     sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
+void cl4_fatal_abort(void)
 {
     sk_fatal_error(0, 0);   /* FUN_001afe4c — noreturn */
 }
@@ -44068,6 +44269,7 @@ void cl4_swift_wt_bf994(void){ cl4_swift_deinit(); }
  * Confidence: low (witness forward). */
 void cl4_swift_wt_bf998(void){ cl4_swift_deinit(); }
 
+void sk_r4_001c050c(uint64_t p1,uint64_t p2)
 
 {
   sk_h_00229464(p1,p2,sk_h_002060d4);
@@ -62563,6 +62765,7 @@ void sk_r4_001cff9c(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,
   return;
 }
 
+void sk_001d0100(void)
 
 {
   undefined8 stk00000008;
@@ -72271,6 +72474,7 @@ void sk_001dffa0(void)
 }
 
 
+uint sk_sched_flag_check(void)
 {
     /* FUN_00354708 / FUN_00352d70(obj+0x18) / FUN_0008412c / FUN_0034f014 / FUN_0035053c */
     sk_cpu_get();
@@ -75569,6 +75773,7 @@ void sk_swift_set_bucket_alloc(void)
      * FUN_0008e500(FUN_001f00ac, auVar7._8_8_, x30) */
 }
 
+void cl4_thread_free_cb(long *obj)
 {
     code *finish_cb = *(code **)(*obj + 0x58);
     long   inner   = *(long *)(*obj + 0x48);

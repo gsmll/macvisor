@@ -8329,3 +8329,283 @@ unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
     FUN_0005ee58(words, 0, 0, 0);
     return 0;
 }
+/*-------------------------------------------------------------------------
+ * TSS (thread-specific-storage) subsystem.
+ *------------------------------------------------------------------------- */
+
+extern unsigned long FUN_0005acac(unsigned long a, int b, int c);  /* per-CPU descriptor allocator */
+
+/* Forward declarations for the TSS subsystem (mutually recursive). */
+long sk_tss_base_get(void);
+long sk_tss_alloc_slot(void);
+unsigned long sk_tss_new_region(void);
+long sk_tb_attach(void *tb, void *key, unsigned long size);
+void sk_tb_release(void *tb);
+
+/* Reads the current thread pointer register (tpidr_el0). */
+static unsigned long sk_tpidr(void)
+{
+    unsigned long v;
+    __asm__ volatile("mrs %0, tpidr_el0" : "=r"(v));
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00063a50 (static helper)   (est. sk_percpu_base_get)
+ * Ghidra: ulong FUN_00063a50(void)
+ * Returns the current per-CPU base. Returns the cached global _DAT_006b2718
+ * if already set; otherwise allocates the per-CPU descriptor (FUN_0005acac,
+ * 0x6b2568) and derives the base at offset 0x50, caching it back. Traps on
+ * base wrap.
+ * Confidence: medium (per-CPU base accessor; global _DAT_006b2718).
+ * Notes: allocator FUN_0005bb68/FUN_0005acac; trap 0x63a94. */
+static unsigned long sk_percpu_base_get(void)
+{
+    unsigned long base = *(unsigned long *)0x6b2718;   /* _DAT_006b2718 */
+    if (base == 0) {
+        long cpu = (long)FUN_0005acac(0x6b2568, 1, 1);  /* FUN_0005bb68 */
+        base = *(unsigned long *)(cpu + 0x50);
+        if (base + 0x2f0 < base) __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x63a94) */
+    }
+    *(unsigned long *)0x6b2718 = base;
+    return base;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013be4 @ 0x00013be4   (est. sk_tss_base_get)
+ * Ghidra: long FUN_00013be4(void)
+ * Returns the current thread's TSS slot pointer (thread-local key slot for
+ * the current key count - 1). Reads the per-CPU base (FUN_00063a50), the
+ * key-count global _DAT_006ae1b0 and the per-thread key array (tpidr_el0).
+ * Panics via FUN_0005b190 on "getting key %lu while destructor" / "which is
+ * deleted"; faults via FUN_004b01e8 on key >= 0x20; traps on slot wrap.
+ * Confidence: medium (string-matched key getter).
+ * Notes: globals _DAT_006ae1b0/006ae1c0/006ae1c8; strings 005ab2c6/005ab2a5;
+ *   trap 0x13c88. */
+long sk_tss_base_get(void)
+{
+    unsigned long nkeys = sk_perthread_key_count;      /* _DAT_006ae1b0 */
+    unsigned long base;
+    long *th;
+
+    if (nkeys < 0x20) {
+        base = sk_percpu_base_get();                    /* FUN_00063a50 */
+        th = (long *)sk_tpidr();
+        if (*(long *)(base + (nkeys - 1) * 8 + 0x1f8) != -1) {
+            if (th[0x1f] == 0) {
+                long *slot = th + (nkeys - 1);
+                if (th <= slot && slot + 1 <= th + 0x1f && slot <= slot + 1) {
+                    return *slot;
+                }
+                __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13c88) */
+            }
+            sk_panic_key((const char *)0x5ab2c6);  /* "getting key %lu while destructor" */
+        }
+    } else {
+        FUN_004b01e8();  /* key >= __XRT_THREAD_TSS_MAX_KEYS fault */
+    }
+    sk_panic_key((const char *)0x5ab2a5);  /* "getting key %lu which is deleted" */
+    return 0;  /* unreachable */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013af0 @ 0x00013af0   (est. sk_tss_free_slot)
+ * Ghidra: void FUN_00013af0(ulong slot)
+ * Frees a TSS slot: computes its slot index (slot - base) / 0x1b8 via the
+ * 0x4a7904a7904a7905 reciprocal and clears the slot's bit in the region
+ * bitmap at base + 0x528. Faults on an out-of-range or unset slot. The
+ * trailing destructor-cleanup loop (FUN_004b0128/004b23d8/0005ed18) is dead
+ * because the fault helpers do not return.
+ * Confidence: medium (bitmap slot free; reciprocal magic 0x4a7904a7904a7905).
+ * Notes: slot stride 0x1b8; bitmap base+0x528; faults FUN_004b01b8/0188/0158;
+ *   dead tail FUN_004b0128/004b23d8/0005ed18. */
+void sk_tss_free_slot(unsigned long slot)
+{
+    unsigned long base = (unsigned long)sk_tss_base_get();  /* FUN_00013be4 */
+    unsigned long idx, bit;
+
+    if (base == 0) {
+        FUN_004b01b8();  /* fault */
+        FUN_004b0188();  /* fault */
+        __builtin_trap();
+    }
+    if (slot < base) {
+        FUN_004b0188();  /* fault */
+        __builtin_trap();
+    }
+    if (slot <= base + 0x370) {
+        idx = (slot - base) / 0x1b8;        /* reciprocal magic */
+        bit = 1UL << (idx & 0x3f);
+        if (*(unsigned long *)(base + 0x528) & bit) {
+            *(unsigned long *)(base + 0x528) &= ~bit;
+            return;
+        }
+        FUN_004b0158();  /* fault: slot not in use */
+        __builtin_trap();
+    }
+    FUN_004b0158();  /* fault */
+    __builtin_trap();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000139ac @ 0x000139ac   (est. sk_tb_release)
+ * Ghidra: void FUN_000139ac(undefined8 *tb)
+ * Releases a thread block: tears down its capability slots and frees its
+ * TSS slot when no region is attached, then clears the TB fields and sets
+ * the released marker at +0x29 bit 0. Idempotent.
+ * Confidence: medium (structural release).
+ * Notes: helpers FUN_00012d70 (slot teardown)/00013af0 (tss free). */
+void sk_tb_release(void *tb)
+{
+    unsigned long *t = (unsigned long *)tb;
+
+    if ((*(uint8_t *)((char *)tb + 0x29) & 1) != 0) return;  /* already released */
+    if (t[6] == 0) {
+        sk_tcb_slot_alloc_teardown(tb);   /* FUN_00012d70 */
+        sk_tss_free_slot(t[0]);           /* FUN_00013af0 */
+    }
+    t[0] = 0;
+    t[6] = 0;
+    t[3] = 0;
+    t[4] = 0;
+    t[2] = 0;
+    *(uint8_t *)((char *)tb + 0x29) = 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013a08 @ 0x00013a08   (est. sk_tb_attach)
+ * Ghidra: long FUN_00013a08(undefined8 *tb, undefined8 key, ulong size)
+ * Attaches a thread block to a TSS slot of the given size. If no region is
+ * attached, tears down the old slots, frees the old TSS slot, initialises
+ * the per-thread key table (FUN_0005d470) and allocates a fresh slot
+ * (FUN_00013cfc); otherwise reuses the region's current slot. Rejects a
+ * request larger than 0x1b8 (returns 5). Returns 0 on success.
+ * Confidence: medium (structural attach).
+ * Notes: helpers FUN_00012d70/00013af0/0005d470/00013cfc; size cap 0x1b8. */
+long sk_tb_attach(void *tb, void *key, unsigned long size)
+{
+    unsigned long *t = (unsigned long *)tb;
+    unsigned long *region = (unsigned long *)t[6];
+
+    if (region == 0) {
+        if (0x1b8 < size) return 5;
+        sk_tcb_slot_alloc_teardown(tb);   /* FUN_00012d70 */
+        sk_tss_free_slot(t[0]);           /* FUN_00013af0 */
+        sk_perthread_init((void *)0x6ae1b8, (void *)0x13c88, 0);  /* FUN_0005d470 */
+        t[0] = (unsigned long)sk_tss_alloc_slot();  /* FUN_00013cfc */
+    } else {
+        if (region[1] < size) return 5;
+        t[0] = region[0];
+    }
+    t[2] = 0;
+    t[3] = size;
+    *(uint16_t *)((char *)tb + 0x2a) = 0;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013cfc @ 0x00013cfc   (est. sk_tss_alloc_slot)
+ * Ghidra: long FUN_00013cfc(void)
+ * Allocates the next free TSS slot for the current thread. If the thread has
+ * no TSS region yet, lazily creates/links one: zeroes the thread list
+ * (thunk_FUN_00114330), picks the per-thread region base (_DAT_006ae1d0 or
+ * _DAT_006ae700) and records it in the thread's key slot, ref-counting the
+ * per-CPU key table at +0x1f8. Finds a free slot by scanning the region's
+ * allocation bitmap at +0x528 (bit-reverse + LZCOUNT) and returns
+ * base + slot*0x1b8. Faults on TSS_MAX_KEYS overflow (FUN_00115424) or when
+ * no slot is free (sk_puts + trap).
+ * Confidence: low-medium (large structural allocator; key-set panic strings).
+ * Notes: globals _DAT_006ae1b0/006ae1c0/006ae1c8; region bases 0x6ae1d0/
+ *   0x6ae700; slot stride 0x1b8; bitmap base+0x528; strings 005ab392/005ab177/
+ *   005ab3b2/005ab3c5/005ab3ef/005ab34c; traps 0x13e84/0x13ea8. */
+long sk_tss_alloc_slot(void)
+{
+    unsigned long region;
+    unsigned long cpu;
+    unsigned long nkeys;
+    unsigned long bitmap, bit, freeidx;
+    unsigned long *th;
+
+    region = (unsigned long)sk_tss_base_get();   /* FUN_00013be4 */
+    if (region == 0) {
+        cpu = FUN_00060524();                    /* current cpu / thread */
+        region = 0x6ae1d0;
+        if (sk_thread_list_head != cpu) {        /* _DAT_006ae1c0 */
+            if (sk_thread_list_head == 0) {
+                thunk_FUN_00114330(&sk_thread_list, 0xa68);  /* zero thread list */
+                region = 0x6ae1d0;
+                sk_thread_list_head = cpu;
+            } else {
+                region = sk_thread_list;         /* _DAT_006ae1c8 */
+                if (sk_thread_list == cpu || (region = cpu, sk_thread_list == 0)) {
+                    sk_thread_list = region;
+                    region = 0x6ae700;
+                } else {
+                    region = (unsigned long)sk_tss_new_region();  /* FUN_00013ea8 */
+                }
+            }
+        }
+        nkeys = sk_perthread_key_count;          /* _DAT_006ae1b0 */
+        if (nkeys > 0x1f) {
+            FUN_00115424((const char *)0x5ab392, (const char *)0x5ab177,
+                         (const char *)0x5ab3b2, 0x1f0);  /* key < __XRT_THREAD_TSS_MAX_KEYS */
+        }
+        cpu = sk_percpu_base_get();              /* FUN_00063a50 */
+        th = (unsigned long *)sk_tpidr();
+        if (th[0x1f] != 0) {
+            sk_panic_key((const char *)0x5ab3c5);  /* "setting key %lu while destructor" */
+        }
+        {
+            unsigned long *slot = th + (nkeys - 1);
+            if (!(th <= slot && th + 0x1f >= slot + 1 && slot <= slot + 1)) {
+                __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13e84) */
+            }
+            if (*slot != region) {
+                if (*slot == 0) {
+                    long *pc = (long *)(cpu + (nkeys - 1) * 8 + 0x1f8);
+                    long v = *pc;
+                    *pc = v + 1;
+                    if (v == -1)
+                        sk_panic_key((const char *)0x5ab3ef);  /* "setting key %lu which is deleted" */
+                }
+                *slot = region;
+            }
+        }
+    }
+    bitmap = *(unsigned long *)(region + 0x528);
+    /* Find lowest free slot: bit-reverse the free mask then LZCOUNT. */
+    {
+        unsigned long f = ~bitmap;
+        f = (f & 0xaaaaaaaaaaaaaaaaUL) >> 1 | (f & 0x5555555555555555UL) << 1;
+        f = (f & 0xccccccccccccccccUL) >> 2 | (f & 0x3333333333333333UL) << 2;
+        f = (f & 0xf0f0f0f0f0f0f0f0UL) >> 4 | (f & 0x0f0f0f0f0f0f0f0fUL) << 4;
+        f = (f & 0xff00ff00ff00ff00UL) >> 8 | (f & 0x00ff00ff00ff00ffUL) << 8;
+        f = (f & 0xffff0000ffff0000UL) >> 16 | (f & 0x0000ffff0000ffffUL) << 16;
+        f = (f >> 32) | (f << 32);
+        freeidx = (unsigned long)__builtin_clzll(f);
+    }
+    if (bitmap != 0xffffffffffffffffUL && freeidx < 3) {
+        bit = 1UL << (freeidx & 0x3f);
+        *(unsigned long *)(region + 0x528) = bitmap | bit;
+        return (long)(region + freeidx * 0x1b8);
+    }
+    sk_puts((const char *)0x5ab34c);  /* "TB FATAL: no available per-thread slot" */
+    __builtin_trap();  /* SoftwareBreakpoint(1, 0x13ea8) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013ea8 @ 0x00013ea8   (est. sk_tss_new_region)
+ * Ghidra: ulong FUN_00013ea8(void)
+ * Allocates a new TSS region of 0x530 bytes (tag 0x10000403b489d26) via
+ * FUN_00010244 (sk_heap_calloc) and returns it. On failure faults via
+ * FUN_004b0244.
+ * Confidence: medium (allocation + fault).
+ * Notes: region size 0x530; tag 0x10000403b489d26. */
+unsigned long sk_tss_new_region(void)
+{
+    unsigned long r = (unsigned long)sk_heap_calloc(1, 0x530, (void *)0x10000403b489d26);  /* FUN_00010244 */
+    if (r != 0) return r;
+    FUN_004b0244();  /* fault */
+    __builtin_trap();
+}

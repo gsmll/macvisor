@@ -239,7 +239,7 @@ static void    sk_rt_dispatch0(word_t a);                                    /* 
 static void    sk_rt_dispatch1(word_t a, word_t b);                          /* 409384 */
 static void    sk_rt_dispatch2(word_t a, word_t b);                          /* 4093b4 */
 static void    sk_rt_dispatch3(void);                                        /* 409414 */
-static void    sk_rt_dispatch4(word_t a, word_t b);                          /* 409444 */
+static word_t  sk_rt_dispatch4(word_t a, word_t b);                          /* 409444 */
 static word_t  sk_isolating_or_flags(word_t p);                              /* 409484 */
 static void    sk_assert_isolating(int v);                                   /* 40949c */
 static word_t  sk_cmp_try2(word_t *p);                                       /* 4094c8 */
@@ -326,7 +326,8 @@ static void sk_acc_set_multi(word_t a, word_t v)
     *(word_t *)(self2 + 0x18) = s0;
 }
 
-/* FUN_00408238 / 40/58 — empty protocol witnesses. */
+/* FUN_00408238 @ 0x00408238, FUN_00408244 @ 0x00408244, FUN_00408258 @ 0x00408258
+ * — empty protocol witnesses (byte-identical). */
 static void sk_acc_void_4(void) { }
 static void sk_acc_void_5(void) { }
 static void sk_acc_void_6(void) { }
@@ -349,6 +350,8 @@ static sk_128_t sk_acc_get_6038(word_t self)
     return r;
 }
 
+/* FUN_00408294 @ 0x00408294, FUN_004082a8 @ 0x004082a8, FUN_004082b4 @ 0x004082b4
+ * — empty protocol witnesses (byte-identical). */
 static void sk_acc_void_7(void) { }
 static void sk_acc_void_8(void) { }
 static void sk_acc_void_9(void) { }
@@ -378,6 +381,7 @@ static void sk_acc_set_40(word_t self, word_t v)
     *(word_t *)(self + 0x40) = *(word_t *)(v + 0x18);
 }
 
+/* FUN_00408314 @ 0x00408314 — empty protocol witness. */
 static void sk_acc_void_10(void) { }
 
 /* FUN_00408328 @ 0x00408328 — setter: self+0xb0 = v, self+0xb8 = src+0x28. */
@@ -388,6 +392,7 @@ static void sk_acc_set_b0(word_t self, word_t v)
     *(word_t *)(self + 0xb8) = *(word_t *)(src + 0x28);
 }
 
+/* FUN_0040833c @ 0x0040833c — empty protocol witness. */
 static void sk_acc_void_11(void) { }
 
 /* FUN_00408348 @ 0x00408348 — getter pair {+0x80, +0x70}. */
@@ -432,6 +437,7 @@ static word_t sk_acc_set_d8_get10(word_t p, word_t v, word_t self)
     return *(word_t *)(self + 0x10);
 }
 
+/* FUN_004083b4 @ 0x004083b4 — empty protocol witness. */
 static void sk_acc_void_13(void) { }
 
 /* FUN_004083c0 @ 0x004083c0 — constant 0xff. */
@@ -443,6 +449,7 @@ static void sk_acc_set_a8(word_t self, word_t v)
     *(word_t *)(self + 0xa8) = v;
 }
 
+/* FUN_004083d8 @ 0x004083d8 — empty protocol witness. */
 static void sk_acc_void_14(void) { }
 
 /* FUN_004083e4 @ 0x004083e4 — constant 0x100. */
@@ -457,6 +464,7 @@ static sk_128_t sk_acc_add_stack(void)
     return r;
 }
 
+/* FUN_00408404 @ 0x00408404 — empty protocol witness. */
 static void sk_acc_void_15(void) { }
 
 /* FUN_00408410 @ 0x00408410 — sum x27 + x25. */
@@ -465,11 +473,13 @@ static word_t sk_acc_add_2(void)
     return 0; /* unaff_x27 + unaff_x25 */
 }
 
+/* FUN_0040841c @ 0x0040841c — empty protocol witness. */
 static void sk_acc_void_16(void) { }
 
 /* FUN_00408428 @ 0x00408428 — zero 128-bit pair. */
 static sk_128_t sk_acc_zero(void) { return sk_128_zero(); }
 
+/* FUN_00408434 @ 0x00408434 — empty protocol witness. */
 static void sk_acc_void_17(void) { }
 
 /* FUN_00408440 @ 0x00408440 — pair: lo = x21+x26, hi = in_stack_00000008. */
@@ -487,6 +497,9 @@ static void sk_acc_set_68(word_t self, word_t v)
     *(word_t *)(self + 0x68) = v;
 }
 
+/* FUN_00408460 @ 0x00408460, FUN_0040846c @ 0x0040846c,
+ * FUN_00408488 @ 0x00408488, FUN_004084a4 @ 0x004084a4
+ * — empty protocol witnesses (byte-identical). */
 static void sk_acc_void_18(void) { }
 static void sk_acc_void_19(void) { }
 static void sk_acc_void_20(void) { }
@@ -962,7 +975,7 @@ static void sk_future_resume(word_t a, word_t b, word_t c)
     int rc;
     word_t stk;
 
-    slot_op = (word_t *)((word_t(*)(word_t))sk_l4_err_op[1])(sk_l4_err_op + 1, a);
+    slot_op = (word_t *)((word_t(*)(word_t, word_t))sk_l4_err_op[1])((word_t)(uintptr_t)(sk_l4_err_op + 1), a);
     lv = *slot_op;
     slot_perm = (word_t *)((word_t(*)(void))sk_l4_err_perm[1])();
     pl = (word_t *)*slot_perm;
@@ -1057,7 +1070,7 @@ static void sk_ref_dec(word_t *p)
  * (FUN_0035bdf8) is inactive, writes 8 into *out. */
 static void sk_drace_handle(word_t *out)
 {
-    uint32_t m = (uint32_t)sk_drace_mode_get(); /* FUN_0035bdf8 */
+    uint32_t m = (uint32_t)sk_drace_mode_get((word_t)0); /* FUN_0035bdf8 */
     if ((m & 1) == 0) {
         *out = 8;
     }
@@ -1067,13 +1080,14 @@ static void sk_drace_handle(word_t *out)
  * detector mode to 1, or 2 if FUN_0035bdf8() reports no race support. */
 static void sk_drace_mode_set(void)
 {
-    int m = (int)sk_drace_mode_get(); /* FUN_0035bdf8 */
+    int m = (int)sk_drace_mode_get((word_t)0); /* FUN_0035bdf8 */
     sk_drace_mode = 1;
     if (m == 0) { sk_drace_mode = 2; }
 }
+/* FUN_00409184 @ 0x00409184 — sk_drace_mode_set2 (byte-identical twin of 0x00409180). */
 static void sk_drace_mode_set2(void)
 {
-    int m = (int)sk_drace_mode_get(); /* FUN_0035bdf8 */
+    int m = (int)sk_drace_mode_get((word_t)0); /* FUN_0035bdf8 */
     sk_drace_mode = 1;
     if (m == 0) { sk_drace_mode = 2; }
 }
@@ -1110,6 +1124,7 @@ static word_t sk_job_send(word_t *p, word_t a, word_t b)
     sk_cas_send(*(word_t *)*p, a, b, 0); /* FUN_0040c640 */
     return 1;
 }
+/* FUN_00409224 @ 0x00409224 — sk_job_send2 (byte-identical twin of 0x00409220). */
 static word_t sk_job_send2(word_t *p, word_t a, word_t b)
 {
     sk_cas_send(*(word_t *)*p, a, b, 0); /* FUN_0040c640 */
@@ -1199,13 +1214,13 @@ static void sk_rt_dispatch3(void)
 }
 
 /* FUN_00409444 @ 0x00409444 — sk_rt_dispatch4. */
-static void sk_rt_dispatch4(word_t a, word_t b)
+static word_t sk_rt_dispatch4(word_t a, word_t b)
 {
     if (sk_rt_dispatch_a0 == 0) {
         sk_rt_fallback_3((word_t)0); /* FUN_0040faac */
-        return;
+        return 0;
     }
-    ((void(*)(word_t, word_t, word_t))sk_rt_dispatch_a0)(a, b, 0x409470);
+    return ((word_t(*)(word_t, word_t, word_t))sk_rt_dispatch_a0)(a, b, 0x409470);
 }
 
 /* FUN_00409484 @ 0x00409484 — sk_isolating_or_flags: if the object is valid
@@ -1375,6 +1390,7 @@ static void sk_job_teardown(word_t p)
     *(word_t *)(*(word_t *)(lv + 0x40) + 0x20) = 0;
     sk_job_state_set(lv);                            /* FUN_00409858 */
 }
+/* FUN_0040981c @ 0x0040981c — sk_job_teardown2 (byte-identical twin of 0x00409818). */
 static void sk_job_teardown2(word_t p)
 {
     word_t lv = *(word_t *)(p + 0x48);
@@ -1493,6 +1509,7 @@ static void sk_job_release(void)
     sk_job_destroy(0);      /* FUN_004099d4() */
     sk_heap_free((word_t)0); /* thunk_FUN_00012568() */
 }
+/* FUN_00409b18 @ 0x00409b18 — sk_job_release2 (byte-identical twin of 0x00409b14). */
 static void sk_job_release2(void)
 {
     sk_job_destroy(0);      /* FUN_004099d4() */
@@ -1532,7 +1549,7 @@ static void sk_run_inline(word_t out, int *desc, word_t a3, word_t a4)
             scratch_sz = 0x1000;
             ((void(*)(void))sk_alloc_fn_658c88)();   /* DAT_00658c88 */
             scratch = (uint8_t *)&local;              /* auStack_1080 */
-            sk_memcpy(scratch, 0x1000);               /* thunk_FUN_00114330 */
+            sk_memcpy((word_t)(uintptr_t)scratch, (word_t)0x1000); /* thunk_FUN_00114330 */
         } else {
             scratch_sz = 0;
             scratch = (uint8_t *)0;
@@ -1614,7 +1631,7 @@ static sk_128_t sk_job_build(word_t flags, uint8_t *desc, word_t a3,
                     SK188_BKPT(0x409fa4); /* SoftwareBreakpoint(1,0x409fa4) */
                 }
             } else if (b5 == 6) {
-                au23 = (sk_128_t)sk_future_get((word_t)desc); /* FUN_004097cc */
+                au23 = sk_future_get((word_t)desc); /* FUN_004097cc */
                 jf |= 0x20000000;
                 u14 = 1;
             } else if (b5 == 7) {
@@ -1684,7 +1701,7 @@ do_header:
     pu1[-3] = a4;
     pu1[-2] = a5;
     if (((jf >> 0x1d & 1) == 0) && (lvar3 != 0) &&
-        (au24 = (sk_128_t)sk_copy128(lvar9, 0), au24.lo != 0)) {
+        (au24 = sk_copy128(lvar9, 0), au24.lo != 0)) {
         jf |= 0x20000000;
         au23 = au24;
     }
@@ -1746,7 +1763,7 @@ set_rest:
             if (i8 != 0) {
                 pu11[10] = 0;
                 pu11[0xb] = 0;
-                sk_buf_init(pu11 + 0xe, (word_t)pu11 + u13, i8); /* FUN_004ba660 */
+                sk_buf_init((word_t)(uintptr_t)(pu11 + 0xe), (word_t)(uintptr_t)pu11 + u13, i8); /* FUN_004ba660 */
                 pu11[0x11] = 0;
                 goto after_buf;
             }
@@ -1761,37 +1778,37 @@ set_rest:
 after_buf:
     pu11[0x13] = u12;
     pu11[0x14] = 0;
-    sk_buf_zero(pu11 + 0x16, 0); /* FUN_0040b280 */
+    sk_buf_zero((word_t)(uintptr_t)(pu11 + 0x16), 0); /* FUN_0040b280 */
     pu11[0xc] = u12 & 0xffffffff;
     pu11[0xd] = 0;
     if (lvar3 != 0) {
         if (((l21 != 0) && (u12 = sk_timer_is_pending(l21), (u12 & 1) != 0)) ||
             (((uint32_t)*(word_t *)(lvar9 + 0x60) >> 8 & 1) != 0)) {
-            sk_job_finalize(pu11); /* FUN_0040c748 */
+            sk_job_finalize((word_t)(uintptr_t)pu11); /* FUN_0040c748 */
         }
-        sk_job_link(pu11 + 0x11, (word_t)pu11, lvar9); /* FUN_0040eef8 */
+        sk_job_link((word_t)(uintptr_t)(pu11 + 0x11), (word_t)(uintptr_t)pu11, lvar9); /* FUN_0040eef8 */
     }
     if (l21 != 0) {
-        sk_timer_arm(l21, (word_t)pu11); /* FUN_0040c970 */
-        sk_swift_retain((word_t)pu11);   /* FUN_0036b270 */
+        sk_timer_arm(l21, (word_t)(uintptr_t)pu11); /* FUN_0040c970 */
+        sk_swift_retain((word_t)(uintptr_t)pu11);   /* FUN_0036b270 */
     }
     if ((u16 >> 10 & 1) != 0) {
-        sk_job_wake(pu11); /* FUN_0040f5c0 */
+        sk_job_wake((word_t)(uintptr_t)pu11); /* FUN_0040f5c0 */
     }
     if (l19 != 0) {
-        sk_job_timer_set((word_t)pu11, (word_t *)l19, b6 ^ 1); /* FUN_004091ac */
+        sk_job_timer_set((word_t)(uintptr_t)pu11, (word_t *)l19, b6 ^ 1); /* FUN_004091ac */
     }
     if ((jf >> 0x1d & 1) != 0) {
-        sk_job_delay(pu11, a6, a3, u14); /* FUN_0040c3a4 */
+        sk_job_delay((word_t)(uintptr_t)pu11, a6, a3, u14); /* FUN_0040c3a4 */
     }
     if (jf >> 0x1e != 0) {
-        sk_job_async(pu11, u22); /* FUN_0040c4b0 */
+        sk_job_async((word_t)(uintptr_t)pu11, u22); /* FUN_0040c4b0 */
     }
     if ((u16 >> 0xc & 1) != 0) {
-        sk_swift_retain((word_t)pu11); /* FUN_0036b270 */
+        sk_swift_retain((word_t)(uintptr_t)pu11); /* FUN_0036b270 */
     }
-    au23.lo = (word_t)pu11;
-    au23.hi = (word_t)pu1;
+    au23.lo = (word_t)(uintptr_t)pu11;
+    au23.hi = (word_t)(uintptr_t)pu1;
     return au23;
 }
 
@@ -1808,7 +1825,7 @@ static void sk_invoke(word_t a, word_t job, word_t cb, word_t a4)
 
     *(word_t *)(lv + 0x38) = 0x409b68;
     *(word_t *)(lv + 0x40) = l4;
-    res = sk_run_job(job, lv, (word_t *)a4, cb); /* FUN_004095a0(job,lv,a4,cb) */
+    res = sk_run_job(job, lv, (word_t *)a4, cb, 0, 0); /* FUN_004095a0(job,lv,a4,cb) */
     base = 0xc0;
     if ((*(uint32_t *)(job + 0x20) & 0x1000000) != 0) { base = 0xd0; }
     base = job + base + ((word_t)(*(uint32_t *)(job + 0x20) >> 0x17) & 8);
@@ -1840,7 +1857,7 @@ static void sk_invoke_future(word_t a, word_t job, word_t cb, word_t a4)
 
     *(word_t *)(lv + 0x38) = 0x409bd4;
     *(word_t *)(lv + 0x40) = l2;
-    res = sk_run_job((word_t *)(lv + 0x38), job, (word_t *)lv, a4, cb);
+    res = sk_run_job((word_t)(uintptr_t)(lv + 0x38), job, (word_t *)lv, a4, cb, 0);
     /* FUN_004095a0(lv+0x38,job,lv,a4,cb) */
     if (res == 2) {
         sk_fatal(0, 0x005dc82e); /* FUN_004ba640 — does not return */
@@ -1915,7 +1932,7 @@ static void sk_job_check_cancel(word_t p)
 {
     if (p != 0) {
         sk_err_op_get();       /* FUN_0040880c */
-        if (sk_rt_check() != 0) {   /* FUN_0040c350 */
+        if (sk_rt_check((word_t)0) != 0) {   /* FUN_0040c350 */
             sk_free(p);        /* FUN_0040bd24 */
         }
     }

@@ -41,6 +41,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 typedef uint64_t word_t;
 typedef unsigned int uint;
@@ -66,6 +67,7 @@ static inline word_t bit_reverse64(word_t x)
         x = ((x & 0xffff0000ffff0000) >> 16) | ((x & 0x0000ffff0000ffff) << 16);
         return (x >> 32) | (x << 32);
 }
+#define CONCAT44(h, l) (((word_t)(h) << 32) | ((word_t)(l) & 0xffffffff))
 static inline int byte_popcount8(unsigned char b)
 {
         static const char t[16] = {0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4};
@@ -77,68 +79,68 @@ static inline int byte_popcount8(unsigned char b)
  * unaff-register conventions with varying argument counts; the bodies call
  * these with the counts shown in each decompile. */
 
-extern word_t sk_swift_current_task(void);                 /* FUN_0040880c */
-extern word_t sk_swift_alloc(word_t, ...);                 /* FUN_0036a804 */
-extern word_t sk_swift_array_buf_alloc(word_t, ...);       /* FUN_0036a940 */
-extern word_t sk_swift_closure_box(word_t, ...);           /* FUN_0036bfe4 */
-extern void   sk_swift_deinit_small(word_t, ...);                 /* FUN_0036a244 */
-extern void   sk_swift_destroy_small(word_t, ...);                /* FUN_0036a2ac */
-extern word_t sk_swift_release(word_t, ...);               /* FUN_0036b118 */
-extern word_t sk_swift_retain(word_t, ...);                /* FUN_0036b270 */
-extern void   sk_atomic_enter(word_t, ...);                     /* FUN_0037a48c */
-extern void   sk_atomic_exit(word_t, ...);                      /* FUN_0037a978 */
-extern void   sk_hashtable_resize(word_t, ...);            /* FUN_0037d700 */
-extern int    sk_c11_mtx_init(word_t, word_t);             /* FUN_00118148 */
-extern int    sk_c11_mtx_lock(word_t, ...);                     /* FUN_00118164 */
-extern int    sk_c11_mtx_unlock(word_t, ...);                   /* FUN_00118194 */
-extern int    sk_c11_mtx_trylock(word_t, ...);                  /* FUN_00118114 */
-extern int    sk_c11_cnd_init(word_t, ...);                     /* FUN_001180fc */
-extern int    sk_c11_cnd_wait(word_t, word_t, ...);             /* FUN_0011812c */
-extern void   sk_swift_fatal(word_t, ...) __attribute__((noreturn)); /* FUN_003a2578 */
-extern void   sk_precond_fatal(word_t, ...) __attribute__((noreturn)); /* FUN_004ba640 */
-extern word_t sk_swift_array_dealloc(word_t, ...);         /* FUN_00117e14 */
-extern void   sk_free(word_t, ...);                        /* thunk_FUN_00012568 */
+extern word_t sk_swift_current_task();                 /* FUN_0040880c */
+extern word_t sk_swift_alloc();                 /* FUN_0036a804 */
+extern word_t sk_swift_array_buf_alloc();       /* FUN_0036a940 */
+extern word_t sk_swift_closure_box();           /* FUN_0036bfe4 */
+extern void   sk_swift_deinit_small();                 /* FUN_0036a244 */
+extern void   sk_swift_destroy_small();                /* FUN_0036a2ac */
+extern word_t sk_swift_release();               /* FUN_0036b118 */
+extern word_t sk_swift_retain();                /* FUN_0036b270 */
+extern void   sk_atomic_enter();                     /* FUN_0037a48c */
+extern void   sk_atomic_exit();                      /* FUN_0037a978 */
+extern void   sk_hashtable_resize();            /* FUN_0037d700 */
+extern int    sk_c11_mtx_init();             /* FUN_00118148 */
+extern int    sk_c11_mtx_lock();                     /* FUN_00118164 */
+extern int    sk_c11_mtx_unlock();                   /* FUN_00118194 */
+extern int    sk_c11_mtx_trylock();                  /* FUN_00118114 */
+extern int    sk_c11_cnd_init();                     /* FUN_001180fc */
+extern int    sk_c11_cnd_wait();             /* FUN_0011812c */
+extern void   sk_swift_fatal(); /* FUN_003a2578 */
+extern void   sk_precond_fatal(); /* FUN_004ba640 */
+extern word_t sk_swift_array_dealloc();         /* FUN_00117e14 */
+extern void   sk_free();                        /* thunk_FUN_00012568 */
 extern word_t sk_swift_hash8(word_t *);                    /* FUN_00112098 */
-extern word_t sk_calloc(word_t, ...);                      /* FUN_00111890 */
-extern word_t sk_memmove(word_t, ...);                     /* FUN_00117d14 */
-extern void   sk_once_gate(word_t, ...);                   /* FUN_003d3dd8 */
-extern void   sk_lock_exit(word_t, ...);                          /* FUN_0035b228 */
-extern int    sk_error_str(word_t, word_t, word_t, ...);   /* FUN_00116bb4 */
-extern word_t sk_error_fmt(word_t, ...);                   /* FUN_001131f4 */
-extern word_t sk_error_fmt2(word_t, ...);                  /* FUN_00113c30 */
-extern word_t sk_error_fmt3(word_t, ...);                  /* FUN_0011394c */
-extern void   sk_str_append2(word_t, ...);                 /* FUN_00112db4 */
-extern void   sk_str_render(word_t, ...);                  /* FUN_00112e8c */
-extern word_t sk_heap_alloc(word_t, ...);                  /* FUN_000101a0 */
-extern int    sk_runtime_once(word_t, ...);                /* FUN_003697c4 */
-extern int    sk_runtime_once2(void);                      /* FUN_00369818 */
-extern word_t sk_ctx_save(word_t);                    /* FUN_00408834 */
-extern void   sk_ctx_save2(word_t);                        /* FUN_00408864 */
-extern void   sk_ctx_restore(word_t);                        /* FUN_004087cc */
-extern void   sk_ctx_restore2(word_t);                     /* FUN_00408784 */
-extern void   sk_task_resume(word_t, word_t, word_t, ...);      /* FUN_00408ae4 */
-extern word_t sk_executor_enq(word_t, ...);                /* FUN_003a25b8 */
-extern void   sk_executor_enq2(word_t, word_t, ...);       /* FUN_003d5338 */
-extern word_t sk_executor_enq3(word_t, word_t, ...);       /* FUN_003d5370 */
-extern word_t sk_executor_deq(word_t, word_t, ...);        /* FUN_003d5308 */
-extern void   sk_ctx_push(word_t, ...);                           /* FUN_001a8564 */
-extern void   sk_ctx_pop(word_t, ...);                     /* FUN_003509ec */
-extern void   sk_ctx_pop2(word_t, ...);                           /* FUN_0035199c */
-extern void   sk_ctx_swap(word_t, ...);                    /* FUN_003523fc */
-extern void   sk_actor_enter(word_t, ...);                 /* FUN_00350af4 */
-extern void   sk_actor_leave(word_t, ...);                        /* FUN_00350518 */
-extern void   sk_sched_enter(word_t, ...);                 /* FUN_00229a3c */
-extern void   sk_sched_enter2(void);                       /* FUN_0006b6f4 */
-extern word_t sk_task_switch1(word_t, ...);                       /* FUN_0041001c */
-extern void   sk_task_switch2(word_t, ...);                       /* FUN_00410414 */
-extern word_t sk_task_switch3(word_t, ...);                       /* FUN_004110ec */
-extern word_t sk_task_switch4(word_t, ...);                       /* FUN_00411624 */
-extern void   sk_task_switch5(word_t, ...);                       /* FUN_004080b0 */
-extern void   sk_task_switch6(word_t, ...);                       /* FUN_00458200 */
-extern void   sk_task_switch7(word_t, ...);                       /* FUN_00458780 */
-extern void   sk_task_switch8(word_t, ...);                       /* FUN_00100efc */
-extern void   sk_swift_identity(word_t, ...);              /* FUN_0001a1c8 */
-extern word_t sk_swift_hotpath(word_t, ...);               /* FUN_00361528 */
+extern word_t sk_calloc();                      /* FUN_00111890 */
+extern word_t sk_memmove();                     /* FUN_00117d14 */
+extern void   sk_once_gate();                   /* FUN_003d3dd8 */
+extern void   sk_lock_exit();                          /* FUN_0035b228 */
+extern int    sk_error_str();   /* FUN_00116bb4 */
+extern word_t sk_error_fmt();                   /* FUN_001131f4 */
+extern word_t sk_error_fmt2();                  /* FUN_00113c30 */
+extern word_t sk_error_fmt3();                  /* FUN_0011394c */
+extern void   sk_str_append2();                 /* FUN_00112db4 */
+extern void   sk_str_render();                  /* FUN_00112e8c */
+extern word_t sk_heap_alloc();                  /* FUN_000101a0 */
+extern int    sk_runtime_once();                /* FUN_003697c4 */
+extern int    sk_runtime_once2();                      /* FUN_00369818 */
+extern word_t sk_ctx_save();                    /* FUN_00408834 */
+extern void   sk_ctx_save2();                        /* FUN_00408864 */
+extern void   sk_ctx_restore();                        /* FUN_004087cc */
+extern void   sk_ctx_restore2();                     /* FUN_00408784 */
+extern void   sk_task_resume();      /* FUN_00408ae4 */
+extern word_t sk_executor_enq();                /* FUN_003a25b8 */
+extern void   sk_executor_enq2();       /* FUN_003d5338 */
+extern word_t sk_executor_enq3();       /* FUN_003d5370 */
+extern word_t sk_executor_deq();        /* FUN_003d5308 */
+extern void   sk_ctx_push();                           /* FUN_001a8564 */
+extern void   sk_ctx_pop();                     /* FUN_003509ec */
+extern void   sk_ctx_pop2();                           /* FUN_0035199c */
+extern void   sk_ctx_swap();                    /* FUN_003523fc */
+extern void   sk_actor_enter();                 /* FUN_00350af4 */
+extern void   sk_actor_leave();                        /* FUN_00350518 */
+extern void   sk_sched_enter();                 /* FUN_00229a3c */
+extern void   sk_sched_enter2();                       /* FUN_0006b6f4 */
+extern word_t sk_task_switch1();                       /* FUN_0041001c */
+extern void   sk_task_switch2();                       /* FUN_00410414 */
+extern word_t sk_task_switch3();                       /* FUN_004110ec */
+extern word_t sk_task_switch4();                       /* FUN_00411624 */
+extern void   sk_task_switch5();                       /* FUN_004080b0 */
+extern void   sk_task_switch6();                       /* FUN_00458200 */
+extern void   sk_task_switch7();                       /* FUN_00458780 */
+extern void   sk_task_switch8();                       /* FUN_00100efc */
+extern void   sk_swift_identity();              /* FUN_0001a1c8 */
+extern word_t sk_swift_hotpath();               /* FUN_00361528 */
 
 /* Register-held self/context pointers (Ghidra sk_reg_x20/x21/x22/w19/w4):
  * the arm64e callee-saved registers carrying the Swift self / accessor-context
@@ -148,6 +150,9 @@ extern word_t sk_reg_x21;
 extern word_t sk_reg_x22;
 extern word_t sk_reg_w19;
 extern word_t sk_reg_w4;
+extern word_t sk_reg_x9;
+extern word_t sk_reg_x10;
+extern word_t sk_reg_x11;
 
 /* Global concurrency-runtime state (Ghidra DAT_ addresses). */
 #define SK_TASK_REGISTRY         0x6c0c48   /* registry of continuations */
@@ -181,17 +186,21 @@ extern word_t DAT_006adfb0;
 extern word_t DAT_005a17f0;
 extern word_t lRam00000000005a17f8;
 extern word_t *DAT_0068a6d8;
-extern word_t thunk_FUN_00369b04(word_t, ...);
+extern word_t DAT_006c0c80;
+extern word_t FUN_004ba704(word_t *);
+extern word_t FUN_004ba780(word_t *);
+extern void sk_task_local_init(void);
+extern void thunk_FUN_00369b04(word_t, ...);
 extern long thunk_FUN_00115080(word_t, ...);
 extern long thunk_FUN_0011537c(word_t, ...);
-extern void sk_assert_hook(word_t, ...);
-extern void sk_assert_abort(void) __attribute__((noreturn));
-extern void sk_cont_deliver(word_t, word_t, ...);
-extern void sk_cont_dispatch(word_t, ...);
-extern void sk_cont_register_excl(word_t, ...);
-extern void sk_cont_resume_hook(word_t, ...);
-extern void sk_cnd_destroy(word_t, ...);
-extern void sk_mtx_destroy(word_t, ...);
+extern void sk_assert_hook();
+extern void sk_assert_abort();
+extern void sk_cont_deliver();
+extern void sk_cont_dispatch();
+extern void sk_cont_register_excl();
+extern void sk_cont_resume_hook();
+extern void sk_cnd_destroy();
+extern void sk_mtx_destroy();
 
 /* cnd/mtx backing storage referenced by sk_continuation_destroy. */
 static word_t cnd_cond[8];
@@ -210,46 +219,41 @@ void sk_actor_value_set(word_t value);
 void sk_claim_null_waiting_fatal(void);
 void sk_cnd_signal(void);
 void sk_cnd_wait(long cnd);
-long sk_cont_block(long param_1);
+long sk_cont_block(word_t param_1);
 long sk_cont_block_alloc(word_t *block, long size);
 void sk_cont_buf_append(word_t *buf, word_t *value);
 void sk_cont_cancel(word_t task);
-void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t arg5);
+void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t arg5, ...);
 void sk_cont_enqueue_record(long task, word_t a2, word_t a3, int enable);
 void sk_cont_enqueue_str(long task, word_t str);
 void sk_cont_exception(long task);
 word_t sk_cont_exception_check(long task);
-long sk_cont_free_nodes(long block, word_t *head);
+long sk_cont_free_nodes(long block, word_t head);
 void sk_cont_init_dispatch(word_t param_1);
 void sk_cont_record_alloc(word_t *block, word_t *rec);
-uint sk_cont_record_commit(word_t rec, word_t cb, word_t cb_arg);
+uint sk_cont_record_commit(word_t rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_record_free(word_t block, word_t rec);
 void sk_cont_record_init(word_t param_1);
-bool sk_cont_record_pop(long queue, word_t *out);
-bool sk_registry_pop(word_t registry, word_t task);
-word_t sk_cont_set_remove(word_t set, word_t *node);
-long sk_cont_set_find(word_t *set, word_t *key);
-long sk_cont_set_alloc(word_t block, word_t size);
-void sk_cont_result_dispatch(long consumer, word_t *rec);
-void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg);
+bool sk_cont_record_pop(long queue, word_t out);
+void sk_cont_result_dispatch(long consumer, word_t rec);
+void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_resume_for_task(word_t task);
-void sk_cont_resume_record(word_t rec, word_t cb, word_t cb_arg);
+void sk_cont_resume_record(word_t rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_save_b(void);
 void sk_cont_save_c(void);
 void sk_cont_save_d(void);
 void sk_cont_save_e(void);
-void sk_cont_set_alloc(word_t block, word_t size);
-long sk_cont_set_find(word_t *set, word_t *key);
+word_t sk_cont_set_alloc(word_t block, word_t size);
+long sk_cont_set_find(word_t set, word_t key);
 word_t sk_cont_set_link(word_t *rec, word_t a2, word_t a3, word_t *flags);
-word_t *sk_registry_add(word_t *set, word_t *key, word_t *arg3);
 word_t sk_cont_set_link_b(word_t *rec, word_t a2, word_t a3, word_t *flags);
-word_t sk_cont_set_remove(word_t set, word_t *node);
-void sk_cont_set_status(long task, uint status, word_t param_3, long param_4);
+word_t sk_cont_set_remove(word_t set, word_t node);
+void sk_cont_set_status(long task, uint status, word_t param_3, long param_4, ...);
 ulong sk_cont_set_status2(long task, ulong want);
-void sk_cont_set_unlink(word_t *out, word_t *set, word_t *node);
+void sk_cont_set_unlink(word_t out, word_t set, word_t node);
 void sk_cont_state_cb(word_t *rec, word_t a2, word_t a3, word_t *state);
 void sk_cont_state_dispatch(long queue, long task);
-void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_arg, word_t wait_cb, word_t wait_arg);
+void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_arg, word_t wait_cb, ...);
 word_t sk_cont_suspend_and_check(long task);
 word_t sk_cont_suspend_simple(word_t task);
 void sk_cont_teardown_block(long task, long ctx, word_t param_3);
@@ -303,10 +307,10 @@ void sk_task_local_pop(long task, long node);
 void sk_task_local_push(long task, word_t value);
 void sk_task_local_release_all(word_t *store, word_t task);
 void sk_task_local_release_all2(word_t task);
-void sk_task_local_set_alloc(word_t block, word_t flags, int kind);
+word_t sk_task_local_set_alloc(word_t block, word_t flags, int kind);
 void sk_task_local_set_value(word_t key, word_t value, long meta);
 bool sk_task_local_value_release(uint *value, long block);
-void sk_task_record_alloc(word_t size, ...);
+word_t sk_task_record_alloc(word_t size, ...);
 void sk_task_resume_trampoline(void);
 uint sk_task_suspend_switch(word_t a, long b, word_t c, uint d, word_t e, long f, word_t g, uint h);
 void sk_task_switch_enter(void);
@@ -314,7 +318,7 @@ void sk_tl_buf_destroy(word_t buf, word_t *node);
 word_t sk_tl_buf_insert(word_t tree, word_t *key, word_t *node);
 void sk_tl_buf_link(word_t *tree, word_t parent, word_t *where, word_t *node);
 void sk_tl_rb_rebalance(word_t *tree, word_t *node);
-void sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag);
+word_t sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag);
 void sk_vtable_dispatch_10(word_t *obj);
 void sk_vtable_dispatch_20(word_t *obj);
 
@@ -556,7 +560,7 @@ word_t *sk_cont_block_dealloc(word_t *block)
  * decrementing the block's outstanding-allocation counter (+0x10) by 2 each.
  * Returns the total count of deallocated units.
  * Confidence: medium */
-long sk_cont_free_nodes(long block, word_t *head)
+long sk_cont_free_nodes(long block, word_t head)
 {
         long node;
         long next;
@@ -791,7 +795,7 @@ bool sk_registry_pop(word_t registry, word_t task)
  * pair; returns the node or 0.  Traps (SoftwareBreakpoint 0x40b548) on an
  * out-of-range bucket index.
  * Confidence: medium */
-long sk_cont_set_find(word_t *set, word_t *key)
+long sk_cont_set_find(word_t set, word_t key)
 {
         word_t hash, keyv;
         word_t mask;
@@ -860,7 +864,7 @@ long sk_cont_set_find(word_t *set, word_t *key)
  * Removes a node from the continuation set: unlinks it (FUN_0040b598) and
  * returns its stored value.  Traps if the node is null.
  * Confidence: medium */
-word_t sk_cont_set_remove(word_t set, word_t *node)
+word_t sk_cont_set_remove(word_t set, word_t node)
 {
         word_t value;
         long free_list[3];
@@ -886,7 +890,7 @@ word_t sk_cont_set_remove(word_t set, word_t *node)
  * Confidence: low
  * Notes: node at +8 holds the hash, +0x10 the key; param_1 receives the
  *   {node, bucket-head, flags} free-list record. */
-void sk_cont_set_unlink(word_t *out, word_t *set, word_t *node)
+void sk_cont_set_unlink(word_t out, word_t set, word_t node)
 {
         word_t bucket_count;
         word_t hash;
@@ -1093,14 +1097,13 @@ void sk_task_exclusive_init(void)
  * Allocates a task record of the given size from the continuation block
  * allocator: resolves the block (FUN_0040bb48) and appends the record.
  * Confidence: low */
-void sk_task_record_alloc(word_t size, ...)
+word_t sk_task_record_alloc(word_t size, ...)
 {
         word_t block;
 
         sk_swift_current_task();
-        block = sk_cont_block();
-        sk_cont_block_alloc(block, size);
-        return;
+        block = sk_cont_block(0);
+        return (word_t)sk_cont_block_alloc((word_t *)block, size);
 }
 
 /* FUN_0040bb48 @ 0x0040bb48   (est. sk_cont_block)
@@ -1109,7 +1112,7 @@ void sk_task_record_alloc(word_t size, ...)
  * param_1+0x70, else the process-wide task-local root (0x6c0c88) once its
  * flag (0x6c0c80) is set, else the freshly-initialized block.
  * Confidence: low */
-long sk_cont_block(long param_1)
+long sk_cont_block(word_t param_1)
 {
         word_t block;
 
@@ -1119,7 +1122,7 @@ long sk_cont_block(long param_1)
         if ((DAT_006c0c80 & 1) != 0) {
                 return 0x6c0c88;
         }
-        FUN_004ba704(&block);
+        FUN_004ba704((word_t *)&block);
         return block;
 }
 
@@ -1128,13 +1131,12 @@ long sk_cont_block(long param_1)
  * Allocates a record of size param_2 from the continuation block and appends
  * it (via FUN_0040bb98).
  * Confidence: low */
-void sk_cont_set_alloc(word_t block, word_t size)
+word_t sk_cont_set_alloc(word_t block, word_t size)
 {
         word_t b;
 
-        b = sk_cont_block();
-        sk_cont_block_alloc(b, size);
-        return;
+        b = sk_cont_block(0);
+        return (word_t)sk_cont_block_alloc((word_t *)b, size);
 }
 
 /* FUN_0040bd24 @ 0x0040bd24   (est. sk_cont_record_init)
@@ -1147,8 +1149,8 @@ void sk_cont_record_init(word_t param_1)
         word_t block;
 
         sk_swift_current_task();
-        block = sk_cont_block();
-        sk_cont_record_alloc(block, param_1);
+        block = sk_cont_block(0);
+        sk_cont_record_alloc((word_t *)block, (word_t *)param_1);
         return;
 }
 
@@ -1169,7 +1171,7 @@ void sk_cont_record_alloc(word_t *block, word_t *rec)
                 *block = hdr;
                 return;
         }
-        FUN_004ba780(rec);
+        FUN_004ba780((word_t *)rec);
         return;
 }
 
@@ -1181,8 +1183,8 @@ void sk_cont_record_free(word_t block, word_t rec)
 {
         word_t b;
 
-        b = sk_cont_block();
-        sk_cont_record_alloc(b, rec);
+        b = sk_cont_block(0);
+        sk_cont_record_alloc((word_t *)b, (word_t *)rec);
         return;
 }
 
@@ -1196,7 +1198,7 @@ void sk_cont_record_free(word_t block, word_t rec)
  * FUN_0040cc24/FUN_0040cc28). Returns bit0 of the outcome.
  * Confidence: low */
 uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
-                       word_t cb_arg)
+                       word_t cb_arg, ...)
 {
         word_t s, s2;
         word_t w;
@@ -1261,7 +1263,7 @@ wake_done:
  * Confidence: low
  * Notes: atomic enter/exit FUN_0037a48c/FUN_0037a978; CONCAT44 packed state. */
 void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_arg,
-                     word_t wait_cb, word_t wait_arg)
+                     word_t wait_cb, ...)
 {
         word_t x1, x2, x3, x4, x5, x6;
         bool flag;
@@ -1318,11 +1320,16 @@ commit:
                 goto exit_atomic;
         }
         {
+                word_t wait_arg_v;
+                va_list ap;
+                va_start(ap, wait_cb);
+                wait_arg_v = va_arg(ap, word_t);
+                va_end(ap);
                 word_t wstate = CONCAT44((int)x5, (int)s_lo);
                 do {
                         x4 = x5 << 0x20 | s_lo & 0xffffffff;
                         word_t prev_hi = s_hi;
-                        (*wait_cb)(wait_arg, x4, s_hi, &wstate);
+                        (*wait_cb)(wait_arg_v, x4, s_hi, &wstate);
                         x5 = s_hi;
                         while (1) {
                                 s_lo = *(ulong *)(task + 0x60);
@@ -1359,7 +1366,7 @@ exit_atomic:
  * Commits a continuation record: loads the task's +0x60/+0x68 state and runs
  * the wake loop (FUN_0040bdd0), returning bit0.
  * Confidence: low */
-uint sk_cont_record_commit(word_t rec, word_t cb, word_t cb_arg)
+uint sk_cont_record_commit(word_t rec, word_t cb, word_t cb_arg, ...)
 {
         word_t task;
         word_t state_lo;
@@ -1468,7 +1475,7 @@ void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t ar
  * Resumes a continuation record: loads the current task's +0x60/+0x68 state
  * and runs the async resume path (FUN_0040c0f8).
  * Confidence: low */
-void sk_cont_resume_record(word_t rec, word_t cb, word_t cb_arg)
+void sk_cont_resume_record(word_t rec, word_t cb, word_t cb_arg, ...)
 {
         word_t task;
         word_t state_lo;
@@ -1666,7 +1673,7 @@ word_t sk_cont_exception_check(long task)
  * param_2's low byte (default 0x19), setting bit 8 if the failure flag (bit 8
  * of param_2) or param_4's high bit (via FUN_0040cfb0) is set.
  * Confidence: low */
-void sk_cont_set_status(long task, uint status, word_t param_3, long param_4)
+void sk_cont_set_status(long task, uint status, word_t param_3, long param_4, ...)
 {
         uint s;
         word_t hi;
@@ -1782,7 +1789,7 @@ void sk_task_local_check_wake(word_t arg, long task)
         word_t root;
 
         value = arg;
-        root = sk_task_local_root();
+        root = sk_task_local_root(0);
         if (*(long *)(root + 0x10) != 0) {
                 slot = &value;
                 recp = &slot;
@@ -2355,6 +2362,10 @@ uint sk_task_group_end(long *group, word_t accepting)
         long *node;
         word_t fmt[3];
         word_t bits;
+        word_t fmt2;
+        word_t fmt2hi;
+        word_t fmt2sz;
+        word_t *q;
 
         count = group[5];
         group[5] = count + 1;
@@ -2668,7 +2679,7 @@ void sk_task_local_deinit_a(void)
 {
         word_t store;
 
-        store = sk_task_local_store();
+        store = (word_t)sk_task_local_store((word_t *)0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -2681,7 +2692,7 @@ void sk_task_local_deinit_b(void)
 {
         word_t store;
 
-        store = sk_task_local_store();
+        store = (word_t)sk_task_local_store((word_t *)0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -2835,7 +2846,7 @@ void sk_task_group_store2(word_t group, word_t result)
  * page via sk_free tag 7), advances the value pointer, and frees the key
  * buffer.  Returns the store.
  * Confidence: low */
-word_t *sk_task_local_store(word_t *store)
+word_t *sk_task_local_store(word_t *store, ...)
 {
         word_t *p;
         word_t *end;
@@ -2891,7 +2902,7 @@ skip_tag:
  * ring buffer, advances the head, and when a page boundary is crossed frees
  * the old page.  Returns whether a record was available.
  * Confidence: low */
-bool sk_cont_record_pop(long queue, word_t *out)
+bool sk_cont_record_pop(long queue, word_t out)
 {
         word_t count;
         word_t *buf;
@@ -3260,7 +3271,7 @@ void sk_task_local_deinit_c(void)
 {
         word_t store;
 
-        store = sk_task_local_store();
+        store = (word_t)sk_task_local_store((word_t *)0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -3273,7 +3284,7 @@ void sk_task_local_deinit_d(void)
 {
         word_t store;
 
-        store = sk_task_local_store();
+        store = (word_t)sk_task_local_store((word_t *)0);
         sk_free(store, 0x70, 7);
         return;
 }
@@ -3359,7 +3370,7 @@ void sk_task_resume_trampoline(void)
  * resume hook with a single flag; for kind 2 invokes the +0x10 value hook then
  * the +0x38 hook; for kind 3 retains the value and stores it at param_1+0x10.
  * Confidence: low */
-void sk_cont_result_dispatch(long consumer, word_t *rec)
+void sk_cont_result_dispatch(long consumer, word_t rec)
 {
         word_t kind;
         word_t value;
@@ -3648,7 +3659,7 @@ void sk_task_local_destructure(long node, long task)
  * or a record from the continuation block, then stores the {kind<<1 | flags}
  * header word.
  * Confidence: low */
-void sk_task_local_set_alloc(word_t block, word_t flags, int kind)
+word_t sk_task_local_set_alloc(word_t block, word_t flags, int kind)
 {
         word_t *cell;
 
@@ -3658,7 +3669,7 @@ void sk_task_local_set_alloc(word_t block, word_t flags, int kind)
                 cell = (word_t *)sk_cont_set_alloc(block, 8);
         }
         *cell = flags & 0xfffffffffffffff9 | (long)kind << 1;
-        return;
+        return (word_t)cell;
 }
 
 /* FUN_0040f0cc @ 0x0040f0cc   (est. sk_tl_value_alloc)
@@ -3670,7 +3681,7 @@ void sk_task_local_set_alloc(word_t block, word_t flags, int kind)
  * continuation block, stores the {kind<<1 | flag} header plus the key
  * (param_2) and element metadata (param_3).
  * Confidence: low */
-void sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag)
+word_t sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag)
 {
         word_t *cell;
         word_t *value;
@@ -3701,7 +3712,7 @@ void sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag)
         *value = v & 0xfffffffffffffff9 | kind;
         value[1] = key;
         value[2] = meta;
-        return;
+        return (word_t)value;
 }
 
 /* FUN_0040f19c @ 0x0040f19c   (est. sk_task_local_value_release)

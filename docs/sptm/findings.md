@@ -1936,3 +1936,1620 @@ Confidence: high.
 - **Evidence**: `uRam000000000064e038 = 0x91181400d00002a0;` (single store); `/* WARNING: Removing unreachable block (ram,0x00076fd4) */`.
 - **Severity (hypothesis)**: low — an unconditional global write of a fixed constant; if 0x64e038 is a code/jump slot the value is fixed at build, so not attacker-influenced here, but worth confirming the target's meaning (potential runtime-patch surface).
 - **Confidence**: low
+
+
+## [sk-syscalls] 0x300000-0x380000 region — syscall/exception-entry security findings
+Security-relevant observations logged during decompilation of the cL4 syscall/exception-entry region (sk_region_syscalls_part01-32.c). Each entry follows the standard Observation/Evidence/Severity/Confidence template. 150 findings total across the 32 slices.
+# SK findings — slice 01 (0x3004ec-0x311e34)
+
+Region characterization: this slice is the embedded Swift standard-library
+integer/string/buffer runtime that the cL4 kernel links in for syscall and
+exception-entry argument parsing/conversion. It consists almost entirely of
+compiler-generated checked-arithmetic and BinaryInteger-conversion helpers.
+Security-relevant observations below.
+
+## [sk] 00300544 swift_uint_parse_decimal_checked
+- Observation: Decimal string parser for the syscall-argument path decodes an
+  attacker/guest-supplied character buffer (base/length packed in the call
+  descriptor) into a 32-bit integer. On a bad digit or 32-bit overflow it
+  invokes FUN_001afe4c (Swift fatalError), which never returns and terminates
+  the kernel.
+- Evidence: Overflow guarded by `if ((t & 0xffffffff00000000) != 0) goto
+  overflow` where overflow -> `SWIFT_FATAL()`; bad digit (`d > 9`) likewise.
+  Decompile shows `s_Fatal_error` / `s_Not_enough_bits_to_represent_the_...`
+  strings routed to the no-return fatalError.
+- Severity (hypothesis): DoS — if any syscall forwards unvalidated length or
+  content, a crafted argument panics the kernel. The overflow is deliberately
+  caught (it is the standard Swift checked conversion), so this is a
+  panic-on-bad-input surface, not a memory-safety flaw.
+- Confidence: medium.
+
+## [sk] 003009c0 swift_i32_binary_integer_conversion (and siblings 0030523c, 00302750, 003030d4, 00303a78, 003043d4, 00307514, 00307ed8, 0030887c, 003091d4, 0030d5c0, 0030e094, 0030eb1c, 0030f5bc, 00311e34)
+- Observation: Range-checked BinaryInteger conversions used to coerce syscall
+  argument values to a fixed width. When the source value does not fit the
+  target width (bit-width from type metadata > 32/64), the code builds the
+  Swift error buffer (FUN_00377bec) and calls fatalError — terminating the
+  kernel rather than returning an error to the caller.
+- Evidence: All share the shape `if (bits >= 0x40) { FUN_00377bec(...);
+  FUN_00310ad4(...); SWIFT_FATAL(); }` with "Not enough bits to represent..."
+  string; sentinel clamps 0x80000000/0x7fffffff/0xffffffffffffffff in the
+  overflow branches.
+- Severity (hypothesis): DoS on out-of-range syscall argument; no privilege
+  boundary crossed since the conversion is width-checked before use.
+- Confidence: medium.
+
+## [sk] 00310924..00310fc4 swift_type_metadata_field_*
+- Observation: The generic conversion machinery reads type-metadata fields via
+  the relative-addressing pattern `(md + off) + *(int*)(md + off)`, after
+  dereferencing an indirect-metadata pointer when the low bit of md is set
+  (`md = *(uint64_t*)(md & ~1)`).
+- Evidence: Decompiler-clean identical bodies across ~28 accessors, e.g.
+  `FUN_00310a14`: `if ((param_1&1)) param_1=*(ulong*)(param_1&~1); return
+  (param_1+0x20)+*(int*)(param_1+0x20)`.
+- Severity (hypothesis): If a guest could influence the metadata pointer this
+  becomes an arbitrary read / potential code-exec; however metadata is
+  kernel-owned compile-time data, so exposure is only via a prior corruption
+  (not a direct input). Low.
+- Confidence: low.
+
+## [sk] 003015dc swift_word_index_validate (and 00305da4, 003069c8, 00309ed0, 0030c9cc)
+- Observation: Word-buffer index validation bounds-checks an index before
+  buffer access; negative or out-of-range indices trap via fatalError
+  ("Negative word index" / "Word index out of range").
+- Evidence: `if (idx < 0) fatal("Negative word index"); else if (idx == 0)
+  return accessor; else fatal("Word index out of range")`. Bounds check present.
+- Severity (hypothesis): defensive; a bad index panics the kernel (DoS) but
+  prevents an out-of-bounds access. Low.
+- Confidence: high (string-matched).
+
+## [sk] 0030a8ec/0030ae1c/0030b340/0030b870 swift_u64_inplace_* (in-place shifts)
+- Observation: In-place 64-bit shift helpers mask the shift count with `& 0x3f`
+  and zero the value for counts >= 64, but on out-of-range shift counts also
+  route through the metadata accessor chain that can hit the fatal path.
+- Evidence: `v << (n & 0x3f); if (n >= 0x40) v = 0;` plus the FUN_00310xxx
+  accessor dispatch that traps on large counts.
+- Severity (hypothesis): shift-count handling is masked and bounded; the fatal
+  path only fires on malformed metadata (kernel-owned). Low.
+- Confidence: low.
+
+Summary: No memory-safety defect identified in this slice. The recurring theme
+is that out-of-range / malformed syscall argument values cause the Swift
+runtime to terminate the whole kernel via fatalError rather than returning a
+graceful error — a denial-of-service consideration if untrusted arguments can
+reach these helpers unvalidated. All arithmetic overflow is explicitly checked.
+
+# SK region findings — Slice 02 (0x312a44-0x31a96c, arithmetic/compiler-rt library)
+
+## [sk] 0x00312d08 sk_udivti3_core
+Observation: 128-bit unsigned division core panics on a zero divisor ("Division by zero", code 0x4d9).
+Evidence: Decompile shows `if (divisor_hi==0 && divisor_lo==0) { FUN_00355754("Division by zero"); ...panic 0x4d9; no-return }`.
+Severity (hypothesis): robustness/availability — a divide-by-zero reaching the kernel would fault; the panic converts it to a controlled halt rather than an EL1/EL2 exception.
+Confidence: high.
+
+## [sk] 0x003130bc sk_udivmodti4_core
+Observation: 128/128 divide-with-remainder core panics on zero divisor ("Division by zero", 0x501) AND on quotient overflow ("Division results in an overflow", 0x504).
+Evidence: Decompile shows both `FUN_00355754("Division by zero")` and `FUN_001a89a8("Division results in an overflow",0x1f,1)` panic paths.
+Severity (hypothesis): availability — overflow/divide-by-zero guarded by panic (controlled halt), preventing silent wraparound of quotient.
+Confidence: high.
+
+## [sk] 0x0031552c sk_sub_checked
+Observation: 128-bit checked subtract panics on underflow ("Overflow in", 0x262) rather than wrapping.
+Evidence: Decompile shows `FUN_0031552c(..., s_Overflow_in____005d3099, 0xe, 0x262)` and a panic path via FUN_001afe4c (no-return).
+Severity (hypothesis): correctness/availability — unsigned-underflow detected and halted; prevents silent large-value corruption used by arithmetic-helper callers.
+Confidence: high.
+
+## [sk] 0x003155b8 sk_add_checked
+Observation: 128-bit checked add panics on overflow ("Overflow in", 0x26e) rather than wrapping.
+Evidence: Decompile shows `FUN_003155b8(..., s_Overflow_in____005d3057, 0xe, 0x26e)` with a no-return panic path.
+Severity (hypothesis): correctness/availability — signed-overflow detected and halted.
+Confidence: high.
+
+## [sk] 0x003163d8 sk_checked_op
+Observation: Dispatched 128-bit arithmetic op panics when the low-bit flag indicates overflow (panic code 0x2aa) instead of returning a wrapped result.
+Evidence: Decompile: `if ((flag & 1) == 0) {*out=result; return;} ...panic FUN_001afe4c`.
+Severity (hypothesis): correctness/availability — overflow is caught centrally for multiply/add callers (sk_add128_checked 0xae, sk_mul_checked 0x2aa).
+Confidence: medium.
+
+## [sk] 0x003191e8 .. 0x0031a96c sk_field_ref_*
+Observation: ~50 object field accessors dereference a potentially tagged pointer: when bit0 of the object pointer is set, the code masks off bit0 and loads the real pointer through that address, then returns `(obj+off) + *(int*)(obj+off)` (a relative reference resolve).
+Evidence: Decompile pattern: `if (param_1 & 1) param_1 = *(ulong*)(param_1 & ~1); return (long)(param_1+OFF) + *(int*)(param_1+OFF);` repeated at many offsets (0x4,0x8,0xc,0x10,0x14,0x18,0x1c,0x20,0x24,0x28,0x2c,0x30,0x34,0x38,0x3c,0x40,0x44,0x48,0x4c,0x50,0x58,0x5c,0x6c).
+Severity (hypothesis): memory-safety — a forged/tagged pointer with bit0 set causes a load from an attacker-influenced address; if the object pointer is attacker-controlled this is a read primitive. Mitigation hypothesis: these operate on kernel-managed object pointers only; the relative-ref arithmetic is bounds-untested here.
+Confidence: medium.
+
+## [sk] 0x00318d40 sk_parse_int_fmt
+Observation: Number-format string parser reads a sign character ('+'/'-') from the buffer and converts base-10, returning {base,value,flags}; bounds-checked via FUN_001d9840/FUN_001e4cbc.
+Evidence: Decompile: checks `*buf=='+'` / `*buf=='-'`, then `if (len<0 || param_3<len) panic` path via FUN_003484b4.
+Severity (hypothesis): input-validation — parse-length bounds are checked before conversion; overflow on huge input would be caught by the arithmetic panic guards.
+Confidence: low.
+
+## [sk] 0x003152b8 sk_neg_checked / 0x00318ed0 sk_float_mul_add
+Observation: Negation of a signed value traps via SoftwareBreakpoint when negating INT64_MIN (0x8000000000000000).
+Evidence: Decompile: `if (SBORROW8(0,unaff_x20)) SoftwareBreakpoint(1,0x315318)` and `SoftwareBreakpoint(1,0x318f5c)`.
+Severity (hypothesis): correctness — MIN-negate is a UB edge caught by a debug trap; in release this could wrap. Not exploitable but worth noting.
+Confidence: medium.
+
+# SK slice 03 findings (0x31a99c-0x31d4e8)
+
+Region is the syscall/exception-entry method-dispatch layer: ~92 tagged-object
+region-end accessors, ~41 no-op/unsupported stubs forwarding to FUN_00021480,
+and ~72 method-table dispatch trampolines plus a handful of map/allocate/
+validate handlers.
+
+## [sk] 0031ce04 sk_op_map_poll — page-table permission bits assembled from object flags with no in-slice validation
+- Observation: The map handler builds a page-table attribute word from three byte flags in the object header (+0x18 read-only / 0x80000000, +0x19 / 0x40000000, +0x1a / 0x20000000) and passes it straight to the out-of-slice mapping primitive FUN_0024c0d0(bits, 0). No bounds, alignment, or privilege check on the flags or target address is performed inside this function.
+- Evidence: `if (*(char *)((char *)ctx + 0x18) != '\0') { uVar6 |= 0x80000000; ... } uVar5 |= 0x40000000 ... uVar3 = 0x20000000 ... FUN_0024c0d0(uVar5 | uVar3, 0);` The permission decisions are delegated entirely to FUN_0024c0d0 (out of slice).
+- Severity (hypothesis): medium — whether this is exploitable depends on the validation in FUN_0024c0d0, which is out of slice and not yet audited.
+- Confidence: low (no header/string match; attribution inferred from page-bit values).
+
+## [sk] 0031cd48 sk_op_map — mapping size OR-ed with a fixed attribute tag before out-of-slice map
+- Observation: Maps a region whose size is taken from the object header (+0x10, decremented by 8) and OR-ed with the fixed tag `0xa0000000` before being passed to FUN_0024c0d0. An underflow of the size is trapped (SoftwareBreakpoint 1,0x31ce04), but the resulting attribute combination and the target virtual address (+0x20) are not otherwise validated here.
+- Evidence: `uVar2 = ctx[2] - 8; if (ctx[2] < 8) { trap } ... FUN_0024c0d0((uint32_t)uVar2 | 0xa0000000, 0);`
+- Severity (hypothesis): medium — attribute/target validation is deferred to the out-of-slice primitive.
+- Confidence: low.
+
+## [sk] 0031b394 sk_op_allocate — signed multiply overflow guarded by a trap
+- Observation: Object size is computed as `count * element_size` (element size from context +0x48) with a 128-bit overflow check that traps (SoftwareBreakpoint 1,0x31b43c) when the product overflows a signed word. This is a defensive guard against size-arithmetic overflow in the allocation path.
+- Evidence: `if (overflow) { SoftwareBreakpoint(1,0x31b43c); }` then branches on negative/zero/prealloc.
+- Severity (hypothesis): low (defensive; noted for the allocation audit).
+- Confidence: low (heavy extraout_* register artifacts).
+
+## [sk] 0031a99c..0031d4e8 sk_obj_end_* (92 accessors) — tagged-pointer dereference with no type/bounds check
+- Observation: A large family of object accessors dereferences a possibly-tagged object reference (`if (obj & 1) obj = *(word_t *)(obj & ~1ULL)`) and then computes an end pointer from a signed length stored at a per-object offset. If any of these is reached with an untrusted object reference, the indirect dereference and the `base + offset + signed_len` arithmetic are performed without an in-slice bounds check (relying entirely on upstream capability checks).
+- Evidence: identical pattern across 92 functions: `obj = *(word_t *)(obj & 0xfffffffffffffffe); return (obj + OFF) + *(int *)(obj + OFF);`
+- Severity (hypothesis): medium — potential type-confusion / out-of-bounds read if an object reference escapes capability validation; per-object offsets 0x4..0xd0.
+- Confidence: low (no callee/string identity; pattern-level hypothesis).
+
+## [sk] 0031bd68 sk_op_validate — validation predicate resolved via function pointers from the object table
+- Observation: The "validate" dispatch resolves two function pointers from the object's method table and an offset derived from a byte at +0x50, invokes the first as a predicate on the argument, and only calls the second if the predicate returns true. The correctness of the whole check therefore depends on the integrity of the object's method table.
+- Evidence: `uVar4 = (*(word_t (**)(word_t))(ctx + *(int *)(lVar3 + 0x2c)))(arg); if ((uVar4 & 1) == 0) return 0; return pcVar1(arg) & 1;`
+- Severity (hypothesis): low-medium — table-driven validation; if the table is attacker-influenced the check can be bypassed.
+- Confidence: low.
+
+# SK Slice 04 findings (0x31d518-0x322450) — syscall/exception-entry + Swift buffer helpers
+
+## [sk] 0x0031e4e0 sk_swap_bytes_e4e0 — Buffer index bounds-checked before element swap
+Observation: The byte-swap helper validates both indices against the buffer
+length and traps (noreturn `FUN_001afe4c` fatal) on out-of-range or a nil
+buffer base before performing the two-byte swap; error codes 0x18f (negative
+index), 0x190 (index >= length), 0x191 (unexpected nil base).
+Evidence: `if ((int64_t)a < len && (int64_t)b < len) { ... swap ... }` else
+fatal with `s_Fatal_error_005accd0` / `s_Swift_UnsafeBufferPointer_swift_005cdc10`.
+Severity (hypothesis): None (defensive bounds check prevents OOB write).
+Confidence: high (string match + explicit range test).
+
+## [sk] 0x003207e0 sk_copy_replace_207e0 — Range-validated replace-subrange copy
+Observation: The replace-subrange copy validates the destination/source
+ranges (errors 0xea/0xeb/0xec) and traps via SoftwareBreakpoint on signed
+underflow of the range arithmetic before copying elements. Violations route
+to the noreturn fatal handler rather than silently overflowing.
+Evidence: `if (lo < 0) { FUN_0035047c(); err = 0xea; } ... if (SBORROW8(hi,lo)) SK_TRAP()`.
+Severity (hypothesis): None/defensive (mitigates OOB write; failure is a
+kernel fatal, i.e. potential DoS if a caller can trigger it).
+Confidence: medium.
+
+## [sk] 0x00320dbc sk_raw_copy_20dbc — Raw copy length validated against destination range
+Observation: Before copying, the helper validates the resolved count against
+the destination buffer range (`l < n` -> fatal 0x21d) and requires a
+non-negative pointer offset (0x603 fatal otherwise), preventing OOB write /
+negative-offset write into the destination.
+Evidence: `if (l < n) FUN_001afe4c(...0x21d,1); ... if (-1 < b) copy else fatal 0x603`.
+Severity (hypothesis): None/defensive.
+Confidence: medium.
+
+## [sk] 0x003212c4 sk_buf_subscript_212c4 — Buffer subscript bounds check with trap
+Observation: Buffer element read validates `idx` against [0, end-base] and
+traps (noreturn fatal) on out-of-range, preventing OOB read of the buffer.
+The read path is used by syscall-entry byte handling.
+Evidence: `if (base != 0 && idx < (uint64_t)(len-base)) return buf[idx]; else
+FUN_0034dab8(); ... fatal`.
+Severity (hypothesis): None/defensive.
+Confidence: medium.
+
+## [sk] 0x0031fa14/0x0031f998 sk_bounds_check_fa14/f998 — Precondition bounds + overflow detection
+Observation: Precondition checks verify [a, a+n) lies within the buffer and
+detect signed overflow of the end pointer arithmetic (`SCARRY8(a,n)`) before
+any access, trapping on violation. Prevents pointer-wrap OOB access.
+Evidence: `if (!SCARRY8(a, n)) return; FUN_0035047c(a + n); ... fatal`.
+Severity (hypothesis): None/defensive.
+Confidence: medium.
+
+## [sk] 0x0031ed10/0x0031fc64 sk_make_buf_init_ed10/fc64 — Element-pointer formation bounds check
+Observation: Before materializing an element pointer (`base + stride * idx`),
+the helper validates `idx` against the buffer length (errors 0x237/0x238 and
+0x75d/0x75e), preventing formation of an out-of-bounds element pointer from a
+bad index.
+Evidence: `if (idx < 0) err=0x237; else if (idx < len) { materialize } else err=0x238`.
+Severity (hypothesis): None/defensive.
+Confidence: medium.
+
+## Summary
+This slice is dominated by (a) syscall-entry trampolines reading args from the
+preserved syscall context (x20 frame) and (b) Swift-runtime UnsafeBufferPointer
+/COW/refcount helpers pulled into the kernel's entry path. The Swift helpers
+consistently perform index/range/capacity validation with a noreturn
+`_fatalError` (FUN_001afe4c) on violation — no silent OOB access path found.
+Security-relevant observation: all validation failures are kernel-fatals; if
+an unprivileged guest can influence a bad index into these entry handlers it
+could induce a kernel panic (availability), though no privilege-escalation or
+OOB-corruption path was identified in this range.
+
+# SK slice 05 security findings (0x3224a0-0x327bf8, syscall/exception-entry)
+
+## [sk] 0x3224f0 / 0x322a88 / 0x322d44 / 0x323304 / 0x323f64 — syscall IPC/capability handler prologues
+Observation: These syscall handlers build a capability message directly from the
+exception frame's argument registers (`in_stack_00000060..98`) via
+`FUN_003515b4(0, N, &args)` and resolve the destination capability through the
+kernel dispatch table (`DAT_00658c00` / per-class method-table slot +0x10). The
+capability pointers are user-supplied; correctness of the whole seL4 security
+model depends on the cap lookup/validation in `FUN_00371950` (sk_cap_lookup).
+Evidence: decompile of FUN_003224f0, FUN_00322a88, FUN_00322d44, FUN_00323304,
+FUN_00323f64 — `FUN_003515b4(0,4|5|6,&args)` then `FUN_00371950()` then
+`(*DAT_00658c00)(*(x+0x40))`.
+Severity (hypothesis): medium — capability argument validation is the core
+security boundary; needs the cap_lookup body to confirm.
+Confidence: medium.
+
+## [sk] 0x3248c — IRQ notify dispatch with object-slot dereference
+Observation: FUN_0032488c reads three slots from the base object (`x20+0x10`,
+`x20+0x20`, `x20+0x30`), passes one to the IRQ handler `FUN_0014ae44`, binds the
+current thread (`FUN_00027754`) and invokes a function pointer loaded via
+`FUN_0014ae44(...)`. The IRQ object slots drive an indirect call.
+Evidence: `pcVar2 = (code *)FUN_0014ae44(*(undefined8 *)(unaff_x20 + 0x30));` then
+`uVar1 = (*pcVar2)();`.
+Severity (hypothesis): medium — an unvalidated object-slot function pointer is
+called; depends on object initialization discipline.
+Confidence: medium.
+
+## [sk] 0x3244b4..0x324ca0 — tagged-pointer intrusive-list accessors
+Observation: A family of accessors (`sk_ilst_elem_at_*`) clears the low tag bit
+of a pointer (`if (p & 1) p = *(p & ~1)`) and then dereferences `*(p + off)` plus
+a signed offset stored at `p + off`. If a corrupt or attacker-influenced tagged
+pointer reaches these, the dereference is a type-confusion / arbitrary-read
+surface.
+Evidence: `return (p + 0x30) + *(int *)(p + 0x30);` after tag clear.
+Severity (hypothesis): medium.
+Confidence: medium.
+
+## [sk] 0x324e8c / 0x324eb8 — buffer metadata error paths (bounds validation present)
+Observation: The kernel raises "UnsafeMutableRawBufferPointer with negative
+stride" (DAT_005cde70) and "UnsafeRawBufferPointer with negative..." (DAT_005cdef0)
+errors via FUN_00324ee4 with file/line/code arguments. This shows user-supplied
+buffer stride/lengths are validated and rejected on negative stride.
+Evidence: `FUN_00324ee4(p1, p2, s_UnsafeMutableRawBufferPointer_wi_005cde70, 0x31, 0x74, 0xfc7)`.
+Severity: low (defensive check present).
+Confidence: high (string match).
+
+## [sk] 0x323304 / 0x323f64 — TCB argument-slot reads indexed by syscall args
+Observation: The cap-op/sys-op handlers read TCB slots at `+0x30..+0x70`
+(`*(int*)(unaff_x19 + 0x30)` etc.) and pass user syscall arguments (param_7,
+param_8, in_stack_*) into the run-queue/capability helpers `FUN_00353718`,
+`FUN_00353130`, `FUN_00352b80`. The syscall args become offsets/bases into
+kernel structures.
+Evidence: `iVar2 = *(int *)(unaff_x19 + 0x30); FUN_00353130(unaff_x24 + iVar2, param_8, ...)`.
+Severity (hypothesis): medium — needs the helper bodies to confirm bounds checks.
+Confidence: medium.
+
+# SK slice 06 findings (0x327c38-0x32cbf8, syscall-metadata registry)
+
+## [sk] 0x327c38-region sk_sysreg_register_* syscall dispatch-table population
+Observation: This entire range builds the cL4 syscall dispatch registry. Most
+entries resolve a syscall group descriptor (DAT_004e* pointers) with a numeric
+tag (e.g. 0x676948, 0x6773c0, 0x6776f0) via FUN_00376820 (=sk_syscall_register,
+the name-hash registry insert) and store the resulting slot into the global
+table at 0x6564d0-0x656840. A second pattern lazily initializes a name range
+(sk_registry_get_or_init on 0x656xxx + a DAT_ descriptor) and binds a handler
+leaf stub before registering {descriptor, name, handler}. These leaf stubs
+(e.g. FUN_00328520, FUN_00329358) write a literal 8-byte instruction-encoding
+constant — the first words of the real handler body — into the slot, so the
+registry holds code-derived values rather than plain addresses.
+Evidence: Ghidra decompiles of FUN_00327c90 (`uRam006564d8 =
+FUN_00376820(&DAT_004ebe4c,0x676948)`), FUN_00328520 (`uRam00656560 =
+0xf2e021c1f2c00801`), FUN_00329358 (one-time `FUN_00656634 =
+FUN_00376820(&DAT_004ecfa8,0x677600)`). Syscall-group name strings
+(CapSyscalls..HypercallSyscalls) live at 0x61b7b0.
+Severity (hypothesis): informational / design note — the syscall dispatch
+table is built at boot from a fixed set of groups; worth confirming no
+untrusted input selects a group.
+Confidence: medium
+
+## [sk] 0x32c3a4/0x32c438/0x32c4cc sk_obj_vtable_dispatch_0x18/0x20/0x28
+Observation: Three near-identical dispatch helpers resolve an object via
+FUN_00348c64, call a vtable entry at +0x18/+0x20/+0x28, then call the
+corresponding vtable entry again on an address computed from a type byte at
+vtable+0x50 (`lVar3 + x21 & ~uVar2`). The type byte selects the target within
+a vtable-relative region, so the effective dispatch offset is type-controlled.
+Evidence: Ghidra FUN_0032c3a4/0x32c438/0x32c4cc; each uses
+`(**(code**)(extraout_x16_00 + <off>))(lVar3 + unaff_x21 & (uVar2 ^ ~0), ...)`
+with `uVar2 = (byte)*(extraout_x16_00 + 0x50)`.
+Severity (hypothesis): medium — indirect-call integrity depends on the type
+byte being a valid, kernel-controlled vtable index; a forged/out-of-range type
+would select an arbitrary nearby function pointer.
+Confidence: low (structural reconstruction; decompiler lost the exact base)
+
+## [sk] 0x32b65c sk_obj_swap_type_tagged type-descriptor vtable dispatch
+Observation: Cross-type object swap dispatches through per-type descriptor
+vtables at +8/+0x10/+0x18/+0x20, gated by a "shared" flag bit at type+0x52 and
+a per-type flag at desc+0x50 bit 0x11. The vtable target is selected by the
+object's type tag (param[3]); an attacker-controllable type tag would select
+an arbitrary indirect call.
+Evidence: Ghidra FUN_0032b65c; jumptable at 0x0032b760 not recovered, indirect
+calls via `(**(code**)(desc + 0x18))`, `(**(code**)(desc + 0x10))`,
+`(**(code**)(desc + 0x20))`, `(**(code**)(desc + 8))`.
+Severity (hypothesis): medium — object-type-tag integrity is load-bearing for
+the indirect call.
+Confidence: low (heavy extraout_* noise; best-effort reconstruction)
+
+## [sk] 0x32c560 sk_obj_syscall_account syscall accounting/validation
+Observation: A syscall-accounting path resolves the current context, binds
+obj+0x10/+0x18, compares a per-object counter at vtable+0x54, and on the
+dispatch path switches on a sub-opcode selecting among FUN_0034e32c (type 3)
+and no-op (types 2/4) before returning a result; the failure path runs
+FUN_003520e8/FUN_0034bf1c and returns FUN_000839f8(). The branch
+`if (unaff_w22 == 0) return 0` early-outs on a zero flag.
+Evidence: Ghidra FUN_0032c560; `switch(extraout_w9)` with cases 2/3/4.
+Severity (hypothesis): low — argument/counter validation before dispatch.
+Confidence: low (extensive extraout register loss)
+
+# SK slice 07 findings (0x32cc70-0x33979c)
+
+Slice 07 = cL4 secure-kernel syscall/exception-entry region. All bodies were
+repaired to compile-clean against fresh Ghidra decompiles. Findings below are
+security-relevant observations from the repaired bodies.
+
+## [sk] 0x32cc70 sk_syscall_entry_dispatch_0
+- Observation: Top-level syscall entry dispatches through a function pointer
+  read from the frame/capability table (`(code **)(table+0x10/0x18/0x20/0x28)`)
+  after the prelude. Control flow is entirely table-derived; there is no
+  explicit validation of the dispatch target beyond the carry/zero flag state
+  produced by the setup helpers.
+- Evidence: `FUN_00358750` (copy) then `((void (*)(void))0)()` in the success
+  path; header notes "callees FUN_0034d724/348d94/377824/34b57c (prelude)",
+  "FUN_00358750 (copy)", "FUN_0034e974 (release)". Decompile 0x32cc70 shows
+  the result-driven branch.
+- Severity (hypothesis): Medium — indirect call through table pointer; integrity
+  of the syscall frame is the trust boundary.
+- Confidence: Medium.
+
+## [sk] 0x333b14 sk_msg_cap_validate_2
+- Observation: Message-capability validation. The caller-supplied word is
+  bounds-checked against the slot limit before a capability can be issued:
+  `if (/* w20 */0 <= a) goto fault;` where `a = (lim != 0) ? lim - 1 : 0` and
+  `lim = *(uint *)(table+0x54)`. The tag/field is read at `(long)x19 + off`
+  where `off` derives from `*(long *)(table+0x40)`; only `lim < 2` guards the
+  fall-through fault. The field read offset is not independently re-bounded
+  against the slot object size before the dereference.
+- Evidence: `uint lim = *(uint *)/* table+0x54 */0;` / `if (/* w20 */0 <= a) goto fault;` /
+  `uint p = (uint)*(byte *)((long)/* x19 */0 + base);` (0x333b14 body).
+- Severity (hypothesis): Medium — if table+0x40 (slot offset) is attacker-
+  influenced, a wide read (16/32-bit) at `x19+off` can over-read past a small
+  slot and gate capability issuance.
+- Confidence: Medium.
+
+## [sk] 0x335f10 sk_msg_cap_validate_4
+- Observation: Same cap-validation shape as 0x333b14. The slot field read
+  width is selected by `(uint)base < 4` with `base` from `table+0x40`; a 16/32-bit
+  field is read at `(long)x19 + base` when `0xff < w10`. The out-of-range word
+  (`w20 <= limit`) routes to the fault path `FUN_000839f8`. Only `limit == 0`
+  terminates the post-check.
+- Evidence: `if (/* w20 */0 <= limit) goto out;` / `b = (uint)*(ushort *)((long)/* x19 */0 + base);` /
+  `out: return FUN_000839f8(0);` (0x335f10 body).
+- Severity (hypothesis): Medium — offset-relative wide reads near slot bounds.
+- Confidence: Medium.
+
+## [sk] 0x33660c sk_slot_write_value_b (and 0x336be4 sk_slot_write_value_c)
+- Observation: Slot value write. A slot width of exactly 3 bytes triggers a
+  hard CPU trap (`SK_BREAKPOINT()` / SoftwareBreakpoint(1,0x33676c) and
+  (1,0x336d54)). 3-byte slots are treated as invalid and never written; widths
+  1/2/4 are handled. This is a defensive invariant enforced in both the clear
+  and set paths.
+- Evidence: `case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33676c) */`
+  and `case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336d54) */`
+  (0x33660c / 0x336be4 bodies).
+- Severity (hypothesis): Low — malformed slot-width causes a deterministic
+  trap (fail-closed), not a memory corruption.
+- Confidence: High.
+
+## [sk] 0x3374e8 sk_msg_cap_validate_write_d
+- Observation: Capability-validate/write. The tag byte at a table-derived
+  offset (`x19 + x12_00`, or a byte at `x19 + off`) gates whether a capability
+  is issued (`FUN_00351538`). The caller word `w22` is compared against the
+  slot limit, and the `v <= limit` path returns early via `FUN_000839f8`.
+  When `limit == w10` (limit matches the target word) it issues a fault/panic
+  (`FUN_0034bf1c`) before returning.
+- Evidence: `if (/* w22 */0 < limit || ...)` / `if (v <= limit) { FUN_0034bf1c(0); FUN_0008e500(0); FUN_000839f8(0); return; }` /
+  `out = FUN_00351538(0);` (0x3374e8 body).
+- Severity (hypothesis): Medium — capability issuance gated on an offset tag
+  read; correctness depends on table+0x40 / selector integrity.
+- Confidence: Medium.
+
+## [sk] 0x338128 sk_msg_slot_read_c
+- Observation: Slot read with size selection. Reads 1/2/4 bytes at
+  `(long)x19 + off`, where `off` is built from `dst+0x40`, `src+0x50` and
+  `src+0x40`. The caller word `w21` is bounds-checked against
+  `lim1 = max(src+0x54, dst+0x54)`; if `w21 < lim1 || w21 - lim1 == 0` the read
+  is skipped and the fault path `FUN_000839f8` runs. A wide read (`p<4` selects
+  32-bit) at an offset not bounded by the destination slot object could
+  over-read if `w21` passes the limit check but `off` is large.
+- Evidence: `uint lim1 = *(uint *)(src + 0x54); ... if (lim1 <= lim2) lim1 = lim2;` /
+  `if (/* w21 */0 < lim1 || /* w21 */0 - lim1 == 0) goto out;` /
+  `v = (n >> 0x10 == 0) ? (uint)*(ushort *)((long)/* x19 */0 + off) : *(uint *)((long)/* x19 */0 + off);`
+  (0x338128 body).
+- Severity (hypothesis): Medium — width-selected reads near slot boundary.
+- Confidence: Medium.
+
+## [sk] 0x337c14 sk_syscall_msg_write_g (and 0x33879c/0x33918c write_h/write_i)
+- Observation: Message write with array/word copy. The copy is gated by
+  `((sel | x9) < 8 && ((w13 | w10) & 0x100000) == 0 && (x11 + table+0x40) < 0x19)`
+  (a combined size/attribute/offset bound). When the gate fails, the slow path
+  does `*(x25) = *(x19)` (a raw frame-word copy) before `FUN_0036b270`. The
+  fast-path destination offsets are computed as `(dst + x25 + dst2 & ~sel)`.
+- Evidence: `if (((sel | /* x9 */0) < 8 && ((/* w13 */0 | /* w10 */0) & 0x100000) == 0) && (ulong)(/* x11 */0 + *(long *)/* table+0x40 */0) < 0x19)` /
+  `*(word_t *)/* x25 */0 = *(word_t *)/* x19 */0;` (0x337c14 body).
+- Severity (hypothesis): Low-Medium — copy length is bounded (0x19 = 25 words)
+  but the word copy on the fallback path is ungated by attribute checks.
+- Confidence: Medium.
+
+# SK Slice 08 findings (0x339ca8-0x344290) — syscall/capability region
+
+Findings for the cL4 Secure Kernel syscall/exception-entry region. Addresses are
+Ghidra cl4_kernel.raw ground truth; all names are estimates (see manifest).
+
+## [sk] 0033a3d0 sk_syscall_varlen_write
+Observation: Variable-length field writer traps with a software breakpoint
+(SoftwareBreakpoint(1, 0x33a5c8), "does not return") on size class 3 of the
+encoded field, and on the overflow path (offset not < 4) branches to
+FUN_00358e40 / FUN_00352900.
+Evidence: decompile of FUN_0033a3d0: `switch(uVar11){ case 3: ... SoftwareBreakpoint(1,0x33a5c8); }`; writes 1-4 byte payloads into a caller buffer at unaff_x19+off.
+Severity (hypothesis): medium — a malformed capability-size field reaching the
+breakpoint would fault the calling vCPU/thread; the offset is bounded
+(off+0x10 < 0x19 check) but the write itself is to an unvalidated caller buffer.
+Confidence: low (decompiled, callee bodies not yet reconstructed; buffer provenance unverified).
+
+## [sk] 0034020c sk_cap_lookup
+Observation: Capability lookup traps (SoftwareBreakpoint(1, 0x34033c), "does not
+return") on size class 3 when decoding a variable-length capability-size field,
+and returns a queue-completion result when the size exceeds 0xfff.
+Evidence: decompile of FUN_0034020c: `case 3: pcVar4 = (code *)SoftwareBreakpoint(1,0x34033c); (*pcVar4)();`; `if ((uint)uVar5 < 0x1000) ... else { uVar6 = FUN_000839f8(); }`.
+Severity (hypothesis): medium — untrusted capability size fields reaching the
+breakpoint fault the kernel path; the 0x1000 threshold gates the fallback path.
+Confidence: low (register aliasing; exact callers unknown).
+
+## [sk] 0033af48 sk_encode_varlen
+Observation: Variable-length field encoder enforces a buffer bound: rejects
+when `(base & 0x1000f8) != 0 || 0x18 < off + 1`, returning an error path; on the
+valid path writes at buf+off after a 1-4 byte width check.
+Evidence: decompile of FUN_0033af48: `if ((*(uint *)(extraout_x8 + 0x50) & 0x1000f8) != 0 || 0x18 < unaff_x20 + 1U) { ...FUN_0035556c...; return ...; }`; width switch on (off & 3).
+Severity (hypothesis): low/medium — the offset is validated (< 0x19) before the
+write, which bounds the buffer; the flag/value read of *extraout_x1 (unrecovered
+source pointer) is unverified.
+Confidence: low.
+
+## [sk] 00340a2c sk_cap_resize
+Observation: Capability resize validates the object path (sk_object_lock on
+param_4+0x10/+0x18), clamps the size to >= 0x1000, and branches on the 0xfff
+threshold to an error path (FUN_0007c1c4 + FUN_000839d8) when the current size
+exceeds 0xfff. Writes a delta and flag byte into a caller buffer.
+Evidence: decompile of FUN_00340a2c: `uVar2 = 0x1000; if (uVar3 < 0x1001) ...`; `if (0xfff < uVar3) { FUN_0007c1c4(); FUN_000839d8(); return; }`.
+Severity (hypothesis): medium — a size-mismatch between the capability object
+and the requested resize could allow a partial/incorrect resize; the object
+path is locked and the 0xfff bound gates the fast path.
+Confidence: low (register aliasing; size semantics inferred).
+
+## [sk] 0033d948 sk_encode_varlen_field
+Observation: Variable-length field writer encodes a length tag byte followed by
+a 1-4 byte little-endian payload for values >= 2, using the offset position
+(uVar5 = pos < 4 ? 1-3 bytes : full word) to pick the width.
+Evidence: decompile of FUN_0033d948: writes tag char `'\x02'`/`'\x02'+(i>>8)` and
+payload via `*(char*)param_1` (pos<4) or `*param_1` (full word).
+Severity (hypothesis): low — encodes caller-provided value; write width chosen
+from the field position, matching the decode side (sk_cap_lookup3).
+Confidence: low.
+
+## [sk] 0033c5cc sk_cap_free_dispatch
+Observation: Capability free dispatches on a tag byte; tags 5-0x10 delegate to
+FUN_000026e8, tag 0x12 frees the +0 object and +0x20 metadata, other tags free
+metadata at +0x10/+0x20; tags 1-4/10-0xe return without freeing.
+Evidence: decompile of FUN_0033c5cc: switch on `*(byte*)(param_1+8)` with
+`case 5..0x10: FUN_000026e8(param_1); return;` and `case 0x12: FUN_0036b118(...);`.
+Severity (hypothesis): low — the tag-driven free dispatch determines what is
+released; if the tag is attacker-controlled, an inconsistent free (double-free /
+partial free) is possible. Caller provenance unverified.
+Confidence: low.
+
+# Security findings — cL4 Secure Kernel slice 09 (0x3442a8-0x348034)
+
+Slice 09 is the syscall/exception-entry dispatch region: ~206 thin wrapper
+functions that read the saved trap register frame (unaff_x20 = sk_trap) and
+forward to shared cL4 kernel handlers (reconstructed in sibling slices).
+The security-relevant logic here is the shared fault/overflow/refcount
+helpers and the region permission checks the wrappers invoke.
+
+## [sk] 00346bdc thunk_FUN_0036b270
+- **Observation**: Object refcount retain is a compare-and-swap loop that treats a
+  refcount of -1 as "object freed" and returns the object base WITHOUT touching
+  the slot; any concurrent change during the CAS falls back to the slow path
+  (FUN_0039f9e8). The increment quantum is 0x200000000 per retain.
+- **Evidence**: `if (0 < (long)param_1) { base = param_1 & ~7; slot = base+8; cur = *slot;
+  do { nxt = cur + 0x200000000; if (nxt < 0) { if ((int)cur == -1) return base;
+  return FUN_0039f9e8(slot, cur, 1); } } while (*slot != cur); *slot = nxt; }`.
+  `-1` sentinel and CAS loop are exact.
+- **Severity (hypothesis)**: medium — a refcount reaching -1 (double-free / over-release)
+  silently short-circuits the retain instead of faulting, so a UAF on a freed
+  object could persist if the caller relies on retain to reject freed objects.
+- **Confidence**: high (logic direct from decompile).
+
+## [sk] 00346c5c / 00346c60 thunk_FUN_002d3c28 / thunk_FUN_002d4a64
+- **Observation**: 128-bit capability/region arithmetic is checked: add faults on
+  signed carry of the high word OR unsigned carry of the low word with a
+  non-wrapping high sum; subtract faults on signed borrow. On fault the kernel
+  calls FUN_003488bc(1, lo-result) and enters a noreturn panic chain
+  (FUN_00349d58 / FUN_001afe4c). This is fail-closed integer-overflow protection
+  in the object/region size path.
+- **Evidence**: `if (!scarry && (!carry || hi+hi != INT64_MAX)) return;` (add),
+  `if (lo_a < lo_b) { if (hi-hi != INT64_MIN && !sborrow) return; } else if (!sborrow) return;` (sub),
+  then `FUN_003488bc(1, lo)` + noreturn.
+- **Severity (hypothesis)**: informational — fail-closed bounds discipline; a
+  logic error here would allow 128-bit overflow in cap math (memory-safety).
+- **Confidence**: high.
+
+## [sk] 003448d4 sk_dispatch_3448d4
+- **Observation**: Before draining an object range, the kernel validates the
+  object header's permission word (header+0x50) against the low tag byte AND'd
+  with the requested permission; a mismatch faults (FUN_003488bc(1) +
+  FUN_00349644, noreturn). The element stride (header+0x48) must be non-zero or
+  the kernel faults (FUN_00348074(1) + FUN_00351be0). No silent default on
+  invalid permissions.
+- **Evidence**: `if ((*(uint*)(hdr+0x50) & tag & 0xff) != 0) goto perm_fault;`
+  and `if (stride == 0) goto stride_fault;`, both ending in noreturn panics.
+- **Severity (hypothesis)**: informational — per-region permission + stride
+  enforcement before bulk object iteration (fail-closed).
+- **Confidence**: medium (header layout is estimated).
+
+## [sk] 0034454c sk_dispatch_34454c
+- **Observation**: The long list-drain syscall handler faults (noreturn
+  FUN_00351094/FUN_001afe4c) when the resolved base at frame+0x30 is negative,
+  and faults when an element-list slot is empty or shorter than 8 bytes
+  (FUN_003488bc(1)/FUN_00349644). It also ORs 0x80000000 / 0x40000000 tag bits
+  into the element word based on the list-head mode bytes (frame+0x48/+0x50
+  +0x10/+0x11), steering dispatch.
+- **Evidence**: `if (lVar9 < 0) { FUN_003483c4(); ... noreturn }`;
+  `if (plVar7 == 0 || (u8_hi - u8_lo) < 8) goto elist_fault;`; tag OR
+  `u12 | 0x80000000` / `| 0x40000000` gated on mode bytes.
+- **Severity (hypothesis)**: informational — negative/short list heads are
+  treated as faults, not dereferenced (defense against malformed frame state).
+- **Confidence**: medium (dense register artifacts, but the guards are direct).
+
+## [sk] 00347200 thunk_FUN_002b3978
+- **Observation**: Capability descriptor type is sourced from param_2 bits 56-59
+  when param_2 bit 61 is set, else from param_1; the returned pair's low word is
+  hard-coded 0xf and the high word carries the rights tag (0x7 or 0xb) OR the
+  type shifted left 16. The type field is masked to 4 bits before it is placed.
+- **Evidence**: `if (p2 & 0x2000000000000000) typ = (p2>>0x38)&0xf;` and
+  `return {lo:0xf, hi: mode | typ<<0x10}` with `typ` masked to 0xf.
+- **Severity (hypothesis)**: low — 4-bit type mask caps the descriptor type
+  space, so an over-wide type value cannot alias into the rights field.
+- **Confidence**: high.
+
+## [sk] 003471d8 thunk_FUN_002298d4
+- **Observation**: 64-bit hash-mixer compression (Skein/Threefish-style) folds an
+  injected word into a 5-word state with a per-block counter increment
+  (0x800000000000000). This is the hash core used for capability/object
+  integrity; no security issue observed, but the counter-add is part of the
+  authenticated hash state.
+- **Evidence**: `u3 = (s0 & 0xff00000000000000) + 0x800000000000000; state[0]=u3;`
+  plus ROTR/ROTL xors on state[1..4].
+- **Severity (hypothesis)**: informational.
+- **Confidence**: medium (recognized mixer structure).
+
+# SK slice 10 findings — 0x348074-0x349abc (syscall/exception-entry region)
+
+Slice 10 of the SK range is a dense cluster of Swift-runtime support helpers
+for the cL4 kernel's syscall/exception-entry area: no-op stubs (81), "Fatal
+error" result constructors (30), fatal-message accessors (19), Swift type
+metadata getters (16), inout/result-buffer accessors, stack-alloca helpers,
+and a handful of trivial leaf/wrapper functions. No actual syscall argument
+validation, capability/privilege checks, or bounds arithmetic is present in
+these 205 functions; they are runtime glue, not dispatch logic.
+
+## [sk] 0x348074 sk_fatal_error_result_01 — fixed {message, code} error pack
+- Observation: A 16-byte result is built as {lo = &"Fatal error", hi = 0xb}.
+  30 identical constructors and 19 string-pointer accessors all reference the
+  same literal s_Fatal_error_005accd0 with code 0xb.
+- Evidence: decompiles FUN_00348074..FUN_003484b4 all emit `_0_8_=s_Fatal_error_005accd0;
+  _8_8_=0xb`.
+- Severity (hypothesis): informational. This is the cL4 kernel's standard
+  "Fatal error" error-pack; code 0xb is the seL4 error kind surfaced on
+  unrecoverable trap/syscall failure.
+- Confidence: medium.
+
+## [sk] 0x348758 sk_fatal_codable_58 / 0x349190 sk_fatal_existcoll_90 — noreturn Swift traps
+- Observation: Two noreturn Swift runtime fatal-error traps sit in the syscall
+  region. FUN_001afa84 (Swift runtime fatalError) is invoked with code 0xb and
+  the type names "Swift.Codable" / "Swift.ExistentialCollection", carrying
+  `idx | 0x8000000000000000` (a tagged/flag value) in the payload.
+- Evidence: WARNING: subroutine does not return; strings
+  s_Swift_Codable_swift_005ce990 and
+  s_Swift_ExistentialCollection_swif_005cf680 matched.
+- Severity (hypothesis): low. If these precondition traps are reachable from
+  attacker-controlled metadata/type fields they become a kernel-crash / DoS
+  primitive; more likely they fire only on internal type-system invariant
+  violations.
+- Confidence: low.
+
+## [sk] 0x3496b0 sk_bitset_insert_byte — bit-lane field insert
+- Observation: `(uint64_t)*byte << (shift & 0x38) | value` inserts a byte into
+  one of 8 lanes of a 64-bit word. `shift & 0x38` constrains the shift to
+  0..56 in 8-bit steps, so no shift-out-of-range occurs.
+- Evidence: decompile FUN_003496b0.
+- Severity (hypothesis): none — the mask prevents out-of-range shifts.
+- Confidence: medium.
+
+# SK slice 11 (0x349ae0-0x34aef4) — security findings
+
+Region nature: a pool of compiler-emitted Swift-runtime glue and small utility
+stubs (no-op stubs, constant returns, pointer getters, frame-bias stores,
+Swift fatalError traps, 9-byte copy helpers). It contains NO cL4 syscall
+argument validation, capability, or privilege-checking logic. Only two
+observations below; both are low-severity notes on shared helpers, not
+exploitable syscall surfaces.
+
+## [sk] 000034a018 sk_insn_bitfield_builder
+- Observation: Function reads two bytes at a caller-supplied pointer offset
+  (bytes 1 and 2) with no bounds or null check before packing them into a
+  descriptor word. The pointer is not validated.
+- Evidence: decompile `(*(byte*)(p+1) & 0x3f) << 12 | (*(byte*)(p+2) & 0x3f) << 6 |
+  (hi4 & 0xf) << 18` — direct dereferences of `p+1`/`p+2`.
+- Severity (hypothesis): Low — generic field-packing helper; correctness of the
+  caller's pointer is assumed, no privilege boundary crossed here.
+- Confidence: medium
+
+## [sk] 000034ab30 sk_runtime_release_dispatch
+- Observation: Function dereferences caller-supplied object fields at offsets
+  +0x18 and +0x20 and passes them to two release/teardown helpers
+  (FUN_0006a4c0, FUN_000a649c) without validating the object pointer or field
+  values. A malformed object could drive teardown on attacker-chosen values.
+- Evidence: decompile `uVar1 = *(p+0x20); FUN_0006a4c0(p, *(p+0x18)); FUN_000a649c(uVar1)`.
+- Severity (hypothesis): Low — object is expected to be a valid kernel object;
+  no untrusted-pointer path identified at call sites in this slice.
+- Confidence: low
+
+## [sk] region note: Swift fatalError traps
+- Observation: FUN_00349eb8 ("load from misaligned raw pointer" on
+  UnsafeRawPointer) and FUN_0034a238 ("Attempting to access Dictionary e" on
+  NativeDictionary) are noreturn Swift fatalError trap emitters. They terminate
+  execution on runtime type/alignment contract violations; not reachable as a
+  privilege boundary from this slice's context.
+- Evidence: decompiles call FUN_001afe4c (noreturn) with the quoted Swift
+  runtime message strings (0x5cf180 / 0x5cf210) and type names
+  (0x5cf1b0 / 0x5be800).
+- Severity (hypothesis): Informational.
+- Confidence: high
+
+# SK region syscalls — Slice 12 findings (0x34af04-0x34c034)
+
+Region: dense table of small per-syscall stub/handler entry points in the cL4
+syscall/exception-entry region. Worker SkWave7.SkP12. Confidence per function
+recorded in the manifest fragment (/tmp/sk_manifest_part12.json).
+
+## [sk] 0x34af04-0x34c034 no-op syscall handler slots
+Observation: 141 of the 205 decompiled entry points in this region have empty
+bodies (`void F(void){ return; }`) — the decompiler reports no observable side
+effect for them.
+Evidence: decompile_function for e.g. 0x0034af20, 0x0034af30, 0x0034af48 …
+(141 addresses) all yield an empty body; the region sits in the syscall-table
+area immediately before the syscall string tables at 0x4e3240
+("CapSyscalls EpSyscalls EcSyscalls … HypercallSyscalls Costs").
+Severity (hypothesis): Medium — if any empty slot is wired into a live syscall
+dispatch index, invoking it would return "success" without performing an
+operation (silent no-op / privilege-assume-success surface). Whether the slots
+are reachable is unconfirmed from this region alone.
+Confidence: Medium
+
+## [sk] 0x34af04..  argument-dropping wrapper stubs hide validation
+Observation: many non-empty slots are thin wrappers whose decompiled bodies
+call out-of-slice helpers with arguments the decompiler dropped (e.g. the
+repeated `FUN_00310ad4(); FUN_00027754();` tagged-pointer deref pair and the
+`unaff_*` register-dependent bodies), so no argument validation (capability,
+bounds, tag-bit) is visible in this region.
+Evidence: 12 `sk_degen_frame_op` functions reference only `unaff_*/in_*`
+operands; ~30 `sk_callee_call_*` wrappers call helpers with `0` substituted for
+dropped args; FUN_00310ad4/FUN_00027754 (out of slice) are tagged-pointer
+deref resolvers (low-bit tag checks at +0x10/+4 or +0x20/+8).
+Severity (hypothesis): Low — validation likely lives in the out-of-slice
+callees; this is a completeness gap for security review of this region, not a
+confirmed flaw.
+Confidence: High (that the gap exists), Low (that it is exploitable)
+
+## [sk] 0x0034b9a0 callback/notifier registration (sk_callback_register)
+Observation: this handler resolves a value via helpers 0x0008f6c0/0x0008f6f4
+then calls 0x00377824 with a zero selector, the resolved value, an argument and
+TWO function pointers (0x0060e3fc, 0x0060e40c) — i.e. it registers callback /
+handler pointers into a dispatch structure.
+Evidence: decompile_function 0x0034b9a0:
+`FUN_0008f6c0(arg3); u=FUN_0008f6f4(); FUN_00377824(0,u,arg2,FUN_0060e3fc,FUN_0060e40c);`
+Severity (hypothesis): Medium — if either callback pointer is caller-controlled
+(not fixed kernel addresses) this is an indirect-call / CFI surface; the two
+pointers here are constants, so it is currently the kernel's own callbacks.
+Confidence: Low (exploitability), High (that pointers are registered)
+
+# SK Slice 13 findings (0x34c044-0x34d054, syscall/exception-entry region)
+
+Template: `## [sk] <address> <estimated_name>` + Observation / Evidence / Severity (hypothesis) / Confidence.
+
+## [sk] 0034c7c4 sk_handle_from_obj
+- Observation: Builds a 16-byte capability/object descriptor with a hard-coded low tag of 0x13f (319) and the object word at offset +0x10. If 0x13f is a capability-type/privilege tag, any caller can mint a descriptor of that type regardless of entitlement.
+- Evidence: decompile `auVar1._8_8_=*(param_1+0x10); auVar1._0_8_=0x13f;` — constant tag + object-derived high word; ~20 callers in the 0x32-0x34 vspace/PT region.
+- Severity (hypothesis): low-medium (unknown tag semantics; no argument validation observed in this helper itself).
+- Confidence: low (tag meaning not confirmed against a header/string).
+
+## [sk] 0034cd90 sk_obj_5word_copy
+- Observation: Copies a fixed 5-word (40-byte) block from a source template into a destination object and writes the destination pointer out through a caller-provided output pointer. No length parameter and no bounds check: a short destination buffer or mis-sized object would be over-written.
+- Evidence: decompile `*unaff_x19=(long)param_1; param_1[0..4]=unaff_x20[0..4];` (five 8-byte word copies, no guard).
+- Severity (hypothesis): low (internal kernel-only copy; 4 callers).
+- Confidence: low (no caller context confirming attacker-controlled sizes).
+
+## [sk] 0034cdb4 sk_byte_copy
+- Observation: Unchecked single-byte copy source->dest; no null/length validation. A bad pointer from any caller yields a kernel fault.
+- Evidence: decompile `*param_1 = *param_2;` (one byte, unconditional). 14 callers including the 0x45 nested-VM region.
+- Severity (hypothesis): low.
+- Confidence: low.
+
+## [sk] 0034cec4 sk_encode_tag_field
+- Observation: Encodes a descriptor/tag word from `(flags&0xf)<<12 | (byte[base+1]&0x3f)<<6` without validating either input. If `base` is attacker-controlled, the byte read at base+1 is an out-of-bounds read; the flags nibble is inserted into bits 12-15 unchecked.
+- Evidence: decompile `return (param_2&0xf)<<0xc | (*(byte*)(param_1+1)&0x3f)<<6;` — 18 callers.
+- Severity (hypothesis): low-medium (depends on caller-supplied `base` provenance; not validated here).
+- Confidence: low.
+
+## [sk] 0034c764 sk_copy_9byte
+- Observation: Copies 8 bytes plus a 1-byte tag between 8-byte-aligned addresses using `& ~7` alignment masking on both source and destination. Masking aligns both operands down, so the copy can read/write up to 7 bytes before a misaligned base — a potential over-read/over-write if callers pass misaligned or near-boundary pointers.
+- Evidence: decompile copies `*(dst & ~7)` (8 bytes) and `*(dst&~7 +1)` (1 byte) from `*(src&~7)`; 5 callers in the 0x33 region.
+- Severity (hypothesis): low (alignment mask is intentional; impact only on misaligned callers).
+- Confidence: low.
+
+## [sk] 0034ca7c sk_log_fault
+- Observation: Logging helper called with a zero code plus two word operands read from a caller object at +0x20/+0x10 and two data pointers. If the object pointer is untrusted, reads at +0x10/+0x20 are attacker-influenced and may leak or fault.
+- Evidence: decompile `FUN_00377824(0, *(param_3+0x20), *(param_3+0x10), &DAT_00611b24, &DAT_00611b3c);` — 3 callers in 0x33.
+- Severity (hypothesis): low (diagnostic path; object provenance internal).
+- Confidence: low.
+
+Note: 183 of 206 functions in this slice decompile to empty bodies (bare return), constant-0/0xff returns, or single-call thunks; these are padding/landing-pad stubs or unimplemented handler slots and carry no additional security surface beyond the above.
+
+# SK slice 14 findings (0x34d070-0x34dff4)
+
+## [sk] 0x0034d0a0 sk_fatal_error_stub
+- **Observation**: Noreturn Swift fatal-error reporter raising "Fatal error" with
+  Swift.Duration type metadata; flags 0xe000000000000000, line 0x14, code 2.
+- **Evidence**: decompile calls FUN_001afa84 with s_Fatal_error_005accd0,
+  s_Swift_Duration_swift_005d0db0.
+- **Severity (hypothesis)**: low (error-reporting path; no privilege boundary).
+- **Confidence**: high (string-matched).
+
+## [sk] 0x0034d708 sk_cannot_initialize_stub
+- **Observation**: Init-failure abort reporting "Cannot initialize"
+  (s_Cannot_initialize_005ce9b0, len 0x12) via noreturn FUN_001a89a8. Reachable
+  from object/runtime initialization failure.
+- **Evidence**: decompile FUN_001a89a8(s_Cannot_initialize..., 0x12, 1).
+- **Severity (hypothesis)**: low (abort path, no validation logic).
+- **Confidence**: high (string-matched).
+
+## [sk] 0x0034d744 / 0x0034dac8 sk_pair_ret
+- **Observation**: Thunks return a {&DAT_004c1010, 0x100} metadata descriptor pair.
+  DAT_004c1010 is a zeroed 16-byte region; hi=0x100 is exposed as a size/count to
+  callers without bounds validation at this site.
+- **Evidence**: decompile returns raw {ptr,0x100} pair.
+- **Severity (hypothesis)**: low (static constant; caller-side bounds not in slice).
+- **Confidence**: medium.
+
+## [sk] 0x0034dcfc sk_pair_ret_34dcfc
+- **Observation**: Returns {0x656120, &DAT_004e7f10} type-metadata pair.
+  DAT_004e7f10 region decodes as Swift type metadata ("Bool"/"Str" strings).
+- **Evidence**: read_memory of 0x4e7f10 shows type-name table bytes.
+- **Severity (hypothesis)**: low (metadata constant; no validation).
+- **Confidence**: medium.
+
+## [sk] 0x0034dc6c sk_pair_ret_34dc6c
+- **Observation**: Returns {x21+0x10, 0x80000000005cfbb0} pair; the hi half is a
+  non-canonical pointer-with-tag 0x80000000005cfbb0. Callee-saved x21 is returned
+  unvalidated as a pointer.
+- **Evidence**: decompile auVar1._8_8_=0x80000000005cfbb0, auVar1._0_8_=x21+0x10.
+- **Severity (hypothesis)**: low (register-bound artifact; likely Swift metadata).
+- **Confidence**: low.
+
+## [sk] 0x0034de44 sk_syscall_constff_34de44
+- **Observation**: Returns constant 0xff (all-ones byte) — an error/sentinel value
+  returned unconditionally from a syscall-dispatch slot.
+- **Evidence**: decompile `return 0xff;`.
+- **Severity (hypothesis)**: low (stub returning fixed error; no data exposure).
+- **Confidence**: medium.
+
+## [sk] region-wide: stack-spill prologue fragments
+- **Observation**: Many functions in 0x34dxxx decompile to Ghidra stack-spill
+  prologue fragments (in_x9/in_x12 -> frame) or pure no-ops. These are
+  syscall-dispatch placeholder slots whose real bodies are unrecovered
+  (PAC/stack-protector or shared-table stubs). No argument validation, capability
+  checks, or bounds logic is visible in this slice.
+- **Evidence**: 137/205 bodies are `return;`, 16/205 return 0, 9 are stack-spill
+  prologue fragments, remainder thin forwarders.
+- **Severity (hypothesis)**: informational — the actual syscall validation
+  logic for this dispatch region is not present in this address slice.
+- **Confidence**: medium.
+
+# SK slice 15 findings (syscall/exception-entry region 0x34e004-0x34efa8)
+
+## [sk] 0x34e004-0x34efa8 (region) syscall dispatch table with large no-op/ret0 surface
+Observation: The contiguous slice 0x34e004-0x34efa8 is a dense syscall-dispatch
+table (206 entries at ~0x10 spacing). 145 entries are bare `ret` no-ops
+(`sk_syscall_stub_*`) and 13 entries return literal 0 (`sk_syscall_ret0_*`).
+A further 21 are stack-frame fragments (`sk_frag_*`) referencing the caller's
+frame pointer (unaff_x29), consistent with Ghidra over-segmenting a dense
+instruction stream rather than true standalone functions.
+Evidence: decompile_function for each address in /tmp/sk_part15.txt; e.g.
+0x34e014/0x34e024/... -> `void FUN(void){ return; }`; 0x34e0a4/0x34e414/... ->
+`undefined8 FUN(void){ return 0; }`; 0x34e850/0x34e8b8 -> 16-byte pair built
+from `param_1 + reg + reg & ~reg` with unaff registers.
+Severity (hypothesis): low — if any of these return-0 slots are reachable
+syscall handlers, unimplemented operations would be silently accepted as
+success instead of returning an error, which could mask privilege/capability
+denial. No argument validation is performed anywhere in this slice.
+Confidence: medium (behavior of each stub is exact; the "unimplemented syscall
+slot" interpretation is inferred from the syscall-dispatch region context and
+the 0x4e3xxx string-table region referenced by the getters).
+
+## [sk] 0x34e830 (sk_frag_e830) record/bitmap setup without bounds check
+Observation: Writes 5 fields (offsets 8,0x10,0x18,0x20) through a caller
+supplied pointer with a conditional 64-bit mask shift; no length/capacity
+validation is present in the fragment.
+Evidence: decompile: `*(param_1+8)=param_2; *(param_1+0x10)=in_x11;
+*(param_1+0x18)=0; *(param_1+0x20)=in_x10 & in_x12;` with conditional
+`if ((ulong)-in_x9 < 0x40) in_x10 = ~(in_x10 << (-in_x9 & 0x3f))`.
+Severity (hypothesis): low — fragment is part of a larger handler; cannot
+assess bounds without the surrounding function.
+Confidence: low (fragment only).
+
+## [sk] 0x34e178 / 0x34e1b0 (sk_vtable_dispatch_*) indirect method dispatch
+Observation: Dispatches through an object vtable method slot at (*(obj-8)+0x30)
+(FUN_000839f8). The target is an indirect call; if `obj` is attacker-influenced
+this is an arbitrary-function-pointer jump surface.
+Evidence: decompile of FUN_000839f8: `(**(code **)(*(long *)(param_3 + -8) + 0x30))();`
+called from 0x34e178 and 0x34e1b0.
+Severity (hypothesis): low — standard virtual-dispatch; relies on the caller
+validating `obj`. Not verified here.
+Confidence: low (callee is out of range; body reconstructed by its worker).
+
+# SK slice 16 findings — 0x34efb8-0x350038 (syscall/exception-entry)
+
+Security-relevant observations from decompiling slice 16 of the cL4 Secure
+Kernel syscall region. Findings are hypotheses; all names/addresses from
+Ghidra cl4_kernel.raw.
+
+## [sk] 0x0034f6a8 sk_swift_fatal_grapheme
+Observation: Fatal-error path invoked with a user/context-supplied value
+(`param_1 | 0x8000000000000000`) folded into the error-detail argument of the
+noreturn Swift fatal-error routine FUN_001afa84.
+Evidence: `FUN_001afa84(s_Fatal_error_005accd0, 0xb, 2, 0xd000000000000034,
+param_1 | 0x8000000000000000, s_Swift_StringGraphemeBreaking_swi_005d3570, 0x22, 2)`.
+Severity (hypothesis): Low — error reporting, no privilege boundary crossed.
+Confidence: medium.
+
+## [sk] 0x0034fa9c sk_swift_precondition
+Observation: Precondition-failure trap that aborts the kernel (noreturn) when
+a caller-supplied precondition is violated; the argument `param_1` is only
+captured to the stack and not validated.
+Evidence: `FUN_001afa84(s_Precondition_failed_005ce2d0, 0x13, 2, 0,
+0xe000000000000000, s_Swift_FloatingPointToString_swif_005d33c0, 0x21, 2)`;
+`uStack... = param_1` then noreturn.
+Severity (hypothesis): Low — abort path, expected kernel-terminating behavior.
+Confidence: medium.
+
+## [sk] 0x0034f138 sk_obj_twin_call
+Observation: Two indirect dispatch calls via the jumptable routine
+FUN_000839f8, where the target is derived from `param_1` masked by `~unaff_x23`
+(`param_1 + unaff_x19 & (unaff_x23 ^ ~0)`). The indirect call target is
+computed from caller-controlled/register values with no explicit validation.
+Evidence: two `FUN_000839f8(param_1 + unaff_x19 & (unaff_x23 ^ -1), 1)` calls;
+FUN_000839f8 itself decompiles as `(**(code **)(*(long *)(param_3 + -8) + 0x30))()`
+with a "Could not recover jumptable ... Too many branches" warning.
+Severity (hypothesis): Medium — indirect-call target derived from masked
+register input; if an attacker can steer the mask/offset this is a potential
+control-flow-integrity concern (consistent with Swift witness/vtable dispatch).
+Confidence: low (unaff registers obscure the actual bounds).
+
+## [sk] 0x0034fa78 sk_bit_clear_indexed
+Observation: Bit-clear into a table slot indexed by `unaff_x21 >> 3` with no
+explicit bounds check on the index (`unaff_x21 & 0x3f` selects the bit).
+Evidence: `*(ulong *)(unaff_x19 + (unaff_x21 >> 3 & 0x1ffffffffffffff8)) &=
+~((1 << (unaff_x21 & 0x3f)) - 1)`.
+Severity (hypothesis): Medium — unchecked table index into a kernel data
+structure; if `unaff_x21` is not pre-validated this could corrupt an adjacent
+slot (out-of-bounds write).
+Confidence: low (index source register unidentified).
+
+## [sk] 0x0034f7ec sk_store_alloc
+Observation: Writes `param_1` into `param_3+0x18` then allocates from a
+fixed metadata region (`sk_alloc_tag(0x66aa10, 0x20, 0xf)`) with no size
+validation of the object slot being filled.
+Evidence: `*(undefined8 *)(param_3 + 0x18) = param_1; FUN_0036a940(0x66aa10,0x20,0xf)`.
+Severity (hypothesis): Low — object field store during construction.
+Confidence: low.
+
+# SK slice 17 findings (0x350048-0x350c14)
+
+## [sk] 0x350048-0x350c14 sk_sys_stub_* (no-op syscall handler slot table)
+Observation: This 205-function slice is a dense table of syscall/exception-entry
+handler slots. The overwhelming majority (172 of 205) are empty no-op stubs
+(`return;`) or `return 0` stubs; 31 are tail-call trampolines that forward to
+real handlers elsewhere (FUN_00027754, FUN_00310a74, FUN_003109b4, FUN_00310924,
+FUN_00310a44, FUN_0008f728, FUN_0031948c, FUN_000a68c4, FUN_000277b8,
+FUN_000839f8, FUN_0014ae44, FUN_0016186c) or string-assert entry points
+(FUN_001a89a8); and 2 are accessors returning pointers to syscall dispatch
+tables (DAT_004e984c, DAT_004e9518, both adjacent to the syscall-name tables at
+0x4e3240).
+Evidence: batch decompile of all 205 addresses in /tmp/sk_part17.txt; the
+decompiled bodies are consistently empty/tail-call; the two table globals
+(DAT_004e984c, DAT_004e9518) contain function-pointer tables (e.g. bytes
+0x00123548, 0x001264b4, 0x00182bec at 0x4e984c).
+Severity (hypothesis): informational — the syscall handling logic is not in this
+range; these are entry/dispatch slots. The no-op slots are deny-by-default (safe
+unless reachable with a non-null return contract), but a reachable no-op returning
+0 where a real handler is expected could silently drop an operation.
+Confidence: medium (stub semantics inferred from decompiled empty bodies + table
+pointer xrefs; no reachability analysis performed).
+
+# SK region syscalls - slice 18 findings (0x350c20-0x3517c0)
+
+Slice 18 is the ABI argument-marshalling layer of the syscall / exception
+dispatch path: each function is a small shim loading syscall arguments from the
+preserved save-frame registers (x19-x28) into ABI argument registers, a tiny
+setup, or a forward to a shared helper. No privilege/capability checks or
+bounds validation appear in this slice itself (that logic lives in the
+dispatched handlers). The observations below are hypothesis-level.
+
+## [sk] 0035151c sk_pack_bits
+- Observation: Packs two untrusted 32-bit fields into a 32-bit code:
+  `(lo & 0x3f) | ((hi & 0x1f) << 6)` (asm: `and w8,w8,#0x3f; bfm w8,w0,#0x1a,#0x4`).
+- Evidence: 0035151c disassembly; the mask limits lo to 6 bits (0..63) and hi
+  to 5 bits (0..31), i.e. a syscall/IRQ number + sub-field are truncated into
+  one word before dispatch.
+- Severity: info/hypothesis - the masking is itself a form of validation that
+  bounds the fields, but the produced code indexes downstream dispatch tables,
+  so an out-of-design hi value (>= 32) is silently discarded rather than
+  rejected.
+- Confidence: medium.
+
+## [sk] 00350da4 sk_set_bitmask
+- Observation: Computes `-1L << (bit & 0x3f)` and stores it through a pointer
+  held in a preserved register (x23): `mov x9,#-1; lsl x8,x9,x8; str x8,[x23]`.
+- Evidence: 00350da4 disassembly. A full-width power-of-two mask is written to
+  a kernel-chosen address. The `& 0x3f` bounds the shift to 0..63, so no shift
+  UB, but the destination (x23) and bit index are live-in frame values.
+- Severity: low/hypothesis - if the destination pointer or bit index can be
+  influenced by the caller (syscall argument path), this is a masked
+  arbitrary-width write; the kernel dispatch convention implies x23 is a
+  kernel-populated frame slot, so no direct guest control expected.
+- Confidence: low.
+
+## [sk] 00351500 sk_mux_attr
+- Observation: Selects a memory-attribute field conditionally on bit 57 of an
+  incoming word: if `(v & 0x2000000000000000)` set use an alternate register
+  value, else extract 4 bits (bits 56..59) of v (asm: `ubfx x9,x25,#56,#4;
+  tst x25,#0x2000000000000000; csel x3,x8,x9,eq`).
+- Evidence: 00351500 disassembly. The 4-bit field is a canonical ARMv8 memattr
+  selector (device vs normal class). If the selecting word originates from a
+  guest/syscall argument, the effective memory attribute is chosen by guest
+  data - a potential attribute-downgrade / misclassification surface.
+- Severity: low/hypothesis; memattr policy enforcement is expected in the
+  mapping handlers, not here.
+- Confidence: low.
+
+## [sk] slice-wide save-frame arg trust
+- Observation: The entire slice forwards the preserved save-frame registers
+  (x19-x28) directly into ABI argument registers with no validation, assuming
+  the exception-entry trap frame is kernel-populated and therefore trusted
+  (e.g. x0=x21;x1=x24, x1=x19;x2=x24, etc.).
+- Evidence: slice disassembly (mov-only forwarders); e.g. 00350c20
+  `mov x1,x19; mov x2,x24; ret`.
+- Severity: info - inherent design assumption of a microkernel syscall-entry
+  path; any path that can reach these shims with a guest-corrupted save frame
+  would pass unvalidated arguments to the handlers. Worth confirming the
+  entry point zeroes/validates the frame before dispatch.
+- Confidence: low.
+
+# SK slice 19 findings (0x3517cc-0x352444)
+
+## [sk] 0x00351930 / 0x003519fc / 0x00352304 sk_sysc_retff_* (constant 0xff return)
+Observation: Three syscall/exception-region stubs return the constant 0xff
+(255) unconditionally with no argument handling. In a cL4/seL4 syscall entry
+region this is consistent with an "invalid/unimplemented syscall" error
+sentinel emitted before any argument parsing.
+Evidence: decompile bodies are exactly `return 0xff;` (FUN_00351930,
+FUN_003519fc, FUN_00352304).
+Severity (hypothesis): informational — default/fallthrough error path; no
+privilege or bounds impact observed.
+Confidence: low.
+
+## [sk] frame-pointer helper clones (sk_sysc_read_local_*/sk_sysc_store_local_*)
+Observation: The many tiny out-of-line helper clones in this region read and
+write caller stack-frame locals at fixed negative frame-pointer offsets
+(e.g. *(frame-0x68), *(frame-0xb8)) with no bounds validation. These are
+compiler-generated leaf clones that reach into the caller's frame (Ghidra
+unaff_x29); no cross-privilege boundary is crossed, but an offset/logic error
+in any clone could read or clobber arbitrary caller-stack data.
+Evidence: decompiles show raw `*(unaff_x29 + offset)` loads/stores (e.g.
+FUN_003517d8, FUN_00351c10, FUN_00351ce8, FUN_00352128, FUN_0035217c).
+Severity (hypothesis): informational — internal-only helper clones.
+Confidence: low.
+
+# SK slice 20 findings — 0x352450-0x3530d8 (exception-entry trampoline region)
+
+Region characterisation: this whole slice is the cL4 exception/syscall entry
+machinery — hand-written ARM64 assembly fragments that save, restore, and
+reload registers across exception entry. Most functions are entered by
+fall-through/branch (not by `bl`), so the decompiler reports only register
+effects (elided to no-op in C). No syscall *argument* validation, capability
+check, or bounds logic lives in this region; it is glue for the handlers that
+follow. Confidence is low throughout (assembly fragments).
+
+## [sk] 00352f18 pte_install_desc
+- Observation: writes a 4-word page-table descriptor block and tail-calls an MMU commit helper (b 0x36986c).
+- Evidence: `movk x9,#0xd000,LSL #48 ; stp x0,x9,[x26,#0x20] ; orr x8,x8,#0x8000000000000000 ; stp x8,xzr,[x26,#0x30] ; b 0x36986c`. Desc[5] = `(x9 & 0xffffffffffff) | 0xd000000000000000` (valid + device/translated descriptor bits), desc[6] = `arg0 | 0x8000000000000000` (upper attribute bit).
+- Severity (hypothesis): low — descriptor write is register-driven (x26 base) on a trusted kernel path; any PTE content here comes from kernel-controlled inputs, not direct guest/user data. Worth confirming the caller validates the address it installs.
+- Confidence: medium.
+
+## [sk] 00352a8c panic_02534_entry
+- Observation: unconditional tail-branch to a fatal/panic handler with fixed message and data operands.
+- Evidence: `adrp x0,0x656000 ; add x0,x0,#0x208 ; adrp x1,0x4e8000 ; add x1,x1,#0x60 ; b 0x00002534` (FUN_00002534(0x656208, &DAT_004e8060)).
+- Severity (hypothesis): informational — a deterministic fatal-path entry, no variable input; used to report a fixed fatal condition.
+- Confidence: medium.
+
+## [sk] 003524ec exc_arg_setup (and 0035300c store batch)
+- Observation: exception-entry reload path reads saved registers from the exception frame at fixed negative offsets off x29 and re-stages syscall arguments (x0-x7) plus two stack spill slots before returning to the shared dispatch.
+- Evidence: 003524ec loads from `[x29,#0x50/#0x60]`, `[x29,#-0xc8/#-0xe0/#-0xe8]`, spills `stp x28,x24,[sp,#0x10]`, `str x8,[sp]`/`[sp,#0x8]`. 0035300c pushes x19-x28 onto the stack at `[sp,#0x40..#0x80]`.
+- Severity (hypothesis): informational — these access only the kernel's own exception frame/stack (trusted save area), no user-controlled pointer.
+- Confidence: medium.
+
+Note: no other security-relevant pattern (argument validation, privilege check, bounds test) was observed in this slice; it is entirely entry/exit glue. Any validation is expected in the syscall dispatch handlers that this region branches into.
+
+# SK slice 21 findings (0x003530e8-0x00353db8)
+
+## [sk] 0x003532b8 sk_sysreg_classify_descriptor
+Observation: Capability-descriptor classification fragment masks the descriptor to 48 bits (`and x8,x0,#0xffffffffffff`), extracts a 4-bit type field from bits [59:56] of the upper word (`ubfx x9,x1,#0x38,#0x4`), and tests the high tag bit `0x2000000000000000` in x1, leaving comparison flags for the caller to branch on.
+Evidence: `and x8,x0,#0xffffffffffff | ubfx x9,x1,#0x38,#0x4 | tst x1,#0x2000000000000000 | ret`
+Severity (hypothesis): Medium — capability type/tag discrimination gate on the syscall path.
+Confidence: Medium (fragment; the consuming branch is in the enclosing dispatcher).
+
+## [sk] 0x003532a8 sk_sysreg_trap_dispatch_panic
+Observation: Tail-call into a noreturn trap-dispatch path (`b 0x001afa84`) with a high-tagged descriptor: `x3 |= 0xd000<<48`, `w6=0x13` (19), `w7=0x2`. Constant operands suggest a fixed trap/exception classification routed to a panic-or-dispatch helper rather than a data-dependent target.
+Evidence: `movk x3,#0xd000, LSL #48 | mov w6,#0x13 | mov w7,#0x2 | b 0x001afa84`
+Severity (hypothesis): Low — fixed routing, no user-controlled target.
+Confidence: Medium.
+
+## [sk] 0x003536ec / 0x003536fc sk_sysreg (capability tag select)
+Observation: Two near-identical fragments select a 48-bit value (`csel`) conditioned on the high tag bit `0x2000000000000000` in another register (x26 / x24). This is a capability-vs-data selection: the tagged (capability) variant wins when the tag bit is clear (EQ on the tst). Mirrors seL4's capability-word tagging where the tag bit distinguishes cap from untyped data.
+Evidence: `and x8,x22,#0xffffffffffff | tst x26,#0x2000000000000000 | csel x25,x8,x25,eq | ret` (and same shape at 0x3536fc with x19/x24)
+Severity (hypothesis): Medium — tag-bit-driven privilege/capability selection in the entry path.
+Confidence: Medium.
+
+## [sk] 0x00353a90 sk_sysreg_tail_cap_check
+Observation: Tail-call into the capability-check helper `FUN_003a25d4` after saving x0->x24, x1->x25 and forwarding x20 as arg0. The helper is a capability validation/translation routine reached on the syscall entry path.
+Evidence: `mov x24,x0 | mov x25,x1 | mov x0,x20 | b 0x003a25d4`
+Severity (hypothesis): Medium — capability validation boundary; helper body is out of slice (0x3a25d4).
+Confidence: Medium.
+
+## [sk] 0x00353ad8 sk_sysreg_tail_vspace_op
+Observation: Tail-call `FUN_002a4c98(0, 0xe000000000000000, 0, 0)`: a vspace/MMU operation invoked with a fixed capability argument whose top 4 bits are `0xe`. The constant capability suggests a privileged/root vspace op rather than a caller-supplied cap.
+Evidence: `mov x0,#0 | mov x1,#-0x2000000000000000 | mov x2,#0 | mov x3,#0 | b 0x002a4c98`
+Severity (hypothesis): Low — fixed capability, no attacker-controlled operand.
+Confidence: Medium.
+
+## [sk] 0x00353888 sk_sysreg (bounds/magic-check fragment)
+Observation: ORs two masked 64-bit values and tests the result against `-0x7f7f7f7f7f7f7f80`, then materializes `-0x6000000000000000`. The constant test is characteristic of a carry/overflow or sentinel check (0x8080808080808080 pattern) used to detect a field overflow or a magic marker.
+Evidence: `and x20,x10,x8 | and x8,x11,x9 | orr x9,x8,x20 | tst x9,#-0x7f7f7f7f7f7f7f80 | mov x9,#-0x6000000000000000`
+Severity (hypothesis): Medium — sentinel/overflow detection; outcome consumed by caller's flags.
+Confidence: Low (fragment, caller unknown).
+
+# SK findings — slice 22 (0x353dc4-0x354b20)
+
+Region is a table of tiny leaf/accessor helpers plus Swift-runtime-style metadata
+accessors (type-name tables at 0x4e7ed8, metadata fn pointers, tagged-object ctors,
+precondition traps). Most functions are trivial accessors; only Swift-runtime trap
+surfaces are security-relevant.
+
+## [sk] 00354ad4 swift_precond_out_of_range
+- Observation: Calls the Swift precondition/fatal-error machinery with the literal
+  "because it is outside the representable range" (src 0x5cfbd0) — the integer
+  conversion out-of-range trap.
+- Evidence: `FUN_001a89a8("because it is outside the representable range", 0x2e, 1)`.
+- Severity (hypothesis): LOW — a fatal-abort path, not a privilege boundary; aborts
+  the calling context on an out-of-range integer conversion.
+- Confidence: medium (string match is high-confidence, security impact low).
+
+## [sk] 00354ae8 swift_precond_abstract
+- Observation: Calls the Swift precondition/fatal-error machinery with a diagnostic
+  string at 0x5d3bb9 ("Should be overridden..." region) — the abstract-method /
+  generic-requirement trap.
+- Evidence: `FUN_001a89a8(&DAT_005d3bb9, 2, 1)`.
+- Severity (hypothesis): LOW — fatal-abort on an unimplemented abstract member.
+- Confidence: medium (string match high-confidence, impact low).
+
+## [sk] 003542dc tagged_ptr_field
+- Observation: Unmasks the high tag bits of a pointer (`ptr & 0xfffffffffffffff`)
+  then adds 0x20. If the tagged-pointer value originates from untrusted input and the
+  low address bits are attacker-controlled, the resulting pointer is dereferenced by
+  the caller.
+- Evidence: `return (ptr & 0xfffffffffffffff) + 0x20;`
+- Severity (hypothesis): LOW — generic Swift/obj tagged-pointer field accessor;
+  whether the source value is attacker-influenced is not determinable from this leaf.
+- Confidence: low.
+
+## [sk] 003540f4 swift_obj_init_pointervalue
+- Observation: Object initializer embeds a "pointerValue" type-name string and a
+  metadata function pointer (0x677790). The 128-bit payload (lo/hi) is copied verbatim
+  into the object at +0x10/+0x18 with no validation.
+- Evidence: payload written unvalidated; metadata fn 0x677790 stored at +0x48.
+- Severity (hypothesis): LOW — constructor; validation, if any, happens in callers.
+- Confidence: low.
+
+No syscall argument-validation gaps, privilege/capability checks, or bounds issues
+were observed in this leaf/accessor-only region.
+
+# SK region syscalls — slice 23 findings (0x354b2c-0x355908)
+
+Slice 23 is dominated by tiny leaf helpers / frame glue / register shims /
+constructor stubs. Most (139/205) are bare `ret` leaves. The observations below
+come from the non-trivial bodies.
+
+## [sk] 00355090 sk_copy_pair_2 — mixed-width struct field copy
+- Observation: copies a 64-bit word at +0x20 then a 32-bit word at +0x28 from
+  `src` into `dst` (no bounds check on either pointer; offsets are fixed struct
+  offsets, so this is structural, not a length-driven copy).
+- Evidence: decompile `*(long*)(dst+0x20)=*(long*)(src+0x20);
+  *(int*)(dst+0x28)=*(int*)(src+0x28)`.
+- Severity (hypothesis): none — fixed-offset struct copy.
+- Confidence: high (no variable length involved).
+
+## [sk] 00355354 sk_bit_from_tag — unchecked shift from byte field
+- Observation: `1L << (*(byte*)(base+0x20) & 0x3f)` — a bit is selected from a
+  tag byte; the shift is masked to 0x3f, so no UB, but a 0x20/0x24 32-bit field
+  read is paired with the shift to form a 16-byte return.
+- Evidence: decompile `auVar1._0_8_ = 1L << ((ulong)*(byte *)(param_1 + 0x20)
+  & 0x3f)`.
+- Severity (hypothesis): informational — masked shift, safe by construction.
+- Confidence: high (mask present in decompile).
+
+## [sk] 003556b0 sk_shift_ctor — length expression from a byte shift
+- Observation: `FUN_00002534((1L << shift) + 0x3f, in_x4, in_x5)` — a length is
+  derived as `(1 << shift) + 0x3f` (a byte -> power-of-two plus slack). If this
+  length feeds an allocation/bounds decision, a large `shift` byte would make
+  `1L << shift` huge (no mask here, unlike 00355354).
+- Evidence: decompile `FUN_00002534((1L << ((long)param_1 & 0x3fU)) + 0x3f, ...)`.
+- Severity (hypothesis): low — only shifts a byte value, caller-controlled
+  shift could produce a very large size argument.
+- Confidence: medium (shift is masked to 0x3f, but the +0x3f slack is constant).
+
+## [sk] 00355720 sk_store_arg_masked — 24-bit truncation of arg
+- Observation: stores `param_4 & 0xffffff` (lower 24 bits) into a stack slot —
+  a capability/selector field truncated to 24 bits; upper bits silently dropped.
+- Evidence: decompile `*(ulong *)(x29-0x48) = param_4 & 0xffffffffffffff`.
+- Severity (hypothesis): informational — explicit 24-bit field packing.
+- Confidence: medium (bit-width chosen by the field layout).
+
+## [sk] 00354b50 / 00355100 sk_read_prev_word — reads word at base-0x100
+- Observation: both accessors read a 64-bit word at `base - 0x100` (a field
+  located 0x100 bytes before the base pointer). If `base` is a mis-sized/alloca
+  pointer, this is an out-of-bounds read before the object.
+- Evidence: decompile `return *(long*)(param_1 + -0x100)`.
+- Severity (hypothesis): low — structural field access at negative offset; the
+  -0x100 offset strongly suggests a fixed struct layout, not attacker-controlled.
+- Confidence: medium (no validation around the access).
+
+# SK slice 24 findings (0x355914-0x356670)
+
+## [sk] 00356530 sk_state_mix
+Observation: ARX/ChaCha-style 4-word state-mixing primitive updating state words at base+0x8/+0x10/+0x18/+0x20 using add/rotate/xor.
+Evidence: Decompile shows explicit add/ror(x>>n | x<<(64-n))/xor rotations over 4 state words, seeded by a register word (in_x12) and the high byte of the top word. Callers FUN_0022995c / FUN_002299cc extract a small field (bits 56-58) from the state top word to select a shift width before mixing — a variable-width bit-extraction hash.
+Severity (hypothesis): low (internal hash/PRNG state mixer; no external input reaches it directly without prior validation by callers).
+Confidence: medium.
+
+## [sk] 003559a8 sk_fatal_msg
+Observation: Returns the literal "Fatal error" string (s_Fatal_error_005accd0).
+Evidence: decompile returns pointer to 0x5accd0; read_memory at 0x5accd0 yields "Fatal error\0". Used by fatal/panic reporting paths.
+Severity (hypothesis): informational.
+Confidence: high.
+
+## [sk] region character
+Observation: The bulk of slice 24 (0x355914-0x356670) is a dense cluster of no-op entry stubs (empty `return;`), saved-register frame load/store helpers, tagged-pointer-aware object-field accessors, and single-callee forwarders to shared field/cpu/alloc helpers (FUN_00310a44, FUN_0008f6c0/f4, FUN_00376820, FUN_003a25d4, FUN_001a89a8). No syscall argument validation, capability checks, or bounds logic is present in this range.
+Evidence: all 206 decompiles reviewed; bodies are empty or trivial pointer arithmetic / register moves.
+Severity (hypothesis): none — the security-relevant validation lives in the callees (0x31xxxx field accessors, allocator, per-CPU dispatch), reconstructed by other slices.
+Confidence: high.
+
+# SK slice 25 findings (0x35667c-0x357424)
+
+## [sk] 0x00356c90 sk_slot_array_insert — unchecked slot-index bitmap/record write
+Observation: Writes `1ULL << (param_2 & 0x3f)` into a bitmap word at `(param_3 + 0x38 + (param_2>>6)*8)` and then copies a 5-word (40-byte) record into `*(param_3+0x30) + param_2*0x28`. The index `param_2` selects both the bitmap word and the record slot with no bounds check inside this fragment.
+Evidence: Decompile `*(ulong *)(lVar1 + 0x38) |= 1L << (param_2 & 0x3f); puVar2 = *(long *)(param_3 + 0x30) + param_2 * 0x28;` with 5-word copy. Caller FUN_0025c260.
+Severity (hypothesis): medium — if `param_2` (a slot/cap index) is attacker-influenced and not validated by the caller, this is an out-of-bounds write into the slot array / its bitmap.
+Confidence: medium
+
+## [sk] 0x003571f8 sk_dispatch_indirect — indirect call through a caller-dereferenced record
+Observation: `param_1 = *param_1`, then dispatches to FUN_0031e874 with record words [0..7]. The target/arguments are derived from a pointer dereferenced at the call site; the record contents are not validated here.
+Evidence: Decompile `param_1 = (undefined8 *)*param_1; FUN_0031e874(*param_1,...,param_1[7]);`
+Severity (hypothesis): low-medium — an indirect dispatch into kernel helper with 8 register args; integrity depends on the record being kernel-private.
+Confidence: medium
+
+## [sk] 0x00356ecc / 0x00356f44 — user-error emitters on syscall entry
+Observation: These call the user-error emitter (FUN_001a89a8) with fixed strings ("value cannot be converted to", len 0x1e; "more", len 5) and flag 1. They sit on the syscall/exception path and encode user-triggerable error conditions into the exception register (bits 0xc000000000000000 / 0x1000000000000000 observed in the emitter).
+Evidence: Decompiles `FUN_001a89a8(s_value_cannot_be_converted_to_005cfbb0, 0x1e, 1)` and `FUN_001a89a8(s_more_005d3bd7, 5, 1)`.
+Severity (hypothesis): informational — error-path hygiene; no direct memory-safety issue in these stubs.
+Confidence: medium
+
+## [sk] slice 25 region — frame-slot accessors & dispatch-table getters (bulk)
+Observation: The bulk of this range is tiny tail fragments that read/write a caller's saved frame slots (unaff_x29 offsets) or return pointers into global dispatch/name tables at 0x4e7xxx-0x4ecxxx. These are the register-frame plumbing of a large inlined syscall dispatcher; they hold no independent validation logic.
+Evidence: Decompiles `return *(undefined8 *)(unaff_x29 + -0xNN)` and `return &DAT_004exxxx` across ~200 addresses; names in part25.
+Severity (hypothesis): none by themselves — correctness depends on the surrounding dispatcher.
+Confidence: medium
+
+# SK region syscalls — findings (slice 26: 0x357440-0x358268)
+
+## [sk] 0x00357acc sk_panic_code_13f
+- Observation: Calls kernel panic/trace reporter FUN_00310d68 with a fixed
+  code 0x13f and a single context word. No return — fatal path.
+- Evidence: `FUN_00310d68(0x13f, param_1)`; decompile body.
+- Severity (hypothesis): Info — this is the kernel's own error-reporting path,
+  not a security boundary by itself, but the 0x13f code may flag a specific
+  invariant/validation failure worth correlating with the caller.
+- Confidence: medium.
+
+## [sk] 0x00357bd0 sk_panic_noreturn
+- Observation: Tail-calls a noreturn panic helper (FUN_001afa84) with no
+  precondition or argument validation visible. Reached when some internal
+  invariant breaks; the panic path itself carries no privilege boundary.
+- Evidence: decompile; callee marked "Subroutine does not return".
+- Severity (hypothesis): Info — panic is a defensive path.
+- Confidence: high (noreturn callee confirmed).
+
+## [sk] 0x003576dc sk_bswap128
+- Observation: 128-bit byte-swap of two 64-bit words (endian conversion),
+  likely deserializing a guest/on-wire 128-bit capability or message field.
+  If applied to attacker-controlled data, endianness assumptions in the
+  caller are the validation surface, not this leaf.
+- Evidence: unambiguous bswap sequence (8/16/32-bit mask-shift-or chain +
+  half-swap).
+- Severity (hypothesis): Info/Low — data-conversion leaf; correctness of
+  callers matters.
+- Confidence: high (algorithm unambiguous).
+
+## [sk] 0x00357874 sk_align_up_mask
+- Observation: `param_2 + ((param_1 + 0x20) & ~param_1)` — rounds up with an
+  alignment derived from the value itself. If `param_1` is not a power of two,
+  `~param_1` does not produce a clean alignment mask; the result is only well
+  defined when callers pass a power-of-two-aligned bound. Unchecked in this
+  leaf.
+- Evidence: decompile expression.
+- Severity (hypothesis): Low (hypothesis) — potential incorrect size/offset
+  computation if a non-power-of-two value reaches here; callers should mask
+  first.
+- Confidence: medium.
+
+## [sk] 0x00357628 / 0x003576c8 / 0x003577a0 sk_cap_slot_size*
+- Observation: `(size_field & 0xfffffffffffffff) + 0x20` — masks a capability
+  word to its low 52 bits and adds the 0x20 object-header size. The 52-bit
+  mask caps the size field; 0x20 is added without overflow check. Large but
+  bounded (52-bit) sizes are fine on 64-bit, but a 52-bit value + 0x20 is
+  within range; no overflow. This is an object-size computation used by
+  allocators/layout code.
+- Evidence: decompile expressions at all three addresses.
+- Severity (hypothesis): Info — size computation, not a boundary itself.
+- Confidence: medium.
+
+## [sk] 0x00357850 sk_shift16_or4
+- Observation: `(param_1 << 0x10) | 4` — packs a value shifted left 16 with
+  flag bit 2 set. Left shift of a caller value by 16 can discard high bits
+  (truncation) — potentially dropping a capability/attribute field. Unchecked
+  in this leaf.
+- Evidence: decompile.
+- Severity (hypothesis): Info — packing helper; caller controls semantics.
+- Confidence: medium.
+
+## [sk] 0x00358134 sk_div_shift_store
+- Observation: Computes `param_1 / x21` guarded by `x21 != 0` before storing.
+  The division is guarded against divide-by-zero, but `x21` (the divisor)
+  arrives in a caller-preserved register and is not validated for range —
+  a signed long divisor is used. After the guarded divide, `(q << 1)` is
+  stored. Reasonable defensive handling.
+- Evidence: decompile: `if (unaff_x21 != 0) lVar1 = param_1 / unaff_x21;`.
+- Severity (hypothesis): Info — divide-by-zero is guarded.
+- Confidence: medium.
+
+## [sk] 0x003581b4 sk_mask_shift_neg1
+- Observation: `*dst = -1L << (x26 & 0x3f)` — shift count masked to 6 bits,
+  so no UB shift. Masking the shift to 0x3f means the shift is well-defined.
+  A shift of 64+ is folded, which is benign here.
+- Evidence: decompile.
+- Severity (hypothesis): Info — shift count masked; no overflow.
+- Confidence: medium.
+
+## [sk] 0x358278-0x358f48 Slice 27 — findings
+
+Slice 27 is a dense run of ~206 tiny leaf helpers on the syscall/exception-entry
+path. The vast majority are empty `ret` stubs, register-save shims (store
+incoming registers into caller-frame slots), or small structure-copy/accessor
+helpers whose operands are caller registers (unmodeled by the decompiler). Few
+carry independent security logic. The following are the security-relevant
+observations with evidence.
+
+## [sk] 003584d8 sk_size_probe_003584d8
+Observation: Reads a size from `*(p1 & ~7)` (unaligned-dereference-tolerant, 8-byte
+aligned probe). If the value is below 0x1000 it returns `size+1`, otherwise 0.
+The `size+1` result is an unchecked 32-bit truncation of a 64-bit read.
+Evidence: `int sk_003584d8(uint64_t p1) { uint64_t sz = *(uint64_t *)(p1 & ~7ULL);
+if (sz < 0x1000) return (int)sz + 1; return 0; }` — `(int)` truncation of a value
+that can be up to 0xFFF.
+Severity (hypothesis): low — helper is a length/size probe; truncation only
+matters if callers use the returned int as a length.
+Confidence: medium.
+
+## [sk] 00358b60 sk_bitmerge_00358b60
+Observation: Merges a 6-bit field from an untrusted byte at `p1+1` with a 5-bit
+field of `p2`. Both fields are masked; no validation of `p1` pointer before the
+byte read.
+Evidence: `return ((*(uint8_t *)(p1 + 1)) & 0x3f) | ((p2 & 0x1f) << 6);`
+Severity (hypothesis): low — field extraction; dereference of a caller-supplied
+pointer with no bounds check on this leaf.
+Confidence: medium.
+
+## [sk] 00358e40 sk_addr_arith_00358e40
+Observation: Address arithmetic `((x11+x19) & x12) + x10 + x9` then masked by
+`param_1`. The mask on the final result can silently discard high bits of a
+computed pointer (potential wrap/alias if used as a canonical address).
+Evidence: `uint64_t t = ((/*x11*/0 + /*x19*/0) & /*x12*/0) + /*x10*/0 + /*x9*/0;
+return t & mask;`
+Severity (hypothesis): low — helper; masking a pointer to a non-canonical width
+could produce aliased addresses if the caller trusts it as an address.
+Confidence: low.
+
+## [sk] 00358c74 sk_pair_load_00358c74
+Observation: Dereferences `*pp` then reads two words at `(*pp + 0x20)` and
+`(*pp + 0x30)` — a double-indirect structure field access with no null/bounds
+check at this leaf.
+Evidence: `uint64_t base = *pp; out[0] = *(uint64_t *)(base + 0x30);
+out[1] = *(uint64_t *)(base + 0x20);`
+Severity (hypothesis): low — an unchecked second-level dereference; fault
+handling depends on callers.
+Confidence: medium.
+
+# Slice 28 (0x358f54-0x359c84) findings — cL4 Secure Kernel (GL1)
+
+Security-relevant observations from the syscall/exception-entry thunk table.
+Most entries are opaque register-forwarding thunks with no local validation;
+the substantive checks live in the out-of-slice syscall engines. Only entries
+with direct evidence are logged.
+
+## [sk] 0x00359088 cl4_syscall_build_cap_descriptor
+- Observation: Capability/frame descriptor constructed from an opaque register value (in_x9 masked to 48 bits then OR'd with the tagged-pointer constant 0xd000000000000000) with no bounds/validation check visible at this thunk; the low 48 bits are taken as-is from the register.
+- Severity (hypothesis): hypothesis
+- Confidence: medium
+
+## [sk] 0x003592b0 cl4_syscall_wrapper_b270
+- Observation: A mask expression over the register value in_w8 ((in_w8 & 0xf8) ^ 0x1f8) & (in_w8 + 0x10) is passed to the syscall helper FUN_0036b270; the mask appears intended to coerce/sanitise the argument, but no upper-bound check on the transformed value is visible at this thunk.
+- Severity (hypothesis): hypothesis
+- Confidence: medium
+
+# SK slice 29 findings — 0x359c90-0x35a8bc (syscall/exception-entry machinery)
+
+Region note: slice 29 is dominated by trivial exception-entry stubs (empty
+`return;` bodies) and register-passthrough argument-marshaling helpers where
+the decompiler dropped the real parameters. Most functions carry no
+security-relevant logic at this layer; only the items below have concrete
+evidence worth tracking. Confidence is low/medium throughout.
+
+## [sk] 0x0035a81c sk_syscall_a81c_dispatch_record
+Observation: Builds a 4-word dispatch record where the word at +0x28 is
+`(in_x10 & 0xffffffffffff) | 0xd000000000000000` — a capability/operation
+descriptor with a hardcoded 0xd<<60 type tag. The lower 48 bits of the
+caller-supplied `in_x10` are folded into the descriptor unchanged, then the
+record is dispatched to FUN_0036986c. No range/validation of `in_x10` is
+visible at this layer.
+Evidence: decompile of FUN_0035a81c (cl4_kernel.raw); callers FUN_001d0100,
+FUN_001d01f4.
+Severity (hypothesis): low — the tag is fixed and the low bits are plausibly a
+validated object index, but if `in_x10` is guest-controlled the 0xd tag could
+be forged into a descriptor the dispatch layer trusts.
+Confidence: low.
+
+## [sk] 0x0035a334 sk_vector_compare_16
+Observation: 8-lane (4x32-bit, two 16-byte operands) unsigned "less-than"
+comparison returning nonzero (0xffff) if any lane of one vector is strictly
+less than the corresponding lane of the other. Shape is consistent with a
+bounds/ordering check over two 128-bit values (e.g. an address-range vs limit
+test). If used to gate memory access, an OR-of-lane comparison is only
+meaningful when both vectors are laid out identically.
+Evidence: decompile of FUN_0035a334 using NEON_umaxv(...,2) to OR the 8
+per-lane compare masks.
+Severity (hypothesis): low — plausible bounds check; no callers inspected at
+this layer.
+Confidence: low.
+
+## [sk] 0x0035a808/0x0035a830/0x0035a880 registration helpers
+Observation: Each registers a (symbol, data-arg) pair via FUN_00002534 /
+FUN_00027614 (DAT_00657588/4f1918, DAT_006575a0/4f1930, FUN_00656240/
+DAT_004e8098). These are handler/table registrations; the targets are
+out-of-slice so the exact entry being installed cannot be confirmed here.
+No argument validation is performed in these thin wrappers.
+Evidence: decompiles of FUN_0035a808/830/880 (cl4_kernel.raw).
+Severity (hypothesis): informational — registration-time trust decision lives
+in the out-of-slice callee.
+Confidence: low.
+
+## [sk] 0035ad10 cl4_registry_insert
+
+**Observation:** Insertion into the process-global registration table grows the
+slot array and element table with no upper bound; the free-list drain runs
+unconditionally when the in-flight counter hits zero.
+**Evidence:** `DAT_006c0174 = n + 1` after growing via FUN_0035b2c8 / allocating
+via FUN_0035b4b8; deferred frees drained by walking DAT_006c01b0 under a memory
+barrier. Growth is load-factor driven (`hash/rem > 3`) — attacker-reachable if
+the key space is user-controllable.
+**Severity (hypothesis):** Medium (unbounded memory growth, potential DoS).
+**Confidence:** medium.
+
+## [sk] 0035b2c8 cl4_small_ht_grow
+
+**Observation:** The element-size exponent `param_2` is used directly to size
+the new block (`2L << (param_2 & 0x3f)`); a hostile size exponent yields an
+oversized allocation and the caller falls through to a `SoftwareBreakpoint` on
+allocation failure.
+**Evidence:** `FUN_00010244(2L << (param_2 & 0x3f), slot_w, 0x48dda4ae)`; on
+null returns, `SoftwareBreakpoint(1, 0x35b4b8)`.
+**Severity (hypothesis):** Low (allocation failure handled by trap, but
+arbitrary-size request is unvalidated).
+**Confidence:** medium.
+
+## [sk] 00361b18 cl4_string_set_register
+
+**Observation:** Registration of a string key validates every input byte: a
+byte whose value is `<= 0x20` (control/space) is rejected (`0xffffffe0 <
+*name - 0x20` catches underflow), bounding the accepted charset before the
+string is copied and inserted into the hash set.
+**Evidence:** `for (i = len; i != 0; i--) if (0xffffffe0 < *name - 0x20) { fail }`;
+then `FUN_000101a0(len, ...)` + `FUN_00117cc4(copy, name - len, len)`.
+**Severity (hypothesis):** Low (defensive input validation; prevents injection
+of control characters into the type-name registry).
+**Confidence:** high.
+
+## [sk] 00364020 cl4_type_metadata_encode
+
+**Observation:** The type-metadata encoder resolves and emits nodes for object
+fields via a large builtin-name lookup table (0x67afa8..0x67b138); any
+unrecognized type pointer returns NULL, and child-type recursion (0x304-0x306,
+0x303) has no explicit depth limit.
+**Evidence:** Builtin-name table dispatch with default `return 0`; recursive
+`FUN_00364020(type[1], ctx)` calls for child types.
+**Severity (hypothesis):** Low (unbounded recursion depth on crafted deeply
+nested type metadata — potential stack exhaustion).
+**Confidence:** low.
+
+## [sk] 00365c38 cl4_cap_op_dispatch_core
+
+**Observation:** The capability-object operation dispatcher selects a handler
+by the object type tag and descends the child/next chain to find a matching
+object. The 0x202 nested-walk path compares the target/source chain lengths and
+can return an error on mismatch, but the generic child-chain descent has no
+cycle guard.
+**Evidence:** Recursion into `FUN_00365c38(...)` on the resolved child
+(`puVar7 = FUN_003a25b8(...)` / `FUN_00374d80(...)`); 0x202 path uses
+`FUN_0035eae4` chain walks with bounded comparison.
+**Severity (hypothesis):** Medium (a cyclic or adversarial capability chain
+could cause unbounded recursion / hang in the op dispatcher).
+**Confidence:** low.
+
+## [sk] 00365660 cl4_arena_reserve
+
+**Observation:** Output arena capacity is doubled (`cap = *(arena+0x20) * 2`)
+with a floor of `len+1`; the size arithmetic could overflow for very large
+`len`, wrapping the capacity to a small value and leading to an undersized
+allocation.
+**Evidence:** `cap = *(arena+0x20) * 2; if (cap < len+1 || cap-(len+1)==0) cap = len+1;`
+then `FUN_000101a0(cap + 8, ...)`.
+**Severity (hypothesis):** Low (unsigned overflow on 64-bit sizes requires an
+attacker to drive `len` near 2^63).
+**Confidence:** low.
+
+# SK slice 31 security findings (0x366f1c-0x3723a0)
+
+## [sk] 0x366f1c sk_msg_parse_registers — descriptor magic/field validation
+Observation: Register-context parser validates the message descriptor header (magic 0x301) and per-slot size fields before copying, rolling back written slots on mismatch.
+Evidence: decompile FUN_00366f1c — magic check, per-slot validation via FUN_00365c38, rollback loop invoking destructor on failure.
+Severity(hypothesis): low (defense-in-depth bounds checks)
+Confidence: medium
+
+## [sk] 0x367bf0 sk_validate_msg_desc — descriptor kind allowlist
+Observation: Only descriptor kinds 0/0x305/0x203 are accepted for validation; object-id-live flag (bit 0x40000000) forces a capability resolution.
+Evidence: decompile FUN_00367bf0 — allowlist check and FUN_00362c34 resolution.
+Severity(hypothesis): medium (syscall argument validation gate)
+Confidence: medium
+
+## [sk] 0x367438 sk_msg_parse_objref — syscall argument kind validation
+Observation: Object-reference parsing accepts only kinds 0x200-0x204 (excluding 0x202) plus 0x305/0; out-of-range kinds rejected.
+Evidence: decompile FUN_00367438 — (kind-0x200)<4 && !=2 allowlist.
+Severity(hypothesis): low (input validation)
+Confidence: medium
+
+## [sk] 0x369f4c sk_access_acquire — access exclusivity fatal
+Observation: Thread-local access tracking enforces exclusivity and raises a fatal 'exclusivity violation' on simultaneous conflicting accesses; removal of a missing entry hits a SoftwareBreakpoint.
+Evidence: decompile FUN_00369f4c (s_exclusivity_violation) and FUN_0036a158 (SoftwareBreakpoint 0x36a1a0).
+Severity(hypothesis): medium (concurrency safety; panic on misuse)
+Confidence: medium
+
+## [sk] 0x36aae4 sk_obj_intern_table family — mutex-guarded global tables, OOM panic
+Observation: The object-intern tables (0x36aae4/36e878/36ed94/37062c/370f2c/371b58/36fb10) are guarded by a mutex (LOAcquire + FUN_00118164/194) and panic via SoftwareBreakpoint on allocation failure rather than returning an error.
+Evidence: decompiles show LOAcquire/LORelease and SoftwareBreakpoint OOM paths (e.g. 0x36aae4, 0x36fb10).
+Severity(hypothesis): medium (OOM -> panic; mutex-protected global state)
+Confidence: medium
+
+## [sk] 0x36d8a4 sk_prespec_lookup — prespecialization range gate
+Observation: The 'Prespecializations library' lookup rejects specialized arguments that fall outside the accepted address range (DAT_006c02f8..310), logging 'Rejecting' and returning no match.
+Evidence: decompile FUN_0036d8a4 — range comparisons and s_Prespecializations_library__Reje strings.
+Severity(hypothesis): low (type-safety gate)
+Confidence: medium
+
+# SK slice 32 findings (0x372534-0x37ffc4)
+
+## [sk] 0x00372a44 sk_desc_copy
+- Observation: allocates 0x58-byte descriptor copy with tag 0x59dd9b33; on alloc failure traps via SoftwareBreakpoint(1,0x372c58) rather than returning an error.
+- Evidence: FUN_0001062c(...,0x58,0x59dd9b33); SoftwareBreakpoint on rc!=0.
+- Severity (hypothesis): low - kernel-internal allocator; no user-controlled bounds.
+- Confidence: medium.
+
+## [sk] 0x003743d0 sk_dedup_insert_a
+- Observation: unbounded open-addressed dedup table insert; on entry-allocation failure (FUN_0001062c) traps via SoftwareBreakpoint(1,0x374838).
+- Evidence: SoftwareBreakpoint(1,0x374838); no error return path.
+- Severity (hypothesis): low - kernel-internal dedup; potential DoS if table corrupted.
+- Confidence: medium.
+
+## [sk] 0x00374838 sk_dedup_insert_b
+- Observation: mirror dedup insert (0x28 entry) also traps via SoftwareBreakpoint(1,0x374d14) on alloc failure.
+- Evidence: SoftwareBreakpoint(1,0x374d14); FUN_0001062c(...,0x28,0x59dd9b33).
+- Severity (hypothesis): low.
+- Confidence: medium.
+
+## [sk] 0x0037d4b8 sk_hashset_insert
+- Observation: hash-set insert traps via SoftwareBreakpoint(1,0x37d700) when a bucket index is out of range (param_1[2] <= slot).
+- Evidence: LAB_0037d6fc -> SoftwareBreakpoint(1,0x37d700).
+- Severity (hypothesis): low; trap implies corrupted table, not attacker-controllable.
+- Confidence: medium.
+
+## [sk] 0x00376038 sk_dedup_registry_lookup
+- Observation: registry lookup can trap via SoftwareBreakpoint(1,0x376634) on a bad object kind; unbounded rehash on load factor.
+- Evidence: SoftwareBreakpoint(1,0x376634) in the insert path.
+- Severity (hypothesis): low.
+- Confidence: medium.
+
+## [sk] 0x00379eec sk_cap2_tagword
+- Observation: capability tag gate (0x80080); functions computing cap offsets honor tag bits. No user-controlled index found.
+- Evidence: ((*param_1 ^ 0xffffffff) & 0x80080) gate.
+- Severity (hypothesis): low; cap offset decode is tag-validated.
+- Confidence: medium.
+
+## [sk] 0x004088d8 sk_drace_check
+- Observation: the cL4 data-race detector installs a raw machine-instruction trampoline into memory at runtime (self-modifying code inside the GL1 Secure Kernel). The 16 bytes rendered by Ghidra as 0x3900012a528005ca, 0x54000643fa4d3120, 0x540003e26b16015f, ... are instruction words written via thunk_FUN_00369b04 then executed. In a ring -1 security monitor, in-kernel code mutation is an integrity-sensitive primitive.
+- Evidence: FUN_004088d8 writes the 8 constant words and calls thunk_FUN_00369b04(bVar1, msg, &w); on first-detector-mode it then falls into FUN_00116d60 (fatal). Also string "data race detected ... at ..." 0x005dc6ba.
+- Severity (hypothesis): medium — runtime code patching is high-value to an attacker who can influence the detector; the fatal path mitigates.
+- Confidence: low (Ghidra renders the patched bytes as constants; exact install target not recovered).
+
+## [sk] 0x00409e90 sk_job_build
+- Observation: the async job builder writes to what Ghidra flags as a read-only address (ram,0x00657998), with multiple "Read-only address ... is written" warnings. If 0x00657998 is a genuinely read-only page, the writes could indicate a mis-decoded pointer, or an actual RO-page mutation attempt in the GL1 kernel.
+- Evidence: Ghidra warnings "WARNING: Read-only address (ram,0x00657998) is written" at three sites in FUN_00409e90; raw instruction words 0xf900143f39008040 / 0x3900803f stored into freshly allocated job storage.
+- Severity (hypothesis): low — most likely a decompiler artifact of writing to freshly-allocated heap (the "read-only" tag is stale), but worth confirming the page attributes.
+- Confidence: low.
+
+## [sk] 0x004085c0 sk_err_reply_build
+- Observation: the L4 error-reply builder invokes the object's stored callback at obj+0x38 with a constructed PermissionInvalid/OperationInvalid error slot. Both paths reach an indirect call through a caller-controlled object pointer; a corrupted obj+0x38 would yield arbitrary indirect call in GL1.
+- Evidence: `(**(code **)(param_1 + 0x38))(param_1)` in the PermissionInvalid path and `(**(code **)(param_1 + 0x38))()` in the OperationInvalid path of FUN_004085c0; slot globals s_L4_ErrorCodePermissionInvalid 0x0068a6b8 / OperationInvalid 0x0068a698.
+- Severity (hypothesis): medium — indirect dispatch on an untrusted/foreign object pointer; requires the object to be attacker-influenced first.
+- Confidence: medium.
+
+## [sk] 0x0040a8d8 sk_job_alloc / 0x0040a9f4 sk_job_alloc2
+- Observation: job allocation exposes caller-chosen pointers: sk_job_alloc stores two caller words (p[2], p[3]) then invokes `((void(*)(void))p[2])()` when the CAS callback reports success; sk_job_alloc2 lets the caller select the metadata pointer (type word) used as the CAS target, defaulting to the thread-local cputype.
+- Evidence: sk_job_alloc `(*(code *)puVar1[2])()` on flag set; sk_job_alloc2 `pdVar2 = (puVar1 + 2)` when param_1 != 0, else `&__thread_bss.cputype`.
+- Severity (hypothesis): medium — arbitrary function-pointer invocation reachable via job alloc if the CAS callback outcome is attacker-influenced.
+- Confidence: low (Swift async ABI; callback path not fully recovered).
