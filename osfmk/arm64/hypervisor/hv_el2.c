@@ -246,8 +246,11 @@ bool hv_el2_guest_exc_check(uint64_t esr, uint64_t elr, uint64_t far,
  * spsel toggle, "Signed thread state manipulated with interrupts enabled"
  * JOP-hash verify (FUN_fffffe000b760444), elr_el1/spsr_el1/fpcr/fpsr reload
  * from the saved frame, SVE Z/P reload when the guest SVE state is active
- * (type-0x31 object at tpidr+0x120), PAC-key re-arm (3,0,1,0,5) and T1SZ
- * (3,0,1,0,6,0x10001) — and ExceptionReturn(). The full body lives in the
+ * (type-0x31 object at tpidr+0x120), PAC-key re-arm — APIAKeyLo_EL1
+ * (3,0,1,0,5) derived nonce and APIAKeyHi_EL1 (3,0,1,0,6) = 0x10001
+ * (the earlier "T1SZ" label was wrong: S3_0_C1_C0_6 is APIAKeyHi_EL1;
+ * register identity per ARM ARM, project convention: unverified) —
+ * and ExceptionReturn(). The full body lives in the
  * shared hv_el2_guest_restore_eret. Verified against the fresh decompile
  * (b75e5cc). Confidence: high.
  */
@@ -3518,8 +3521,9 @@ void hv_el2_guest_fiq(void)
  * (tpidr+0x1c0) and the "saved thread state with interrupts enabled" guard,
  * then restores elr_el1/spsr_el1/fpsr/fpcr, reloads SVE Z/P registers when
  * the guest SVE state is active (type 0x31 at tpidr+0x120), re-arms the
- * PAC key (UnkSytemRegWrite(3,0,1,0,5)) and T1SZ
- * (UnkSytemRegWrite(3,0,1,0,6,0x10001)), and executes ExceptionReturn().
+ * PAC key (UnkSytemRegWrite(3,0,1,0,5)) and APIAKeyHi_EL1
+ * (UnkSytemRegWrite(3,0,1,0,6,0x10001); the earlier "T1SZ" label was wrong),
+ * and executes ExceptionReturn().
  * hv_el2_eret_fast is the same tail without the preemption re-check.
  * Confidence: high (SVE restore + ExceptionReturn observed)
  * Notes: "Signed thread state manipulated with interrupts enabled" guard is
