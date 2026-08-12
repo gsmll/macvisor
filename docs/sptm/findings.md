@@ -4612,3 +4612,33 @@ Confidence: medium.
 - **Evidence**: Entry: `uVar20=(uint)param_3; if (0x300<uVar20) { sk_out_str(...,"<<too complex>>",0xf); ...}`; `LAB_003b3da8: ... if (0x300<(uint)d3) goto LAB_003b483c;` (depth guard on the child-recurse loop). Null: `LAB_003b21dc: if (param_2==0) { pcVar10="<null node pointer>"; ...}`. Fatal path: `if (0x179<uVar5) goto LAB_003b86f8;` -> `FUN_004ba408()...FUN_004ba468(); UndefinedInstructionException(0x3d48,0x3b8700)`. Child indexing is bounds-checked per sub-type (subt==2 => node[1]; subt==5 => `(uint)node[1]` count checked before `node[i]`).
 - **Severity (hypothesis)**: informational — the printer is a depth-capped, bounds-checked walker over already-trusted in-memory tagged values; the only trust-sensitive spot is the Swift-string reconstruction (`flag<0` heap string => `sk_lock(ptr, len&0x7fffffffffffffff)` free), which assumes the node's embedded string pointer/len are valid.
 - **Confidence**: high (depth cap, null handling, and tag->fatal dispatch are explicit in the decompile).
+
+## [SKR67] 0x461514-0x462b90 Object/state management table
+Observation: This slice (0x461514-0x462b90, 120 fn) is the object/state
+management table: per-object-type tag initializers (type byte at +0x98,
+3-word flag group at +0x98/+0x158/+0x170, size bits at +0x68), 16-byte
+state-descriptor zero-init / copy / swap helpers (4-word descriptors at
++0x28..+0x40 with a type byte at +0x48), a sorted region-array insert/split
+engine (stride-0x178 records, count at +0x10), and a tail of no-op witnesses.
+Trust-sensitive spots: (1) FUN_00461610 region-insert traps on every
+signed-borrow/carry overflow via SoftwareBreakpoint(1, addr) — fail-closed,
+but the arithmetic is signed and record stride (0x178) multiplies attacker-
+influenced indices; (2) FUN_00461e44 / FUN_00461f58 descriptor merge/swap
+conditionally free the old dst descriptor (sk_desc4_free / sk_desc_put_one)
+keyed on type bytes at +0x48, so an inconsistent type-byte state between the
+four merge branches could free a descriptor that is still referenced
+(double-free / UAF) or leak one; (3) FUN_00461cb8 performs an indirect call
+through a vtable pointer returned by sk_pair_use (FUN_003509c8, x16) —
+*(vtable+8)(param_1) — a classic type-confusion / control-flow surface whose
+target derivation is only partially reconstructed.
+Evidence: decompiles of FUN_00461610 (SBORROW8/SCARRY8 -> cl4_sw_bp_trap at
+0x4616c0/4/c8/cc/d0/d4; memcpy_tagged 0x684390; memmove_range),
+FUN_00461e44 (four-way merge on +0x48 type bytes, sk_desc4_free of old dst
+descriptor), FUN_00461f58 (descriptor swap; extraout_w8 byte write is a
+reconstruction artifact), FUN_00461cb8 (vtable+8 indirect call). All 120
+entries added to manifest as sk_slice_r67.c.
+Severity (hypothesis): low-medium — the merge/swap free paths are reachable
+from state transitions and the vtable dispatch is caller-parameterized; the
+region insert is fail-closed via traps but indexes are signed.
+Confidence: medium (merge/swap/vtable logic reconstructed; no-op tail and
+type setters are high-confidence).
