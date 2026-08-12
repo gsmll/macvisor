@@ -57,7 +57,7 @@ extern word_t FUN_0036a9d4(word_t, word_t);    /* object alloc */
 extern word_t thunk_FUN_000126e8(void);        /* size/count probe */
 extern void   FUN_0006ae9c(word_t, word_t);    /* span/key builder */
 extern void   FUN_00072464(word_t);            /* slot-key resolve */
-extern void   FUN_000724cc(word_t, word_t);    /* slot-key resolve (2 arg) */
+extern word_t FUN_000724cc(word_t, word_t);    /* slot-key resolve (2 arg) */
 extern void   FUN_0007198c(word_t *, word_t, word_t, word_t); /* bitmap ctx */
 extern void   FUN_00072664(word_t);            /* key rebuild */
 extern void   FUN_00081b10(word_t, word_t, word_t, word_t, word_t); /* insert */
@@ -73,7 +73,6 @@ extern void   FUN_00081c98(word_t, word_t, word_t, word_t, word_t,
 extern void   FUN_00081d14(void);              /* insert */
 extern void   FUN_00081d60(void);              /* insert-move */
 extern void   FUN_00081df0(void);              /* insert */
-extern void   FUN_00081fe0(word_t *, word_t, word_t, word_t); /* build */
 extern word_t thunk_FUN_00081ce8(word_t);      /* element move */
 extern void   FUN_000777c4(word_t, word_t, word_t); /* move helper */
 extern void   FUN_00077860(word_t, word_t, word_t, word_t); /* move (u08) */
@@ -113,7 +112,7 @@ extern void   FUN_00077794(word_t, word_t);    /* slot release */
 extern word_t FUN_000777b4(word_t, word_t);    /* slot release */
 extern void   FUN_000777e4(void);              /* element probe */
 extern void   FUN_00077928(void);              /* lock snapshot */
-extern void   FUN_000778e8(void);              /* lock snapshot */
+extern word_t FUN_000778e8(void);              /* lock snapshot */
 extern void   FUN_0007783c(void);              /* slot release */
 extern void   FUN_00077824(void);              /* insert helper */
 extern void   FUN_0007787c(void);              /* fatal helper */
@@ -123,7 +122,6 @@ extern void   FUN_00077708(void);              /* release */
 extern void   FUN_00077764(void);              /* grow probe */
 extern void   FUN_00077778(void);              /* release */
 extern void   FUN_00077770(word_t);            /* table cleanup */
-extern word_t FUN_00081fe0(word_t *, word_t, word_t, word_t);
 extern word_t FUN_00071c4c(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 extern word_t FUN_00071d74(word_t, word_t, word_t, word_t); /* alloc dispatcher */
 extern word_t FUN_00071dbc(word_t, word_t, word_t, word_t); /* alloc dispatcher */
@@ -145,6 +143,46 @@ static word_t sk_slot_release(word_t thisp, word_t slot) { return 0; } /* 77590 
 static word_t sk_clear_element(word_t thisp) { return 0; }      /* 77604 */
 static word_t sk_element_probe(void) { return 0; }              /* 77614 */
 static word_t sk_overflow_probe(void) { return 0; }             /* 77624 */
+
+/* Forward declarations for the ranged element-copy helpers (defined below). */
+static word_t sk_copy17_74a28(long, long, word_t, long);
+static word_t sk_copy17_74a98(long, long, word_t, long);
+static word_t sk_copy17_74b08(long, long, word_t, long);
+static word_t sk_copy17_74b78(long, long, word_t, long);
+static word_t sk_copy17_74c14(long, long, word_t, long);
+static word_t sk_copy17_74cb8(long, long, word_t, long);
+static word_t sk_copy17_74d54(long, long, word_t, long);
+static word_t sk_copy17_74dc8(long, long, word_t, long);
+static word_t sk_copy17_74e34(long, long, word_t, long);
+static word_t sk_copy17_74eb0(long, long, word_t, long);
+static word_t sk_copy17_74f28(long, long, word_t, long);
+static word_t sk_copy17_74fa4(long, long, word_t, long);
+static word_t sk_copy17_75018(long, long, word_t, long);
+static void   sk_copy17_750bc(word_t, word_t, word_t, long);
+static word_t sk_copy17_75118(long, long, word_t, long);
+static word_t sk_copy17_751b4(long, long, word_t, long);
+static word_t sk_copy17_75234(long, long, word_t, long);
+static word_t sk_copy17_752a4(long, long, word_t, long);
+static word_t sk_copy17_7534c(long, long, word_t, long);
+static word_t sk_copy17_753c0(long, long, word_t, long);
+static word_t sk_copy17_7543c(long, long, word_t, long);
+static word_t sk_copy17_754b0(long, long, word_t, long);
+static word_t sk_copy17_7552c(long, long, word_t, long);
+static word_t sk_copy17_755a4(long, long, word_t, long);
+static word_t sk_copy17_75624(long, long, word_t, long);
+static word_t sk_copy17_75694(long, long, word_t, long);
+static word_t sk_copy17_75710(long, long, word_t, long);
+static void   sk_copy17_75784(word_t, word_t, word_t, long);
+static word_t sk_copy17_757e8(long, long, word_t, long);
+static word_t sk_copy17_7585c(long, long, word_t, long);
+static word_t sk_copy17_758d8(long, long, word_t, long, word_t);
+static word_t sk_copy17_75948(long, long, word_t, long);
+static word_t sk_copy17_759c0(long, long, word_t, long);
+static word_t sk_copy17_75a38(long, long, word_t, long);
+static word_t sk_copy17_75ab4(long, long, word_t, long);
+static word_t sk_copy17_75b2c(long, long, word_t, long);
+static word_t sk_copy17_75bac(long, long, word_t, long);
+static void   sk_copy17_75c50(word_t, word_t, word_t, long);
 
 /* ================================================================== *
  * Cap-type allocation factory wrappers.
@@ -1136,7 +1174,7 @@ static void sk_copy17_750bc(word_t from, word_t to, word_t dest, long container)
     bool ok = from <= to;
     if ((word_t)to < (word_t)from) CL4_FATAL();         /* SBP(1,0x75110) */
     if ((long)(to - from) >= 0) {
-        FUN_000777c4(from, (word_t)container + from * 8 + 0x20);
+        FUN_000777c4(from, (word_t)container + from * 8 + 0x20, 0);
         if (ok || /*extraout_x9*/ 0 <= dest) {
             FUN_00077860(/*move*/ 0, 0, 0, 0);
             FUN_0036b118(container);
@@ -1439,7 +1477,7 @@ static word_t sk_copy17_757e8(long from, long to, word_t dest, long container)
         word_t src = (word_t)container + (word_t)from * 0x20 + 0x20;
         word_t end = dest + (word_t)n * 0x20;
         if (end <= src || src + (word_t)n * 0x20 <= dest) {
-            FUN_0035b67c(dest, src, (word_t)n, (word_t)&/*LAB_00659cd8*/ 0);
+            FUN_0035b67c(dest, src, (word_t)n, 0x659cd8);
             FUN_0036b118(container);
             return end;
         }
@@ -1459,7 +1497,7 @@ static word_t sk_copy17_7585c(long from, long to, word_t dest, long container)
         word_t src = (word_t)container + (word_t)from * 0x28 + 0x20;
         word_t end = dest + (word_t)n * 0x28;
         if (end <= src || src + (word_t)n * 0x28 <= dest) {
-            FUN_0035b67c(dest, src, (word_t)n, (word_t)&/*LAB_00659c50*/ 0);
+            FUN_0035b67c(dest, src, (word_t)n, 0x659c50);
             FUN_0036b118(container);
             return end;
         }
@@ -1699,7 +1737,7 @@ static void sk_vec_insert_75dd8(word_t value, word_t key1, word_t key2)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x75e9c) */
     {
         word_t tag = FUN_00002534(0x64e8a0, 0x4c08c0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_0006ae9c(sk_element_probe(), key2);
@@ -1734,7 +1772,7 @@ static void sk_vec_insert_75ea4(word_t v0, word_t v1, word_t v2,
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x75fa4) */
     {
         word_t tag = FUN_00002534(0x64e880, 0x4c06d8);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             word_t st2 = FUN_000778e8();
             idx = st2 & 0xffffffff;
@@ -1771,7 +1809,7 @@ static void sk_vec_insert_75fb4(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76084) */
     {
         word_t tag = FUN_00002534(0x64e878, 0x4c06d0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -1808,7 +1846,7 @@ static void sk_vec_insert_7608c(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76150) */
     {
         word_t tag = FUN_00002534(0x64e7a0, 0x4e7ff0);
-        word_t r = FUN_00258c60(v_lo, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(v_lo, 0 + 0, 0);
         if ((r & 1) != 0) {
             FUN_00077928();
             idx = sk_clear_element(/*this*/ 0);         /* 77604 */
@@ -1844,7 +1882,7 @@ static void sk_vec_insert_76158(word_t v0, word_t v1, word_t v2, word_t v3, word
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x7626c) */
     {
         word_t tag = FUN_00002534(0x64e830, 0x4c0688);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             word_t st2 = FUN_00072664(v4);
             idx = st2 & 0xffffffff;
@@ -1883,7 +1921,7 @@ static void sk_vec_insert_764c8(word_t value, word_t key1, word_t key2)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76594) */
     {
         word_t tag = FUN_00002534(0x64e788, 0x4c05e0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_0006ae9c(sk_element_probe(), key2);
@@ -2885,7 +2923,7 @@ static void sk_copy17_750bc(word_t from, word_t to, word_t dest, long container)
     bool ok = from <= to;
     if ((word_t)to < (word_t)from) CL4_FATAL();         /* SBP(1,0x75110) */
     if ((long)(to - from) >= 0) {
-        FUN_000777c4(from, (word_t)container + from * 8 + 0x20);
+        FUN_000777c4(from, (word_t)container + from * 8 + 0x20, 0);
         if (ok || /*extraout_x9*/ 0 <= dest) {
             FUN_00077860(/*move*/ 0, 0, 0, 0);
             FUN_0036b118(container);
@@ -3188,7 +3226,7 @@ static word_t sk_copy17_757e8(long from, long to, word_t dest, long container)
         word_t src = (word_t)container + (word_t)from * 0x20 + 0x20;
         word_t end = dest + (word_t)n * 0x20;
         if (end <= src || src + (word_t)n * 0x20 <= dest) {
-            FUN_0035b67c(dest, src, (word_t)n, (word_t)&/*LAB_00659cd8*/ 0);
+            FUN_0035b67c(dest, src, (word_t)n, 0x659cd8);
             FUN_0036b118(container);
             return end;
         }
@@ -3208,7 +3246,7 @@ static word_t sk_copy17_7585c(long from, long to, word_t dest, long container)
         word_t src = (word_t)container + (word_t)from * 0x28 + 0x20;
         word_t end = dest + (word_t)n * 0x28;
         if (end <= src || src + (word_t)n * 0x28 <= dest) {
-            FUN_0035b67c(dest, src, (word_t)n, (word_t)&/*LAB_00659c50*/ 0);
+            FUN_0035b67c(dest, src, (word_t)n, 0x659c50);
             FUN_0036b118(container);
             return end;
         }
@@ -3448,7 +3486,7 @@ static void sk_vec_insert_75dd8(word_t value, word_t key1, word_t key2)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x75e9c) */
     {
         word_t tag = FUN_00002534(0x64e8a0, 0x4c08c0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_0006ae9c(sk_element_probe(), key2);
@@ -3483,7 +3521,7 @@ static void sk_vec_insert_75ea4(word_t v0, word_t v1, word_t v2,
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x75fa4) */
     {
         word_t tag = FUN_00002534(0x64e880, 0x4c06d8);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             word_t st2 = FUN_000778e8();
             idx = st2 & 0xffffffff;
@@ -3520,7 +3558,7 @@ static void sk_vec_insert_75fb4(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76084) */
     {
         word_t tag = FUN_00002534(0x64e878, 0x4c06d0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -3557,7 +3595,7 @@ static void sk_vec_insert_7608c(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76150) */
     {
         word_t tag = FUN_00002534(0x64e7a0, 0x4e7ff0);
-        word_t r = FUN_00258c60(v_lo, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(v_lo, 0 + 0, 0);
         if ((r & 1) != 0) {
             FUN_00077928();
             idx = sk_clear_element(/*this*/ 0);         /* 77604 */
@@ -3593,7 +3631,7 @@ static void sk_vec_insert_76158(word_t v0, word_t v1, word_t v2, word_t v3, word
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x7626c) */
     {
         word_t tag = FUN_00002534(0x64e830, 0x4c0688);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             word_t st2 = FUN_00072664(v4);
             idx = st2 & 0xffffffff;
@@ -3632,7 +3670,7 @@ static void sk_vec_insert_764c8(word_t value, word_t key1, word_t key2)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76594) */
     {
         word_t tag = FUN_00002534(0x64e788, 0x4c05e0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_0006ae9c(sk_element_probe(), key2);
@@ -3706,7 +3744,7 @@ static void sk_vec_insert_765c4(word_t a, word_t b, word_t t1, word_t t2,
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76674) */
     {
         word_t tag = FUN_00002534(t1, t2);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -3742,7 +3780,7 @@ static void sk_vec_insert_7667c(word_t value)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76758) */
     {
         word_t tag = FUN_00002534(0x64e680, 0x4c04d0);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             FUN_00072664(/*key*/ 0);
             idx = sk_clear_element(/*this*/ 0);         /* 7765c */
@@ -3776,7 +3814,7 @@ static void sk_vec_insert_76760(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76824) */
     {
         word_t tag = FUN_00002534(0x64e778, 0x4c05d0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -3817,7 +3855,7 @@ static void sk_vec_insert_7682c(word_t value_lo, word_t value_hi)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x768e8) */
     {
         word_t tag = FUN_00002534(0x64e688, 0x4c25c0);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -3866,7 +3904,7 @@ static void sk_vec_insert_76918(word_t a, word_t b, word_t t1, word_t t2,
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x769cc) */
     {
         word_t tag = FUN_00002534(t1, t2);
-        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(sk_element_probe(), 0 + 0, 0);
         if ((r & 1) != 0) {
             sk_overflow_probe();                        /* 77764 */
             FUN_00072664(/*key*/ 0);
@@ -3899,7 +3937,7 @@ static void sk_vec_insert_769d4(word_t *src)
     if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76ac0) */
     {
         word_t tag = FUN_00002534(0x64e648, 0x4c04a0);
-        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        word_t r = FUN_00258c60(lock, 0 + 0, 0);
         if ((r & 1) != 0) {
             FUN_00072664(/*key*/ 0);
             idx = sk_clear_element(/*this*/ 0);         /* 7765c */
@@ -3961,7 +3999,7 @@ static void sk_slot_iter_76ac8(word_t v, word_t unused, word_t key,
             word_t slot_byte = *(unsigned char *)(ctx[0] + 0x30 + idx);
             word_t aux = *(word_t *)(ctx[0] + 0x38 + idx * 8);
             word_t tag = FUN_00002534(0x64e5b8, 0x4c03b0);
-            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag);
+            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag,0);
             if ((r & 1) != 0)
                 FUN_002591b4(0x65f260);                  /* slot moved fatal */
             bits = bits - 1 & bits;
@@ -4022,7 +4060,7 @@ static void sk_slot_iter_76d08(word_t v, word_t unused, word_t key,
             word_t el_hi = (word_t)(unsigned char)((word_t)(e + 1));
             word_t aux = *(word_t *)(ctx[0] + 0x38 + idx * 8);
             word_t tag = FUN_00002534(0x64e8e8, 0x4c0748);
-            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag);
+            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag,0);
             if ((r & 1) != 0)
                 FUN_002591b4(0x65f2f0);                  /* slot moved fatal */
             bits = bits - 1 & bits;

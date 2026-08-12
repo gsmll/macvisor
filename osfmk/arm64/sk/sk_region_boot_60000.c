@@ -1005,7 +1005,7 @@ sk_word_t sk_pac_lookup(sk_word_t a, sk_word_t b);
 sk_word_t sk_pac_token(void);
 void sk_pac_link(sk_word_t lo, sk_word_t hi, long obj);
 void sk_noop_6fd6c(void);
-void sk_pac_obj(void);
+long sk_pac_obj(void);
 sk_word_t sk_untyped_name(sk_word_t i, char quote);
 void sk_ctx_call_bind(void);
 sk_word_t sk_untyped_rec(sk_word_t v, char mode);
@@ -9489,7 +9489,7 @@ void sk_noop_6fd6c(void){ }
  * Confidence: low
  * Notes: FUN_0036a940.
  */
-void sk_pac_obj(void){ sk_alloc_obj(0x64e568, 0x51, 7); }
+long sk_pac_obj(void){ return (long)sk_alloc_obj(0x64e568, 0x51, 7); }
 /* FUN_0006fdbc @ 0x6fdbc   (est. sk_untyped_name)
  * Ghidra: undefined1[16] FUN_0006fdbc(ulong,char)
  * Formats an untyped-object name: selects the name record by index (from the name table at 0x65f120), appends a single- or double-quoted suffix, and emits it; breaks on an out-of-range index.

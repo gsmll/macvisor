@@ -47,14 +47,14 @@ extern void sk_lo_release(void);                 /* LORelease */
 /* FUN_0036a9a0 */ extern uint64_t sk_record_alloc(uint64_t key, uint64_t *out);
 /* FUN_0036b6ac */ extern void sk_swift_barrier(void);
 /* FUN_0036b588 */ extern void sk_record_ref(uint64_t obj);
-/* thunk_FUN_002acbb8 */ extern void sk_str_append(...);
+/* thunk_FUN_002acbb8 */ extern void sk_str_append();
 /* thunk_FUN_002298d4 */ extern void sk_lock_select(uint64_t n);
-/* FUN_001a84f4 */ extern void sk_scope_enter(...);
+/* FUN_001a84f4 */ extern void sk_scope_enter();
 /* FUN_001a8564 */ extern uint64_t sk_scope_exit(void);
 /* FUN_00117d14 */ extern void sk_memmove(uint64_t dst, uint64_t src, uint64_t n);
-/* FUN_001a1564 */ extern void sk_vec_push(...);
-/* FUN_001a0774 */ extern void sk_vec_reserve(...);
-/* FUN_0001a1c8 */ extern uint64_t sk_identity_hash(...);
+/* FUN_001a1564 */ extern void sk_vec_push();
+/* FUN_001a0774 */ extern void sk_vec_reserve();
+/* FUN_0001a1c8 */ extern uint64_t sk_identity_hash();
 /* FUN_0001c294 */ extern uint64_t sk_key_hasheq(uint64_t a, uint64_t b);
 /* FUN_0001c2a4 */ extern void sk_key_eq(uint64_t a, uint64_t b);
 /* FUN_00002534 */ extern uint64_t sk_string_cache(uint64_t a, uint64_t b);
@@ -270,7 +270,7 @@ static void sk_emit_seven(void);
 static void sk_emit_eight(void);
 static void sk_emit_nine(void);
 static void sk_emit_ten(void);
-static sk_u128_t sk_set_find(long key, char tag, uint64_t idx);
+static sk_u128_t sk_set_find(uint64_t key, char tag, uint64_t idx);
 static void sk_set_skip(char c, uint64_t idx);
 static void sk_set_skip_pair(long a, long b, uint64_t idx);
 static sk_u128_t sk_set_find_int(int key, uint64_t idx);
@@ -299,6 +299,128 @@ static void sk_set_first_probe(uint64_t a, uint64_t b, uint64_t c);
 static void sk_iter_probe(long *out, long set, long a, long b);
 
 /*============================================================================
+
+/* ---- out-of-region helpers ---- */
+/* Out-of-region kernel/Swift helpers referenced by this slice. */
+/* Ghidra FUN_00002534 */ extern uint64_t sk_ext_00002534();
+/* Ghidra FUN_00002688 */ extern uint64_t sk_ext_00002688();
+/* Ghidra FUN_00002804 */ extern uint64_t sk_ext_00002804();
+/* Ghidra FUN_00002828 */ extern uint64_t sk_ext_00002828();
+/* Ghidra FUN_00002834 */ extern uint64_t sk_ext_00002834();
+/* Ghidra FUN_0001a1c8 */ extern uint64_t sk_ext_0001a1c8();
+/* Ghidra FUN_0001c294 */ extern uint64_t sk_ext_0001c294();
+/* Ghidra FUN_0001c2a4 */ extern uint64_t sk_ext_0001c2a4();
+/* Ghidra FUN_00027724 */ extern uint64_t sk_ext_00027724();
+/* Ghidra FUN_00055a24 */ extern uint64_t sk_ext_00055a24();
+/* Ghidra FUN_00069770 */ extern uint64_t sk_ext_00069770();
+/* Ghidra FUN_000697e4 */ extern uint64_t sk_ext_000697e4();
+/* Ghidra FUN_00069970 */ extern uint64_t sk_ext_00069970();
+/* Ghidra FUN_000699a4 */ extern uint64_t sk_ext_000699a4();
+/* Ghidra FUN_0006a374 */ extern uint64_t sk_ext_0006a374();
+/* Ghidra FUN_0006a4c0 */ extern uint64_t sk_ext_0006a4c0();
+/* Ghidra FUN_0006fdbc */ extern uint64_t sk_ext_0006fdbc();
+/* Ghidra FUN_0006ff84 */ extern uint64_t sk_ext_0006ff84();
+/* Ghidra FUN_00074a28 */ extern uint64_t sk_ext_00074a28();
+/* Ghidra FUN_00074a98 */ extern uint64_t sk_ext_00074a98();
+/* Ghidra FUN_00074b08 */ extern uint64_t sk_ext_00074b08();
+/* Ghidra FUN_00074b78 */ extern uint64_t sk_ext_00074b78();
+/* Ghidra FUN_00074c14 */ extern uint64_t sk_ext_00074c14();
+/* Ghidra FUN_00074cb8 */ extern uint64_t sk_ext_00074cb8();
+/* Ghidra FUN_00074d54 */ extern uint64_t sk_ext_00074d54();
+/* Ghidra FUN_00074dc8 */ extern uint64_t sk_ext_00074dc8();
+/* Ghidra FUN_00074e34 */ extern uint64_t sk_ext_00074e34();
+/* Ghidra FUN_00074f28 */ extern uint64_t sk_ext_00074f28();
+/* Ghidra FUN_00074fa4 */ extern uint64_t sk_ext_00074fa4();
+/* Ghidra FUN_00075018 */ extern uint64_t sk_ext_00075018();
+/* Ghidra FUN_000750bc */ extern uint64_t sk_ext_000750bc();
+/* Ghidra FUN_000751b4 */ extern uint64_t sk_ext_000751b4();
+/* Ghidra FUN_00075784 */ extern uint64_t sk_ext_00075784();
+/* Ghidra FUN_000758d8 */ extern uint64_t sk_ext_000758d8();
+/* Ghidra FUN_00075b2c */ extern uint64_t sk_ext_00075b2c();
+/* Ghidra FUN_00075c50 */ extern uint64_t sk_ext_00075c50();
+/* Ghidra FUN_00075cb4 */ extern uint64_t sk_ext_00075cb4();
+/* Ghidra FUN_00076ac8 */ extern uint64_t sk_ext_00076ac8();
+/* Ghidra FUN_00076d08 */ extern uint64_t sk_ext_00076d08();
+/* Ghidra FUN_00076f74 */ extern uint64_t sk_ext_00076f74();
+/* Ghidra FUN_00076fc0 */ extern uint64_t sk_ext_00076fc0();
+/* Ghidra FUN_00077024 */ extern uint64_t sk_ext_00077024();
+/* Ghidra FUN_00077070 */ extern uint64_t sk_ext_00077070();
+/* Ghidra FUN_00077088 */ extern uint64_t sk_ext_00077088();
+/* Ghidra FUN_000770b8 */ extern uint64_t sk_ext_000770b8();
+/* Ghidra FUN_000770e8 */ extern uint64_t sk_ext_000770e8();
+/* Ghidra FUN_00077118 */ extern uint64_t sk_ext_00077118();
+/* Ghidra FUN_00077148 */ extern uint64_t sk_ext_00077148();
+/* Ghidra FUN_00077178 */ extern uint64_t sk_ext_00077178();
+/* Ghidra FUN_0007752c */ extern uint64_t sk_ext_0007752c();
+/* Ghidra FUN_00077540 */ extern uint64_t sk_ext_00077540();
+/* Ghidra FUN_00077550 */ extern uint64_t sk_ext_00077550();
+/* Ghidra FUN_00077560 */ extern uint64_t sk_ext_00077560();
+/* Ghidra FUN_00077570 */ extern uint64_t sk_ext_00077570();
+/* Ghidra FUN_00077580 */ extern uint64_t sk_ext_00077580();
+/* Ghidra FUN_00077590 */ extern uint64_t sk_ext_00077590();
+/* Ghidra FUN_000775dc */ extern uint64_t sk_ext_000775dc();
+/* Ghidra FUN_00077604 */ extern uint64_t sk_ext_00077604();
+/* Ghidra FUN_00077624 */ extern uint64_t sk_ext_00077624();
+/* Ghidra FUN_00077630 */ extern uint64_t sk_ext_00077630();
+/* Ghidra FUN_0007764c */ extern uint64_t sk_ext_0007764c();
+/* Ghidra FUN_0007766c */ extern uint64_t sk_ext_0007766c();
+/* Ghidra FUN_000776cc */ extern uint64_t sk_ext_000776cc();
+/* Ghidra FUN_000776d8 */ extern uint64_t sk_ext_000776d8();
+/* Ghidra FUN_000776f8 */ extern uint64_t sk_ext_000776f8();
+/* Ghidra FUN_00077708 */ extern uint64_t sk_ext_00077708();
+/* Ghidra FUN_00077718 */ extern uint64_t sk_ext_00077718();
+/* Ghidra FUN_00077724 */ extern uint64_t sk_ext_00077724();
+/* Ghidra FUN_00077744 */ extern uint64_t sk_ext_00077744();
+/* Ghidra FUN_000777d4 */ extern uint64_t sk_ext_000777d4();
+/* Ghidra FUN_0007780c */ extern uint64_t sk_ext_0007780c();
+/* Ghidra FUN_00077848 */ extern uint64_t sk_ext_00077848();
+/* Ghidra FUN_00077870 */ extern uint64_t sk_ext_00077870();
+/* Ghidra FUN_00077894 */ extern uint64_t sk_ext_00077894();
+/* Ghidra FUN_000778a0 */ extern uint64_t sk_ext_000778a0();
+/* Ghidra FUN_000778d4 */ extern uint64_t sk_ext_000778d4();
+/* Ghidra FUN_000778fc */ extern uint64_t sk_ext_000778fc();
+/* Ghidra FUN_0007791c */ extern uint64_t sk_ext_0007791c();
+/* Ghidra FUN_00077934 */ extern uint64_t sk_ext_00077934();
+/* Ghidra FUN_00077960 */ extern uint64_t sk_ext_00077960();
+/* Ghidra FUN_00117d14 */ extern uint64_t sk_ext_00117d14();
+/* Ghidra FUN_0012097c */ extern uint64_t sk_ext_0012097c();
+/* Ghidra FUN_001394c8 */ extern uint64_t sk_ext_001394c8();
+/* Ghidra FUN_00157308 */ extern uint64_t sk_ext_00157308();
+/* Ghidra FUN_001a0774 */ extern uint64_t sk_ext_001a0774();
+/* Ghidra FUN_001a1564 */ extern uint64_t sk_ext_001a1564();
+/* Ghidra FUN_001a84f4 */ extern uint64_t sk_ext_001a84f4();
+/* Ghidra FUN_001a8564 */ extern uint64_t sk_ext_001a8564();
+/* Ghidra FUN_001afa84 */ extern uint64_t sk_ext_001afa84();
+/* Ghidra FUN_001b9084 */ extern uint64_t sk_ext_001b9084();
+/* Ghidra FUN_001bc440 */ extern uint64_t sk_ext_001bc440();
+/* Ghidra FUN_001f0130 */ extern uint64_t sk_ext_001f0130();
+/* Ghidra FUN_0022995c */ extern uint64_t sk_ext_0022995c();
+/* Ghidra FUN_00229a3c */ extern uint64_t sk_ext_00229a3c();
+/* Ghidra FUN_00258c60 */ extern uint64_t sk_ext_00258c60();
+/* Ghidra FUN_002591b4 */ extern uint64_t sk_ext_002591b4();
+/* Ghidra FUN_002a0cf8 */ extern uint64_t sk_ext_002a0cf8();
+/* Ghidra FUN_002a4ab4 */ extern uint64_t sk_ext_002a4ab4();
+/* Ghidra FUN_0035bc70 */ extern uint64_t sk_ext_0035bc70();
+/* Ghidra FUN_0036a1a0 */ extern uint64_t sk_ext_0036a1a0();
+/* Ghidra FUN_0036a20c */ extern uint64_t sk_ext_0036a20c();
+/* Ghidra FUN_0036a940 */ extern uint64_t sk_ext_0036a940();
+/* Ghidra FUN_0036a9a0 */ extern uint64_t sk_ext_0036a9a0();
+/* Ghidra FUN_0036b118 */ extern uint64_t sk_ext_0036b118();
+/* Ghidra FUN_0036b270 */ extern uint64_t sk_ext_0036b270();
+
+/* Ghidra FUN_0036a1a0 */ extern void sk_reserve_slot(uint64_t p, uint64_t tmp, uint64_t sz, uint64_t fl);
+/* Ghidra FUN_0036a20c */ extern void sk_commit_slot(uint64_t tmp);
+/* Ghidra FUN_00075cb4 */ extern void sk_counted_insert(uint64_t a, uint64_t b, uint64_t c);
+
+/* ---- forward declarations within this slice ---- */
+static void sk_vec_counted_insert(uint64_t delta, uint64_t key, uint64_t tag);
+static void sk_vec_retain_push(uint64_t obj);
+static void sk_vec_push_elem(uint64_t obj, uint64_t val);
+static void sk_scope_emit_pair(uint64_t a, uint64_t b, char tag);
+static void sk_set_find_pair(long a, long b, long c, long d, uint64_t idx);
+static void sk_emit_run(void);
+static void sk_fatal_launcher(void);
+
  * 0x70098 - 0x70960 : field emitters, vector push, set builder
  *==========================================================================*/
 
@@ -506,112 +628,6 @@ static void sk_vec_pair_make(uint64_t *out, uint64_t a, uint64_t b)
     sk_vec_pack_init();
     sk_class_vt(0, 0, 0, 0);
 }
-/* Out-of-region kernel/Swift helpers referenced by this slice. */
-/* Ghidra FUN_00002534 */ extern uint64_t sk_ext_00002534();
-/* Ghidra FUN_00002688 */ extern uint64_t sk_ext_00002688();
-/* Ghidra FUN_00002804 */ extern uint64_t sk_ext_00002804();
-/* Ghidra FUN_00002828 */ extern uint64_t sk_ext_00002828();
-/* Ghidra FUN_00002834 */ extern uint64_t sk_ext_00002834();
-/* Ghidra FUN_0001a1c8 */ extern uint64_t sk_ext_0001a1c8();
-/* Ghidra FUN_0001c294 */ extern uint64_t sk_ext_0001c294();
-/* Ghidra FUN_0001c2a4 */ extern uint64_t sk_ext_0001c2a4();
-/* Ghidra FUN_00027724 */ extern uint64_t sk_ext_00027724();
-/* Ghidra FUN_00055a24 */ extern uint64_t sk_ext_00055a24();
-/* Ghidra FUN_00069770 */ extern uint64_t sk_ext_00069770();
-/* Ghidra FUN_000697e4 */ extern uint64_t sk_ext_000697e4();
-/* Ghidra FUN_00069970 */ extern uint64_t sk_ext_00069970();
-/* Ghidra FUN_000699a4 */ extern uint64_t sk_ext_000699a4();
-/* Ghidra FUN_0006a374 */ extern uint64_t sk_ext_0006a374();
-/* Ghidra FUN_0006a4c0 */ extern uint64_t sk_ext_0006a4c0();
-/* Ghidra FUN_0006fdbc */ extern uint64_t sk_ext_0006fdbc();
-/* Ghidra FUN_0006ff84 */ extern uint64_t sk_ext_0006ff84();
-/* Ghidra FUN_00074a28 */ extern uint64_t sk_ext_00074a28();
-/* Ghidra FUN_00074a98 */ extern uint64_t sk_ext_00074a98();
-/* Ghidra FUN_00074b08 */ extern uint64_t sk_ext_00074b08();
-/* Ghidra FUN_00074b78 */ extern uint64_t sk_ext_00074b78();
-/* Ghidra FUN_00074c14 */ extern uint64_t sk_ext_00074c14();
-/* Ghidra FUN_00074cb8 */ extern uint64_t sk_ext_00074cb8();
-/* Ghidra FUN_00074d54 */ extern uint64_t sk_ext_00074d54();
-/* Ghidra FUN_00074dc8 */ extern uint64_t sk_ext_00074dc8();
-/* Ghidra FUN_00074e34 */ extern uint64_t sk_ext_00074e34();
-/* Ghidra FUN_00074f28 */ extern uint64_t sk_ext_00074f28();
-/* Ghidra FUN_00074fa4 */ extern uint64_t sk_ext_00074fa4();
-/* Ghidra FUN_00075018 */ extern uint64_t sk_ext_00075018();
-/* Ghidra FUN_000750bc */ extern uint64_t sk_ext_000750bc();
-/* Ghidra FUN_000751b4 */ extern uint64_t sk_ext_000751b4();
-/* Ghidra FUN_00075784 */ extern uint64_t sk_ext_00075784();
-/* Ghidra FUN_000758d8 */ extern uint64_t sk_ext_000758d8();
-/* Ghidra FUN_00075b2c */ extern uint64_t sk_ext_00075b2c();
-/* Ghidra FUN_00075c50 */ extern uint64_t sk_ext_00075c50();
-/* Ghidra FUN_00075cb4 */ extern uint64_t sk_ext_00075cb4();
-/* Ghidra FUN_00076ac8 */ extern uint64_t sk_ext_00076ac8();
-/* Ghidra FUN_00076d08 */ extern uint64_t sk_ext_00076d08();
-/* Ghidra FUN_00076f74 */ extern uint64_t sk_ext_00076f74();
-/* Ghidra FUN_00076fc0 */ extern uint64_t sk_ext_00076fc0();
-/* Ghidra FUN_00077024 */ extern uint64_t sk_ext_00077024();
-/* Ghidra FUN_00077070 */ extern uint64_t sk_ext_00077070();
-/* Ghidra FUN_00077088 */ extern uint64_t sk_ext_00077088();
-/* Ghidra FUN_000770b8 */ extern uint64_t sk_ext_000770b8();
-/* Ghidra FUN_000770e8 */ extern uint64_t sk_ext_000770e8();
-/* Ghidra FUN_00077118 */ extern uint64_t sk_ext_00077118();
-/* Ghidra FUN_00077148 */ extern uint64_t sk_ext_00077148();
-/* Ghidra FUN_00077178 */ extern uint64_t sk_ext_00077178();
-/* Ghidra FUN_0007752c */ extern uint64_t sk_ext_0007752c();
-/* Ghidra FUN_00077540 */ extern uint64_t sk_ext_00077540();
-/* Ghidra FUN_00077550 */ extern uint64_t sk_ext_00077550();
-/* Ghidra FUN_00077560 */ extern uint64_t sk_ext_00077560();
-/* Ghidra FUN_00077570 */ extern uint64_t sk_ext_00077570();
-/* Ghidra FUN_00077580 */ extern uint64_t sk_ext_00077580();
-/* Ghidra FUN_00077590 */ extern uint64_t sk_ext_00077590();
-/* Ghidra FUN_000775dc */ extern uint64_t sk_ext_000775dc();
-/* Ghidra FUN_00077604 */ extern uint64_t sk_ext_00077604();
-/* Ghidra FUN_00077624 */ extern uint64_t sk_ext_00077624();
-/* Ghidra FUN_00077630 */ extern uint64_t sk_ext_00077630();
-/* Ghidra FUN_0007764c */ extern uint64_t sk_ext_0007764c();
-/* Ghidra FUN_0007766c */ extern uint64_t sk_ext_0007766c();
-/* Ghidra FUN_000776cc */ extern uint64_t sk_ext_000776cc();
-/* Ghidra FUN_000776d8 */ extern uint64_t sk_ext_000776d8();
-/* Ghidra FUN_000776f8 */ extern uint64_t sk_ext_000776f8();
-/* Ghidra FUN_00077708 */ extern uint64_t sk_ext_00077708();
-/* Ghidra FUN_00077718 */ extern uint64_t sk_ext_00077718();
-/* Ghidra FUN_00077724 */ extern uint64_t sk_ext_00077724();
-/* Ghidra FUN_00077744 */ extern uint64_t sk_ext_00077744();
-/* Ghidra FUN_000777d4 */ extern uint64_t sk_ext_000777d4();
-/* Ghidra FUN_0007780c */ extern uint64_t sk_ext_0007780c();
-/* Ghidra FUN_00077848 */ extern uint64_t sk_ext_00077848();
-/* Ghidra FUN_00077870 */ extern uint64_t sk_ext_00077870();
-/* Ghidra FUN_00077894 */ extern uint64_t sk_ext_00077894();
-/* Ghidra FUN_000778a0 */ extern uint64_t sk_ext_000778a0();
-/* Ghidra FUN_000778d4 */ extern uint64_t sk_ext_000778d4();
-/* Ghidra FUN_000778fc */ extern uint64_t sk_ext_000778fc();
-/* Ghidra FUN_0007791c */ extern uint64_t sk_ext_0007791c();
-/* Ghidra FUN_00077934 */ extern uint64_t sk_ext_00077934();
-/* Ghidra FUN_00077960 */ extern uint64_t sk_ext_00077960();
-/* Ghidra FUN_00117d14 */ extern uint64_t sk_ext_00117d14();
-/* Ghidra FUN_0012097c */ extern uint64_t sk_ext_0012097c();
-/* Ghidra FUN_001394c8 */ extern uint64_t sk_ext_001394c8();
-/* Ghidra FUN_00157308 */ extern uint64_t sk_ext_00157308();
-/* Ghidra FUN_001a0774 */ extern uint64_t sk_ext_001a0774();
-/* Ghidra FUN_001a1564 */ extern uint64_t sk_ext_001a1564();
-/* Ghidra FUN_001a84f4 */ extern uint64_t sk_ext_001a84f4();
-/* Ghidra FUN_001a8564 */ extern uint64_t sk_ext_001a8564();
-/* Ghidra FUN_001afa84 */ extern uint64_t sk_ext_001afa84();
-/* Ghidra FUN_001b9084 */ extern uint64_t sk_ext_001b9084();
-/* Ghidra FUN_001bc440 */ extern uint64_t sk_ext_001bc440();
-/* Ghidra FUN_001f0130 */ extern uint64_t sk_ext_001f0130();
-/* Ghidra FUN_0022995c */ extern uint64_t sk_ext_0022995c();
-/* Ghidra FUN_00229a3c */ extern uint64_t sk_ext_00229a3c();
-/* Ghidra FUN_00258c60 */ extern uint64_t sk_ext_00258c60();
-/* Ghidra FUN_002591b4 */ extern uint64_t sk_ext_002591b4();
-/* Ghidra FUN_002a0cf8 */ extern uint64_t sk_ext_002a0cf8();
-/* Ghidra FUN_002a4ab4 */ extern uint64_t sk_ext_002a4ab4();
-/* Ghidra FUN_0035bc70 */ extern uint64_t sk_ext_0035bc70();
-/* Ghidra FUN_0036a1a0 */ extern uint64_t sk_ext_0036a1a0();
-/* Ghidra FUN_0036a20c */ extern uint64_t sk_ext_0036a20c();
-/* Ghidra FUN_0036a940 */ extern uint64_t sk_ext_0036a940();
-/* Ghidra FUN_0036a9a0 */ extern uint64_t sk_ext_0036a9a0();
-/* Ghidra FUN_0036b118 */ extern uint64_t sk_ext_0036b118();
-/* Ghidra FUN_0036b270 */ extern uint64_t sk_ext_0036b270();
 /* Ghidra FUN_0036b588 */ extern uint64_t sk_ext_0036b588();
 /* Ghidra FUN_0036b6ac */ extern uint64_t sk_ext_0036b6ac();
 /* Ghidra FUN_003a25d4 */ extern uint64_t sk_ext_003a25d4();
@@ -626,6 +642,7 @@ static void sk_vec_pair_make(uint64_t *out, uint64_t a, uint64_t b)
 /* Ghidra FUN_0036a1a0 */ extern void sk_reserve_slot(uint64_t p, uint64_t tmp, uint64_t sz, uint64_t fl);
 /* Ghidra FUN_0036a20c */ extern void sk_commit_slot(uint64_t tmp);
 /* Ghidra FUN_00075cb4 */ extern void sk_counted_insert(uint64_t a, uint64_t b, uint64_t c);
+
 /* FUN_00070920 @ 0x70920  (est. sk_pair_copy_hash)
  * Copy a {hash, tag} pair: out[0]=hash(in[0], in[1]); out[1]=tag; out[2]=in[2].
  * Confidence: high (structural). */
@@ -1393,7 +1410,7 @@ static void sk_set_emit_str_wrap(uint64_t a, uint64_t b, uint64_t c, int64_t n)
     }
     sk_scope_exit();
     sk_done3();
-    sk_ext_0007292c();
+    sk_set_find_pair(0,0,0,0,0);
 }
 
 /* FUN_00072664 @ 0x72664  (est. sk_set_find_word_wrap)
@@ -1683,7 +1700,7 @@ static sk_u128_t sk_reserve_u16(uint64_t a, uint64_t b, uint64_t grow)
         sk_ext_000750bc();
     } else {
         sk_ptr_plus();
-        sk_ext_000721b0();
+        sk_move_0x08(0,0,0);
         sk_release_and_zero();
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
@@ -1712,7 +1729,7 @@ static sk_u128_t sk_reserve_u32(uint64_t a, uint64_t b, uint64_t grow)
         sk_ext_00074a98();
     } else {
         sk_ptr_plus();
-        sk_ext_00072150();
+        sk_move_0x40(0,0,0);
         sk_release_and_zero();
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
@@ -1799,7 +1816,7 @@ static sk_u128_t sk_reserve_u16b(uint64_t a, uint64_t b, uint64_t grow)
         sk_ext_000750bc();
     } else {
         sk_ptr_plus();
-        sk_ext_000721b0();
+        sk_move_0x08(0,0,0);
         sk_release_and_zero();
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
@@ -2002,7 +2019,7 @@ static sk_u128_t sk_reserve_u16c(uint64_t a, uint64_t b, uint64_t grow)
         sk_ext_000750bc();
     } else {
         sk_ptr_plus();
-        sk_ext_000721b0();
+        sk_move_0x08(0,0,0);
         sk_release_and_zero();
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
@@ -2060,7 +2077,7 @@ static sk_u128_t sk_reserve_u16d(uint64_t a, uint64_t b, uint64_t grow)
         sk_ext_00074d54();
     } else {
         sk_ptr_plus();
-        sk_ext_000721b0();
+        sk_move_0x08(0,0,0);
         sk_release_and_zero();
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
