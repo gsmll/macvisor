@@ -10352,7 +10352,7 @@ static void sk_bcg_00478a98(void)
     word_t local_4e0[22];
     word_t extraout_x8, extraout_x9, extraout_x9_01, extraout_w8;
     long *plVar9;
-    word_t section_00000158;
+    struct { union { struct { unsigned char _0_1_; unsigned char pad[7]; } addr; } _0;                union { word_t _8_8_; } segname; } section_00000158 = {0};
 
     auVar24 = FUN_0008e518();
     lVar21 = *(word_t *)(auVar24.lo + 0x10);
