@@ -105,7 +105,8 @@ extern void cL4_fmt_build_str(void *out, const char *fmt, ...);
 
 /* In-range prototypes (bodies below). */
 extern void cL4_mr_emit_num(long tcb, long n);        /* FUN_003d05e0 */
-extern unsigned long cL4_fmt_begin(unsigned long tcb, unsigned long msg, unsigned char (*desc)[16]); /* FUN_003d0358 */
+extern unsigned long cL4_fmt_begin(unsigned long tcb, unsigned long msg, unsigned char (*desc)[16], unsigned long depth); /* FUN_003d0358 */
+extern unsigned long cL4_fmt_emit_letter(unsigned long a, unsigned long tcb, char letter[3], unsigned long count, unsigned int flag); /* FUN_003d0650 */
 extern unsigned char cL4_msg_decode(long tcb, long *msg);  /* FUN_003d0458 */
 extern void cL4_msg_args(int *res, unsigned long tcb, long *msg, unsigned long depth); /* FUN_003d01ac */
 extern void cL4_msg_one(int *res, unsigned long tcb, long *msg, unsigned long depth);  /* FUN_003d11d4 */
@@ -927,20 +928,20 @@ void cL4_mr_emit_num(unsigned long tcb, long n)
  * emit an index into the numeric table. Returns 1 once the record is flushed
  * (or the precheck says skip), 0 when it must be committed by the caller.
  * Confidence: medium (letter-tag encoding inferred from 0x1a bound + 'A'). */
-unsigned long cL4_fmt_begin(unsigned long tcb, unsigned long msg, unsigned char (*out)[16])
+unsigned long cL4_fmt_begin(unsigned long tcb, unsigned long msg, unsigned char (*out)[16], unsigned long depth)
 {
-    unsigned char desc[16]; char letter[3]; unsigned long r;
+    unsigned char desc[16], letter[3]; unsigned long r;
     unsigned int kind;
 
     if (!(cL4_msg_decode(tcb, (long*)msg) & 1)) {
-        /* build output descriptor */
-        memcpy(desc, cL4_fmt_build(tcb, msg, 0), 16);
-        *out = desc;
+        /* build output descriptor into *out */
+        memcpy(desc, cL4_fmt_build(tcb, msg, depth), 16);
+        memcpy(*out, desc, 16);
         kind = cL4_fmt_kind(tcb, out);
         if ((int)kind < 0) return 0;
         if (kind < 0x1a) {
             letter[0] = (char)kind + 'A';
-            r = cL4_fmt_begin(tcb + 0x2180, tcb, (unsigned char(*)[16])letter, 1, 0);
+            r = cL4_fmt_emit_letter(tcb + 0x2180, tcb, letter, 1, 0);
             if (!(r & 1)) {
                 letter[2] = 'A';
                 cL4_mr_emit_byte(tcb + 0x2140, letter + 2, *(unsigned long *)(tcb + 0x2150));
@@ -953,4 +954,215 @@ unsigned long cL4_fmt_begin(unsigned long tcb, unsigned long msg, unsigned char 
         }
     }
     return 1;
+}
+/* 003d0458 @ 0x3d0458   (est. cL4_msg_decode)
+ * Ghidra: byte FUN_003d0458(long tcb, long *msg)
+ * Detect and decode a "Swift"-tagged message descriptor. Accepts only the
+ * message type words 0x19 / 0x3f / 0xe7 / 0xbf. When the descriptor's payload
+ * begins with the little-endian magic "Swift" (0x66697753) followed by 't'
+ * and its element type is 0x67, it formats the nested (ptr,len) value into a
+ * buffer and emits it as an identifier-letter via cL4_fmt_emit_letter, then
+ * returns 1 (message fully consumed). Otherwise returns 0. A failure past the
+ * magic hits a SoftwareBreakpoint (0x3d05e0) trap. Confidence: high
+ * (magic string is explicit). */
+unsigned char cL4_msg_decode(unsigned long tcb, unsigned long *msg)
+{
+    unsigned short type = *(unsigned short *)(msg + 2);
+    unsigned char kind; unsigned long *cur; unsigned long *payload;
+    unsigned char buf[16]; char byte; unsigned long r;
+    unsigned long len;
+    int magic;
+
+    if (type < 0xbf) {
+        if ((type != 0x19) && (type != 0x3f)) return 0;
+    } else if ((type != 0xe7) && (type != 0xbf)) {
+        return 0;
+    }
+
+    kind = *(unsigned char *)((long)msg + 0x12);
+    cur = msg;
+    if (kind - 1 < 2) {
+        payload = (unsigned long*)*cur;
+    } else if ((kind == 5) && ((int)msg[1] != 0)) {
+        cur = (unsigned long*)*msg;
+        payload = (unsigned long*)*cur;
+    } else {
+        payload = 0;
+    }
+
+    magic = (int)*payload;
+    if ((*(short *)(payload + 2) == 0xa3) && (payload[1] == 5) &&
+        (magic == 0x66697753) && (((char *)&magic)[1] == 't')) {
+        /* "Swift" magic — nested value */
+        if (kind == 5) {
+            if (*(short *)(*(unsigned long *)(*msg + 8) + 0x10) == 0x67) {
+                cur = (unsigned long*)*msg;
+                goto fmt;
+            }
+        } else if (*(short *)(msg[1] + 0x10) == 0x67) {
+            goto fmt;
+        }
+    }
+    return 0;
+fmt:
+    cL4_fmt_make(buf, *(unsigned long*)cur[1], ((unsigned long*)cur[1])[1], 1);
+    if (buf[0] != 1) return buf[0];
+    r = cL4_fmt_emit_letter(tcb + 0x2180, tcb, buf, ((unsigned long*)cur[1])[1], 1);
+    if ((r & 1) != 0) return 1;
+    byte = 'S';
+    cL4_mr_emit_byte(tcb + 0x2140, &byte, *(unsigned long *)(tcb + 0x2150));
+    if ((buf[0] & 1) != 0) {
+        cL4_mr_emit_tag(tcb + 0x2140, buf, ((unsigned long*)cur[1])[1], *(unsigned long *)(tcb + 0x2150));
+        return 1;
+    }
+    /* WARNING: does not return (SoftwareBreakpoint 0x3d05e0) */
+    return 0;
+}
+
+/* 003d0650 @ 0x3d0650   (est. cL4_fmt_emit_letter)
+ * Ghidra: undefined8 FUN_003d0650(ulong *state, long tcb, undefined8 text, ulong len, uint flag)
+ * Attempt to append `text`/`len` to the in-progress output record without
+ * re-emission. `state` is the record cursor {base, count, tag, flag}; tcb
+ * carries the outbound depth (tcb+0x2148) and object (tcb+0x2140). When the
+ * pending buffer already holds `len` ASCII digits, the new text is fused;
+ * otherwise the buffered numeric field is flushed as a "_"-terminated value
+ * and the letter/flag is re-emitted. Returns 1 when the record is flushed,
+ * 0 when it must be committed. Confidence: medium (fuse/flush logic inferred
+ * from the digit-buffer walk). */
+unsigned long cL4_fmt_emit_letter(unsigned long *state, unsigned long tcb, unsigned char *text,
+                                  unsigned long len, unsigned int flag)
+{
+    unsigned long n = *(unsigned int *)(tcb + 0x2148);
+    unsigned long ndigits = state[2];
+    unsigned long base = *state, count = state[1], fused;
+    long p; unsigned long k; char c; unsigned long r;
+
+    if (ndigits - 1 < 0x7ff) {
+        unsigned long a = *state, b = state[1];
+        if ((b + a != n) || ((unsigned char)state[3] != flag)) goto fail;
+        p = 0;
+        if (b <= n) p = n - b;
+        p = *(long *)(tcb + 0x2140) + p;
+        if (n <= b) b = n;
+        if (b == 0) {
+            if (len == 0) goto done;
+        } else {
+            k = 0;
+            while (9 >= *(unsigned char *)(p + k) - 0x30) { k = k + 1; if (b == k) break; }
+            k = (k <= b) ? k : b;   /* uVar2 = min */
+            if (b - k == len) {
+                if (b <= k) goto done;
+                r = cL4_memcmp((void*)(p + k), text, len);
+                if (((flag & 1) != 0) || (r == 0)) {
+                    if (r != 0) goto fail;
+                    goto done;
+                }
+                goto flush;
+            }
+        }
+        if ((flag & 1) == 0) {
+flush:
+            *state = n;
+            state[2] = 1;
+            *(unsigned int *)(tcb + 0x2148) = (unsigned int)n - 1;
+            c = *(char *)(p + b + -1) + ' ';
+            cL4_mr_emit_byte(tcb + 0x2140, &c, *(unsigned long *)(tcb + 0x2150));
+            cL4_mr_emit_tag(tcb + 0x2140, text, len, *(unsigned long *)(tcb + 0x2150));
+            state[1] = 1;
+            return 1;
+        }
+    }
+fail:
+    *state = n + 1;
+    state[1] = len;
+    state[2] = 1;
+    *(unsigned char *)(state + 3) = (unsigned char)flag;
+    return 0;
+done:
+    ndigits = ndigits + 1;
+    state[2] = ndigits;
+    *(int *)(tcb + 0x2148) = (int)*state;
+    cL4_mr_emit_val2(tcb + 0x2140, ndigits, *(unsigned long *)(tcb + 0x2150));
+    cL4_mr_emit_tag(tcb + 0x2140, text, len, *(unsigned long *)(tcb + 0x2150));
+    state[1] = (unsigned long)*(unsigned int *)(tcb + 0x2148) - *state;
+    return 1;
+}
+
+/* 003d0280 @ 0x3d0280   (est. cL4_msg_arg_index)
+ * Ghidra: void FUN_003d0280(undefined4 *result, undefined8 tcb, undefined8 *msg, ulong idx, undefined8 depth)
+ * Decode the argument at index `idx` of the message descriptor `msg`. When
+ * idx is within bounds, the descriptor is dereferenced through its kind and
+ * that element is decoded with cL4_arg_decode; otherwise the result is
+ * cleared (empty slot). Confidence: high (structural). */
+void cL4_msg_arg_index(int *result, unsigned long tcb, unsigned long *msg, unsigned long idx, unsigned long depth)
+{
+    unsigned char kind = *(unsigned char *)((long)msg + 0x12);
+    unsigned long n = (unsigned long)kind;
+    unsigned int uk = kind;
+
+    if (uk != 1) {
+        if (uk == 5) n = (unsigned long)*(unsigned int *)(msg + 1);
+        else if (kind != 2) goto clear;
+        else n = 2;
+    }
+    if ((idx & 0xffffffff) < n) {
+        if (1 < uk - 1) msg = (unsigned long*)*msg;
+        cL4_arg_decode(result, tcb, msg[idx & 0xffffffff], depth);
+        return;
+    }
+clear:
+    *result = 0; result[2] = 0; result[4] = 0;
+}
+
+/* 003d02dc @ 0x3d02dc   (est. cL4_msg_arg_kind_dispatch)
+ * Ghidra: void FUN_003d02dc(undefined4 *result, undefined8 tcb, long msg, int depth)
+ * Dispatch a message whose type word (msg+0x10) is one of 0x1b/0x1c/0x30-0x33
+ * to the matching kind-specific arg decoder; any other type clears the
+ * result. Confidence: high (dispatch table explicit). */
+void cL4_msg_arg_kind_dispatch(int *result, unsigned long tcb, unsigned long msg, unsigned long depth)
+{
+    unsigned short t = *(unsigned short *)(msg + 0x10);
+    if (t < 0x31) {
+        if (t == 0x1b) { cL4_arg_kind1b(tcb, msg, depth + 1); return; }
+        if (t == 0x1c) { cL4_arg_kind1c(tcb, msg, depth + 1); return; }
+        if (t == 0x30) { cL4_arg_kind30(tcb, msg, depth + 1); return; }
+    } else {
+        if (t == 0x31) { cL4_arg_kind31(tcb, msg, depth + 1); return; }
+        if (t == 0x32) { cL4_arg_kind32(tcb, msg, depth + 1); return; }
+        if (t == 0x33) { cL4_arg_kind33(tcb, msg, depth + 1); return; }
+    }
+    *result = 0; result[2] = 0; result[4] = 0;
+}
+
+/* 003d081c @ 0x3d081c   (est. cL4_msg_args_reverse)
+ * Ghidra: void FUN_003d081c(int *result, undefined8 tcb, long msg, undefined8 depth)
+ * Decode the message's arguments in REVERSE order (index n-1 down to 0) via
+ * cL4_msg_arg_index, then clear the result. Confidence: high (loop direction
+ * explicit). */
+void cL4_msg_args_reverse(int *result, unsigned long tcb, unsigned long msg, unsigned long depth)
+{
+    unsigned char kind = *(unsigned char *)(msg + 0x12);
+    unsigned long n, i; long neg;
+
+    if (kind != 1) {
+        if (kind == 5) {
+            n = (unsigned long)*(unsigned int *)(msg + 8);
+            if (*(unsigned int *)(msg + 8) == 0) goto clear;
+        } else {
+            if (kind != 2) goto clear;
+            n = 2;
+        }
+    } else {
+        n = 1;
+    }
+    neg = -(long)n;
+    i = (int)n;
+    do {
+        i = i - 1;
+        cL4_msg_arg_index(result, tcb, (unsigned long*)msg, i, depth);
+        if (*result != 0) return;
+        neg = neg + 1;
+    } while (neg != -1);
+clear:
+    *result = 0; result[2] = 0; result[3] = 0; result[4] = 0;
 }

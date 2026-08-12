@@ -1128,3 +1128,1698 @@ void FUN_003d3fcc(void)
         cL4_release(lVar2);
     }
 }
+
+/* ------------------------------------------------------------------ *
+ * 0x3d40bc - 0x3d5a4c : Swift Concurrency async task / executor
+ * machinery. The decompiler could not recover the indirect jump tables in
+ * these coroutine bodies ("Too many branches"); they are reconstructed at
+ * structural level with the observed call sequence preserved.
+ * ------------------------------------------------------------------ */
+
+/* FUN_003d40bc @ 0x3d40bc   (est. cL4_async_executor_cleanup_pair)
+ * Ghidra: void FUN_003d40bc(void)
+ * Tear down the executor context and run the async leave barrier.
+ * Confidence: low
+ * Notes: wraps FUN_003d3fcc + FUN_0036b6ac. */
+void FUN_003d40bc(void)
+{
+    FUN_003d3fcc();
+    FUN_0036b6ac();
+}
+
+/* FUN_003d40c0 @ 0x3d40c0   (est. cL4_async_executor_cleanup_pair2)
+ * Ghidra: void FUN_003d40c0(void)
+ * Same executor teardown as FUN_003d40bc (duplicate entry).
+ * Confidence: low */
+void FUN_003d40c0(void)
+{
+    FUN_003d3fcc();
+    FUN_0036b6ac();
+}
+
+/* FUN_003d40e4 @ 0x3d40e4   (est. cL4_async_task_new)
+ * Ghidra: undefined8 FUN_003d40e4(undefined8, undefined8, undefined8)
+ * Create a new async task/job record and release the passed closure value
+ * (param_3); returns the new record.
+ * Confidence: low */
+unsigned long FUN_003d40e4(unsigned long param_1, unsigned long param_2,
+                           unsigned long param_3)
+{
+    unsigned long uVar1;
+
+    uVar1 = FUN_003d3f78();
+    cL4_obj_release(param_3);
+    return uVar1;
+}
+
+/* FUN_003d412c @ 0x3d412c   (est. cL4_async_task_complete)
+ * Ghidra: void FUN_003d412c(undefined8, long)
+ * Complete an async task: destroy its context, then atomically swap the
+ * completion flag at param_2+0x10 (via LOAcquire/LORelease). If a previous
+ * completion was already present, forward to FUN_003d4278; otherwise
+ * report the task completion through the trace/metadata path.
+ * Confidence: low
+ * Notes: LOAcquire/LORelease are the OSAtomic acquire/release barriers;
+ *   ends in a SoftwareBreakpoint(1, 0x3d4278) trap on the error path. */
+void FUN_003d412c(unsigned long param_1, long param_2)
+{
+    unsigned long uVar1;
+    long lVar3;
+
+    FUN_0007c028(param_1, param_1);
+    (*DAT_00658c80)(0);
+    FUN_000aa4ec();
+    FUN_0040841c();
+    (*(void (**)(void))0)();
+    /* LOAcquire(); */
+    lVar3 = *(long *)(param_2 + 0x10);
+    *(long *)(param_2 + 0x10) = 0;
+    /* LORelease(); */
+    if (lVar3 != 0) {
+        FUN_003d4278();
+        return;
+    }
+    cL4_stack_mark(0x62);
+    FUN_00407c5c();
+    cL4_trace_emit(0xd000000000000020, 0);
+    uVar1 = *(unsigned long *)(param_2 + 0x20);
+    cL4_retain(uVar1);
+    FUN_003504c4();
+    cL4_trace_emit(0, 0);
+    cL4_obj_release(uVar1);
+    cL4_trace_emit(0 | 0x1c, 0x80000000005dbd10);
+    FUN_00084180();
+    FUN_001b1780();
+    cL4_trace_emit(0xa21, 0xe200000000000000);
+    FUN_00350d04();
+    FUN_00407a04(0xac);
+    /* __builtin_trap(); */
+}
+
+/* FUN_003d4278 @ 0x3d4278   (est. cL4_async_task_complete_already)
+ * Ghidra: void FUN_003d4278(undefined8, long, long)
+ * Completion path taken when the async task was already completing: invoke
+ * the object's completion callback (at +0x20 / +0x40+0x28) and deallocate
+ * the frame.
+ * Confidence: low
+ * Notes: uses object dispatch at *(lVar1+0x20) and *(obj+0x40)+0x28. */
+void FUN_003d4278(unsigned long param_1, long param_2, long param_3)
+{
+    long lVar1;
+    void (**pcVar2)(void);
+
+    lVar1 = *(long *)(param_3 + -8);
+    (*DAT_00658c80)(*(unsigned long *)(lVar1 + 0x40), param_1, param_1);
+    pcVar2 = *(void (***)(void))(lVar1 + 0x20);
+    (*pcVar2)();
+    (*pcVar2)(*(unsigned long *)(*(long *)(param_2 + 0x40) + 0x28), 0, param_3);
+    FUN_0040a7f0(param_2);
+}
+
+/* FUN_003d4368 @ 0x3d4368   (est. cL4_async_executor_fatal)
+ * Ghidra: void FUN_003d4368(void)
+ * Fatal-error path for the async executor: tear down state, report through
+ * the trace/metadata system, and trap (SoftwareBreakpoint at 0x3d4428).
+ * Confidence: low
+ * Notes: ends with __builtin_trap. */
+void FUN_003d4368(void)
+{
+    unsigned long uVar1;
+
+    FUN_000b430c();
+    cL4_stack_mark(0x61);
+    FUN_00407c5c();
+    cL4_trace_emit(0xd000000000000020, 0);
+    uVar1 = *(unsigned long *)0x20;
+    cL4_retain(uVar1);
+    FUN_000e15d8();
+    cL4_trace_emit(0, 0);
+    cL4_obj_release(uVar1);
+    cL4_trace_emit(0 | 0x1b, 0x80000000005dbd80);
+    FUN_003507e0();
+    FUN_001b1780();
+    cL4_trace_emit(0xa21, 0xe200000000000000);
+    FUN_004070cc();
+    FUN_00407a04(0xc4);
+    /* __builtin_trap(); */
+}
+
+/* FUN_003d4428 @ 0x3d4428   (est. cL4_async_dispatch_thunk)
+ * Ghidra: void FUN_003d4428(undefined8, undefined8, undefined8, long, undefined8)
+ * Dispatch through the async machinery: build a 16-byte job pair, invoke the
+ * object's entry at param_4-8 +0x20, and forward the second word to the
+ * cleanup path.
+ * Confidence: low */
+void FUN_003d4428(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  long param_4, unsigned long param_5)
+{
+    cL4_w16_t auVar1;
+
+    auVar1 = FUN_0036993c(param_4, param_5, 0, 0);
+    (*(void (**)(unsigned long, unsigned long, long))(*(long *)(param_4 + -8) + 0x20))
+        (auVar1.hi, param_1, param_4);
+    FUN_0040a860(param_2, auVar1.lo);
+}
+
+/* FUN_003d44a8 @ 0x3d44a8   (est. cL4_async_run_closure)
+ * Ghidra: void FUN_003d44a8(undefined8, code*, undefined8, undefined8, undefined8)
+ * Run the async closure param_2: retain the job, create it, invoke the
+ * closure, then release the job record.
+ * Confidence: low */
+void FUN_003d44a8(unsigned long param_1, void (*param_2)(void), unsigned long param_3,
+                  unsigned long param_4, unsigned long param_5)
+{
+    unsigned long uVar1;
+
+    cL4_retain(param_5);
+    uVar1 = FUN_003d40e4(param_1, param_4, param_5);
+    (*param_2)();
+    cL4_release(uVar1);
+}
+
+/* FUN_003d4518 @ 0x3d4518   (est. cL4_async_task_begin_suite)
+ * Ghidra: void FUN_003d4518(...8 params)
+ * Begin an async task suite: store the 8 parameters into the frame's
+ * +0x58..0x80 slots, branch on a job flag, and schedule a continuation
+ * (FUN_003d45b0) for the task.
+ * Confidence: low
+ * Notes: the inner branch runs FUN_003d4658 / FUN_0034bcf0 on one side and
+ *   FUN_004075c4 on the other. */
+void FUN_003d4518(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, unsigned long param_5, unsigned long param_6,
+                  unsigned long param_7, unsigned long param_8)
+{
+    cL4_w16_t auVar1;
+
+    auVar1 = FUN_00406fd4();
+    *(unsigned long *)(0x78) = param_7;
+    *(unsigned long *)(0x80) = param_8;
+    *(unsigned long *)(0x68) = param_5;
+    *(unsigned long *)(0x70) = param_6;
+    *(long *)(0x58) = auVar1.lo;
+    *(unsigned long *)(0x60) = param_4;
+    if (auVar1.hi == 0) {
+        FUN_004075c4();
+    } else {
+        FUN_004078d4();
+        FUN_003d4658(param_3);
+        FUN_0034bcf0();
+        (*(void (**)(void))0)();
+        FUN_00407588();
+    }
+    FUN_00408db8((void *)FUN_003d45b0, param_4);
+}
+
+/* FUN_003d45b0 @ 0x3d45b0   (est. cL4_async_task_begin_cont)
+ * Ghidra: void FUN_003d45b0(void)
+ * Continuation body for an async task: load the stored parameters, build a
+ * new frame with its metadata table, and dispatch through the task runner.
+ * Confidence: low
+ * Notes: DAT_00405fa4 is the frame metadata vtable. */
+void FUN_003d45b0(void)
+{
+    unsigned long uVar1, uVar2, uVar3, uVar4;
+
+    uVar3 = FUN_00408058();
+    FUN_0040700c();
+    uVar1 = *(unsigned long *)0x78;
+    uVar2 = *(unsigned long *)0x70;
+    *(long *)0x10 = 0;
+    *(unsigned long *)0x38 = *(unsigned long *)0x58;
+    *(unsigned long **)0x18 = &DAT_00405fa4;
+    uVar4 = FUN_0040ab60((unsigned long)0x18, 0x10, 0);
+    FUN_00356b80(uVar4, uVar2, uVar1);
+    FUN_003d44a8();
+    FUN_00408044((unsigned long)0x10, uVar3);
+    FUN_0040ada4();
+}
+
+/* FUN_003d4658 @ 0x3d4658   (est. cL4_async_unbox_payload)
+ * Ghidra: long FUN_003d4658(ulong)
+ * If the low bit of param_1 is set, dereference the boxed payload pointer
+ * (masking the tag); otherwise return the tagged value's body: offset+4
+ * plus the length word at +4.
+ * Confidence: medium
+ * Notes: classic tagged/boxed Swift payload decode. */
+long FUN_003d4658(unsigned long param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(unsigned long *)(param_1 & 0xfffffffffffffffe);
+    }
+    return (long)(param_1 + 4) + (long)*(int *)(param_1 + 4);
+}
+
+/* FUN_003d4688 @ 0x3d4688   (est. cL4_async_executor_step)
+ * Ghidra: void FUN_003d4688(void)
+ * One step of the async executor: run the standard prologue sequence, build
+ * a new frame with its continuation label (LAB_003d4740), and schedule
+ * FUN_003d47f8. Ends in an unrecoverable jump-table dispatch.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d473c". */
+void FUN_003d4688(void)
+{
+    unsigned long *puVar1;
+
+    FUN_004079cc();
+    FUN_004070d8();
+    FUN_00352700();
+    FUN_0034e4ec();
+    FUN_0040bb18(0x40);
+    FUN_00407fb4();
+    FUN_00407db0(0x59ff48);
+    FUN_0040bb18(0);
+    puVar1 = (unsigned long *)FUN_00406fe0();
+    *(unsigned long **)0x18 = puVar1;
+    *puVar1 = 0;
+    puVar1[1] = (unsigned long)0x3d4740;   /* LAB_003d4740 continuation */
+    FUN_00407f9c(puVar1, (void *)FUN_003d47f8);
+    FUN_004078f4();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d47f8 @ 0x3d47f8   (est. cL4_async_executor_step_cont)
+ * Ghidra: void FUN_003d47f8(void)
+ * Continuation of the executor step: run cleanup, create the next job, call
+ * the saved closure, and release.
+ * Confidence: low */
+void FUN_003d47f8(void)
+{
+    unsigned long uVar1;
+
+    FUN_00408574();
+    FUN_003504ac();
+    uVar1 = FUN_003d40e4();
+    (*(void (**)(void))0)();
+    cL4_release(uVar1);
+}
+
+/* FUN_003d484c @ 0x3d484c   (est. cL4_async_frame_run)
+ * Ghidra: void FUN_003d484c(undefined8, code*)
+ * Build an async frame (metadata DAT_00405fa4), run the closure param_2,
+ * then tear the frame down.
+ * Confidence: low */
+void FUN_003d484c(unsigned long param_1, void (*param_2)(void))
+{
+    *(long *)0x10 = 0;
+    *(unsigned long *)0x38 = param_1;
+    *(unsigned long **)0x18 = &DAT_00405fa4;
+    FUN_0040ab60((unsigned long)0x18, 0x10, 0);
+    (*param_2)();
+    FUN_0040ada4((unsigned long)0x10);
+}
+
+/* FUN_003d48e8 @ 0x3d48e8   (est. cL4_async_task_begin_suite_b)
+ * Ghidra: void FUN_003d48e8(...8 params)
+ * Mirror of FUN_003d4518 with continuation FUN_003d4980.
+ * Confidence: low */
+void FUN_003d48e8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, unsigned long param_5, unsigned long param_6,
+                  unsigned long param_7, unsigned long param_8)
+{
+    cL4_w16_t auVar1;
+
+    auVar1 = FUN_00406fd4();
+    *(unsigned long *)0x78 = param_7;
+    *(unsigned long *)0x80 = param_8;
+    *(unsigned long *)0x68 = param_5;
+    *(unsigned long *)0x70 = param_6;
+    *(long *)0x58 = auVar1.lo;
+    *(unsigned long *)0x60 = param_4;
+    if (auVar1.hi == 0) {
+        FUN_004075c4();
+    } else {
+        FUN_004078d4();
+        FUN_003d4658(param_3);
+        FUN_0034bcf0();
+        (*(void (**)(void))0)();
+        FUN_00407588();
+    }
+    FUN_00408db8((void *)FUN_003d4980, param_4);
+}
+
+/* FUN_003d4980 @ 0x3d4980   (est. cL4_async_task_begin_cont_b)
+ * Ghidra: void FUN_003d4980(void)
+ * Continuation mirroring FUN_003d45b0 but with continuation FUN_003d4a28.
+ * Confidence: low */
+void FUN_003d4980(void)
+{
+    unsigned long uVar1, uVar2, uVar3, uVar4;
+
+    uVar3 = FUN_00408058();
+    FUN_0040700c();
+    uVar1 = *(unsigned long *)0x78;
+    uVar2 = *(unsigned long *)0x70;
+    *(long *)0x10 = 0;
+    *(unsigned long *)0x38 = *(unsigned long *)0x58;
+    *(void (**)(void))0x18 = FUN_003d4a28;
+    uVar4 = FUN_0040ab60((unsigned long)0x18, 0x10, 1);
+    FUN_00356b80(uVar4, uVar2, uVar1);
+    FUN_003d44a8();
+    FUN_00408044((unsigned long)0x10, uVar3);
+    FUN_0040ada4();
+}
+
+/* FUN_003d4a28 @ 0x3d4a28   (est. cL4_async_task_finish)
+ * Ghidra: void FUN_003d4a28(void)
+ * Finish an async task: run the frame prologue and, if the result slot at
+ * +0x30 is nonzero, forward it to FUN_0036986c before the exit dispatch.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d4ad0". */
+void FUN_003d4a28(void)
+{
+    FUN_00406fd4();
+    FUN_00407018();
+    if (*(long *)0x30 != 0) {
+        FUN_0036986c();
+    }
+    FUN_00407e10();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d4d0c @ 0x3d4d0c   (est. cL4_concurrency_fatal_deleted_metatype)
+ * Ghidra: void FUN_003d4d0c(void)
+ * Fatal "call of deleted metatype" error in the Concurrency module: build
+ * the message, then raise the runtime fatal with file "Concurrency/Errors.swift".
+ * Confidence: medium
+ * Notes: string refs s_Fatal_error__Call_of_deleted_met@0x5cfef0 and
+ *   s__Concurrency_Errors_swift@0x5dbde0 (module "Concurrency", file "Errors.swift"). */
+void FUN_003d4d0c(void)
+{
+    unsigned long uVar1;
+
+    FUN_00406fd4();
+    FUN_0035ac70((const char *)0x5cfef0);   /* "Fatal error: Call of deleted metatype" */
+    uVar1 = FUN_003593c0();
+    cL4_runtime_fatal(uVar1, 0xb, 2, 0xd000000000000023,
+                      0x8000000000000000, "_Concurrency/Errors.swift", 0x19, 2);
+}
+
+/* FUN_003d4d80 @ 0x3d4d80   (est. cL4_is_concurrency_available)
+ * Ghidra: bool FUN_003d4d80(void)
+ * Return nonzero if the Concurrency runtime feature (keyed on DAT_00614564)
+ * is available.
+ * Confidence: medium */
+bool FUN_003d4d80(void)
+{
+    unsigned long uVar1;
+    long lVar2;
+
+    uVar1 = FUN_000027e8();
+    lVar2 = FUN_0008dae4(uVar1, 0, (unsigned long)&DAT_00614564);
+    return lVar2 != 0;
+}
+
+/* FUN_003d4dbc @ 0x3d4dbc   (est. cL4_concurrency_fatal_error)
+ * Ghidra: void FUN_003d4dbc(undefined8)
+ * General Concurrency fatal error: tear down, emit the fatal-error record,
+ * and trap.
+ * Confidence: medium
+ * Notes: string refs s_Fatal_error@0x5accd0 and
+ *   s__Concurrency_Executor_swift@0x5dbde0 (module "_Concurrency"). */
+void FUN_003d4dbc(unsigned long param_1)
+{
+    FUN_000b430c();
+    cL4_stack_mark(0x3c);
+    cL4_trace_emit(0xd00000000000003a, 0x80000000005dbde0);
+    FUN_00208418(param_1, 0);
+    FUN_000e72d4();
+    cL4_obj_release(param_1);
+    FUN_004070cc(0x3d4e28);
+    cL4_runtime_fatal((unsigned long)(const char *)0x5accd0, 0xb, 2);   /* "Fatal error" */
+}
+
+/* FUN_003d4e84 @ 0x3d4e84   (est. cL4_concurrency_noop)
+ * Ghidra: void FUN_003d4e84(void)
+ * No-op.
+ * Confidence: high
+ * Notes: empty body. */
+void FUN_003d4e84(void)
+{
+    return;
+}
+
+/* FUN_003d4ebc @ 0x3d4ebc   (est. cL4_executor_owned)
+ * Ghidra: uint FUN_003d4ebc(undefined8, undefined8, undefined8)
+ * Return 1 if the current executor owns the given job (a boolean check via
+ * the executor run-loop); 0 otherwise.
+ * Confidence: low
+ * Notes: uses FUN_00350b54 / FUN_0014ae44 / FUN_0035063c. */
+unsigned int FUN_003d4ebc(unsigned long param_1, unsigned long param_2,
+                          unsigned long param_3)
+{
+    unsigned int uVar1;
+    unsigned long uVar2;
+
+    FUN_00350b54();
+    uVar2 = FUN_0014ae44(param_3);
+    FUN_0035063c(uVar2, 0, 0);
+    uVar1 = (*(unsigned int (**)(void))0)();
+    return uVar1 & 1;
+}
+
+/* FUN_003d4f18 @ 0x3d4f18   (est. cL4_executor_fatal_unsupported)
+ * Ghidra: void FUN_003d4f18(void)
+ * [[noreturn]] fatal "unsupported executor" error in _Concurrency module.
+ * Confidence: medium
+ * Notes: strings s_Fatal_error@0x5accd0 and s__Concurrency_Executor_swift@0x5dbe40. */
+void FUN_003d4f18(void)
+{
+    cL4_runtime_fatal((unsigned long)(const char *)0x5accd0, 0xb, 2,
+                      0xd000000000000034, 0x80000000005dbe40,
+                      "_Concurrency/Executor.swift", 0x1b, 2, 0x240, 1);
+}
+
+/* FUN_003d4f78 @ 0x3d4f78   (est. cL4_executor_fatal_condition)
+ * Ghidra: void FUN_003d4f78(void)
+ * [[noreturn]] fatal "run(until:) not supported" error in the executor.
+ * Confidence: medium
+ * Notes: string ref s_run_until_condition___not_suppor@0x5dbe60. */
+void FUN_003d4f78(void)
+{
+    unsigned long uVar1;
+
+    uVar1 = FUN_0035ac70((const char *)0x5dbe60);  /* "run(until:) not supported..." */
+    uVar1 = FUN_003593c0(uVar1, uVar1);
+    cL4_runtime_fatal(uVar1, 0xb, 2, 0xd000000000000034,
+                      0x8000000000000000, "_Concurrency/Executor.swift", 0x1b, 2);
+}
+
+/* FUN_003d4fd8 @ 0x3d4fd8   (est. cL4_executor_global_update)
+ * Ghidra: void FUN_003d4fd8(void)
+ * Update the global executor/job word (0x6adf60): run the prologue, build
+ * a new job, and atomically swap the global.
+ * Confidence: low
+ * Notes: _DAT_006adf60 is the shared executor job global. */
+void FUN_003d4fd8(void)
+{
+    cL4_w16_t auVar1;
+
+    FUN_00406fc0();
+    FUN_003d5028();
+    FUN_0034bcf0();
+    auVar1 = (*(cL4_w16_t (**)(void))0)();
+    cL4_release(_DAT_006adf60);
+    _DAT_006adf60 = auVar1.lo;
+}
+
+/* FUN_003d5028 @ 0x3d5028   (est. cL4_async_unbox_payload_b)
+ * Ghidra: long FUN_003d5028(ulong)
+ * Tagged/boxed payload decode (offset+8 variant of FUN_003d4658).
+ * Confidence: medium */
+long FUN_003d5028(unsigned long param_1)
+{
+    if ((param_1 & 1) != 0) {
+        param_1 = *(unsigned long *)(param_1 & 0xfffffffffffffffe);
+    }
+    return (long)(param_1 + 8) + (long)*(int *)(param_1 + 8);
+}
+
+/* FUN_003d5058 @ 0x3d5058   (est. cL4_executor_global_lazy)
+ * Ghidra: void FUN_003d5058(void)
+ * Lazy initialisation of the executor globals: if already initialised
+ * return; otherwise (unless the init token is -1) build the initial job
+ * record, then publish the executor state words and take a reference.
+ * Confidence: low
+ * Notes: _DAT_006adf60/_DAT_006adf68/_DAT_006adf50/_DAT_006adf58 are the
+ *   executor globals; _DAT_006c0b50 is the init token. */
+void FUN_003d5058(void)
+{
+    long lVar1;
+
+    if (_DAT_006adf60 != 0) {
+        return;
+    }
+    if (_DAT_006c0b50 == -1) {
+        lVar1 = 0;
+    } else {
+        FUN_00406c3c();
+        FUN_0039a128();
+        lVar1 = _DAT_006adf60;
+    }
+    _DAT_006adf68 = _DAT_006adf58;
+    _DAT_006adf60 = _DAT_006adf50;
+    cL4_retain(_DAT_006adf50);
+    cL4_release(lVar1);
+}
+
+/* FUN_003d50cc @ 0x3d50cc   (est. cL4_executor_run_loop_guard)
+ * Ghidra: void FUN_003d50cc(void)
+ * Enter the executor run loop guarded by a recursive-check global: if the
+ * loop is already active return; otherwise set the re-entry flag, run the
+ * loop, and trap on abnormal exit.
+ * Confidence: low
+ * Notes: "Subroutine does not return" on the tail FUN_001afe4c. */
+void FUN_003d50cc(void)
+{
+    FUN_004094ec();
+    if (_DAT_006adf60 != 0) {
+        cL4_retain();
+        return;
+    }
+    FUN_003488bc(1);
+    FUN_00407984();
+    FUN_0034a2f8();
+    FUN_001afe4c();   /* [[noreturn]] */
+}
+
+/* FUN_003d5138 @ 0x3d5138   (est. cL4_executor_run_loop_guard_b)
+ * Ghidra: void FUN_003d5138(void)
+ * Mirror of FUN_003d50cc (same guard logic, no retain on the active path).
+ * Confidence: low */
+void FUN_003d5138(void)
+{
+    FUN_004094ec();
+    if (_DAT_006adf60 != 0) {
+        return;
+    }
+    FUN_003488bc(1);
+    FUN_00407984();
+    FUN_0034a2f8();
+    FUN_001afe4c();   /* [[noreturn]] */
+}
+
+/* FUN_003d5194 @ 0x3d5194   (est. cL4_executor_retain_barrier)
+ * Ghidra: void FUN_003d5194(void)
+ * Retain the executor global job record.
+ * Confidence: low */
+void FUN_003d5194(void)
+{
+    cL4_retain();
+}
+
+/* FUN_003d51c4 @ 0x3d51c4   (est. cL4_async_retain_dispatch)
+ * Ghidra: void FUN_003d51c4(undefined8, undefined8, undefined8)
+ * Retain param_3 and run the generic dispatch prologue.
+ * Confidence: low */
+void FUN_003d51c4(unsigned long param_1, unsigned long param_2, unsigned long param_3)
+{
+    FUN_00027754(param_3);
+    FUN_0007c1c4();
+}
+
+/* FUN_003d520c @ 0x3d520c   (est. cL4_async_task_offer)
+ * Ghidra: void FUN_003d520c(...6 params)
+ * Offer an async task to an executor: run the prologue, fetch the job
+ * (param_5/param_6), and unless the low-bit flag is set, enqueue it with
+ * the given enqueue flag and finish.
+ * Confidence: low */
+void FUN_003d520c(unsigned long param_1, unsigned long param_2, unsigned int param_3,
+                  unsigned long param_4, unsigned long param_5, unsigned long param_6)
+{
+    cL4_w16_t auVar1;
+
+    FUN_00353d70();
+    auVar1 = FUN_00408bdc(param_5, param_6);
+    if ((auVar1.lo & 1) != 0) {
+        return;
+    }
+    FUN_00351384(auVar1.lo, auVar1.hi, param_3 & 1);
+    FUN_0040761c();
+    FUN_004088d8();
+}
+
+/* FUN_003d5284 @ 0x3d5284   (est. cL4_executor_has_jobs)
+ * Ghidra: uint FUN_003d5284(void)
+ * Return 1 if the current executor has queued jobs, 0 otherwise.
+ * Confidence: low */
+unsigned int FUN_003d5284(void)
+{
+    unsigned int uVar1;
+    unsigned long uVar2;
+
+    FUN_0034a74c();
+    uVar2 = FUN_003fcafc(0);
+    FUN_003504a0(uVar2);
+    uVar1 = (*(unsigned int (**)(void))0)();
+    return uVar1 & 1;
+}
+
+/* FUN_003d52d0 @ 0x3d52d0   (est. cL4_executor_wake_worker)
+ * Ghidra: void FUN_003d52d0(void)
+ * Wake the executor worker via the standard prologue + FUN_003fcb8c path.
+ * Confidence: low */
+void FUN_003d52d0(void)
+{
+    FUN_00406fc0();
+    FUN_003fcb8c();
+    FUN_0034bcf0();
+    (*(void (**)(void))0)();
+}
+
+/* FUN_003d5308 @ 0x3d5308   (est. cL4_async_available_and_retain)
+ * Ghidra: uint FUN_003d5308(undefined8, undefined8, undefined8)
+ * Retain param_3 then return whether the Concurrency runtime is available.
+ * Confidence: low */
+unsigned int FUN_003d5308(unsigned long param_1, unsigned long param_2,
+                          unsigned long param_3)
+{
+    unsigned int uVar1;
+
+    FUN_00027754(param_3);
+    uVar1 = FUN_003d4d80();
+    return uVar1 & 1;
+}
+
+/* FUN_003d5338 @ 0x3d5338   (est. cL4_executor_sleep)
+ * Ghidra: void FUN_003d5338(void)
+ * Put the executor worker to sleep via FUN_003fcb2c.
+ * Confidence: low */
+void FUN_003d5338(void)
+{
+    FUN_00406fc0();
+    FUN_003fcb2c();
+    FUN_0034bcf0();
+    (*(void (**)(void))0)();
+}
+
+/* FUN_003d5370 @ 0x3d5370   (est. cL4_executor_state)
+ * Ghidra: uint FUN_003d5370(void)
+ * Query executor state: return the low bit, or -1 if the state byte is 2.
+ * Confidence: low */
+unsigned int FUN_003d5370(void)
+{
+    unsigned int uVar1, uVar2;
+
+    FUN_00406fc0();
+    FUN_003fcb5c();
+    FUN_0034bcf0();
+    uVar2 = (*(unsigned int (**)(void))0)();
+    uVar1 = uVar2 & 1;
+    if ((uVar2 & 0xff) == 2) {
+        uVar1 = 0xffffffff;
+    }
+    return uVar1;
+}
+
+/* FUN_003d53bc @ 0x3d53bc   (est. cL4_executor_teardown_guard)
+ * Ghidra: void FUN_003d53bc(void)
+ * Executor teardown wrapper: FUN_00406574, then the teardown body
+ * FUN_003d53ec, then the retain barrier.
+ * Confidence: low */
+void FUN_003d53bc(void)
+{
+    FUN_00406574();
+    FUN_003d53ec();
+    cL4_retain();
+}
+
+/* FUN_003d53ec @ 0x3d53ec   (est. cL4_executor_teardown_body)
+ * Ghidra: void FUN_003d53ec(void)
+ * Executor teardown body forwarding to FUN_003e9df8.
+ * Confidence: low */
+void FUN_003d53ec(void)
+{
+    FUN_003e9df8();
+}
+
+/* FUN_003d541c @ 0x3d541c   (est. cL4_async_task_suite_enter)
+ * Ghidra: void FUN_003d541c(void)
+ * Large async task-suite entry: run the frame prologue, capture the task
+ * record, build the executor/job context (slot +0x30..0x90), then dispatch
+ * into the async run loop via an unrecoverable jump table.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d55b0". */
+void FUN_003d541c(void)
+{
+    unsigned long uVar1;
+
+    FUN_00407ca0();
+    FUN_0040700c();
+    FUN_00407214();
+    FUN_00350798();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x30 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x38 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x40 = uVar1;
+    FUN_0040683c();
+    *(unsigned long *)0x48 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x50 = uVar1;
+    FUN_00406da8();
+    uVar1 = FUN_00406fec();
+    *(unsigned long *)0x58 = uVar1;
+    FUN_00350500();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x60 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x68 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x70 = uVar1;
+    FUN_00406f50();
+    *(unsigned long *)0x78 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x80 = uVar1;
+    uVar1 = FUN_00406fec();
+    *(unsigned long *)0x88 = uVar1.lo;
+    FUN_0007c1c4(uVar1.lo, uVar1.hi, uVar1.lo);
+    uVar1 = FUN_00377bec();
+    *(unsigned long *)0x90 = uVar1;
+    FUN_003fcc1c();
+    FUN_00408588();
+    FUN_00406268();
+    FUN_0040bb18(0);
+    FUN_00406fe0();
+    *(unsigned long **)0xa0 = (unsigned long *)FUN_00406fe0();
+    FUN_00407398();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d5670 @ 0x3d5670   (est. cL4_async_task_suite_body)
+ * Ghidra: void FUN_003d5670(undefined8, undefined8, code*)
+ * Async task-suite body: branch on a zero-flag. The taken path reads the
+ * captured result from +0x58/+0x60/+0x68, clears task state and dispatches
+ * via the unrecoverable jump table; the fall-through path runs the closure
+ * machinery (FUN_00406bd4 / FUN_004062a8) and builds a continuation frame.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d5704 / 0x003d57a0". */
+void FUN_003d5670(unsigned long param_1, unsigned long param_2,
+                  void (*UNRECOVERED_JUMPTABLE)(void))
+{
+    unsigned long uVar3, uVar4;
+
+    uVar3 = FUN_00407ca0();
+    FUN_0040700c();
+    uVar4 = *(unsigned long *)0x58;
+    (void)FUN_00406420();
+    if (0) {   /* in_ZR branch (zero-flag) */
+        FUN_0040711c(*(unsigned long *)0x68, uVar4, *(unsigned long *)0x60);
+        FUN_004077a0();
+        FUN_0040686c();
+        FUN_0040bd24(uVar4);
+        FUN_0040bd24(0);
+        FUN_0040bd24(0);
+        FUN_00407e58(0, 0, uVar3);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    FUN_00406bd4(*(unsigned long *)0x78, *(unsigned long *)0x80);
+    FUN_004062a8(0);
+    FUN_0040bb18(0);
+    FUN_00406fe0();
+    *(unsigned long **)0xb0 = (unsigned long *)FUN_00406fe0();
+    FUN_00407824(*(unsigned long *)0x40, *(unsigned long *)0x80);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d58a0 @ 0x3d58a0   (est. cL4_async_task_suite_body_b)
+ * Ghidra: void FUN_003d58a0(void)
+ * Mirror task-suite body: the taken path reads the result from +0x28/+0x30/
+ * +0x38 and teardown from +0x98/+0x88; the fall-through runs the closure
+ * path (FUN_0011aa70 / FUN_00407aa0). Unrecoverable jump table dispatch.
+ * Confidence: low */
+void FUN_003d58a0(void)
+{
+    unsigned long uVar1, uVar2, uVar4;
+
+    uVar1 = FUN_0040790c();
+    FUN_004070d8();
+    uVar4 = *(unsigned long *)0x28;
+    (void)FUN_00406420();
+    if (0) {
+        FUN_0040711c(*(unsigned long *)0x38, uVar4, *(unsigned long *)0x30);
+        FUN_00377dcc(0, *(unsigned long *)0x88);
+        FUN_00406268();
+        FUN_0040bb18(0);
+        FUN_00406fe0();
+        *(unsigned long **)0xa0 = (unsigned long *)FUN_00406fe0();
+        FUN_00407398();
+        FUN_004080cc();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    uVar2 = *(unsigned long *)0x50;
+    FUN_00407aa0();
+    FUN_0011aa70();
+    (*(void (**)(void))0)();
+    FUN_003504a0();
+    (*(void (**)(void))0)();
+    FUN_004077a0();
+    FUN_00406cf0();
+    FUN_0040bd24(uVar4);
+    FUN_0040bd24(uVar2);
+    FUN_0040bd24(0);
+    FUN_004079b4(0, 0, uVar1);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d5a4c @ 0x3d5a4c   (est. cL4_async_task_suite_enter_b)
+ * Ghidra: void FUN_003d5a4c(void)
+ * Mirror of the large task-suite entry FUN_003d541c with the continuation
+ * record (LAB_003d5c6c) and an extra result slot at +0xc8.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d5c68". */
+void FUN_003d5a4c(void)
+{
+    unsigned long uVar1;
+
+    FUN_00407ca0();
+    FUN_0040700c();
+    FUN_00406f40();
+    FUN_00408308();
+    FUN_00350798();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x48 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x50 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x58 = uVar1;
+    FUN_0040683c();
+    *(unsigned long *)0x60 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x68 = uVar1;
+    FUN_00350798();
+    FUN_00350974();
+    uVar1 = FUN_00377824();
+    *(unsigned long *)0x70 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x78 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x80 = uVar1;
+    uVar1 = FUN_00406fec();
+    *(unsigned long *)0x88 = uVar1;
+    FUN_00350500();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x90 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x98 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0xa0 = uVar1;
+    FUN_00406f50();
+    *(unsigned long *)0xa8 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0xb0 = uVar1;
+    uVar1 = FUN_00406fec();
+    *(unsigned long *)0xb8 = uVar1.lo;
+    FUN_0007c1c4(uVar1.lo, uVar1.hi, uVar1.lo);
+    uVar1 = FUN_00377bec();
+    *(unsigned long *)0xc0 = uVar1;
+    uVar1 = FUN_003fcc4c();
+    *(long *)200 = uVar1;
+    FUN_00377dcc(0, *(unsigned long *)0xb8);
+    FUN_00406288();
+    FUN_0040bb18(0);
+    FUN_00406fe0();
+    *(unsigned long **)0xd0 = (unsigned long *)FUN_00406fe0();
+    FUN_00406bc4(*(unsigned long *)0xa0);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d5dc8 @ 0x3d5dc8   (est. cL4_async_task_suite_body_c)
+ * Ghidra: void FUN_003d5dc8(undefined8, undefined8, code*)
+ * Task-suite body variant: taken path reads the result from +0x58..+0xa0
+ * (four releases) and dispatches; fall-through runs the closure path.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d5e70 / 0x003d5f0c". */
+void FUN_003d5dc8(unsigned long param_1, unsigned long param_2,
+                  void (*UNRECOVERED_JUMPTABLE)(void))
+{
+    unsigned long uVar3, uVar4;
+
+    uVar3 = FUN_00407c8c();
+    FUN_0040700c();
+    uVar4 = FUN_00406420();
+    if (0) {
+        FUN_0040711c(*(unsigned long *)0x98, uVar4, *(unsigned long *)0x90);
+        FUN_0040686c();
+        FUN_0040bd24(*(unsigned long *)0xa0);
+        FUN_0040bd24(*(unsigned long *)0x80);
+        FUN_0040bd24(*(unsigned long *)0x68);
+        FUN_0040bd24(*(unsigned long *)0x58);
+        FUN_00407c78(0, 0, uVar3);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    FUN_00406bd4(*(unsigned long *)0xa8, *(unsigned long *)0xb0);
+    FUN_004062a8(0);
+    FUN_0040bb18(0);
+    FUN_00406fe0();
+    *(unsigned long **)0xe8 = (unsigned long *)FUN_00406fe0();
+    FUN_00408380(*(unsigned long *)0x58, *(unsigned long *)0xb0);
+    FUN_00407c78();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d6034 @ 0x3d6034   (est. cL4_async_task_suite_body_d)
+ * Ghidra: void FUN_003d6034(void)
+ * Task-suite body variant: taken path (result at +0x48/+0x50, teardown at
+ * +200/+0xb8) mirrors the enter path; fall-through runs the closure path.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d6114 / 0x003d61a0". */
+void FUN_003d6034(void)
+{
+    unsigned long uVar1, uVar2, uVar5, uVar6, uVar7;
+
+    uVar1 = FUN_0040790c();
+    FUN_004070d8();
+    uVar2 = FUN_00406420();
+    if (0) {
+        FUN_0040711c(*(unsigned long *)0x50, uVar2, *(unsigned long *)0x48);
+        FUN_00377dcc(0, *(unsigned long *)0xb8);
+        FUN_00406288();
+        FUN_0040bb18(0);
+        FUN_00406fe0();
+        *(unsigned long **)0xd0 = (unsigned long *)FUN_00406fe0();
+        FUN_00406bc4(*(unsigned long *)0xa0);
+        FUN_004080cc();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    FUN_00407aa0();
+    FUN_0011aa70();
+    (*(void (**)(void))0)();
+    FUN_003504a0();
+    (*(void (**)(void))0)();
+    uVar2 = *(unsigned long *)0xa0;
+    uVar5 = *(unsigned long *)0x80;
+    uVar6 = *(unsigned long *)0x68;
+    uVar7 = *(unsigned long *)0x58;
+    FUN_00406cf0();
+    FUN_0040bd24(uVar2);
+    FUN_0040bd24(uVar5);
+    FUN_0040bd24(uVar6);
+    FUN_0040bd24(uVar7);
+    FUN_004079b4(0, 0, uVar1);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d62dc @ 0x3d62dc   (est. cL4_async_task_suite_setup)
+ * Ghidra: void FUN_003d62dc(undefined8, undefined8, undefined8, undefined8, long)
+ * Set up an async task suite: capture param_4, build the job via
+ * FUN_00377824 (metadata table DAT_00614a5c / LAB_00614a7c), allocate the
+ * frame and its continuation frame, then run the task-suite body
+ * FUN_003d5a4c with the recorded closure.
+ * Confidence: low
+ * Notes: DAT_00405fdc is the frame metadata table. */
+void FUN_003d62dc(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, long param_5)
+{
+    long lVar1;
+    unsigned long uVar2;
+    long *plVar3;
+
+    *(unsigned long *)0x10 = param_4;
+    lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x20),
+                         *(unsigned long *)(param_5 + 0x10),
+                         (unsigned long)&DAT_00614a5c, (unsigned long)&LAB_00614a7c);
+    *(long *)0x18 = lVar1;
+    lVar1 = *(long *)(lVar1 + -8);
+    *(long *)0x20 = lVar1;
+    uVar2 = FUN_0040bb18(*(long *)(lVar1 + 0x40) + 0xf & 0xfffffffffffffff0);
+    *(unsigned long *)0x28 = uVar2;
+    plVar3 = (long *)FUN_0040bb18(DAT_0059ff7c);
+    *(long **)0x30 = plVar3;
+    *plVar3 = 0;
+    plVar3[1] = (long)&DAT_00405fdc;
+    FUN_003d5a4c(plVar3, param_1, param_2, param_3, param_5, uVar2);
+}
+
+/* FUN_003d6418 @ 0x3d6418   (est. cL4_executor_release_semaphore)
+ * Ghidra: void FUN_003d6418(long, undefined8, undefined8)
+ * Release `param_1` permits of the executor semaphore; a negative count is
+ * a fatal error ("can't drop a negative number of...").
+ * Confidence: medium
+ * Notes: string ref s_Can_t_drop_a_negative_number_of_e@0x5dbed0. */
+void FUN_003d6418(long param_1, unsigned long param_2, unsigned long param_3)
+{
+    if (-1 < param_1) {
+        FUN_0035a7e8(param_1, param_2, param_2, param_3);
+        FUN_003d6470();
+        return;
+    }
+    FUN_0035ac70((const char *)0x5dbed0);   /* "Can't drop a negative number of..." */
+    FUN_00406aa4();
+    FUN_0040697c();
+    FUN_004084d4();
+    /* __builtin_trap(); */
+}
+
+/* FUN_003d6470 @ 0x3d6470   (est. cL4_executor_release_after)
+ * Ghidra: void FUN_003d6470(void)
+ * Post-release executor step forwarding to FUN_003dd540.
+ * Confidence: low */
+void FUN_003d6470(void)
+{
+    FUN_003dd540();
+}
+
+/* FUN_003d64a0 @ 0x3d64a0   (est. cL4_async_result_build)
+ * Ghidra: void FUN_003d64a0(void)
+ * Build an async result: capture the task context, build the job record,
+ * run the frame prologue and schedule the continuation.
+ * Confidence: low */
+void FUN_003d64a0(void)
+{
+    unsigned long uVar1;
+
+    FUN_00407000();
+    uVar1 = FUN_00406704();
+    *(unsigned long *)0x38 = uVar1;
+    uVar1 = FUN_00310d68(0, uVar1);
+    *(unsigned long *)0x40 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x48 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x50 = uVar1;
+    FUN_00407594();
+    FUN_00408db8();
+}
+
+/* FUN_003d6530 @ 0x3d6530   (est. cL4_async_refcount_dec)
+ * Ghidra: void FUN_003d6530(void)
+ * Decrement an async task's reference count at +0x24; when it reaches zero
+ * clear the slot and run the completion path (FUN_004071c0), else continue
+ * with the decremented path (FUN_004074c4).
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d6664". */
+void FUN_003d6530(void)
+{
+    int iVar1;
+    long lVar3;
+
+    FUN_00407ca0();
+    FUN_0040700c();
+    iVar1 = *(int *)(*(long *)0x18 + 0x24);
+    *(int *)0x78 = iVar1;
+    lVar3 = *(long *)(*(long *)0x20 + (long)iVar1);
+    *(long *)0x58 = lVar3;
+    if (lVar3 < 1) {
+        lVar3 = *(long *)0x30;
+        *(unsigned long *)(*(long *)0x20 + (long)iVar1) = 0;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_004068f4();
+        FUN_00406268();
+        FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+        *(unsigned long **)0x70 = (unsigned long *)FUN_00406fe0();
+        FUN_004071c0();
+    } else {
+        lVar3 = *(long *)0x30;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_004068f4();
+        FUN_00406268();
+        FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+        *(unsigned long **)0x60 = (unsigned long *)FUN_00406fe0();
+        FUN_004074c4();
+    }
+    FUN_00406ab4();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d6724 @ 0x3d6724   (est. cL4_async_refcount_offer)
+ * Ghidra: void FUN_003d6724(void)
+ * Offer a task and, based on the result of the ownership check
+ * (FUN_000839f8 / FUN_00351330), either complete immediately (clear slot,
+ * release context) or decrement the reference count and re-run the
+ * completion decision.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d67c4 / 0x003d68e0". */
+void FUN_003d6724(void)
+{
+    int iVar1;
+    unsigned long uVar2, uVar4, uVar6;
+    long lVar7;
+    cL4_w16_t auVar8;
+
+    uVar2 = FUN_00407c8c();
+    FUN_0040700c();
+    uVar4 = *(unsigned long *)0x38;
+    auVar8 = FUN_00351330();
+    uVar4 = FUN_000839f8(auVar8.lo, auVar8.hi, uVar4);
+    if ((int)uVar4 == 1) {
+        iVar1 = *(int *)0x78;
+        lVar7 = *(long *)0x20;
+        uVar6 = *(unsigned long *)0x10;
+        FUN_00353c00(*(unsigned long *)0x48, uVar4, *(unsigned long *)0x40);
+        *(unsigned long *)(lVar7 + iVar1) = 0;
+        FUN_00350744(uVar6);
+        FUN_000839d8();
+        FUN_0040bd24(*(unsigned long *)0x50);
+        FUN_00407c78(0, 0, uVar2);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    lVar7 = *(long *)0x58;
+    FUN_00353c00(*(unsigned long *)0x48, uVar4, *(unsigned long *)0x40);
+    lVar7--;
+    *(long *)0x58 = lVar7;
+    if (lVar7 == 0 || *(long *)0x58 < 1) {
+        *(unsigned long *)(*(long *)0x20 + (long)*(int *)0x78) = 0;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_004068f4();
+        FUN_00406268();
+        FUN_0040bb18(*(unsigned int *)(*(long *)0x30 + 4));
+        *(unsigned long **)0x70 = (unsigned long *)FUN_00406fe0();
+        FUN_004071c0();
+    } else {
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_004068f4();
+        FUN_00406268();
+        FUN_0040bb18(*(unsigned int *)(*(long *)0x30 + 4));
+        *(unsigned long **)0x60 = (unsigned long *)FUN_00406fe0();
+        FUN_004074c4();
+    }
+    FUN_00406ab4();
+    FUN_00407c78();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d69f8 @ 0x3d69f8   (est. cL4_async_task_suite_run)
+ * Ghidra: void FUN_003d69f8(undefined8, undefined8, undefined8, long)
+ * Run an async task suite: capture the job context from param_4+0x10, build
+ * the job record and result frame, and branch on a worker flag to complete
+ * through one of two paths, then schedule the continuation.
+ * Confidence: low */
+void FUN_003d69f8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  long param_4)
+{
+    unsigned long uVar1;
+
+    FUN_00408058();
+    FUN_0040700c();
+    FUN_00406cc8();
+    FUN_00408308();
+    *(unsigned long *)0x48 = *(unsigned long *)(param_4 + 0x10);
+    uVar1 = FUN_0040684c();
+    *(unsigned long *)0x50 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x58 = 0;
+    uVar1 = FUN_0040859c(0);
+    *(unsigned long *)0x60 = uVar1;
+    uVar1 = FUN_0040bb18(0);
+    *(unsigned long *)0x68 = uVar1;
+    uVar1 = FUN_00406dd0();
+    *(unsigned long *)0x70 = uVar1;
+    uVar1 = FUN_00310d68(0, uVar1);
+    *(unsigned long *)0x78 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x80 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x88 = uVar1;
+    if (0) {   /* worker flag */
+        FUN_00407248();
+        uVar1 = 0;
+    } else {
+        FUN_00406590();
+        (*(void (**)(void))0)();
+        FUN_0008e1ec();
+        uVar1 = 0;
+    }
+    *(unsigned long *)0x90 = uVar1;
+    *(unsigned long *)0x98 = param_3;
+    FUN_00353080();
+    FUN_00408044();
+    FUN_00408db8();
+}
+
+/* FUN_003d6b14 @ 0x3d6b14   (est. cL4_async_task_suite_body_e)
+ * Ghidra: void FUN_003d6b14(undefined8, undefined8, undefined8)
+ * Task-suite body variant using the +0x28/+0x30 slot pair and the
+ * +0x88/+0x68 context; unrecoverable jump-table dispatch.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d6c60". */
+void FUN_003d6b14(unsigned long param_1, unsigned long param_2, unsigned long param_3)
+{
+    int iVar1;
+    long lVar3;
+
+    FUN_00407ca0();
+    FUN_0040700c();
+    iVar1 = *(int *)(*(long *)0x28 + 0x24);
+    *(int *)0xb8 = iVar1;
+    lVar3 = *(long *)(*(long *)0x30 + (long)iVar1);
+    *(long *)0xa0 = lVar3;
+    if (lVar3 < 1) {
+        lVar3 = *(long *)0x48;
+        *(unsigned long *)(*(long *)0x30 + (long)iVar1) = 0;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_00406e8c();
+        FUN_00406288();
+        FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+        *(unsigned long **)0xb0 = (unsigned long *)FUN_00406fe0();
+        FUN_00406f2c();
+    } else {
+        lVar3 = *(long *)0x48;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_00406e8c();
+        FUN_00406288();
+        FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+        *(unsigned long **)0xa8 = (unsigned long *)FUN_00406fe0();
+        FUN_00407164(*(unsigned long *)0x88, 0, param_3, *(unsigned long *)0x68);
+    }
+    FUN_00406d70();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d6d50 @ 0x3d6d50   (est. cL4_async_refcount_offer_b)
+ * Ghidra: void FUN_003d6d50(void)
+ * Mirror of FUN_003d6724 with the +0x70/+0xb8 slot layout; unrecoverable
+ * jump-table dispatch.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d6e04 / 0x003d6f38". */
+void FUN_003d6d50(void)
+{
+    int iVar1;
+    unsigned long uVar2, uVar4, uVar6;
+    long lVar7;
+    cL4_w16_t auVar8;
+
+    uVar2 = FUN_00407c8c();
+    FUN_0040700c();
+    uVar4 = *(unsigned long *)0x70;
+    auVar8 = FUN_00351330();
+    uVar4 = FUN_000839f8(auVar8.lo, auVar8.hi, uVar4);
+    if ((int)uVar4 == 1) {
+        iVar1 = *(int *)0xb8;
+        lVar7 = *(long *)0x30;
+        uVar6 = *(unsigned long *)0x10;
+        FUN_00353c00(*(unsigned long *)0x80, uVar4, *(unsigned long *)0x78);
+        *(unsigned long *)(lVar7 + iVar1) = 0;
+        FUN_00350744(uVar6);
+        FUN_000839d8();
+        FUN_0040bd24(*(unsigned long *)0x88);
+        FUN_0040bd24(*(unsigned long *)0x68);
+        FUN_0040bd24(*(unsigned long *)0x60);
+        FUN_00407c78(0, 0, uVar2);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    lVar7 = *(long *)0xa0;
+    FUN_00353c00(*(unsigned long *)0x80, uVar4, *(unsigned long *)0x78);
+    lVar7--;
+    *(long *)0xa0 = lVar7;
+    if (lVar7 == 0 || *(long *)0xa0 < 1) {
+        *(unsigned long *)(*(long *)0x30 + (long)*(int *)0xb8) = 0;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_00406e8c();
+        FUN_00406288();
+        FUN_0040bb18(*(unsigned int *)(*(long *)0x48 + 4));
+        *(unsigned long **)0xb0 = (unsigned long *)FUN_00406fe0();
+        FUN_00406f2c();
+    } else {
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_00406e8c();
+        FUN_00406288();
+        FUN_0040bb18(*(unsigned int *)(*(long *)0x48 + 4));
+        *(unsigned long **)0xa8 = (unsigned long *)FUN_00406fe0();
+        FUN_00407164(*(unsigned long *)0x88);
+    }
+    FUN_00406d70();
+    FUN_00407c78();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d71b8 @ 0x3d71b8   (est. cL4_async_task_suite_setup_b)
+ * Ghidra: void FUN_003d71b8(undefined8, undefined8, undefined8, undefined8, long)
+ * Set up a task suite (mirror of FUN_003d62dc) using context param_5+0x18
+ * and running FUN_003d69f8.
+ * Confidence: low
+ * Notes: DAT_0059ff8c is the size global. */
+void FUN_003d71b8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, long param_5)
+{
+    long lVar1;
+    unsigned long uVar2;
+    long *plVar3;
+
+    *(unsigned long *)0x10 = param_4;
+    lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x18),
+                         *(unsigned long *)(param_5 + 0x10),
+                         (unsigned long)&DAT_00614a5c, (unsigned long)&LAB_00614a7c);
+    *(long *)0x18 = lVar1;
+    lVar1 = *(long *)(lVar1 + -8);
+    *(long *)0x20 = lVar1;
+    uVar2 = FUN_0040bb18(*(long *)(lVar1 + 0x40) + 0xf & 0xfffffffffffffff0);
+    *(unsigned long *)0x28 = uVar2;
+    plVar3 = (long *)FUN_0040bb18(DAT_0059ff8c);
+    *(long **)0x30 = plVar3;
+    *plVar3 = 0;
+    plVar3[1] = (long)&DAT_00405fdc;
+    FUN_003d69f8(plVar3, param_1, param_2, param_3, param_5, uVar2);
+}
+
+/* FUN_003d72f0 @ 0x3d72f0   (est. cL4_async_drop_permits)
+ * Ghidra: void FUN_003d72f0(void)
+ * Drop a number of executor permits: read the count, run the retain/release
+ * protocol, and either call FUN_003d6470 to finish or trap on a carry
+ * overflow.
+ * Confidence: low
+ * Notes: ends in a SoftwareBreakpoint(1, 0x3d7414) on SCARRY overflow. */
+void FUN_003d72f0(void)
+{
+    long lVar2;
+
+    FUN_00084220();
+    FUN_003509ec();
+    (void)*(unsigned long *)0x10;
+    FUN_0034b7e4();
+    lVar2 = (*DAT_00658c80)(0);
+    if (lVar2 < 0) {
+        FUN_0034a478((const char *)0x5dbed0);   /* "Can't drop a negative number of..." */
+        FUN_00406aa4();
+        FUN_0040697c();
+        FUN_004084d4();
+        /* __builtin_trap(); */
+    }
+    FUN_00350518();
+    (*(void (**)(void))0)();
+    lVar2 = *(long *)(0 + *(int *)(0 + 0x24));
+    FUN_003509c8();
+    (*(void (**)(void))0)();
+    if (0) {   /* SCARRY8 overflow check */
+        /* __builtin_trap(); */
+    }
+    FUN_003d6470(0, 0, lVar2, 0, 0);
+    FUN_00084234(0);
+}
+
+/* FUN_003d7414 @ 0x3d7414   (est. cL4_executor_teardown_guard_b)
+ * Ghidra: void FUN_003d7414(void)
+ * Executor teardown wrapper forwarding to FUN_003d7440.
+ * Confidence: low */
+void FUN_003d7414(void)
+{
+    FUN_00406574();
+    FUN_003d7440();
+    cL4_retain();
+}
+
+/* FUN_003d7440 @ 0x3d7440   (est. cL4_executor_teardown_body_b)
+ * Ghidra: void FUN_003d7440(void)
+ * Executor teardown body forwarding to FUN_003eaf4c.
+ * Confidence: low */
+void FUN_003d7440(void)
+{
+    FUN_003eaf4c();
+}
+
+/* FUN_003d7460 @ 0x3d7460   (est. cL4_executor_flush_marks)
+ * Ghidra: void FUN_003d7460(void)
+ * Flush executor trace/mark records: run FUN_0009461c, FUN_003fccc4,
+ * FUN_0009461c in sequence.
+ * Confidence: low */
+void FUN_003d7460(void)
+{
+    FUN_0009461c();
+    FUN_003fccc4();
+    FUN_0009461c();
+}
+
+/* FUN_003d7494 @ 0x3d7494   (est. cL4_async_store_result_pair)
+ * Ghidra: void FUN_003d7494(undefined8, undefined8, long)
+ * Store a two-word result into the frame slot selected by param_3+0x24,
+ * releasing the old value first.
+ * Confidence: low */
+void FUN_003d7494(unsigned long param_1, unsigned long param_2, long param_3)
+{
+    unsigned long *puVar1;
+
+    FUN_0008409c();
+    puVar1 = (unsigned long *)(0 + *(int *)(param_3 + 0x24));
+    FUN_0031d5f0(*puVar1, puVar1[1]);
+    *puVar1 = param_1;
+    puVar1[1] = param_2;
+}
+
+/* FUN_003d74d0 @ 0x3d74d0   (est. cL4_async_store_result_suite)
+ * Ghidra: void FUN_003d74d0(void)
+ * Store the async result suite: run the prologue, fetch the slot from
+ * FUN_003fccd4+0x24, release the old value, run the retention protocol and
+ * store the two new words.
+ * Confidence: low */
+void FUN_003d74d0(void)
+{
+    unsigned long *puVar1;
+    long lVar2;
+
+    FUN_00084220();
+    FUN_0040679c();
+    FUN_00407450();
+    lVar2 = FUN_003fccd4();
+    puVar1 = (unsigned long *)(0 + *(int *)(lVar2 + 0x24));
+    FUN_0040654c();
+    FUN_00350968();
+    FUN_00377824();
+    FUN_00349530();
+    (*(void (**)(void))0)();
+    *puVar1 = 0;
+    puVar1[1] = 0;
+    FUN_00084234(0);
+}
+
+/* FUN_003d7540 @ 0x3d7540   (est. cL4_async_result_build_b)
+ * Ghidra: void FUN_003d7540(void)
+ * Build an async result (mirror of FUN_003d64a0) using the +0x40 slot and
+ * two property captures.
+ * Confidence: low */
+void FUN_003d7540(void)
+{
+    unsigned long uVar1;
+
+    FUN_00407000();
+    FUN_00406704();
+    FUN_004079a8();
+    FUN_00350798();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x40 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x48 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x50 = uVar1;
+    FUN_0040683c();
+    *(unsigned long *)0x58 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x60 = uVar1;
+    FUN_00407594();
+    FUN_00408db8();
+}
+
+/* FUN_003d75f8 @ 0x3d75f8   (est. cL4_async_task_read_pair)
+ * Ghidra: void FUN_003d75f8(void)
+ * Read the two-word async task payload from +0x24, build a continuation
+ * frame (LAB_003d7ae4 or LAB_003d7700 depending on the first word), and
+ * dispatch via the unrecoverable jump table.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d76fc". */
+void FUN_003d75f8(void)
+{
+    int iVar3;
+    long lVar2, lVar5;
+    long *plVar1;
+
+    FUN_00407c8c();
+    FUN_0040700c();
+    *(long *)0x68 = 0;
+    iVar3 = *(int *)(*(long *)0x18 + 0x24);
+    *(int *)0xa8 = iVar3;
+    plVar1 = (long *)(*(long *)0x20 + (long)iVar3);
+    lVar5 = *plVar1;
+    *(long *)0x70 = lVar5;
+    *(long *)0x78 = plVar1[1];
+    lVar2 = *(long *)0x30;
+    FUN_0040652c();
+    FUN_00406608();
+    FUN_004068f4();
+    FUN_00406268();
+    FUN_0040bb18(*(unsigned int *)(lVar2 + 4));
+    *(unsigned long *)0x80 = 0;
+    FUN_004083b4(0);
+    if (lVar5 == 0) {
+        /* LAB_003d7ae4 continuation */
+        FUN_00407670();
+    } else {
+        /* LAB_003d7700 continuation */
+        FUN_00407740();
+    }
+    FUN_00406ab4();
+    FUN_00407c78();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d77bc @ 0x3d77bc   (est. cL4_async_task_continue)
+ * Ghidra: void FUN_003d77bc(void)
+ * Continue an async task: branch on a zero-flag from the ownership check
+ * (FUN_00349f3c). Taken path reads the result from +0x40/+0x48/+0x50 and
+ * dispatches; fall-through stores the continuation context and runs the
+ * closure machinery.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d783c / 0x003d78d0". */
+void FUN_003d77bc(void)
+{
+    unsigned long uVar2, uVar3;
+
+    uVar2 = FUN_00407ca0();
+    FUN_0040700c();
+    uVar3 = FUN_00349f3c(*(unsigned long *)0x50);
+    if (0) {
+        FUN_00407f48(*(unsigned long *)0x48, uVar3, *(unsigned long *)0x40);
+        FUN_00406f18();
+        FUN_004081c0();
+        FUN_0040bd24(0);
+        FUN_00407e58(0, 0, uVar2);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    FUN_00406894(*(unsigned long *)0x58, *(unsigned long *)0x60);
+    *(unsigned long *)0x90 = 0;
+    *(unsigned long *)0x98 = 0;
+    FUN_003504a0();
+    (*(void (**)(void))0)();
+    FUN_004072a0();
+    *(long **)0xa0 = (long *)FUN_0040bb18(0);
+    FUN_00406bb4(*(unsigned long *)0x60);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d7978 @ 0x3d7978   (est. cL4_async_task_finish_suite)
+ * Ghidra: void FUN_003d7978(void)
+ * Finish an async task suite: branch on the flag at +0xac. Taken path runs
+ * the completion decision (LAB_003d7ae4/LAB_003d7700); fall-through clears
+ * the task slot, runs the release protocol and dispatches.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d7ae0 / 0x003d7a94". */
+void FUN_003d7978(void)
+{
+    unsigned long uVar3, uVar4;
+    long lVar2, lVar5;
+    unsigned long *puVar1;
+
+    uVar3 = FUN_0040790c();
+    FUN_004070d8();
+    if ((*(unsigned char *)0xac & 1) != 0) {
+        FUN_00407cd4();
+        lVar5 = *(long *)0x70;
+        lVar2 = *(long *)0x30;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_004068f4();
+        FUN_00406268();
+        FUN_0040bb18(*(unsigned int *)(lVar2 + 4));
+        *(unsigned long *)0x80 = 0;
+        FUN_004083b4(0);
+        if (lVar5 == 0) {
+            FUN_00407670();
+        } else {
+            FUN_00407740();
+        }
+        FUN_00406ab4();
+        FUN_004080cc();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    uVar4 = *(unsigned long *)0x60;
+    puVar1 = (unsigned long *)(*(long *)0x20 + (long)*(int *)0xa8);
+    FUN_0031d5f0(*(unsigned long *)0x70, *(unsigned long *)0x78);
+    *puVar1 = 0;
+    puVar1[1] = 0;
+    FUN_0011aa70();
+    (*(void (**)(void))0)();
+    FUN_0040738c();
+    FUN_00350750();
+    FUN_000839d8();
+    FUN_004081c0();
+    FUN_0040bd24(uVar4);
+    FUN_004079b4(0, 0, uVar3);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d7c18 @ 0x3d7c18   (est. cL4_async_task_suite_run_b)
+ * Ghidra: void FUN_003d7c18(undefined8, undefined8, undefined8, long)
+ * Run a task suite (mirror of FUN_003d69f8) capturing the +0x10 context and
+ * a second property set.
+ * Confidence: low */
+void FUN_003d7c18(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  long param_4)
+{
+    unsigned long uVar1;
+
+    FUN_00408058();
+    FUN_0040700c();
+    FUN_00406cc8();
+    FUN_00408308();
+    *(unsigned long *)0x48 = *(unsigned long *)(param_4 + 0x10);
+    uVar1 = FUN_0040684c();
+    *(unsigned long *)0x50 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x58 = 0;
+    uVar1 = FUN_0040859c(0);
+    *(unsigned long *)0x60 = uVar1;
+    uVar1 = FUN_0040bb18(0);
+    *(unsigned long *)0x68 = uVar1;
+    uVar1 = FUN_00406dd0();
+    *(unsigned long *)0x70 = uVar1;
+    FUN_00350798();
+    uVar1 = FUN_00310d68();
+    *(unsigned long *)0x78 = uVar1;
+    FUN_00352018();
+    *(unsigned long *)0x80 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x88 = uVar1;
+    FUN_0040683c();
+    *(unsigned long *)0x90 = 0;
+    uVar1 = FUN_004078e8(0);
+    *(unsigned long *)0x98 = uVar1;
+    if (0) {
+        FUN_00407248();
+        uVar1 = 0;
+    } else {
+        FUN_00406590();
+        (*(void (**)(void))0)();
+        FUN_0008e1ec();
+        uVar1 = 0;
+    }
+    *(unsigned long *)0xa0 = uVar1;
+    *(unsigned long *)0xa8 = param_3;
+    FUN_00353080();
+    FUN_00408044();
+    FUN_00408db8();
+}
+
+/* FUN_003d7d60 @ 0x3d7d60   (est. cL4_async_task_read_pair_b)
+ * Ghidra: void FUN_003d7d60(undefined8, undefined8, undefined8)
+ * Read the two-word task payload from the +0x28/+0x30 slot pair (variant of
+ * FUN_003d75f8) and dispatch.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d7e70". */
+void FUN_003d7d60(unsigned long param_1, unsigned long param_2, unsigned long param_3)
+{
+    int iVar3;
+    long lVar2, lVar5;
+    long *plVar1;
+
+    FUN_00407c8c();
+    FUN_0040700c();
+    *(long *)0xb0 = 0;
+    iVar3 = *(int *)(*(long *)0x28 + 0x24);
+    *(int *)0xe8 = iVar3;
+    plVar1 = (long *)(*(long *)0x30 + (long)iVar3);
+    lVar5 = *plVar1;
+    *(long *)0xb8 = lVar5;
+    *(long *)0xc0 = plVar1[1];
+    lVar2 = *(long *)0x48;
+    FUN_0040652c();
+    FUN_00406608();
+    FUN_00406e8c();
+    FUN_00406288();
+    FUN_0040bb18(*(unsigned int *)(lVar2 + 4));
+    *(unsigned long *)200 = 0;
+    FUN_004083b4(0);
+    if (lVar5 == 0) {
+        /* LAB_003d830c continuation */
+        FUN_00406f2c();
+    } else {
+        /* LAB_003d7e74 continuation */
+        FUN_00407164(*(unsigned long *)0x88, 0, param_3, *(unsigned long *)0x68);
+    }
+    FUN_00406d70();
+    FUN_00407c78();
+    /* jump-table dispatch (unrecovered) */
+}

@@ -245,7 +245,7 @@ static void   cL4_dem_string_push(dem_state_t *st, long *s, unsigned long data, 
 static void   cL4_dem_string_reserve(dem_state_t *st, long *s, unsigned int *cnt, unsigned long n); /* 3a3aec */
 static long   cL4_dem_save_state(dem_state_t *st, long obj, unsigned long a, unsigned long b, unsigned long c); /* 3a3d18 */
 static long   cL4_dem_restore_state(dem_state_t *st);  /* 3a3de4 */
-static long   cL4_dem_parse(dem_state_t *st, short *sub, unsigned long len, unsigned long c); /* 3a3e54 */
+static long   cL4_dem_parse_node(dem_state_t *st, short *sub, unsigned long len, unsigned long c); /* 3a3e54 */
 static unsigned long cL4_dem_parse_until(dem_state_t *st);  /* 3a4094 */
 static unsigned long cL4_dem_pop_kind_node(dem_state_t *st, void *fn); /* 3a4110 */
 static void   cL4_dem_dispatch(dem_state_t *st);   /* 3a4180 */
@@ -275,3 +275,233 @@ static dem_node_t *cL4_dem_emit_0xbf(dem_state_t *st); /* 3a663c */
 static long   cL4_dem_emit_0xc1(dem_state_t *st);     /* 3a672c */
 static void   cL4_dem_emit_kind(dem_state_t *st, unsigned long k); /* 3a6874 */
 static unsigned long *cL4_dem_parse_word(dem_state_t *st); /* 3a68a4 */
+
+/* ------------------------------------------------------------------ *
+
+/* Walk the demangler "context chain": from a global context record, follow
+ * the +8 link until the entry whose +0x28 field is non-null. (Ghidra
+ * collapses the root argument to the loader, so read the runtime context.) */
+static long cL4_dem_ctx_walk(void)
+{
+    /* Start from the runtime context record (cL4_current_thread/_DAT_006c0380)
+     * and follow the +8 link until the +0x28 field is non-null. */
+    long t = cL4_dem_load(&cL4_current_thread);
+    while ((*(long *)(t + 0x28) == 0 || *(long *)(t + 0x28) == 0)) {
+        long link = *(long *)(t + 8);
+        t = 0;
+        if (link != 0) t = link;
+    }
+    return t;
+}
+
+/* FUN_0039fcc4 @ 0x0039fcc4   (est. cL4_dem_opcode)
+ * Ghidra: ulong FUN_0039fcc4(ulong *param_1)
+ * Returns the low 32 bits of the operation word when it is a valid
+ * (< 0x800) demangle token, else 0.
+ * Confidence: medium
+ */
+unsigned long cL4_dem_opcode(unsigned long *word)
+{
+    unsigned long v = 0;
+    if (*word < 0x800) v = *word & 0xffffffff;
+    return v;
+}
+
+/* FUN_003a0ed4 @ 0x003a0ed4   (est. cL4_dem_resolve)
+ * Ghidra: undefined1[16] FUN_003a0ed4(ulong *param_1, undefined8 *param_2)
+ * Resolves a demangle operand pair into a {base, meta} word pair, following
+ * indirect child references. Kind 0x303 follows two child pointers; kind
+ * 0x307 dispatches on the tag byte at *param_1[1]: 0 = index through
+ * param_2[3], 1 = value via cL4_dem_load2, 2 = re-resolve through
+ * FUN_003743d0(*param_2), 3 = fail-closed trap. Non-special kinds return
+ * {param_1, param_2} directly.
+ * Confidence: low
+ */
+cL4_w16_t cL4_dem_resolve(unsigned long *word, unsigned long *meta)
+{
+    cL4_w16_t r;
+    unsigned long *nw;
+    unsigned char b;
+
+    for (;;) {
+        int kind = 0;
+        if (*word < 0x800) kind = (int)*word;
+        for (;;) {
+            if (kind != 0x307) {
+                if (kind != 0x303) {
+                    r.lo = (unsigned long)word;
+                    r.hi = (unsigned long)meta;
+                    return r;
+                }
+                nw = (unsigned long *)cL4_node_ptr((long*)word, (void*)meta);
+                meta = (unsigned long *)cL4_node_child((void*)word, (void*)meta);
+                word = nw;
+                break;
+            }
+            b = *(unsigned char *)word[1];
+            if (b < 2) break;
+            if (b == 2) { word = (unsigned long *)cL4_node_index((void*)*meta); break; }
+            if (b == 3) { __asm__ volatile("brk #1" ::: "memory"); /* 0x3a0fc0 */ }
+        }
+        if (b == 0) {
+            word = (unsigned long *)meta[3];
+            meta = (unsigned long *)cL4_node_child_ref((long*)meta);
+            continue;
+        }
+        /* b == 1 */
+        word = (unsigned long *)cL4_dem_load2((unsigned long*)*meta);
+    }
+}
+
+/* FUN_0039fcd8 @ 0x0039fcd8   (est. cL4_dem_kind_get)
+ * Ghidra: ulong FUN_0039fcd8(undefined8 param_1, ulong *param_2, undefined8 param_3)
+ * Dispatches on the resolved operation kind and returns a demangle node kind
+ * from the runtime table (0x67c1c8 / 0x67c0d0 / 0x67b0a8 / 0x67c230).
+ * Out-of-range tokens hit a fail-closed SoftwareBreakpoint(1) trap.
+ * Confidence: low
+ */
+unsigned long cL4_dem_kind_get(unsigned long op, unsigned long *word,
+                               unsigned long x)
+{
+    unsigned long r;
+    cL4_w16_t rv;
+    unsigned long *cand, *base;
+    long t, link;
+    long kind;
+
+    rv = cL4_dem_resolve((unsigned long*)x, (unsigned long*)op);
+    cand = (unsigned long*)rv.hi;
+    base = (unsigned long*)rv.lo;
+    if (word != 0) base = word;
+
+    kind = 0;
+    if (*base < 0x800) kind = (int)*base;
+
+    if (kind < 0x203) {
+        if (kind - 0x201U < 2) { r = 0x67c1c8; return cL4_dem_field1((long)&r); }
+        if (kind != 0) {
+            if (kind != 0x200) return 0;
+            r = 0x67c0d0; return cL4_dem_field2((long)&r);
+        }
+    } else if (kind < 0x301) {
+        if (kind != 0x203) {
+            if (kind != 0x300) return 0;
+            if ((base != (unsigned long*)0x67b0a8) ||
+                (0xfffffffffffff800 < **(long **)*cand - 0x800U)) return 0;
+            if (word == 0) {
+                t = cL4_dem_ctx_walk();
+            }
+            cand = (unsigned long*)0x67b0a8;
+            base = (unsigned long*)0x67b0a8;
+            goto use230;
+        }
+    } else {
+        if (kind < 0x305) { if (kind != 0x301) return 0; return base[1]; }
+        if (kind != 0x305) {
+            if ((1 < kind - 0x500U) && (kind != 0x400)) return 0;
+            __asm__ volatile("brk #1" ::: "memory"); /* 0x39fd58 */
+        }
+    }
+    if (word == 0) {
+        t = cL4_dem_ctx_walk();
+    }
+    cand = &r;
+use230:
+    r = 0x67c230;
+    return cL4_dem_field5((long)cand);
+}
+
+/* FUN_0039ff2c @ 0x0039ff2c   (est. cL4_dem_kind_get2)
+ * Ghidra: ulong FUN_0039ff2c(ulong *param_1)
+ * Companion of cL4_dem_kind_get with a single operand (the same table
+ * dispatch over the resolved operation kind).
+ * Confidence: low
+ */
+unsigned long cL4_dem_kind_get2(unsigned long *word, unsigned long x)
+{
+    unsigned long r;
+    cL4_w16_t rv;
+    unsigned long *cand, *base;
+    long t, link;
+    long kind;
+
+    rv = cL4_dem_resolve(word, (unsigned long*)0);
+    cand = (unsigned long*)rv.hi;
+    base = (unsigned long*)rv.lo;
+    if (word != 0) base = word;
+
+    kind = 0;
+    if (*base < 0x800) kind = (int)*base;
+
+    if (kind < 0x203) {
+        if (kind - 0x201U < 2) { r = 0x67c1c8; return cL4_dem_field1((long)&r); }
+        if (kind != 0) {
+            if (kind != 0x200) return 0;
+            r = 0x67c0d0; return cL4_dem_field2((long)&r);
+        }
+    } else if (kind < 0x301) {
+        if (kind != 0x203) {
+            if (kind != 0x300) return 0;
+            if ((base != (unsigned long*)0x67b0a8) ||
+                (0xfffffffffffff800 < **(long **)*cand - 0x800U)) return 0;
+            if (word == 0) {
+                t = cL4_dem_ctx_walk();
+            }
+            cand = (unsigned long*)0x67b0a8;
+            base = (unsigned long*)0x67b0a8;
+            goto use230;
+        }
+    } else {
+        if (kind < 0x305) { if (kind != 0x301) return 0; return base[1]; }
+        if (kind != 0x305) {
+            if ((1 < kind - 0x500U) && (kind != 0x400)) return 0;
+            __asm__ volatile("brk #1" ::: "memory"); /* 0x39ffa8 */
+        }
+    }
+    if (word == 0) {
+        t = cL4_dem_ctx_walk();
+    }
+    cand = &r;
+use230:
+    r = 0x67c230;
+    return cL4_dem_field5((long)cand);
+}
+
+/* FUN_003a0b04 @ 0x003a0b04   (est. cL4_dem_kind_bool)
+ * Ghidra: undefined8 FUN_003a0b04(undefined8 param_1, undefined8 param_2)
+ * Dispatch on the resolved operation kind; returns 1 for the "named
+ * children" kinds (0x201/0x202), else 0 after walking the context chain.
+ * Confidence: low
+ */
+unsigned long cL4_dem_kind_bool(unsigned long op, unsigned long word)
+{
+    cL4_w16_t rv;
+    unsigned long *cand, *base;
+    long t, link;
+    long kind;
+
+    rv = cL4_dem_resolve((unsigned long*)word, (unsigned long*)op);
+    base = (unsigned long*)rv.lo;
+    cand = (unsigned long*)rv.hi;
+
+    kind = 0;
+    if (*base < 0x800) kind = (int)*base;
+
+    if (kind < 0x203) {
+        if (kind - 0x201U < 2) { r = 0x67c1c8; return cL4_dem_field1((long)&r); }
+        if (kind != 0) return 0;
+    } else if (kind < 0x305) {
+        if (kind != 0x203) {
+            if (kind != 0x300) return 0;
+            if (base != (unsigned long*)0x67b0a8) return 0;
+            if (0xfffffffffffff800 < **(long **)*cand - 0x800U) return 0;
+            t = cL4_dem_ctx_walk();
+            return 0;
+        }
+    } else if (kind != 0x305) {
+        if ((1 < kind - 0x500U) && (kind != 0x400)) return 0;
+        __asm__ volatile("brk #1" ::: "memory"); /* 0x3a0c90 */
+    }
+    t = cL4_dem_ctx_walk();
+    return 0;
+}
