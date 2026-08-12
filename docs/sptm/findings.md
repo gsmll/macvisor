@@ -4176,3 +4176,27 @@ Confidence: high
 - **Evidence**: disassembly — 0x4ac2ac `sub x23,x9,x8; mov sp,x23`; 0x4ac2b8 `stur x8,[x29,#-0xc8]; mov sp,x8`; 0x4ac36c `stur x8,[x29,#-0xa0]; mov sp,x8`.
 - **Severity (hypothesis)**: low — these are non-standard-ABI prologue fragments where the caller has already validated x8/x9; no external input path observed into the register.
 - **Confidence**: low (register artifacts; no caller traced).
+
+## [SkR27] 0x0046ae94-0x0047c4e4 — Swift _StringProcessing regex ByteCodeGen region
+- **Observation**: The entire SKR27 slice is the cL4 kernel's embedded Swift `_StringProcessing` regex-bytecode compiler (strings: `Backreference_kind`, `Anchor_*`, `Handled_in_ByteCodeGen`, `_StringProcessing_ByteCodeGen_sw`, `Fatal_error`). It compiles attacker-reachable (guest/entitlement-driven) regex AST into bytecode in ring −1 (Secure Kernel). Every emitter bounds-checked its instruction-buffer/element/span index with fail-closed `SoftwareBreakpoint(1,addr)` traps (rendered `CL4_SWBP`) on out-of-range (`>> 0xe` tag/range compares, `SCARRY8`/`SBORROW8` overflow), so malformed/hostile regex fails closed rather than corrupting memory.
+- **Evidence**: 63+ `CL4_SWBP` traps across part 7 alone (0x47a250..0x47a3a4); range-ordering traps (0x46ef84/88/90, 0x46f294/298, 0x4772c8, 0x477500) before every vector store; opcode packing uses high-bit tagged words (0x1100000000000000, 0x400000000000000) with negative offset traps (0x477d74..9c) preventing signed-offset corruption; 00478110 builds 64-bit char bitmaps with shifts masked to 0x3f avoiding UB.
+- **Severity (hypothesis)**: medium — the compiler runs in the Secure Kernel and its inputs originate from guest-controlled regex patterns; fail-closed traps are the correct hardening, but a trap is a DoS (kernel fault) on hostile input, not a graceful error.
+- **Confidence**: high (trap pattern is consistent and pervasive).
+
+## [SkR27] 0x00477e8c — recursive child-descriptor walk without visible depth limit
+- **Observation**: 00477e8c recurses over nested regex child descriptors (0x160-byte elements) with no depth counter; only vector counts bound it. Deeply nested hostile patterns could drive deep (unbounded) recursion on the ring −1 stack.
+- **Evidence**: recursive calls to sk_bcg_00477e8c following `FUN_0047e5dc` classification; no depth/limit check observed.
+- **Severity (hypothesis)**: low-medium — potential kernel-stack exhaustion via crafted regex nesting.
+- **Confidence**: medium.
+
+## [SkR27] masked self-modifying / trampoline calls (SUB_54ffff60f100041f)
+- **Observation**: The region makes heavy use of an indirect call through the constant address `SUB_54ffff60f100041f` (rendered `sk_svc_call()`, sibling-slice convention) and indirect method-table dispatches through resolved function-pointer slots (+8/+0x10/+0x20) whose provenance is register-carried (extraout_xN / unaff_xN). A handful of indirect jump-table targets Ghidra could not resolve (e.g. 0046cb54 / 0046d670) choose targets through object method-table slots.
+- **Evidence**: `sk_svc_call()` at 70+ sites; indirect calls `(**(code **)(X+off))(...)` throughout.
+- **Severity (hypothesis)**: low-medium — indirect-call targets are not statically verifiable; worth auditing once the trampoline/method tables are re-homed.
+- **Confidence**: medium.
+
+## [SkR27] 0046ae94 grow-downward code buffer writes at negative offsets
+- **Observation**: The large emitter 0046ae94 and its wrappers (0046bd78, 0046c0cc) write spilled arguments at NEGATIVE offsets of a code buffer (`lvar6-0x10/-0x18/-0x20`, `extraout_x9-extraout_x8_01-0x10`), indicating a grow-downward bytecode buffer. The size accounting relies on the `>>0xe` tag/range compares; a bypass would be an OOB-write surface.
+- **Evidence**: `*(word_t *)(x8ret3 - 0x10/-0x18/-0x20) = ...` in 0046bd78/0046c0cc; all guarded by CL4_SWBP range checks (0x46bd58..0x46d670).
+- **Severity (hypothesis)**: medium — negative-offset writes are a classic overflow surface if any range check is skipped; the fail-closed traps mitigate.
+- **Confidence**: medium.

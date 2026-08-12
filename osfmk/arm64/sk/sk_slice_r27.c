@@ -793,6 +793,7 @@ extern word_t DAT_005a5580;
 extern word_t DAT_005a5e3c;
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_0049853c;
 extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t DAT_00616214;
@@ -893,7 +894,7 @@ static void sk_bcg_00472974(word_t param_1, word_t param_2, long param_3, word_t
 static void sk_bcg_00472f00(void);
 static void sk_bcg_00472f04(void);
 static void sk_bcg_00472f44(void);
-static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3, word_t param_4, code *param_5);
+static wpair_t sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3, word_t param_4, code *param_5);
 static void sk_bcg_00473244(word_t param_1, word_t param_2, unsigned long param_3, unsigned long param_4);
 static void sk_bcg_00474fe8(long *param_1);
 static void sk_bcg_00475544(void);
@@ -928,7 +929,7 @@ static void sk_bcg_0047aa0c(void);
 static void sk_bcg_0047b844(void);
 static void sk_bcg_0047bcc8(void);
 static void sk_bcg_0047bd74(void);
-static void sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3);
+static wpair_t sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3);
 static word_t sk_bcg_0047c1b0(word_t p1);
 static void sk_bcg_0047c3a4(void);
 static void sk_bcg_0047c474(void);
@@ -3336,6 +3337,7 @@ extern word_t thunk_FUN_00498708();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_0049853c;
 extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
@@ -3942,6 +3944,7 @@ extern word_t thunk_FUN_001a29a0(); /* thunk -> FUN_001a29a0 */
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_0049853c;
 extern word_t LAB_00657e08;
 extern word_t LAB_00611b34; /* thunk -> FUN_002b74c0 */
 extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn */
@@ -5430,7 +5433,7 @@ static wpair_t sk_bcg_004730e4(word_t param_1, word_t param_2, long param_3)
  * (v2>>0xe vs count<<2) selects the success path.
  * Confidence: medium   Notes: tag-bit decode of param_3; indirect param_5 call;
  * exx8; trap 0x4731b4/0x4731b8. */
-static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3, word_t param_4, code *param_5)
+static wpair_t sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3, word_t param_4, code *param_5)
 {
     unsigned long v1, v2, v6;
     code *pc3;
@@ -5467,7 +5470,7 @@ static void sk_bcg_004730f0(long param_1, word_t param_2, unsigned long param_3,
         FUN_004abf6c();
         FUN_003a25d4();
         FUN_0034c444(v5);
-        return;
+        return (wpair_t){0, 0};   /* register-residue 16-byte return */
     }
     /* WARNING: Does not return */
     CL4_SWBP(0x4731b8);
@@ -10310,6 +10313,7 @@ extern word_t thunk_FUN_002acbb8();
 extern wpair_t thunk_FUN_002b74c0();
 extern word_t DAT_0060e208;
 extern word_t DAT_00611b24;
+extern word_t LAB_0049853c;
 extern word_t LAB_00657e08;
 extern word_t LAB_00611b34;
 extern word_t thunk_FUN_0036b270();
@@ -10345,14 +10349,21 @@ static void sk_bcg_00478a98(void)
     int iVar8;
     unsigned char uVar4, uVar5;
     word_t uVar6;
-    wpair_t auVar24, auVar25;
+    wpair_t auVar24;
+    unsigned char auVar25[16];
     word_t auStack_2c8[44];
     unsigned char auStack_428[352];
     unsigned char auStack_168[360];
     word_t local_4e0[22];
     word_t extraout_x8, extraout_x9, extraout_x9_01, extraout_w8;
     long *plVar9;
-    struct { union { struct { unsigned char _0_1_; unsigned char pad[7]; } addr; } _0;                union { word_t _8_8_; } segname; } section_00000158 = {0};
+    struct { struct { unsigned char _0_1_; } addr; unsigned char sectname[16]; union { word_t _8_8_; } segname; } section_00000158 = {0};
+    word_t extraout_x8_00, extraout_x8_01, extraout_x8_02, extraout_x8_03, extraout_x8_04, extraout_x8_05;
+    word_t extraout_x1, extraout_x1_00, uVar10, extraout_x9_00, extraout_x9_02, extraout_x9_03;
+    word_t extraout_w8_00, extraout_w9, extraout_w10, extraout_x13, lVar19;
+    bool bVar2;
+    unsigned char (*pauVar12)[16];
+    word_t uVar1, extraout_x10;
 
     auVar24 = FUN_0008e518();
     lVar21 = *(word_t *)(auVar24.lo + 0x10);
@@ -10395,7 +10406,7 @@ static void sk_bcg_00478a98(void)
                     FUN_004ac034(auStack_428);
                     unaff_x20 = (word_t *)FUN_004acd08();
                 }
-                sk_bcg_00479c18(unaff_x20);
+                sk_bcg_00479c18();  /* register-residue arg dropped */
                 FUN_004ac2d0();
                 FUN_0036b118();
                 FUN_004a3918(auStack_2c8);
@@ -10424,7 +10435,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = sk_bcg_00479c18();
+                sk_bcg_00479c18(); uVar15 = 0;  /* register-residue return */
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10434,7 +10445,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
+                sk_bcg_00479c18(); unaff_x20 = 0; /* register-residue */
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10458,7 +10469,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = sk_bcg_00479c18();
+                sk_bcg_00479c18(); uVar15 = 0;  /* register-residue return */
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10468,7 +10479,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
+                sk_bcg_00479c18(); unaff_x20 = 0; /* register-residue */
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10492,7 +10503,7 @@ label_b38:
                 FUN_004ab18c();
                 FUN_0036a940();
                 FUN_004ac930();
-                uVar15 = sk_bcg_00479c18();
+                sk_bcg_00479c18(); uVar15 = 0;  /* register-residue return */
                 FUN_0036b118(unaff_x20);
                 section_00000158.segname._8_8_ = uVar15;
                 if ((uVar7 >> 0x10 & 1) == 0) {
@@ -10502,7 +10513,7 @@ label_b38:
                     section_00000158.addr._0_1_ = unaff_w28;
                     unaff_x25 = FUN_004ac594();
                 }
-                unaff_x20 = (word_t *)sk_bcg_00479c18(unaff_x25);
+                sk_bcg_00479c18(); unaff_x20 = 0; /* register-residue */
                 FUN_0036b118(unaff_x25);
                 FUN_004ac508();
                 local_640 = 0x160;
@@ -10676,7 +10687,7 @@ label_9518:
                         FUN_003a25d4(uVar15);
                         goto label_8fec;
                     }
-                    pauVar12 = (unsigned char (*)[16])FUN_0049e2f0(auStack_428);
+                    pauVar12 = (unsigned char (*)[16])FUN_0049e2f0((word_t)auStack_428);
                     auVar25[0] = pauVar12[0][0];
                     FUN_00117cc4(&local_640, lVar13 + 0xb0, 0xb0);
                     FUN_004acd14(&local_640);
@@ -10703,7 +10714,7 @@ label_9518:
                     lVar11 = FUN_00072c0c();
                 }
                 *(word_t **)(lVar11 + 0x10) = unaff_x20;
-                *(unsigned char (*)[16])(lVar11 + uVar14 * 0x10 + 0x20) = auVar25;
+                memcpy((void *)(lVar11 + uVar14 * 0x10 + 0x20), auVar25, 16);
                 FUN_004a3918(auStack_2c8);
                 break;
             case 2:
@@ -10744,7 +10755,7 @@ label_9518:
             }
             if (uVar23 == uVar20) {
                 FUN_0036b118(lVar18);
-                uVar15 = sk_bcg_004795b0(lVar11);
+                sk_bcg_004795b0(lVar11, 0, 0, 0); /* register-residue */
                 FUN_0036b118(lVar11);
                 FUN_0049a644(uVar15);
                 goto label_9518;
@@ -10755,7 +10766,7 @@ label_8ea8_case2:
             FUN_004ac520();
 label_8fec:
             if (bVar2) {
-                lVar13 = sk_bcg_004795b0(lVar11);
+                sk_bcg_004795b0(lVar11, 0, 0, 0); /* register-residue */
                 FUN_0036b118(lVar11);
                 uVar14 = *(word_t *)(lVar13 + 0x10);
                 lVar11 = *(word_t *)(lVar21 + 0x10) + uVar14;
@@ -10856,8 +10867,9 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
     unsigned char auStack_218[176];
     unsigned char local_168[22][16];
     word_t unaff_x28;
+    word_t extraout_x10, extraout_x8, extraout_x1, extraout_x8_00;
 
-    root_pair.lo = FUN_0008e518();
+    root_pair = FUN_0008e518();
     lVar7 = root_pair.lo;
     uVar16 = *(word_t *)(lVar7 + 0x10);
     if (uVar16 == 1) {
@@ -10882,7 +10894,7 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
         puVar22 = (word_t *)(lVar7 + 0x38);
         uVar1 = param_4 >> 1;
         FUN_000a6fe0();
-        puVar19 = extraout_x10;
+        puVar19 = (word_t *)extraout_x10;
         pcVar20 = param_3;
         for (uVar21 = 1; (b_pair.hi = pcVar20, b_pair.lo = unaff_x28,
             param_3 + (uVar21 - uVar1) != 1); uVar21 = uVar21 + 1) {
@@ -10899,15 +10911,15 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             FUN_003a25e0(uVar3, 2);
             thunk_FUN_0036b270(uVar5);
             if (uVar21 == 1) {
-                pcVar15 = FUN_001ee018;
+                pcVar15 = (word_t)FUN_001ee018;
                 FUN_003515d8(1);
-                sk_bcg_004773a8();
+                sk_bcg_004773a8(0, 0, 0, 0, 0, 0); /* register-residue args */
                 FUN_004acaa0();
                 pcVar13 = param_4;
             } else {
                 FUN_004ab248();
                 FUN_003515d8(1);
-                b_pair = sk_bcg_004730f0();
+                b_pair = sk_bcg_004730f0(0, 0, 0, 0, 0); /* register-residue args */
                 pcVar15 = b_pair.hi;
                 uVar8 = b_pair.lo;
                 FUN_00351790();
@@ -10980,14 +10992,14 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             FUN_003515d8(uVar12 | uVar10 << 0x10);
             FUN_0029c058();
             FUN_003515d8();
-            b_pair = FUN_00267510().lo;
+            b_pair = FUN_00267510();
             FUN_003a25d4(uVar3);
             FUN_0034eb74(uVar2 & 0xffffffffffff);
             if (extraout_x8 == 0) {
                 FUN_003a25d4(uVar5);
                 CL4_SWBP(0x479c14);
             }
-            a_pair = FUN_00267510(0xf, extraout_x1, uVar5).lo;
+            a_pair = FUN_00267510(0xf, extraout_x1, uVar5);
             FUN_003a25d4(uVar5);
             uVar12 = FUN_003a261c(pcVar11);
             pcVar14 = pcVar15;
@@ -11028,11 +11040,11 @@ static void sk_bcg_004795b0(word_t param_1, word_t param_2, word_t param_3, word
             CL4_SWBP(0x479c18);
         }
         FUN_004ab248(lVar7, uVar5, lVar7, uVar5);
-        c_pair = sk_bcg_004730f0(1, uVar5, extraout_x8_00);
+        c_pair = sk_bcg_004730f0(1, uVar5, extraout_x8_00, 0, 0); /* register-residue args */
         if ((c_pair.lo ^ c_pair.hi) < 0x4000) {
             FUN_003a25d4(pcVar14);
         } else {
-            c_pair = FUN_002a3e64().lo;
+            c_pair = FUN_002a3e64();
             FUN_003a25d4(pcVar14);
             uVar16 = FUN_003a261c(pcVar6);
             if ((uVar16 & 1) == 0) {
@@ -11085,7 +11097,7 @@ static void sk_bcg_00479c18(void)
     word_t *local_10, *puStack_8;
     word_t unaff_x19;
 
-    root_pair.lo = FUN_0008e518();
+    root_pair = FUN_0008e518();
     local_10 = &DAT_006577e0;
     puStack_8 = &DAT_006577e0;
     lVar9 = *(word_t *)(root_pair.lo + 0x10);
@@ -11112,7 +11124,7 @@ static void sk_bcg_00479c18(void)
                 FUN_004a3940(auStack_2d0, auStack_5b0);
                 thunk_FUN_0036b270(uVar5);
                 while (true) {
-                    el_pair = FUN_0029fb80().lo;
+                    el_pair = FUN_0029fb80();
                     lVar7 = el_pair.hi;
                     if (lVar7 == 0) break;
                     thunk_FUN_0036b270(lVar7);
@@ -11227,6 +11239,10 @@ static void sk_bcg_00479fe4(void)
     word_t lVar8, lVar9, lVar10, lVar11;
     wpair_t el_pair;
     word_t in_stack_00000028;
+    word_t lVar4, stack0x00000028;
+    word_t *plVar7;
+    int iVar6;
+    unsigned char stack0x00000008[16];
 
     FUN_0035193c();
     FUN_004abacc();
@@ -11238,9 +11254,9 @@ static void sk_bcg_00479fe4(void)
     if ((extraout_w8 >> 0x10 & 1) == 0) {
         uVar3 = sk_bcg_004772d0();
         thunk_FUN_0036b270();
-        pcVar1 = FUN_0042c5a4;
+        pcVar1 = (word_t)FUN_0042c5a4;
         FUN_00077894(1);
-        el_pair = sk_bcg_004773a8();
+        sk_bcg_004773a8(0, 0, 0, 0, 0, 0); el_pair.lo = 0; el_pair.hi = 0; /* register-residue */
         in_stack_00000028 = el_pair.lo;
         uVar7 = el_pair.hi >> 0xe;
         lVar8 = unaff_x21;
@@ -11279,7 +11295,7 @@ static void sk_bcg_00479fe4(void)
             FUN_004ab7f0();
             FUN_004ab7e0();
             FUN_00481918(lVar11);
-            sk_bcg_00476518(lVar4);
+            sk_bcg_00476518(); /* register-residue arg dropped */
             FUN_00498b28(lVar8);
             uVar5 = FUN_004aab1c();
             FUN_00498c1c(uVar5, lVar8);
@@ -11307,7 +11323,7 @@ static void sk_bcg_00479fe4(void)
         }
         CL4_SWBP(0x47a250);
     }
-    el_pair = FUN_00100efc().lo;
+    el_pair = FUN_00100efc();
     FUN_00351774(el_pair.lo, el_pair.hi, unaff_x30);
     sk_bcg_00475e14();
 }
@@ -11341,6 +11357,19 @@ static void sk_bcg_0047a258(void)
     word_t uVar14, uVar16;
     wpair_t el_pair;
     word_t in_stack_00000008;
+    word_t *plVar7;
+    int iVar6;
+    unsigned char stack0x00000008[16];
+    word_t extraout_x16_00;
+    word_t extraout_x1, extraout_x16_01, extraout_x16_02, extraout_x16_03, extraout_x16_04;
+    word_t extraout_x16_05, extraout_x16_06;
+    word_t extraout_x8_00, extraout_x8_01, extraout_x8_02, extraout_x8_03, extraout_x8_04;
+    word_t extraout_x8_05, extraout_x8_06, extraout_x8_07, extraout_x8_08, extraout_x8_09;
+    word_t extraout_x8_10, extraout_x8_11;
+    word_t extraout_x9_00, extraout_x9_01, extraout_x9_02, extraout_x9_03, extraout_x9_04;
+    word_t extraout_x9_05, extraout_x9_06, extraout_x9_07, extraout_x9_08, extraout_x9_09;
+    word_t extraout_x9_10, extraout_x9_11, extraout_x9_12, extraout_x9_13, extraout_x9_14;
+    word_t extraout_x9_15;
     unsigned char auStack_2c8[352];
     unsigned char auStack_168[176];
     unsigned char auStack_b8[184];
@@ -11373,7 +11402,7 @@ static void sk_bcg_0047a258(void)
             } else {
                 uVar12 = (word_t)(extraout_w8 + 1);
             }
-            el_pair = FUN_00255d4c(uVar12).lo;
+            el_pair = FUN_00255d4c(uVar12);
             in_stack_00000008 = el_pair.lo;
             if (el_pair.hi < 0) {
                 CL4_SWBP(0x47a9a8);
@@ -11391,7 +11420,7 @@ static void sk_bcg_0047a258(void)
         }
         break;
     case 1:
-        sk_bcg_0047b844(*unaff_x20);
+        sk_bcg_0047b844();  /* register-residue arg dropped */
         if (unaff_x21 == 0) {
             uVar12 = FUN_00481a38();
             FUN_0036b118(extraout_x1_00);
@@ -11668,6 +11697,11 @@ static void sk_bcg_0047aa0c(void)
     wpair_t el_pair;
     unsigned char auVar31[12], auVar32[16];
     word_t in_x3;
+    word_t pcVar13;
+    word_t extraout_x16, extraout_x16_00, extraout_x16_01, extraout_x9, extraout_x9_00, extraout_x9_01;
+    word_t extraout_x8, extraout_x8_00, extraout_x8_01;
+    word_t extraout_x1, extraout_x1_01, extraout_x1_03;
+    struct { struct { unsigned char _0_1_; } addr; unsigned char sectname[16]; union { word_t _8_8_; } segname; } section_00000158 = {0};
 
     FUN_00353cfc();
     /* masked self-modifying/trampoline fn */
@@ -11681,21 +11715,21 @@ static void sk_bcg_0047aa0c(void)
     if ((*(unsigned int *)(local_508 + 0x1c + *(word_t *)(local_508 + 0x10) * 4) >> 0x10 & 1) == 0) {
         FUN_0036b270(uVar10);
     } else {
-        uVar10 = sk_bcg_00478a98(uVar10);
+        sk_bcg_00478a98(); uVar10 = 0; /* register-residue */
     }
-    uVar5 = sk_bcg_00479c18(uVar10);
+    sk_bcg_00479c18(); uVar5 = 0; /* register-residue */
     el_pair.hi = el_pair.hi;
     el_pair.lo = uVar5;
     auVar31[0] = el_pair.lo; auVar31[8] = el_pair.hi;
     FUN_0036b118(uVar10);
     uVar12 = (word_t)(el_pair.hi & 1);
     FUN_00350470();
-    lVar6 = sk_bcg_00478110();
+    sk_bcg_00478110(0, 0, 0); lVar6 = 0; /* register-residue args */
     if (lVar6 == 2) {
         if ((local_430 & 1) == 0) {
             uVar12 = (word_t)(el_pair.hi & 1);
             FUN_00350470();
-            el_pair = sk_bcg_0047be1c();
+            el_pair = sk_bcg_0047be1c(0, 0, 0); /* register-residue args */
             FUN_0036b118(uVar5);
         }
     } else if ((local_430 & 1) == 0) {
@@ -11880,7 +11914,7 @@ label_af60:
     FUN_0036b118(lVar6);
     if ((local_1ba4 & 1) == 0) {
         uVar10 = sk_bcg_004772d0();
-        uVar5 = sk_bcg_00477338(1, local_430);
+        uVar5 = sk_bcg_00477338(1, local_430).lo;
         in_x3 = in_x3 >> 1;
         FUN_0036b270(local_430);
         lVar6 = 0x160;
@@ -12018,7 +12052,7 @@ label_af60:
         if (*(word_t *)(local_430 + 0x10) == 0) {
             CL4_SWBP(0x47b82c);
         }
-        el_pair = FUN_004ab980(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140).lo;
+        el_pair = FUN_004ab980(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140);
         FUN_00117cc4(el_pair.lo, el_pair.hi, 0x160);
         uVar5 = FUN_004ab980().lo;
         FUN_004a3940(uVar5, auStack_428);
@@ -12032,10 +12066,10 @@ label_af60:
 label_b7c0:
         FUN_0036b118(local_430);
     } else {
-        uVar10 = sk_bcg_004772d0(unaff_x20);
-        uVar5 = sk_bcg_00477338(1, local_430);
+        uVar10 = sk_bcg_004772d0(); /* register-residue arg dropped */
+        uVar5 = sk_bcg_00477338(1, local_430).lo;
         FUN_0036b270(local_430);
-        pcVar13 = section_00000158.sectname + 8;
+        pcVar13 = (word_t)(section_00000158.sectname + 8);
         lVar6 = local_500;
         for (; in_x3 >> 1 != uVar12; uVar12 = uVar12 + 1) {
             if ((long)(in_x3 >> 1) <= (long)uVar12) {
@@ -12154,7 +12188,7 @@ label_b7c0:
             FUN_0036b118(local_430);
             CL4_SWBP(0x47b840);
         }
-        el_pair = FUN_004ac6b0(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140).lo;
+        el_pair = FUN_004ac6b0(uVar5, local_430 + *(word_t *)(local_430 + 0x10) * 0x160 + -0x140);
         FUN_00117cc4(el_pair.lo, el_pair.hi, 0x160);
         uVar5 = FUN_004ac6b0().lo;
         FUN_004a3940(uVar5, auStack_168);
@@ -12231,8 +12265,11 @@ static void sk_bcg_0047b844(void)
     word_t local_338, local_328, local_310;
     unsigned char auStack_2c0[352], auStack_160[176], auStack_b0[176];
     wpair_t el_pair, r_pair;
+    word_t extraout_x1, extraout_x1_00, extraout_x1_01, extraout_x1_03;
+    unsigned char (*extraout_x1_04)[16];
+    word_t *extraout_x1_02;
 
-    el_pair.lo = FUN_00353cfc();
+    el_pair = FUN_00353cfc();
     FUN_00117cc4(auStack_2c0);
     uVar8 = FUN_0049df0c(auStack_2c0);
     uVar9 = FUN_0049df18(auStack_2c0);
@@ -12248,7 +12285,7 @@ static void sk_bcg_0047b844(void)
     case 1:
         FUN_00117cc4(auStack_b0, uVar9, 0xb0);
         FUN_00117cc4(auStack_160, uVar9 + 0xb0, 0xb0);
-        el_pair = sk_bcg_0047c3a4();
+        sk_bcg_0047c3a4(); el_pair.lo = 0; el_pair.hi = 0; /* register-residue */
         lVar12 = el_pair.hi;
         if (lVar12 == 0) {
             local_348 = 0;
@@ -12266,7 +12303,7 @@ static void sk_bcg_0047b844(void)
             *puVar11 = local_2e8;
             puVar11[3] = uStack_2d0;
             puVar11[2] = local_2d8;
-            puVar11 = extraout_x1_01;
+            puVar11 = (word_t *)extraout_x1_01;
             local_318 = local_2c8;
 label_bb78:
             puVar11[4] = local_318;
@@ -12289,7 +12326,7 @@ label_bb78:
                 *puVar11 = local_310;
                 puVar11[3] = uStack_2f8;
                 puVar11[2] = uStack_300;
-                puVar11 = extraout_x1_03;
+                puVar11 = (word_t *)extraout_x1_03;
                 local_318 = local_2f0;
                 goto label_bb78;
             }
@@ -12300,7 +12337,7 @@ label_bb78:
 label_baec:
                 FUN_003a25d4(auStack_160);
                 FUN_004aa610();
-                *extraout_x1_02 = el_pair;
+                *extraout_x1_02 = el_pair.lo;
                 pauVar10 = extraout_x1_02;
             } else {
                 FUN_000a6e14();
@@ -12365,7 +12402,7 @@ label_baec:
                         *puVar11 = local_338;
                         puVar11[3] = uStack_320;
                         puVar11[2] = local_328;
-                        puVar11 = extraout_x1_00;
+                        puVar11 = (word_t *)extraout_x1_00;
                         goto label_bb78;
                     }
                 }
@@ -12376,7 +12413,7 @@ label_baec:
             }
             pauVar10[1][0] = 1;
         }
-        el_pair = FUN_0036986c().lo;
+        el_pair = FUN_0036986c();
 label_case4:
         el_pair = FUN_004aca94(el_pair.lo, el_pair.hi);
         FUN_00353d14(el_pair.lo, el_pair.hi, el_pair.hi);
@@ -12484,7 +12521,7 @@ static void sk_bcg_0047bd74(void)
  * FUN_0008e500 with param_3's low bit.
  * Confidence: medium   Notes: _DAT_004c2450, uRam00000000004c2458 globals;
  * out-of-slice classification + list helpers. */
-static void sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3)
+static wpair_t sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3)
 {
     word_t uVar2, uVar3;
     word_t lVar1, lVar4, lVar5, lVar6, lVar7, lVar8;
@@ -12494,7 +12531,7 @@ static void sk_bcg_0047be1c(word_t param_1, word_t param_2, unsigned int param_3
     unsigned char local_420, local_2c0;
     unsigned char auStack_168[360];
 
-    root_pair.lo = FUN_0008e518();
+    root_pair = FUN_0008e518();
     lVar4 = root_pair.hi;
     lVar8 = *(word_t *)(lVar4 + 0x10);
     lVar6 = unaff_x22;
@@ -12762,7 +12799,7 @@ static void sk_bcg_0047c3a4(void)
         } else {
             uVar5 = (word_t)(extraout_w8 + 1);
         }
-        el_pair = FUN_00255d4c(uVar5).lo;
+        el_pair = FUN_00255d4c(uVar5);
         local_190[0] = el_pair.lo;
         if (el_pair.hi < 0) {
             CL4_SWBP(0x47c468);
@@ -12791,7 +12828,7 @@ static void sk_bcg_0047c474(void)
     word_t unaff_x20, unaff_x21;
     wpair_t el_pair;
 
-    el_pair = FUN_0035199c().lo;
+    el_pair = FUN_0035199c();
     if ((el_pair.hi & 0xff) != 1) {
         el_pair = FUN_0049c0e4(*(word_t *)(unaff_x20 + 0x88), el_pair.lo);
     }
