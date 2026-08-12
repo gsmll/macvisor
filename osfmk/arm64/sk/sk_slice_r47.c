@@ -39,8 +39,8 @@ extern unsigned long tpidrro_el0;       /* read of tpidrro_el0 (per-CPU/user con
 extern unsigned long tpidr_el0;         /* read of tpidr_el0 */
 
 /* ---- generic memory / copy helpers ---- */
-extern void *sk_memcpy(void *dst, const void *src, unsigned long n);   /* FUN_0067aa00 */
-extern void sk_memzero(void *dst, unsigned long n);                    /* FUN_0067a780 */
+extern void sk_memcpy(unsigned long dst, const void *src, unsigned long n); /* FUN_0067aa00 */
+extern void sk_memzero(unsigned long dst, unsigned long n);                /* FUN_0067a780 */
 extern void sk_strcpy_pad(void *dst, const void *src, unsigned long n);/* FUN_0067d440-ish pad copy */
 extern void sk_alloc_region(unsigned long addr, unsigned long kind);   /* FUN_006827a8 */
 extern void sk_free_obj(unsigned long obj);                            /* FUN_006823d4 */
@@ -154,8 +154,8 @@ extern unsigned long _DAT_006b4870;   /* method-dispatch slot 3 */
 extern unsigned long _DAT_006b4868;   /* method-dispatch slot 3 (alt) */
 extern unsigned long _DAT_006b4878;   /* method-dispatch slot 7 release */
 extern unsigned long _DAT_006bb920;   /* object-store initialized flag */
-extern unsigned long _DAT_006bb928;
-extern unsigned long _DAT_006bb930;
+extern unsigned char *_DAT_006bb928;
+extern unsigned int *_DAT_006bb930;
 extern unsigned long _DAT_006bb938;
 extern unsigned long _DAT_006bb940;
 extern unsigned long _DAT_006bb948;
@@ -183,6 +183,10 @@ extern unsigned long _DAT_006fc540, _DAT_006fc548, _DAT_006fc550, _DAT_006fc558;
 extern unsigned long _DAT_006fc560, _DAT_006fc568, _DAT_006fc570, _DAT_006fc578;
 extern unsigned long _DAT_006fb9c0;
 extern unsigned long _DAT_006b43a0b;
+extern unsigned long _DAT_0064c020;   /* machine feature register */
+extern unsigned long _DAT_0064c038;   /* image data base */
+extern unsigned long _DAT_0064c058;   /* feature field */
+extern unsigned long _DAT_0064c05c;   /* feature field */
 
 /* =====================================================================
  * Function bodies (address order).
@@ -286,7 +290,7 @@ static void sk_notif_dispatch_all(int preempt, unsigned int flags)
     if (cur != 0 && cur + 8 < cur) {
         SoftwareBreakpoint(0x5519, 0x652550);
     }
-    sk_memzero(save_ctx, sizeof save_ctx);
+    sk_memzero((unsigned long)save_ctx, sizeof save_ctx);
     do {
         if (node == 0) {
             return;
@@ -356,7 +360,7 @@ static void sk_notif_dispatch_all2(int preempt, int select_zero)
     if (cur != 0 && cur + 8 < cur) {
         SoftwareBreakpoint(0x5519, 0x6527c8);
     }
-    sk_memzero(save_ctx, sizeof save_ctx);
+    sk_memzero((unsigned long)save_ctx, sizeof save_ctx);
     do {
         if (node == 0) {
             return;
@@ -598,7 +602,7 @@ static unsigned long sk_ipc_reply_copyout(long *vas, long thr, unsigned short *b
         if (local_68 == 0) {
             sk_notif_dispatch_all_panic();
         }
-        (*(void (**)(void))(local_68 + 8))(local_70, local_90);
+        (*(void (**)(unsigned long, unsigned char *))(local_68 + 8))(local_70, local_90);
         slot_ptr = local_88;
     }
     /* store the reply capability slot back into the IPC buffer at index */
@@ -691,7 +695,8 @@ static void sk_ipc_reply_commit(long base, unsigned long arg2, long target, unsi
                 sk_vas_unmap_all(base, 0);
                 sk_fatal_msg("reply error");   /* FUN_0065c2f0(0,0x6a59a9) */
             }
-            err = (**(unsigned long (**)(void))(target + 0x28))(arg2, w << 0xe, cur);
+            err = (**(unsigned long (**)(unsigned long, unsigned long, unsigned long))
+                   (target + 0x28))(arg2, w << 0xe, cur);
             if ((err & 0xff) != 0) {
                 m = (unsigned char *)((err & 0xff) * 8 + 0x6b5e50);
                 if (m < (unsigned char *)0x6b5e50 || (unsigned char *)0x6b5e90 < m + 8 ||
@@ -844,7 +849,7 @@ static unsigned long sk_vas_translate(long vas, unsigned long addr, long out_bas
             mask2 = 0;
             mask = addr + 0x4000;
             base = *(long *)(vas + 8);
-            data = &__data;
+            data = __data;
             if (_DAT_006bb920 == 0) {
                 data = 0;
             }
@@ -937,7 +942,7 @@ static unsigned char sk_vas_any_mapped(long vas, unsigned long addr)
         if (addr < 0xffffffffffffc000) {
             present = 0;
             end = addr + 0x4000;
-            data = &__data;
+            data = __data;
             if (_DAT_006bb920 == 0) {
                 data = 0;
             }
@@ -981,7 +986,7 @@ static unsigned long sk_vas_region_find(unsigned char *block, unsigned long size
         iter = _DAT_006bb930 + 1;
         limit = iter + count;
         base = _DAT_006bb948 + _DAT_006bb950;
-        data = &__data;
+        data = __data;
         if (_DAT_006bb920 == 0) {
             data = 0;
         }
@@ -1047,12 +1052,12 @@ static void sk_vas_store_init(unsigned int *table, unsigned long size)
         SoftwareBreakpoint(0x5519, 0x653878);
     }
     _DAT_006bb920 = 1;
-    _DAT_006bb928 = table;
+    _DAT_006bb928 = (unsigned char *)table;
     _DAT_006bb930 = iter;
-    _DAT_006bb948 = table;
+    _DAT_006bb948 = (unsigned long)table;
     _DAT_006bb950 = size;
-    x1 = sk_object_lookup(&__data, 0x6a53cc);
-    x2 = sk_object_lookup(&__data, 0x6a53d3);
+    x1 = sk_object_lookup((unsigned long)__data, 0x6a53cc);
+    x2 = sk_object_lookup((unsigned long)__data, 0x6a53d3);
     if ((int)count != 0) {
         i = 0;
         entry = iter + 1;
@@ -1070,7 +1075,7 @@ static void sk_vas_store_init(unsigned int *table, unsigned long size)
                       ((unsigned int *)((long)e + (unsigned long)(unsigned short)e[5] * 2 + 0x16) < e + 6)))) {
                     SoftwareBreakpoint(0x5519, 0x653878);
                 }
-                block = &__data + *(long *)(e + 2);
+                block = __data + *(long *)(e + 2);
                 if (_DAT_006fec90 == 1) {
                     if ((x1 == 0) ||
                         (*(unsigned long *)(x1 + 0x20) <= (unsigned long)((long)block - (slide + *(long *)(x1 + 0x18))))) {
@@ -1089,7 +1094,7 @@ sw_path:
                     if ((short)e[5] != 0) {
                         i = 0;
                         do {
-                            sk_vas_translate(e, block, block);
+                            sk_vas_translate((long)e, (unsigned long)block, (long)block);
                             i++;
                             block = block + 0x4000;
                         } while (i < (unsigned short)e[5]);
@@ -1110,7 +1115,7 @@ sw_path:
 static void sk_vas_store_enable(long sw_flag)
 {
     if ((_DAT_0064c020 == 0x19) && (_DAT_0064c058 == 5) && (_DAT_0064c05c == 5)) {
-        _DAT_006fec88 = (long)&__data - _DAT_0064c038;
+        _DAT_006fec88 = (long)__data - _DAT_0064c038;
         _DAT_006fec90 = sw_flag != 0;
         _DAT_006fec91 = 0;
         _DAT_006fec92 = 1;
@@ -1230,7 +1235,7 @@ static unsigned long sk_vas_lookup(long vas, unsigned long addr, long out_base)
                         }
                         if (off == *p1) {
                             sk_vas_walk_commit(out_base + (unsigned long)*p2, addr & 0xffffffffffffc000,
-                                               *(unsigned short *)(vas + 2), (long)&__data - _DAT_006fec88);
+                                               *(unsigned short *)(vas + 2), (long)__data - _DAT_006fec88);
                         }
                     }
                 }
@@ -1239,7 +1244,7 @@ static unsigned long sk_vas_lookup(long vas, unsigned long addr, long out_base)
                     goto fault_path;
                 }
                 sk_vas_walk_commit(out_base + (unsigned long)u8, addr & 0xffffffffffffc000,
-                                   *(unsigned short *)(vas + 2), (long)&__data - _DAT_006fec88);
+                                   *(unsigned short *)(vas + 2), (long)__data - _DAT_006fec88);
             }
             return 1;
         }
@@ -2177,7 +2182,7 @@ static void sk_prng_fill(long dst, unsigned long n)
         if (7 < b) {
             b = 8;
         }
-        sk_memcpy(dst + i, &out, b);
+        sk_memcpy((unsigned long)dst + i, &out, b);
         if (dst + i + b < dst + i) {
             SoftwareBreakpoint(0x5519, 0x67cc14);
         }
@@ -2446,9 +2451,9 @@ static void sk_store_dispatch_teardown(long entry, unsigned long cap, long size,
     *(unsigned long *)(entry + 8) = b;
     desc_off = sk_vas_region_at(cap);
     if (desc_off == 0) {
-        sk_memzero(entry + 0x10, 0x10);
+        sk_memzero((unsigned long)entry + 0x10, 0x10);
     } else if (desc_off + 0x10 < desc_off ||
-               (sk_memcpy(entry + 0x10, desc_off, 0x10), entry + 0x20 < entry + 0x10)) {
+               (sk_memcpy((unsigned long)entry + 0x10, desc_off, 0x10), entry + 0x20 < entry + 0x10)) {
         SoftwareBreakpoint(0x5519, 0x655d54);
     }
 }
@@ -2494,10 +2499,10 @@ static void sk_store_get_footer(unsigned long out)
 
     e = (unsigned long)sk_bucket_current();
     if (e == 0) {
-        sk_memzero(out, 0x10);
+        sk_memzero((unsigned long)out, 0x10);
         return;
     }
-    sk_memcpy(out, e + 0x10, 0x10);
+    sk_memcpy((unsigned long)out, e + 0x10, 0x10);
     if (out <= out + 0x10) {
         return;
     }
@@ -2723,7 +2728,7 @@ static unsigned long *sk_obj_retain(unsigned long *obj)
                         }
                         return o;
                     }
-                    sk_memcpy(copy, obj, u);
+                    sk_memcpy((unsigned long)copy, obj, u);
                     copy[2] = obj[2];
                     *(unsigned int *)(copy + 1) = *(unsigned int *)(copy + 1) & 0xffff0000;
                     *(unsigned int *)(copy + 1) = *(unsigned int *)(copy + 1) | 0x1000002;

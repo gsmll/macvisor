@@ -11,6 +11,7 @@
 
 /* ---- Shared helpers used by this slice (defined elsewhere in the SK tree) ---- */
 extern unsigned long sk_00661318(void);                 /* FUN_00661318: current-object/tcb getter */
+extern unsigned long FUN_00661318(void);                /* FUN_00661318 (alias) */
 extern long FUN_00661348(void *);                       /* FUN_00661348: spin/sched state enter */
 extern void FUN_006613d0(void *);                       /* FUN_006613d0: state leave */
 extern void FUN_00661428(void);                         /* FUN_00661428: full memory barrier / sched tick */
@@ -120,7 +121,24 @@ static inline void *sk_thread_base(void)
 static long sk_notif_id_lookup(int major, int minor);
 
 /* Forward: notification list ensure helper (defined in this file) */
-static void sk_notif_list_ensure(long *slot, uint64_t major, uint64_t minor);
+static long sk_notif_list_ensure(long *slot, uint64_t major, uint64_t minor);
+
+/* Forward declarations for helpers referenced before their definition */
+static uint32_t sk_cfg_bit_test(uint64_t idx, uint32_t bit);
+static void sk_panic2(uint64_t a, uint64_t b);
+static void sk_list_push(long *node);
+static long sk_notif_lookup(uint64_t *key, int mode);
+static uint64_t sk_notif_feature_check(void);
+static void sk_slot_attach(uint64_t *param_1);
+static void sk_slot_init(uint64_t param_1);
+static long sk_alloc_bind(uint64_t param_1);
+static void sk_free_bind(uint64_t param_1);
+static void sk_objtype_release_all(uint64_t a, uint64_t obj, uint64_t b, int flag);
+static void sk_notif_send(uint64_t obj, uint64_t a, uint64_t b);
+static void sk_notif_cancel(uint64_t obj, uint64_t a);
+static void sk_notif_cleanup(uint64_t obj);
+static void sk_io_ring_push(uint64_t ring);
+static void FUN_0065c310(uint64_t a, uint64_t b, uint64_t c);   /* noreturn panic core */
 
 /* ===================================================================== */
 /* Syscall entry stubs — pattern A: 3 IPC words staged then SVC trap     */
@@ -318,8 +336,10 @@ SK_NOTIF_STUB_B(sk_syscall1_0065bbfc, 0x0065bbfc)
 SK_NOTIF_STUB_B(sk_syscall1_0065bc2c, 0x0065bc2c)
 /* FUN_0065bc5c @ 0x0065bc5c — est. sk_notif_syscall1 (table 0x900000001) */
 SK_NOTIF_STUB_B(sk_syscall1_0065bc5c, 0x0065bc5c)
-/* FUN_0065bc8c @ 0x0065bc8c — est. sk_notif_syscall1 (table 0x900000001) */
+/* FUN_0065bc8c @ 0x0065bc8c — est. sk_syscall1 (table 0x900000001) */
 SK_NOTIF_STUB_B(sk_syscall1_0065bc8c, 0x0065bc8c)
+/* FUN_0065b32c @ 0x0065b32c — est. sk_syscall1 (table 0x800000001, pattern B) */
+SK_NOTIF_STUB_B(sk_syscall1_0065b32c, 0x0065b32c)
 
 /* ===================================================================== */
 /* Syscall entry stubs — pattern C: 1-word staged retry-while-flag SVC   */
@@ -922,7 +942,8 @@ static long sk_notif_list_ensure(long *slot, uint64_t major, uint64_t minor)
 static long sk_notif_id_lookup(int major, int minor)
 {
     long cur;
-    long *list = *(long **)**(long **)((char *)sk_thread_base() + 0x10);
+    /* plVar3 = **(long **)(tpidr_el0 + 0x10): the id-list head pointer. */
+    long *list = (long *)*(long *)*(long **)((char *)sk_thread_base() + 0x10);
     long found = 0;
     if (list == 0) {
         return 0;
@@ -1023,7 +1044,7 @@ static void sk_reg_setup_a(uint64_t param_1)
 {
     _DAT_006b5220 = 0x6fe5a0;
     _DAT_006fe5f0 = param_1;
-    FUN_0065cbbc((long *)&_DAT_006b5220);
+    sk_list_push((long *)&_DAT_006b5220);
 }
 
 /* FUN_0065be9c @ 0x0065be9c   (est. sk_reg_setup_b)
@@ -1033,7 +1054,7 @@ static void sk_reg_setup_a(uint64_t param_1)
 static void sk_reg_setup_b(void)
 {
     _DAT_006b51f8 = 0x6b5170;
-    FUN_0065cbbc((long *)&_DAT_006b51f8);
+    sk_list_push((long *)&_DAT_006b51f8);
 }
 
 /* FUN_0065d2cc @ 0x0065d2cc   (est. sk_reg_setup_c)
@@ -1043,7 +1064,7 @@ static void sk_reg_setup_b(void)
 static void sk_reg_setup_c(void)
 {
     _DAT_006b5240 = 0x6fe640;
-    FUN_0065cbbc((long *)&_DAT_006b5240);
+    sk_list_push((long *)&_DAT_006b5240);
 }
 
 /* FUN_0065c29c @ 0x0065c29c   (est. sk_reg_init_once)
@@ -1132,7 +1153,7 @@ static uint64_t sk_notif_feature_check(void)
             uint64_t local = 0;
             long l = FUN_006661e0(0x6a60ff, &local);
             if (l == 0 || FUN_0067aff0(l, 0x6a610e, local) == 0) {
-                int v = FUN_0065bcf0(2, 1);
+                int v = sk_cfg_bit_test(2, 1);
                 r = (uint64_t)(v == 1);
             } else {
                 r = 1;
@@ -1155,7 +1176,7 @@ static void sk_notif_state_check(void)
     uint64_t v = *(uint64_t *)(base + 0x108);
     if (v == 0) {
         uint64_t ctx = FUN_00661318();
-        FUN_0065c2f0(ctx, 0x6a6110);   /* noreturn */
+        sk_panic2(ctx, 0x6a6110);   /* noreturn */
     }
     if (v <= v + 0x30) {
         return;
@@ -1189,7 +1210,7 @@ static uint32_t sk_cfg_bit_test(uint64_t idx, uint32_t bit)
     }
     if (len < (idx & 0xffffffff)) {
         uint64_t ctx = FUN_00661318();
-        FUN_0065c2f0(ctx, 0x6a60da);   /* noreturn */
+        sk_panic2(ctx, 0x6a60da);   /* noreturn */
     }
     char *p = (char *)(base + (idx & 0xffffffff));
     if ((char *)(base + len) <= p) {
@@ -1225,7 +1246,7 @@ static void sk_list_push(long *node)
         slot = *list;
         *node = (long)slot;
         if (*list == slot) {
-            *list = (long)node;
+            *list = node;
             return;
         }
     }
@@ -1385,7 +1406,7 @@ static void sk_io_ring_push(uint64_t ring)
                 uint64_t *tbl = (uint64_t *)(err + 0x6b5e50);
                 if ((uint64_t *)0x6b5e4f < tbl && (uint64_t *)(0x6b5e58) + (err / 8) < (uint64_t *)0x6b5e91
                     && tbl <= (uint64_t *)(0x6b5e58) + (err / 8)) {
-                    FUN_0065c2f0(ctx, 0x6a6374);   /* noreturn */
+                    sk_panic2(ctx, 0x6a6374);   /* noreturn */
                 }
                 SoftwareBreakpoint(0x5519, 0x65bfa8);
             }
@@ -1436,7 +1457,7 @@ static void sk_objtype_release_all(uint64_t a, uint64_t obj, uint64_t b, int fla
  * Confidence: medium */
 static void sk_notif_send(uint64_t obj, uint64_t a, uint64_t b)
 {
-    char *flag = (char *)sk_notif_list_ensure(&_DAT_006fc590, 1, 3);
+    char *flag = (char *)sk_notif_list_ensure((long *)&_DAT_006fc590, 1, 3);
     if (*flag != '\x02' || (FUN_00683f74((void *)obj, (void *)b, (void *)a) & 1) != 0) {
         *(long *)(obj + 0x58) = *(long *)(obj + 0x58) + 1;
     }
@@ -1449,7 +1470,7 @@ static void sk_notif_send(uint64_t obj, uint64_t a, uint64_t b)
  * Confidence: medium */
 static void sk_notif_cancel(uint64_t obj, uint64_t a)
 {
-    char *flag = (char *)sk_notif_list_ensure(&_DAT_006fc590, 1, 3);
+    char *flag = (char *)sk_notif_list_ensure((long *)&_DAT_006fc590, 1, 3);
     if (*flag == '\x02') {
         FUN_00684150((void *)obj, (void *)a);
     }
@@ -1463,12 +1484,12 @@ static void sk_notif_cancel(uint64_t obj, uint64_t a)
  * Confidence: medium */
 static void sk_notif_cleanup(uint64_t obj)
 {
-    char *flag = (char *)sk_notif_list_ensure(&_DAT_006fc590, 1, 3);
+    char *flag = (char *)sk_notif_list_ensure((long *)&_DAT_006fc590, 1, 3);
     if (*flag == '\x02') {
         FUN_00684388((void *)obj);
     }
     if (*(long *)(obj + 0x58) == 0) {
         return;
     }
-    FUN_0065c2f0(0, 0x6a634a);   /* noreturn */
+    sk_panic2(0, 0x6a634a);   /* noreturn */
 }
