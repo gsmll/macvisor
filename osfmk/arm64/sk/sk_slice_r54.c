@@ -259,6 +259,54 @@ static inline unsigned long dem_kind(const unsigned long *node)
     return *(unsigned short *)((const char *)node + 0x10);
 }
 
+/* Forward declarations for in-range functions (bodies below). */
+void cL4_dem_render_convention(unsigned long *out, unsigned long node, unsigned long depth);
+void cL4_dem_render_generic_args(unsigned long out, unsigned long *node, int depth);
+void cL4_dem_render_args(void *ctx, int sel, unsigned long depth);
+void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned long depth);
+void cL4_dem_arg_group(unsigned long out, unsigned long *node, unsigned long *idx, unsigned long kind, int depth);
+void cL4_dem_render_specialization(unsigned long out, unsigned long *node, unsigned long s1, unsigned long n1, unsigned long depth, unsigned long s2, unsigned long n2);
+unsigned long cL4_dem_emit_rec(unsigned long out, unsigned long a, unsigned long b);
+long *cL4_dem_render_qualtype(unsigned long *out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11);
+void cL4_dem_render_symbol(unsigned long *dst, long node, unsigned long *ctx);
+unsigned long cL4_dem_emit_quoted(unsigned long out, unsigned char *rec);
+unsigned char (*cL4_dem_kind2name(unsigned int kind))[16];
+unsigned long cL4_dem_kind_needs_space(unsigned long out, unsigned long node);
+unsigned long cL4_dem_is_simple_type(unsigned long *node);
+void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long *rt, unsigned long ret, unsigned long depth);
+void cL4_dem_render_subst_generic(unsigned long out, unsigned long flag, unsigned long *a, unsigned long *b, int mode, int *state, unsigned long *node, int depth);
+unsigned long *cL4_dem_path_lookup(unsigned long *node, long *path);
+void cL4_dem_render_subscript(unsigned long *dst, unsigned long a, unsigned long b);
+void cL4_str_rec_cat_grow(unsigned long *arr, unsigned long *rec);
+void cL4_str_rec_from_node(unsigned long *dst, unsigned long *node);
+void cL4_str_rec_copy_from(unsigned long *dst, unsigned long *src, unsigned long ctx);
+void cL4_str_rec_get(unsigned long *dst, unsigned long *arr, unsigned long i);
+void cL4_str_rec_free_ctx(void);
+void cL4_str_rec_free_ctx2(void);
+unsigned long cL4_dem_ctx_link(unsigned long dst, unsigned long *ctx);
+unsigned long *cL4_dem_ctx_make(unsigned long *ctx);
+void cL4_dem_emit_ctor_or_dtor(unsigned long *ctx, unsigned long node);
+void cL4_str_rec_free_chain(unsigned long ctx);
+void cL4_str_rec_list_free(unsigned long *head);
+void cL4_str_rec_pop2(unsigned long *p, unsigned long target);
+unsigned long *cL4_dem_rec_from_pair(unsigned long *dst, unsigned long *pair);
+void *cL4_str_rec_grow(unsigned long n);
+unsigned long *cL4_str_rec_destroy(unsigned long *arr);
+void cL4_str_rec_release(unsigned long *arr, unsigned long target);
+unsigned long cL4_parse_base36_int(char *s, unsigned long n, unsigned long *arr);
+void cL4_array_ensure(unsigned long *arr, unsigned long need);
+void cL4_u32arr_push_front(unsigned long *out, unsigned long *arr, unsigned long *val, unsigned int *four);
+void cL4_u32arr_push_front2(unsigned long *head, unsigned int *four);
+unsigned long cL4_emit_varint_utf8(unsigned long *arr, unsigned long *dst);
+unsigned long cL4_emit_varint_utf8_full(unsigned long *arr, unsigned long *dst);
+unsigned long cL4_utf8_encode_codepoints(unsigned long a, unsigned long b, unsigned long *dst);
+unsigned long cL4_parse_utf8_into_codepoints(unsigned char *s, long n, unsigned long *dst, int flag);
+void cL4_u32arr_grow_push(unsigned long *arr, unsigned int *v);
+unsigned long cL4_map_key_eq(unsigned long *a, unsigned long *b);
+unsigned long cL4_map_key_eq_recursive(unsigned long ctx, unsigned long *a, unsigned long *b);
+unsigned long cL4_map_key_eq_simple(unsigned long *a, unsigned long *b);
+unsigned long cL4_str_hash(unsigned long ctx, unsigned short *rec, unsigned long mode);
+
 /* 003ba9e0 @ 0x003ba9e0   (est. cL4_dem_render_function)
  * Ghidra: void FUN_003ba9e0(long *param_1, long param_2)
  * Renders a demangler node's "convention" attribute (the string

@@ -90,6 +90,31 @@ extern char s__owned_005d5f18[]; extern char s__unowned_005d5f1f[];
 extern char s__inout_aliasable_005d5f07[];
 extern uint64_t DAT_004f2740;
 extern uint64_t FUN_003a33cc(uint64_t *node);
+extern char s_AutoreleasingUnsafeMutablePointe_005d6a10[]; extern char s_Array_005d6a32[];
+extern char DAT_005d6a38[]; extern char s_Dictionary_005d6a3d[]; extern char s_Double_005d6a48[];
+extern char s_Float_005d6a4f[]; extern char DAT_005d6a55[]; extern char s_DefaultIndices_005d6a59[];
+extern char DAT_005d6a68[]; extern char s_Character_005d6a6c[]; extern char s_ClosedRange_005d6a76[];
+extern char s_Range_005d6a82[]; extern char s_ObjectIdentifier_005d6a88[]; extern char s_UnsafePointer_005d6a99[];
+extern char s_UnsafeMutablePointer_005d6aa7[]; extern char s_UnsafeBufferPointer_005d6abc[];
+extern char s_UnsafeMutableBufferPointer_005d6ad0[]; extern char s_String_005d6aeb[];
+extern char s_Substring_005d6af2[]; extern char DAT_005d6afc[]; extern char s_UnsafeRawPointer_005d6b01[];
+extern char s_UnsafeMutableRawPointer_005d6b12[]; extern char s_UnsafeRawBufferPointer_005d6b2a[];
+extern char s_UnsafeMutableRawBufferPointer_005d6b41[]; extern char s_BinaryFloatingPoint_005d6b5f[];
+extern char s_Encodable_005d6b73[]; extern char s_Decodable_005d6b7f[]; extern char s_FloatingPoint_005d6b89[];
+extern char s_RandomNumberGenerator_005d6b97[]; extern char s_Hashable_005d6bad[]; extern char s_Numeric_005d6bb6[];
+extern char s_BidirectionalCollection_005d6bbe[]; extern char s_RandomAccessCollection_005d6bd6[];
+extern char s_Comparable_005d6bed[]; extern char s_Collection_005d6bf8[]; extern char s_MutableCollection_005d6c03[];
+extern char s_RangeReplaceableCollection_005d6c17[]; extern char s_Equatable_005d6c32[]; extern char s_Sequence_005d6c3c[];
+extern char s_IteratorProtocol_005d6c45[]; extern char s_UnsignedInteger_005d6c56[]; extern char s_RangeExpression_005d6c66[];
+extern char s_Strideable_005d6c76[]; extern char s_RawRepresentable_005d6c81[]; extern char s_StringProtocol_005d6c92[];
+extern char s_SignedInteger_005d6ca1[]; extern char s_BinaryInteger_005d6caf[]; extern char s_Actor_005d6cbd[];
+extern char s_CheckedContinuation_005d6cc3[]; extern char s_UnsafeContinuation_005d6cd9[]; extern char s_CancellationError_005d6cec[];
+extern char s_UnownedSerialExecutor_005d6cfe[]; extern char s_Executor_005d6d14[]; extern char s_SerialExecutor_005d6d1d[];
+extern char s_TaskGroup_005d6d2c[]; extern char s_ThrowingTaskGroup_005d6d36[]; extern char s_TaskExecutor_005d6d48[];
+extern char s_AsyncIteratorProtocol_005d6d55[]; extern char s_AsyncSequence_005d6d6b[]; extern char s_UnownedJob_005d6d79[];
+extern char s_TaskPriority_005d6d8e[]; extern char s_AsyncStream_005d6d9b[]; extern char s_AsyncThrowingStream_005d6da7[];
+extern char s_UnsafeCurrentTask_005d6dbb[]; extern char DAT_005d4ec0[]; extern char s_MainActor_005d6d84[];
+
 extern uint64_t sk_003a6090(uint64_t *st, uint64_t tag); /* FUN_003a6090 */
 extern uint64_t sk_ctx_op2_v(uint64_t *a, uint64_t *b); /* FUN_003a4f5c (returns node) */
 
