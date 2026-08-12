@@ -122,7 +122,7 @@ extern uint32_t sptm_pt_shifts_lo[];
  *   +0x240  throttle register descriptor base (+0x12f78)
  *   +0x248  region-program mode (0=off, 1=on), +0x24a per-CPU guard
  */
-extern uint8_t sptm_sart_state[];        /* DAT_00094cc8 */
+extern uint8_t *sptm_sart_state;         /* DAT_00094cc8 (per-cpu SART base) */
 /* DAT_00094cc0 — "exclusive bounds" SART validation flag (set when the
  * device tree does NOT supply an "exclusive-bounds" property). */
 extern uint32_t sptm_sart_exclusive_bounds; /* DAT_00094cc0 */
@@ -155,14 +155,14 @@ sptm_take_guard(uint8_t *state, uint64_t err)
     if (*(state + 0x24a) != 0) {
         sptm_panic(0x200000a, err, "%s %s %s %d %s %llx %s %s %llx");
     }
-    *(state + 0x24a) = (uint8_t)(sptm_guard_token[cpu + 10] << 1 | 1);
+    *(state + 0x24a) = (uint8_t)(sptm_guard_token[(uintptr_t)cpu + 10] << 1 | 1);
 }
 
 static inline void
 sptm_release_guard(uint8_t *state)
 {
     uint8_t *cpu = sptm_cur_cpu_state();
-    if (*(state + 0x24a) != (uint8_t)(sptm_guard_token[cpu + 10] << 1 | 1)) {
+    if (*(state + 0x24a) != (uint8_t)(sptm_guard_token[(uintptr_t)cpu + 10] << 1 | 1)) {
         sptm_assert_fail("state guard release %llx");
     }
     *(state + 0x24a) = 0;
@@ -194,6 +194,7 @@ uint32_t sptm_dart_read_reg(void *ctrl, uint32_t client, uint32_t reg);
 void sptm_dart_write_reg_v1(void *ctrl, uint32_t client, uint32_t reg, uint32_t val);
 void sptm_dart_save(void *ctrl, uint32_t client);
 void sptm_dart_flush_cmd(void *ctrl, void *cmd);
+void sptm_sart_region_program(uint32_t id);
 
 /* ------------------------------------------------------------------ *
  * SART region functions.
