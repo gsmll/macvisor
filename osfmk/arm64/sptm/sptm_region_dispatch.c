@@ -858,6 +858,8 @@ static void sptm_fte_rc_panic(void)
 {
     sptm_panic(0x17, 0, "%s: %s %d %s 0x%llx %s 0x%llx");
 }
+/* FUN_000e0f00 — byte-identical noreturn refcount/type panic (FUN_000f8844
+ * with err 0x17). Grouped with sptm_fte_rc_panic. */
 
 /* FUN_000e0de4: FTE class-4 emptiness check. */
 static void sptm_fte_class4_check(void *fte, uint32_t type)
@@ -1083,8 +1085,9 @@ static void sptm_fte_retype_alloc(void *fte, uint32_t new_type, uint64_t param)
 
 /* (tlb_program_asid declared above.) */
 
-/* No-ops FUN_000e2138/0xe2140/0xe2148. */
+/* No-ops FUN_000e2138 / 0xe2140 / 0xe2148 (three empty functions). */
 static void sptm_noop(void) {}
+/* FUN_000e2138 — empty. FUN_000e2140 — empty. FUN_000e2148 — empty. */
 
 /* ------------------------------------------------------------------ *
  * FUN_000e2150 @ 0x000e2150   (est. sptm_cpu_root_fte_to_paddr)
@@ -1982,13 +1985,15 @@ static void sptm_vector_type_dispatch(uint64_t arg)
                           *((uint64_t *)DAT_00095cf8), arg);
 }
 
-/* FUN_000e71c4 / 0xe71c8: exc-return stubs (branch to 0xe71d8). */
+/* FUN_000e71c4 / 0xe71c8: exc-return stubs (branch to 0xe71d8). Both are
+ * `bl FUN_000a1318` (exception-return-el0) followed by a branch to 0xe71d8. */
 static void sptm_exc_return_stub(void)
 {
     sptm_brk(1);   /* SoftwareBreakpoint(1, 0xe71d8) */
 }
 
-/* FUN_000e71d8 / 0xe71dc: exc-return-save stubs (branch to 0xe71ec). */
+/* FUN_000e71d8 / 0xe71dc: exc-return-save stubs (branch to 0xe71ec). Both are
+ * `bl FUN_000a0d80` (exception-return-save) followed by a branch to 0xe71ec. */
 static void sptm_exc_return_save_stub(void)
 {
     sptm_brk(1);   /* SoftwareBreakpoint(1, 0xe71ec) */
@@ -2581,6 +2586,7 @@ static void sptm_hib_unaligned_panic(void)
 {
     sptm_assert_fail(599, "uint64_t sptm_hib_unaligned_r…");
 }
+/* FUN_000eafec — byte-identical to FUN_000eafe8. */
 
 /* ------------------------------------------------------------------ *
  * FUN_000e7d78 @ 0x000e7d78   (est. sptm_hib_setup)

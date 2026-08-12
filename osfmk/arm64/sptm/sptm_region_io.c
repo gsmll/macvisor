@@ -3022,3 +3022,389 @@ void sptm_papt_commit(void)
     g_committed_range_count = (uint32_t)n;
     sptm_qsort(g_committed_range_base, g_committed_range_count, 0x18, (void *)sptm_io_range_cmp);
 }
+
+/* ------------------------------------------------------------------ */
+/* Extra bootstrap globals (addresses in comments; image base 0).      */
+/* ------------------------------------------------------------------ */
+extern uint64_t g_mem_size_pages;            /* DAT_00095318 */
+extern uint32_t g_has_virtualization;        /* DAT_00095d38 */
+extern uint32_t g_io_range_count2;           /* DAT_00095440 */
+extern uint64_t g_io_range_fte2;             /* DAT_00095448 */
+extern uint64_t g_io_range_table2;           /* DAT_00095450 */
+extern uintptr_t g_percpu_save[10];          /* DAT_00095180 */
+extern uintptr_t g_percpu_exc[10];           /* DAT_000951d0 */
+extern uintptr_t g_percpu_misc[10];          /* DAT_00095220 */
+extern uint8_t  g_hib_segs_present2;         /* DAT_00100e00 */
+
+/* ------------------------------------------------------------------ */
+/* 000d9ec8  sptm_bootstrap_early                                     */
+/* ------------------------------------------------------------------ */
+/* FUN_000d9ec8 @ 0x000d9ec8   (est. sptm_bootstrap_early)
+ * Ghidra: void FUN_000d9ec8(ulong param_1,ulong param_2,ulong param_3,
+ *                           ulong param_4,undefined8 *param_5)
+ * The first big bootstrap stage: establishes the PAPT physical window
+ * and VA base, reads the DRAM window from /chosen, lays out the boot
+ * PAPT ranges, sets up the frame allocator pools and the root table VA
+ * translation, resolves the execution-mode (exception-level) bitsets into
+ * the dispatch table, rebases the xnu exception-return/dispatch globals,
+ * allocates the per-CPU state, parses the hibernation segments and the
+ * /product "has-virtualization" flag. Args are (virt_base, phys_base,
+ * first_avail_phys, mem_size, device-tree). Requires the pre-PAPT stage
+ * (bits 0-1 of g_bootstrap_stages set) and bit 9 clear; each phase is
+ * announced into g_bootstrap_stages with single-shot panics.
+ * Confidence: low
+ * Notes: the execution-mode processing collapses 5 identical
+ *   bit-reverse+count-leading-zeros loops over the mode bitsets into one
+ *   helper (each level's set bits are written to g_exec_mode_dispatch
+ *   with the level index). */
+void sptm_bootstrap_early(uintptr_t virt_base, uintptr_t phys_base,
+    uintptr_t first_avail, uintptr_t mem_size, uintptr_t *dt)
+{
+    if ((~(uint32_t)g_bootstrap_stages & 3) != 0) goto bad_expected;
+    if (((g_bootstrap_stages >> 9) & 1) != 0) goto bad_unexpected;
+    if ((virt_base & 0x3fff) != 0) sptm_panic("%s: ... invalid virt_base %llx...", 0, 0, 0);
+    if ((phys_base & 0x3fff) != 0) sptm_panic("%s: ... invalid phys_base %llx...", 0, 0, 0);
+    if ((first_avail & 0x3fff) != 0) sptm_panic("%s: ... invalid first_avail phys...", 0, 0, 0);
+    if ((mem_size & 0x3fff) != 0) sptm_panic("%s: ... invalid mem_size %zx...", 0, 0, 0);
+    if (mem_size >> 0x2e != 0) sptm_panic("%s: ... page_count_overflows_32_b...", 0, 0, 0);
+
+    g_mem_phys_end = mem_size + phys_base;
+    g_mem_size_pages = mem_size >> 0xe;
+    g_papt_va_base = virt_base;
+    g_mem_phys_base = phys_base;
+
+    uintptr_t chosen = 0;
+    if (sptm_dt_find_node(dt[0], 0, "chosen", &chosen) != 1) {
+        sptm_panic("%s: Error looking up %chosen...", 0, 0, 0);
+    }
+    uint64_t *dram = NULL; uint32_t dsz = 0;
+    if (sptm_dt_get_prop(chosen, "dram-base", (uintptr_t *)&dram, &dsz, dt[0], dt[1]) != 1) {
+        sptm_panic("%s: Error looking up %chosen dra...", 0, 0, 0);
+    }
+    if (dram == NULL || dsz == 0) sptm_panic("%s: dram_base %p size mismatch...", 0, 0, 0);
+    uint64_t *dsize = NULL; uint32_t ssz = 0;
+    if (sptm_dt_get_prop(chosen, "dram-size", (uintptr_t *)&dsize, &ssz, dt[0], dt[1]) != 1) {
+        sptm_panic("%s: Error looking up %chosen dra...", 0, 0, 0);
+    }
+    if (dsize == NULL || ssz == 0) sptm_panic("%s: dram_size %p size mismatch...", 0, 0, 0);
+    g_dram_base = dram[0];
+    g_dram_end = dsize[0] + g_dram_base;
+    if ((g_dram_base & 0x3fff) != 0) sptm_panic("%s: sptm_first_dram_is_not_page...", 0, 0, 0);
+    if ((dsize[0] & 0x3fff) != 0) sptm_panic("%s: sptm_last_dram_is_not_page_a...", 0, 0, 0);
+
+    sptm_announce_bootstrap_feature(0x10);
+
+    /* Lay out the boot PAPT ranges: walk the registered ranges, place each
+     * non-contiguous/allocated one, and remember the merge start + last VA. */
+    uint64_t cur_va = sptm_pa_to_va(g_papt_range_va[0]);
+    uint64_t last_va = cur_va;
+    g_va_alloc_cur = cur_va;
+    for (uint64_t i = 0; i < g_papt_range_count; i++) {
+        uint64_t *r = (uint64_t *)(0x12f8 + i * 0x28);
+        uint32_t flags = (uint32_t)r[4];
+        uint64_t pages = (uint32_t)r[3];
+        uint64_t len = pages * 0x4000;
+        if ((flags & 0x10) != 0) last_va += len;      /* the allocated-range bit */
+        if ((flags >> 7) & 1) {
+            /* PAPT_RANGE_ALLOC: grow the VA window backwards into the gap. */
+            cur_va = (cur_va & 0xfffffff000000000) - (len + 0xfffffffff & 0x7ff000000000);
+            g_va_alloc_cur = cur_va;
+        } else {
+            cur_va = cur_va + 0x1ffffff & 0xfffffffffe000000;
+            g_va_alloc_cur = cur_va;
+        }
+        r[2] = cur_va;   /* the range's resolved VA base */
+        last_va = cur_va + len;
+    }
+    g_carveout_lo = last_va + 0x1ffffff & 0xfffffffffe000000;
+    g_carveout_hi = (g_carveout_lo | 0x24000) + 0x4000;
+
+    sptm_announce_bootstrap_feature(0x20);
+    g_va_alloc_cur = g_carveout_hi;
+
+    /* Frame allocator pools + root table VA resolution. */
+    g_fa_counter[0] = (uint32_t)((first_avail - g_mem_phys_base) >> 0xe);
+    g_fa_counter[4] = 0;
+    g_io_range_fte2 = sptm_pa_to_va(g_carveout_hi);
+    sptm_va_to_pa(0x40000);
+    g_fa_counter[2] = (uint32_t)((sptm_va_to_pa(0x40000) - g_mem_phys_base) >> 0xe);
+    sptm_va_to_pa(0x95150);
+    g_fa_counter[5] = (uint32_t)((sptm_va_to_pa(0x95150) - g_mem_phys_base) >> 0xe);
+    g_io_range_table2 = sptm_pa_to_va(first_avail);
+
+    /* Zero the PAPT region from the first-available page. */
+    uintptr_t fte_va = sptm_pa_to_va(first_avail);
+    uint64_t zlen = (g_mem_size_pages * 0x10 + 0x3fff) & 0x1fffffc000;
+    sptm_bzero_chk(fte_va, zlen, 0xffffffffffffffffULL);
+    g_fa_counter[1] += (uint32_t)(zlen >> 0xe);
+
+    /* Execution-mode bitsets: verify no unsupported cross-level modes and
+     * flatten each level's supported bits into the dispatch table. */
+    {
+        uint64_t src[5][2] = {
+            { g_exec_mode_enabled[0], g_exec_mode_enabled[1] },
+            { g_exec_mode_enabled[2], g_exec_mode_enabled[3] },
+            { g_exec_mode_enabled[4], g_exec_mode_enabled[5] },
+            { g_exec_mode_enabled[6], g_exec_mode_enabled[7] },
+            { g_exec_mode_dispatch[0], g_exec_mode_dispatch[1] },
+        };
+        if ((src[0][0] & g_exec_mode_dispatch[0]) != 0 ||
+            (src[0][1] & g_exec_mode_dispatch[1]) != 0) {
+            sptm_panic("%s: Execution_Modes_cannot_be_su...", 0, 0, 0);
+        }
+        for (int level = 0; level < 5; level++) {
+            uint64_t l = src[level][0], h = src[level][1];
+            while (l != 0 || h != 0) {
+                uint64_t w = (h != 0) ? h : l;
+                int bit = (int)clz64(bitreverse64(w)) + ((h != 0) ? 0 : 64);
+                uint64_t m = 1ULL << (bit & 0x3f);
+                if (bit & 0x40) { h &= ~m; } else { l &= ~m; }
+                g_exec_mode_dispatch[(uint64_t)bit * 0x30] = (uint64_t)level;
+            }
+        }
+    }
+
+    /* Rebase the xnu exception-return / dispatch globals by the slide. */
+    {
+        uint64_t slide = virt_base - phys_base;
+        g_xnu_el2_exception_vector = sptm_pa_to_va(g_xnu_el2_exception_vector - slide);
+        g_xnu_exc_return_handler = sptm_pa_to_va(g_xnu_exc_return_handler - slide);
+        g_dispatch_table = sptm_pa_to_va(g_dispatch_table - slide);
+        g_el2_dispatch = sptm_pa_to_va(g_el2_dispatch - slide);
+        g_carveout_lo = sptm_pa_to_va(g_carveout_lo - slide);
+        g_carveout_hi = g_carveout_lo + (0x95100 - 0x95150);
+    }
+    sptm_dt_root();
+    sptm_register_cpu((uint16_t)sptm_percpu_state() & 0xffff);   /* mpidr_el1 & 0xffff */
+    sptm_boot_skip_unmap(0);
+
+    /* Allocate the 10 per-CPU state blocks. */
+    if (((g_bootstrap_stages >> 1) & 1) != 0) {
+        if (((g_bootstrap_stages >> 9) & 1) != 0) goto bad_unexpected;
+        for (uint32_t i = 0; i < 10; i++) {
+            uintptr_t s1 = sptm_pa_to_va(sptm_alloc_frames(1, 1, 2));
+            uintptr_t s2 = sptm_pa_to_va(sptm_alloc_frames(2, 1, 2));
+            sptm_alloc_frames(1, 1, 2);
+            uintptr_t s3 = sptm_pa_to_va(sptm_alloc_frames(0x2c, 1, 2));
+            g_percpu_save[i] = s1 + 0x4000;
+            g_percpu_exc[i] = s2 + 0x4000;
+            g_percpu_misc[i] = s3;
+        }
+    }
+    return;
+bad_expected:
+    sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+bad_unexpected:
+    sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* 000dcf80  sptm_io_bootstrap                                         */
+/* ------------------------------------------------------------------ */
+/* FUN_000dcf80 @ 0x000dcf80   (est. sptm_io_bootstrap)
+ * Ghidra: void FUN_000dcf80(long param_1,ulong param_2,undefined8 *param_3)
+ * The second big bootstrap stage: the IO-space / hibernation / filter
+ * setup. Requires the post-boot stage (bit 9) and pre-region stage (bit
+ * 0xb). Performs (a) per-CPU frame allocation, (b) parses the root
+ * device-tree "sptm-io-space" range via sptm_dt_parse_io_space
+ * (FUN_000d6860), (c) reads /defaults "pmap-io-ranges" (16K-aligned,
+ * sorted, registered into the IO-range table with managed/type
+ * classification, mapping via sptm_phystokv), (d) reads /defaults
+ * "pmap-io-filters" (8-byte entries, sorted with the io-filter
+ * comparator, overlap-checked), (e) builds the hibernation segment
+ * descriptors from the pmap-io-ranges and the SPTM ro/rx/rm/le boot
+ * regions, (f) programs the UAT handoff regions (memory regions), and
+ * (g) maps the per-CPU / all-CPU VA windows and the commpage/exception
+ * table region. Ends by enabling the IOMMU kinds and sorting/validating
+ * the IO-range table for overlaps.
+ * Confidence: low
+ * Notes: the /defaults "pmap-max-asids" property bounds g_pmap_max_asids;
+ *   the io-filter overlap scan uses sptm_io_filter_cmp ordering. */
+void sptm_io_bootstrap(uintptr_t mem_start, uintptr_t mem_size, uintptr_t *dt)
+{
+    if (((g_bootstrap_stages >> 9) & 1) == 0) goto bad_expected;
+    if (((g_bootstrap_stages >> 0xb) & 1) != 0) goto bad_unexpected;
+    if ((mem_size & 0x3fff) != 0) sptm_panic("%s: ... invalid mem_size %zx...", 0, 0, 0);
+    if (mem_size >> 0x2e != 0) sptm_panic("%s: ... page_count_overflows_32_b...", 0, 0, 0);
+
+    /* Per-CPU frame region table. */
+    for (uint32_t i = 0; i < 10; i++) {
+        sptm_alloc_frames(1, 1, 2);
+        uintptr_t r = sptm_pa_to_va(sptm_alloc_frames(0x2d, 1, 2));
+        (void)r;
+    }
+
+    /* IO-space ranges. */
+    uintptr_t root_io = 0;
+    if (sptm_dt_find_node(g_dt_root, 0, (const char *)0xe6ed, &root_io) != 1) {
+        sptm_panic("%s: Unable to get root device tr...", 0, 0, 0);
+    }
+    sptm_dt_parse_io_space(root_io);
+
+    /* pmap-io-ranges from /defaults. */
+    uintptr_t defaults = 0;
+    if (sptm_dt_find_node(g_dt_root, 0, "defaults", &defaults) != 1) {
+        sptm_panic("%s: ... defaults node doesn't exist...", 0, 0, 0);
+    }
+    uint64_t *io_ranges = NULL; uint32_t irsz = 0;
+    if (sptm_dt_get_prop(defaults, "pmap-io-ranges", (uintptr_t *)&io_ranges, &irsz, g_dt_root, *(uintptr_t *)(g_dt_root + 8)) == 1) {
+        if (irsz % 0x18 != 0) sptm_panic("%s: Total size of pmap_io_ranges...", 0, 0, 0);
+        g_pmap_io_range_count = 0;
+        for (uint32_t i = 0; i < irsz / 0x18; i++) {
+            uint64_t a = io_ranges[i * 3];
+            uint64_t l = io_ranges[i * 3 + 1];
+            if ((a & 0x3fff) != 0) sptm_panic("%s: pmap_io_range %u has an addr...", 0, 0, 0);
+            if ((l & 0x3fff) != 0) sptm_panic("%s: pmap_io_range %u has a lengt...", 0, 0, 0);
+            if (a + l < a) sptm_panic("%s: pmap_io_range %u wraps aroun...", 0, 0, 0);
+            if (((io_ranges[i * 3 + 2] >> 0x1b & 1) == 0) && a < g_mem_phys_end && g_mem_phys_base < a + l) {
+                sptm_panic("%s: pmap_io_range %u overlaps wi...", 0, 0, 0);
+            }
+            g_pmap_io_range_count = i + 1;
+        }
+        if (g_pmap_io_range_count != 0) {
+            uintptr_t tbl_pa = sptm_alloc_frames(2, (g_pmap_io_range_count * 0x18 + 0x3fff) >> 0xe, 2);
+            g_pmap_io_ranges = (uintptr_t *)sptm_pa_to_va(tbl_pa);
+            for (uint32_t i = 0; i < g_pmap_io_range_count; i++) {
+                g_pmap_io_ranges[i * 3] = io_ranges[i * 3];
+                g_pmap_io_ranges[i * 3 + 1] = io_ranges[i * 3 + 1];
+                g_pmap_io_ranges[i * 3 + 2] = io_ranges[i * 3 + 2];
+            }
+            sptm_qsort(g_pmap_io_ranges, g_pmap_io_range_count, 0x18, (void *)sptm_io_range_cmp);
+            for (uint32_t i = 0; i < g_pmap_io_range_count; i++) {
+                if (((g_bootstrap_stages >> 7) & 1) != 0) goto bad_unexpected;
+                uintptr_t *r = (uintptr_t *)((uintptr_t)g_pmap_io_ranges + (uintptr_t)i * 0x18);
+                uint32_t flags = (uint32_t)r[2];
+                uint32_t magic = (uint32_t)(r[2] >> 0x20);
+                if (((flags >> 0x1b & 1) == 0) && (magic == 0x534b494f || (flags & 0x4000) != 0)) {
+                    uint64_t len = r[1];
+                    if (len >> 0x26 != 0) sptm_panic("%s: %s p_length is greater than %u...", 0, 0, 0);
+                    uint32_t type;
+                    if ((flags & 0xff) == 0x16) type = 2;
+                    else if ((flags & 0xff) == 2) type = 1;
+                    else type = 0;
+                    if (g_io_range_count2 > 0x3ff) sptm_panic("%s: Number of IO ranges exhauste...", 0, 0, 0);
+                    uint64_t pages = len >> 0xe;
+                    uintptr_t base = r[0];
+                    if (g_mem_phys_base <= base && base < g_mem_phys_end) {
+                        sptm_panic("%s: Attempted to register manage...", 0, 0, 0);
+                    }
+                    if (pages == 0) sptm_panic("%s: Attempted to register an emp...", 0, 0, 0);
+                    if ((base & 0x3fff) != 0) sptm_panic("%s: Attempted to register unalig...", 0, 0, 0);
+                    uintptr_t ent = g_io_range_fte2 + (uintptr_t)g_io_range_count2 * 0x10;
+                    if (g_fte_class[(uint64_t)*(uint8_t *)(ent + 2) * 0x90] != 0x06) goto bad_type_class;
+                    uint8_t fte_type;
+                    if (magic == 0x534b494f) fte_type = 0x41;
+                    else if (magic == 0x43545252) fte_type = 0x1c;
+                    else if (magic == 0x544d5459) fte_type = 0x27;
+                    else if (magic == 0x52535444) fte_type = 0x26;
+                    else fte_type = 0x1b;
+                    *(uint8_t *)(ent + 2) = fte_type;
+                    if (g_fte_class[(uint64_t)fte_type * 0x90] != 0x06) {
+                        sptm_panic("%s: Attempted to register a IO r...", 0, 0, 0);
+                    }
+                    *(uint32_t *)(ent + 8) = (uint32_t)(base >> 0xe);
+                    *(uint32_t *)(ent + 0xc) = (uint32_t)pages | 0x9000000;
+                    g_io_range_count2 += 1;
+                    *(uint32_t *)(ent + 4) = 0xffffffff;
+                    if (g_type_state[(uint64_t)fte_type * 0x90] != -1) {
+                        *(uint32_t *)(ent + 4) = (uint32_t)g_mapping_region_count;
+                        sptm_phystokv(base, pages, 0);
+                    }
+                }
+            }
+            for (uint32_t i = 0; i + 1 < g_pmap_io_range_count; i++) {
+                if (g_pmap_io_ranges[(i + 1) * 3] < g_pmap_io_ranges[i * 3] + g_pmap_io_ranges[i * 3 + 1]) {
+                    sptm_panic("%s: sptm_pmap_io_ranges %u addr...", 0, 0, 0);
+                }
+            }
+        }
+    }
+
+    sptm_announce_bootstrap_feature(0x200000);
+
+    /* pmap-io-filters from /defaults. */
+    if (g_dt_root == 0) sptm_panic("%s: failed to get DT...", 0, 0, 0);
+    defaults = 0;
+    if (sptm_dt_find_node(g_dt_root, 0, "defaults", &defaults) != 1) sptm_panic("%s: ... defaults node doesn't exist...", 0, 0, 0);
+    uint32_t *io_filters = NULL; uint32_t fsz = 0;
+    if (sptm_dt_get_prop(defaults, "pmap-io-filters", (uintptr_t *)&io_filters, &fsz, g_dt_root, *(uintptr_t *)(g_dt_root + 8)) == 1) {
+        g_io_filter_count = 0;
+        for (uint32_t i = 0; i < fsz >> 3; i++) {
+            uint16_t *e = (uint16_t *)((uintptr_t)io_filters + i * 8 + 6);
+            if ((uint32_t)e[0] + (uint32_t)e[-1] > 0x4000) {
+                sptm_panic("%s: io_filter_entry %u offset 0x...", 0, 0, 0);
+            }
+            g_io_filter_count = i + 1;
+        }
+        uintptr_t fp = sptm_alloc_frames(2, ((fsz & 0xfffffff8) + 0x3fff) >> 0xe, 2);
+        g_io_filter_table = (uint32_t *)sptm_pa_to_va(fp);
+        for (uint32_t i = 0; i < fsz / 8; i++) {
+            g_io_filter_table[i * 2] = io_filters[i * 2];
+            g_io_filter_table[i * 2 + 1] = io_filters[i * 2 + 1];
+        }
+        sptm_qsort(g_io_filter_table, g_io_filter_count, 8, (void *)sptm_io_filter_cmp);
+        for (uint32_t i = 1; i < g_io_filter_count; i++) {
+            uint16_t *prev = (uint16_t *)((uintptr_t)g_io_filter_table + (i - 1) * 8 + 6);
+            uint16_t *cur = (uint16_t *)((uintptr_t)g_io_filter_table + i * 8 + 6);
+            if (*(uint32_t *)((uintptr_t)g_io_filter_table + i * 8) == *(uint32_t *)((uintptr_t)g_io_filter_table + (i - 1) * 8) &&
+                (uint32_t)cur[3] < (uint32_t)cur[0] + (uint32_t)cur[-1]) {
+                sptm_panic("%s: io_filter_entry %u and %u ov...", 0, 0, 0);
+            }
+        }
+    }
+
+    /* Hibernation / managed-region descriptors. */
+    if (((g_bootstrap_stages >> 0x13) & 1) != 0 && (g_hib_segs_present2 & 1) != 0) {
+        if (((g_bootstrap_stages >> 0x15) & 1) == 0) goto bad_expected;
+        for (uint32_t i = 0; i < g_pmap_io_range_count; i++) {
+            uintptr_t *r = (uintptr_t *)((uintptr_t)g_pmap_io_ranges + (uintptr_t)i * 0x18);
+            if ((r[2] >> 0x1d) & 1) {
+                if ((r[2] >> 0x1a) & 1) sptm_panic("%s: region_marked_as_both_needin...", 0, 0, 0);
+                if (g_managed_region_count > 0x4f) sptm_panic("%s: Attempted to register more t...", 0, 0, 0);
+                uint32_t *e = &g_managed_region_table[g_managed_region_count * 4];
+                uint64_t base = r[0];
+                if (g_mem_phys_base <= base && base < g_mem_phys_end) {
+                    sptm_panic("%s: Attempted to register a mana...", 0, 0, 0);
+                }
+                if ((base & 0x3fff) != 0) sptm_panic("%s: Attempted to register an una...", 0, 0, 0);
+                e[0] = (uint32_t)(base >> 0xe);
+                if (r[1] >> 0x2e != 0) sptm_panic("%s: %s p_length is greater than th...", 0, 0, 0);
+                e[1] = (uint32_t)(r[1] >> 0xe);
+                e[2] = e[0];
+                e[3] = (r[2] >> 0x20 == 0x534b494f) ? 6 : 4;
+                g_managed_region_count++;
+            }
+        }
+    }
+    sptm_announce_bootstrap_feature(0x100000);
+    if (((g_bootstrap_stages >> 7) & 1) != 0) goto bad_unexpected;
+    if (((g_bootstrap_stages >> 0x15) & 1) == 0) goto bad_expected;
+
+    /* Enable the IOMMU kinds and sort/validate the IO-range table. */
+    sptm_enable_iommu(1);
+    sptm_enable_iommu(2);
+    sptm_enable_iommu(3);
+    sptm_enable_iommu(5);
+    sptm_enable_iommu(7);
+    sptm_announce_bootstrap_feature(0x80);
+
+    if (g_io_range_count2 > 1) {
+        sptm_io_range_sort((void *)g_io_range_fte2, g_io_range_count2, 0x10, (void *)sptm_io_range_cmp);
+        if (g_fte_class[(uint64_t)*(uint8_t *)(g_io_range_fte2 + 2) * 0x90] != 0x06) goto bad_type_class;
+        for (uint32_t i = 1; i < g_io_range_count2; i++) {
+            if (g_fte_class[(uint64_t)*(uint8_t *)(g_io_range_fte2 + i * 0x10 + 0x12) * 0x90] != 0x06) goto bad_type_class;
+            uint64_t prev_end = (*(uint32_t *)(g_io_range_fte2 + (i - 1) * 0x10 + 0xc) & 0xffffff) +
+                                *(uint32_t *)(g_io_range_fte2 + (i - 1) * 0x10 + 8);
+            if (*(uint32_t *)(g_io_range_fte2 + i * 0x10 + 0x18) <= prev_end - 1) {
+                sptm_panic("%s: IO_Ranges %u and %u overlap...", 0, 0, 0);
+            }
+        }
+    }
+    return;
+bad_expected:
+    sptm_panic("%s: Expected bootstrap stages no...", 0, 0, 0);
+bad_unexpected:
+    sptm_panic("%s: Unexpected bootstrap stages r...", 0, 0, 0);
+bad_type_class:
+    sptm_panic("%s: Type %d class of FTE %p %d...", 0, 0, 0, 0);
+}

@@ -511,3 +511,33 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (paddr < g_mem_phys_base || g_mem_phys_end <= paddr) panic "paddr isn't managed"`; `if (flags==0 || flags&0x3c) panic "invalid flag found while upd..."`; `if (attr>7) panic "invalid cache attribute inde..."`.
 - **Severity (hypothesis)**: low — bounds what PTE mutations are expressible by callers.
 - **Confidence**: high
+
+## [ringminus1] 000e74e0 sptm_dispatch_route — guarded-call selector → event mapping
+- **Observation**: The guarded-call route entry derives the transition event from the selector and performs an implicit capability check before dispatching. The low byte maps 0x1b→event 0xc, 0x1c→0xd, 0x1e→2, else 0xe; the guest-IO endpoints 0x1b/0x1c are gated on a feature flag (DAT_00095d38 bit 0) — if the feature is disabled, reaching them panics 0x5d. The domain field (bits 48-55) must be 2 or 3 (else panic 0x29), selecting events 3/4. A table field (bits 32-39) that is neither 0 nor gated routes to event 2.
+- **Evidence**: `if (sel&0xff000000000000==0){ if(sel&0xff00000000==0){ lo=sel&0xff; if(lo==0x1b)evt=0xc; else if(lo==0x1c)evt=0xd; else {evt=(lo==0x1e)?2:0xe;} if(!(DAT_00095d38&1)) panic 0x5d } else evt=2 } else if(domain==2)evt=3; else if(domain!=3)panic 0x29; else evt=4;` then `sptm_dispatch_transition(evt, sel)`.
+- **Severity (hypothesis)**: low — the capability check is the presence of the guest-IO feature, not a per-caller authz; a malicious caller able to set the selector to 0x1b/0x1c while the feature is off can trigger a panic (availability).
+- **Confidence**: high
+
+## [ringminus1] 000e56ac / 000e5c80 sptm_io_frame_map / sptm_io_frame_unmap — IO frame owner/permission enforcement
+- **Observation**: The IO-frame map/unmap paths validate frame ownership against the current dispatch id (type 0x18 frames require the FTE owner byte == dispatch id-1; other frames require the per-type permission mask bit for the dispatch id), and reject a write-mode transition on unmap when the type's map-perm table forbids it. Every violation panics. A write-refcounted frame may not be shared.
+- **Evidence**: `if (FTE_TYPE==0x18){ if(fte[6] != disp_id-1) panic "attempted to release foreign frame" } else if (!(SPTM_FTE_DISPATCH(type)>> (disp_id-1)&1)) panic "Tried releasing a frame that this dispatch doesn't own"`; unmap `if (MAPPERM(type)>>1 & 1 && wr) panic 0x39`.
+- **Severity (hypothesis)**: medium — confines each IOMMU dispatch to frames SPTM has granted it, preventing cross-dispatch DMA frame access.
+- **Confidence**: medium
+
+## [ringminus1] 000e61f0 sptm_iommu_bootstrap — IOMMU dispatch-table registration
+- **Observation**: IOMMU bootstrap registers guarded dispatch endpoints (via 0xe71ec, the same single-write registration slot used by sptm_register_dispatch): each IOMMU's handoff region is bound to a dispatch id whose slot must be empty (double-register panics 0x2a). For IOMMU id 2 the endpoint is registered with permission 0x12; others with 0x2. The bootstrap dispatch id is set to id+1 during registration and restored to 10 after.
+- **Evidence**: `if (*(slot)==0){ register_dispatch(id, obj[0x30], obj[0x38], (id==2)?0x12:0x2); if(obj[0x40]) register_dispatch(id, obj[0x30]+1, obj[0x40], 8); } else panic "tried registering the same dispatch id twice"`.
+- **Severity (hypothesis)**: informational — dispatch endpoint registration is single-write and the endpoint set is fixed at bootstrap.
+- **Confidence**: low
+
+## [ringminus1] 000e7d78 sptm_hib_setup — hibernate image validation
+- **Observation**: The hibernate (HIB) setup routine validates the on-disk image1 header and bank descriptors before use: image1Size bounds, page-list length, bank ordering (first<last, non-overlap), bitmap-words vs page-count consistency, and pages-seen == page_count. The handoff pages are scanned for a valid "ho" magic before any page-table work. Every check is a noreturn panic. The IO ranges recorded from the DT must be present and non-IO-reserved for each bank page mapped.
+- **Evidence**: `if (image1_size > ...) panic 0x74d`; `if (last<first) panic 0x48c`; `if (words != (last-first+0x20)>>5) panic 0x49e`; `if (pages_seen != list[1]) panic 0x4a9`; `if (!found_ho) panic 0x62b "Could not find device tree in handoff"`; `if (!(io_range->flags&1)) panic 0x5fd`.
+- **Severity (hypothesis)**: low — prevents restoring from a malformed/corrupt hibernate image; the bank-descriptor validation guards against bitmap overruns.
+- **Confidence**: medium
+
+## [ringminus1] 000e9ecc / 000e9f28 sptm_assert_fail / sptm_panic_hib — fail-closed panic + CTRR output
+- **Observation**: Both HIB error paths are noreturn: they write the message to the CTRR trace register and spin forever (never recover). The CTRR output path itself double-checks a config flag (tpidrro_el0 + 0x600 bit 0 and a mask at +0x61c) before touching the register — so on a misconfigured trace module it silently skips output rather than faulting.
+- **Evidence**: `sptm_ctrr_puts("Assertion failed: "); ...; sptm_wait_forever()`; CTRR write gated on `if (tpidrro_el0 && (ctx[0x600]&1) && (ctx[0x61c] & config_mask))`.
+- **Severity (hypothesis)**: informational — the trace channel write is best-effort, the panic always halts.
+- **Confidence**: high

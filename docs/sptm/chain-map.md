@@ -273,3 +273,23 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 000d8914 -> 000d8a58; 000d8bf8 -> 000d8914/000d8784; 000d7348 -> 000d6f00 (sptm_papt_walk) -> 000d76fc (slice update)
 - 000d6124/000d617c (copy-to-scratch) -> FUN_000f8714, FUN_000e3d7c, FUN_000e40ec
 - 000dcf80 (sptm_io_bootstrap) -> 000d6860 (sptm_dt_parse_io_space), 000d9940, 000d823c, sptm_enable_iommu (FUN_000e61f0), 000d64d0/000d6e64 (comparators)
+
+## dispatch/register region (0xe0000-0xeb000) — Wave3j
+
+- FUN_000e6bc0 (sptm_dispatch_transition) — central gate; validates via FUN_000e7068 (sptm_dispatch_state_name, table @0x16640) + FUN_000e70b4 (sptm_dispatch_event_name, table @0x166f8)
+- FUN_000e74e0 (sptm_dispatch_route) → FUN_000e6bc0  [selector→event 0x2/0x3/0x4/0xc/0xd/0xe; domain field 48-55]
+- FUN_000e7644 (sptm_dispatch_vector_type) → FUN_000e6bc0 [event 6]
+- FUN_000e7100 (sptm_vector_type_dispatch) → FUN_000a0adc (sptm_exception_return) [3 guard panics]
+- FUN_000e71c4 / 0xe71c8 → FUN_000a1318 + branch 0xe71d8
+- FUN_000e71d8 / 0xe71dc → FUN_000a0d80 + branch 0xe71ec
+- FUN_000e61f0 (sptm_iommu_bootstrap) → FUN_000e71ec (sptm_register_dispatch) [register IOMMU endpoints]
+- FUN_000e71ec (sptm_register_dispatch) → FUN_000e6768 (register endpoint under caller domain) [single-write slot]
+- FUN_000e3d7c (sptm_phystokv) → FUN_000e4030 (sptm_ftes_overlap), FUN_000ad2dc (sptm_bsearch_range)
+- FUN_000e7d78 (sptm_hib_setup) → FUN_000ea744 (sptm_dt_pmap_io_ranges), FUN_000eaa44 (sptm_hib_alloc_page), FUN_000eabb4 (sptm_hib_map_region), FUN_000ea40c (sptm_page_list_next_free), FUN_000e9ecc (sptm_assert_fail), FUN_000e9f28 (sptm_panic_hib)
+- FUN_000eaa44 (sptm_hib_alloc_page) → FUN_000ea40c, FUN_000ea5f8 (sptm_hib_is_managed_page)
+- FUN_000ea744 (sptm_dt_pmap_io_ranges) → FUN_000eaf10 (sptm_hib_io_range_add) [callback]
+- FUN_000e78dc (sptm_guest_state_restore) — full EL2/EL1 guest context restore (no callees)
+- FUN_000e7c30 (sptm_stage2_state_restore) — restore stage-2 EL2 MMU/exception context
+- IO-frame paths: FUN_000e56ac/0xe5c80 (map/unmap) → FUN_000e4e74 (check_owner), FUN_000e5958 (refcount_ex), FUN_000e5090 (release); FUN_000e45a8 (io_frame_add) → FUN_000e3d7c, FUN_000d9940 (commit)
+- IOMMU state: FUN_000e4424 (state_alloc) / FUN_000e4d78 (state_get) — per-dispatch state arrays (DAT_00095320/0x95328/0x95330)
+- DRAM/paddr: FUN_000e35b4 (dram_update_type), FUN_000e3a14 (sptm_paddr_in_dram), FUN_000e384c (sptm_paddr_type) — DRAM byte table DAT_000952e8
