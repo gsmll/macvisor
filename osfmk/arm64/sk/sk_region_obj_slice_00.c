@@ -793,15 +793,42 @@ extern uint64_t FUN_00284424();  /* sibling slice */
 /* Global object-method dispatch slot (DAT_00658c00) - unspecified-arity fn pointer. */
 extern uint64_t (*DAT_00658c00)();
 
-/* Forward declarations (functions reconstructed in this file, cross-referenced). */
-void FUN_00286c10(void);
-void FUN_002871cc(word_t, word_t, word_t, word_t, word_t);
-void FUN_00287794(long, long, word_t);
-void FUN_00287d34(void);
-void FUN_00288a80(void);
-void FUN_002890d8(void);
-void FUN_0028b918(void);
-long FUN_0028d1a8(long, long, long, long, long);
+/* Forward declarations (functions reconstructed in this file, cross-referenced).
+ * In-slice functions are register-passed (decompiler models many as `(void)`);
+ * declared with unspecified arity so any observed call pattern compiles. */
+void FUN_00286c10();
+void FUN_002871cc();
+long FUN_00287794(long, long, word_t);
+void FUN_00287d34();
+void FUN_00288a80();
+void FUN_002890d8();
+void FUN_0028b918();
+word_t FUN_0028d1a8();
+void FUN_0028adc4();
+uint8_t *FUN_00287e30(long *, word_t, word_t, word_t, long, word_t);
+void thunk_FUN_00287c68();
+void FUN_00288910();
+void FUN_002884a0();
+word_t FUN_00287f6c();
+void FUN_00288f34();
+word_t *FUN_00288954();
+word_t FUN_00289bdc();
+word_t FUN_00289eac();
+word_t FUN_00289ce8();
+void FUN_0028a65c();
+word_t FUN_0028a0d4();
+word_t FUN_0028a644();
+void FUN_0028a6f4();
+word_t FUN_0028aad4();
+void FUN_0028ac40();
+void FUN_0028b31c();
+void FUN_0028bdc0();
+void FUN_0028beec();
+void FUN_0028c808();
+void FUN_0028c7d8();
+void FUN_0028d6e8();
+void FUN_0028cd14();
+uint8_t *FUN_0028d270();
 
 /* ====================================================================== *
  *  Swift collection / string primitives (0x28279c - 0x283344)
@@ -2242,6 +2269,12 @@ void FUN_00287c68(word_t p1, word_t idx, int tag, long meta, long coll)
     __builtin_trap();           /* Swift fatal (msg dropped by decompiler) */
 }
 
+/* thunk_FUN_00287c68: register thunk to FUN_00287c68 (same body). */
+void thunk_FUN_00287c68(word_t a, word_t b, int c, long d, long e)
+{
+    FUN_00287c68(a, b, c, d, e);
+}
+
 /*--------------------------------------------------------------------*
  * FUN_00287d08 @ 0x00287d08   (est. sk_swift_type_meta_update)
  * Ghidra: void FUN_00287d08(void)
@@ -2381,8 +2414,8 @@ word_t *FUN_00287db4(long *out_box, word_t *src, long p3)
 
     l1 = (long)FUN_0036a908(0x28, 0x96c4);
     *out_box = l1;
-    u2 = FUN_00287e30(l1, *src, *(uint32_t *)(src + 1), x20,
-                      *(word_t *)(p3 + 0x10), *(word_t *)(p3 + 0x18));
+    u2 = (word_t)FUN_00287e30((long *)(uintptr_t)l1, *src, *(uint32_t *)(src + 1), x20,
+                              *(word_t *)(p3 + 0x10), *(word_t *)(p3 + 0x18));
     *(word_t *)(l1 + 0x20) = u2;
     return (word_t *)0x3471a4;
 }
@@ -2395,10 +2428,12 @@ word_t *FUN_00287db4(long *out_box, word_t *src, long p3)
  * 0x5732) at +0x10, and runs the checked array-index FUN_00287c68 to
  * initialise the element.  Returns {&DAT_003471a8, storage}.
  * Confidence: low (Swift box init). */
-uint8_t *FUN_00287e30(long *box, word_t p2, word_t p3, word_t p4, long p5)
+uint8_t *FUN_00287e30(long *box, word_t p2, word_t p3, word_t p4, long p5,
+                       word_t p6)
 {
     long l1;
     static uint8_t ret[16];
+    (void)p6;
 
     l1 = *(long *)(p5 - 8);
     box[0] = p5;
@@ -2742,9 +2777,10 @@ void FUN_002884a0(word_t p1, long set)
  *   FUN_00359d38 / FUN_00352b98 / FUN_00352554 / FUN_0036b270 /
  *   FUN_0034c194 / FUN_00353c24 / FUN_00355418 / FUN_0031948c /
  *   FUN_00351384 / FUN_00354b74 / FUN_0036b118 / FUN_003553d8. */
-void FUN_00288638(void)
+void FUN_00288638(word_t a1, word_t a2, word_t a3, word_t a4)
 {
     long i1, i2;
+    (void)a1; (void)a2; (void)a3; (void)a4;
     word_t u4, u5, u6, u7;
     word_t x1;
     long e8;
@@ -2837,7 +2873,7 @@ void FUN_0028886c(word_t p1, long p2)
     word_t x20 = 0;             /* unaff_x20 */
 
     FUN_001a84f4(st68);
-    FUN_00288638(st68, x20, *(word_t *)(p2 + 0x10), *(word_t *)(p2 + 0x18));
+    FUN_00288638((word_t)st68, x20, *(word_t *)(p2 + 0x10), *(word_t *)(p2 + 0x18));
     FUN_001a8564();
 }
 
@@ -2965,7 +3001,7 @@ void FUN_00288abc(word_t *out, word_t p2, word_t p3)
     word_t u1, u2;
 
     thunk_FUN_0036b270(p3);
-    u1 = FUN_00288954(p3);
+    u1 = (word_t)FUN_00288954(p3);
     u2 = FUN_0035a830();
     out[3] = u2;
     out[4] = 0x4f1730;
@@ -2996,7 +3032,7 @@ uint32_t FUN_00288b18(word_t p1)
         u2 = 2;
     } else {
         FUN_0009461c();
-        u2 = (uint32_t)FUN_00287f6c();
+        u2 = (uint32_t)FUN_00287f6c(0, 0);
         FUN_003a25d4(st60);
         FUN_003a25d4(l68);
         u2 = u2 & 1;
@@ -3017,7 +3053,7 @@ void FUN_00288b9c(void)
 
     b1 = (uint8_t)FUN_00348c48();
     FUN_0034d264(b1, 0, b1 ^ 0);
-    FUN_002884a0();
+    FUN_002884a0(0, 0);
     FUN_001a8564();
 }
 
@@ -3034,7 +3070,7 @@ void FUN_00288bf0(word_t p1, word_t p2, word_t p3)
     FUN_00349d14(p1, p3);
     FUN_00351624();
     FUN_00348f68();
-    FUN_002884a0(st68);
+    FUN_002884a0((word_t)st68, 0);
     FUN_001a8564();
 }
 
@@ -3095,11 +3131,12 @@ void FUN_00288e50(void)
  * Swift element bind: binds the collection descriptor (FUN_00351cc4 /
  * FUN_003524bc), and runs FUN_0031a1f4 / FUN_00353c18 / FUN_0026b1dc.
  * Confidence: low. */
-void FUN_00288ec8(void)
+void FUN_00288ec8(word_t a1, word_t a2)
 {
     word_t u1;
     long i2;
     wpair_t v;
+    (void)a1; (void)a2;
 
     v.lo = FUN_00351cc4();
     v.hi = FUN_00351cc4();
@@ -3190,9 +3227,10 @@ void FUN_002890a0(word_t p1, long p2)
  * rebuilds; else (when the collection is non-empty) it removes the last
  * element and releases the ref.  Restores IRQ state (FUN_00357c74).
  * Confidence: low (Swift Array removeLast; indirect). */
-void FUN_002890d8(void)
+void FUN_002890d8(word_t a1, word_t a2)
 {
     word_t u1, u2;
+    (void)a1; (void)a2;
     long e8;
     word_t x20 = 0;
     long i3;
@@ -3233,10 +3271,2871 @@ void FUN_00289170(void)
     FUN_00351cc4();
     if (*(long *)((uintptr_t)x20 + 0x10) != 0) {
         FUN_0025baa4();
-        FUN_00288f34();
+        FUN_00288f34(0, 0, 0);
         return;
     }
     FUN_003488bc(1);
     FUN_0034ae08();
     __builtin_trap();           /* Swift fatal */
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00288ca0 @ 0x00288ca0   (est. sk_object_service_process2)
+ * Ghidra: void FUN_00288ca0(void)
+ * Object-service process variant: CPU (FUN_0008e518), setup + dispatch
+ * slots, then a conditional branch on FUN_00365b6c running either the
+ * fast path (FUN_0034bd00) or the slow path with a dispatch callback
+ * (FUN_0034bc94 / FUN_000839d8 / FUN_0034dfc4 / FUN_003508c0); ends via
+ * FUN_00359920 / FUN_0008e500.
+ * Confidence: low (object-service run; indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00359c58 / FUN_003517b4 /
+ *   FUN_00310d68 / FUN_00348e00 / FUN_0007c1a4 / FUN_0034924c /
+ *   FUN_00348f50 / FUN_00350920 / FUN_0031a1dc / FUN_0036b270 /
+ *   FUN_0035992c / FUN_003518a0 / FUN_00365b6c / FUN_0034bd00 /
+ *   FUN_0034bc94 / FUN_000839d8 / FUN_0034dfc4 / FUN_003508c0 /
+ *   FUN_00359920 / FUN_0008e500. */
+void FUN_00288ca0(void)
+{
+    int i1;
+    word_t u2;
+    word_t x1, x4, x5;
+    long e8;
+    code m8 = 0;
+    long e16;
+    wpair_t v4;
+    word_t st48;
+
+    FUN_0008e518();
+    FUN_00359c58();
+    u2 = FUN_003517b4();
+    FUN_00310d68(u2, x4);
+    FUN_00348e00();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034924c();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_00348f50();
+    v4.lo = FUN_00350920();
+    FUN_0031a1dc(v4.lo, v4.hi, x5);
+    FUN_0036b270((void *)x1);
+    FUN_0035992c();
+    FUN_003518a0();
+    i1 = (int)FUN_00365b6c();
+    if (i1 == 0) {
+        FUN_0034bd00();
+        if (m8) m8();
+    } else {
+        FUN_0034bc94();
+        FUN_000839d8();
+        m8 = *(code *)(e16 + 0x20);
+        FUN_0034dfc4();
+        if (m8) m8();
+        FUN_003508c0();
+        if (m8) m8();
+    }
+    u2 = FUN_00359920();
+    FUN_0008e500(u2, st48);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_002891e4 @ 0x002891e4   (est. sk_object_service_run_c)
+ * Ghidra: void FUN_002891e4(void)
+ * Object-service run variant: prelude, then either a slow retry path
+ * (looping FUN_000a68f4 items through the dispatch slot, breaking on
+ * in_ZR) or the fast path; finishes via FUN_00353100 / FUN_0008e500.
+ * Confidence: low (object-service run loop; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00353d70 / FUN_00353ee4 /
+ *   FUN_00349b3c / FUN_003493c4 / FUN_0034d698 / FUN_0034ac3c /
+ *   FUN_0034d464 / FUN_0007c1a4 / FUN_0034b2f8 / FUN_0035454c /
+ *   FUN_00351494 / FUN_00377824 / FUN_000a6f88 / FUN_0034aee4 /
+ *   FUN_003499c8 / FUN_0034947c / FUN_00353a00 / FUN_00351ab0 /
+ *   FUN_0034ce98 / FUN_00359678 / FUN_003516a8 / FUN_00365b6c /
+ *   FUN_003560a8 / FUN_000a6894 / FUN_003510e8 / FUN_00351354 /
+ *   FUN_00350878 / FUN_0025a060 / FUN_00352680 / FUN_00350a34 /
+ *   FUN_00377bec / FUN_000a68f4 / FUN_00349f3c / FUN_0034e69c /
+ *   FUN_000b4390 / FUN_001cc94c / FUN_00084180 / FUN_0035313c /
+ *   FUN_00353100 / FUN_0008e500. */
+word_t FUN_002891e4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5)
+{
+    int zr;
+    word_t u1, u2, u3;
+    long e8, e8b;
+    code m8 = 0;
+    long e16, e16b;
+    word_t x22, x26;
+    wpair_t v5;
+    word_t st8;
+    word_t l8;
+    word_t ret;
+
+    FUN_0008e518();
+    FUN_00353d70();
+    u1 = FUN_00353ee4();
+    FUN_00349b3c();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003493c4();
+    FUN_0034d698();
+    (*DAT_00658c00)();
+    FUN_0034ac3c();
+    FUN_0034d464(0);
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b2f8();
+    FUN_0035454c();
+    FUN_00351494(0);
+    u2 = FUN_00377824();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034aee4();
+    FUN_003499c8();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_0034947c();
+    FUN_00353a00();
+    FUN_00351ab0();
+    if (m8) m8();
+    FUN_0034ce98();
+    FUN_00359678();
+    FUN_003516a8(&l8);
+    u3 = FUN_00365b6c();
+    if ((u3 & 1) == 0) {
+        FUN_003560a8();
+        FUN_000a6894();
+        FUN_003510e8();
+        FUN_00351354();
+        if (m8) m8();
+        FUN_00350878();
+        l8 = FUN_0025a060();
+        FUN_00352680(u1);
+        FUN_00351354();
+        if (m8) m8();
+        FUN_00350a34();
+        FUN_00377bec();
+        m8 = (code)(uintptr_t)FUN_000a68f4();
+        while (1) {
+            FUN_00350a34();
+            if (m8) m8();
+            FUN_00349f3c();
+            if (zr) break;
+            FUN_0034e69c(*(word_t *)(e16 + 0x20));
+            u3 = (word_t)m8();
+            FUN_000b4390(u3, u3, x22);
+            FUN_001cc94c();
+            FUN_00084180(*(word_t *)(e16 + 8));
+            if (m8) m8();
+        }
+        FUN_0035313c();
+        if (m8) m8(x26, u2);
+    } else {
+        FUN_00350618(*(word_t *)(e16b + 8));
+        if (m8) m8();
+    }
+    u1 = FUN_00353100();
+    FUN_0008e500(u1, st8);
+    return ret;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289480 @ 0x00289480   (est. sk_object_service_process3)
+ * Ghidra: void FUN_00289480(void)
+ * Object-service process: CPU, setup + dispatch slots, then branches on
+ * the collection element count: empty -> 1; single-element -> run the
+ * single path with a check (FUN_001f26cc / FUN_0034b3e8); otherwise the
+ * multi-element path (FUN_0034ee28 / FUN_003513d8 / FUN_00365b6c) with
+ * either retain/run or release teardown.  Result reported via
+ * FUN_0008e500.
+ * Confidence: low (object-service run; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00352ce0 / FUN_00350a28 /
+ *   FUN_00349a68 / FUN_00349068 / FUN_00350a64 / FUN_0034d464 /
+ *   FUN_0007c1a4 / FUN_0034b05c / FUN_0034f604 / FUN_0031a1dc /
+ *   FUN_001aeab4 / FUN_00357400 / FUN_00349f3c / FUN_003489dc /
+ *   FUN_0034a2f8 / FUN_00356bb0 / FUN_0034c9d8 / FUN_001f26cc /
+ *   FUN_0034b3e8 / FUN_0034ee28 / FUN_00359678 / FUN_003513d8 /
+ *   FUN_00365b6c / FUN_0036b270 / FUN_00350624 / FUN_00353b58 /
+ *   FUN_0025f164 / FUN_00356328 / FUN_0036b118 / FUN_0034c818 /
+ *   FUN_001bcc18 / FUN_00357344 / FUN_003a25d4 / FUN_0008e500. */
+void FUN_00289480(void)
+{
+    uint8_t u1;
+    int i2;
+    word_t u3;
+    uint32_t in_w5;
+    long e8;
+    code m8 = 0;
+    long e16, e16b;
+    word_t x20 = 0;             /* unaff_x20 */
+    word_t x30;
+
+    FUN_0008e518();
+    FUN_00352ce0();
+    u3 = FUN_00350a28();
+    FUN_00349a68();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_00349068();
+    FUN_00350a64();
+    FUN_0034d464();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b05c();
+    if (*(long *)(x20 + 0x10) == 0) {
+        in_w5 = 1;
+    } else {
+        u1 = (uint8_t)(*(long *)(x20 + 0x10) == 1);
+        if (u1) {
+            FUN_0034f604();
+            u3 = FUN_0031a1dc();
+            FUN_001aeab4(u3, 0x66dae0);
+            FUN_00357400();
+            FUN_00349f3c();
+            if (u1) {
+                FUN_003489dc(0x2ca);
+                FUN_0034a2f8();
+                __builtin_trap();       /* Swift fatal */
+            }
+            FUN_00356bb0();
+            FUN_0034c9d8();
+            in_w5 = (uint32_t)FUN_001f26cc();
+            FUN_0034b3e8();
+            if (m8) m8();
+        } else {
+            FUN_0034ee28(*(word_t *)(e16 + 0x10));
+            if (m8) m8();
+            FUN_0034f604();
+            FUN_00359678();
+            FUN_003513d8();
+            i2 = (int)FUN_00365b6c();
+            if (i2 == 0) {
+                FUN_0036b270();
+                FUN_00350624(u3);
+                FUN_00353b58();
+                FUN_0025f164();
+                FUN_00356328();
+                FUN_0036b118();
+            } else {
+                FUN_0034c818();
+                FUN_001bcc18();
+                FUN_00357344();
+                FUN_003a25d4();
+            }
+        }
+    }
+    FUN_0008e500(in_w5 & 1, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_002897f0 @ 0x002897f0   (est. sk_object_service_run_d)
+ * Ghidra: void FUN_002897f0(void)
+ * Object-service run variant: CPU, prelude + dispatch slots, then either
+ * a dispatch loop (FUN_000a68f4 items through the slot, breaking on
+ * in_ZR) or the fast path; finishes via FUN_00353034 / FUN_0008e500.
+ * Confidence: low (object-service run loop; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00359c58 / FUN_00349720 /
+ *   FUN_003490ec / FUN_00350a64 / FUN_0034d464 / FUN_0007c1a4 /
+ *   FUN_0034b0c4 / FUN_00349830 / FUN_00352a34 / FUN_00377824 /
+ *   FUN_00348d7c / FUN_0034aee4 / FUN_0034a688 / FUN_0034947c /
+ *   FUN_00353a00 / FUN_00352370 / FUN_0034bec4 / FUN_00359678 /
+ *   FUN_00351b60 / FUN_00365b6c / FUN_00358bc0 / FUN_00352680 /
+ *   FUN_003508cc / FUN_0034b278 / FUN_003510ac / FUN_00377bec /
+ *   FUN_000a68f4 / FUN_00350a04 / FUN_0034aa54 / FUN_003529a4 /
+ *   FUN_00350738 / FUN_0034ede8 / FUN_0025bca4 / FUN_00350560 /
+ *   FUN_0034c5ac / FUN_001bcc18 / FUN_003a25d4 / FUN_00353034 /
+ *   FUN_0008e500. */
+void FUN_002897f0(void)
+{
+    int zr;
+    int i1;
+    code cb = 0;
+    word_t u3, u4;
+    long e8, e8b;
+    code m8 = 0;
+    long e16, e16b;
+    wpair_t v5;
+    word_t st18;
+    word_t l8;
+
+    FUN_0008e518();
+    v5.lo = FUN_00359c58();
+    v5.hi = FUN_00359c58();
+    FUN_00349720();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003490ec();
+    FUN_00350a64();
+    FUN_0034d464();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b0c4();
+    FUN_00349830();
+    FUN_00352a34();
+    FUN_00377824();
+    FUN_00348d7c();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034aee4();
+    FUN_0034a688();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_0034947c();
+    FUN_00353a00();
+    FUN_00352370();
+    if (cb) cb();
+    FUN_0034bec4();
+    FUN_00359678();
+    FUN_00351b60(&l8);
+    i1 = (int)FUN_00365b6c();
+    if (i1 == 0) {
+        FUN_00358bc0();
+        FUN_00352680();
+        FUN_003508cc();
+        if (cb) cb();
+        FUN_0034b278();
+        FUN_003510ac();
+        FUN_00377bec();
+        cb = (code)(uintptr_t)FUN_000a68f4();
+        do {
+            FUN_00350a04();
+            if (cb) cb();
+            FUN_0034aa54();
+            if (zr) {
+                FUN_003529a4();
+                FUN_00350738();
+                if (m8) m8();
+                goto finish;
+            }
+            FUN_0034ede8(*(word_t *)(e16 + 0x20));
+            if (m8) m8();
+            u3 = thunk_FUN_0025bca4();
+            FUN_00350560(*(word_t *)(e16 + 8));
+            if (m8) m8();
+        } while ((u3 & 1) != 0);
+        FUN_003529a4();
+        FUN_00350738();
+        if (m8) m8();
+    } else {
+        if (m8) m8(v5.lo);
+        FUN_0034c5ac(v5.hi);
+        FUN_001bcc18();
+        FUN_003a25d4(l8);
+    }
+finish:
+    u4 = FUN_00353034();
+    FUN_0008e500(u4, st18);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289a84 @ 0x00289a84   (est. sk_swift_collection_remove_op)
+ * Ghidra: void FUN_00289a84(void)
+ * Swift collection remove op: enters the service (FUN_00084220), and if
+ * the collection is non-empty runs either the fast remove path
+ * (FUN_0034e55c / FUN_00350488 / FUN_00359678 / FUN_00350ad0 / retain /
+ * FUN_0034ed88 / FUN_0025f164) or the slow path (FUN_0034d190 /
+ * FUN_00289bdc / release).  Exits via FUN_00084234.
+ * Confidence: low (Swift collection remove; indirect dispatch).
+ * Notes: helpers FUN_00084220 / FUN_00351cf4 / FUN_0034b7e4 /
+ *   FUN_0034d3b4 / FUN_0034e55c / FUN_00350488 / FUN_00359678 /
+ *   FUN_00350ad0 / FUN_00365b6c / FUN_0036b270 / FUN_0034435c /
+ *   FUN_0034ed88 / FUN_0025f164 / FUN_00351d18 / FUN_0036b118 /
+ *   FUN_0034d190 / FUN_00289bdc / FUN_003a25d4 / FUN_0035687c /
+ *   FUN_00084234. */
+void FUN_00289a84(void)
+{
+    int i1;
+    word_t x1, x4, x16;
+    long x9, x10;
+    code cb = 0;
+    wpair_t v2;
+    word_t l8;
+
+    FUN_00084220();
+    FUN_00351cf4();
+    FUN_0034b7e4();
+    (*DAT_00658c00)(x16);
+    FUN_0034d3b4();
+    if (*(long *)(x1 + 0x10) != 0) {
+        FUN_0034e55c();
+        if (cb) cb();
+        v2.lo = FUN_00350488();
+        FUN_00359678(v2.lo, v2.hi, x4);
+        FUN_00350ad0(&l8);
+        i1 = (int)FUN_00365b6c();
+        if (i1 == 0) {
+            FUN_0036b270();
+            *(code *)((x9 - x10) - 0x10) = (code)(uintptr_t)FUN_0034435c;
+            FUN_0034ed88();
+            FUN_0025f164();
+            FUN_00351d18();
+            FUN_0036b118();
+        } else {
+            FUN_0034d190();
+            FUN_00289bdc();
+            FUN_003a25d4(l8);
+        }
+    }
+    v2.lo = FUN_0035687c();
+    FUN_00084234(v2.lo, v2.hi, *(word_t *)((x9 - x10) + 0x48));
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289bdc @ 0x00289bdc   (est. sk_swift_collection_count_less)
+ * Ghidra: undefined8 FUN_00289bdc(long,long)
+ * Swift collection size comparison: returns the result of FUN_00357b2c
+ * when collection1's count is less than collection2's, else 0.
+ * Confidence: medium. */
+word_t FUN_00289bdc(long p1, long p2)
+{
+    if (*(unsigned long *)(p1 + 0x10) < *(unsigned long *)(p2 + 0x10))
+        return FUN_00357b2c();
+    return 0;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289bf8 @ 0x00289bf8   (est. sk_swift_collection_is_subset)
+ * Ghidra: void FUN_00289bf8(void)
+ * Swift collection subset test: enters the service, and depending on
+ * FUN_00365b6c runs either FUN_00289eac (fast) or FUN_00289ce8 (slow)
+ * subset check, releasing the probe buffer; reports the boolean via
+ * FUN_00084234.
+ * Confidence: low (Swift collection subset; indirect dispatch).
+ * Notes: helpers FUN_00084220 / FUN_00355544 / FUN_00350980 /
+ *   FUN_00349a68 / FUN_00348f50 / FUN_00350618 / FUN_0034bec4 /
+ *   FUN_00359678 / FUN_00350ad0 / FUN_00365b6c / FUN_0034e474 /
+ *   FUN_00289eac / FUN_0034b358 / FUN_00289ce8 / FUN_003a25d4 /
+ *   FUN_00084234. */
+void FUN_00289bf8(void)
+{
+    int i1;
+    uint32_t u2;
+    word_t u3;
+    word_t x1, x1b, x3, x8, x12;
+    code cb = 0;
+    word_t x30;
+    wpair_t v4;
+    word_t l8;
+
+    FUN_00084220();
+    FUN_00355544();
+    FUN_00350980();
+    FUN_00349a68();
+    (*DAT_00658c00)(*(word_t *)(x8 + 0x40));
+    FUN_00348f50();
+    v4.lo = FUN_00350618(*(word_t *)(x12 + 0x10));
+    if (cb) cb(v4.lo, v4.hi, x3);
+    FUN_0034bec4();
+    FUN_00359678();
+    FUN_00350ad0(&l8);
+    i1 = (int)FUN_00365b6c();
+    if (i1 == 0) {
+        FUN_0034e474();
+        u2 = (uint32_t)FUN_00289eac();
+        u3 = x1b;
+    } else {
+        FUN_0034b358(l8);
+        u2 = (uint32_t)FUN_00289ce8();
+        FUN_003a25d4(l8);
+        u3 = x1;
+    }
+    FUN_00084234(u2 & 1, u3, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289ce8 @ 0x00289ce8   (est. sk_swift_set_subset_check)
+ * Ghidra: void FUN_00289ce8(void)
+ * Swift Set subset check (slow path): CPU, then iterates the shorter of
+ * the two sets' bitmaps, checking each element for membership in the
+ * other via the dispatch predicate (FUN_00355610 / thunk_FUN_0025bca4).
+ * Returns 1 if every element is present, 0 otherwise; releases both ends
+ * (FUN_003a25d4 / FUN_0036b118) and exits via FUN_0008e500.
+ * Confidence: low (Swift Set subset; indirect membership dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00349720 / FUN_003490ec /
+ *   FUN_00359f14 / FUN_0028adc4 / FUN_00357540 / FUN_00356aac /
+ *   FUN_0036b270 / FUN_00355610 / FUN_00350470 / FUN_00352c28 /
+ *   FUN_0025bca4 / FUN_00350aa0 / FUN_003a25d4 / FUN_0036b118 /
+ *   FUN_0008e500. */
+word_t FUN_00289ce8(void)
+{
+    int zr;
+    word_t u5, u6, u7;
+    long i4;
+    wpair_t v8;
+    word_t x3, x8, x9, x16;
+    code cb = 0;
+    word_t x1;
+    word_t x22 = 0;             /* unaff_x22 */
+    word_t x30;
+    long st48;
+    word_t l40;
+    long st38;
+    word_t l30;
+
+    v8.lo = FUN_0008e518();
+    v8.hi = FUN_0008e518();
+    FUN_00349720();
+    (*DAT_00658c00)(*(word_t *)(x8 + 0x40));
+    FUN_003490ec();
+    if ((*(unsigned long *)(x1 + 0x10) == 0) || (*(unsigned long *)(v8.hi + 0x10) == 0)) {
+        u7 = 1;
+    } else {
+        if (*(unsigned long *)(v8.hi + 0x10) <= *(unsigned long *)(x1 + 0x10))
+            v8 = (wpair_t){ v8.lo, v8.hi };
+        u6 = -(-1L << ((word_t)*(uint8_t *)(v8.lo + 0x20) & 0x3f));
+        u5 = 0xffffffffffffffffull;
+        if (u6 < 0x40)
+            u5 = ~(-1L << (u6 & 0x3f));
+        v8 = (wpair_t){ FUN_00359f14(u5 & *(word_t *)(v8.lo + 0x38)),
+                        FUN_00359f14(u5 & *(word_t *)(v8.lo + 0x38)) };
+        FUN_0028adc4(v8.lo, v8.hi, x3);
+        FUN_00357540(l40);
+        FUN_00356aac();
+        FUN_0036b270();
+        FUN_0036b270((void *)v8.hi);
+        do {
+            while (l30 == 0) {
+                st38++;
+                if (SCARRY8(st38, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x289eac) */
+                if (x22 <= st38) {
+                    u7 = 1;
+                    goto finish;
+                }
+                l30 = *(word_t *)(st48 + st38 * 8);
+            }
+            u5 = sk_bitreverse64(l30);
+            l30 = l30 - 1 & l30;
+            FUN_00355610(LZCOUNT(u5) | st38 << 6);
+            if (cb) cb();
+            FUN_00350470();
+            FUN_00352c28();
+            u5 = thunk_FUN_0025bca4();
+            FUN_00350aa0(*(word_t *)(x16 + 8));
+            if (cb) cb();
+        } while ((u5 & 1) == 0);
+        u7 = 0;
+finish:
+        FUN_003a25d4(v8.hi);
+        FUN_0036b118((void *)x9);
+    }
+    FUN_0008e500(u7, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_00289eac @ 0x00289eac   (est. sk_swift_set_subset_fast)
+ * Ghidra: void FUN_00289eac(void)
+ * Swift Set subset check (fast path): CPU, prelude + dispatch slots, then
+ * iterates the collection bitmap dispatching each element's membership
+ * through thunk_FUN_0025bca4; returns via FUN_003548b8 / FUN_0008e500.
+ * Confidence: low (Swift Set subset fast; indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00352cec / FUN_00349720 /
+ *   FUN_003490ec / FUN_00350a64 / FUN_0034d464 / FUN_0007c1a4 /
+ *   FUN_0034b0c4 / FUN_0034a688 / FUN_00348dd8 / FUN_00352370 /
+ *   FUN_00377824 / FUN_000a6f88 / FUN_003524a4 / FUN_003506b0 /
+ *   FUN_003508b4 / FUN_0034b278 / FUN_00350c80 / FUN_00377bec /
+ *   FUN_000a68f4 / FUN_00350738 / FUN_0034aa54 / FUN_0034ede8 /
+ *   FUN_0025bca4 / FUN_00350560 / FUN_00352420 / FUN_00358e0c /
+ *   FUN_003548b8 / FUN_0008e500. */
+word_t FUN_00289eac(void)
+{
+    int zr;
+    word_t u1, u3;
+    code cb = 0;
+    long e8, e8b;
+    long e16, e16b;
+    wpair_t v4;
+    word_t x3, x9;
+    word_t x19 = 0;             /* unaff_x19 */
+    word_t st38;
+
+    FUN_0008e518();
+    FUN_00352cec();
+    FUN_00349720();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003490ec();
+    FUN_00350a64();
+    FUN_0034d464();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b0c4();
+    FUN_0034a688();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_00348dd8();
+    FUN_00352370();
+    FUN_00377824();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    u1 = (*DAT_00658c00)();
+    if (*(long *)(x19 + 0x10) != 0) {
+        v4.lo = FUN_003524a4(*(word_t *)(e16b + 0x10));
+        if (cb) cb(v4.lo, v4.hi, x3);
+        FUN_003506b0();
+        FUN_003508b4(x9);
+        if (cb) cb();
+        FUN_0034b278();
+        v4.lo = FUN_00350c80();
+        FUN_00377bec(v4.lo, v4.hi, u1);
+        cb = (code)(uintptr_t)FUN_000a68f4();
+        do {
+            FUN_00350738();
+            if (cb) cb();
+            FUN_0034aa54();
+            if (zr) break;
+            FUN_0034ede8(*(word_t *)(e16 + 0x20));
+            if (cb) cb();
+            u3 = thunk_FUN_0025bca4();
+            FUN_00350560(*(word_t *)(e16 + 8));
+            if (cb) cb();
+        } while ((u3 & 1) == 0);
+        FUN_00352420();
+        FUN_00358e0c();
+        if (cb) cb();
+    }
+    u1 = FUN_003548b8();
+    FUN_0008e500(u1, st38);
+    return u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a0d4 @ 0x0028a0d4   (est. sk_swift_collection_remove_first)
+ * Ghidra: void FUN_0028a0d4(void)
+ * Wrapper to FUN_0028a65c.
+ * Confidence: low. */
+word_t FUN_0028a0d4(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6)
+{
+    (void)a1; (void)a2; (void)a3; (void)a4; (void)a5; (void)a6;
+    FUN_0028a65c();
+    return 0;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a0ec @ 0x0028a0ec   (est. sk_object_service_run_e)
+ * Ghidra: void FUN_0028a0ec(void)
+ * Object-service run variant: CPU, prelude + dispatch slots, then loops
+ * FUN_000a68f4 items through the slot, breaking on in_ZR; finishes via
+ * FUN_00350e24 / FUN_0008e500.
+ * Confidence: low (object-service run loop; indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00359f8c / FUN_003499f0 /
+ *   FUN_00348bbc / FUN_0034b8bc / FUN_00350488 / FUN_0034d464 /
+ *   FUN_0007c1a4 / FUN_0034b05c / FUN_0035113c / FUN_0035063c /
+ *   FUN_00377824 / FUN_00348e60 / FUN_0034b0d4 / FUN_00352680 /
+ *   FUN_003514d0 / FUN_003515cc / FUN_003518a0 / FUN_00377bec /
+ *   FUN_000a68f4 / FUN_00350944 / FUN_0034b2c8 / FUN_0034edd8 /
+ *   FUN_00350518 / FUN_001cc94c / FUN_00351384 / FUN_00350e24 /
+ *   FUN_0008e500. */
+void FUN_0028a0ec(void)
+{
+    int zr;
+    code cb = 0;
+    long e8;
+    long e16;
+    wpair_t v2;
+    word_t x30;
+    word_t l18;
+
+    FUN_0008e518();
+    FUN_00359f8c();
+    FUN_003499f0();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_00348bbc();
+    (*DAT_00658c00)();
+    FUN_0034b8bc();
+    FUN_00350488();
+    FUN_0034d464();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b05c();
+    FUN_0035113c();
+    FUN_0035063c();
+    FUN_00377824();
+    FUN_00348e60();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b0d4();
+    FUN_00352680();
+    FUN_003514d0();
+    if (cb) cb();
+    FUN_003515cc();
+    FUN_003518a0();
+    FUN_00377bec();
+    cb = (code)(uintptr_t)FUN_000a68f4();
+    while (1) {
+        FUN_00350944();
+        if (cb) cb();
+        FUN_0034b2c8();
+        if (zr) break;
+        FUN_0034edd8(*(word_t *)(e16 + 0x20));
+        if (cb) cb();
+        v2.lo = FUN_00350518();
+        FUN_001cc94c(v2.lo, v2.hi, l18);
+        FUN_00351384(*(word_t *)(e16 + 8));
+        if (cb) cb();
+    }
+    FUN_00350e24();
+    if (cb) cb();
+    FUN_0008e500(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a2b4 @ 0x0028a2b4   (est. sk_swift_collection_merge)
+ * Ghidra: void FUN_0028a2b4(void)
+ * Swift collection merge: CPU, prelude, then if a guard passes it loops
+ * FUN_000a68f4 items, merging each element (FUN_00288ec8 / FUN_003504c4)
+ * through the slot; finishes via FUN_0008e500.
+ * Confidence: low (Swift collection merge; indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_003499f0 / FUN_003490ec /
+ *   FUN_00350488 / FUN_00310d68 / FUN_000a6f88 / FUN_00348bd8 /
+ *   FUN_0034b87c / FUN_00349734 / FUN_000aa4ec / FUN_0035196c /
+ *   FUN_00349830 / FUN_003510a0 / FUN_00377824 / FUN_00348cd0 /
+ *   FUN_0007c1a4 / FUN_0034b05c / FUN_00353c48 / FUN_00352680 /
+ *   FUN_00351ea8 / FUN_00350c2c / FUN_0034b278 / FUN_003507bc /
+ *   FUN_00377bec / FUN_000a68f4 / FUN_0034b2c8 / FUN_003511a8 /
+ *   FUN_00288ec8 / FUN_003504c4 / FUN_00353154 / FUN_0008e500. */
+void FUN_0028a2b4(word_t a1, word_t a2, word_t a3)
+{
+    int zr;
+    word_t u1, u2, u4;
+    (void)a1; (void)a2; (void)a3;
+    code cb = 0;
+    long e8, e8b, e8c, e8d;
+    code m8 = 0;
+    long e16, e16b, e16c;
+    wpair_t v5;
+    word_t x1, x3;
+    word_t x25, x27, x30;
+    word_t l30;
+
+    FUN_0008e518();
+    u4 = *(word_t *)(x1 + 0x10);
+    FUN_003499f0();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003490ec();
+    FUN_00350488();
+    u1 = FUN_00310d68();
+    FUN_000a6f88();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_00348bd8();
+    (*DAT_00658c00)();
+    FUN_0034b87c();
+    FUN_00349734();
+    (*DAT_00658c00)(*(word_t *)(e8c + 0x40));
+    FUN_000aa4ec();
+    FUN_0035196c();
+    FUN_00349830();
+    FUN_003510a0();
+    FUN_00377824();
+    FUN_00348cd0();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b05c();
+    FUN_00353c48();
+    if (e8d != 0) {
+        if (m8) m8();
+        FUN_00352680(x3);
+        FUN_00351ea8();
+        FUN_00350c2c();
+        if (cb) cb();
+        FUN_0034b278();
+        FUN_003507bc();
+        u2 = FUN_00377bec();
+        cb = (code)(uintptr_t)FUN_000a68f4();
+        while (1) {
+            if (cb) cb(x27, u2);
+            FUN_0034b2c8();
+            if (zr) break;
+            v5.lo = FUN_003511a8(*(word_t *)(e16 + 0x20));
+            if (m8) m8(v5.lo, v5.hi, u4);
+            FUN_00288ec8(l30, 0);
+            if (m8) m8(l30, u1);
+            FUN_003504c4(*(word_t *)(e16 + 8));
+            if (m8) m8();
+        }
+        FUN_00353154();
+        if (m8) m8(x25, x27);
+    }
+    FUN_0008e500(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a528 @ 0x0028a528   (est. sk_swift_collection_insert_check)
+ * Ghidra: void FUN_0028a528(void)
+ * Swift collection insert check: enters the service, and depending on
+ * FUN_00365b6c runs the fast insert (FUN_0034e474 / FUN_00261134) or the
+ * slow path (FUN_0034b358 / FUN_002608cc / FUN_0035310c / release);
+ * exits via FUN_00358f90 / FUN_00084234.
+ * Confidence: low (Swift collection insert; indirect dispatch).
+ * Notes: helpers FUN_00084220 / FUN_00355544 / FUN_00350980 /
+ *   FUN_00349a68 / FUN_00348f50 / FUN_00350618 / FUN_0034bec4 /
+ *   FUN_00359678 / FUN_00350ad0 / FUN_00365b6c / FUN_0034e474 /
+ *   FUN_00261134 / FUN_0034b358 / FUN_002608cc / FUN_0035310c /
+ *   FUN_003a25d4 / FUN_00358f90 / FUN_00084234. */
+word_t FUN_0028a528(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6)
+{
+    int i1;
+    word_t x3, x8, x12;
+    code cb = 0;
+    wpair_t v2;
+    word_t st38;
+    word_t l8;
+
+    FUN_00084220();
+    FUN_00355544();
+    FUN_00350980();
+    FUN_00349a68();
+    (*DAT_00658c00)(*(word_t *)(x8 + 0x40));
+    FUN_00348f50();
+    v2.lo = FUN_00350618(*(word_t *)(x12 + 0x10));
+    if (cb) cb(v2.lo, v2.hi, x3);
+    FUN_0034bec4();
+    FUN_00359678();
+    FUN_00350ad0(&l8);
+    i1 = (int)FUN_00365b6c();
+    if (i1 == 0) {
+        FUN_0034e474();
+        FUN_00261134();
+    } else {
+        FUN_0034b358(l8);
+        FUN_002608cc();
+        FUN_0035310c();
+        FUN_003a25d4();
+    }
+    v2.lo = FUN_00358f90();
+    FUN_00084234(v2.lo, v2.hi, st38);
+    return v2.lo;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a614 @ 0x0028a614   (est. sk_swift_collection_insert_store)
+ * Ghidra: void FUN_0028a614(undefined8 x4)
+ * Swift collection insert: calls FUN_0028a528 and stores the returned
+ * descriptor into the container slot.
+ * Confidence: low. */
+void FUN_0028a614(word_t p1, long p2, word_t p3, word_t p4)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = FUN_0028a528(p1, x20, *(word_t *)(p2 + 0x10), p3, *(word_t *)(p2 + 0x18), p4);
+    x20 = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a618 @ 0x0028a618   (est. sk_swift_collection_insert_store2)
+ * Ghidra: void FUN_0028a618(undefined8 x4)
+ * Duplicate of FUN_0028a614.
+ * Confidence: low. */
+void FUN_0028a618(word_t p1, long p2, word_t p3, word_t p4)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = FUN_0028a528(p1, x20, *(word_t *)(p2 + 0x10), p3, *(word_t *)(p2 + 0x18), p4);
+    x20 = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a644 @ 0x0028a644   (est. sk_swift_collection_remove_first2)
+ * Ghidra: void FUN_0028a644(void)
+ * Wrapper to FUN_0028a65c.
+ * Confidence: low. */
+word_t FUN_0028a644(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5, word_t a6)
+{
+    (void)a1; (void)a2; (void)a3; (void)a4; (void)a5; (void)a6;
+    FUN_0028a65c();
+    return 0;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a65c @ 0x0028a65c   (est. sk_swift_collection_pop)
+ * Ghidra: void FUN_0028a65c(void)
+ * Swift collection pop: takes the IRQ-save lock (FUN_00357cb4), runs the
+ * pop helpers (FUN_00356940 / FUN_00350a64 / FUN_0031a1dc /
+ * FUN_00355c28 / FUN_00351b78) and a dispatch callback, then restores
+ * IRQ state (FUN_00357c74).
+ * Confidence: low (Swift collection pop; indirect). */
+void FUN_0028a65c(void)
+{
+    word_t x4;
+    code cb = 0;                /* unaff_x19 */
+    word_t x30;
+    wpair_t v1, v2;
+
+    FUN_00357cb4();
+    v1.lo = FUN_00356940();
+    v2.lo = FUN_00350a64();
+    FUN_0031a1dc(v2.lo, v2.hi, x4);
+    FUN_00355c28();
+    FUN_00351b78(v1.lo);
+    if (cb) cb();
+    FUN_00357c74(v1.hi, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a6bc @ 0x0028a6bc   (est. sk_swift_collection_bind_remove)
+ * Ghidra: void FUN_0028a6bc(undefined8 x4)
+ * Swift collection bind+remove: runs FUN_002891e4 then FUN_0028a6f4 on
+ * the container.
+ * Confidence: low. */
+void FUN_0028a6bc(word_t p1, long p2, word_t p3, word_t p4)
+{
+    word_t u1;
+
+    u1 = FUN_002891e4(p1, *(word_t *)(p2 + 0x10), p3, *(word_t *)(p2 + 0x18), p4);
+    FUN_0028a6f4(u1, p2);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a6f4 @ 0x0028a6f4   (est. sk_swift_collection_for_each_hash)
+ * Ghidra: void FUN_0028a6f4(void)
+ * Swift collection forEach: CPU, prelude, then iterates the collection
+ * bitmap dispatching each element (FUN_00357aec / FUN_00288ec8 /
+ * thunk_FUN_0025bca4) through the method table; releases the container
+ * ref (FUN_0036b118) and exits via FUN_0008e500.
+ * Confidence: low (Swift collection forEach; indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00352914 / FUN_00350530 /
+ *   FUN_00310d68 / FUN_000a6f88 / FUN_0007c1a4 / FUN_00350428 /
+ *   FUN_00349080 / FUN_003493c4 / FUN_0034e6cc / FUN_0034a464 /
+ *   FUN_00350464 / FUN_0035216c / FUN_0034fa4c / FUN_0028adc4 /
+ *   FUN_00359d38 / FUN_00357aec / FUN_00350a04 / FUN_00356ab8 /
+ *   FUN_0025bca4 / FUN_00350914 / FUN_001cc94c / FUN_00352a64 /
+ *   FUN_00288ec8 / FUN_00352b14 / FUN_0036b118 / FUN_0008e500. */
+void FUN_0028a6f4(void)
+{
+    word_t u4, u5, u6, u7, u8;
+    long i1, i2;
+    code cb = 0;
+    long e8;
+    code m8 = 0;
+    long e16;
+    word_t x1, x19;
+    word_t x20 = 0;             /* unaff_x20 */
+    word_t x25 = 0;             /* unaff_x25 */
+    word_t x30;
+    wpair_t v9;
+    long l58, st50, l48, st40, l38;
+
+    FUN_0008e518();
+    FUN_00352914();
+    u7 = *(word_t *)(x1 + 0x10);
+    FUN_00350530();
+    u4 = FUN_00310d68();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_00350428();
+    FUN_00349080();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003493c4();
+    FUN_0034e6cc();
+    (*DAT_00658c00)();
+    FUN_0034a464();
+    (*DAT_00658c00)();
+    FUN_00350464();
+    FUN_0035216c();
+    FUN_0034fa4c();
+    FUN_0028adc4(&l58, 0, u7);
+    u5 = FUN_00359d38(l48);
+    i2 = st40;
+    u8 = l38;
+    while (1) {
+        for (; u8 != 0; u8 = u8 - 1 & u8) {
+            u6 = sk_bitreverse64(u8);
+            FUN_00357aec(*(word_t *)(e16 + 0x10), u5,
+                         *(long *)(l58 + 0x30) + *(long *)(e16 + 0x48) *
+                         (LZCOUNT(u6) | i2 << 6));
+            if (cb) cb();
+            v9.lo = FUN_00350a04(*(word_t *)(e16 + 0x20));
+            u5 = (word_t)m8(v9.lo, v9.hi, u7);
+            FUN_00356ab8(u5, x20);
+            u6 = thunk_FUN_0025bca4();
+            if ((u6 & 1) == 0) {
+                v9.lo = FUN_00350914();
+                FUN_001cc94c(v9.lo, v9.hi, x19);
+            } else {
+                u5 = FUN_00352a64();
+                FUN_00288ec8(u5, x19);
+                u5 = FUN_00352b14();
+                if (m8) m8(u5, u4);
+            }
+            u5 = (word_t)m8();
+        }
+        i1 = i2 + 1;
+        if (SCARRY8(i2, 1)) break;
+        if (x25 <= i1) {
+            FUN_0036b118((void *)l58);
+            FUN_0008e500(x30);
+            return;
+        }
+        i2 = i1;
+        u8 = *(word_t *)(st50 + i1 * 8);
+    }
+    __builtin_trap();           /* SoftwareBreakpoint(1,0x28a950) */
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a950 @ 0x0028a950   (est. sk_swift_collection_empty)
+ * Ghidra: void FUN_0028a950(undefined8*)
+ * Swift collection empty value: returns the empty sentinel from
+ * thunk_FUN_0006e06c into *out.
+ * Confidence: medium. */
+void FUN_0028a950(word_t *out)
+{
+    *out = thunk_FUN_0006e06c();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a988 @ 0x0028a988   (est. sk_swift_array_remove_first_value)
+ * Ghidra: void FUN_0028a988(undefined8*,undefined8,long)
+ * Swift Array removeFirst value: calls FUN_0028a0d4 with the container
+ * fields and stores the result.
+ * Confidence: low. */
+void FUN_0028a988(word_t *out, word_t p2, long p3)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = FUN_0028a0d4(p2, x20, *(word_t *)(p3 + 0x10), p3, *(word_t *)(p3 + 0x18), 0x66dab8);
+    *out = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028a9d0 @ 0x0028a9d0   (est. sk_swift_collection_insert_value)
+ * Ghidra: void FUN_0028a9d0(undefined8*,undefined8*,long)
+ * Swift collection insert value: calls thunk_FUN_002608cc and stores the
+ * result.
+ * Confidence: low. */
+void FUN_0028a9d0(word_t *out, word_t *src, long p3)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = thunk_FUN_002608cc(*src, x20, *(word_t *)(p3 + 0x10), *(word_t *)(p3 + 0x18));
+    *out = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028aa08 @ 0x0028aa08   (est. sk_swift_array_remove_first_value2)
+ * Ghidra: void FUN_0028aa08(undefined8*,undefined8,long)
+ * Swift Array removeFirst value variant: calls FUN_0028a644 and stores.
+ * Confidence: low. */
+void FUN_0028aa08(word_t *out, word_t p2, long p3)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = FUN_0028a644(p2, x20, *(word_t *)(p3 + 0x10), p3, *(word_t *)(p3 + 0x18), 0x66dab8);
+    *out = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028aa9c @ 0x0028aa9c   (est. sk_swift_collection_merge_value)
+ * Ghidra: void FUN_0028aa9c(undefined8*,undefined8*,long)
+ * Swift collection merge value: calls FUN_0028aad4 and stores the result.
+ * Confidence: low. */
+void FUN_0028aa9c(word_t *out, word_t *src, long p3)
+{
+    word_t u1;
+    word_t x20 = 0;             /* unaff_x20 */
+
+    u1 = FUN_0028aad4(*src, x20, *(word_t *)(p3 + 0x10), *(word_t *)(p3 + 0x18));
+    *out = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028aad4 @ 0x0028aad4   (est. sk_swift_collection_merge_check)
+ * Ghidra: undefined8 FUN_0028aad4(void)
+ * Swift collection merge check: compares element counts
+ * (FUN_0034b85c); when the source count (>>3) is smaller it takes the
+ * fast path (FUN_0025f910), else merges via FUN_0028a2b4.
+ * Confidence: low. */
+word_t FUN_0028aad4(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    word_t u1;
+    word_t x21 = 0;             /* unaff_x21 */
+    wpair_t v2;
+    long l40;
+
+    v2.lo = FUN_0034b85c();
+    v2.hi = FUN_0034b85c();
+    l40 = (long)v2.lo;
+    if (*(unsigned long *)(v2.hi + 0x10) >> 3 < *(unsigned long *)(l40 + 0x10)) {
+        FUN_0034e70c();
+        FUN_00359678();
+        FUN_00350548((void *)0xffffffffffffffc8);
+        x21 = FUN_0025f910();
+    } else {
+        FUN_0034e70c();
+        u1 = FUN_0031a1dc();
+        FUN_00354558(u1, u1);
+        FUN_0028a2b4((word_t)&l40, 0, 0);
+    }
+    return x21;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028abac @ 0x0028abac   (est. sk_object_service_run_f)
+ * Ghidra: void FUN_0028abac(undefined8*,undefined8 x4)
+ * Object-service run: calls FUN_002891e4 with the container fields and
+ * stores the result.
+ * Confidence: low. */
+void FUN_0028abac(word_t *out, word_t p2, word_t p3, word_t p4, long p5)
+{
+    word_t u1;
+
+    u1 = FUN_002891e4(p2, *(word_t *)(p5 + 0x10), p3, *(word_t *)(p5 + 0x18), p4);
+    *out = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028abe8 @ 0x0028abe8   (est. sk_swift_collection_merge_entry)
+ * Ghidra: void FUN_0028abe8(undefined8)
+ * Swift collection merge entry: runs FUN_00354558 then FUN_0028a2b4 on
+ * the value.
+ * Confidence: low. */
+void FUN_0028abe8(word_t p1)
+{
+    word_t x1;
+    word_t l18;
+
+    l18 = p1;
+    FUN_00354558();
+    FUN_0028a2b4((word_t)&l18, x1, x1);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ac18 @ 0x0028ac18   (est. sk_swift_box_store)
+ * Ghidra: void FUN_0028ac18(void)
+ * Swift box store: runs FUN_003515b4 then FUN_0028ac40.
+ * Confidence: low. */
+void FUN_0028ac18(void)
+{
+    FUN_003515b4();
+    FUN_0028ac40();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ac40 @ 0x0028ac40   (est. sk_swift_box_value_emit)
+ * Ghidra: void FUN_0028ac40(void)
+ * Swift box value emit: builds a value (FUN_00352700 / FUN_00352ddc /
+ * FUN_0031a1dc) and reports it via FUN_00084180, then runs FUN_001a6ab8.
+ * Confidence: low. */
+void FUN_0028ac40(void)
+{
+    wpair_t v;
+
+    FUN_00352700();
+    FUN_00352ddc();
+    v.lo = FUN_0031a1dc();
+    FUN_00084180(v.lo, v.hi, v.lo, 0x66dae0);
+    FUN_001a6ab8();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028acbc @ 0x0028acbc   (est. sk_swift_element_dispatch)
+ * Ghidra: void FUN_0028acbc(undefined8,long)
+ * Swift element dispatch: prepares the element (FUN_0031ddb0 /
+ * FUN_00350404) and dispatches it via the collection method table
+ * (param2+0x10).
+ * Confidence: low (Swift element dispatch; unrecovered jumptable at
+ * 0x28ad0c). */
+void FUN_0028acbc(word_t p1, long p2)
+{
+    long e16;
+
+    FUN_0031ddb0(0, *(word_t *)(p2 + 0x10), *(word_t *)(p2 + 0x18));
+    FUN_00350404();
+    ((code)(*(word_t *)(e16 + 0x10)))(p1);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ad10 @ 0x0028ad10   (est. sk_swift_element_bind2)
+ * Ghidra: void FUN_0028ad10(void)
+ * Swift element bind: runs FUN_00358c50 / FUN_003524bc / FUN_0031ddb0 /
+ * FUN_00349530, dispatches through the method table (0x20), and stores
+ * the value into the container slot (+0x20).
+ * Confidence: low (Swift element bind; indirect dispatch). */
+void FUN_0028ad10(void)
+{
+    long e16;
+    word_t x19;
+    long x20 = 0;               /* unaff_x20 */
+    uint8_t st50[48];
+
+    FUN_00358c50();
+    FUN_003524bc();
+    FUN_0031ddb0();
+    FUN_00349530();
+    ((code)(*(word_t *)(e16 + 0x20)))((word_t)st50);
+    FUN_0035a960();
+    FUN_00359804();
+    *(word_t *)(x20 + 0x20) = x19;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ad6c @ 0x0028ad6c   (est. sk_swift_element_bind3)
+ * Ghidra: void FUN_0028ad6c(void)
+ * Swift element bind variant: builds (FUN_0034ed08 / FUN_0031ddb0 /
+ * FUN_00349530), dispatches via method table (0x20), and stores the
+ * value into the container slot (+0x20).
+ * Confidence: low (Swift element bind; indirect dispatch). */
+void FUN_0028ad6c(void)
+{
+    word_t e8;
+    long e16;
+    long x20 = 0;               /* unaff_x20 */
+    uint8_t st50[32];
+    word_t l30;
+
+    FUN_0034ed08();
+    FUN_0031ddb0();
+    FUN_00349530();
+    ((code)(*(word_t *)(e16 + 0x20)))((word_t)st50);
+    FUN_00359804(l30);
+    *(word_t *)(x20 + 0x20) = e8;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028adc4 @ 0x0028adc4   (est. sk_swift_array_build_header)
+ * Ghidra: void FUN_0028adc4(void)
+ * Swift Array header build: runs FUN_00356bf8 / FUN_0028ad6c /
+ * FUN_003551f8 and stores the value into the container slot (+0x20).
+ * Confidence: low (Swift Array build; indirect). */
+void FUN_0028adc4(void)
+{
+    word_t x19 = 0;             /* unaff_x19 */
+    word_t l58;
+
+    FUN_00356bf8();
+    FUN_0028ad6c();
+    FUN_003551f8();
+    *(word_t *)(x19 + 0x20) = l58;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ae00 @ 0x0028ae00   (est. sk_swift_value_store_swap)
+ * Ghidra: void FUN_0028ae00(undefined8*)
+ * Swift value store: releases the container ref (FUN_0036b118) and copies
+ * the 5-word value descriptor from src into the container slot.
+ * Confidence: low. */
+void FUN_0028ae00(word_t *src)
+{
+    word_t x20 = 0;             /* unaff_x20 */
+    word_t u1, u2, u3, u4;
+
+    u3 = src[3];
+    u2 = src[2];
+    u1 = src[4];
+    FUN_0036b118((void *)x20);
+    u4 = src[0];
+    x20 = src[1];
+    x20 = u4;
+    x20 = u3;
+    x20 = u2;
+    x20 = u1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ae54 @ 0x0028ae54   (est. sk_swift_box_alloc2)
+ * Ghidra: void FUN_0028ae54(void)
+ * Swift box alloc variant: allocates a 0x38-byte box (FUN_0036a908, tag
+ * 0x4abf), retains it (FUN_0036b270), and runs FUN_003548f4 /
+ * FUN_003507e0.
+ * Confidence: low. */
+void FUN_0028ae54(void)
+{
+    FUN_0036a908(0x38, 0x4abf);
+    FUN_003548f4();
+    FUN_0036b270();
+    FUN_003507e0();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028aeac @ 0x0028aeac   (est. sk_swift_box_value_release)
+ * Ghidra: void FUN_0028aeac(void)
+ * Swift box value release: reads the box's 7-word descriptor, releases
+ * the value ref (FUN_0036b118), copies the payload into the target slot,
+ * and (in the branch path) retains the source first then releases it.
+ * Finishes via FUN_003544c8 / thunk_FUN_00012568.
+ * Confidence: low (Swift box value move; indirect). */
+void FUN_0028aeac(void)
+{
+    word_t u1, u3, u4, u6, u7, u8;
+    word_t *pu2, *pu5;
+    word_t x30;
+    wpair_t v9;
+
+    v9.lo = FUN_00354744();
+    v9.hi = FUN_00354744();
+    pu5 = (word_t *)(uintptr_t)v9.lo;
+    u7 = pu5[1];
+    u8 = pu5[0];
+    u1 = pu5[2];
+    u3 = pu5[3];
+    pu2 = (word_t *)(uintptr_t)pu5[5];
+    u4 = pu5[6];
+    u6 = pu5[4];
+    if ((v9.hi & 1) == 0) {
+        u7 = pu5[1];
+        FUN_0036b118((void *)u4);
+        pu2[0] = u8;
+        pu2[1] = u7;
+        pu2[2] = u1;
+        pu2[3] = u3;
+        pu2[4] = u6;
+    } else {
+        FUN_0036b270((void *)u8);
+        FUN_0036b118((void *)u4);
+        pu2[1] = u7;
+        pu2[0] = u8;
+        pu2[2] = u1;
+        pu2[3] = u3;
+        pu2[4] = u6;
+        FUN_0036b118((void *)pu5[0]);
+    }
+    FUN_003544c8(pu5, x30);
+    thunk_FUN_00012568();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028af44 @ 0x0028af44   (est. sk_swift_collection_next_element)
+ * Ghidra: void FUN_0028af44(undefined8,long)
+ * Swift collection next-element: walks the container's bitmap to find the
+ * next set bit, dispatches that element through the collection method
+ * table (param2-8 +0x10), and advances the container position.  When the
+ * bitmap is exhausted it reports completion via FUN_000839d8.
+ * Confidence: low (Swift collection iterator; indirect dispatch).
+ * Notes: helpers FUN_001f7d28 / FUN_0001a1c8 / FUN_000839d8;
+ *   SoftwareBreakpoint(1,0x28b07c). */
+void FUN_0028af44(word_t p1, long p2)
+{
+    long i1, i5, i7, i8;
+    word_t u2, u3, u6, u9, u10;
+    word_t *x20 = 0;            /* unaff_x20 */
+    long l1, l8;
+
+    u10 = x20[1];
+    u9 = x20[0];
+    l1 = x20[2];
+    l8 = x20[3];
+    u6 = x20[4];
+    if (u6 == 0) {
+        i7 = l8;
+        do {
+            l8 = i7 + 1;
+            if (SCARRY8(i7, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28b07c) */
+            if ((long)(l1 + 0x40u >> 6) <= l8) {
+                FUN_000839d8(p1, 1, 1, *(word_t *)(p2 + 0x10));
+                u6 = 0;
+                goto done;
+            }
+            u6 = *(word_t *)(x20[1] + l8 * 8);
+            i7++;
+        } while (u6 == 0);
+    }
+    u3 = sk_bitreverse64(u6);
+    u6 = u6 - 1 & u6;
+    i7 = *(long *)(p2 + 0x10);
+    u2 = *(word_t *)(p2 + 0x18);
+    i5 = FUN_001f7d28(u9);
+    ((code)(*(word_t *)(*(long *)(i7 - 8) + 0x10)))
+        (p1, i5 + *(long *)(*(long *)(i7 - 8) + 0x48) * (LZCOUNT(u3) | l8 << 6), i7);
+    FUN_0001a1c8(u9, i7, u2);
+    FUN_000839d8(p1, 0, 1, i7);
+    i7 = l8;
+done:
+    x20[1] = u10;
+    x20[0] = u9;
+    x20[2] = l1;
+    x20[3] = i7;
+    x20[4] = u6;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b07c @ 0x0028b07c   (est. sk_swift_collection_prepare_next)
+ * Ghidra: void FUN_0028b07c(void)
+ * Swift collection prepare-next: snapshots the container header, runs the
+ * setup helpers (FUN_00353aa0 / FUN_000e15d8 / FUN_00002534 /
+ * FUN_00353dd0 / FUN_003505c4 / FUN_00327e08 / FUN_0031ddb0), and
+ * dispatches through the method table (0x10) to produce the next value.
+ * Confidence: low (Swift collection iterate; indirect dispatch). */
+void FUN_0028b07c(word_t a1)
+{
+    word_t u1;
+    (void)a1;
+    code cb = 0;
+    long e16;
+    word_t *x20 = 0;            /* unaff_x20 */
+    word_t l_d0, st_c8, st_c0, st_b8, l_b0;
+    uint8_t st_a8[48], st_78[40];
+
+    FUN_00353aa0();
+    st_c8 = x20[1];
+    l_d0 = x20[0];
+    st_b8 = x20[3];
+    st_c0 = x20[2];
+    l_b0 = x20[4];
+    FUN_000e15d8();
+    FUN_00002534();
+    FUN_00353dd0();
+    FUN_003505c4();
+    FUN_00327e08();
+    u1 = FUN_0031ddb0(0, x20[2], x20[3]);
+    FUN_0035295c();
+    FUN_003513a8(st_78);
+    if (cb) cb();
+    ((code)(*(word_t *)(e16 + 0x10)))((word_t)st_a8, (word_t)st_78, u1);
+    FUN_0034d5ec(st_a8, &l_d0);
+    FUN_001f6fac();
+    FUN_00358888();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b174 @ 0x0028b174   (est. sk_swift_collection_iter_value)
+ * Ghidra: void FUN_0028b174(undefined8*)
+ * Swift collection iterator value: snapshots the container header, runs
+ * FUN_0028b07c, and copies the 0x29-byte result value into out (with the
+ * packed concat fields at +0x19 and +0x21).
+ * Confidence: low (Swift iterator value; byte packing). */
+void FUN_0028b174(word_t *out)
+{
+    word_t *x20 = 0;            /* unaff_x20 */
+    word_t l80, st78, st70, st68, l67, st60, st5f;
+    word_t l50, st48, st40, st38, l30;
+
+    st48 = x20[1];
+    l50 = x20[0];
+    st38 = x20[3];
+    st40 = x20[2];
+    l30 = x20[4];
+    FUN_0028b07c((word_t)&l80);
+    out[1] = st78;
+    out[0] = l80;
+    out[3] = (((l67) << 8) | (st68 & 0xff));
+    out[2] = st70;
+    *(word_t *)((long)out + 0x21) = st5f;
+    *(word_t *)((long)out + 0x19) = ((st60) << 8) | (l67 & 0xff);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b1c8 @ 0x0028b1c8   (est. sk_swift_collection_build_empty)
+ * Ghidra: void FUN_0028b1c8(void)
+ * Swift collection build-empty: runs FUN_00352800 / FUN_0031a1dc /
+ * FUN_00354924 / FUN_003a25e0 / FUN_00357f14 / FUN_003515b4 /
+ * FUN_001a67bc / FUN_0035a1d4 to produce an empty collection value.
+ * Confidence: low. */
+void FUN_0028b1c8(word_t a1, word_t a2, word_t a3, word_t a4)
+{
+    word_t u1;
+    (void)a1; (void)a2; (void)a3; (void)a4;
+    wpair_t v2;
+
+    FUN_00352800();
+    FUN_0031a1dc(0);
+    u1 = FUN_00354924();
+    FUN_003a25e0(u1, 2);
+    v2.lo = FUN_00357f14();
+    FUN_003515b4(v2.lo, v2.hi, 7);
+    FUN_001a67bc();
+    FUN_0035a1d4();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b240 @ 0x0028b240   (est. sk_swift_collection_build_value)
+ * Ghidra: void FUN_0028b240(undefined8*,long)
+ * Swift collection build-value: builds an empty collection via
+ * FUN_0028b1c8 and copies the 0x29-byte result into out.
+ * Confidence: low. */
+void FUN_0028b240(word_t *out, long p2)
+{
+    word_t *x20 = 0;            /* unaff_x20 */
+    word_t l50, st48, st40, st38, l37, st30, st2f;
+
+    FUN_0028b1c8((word_t)&l50, (word_t)x20, *(word_t *)(p2 + 0x10), *(word_t *)(p2 + 0x18));
+    out[1] = st48;
+    out[0] = l50;
+    out[3] = ((l37) << 8) | (st38 & 0xff);
+    out[2] = st40;
+    *(word_t *)((long)out + 0x21) = st2f;
+    *(word_t *)((long)out + 0x19) = ((st30) << 8) | (l37 & 0xff);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b28c @ 0x0028b28c   (est. sk_swift_array_remove_if_present)
+ * Ghidra: void FUN_0028b28c(void)
+ * Swift Array remove-if-present: if the collection is non-empty runs the
+ * remove path (FUN_0025baa4 / FUN_00288f34), then reports via
+ * FUN_000839d8.
+ * Confidence: low. */
+void FUN_0028b28c(void)
+{
+    word_t x20 = 0;             /* unaff_x20 */
+
+    FUN_00353b10();
+    if (*(long *)(x20 + 0x10) != 0) {
+        FUN_0025baa4();
+        FUN_00288f34(0, 0, 0);
+    }
+    FUN_000839d8();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b2ec @ 0x0028b2ec   (est. sk_swift_collection_prepare)
+ * Ghidra: void FUN_0028b2ec(void)
+ * Swift collection prepare: runs FUN_00358c50 / FUN_003524bc /
+ * FUN_0031a1f4 / FUN_00353a30 then FUN_0028b31c.
+ * Confidence: low. */
+void FUN_0028b2ec(void)
+{
+    FUN_00358c50();
+    FUN_003524bc();
+    FUN_0031a1f4();
+    FUN_00353a30();
+    FUN_0028b31c();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b31c @ 0x0028b31c   (est. sk_swift_collection_teardown)
+ * Ghidra: void FUN_0028b31c(void)
+ * Swift collection teardown: takes the IRQ-save lock (FUN_00357cb4),
+ * runs the teardown helpers, and releases the container ref
+ * (FUN_0036b118), restoring IRQ state (FUN_00357c74).
+ * Confidence: low. */
+void FUN_0028b31c(void)
+{
+    word_t x20 = 0, x30;
+    wpair_t v;
+    word_t st8;
+
+    FUN_00357cb4();
+    FUN_0035098c();
+    FUN_003a261c(x20);
+    FUN_003589fc();
+    FUN_0034f2e4();
+    FUN_0034d3e4();
+    v.lo = FUN_0031d5d8();
+    FUN_00355458(v.lo, v.hi, v.lo);
+    FUN_0025ba04();
+    FUN_003552a0();
+    FUN_00350bfc();
+    FUN_001fb194();
+    FUN_00357c74(st8, x30);
+    FUN_0036b118();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b390 @ 0x0028b390   (est. sk_swift_cap_contains)
+ * Ghidra: uint FUN_0028b390(undefined8 x3)
+ * Swift capability contains: probes the capability set (FUN_0034f414 /
+ * FUN_0014f810 / FUN_0034bcf0); if the probe fails returns 0, else runs
+ * the success helpers and returns the inverted low bit.
+ * Confidence: low (Swift cap set contains). */
+uint32_t FUN_0028b390(word_t p1, word_t p2, word_t p3)
+{
+    uint32_t u1;
+    word_t u2;
+    code cb = 0, cb2 = 0;
+
+    FUN_0034f414();
+    FUN_0014f810(p3);
+    FUN_0034bcf0();
+    u2 = (word_t)cb();
+    if ((u2 & 1) == 0) {
+        u1 = 0;
+    } else {
+        FUN_0034c4fc();
+        FUN_0006b6f4();
+        FUN_0034df34();
+        u1 = (uint32_t)cb2();
+        u1 = u1 ^ 1;
+    }
+    return u1 & 1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b3fc @ 0x0028b3fc   (est. sk_swift_cap_contains_wrap)
+ * Ghidra: uint FUN_0028b3fc(void)
+ * Wrapper: FUN_00351318 then FUN_0028b390.
+ * Confidence: low. */
+uint32_t FUN_0028b3fc(void)
+{
+    FUN_00351318();
+    return FUN_0028b390(0, 0, 0) & 1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b428 @ 0x0028b428   (est. sk_swift_collection_subset_cap)
+ * Ghidra: uint FUN_0028b428(undefined8,undefined8)
+ * Swift collection subset via cap compare: builds two buffers
+ * (FUN_00351488 / FUN_00228e78 / FUN_0026a744), runs the compare helpers,
+ * and returns the low bit of the comparison.
+ * Confidence: low (Swift collection compare; indirect). */
+uint32_t FUN_0028b428(word_t p1, word_t p2)
+{
+    uint32_t u1;
+    code cb = 0;
+    uint8_t st90[40], st68[40];
+
+    FUN_00351488(st90, p2);
+    FUN_00228e78();
+    u1 = (uint32_t)FUN_0026a744(st68, st90);
+    FUN_0034b440(st68);
+    FUN_0031c688();
+    FUN_00355d40();
+    FUN_00350470();
+    if (cb) cb();
+    FUN_003199ac(st68);
+    FUN_00351f34();
+    FUN_00358b54();
+    FUN_00365b6c(p1);
+    return u1 & 1;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b4c8 @ 0x0028b4c8   (est. sk_swift_collection_cap_merge)
+ * Ghidra: void FUN_0028b4c8(void)
+ * Swift collection cap merge: builds the element buffer
+ * (FUN_00352c10 / FUN_00228e78 / FUN_0025cc54), runs the merge helpers
+ * (FUN_000e15d8 / FUN_00002534 / FUN_0035401c / FUN_001d88fc), and
+ * completes via FUN_003505c4 / FUN_00344e54.
+ * Confidence: low (Swift collection merge; indirect). */
+void FUN_0028b4c8(void)
+{
+    word_t u1, e8, u2;
+    word_t x20 = 0;             /* unaff_x20 */
+    wpair_t v3;
+    uint8_t stc0[16], st90[40], st68[40];
+
+    FUN_00352c10();
+    FUN_00228e78(st90);
+    u1 = FUN_003a261c(x20);
+    u2 = x20;
+    FUN_00359aec(u1, u1);
+    FUN_0025cc54(st68, st90);
+    x20 = u2;
+    FUN_000e15d8();
+    v3.lo = FUN_00002534();
+    FUN_0035401c(v3.lo, v3.hi, v3.lo);
+    FUN_001d88fc(e8, (void *)0x346580, stc0);
+    FUN_003505c4(st68);
+    FUN_00344e54();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b5b0 @ 0x0028b5b0   (est. sk_swift_collection_cap_merge2)
+ * Ghidra: void FUN_0028b5b0(void)
+ * Swift collection cap merge variant: prelude, builds buffers
+ * (FUN_0034e53c / FUN_00228e78 / FUN_0026af9c), runs the merge helpers,
+ * and completes via FUN_003505c4 / FUN_00344e54.
+ * Confidence: low (Swift collection merge; indirect). */
+void FUN_0028b5b0(void)
+{
+    long e8, e12;
+    code cb = 0;
+    wpair_t v1;
+    uint8_t stc0[16], st90[40], st68[40];
+
+    FUN_00351cf4();
+    FUN_00356ba4();
+    FUN_003494e8();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003490ec();
+    FUN_00352a28(*(word_t *)(e12 + 0x10));
+    if (cb) cb();
+    FUN_0034e53c(st90);
+    FUN_00228e78();
+    FUN_0026af9c(st68, st90);
+    FUN_003199ac(st90);
+    FUN_000e15d8();
+    v1.lo = FUN_00002534();
+    FUN_0035401c(v1.lo, v1.hi, v1.lo);
+    FUN_001d88fc((void *)0x31ddc8, stc0);
+    FUN_003505c4(st68);
+    FUN_00344e54();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b6cc @ 0x0028b6cc   (est. sk_swift_collection_cap_cmp)
+ * Ghidra: void FUN_0028b6cc(undefined8 x4)
+ * Swift collection cap compare: runs FUN_0034f1a8 / FUN_0031c688 /
+ * FUN_00355d40 / FUN_000dbd0c / FUN_00351f34 / FUN_00358b54 and finishes
+ * with FUN_00365b6c.
+ * Confidence: low. */
+void FUN_0028b6cc(word_t p1, long p2, word_t p3, word_t p4)
+{
+    word_t x1;
+    code cb = 0;
+
+    FUN_0034f1a8(p2, *(word_t *)(p2 + 0x18));
+    FUN_0031c688();
+    FUN_00355d40();
+    FUN_000dbd0c();
+    if (cb) cb();
+    FUN_00351f34();
+    FUN_00358b54();
+    FUN_00365b6c(p1, x1, p4, p3, 7);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b748 @ 0x0028b748   (est. sk_swift_string_meta)
+ * Ghidra: void FUN_0028b748(void)
+ * Wrapper to FUN_0025a060.
+ * Confidence: low. */
+void FUN_0028b748(void)
+{
+    FUN_0025a060();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b770 @ 0x0028b770   (est. sk_swift_array_reserve_check)
+ * Ghidra: void FUN_0028b770(undefined8,long)
+ * Swift Array reserve: if the collection count is below the reserved
+ * capacity it takes the grow path (FUN_00352834 / FUN_0034ce78 /
+ * FUN_0025af6c); otherwise it traps (Swift fatal).
+ * Confidence: low (Swift Array reserve; fatal on overflow). */
+void FUN_0028b770(word_t p1, long p2)
+{
+    word_t u1;
+    code cb = 0;
+    word_t x16;
+    word_t *x20 = 0;            /* unaff_x20 */
+    wpair_t v2;
+
+    u1 = *(word_t *)(p2 + 0x10);
+    FUN_003499b4(p1, p1);
+    (*DAT_00658c00)(x16);
+    FUN_0034d3b4();
+    if (*(long *)(x20 + 0x10) < x20[1]) {
+        v2.lo = FUN_00352834();
+        if (cb) cb(v2.lo, v2.hi, u1);
+        FUN_0034ce78();
+        FUN_0025af6c();
+        return;
+    }
+    FUN_00350410();
+    FUN_003488bc();
+    FUN_0034bbdc();
+    __builtin_trap();           /* Swift fatal */
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b85c @ 0x0028b85c   (est. sk_swift_fatal_no_recovery)
+ * Ghidra: void FUN_0028b85c(void)
+ * Unconditional Swift fatal (no-recovery) path.
+ * Confidence: medium. */
+void FUN_0028b85c(void)
+{
+    FUN_003488bc(1);
+    FUN_0006f768();
+    FUN_0035110c();
+    __builtin_trap();           /* Swift fatal */
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028b918 @ 0x0028b918   (est. sk_swift_collection_rebuild)
+ * Ghidra: void FUN_0028b918(void)
+ * Swift collection rebuild: CPU, prelude + dispatch slots, then iterates
+ * the collection bitmap and rebuilds each element through the method
+ * table (FUN_00359894 / FUN_00355610 / FUN_00355418 / FUN_0028bdc0 /
+ * FUN_003530f4), with a branch on the tag (unaff_x20 == 0x6753a0)
+ * selecting between two element-rebuild paths.  Releases the container
+ * refs and exits via FUN_00353100 / FUN_0008e500.
+ * Confidence: low (Swift collection rebuild; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00077888 / FUN_00357688 /
+ *   FUN_00350a64 / FUN_00310d68 / FUN_003490b8 / FUN_00348abc /
+ *   FUN_0034c2d8 / FUN_00349b00 / FUN_003493c4 / FUN_0034e6cc /
+ *   FUN_0034dc9c / FUN_0007c028 / FUN_0034d944 / FUN_0034b87c /
+ *   FUN_0025a060 / FUN_00354a84 / FUN_0035261c / FUN_0028adc4 /
+ *   FUN_00352554 / FUN_00353148 / FUN_0036b270 / FUN_00359894 /
+ *   FUN_00355610 / FUN_00355418 / FUN_000dbf08 / FUN_0028bdc0 /
+ *   FUN_003530f4 / FUN_00354b74 / FUN_0034b2c8 / FUN_003508f0 /
+ *   FUN_003515fc / FUN_0025af6c / FUN_003553d8 / FUN_003598ec /
+ *   FUN_0034db58 / FUN_000a6e14 / FUN_00355eec / FUN_0009461c /
+ *   FUN_0034d424 / FUN_0031d5d8 / FUN_0025d3d0 / FUN_0036b118 /
+ *   FUN_00357274 / FUN_00353100 / FUN_0008e500. */
+void FUN_0028b918(void)
+{
+    code cb = 0;
+    bool keep;
+    word_t u3, u4, u5, u6, u7;
+    long e8, e8b, e8c, e8d;
+    word_t x1, x14;
+    long e16;
+    word_t x20 = 0;             /* unaff_x20 */
+    word_t x21 = 0;             /* unaff_x21 */
+    word_t x22, x25, x26, x28;
+    wpair_t v8;
+    word_t le0, la0;
+    long l98, l58, st50, l48;
+    word_t st40, l38;
+
+    FUN_0008e518();
+    FUN_00077888();
+    FUN_00357688();
+    FUN_00350a64();
+    FUN_00310d68();
+    FUN_003490b8((void *)0x20);
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_00348abc();
+    (*DAT_00658c00)();
+    FUN_0034c2d8();
+    FUN_00349b00();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_003493c4();
+    FUN_0034e6cc();
+    (*DAT_00658c00)();
+    FUN_0034dc9c();
+    FUN_0007c028();
+    (*DAT_00658c00)(*(word_t *)(e8c + 0x40));
+    FUN_003493c4();
+    FUN_0034d944();
+    (*DAT_00658c00)();
+    FUN_0034b87c();
+    u4 = FUN_0025a060(*(word_t *)(x21 + 0x10));
+    u5 = FUN_00354a84();
+    keep = (x20 == 0x6753a0);
+    if (!keep) {
+        FUN_0035261c();
+        FUN_0028adc4();
+        u7 = l48 + 0x40u >> 6;
+        FUN_00352554(e16 + 8);
+        FUN_00353148();
+        FUN_0036b270((void *)u4);
+        FUN_0036b270((void *)x14);
+        do {
+            for (; l38 != 0; l38 = l38 - 1 & l38) {
+                FUN_00359894();
+                FUN_00355610(0 | st40 << 6);
+                FUN_00355418(l98, x1, x28);
+                if (cb) cb();
+                FUN_000dbf08(x25, l98);
+                FUN_0028bdc0();
+                FUN_003530f4(*(word_t *)(e16 + 8));
+                FUN_00354b74();
+                if (cb) cb();
+                FUN_0034b2c8(x25);
+                x22 = x25;
+                if (keep) goto fatal;
+                v8.lo = FUN_003508f0(*(word_t *)(e8d + 0x20));
+                if (cb) cb(v8.lo, v8.hi, x20);
+                FUN_003515fc(la0, u5);
+                FUN_0025af6c();
+                FUN_003553d8();
+                st50 = l98;
+            }
+            st40++;
+            if (SCARRY8(st40, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28bd64) */
+            if ((long)u7 <= (long)st40) break;
+            l38 = *(word_t *)(st50 + st40 * 8);
+        } while (1);
+    }
+    goto alt;
+fatal:
+    FUN_0036b118((void *)u5);
+    FUN_0036b118((void *)l58);
+    FUN_00350bc0((void *)0x18);
+    if (cb) cb(x22, le0);
+    FUN_0034b348();
+    FUN_00354618();
+    FUN_003489dc();
+    FUN_0034a2f8();
+    __builtin_trap();           /* Swift fatal */
+alt:
+    FUN_0035261c();
+    FUN_0028adc4();
+    u7 = l48 + 0x40u >> 6;
+    FUN_0035a59c();
+    FUN_00353148();
+    FUN_0036b270((void *)u4);
+    FUN_0036b270((void *)x14);
+    FUN_00357398();
+    while (1) {
+        for (; l38 != 0; l38 = l38 - 1 & l38) {
+            FUN_003598ec();
+            ((code)(*(word_t *)(e16 + 0x10)))
+                (x26, *(long *)(l58 + 0x30) + *(long *)(e16 + 0x48) * (0 | st40 << 6), x28);
+            FUN_0034db58(x22);
+            FUN_0028bdc0();
+            FUN_000a6e14(*(word_t *)(e16 + 8));
+            if (cb) cb();
+            FUN_0034b2c8(x22);
+            if (keep) goto fatal;
+            FUN_00355eec();
+            v8.lo = FUN_0009461c();
+            if (cb) cb(v8.lo, v8.hi, 0x6753a0);
+            FUN_0034d424();
+            u6 = FUN_0031d5d8();
+            FUN_0025d3d0(u4, u6);
+        }
+        st40++;
+        if (SCARRY8(st40, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28bd68) */
+        if ((long)u7 <= (long)st40) break;
+        l38 = *(word_t *)(st50 + st40 * 8);
+    }
+    FUN_0036b118((void *)l58);
+    FUN_00357274();
+    FUN_0036b118();
+    u4 = FUN_00353100();
+    FUN_0008e500(u4, l98);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028bdc0 @ 0x0028bdc0   (est. sk_swift_collection_element_step)
+ * Ghidra: void FUN_0028bdc0(void)
+ * Swift collection element step: prelude + dispatch slots, then the
+ * element-step helpers (FUN_00349178 / FUN_00353ba0 / FUN_0034aebc /
+ * FUN_00365b6c / FUN_0034bc94 / FUN_000839d8).
+ * Confidence: low (Swift collection element step; indirect). */
+void FUN_0028bdc0(void)
+{
+    long e8;
+    code cb = 0;
+
+    FUN_00350a28();
+    FUN_00356ba4();
+    FUN_00349b00();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_00349178();
+    FUN_00353ba0();
+    if (cb) cb();
+    FUN_0034aebc();
+    FUN_00365b6c();
+    FUN_0034bc94();
+    FUN_000839d8();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028be58 @ 0x0028be58   (est. sk_swift_collection_bind_pop)
+ * Ghidra: void FUN_0028be58(void)
+ * Swift collection bind+pop: takes the IRQ-save lock (FUN_00357cb4),
+ * runs FUN_0028beec, and if a guard is set runs the pop dispatch
+ * (FUN_0034d424 / FUN_0031a1dc / FUN_00349530 / method table 0x20);
+ * restores IRQ state (FUN_00357c74).
+ * Confidence: low (Swift collection pop; indirect). */
+void FUN_0028be58(void)
+{
+    word_t *pu1;
+    word_t x1, x1b, u2;
+    long x4;
+    long e16;
+    word_t x30;
+
+    FUN_00357cb4();
+    pu1 = (word_t *)FUN_0035215c();
+    FUN_0036b270((void *)pu1[0]);
+    FUN_000bd3a4();
+    FUN_0028beec();
+    FUN_0035122c();
+    FUN_003a25d4();
+    u2 = x1;
+    if (x4 != 0) {
+        FUN_0034d424();
+        FUN_0031a1dc();
+        FUN_00349530();
+        ((code)(*(word_t *)(e16 + 0x20)))();
+        u2 = x1b;
+    }
+    FUN_00357c74(x4 != 0, u2, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c378 @ 0x0028c378   (est. sk_swift_collection_element_cmp)
+ * Ghidra: void FUN_0028c378(undefined8,undefined8,long,undefined8)
+ * Swift collection element compare: dispatches the element through the
+ * collection method table (param3-8 +0x40 / +0x10), runs FUN_00365b6c,
+ * and reports the result via FUN_000839d8.
+ * Confidence: low (Swift element compare; indirect dispatch). */
+void FUN_0028c378(word_t p1, word_t p2, long p3, word_t p4, word_t p5)
+{
+    uint32_t u1;
+    word_t x1;
+    long e8, e12;
+    (void)p5;
+
+    (*DAT_00658c00)(*(word_t *)(*(long *)(p3 - 8) + 0x40), p2, p2);
+    ((code)(*(word_t *)(e12 + 0x10)))
+        ((word_t)0xffffffffffffffd0 + -(e8 + 0xf & 0xfffffffffffffff0ull), x1, p3);
+    u1 = (uint32_t)FUN_00365b6c(p1, (word_t)0xffffffffffffffd0 + -(e8 + 0xf & 0xfffffffffffffff0ull),
+                                p3, p4, 6);
+    FUN_000839d8(p1, u1 ^ 1, 1, p4);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028beec @ 0x0028beec   (est. sk_swift_collection_rebuild2)
+ * Ghidra: void FUN_0028beec(void)
+ * Swift collection rebuild variant: CPU, prelude + dispatch slots, then
+ * iterates the collection bitmap rebuilding each element, branching on
+ * the tag (unaff_x20 == 0x6753a0) between two rebuild paths (via
+ * FUN_0028c378 / FUN_00350494 / FUN_003510d0 / FUN_00351654, or
+ * FUN_00355610 / FUN_00351648 / FUN_00352290 / FUN_00350c38 /
+ * FUN_0031d5d8).  Releases container refs and exits via FUN_0008e500.
+ * Confidence: low (Swift collection rebuild2; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00350b0c / FUN_00350a64 /
+ *   FUN_00310d68 / FUN_003490b8 / FUN_0034ab10 / FUN_0034dfa4 /
+ *   FUN_0034b8bc / FUN_00349b00 / FUN_0034926c / FUN_0034b87c /
+ *   FUN_00349734 / FUN_003493c4 / FUN_0034e6cc / FUN_0034ba68 /
+ *   FUN_0025a060 / FUN_00354a84 / FUN_0035261c / FUN_0028adc4 /
+ *   FUN_00352554 / FUN_00353148 / FUN_00354128 / FUN_0036b270 /
+ *   FUN_00358834 / FUN_003598ec / FUN_00355418 / FUN_00350494 /
+ *   FUN_0028c378 / FUN_00354b74 / FUN_00349f3c / FUN_0036b118 /
+ *   FUN_00350bc0 / FUN_003510d0 / FUN_00350c68 / FUN_00351654 /
+ *   FUN_0025af6c / FUN_0035a59c / FUN_00352b98 / FUN_00358864 /
+ *   FUN_00355610 / FUN_00351648 / FUN_00352290 / FUN_00350884 /
+ *   FUN_0034d688 / FUN_00350c38 / FUN_00350920 / FUN_0031d5d8 /
+ *   FUN_0025d3d0 / FUN_003573c0 / FUN_0008e500. */
+void FUN_0028beec(void)
+{
+    code cb = 0;
+    bool keep;
+    word_t u1, u2, u6, u8, u9;
+    uint8_t u4;
+    long l5;
+    word_t v6, x1, x3, x4;
+    long e8, e8b, e8c, e8d;
+    word_t e8_3;
+    long e16;
+    word_t x19, x21, x24, x26, x27;
+    word_t *x20 = 0;            /* unaff_x20 */
+    word_t x30;
+    wpair_t v10;
+    word_t ld8, la8, la0, l90, l78, l60, l58;
+    word_t *pu50;
+    long l48;
+    word_t st40, l38;
+    long l30;
+
+    FUN_0008e518();
+    l5 = (long)FUN_00350b0c();
+    FUN_00350a64();
+    FUN_00310d68();
+    FUN_003490b8((void *)0x28);
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_0034ab10();
+    FUN_0034dfa4();
+    (*DAT_00658c00)();
+    FUN_0034b8bc();
+    FUN_00349b00();
+    (*DAT_00658c00)(*(word_t *)(e8b + 0x40));
+    FUN_0034926c();
+    (*DAT_00658c00)();
+    FUN_0034b87c();
+    FUN_00349734();
+    (*DAT_00658c00)(*(word_t *)(e8c + 0x40));
+    FUN_003493c4();
+    FUN_0034e6cc();
+    (*DAT_00658c00)();
+    FUN_0034ba68();
+    l90 = FUN_0025a060(*(word_t *)(l5 + 0x10));
+    l60 = l90;
+    FUN_00354a84(l5);
+    keep = (x20 == 0x6753a0);
+    l30 = l5;
+    if (!keep) {
+        FUN_0035261c();
+        FUN_0028adc4();
+        l78 = l58;
+        u9 = l48 + 0x40u >> 6;
+        FUN_00352554(e16 + 8, l5);
+        FUN_00353148();
+        FUN_00354128(e8d + 0x20);
+        FUN_0036b270();
+        FUN_00358834();
+        u8 = l38;
+        u2 = st40;
+        do {
+            for (; u8 != 0; u8 = u8 - 1 & u8) {
+                FUN_003598ec();
+                FUN_00355418(*(word_t *)(e16 + 0x10), la0,
+                             *(long *)(l58 + 0x30) + *(long *)(e16 + 0x48) * (0 | u2 << 6), x21);
+                if (cb) cb();
+                v10.lo = FUN_00350494(x19);
+                FUN_0028c378(v10.lo, v10.hi, (long)(uintptr_t)x20, x3, x4);
+                FUN_00350494(*(word_t *)(e16 + 8));
+                FUN_00354b74();
+                if (cb) cb();
+                FUN_00349f3c(x19);
+                if (keep) {
+                    FUN_0036b118((void *)l90);
+                    FUN_0036b118((void *)l58);
+                    FUN_00350bc0((void *)0x20);
+                    x24 = x19;
+                    if (cb) cb(x24, ld8);
+                    l90 = 0;
+                    goto finish;
+                }
+                FUN_003510d0((void *)0x30);
+                FUN_00350c68(la8);
+                if (cb) cb();
+                FUN_00351654(la8, l90);
+                FUN_0025af6c();
+                pu50 = (word_t *)ld8;
+            }
+            u1 = u2 + 1;
+            if (SCARRY8(u2, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28c374) */
+            if ((long)u9 <= (long)u1) goto finish;
+            u8 = pu50[u1];
+            u2 = u1;
+        } while (1);
+    }
+    FUN_0035261c();
+    FUN_0028adc4();
+    l78 = l58;
+    u9 = l48 + 0x40u >> 6;
+    FUN_0035a59c();
+    FUN_00353148();
+    FUN_00352b98(e8_3 + 0x20);
+    FUN_0036b270((void *)l5);
+    FUN_00358864();
+    u8 = l38;
+    u2 = st40;
+    {
+        word_t *pu7 = pu50;
+        while (1) {
+            for (; u8 != 0; u8 = u8 - 1 & u8) {
+                u1 = sk_bitreverse64(u8);
+                FUN_00355610(LZCOUNT(u1) | u2 << 6);
+                if (cb) cb(x27, x1, x21);
+                v10.lo = FUN_00351648(x24);
+                FUN_0028c378(v10.lo, v10.hi, 0x6753a0, x3, x4);
+                FUN_00351648(*(word_t *)(e16 + 8));
+                if (cb) cb();
+                v10.lo = FUN_00352290();
+                FUN_00350884(v10.lo, v10.hi, 0x6753a0);
+                if (keep) {
+                    FUN_0036b118((void *)l90);
+                    FUN_0036b118((void *)l58);
+                    FUN_00350bc0((void *)0x20);
+                    if (cb) cb(x24, ld8);
+                    l90 = 0;
+                    goto finish;
+                }
+                FUN_0034d688();
+                v10.lo = FUN_00350c38();
+                if (cb) cb(v10.lo, v10.hi, 0x6753a0);
+                v10.lo = FUN_00350920();
+                v6 = FUN_0031d5d8(v10.lo, v10.hi, x4);
+                pu7 = &l60;
+                FUN_0025d3d0(x26, v6);
+                FUN_003573c0();
+            }
+            u1 = u2 + 1;
+            if (SCARRY8(u2, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28c378) */
+            if ((long)u9 <= (long)u1) break;
+            u8 = pu7[u1];
+            u2 = u1;
+        }
+    }
+finish:
+    FUN_0036b118((void *)l78);
+    FUN_0008e500(l90, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c480 @ 0x0028c480   (est. sk_swift_collection_reserve)
+ * Ghidra: void FUN_0028c480(void)
+ * Swift collection reserve: runs FUN_00355ce4 / FUN_0036b6ac.
+ * Confidence: low. */
+void FUN_0028c480(void)
+{
+    FUN_00355ce4();
+    FUN_0036b6ac();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c498 @ 0x0028c498   (est. sk_swift_collection_compact)
+ * Ghidra: void FUN_0028c498(void)
+ * Swift collection compact: enters the service, and while the container
+ * count > 0 and its type flag allows compaction, walks the bitmap
+ * compacting elements (FUN_0034a340 / FUN_0035516c / FUN_00356688 /
+ * FUN_0034bdbc / FUN_0034c194 / FUN_003590cc); exits via FUN_00084234.
+ * Confidence: low (Swift collection compact; indirect).
+ * Notes: SoftwareBreakpoint(1,0x28c56c). */
+void FUN_0028c498(void)
+{
+    long i2, i3;
+    word_t x8, x9, x9b, x10;
+    word_t *x20 = 0;            /* unaff_x20 */
+    long x25 = 0;               /* unaff_x25 */
+    word_t x26 = 0;             /* unaff_x26 */
+
+    FUN_00084220();
+    if ((0 < x20[2]) &&
+        ((*(uint8_t *)(*(long *)(*(long *)(x20[0] + 0x88) - 8) + 0x52) & 1) != 0)) {
+        FUN_0034a340(x20[7]);
+        FUN_0035516c();
+        i2 = 0;
+        do {
+            if (x26 == 0) {
+                do {
+                    i3 = i2 + 1;
+                    if (SCARRY8(i2, 1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28c56c) */
+                    if (x25 <= i3) goto out;
+                    FUN_00356688();
+                    i2 = x8;
+                } while (x9 == 0);
+                FUN_0034bdbc();
+                x26 = x10 & x9b;
+            } else {
+                FUN_0034c194();
+                i3 = i2;
+            }
+            FUN_003590cc();
+            i2 = i3;
+        } while (1);
+    }
+out:
+    FUN_00084234();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c56c @ 0x0028c56c   (est. sk_swift_collection_compact2)
+ * Ghidra: void FUN_0028c56c(void)
+ * Swift collection compact: FUN_0028c498 then FUN_00355ce4 /
+ * FUN_0036b6ac.
+ * Confidence: low. */
+void FUN_0028c56c(void)
+{
+    FUN_0028c498();
+    FUN_00355ce4();
+    FUN_0036b6ac();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c570 @ 0x0028c570   (est. sk_swift_collection_compact3)
+ * Ghidra: void FUN_0028c570(void)
+ * Duplicate of FUN_0028c56c.
+ * Confidence: low. */
+void FUN_0028c570(void)
+{
+    FUN_0028c498();
+    FUN_00355ce4();
+    FUN_0036b6ac();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c5c0 @ 0x0028c5c0   (est. sk_swift_value_release_cb)
+ * Ghidra: void FUN_0028c5c0(undefined8*)
+ * Swift value release callback: invokes FUN_001fb194 with the value's
+ * fields then releases the container ref (FUN_0036b118).
+ * Confidence: low. */
+void FUN_0028c5c0(word_t *v)
+{
+    FUN_001fb194(v[2], (word_t)v, *(word_t *)(v[1] + 0x10), *(word_t *)(v[1] + 0x18));
+    FUN_0036b118((void *)v[0]);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c60c @ 0x0028c60c   (est. sk_swift_element_dispatch2)
+ * Ghidra: void FUN_0028c60c(void)
+ * Swift element dispatch: binds (FUN_00355694 / FUN_003524bc /
+ * FUN_00377824 / FUN_00350404) and dispatches via the method table
+ * (+0x28).  Unrecovered jumptable at 0x28c65c.
+ * Confidence: low (Swift element dispatch; indirect). */
+void FUN_0028c60c(void)
+{
+    long i1;
+    long e16;
+    wpair_t v2;
+
+    v2.lo = FUN_00355694();
+    v2.hi = FUN_00355694();
+    i1 = (long)v2.hi;
+    FUN_003524bc(*(word_t *)(i1 + 0x18), v2.lo, i1, *(word_t *)(i1 + 0x10));
+    FUN_00377824();
+    FUN_00350404();
+    ((code)(*(word_t *)(e16 + 0x28)))();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c660 @ 0x0028c660   (est. sk_swift_element_dispatch3)
+ * Ghidra: void FUN_0028c660(void)
+ * Swift element dispatch: binds (FUN_00358054 / FUN_00377824 /
+ * FUN_00350404) and dispatches via the method table (+0x10).
+ * Unrecovered jumptable at 0x28c6bc.
+ * Confidence: low (Swift element dispatch; indirect). */
+void FUN_0028c660(void)
+{
+    long i1;
+    long e16;
+
+    i1 = (long)FUN_00358054();
+    FUN_00377824(0, *(word_t *)(i1 + 0x18), *(word_t *)(i1 + 0x10));
+    FUN_00350404();
+    ((code)(*(word_t *)(e16 + 0x10)))();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c754 @ 0x0028c754   (est. sk_swift_element_subscript)
+ * Ghidra: void FUN_0028c754(undefined8,long)
+ * Swift element subscript: dispatches the element at index param2+0x28
+ * via the collection method table (param2+0x10 -> +0x10).
+ * Confidence: low (Swift element subscript; unrecovered jumptable at
+ * 0x28c780). */
+void FUN_0028c754(word_t p1, long p2)
+{
+    long x20 = 0;               /* unaff_x20 */
+
+    ((code)(*(word_t *)(*(long *)(*(long *)(p2 + 0x10) - 8) + 0x10)))
+        (p1, x20 + *(int *)(p2 + 0x28));
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c784 @ 0x0028c784   (est. sk_swift_element_dispatch4)
+ * Ghidra: void FUN_0028c784(void)
+ * Swift element dispatch: binds (FUN_00358054 / FUN_00377824 /
+ * FUN_00350404) and dispatches via the method table (+0x10).
+ * Unrecovered jumptable at 0x28c7d4.
+ * Confidence: low. */
+void FUN_0028c784(void)
+{
+    long i1;
+    long e16;
+
+    i1 = (long)FUN_00358054();
+    FUN_00377824(0, *(word_t *)(i1 + 0x18), *(word_t *)(i1 + 0x10));
+    FUN_00350404();
+    ((code)(*(word_t *)(e16 + 0x10)))();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c7d8 @ 0x0028c7d8   (est. sk_swift_element_dispatch_cb)
+ * Ghidra: void FUN_0028c7d8(void)
+ * Wrapper to FUN_0028c808.
+ * Confidence: low. */
+void FUN_0028c7d8(word_t a1, word_t a2, word_t a3)
+{
+    (void)a1; (void)a2; (void)a3;
+    FUN_0028c808();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c7f0 @ 0x0028c7f0   (est. sk_swift_element_dispatch_cb2)
+ * Ghidra: void FUN_0028c7f0(void)
+ * Wrapper to FUN_0028c808.
+ * Confidence: low. */
+void FUN_0028c7f0(word_t a1, word_t a2, word_t a3)
+{
+    (void)a1; (void)a2; (void)a3;
+    FUN_0028c808();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c808 @ 0x0028c808   (est. sk_swift_element_dispatch_call)
+ * Ghidra: void FUN_0028c808(undefined8,undefined8,long,code*)
+ * Swift element dispatch call: gets the current TCB (FUN_000867ec), runs
+ * the callback on the element type (param3+0x18), and reports the result
+ * via FUN_00100efc.
+ * Confidence: low (Swift element dispatch; indirect callback). */
+void FUN_0028c808(word_t p1, word_t p2, long p3, code cb)
+{
+    code m8 = 0;
+    word_t x19 = 0;             /* unaff_x19 */
+    wpair_t v;
+
+    FUN_000867ec();
+    v.lo = (word_t)cb(*(word_t *)(p3 + 0x18));
+    FUN_00100efc(v.lo, v.lo, v.hi, *(word_t *)(x19 + 0x10));
+    if (m8) m8();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028c868 @ 0x0028c868   (est. sk_object_service_run_g)
+ * Ghidra: void FUN_0028c868(void)
+ * Object-service run variant: CPU, prelude + dispatch slots, method-table
+ * dispatch (FUN_00350bf0 / +0x10 / +0x20 / +8), and the epilogue
+ * FUN_0008e500.
+ * Confidence: low (object-service run; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_0034a3c4 / FUN_00377824 /
+ *   FUN_00348bf8 / FUN_003722e4 / FUN_00348d64 / FUN_003493c4 /
+ *   FUN_0034c2d8 / FUN_0034dbb8 / FUN_00377bec / FUN_0034da98 /
+ *   FUN_00310e08 / FUN_000a6f88 / FUN_0007c1a4 / FUN_00350428 /
+ *   FUN_003508e4 / FUN_0035063c / FUN_0034bdfc / FUN_00310b98 /
+ *   FUN_00351130 / FUN_00350bf0 / FUN_00352474 / FUN_0034ee48 /
+ *   FUN_0009e234 / FUN_003595d8 / FUN_00350c38 / FUN_00352eb4 /
+ *   FUN_00350600 / FUN_0034de34 / FUN_00351e54 / FUN_00351450 /
+ *   FUN_0008e500. */
+void FUN_0028c868(void)
+{
+    word_t u1, u3, u4, u5;
+    int i2;
+    word_t e8, e8_1;
+    code cb = 0;
+    long x9;
+    code m9 = 0;
+    long e16;
+    long l6;
+    code pc7 = 0, pc8 = 0;
+    long x20, x22, x23, x24;
+    wpair_t v9;
+
+    v9.lo = FUN_0008e518();
+    v9.hi = FUN_0008e518();
+    l6 = (long)v9.lo;
+    u5 = *(word_t *)(l6 + 0x10);
+    u1 = *(word_t *)(l6 + 0x18);
+    u3 = FUN_0034a3c4();
+    FUN_00377824(u3, u1);
+    FUN_00348bf8();
+    FUN_003722e4();
+    FUN_00348d64();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003493c4();
+    (*DAT_00658c00)();
+    FUN_0034c2d8();
+    FUN_0034dbb8(u1);
+    FUN_00377bec();
+    FUN_0034da98();
+    u3 = FUN_00310e08();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_00350428();
+    FUN_003508e4();
+    FUN_0035063c();
+    u4 = FUN_00377824();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034bdfc();
+    FUN_00310b98(u1);
+    FUN_00351130();
+    if (m9) m9();
+    i2 = *(int *)(l6 + 0x24);
+    l6 = *(long *)(x24 - 8);
+    pc7 = *(code *)(l6 + 0x10);
+    FUN_00350bf0();
+    if (pc7) pc7();
+    if (pc7) pc7(x22 + *(int *)(x23 + 0x30), x20 + i2);
+    FUN_00352474();
+    FUN_0034ee48();
+    if (m9) m9();
+    i2 = *(int *)(x23 + 0x30);
+    pc8 = *(code *)(l6 + 0x20);
+    FUN_0009e234();
+    if (pc8) pc8();
+    pc7 = *(code *)(l6 + 8);
+    if (pc7) pc7(x9 + i2);
+    ((code)(*(word_t *)(e16 + 0x20)))(x9, x22);
+    FUN_003595d8((long)*(int *)(x23 + 0x30));
+    if (pc8) pc8();
+    FUN_00350c38();
+    if (pc7) pc7();
+    FUN_00377bec(u1, u5, u4, (void *)0x60e208, (void *)0x60e220);
+    FUN_00352eb4();
+    FUN_00350600(e8, e8_1);
+    if (cb) cb();
+    u5 = FUN_0034de34();
+    if (cb) cb(u5, u3);
+    FUN_00351e54();
+    FUN_00351450();
+    if (cb) cb();
+    FUN_0008e500(v9.hi);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cb54 @ 0x0028cb54   (est. sk_swift_element_bind_cb)
+ * Ghidra: void FUN_0028cb54(void)
+ * Swift element bind callback: binds the element (FUN_0034c084 /
+ * FUN_00359490 / FUN_00353d94 / FUN_00352c1c) and dispatches.
+ * Confidence: low. */
+void FUN_0028cb54(void)
+{
+    word_t u1;
+    code cb = 0;
+    word_t x19 = 0;             /* unaff_x19 */
+
+    FUN_0034c084();
+    FUN_00359490();
+    u1 = FUN_00353d94();
+    FUN_00352c1c(u1, *(word_t *)(x19 + 0x10));
+    if (cb) cb();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cba8 @ 0x0028cba8   (est. sk_swift_string_emit_cb)
+ * Ghidra: void FUN_0028cba8(void)
+ * Swift string emit callback: runs FUN_0008409c / FUN_003584b4 and
+ * dispatches through FUN_00027818.
+ * Confidence: low. */
+void FUN_0028cba8(void)
+{
+    code cb = 0;
+
+    FUN_0008409c();
+    FUN_003584b4();
+    cb = (code)(uintptr_t)FUN_00027818();
+    if (cb) cb();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cc00 @ 0x0028cc00   (est. sk_swift_element_emit_cb)
+ * Ghidra: void FUN_0028cc00(undefined8,undefined8,long)
+ * Swift element emit callback: enters the service, binds the element
+ * (FUN_00349ef4 / FUN_0031afcc / FUN_0034cdd8), dispatches, and exits
+ * via FUN_00084234.
+ * Confidence: low (Swift element emit; indirect). */
+void FUN_0028cc00(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    code cb = 0;
+    word_t x19 = 0;             /* unaff_x19 */
+    word_t x30;
+    wpair_t v;
+
+    FUN_00084220();
+    FUN_00349ef4();
+    v.lo = FUN_0031afcc(*(word_t *)(p3 + 0x18));
+    FUN_0034cdd8(v.lo, v.hi, *(word_t *)(x19 + 0x10));
+    if (cb) cb();
+    FUN_00084234(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cc5c @ 0x0028cc5c   (est. sk_swift_string_emit)
+ * Ghidra: void FUN_0028cc5c(void)
+ * Swift string emit: enters the service, binds the string (FUN_00349944 /
+ * FUN_003192d8 / FUN_0034b508), dispatches, and exits via FUN_00084234.
+ * Confidence: low. */
+void FUN_0028cc5c(void)
+{
+    long x3;
+    code cb = 0;
+    word_t x30;
+
+    FUN_00084220();
+    FUN_00349944();
+    FUN_003192d8(*(word_t *)(x3 + 0x18));
+    FUN_0034b508();
+    if (cb) cb();
+    FUN_00084234(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028ccbc @ 0x0028ccbc   (est. sk_swift_element_emit_cb2)
+ * Ghidra: void FUN_0028ccbc(undefined8,undefined8,long)
+ * Swift element emit callback: TCB (FUN_000867ec), binds the element
+ * (FUN_0035647c), reports via FUN_00100efc, and dispatches.
+ * Confidence: low. */
+void FUN_0028ccbc(word_t p1, word_t p2, long p3)
+{
+    code cb = 0;
+    word_t x19 = 0;             /* unaff_x19 */
+    wpair_t v;
+
+    FUN_000867ec();
+    v.lo = FUN_0035647c(*(word_t *)(p3 + 0x18));
+    FUN_00100efc(v.lo, v.hi, *(word_t *)(x19 + 0x10));
+    if (cb) cb();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cd14 @ 0x0028cd14   (est. sk_swift_string_slice_dispatch)
+ * Ghidra: void FUN_0028cd14(undefined8 x5)
+ * Swift string slice dispatch: binds the element (FUN_00027754 /
+ * FUN_00310c44) and dispatches with the FUN_00343cac callback.
+ * Confidence: low (Swift string slice; indirect). */
+void FUN_0028cd14(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    word_t u1, u2;
+    code cb = 0;
+    uint8_t st90[16];
+    word_t l80, st78, l70;
+
+    u1 = *(word_t *)(p4 + 0x10);
+    l70 = *(word_t *)(p4 + 0x18);
+    l80 = u1;
+    st78 = p3;
+    u2 = FUN_00027754(l70);
+    cb = (code)(uintptr_t)FUN_00310c44();
+    if (cb) cb(p1, (code)(uintptr_t)FUN_00343cac, st90, p3, u1, u2);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d1fc @ 0x0028d1fc   (est. sk_swift_box_alloc3)
+ * Ghidra: undefined* FUN_0028d1fc(long*,undefined8,undefined8)
+ * Swift box alloc: allocates a 0x28-byte box (FUN_0036a908, tag 0xdfbf),
+ * initialises it via FUN_0028d270, stores the value at +0x20, returns
+ * the value metadata (DAT_003471a4).
+ * Confidence: low (Swift box alloc). */
+word_t *FUN_0028d1fc(long *box, word_t p2, word_t p3)
+{
+    long l1;
+    word_t u2;
+
+    l1 = (long)FUN_0036a908(0x28, 0xdfbf);
+    *box = l1;
+    u2 = (word_t)FUN_0028d270(l1, p2, p3);
+    *(word_t *)(l1 + 0x20) = u2;
+    return (word_t *)0x3471a4;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d270 @ 0x0028d270   (est. sk_swift_box_init3)
+ * Ghidra: undefined1[16] FUN_0028d270(long*,undefined8,long)
+ * Swift box init: fills the box header, allocates element storage
+ * (FUN_0036a908, tag 0x8eff), and initialises it via FUN_001ff258.
+ * Returns {&DAT_003471a8, storage}.
+ * Confidence: low (Swift box init). */
+uint8_t *FUN_0028d270(long *box, word_t p2, long p3)
+{
+    word_t u1;
+    long l2;
+    static uint8_t ret[16];
+
+    u1 = FUN_00027754(*(word_t *)(p3 + 0x18));
+    l2 = (long)FUN_00377824(0, u1, *(word_t *)(p3 + 0x10), (void *)0x611b24, (void *)0x611b34);
+    box[0] = l2;
+    l2 = *(long *)(l2 - 8);
+    box[1] = l2;
+    l2 = (long)FUN_0036a908(*(word_t *)(l2 + 0x40), 0x8eff);
+    box[2] = l2;
+    FUN_001ff258(l2, p2, p3);
+    *(word_t *)&ret[8] = (word_t)l2;
+    *(word_t *)&ret[0] = 0x3471a8;
+    return ret;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d344 @ 0x0028d344   (est. sk_swift_element_emit3)
+ * Ghidra: void FUN_0028d344(undefined8,long)
+ * Swift element emit: binds (FUN_0034a32c / FUN_00377824 /
+ * FUN_00352efc / FUN_00310d68 / FUN_0034b690) and reports via
+ * FUN_000839d8.
+ * Confidence: low. */
+void FUN_0028d344(word_t p1, long p2)
+{
+    word_t e8;
+
+    FUN_0034a32c(*(word_t *)(p2 + 0x18), p1, p2, *(word_t *)(p2 + 0x10));
+    FUN_00377824(0xff, e8);
+    FUN_00352efc();
+    FUN_00310d68();
+    FUN_0034b690();
+    FUN_000839d8();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d3f8 @ 0x0028d3f8   (est. sk_swift_string_slice_convert)
+ * Ghidra: undefined8 FUN_0028d3f8(long,undefined8,undefined8,long)
+ * Swift string slice convert: builds the string descriptor, runs the
+ * slice dispatch (FUN_0028cd14), and depending on the conversion flag
+ * either takes the direct path (FUN_00284424) or the buffer path
+ * (FUN_0021867c / FUN_0031090c / FUN_0028cc00); returns the converted
+ * value.
+ * Confidence: low (Swift string slice conversion; indirect).
+ * Notes: helpers FUN_00377824 / FUN_00027754 / FUN_0031e134 /
+ *   FUN_003722e4 / FUN_0028cd14 / FUN_00284424 / FUN_0021867c /
+ *   FUN_0031090c / FUN_0028cc00. */
+word_t FUN_0028d3f8(long p1, word_t p2, word_t p3, long p4)
+{
+    long l1, l2, l3, l5;
+    word_t u4, u6;
+    word_t ld0, stc8;
+    uint8_t stc0[16];
+    word_t lb0, sta8, la0, st98;
+    uint8_t st80[16];
+    word_t l70;
+    char l68;
+
+    u4 = *(word_t *)(p4 + 0x18);
+    stc8 = *(word_t *)(p4 + 0x18);
+    u6 = *(word_t *)(p4 + 0x10);
+    ld0 = u6;
+    l1 = (long)FUN_00377824(0, u4, u6, (void *)0x60e208, (void *)0x60e230);
+    l3 = *(long *)(l1 - 8);
+    (*DAT_00658c00)(*(long *)(l3 + 0x40) + 0xf & 0xfffffffffffffff0ull);
+    l5 = (long)&ld0 - 0;
+    sta8 = stc8;
+    lb0 = ld0;
+    la0 = p2;
+    st98 = p3;
+    u4 = FUN_00027754(u4);
+    u4 = FUN_00377824(0xff, u4, u6, (void *)0x611b24, (void *)0x611b34);
+    u4 = FUN_0031e134(0xff, u4);
+    u4 = FUN_003722e4(0, u4, 0x677880, 0, 0);
+    FUN_0028cd14((word_t)st80, (word_t)(uintptr_t)FUN_00343cf8, (word_t)stc0, (word_t)p4);
+    if (l68 == 1) {
+        l70 = FUN_00284424(p1, p2, p3, p4, 0x66dcc0);
+    } else {
+        FUN_0021867c(l5, p4);
+        l2 = (long)FUN_0031090c(0, p4, 0x66dc58);
+        FUN_0028cc00(p1 + *(int *)(l2 + 0x24), l5, l70, p4);
+        ((code)(*(word_t *)(l3 + 8)))(l5, l1);
+        ((code)(*(word_t *)(*(long *)(p4 - 8) + 0x20)))(p1);
+    }
+    return l70;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d628 @ 0x0028d628   (est. sk_swift_string_slice_dispatch2)
+ * Ghidra: void FUN_0028d628(undefined8 x4)
+ * Swift string slice dispatch wrapper: FUN_0028cd14 with swapped args.
+ * Confidence: low. */
+void FUN_0028d628(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    FUN_0028cd14(p1, p2, p4, p3);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d62c @ 0x0028d62c   (est. sk_swift_string_slice_dispatch3)
+ * Ghidra: void FUN_0028d62c(undefined8 x4)
+ * Duplicate of FUN_0028d628.
+ * Confidence: low. */
+void FUN_0028d62c(word_t p1, word_t p2, word_t p3, word_t p4)
+{
+    FUN_0028cd14(p1, p2, p4, p3);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d64c @ 0x0028d64c   (est. sk_swift_string_value_build)
+ * Ghidra: void FUN_0028d64c(undefined1(*)[16],undefined8 x7)
+ * Swift string value build: resolves the element type (FUN_00027754 /
+ * FUN_00377824), builds via FUN_0028d6e8, and stores the 16-byte value.
+ * Confidence: low (Swift string value build). */
+void FUN_0028d64c(uint8_t (*out)[16], word_t p2, word_t p3, word_t p4, word_t p5,
+                  word_t p6, word_t p7)
+{
+    word_t u1;
+    uint8_t av2[16];
+
+    u1 = FUN_00027754(p7);
+    u1 = FUN_00377824(0, u1, p6, (void *)0x611b24, (void *)0x611b34);
+    FUN_0028d6e8(p4, p5, p2, p3, u1);
+    memcpy(*out, av2, 16);
+    *(word_t *)out[1] = p2;
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d6e8 @ 0x0028d6e8   (est. sk_swift_string_value_alloc)
+ * Ghidra: void FUN_0028d6e8(void)
+ * Swift string value alloc: wrapper to FUN_0031ddfc.
+ * Confidence: low. */
+void FUN_0028d6e8(word_t a1, word_t a2, word_t a3, word_t a4, word_t a5)
+{
+    (void)a1; (void)a2; (void)a3; (void)a4; (void)a5;
+    FUN_0031ddfc();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d700 @ 0x0028d700   (est. sk_swift_string_emit4)
+ * Ghidra: void FUN_0028d700(undefined8 x3)
+ * Swift string emit: binds the string (FUN_00349ef4 / FUN_00354930 /
+ * FUN_00351888) and dispatches.
+ * Confidence: low. */
+void FUN_0028d700(word_t p1, word_t p2, word_t p3)
+{
+    word_t u1;
+    code cb = 0;
+    word_t x21 = 0;             /* unaff_x21 */
+
+    FUN_00349ef4();
+    u1 = FUN_00354930(p3);
+    FUN_00351888(u1, *(word_t *)(x21 + 0x10));
+    if (cb) cb();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d754 @ 0x0028d754   (est. sk_swift_string_emit5)
+ * Ghidra: void FUN_0028d754(undefined8 x3)
+ * Swift string emit: TCB (FUN_000867ec), binds the string (FUN_003196e8 /
+ * FUN_00351c88), and dispatches.
+ * Confidence: low. */
+void FUN_0028d754(word_t p1, word_t p2, word_t p3)
+{
+    word_t u1;
+    code cb = 0;
+    word_t x21 = 0;             /* unaff_x21 */
+
+    FUN_000867ec();
+    u1 = FUN_003196e8(p3);
+    FUN_00351c88(u1, u1, *(word_t *)(x21 + 0x10));
+    if (cb) cb();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028d7cc @ 0x0028d7cc   (est. sk_object_service_run_h)
+ * Ghidra: void FUN_0028d7cc(undefined8 x3)
+ * Object-service run variant: CPU, prelude + dispatch slots, method-table
+ * dispatch (FUN_00350bf0-style +0x10/+0x20/+8), and the epilogue
+ * FUN_0008e500.
+ * Confidence: low (object-service run; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_003514b8 / FUN_0034a3c4 /
+ *   FUN_003515fc / FUN_00377824 / FUN_0034b0b4 / FUN_00355adc /
+ *   FUN_003722e4 / FUN_00348e60 / FUN_003489c0 / FUN_0034c074 /
+ *   FUN_0034d130 / FUN_00377bec / FUN_0034e414 / FUN_00310e08 /
+ *   FUN_000a6f88 / FUN_0007c1a4 / FUN_0034b0c4 / FUN_003597b4 /
+ *   FUN_000b43d0 / FUN_00359594 / FUN_0035399c / FUN_003508a8 /
+ *   FUN_00351f4c / FUN_00351354 / FUN_0035a190 / FUN_003508f0 /
+ *   FUN_00350470 / FUN_0028c7d8 / FUN_00353154 / FUN_00351360 /
+ *   FUN_00356810 / FUN_00352ecc / FUN_0035949c / FUN_00351e3c /
+ *   FUN_00350df4 / FUN_00348b94 / FUN_00349530 / FUN_00351d00 /
+ *   FUN_0008e500. */
+void FUN_0028d7cc(word_t p1, word_t p2, word_t p3)
+{
+    int i1;
+    word_t u2, u5;
+    long l3, l4;
+    word_t e8, e8_1;
+    code cb = 0;
+    long e16, e16b, e16c;
+    long x20, x24, x26, x27;
+    word_t x30;
+    wpair_t v8, v9;
+    code pc6 = 0, pc7 = 0;
+
+    v8.lo = FUN_0008e518();
+    v8.hi = FUN_0008e518();
+    l4 = (long)v8.hi;
+    FUN_003514b8(p3);
+    u5 = *(word_t *)(l4 + 0x10);
+    FUN_0034a3c4();
+    FUN_003515fc();
+    u2 = FUN_00377824();
+    FUN_0034b0b4();
+    FUN_00355adc();
+    FUN_003722e4();
+    FUN_00348e60();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003489c0();
+    (*DAT_00658c00)();
+    FUN_0034c074();
+    FUN_0034d130();
+    FUN_00377bec();
+    FUN_0034e414();
+    l3 = (long)FUN_00310e08();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b0c4();
+    FUN_003597b4();
+    pc6 = *(code *)(e16b + 0x10);
+    v9.lo = FUN_000b43d0();
+    if (pc6) pc6(v9.lo, v9.hi, u2);
+    FUN_00359594();
+    if (pc6) pc6();
+    FUN_0035399c();
+    FUN_003508a8();
+    FUN_00351f4c();
+    if (cb) cb();
+    i1 = *(int *)(x26 + 0x30);
+    pc7 = *(code *)(e16b + 0x20);
+    v9.lo = FUN_00351354();
+    if (pc7) pc7(v9.lo, v9.hi, u2);
+    pc6 = *(code *)(e16b + 8);
+    if (pc6) pc6(x27 + i1, u2);
+    FUN_0035a190(*(word_t *)(e16 + 0x20));
+    if (cb) cb();
+    if (pc7) pc7(x24 + *(int *)(l3 + 0x24), x27 + *(int *)(x20 + 0x30), u2);
+    FUN_003508f0();
+    if (pc6) pc6();
+    v9.lo = FUN_00350470();
+    FUN_0028c7d8(v9.lo, v9.hi, l4);
+    FUN_00353154();
+    FUN_00351360();
+    if (cb) cb();
+    i1 = *(int *)(l4 + 0x28);
+    FUN_00356810();
+    FUN_00352ecc();
+    u2 = FUN_0035949c();
+    FUN_00351e3c(u2, v8.lo);
+    if (cb) cb();
+    FUN_00350df4();
+    v8.lo = FUN_00348b94();
+    FUN_00377824(v8.lo, v8.hi, u5);
+    FUN_00349530();
+    ((code)(*(word_t *)(e16c + 0x10)))(e8, (code)(long)i1 + x20);
+    FUN_00351d00();
+    ((code)(long)i1)();
+    FUN_0008e500(x30);
 }

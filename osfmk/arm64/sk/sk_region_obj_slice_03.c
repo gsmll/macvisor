@@ -33,6 +33,9 @@ typedef union {
     uint8_t b[16];
 } sk_word16_t;
 
+typedef unsigned int uint;
+
+
 /* Fatal Swift runtime error (noreturn). Signature follows the decompiled call. */
 extern void sk_fatal_error(unsigned long, unsigned long, ...) __attribute__((noreturn)); /* FUN_001afe4c */
 #define SK_FATAL(code,msg,msglen,type,typlen) \
@@ -335,15 +338,255 @@ extern sk_word16_t FUN_003507e0();
 extern sk_word16_t FUN_003504ac();
 extern sk_word16_t FUN_00350c80();
 
+extern sk_word16_t FUN_00353a24();
+
+extern sk_word16_t FUN_0018de98();
+
+extern sk_word16_t FUN_0035298c();
+
+extern sk_word16_t FUN_00319338();
+
+extern sk_word16_t FUN_0031be18();
+
+extern sk_word16_t FUN_00354300();
+
+extern sk_word16_t FUN_00350df4();
+
+extern sk_word16_t FUN_001afe4c();
+
+extern sk_word16_t FUN_002a6efc();
+
+
+extern sk_word16_t FUN_00344e54();
+extern sk_word16_t FUN_00349fcc();
+extern sk_word16_t FUN_0034ba28();
+extern sk_word16_t FUN_00350470();
+extern sk_word16_t FUN_00353590();
+extern sk_word16_t FUN_00359a30();
+extern uint64_t DAT_004f2240;
+
+
+extern sk_word16_t FUN_00358da0();
+extern sk_word16_t FUN_003518c4();
+extern sk_word16_t FUN_003516cc();
+extern sk_word16_t FUN_00348e18();
+extern sk_word16_t FUN_00351444();
+extern sk_word16_t FUN_003509e0();
+extern sk_word16_t FUN_003508cc();
+extern sk_word16_t FUN_00351654();
+
+
+extern sk_word16_t FUN_0029ea8c();
+extern sk_word16_t FUN_0031e030();
+extern sk_word16_t FUN_00348ce8();
+extern sk_word16_t FUN_00349720();
+extern sk_word16_t FUN_0034c444();
+extern sk_word16_t FUN_00351750();
+
+
+extern sk_word16_t FUN_00355770();
+extern sk_word16_t FUN_00355814();
+extern sk_word16_t FUN_00359fc0();
+
+
+extern sk_word16_t FUN_000bd3a4();
+extern sk_word16_t FUN_00100efc();
+extern sk_word16_t FUN_003194f8();
+extern sk_word16_t FUN_0031e2e0();
+extern sk_word16_t FUN_00348f50();
+extern sk_word16_t FUN_0034ef78();
+extern sk_word16_t FUN_0035047c();
+extern sk_word16_t FUN_00351984();
+extern sk_word16_t FUN_00353274();
+
+extern sk_word16_t FUN_00267820();
+extern sk_word16_t FUN_00310c44();
+extern sk_word16_t FUN_0031b46c();
+extern sk_word16_t FUN_0031b49c();
+extern sk_word16_t FUN_00346d38();
+extern sk_word16_t FUN_003493d8();
+extern sk_word16_t FUN_0034a6b0();
+extern sk_word16_t FUN_0034aebc();
+extern sk_word16_t FUN_00350b54();
+extern sk_word16_t FUN_003510a0();
+extern sk_word16_t FUN_003510c4();
+extern sk_word16_t FUN_00352480();
+extern sk_word16_t FUN_003542dc();
+extern sk_word16_t FUN_003551f8();
+extern sk_word16_t FUN_00356048();
+extern sk_word16_t FUN_00359208();
+extern sk_word16_t FUN_003598a0();
+extern sk_word16_t FUN_0035b67c();
+extern sk_word16_t FUN_0036b6ac();
+extern sk_word16_t FUN_0039a128();
+extern sk_word16_t FUN_003d3550();
+
+
+
+extern void FUN_002a7268();
+extern void FUN_002a72e4();
+extern void FUN_002a74f8();
+extern uint64_t FUN_002a782c();
+extern uint64_t FUN_002a7c00();
+extern sk_word16_t FUN_002a7f58();
+extern void FUN_002a82cc();
+extern void FUN_002a8870();
+extern void FUN_002a88bc();
+extern void FUN_002a8954();
+extern void FUN_002a8a88();
+extern void FUN_002a8ca0();
+extern void FUN_002a8d04();
+extern void FUN_002a8e28();
+extern void FUN_002a8f40();
+extern void FUN_002a919c();
+extern void FUN_002a92b8();
+extern void FUN_002a93b8();
+extern void FUN_002a95b4();
+extern void FUN_002a999c();
+extern void FUN_002a9a88();
+extern void FUN_002a9b7c();
+extern sk_word16_t FUN_002a9b9c();
+extern sk_word16_t FUN_002a9ba8();
+extern void FUN_002a9bd0();
+extern void FUN_002a9c14();
+extern sk_word16_t FUN_002a9d64();
+extern sk_word16_t FUN_002a9f3c();
+extern void FUN_002aa154();
+extern void FUN_002aa2a0();
+extern void FUN_002aa55c();
+extern void FUN_002aa584();
+extern void FUN_002aa5e8();
+extern sk_word16_t FUN_002aa62c();
+extern sk_word16_t FUN_002aa68c();
+extern sk_word16_t FUN_002aaae4();
+extern void FUN_002aab54();
+extern uint64_t FUN_002aacf8();
+extern void FUN_002aadb8();
+extern uint64_t FUN_002aadf0();
+extern void FUN_002aae80();
+extern uint64_t FUN_002aaeb8();
+extern void FUN_002aaf60();
+extern void FUN_002aaf64();
+extern uint64_t FUN_002aaf80();
+extern void FUN_002ab058();
+extern sk_word16_t FUN_002ab130();
+extern sk_word16_t FUN_002ab220();
+extern sk_word16_t FUN_002ab2d4();
+extern sk_word16_t FUN_002ab388();
+extern uint64_t FUN_002ab49c();
+extern uint64_t FUN_002ab4d4();
+extern void FUN_002ab5bc();
+extern void FUN_002ab6a0();
+extern sk_word16_t FUN_002ab778();
+extern void FUN_002ab7f0();
+extern sk_word16_t FUN_002ab8ac();
+extern void FUN_002ab984();
+extern void FUN_002ab9e0();
+extern void FUN_002aba18();
+extern void FUN_002aba8c();
+extern uint64_t FUN_002abcb0();
+extern void FUN_002abda8();
+extern uint64_t FUN_002abe60();
+extern void FUN_002abf50();
+extern void FUN_002ac024();
+extern void FUN_002ac0d8();
+extern void FUN_002ac168();
+extern void FUN_002ac214();
+extern sk_word16_t FUN_002ac260();
+extern void FUN_002ac3bc();
+extern void FUN_002ac73c();
+extern void FUN_002ac764();
+extern void FUN_002ac768();
+extern void FUN_002ac784();
+extern void FUN_002ac828();
+extern sk_word16_t FUN_002ac854();
+extern void FUN_002ac99c();
+extern void FUN_002aca00();
+extern void FUN_002acbb8();
+extern void FUN_002acc20();
+extern void FUN_002acd30();
+extern void FUN_002ace24();
+extern void FUN_002acfbc();
+extern void FUN_002acfc0();
+extern void FUN_002acfe0();
+extern void FUN_002acfe4();
+extern void FUN_002ad02c();
+extern void FUN_002ad060();
+extern void FUN_002ad088();
+extern void FUN_002ad0d4();
+extern void FUN_002ad10c();
+extern void FUN_002ad1a0();
+extern void FUN_002ad1c8();
+extern void FUN_002ad1f8();
+extern void FUN_002ad1fc();
+extern void FUN_002ad228();
+extern void FUN_002ad274();
+extern void FUN_002ad2c4();
+extern void FUN_002ad310();
+extern void FUN_002ad358();
+extern int64_t FUN_002ad3a8();
+extern void FUN_002ad450();
+extern void FUN_002ad454();
+extern uint64_t FUN_002ad480();
+extern void FUN_002ad4d8();
+extern void FUN_002ad4dc();
+extern uint64_t FUN_002ad4fc();
+extern void FUN_002ad608();
+extern sk_word16_t FUN_002ad62c();
+extern void FUN_002ad668();
+extern void FUN_002ad66c();
+extern void FUN_002ad68c();
+extern void FUN_002ad6d8();
+extern void FUN_002ad6dc();
+extern uint64_t FUN_002ad700();
+extern void FUN_002ad78c();
+extern void FUN_002ad95c();
+extern void FUN_002ada34();
+extern void FUN_002adcf8();
+extern void FUN_002add28();
+extern void FUN_002add84();
+extern void FUN_002addc0();
+extern uint64_t FUN_002ade9c();
+extern void FUN_002adf54();
+extern uint64_t FUN_002adfb4();
+extern uint32_t FUN_002ae028();
+extern sk_word16_t FUN_002ae098();
+extern sk_word16_t FUN_002ae1ac();
+extern sk_word16_t FUN_002ae2c0();
+extern void FUN_002ae6d4();
+extern void FUN_002ae818();
+extern void FUN_002ae858();
+extern sk_word16_t FUN_002ae880();
+extern void FUN_002aea60();
+extern void FUN_002aeaa0();
+extern void FUN_002aead0();
+extern void FUN_002aead4();
+extern void FUN_002aeb14();
+extern void FUN_002aeb18();
+extern void FUN_002aeb30();
+extern void FUN_002aebe0();
+extern void FUN_002aeca8();
+extern void FUN_002aecf0();
+extern void FUN_002af068();
+extern void FUN_002af0d0();
+extern void FUN_002af138();
+extern void FUN_002af19c();
+extern void FUN_002af214();
+extern void FUN_002af24c();
+extern void FUN_002af27c();
+extern void FUN_002af2ac();
+extern void FUN_002af2b0();
+extern uint64_t FUN_002af2c4();
+extern sk_word16_t FUN_002af340();
+extern void FUN_002af40c();
+extern void FUN_002af444();
+
 /* Out-of-slice String/Collection helpers. */
 extern sk_word16_t FUN_00209928();
 extern sk_word16_t FUN_002093d4();
 extern sk_word16_t FUN_001e3f70();
 extern sk_word16_t FUN_001d95f4();
 extern sk_word16_t FUN_002a2f60();
-extern sk_word16_t FUN_002a9ba8();
-extern sk_word16_t FUN_002ab8ac();
-extern sk_word16_t FUN_002ad62c();
 extern sk_word16_t FUN_002a2bb0();
 extern sk_word16_t FUN_002a4c98();
 extern sk_word16_t FUN_002a49d4();
@@ -353,7 +596,6 @@ extern sk_word16_t FUN_002a49a8();
 extern sk_word16_t FUN_002a66f0();
 extern sk_word16_t FUN_002a6900();
 extern sk_word16_t FUN_002a6a18();
-extern sk_word16_t FUN_002a8f40();
 extern sk_word16_t FUN_002a539c();
 extern sk_word16_t FUN_002a5400();
 extern sk_word16_t FUN_002a55c0();
@@ -481,9 +723,9 @@ extern void thunk_FUN_0036b270();
 extern void thunk_FUN_002acbb8();
 extern void thunk_FUN_002298d4();
 extern void thunk_FUN_00200b38();
-extern void thunk_FUN_001ed960();
+extern sk_word16_t thunk_FUN_001ed960();
 extern void thunk_FUN_002a2698();
-extern void thunk_FUN_000126e8();
+extern sk_word16_t thunk_FUN_000126e8();
 
 /* Shared globals / dispatch pointer. */
 extern uint64_t (*DAT_00658c00)();
@@ -511,6 +753,10 @@ extern uint64_t DAT_00611b24;
 extern uint64_t DAT_00612600;
 extern uint64_t DAT_005d32c2;
 extern uint64_t DAT_005d32c4;
+extern uint64_t DAT_005a3680;
+extern uint64_t DAT_002ada30;
+extern uint64_t LAB_00657688;
+extern uint64_t DAT_00657680;
 extern uint64_t LAB_0027ccec;
 extern uint64_t LAB_003243b0;
 extern uint64_t LAB_00657690;
@@ -535,6 +781,170 @@ extern uint64_t s_Swift_UnicodeScalar_swift_005cfe00;
 extern uint64_t s_UnsafeMutableRawPointer_initiali_005d0820;
 extern uint64_t s_UnsafeMutableRawPointer_initiali_005d0860;
 extern uint64_t s_Swift_UnicodeHelpers_swift_005ce730;
+
+/* ------------------------------------------------------------------ *
+ * Per-cpu container slot base (the decompiler's *unaff_x20): a pointer to a
+ * 16-byte {lo,hi} word-pair slot threaded through the Swift runtime calls. */
+extern uint64_t *base_slot(void);
+
+/* In-slice forward declarations (functions defined in this file). */
+extern void   sk_swift_kind_dispatch_guard(void);
+extern void   sk_swift_string_unicode_advance(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_obj_service_dispatch(uint64_t, uint64_t, uint64_t);
+extern uint64_t sk_swift_string_append(uint64_t, uint64_t, uint64_t, uint64_t);
+extern uint64_t sk_swift_string_append_empty(uint64_t, uint64_t);
+extern sk_word16_t sk_swift_substring_slice(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_literal_build(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_grow_check(uint64_t);
+extern void   sk_swift_utf8_append_validated(void);
+extern void   sk_swift_utf8_append_ascii_loop(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_multibyte_loop(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_simple(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_params(uint64_t, uint64_t, uint64_t *, uint64_t);
+extern void   sk_swift_utf8_append_refs(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_unicode_scalar_encode(uint64_t, uint64_t, uint32_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_wide(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_ascii(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_utf8_append_builder(void);
+extern void   sk_swift_string_advance_end(void);
+extern void   sk_swift_string_scalar_count(void);
+extern void   sk_swift_obj_release_pair(void);
+extern void   sk_swift_obj_release_single(void);
+extern sk_word16_t sk_swift_string_storage_base(uint64_t, uint64_t);
+extern sk_word16_t sk_swift_string_resolve_storage(void);
+extern void   sk_swift_closure_invoke(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_range_merge(void);
+extern sk_word16_t sk_swift_string_index_offset(uint64_t, uint64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_string_index_step(uint64_t, int64_t, uint64_t, uint64_t);
+extern void   sk_swift_task_descriptor_build(void);
+extern void   sk_swift_string_split_whitespace(void);
+extern void   sk_swift_index_emit_word(uint64_t, uint64_t);
+extern void   sk_swift_utf8_emit_validated(void);
+extern void   sk_swift_utf8_emit_state(void);
+extern sk_word16_t sk_swift_uint_radix_label(uint64_t);
+extern sk_word16_t sk_swift_uint_description(uint64_t);
+extern sk_word16_t sk_swift_dictionary_lookup_guard(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_iterate_lines(void);
+extern uint64_t sk_swift_string_has_prefix(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_obj_release_pair2(void);
+extern uint64_t sk_swift_string_grown_index(void);
+extern void   sk_swift_obj_release_pair3(void);
+extern uint64_t sk_swift_string_grown_index2(void);
+extern void   sk_swift_string_index_emit_a(void);
+extern void   sk_swift_string_index_emit_b(void);
+extern uint64_t sk_swift_string_index_resolve(void);
+extern void   sk_swift_string_prefix_emit(void);
+extern sk_word16_t sk_swift_string_index_validate(uint64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_substring_index_validate(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_substring_index_validate_closed(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_substring_index_range_validate(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern uint64_t sk_swift_string_index_repack(uint64_t);
+extern uint64_t sk_swift_substring_index_repack(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_index_range_commit(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_prefix_emit2(void);
+extern sk_word16_t sk_swift_string_index_validate_inline(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_range_emit(void);
+extern sk_word16_t sk_swift_string_buffer_reserve(void);
+extern void   sk_swift_string_describe(void);
+extern void   sk_swift_string_new_builtin(sk_word16_t *);
+extern void   sk_swift_string_init_hash(void);
+extern void   sk_swift_string_hash_finalize(void);
+extern uint64_t sk_swift_string_contains_char(uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_canonicalize(void);
+extern uint64_t sk_swift_string_has_scalar(uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_canonicalize_scalar(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_contains_char2(uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_sha_compress_block(uint8_t *, int64_t, uint64_t *);
+extern void   sk_swift_array_append_bytes(uint64_t);
+extern void   sk_swift_array_for_each(uint64_t);
+extern sk_word16_t sk_swift_utf8_validate_and_advance(void);
+extern void   sk_swift_obj_service_rethrow(sk_word16_t *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_obj_new_error(sk_word16_t *);
+extern void   sk_swift_string_append_refs2(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_append_refs3(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_append_literal(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_new_empty(sk_word16_t *);
+extern sk_word16_t sk_swift_array_release_pair(uint64_t);
+extern void   sk_swift_obj_service_dispatch2(uint64_t);
+extern void   sk_swift_obj_service_dispatch3(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_obj_release_slot(void);
+extern void   sk_swift_string_op_dispatch(void);
+extern void   sk_swift_string_op_dispatch2(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_next_scalar(void);
+extern void   sk_swift_string_append_scalar_a(uint64_t, uint64_t);
+extern void   sk_swift_string_append_scalar_b(uint64_t, uint64_t);
+extern void   sk_swift_string_release_a(uint64_t);
+extern void   sk_swift_string_release_b(uint64_t);
+extern void   sk_swift_string_new_substr(sk_word16_t *, uint64_t *, uint64_t);
+extern void   sk_swift_string_op_pair(sk_word16_t *);
+extern void   sk_swift_string_release_slot(uint64_t *);
+extern void   sk_swift_string_release_substr(uint64_t *, uint64_t *);
+extern void   sk_swift_string_op_dispatch3(uint64_t, uint64_t *, uint64_t);
+extern void   sk_swift_string_new_from_ptr(sk_word16_t *);
+extern void   sk_swift_string_new_utf8(sk_word16_t *);
+extern void   sk_swift_string_copy_a(void);
+extern void   sk_swift_string_copy_b(void);
+extern void   sk_swift_string_fail_index(void);
+extern void   sk_swift_string_fail_bounds_a(void);
+extern void   sk_swift_string_fail_bounds_b(void);
+extern void   sk_swift_fatal_range_0x168(void);
+extern void   sk_swift_fatal_range_0x16d(void);
+extern int64_t sk_swift_float_to_int(void);
+extern void   sk_swift_array_element_ptr(void);
+extern void   sk_swift_array_element_ptr2(void);
+extern uint64_t sk_swift_array_element_ptr_resolve(void);
+extern void   sk_swift_array_release_header_a(void);
+extern void   sk_swift_array_release_header_b(void);
+extern uint64_t sk_swift_string_init_buffer(int64_t, uint64_t);
+extern void   sk_swift_array_append_byte(uint64_t, uint8_t);
+extern sk_word16_t sk_swift_string_byte_extent(uint64_t, uint64_t);
+extern void   sk_swift_string_meta_release_a(void);
+extern void   sk_swift_string_meta_release_b(void);
+extern void   sk_swift_string_meta_release_full(void);
+extern void   sk_swift_string_meta_release_full2_a(void);
+extern void   sk_swift_string_meta_release_full2_b(void);
+extern uint64_t sk_swift_dict_lookup_or_create(void);
+extern void   sk_swift_dict_find_slot(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_dict_lookup_index(void);
+extern void   sk_swift_dict_rebuild_slots(void);
+extern void   sk_swift_dict_sync_buckets(void);
+extern void   sk_swift_dict_set_capacity(uint64_t, uint8_t);
+extern void   sk_swift_dict_new_bucket(uint64_t);
+extern void   sk_swift_dict_new_bucket_desc(void);
+extern uint64_t sk_swift_unsafe_rawpointer_init(uint64_t, uint64_t, int64_t, uint64_t, uint64_t);
+extern void   sk_swift_unsafe_rawpointer_store(uint8_t, uint64_t, int64_t, int64_t);
+extern uint64_t sk_swift_string_scalar_advance(void);
+extern uint32_t sk_swift_utf8_char_width(int64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_utf8_next_char(void);
+extern sk_word16_t sk_swift_utf8_decode_char(int64_t, uint64_t, uint64_t);
+extern sk_word16_t sk_swift_string_scalar_prev(uint64_t, int64_t, uint64_t, uint64_t *, uint64_t);
+extern void   sk_swift_string_scalar_prev_one(uint64_t *);
+extern void   sk_swift_string_scalar_next(void);
+extern void   sk_swift_string_scalar_step(void);
+extern sk_word16_t sk_swift_unicode_scalar_decode(uint32_t *, uint64_t *);
+extern void   sk_swift_string_normalize(void);
+extern void   sk_swift_string_append_guard(void);
+extern void   sk_swift_string_offset_apply_a(void);
+extern void   sk_swift_string_offset_apply_b(void);
+extern void   sk_swift_string_finalize_a(void);
+extern void   sk_swift_string_finalize_b(void);
+extern void   sk_swift_string_scalar_next_index(uint64_t *, uint64_t *);
+extern void   sk_swift_string_scalar_next_index2(uint64_t *);
+extern void   sk_swift_string_append_closure(uint64_t, uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_unicode_scalar_next(uint32_t *);
+extern void   sk_swift_string_append_desc(void);
+extern void   sk_swift_string_builder_commit(void);
+extern void   sk_swift_string_new_from_flag(sk_word16_t *, uint32_t *);
+extern void   sk_swift_string_commit2(void);
+extern void   sk_swift_string_index_fetch(uint32_t *, uint64_t *);
+extern void   sk_swift_string_index_fetch2(uint32_t *);
+extern void   sk_swift_string_index_fetch3(uint32_t *);
+extern void   sk_swift_string_index_copy_a(void);
+extern void   sk_swift_string_index_copy_b(void);
+extern uint64_t sk_swift_string_index_resolve2(void);
+extern sk_word16_t sk_swift_string_is_scalar_boundary(uint64_t, uint64_t, uint64_t);
+extern void   sk_swift_string_dispatch_guard2(void);
+extern void   sk_swift_string_op_guard(uint64_t, uint64_t);
 
 /* ================================================================== *
  * FUNCTIONS IN ADDRESS ORDER (0x2a7268-0x2af444)
@@ -775,9 +1185,11 @@ uint64_t sk_swift_string_append(uint64_t p1, uint64_t p2, uint64_t hi, uint64_t 
         uint64_t hw = 0, lw = 0xe000000000000000;
         sk_word16_t d = FUN_002a49d4(sLo, sHi);
         uint64_t len = d.lo;
-        if (((d.b[4] & 0xff) != 1 && 0xf < len) &&
-            ((sk_word16_t)t2 = FUN_002a4a2c(), (t2.b[4] & 0xff) == 1 || t2.lo < len)) {
-            FUN_002a4ab4(len);
+        if ((d.b[4] & 0xff) != 1 && 0xf < len) {
+            sk_word16_t t2 = FUN_002a4a2c();
+            if ((t2.b[4] & 0xff) == 1 || t2.lo < len) {
+                FUN_002a4ab4(len);
+            }
         }
         sk_word16_t r = FUN_002ab8ac(0xf, p1, sLo, sHi, 0xd2, 0x50);
         FUN_003a25e0(sHi, 2);
@@ -869,9 +1281,11 @@ uint64_t sk_swift_string_append_empty(uint64_t p1, uint64_t p2)
     }
     sk_word16_t d = FUN_002a49d4(sLo, sHi);
     uint64_t len = d.lo;
-    if (((d.b[4] & 0xff) != 1 && 0xf < len) &&
-        ((sk_word16_t)t2 = FUN_002a4a2c(), (t2.b[4] & 0xff) == 1 || t2.lo < len)) {
-        FUN_002a4ab4(len);
+    if ((d.b[4] & 0xff) != 1 && 0xf < len) {
+        sk_word16_t t2 = FUN_002a4a2c();
+        if ((t2.b[4] & 0xff) == 1 || t2.lo < len) {
+            FUN_002a4ab4(len);
+        }
     }
     sk_word16_t r = FUN_002ab8ac(0xf, p1, sLo, sHi, 0xd2, 0x50);
     FUN_003a25e0(sHi, 2);
@@ -982,9 +1396,11 @@ sk_word16_t sk_swift_substring_slice(uint64_t lo, uint64_t hi, uint64_t p3)
     }
     sk_word16_t d = FUN_002a49d4(sLo, sHi);
     uint64_t len = d.lo;
-    if (((d.b[4] & 0xff) != 1 && 0xf < len) &&
-        ((sk_word16_t)t = FUN_002a4a2c(), (t.b[4] & 0xff) == 1 || t.lo < len)) {
-        FUN_002a4ab4(len);
+    if ((d.b[4] & 0xff) != 1 && 0xf < len) {
+        sk_word16_t t = FUN_002a4a2c();
+        if ((t.b[4] & 0xff) == 1 || t.lo < len) {
+            FUN_002a4ab4(len);
+        }
     }
     sk_word16_t r = FUN_002ab8ac(0xf, lo, sLo, sHi, 0xd2, 0x50);
     FUN_003a25e0(sHi, 2);
@@ -1051,6 +1467,7 @@ void sk_swift_string_literal_build(uint64_t p1, uint64_t p2, uint64_t p3, uint64
     sk_word16_t f = FUN_0008e518();
     uint64_t u11 = f.hi;
     uint64_t u4 = f.lo;
+    uint64_t l30 = 0, l28 = 0, l18 = 0;
     FUN_00351bec(p5);
     FUN_00350318();
     FUN_00319320();
@@ -1076,7 +1493,7 @@ void sk_swift_string_literal_build(uint64_t p1, uint64_t p2, uint64_t p3, uint64
     uint64_t u9 = slot[1];
     if ((((*slot & (u9 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0) ||
         (FUN_003a261c(u9 & 0xfffffffffffffff).lo == 0)) {
-        uint64_t l30 = 0, l28 = 0xe000000000000000;
+        l30 = 0; l28 = 0xe000000000000000;
         FUN_00350a34();
         FUN_002a49d4();
         uint64_t u7 = FUN_00351db4().lo;
@@ -1313,11 +1730,11 @@ loop_top:
         }
         uint64_t c6 = FUN_00255324(l8, u12).lo;
         uint64_t u1 = 3;
-        if (0xffff < u11) { u1 = 4; }
+        if (0xffff < u12) { u1 = 4; }
         uint64_t u2 = 2;
-        if (0x7ff < u11) { u2 = u1; }
+        if (0x7ff < u12) { u2 = u1; }
         u1 = 1;
-        if (0x7f < u11) { u1 = u2; }
+        if (0x7f < u12) { u1 = u2; }
         sk_word16_t g = FUN_0026bd30(0, u1);
         FUN_001d2d1c(l8, g.lo, g.hi);
         l8 = l8 + 1;
@@ -1632,7 +2049,8 @@ void sk_swift_string_advance_end(void)
     FUN_00350a10();
     uint64_t u5 = FUN_00353e50().lo;
     uint64_t u12 = x21[1];
-    if (((u12 >> 0x3c & 1) == 0) || (uint64_t u14 = x21[0], (u14 >> 0x3b & 1) != 0)) {
+    uint64_t u14 = x21[0];
+    if (((u12 >> 0x3c & 1) == 0) || ((u14 >> 0x3b & 1) != 0)) {
         /* ASCII / small-string advance */
         uint64_t cur = *(uint64_t *)base_slot();
         uint64_t u13 = cur >> 0x10;
@@ -1797,9 +2215,12 @@ void sk_swift_obj_release_single(void)
  * buffer described by `param_2`'s low 52 bits.
  * Confidence: medium
  * Notes: Swift String storage base fetch. */
-uint64_t sk_swift_string_storage_base(uint64_t a, uint64_t b)
+sk_word16_t sk_swift_string_storage_base(uint64_t a, uint64_t b)
 {
-    return *(uint64_t *)((b & 0xfffffffffffffff) + 0x18);
+    sk_word16_t r;
+    r.lo = *(uint64_t *)((b & 0xfffffffffffffff) + 0x18);
+    r.hi = 0;
+    return r;
 }
 
 /* FUN_002a9ba8 @ 0x002a9ba8   (est. sk_swift_string_resolve_storage)
@@ -1809,9 +2230,12 @@ uint64_t sk_swift_string_storage_base(uint64_t a, uint64_t b)
  * every small-string path in this slice.
  * Confidence: medium
  * Notes: in-slice helper; returns the storage word (lo). */
-void sk_swift_string_resolve_storage(void)
+sk_word16_t sk_swift_string_resolve_storage(void)
 {
-    FUN_002a9b9c();
+    sk_word16_t r;
+    r.lo = FUN_002a9b9c().lo;
+    r.hi = 0;
+    return r;
 }
 
 /* FUN_002a9bd0 @ 0x002a9bd0   (est. sk_swift_closure_invoke)
@@ -1871,7 +2295,7 @@ void sk_swift_range_merge(void)
  * overrun. Returns the packed encoded-index word.
  * Confidence: medium
  * Notes: SK_FATAL 0xce/0xc9 (StringUnicodeScalarView index). */
-uint64_t sk_swift_string_index_offset(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+sk_word16_t sk_swift_string_index_offset(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
     uint64_t u6 = 0;
     sk_word16_t r = FUN_002ab130(p1, p3, p4);
@@ -1881,13 +2305,15 @@ uint64_t sk_swift_string_index_offset(uint64_t p1, uint64_t p2, uint64_t p3, uin
     if (pu >> 0xe < u15) {
         uint64_t l16 = 0;
         uint64_t l9 = (p4 & 0xfffffffffffffff) + 0x20;
+        uint64_t u14 = 0;
+        uint32_t u11 = 0;
         do {
             u6 = l16 + 1;
             if ((p4 >> 0x3c & 1) != 0) {
                 FUN_002a49a8();
                 goto fatal_unicode;
             }
-            uint64_t u14 = pu >> 0x10;
+            u14 = pu >> 0x10;
             uint64_t bptr;
             if ((p4 >> 0x3d & 1) == 0) {
                 bptr = l9;
@@ -1900,7 +2326,7 @@ uint64_t sk_swift_string_index_offset(uint64_t p1, uint64_t p2, uint64_t p3, uin
                 l9 = (uint64_t)(uintptr_t)&p3;
             }
             uint8_t b1 = *(uint8_t *)(l9 + u14);
-            uint32_t u11 = 31 - __builtin_clz((uint32_t)b1 << 0x18 ^ 0xffffffff);
+            u11 = 31 - __builtin_clz((uint32_t)b1 << 0x18 ^ 0xffffffff);
             if ((int8_t)b1 >= 0) { u11 = 1; }
             pu = (u14 + u11) * 0x10000;
             l16 = l16 + 1;
@@ -1938,7 +2364,10 @@ uint64_t sk_swift_string_index_offset(uint64_t p1, uint64_t p2, uint64_t p3, uin
     else {
         u6 = 0;
     }
-    return u6;
+    sk_word16_t r_out;
+    r_out.lo = u6;
+    r_out.hi = 0;
+    return r_out;
 fatal_unicode:
     SK_FATAL(0xce, (unsigned long)&s_String_index_is_out_of_bounds_005ce6a0, 0x1d,
              (unsigned long)&s_Swift_StringUnicodeScalarView_sw_005ce6c0, 0x23);
@@ -1952,7 +2381,7 @@ fatal_unicode:
  * index-out-of-bounds fatal.
  * Confidence: medium
  * Notes: SK_FATAL 0xce/0xc9 (StringUnicodeScalarView). */
-uint64_t sk_swift_string_index_step(uint64_t p1, int64_t p2, uint64_t p3, uint64_t p4)
+sk_word16_t sk_swift_string_index_step(uint64_t p1, int64_t p2, uint64_t p3, uint64_t p4)
 {
     uint64_t u3 = FUN_002ab130(p1, p3, p4).lo;
     uint64_t u9 = u3;
@@ -1963,7 +2392,7 @@ uint64_t sk_swift_string_index_step(uint64_t p1, int64_t p2, uint64_t p3, uint64
             if (u9 == 0) goto fatal_idx_ce;
             if ((p4 >> 0x3c & 1) != 0) {
                 u9 = FUN_002ae098(u3, p3, p4).lo;
-                return u9 >> 0xe;
+                { sk_word16_t r2; r2.lo = u9 >> 0xe; r2.hi = 0; return r2; }
             }
             uint64_t l5;
             if ((p4 >> 0x3d & 1) == 0) {
@@ -2014,7 +2443,10 @@ uint64_t sk_swift_string_index_step(uint64_t p1, int64_t p2, uint64_t p3, uint64
             u9 = (u9 + u6) * 0x10000 | 5;
         }
     }
-    return u9;
+    sk_word16_t r;
+    r.lo = u9;
+    r.hi = 0;
+    return r;
 fatal_idx_ce:
     SK_FATAL(0xce, (unsigned long)&s_String_index_is_out_of_bounds_005ce6a0, 0x1d,
              (unsigned long)&s_Swift_StringUnicodeScalarView_sw_005ce6c0, 0x23);
@@ -2046,6 +2478,7 @@ void sk_swift_task_descriptor_build(void)
     FUN_00350618();
     FUN_00351444();
     uint64_t u2 = FUN_00377bec().lo;
+    uint8_t auStack_8[8];
     FUN_00351bec();
     FUN_0035156c();
     FUN_003509e0((uint64_t)&auStack_8);
@@ -2067,6 +2500,7 @@ void sk_swift_task_descriptor_build(void)
  * Notes: register-threaded Swift String split. */
 void sk_swift_string_split_whitespace(void)
 {
+    uint64_t local_18[2], local_8, local_20;
     sk_word16_t f = FUN_0008e518();
     sk_word16_t v = FUN_00351708();
     FUN_003516cc();
@@ -2143,6 +2577,7 @@ void sk_swift_utf8_emit_validated(void)
 void sk_swift_utf8_emit_state(void)
 {
     uint64_t u1 = *(uint64_t *)base_slot();
+    uint8_t auStack_68[72];
     FUN_001a84f4((uint64_t)&auStack_68);
     thunk_FUN_002298d4(u1 >> 0xe);
     FUN_001a8564();
@@ -2645,7 +3080,7 @@ done_prefix:
  * StringIndexValidation fatal on overrun. Returns the validated index word.
  * Confidence: medium
  * Notes: SK_FATAL 0xa5 (StringIndexValidation). */
-uint64_t sk_swift_string_index_validate(uint64_t idx, uint64_t sLo, uint64_t sHi)
+sk_word16_t sk_swift_string_index_validate(uint64_t idx, uint64_t sLo, uint64_t sHi)
 {
     uint64_t u2 = (sLo >> 0x3b) & 1;
     if ((sHi & 0x1000000000000000) == 0) { u2 = 1; }
@@ -2668,7 +3103,10 @@ uint64_t sk_swift_string_index_validate(uint64_t idx, uint64_t sLo, uint64_t sHi
                      (unsigned long)&s_Swift_StringIndexValidation_swif_005d32a0, 0x21);
         }
     }
-    return idx;
+    sk_word16_t r;
+    r.lo = idx;
+    r.hi = 0;
+    return r;
 }
 
 /* FUN_002ab220 @ 0x002ab220   (est. sk_swift_substring_index_validate)
@@ -2678,7 +3116,7 @@ uint64_t sk_swift_string_index_validate(uint64_t idx, uint64_t sLo, uint64_t sHi
  * out-of-bounds fatal otherwise.
  * Confidence: medium
  * Notes: SK_FATAL 0x41 (StringIndexValidation, Substring). */
-void sk_swift_substring_index_validate(uint64_t idx, uint64_t lo, uint64_t hi, uint64_t sLo, uint64_t sHi)
+sk_word16_t sk_swift_substring_index_validate(uint64_t idx, uint64_t lo, uint64_t hi, uint64_t sLo, uint64_t sHi)
 {
     uint64_t u1 = (sLo >> 0x3b) & 1;
     if ((sHi & 0x1000000000000000) == 0) { u1 = 1; }
@@ -2689,6 +3127,8 @@ void sk_swift_substring_index_validate(uint64_t idx, uint64_t lo, uint64_t hi, u
         SK_FATAL(0x41, (unsigned long)&s_Substring_index_is_out_of_bounds_005d0960, 0x20,
                  (unsigned long)&s_Swift_StringIndexValidation_swif_005d32a0, 0x21);
     }
+    sk_word16_t r; r.lo = 0; r.hi = 0;
+    return r;
 }
 
 /* FUN_002ab2d4 @ 0x002ab2d4   (est. sk_swift_substring_index_validate_closed)
@@ -2698,7 +3138,7 @@ void sk_swift_substring_index_validate(uint64_t idx, uint64_t lo, uint64_t hi, u
  * Runs the same fatal.
  * Confidence: medium
  * Notes: SK_FATAL 0x2b (StringIndexValidation, Substring). */
-void sk_swift_substring_index_validate_closed(uint64_t idx, uint64_t lo, uint64_t hi, uint64_t sLo, uint64_t sHi)
+sk_word16_t sk_swift_substring_index_validate_closed(uint64_t idx, uint64_t lo, uint64_t hi, uint64_t sLo, uint64_t sHi)
 {
     uint64_t u1 = (sLo >> 0x3b) & 1;
     if ((sHi & 0x1000000000000000) == 0) { u1 = 1; }
@@ -2709,6 +3149,8 @@ void sk_swift_substring_index_validate_closed(uint64_t idx, uint64_t lo, uint64_
         SK_FATAL(0x2b, (unsigned long)&s_Substring_index_is_out_of_bounds_005d0960, 0x20,
                  (unsigned long)&s_Swift_StringIndexValidation_swif_005d32a0, 0x21);
     }
+    sk_word16_t r; r.lo = 0; r.hi = 0;
+    return r;
 }
 
 /* FUN_002ab388 @ 0x002ab388   (est. sk_swift_substring_index_range_validate)
@@ -2872,7 +3314,7 @@ done_prefix2:
  * out-of-range via the shared fatal path.
  * Confidence: medium
  * Notes: SK_FATAL on bounds. */
-void sk_swift_string_index_validate_inline(uint64_t p1, uint64_t p2, uint64_t p3)
+sk_word16_t sk_swift_string_index_validate_inline(uint64_t p1, uint64_t p2, uint64_t p3)
 {
     FUN_0034b85c();
     bool small = (p3 & 0x1000000000000000) == 0;
@@ -2884,8 +3326,10 @@ void sk_swift_string_index_validate_inline(uint64_t p1, uint64_t p2, uint64_t p3
         FUN_0001da84();
     }
     uint64_t u2 = FUN_0034a260().lo;
+    sk_word16_t r;
     if (u2 >> 0x10 <= FUN_0034a260().lo) {
-        return;
+        r.lo = 0; r.hi = 0;
+        return r;
     }
     FUN_0035047c();
     FUN_00348974();
@@ -2938,7 +3382,7 @@ void sk_swift_string_range_emit(void)
  * reservation via FUN_0007c1c4. Traps on out-of-range.
  * Confidence: medium
  * Notes: in-slice; the Swift buffer reserve path. */
-void sk_swift_string_buffer_reserve(void)
+sk_word16_t sk_swift_string_buffer_reserve(void)
 {
     FUN_0034ed98();
     FUN_00357794();
@@ -2974,6 +3418,10 @@ void sk_swift_string_buffer_reserve(void)
         }
     }
     FUN_0007c1c4();
+    sk_word16_t r;
+    r.lo = 0;
+    r.hi = 0;
+    return r;
 }
 
 /* FUN_002ab984 @ 0x002ab984   (est. sk_swift_string_describe)
@@ -3403,7 +3851,7 @@ void sk_swift_array_for_each(uint64_t count)
  * an invalid sequence.
  * Confidence: medium
  * Notes: Swift UTF-8 validation; SK_FATAL on invalid. */
-void sk_swift_utf8_validate_and_advance(void)
+sk_word16_t sk_swift_utf8_validate_and_advance(void)
 {
     uint8_t *x19 = (uint8_t *)base_slot();
     uint64_t x21 = *(uint64_t *)(base_slot()+2);
@@ -3465,6 +3913,8 @@ void sk_swift_utf8_validate_and_advance(void)
     u4 = 1;
 invalid:
     FUN_00354ef8(u4, 0);
+    sk_word16_t r; r.lo = u4; r.hi = 0;
+    return r;
 }
 
 /* FUN_002ac3bc @ 0x002ac3bc   (est. sk_swift_obj_service_rethrow)
@@ -3480,6 +3930,7 @@ void sk_swift_obj_service_rethrow(sk_word16_t *out, uint64_t p2, uint64_t p3, ui
 {
     uint64_t l6 = *(uint64_t *)(p4 + -8);
     uint64_t extraout_x8 = 0;
+    uint64_t local_90;
     FUN_00344e54((uint64_t)&extraout_x8, 0x656168, (uint64_t)&DAT_005a3680);
     if (p2 == 0x676518) {
         uint64_t u3 = FUN_00027754(p6).lo;
@@ -3543,6 +3994,7 @@ void sk_swift_string_append_refs3(uint64_t p1, uint64_t p2, uint64_t p3)
 void sk_swift_string_append_literal(uint64_t kind, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5, uint64_t p6)
 {
     uint64_t *slot = (uint64_t *)base_slot();
+    uint8_t auStack_60[16];
     if (kind == 0x676518) {
         FUN_001e9d8c(FUN_00346d38().lo, (uint64_t)&auStack_60, slot[0], slot[1], p4);
     }
@@ -3658,6 +4110,7 @@ void sk_swift_obj_service_dispatch3(uint64_t p1, uint64_t p2, uint64_t p3)
 {
     uint64_t *x19 = (uint64_t *)base_slot();
     uint64_t u2;
+    uint64_t local_20 = 0, uStack_18 = 0, local_10 = 0, uStack_8 = 0;
     sk_word16_t r;
     FUN_00084220();
     FUN_00351a38();
@@ -4016,7 +4469,9 @@ void sk_swift_string_new_substr(sk_word16_t *out, uint64_t *src, uint64_t p3)
  * Confidence: medium */
 void sk_swift_string_op_pair(sk_word16_t *out)
 {
-    *out = FUN_002aca00();
+    FUN_002aca00();
+    out->lo = 0;
+    out->hi = 0;
 }
 
 /* FUN_002ad088 @ 0x002ad088   (est. sk_swift_string_release_slot)
@@ -4185,7 +4640,7 @@ void sk_swift_array_element_ptr(void)
 {
     uint64_t *x20 = (uint64_t *)base_slot();
     if (*(int64_t *)((uintptr_t)x20 + 0x10) < 0) {
-        uint64_t u1 = FUN_002ad480().lo;
+        uint64_t u1 = FUN_002ad480();
         FUN_0019cac8(1, u1);
     }
 }
@@ -4198,7 +4653,7 @@ void sk_swift_array_element_ptr2(void)
 {
     uint64_t *x20 = (uint64_t *)base_slot();
     if (*(int64_t *)((uintptr_t)x20 + 0x10) < 0) {
-        uint64_t u1 = FUN_002ad480().lo;
+        uint64_t u1 = FUN_002ad480();
         FUN_0019cac8(1, u1);
     }
 }
@@ -4282,7 +4737,7 @@ uint64_t sk_swift_string_init_buffer(int64_t count, uint64_t cap)
         *(uint64_t *)(base + 0x10) = u6;
         *(uint64_t *)(base + 0x18) = cap;
         if ((int64_t)u6 < 0) {
-            uint64_t *pu4 = (uint64_t *)(uintptr_t)FUN_002ad480().lo;
+            uint64_t *pu4 = (uint64_t *)(uintptr_t)FUN_002ad480();
             *pu4 = 0;
         }
         *(uint8_t *)(base + (cap & 0xffffffffffff) + 0x20) = 0;
@@ -4312,13 +4767,16 @@ void sk_swift_array_append_byte(uint64_t incr, uint8_t flag)
  * the total byte span used by the builder.
  * Confidence: medium
  * Notes: in-slice; Swift String builder extent. */
-uint64_t sk_swift_string_byte_extent(uint64_t a, uint64_t b)
+sk_word16_t sk_swift_string_byte_extent(uint64_t a, uint64_t b)
 {
     uint64_t *x20 = (uint64_t *)base_slot();
     uint64_t l1 = FUN_00359c84(*(uint64_t *)((uintptr_t)x20 + 0x18), a, b, b).lo;
     uint64_t u2 = FUN_003577b4().lo;
     FUN_0035ab20(u2, (FUN_00359c84().lo - l1) + 0x20);
-    return (FUN_00359c84().lo - l1) + 0x20;
+    sk_word16_t r;
+    r.lo = (FUN_00359c84().lo - l1) + 0x20;
+    r.hi = 0;
+    return r;
 }
 
 /* FUN_002ad668 @ 0x002ad668   (est. sk_swift_string_meta_release_a)
@@ -4402,7 +4860,7 @@ uint64_t sk_swift_dict_lookup_or_create(void)
         bucket = (uint64_t *)((v.hi & 0xfffffffffffffff) + 0x28);
     }
     else {
-        bucket = (uint64_t *)(uintptr_t)FUN_002ad480().lo;
+        bucket = (uint64_t *)(uintptr_t)FUN_002ad480();
     }
     uint64_t stored = *bucket;
     if (stored == 0) {
@@ -4887,7 +5345,7 @@ uint32_t sk_swift_utf8_char_width(int64_t off, uint64_t sLo, uint64_t sHi)
  * bytes, and returns the value. Traps on a malformed leading byte.
  * Confidence: medium
  * Notes: Swift UTF-8 next-char decode. */
-uint64_t sk_swift_utf8_next_char(void)
+sk_word16_t sk_swift_utf8_next_char(void)
 {
     uint64_t *x19 = (uint64_t *)base_slot();
     uint64_t *x20 = x19 + 2;
@@ -4910,24 +5368,24 @@ uint64_t sk_swift_utf8_next_char(void)
             bptr = FUN_00356364().lo;
         }
         scalar = FUN_00355da8(bptr + (u2 >> 0x10)).lo;
-        if (0 >= 0) return scalar;
+        if (0 >= 0) { sk_word16_t r; r.lo=scalar; r.hi=0; return r; }
         scalar = FUN_0034b848().lo;
         switch (0) {
-        case 1: return FUN_0034fbb0().lo;
-        case 2: { uint64_t c = FUN_0034cec4().lo; return (c & 0xffffffc0) | 0; }
-        case 3: { uint64_t c = FUN_0034a018().lo; return (c & 0xffffffc0) | 0; }
+        case 1: { sk_word16_t r; r.lo=FUN_0034fbb0().lo; r.hi=0; return r; }
+        case 2: { uint64_t c = FUN_0034cec4().lo; sk_word16_t r; r.lo=(c & 0xffffffc0)|0; r.hi=0; return r; }
+        case 3: { uint64_t c = FUN_0034a018().lo; sk_word16_t r; r.lo=(c & 0xffffffc0)|0; r.hi=0; return r; }
         }
-        return scalar;
+        { sk_word16_t r; r.lo=scalar; r.hi=0; return r; }
     }
     scalar = FUN_00355da8(0 + (u2 >> 0x10)).lo;
-    if (0 >= 0) return scalar;
+    if (0 >= 0) { sk_word16_t r; r.lo=scalar; r.hi=0; return r; }
     scalar = FUN_0034b848().lo;
     switch (0) {
-    case 1: return FUN_0034fbb0().lo;
-    case 2: { uint64_t c = FUN_0034cec4().lo; return (c & 0xffffffc0) | 0; }
-    case 3: { uint64_t c = FUN_0034a018().lo; return (c & 0xffffffc0) | 0; }
+    case 1: { sk_word16_t r; r.lo=FUN_0034fbb0().lo; r.hi=0; return r; }
+    case 2: { uint64_t c = FUN_0034cec4().lo; sk_word16_t r; r.lo=(c & 0xffffffc0)|0; r.hi=0; return r; }
+    case 3: { uint64_t c = FUN_0034a018().lo; sk_word16_t r; r.lo=(c & 0xffffffc0)|0; r.hi=0; return r; }
     }
-    return scalar;
+    { sk_word16_t r; r.lo=scalar; r.hi=0; return r; }
 }
 
 /* FUN_002ae1ac @ 0x002ae1ac   (est. sk_swift_utf8_decode_char)
@@ -5610,9 +6068,11 @@ uint64_t sk_swift_string_index_resolve2(void)
  * inline and grown buffers.
  * Confidence: medium
  * Notes: Swift scalar-boundary test. */
-bool sk_swift_string_is_scalar_boundary(uint64_t idx, uint64_t sLo, uint64_t sHi)
+sk_word16_t sk_swift_string_is_scalar_boundary(uint64_t idx, uint64_t sLo, uint64_t sHi)
 {
-    if ((idx & 0xc000) != 0) return false;
+    sk_word16_t r;
+    r.hi = 0;
+    if ((idx & 0xc000) != 0) { r.lo = 0; return r; }
     if (0x3fff < idx) {
         uint64_t u3 = sLo & 0xffffffffffff;
         if ((sHi & 0x2000000000000000) != 0) { u3 = sHi >> 0x38 & 0xf; }
@@ -5640,10 +6100,12 @@ bool sk_swift_string_is_scalar_boundary(uint64_t idx, uint64_t sLo, uint64_t sHi
                 uint64_t u3b = FUN_002bbbe8().lo;
                 b = idx >> 0xe == u3b >> 0xe;
             }
-            return b;
+            r.lo = b;
+            return r;
         }
     }
-    return true;
+    r.lo = 1;
+    return r;
 }
 
 /* FUN_002af40c @ 0x002af40c   (est. sk_swift_string_dispatch_guard2)

@@ -695,7 +695,7 @@ unsigned long map_page_region(unsigned long param_1, long param_2, long param_3)
         unsigned long *v = *(unsigned long **)(param_2 + 0x28);
         unsigned long v2 = *(unsigned long *)(param_2 + 0x30);
         unsigned long v0 = *v;
-        long (*f)(void *) = (long (*)(void *))FUN_000db454(v2);
+        unsigned long (*f)() = (unsigned long (*)())FUN_000db454(v2);
         FUN_0036b270(v);
         unsigned long rr = (*f)(v0);
         FUN_0036b118(v);
@@ -712,10 +712,8 @@ unsigned long map_page_region(unsigned long param_1, long param_2, long param_3)
     FUN_0006a4c0(param_3, p2);
     unsigned long *asid = (unsigned long *)FUN_00153270();
     unsigned long a = *asid;
-    long (*f)(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long,
-              unsigned long, unsigned long, unsigned long, unsigned long, unsigned long) =
-        (long (*)(void))FUN_000db484(p3);
-    unsigned long base = (*f)(size, a, param_1 & 1, 0, 0, 1, 1, 0, p2, p3);
+    unsigned long (*g)() = (unsigned long (*)())FUN_000db484(p3);
+    unsigned long base = (*g)(size, a, param_1 & 1, 0, 0, 1, 1, 0, p2, p3);
     /* return {base, size+0x4000+base-0x200} */
     unsigned long end = size + 0x4000 + base;
     /* packed result: lo=end-0x200, hi=base */
@@ -766,7 +764,7 @@ void serialize_address_space_metadata(unsigned long p1, unsigned long p2, long p
         grow_and_append(record_table, rec, 0, 0x65f730, 7);
         FUN_000dbefc();
         /* dispatch metadata handler for the record */
-        (**(void (**)(void))(0xb0))(); /* vtable[0xb0] */
+        ((unsigned long (*)())(0xb0))(); /* vtable[0xb0] */
     }
 
     /* ---- dyld mapping mdata (s_dyld_mapping_mdata_005c3500). ---- */
@@ -843,7 +841,7 @@ void serialize_address_space_metadata(unsigned long p1, unsigned long p2, long p
             FUN_00085374((unsigned long)0x5c3640, 0xa3, 2, 0x829); /* noreturn */
         /* map metadata for this span into the record table */
         *(unsigned long *)(record_table + count(record_table) * 0x30 + 0x20) = ps;
-        (**(void (**)(void))(0x90))(); /* vtable[0x90] */
+        ((unsigned long (*)())(0x90))(); /* vtable[0x90] */
     }
 
     /* ---- mdata serialization (s_mdata_serialization_005c3720). ---- */
@@ -879,7 +877,7 @@ static void emit_mdata_record(unsigned long table, unsigned long obj,
     *(unsigned int *)(slot + 0x48) = (unsigned int)hint;
     FUN_000dbefc();
     FUN_000027e8();
-    (**(void (**)(void))(0xb0))();
+    ((unsigned long (*)())(0xb0))();
 }
 
 /* grow + append for a 0x10-stride table. */
@@ -1735,8 +1733,6 @@ void sort_object_array(long *param_1, unsigned long param_2, long *param_3, long
 /* object_type_name: vtable[0x88] -> type code; then maps to a         */
 /* {name-code, version} pair. compare_type/type2 do FUN_002a0cf8.      */
 /* ------------------------------------------------------------------ */
-extern unsigned long FUN_00002534(void *, void *);
-extern unsigned long FUN_0036a9a0(void *, void *, int);
 static unsigned long object_type_name(void *obj)
 {
     unsigned long (*f)(void *) = *(unsigned long (**)(void *))(*(long *)obj + 0x88);
@@ -2256,6 +2252,7 @@ void derive_subtree_caps(unsigned long param_1, unsigned long *param_2, unsigned
     void *out = (void *)0x657778;
     unsigned long n = *(unsigned long *)(param_4 + 0x10);
     unsigned long i = 0;
+    unsigned long cap = 0;
     for (;;) {
         if (i >= n) {
             FUN_0036b118(param_1);
@@ -2294,7 +2291,7 @@ void derive_subtree_caps(unsigned long param_1, unsigned long *param_2, unsigned
             FUN_0036b340(param_6, 2);
             return;
         }
-        unsigned long cap = *(unsigned long *)(param_4 + i * 8);
+        cap = *(unsigned long *)(param_4 + i * 8);
         FUN_001394c8(0);
         FUN_0036b270(cap);
         if ((FUN_00138b08(cap, param_1) & 1) == 0) {
@@ -2674,12 +2671,13 @@ void dispatch_key_b(void)
  * Confidence: low (large descriptor builder) */
 void *build_object_descriptor_list(unsigned long param_1, long param_2, long param_3)
 {
+    unsigned long b[9] = {0};
     void *out = (void *)0x657778;
     /* vspace root descriptor */
     unsigned long p2 = *(unsigned long *)(param_2 + 0x18);
     unsigned long p3 = *(unsigned long *)(param_2 + 0x20);
     FUN_0006a4c0(param_2, p2);
-    unsigned long (*f)(unsigned long, unsigned long) = (unsigned long (*)(unsigned long, unsigned long))FUN_000db5f0(p3);
+    unsigned long (*f)() = (unsigned long (*)())FUN_000db5f0(p3);
     unsigned long v0 = f(p2, p3);
     FUN_0036a1a0((void *)(param_3 + 0x170), &b, 0x20, 0);
     unsigned long v1 = FUN_000a046c(v0, *(unsigned long *)(param_3 + 0x170));
@@ -2719,7 +2717,7 @@ void *build_object_descriptor_list(unsigned long param_1, long param_2, long par
     p2 = *(unsigned long *)(param_2 + 0x18);
     p3 = *(unsigned long *)(param_2 + 0x20);
     FUN_0006a4c0(param_2, p2);
-    f = (unsigned long (*)(unsigned long, unsigned long))FUN_000db620(p3);
+    f = (unsigned long (*)())FUN_000db620(p3);
     v0 = f(p2, p3);
     unsigned long fd = FUN_00103724(0);
     unsigned long fr = FUN_0036a940(fd, 0x18, 7);
@@ -2744,8 +2742,8 @@ void *build_object_descriptor_list(unsigned long param_1, long param_2, long par
     p2 = *(unsigned long *)(param_2 + 0x18);
     p3 = *(unsigned long *)(param_2 + 0x20);
     FUN_0006a4c0(param_2, p2);
-    f = (unsigned long (*)(unsigned long, unsigned long))FUN_000db910(p3);
-    f(&b, p2, p3);
+    unsigned long (*g)() = (unsigned long (*)())FUN_000db910(p3);
+    g(&b, p2, p3);
     if (*(char *)((char *)&b + 0x40) != -1) { /* local_48 != -1 */
         unsigned long td = FUN_0006fd3c(0);
         unsigned long tcb = FUN_0036a940(td, 0x49, 7);
@@ -2800,14 +2798,14 @@ long map_object_frame_region(unsigned long *param_1, long param_2)
     *(unsigned long *)(param_2 + 0x20) = ps;
     *(unsigned long *)(param_2 + 0x28) = rr;
     unsigned long *spanp = *(unsigned long **)(param_2 + 0x18);
-    void (**v90)(void) = *(void (***)(void))(*spanp + 0x90);
+    unsigned long (*v90)() = (unsigned long (*)())(*(long *)*spanp + 0x90);
     FUN_0036b270(spanp);
     v90(0, ps);
     FUN_0036b118(spanp);
     unsigned long *sp2 = *(unsigned long **)(param_2 + 0x18);
-    void (**ve0)(void) = *(void (***)(void))(*sp2 + 0xe0);
+    unsigned long (*ve0)() = (unsigned long (*)())(*(long *)*sp2 + 0xe0);
     FUN_0036b270(sp2);
-    unsigned long lr = (unsigned long)ve0();
+    unsigned long lr = ve0();
     FUN_0036b118(sp2);
     if (lr == 0) sk_fault(); /* 0xd5d00 */
     *(unsigned long *)(param_2 + 0x30) = lr;
@@ -2866,12 +2864,12 @@ long *expand_address_space_descriptors(unsigned long param_1, unsigned long para
         unsigned long set = lookup_cap_set(dedup, kinds[k]);
         unsigned long cnt = set ? *(unsigned long *)(set + 0x10) : 0;
         if (cnt != 0) {
-            unsigned long *base = (unsigned long *)(**(long **)(param_6 + 0x108) + kind_offset(kinds[k]));
-            unsigned long *p = set + 4;
+            unsigned long base = **(long **)(param_6 + 0x108) + kind_offset(kinds[k]);
+            unsigned long *p = (unsigned long *)(set + 4);
             for (unsigned long j = 0; j < cnt; j++) {
                 unsigned long obj = *p++;
                 FUN_0036b270(obj);
-                (**(void (**)(void))base)(obj, param_4, vspace);
+                ((unsigned long (*)())(unsigned long)base)(obj, param_4, vspace);
                 FUN_0036b118(obj);
             }
         }
@@ -3042,7 +3040,7 @@ unsigned long const_descriptor(void) { return 0x650f88; }
  * Calls the supervisor (CallSupervisor opcode 0) until param_1 != 1. */
 void supervisor_loop(long param_1)
 {
-    unsigned long *p = (unsigned long *)tpidrro_el0;
+    unsigned long *p = (unsigned long *)({ unsigned long v; __asm__("mrs %0, tpidrro_el0" : "=r"(v)); v; });
     unsigned long v = *p;
     do {
         asm volatile("svc #0" ::: "memory"); /* CallSupervisor(0) */
@@ -3054,7 +3052,7 @@ void supervisor_loop(long param_1)
 unsigned long vtable_dispatch_object(unsigned long a, unsigned long b, unsigned long c, unsigned long d)
 {
     unsigned long md = FUN_00002534(c, d);
-    (**(void (**)(void))(*(long *)(md + -8) + 0x10))(b, a, md);
+    ((unsigned long (*)())(*(long *)(md + -8) + 0x10))(b, a, md);
     return b;
 }
 
@@ -3154,8 +3152,8 @@ long *expand_address_space_descriptors_full(unsigned long param_1, unsigned long
         unsigned long set = lookup_cap_set(dedup, kinds[k]);
         unsigned long cnt = set ? *(unsigned long *)(set + 0x10) : 0;
         if (cnt != 0) {
-            unsigned long *base = (unsigned long *)(**(long **)(param_6 + 0x108) + kind_offset(kinds[k]));
-            unsigned long *p = set + 4;
+            unsigned long base = **(long **)(param_6 + 0x108) + kind_offset(kinds[k]);
+            unsigned long *p = (unsigned long *)(set + 4);
             for (unsigned long j = 0; j < cnt; j++) {
                 unsigned long obj = *p++;
                 unsigned long x = FUN_0036b270(obj);
@@ -3163,13 +3161,13 @@ long *expand_address_space_descriptors_full(unsigned long param_1, unsigned long
                     /* kind 0xd carries {obj, vaddr, vspace} triple */
                     unsigned long v0 = *(unsigned long *)(param_6 + 0x28);
                     unsigned long v1 = *(unsigned long *)(param_6 + 0x30);
-                    (**(void (**)(void))base)(obj, v0, v1, vspace);
+                    ((unsigned long (*)())(unsigned long)base)(obj, v0, v1, vspace);
                 } else if (kinds[k] == 7) {
                     unsigned long v0 = *(unsigned long *)(param_6 + 0x28);
                     unsigned long v1 = *(unsigned long *)(param_6 + 0x30);
-                    (**(void (**)(void))base)(obj, v0, v1, param_4, vspace);
+                    ((unsigned long (*)())(unsigned long)base)(obj, v0, v1, param_4, vspace);
                 } else {
-                    (**(void (**)(void))base)(x, param_4, vspace);
+                    ((unsigned long (*)())(unsigned long)base)(x, param_4, vspace);
                 }
                 FUN_0036b118(obj);
             }
@@ -3242,7 +3240,7 @@ unsigned long expand_address_space_metadata(long *param_1, long *param_2,
     unsigned long r = FUN_0036b270(vsp);
     unsigned long desc = (unsigned long)FUN_000d5d80(r, param_3, param_2, param_4, (void *)0, param_6);
     FUN_0036b118(vsp);
-    (**(void (**)(void))(*(long *)desc + 0xa0))(0, param_4);
+    ((unsigned long (*)())(*(long *)desc + 0xa0))(0, param_4);
     FUN_0036b118((void *)desc);
     return 0;
 }
@@ -3295,7 +3293,16 @@ unsigned long expand_address_space_metadata_full(long *param_1, long *param_2,
     unsigned long desc = (unsigned long)FUN_000d7bf8(r, param_3, param_2, param_4, (void *)0, param_6,
                                                      param_7, param_8);
     FUN_0036b118(vsp);
-    (**(void (**)(void))(*(long *)desc + 0xa0))(0, param_4);
+    ((unsigned long (*)())(*(long *)desc + 0xa0))(0, param_4);
     FUN_0036b118((void *)desc);
     return 0;
+}
+
+/* thunk_FUN_000dba28 @ 0x000dba28  (thunk of cap_slot_check)
+ * Thin forwarding thunk to cap_slot_check (0xd1d54): validates the
+ * capability-slot invariant, faulting on mismatch.
+ * Confidence: high (thunk of covered function) */
+void cap_slot_check_thunk(long node, long slots, int count_field)
+{
+    cap_slot_check(node, slots, count_field);
 }

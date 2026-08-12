@@ -780,6 +780,7 @@ extern uint64_t thunk_FUN_0036b270(); /* out of slice (PLT thunk) */
 extern uint64_t (*DAT_00658c00)(); /* out of slice (global fnptr) */
 extern unsigned long DAT_003471a4; /* out of slice (global data) */
 extern unsigned long DAT_003471a8; /* out of slice (global data) */
+extern unsigned long DAT_004baeb0;
 extern unsigned long DAT_004baeb8; /* out of slice (global data) */
 extern unsigned long DAT_004e8214; /* out of slice (global data) */
 extern unsigned long DAT_004ea72c; /* out of slice (global data) */
@@ -797,7 +798,7 @@ extern unsigned long DAT_0060e230; /* out of slice (global data) */
 extern unsigned long DAT_00657700; /* out of slice (global data) */
 
 
-/* In-slice forward declarations (functions call each other regardless of file order). */
+/* In-slice forward declarations. */
 
 uint64_t vspace_op_00277be4(void);
 uint64_t vspace_op_00277d80(void);
@@ -805,9 +806,13 @@ uint64_t vspace_op_00277de0(void);
 uint64_t vspace_op_002782a4(void);
 uint64_t vspace_op_00278dac(void);
 uint64_t vspace_op_00278e54(void);
+uint64_t vspace_op_0027905c(uint64_t arg1,uint64_t arg2,int64_t arg3,uint64_t arg4,
+                 uint64_t arg5);
+uint64_t vspace_op_00279558(void);
 uint64_t vspace_op_00279568(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4);
 uint64_t vspace_op_00279c5c(void);
 uint64_t vspace_op_00279c60(void);
+uint64_t vspace_op_00279c7c(void);
 uint64_t vspace_op_00279cbc(void);
 uint64_t vspace_op_00279cc0(void);
 uint64_t vspace_op_00279cdc(void);
@@ -820,8 +825,14 @@ uint64_t vspace_op_0027ad9c(uint64_t arg1,uint64_t arg2);
 uint64_t vspace_op_0027ade0(void);
 uint64_t vspace_op_0027b304(void);
 uint64_t vspace_op_0027b3c0(void);
+uint64_t vspace_op_0027b41c(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4,
+                 uint64_t arg5);
 uint64_t vspace_op_0027b8c0(void);
+uint64_t vspace_op_0027bb78(void);
 uint64_t vspace_op_0027bc50(uint64_t arg1);
+uint64_t vspace_op_0027bc98(int64_t *param_1,uint64_t *param_2,int64_t arg3);
+uint64_t vspace_op_0027bd10(int64_t *param_1,uint64_t arg2,uint64_t arg3,uint64_t arg4,
+            uint64_t arg5);
 uint64_t vspace_op_0027bdd4(uint64_t arg1,uint64_t arg2);
 uint64_t vspace_op_0027be40(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027bedc(uint64_t arg1,uint64_t arg2,uint64_t arg3);
@@ -830,13 +841,20 @@ uint64_t vspace_op_0027bfc8(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027c010(void);
 uint64_t vspace_op_0027c054(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027c0a8(void);
+uint64_t vspace_op_0027c1c0(void);
 uint64_t vspace_op_0027c224(uint64_t arg1,int64_t arg2,int64_t arg3);
+uint64_t vspace_op_0027c37c(void);
 uint64_t vspace_op_0027c3d0(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027c418(void);
 uint64_t vspace_op_0027c45c(uint64_t arg1,uint64_t arg2,uint64_t arg3);
+uint64_t vspace_op_0027c4a0(void);
 uint64_t vspace_op_0027c50c(int64_t *param_1,uint64_t arg2,int64_t arg3);
 uint64_t vspace_op_0027c5b4(void);
+uint64_t vspace_op_0027c5f8(void);
+uint64_t vspace_op_0027c64c(void);
 uint64_t vspace_op_0027c698(void);
+uint64_t vspace_op_0027c740(void);
+uint64_t vspace_op_0027c770(void);
 uint64_t vspace_op_0027c7a0(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4);
 uint64_t vspace_op_0027c85c(uint64_t arg1,uint64_t arg2,uint64_t *param_3);
 uint64_t vspace_op_0027cd04(void);
@@ -856,9 +874,11 @@ uint64_t vspace_op_0027db18(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027db60(void);
 uint64_t vspace_op_0027dba4(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027dbe4(uint64_t *param_1);
+uint64_t vspace_op_0027dc0c(int64_t *param_1,uint64_t *param_2,uint64_t arg3);
 uint64_t vspace_op_0027dc80(int64_t *param_1,uint64_t arg2,int64_t arg3);
 uint64_t vspace_op_0027dd28(uint64_t arg1,uint64_t arg2);
 uint64_t vspace_op_0027dd94(uint64_t arg1,uint64_t arg2,uint64_t arg3);
+uint64_t vspace_op_0027de1c(void);
 uint64_t vspace_op_0027de68(int64_t arg1,int64_t arg2);
 uint64_t vspace_op_0027df2c(uint64_t arg1);
 uint64_t vspace_op_0027df74(uint64_t arg1);
@@ -868,6 +888,7 @@ uint64_t vspace_op_0027e0d4(void);
 uint64_t vspace_op_0027e17c(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4);
 uint64_t vspace_op_0027e4ac(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027e698(void);
+uint64_t vspace_op_0027e718(void);
 uint64_t vspace_op_0027e778(void);
 uint64_t vspace_op_0027e8e4(void);
 uint64_t vspace_op_0027ea48(void);
@@ -875,13 +896,18 @@ uint64_t vspace_op_0027ebac(void);
 uint64_t vspace_op_0027ed08(uint64_t arg1,uint64_t arg2);
 uint64_t vspace_op_0027ed7c(uint64_t arg1,int64_t arg2,uint64_t arg3);
 uint64_t vspace_op_0027eebc(void);
+uint64_t vspace_op_0027f010(void);
 uint64_t vspace_op_0027f100(void);
 uint64_t vspace_op_0027f448(void);
 uint64_t vspace_op_0027f83c(int64_t arg1,int64_t arg2);
 uint64_t vspace_op_0027f94c(void);
 uint64_t vspace_op_0027f9b0(uint64_t arg1,uint64_t arg2,uint64_t arg3);
+uint64_t vspace_op_0027fb24(void);
 uint64_t vspace_op_0027fbfc(void);
+uint64_t vspace_op_0027fca0(void);
+uint64_t vspace_op_0027fd38(void);
 uint64_t vspace_op_0027fdd4(uint64_t arg1,uint64_t arg2,int64_t arg3);
+uint64_t vspace_op_0027fe84(void);
 uint64_t vspace_op_0027ffd8(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4);
 
 /* FUN_00277be4 @ 0x00277be4  (est. vspace_op_00277be4)
@@ -902,7 +928,7 @@ uint64_t vspace_op_00277be4(void)
     uint64_t x20;
     int64_t x26;
     uint64_t av3;
-    uint64_t is0000008;
+    uint64_t is00000008;
     uint64_t st40;
     int64_t loc8;
   
@@ -944,7 +970,7 @@ uint64_t vspace_op_00277be4(void)
     (*x8_02)();
   }
   av3 = FUN_00352980();
-  FUN_0008e500(av3,(0u /* hi: unspecified */),is0000008);
+  FUN_0008e500(av3,(0u /* hi: unspecified */),is00000008);
   return 0;
 }
 
@@ -1196,8 +1222,8 @@ uint64_t vspace_op_002782a4(void)
     uint64_t (*fn17)();;
     uint64_t x30;
     uint64_t av18;
-    uint64_t is0000050;
-    uint64_t is0000058;
+    uint64_t is00000050;
+    uint64_t is00000058;
     uint64_t (*loc128)();;
     uint64_t (*loc110)();;
     uint64_t locf8;
@@ -1223,7 +1249,7 @@ uint64_t vspace_op_002782a4(void)
   av18 = FUN_0008e518();
   l7 = av18;
   v13 = *(uint64_t *)((0u /* hi: unspecified */) + 0x10);
-  is0000058 = x30;
+  is00000058 = x30;
   FUN_003510a0(0xff);
   l8 = FUN_00310e08();
   FUN_00350920();
@@ -1511,7 +1537,7 @@ LAB_00278d98:
   FUN_00359f60();
   FUN_001dc754();
 LAB_00278d7c:
-  FUN_0008e500(is0000058);
+  FUN_0008e500(is00000058);
   return 0;
 }
 
@@ -1556,7 +1582,7 @@ uint64_t vspace_op_00278e54(void)
     int64_t x16;
     int64_t x16_00;
     uint64_t av3;
-    uint64_t is0000018;
+    uint64_t is00000018;
   
   FUN_0008e518();
   FUN_00353274();
@@ -1597,7 +1623,7 @@ uint64_t vspace_op_00278e54(void)
     (*x8_00)();
     av3 = FUN_00350500();
     FUN_0031d8c8(av3,(0u /* hi: unspecified */),x1_00);
-    vspace_op_0027905c();
+    vspace_op_0027905c(0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 5 leftover-register arg(s) */
     FUN_00350518(*(uint64_t *)(x16 + 8));
     (*x8_01)();
   }
@@ -1607,7 +1633,7 @@ uint64_t vspace_op_00278e54(void)
   FUN_00350944();
   (*x8_02)();
   v2 = FUN_0035a560();
-  FUN_0008e500(v2,is0000018);
+  FUN_0008e500(v2,is00000018);
   return 0;
 }
 
@@ -1641,7 +1667,7 @@ uint64_t vspace_op_0027905c(uint64_t arg1,uint64_t arg2,int64_t arg3,uint64_t ar
     uint64_t v7;
     int64_t x28;
     uint64_t av8;
-    uint64_t is0000018;
+    uint64_t is00000018;
     uint64_t loc30;
     uint64_t loc28;
   
@@ -1699,7 +1725,7 @@ uint64_t vspace_op_0027905c(uint64_t arg1,uint64_t arg2,int64_t arg3,uint64_t ar
     v2 = FUN_0034e33c();
     (*x8_03)(v2,x19);
     v2 = FUN_00353034();
-    FUN_0008e500(v2,is0000018);
+    FUN_0008e500(v2,is00000018);
     return 0;
   }
   FUN_00347d60();
@@ -1712,7 +1738,9 @@ uint64_t vspace_op_0027905c(uint64_t arg1,uint64_t arg2,int64_t arg3,uint64_t ar
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_00279558(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_00279558(void)
+{
+  FUN_00347d60();
   FUN_001afe4c();
 }
 
@@ -1988,7 +2016,9 @@ uint64_t vspace_op_00279c60(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_00279c7c(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_00279c7c(void)
+{
+  FUN_003504d0();
   vspace_op_00279e90();
   FUN_00354924();
   FUN_0036b118();
@@ -2086,7 +2116,7 @@ uint64_t vspace_op_00279cfc(void)
   FUN_0036b118();
   FUN_0008e388();
   FUN_0035053c();
-  v2 = vspace_op_0027ad9c();
+  v2 = vspace_op_0027ad9c(0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 2 leftover-register arg(s) */
   FUN_0036b118(v1);
   return v2;
 }
@@ -2995,7 +3025,7 @@ uint64_t vspace_op_0027b41c(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t a
     char ww27;
     uint64_t x30;
     uint64_t av7;
-    uint64_t is0000008;
+    uint64_t is00000008;
     uint64_t locf0;
     uint64_t st60;
     uint64_t loc50;
@@ -3068,7 +3098,7 @@ uint64_t vspace_op_0027b41c(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t a
       FUN_00352ca4(STK);
       FUN_00351354();
       (*x9_00)();
-      is0000008 = v5;
+      is00000008 = v5;
       v6 = FUN_00310d34(0,v2);
       v6 = FUN_00376820((uint64_t)&DAT_004e8214,v6);
       FUN_00348e9c(v6,v6);
@@ -3130,7 +3160,7 @@ uint64_t vspace_op_0027b8c0(void)
     int64_t x19;
     int64_t x27;
     uint64_t av7;
-    uint64_t is0000018;
+    uint64_t is00000018;
     int64_t loc40[4];
     int64_t loc20;
     int64_t al18[2];
@@ -3210,7 +3240,7 @@ uint64_t vspace_op_0027b8c0(void)
     }
   }
   av7 = FUN_00359920(v5,l6);
-  FUN_0008e500(av7,(0u /* hi: unspecified */),is0000018);
+  FUN_0008e500(av7,(0u /* hi: unspecified */),is00000018);
   return 0;
 }
 
@@ -3220,7 +3250,9 @@ uint64_t vspace_op_0027b8c0(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027bb78(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027bb78(void)
+{
+    uint64_t (*xUNRECOVERED_JUMPTABLE)();;
     int64_t l1;
     int64_t x16;
     int64_t x21;
@@ -3254,11 +3286,11 @@ uint64_t vspace_op_0027bc50(uint64_t arg1)
 
 
 /* FUN_0027bc98 @ 0x0027bc98  (est. vspace_op_0027bc98)
- * Ghidra: uint8_t * vspace_op_0027bc98(int64_t *param_1,uint64_t *param_2,int64_t arg3)
+ * Ghidra: uint8_t * vspace_op_0027bc98(int64_t *param_1, uint64_t *param_2, int64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint8_t * vspace_op_0027bc98(int64_t *param_1,uint64_t *param_2,int64_t arg3)
+uint64_t vspace_op_0027bc98(int64_t *param_1,uint64_t *param_2,int64_t arg3)
 {
     int64_t l1;
     uint64_t v2;
@@ -3266,7 +3298,7 @@ uint8_t * vspace_op_0027bc98(int64_t *param_1,uint64_t *param_2,int64_t arg3)
   
   l1 = FUN_0036a908(0x28,0xfbee);
   *param_1 = l1;
-  v2 = vspace_op_0027bd10(l1,*param_2,*x20,*(uint64_t *)(arg3 + 0x10),
+  v2 = vspace_op_0027bd10(((int64_t *)l1), *param_2, *x20, *(uint64_t *)(arg3 + 0x10),
                        *(uint64_t *)(arg3 + 0x18));
   *(uint64_t *)(l1 + 0x20) = v2;
   return (uint64_t)&DAT_003471a4;
@@ -3447,7 +3479,9 @@ uint64_t vspace_op_0027c0a8(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c1c0(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027c1c0(void)
+{
+    uint64_t (*x19)();;
     uint64_t * x20;
     int64_t x21;
     uint8_t st78[72];
@@ -3521,7 +3555,9 @@ uint64_t vspace_op_0027c224(uint64_t arg1,int64_t arg2,int64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c37c(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_0027c37c(void)
+{
+  FUN_0034c084();
   FUN_00348eb4();
   FUN_00376820();
   FUN_0034887c();
@@ -3593,7 +3629,7 @@ uint64_t vspace_op_0027c45c(uint64_t arg1,uint64_t arg2,uint64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint8_t * vspace_op_0027c4a0(void)
+uint64_t vspace_op_0027c4a0(void)
 {
     int64_t l1;
     uint64_t v2;
@@ -3603,7 +3639,7 @@ uint8_t * vspace_op_0027c4a0(void)
   FUN_000867ec();
   l1 = FUN_0036a908(0x28,0x2ca3);
   *x22 = l1;
-  v2 = vspace_op_0027c50c(l1,*x21);
+  v2 = vspace_op_0027c50c(((int64_t *)l1), *x21, 0 /* leftover-register arg */); /* padded 1 leftover-register arg(s) */
   *(uint64_t *)(l1 + 0x20) = v2;
   return (uint64_t)&DAT_003471a4;
 }
@@ -3625,7 +3661,7 @@ uint64_t vspace_op_0027c50c(int64_t *param_1,uint64_t arg2,int64_t arg3)
   param_1[1] = l1;
   l1 = FUN_0036a908(*(uint64_t *)(l1 + 0x40),0x5c18);
   param_1[2] = l1;
-  vspace_op_0027c224(l1,arg2,arg3);
+  vspace_op_0027c224(((uint64_t)l1), ((int64_t)arg2), ((int64_t)arg3));
   (void)(l1); /* hi write (unspecified) dropped */
   av2 = (uint64_t)&DAT_003471a8;
   return av2;
@@ -3656,7 +3692,9 @@ uint64_t vspace_op_0027c5b4(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c5f8(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_0027c5f8(void)
+{
+  FUN_0034c084();
   FUN_00348eb4();
   FUN_00376820();
   FUN_0034887c();
@@ -3671,7 +3709,9 @@ uint64_t vspace_op_0027c5f8(); /* dropped 1 leftover-register arg(s) */
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c64c(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027c64c(void)
+{
+    uint64_t (*x19)();;
   
   FUN_00350858();
   FUN_00358b9c();
@@ -3717,7 +3757,9 @@ uint64_t vspace_op_0027c698(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c740(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_0027c740(void)
+{
+  FUN_0034b1c0();
   FUN_00376820();
   FUN_00353a30();
   FUN_001a0194();
@@ -3730,7 +3772,9 @@ uint64_t vspace_op_0027c740(); /* dropped 1 leftover-register arg(s) */
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027c770(); /* dropped 1 leftover-register arg(s) */
+uint64_t vspace_op_0027c770(void)
+{
+  FUN_0034b1c0();
   FUN_00376820();
   FUN_00353a30();
   FUN_001e088c();
@@ -3798,8 +3842,8 @@ uint64_t vspace_op_0027c85c(uint64_t arg1,uint64_t arg2,uint64_t *param_3)
     uint64_t v13;
     uint64_t av14;
     uint64_t av15;
-    uint64_t is0000020;
-    uint64_t is0000028;
+    uint64_t is00000020;
+    uint64_t is00000028;
     int64_t l5;
   
   av14 = FUN_0035a9b0();
@@ -3852,7 +3896,7 @@ uint64_t vspace_op_0027c85c(uint64_t arg1,uint64_t arg2,uint64_t *param_3)
   i1 = (int)(char)v4;
   (void)(i1);
   av3 = v11;
-  av3._12_4_ = 0;
+  (void)(0); /* hi/aux write (unspecified) dropped */
   if ((v4 >> 7 & 1) == 0) {
     if (i1 == 0) {
       v12 = 9;
@@ -3893,7 +3937,7 @@ LAB_0027ca14:
     }
   }
   FUN_0006e778(0x1e);
-  _is0000020 = FUN_003548dc();
+  is00000020 = FUN_003548dc();
   v9 = FUN_001a89a8((uint64_t)0 /* s_Unknown_raw_display_style___005d3cd0 */,0x1b,1);
   (void)(x8); /* hi write (unspecified) dropped */
   av2 = v9;
@@ -3919,20 +3963,20 @@ LAB_0027ca14:
     FUN_0034ef38();
     FUN_002a4c98();
     FUN_003a25d4(x8);
-    av15 = _is0000020;
+    av15 = is00000020;
   }
 LAB_0027caf0:
-  is0000028 = (0u /* hi: unspecified */);
-  v7 = is0000028;
-  is0000020 = av15;
-  v11 = is0000020;
-  _is0000020 = av15;
+  is00000028 = (0u /* hi: unspecified */);
+  v7 = is00000028;
+  is00000020 = av15;
+  v11 = is00000020;
+  is00000020 = av15;
   av14 = FUN_00356340();
   FUN_002357b4(av14,(0u /* hi: unspecified */),i1);
   FUN_00349dcc();
   if ((x8_01 == 0) && (((v11 & (v7 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
     FUN_003a25d4(v7);
-    _is0000020 = av3;
+    is00000020 = av3;
   }
   else {
     if ((v7 >> 0x3d & 1) == 0) {
@@ -3942,8 +3986,8 @@ LAB_0027caf0:
     FUN_002a4c98();
     FUN_003a25d4(i1);
   }
-  v8 = is0000028;
-  v11 = is0000020;
+  v8 = is00000028;
+  v11 = is00000020;
   FUN_00350744((uint64_t)&DAT_005d3ad7);
   FUN_001a89a8();
   FUN_00354a00();
@@ -4289,10 +4333,10 @@ uint64_t vspace_op_0027d49c(uint64_t arg1,uint64_t arg2,uint64_t arg3)
     uint64_t v2;
     uint64_t x8;
     uint64_t x30;
-    uint64_t is0000008;
+    uint64_t is00000008;
   
   FUN_00357cb4();
-  is0000008 = FUN_00350b54();
+  is00000008 = FUN_00350b54();
   fn1 = (uint64_t (*)())FUN_0031db2c(arg3);
   FUN_00351684();
   FUN_003560f8();
@@ -4434,17 +4478,17 @@ uint64_t vspace_op_0027d6d0(void)
     uint64_t (*x19)();;
     int64_t l8;
     uint64_t x30;
-    uint8_t av9[12];
+    uint64_t av9;
     uint64_t av10;
-    uint8_t * is0000020;
-    uint64_t (*is0000028)();;
-    uint16_t is0000030;
-    uint64_t is0000038;
+    uint8_t * is00000020;
+    uint64_t (*is00000028)();;
+    uint16_t is00000030;
+    uint64_t is00000038;
   
   FUN_0035300c();
   av9 = FUN_00356048();
   FUN_0006b2ec();
-  is0000038 = x8;
+  is00000038 = x8;
   b2 = FUN_0036298c();
   v1 = ((((uint32_t)((0u /* hi: unspecified */))) ^ 0xffffffff) & 0xaa1703ea) == 0;
   if (((b2 ^ v1) & 1) == 0) {
@@ -4458,28 +4502,28 @@ uint64_t vspace_op_0027d6d0(void)
       do {
         FUN_0008e388();
         av10 = FUN_003a0440();
-        is0000020 = (uint8_t *)0x0;
-        is0000028 = (uint64_t (*)())0x0;
-        is0000030 = 0;
+        is00000020 = (uint8_t *)0x0;
+        is00000028 = (uint64_t (*)())0x0;
+        is00000030 = 0;
         FUN_0008e388(av10,(0u /* hi: unspecified */),STK);
         FUN_003a017c();
         FUN_0039fcc4();
-        c3 = vspace_op_0027d530();
+        c3 = vspace_op_0027d530(0 /* leftover-register arg */); /* padded 1 leftover-register arg(s) */
         v1 = c3 == '\x10';
-        p6 = is0000020;
-        if (is0000020 == (uint8_t *)0x0) {
-          p6 = (uint64_t)&DAT_005be7c0;
+        p6 = is00000020;
+        if (is00000020 == (uint8_t *)0x0) {
+          p6 = (uint8_t *)&DAT_005be7c0;
         }
         FUN_00351214(p6);
         v7 = (*x19)();
         if ((v7 & 1) == 0) {
-          if (is0000028 != (uint64_t (*)())0x0) {
-            (*is0000028)(is0000020);
+          if (is00000028 != (uint64_t (*)())0x0) {
+            (*is00000028)(is00000020);
           }
           goto LAB_0027d718;
         }
-        if (is0000028 != (uint64_t (*)())0x0) {
-          (*is0000028)(is0000020);
+        if (is00000028 != (uint64_t (*)())0x0) {
+          (*is00000028)(is00000020);
         }
         l8 = l8 + 1;
         v1 = l5 == l8;
@@ -4491,7 +4535,7 @@ uint64_t vspace_op_0027d6d0(void)
 LAB_0027d718:
     v4 = 0;
   }
-  v4 = FUN_000651bc(is0000038,v4);
+  v4 = FUN_000651bc(is00000038,v4);
   if ((bool)v1) {
     FUN_00353238(v4,x30);
     return 0;
@@ -4608,18 +4652,18 @@ uint64_t vspace_op_0027dbe4(uint64_t *param_1)
 
 
 /* FUN_0027dc0c @ 0x0027dc0c  (est. vspace_op_0027dc0c)
- * Ghidra: uint8_t * vspace_op_0027dc0c(int64_t *param_1,uint64_t *param_2,uint64_t arg3)
+ * Ghidra: uint8_t * vspace_op_0027dc0c(int64_t *param_1, uint64_t *param_2, uint64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint8_t * vspace_op_0027dc0c(int64_t *param_1,uint64_t *param_2,uint64_t arg3)
+uint64_t vspace_op_0027dc0c(int64_t *param_1,uint64_t *param_2,uint64_t arg3)
 {
     int64_t l1;
     uint64_t v2;
   
   l1 = FUN_0036a908(0x28,0x5e33);
   *param_1 = l1;
-  v2 = vspace_op_0027dc80(l1,*param_2,arg3);
+  v2 = vspace_op_0027dc80(((int64_t *)l1), *param_2, ((int64_t)arg3));
   *(uint64_t *)(l1 + 0x20) = v2;
   return (uint64_t)&DAT_003471a4;
 }
@@ -4641,7 +4685,7 @@ uint64_t vspace_op_0027dc80(int64_t *param_1,uint64_t arg2,int64_t arg3)
   param_1[1] = l1;
   l1 = FUN_0036a908(*(uint64_t *)(l1 + 0x40),0x783c);
   param_1[2] = l1;
-  vspace_op_0027da14(l1,arg2,arg3);
+  vspace_op_0027da14(((uint64_t)l1), ((int64_t)arg2), ((int64_t)arg3));
   (void)(l1); /* hi write (unspecified) dropped */
   av2 = (uint64_t)&DAT_003471a8;
   return av2;
@@ -4683,7 +4727,9 @@ uint64_t vspace_op_0027dd94(uint64_t arg1,uint64_t arg2,uint64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027de1c(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027de1c(void)
+{
+    uint64_t (*x19)();;
   
   FUN_00350858();
   FUN_00358b9c();
@@ -5033,7 +5079,7 @@ uint64_t vspace_op_0027e698(void)
   b1 = FUN_00348c48();
   FUN_0034d264(b1,(uint64_t)0 /* s_uespemosmodnarodarenegylsetybdet_004e7a30._16_8_ */,
                b1 ^ (uint8_t)(uint64_t)0 /* s_uespemosmodnarodarenegylsetybdet_004e7a30._0_8_ */);
-  vspace_op_0027e4ac();
+  vspace_op_0027e4ac(0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 3 leftover-register arg(s) */
   FUN_001a8564();
   return 0;
 }
@@ -5044,7 +5090,9 @@ uint64_t vspace_op_0027e698(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027e718(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027e718(void)
+{
+    uint64_t (*x19)();;
     uint8_t st88[72];
   
   FUN_00354f10();
@@ -5394,7 +5442,9 @@ uint64_t vspace_op_0027eebc(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027f010(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027f010(void)
+{
+    uint64_t (*fn1)();;
     uint64_t (*x8)();;
     int64_t x16;
     uint64_t x30;
@@ -5598,7 +5648,9 @@ uint32_t vspace_op_0027fa8c(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027fb24(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027fb24(void)
+{
+    uint64_t (*xUNRECOVERED_JUMPTABLE)();;
     uint64_t v1;
     int64_t x21;
     uint64_t av2;
@@ -5643,7 +5695,7 @@ uint64_t vspace_op_0027fbfc(void)
   FUN_0034e72c();
   (*x9)();
   av3 = FUN_003504f4();
-  vspace_op_0027f9b0(av3,(0u /* hi: unspecified */),v2);
+  vspace_op_0027f9b0(((uint64_t)av3), (0u /* hi: unspecified */),v2);
   FUN_00084234(x30);
   return 0;
 }
@@ -5654,7 +5706,9 @@ uint64_t vspace_op_0027fbfc(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027fca0(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027fca0(void)
+{
+    uint64_t (*x9)();;
     int64_t x19;
     uint64_t v1;
     uint64_t av2;
@@ -5675,7 +5729,7 @@ uint64_t vspace_op_0027fca0(); /* dropped 1 leftover-register arg(s) */;
   (*x9)();
   FUN_00353f50();
   FUN_00350810();
-  vspace_op_0027f9b0();
+  vspace_op_0027f9b0(0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 3 leftover-register arg(s) */
   return 0;
 }
 
@@ -5685,7 +5739,9 @@ uint64_t vspace_op_0027fca0(); /* dropped 1 leftover-register arg(s) */;
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027fd38(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027fd38(void)
+{
+    uint64_t (*x9)();;
     uint64_t x30;
   
   FUN_00084220();
@@ -5704,7 +5760,7 @@ uint64_t vspace_op_0027fd38(); /* dropped 1 leftover-register arg(s) */;
   FUN_00350c20();
   (*x9)();
   FUN_0035060c();
-  vspace_op_0027f9b0();
+  vspace_op_0027f9b0(0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 3 leftover-register arg(s) */
   FUN_00084234(x30);
   return 0;
 }
@@ -5744,7 +5800,7 @@ uint64_t vspace_op_0027fdd4(uint64_t arg1,uint64_t arg2,int64_t arg3)
     FUN_0034cf74();
     (*x9)();
     FUN_0034e464();
-    vspace_op_0027f9b0();
+    vspace_op_0027f9b0(0 /* leftover-register arg */, 0 /* leftover-register arg */, 0 /* leftover-register arg */); /* padded 3 leftover-register arg(s) */
     FUN_00084234(x30);
     return 0;
   }
@@ -5758,7 +5814,9 @@ uint64_t vspace_op_0027fdd4(uint64_t arg1,uint64_t arg2,int64_t arg3)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
  * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
-uint64_t vspace_op_0027fe84(); /* dropped 1 leftover-register arg(s) */;
+uint64_t vspace_op_0027fe84(void)
+{
+    uint64_t (*fn1)();;
     int64_t ix3;
     int64_t l2;
     uint64_t x8;
@@ -5825,8 +5883,8 @@ uint64_t vspace_op_0027ffd8(uint64_t arg1,uint64_t arg2,uint64_t arg3,uint64_t a
   l2 = av3;
   (*DAT_00658c00)(*(int64_t *)(*(int64_t *)(l2 + -8) + 0x40) + 0xfU & 0xfffffffffffffff0,l2,
                   (0u /* hi: unspecified */),l2);
-  ((uint64_t (*)())(*((void **)(x12 + 0x10))))(STK + -x8,arg2);
-  vspace_op_0027f9b0(arg1,STK + -x8,arg3); /* dropped 1 leftover-register arg(s) */
+  ((uint64_t (*)())(*((void **)(x12 + 0x10))))((uint64_t)STK + -x8,arg2);
+  vspace_op_0027f9b0(((uint64_t)arg1), (uint64_t)STK + -x8, ((uint64_t)arg3)); /* dropped 1 leftover-register arg(s) */
   return 0;
 }
 

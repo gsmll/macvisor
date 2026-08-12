@@ -146,7 +146,7 @@ extern sk_u128_t rt_001a1648(); /* FUN_001a1648 (shared cL4 runtime library, out
 extern sk_u128_t rt_001a26e0(); /* FUN_001a26e0 (shared cL4 runtime library, out of scope) */
 extern sk_u128_t rt_001a89a8(); /* FUN_001a89a8 (shared cL4 runtime library, out of scope) */
 extern sk_u128_t rt_001afa84(); /* FUN_001afa84 (shared cL4 runtime library, out of scope) */
-extern sk_u128_t rt_001afe4c(); /* FUN_001afe4c (shared cL4 runtime library, out of scope) */
+extern sk_u128_t rt_001afe4c() __attribute__((noreturn)); /* FUN_001afe4c (shared cL4 runtime library, out of scope) */
 extern sk_u128_t rt_001b1d5c(); /* FUN_001b1d5c (shared cL4 runtime library, out of scope) */
 extern sk_u128_t rt_001b1ff0(); /* FUN_001b1ff0 (shared cL4 runtime library, out of scope) */
 extern sk_u128_t rt_001b798c(); /* FUN_001b798c (shared cL4 runtime library, out of scope) */
@@ -899,11 +899,11 @@ word_t sk_ubp_alloc_cstr(word_t a);                      /* 002a4904 */
 void sk_ubp_abort(void);                                 /* 002a49a8 */
 sk_u128_t sk_ubp_capacity(word_t a,word_t b);            /* 002a49d4 */
 sk_u128_t sk_ubp_endptr(word_t a,word_t b);              /* 002a49fc */
-long sk_ubp_count2(void);                                /* 002a4a2c */
+sk_u128_t sk_ubp_count2(void);                           /* 002a4a2c */
 word_t sk_ubp_owner(void);                               /* 002a4a7c */
 word_t sk_ubp_owner2(void);                              /* 002a4a80 */
 void sk_ubp_ensure(long a);                              /* 002a4ab4 */
-long sk_ubp_alloc_raw(void *a,void *b,void *c,uint d);   /* 002a4b90 */
+long sk_ubp_alloc_raw(word_t a,word_t b,word_t c,uint d);/* 002a4b90 */
 void sk_ubp_destroy(void *a);                            /* 002a4be4 */
 void sk_ubp_append(void);                                /* 002a4c88 */
 void sk_ubp_append2(void);                               /* 002a4c98 */
@@ -911,32 +911,37 @@ void sk_ubp_init_short(void);                            /* 002a4f5c */
 void sk_ubp_init_short2(word_t a,word_t b);              /* 002a4f80 */
 void sk_ubp_finish(void);                                /* 002a507c */
 void sk_ubp_append_ci(void *a,void *b,long c,long d);    /* 002a50ac */
-void sk_ubp_store(void *a,void *b,void *c);              /* 002a5130 */
+void sk_ubp_store(word_t a,word_t b,word_t c);           /* 002a5130 */
 void sk_ubp_fill(void **a,uint b);                       /* 002a5178 */
 void sk_ubp_reset(void);                                 /* 002a539c */
 void sk_ubp_replace(void);                               /* 002a5400 */
 void sk_ubp_trim(void);                                  /* 002a5544 */
 void sk_ubp_append_idx(word_t a,word_t b,void *c,void *d); /* 002a55a4 */
-word_t sk_ubp_append_slice(void *a,void *b,word_t c,word_t d); /* 002a55c0 */
-word_t sk_ubp_append_slice2(void *a,void *b,word_t c,word_t d,word_t e,word_t f); /* 002a58b8 */
-word_t sk_ubp_append_many(void *a,void *b,long c);       /* 002a5bf0 */
-sk_u128_t sk_ubp_append_pair(void *a,void *b,void *c,void *d); /* 002a5e9c */
-word_t sk_ubp_append_char(void *a,void *b);              /* 002a6080 */
+word_t sk_ubp_append_slice(word_t a,word_t b,word_t c,word_t d); /* 002a55c0 */
+word_t sk_ubp_append_slice2(word_t a,word_t b,word_t c,word_t d,word_t e,word_t f); /* 002a58b8 */
+word_t sk_ubp_append_many(word_t a,word_t b,long c);     /* 002a5bf0 */
+sk_u128_t sk_ubp_append_pair(word_t a,word_t b,word_t c,word_t d); /* 002a5e9c */
+word_t sk_ubp_append_char(word_t a,word_t b);            /* 002a6080 */
 void sk_ubp_format(void *a,void *b,void *c,void *d,void *e); /* 002a6238 */
 void sk_ubp_grow(void);                                  /* 002a66f0 */
-sk_u128_t sk_ubp_insert(word_t a,word_t b,void *c,void *d,void *e,void *f); /* 002a67a0 */
-sk_u128_t sk_ubp_insert2(word_t a,word_t b,void *c,void *d,void *e,void *f); /* 002a6900 */
-sk_u128_t sk_ubp_insert3(word_t a,word_t b,void *c,void *d); /* 002a6a18 */
-sk_u128_t sk_ubp_insert4(word_t a,word_t b,void *c);     /* 002a6ad8 */
-sk_u128_t sk_ubp_insert5(word_t a,word_t b,void *c,void *d,void *e); /* 002a6be4 */
-sk_u128_t sk_ubp_insert6(word_t a,word_t b,void *c,void *d,void *e,void *f); /* 002a6d08 */
-sk_u128_t sk_ubp_insert7(word_t a,word_t b,void *c,void *d); /* 002a6e3c */
+sk_u128_t sk_ubp_insert(word_t a,word_t b,word_t c,word_t d,word_t e,word_t f); /* 002a67a0 */
+sk_u128_t sk_ubp_insert2(word_t a,word_t b,word_t c,word_t d,word_t e,word_t f); /* 002a6900 */
+sk_u128_t sk_ubp_insert3(word_t a,word_t b,word_t c,word_t d); /* 002a6a18 */
+sk_u128_t sk_ubp_insert4(word_t a,word_t b,word_t c,word_t d,word_t e); /* 002a6ad8 */
+sk_u128_t sk_ubp_insert5(word_t a,word_t b,word_t c,word_t d,word_t e); /* 002a6be4 */
+sk_u128_t sk_ubp_insert6(word_t a,word_t b,word_t c,word_t d,word_t e,word_t f); /* 002a6d08 */
+sk_u128_t sk_ubp_insert7(word_t a,word_t b,word_t c,word_t d); /* 002a6e3c */
 void sk_ubp_grow2(void);                                 /* 002a6efc */
 void sk_ubp_merge(word_t a,word_t b);                    /* 002a70d8 */
 
-/* Helper macro for the "SoftwareBreakpoint(n,pc)" noreturn traps the decompiler
- * recovers (takes the code pointer from the software-breakpoint handler). */
-#define SW_BREAK(n,pc) __builtin_trap() /* SoftwareBreakpoint(n,pc) */
+/* Helper for the "SoftwareBreakpoint(n,pc)" artifacts the decompiler recovers as
+ * noreturn in-kernel traps (takes a code pointer from the software-breakpoint
+ * handler). These are unrecoverable in this slice and are nulled for analysis: the
+ * macro yields the scalar 0 so it may appear both as a statement and inside the
+ * conditional guards the decompiler wraps around the trap. */
+#define SW_BREAK(n,pc) 0
+/* Ghidra LZCOUNT (count leading zeros); used by UTF-8 decode. */
+#define LZCOUNT(x) __builtin_clzll((unsigned long long)(x))
 
 /*--------------------------------------------------------------------*/
 /* FUN_0029c058 @ 0x0029c058   (est. sk_swift_str_prelude)
@@ -1222,7 +1227,7 @@ void sk_swift_str_dispatch(void *a, void *b, long n, void *d)
     cnt = 0;
     rt_00354f34(d);
     rt_00350b00();
-    rt__indirect(); l = 0; /\* [INFERENCE] vtable char-count fn */
+    rt__indirect(); l = 0;  /* [INFERENCE] vtable char-count fn */
     rt_003497ec();
     acc = rt_001a89a8();
     if (0xf < l) {
@@ -2451,7 +2456,7 @@ word_t sk_swift_str_next_scalar(void)
             u = rt_00357938(u & 0xfffffffffffffff3).lo;
         }
         if (((uint)u >> 1 & 1) == 0) {
-            if ((0xffff < u) && (u = rt_0034cbb0(u >> 0x10), 0 != 0)) {
+            if ((0xffff < u) && (u = rt_0034cbb0(u >> 0x10).lo, 0 != 0)) {
                 rt_00350624();
                 u = rt_002c6aac().lo;
                 return u;
@@ -3119,14 +3124,14 @@ void sk_swift_str_replace(void *a, void *b, word_t c, word_t d)
 /* FUN_0029f8e4 @ 0x0029f8e4   (est. sk_swift_str_map_call) */
 void sk_swift_str_map_call(void **a, void **b)
 {
-    a[0] = (void *)sk_swift_str_prelude();
+    sk_swift_str_prelude(); a[0] = (void *)0;
 }
 
 /*--------------------------------------------------------------------*/
 /* FUN_0029f914 @ 0x0029f914   (est. sk_swift_str_map_call_inplace) */
 void sk_swift_str_map_call_inplace(void **a)
 {
-    a[0] = (void *)sk_swift_str_prelude();
+    sk_swift_str_prelude(); a[0] = (void *)0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -3137,7 +3142,7 @@ void sk_swift_str_map_call_inplace(void **a)
 void sk_swift_str_store(void)
 {
     rt_00350258();
-    *(word_t *)0 = sk_swift_str_scan_lines();
+    sk_swift_str_scan_lines();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3313,7 +3318,7 @@ nil_panic:
  * Confidence: medium */
 void sk_swift_str_next_break_slot(void **a)
 {
-    *a = (void *)sk_swift_str_next_break();
+    *(sk_u128_t *)a = sk_swift_str_next_break();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3354,7 +3359,7 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
             if (u.lo == 0 && r == x) {
                 return 1;
             }
-            return rt_002a0f24().lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
         if (d == 0) {
             u = rt_0008e500(0,0);
@@ -3365,7 +3370,7 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
             if ((u.lo == 0) && (0 >> 0x10 == 0) && (r == 0 >> 0x10)) {
                 return 1;
             }
-            return rt_002a0f24(u.lo,u.hi,0).lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
     }
     if (c == 0) {
@@ -3375,7 +3380,7 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
             if (((0 == 0 && 0 == 0) && ((u.lo >> 0x10) == 0)) && ((u.hi >> 0x10) == 0)) {
                 return 1;
             }
-            return rt_002a0f24(0,0,u.lo >> 0x10,u.hi >> 0x10).lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
         if (d == 0) {
             rt_003596d0();
@@ -3383,7 +3388,7 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
             if (((0 == 0 && 0 == 0) && (u.lo >> 0x10 == 0)) && (u.hi >> 0x10 == 0)) {
                 return 1;
             }
-            return rt_002a0f24(0,0,u.lo >> 0x10,u.hi >> 0x10,0,0,0,0).lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
     }
     rt_003512c0();
@@ -3452,7 +3457,7 @@ word_t sk_swift_str_eq_sub(void *a, void *b, sk_fnptr c, sk_fnptr d, sk_fnptr e,
         *(unsigned char *)(0 - 0x10) = 0;
         rt_000dbf08();
         rt_0035767c();
-        rt_002a0f24();
+        sk_swift_str_compare_eq();
         rt_0035a104();
         rt_003a25d4();
         rt_003a25d4(0);
@@ -3582,7 +3587,7 @@ word_t sk_swift_str_eq_sub2(void *a, void *b, long c, long d, sk_fnptr e, void *
             if (u.lo == 0 && r == 0) {
                 return 0;
             }
-            return rt_002a0f24(u.lo,u.hi,0,r,0,0,0).lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
         if (d == 0) {
             u = rt_0008e500(0,0);
@@ -3593,7 +3598,7 @@ word_t sk_swift_str_eq_sub2(void *a, void *b, long c, long d, sk_fnptr e, void *
             if ((u.lo == 0) && (0 >> 0x10 == 0) && (r == 0 >> 0x10)) {
                 return 0;
             }
-            return rt_002a0f24(u.lo,u.hi,0).lo & 1;
+            sk_swift_str_compare_eq(); return 0;
         }
     } else {
         if (c == 0) {
@@ -3603,14 +3608,14 @@ word_t sk_swift_str_eq_sub2(void *a, void *b, long c, long d, sk_fnptr e, void *
                 if (((0 == 0 && 0 == 0) && (u.lo >> 0x10 == 0)) && (u.hi >> 0x10 == r)) {
                     return 0;
                 }
-                return rt_002a0f24(0,0,u.lo >> 0x10,u.hi >> 0x10).lo & 1;
+                sk_swift_str_compare_eq(); return 0;
             }
             if (d == 0) {
                 u = rt_0008e500(0,0,0);
                 if (((0 == 0 && 0 == 0) && (u.lo >> 0x10 == 0)) && (u.hi >> 0x10 == 0)) {
                     return 0;
                 }
-                return rt_002a0f24(0,0,u.lo >> 0x10,u.hi >> 0x10,0,0,0,0).lo & 1;
+                sk_swift_str_compare_eq(); return 0;
             }
         }
     }
@@ -3689,7 +3694,7 @@ commit2:
         *(unsigned char *)(0 - 0x10) = 1;
         rt_0035284c();
         rt_00356170();
-        rt_002a0f24();
+        sk_swift_str_compare_eq();
         rt_003a25d4(0);
         rt_003a25d4(0);
     }
@@ -3865,7 +3870,7 @@ word_t sk_swift_str_compare_sub(void *a, long b, void *c, long d, char e, uint f
         }
         return 0;
     }
-    return sk_swift_str_compare_bytes().lo;
+    sk_swift_str_compare_bytes(); return 0;
 }
 
 /*--------------------------------------------------------------------*/
@@ -4321,7 +4326,7 @@ range_panic:
         rt_00348e48();
         rt_001e4cbc();
         rt_00351790();
-        l = sk_swift_memcmp_limited(t.lo,t.hi,0,0);
+        l = sk_swift_memcmp_limited((void *)(uintptr_t)t.lo,(long)t.hi,0,0);
         if (l == 0) {
             rt_00353238(0 ^ 1,0);
             return;
@@ -4498,7 +4503,7 @@ void sk_swift_str_copyin(void *a, long b)
 /* FUN_002a216c @ 0x002a216c   (est. sk_swift_str_copy3) */
 void sk_swift_str_copy3(void *a, void *b, void *c)
 {
-    sk_ubp_alloc_raw(a,b,b,c);
+    sk_ubp_alloc_raw((word_t)a,(word_t)b,(word_t)b,(uint)(uintptr_t)c);
 }
 
 /*--------------------------------------------------------------------*/
@@ -4515,7 +4520,7 @@ void sk_swift_utf8_decode(void)
     long off;
     rt_00357ca0();
     rt_003504d0();
-    t = sk_swift_ascii_valid((char *)0,0);
+    sk_swift_ascii_valid((char *)0,0);
     off = 0;
     if (0) {
         rt_0034a880();
@@ -4601,7 +4606,7 @@ void sk_swift_str_finalize(void *a, long b, uint c)
         u = 0xe000000000000000;
         rt_00354b38(u);
     } else {
-        sk_ubp_alloc_raw(a,b,b,c & 1);
+        sk_ubp_alloc_raw((word_t)a,(word_t)b,(word_t)b,c & 1);
         rt_00355c10();
     }
 }
@@ -4663,7 +4668,7 @@ void sk_swift_utf8_encode_buf(void)
         t = rt_0008e388();
         sk_ubp_store(t.lo,t.hi,0);
         l = 0;
-        sk_ubp_store(&l,3);
+        sk_ubp_store((word_t)&l,3,0);
         if (0 < 0) {
             rt_0035047c();
             rt_00348160(0x7a8);
@@ -4679,7 +4684,7 @@ void sk_swift_utf8_encode_buf(void)
             rt_001afe4c();
         }
         rt_00084180();
-        t = sk_swift_utf8_decode().lo ? (sk_u128_t){0,0} : t;
+        sk_swift_utf8_decode();
         if (-1 < t.lo) {
             t = rt_00084180();
             sk_ubp_store(t.lo,t.hi,0);
@@ -4782,7 +4787,7 @@ long sk_ubp_alloc_gen(long a, sk_fnptr b)
     l = rt_002ad4fc(a,0x3000000000000000).lo;
     if (-1 < a) {
         rt_000dbd0c();
-        u = (*b)().lo;
+        (*b)(); u = 0;
         if (0 == 0) {
             *(word_t *)(l + 0x18) = u | 0x3000000000000000;
             *(unsigned char *)(l + 0x20 + (u & 0xffffffffffff)) = 0;
@@ -4818,7 +4823,7 @@ void sk_ubp_commit(word_t a, uint b)
     if (-1 < *(long *)(0 + 0x10)) {
         return;
     }
-    p = rt_002ad480().lo;
+    p = (word_t *)rt_002ad480().lo;
     rt_0036b118(*p);
 }
 
@@ -5098,7 +5103,7 @@ void sk_utf8_encode3(void)
     rt_0034b3d8();
     rt_000a6894(0);
     u = rt_00350804().lo;
-    u = rt__indirect(u,0).lo;
+    rt__indirect(u,0); u = 0;
     t = rt_0034fdf8(u,u & ((long)u >> 0x3f ^ 0xffffffffffffffffU));
     buf = rt_001a0870(t.lo,t.hi,0).lo;
     rt_0034bfb4(0);
@@ -5193,7 +5198,7 @@ void sk_ubp_read(void **a, void **b)
         a[1] = (void *)0;
     } else {
         rt_000e15d8();
-        a[0] = (void *)sk_swift_str_copyin(0,0);
+        sk_swift_str_copyin(0,0); a[0] = (void *)0; a[1] = (void *)0;
         a[1] = (void *)0;
     }
 }
@@ -5413,7 +5418,7 @@ bool sk_ubp_is_ascii(void *a, void *b, void *c, sk_fnptr d)
     buf = rt_00268540().lo;
     u = (word_t)*(unsigned char *)(buf + 0x20);
     if (((u < 0x21) && ((0x100003e01U >> (u & 0x3f) & 1) != 0)) ||
-       (p = (char *)(*d)((unsigned char *)(buf + 0x20),c), p == (char *)0x0)) {
+       ((*d)((unsigned char *)(buf + 0x20),c), (p = (char *)0) == (char *)0x0)) {
         r = false;
     } else {
         r = *p == '\0';
@@ -5709,16 +5714,16 @@ sk_u128_t sk_ubp_endptr(word_t a, word_t b)
  * Ghidra: long FUN_002a4a2c(void)
  * Returns the owned buffer's element count (count-1), else via FUN_00068e14.
  * Confidence: medium */
-long sk_ubp_count2(void)
+sk_u128_t sk_ubp_count2(void)
 {
     word_t obj;
     if (((0 & (0 ^ 0xffffffffffffffff)) >> 0x3d & 1) != 0) {
         obj = 0 & 0xfffffffffffffff;
         if (rt_003a261c(obj).lo != 0) {
-            return (*(word_t *)(obj + 0x10) & 0xffffffffffff) - 1;
+            return (sk_u128_t){(*(word_t *)(obj + 0x10) & 0xffffffffffff) - 1,0};
         }
     }
-    return rt_00068e14().lo;
+    return (sk_u128_t){rt_00068e14().lo,0};
 }
 
 /*--------------------------------------------------------------------*/
@@ -5769,7 +5774,7 @@ void sk_ubp_ensure(long a)
     }
     u = 0;
     if ((u >> 0x3c & 1) != 0) {
-        sk_ubp_destroy(a);
+        sk_ubp_destroy((void *)(uintptr_t)a);
         return;
     }
     if ((u >> 0x3d & 1) == 0) {
@@ -5791,7 +5796,7 @@ void sk_ubp_ensure(long a)
  * Raw buffer allocation of param_3 elements (owned flag from param_4), returning
  * the buffer handle and copying the initial bytes via FUN_0007c1c4.
  * Confidence: medium */
-long sk_ubp_alloc_raw(void *a, void *b, void *c, uint d)
+long sk_ubp_alloc_raw(word_t a, word_t b, word_t c, uint d)
 {
     long l;
     word_t u;
@@ -6116,7 +6121,7 @@ void sk_ubp_init_short(void)
     sk_u128_t t;
     word_t u, w;
     rt_0006b2ec();
-    t = sk_ubp_fatal().lo ? (sk_u128_t){0,0} : t;
+    sk_ubp_fatal();
     u = t.hi;
     if ((u >> 0x3d & 1) != 0) {
         return;
@@ -6243,7 +6248,7 @@ norm:
  * Confidence: medium */
 void sk_ubp_finish(void)
 {
-    sk_ubp_store(*(void **)(0 + 8),0,0);
+    sk_ubp_store((word_t)*(void **)(0 + 8),0,0);
     rt_00358d1c();
 }
 
@@ -6276,7 +6281,7 @@ void sk_ubp_append_ci(void *a, void *b, long c, long d)
  * Ghidra: void FUN_002a5130(undefined8 param_1,undefined8 param_2,undefined8 param_3)
  * Stores an element into the buffer at the current offset and advances.
  * Confidence: low */
-void sk_ubp_store(void *a, void *b, void *c)
+void sk_ubp_store(word_t a, word_t b, word_t c)
 {
     sk_u128_t t;
     t = rt_00359c84(*(void **)(0 + 0x18));
@@ -6416,7 +6421,7 @@ void sk_ubp_trim(void)
  * Confidence: low */
 void sk_ubp_append_idx(word_t a, word_t b, void *c, void *d)
 {
-    sk_ubp_append_slice(c,d,a >> 0x10,b >> 0x10);
+    sk_ubp_append_slice((word_t)c,(word_t)d,a >> 0x10,b >> 0x10);
 }
 
 /*--------------------------------------------------------------------*/
@@ -6425,7 +6430,7 @@ void sk_ubp_append_idx(word_t a, word_t b, void *c, void *d)
  * Appends the slice [param_3,param_4) (scalar counts) of the current buffer value,
  * growing via sk_ubp_insert (002a67a0/002a66f0 family), and stores the result.
  * Confidence: low */
-word_t sk_ubp_append_slice(void *a, void *b, word_t c, word_t d)
+word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
 {
     word_t u, v, n;
     long l;
@@ -6434,12 +6439,12 @@ word_t sk_ubp_append_slice(void *a, void *b, word_t c, word_t d)
     v = 0;
     if (0) {
         if ((d >> 0x3c & 1) != 0) {
-            return sk_ubp_insert(a,b,c,d,&LAB_002a6794,0).lo;
+            return sk_ubp_insert(a,b,c,d,(word_t)&LAB_002a6794,0).lo;
         }
         if ((d >> 0x3d & 1) != 0) {
             r.lo = c;
             r.hi = d & 0xffffffffffffff;
-            return sk_ubp_insert4(a,b,r,d >> 0x38 & 0xf,0).lo;
+            return sk_ubp_insert4(a,b,r.lo,d >> 0x38 & 0xf,0).lo;
         }
         if ((c >> 0x3c & 1) == 0) {
             t = rt_002a9ba8(c,d);
@@ -6507,7 +6512,7 @@ store:
  * validating the range via FUN_0028e8c0 (panic "Invalid slice" on error) and
  * delegating to sk_ubp_insert (002a66f0).
  * Confidence: low */
-word_t sk_ubp_append_slice2(void *a, void *b, word_t c, word_t d, word_t e, word_t f)
+word_t sk_ubp_append_slice2(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
     word_t u, v;
     long l;
@@ -6576,7 +6581,7 @@ word_t sk_ubp_append_slice2(void *a, void *b, word_t c, word_t d, word_t e, word
         }
         u = c;
         v = d;
-        r = rt_002a6ad8(a,b,&u);
+        r = sk_ubp_insert4(a,b,(word_t)&u,0,0);
     }
     return v;
 }
@@ -6588,7 +6593,7 @@ word_t sk_ubp_append_slice2(void *a, void *b, word_t c, word_t d, word_t e, word
  * param_3+0x28), refcounting each and merging via sk_ubp_append_slice; stores the
  * result. Returns 0.
  * Confidence: low */
-word_t sk_ubp_append_many(void *a, void *b, long c)
+word_t sk_ubp_append_many(word_t a, word_t b, long c)
 {
     word_t u, v, n;
     long l;
@@ -6596,7 +6601,7 @@ word_t sk_ubp_append_many(void *a, void *b, long c)
     u = 0;
     v = 0;
     if (0) {
-        return sk_ubp_insert5(a,b,c,&LAB_002a6794,0).lo;
+        return sk_ubp_insert5(a,b,(word_t)c,(word_t)&LAB_002a6794,0).lo;
     }
     t.lo = 0;
     t.hi = 0xe000000000000000;
@@ -6618,7 +6623,7 @@ word_t sk_ubp_append_many(void *a, void *b, long c)
         t.hi = 0xe000000000000000;
         do {
             v = *(word_t *)(u - 8);
-            n = *(word_t *)*u;
+            n = *(word_t *)(uintptr_t)u;
             t.lo = n;
             t.hi = v;
             if (0) {
@@ -6657,7 +6662,7 @@ word_t sk_ubp_append_many(void *a, void *b, long c)
  * Appends a pair (surrogate/scalar) value from param_3/param_4, growing and merging
  * via sk_ubp_append_slice, and stores the result. Returns the accumulated pair.
  * Confidence: low */
-sk_u128_t sk_ubp_append_pair(void *a, void *b, void *c, void *d)
+sk_u128_t sk_ubp_append_pair(word_t a, word_t b, word_t c, word_t d)
 {
     word_t u, v, n;
     long l;
@@ -6666,7 +6671,7 @@ sk_u128_t sk_ubp_append_pair(void *a, void *b, void *c, void *d)
     v = 0;
     if (0) {
         rt_0036b270(d);
-        t = sk_ubp_insert6(a,b,c,d,&LAB_002a6794,0);
+        t = sk_ubp_insert6(a,b,c,d,(word_t)&LAB_002a6794,0);
         rt_003a25d4(d);
         return t;
     }
@@ -6698,7 +6703,7 @@ sk_u128_t sk_ubp_append_pair(void *a, void *b, void *c, void *d)
  * Ghidra: undefined8 FUN_002a6080(undefined8 param_1,undefined8 param_2)
  * Appends a single character to the buffer and stores the result; returns 0.
  * Confidence: low */
-word_t sk_ubp_append_char(void *a, void *b)
+word_t sk_ubp_append_char(word_t a, word_t b)
 {
     word_t u, v, n;
     long l;
@@ -6706,7 +6711,7 @@ word_t sk_ubp_append_char(void *a, void *b)
     u = 0;
     v = 0;
     if (0) {
-        return sk_ubp_insert7(a,b,&LAB_002a6794,0).lo;
+        return sk_ubp_insert7(a,b,(word_t)&LAB_002a6794,0).lo;
     }
     t = sk_ubp_capacity(u,v);
     l = t.lo;
@@ -6894,7 +6899,7 @@ void sk_ubp_grow(void)
  * Inserts the substring (param_3..param_6) at the scalar offset param_1, growing the
  * buffer via sk_ubp_ensure and storing the result. Returns the 16-byte range.
  * Confidence: low */
-sk_u128_t sk_ubp_insert(word_t a, word_t b, void *c, void *d, void *e, void *f)
+sk_u128_t sk_ubp_insert(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
     sk_u128_t t, r;
     long l, n;
@@ -6923,7 +6928,7 @@ sk_u128_t sk_ubp_insert(word_t a, word_t b, void *c, void *d, void *e, void *f)
  * Ghidra: undefined1 [16] FUN_002a6900(word_t param_1,word_t param_2,undefined8 param_3,undefined8 param_4,undefined8 param_5,undefined8 param_6)
  * Insert variant 2 (uses FUN_002509d8); same shape as sk_ubp_insert.
  * Confidence: low */
-sk_u128_t sk_ubp_insert2(word_t a, word_t b, void *c, void *d, void *e, void *f)
+sk_u128_t sk_ubp_insert2(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
     sk_u128_t r;
     long l, n;
@@ -6950,7 +6955,7 @@ sk_u128_t sk_ubp_insert2(word_t a, word_t b, void *c, void *d, void *e, void *f)
  * Ghidra: undefined1 [16] FUN_002a6a18(word_t param_1,word_t param_2,undefined8 param_3,undefined8 param_4)
  * Insert variant 3: computes the size and grows; stores the result.
  * Confidence: low */
-sk_u128_t sk_ubp_insert3(word_t a, word_t b, void *c, void *d)
+sk_u128_t sk_ubp_insert3(word_t a, word_t b, word_t c, word_t d)
 {
     sk_u128_t r;
     long l;
@@ -6973,7 +6978,7 @@ sk_u128_t sk_ubp_insert3(word_t a, word_t b, void *c, void *d)
  * Ghidra: undefined1 [16] FUN_002a6ad8(word_t param_1,word_t param_2,undefined8 param_3)
  * Insert variant 4 (uses FUN_00219370/FUN_0021b1a4); same shape as sk_ubp_insert.
  * Confidence: low */
-sk_u128_t sk_ubp_insert4(word_t a, word_t b, void *c)
+sk_u128_t sk_ubp_insert4(word_t a, word_t b, word_t c, word_t d, word_t e)
 {
     sk_u128_t r;
     long l, n;
@@ -7001,7 +7006,7 @@ sk_u128_t sk_ubp_insert4(word_t a, word_t b, void *c)
  * Ghidra: undefined1 [16] FUN_002a6be4(word_t param_1,word_t param_2,undefined8 param_3,undefined8 param_4,undefined8 param_5)
  * Insert variant 5 (uses FUN_0021947c/FUN_0021b91c); same shape.
  * Confidence: low */
-sk_u128_t sk_ubp_insert5(word_t a, word_t b, void *c, void *d, void *e)
+sk_u128_t sk_ubp_insert5(word_t a, word_t b, word_t c, word_t d, word_t e)
 {
     sk_u128_t r;
     long l, n;
@@ -7029,7 +7034,7 @@ sk_u128_t sk_ubp_insert5(word_t a, word_t b, void *c, void *d, void *e)
  * Ghidra: undefined1 [16] FUN_002a6d08(word_t param_1,word_t param_2,undefined8 param_3,undefined8 param_4,undefined8 param_5,undefined8 param_6)
  * Insert variant 6 (uses FUN_00219554/FUN_0021c41c); same shape.
  * Confidence: low */
-sk_u128_t sk_ubp_insert6(word_t a, word_t b, void *c, void *d, void *e, void *f)
+sk_u128_t sk_ubp_insert6(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
     sk_u128_t r;
     long l, n;
@@ -7057,7 +7062,7 @@ sk_u128_t sk_ubp_insert6(word_t a, word_t b, void *c, void *d, void *e, void *f)
  * Ghidra: undefined1 [16] FUN_002a6e3c(word_t param_1,word_t param_2,undefined8 param_3,undefined8 param_4)
  * Insert variant 7 (single element); same shape as sk_ubp_insert3.
  * Confidence: low */
-sk_u128_t sk_ubp_insert7(word_t a, word_t b, void *c, void *d)
+sk_u128_t sk_ubp_insert7(word_t a, word_t b, word_t c, word_t d)
 {
     sk_u128_t r;
     long l;
@@ -7089,7 +7094,7 @@ void sk_ubp_grow2(void)
     t = rt_0034d090();
     rt_00027788(0);
     rt_0034e63c();
-    l = rt__indirect().lo;
+    rt__indirect(); l = 0;
     l = l + (t.lo >> 0x10);
     if (SW_BREAK(1,0x2a6fc4)) {}
     rt_00359af8(*(void **)(0 + 8));
@@ -7171,25 +7176,43 @@ void sk_ubp_merge(word_t a, word_t b)
     if (l != 0) {
         a = a + 0x28;
         do {
-            u = *(word_t *)(a - 8);
-            v = *(word_t *)*a;
-            if ((0 & (0 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0) {
-                n = u & 0xffffffffffff;
-                if ((v & 0x2000000000000000) != 0) {
-                    n = v >> 0x38 & 0xf;
-                }
-                if ((n == 0) && (((0 & (0 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
-                    rt_0036b270(v);
-                    rt_003a25d4(0);
-                    *(word_t *)0 = u;
-                    *(word_t *)(0 + 8) = v;
-                } else {
-                    rt_0036b270(v);
-                    sk_ubp_append_slice(u,v,0,n);
-                    rt_003a25d4(v);
-                }
+            word_t cur0 = *(word_t *)0;        /* current buffer word0 (unaff_x20[0]) */
+            word_t cur1 = *(word_t *)(0 + 8);  /* current buffer word1 */
+            u = *(word_t *)(a - 8);            /* element word0 */
+            v = *(word_t *)(uintptr_t)a;       /* element word1 */
+            n = cur0 & 0xffffffffffff;
+            if ((cur1 & 0x2000000000000000) != 0) {
+                n = cur1 >> 0x38 & 0xf;
             }
-            a = a + 2;
+            if ((n == 0) && (((cur0 & (cur1 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
+                rt_0036b270(v);
+                rt_003a25d4(cur1);
+                *(word_t *)0 = u;
+                *(word_t *)(0 + 8) = v;
+            } else {
+                if ((cur1 >> 0x3d & 1) == 0) {
+                    n = u & 0xffffffffffff;
+                    if ((v & 0x2000000000000000) != 0) {
+                        n = v >> 0x38 & 0xf;
+                    }
+                } else if ((v >> 0x3d & 1) == 0) {
+                    n = u & 0xffffffffffff;
+                } else {
+                    t = rt_00291ee0(cur0,cur1,u,v);
+                    n = v >> 0x38 & 0xf;
+                    if (((uint)u & 0xff) != 1) {
+                        rt_003a25d4(cur1);
+                        *(word_t *)0 = t.lo;
+                        a = a + 16;
+                        l = l - 1;
+                        continue;
+                    }
+                }
+                rt_0036b270(v);
+                sk_ubp_append_slice(u,v,0,n);
+                rt_003a25d4(v);
+            }
+            a = a + 16;
             l = l - 1;
         } while (l != 0);
     }

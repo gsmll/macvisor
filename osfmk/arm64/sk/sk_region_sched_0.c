@@ -15,10 +15,17 @@
 extern uint8_t *per_cpu;
 extern uint64_t per_cpu_err;
 
-/* Method-table function pointer (Ghidra "code_fn_t"). */
-typedef uint64_t (*code_fn_t)(uint64_t, ...);
+/* In-stack argument frame (Ghidra stack0x... tokens). */
+extern uint64_t stack_arg;
+extern uint64_t dat_004e6548;
+extern uint64_t dat_004e64c8;
+extern uint64_t dat_004e6468;
+extern uint64_t dat_004e65c8;
 
-/* 16-byte aggregate returned by message writers (Ghidra "undefined1 [16]").
+/* Method-table function pointer (Ghidra "code_fn_t"). */
+typedef uint64_t (*code_fn_t)();  /* unspecified params: any arity */
+
+/* 16-uint8_t aggregate returned by message writers (Ghidra "undefined1 [16]").
  * lo = bytes 0..7 (Ghidra _0_8_), hi = bytes 8..15 (_8_8_). */
 typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define _0_8_ lo
@@ -28,8 +35,12 @@ typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define _12_4_ hi
 #define CONCAT44(hi4, lo4)  (((uint64_t)(hi4) << 32) | (uint64_t)(lo4))
 #define CONCAT31(hi3, lo1)  (((uint64_t)(hi3) << 8)  | (uint64_t)(lo1))
-#define CONCAT71(hi7, lo1)  (((uint64_t)(hi7) << 8)  | (uint64_t)(lo1))
+#define CONCAT71(hi7, lo1)  (((uint64_t)(hi7) << 8)  | (uint64_t)(lo1) & 0xffull)
+#define EXTRACT17(x)  (((uint64_t)(x) >> 8) & 0x00ffffffffffffffull)
+#define EXTRACT13(x)  (((uint32_t)(x) >> 8) & 0x00ffffffu)
 #define SCARRY8(v, bits)    ((int64_t)(v) < 0)
+
+/* Hand-written simple helper externs (bodies in-file under cl4_* names). */
 
 /* Breakpoint: SoftwareBreakpoint(1, addr). */
 #define cl4_break(addr) __asm__ volatile("brk #1" : : : "memory")
@@ -89,99 +100,6 @@ extern uint64_t FUN_0017f408();  /* 0x0017f408 */
 extern uint64_t FUN_0017f98c();  /* 0x0017f98c */
 extern uint64_t FUN_0017fcc4();  /* 0x0017fcc4 */
 extern uint64_t FUN_0017fcf4();  /* 0x0017fcf4 */
-extern uint64_t FUN_001807dc();  /* 0x001807dc */
-extern uint64_t FUN_001812dc();  /* 0x001812dc */
-extern uint64_t FUN_00181374();  /* 0x00181374 */
-extern uint64_t FUN_00181554();  /* 0x00181554 */
-extern uint64_t FUN_0018157c();  /* 0x0018157c */
-extern uint64_t FUN_001815a4();  /* 0x001815a4 */
-extern uint64_t FUN_001817bc();  /* 0x001817bc */
-extern uint64_t FUN_001819a0();  /* 0x001819a0 */
-extern uint64_t FUN_00181a2c();  /* 0x00181a2c */
-extern uint64_t FUN_00181b3c();  /* 0x00181b3c */
-extern uint64_t FUN_00181bf0();  /* 0x00181bf0 */
-extern uint64_t FUN_00181c44();  /* 0x00181c44 */
-extern uint64_t FUN_00181eb8();  /* 0x00181eb8 */
-extern uint64_t FUN_00181fd0();  /* 0x00181fd0 */
-extern uint64_t FUN_00182080();  /* 0x00182080 */
-extern uint64_t FUN_00184390();  /* 0x00184390 */
-extern uint64_t FUN_001845a8();  /* 0x001845a8 */
-extern uint64_t FUN_0018569c();  /* 0x0018569c */
-extern uint64_t FUN_001857a8();  /* 0x001857a8 */
-extern uint64_t FUN_00185cbc();  /* 0x00185cbc */
-extern uint64_t FUN_00185ce4();  /* 0x00185ce4 */
-extern uint64_t FUN_00186094();  /* 0x00186094 */
-extern uint64_t FUN_00186460();  /* 0x00186460 */
-extern uint64_t FUN_001866dc();  /* 0x001866dc */
-extern uint64_t FUN_00186aa8();  /* 0x00186aa8 */
-extern uint64_t FUN_00186e3c();  /* 0x00186e3c */
-extern uint64_t FUN_001871d0();  /* 0x001871d0 */
-extern uint64_t FUN_0018758c();  /* 0x0018758c */
-extern uint64_t FUN_00187820();  /* 0x00187820 */
-extern uint64_t FUN_00187aac();  /* 0x00187aac */
-extern uint64_t FUN_00187d28();  /* 0x00187d28 */
-extern uint64_t FUN_00187fa4();  /* 0x00187fa4 */
-extern uint64_t FUN_00188220();  /* 0x00188220 */
-extern uint64_t FUN_0018849c();  /* 0x0018849c */
-extern uint64_t FUN_00188718();  /* 0x00188718 */
-extern uint64_t FUN_00188994();  /* 0x00188994 */
-extern uint64_t FUN_00188c10();  /* 0x00188c10 */
-extern uint64_t FUN_00188e8c();  /* 0x00188e8c */
-extern uint64_t FUN_00189108();  /* 0x00189108 */
-extern uint64_t FUN_001894b4();  /* 0x001894b4 */
-extern uint64_t FUN_00189730();  /* 0x00189730 */
-extern uint64_t FUN_0018999c();  /* 0x0018999c */
-extern uint64_t FUN_00189c08();  /* 0x00189c08 */
-extern uint64_t FUN_00189e84();  /* 0x00189e84 */
-extern uint64_t FUN_0018a100();  /* 0x0018a100 */
-extern uint64_t FUN_0018a37c();  /* 0x0018a37c */
-extern uint64_t FUN_0018a608();  /* 0x0018a608 */
-extern uint64_t FUN_0018a8ac();  /* 0x0018a8ac */
-extern uint64_t FUN_0018ab38();  /* 0x0018ab38 */
-extern uint64_t FUN_0018ada8();  /* 0x0018ada8 */
-extern uint64_t FUN_0018b094();  /* 0x0018b094 */
-extern uint64_t FUN_0018b1bc();  /* 0x0018b1bc */
-extern uint64_t FUN_0018b1e4();  /* 0x0018b1e4 */
-extern uint64_t FUN_0018b2f4();  /* 0x0018b2f4 */
-extern uint64_t FUN_0018b5c4();  /* 0x0018b5c4 */
-extern uint64_t FUN_0018b830();  /* 0x0018b830 */
-extern uint64_t FUN_0018bbac();  /* 0x0018bbac */
-extern uint64_t FUN_0018bc58();  /* 0x0018bc58 */
-extern uint64_t FUN_0018bf2c();  /* 0x0018bf2c */
-extern uint64_t FUN_0018bf78();  /* 0x0018bf78 */
-extern uint64_t FUN_0018c020();  /* 0x0018c020 */
-extern uint64_t FUN_0018c078();  /* 0x0018c078 */
-extern uint64_t FUN_0018c214();  /* 0x0018c214 */
-extern uint64_t FUN_0018c3cc();  /* 0x0018c3cc */
-extern uint64_t FUN_0018c540();  /* 0x0018c540 */
-extern uint64_t FUN_0018c594();  /* 0x0018c594 */
-extern uint64_t FUN_0018c660();  /* 0x0018c660 */
-extern uint64_t FUN_0018c7b8();  /* 0x0018c7b8 */
-extern uint64_t FUN_0018c968();  /* 0x0018c968 */
-extern uint64_t FUN_0018cad4();  /* 0x0018cad4 */
-extern uint64_t FUN_0018cb24();  /* 0x0018cb24 */
-extern uint64_t FUN_0018cc2c();  /* 0x0018cc2c */
-extern uint64_t FUN_0018cdd8();  /* 0x0018cdd8 */
-extern uint64_t FUN_0018cfe8();  /* 0x0018cfe8 */
-extern uint64_t FUN_0018d0e4();  /* 0x0018d0e4 */
-extern uint64_t FUN_0018d208();  /* 0x0018d208 */
-extern uint64_t FUN_0018d304();  /* 0x0018d304 */
-extern uint64_t FUN_0018d414();  /* 0x0018d414 */
-extern uint64_t FUN_0018d494();  /* 0x0018d494 */
-extern uint64_t FUN_0018d690();  /* 0x0018d690 */
-extern uint64_t FUN_0018d710();  /* 0x0018d710 */
-extern uint64_t FUN_0018daf4();  /* 0x0018daf4 */
-extern uint64_t FUN_0018dbec();  /* 0x0018dbec */
-extern uint64_t FUN_0018dd04();  /* 0x0018dd04 */
-extern uint64_t FUN_0018ddd8();  /* 0x0018ddd8 */
-extern uint64_t FUN_0018de98();  /* 0x0018de98 */
-extern uint64_t FUN_0018deb8();  /* 0x0018deb8 */
-extern uint64_t FUN_0018e1c0();  /* 0x0018e1c0 */
-extern uint64_t FUN_0018e290();  /* 0x0018e290 */
-extern uint64_t FUN_0018e2b4();  /* 0x0018e2b4 */
-extern uint64_t FUN_0018eb68();  /* 0x0018eb68 */
-extern uint64_t FUN_0018fcb0();  /* 0x0018fcb0 */
-extern uint64_t FUN_0018fcd8();  /* 0x0018fcd8 */
 extern uint64_t FUN_001900d4();  /* 0x001900d4 */
 extern uint64_t FUN_001904d8();  /* 0x001904d8 */
 extern uint64_t FUN_001908f0();  /* 0x001908f0 */
@@ -244,6 +162,151 @@ extern uint64_t thunk_FUN_00024068();  /* 0x00024068 */
 extern uint64_t thunk_FUN_002298d4();  /* 0x002298d4 */
 extern uint64_t thunk_FUN_002acbb8();  /* 0x002acbb8 */
 
+void FUN_001807a8();
+void FUN_001807c4();
+void FUN_00180ef8();
+void FUN_00180f10();
+void FUN_00180f28();
+void FUN_00180f44();
+void FUN_00180f5c();
+void FUN_00180f74();
+void FUN_00180f8c();
+void FUN_00180fa4();
+void FUN_00180fbc();
+void FUN_00180fd4();
+void FUN_00180ff8();
+void FUN_00181010();
+void FUN_00181028();
+void FUN_00181040();
+void FUN_00181058();
+void FUN_00181070();
+void FUN_00181088();
+long FUN_001810a4();
+long FUN_00181154();
+void FUN_00181284();
+void FUN_001812b0();
+cl4_16_t FUN_001812dc();
+cl4_16_t FUN_00181374();
+void FUN_00181558();
+void FUN_00181580();
+uint32_t FUN_001817bc();
+cl4_16_t FUN_00181a2c();
+uint32_t FUN_00181af0();
+cl4_16_t FUN_00181c44();
+uint32_t FUN_00181e10();
+void FUN_00181eb8();
+void FUN_00182080();
+void FUN_00182468();
+void FUN_001825c4();
+void FUN_00182674();
+long FUN_001827d0();
+void FUN_001828dc();
+void FUN_00182aac();
+void FUN_00182e1c();
+void FUN_001831a0();
+void FUN_00183524();
+void FUN_00183b2c();
+void FUN_00183ea0();
+void FUN_00183ecc();
+void FUN_00183ef8();
+void FUN_00183f24();
+void FUN_00183f50();
+void FUN_001840e4();
+void FUN_00184110();
+void FUN_0018413c();
+void FUN_0018430c();
+void FUN_00184338();
+void FUN_00184364();
+void FUN_00184390();
+void FUN_00184528();
+void FUN_00184554();
+void FUN_00184580();
+uint32_t FUN_0018473c();
+uint32_t FUN_00184cd4();
+void FUN_00184ffc();
+void FUN_00185198();
+void FUN_001851e0();
+void FUN_00185500();
+void FUN_001857a8();
+uint64_t * FUN_00185b94();
+uint64_t FUN_00185ce4();
+uint64_t FUN_00187820();
+void FUN_00187d28();
+void FUN_00188220();
+uint64_t FUN_00188718();
+void FUN_00188c10();
+uint32_t FUN_00189108();
+void FUN_00189730();
+void FUN_00189c08();
+void FUN_0018a100();
+uint32_t FUN_0018a608();
+void FUN_0018ab38();
+uint64_t FUN_0018b094();
+uint64_t FUN_0018b1e4();
+void FUN_0018b5c4();
+void FUN_0018bbac();
+void FUN_0018bd0c();
+uint32_t FUN_0018bd48();
+void FUN_0018bdf4();
+void FUN_0018bf78();
+uint64_t FUN_0018c078();
+uint32_t FUN_0018c140();
+uint32_t FUN_0018c214();
+void FUN_0018c3cc();
+void FUN_0018c754();
+uint32_t FUN_0018c790();
+void FUN_0018c82c();
+void FUN_0018cad4();
+uint32_t FUN_0018cdb0();
+void FUN_0018cea4();
+void FUN_0018d0e4();
+uint64_t FUN_0018d304();
+void FUN_0018d494();
+void FUN_0018d5c4();
+void FUN_0018d710();
+void FUN_0018d8a0();
+void FUN_0018d970();
+void FUN_0018d9dc();
+void FUN_0018da08();
+void FUN_0018da34();
+void FUN_0018daa0();
+void FUN_0018dacc();
+void FUN_0018dbc0();
+void FUN_0018dbec();
+void FUN_0018dcdc();
+void FUN_0018ddac();
+void FUN_0018ddd8();
+uint64_t FUN_0018deb8();
+void FUN_0018e2b8();
+void FUN_0018e2e0();
+void FUN_0018e314();
+void FUN_0018e348();
+void FUN_0018e77c();
+void FUN_0018e950();
+void FUN_0018ea08();
+void FUN_0018ea80();
+void FUN_0018eac8();
+void FUN_0018eb10();
+void FUN_0018eb3c();
+void FUN_0018eb68();
+uint64_t FUN_0018ec00();
+void FUN_0018efa8();
+void FUN_0018eff0();
+void FUN_0018f038();
+void FUN_0018f080();
+uint32_t FUN_0018f0c8();
+void FUN_0018f130();
+void FUN_0018f178();
+void FUN_0018f1c0();
+void FUN_0018f5c4();
+void FUN_0018f63c();
+void FUN_0018f684();
+void FUN_0018f6fc();
+void FUN_0018f7a4();
+void FUN_0018f7ec();
+void FUN_0018f8d8();
+uint64_t FUN_0018fcd8();
+
 /* String/data references. */
 extern char s_Fatal_error_005accd0[];
 extern char s_StackshotConclaveSupport_Stacksh_005cbc40[];
@@ -251,6 +314,338 @@ extern char s_XnuProxyStackshotSupport_Stacksh_005cbf60[];
 extern char s_XnuUpcallsV2_XnuUpcallsV2_Swift__005ccbc0[];
 extern char s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0[];
 extern char s_XnuUpcalls_XnuUpcalls_swift_005cbfa0[];
+
+
+
+void FUN_001807a4(uint64_t p1, uint64_t p2);
+void FUN_001807a8(uint64_t p1, uint64_t p2);
+void FUN_001807c0(uint64_t p1, uint64_t p2);
+void FUN_001807c4(uint64_t p1, uint64_t p2);
+void FUN_001807dc(uint64_t *p1, uint64_t *p2, uint64_t *p3, uint64_t p4);
+void FUN_00180ef8(void);
+void FUN_00180efc(void);
+void FUN_00180f10(void);
+void FUN_00180f14(void);
+void FUN_00180f28(void);
+void FUN_00180f2c(void);
+void FUN_00180f44(void);
+void FUN_00180f48(void);
+void FUN_00180f5c(void);
+void FUN_00180f60(void);
+void FUN_00180f74(void);
+void FUN_00180f78(void);
+void FUN_00180f8c(void);
+void FUN_00180f90(void);
+void FUN_00180fa4(void);
+void FUN_00180fa8(void);
+void FUN_00180fbc(void);
+void FUN_00180fc0(void);
+void FUN_00180fd4(void);
+void FUN_00180fd8(void);
+void FUN_00180ff8(void);
+void FUN_00180ffc(void);
+void FUN_00181010(void);
+void FUN_00181014(void);
+void FUN_00181028(void);
+void FUN_0018102c(void);
+void FUN_00181040(void);
+void FUN_00181044(void);
+void FUN_00181058(void);
+void FUN_0018105c(void);
+void FUN_00181070(void);
+void FUN_00181074(void);
+void FUN_00181088(void);
+void FUN_0018108c(void);
+long FUN_001810a4(uint64_t p1, uint64_t p2);
+void FUN_00181118(void);
+long FUN_00181154(uint64_t p1, uint64_t p2, code_fn_t p3);
+void FUN_00181204(uint64_t p1, uint64_t p2, code_fn_t p3);
+void FUN_00181284(uint64_t p1);
+void FUN_00181288(uint64_t p1);
+void FUN_001812b0(uint64_t p1);
+void FUN_001812b4(uint64_t p1);
+cl4_16_t FUN_001812dc(uint64_t p1, code_fn_t p2);
+void FUN_00181310(void);
+cl4_16_t FUN_00181374(void);
+void FUN_00181554(uint64_t p1);
+void FUN_00181558(uint64_t p1);
+void FUN_0018157c(uint64_t p1);
+void FUN_00181580(uint64_t p1);
+cl4_16_t FUN_001815a4(uint64_t p1, uint64_t p2);
+uint32_t FUN_001817bc(void);
+void FUN_001819a0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
+cl4_16_t FUN_00181a2c(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_00181ab4(uint64_t *p1);
+uint32_t FUN_00181af0(uint64_t p1, uint64_t p2, uint64_t p3);
+uint32_t FUN_00181af4(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_00181b3c(uint64_t p1, uint64_t p2, char p3, uint64_t p4, uint64_t p5);
+cl4_16_t FUN_00181bf0(uint64_t p1, uint64_t p2, uint64_t p3);
+cl4_16_t FUN_00181c44(uint64_t p1, uint64_t p2);
+void FUN_00181db8(uint64_t *p1);
+uint32_t FUN_00181e10(uint64_t p1, uint64_t p2, uint64_t p3);
+uint32_t FUN_00181e14(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_00181eb8(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+uint64_t FUN_00181f20(uint64_t p1, uint64_t p2);
+void FUN_00181fd0(uint64_t a, uint64_t b);
+void FUN_00181fd4(uint64_t a, uint64_t b);
+uint8_t FUN_0018200c(void);
+void FUN_00182018(uint64_t v);
+void FUN_00182080(uint64_t *p1, uint32_t p2);
+void FUN_001823e0(void);
+void FUN_00182430(uint64_t v);
+void FUN_00182468(void);
+void FUN_001824d4(uint64_t a, uint64_t b);
+void FUN_00182528(uint64_t a, uint64_t b);
+void FUN_0018257c(void);
+void FUN_001825c4(void);
+void FUN_00182630(void);
+void FUN_00182674(void);
+void FUN_0018269c(void);
+void FUN_001826f0(uint64_t a, uint64_t b);
+void FUN_0018276c(uint64_t a, uint64_t b);
+long FUN_001827d0(uint64_t p1, uint64_t p2);
+void FUN_00182860(uint64_t p1, uint64_t p2);
+void FUN_001828dc(void);
+void FUN_00182900(void);
+void FUN_00182aac(char *p1);
+void FUN_00182c64(char *p1);
+void FUN_00182e1c(char *p1);
+void FUN_00182fd4(char *p1, uint64_t p2);
+void FUN_001831a0(char *p1, uint64_t p2);
+void FUN_0018336c(char *p1);
+void FUN_00183524(char *p1, char *p2);
+uint64_t FUN_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_t p4);
+void FUN_00183b2c(char *p1);
+uint32_t FUN_00183ce4(char *p1);
+void FUN_00183ea0(uint64_t p1, uint64_t p2);
+void FUN_00183ea4(uint64_t p1, uint64_t p2);
+void FUN_00183ecc(uint64_t p1, uint64_t p2);
+void FUN_00183ed0(uint64_t p1, uint64_t p2);
+void FUN_00183ef8(uint64_t p1, uint64_t p2);
+void FUN_00183efc(uint64_t p1, uint64_t p2);
+void FUN_00183f24(uint64_t p1, uint64_t p2);
+void FUN_00183f28(uint64_t p1, uint64_t p2);
+void FUN_00183f50(void);
+void FUN_001840e0(uint64_t p1, uint64_t p2);
+void FUN_001840e4(uint64_t p1, uint64_t p2);
+void FUN_0018410c(uint64_t p1, uint64_t p2);
+void FUN_00184110(uint64_t p1, uint64_t p2);
+void FUN_00184138(uint64_t p1, uint64_t p2);
+void FUN_0018413c(uint64_t p1, uint64_t p2);
+uint32_t FUN_00184164(uint64_t p1, uint64_t p2, uint64_t *p3);
+void FUN_0018430c(uint64_t p1, uint64_t p2);
+void FUN_00184310(uint64_t p1, uint64_t p2);
+void FUN_00184338(uint64_t p1);
+void FUN_0018433c(uint64_t p1);
+void FUN_00184364(uint64_t p1);
+void FUN_00184368(uint64_t p1);
+void FUN_00184390(uint64_t p1, code_fn_t p2);
+void FUN_00184524(uint64_t p1, uint64_t p2);
+void FUN_00184528(uint64_t p1, uint64_t p2);
+void FUN_00184550(uint64_t p1, uint64_t p2);
+void FUN_00184554(uint64_t p1, uint64_t p2);
+void FUN_0018457c(uint64_t p1, uint64_t p2);
+void FUN_00184580(uint64_t p1, uint64_t p2);
+void FUN_001845a8(uint64_t p1, uint64_t p2, code_fn_t p3);
+uint32_t FUN_0018473c(void);
+uint32_t FUN_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+uint32_t FUN_00184cd4(void);
+uint32_t FUN_00184e68(void);
+void FUN_00184ffc(void);
+void FUN_00185174(void);
+void FUN_00185198(void);
+void FUN_001851bc(void);
+void FUN_001851e0(void);
+void FUN_00185370(void);
+void FUN_00185500(void);
+void FUN_0018569c(void);
+void FUN_001857a8(void);
+uint64_t * FUN_00185b58(uint64_t *p1, uint64_t *p2);
+uint64_t * FUN_00185b94(uint64_t *p1, uint64_t *p2);
+cl4_16_t FUN_00185c60(void);
+void FUN_00185cbc(uint64_t p1);
+uint64_t FUN_00185ce4(long p1);
+uint64_t FUN_00186094(uint8_t p1, uint64_t p2, long p3);
+void FUN_00186460(uint8_t p1, uint64_t p2);
+uint64_t FUN_001866dc(uint8_t p1, uint64_t p2, long p3);
+void FUN_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3);
+void FUN_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3);
+void FUN_001871d0(uint8_t p1, uint64_t p2, long p3);
+void FUN_0018758c(uint8_t p1, uint8_t p2, uint64_t p3);
+uint64_t FUN_00187820(uint8_t p1, uint64_t p2);
+uint8_t FUN_00187aac(uint8_t p1);
+void FUN_00187d28(uint64_t p1, uint64_t p2);
+void FUN_00187fa4(uint64_t p1, uint64_t p2);
+void FUN_00188220(uint64_t p1, uint64_t p2);
+void FUN_0018849c(uint64_t p1, uint64_t p2);
+uint64_t FUN_00188718(uint64_t p1);
+void FUN_00188994(uint64_t p1, uint64_t p2);
+void FUN_00188c10(uint64_t p1, uint64_t p2);
+void FUN_00188e8c(uint64_t p1, uint64_t p2);
+uint32_t FUN_00189108(uint64_t p1, uint64_t p2, uint64_t *p3);
+void FUN_001894b4(uint64_t p1, uint64_t p2);
+void FUN_00189730(uint64_t p1);
+void FUN_0018999c(uint64_t p1);
+void FUN_00189c08(uint64_t p1, uint64_t p2);
+void FUN_00189e84(uint64_t p1, uint64_t p2);
+void FUN_0018a100(uint64_t p1, uint64_t p2);
+uint32_t FUN_0018a37c(uint64_t p1, uint64_t p2);
+uint32_t FUN_0018a608(uint64_t p1, uint64_t p2, uint64_t p3);
+uint32_t FUN_0018a8ac(uint64_t p1, uint64_t p2);
+void FUN_0018ab38(uint64_t p1, uint64_t p2);
+uint64_t FUN_0018ada8(long p1);
+uint64_t FUN_0018b094(uint64_t p1, uint64_t p2);
+void FUN_0018b1bc(uint64_t p1);
+uint64_t FUN_0018b1e4(uint64_t p1, uint64_t p2);
+void FUN_0018b2f4(uint64_t *p1, uint64_t p2);
+void FUN_0018b5c4(uint64_t p1);
+void FUN_0018b830(uint64_t *p1, uint64_t p2);
+void FUN_0018bbac(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_0018bc58(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5);
+void FUN_0018bd0c(void);
+uint32_t FUN_0018bd44(void);
+uint32_t FUN_0018bd48(void);
+void FUN_0018bd6c(void);
+void FUN_0018bdbc(uint64_t v);
+void FUN_0018bdf4(void);
+void FUN_0018be40(uint8_t *out, uint32_t *arg);
+void FUN_0018be84(uint64_t a, uint64_t b);
+void FUN_0018bed8(uint64_t a, uint64_t b);
+uint32_t FUN_0018bf2c(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_0018bf78(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+void FUN_0018c020(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5);
+uint64_t FUN_0018c078(uint64_t p1, uint64_t p2);
+void FUN_0018c108(void);
+uint32_t FUN_0018c140(void);
+uint32_t FUN_0018c144(void);
+void FUN_0018c168(uint64_t a, uint64_t b);
+void FUN_0018c1bc(uint64_t a, uint64_t b);
+uint32_t FUN_0018c214(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_0018c288(long p1);
+void FUN_0018c3cc(long p1, uint64_t p2, uint64_t p3);
+void FUN_0018c540(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5);
+void FUN_0018c754(void);
+uint32_t FUN_0018c78c(void);
+uint32_t FUN_0018c790(void);
+uint32_t FUN_0018c7b8(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_0018c82c(long p1);
+void FUN_0018c968(long p1, uint64_t p2, uint64_t p3);
+void FUN_0018cad4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5);
+void FUN_0018cd78(void);
+uint32_t FUN_0018cdb0(void);
+uint32_t FUN_0018cdb4(void);
+void FUN_0018cea4(long p1);
+void FUN_0018cfe8(void);
+void FUN_0018d0e4(uint64_t p1, uint64_t p2);
+void FUN_0018d208(void);
+uint64_t FUN_0018d304(void);
+void FUN_0018d414(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+void FUN_0018d494(uint64_t *p1);
+uint64_t FUN_0018d50c(uint64_t p1, uint64_t p2);
+void FUN_0018d5c4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5);
+void FUN_0018d690(uint64_t p1, uint64_t p2, uint64_t p3);
+void FUN_0018d710(uint64_t *p1, uint64_t p2, uint64_t *p3);
+uint64_t FUN_0018d7e8(uint64_t p1, uint64_t p2);
+void FUN_0018d8a0(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5);
+void FUN_0018d96c(uint64_t p1, uint64_t p2);
+void FUN_0018d970(uint64_t p1, uint64_t p2);
+void FUN_0018d9d8(void);
+void FUN_0018d9dc(void);
+void FUN_0018da04(void);
+void FUN_0018da08(void);
+void FUN_0018da30(uint64_t p1, uint64_t p2);
+void FUN_0018da34(uint64_t p1, uint64_t p2);
+void FUN_0018da9c(void);
+void FUN_0018daa0(void);
+void FUN_0018dac8(void);
+void FUN_0018dacc(void);
+void FUN_0018daf4(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4);
+void FUN_0018dbc0(uint64_t p1, uint64_t p2);
+void FUN_0018dbc4(uint64_t p1, uint64_t p2);
+void FUN_0018dbec(uint64_t *p1, uint64_t p2, uint64_t *p3, code_fn_t p4);
+void FUN_0018dcd8(void);
+void FUN_0018dcdc(void);
+uint64_t FUN_0018dd04(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
+void FUN_0018ddac(void);
+void FUN_0018ddb0(void);
+void FUN_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5, uint64_t p6, uint64_t p7);
+void FUN_0018de98(void);
+uint64_t FUN_0018deb8(uint32_t p1);
+cl4_16_t FUN_0018e1c0(void);
+void FUN_0018e290(uint64_t a, uint64_t b);
+void FUN_0018e294(uint64_t a, uint64_t b);
+void FUN_0018e2b4(uint64_t p1, uint64_t p2);
+void FUN_0018e2b8(uint64_t p1, uint64_t p2);
+void FUN_0018e2dc(void);
+void FUN_0018e2e0(void);
+void FUN_0018e310(void);
+void FUN_0018e314(void);
+void FUN_0018e344(void);
+void FUN_0018e348(void);
+void FUN_0018e38c(uint8_t *out, uint8_t v);
+void FUN_0018e6f4(void);
+void FUN_0018e744(uint64_t v);
+void FUN_0018e77c(void);
+void FUN_0018e7e8(uint64_t a, uint64_t b);
+void FUN_0018e84c(uint64_t a, uint64_t b);
+void FUN_0018e8a0(uint64_t a, uint64_t b);
+void FUN_0018e90c(void);
+void FUN_0018e950(void);
+void FUN_0018e978(void);
+void FUN_0018ea08(void);
+void FUN_0018ea5c(void);
+void FUN_0018ea80(void);
+void FUN_0018eaa4(void);
+void FUN_0018eac8(void);
+void FUN_0018eaec(void);
+void FUN_0018eb10(void);
+void FUN_0018eb14(void);
+void FUN_0018eb3c(void);
+void FUN_0018eb40(void);
+void FUN_0018eb68(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4);
+void FUN_0018ebac(void);
+void FUN_0018ebd0(uint64_t a, uint8_t *b);
+uint64_t FUN_0018ec00(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+void FUN_0018ef04(void);
+uint32_t FUN_0018ef28(void);
+uint32_t FUN_0018ef50(void);
+void FUN_0018efa8(void);
+void FUN_0018efcc(void);
+void FUN_0018eff0(void);
+void FUN_0018f014(void);
+void FUN_0018f038(void);
+void FUN_0018f05c(void);
+void FUN_0018f080(void);
+void FUN_0018f0a4(void);
+uint32_t FUN_0018f0c8(uint64_t p1, uint64_t p2, uint64_t *p3);
+void FUN_0018f10c(void);
+void FUN_0018f130(void);
+void FUN_0018f154(void);
+void FUN_0018f178(void);
+void FUN_0018f19c(void);
+void FUN_0018f1c0(void);
+uint32_t FUN_0018f214(void);
+uint32_t FUN_0018f23c(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
+uint32_t FUN_0018f544(void);
+uint32_t FUN_0018f56c(void);
+void FUN_0018f5c4(void);
+void FUN_0018f5e8(void);
+void FUN_0018f63c(void);
+void FUN_0018f660(void);
+void FUN_0018f684(void);
+void FUN_0018f6d8(void);
+void FUN_0018f6fc(void);
+void FUN_0018f720(uint64_t *p);
+void FUN_0018f780(void);
+void FUN_0018f7a4(void);
+void FUN_0018f7c8(void);
+void FUN_0018f7ec(void);
+long FUN_0018f828(uint64_t p1, uint64_t p2, code_fn_t p3);
+void FUN_0018f8d8(uint64_t p1, uint64_t p2, code_fn_t p3);
+void FUN_0018f958(uint64_t *p);
+cl4_16_t FUN_0018fbe8(void);
+void FUN_0018fcb0(uint64_t p1);
+uint64_t FUN_0018fcd8(long p1);
 
 /* per-CPU accessors used by the upcall layer (unaff_x20/x21). */
 #define cpu per_cpu
@@ -284,7 +679,7 @@ extern uint64_t dat_006695f8;
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001807a4(uint64_t p1, uint64_t p2)
+void FUN_001807a4(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -296,7 +691,7 @@ void cl4_thunk_001807a4(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001807a8(uint64_t p1, uint64_t p2)
+void FUN_001807a8(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -308,7 +703,7 @@ void cl4_thunk_001807a8(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001807c0(uint64_t p1, uint64_t p2)
+void FUN_001807c0(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -320,20 +715,20 @@ void cl4_thunk_001807c0(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001807c4(uint64_t p1, uint64_t p2)
+void FUN_001807c4(uint64_t p1, uint64_t p2)
 {
     ;
 }
 
 
 
-/* FUN_001807dc @ 0x001807dc   (est. cl4_upcall_handler_001807dc)
+/* FUN_001807dc @ 0x001807dc   (est. FUN_001807dc)
  * Ghidra: void FUN_001807dc(ulong *p1,undefined8 *p2,undefined4 *p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_001807dc(uint64_t *p1, uint64_t *p2, uint64_t *p3, uint64_t p4)
+void FUN_001807dc(uint64_t *p1, uint64_t *p2, uint64_t *p3, uint64_t p4)
 {
   uint64_t o;
   uint64_t p;
@@ -436,7 +831,7 @@ void cl4_upcall_handler_001807dc(uint64_t *p1, uint64_t *p2, uint64_t *p3, uint6
     w5 = key2;
     FUN_00022028(key,4,0,&st);
     if (err != (void *)0x0) {
-      *p3 = st._0_4_;
+      *p3 = *(uint32_t *)(uintptr_t)st;
       return;
     }
     fn3 = (uint64_t)key[0];
@@ -580,7 +975,7 @@ LAB_00180b5c:
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180ef8(void)
+void FUN_00180ef8(void)
 {
     ;
 }
@@ -592,7 +987,7 @@ void cl4_thunk_00180ef8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180efc(void)
+void FUN_00180efc(void)
 {
     ;
 }
@@ -604,7 +999,7 @@ void cl4_thunk_00180efc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f10(void)
+void FUN_00180f10(void)
 {
     ;
 }
@@ -616,7 +1011,7 @@ void cl4_thunk_00180f10(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f14(void)
+void FUN_00180f14(void)
 {
     ;
 }
@@ -628,7 +1023,7 @@ void cl4_thunk_00180f14(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f28(void)
+void FUN_00180f28(void)
 {
     ;
 }
@@ -640,7 +1035,7 @@ void cl4_thunk_00180f28(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f2c(void)
+void FUN_00180f2c(void)
 {
     ;
 }
@@ -652,7 +1047,7 @@ void cl4_thunk_00180f2c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f44(void)
+void FUN_00180f44(void)
 {
     ;
 }
@@ -664,7 +1059,7 @@ void cl4_thunk_00180f44(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f48(void)
+void FUN_00180f48(void)
 {
     ;
 }
@@ -676,7 +1071,7 @@ void cl4_thunk_00180f48(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f5c(void)
+void FUN_00180f5c(void)
 {
     ;
 }
@@ -688,7 +1083,7 @@ void cl4_thunk_00180f5c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f60(void)
+void FUN_00180f60(void)
 {
     ;
 }
@@ -700,7 +1095,7 @@ void cl4_thunk_00180f60(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f74(void)
+void FUN_00180f74(void)
 {
     ;
 }
@@ -712,7 +1107,7 @@ void cl4_thunk_00180f74(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f78(void)
+void FUN_00180f78(void)
 {
     ;
 }
@@ -724,7 +1119,7 @@ void cl4_thunk_00180f78(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f8c(void)
+void FUN_00180f8c(void)
 {
     ;
 }
@@ -736,7 +1131,7 @@ void cl4_thunk_00180f8c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180f90(void)
+void FUN_00180f90(void)
 {
     ;
 }
@@ -748,7 +1143,7 @@ void cl4_thunk_00180f90(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fa4(void)
+void FUN_00180fa4(void)
 {
     ;
 }
@@ -760,7 +1155,7 @@ void cl4_thunk_00180fa4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fa8(void)
+void FUN_00180fa8(void)
 {
     ;
 }
@@ -772,7 +1167,7 @@ void cl4_thunk_00180fa8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fbc(void)
+void FUN_00180fbc(void)
 {
     ;
 }
@@ -784,7 +1179,7 @@ void cl4_thunk_00180fbc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fc0(void)
+void FUN_00180fc0(void)
 {
     ;
 }
@@ -796,7 +1191,7 @@ void cl4_thunk_00180fc0(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fd4(void)
+void FUN_00180fd4(void)
 {
     ;
 }
@@ -808,7 +1203,7 @@ void cl4_thunk_00180fd4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180fd8(void)
+void FUN_00180fd8(void)
 {
     ;
 }
@@ -820,7 +1215,7 @@ void cl4_thunk_00180fd8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180ff8(void)
+void FUN_00180ff8(void)
 {
     ;
 }
@@ -832,7 +1227,7 @@ void cl4_thunk_00180ff8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00180ffc(void)
+void FUN_00180ffc(void)
 {
     ;
 }
@@ -844,7 +1239,7 @@ void cl4_thunk_00180ffc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181010(void)
+void FUN_00181010(void)
 {
     ;
 }
@@ -856,7 +1251,7 @@ void cl4_thunk_00181010(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181014(void)
+void FUN_00181014(void)
 {
     ;
 }
@@ -868,7 +1263,7 @@ void cl4_thunk_00181014(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181028(void)
+void FUN_00181028(void)
 {
     ;
 }
@@ -880,7 +1275,7 @@ void cl4_thunk_00181028(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018102c(void)
+void FUN_0018102c(void)
 {
     ;
 }
@@ -892,7 +1287,7 @@ void cl4_thunk_0018102c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181040(void)
+void FUN_00181040(void)
 {
     ;
 }
@@ -904,7 +1299,7 @@ void cl4_thunk_00181040(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181044(void)
+void FUN_00181044(void)
 {
     ;
 }
@@ -916,7 +1311,7 @@ void cl4_thunk_00181044(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181058(void)
+void FUN_00181058(void)
 {
     ;
 }
@@ -928,7 +1323,7 @@ void cl4_thunk_00181058(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018105c(void)
+void FUN_0018105c(void)
 {
     ;
 }
@@ -940,7 +1335,7 @@ void cl4_thunk_0018105c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181070(void)
+void FUN_00181070(void)
 {
     ;
 }
@@ -952,7 +1347,7 @@ void cl4_thunk_00181070(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181074(void)
+void FUN_00181074(void)
 {
     ;
 }
@@ -964,7 +1359,7 @@ void cl4_thunk_00181074(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181088(void)
+void FUN_00181088(void)
 {
     ;
 }
@@ -976,24 +1371,24 @@ void cl4_thunk_00181088(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018108c(void)
+void FUN_0018108c(void)
 {
     ;
 }
 
 
 
-/* FUN_001810a4 @ 0x001810a4   (est. cl4_upcall_handler_001810a4)
+/* FUN_001810a4 @ 0x001810a4   (est. FUN_001810a4)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_001810a4(void)
+long FUN_001810a4(uint64_t p1, uint64_t p2)
 {
   long msgbuf;
   uint64_t msgbuf2;
-  
+
   msgbuf = FUN_0036a940();
   msgbuf2 = FUN_000262ec(0);
   FUN_0036a940(msgbuf2,0x18,7);
@@ -1009,20 +1404,20 @@ void cl4_upcall_handler_001810a4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181118(void)
+void FUN_00181118(void)
 {
     ;
 }
 
 
 
-/* FUN_00181154 @ 0x00181154   (est. cl4_upcall_handler_00181154)
+/* FUN_00181154 @ 0x00181154   (est. FUN_00181154)
  * Ghidra: long FUN_00181154(undefined8 p1,undefined8 p2,code_fn_t p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-long cl4_upcall_handler_00181154(uint64_t p1, uint64_t p2, code_fn_t p3)
+long FUN_00181154(uint64_t p1, uint64_t p2, code_fn_t p3)
 {
   long msgbuf;
   uint64_t msgbuf3;
@@ -1041,13 +1436,13 @@ long cl4_upcall_handler_00181154(uint64_t p1, uint64_t p2, code_fn_t p3)
 
 
 
-/* FUN_00181204 @ 0x00181204   (est. cl4_upcall_handler_00181204)
+/* FUN_00181204 @ 0x00181204   (est. FUN_00181204)
  * Ghidra: void FUN_00181204(undefined8 p1,undefined8 p2,code_fn_t p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00181204(uint64_t p1, uint64_t p2, code_fn_t p3)
+void FUN_00181204(uint64_t p1, uint64_t p2, code_fn_t p3)
 {
   uint64_t msgbuf2;
   long msgbuf;
@@ -1070,7 +1465,7 @@ void cl4_upcall_handler_00181204(uint64_t p1, uint64_t p2, code_fn_t p3)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181284(uint64_t p1)
+void FUN_00181284(uint64_t p1)
 {
     ;
 }
@@ -1082,7 +1477,7 @@ void cl4_thunk_00181284(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181288(uint64_t p1)
+void FUN_00181288(uint64_t p1)
 {
     ;
 }
@@ -1094,7 +1489,7 @@ void cl4_thunk_00181288(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001812b0(uint64_t p1)
+void FUN_001812b0(uint64_t p1)
 {
     ;
 }
@@ -1106,27 +1501,27 @@ void cl4_thunk_001812b0(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001812b4(uint64_t p1)
+void FUN_001812b4(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_001812dc @ 0x001812dc   (est. cl4_upcall_handler_001812dc)
+/* FUN_001812dc @ 0x001812dc   (est. FUN_001812dc)
  * Ghidra: undefined1  [16] FUN_001812dc(undefined8 p1,code_fn_t p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-cl4_16_t cl4_upcall_handler_001812dc(uint64_t p1, code_fn_t p2)
+cl4_16_t FUN_001812dc(uint64_t p1, code_fn_t p2)
 {
   cl4_16_t msgbuf2;
   uint64_t msgbuf;
   long err;
   cl4_16_t msgbuf3;
   
-  msgbuf3 = (*p2)();
+  msgbuf3.lo = (*p2)();
   msgbuf2._8_8_ = msgbuf;
   msgbuf2._0_8_ = msgbuf;
   if (err != 0) {
@@ -1142,20 +1537,20 @@ cl4_16_t cl4_upcall_handler_001812dc(uint64_t p1, code_fn_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181310(void)
+void FUN_00181310(void)
 {
     ;
 }
 
 
 
-/* FUN_00181374 @ 0x00181374   (est. cl4_upcall_handler_00181374)
+/* FUN_00181374 @ 0x00181374   (est. FUN_00181374)
  * Ghidra: undefined1  [16] FUN_00181374(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-cl4_16_t cl4_upcall_handler_00181374(void)
+cl4_16_t FUN_00181374(void)
 {
   uint64_t w3;
   uint32_t *msgbuf4;
@@ -1220,7 +1615,7 @@ cl4_16_t cl4_upcall_handler_00181374(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181554(uint64_t p1)
+void FUN_00181554(uint64_t p1)
 {
     ;
 }
@@ -1232,7 +1627,7 @@ void cl4_thunk_00181554(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181558(uint64_t p1)
+void FUN_00181558(uint64_t p1)
 {
     ;
 }
@@ -1244,7 +1639,7 @@ void cl4_thunk_00181558(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018157c(uint64_t p1)
+void FUN_0018157c(uint64_t p1)
 {
     ;
 }
@@ -1256,20 +1651,20 @@ void cl4_thunk_0018157c(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00181580(uint64_t p1)
+void FUN_00181580(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_001815a4 @ 0x001815a4   (est. cl4_upcall_handler_001815a4)
+/* FUN_001815a4 @ 0x001815a4   (est. FUN_001815a4)
  * Ghidra: undefined1  [16] FUN_001815a4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-cl4_16_t cl4_upcall_handler_001815a4(uint64_t p1, uint64_t p2)
+cl4_16_t FUN_001815a4(uint64_t p1, uint64_t p2)
 {
   char w3;
   uint64_t w4;
@@ -1337,13 +1732,13 @@ cl4_16_t cl4_upcall_handler_001815a4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_001817bc @ 0x001817bc   (est. cl4_upcall_handler_001817bc)
+/* FUN_001817bc @ 0x001817bc   (est. FUN_001817bc)
  * Ghidra: undefined4 FUN_001817bc(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_001817bc(void)
+uint32_t FUN_001817bc(void)
 {
   uint64_t w1;
   uint64_t w2;
@@ -1431,16 +1826,16 @@ uint32_t cl4_upcall_handler_001817bc(void)
 
 
 
-/* FUN_001819a0 @ 0x001819a0   (est. cl4_upcall_handler_001819a0)
+/* FUN_001819a0 @ 0x001819a0   (est. FUN_001819a0)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_001819a0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5)
+void FUN_001819a0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5)
 {
-  void *msgbuf;
-  
+  code_fn_t msgbuf;
+
   msgbuf = (code_fn_t)FUN_00023c78(p5);
   (*msgbuf)(p2,p4,p5);
   (*msgbuf)(p3,p4,p5);
@@ -1449,22 +1844,22 @@ void cl4_upcall_handler_001819a0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t
 
 
 
-/* FUN_00181a2c @ 0x00181a2c   (est. cl4_upcall_handler_00181a2c)
+/* FUN_00181a2c @ 0x00181a2c   (est. FUN_00181a2c)
  * Ghidra: undefined1  [16] FUN_00181a2c(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-cl4_16_t cl4_upcall_handler_00181a2c(uint64_t p1, uint64_t p2, uint64_t p3)
+cl4_16_t FUN_00181a2c(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t msgbuf3;
   uint64_t msgbuf4;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf5;
   uint64_t msgbuf6;
   long err;
   cl4_16_t msgbuf;
-  
+
   msgbuf2 = (code_fn_t)FUN_00023d00(p3);
   msgbuf5 = (*msgbuf2)(p2,p3);
   msgbuf6 = (*msgbuf2)(p2,p3);
@@ -1481,20 +1876,20 @@ cl4_16_t cl4_upcall_handler_00181a2c(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181ab4 @ 0x00181ab4   (est. cl4_upcall_handler_00181ab4)
+/* FUN_00181ab4 @ 0x00181ab4   (est. FUN_00181ab4)
  * Ghidra: void FUN_00181ab4(undefined8 *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00181ab4(uint64_t *p1)
+void FUN_00181ab4(uint64_t *p1)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf;
   uint32_t *in_x3;
   long err;
   
-  msgbuf2 = FUN_00181a2c();
+  msgbuf2 = FUN_00181a2c(0,0,0).lo;
   if (err == 0) {
     *p1 = msgbuf2;
     p1[1] = msgbuf;
@@ -1507,19 +1902,19 @@ void cl4_upcall_handler_00181ab4(uint64_t *p1)
 
 
 
-/* FUN_00181af0 @ 0x00181af0   (est. cl4_upcall_handler_00181af0)
+/* FUN_00181af0 @ 0x00181af0   (est. FUN_00181af0)
  * Ghidra: undefined4 FUN_00181af0(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_00181af0(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_00181af0(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t *cpu;
   long err;
   
-  msgbuf = FUN_001819a0(p1,*cpu,cpu[1],p2,p3);
+  FUN_001819a0(p1,*cpu,cpu[1],p2,p3);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -1528,19 +1923,19 @@ uint32_t cl4_upcall_handler_00181af0(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181af4 @ 0x00181af4   (est. cl4_upcall_handler_00181af4)
+/* FUN_00181af4 @ 0x00181af4   (est. FUN_00181af4)
  * Ghidra: undefined4 FUN_00181af4(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_00181af4(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_00181af4(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t *cpu;
   long err;
   
-  msgbuf = FUN_001819a0(p1,*cpu,cpu[1],p2,p3);
+  FUN_001819a0(p1,*cpu,cpu[1],p2,p3);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -1549,16 +1944,16 @@ uint32_t cl4_upcall_handler_00181af4(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181b3c @ 0x00181b3c   (est. cl4_upcall_handler_00181b3c)
+/* FUN_00181b3c @ 0x00181b3c   (est. FUN_00181b3c)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_00181b3c(uint64_t p1, uint64_t p2, char p3, uint64_t p4, uint64_t p5)
+void FUN_00181b3c(uint64_t p1, uint64_t p2, char p3, uint64_t p4, uint64_t p5)
 {
-  void *msgbuf;
-  
+  code_fn_t msgbuf;
+
   msgbuf = (code_fn_t)FUN_00023c78(p5);
   if (p3 == '\x01') {
     p2 = 0x53fc08af3ee9551b;
@@ -1572,13 +1967,13 @@ void cl4_upcall_handler_00181b3c(uint64_t p1, uint64_t p2, char p3, uint64_t p4,
 
 
 
-/* FUN_00181bf0 @ 0x00181bf0   (est. cl4_upcall_handler_00181bf0)
+/* FUN_00181bf0 @ 0x00181bf0   (est. FUN_00181bf0)
  * Ghidra: undefined1  [16] FUN_00181bf0(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-cl4_16_t cl4_upcall_handler_00181bf0(uint64_t p1, uint64_t p2, uint64_t p3)
+cl4_16_t FUN_00181bf0(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t msgbuf4;
   uint64_t msgbuf5;
@@ -1586,8 +1981,8 @@ cl4_16_t cl4_upcall_handler_00181bf0(uint64_t p1, uint64_t p2, uint64_t p3)
   uint32_t msgbuf6;
   long err;
   cl4_16_t msgbuf;
-  uint8_t msgbuf2 [12];
-  
+  cl4_16_t msgbuf2;
+
   msgbuf2 = FUN_00181c44(p2,p3);
   msgbuf3 = (msgbuf2._8_4_ & 0xff) == 1;
   msgbuf4 = 0;
@@ -1610,21 +2005,21 @@ cl4_16_t cl4_upcall_handler_00181bf0(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181c44 @ 0x00181c44   (est. cl4_upcall_handler_00181c44)
+/* FUN_00181c44 @ 0x00181c44   (est. FUN_00181c44)
  * Ghidra: undefined1  [16] FUN_00181c44(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-cl4_16_t cl4_upcall_handler_00181c44(uint64_t p1, uint64_t p2)
+cl4_16_t FUN_00181c44(uint64_t p1, uint64_t p2)
 {
-  void *msgbuf3;
+  code_fn_t msgbuf3;
   long msgbuf4;
   uint64_t msgbuf5;
   uint64_t msgbuf6;
   uint64_t msgbuf;
   cl4_16_t msgbuf2;
-  
+
   msgbuf3 = (code_fn_t)FUN_00023d00(p2);
   msgbuf4 = (*msgbuf3)(p1,p2);
   if (msgbuf4 == 0x53fc08af3ee9551b) {
@@ -1653,20 +2048,20 @@ cl4_16_t cl4_upcall_handler_00181c44(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00181db8 @ 0x00181db8   (est. cl4_upcall_handler_00181db8)
+/* FUN_00181db8 @ 0x00181db8   (est. FUN_00181db8)
  * Ghidra: void FUN_00181db8(undefined8 *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00181db8(uint64_t *p1)
+void FUN_00181db8(uint64_t *p1)
 {
   uint64_t msgbuf2;
   uint8_t msgbuf;
   uint32_t *in_x3;
   long err;
   
-  msgbuf2 = FUN_00181bf0();
+  msgbuf2 = FUN_00181bf0(0,0,0).lo;
   if (err == 0) {
     *p1 = msgbuf2;
     *(uint8_t *)(p1 + 1) = msgbuf;
@@ -1679,19 +2074,19 @@ void cl4_upcall_handler_00181db8(uint64_t *p1)
 
 
 
-/* FUN_00181e10 @ 0x00181e10   (est. cl4_upcall_handler_00181e10)
+/* FUN_00181e10 @ 0x00181e10   (est. FUN_00181e10)
  * Ghidra: undefined4 FUN_00181e10(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_00181e10(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_00181e10(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t *cpu;
   long err;
   
-  msgbuf = FUN_00181b3c(p1,*cpu,*(uint8_t *)(cpu + 1),p2,p3);
+  FUN_00181b3c(p1,*cpu,*(uint8_t *)(cpu + 1),p2,p3);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -1700,19 +2095,19 @@ uint32_t cl4_upcall_handler_00181e10(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181e14 @ 0x00181e14   (est. cl4_upcall_handler_00181e14)
+/* FUN_00181e14 @ 0x00181e14   (est. FUN_00181e14)
  * Ghidra: undefined4 FUN_00181e14(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_00181e14(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_00181e14(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t *cpu;
   long err;
   
-  msgbuf = FUN_00181b3c(p1,*cpu,*(uint8_t *)(cpu + 1),p2,p3);
+  FUN_00181b3c(p1,*cpu,*(uint8_t *)(cpu + 1),p2,p3);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -1721,13 +2116,13 @@ uint32_t cl4_upcall_handler_00181e14(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181eb8 @ 0x00181eb8   (est. cl4_upcall_handler_00181eb8)
+/* FUN_00181eb8 @ 0x00181eb8   (est. FUN_00181eb8)
  * Ghidra: void FUN_00181eb8(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00181eb8(uint64_t p1, uint64_t p2, uint64_t p3)
+void FUN_00181eb8(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint8_t msgbuf [56];
   
@@ -1740,13 +2135,13 @@ void cl4_upcall_handler_00181eb8(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_00181f20 @ 0x00181f20   (est. cl4_upcall_handler_00181f20)
+/* FUN_00181f20 @ 0x00181f20   (est. FUN_00181f20)
  * Ghidra: ulong FUN_00181f20(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_00181f20(uint64_t p1, uint64_t p2)
+uint64_t FUN_00181f20(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf5;
   uint64_t msgbuf6;
@@ -1770,11 +2165,11 @@ uint64_t cl4_upcall_handler_00181f20(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00181fd0 @ 0x00181fd0   (est. cl4_upcall_simple_00181fd0)
+/* FUN_00181fd0 @ 0x00181fd0   (est. FUN_00181fd0)
  * Ghidra: void FUN_00181fd0(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply2(uint64_t a, uint64_t b)
+void FUN_00181fd0(uint64_t a, uint64_t b)
 {
     /* Sends a two-word upcall reply: writes the two per-CPU words at x20+0x10
      * and x20+0x18 via the message writer then delivers (FUN_00181eb8). */
@@ -1782,46 +2177,46 @@ void cl4_upcall_reply2(uint64_t a, uint64_t b)
 }
 
 
-/* FUN_00181fd4 @ 0x00181fd4   (est. cl4_upcall_simple_00181fd4)
+/* FUN_00181fd4 @ 0x00181fd4   (est. FUN_00181fd4)
  * Ghidra: void FUN_00181fd4(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply2b(uint64_t a, uint64_t b)
+void FUN_00181fd4(uint64_t a, uint64_t b)
 {
     /* Twin of 00181fd0; same two-word upcall reply from the per-CPU words. */
     FUN_00181eb8(a, *(uint64_t *)(per_cpu + 0x10), *(uint64_t *)(per_cpu + 0x18), b);
 }
 
 
-/* FUN_0018200c @ 0x0018200c   (est. cl4_upcall_simple_0018200c)
+/* FUN_0018200c @ 0x0018200c   (est. FUN_0018200c)
  * Ghidra: undefined1 FUN_0018200c(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint8_t cl4_percpu_kind(void)
+uint8_t FUN_0018200c(void)
 {
     /* Returns the per-CPU upcall kind uint8_t (unaff_x20[0]). */
     return *per_cpu;
 }
 
 
-/* FUN_00182018 @ 0x00182018   (est. cl4_upcall_simple_00182018)
+/* FUN_00182018 @ 0x00182018   (est. FUN_00182018)
  * Ghidra: void FUN_00182018(undefined8 p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_set_kind(uint64_t v)
+void FUN_00182018(uint64_t v)
 {
     /* Sets the upcall result: FUN_0022995c(v, per-CPU kind uint8_t). */
     FUN_0022995c(v, *per_cpu);
 }
 
 
-/* FUN_00182080 @ 0x00182080   (est. cl4_upcall_handler_00182080)
+/* FUN_00182080 @ 0x00182080   (est. FUN_00182080)
  * Ghidra: void FUN_00182080(undefined1 *p1,uint p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00182080(uint64_t *p1, uint32_t p2)
+void FUN_00182080(uint64_t *p1, uint32_t p2)
 {
   uint8_t msgbuf;
   
@@ -2013,13 +2408,13 @@ switchD_001820ac_caseD_3:
 
 
 
-/* FUN_001823e0 @ 0x001823e0   (est. cl4_upcall_handler_001823e0)
+/* FUN_001823e0 @ 0x001823e0   (est. FUN_001823e0)
  * Ghidra: void FUN_001823e0(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_001823e0(void)
+void FUN_001823e0(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -2034,25 +2429,25 @@ void cl4_upcall_handler_001823e0(void)
 
 
 
-/* FUN_00182430 @ 0x00182430   (est. cl4_upcall_simple_00182430)
+/* FUN_00182430 @ 0x00182430   (est. FUN_00182430)
  * Ghidra: void FUN_00182430(undefined8 p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_set_kind_tbl(uint64_t v)
+void FUN_00182430(uint64_t v)
 {
     /* Sets the upcall result from a per-CPU-indexed table entry:
-     * FUN_0022995c(v, DAT_004e6154[per-CPU-kind * 4]). */
-    FUN_0022995c(v, *(uint32_t *)(DAT_004e6154 + (uint64_t)*per_cpu * 4));
+     * FUN_0022995c(v, dat_004e6154[per-CPU-kind * 4]). */
+    FUN_0022995c(v, *(uint32_t *)(dat_004e6154 + (uint64_t)*per_cpu * 4));
 }
 
 
-/* FUN_00182468 @ 0x00182468   (est. cl4_upcall_handler_00182468)
+/* FUN_00182468 @ 0x00182468   (est. FUN_00182468)
  * Ghidra: void FUN_00182468(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00182468(void)
+void FUN_00182468(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -2067,11 +2462,11 @@ void cl4_upcall_handler_00182468(void)
 
 
 
-/* FUN_001824d4 @ 0x001824d4   (est. cl4_upcall_simple_001824d4)
+/* FUN_001824d4 @ 0x001824d4   (est. FUN_001824d4)
  * Ghidra: void FUN_001824d4(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_c0(uint64_t a, uint64_t b)
+void FUN_001824d4(uint64_t a, uint64_t b)
 {
     /* Replies through the cL4 writer FUN_00208478 with the fixed class key
      * 0x668e58 and the current trap state (FUN_0002142c). */
@@ -2080,24 +2475,24 @@ void cl4_upcall_reply_c0(uint64_t a, uint64_t b)
 }
 
 
-/* FUN_00182528 @ 0x00182528   (est. cl4_upcall_simple_00182528)
+/* FUN_00182528 @ 0x00182528   (est. FUN_00182528)
  * Ghidra: void FUN_00182528(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_c1(uint64_t a, uint64_t b)
+void FUN_00182528(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x668ea8, st);
 }
 
 
-/* FUN_0018257c @ 0x0018257c   (est. cl4_upcall_handler_0018257c)
+/* FUN_0018257c @ 0x0018257c   (est. FUN_0018257c)
  * Ghidra: void FUN_0018257c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018257c(void)
+void FUN_0018257c(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -2112,13 +2507,13 @@ void cl4_upcall_handler_0018257c(void)
 
 
 
-/* FUN_001825c4 @ 0x001825c4   (est. cl4_upcall_handler_001825c4)
+/* FUN_001825c4 @ 0x001825c4   (est. FUN_001825c4)
  * Ghidra: void FUN_001825c4(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_001825c4(void)
+void FUN_001825c4(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -2133,13 +2528,13 @@ void cl4_upcall_handler_001825c4(void)
 
 
 
-/* FUN_00182630 @ 0x00182630   (est. cl4_upcall_handler_00182630)
+/* FUN_00182630 @ 0x00182630   (est. FUN_00182630)
  * Ghidra: void FUN_00182630(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00182630(void)
+void FUN_00182630(void)
 {
   uint8_t msgbuf [72];
   
@@ -2156,20 +2551,20 @@ void cl4_upcall_handler_00182630(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00182674(void)
+void FUN_00182674(void)
 {
     ;
 }
 
 
 
-/* FUN_0018269c @ 0x0018269c   (est. cl4_upcall_handler_0018269c)
+/* FUN_0018269c @ 0x0018269c   (est. FUN_0018269c)
  * Ghidra: void FUN_0018269c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018269c(void)
+void FUN_0018269c(void)
 {
   uint8_t msgbuf [72];
   
@@ -2181,43 +2576,42 @@ void cl4_upcall_handler_0018269c(void)
 
 
 
-/* FUN_001826f0 @ 0x001826f0   (est. cl4_upcall_simple_001826f0)
+/* FUN_001826f0 @ 0x001826f0   (est. FUN_001826f0)
  * Ghidra: void FUN_001826f0(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_c2(uint64_t a, uint64_t b)
+void FUN_001826f0(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x668f48, st);
 }
 
 
-/* FUN_0018276c @ 0x0018276c   (est. cl4_upcall_simple_0018276c)
+/* FUN_0018276c @ 0x0018276c   (est. FUN_0018276c)
  * Ghidra: void FUN_0018276c(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_c3(uint64_t a, uint64_t b)
+void FUN_0018276c(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x668f98, st);
 }
 
 
-/* FUN_001827d0 @ 0x001827d0   (est. cl4_upcall_handler_001827d0)
+/* FUN_001827d0 @ 0x001827d0   (est. FUN_001827d0)
  * Ghidra: long FUN_001827d0(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-long cl4_upcall_handler_001827d0(uint64_t p1, uint64_t p2)
+long FUN_001827d0(uint64_t p1, uint64_t p2)
 {
   long msgbuf;
   uint64_t msgbuf3;
   long msgbuf2;
   
   msgbuf = FUN_0036a940();
-  msgbuf3 = FUN_0018e1c0(0);
-  msgbuf2 = FUN_0036a940(msgbuf3,0x18,7);
+    msgbuf2 = FUN_0036a940(msgbuf3,0x18,7);
   msgbuf3 = FUN_000262ec(0);
   FUN_0036a940(msgbuf3,0x18,7);
   msgbuf3 = FUN_000260e0(p1,p2);
@@ -2228,19 +2622,19 @@ long cl4_upcall_handler_001827d0(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00182860 @ 0x00182860   (est. cl4_upcall_handler_00182860)
+/* FUN_00182860 @ 0x00182860   (est. FUN_00182860)
  * Ghidra: void FUN_00182860(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_00182860(uint64_t p1, uint64_t p2)
+void FUN_00182860(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf2;
   long msgbuf;
   long cpu;
   
-  msgbuf2 = FUN_0018e1c0(0);
+  msgbuf2 = FUN_0018e1c0(0).lo;
   msgbuf = FUN_0036a940(msgbuf2,0x18,7);
   msgbuf2 = FUN_000262ec(0);
   msgbuf2 = FUN_0036a940(msgbuf2,0x18,7);
@@ -2257,20 +2651,20 @@ void cl4_upcall_handler_00182860(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001828dc(void)
+void FUN_001828dc(void)
 {
     ;
 }
 
 
 
-/* FUN_00182900 @ 0x00182900   (est. cl4_upcall_handler_00182900)
+/* FUN_00182900 @ 0x00182900   (est. FUN_00182900)
  * Ghidra: void FUN_00182900(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00182900(void)
+void FUN_00182900(void)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2284,13 +2678,13 @@ void cl4_upcall_handler_00182900(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2311,13 +2705,13 @@ void cl4_upcall_handler_00182900(void)
 
 
 
-/* FUN_00182aac @ 0x00182aac   (est. cl4_upcall_handler_00182aac)
+/* FUN_00182aac @ 0x00182aac   (est. FUN_00182aac)
  * Ghidra: void FUN_00182aac(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00182aac(char *p1)
+void FUN_00182aac(char *p1)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2331,13 +2725,13 @@ void cl4_upcall_handler_00182aac(char *p1)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2358,13 +2752,13 @@ void cl4_upcall_handler_00182aac(char *p1)
 
 
 
-/* FUN_00182c64 @ 0x00182c64   (est. cl4_upcall_handler_00182c64)
+/* FUN_00182c64 @ 0x00182c64   (est. FUN_00182c64)
  * Ghidra: void FUN_00182c64(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00182c64(char *p1)
+void FUN_00182c64(char *p1)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2378,13 +2772,13 @@ void cl4_upcall_handler_00182c64(char *p1)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2405,13 +2799,13 @@ void cl4_upcall_handler_00182c64(char *p1)
 
 
 
-/* FUN_00182e1c @ 0x00182e1c   (est. cl4_upcall_handler_00182e1c)
+/* FUN_00182e1c @ 0x00182e1c   (est. FUN_00182e1c)
  * Ghidra: void FUN_00182e1c(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00182e1c(char *p1)
+void FUN_00182e1c(char *p1)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2425,13 +2819,13 @@ void cl4_upcall_handler_00182e1c(char *p1)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2452,13 +2846,13 @@ void cl4_upcall_handler_00182e1c(char *p1)
 
 
 
-/* FUN_00182fd4 @ 0x00182fd4   (est. cl4_upcall_handler_00182fd4)
+/* FUN_00182fd4 @ 0x00182fd4   (est. FUN_00182fd4)
  * Ghidra: void FUN_00182fd4(char *p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00182fd4(char *p1, uint64_t p2)
+void FUN_00182fd4(char *p1, uint64_t p2)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2468,17 +2862,17 @@ void cl4_upcall_handler_00182fd4(char *p1, uint64_t p2)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00186aa8(*p1 == '\x01',p2,&stack0xffffffffffffffb0);
+  FUN_00186aa8(*p1 == '\x01',p2,&stack_arg);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffb0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffb0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2499,13 +2893,13 @@ void cl4_upcall_handler_00182fd4(char *p1, uint64_t p2)
 
 
 
-/* FUN_001831a0 @ 0x001831a0   (est. cl4_upcall_handler_001831a0)
+/* FUN_001831a0 @ 0x001831a0   (est. FUN_001831a0)
  * Ghidra: void FUN_001831a0(char *p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_001831a0(char *p1, uint64_t p2)
+void FUN_001831a0(char *p1, uint64_t p2)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2515,17 +2909,17 @@ void cl4_upcall_handler_001831a0(char *p1, uint64_t p2)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00186e3c(*p1 == '\x01',p2,&stack0xffffffffffffffb0);
+  FUN_00186e3c(*p1 == '\x01',p2,&stack_arg);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffb0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffb0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2546,13 +2940,13 @@ void cl4_upcall_handler_001831a0(char *p1, uint64_t p2)
 
 
 
-/* FUN_0018336c @ 0x0018336c   (est. cl4_upcall_handler_0018336c)
+/* FUN_0018336c @ 0x0018336c   (est. FUN_0018336c)
  * Ghidra: void FUN_0018336c(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_0018336c(char *p1)
+void FUN_0018336c(char *p1)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2566,13 +2960,13 @@ void cl4_upcall_handler_0018336c(char *p1)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2593,13 +2987,13 @@ void cl4_upcall_handler_0018336c(char *p1)
 
 
 
-/* FUN_00183524 @ 0x00183524   (est. cl4_upcall_handler_00183524)
+/* FUN_00183524 @ 0x00183524   (est. FUN_00183524)
  * Ghidra: void FUN_00183524(char *p1,char *p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00183524(char *p1, char *p2)
+void FUN_00183524(char *p1, char *p2)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2613,13 +3007,13 @@ void cl4_upcall_handler_00183524(char *p1, char *p2)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2640,13 +3034,13 @@ void cl4_upcall_handler_00183524(char *p1, char *p2)
 
 
 
-/* FUN_001836e8 @ 0x001836e8   (est. cl4_upcall_handler_001836e8)
+/* FUN_001836e8 @ 0x001836e8   (est. FUN_001836e8)
  * Ghidra: ulong FUN_001836e8(char *p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint64_t cl4_upcall_handler_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_t p4)
+uint64_t FUN_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   void *key;
   char slot;
@@ -2745,7 +3139,7 @@ uint64_t cl4_upcall_handler_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_
     FUN_003698b0(&w4,0x669b78,&dat_004e6898);
     h4 = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
     fn = h4._0_8_;
-    *h4._8_8_ = slot;
+    h4.hi = (uint64_t)(slot);
     errword = val2;
     val4 = tmp2;
     msgbuf5 = val;
@@ -2759,7 +3153,7 @@ uint64_t cl4_upcall_handler_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_
     slot3 = FUN_00019aac(0);
     h4 = FUN_0036993c(slot3,FUN_0065a550,0,0);
     fn = h4._0_8_;
-    *h4._8_8_ = w3;
+    h4.hi = (uint64_t)(w3);
   }
   w7 = fn;
   FUN_0036b270(fn);
@@ -2798,13 +3192,13 @@ LAB_00183ad8:
 
 
 
-/* FUN_00183b2c @ 0x00183b2c   (est. cl4_upcall_handler_00183b2c)
+/* FUN_00183b2c @ 0x00183b2c   (est. FUN_00183b2c)
  * Ghidra: void FUN_00183b2c(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00183b2c(char *p1)
+void FUN_00183b2c(char *p1)
 {
   void *msgbuf4;
   int msgbuf5;
@@ -2818,13 +3212,13 @@ void cl4_upcall_handler_00183b2c(char *p1)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2845,13 +3239,13 @@ void cl4_upcall_handler_00183b2c(char *p1)
 
 
 
-/* FUN_00183ce4 @ 0x00183ce4   (est. cl4_upcall_handler_00183ce4)
+/* FUN_00183ce4 @ 0x00183ce4   (est. FUN_00183ce4)
  * Ghidra: uint FUN_00183ce4(char *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-uint32_t cl4_upcall_handler_00183ce4(char *p1)
+uint32_t FUN_00183ce4(char *p1)
 {
   void *msgbuf4;
   uint32_t msgbuf6;
@@ -2866,13 +3260,13 @@ uint32_t cl4_upcall_handler_00183ce4(char *p1)
   if (err != 0) {
     FUN_0036b270();
     errword = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf5 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,errword,0x669b78,0);
+    msgbuf5 = FUN_00365b6c(&stack_arg,&stack_arg,errword,0x669b78,0);
     if (msgbuf5 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,errword,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,errword,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -2898,7 +3292,7 @@ uint32_t cl4_upcall_handler_00183ce4(char *p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183ea0(uint64_t p1, uint64_t p2)
+void FUN_00183ea0(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2910,7 +3304,7 @@ void cl4_thunk_00183ea0(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183ea4(uint64_t p1, uint64_t p2)
+void FUN_00183ea4(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2922,7 +3316,7 @@ void cl4_thunk_00183ea4(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183ecc(uint64_t p1, uint64_t p2)
+void FUN_00183ecc(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2934,7 +3328,7 @@ void cl4_thunk_00183ecc(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183ed0(uint64_t p1, uint64_t p2)
+void FUN_00183ed0(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2946,7 +3340,7 @@ void cl4_thunk_00183ed0(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183ef8(uint64_t p1, uint64_t p2)
+void FUN_00183ef8(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2958,7 +3352,7 @@ void cl4_thunk_00183ef8(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183efc(uint64_t p1, uint64_t p2)
+void FUN_00183efc(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2970,7 +3364,7 @@ void cl4_thunk_00183efc(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183f24(uint64_t p1, uint64_t p2)
+void FUN_00183f24(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -2982,20 +3376,20 @@ void cl4_thunk_00183f24(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00183f28(uint64_t p1, uint64_t p2)
+void FUN_00183f28(uint64_t p1, uint64_t p2)
 {
     ;
 }
 
 
 
-/* FUN_00183f50 @ 0x00183f50   (est. cl4_upcall_handler_00183f50)
+/* FUN_00183f50 @ 0x00183f50   (est. FUN_00183f50)
  * Ghidra: void FUN_00183f50(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00183f50(void)
+void FUN_00183f50(void)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3008,13 +3402,13 @@ void cl4_upcall_handler_00183f50(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3039,7 +3433,7 @@ void cl4_upcall_handler_00183f50(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001840e0(uint64_t p1, uint64_t p2)
+void FUN_001840e0(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3051,7 +3445,7 @@ void cl4_thunk_001840e0(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001840e4(uint64_t p1, uint64_t p2)
+void FUN_001840e4(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3063,7 +3457,7 @@ void cl4_thunk_001840e4(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018410c(uint64_t p1, uint64_t p2)
+void FUN_0018410c(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3075,7 +3469,7 @@ void cl4_thunk_0018410c(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184110(uint64_t p1, uint64_t p2)
+void FUN_00184110(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3087,7 +3481,7 @@ void cl4_thunk_00184110(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184138(uint64_t p1, uint64_t p2)
+void FUN_00184138(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3099,20 +3493,20 @@ void cl4_thunk_00184138(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018413c(uint64_t p1, uint64_t p2)
+void FUN_0018413c(uint64_t p1, uint64_t p2)
 {
     ;
 }
 
 
 
-/* FUN_00184164 @ 0x00184164   (est. cl4_upcall_handler_00184164)
+/* FUN_00184164 @ 0x00184164   (est. FUN_00184164)
  * Ghidra: uint FUN_00184164(undefined8 p1,undefined8 p2,undefined1 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-uint32_t cl4_upcall_handler_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
+uint32_t FUN_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
 {
   void *errword;
   uint32_t kind;
@@ -3126,7 +3520,7 @@ uint32_t cl4_upcall_handler_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
   uint32_t msgbuf3;
   uint8_t msgbuf;
   
-  msgbuf6 = CONCAT31(msgbuf6._1_3_,*p3);
+  msgbuf6 = CONCAT31(EXTRACT13(msgbuf6),*p3);
   msgbuf5 = (uint32_t)*(uint64_t *)(p3 + 4);
   msgbuf4 = (uint32_t)((uint64_t)*(uint64_t *)(p3 + 4) >> 0x20);
   kind = FUN_00189108(p1,p2,&msgbuf6);
@@ -3135,7 +3529,7 @@ uint32_t cl4_upcall_handler_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
     msgbuf5 = (uint32_t)((uint64_t)err >> 0x20);
     FUN_0036b270();
     kind2 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    errword2 = FUN_00365b6c(&stack0xffffffffffffffd8,&msgbuf6,kind2,0x669ae8,0);
+    errword2 = FUN_00365b6c(&stack_arg,&msgbuf6,kind2,0x669ae8,0);
     if (errword2 == 0) {
       FUN_0036b118(CONCAT44(msgbuf5,msgbuf6));
       msgbuf6 = 0;
@@ -3145,7 +3539,7 @@ uint32_t cl4_upcall_handler_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&msgbuf6,kind2,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&msgbuf6,kind2,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,CONCAT44(msgbuf5,msgbuf6),
                    CONCAT44(msgbuf3,msgbuf4),s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a
@@ -3171,7 +3565,7 @@ uint32_t cl4_upcall_handler_00184164(uint64_t p1, uint64_t p2, uint64_t *p3)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018430c(uint64_t p1, uint64_t p2)
+void FUN_0018430c(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3183,7 +3577,7 @@ void cl4_thunk_0018430c(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184310(uint64_t p1, uint64_t p2)
+void FUN_00184310(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3195,7 +3589,7 @@ void cl4_thunk_00184310(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184338(uint64_t p1)
+void FUN_00184338(uint64_t p1)
 {
     ;
 }
@@ -3207,7 +3601,7 @@ void cl4_thunk_00184338(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018433c(uint64_t p1)
+void FUN_0018433c(uint64_t p1)
 {
     ;
 }
@@ -3219,7 +3613,7 @@ void cl4_thunk_0018433c(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184364(uint64_t p1)
+void FUN_00184364(uint64_t p1)
 {
     ;
 }
@@ -3231,20 +3625,20 @@ void cl4_thunk_00184364(uint64_t p1)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184368(uint64_t p1)
+void FUN_00184368(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_00184390 @ 0x00184390   (est. cl4_upcall_handler_00184390)
+/* FUN_00184390 @ 0x00184390   (est. FUN_00184390)
  * Ghidra: void FUN_00184390(undefined8 p1,code_fn_t p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00184390(uint64_t p1, code_fn_t p2)
+void FUN_00184390(uint64_t p1, code_fn_t p2)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3257,13 +3651,13 @@ void cl4_upcall_handler_00184390(uint64_t p1, code_fn_t p2)
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3288,7 +3682,7 @@ void cl4_upcall_handler_00184390(uint64_t p1, code_fn_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184524(uint64_t p1, uint64_t p2)
+void FUN_00184524(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3300,7 +3694,7 @@ void cl4_thunk_00184524(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184528(uint64_t p1, uint64_t p2)
+void FUN_00184528(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3312,7 +3706,7 @@ void cl4_thunk_00184528(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184550(uint64_t p1, uint64_t p2)
+void FUN_00184550(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3324,7 +3718,7 @@ void cl4_thunk_00184550(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184554(uint64_t p1, uint64_t p2)
+void FUN_00184554(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3336,7 +3730,7 @@ void cl4_thunk_00184554(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018457c(uint64_t p1, uint64_t p2)
+void FUN_0018457c(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -3348,20 +3742,20 @@ void cl4_thunk_0018457c(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00184580(uint64_t p1, uint64_t p2)
+void FUN_00184580(uint64_t p1, uint64_t p2)
 {
     ;
 }
 
 
 
-/* FUN_001845a8 @ 0x001845a8   (est. cl4_upcall_handler_001845a8)
+/* FUN_001845a8 @ 0x001845a8   (est. FUN_001845a8)
  * Ghidra: void FUN_001845a8(undefined8 p1,undefined8 p2,code_fn_t p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_001845a8(uint64_t p1, uint64_t p2, code_fn_t p3)
+void FUN_001845a8(uint64_t p1, uint64_t p2, code_fn_t p3)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3374,13 +3768,13 @@ void cl4_upcall_handler_001845a8(uint64_t p1, uint64_t p2, code_fn_t p3)
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3400,13 +3794,13 @@ void cl4_upcall_handler_001845a8(uint64_t p1, uint64_t p2, code_fn_t p3)
 
 
 
-/* FUN_0018473c @ 0x0018473c   (est. cl4_upcall_handler_0018473c)
+/* FUN_0018473c @ 0x0018473c   (est. FUN_0018473c)
  * Ghidra: uint FUN_0018473c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-uint32_t cl4_upcall_handler_0018473c(void)
+uint32_t FUN_0018473c(void)
 {
   void *msgbuf3;
   uint32_t msgbuf5;
@@ -3420,13 +3814,13 @@ uint32_t cl4_upcall_handler_0018473c(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3446,13 +3840,13 @@ uint32_t cl4_upcall_handler_0018473c(void)
 
 
 
-/* FUN_001848d0 @ 0x001848d0   (est. cl4_upcall_handler_001848d0)
+/* FUN_001848d0 @ 0x001848d0   (est. FUN_001848d0)
  * Ghidra: uint FUN_001848d0(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint32_t cl4_upcall_handler_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+uint32_t FUN_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint8_t tmp3;
   void *tag2;
@@ -3528,11 +3922,11 @@ uint32_t cl4_upcall_handler_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint
       goto LAB_00184c7c;
     }
     ptr2 = FUN_001857a8();
-    cnt = CONCAT71(cnt._1_7_,ptr2);
+    cnt = CONCAT71(EXTRACT17(cnt),ptr2);
     FUN_003698b0(&cnt,0x669ae8,&dat_004e6878);
     tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
     ptr3 = tag._0_8_;
-    *tag._8_8_ = ptr2;
+    tag.hi = (uint64_t)(ptr2);
     w0 = kind2;
     w5 = val;
     val3 = kind;
@@ -3546,7 +3940,7 @@ uint32_t cl4_upcall_handler_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint
     ptr3 = FUN_00019aac(0);
     tag = FUN_0036993c(ptr3,FUN_0065a550,0,0);
     ptr3 = tag._0_8_;
-    *tag._8_8_ = len2;
+    tag.hi = (uint64_t)(len2);
   }
   val = ptr3;
   FUN_0036b270(ptr3);
@@ -3586,13 +3980,13 @@ LAB_00184a70:
 
 
 
-/* FUN_00184cd4 @ 0x00184cd4   (est. cl4_upcall_handler_00184cd4)
+/* FUN_00184cd4 @ 0x00184cd4   (est. FUN_00184cd4)
  * Ghidra: uint FUN_00184cd4(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-uint32_t cl4_upcall_handler_00184cd4(void)
+uint32_t FUN_00184cd4(void)
 {
   void *msgbuf3;
   uint32_t msgbuf5;
@@ -3606,13 +4000,13 @@ uint32_t cl4_upcall_handler_00184cd4(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3632,13 +4026,13 @@ uint32_t cl4_upcall_handler_00184cd4(void)
 
 
 
-/* FUN_00184e68 @ 0x00184e68   (est. cl4_upcall_handler_00184e68)
+/* FUN_00184e68 @ 0x00184e68   (est. FUN_00184e68)
  * Ghidra: uint FUN_00184e68(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-uint32_t cl4_upcall_handler_00184e68(void)
+uint32_t FUN_00184e68(void)
 {
   void *msgbuf3;
   uint32_t msgbuf5;
@@ -3652,13 +4046,13 @@ uint32_t cl4_upcall_handler_00184e68(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x669ae8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf6,0x669ae8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf6,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf6,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3678,13 +4072,13 @@ uint32_t cl4_upcall_handler_00184e68(void)
 
 
 
-/* FUN_00184ffc @ 0x00184ffc   (est. cl4_upcall_handler_00184ffc)
+/* FUN_00184ffc @ 0x00184ffc   (est. FUN_00184ffc)
  * Ghidra: void FUN_00184ffc(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00184ffc(void)
+void FUN_00184ffc(void)
 {
   int msgbuf;
   uint64_t msgbuf2;
@@ -3694,13 +4088,13 @@ void cl4_upcall_handler_00184ffc(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf2 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf = FUN_00365b6c(msgbuf2,&stack0xffffffffffffffc0,msgbuf2,0x669a58,0);
+    msgbuf = FUN_00365b6c(msgbuf2,&stack_arg,msgbuf2,0x669a58,0);
     if (msgbuf == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf2,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf2,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3720,7 +4114,7 @@ void cl4_upcall_handler_00184ffc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00185174(void)
+void FUN_00185174(void)
 {
     ;
 }
@@ -3732,7 +4126,7 @@ void cl4_thunk_00185174(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00185198(void)
+void FUN_00185198(void)
 {
     ;
 }
@@ -3744,20 +4138,20 @@ void cl4_thunk_00185198(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_001851bc(void)
+void FUN_001851bc(void)
 {
     ;
 }
 
 
 
-/* FUN_001851e0 @ 0x001851e0   (est. cl4_upcall_handler_001851e0)
+/* FUN_001851e0 @ 0x001851e0   (est. FUN_001851e0)
  * Ghidra: void FUN_001851e0(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_001851e0(void)
+void FUN_001851e0(void)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3770,13 +4164,13 @@ void cl4_upcall_handler_001851e0(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6699c8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x6699c8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3796,13 +4190,13 @@ void cl4_upcall_handler_001851e0(void)
 
 
 
-/* FUN_00185370 @ 0x00185370   (est. cl4_upcall_handler_00185370)
+/* FUN_00185370 @ 0x00185370   (est. FUN_00185370)
  * Ghidra: void FUN_00185370(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00185370(void)
+void FUN_00185370(void)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3815,13 +4209,13 @@ void cl4_upcall_handler_00185370(void)
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6699c8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x6699c8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3841,13 +4235,13 @@ void cl4_upcall_handler_00185370(void)
 
 
 
-/* FUN_00185500 @ 0x00185500   (est. cl4_upcall_handler_00185500)
+/* FUN_00185500 @ 0x00185500   (est. FUN_00185500)
  * Ghidra: void FUN_00185500(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class B/None */
-void cl4_upcall_handler_00185500(void)
+void FUN_00185500(void)
 {
   void *msgbuf3;
   int msgbuf4;
@@ -3856,17 +4250,17 @@ void cl4_upcall_handler_00185500(void)
   long err;
   uint8_t msgbuf;
   
-  FUN_0018b830(&stack0xffffffffffffffc0);
+  FUN_0018b830(&stack_arg);
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
-    msgbuf4 = FUN_00365b6c(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6699c8,0);
+    msgbuf4 = FUN_00365b6c(&stack_arg,&stack_arg,msgbuf5,0x6699c8,0);
     if (msgbuf4 == 0) {
       FUN_0036b118(err);
       FUN_0036b270();
       FUN_002a4ab4(0x2f);
       thunk_FUN_002acbb8(0xd00000000000002d,0x80000000005cbfa0);
-      FUN_00205844(&stack0xffffffffffffffd8,&stack0xffffffffffffffc0,msgbuf5,0x6756a8,0x66e1b8);
+      FUN_00205844(&stack_arg,&stack_arg,msgbuf5,0x6756a8,0x66e1b8);
                     /* WARNING: Subroutine does not return */
       FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0,0xe000000000000000,
                    s_XnuUpcalls_XnuUpcalls_swift_005cbfa0,0x1b,2,0x10a,0);
@@ -3886,16 +4280,16 @@ void cl4_upcall_handler_00185500(void)
 
 
 
-/* FUN_0018569c @ 0x0018569c   (est. cl4_upcall_handler_0018569c)
+/* FUN_0018569c @ 0x0018569c   (est. FUN_0018569c)
  * Ghidra: void FUN_0018569c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018569c(void)
+void FUN_0018569c(void)
 {
   char msgbuf3;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   FUN_000218a4();
@@ -3916,16 +4310,16 @@ void cl4_upcall_handler_0018569c(void)
 
 
 
-/* FUN_001857a8 @ 0x001857a8   (est. cl4_upcall_handler_001857a8)
+/* FUN_001857a8 @ 0x001857a8   (est. FUN_001857a8)
  * Ghidra: void FUN_001857a8(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_001857a8(void)
+void FUN_001857a8(void)
 {
   uint32_t msgbuf3;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   msgbuf3 = FUN_000218a4();
@@ -3945,7 +4339,7 @@ void cl4_upcall_handler_001857a8(void)
 
 
 
-/* FUN_00185b20 @ 0x00185b20   (est. cl4_upcall_simple_00185b20)
+/* FUN_00185b20 @ 0x00185b20   (est. FUN_00185b20)
  * Ghidra: undefined8 * FUN_00185b20(undefined8 *p1,undefined8 *p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
@@ -3958,13 +4352,13 @@ uint64_t *cl4_copy_word(uint64_t *dst, uint64_t *src)
 }
 
 
-/* FUN_00185b58 @ 0x00185b58   (est. cl4_upcall_handler_00185b58)
+/* FUN_00185b58 @ 0x00185b58   (est. FUN_00185b58)
  * Ghidra: undefined8 * FUN_00185b58(undefined8 *p1,undefined8 *p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t * cl4_upcall_handler_00185b58(uint64_t *p1, uint64_t *p2)
+uint64_t * FUN_00185b58(uint64_t *p1, uint64_t *p2)
 {
   uint64_t msgbuf;
   
@@ -3977,13 +4371,13 @@ uint64_t * cl4_upcall_handler_00185b58(uint64_t *p1, uint64_t *p2)
 
 
 
-/* FUN_00185b94 @ 0x00185b94   (est. cl4_upcall_handler_00185b94)
+/* FUN_00185b94 @ 0x00185b94   (est. FUN_00185b94)
  * Ghidra: undefined8 * FUN_00185b94(undefined8 *p1,undefined8 *p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t * cl4_upcall_handler_00185b94(uint64_t *p1, uint64_t *p2)
+uint64_t * FUN_00185b94(uint64_t *p1, uint64_t *p2)
 {
   uint64_t msgbuf;
   
@@ -3995,11 +4389,11 @@ uint64_t * cl4_upcall_handler_00185b94(uint64_t *p1, uint64_t *p2)
 
 
 
-/* FUN_00185c60 @ 0x00185c60   (est. cl4_upcall_simple_00185c60)
+/* FUN_00185c60 @ 0x00185c60   (est. FUN_00185c60)
  * Ghidra: undefined1  [16] FUN_00185c60(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-cl4_16_t cl4_tag_655078(void)
+cl4_16_t FUN_00185c60(void)
 {
     /* Returns the 16-uint8_t tag at 0x655078 (a class/selector constant). */
     return *(cl4_16_t *)0x655078;
@@ -4011,23 +4405,23 @@ cl4_16_t cl4_tag_655078(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_00185cbc(uint64_t p1)
+void FUN_00185cbc(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_00185ce4 @ 0x00185ce4   (est. cl4_upcall_handler_00185ce4)
+/* FUN_00185ce4 @ 0x00185ce4   (est. FUN_00185ce4)
  * Ghidra: undefined8 FUN_00185ce4(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1LONG */
-uint64_t cl4_upcall_handler_00185ce4(long p1)
+uint64_t FUN_00185ce4(long p1)
 {
   long fn;
-  void *key2;
+  code_fn_t key2;
   bool slot2;
   char slot3;
   uint8_t fn3;
@@ -4151,11 +4545,11 @@ LAB_0018603c:
         goto LAB_0018603c;
       }
       fn3 = FUN_0018569c();
-      w5 = CONCAT71(w5._1_7_,fn3);
+      w5 = CONCAT71(EXTRACT17(w5),fn3);
       FUN_003698b0(&w5,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
       ret = key._0_8_;
-      *key._8_8_ = fn3;
+      key.hi = (uint64_t)(fn3);
       ptr3 = val;
       val2 = tag;
       ptr = idx;
@@ -4176,16 +4570,16 @@ LAB_0018603c:
 
 
 
-/* FUN_00186094 @ 0x00186094   (est. cl4_upcall_handler_00186094)
+/* FUN_00186094 @ 0x00186094   (est. FUN_00186094)
  * Ghidra: undefined8 FUN_00186094(undefined1 p1,undefined8 p2,long p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1LONG */
-uint64_t cl4_upcall_handler_00186094(uint8_t p1, uint64_t p2, long p3)
+uint64_t FUN_00186094(uint8_t p1, uint64_t p2, long p3)
 {
   long fn;
-  void *key2;
+  code_fn_t key2;
   bool slot2;
   char slot3;
   uint8_t fn3;
@@ -4311,11 +4705,11 @@ LAB_0018640c:
         goto LAB_0018640c;
       }
       fn3 = FUN_0018569c();
-      w6 = CONCAT71(w6._1_7_,fn3);
+      w6 = CONCAT71(EXTRACT17(w6),fn3);
       FUN_003698b0(&w6,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
       ret = key._0_8_;
-      *key._8_8_ = fn3;
+      key.hi = (uint64_t)(fn3);
       errword = val3;
       val4 = tag2;
       ptr2 = val;
@@ -4336,13 +4730,13 @@ LAB_0018640c:
 
 
 
-/* FUN_00186460 @ 0x00186460   (est. cl4_upcall_handler_00186460)
+/* FUN_00186460 @ 0x00186460   (est. FUN_00186460)
  * Ghidra: void FUN_00186460(undefined1 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00186460(uint8_t p1, uint64_t p2)
+void FUN_00186460(uint8_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -4429,16 +4823,16 @@ void cl4_upcall_handler_00186460(uint8_t p1, uint64_t p2)
 
 
 
-/* FUN_001866dc @ 0x001866dc   (est. cl4_upcall_handler_001866dc)
+/* FUN_001866dc @ 0x001866dc   (est. FUN_001866dc)
  * Ghidra: undefined8 FUN_001866dc(undefined1 p1,undefined8 p2,long p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1LONG */
-uint64_t cl4_upcall_handler_001866dc(uint8_t p1, uint64_t p2, long p3)
+uint64_t FUN_001866dc(uint8_t p1, uint64_t p2, long p3)
 {
   long fn;
-  void *key2;
+  code_fn_t key2;
   bool slot2;
   char slot3;
   uint8_t fn3;
@@ -4564,11 +4958,11 @@ LAB_00186a54:
         goto LAB_00186a54;
       }
       fn3 = FUN_0018569c();
-      w6 = CONCAT71(w6._1_7_,fn3);
+      w6 = CONCAT71(EXTRACT17(w6),fn3);
       FUN_003698b0(&w6,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
       ret = key._0_8_;
-      *key._8_8_ = fn3;
+      key.hi = (uint64_t)(fn3);
       errword = val3;
       val4 = tag2;
       ptr2 = val;
@@ -4589,13 +4983,13 @@ LAB_00186a54:
 
 
 
-/* FUN_00186aa8 @ 0x00186aa8   (est. cl4_upcall_handler_00186aa8)
+/* FUN_00186aa8 @ 0x00186aa8   (est. FUN_00186aa8)
  * Ghidra: void FUN_00186aa8(undefined1 p1,undefined8 p2,undefined8 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3)
+void FUN_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3)
 {
   uint64_t h4;
   void *h;
@@ -4713,13 +5107,13 @@ void cl4_upcall_handler_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3)
 
 
 
-/* FUN_00186e3c @ 0x00186e3c   (est. cl4_upcall_handler_00186e3c)
+/* FUN_00186e3c @ 0x00186e3c   (est. FUN_00186e3c)
  * Ghidra: void FUN_00186e3c(undefined1 p1,undefined8 p2,undefined8 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3)
+void FUN_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3)
 {
   uint64_t h4;
   void *h;
@@ -4837,16 +5231,16 @@ void cl4_upcall_handler_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3)
 
 
 
-/* FUN_001871d0 @ 0x001871d0   (est. cl4_upcall_handler_001871d0)
+/* FUN_001871d0 @ 0x001871d0   (est. FUN_001871d0)
  * Ghidra: void FUN_001871d0(undefined1 p1,undefined8 p2,long p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1LONG */
-void cl4_upcall_handler_001871d0(uint8_t p1, uint64_t p2, long p3)
+void FUN_001871d0(uint8_t p1, uint64_t p2, long p3)
 {
   long fn;
-  void *key2;
+  code_fn_t key2;
   bool slot2;
   char slot3;
   uint8_t fn3;
@@ -4970,7 +5364,7 @@ LAB_00187538:
         goto LAB_00187538;
       }
       fn3 = FUN_0018569c();
-      w7 = CONCAT71(w7._1_7_,fn3);
+      w7 = CONCAT71(EXTRACT17(w7),fn3);
       FUN_003698b0(&w7,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
       *msgbuf = fn3;
@@ -4994,13 +5388,13 @@ LAB_00187538:
 
 
 
-/* FUN_0018758c @ 0x0018758c   (est. cl4_upcall_handler_0018758c)
+/* FUN_0018758c @ 0x0018758c   (est. FUN_0018758c)
  * Ghidra: void FUN_0018758c(undefined1 p1,undefined1 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018758c(uint8_t p1, uint8_t p2, uint64_t p3)
+void FUN_0018758c(uint8_t p1, uint8_t p2, uint64_t p3)
 {
   char tag2;
   uint8_t tmp;
@@ -5088,13 +5482,13 @@ void cl4_upcall_handler_0018758c(uint8_t p1, uint8_t p2, uint64_t p3)
 
 
 
-/* FUN_00187820 @ 0x00187820   (est. cl4_upcall_handler_00187820)
+/* FUN_00187820 @ 0x00187820   (est. FUN_00187820)
  * Ghidra: undefined8 FUN_00187820(undefined1 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint64_t cl4_upcall_handler_00187820(uint8_t p1, uint64_t p2)
+uint64_t FUN_00187820(uint8_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5162,7 +5556,7 @@ uint64_t cl4_upcall_handler_00187820(uint8_t p1, uint64_t p2)
       FUN_003698b0(&idx,0x669b78,&dat_004e6898);
       tag = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
       p2 = tag._0_8_;
-      *tag._8_8_ = tmp;
+      tag.hi = (uint64_t)(tmp);
       val3 = errword2;
       w5 = cnt2;
       val = errword;
@@ -5183,13 +5577,13 @@ uint64_t cl4_upcall_handler_00187820(uint8_t p1, uint64_t p2)
 
 
 
-/* FUN_00187aac @ 0x00187aac   (est. cl4_upcall_handler_00187aac)
- * Ghidra: byte FUN_00187aac(byte p1)
+/* FUN_00187aac @ 0x00187aac   (est. FUN_00187aac)
+ * Ghidra: uint8_t FUN_00187aac(uint8_t p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-byte cl4_upcall_handler_00187aac(byte p1)
+uint8_t FUN_00187aac(uint8_t p1)
 {
   char tag2;
   uint8_t tmp;
@@ -5276,13 +5670,13 @@ byte cl4_upcall_handler_00187aac(byte p1)
 
 
 
-/* FUN_00187d28 @ 0x00187d28   (est. cl4_upcall_handler_00187d28)
+/* FUN_00187d28 @ 0x00187d28   (est. FUN_00187d28)
  * Ghidra: void FUN_00187d28(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00187d28(uint64_t p1, uint64_t p2)
+void FUN_00187d28(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5369,13 +5763,13 @@ void cl4_upcall_handler_00187d28(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00187fa4 @ 0x00187fa4   (est. cl4_upcall_handler_00187fa4)
+/* FUN_00187fa4 @ 0x00187fa4   (est. FUN_00187fa4)
  * Ghidra: void FUN_00187fa4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00187fa4(uint64_t p1, uint64_t p2)
+void FUN_00187fa4(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5462,13 +5856,13 @@ void cl4_upcall_handler_00187fa4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00188220 @ 0x00188220   (est. cl4_upcall_handler_00188220)
+/* FUN_00188220 @ 0x00188220   (est. FUN_00188220)
  * Ghidra: void FUN_00188220(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00188220(uint64_t p1, uint64_t p2)
+void FUN_00188220(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5555,13 +5949,13 @@ void cl4_upcall_handler_00188220(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018849c @ 0x0018849c   (est. cl4_upcall_handler_0018849c)
+/* FUN_0018849c @ 0x0018849c   (est. FUN_0018849c)
  * Ghidra: void FUN_0018849c(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018849c(uint64_t p1, uint64_t p2)
+void FUN_0018849c(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5648,13 +6042,13 @@ void cl4_upcall_handler_0018849c(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00188718 @ 0x00188718   (est. cl4_upcall_handler_00188718)
+/* FUN_00188718 @ 0x00188718   (est. FUN_00188718)
  * Ghidra: undefined8 FUN_00188718(undefined8 p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint64_t cl4_upcall_handler_00188718(uint64_t p1)
+uint64_t FUN_00188718(uint64_t p1)
 {
   char tag2;
   uint8_t tmp;
@@ -5721,7 +6115,7 @@ uint64_t cl4_upcall_handler_00188718(uint64_t p1)
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
       p1 = tag._0_8_;
-      *tag._8_8_ = tmp;
+      tag.hi = (uint64_t)(tmp);
       val3 = errword2;
       w5 = cnt2;
       val = errword;
@@ -5742,13 +6136,13 @@ uint64_t cl4_upcall_handler_00188718(uint64_t p1)
 
 
 
-/* FUN_00188994 @ 0x00188994   (est. cl4_upcall_handler_00188994)
+/* FUN_00188994 @ 0x00188994   (est. FUN_00188994)
  * Ghidra: void FUN_00188994(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00188994(uint64_t p1, uint64_t p2)
+void FUN_00188994(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5835,13 +6229,13 @@ void cl4_upcall_handler_00188994(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00188c10 @ 0x00188c10   (est. cl4_upcall_handler_00188c10)
+/* FUN_00188c10 @ 0x00188c10   (est. FUN_00188c10)
  * Ghidra: void FUN_00188c10(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00188c10(uint64_t p1, uint64_t p2)
+void FUN_00188c10(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -5928,13 +6322,13 @@ void cl4_upcall_handler_00188c10(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00188e8c @ 0x00188e8c   (est. cl4_upcall_handler_00188e8c)
+/* FUN_00188e8c @ 0x00188e8c   (est. FUN_00188e8c)
  * Ghidra: void FUN_00188e8c(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00188e8c(uint64_t p1, uint64_t p2)
+void FUN_00188e8c(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6021,13 +6415,13 @@ void cl4_upcall_handler_00188e8c(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00189108 @ 0x00189108   (est. cl4_upcall_handler_00189108)
+/* FUN_00189108 @ 0x00189108   (est. FUN_00189108)
  * Ghidra: uint FUN_00189108(undefined8 p1,undefined8 p2,undefined1 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint32_t cl4_upcall_handler_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
+uint32_t FUN_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
 {
   uint32_t fn3;
   uint32_t st;
@@ -6088,7 +6482,7 @@ uint32_t cl4_upcall_handler_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
   st2 = *p3;
   fn3 = *(uint32_t *)(p3 + 4);
   st = *(uint32_t *)(p3 + 8);
-  tmp4 = CONCAT31(tmp4._1_3_,st2);
+  tmp4 = CONCAT31(EXTRACT13(tmp4),st2);
   val3 = fn3;
   val2 = st;
   fn2 = FUN_00026754(&tmp4,0x6693a0,&dat_006695f8);
@@ -6102,7 +6496,7 @@ uint32_t cl4_upcall_handler_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
     FUN_00023208(0xa255c9fe760496a6);
     FUN_00023208(p1);
     FUN_000231f0(p2);
-    ptr4 = CONCAT31(ptr4._1_3_,st2);
+    ptr4 = CONCAT31(EXTRACT13(ptr4),st2);
     w3 = fn3;
     w2 = st;
     FUN_000267d4(&ptr4,0x65a870,0x6693a0,0x65a798,&dat_006695f8);
@@ -6160,13 +6554,13 @@ uint32_t cl4_upcall_handler_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
 
 
 
-/* FUN_001894b4 @ 0x001894b4   (est. cl4_upcall_handler_001894b4)
+/* FUN_001894b4 @ 0x001894b4   (est. FUN_001894b4)
  * Ghidra: void FUN_001894b4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_001894b4(uint64_t p1, uint64_t p2)
+void FUN_001894b4(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6253,13 +6647,13 @@ void cl4_upcall_handler_001894b4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00189730 @ 0x00189730   (est. cl4_upcall_handler_00189730)
+/* FUN_00189730 @ 0x00189730   (est. FUN_00189730)
  * Ghidra: void FUN_00189730(undefined8 p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00189730(uint64_t p1)
+void FUN_00189730(uint64_t p1)
 {
   char tag2;
   uint8_t tmp;
@@ -6345,13 +6739,13 @@ void cl4_upcall_handler_00189730(uint64_t p1)
 
 
 
-/* FUN_0018999c @ 0x0018999c   (est. cl4_upcall_handler_0018999c)
+/* FUN_0018999c @ 0x0018999c   (est. FUN_0018999c)
  * Ghidra: void FUN_0018999c(undefined8 p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018999c(uint64_t p1)
+void FUN_0018999c(uint64_t p1)
 {
   char tag2;
   uint8_t tmp;
@@ -6437,13 +6831,13 @@ void cl4_upcall_handler_0018999c(uint64_t p1)
 
 
 
-/* FUN_00189c08 @ 0x00189c08   (est. cl4_upcall_handler_00189c08)
+/* FUN_00189c08 @ 0x00189c08   (est. FUN_00189c08)
  * Ghidra: void FUN_00189c08(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00189c08(uint64_t p1, uint64_t p2)
+void FUN_00189c08(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6530,13 +6924,13 @@ void cl4_upcall_handler_00189c08(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_00189e84 @ 0x00189e84   (est. cl4_upcall_handler_00189e84)
+/* FUN_00189e84 @ 0x00189e84   (est. FUN_00189e84)
  * Ghidra: void FUN_00189e84(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_00189e84(uint64_t p1, uint64_t p2)
+void FUN_00189e84(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6623,13 +7017,13 @@ void cl4_upcall_handler_00189e84(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018a100 @ 0x0018a100   (est. cl4_upcall_handler_0018a100)
+/* FUN_0018a100 @ 0x0018a100   (est. FUN_0018a100)
  * Ghidra: void FUN_0018a100(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018a100(uint64_t p1, uint64_t p2)
+void FUN_0018a100(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6716,13 +7110,13 @@ void cl4_upcall_handler_0018a100(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018a37c @ 0x0018a37c   (est. cl4_upcall_handler_0018a37c)
+/* FUN_0018a37c @ 0x0018a37c   (est. FUN_0018a37c)
  * Ghidra: uint FUN_0018a37c(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint32_t cl4_upcall_handler_0018a37c(uint64_t p1, uint64_t p2)
+uint32_t FUN_0018a37c(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6790,7 +7184,7 @@ uint32_t cl4_upcall_handler_0018a37c(uint64_t p1, uint64_t p2)
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
       p2 = tag._0_8_;
-      *tag._8_8_ = tmp;
+      tag.hi = (uint64_t)(tmp);
       val3 = errword2;
       w5 = cnt2;
       val = errword;
@@ -6811,13 +7205,13 @@ uint32_t cl4_upcall_handler_0018a37c(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018a608 @ 0x0018a608   (est. cl4_upcall_handler_0018a608)
+/* FUN_0018a608 @ 0x0018a608   (est. FUN_0018a608)
  * Ghidra: uint FUN_0018a608(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint32_t cl4_upcall_handler_0018a608(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_0018a608(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   char tag2;
   uint8_t tmp;
@@ -6886,7 +7280,7 @@ uint32_t cl4_upcall_handler_0018a608(uint64_t p1, uint64_t p2, uint64_t p3)
       FUN_003698b0(&val,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
       p3 = tag._0_8_;
-      *tag._8_8_ = tmp;
+      tag.hi = (uint64_t)(tmp);
       w0 = kind2;
       w5 = idx2;
       val3 = kind;
@@ -6907,13 +7301,13 @@ uint32_t cl4_upcall_handler_0018a608(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018a8ac @ 0x0018a8ac   (est. cl4_upcall_handler_0018a8ac)
+/* FUN_0018a8ac @ 0x0018a8ac   (est. FUN_0018a8ac)
  * Ghidra: uint FUN_0018a8ac(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-uint32_t cl4_upcall_handler_0018a8ac(uint64_t p1, uint64_t p2)
+uint32_t FUN_0018a8ac(uint64_t p1, uint64_t p2)
 {
   char tag2;
   uint8_t tmp;
@@ -6981,7 +7375,7 @@ uint32_t cl4_upcall_handler_0018a8ac(uint64_t p1, uint64_t p2)
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
       p2 = tag._0_8_;
-      *tag._8_8_ = tmp;
+      tag.hi = (uint64_t)(tmp);
       val3 = errword2;
       w5 = cnt2;
       val = errword;
@@ -7002,13 +7396,13 @@ uint32_t cl4_upcall_handler_0018a8ac(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018ab38 @ 0x0018ab38   (est. cl4_upcall_handler_0018ab38)
+/* FUN_0018ab38 @ 0x0018ab38   (est. FUN_0018ab38)
  * Ghidra: void FUN_0018ab38(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018ab38(uint64_t p1, uint64_t p2)
+void FUN_0018ab38(uint64_t p1, uint64_t p2)
 {
   char w7;
   uint64_t tag;
@@ -7089,16 +7483,16 @@ void cl4_upcall_handler_0018ab38(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018ada8 @ 0x0018ada8   (est. cl4_upcall_handler_0018ada8)
+/* FUN_0018ada8 @ 0x0018ada8   (est. FUN_0018ada8)
  * Ghidra: ulong FUN_0018ada8(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018ada8(long p1)
+uint64_t FUN_0018ada8(long p1)
 {
   uint64_t w5;
-  void *w4;
+  code_fn_t w4;
   uint32_t *msgbuf4;
   uint64_t msgbuf;
   uint64_t w6;
@@ -7189,13 +7583,13 @@ uint64_t cl4_upcall_handler_0018ada8(long p1)
 
 
 
-/* FUN_0018b094 @ 0x0018b094   (est. cl4_upcall_handler_0018b094)
+/* FUN_0018b094 @ 0x0018b094   (est. FUN_0018b094)
  * Ghidra: ulong FUN_0018b094(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018b094(uint64_t p1, uint64_t p2)
+uint64_t FUN_0018b094(uint64_t p1, uint64_t p2)
 {
   uint64_t errword2;
   uint32_t *msgbuf3;
@@ -7236,20 +7630,20 @@ uint64_t cl4_upcall_handler_0018b094(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018b1bc(uint64_t p1)
+void FUN_0018b1bc(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_0018b1e4 @ 0x0018b1e4   (est. cl4_upcall_handler_0018b1e4)
+/* FUN_0018b1e4 @ 0x0018b1e4   (est. FUN_0018b1e4)
  * Ghidra: ulong FUN_0018b1e4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018b1e4(uint64_t p1, uint64_t p2)
+uint64_t FUN_0018b1e4(uint64_t p1, uint64_t p2)
 {
   uint64_t errword2;
   uint32_t *msgbuf3;
@@ -7284,13 +7678,13 @@ uint64_t cl4_upcall_handler_0018b1e4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018b2f4 @ 0x0018b2f4   (est. cl4_upcall_handler_0018b2f4)
+/* FUN_0018b2f4 @ 0x0018b2f4   (est. FUN_0018b2f4)
  * Ghidra: void FUN_0018b2f4(undefined8 *p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018b2f4(uint64_t *p1, uint64_t p2)
+void FUN_0018b2f4(uint64_t *p1, uint64_t p2)
 {
   char tmp2;
   uint8_t tmp3;
@@ -7358,7 +7752,7 @@ void cl4_upcall_handler_0018b2f4(uint64_t *p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000041,0x80000000005cc290,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xc0a,0);
       }
-      FUN_000268d0(&val2,0x669540,0x65a688,0x669540,0x65a5e8,&LAB_00669608,&cnt);
+      FUN_000268d0(&val2,0x669540,0x65a688,0x669540,0x65a5e8,(uint64_t)0x669608,&cnt);
       p1[1] = kind2;
       *p1 = CONCAT71(len,val2);
       w5 = kind;
@@ -7381,13 +7775,13 @@ void cl4_upcall_handler_0018b2f4(uint64_t *p1, uint64_t p2)
 
 
 
-/* FUN_0018b5c4 @ 0x0018b5c4   (est. cl4_upcall_handler_0018b5c4)
+/* FUN_0018b5c4 @ 0x0018b5c4   (est. FUN_0018b5c4)
  * Ghidra: void FUN_0018b5c4(undefined8 p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018b5c4(uint64_t p1)
+void FUN_0018b5c4(uint64_t p1)
 {
   char tag2;
   uint8_t tmp;
@@ -7473,13 +7867,13 @@ void cl4_upcall_handler_0018b5c4(uint64_t p1)
 
 
 
-/* FUN_0018b830 @ 0x0018b830   (est. cl4_upcall_handler_0018b830)
+/* FUN_0018b830 @ 0x0018b830   (est. FUN_0018b830)
  * Ghidra: void FUN_0018b830(undefined8 *p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V1 */
-void cl4_upcall_handler_0018b830(uint64_t *p1, uint64_t p2)
+void FUN_0018b830(uint64_t *p1, uint64_t p2)
 {
   void *ptr3;
   char ptr4;
@@ -7588,17 +7982,17 @@ void cl4_upcall_handler_0018b830(uint64_t *p1, uint64_t p2)
 
 
 
-/* FUN_0018bbac @ 0x0018bbac   (est. cl4_upcall_handler_0018bbac)
+/* FUN_0018bbac @ 0x0018bbac   (est. FUN_0018bbac)
  * Ghidra: void FUN_0018bbac(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_0018bbac(uint64_t p1, uint64_t p2, uint64_t p3)
+void FUN_0018bbac(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf3;
-  void *msgbuf;
+  code_fn_t msgbuf;
   uint64_t *cpu;
   uint64_t msgbuf4;
   
@@ -7614,15 +8008,15 @@ void cl4_upcall_handler_0018bbac(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018bc58 @ 0x0018bc58   (est. cl4_upcall_handler_0018bc58)
+/* FUN_0018bc58 @ 0x0018bc58   (est. FUN_0018bc58)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_0018bc58(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
+void FUN_0018bc58(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
 {
-  void *msgbuf;
+  code_fn_t msgbuf;
   uint64_t msgbuf2;
   uint64_t msgbuf3;
   uint64_t msgbuf4;
@@ -7645,13 +8039,13 @@ void cl4_upcall_handler_0018bc58(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018bd0c @ 0x0018bd0c   (est. cl4_upcall_handler_0018bd0c)
+/* FUN_0018bd0c @ 0x0018bd0c   (est. FUN_0018bd0c)
  * Ghidra: void FUN_0018bd0c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018bd0c(void)
+void FUN_0018bd0c(void)
 {
   uint32_t *in_x3;
   long err;
@@ -7666,13 +8060,13 @@ void cl4_upcall_handler_0018bd0c(void)
 
 
 
-/* FUN_0018bd44 @ 0x0018bd44   (est. cl4_upcall_handler_0018bd44)
+/* FUN_0018bd44 @ 0x0018bd44   (est. FUN_0018bd44)
  * Ghidra: undefined4 FUN_0018bd44(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018bd44(void)
+uint32_t FUN_0018bd44(void)
 {
   uint32_t msgbuf;
   long err;
@@ -7686,13 +8080,13 @@ uint32_t cl4_upcall_handler_0018bd44(void)
 
 
 
-/* FUN_0018bd48 @ 0x0018bd48   (est. cl4_upcall_handler_0018bd48)
+/* FUN_0018bd48 @ 0x0018bd48   (est. FUN_0018bd48)
  * Ghidra: undefined4 FUN_0018bd48(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018bd48(void)
+uint32_t FUN_0018bd48(void)
 {
   uint32_t msgbuf;
   long err;
@@ -7706,13 +8100,13 @@ uint32_t cl4_upcall_handler_0018bd48(void)
 
 
 
-/* FUN_0018bd6c @ 0x0018bd6c   (est. cl4_upcall_handler_0018bd6c)
+/* FUN_0018bd6c @ 0x0018bd6c   (est. FUN_0018bd6c)
  * Ghidra: void FUN_0018bd6c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018bd6c(void)
+void FUN_0018bd6c(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -7727,23 +8121,23 @@ void cl4_upcall_handler_0018bd6c(void)
 
 
 
-/* FUN_0018bdbc @ 0x0018bdbc   (est. cl4_upcall_simple_0018bdbc)
+/* FUN_0018bdbc @ 0x0018bdbc   (est. FUN_0018bdbc)
  * Ghidra: void FUN_0018bdbc(undefined8 p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_set_kind_tbl_b(uint64_t v)
+void FUN_0018bdbc(uint64_t v)
 {
-    FUN_0022995c(v, *(uint32_t *)(DAT_004e68c4 + (uint64_t)*per_cpu * 4));
+    FUN_0022995c(v, *(uint32_t *)(dat_004e68c4 + (uint64_t)*per_cpu * 4));
 }
 
 
-/* FUN_0018bdf4 @ 0x0018bdf4   (est. cl4_upcall_handler_0018bdf4)
+/* FUN_0018bdf4 @ 0x0018bdf4   (est. FUN_0018bdf4)
  * Ghidra: void FUN_0018bdf4(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018bdf4(void)
+void FUN_0018bdf4(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -7758,46 +8152,46 @@ void cl4_upcall_handler_0018bdf4(void)
 
 
 
-/* FUN_0018be40 @ 0x0018be40   (est. cl4_upcall_simple_0018be40)
+/* FUN_0018be40 @ 0x0018be40   (est. FUN_0018be40)
  * Ghidra: void FUN_0018be40(undefined1 *p1,undefined4 *p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_classify(uint8_t *out, uint32_t *arg)
+void FUN_0018be40(uint8_t *out, uint32_t *arg)
 {
     /* Classifies the upcall kind: FUN_0018deb8(*arg), stored to *out. */
     *out = FUN_0018deb8(*arg);
 }
 
 
-/* FUN_0018be84 @ 0x0018be84   (est. cl4_upcall_simple_0018be84)
+/* FUN_0018be84 @ 0x0018be84   (est. FUN_0018be84)
  * Ghidra: void FUN_0018be84(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_d0(uint64_t a, uint64_t b)
+void FUN_0018be84(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
-    FUN_00208478(a, b, (uint64_t)&DAT_004e6468, st);
+    FUN_00208478(a, b, (uint64_t)&dat_004e6468, st);
 }
 
 
-/* FUN_0018bed8 @ 0x0018bed8   (est. cl4_upcall_simple_0018bed8)
+/* FUN_0018bed8 @ 0x0018bed8   (est. FUN_0018bed8)
  * Ghidra: void FUN_0018bed8(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_d1(uint64_t a, uint64_t b)
+void FUN_0018bed8(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
-    FUN_00208478(a, b, (uint64_t)&DAT_004e64c8, st);
+    FUN_00208478(a, b, (uint64_t)&dat_004e64c8, st);
 }
 
 
-/* FUN_0018bf2c @ 0x0018bf2c   (est. cl4_upcall_handler_0018bf2c)
+/* FUN_0018bf2c @ 0x0018bf2c   (est. FUN_0018bf2c)
  * Ghidra: undefined4 FUN_0018bf2c(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018bf2c(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_0018bf2c(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint8_t *cpu;
@@ -7813,15 +8207,15 @@ uint32_t cl4_upcall_handler_0018bf2c(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018bf78 @ 0x0018bf78   (est. cl4_upcall_handler_0018bf78)
+/* FUN_0018bf78 @ 0x0018bf78   (est. FUN_0018bf78)
  * Ghidra: void FUN_0018bf78(ulong p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018bf78(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+void FUN_0018bf78(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
-  void *msgbuf;
+  code_fn_t msgbuf;
   long err;
   
   msgbuf = (code_fn_t)FUN_000bd0e4(p4);
@@ -7836,16 +8230,16 @@ void cl4_upcall_handler_0018bf78(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t
 
 
 
-/* FUN_0018c020 @ 0x0018c020   (est. cl4_upcall_handler_0018c020)
+/* FUN_0018c020 @ 0x0018c020   (est. FUN_0018c020)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c020(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
+void FUN_0018c020(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
 {
   long err;
-  uint8_t msgbuf [12];
+  cl4_16_t msgbuf [12];
   
   msgbuf = FUN_0018c078(p3,p4);
   if (err == 0) {
@@ -7861,17 +8255,17 @@ void cl4_upcall_handler_0018c020(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018c078 @ 0x0018c078   (est. cl4_upcall_handler_0018c078)
+/* FUN_0018c078 @ 0x0018c078   (est. FUN_0018c078)
  * Ghidra: ulong FUN_0018c078(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018c078(uint64_t p1, uint64_t p2)
+uint64_t FUN_0018c078(uint64_t p1, uint64_t p2)
 {
   uint32_t msgbuf3;
   uint64_t msgbuf4;
-  void *msgbuf;
+  code_fn_t msgbuf;
   long msgbuf2;
   long err;
   
@@ -7890,13 +8284,13 @@ uint64_t cl4_upcall_handler_0018c078(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018c108 @ 0x0018c108   (est. cl4_upcall_handler_0018c108)
+/* FUN_0018c108 @ 0x0018c108   (est. FUN_0018c108)
  * Ghidra: void FUN_0018c108(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c108(void)
+void FUN_0018c108(void)
 {
   uint32_t *in_x3;
   long err;
@@ -7911,13 +8305,13 @@ void cl4_upcall_handler_0018c108(void)
 
 
 
-/* FUN_0018c140 @ 0x0018c140   (est. cl4_upcall_handler_0018c140)
+/* FUN_0018c140 @ 0x0018c140   (est. FUN_0018c140)
  * Ghidra: undefined4 FUN_0018c140(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c140(void)
+uint32_t FUN_0018c140(void)
 {
   uint32_t msgbuf;
   long err;
@@ -7931,13 +8325,13 @@ uint32_t cl4_upcall_handler_0018c140(void)
 
 
 
-/* FUN_0018c144 @ 0x0018c144   (est. cl4_upcall_handler_0018c144)
+/* FUN_0018c144 @ 0x0018c144   (est. FUN_0018c144)
  * Ghidra: undefined4 FUN_0018c144(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c144(void)
+uint32_t FUN_0018c144(void)
 {
   uint32_t msgbuf;
   long err;
@@ -7951,35 +8345,35 @@ uint32_t cl4_upcall_handler_0018c144(void)
 
 
 
-/* FUN_0018c168 @ 0x0018c168   (est. cl4_upcall_simple_0018c168)
+/* FUN_0018c168 @ 0x0018c168   (est. FUN_0018c168)
  * Ghidra: void FUN_0018c168(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_d2(uint64_t a, uint64_t b)
+void FUN_0018c168(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
-    FUN_00208478(a, b, (uint64_t)&DAT_004e6548, st);
+    FUN_00208478(a, b, (uint64_t)&dat_004e6548, st);
 }
 
 
-/* FUN_0018c1bc @ 0x0018c1bc   (est. cl4_upcall_simple_0018c1bc)
+/* FUN_0018c1bc @ 0x0018c1bc   (est. FUN_0018c1bc)
  * Ghidra: void FUN_0018c1bc(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_d3(uint64_t a, uint64_t b)
+void FUN_0018c1bc(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
-    FUN_00208478(a, b, (uint64_t)&DAT_004e65c8, st);
+    FUN_00208478(a, b, (uint64_t)&dat_004e65c8, st);
 }
 
 
-/* FUN_0018c214 @ 0x0018c214   (est. cl4_upcall_handler_0018c214)
+/* FUN_0018c214 @ 0x0018c214   (est. FUN_0018c214)
  * Ghidra: undefined4 FUN_0018c214(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c214(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_0018c214(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t msgbuf2;
@@ -7999,15 +8393,15 @@ uint32_t cl4_upcall_handler_0018c214(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018c288 @ 0x0018c288   (est. cl4_upcall_handler_0018c288)
+/* FUN_0018c288 @ 0x0018c288   (est. FUN_0018c288)
  * Ghidra: void FUN_0018c288(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c288(long p1)
+void FUN_0018c288(long p1)
 {
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   long msgbuf3;
   
@@ -8033,15 +8427,15 @@ void cl4_upcall_handler_0018c288(long p1)
 
 
 
-/* FUN_0018c3cc @ 0x0018c3cc   (est. cl4_upcall_handler_0018c3cc)
+/* FUN_0018c3cc @ 0x0018c3cc   (est. FUN_0018c3cc)
  * Ghidra: void FUN_0018c3cc(long p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_0018c3cc(long p1, uint64_t p2, uint64_t p3)
+void FUN_0018c3cc(long p1, uint64_t p2, uint64_t p3)
 {
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   long msgbuf3;
   
@@ -8068,13 +8462,13 @@ void cl4_upcall_handler_0018c3cc(long p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018c540 @ 0x0018c540   (est. cl4_upcall_handler_0018c540)
+/* FUN_0018c540 @ 0x0018c540   (est. FUN_0018c540)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c540(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
+void FUN_0018c540(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
 {
   uint64_t msgbuf;
   long err;
@@ -8093,13 +8487,13 @@ void cl4_upcall_handler_0018c540(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018c594 @ 0x0018c594   (est. cl4_upcall_handler_0018c594)
+/* FUN_0018c594 @ 0x0018c594   (est. FUN_0018c594)
  * Ghidra: undefined * FUN_0018c594(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void * cl4_upcall_handler_0018c594(void)
+void * FUN_0018c594(void)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf3;
@@ -8124,17 +8518,17 @@ void * cl4_upcall_handler_0018c594(void)
 
 
 
-/* FUN_0018c660 @ 0x0018c660   (est. cl4_upcall_handler_0018c660)
+/* FUN_0018c660 @ 0x0018c660   (est. FUN_0018c660)
  * Ghidra: undefined * FUN_0018c660(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void * cl4_upcall_handler_0018c660(uint64_t p1, uint64_t p2)
+void * FUN_0018c660(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf3;
   uint64_t msgbuf4;
-  void *msgbuf;
+  code_fn_t msgbuf;
   uint64_t msgbuf5;
   long msgbuf2;
   
@@ -8157,13 +8551,13 @@ void * cl4_upcall_handler_0018c660(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018c754 @ 0x0018c754   (est. cl4_upcall_handler_0018c754)
+/* FUN_0018c754 @ 0x0018c754   (est. FUN_0018c754)
  * Ghidra: void FUN_0018c754(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c754(void)
+void FUN_0018c754(void)
 {
   uint32_t *in_x3;
   long err;
@@ -8178,13 +8572,13 @@ void cl4_upcall_handler_0018c754(void)
 
 
 
-/* FUN_0018c78c @ 0x0018c78c   (est. cl4_upcall_handler_0018c78c)
+/* FUN_0018c78c @ 0x0018c78c   (est. FUN_0018c78c)
  * Ghidra: undefined4 FUN_0018c78c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c78c(void)
+uint32_t FUN_0018c78c(void)
 {
   uint32_t msgbuf;
   long err;
@@ -8198,13 +8592,13 @@ uint32_t cl4_upcall_handler_0018c78c(void)
 
 
 
-/* FUN_0018c790 @ 0x0018c790   (est. cl4_upcall_handler_0018c790)
+/* FUN_0018c790 @ 0x0018c790   (est. FUN_0018c790)
  * Ghidra: undefined4 FUN_0018c790(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c790(void)
+uint32_t FUN_0018c790(void)
 {
   uint32_t msgbuf;
   long err;
@@ -8218,13 +8612,13 @@ uint32_t cl4_upcall_handler_0018c790(void)
 
 
 
-/* FUN_0018c7b8 @ 0x0018c7b8   (est. cl4_upcall_handler_0018c7b8)
+/* FUN_0018c7b8 @ 0x0018c7b8   (est. FUN_0018c7b8)
  * Ghidra: undefined4 FUN_0018c7b8(undefined8 p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018c7b8(uint64_t p1, uint64_t p2, uint64_t p3)
+uint32_t FUN_0018c7b8(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint32_t msgbuf;
   uint64_t msgbuf2;
@@ -8244,15 +8638,15 @@ uint32_t cl4_upcall_handler_0018c7b8(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018c82c @ 0x0018c82c   (est. cl4_upcall_handler_0018c82c)
+/* FUN_0018c82c @ 0x0018c82c   (est. FUN_0018c82c)
  * Ghidra: void FUN_0018c82c(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018c82c(long p1)
+void FUN_0018c82c(long p1)
 {
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   if (*(long *)(p1 + 0x10) == 2) {
@@ -8274,15 +8668,15 @@ void cl4_upcall_handler_0018c82c(long p1)
 
 
 
-/* FUN_0018c968 @ 0x0018c968   (est. cl4_upcall_handler_0018c968)
+/* FUN_0018c968 @ 0x0018c968   (est. FUN_0018c968)
  * Ghidra: void FUN_0018c968(long p1,undefined8 p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void cl4_upcall_handler_0018c968(long p1, uint64_t p2, uint64_t p3)
+void FUN_0018c968(long p1, uint64_t p2, uint64_t p3)
 {
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   if (*(long *)(p1 + 0x10) == 2) {
@@ -8305,13 +8699,13 @@ void cl4_upcall_handler_0018c968(long p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018cad4 @ 0x0018cad4   (est. cl4_upcall_handler_0018cad4)
+/* FUN_0018cad4 @ 0x0018cad4   (est. FUN_0018cad4)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018cad4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
+void FUN_0018cad4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
 {
   uint64_t msgbuf;
   long err;
@@ -8328,13 +8722,13 @@ void cl4_upcall_handler_0018cad4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018cb24 @ 0x0018cb24   (est. cl4_upcall_handler_0018cb24)
+/* FUN_0018cb24 @ 0x0018cb24   (est. FUN_0018cb24)
  * Ghidra: undefined * FUN_0018cb24(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void * cl4_upcall_handler_0018cb24(void)
+void * FUN_0018cb24(void)
 {
   uint64_t msgbuf2;
   long msgbuf;
@@ -8363,18 +8757,18 @@ void * cl4_upcall_handler_0018cb24(void)
 
 
 
-/* FUN_0018cc2c @ 0x0018cc2c   (est. cl4_upcall_handler_0018cc2c)
+/* FUN_0018cc2c @ 0x0018cc2c   (est. FUN_0018cc2c)
  * Ghidra: undefined * FUN_0018cc2c(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class D/None */
-void * cl4_upcall_handler_0018cc2c(uint64_t p1, uint64_t p2)
+void * FUN_0018cc2c(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf3;
   long msgbuf2;
   uint64_t msgbuf4;
-  void *msgbuf;
+  code_fn_t msgbuf;
   uint64_t msgbuf5;
   
   FUN_00082484(0,2,0);
@@ -8401,13 +8795,13 @@ void * cl4_upcall_handler_0018cc2c(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018cd78 @ 0x0018cd78   (est. cl4_upcall_handler_0018cd78)
+/* FUN_0018cd78 @ 0x0018cd78   (est. FUN_0018cd78)
  * Ghidra: void FUN_0018cd78(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018cd78(void)
+void FUN_0018cd78(void)
 {
   uint32_t *in_x3;
   long err;
@@ -8422,13 +8816,13 @@ void cl4_upcall_handler_0018cd78(void)
 
 
 
-/* FUN_0018cdb0 @ 0x0018cdb0   (est. cl4_upcall_handler_0018cdb0)
+/* FUN_0018cdb0 @ 0x0018cdb0   (est. FUN_0018cdb0)
  * Ghidra: undefined4 FUN_0018cdb0(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018cdb0(void)
+uint32_t FUN_0018cdb0(void)
 {
   uint32_t msgbuf;
   long err;
@@ -8442,13 +8836,13 @@ uint32_t cl4_upcall_handler_0018cdb0(void)
 
 
 
-/* FUN_0018cdb4 @ 0x0018cdb4   (est. cl4_upcall_handler_0018cdb4)
+/* FUN_0018cdb4 @ 0x0018cdb4   (est. FUN_0018cdb4)
  * Ghidra: undefined4 FUN_0018cdb4(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018cdb4(void)
+uint32_t FUN_0018cdb4(void)
 {
   uint32_t msgbuf;
   long err;
@@ -8462,13 +8856,13 @@ uint32_t cl4_upcall_handler_0018cdb4(void)
 
 
 
-/* FUN_0018cdd8 @ 0x0018cdd8   (est. cl4_upcall_handler_0018cdd8)
+/* FUN_0018cdd8 @ 0x0018cdd8   (est. FUN_0018cdd8)
  * Ghidra: undefined * FUN_0018cdd8(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void * cl4_upcall_handler_0018cdd8(void)
+void * FUN_0018cdd8(void)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf3;
@@ -8493,15 +8887,15 @@ void * cl4_upcall_handler_0018cdd8(void)
 
 
 
-/* FUN_0018cea4 @ 0x0018cea4   (est. cl4_upcall_handler_0018cea4)
+/* FUN_0018cea4 @ 0x0018cea4   (est. FUN_0018cea4)
  * Ghidra: void FUN_0018cea4(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018cea4(long p1)
+void FUN_0018cea4(long p1)
 {
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   long msgbuf3;
   
@@ -8527,16 +8921,16 @@ void cl4_upcall_handler_0018cea4(long p1)
 
 
 
-/* FUN_0018cfe8 @ 0x0018cfe8   (est. cl4_upcall_handler_0018cfe8)
+/* FUN_0018cfe8 @ 0x0018cfe8   (est. FUN_0018cfe8)
  * Ghidra: void FUN_0018cfe8(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018cfe8(void)
+void FUN_0018cfe8(void)
 {
   uint32_t msgbuf3;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   msgbuf3 = FUN_000218a4();
@@ -8556,16 +8950,16 @@ void cl4_upcall_handler_0018cfe8(void)
 
 
 
-/* FUN_0018d0e4 @ 0x0018d0e4   (est. cl4_upcall_handler_0018d0e4)
+/* FUN_0018d0e4 @ 0x0018d0e4   (est. FUN_0018d0e4)
  * Ghidra: void FUN_0018d0e4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d0e4(uint64_t p1, uint64_t p2)
+void FUN_0018d0e4(uint64_t p1, uint64_t p2)
 {
   uint32_t msgbuf3;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   msgbuf2 = (code_fn_t)FUN_001477c4(p2);
@@ -8586,16 +8980,16 @@ void cl4_upcall_handler_0018d0e4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018d208 @ 0x0018d208   (est. cl4_upcall_handler_0018d208)
+/* FUN_0018d208 @ 0x0018d208   (est. FUN_0018d208)
  * Ghidra: void FUN_0018d208(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d208(void)
+void FUN_0018d208(void)
 {
   int msgbuf3;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   msgbuf3 = FUN_000218a4();
@@ -8615,17 +9009,17 @@ void cl4_upcall_handler_0018d208(void)
 
 
 
-/* FUN_0018d304 @ 0x0018d304   (est. cl4_upcall_handler_0018d304)
+/* FUN_0018d304 @ 0x0018d304   (est. FUN_0018d304)
  * Ghidra: undefined8 FUN_0018d304(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018d304(void)
+uint64_t FUN_0018d304(void)
 {
   int msgbuf3;
   uint64_t msgbuf4;
-  void *msgbuf2;
+  code_fn_t msgbuf2;
   uint64_t msgbuf;
   
   msgbuf3 = FUN_000218a4();
@@ -8651,13 +9045,13 @@ uint64_t cl4_upcall_handler_0018d304(void)
 
 
 
-/* FUN_0018d414 @ 0x0018d414   (est. cl4_upcall_handler_0018d414)
+/* FUN_0018d414 @ 0x0018d414   (est. FUN_0018d414)
  * Ghidra: void FUN_0018d414(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d414(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+void FUN_0018d414(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint8_t msgbuf [56];
   
@@ -8671,13 +9065,13 @@ void cl4_upcall_handler_0018d414(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t
 
 
 
-/* FUN_0018d494 @ 0x0018d494   (est. cl4_upcall_handler_0018d494)
+/* FUN_0018d494 @ 0x0018d494   (est. FUN_0018d494)
  * Ghidra: void FUN_0018d494(undefined8 *p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d494(uint64_t *p1)
+void FUN_0018d494(uint64_t *p1)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf3;
@@ -8697,13 +9091,13 @@ void cl4_upcall_handler_0018d494(uint64_t *p1)
 
 
 
-/* FUN_0018d50c @ 0x0018d50c   (est. cl4_upcall_handler_0018d50c)
+/* FUN_0018d50c @ 0x0018d50c   (est. FUN_0018d50c)
  * Ghidra: ulong FUN_0018d50c(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018d50c(uint64_t p1, uint64_t p2)
+uint64_t FUN_0018d50c(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf6;
   uint64_t errword;
@@ -8729,13 +9123,13 @@ uint64_t cl4_upcall_handler_0018d50c(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018d5c4 @ 0x0018d5c4   (est. cl4_upcall_handler_0018d5c4)
+/* FUN_0018d5c4 @ 0x0018d5c4   (est. FUN_0018d5c4)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d5c4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5)
+void FUN_0018d5c4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5)
 {
   uint64_t msgbuf5;
   long err;
@@ -8759,13 +9153,13 @@ void cl4_upcall_handler_0018d5c4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018d690 @ 0x0018d690   (est. cl4_upcall_handler_0018d690)
+/* FUN_0018d690 @ 0x0018d690   (est. FUN_0018d690)
  * Ghidra: void FUN_0018d690(undefined8 p1,ulong p2,undefined8 p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d690(uint64_t p1, uint64_t p2, uint64_t p3)
+void FUN_0018d690(uint64_t p1, uint64_t p2, uint64_t p3)
 {
   uint8_t msgbuf [56];
   
@@ -8779,13 +9173,13 @@ void cl4_upcall_handler_0018d690(uint64_t p1, uint64_t p2, uint64_t p3)
 
 
 
-/* FUN_0018d710 @ 0x0018d710   (est. cl4_upcall_handler_0018d710)
+/* FUN_0018d710 @ 0x0018d710   (est. FUN_0018d710)
  * Ghidra: void FUN_0018d710(undefined1 *p1,undefined8 p2,undefined4 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d710(uint64_t *p1, uint64_t p2, uint64_t *p3)
+void FUN_0018d710(uint64_t *p1, uint64_t p2, uint64_t *p3)
 {
   uint32_t w1;
   uint32_t w2;
@@ -8846,13 +9240,13 @@ void cl4_upcall_handler_0018d710(uint64_t *p1, uint64_t p2, uint64_t *p3)
 
 
 
-/* FUN_0018d7e8 @ 0x0018d7e8   (est. cl4_upcall_handler_0018d7e8)
+/* FUN_0018d7e8 @ 0x0018d7e8   (est. FUN_0018d7e8)
  * Ghidra: ulong FUN_0018d7e8(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018d7e8(uint64_t p1, uint64_t p2)
+uint64_t FUN_0018d7e8(uint64_t p1, uint64_t p2)
 {
   uint64_t msgbuf5;
   uint64_t msgbuf6;
@@ -8876,13 +9270,13 @@ uint64_t cl4_upcall_handler_0018d7e8(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018d8a0 @ 0x0018d8a0   (est. cl4_upcall_handler_0018d8a0)
+/* FUN_0018d8a0 @ 0x0018d8a0   (est. FUN_0018d8a0)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018d8a0(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5)
+void FUN_0018d8a0(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5)
 {
   uint64_t msgbuf4;
   long err;
@@ -8909,7 +9303,7 @@ void cl4_upcall_handler_0018d8a0(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018d96c(uint64_t p1, uint64_t p2)
+void FUN_0018d96c(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -8921,7 +9315,7 @@ void cl4_thunk_0018d96c(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018d970(uint64_t p1, uint64_t p2)
+void FUN_0018d970(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -8933,7 +9327,7 @@ void cl4_thunk_0018d970(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018d9d8(void)
+void FUN_0018d9d8(void)
 {
     ;
 }
@@ -8945,7 +9339,7 @@ void cl4_thunk_0018d9d8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018d9dc(void)
+void FUN_0018d9dc(void)
 {
     ;
 }
@@ -8957,7 +9351,7 @@ void cl4_thunk_0018d9dc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018da04(void)
+void FUN_0018da04(void)
 {
     ;
 }
@@ -8969,7 +9363,7 @@ void cl4_thunk_0018da04(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018da08(void)
+void FUN_0018da08(void)
 {
     ;
 }
@@ -8981,7 +9375,7 @@ void cl4_thunk_0018da08(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018da30(uint64_t p1, uint64_t p2)
+void FUN_0018da30(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -8993,7 +9387,7 @@ void cl4_thunk_0018da30(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018da34(uint64_t p1, uint64_t p2)
+void FUN_0018da34(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -9005,7 +9399,7 @@ void cl4_thunk_0018da34(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018da9c(void)
+void FUN_0018da9c(void)
 {
     ;
 }
@@ -9017,7 +9411,7 @@ void cl4_thunk_0018da9c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018daa0(void)
+void FUN_0018daa0(void)
 {
     ;
 }
@@ -9029,7 +9423,7 @@ void cl4_thunk_0018daa0(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dac8(void)
+void FUN_0018dac8(void)
 {
     ;
 }
@@ -9041,20 +9435,20 @@ void cl4_thunk_0018dac8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dacc(void)
+void FUN_0018dacc(void)
 {
     ;
 }
 
 
 
-/* FUN_0018daf4 @ 0x0018daf4   (est. cl4_upcall_handler_0018daf4)
+/* FUN_0018daf4 @ 0x0018daf4   (est. FUN_0018daf4)
  * Ghidra: void FUN_0018daf4(undefined8 p1,undefined8 p2,undefined4 *p3,code_fn_t p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018daf4(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
+void FUN_0018daf4(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
 {
   uint32_t w1;
   long err;
@@ -9113,7 +9507,7 @@ void cl4_upcall_handler_0018daf4(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dbc0(uint64_t p1, uint64_t p2)
+void FUN_0018dbc0(uint64_t p1, uint64_t p2)
 {
     ;
 }
@@ -9125,20 +9519,20 @@ void cl4_thunk_0018dbc0(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dbc4(uint64_t p1, uint64_t p2)
+void FUN_0018dbc4(uint64_t p1, uint64_t p2)
 {
     ;
 }
 
 
 
-/* FUN_0018dbec @ 0x0018dbec   (est. cl4_upcall_handler_0018dbec)
+/* FUN_0018dbec @ 0x0018dbec   (est. FUN_0018dbec)
  * Ghidra: void FUN_0018dbec(undefined8 *p1,undefined8 p2,undefined4 *p3,code_fn_t p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018dbec(uint64_t *p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
+void FUN_0018dbec(uint64_t *p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
 {
   uint64_t w1;
   long err;
@@ -9198,7 +9592,7 @@ void cl4_upcall_handler_0018dbec(uint64_t *p1, uint64_t p2, uint64_t *p3, code_f
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dcd8(void)
+void FUN_0018dcd8(void)
 {
     ;
 }
@@ -9210,20 +9604,20 @@ void cl4_thunk_0018dcd8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018dcdc(void)
+void FUN_0018dcdc(void)
 {
     ;
 }
 
 
 
-/* FUN_0018dd04 @ 0x0018dd04   (est. cl4_upcall_handler_0018dd04)
+/* FUN_0018dd04 @ 0x0018dd04   (est. FUN_0018dd04)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018dd04(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5)
+uint64_t FUN_0018dd04(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5)
 {
   uint64_t msgbuf2;
   uint64_t msgbuf3;
@@ -9248,7 +9642,7 @@ uint64_t cl4_upcall_handler_0018dd04(uint64_t p1, uint64_t p2, uint64_t p3, uint
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ddac(void)
+void FUN_0018ddac(void)
 {
     ;
 }
@@ -9260,20 +9654,20 @@ void cl4_thunk_0018ddac(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ddb0(void)
+void FUN_0018ddb0(void)
 {
     ;
 }
 
 
 
-/* FUN_0018ddd8 @ 0x0018ddd8   (est. cl4_upcall_handler_0018ddd8)
+/* FUN_0018ddd8 @ 0x0018ddd8   (est. FUN_0018ddd8)
  * Ghidra: 
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5, uint64_t p6, uint64_t p7)
+void FUN_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5, uint64_t p6, uint64_t p7)
 {
   uint64_t msgbuf3;
   long err;
@@ -9293,13 +9687,13 @@ void cl4_upcall_handler_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_
 
 
 
-/* FUN_0018de98 @ 0x0018de98   (est. cl4_upcall_handler_0018de98)
+/* FUN_0018de98 @ 0x0018de98   (est. FUN_0018de98)
  * Ghidra: void FUN_0018de98(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018de98(void)
+void FUN_0018de98(void)
 {
   uint64_t msgbuf;
   uint64_t *cpu;
@@ -9311,13 +9705,13 @@ void cl4_upcall_handler_0018de98(void)
 
 
 
-/* FUN_0018deb8 @ 0x0018deb8   (est. cl4_upcall_handler_0018deb8)
+/* FUN_0018deb8 @ 0x0018deb8   (est. FUN_0018deb8)
  * Ghidra: undefined8 FUN_0018deb8(uint p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint64_t cl4_upcall_handler_0018deb8(uint32_t p1)
+uint64_t FUN_0018deb8(uint32_t p1)
 {
   uint64_t msgbuf;
   
@@ -9487,21 +9881,21 @@ switchD_0018dee8_caseD_3:
 
 
 
-/* FUN_0018e1c0 @ 0x0018e1c0   (est. cl4_upcall_simple_0018e1c0)
+/* FUN_0018e1c0 @ 0x0018e1c0   (est. FUN_0018e1c0)
  * Ghidra: undefined1  [16] FUN_0018e1c0(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-cl4_16_t cl4_tag_655130(void)
+cl4_16_t FUN_0018e1c0(void)
 {
     return *(cl4_16_t *)0x655130;
 }
 
 
-/* FUN_0018e290 @ 0x0018e290   (est. cl4_upcall_simple_0018e290)
+/* FUN_0018e290 @ 0x0018e290   (est. FUN_0018e290)
  * Ghidra: void FUN_0018e290(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply3(uint64_t a, uint64_t b)
+void FUN_0018e290(uint64_t a, uint64_t b)
 {
     /* Sends a three-word upcall reply from the per-CPU words at +0x10/+0x18/+0x20. */
     FUN_0018d414(a, *(uint64_t *)(per_cpu + 0x10), *(uint64_t *)(per_cpu + 0x18),
@@ -9509,24 +9903,24 @@ void cl4_upcall_reply3(uint64_t a, uint64_t b)
 }
 
 
-/* FUN_0018e294 @ 0x0018e294   (est. cl4_upcall_simple_0018e294)
+/* FUN_0018e294 @ 0x0018e294   (est. FUN_0018e294)
  * Ghidra: void FUN_0018e294(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply3b(uint64_t a, uint64_t b)
+void FUN_0018e294(uint64_t a, uint64_t b)
 {
     FUN_0018d414(a, *(uint64_t *)(per_cpu + 0x10), *(uint64_t *)(per_cpu + 0x18),
                  *(uint64_t *)(per_cpu + 0x20), b);
 }
 
 
-/* FUN_0018e2b4 @ 0x0018e2b4   (est. cl4_upcall_handler_0018e2b4)
+/* FUN_0018e2b4 @ 0x0018e2b4   (est. FUN_0018e2b4)
  * Ghidra: void FUN_0018e2b4(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e2b4(uint64_t p1, uint64_t p2)
+void FUN_0018e2b4(uint64_t p1, uint64_t p2)
 {
   long cpu;
   
@@ -9538,13 +9932,13 @@ void cl4_upcall_handler_0018e2b4(uint64_t p1, uint64_t p2)
 
 
 
-/* FUN_0018e2b8 @ 0x0018e2b8   (est. cl4_upcall_handler_0018e2b8)
+/* FUN_0018e2b8 @ 0x0018e2b8   (est. FUN_0018e2b8)
  * Ghidra: void FUN_0018e2b8(undefined8 p1,undefined8 p2)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e2b8(uint64_t p1, uint64_t p2)
+void FUN_0018e2b8(uint64_t p1, uint64_t p2)
 {
   long cpu;
   
@@ -9561,7 +9955,7 @@ void cl4_upcall_handler_0018e2b8(uint64_t p1, uint64_t p2)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e2dc(void)
+void FUN_0018e2dc(void)
 {
     ;
 }
@@ -9573,7 +9967,7 @@ void cl4_thunk_0018e2dc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e2e0(void)
+void FUN_0018e2e0(void)
 {
     ;
 }
@@ -9585,7 +9979,7 @@ void cl4_thunk_0018e2e0(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e310(void)
+void FUN_0018e310(void)
 {
     ;
 }
@@ -9597,7 +9991,7 @@ void cl4_thunk_0018e310(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e314(void)
+void FUN_0018e314(void)
 {
     ;
 }
@@ -9609,7 +10003,7 @@ void cl4_thunk_0018e314(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e344(void)
+void FUN_0018e344(void)
 {
     ;
 }
@@ -9621,30 +10015,30 @@ void cl4_thunk_0018e344(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e348(void)
+void FUN_0018e348(void)
 {
     ;
 }
 
 
 
-/* FUN_0018e38c @ 0x0018e38c   (est. cl4_upcall_simple_0018e38c)
+/* FUN_0018e38c @ 0x0018e38c   (est. FUN_0018e38c)
  * Ghidra: void FUN_0018e38c(undefined1 *p1,undefined1 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_store_byte(uint8_t *out, uint8_t v)
+void FUN_0018e38c(uint8_t *out, uint8_t v)
 {
     *out = v;
 }
 
 
-/* FUN_0018e6f4 @ 0x0018e6f4   (est. cl4_upcall_handler_0018e6f4)
+/* FUN_0018e6f4 @ 0x0018e6f4   (est. FUN_0018e6f4)
  * Ghidra: void FUN_0018e6f4(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e6f4(void)
+void FUN_0018e6f4(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -9659,23 +10053,23 @@ void cl4_upcall_handler_0018e6f4(void)
 
 
 
-/* FUN_0018e744 @ 0x0018e744   (est. cl4_upcall_simple_0018e744)
+/* FUN_0018e744 @ 0x0018e744   (est. FUN_0018e744)
  * Ghidra: void FUN_0018e744(undefined8 p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_set_kind_tbl_c(uint64_t v)
+void FUN_0018e744(uint64_t v)
 {
-    FUN_0022995c(v, *(uint32_t *)(DAT_004e7004 + (uint64_t)*per_cpu * 4));
+    FUN_0022995c(v, *(uint32_t *)(dat_004e7004 + (uint64_t)*per_cpu * 4));
 }
 
 
-/* FUN_0018e77c @ 0x0018e77c   (est. cl4_upcall_handler_0018e77c)
+/* FUN_0018e77c @ 0x0018e77c   (est. FUN_0018e77c)
  * Ghidra: void FUN_0018e77c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e77c(void)
+void FUN_0018e77c(void)
 {
   uint8_t msgbuf2;
   uint8_t *cpu;
@@ -9690,46 +10084,46 @@ void cl4_upcall_handler_0018e77c(void)
 
 
 
-/* FUN_0018e7e8 @ 0x0018e7e8   (est. cl4_upcall_simple_0018e7e8)
+/* FUN_0018e7e8 @ 0x0018e7e8   (est. FUN_0018e7e8)
  * Ghidra: void FUN_0018e7e8(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_e0(uint64_t a, uint64_t b)
+void FUN_0018e7e8(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x669c40, st);
 }
 
 
-/* FUN_0018e84c @ 0x0018e84c   (est. cl4_upcall_simple_0018e84c)
+/* FUN_0018e84c @ 0x0018e84c   (est. FUN_0018e84c)
  * Ghidra: void FUN_0018e84c(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_e1(uint64_t a, uint64_t b)
+void FUN_0018e84c(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x669d60, st);
 }
 
 
-/* FUN_0018e8a0 @ 0x0018e8a0   (est. cl4_upcall_simple_0018e8a0)
+/* FUN_0018e8a0 @ 0x0018e8a0   (est. FUN_0018e8a0)
  * Ghidra: void FUN_0018e8a0(undefined8 p1,undefined8 p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_reply_e2(uint64_t a, uint64_t b)
+void FUN_0018e8a0(uint64_t a, uint64_t b)
 {
     uint64_t st = FUN_0002142c();
     FUN_00208478(a, b, 0x669db0, st);
 }
 
 
-/* FUN_0018e90c @ 0x0018e90c   (est. cl4_upcall_handler_0018e90c)
+/* FUN_0018e90c @ 0x0018e90c   (est. FUN_0018e90c)
  * Ghidra: void FUN_0018e90c(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e90c(void)
+void FUN_0018e90c(void)
 {
   uint8_t msgbuf [72];
   
@@ -9746,20 +10140,20 @@ void cl4_upcall_handler_0018e90c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018e950(void)
+void FUN_0018e950(void)
 {
     ;
 }
 
 
 
-/* FUN_0018e978 @ 0x0018e978   (est. cl4_upcall_handler_0018e978)
+/* FUN_0018e978 @ 0x0018e978   (est. FUN_0018e978)
  * Ghidra: void FUN_0018e978(void)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018e978(void)
+void FUN_0018e978(void)
 {
   uint8_t msgbuf [72];
   
@@ -9776,7 +10170,7 @@ void cl4_upcall_handler_0018e978(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ea08(void)
+void FUN_0018ea08(void)
 {
     ;
 }
@@ -9788,7 +10182,7 @@ void cl4_thunk_0018ea08(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ea5c(void)
+void FUN_0018ea5c(void)
 {
     ;
 }
@@ -9800,7 +10194,7 @@ void cl4_thunk_0018ea5c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ea80(void)
+void FUN_0018ea80(void)
 {
     ;
 }
@@ -9812,7 +10206,7 @@ void cl4_thunk_0018ea80(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eaa4(void)
+void FUN_0018eaa4(void)
 {
     ;
 }
@@ -9824,7 +10218,7 @@ void cl4_thunk_0018eaa4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eac8(void)
+void FUN_0018eac8(void)
 {
     ;
 }
@@ -9836,7 +10230,7 @@ void cl4_thunk_0018eac8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eaec(void)
+void FUN_0018eaec(void)
 {
     ;
 }
@@ -9848,7 +10242,7 @@ void cl4_thunk_0018eaec(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eb10(void)
+void FUN_0018eb10(void)
 {
     ;
 }
@@ -9860,7 +10254,7 @@ void cl4_thunk_0018eb10(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eb14(void)
+void FUN_0018eb14(void)
 {
     ;
 }
@@ -9872,7 +10266,7 @@ void cl4_thunk_0018eb14(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eb3c(void)
+void FUN_0018eb3c(void)
 {
     ;
 }
@@ -9884,20 +10278,20 @@ void cl4_thunk_0018eb3c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eb40(void)
+void FUN_0018eb40(void)
 {
     ;
 }
 
 
 
-/* FUN_0018eb68 @ 0x0018eb68   (est. cl4_upcall_handler_0018eb68)
+/* FUN_0018eb68 @ 0x0018eb68   (est. FUN_0018eb68)
  * Ghidra: void FUN_0018eb68(undefined8 p1,undefined8 p2,undefined8 *p3,code_fn_t p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018eb68(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
+void FUN_0018eb68(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn_t p4)
 {
   uint64_t msgbuf3;
   uint64_t msgbuf;
@@ -9917,18 +10311,18 @@ void cl4_upcall_handler_0018eb68(uint64_t p1, uint64_t p2, uint64_t *p3, code_fn
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ebac(void)
+void FUN_0018ebac(void)
 {
     ;
 }
 
 
 
-/* FUN_0018ebd0 @ 0x0018ebd0   (est. cl4_upcall_simple_0018ebd0)
+/* FUN_0018ebd0 @ 0x0018ebd0   (est. FUN_0018ebd0)
  * Ghidra: void FUN_0018ebd0(undefined8 p1,undefined1 *p2)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_upcall_deliver(uint64_t a, uint8_t *b)
+void FUN_0018ebd0(uint64_t a, uint8_t *b)
 {
     /* Delivers an upcall with the uint8_t *b: FUN_00191ba8(a, &b). */
     uint8_t v = *b;
@@ -9936,13 +10330,13 @@ void cl4_upcall_deliver(uint64_t a, uint8_t *b)
 }
 
 
-/* FUN_0018ec00 @ 0x0018ec00   (est. cl4_upcall_handler_0018ec00)
+/* FUN_0018ec00 @ 0x0018ec00   (est. FUN_0018ec00)
  * Ghidra: ulong FUN_0018ec00(undefined8 p1,undefined8 p2,ulong p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V2 */
-uint64_t cl4_upcall_handler_0018ec00(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+uint64_t FUN_0018ec00(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   char tag2;
   uint64_t tmp;
@@ -10036,28 +10430,28 @@ uint64_t cl4_upcall_handler_0018ec00(uint64_t p1, uint64_t p2, uint64_t p3, uint
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018ef04(void)
+void FUN_0018ef04(void)
 {
     ;
 }
 
 
 
-/* FUN_0018ef28 @ 0x0018ef28   (est. cl4_upcall_simple_0018ef28)
+/* FUN_0018ef28 @ 0x0018ef28   (est. FUN_0018ef28)
  * Ghidra: uint FUN_0018ef28(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint32_t cl4_flag_a(void)
+uint32_t FUN_0018ef28(void)
 {
     return FUN_0019225c() & 1;
 }
 
 
-/* FUN_0018ef50 @ 0x0018ef50   (est. cl4_upcall_simple_0018ef50)
+/* FUN_0018ef50 @ 0x0018ef50   (est. FUN_0018ef50)
  * Ghidra: uint FUN_0018ef50(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint32_t cl4_flag_b(void)
+uint32_t FUN_0018ef50(void)
 {
     return FUN_00192528() & 1;
 }
@@ -10068,7 +10462,7 @@ uint32_t cl4_flag_b(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018efa8(void)
+void FUN_0018efa8(void)
 {
     ;
 }
@@ -10080,7 +10474,7 @@ void cl4_thunk_0018efa8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018efcc(void)
+void FUN_0018efcc(void)
 {
     ;
 }
@@ -10092,7 +10486,7 @@ void cl4_thunk_0018efcc(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018eff0(void)
+void FUN_0018eff0(void)
 {
     ;
 }
@@ -10104,7 +10498,7 @@ void cl4_thunk_0018eff0(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f014(void)
+void FUN_0018f014(void)
 {
     ;
 }
@@ -10116,7 +10510,7 @@ void cl4_thunk_0018f014(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f038(void)
+void FUN_0018f038(void)
 {
     ;
 }
@@ -10128,7 +10522,7 @@ void cl4_thunk_0018f038(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f05c(void)
+void FUN_0018f05c(void)
 {
     ;
 }
@@ -10140,7 +10534,7 @@ void cl4_thunk_0018f05c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f080(void)
+void FUN_0018f080(void)
 {
     ;
 }
@@ -10152,20 +10546,20 @@ void cl4_thunk_0018f080(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f0a4(void)
+void FUN_0018f0a4(void)
 {
     ;
 }
 
 
 
-/* FUN_0018f0c8 @ 0x0018f0c8   (est. cl4_upcall_handler_0018f0c8)
+/* FUN_0018f0c8 @ 0x0018f0c8   (est. FUN_0018f0c8)
  * Ghidra: uint FUN_0018f0c8(undefined8 p1,undefined8 p2,undefined1 *p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-uint32_t cl4_upcall_handler_0018f0c8(uint64_t p1, uint64_t p2, uint64_t *p3)
+uint32_t FUN_0018f0c8(uint64_t p1, uint64_t p2, uint64_t *p3)
 {
   uint32_t msgbuf3;
   uint8_t msgbuf2 [4];
@@ -10184,7 +10578,7 @@ uint32_t cl4_upcall_handler_0018f0c8(uint64_t p1, uint64_t p2, uint64_t *p3)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f10c(void)
+void FUN_0018f10c(void)
 {
     ;
 }
@@ -10196,7 +10590,7 @@ void cl4_thunk_0018f10c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f130(void)
+void FUN_0018f130(void)
 {
     ;
 }
@@ -10208,7 +10602,7 @@ void cl4_thunk_0018f130(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f154(void)
+void FUN_0018f154(void)
 {
     ;
 }
@@ -10220,7 +10614,7 @@ void cl4_thunk_0018f154(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f178(void)
+void FUN_0018f178(void)
 {
     ;
 }
@@ -10232,7 +10626,7 @@ void cl4_thunk_0018f178(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f19c(void)
+void FUN_0018f19c(void)
 {
     ;
 }
@@ -10244,30 +10638,30 @@ void cl4_thunk_0018f19c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f1c0(void)
+void FUN_0018f1c0(void)
 {
     ;
 }
 
 
 
-/* FUN_0018f214 @ 0x0018f214   (est. cl4_upcall_simple_0018f214)
+/* FUN_0018f214 @ 0x0018f214   (est. FUN_0018f214)
  * Ghidra: uint FUN_0018f214(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint32_t cl4_flag_c(void)
+uint32_t FUN_0018f214(void)
 {
     return FUN_00195418() & 1;
 }
 
 
-/* FUN_0018f23c @ 0x0018f23c   (est. cl4_upcall_handler_0018f23c)
+/* FUN_0018f23c @ 0x0018f23c   (est. FUN_0018f23c)
  * Ghidra: uint FUN_0018f23c(undefined8 p1,undefined8 p2,ulong p3,undefined8 p4)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V2 */
-uint32_t cl4_upcall_handler_0018f23c(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
+uint32_t FUN_0018f23c(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
   uint8_t tag2;
   char tmp;
@@ -10359,21 +10753,21 @@ uint32_t cl4_upcall_handler_0018f23c(uint64_t p1, uint64_t p2, uint64_t p3, uint
 
 
 
-/* FUN_0018f544 @ 0x0018f544   (est. cl4_upcall_simple_0018f544)
+/* FUN_0018f544 @ 0x0018f544   (est. FUN_0018f544)
  * Ghidra: uint FUN_0018f544(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint32_t cl4_flag_d(void)
+uint32_t FUN_0018f544(void)
 {
     return FUN_001956f4() & 1;
 }
 
 
-/* FUN_0018f56c @ 0x0018f56c   (est. cl4_upcall_simple_0018f56c)
+/* FUN_0018f56c @ 0x0018f56c   (est. FUN_0018f56c)
  * Ghidra: uint FUN_0018f56c(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-uint32_t cl4_flag_e(void)
+uint32_t FUN_0018f56c(void)
 {
     return FUN_001959e8() & 1;
 }
@@ -10384,7 +10778,7 @@ uint32_t cl4_flag_e(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f5c4(void)
+void FUN_0018f5c4(void)
 {
     ;
 }
@@ -10396,7 +10790,7 @@ void cl4_thunk_0018f5c4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f5e8(void)
+void FUN_0018f5e8(void)
 {
     ;
 }
@@ -10408,7 +10802,7 @@ void cl4_thunk_0018f5e8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f63c(void)
+void FUN_0018f63c(void)
 {
     ;
 }
@@ -10420,7 +10814,7 @@ void cl4_thunk_0018f63c(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f660(void)
+void FUN_0018f660(void)
 {
     ;
 }
@@ -10432,7 +10826,7 @@ void cl4_thunk_0018f660(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f684(void)
+void FUN_0018f684(void)
 {
     ;
 }
@@ -10444,7 +10838,7 @@ void cl4_thunk_0018f684(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f6d8(void)
+void FUN_0018f6d8(void)
 {
     ;
 }
@@ -10456,18 +10850,18 @@ void cl4_thunk_0018f6d8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f6fc(void)
+void FUN_0018f6fc(void)
 {
     ;
 }
 
 
 
-/* FUN_0018f720 @ 0x0018f720   (est. cl4_upcall_simple_0018f720)
+/* FUN_0018f720 @ 0x0018f720   (est. FUN_0018f720)
  * Ghidra: void FUN_0018f720(undefined8 *p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_op_first(uint64_t *p)
+void FUN_0018f720(uint64_t *p)
 {
     /* Runs FUN_00196c20 on the first word of *p. */
     uint64_t v = *p;
@@ -10480,7 +10874,7 @@ void cl4_op_first(uint64_t *p)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f780(void)
+void FUN_0018f780(void)
 {
     ;
 }
@@ -10492,7 +10886,7 @@ void cl4_thunk_0018f780(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f7a4(void)
+void FUN_0018f7a4(void)
 {
     ;
 }
@@ -10504,7 +10898,7 @@ void cl4_thunk_0018f7a4(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f7c8(void)
+void FUN_0018f7c8(void)
 {
     ;
 }
@@ -10516,20 +10910,20 @@ void cl4_thunk_0018f7c8(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018f7ec(void)
+void FUN_0018f7ec(void)
 {
     ;
 }
 
 
 
-/* FUN_0018f828 @ 0x0018f828   (est. cl4_upcall_handler_0018f828)
+/* FUN_0018f828 @ 0x0018f828   (est. FUN_0018f828)
  * Ghidra: long FUN_0018f828(undefined8 p1,undefined8 p2,code_fn_t p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-long cl4_upcall_handler_0018f828(uint64_t p1, uint64_t p2, code_fn_t p3)
+long FUN_0018f828(uint64_t p1, uint64_t p2, code_fn_t p3)
 {
   long msgbuf;
   uint64_t msgbuf3;
@@ -10548,13 +10942,13 @@ long cl4_upcall_handler_0018f828(uint64_t p1, uint64_t p2, code_fn_t p3)
 
 
 
-/* FUN_0018f8d8 @ 0x0018f8d8   (est. cl4_upcall_handler_0018f8d8)
+/* FUN_0018f8d8 @ 0x0018f8d8   (est. FUN_0018f8d8)
  * Ghidra: void FUN_0018f8d8(undefined8 p1,undefined8 p2,code_fn_t p3)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class X/None */
-void cl4_upcall_handler_0018f8d8(uint64_t p1, uint64_t p2, code_fn_t p3)
+void FUN_0018f8d8(uint64_t p1, uint64_t p2, code_fn_t p3)
 {
   uint64_t msgbuf2;
   long msgbuf;
@@ -10572,22 +10966,22 @@ void cl4_upcall_handler_0018f8d8(uint64_t p1, uint64_t p2, code_fn_t p3)
 
 
 
-/* FUN_0018f958 @ 0x0018f958   (est. cl4_upcall_simple_0018f958)
+/* FUN_0018f958 @ 0x0018f958   (est. FUN_0018f958)
  * Ghidra: void FUN_0018f958(undefined8 *p1)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-void cl4_op_second(uint64_t *p)
+void FUN_0018f958(uint64_t *p)
 {
     uint64_t v = *p;
     FUN_00197be4(&v);
 }
 
 
-/* FUN_0018fbe8 @ 0x0018fbe8   (est. cl4_upcall_simple_0018fbe8)
+/* FUN_0018fbe8 @ 0x0018fbe8   (est. FUN_0018fbe8)
  * Ghidra: undefined1  [16] FUN_0018fbe8(void)
  * Small upcall / message-register marshalling helper. Confidence: medium
  * Notes: part of the XNU upcall layer. */
-cl4_16_t cl4_tag_655440(void)
+cl4_16_t FUN_0018fbe8(void)
 {
     return *(cl4_16_t *)0x655440;
 }
@@ -10598,23 +10992,23 @@ cl4_16_t cl4_tag_655440(void)
  * Forwarding thunk: forwards its arguments to ? and returns its result.
  * Confidence: medium
  * Notes: XNU upcall dispatch alias. */
-void cl4_thunk_0018fcb0(uint64_t p1)
+void FUN_0018fcb0(uint64_t p1)
 {
     ;
 }
 
 
 
-/* FUN_0018fcd8 @ 0x0018fcd8   (est. cl4_upcall_handler_0018fcd8)
+/* FUN_0018fcd8 @ 0x0018fcd8   (est. FUN_0018fcd8)
  * Ghidra: ulong FUN_0018fcd8(long p1)
  * XNU upcall / syscall handler: reads the message registers, dispatches the
  * operation, marshals the reply and, on a per-CPU error, reports a fault via
  * the XnuUpcalls tracing/fatal path. Confidence: medium
  * Notes: class A/V2LONG */
-uint64_t cl4_upcall_handler_0018fcd8(long p1)
+uint64_t FUN_0018fcd8(long p1)
 {
   long slot3;
-  void *key2;
+  code_fn_t key2;
   bool slot;
   char slot2;
   uint64_t fn2;

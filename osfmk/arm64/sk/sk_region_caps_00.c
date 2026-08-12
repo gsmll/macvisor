@@ -1477,3 +1477,12 @@ static void sk_vec_insert_bytes(void *dst)
 {
     /* iterate source bytes, grow vector, insert */
 }
+
+/* thunk_FUN_00081928 @ 0x81928  (thunk of sk_index_bounds)
+ * Thin forwarding thunk: performs the same vector bounds check as
+ * sk_index_bounds (0x8192c), faulting on idx<0 or idx>=len.
+ * Confidence: high (thunk of covered function) */
+static void sk_index_bounds_thunk(word_t idx, word_t unused, word_t vec)
+{
+    sk_index_bounds(idx, unused, vec);
+}

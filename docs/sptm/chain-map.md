@@ -417,3 +417,15 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - sptm_guest_dispatch (0xfffffe000c0d997c) ← FUN_fffffe000b953e14 (guest-entry hub) [endpoint 27]
 - sptm_retype (0xfffffe000c0d83e8) ← FUN_fffffe000b9552c4 (txm_alloc_free_page OOM path: retypes a VM page for TXM) [endpoint 1]
 - Every sptm_* wrapper (0xfffffe000c0d83c0..0xfffffe000c0d8a78) → _sptm_pre_entry_hook (0xfffffe000b75e8e8) → GENTER → _sptm_post_exit_hook (0xfffffe000b75e954)
+
+## cL4 Secure Kernel Tightbeam subsystem (osfmk/arm64/sk/sk_slice_03.c) — 0x1a2f4-0x20c88
+Serialization/validation core for the Tightbeam inter-component data layer.
+- Record writers: 0x1a4f0 cL4_typedata_write, 0x1a838 cL4_clntdata_write, 0x1b02c cL4_component_write, 0x1b620 cL4_initdata_write.
+- Size computation: 0x1a760 cL4_clntdata_size, 0x1afb4 cL4_component_size, 0x1b370 cL4_component_metadata_size, 0x1dfb4 cL4_comp_fields_size.
+- Record validators (consume loops): 0x1ba18/0x1c038, 0x1c81c cL4_comp_array_consume, 0x1cf2c/0x1d05c size-summers.
+- Range/pair helpers: 0x1ab00 cL4_range_validate, 0x1db00 cL4_range_pair, 0x1a2f4 cL4_tagdata_validate_copy, 0x1a1dc (tagdata copy, out-of-slice).
+- Growable buffers: 0x1db94/0x1dc08/0x1dc8c alloc, 0x1dd14/0x1dde4 grow, 0x1dd00 wrapper.
+- Task/async engine glue: 0x1f1d0/0x1f670/0x1fa18 init, 0x1f38c cb, 0x1f834/0x1fc10 ForwardingConnection send, 0x1fde8 cL4_entry_resolve.
+- TransportBuffer: 0x20448 write, 0x20560 seek, 0x20628/0x208a8 forward/dispatch, 0x209f8/0x20ac8/0x20bb8 pointer getters, 0x20c88 forget.
+- Module singletons: 0x1df60 (ComponentInitData, id 0x677880), 0x1e790 (TransportBuffer, id 0x677790).
+- Fatal-error family (module Tightbeam_ComponentInitData @ 0x5ac9c0 / TransportBuffer @ 0x5accb0): 0x1b998, 0x1bcac, 0x1ced0, 0x1afa84 (shared reporter).

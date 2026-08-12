@@ -1807,7 +1807,7 @@ void sk_span_store_u64(unsigned long val, unsigned long off)
                        (unsigned long)"Byte offset range out of bounds", 0x1f, 2,
                        (unsigned long)"Swift.MutableRawSpan", 0x1a, 2, 0x157, 1);
     }
-    *(unsigned long *)(*(unsigned long *)0 + off) = val;
+    *(unsigned long *)(SK_OBJ_BASE() + off) = val;
 }
 
 /*--------------------------------------------------------------------*/

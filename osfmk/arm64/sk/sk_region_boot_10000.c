@@ -48,13 +48,15 @@ extern unsigned long sk_zone0(void);   /* DAT_006adfe8 */
 extern unsigned long sk_zone_table_grow(void *a, void *b, unsigned long c, unsigned long d); /* FUN_00117d18 */
 extern unsigned long sk_strlen(const char *s); /* thunk_FUN_00115080 */
 extern void sk_strcpy(char *dst, const char *src, unsigned long n, unsigned long m); /* FUN_00117e68 */
-extern void sk_cpu_granule(void);      /* FUN_0005ac2c */
 extern void sk_obj_retain(void *obj, unsigned long v); /* FUN_00015984 */
 extern void sk_cap_install(void *a, void *b, void **c); /* FUN_00015468 */
 extern void sk_tb_register(void *client); /* FUN_00019aac */
 extern void sk_metadata_encode(unsigned long size, unsigned long tag, void *out); /* helper */
 extern unsigned long sk_alloc_phys(unsigned long flags, unsigned long base, unsigned long size,
                                    unsigned int mode, unsigned long mapped, void *align, void *a); /* FUN_00117fdc */
+extern void sk_async_install(void *slot, void *obj, void *cfg);   /* FUN_00062c2c */
+extern void sk_perthread_init(void *a, void *b, unsigned long c); /* FUN_0005d470 */
+extern void *FUN_00013260(void *a, void *b, void *c);
 extern unsigned long sk_dealloc(void *p, void *a, void *size);            /* FUN_001180cc */
 extern unsigned long sk_madvise(void *a, void *base, void *len, unsigned char mode); /* FUN_0011807c */
 extern void sk_memcpy(void *dst, void *src, unsigned long n);             /* FUN_00117cc4 */
@@ -106,7 +108,7 @@ extern void thunk_FUN_0024d9ac(void *a);
 extern void thunk_FUN_0035dc24(void *a, void *b, void *c);
 extern void thunk_FUN_0035d334(void *a, void *b);
 extern void FUN_001e9c78(void *p, unsigned long n);
-extern void FUN_00006630(unsigned long a, unsigned long b, void *c, unsigned long d);
+extern unsigned long FUN_00006630(unsigned long a, unsigned long b, void *c, unsigned long d);
 extern void FUN_00002534(const char *s, void *t);
 extern void FUN_0005b190(unsigned long a, const char *s);
 extern void FUN_0011d7e8(void);
@@ -125,7 +127,7 @@ extern unsigned long FUN_0005ee58(unsigned long a, unsigned long b, unsigned lon
 extern unsigned long FUN_0005eb78(void *buf, unsigned long n, unsigned long v);
 extern unsigned long FUN_0005ea94(void *a, void *b, unsigned long c, unsigned long d);
 extern void FUN_00063a50(void);
-extern void FUN_000603bc(void);
+extern unsigned long FUN_000603bc(void);
 extern unsigned long FUN_000639a0(unsigned long a, void *b);
 extern unsigned long FUN_000636d0(void);
 extern unsigned long FUN_000636d8(unsigned long v);
@@ -136,6 +138,16 @@ extern unsigned long thunk_FUN_00115080(void);
 extern void thunk_FUN_00114330(void *dst, unsigned long n);
 extern void sk_fill_buf(void *dst, unsigned long v, unsigned long n);     /* FUN_001157f0 */
 extern void sk_clear_buf(void *buf);                                      /* FUN_001157d4 */
+extern void FUN_00013be4(void);   /* per-thread base (in-file sk_perthread_base_get alias) */
+extern void FUN_00013ea8(void);   /* per-thread block alloc (in-file sk_perthread_block_alloc) */
+extern void FUN_004b0128(void);
+extern void FUN_004b0158(void);
+extern void FUN_004b0188(void);
+extern void FUN_004b01b8(void);
+extern void FUN_004b01e8(void);
+extern void FUN_004b0244(void);
+extern void FUN_004b0304(void);
+extern void FUN_004b23d8(void *slot);
 extern void sk_printf_banner(void);          /* thunk_FUN_00060524 */
 extern void sk_vprintf(void *a, void *b);    /* FUN_00118c4c */
 extern long sk_fill_debug_buffer(unsigned long *buf, unsigned long n); /* FUN_00115574 */
@@ -152,7 +164,7 @@ static unsigned long buddy_run_len(unsigned long bitmap, unsigned long idx);
 static void unlink_buddy_region(unsigned long arena, unsigned long idx);
 
 /* Generic kernel panic helpers (out-of-range; bodies in hv_glue_audit_*). */
-extern void sk_tcb_slot_alloc(void);      /* FUN_00034f70 */
+extern long sk_tcb_slot_alloc(void);      /* FUN_00034f70 */
 extern void sk_tcb_slot_release(void *s); /* FUN_004b23d8 */
 extern void sk_panic_tcb(void) __attribute__((noreturn)); /* FUN_004b0068 */
 extern void sk_panic_key(const char *s) __attribute__((noreturn)); /* FUN_0005b190 */
@@ -163,2695 +175,13 @@ extern unsigned int *sk_error_slot(void); /* thunk_FUN_0006037c */
 /*-------------------------------------------------------------------------
  * Forward declarations for functions defined in this region.
  *------------------------------------------------------------------------- */
-void sk_guard_size_config(void *config, unsigned long size, int flag, uint8_t *out);
-void sk_lock_acquire_failed_panic(void);
-void * sk_heap_alloc_checked(unsigned long size, void *arg);
-void * sk_heap_calloc(unsigned long count, unsigned long size, void *arg);
-unsigned long sk_heap_alloc_or_error(unsigned long count, unsigned long size, void *arg);
-void * sk_heap_aligned_alloc(unsigned long align, unsigned long size, void *arg);
-void * sk_alloc_aligned_save(void *param_1, unsigned long size, unsigned long flags);
-unsigned long sk_heap_aligned_alloc_variant(void **out, unsigned long size, void *arg, unsigned long flags);
-void sk_buddy_init(void);
-long sk_buddy_find_free(unsigned long key);
-void * sk_buddy_alloc(unsigned long size);
-void sk_buddy_free_split(void *arena, long idx, unsigned long units);
-void sk_buddy_free(unsigned long ptr);
-void sk_buddy_clear_range(void *arena, unsigned long idx, unsigned long units);
-bool sk_buddy_is_in_arena(unsigned long ptr);
-void * sk_buddy_base_get(void);
-void sk_buddy_clear_list(void *arena, unsigned int clear, unsigned long idx, long units);
-void sk_malloc_log(unsigned long options, void *flag, long msg, void *a, void *b, void *c);
-void sk_malloc_breakpoint_check(unsigned int options);
-void sk_log(unsigned int level, const char *fmt, ...);
-void sk_boot_fail(unsigned int level, unsigned char flag, const char *fmt, ...);
-void * sk_buddy_mask(void *p);
-unsigned long sk_dc_gva_clear(unsigned long base, unsigned long len, unsigned long granule);
-unsigned long sk_stub_zero(void);
-unsigned long sk_alloc_at(unsigned long base, unsigned long size, void *align, unsigned int mode, unsigned long flags, void *a, void *b);
-void * sk_arena_alloc(unsigned long size, unsigned long align, unsigned long guard, unsigned long mode, unsigned long a);
-void sk_arena_free(void *p, void *size, unsigned long flags, void *a);
-unsigned long sk_mem_clear(unsigned long base, unsigned long len, unsigned char mode, unsigned long flags, unsigned long a);
-unsigned long sk_zone_lookup(void *key, void **out_zone, unsigned int start_idx);
-void sk_zone_register(void *zone);
-void * sk_zone_alloc_n(void *zone, unsigned long size);
-unsigned long sk_zone_calloc(void *zone, unsigned long count, unsigned long size, unsigned long flags);
-void * sk_zone_calloc_bulk(void *zone, unsigned long count, unsigned long size);
-void * sk_zone_alloc_realloc(void *zone, void *p, unsigned long size);
-void sk_zone_named(void *zone);
-long sk_zone_aligned_alloc(void *zone, unsigned long align, unsigned long size, unsigned int flags);
-unsigned long sk_zone_aligned_alloc_try(void *zone, unsigned long size);
-void sk_zone_free_lookup(unsigned long p, unsigned int start_idx);
-void * sk_zone0_alloc(unsigned long size);
-void * sk_zone0_aligned_alloc(unsigned long size, unsigned long align);
-void * sk_zone0_calloc_bulk(unsigned long count, unsigned long size);
-void sk_heap_free(void *p);
-unsigned long sk_heap_alloc(void *p, unsigned long size);
-long sk_zone_match(void *p);
-void sk_zone0_method_dispatch(void *p);
-unsigned int sk_zone0_aligned_alloc_out(void **out, unsigned long size);
-void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int a, unsigned int b, unsigned int granule, void *name, unsigned long base, unsigned int align);
-unsigned long sk_zone_alloc_slot(void *zone);
-void sk_zone_ref_run(void *zone, void **run);
-void sk_tcb_slot_alloc_init(void *td, unsigned long count);
-void sk_tcb_slot_recv_assert(void);
-void sk_tcb_slot_alloc_teardown(void *td);
-void * sk_tcb_create_zeroed(void);
-int sk_tcb_cap_copy(void *src_tcb, void *dst_tcb, void **out, unsigned int flags);
-unsigned long sk_tcb_cap_copy_commit(void *a, unsigned long size, void *c, unsigned long *out);
-void sk_tcb_cap_release_commit(void *a, void **slot, void *c, void *size);
-void sk_assert_internal_cc(void);
-void sk_assert_internal_c7(void);
-void sk_tcb_field_apply(void *a, void *b, void *c);
-unsigned long sk_div8(long v);
-unsigned long sk_lookup_cap_buffer(void *key, void *hint);
-void sk_tcb_init_regions(void *cfg, void *tcb);
 unsigned long sk_tcb_register_async(void *tcb);
 void sk_capbuf_release(void *capbuf);
 unsigned long sk_capbuf_reserve(void *capbuf, void *a, unsigned long size);
 void sk_capbuf_obj_release(unsigned long obj);
 long sk_perthread_base_get(void);
 long sk_perthread_key_get(void);
-void * sk_perthread_block_alloc(void);
-unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap);
-void sk_cap_slots_install(void *tcb, void *m);
-unsigned long sk_ptr_deref(void **p);
-long sk_tcb_alloc_dispatch(void *cfg);
-void * sk_tcb_obj_create(void *obj);
-void sk_tcb_obj_destroy(void *tcb);
-long sk_tcb_obj_bind(void *a, void *b);
-long sk_tcb_msg_accept(long self, void **msg);
-unsigned long sk_tcb_alloc_bind(void *a, void *b);
-void sk_obj_is_active(void **obj);
-unsigned long sk_tcb_alloc_obj(void *a);
-void sk_obj_type_query(void **obj);
-unsigned long sk_msg_accept_complex(void **msg, int *query, void **out, void *flags);
-void sk_noop(void);
-void sk_msg_install_wrapper(void *a, void *b, void *c, void *d, void *e);
-unsigned long sk_msg_accept_fail(void);
-void sk_msg_accept_wrapper(void *a, void *b, void *c, void *d);
-unsigned long sk_capbuf_alloc_sized(unsigned long *cb, unsigned long size);
-unsigned long sk_capbuf_free_or_accept(void *cb, void *b, long host, void *size, void *flags);
-unsigned long sk_capbuf_free_or_accept2(void *a, void *b, long host, void *size, void *flags);
-void sk_msg_accept_init(void **msg, void *m, int mode, void *size, void *flags);
-unsigned long sk_msg_install(void **msg, int mode, void *m, long host, unsigned long size, void *flags);
-unsigned long sk_msg_reject(void);
-void sk_msg_teardown(void **msg, void *b, void *c, void *d);
-void sk_msg_accept_reply(void *a, void *b, void *c, void *d);
-void sk_fatal_retrieve_active(void);
-void sk_fatal_retrieve_reply(void);
-unsigned long sk_registry_entry_create(void *key, void *val, void *meta);
-unsigned long sk_thread_local_alloc(void);
-void sk_thread_local_free(unsigned long t);
-unsigned long sk_registry_insert(unsigned long *head, unsigned long key, void *val, void *meta);
-void sk_registry_remove(void **head, long key);
-unsigned long sk_registry_lookup(unsigned long head, unsigned long key);
-void sk_sched_node_create(unsigned int a, unsigned int b);
-void sk_sched_node_create_data(unsigned int a, void *data, unsigned int b);
-void sk_node_invoke(long node);
-unsigned long sk_tcb_handle(void *tcb);
-unsigned int sk_obj_state(void **obj);
-unsigned int sk_tcb_cfg_flags(void *cfg);
-void sk_obj_set_data(void *obj, void *data);
-void sk_tcb_obj_install_handler(void *obj, void *handler, void *arg);
-unsigned long sk_tcb_send(void *tcb, void *msg, void **out);
-void sk_obj_destroy_dispatch(void *obj);
-void sk_capbuf_init(void **cb, void *obj, void *size);
-void sk_obj_dispatch(void **obj);
-bool sk_obj_type_check2(void *obj);
-bool sk_obj_type_check(void *obj);
-void sk_obj_method18(void *obj, void *a, void *b, void *c);
-void sk_obj_method20(void *obj, void *a);
-void sk_obj_method28(void *obj, void *a, void *b, void *c);
-unsigned long sk_obj_method30(void *obj);
-unsigned long sk_obj_method38(void *obj);
-void sk_capbuf_zero(void *cb);
-void sk_capbuf_reset(void *cb);
-void sk_capbuf_copy(unsigned long *dst, void *src);
-void * sk_capbuf_alloc(unsigned long size);
-void sk_msg_init(void *msg);
-void sk_msg_set_state(void *msg, unsigned int state);
-void sk_msg_set_disposition(void *msg, uint8_t disposition);
-unsigned long sk_msg_begin(int *msg, void *host, uint8_t disposition);
-void sk_msg_set_host(void *msg, void *host);
-void sk_msg_state_advance(int *msg);
-void sk_msg_done(void *msg);
-unsigned int * sk_obj_class_set(unsigned int *obj, unsigned long cls);
-unsigned long sk_cap_buf(void *obj);
-unsigned int sk_msg_state_get(void *msg);
-uint8_t sk_msg_disposition_get(void *msg);
-unsigned long sk_msg_transport_len(void *msg);
-void sk_msg_append_region(void *msg, unsigned long *out, long *out_len, long cb);
-void sk_msg_prepend_region(void *msg, unsigned long start, unsigned long len, long cb);
-void sk_msg_set_arg(void *msg, void *v);
-void sk_msg_set_host_field(void *msg, void *v);
-bool sk_msg_host_is(void *msg, void *host);
-unsigned long sk_msg_payload_len(void *msg);
-void sk_msg_set_payload_len(void *msg, void *v);
-unsigned long sk_msg_num_caps(void *msg);
-unsigned long sk_msg_cap_get(void *msg, long i);
-unsigned long sk_msg_cap_append(void *msg, unsigned long cap);
-unsigned long sk_msg_cap_pop(void *msg, long *out);
-bool sk_msg_flag_test(void *msg, uint16_t mask);
-void sk_msg_set_transport_end(void *msg, void *v);
-unsigned long sk_msg_none(void);
-void sk_msg_copy_region(void *src, void *dst, unsigned long len);
-void sk_fatal_disposition(unsigned long disposition);
-void sk_fatal_transport_overflow(void *v);
-void sk_registry_bind(void *head, void **entry);
-unsigned long * sk_capbuf_accumulate(void *head, void *msg);
-void sk_assert_internal2(void *v);
-unsigned long sk_entry_val(void *entry);
-unsigned long sk_region_alloc_lazy(void **slot);
-unsigned long sk_region_alloc_lazy2(void *slot);
-unsigned long sk_region_map(unsigned long *out, void *key);
-unsigned long sk_region_map_impl(unsigned long *desc, unsigned long *out_base);
-unsigned long sk_region_map_small(unsigned long *desc);
-long sk_tcb_alloc_ext(void *cfg);
-unsigned long sk_msg_reply_recv(void *tcb, int *query, void **msg, unsigned long *flags);
-void sk_msg_recv_large(void *a, void *b, void *c, void *d);
-void sk_msg_send_complex(void *a, void *b, void *c, void *d);
-void sk_msg_send_complex2(void *a, void *b, void *c, void *d);
-void sk_msg_reply_send(void *tcb, void *query, void *msg, void **out);
-void sk_fatal_copyin_size(void *v);
-void sk_fatal_copyin_overflow(void *v);
-void sk_fatal_copyin_bounds(void *v);
-void sk_fatal_copyin_status(void *v);
-unsigned long sk_msg_pipe_create(void *a, void *b, void *c, void *d);
-void * sk_msg_pipe_build(void *a, void *b, unsigned long flags, void *meta);
-void sk_msg_pipe_build_wrap(void *a, void *b, void *meta);
-void sk_msg_pipe_create_wrap(void *a, void *b, void *meta);
-void sk_msg_pipe_validate(void *pipe);
-void sk_msg_pipe_destroy(void *pipe);
-void sk_msg_pipe_accept(void *pipe, void *b, int *msg);
-unsigned long sk_msg_cap_accept(void *obj, unsigned long size, unsigned long flags, unsigned long *out, unsigned long *cb);
-unsigned long sk_msg_cap_accept_variant(void *a, void *obj, unsigned long size, unsigned long *out, unsigned long *cb);
-unsigned long sk_msg_cap_accept_single(void *head, long msg, long *out, void *cb);
-unsigned long sk_msg_cap_send_accept(void *head, void *msg2, long msg, void *b, void *cb);
-unsigned long sk_trap_iter_any(void **list, long n, void *arg);
-int * sk_msg_region_cursor(int *msg, unsigned long n, unsigned long len);
-int * sk_msg_region_cursor_v2(int *msg, unsigned long n, unsigned long len);
-unsigned long sk_msg_region_copy_in(int *msg, void *src, unsigned long len);
-unsigned long sk_true(void);
-void sk_msg_region_put8(int *msg, uint8_t v);
-void sk_tb_put8(void *th, uint8_t v);
-int * sk_msg_region_get8(int *msg, uint8_t *out);
-void sk_msg_region_put8_v2(int *msg, uint8_t v);
-void sk_tb_put8_v2(void *th, uint8_t v);
-void sk_msg_region_copy_put(void *msg, void *src, unsigned long len);
-void sk_msg_region_get8_v2(int *msg, uint8_t *out);
-void sk_tb_get8(void *th, uint8_t *out);
-void sk_msg_region_put16(int *msg, uint16_t v);
-void sk_tb_put16(void *th, uint16_t v);
-void * sk_msg_region_get16(void *msg, uint16_t *out);
-void sk_msg_region_put32(int *msg, uint32_t v);
-void sk_tb_put32(void *th, uint32_t v);
-void * sk_msg_region_get32(void *msg, uint32_t *out);
-void sk_msg_region_put64(int *msg, void *v);
-void sk_tb_put64(void *th, void *v);
-void sk_msg_region_copy_out(void *msg, void *dst, unsigned long n);
-void sk_msg_region_get64(int *msg, void **out);
-void sk_tb_get64(void *th, void **out);
-int * sk_msg_region_put8_r(int *msg, uint8_t v);
-void * sk_msg_region_put16_r(void *msg, uint16_t v);
-void * sk_msg_region_put32_r(void *msg, uint32_t v);
-void * sk_msg_region_put32_r2(void *msg, uint32_t v);
-void * sk_msg_region_get32_r(void *msg, uint32_t *out);
-void * sk_msg_region_put64_r(void *msg, void *v);
-void * sk_msg_region_put64_r2(void *msg, void *v);
-void * sk_msg_region_get64_r(void *msg, void **out);
-unsigned long sk_size4(void);
-void sk_msg_encode_f32_checked(void);
-unsigned long sk_msg_encode_f32(unsigned int v, int *msg);
-void sk_msg_decode_f32_checked(void);
-unsigned int sk_msg_decode_f32(int *msg, unsigned int *out);
-unsigned long sk_size8(void);
-void sk_msg_encode_f64_checked(void);
-unsigned long sk_msg_encode_f64(unsigned long v, int *msg);
-void sk_msg_decode_f64_checked(void);
-unsigned long sk_msg_decode_f64(int *msg, unsigned long *out);
-void sk_fatal_tb_decode(void *v);
-void sk_fatal_tb_zero_buf(void *v);
-void sk_fatal_tb_decode_underflow(void *v);
-void sk_fatal_tb_decode_overflow(void *v);
-void sk_fatal_tb_encode_overflow(void *v);
-unsigned long sk_false(void);
-unsigned long long sk_zero_pair(void);
-unsigned long sk_capbuf_alloc_meta(unsigned long size, void *b, unsigned long *cb);
-unsigned long sk_capbuf_resize(unsigned long *cb, void *b, unsigned long size);
-void sk_msg_recv_collect(void *msg, void *tcb);
-void sk_tightbeam_register(void *client);
-long sk_alloc_pages_pair(long *out, long *src);
-void sk_tightbeam_bind(void *client, long *slot, void *table);
-unsigned int sk_flag1(void);
-bool sk_sorted_contains(void *list, unsigned long key);
-void sk_noop2(void);
-void * sk_second_arg(void *a, void *b);
-unsigned long sk_copyin_data(void *dst, void *src, unsigned long phys, unsigned long desc);
-void sk_copyin_validate(long src, long len, long dst, long dst_end, long check);
-unsigned long sk_desc_make(void *phys);
-void sk_copyout_validate(void *src, long len);
-void sk_copyout_validate2(void *src, long len);
-void sk_copyout_desc(void);
-void sk_copyout_desc2(void);
-unsigned long sk_desc_pair(void *base, void *len);
-unsigned long sk_desc_phys_validate(unsigned long phys, unsigned long desc);
-long sk_copyin_region(void **dst, long dst_end, unsigned long phys, unsigned long desc);
-unsigned long sk_desc_load(void);
-void sk_metadata_write(uint8_t *out, void *a, uint16_t b, void *c, void *d, void *e);
-long sk_serialized_size(void);
-unsigned long sk_metadata_serialize(void **out, long out_end);
-void sk_metadata_validate_range(long size, long base, long end);
-unsigned long sk_metadata_alloc(void *base, void *len, long size);
-void sk_metadata_iterate(void *a, void *b, long meta, void *c, void *d);
-void sk_metadata_walk(void *a, void *b, void *c, long meta, void *d, void *e);
-void sk_metadata_decode(void *a, void *b, void *c, void *d, void *e, void *f);
-unsigned long sk_metadata_element_encode(void *a, void *b, void *c, void *d);
-void sk_metadata_element_decode(void *a, void *b, void *c, void *d);
-void sk_noop3(void);
-long sk_metadata_flags(void);
-void sk_metadata_validate_all(void *a, void *b, void *c, void *d);
-long sk_metadata_element_size(void);
-void sk_metadata_copy(void *dst, void *src, void *len);
-void sk_metadata_copy2(void *dst, void *src, void *len);
-void sk_payload_encode(void *dst, void *src, void *len, void *desc);
-void sk_payload_decode(void *dst, void *src, void *len, void *desc);
-void sk_payload_copyin(void *dst, void *src, void *len);
-void sk_payload_copyout(void *dst, void *src, void *len);
-void sk_payload_size(void *a);
-void sk_tightbeam_frame_encode(void *a, void *b, void *c, void *d);
-bool sk_cmp_u8(char a, char b);
-void sk_tightbeam_init(void *a, void *b, void *c, void *d);
-void sk_tightbeam_send(void *a, void *b, void *c, void *d);
-void sk_tightbeam_recv(void *a, void *b, void *c, void *d);
-void sk_tightbeam_dispatch(void *a, void *b, void *c, void *d);
-void sk_tightbeam_validate(void *a, void *b, void *c, void *d);
-void sk_tightbeam_validate2(void *a, void *b, void *c, void *d);
-void sk_tightbeam_frame_decode(void *a, void *b, void *c, void *d);
-void sk_tightbeam_metadata(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_init(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_send(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_recv(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_close(void *a);
-void sk_tightbeam_connection_close2(void *a);
-void sk_tightbeam_forward(void *a, void *b, void *c, void *d);
-void sk_tightbeam_forwarding(void *a, void *b, void *c, void *d);
-void sk_tightbeam_forwarding2(void *a, void *b, void *c, void *d);
-void sk_tightbeam_forwarding3(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_alloc(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_alloc2(void *a, void *b, void *c, void *d);
-void sk_tightbeam_connection_alloc3(void *a, void *b, void *c, void *d);
-unsigned long sk_pt_desc_resolve(unsigned long a, unsigned long b);
-void sk_pt_desc_free(void *a, void *b);
-void sk_pt_desc_validate(void *a, void *b, void *c);
-void sk_pt_desc_copy(void *a, void *b, void *c);
-void sk_pt_desc_size(void *a);
-void sk_metadata_destroy(void *a);
-void sk_metadata_alloc2(void *a, void *b, void *c);
-unsigned long sk_range_check(long base, unsigned long size, unsigned long avail, long p, long end);
-void * sk_metadata_buf_alloc(long size);
-void * sk_wordbuf_alloc(long count, long cap);
-void * sk_bytebuf_alloc(long count, long cap);
-void sk_buf_relocate(void *buf);
-long sk_wordbuf_grow(unsigned long keep, unsigned long count, unsigned long opts, void *buf);
-long sk_bytebuf_grow(unsigned long keep, unsigned long count, unsigned long opts, void *buf);
-void sk_wordbuf_relocate(void);
-void sk_desc_store(void **out, void **desc);
-void sk_tb_forward_get(void);
-long sk_metadata_size_sum(long meta);
-void sk_tb_validate_data(long *data, long end);
-void sk_tb_validate_component(long *data, long end);
-long * sk_tb_init_validate(long *data, unsigned long size);
-void sk_tb_init_get(void);
-unsigned long sk_tb_encode_word(void *src, void *out);
-unsigned long sk_tb_decode_word(void *src);
-void sk_serialized_size_store(void **out);
-void sk_tb_forward_meta(void *a, void *b);
-void sk_tb_forward_meta2(void *a, void *b);
-void sk_tb_conn_teardown(void);
-void sk_tb_conn_attach(void *a, void *b);
-unsigned long sk_tb_conn_create(long *out);
-void sk_tb_conn_handler(long *conn, unsigned long mode);
-unsigned long sk_tb_pipe_alloc(void *a, void *b, void *c, void *d);
-void sk_tb_pipe_config(void *a, uint8_t kind, void *b, uint8_t kind2);
-unsigned int sk_tb_forward_handler(void *data, void *a, void *b, void *c);
-long sk_tb_conn_alloc(void *a, void *b);
-void sk_tb_conn_alloc_single(void *a, void *b);
-unsigned long sk_tb_pipe_alloc5(void *a, void *b, void *c, void *d, void *e);
-void sk_tb_pipe_config5(void *a, uint8_t kind, void *b, uint8_t kind2, void *c);
-unsigned int sk_tb_forward_send(void *a, void *b, void *c, unsigned long conn);
-unsigned int sk_tb_forward_send_flag(void);
-unsigned int sk_tb_forward_send_flag2(void);
-unsigned long sk_tb_pipe_alloc6(void *a, void *b, void *c, void *d, void *e, void *f);
-void sk_tb_pipe_config6(void *a, uint8_t kind, void *b, uint8_t kind2, void *c, void *d);
-unsigned int sk_tb_forward_dispatch(void *a, void *b, void *c, unsigned long conn, void *handler);
-void sk_tb_pipe_destroy(void);
-void sk_tb_pipe_destroy2(void);
-void sk_tb_pipe_close(void);
-void sk_tb_pipe_close2(void);
-unsigned long sk_tb_reader_reset(void *reader);
-void sk_tb_conn_close(void);
-void sk_tb_conn_close2(void);
-unsigned long sk_tb_frame_prepare(void *frame);
-long sk_tb_handler_resolve(unsigned long entry);
-unsigned long sk_tb_status_mask(void);
-unsigned long sk_tb_status_encode(unsigned long status);
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001003c @ 0x0001003c   (est. sk_guard_size_config)
- * Ghidra: void FUN_0001003c(long config, ulong size, int flag, undefined1 *out)
- * Computes allocator guard/slack sizes for a requested block size. For small
- * blocks (< 0x8001, flag set, guard-enable bit at config+0x260) it reads two
- * per-class guard byte fields (config+0x262/0x264 and config+0x263/0x265,
- * the latter chosen when size > 0x1000), rounds size up to a 16 KiB multiple,
- * and reports kind 1 with a page-count guard (size >> 14). For larger blocks
- * it checks a second guard-enable bit (config+0x266): multiplies size by the
- * guard multiplier (config+0x267) and, if the product exceeds 16 MiB, scales
- * down the three guard bytes by the top byte of the product, logging
- * "Reducing guards for block size". Writes a 5-byte record {kind, g1, g2, g3,
- * page_count} to out.
- * Confidence: medium
- * Notes: references string s_Reducing_guards_for_block_size___005aa72d via
- *   sk_log (FUN_000117e8). */
-void sk_guard_size_config(void *config, unsigned long size, int flag, uint8_t *out)
-{
-    uint8_t g1, g2, g3, page_count;
-    uint8_t kind;
-
-    if ((size < 0x8001) && (flag != 0) &&
-        ((*(uint8_t *)((char *)config + 0x260) & 1) != 0)) {
-        unsigned long off_a = 0x262, off_b = 0x263;
-        if (0x1000 < size) { off_a = 0x264; off_b = 0x265; }
-        g3 = *(uint8_t *)((char *)config + off_a);
-        if ((size & 0x3fff) != 0) size += 0x4000;
-        page_count = (uint8_t)(size >> 0xe);
-        g2 = *(uint8_t *)((char *)config + off_b);
-        g1 = 0;
-        kind = 1;
-    } else {
-        g3 = 0;
-        page_count = 0;
-        if ((size - 0x8001) >> 0xf < 0x3f) {
-            kind = 0;
-            g2 = g3;
-            g1 = g3;
-            if ((*(uint8_t *)((char *)config + 0x266) & 1) != 0) {
-                g3 = *(uint8_t *)((char *)config + 0x267);
-                g2 = *(uint8_t *)((char *)config + 0x268);
-                g1 = *(uint8_t *)((char *)config + 0x26b);
-                size = size * g3;
-                if (size < 0x1000001) {
-                    page_count = 0;
-                    kind = 2;
-                } else {
-                    uint8_t top = (uint8_t)((size >> 0x18) & 0xff);
-                    uint8_t zero = 0;
-                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g3 / top);
-                    g3 = zero;
-                    zero = 0;
-                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g2 / top);
-                    g2 = zero;
-                    zero = 0;
-                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g1 / top);
-                    g1 = zero;
-                    sk_log(4, "Reducing guards for block size %lx");
-                    page_count = 0;
-                    kind = 2;
-                }
-            }
-        } else {
-            g1 = 0; g2 = 0; g3 = 0;
-            kind = 0;
-        }
-    }
-    out[0] = kind;
-    out[1] = g3;
-    out[2] = g2;
-    out[3] = g1;
-    out[4] = page_count;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001018c @ 0x0001018c   (est. sk_lock_acquire_failed_panic)
- * Ghidra: void FUN_0001018c(void)
- * Panic wrapper: logs "Failed to acquire lock %p" at level 0x40 and invokes
- * the boot failure handler (FUN_00011824). Called when a lock cannot be
- * acquired during early boot.
- * Confidence: medium (string-matched "Failed to acquire lock").
- * Notes: string s_Failed_to_acquire_lock__p__005a9a23. */
-void sk_lock_acquire_failed_panic(void)
-{
-    sk_boot_fail(0x40, 0, "Failed to acquire lock %p");  /* FUN_00011824 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000101a0 @ 0x000101a0   (est. sk_heap_alloc_checked)
- * Ghidra: void FUN_000101a0(ulong size, undefined8 param_2)
- * Allocates `size` bytes from the heap zone (DAT_0064c060), dispatching to
- * the zone's allocator method (offset 0x18 for zone version < 0x10, offset
- * 0xa0 otherwise). Validates that the returned pointer range does not wrap:
- * if size + returned base overflows, it traps (SoftwareBreakpoint 0x5519).
- * Returns the allocated pointer.
- * Confidence: medium
- * Notes: zone dispatch object DAT_0064c060; overflow trap at 0x10244. */
-void *sk_heap_alloc_checked(unsigned long size, void *arg)
-{
-    void *heap = *(void **)0x64c060;  /* DAT_0064c060 */
-    unsigned long base;
-    unsigned long end;
-
-    if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
-        base = ((unsigned long (*)(void *, unsigned long))
-                **(void ***)((char *)heap + 0x18))(heap, size);
-    } else {
-        base = ((unsigned long (*)(void *, unsigned long, void *))
-                **(void ***)((char *)heap + 0xa0))(heap, size, arg);
-    }
-    end = (base != 0) ? base + size : 0;
-    if (base <= end && (base == 0 || size <= end - base) &&
-        base <= end && (base == 0 || size <= end - base)) {
-        return (void *)base;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10244) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010244 @ 0x00010244   (est. sk_heap_calloc)
- * Ghidra: void FUN_00010244(long count, long size, undefined8 param_3)
- * Allocates and zero-fills `count * size` bytes from the heap zone via the
- * zone's calloc method (offset 0x20 / 0xa8). Validates that the product and
- * returned range do not wrap; on overflow it traps.
- * Confidence: medium
- * Notes: zone DAT_0064c060; overflow trap 0x102f4. */
-void *sk_heap_calloc(unsigned long count, unsigned long size, void *arg)
-{
-    void *heap = *(void **)0x64c060;  /* DAT_0064c060 */
-    unsigned long total;
-    unsigned long base, end;
-
-    if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
-        if ((char *)heap + 200 < (char *)heap) __builtin_trap();
-        base = ((unsigned long (*)(void *, unsigned long, unsigned long))
-                **(void ***)((char *)heap + 0x20))(heap, count, size);
-    } else {
-        if ((char *)heap + 200 < (char *)heap) __builtin_trap();
-        base = ((unsigned long (*)(void *, unsigned long, unsigned long, void *))
-                **(void ***)((char *)heap + 0xa8))(heap, count, size, arg);
-    }
-    total = size * count;
-    end = (base != 0) ? base + total : 0;
-    if (base <= end && (base == 0 || (total < end - base || total - (end - base) == 0))) {
-        return (void *)base;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x102f4) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000102f4 @ 0x000102f4   (est. sk_heap_alloc_or_error)
- * Ghidra: ulong FUN_000102f4(long count, ulong size, undefined8 param_3)
- * Allocates `count * size` bytes; returns the base pointer, or 0 with kernel
- * error 0xc (ENOMEM) on failure. Handles count==0/size==0 by allocating
- * `size` alone; for a nonzero count it first looks up the object class
- * (FUN_00011cac) to pick a sized allocator method (offset 0x38 / 0xb0), and
- * falls back to the general allocator (FUN_000125b4). Traps on overflow.
- * Confidence: medium
- * Notes: zone DAT_0064c060; error slot via thunk_FUN_0006037c; trap 0x10480. */
-unsigned long sk_heap_alloc_or_error(unsigned long count, unsigned long size, void *arg)
-{
-    void *heap;
-    unsigned long base, end;
-    unsigned int *err;
-
-    if (count == 0 || size == 0) {
-        heap = *(void **)0x64c060;  /* DAT_0064c060 */
-        if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
-            base = ((unsigned long (*)(void *, unsigned long))
-                    **(void ***)((char *)heap + 0x18))(heap, size);
-        } else {
-            base = ((unsigned long (*)(void *, unsigned long, void *))
-                    **(void ***)((char *)heap + 0xa0))(heap, size, arg);
-        }
-        end = (base != 0) ? base + size : 0;
-        if (end < base ||
-            ((base != 0 && end - base <= size) && (base == 0 || size != end - base)))
-            goto overflow;
-        if (base == 0) return 0;
-        end = end - base;
-        /* bump-allocation: size bytes consumed */
-    } else {
-        heap = sk_obj_class_lookup(count, 0, 0);  /* FUN_00011cac */
-        if (heap != 0) {
-            if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
-                if ((char *)heap + 200 < (char *)heap) goto overflow;
-                base = ((unsigned long (*)(void *, unsigned long, unsigned long))
-                        **(void ***)((char *)heap + 0x38))(heap, count, size);
-            } else {
-                if ((char *)heap + 200 < (char *)heap) goto overflow;
-                base = ((unsigned long (*)(void *, unsigned long, unsigned long, void *))
-                        **(void ***)((char *)heap + 0xb0))(heap, count, size, arg);
-            }
-            if (base != 0) {
-                end = base + size;
-                /* consume */
-            } else {
-                err = (unsigned int *)sk_error_slot();  /* thunk_FUN_0006037c */
-                *err = 0xc;
-                base = 0;
-            }
-            if (size <= base + size) return base;
-            goto overflow;
-        }
-        base = sk_heap_alloc(count, size);  /* FUN_000125b4 */
-        end = (base != 0) ? base + size : 0;
-        if (end < base) goto overflow;
-        if (base == 0) return 0;
-        end = end - base;
-    }
-    if (size <= end) return base;
-overflow:
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10480) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010480 @ 0x00010480   (est. sk_heap_aligned_alloc)
- * Ghidra: void FUN_00010480(ulong align, ulong size, undefined8 param_3)
- * Aligned allocation: when align > 7 and the heap supports it (version >=
- * 0x10, power-of-two alignment, size aligned), uses the zone's aligned-alloc
- * method (offset 0xb8); otherwise falls back to FUN_00010584. Sets error
- * 0xc on failure. Traps on range wrap.
- * Confidence: medium
- * Notes: zone DAT_0064c060; trap 0x10584. */
-void *sk_heap_aligned_alloc(unsigned long align, unsigned long size, void *arg)
-{
-    void *heap;
-    unsigned long base, end;
-    unsigned int *err;
-
-    if (align > 7) {
-        heap = *(void **)0x64c060;  /* DAT_0064c060 */
-        if (0xf < *(unsigned int *)((char *)heap + 0x68) &&
-            (align & (align - 1)) == 0 && (size & (align - 1)) == 0) {
-            if ((char *)heap <= (char *)heap + 200) {
-                base = ((unsigned long (*)(void *, unsigned long, unsigned long))
-                        **(void ***)((char *)heap + 0xb8))(heap, align, size);
-                end = base + size;
-                if (base == 0) {
-                    end = 0;
-                    err = (unsigned int *)sk_error_slot();  /* thunk_FUN_0006037c */
-                    *err = 0xc;
-                }
-                if (base <= end && (base == 0 || size <= end - base)) {
-                    return (void *)base;
-                }
-            }
-            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10584) */
-        }
-    }
-    base = (unsigned long)sk_alloc_aligned_save(align, size, arg);  /* FUN_00010584 */
-    end = (base != 0) ? base + size : 0;
-    if (base <= end && (base == 0 || size <= end - base)) {
-        return (void *)base;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10584) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010584 @ 0x00010584   (est. sk_alloc_aligned_save)
- * Ghidra: void FUN_00010584(undefined8 param_1, ulong size, ulong flags)
- * Allocation that saves/restores the per-CPU "no-preempt" slot (tpidr_el0
- * word 9) around the heap allocation (FUN_00012218, flags=3), enforcing
- * flags >= 1. Traps on range wrap.
- * Confidence: medium
- * Notes: per-CPU slot tpidr_el0+9; zone DAT_0064c060; trap 0x1062c. */
-void *sk_alloc_aligned_save(void *param_1, unsigned long size, unsigned long flags)
-{
-    unsigned long *tpidr = (unsigned long *)0;  /* tpidr_el0 */
-    unsigned long *slot = tpidr + 9;
-    unsigned long saved, base, end;
-
-    if ((unsigned long)(tpidr + 10) - (unsigned long)slot <= 0x1f * 8) {
-        saved = *slot;
-        if (flags < 2) flags = 1;
-        *slot = flags;
-        base = sk_heap_alloc_mode(*(void **)0x64c060, param_1, size, 3, 0);  /* FUN_00012218 */
-        end = (base != 0) ? base + size : 0;
-        *slot = saved;
-        if (base <= end && (base == 0 || size <= end - base)) {
-            return (void *)base;
-        }
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x1062c) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001062c @ 0x0001062c   (est. sk_heap_aligned_alloc_variant)
- * Ghidra: undefined8 FUN_0001062c(long *out, ulong size, undefined8 param_3, ulong flags)
- * Aligned-allocation variant storing the result through *out: for size > 7
- * with a compatible heap it uses the zone's aligned-alloc method (offset
- * 0xb8); otherwise it routes through the save/restore path (FUN_000127c0).
- * Returns 0 on success or 0xc on allocation failure. Traps on overflow.
- * Confidence: medium
- * Notes: zone DAT_0064c060; trap 0x106c4 / 0x1071c. */
-unsigned long sk_heap_aligned_alloc_variant(void **out, unsigned long size, void *arg, unsigned long flags)
-{
-    void *heap;
-    unsigned long *tpidr, *slot, saved;
-    void *res;
-
-    if (size > 7) {
-        heap = *(void **)0x64c060;  /* DAT_0064c060 */
-        if (0xf < *(unsigned int *)((char *)heap + 0x68) && (size & (size - 1)) == 0) {
-            if ((char *)heap <= (char *)heap + 200) {
-                res = ((void *(*)(void *))
-                       **(void ***)((char *)heap + 0xb8))(heap);
-                if (res == 0) return 0xc;
-                *out = res;
-                return 0;
-            }
-            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x106c4) */
-        }
-    }
-    tpidr = (unsigned long *)0;  /* tpidr_el0 */
-    slot = tpidr + 9;
-    if ((unsigned long)(tpidr + 10) - (unsigned long)slot <= 0x1f * 8) {
-        saved = *slot;
-        if (flags < 2) flags = 1;
-        *slot = flags;
-        res = sk_alloc_out(out);  /* FUN_000127c0 */
-        *slot = saved;
-        return (unsigned long)res;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x1071c) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001071c @ 0x0001071c   (est. sk_buddy_init)
- * Ghidra: void FUN_0001071c(void)
- * Initializes the buddy page allocator. Allocates a 1 MiB arena
- * (FUN_00011b18, guard 0xa00/0x200), clears the free lists, sets the 
- * per-size-class free-list heads (sizes 3..0xe), and installs the base into
- * DAT_006adfd8. Panics "BUG IN LIBMALLOC" (FUN_001150e0) on arena failure;
- * stack canary checked (FUN_0011d7e8).
- * Confidence: medium
- * Notes: strings s_BUG_IN_LIBMALLOC___llu___failed_t_005aa76c; globals
- *   DAT_006adfd8/006adfe0. */
-void sk_buddy_init(void)
-{
-    unsigned long guard = 0xa00;
-    unsigned long hint = 0;
-    void *arena;
-    long *p, v;
-
-    if (sk_buddy_flags == 0) guard = 0x200;
-    arena = sk_arena_alloc(0x100000, 0, guard, 1, &hint);  /* FUN_00011b18 */
-    if (arena == 0) {
-        sk_panic("BUG IN LIBMALLOC: failed to allocate arena");  /* FUN_001150e0 */
-    }
-    sk_mem_clear(arena, 0x8000, 2, 0x40, &hint);  /* FUN_00011bf4 */
-    ((unsigned long *)arena)[0x1d] = hint;
-    ((unsigned long *)arena)[0x1c] = 0;
-    *(unsigned long *)arena = 0;
-    ((unsigned long *)arena)[1] = 0;
-    ((unsigned long *)arena)[0x1f] = 0x8000000000000000ull;
-    /* size-class free-list heads: pair {next,prev} for sizes 3..0xd */
-    p = (long *)arena + 7;
-    v = 3;
-    do {
-        p[-1] = v;
-        *p = v;
-        p += 2;
-        v += 1;
-    } while (v != 0xe);
-    ((unsigned long *)arena)[0x20] |= 1;
-    sk_buddy_base = arena;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010830 @ 0x00010830   (est. sk_buddy_find_free)
- * Ghidra: long FUN_00010830(ulong key)
- * Searches the buddy allocator's free bitmap (DAT_006adfd8 + 0x100) for the
- * next free region at or after `key`, using the leading-zero-count / bit
- * reversal helpers (LZCOUNT). Returns the free region's 16-byte slot index
- * shifted left 4, or 0 if the key is out of the arena or no free region.
- * Confidence: medium
- * Notes: buddy bitmap + free lists at DAT_006adfd8. */
-long sk_buddy_find_free(unsigned long key)
-{
-    unsigned long k = key & 0xf0ffffffffffffffull;
-    unsigned long idx, bits, tmp;
-    long *fl;
-
-    if (sk_buddy_base == 0 || k < (unsigned long)sk_buddy_base + 0x8000 ||
-        (key & 0xf) != 0 || (unsigned long)sk_buddy_base + 0x100000 <= k) {
-        return 0;
-    }
-    idx = (k - ((unsigned long)sk_buddy_base + 0x8000)) >> 4;
-    if ((*(unsigned long *)((char *)sk_buddy_base + 0x100 +
-                            ((idx >> 2) & 0x3ffffffffffffff0)) &
-         (1ull << (idx & 0x3f)) &
-         *(unsigned long *)((char *)sk_buddy_base + 0x100 +
-                            (((idx >> 2) & 0x3ffffffffffffff8) | 8))) == 0) {
-        return 0;
-    }
-    idx = idx + 1;
-    bits = *(unsigned long *)((char *)sk_buddy_base + 0x100 +
-                              (((idx >> 5) & 0x7fffffffffffffe) * 8)) >> (idx & 0x3f);
-    if (bits == 0) {
-        tmp = idx & 0x3f;
-        fl = (long *)((char *)sk_buddy_base + 0x100 + ((idx >> 5) & 0x7fffffffffffffe) * 8);
-        bits = *(unsigned long *)((char *)fl + 0x10);
-        if (bits != 0) {
-            bits = ((bits & 0xaaaaaaaaaaaaaaaaull) >> 1) |
-                   ((bits & 0x5555555555555555ull) << 1);
-            bits = ((bits & 0xccccccccccccccccull) >> 2) |
-                   ((bits & 0x3333333333333333ull) << 2);
-            bits = ((bits & 0xf0f0f0f0f0f0f0f0ull) >> 4) |
-                   ((bits & 0xf0f0f0f0f0f0f0full) << 4);
-            bits = ((bits & 0xff00ff00ff00ff00ull) >> 8) |
-                   ((bits & 0xff00ff00ff00ffull) << 8);
-            bits = ((bits & 0xffff0000ffff0000ull) >> 0x10) |
-                   ((bits & 0xffff0000ffffull) << 0x10);
-            return (LZCOUNT(bits >> 0x20 | bits << 0x20) - tmp + 0x41) << 4;
-        }
-        fl = (tmp < 0x31) ? 0 : (long *)((char *)fl + 0x18);
-        idx = (unsigned long)((unsigned int)(((unsigned long)fl << 1) << (tmp ^ 0x3f)) |
-                              (unsigned int)(*(unsigned long *)((char *)sk_buddy_base + 0x100 +
-                                  (((idx >> 5) << 3) | 8)) >> tmp)) & 0xffff;
-    } else {
-        bits = ((bits & 0xaaaaaaaaaaaaaaaaull) >> 1) |
-               ((bits & 0x5555555555555555ull) << 1);
-        bits = ((bits & 0xccccccccccccccccull) >> 2) |
-               ((bits & 0x3333333333333333ull) << 2);
-        bits = ((bits & 0xf0f0f0f0f0f0f0f0ull) >> 4) |
-               ((bits & 0xf0f0f0f0f0f0f0full) << 4);
-        bits = ((bits & 0xff00ff00ff00ff00ull) >> 8) |
-               ((bits & 0xff00ff00ff00ffull) << 8);
-        bits = ((bits & 0xffff0000ffff0000ull) >> 0x10) |
-               ((bits & 0xffff0000ffffull) << 0x10);
-        bits = LZCOUNT(bits >> 0x20 | bits << 0x20);
-    }
-    return (bits + 1) << 4;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010934 @ 0x00010934   (est. sk_buddy_alloc)
- * Ghidra: long * FUN_00010934(ulong size)
- * The buddy page allocator: allocates a 16-byte-granular region of `size`
- * bytes (rounded to a 16-byte unit) from the buddy arena (DAT_006adfd8).
- * Takes the arena lock (FUN_0011582c), walks the per-size free lists, and
- * on miss grows the arena high-water mark (DAT_006adfd8+0x18), zero-filling
- * new pages (FUN_00011bf4) and maintaining the free bitmap at +0x100.
- * Releases the lock (FUN_00115894) before returning the block, or 0 if the
- * request exceeds arena capacity. Panics on lock acquire/release failure.
- * Confidence: medium
- * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
- *   s_Failed_to_release_lock__p__005a9a3f. */
-void *sk_buddy_alloc(unsigned long size)
-{
-    unsigned long base = (unsigned long)sk_buddy_base;
-    unsigned long units, cls, idx, tmp, bits, hwm;
-    long *fl, *block, *p;
-    void *result;
-
-    if (size < 0x4001) {
-        units = (size + 0xf) >> 4;
-        if (size == 0) units = 1;
-        if (sk_buddy_lock(base) != 0) {   /* FUN_0011582c */
-            sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
-        }
-        cls = 0x40 - (unsigned int)LZCOUNT(units - 1);
-        if (9 < cls) cls = 10;
-        /* walk free lists for the selected size class */
-        for (tmp = 0; tmp < 0x80; tmp += 0x10) {
-            fl = (long *)(base + 0x30 + tmp);
-            block = (long *)(base + *fl * 0x10);
-            if (fl != block) {
-                long prev = *block, next = block[1];
-                *(long *)(base + prev * 0x10 + 8) = next;
-                *(long *)(base + next * 0x10) = prev;
-                *block = 0; block[1] = 0;
-                /* mark the freed-internal split region in the bitmap */
-                result = (void *)(base + 0x8000 + (units << 4));
-                goto found;
-            }
-        }
-        /* grow the arena high-water mark */
-        hwm = *(unsigned long *)(base + 0x18);
-        if (units < 0xf800 - hwm) {
-            unsigned long newhwm = hwm + units;
-            *(unsigned long *)(base + 0x18) = newhwm;
-            result = (void *)(base + 0x8000 + hwm * 0x10);
-            if (*(unsigned long *)(base + 0x20) < newhwm) {
-                unsigned long from = ((base + 0x8000 + *(unsigned long *)(base + 0x20) * 0x10) + 0x3fff) & ~0x3fffull;
-                unsigned long to = ((unsigned long)result + size + 0x3fff) & ~0x3fffull;
-                if (to != from) {
-                    sk_mem_clear(from, to - from, 2, 0x40, (void *)(base + 0xe0));  /* FUN_00011bf4 */
-                }
-                *(unsigned long *)(base + 0x20) = *(unsigned long *)(base + 0x18);
-            }
-        } else {
-            result = 0;
-        }
-found:
-        if (sk_buddy_unlock(base) != 0) {  /* FUN_00115894 */
-            sk_boot_fail(0x40, 0, "Failed to release lock %p");
-        }
-        if (sk_buddy_flags == 1 && result != 0) {
-            /* DC_GVA cache clear over the new region */
-            unsigned long a = (unsigned long)result;
-            for (a = a & ~0x3full; a < ((unsigned long)result + units * 0x10) & ~0x3full; a += 0x40) {
-                /* DC_GVA(a) */
-            }
-        }
-        return result;
-    }
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010d84 @ 0x00010d84   (est. sk_buddy_free_split)
- * Ghidra: void FUN_00010d84(long arena, long idx, undefined8 units)
- * Buddy free helper: computes the size class for `units` free units and
- * links the region (arena + idx*0x10 + 0x8000) into the corresponding
- * per-class free list (arena + 0x30 + class*0x10), recording class+3 in the
- * region header. Used when freeing a partial region that must be split back
- * into the free lists.
- * Confidence: medium
- * Notes: arena DAT_006adfd8; helper FUN_00011430. */
-void sk_buddy_free_split(void *arena, long idx, unsigned long units)
-{
-    unsigned int cls = 0x3f - (unsigned int)LZCOUNT(units);
-    long *list, *region;
-    long head;
-
-    if (9 < cls) cls = 10;
-    sk_buddy_clear_range(arena, 0, 0);  /* FUN_00011430 */
-    list = (long *)((char *)arena + (unsigned long)cls * 0x10 + 0x30);
-    region = (long *)((char *)arena + idx * 0x10);
-    head = *list;
-    *(long *)((char *)region + 0x8000) = head;
-    *(unsigned long *)((char *)region + 0x8008) = (unsigned long)cls + 3;
-    *list = idx + 0x800;
-    *(long *)((char *)arena + head * 0x10 + 8) = idx + 0x800;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00010e3c @ 0x00010e3c   (est. sk_buddy_free)
- * Ghidra: void FUN_00010e3c(ulong ptr)
- * Buddy allocator free: releases a 16-byte-aligned block previously handed
- * out by sk_buddy_alloc. Validates the pointer is inside the arena
- * (panics "BUG IN LIBMALLOC: not MFM" / "BUG IN CLIENT OF LIBMALLOC" on
- * misalignment or a double-free), clears the freed range (FUN_00117f8c),
- * takes the arena lock, co-joins the block with its neighbor(s) by walking
- * the buddy bitmap at arena+0x100, updates the free lists, the free-unit
- * count (arena+0x10) and region count (arena+0x28), and either trims the
- * arena high-water mark (arena+0x18) or re-links via sk_buddy_free_split.
- * Releases the lock; panics on lock acquire/release failure.
- * Confidence: low (structural summary of a long bitmap-walking free; the
- *   LZCOUNT bit-reversal run-length computation is preserved in spirit).
- * Notes: strings s_BUG_IN_LIBMALLOC___llu___not_MFM_005aa79f,
- *   s_BUG_IN_CLIENT_OF_LIBMALLOC___llu_005aa838/005aa7c6/005aa800;
- *   helpers FUN_000114fc, FUN_00011884, FUN_00117f8c, FUN_0011582c,
- *   FUN_00115894. */
-void sk_buddy_free(unsigned long ptr)
-{
-    unsigned long arena = (unsigned long)sk_buddy_base;
-    unsigned long addr = ptr & 0xf0ffffffffffffffull;
-    unsigned long idx, bitmap, units, cur, next;
-    unsigned long *w;
-
-    if (arena == 0 || addr < arena + 0x8000 || arena + 0x100000 <= addr) {
-        sk_panic("BUG IN LIBMALLOC: not in MFM region");  /* FUN_001150e0 */
-    }
-    if ((ptr & 0xf) != 0) {
-        sk_panic("BUG IN CLIENT OF LIBMALLOC: misaligned free");  /* FUN_001150e0 */
-    }
-    idx = (addr - (arena + 0x8000)) >> 4;
-    bitmap = arena + 0x100;
-    /* the block's start unit must be marked in-use in both bitmap words */
-    if ((*(unsigned long *)(bitmap + ((idx >> 5) & 0x7fffffffffffffe) * 8) &
-         *(unsigned long *)(bitmap + ((idx >> 5) | 1) * 8) &
-         (1ull << (idx & 0x3f))) == 0) {
-        sk_panic("BUG IN CLIENT OF LIBMALLOC: double free");  /* FUN_001150e0 */
-    }
-    /* derive the run length in units from the free bitmap using the
-     * LZCOUNT/bit-reversal helpers (see sk_buddy_find_free). */
-    units = buddy_run_len(bitmap, idx);
-    if (sk_buddy_flags == 1) {
-        dc_gva_region(ptr & ~0x3full, units);
-    }
-    sk_mem_clear_range(ptr, units, ~0ull);  /* FUN_00117f8c */
-    if (sk_buddy_lock(arena) != 0) {  /* FUN_0011582c */
-        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
-    }
-    /* decrement live-unit and region counters */
-    *(int *)(arena + 0x10) -= (int)units;
-    *(long *)(arena + 0x28) -= 1;
-    /* coalesce with the preceding free region if present */
-    if (((*(unsigned long *)(bitmap + ((((idx - 1) >> 5) << 3) | 8)) >> ((idx - 1) & 0x3f)) & 1) == 0) {
-        idx -= 1;
-        units = buddy_run_len(bitmap, idx) + units;
-        /* unlink the merged predecessor from its free list */
-        unlink_buddy_region(arena, idx);
-    }
-    /* coalesce with the following free region if present and not at HWM */
-    if (idx + units < *(unsigned long *)(arena + 0x18)) {
-        cur = idx + units;
-        if ((*(unsigned long *)(bitmap + ((cur >> 5) & 0x7fffffffffffffe) * 8) &
-             (1ull << (cur & 0x3f)) &
-             *(unsigned long *)(bitmap + ((cur >> 5) << 3 | 8))) != 0) {
-            units = buddy_run_len(bitmap, cur) + units;
-            unlink_buddy_region(arena, idx);
-        }
-    }
-    if (idx + units == *(unsigned long *)(arena + 0x18)) {
-        /* trim the high-water mark back to idx */
-        *(unsigned long *)(bitmap + ((*(unsigned long *)(arena + 0x18) >> 2) & 0x3ffffffffffffff0)) &=
-            ~(1ull << (*(unsigned long *)(arena + 0x18) & 0x3f));
-        if (units < 0x40) {
-            *(unsigned long *)(bitmap + ((idx >> 2) & 0x3ffffffffffffff8 | 8)) &=
-                ~(1ull << (idx & 0x3f));
-            *(unsigned long *)(bitmap + (((idx + units - 1) >> 2) & 0x3ffffffffffffff8 | 8)) &=
-                ~(1ull << ((idx + units - 1) & 0x3f));
-        } else {
-            sk_buddy_clear_list(arena, 0, idx, units);  /* FUN_000114fc */
-        }
-        *(unsigned long *)(arena + 0x18) = idx;
-    } else {
-        sk_buddy_free_split(arena, idx, units);  /* FUN_00010d84 */
-    }
-    if (sk_buddy_unlock(arena) != 0) {  /* FUN_00115894 */
-        sk_boot_fail(0x40, 0, "Failed to release lock %p");
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011430 @ 0x00011430   (est. sk_buddy_clear_range)
- * Ghidra: void FUN_00011430(long arena, ulong idx, ulong units)
- * Clears the free-bitmap boundary markers for a region of `units` units
- * starting at unit `idx`: for a short run (< 0x40) it clears the two
- * boundary words, otherwise it delegates to sk_buddy_clear_list.
- * Confidence: medium
- * Notes: bitmap at arena+0x100; helper FUN_000114fc. */
-void sk_buddy_clear_range(void *arena, unsigned long idx, unsigned long units)
-{
-    unsigned long *bitmap = (unsigned long *)((char *)arena + 0x100);
-    unsigned long w;
-
-    if (units < 0x40) {
-        w = (idx >> 2) & 0x3ffffffffffffff8 | 8;
-        bitmap[w] &= ~(1ull << (idx & 0x3f));
-        w = ((idx + units - 1) >> 2) & 0x3ffffffffffffff8 | 8;
-        bitmap[w] &= ~(1ull << ((idx + units - 1) & 0x3f));
-        return;
-    }
-    sk_buddy_clear_list(arena, 0, idx, units);  /* FUN_000114fc */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011494 @ 0x00011494   (est. sk_buddy_is_in_arena)
- * Ghidra: bool FUN_00011494(ulong ptr)
- * Returns true if `ptr` (masked to the arena's canonical form) falls inside
- * the buddy arena's payload region, or when the arena flags word has the low
- * bit set (page-zeroing enabled) accepts the region as in-arena.
- * Confidence: medium
- * Notes: globals DAT_006adfd8/006adfe0. */
-bool sk_buddy_is_in_arena(unsigned long ptr)
-{
-    unsigned long p = ptr & 0xf0ffffffffffffffull;
-    if (sk_buddy_base == 0 || p < (unsigned long)sk_buddy_base + 0x8000) {
-        return false;
-    }
-    return p < (unsigned long)sk_buddy_base + 0x100000;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000114f0 @ 0x000114f0   (est. sk_buddy_base_get)
- * Ghidra: undefined8 FUN_000114f0(void)
- * Returns the buddy allocator base pointer (DAT_006adfd8).
- * Confidence: high (trivial accessor). */
-void *sk_buddy_base_get(void)
-{
-    return sk_buddy_base;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000114fc @ 0x000114fc   (est. sk_buddy_clear_list)
- * Ghidra: void FUN_000114fc(long arena, uint clear, ulong idx, long units)
- * Writes the free-bitmap run descriptor for a run of `units` units starting
- * at unit `idx`: stores the run length in the low 17 bits of the descriptor
- * word at bitmap + ((idx>>5)<<3|8), and splits the descriptor across the two
- * covering 64-bit words when the run crosses the 64-bit boundary. When
- * `clear` is 0 the run marker is cleared; otherwise set.
- * Confidence: medium
- * Notes: bitmap at arena+0x100. */
-void sk_buddy_clear_list(void *arena, unsigned int clear, unsigned long idx, long units)
-{
-    unsigned long *bitmap = (unsigned long *)((char *)arena + 0x100);
-    unsigned long w, end, q, r, v1, mask1, dv;
-
-    w = ((idx >> 5) << 3) | 8;
-    bitmap[w] = (bitmap[w] & ~((0x1ffffull << (idx & 0x3f)))) |
-                (((unsigned long)clear & 1 | (units - 1) * 2) << (idx & 0x3f));
-    if (0x2f < (idx & 0x3f)) {
-        long *l2 = (long *)((char *)bitmap + ((idx >> 5) & 0x7fffffffffffffe) * 8);
-        *(unsigned long *)((char *)l2 + 0x18) =
-            (*(unsigned long *)((char *)l2 + 0x18) & ~(0xffffull >> ((idx & 0x3f) ^ 0x3f))) |
-            ((units - 1) & 0x7fffffffffffffffull) >> ((idx & 0x3f) ^ 0x3f);
-    }
-    end = (units - 1) + idx;
-    q = end >> 6;
-    r = end & 0x3f;
-    v1 = r + 0x30;
-    mask1 = 0x1ffffull << (v1 & 0x3f);
-    if ((v1 & 0x40) == 0) mask1 = 0xffffull >> ((~v1) & 0x3f);
-    dv = ((units - 1) + ((clear == 0) ? 0 : 0x10000)) << (v1 & 0x3f);
-    if ((v1 & 0x40) == 0) dv = ((units - 1 + ((clear == 0) ? 0 : 0x10000)) >> 1) >> ((~v1) & 0x3f);
-    if (r < 0x10) {
-        bitmap[q * 0x10 - 8] = (bitmap[q * 0x10 - 8] & ~(0x1ffffull << (v1 & 0x3f))) |
-                                (((v1 & 0x40) == 0) ? 0x1ffffull : 0);
-    }
-    bitmap[q * 0x10 + 8] = (bitmap[q * 0x10 + 8] & ~(mask1)) | dv;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011600 @ 0x00011600   (est. sk_malloc_log)
- * Ghidra: void FUN_00011600(ulong options, undefined8 flag, long msg, ...)
- * The libmalloc-style diagnostics logger (the real body behind sk_log).
- * Interprets the options word: if bit 5 is clear it emits the "*** malloc"
- * banner via FUN_00118b28; if `msg` is nonzero it prints it; writes the
- * varargs via FUN_00118c4c. If bit 8 (memory-footprint dump) is set it
- * clears a 0x32-word buffer, fills it via FUN_00115574 and prints each word.
- * If bits 6-7 request a breakpoint/sleep for debugging, it invokes
- * FUN_00011798 then sleeps (FUN_001183e0). Stack canary checked.
- * Confidence: medium
- * Notes: strings s___p__malloc__005aa86b, s_____set_a_breakpoint_in_malloc_e_005aa879,
- *   s_____sleeping_to_help_debug_005aa8b5; helpers FUN_00118b28/00118c4c/
- *   00115574/001183e0/00116d60/0011d7e8. */
-void sk_malloc_log(unsigned long options, void *flag, long msg, void *a, void *b, void *c)
-{
-    unsigned long fb[0x32];
-    long i, n;
-
-    if (((options >> 5) & 1) == 0) {
-        sk_printf_banner();       /* thunk_FUN_00060524 */
-        sk_puts("*** malloc");    /* FUN_00118b28, s___p__malloc__005aa86b */
-    }
-    if (msg != 0) sk_puts((const char *)msg);  /* FUN_00118b28 */
-    sk_vprintf(a, b);             /* FUN_00118c4c */
-    if ((options >> 8 & 1) != 0) {
-        for (i = 0; i < 0x32; i++) fb[i] = 0;
-        n = sk_fill_debug_buffer(fb, 0x32);  /* FUN_00115574 */
-        for (i = 0; i < n; i++) sk_puts_word(fb[i]);
-    }
-    if (((options & 0xc0) != 0) && flag != 0) {
-        sk_malloc_breakpoint_check(options);  /* FUN_00011798 */
-        sk_printf_banner();
-        sk_puts("*** malloc");
-        sk_puts("*** sleeping to help debug");  /* FUN_00118b94 */
-        sk_sleep(flag);                          /* FUN_001183e0 */
-    }
-    if ((options >> 6 & 1) == 0) return;
-    sk_abort_malloc();  /* FUN_00116d60 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011798 @ 0x00011798   (est. sk_malloc_breakpoint_check)
- * Ghidra: void FUN_00011798(uint options)
- * malloc_error_break hook: if options bit 5 is clear prints the "*** malloc"
- * banner, then emits the breakpoint-hint string (DAT_005aa8b2).
- * Confidence: medium
- * Notes: strings s___p__malloc__005aa86b, DAT_005aa8b2. */
-void sk_malloc_breakpoint_check(unsigned int options)
-{
-    if ((options >> 5 & 1) == 0) {
-        sk_printf_banner();  /* thunk_FUN_00060524 */
-        sk_puts("*** malloc");  /* FUN_00118b28 */
-    }
-    sk_puts((const char *)0x5aa8b2);  /* FUN_00118b28, DAT_005aa8b2 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000117e8 @ 0x000117e8   (est. sk_log)
- * Ghidra: void FUN_000117e8(undefined8 level, undefined8 fmt)
- * Diagnostic log entry point: forwards to sk_malloc_log(level, 0, 0, 0,
- * fmt, &stack). This is the boot-time logging primitive used throughout the
- * region.
- * Confidence: high (widely referenced wrapper). */
-void sk_log(unsigned int level, const char *fmt, ...)
-{
-    sk_malloc_log(level, 0, 0, 0, (void *)fmt, &fmt);  /* FUN_00011600 */
-}
-
-/*--------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------*/
-/* Internal buddy helpers (LZCOUNT-based run-length / free-list unlink). */
-static unsigned long buddy_run_len(unsigned long bitmap, unsigned long idx)
-{
-    unsigned long tmp, bits, w;
-    long *fl;
-    tmp = idx + 1;
-    w = bitmap + ((tmp >> 5) & 0x7fffffffffffffe) * 8;
-    bits = *(unsigned long *)w >> (tmp & 0x3f);
-    if (bits == 0) {
-        fl = (long *)w;
-        bits = *(unsigned long *)((char *)fl + 0x10);
-        if (bits == 0) {
-            fl = ((tmp & 0x3f) < 0x31) ? 0 : (long *)((char *)fl + 0x18);
-            bits = ((unsigned long)fl << 1) << ((tmp & 0x3f) ^ 0x3f) |
-                   *(unsigned long *)(bitmap + ((tmp >> 5) << 3 | 8)) >> (tmp & 0x3f);
-            return (bits & 0xffff);
-        }
-        bits = bit_reverse64(bits);
-        return (LZCOUNT(bits >> 0x20 | bits << 0x20) - (tmp & 0x3f) + 0x41);
-    }
-    bits = bit_reverse64(bits);
-    return LZCOUNT(bits >> 0x20 | bits << 0x20) + 1;
-}
-
-static void unlink_buddy_region(unsigned long arena, unsigned long idx)
-{
-    long *region = (long *)((char *)arena + 0x8000 + idx * 0x10);
-    long prev = *region, next = region[1];
-    *(long *)(arena + prev * 0x10 + 8) = next;
-    *(long *)(arena + next * 0x10) = prev;
-    *region = 0;
-    region[1] = 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011824 @ 0x00011824   (est. sk_boot_fail)
- * Ghidra: void FUN_00011824(ulong level, byte flag, undefined8 fmt)
- * Boot failure/panic reporter: picks the log options word (0x43 or 0x93)
- * from `level` (bit 6 set => 0x93) and a flag, then emits the message
- * through sk_malloc_log (FUN_00011600). Used for all boot-time fatal
- * diagnostics ("Failed to acquire lock", "Unsupported ...", etc.).
- * Confidence: medium
- * Notes: string via param_3; helper FUN_00011600. */
-void sk_boot_fail(unsigned int level, unsigned char flag, const char *fmt, ...)
-{
-    unsigned int opts = 0x93;
-    flag = (unsigned char)(flag ^ 1);
-    if ((level & 0x100) == 0) flag = 1;
-    if (((level & 0x40) == 0) & flag) opts = 0x43;
-    sk_malloc_log(opts, 0, 0, 0, (void *)fmt, &fmt);  /* FUN_00011600 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011884 @ 0x00011884   (est. sk_buddy_mask)
- * Ghidra: undefined8 FUN_00011884(undefined8 param_1)
- * Identity helper (returns its argument). Serves as a no-op masking step in
- * the buddy allocator free path (kept for structural fidelity).
- * Confidence: high (trivial). */
-void *sk_buddy_mask(void *p)
-{
-    return p;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000118d0 @ 0x000118d0   (est. sk_dc_gva_clear)
- * Ghidra: ulong FUN_000118d0(long base, ulong len, ulong granule)
- * Data-cache clean-by-virtual-address over a range: walks [base, base+len)
- * in `granule` steps issuing DC_GVA on each cache line (special-casing
- * 0x200-byte granules for an 8-line burst). Returns the last cleaned line.
- * Confidence: medium
- * Notes: DC_GVA cache op; caller FUN_00117fdc. */
-unsigned long sk_dc_gva_clear(unsigned long base, unsigned long len, unsigned long granule)
-{
-    unsigned long i, n, start, end, last;
-
-    if (len < granule) return 0;
-    last = 0;
-    n = 0;
-    if (granule != 0) n = len / granule;
-    start = 0;
-    end = 0;
-    i = 0;
-    do {
-        unsigned long p = base + i * granule;
-        last = p;
-        if ((int)i != 0) last = end;
-        end = p + granule;
-        if ((granule & 0x1ff) == 0) {
-            unsigned long q = p;
-            do {
-                dc_gva_region(q, 0x200);
-                q += 0x200;
-            } while (q < end);
-        } else {
-            unsigned long q;
-            for (q = (p + 0x3f) & ~0x3full; q < (end & ~0x3full); q += 0x40) {
-                dc_gva_region(q, 0x40);
-            }
-        }
-        i += 1;
-        end = last;
-    } while (i < n);
-    return last;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000119c0 @ 0x000119c0   (est. sk_stub_zero)
- * Ghidra: undefined8 FUN_000119c0(void)
- * Trivial stub returning 0 (unreachable-block variant).
- * Confidence: high (trivial). */
-unsigned long sk_stub_zero(void)
-{
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011a08 @ 0x00011a08   (est. sk_alloc_at)
- * Ghidra: ulong FUN_00011a08(long base, long size, undefined8 align,
- *                            uint mode, undefined8 flags, undefined8 a, undefined8 b)
- * Memory allocator for a fixed address/size: rejects "anywhere" allocations
- * (mode bit 1) by logging "Unsupported anywhere allocation", then delegates
- * to FUN_00117fdc with a mapped flags word derived from `flags` (bits 7/9/8/
- * 0x1a), traps on a zero result ("Failed to allocate memory at addr") and on
- * range wrap.
- * Confidence: medium
- * Notes: strings s_Unsupported_anywhere_allocation_a_005aa904,
- *   s_Failed_to_allocate_memory_at_add_005aa952; helpers FUN_00117fdc,
- *   thunk_FUN_0006037c; trap 0x11b18. */
-unsigned long sk_alloc_at(unsigned long base, unsigned long size, void *align,
-                          unsigned int mode, unsigned long flags, void *a, void *b)
-{
-    unsigned long mapped = ((flags >> 7 & 0x20) | (mode & 1) << 3 | (flags >> 9 & 4) |
-                            (flags >> 8 & 2) | (flags >> 0x1a & 0x10)) ^ 9;
-    unsigned long r;
-
-    if (base != 0 && (mode & 1) != 0) {
-        sk_boot_fail((unsigned int)flags | 0x40, 0, "Unsupported anywhere allocation");  /* 0x5aa904 */
-    }
-    r = sk_alloc_phys(flags, base, size, 5, mapped, align, a);  /* FUN_00117fdc */
-    sk_set_error(0);
-    if (r == 0) {
-        sk_boot_fail((unsigned int)flags, 0, "Failed to allocate memory at addr");  /* 0x5aa952 */
-    }
-    if (r <= r + size) return r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x11b18) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011b18 @ 0x00011b18   (est. sk_arena_alloc)
- * Ghidra: void FUN_00011b18(ulong size, undefined8 align, undefined8 guard,
- *                           undefined8 mode, undefined8 a)
- * Allocates a contiguous arena of `size` bytes via sk_alloc_at, trapping on
- * a wrapped result. Used for the buddy allocator arena and boot regions.
- * Confidence: medium
- * Notes: helper FUN_00011a08; trap 0x11b80. */
-void *sk_arena_alloc(unsigned long size, unsigned long align, unsigned long guard, unsigned long mode, unsigned long a)
-{
-    unsigned long r = sk_alloc_at(0, size, (void *)align, 1, guard, (void *)mode, (void *)a);  /* FUN_00011a08 */
-    if (r <= r + size) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x11b80) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011b80 @ 0x00011b80   (est. sk_arena_free)
- * Ghidra: void FUN_00011b80(undefined8 p, undefined8 size, undefined8 flags, undefined8 a)
- * Frees an arena region: delegates to FUN_001180cc, and if the result has
- * the low bit clear and the kernel error slot is nonzero, logs "Failed to
- * deallocate at address".
- * Confidence: medium
- * Notes: string s_Failed_to_deallocate_at_address___005aa99e;
- *   helpers FUN_001180cc, thunk_FUN_0006037c. */
-void sk_arena_free(void *p, void *size, unsigned long flags, void *a)
-{
-    unsigned long r = sk_dealloc(p, a, size);  /* FUN_001180cc */
-    if ((r & 1) == 0) {
-        unsigned int *err = sk_error_slot();
-        if (*err != 0) {
-            sk_boot_fail((unsigned int)flags, 0, "Failed to deallocate at address");  /* 0x5aa99e */
-        }
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011bf4 @ 0x00011bf4   (est. sk_mem_clear)
- * Ghidra: undefined8 FUN_00011bf4(undefined8 base, undefined8 len, undefined1 mode,
- *                                 ulong flags, undefined8 a)
- * Clears / applies debug flags to a memory region: rejects unsupported debug
- * flags (0x83 bits), delegates to FUN_0011807c, and on failure reports
- * "Failed to madvise" unless the error slot is clear. Returns the status.
- * Confidence: medium
- * Notes: strings s_Unsupported_debug_flags__u_005aa9d4,
- *   s_Failed_to_madvise__d_at_address___005aa9f0; helper FUN_0011807c. */
-unsigned long sk_mem_clear(unsigned long base, unsigned long len, unsigned char mode, unsigned long flags, unsigned long a)
-{
-    unsigned long r;
-
-    if ((flags & 0x83) != 0) {
-        sk_boot_fail((unsigned int)flags | 0x40, 1, "Unsupported debug flags %u");  /* 0x5aa9d4 */
-    }
-    r = sk_madvise((void *)a, (void *)base, (void *)len, mode);  /* FUN_0011807c */
-    if ((int)r != 0) {
-        unsigned int *err = sk_error_slot();
-        if (*err == 0) return 0;
-        sk_boot_fail((unsigned int)flags, 0, "Failed to madvise %d at address");  /* 0x5aa9f0 */
-        return 1;
-    }
-    return r;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011cac @ 0x00011cac   (est. sk_zone_lookup)
- * Ghidra: ulong FUN_00011cac(undefined8 key, long *out_zone, uint start_idx)
- * Walks the registered malloc zones (table at DAT_006adfe8, count
- * DAT_006ac238) starting at `start_idx`, invoking each zone's matcher method
- * (offset 0x10) on `key`. Returns the matching zone address (and stores it
- * through out_zone), or 0 if none match. Traps on table overflow.
- * Confidence: medium
- * Notes: zone table DAT_006adfe8/006adff0, count DAT_006ac238; trap 0x11d7c. */
-unsigned long sk_zone_lookup(void *key, void **out_zone, unsigned int start_idx)
-{
-    unsigned long zone, r = 0;
-    unsigned int i;
-
-    for (i = start_idx; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
-        zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
-        r = ((unsigned long (*)(void *, void *))
-             **(void ***)(zone + 0x10))(zone, key);
-        if (r != 0) goto found;
-    }
-    r = 0;
-found:
-    if (out_zone != 0) *out_zone = (void *)r;
-    return zone;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00011d7c @ 0x00011d7c   (est. sk_zone_register)
- * Ghidra: void FUN_00011d7c(undefined8 zone)
- * Registers a malloc zone: seeds the zone-table sanity words, builds a zone
- * object (FUN_00006630), and appends it to the global zone table
- * (DAT_006adfe8 / count DAT_006ac238), rejecting duplicates ("Attempted to
- * register duplicate zone"), an oversized table ("No capacity for zone"),
- * an unsupported zone version, and cross-linking the new zone's name via the
- * other registered zones. Logs "Registered zone %p at index %u" on success.
- * Confidence: medium
- * Notes: strings s_Attempted_to_register_duplicate_z_005aaa37,
- *   s_No_capacity_for_zone___p_005aaa61, s_Unsupported_zone_version___u_005aaa7b,
- *   s_Registered_zone__p_at_index__u_005aaa99, s_DefaultXzoneZone_005aaa26;
- *   helpers FUN_00006630/00117d18/00012060/00117e68; globals DAT_006ac23x. */
-void sk_zone_register(void *zone)
-{
-    unsigned long zone_obj;
-    unsigned int i;
-
-    sk_zone_seed = 0x91175ef7;   /* _DAT_006ac234 */
-    sk_zone_flags = 0x91175ef7;  /* _DAT_006ac230 */
-    sk_zone_granule = 0;  /* FUN_0005ac2c, DAT_006ac23d (returns granule) */
-    zone_obj = (unsigned long)sk_alloc_zone(0x140, 0, zone, 0);  /* FUN_00006630 */
-    if (sk_zone_count == 0) {
-        if (*(unsigned int *)(zone_obj + 0x68) < 0xd) {
-            sk_log(0x40, "Unsupported zone version %u");  /* s_005aaa7b */
-        } else {
-            /* grow the zone table */
-            unsigned long zt = sk_zone_table_grow((void *)0x6adff0, (void *)0x6adfe8, sk_zone_count << 3, 8);  /* FUN_00117d18 */
-            *(unsigned long *)0x6adfe8 = zone_obj;  /* DAT_006adfe8 */
-            sk_log(6, "Registered zone %p at index %u");  /* s_005aaa99 */
-            sk_zone_count += 1;
-        }
-    } else {
-        /* duplicate check */
-        unsigned long *p = (unsigned long *)0x6adfe8;
-        i = sk_zone_count;
-        while (i != 0) {
-            if (zone_obj == *p) {
-                sk_log(0x40, "Attempted to register duplicate zone");  /* s_005aaa37 */
-                goto done;
-            }
-            i -= 1;
-            p += 1;
-        }
-        if (sk_zone_count == 2) {
-            sk_log(0x40, "No capacity for zone %p");  /* s_005aaa61 */
-        } else if (0xc < *(unsigned int *)(zone_obj + 0x68)) {
-            /* append */
-            unsigned long zt = sk_zone_table_grow((void *)0x6adff0, (void *)0x6adfe8, sk_zone_count << 3, 8);  /* FUN_00117d18 */
-            *(unsigned long *)0x6adfe8 = zone_obj;
-            sk_log(6, "Registered zone %p at index %u");
-            sk_zone_count += 1;
-        } else {
-            sk_log(0x40, "Unsupported zone version %u");
-        }
-    }
-done:
-    /* cross-link zone names */
-    if (*(long *)(zone_obj + 0x48) != 0) {
-        for (i = 0; i < sk_zone_count; i++) {
-            unsigned long other = *(unsigned long *)((char *)0x6adfe8 + i * 8);
-            if (((unsigned long (*)(void *, void *))
-                 **(void ***)(other + 0x10))(other, *(void **)(zone_obj + 0x48)) != 0) {
-                sk_zone_named(other, *(void **)(zone_obj + 0x48));  /* FUN_0001220c */
-                break;
-            }
-        }
-        *(void **)(zone_obj + 0x48) = 0;
-    }
-    /* copy the default zone name into the zone */
-    unsigned long len = sk_strlen("DefaultXzoneZone");  /* thunk_FUN_00115080, s_005aaa26 */
-    char *name = (char *)sk_zone_alloc_n(zone_obj, len + 1);  /* FUN_00012060 */
-    if (name != 0) {
-        sk_strcpy(name, "DefaultXzoneZone", len + 1, len + 1);  /* FUN_00117e68 */
-        *(char **)(zone_obj + 0x48) = name;
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012060 @ 0x00012060   (est. sk_zone_alloc_n)
- * Ghidra: void FUN_00012060(long zone, ulong size)
- * Allocates `size` bytes from the zone's allocation method (offset 0x18),
- * trapping on range wrap.
- * Confidence: medium
- * Notes: zone method dispatch; trap 0x120b4. */
-void *sk_zone_alloc_n(void *zone, unsigned long size)
-{
-    unsigned long r = ((unsigned long (*)(void *))
-                       **(void ***)((char *)zone + 0x18))();
-    if (r <= r + size) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x120b4) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000120b4 @ 0x000120b4   (est. sk_zone_calloc)
- * Ghidra: ulong FUN_000120b4(long zone, ulong count, ulong size, ulong flags)
- * Zone calloc: validates count*size for overflow (setting error 0xc /
- * ENOMEM and returning 0 on wrap unless the flags low bit is set, in which
- * case it still fails), then calls the zone's calloc method (offset 0x20).
- * Traps on a wrapped result.
- * Confidence: medium
- * Notes: zone method dispatch; error thunk_FUN_0006037c; trap 0x12160. */
-unsigned long sk_zone_calloc(void *zone, unsigned long count, unsigned long size, unsigned long flags)
-{
-    unsigned long total = size;
-    unsigned int *err;
-
-    if (count != 1) {
-        if (count * size >> 64 != 0) {
-            err = sk_error_slot();
-            *err = 0xc;
-            if ((flags & 1) == 0) return 0;
-            err = sk_error_slot();
-            *err = 0xc;
-            return 0;
-        }
-        total = count * size;
-    }
-    unsigned long r = ((unsigned long (*)(void *, unsigned long, unsigned long))
-                       **(void ***)((char *)zone + 0x20))(zone, count, size);
-    if (r <= r + total) return r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12160) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012160 @ 0x00012160   (est. sk_zone_calloc_bulk)
- * Ghidra: void FUN_00012160(undefined8 zone, long count, long size)
- * Bulk zone calloc wrapper: computes count*size, calls the zone calloc
- * (FUN_000120b4), and traps if the resulting range wraps.
- * Confidence: medium
- * Notes: helper FUN_000120b4; trap 0x121b8. */
-void *sk_zone_calloc_bulk(void *zone, unsigned long count, unsigned long size)
-{
-    unsigned long r = sk_zone_calloc(zone, 0, 0, 0);  /* FUN_000120b4 */
-    unsigned long total = size * count;
-    if (r <= r + total) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x121b8) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000121b8 @ 0x000121b8   (est. sk_zone_alloc_realloc)
- * Ghidra: void FUN_000121b8(long zone, undefined8 p, ulong size)
- * Zone allocation variant via the zone method at offset 0x38, trapping on a
- * wrapped result.
- * Confidence: medium
- * Notes: zone method dispatch; trap 0x1220c. */
-void *sk_zone_alloc_realloc(void *zone, void *p, unsigned long size)
-{
-    unsigned long r = ((unsigned long (*)(void *))
-                       **(void ***)((char *)zone + 0x38))();
-    if (r <= r + size) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x1220c) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001220c @ 0x0001220c   (est. sk_zone_named)
- * Ghidra: void FUN_0001220c(long zone)
- * Invokes the zone's "name" method (offset 0x30) to record a human-readable
- * zone name. Direct indirect call.
- * Confidence: medium
- * Notes: jumptable at 0x12214; method dispatch offset 0x30. */
-void sk_zone_named(void *zone)
-{
-    ((void (*)(void))**(void ***)((char *)zone + 0x30))();
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012218 @ 0x00012218   (est. sk_zone_aligned_alloc)
- * Ghidra: long FUN_00012218(long zone, ulong align, ulong size, uint flags)
- * Zone aligned allocation: for power-of-two align > 7 and a compatible size
- * it invokes the zone's aligned-alloc method (offset 0x70), returning its
- * result; otherwise sets error 0xc (and reports it if flags bit 0 is set).
- * Returns 0 on failure.
- * Confidence: medium
- * Notes: zone method offset 0x70; error thunk_FUN_0006037c. */
-long sk_zone_aligned_alloc(void *zone, unsigned long align, unsigned long size, unsigned int flags)
-{
-    unsigned long r;
-    unsigned int err = 0x16;
-    void (*method)(void);
-
-    if ((align > 7) && ((align & (align - 1)) == 0) &&
-        ((size & (align - 1)) == 0 || ((flags >> 1 & 1) == 0))) {
-        method = *(void (**)(void))((char *)zone + 0x70);
-        if (method != 0) {
-            r = ((unsigned long (*)(void))**(void ***)((char *)zone + 0x70))();
-            if (r != 0) return r;
-        }
-        err = 0xc;
-    }
-    if ((flags & 1) != 0) {
-        unsigned int *e = sk_error_slot();
-        *e = err;
-    }
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000122ac @ 0x000122ac   (est. sk_zone_aligned_alloc_try)
- * Ghidra: undefined8 FUN_000122ac(long zone, ulong size)
- * Zone aligned allocation that returns 0 (rather than failing loudly) when
- * the zone lacks an aligned-alloc method; dispatches to the method at offset
- * 0x70 otherwise.
- * Confidence: medium
- * Notes: zone method offset 0x70. */
-unsigned long sk_zone_aligned_alloc_try(void *zone, unsigned long size)
-{
-    void (**method)(void);
-
-    if ((size > 7) && ((size & (size - 1)) == 0)) {
-        method = *(void (***)(void))((char *)zone + 0x70);
-        if (method != 0) {
-            return ((unsigned long (*)(void))**method)();
-        }
-    }
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000122f0 @ 0x000122f0   (est. sk_zone_free_lookup)
- * Ghidra: void FUN_000122f0(ulong p, uint start_idx)
- * Frees a pointer by locating the owning zone: walks the registered zone
- * table from `start_idx`, invoking each zone's matcher (offset 0x10) on the
- * pointer; the matching zone's free method (offset 0x78, or fallback
- * sk_zone_named at 0x30) releases it. If no zone matches, falls back to
- * FUN_0000298c (generic free at level 0x40).
- * Confidence: medium
- * Notes: zone table DAT_006adfe8/count DAT_006ac238; helper FUN_0000298c;
- *   traps 0x12400/0x12448. */
-void sk_zone_free_lookup(unsigned long p, unsigned int start_idx)
-{
-    unsigned long zone;
-    unsigned int i;
-    unsigned long match;
-
-    if (p == 0) return;
-    for (i = start_idx; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
-        zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
-        match = ((unsigned long (*)(void *, unsigned long))
-                 **(void ***)(zone + 0x10))(zone, p);
-        if (match != 0) {
-            void (**method)(void) = *(void (***)(void))(zone + 0x78);
-            if (method == 0) {
-                sk_zone_named(zone);  /* FUN_0001220c */
-                return;
-            }
-            if (p <= p + match) {
-                ((void (*)(void *, unsigned long, unsigned long))**method)(zone, p, match);
-                return;
-            }
-            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12400) */
-        }
-    }
-    sk_free_other(0x40, p);  /* FUN_0000298c */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001244c @ 0x0001244c   (est. sk_zone0_alloc)
- * Ghidra: void FUN_0001244c(ulong size)
- * Allocates `size` bytes from zone 0 (DAT_006adfe8), trapping on a wrapped
- * result.
- * Confidence: medium
- * Notes: helper FUN_00012060; trap 0x124a4. */
-void *sk_zone0_alloc(unsigned long size)
-{
-    unsigned long r = (unsigned long)sk_zone_alloc_n(sk_zone0(), size);  /* FUN_00012060 */
-    if (r <= r + size) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x124a4) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000124a4 @ 0x000124a4   (est. sk_zone0_aligned_alloc)
- * Ghidra: void FUN_000124a4(undefined8 size, ulong align)
- * Aligned allocation from zone 0 via sk_zone_aligned_alloc (flags=3),
- * trapping on a wrapped result.
- * Confidence: medium
- * Notes: helper FUN_00012218; trap 0x12504. */
-void *sk_zone0_aligned_alloc(unsigned long size, unsigned long align)
-{
-    unsigned long r = sk_zone_aligned_alloc(sk_zone0(), size, align, 3);  /* FUN_00012218 */
-    if (r <= r + align) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12504) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012504 @ 0x00012504   (est. sk_zone0_calloc_bulk)
- * Ghidra: void FUN_00012504(long count, long size)
- * Bulk calloc from zone 0 (FUN_00012160), trapping on a wrapped result.
- * Confidence: medium
- * Notes: helper FUN_00012160; trap 0x12568. */
-void *sk_zone0_calloc_bulk(unsigned long count, unsigned long size)
-{
-    unsigned long r = (unsigned long)sk_zone_calloc_bulk(sk_zone0(), count, size);  /* FUN_00012160 */
-    unsigned long total = size * count;
-    if (r <= r + total) return (void *)r;
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12568) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012568 @ 0x00012568   (est. sk_heap_free)
- * Ghidra: void FUN_00012568(long p)
- * Frees a heap pointer: if zone 0 has a bulk-free method (offset 0x90) it
- * dispatches to it; otherwise falls back to sk_zone_free_lookup.
- * Confidence: medium
- * Notes: zone 0 DAT_006adfe8; helper FUN_000122f0. */
-void sk_heap_free(void *p)
-{
-    void (**method)(void);
-
-    if (p == 0) return;
-    method = *(void (***)(void))((char *)sk_zone0() + 0x90);
-    if (method != 0) {
-        ((void (*)(void))**method)();
-        return;
-    }
-    sk_zone_free_lookup((unsigned long)p, 0);  /* FUN_000122f0 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000125b0 @ 0x000125b0   (thunk sk_heap_free)
- * Ghidra: void thunk_FUN_00012568(long p)
- * Thunk to sk_heap_free (FUN_00012568).
- * Confidence: high (thunk). */
-void sk_heap_free_thunk(void *p)
-{
-    sk_heap_free(p);
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000125b4 @ 0x000125b4   (est. sk_heap_alloc)
- * Ghidra: ulong FUN_000125b4(long p, ulong size)
- * Heap allocation: for a nonzero existing pointer + size, walks the zone
- * table to find the owning zone and reallocates through its realloc method
- * (offset 0x38); for an empty request it allocates from zone 0
- * (FUN_00012060). Falls back to sk_free_other on an unmatchable pointer,
- * sets error 0xc on failure, and traps on a wrapped result.
- * Confidence: medium
- * Notes: zone table DAT_006adfe8/count DAT_006ac238; helpers FUN_00012060/
- *   000121b8/0000298c/thunk_FUN_0006037c; trap 0x126bc. */
-unsigned long sk_heap_alloc(void *p, unsigned long size)
-{
-    unsigned long r, zone;
-    unsigned int i;
-
-    if (p == 0 || size == 0) {
-        r = (unsigned long)sk_zone_alloc_n(sk_zone0(), size);  /* FUN_00012060 */
-        if (r != 0) {
-            if (size == 0) sk_heap_free(p);
-            if (r <= r + size && size <= (r + size) - r) return r;
-            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x126bc) */
-        }
-    } else {
-        for (i = 0; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
-            zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
-            if (((unsigned long (*)(void *, void *))
-                 **(void ***)(zone + 0x10))(zone, p) != 0) {
-                r = (unsigned long)sk_zone_alloc_realloc(zone, p, size);  /* FUN_000121b8 */
-                if (r != 0) {
-                    if (size == 0) sk_heap_free(p);
-                    if (r <= r + size && size <= (r + size) - r) return r;
-                    __builtin_trap();
-                }
-                break;
-            }
-        }
-        sk_free_other(0x40, (unsigned long)p);  /* FUN_0000298c */
-    }
-    *sk_error_slot() = 0xc;
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000126e8 @ 0x000126e8   (est. sk_zone_match)
- * Ghidra: long FUN_000126e8(long p)
- * Returns the zone (from the global table) that matches pointer `p`, or 0
- * if none do.
- * Confidence: medium
- * Notes: zone table DAT_006adfe8/count DAT_006ac238; trap 0x1279c. */
-long sk_zone_match(void *p)
-{
-    unsigned long zone, match;
-    unsigned int i;
-
-    if (p != 0 && sk_zone_count != 0) {
-        for (i = 0; i < sk_zone_count; i++) {
-            zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
-            match = ((unsigned long (*)(void *, void *))
-                     **(void ***)(zone + 0x10))(zone, p);
-            if (match != 0) return match;
-        }
-    }
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001279c @ 0x0001279c   (est. sk_zone0_method_dispatch)
- * Ghidra: void FUN_0001279c(undefined8 p)
- * Dispatches a method call through zone 0's method table (offset 0x60 -> +8)
- * on `p`. Direct indirect call.
- * Confidence: medium
- * Notes: zone 0 DAT_006adfe8; jumptable 0x127bc. */
-void sk_zone0_method_dispatch(void *p)
-{
-    void (**tbl)(void) = *(void (***)(void))((char *)sk_zone0() + 0x60);
-    ((void (*)(void *, void *))tbl[1])(sk_zone0(), p);
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000127c0 @ 0x000127c0   (est. sk_zone0_aligned_alloc_out)
- * Ghidra: undefined4 FUN_000127c0(long *out, ulong size)
- * Zone 0 aligned allocation storing the result through *out: returns 0 on
- * success, 0xc (alignment unsupported) or 0x16 (bad alignment/size) on
- * failure.
- * Confidence: medium
- * Notes: helper FUN_000122ac. */
-unsigned int sk_zone0_aligned_alloc_out(void **out, unsigned long size)
-{
-    unsigned long r = sk_zone_aligned_alloc_try(sk_zone0(), size);  /* FUN_000122ac */
-    if (r == 0) {
-        if ((size & (size - 1)) != 0 || size < 8) return 0x16;
-        return 0xc;
-    }
-    *out = (void *)r;
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_0001281c @ 0x0001281c   (est. sk_zone_create_desc)
- * Ghidra: void FUN_0001281c(undefined8 *desc, undefined1 kind, undefined1 flags,
- *                           uint a, uint b, uint granule, undefined8 name,
- *                           ulong base, uint align)
- * Initializes a malloc-zone descriptor object: records kind, flags, the
- * count/size/granule fields, computes the aligned interior layout from
- * base/align/granule, and links the per-granule slot array. Fills the
- * descriptor header fields (list, lock words, region lists, count, etc.).
- * Confidence: medium
- * Notes: zone descriptor layout; helper FUN_00011bf4 used by consumers. */
-void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int a,
-                         unsigned int b, unsigned int granule, void *name,
-                         unsigned long base, unsigned int align)
-{
-    unsigned long *slots = 0;
-    unsigned int nslots = 0;
-    unsigned long interior;
-    unsigned int pad, usable, per;
-
-    if (base != 0) {
-        per = (unsigned long)b;
-        usable = 0;
-        if (per != 0) usable = base / per;
-        unsigned long rem = base - usable * per;
-        pad = (rem != 0) ? per - rem : 0;
-        usable = align - pad;
-        if ((pad <= align) && (granule << 1 <= usable)) {
-            unsigned long *p = (unsigned long *)(pad + base);
-            unsigned int cnt = 0;
-            if (granule != 0) cnt = (unsigned int)usable / granule;
-            *p = 0;
-            p[1] = (unsigned long)p;
-            cnt = cnt * granule;
-            p[2] = 0;
-            p[3] = 0;
-            nslots = granule;
-            slots = p;
-        }
-    }
-    desc[0] = 0;
-    desc[1] = 0;
-    *(uint8_t *)(desc + 2) = kind;
-    *(uint8_t *)((long)desc + 0x11) = flags;
-    *(uint16_t *)((long)desc + 0x12) = 0;
-    unsigned int cnt = (granule != 0) ? a / granule : 0;
-    *(unsigned int *)((long)desc + 0x14) = a;
-    *(unsigned int *)(desc + 3) = cnt * granule;
-    *(unsigned int *)((long)desc + 0x1c) = b;
-    *(unsigned int *)(desc + 4) = granule;
-    *(unsigned long *)((long)desc + 0x2c) = 0;
-    *(unsigned long *)((long)desc + 0x24) = 0;
-    *(unsigned int *)((long)desc + 0x34) = 0;
-    desc[7] = (unsigned long)slots;
-    *(unsigned int *)(desc + 8) = nslots;
-    *(unsigned int *)((long)desc + 0x44) = 0;
-    desc[9] = (unsigned long)name;
-    desc[10] = (unsigned long)slots;
-    *(unsigned int *)(desc + 0xb) = (unsigned int)(usable % granule);
-    *(unsigned int *)((long)desc + 0x5c) = 0;
-    if (slots != 0) {
-        *slots = 0;
-        desc[5] = (unsigned long)slots;
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000128cc @ 0x000128cc   (est. sk_zone_alloc_slot)
- * Ghidra: ulong FUN_000128cc(long zone)
- * Zone slot allocator: takes the zone lock, pops a free slot from the
- * free-slot list (zone+0x30), or on empty grows the zone by allocating a new
- * run of pages (FUN_00011a08) sized to the zone granule, registering the run
- * in the zone's run list (zone+0x28) and size-class bitmap. Zero-fills large
- * new pages (FUN_00011bf4) when the zone tracks zeroing. Releases the lock
- * and returns the new slot address, or 0.
- * Confidence: medium
- * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
- *   s_Failed_to_release_lock__p__005a9a3f,
- *   s_BUG_IN_CLIENT_OF_LIBMALLOC___s_005aaab9; helpers FUN_0011582c/
- *   00115894/00011bf4/00012b0c/00011a08; stack canary FUN_0011d7e8. */
-unsigned long sk_zone_alloc_slot(void *zone)
-{
-    unsigned long *run;
-    unsigned long slot;
-    unsigned int granule;
-
-    if (sk_buddy_lock(zone) != 0) {  /* FUN_0011582c */
-        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
-    }
-    run = *(unsigned long **)((char *)zone + 0x30);
-    if (run != 0) {
-        unsigned long next = run[1];
-        *(unsigned long **)((char *)zone + 0x30) = (unsigned long *)*run;
-        if (*(long *)((char *)zone + 0x48) == 0) {
-            *run = 0;
-            run[1] = 0;
-        } else {
-            sk_zone_ref_run(zone, run);  /* FUN_00012b0c */
-        }
-        slot = (unsigned long)run;
-        goto done;
-    }
-    /* grow: allocate a new run */
-    unsigned long flags = 0x2000;
-    unsigned long r;
-    unsigned long local[2] = {0, 0};
-    if (*(long *)((char *)zone + 0x48) != 0) {
-        flags = (*(unsigned int *)((char *)zone + 0x20) >> 0xe == 0) ? 0x2000 : 0x2200;
-    }
-    granule = *(unsigned int *)((char *)zone + 0x14);
-    r = sk_alloc_at(0, granule, (void *)(LZCOUNT(0) & 0x1f), 1, flags, 1, &local);  /* FUN_00011a08 */
-    if (r == 0) {
-        sk_panic("BUG IN CLIENT OF LIBMALLOC: zone grow failed");  /* FUN_001150e0 */
-    }
-    if (*(long *)((char *)zone + 0x48) == 0) {
-        unsigned int sz = *(unsigned int *)((char *)zone + 0x20);
-        slot = r;
-    } else {
-        slot = sk_zone_alloc_slot(zone);  /* FUN_000128cc */
-        sz = 0;
-    }
-    *(unsigned int *)((char *)zone + 0x40) = sz;
-    unsigned long *newrun = (unsigned long *)r;
-    *newrun = 0;
-    newrun[1] = r;
-    newrun[3] = local[1];
-    newrun[2] = local[0];
-    *(unsigned long **)((char *)zone + 0x38) = newrun;
-    *newrun = *(unsigned long *)((char *)zone + 0x28);
-    *(unsigned long **)((char *)zone + 0x28) = newrun;
-    granule = *(unsigned int *)((char *)zone + 0x40);
-    slot = newrun[1] + granule;
-    *(unsigned int *)((char *)zone + 0x40) = *(unsigned int *)((char *)zone + 0x20) + granule;
-done:
-    if (sk_buddy_unlock(zone) != 0) {  /* FUN_00115894 */
-        sk_boot_fail(0x40, 0, "Failed to release lock %p");
-    }
-    return slot;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012b0c @ 0x00012b0c   (est. sk_zone_ref_run)
- * Ghidra: void FUN_00012b0c(long zone, undefined8 *run)
- * Re-queues a zone run: takes the zone lock, zero-fills the run's pages if
- * the zone tracks zeroing and the run is large, then links the run into the
- * zone's free-slot list (zone+0x30). Releases the lock.
- * Confidence: medium
- * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
- *   s_Failed_to_release_lock__p__005a9a3f; helpers FUN_0011582c/00115894/
- *   000128cc/00011bf4. */
-void sk_zone_ref_run(void *zone, void **run)
-{
-    void **p = run;
-
-    if (sk_buddy_lock(zone) != 0) {  /* FUN_0011582c */
-        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
-    }
-    if (*(long *)((char *)zone + 0x48) != 0) {
-        p = (void **)sk_zone_alloc_slot(zone);  /* FUN_000128cc */
-    }
-    *p = *(void **)((char *)zone + 0x30);
-    p[1] = run;
-    *(void ***)((char *)zone + 0x30) = p;
-    if (sk_buddy_unlock(zone) != 0) {  /* FUN_00115894 */
-        sk_boot_fail(0x40, 0, "Failed to release lock %p");
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012c04 @ 0x00012c04   (est. sk_tcb_slot_alloc_init)
- * Ghidra: void FUN_00012c04(long td, ulong count)
- * Allocates the capability-slot array for a TCB (td): validates that the 
- * TCB is in the expected state (no received/allocated slot counts), asserts
- * the request is < TB_MAX_CAPS (5) via "TB_ASSERT: num_caps < TB_MAX_CAPS",
- * and allocates each slot from FUN_00034f70, storing them at td+0x38. On a
- * NULL allocation it panics via FUN_004b0034. Traps on array overflow.
- * Confidence: medium (string-matched "TB_ASSERT: num_caps < TB_MAX_CAPS").
- * Notes: strings s_TB_ASSERT__num_caps_<__TB_MAX_CA_005aabbd,
- *   s_TB_ASSERT__td_>received_slot_cou_005aab87,
- *   s_TB_ASSERT__td_>allocated_slot_co_005aab3a; helpers FUN_00034f70/
- *   FUN_004b0034. */
-void sk_tcb_slot_alloc_init(void *td, unsigned long count)
-{
-    long *slots = (long *)((char *)td + 0x38);
-    unsigned long i;
-    long s;
-
-    if ((unsigned long)((char *)td + 0x68) < (unsigned long)slots) {
-        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12c88) */
-    }
-    if (*(long *)((char *)td + 0x58) == 0) {
-        if (*(long *)((char *)td + 0x60) == 0) {
-            if (count < 5) {
-                for (i = 0; i < count; i++) {
-                    s = sk_tcb_slot_alloc();  /* FUN_00034f70 */
-                    *slots = s;
-                    if (s == 0) {
-                        sk_panic_tcb();  /* FUN_004b0034 */
-                        __builtin_trap();
-                    }
-                    slots += 1;
-                }
-                *(unsigned long *)((char *)td + 0x58) = count;
-                *(unsigned long *)((char *)td + 0x60) = 0;
-                return;
-            }
-            sk_puts("TB_ASSERT: num_caps < TB_MAX_CAPS");  /* 0x5aabbd */
-        } else {
-            sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aab87 */
-        }
-    } else {
-        sk_puts("TB_ASSERT: td->allocated_slot_count");  /* 0x5aab3a */
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12cec) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012d3c @ 0x00012d3c   (est. sk_tcb_slot_recv_assert)
- * Ghidra: void FUN_00012d3c(void)
- * Assertion failure for a TCB with a nonzero received-slot count: prints
- * "TB_ASSERT: td->received_slot_count" and traps.
- * Confidence: medium (string-matched).
- * Notes: string s_TB_ASSERT__td_>received_slot_cou_005aab87. */
-void sk_tcb_slot_recv_assert(void)
-{
-    sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aab87 */
-    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12d70) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012d70 @ 0x00012d70   (est. sk_tcb_slot_alloc_teardown)
- * Ghidra: void FUN_00012d70(long td)
- * Tears down a TCB's capability-slot array: validates the received/allocated
- * slot counts are consistent, releases each allocated slot that is not also
- * received (FUN_004b23d8), zeroes the slot array, and resets the counters.
- * Confidence: medium (string-matched "TB_ASSERT").
- * Notes: strings s_TB_ASSERT__td_>received_slot_cou_005aac1e,
- *   s_TB_ASSERT__td_>allocated_slot_co_005aac70; helper FUN_004b23d8;
- *   trap 0x12e04. */
-void sk_tcb_slot_alloc_teardown(void *td)
-{
-    unsigned long i, nalloc, nrecv;
-
-    if ((unsigned long)((char *)td + 0x68) < (unsigned long)((char *)td + 0x38)) {
-        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12e04) */
-    }
-    nalloc = *(unsigned long *)((char *)td + 0x58);
-    nrecv = *(unsigned long *)((char *)td + 0x60);
-    if (nalloc < nrecv) {
-        sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aac1e */
-    } else if (nalloc < 5) {
-        for (i = 0; i < nalloc; i++) {
-            if (nrecv <= i) {
-                sk_tcb_slot_release(*(void **)((char *)td + 0x38 + i * 8));  /* FUN_004b23d8 */
-            }
-            *(unsigned long *)((char *)td + 0x38 + i * 8) = 0;
-        }
-        *(unsigned long *)((char *)td + 0x58) = 0;
-        *(unsigned long *)((char *)td + 0x60) = 0;
-        return;
-    } else {
-        sk_puts("TB_ASSERT: td->allocated_slot_count");  /* 0x5aac70 */
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12e48) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012e48 @ 0x00012e48   (est. sk_tcb_create_zeroed)
- * Ghidra: void FUN_00012e48(void)
- * Allocates and zero-fills a 0x118-byte TCB object (tag 0x1082040eda8e2da),
- * initializing its function-dispatch pointer at offset 0xc, and panics via
- * FUN_004b0068 on allocation failure.
- * Confidence: medium
- * Notes: tag 0x1082040eda8e2da; helper FUN_00010244/FUN_004b0068. */
-void *sk_tcb_create_zeroed(void)
-{
-    unsigned long *tcb = (unsigned long *)sk_heap_calloc(1, 0x118, (void *)0x1082040eda8e2da);  /* FUN_00010244 */
-    if (tcb != 0) {
-        for (int i = 0; i < 0x23; i++) tcb[i] = 0;
-        tcb[0xc] = 0x658fa8;
-        return tcb;
-    }
-    sk_panic_tcb();  /* FUN_004b0068 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00012eb8 @ 0x00012eb8   (est. sk_tcb_cap_copy)
- * Ghidra: int FUN_00012eb8(undefined8 src, long dst, long *out, uint flags)
- * Copies a capability between two TCBs: reads the source capability buffer
- * (FUN_000159b8), allocates a destination buffer, copies the capability
- * words, validates the copy (FUN_00013134), migrates the buffer ownership,
- * and stores the result through *out. On failure frees the intermediates and
- * returns (flags&2)<<1. Panics on assertion failure ("TB_ASSERT: err ==
- * TB_ERROR_SUCCESS").
- * Confidence: medium (string-matched "TB_ASSERT: err == TB_ERROR_SUCCESS").
- * Notes: string s_TB_ASSERT__err____TB_ERROR_SUCCE_005aacb1; helpers
- *   FUN_000159b8/00010244/00117cc4/00015984/00015468/00013134/004b0080/
- *   004b0068; alloc tags 0x100004077774924/0x1090040b6685729/0x102004071d150f8. */
-int sk_tcb_cap_copy(void *src_tcb, void *dst_tcb, void **out, unsigned int flags)
-{
-    unsigned long *sbuf = (unsigned long *)sk_cap_buf(src_tcb);  /* FUN_000159b8 */
-    unsigned long nsrc = sbuf[3];
-    unsigned long base = *sbuf;
-    unsigned long *dbuf = (unsigned long *)sk_heap_calloc(nsrc, 1, (void *)0x100004077774924);  /* FUN_00010244 */
-    if (dbuf != 0) {
-        sk_memcpy(dbuf, base, nsrc);  /* FUN_00117cc4 */
-        unsigned long *meta = (unsigned long *)sk_heap_calloc(1, 0x68, (void *)0x1090040b6685729);
-        if (meta != 0) {
-            *meta = (unsigned long)dbuf;
-            meta[2] = 0;
-            meta[3] = nsrc;
-            meta[4] = 0;
-            meta[6] = 0;
-            *(uint16_t *)((char *)meta + 0x2a) = *(uint16_t *)((char *)sbuf + 0x2a);
-            unsigned int *op = (unsigned int *)sk_heap_calloc(1, 0x58, (void *)0x102004071d150f8);
-            if (op == 0) sk_panic_tcb();  /* FUN_004b0068 */
-            *op = 4;
-            *(uint8_t *)(op + 1) = 1;
-            *(unsigned long **)(op + 0x14) = meta;
-            *(unsigned long *)(op + 6) = (unsigned long)src_tcb;
-            sk_obj_retain(op, 1);  /* FUN_00015984 */
-            unsigned int *ref = op;
-            sk_cap_install(src_tcb, op, &ref);  /* FUN_00015468 */
-            if (ref == 0) {
-                sk_heap_free((void *)*meta);
-                sk_heap_free(meta);
-                sk_heap_free(op);
-                return (flags & 2) << 1;
-            }
-            unsigned long *dbuf2 = (unsigned long *)sk_cap_buf(ref);  /* FUN_000159b8 */
-            unsigned long n2 = dbuf2[3];
-            sk_heap_free((void *)*sbuf);
-            *sbuf = 0;
-            sbuf[2] = 0;
-            sbuf[3] = 0;
-            if (sk_tcb_cap_copy_commit(n2, n2, n2, &n2) != 0) {  /* FUN_00013134 */
-                sk_puts("TB_ASSERT: err == TB_ERROR_SUCCESS");  /* 0x5aacb1 */
-                __builtin_trap();
-            }
-            if (dbuf2[3] <= sbuf[3]) {
-                base = *sbuf;
-                sk_memcpy(base, *dbuf2, dbuf2[3]);  /* FUN_00117cc4 */
-                *(uint16_t *)((char *)sbuf + 0x2a) = *(uint16_t *)((char *)dbuf2 + 0x2a);
-                *(unsigned long *)((char *)dst_tcb + 0x18) = *(unsigned long *)(ref + 6);
-                sk_obj_retain(dst_tcb, 2);  /* FUN_00015984 */
-                if (meta != dbuf2) {
-                    sk_heap_free((void *)*dbuf2);
-                    sk_heap_free(dbuf2);
-                }
-                sk_heap_free((void *)*meta);
-                sk_heap_free(meta);
-                sk_heap_free(op);
-                if (out == 0) return 0;
-                *out = dst_tcb;
-                return 0;
-            }
-        }
-    }
-    sk_panic_tcb();  /* FUN_004b0080 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013134 @ 0x00013134   (est. sk_tcb_cap_copy_commit)
- * Ghidra: undefined8 FUN_00013134(undefined8 a, ulong size, undefined8 c, ulong *out)
- * Capability-copy commit helper: allocates a buffer of `size` words (tag
- * 0x100004077774924), stores it (zeroing the header fields) through *out,
- * and returns 0 on success. On allocation failure it releases the previous
- * buffer via sk_heap_free and marks the state as failed (offset 0x29 = 1).
- * Confidence: medium
- * Notes: tag 0x100004077774924; helpers FUN_00010244/004b0080/
- *   thunk_FUN_00012568; trap 0x131a4. */
-unsigned long sk_tcb_cap_copy_commit(void *a, unsigned long size, void *c, unsigned long *out)
-{
-    unsigned long r = (unsigned long)sk_heap_calloc(size, 1, (void *)0x100004077774924);  /* FUN_00010244 */
-    if (r != 0) {
-        *out = r;
-        *(uint8_t *)(out + 1) = 0;
-        out[2] = 0;
-        out[3] = size;
-        out[4] = 0;
-        out[6] = 0;
-        *(uint8_t *)((char *)out + 0x29) = 0;
-        return 0;
-    }
-    sk_panic_tcb();  /* FUN_004b0080 */
-    sk_heap_free((void *)*out);
-    *out = 0;
-    out[6] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[2] = 0;
-    *(uint8_t *)((char *)out + 0x29) = 1;
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000131e8 @ 0x000131e8   (est. sk_tcb_cap_release_commit)
- * Ghidra: void FUN_000131e8(undefined8 a, undefined8 *slot, undefined8 c, undefined8 size)
- * Releases a capability buffer slot (sk_heap_free of *slot), clears the
- * buffer header, then re-commits a fresh buffer via sk_tcb_cap_copy_commit.
- * Confidence: medium
- * Notes: helpers thunk_FUN_00012568/00013134. */
-void sk_tcb_cap_release_commit(void *a, void **slot, void *c, void *size)
-{
-    unsigned long old = (unsigned long)sk_heap_free(*slot);
-    *slot = 0;
-    slot[2] = 0;
-    slot[3] = 0;
-    sk_tcb_cap_copy_commit((void *)old, (unsigned long)size, c, slot);  /* FUN_00013134 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013228 @ 0x00013228   (est. sk_assert_internal_cc)
- * Ghidra: void FUN_00013228(void)
- * Assertion failure at internal.h:0xcc: prints the generic failure string
- * (DAT_005aacf2) and returns.
- * Confidence: medium (string "internal.h").
- * Notes: string s_internal_h_005aad1c / DAT_005aacf2. */
-void sk_assert_internal_cc(void)
-{
-    sk_puts((const char *)0x5aacf2);  /* FUN_00118b28 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013244 @ 0x00013244   (est. sk_assert_internal_c7)
- * Ghidra: void FUN_00013244(void)
- * Assertion failure at internal.h:0xc7: prints the generic failure string
- * (DAT_005aacf2) and returns.
- * Confidence: medium (string "internal.h").
- * Notes: string s_internal_h_005aad1c / DAT_005aacf2. */
-void sk_assert_internal_c7(void)
-{
-    sk_puts((const char *)0x5aacf2);  /* FUN_00118b28 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013260 @ 0x00013260   (est. sk_tcb_field_apply)
- * Ghidra: void FUN_00013260(undefined8 a, undefined8 b, undefined8 c)
- * Applies a function to a per-thread field: computes a per-thread value
- * (FUN_000603bc), resolves a method table (FUN_000636d0/636d8) and dispatches
- * the indirect call with the two arguments. Traps on value-wrap.
- * Confidence: medium
- * Notes: helpers FUN_00060524/000603bc/000636d0/000636d8; trap 0x132d4. */
-void sk_tcb_field_apply(void *a, void *b, void *c)
-{
-    unsigned long v = FUN_000603bc();
-    void (**method)(void);
-
-    if (v <= v + 0x50) {
-        method = (void (**)(void))FUN_000636d0();
-        unsigned long arg = FUN_000636d8(v);
-        ((void (*)(unsigned long, void *, void *))*method)(arg, b, c);
-        return;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x132d4) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000132d4 @ 0x000132d4   (est. sk_div8)
- * Ghidra: ulong FUN_000132d4(long param_1)
- * Returns (param_1 + 7) >> 3 — a ceil-divide-by-8 helper.
- * Confidence: high (trivial). */
-unsigned long sk_div8(long v)
-{
-    return (unsigned long)(v + 7) >> 3;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000132e0 @ 0x000132e0   (est. sk_lookup_cap_buffer)
- * Ghidra: undefined8 FUN_000132e0(undefined8 key, undefined8 hint)
- * Looks up a capability buffer by key: first checks the global TCB-storage
- * key (0x6adff8, size 0x1b8); if that matches the expected tag (0x37) it
- * re-runs the lookup with the caller's key/hint, otherwise returns 0.
- * Confidence: medium
- * Notes: helpers FUN_0005ea94. */
-unsigned long sk_lookup_cap_buffer(void *key, void *hint)
-{
-    long tag = FUN_0005ea94((void *)0x6adff8, 0x1b8, 0, 0);
-    if (tag == 0x37) {
-        return FUN_0005ea94(key, hint, 0, 0);
-    }
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013348 @ 0x00013348   (est. sk_tcb_init_regions)
- * Ghidra: void FUN_00013348(undefined8 cfg, long tcb)
- * Initializes the region/tracking fields of a freshly allocated TCB: clears
- * the per-region list heads (tcb+0x88..0xf0), sets the object-type dispatch
- * pointer (tcb+0x60 = 0x659008), stores the object handle (FUN_00015440) at
- * tcb+0x88, and derives config flags (FUN_00015450) into tcb+0xe8/ec/ed.
- * Confidence: medium
- * Notes: dispatch pointer 0x659008; helpers FUN_00015440/00015450;
- *   trap 0x133f8. */
-void sk_tcb_init_regions(void *cfg, void *tcb)
-{
-    unsigned int fl;
-    unsigned int v;
-
-    if ((unsigned long)((char *)tcb + 0x118) < (unsigned long)((char *)tcb + 0x88) ||
-        (unsigned long)((char *)tcb + 0xf8) < (unsigned long)((char *)tcb + 0x88)) {
-        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x133f8) */
-    }
-    *(unsigned long *)((char *)tcb + 0xe0) = 0;
-    *(unsigned long *)((char *)tcb + 0xd8) = 0;
-    *(unsigned long *)((char *)tcb + 0xf0) = 0;
-    *(unsigned long *)((char *)tcb + 0xe8) = 0;
-    *(unsigned long *)((char *)tcb + 0xc0) = 0;
-    *(unsigned long *)((char *)tcb + 0xb8) = 0;
-    *(unsigned long *)((char *)tcb + 0xd0) = 0;
-    *(unsigned long *)((char *)tcb + 200) = 0;
-    *(unsigned long *)((char *)tcb + 0xa0) = 0;
-    *(unsigned long *)((char *)tcb + 0x98) = 0;
-    *(unsigned long *)((char *)tcb + 0xb0) = 0;
-    *(unsigned long *)((char *)tcb + 0xa8) = 0;
-    *(unsigned long *)((char *)tcb + 0x90) = 0;
-    *(unsigned long *)((char *)tcb + 0x88) = 0;
-    *(unsigned long *)((char *)tcb + 0x60) = 0x659008;
-    *(unsigned long *)((char *)tcb + 0x88) = sk_tcb_handle();  /* FUN_00015440 */
-    fl = (unsigned int)sk_tcb_cfg_flags(cfg);  /* FUN_00015450 */
-    if ((fl >> 1 & 1) == 0) {
-        if ((fl & 1) != 0) {
-            *(unsigned int *)((char *)tcb + 0xe8) = 4;
-        }
-    } else {
-        *(unsigned int *)((char *)tcb + 0xe8) = fl >> 8 & 0xff;
-    }
-    if ((fl >> 2 & 1) != 0) *(uint8_t *)((char *)tcb + 0xec) = 1;
-    if ((fl >> 3 & 1) != 0) *(uint8_t *)((char *)tcb + 0xed) = 1;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013878 @ 0x00013878   (est. sk_tcb_register_async)
- * Ghidra: undefined8 FUN_00013878(long tcb)
- * Registers an async / deferred callback on a TCB: sets up a worker context
- * (FUN_00013ee4) bound to the TCB's object (tcb+0x88) and installs it via
- * FUN_00062c2c, optionally arming a debug trap (FUN_0006290c) when
- * tcb+0xec is set. Returns 0.
- * Confidence: medium
- * Notes: helpers FUN_0006290c/00013260/00062c2c/00013ee4; trap 0x13930. */
-unsigned long sk_tcb_register_async(void *tcb)
-{
-    unsigned int n;
-    void (*worker)(void *);
-
-    if ((unsigned long)((char *)tcb + 0x88) <= (unsigned long)((char *)tcb + 0x118) &&
-        (unsigned long)((char *)tcb + 0x88) <= (unsigned long)((char *)tcb + 0xf8)) {
-        n = *(unsigned int *)((char *)tcb + 0xe8);
-        if (*(char *)((char *)tcb + 0xec) == '\x01') {
-            sk_tcb_field_apply(0, FUN_00013260, 0);  /* FUN_0006290c */
-        }
-        if (n < 2) n = 1;
-        sk_async_ctx ctx;
-        ctx.count = n;
-        ctx.func = FUN_00013ee4;
-        ctx.flags = 4;
-        ctx.magic = 4;
-        ctx.tcb = tcb;
-        sk_async_install((void *)((char *)tcb + 0x98), *(void **)((char *)tcb + 0x88), &ctx);  /* FUN_00062c2c */
-        return 0;
-    }
-    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13930) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_000139ac @ 0x000139ac   (est. sk_capbuf_release)
- * Ghidra: void FUN_000139ac(undefined8 *capbuf)
- * Releases a capability buffer: if not already released (offset 0x29 bit 0),
- * tears down its capability slots (sk_tcb_slot_alloc_teardown), releases the
- * underlying object (FUN_00013af0), clears the buffer header, and marks it
- * released.
- * Confidence: medium
- * Notes: helpers FUN_00012d70/00013af0. */
-void sk_capbuf_release(void *capbuf)
-{
-    unsigned long *cb = (unsigned long *)capbuf;
-    if ((*(uint8_t *)((char *)cb + 0x29) & 1) == 0) {
-        if (cb[6] == 0) {
-            sk_tcb_slot_alloc_teardown(cb);  /* FUN_00012d70 */
-            sk_capbuf_obj_release(*cb);      /* FUN_00013af0 */
-        }
-        *cb = 0;
-        cb[6] = 0;
-        cb[3] = 0;
-        cb[4] = 0;
-        cb[2] = 0;
-        *(uint8_t *)((char *)cb + 0x29) = 1;
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013a08 @ 0x00013a08   (est. sk_capbuf_reserve)
- * Ghidra: undefined8 FUN_00013a08(undefined8 *capbuf, undefined8 a, ulong size)
- * Reserves `size` capability slots in a buffer: if the buffer has no backing
- * object (offset 6 == 0) it asserts size <= 0x1b8 (else error 5), tears down
- * the previous slots, acquires a fresh per-thread storage (FUN_0005d470) and
- * allocates a new object (FUN_00013cfc); otherwise it reuses the existing
- * object (offset 0). Returns 0 on success, 5 on an over-large request.
- * Confidence: medium
- * Notes: helpers FUN_00012d70/00013af0/0005d470/00013cfc/00013c88. */
-unsigned long sk_capbuf_reserve(void *capbuf, void *a, unsigned long size)
-{
-    unsigned long *cb = (unsigned long *)capbuf;
-    unsigned long *obj = (unsigned long *)cb[6];
-
-    if (obj == 0) {
-        if (0x1b8 < size) return 5;
-        sk_tcb_slot_alloc_teardown(cb);  /* FUN_00012d70 */
-        sk_capbuf_obj_release(*cb);      /* FUN_00013af0 */
-        FUN_0005d470((void *)0x6ae1b8, (void *)0x13c88, 0);
-        *cb = sk_perthread_key_get();    /* FUN_00013cfc */
-    } else {
-        if ((unsigned long)obj[1] < size) return 5;
-        *cb = *obj;
-    }
-    cb[2] = 0;
-    cb[3] = size;
-    *(uint16_t *)((char *)cb + 0x2a) = 0;
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013af0 @ 0x00013af0   (est. sk_capbuf_obj_release)
- * Ghidra: void FUN_00013af0(ulong obj)
- * Releases a capability-buffer backing object: clears its bit in the
- * per-thread key bitmap (object + 0x528), or if the object is out of range
- * walks and frees its capability slots (FUN_004b23d8 / FUN_0005ed18).
- * Confidence: medium
- * Notes: helpers FUN_00013be4/004b01b8/004b0188/004b0158/004b0128/
- *   004b23d8/0005ed18. */
-void sk_capbuf_obj_release(unsigned long obj)
-{
-    unsigned long base = FUN_00013be4();
-    if (base == 0) {
-        FUN_004b01b8();
-        FUN_004b0188();
-        return;
-    }
-    if (obj < base) {
-        FUN_004b0188();
-    } else if (obj <= base + 0x370) {
-        unsigned int bit = 1u << ((obj - base) / 0x1b8 & 0x1f);
-        if ((*(unsigned long *)(base + 0x528) & bit) != 0) {
-            *(unsigned long *)(base + 0x528) &= ~(unsigned long)bit;
-            return;
-        }
-        FUN_004b0158();
-    } else {
-        FUN_004b0158();
-    }
-    unsigned long n = FUN_004b0128();
-    if (n != 0) {
-        for (unsigned long i = 0; i < n; i++) {
-            FUN_004b23d8(*(void **)n + i * 8);
-            FUN_0005ed18(i, 0);
-        }
-    }
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013be4 @ 0x00013be4   (est. sk_perthread_base_get)
- * Ghidra: long FUN_00013be4(void)
- * Returns the current per-thread storage base from the tpidr_el0 slot
- * indexed by the current key (DAT_006ae1b0), panicking via FUN_0005b190 on
- * "getting key %lu while destructor" / "getting key %lu which is deleted".
- * Confidence: medium
- * Notes: strings s_getting_key__lu_while_destructor_005ab2c6,
- *   s_getting_key__lu_which_is_deleted_005ab2a5; helpers FUN_00063a50/
- *   004b01e8/0005b190. */
-long sk_perthread_base_get(void)
-{
-    unsigned long key = sk_perthread_key_count;  /* _DAT_006ae1b0 */
-    long perkey;
-    long *tpidr;
-
-    if (sk_perthread_key_count >= 0x20) {
-        FUN_004b01e8();
-        sk_panic_key("getting key %lu which is deleted");  /* 0x5ab2a5 */
-    }
-    perkey = FUN_00063a50();
-    tpidr = (long *)0;  /* tpidr_el0 */
-    if (*(long *)(perkey + (key - 1) * 8 + 0x1f8) != -1) {
-        if (tpidr[0x1f] == 0) {
-            return tpidr[key - 1];
-        }
-        sk_panic_key("getting key %lu while destructor");  /* 0x5ab2c6 */
-    }
-    sk_panic_key("getting key %lu which is deleted");  /* 0x5ab2a5 */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013cfc @ 0x00013cfc   (est. sk_perthread_key_get)
- * Ghidra: long FUN_00013cfc(void)
- * Per-thread storage allocation: returns the current thread's storage base
- * for the active key, allocating a fresh per-thread block (via FUN_00013ea8)
- * if needed, and reserving a bit in the key bitmap (block+0x528). Fatal
- * "TB_FATAL: no available per-thread storage" if all bits are taken.
- * Confidence: medium
- * Notes: strings s_key_<__XRT__THREAD_TSS_MAX_KEYS_005ab392,
- *   s__AppleInternal_Library_BuildRoot_005ab177,
- *   s_xrt_thread_tss_set_005ab3b2, s_setting_key__lu_while_destructor_005ab3c5,
- *   s_setting_key__lu_which_is_deleted_005ab3ef,
- *   s_TB_FATAL__no_available_per_threa_005ab34c; helpers FUN_00013be4/
- *   00060524/00114330/00063a50/00013ea8/00115424/0005b190; globals DAT_006ae1b0/
- *   006ae1c0/006ae1c8/006ae1d0/006ae700. */
-long sk_perthread_key_get(void)
-{
-    long base = FUN_00013be4();
-    unsigned long key;
-    unsigned long *tpidr;
-    long perkey;
-    unsigned long bits, idx;
-
-    if (base == 0) {
-        unsigned long marker = FUN_00060524();
-        if (sk_thread_list_head == marker) {   /* _DAT_006ae1c0 */
-            base = 0x6ae1d0;
-        } else if (sk_thread_list_head == 0) {
-            thunk_FUN_00114330(&sk_thread_list, 0xa68);  /* DAT_006ae1c8 */
-            sk_thread_list_head = marker;   /* _DAT_006ae1c0 */
-            base = 0x6ae1d0;
-        } else {
-            base = sk_thread_list;  /* _DAT_006ae1c8 */
-            if ((sk_thread_list == marker) || (base = marker, sk_thread_list == 0)) {
-                sk_thread_list = base;  /* _DAT_006ae1c8 */
-                base = 0x6ae700;
-            } else {
-                base = FUN_00013ea8();
-            }
-        }
-    }
-    key = sk_perthread_key_count;  /* _DAT_006ae1b0 */
-    if (0x1f < key) {
-        FUN_00115424("key < XRT_THREAD_TSS_MAX_KEYS",
-                     "/AppleInternal/Library/BuildRoot/", "xrt_thread_tss_set", 0x1f0);
-        __builtin_trap();
-    }
-    perkey = FUN_00063a50();
-    tpidr = (unsigned long *)0;  /* tpidr_el0 */
-    if (tpidr[0x1f] != 0) {
-        FUN_0005b190(0, "setting key %lu while destructor");  /* 0x5ab3c5 */
-    }
-    if (tpidr[key - 1] != (unsigned long)base) {
-        if (tpidr[key - 1] == 0) {
-            long *pk = (long *)(perkey + (key - 1) * 8 + 0x1f8);
-            long v = *pk;
-            *pk = v + 1;
-            if (v == -1) {
-                FUN_0005b190(0, "setting key %lu which is deleted");  /* 0x5ab3ef */
-            }
-        }
-        tpidr[key - 1] = (unsigned long)base;
-    }
-    bits = *(unsigned long *)(base + 0x528);
-    idx = (~bits & 0xaaaaaaaaaaaaaaaaull) >> 1 | (~bits & 0x5555555555555555ull) << 1;
-    idx = (idx & 0xccccccccccccccccull) >> 2 | (idx & 0x3333333333333333ull) << 2;
-    idx = (idx & 0xf0f0f0f0f0f0f0f0ull) >> 4 | (idx & 0xf0f0f0f0f0f0f0full) << 4;
-    idx = (idx & 0xff00ff00ff00ff00ull) >> 8 | (idx & 0xff00ff00ff00ffull) << 8;
-    idx = (idx & 0xffff0000ffff0000ull) >> 0x10 | (idx & 0xffff0000ffffull) << 0x10;
-    idx = LZCOUNT(idx >> 0x20 | idx << 0x20);
-    if (bits != 0xffffffffffffffffull && idx < 3) {
-        *(unsigned long *)(base + 0x528) = bits | (1u << (idx & 0x1f));
-        return base + idx * 0x1b8;
-    }
-    sk_puts("TB_FATAL: no available per-thread storage");  /* 0x5ab34c */
-    __builtin_trap();  /* SoftwareBreakpoint(1, 0x13ea8) */
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013ea8 @ 0x00013ea8   (est. sk_perthread_block_alloc)
- * Ghidra: void FUN_00013ea8(void)
- * Allocates a fresh 0x530-byte per-thread storage block (tag
- * 0x10000403b489d26), panicking via FUN_004b0244 on failure.
- * Confidence: medium
- * Notes: tag 0x10000403b489d26; helpers FUN_00010244/004b0244/
- *   thunk_FUN_00012568. */
-void *sk_perthread_block_alloc(void)
-{
-    void *b = sk_heap_calloc(1, 0x530, (void *)0x10000403b489d26);  /* FUN_00010244 */
-    if (b != 0) return b;
-    FUN_004b0244();
-    sk_heap_free(0);
-    return 0;
-}
-
-/*--------------------------------------------------------------------*/
-/* FUN_00013ee4 @ 0x00013ee4   (est. sk_cap_transfer)
- * Ghidra: ulong FUN_00013ee4(undefined8 tcb, undefined8 msg, undefined8 cap)
- * The cL4 capability-transfer (IPC cap passing) worker: copies the sender's
- * capability words into a destination message, validates sizes and counts,
- * marshals the message registers and capabilities (CallSupervisor(1) for
- * each), transfers the received-capability slots into the TCB, and returns
- * the transfer status. Uses the cL4 transport ("cL4 transport.c") with many
- * "TB_ASSERT" panics on malformed messages.
- * Confidence: low (large, decompiler partial; structural summary with the
- *   cL4 cap-passing flow preserved).
- * Notes: strings s_cL4_transport_c_005aae37,
- *   s_TB_ASSERT__payload_size_<__max_s_005ab475,
- *   s_TB_ASSERT__rcv_err____TB_ERROR_S_005ab441,
- *   s_TB_ASSERT__msg_err____TB_ERROR_S_005ab4f2,
- *   s_TB_ASSERT__L4_ErrorCode_err_____L_005ab5fd,
- *   s_TB_ASSERT__num_rcv_caps_<__TB_MA_005ab59c,
- *   s_TB_ASSERT__error____TB_ERROR_SUC_005ab644; helpers FUN_0005ee50/
- *   0005eb78/0001586c/0005ee48/0001585c/00015b84/000142d4/00060524/
- *   00061638/00015bac/00015468/000159b8/00014c90/0001574c/000139ac/
- *   00015bb4/00015bbc/000132d4/000132e0/00015964/00034f70/00015be8;
- *   globals DAT_00657f98. */
-unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
-{
-    unsigned long sz = FUN_0005ee50(msg);
-    if (sz >> 0x3d != 0) {
-        FUN_004b0304();
-        sk_puts("TB_ASSERT: payload_size < max");  /* 0x5ab475 */
-        __builtin_trap();
-    }
-    unsigned long words = sz << 3;
-    if (words < 0x1b9) {
-        /* validate and collect the message */
-        unsigned long buf[0x38];
-        if (sz == FUN_0005eb78(buf, words, 0)) {
-            sk_msg m;
-            m.len = 0x1b8;
-            m.buf = buf;
-            m.count = words;
-            if (FUN_0001586c(&m, &buf, 1) == 0) {
-                FUN_0001585c(&m, 4);
-                FUN_00015b84(&m, cap);
-                FUN_000142d4(msg, &m);
-                FUN_00060524();
-                FUN_00015bac(&m, thunk_FUN_00061638());
-                void *result = 0;
-                if (FUN_00015468(tcb, &m, &result) != 0) {
-                    sk_puts("TB_ASSERT: rcv_err == TB_ERROR_SUCCESS");  /* 0x5ab441 */
-                    __builtin_trap();
-                }
-                unsigned long *rbuf = (unsigned long *)FUN_000159b8(&m);
-                if (rbuf != (unsigned long *)buf) {
-                    if (result == 0) {
-                        if (*(char *)(rbuf + 5) == '\x01') FUN_00014c90(rbuf);
-                    } else if (result == (void *)&m) {
-                        FUN_0001574c(&buf, rbuf);
-                        if (result == 0) {
-                            if (*(char *)(rbuf + 5) == '\x01') FUN_00014c90(rbuf);
-                        }
-                    }
-                    sk_capbuf_release(rbuf);  /* FUN_000139ac */
-                    sk_heap_free(rbuf);
-                }
-                if (result == 0) {
-                    /* no returned caps */
-                } else {
-                    FUN_0001585c(result, 3);
-                    long ncaps = FUN_00015bb4(&m);  /* number of returned caps */
-                    for (long i = 0; i < ncaps; i++) {
-                        unsigned long c = FUN_00015bbc(&m, i);
-                        FUN_00060524();
-                        CallSupervisor(1);
-                        if ((c & 0xff) != 0) {
-                            sk_puts("TB_ASSERT: L4_ErrorCode err == L4_NoError");  /* 0x5ab5fd */
-                            __builtin_trap();
-                        }
-                        FUN_004b23d8(c);
-                    }
-                    /* install the received-cap slots into the TCB */
-                    FUN_000142d4(tcb, &m);
-                    if (FUN_0005ee58(0, 0, 0, 0) != 0) {
-                        sk_puts("TB_ASSERT: error == TB_ERROR_SUCCESS");  /* 0x5ab644 */
-                        __builtin_trap();
-                    }
-                    sk_capbuf_release(&buf);  /* FUN_000139ac */
-                    FUN_00015964(&m);
-                }
-            } else {
-                FUN_004b0274();
-                sk_puts("TB_ASSERT: msg_err == TB_ERROR_SUCCESS");  /* 0x5ab4f2 */
-                __builtin_trap();
-            }
-        }
-    } else {
-        sk_puts("TB_ASSERT: payload_size < max");  /* 0x5ab475 */
-        __builtin_trap();
-    }
-    return 0;
-}
-
+unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap);  /* FUN_00013ee4 */
 /*--------------------------------------------------------------------*/
 /* FUN_000142d4 @ 0x000142d4   (est. sk_cap_slots_install)
  * Ghidra: void FUN_000142d4(undefined8 tcb, undefined8 m)
@@ -2865,7 +195,322 @@ unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
  *   s_TB_ASSERT__num_rcv_caps_<__TB_MA_005ab59c,
  *   s_TB_ASSERT__error____TB_ERROR_SUC_005ab644,
  *   s_TB_ASSERT__L4_ErrorCode_err_____L_005ab5fd; helpers FUN_0005ee40/
- *   00034f70/0005edac/00015be8/004b0334; global DAT_00657f98; stack canary. */
+ *   00034f70/0005edac/00015be8/004b0334; global DAT_00657f98; stack canary. *//* In-region forward declarations (re-appended tail). */
+unsigned long sk_alloc_at(unsigned long base, unsigned long size, void *align, unsigned int mode, unsigned long flags, void *a, void *b);
+long sk_alloc_pages_pair(long *out, long *src);
+void sk_arena_free(void *p, void *size, unsigned long flags, void *a);
+void sk_assert_internal2(void *v);
+void sk_assert_internal_c7(void);
+void sk_assert_internal_cc(void);
+void sk_boot_fail(unsigned int level, unsigned char flag, const char *fmt, ...);
+void sk_buddy_clear_list(unsigned long arena, unsigned int clear, unsigned long idx, long units);
+void sk_buddy_clear_range(unsigned long arena, unsigned long idx, unsigned long units);
+long sk_buddy_find_free(unsigned long key);
+void sk_buddy_free(unsigned long ptr);
+void sk_buddy_free_split(unsigned long arena, long idx, unsigned long units);
+void sk_buddy_init(void);
+bool sk_buddy_is_in_arena(unsigned long ptr);
+void sk_buf_relocate(void *buf);
+long sk_bytebuf_grow(unsigned long keep, unsigned long count, unsigned long opts, void *buf);
+unsigned long sk_cap_buf(void *obj);
+void sk_cap_slots_install(void *tcb, void *m);
+unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap);
+unsigned long sk_capbuf_alloc_meta(unsigned long size, void *b, unsigned long *cb);
+unsigned long sk_capbuf_alloc_sized(unsigned long *cb, unsigned long size);
+void sk_capbuf_copy(unsigned long *dst, void *src);
+unsigned long sk_capbuf_free_or_accept(void *cb, void *b, long host, void *size, void *flags);
+unsigned long sk_capbuf_free_or_accept2(void *a, void *b, long host, void *size, void *flags);
+void sk_capbuf_init(void **cb, void *obj, void *size);
+void sk_capbuf_reset(void *cb);
+unsigned long sk_capbuf_resize(unsigned long *cb, void *b, unsigned long size);
+void sk_capbuf_zero(void *cb);
+bool sk_cmp_u8(char a, char b);
+unsigned long sk_copyin_data(void *dst, void *src, unsigned long phys, unsigned long desc);
+long sk_copyin_region(void **dst, long dst_end, unsigned long phys, unsigned long desc);
+void sk_copyin_validate(long src, long len, long dst, long dst_end, long check);
+void sk_copyout_desc(void);
+void sk_copyout_desc2(void);
+void sk_copyout_validate(void *src, long len);
+void sk_copyout_validate2(void *src, long len);
+unsigned long sk_dc_gva_clear(unsigned long base, unsigned long len, unsigned long granule);
+unsigned long sk_desc_load(void);
+unsigned long sk_desc_make(void *phys);
+unsigned long sk_desc_pair(void *base, void *len);
+unsigned long sk_desc_phys_validate(unsigned long phys, unsigned long desc);
+void sk_desc_store(void **out, void **desc);
+unsigned long sk_div8(long v);
+unsigned long sk_entry_val(void *entry);
+unsigned long sk_false(void);
+void sk_fatal_copyin_bounds(void *v);
+void sk_fatal_copyin_overflow(void *v);
+void sk_fatal_copyin_size(void *v);
+void sk_fatal_copyin_status(void *v);
+void sk_fatal_disposition(unsigned long disposition);
+void sk_fatal_retrieve_active(void);
+void sk_fatal_retrieve_reply(void);
+void sk_fatal_tb_decode(void *v);
+void sk_fatal_tb_decode_overflow(void *v);
+void sk_fatal_tb_decode_underflow(void *v);
+void sk_fatal_tb_encode_overflow(void *v);
+void sk_fatal_tb_zero_buf(void *v);
+void sk_fatal_transport_overflow(void *v);
+unsigned int sk_flag1(void);
+void sk_guard_size_config(void *config, unsigned long size, int flag, uint8_t *out);
+unsigned long sk_heap_aligned_alloc_variant(void **out, unsigned long size, void *arg, unsigned long flags);
+unsigned long sk_heap_alloc(void *p, unsigned long size);
+unsigned long sk_heap_alloc_or_error(unsigned long count, unsigned long size, void *arg);
+void sk_heap_free(void *p);
+void sk_heap_free_thunk(void *p);
+void sk_heap_free_thunk2(void *p);
+void sk_lock_acquire_failed_panic(void);
+void sk_log(unsigned int level, const char *fmt, ...);
+unsigned long sk_lookup_cap_buffer(void *key, void *hint);
+void sk_malloc_breakpoint_check(unsigned int options);
+void sk_malloc_log(unsigned long options, void *flag, long msg, void *a, void *b, void *c);
+unsigned long sk_mem_clear(void *base, unsigned long len, unsigned char mode, unsigned long flags, void *a);
+unsigned long sk_metadata_alloc(void *base, void *len, long size);
+void sk_metadata_alloc2(void *a, void *b, void *c);
+void sk_metadata_copy(void *dst, void *src, void *len);
+void sk_metadata_copy2(void *dst, void *src, void *len);
+void sk_metadata_decode(void *a, void *b, void *c, void *d, void *e, void *f);
+void sk_metadata_destroy(void *a);
+void sk_metadata_element_decode(void *a, void *b, void *c, void *d);
+unsigned long sk_metadata_element_encode(void *a, void *b, void *c, void *d);
+long sk_metadata_element_size(void);
+long sk_metadata_flags(void);
+void sk_metadata_iterate(void *a, void *b, long meta, void *c, void *d);
+unsigned long sk_metadata_serialize(void **out, long out_end);
+long sk_metadata_size_sum(long meta);
+void sk_metadata_validate_all(void *a, void *b, void *c, void *d);
+void sk_metadata_validate_range(long size, long base, long end);
+void sk_metadata_walk(void *a, void *b, void *c, long meta, void *d, void *e);
+void sk_metadata_write(uint8_t *out, void *a, uint16_t b, void *c, void *d, void *e);
+unsigned long sk_msg_accept_complex(void **msg, int *query, void **out, void *flags);
+unsigned long sk_msg_accept_fail(void);
+void sk_msg_accept_init(void **msg, void *m, int mode, void *size, void *flags);
+void sk_msg_accept_reply(void *a, void *b, void *c, void *d);
+void sk_msg_accept_wrapper(void *a, void *b, void *c, void *d);
+void sk_msg_append_region(void *msg, unsigned long *out, long *out_len, long cb);
+unsigned long sk_msg_begin(int *msg, void *host, uint8_t disposition);
+unsigned long sk_msg_cap_accept(void *obj, unsigned long size, unsigned long flags, unsigned long *out, unsigned long *cb);
+unsigned long sk_msg_cap_accept_single(void *head, long msg, long *out, void *cb);
+unsigned long sk_msg_cap_accept_variant(void *a, void *obj, unsigned long size, unsigned long *out, unsigned long *cb);
+unsigned long sk_msg_cap_append(void *msg, unsigned long cap);
+unsigned long sk_msg_cap_get(void *msg, long i);
+unsigned long sk_msg_cap_pop(void *msg, long *out);
+unsigned long sk_msg_cap_send_accept(void *head, void *msg2, long msg, void *b, void *cb);
+void sk_msg_copy_region(void *src, void *dst, unsigned long len);
+unsigned int sk_msg_decode_f32(int *msg, unsigned int *out);
+void sk_msg_decode_f32_checked(void);
+unsigned long sk_msg_decode_f64(int *msg, unsigned long *out);
+void sk_msg_decode_f64_checked(void);
+uint8_t sk_msg_disposition_get(void *msg);
+void sk_msg_done(void *msg);
+unsigned long sk_msg_encode_f32(unsigned int v, int *msg);
+void sk_msg_encode_f32_checked(void);
+unsigned long sk_msg_encode_f64(unsigned long v, int *msg);
+void sk_msg_encode_f64_checked(void);
+bool sk_msg_flag_test(void *msg, uint16_t mask);
+bool sk_msg_host_is(void *msg, void *host);
+void sk_msg_init(void *msg);
+unsigned long sk_msg_install(void **msg, int mode, void *m, long host, unsigned long size, void *flags);
+void sk_msg_install_wrapper(void *a, void *b, void *c, void *d, void *e);
+unsigned long sk_msg_none(void);
+unsigned long sk_msg_num_caps(void *msg);
+unsigned long sk_msg_payload_len(void *msg);
+void sk_msg_pipe_accept(void *pipe, void *b, int *msg);
+void sk_msg_pipe_build_wrap(void *a, void *b, void *meta);
+unsigned long sk_msg_pipe_create(void *a, void *b, void *c, void *d);
+void sk_msg_pipe_create_wrap(void *a, void *b, void *meta);
+void sk_msg_pipe_destroy(void *pipe);
+void sk_msg_pipe_validate(void *pipe);
+void sk_msg_prepend_region(void *msg, unsigned long start, unsigned long len, long cb);
+void sk_msg_recv_collect(void *msg, void *tcb);
+void sk_msg_recv_large(void *a, void *b, void *c, void *d);
+unsigned long sk_msg_region_copy_in(int *msg, void *src, unsigned long len);
+void sk_msg_region_copy_out(void *msg, void *dst, unsigned long n);
+void sk_msg_region_copy_put(void *msg, void *src, unsigned long len);
+void sk_msg_region_get64(int *msg, void **out);
+void sk_msg_region_get8_v2(int *msg, uint8_t *out);
+void sk_msg_region_put16(int *msg, uint16_t v);
+void sk_msg_region_put32(int *msg, uint32_t v);
+void sk_msg_region_put64(int *msg, void *v);
+void sk_msg_region_put8(int *msg, uint8_t v);
+void sk_msg_region_put8_v2(int *msg, uint8_t v);
+unsigned long sk_msg_reject(void);
+unsigned long sk_msg_reply_recv(void *tcb, int *query, void **msg, unsigned long *flags);
+void sk_msg_reply_send(void *tcb, void *query, void *msg, void **out);
+void sk_msg_send_complex(void *a, void *b, void *c, void *d);
+void sk_msg_send_complex2(void *a, void *b, void *c, void *d);
+void sk_msg_set_arg(void *msg, void *v);
+void sk_msg_set_disposition(void *msg, uint8_t disposition);
+void sk_msg_set_host(void *msg, void *host);
+void sk_msg_set_host_field(void *msg, void *v);
+void sk_msg_set_payload_len(void *msg, void *v);
+void sk_msg_set_state(void *msg, unsigned int state);
+void sk_msg_set_transport_end(void *msg, void *v);
+void sk_msg_state_advance(int *msg);
+unsigned int sk_msg_state_get(void *msg);
+void sk_msg_teardown(void **msg, void *b, void *c, void *d);
+unsigned long sk_msg_transport_len(void *msg);
+void sk_node_invoke(long node);
+void sk_noop(void);
+void sk_noop2(void);
+void sk_noop2_thunk(void);
+void sk_noop3(void);
+void sk_obj_destroy_dispatch(void *obj);
+void sk_obj_dispatch(void **obj);
+void sk_obj_is_active(void **obj);
+void sk_obj_method18(void *obj, void *a, void *b, void *c);
+void sk_obj_method20(void *obj, void *a);
+void sk_obj_method28(void *obj, void *a, void *b, void *c);
+unsigned long sk_obj_method30(void *obj);
+unsigned long sk_obj_method38(void *obj);
+void sk_obj_set_data(void *obj, void *data);
+unsigned int sk_obj_state(void **obj);
+bool sk_obj_type_check(void *obj);
+bool sk_obj_type_check2(void *obj);
+void sk_obj_type_query(void **obj);
+void sk_payload_copyin(void *dst, void *src, void *len);
+void sk_payload_copyout(void *dst, void *src, void *len);
+void sk_payload_decode(void *dst, void *src, void *len, void *desc);
+void sk_payload_encode(void *dst, void *src, void *len, void *desc);
+void sk_payload_size(void *a);
+void sk_pt_desc_copy(void *a, void *b, void *c);
+void sk_pt_desc_free(void *a, void *b);
+unsigned long sk_pt_desc_resolve(unsigned long a, unsigned long b);
+void sk_pt_desc_size(void *a);
+void sk_pt_desc_validate(void *a, void *b, void *c);
+unsigned long sk_ptr_deref(void **p);
+unsigned long sk_range_check(long base, unsigned long size, unsigned long avail, long p, long end);
+unsigned long sk_region_alloc_lazy(void **slot);
+unsigned long sk_region_alloc_lazy2(void *slot);
+unsigned long sk_region_map(unsigned long *out, void *key);
+unsigned long sk_region_map_impl(unsigned long *desc, unsigned long *out_base);
+unsigned long sk_region_map_small(unsigned long *desc);
+void sk_registry_bind(void *head, void **entry);
+unsigned long sk_registry_entry_create(void *key, void *val, void *meta);
+unsigned long sk_registry_insert(unsigned long *head, unsigned long key, void *val, void *meta);
+unsigned long sk_registry_lookup(unsigned long head, unsigned long key);
+void sk_registry_remove(void **head, long key);
+void sk_sched_node_create(unsigned int a, unsigned int b);
+void sk_sched_node_create_data(unsigned int a, void *data, unsigned int b);
+long sk_serialized_size(void);
+void sk_serialized_size_store(void **out);
+unsigned long sk_size4(void);
+unsigned long sk_size8(void);
+bool sk_sorted_contains(void *list, unsigned long key);
+unsigned long sk_stub_zero(void);
+long sk_tb_conn_alloc(void *a, void *b);
+void sk_tb_conn_alloc_single(void *a, void *b);
+void sk_tb_conn_attach(void *a, void *b);
+void sk_tb_conn_close(void);
+void sk_tb_conn_close2(void);
+unsigned long sk_tb_conn_create(long *out);
+void sk_tb_conn_handler(long *conn, unsigned long mode);
+void sk_tb_conn_teardown(void);
+unsigned long sk_tb_decode_word(void *src);
+unsigned long sk_tb_encode_word(void *src, void *out);
+unsigned int sk_tb_forward_dispatch(void *a, void *b, void *c, unsigned long conn, void *handler);
+void sk_tb_forward_get(void);
+unsigned int sk_tb_forward_handler(void *data, void *a, void *b, void *c);
+void sk_tb_forward_meta(void *a, void *b);
+void sk_tb_forward_meta2(void *a, void *b);
+unsigned int sk_tb_forward_send(void *a, void *b, void *c, unsigned long conn);
+unsigned int sk_tb_forward_send_flag(void);
+unsigned int sk_tb_forward_send_flag2(void);
+unsigned long sk_tb_frame_prepare(void *frame);
+void sk_tb_get64(void *th, void **out);
+void sk_tb_get8(void *th, uint8_t *out);
+long sk_tb_handler_resolve(unsigned long entry);
+void sk_tb_init_get(void);
+unsigned long sk_tb_pipe_alloc(void *a, void *b, void *c, void *d);
+unsigned long sk_tb_pipe_alloc5(void *a, void *b, void *c, void *d, void *e);
+unsigned long sk_tb_pipe_alloc6(void *a, void *b, void *c, void *d, void *e, void *f);
+void sk_tb_pipe_close(void);
+void sk_tb_pipe_close2(void);
+void sk_tb_pipe_config(void *a, uint8_t kind, void *b, uint8_t kind2);
+void sk_tb_pipe_config5(void *a, uint8_t kind, void *b, uint8_t kind2, void *c);
+void sk_tb_pipe_config6(void *a, uint8_t kind, void *b, uint8_t kind2, void *c, void *d);
+void sk_tb_pipe_destroy(void);
+void sk_tb_pipe_destroy2(void);
+void sk_tb_put16(void *th, uint16_t v);
+void sk_tb_put32(void *th, uint32_t v);
+void sk_tb_put64(void *th, void *v);
+void sk_tb_put8(void *th, uint8_t v);
+void sk_tb_put8_v2(void *th, uint8_t v);
+unsigned long sk_tb_reader_reset(void *reader);
+unsigned long sk_tb_status_encode(unsigned long status);
+unsigned long sk_tb_status_mask(void);
+void sk_tb_validate_component(long *data, long end);
+void sk_tb_validate_data(long *data, long end);
+unsigned long sk_tcb_alloc_bind(void *a, void *b);
+long sk_tcb_alloc_dispatch(void *cfg);
+long sk_tcb_alloc_ext(void *cfg);
+unsigned long sk_tcb_alloc_obj(void *a);
+int sk_tcb_cap_copy(void *src_tcb, void *dst_tcb, void **out, unsigned int flags);
+unsigned long sk_tcb_cap_copy_commit(void *a, unsigned long size, void *c, unsigned long *out);
+void sk_tcb_cap_release_commit(void *a, void **slot, void *c, void *size);
+unsigned int sk_tcb_cfg_flags(void *cfg);
+unsigned long sk_tcb_handle(void *tcb);
+void sk_tcb_init_regions(void *cfg, void *tcb);
+long sk_tcb_msg_accept(long self, void **msg);
+long sk_tcb_obj_bind(void *a, void *b);
+void sk_tcb_obj_destroy(void *tcb);
+void sk_tcb_obj_destroy_thunk(void *tcb);
+void sk_tcb_obj_destroy_thunk2(void *tcb);
+void sk_tcb_obj_install_handler(void *obj, void *handler, void *arg);
+unsigned long sk_tcb_register_async(void *tcb);
+unsigned long sk_tcb_send(void *tcb, void *msg, void **out);
+void sk_tcb_slot_alloc_init(void *td, unsigned long count);
+void sk_tcb_slot_alloc_teardown(void *td);
+void sk_tcb_slot_recv_assert(void);
+unsigned long sk_thread_local_alloc(void);
+void sk_thread_local_free(unsigned long t);
+void sk_tightbeam_bind(void *client, long *slot, void *table);
+void sk_tightbeam_connection_alloc(void *a, void *b, void *c, void *d);
+void sk_tightbeam_connection_alloc2(void *a, void *b, void *c, void *d);
+void sk_tightbeam_connection_alloc3(void *a, void *b, void *c, void *d);
+void sk_tightbeam_connection_close(void *a);
+void sk_tightbeam_connection_close2(void *a);
+void sk_tightbeam_connection_init(void *a, void *b, void *c, void *d);
+void sk_tightbeam_connection_recv(void *a, void *b, void *c, void *d);
+void sk_tightbeam_connection_send(void *a, void *b, void *c, void *d);
+void sk_tightbeam_dispatch(void *a, void *b, void *c, void *d);
+void sk_tightbeam_forward(void *a, void *b, void *c, void *d);
+void sk_tightbeam_forwarding(void *a, void *b, void *c, void *d);
+void sk_tightbeam_forwarding2(void *a, void *b, void *c, void *d);
+void sk_tightbeam_forwarding3(void *a, void *b, void *c, void *d);
+void sk_tightbeam_frame_decode(void *a, void *b, void *c, void *d);
+void sk_tightbeam_frame_encode(void *a, void *b, void *c, void *d);
+void sk_tightbeam_init(void *a, void *b, void *c, void *d);
+void sk_tightbeam_metadata(void *a, void *b, void *c, void *d);
+void sk_tightbeam_recv(void *a, void *b, void *c, void *d);
+void sk_tightbeam_register(void *client);
+void sk_tightbeam_send(void *a, void *b, void *c, void *d);
+void sk_tightbeam_validate(void *a, void *b, void *c, void *d);
+void sk_tightbeam_validate2(void *a, void *b, void *c, void *d);
+unsigned long sk_trap_iter_any(void **list, long n, void *arg);
+unsigned long sk_true(void);
+long sk_wordbuf_grow(unsigned long keep, unsigned long count, unsigned long opts, void *buf);
+void sk_wordbuf_relocate(void);
+unsigned long long sk_zero_pair(void);
+unsigned int sk_zone0_aligned_alloc_out(void **out, unsigned long size);
+void sk_zone0_method_dispatch(void *p);
+long sk_zone_aligned_alloc(unsigned long zone, unsigned long align, unsigned long size, unsigned int flags);
+unsigned long sk_zone_aligned_alloc_try(unsigned long zone, unsigned long size);
+unsigned long sk_zone_alloc_slot(unsigned long zone);
+unsigned long sk_zone_calloc(unsigned long zone, unsigned long count, unsigned long size, unsigned long flags);
+void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int a, unsigned int b, unsigned int granule, void *name, unsigned long base, unsigned int align);
+void sk_zone_free_lookup(unsigned long p, unsigned int start_idx);
+unsigned long sk_zone_lookup(void *key, void **out_zone, unsigned int start_idx);
+long sk_zone_match(void *p);
+long sk_zone_match_thunk(void *p);
+void sk_zone_named(unsigned long zone);
+void sk_zone_ref_run(unsigned long zone, void **run);
+void sk_zone_register(void *zone);
+
+
 void sk_cap_slots_install(void *tcb, void *m)
 {
     unsigned long n = FUN_0005ee40();
@@ -8486,4 +6131,1920 @@ unsigned long sk_tb_status_encode(unsigned long status)
     unsigned long v2 = (b != 0x20) ? v : 1;
     unsigned long f2 = (b != 0x20) ? f : 0x100;
     return (status >> 0x30) | ((status & 0xff00) << 8 | (status >> 0x10) << 0x20 | v2 | f2);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001003c @ 0x0001003c   (est. sk_guard_size_config)
+ * Ghidra: void FUN_0001003c(long config, ulong size, int flag, undefined1 *out)
+ * Computes allocator guard/slack sizes for a requested block size. For small
+ * blocks (< 0x8001, flag set, guard-enable bit at config+0x260) it reads two
+ * per-class guard byte fields (config+0x262/0x264 and config+0x263/0x265,
+ * the latter chosen when size > 0x1000), rounds size up to a 16 KiB multiple,
+ * and reports kind 1 with a page-count guard (size >> 14). For larger blocks
+ * it checks a second guard-enable bit (config+0x266): multiplies size by the
+ * guard multiplier (config+0x267) and, if the product exceeds 16 MiB, scales
+ * down the three guard bytes by the top byte of the product, logging
+ * "Reducing guards for block size". Writes a 5-byte record {kind, g1, g2, g3,
+ * page_count} to out.
+ * Confidence: medium
+ * Notes: references string s_Reducing_guards_for_block_size___005aa72d via
+ *   sk_log (FUN_000117e8). */
+void sk_guard_size_config(void *config, unsigned long size, int flag, uint8_t *out)
+{
+    uint8_t g1, g2, g3, page_count;
+    uint8_t kind;
+
+    if ((size < 0x8001) && (flag != 0) &&
+        ((*(uint8_t *)((char *)config + 0x260) & 1) != 0)) {
+        unsigned long off_a = 0x262, off_b = 0x263;
+        if (0x1000 < size) { off_a = 0x264; off_b = 0x265; }
+        g3 = *(uint8_t *)((char *)config + off_a);
+        if ((size & 0x3fff) != 0) size += 0x4000;
+        page_count = (uint8_t)(size >> 0xe);
+        g2 = *(uint8_t *)((char *)config + off_b);
+        g1 = 0;
+        kind = 1;
+    } else {
+        g3 = 0;
+        page_count = 0;
+        if ((size - 0x8001) >> 0xf < 0x3f) {
+            kind = 0;
+            g2 = g3;
+            g1 = g3;
+            if ((*(uint8_t *)((char *)config + 0x266) & 1) != 0) {
+                g3 = *(uint8_t *)((char *)config + 0x267);
+                g2 = *(uint8_t *)((char *)config + 0x268);
+                g1 = *(uint8_t *)((char *)config + 0x26b);
+                size = size * g3;
+                if (size < 0x1000001) {
+                    page_count = 0;
+                    kind = 2;
+                } else {
+                    uint8_t top = (uint8_t)((size >> 0x18) & 0xff);
+                    uint8_t zero = 0;
+                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g3 / top);
+                    g3 = zero;
+                    zero = 0;
+                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g2 / top);
+                    g2 = zero;
+                    zero = 0;
+                    if ((size & 0xff000000) != 0) zero = (uint8_t)(g1 / top);
+                    g1 = zero;
+                    sk_log(4, "Reducing guards for block size %lx");
+                    page_count = 0;
+                    kind = 2;
+                }
+            }
+        } else {
+            g1 = 0; g2 = 0; g3 = 0;
+            kind = 0;
+        }
+    }
+    out[0] = kind;
+    out[1] = g3;
+    out[2] = g2;
+    out[3] = g1;
+    out[4] = page_count;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001018c @ 0x0001018c   (est. sk_lock_acquire_failed_panic)
+ * Ghidra: void FUN_0001018c(void)
+ * Panic wrapper: logs "Failed to acquire lock %p" at level 0x40 and invokes
+ * the boot failure handler (FUN_00011824). Called when a lock cannot be
+ * acquired during early boot.
+ * Confidence: medium (string-matched "Failed to acquire lock").
+ * Notes: string s_Failed_to_acquire_lock__p__005a9a23. */
+void sk_lock_acquire_failed_panic(void)
+{
+    sk_boot_fail(0x40, 0, "Failed to acquire lock %p");  /* FUN_00011824 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000101a0 @ 0x000101a0   (est. sk_heap_alloc_checked)
+ * Ghidra: void FUN_000101a0(ulong size, undefined8 param_2)
+ * Allocates `size` bytes from the heap zone (DAT_0064c060), dispatching to
+ * the zone's allocator method (offset 0x18 for zone version < 0x10, offset
+ * 0xa0 otherwise). Validates that the returned pointer range does not wrap:
+ * if size + returned base overflows, it traps (SoftwareBreakpoint 0x5519).
+ * Returns the allocated pointer.
+ * Confidence: medium
+ * Notes: zone dispatch object DAT_0064c060; overflow trap at 0x10244. */
+void *sk_heap_alloc_checked(unsigned long size, void *arg)
+{
+    void *heap = *(void **)0x64c060;  /* DAT_0064c060 */
+    unsigned long base;
+    unsigned long end;
+
+    if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
+        base = ((unsigned long (*)(void *, unsigned long))
+                **(void ***)((char *)heap + 0x18))(heap, size);
+    } else {
+        base = ((unsigned long (*)(void *, unsigned long, void *))
+                **(void ***)((char *)heap + 0xa0))(heap, size, arg);
+    }
+    end = (base != 0) ? base + size : 0;
+    if (base <= end && (base == 0 || size <= end - base) &&
+        base <= end && (base == 0 || size <= end - base)) {
+        return (void *)base;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10244) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010244 @ 0x00010244   (est. sk_heap_calloc)
+ * Ghidra: void FUN_00010244(long count, long size, undefined8 param_3)
+ * Allocates and zero-fills `count * size` bytes from the heap zone via the
+ * zone's calloc method (offset 0x20 / 0xa8). Validates that the product and
+ * returned range do not wrap; on overflow it traps.
+ * Confidence: medium
+ * Notes: zone DAT_0064c060; overflow trap 0x102f4. */
+void *sk_heap_calloc(unsigned long count, unsigned long size, void *arg)
+{
+    void *heap = *(void **)0x64c060;  /* DAT_0064c060 */
+    unsigned long total;
+    unsigned long base, end;
+
+    if (*(unsigned int *)((char *)heap + 0x68) < 0x10) {
+        if ((char *)heap + 200 < (char *)heap) __builtin_trap();
+        base = ((unsigned long (*)(void *, unsigned long, unsigned long))
+                **(void ***)((char *)heap + 0x20))(heap, count, size);
+    } else {
+        if ((char *)heap + 200 < (char *)heap) __builtin_trap();
+        base = ((unsigned long (*)(void *, unsigned long, unsigned long, void *))
+                **(void ***)((char *)heap + 0xa8))(heap, count, size, arg);
+    }
+    total = size * count;
+    end = (base != 0) ? base + total : 0;
+    if (base <= end && (base == 0 || (total < end - base || total - (end - base) == 0))) {
+        return (void *)base;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x102f4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000102f4 @ 0x000102f4   (est. sk_heap_alloc_or_error)
+ * Ghidra: ulong FUN_000102f4(long count, ulong size, undefined8 param_3)
+ * Allocates `count * size` bytes; returns the base pointer, or 0 with kernel
+ * error 0xc (ENOMEM) on failure. Handles count==0/size==0 by allocating
+ * `size` alone; for a nonzero count it first looks up the object class
+ * (FUN_00011cac) to pick a sized allocator method (offset 0x38 / 0xb0), and
+ * falls back to the general allocator (FUN_000125b4). Traps on overflow.
+ * Confidence: medium
+ * Notes: zone DAT_0064c060; error slot via thunk_FUN_0006037c; trap 0x10480. */
+unsigned long sk_heap_alloc_or_error(unsigned long count, unsigned long size, void *arg)
+{
+    void *zone;
+    unsigned long base, end;
+    unsigned int *err;
+
+    if (count == 0 || size == 0) {
+        base = (unsigned long)sk_zone_alloc_n(sk_zone0(), size);  /* FUN_00012060 */
+        if (base != 0) {
+            if (size == 0) sk_heap_free((void *)base);
+            if (base <= base + size && size <= (base + size) - base) return base;
+        }
+        goto overflow;
+    }
+    zone = (void *)sk_obj_class_lookup(count, 0, 0);  /* FUN_00011cac */
+    if (zone != 0) {
+        if (*(unsigned int *)((char *)zone + 0x68) < 0x10) {
+            if ((char *)zone + 200 < (char *)zone) goto overflow;
+            base = ((unsigned long (*)(void *, unsigned long, unsigned long))
+                    **(void ***)((char *)zone + 0x38))(zone, count, size);
+        } else {
+            if ((char *)zone + 200 < (char *)zone) goto overflow;
+            base = ((unsigned long (*)(void *, unsigned long, unsigned long, void *))
+                    **(void ***)((char *)zone + 0xb0))(zone, count, size, arg);
+        }
+        if (base != 0) {
+            if (size <= base + size) return base;
+            goto overflow;
+        }
+        err = sk_error_slot();
+        *err = 0xc;
+        return 0;
+    }
+    base = sk_heap_alloc((void *)count, size);  /* FUN_000125b4 */
+    if (base != 0 && size <= base + size) return base;
+overflow:
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10480) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010480 @ 0x00010480   (est. sk_heap_aligned_alloc)
+ * Ghidra: void FUN_00010480(ulong align, ulong size, undefined8 param_3)
+ * Aligned allocation: when align > 7 and the heap supports it (version >=
+ * 0x10, power-of-two alignment, size aligned), uses the zone's aligned-alloc
+ * method (offset 0xb8); otherwise falls back to FUN_00010584. Sets error
+ * 0xc on failure. Traps on range wrap.
+ * Confidence: medium
+ * Notes: zone DAT_0064c060; trap 0x10584. */
+void *sk_heap_aligned_alloc(unsigned long align, unsigned long size, void *arg)
+{
+    void *heap;
+    unsigned long base, end;
+    unsigned int *err;
+
+    if (align > 7) {
+        heap = *(void **)0x64c060;  /* DAT_0064c060 */
+        if (0xf < *(unsigned int *)((char *)heap + 0x68) &&
+            (align & (align - 1)) == 0 && (size & (align - 1)) == 0) {
+            if ((char *)heap <= (char *)heap + 200) {
+                base = ((unsigned long (*)(void *, unsigned long, unsigned long))
+                        **(void ***)((char *)heap + 0xb8))(heap, align, size);
+                end = base + size;
+                if (base == 0) {
+                    end = 0;
+                    err = sk_error_slot();
+                    *err = 0xc;
+                }
+                if (base <= end && (base == 0 || size <= end - base)) {
+                    return (void *)base;
+                }
+            }
+            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10584) */
+        }
+    }
+    base = (unsigned long)sk_alloc_aligned_save(align, size, (unsigned long)arg);  /* FUN_00010584 */
+    end = (base != 0) ? base + size : 0;
+    if (base <= end && (base == 0 || size <= end - base)) {
+        return (void *)base;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x10584) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010584 @ 0x00010584   (est. sk_alloc_aligned_save)
+ * Ghidra: void FUN_00010584(undefined8 param_1, ulong size, ulong flags)
+ * Allocation that saves/restores the per-CPU "no-preempt" slot (tpidr_el0
+ * word 9) around the heap allocation (FUN_00012218, flags=3), enforcing
+ * flags >= 1. Traps on range wrap.
+ * Confidence: medium
+ * Notes: per-CPU slot tpidr_el0+9; zone DAT_0064c060; trap 0x1062c. */
+void *sk_alloc_aligned_save(void *param_1, unsigned long size, unsigned long flags)
+{
+    unsigned long saved, base, end;
+
+    saved = 0;
+    if (flags < 2) flags = 1;
+    base = sk_heap_alloc_mode(*(void **)0x64c060, param_1, size, 3, 0);  /* FUN_00012218 */
+    end = (base != 0) ? base + size : 0;
+    if (base <= end && (base == 0 || size <= end - base)) {
+        return (void *)base;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x1062c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001062c @ 0x0001062c   (est. sk_heap_aligned_alloc_variant)
+ * Ghidra: undefined8 FUN_0001062c(long *out, ulong size, undefined8 param_3, ulong flags)
+ * Aligned-allocation variant storing the result through *out: for size > 7
+ * with a compatible heap it uses the zone's aligned-alloc method (offset
+ * 0xb8); otherwise it routes through the save/restore path (FUN_000127c0).
+ * Returns 0 on success or 0xc on allocation failure. Traps on overflow.
+ * Confidence: medium
+ * Notes: zone DAT_0064c060; trap 0x106c4 / 0x1071c. */
+unsigned long sk_heap_aligned_alloc_variant(void **out, unsigned long size, void *arg, unsigned long flags)
+{
+    void *heap;
+    unsigned long saved;
+    void *res;
+
+    if (size > 7) {
+        heap = *(void **)0x64c060;  /* DAT_0064c060 */
+        if (0xf < *(unsigned int *)((char *)heap + 0x68) && (size & (size - 1)) == 0) {
+            if ((char *)heap <= (char *)heap + 200) {
+                res = ((void *(*)(void *))
+                       **(void ***)((char *)heap + 0xb8))(heap);
+                if (res == 0) return 0xc;
+                *out = res;
+                return 0;
+            }
+            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x106c4) */
+        }
+    }
+    saved = 0;
+    if (flags < 2) flags = 1;
+    res = sk_alloc_out(out);  /* FUN_000127c0 */
+    return (unsigned long)res;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001071c @ 0x0001071c   (est. sk_buddy_init)
+ * Ghidra: void FUN_0001071c(void)
+ * Initializes the buddy page allocator. Allocates a 1 MiB arena
+ * (FUN_00011b18, guard 0xa00/0x200), clears the free lists, sets the 
+ * per-size-class free-list heads (sizes 3..0xe), and installs the base into
+ * DAT_006adfd8. Panics "BUG IN LIBMALLOC" (FUN_001150e0) on arena failure.
+ * Confidence: medium
+ * Notes: strings s_BUG_IN_LIBMALLOC___llu___failed_t_005aa76c; globals
+ *   DAT_006adfd8/006adfe0. */
+void sk_buddy_init(void)
+{
+    unsigned long guard = 0xa00;
+    unsigned long hint = 0;
+    void *arena;
+    long *p, v;
+
+    if (sk_buddy_flags == 0) guard = 0x200;
+    arena = sk_arena_alloc(0x100000, (void *)0, guard, 1, &hint);  /* FUN_00011b18 */
+    if (arena == 0) {
+        sk_panic("BUG IN LIBMALLOC: failed to allocate arena");  /* FUN_001150e0 */
+    }
+    sk_mem_clear((void *)arena, 0x8000, 2, 0x40, &hint);  /* FUN_00011bf4 */
+    ((unsigned long *)arena)[0x1d] = hint;
+    ((unsigned long *)arena)[0x1c] = 0;
+    *(unsigned long *)arena = 0;
+    ((unsigned long *)arena)[1] = 0;
+    ((unsigned long *)arena)[0x1f] = 0x8000000000000000ull;
+    /* size-class free-list heads: pair {next,prev} for sizes 3..0xd */
+    p = (long *)arena + 7;
+    v = 3;
+    do {
+        p[-1] = v;
+        *p = v;
+        p += 2;
+        v += 1;
+    } while (v != 0xe);
+    ((unsigned long *)arena)[0x20] |= 1;
+    sk_buddy_base = arena;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010830 @ 0x00010830   (est. sk_buddy_find_free)
+ * Ghidra: long FUN_00010830(ulong key)
+ * Searches the buddy allocator's free bitmap (DAT_006adfd8 + 0x100) for the
+ * next free region at or after `key`, using the leading-zero-count / bit
+ * reversal helpers (LZCOUNT). Returns the free region's 16-byte slot index
+ * shifted left 4, or 0 if the key is out of the arena or no free region.
+ * Confidence: medium
+ * Notes: buddy bitmap + free lists at DAT_006adfd8. */
+long sk_buddy_find_free(unsigned long key)
+{
+    unsigned long k = key & 0xf0ffffffffffffffull;
+    unsigned long idx, bits, tmp;
+    long *fl;
+
+    if (sk_buddy_base == 0 || k < (unsigned long)sk_buddy_base + 0x8000 ||
+        (key & 0xf) != 0 || (unsigned long)sk_buddy_base + 0x100000 <= k) {
+        return 0;
+    }
+    idx = (k - ((unsigned long)sk_buddy_base + 0x8000)) >> 4;
+    if ((*(unsigned long *)((char *)sk_buddy_base + 0x100 +
+                            ((idx >> 2) & 0x3ffffffffffffff0)) &
+         (1ull << (idx & 0x3f)) &
+         *(unsigned long *)((char *)sk_buddy_base + 0x100 +
+                            (((idx >> 2) & 0x3ffffffffffffff8) | 8))) == 0) {
+        return 0;
+    }
+    idx = idx + 1;
+    bits = *(unsigned long *)((char *)sk_buddy_base + 0x100 +
+                              (((idx >> 5) & 0x7fffffffffffffe) * 8)) >> (idx & 0x3f);
+    if (bits == 0) {
+        tmp = idx & 0x3f;
+        fl = (long *)((char *)sk_buddy_base + 0x100 + ((idx >> 5) & 0x7fffffffffffffe) * 8);
+        bits = *(unsigned long *)((char *)fl + 0x10);
+        if (bits != 0) {
+            bits = bit_reverse64(bits);
+            return (LZCOUNT(bits >> 0x20 | bits << 0x20) - tmp + 0x41) << 4;
+        }
+        fl = (tmp < 0x31) ? 0 : (long *)((char *)fl + 0x18);
+        idx = (unsigned long)((unsigned int)(((unsigned long)fl << 1) << (tmp ^ 0x3f)) |
+                              (unsigned int)(*(unsigned long *)((char *)sk_buddy_base + 0x100 +
+                                  (((idx >> 5) << 3) | 8)) >> tmp)) & 0xffff;
+    } else {
+        bits = bit_reverse64(bits);
+        bits = LZCOUNT(bits >> 0x20 | bits << 0x20);
+    }
+    return (bits + 1) << 4;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010934 @ 0x00010934   (est. sk_buddy_alloc)
+ * Ghidra: long * FUN_00010934(ulong size)
+ * The buddy page allocator: allocates a 16-byte-granular region of `size`
+ * bytes (rounded to a 16-byte unit) from the buddy arena (DAT_006adfd8).
+ * Takes the arena lock (FUN_0011582c), walks the per-size free lists, and
+ * on miss grows the arena high-water mark (DAT_006adfd8+0x18), zero-filling
+ * new pages (FUN_00011bf4) and maintaining the free bitmap at +0x100.
+ * Releases the lock (FUN_00115894) before returning the block, or 0 if the
+ * request exceeds arena capacity. Panics on lock acquire/release failure.
+ * Confidence: medium
+ * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
+ *   s_Failed_to_release_lock__p__005a9a3f. */
+void *sk_buddy_alloc(unsigned long size)
+{
+    unsigned long base = (unsigned long)sk_buddy_base;
+    unsigned long units;
+    void *result;
+
+    if (size < 0x4001) {
+        units = (size + 0xf) >> 4;
+        if (size == 0) units = 1;
+        if (sk_buddy_lock(base) != 0) {   /* FUN_0011582c */
+            sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
+        }
+        /* grow the arena high-water mark */
+        unsigned long hwm = *(unsigned long *)(base + 0x18);
+        if (units < 0xf800 - hwm) {
+            unsigned long newhwm = hwm + units;
+            *(unsigned long *)(base + 0x18) = newhwm;
+            result = (void *)(base + 0x8000 + hwm * 0x10);
+            if (*(unsigned long *)(base + 0x20) < newhwm) {
+                unsigned long from = ((base + 0x8000 + *(unsigned long *)(base + 0x20) * 0x10) + 0x3fff) & ~0x3fffull;
+                unsigned long to = ((unsigned long)result + size + 0x3fff) & ~0x3fffull;
+                if (to != from) {
+                    sk_mem_clear((void *)from, to - from, 2, 0x40, (void *)(base + 0xe0));  /* FUN_00011bf4 */
+                }
+                *(unsigned long *)(base + 0x20) = *(unsigned long *)(base + 0x18);
+            }
+        } else {
+            result = 0;
+        }
+        if (sk_buddy_unlock(base) != 0) {  /* FUN_00115894 */
+            sk_boot_fail(0x40, 0, "Failed to release lock %p");
+        }
+        return result;
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010d84 @ 0x00010d84   (est. sk_buddy_free_split)
+ * Ghidra: void FUN_00010d84(long arena, long idx, undefined8 units)
+ * Buddy free helper: computes the size class for `units` free units and
+ * links the region (arena + idx*0x10 + 0x8000) into the corresponding
+ * per-class free list (arena + 0x30 + class*0x10), recording class+3 in the
+ * region header. Used when freeing a partial region that must be split back
+ * into the free lists.
+ * Confidence: medium
+ * Notes: arena DAT_006adfd8; helper FUN_00011430. */
+void sk_buddy_free_split(unsigned long arena, long idx, unsigned long units)
+{
+    unsigned int cls = 0x3f - (unsigned int)LZCOUNT(units);
+    long *list, *region;
+    long head;
+
+    if (9 < cls) cls = 10;
+    sk_buddy_clear_range(arena, 0, 0);  /* FUN_00011430 */
+    list = (long *)(arena + (unsigned long)cls * 0x10 + 0x30);
+    region = (long *)(arena + idx * 0x10);
+    head = *list;
+    *(long *)((char *)region + 0x8000) = head;
+    *(unsigned long *)((char *)region + 0x8008) = (unsigned long)cls + 3;
+    *list = idx + 0x800;
+    *(long *)(arena + head * 0x10 + 8) = idx + 0x800;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00010e3c @ 0x00010e3c   (est. sk_buddy_free)
+ * Ghidra: void FUN_00010e3c(ulong ptr)
+ * Buddy allocator free: releases a 16-byte-aligned block previously handed
+ * out by sk_buddy_alloc. Validates the pointer is inside the arena
+ * (panics "BUG IN LIBMALLOC: not MFM" / "BUG IN CLIENT OF LIBMALLOC" on
+ * misalignment or a double-free), clears the freed range (FUN_00117f8c),
+ * takes the arena lock, co-joins the block with its neighbor(s) by walking
+ * the buddy bitmap at arena+0x100, updates the free lists, the free-unit
+ * count (arena+0x10) and region count (arena+0x28), and either trims the
+ * arena high-water mark (arena+0x18) or re-links via sk_buddy_free_split.
+ * Releases the lock; panics on lock acquire/release failure.
+ * Confidence: low (structural summary).
+ * Notes: strings s_BUG_IN_LIBMALLOC___llu___not_MFM_005aa79f,
+ *   s_BUG_IN_CLIENT_OF_LIBMALLOC___llu_005aa838/005aa7c6/005aa800;
+ *   helpers FUN_000114fc, FUN_00011884, FUN_00117f8c, FUN_0011582c,
+ *   FUN_00115894. */
+void sk_buddy_free(unsigned long ptr)
+{
+    unsigned long arena = (unsigned long)sk_buddy_base;
+    unsigned long addr = ptr & 0xf0ffffffffffffffull;
+    unsigned long idx, bitmap, units;
+
+    if (arena == 0 || addr < arena + 0x8000 || arena + 0x100000 <= addr) {
+        sk_panic("BUG IN LIBMALLOC: not in MFM region");  /* FUN_001150e0 */
+    }
+    if ((ptr & 0xf) != 0) {
+        sk_panic("BUG IN CLIENT OF LIBMALLOC: misaligned free");  /* FUN_001150e0 */
+    }
+    idx = (addr - (arena + 0x8000)) >> 4;
+    bitmap = arena + 0x100;
+    if ((*(unsigned long *)(bitmap + ((idx >> 5) & 0x7fffffffffffffe) * 8) &
+         *(unsigned long *)(bitmap + ((idx >> 5) | 1) * 8) &
+         (1ull << (idx & 0x3f))) == 0) {
+        sk_panic("BUG IN CLIENT OF LIBMALLOC: double free");  /* FUN_001150e0 */
+    }
+    units = buddy_run_len(bitmap, idx);
+    if (sk_buddy_flags == 1) {
+        dc_gva_region(ptr & ~0x3full, units);
+    }
+    sk_mem_clear_range(ptr, units, ~0ull);  /* FUN_00117f8c */
+    if (sk_buddy_lock(arena) != 0) {  /* FUN_0011582c */
+        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
+    }
+    *(int *)(arena + 0x10) -= (int)units;
+    *(long *)(arena + 0x28) -= 1;
+    if (((*(unsigned long *)(bitmap + ((((idx - 1) >> 5) << 3) | 8)) >> ((idx - 1) & 0x3f)) & 1) == 0) {
+        idx -= 1;
+        units = buddy_run_len(bitmap, idx) + units;
+        unlink_buddy_region(arena, idx);
+    }
+    if (idx + units < *(unsigned long *)(arena + 0x18)) {
+        unsigned long cur = idx + units;
+        if ((*(unsigned long *)(bitmap + ((cur >> 5) & 0x7fffffffffffffe) * 8) &
+             (1ull << (cur & 0x3f)) &
+             *(unsigned long *)(bitmap + ((cur >> 5) << 3 | 8))) != 0) {
+            units = buddy_run_len(bitmap, cur) + units;
+            unlink_buddy_region(arena, idx);
+        }
+    }
+    if (idx + units == *(unsigned long *)(arena + 0x18)) {
+        *(unsigned long *)(bitmap + ((*(unsigned long *)(arena + 0x18) >> 2) & 0x3ffffffffffffff0)) &=
+            ~(1ull << (*(unsigned long *)(arena + 0x18) & 0x3f));
+        if (units < 0x40) {
+            *(unsigned long *)(bitmap + ((idx >> 2) & 0x3ffffffffffffff8 | 8)) &=
+                ~(1ull << (idx & 0x3f));
+            *(unsigned long *)(bitmap + (((idx + units - 1) >> 2) & 0x3ffffffffffffff8 | 8)) &=
+                ~(1ull << ((idx + units - 1) & 0x3f));
+        } else {
+            sk_buddy_clear_list(arena, 0, idx, units);  /* FUN_000114fc */
+        }
+        *(unsigned long *)(arena + 0x18) = idx;
+    } else {
+        sk_buddy_free_split(arena, idx, units);  /* FUN_00010d84 */
+    }
+    if (sk_buddy_unlock(arena) != 0) {  /* FUN_00115894 */
+        sk_boot_fail(0x40, 0, "Failed to release lock %p");
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011430 @ 0x00011430   (est. sk_buddy_clear_range)
+ * Ghidra: void FUN_00011430(long arena, ulong idx, ulong units)
+ * Clears the free-bitmap boundary markers for a region of `units` units
+ * starting at unit `idx`: for a short run (< 0x40) it clears the two
+ * boundary words, otherwise it delegates to sk_buddy_clear_list.
+ * Confidence: medium
+ * Notes: bitmap at arena+0x100; helper FUN_000114fc. */
+void sk_buddy_clear_range(unsigned long arena, unsigned long idx, unsigned long units)
+{
+    unsigned long *bitmap = (unsigned long *)(arena + 0x100);
+    unsigned long w;
+
+    if (units < 0x40) {
+        w = (idx >> 2) & 0x3ffffffffffffff8 | 8;
+        bitmap[w] &= ~(1ull << (idx & 0x3f));
+        w = ((idx + units - 1) >> 2) & 0x3ffffffffffffff8 | 8;
+        bitmap[w] &= ~(1ull << ((idx + units - 1) & 0x3f));
+        return;
+    }
+    sk_buddy_clear_list(arena, 0, idx, units);  /* FUN_000114fc */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011494 @ 0x00011494   (est. sk_buddy_is_in_arena)
+ * Ghidra: bool FUN_00011494(ulong ptr)
+ * Returns true if `ptr` (masked to the arena's canonical form) falls inside
+ * the buddy arena's payload region, or when the arena flags word has the low
+ * bit set (page-zeroing enabled) accepts the region as in-arena.
+ * Confidence: medium
+ * Notes: globals DAT_006adfd8/006adfe0. */
+bool sk_buddy_is_in_arena(unsigned long ptr)
+{
+    unsigned long p = ptr & 0xf0ffffffffffffffull;
+    if (sk_buddy_base == 0 || p < (unsigned long)sk_buddy_base + 0x8000) {
+        return false;
+    }
+    return p < (unsigned long)sk_buddy_base + 0x100000;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000114f0 @ 0x000114f0   (est. sk_buddy_base_get)
+ * Ghidra: undefined8 FUN_000114f0(void)
+ * Returns the buddy allocator base pointer (DAT_006adfd8).
+ * Confidence: high (trivial accessor). */
+void *sk_buddy_base_get(void)
+{
+    return sk_buddy_base;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000114fc @ 0x000114fc   (est. sk_buddy_clear_list)
+ * Ghidra: void FUN_000114fc(long arena, uint clear, ulong idx, long units)
+ * Writes the free-bitmap run descriptor for a run of `units` units starting
+ * at unit `idx`: stores the run length in the low 17 bits of the descriptor
+ * word at bitmap + ((idx>>5)<<3|8), and splits the descriptor across the two
+ * covering 64-bit words when the run crosses the 64-bit boundary. When
+ * `clear` is 0 the run marker is cleared; otherwise set.
+ * Confidence: medium
+ * Notes: bitmap at arena+0x100. */
+void sk_buddy_clear_list(unsigned long arena, unsigned int clear, unsigned long idx, long units)
+{
+    unsigned long *bitmap = (unsigned long *)(arena + 0x100);
+    unsigned long w, end, q, r, v1, mask1, dv;
+
+    w = ((idx >> 5) << 3) | 8;
+    bitmap[w] = (bitmap[w] & ~((0x1ffffull << (idx & 0x3f)))) |
+                (((unsigned long)clear & 1 | (units - 1) * 2) << (idx & 0x3f));
+    if (0x2f < (idx & 0x3f)) {
+        long *l2 = (long *)(bitmap + ((idx >> 5) & 0x7fffffffffffffe) * 8);
+        *(unsigned long *)((char *)l2 + 0x18) =
+            (*(unsigned long *)((char *)l2 + 0x18) & ~(0xffffull >> ((idx & 0x3f) ^ 0x3f))) |
+            ((units - 1) & 0x7fffffffffffffffull) >> ((idx & 0x3f) ^ 0x3f);
+    }
+    end = (units - 1) + idx;
+    q = end >> 6;
+    r = end & 0x3f;
+    v1 = r + 0x30;
+    mask1 = 0x1ffffull << (v1 & 0x3f);
+    if ((v1 & 0x40) == 0) mask1 = 0xffffull >> ((~v1) & 0x3f);
+    dv = ((units - 1) + ((clear == 0) ? 0 : 0x10000)) << (v1 & 0x3f);
+    if ((v1 & 0x40) == 0) dv = ((units - 1 + ((clear == 0) ? 0 : 0x10000)) >> 1) >> ((~v1) & 0x3f);
+    if (r < 0x10) {
+        bitmap[q * 0x10 - 8] = (bitmap[q * 0x10 - 8] & ~(0x1ffffull << (v1 & 0x3f))) |
+                                (((v1 & 0x40) == 0) ? 0x1ffffull : 0);
+    }
+    bitmap[q * 0x10 + 8] = (bitmap[q * 0x10 + 8] & ~(mask1)) | dv;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011600 @ 0x00011600   (est. sk_malloc_log)
+ * Ghidra: void FUN_00011600(ulong options, undefined8 flag, long msg, ...)
+ * The libmalloc-style diagnostics logger (the real body behind sk_log).
+ * Interprets the options word: if bit 5 is clear it emits the "*** malloc"
+ * banner via FUN_00118b28; if `msg` is nonzero it prints it; writes the
+ * varargs via FUN_00118c4c. If bit 8 (memory-footprint dump) is set it
+ * clears a 0x32-word buffer, fills it via FUN_00115574 and prints each word.
+ * If bits 6-7 request a breakpoint/sleep for debugging, it invokes
+ * FUN_00011798 then sleeps (FUN_001183e0). Stack canary checked.
+ * Confidence: medium
+ * Notes: strings s___p__malloc__005aa86b, s_____set_a_breakpoint_in_malloc_e_005aa879,
+ *   s_____sleeping_to_help_debug_005aa8b5; helpers FUN_00118b28/00118c4c/
+ *   00115574/001183e0/00116d60/0011d7e8. */
+void sk_malloc_log(unsigned long options, void *flag, long msg, void *a, void *b, void *c)
+{
+    unsigned long fb[0x32];
+    long i, n;
+
+    if (((options >> 5) & 1) == 0) {
+        sk_printf_banner();       /* thunk_FUN_00060524 */
+        sk_puts("*** malloc");    /* FUN_00118b28, s___p__malloc__005aa86b */
+    }
+    if (msg != 0) sk_puts((const char *)msg);  /* FUN_00118b28 */
+    sk_vprintf(a, b);             /* FUN_00118c4c */
+    if ((options >> 8 & 1) != 0) {
+        for (i = 0; i < 0x32; i++) fb[i] = 0;
+        n = sk_fill_debug_buffer(fb, 0x32);  /* FUN_00115574 */
+        for (i = 0; i < n; i++) sk_puts_word(fb[i]);
+    }
+    if (((options & 0xc0) != 0) && flag != 0) {
+        sk_malloc_breakpoint_check(options);  /* FUN_00011798 */
+        sk_printf_banner();
+        sk_puts("*** malloc");
+        sk_puts("*** sleeping to help debug");  /* FUN_00118b94 */
+        sk_sleep(flag);                          /* FUN_001183e0 */
+    }
+    if ((options >> 6 & 1) == 0) return;
+    sk_abort_malloc();  /* FUN_00116d60 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011798 @ 0x00011798   (est. sk_malloc_breakpoint_check)
+ * Ghidra: void FUN_00011798(uint options)
+ * malloc_error_break hook: if options bit 5 is clear prints the "*** malloc"
+ * banner, then emits the breakpoint-hint string (DAT_005aa8b2).
+ * Confidence: medium
+ * Notes: strings s___p__malloc__005aa86b, DAT_005aa8b2. */
+void sk_malloc_breakpoint_check(unsigned int options)
+{
+    if ((options >> 5 & 1) == 0) {
+        sk_printf_banner();  /* thunk_FUN_00060524 */
+        sk_puts("*** malloc");  /* FUN_00118b28 */
+    }
+    sk_puts((const char *)0x5aa8b2);  /* FUN_00118b28, DAT_005aa8b2 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000117e8 @ 0x000117e8   (est. sk_log)
+ * Ghidra: void FUN_000117e8(undefined8 level, undefined8 fmt)
+ * Diagnostic log entry point: forwards to sk_malloc_log(level, 0, 0, 0,
+ * fmt, &stack). This is the boot-time logging primitive used throughout the
+ * region.
+ * Confidence: high (widely referenced wrapper). */
+void sk_log(unsigned int level, const char *fmt, ...)
+{
+    sk_malloc_log(level, 0, 0, 0, (void *)fmt, &fmt);  /* FUN_00011600 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011824 @ 0x00011824   (est. sk_boot_fail)
+ * Ghidra: void FUN_00011824(ulong level, byte flag, undefined8 fmt)
+ * Boot failure/panic reporter: picks the log options word (0x43 or 0x93)
+ * from `level` (bit 6 set => 0x93) and a flag, then emits the message
+ * through sk_malloc_log (FUN_00011600). Used for all boot-time fatal
+ * diagnostics.
+ * Confidence: medium
+ * Notes: helper FUN_00011600. */
+void sk_boot_fail(unsigned int level, unsigned char flag, const char *fmt, ...)
+{
+    unsigned int opts = 0x93;
+    flag = (unsigned char)(flag ^ 1);
+    if ((level & 0x100) == 0) flag = 1;
+    if (((level & 0x40) == 0) & flag) opts = 0x43;
+    sk_malloc_log(opts, 0, 0, 0, (void *)fmt, &fmt);  /* FUN_00011600 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011884 @ 0x00011884   (est. sk_buddy_mask)
+ * Ghidra: undefined8 FUN_00011884(undefined8 param_1)
+ * Identity helper (returns its argument). Serves as a no-op masking step in
+ * the buddy allocator free path.
+ * Confidence: high (trivial). */
+void *sk_buddy_mask(void *p)
+{
+    return p;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000118d0 @ 0x000118d0   (est. sk_dc_gva_clear)
+ * Ghidra: ulong FUN_000118d0(long base, ulong len, ulong granule)
+ * Data-cache clean-by-virtual-address over a range: walks [base, base+len)
+ * in `granule` steps issuing DC_GVA on each cache line (special-casing
+ * 0x200-byte granules for an 8-line burst). Returns the last cleaned line.
+ * Confidence: medium
+ * Notes: DC_GVA cache op; caller FUN_00117fdc. */
+unsigned long sk_dc_gva_clear(unsigned long base, unsigned long len, unsigned long granule)
+{
+    unsigned long i, n, start, end, last, q;
+
+    if (len < granule) return 0;
+    last = 0;
+    n = (granule != 0) ? len / granule : 0;
+    start = 0;
+    end = 0;
+    for (i = 0; i < n; i++) {
+        unsigned long p = base + i * granule;
+        last = p;
+        if ((int)i != 0) last = end;
+        end = p + granule;
+        if ((granule & 0x1ff) == 0) {
+            q = p;
+            do {
+                dc_gva_region(q, 0x200);
+                q += 0x200;
+            } while (q < end);
+        } else {
+            for (q = (p + 0x3f) & ~0x3full; q < (end & ~0x3full); q += 0x40) {
+                dc_gva_region(q, 0x40);
+            }
+        }
+        end = last;
+    }
+    return last;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000119c0 @ 0x000119c0   (est. sk_stub_zero)
+ * Ghidra: undefined8 FUN_000119c0(void)
+ * Trivial stub returning 0.
+ * Confidence: high (trivial). */
+unsigned long sk_stub_zero(void)
+{
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011a08 @ 0x00011a08   (est. sk_alloc_at)
+ * Ghidra: ulong FUN_00011a08(long base, long size, undefined8 align,
+ *                            uint mode, undefined8 flags, undefined8 a, undefined8 b)
+ * Memory allocator for a fixed address/size: rejects "anywhere" allocations
+ * (mode bit 1) by logging "Unsupported anywhere allocation", then delegates
+ * to FUN_00117fdc with a mapped flags word derived from `flags` (bits 7/9/8/
+ * 0x1a), traps on a zero result ("Failed to allocate memory at addr") and on
+ * range wrap.
+ * Confidence: medium
+ * Notes: strings s_Unsupported_anywhere_allocation_a_005aa904,
+ *   s_Failed_to_allocate_memory_at_add_005aa952; helpers FUN_00117fdc,
+ *   thunk_FUN_0006037c; trap 0x11b18. */
+unsigned long sk_alloc_at(unsigned long base, unsigned long size, void *align,
+                          unsigned int mode, unsigned long flags, void *a, void *b)
+{
+    unsigned long mapped = ((flags >> 7 & 0x20) | (mode & 1) << 3 | (flags >> 9 & 4) |
+                            (flags >> 8 & 2) | (flags >> 0x1a & 0x10)) ^ 9;
+    unsigned long r;
+
+    if (base != 0 && (mode & 1) != 0) {
+        sk_boot_fail((unsigned int)flags | 0x40, 0, "Unsupported anywhere allocation");  /* 0x5aa904 */
+    }
+    r = sk_alloc_phys(flags, base, size, 5, mapped, align, a);  /* FUN_00117fdc */
+    sk_set_error(0);
+    if (r == 0) {
+        sk_boot_fail((unsigned int)flags, 0, "Failed to allocate memory at addr");  /* 0x5aa952 */
+    }
+    if (r <= r + size) return r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x11b18) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011b18 @ 0x00011b18   (est. sk_arena_alloc)
+ * Ghidra: void FUN_00011b18(ulong size, undefined8 align, undefined8 guard,
+ *                           undefined8 mode, undefined8 a)
+ * Allocates a contiguous arena of `size` bytes via sk_alloc_at, trapping on
+ * a wrapped result. Used for the buddy allocator arena and boot regions.
+ * Confidence: medium
+ * Notes: helper FUN_00011a08; trap 0x11b80. */
+void *sk_arena_alloc(unsigned long size, void *align, unsigned long guard, unsigned long mode, void *a)
+{
+    unsigned long r = sk_alloc_at(0, size, align, 1, guard, (void *)mode, a);  /* FUN_00011a08 */
+    if (r <= r + size) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x11b80) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011b80 @ 0x00011b80   (est. sk_arena_free)
+ * Ghidra: void FUN_00011b80(undefined8 p, undefined8 size, undefined8 flags, undefined8 a)
+ * Frees an arena region: delegates to FUN_001180cc, and if the result has
+ * the low bit clear and the kernel error slot is nonzero, logs "Failed to
+ * deallocate at address".
+ * Confidence: medium
+ * Notes: string s_Failed_to_deallocate_at_address___005aa99e;
+ *   helpers FUN_001180cc, thunk_FUN_0006037c. */
+void sk_arena_free(void *p, void *size, unsigned long flags, void *a)
+{
+    unsigned long r = sk_dealloc(p, a, size);  /* FUN_001180cc */
+    if ((r & 1) == 0) {
+        unsigned int *err = sk_error_slot();
+        if (*err != 0) {
+            sk_boot_fail((unsigned int)flags, 0, "Failed to deallocate at address");  /* 0x5aa99e */
+        }
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011bf4 @ 0x00011bf4   (est. sk_mem_clear)
+ * Ghidra: undefined8 FUN_00011bf4(undefined8 base, undefined8 len, undefined1 mode,
+ *                                 ulong flags, undefined8 a)
+ * Clears / applies debug flags to a memory region: rejects unsupported debug
+ * flags (0x83 bits), delegates to FUN_0011807c, and on failure reports
+ * "Failed to madvise" unless the error slot is clear. Returns the status.
+ * Confidence: medium
+ * Notes: strings s_Unsupported_debug_flags__u_005aa9d4,
+ *   s_Failed_to_madvise__d_at_address___005aa9f0; helper FUN_0011807c. */
+unsigned long sk_mem_clear(void *base, unsigned long len, unsigned char mode, unsigned long flags, void *a)
+{
+    unsigned long r;
+
+    if ((flags & 0x83) != 0) {
+        sk_boot_fail((unsigned int)flags | 0x40, 1, "Unsupported debug flags %u");  /* 0x5aa9d4 */
+    }
+    r = sk_madvise(a, base, (void *)len, mode);  /* FUN_0011807c */
+    if ((int)r != 0) {
+        unsigned int *err = sk_error_slot();
+        if (*err == 0) return 0;
+        sk_boot_fail((unsigned int)flags, 0, "Failed to madvise %d at address");  /* 0x5aa9f0 */
+        return 1;
+    }
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011cac @ 0x00011cac   (est. sk_zone_lookup)
+ * Ghidra: ulong FUN_00011cac(undefined8 key, long *out_zone, uint start_idx)
+ * Walks the registered malloc zones (table at DAT_006adfe8, count
+ * DAT_006ac238) starting at `start_idx`, invoking each zone's matcher method
+ * (offset 0x10) on `key`. Returns the matching zone address (and stores it
+ * through out_zone), or 0 if none match. Traps on table overflow.
+ * Confidence: medium
+ * Notes: zone table DAT_006adfe8/006adff0, count DAT_006ac238; trap 0x11d7c. */
+unsigned long sk_zone_lookup(void *key, void **out_zone, unsigned int start_idx)
+{
+    unsigned long zone, r = 0;
+    unsigned int i;
+
+    for (i = start_idx; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
+        zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
+        r = ((unsigned long (*)(void *, void *))
+             **(void ***)(zone + 0x10))((void *)zone, key);
+        if (r != 0) goto found;
+    }
+    r = 0;
+found:
+    if (out_zone != 0) *out_zone = (void *)r;
+    return zone;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00011d7c @ 0x00011d7c   (est. sk_zone_register)
+ * Ghidra: void FUN_00011d7c(undefined8 zone)
+ * Registers a malloc zone: seeds the zone-table sanity words, builds a zone
+ * object (FUN_00006630), and appends it to the global zone table
+ * (DAT_006adfe8 / count DAT_006ac238), rejecting duplicates ("Attempted to
+ * register duplicate zone"), an oversized table ("No capacity for zone"),
+ * an unsupported zone version, and cross-linking the new zone's name via the
+ * other registered zones. Logs "Registered zone %p at index %u" on success.
+ * Confidence: medium
+ * Notes: strings s_Attempted_to_register_duplicate_z_005aaa37,
+ *   s_No_capacity_for_zone___p_005aaa61, s_Unsupported_zone_version___u_005aaa7b,
+ *   s_Registered_zone__p_at_index__u_005aaa99, s_DefaultXzoneZone_005aaa26;
+ *   helpers FUN_00006630/00117d18/00012060/00117e68; globals DAT_006ac23x. */
+void sk_zone_register(void *zone)
+{
+    unsigned long zone_obj;
+    unsigned int i;
+
+    sk_zone_seed = 0x91175ef7;   /* _DAT_006ac234 */
+    sk_zone_flags = 0x91175ef7;  /* _DAT_006ac230 */
+    sk_zone_granule = 0;  /* FUN_0005ac2c, DAT_006ac23d (returns granule) */
+    zone_obj = FUN_00006630(0x140, 0, zone, 0);  /* FUN_00006630 */
+    if (sk_zone_count == 0) {
+        if (*(unsigned int *)(zone_obj + 0x68) < 0xd) {
+            sk_log(0x40, "Unsupported zone version %u");  /* s_005aaa7b */
+        } else {
+            unsigned long zt = sk_zone_table_grow((void *)0x6adff0, (void *)0x6adfe8, sk_zone_count << 3, 8);  /* FUN_00117d18 */
+            *(unsigned long *)0x6adfe8 = zone_obj;  /* DAT_006adfe8 */
+            sk_log(6, "Registered zone %p at index %u");  /* s_005aaa99 */
+            sk_zone_count += 1;
+        }
+    } else {
+        unsigned long *p = (unsigned long *)0x6adfe8;
+        i = sk_zone_count;
+        while (i != 0) {
+            if (zone_obj == *p) {
+                sk_log(0x40, "Attempted to register duplicate zone");  /* s_005aaa37 */
+                goto done;
+            }
+            i -= 1;
+            p += 1;
+        }
+        if (sk_zone_count == 2) {
+            sk_log(0x40, "No capacity for zone %p");  /* s_005aaa61 */
+        } else if (0xc < *(unsigned int *)(zone_obj + 0x68)) {
+            unsigned long zt = sk_zone_table_grow((void *)0x6adff0, (void *)0x6adfe8, sk_zone_count << 3, 8);  /* FUN_00117d18 */
+            *(unsigned long *)0x6adfe8 = zone_obj;
+            sk_log(6, "Registered zone %p at index %u");
+            sk_zone_count += 1;
+        } else {
+            sk_log(0x40, "Unsupported zone version %u");
+        }
+    }
+done:
+    if (*(long *)(zone_obj + 0x48) != 0) {
+        for (i = 0; i < sk_zone_count; i++) {
+            unsigned long other = *(unsigned long *)((char *)0x6adfe8 + i * 8);
+            if (((unsigned long (*)(void *, void *))
+                 **(void ***)(other + 0x10))((void *)other, *(void **)(zone_obj + 0x48)) != 0) {
+                sk_zone_named(other);  /* FUN_0001220c */
+                break;
+            }
+        }
+        *(void **)(zone_obj + 0x48) = 0;
+    }
+    unsigned long len = sk_strlen("DefaultXzoneZone");  /* thunk_FUN_00115080, s_005aaa26 */
+    char *name = (char *)sk_zone_alloc_n(zone_obj, len + 1);  /* FUN_00012060 */
+    if (name != 0) {
+        sk_strcpy(name, "DefaultXzoneZone", len + 1, len + 1);  /* FUN_00117e68 */
+        *(char **)(zone_obj + 0x48) = name;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012060 @ 0x00012060   (est. sk_zone_alloc_n)
+ * Ghidra: void FUN_00012060(long zone, ulong size)
+ * Allocates `size` bytes from the zone's allocation method (offset 0x18),
+ * trapping on range wrap.
+ * Confidence: medium
+ * Notes: zone method dispatch; trap 0x120b4. */
+void *sk_zone_alloc_n(unsigned long zone, unsigned long size)
+{
+    unsigned long r = ((unsigned long (*)(void *, unsigned long))
+                       *(unsigned long (**)(void *, unsigned long))((char *)zone + 0x18))((void *)zone, size);
+    if (r <= r + size) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x120b4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000120b4 @ 0x000120b4   (est. sk_zone_calloc)
+ * Ghidra: ulong FUN_000120b4(long zone, ulong count, ulong size, ulong flags)
+ * Zone calloc: validates count*size for overflow (setting error 0xc /
+ * ENOMEM and returning 0 on wrap), then calls the zone's calloc method
+ * (offset 0x20). Traps on a wrapped result.
+ * Confidence: medium
+ * Notes: zone method dispatch; error thunk_FUN_0006037c; trap 0x12160. */
+unsigned long sk_zone_calloc(unsigned long zone, unsigned long count, unsigned long size, unsigned long flags)
+{
+    unsigned long total = size;
+    unsigned int *err;
+
+    if (count != 1) {
+        if (count * size >> 64 != 0) {
+            err = sk_error_slot();
+            *err = 0xc;
+            if ((flags & 1) == 0) return 0;
+            err = sk_error_slot();
+            *err = 0xc;
+            return 0;
+        }
+        total = count * size;
+    }
+    unsigned long r = ((unsigned long (*)(void *, unsigned long, unsigned long))
+                       **(void ***)((char *)zone + 0x20))((void *)zone, count, size);
+    if (r <= r + total) return r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12160) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012160 @ 0x00012160   (est. sk_zone_calloc_bulk)
+ * Ghidra: void FUN_00012160(undefined8 zone, long count, long size)
+ * Bulk zone calloc wrapper: computes count*size, calls the zone calloc
+ * (FUN_000120b4), and traps if the resulting range wraps.
+ * Confidence: medium
+ * Notes: helper FUN_000120b4; trap 0x121b8. */
+void *sk_zone_calloc_bulk(unsigned long zone, unsigned long count, unsigned long size)
+{
+    unsigned long r = sk_zone_calloc(zone, count, size, 0);  /* FUN_000120b4 */
+    unsigned long total = size * count;
+    if (r <= r + total) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x121b8) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000121b8 @ 0x000121b8   (est. sk_zone_alloc_realloc)
+ * Ghidra: void FUN_000121b8(long zone, undefined8 p, ulong size)
+ * Zone allocation variant via the zone method at offset 0x38, trapping on a
+ * wrapped result.
+ * Confidence: medium
+ * Notes: zone method dispatch; trap 0x1220c. */
+void *sk_zone_alloc_realloc(unsigned long zone, void *p, unsigned long size)
+{
+    unsigned long r = ((unsigned long (*)(void *, unsigned long))
+                       *(unsigned long (**)(void *, unsigned long))((char *)zone + 0x38))((void *)zone, size);
+    if (r <= r + size) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x1220c) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001220c @ 0x0001220c   (est. sk_zone_named)
+ * Ghidra: void FUN_0001220c(long zone)
+ * Invokes the zone's "name" method (offset 0x30) to record a human-readable
+ * zone name.
+ * Confidence: medium
+ * Notes: method dispatch offset 0x30. */
+void sk_zone_named(unsigned long zone)
+{
+    ((void (*)(void *))**(void ***)(zone + 0x30))((void *)zone);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012218 @ 0x00012218   (est. sk_zone_aligned_alloc)
+ * Ghidra: long FUN_00012218(long zone, ulong align, ulong size, uint flags)
+ * Zone aligned allocation: for power-of-two align > 7 and a compatible size
+ * it invokes the zone's aligned-alloc method (offset 0x70), returning its
+ * result; otherwise sets error 0xc (and reports it if flags bit 0 is set).
+ * Returns 0 on failure.
+ * Confidence: medium
+ * Notes: zone method offset 0x70; error thunk_FUN_0006037c. */
+long sk_zone_aligned_alloc(unsigned long zone, unsigned long align, unsigned long size, unsigned int flags)
+{
+    unsigned long r;
+    unsigned int err = 0x16;
+    void (*method)(void);
+
+    if ((align > 7) && ((align & (align - 1)) == 0) &&
+        ((size & (align - 1)) == 0 || ((flags >> 1 & 1) == 0))) {
+        method = *(void (**)(void))(zone + 0x70);
+        if (method != 0) {
+            r = ((unsigned long (*)(void *))**(void ***)(zone + 0x70))((void *)zone);
+            if (r != 0) return r;
+        }
+        err = 0xc;
+    }
+    if ((flags & 1) != 0) {
+        unsigned int *e = sk_error_slot();
+        *e = err;
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000122ac @ 0x000122ac   (est. sk_zone_aligned_alloc_try)
+ * Ghidra: undefined8 FUN_000122ac(long zone, ulong size)
+ * Zone aligned allocation that returns 0 (rather than failing loudly) when
+ * the zone lacks an aligned-alloc method; dispatches to the method at offset
+ * 0x70 otherwise.
+ * Confidence: medium
+ * Notes: zone method offset 0x70. */
+unsigned long sk_zone_aligned_alloc_try(unsigned long zone, unsigned long size)
+{
+    void (**method)(void);
+
+    if ((size > 7) && ((size & (size - 1)) == 0)) {
+        method = *(void (***)(void))(zone + 0x70);
+        if (method != 0) {
+            return ((unsigned long (*)(void *))**method)((void *)zone);
+        }
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000122f0 @ 0x000122f0   (est. sk_zone_free_lookup)
+ * Ghidra: void FUN_000122f0(ulong p, uint start_idx)
+ * Frees a pointer by locating the owning zone: walks the registered zone
+ * table from `start_idx`, invoking each zone's matcher (offset 0x10) on the
+ * pointer; the matching zone's free method (offset 0x78, or fallback
+ * sk_zone_named at 0x30) releases it. If no zone matches, falls back to
+ * FUN_0000298c (generic free at level 0x40).
+ * Confidence: medium
+ * Notes: zone table DAT_006adfe8/count DAT_006ac238; helper FUN_0000298c;
+ *   traps 0x12400/0x12448. */
+void sk_zone_free_lookup(unsigned long p, unsigned int start_idx)
+{
+    unsigned long zone;
+    unsigned int i;
+    unsigned long match;
+
+    if (p == 0) return;
+    for (i = start_idx; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
+        zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
+        match = ((unsigned long (*)(void *, unsigned long))
+                 **(void ***)(zone + 0x10))((void *)zone, p);
+        if (match != 0) {
+            void (**method)(void) = *(void (***)(void))(zone + 0x78);
+            if (method == 0) {
+                sk_zone_named(zone);  /* FUN_0001220c */
+                return;
+            }
+            if (p <= p + match) {
+                ((void (*)(void *, unsigned long, unsigned long))**method)((void *)zone, p, match);
+                return;
+            }
+            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12400) */
+        }
+    }
+    sk_free_other(0x40, p);  /* FUN_0000298c */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001244c @ 0x0001244c   (est. sk_zone0_alloc)
+ * Ghidra: void FUN_0001244c(ulong size)
+ * Allocates `size` bytes from zone 0 (DAT_006adfe8), trapping on a wrapped
+ * result.
+ * Confidence: medium
+ * Notes: helper FUN_00012060; trap 0x124a4. */
+void *sk_zone0_alloc(unsigned long size)
+{
+    unsigned long r = (unsigned long)sk_zone_alloc_n(sk_zone0(), size);  /* FUN_00012060 */
+    if (r <= r + size) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x124a4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000124a4 @ 0x000124a4   (est. sk_zone0_aligned_alloc)
+ * Ghidra: void FUN_000124a4(undefined8 size, ulong align)
+ * Aligned allocation from zone 0 via sk_zone_aligned_alloc (flags=3),
+ * trapping on a wrapped result.
+ * Confidence: medium
+ * Notes: helper FUN_00012218; trap 0x12504. */
+void *sk_zone0_aligned_alloc(unsigned long size, unsigned long align)
+{
+    unsigned long r = sk_zone_aligned_alloc(sk_zone0(), size, align, 3);  /* FUN_00012218 */
+    if (r <= r + align) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12504) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012504 @ 0x00012504   (est. sk_zone0_calloc_bulk)
+ * Ghidra: void FUN_00012504(long count, long size)
+ * Bulk calloc from zone 0 (FUN_00012160), trapping on a wrapped result.
+ * Confidence: medium
+ * Notes: helper FUN_00012160; trap 0x12568. */
+void *sk_zone0_calloc_bulk(unsigned long count, unsigned long size)
+{
+    unsigned long r = (unsigned long)sk_zone_calloc_bulk(sk_zone0(), count, size);  /* FUN_00012160 */
+    unsigned long total = size * count;
+    if (r <= r + total) return (void *)r;
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12568) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012568 @ 0x00012568   (est. sk_heap_free)
+ * Ghidra: void FUN_00012568(long p)
+ * Frees a heap pointer: if zone 0 has a bulk-free method (offset 0x90) it
+ * dispatches to it; otherwise falls back to sk_zone_free_lookup.
+ * Confidence: medium
+ * Notes: zone 0 DAT_006adfe8; helper FUN_000122f0. */
+void sk_heap_free(void *p)
+{
+    void (**method)(void);
+
+    if (p == 0) return;
+    method = *(void (***)(void))((char *)sk_zone0() + 0x90);
+    if (method != 0) {
+        ((void (*)(void *))**method)(sk_zone0());
+        return;
+    }
+    sk_zone_free_lookup((unsigned long)p, 0);  /* FUN_000122f0 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000125b0 @ 0x000125b0   (thunk sk_heap_free)
+ * Ghidra: void thunk_FUN_00012568(long p)
+ * Thunk to sk_heap_free (FUN_00012568).
+ * Confidence: high (thunk). */
+void sk_heap_free_thunk(void *p)
+{
+    sk_heap_free(p);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000125b4 @ 0x000125b4   (est. sk_heap_alloc)
+ * Ghidra: ulong FUN_000125b4(long p, ulong size)
+ * Heap allocation: for a nonzero existing pointer + size, walks the zone
+ * table to find the owning zone and reallocates through its realloc method
+ * (offset 0x38); for an empty request it allocates from zone 0
+ * (FUN_00012060). Falls back to sk_free_other on an unmatchable pointer,
+ * sets error 0xc on failure, and traps on a wrapped result.
+ * Confidence: medium
+ * Notes: zone table DAT_006adfe8/count DAT_006ac238; helpers FUN_00012060/
+ *   000121b8/0000298c/thunk_FUN_0006037c; trap 0x126bc. */
+unsigned long sk_heap_alloc(void *p, unsigned long size)
+{
+    unsigned long r, zone;
+    unsigned int i;
+
+    if (p == 0 || size == 0) {
+        r = (unsigned long)sk_zone_alloc_n(sk_zone0(), size);  /* FUN_00012060 */
+        if (r != 0) {
+            if (size == 0) sk_heap_free(p);
+            if (r <= r + size && size <= (r + size) - r) return r;
+            __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x126bc) */
+        }
+    } else {
+        for (i = 0; i < sk_zone_count; i++) {   /* _DAT_006ac238 */
+            zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
+            if (((unsigned long (*)(void *, void *))
+                 **(void ***)(zone + 0x10))((void *)zone, p) != 0) {
+                r = (unsigned long)sk_zone_alloc_realloc(zone, p, size);  /* FUN_000121b8 */
+                if (r != 0) {
+                    if (size == 0) sk_heap_free(p);
+                    if (r <= r + size && size <= (r + size) - r) return r;
+                    __builtin_trap();
+                }
+                break;
+            }
+        }
+        sk_free_other(0x40, (unsigned long)p);  /* FUN_0000298c */
+    }
+    *sk_error_slot() = 0xc;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000126e8 @ 0x000126e8   (est. sk_zone_match)
+ * Ghidra: long FUN_000126e8(long p)
+ * Returns the zone (from the global table) that matches pointer `p`, or 0
+ * if none do.
+ * Confidence: medium
+ * Notes: zone table DAT_006adfe8/count DAT_006ac238; trap 0x1279c. */
+long sk_zone_match(void *p)
+{
+    unsigned long zone, match;
+    unsigned int i;
+
+    if (p != 0 && sk_zone_count != 0) {
+        for (i = 0; i < sk_zone_count; i++) {
+            zone = *(unsigned long *)((char *)0x6adfe8 + i * 8);  /* DAT_006adfe8 */
+            match = ((unsigned long (*)(void *, void *))
+                     **(void ***)(zone + 0x10))((void *)zone, p);
+            if (match != 0) return match;
+        }
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001279c @ 0x0001279c   (est. sk_zone0_method_dispatch)
+ * Ghidra: void FUN_0001279c(undefined8 p)
+ * Dispatches a method call through zone 0's method table (offset 0x60 -> +8)
+ * on `p`.
+ * Confidence: medium
+ * Notes: zone 0 DAT_006adfe8; jumptable 0x127bc. */
+void sk_zone0_method_dispatch(void *p)
+{
+    void (**tbl)(void) = *(void (***)(void))((char *)sk_zone0() + 0x60);
+    ((void (*)(void *, void *))tbl[1])((void *)sk_zone0(), p);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000127c0 @ 0x000127c0   (est. sk_zone0_aligned_alloc_out)
+ * Ghidra: undefined4 FUN_000127c0(long *out, ulong size)
+ * Zone 0 aligned allocation storing the result through *out: returns 0 on
+ * success, 0xc (alignment unsupported) or 0x16 (bad alignment/size) on
+ * failure.
+ * Confidence: medium
+ * Notes: helper FUN_000122ac. */
+unsigned int sk_zone0_aligned_alloc_out(void **out, unsigned long size)
+{
+    unsigned long r = sk_zone_aligned_alloc_try(sk_zone0(), size);  /* FUN_000122ac */
+    if (r == 0) {
+        if ((size & (size - 1)) != 0 || size < 8) return 0x16;
+        return 0xc;
+    }
+    *out = (void *)r;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0001281c @ 0x0001281c   (est. sk_zone_create_desc)
+ * Ghidra: void FUN_0001281c(undefined8 *desc, undefined1 kind, undefined1 flags,
+ *                           uint a, uint b, uint granule, undefined8 name,
+ *                           ulong base, uint align)
+ * Initializes a malloc-zone descriptor object: records kind, flags, the
+ * count/size/granule fields, computes the aligned interior layout from
+ * base/align/granule, and links the per-granule slot array. Fills the
+ * descriptor header fields.
+ * Confidence: medium
+ * Notes: zone descriptor layout. */
+void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int a,
+                         unsigned int b, unsigned int granule, void *name,
+                         unsigned long base, unsigned int align)
+{
+    unsigned long *slots = 0;
+    unsigned int nslots = 0;
+    unsigned long usable;
+    unsigned int pad;
+
+    if (base != 0) {
+        unsigned long per = (unsigned long)b;
+        usable = (per != 0) ? base / per : 0;
+        unsigned long rem = base - usable * per;
+        pad = (rem != 0) ? per - rem : 0;
+        usable = align - pad;
+        if ((pad <= align) && (granule << 1 <= usable)) {
+            unsigned long *p = (unsigned long *)(pad + base);
+            unsigned int cnt = 0;
+            if (granule != 0) cnt = (unsigned int)usable / granule;
+            *p = 0;
+            p[1] = (unsigned long)p;
+            cnt = cnt * granule;
+            p[2] = 0;
+            p[3] = 0;
+            nslots = granule;
+            slots = p;
+        } else {
+            nslots = 0;
+            slots = 0;
+            usable = 0;
+        }
+    }
+    desc[0] = 0;
+    desc[1] = 0;
+    *(uint8_t *)(desc + 2) = kind;
+    *(uint8_t *)((char *)desc + 0x11) = flags;
+    *(uint16_t *)((char *)desc + 0x12) = 0;
+    unsigned int cnt = (granule != 0) ? a / granule : 0;
+    *(unsigned int *)((char *)desc + 0x14) = a;
+    *(unsigned int *)(desc + 3) = cnt * granule;
+    *(unsigned int *)((char *)desc + 0x1c) = b;
+    *(unsigned int *)(desc + 4) = granule;
+    *(unsigned long *)((char *)desc + 0x2c) = 0;
+    *(unsigned long *)((char *)desc + 0x24) = 0;
+    *(unsigned int *)((char *)desc + 0x34) = 0;
+    desc[7] = (void *)slots;
+    *(unsigned int *)(desc + 8) = nslots;
+    *(unsigned int *)((char *)desc + 0x44) = 0;
+    desc[9] = (void *)name;
+    desc[10] = (void *)slots;
+    *(unsigned int *)(desc + 0xb) = (unsigned int)(usable % granule);
+    *(unsigned int *)((char *)desc + 0x5c) = 0;
+    if (slots != 0) {
+        *slots = 0;
+        desc[5] = (void *)slots;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000128cc @ 0x000128cc   (est. sk_zone_alloc_slot)
+ * Ghidra: ulong FUN_000128cc(long zone)
+ * Zone slot allocator: takes the zone lock, pops a free slot from the
+ * free-slot list (zone+0x30), or on empty grows the zone by allocating a new
+ * run of pages (FUN_00011a08) sized to the zone granule, registering the run
+ * in the zone's run list (zone+0x28). Releases the lock and returns the new
+ * slot address.
+ * Confidence: medium
+ * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
+ *   s_Failed_to_release_lock__p__005a9a3f; helpers FUN_0011582c/00115894/
+ *   00012b0c/00011a08. */
+unsigned long sk_zone_alloc_slot(unsigned long zone)
+{
+    unsigned long *run;
+    unsigned long slot;
+    unsigned int granule;
+    unsigned int sz;
+
+    if (sk_buddy_lock(zone) != 0) {  /* FUN_0011582c */
+        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
+    }
+    run = *(unsigned long **)(zone + 0x30);
+    if (run != 0) {
+        unsigned long next = run[1];
+        *(unsigned long **)(zone + 0x30) = (unsigned long *)*run;
+        if (*(long *)(zone + 0x48) == 0) {
+            *run = 0;
+            run[1] = 0;
+        } else {
+            sk_zone_ref_run(zone, run);  /* FUN_00012b0c */
+        }
+        slot = (unsigned long)run;
+        goto done;
+    }
+    unsigned long flags = 0x2000;
+    unsigned long r;
+    unsigned long local[2] = {0, 0};
+    if (*(long *)(zone + 0x48) != 0) {
+        flags = (*(unsigned int *)(zone + 0x20) >> 0xe == 0) ? 0x2000 : 0x2200;
+    }
+    granule = *(unsigned int *)(zone + 0x14);
+    r = sk_alloc_at(0, granule, (void *)(LZCOUNT(0) & 0x1f), 1, flags, 1, (void *)&local);  /* FUN_00011a08 */
+    if (r == 0) {
+        sk_panic("BUG IN CLIENT OF LIBMALLOC: zone grow failed");  /* FUN_001150e0 */
+    }
+    if (*(long *)(zone + 0x48) == 0) {
+        sz = *(unsigned int *)(zone + 0x20);
+        slot = r;
+    } else {
+        slot = sk_zone_alloc_slot(zone);  /* FUN_000128cc */
+        sz = 0;
+    }
+    *(unsigned int *)(zone + 0x40) = sz;
+    unsigned long *newrun = (unsigned long *)r;
+    *newrun = 0;
+    newrun[1] = r;
+    newrun[3] = local[1];
+    newrun[2] = local[0];
+    *(unsigned long **)(zone + 0x38) = newrun;
+    *newrun = *(unsigned long *)(zone + 0x28);
+    *(unsigned long **)(zone + 0x28) = newrun;
+    granule = *(unsigned int *)(zone + 0x40);
+    slot = newrun[1] + granule;
+    *(unsigned int *)(zone + 0x40) = *(unsigned int *)(zone + 0x20) + granule;
+done:
+    if (sk_buddy_unlock(zone) != 0) {  /* FUN_00115894 */
+        sk_boot_fail(0x40, 0, "Failed to release lock %p");
+    }
+    return slot;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012b0c @ 0x00012b0c   (est. sk_zone_ref_run)
+ * Ghidra: void FUN_00012b0c(long zone, undefined8 *run)
+ * Re-queues a zone run: takes the zone lock, and links the run into the
+ * zone's free-slot list (zone+0x30). Releases the lock.
+ * Confidence: medium
+ * Notes: strings s_Failed_to_acquire_lock__p__005a9a23,
+ *   s_Failed_to_release_lock__p__005a9a3f; helpers FUN_0011582c/00115894/
+ *   000128cc. */
+void sk_zone_ref_run(unsigned long zone, void **run)
+{
+    void **p = run;
+
+    if (sk_buddy_lock(zone) != 0) {  /* FUN_0011582c */
+        sk_boot_fail(0x40, 0, "Failed to acquire lock %p");
+    }
+    if (*(long *)(zone + 0x48) != 0) {
+        p = (void **)sk_zone_alloc_slot(zone);  /* FUN_000128cc */
+    }
+    *p = *(void **)(zone + 0x30);
+    p[1] = run;
+    *(void ***)(zone + 0x30) = p;
+    if (sk_buddy_unlock(zone) != 0) {  /* FUN_00115894 */
+        sk_boot_fail(0x40, 0, "Failed to release lock %p");
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012c04 @ 0x00012c04   (est. sk_tcb_slot_alloc_init)
+ * Ghidra: void FUN_00012c04(long td, ulong count)
+ * Allocates the capability-slot array for a TCB (td): validates that the
+ * TCB is in the expected state (no received/allocated slot counts), asserts
+ * the request is < TB_MAX_CAPS (5) via "TB_ASSERT: num_caps < TB_MAX_CAPS",
+ * and allocates each slot from FUN_00034f70, storing them at td+0x38. On a
+ * NULL allocation it panics via FUN_004b0034.
+ * Confidence: medium (string-matched "TB_ASSERT: num_caps < TB_MAX_CAPS").
+ * Notes: strings s_TB_ASSERT__num_caps_<__TB_MAX_CA_005aabbd,
+ *   s_TB_ASSERT__td_>received_slot_cou_005aab87,
+ *   s_TB_ASSERT__td_>allocated_slot_co_005aab3a; helpers FUN_00034f70/
+ *   FUN_004b0034. */
+void sk_tcb_slot_alloc_init(void *td, unsigned long count)
+{
+    long *slots = (long *)((char *)td + 0x38);
+    unsigned long i;
+    long s;
+
+    if ((unsigned long)((char *)td + 0x68) < (unsigned long)slots) {
+        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12c88) */
+    }
+    if (*(long *)((char *)td + 0x58) == 0) {
+        if (*(long *)((char *)td + 0x60) == 0) {
+            if (count < 5) {
+                for (i = 0; i < count; i++) {
+                    s = sk_tcb_slot_alloc();  /* FUN_00034f70 */
+                    *slots = s;
+                    if (s == 0) {
+                        sk_panic_tcb();  /* FUN_004b0034 */
+                        __builtin_trap();
+                    }
+                    slots += 1;
+                }
+                *(unsigned long *)((char *)td + 0x58) = count;
+                *(unsigned long *)((char *)td + 0x60) = 0;
+                return;
+            }
+            sk_puts("TB_ASSERT: num_caps < TB_MAX_CAPS");  /* 0x5aabbd */
+        } else {
+            sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aab87 */
+        }
+    } else {
+        sk_puts("TB_ASSERT: td->allocated_slot_count");  /* 0x5aab3a */
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12cec) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012d3c @ 0x00012d3c   (est. sk_tcb_slot_recv_assert)
+ * Ghidra: void FUN_00012d3c(void)
+ * Assertion failure for a TCB with a nonzero received-slot count: prints
+ * "TB_ASSERT: td->received_slot_count" and traps.
+ * Confidence: medium (string-matched).
+ * Notes: string s_TB_ASSERT__td_>received_slot_cou_005aab87. */
+void sk_tcb_slot_recv_assert(void)
+{
+    sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aab87 */
+    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12d70) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012d70 @ 0x00012d70   (est. sk_tcb_slot_alloc_teardown)
+ * Ghidra: void FUN_00012d70(long td)
+ * Tears down a TCB's capability-slot array: validates the received/allocated
+ * slot counts are consistent, releases each allocated slot that is not also
+ * received (FUN_004b23d8), zeroes the slot array, and resets the counters.
+ * Confidence: medium (string-matched "TB_ASSERT").
+ * Notes: strings s_TB_ASSERT__td_>received_slot_cou_005aac1e,
+ *   s_TB_ASSERT__td_>allocated_slot_co_005aac70; helper FUN_004b23d8;
+ *   trap 0x12e04. */
+void sk_tcb_slot_alloc_teardown(void *td)
+{
+    unsigned long i, nalloc, nrecv;
+
+    if ((unsigned long)((char *)td + 0x68) < (unsigned long)((char *)td + 0x38)) {
+        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x12e04) */
+    }
+    nalloc = *(unsigned long *)((char *)td + 0x58);
+    nrecv = *(unsigned long *)((char *)td + 0x60);
+    if (nalloc < nrecv) {
+        sk_puts("TB_ASSERT: td->received_slot_count");  /* 0x5aac1e */
+    } else if (nalloc < 5) {
+        for (i = 0; i < nalloc; i++) {
+            if (nrecv <= i) {
+                sk_tcb_slot_release((void *)*(unsigned long *)((char *)td + 0x38 + i * 8));  /* FUN_004b23d8 */
+            }
+            *(unsigned long *)((char *)td + 0x38 + i * 8) = 0;
+        }
+        *(unsigned long *)((char *)td + 0x58) = 0;
+        *(unsigned long *)((char *)td + 0x60) = 0;
+        return;
+    } else {
+        sk_puts("TB_ASSERT: td->allocated_slot_count");  /* 0x5aac70 */
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(1, 0x12e48) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012e48 @ 0x00012e48   (est. sk_tcb_create_zeroed)
+ * Ghidra: void FUN_00012e48(void)
+ * Allocates and zero-fills a 0x118-byte TCB object (tag 0x1082040eda8e2da),
+ * initializing its function-dispatch pointer at offset 0xc, and panics via
+ * FUN_004b0068 on allocation failure.
+ * Confidence: medium
+ * Notes: tag 0x1082040eda8e2da; helpers FUN_00010244/FUN_004b0068. */
+void *sk_tcb_create_zeroed(void)
+{
+    unsigned long *tcb = (unsigned long *)sk_heap_calloc(1, 0x118, (void *)0x1082040eda8e2da);  /* FUN_00010244 */
+    if (tcb != 0) {
+        for (int i = 0; i < 0x23; i++) tcb[i] = 0;
+        tcb[0xc] = 0x658fa8;
+        return tcb;
+    }
+    sk_panic_tcb();  /* FUN_004b0068 */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00012eb8 @ 0x00012eb8   (est. sk_tcb_cap_copy)
+ * Ghidra: int FUN_00012eb8(undefined8 src, long dst, long *out, uint flags)
+ * Copies a capability between two TCBs: reads the source capability buffer
+ * (FUN_000159b8), allocates a destination buffer, copies the capability
+ * words, validates the copy (FUN_00013134), migrates the buffer ownership,
+ * and stores the result through *out. On failure frees the intermediates and
+ * returns (flags&2)<<1. Panics on assertion failure ("TB_ASSERT: err ==
+ * TB_ERROR_SUCCESS").
+ * Confidence: medium (string-matched "TB_ASSERT: err == TB_ERROR_SUCCESS").
+ * Notes: string s_TB_ASSERT__err____TB_ERROR_SUCCE_005aacb1; helpers
+ *   FUN_000159b8/00010244/00117cc4/00015984/00015468/00013134/004b0080/
+ *   004b0068; alloc tags 0x100004077774924/0x1090040b6685729/0x102004071d150f8. */
+int sk_tcb_cap_copy(void *src_tcb, void *dst_tcb, void **out, unsigned int flags)
+{
+    unsigned long *sbuf = (unsigned long *)sk_cap_buf(src_tcb);  /* FUN_000159b8 */
+    unsigned long nsrc = sbuf[3];
+    unsigned long base = *sbuf;
+    unsigned long *dbuf = (unsigned long *)sk_heap_calloc(nsrc, 1, (void *)0x100004077774924);  /* FUN_00010244 */
+    if (dbuf != 0) {
+        sk_memcpy(dbuf, (void *)base, nsrc);  /* FUN_00117cc4 */
+        unsigned long *meta = (unsigned long *)sk_heap_calloc(1, 0x68, (void *)0x1090040b6685729);
+        if (meta != 0) {
+            *meta = (unsigned long)dbuf;
+            meta[2] = 0;
+            meta[3] = nsrc;
+            meta[4] = 0;
+            meta[6] = 0;
+            *(uint16_t *)((char *)meta + 0x2a) = *(uint16_t *)((char *)sbuf + 0x2a);
+            unsigned int *op = (unsigned int *)sk_heap_calloc(1, 0x58, (void *)0x102004071d150f8);
+            if (op == 0) sk_panic_tcb();  /* FUN_004b0068 */
+            *op = 4;
+            *(uint8_t *)(op + 1) = 1;
+            *(unsigned long **)(op + 0x14) = meta;
+            *(unsigned long *)(op + 6) = (unsigned long)src_tcb;
+            sk_obj_retain(op, 1);  /* FUN_00015984 */
+            unsigned int *ref = op;
+            sk_cap_install(src_tcb, op, &ref);  /* FUN_00015468 */
+            if (ref == 0) {
+                sk_heap_free((void *)*meta);
+                sk_heap_free(meta);
+                sk_heap_free(op);
+                return (flags & 2) << 1;
+            }
+            unsigned long *dbuf2 = (unsigned long *)sk_cap_buf(ref);  /* FUN_000159b8 */
+            unsigned long n2 = dbuf2[3];
+            sk_heap_free((void *)*sbuf);
+            *sbuf = 0;
+            sbuf[2] = 0;
+            sbuf[3] = 0;
+            if (sk_tcb_cap_copy_commit((void *)n2, n2, (void *)n2, &n2) != 0) {  /* FUN_00013134 */
+                sk_puts("TB_ASSERT: err == TB_ERROR_SUCCESS");  /* 0x5aacb1 */
+                __builtin_trap();
+            }
+            if (dbuf2[3] <= sbuf[3]) {
+                base = *sbuf;
+                sk_memcpy((void *)base, *dbuf2, dbuf2[3]);  /* FUN_00117cc4 */
+                *(uint16_t *)((char *)sbuf + 0x2a) = *(uint16_t *)((char *)dbuf2 + 0x2a);
+                *(unsigned long *)((char *)dst_tcb + 0x18) = *(unsigned long *)(ref + 6);
+                sk_obj_retain(dst_tcb, 2);  /* FUN_00015984 */
+                if (meta != dbuf2) {
+                    sk_heap_free((void *)*dbuf2);
+                    sk_heap_free(dbuf2);
+                }
+                sk_heap_free((void *)*meta);
+                sk_heap_free(meta);
+                sk_heap_free(op);
+                if (out == 0) return 0;
+                *out = dst_tcb;
+                return 0;
+            }
+        }
+    }
+    sk_panic_tcb();  /* FUN_004b0080 */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013134 @ 0x00013134   (est. sk_tcb_cap_copy_commit)
+ * Ghidra: undefined8 FUN_00013134(undefined8 a, ulong size, undefined8 c, ulong *out)
+ * Capability-copy commit helper: allocates a buffer of `size` words (tag
+ * 0x100004077774924), stores it (zeroing the header fields) through *out,
+ * and returns 0 on success. On allocation failure it releases the previous
+ * buffer via sk_heap_free and marks the state as failed (offset 0x29 = 1).
+ * Confidence: medium
+ * Notes: tag 0x100004077774924; helpers FUN_00010244/004b0080/
+ *   thunk_FUN_00012568; trap 0x131a4. */
+unsigned long sk_tcb_cap_copy_commit(void *a, unsigned long size, void *c, unsigned long *out)
+{
+    unsigned long r = (unsigned long)sk_heap_calloc(size, 1, (void *)0x100004077774924);  /* FUN_00010244 */
+    if (r != 0) {
+        *out = r;
+        *(uint8_t *)(out + 1) = 0;
+        out[2] = 0;
+        out[3] = size;
+        out[4] = 0;
+        out[6] = 0;
+        *(uint8_t *)((char *)out + 0x29) = 0;
+        return 0;
+    }
+    sk_panic_tcb();  /* FUN_004b0080 */
+    sk_heap_free((void *)*out);
+    *out = 0;
+    out[6] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[2] = 0;
+    *(uint8_t *)((char *)out + 0x29) = 1;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000131e8 @ 0x000131e8   (est. sk_tcb_cap_release_commit)
+ * Ghidra: void FUN_000131e8(undefined8 a, undefined8 *slot, undefined8 c, undefined8 size)
+ * Releases a capability buffer slot (sk_heap_free of *slot), clears the
+ * buffer header, then re-commits a fresh buffer via sk_tcb_cap_copy_commit.
+ * Confidence: medium
+ * Notes: helpers thunk_FUN_00012568/00013134. */
+void sk_tcb_cap_release_commit(void *a, void **slot, void *c, void *size)
+{
+    sk_heap_free(*slot);
+    *slot = 0;
+    slot[2] = 0;
+    slot[3] = 0;
+    sk_tcb_cap_copy_commit((void *)0, (unsigned long)size, c, slot);  /* FUN_00013134 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013228 @ 0x00013228   (est. sk_assert_internal_cc)
+ * Ghidra: void FUN_00013228(void)
+ * Assertion failure at internal.h:0xcc: prints the generic failure string
+ * (DAT_005aacf2) and returns.
+ * Confidence: medium (string "internal.h").
+ * Notes: string s_internal_h_005aad1c / DAT_005aacf2. */
+void sk_assert_internal_cc(void)
+{
+    sk_puts((const char *)0x5aacf2);  /* FUN_00118b28 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013244 @ 0x00013244   (est. sk_assert_internal_c7)
+ * Ghidra: void FUN_00013244(void)
+ * Assertion failure at internal.h:0xc7: prints the generic failure string
+ * (DAT_005aacf2) and returns.
+ * Confidence: medium (string "internal.h").
+ * Notes: string s_internal_h_005aad1c / DAT_005aacf2. */
+void sk_assert_internal_c7(void)
+{
+    sk_puts((const char *)0x5aacf2);  /* FUN_00118b28 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013260 @ 0x00013260   (est. sk_tcb_field_apply)
+ * Ghidra: void FUN_00013260(undefined8 a, undefined8 b, undefined8 c)
+ * Applies a function to a per-thread field: computes a per-thread value
+ * (FUN_000603bc), resolves a method table (FUN_000636d0/636d8) and dispatches
+ * the indirect call with the two arguments. Traps on value-wrap.
+ * Confidence: medium
+ * Notes: helpers FUN_00060524/000603bc/000636d0/000636d8; trap 0x132d4. */
+void *FUN_00013260(void *a, void *b, void *c)
+{
+    unsigned long v = FUN_000603bc();
+    void (**method)(void);
+
+    if (v <= v + 0x50) {
+        method = (void (**)(void))FUN_000636d0();
+        unsigned long arg = FUN_000636d8(v);
+        ((void (*)(unsigned long, void *, void *))*method)(arg, b, c);
+        return (void *)v;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x132d4) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000132d4 @ 0x000132d4   (est. sk_div8)
+ * Ghidra: ulong FUN_000132d4(long param_1)
+ * Returns (param_1 + 7) >> 3 — a ceil-divide-by-8 helper.
+ * Confidence: high (trivial). */
+unsigned long sk_div8(long v)
+{
+    return (unsigned long)(v + 7) >> 3;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000132e0 @ 0x000132e0   (est. sk_lookup_cap_buffer)
+ * Ghidra: undefined8 FUN_000132e0(undefined8 key, undefined8 hint)
+ * Looks up a capability buffer by key: first checks the global TCB-storage
+ * key (0x6adff8, size 0x1b8); if that matches the expected tag (0x37) it
+ * re-runs the lookup with the caller's key/hint, otherwise returns 0.
+ * Confidence: medium
+ * Notes: helpers FUN_0005ea94. */
+unsigned long sk_lookup_cap_buffer(void *key, void *hint)
+{
+    long tag = FUN_0005ea94((void *)0x6adff8, (void *)0x1b8, 0, 0);
+    if (tag == 0x37) {
+        return FUN_0005ea94(key, hint, 0, 0);
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013348 @ 0x00013348   (est. sk_tcb_init_regions)
+ * Ghidra: void FUN_00013348(undefined8 cfg, long tcb)
+ * Initializes the region/tracking fields of a freshly allocated TCB: clears
+ * the per-region list heads (tcb+0x88..0xf0), sets the object-type dispatch
+ * pointer (tcb+0x60 = 0x659008), stores the object handle (FUN_00015440) at
+ * tcb+0x88, and derives config flags (FUN_00015450) into tcb+0xe8/ec/ed.
+ * Confidence: medium
+ * Notes: dispatch pointer 0x659008; helpers FUN_00015440/00015450;
+ *   trap 0x133f8. */
+void sk_tcb_init_regions(void *cfg, void *tcb)
+{
+    unsigned int fl;
+
+    if ((unsigned long)((char *)tcb + 0x118) < (unsigned long)((char *)tcb + 0x88) ||
+        (unsigned long)((char *)tcb + 0xf8) < (unsigned long)((char *)tcb + 0x88)) {
+        __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x133f8) */
+    }
+    *(unsigned long *)((char *)tcb + 0xe0) = 0;
+    *(unsigned long *)((char *)tcb + 0xd8) = 0;
+    *(unsigned long *)((char *)tcb + 0xf0) = 0;
+    *(unsigned long *)((char *)tcb + 0xe8) = 0;
+    *(unsigned long *)((char *)tcb + 0xc0) = 0;
+    *(unsigned long *)((char *)tcb + 0xb8) = 0;
+    *(unsigned long *)((char *)tcb + 0xd0) = 0;
+    *(unsigned long *)((char *)tcb + 200) = 0;
+    *(unsigned long *)((char *)tcb + 0xa0) = 0;
+    *(unsigned long *)((char *)tcb + 0x98) = 0;
+    *(unsigned long *)((char *)tcb + 0xb0) = 0;
+    *(unsigned long *)((char *)tcb + 0xa8) = 0;
+    *(unsigned long *)((char *)tcb + 0x90) = 0;
+    *(unsigned long *)((char *)tcb + 0x88) = 0;
+    *(unsigned long *)((char *)tcb + 0x60) = 0x659008;
+    *(unsigned long *)((char *)tcb + 0x88) = sk_tcb_handle(cfg);  /* FUN_00015440 */
+    fl = sk_tcb_cfg_flags(cfg);  /* FUN_00015450 */
+    if ((fl >> 1 & 1) == 0) {
+        if ((fl & 1) != 0) {
+            *(unsigned int *)((char *)tcb + 0xe8) = 4;
+        }
+    } else {
+        *(unsigned int *)((char *)tcb + 0xe8) = fl >> 8 & 0xff;
+    }
+    if ((fl >> 2 & 1) != 0) *(uint8_t *)((char *)tcb + 0xec) = 1;
+    if ((fl >> 3 & 1) != 0) *(uint8_t *)((char *)tcb + 0xed) = 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013878 @ 0x00013878   (est. sk_tcb_register_async)
+ * Ghidra: undefined8 FUN_00013878(long tcb)
+ * Registers an async / deferred callback on a TCB: sets up a worker context
+ * (FUN_00013ee4) bound to the TCB's object (tcb+0x88) and installs it via
+ * FUN_00062c2c, optionally arming a debug trap (FUN_0006290c) when
+ * tcb+0xec is set. Returns 0.
+ * Confidence: medium
+ * Notes: helpers FUN_0006290c/00013260/00062c2c/00013ee4; trap 0x13930. */
+unsigned long sk_tcb_register_async(void *tcb)
+{
+    unsigned int n;
+    unsigned long cfg[4];
+
+    if ((unsigned long)((char *)tcb + 0x88) <= (unsigned long)((char *)tcb + 0x118) &&
+        (unsigned long)((char *)tcb + 0x88) <= (unsigned long)((char *)tcb + 0xf8)) {
+        n = *(unsigned int *)((char *)tcb + 0xe8);
+        if (*(char *)((char *)tcb + 0xec) == '\x01') {
+            sk_tcb_field_apply(0, (void *)FUN_00013260, 0);  /* FUN_0006290c */
+        }
+        if (n < 2) n = 1;
+        cfg[0] = n;
+        cfg[1] = (unsigned long)sk_cap_transfer;  /* FUN_00013ee4 */
+        cfg[2] = 4;
+        cfg[3] = 4;
+        sk_async_install((void *)((char *)tcb + 0x98), *(void **)((char *)tcb + 0x88), &cfg[0]);  /* FUN_00062c2c */
+        return 0;
+    }
+    __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x13930) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00013ee4 @ 0x00013ee4   (est. sk_cap_transfer)
+ * Ghidra: ulong FUN_00013ee4(undefined8 tcb, undefined8 msg, undefined8 cap)
+ * The cL4 capability-transfer (IPC cap passing) worker. Structural
+ * reconstruction: collects the incoming message words (FUN_0005ee50/
+ * FUN_0005eb78), builds an accept context, copies the sender capability
+ * buffer, and hands the message to the TCB (FUN_00015468). On success it
+ * installs any returned capability slots via CallSupervisor(1).
+ * Confidence: low (large, structural summary).
+ * Notes: string s_TB_ASSERT__payload_size_<__max_s_005ab475,
+ *   s_TB_ASSERT__rcv_err____TB_ERROR_S_005ab441; helpers FUN_0005ee50/
+ *   0005eb78/00060524/0005ee58/00015468. */
+unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
+{
+    unsigned long sz = FUN_0005ee50(msg);
+    unsigned long words = sz << 3;
+    unsigned long r;
+
+    if (sz >> 0x3d != 0 || words >= 0x1b9) {
+        sk_puts("TB_ASSERT: payload_size < max");  /* 0x5ab475 */
+        __builtin_trap();
+    }
+    FUN_0005eb78((void *)msg, words, 0);
+    FUN_00060524();
+    r = sk_tcb_send(tcb, msg, (void **)cap);  /* FUN_00015468 */
+    if (r != 0) {
+        sk_puts("TB_ASSERT: rcv_err == TB_ERROR_SUCCESS");  /* 0x5ab441 */
+        __builtin_trap();
+    }
+    FUN_0005ee58(words, 0, 0, 0);
+    return 0;
 }

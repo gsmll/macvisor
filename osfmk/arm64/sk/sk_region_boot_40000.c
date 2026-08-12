@@ -446,7 +446,6 @@ extern unsigned long sk_tb_fatal();
 extern unsigned long sk_tb_get_u8();
 extern unsigned long sk_tb_len();
 extern unsigned long sk_tb_meta();
-extern unsigned long sk_tb_ph_iter_next();
 extern unsigned long sk_tb_put_len();
 extern unsigned long sk_tb_put_mem();
 extern unsigned long sk_tb_put_nl();
@@ -461,13 +460,7 @@ extern unsigned long sk_tls_enter();
 extern unsigned long sk_tls_exit();
 extern unsigned long sk_tls_store();
 extern unsigned long sk_vas_abort();
-extern unsigned long sk_vas_abort_5b324e();
-extern unsigned long sk_vas_abort_l4err();
 extern unsigned long sk_vas_err();
-extern unsigned long sk_vas_err_stack();
-extern unsigned long sk_vas_err_stack16();
-extern unsigned long sk_vas_noop_110();
-extern unsigned long sk_vas_noop_14c();
 extern unsigned long sk_vas_span_op();
 extern unsigned long sk_vm_ent_alloc();
 extern unsigned long sk_vm_ent_free();
@@ -477,6 +470,186 @@ extern unsigned long sk_vm_obj_alloc();
 extern unsigned long sk_vm_obj_ref();
 extern unsigned long sk_vm_obj_unref();
 extern unsigned long sk_vm_present();
+
+
+/* ---- Forward declarations of in-region functions. ---- */
+unsigned long sk_boot_call(unsigned long ep, unsigned long out, unsigned long reply);
+void sk_boot_ep(unsigned long out, int mode);
+void sk_boot_parse(unsigned long p, unsigned long out);
+unsigned long sk_boot_string(unsigned long ep, unsigned long size);
+void sk_cap_release(unsigned long cap);
+void sk_cap_release_cb(unsigned long obj);
+void sk_cap_release_rt(unsigned long cap, unsigned int kind);
+void sk_cap_release_t(unsigned long p, unsigned long obj);
+unsigned long sk_cap_retain(unsigned long cap);
+void sk_cap_retype(unsigned long outp, unsigned long cap, unsigned int kind);
+cl4_result_t sk_cap_type_table(void);
+cl4_result_t sk_cap_type_table_get(unsigned long data, unsigned long size);
+void sk_ep_call(unsigned long ep, unsigned long sel, unsigned long n, unsigned long *args,                 long nargs, unsigned long flags, unsigned long *outs, unsigned long nouts);
+void sk_ep_call_noreply(unsigned long ep, unsigned long w);
+void sk_ep_call_reply(unsigned long ep, unsigned long w, unsigned long outp);
+void sk_ep_call_send(unsigned long ep, unsigned long w0, unsigned long w1, unsigned long w2);
+unsigned long sk_ep_call_tls(unsigned long ep, unsigned long sel, unsigned long w, long arg,                              unsigned long flags);
+void sk_ep_call_w(unsigned long ep, unsigned long w, unsigned long a, unsigned long b);
+void sk_err_abort(unsigned long out, unsigned long code, unsigned long extra);
+void sk_err_str_cc24(unsigned long out, unsigned long code);
+void sk_err_str_dcd0(unsigned long out, unsigned long code);
+void sk_fault_handle(unsigned long fault, unsigned long va, unsigned long attr, unsigned long outp);
+unsigned long sk_fault_startfault(unsigned long fault, unsigned long arg, unsigned long in);
+unsigned long sk_fault_startfault_ret(void);
+void sk_fh_dump(unsigned long in);
+void sk_fh_register(unsigned long a, unsigned long b);
+void sk_l4_err_string(unsigned long out, unsigned long code);
+void sk_mo_add(unsigned long vspace, unsigned long desc, unsigned long base, long size,                unsigned int flags);
+void sk_mo_alloc(unsigned long p, unsigned long vspace, unsigned long obj, unsigned long arg,                  int level, unsigned long info);
+void sk_mo_del(unsigned long p, unsigned long vspace, unsigned long trans);
+void sk_mo_find(unsigned long vspace, unsigned long obj);
+void sk_mo_init(unsigned long vspace, unsigned long desc, unsigned long base, unsigned long size);
+void sk_mo_insert(unsigned long vspace, unsigned long base, unsigned long size, unsigned long arg);
+unsigned long sk_mo_lookup(unsigned long vspace, unsigned long va);
+unsigned char sk_mo_present(unsigned long obj);
+bool sk_mo_query(unsigned long vspace, unsigned long desc, unsigned long va, unsigned long out_f,                  unsigned long out_a);
+void sk_mo_remove(unsigned long vspace, unsigned long desc);
+void sk_mo_split(unsigned long p, unsigned long vspace, unsigned long desc, unsigned long at,                  unsigned long info);
+void sk_mo_split_add(unsigned long p, unsigned long vspace, unsigned long desc, long at);
+void sk_noop_ba64(void);
+void sk_obj_create(unsigned long kind, unsigned long size, unsigned long arg);
+void sk_obj_create_batch(unsigned long ep, unsigned int kind, unsigned int flags, unsigned long n,                          unsigned long get, unsigned long put);
+unsigned long sk_opt_get(unsigned long opt);
+void sk_opt_set(unsigned long opt, unsigned long val);
+void sk_opt_set2(unsigned long opt, unsigned long valp);
+void sk_pt_free(unsigned long p, unsigned long pt);
+void sk_pt_free_all(unsigned long pt);
+unsigned long sk_pt_get(unsigned long cachep, unsigned long va, unsigned long alloc, int create);
+unsigned long sk_ptr_fixup(unsigned long ptr, unsigned long arg, long stride, long slide, long base);
+void sk_reloc_apply(unsigned long begin, unsigned long end);
+void sk_reloc_init(void);
+unsigned long sk_reloc_one(unsigned long in);
+void sk_spanmap_cap_op(unsigned long vas, unsigned long op, long slot, unsigned long arg);
+unsigned long sk_spanmap_commit(unsigned long vas, unsigned long va);
+void sk_spanmap_fault_cont(void);
+void sk_spanmap_get_cap(unsigned long vas, unsigned long slot);
+unsigned long sk_spanmap_lookup(unsigned long vas, long level, long va);
+unsigned long sk_spanmap_next_used(unsigned long ctx, long ent);
+unsigned long sk_spanmap_op(unsigned long va, unsigned long level);
+cl4_result_t sk_spanmap_query(unsigned long vas, unsigned long va, unsigned long outp);
+void sk_spanmap_rb_insert(unsigned long rootp, unsigned long node);
+unsigned long sk_spanmap_release(unsigned long vas, unsigned long va);
+void sk_spanmap_startfault_cow(unsigned long ff, long va, unsigned int flags, unsigned long vas, unsigned long out);
+unsigned long sk_str_skip(unsigned long s);
+unsigned int sk_tb_cmp(unsigned long a, unsigned long b);
+unsigned int sk_tb_cmp2(unsigned long a, unsigned long b);
+unsigned int sk_tb_cmp3(unsigned long a, unsigned long b);
+unsigned int sk_tb_cmp4(unsigned long a, unsigned long b);
+void sk_tb_dec_rec(unsigned long s, unsigned long rec);
+unsigned long sk_tb_dispatch(unsigned long obj, unsigned long arg, unsigned long buf);
+void sk_tb_enc_rec(unsigned long s, unsigned long rec);
+void sk_tb_enc_rec2(unsigned long s, unsigned long rec);
+void sk_tb_fatal_5b85d2(unsigned long ret);
+void sk_tb_fatal_5b8648(unsigned long ret);
+void sk_tb_fatal_ph(unsigned long kind);
+void sk_tb_ph_addr(unsigned long out, unsigned long addr);
+unsigned long sk_tb_ph_addr2(unsigned long p, long sel, unsigned long region, unsigned long ph,                              unsigned long len);
+unsigned long sk_tb_ph_addr_off(unsigned long region, unsigned long off);
+unsigned long sk_tb_ph_alloc(unsigned int kind, unsigned long obj, unsigned long cap);
+void sk_tb_ph_array(unsigned long arr, unsigned long n, unsigned long target);
+unsigned long sk_tb_ph_avail(void);
+void sk_tb_ph_byte(unsigned long out, unsigned char v);
+void sk_tb_ph_call(unsigned long p, unsigned long out);
+void sk_tb_ph_cb(unsigned long out, unsigned long src);
+void sk_tb_ph_copy4(unsigned long out, unsigned long in);
+void sk_tb_ph_copy8(unsigned long out, unsigned long in);
+void sk_tb_ph_copy9(unsigned long out, unsigned long in);
+unsigned long sk_tb_ph_count(unsigned long ph);
+unsigned long sk_tb_ph_dt(unsigned long p, unsigned long ph, unsigned long region, unsigned long dst,                           unsigned long len);
+unsigned long sk_tb_ph_dump(unsigned long p, unsigned long ph, unsigned long region, unsigned long dst,                             unsigned long len);
+unsigned long sk_tb_ph_dump2(unsigned long p, unsigned long ph, unsigned long arg, unsigned long dst,                              unsigned long len);
+unsigned long sk_tb_ph_dump3(unsigned long p, unsigned long ph, unsigned long arg, unsigned long dst,                              unsigned long len);
+unsigned long sk_tb_ph_encode(unsigned long buf, long size, unsigned long arr, unsigned long n);
+unsigned long sk_tb_ph_find(unsigned long ph, unsigned long pat, unsigned long n, unsigned long outi);
+void sk_tb_ph_free(unsigned long d);
+void sk_tb_ph_go(unsigned long p, unsigned long out, unsigned long arg);
+void sk_tb_ph_iter_init(void);
+bool sk_tb_ph_iter_more(unsigned long it);
+unsigned long sk_tb_ph_iter_next(unsigned long it);
+unsigned int sk_tb_ph_kind(unsigned long ph);
+void sk_tb_ph_name(unsigned long name, unsigned long len, unsigned long cb, unsigned long arg);
+void sk_tb_ph_name2(unsigned long name, unsigned long len, unsigned long cb, unsigned long arg);
+void sk_tb_ph_none(unsigned long out);
+unsigned long sk_tb_ph_one(unsigned long kind, unsigned long buf, long size, long total,                            unsigned long fill, unsigned long arg);
+bool sk_tb_ph_one8(unsigned long in, long size, unsigned long cb, unsigned long arg);
+void sk_tb_ph_range(unsigned long out, unsigned long base, unsigned long size);
+cl4_result_t sk_tb_ph_range2(void);
+bool sk_tb_ph_ready(void);
+void sk_tb_ph_reloc(unsigned long p, unsigned long ph, unsigned long arg, unsigned long seg,                     long off, unsigned long name);
+unsigned long sk_tb_ph_res(unsigned int kind, unsigned long n);
+unsigned long sk_tb_ph_resolve(unsigned long ph, unsigned long idx);
+void sk_tb_ph_scan(int do_pdata, unsigned int flags);
+unsigned long sk_tb_ph_size(unsigned long arr, unsigned long n);
+void sk_tb_ph_u32(unsigned long out, unsigned int v);
+void sk_tb_ph_u32_2(unsigned long out, unsigned int v);
+unsigned long sk_tb_rec_encode(unsigned long obj, unsigned long rec);
+unsigned long sk_tb_rec_encode2(unsigned long obj, char kind, unsigned long arg);
+unsigned long sk_tb_rec_encode3(unsigned long obj, unsigned long rec);
+unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg);
+unsigned long sk_tb_rec_encode5(unsigned long obj, unsigned long rec);
+unsigned long sk_tb_rec_encode6(unsigned long obj, char kind, unsigned long arg);
+unsigned long sk_tb_rec_encode7(unsigned long obj, unsigned long rec);
+unsigned long sk_tb_rec_encode8(unsigned long obj, unsigned long rec);
+void sk_tb_tag_0427(unsigned long out);
+void sk_tb_tag_629b(unsigned long out, unsigned long in);
+void sk_tb_tag_6523(unsigned long out);
+void sk_vas_abort_5aea4f(unsigned long ret);
+void sk_vas_abort_5b324e(unsigned long ret);
+void sk_vas_abort_5b4c32(unsigned long ret);
+void sk_vas_abort_5b562b(unsigned long ret);
+void sk_vas_abort_5b56c0(unsigned long ret);
+void sk_vas_abort_5b5fc3(unsigned long ret);
+void sk_vas_abort_5b6846(unsigned long ret);
+void sk_vas_abort_5b6ac1(unsigned long ret);
+void sk_vas_abort_l4err(void);
+void sk_vas_abort_l4err_18(void);
+void sk_vas_abort_mapped_level(void);
+unsigned long sk_vas_cfg(void);
+unsigned long sk_vas_cfg_init(void);
+void sk_vas_dump(unsigned long fd, unsigned long vspace, unsigned long cfg);
+void sk_vas_err_log(void);
+void sk_vas_err_stack(void);
+void sk_vas_err_stack16(void);
+void sk_vas_err_stack18(void);
+void sk_vas_err_str_0c(void);
+void sk_vas_err_str_90(void);
+void sk_vas_fh_validate(void);
+void sk_vas_init_fh(void);
+cl4_result_t sk_vas_init_map(unsigned long base, long size, unsigned int flags, unsigned char kind);
+void sk_vas_init_root(unsigned long p, long a, long b);
+long sk_vas_layout_init(unsigned long d, int type, unsigned long base, long limit,                         unsigned long mtab0, unsigned long mtab);
+bool sk_vas_level_valid(int level, int type);
+cl4_result_t sk_vas_map_range(unsigned long p, unsigned long vspace, unsigned long align,                               unsigned long base, long size);
+void sk_vas_noop(void);
+void sk_vas_noop_110(void);
+void sk_vas_noop_138(void);
+void sk_vas_noop_14c(void);
+void sk_vas_noop_1c0(void);
+void sk_vas_noop_f8(void);
+unsigned long sk_vas_populate_level(unsigned long vas, unsigned long va, long size);
+unsigned long sk_vas_populate_level_inner(unsigned long vas, unsigned long va, unsigned long level,         unsigned long size);
+unsigned long sk_vas_populate_level_nonself(unsigned long vas, unsigned long va, unsigned long level,         unsigned long size, unsigned long a, unsigned long b, unsigned long c, unsigned long d);
+unsigned int sk_vas_pt_alloc_flags(unsigned long vas, unsigned long level);
+void sk_vas_query_bounds(unsigned long type, unsigned long outp);
+unsigned long sk_vas_region_count(unsigned int type);
+long sk_vas_region_size(int type);
+void sk_vas_shadow_cleanup(unsigned long vas, unsigned long base, unsigned long size,                            unsigned long flags, long kind);
+void sk_vas_shadow_setup(unsigned long vas, unsigned long type, long phys, long size,                          unsigned long m0, unsigned long m1, unsigned long a, unsigned long b,                          unsigned int flags);
+cl4_result_t sk_vas_span_map_op(unsigned long vas, unsigned long arg2, unsigned long arg3, unsigned long arg4);
+cl4_result_t sk_vas_span_map_op2(unsigned long vas, unsigned long a, unsigned long b, unsigned long c,         unsigned long d, unsigned long e);
+unsigned long sk_vas_spanmap_cow_scan(unsigned long p, unsigned long va, unsigned long size,                                       unsigned long vas);
+void sk_vas_spanmap_teardown(unsigned long vas, unsigned long base, unsigned long limit,                              long clip, unsigned int flags);
+unsigned long sk_vas_stack_pop(void);
+unsigned long sk_vas_stack_push(void);
+void sk_vas_teardown(unsigned long vspace);
+unsigned long sk_vas_teardown2(unsigned long p, unsigned long desc);
+void sk_vas_teardown_free(void);
 
 /*--------------------------------------------------------------------*/
 /* FUN_000402b4 @ 0x000402b4   (est. sk_spanmap_get_cap)
@@ -1103,7 +1276,7 @@ void sk_vas_init_root(unsigned long p, long a, long b)
             }
             *(unsigned long *)(span + 0x80) = 3;
             if (span <= span + 0x110)
-                sk_vm_obj_add_cb(span, sk_x_000446ec, 0);  /* FUN_000446ec validate */
+                sk_vm_obj_add_cb(span, sk_vas_fh_validate, 0);  /* FUN_000446ec validate */
             /* second walk remapping pte frames (condensed) */
             *(unsigned char *)(cfg + 0x100) = 1;
         }
@@ -1376,30 +1549,31 @@ unsigned long sk_spanmap_lookup(unsigned long vas, long level, long va)
  */
 unsigned long sk_spanmap_release(unsigned long vas, unsigned long va)
 {
-    cl4_result_t r;
-    unsigned long res, u, eb[4];
+    unsigned long r, res, u, eb[4];
     unsigned long span, owner;
 
-    r.lo = 0; r.hi = 0;
-    if (vas == 0) { r = sk_x_004b3d7c(); return r.hi; }
+    r = 0;
+    if (vas == 0) { r = sk_x_004b3d7c(); return r; }
     owner = sk_cpu_get(0x6af2b0, 4, 0xb);
     if (vas == *(unsigned long *)(owner + 0xf8)) {
         r = sk_spanmap_op(va, 0);
-        return r.hi;
+        return r;
     }
-    if (*(char *)(vas + 0x98) == 2) { r.hi = 0; return r.hi; }
+    if (*(char *)(vas + 0x98) == 2) return 0;
     CallSupervisor(1);
     if (va != 5) {
         if ((va & 0xfb) != 0) {
             r = sk_x_004b3d54(va, eb);
-            u = r.hi;
-            span = r.lo;
+            u = r;
+            r = sk_x_004b3d54(va, eb);
+            u = r;
+            span = sk_x_004b3d54(va, eb);
             if (span == *(unsigned long *)(owner + 0xf8)) sk_vas_abort(0x5b745c);
             res = u - *(unsigned long *)(span + 0x10);
             if (u < *(unsigned long *)(span + 0x10)) sk_vas_abort(0x5b756b);
             if (sk_mtx_lock(span + 0x14)) sk_vas_abort(0x5aed68);
-            if ((*(unsigned long (**)(unsigned long,unsigned long*,unsigned long))(*(unsigned long *)(span + 8) + 0x20))
-                    (*(unsigned long *)span, &res, &u) == 0)
+            if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long))(*(unsigned long *)(span + 8) + 0x20))
+                    (*(unsigned long *)span, res, u) == 0)
                 return u;
             sk_vas_abort(0x5b75c9);
         }
@@ -1427,8 +1601,8 @@ unsigned long sk_spanmap_commit(unsigned long vas, unsigned long va)
     res = va - *(unsigned long *)(vas + 0x10);
     if (va < *(unsigned long *)(vas + 0x10)) sk_vas_abort(0x5b756b);
     if (sk_mtx_lock(vas + 0x14)) sk_vas_abort(0x5aed68);
-    if ((*(unsigned long (**)(unsigned long,unsigned long*,unsigned long))(*(unsigned long *)(vas + 8) + 0x20))
-            (*(unsigned long *)vas, &res, &u) == 0)
+    if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long))(*(unsigned long *)(vas + 8) + 0x20))
+            (*(unsigned long *)vas, res, u) == 0)
         return va;
     sk_vas_abort(0x5b75c9);
     return 0;
@@ -1467,11 +1641,11 @@ unsigned long sk_spanmap_op(unsigned long va, unsigned long level)
         else if (t == 1) { flags = sk_vas_cfg(); flags = *(unsigned char *)(flags + 2); }
         else { flags = (0xc0d0e04 >> (((unsigned int)level & 3) << 3)) & 0xff; }
         /* (condensed) issue unmap method, push retry to free list */
-        if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long))
+        if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long,unsigned long))
                 (*(unsigned long *)(span + 0xb8)))(*(unsigned long *)(span + 0xb0), flags & 0xff, r, r, 0) != 0)
             sk_vas_abort(0x5b6e4b);
         r = sk_spanmap_lookup(span, v, res & va);
-        if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long))
+        if ((*(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long,unsigned long))
                 (*(unsigned long *)(span + 0xb8)))(*(unsigned long *)(span + 0xb0), flags & 0xff, r, r, 0) != 0)
             sk_vas_abort(0x5b6e4b);
     }
@@ -1568,7 +1742,7 @@ cl4_result_t sk_vas_span_map_op(unsigned long vas, unsigned long arg2, unsigned 
     r.lo = 0; r.hi = 0;
     t = *(char *)(vas + 0x98);
     if (t == 2) { r.lo = 4; r.hi = arg2; return r; }
-    if (t == 1) return sk_x_000555ac(arg2, arg3, arg4);
+    if (t == 1) { r.lo = sk_x_000555ac(arg2, arg3, arg4); return r; }
     if (t != 0) sk_vas_abort(0x5b6400);
     CallSupervisor(0);
     r.lo = arg2; r.hi = 0;
@@ -1601,7 +1775,7 @@ cl4_result_t sk_vas_span_map_op2(unsigned long vas, unsigned long a, unsigned lo
         }
         sk_vas_abort(0x5b697a);
     }
-    return sk_x_00055558(a, b, c, (unsigned int)d & 1);
+    r.lo = sk_x_00055558(a, b, c, (unsigned int)d & 1); return r;
 }
 
 /*--------------------------------------------------------------------*/
@@ -1753,7 +1927,7 @@ void sk_vas_shadow_cleanup(unsigned long vas, unsigned long base, unsigned long 
         if (*(unsigned long *)(*(unsigned long *)(vas + 0xb8) + 0x30) != 0) {
             /* free shadow page tables under lock (condensed) */
             if (sk_mtx_lock(vas + 0xa0)) sk_vas_abort(0x5aed68);
-            r = sk_x_004b4000();
+            r.lo = sk_x_004b4000();
             sk_vas_abort(0x5b6b23);
         }
     }
@@ -1981,7 +2155,7 @@ void sk_mo_find(unsigned long vspace, unsigned long obj)
 void sk_mo_insert(unsigned long vspace, unsigned long base, unsigned long size, unsigned long arg)
 {
     unsigned long u, cur, ent, res;
-    cl4_result_t r;
+    unsigned long i;
 
     u = 0;
     if ((size + base & 0x3fff) != 0) u = 0x4000;
@@ -1991,13 +2165,12 @@ void sk_mo_insert(unsigned long vspace, unsigned long base, unsigned long size, 
             res = u + (size + base & 0xffffffffffffc000);
             if (res == (base & 0xffffffffffffc000)) {
                 /* fresh range: alloc descriptor, insert via add */
-                r = sk_x_004b4104();
-                ent = r.hi;
-                *(unsigned long *)ent = r.lo;
+                ent = sk_x_004b4104();
+                *(unsigned long *)ent = ent;
                 for (i = 0; i < 10; i++) *(unsigned long *)(ent + 8 + i * 8) = 0;
                 sk_mtx_init2(ent + 0x30);
-                sk_mo_insert(r.lo, size, arg);
-                sk_mo_add(r.lo, ent, size, arg, 0);
+                sk_mo_insert(ent, size, arg, 0);
+                sk_mo_add(ent, ent, size, arg, 0);
                 if (sk_mtx_unlock(vspace + 0x40)) sk_vas_abort(0x5aed68);
                 return;
             }
@@ -2036,7 +2209,7 @@ void sk_mo_init(unsigned long vspace, unsigned long desc, unsigned long base, un
     *(unsigned long *)desc = vspace;
     for (i = 0; i < 10; i++) *(unsigned long *)(desc + 8 + i * 8) = 0;
     sk_mtx_init2(desc + 0x30);
-    sk_mo_insert(vspace, base, size);
+    sk_mo_insert(vspace, base, size, 0);
     sk_mo_add(vspace, desc, base, size, 0);
     if (vspace + 0x50 < vspace + 0x40) sk_vas_abort(0x5aed68);
     if (sk_mtx_unlock(vspace + 0x40)) sk_vas_abort(0x5aed68);
@@ -2149,7 +2322,7 @@ cl4_result_t sk_vas_map_range(unsigned long p, unsigned long vspace, unsigned lo
         }
         if (base == 0 && *(unsigned long *)(vspace + 0x10) == n) {
             frame = sk_mo_lookup(p, *(unsigned long *)(vspace + 8));
-            if (*(unsigned long *)(frame + 0x18) != 0) sk_pt_free(&r);
+            if (*(unsigned long *)(frame + 0x18) != 0) sk_pt_free(0, frame);
             *(unsigned long *)(frame + 0x18) = 0;
             *(char *)(frame + 0x10) = (char)align;
         } else if (n != 0) {
@@ -2346,7 +2519,7 @@ void sk_mo_del(unsigned long p, unsigned long vspace, unsigned long trans)
         if (*(unsigned long *)(cur + 0x20) == trans) {
             *(unsigned long *)prev = *(unsigned long *)(cur + 0x28);
             *(unsigned long *)(cur + 0x28) = 0;
-            if (*(unsigned long *)(cur + 0x18) != 0) sk_pt_free(p);
+            if (*(unsigned long *)(cur + 0x18) != 0) sk_pt_free(p, cur);
             sk_vm_ent_free(p, cur);
             return;
         }
@@ -2411,7 +2584,7 @@ void sk_vas_teardown(unsigned long vspace)
     while (1) {
         if (cur == 0) return;
         nxt = *(unsigned long *)(cur + 0x28);
-        if (*(unsigned long *)(cur + 0x18) != 0) sk_pt_free_all();
+        if (*(unsigned long *)(cur + 0x18) != 0) sk_pt_free_all(cur);
         sk_free_obj(cur);
         cur = nxt;
     }
@@ -2433,7 +2606,7 @@ bool sk_mo_query(unsigned long vspace, unsigned long desc, unsigned long va, uns
 
     if ((*(unsigned char *)(desc + 0xa1) & 1) == 0) {
         va &= 0xffffffffffffc000;
-        sk_mo_insert(vspace, va, 0x4000);
+        sk_mo_insert(vspace, va, 0x4000, 0);
         frame = sk_mo_lookup(vspace, va);
         if (frame == 0) {
             if (vspace + 0x40 <= vspace + 0x50) {
@@ -2487,7 +2660,7 @@ unsigned long sk_vas_teardown2(unsigned long p, unsigned long desc)
 
     if ((*(unsigned char *)(desc + 0xa1) & 1) != 0) {
         *(unsigned char *)(desc + 0xa1) = 0;
-        return sk_mo_remove(p, desc);
+        sk_mo_remove(p, desc); return 0;
     }
     lv = sk_x_004b4284();
     if (*(char *)(lv + 0x18) == 0x11)
@@ -3068,8 +3241,7 @@ unsigned long sk_tb_rec_encode3(unsigned long obj, unsigned long rec)
  */
 unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg)
 {
-    unsigned long lv, out, w, u, k;
-    cl4_result_t r;
+    unsigned long lv, out, w, u, k, r;
 
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
     u = 4;
@@ -3097,13 +3269,13 @@ unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg)
     }
     /* recurse through method table for the nested record (condensed) */
     r = sk_tb_meta(u);
-    lv = *(unsigned long *)(*(unsigned long *)(r.lo + 0x20) + 8);
+    lv = *(unsigned long *)(*(unsigned long *)(r + 0x20) + 8);
     if (sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0) == 0) {
         w = *(unsigned long *)(lv + 0x28);
-        if ((r.hi & 0xff) == 1) {
+        if ((r & 0xff) == 1) {
             sk_tb_tag(w, 1);
             sk_tb_put_len(w, 3);
-        } else if ((r.hi & 0xff) == 0) {
+        } else if ((r & 0xff) == 0) {
             sk_tb_tag(w, 0);
             *(unsigned char *)(lv + 0x20) = 1;
             return 0;
@@ -3614,7 +3786,7 @@ unsigned long sk_ep_call_tls(unsigned long ep, unsigned long sel, unsigned long 
     tls = 0;
     if ((flags & 8) == 0 || (int)sel == 3) {
         /* direct call path */
-        ret = sk_ep_call(ep, 1, 3, &arg, 1, 1, 0, 0);
+        sk_ep_call(ep, 1, 3, &arg, 1, 1, 0, 0); ret = 0;
         if (ret == 0 && (flags & 8) == 0 && (int)sel != 3)
             sk_obj_create(sel, w, arg);
         return ret;
@@ -3657,8 +3829,8 @@ void sk_ep_call_reply(unsigned long ep, unsigned long w, unsigned long outp)
     unsigned long lv, r;
 
     lv = 0;
-    r = sk_ep_call(ep, 8, 1, 0, 0, 1, &lv, 1);
-    if (r == 0) *(unsigned long *)outp = lv;
+    sk_ep_call(ep, 8, 1, 0, 0, 1, &lv, 1);
+    *(unsigned long *)outp = lv;
 }
 
 /*--------------------------------------------------------------------*/
@@ -3717,8 +3889,8 @@ void sk_obj_create_batch(unsigned long ep, unsigned int kind, unsigned int flags
             sels[i] = (*(unsigned long (**)(unsigned long,unsigned long))(get + 0x10))(get, i);
             i++;
         }
-        ret = sk_ep_call(ep, 0xb, n + 3, desc, n, 0, outs, n);
-        if (ret != 0) for (j = 0; j < n; j++) outs[j] = ret;
+        sk_ep_call(ep, 0xb, n + 3, desc, n, 0, outs, n);
+        ret = 0;
         for (j = 0; j < n; j++) {
             if (outs[j] == 0) sk_obj_create(kind, desc[j], sels[j]);
         }
@@ -3740,7 +3912,7 @@ void sk_obj_create(unsigned long kind, unsigned long size, unsigned long arg)
 
     CallSupervisor(0);
     if ((size & 0xff) != 0) {
-        sk_err_abort(errbuf, size, 0);
+        sk_err_abort((unsigned long)errbuf, size, 0);
         sk_vas_abort(0x5bafe4);
     }
     sk_x_004b5b00(size, kind, errbuf);
@@ -3914,7 +4086,7 @@ unsigned long sk_boot_call(unsigned long ep, unsigned long out, unsigned long re
 {
     unsigned long lv, r;
 
-    lv = sk_boot_ep(out, 0);
+    sk_boot_ep(out, 0); lv = 0;
     r = sk_tls_exit(ep, &lv);
     if (reply != 0 && r == 0) sk_boot_parse(lv, reply);
     return r;
@@ -4047,7 +4219,7 @@ void sk_reloc_init(void)
     if (sk_cfg_geo_c != 1) return;
     img = sk_x_0005ba14();
     u = sk_tb_ph_avail();
-    r = sk_tb_ph_range();
+    r = sk_tb_ph_range2();
     while (img != 0) {
         if (*(char *)(img + 8) < 0) {
             /* walk TB placeholders and register ranges (condensed) */
@@ -4058,13 +4230,13 @@ void sk_reloc_init(void)
     u = *(unsigned long *)(n + 0x110);
     if (u < *(unsigned long *)(n + 0x118)) {
         do {
-            r = sk_vm_obj_alloc();
+            r.lo = sk_vm_obj_alloc();
             i = (**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long))
-                    (r.hi + 0x38))(r.lo, u, 0, 0);
+                    (r.lo + 0x38))(r.lo, u, 0, 0);
             if (i == 0) {
                 sk_x_004b5d40(u);
-                r = sk_vm_obj_alloc();
-                i = (**(unsigned long (**)(unsigned long,unsigned long))(r.hi + 0x58))(r.lo, 0x6af2c8);
+                r.lo = sk_vm_obj_alloc();
+                i = (**(unsigned long (**)(unsigned long,unsigned long))(r.lo + 0x58))(r.lo, 0x6af2c8);
                 if ((i & 0xff) == 0) { sk_init_done(0x64cc30); return; }
                 sk_vas_abort(0x5bb24f);
             }
@@ -4084,7 +4256,7 @@ void sk_vas_init_fh(void)
     unsigned long r, u;
 
     r = sk_vm_obj_alloc();
-    u = (**(unsigned long (**)(unsigned long,unsigned long))(r.hi + 0x58))(r.lo, 0x6af2c8);
+    u = (**(unsigned long (**)(unsigned long,unsigned long))(r + 0x58))(r, 0x6af2c8);
     if ((u & 0xff) == 0) { sk_init_done(0x64cc30); return; }
     sk_vas_abort(0x5bb24f);
 }
@@ -4109,10 +4281,10 @@ cl4_result_t sk_vas_init_map(unsigned long base, long size, unsigned int flags, 
     lv = 0x11;
     u = sk_vm_obj_alloc();
     if ((**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long))
-            (u + 0x30))(0, flags | 0x801, &lv, &r.lo, 0, 0) != 0)
+            (u + 0x30))(0, flags | 0x801, (unsigned long)&lv, (unsigned long)&r.lo, 0, 0) != 0)
         sk_vas_abort(0x5bb2e3);
-    if (r.hi == 0) sk_x_00054354();
-    (**(unsigned long (**)(unsigned long,unsigned long))(r.hi + 8))(r.lo, &lv);
+    if (r.lo == 0) sk_x_00054354();
+    (**(unsigned long (**)(unsigned long,unsigned long))(r.hi + 8))(r.lo, (unsigned long)&lv);
     return r;
 }
 
@@ -4195,7 +4367,7 @@ unsigned long sk_fault_startfault(unsigned long fault, unsigned long arg, unsign
         sk_stat_cow9++;
         r = (**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long,unsigned long))
                 (*(unsigned long *)(fault + 0x10)))(*(unsigned long *)fault, *(unsigned long *)(fault + 8),
-                *(unsigned long *)(in + 8), *(unsigned char *)(in + 0x19), res);
+                *(unsigned long *)(in + 8), *(unsigned char *)(in + 0x19), (unsigned long)res);
         if (r != 0 && (res[0] & 1) != 0) sk_vas_abort(0x5bb4d4);
         if (r == 5) { sk_stat_cow10++; return 0; }
         if (r == 0) {
@@ -4312,7 +4484,7 @@ void sk_tb_ph_array(unsigned long arr, unsigned long n, unsigned long target)
                 buf[i * 4 + 3] = *(unsigned long *)(*(unsigned long *)(arr + i * 8) + 0x20);
             }
         }
-        (*(unsigned long (**)(unsigned long,unsigned long,unsigned long))(target + 0x10))(target, buf, n);
+        (*(unsigned long (**)(unsigned long,unsigned long,unsigned long))(target + 0x10))(target, (unsigned long)buf, n);
     }
 }
 
@@ -4391,7 +4563,7 @@ unsigned long sk_tb_ph_encode(unsigned long buf, long size, unsigned long arr, u
                 if (kind > 0x1c) sk_panic(0x5bb75b);
                 esz = *(unsigned long *)(kind * 0x30 + 0x65bf70);
                 if (sz < esz + i * esz) return 0;
-                u = sk_tb_ph_one(kind, buf + 0xc + i * esz, esz, sz, 0);
+                u = sk_tb_ph_one(kind, buf + 0xc + i * esz, esz, sz, 0, 0);
                 if (u == 0) return 0;
             }
         }
@@ -4434,13 +4606,13 @@ unsigned long sk_tb_ph_one(unsigned long kind, unsigned long buf, long size, lon
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_0004e774 @ 0x0004e774   (est. sk_tb_ph_addr)
+/* FUN_0004e774 @ 0x0004e774   (est. sk_tb_ph_addr_off)
  * Ghidra: long FUN_0004e774(long *param_1,ulong param_2)
  * Returns the physical address of a TB placeholder region: offset*0x40 past the
  * region base, or 0 if out of range.
  * Confidence: medium
  */
-unsigned long sk_tb_ph_addr(unsigned long region, unsigned long off)
+unsigned long sk_tb_ph_addr_off(unsigned long region, unsigned long off)
 {
     unsigned long base;
 
@@ -4520,11 +4692,11 @@ unsigned long sk_tb_ph_find(unsigned long ph, unsigned long pat, unsigned long n
     cb = *(unsigned long *)(kind * 0x30 + 0x65bf78);
     if (cb != 0 && *(unsigned long *)(kind * 0x30 + 0x65bf80) != 0) {
         u = (**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long))
-                (cb))(pat, n, sk_tb_ph_cb, &ph);
+                (cb))(pat, n, (unsigned long)sk_tb_ph_cb, (unsigned long)&ph);
         if ((int)u == 0) return u;
         if (*(unsigned long *)(ph + 8) != 0) {
             u = *(unsigned long *)(kind * 0x30 + 0x65bf70);
-            *outi = (*(unsigned long *)(ph + 8) - ph - 0xc) / u;
+            *(unsigned long *)outi = (*(unsigned long *)(ph + 8) - ph - 0xc) / u;
             return 1;
         }
     }
@@ -4615,13 +4787,13 @@ unsigned long sk_tb_ph_avail(void)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_0004ed84 @ 0x0004ed84   (est. sk_tb_ph_range)
+/* FUN_0004ed84 @ 0x0004ed84   (est. sk_tb_ph_range2)
  * Ghidra: void FUN_0004ed84(void)
  * Validates the TB placeholder range (base at +0xa8, length at +0xb0) and
  * returns the descriptor. Aborts if the range wraps.
  * Confidence: medium
  */
-cl4_result_t sk_tb_ph_range(void)
+cl4_result_t sk_tb_ph_range2(void)
 {
     cl4_result_t r;
     unsigned long u;
@@ -4653,7 +4825,7 @@ void sk_tb_ph_name(unsigned long name, unsigned long len, unsigned long cb, unsi
     if (u != 0) {
         if (len > 0xff) len = 0x100;
         sk_strncpy(buf, u, len, 0x108);
-        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, buf);
+        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, (unsigned long)buf);
     }
 }
 
@@ -4712,7 +4884,7 @@ unsigned long sk_tb_ph_dump(unsigned long p, unsigned long ph, unsigned long reg
     for (i = 0; i < n; i++) {
         u = dst + i * 0x107;
         if (sk_tb_ph_resolve(ph, 0) != 0) {
-            base = sk_tb_ph_addr(region, sk_tb_ph_count(ph));
+            base = sk_tb_ph_addr_off(region, sk_tb_ph_count(ph));
             if (sk_strcmp(base + 8, u + 8, 0xff) == 0) {
                 /* (condensed) copy resolved element */
                 cnt++;
@@ -4768,7 +4940,7 @@ void sk_tb_ph_name2(unsigned long name, unsigned long len, unsigned long cb, uns
     if (u != 0) {
         if (len > 0xff) len = 0x100;
         sk_strncpy(buf, u, len, 0x120);
-        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, buf);
+        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, (unsigned long)buf);
     }
 }
 
@@ -4848,7 +5020,7 @@ bool sk_tb_ph_one8(unsigned long in, long size, unsigned long cb, unsigned long 
 
     if (size == 8) {
         w = *(unsigned long *)in;
-        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, &w);
+        (*(unsigned long (**)(unsigned long,unsigned long))(cb))(arg, (unsigned long)&w);
     }
     return size == 8;
 }
@@ -4872,10 +5044,10 @@ unsigned long sk_tb_ph_addr2(unsigned long p, long sel, unsigned long region, un
     n = len >> 4;
     for (i = 0; i < n; i++) {
         u = ph + i * 8;
-        if (sk_tb_ph_find(sel, u, 8, &cntn) != 0) {
+        if (sk_tb_ph_find(sel, u, 8, (unsigned long)&cntn) != 0) {
             ph2 = sk_tb_ph_resolve(sel, cntn);
             if (ph2 != 0 && *(unsigned long *)ph2 == *(unsigned long *)u) {
-                rec = sk_tb_ph_addr(region, *(unsigned long *)(ph2 + 0x20) * 0x40);
+                rec = sk_tb_ph_addr_off(region, *(unsigned long *)(ph2 + 0x20) * 0x40);
                 *(unsigned long *)(u + 0x20) = rec;
                 cnt++;
             }
@@ -4907,16 +5079,16 @@ unsigned long sk_tb_ph_dt(unsigned long p, unsigned long ph, unsigned long regio
     for (i = 0; i < n; i++) {
         frame = sk_tb_ph_count(ph);
         if (frame != 0) {
-            u = sk_tb_ph_addr(region, 0);
+            u = sk_tb_ph_addr_off(region, 0);
             /* allocate device-tree span, map frame (condensed) */
             local = 0x11;
             res = sk_vm_obj_alloc();
             if ((**(unsigned long (**)(unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long))
-                    (res + 0x30))(0, 0x1800, &local, &desc[0], 0, 0) != 0)
+                    (res + 0x30))(0, 0x1800, (unsigned long)&local, (unsigned long)&desc[0], 0, 0) != 0)
                 sk_panic(0x5bb844);
             sk_x_000510e4(frame, desc[0], desc[1], u);
             if (desc[1] == 0) sk_x_00054354();
-            (**(unsigned long (**)(unsigned long,unsigned long))(desc[1] + 8))(desc[0], &local);
+            (**(unsigned long (**)(unsigned long,unsigned long))(desc[1] + 8))(desc[0], (unsigned long)&local);
             /* (condensed) write resolved frame into dst[i] */
             cnt++;
         }
@@ -4986,13 +5158,13 @@ void sk_tb_ph_scan(int do_pdata, unsigned int flags)
 
     img = sk_x_0005ba14();
     u = sk_tb_ph_avail();
-    r = sk_tb_ph_range();
+    r = sk_tb_ph_range2();
     while (img != 0) {
         if (*(char *)(img + 8) < 0) {
             it[0] = u;
             it[1] = 0;
             base = *(unsigned long *)(img + 0x38);
-            ph = sk_tb_ph_iter_next(it);
+            ph = sk_tb_ph_iter_next((unsigned long)it);
             while (ph != 0) {
                 if ((char)*(unsigned long *)ph == 0 && *(unsigned char *)(ph + 3) == 0 && *(unsigned long *)ph == 0) {
                     if (do_pdata) {
@@ -5002,7 +5174,7 @@ void sk_tb_ph_scan(int do_pdata, unsigned int flags)
                         sk_tb_ph_reloc(u, ph, r.lo, base, *(unsigned long *)(img + 0x20), 0x5bb23b);
                     }
                 }
-                ph = sk_tb_ph_iter_next(it);
+                ph = sk_tb_ph_iter_next((unsigned long)it);
             }
         }
         img = *(unsigned long *)img;

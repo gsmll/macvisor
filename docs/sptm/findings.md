@@ -1141,3 +1141,148 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: each body is `rt_00347de8(1); rt_001afe4c();` (or 0x50/0x5b/0x43 via FUN_003486b8) with FUN_001afe4c / FUN_001afa84 noreturn.
 - **Severity (hypothesis)**: informational — fixed-code panic entry points (availability only).
 - **Confidence**: high
+
+## [sk-vspace] 0x0026cd08-0x00277ba8 Swift runtime Range/Collection bounds + UTF-8 buffer validation
+- **Observation**: The cL4 kernel embeds the Swift standard-library Range/String/Collection machinery (0x26xxxx region). The Range, removeFirst/removeLast, and UTF-8 buffer operations are fail-closed: every bounds violation, invalid UTF-8 code point, or packed-buffer overflow is converted into the noreturn fatal trap FUN_001afe4c (Swift `_fatalError` / `preconditionFailure`) rather than a recoverable error. Specifically: empty-collection removeFirst traps code 0x222 (s_Can_t_remove_from_an_empty_colle_005d0370); Range lowerBound>=upperBound traps 0x2f9 (s_Range_requires_lowerBound_<__upp_005cda00); UTF-8 buffer overflow/invalid scalar traps 0xa7/0xc1/0xc2 (s_Swift_ValidUTF8Buffer_swift_005d08c0) or 0xbe/0xd4/0xdd (s_Swift_UIntBuffer_swift_005d0610); out-of-bounds index traps 0x2ca (s_Index_out_of_bounds_005cdab0). A malformed/oversized string index therefore panics the kernel rather than corrupting the packed bit-buffer.
+- **Evidence**: FUN_00272820 (`sk_collection_remove_first`): `if (u==0) FUN_001afe4c(0x5d0370,0x25,..0x222)`, `if ((uint)idx<(uint)lb) FUN_001afe4c(0x5cda00,..0x2f9)`, per-byte `(map&0xff000000)` overflow -> 0xa7; FUN_00271fa0 (`sk_bitbuffer_append_16`): `if (off<0x20) {shift+store} else FUN_001afe4c(0x5d0610,..0xbe)`; FUN_00272c58/FUN_00273310: UTF-8 LZCOUNT-length decode with `0xd000000000000034` trap via FUN_001afa84 (s_Swift_UnicodeHelpers_swift_005ce730) on malformed sequences; FUN_0027169c: `if (r.hi==0) FUN_001afe4c(0x5cd7d0,..0x1c2)` ("Unexpectedly found nil while unwrapping").
+- **Severity (hypothesis)**: medium — these are the kernel's own string/collection parser paths; all validation failures are hard panics (availability), but the bounds logic is correct and non-corrupting, so no privilege-escalation surface observed. The nil-tag (0xe000000000000000) handling in FUN_0026e1d8/FUN_0026e3b0 coerces nil to empty rather than dereferencing, which is the expected Optional-safe behavior.
+- **Confidence**: high (explicit fatal strings + codes in every function).
+
+## [sk-vspace] 0x002075e0 sk_index_lookup — object-table index OOB is a fail-closed panic
+- **Observation**: The object-table index-lookup path validates a resolved index and, on any out-of-range/missing entry, traps with the Swift-style "Fatal error" / "Index out of bounds" / "Swift EnumeratedSequence" strings (sk_str_Fatal_error / sk_str_Index_out_of_bounds / sk_str_Swift_EnumeratedSequence) via the noreturn rt_001afe4c. There is no recoverable error path — an OOB index halts the kernel rather than reading out of bounds.
+- **Evidence**: sk_index_lookup (002075e0) walks via rt_000277b8/rt_00310e20; on the non-taken (miss) branch it resolves the slot through rt_0032d3e0 and returns it; on failure it executes `rt_001afe4c(sk_str_Fatal_error,0xb,2,sk_str_Index_out_of_bounds,0x13,2,sk_str_Swift_EnumeratedSequence,0x1e)` (noreturn). Same OOB-fatal pattern is reused by the sibling table walkers sk_table_lookup (00206d88) / sk_table_range (00206f18), which additionally trap on signed borrow (SBORROW8 -> SoftwareBreakpoint 0x20711c) when a range delta would underflow.
+- **Severity (hypothesis)**: low — the bounds logic is correct and non-corrupting (fail-closed panics); a crafted/buggy vspace walk that produces an out-of-range index would be a kernel-wide DoS (availability), but no out-of-bounds read/write is possible.
+- **Confidence**: high (explicit fatal strings + code in the body).
+
+## [sk-vspace] 0x002085a4 sk_abstract_method + 0x002087xx-0x00208axx — base-class virtuals are trap stubs
+- **Observation**: The 002087xx-00208axx family (sk_vt_abstract_a/b, sk_vt_hook_a-e, and the six sk_dtor_pure_* destructors) are base-class virtual methods whose only behavior is to enter the runtime save (rt_00357cc8), emit "Method must be overridden" then "Fatal error" via sk_abstract_method (002085a4, noreturn rt_001afa84), and only then, in the pure-destructor stubs, release the object's +0x10/+0x20 fields. Any concrete subclass that fails to override one of these virtuals will hit an unconditional kernel panic on first call — a fail-closed virtual dispatch design.
+- **Evidence**: sk_abstract_method (002085a4): `rt_0035ac70(sk_str_Method_must_be_overridden); rt_0006f768(sk_str_Fatal_error); rt_001afa84();` (noreturn). Each of sk_dtor_pure_a..f (002089ec..00208a70) contains 14 repetitions of `rt_00357cc8(); sk_abstract_method();` then `rt_0036b118(*(word_t*)(savx20+0x10)); rt_0036b118(*(word_t*)(savx20+0x20));`.
+- **Severity (hypothesis)**: informational — this is the expected seL4-style vtable/abstract-method pattern; the trap guarantees an un-overridden virtual is never silently dispatched (no NULL-call into attacker-controlled code). Availability-only if a subclass is incomplete.
+- **Confidence**: high (explicit "Method must be overridden" string, repeated identical stub bodies).
+
+## [sk-vspace] 0x00204798 / 0x00205bd0 sk_desc_node / sk_desc_children — depth-budgeted recursive object walk
+- **Observation**: The object-description walker carries a depth budget through *param_5: sk_desc_node and sk_desc_children decrement it on entry and return immediately when it reaches 0, and any arithmetic overflow on the remaining budget (SCARRY8 -> SoftwareBreakpoint 0x204ebc/0x204ec0/0x20609c/0x2060a0) traps. Child/super counts are formatted with the Swift-style "N children"/"1 child"/"super" strings. This bounds the recursion depth of the reflection dumper.
+- **Evidence**: sk_desc_node (00204798) `lVar3 = *ptl7 + -1; if (*ptl7 < 1) return; *ptl7 = lVar3;` and recursive call `sk_desc_children(...,param_5+2,param_6-1,ptl7,...)`; sk_desc_children (00205bd0) same guard on *param_5; SCARRY8(param_5,2)/SCARRY8(param_3,2) SoftwareBreakpoint traps guard the budget arithmetic.
+- **Severity (hypothesis)**: low — the explicit depth budget prevents unbounded/cyclic object-graph recursion in the description/dump path (availability/DoS protection); the overflow traps are defense-in-depth.
+- **Confidence**: medium (depth-budget semantics inferred from the decrement+early-return; trap codes explicit).
+
+## [sk-vspace] 0x002450ec sk_uint128_divide — division-by-zero and high-dividend overflow are hard traps
+- **Observation**: The UInt128 division core rejects both a zero divisor and a dividend-high >= divisor-high (the condition that would make the 128-bit quotient overflow its 128-bit result) with a noreturn Swift fatal error rather than returning a truncated/wrapped quotient. Division-by-zero maps to s_Division_by_zero (0x5cd710); the overflow precondition maps to s_Dividend_high_must_be_smaller_th (0x5d3250). The shift-normalized long-division path is only reached after both guards pass.
+- **Evidence**: FUN_002450ec: `if (dh==0 && dl==0) FUN_001afe4c(...0x165...)` and `if (CARRY8(...)&&CARRY8(...)) FUN_001afe4c(...0xd24...)` precede the LZCOUNT normalization and the per-bit subtraction loop. The signed wrapper sk_int128_divide_full (00245ef0) additionally traps when the quotient is not representable ("Quotient is not representable", 0x5d3280).
+- **Severity (hypothesis)**: informational — fail-closed integer division; a caller supplying a bad divisor/dividend order cannot get a silent wrong quotient, only a kernel trap.
+- **Confidence**: high (guard strings are explicit).
+
+## [sk-vspace] 0x0023b254 / 0x0023b2a0 sk_int128_multiply(_full) — wide multiply overflow trapping
+- **Observation**: The 128-bit multiply and its full-width (256-bit) variant carry the overflow/`_overflow` status explicitly and the full variant routes any multiply that would exceed the representable range to the noreturn Int128 `_overflow` fatal error (s_Swift_Int128_swift_005d0ed0, line 0x9f) rather than returning a wrapped product. The base multiply (0023b254) accumulates carries through the cross terms (uVar11/uVar12 with CARRY8 bumps) and returns the high word.
+- **Evidence**: 0023b2a0: `if ((uVar9&0xff)==1) FUN_001afa84(...0x9f,1)` (the "operation overflow" fatal); SUB168/auVar* word products mirror seL4/Swift Int128.multipliedFullWidth. The base 0023b254 writes `*param_1 = param_4*param_2` and `param_1[1] = uVar1 + param_4*param_3` with carry bumps.
+- **Severity (hypothesis)**: informational — fail-closed arithmetic; no silent wrap on the checked full-width path.
+- **Confidence**: medium (fatal-string location matches Swift Int128._overflow).
+
+## [sk-vspace] 0x0024893c sk_collection_sum_wide — unchecked accumulator overflow traps via SoftwareBreakpoint
+- **Observation**: The wide-element sum helper accumulates a running total and traps (SoftwareBreakpoint(1,0x248a00)) if the running sum overflows (SCARRY8(lVar8, uVar3)), while separately validating the element tag (must be 0x01000000) and handling the "all-bits" sentinel (0x7fffff -> load from a live pointer, with alignment checks). This is a fail-closed sum over the collection, not a wrapping one.
+- **Evidence**: `bVar2 = SCARRY8(lVar8,(ulong)uVar3); lVar8 = lVar8 + uVar3; if (bVar2) pcVar1=(code*)SoftwareBreakpoint(1,0x248a00); (*pcVar1)();` plus the element-tag gate `(uVar3 & 0x7f000000) != 0x1000000 -> acc=0`.
+- **Severity (hypothesis)**: low — a corrupt/oversized element in the summed range traps the kernel instead of producing a silently-wrapped aggregate (availability; correctness-guard).
+- **Confidence**: medium (element-tag semantics inferred; the overflow trap is explicit).
+
+## [sk-vspace] 0x00248ae0 sk_word_width_decode — width selector is 4-bit masked, others fatal-0
+- **Observation**: The Swift word-width/memattr selector decode only accepts selector types 1-4; the type field is `(param_1 >> 24) & 0x7f` and only the low 4 bits of param_1 feed the type-4 packed table lookup (0x50604 >> ((param_1&3)<<3)), while type 2 calls an allocator (FUN_0006f794(0)). Unsupported selector types return 0 rather than a trap.
+- **Evidence**: `switch((param_1>>24)&0x7f){case 1:return 1;case 2:uVar1=FUN_0006f794(0);return uVar1;case 3:return 2;case 4:return 0x50604>>((param_1&3)<<3);} return 0;`.
+- **Severity (hypothesis)**: informational — the decode is conservative (only 4 well-known widths), and type-2 width selection allocates through the runtime; a caller with an out-of-range type gets 0 (benign default), not a trap.
+- **Confidence**: high (switch is explicit).
+
+## [sk-vspace] 0x0027905c etc. vspace_op_* (slice 12, 0x277be4-0x27ffd8) — fail-closed vspace/MMU validation panics
+- **Observation**: The vspace/MMU operation set in this slice validates its inputs and, on any validation failure, routes to a noreturn panic chain `FUN_00347d60(); FUN_001afe4c();` (the same fatal hook used across the kernel) rather than returning an error and continuing. Many operations additionally carry debug SoftwareBreakpoint traps on count/index-underflow guards (e.g. `SBORROW8(cnt,1)` → trap at the guard address, `if (SBORROW8(l9,1)) fn=(trap); (*fn)();`). Object-creation paths (0027bd10/0027c50c/0027dc80) allocate via `FUN_0036a908(size, tag)` and return a vtable pointer (`&DAT_003471a4/a8`), with teardown/release pairs (FUN_00358b24 free / FUN_0036b118 deref).
+- **Evidence**: repeated `if (...) goto panic; FUN_00347d60(); FUN_001afe4c();` pattern across 27905c/279568/27c85c; SoftwareBreakpoint(1,0x…) trap fnptrs at 277de0/2782a4/279568; `FUN_0036a908(0x28,0x2ca3)` object alloc in 27c4a0. Call sites pass leftover registers (extraout_x*) so exact argument ABI is register-based (16-byte pair returns; hi unspecified).
+- **Severity (hypothesis)**: informational — the vspace isolation boundary is fail-closed: invalid page-table/object operations trap or panic instead of being tolerated, which is the expected posture for a microkernel MMU layer; no silent partial success observed.
+- **Confidence**: medium (panic/trap control flow is explicit in the decompiles; the exact register-argument semantics are inferred).
+
+## [sk-vspace] 0x0022a5cc/0x0022a644/0x0022aaac/0x0022aaec sk_u*_bit_width — zero traps via Swift fatal
+- **Observation**: The bit-width primitives for the integer types trap (noreturn Swift "Fatal error", Swift/Integers.swift line 0x985) on a zero/negative input instead of returning a sentinel, matching the Swift standard library's `bitWidth` precondition. The cL4 kernel thus hard-halts on `bitWidth(0)`.
+- **Evidence**: `if (v != 0) return 0x10 - (LZCOUNT(v<<16)+1);` else `FUN_001afe4c(s_Fatal_error..., 0x985, 1)`; Int64 variant requires `0 < v`.
+- **Severity (hypothesis)**: informational — fail-closed precondition trap (availability only); matches upstream Swift semantics.
+- **Confidence**: high (explicit trap + line number).
+
+## [sk-vspace] 0x0022d420/0x0022d898/0x0022dc54/0x0022e018/0x0022e3d4/0x0022e798/0x0022eb38 sk_parse_u* — "Invalid slice" bounds trap
+- **Observation**: The string-to-integer parsers validate the input slice bounds before parsing: any slice whose start is negative or whose end exceeds the buffer traps with "Invalid slice" (Swift/UnsafeBufferPointer.swift, line 0x7db), and a zero-length buffer traps line 0x75e. Numeric overflow during accumulation also aborts the parse (returns the success-flag zero) rather than wrapping.
+- **Evidence**: `if (slice.lo < 0 || bound < slice.hi) sk_swift_fatal_error(..., s_Invalid_slice_005cfa58, 0xd, 2, s_Swift_UnsafeBufferPointer..., 0x1f, 2, 0x7db, 1)`; per-digit `(uVar & 0xff00)!=0` / `t>>64` overflow checks return failure.
+- **Severity (hypothesis)**: informational — input validation is fail-closed (a malformed slice halts rather than parsing garbage).
+- **Confidence**: high (explicit trap strings).
+
+## [sk-vspace] 0x002322fc/0x002324b0/0x00232578/0x00232654/0x002327f0/0x00232904 sk_*_divmod — divide-by-zero and INT_MIN/-1 overflow traps
+- **Observation**: The checked divide-with-remainder primitives are fail-closed: a zero divisor traps "Division by zero" (Swift/IntegerTypes.swift or UInt128.swift/Int128.swift) and the signed variants additionally trap on the `INT_MIN / -1` overflow case ("Division results in an overflow"). The cL4 kernel cannot silently divide by zero.
+- **Evidence**: `if (d == 0) sk_swift_fatal_error(s_Division_by_zero_005cd710, 0x10, ...)`; signed: `else if (d == -1 && n == -0x80000000) sk_swift_fatal_error(s_Division_results_in_an_overflow_005cd6d0, ...)`.
+- **Severity (hypothesis)**: informational — fail-closed arithmetic (availability only); a buggy kernel caller can panic the kernel but cannot produce a wrong quotient.
+- **Confidence**: high (explicit trap strings + per-width line numbers).
+
+## [sk-vspace] 0x0022984c..0x0022a0c4 sk_siphash_* — SipHash _Hasher core uses fixed ASCII constants
+- **Observation**: The hashing core is SipHash-2-4 with the canonical ASCII key/mixing constants ("somepseudorandomlygeneratedbytes", 0x736f6d6570736575 / 0x646f72616e646f6d / 0x6c7967656e657261) and per-state XOR-rotate rounds. This is the Swift `_Hasher`; no weakness observed, but the constants being fixed means hash DoS resistance depends on per-instance seeding (key from FUN_003560e4 / DAT_006adf10).
+- **Evidence**: `s[1] = k.lo ^ 0x736f6d6570736575ull; s[2] = k.hi ^ 0x646f72616e646f6dull; s[3] = k.lo ^ 0x6c7967656e657261ull;` and the 0x7465646279746573 ("stedybt"/c2) constant in finalization.
+- **Severity (hypothesis)**: informational — cryptographic hygiene; per-instance keying is the only defense against hash-collision attacks, so the seeding call site (FUN_003560e4) matters.
+- **Confidence**: high (canonical SipHash round arithmetic + constants).
+
+
+## [sk-slice03] 0x0001a2f4..0x00020c88 Tightbeam ComponentInitData / TransportBuffer — pervasive fail-closed invariant traps
+- **Observation**: The Tightbeam serialization layer (ComponentInitData record reader/validator, TransportBuffer, ForwardingConnection) validates every record magic, declared length, and position advance against the buffer bounds before use. Malformed records — wrong magic (TYPEDATA/INITDATA/COMPDATA/ENDPDATA/CLNTDATA), declared length exceeding the remaining span, negative lengths, or out-of-order positions — hit a `SoftwareBreakpoint(1, <line>)` or the noreturn `cL4_fatal_1afa84` reporter (module `Tightbeam_ComponentInitData`/`Tightbeam_TransportBuffer`) with a precise line number. TransportBuffer base/data/raw-pointer getters (FUN_000209f8/20ac8/20bb8) only return a pointer after checking `position <= limit` and the not-forgotten flag; a forgotten (freed) buffer traps rather than exposing a dangling pointer.
+- **Evidence**: e.g. `FUN_0001e3e0` (`CLNTDATA` validate): `if (buf==0 || lim-buf<0x25) fatal(0xd000000000000033,0x80000000005acaf0,...,0x1f2)`; magic mismatch `fatal(0xd00000000000001b,...)`; `FUN_0001c81c`: per-record `*plVar5 != 0x434f4d5044415441` -> `FUN_003698b0` log + `fatal(...0x2e5)`. Dozens of distinct breakpoint lines (0x1a320..0x20bf8).
+- **Severity (hypothesis)**: informational — fail-closed parsing (availability only); a malformed component payload can panic the kernel but cannot be parsed into a wrong/garbage structure. The count of trap paths indicates hardened, review-heavy code.
+- **Confidence**: high (explicit magic constants + per-line trap addresses).
+
+## [sk-slice03] 0x0001fde8 cL4_entry_resolve — tagged function-pointer indirection
+- **Observation**: FUN_0001fde8 resolves a call target from a tagged word: if bit0 is set, it dereferences the word aligned-down to a pointer and adds the sign-extended 32-bit displacement at +4 (an ARM64 br/bl-style thunk descriptor). This is used by the ForwardingConnection send path (FUN_0001f834) to reach the message-handling entry. The target is therefore attacker-influenced only if the tagged word itself is attacker-controlled.
+- **Evidence**: `if (obj&1) obj=*(obj & ~1); return (obj+4) + (int32)*(uint32*)(obj+4);`
+- **Severity (hypothesis)**: informational — standard indirection; only becomes a hijack primitive if a ForwardingConnection object's tag word is spoofable, which the surrounding validation (not-forgotten flag, retained refs) is designed to prevent.
+- **Confidence**: medium (shape strongly suggests a thunk descriptor; exact producer of the tagged word not yet traced).
+
+## [sk-slice03] 0x0001b620/0x0001a838/0x0001b02c Tightbeam record writers — bounds-checked serialization
+- **Observation**: The record writers (INITDATA/CLNTDATA/COMPDATA) compute the full serialized size up front (FUN_0001b370/FUN_0001a760/FUN_0001afb4), check the destination has room, then write magic + header + per-field records, re-validating the running position against the destination on every iteration (breakpoints 0x1b348..0x1b964, 0x1aabc..0x1aac0, etc.). A too-small destination returns 0 rather than overrunning.
+- **Evidence**: `if (dst==0 || avail<recsize) goto no_room` where `no_room: FUN_003698b0(0,0x659b58,0x6598d8); return 0;` and carry checks `SCARRY8` on every size addition trap at dedicated lines.
+- **Severity (hypothesis)**: informational — serialization cannot overflow its destination; failure returns an error instead of a partial/corrupt record.
+- **Confidence**: high (explicit capacity checks + carry traps on every write).
+
+## [sk-slice04] 0x00020ebc TightbeamMessage status-string encoder (FUN_00020ebc)
+- **Observation**: The status→String map builds Swift tagged-pointer strings from fixed low-address literals (0x005acf30, 0x005aced0, ...) with the top bit set (0x8000000000000000) and length nibbles packed into the low byte. Codes 6/8/0xb..0xf and any value >0x10 fall through to a shared "Unknown n" inline string.
+- **Evidence**: decompile: `auVar8._8_8_ = (ulong)(pcVar3 + -0x20) | 0x8000000000000000; auVar8._0_8_ = 0xd000000000000011;` and the `switchD_00020efc_caseD_6` default bucket.
+- **Severity (hypothesis)**: informational — a status code is rendered into an unbounded set of inline/tagged string forms, all from read-only rodata; no attacker-controlled pointer is dereferenced.
+- **Confidence**: high (literal-packed Swift small strings).
+
+## [sk-slice04] 0x00022718 Tightbeam buffer offset bounds check (FUN_00022718)
+- **Observation**: The offset helper returns `base + off` only when `off >= 0 && base != 0 && off < end - base`; on any violation it pushes "offset error" diagnostics (0x80000000005ad050 / 0x80000000005ad070) and calls the fatal handler. This is the central bounds gate for all Tightbeam record field access.
+- **Evidence**: `if (((-1 < (long)param_1) && (param_2 != 0)) && (param_1 < (ulong)(param_3 - param_2))) return param_2 + param_1;` else `FUN_002a4ab4(0x34); ...FUN_001afa84(...)`.
+- **Severity (hypothesis)**: hardening control — out-of-bounds offset traps rather than writing; prevents record-field OOB read/write in the codec.
+- **Confidence**: high (explicit range check before pointer arithmetic).
+
+## [sk-slice04] 0x00021260 Tightbeam varint encoder — width/payload size selection (FUN_00021260)
+- **Observation**: The variable-width integer writer derives a width from the message buffer length (`uVar4 = *(ulong*)(*(long*)(*(long*)(self+0x10)+-8)+0x40)`, min 4) and picks a 1/2/4-byte payload plus a width-marker byte. The carry/overflow arithmetic uses `-1 << (w<<3&0x1f)` bit tricks; a width of 0 in the `w<4` branch writes only the low byte. If the buffer length were attacker-controlled the width selection could mismatch the real allocation.
+- **Evidence**: `uVar2 = ((flags + ~(-1 << (w<<3&0x1f))) - 0xfe >> (w<<3&0x1f)) + 1;` and the m==0/2/4 store-size branches.
+- **Severity (hypothesis)**: low — width is derived from the message's own length metadata, and the payload writes stay within `w1=width+1`; no explicit capacity check before the stores.
+- **Confidence**: medium (decompiler-driven, no independent overflow guard observed at this site).
+
+## [sk-slice04] 0x00021554 Tightbeam message unwrap (FUN_00021554)
+- **Observation**: Unwrapping the message buffer copies `end-start` bytes from the storage payload into the message. It bounds-checks `uVar10 + uVar6 <= uVar9` (cursor + length against storage length) and re-checks `uVar6 <= uVar9 - uVar10` before the memcpy shim; on failure it either returns 1 or traps SoftwareBreakpoint(0x5519). A null `start` (0) and a pre-unwrapped message both fatal.
+- **Evidence**: `if (uVar10 + uVar6 <= uVar9) { ... uVar2 = uVar11 + uVar10; if ((uVar2 <= uVar11+uVar9 && uVar11<=uVar2) && (uVar6<=uVar9-uVar10)) ... }` with `SoftwareBreakpoint(0x5519,0x18768)`.
+- **Severity (hypothesis)**: hardening control — copy length validated against storage before memcpy; overflow path traps.
+- **Confidence**: medium (double-checked bounds but the carry test is on the storage cursor, not the destination).
+
+## [sk-slice04] 0x00025704 TightbeamMessage deinit — storage-tag release dispatch (FUN_00025704)
+- **Observation**: Deinit inspects the storage descriptor tag `((uVar6>>32)>>29)` and dispatches release to FUN_00014f10 (tag 1) / FUN_00014bec (tag 0) / the wrapper buffer-field closure (tag other). A tag of 3 (or any non-0/1 tag with kind != 0xff) always terminates in a fatal (0x4e/0x1ba) after releasing the fields — i.e. there is no silent path that frees attacker-controlled pointers without a kind/tag check.
+- **Evidence**: decompile branches on `uVar7`/`uVar2>>0x1d`; the `else` fatal path `FUN_001afa84(...0xd00000000000004e..., 0x1ba)`.
+- **Severity (hypothesis)**: informational — deinit is defensive: unexpected storage tags fault instead of mis-releasing.
+- **Confidence**: medium (fatal reachability inferred from the branch structure).
+
+## [sk-slice04] 0x000240e4 TightbeamMessage reset — storage-tag validation (FUN_000240e4)
+- **Observation**: Reset switches on the storage descriptor tag; tags 0/1/2 attempt a merge via FUN_00014f90/FUN_00014c08, but tags 3 and other are rejected with a fatal ("TightbeamMessage.reset called on..." 0x49/0x4d, diagnostics 0x1a6/0x1a8). This closes the door on resetting a message whose storage layout is unrecognized.
+- **Evidence**: `if (uVar7==3) {...0xd000000000000049...} else {...0xd00000000000004d...}` fatal branches; strings s_TightbeamMessage_reset___called_o_005ad270/005ad220.
+- **Severity (hypothesis)**: hardening control — unknown storage kind is a hard fault, not a misinterpreted merge.
+- **Confidence**: high (two explicit fatal branches on the tag).
+
+## [sk-slice04] 0x00024f40 / 0x000252d4 TransportBuffer encode / decode — buffer size gate
+- **Observation**: TransportBuffer encode rejects a buffer size > 1 word with a fatal (TransportBuffer, 0x3b/0x25); decode allocates a 0x18-byte object, resolves the witness via FUN_00025dcc, and releases the buffer unless the size flag says it is owned. The whole region routes every field access through the offset bounds gate (0x22718) and the canary-checked generic read/append wrappers.
+- **Evidence**: `if (1 < extraout_w12) { ...FUN_001afa84(...0x25, 0x80000000005acd00, TransportBuffer...) }`; decode `FUN_0036b270(param_2); (*pcVar2)(&local_118, ...)`.
+- **Severity (hypothesis)**: hardening control — oversized buffers and post-size-release ownership are gated.
+- **Confidence**: medium.
+
+## [sk-slice04] 0x000219c4 et al. — Swift stack canary (0x2c8502b44bfffed6) on every read wrapper
+- **Observation**: Every generic read/append wrapper (FUN_000219c4, 21ad8, 21bec, 21d00, 22338, 22448, 22558, 22668, 23330, 233c8, 23670, 23704) seeds a local with the sentinel `-0x2c8502b44bfffed6` and, after invoking the reader/writer, verifies it is unchanged; if overwritten it faults via FUN_0011d7e8. The unwrap guard (`self+0x10 == 0` → fatal 0x93) precedes every call.
+- **Evidence**: `local_18 = -0x2c8502b44bfffed6; ... if (local_18 == -0x2c8502b44bfffed6) return; FUN_0011d7e8(...)`.
+- **Severity (hypothesis)**: integrity control — Swift stack-scratch canary detects writer overruns into the scratch slot; any corruption faults instead of propagating.
+- **Confidence**: high (explicit sentinel compare + noreturn fault handler).

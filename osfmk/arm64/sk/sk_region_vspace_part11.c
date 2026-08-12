@@ -2416,6 +2416,7 @@ full:
     sk_rt_001afe4c(0x5accd0, 0xb, 2, 0x5be7c0, 0, 2, 0x5d08c0, 0x1b, 2, code, 1);
 oob:
     sk_rt_001afe4c(0x5accd0, 0xb, 2, 0x5cdab0, 0x13, 2, 0x5cdad0, 0x16, 2, 0x2ca, 1);
+    return 0;
 }
 
 /* FUN_00272a98 @ 0x00272a98   (est. sk_range_remove_first)
@@ -2482,6 +2483,7 @@ uint32_t sk_bitbuffer_remove_first(uint32_t idx)
         code = 0xdd;
     }
     sk_rt_001afe4c(0x5accd0, 0xb, 2, 0x5be7c0, 0, 2, 0x5d0610, 0x16, 2, code, 1);
+    return 0;
 }
 
 /* FUN_00273168 @ 0x00273168   (est. sk_bitbuffer_remove_first_8)
@@ -2516,6 +2518,7 @@ uint32_t sk_bitbuffer_remove_first_8(uint32_t idx)
         code = 0xdd;
     }
     sk_rt_001afe4c(0x5accd0, 0xb, 2, 0x5be7c0, 0, 2, 0x5d0610, 0x16, 2, code, 1);
+    return 0;
 }
 
 /* FUN_00274128 @ 0x00274128   (est. sk_range_remove_first_nil)

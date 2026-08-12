@@ -158,6 +158,13 @@ extern unsigned long FUN_00356ea8(unsigned long _a, ...);
  * ------------------------------------------------------------------ */
 static inline void sk_swift_trap(void) { __builtin_trap(); }
 
+/* Concatenate two 32-bit words into a 64-bit word (high << 32 | low). */
+static inline unsigned long sk_concat44(unsigned long hi, unsigned long lo)
+{
+    return (hi << 32) | (lo & 0xffffffff);
+}
+#define CONCAT44(h, l) sk_concat44((unsigned long)(h), (unsigned long)(l))
+
 /* ------------------------------------------------------------------ *
  * In-slice / global data symbols referenced by the bodies.
  * ------------------------------------------------------------------ */
@@ -171,6 +178,12 @@ extern void _LAB_00346840(void);        /* LAB_00346840 (dispatch thunk) */
 
 /* 16-byte pair returned by the Int128 word-index builders. */
 typedef struct sk_i128 { unsigned long lo, hi; } sk_i128_t;
+
+/* Forward declarations (mutually-referencing word-index builders). */
+static sk_i128_t sk_swift_int8_word_index(unsigned long self, long idx, char low);
+static sk_i128_t sk_swift_int16_word_index(unsigned long self, long idx, unsigned long low);
+static sk_i128_t sk_swift_int16_word_index_b(unsigned long self, long idx, short low);
+static sk_i128_t sk_swift_int32_word_index(unsigned long self, long idx, unsigned long low);
 
 
 /* ------------------------------------------------------------------ *
@@ -311,7 +324,7 @@ static void sk_swift_divzero_rem_fatal_64b(void)
 static void sk_swift_divzero_runtime_trap(void)
 {
     FUN_00348074(1);
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -321,7 +334,7 @@ static void sk_swift_divzero_runtime_trap(void)
 static void sk_swift_divzero_rem_runtime_trap(void)
 {
     FUN_00348404(1);
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -330,7 +343,7 @@ static void sk_swift_divzero_rem_runtime_trap(void)
 static void sk_swift_divzero_runtime_trap_b(void)
 {
     FUN_00348074(1);
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -339,7 +352,7 @@ static void sk_swift_divzero_runtime_trap_b(void)
 static void sk_swift_divzero_rem_runtime_trap_b(void)
 {
     FUN_00348404(1);
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -348,7 +361,7 @@ static void sk_swift_divzero_rem_runtime_trap_b(void)
 static void sk_swift_divzero_rem_runtime_trap_32(void)
 {
     FUN_00348404(1);
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -374,7 +387,7 @@ static void sk_swift_div_int8(char *self, char divisor)
         }
         FUN_0034834c(1);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -395,9 +408,9 @@ static void sk_swift_rem_int8(char *self, char divisor)
             return;
         }
         FUN_003488bc(1);
-        FUN_00349098();
+        FUN_00349098(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -440,7 +453,7 @@ static int sk_swift_div_int8_return(char lhs, char rhs)
         }
         FUN_0034834c(1);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -506,9 +519,9 @@ static int sk_swift_rem_int8_return(char lhs, char rhs)
             return (int)lhs - q * d;
         }
         FUN_003488bc(1);
-        FUN_00349098();
+        FUN_00349098(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -557,7 +570,7 @@ static void sk_swift_div_int16(short *self, short divisor)
         }
         FUN_0034834c(1);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -578,9 +591,9 @@ static void sk_swift_rem_int16(short *self, short divisor)
             return;
         }
         FUN_003488bc(1);
-        FUN_00349098();
+        FUN_00349098(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -622,7 +635,7 @@ static int sk_swift_div_int16_return(short lhs, short rhs)
         }
         FUN_0034834c(1);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -688,9 +701,9 @@ static int sk_swift_rem_int16_return(short lhs, short rhs)
             return (int)lhs - q * d;
         }
         FUN_003488bc(1);
-        FUN_00349098();
+        FUN_00349098(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -752,10 +765,10 @@ static uint32_t sk_swift_divmod16(int high, uint32_t low, char divisor)
                 return q & 0xff | (v - q * (uint32_t)divisor) * 0x100;
             }
             FUN_003488bc(1);
-            FUN_003493d8();
+            FUN_003493d8(0);
         }
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -806,9 +819,9 @@ static uint32_t sk_swift_divmod32(uint32_t high, uint32_t low, uint32_t divisor)
             return q & 0xffff | (low - q * divisor) * 0x10000;
         }
         FUN_003488bc(1);
-        FUN_003493d8();
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -863,10 +876,10 @@ static uint32_t sk_swift_divmod32_signed(int high, uint32_t low, short divisor)
                 return q & 0xffff | (v - q * (uint32_t)d) * 0x10000;
             }
             FUN_003488bc(1);
-            FUN_003493d8();
+            FUN_003493d8(0);
         }
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -917,9 +930,9 @@ static unsigned long sk_swift_divmod64(uint32_t high, int low, uint32_t divisor)
             return q & 0xffffffff | (unsigned long)(low - (int)q * divisor) << 0x20;
         }
         FUN_003488bc(1);
-        FUN_003493d8();
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1311,15 +1324,15 @@ static long sk_swift_word_index_trap8(long idx, char low)
 {
     if (idx < 0) {
         FUN_003488bc(1);
-        FUN_00355ebc();
-        FUN_003493d8();
+        FUN_00355ebc(0);
+        FUN_003493d8(0);
     } else {
         if (idx == 0) return (long)low;
         FUN_003488bc(1);
-        FUN_00355890();
-        FUN_003493d8();
+        FUN_00355890(0);
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1329,15 +1342,15 @@ static unsigned short sk_swift_word_index_trap16(long idx, unsigned short low)
 {
     if (idx < 0) {
         FUN_003488bc(1);
-        FUN_00355ebc();
-        FUN_003493d8();
+        FUN_00355ebc(0);
+        FUN_003493d8(0);
     } else {
         if (idx == 0) return low;
         FUN_003488bc(1);
-        FUN_00355890();
-        FUN_003493d8();
+        FUN_00355890(0);
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1347,15 +1360,15 @@ static long sk_swift_word_index_trap16_b(long idx, short low)
 {
     if (idx < 0) {
         FUN_003488bc(1);
-        FUN_00355ebc();
-        FUN_003493d8();
+        FUN_00355ebc(0);
+        FUN_003493d8(0);
     } else {
         if (idx == 0) return (long)low;
         FUN_003488bc(1);
-        FUN_00355890();
-        FUN_003493d8();
+        FUN_00355890(0);
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1365,15 +1378,15 @@ static unsigned int sk_swift_word_index_trap32(long idx, unsigned int low)
 {
     if (idx < 0) {
         FUN_003488bc(1);
-        FUN_00355ebc();
-        FUN_003493d8();
+        FUN_00355ebc(0);
+        FUN_003493d8(0);
     } else {
         if (idx == 0) return low;
         FUN_003488bc(1);
-        FUN_00355890();
-        FUN_003493d8();
+        FUN_00355890(0);
+        FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1386,12 +1399,12 @@ static unsigned int sk_swift_word_index_trap32(long idx, unsigned int low)
 static int sk_swift_float2int8(void)
 {
     double f;
-    f = (double)FUN_0034d584();
+    f = (double)FUN_0034d584(0);
     /* range-checks against fp16 bounds; traps out of range */
-    if (f <= 7.74974e-41) { FUN_003488bc(1); FUN_003493d8(); }
+    if (f <= 7.74974e-41) { FUN_003488bc(1); FUN_003493d8(0); }
     else if (f < 3.15685e-41) { return (int)f; }
-    else { FUN_003488bc(1); FUN_003493d8(); }
-    FUN_00351be0();
+    else { FUN_003488bc(1); FUN_003493d8(0); }
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1400,16 +1413,16 @@ static int sk_swift_float2int8(void)
 static int sk_swift_float2int8_b(void)
 {
     float f;
-    FUN_0034bb38();
+    FUN_0034bb38(0);
     if (1) {
         f = (float)FUN_00357958(0xc3010000);
-        if (1) { FUN_003488bc(1); FUN_003493d8(); }
+        if (1) { FUN_003488bc(1); FUN_003493d8(0); }
         else if (f < 128.0) { return (int)f; }
-        else { FUN_003488bc(1); FUN_003493d8(); }
+        else { FUN_003488bc(1); FUN_003493d8(0); }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1419,19 +1432,19 @@ static int sk_swift_double2int8(void)
 {
     double d;
     bool lt;
-    d = (double)FUN_0034bb60();
+    d = (double)FUN_0034bb60(0);
     if (1) {
         lt = d < 127.0;
-        if (d <= 127.0) { FUN_003488bc(1); FUN_003493d8(); }
+        if (d <= 127.0) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             d = (double)FUN_00354588(0x4060000000000000);
             if (lt) return (int)d;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1440,15 +1453,15 @@ static int sk_swift_double2int8(void)
 static int sk_swift_float2int16(void)
 {
     double f;
-    FUN_0034d584();
+    FUN_0034d584(0);
     if (1) {
-        f = (double)FUN_0035ab7c();
+        f = (double)FUN_0035ab7c(0);
         if (1) return (int)f;
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1457,19 +1470,19 @@ static int sk_swift_float2int16(void)
 static int sk_swift_float2int16_b(void)
 {
     float f;
-    FUN_0034bb38();
+    FUN_0034bb38(0);
     if (1) {
-        FUN_0035ab54();
-        if (1) { FUN_003488bc(1); FUN_003493d8(); }
+        FUN_0035ab54(0);
+        if (1) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             f = (float)FUN_00357958(0x47800000);
             if (1) return (int)f;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1478,19 +1491,19 @@ static int sk_swift_float2int16_b(void)
 static int sk_swift_double2int16(void)
 {
     double d;
-    FUN_0034bb60();
+    FUN_0034bb60(0);
     if (1) {
-        FUN_0035ab2c();
-        if (1) { FUN_003488bc(1); FUN_003493d8(); }
+        FUN_0035ab2c(0);
+        if (1) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             d = (double)FUN_00354588(0x40f0000000000000);
             if (1) return (int)d;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1499,11 +1512,11 @@ static int sk_swift_double2int16(void)
 static int sk_swift_float2int16_c(void)
 {
     double f;
-    f = (double)FUN_0034d584();
-    if (f <= 8.8967e-41) { FUN_003488bc(1); FUN_003493d8(); }
+    f = (double)FUN_0034d584(0);
+    if (f <= 8.8967e-41) { FUN_003488bc(1); FUN_003493d8(0); }
     else if (f < 4.30479e-41) { return (int)f; }
-    else { FUN_003488bc(1); FUN_003493d8(); }
-    FUN_00351be0();
+    else { FUN_003488bc(1); FUN_003493d8(0); }
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1512,11 +1525,11 @@ static int sk_swift_float2int16_c(void)
 static int sk_swift_float2int16_d(void)
 {
     float f;
-    f = (float)FUN_0034bb38();
-    if (f <= -32768.0) { FUN_003488bc(1); FUN_003493d8(); }
+    f = (float)FUN_0034bb38(0);
+    if (f <= -32768.0) { FUN_003488bc(1); FUN_003493d8(0); }
     else if (f < 32768.0) { return (int)f; }
-    else { FUN_003488bc(1); FUN_003493d8(); }
-    FUN_00351be0();
+    else { FUN_003488bc(1); FUN_003493d8(0); }
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1526,19 +1539,19 @@ static int sk_swift_double2int16_b(void)
 {
     double d;
     bool lt;
-    d = (double)FUN_0034bb60();
+    d = (double)FUN_0034bb60(0);
     if (1) {
         lt = d < 32767.0;
-        if (d <= 32767.0) { FUN_003488bc(1); FUN_003493d8(); }
+        if (d <= 32767.0) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             d = (double)FUN_00354588(0x40e0000000000000);
             if (lt) return (int)d;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1547,15 +1560,15 @@ static int sk_swift_double2int16_b(void)
 static int sk_swift_float2int32(void)
 {
     double f;
-    FUN_0034d584();
+    FUN_0034d584(0);
     if (1) {
-        f = (double)FUN_0035ab7c();
+        f = (double)FUN_0035ab7c(0);
         if (1) return (int)f;
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1564,19 +1577,19 @@ static int sk_swift_float2int32(void)
 static int sk_swift_float2int32_b(void)
 {
     float f;
-    FUN_0034bb38();
+    FUN_0034bb38(0);
     if (1) {
-        FUN_0035ab54();
-        if (1) { FUN_003488bc(1); FUN_003493d8(); }
+        FUN_0035ab54(0);
+        if (1) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             f = (float)FUN_00357958(0x4f800000);
             if (1) return (int)f;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1585,19 +1598,19 @@ static int sk_swift_float2int32_b(void)
 static int sk_swift_double2int32(void)
 {
     double d;
-    FUN_0034bb60();
+    FUN_0034bb60(0);
     if (1) {
-        FUN_0035ab2c();
-        if (1) { FUN_003488bc(1); FUN_003493d8(); }
+        FUN_0035ab2c(0);
+        if (1) { FUN_003488bc(1); FUN_003493d8(0); }
         else {
             d = (double)FUN_00354588(0x41f0000000000000);
             if (1) return (int)d;
-            FUN_003488bc(1); FUN_003493d8();
+            FUN_003488bc(1); FUN_003493d8(0);
         }
     } else {
-        FUN_003488bc(1); FUN_003493d8();
+        FUN_003488bc(1); FUN_003493d8(0);
     }
-    FUN_00351be0();
+    FUN_00351be0(0);
     __builtin_trap();
 }
 
@@ -1613,9 +1626,9 @@ static void sk_swift_int8_init(void)
 {
     unsigned char tag;
     tag = 0;   /* unaff_w19 */
-    FUN_00352800();
+    FUN_00352800(0);
     FUN_00002534(0x656328, (unsigned long)_DAT_004e8120);
-    FUN_00348a68();
+    FUN_00348a68(0);
     /* *unaff_x20 = tag */
 }
 
@@ -1625,9 +1638,9 @@ static void sk_swift_int16_init(void)
 {
     unsigned short tag;
     tag = 0;
-    FUN_00352800();
+    FUN_00352800(0);
     FUN_00002534(0x656330, (unsigned long)_DAT_004e8128);
-    FUN_00348a68();
+    FUN_00348a68(0);
 }
 
 /* FUN_002f827c @ 0x2f827c  (est. sk_swift_int16_init_b)
@@ -1636,9 +1649,9 @@ static void sk_swift_int16_init_b(void)
 {
     unsigned short tag;
     tag = 0;
-    FUN_00352800();
+    FUN_00352800(0);
     FUN_00002534(0x656338, (unsigned long)_DAT_004e8130);
-    FUN_00348a68();
+    FUN_00348a68(0);
 }
 
 /* FUN_002fcef4 @ 0x2fcef4  (est. sk_swift_int32_init)
@@ -1647,9 +1660,9 @@ static void sk_swift_int32_init(void)
 {
     unsigned int tag;
     tag = 0;
-    FUN_00352800();
+    FUN_00352800(0);
     FUN_00002534(0x656340, (unsigned long)_DAT_004e8138);
-    FUN_00348a68();
+    FUN_00348a68(0);
 }
 
 /* FUN_002efa10 @ 0x2efa10  (est. sk_swift_dispatch_thunk)
@@ -1661,7 +1674,7 @@ static void sk_swift_dispatch_thunk(void)
     unsigned char self;
     unsigned char r[16];
     self = 0;   /* unaff_x20 */
-    FUN_00352e84();
+    FUN_00352e84(0);
     /* r = (*in_x3)(extraout_x8) */
     /* *unaff_x19 = r; unaff_x19[1] = self */
 }
@@ -1673,7 +1686,7 @@ static void sk_swift_dispatch_thunk16(void)
     unsigned short self;
     unsigned char r[16];
     self = 0;
-    FUN_00352e84();
+    FUN_00352e84(0);
     /* indirect call; store r and self */
 }
 
@@ -1683,12 +1696,12 @@ static void sk_swift_dispatch_thunk16(void)
 static void sk_swift_service_op8(void)
 {
     unsigned char v;
-    FUN_0034c034();
-    FUN_00354e00();
-    FUN_003109b4();
-    FUN_0034bcf0();
+    FUN_0034c034(0);
+    FUN_00354e00(0);
+    FUN_003109b4(0);
+    FUN_0034bcf0(0);
     v = 0;   /* (*extraout_x8)() */
-    FUN_0034b3c8();
+    FUN_0034b3c8(0);
     /* (**(code **)(extraout_x16+8))(); *unaff_x22 = v */
 }
 
@@ -1697,12 +1710,12 @@ static void sk_swift_service_op8(void)
 static void sk_swift_service_op16(void)
 {
     unsigned short v;
-    FUN_0034c034();
-    FUN_00354e00();
-    FUN_003109b4();
-    FUN_0034bcf0();
+    FUN_0034c034(0);
+    FUN_00354e00(0);
+    FUN_003109b4(0);
+    FUN_0034bcf0(0);
     v = 0;
-    FUN_0034b3c8();
+    FUN_0034b3c8(0);
 }
 
 /* FUN_002f4340 @ 0x2f4340  (est. sk_swift_int16_word_build)
@@ -1713,7 +1726,7 @@ static void sk_swift_int16_word_build(void)
     unsigned long r[2];
     unsigned long self;
     self = 0;   /* unaff_x20 */
-    /* r = FUN_00351124(); self = FUN_001e655c(r0,r1,*self) */
+    /* r = FUN_00351124(0); self = FUN_001e655c(r0,r1,*self) */
     /* *unaff_x19 = self */
 }
 
@@ -1724,25 +1737,25 @@ static void sk_swift_int32_word_build(void)
     unsigned long r[2];
     unsigned int self;
     self = 0;
-    /* r = FUN_00351124(); self = FUN_001e655c(unsigned long _a, ...) */
+    /* r = FUN_00351124(0); self = FUN_001e655c(unsigned long _a, ...) */
 }
 
 /* FUN_002f436c @ 0x2f436c  (est. sk_swift_int16_construct)
  * Int16 construct: FUN_0034c434 / FUN_001e3600 / FUN_0035272c. Low. */
 static void sk_swift_int16_construct(void)
 {
-    FUN_0034c434();
-    FUN_001e3600();
-    FUN_0035272c();
+    FUN_0034c434(0);
+    FUN_001e3600(0);
+    FUN_0035272c(0);
 }
 
 /* FUN_002fd2d4 @ 0x2fd2d4  (est. sk_swift_int32_construct)
  * Int32 construct: FUN_0034c434 / FUN_001e3568 / FUN_0035272c. Low. */
 static void sk_swift_int32_construct(void)
 {
-    FUN_0034c434();
-    FUN_001e3568();
-    FUN_0035272c();
+    FUN_0034c434(0);
+    FUN_001e3568(0);
+    FUN_0035272c(0);
 }
 
 /* FUN_002f43ac @ 0x2f43ac  (est. sk_swift_int16_pair_emit)
@@ -1785,8 +1798,8 @@ static void sk_swift_int32_pair_emit_b(unsigned long *a, unsigned long *b)
  * Int16 flush: FUN_003528cc / FUN_002299cc. Low. */
 static void sk_swift_int16_flush(void)
 {
-    FUN_003528cc();
-    FUN_002299cc();
+    FUN_003528cc(0);
+    FUN_002299cc(0);
 }
 
 /* ================================================================== *
@@ -1828,7 +1841,7 @@ static void sk_swift_int8_shift_b(unsigned char *out, unsigned char *low_in,
     /* lock/setup: FUN_0008f6c0(p5) FUN_0008f6f4 FUN_00377824
      * FUN_00310a14/44 bit-width walk with FUN_00310a74 shift-with-overflow */
     shift = FUN_003109b4(meta, p5);   /* masked shift amount */
-    (*(void (**)(void))(mt + 8))(0, meta);   /* element-store method */
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);   /* element-store method */
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             *out = (unsigned char)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -1852,7 +1865,7 @@ static void sk_swift_int8_shift_c(unsigned char *out, unsigned long v, long meta
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             *out = (unsigned char)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -1876,7 +1889,7 @@ static void sk_swift_int8_shift_d(unsigned char *out, unsigned char *low_in,
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             *out = (unsigned char)(low >> (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -1900,7 +1913,7 @@ static void sk_swift_int8_shift_e(unsigned char *out, unsigned long v, long meta
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             *out = (unsigned char)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -1922,7 +1935,7 @@ static void sk_swift_int8_shift_pair(unsigned char *out, unsigned long v, long m
     long shift;
     (void)v;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     *out = 0;
     out[1] = 0;
 }
@@ -1940,7 +1953,7 @@ static void sk_swift_int8_ashr(char *out, unsigned char *low_in, unsigned long v
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             result = (char)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -1967,7 +1980,7 @@ static void sk_swift_int8_ashl(char *out, unsigned char *low_in, unsigned long v
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             result = (char)((int)(char)low >> (-(uint32_t)shift & 0x1f));
@@ -1993,7 +2006,7 @@ static void sk_swift_int8_shr_self(char *out, unsigned long v, long meta, unsign
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             result = (char)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2019,7 +2032,7 @@ static void sk_swift_int8_shl_self(char *out, unsigned long v, long meta, unsign
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff8 < shift) {
             result = (char)((int)low >> (-(uint32_t)shift & 0x1f));
@@ -2041,7 +2054,7 @@ static void sk_swift_int8_shift_pair_b(unsigned char *out, unsigned long v, long
 {
     long mt = *(long *)(meta + -8);
     (void)v;
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     *out = 0;
     out[1] = 0;
 }
@@ -2058,7 +2071,7 @@ static void sk_swift_int16_shift_a(unsigned short *out, unsigned short *low_in,
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             *out = (unsigned short)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2082,7 +2095,7 @@ static void sk_swift_int16_shift_b(unsigned short *out, unsigned long v, long me
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             *out = (unsigned short)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2106,7 +2119,7 @@ static void sk_swift_int16_shift_c(unsigned short *out, unsigned short *low_in,
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             *out = (unsigned short)(low >> (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2130,7 +2143,7 @@ static void sk_swift_int16_shift_d(unsigned short *out, unsigned long v, long me
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             *out = (unsigned short)(low >> (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2151,7 +2164,7 @@ static void sk_swift_int16_shift_pair(unsigned short *out, unsigned long v, long
 {
     long mt = *(long *)(meta + -8);
     (void)v;
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     *out = 0;
     *((unsigned char *)out + 2) = 0;
 }
@@ -2169,7 +2182,7 @@ static void sk_swift_int16_ashr(short *out, unsigned short *low_in, unsigned lon
     (void)v;
     low = (uint32_t)*low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             result = (short)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2193,7 +2206,7 @@ static void sk_swift_int32_shift_a(unsigned int *out, unsigned long v, long meta
     long shift;
     (void)v;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xffffffffffffffe0 < shift) {
             *out = 0u << (unsigned long)(-(uint32_t)shift & 0x1f);
@@ -2217,7 +2230,7 @@ static void sk_swift_int32_shift_b(unsigned int *out, unsigned int *low_in,
     (void)v;
     low = *low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xffffffffffffffe0 < shift) {
             *out = low << (unsigned long)(-(uint32_t)shift & 0x1f);
@@ -2241,7 +2254,7 @@ static void sk_swift_int32_shift_c(unsigned int *out, unsigned long v, long meta
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xffffffffffffffe0 < shift) {
             *out = low << (unsigned long)(-(uint32_t)shift & 0x1f);
@@ -2266,7 +2279,7 @@ static void sk_swift_int32_shift_d(unsigned int *out, unsigned int *low_in,
     (void)v;
     low = *low_in;
     shift = FUN_003109b4(meta, p5);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xffffffffffffffe0 < shift) {
             *out = low >> (unsigned long)(-(uint32_t)shift & 0x1f);
@@ -2290,7 +2303,7 @@ static void sk_swift_int32_shift_e(unsigned int *out, unsigned long v, long meta
     (void)v;
     low = *out;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xffffffffffffffe0 < shift) {
             *out = low << (unsigned long)(-(uint32_t)shift & 0x1f);
@@ -2310,14 +2323,14 @@ static void sk_swift_int32_shift_e(unsigned int *out, unsigned long v, long meta
  * ================================================================== */
 
 /* FUN_002eb94c @ 0x2eb94c  (est. sk_swift_int128_shift_sel_a)
- * 5-arg shift thunk: out = shift(a,b,p5,p3, FUN_00324ac0(), p4).
+ * 5-arg shift thunk: out = shift(a,b,p5,p3, FUN_00324ac0(0), p4).
  * Confidence: medium. */
 static void sk_swift_int128_shift_sel_a(unsigned long p1, unsigned long p2,
                                         unsigned long p3, unsigned long p4,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00324ac0();
+    sel = FUN_00324ac0(0);
     FUN_0024304c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2328,7 +2341,7 @@ static void sk_swift_int128_shift_sel_b(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00343b08();
+    sel = FUN_00343b08(0);
     FUN_0024304c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2340,7 +2353,7 @@ static void sk_swift_int128_shift_sel_c(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00343b08();
+    sel = FUN_00343b08(0);
     FUN_0024320c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2351,7 +2364,7 @@ static void sk_swift_int128_shift_sel_d(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00324d30();
+    sel = FUN_00324d30(0);
     FUN_0024304c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2362,7 +2375,7 @@ static void sk_swift_int128_shift_sel_e(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00343ab4();
+    sel = FUN_00343ab4(0);
     FUN_0024304c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2374,7 +2387,7 @@ static void sk_swift_int128_shift_sel_f(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_00343ab4();
+    sel = FUN_00343ab4(0);
     FUN_0024320c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2385,7 +2398,7 @@ static void sk_swift_int128_shift_sel_g(unsigned long p1, unsigned long p2,
                                         unsigned long p5)
 {
     unsigned long sel;
-    sel = FUN_0002142c();
+    sel = FUN_0002142c(0);
     FUN_0024304c(p1, p2, p5, p3, sel, p4);
 }
 
@@ -2415,7 +2428,7 @@ static void sk_swift_int8_parse(unsigned char *out, unsigned long s2,
     self = s2 & 0xffffffffffff;
     if ((s3 & 0x2000000000000000) != 0) self = len;
     if (self == 0) {
-        FUN_003a25d4(s3);
+        sk_swift_release(s3);
         ok = 1;
         result = 0;
         goto done;
@@ -2467,13 +2480,13 @@ static void sk_swift_int16_parse(unsigned short *out, unsigned long s2,
     self = s2 & 0xffffffffffff;
     if ((s3 & 0x2000000000000000) != 0) self = len;
     if (self == 0) {
-        FUN_003a25d4(s3);
+        sk_swift_release(s3);
         ok = 1;
         result = 0;
         goto done;
     }
     /* FUN_0022cf60 driver handles the raw path; manual sign-stripping here. */
-    FUN_003a25d4(s3);
+    sk_swift_release(s3);
     ok = 0;
     result = 0;
 done:
@@ -2499,7 +2512,7 @@ static void sk_swift_int16_parse_b(unsigned short *out, unsigned long s2,
     self = s2 & 0xffffffffffff;
     if ((s3 & 0x2000000000000000) != 0) self = len;
     if (self == 0) {
-        FUN_003a25d4(s3);
+        sk_swift_release(s3);
         ok = 1;
         result = 0;
         goto done;
@@ -2550,15 +2563,15 @@ static void sk_swift_int128_shift_ovf_a(unsigned long p1, unsigned long p2,
     long shift;
     long mt;
     (void)p1; (void)p2;
-    FUN_00357ca0();
-    FUN_0034c7a8();
+    FUN_00357ca0(0);
+    FUN_0034c7a8(0);
     body();
-    FUN_0035732c();
-    FUN_00350230();
-    FUN_002412d4();
+    FUN_0035732c(0);
+    FUN_00350230(0);
+    FUN_002412d4(0);
     if (/* cStack != 1 */ 1) {
         /* fast path: release and return */
-        FUN_0034b518();
+        FUN_0034b518(0);
         FUN_00357c44(0);
         return;
     }
@@ -2566,7 +2579,7 @@ static void sk_swift_int128_shift_ovf_a(unsigned long p1, unsigned long p2,
     mt = *(long *)(p3 + -8);
     low = 0;   /* element low byte */
     shift = FUN_003109b4(p3, p4);
-    (*(void (**)(void))(mt + 8))(0, p3);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, p3);
     /* tail: masked shift of low byte; fatal on overflow */
     (void)low; (void)shift;
 }
@@ -2582,14 +2595,14 @@ static void sk_swift_int128_shift_ovf_b(unsigned long p1, unsigned long p2,
     unsigned short low;
     long shift;
     (void)p1; (void)p2;
-    FUN_00357ca0();
-    FUN_0034c7a8();
+    FUN_00357ca0(0);
+    FUN_0034c7a8(0);
     body();
-    FUN_0035732c();
-    FUN_00350230();
-    FUN_002412d4();
+    FUN_0035732c(0);
+    FUN_00350230(0);
+    FUN_002412d4(0);
     if (1) {
-        FUN_0034b518();
+        FUN_0034b518(0);
         FUN_00357c44(0);
         return;
     }
@@ -2597,7 +2610,7 @@ static void sk_swift_int128_shift_ovf_b(unsigned long p1, unsigned long p2,
     mt = *(long *)(p3 + -8);
     low = 0;
     shift = FUN_003109b4(p3, p4);
-    (*(void (**)(void))(mt + 8))(0, p3);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, p3);
     (void)low; (void)shift;
 }
 
@@ -2611,7 +2624,7 @@ static void sk_swift_int16_shift_ovf(unsigned short *out, unsigned long v, long 
     long shift;
     (void)v; (void)p4; (void)p5; (void)p6;
     shift = FUN_003109b4(meta, p4);
-    (*(void (**)(void))(mt + 8))(0, meta);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
     if ((long)shift < 0) {
         if (0xfffffffffffffff0 < shift) {
             *out = (unsigned short)(0u << (unsigned long)(-(uint32_t)shift & 0x1f));
@@ -2624,3 +2637,154 @@ static void sk_swift_int16_shift_ovf(unsigned short *out, unsigned long v, long 
     *out = 0;
 }
 
+
+/* ------------------------------------------------------------------ *
+ * Remaining Int16 shift / parse wrappers (originally omitted).
+ * ------------------------------------------------------------------ */
+
+/* FUN_002fa4b4 @ 0x2fa4b4  (est. sk_swift_int16_shr_self)
+ * Int16 shift-right wrapper (in-place self). Width 0x40/0x10. Medium. */
+static void sk_swift_int16_shr_self(short *out, unsigned long v, long meta,
+                                    unsigned long p4)
+{
+    long mt = *(long *)(meta + -8);
+    short low;
+    long shift;
+    short result;
+    (void)v;
+    low = *out;
+    shift = FUN_003109b4(meta, p4);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
+    if ((long)shift < 0) {
+        if (0xfffffffffffffff0 < shift) {
+            result = (short)(low << (unsigned long)(-(uint32_t)shift & 0x1f));
+            goto done;
+        }
+    } else if (shift < 0x10) {
+        result = (short)((int)low >> ((uint32_t)shift & 0x1f));
+        goto done;
+    }
+    result = 0;
+done:
+    *out = result;
+}
+
+/* FUN_002fae5c @ 0x2fae5c  (est. sk_swift_int16_ashl)
+ * Int16 arithmetic shift-left wrapper with explicit low word and sign fill.
+ * Width 0x40/0x10. Medium. */
+static void sk_swift_int16_ashl(short *out, unsigned short *low_in, unsigned long v,
+                                long meta, unsigned long p5)
+{
+    long mt = *(long *)(meta + -8);
+    uint32_t low;
+    long shift;
+    short result;
+    (void)v;
+    low = (uint32_t)*low_in;
+    shift = FUN_003109b4(meta, p5);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
+    if ((long)shift < 0) {
+        if (0xfffffffffffffff0 < shift) {
+            result = (short)((int)(short)low >> (-(uint32_t)shift & 0x1f));
+            goto done;
+        }
+    } else if (shift < 0x10) {
+        result = (short)(low << (unsigned long)((uint32_t)shift & 0x1f));
+        goto done;
+    }
+    result = -((unsigned short)(low >> 0xf) & 1);
+done:
+    *out = result;
+}
+
+/* FUN_002fb7bc @ 0x2fb7bc  (est. sk_swift_int16_shl_self)
+ * Int16 shift-left wrapper (in-place self). Width 0x40/0x10. Medium. */
+static void sk_swift_int16_shl_self(short *out, unsigned long v, long meta,
+                                    unsigned long p4)
+{
+    long mt = *(long *)(meta + -8);
+    short low;
+    long shift;
+    short result;
+    (void)v;
+    low = *out;
+    shift = FUN_003109b4(meta, p4);
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
+    if ((long)shift < 0) {
+        if (0xfffffffffffffff0 < shift) {
+            result = (short)((int)low >> (-(uint32_t)shift & 0x1f));
+            goto done;
+        }
+    } else if (shift < 0x10) {
+        result = (short)(low << (unsigned long)((uint32_t)shift & 0x1f));
+        goto done;
+    }
+    result = 0;
+done:
+    *out = result;
+}
+
+/* FUN_002fc180 @ 0x2fc180  (est. sk_swift_int16_parse_c)
+ * Int16 decimal string parse (full digit loop with *10+digit accumulation).
+ * Confidence: high (pattern-matched). */
+static void sk_swift_int16_parse_c(unsigned short *out, unsigned long s2,
+                                   unsigned long s3, unsigned long p4, long bound)
+{
+    unsigned long len;
+    unsigned char *buf;
+    unsigned long self;
+    unsigned char ok;
+    unsigned short result;
+    long i;
+    int digit, acc, prod;
+    (void)p4; (void)bound;
+    len = s3 >> 0x38 & 0xf;
+    self = s2 & 0xffffffffffff;
+    if ((s3 & 0x2000000000000000) != 0) self = len;
+    if (self == 0) {
+        sk_swift_release(s3);
+        ok = 1;
+        result = 0;
+        goto done;
+    }
+    buf = (unsigned char *)((s3 & 0xfffffffffffffff) + 0x20);
+    if (buf[0] == '+') buf++, len--;
+    acc = 0; ok = 1;
+    if (buf[0] == '-') {
+        buf++;
+        for (i = 0; i < (long)len; i++) {
+            digit = buf[i] - 0x30;
+            if (9 < digit) { ok = 0; result = 0; goto done; }
+            prod = acc * 10;
+            acc = prod - digit;
+            if (prod != acc + digit) { ok = 0; result = 0; goto done; }
+        }
+        result = (unsigned short)acc; goto finish;
+    }
+    for (i = 0; i < (long)len; i++) {
+        digit = buf[i] - 0x30;
+        if (9 < digit) { ok = 0; result = 0; goto done; }
+        prod = acc * 10;
+        acc = prod + digit;
+        if (prod != acc - digit) { ok = 0; result = 0; goto done; }
+    }
+    result = (unsigned short)acc;
+finish:
+    ok = 0;
+done:
+    *out = result;
+    *((unsigned char *)out + 2) = ok;
+}
+
+/* FUN_002fc664 @ 0x2fc664  (est. sk_swift_int16_shift_pair_b)
+ * Int16 shift wrapper writing an (out, status) pair with a 0x7fff range
+ * check. Width 0x40/0x10. Medium. */
+static void sk_swift_int16_shift_pair_b(unsigned short *out, unsigned long v, long meta,
+                                        unsigned long p4, unsigned long p5)
+{
+    long mt = *(long *)(meta + -8);
+    (void)v;
+    (*(void (**)(unsigned long _p, ...))(mt + 8))(0, meta);
+    *out = 0;
+    *((unsigned char *)out + 2) = 0;
+}

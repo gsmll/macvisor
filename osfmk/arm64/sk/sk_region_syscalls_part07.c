@@ -16,6 +16,9 @@ typedef uint8_t  uint1_t;
 typedef uint16_t uint2_t;
 typedef uint32_t uint3_t;
 typedef uint32_t uint4_t;
+typedef uint8_t  und1_t;
+typedef uint16_t und2_t;
+typedef uint32_t und4_t;
 
 /* =====================================================================
  * Out-of-range callee declarations (bodies reconstructed by their range
@@ -24,7 +27,8 @@ typedef uint32_t uint4_t;
 
 /* --- syscall/entry setup helpers (0x34xxxx / 0x35xxxx range) --- */
 extern cl4_result_t FUN_0034d724(word_t, ...);
-extern word_t FUN_00348d94(word_t, ...);          /* arg/cap fetch */
+extern cl4_result_t FUN_00348d94(word_t, ...);     /* arg/cap fetch */
+extern void FUN_00348c64(word_t, ...);
 extern void FUN_00348ce8(word_t, ...);
 extern void FUN_00348e00(word_t, ...);
 extern void FUN_00348f14(word_t, ...);
@@ -32,7 +36,7 @@ extern void FUN_00349104(word_t, ...);
 extern void FUN_00349394(word_t, ...);
 extern void FUN_00349530(word_t, ...);
 extern void FUN_00349734(word_t, ...);
-extern void FUN_00349830(word_t, ...);
+extern word_t FUN_00349830(word_t, ...);
 extern void FUN_00349928(word_t, ...);
 extern void FUN_00349a9c(word_t, ...);
 extern void FUN_00349ae0(word_t, ...);
@@ -53,7 +57,7 @@ extern void FUN_0034aed0(word_t, ...);
 extern void FUN_0034b044(word_t, ...);
 extern void FUN_0034b07c(word_t, ...);
 extern word_t FUN_0034b264(word_t, ...);
-extern cl4_result_t FUN_0034b3c8(word_t, ...);
+extern word_t FUN_0034b3c8(word_t, ...);
 extern void FUN_0034b3e8(word_t, ...);
 extern void FUN_0034b430(word_t, ...);
 extern cl4_result_t FUN_0034b57c(word_t, ...);
@@ -69,7 +73,7 @@ extern void FUN_0034bfb4(word_t, ...);
 extern void FUN_0034c11c(word_t, ...);
 extern cl4_result_t FUN_0034c144(word_t, ...);
 extern cl4_result_t FUN_0034c16c(word_t, ...);
-extern cl4_result_t FUN_0034c1e4(word_t, ...);
+extern word_t FUN_0034c1e4(word_t, ...);
 extern void FUN_0034c444(word_t, ...);
 extern void FUN_0034c654(word_t, ...);
 extern void FUN_0034c7c4(word_t, ...);
@@ -79,7 +83,7 @@ extern cl4_result_t FUN_0034cb60(word_t, ...);
 extern void FUN_0034cc38(word_t, ...);
 extern void FUN_0034cc5c(word_t, ...);
 extern void FUN_0034ccbc(word_t, ...);
-extern cl4_result_t FUN_0034cdb4(word_t, ...);
+extern word_t FUN_0034cdb4(word_t, ...);
 extern cl4_result_t FUN_0034cdf8(word_t, ...);
 extern void FUN_0034d034(word_t, ...);
 extern void FUN_0034d1c0(word_t, ...);
@@ -134,13 +138,13 @@ extern cl4_result_t FUN_0035060c(word_t, ...);
 extern void FUN_00350624(word_t, ...);
 extern void FUN_00350630(word_t, ...);
 extern void FUN_00350798(word_t, ...);
-extern void FUN_003507e0(word_t, ...);
+extern cl4_result_t FUN_003507e0(word_t, ...);
 extern void FUN_00350878(word_t, ...);
 extern void FUN_0035098c(word_t, ...);
 extern void FUN_00350bb4(word_t, ...);
 extern cl4_result_t FUN_00350bd8(word_t, ...);
 extern void FUN_00350bfc(word_t, ...);
-extern void FUN_00350c5c(word_t, ...);
+extern word_t FUN_00350c5c(word_t, ...);
 extern void FUN_00350d74(word_t, ...);
 extern word_t FUN_00350e04(word_t, ...);
 extern void FUN_00350e74(word_t, ...);
@@ -154,7 +158,7 @@ extern cl4_result_t FUN_00351330(word_t, ...);
 extern void FUN_00351390(word_t, ...);
 extern void FUN_003513a8(word_t, ...);
 extern void FUN_003513e4(word_t, ...);
-extern cl4_result_t FUN_00351538(word_t, ...);
+extern word_t FUN_00351538(word_t, ...);
 extern void FUN_00351608(word_t, ...);
 extern void FUN_0035163c(word_t, ...);
 extern void FUN_00351774(word_t, ...);
@@ -172,7 +176,7 @@ extern void FUN_003524bc(word_t, ...);
 extern void FUN_003525a4(word_t, ...);
 extern void FUN_003525b8(word_t, ...);
 extern void FUN_0035270c(word_t, ...);
-extern void FUN_00352758(word_t, ...);
+extern word_t FUN_00352758(word_t, ...);
 extern void FUN_00352778(word_t, ...);
 extern void FUN_00352820(word_t, ...);
 extern void FUN_0035295c(word_t, ...);
@@ -190,7 +194,7 @@ extern void FUN_00353504(word_t, ...);
 extern void FUN_003535cc(word_t, ...);
 extern void FUN_003535e4(word_t, ...);
 extern void FUN_0035376c(word_t, ...);
-extern void FUN_00353844(word_t, ...);
+extern word_t FUN_00353844(word_t, ...);
 extern void FUN_003538d4(word_t, ...);
 extern void FUN_00353a00(word_t, ...);
 extern cl4_result_t FUN_00353af8(word_t, ...);
@@ -212,7 +216,7 @@ extern cl4_result_t FUN_00355008(word_t, ...);
 extern void FUN_003550cc(word_t, ...);
 extern void FUN_003550e0(word_t, ...);
 extern void FUN_0035510c(word_t, ...);
-extern cl4_result_t FUN_00355150(word_t, ...);
+extern word_t FUN_00355150(word_t, ...);
 extern void FUN_00355160(word_t, ...);
 extern void FUN_003551b0(word_t, ...);
 extern void FUN_00355208(word_t, ...);
@@ -259,8 +263,8 @@ extern void FUN_003580f4(word_t, ...);
 extern void FUN_00358184(word_t, ...);
 extern void FUN_00358194(word_t, ...);
 extern cl4_result_t FUN_00358410(word_t, ...);
-extern cl4_result_t FUN_003584d8(word_t, ...);
-extern cl4_result_t FUN_003585dc(word_t, ...);
+extern word_t FUN_003584d8(word_t, ...);
+extern word_t FUN_003585dc(word_t, ...);
 extern void FUN_00358750(word_t, ...);
 extern void FUN_0035884c(word_t, ...);
 extern cl4_result_t FUN_00358bb4(word_t, ...);
@@ -308,7 +312,7 @@ extern void FUN_0008e518(word_t, ...);
 extern void FUN_0009461c(word_t, ...);
 extern void FUN_000a6f88(word_t, ...);
 extern void FUN_000b4390(word_t, ...);
-extern void FUN_000b43d0(word_t, ...);
+extern cl4_result_t FUN_000b43d0(word_t, ...);
 extern void FUN_00114330(word_t, ...);
 extern void FUN_00117cc4(word_t, ...);
 extern void FUN_0031d5a8(word_t, ...);
@@ -601,7 +605,8 @@ void sk_syscall_entry_dispatch_0(void)
 void sk_syscall_entry_dispatch_1(void)
 {
     FUN_003561f4(0);                 /* entry setup */
-    word_t w = FUN_00348d94(0);      /* fetch word 0);     /* entry context */
+    word_t w = FUN_00348d94(0).lo;   /* fetch word */
+    FUN_00377824(0);                 /* entry context */
     FUN_0034bf0c(0);                 /* setup continuation */
     /* dispatch via capability table (table+8), offsetting into frame */
     ((void (*)(word_t))0)(0);       /* indirect jump — table recovered */
@@ -1220,7 +1225,9 @@ void sk_syscall_cap_copy_28(void)
     FUN_003503b0(0);
     byte sel = *(byte *)/* table+0x50 */0;
     int st = FUN_0034f138(dst + (ulong)sel);
-    if (/* w20 */0);
+    if (/* w20 */0 == 0) {
+        if (st == 0) {
+            FUN_0034f828(*(word_t *)/* table+0x28 */0);
             ((void (*)(void))0)();
             goto done;
         }
@@ -1268,11 +1275,14 @@ void sk_msg_cap_validate_write(void)
     FUN_00350500(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0034c11c(0);
-    int zero = (*(int *)/* table+0x54 */0 == 0);
+    int zero = (*(int *)/* table2+0x54 */0 == 0);
     word_t out = 0;
-    if (/* w22 */0);
+    if (/* w22 */0 == 0) {
+        out = 0;
+    } else {
+        FUN_00358194(*(word_t *)/* x8+0x40 */0);
         uint v = /* extraout_w11 */0;
-        if (1 /* && !zero */) {
+        if (1 /* bVar2 && !bVar3 */) {
             FUN_003550cc(0);
             long off = /* x12 */0;
             int st = /* w10 */0;
@@ -1282,7 +1292,9 @@ void sk_msg_cap_validate_write(void)
                 st = /* w10_00 */0;
                 v = /* w11_01 */0;
                 if (1 && !zero) {
-                    uint b = ((/* w14 */0 + /* x12_00 */0 + /* x12_00 */0);
+                    uint b = ((/* w14 */0 >> 0x10) == 0)
+                        ? (uint)*(ushort *)((long)/* x19 */0 + /* x12_00 */0)
+                        : *(uint *)((long)/* x19 */0 + /* x12_00 */0);
                     if (b != 0) {
                         FUN_003525b8(0);
                         if (/* w12 */0 != 0) {
@@ -1294,7 +1306,8 @@ void sk_msg_cap_validate_write(void)
                     }
                 } else {
                     long o2 = /* x12_00 */0;
-                    if (1 < /* w14 */0 + o2);
+                    if (1 < /* w14 */0) {
+                        uint b = (uint)*(byte *)((long)/* x19 */0 + o2);
                         if (b != 0) {
                             FUN_003525b8(0);
                             if (/* w12 */0 != 0) {
@@ -1347,7 +1360,8 @@ void sk_tcb_release_extra(long tcb)
     FUN_0034a32c(0);
     FUN_00350548(0x13f);
     FUN_00377824(0);
-    int is_big = 0x3e < /* x1 */0 == 0x3f);
+    int is_big = 0x3e < /* x1 */0;
+    int is_3f = (/* x1 */0 == 0x3f);
     if (/* x1 */0 < 0x40) {
         FUN_00348f14(r2);
         cl4_result_t r = FUN_00377824(0xff, /* x1_00 */0, r1);
@@ -1392,7 +1406,7 @@ void sk_syscall_msg_write_b(word_t p1, word_t p2, long frame)
     int zero = (*(int *)/* table+0x54 */0 == 0);
     if (zero) lim = lim + 1;
     word_t sz = FUN_0034d5d8(*(uint *)/* table+0x50 */0 & 0xff);
-    if ((zero /*&&...0 < 0x19) {
+    if ((zero /*&&...*/) && (ulong)/* x11 */0 < 0x19) {
         FUN_0034bfb4(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         FUN_003518dc(dst + /* x20 */0);
@@ -1463,7 +1477,9 @@ void sk_syscall_cap_copy_18b(void)
     FUN_003503b0(0);
     byte sel = *(byte *)/* table+0x50 */0;
     int st = FUN_0034f138(dst + (ulong)sel);
-    if (/* w20 */0);
+    if (/* w20 */0 == 0) {
+        if (st == 0) {
+            FUN_0034f828(*(word_t *)/* table+0x18 */0);
             ((void (*)(void))0)();
             goto done;
         }
@@ -1534,7 +1550,9 @@ void sk_syscall_cap_copy_28b(void)
     FUN_003503b0(0);
     byte sel = *(byte *)/* table+0x50 */0;
     int st = FUN_0034f138(dst + (ulong)sel);
-    if (/* w20 */0);
+    if (/* w20 */0 == 0) {
+        if (st == 0) {
+            FUN_0034f828(*(word_t *)/* table+0x28 */0);
             ((void (*)(void))0)();
             goto done;
         }
@@ -1574,7 +1592,7 @@ void sk_msg_cap_validate_write_c(word_t p1, word_t p2, long frame)
     word_t u1 = *(word_t *)(frame + 0x18);
     FUN_0034c920(0);
     FUN_00353504(0);
-    word_t u5 = FUN_00377824(0);
+    word_t u5 = FUN_00377824(0).lo;
     FUN_00352ff4(0);
     uint limit = *(uint *)/* table+0x54 */0;
     FUN_00348f14(u1);
@@ -1585,7 +1603,9 @@ void sk_msg_cap_validate_write_c(word_t p1, word_t p2, long frame)
     FUN_0034c11c(0);
     int zero = (*(int *)/* table+0x54 */0 == 0);
     word_t out = 0;
-    if (/* w22 */0);
+    if (/* w22 */0 == 0) {
+        out = 0;
+    } else {
         uint v = /* w11 */0;
         if (1 /*&& !zero*/) {
             FUN_003550cc(0);
@@ -1597,7 +1617,7 @@ void sk_msg_cap_validate_write_c(word_t p1, word_t p2, long frame)
                 st = /* w10_00 */0;
                 v = /* w11_01 */0;
                 if (1 && !zero) {
-                    uint b = ((/* w14 */0 + /* x12_00 */0 + /* x12_00 */0);
+                    uint b = ((/* w14 */0 >> 0x10) == 0) ? (uint)*(ushort *)((long)/* x19 */0 + /* x12_00 */0) : *(uint *)((long)/* x19 */0 + /* x12_00 */0);
                     if (b != 0) {
                         FUN_003525b8(0);
                         if (/* w12 */0 != 0) {
@@ -1609,7 +1629,8 @@ void sk_msg_cap_validate_write_c(word_t p1, word_t p2, long frame)
                     }
                 } else {
                     long o2 = /* x12_00 */0;
-                    if (1 < /* w14 */0 + o2);
+                    if (1 < /* w14 */0) {
+                        uint b = (uint)*(byte *)((long)/* x19 */0 + o2);
                         if (b != 0) {
                             FUN_003525b8(0);
                             if (/* w12 */0 != 0) {
@@ -1672,7 +1693,7 @@ long sk_cap_pair_update(long dst, long src)
 /* FUN_0032f948 @ 0x32f948 (est. sk_wrapper_f970)
  * Thin wrapper: calls sk_cap_move and returns the argument.
  * Confidence: medium (in-range target). */
-word_t sk_wrapper_f970(word_t p1) { sk_cap_move(); return p1; }
+word_t sk_wrapper_f970(word_t p1) { sk_cap_move((word_t *)p1, 0); return p1; }
 
 /* sk_cap_move @ 0x32f970 (est. sk_cap_move)
  * Capability move/copy with type-aware dispatch. If both source and
@@ -1690,7 +1711,8 @@ void sk_cap_move(word_t *dst, word_t *src)
     if (dst == src) return;
     long td = dst[3], ts = src[3];
     if (td == ts) {
-        /* same type: dispatchable type has a move handler at type+0x18 0)(dst, src, td);
+        if ((*(byte *)(*(long *)(td + -8) + 0x52) >> 1 & 1) == 0) {
+            ((void (*)(word_t *, word_t *, long))0)(dst, src, td);
             return;
         }
         word_t old = dst[0], new = src[0];
@@ -1738,8 +1760,9 @@ word_t sk_tcb_validate_3(word_t p1, word_t p2, word_t code)
 {
     FUN_0034c7c4(0);
     FUN_00377dcc(0);
-    word_t w = FUN_00354ce4(0);
-    if (/* carry clear && !zero 0);
+    word_t w = FUN_00354ce4(0).lo;
+    if (/* carry clear && !zero */1) {
+        FUN_0034a32c(w, *(word_t *)/* x19+0x18 */0);
         FUN_00377824(0x13f);
         FUN_00354ce4(0);
         if (/* carry clear && !zero */1) {
@@ -1766,16 +1789,16 @@ void sk_syscall_msg_write_d(word_t p1, word_t p2, long frame)
     cl4_result_t r = FUN_00348d94(0);
     FUN_00377824(r.lo, r.hi, u);
     FUN_000a6f88(0);
-    long dst = *(long *)/* x8+0x40 0;
+    long dst = *(long *)/* x8+0x40 */0 + (ulong)(byte)*(uint *)/* table+0x50 */0;
     word_t sz = FUN_0034d5d8(*(uint *)/* table+0x50 */0 & 0xff);
-    if ((/* carry clear && !zero 0 < 0x19) {
+    if ((/* carry clear && !zero */1) && (ulong)/* x11 */0 < 0x19) {
         FUN_0034bfb4(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         FUN_00355800(0);
         void *pc = 0;
         cl4_result_t r2 = FUN_000b43d0(0);
         ((void (*)(word_t, word_t, word_t))pc)(r2.lo, r2.hi, sz);
-        ((void (*)(word_t, word_t, word_t))pc)(dst + u & ~/* x8_00 */0 & ~/* x8_00 */0, sz);
+        ((void (*)(word_t, word_t, word_t))pc)(dst + u & ~/* x8_00 */0, dst + /* x20 */0 & ~/* x8_00 */0, sz);
     } else {
         FUN_0034de74(0);
     }
@@ -1794,7 +1817,7 @@ void sk_syscall_msg_read_c(void)
     w = ((word_t (*)(word_t, word_t))0)(w, u4);
     long dst = *(long *)/* table+0x40 */0;
     cl4_result_t r = FUN_00348d94(w, *(word_t *)/* x19+0x18 */0);
-    w = FUN_00377824(r.lo, r.hi, u4);
+    w = FUN_00377824(r.lo, r.hi, u4).lo;
     FUN_0034ab20(0);
     void *jt = 0;
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
@@ -1807,16 +1830,16 @@ void sk_syscall_msg_read_c(void)
 void sk_dispatch_slot_18_3(void)
 {
     FUN_00084220(0);
-    FUN_00348c64();
+    FUN_00348c64(0);
     word_t w = ((word_t (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348d94(w, *(word_t *)/* x19+0x18 */0);
-    w = FUN_00377824(0);
+    w = FUN_00377824(0).lo;
     FUN_0034ab20(0);
     void *pc = 0;
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, w);
+    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel, w);
     FUN_0034e850(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_00084234(0);
@@ -1826,16 +1849,16 @@ void sk_dispatch_slot_18_3(void)
 void sk_dispatch_slot_20_3(void)
 {
     FUN_00084220(0);
-    FUN_00348c64();
+    FUN_00348c64(0);
     word_t w = ((word_t (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348d94(w, *(word_t *)/* x19+0x18 */0);
-    w = FUN_00377824(0);
+    w = FUN_00377824(0).lo;
     FUN_0034ab20(0);
     void *pc = 0;
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, w);
+    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel, w);
     FUN_0034e850(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_00084234(0);
@@ -1845,16 +1868,16 @@ void sk_dispatch_slot_20_3(void)
 void sk_dispatch_slot_28_3(void)
 {
     FUN_00084220(0);
-    FUN_00348c64();
+    FUN_00348c64(0);
     word_t w = ((word_t (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348d94(w, *(word_t *)/* x19+0x18 */0);
-    w = FUN_00377824(0);
+    w = FUN_00377824(0).lo;
     FUN_0034ab20(0);
     void *pc = 0;
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, w);
+    ((void (*)(word_t, word_t, word_t))pc)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel, w);
     FUN_0034e850(*(word_t *)/* table2+0x40 */0);
     ((void (*)(void))pc)();
     FUN_00084234(0);
@@ -1892,9 +1915,10 @@ word_t sk_msg_cap_validate_1(word_t p1, word_t p2, long frame)
         FUN_0034e888(0);
         st = /* w10_00 */0;
         v = /* w1_01 */0;
-        if (0xff < /* w13 */0 >> 0x10) == 0)
-                ? (uint)*(ushort *)((long)/* x19 */0)
-                : *(uint *)((long)/* x19 */0);
+        if (0xff < /* w13 */0) {
+            uint b = ((/* w13 */0 >> 0x10) == 0)
+                ? (uint)*(ushort *)((long)/* x19 */0 + /* x11_00 */0)
+                : *(uint *)((long)/* x19 */0 + /* x11_00 */0);
             if (b != 0) {
                 FUN_003551b0(0);
                 if (/* w11 */0 != 0) {
@@ -1905,7 +1929,8 @@ word_t sk_msg_cap_validate_1(word_t p1, word_t p2, long frame)
             }
         } else {
             long o2 = /* x11_00 */0;
-            if (1 < /* w13 */0 + o2);
+            if (1 < /* w13 */0) {
+                uint b = (uint)*(byte *)((long)/* x19 */0 + o2);
                 if (b != 0) {
                     FUN_003551b0(0);
                     if (/* w11 */0 != 0) {
@@ -1963,12 +1988,13 @@ void sk_msg_array_copy(word_t p1, word_t p2, long frame)
     long stride = *(long *)/* x8+0x48 */0;
     ulong cnt = *(ulong *)(frame + 0x10);
     ulong n = cnt & (~(ulong)((long)cnt >> 0x3f) ^ 0xffffffffffffffffU);
-    if (((*(uint *)/* table+0x50 0 & 0x100000) == 0) && n * (ulong)stride < 0x19) {
+    if (((*(uint *)/* table+0x50 */0 & 0xff) < 8 &&
+         (*(uint *)/* table+0x50 */0 & 0x100000) == 0) && n * (ulong)stride < 0x19) {
         if (0 < (long)cnt) {
             long i = 0;
             void *pc = 0;
             do {
-                ((void (*)(word_t, word_t, word_t))pc)(/* x19 */0 + i, w);
+                ((void (*)(word_t, word_t, word_t))pc)(/* x19 */0 + i, /* x20 */0 + i, w);
                 i = i + stride;
                 n = n - 1;
             } while (n != 0);
@@ -2077,7 +2103,7 @@ void sk_entry_commit_store(void)
         FUN_0034df14(0);
         ((void (*)(void))0)();
         FUN_00349cd0(0);
-        0 = 0;
+        /* register copy (extraout_x8 = extraout_x9_00) */
     } else {
         FUN_00349a9c(0);
     }
@@ -2099,7 +2125,7 @@ void sk_slot_dispatch_10(void)
     FUN_00349928(0);
     ((void (*)(void))0)();
     FUN_00349104(*(word_t *)/* table+0x40 */0);
-    0 = 0;
+    /* register copy (extraout_x9 = extraout_x8) */
     FUN_0036b270(0);
 }
 
@@ -2110,7 +2136,7 @@ void sk_slot_dispatch_18(void)
     ((void (*)(void))0)();
     FUN_00349104(*(word_t *)/* table+0x40 */0);
     word_t old = 0;
-    0 = 0;
+    /* register copy (extraout_x9 = extraout_x8) */
     FUN_0036b270(0);
     FUN_0036b118(old);
 }
@@ -2122,7 +2148,7 @@ void sk_slot_dispatch_28(void)
     ((void (*)(void))0)();
     FUN_00349104(*(word_t *)/* table+0x40 */0);
     word_t old = 0;
-    0 = 0;
+    /* register copy (extraout_x9 = extraout_x8) */
     FUN_0036b118(old);
 }
 
@@ -2140,41 +2166,44 @@ void sk_slot_write_value(void)
     FUN_00357d94(0);
     long off = (*(long *)/* x9+0x40 */0 + 7U & 0xfffffffffffffff8) + 8;
     FUN_00356e74(0);
-    uint width = (/* w11 */0;
+    uint width = (/* w11 */0 < 0x100) ? /* w12 */0 : 1;
     uint sel = (1 < /* w11 */0) ? width : 0;
     width = 0;
-    if (/* w10 */0) width = sel;
-    int diff = /* w1 */0;
-    if (/* w10 */0 && diff != 0) {
+    if (/* w10 */0 < /* w8 */0) width = sel;
+    int diff = /* w1 */0 - /* w10 */0;
+    if (/* w10 */0 <= /* w1 */0 && diff != 0) {
         if ((int)off != 0) {
             diff = 1;
             FUN_0009461c(0);
             FUN_00114330(0);
-            0 = /* w1 */0;
+            /* reg store: *x19 = w1 + ~w10 */
         }
         switch (width) {
         default: return;
         case 1: *(char *)((long)/* x19 */0 + off) = (char)diff; return;
         case 2: *(short *)((long)/* x19 */0 + off) = (short)diff; return;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x330f6c) 0 + off) = diff; return;
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x330f6c) */
+        case 4: *(int *)((long)/* x19 */0 + off) = diff; return;
         }
     }
     switch (width) {
     case 1:
-        *(und1_t *)((long)/* x19 */0 + off) = 0;
+        *(uint1_t *)((long)/* x19 */0 + off) = 0;
         if (/* w1 */0 == 0) return;
         break;
     case 2:
-        *(und2_t *)((long)/* x19 */0 + off) = 0;
+        *(uint2_t *)((long)/* x19 */0 + off) = 0;
         break;
-    case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x330f6c) 0 + off) = 0;
+    case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x330f6c) */
+    case 4:
+        *(uint4_t *)((long)/* x19 */0 + off) = 0;
     default:
         if (/* w1 */0 != 0) {
             int big = 0xfff < limit, eq = (limit == 0x1000);
             if (big) { FUN_000839d8(0); return; }
             FUN_00354fe0(0);
             int inc = (big && !eq) ? -0x1001 : -1;
-            0 = (ulong)(uint)(/* w1_00 */0 + inc);
+            /* reg store: *x8 = w1_00 + inc */
         }
     }
 }
@@ -2205,8 +2234,9 @@ void sk_msg_write_commit(void)
     long dst = *(long *)/* x8+0x40 */0;
     if (*(int *)/* table+0x54 */0 == 0) dst = dst + 1;
     word_t sz = FUN_00353844(*(uint *)/* table+0x50 */0 & 0xff);
-    uint szb = /* w8 */0 & 0xf8;
-    if ((szb < 8 && (/*...0 + 0xfU & 0xfffffffffffffff8) + 0x11 < 0x19) {
+    uint szb = /* w8 */0 | *(uint *)/* table+0x50 */0 & 0xf8;
+    if ((szb < 8 && ((*(uint *)/* table+0x50 */0 | /* extraout_w10 */0) & 0x100000) == 0) &&
+        (/* x9 */0 + 0xfU & 0xfffffffffffffff8) + 0x11 < 0x19) {
         FUN_0034bfb4(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         FUN_00355800(0);
@@ -2234,7 +2264,7 @@ void sk_msg_write_commit(void)
         FUN_0036b270(0);
     } else {
         long w = 0;
-        0 = w;
+        /* reg copy: *x19 = *x20 */
         FUN_00358bb4(szb | 7);
     }
     FUN_0036b270(0);
@@ -2270,7 +2300,7 @@ void sk_msg_read_commit(void)
         ((void (*)(void))0)();
     }
     FUN_00357d74(0);
-    long addr = (dst + /* x19 */0;
+    long addr = (dst + /* x19 */0 + (ulong)sel & ~(ulong)sel) + /* extraout_x9_00 */0;
     if (/* zero */1) addr = addr + 1;
     word_t *p = (word_t *)(addr + 7U & 0xfffffffffffffff8);
     FUN_0036b118(*p);
@@ -2294,10 +2324,10 @@ void sk_syscall_cap_copy2_10(void)
     FUN_00354fd0(*(und1_t *)/* table+0x50 */0);
     ulong addr = /* x9 */0 & ~/* x8 */0;
     FUN_003518dc(addr);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     int st;
     long dst;
-    if (rr.lo == 0) {
+    if (rr == 0) {
         FUN_00350ed0(*(word_t *)/* table+0x10 */0, extra);
         ((void (*)(void))0)();
         FUN_0034e094(0);
@@ -2308,7 +2338,7 @@ void sk_syscall_cap_copy2_10(void)
         st = *(int *)/* table+0x54 */0;
         dst = *(long *)/* table+0x40 */0;
         long d2 = (st == 0) ? dst + 1 : dst;
-        FUN_000b43d0(rr.lo, rr.hi, d2);
+        FUN_000b43d0(rr, 0, d2);
         FUN_00117cc4(0);
     }
     if (st == 0) dst = dst + 1;
@@ -2347,20 +2377,20 @@ void sk_syscall_cap_copy3_18(word_t p1, word_t p2, long frame)
     FUN_003518dc(u4);
     int i1 = FUN_000839f8(0);
     FUN_00350198(0);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     int st; long dst;
     if (i1 == 0) {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             FUN_0034d3d4(0);
             ((void (*)(void))0)();
             goto tail;
         }
         FUN_0008e388(*(word_t *)/* table+8 */0);
-        rr = ((cl4_result_t (*)(void))0)();
+        rr = ((word_t (*)(void))0)();
         st = *(int *)/* table+0x54 */0;
         dst = *(long *)/* table+0x40 */0;
     } else {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             FUN_00353a00(0);
             FUN_0034d3d4(0);
             ((void (*)(void))0)();
@@ -2372,12 +2402,12 @@ void sk_syscall_cap_copy3_18(word_t p1, word_t p2, long frame)
         dst = *(long *)/* table+0x40 */0;
     }
     if (st == 0) dst = dst + 1;
-    FUN_000b4390(rr.lo, rr.hi, dst);
+    FUN_000b4390(rr, 0, dst);
     FUN_00117cc4(0);
 tail:
     FUN_00357028(0);
     word_t *pd = (word_t *)(/* x9_02 */0 & 0xfffffffffffffff8);
-    word_t *ps = (word_t *)((/* x9 */0 & ~/* x8 */0 + 7 & 0xfffffffffffffff8);
+    word_t *ps = (word_t *)((/* x9 */0 + /* x22 */0 & ~/* x8 */0) + /* x8_01 */0 + 7 & 0xfffffffffffffff8);
     word_t w0 = *pd;
     *pd = *ps;
     FUN_0036b270(0);
@@ -2408,9 +2438,9 @@ void sk_syscall_cap_copy2_20(void)
     FUN_00354fd0(*(und1_t *)/* table+0x50 */0);
     ulong addr = /* x9 */0 & ~/* x8 */0;
     FUN_003518dc(addr);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     int st; long dst;
-    if (rr.lo == 0) {
+    if (rr == 0) {
         FUN_00350ed0(*(word_t *)/* table+0x20 */0, extra);
         ((void (*)(void))0)();
         FUN_0034e094(0);
@@ -2421,7 +2451,7 @@ void sk_syscall_cap_copy2_20(void)
         st = *(int *)/* table+0x54 */0;
         dst = *(long *)/* table+0x40 */0;
         long d2 = (st == 0) ? dst + 1 : dst;
-        FUN_000b43d0(rr.lo, rr.hi, d2);
+        FUN_000b43d0(rr, 0, d2);
         FUN_00117cc4(0);
     }
     if (st == 0) dst = dst + 1;
@@ -2454,20 +2484,20 @@ void sk_syscall_cap_copy3_28(word_t p1, word_t p2, long frame)
     FUN_003518dc(u3);
     int i1 = FUN_000839f8(0);
     FUN_00350198(0);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     int st; long dst;
     if (i1 == 0) {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             FUN_0034d3d4(0);
             ((void (*)(void))0)();
             goto tail;
         }
         FUN_0008e388(*(word_t *)/* table+8 */0);
-        rr = ((cl4_result_t (*)(void))0)();
+        rr = ((word_t (*)(void))0)();
         st = *(int *)/* table+0x54 */0;
         dst = *(long *)/* table+0x40 */0;
     } else {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             FUN_0034d3d4(0);
             ((void (*)(void))0)();
             FUN_0034e094(0);
@@ -2478,12 +2508,12 @@ void sk_syscall_cap_copy3_28(word_t p1, word_t p2, long frame)
         dst = *(long *)/* table+0x40 */0;
     }
     if (st == 0) dst = dst + 1;
-    FUN_000b4390(rr.lo, rr.hi, dst);
+    FUN_000b4390(rr, 0, dst);
     FUN_00117cc4(0);
 tail:
     FUN_00357028(0);
     word_t *pd = (word_t *)(/* x9_02 */0 & 0xfffffffffffffff8);
-    word_t *ps = (word_t *)((/* x9 */0 & ~/* x8 */0 + 7 & 0xfffffffffffffff8);
+    word_t *ps = (word_t *)((/* x9 */0 + /* x22 */0 & ~/* x8 */0) + /* x8_01 */0 + 7 & 0xfffffffffffffff8);
     word_t w0 = *pd;
     *pd = *ps;
     FUN_0036b118(w0);
@@ -2518,7 +2548,7 @@ void sk_msg_slot_read(void)
     cl4_result_t r = FUN_00377824(0);
     FUN_00350500(r.lo, r.hi, r.lo);
     FUN_00377824(0);
-    word_t w = FUN_0034cb60(0);
+    cl4_result_t cw = FUN_0034cb60(0);
     uint lim2 = *(uint *)/* table+0x54 */0;
     uint a = (lim2 != 0) ? lim2 - 1 : 0;
     uint top = (a <= lim1) ? lim1 : a;
@@ -2526,8 +2556,10 @@ void sk_msg_slot_read(void)
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     long dst = *(long *)/* x8+0x40 */0;
     if (lim2 == 0) dst = dst + 1;
-    if (/* w22 */0 + sel;
-        if (top <= /* w22 */0 - top != 0) {
+    ulong res = 0;
+    if (/* w22 */0 != 0) {
+        ulong base = *(long *)/* x27+0x40 */0 + sel;
+        if (top <= /* w22 */0 && /* w22 */0 - top != 0) {
             long off = (dst + 7 + (base & ~sel) & 0xfffffffffffffff8) + 0x19;
             uint p = (uint)off;
             uint size = 2;
@@ -2536,13 +2568,12 @@ void sk_msg_slot_read(void)
             if (sv < 0x100) size = 1;
             uint v = 0;
             if (1 < sv) v = size;
-            ulong res;
             switch (v) {
             case 1:
                 if (*(byte *)((long)/* x19 */0 + off) != 0) {
                     int sh = (p & 3) << 3;
                     int bit = (p < 4) ? (int)*(byte *)((long)/* x19 */0 + off) - 1 << sh : 0;
-                    res = FUN_00351538(bit, w, lim2, w);
+                    res = FUN_00351538(bit, cw.lo, lim2, cw.lo);
                     goto done;
                 }
                 break;
@@ -2550,14 +2581,16 @@ void sk_msg_slot_read(void)
                 if (*(ushort *)((long)/* x19 */0 + off) != 0) {
                     int sh = (p & 3) << 3;
                     int bit = (p < 4) ? (int)*(ushort *)((long)/* x19 */0 + off) - 1 << sh : 0;
-                    res = FUN_00351538(bit, w, lim2, w);
+                    res = FUN_00351538(bit, cw.lo, lim2, cw.lo);
                     goto done;
                 }
                 break;
-            case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x331b30) 0 + off) != 0) {
+            case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x331b30) */
+            case 4:
+                if (*(uint *)((long)/* x19 */0 + off) != 0) {
                     int sh = (p & 3) << 3;
                     int bit = (p < 4) ? (int)*(uint *)((long)/* x19 */0 + off) - 1 << sh : 0;
-                    res = FUN_00351538(bit, w, lim2, w);
+                    res = FUN_00351538(bit, cw.lo, lim2, cw.lo);
                     goto done;
                 }
             }
@@ -2579,7 +2612,6 @@ void sk_msg_slot_read(void)
             goto done;
         }
     }
-    res = 0;
 done:
     FUN_0008e500(res, /* x30 */0);
 }
@@ -2807,16 +2839,20 @@ ulong sk_msg_count_cap_b(word_t p1, uint count)
         cnt = /* x1 */0;
         switch (sel) {
         case 1:
-            if (*(byte *)((long)/* x19 */0 + off) - 1;
+            if (*(byte *)((long)/* x19 */0 + off) != 0) {
+                int i = (off & 0xfffffff8) ? 0 : (int)*(byte *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i);
             }
             break;
         case 2:
-            if (*(ushort *)((long)/* x19 */0 + off) - 1;
+            if (*(ushort *)((long)/* x19 */0 + off) != 0) {
+                int i = (off & 0xfffffff8) ? 0 : (int)*(ushort *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i);
             }
             break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33266c) 0 + off) != 0) {
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33266c) */
+        case 4:
+            if (*(uint *)((long)/* x19 */0 + off) != 0) {
                 int i = (off & 0xfffffff8) ? 0 : (int)*(uint *)((long)/* x19 */0 + off) - 1;
                 return FUN_00356e64(i);
             }
@@ -2825,7 +2861,7 @@ ulong sk_msg_count_cap_b(word_t p1, uint count)
     if ((uint)cnt < 0x1000) {
         FUN_0034de54(0);
         ulong v = 0;
-        if (/* *x8_00 0 + 1;
+        if (/* *x8_00 */0 < 0x1000) v = (int)/* *x8_00 */0 + 1;
         return v;
     }
     return FUN_000839f8(0);
@@ -2975,7 +3011,7 @@ void sk_slot4_dispatch_10(word_t p1, word_t p2, long frame)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
-        (sel + 1 + /* x20 */0 & ~sel);
+        (sel + 1 + /* x20 */0 & ~sel, sel + 1 + /* x19 */0 & ~sel);
     FUN_0034bb74(*(long *)/* table+0x40 */0 + 7);
     FUN_0034f22c(0);
     FUN_0036b270(0);
@@ -2990,7 +3026,7 @@ void sk_slot4_dispatch_18(word_t p1, word_t p2, long frame)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
-        (sel + 1 + /* x20 */0 & ~sel);
+        (sel + 1 + /* x20 */0 & ~sel, sel + 1 + /* x19 */0 & ~sel);
     FUN_0034bb74(*(long *)/* table+0x40 */0 + 7);
     word_t w2 = *(word_t *)/* x9+8 */0;
     FUN_0034f22c(0);
@@ -3007,7 +3043,7 @@ void sk_slot4_dispatch_20(word_t p1, word_t p2, long frame)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
-        (sel + 1 + /* x20 */0 & ~sel);
+        (sel + 1 + /* x20 */0 & ~sel, sel + 1 + /* x19 */0 & ~sel);
     FUN_0034bb74(*(long *)/* table+0x40 */0 + 7);
     FUN_00352dac(0);
 }
@@ -3021,7 +3057,7 @@ void sk_slot4_dispatch_28(word_t p1, word_t p2, long frame)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
-        (sel + 1 + /* x20 */0 & ~sel);
+        (sel + 1 + /* x20 */0 & ~sel, sel + 1 + /* x19 */0 & ~sel);
     FUN_0034bb74(*(long *)/* table+0x40 */0 + 7);
     FUN_00352dac(*(word_t *)/* x9+8 */0);
     FUN_0036b118(0);
@@ -3075,7 +3111,7 @@ word_t sk_msg_slot_read_b(void)
 void sk_msg_peek(void)
 {
     FUN_003561f4(0);
-    word_t w = FUN_00348d94(0);
+    word_t w = FUN_00348d94(0).lo;
     cl4_result_t r = FUN_00377824(w, /* x8 */0);
     FUN_00351330(r.lo, r.hi, r.lo);
     FUN_000839f8(0);
@@ -3121,7 +3157,7 @@ long sk_msg_write_commit_b(void)
     if (zero) dst = dst + 1;
     FUN_003594a8(0);
     long frame;
-    if ((zero /*&&...*/) && dst < 0x19) {
+    if ((zero /*&&...*/) && (ulong)/* x11 */0 < 0x19) {
         FUN_00356328(0);
         FUN_003513e4(0);
         if (FUN_000839f8(0) != 0) {
@@ -3149,7 +3185,7 @@ long sk_msg_write_commit_b(void)
 void sk_msg_peek_dispatch(void)
 {
     FUN_003561f4(0);
-    word_t w = FUN_00348d94(0);
+    word_t w = FUN_00348d94(0).lo;
     w = FUN_00377824(w, /* x8 */0);
     cl4_result_t r = FUN_00351330(0);
     if (FUN_000839f8(r.lo, r.hi, w) != 0) return;
@@ -3167,7 +3203,9 @@ void sk_syscall_cap_copy4_18(void)
     int st = FUN_0034e178(0);
     cl4_result_t r;
     long idx;
-    if (/* w23 */0);
+    if (/* w23 */0 == 0) {
+        if (st == 0) {
+            FUN_0034bfb4(*(word_t *)/* table+0x18 */0);
             ((void (*)(void))0)();
             return;
         }
@@ -3228,7 +3266,9 @@ void sk_syscall_cap_copy4_28(void)
     int st = FUN_0034e178(0);
     cl4_result_t r;
     long idx;
-    if (/* w23 */0);
+    if (/* w23 */0 == 0) {
+        if (st == 0) {
+            FUN_0034bfb4(*(word_t *)/* table+0x28 */0);
             ((void (*)(void))0)();
             return;
         }
@@ -3403,10 +3443,11 @@ void sk_dispatch3_28(void)
 void sk_tcb_validate_commit(void)
 {
     FUN_0034c7c4(0);
-    FUN_00377dcc(0);
-    if (/* x1 */0);
-        if (r.hi < 0x40) {
-            FUN_003558b8(*(long *)(r.lo + -8) + 0x40);
+    cl4_result_t r = FUN_00377dcc(0);
+    if (r.hi < 0x40) {
+        cl4_result_t r2 = FUN_00377dcc(0x13f, *(word_t *)/* x19+0x18 */0);
+        if (r2.hi < 0x40) {
+            FUN_003558b8(*(long *)(r2.lo + -8) + 0x40);
             FUN_0034d1c0(0);
             FUN_00368980(0);
             FUN_00019858(0);
@@ -3540,7 +3581,7 @@ void sk_syscall_msg_read_d(void)
 /* FUN_003356d8 @ 0x3356d8 (est. sk_dispatch4_18) table+0x18 */
 void sk_dispatch4_18(void)
 {
-    FUN_00348c64();
+    FUN_00348c64(0);
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00350bd8(*(word_t *)/* x19+0x18 */0);
@@ -3555,7 +3596,7 @@ void sk_dispatch4_18(void)
 /* FUN_00335770 @ 0x335770 (est. sk_dispatch4_20) table+0x20 */
 void sk_dispatch4_20(void)
 {
-    FUN_00348c64();
+    FUN_00348c64(0);
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00350bd8(*(word_t *)/* x19+0x18 */0);
@@ -3570,7 +3611,7 @@ void sk_dispatch4_20(void)
 /* FUN_00335808 @ 0x335808 (est. sk_dispatch4_28) table+0x28 */
 void sk_dispatch4_28(void)
 {
-    FUN_00348c64();
+    FUN_00348c64(0);
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00350bd8(*(word_t *)/* x19+0x18 */0);
@@ -3613,9 +3654,10 @@ word_t sk_msg_cap_validate_3(word_t p1, word_t p2, long frame)
         FUN_0034e888(0);
         st = /* w10_00 */0;
         v = /* w1_01 */0;
-        if (0xff < /* w13 */0 >> 0x10) == 0)
-                ? (uint)*(ushort *)((long)/* x19 */0)
-                : *(uint *)((long)/* x19 */0);
+        if (0xff < /* w13 */0) {
+            uint b = ((/* w13 */0 >> 0x10) == 0)
+                ? (uint)*(ushort *)((long)/* x19 */0 + /* x11_00 */0)
+                : *(uint *)((long)/* x19 */0 + /* x11_00 */0);
             if (b != 0) {
                 FUN_003551b0(0);
                 if (/* w11 */0 != 0) {
@@ -3626,7 +3668,8 @@ word_t sk_msg_cap_validate_3(word_t p1, word_t p2, long frame)
             }
         } else {
             long o2 = /* x11_00 */0;
-            if (1 < /* w13 */0 + o2);
+            if (1 < /* w13 */0) {
+                uint b = (uint)*(byte *)((long)/* x19 */0 + o2);
                 if (b != 0) {
                     FUN_003551b0(0);
                     if (/* w11 */0 != 0) {
@@ -3769,7 +3812,7 @@ word_t sk_msg_cap_validate_4(word_t p1, word_t p2, long frame)
                 }
                 return FUN_00352f78(0);
             }
-        } else if (1 < /* w10 */0 + base);
+        } else if (1 < /* w10 */0) {
             if (b != 0) {
                 uint sz = (uint)base;
                 if (sz != 0) {
@@ -4080,7 +4123,8 @@ void sk_tcb_release_extra_b(void)
     FUN_0034d4d4(0);
     FUN_003510c4(0x13f);
     FUN_00377824(0);
-    int is_big = 0x3e < /* x1 */0 == 0x3f);
+    int is_big = 0x3e < /* x1 */0;
+    int is_3f = (/* x1 */0 == 0x3f);
     if (/* x1 */0 < 0x40) {
         FUN_0034a820(0);
         FUN_003510c4(0xff);
@@ -4119,7 +4163,7 @@ void sk_syscall_msg_write_f(void)
     int zero = (*(int *)/* table+0x54 */0 == 0);
     if (zero) lim = lim + 1;
     word_t sz = FUN_0034d5d8(*(uint *)/* table+0x50 */0 & 0xff);
-    if ((zero /*&&...0 < 0x19) {
+    if ((zero /*&&...*/) && (ulong)/* x11 */0 < 0x19) {
         ulong mask = ~/* x8_01 */0;
         FUN_0009461c(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
@@ -4222,11 +4266,11 @@ void sk_syscall_cap_copy6_18(word_t p1, word_t p2, long frame)
     FUN_0035163c(dst & ~sel);
     int i2 = FUN_000839f8(0);
     FUN_0035163c(/* x8 */0 & ~sel);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     cl4_result_t r;
     int st; long l3;
     if (i2 == 0) {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x18 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             goto tail;
@@ -4235,7 +4279,7 @@ void sk_syscall_cap_copy6_18(word_t p1, word_t p2, long frame)
         st = *(int *)/* table+0x54 */0;
         l3 = *(long *)/* table+0x40 */0;
     } else {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x10 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             FUN_0034c9e8(dst & ~sel);
@@ -4305,11 +4349,11 @@ void sk_syscall_cap_copy6_28(word_t p1, word_t p2, long frame)
     FUN_0035163c(dst & ~sel);
     int i2 = FUN_000839f8(0);
     FUN_0035163c(/* x8 */0 & ~sel);
-    cl4_result_t rr = FUN_000839f8(0);
+    word_t rr = FUN_000839f8(0);
     cl4_result_t r;
     int st; long l3;
     if (i2 == 0) {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x28 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             goto tail;
@@ -4318,7 +4362,7 @@ void sk_syscall_cap_copy6_28(word_t p1, word_t p2, long frame)
         st = *(int *)/* table+0x54 */0;
         l3 = *(long *)/* table+0x40 */0;
     } else {
-        if (rr.lo == 0) {
+        if (rr == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x20 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             FUN_0034c9e8(dst & ~sel);
@@ -4368,7 +4412,7 @@ void sk_msg_cap_validate_write_d(void)
                 st = /* w10_00 */0;
                 v = /* w11_01 */0;
                 if (1 && !zero) {
-                    uint b = ((/* w14 */0 + /* x12_00 */0 + /* x12_00 */0);
+                    uint b = ((/* w14 */0 >> 0x10) == 0) ? (uint)*(ushort *)((long)/* x19 */0 + /* x12_00 */0) : *(uint *)((long)/* x19 */0 + /* x12_00 */0);
                     if (b != 0) {
                         FUN_003525b8(0);
                         if (/* w12 */0 != 0) {
@@ -4380,7 +4424,7 @@ void sk_msg_cap_validate_write_d(void)
                     }
                 } else {
                     long o2 = /* x12_00 */0;
-                    if (1 < /* w14 */0 + o2);
+                    if (1 < /* w14 */0) {
                         if (b != 0) {
                             FUN_003525b8(0);
                             if (/* w12 */0 != 0) {
@@ -4774,7 +4818,7 @@ long sk_tcb_lookup_commit(word_t p1, word_t p2, long code)
 {
     FUN_0034c7c4(0);
     FUN_00377dcc(0);
-    word_t w = FUN_00354ce4(0);
+    word_t w = FUN_00354ce4(0).lo;
     if (/* carry clear && !zero */1) {
         long base = *(long *)(code + -8) + 0x40;
         FUN_00349e24(w, *(word_t *)/* x19+0x18 */0);
@@ -4990,7 +5034,7 @@ long sk_tcb_lookup_commit_b(word_t p1, word_t p2, long code)
 {
     FUN_0034c7c4(0);
     FUN_00377dcc(0);
-    word_t w = FUN_00354ce4(0);
+    word_t w = FUN_00354ce4(0).lo;
     if (/* carry clear && !zero */1) {
         long base = *(long *)(code + -8) + 0x40;
         FUN_00349e24(w, *(word_t *)/* x19+0x18 */0);

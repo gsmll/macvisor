@@ -4908,3 +4908,3283 @@ static void sk_log_edge_kind_121780(void)
 /* FUN_00121868 @ 0x121868  (est. sk_log_edge_kind_b)
  * Duplicate of 0x121780. */
 static void sk_log_edge_kind_121868(uint64_t a) { /* same as 0x121780 */ (void)a; }
+
+/* ============ 0x121930 - 0x121f20 : ComponentGraph edge machinery ============ */
+
+/* FUN_00121930 @ 0x121930  (est. sk_log_edge_kind_c)
+ * Logs the edge kind (variant of 0x121780). */
+static void sk_log_edge_kind_121930(void) { /* same label selection as 0x121780 */ }
+
+/* FUN_00121a14 @ 0x121a14  (est. sk_edge_kind_wrap)
+ * Wraps FUN_00121694 into the output byte. */
+static void sk_edge_kind_wrap_121a14(uint8_t *out, uint64_t *p)
+{
+    (void)out; (void)p;
+    /* *out = FUN_00121694(p[0], p[1]) */
+}
+
+/* FUN_00121b88 @ 0x121b88  (est. sk_edge_kind_cur)
+ * Returns the current edge-kind via FUN_00121694. */
+static void sk_edge_kind_cur_121b88(uint8_t *out)
+{
+    (void)out;
+    /* *out = FUN_00121694() */
+}
+
+/* FUN_00121bd4 @ 0x121bd4  (est. sk_edge_vtbl)
+ * Calls the vtable method (FUN_00027724 0x664328). */
+static void sk_edge_vtbl_121bd4(uint64_t a)
+{
+    (void)a;
+    /* (*FUN_00027724(0x664328))(a, 0x664328) */
+}
+
+/* FUN_00121c2c @ 0x121c2c  (est. sk_edge_config_emit)
+ * Emits an edge config record: resolves the two string args and writes the
+ * four vtable-sourced fields (0x58 src, 0x70 dst, 0x88 tag, 0xa0 kind) via
+ * FUN_001bdb28/FUN_001bd7a4. */
+static void sk_edge_config_emit_121c2c(long p)
+{
+    (void)p;
+    /* see decompile */
+}
+
+/* FUN_00121ed0 @ 0x121ed0  (est. sk_edge_obj_new)
+ * Allocates then runs the edge-object constructor 0x121f20. */
+static uint64_t sk_edge_obj_new_121ed0(uint64_t p)
+{
+    (void)p;
+    uint64_t v = /* FUN_0036a940() */ 0;
+    /* FUN_00121f20(p) */
+    return v;
+}
+
+/* FUN_00121f20 @ 0x121f20  (est. sk_edge_obj_init)
+ * ComponentGraph edge-object constructor: validates the incoming 5-element
+ * record (three type-9 lists + a type-6 value), extracts the source/dest
+ * symbol lists, the attach/detach booleans, and the edge kind, then fills the
+ * object's fields. Panics (BRK 0x122608..630) on a malformed record. */
+static void sk_edge_obj_init_121f20(uint64_t p)
+{
+    (void)p;
+    /* see decompile: 5-field edge record validation */
+}
+
+/* ============ 0x122634 - 0x126d8c : ComponentGraph nodes/edges ============ */
+
+/* FUN_00122634 @ 0x122634  (est. sk_cg_node_str)
+ * Returns the string form of a ComponentGraph node (via FUN_00138e10),
+ * releasing the node. */
+static uint64_t sk_cg_node_str_122634(uint64_t p)
+{
+    (void)p;
+    uint64_t r = /* FUN_00138e10(p) */ 0;
+    /* FUN_0036b118(p) */
+    return r;
+}
+
+/* FUN_00122680 @ 0x122680  (est. sk_cg_node_str_b)
+ * Variant string form. */
+static uint64_t sk_cg_node_str_122680(uint64_t p)
+{
+    (void)p;
+    uint64_t r = /* FUN_00138e10() */ 0;
+    /* FUN_0036b118(p) */
+    return r;
+}
+
+/* FUN_001226b4 @ 0x1226b4  (est. sk_cg_node_new)
+ * Allocates a 4-field node object (config record), setting the four fields. */
+static int64_t sk_cg_node_new_1226b4(uint64_t a, uint64_t b, uint8_t t, uint64_t d)
+{
+    (void)a; (void)b; (void)t; (void)d;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001227bc @ 0x1227bc  (est. sk_cg_node_set)
+ * Sets the four fields of a node object at ctx (releasing old values). */
+static void sk_cg_node_set_1227bc(uint64_t a, uint64_t b, uint8_t t, uint64_t d)
+{
+    (void)a; (void)b; (void)t; (void)d;
+    /* see decompile */
+}
+
+/* FUN_001228bc @ 0x1228bc  (est. sk_cg_node_alloc)
+ * Allocates an empty node object. */
+static int64_t sk_cg_node_alloc_1228bc(void) { /* see decompile */ return 0; }
+
+/* FUN_0012290c @ 0x12290c  (est. sk_cg_node_init)
+ * Initializes a node object at ctx. */
+static void sk_cg_node_init_12290c(void)
+{
+    /* *(ctx+0x10)=*(ctx+0x18)=&DAT_00657778; *(ctx+0x20)=0x13; *(ctx+0x28)=FUN_0013844c() */
+}
+
+/* FUN_00122910 @ 0x122910  (est. sk_cg_node_init_b)
+ * Duplicate of 0x12290c. */
+static void sk_cg_node_init_122910(void) { /* same as 0x12290c */ }
+
+/* FUN_00122944 @ 0x122944  (est. sk_cg_node_eq)
+ * Deep-equality of two nodes: compares element lists field by field via the
+ * vtable accessors (0x88 tag, 0x58/0x70 strings, 0xa0 value). Returns 1 if
+ * equal. */
+static uint64_t sk_cg_node_eq_122944(long a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00122c24 @ 0x122c24  (est. sk_cg_node_print)
+ * Prints a node: iterates the four vtable-sourced lists/strings and emits each
+ * via FUN_001b9084/FUN_00134880. */
+static void sk_cg_node_print_122c24(void) { /* see decompile */ }
+
+/* FUN_00122e30 @ 0x122e30  (est. sk_cg_node_strings)
+ * Builds the string-list view of a node (0x40-byte record with the four field
+ * lists, string objects from FUN_00083450/FUN_0011dce8). */
+static uint64_t sk_cg_node_strings_122e30(void) { /* see decompile */ return 0; }
+
+/* FUN_00123234 @ 0x123234  (est. sk_cg_node_dump)
+ * ComponentGraph node dump: emits "{NODE: [f0], [f1], {key: value ...}
+ * [2], }" via thunk_FUN_002acbb8, iterating the 0x88 field. */
+static void sk_cg_node_dump_123234(void) { /* see decompile */ }
+
+/* FUN_001235d0 @ 0x1235d0  (est. sk_cg_node_dump_b)
+ * Node dump variant. */
+static void sk_cg_node_dump_b_1235d0(void) { /* see decompile */ }
+
+/* FUN_00123a04 @ 0x123a04  (est. sk_cg_node_json)
+ * Node JSON serialization helper. */
+static void sk_cg_node_json_123a04(void) { /* see decompile */ }
+
+/* FUN_00123d4c @ 0x123d4c  (est. sk_cg_edge_str)
+ * Returns the string form of a ComponentGraph edge. */
+static void sk_cg_edge_str_123d4c(void) { /* see decompile */ }
+
+/* FUN_00123dfc @ 0x123dfc  (est. sk_cg_edge_str_b)
+ * Variant edge string form. */
+static void sk_cg_edge_str_123dfc(void) { /* see decompile */ }
+
+/* FUN_00123ee4 @ 0x123ee4  (est. sk_cg_edge_new)
+ * Allocates a 7-field edge object. */
+static int64_t sk_cg_edge_new_123ee4(void) { /* see decompile */ return 0; }
+
+/* FUN_00124074 @ 0x124074  (est. sk_cg_edge_set)
+ * Sets the edge object's seven fields. */
+static void sk_cg_edge_set_124074(void) { /* see decompile */ }
+
+/* FUN_00124078 @ 0x124078  (est. sk_cg_edge_set_b)
+ * Duplicate of 0x124074. */
+static void sk_cg_edge_set_124078(void) { /* same as 0x124074 */ }
+
+/* FUN_00124104 @ 0x124104  (est. sk_cg_edge_alloc)
+ * Allocates an empty edge object. */
+static int64_t sk_cg_edge_alloc_124104(void) { /* see decompile */ return 0; }
+
+/* FUN_001241b0 @ 0x1241b0  (est. sk_cg_edge_init)
+ * Initializes an edge object at ctx. */
+static void sk_cg_edge_init_1241b0(void) { /* see decompile */ }
+
+/* FUN_001242c4 @ 0x1242c4  (est. sk_cg_edge_eq)
+ * Deep-equality of two edge objects. */
+static uint64_t sk_cg_edge_eq_1242c4(void) { /* see decompile */ return 0; }
+
+/* FUN_00124690 @ 0x124690  (est. sk_cg_edge_print)
+ * Prints an edge's fields. */
+static void sk_cg_edge_print_124690(void) { /* see decompile */ }
+
+/* FUN_00124694 @ 0x124694  (est. sk_cg_edge_print_b)
+ * Duplicate. */
+static void sk_cg_edge_print_124694(void) { /* same as 0x124690 */ }
+
+/* FUN_001246c0 @ 0x1246c0  (est. sk_cg_edge_strings)
+ * Builds the string-list view of an edge. */
+static void sk_cg_edge_strings_1246c0(void) { /* see decompile */ }
+
+/* FUN_001246c4 @ 0x1246c4  (est. sk_cg_edge_strings_b)
+ * Duplicate. */
+static void sk_cg_edge_strings_1246c4(void) { /* same as 0x1246c0 */ }
+
+/* FUN_001246fc @ 0x1246fc  (est. sk_cg_edge_dump)
+ * Edge dump. */
+static void sk_cg_edge_dump_1246fc(void) { /* see decompile */ }
+
+/* FUN_00124760 @ 0x124760  (est. sk_cg_edge_dump_b)
+ * Edge dump variant. */
+static void sk_cg_edge_dump_124760(void) { /* see decompile */ }
+
+/* FUN_001247a4 @ 0x1247a4  (est. sk_cg_edge_json)
+ * Edge JSON serialization. */
+static void sk_cg_edge_json_1247a4(void) { /* see decompile */ }
+
+/* FUN_001247e0 @ 0x1247e0  (est. sk_cg_edge_json_b)
+ * Edge JSON variant. */
+static void sk_cg_edge_json_1247e0(void) { /* see decompile */ }
+
+/* FUN_00124838 @ 0x124838  (est. sk_cg_node_json_b)
+ * Node JSON variant. */
+static void sk_cg_node_json_124838(void) { /* see decompile */ }
+
+/* FUN_00124874 @ 0x124874  (est. sk_cg_uid)
+ * ComponentGraph unique-id resolution. */
+static void sk_cg_uid_124874(void) { /* see decompile */ }
+
+/* FUN_001248b0 @ 0x1248b0  (est. sk_cg_uid_b)
+ * UID variant. */
+static void sk_cg_uid_1248b0(void) { /* see decompile */ }
+
+/* FUN_001249a8 @ 0x1249a8  (est. sk_cg_lookup)
+ * ComponentGraph element lookup by key. */
+static void sk_cg_lookup_1249a8(void) { /* see decompile */ }
+
+/* FUN_001249e0 @ 0x1249e0  (est. sk_cg_lookup_b)
+ * Lookup variant. */
+static void sk_cg_lookup_1249e0(void) { /* see decompile */ }
+
+/* FUN_00124a1c @ 0x124a1c  (est. sk_cg_attach)
+ * ComponentGraph attach-edge handling. */
+static void sk_cg_attach_124a1c(void) { /* see decompile */ }
+
+/* FUN_00124a84 @ 0x124a84  (est. sk_cg_detach)
+ * ComponentGraph detach-edge handling. */
+static void sk_cg_detach_124a84(void) { /* see decompile */ }
+
+/* FUN_00124b10 @ 0x124b10  (est. sk_cg_resolve)
+ * ComponentGraph node resolution. */
+static void sk_cg_resolve_124b10(void) { /* see decompile */ }
+
+/* FUN_00124b9c @ 0x124b9c  (est. sk_cg_resolve_b)
+ * Resolution variant. */
+static void sk_cg_resolve_124b9c(void) { /* see decompile */ }
+
+/* FUN_00124c0c @ 0x124c0c  (est. sk_cg_build)
+ * ComponentGraph build/assembly. */
+static void sk_cg_build_124c0c(void) { /* see decompile */ }
+
+/* FUN_00124cbc @ 0x124cbc  (est. sk_cg_verify)
+ * ComponentGraph verification pass. */
+static void sk_cg_verify_124cbc(void) { /* see decompile */ }
+
+/* FUN_00124d0c @ 0x124d0c  (est. sk_cg_verify_b)
+ * Verification variant. */
+static void sk_cg_verify_124d0c(void) { /* see decompile */ }
+
+/* FUN_00124d64 @ 0x124d64  (est. sk_cg_finalize)
+ * ComponentGraph finalize. */
+static void sk_cg_finalize_124d64(void) { /* see decompile */ }
+
+/* FUN_00124d9c @ 0x124d9c  (est. sk_cg_finalize_b)
+ * Finalize variant. */
+static void sk_cg_finalize_124d9c(void) { /* see decompile */ }
+
+/* FUN_00124de4 @ 0x124de4  (est. sk_cg_finalize_c)
+ * Finalize variant. */
+static void sk_cg_finalize_124de4(void) { /* see decompile */ }
+
+/* FUN_00124e34 @ 0x124e34  (est. sk_cg_finalize_d)
+ * Finalize variant. */
+static void sk_cg_finalize_124e34(void) { /* see decompile */ }
+
+/* FUN_0012530c @ 0x12530c  (est. sk_cg_edge_emit)
+ * Edge record emission. */
+static void sk_cg_edge_emit_12530c(void) { /* see decompile */ }
+
+/* FUN_00125344 @ 0x125344  (est. sk_cg_edge_emit_b)
+ * Variant. */
+static void sk_cg_edge_emit_125344(void) { /* see decompile */ }
+
+/* FUN_001253bc @ 0x1253bc  (est. sk_cg_node_emit)
+ * Node record emission. */
+static void sk_cg_node_emit_1253bc(void) { /* see decompile */ }
+
+/* FUN_0012540c @ 0x12540c  (est. sk_cg_node_emit_b)
+ * Variant. */
+static void sk_cg_node_emit_12540c(void) { /* see decompile */ }
+
+/* FUN_001254f0 @ 0x1254f0  (est. sk_cg_emit)
+ * ComponentGraph emission. */
+static void sk_cg_emit_1254f0(void) { /* see decompile */ }
+
+/* FUN_00125604 @ 0x125604  (est. sk_cg_emit_b)
+ * Variant. */
+static void sk_cg_emit_125604(void) { /* see decompile */ }
+
+/* FUN_00125a38 @ 0x125a38  (est. sk_cg_emit_c)
+ * Variant. */
+static void sk_cg_emit_125a38(void) { /* see decompile */ }
+
+/* FUN_00125ed0 @ 0x125ed0  (est. sk_cg_emit_d)
+ * Variant. */
+static void sk_cg_emit_125ed0(void) { /* see decompile */ }
+
+/* FUN_001260e4 @ 0x1260e4  (est. sk_cg_edge_parse)
+ * Edge parse helper. */
+static void sk_cg_edge_parse_1260e4(void) { /* see decompile */ }
+
+/* FUN_00126198 @ 0x126198  (est. sk_cg_node_parse)
+ * Node parse helper. */
+static void sk_cg_node_parse_126198(void) { /* see decompile */ }
+
+/* FUN_0012624c @ 0x12624c  (est. sk_cg_parse)
+ * ComponentGraph parse. */
+static void sk_cg_parse_12624c(void) { /* see decompile */ }
+
+/* FUN_001262e0 @ 0x1262e0  (est. sk_cg_parse_b)
+ * Parse variant. */
+static void sk_cg_parse_1262e0(void) { /* see decompile */ }
+
+/* FUN_00126390 @ 0x126390  (est. sk_cg_parse_c)
+ * Parse variant. */
+static void sk_cg_parse_126390(void) { /* see decompile */ }
+
+/* FUN_0012649c @ 0x12649c  (est. sk_cg_parse_d)
+ * Parse variant. */
+static void sk_cg_parse_12649c(void) { /* see decompile */ }
+
+/* FUN_001264e8 @ 0x1264e8  (est. sk_cg_parse_e)
+ * Parse variant. */
+static void sk_cg_parse_1264e8(void) { /* see decompile */ }
+
+/* FUN_00126540 @ 0x126540  (est. sk_cg_parse_f)
+ * Parse variant. */
+static void sk_cg_parse_126540(void) { /* see decompile */ }
+
+/* FUN_00126778 @ 0x126778  (est. sk_cg_resolve_edges)
+ * ComponentGraph edge resolution: iterates the a0 field's entries, checks each
+ * for the "indent_tag" property (0x7463657269646e69/0xec0000006761745f), walks
+ * the 0x88 hash to find matching symbol edges, and emits "is signing...." /
+ * "is part of" diagnostic strings; panics on a missing/invalid edge. */
+static void sk_cg_resolve_edges_126778(void)
+{
+    /* see decompile: BRK 0x126cd4..dc, "indent_tag" lookup, "is signing." logs */
+}
+
+/* FUN_00126cdc @ 0x126cdc  (est. sk_cg_symbol_lookup)
+ * Symbol lookup helper (thunk_FUN_0006e06c hash + FUN_00286e40). */
+static uint32_t sk_cg_symbol_lookup_126cdc(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* local = thunk_FUN_0006e06c(b,c); uVar2 = FUN_00310d34(0,b);
+     * uVar1 = FUN_00286e40(FUN_00139670, buf, uVar2, 0x66acf0) */
+    return 0;
+}
+
+/* FUN_00126d8c @ 0x126d8c  (est. sk_cg_process_edges)
+ * ComponentGraph edge processing: collects a0-field entries with tag 0,
+ * parses each "status_tag" value (0x695f636974617473/0xee00687461705f64),
+ * builds a 128-bit integer, and writes the result via FUN_000b2194. */
+static void sk_cg_process_edges_126d8c(void)
+{
+    /* see decompile: "status_tag" parse + 128-bit int */
+}
+
+/* ============ 0x1273bc - 0x12779c : CG edge/uid continuation ============ */
+
+/* FUN_001273bc @ 0x1273bc  (est. sk_cg_next_uid)
+ * ComponentGraph unique-id allocation: scans the 0x88 hash table for the next
+ * free uid (linear probing via thunk_FUN_00229ebc), returns it via
+ * FUN_000b2194. */
+static uint64_t sk_cg_next_uid_1273bc(int64_t *hash, uint64_t *cur)
+{
+    (void)hash; (void)cur;
+    /* see decompile: hash probe for free slot */
+    return 0;
+}
+
+/* FUN_001274fc @ 0x1274fc  (est. sk_cg_vtbl_f8)
+ * Calls vtable method at offset 0xf8; stores result into *param_1. */
+static void sk_cg_vtbl_f8_1274fc(uint64_t *out, uint64_t *ctx)
+{
+    (void)out; (void)ctx;
+    /* *out = (**(code**)(*(long*)*ctx + 0xf8))() */
+}
+
+/* FUN_00127540 @ 0x127540  (est. sk_cg_vtbl_100)
+ * Calls vtable method at offset 0x100 (releasing *param_1). */
+static void sk_cg_vtbl_100_127540(uint64_t *a, uint64_t *ctx)
+{
+    (void)a; (void)ctx;
+    /* thunk_FUN_0036b270(*a); (**(code**)(*(long*)*ctx + 0x100))() */
+}
+
+/* FUN_0012759c @ 0x12759c  (est. sk_cg_get20)
+ * Reads the value at ctx+0x20 (releasing the obj). */
+static void sk_cg_get20_12759c(void)
+{
+    /* FUN_0036a1a0(ctx+0x20, buf, 0, 0); FUN_0036b270(ctx->r[0x20/8]) */
+}
+
+/* FUN_001275d4 @ 0x1275d4  (est. sk_cg_set20)
+ * Sets the value at ctx+0x20 (releasing old). */
+static void sk_cg_set20_1275d4(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(ctx+0x20, buf, 1, 0); release old; ctx[0x20/8]=v */
+}
+
+/* FUN_0012761c @ 0x12761c  (est. sk_cg_share20)
+ * Shares the object at ctx+0x20, returning {&LAB_0006f910, ctx+0x20}. */
+static void sk_cg_share20_12761c(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(ctx+0x20, v, 0x21, 0); return {&LAB_0006f910, ctx+0x20} */
+}
+
+/* FUN_0012766c @ 0x12766c  (est. sk_cg_vtbl_110)
+ * Calls vtable method at offset 0x110; stores result. */
+static void sk_cg_vtbl_110_12766c(uint64_t *out, uint64_t *ctx)
+{
+    (void)out; (void)ctx;
+    /* *out = (**(code**)(*(long*)*ctx + 0x110))() */
+}
+
+/* FUN_001276b8 @ 0x1276b8  (est. sk_cg_vtbl_118)
+ * Calls vtable method at offset 0x118 (releasing *param_1). */
+static void sk_cg_vtbl_118_1276b8(uint64_t *a, uint64_t *ctx)
+{
+    (void)a; (void)ctx;
+    /* thunk_FUN_0036b270(*a); (**(code**)(*(long*)*ctx + 0x118))() */
+}
+
+/* FUN_00127718 @ 0x127718  (est. sk_cg_get28)
+ * Reads the value at ctx+0x28. */
+static void sk_cg_get28_127718(void)
+{
+    /* FUN_0036a1a0(ctx+0x28, buf, 0, 0); FUN_0036b270(ctx->r[0x28/8]) */
+}
+
+/* FUN_00127754 @ 0x127754  (est. sk_cg_set28)
+ * Sets the value at ctx+0x28. */
+static void sk_cg_set28_127754(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(ctx+0x28, buf, 1, 0); release old; ctx[0x28/8]=v */
+}
+
+/* ============ 0x1252d4 - 0x125a38 : ComponentGraph graph build ============ */
+
+/* FUN_001252d4 @ 0x1252d4  (est. sk_cg_build_graph)
+ * ComponentGraph assembly: validates the incoming 2-element record (two type-9
+ * lists of nodes and edges), builds the node list (FUN_0011f2e4 per node) and
+ * the edge list (FUN_00121f20 per edge), then resolves edges via
+ * FUN_00126778. Panics on a malformed record. */
+static void sk_cg_build_graph_1252d4(uint64_t p)
+{
+    (void)p;
+    /* see decompile: BRK 0x1252d4..e8, node/edge build loops */
+}
+
+/* FUN_0012530c @ 0x12530c  (est. sk_cg_graph_new)
+ * Allocates then runs the graph constructor 0x125344. */
+static uint64_t sk_cg_graph_new_12530c(void)
+{
+    uint64_t v = /* FUN_0036a940() */ 0;
+    /* FUN_00125344() */
+    return v;
+}
+
+/* FUN_00125344 @ 0x125344  (est. sk_cg_graph_init)
+ * Graph-object constructor: sets the ten config slots (via FUN_00138560/
+ * FUN_00138678/FUN_00138790) with default values. */
+static void sk_cg_graph_init_125344(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001253bc @ 0x1253bc  (est. sk_cg_graph_new2)
+ * Allocates then runs the 2-arg graph constructor 0x12540c. */
+static uint64_t sk_cg_graph_new2_1253bc(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    uint64_t v = /* FUN_0036a940() */ 0;
+    /* FUN_0012540c(a, b) */
+    return v;
+}
+
+/* FUN_0012540c @ 0x12540c  (est. sk_cg_graph_init2)
+ * Graph constructor with the two primary fields set (a, b). */
+static void sk_cg_graph_init2_12540c(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_001254f0 @ 0x1254f0  (est. sk_cg_node_edge_eq)
+ * Compares two graph elements: first the 0x88 tag equality (FUN_00125604),
+ * then the 0xa0 value lists (FUN_00122944). Returns 1 if equal. */
+static uint32_t sk_cg_node_edge_eq_1254f0(int64_t *a, int64_t *b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00125604 @ 0x125604  (est. sk_cg_elem_list_eq)
+ * ComponentGraph element-list equality: compares two hash-indexed element
+ * lists field by field via their vtable accessors (0xd8, 0x58, 0x70, 0x88,
+ * 0xa0), walking the occupancy bitmap. Returns 1 if equal. */
+static uint64_t sk_cg_elem_list_eq_125604(long a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile: bitmap-walk element compare */
+    return 0;
+}
+
+/* FUN_00125a38 @ 0x125a38  (est. sk_cg_dump_nodes)
+ * ComponentGraph node dump: iterates the 0x88 hash's entries and emits each
+ * node's fields (via the 0xf0 accessor) with a log record. */
+static void sk_cg_dump_nodes_125a38(void)
+{
+    /* see decompile: dump each node */
+}
+
+/* ============ 0x1241b0 - 0x128e1c : CG edge/node detail ============ */
+
+/* FUN_001241b0 @ 0x1241b0  (est. sk_cg_edge_attached)
+ * Checks whether the edge has the "attach" attribute: reads the 0x128 field;
+ * if set, compares the 0x70 field against the known "attach_edge" value. */
+static uint32_t sk_cg_edge_attached_1241b0(void)
+{
+    /* see decompile: FUN_00139134 comparison */
+    return 0;
+}
+
+/* FUN_001242c4 @ 0x1242c4  (est. sk_cg_edge_construct)
+ * ComponentGraph edge constructor (deep): resolves the edge via the vtable
+ * dispatch (FUN_00377824/FUN_00310d68), formats a diagnostic, and on failure
+ * panics "Fatal error"/"found zero..." */
+static void sk_cg_edge_construct_1242c4(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint32_t f, uint64_t g, long h, uint64_t i)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)i;
+    /* see decompile */
+}
+
+/* FUN_00124690 @ 0x124690  (est. sk_cg_edge_release)
+ * Releases the edge's field objects. */
+static void sk_cg_edge_release_124690(uint64_t *ctx)
+{
+    (void)ctx;
+    /* FUN_0036b118(ctx[0x10/8]); FUN_0036b118(ctx[0x18/8]); FUN_003a25d4(ctx[0x28/8]) */
+}
+
+/* FUN_00124694 @ 0x124694  (est. sk_cg_edge_release_b)
+ * Duplicate of 0x124690. */
+static void sk_cg_edge_release_124694(uint64_t *ctx) { /* same as 0x124690 */ (void)ctx; }
+
+/* FUN_001246c0 @ 0x1246c0  (est. sk_cg_edge_release_td)
+ * Releases edge fields then teardown FUN_0036b6ac. */
+static void sk_cg_edge_release_td_1246c0(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_001246c4 @ 0x1246c4  (est. sk_cg_edge_release_td_b)
+ * Duplicate of 0x1246c0. */
+static void sk_cg_edge_release_td_1246c4(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_001246fc @ 0x1246fc  (est. sk_cg_vtbl_e8)
+ * Calls vtable method at offset 0xe8 with a 72-byte buffer. */
+static void sk_cg_vtbl_e8_1246fc(void)
+{
+    /* uint8_t buf[72]; FUN_001a84f4(buf,0); (**(code**)(*ctx+0xe8))(buf); FUN_001a8564() */
+}
+
+/* FUN_00124760 @ 0x124760  (est. sk_cg_vtbl_140)
+ * Calls vtable method at offset 0x140. */
+static void sk_cg_vtbl_140_124760(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x140))() */
+}
+
+/* FUN_001247a4 @ 0x1247a4  (est. sk_cg_vtbl_e8_b)
+ * Calls vtable method at offset 0xe8. */
+static void sk_cg_vtbl_e8_1247a4(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0xe8))() */
+}
+
+/* FUN_001247e0 @ 0x1247e0  (est. sk_cg_vtbl_e8_c)
+ * Calls vtable +0xe8 with a 72-byte buffer. */
+static void sk_cg_vtbl_e8_1247e0(void)
+{
+    /* uint8_t buf[72]; FUN_001a84f4(buf); (**(code**)(*ctx+0xe8))(buf); FUN_001a8564() */
+}
+
+/* FUN_00124838 @ 0x124838  (est. sk_cg_vtbl_f8)
+ * Calls vtable method at offset 0xf8. */
+static void sk_cg_vtbl_f8_124838(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0xf8))() */
+}
+
+/* FUN_00124874 @ 0x124874  (est. sk_cg_vtbl_c0)
+ * Calls vtable method at offset 0xc0. */
+static void sk_cg_vtbl_c0_124874(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0xc0))() */
+}
+
+/* FUN_001248b0 @ 0x1248b0  (est. sk_cg_dump_node_head)
+ * Emits "{Endpoin t...: {label: " + "nil"/value + "}" via thunk_FUN_002acbb8. */
+static void sk_cg_dump_node_head_1248b0(uint64_t a, uint64_t b, uint64_t c, long d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_001249a8 @ 0x1249a8  (est. sk_cg_ctx_set01)
+ * Sets the two words at ctx[0]/ctx[1] (releasing old ctx[1]). */
+static void sk_cg_ctx_set01_1249a8(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_003a25d4(ctx[1]); ctx[0]=a; ctx[1]=b */
+}
+
+/* FUN_001249e0 @ 0x1249e0  (est. sk_cg_ctx_set18)
+ * Sets ctx[0x10/8] and ctx[0x18/8] (releasing old). */
+static void sk_cg_ctx_set18_1249e0(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_003a25d4(*(ctx+0x18)); *(ctx+0x10)=a; *(ctx+0x18)=b */
+}
+
+/* FUN_00124a1c @ 0x124a1c  (est. sk_cg_print_edge)
+ * Prints an edge: emits the source (param_1,param_2), then (if param_5) an
+ * arrow "->" and the target (param_4,param_5) via FUN_001b9084/FUN_00229a3c. */
+static void sk_cg_print_edge_124a1c(uint64_t a, uint64_t b, uint64_t c, uint64_t d, long e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* see decompile */
+}
+
+/* FUN_00124a84 @ 0x124a84  (est. sk_cg_print_edge_b)
+ * Edge print with a 72-byte buffer and arrow. */
+static void sk_cg_print_edge_124a84(uint64_t a, uint64_t b, uint64_t c, long d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_00124b10 @ 0x124b10  (est. sk_cg_print_edge_c)
+ * Edge print from the four context words. */
+static void sk_cg_print_edge_124b10(void) { /* see decompile */ }
+
+/* FUN_00124b9c @ 0x124b9c  (est. sk_cg_print_edge_d)
+ * Edge print into the given buffer. */
+static void sk_cg_print_edge_124b9c(uint64_t buf)
+{
+    (void)buf;
+    /* see decompile */
+}
+
+/* FUN_00124c0c @ 0x124c0c  (est. sk_cg_print_edge_e)
+ * Edge print variant. */
+static void sk_cg_print_edge_124c0c(void) { /* see decompile */ }
+
+/* FUN_00124cbc @ 0x124cbc  (est. sk_cg_get10)
+ * Reads the value at ctx+0x10. */
+static void sk_cg_get10_124cbc(void)
+{
+    /* FUN_0036a1a0(ctx+0x10, buf, 0, 0); FUN_0036b270(ctx->r[0x10/8]) */
+}
+
+/* FUN_00124d0c @ 0x124d0c  (est. sk_cg_set10)
+ * Sets the value at ctx+0x10, calling the release callback param_2 on the old. */
+static void sk_cg_set10_124d0c(uint64_t v, uint64_t (*rel)(void))
+{
+    (void)v; (void)rel;
+    /* FUN_0036a1a0(ctx+0x10, buf, 1, 0); old=*(ctx+0x10); *(ctx+0x10)=v; rel(old) */
+}
+
+/* FUN_00124d64 @ 0x124d64  (est. sk_cg_get18)
+ * Reads the value at ctx+0x18. */
+static void sk_cg_get18_124d64(void)
+{
+    /* FUN_0036a1a0(ctx+0x18, buf, 0, 0); FUN_0036b270(ctx->r[0x18/8]) */
+}
+
+/* FUN_00124d9c @ 0x124d9c  (est. sk_cg_set18)
+ * Sets the value at ctx+0x18. */
+static void sk_cg_set18_124d9c(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(ctx+0x18, buf, 1, 0); release old; ctx[0x18/8]=v */
+}
+
+/* FUN_00124de4 @ 0x124de4  (est. sk_cg_obj_new4)
+ * Allocates then runs the 4-arg constructor 0x124e34. */
+static uint64_t sk_cg_obj_new4_124de4(uint64_t p)
+{
+    (void)p;
+    uint64_t v = /* FUN_0036a940() */ 0;
+    /* FUN_00124e34(p) */
+    return v;
+}
+
+/* FUN_00124e34 @ 0x124e34  (est. sk_cg_obj_init4)
+ * ComponentGraph deep object constructor: processes the source/dest symbol
+ * lists (via the vtable accessors), building the edge/node records; panics
+ * "Found invalid edge"/"ComponentGraph.swift" on a malformed element. */
+static int64_t sk_cg_obj_init4_124e34(void *p)
+{
+    (void)p;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00128e1c @ 0x128e1c  (est. sk_cg_resolve_nodes)
+ * ComponentGraph node resolution: iterates the 0x88 hash's nodes, walks each
+ * node's 0xa0 edge list to find attach (0xd) edges, then resolves the
+ * "source_symbol"/"dest_symbol"/"is_attach"/"is_detach" properties, emitting
+ * "panap" (attach) / "map" edges. Panics "Fatal error"/"Found invalid edge" on
+ * inconsistency. */
+static void sk_cg_resolve_nodes_128e1c(void)
+{
+    /* see decompile: BRK 0x129bd0..e0, "panap" 0x63696e6170, "dest_symbol" */
+}
+
+/* ============ 0x129be0 - 0x12f60c : CG deep resolve/attach ============ */
+
+/* FUN_00129be0 @ 0x129be0  (est. sk_cg_edge_attach)
+ * ComponentGraph attach operation: resolves the edge via the vtable dispatch
+ * (FUN_00377824/FUN_00310d68) and installs/removes the attach record. */
+static void sk_cg_edge_attach_129be0(uint64_t a, long b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+}
+
+/* FUN_00129f08 @ 0x129f08  (est. sk_cg_resolve_edges_full)
+ * Full edge resolution: iterates the a0 edge list, for each attach edge (tag 5)
+ * matches "dest_symbol"/"source_symbol" pairs, resolves the endpoint edges,
+ * and validates each has exactly one destination (panics "Expected edge to
+ * have only one dest..."). Builds the resolved edge set. */
+static void sk_cg_resolve_edges_full_129f08(void)
+{
+    /* see decompile: BRK 0x12aee8..fc, "dest_symbol"/"source_symbol" lookups */
+}
+
+/* FUN_0012eccc @ 0x12eccc  (est. sk_cg_check_edge)
+ * ComponentGraph edge validity check: verifies the source/dest each have
+ * exactly one element, looks up the attached/detached endpoints, and returns
+ * whether the edge connects them. Panics on invalid edges. */
+static uint32_t sk_cg_check_edge_12eccc(uint64_t *a, int64_t *b, int64_t *c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0012f178 @ 0x12f178  (est. sk_cg_finalize_all)
+ * Runs the four finalization passes: FUN_00128e1c (resolve nodes),
+ * FUN_00129f08 (resolve edges), FUN_0012cd68, FUN_0012dbb8. */
+static void sk_cg_finalize_all_12f178(void)
+{
+    /* FUN_00128e1c(); FUN_00129f08(); FUN_0012cd68(); FUN_0012dbb8() */
+}
+
+/* FUN_0012f17c @ 0x12f17c  (est. sk_cg_finalize_all_b)
+ * Duplicate of 0x12f178. */
+static void sk_cg_finalize_all_12f17c(void)
+{
+    /* FUN_00128e1c(); FUN_00129f08(); FUN_0012cd68(); FUN_0012dbb8() */
+}
+
+/* FUN_0012f19c @ 0x12f19c  (est. sk_cg_graph_construct)
+ * ComponentGraph graph constructor: allocates a 0x70 graph object, builds the
+ * node/edge lists from the 0x88/0xa0/0xf0 fields (via FUN_0011e2c4/
+ * FUN_001394d8), and initializes the 0x218/0x248 pass state. */
+static int64_t *sk_cg_graph_construct_12f19c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0012f598 @ 0x12f598  (est. sk_cg_validate_all)
+ * ComponentGraph validation: runs the seven validation passes
+ * (FUN_0012f60c..FUN_00131704) and returns the final result FUN_00131840. */
+static uint64_t sk_cg_validate_all_12f598(void)
+{
+    /* see decompile: pass chain */
+    return 0;
+}
+
+/* FUN_0012f59c @ 0x12f59c  (est. sk_cg_validate_all_b)
+ * Duplicate of 0x12f598. */
+static uint64_t sk_cg_validate_all_12f59c(void)
+{
+    /* see decompile: pass chain */
+    return 0;
+}
+
+/* FUN_0012f60c @ 0x12f60c  (est. sk_cg_validate_pass1)
+ * ComponentGraph validation pass 1: collects the attach edges (tag 5) from the
+ * a0 field, then for each edge matching "dest_symbol"/"source_symbol" resolves
+ * and validates the endpoints. */
+static uint64_t sk_cg_validate_pass1_12f60c(void)
+{
+    /* see decompile: BRK 0x12fd14..1c */
+    return 0;
+}
+
+/* ============ 0x12779c - 0x12f19c : CG validate/attach detail ============ */
+
+/* FUN_0012779c @ 0x12779c  (est. sk_cg_has_prop)
+ * ComponentGraph property check: reads the 0x110 property of the object and
+ * compares it via FUN_000ac1dc; if present, logs a message. */
+static void sk_cg_has_prop_12779c(void)
+{
+    /* see decompile: FUN_00127970 + 0x110 lookup */
+}
+
+/* FUN_0012cd68 @ 0x12cd68  (est. sk_cg_validate_edges)
+ * ComponentGraph edge validation pass: iterates the 0x88 node set, for each
+ * edge type (0 = attach/ASID, 0xd = endpoint, 5 = ...) validates the dest has
+ * exactly one element (panics "ASID edge must have only one dest...",
+ * "Expected only one node"), resolves the "indent_tag"/"is_attach" integer,
+ * and builds the ASID/endpoint records. */
+static void sk_cg_validate_edges_12cd68(void)
+{
+    /* see decompile: BRK 0x12cb70..e0, "ASID edge..." panic strings */
+}
+
+/* FUN_0012dbb8 @ 0x12dbb8  (est. sk_cg_validate_pass_d)
+ * ComponentGraph validation pass (D): iterates the node/edge lists and
+ * validates the attach/detach connectivity. */
+static void sk_cg_validate_pass_d_12dbb8(void)
+{
+    /* see decompile */
+}
+
+/* ============ 0x12fe1c - 0x13fff8 : CG validation passes ============ */
+
+/* FUN_0012fe1c @ 0x12fe1c  (est. sk_cg_validate_pass2)
+ * ComponentGraph validation pass 2: iterates the node set, checks each
+ * attach/detach edge's single-dest invariant. */
+static uint64_t sk_cg_validate_pass2_12fe1c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001302f8 @ 0x1302f8  (est. sk_cg_validate_pass3)
+ * Validation pass 3. */
+static uint64_t sk_cg_validate_pass3_1302f8(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0013057c @ 0x13057c  (est. sk_cg_validate_pass4)
+ * Validation pass 4. */
+static uint64_t sk_cg_validate_pass4_13057c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001307fc @ 0x1307fc  (est. sk_cg_validate_pass5)
+ * Validation pass 5. */
+static uint64_t sk_cg_validate_pass5_1307fc(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00130950 @ 0x130950  (est. sk_cg_validate_pass6)
+ * Validation pass 6. */
+static uint64_t sk_cg_validate_pass6_130950(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00130ac0 @ 0x130ac0  (est. sk_cg_validate_pass7)
+ * Validation pass 7. */
+static uint64_t sk_cg_validate_pass7_130ac0(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00130e90 @ 0x130e90  (est. sk_cg_validate_pass8)
+ * Validation pass 8. */
+static uint64_t sk_cg_validate_pass8_130e90(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00131578 @ 0x131578  (est. sk_cg_validate_pass9)
+ * Validation pass 9. */
+static uint64_t sk_cg_validate_pass9_131578(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00131704 @ 0x131704  (est. sk_cg_validate_pass10)
+ * Validation pass 10. */
+static uint64_t sk_cg_validate_pass10_131704(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00131840 @ 0x131840  (est. sk_cg_validate_final)
+ * Validation final result assembly. */
+static uint64_t sk_cg_validate_final_131840(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00131f50 @ 0x131f50  (est. sk_cg_pass_a)
+ * CG pass helper. */
+static void sk_cg_pass_a_131f50(void) { /* see decompile */ }
+
+/* FUN_00131f54 @ 0x131f54  (est. sk_cg_pass_b)
+ * CG pass helper. */
+static void sk_cg_pass_b_131f54(void) { /* see decompile */ }
+
+/* FUN_00131f98 @ 0x131f98  (est. sk_cg_pass_c)
+ * CG pass helper. */
+static void sk_cg_pass_c_131f98(void) { /* see decompile */ }
+
+/* FUN_00131f9c @ 0x131f9c  (est. sk_cg_pass_d)
+ * CG pass helper. */
+static void sk_cg_pass_d_131f9c(void) { /* see decompile */ }
+
+/* FUN_00131fec @ 0x131fec  (est. sk_cg_pass_e)
+ * CG pass helper. */
+static void sk_cg_pass_e_131fec(void) { /* see decompile */ }
+
+/* FUN_00132100 @ 0x132100  (est. sk_cg_pass_f)
+ * CG pass helper. */
+static void sk_cg_pass_f_132100(void) { /* see decompile */ }
+
+/* FUN_0013213c @ 0x13213c  (est. sk_cg_pass_g)
+ * CG pass helper. */
+static void sk_cg_pass_g_13213c(void) { /* see decompile */ }
+
+/* FUN_00132260 @ 0x132260  (est. sk_cg_pass_h)
+ * CG pass helper. */
+static void sk_cg_pass_h_132260(void) { /* see decompile */ }
+
+/* FUN_001322c8 @ 0x1322c8  (est. sk_cg_pass_i)
+ * CG pass helper. */
+static void sk_cg_pass_i_1322c8(void) { /* see decompile */ }
+
+/* FUN_0013230c @ 0x13230c  (est. sk_cg_pass_j)
+ * CG pass helper. */
+static void sk_cg_pass_j_13230c(void) { /* see decompile */ }
+
+/* FUN_00132370 @ 0x132370  (est. sk_cg_pass_k)
+ * CG pass helper. */
+static void sk_cg_pass_k_132370(void) { /* see decompile */ }
+
+/* FUN_00132408 @ 0x132408  (est. sk_cg_parse_int)
+ * 128-bit integer parse from a CG property (base 10). */
+static uint64_t sk_cg_parse_int_132408(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132524 @ 0x132524  (est. sk_cg_parse_int_b)
+ * 128-bit integer parse variant. */
+static uint64_t sk_cg_parse_int_132524(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001327a8 @ 0x1327a8  (est. sk_cg_validate_pass11)
+ * Validation pass 11. */
+static uint64_t sk_cg_validate_pass11_1327a8(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132858 @ 0x132858  (est. sk_cg_validate_pass12)
+ * Validation pass 12. */
+static uint64_t sk_cg_validate_pass12_132858(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001328ec @ 0x1328ec  (est. sk_cg_validate_pass13)
+ * Validation pass 13. */
+static uint64_t sk_cg_validate_pass13_1328ec(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001329f0 @ 0x1329f0  (est. sk_cg_validate_pass14)
+ * Validation pass 14. */
+static uint64_t sk_cg_validate_pass14_1329f0(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132ae8 @ 0x132ae8  (est. sk_cg_validate_pass15)
+ * Validation pass 15. */
+static uint64_t sk_cg_validate_pass15_132ae8(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132c64 @ 0x132c64  (est. sk_cg_validate_pass16)
+ * Validation pass 16. */
+static uint64_t sk_cg_validate_pass16_132c64(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132de4 @ 0x132de4  (est. sk_cg_validate_pass17)
+ * Validation pass 17. */
+static uint64_t sk_cg_validate_pass17_132de4(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00132f60 @ 0x132f60  (est. sk_cg_validate_pass18)
+ * Validation pass 18. */
+static uint64_t sk_cg_validate_pass18_132f60(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001330d4 @ 0x1330d4  (est. sk_cg_validate_pass19)
+ * Validation pass 19. */
+static uint64_t sk_cg_validate_pass19_1330d4(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00133224 @ 0x133224  (est. sk_cg_validate_pass20)
+ * Validation pass 20. */
+static uint64_t sk_cg_validate_pass20_133224(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001333a4 @ 0x1333a4  (est. sk_cg_validate_pass21)
+ * Validation pass 21. */
+static uint64_t sk_cg_validate_pass21_1333a4(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0013365c @ 0x13365c  (est. sk_cg_validate_pass22)
+ * Validation pass 22. */
+static uint64_t sk_cg_validate_pass22_13365c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00133940 @ 0x133940  (est. sk_cg_validate_pass23)
+ * Validation pass 23. */
+static uint64_t sk_cg_validate_pass23_133940(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00133c0c @ 0x133c0c  (est. sk_cg_validate_pass24)
+ * Validation pass 24. */
+static uint64_t sk_cg_validate_pass24_133c0c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00133eac @ 0x133eac  (est. sk_cg_validate_pass25)
+ * Validation pass 25. */
+static uint64_t sk_cg_validate_pass25_133eac(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0013410c @ 0x13410c  (est. sk_cg_validate_pass26)
+ * Validation pass 26. */
+static uint64_t sk_cg_validate_pass26_13410c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001343e8 @ 0x1343e8  (est. sk_cg_validate_pass27)
+ * Validation pass 27. */
+static uint64_t sk_cg_validate_pass27_1343e8(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0013442c @ 0x13442c  (est. sk_array_grow)
+ * Dynamic array growth helper (FUN_0013442c): grows the array to fit the new
+ * element count. */
+static void sk_array_grow_13442c(void) { /* see decompile */ }
+
+/* FUN_0013444c @ 0x13444c  (est. sk_array_grow_b)
+ * Dynamic array growth variant. */
+static void sk_array_grow_13444c(void) { /* see decompile */ }
+
+/* FUN_0013446c @ 0x13446c  (est. sk_array_grow_c)
+ * Dynamic array growth variant. */
+static void sk_array_grow_13446c(void) { /* see decompile */ }
+
+/* FUN_0013448c @ 0x13448c  (est. sk_array_grow_d)
+ * Dynamic array growth variant. */
+static void sk_array_grow_13448c(void) { /* see decompile */ }
+
+/* FUN_0013459c @ 0x13459c  (est. sk_cg_pass_l)
+ * CG pass helper. */
+static void sk_cg_pass_l_13459c(void) { /* see decompile */ }
+
+/* FUN_00134678 @ 0x134678  (est. sk_cg_pass_m)
+ * CG pass helper. */
+static void sk_cg_pass_m_134678(void) { /* see decompile */ }
+
+/* FUN_0013477c @ 0x13477c  (est. sk_cg_pass_n)
+ * CG pass helper. */
+static void sk_cg_pass_n_13477c(void) { /* see decompile */ }
+
+/* FUN_00134880 @ 0x134880  (est. sk_cg_print_val)
+ * Prints a value via FUN_00134880. */
+static void sk_cg_print_val_134880(void) { /* see decompile */ }
+
+/* FUN_001349e8 @ 0x1349e8  (est. sk_cg_print_dict)
+ * Prints a CG dictionary. */
+static void sk_cg_print_dict_1349e8(void) { /* see decompile */ }
+
+/* FUN_00134a58 @ 0x134a58  (est. sk_cg_print_dict_b)
+ * Dict print variant. */
+static void sk_cg_print_dict_134a58(void) { /* see decompile */ }
+
+/* FUN_00134b48 @ 0x134b48  (est. sk_cg_print_dict_c)
+ * Dict print variant. */
+static void sk_cg_print_dict_134b48(void) { /* see decompile */ }
+
+/* FUN_00134fb4 @ 0x134fb4  (est. sk_cg_parse_dict)
+ * CG dict parse. */
+static void sk_cg_parse_dict_134fb4(void) { /* see decompile */ }
+
+/* FUN_001350b4 @ 0x1350b4  (est. sk_cg_parse_dict_b)
+ * Dict parse variant. */
+static void sk_cg_parse_dict_1350b4(void) { /* see decompile */ }
+
+/* FUN_00135314 @ 0x135314  (est. sk_cg_parse_list)
+ * CG list parse. */
+static void sk_cg_parse_list_135314(void) { /* see decompile */ }
+
+/* FUN_00135398 @ 0x135398  (est. sk_cg_parse_list_b)
+ * List parse variant. */
+static void sk_cg_parse_list_135398(void) { /* see decompile */ }
+
+/* FUN_00135600 @ 0x135600  (est. sk_cg_record_add)
+ * CG record addition: adds a {key,value} pair to a record (via
+ * FUN_00135600). */
+static void sk_cg_record_add_135600(void) { /* see decompile */ }
+
+/* FUN_00135768 @ 0x135768  (est. sk_cg_record_add_b)
+ * Record add variant. */
+static void sk_cg_record_add_135768(void) { /* see decompile */ }
+
+/* FUN_001358e8 @ 0x1358e8  (est. sk_cg_record_add_c)
+ * Record add variant. */
+static void sk_cg_record_add_1358e8(void) { /* see decompile */ }
+
+/* FUN_00135a70 @ 0x135a70  (est. sk_cg_record_build)
+ * CG record build. */
+static void sk_cg_record_build_135a70(void) { /* see decompile */ }
+
+/* FUN_00135bcc @ 0x135bcc  (est. sk_cg_record_build_b)
+ * Record build variant. */
+static void sk_cg_record_build_135bcc(void) { /* see decompile */ }
+
+/* FUN_00135ce8 @ 0x135ce8  (est. sk_cg_record_build_c)
+ * Record build variant. */
+static void sk_cg_record_build_135ce8(void) { /* see decompile */ }
+
+/* FUN_00135e68 @ 0x135e68  (est. sk_cg_record_build_d)
+ * Record build variant. */
+static void sk_cg_record_build_135e68(void) { /* see decompile */ }
+
+/* FUN_0013620c @ 0x13620c  (est. sk_cg_record_build_e)
+ * Record build variant. */
+static void sk_cg_record_build_13620c(void) { /* see decompile */ }
+
+/* FUN_001365fc @ 0x1365fc  (est. sk_cg_record_build_f)
+ * Record build variant. */
+static void sk_cg_record_build_1365fc(void) { /* see decompile */ }
+
+/* FUN_00136844 @ 0x136844  (est. sk_cg_record_build_g)
+ * Record build variant. */
+static void sk_cg_record_build_136844(void) { /* see decompile */ }
+
+/* FUN_00136988 @ 0x136988  (est. sk_cg_record_build_h)
+ * Record build variant. */
+static void sk_cg_record_build_136988(void) { /* see decompile */ }
+
+/* FUN_00136bf8 @ 0x136bf8  (est. sk_cg_record_build_i)
+ * Record build variant. */
+static void sk_cg_record_build_136bf8(void) { /* see decompile */ }
+
+/* FUN_00136d1c @ 0x136d1c  (est. sk_cg_record_release)
+ * CG record release. */
+static void sk_cg_record_release_136d1c(void) { /* see decompile */ }
+
+/* FUN_00136e40 @ 0x136e40  (est. sk_cg_record_release_b)
+ * Record release variant. */
+static void sk_cg_record_release_136e40(void) { /* see decompile */ }
+
+/* FUN_00136fa0 @ 0x136fa0  (est. sk_cg_record_release_c)
+ * Record release variant. */
+static void sk_cg_record_release_136fa0(void) { /* see decompile */ }
+
+/* FUN_001371fc @ 0x1371fc  (est. sk_cg_record_release_d)
+ * Record release variant. */
+static void sk_cg_record_release_1371fc(void) { /* see decompile */ }
+
+/* FUN_00137338 @ 0x137338  (est. sk_cg_record_copy)
+ * CG record copy. */
+static void sk_cg_record_copy_137338(void) { /* see decompile */ }
+
+/* FUN_00137418 @ 0x137418  (est. sk_cg_record_copy_b)
+ * Record copy variant. */
+static void sk_cg_record_copy_137418(void) { /* see decompile */ }
+
+/* FUN_001374e8 @ 0x1374e8  (est. sk_cg_record_copy_c)
+ * Record copy variant. */
+static void sk_cg_record_copy_1374e8(void) { /* see decompile */ }
+
+/* FUN_00137534 @ 0x137534  (est. sk_cg_record_copy_d)
+ * Record copy variant. */
+static void sk_cg_record_copy_137534(void) { /* see decompile */ }
+
+/* FUN_001376b8 @ 0x1376b8  (est. sk_cg_record_copy_e)
+ * Record copy variant. */
+static void sk_cg_record_copy_1376b8(void) { /* see decompile */ }
+
+/* FUN_0013779c @ 0x13779c  (est. sk_cg_ctx_merge)
+ * CG context merge. */
+static void sk_cg_ctx_merge_13779c(void) { /* see decompile */ }
+
+/* FUN_00137800 @ 0x137800  (est. sk_cg_ctx_merge_b)
+ * Context merge variant. */
+static void sk_cg_ctx_merge_137800(void) { /* see decompile */ }
+
+/* FUN_00137bc0 @ 0x137bc0  (est. sk_cg_ctx_merge_c)
+ * Context merge variant. */
+static void sk_cg_ctx_merge_137bc0(void) { /* see decompile */ }
+
+/* FUN_00137f1c @ 0x137f1c  (est. sk_cg_ctx_lookup)
+ * CG context lookup. */
+static void sk_cg_ctx_lookup_137f1c(void) { /* see decompile */ }
+
+/* FUN_00138210 @ 0x138210  (est. sk_cg_ctx_lookup_b)
+ * Context lookup variant. */
+static void sk_cg_ctx_lookup_138210(void) { /* see decompile */ }
+
+/* FUN_0013844c @ 0x13844c  (est. sk_cg_alloc)
+ * CG allocator (FUN_0036a940 wrapper). */
+static void sk_cg_alloc_13844c(void) { /* see decompile */ }
+
+/* FUN_00138560 @ 0x138560  (est. sk_cg_alloc_b)
+ * CG allocator variant. */
+static void sk_cg_alloc_138560(void) { /* see decompile */ }
+
+/* FUN_00138678 @ 0x138678  (est. sk_cg_alloc_c)
+ * CG allocator variant. */
+static void sk_cg_alloc_138678(void) { /* see decompile */ }
+
+/* FUN_00138790 @ 0x138790  (est. sk_cg_alloc_d)
+ * CG allocator variant. */
+static void sk_cg_alloc_138790(void) { /* see decompile */ }
+
+/* FUN_0013886c @ 0x13886c  (est. sk_cg_alloc_e)
+ * CG allocator variant. */
+static void sk_cg_alloc_13886c(void) { /* see decompile */ }
+
+/* FUN_0013896c @ 0x13896c  (est. sk_cg_alloc_f)
+ * CG allocator variant. */
+static void sk_cg_alloc_13896c(void) { /* see decompile */ }
+
+/* FUN_00138a84 @ 0x138a84  (est. sk_cg_alloc_g)
+ * CG allocator variant. */
+static void sk_cg_alloc_138a84(void) { /* see decompile */ }
+
+/* FUN_00138b08 @ 0x138b08  (est. sk_cg_eq_wrap)
+ * CG object equality wrapper (via the vtable accessors). */
+static void sk_cg_eq_wrap_138b08(void) { /* see decompile */ }
+
+/* FUN_00138d64 @ 0x138d64  (est. sk_cg_release)
+ * CG object release. */
+static void sk_cg_release_138d64(void) { /* see decompile */ }
+
+/* FUN_00138d68 @ 0x138d68  (est. sk_cg_release_b)
+ * Release variant. */
+static void sk_cg_release_138d68(void) { /* see decompile */ }
+
+/* FUN_00138d90 @ 0x138d90  (est. sk_cg_release_c)
+ * Release variant. */
+static void sk_cg_release_138d90(void) { /* see decompile */ }
+
+/* FUN_00138d94 @ 0x138d94  (est. sk_cg_release_d)
+ * Release variant. */
+static void sk_cg_release_138d94(void) { /* see decompile */ }
+
+/* FUN_00138dbc @ 0x138dbc  (est. sk_cg_enum_map)
+ * Enum value mapping (FUN_00138dbc): maps a string back to an enum id. */
+static void sk_cg_enum_map_138dbc(void) { /* see decompile */ }
+
+/* FUN_00138e10 @ 0x138e10  (est. sk_cg_obj_str)
+ * CG object-to-string conversion. */
+static void sk_cg_obj_str_138e10(void) { /* see decompile */ }
+
+/* FUN_00138f80 @ 0x138f80  (est. sk_cg_obj_str_b)
+ * Object-to-string variant. */
+static void sk_cg_obj_str_138f80(void) { /* see decompile */ }
+
+/* FUN_00139134 @ 0x139134  (est. sk_cg_assert)
+ * CG assertion (FUN_00139134): formats a message and panics on failure. */
+static void sk_cg_assert_139134(void) { /* see decompile */ }
+
+/* FUN_0013924c @ 0x13924c  (est. sk_cg_find)
+ * CG element find (FUN_0013924c). */
+static void sk_cg_find_13924c(void) { /* see decompile */ }
+
+/* FUN_00139418 @ 0x139418  (est. sk_cg_find_b)
+ * Find variant. */
+static void sk_cg_find_139418(void) { /* see decompile */ }
+
+/* FUN_001394c8 @ 0x1394c8  (est. sk_cg_find_c)
+ * Find variant. */
+static void sk_cg_find_1394c8(void) { /* see decompile */ }
+
+/* FUN_001394d8 @ 0x1394d8  (est. sk_cg_find_d)
+ * Find variant. */
+static void sk_cg_find_1394d8(void) { /* see decompile */ }
+
+/* FUN_00139574 @ 0x139574  (est. sk_cg_find_e)
+ * Find variant. */
+static void sk_cg_find_139574(void) { /* see decompile */ }
+
+/* FUN_00139584 @ 0x139584  (est. sk_cg_find_f)
+ * Find variant. */
+static void sk_cg_find_139584(void) { /* see decompile */ }
+
+/* FUN_001395ec @ 0x1395ec  (est. sk_cg_find_g)
+ * Find variant. */
+static void sk_cg_find_1395ec(void) { /* see decompile */ }
+
+/* FUN_00139670 @ 0x139670  (est. sk_cg_hash)
+ * CG hash function (FUN_00139670). */
+static void sk_cg_hash_139670(void) { /* see decompile */ }
+
+/* FUN_00139674 @ 0x139674  (est. sk_cg_hash_b)
+ * Hash variant. */
+static void sk_cg_hash_139674(void) { /* see decompile */ }
+
+/* FUN_00139694 @ 0x139694  (est. sk_cg_hash_c)
+ * Hash variant. */
+static void sk_cg_hash_139694(void) { /* see decompile */ }
+
+/* FUN_001396b4 @ 0x1396b4  (est. sk_cg_hash_d)
+ * Hash variant. */
+static void sk_cg_hash_1396b4(void) { /* see decompile */ }
+
+/* FUN_001399b4 @ 0x1399b4  (est. sk_cg_str_hash)
+ * CG string hash. */
+static void sk_cg_str_hash_1399b4(void) { /* see decompile */ }
+
+/* FUN_00139a20 @ 0x139a20  (est. sk_cg_str_hash_b)
+ * String hash variant. */
+static void sk_cg_str_hash_139a20(void) { /* see decompile */ }
+
+/* FUN_00139a94 @ 0x139a94  (est. sk_cg_str_hash_c)
+ * String hash variant. */
+static void sk_cg_str_hash_139a94(void) { /* see decompile */ }
+
+/* FUN_00139a98 @ 0x139a98  (est. sk_cg_str_hash_d)
+ * String hash variant. */
+static void sk_cg_str_hash_139a98(void) { /* see decompile */ }
+
+/* FUN_00139ae0 @ 0x139ae0  (est. sk_cg_str_hash_e)
+ * String hash variant. */
+static void sk_cg_str_hash_139ae0(void) { /* see decompile */ }
+
+/* FUN_00139b54 @ 0x139b54  (est. sk_cg_str_hash_f)
+ * String hash variant. */
+static void sk_cg_str_hash_139b54(void) { /* see decompile */ }
+
+/* FUN_00139ba4 @ 0x139ba4  (est. sk_cg_str_hash_g)
+ * String hash variant. */
+static void sk_cg_str_hash_139ba4(void) { /* see decompile */ }
+
+/* FUN_00139bdc @ 0x139bdc  (est. sk_cg_str_hash_h)
+ * String hash variant. */
+static void sk_cg_str_hash_139bdc(void) { /* see decompile */ }
+
+/* FUN_00139c28 @ 0x139c28  (est. sk_cg_str_hash_i)
+ * String hash variant. */
+static void sk_cg_str_hash_139c28(void) { /* see decompile */ }
+
+/* FUN_00139c6c @ 0x139c6c  (est. sk_cg_str_hash_j)
+ * String hash variant. */
+static void sk_cg_str_hash_139c6c(void) { /* see decompile */ }
+
+/* FUN_0013ace0 @ 0x13ace0  (est. sk_cg_pass_o)
+ * CG pass helper. */
+static void sk_cg_pass_o_13ace0(void) { /* see decompile */ }
+
+/* FUN_0013ad1c @ 0x13ad1c  (est. sk_cg_pass_p)
+ * CG pass helper. */
+static void sk_cg_pass_p_13ad1c(void) { /* see decompile */ }
+
+/* FUN_0013ad20 @ 0x13ad20  (est. sk_cg_pass_q)
+ * CG pass helper. */
+static void sk_cg_pass_q_13ad20(void) { /* see decompile */ }
+
+/* FUN_0013ad34 @ 0x13ad34  (est. sk_cg_pass_r)
+ * CG pass helper. */
+static void sk_cg_pass_r_13ad34(void) { /* see decompile */ }
+
+/* FUN_0013adac @ 0x13adac  (est. sk_cg_pass_s)
+ * CG pass helper. */
+static void sk_cg_pass_s_13adac(void) { /* see decompile */ }
+
+/* FUN_0013ae0c @ 0x13ae0c  (est. sk_cg_pass_t)
+ * CG pass helper. */
+static void sk_cg_pass_t_13ae0c(void) { /* see decompile */ }
+
+/* FUN_0013b468 @ 0x13b468  (est. sk_cg_pass_u)
+ * CG pass helper. */
+static void sk_cg_pass_u_13b468(void) { /* see decompile */ }
+
+/* FUN_0013bf20 @ 0x13bf20  (est. sk_cg_pass_v)
+ * CG pass helper. */
+static void sk_cg_pass_v_13bf20(void) { /* see decompile */ }
+
+/* FUN_0013bf44 @ 0x13bf44  (est. sk_cg_pass_w)
+ * CG pass helper. */
+static void sk_cg_pass_w_13bf44(void) { /* see decompile */ }
+
+/* FUN_0013c584 @ 0x13c584  (est. sk_cg_pass_x)
+ * CG pass helper. */
+static void sk_cg_pass_x_13c584(void) { /* see decompile */ }
+
+/* FUN_0013c8d0 @ 0x13c8d0  (est. sk_cg_pass_y)
+ * CG pass helper. */
+static void sk_cg_pass_y_13c8d0(void) { /* see decompile */ }
+
+/* FUN_0013c8f4 @ 0x13c8f4  (est. sk_cg_pass_z)
+ * CG pass helper. */
+static void sk_cg_pass_z_13c8f4(void) { /* see decompile */ }
+
+/* FUN_0013c9bc @ 0x13c9bc  (est. sk_cg_pass_aa)
+ * CG pass helper. */
+static void sk_cg_pass_aa_13c9bc(void) { /* see decompile */ }
+
+/* FUN_0013ccf4 @ 0x13ccf4  (est. sk_cg_str_build)
+ * CG string builder. */
+static void sk_cg_str_build_13ccf4(void) { /* see decompile */ }
+
+/* FUN_0013cd18 @ 0x13cd18  (est. sk_cg_str_build_b)
+ * String builder variant. */
+static void sk_cg_str_build_13cd18(void) { /* see decompile */ }
+
+/* FUN_0013cdd8 @ 0x13cdd8  (est. sk_cg_str_build_c)
+ * String builder variant. */
+static void sk_cg_str_build_13cdd8(void) { /* see decompile */ }
+
+/* FUN_0013d068 @ 0x13d068  (est. sk_cg_str_build_d)
+ * String builder variant. */
+static void sk_cg_str_build_13d068(void) { /* see decompile */ }
+
+/* FUN_0013d154 @ 0x13d154  (est. sk_cg_str_build_e)
+ * String builder variant. */
+static void sk_cg_str_build_13d154(void) { /* see decompile */ }
+
+/* FUN_0013d17c @ 0x13d17c  (est. sk_cg_str_build_f)
+ * String builder variant. */
+static void sk_cg_str_build_13d17c(void) { /* see decompile */ }
+
+/* FUN_0013d190 @ 0x13d190  (est. sk_cg_str_build_g)
+ * String builder variant. */
+static void sk_cg_str_build_13d190(void) { /* see decompile */ }
+
+/* FUN_0013d1a4 @ 0x13d1a4  (est. sk_cg_str_build_h)
+ * String builder variant. */
+static void sk_cg_str_build_13d1a4(void) { /* see decompile */ }
+
+/* FUN_0013d220 @ 0x13d220  (est. sk_cg_str_build_i)
+ * String builder variant. */
+static void sk_cg_str_build_13d220(void) { /* see decompile */ }
+
+/* FUN_0013d234 @ 0x13d234  (est. sk_cg_str_build_j)
+ * String builder variant. */
+static void sk_cg_str_build_13d234(void) { /* see decompile */ }
+
+/* FUN_0013d2b0 @ 0x13d2b0  (est. sk_cg_str_build_k)
+ * String builder variant. */
+static void sk_cg_str_build_13d2b0(void) { /* see decompile */ }
+
+/* FUN_0013d32c @ 0x13d32c  (est. sk_cg_str_build_l)
+ * String builder variant. */
+static void sk_cg_str_build_13d32c(void) { /* see decompile */ }
+
+/* FUN_0013d49c @ 0x13d49c  (est. sk_cg_str_build_m)
+ * String builder variant. */
+static void sk_cg_str_build_13d49c(void) { /* see decompile */ }
+
+/* FUN_0013d61c @ 0x13d61c  (est. sk_cg_str_build_n)
+ * String builder variant. */
+static void sk_cg_str_build_13d61c(void) { /* see decompile */ }
+
+/* FUN_0013d700 @ 0x13d700  (est. sk_cg_str_build_o)
+ * String builder variant. */
+static void sk_cg_str_build_13d700(void) { /* see decompile */ }
+
+/* FUN_0013d7f4 @ 0x13d7f4  (est. sk_cg_str_build_p)
+ * String builder variant. */
+static void sk_cg_str_build_13d7f4(void) { /* see decompile */ }
+
+/* FUN_0013d948 @ 0x13d948  (est. sk_cg_str_build_q)
+ * String builder variant. */
+static void sk_cg_str_build_13d948(void) { /* see decompile */ }
+
+/* FUN_0013dafc @ 0x13dafc  (est. sk_cg_str_build_r)
+ * String builder variant. */
+static void sk_cg_str_build_13dafc(void) { /* see decompile */ }
+
+/* FUN_0013dbc8 @ 0x13dbc8  (est. sk_cg_str_build_s)
+ * String builder variant. */
+static void sk_cg_str_build_13dbc8(void) { /* see decompile */ }
+
+/* FUN_0013dcb8 @ 0x13dcb8  (est. sk_cg_str_build_t)
+ * String builder variant. */
+static void sk_cg_str_build_13dcb8(void) { /* see decompile */ }
+
+/* FUN_0013dd98 @ 0x13dd98  (est. sk_cg_str_build_u)
+ * String builder variant. */
+static void sk_cg_str_build_13dd98(void) { /* see decompile */ }
+
+/* FUN_0013dfc0 @ 0x13dfc0  (est. sk_cg_str_build_v)
+ * String builder variant. */
+static void sk_cg_str_build_13dfc0(void) { /* see decompile */ }
+
+/* FUN_0013e048 @ 0x13e048  (est. sk_cg_str_build_w)
+ * String builder variant. */
+static void sk_cg_str_build_13e048(void) { /* see decompile */ }
+
+/* FUN_0013e04c @ 0x13e04c  (est. sk_cg_str_build_x)
+ * String builder variant. */
+static void sk_cg_str_build_13e04c(void) { /* see decompile */ }
+
+/* FUN_0013e074 @ 0x13e074  (est. sk_cg_str_build_y)
+ * String builder variant. */
+static void sk_cg_str_build_13e074(void) { /* see decompile */ }
+
+/* FUN_0013e198 @ 0x13e198  (est. sk_cg_str_build_z)
+ * String builder variant. */
+static void sk_cg_str_build_13e198(void) { /* see decompile */ }
+
+/* FUN_0013e3b0 @ 0x13e3b0  (est. sk_cg_str_build_ab)
+ * String builder variant. */
+static void sk_cg_str_build_13e3b0(void) { /* see decompile */ }
+
+/* FUN_0013e3b4 @ 0x13e3b4  (est. sk_cg_str_build_ac)
+ * String builder variant. */
+static void sk_cg_str_build_13e3b4(void) { /* see decompile */ }
+
+/* FUN_0013e3dc @ 0x13e3dc  (est. sk_cg_str_build_ad)
+ * String builder variant. */
+static void sk_cg_str_build_13e3dc(void) { /* see decompile */ }
+
+/* FUN_0013e490 @ 0x13e490  (est. sk_cg_str_build_ae)
+ * String builder variant. */
+static void sk_cg_str_build_13e490(void) { /* see decompile */ }
+
+/* FUN_0013e748 @ 0x13e748  (est. sk_cg_str_build_af)
+ * String builder variant. */
+static void sk_cg_str_build_13e748(void) { /* see decompile */ }
+
+/* FUN_0013e9e4 @ 0x13e9e4  (est. sk_cg_str_build_ag)
+ * String builder variant. */
+static void sk_cg_str_build_13e9e4(void) { /* see decompile */ }
+
+/* FUN_0013ec4c @ 0x13ec4c  (est. sk_cg_str_build_ah)
+ * String builder variant. */
+static void sk_cg_str_build_13ec4c(void) { /* see decompile */ }
+
+/* FUN_0013ed50 @ 0x13ed50  (est. sk_cg_str_build_ai)
+ * String builder variant. */
+static void sk_cg_str_build_13ed50(void) { /* see decompile */ }
+
+/* FUN_0013ee94 @ 0x13ee94  (est. sk_cg_str_build_aj)
+ * String builder variant. */
+static void sk_cg_str_build_13ee94(void) { /* see decompile */ }
+
+/* FUN_0013f16c @ 0x13f16c  (est. sk_cg_str_build_ak)
+ * String builder variant. */
+static void sk_cg_str_build_13f16c(void) { /* see decompile */ }
+
+/* FUN_0013f1c4 @ 0x13f1c4  (est. sk_cg_str_build_al)
+ * String builder variant. */
+static void sk_cg_str_build_13f1c4(void) { /* see decompile */ }
+
+/* FUN_0013f27c @ 0x13f27c  (est. sk_cg_str_build_am)
+ * String builder variant. */
+static void sk_cg_str_build_13f27c(void) { /* see decompile */ }
+
+/* FUN_0013f348 @ 0x13f348  (est. sk_cg_str_build_an)
+ * String builder variant. */
+static void sk_cg_str_build_13f348(void) { /* see decompile */ }
+
+/* FUN_0013f6f8 @ 0x13f6f8  (est. sk_cg_str_build_ao)
+ * String builder variant. */
+static void sk_cg_str_build_13f6f8(void) { /* see decompile */ }
+
+/* FUN_0013f720 @ 0x13f720  (est. sk_cg_str_build_ap)
+ * String builder variant. */
+static void sk_cg_str_build_13f720(void) { /* see decompile */ }
+
+/* FUN_0013f72c @ 0x13f72c  (est. sk_cg_str_build_aq)
+ * String builder variant. */
+static void sk_cg_str_build_13f72c(void) { /* see decompile */ }
+
+/* FUN_0013f738 @ 0x13f738  (est. sk_cg_str_build_ar)
+ * String builder variant. */
+static void sk_cg_str_build_13f738(void) { /* see decompile */ }
+
+/* FUN_0013f744 @ 0x13f744  (est. sk_cg_str_build_as)
+ * String builder variant. */
+static void sk_cg_str_build_13f744(void) { /* see decompile */ }
+
+/* FUN_0013f758 @ 0x13f758  (est. sk_cg_str_build_at)
+ * String builder variant. */
+static void sk_cg_str_build_13f758(void) { /* see decompile */ }
+
+/* FUN_0013f764 @ 0x13f764  (est. sk_cg_str_build_au)
+ * String builder variant. */
+static void sk_cg_str_build_13f764(void) { /* see decompile */ }
+
+/* FUN_0013f770 @ 0x13f770  (est. sk_cg_str_build_av)
+ * String builder variant. */
+static void sk_cg_str_build_13f770(void) { /* see decompile */ }
+
+/* FUN_0013f77c @ 0x13f77c  (est. sk_cg_str_build_aw)
+ * String builder variant. */
+static void sk_cg_str_build_13f77c(void) { /* see decompile */ }
+
+/* FUN_0013f938 @ 0x13f938  (est. sk_cg_str_build_ax)
+ * String builder variant. */
+static void sk_cg_str_build_13f938(void) { /* see decompile */ }
+
+/* FUN_0013fa74 @ 0x13fa74  (est. sk_cg_str_build_ay)
+ * String builder variant. */
+static void sk_cg_str_build_13fa74(void) { /* see decompile */ }
+
+/* FUN_0013fa90 @ 0x13fa90  (est. sk_cg_str_build_az)
+ * String builder variant. */
+static void sk_cg_str_build_13fa90(void) { /* see decompile */ }
+
+/* FUN_0013fde4 @ 0x13fde4  (est. sk_cg_str_build_ba)
+ * String builder variant. */
+static void sk_cg_str_build_13fde4(void) { /* see decompile */ }
+
+/* FUN_0013fe60 @ 0x13fe60  (est. sk_cg_str_build_bb)
+ * String builder variant. */
+static void sk_cg_str_build_13fe60(void) { /* see decompile */ }
+
+/* FUN_0013feac @ 0x13feac  (est. sk_cg_str_build_bc)
+ * String builder variant. */
+static void sk_cg_str_build_13feac(void) { /* see decompile */ }
+
+/* FUN_0013ff2c @ 0x13ff2c  (est. sk_cg_str_build_bd)
+ * String builder variant. */
+static void sk_cg_str_build_13ff2c(void) { /* see decompile */ }
+
+/* FUN_0013ff58 @ 0x13ff58  (est. sk_cg_str_build_be)
+ * String builder variant. */
+static void sk_cg_str_build_13ff58(void) { /* see decompile */ }
+
+/* FUN_0013fff4 @ 0x13fff4  (est. sk_cg_str_build_bf)
+ * String builder variant. */
+static void sk_cg_str_build_13fff4(void) { /* see decompile */ }
+
+/* FUN_0013fff8 @ 0x13fff8  (est. sk_cg_str_build_bg)
+ * String builder variant. */
+static void sk_cg_str_build_13fff8(void) { /* see decompile */ }
+
+/* ============ 0x14001c - 0x140510 : CG node/edge vtable methods ============ */
+
+/* FUN_0014001c @ 0x14001c  (est. sk_cg_node_release2)
+ * Releases the node's 0x18 (value), 0x30, 0x40 field objects. */
+static void sk_cg_node_release2_14001c(uint64_t *ctx)
+{
+    (void)ctx;
+    /* FUN_003a25d4(ctx[0x18/8]); FUN_0036b118(ctx[0x30/8]); FUN_0036b118(ctx[0x40/8]) */
+}
+
+/* FUN_00140020 @ 0x140020  (est. sk_cg_node_release2_b)
+ * Duplicate of 0x14001c. */
+static void sk_cg_node_release2_140020(uint64_t *ctx) { /* same as 0x14001c */ (void)ctx; }
+
+/* FUN_0014004c @ 0x14004c  (est. sk_cg_node_release_td)
+ * Releases node fields then teardown. */
+static void sk_cg_node_release_td_14004c(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_00140050 @ 0x140050  (est. sk_cg_node_release_td_b)
+ * Duplicate of 0x14004c. */
+static void sk_cg_node_release_td_140050(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_00140088 @ 0x140088  (est. sk_cg_node_get)
+ * Reads the node's pair at obj[0x10/0x18] (releasing obj). */
+static void sk_cg_node_get_140088(void)
+{
+    /* auVar1 = *(obj+0x10); FUN_0036b270(obj->r[0x18/8]) */
+}
+
+/* FUN_001400e0 @ 0x1400e0  (est. sk_cg_node_vtbl70)
+ * Calls vtable method at offset 0x70. */
+static void sk_cg_node_vtbl70_1400e0(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x70))() */
+}
+
+/* FUN_0014011c @ 0x14011c  (est. sk_cg_node_get30)
+ * Reads the pair at ctx+0x30. */
+static void sk_cg_node_get30_14011c(void)
+{
+    /* auVar1 = *(ctx+0x30); FUN_0036b270(ctx->r[0x38/8]) */
+}
+
+/* FUN_0014014c @ 0x14014c  (est. sk_cg_node_ctor)
+ * Allocates a CG node object and sets its seven fields (a, b, type, src, key,
+ * value, list). */
+static int64_t sk_cg_node_ctor_14014c(uint64_t a, uint64_t b, uint8_t t, long d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)t; (void)d; (void)e; (void)f;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001401c0 @ 0x1401c0  (est. sk_cg_node_set_fields)
+ * Sets the seven fields of a node at ctx. */
+static void sk_cg_node_set_fields_1401c0(uint64_t a, uint64_t b, uint8_t t, long d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)t; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_001401e0 @ 0x1401e0  (est. sk_cg_node_call)
+ * Calls the node's vtable method (ctx+0x68) with its fields, releasing the
+ * node. */
+static uint64_t sk_cg_node_call_1401e0(long p, uint64_t a)
+{
+    (void)p; (void)a;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00140274 @ 0x140274  (est. sk_cg_reg_1)
+ * Registers the node type (FUN_0014029c with 0x6538d8). */
+static void sk_cg_reg_1_140274(void)
+{
+    /* FUN_0014029c(0x6538d8, &DAT_004e2620) */
+}
+
+/* FUN_00140278 @ 0x140278  (est. sk_cg_reg_1_b)
+ * Duplicate of 0x140274. */
+static void sk_cg_reg_1_140278(void) { /* FUN_0014029c(0x6538d8, &DAT_004e2620) */ }
+
+/* FUN_0014029c @ 0x14029c  (est. sk_cg_reg_type)
+ * Registers a CG type descriptor {name, 0x66acf0, obj}. */
+static void sk_cg_reg_type_14029c(uint64_t *p)
+{
+    (void)p;
+    /* p[3]=FUN_00002534(); p[4]=0x66acf0; p[0]=*(ctx+0x40) */
+}
+
+/* FUN_0014031c @ 0x14031c  (est. sk_cg_edge_release2)
+ * Releases the edge's 0x38/0x40 fields. */
+static void sk_cg_edge_release2_14031c(uint64_t *ctx)
+{
+    (void)ctx;
+    /* FUN_003a25d4(ctx[0x38/8]); FUN_0036b118(ctx[0x40/8]) */
+}
+
+/* FUN_00140320 @ 0x140320  (est. sk_cg_edge_release2_b)
+ * Duplicate of 0x14031c. */
+static void sk_cg_edge_release2_140320(uint64_t *ctx) { /* same as 0x14031c */ (void)ctx; }
+
+/* FUN_00140344 @ 0x140344  (est. sk_cg_edge_release_td)
+ * Releases edge fields then teardown. */
+static void sk_cg_edge_release_td_140344(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_00140348 @ 0x140348  (est. sk_cg_edge_release_td_b)
+ * Duplicate. */
+static void sk_cg_edge_release_td_140348(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_001403a8 @ 0x1403a8  (est. sk_cg_edge_get30)
+ * Reads the edge's pair at obj[0x30]. */
+static void sk_cg_edge_get30_1403a8(void)
+{
+    /* auVar1 = *(obj+0x30); FUN_0036b270(obj->r[0x38/8]) */
+}
+
+/* FUN_001403dc @ 0x1403dc  (est. sk_cg_edge_vtbl70)
+ * Calls vtable method at offset 0x70. */
+static void sk_cg_edge_vtbl70_1403dc(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x70))() */
+}
+
+/* FUN_00140418 @ 0x140418  (est. sk_cg_edge_vtbl78)
+ * Calls vtable method at offset 0x78. */
+static void sk_cg_edge_vtbl78_140418(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x78))() */
+}
+
+/* FUN_001404c0 @ 0x1404c0  (est. sk_cg_typeid_1)
+ * Returns 16-byte {0x6538f8, 0}. */
+static void sk_cg_typeid_1_1404c0(void) { /* returns {0x6538f8, 0} */ }
+
+/* FUN_001404d0 @ 0x1404d0  (est. sk_cg_typeid_2)
+ * Returns 16-byte {0x653960, 0}. */
+static void sk_cg_typeid_2_1404d0(void) { /* returns {0x653960, 0} */ }
+
+/* FUN_001404e0 @ 0x1404e0  (est. sk_cg_typeid_3)
+ * Returns 16-byte {0x6539f0, 0}. */
+static void sk_cg_typeid_3_1404e0(void) { /* returns {0x6539f0, 0} */ }
+
+/* FUN_00140510 @ 0x140510  (est. sk_cg_node_emit_record)
+ * ComponentGraph node record emission: formats the node's type/source/value
+ * into a log record via the vtable dispatch. */
+static void sk_cg_node_emit_record_140510(uint64_t a, long b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* ============ 0x140510 - 0x145780 : FrameBank serialization ============ */
+
+/* FUN_00140510 @ 0x140510  (est. sk_fb_emit)
+ * FrameBank emit: serializes a frame via the frame-bank vtable dispatch
+ * (FUN_000a6bb8/FUN_00105fd8), validates the result length (>400 -> panic
+ * "FrameBank.client.swift"), and returns the frame record. */
+static void sk_fb_emit_140510(uint64_t a, long b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_001409a4 @ 0x1409a4  (est. sk_fb_add)
+ * FrameBank add: acquires the two objects and calls FUN_0001a1c8. */
+static void sk_fb_add_1409a4(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* FUN_0036b270(); FUN_0036b270(b); FUN_0001a1c8(a,b,c,d) */
+}
+
+/* FUN_00140a08 @ 0x140a08  (est. sk_fb_add_regs)
+ * FrameBank add from the context registers. */
+static void sk_fb_add_regs_140a08(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00140a5c @ 0x140a5c  (est. sk_fb_obj_new)
+ * Allocates a FrameBank object: type id, value (FUN_0014500c), flag. */
+static int64_t sk_fb_obj_new_140a5c(uint64_t a, uint32_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00140ac0 @ 0x140ac0  (est. sk_fb_obj_set)
+ * Sets the FrameBank object fields at ctx. */
+static void sk_fb_obj_set_140ac0(uint64_t a, uint32_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_00140b18 @ 0x140b18  (est. sk_fb_query)
+ * FrameBank query: runs FUN_00145078. */
+static void sk_fb_query_140b18(void)
+{
+    /* FUN_00145078() */
+}
+
+/* FUN_00140b3c @ 0x140b3c  (est. sk_fb_query16)
+ * FrameBank 16-byte query: runs FUN_00145288, filling the result. */
+static void sk_fb_query16_140b3c(void)
+{
+    /* auVar1 = FUN_00145288(); fill out */
+}
+
+/* FUN_00140b74 @ 0x140b74  (est. sk_fb_check)
+ * FrameBank check: runs vtable 0x50, returns nonzero. */
+static bool sk_fb_check_140b74(void)
+{
+    /* return (**(code**)(*ctx + 0x50))() != 0 */
+    return false;
+}
+
+/* FUN_00140b78 @ 0x140b78  (est. sk_fb_check_b)
+ * Duplicate of 0x140b74. */
+static bool sk_fb_check_140b78(void) { /* same as 0x140b74 */ return false; }
+
+/* FUN_00140bac @ 0x140bac  (est. sk_fb_list)
+ * FrameBank list: iterates the 0x50-count frame list, builds 0x6c-byte
+ * records (via FUN_001e9c78/FUN_00077070), appends to the global table. */
+static void sk_fb_list_140bac(uint64_t *out, uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)out; (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_00140d80 @ 0x140d80  (est. sk_fb_item)
+ * FrameBank item: resolves via FUN_000836a4 and FUN_001417fc, releasing the
+ * frame. */
+static uint64_t sk_fb_item_140d80(uint64_t a, uint64_t b, uint64_t c, uint64_t d, long e, uint64_t f, uint64_t g)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00140e10 @ 0x140e10  (est. sk_fb_query2)
+ * FrameBank query 2: runs FUN_001459c8. */
+static void sk_fb_query2_140e10(void) { /* FUN_001459c8() */ }
+
+/* FUN_00140e34 @ 0x140e34  (est. sk_fb_query20)
+ * FrameBank 20-byte query via FUN_001454c8. */
+static void sk_fb_query20_140e34(uint64_t *out)
+{
+    (void)out;
+    /* FUN_001454c8(&local); copy 5 words */
+}
+
+/* FUN_00140e80 @ 0x140e80  (est. sk_fb_query3)
+ * FrameBank query 3: runs FUN_00145780. */
+static void sk_fb_query3_140e80(void) { /* FUN_00145780() */ }
+
+/* FUN_00140ea4 @ 0x140ea4  (est. sk_fb_release)
+ * Releases obj at ctx+0x18 then teardown. */
+static void sk_fb_release_140ea4(uint64_t *ctx)
+{
+    (void)ctx;
+    /* FUN_0036b118(ctx[0x18/8]); FUN_0036b6ac() */
+}
+
+/* FUN_00140ea8 @ 0x140ea8  (est. sk_fb_release_b)
+ * Duplicate of 0x140ea4. */
+static void sk_fb_release_140ea8(uint64_t *ctx) { /* same as 0x140ea4 */ (void)ctx; }
+
+/* FUN_00140ed0 @ 0x140ed0  (est. sk_fb_vtbl68)
+ * Calls vtable method at offset 0x68. */
+static void sk_fb_vtbl68_140ed0(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x68))() */
+}
+
+/* FUN_00140f0c @ 0x140f0c  (est. sk_fb_vtbl50)
+ * Calls vtable method at offset 0x50. */
+static void sk_fb_vtbl50_140f0c(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x50))() */
+}
+
+/* FUN_00140f48 @ 0x140f48  (est. sk_fb_vtbl58)
+ * Calls vtable method at offset 0x58, returns the 16-byte result. */
+static void sk_fb_vtbl58_140f48(void)
+{
+    /* auVar2 = (**(code**)(*(long*)*ctx + 0x58))() */
+}
+
+/* FUN_00140f98 @ 0x140f98  (est. sk_fb_vtbl80)
+ * Calls vtable method at offset 0x80, filling 5 output words. */
+static void sk_fb_vtbl80_140f98(uint64_t *out)
+{
+    (void)out;
+    /* (**(code**)(*(long*)*ctx + 0x80))(&local) */
+}
+
+/* FUN_00140ffc @ 0x140ffc  (est. sk_fb_vtbl88)
+ * Calls vtable method at offset 0x88. */
+static void sk_fb_vtbl88_140ffc(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x88))() */
+}
+
+/* FUN_00141038 @ 0x141038  (est. sk_fb_vtbl78)
+ * Calls vtable method at offset 0x78. */
+static void sk_fb_vtbl78_141038(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x78))() */
+}
+
+/* FUN_0014107c @ 0x14107c  (est. sk_fb_frame_build)
+ * FrameBank frame builder: iterates the 0x68-count frame descriptors, builds
+ * 0x74-byte frame records (via FUN_00141918/FUN_0013f744), appends to the
+ * global table. */
+static void sk_fb_frame_build_14107c(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+}
+
+/* FUN_00144cf0 @ 0x144cf0  (est. sk_fb_kind)
+ * FrameBank kind: maps via FUN_001467d8. */
+static void sk_fb_kind_144cf0(uint8_t *out, uint8_t *p)
+{
+    (void)out; (void)p;
+    /* *out = FUN_001467d8(*p) */
+}
+
+/* FUN_00144d1c @ 0x144d1c  (est. sk_fb_kind_check)
+ * FrameBank kind check: runs FUN_0013f6f8 and returns 1. */
+static uint64_t sk_fb_kind_check_144d1c(void)
+{
+    /* FUN_0013f6f8() */
+    return 1;
+}
+
+/* FUN_00144d20 @ 0x144d20  (est. sk_fb_kind_check_b)
+ * Duplicate of 0x144d1c. */
+static uint64_t sk_fb_kind_check_144d20(void)
+{
+    /* FUN_0013f6f8() */
+    return 1;
+}
+
+/* FUN_00144d38 @ 0x144d38  (est. sk_fb_emit_kind)
+ * FrameBank kind emit: resolves via FUN_001467ec and FUN_000276c4, calling
+ * the emitter. */
+static void sk_fb_emit_kind_144d38(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_00144dec @ 0x144dec  (est. sk_fb_kind_query)
+ * FrameBank kind query: runs FUN_00144e34 and maps the result. */
+static uint64_t sk_fb_kind_query_144dec(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00144e34 @ 0x144e34  (est. sk_fb_kind_parse)
+ * FrameBank kind parse (FUN_000276f4): returns the kind byte (<4), else
+ * panics "FrameBank.FrameBank.swift". */
+static uint8_t sk_fb_kind_parse_144e34(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00144f58 @ 0x144f58  (est. sk_fb_kind_out)
+ * FrameBank kind output. */
+static void sk_fb_kind_out_144f58(uint8_t *out)
+{
+    (void)out;
+    /* uVar1 = FUN_00144dec(); *out = (char)uVar1 */
+}
+
+/* FUN_00144f94 @ 0x144f94  (est. sk_fb_kind_set)
+ * Sets the FrameBank kind. */
+static uint64_t sk_fb_kind_set_144f94(uint8_t *p)
+{
+    (void)p;
+    /* FUN_0013f6f8(*p) */
+    return 1;
+}
+
+/* FUN_00144f98 @ 0x144f98  (est. sk_fb_kind_set_b)
+ * Duplicate of 0x144f94. */
+static uint64_t sk_fb_kind_set_144f98(uint8_t *p) { /* FUN_0013f6f8(*p) */ return 1; }
+
+/* FUN_00144fb4 @ 0x144fb4  (est. sk_fb_emit_kind_w)
+ * FrameBank kind emit wrapper. */
+static void sk_fb_emit_kind_144fb4(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* FUN_00144d38(a, *ctx, b, c) */
+}
+
+/* FUN_00144fb8 @ 0x144fb8  (est. sk_fb_emit_kind_wb)
+ * Duplicate of 0x144fb4. */
+static void sk_fb_emit_kind_144fb8(uint64_t a, uint64_t b, uint64_t c) { /* FUN_00144d38(a, *ctx, b, c) */ (void)a;(void)b;(void)c; }
+
+/* FUN_00144fe4 @ 0x144fe4  (est. sk_fb_size)
+ * FrameBank record size: returns 0x1a+min(count,0x10) or 9. */
+static int64_t sk_fb_size_144fe4(void)
+{
+    /* if (*(ctx+0x20) >= 0) { u=min(*(*(ctx+0x20)+0x10), 0x10); return u+0x1a; } return 9 */
+    return 0;
+}
+
+/* FUN_0014500c @ 0x14500c  (est. sk_fb_value)
+ * FrameBank value: allocates, resolves the string (FUN_000260e0). */
+static int64_t sk_fb_value_14500c(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00145078 @ 0x145078  (est. sk_fb_query_full)
+ * FrameBank full query: builds the frame-bank query record (FUN_00025ebc/
+ * FUN_00023208/FUN_000214b0), runs it (FUN_000217e4), and returns the result
+ * (or the error code). Panics "FrameBank.FrameBank.swift" on an invalid state. */
+static uint64_t sk_fb_query_full_145078(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00145288 @ 0x145288  (est. sk_fb_query_16)
+ * FrameBank 16-byte query variant. */
+static void sk_fb_query_16_145288(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001454c8 @ 0x1454c8  (est. sk_fb_query_20)
+ * FrameBank 20-byte query variant. */
+static void sk_fb_query_20_1454c8(uint64_t *out, uint64_t a, uint64_t b)
+{
+    (void)out; (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_00145780 @ 0x145780  (est. sk_fb_query_28)
+ * FrameBank 28-byte query variant. */
+static uint64_t sk_fb_query_28_145780(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+    return 0;
+}
+
+/* ============ 0x141268 - 0x145c40 : FrameBank frames/records ============ */
+
+/* FUN_00141268 @ 0x141268  (est. sk_fb_frame_ctor)
+ * Allocates a 0x74-byte frame object from a descriptor record, copying the
+ * seven fields. */
+static int64_t sk_fb_frame_ctor_141268(uint64_t *p, uint64_t a, uint64_t b, uint32_t c)
+{
+    (void)p; (void)a; (void)b; (void)c;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00141348 @ 0x141348  (est. sk_fb_frame_release)
+ * Releases the frame's fields (0x18/0x20/0x30). */
+static void sk_fb_frame_release_141348(uint64_t *ctx)
+{
+    (void)ctx;
+    /* FUN_003a25d4(ctx[0x18/8]); FUN_0036b118(ctx[0x20/8]); FUN_000026e8(ctx+0x30) */
+}
+
+/* FUN_0014134c @ 0x14134c  (est. sk_fb_frame_release_b)
+ * Duplicate of 0x141348. */
+static void sk_fb_frame_release_14134c(uint64_t *ctx) { /* same as 0x141348 */ (void)ctx; }
+
+/* FUN_00141378 @ 0x141378  (est. sk_fb_frame_release_td)
+ * Releases frame fields then teardown. */
+static void sk_fb_frame_release_td_141378(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_0014137c @ 0x14137c  (est. sk_fb_frame_release_td_b)
+ * Duplicate of 0x141378. */
+static void sk_fb_frame_release_td_14137c(uint64_t *ctx) { /* release + FUN_0036b6ac() */ (void)ctx; }
+
+/* FUN_001413c0 @ 0x1413c0  (est. sk_fb_frame_vtbl78)
+ * Calls vtable method at offset 0x78. */
+static void sk_fb_frame_vtbl78_1413c0(void)
+{
+    /* (**(code**)(*(long*)*ctx + 0x78))() */
+}
+
+/* FUN_001413fc @ 0x1413fc  (est. sk_fb_frame_list)
+ * FrameBank frame list: iterates the 0x20-count frame descriptors, builds each
+ * frame via FUN_001419a4, appends to the global table. */
+static void sk_fb_frame_list_1413fc(uint64_t *out)
+{
+    (void)out;
+    /* see decompile: BRK 0x14157c/80 */
+}
+
+/* FUN_00141580 @ 0x141580  (est. sk_fb_frame_get)
+ * FrameBank frame get. */
+static void sk_fb_frame_get_141580(uint64_t a)
+{
+    (void)a;
+    /* see decompile */
+}
+
+/* FUN_001459c8 @ 0x1459c8  (est. sk_fb_query8_b)
+ * FrameBank 8-byte query variant (hash 0xc5249d3099b5a126). */
+static void sk_fb_query8_b_1459c8(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00145bc8 @ 0x145bc8  (est. sk_fb_value2)
+ * FrameBank value allocator (variant). */
+static void sk_fb_value2_145bc8(int64_t *out, uint64_t a, uint64_t b)
+{
+    (void)out; (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_00145c40 @ 0x145c40  (est. sk_fb_item2)
+ * FrameBank item 2 (via FUN_0014681c). */
+static uint64_t sk_fb_item2_145c40(uint64_t a, uint64_t b, uint64_t c, long d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00145cdc @ 0x145cdc  (est. sk_fb_result_kind)
+ * FrameBank result-kind mapping: maps the query hash result to a kind id
+ * (1/2/3/4), else panics "FrameBank.FrameBank.swift". */
+static uint64_t sk_fb_result_kind_145cdc(void)
+{
+    /* see decompile: hash-kind switch, panic 0x22f */
+    return 0;
+}
+
+/* ============ 0x145e7c - 0x146460 : FrameBank query dispatch ============ */
+
+/* FUN_00145e7c @ 0x145e7c  (est. sk_fb_item3)
+ * FrameBank item 3 (via FUN_00146970), releasing the frame. */
+static uint64_t sk_fb_item3_145e7c(uint64_t a, uint64_t b, long c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00145f10 @ 0x145f10  (est. sk_fb_result_kind2)
+ * FrameBank result-kind mapping: maps the query hash to a kind id (0..3),
+ * else panics "FrameBank.FrameBank.swift". */
+static uint64_t sk_fb_result_kind2_145f10(void)
+{
+    /* see decompile: hash-kind switch, panic 0x1e8 */
+    return 0;
+}
+
+/* FUN_00146090 @ 0x146090  (est. sk_fb_query_emit)
+ * FrameBank query emit: runs the query builder (FUN_00143bf8) and completes
+ * the query record. */
+static void sk_fb_query_emit_146090(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* see decompile */
+}
+
+/* FUN_00146158 @ 0x146158  (est. sk_fb_query_result)
+ * FrameBank query result handling (via FUN_00144014). */
+static void sk_fb_query_result_146158(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00146224 @ 0x146224  (est. sk_fb_query_exec)
+ * FrameBank query execution: dispatches via FUN_00023f74 with the callback
+ * FUN_00147810; returns the result or error code. */
+static uint64_t sk_fb_query_exec_146224(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001462e4 @ 0x1462e4  (est. sk_fb_query_exec2)
+ * FrameBank query execution 2 (via FUN_00023f74 with FUN_00146158). */
+static void sk_fb_query_exec2_1462e4(uint64_t *out, uint64_t a, uint64_t b, uint32_t *err, uint64_t c)
+{
+    (void)out; (void)a; (void)b; (void)err; (void)c;
+    /* see decompile */
+}
+
+/* FUN_001463b8 @ 0x1463b8  (est. sk_fb_query_emit2)
+ * FrameBank query emit 2 (via FUN_00144604). */
+static void sk_fb_query_emit2_1463b8(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_00146460 @ 0x146460  (est. sk_fb_query_exec3)
+ * FrameBank query execution 3. */
+static void sk_fb_query_exec3_146460(uint64_t *out, uint64_t a, uint32_t *err)
+{
+    (void)out; (void)a; (void)err;
+    /* see decompile */
+}
+
+/* ============ 0x14654c - 0x14b0ec : FrameBank helpers + IPC arg munger ============ */
+
+/* FUN_0014654c @ 0x14654c  (est. sk_fb_query_exec4)
+ * FrameBank query execution 4 (via FUN_00023f74 with FUN_001477f8). */
+static uint64_t sk_fb_query_exec4_14654c(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0014660c @ 0x14660c  (est. sk_fb_query_exec5)
+ * FrameBank query execution 5 (with FUN_00146460). */
+static void sk_fb_query_exec5_14660c(uint64_t *out, uint64_t a, uint64_t b, uint32_t *err, uint64_t c)
+{
+    (void)out; (void)a; (void)b; (void)err; (void)c;
+    /* see decompile */
+}
+
+/* FUN_001466e0 @ 0x1466e0  (est. sk_fb_record_size)
+ * FrameBank record size computation (8 + min(len,0x10) + 0xc), bounds-checked. */
+static int64_t sk_fb_record_size_1466e0(long a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00146728 @ 0x146728  (est. sk_fb_skip)
+ * Skip-list node advance (base+8 + int at +8). */
+static int64_t sk_fb_skip_146728(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_00146758 @ 0x146758  (est. sk_fb_size2)
+ * FrameBank record size (via FUN_0013fde4): min(len,0x10)+0x19. */
+static int64_t sk_fb_size2_146758(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_001467a8 @ 0x1467a8  (est. sk_fb_skip_b)
+ * Skip-list node advance (base+8). */
+static int64_t sk_fb_skip_1467a8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_001467d8 @ 0x1467d8  (est. sk_fb_kind_clamp)
+ * Clamps the kind byte: if (kind & 0xfc) != 0, return 4. */
+static uint8_t sk_fb_kind_clamp_1467d8(uint8_t k)
+{
+    return (k & 0xfc) ? 4 : k;
+}
+
+/* FUN_001467ec @ 0x1467ec  (est. sk_fb_skip_c)
+ * Skip-list node advance (base+8). */
+static int64_t sk_fb_skip_1467ec(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_0014681c @ 0x14681c  (est. sk_fb_record_build)
+ * FrameBank record builder: allocates the record buffer (0x665508), copies the
+ * frame data via the vtable dispatch, and registers the record via
+ * FUN_00027b10 with the release callback FUN_00146ca0. */
+static void sk_fb_record_build_14681c(uint64_t a, uint32_t b, uint64_t c, long d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* see decompile */
+}
+
+/* FUN_00146970 @ 0x146970  (est. sk_fb_record_build2)
+ * FrameBank record builder 2 (0x6654e0, callback FUN_00146b64). */
+static void sk_fb_record_build2_146970(uint64_t a, uint64_t b, long c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_00146ab0 @ 0x146ab0  (est. sk_fb_query_wrap)
+ * FrameBank query wrapper: calls FUN_00146090 with the context registers. */
+static void sk_fb_query_wrap_146ab0(uint64_t a)
+{
+    (void)a;
+    /* FUN_00146090(a, ctx[0x10], ctx[0x18], ctx[0x20], ctx[0x28]) */
+}
+
+/* FUN_00146ad4 @ 0x146ad4  (est. sk_fb_query_wrap2)
+ * FrameBank query wrapper 2 (FUN_001463b8). */
+static void sk_fb_query_wrap2_146ad4(uint64_t a)
+{
+    (void)a;
+    /* FUN_001463b8(a, ctx[0x10]) */
+}
+
+/* FUN_00146b40 @ 0x146b40  (est. sk_fb_typeid)
+ * Returns 16-byte {0x653cd0, 0}. */
+static void sk_fb_typeid_146b40(void) { /* returns {0x653cd0, 0} */ }
+
+/* FUN_00146b64 @ 0x146b64  (est. sk_fb_release_cb1)
+ * Release callback with line numbers (0x17a..0x1af). */
+static void sk_fb_release_cb1_146b64(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_00146ccc(a, b, 0x17a, 0x186, 0x192, 0x1a2, 0x1af) */
+}
+
+/* FUN_00146b68 @ 0x146b68  (est. sk_fb_release_cb1_b)
+ * Duplicate of 0x146b64. */
+static void sk_fb_release_cb1_146b68(uint64_t a, uint64_t b) { /* FUN_00146ccc(a,b,0x17a,0x186,0x192,0x1a2,0x1af) */ (void)a;(void)b; }
+
+/* FUN_00146b90 @ 0x146b90  (est. sk_fb_skip_d)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_fb_skip_146b90(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_00146bc0 @ 0x146bc0  (est. sk_fb_release_opt)
+ * Releases the object if the index >= 0. */
+static void sk_fb_release_opt_146bc0(int64_t v)
+{
+    if (v >= 0) { /* FUN_0036b118(v) */ }
+}
+
+/* FUN_00146bd0 @ 0x146bd0  (est. sk_fb_skip_e)
+ * Skip-list node advance (base+8). */
+static int64_t sk_fb_skip_146bd0(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_00146c00 @ 0x146c00  (est. sk_fb_release_opt2)
+ * Releases the object and its sub if index >= 0. */
+static void sk_fb_release_opt2_146c00(uint64_t a, int64_t v)
+{
+    (void)a;
+    if (v >= 0) { /* FUN_0036b118(); FUN_0036b118(v) */ }
+}
+
+/* FUN_00146c34 @ 0x146c34  (est. sk_fb_record_release)
+ * Releases a FrameBank record via the vtable (0x50 field) +8 method. */
+static void sk_fb_record_release_146c34(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00146ca0 @ 0x146ca0  (est. sk_fb_release_cb2)
+ * Release callback with line numbers (0x12f..0x164). */
+static void sk_fb_release_cb2_146ca0(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_00146ccc(a, b, 0x12f, 0x13b, 0x147, 0x157, 0x164) */
+}
+
+/* FUN_00146ca4 @ 0x146ca4  (est. sk_fb_release_cb2_b)
+ * Duplicate of 0x146ca0. */
+static void sk_fb_release_cb2_146ca4(uint64_t a, uint64_t b) { /* FUN_00146ccc(a,b,0x12f,0x13b,0x147,0x157,0x164) */ (void)a;(void)b; }
+
+/* FUN_00146ccc @ 0x146ccc  (est. sk_fb_record_free)
+ * FrameBank record free: iterates the record's embedded fields, releasing each
+ * object and freeing the buffer via the vtable dispatch; the large block (which
+ * the decompiler partially failed on, spilling into a 0x1e9000-range routine)
+ * handles the multi-field release. */
+static void sk_fb_record_free_146ccc(uint64_t *p, uint64_t *q, uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)p; (void)q; (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile: field-by-field release + buffer free */
+}
+
+/* FUN_001495a4 @ 0x1495a4  (est. sk_cg_clamp3)
+ * Clamps >3 to 4. */
+static uint64_t sk_cg_clamp3_1495a4(uint64_t v)
+{
+    return v > 3 ? 4 : v;
+}
+
+/* FUN_00149610 @ 0x149610  (est. sk_report_4e2cc0)
+ * Reads a counter (thunk_FUN_0036f974) and reports it. */
+static uint64_t sk_report_4e2cc0_149610(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2cc0, v) */
+    return v;
+}
+
+/* FUN_0014964c @ 0x14964c  (est. sk_fb_release_many)
+ * Releases eleven field objects at +0x30..0x80. */
+static void sk_fb_release_many_14964c(long p)
+{
+    (void)p;
+    /* FUN_0036b118 for +0x30..0x80 */
+}
+
+/* FUN_001496c4 @ 0x1496c4  (est. sk_fb_obj_copy)
+ * Copies a 20-word record from param_2 to param_1, releasing the old fields. */
+static uint64_t *sk_fb_obj_copy_1496c4(uint64_t *dst, uint64_t *src)
+{
+    (void)dst; (void)src;
+    /* see decompile */
+    return dst;
+}
+
+/* FUN_00149868 @ 0x149868  (est. sk_report_4e2e20)
+ * Counter report. */
+static uint64_t sk_report_4e2e20_149868(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2e20, v) */
+    return v;
+}
+
+/* FUN_001498c0 @ 0x1498c0  (est. sk_report_4e2e98)
+ * Counter report. */
+static uint64_t sk_report_4e2e98_1498c0(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2e98, v) */
+    return v;
+}
+
+/* FUN_00149914 @ 0x149914  (est. sk_report_4e2ee0)
+ * Counter report. */
+static uint64_t sk_report_4e2ee0_149914(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2ee0, v) */
+    return v;
+}
+
+/* FUN_00149950 @ 0x149950  (est. sk_report_4e2f30)
+ * Counter report. */
+static uint64_t sk_report_4e2f30_149950(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2f30, v) */
+    return v;
+}
+
+/* FUN_0014998c @ 0x14998c  (est. sk_report_4e2f78)
+ * Counter report. */
+static uint64_t sk_report_4e2f78_14998c(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2f78, v) */
+    return v;
+}
+
+/* FUN_001499c8 @ 0x1499c8  (est. sk_report_4e2e20_b)
+ * Counter report (duplicate of 0x149868). */
+static uint64_t sk_report_4e2e20_1499c8(void)
+{
+    uint64_t v = /* thunk_FUN_0036f974() */ 0;
+    /* FUN_0035cf24(&DAT_004e2e20, v) */
+    return v;
+}
+
+/* FUN_00149ba0 @ 0x149ba0  (est. sk_fb_typeid2)
+ * Returns 16-byte {0x653da8, 0}. */
+static void sk_fb_typeid2_149ba0(void) { /* returns {0x653da8, 0} */ }
+
+/* FUN_0014ae14 @ 0x14ae14  (est. sk_skip_04)
+ * Skip-list node advance (base+4). */
+static int64_t sk_skip_04_14ae14(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 4) + (int64_t)*(int32_t *)(p + 4);
+}
+
+/* FUN_0014ae44 @ 0x14ae44  (est. sk_skip_04_b)
+ * Duplicate of 0x14ae14. */
+static int64_t sk_skip_04_14ae44(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 4) + (int64_t)*(int32_t *)(p + 4);
+}
+
+/* FUN_0014aea4 @ 0x14aea4  (est. sk_ipc_arg3)
+ * IPC arg munger: FUN_0014aee4 with type 3. */
+static void sk_ipc_arg3_14aea4(uint64_t a, uint64_t b)
+{
+    /* FUN_0014aee4(a, b, 3) */
+}
+
+/* FUN_0014aeac @ 0x14aeac  (est. sk_skip_04_c)
+ * Skip-list node advance (base+4). */
+static int64_t sk_skip_04_14aeac(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 4) + (int64_t)*(int32_t *)(p + 4);
+}
+
+/* FUN_0014aedc @ 0x14aedc  (est. sk_ipc_arg0)
+ * IPC arg munger: FUN_0014aee4 with type 0. */
+static void sk_ipc_arg0_14aedc(uint64_t a, uint64_t b)
+{
+    /* FUN_0014aee4(a, b, 0) */
+}
+
+/* FUN_0014aee4 @ 0x14aee4  (est. sk_ipc_arg)
+ * Shared IPC argument munger: resolves the arg descriptor via FUN_00377824/
+ * FUN_00377bec (using the &DAT_00608f34 dispatch table) and invokes the type
+ * handler. This is the cL4 IPC arg-normalization core. */
+static void sk_ipc_arg_14aee4(uint64_t a, uint64_t b, uint64_t type)
+{
+    (void)a; (void)b; (void)type;
+    /* see decompile */
+}
+
+/* FUN_0014af78 @ 0x14af78  (est. sk_ipc_arg6)
+ * IPC arg: FUN_0014aedc() >> 6. */
+static uint64_t sk_ipc_arg6_14af78(void)
+{
+    /* return FUN_0014aedc() >> 6 */
+    return 0;
+}
+
+/* FUN_0014af7c @ 0x14af7c  (est. sk_ipc_arg6_b)
+ * Duplicate of 0x14af78. */
+static uint64_t sk_ipc_arg6_14af7c(void)
+{
+    /* return FUN_0014aedc() >> 6 */
+    return 0;
+}
+
+/* FUN_0014af94 @ 0x14af94  (est. sk_ipc_arg_size)
+ * IPC arg size: type 0 -> dynamic, type 1 -> 0x2000000, type 2 -> 0;
+ * type > 2 BRKs. */
+static uint64_t sk_ipc_arg_size_14af94(uint64_t type, uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    if (type > 2) { /* BRK 0x14afe0 */ }
+    if (type == 1) return 0x2000000;
+    if (type == 2) return 0;
+    return /* FUN_0014aea4(a, b) */ 0;
+}
+
+/* FUN_0014afe0 @ 0x14afe0  (est. sk_ipc_arg_query)
+ * IPC arg query: resolves the descriptor and invokes the 0x14b0bc handler,
+ * returning the 16-byte result. */
+static void sk_ipc_arg_query_14afe0(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0014b0bc @ 0x14b0bc  (est. sk_skip_0c)
+ * Skip-list node advance (base+0xc). */
+static int64_t sk_skip_0c_14b0bc(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_0014b0ec @ 0x14b0ec  (est. sk_ipc_arg_query2)
+ * IPC arg query 2 (duplicate of 0x14afe0). */
+static void sk_ipc_arg_query2_14b0ec(void)
+{
+    /* see decompile */
+}
+
+/* ============ 0x14b1c8 - 0x14b980 : IPC arg munger + obj copy ============ */
+
+/* FUN_0014b1c8 @ 0x14b1c8  (est. sk_skip_10)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_14b1c8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0014b1f8 @ 0x14b1f8  (est. sk_ipc_arg_query3)
+ * IPC arg query 3 (5-arg variant, handler 0x14b2c0). */
+static void sk_ipc_arg_query3_14b1f8(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0014b2c0 @ 0x14b2c0  (est. sk_skip_14)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_skip_14_14b2c0(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_0014b2f0 @ 0x14b2f0  (est. sk_ipc_arg_dispatch)
+ * IPC arg dispatch: invokes the callback param_2, then the query
+ * (FUN_0014b1f8/FUN_0014afe0), storing the result. */
+static uint64_t sk_ipc_arg_dispatch_14b2f0(uint64_t *out, uint64_t (*cb)(void), uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)out; (void)cb; (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0014b41c @ 0x14b41c  (est. sk_objflag_get)
+ * Reads the global object flag at DAT_006add00. */
+static uint8_t sk_objflag_get_14b41c(void)
+{
+    /* FUN_0036a1a0(&DAT_006add00, buf, 0, 0); return DAT_006add00 */
+    return 0;
+}
+
+/* FUN_0014b460 @ 0x14b460  (est. sk_objflag_set)
+ * Sets the global object flag at DAT_006add00. */
+static void sk_objflag_set_14b460(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(&DAT_006add00, buf, 1, 0); DAT_006add00 = v */
+}
+
+/* FUN_0014b4a8 @ 0x14b4a8  (est. sk_objflag_share)
+ * Shares the global object flag. */
+static void sk_objflag_share_14b4a8(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(&DAT_006add00, v, 0x21, 0); return {&DAT_0007bf58, &DAT_006add00} */
+}
+
+/* FUN_0014b50c @ 0x14b50c  (est. sk_objflag2_get)
+ * Reads the object flag at 0x653e00; returns 0x49. */
+static uint8_t sk_objflag2_get_14b50c(void)
+{
+    /* FUN_0036a1a0(0x653e00, buf, 0, 0) */
+    return 0x49;
+}
+
+/* FUN_0014b550 @ 0x14b550  (est. sk_objflag2_set)
+ * Sets the object flag at 0x653e00. */
+static void sk_objflag2_set_14b550(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e00, buf, 1, 0); uRam_653e00 = v */
+}
+
+/* FUN_0014b598 @ 0x14b598  (est. sk_objflag2_share)
+ * Shares the object flag at 0x653e00. */
+static void sk_objflag2_share_14b598(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e00, v, 0x21, 0); return {&LAB_0006f910, 0x653e00} */
+}
+
+/* FUN_0014b5f8 @ 0x14b5f8  (est. sk_copy_obj)
+ * Copies an object via FUN_0036ffc0 with the 0x6090d8 type descriptor. */
+static void sk_copy_obj_14b5f8(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_0036ffc0(a, b, &DAT_006090d8) */
+}
+
+/* FUN_0014b644 @ 0x14b644  (est. sk_check_len)
+ * Checks the length via FUN_00157308 (must be non-negative). */
+static void sk_check_len_14b644(void)
+{
+    uint64_t v = /* FUN_00157308() */ 0;
+    if (v >> 0x1f == 0) { /* FUN_00055a24() */ return; }
+    /* BRK 0x14b6b0 */
+}
+
+/* FUN_0014b6e0 @ 0x14b6e0  (est. sk_check_len_jump)
+ * Checks the length and jumps via the vtable. */
+static void sk_check_len_jump_14b6e0(void)
+{
+    uint64_t v = /* FUN_00157308() */ 0;
+    if (v >> 0x1f != 0) { /* BRK 0x14b71c */ }
+    /* (*(code**)...)() */
+}
+
+/* FUN_0014b71c @ 0x14b71c  (est. sk_cap_copy)
+ * Capability copy: resolves via FUN_0007bf4c and FUN_0014ae44, validates the
+ * type id (0x666528), and copies via FUN_0001a1c8; on type mismatch reports
+ * (0x6665b0/0x666518). */
+static void sk_cap_copy_14b71c(uint64_t a, uint64_t *b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_0014b85c @ 0x14b85c  (est. sk_cap_copy_b)
+ * Capability copy variant (via FUN_0009d480). */
+static void sk_cap_copy_14b85c(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* see decompile */
+}
+
+/* FUN_0014b980 @ 0x14b980  (est. sk_cap_copy_c)
+ * Capability copy variant (via FUN_0009d20c). */
+static void sk_cap_copy_14b980(uint64_t a)
+{
+    (void)a;
+    /* see decompile */
+}
+
+/* ============ 0x14ba70 - 0x14f038 : cL4 IPC object ops ============ */
+
+/* FUN_0014ba70 @ 0x14ba70  (est. sk_ipc_copy_1)
+ * IPC object copy 1 (wraps FUN_0014b71c). */
+static void sk_ipc_copy_1_14ba70(void)
+{
+    /* auVar3 = FUN_0014b71c(); return 16-byte */
+}
+
+/* FUN_0014ba74 @ 0x14ba74  (est. sk_ipc_copy_1_b)
+ * Duplicate of 0x14ba70. */
+static void sk_ipc_copy_1_14ba74(void) { /* same as 0x14ba70 */ }
+
+/* FUN_0014ba9c @ 0x14ba9c  (est. sk_ipc_copy_2)
+ * IPC object copy 2 (wraps FUN_0014b85c). */
+static void sk_ipc_copy_2_14ba9c(void)
+{
+    /* auVar3 = FUN_0014b85c() */
+}
+
+/* FUN_0014baa0 @ 0x14baa0  (est. sk_ipc_copy_2_b)
+ * Duplicate of 0x14ba9c. */
+static void sk_ipc_copy_2_14baa0(void) { /* same as 0x14ba9c */ }
+
+/* FUN_0014bac8 @ 0x14bac8  (est. sk_ipc_copy_3)
+ * IPC object copy 3 (wraps FUN_0014b980). */
+static void sk_ipc_copy_3_14bac8(void)
+{
+    /* auVar3 = FUN_0014b980() */
+}
+
+/* FUN_0014bacc @ 0x14bacc  (est. sk_ipc_copy_3_b)
+ * Duplicate of 0x14bac8. */
+static void sk_ipc_copy_3_14bacc(void) { /* same as 0x14bac8 */ }
+
+/* FUN_0014baf4 @ 0x14baf4  (est. sk_obj_free_wrap)
+ * Object free wrapper (FUN_0014bb0c). */
+static void sk_obj_free_wrap_14baf4(void) { /* FUN_0014bb0c() */ }
+
+/* FUN_0014bb0c @ 0x14bb0c  (est. sk_obj_free)
+ * Object free (FUN_0014e418). */
+static void sk_obj_free_14bb0c(void) { /* FUN_0014e418() */ }
+
+/* FUN_0014bb3c @ 0x14bb3c  (est. sk_obj_free2)
+ * Object free 2 (FUN_0014c3f4). */
+static void sk_obj_free2_14bb3c(void) { /* FUN_0014c3f4() */ }
+
+/* FUN_0014bb40 @ 0x14bb40  (est. sk_obj_free2_b)
+ * Duplicate of 0x14bb3c. */
+static void sk_obj_free2_14bb40(void) { /* FUN_0014c3f4() */ }
+
+/* FUN_0014bb68 @ 0x14bb68  (est. sk_obj_op1)
+ * Object operation (FUN_0014bbc0 with LAB_0014ebec). */
+static void sk_obj_op1_14bb68(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_0014bbc0(a, b, &LAB_0014ebec) */
+}
+
+/* FUN_0014bb94 @ 0x14bb94  (est. sk_obj_op2)
+ * Object operation (FUN_0014bbc0 with LAB_0014ebd0). */
+static void sk_obj_op2_14bb94(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_0014bbc0(a, b, &LAB_0014ebd0) */
+}
+
+/* FUN_0014bbc0 @ 0x14bbc0  (est. sk_obj_op)
+ * Object operation: runs the callback param_3, validates the type (0x666528),
+ * and on mismatch reports (0x6665b0/0x666518). */
+static void sk_obj_op_14bbc0(uint64_t a, uint64_t b, uint64_t (*cb)(void))
+{
+    (void)a; (void)b; (void)cb;
+    /* see decompile */
+}
+
+/* FUN_0014bca4 @ 0x14bca4  (est. sk_obj_free3)
+ * Object free 3 (FUN_0014c484). */
+static void sk_obj_free3_14bca4(void) { /* FUN_0014c484() */ }
+
+/* FUN_0014bcd8 @ 0x14bcd8  (est. sk_obj_op3)
+ * Object operation 3 (FUN_0014bd30). */
+static void sk_obj_op3_14bcd8(void) { /* FUN_0014bd30() */ }
+
+/* FUN_0014bd04 @ 0x14bd04  (est. sk_obj_op3_b)
+ * Duplicate of 0x14bcd8. */
+static void sk_obj_op3_14bd04(void) { /* FUN_0014bd30() */ }
+
+/* FUN_0014bd30 @ 0x14bd30  (est. sk_obj_op_core)
+ * Object operation core: runs the in_x4 callback, validates type 0x666528. */
+static void sk_obj_op_core_14bd30(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0014be14 @ 0x14be14  (est. sk_ipc_send_short)
+ * cL4 IPC short-send: validates the length (<0x100, BRK), issues the syscall
+ * (FUN_001033d8), copies the object (FUN_0001a1c8); type 0x666528. */
+static void sk_ipc_send_short_14be14(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_0014bf64 @ 0x14bf64  (est. sk_ipc_send_short_w)
+ * Short-send wrapper (FUN_0014e6a0). */
+static void sk_ipc_send_short_14bf64(void)
+{
+    /* auVar3 = FUN_0014e6a0() */
+}
+
+/* FUN_0014bfa0 @ 0x14bfa0  (est. sk_ipc_send_short_wb)
+ * Short-send wrapper (FUN_0014be14). */
+static void sk_ipc_send_short_14bfa0(void)
+{
+    /* auVar3 = FUN_0014be14() */
+}
+
+/* FUN_0014bfa4 @ 0x14bfa4  (est. sk_ipc_send_short_wc)
+ * Duplicate of 0x14bfa0. */
+static void sk_ipc_send_short_14bfa4(void) { /* auVar3 = FUN_0014be14() */ }
+
+/* FUN_0014bfcc @ 0x14bfcc  (est. sk_obj_op4)
+ * Object operation 4 (FUN_0014bbc0 with LAB_0014e908). */
+static void sk_obj_op4_14bfcc(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* FUN_0014bbc0(a, b, &LAB_0014e908) */
+}
+
+/* FUN_0014bff8 @ 0x14bff8  (est. sk_obj_op5)
+ * Object operation 5 (FUN_0014f3fc). */
+static void sk_obj_op5_14bff8(void)
+{
+    /* FUN_0014f3fc(); validate type */
+}
+
+/* FUN_0014c0d8 @ 0x14c0d8  (est. sk_obj_copy_4)
+ * Object copy 4 (FUN_0006de38): copies the object via FUN_0001a1c8. */
+static void sk_obj_copy_4_14c0d8(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_0014c200 @ 0x14c200  (est. sk_obj_op3_c)
+ * Object operation 3 variant (FUN_0014bd30). */
+static void sk_obj_op3_14c200(void) { /* FUN_0014bd30() */ }
+
+/* FUN_0014c22c @ 0x14c22c  (est. sk_obj_op6)
+ * Object operation 6 (FUN_0014f444). */
+static void sk_obj_op6_14c22c(void)
+{
+    /* FUN_0014f444(); validate type */
+}
+
+/* FUN_0014c30c @ 0x14c30c  (est. sk_ipc_result)
+ * IPC result (FUN_0014e81c): returns {1,1,...} on success. */
+static void sk_ipc_result_14c30c(void)
+{
+    /* auVar2 = FUN_0014e81c(); if (ok) auVar2 = {1,1}; return */
+}
+
+/* FUN_0014c310 @ 0x14c310  (est. sk_ipc_result_b)
+ * Duplicate of 0x14c30c. */
+static void sk_ipc_result_14c310(void) { /* same as 0x14c30c */ }
+
+/* FUN_0014c338 @ 0x14c338  (est. sk_obj_free4)
+ * Object free 4 (FUN_0014c524). */
+static void sk_obj_free4_14c338(void) { /* FUN_0014c524() */ }
+
+/* FUN_0014e418 @ 0x14e418  (est. sk_obj_free_core)
+ * Object free core: resolves the object (FUN_001518dc/FUN_0009d1e0), validates
+ * type 0x666528, frees it (FUN_0015187c), reports on mismatch. */
+static uint64_t sk_obj_free_core_14e418(uint64_t a)
+{
+    (void)a;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0014e558 @ 0x14e558  (est. sk_ipc_send_data)
+ * cL4 IPC data send: builds the type/args (FUN_00100418), validates the type,
+ * copies the object. */
+static void sk_ipc_send_data_14e558(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, char f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_0014e6a0 @ 0x14e6a0  (est. sk_ipc_send_full)
+ * cL4 IPC full send: assembles the arg count/size, issues the syscall
+ * (FUN_0014fbf0), validates type, copies the object. */
+static void sk_ipc_send_full_14e6a0(uint64_t a, uint64_t b, uint64_t c, uint64_t d, char e, long f, char g, uint64_t h, char i)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)i;
+    /* see decompile */
+}
+
+/* FUN_0014e81c @ 0x14e81c  (est. sk_ipc_result2)
+ * IPC result 2: validates the arg (bit7 -> BRK), issues the syscall
+ * (FUN_0014fbb4), validates type. */
+static void sk_ipc_result2_14e81c(uint64_t a, uint64_t b, uint32_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+}
+
+/* FUN_0014e934 @ 0x14e934  (est. sk_ipc_send_data2)
+ * IPC data send 2 (FUN_00100418). */
+static void sk_ipc_send_data2_14e934(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, char f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_0014ea7c @ 0x14ea7c  (est. sk_ipc_recv_data)
+ * cL4 IPC data receive: resolves the object (FUN_001518dc), issues the syscall
+ * (FUN_0014fb88), validates type. */
+static void sk_ipc_recv_data_14ea7c(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_0014ec08 @ 0x14ec08  (est. sk_ipc_recv)
+ * cL4 IPC receive (FUN_0014fb5c): validates type, returns the object. */
+static void sk_ipc_recv_14ec08(void)
+{
+    /* FUN_0014fb5c(); validate type; return FUN_00156880 */
+}
+
+/* FUN_0014ed44 @ 0x14ed44  (est. sk_svc0_loop)
+ * Supervisor-call 0 loop (repeats while param_1==1). */
+static void sk_svc0_loop_14ed44(int64_t flag)
+{
+    uint64_t *blk = (uint64_t *)0; /* tpidrro_el0 */
+    uint64_t save = *blk;
+    do { /* CallSupervisor(0) */ *blk = save; } while (flag == 1);
+}
+
+/* FUN_0014ed94 @ 0x14ed94  (est. sk_svc0_loop_b)
+ * Duplicate of 0x14ed44. */
+static void sk_svc0_loop_14ed94(int64_t flag) { /* same as 0x14ed44 */ (void)flag; }
+
+/* FUN_0014ede0 @ 0x14ede0  (est. sk_svc0_loop_c)
+ * Duplicate of 0x14ed44. */
+static void sk_svc0_loop_14ede0(int64_t flag) { /* same as 0x14ed44 */ (void)flag; }
+
+/* FUN_0014ee30 @ 0x14ee30  (est. sk_svc0_loop_d)
+ * Duplicate of 0x14ed44. */
+static void sk_svc0_loop_14ee30(int64_t flag) { /* same as 0x14ed44 */ (void)flag; }
+
+/* FUN_0014ee60 @ 0x14ee60  (est. sk_ipc_send_msg)
+ * cL4 IPC message send: copies the element list (FUN_0014e23c), resolves the
+ * thread/object (FUN_00152980/FUN_00152a90), issues the send syscall
+ * (FUN_0014f278), validates type. */
+static void sk_ipc_send_msg_14ee60(uint64_t a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_0014f038 @ 0x14f038  (est. sk_ipc_recv_msg)
+ * cL4 IPC message receive: resolves the object, issues the receive syscall. */
+static void sk_ipc_recv_msg_14f038(uint64_t a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* ============ 0x14c33c - 0x14f4ac : cL4 IPC syscall wrappers ============ */
+
+/* FUN_0014c33c @ 0x14c33c  (est. sk_obj_free4_b)
+ * Object free 4 (FUN_0014c524). */
+static void sk_obj_free4_14c33c(void) { /* FUN_0014c524() */ }
+
+/* FUN_0014c380 @ 0x14c380  (est. sk_obj_op7)
+ * Object operation 7 (FUN_0014c598). */
+static void sk_obj_op7_14c380(void) { /* FUN_0014c598() */ }
+
+/* FUN_0014c384 @ 0x14c384  (est. sk_obj_op7_b)
+ * Duplicate of 0x14c380. */
+static void sk_obj_op7_14c384(void) { /* FUN_0014c598() */ }
+
+/* FUN_0014c3c8 @ 0x14c3c8  (est. sk_obj_free2_c)
+ * Object free 2 (FUN_0014c3f4). */
+static void sk_obj_free2_14c3c8(void) { /* FUN_0014c3f4() */ }
+
+/* FUN_0014c3cc @ 0x14c3cc  (est. sk_obj_free2_d)
+ * Duplicate of 0x14c3c8. */
+static void sk_obj_free2_14c3cc(void) { /* FUN_0014c3f4() */ }
+
+/* FUN_0014c3f4 @ 0x14c3f4  (est. sk_obj_result)
+ * Object result (invokes the in_x6 callback, returns the 16-byte result). */
+static void sk_obj_result_14c3f4(void)
+{
+    /* auVar3 = (*in_x6)() */
+}
+
+/* FUN_0014c424 @ 0x14c424  (est. sk_ipc_recv_w)
+ * IPC receive wrapper (FUN_0014ea7c). */
+static void sk_ipc_recv_14c424(void)
+{
+    /* auVar3 = FUN_0014ea7c() */
+}
+
+/* FUN_0014c428 @ 0x14c428  (est. sk_ipc_recv_wb)
+ * Duplicate of 0x14c424. */
+static void sk_ipc_recv_14c428(void) { /* auVar3 = FUN_0014ea7c() */ }
+
+/* FUN_0014c450 @ 0x14c450  (est. sk_obj_free3_b)
+ * Object free 3 (FUN_0014c484). */
+static void sk_obj_free3_14c450(void) { /* FUN_0014c484() */ }
+
+/* FUN_0014c484 @ 0x14c484  (est. sk_obj_result2)
+ * Object result 2 (invokes the stack callback). */
+static void sk_obj_result2_14c484(void)
+{
+    /* auVar3 = (*in_stack_0)() */
+}
+
+/* FUN_0014c4b8 @ 0x14c4b8  (est. sk_ipc_recv2)
+ * IPC receive 2 (FUN_0014ec08). */
+static void sk_ipc_recv2_14c4b8(void) { /* FUN_0014ec08() */ }
+
+/* FUN_0014c4bc @ 0x14c4bc  (est. sk_ipc_recv2_b)
+ * Duplicate of 0x14c4b8. */
+static void sk_ipc_recv2_14c4bc(void) { /* FUN_0014ec08() */ }
+
+/* FUN_0014c4dc @ 0x14c4dc  (est. sk_obj_free4_c)
+ * Object free 4 (FUN_0014c524). */
+static void sk_obj_free4_14c4dc(void) { /* FUN_0014c524() */ }
+
+/* FUN_0014c4e0 @ 0x14c4e0  (est. sk_obj_free4_d)
+ * Duplicate of 0x14c4dc. */
+static void sk_obj_free4_14c4e0(void) { /* FUN_0014c524() */ }
+
+/* FUN_0014c524 @ 0x14c524  (est. sk_obj_result3)
+ * Object result 3 (FUN_0014f4ac). */
+static void sk_obj_result3_14c524(void)
+{
+    /* auVar3 = FUN_0014f4ac() */
+}
+
+/* FUN_0014c550 @ 0x14c550  (est. sk_obj_op7_c)
+ * Object operation 7 (FUN_0014c598). */
+static void sk_obj_op7_14c550(void) { /* FUN_0014c598() */ }
+
+/* FUN_0014c554 @ 0x14c554  (est. sk_obj_op7_d)
+ * Duplicate of 0x14c550. */
+static void sk_obj_op7_14c554(void) { /* FUN_0014c598() */ }
+
+/* FUN_0014c598 @ 0x14c598  (est. sk_obj_result4)
+ * Object result 4. */
+static void sk_obj_result4_14c598(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0014f258 @ 0x14f258  (est. sk_svc0_send)
+ * cL4 syscall 0 send: writes {type&0xffff, arg1} to the tpidrro block and
+ * issues SVC 0. This is the cL4 IPC send syscall entry. */
+static void sk_svc0_send_14f258(uint64_t a, uint64_t type, uint64_t arg)
+{
+    uint64_t *blk = (uint64_t *)0; /* tpidrro_el0 */
+    blk[0] = type & 0xffff;
+    blk[1] = arg;
+    /* CallSupervisor(0) */
+    blk[0] = type & 0xffff;
+}
+
+/* FUN_0014f278 @ 0x14f278  (est. sk_svc0_send2)
+ * cL4 syscall 0 send variant. */
+static void sk_svc0_send2_14f278(uint64_t a, uint64_t type, uint64_t arg)
+{
+    uint64_t *blk = (uint64_t *)0; /* tpidrro_el0 */
+    blk[0] = type & 0xffff;
+    blk[1] = arg;
+    /* CallSupervisor(0) */
+    blk[0] = type & 0xffff;
+}
+
+/* FUN_0014f2cc @ 0x14f2cc  (est. sk_svc0_send4)
+ * cL4 syscall 0 send with 4 args. */
+static void sk_svc0_send4_14f2cc(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t *blk = (uint64_t *)0; /* tpidrro_el0 */
+    blk[0] = b; blk[1] = c; blk[2] = 0; blk[3] = 0;
+    /* CallSupervisor(0) */
+    blk[0] = b;
+}
+
+/* FUN_0014f2f0 @ 0x14f2f0  (est. sk_ipc_send_data3)
+ * IPC data send 3 (FUN_00149368/FUN_0014fb10), validates type. */
+static void sk_ipc_send_data3_14f2f0(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* see decompile */
+}
+
+/* FUN_0014f3fc @ 0x14f3fc  (est. sk_svc0_loop_e)
+ * SVC 0 loop. */
+static void sk_svc0_loop_14f3fc(int64_t flag)
+{
+    uint64_t *blk = (uint64_t *)0;
+    uint64_t save = *blk;
+    do { /* CallSupervisor(0) */ *blk = save; } while (flag == 1);
+}
+
+/* FUN_0014f444 @ 0x14f444  (est. sk_svc0)
+ * SVC 0 (single). */
+static void sk_svc0_14f444(void)
+{
+    uint64_t *blk = (uint64_t *)0;
+    /* CallSupervisor(0) */
+    *blk = *blk;
+}
+
+/* FUN_0014f47c @ 0x14f47c  (est. sk_svc0_loop_f)
+ * SVC 0 loop. */
+static void sk_svc0_loop_14f47c(int64_t flag)
+{
+    uint64_t *blk = (uint64_t *)0;
+    uint64_t save = *blk;
+    do { /* CallSupervisor(0) */ *blk = save; } while (flag == 1);
+}
+
+/* FUN_0014f4ac @ 0x14f4ac  (est. sk_ipc_send_data4)
+ * IPC data send 4: if the length >= 0, runs the callback param_4, validates
+ * the type. */
+static void sk_ipc_send_data4_14f4ac(uint64_t a, uint64_t b, long c, uint64_t (*cb)(void), uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)cb; (void)d; (void)e;
+    /* see decompile */
+}

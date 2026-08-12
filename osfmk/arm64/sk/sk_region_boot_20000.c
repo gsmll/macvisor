@@ -15,11 +15,12 @@
  * ------------------------------------------------------------------ */
 extern void sk_fatal_error(const char *msg, unsigned long a, unsigned long b,
                            unsigned long c, unsigned long d, const char *s2,
-                           unsigned long e, unsigned long f, ...); /* FUN_001afa84, noreturn */
-extern void sk_stack_chk_fail(void);                          /* FUN_0011d7e8, noreturn */
-extern void sk_swift_fatal(const char *fmt, ...);             /* FUN_004afae4, noreturn */
+                           unsigned long e, unsigned long f, ...)
+    __attribute__((noreturn)); /* FUN_001afa84 */
+extern void sk_stack_chk_fail(void) __attribute__((noreturn));  /* FUN_0011d7e8 */
+extern void sk_swift_fatal(const char *fmt, ...) __attribute__((noreturn));  /* FUN_004afae4 */
 extern void sk_swift_assert(const char *msg);                 /* FUN_00118b28, noreturn */
-extern void sk_software_breakpoint(void);                     /* FUN_00116d60, noreturn */
+extern void sk_software_breakpoint(void) __attribute__((noreturn));  /* FUN_00116d60 */
 extern void sk_lock_spin(unsigned long);                      /* FUN_0036b270 */
 extern void sk_lock_release(unsigned long);                   /* FUN_0036b118 */
 extern void *sk_alloc_typed(unsigned long tag, unsigned long size, unsigned long mtag); /* FUN_0036a940 */
@@ -895,10 +896,10 @@ void tightbeam_uleb_encode(unsigned int *param_1, unsigned int param_2, unsigned
     if (param_3 < 0xff) {
         tagw = 0;
     } else if (w < 4) {
-        tagw = (unsigned char)(((param_3 + ~(0xffffffffu << ((w << 3) & 0x1f))) - 0xfe
+        tagw = (unsigned char)((((param_3 + ~(0xffffffffu << ((w << 3) & 0x1f))) - 0xfe)
                                 >> ((w << 3) & 0x1f)) + 1);
         if (tagw > 0xff) tagw = 4;
-        if (tagw < 0x100) tagw = (1 < tagw);
+        tagw = (unsigned char)(1 < tagw);
     } else {
         tagw = 1;
     }
@@ -2959,7 +2960,7 @@ void tightbeam_transport_write(unsigned long param_1, unsigned long param_2,
     unsigned long backing;
     (void)param_1; (void)param_8; (void)param_9; (void)param_11; (void)param_12;
 
-    if (1 < (unsigned int)((unsigned char)__builtin_frame_address(0))) {
+    if (1 < (unsigned int)((unsigned long)__builtin_frame_address(0) & 0xff)) {
         sk_fatal_error("Fatal error", 0xb, 2, 0xd000000000000025, 0x80000000005acd00,
                        "Tightbeam TransportBuffer swift", 0x1f, 2);
     }
@@ -5280,7 +5281,7 @@ void vas_fh_table_remove(long param_1, unsigned long *param_2)
     unsigned long *tail;
 
     table = (unsigned long *)(param_1 + 400);
-    idx = ((unsigned long)param_2 - (unsigned long)table >> 3) * 0x71c71c71c71c71c7; /* /9 */
+    idx = (((unsigned long)param_2 - (unsigned long)table) >> 3) * 0x71c71c71c71c71c7; /* /9 */
     if (*(unsigned long *)(param_1 + 0x188) <= idx) {
         sk_swift_fatal("fh %p is not an active faulthand");
     }
@@ -5465,7 +5466,7 @@ void vas_fh_register(long param_1, unsigned int *param_2, long param_3)
     status = 0;
     if ((status & 0xff) == 0) {
         rec = vas_record_add(*(unsigned long *)(param_1 + 0x20), 0, 0);
-        vas_record_fill((unsigned long *)d, d, (unsigned int)flags);
+        vas_record_fill((unsigned long *)d, (char *)d, (unsigned int)flags);
         if (slot != 0) {
             slot[4] = rec;
             slot[5] = 0;
@@ -5514,7 +5515,7 @@ unsigned long vas_fh_handle_state(long param_1, unsigned long param_2, long para
             slot[5] = *(unsigned long *)(d0 + 0x18);
             *(unsigned char *)((char *)slot + 4) = 0;
         }
-        vas_record_fill((unsigned long *)d0, d1 + 0x18, *(unsigned int *)(d0 + 0x18));
+        vas_record_fill((unsigned long *)d0, (char *)(d1 + 0x18), *(unsigned int *)(d0 + 0x18));
     } else {
         if (slot != 0) {
             *(unsigned char *)((char *)slot + 1) = 4;

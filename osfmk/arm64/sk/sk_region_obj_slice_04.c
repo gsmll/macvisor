@@ -646,7 +646,7 @@ bool sk_swift_string_utf16_view_contains(void *a, void *b, unsigned long c);
 void sk_swift_string_utf16_view_count(void);
 void sk_swift_string_utf16_view_count_b(void);
 void sk_swift_string_utf16_view_count_c(void);
-void sk_swift_string_utf16_view_distance(void);
+void sk_swift_string_utf16_view_distance(void *a, void *b, unsigned long param_3);
 void sk_swift_string_utf16_view_distance_b(void);
 unsigned long sk_swift_string_utf16_view_index(void);
 void sk_swift_string_utf16_view_index_b(void *out, void *s);
@@ -758,8 +758,6 @@ void sk_swift_utf8_scan_scalar(void *o1, void *o2, unsigned long p3);
 /* ------------------------------------------------------------------ *
  * Function bodies (FUN_ address in header comment is ground truth). *
  * ------------------------------------------------------------------ */
- * Function bodies (FUN_ address in header comment is ground truth).
- * ------------------------------------------------------------------ */
 
 /*--------------------------------------------------------------------*/
 /* FUN_002af474 @ 0x002af474   (est. sk_swift_string_init_out)
@@ -815,14 +813,14 @@ void sk_swift_string_utf16_view_index_b(void *out, void *s)
             sk_rt_0034a260();
             if ((idx >> 0xe) <= (sk_rt_0035aac0() << 2)) {
                 if ((idx & 0x8000000000000000UL) != 0) {
-                    *out = sk_swift_string_utf16_index_before(idx);
+                    *(unsigned long *)out = sk_swift_string_utf16_index_before(idx);
                     return;
                 }
                 /* resolve within capacity; fault if out of range */
                 sk_rt_00358990();
                 unsigned long j = (v & 0x2000000000000000UL) ? (unsigned long)((v >> 0x3e) & 1) : 0;
                 if (j == 1) {
-                    *out = (idx & 0xffffffffffff0000UL) - 0xfff3;
+                    *(unsigned long *)out = (idx & 0xffffffffffff0000UL) - 0xfff3;
                     return;
                 }
                 if ((idx & 0xc000) == 0) {
@@ -831,15 +829,15 @@ void sk_swift_string_utf16_view_index_b(void *out, void *s)
                         idx = sk_rt_001676cc();
                     }
                     sk_rt_0034b768();
-                    long n = sk_swift_string_utf16_index_advance_b();
+                    long n = sk_swift_string_utf16_index_advance_b(idx >> 0x10, 0, 0);
                     if (n == 4) {
-                        *out = (idx & 0xffffffffffff0000UL) - 0x3bffc;
+                        *(unsigned long *)out = (idx & 0xffffffffffff0000UL) - 0x3bffc;
                         return;
                     }
-                    *out = ((idx >> 0x10) - n) * 0x10000UL | 5;
+                    *(unsigned long *)out = ((idx >> 0x10) - n) * 0x10000UL | 5;
                     return;
                 }
-                *out = idx & 0xffffffffffff0000UL | 5;
+                *(unsigned long *)out = idx & 0xffffffffffff0000UL | 5;
                 return;
             }
         }
@@ -1018,8 +1016,9 @@ unsigned long sk_swift_string_utf16_subscript_char(unsigned long w)
  * normalization and emitting the result through sk_rt_00354ef8.
  * Confidence: low (Swift String.UTF16View distance computation).
  */
-void sk_swift_string_utf16_view_distance(void)
+void sk_swift_string_utf16_view_distance(void *a, void *b, unsigned long param_3)
 {
+    (void)a; (void)b;
     sk_rt_00354a34();
     sk_rt_00351da8();
     sk_rt_00353a0c();
@@ -2411,7 +2410,7 @@ unsigned long sk_swift_unicode_scalar_kind(unsigned long c)
         }
         v = (unsigned int)sk_rt_003d3d4c(c);
         if (v < 0xb) {
-            return (&(unsigned char[]){0})[v]; /* DAT_004f26f0 table */
+            return (unsigned long)(&(unsigned char[]){0})[v]; /* DAT_004f26f0 table */
         }
         return 1;
     }

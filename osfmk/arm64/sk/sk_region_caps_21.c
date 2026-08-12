@@ -77,7 +77,7 @@ extern long cL4_range_check(long a, long b, long c, long d); /* FUN_002b15d0 */
 extern word_t cL4_vector_add(uint8_t *vec);        /* FUN_003a261c */
 extern sk128_t cL4_vector_pop(long a, long b);     /* FUN_0029d3d8 */
 extern long cL4_vector_put(long a, long b, long c, long d); /* FUN_00467468 */
-extern void cL4_vector_rel(long a, long b, long c); /* FUN_000b2260 */
+extern void cL4_vector_rel(void *a, long b, long c); /* FUN_000b2260 */
 extern void cL4_vector_del(long a, long b);        /* FUN_003a25d4 */
 extern void cL4_vector_ret(long a, long b);        /* FUN_003a2610 */
 extern void *cL4_grow(long a, long b, long c, void *v); /* FUN_00073690 */
@@ -91,11 +91,11 @@ extern void cL4_ctxset(long *o, long a, long b, long c, long d, long e, long f, 
 extern long cL4_reg_state(void);                   /* FUN_0039a128 */
 extern sk128_t cL4_state_pair(long a, long b);     /* FUN_0007d054 */
 extern sk128_t cL4_frame_classify(long a, long b, long c); /* FUN_0001d4f4 */
-extern long cL4_enter_fault(void);                 /* FUN_0008f630 */
+extern sk128_t cL4_enter_fault(long a, long b);    /* FUN_0008f630 */
 extern long cL4_fault_chk(long a, long b);         /* FUN_0008e140 */
 extern long cL4_fault_get(void);                   /* FUN_0008e0d4 */
 extern long cL4_fault_go(long a);                 /* FUN_000db7a8 */
-extern void cL4_switch(long a, long b, long c);    /* FUN_002a4ab4 */
+extern void cL4_switch(long a);                    /* FUN_002a4ab4 */
 extern long cL4_reg2(long a, long b);              /* FUN_0006e7c0 */
 extern long cL4_tbl_state(void);                   /* FUN_0039a128 */
 extern void cL4_async_cb(long a, long b);          /* FUN_000f67b4 */
@@ -146,14 +146,14 @@ extern const char cL4_s_pmmcreate[];      /* s_PMMInstance_could_not_create_SC_o
 /* Forward declarations (functions referenced before their definitions). */
 sk128_t pmm_pack_err_msg(long param_1);
 void pmm_async_cb_fwd(void);
-uint64_t pmm_fptr_22_call(void *param_1);
+uint64_t pmm_fptr_22_call(uint64_t *param_1);
 uint64_t *pmm_release_word(uint64_t *param_1);
-uint64_t pmm_fptr_2a_call(void *param_1, void *param_2);
+uint64_t pmm_fptr_2a_call(uint64_t *param_1, uint64_t *param_2);
 uint64_t *pmm_copy_word(uint64_t *param_1, uint64_t *param_2);
 void pmm_const_2(void);
 void pmm_const_3(void);
-void pmm_noop11(void);
-void pmm_noop12(void);
+void pmm_noop_11(void);
+void pmm_noop_12(void);
 uint8_t *pmm_split_ranges(uint64_t param_1, uint64_t param_2, long param_3, uint8_t param_4,
                           word_t param_5, word_t param_6, uint64_t param_7, uint64_t param_8);
 void cL4_noop11_f(void);
@@ -1195,7 +1195,7 @@ sk128_t pmm_frame_map_walk(uint64_t *param_1, uint64_t param_2, long param_3, wo
                 cL4_obj_ref(uVar3, 0);
                 auVar35 = cL4_tbl_get(uVar13, uVar12, uVar10, uVar3);
                 cL4_vector_del(uVar3, 0);
-                cL4_vector_rel(local_b0.lo, auVar35.lo, auVar35.hi);
+                cL4_vector_rel((void *)(uintptr_t)local_b0.lo, auVar35.lo, auVar35.hi);
                 cL4_vector_del(local_b0.hi, 0);
                 puVar22 += 4;
                 lVar15--;
@@ -1360,7 +1360,7 @@ map_reload:
         uVar21 = ~(-1LL << (uVar31 & 0x3f));
     }
     uVar21 &= *puVar30;
-    cL4_obj_ref(local_1b0, 0);
+    cL4_obj_ref((long)(uintptr_t)local_1b0, 0);
     uVar10 = cL4_gbl3;
     uVar13 = cL4_gbl2;
     lVar27 = 0;
@@ -1437,7 +1437,7 @@ map_reload:
         lVar27 = cL4_fault_go(param_2);
         uVar16 = 0;
         /* (*pcVar9)(auStack_168, uVar23, param_2); */
-        if ((uVar16 & 1) == 0) continue;
+        if ((uVar16 & 1) == 0) goto map_reload;
         uVar28 = 1;
         uVar16 = 2;
     }
@@ -1449,7 +1449,7 @@ map_reload:
         bVar4 = (uint8_t)(1 << (uVar28 & 7));
     }
     if ((local_2b8 & 1) != 0) {
-        iVar8 = cL4_vector_add(local_2c0);
+        iVar8 = cL4_vector_add((uint8_t *)(uintptr_t)local_2c0);
         if (iVar8 != 0) goto set_bit;
     }
     auVar33 = cL4_enter_fault(local_2c0, local_2a8);
@@ -1517,9 +1517,10 @@ void pmm_const_2(void) {
  * Calls the function pointer stored in the global _DAT_f108181f3700022a
  * with (param_2, param_1), returning param_2.
  * Confidence: low  Notes: (*_DAT_f108181f3700022a)(param_2, param_1). */
-uint64_t pmm_fptr_2a_call(uint64_t param_1, uint64_t param_2) {
+uint64_t pmm_fptr_2a_call(uint64_t *param_1, uint64_t *param_2) {
     /* (*_DAT_f108181f3700022a)(param_2, param_1); */
-    return param_2;
+    (void)param_1; (void)param_2;
+    return (uint64_t)param_2;
 }
 
 /* FUN_000f5dd8 @ 0x000f5dd8   (est. pmm_copy_word)
@@ -1547,9 +1548,10 @@ void pmm_const_3(void) {
  * Calls the function pointer stored in the global _DAT_f108181f37000222
  * with no arguments, returning param_1 unchanged.
  * Confidence: low  Notes: (*_DAT_f108181f37000222)(); */
-uint64_t pmm_fptr_22_call(uint64_t param_1) {
+uint64_t pmm_fptr_22_call(uint64_t *param_1) {
     /* (*_DAT_f108181f37000222)(); */
-    return param_1;
+    (void)param_1;
+    return (uint64_t)param_1;
 }
 
 /* FUN_000f5ea8 @ 0x000f5ea8   (est. pmm_release_word)

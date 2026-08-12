@@ -211,7 +211,7 @@ static unsigned long local_canary(void) { return 0; }
 
 /* In-slice forward declarations (defined below). */
 static sk_f80 sk_swift_f64_to_f80_bits(unsigned long);
-static unsigned long sk_swift_u16_divrem(unsigned long a, unsigned long b, unsigned long c);
+static unsigned int sk_swift_u16_divrem(unsigned int a, unsigned int b, unsigned int c);
 static unsigned long sk_swift_u16_div_hi(unsigned long a, unsigned char b);
 static sk_pair sk_swift_f80_word_box_fill(sk_word box, long idx, unsigned long val);
 static void sk_swift_f80_str_idx_loop(void);
@@ -733,7 +733,7 @@ void sk_swift_trap_f80_div(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -754,7 +754,7 @@ long sk_swift_f80_to_int(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -806,7 +806,7 @@ void sk_swift_f80_str_idx_loop(void)
             sk_h_00358768();
             if (sk_h_00347da8()) {
                 sk_h_003504b8();
-                sk_fatal_error();
+                sk_fatal_error(0, 0);
                 __builtin_unreachable();
             }
             sk_h_0034e0b4();
@@ -830,7 +830,7 @@ void sk_swift_f80_str_idx_loop(void)
     if (flags) return;
 fail:
     sk_h_003504b8();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -858,7 +858,7 @@ void sk_swift_str_build_bytes(void)
     sk_h_00267820((r.hi - off) | 0xd000000000000000,
                   ((unsigned long)(buf + 0) + off) | 0x8000000000000000);
     if ((sk_word)(long)local_canary() == canary) return;
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -889,7 +889,7 @@ void sk_swift_str_emit_empty_check(void)
     ((sk_fn)(sk_word)sk_g_dispatch)();
     sk_h_000651bc(0);
     if (flags) return;
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -918,7 +918,7 @@ void sk_swift_trap_f32_range(void)
 {
     sk_h_003488bc(1);
     sk_h_0034987c();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -1516,7 +1516,7 @@ long sk_swift_f32_to_int2(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -1703,7 +1703,7 @@ void sk_swift_f80_str_idx_loop_b(void)
             sk_h_00358768();
             if (sk_h_00347da8()) {
                 sk_h_003504b8();
-                sk_fatal_error();
+                sk_fatal_error(0, 0);
                 __builtin_unreachable();
             }
             sk_h_0034e0b4();
@@ -1727,7 +1727,7 @@ void sk_swift_f80_str_idx_loop_b(void)
     if (flags) return;
 fail:
     sk_h_003504b8();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -1753,7 +1753,7 @@ void sk_swift_str_build_bytes_b(void)
     sk_h_00267820((r.hi - off) | 0xd000000000000000,
                   ((unsigned long)(buf + 0) + off) | 0x8000000000000000);
     if ((sk_word)(long)local_canary() == canary) return;
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -1782,7 +1782,7 @@ void sk_swift_str_emit_empty_check_b(void)
     ((sk_fn)(sk_word)sk_g_dispatch)();
     sk_h_000651bc(0);
     if (flags) return;
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -1808,7 +1808,7 @@ void sk_swift_trap_f64_range(void)
 {
     sk_h_003488bc(1);
     sk_h_0034987c();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2418,7 +2418,7 @@ long sk_swift_f64_to_int2(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2590,7 +2590,7 @@ void sk_swift_f80_ops_unavailable(void)
     sk_word c = (sk_word)sk_h_0035ac70(0x005d15d0, (sk_word)sk_swift_f80_modassign_unavailable);  /* "%= is not available." */
     sk_h_003593c0(c, c);
     sk_h_00349c58();
-    sk_fatal_unavail();
+    sk_fatal_unavail(0, 0);
     __builtin_unreachable();
 }
 
@@ -2610,7 +2610,7 @@ void sk_swift_f80_mod_unavailable(void)
     sk_word b = (sk_word)sk_h_0035ac70(0x005d15d0, (sk_word)sk_swift_f80_modassign_unavailable);  /* "%= is not available." */
     sk_h_003593c0(b, b);
     sk_h_00349c58();
-    sk_fatal_unavail();
+    sk_fatal_unavail(0, 0);
     __builtin_unreachable();
 }
 
@@ -2625,7 +2625,7 @@ void sk_swift_f80_modassign_unavailable(void)
     sk_word a = (sk_word)sk_h_0035ac70(0x005d15d0);  /* "%= is not available." */
     sk_h_003593c0(a, a);
     sk_h_00349c58();
-    sk_fatal_unavail();
+    sk_fatal_unavail(0, 0);
     __builtin_unreachable();
 }
 
@@ -2645,7 +2645,7 @@ int sk_swift_f80_to_int32(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2664,7 +2664,7 @@ int sk_swift_f32_to_int32(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2683,7 +2683,7 @@ int sk_swift_f64_to_int32(void)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2697,7 +2697,7 @@ void sk_swift_trap_div_by_zero(void)
 {
     sk_h_00348074(1);
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2711,7 +2711,7 @@ void sk_swift_trap_int_overflow(void)
 {
     sk_h_00348404(1);
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2736,7 +2736,7 @@ unsigned char sk_swift_int_to_char_check(long v, unsigned char fallback)
         sk_h_003493d8();
     }
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2850,7 +2850,7 @@ unsigned long sk_swift_u16_div_hi(sk_word a, unsigned char b)
     if (divisor == 0) {
         sk_h_00348074(1);
         sk_h_00351be0();
-        sk_fatal_error();
+        sk_fatal_error(0, 0);
         __builtin_unreachable();
     }
     if ((a & 0xff) < divisor) {
@@ -2863,7 +2863,7 @@ unsigned long sk_swift_u16_div_hi(sk_word a, unsigned char b)
     sk_h_003488bc(1);
     sk_h_003493d8();
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 
@@ -2889,7 +2889,7 @@ unsigned int sk_swift_u16_divrem(unsigned int a, unsigned int b, unsigned int c)
         sk_h_003493d8();
     }
     sk_h_00351be0();
-    sk_fatal_error();
+    sk_fatal_error(0, 0);
     __builtin_unreachable();
 }
 

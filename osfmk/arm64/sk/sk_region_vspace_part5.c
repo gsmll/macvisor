@@ -50,7 +50,7 @@ extern unsigned long FUN_00012568();
 extern unsigned long FUN_0001df60();
 extern unsigned long FUN_0001e790();
 extern unsigned long FUN_00027754();
-extern unsigned long FUN_00041138();
+extern sk_wide_t FUN_00041138();
 extern unsigned long FUN_000651bc();
 extern sk_wide_t FUN_0006b2dc();
 extern unsigned long FUN_0006b2ec();
@@ -69,7 +69,7 @@ extern unsigned long FUN_000839d8();
 extern unsigned long FUN_0008409c();
 extern unsigned long FUN_00084174();
 extern unsigned long FUN_00084180();
-extern unsigned long FUN_00084220();
+extern sk_wide_t FUN_00084220();
 extern unsigned long FUN_00084234();
 extern unsigned long FUN_0008e388();
 extern unsigned long FUN_0008e500();
@@ -151,7 +151,7 @@ extern unsigned long FUN_002a4b90();
 extern unsigned long FUN_002a4c98();
 extern unsigned long FUN_002acbb8();
 extern unsigned long FUN_002b81b4();
-extern unsigned long FUN_002d3674();
+extern sk_wide_t FUN_002d3674();
 extern sk_wide_t FUN_002d6730();
 extern unsigned long FUN_002e3704();
 extern unsigned long FUN_002e9ab4();
@@ -175,7 +175,7 @@ extern unsigned long FUN_00310f34();
 extern unsigned long FUN_00312d08();
 extern unsigned long FUN_003156d0();
 extern unsigned long FUN_003167cc();
-extern unsigned long FUN_00316cd0();
+extern sk_wide_t FUN_00316cd0();
 extern unsigned long FUN_003195c8();
 extern unsigned long FUN_00319748();
 extern unsigned long FUN_00319778();
@@ -778,7 +778,7 @@ extern unsigned long FUN_00351298();
 extern unsigned long FUN_003512a4();
 extern unsigned long FUN_00351324();
 extern unsigned long FUN_0035133c();
-extern unsigned long FUN_00351354();
+extern sk_wide_t FUN_00351354();
 extern unsigned long FUN_00351360();
 extern unsigned long FUN_00351378();
 extern unsigned long FUN_00351384();
@@ -813,7 +813,7 @@ extern unsigned long FUN_0035172c();
 extern unsigned long FUN_00351744();
 extern unsigned long FUN_00351768();
 extern unsigned long FUN_0035179c();
-extern unsigned long FUN_003517a8();
+extern sk_wide_t FUN_003517a8();
 extern unsigned long FUN_003517b4();
 extern unsigned long FUN_003517d8();
 extern unsigned long FUN_00351888();
@@ -1226,7 +1226,7 @@ extern unsigned long FUN_0035a54c();
 extern unsigned long FUN_0035a560();
 extern unsigned long FUN_0035a56c();
 extern unsigned long FUN_0035a5a8();
-extern unsigned long FUN_0035a5c0();
+extern sk_wide_t FUN_0035a5c0();
 extern unsigned long FUN_0035a5f0();
 extern unsigned long FUN_0035a634();
 extern unsigned long FUN_0035a64c();
@@ -1258,8 +1258,9 @@ extern unsigned long FUN_003a25d4();
 extern unsigned long FUN_003d31f8();
 
 /* ---- other ---- */
-extern unsigned long FUN_0060e3fc();
-extern unsigned long FUN_00610504();
+extern unsigned long FUN_0060e3fc;
+extern unsigned long FUN_0060e40c;
+extern unsigned long FUN_00610504;
 /* Alias map: in-slice FUN_ names -> the English-named functions defined in this file. */
 #define FUN_00233354 sk_uint64_to_string_radix
 #define FUN_00233ba8 sk_int64_to_string_radix
@@ -1412,10 +1413,10 @@ uint32_t sk_collection_guard_range(long coll, unsigned long a, uint32_t flags);
 void sk_collection_initialize_buffer(void);
 unsigned long sk_collection_map_reduce(unsigned long (*cb)(unsigned long, unsigned long, unsigned long, uint32_t),
                                        unsigned long arg, uint32_t flags);
-void sk_collection_next_element(void);
+sk_wide_t sk_collection_next_element(void);
 sk_wide_t sk_collection_range_bounds(void);
 bool sk_collection_range_equal_wide(long a, long b, long lo, long hi);
-sk_wide_t sk_collection_range_get(void);
+sk_wide_t sk_collection_range_get(unsigned long base);
 void sk_collection_read_index_wide(void);
 sk_wide_t sk_collection_reduce_wide(void);
 void sk_collection_replace_range(void);
@@ -1462,8 +1463,12 @@ void sk_obj_call_slot_64(void);
 void sk_obj_call_slot_f4(void);
 void sk_obj_construct(void);
 unsigned long sk_obj_deref(void);
+/* FUN_0024730c @ 0x24730c   (est. sk_obj_deref_b)
+ * Ghidra: undefined8 FUN_0024730c(void)
+ * Object deref variant; identical to sk_obj_deref.
+ * Confidence: low */
 unsigned long sk_obj_deref_b(void);
-void sk_obj_format_value(void);
+void sk_obj_format_value(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5);
 void sk_obj_method_call_wide(void);
 void sk_obj_method_dispatch(void);
 sk_wide_t sk_obj_method_dispatch_wide(void);
@@ -1472,10 +1477,10 @@ void sk_obj_release_field_dc(long meta);
 void sk_obj_service_iter(void);
 void sk_obj_service_m(void);
 void sk_obj_service_poll(void);
-void sk_obj_service_r(void);
+void sk_obj_service_r(unsigned long p1, unsigned long p2, unsigned long p3);
 void sk_obj_service_s(void);
 void sk_obj_service_store(void);
-void sk_obj_service_w(void);
+void sk_obj_service_w(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5);
 unsigned long sk_obj_slot_dispatch(void);
 void sk_obj_store_field(unsigned long value, long meta);
 void sk_obj_store_field_88(unsigned long value, long meta);
@@ -1496,9 +1501,17 @@ void sk_runtime_thunk_b1b4(void);
 void sk_runtime_thunk_b458(void);
 void sk_runtime_thunk_b5c0(void);
 void sk_runtime_thunk_c780(void);
+/* FUN_0023c784 @ 0x23c784   (est. sk_runtime_thunk_c784)
+ * Ghidra: void FUN_0023c784(void)
+ * Runtime glue thunk; identical to sk_runtime_thunk_c780.
+ * Confidence: low */
 void sk_runtime_thunk_c784(void);
 void sk_runtime_thunk_cb80(void);
 void sk_runtime_thunk_cbac(void);
+/* FUN_0023cbb0 @ 0x23cbb0   (est. sk_runtime_thunk_cbb0)
+ * Ghidra: void FUN_0023cbb0(void)
+ * Runtime glue thunk into 0023c79c; identical to sk_runtime_thunk_cbac.
+ * Confidence: low */
 void sk_runtime_thunk_cbb0(void);
 void sk_string_append_overflow(void);
 void sk_string_builder_loop(void);
@@ -1510,6 +1523,10 @@ sk_wide_t sk_uint128_divide(unsigned long *out, uint64_t ah, uint64_t al,
                             uint64_t bh, uint64_t bl, uint64_t dh, uint64_t dl);
 bool sk_uint128_is_zero(unsigned long a, unsigned long b, unsigned long lo,
                         unsigned long hi);
+/* FUN_002456a4 @ 0x2456a4   (est. sk_uint128_is_zero_b)
+ * Ghidra: bool FUN_002456a4(undefined8,undefined8,undefined8,undefined8)
+ * Returns whether the 128-bit value is zero; duplicate of 002456a0.
+ * Confidence: medium */
 bool sk_uint128_is_zero_b(unsigned long a, unsigned long b, unsigned long lo,
                           unsigned long hi);
 void sk_uint128_parse_overflow(void);
@@ -1540,9 +1557,18 @@ int sk_word_sub(int a, int b);
 uint64_t sk_word_width_decode(uint32_t sel);
 void thunk_sk_fatal_error_thunk(void);
 void thunk_sk_runtime_thunk_3c5c(void);
+/* FUN_0024614c @ 0x24614c   (thunk sk_word_add)
+ * Ghidra: long thunk_FUN_0035911c(long,long)
+ * Word addition thunk.
+ * Confidence: high */
 long thunk_sk_word_add(long a, long b);
+/* FUN_00246178 @ 0x246178   (thunk sk_word_sub)
+ * Ghidra: long FUN_00246178(long,long)
+ * Word subtraction thunk.
+ * Confidence: high */
 long thunk_sk_word_sub(long a, long b);
 extern void (*FUN_00658c00_REF)(void);
+extern void sk_indirect_dispatch(unsigned long, ...);  /* variadic: accepts any args (unresolved indirect dispatch) */
 
 /* ================================================================== *
  * Function bodies — in address order.
@@ -1968,33 +1994,34 @@ void sk_integer_description_dispatch(uint32_t neg, void **lo_out, void **hi_out,
     FUN_00377824(r.lo, u54, u45);
     FUN_00349c44((void *)0xffffffffffffffa0);
     FUN_0007c1a4();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034bdfc();
     FUN_00350530();
     FUN_00377dcc();
     FUN_00348e00();
-    ((void (*)(unsigned long))0)(*(unsigned long *)(0x40) + 0x40);
+    sk_indirect_dispatch(*(unsigned long *)(0x40) + 0x40);
     FUN_003493c4();
     FUN_0034acf0();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034ae94();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00352008();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00350464();
     if (style == 0x677790) {
         /* direct radix formatting into the value words */
         sk_uint64_to_string_radix(neg & 1, *(unsigned long *)lo_out,
-                                  *(unsigned long *)hi_out, (unsigned long)(*(unsigned long *)str_buf) & 1, value);
+                                  *(unsigned long *)hi_out, (unsigned long)(*(unsigned long *)str_buf) & 1,
+                                  (void **)str_buf);
     } else {
         FUN_00359a60(FUN_003509a4(), lo_out);
         if (style != 0x6777e0) {
             /* full generic description path (hex / typed) */
             FUN_00351c4c();
-            ((void (*)(unsigned long,unsigned long,unsigned long))0)(0x148, 0x1, u45);
+            sk_indirect_dispatch(0x148, 0x1, u45);
             FUN_00357c88(u44);
             FUN_003504c4(0);
-            ((void (*)(void))0)();
+            sk_indirect_dispatch(0);
             /* formats the value then stores the result string */
             FUN_003499a0();
             FUN_003504f4();
@@ -2002,10 +2029,10 @@ void sk_integer_description_dispatch(uint32_t neg, void **lo_out, void **hi_out,
             FUN_00377bec();
             FUN_003494fc();
             FUN_00350578(FUN_00610504);
-            ((void (*)(void))0)();
+            sk_indirect_dispatch(0);
             FUN_0034d558();
             r = FUN_0034b228();
-            ((void (*)(unsigned long,unsigned long,unsigned long))0)(r.lo, r.hi, u54);
+            sk_indirect_dispatch(r.lo, r.hi, u54);
             FUN_0034bb4c();
             FUN_00355e2c(u44);
             FUN_00350600();
@@ -2013,7 +2040,7 @@ void sk_integer_description_dispatch(uint32_t neg, void **lo_out, void **hi_out,
             FUN_00351bec();
             FUN_0014ae44();
             r = FUN_0034db88();
-            if ((FUN_0034db88() & 1) != 0) {
+            if ((FUN_0034db88().lo & 1) != 0) {
                 FUN_00357634();
                 FUN_003507d4();
                 *(unsigned char *)str_buf[0] = '0';
@@ -2054,13 +2081,13 @@ void sk_runtime_thunk_2351ac(void)
     FUN_00348f50();
     FUN_003547ec();
     FUN_00351274();
-    ((void (*)(void))0)();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
+    sk_indirect_dispatch(0);
     FUN_003505d0();
     FUN_00351b78();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00350630(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     lr_ret = FUN_00084234(0);
     (void)lr_ret;
 }
@@ -2428,7 +2455,7 @@ void sk_fatal_redirect(void)
  *   s_Swift_Range_swift_005cda30. */
 void sk_fatal_range_lowerbound(void)
 {
-    FUN_0023723c(0x005accd0, 0xb, 2, 0x005cda00, 0x27, 0, 0x005cda30, 0x19, 2, 0x2f9, 1);
+    FUN_001afe4c(0x005accd0, 0xb, 2, 0x005cda00, 0x27, 0, 0x005cda30, 0x19, 2, 0x2f9, 1);
 }
 
 /* FUN_002373c4 @ 0x2373c4   (est. sk_uint64_from_string_radix_c)
@@ -2473,7 +2500,8 @@ void sk_uint16_from_string(unsigned long radix, uint32_t uppercase,
 void sk_uint64_from_string_decimal(void)
 {
     sk_wide_t r;
-    unsigned long v = FUN_0006b2dc();
+    sk_wide_t vb = FUN_0006b2dc();
+    unsigned long v = vb.lo;
     if (0x22 < v - 2) {
         FUN_003488bc(1);
         FUN_00349a54();
@@ -2627,7 +2655,7 @@ void sk_collection_subscript_range(void)
     FUN_001a2630();
     if (FUN_00351a50() != 0) {
         FUN_00350624(0x30);
-        FUN_00235398();
+        FUN_00235398(0, 0, 0);
     }
     r = FUN_00233f04(0, idx_lo, idx_hi, 0, 0, 1, (void *)&idx_lo);
     FUN_002a20cc(r.lo, r.hi - r.lo);
@@ -2680,7 +2708,7 @@ void sk_collection_read_index_wide(void)
     n = FUN_00354e0c();
     if (n != 0) {
         FUN_003510c4(0x30);
-        FUN_00235398();
+        FUN_00235398(0, 0, 0);
     }
     FUN_00310a14(0);
     FUN_0034fd14();
@@ -2697,7 +2725,7 @@ void sk_collection_read_index_wide(void)
         FUN_0034aca0();
         FUN_00351154(0, &n);
         FUN_0035256c((uint32_t)0 & 1);
-        FUN_00234384();
+        FUN_00234384(0, 0, 0, 0, 0, 0, 0);
         FUN_00351a50();
         FUN_00350630();
         FUN_00350b00();
@@ -2717,7 +2745,7 @@ void sk_collection_write_index_wide(void)
     unsigned long v7;
     sk_wide_t r;
 
-    v4 = FUN_0008e518();
+    v4 = FUN_0008e518().lo;
     FUN_00352c10();
     FUN_0008f6c0(0);
     FUN_00352f54();
@@ -2922,7 +2950,7 @@ void sk_runtime_thunk_b03c(void)
     FUN_003503c0();
     FUN_00310984();
     FUN_0035013c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_0023b06c @ 0x23b06c   (est. sk_runtime_thunk_b06c)
@@ -2935,7 +2963,7 @@ void sk_runtime_thunk_b06c(void)
     FUN_0008409c();
     FUN_003496e8(0);
     FUN_0034bf1c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00356d20();
 }
 
@@ -2948,11 +2976,11 @@ void sk_runtime_thunk_b0e0(void)
     unsigned long v;
 
     FUN_0034ba88();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_003514b8();
     v = ((unsigned long (*)(void))0)();
     FUN_0034b768(v);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00356d20();
 }
 
@@ -3036,9 +3064,9 @@ void sk_runtime_thunk_b1b4(void)
     FUN_00354e00();
     FUN_0031c904();
     FUN_0034ffb8();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_003511e4();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_0023b254 @ 0x23b254   (est. sk_int128_multiply)
@@ -3106,18 +3134,18 @@ void sk_runtime_thunk_b458(void)
     FUN_00349720();
     FUN_00658c00_REF();
     FUN_0034947c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00350950(0);
     FUN_00350a4c();
     FUN_003508f0();
     FUN_00353a78();
-    ((void (*)(void))0)();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
+    sk_indirect_dispatch(0);
     FUN_00350390();
     FUN_0035053c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00351e90(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0008e500(0, 0, 0);
 }
 
@@ -3130,11 +3158,11 @@ void sk_runtime_thunk_b5c0(void)
     FUN_0034d654();
     FUN_0035a5f0();
     FUN_0034b07c();
-    ((void (*)(void))0)();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
+    sk_indirect_dispatch(0);
     FUN_0034c8b8();
     FUN_00350aac();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_0023b644 @ 0x23b644   (est. sk_obj_method_dispatch)
@@ -3159,20 +3187,20 @@ void sk_obj_method_dispatch(void)
     FUN_0034ba68();
     FUN_003547ec();
     FUN_003508b4();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     r = FUN_0035145c(0);
-    ((void (*)(void))0)(r.lo, r.hi, 0);
+    sk_indirect_dispatch(r.lo, r.hi, 0);
     FUN_00350950(0);
     FUN_00350a4c();
     r = FUN_003507c8();
-    ((void (*)(void))0)(r.lo, r.hi, 0, 0, (void *)0);
+    sk_indirect_dispatch(r.lo, r.hi, 0, 0, (void *)0);
     FUN_00351250();
     FUN_00350038();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00351f88();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00351ec0();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0008e500(0, 0, 0);
 }
 
@@ -3183,7 +3211,7 @@ void sk_obj_method_dispatch(void)
  * formats the digit string, and returns it. Fatal-errors on nil / overflow.
  * Confidence: low
  * Notes: 681-line runtime-heavy BigInt description. */
-void sk_big_int_to_string(void)
+void sk_big_int_to_string(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5)
 {
     sk_wide_t r;
     unsigned long v4;
@@ -3303,7 +3331,7 @@ void sk_runtime_thunk_c784(void)
  * back via the slot dispatchers, branching on the success flag.
  * Confidence: low
  * Notes: dispatches via [x16+8]; two-way success/failure path. */
-void sk_obj_service_w(void)
+void sk_obj_service_w(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5)
 {
     sk_wide_t r;
     unsigned long v6;
@@ -3342,21 +3370,21 @@ void sk_obj_service_w(void)
     FUN_00310f04();
     FUN_003195c8(0);
     FUN_00350768(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034f754();
     FUN_00084180();
     FUN_00377bec();
     FUN_00350a4c();
     FUN_003505e8(0);
     FUN_003569fc();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00357d54();
     FUN_0034ff98();
     FUN_00377bec();
     FUN_00310aa4();
     FUN_00351184();
     FUN_003508f0();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034cdc8();
     FUN_00350ba8(0);
     FUN_00377bec();
@@ -3371,36 +3399,36 @@ void sk_obj_service_w(void)
         FUN_0034bc04();
         FUN_0035a540();
         FUN_00350aac();
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_0034cea8();
         FUN_000dbf08(0);
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_00350950(0);
         FUN_0031c9f4();
         FUN_003516e4(0);
         FUN_00352438();
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_00352e24();
-        ((void (*)(void))0)(0, r.lo, 0);
+        sk_indirect_dispatch(0, r.lo, 0);
         r = FUN_0007c1c4(0);
         FUN_003569fc(r.lo, r.hi, 0);
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_00353f50();
-        FUN_0023b7b8(0, 0);
+        FUN_0023b7b8(0, 0, 0, 0, 0);
         FUN_00351354();
         FUN_00310f34(0);
         FUN_0034e054();
         FUN_00353ef0();
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_00350c80();
         FUN_0035190c();
     } else {
-        FUN_002445ac(0);
+        FUN_002445ac(0, 0, 0, 0, 0);
     }
     FUN_003506cc();
     r = FUN_003509b0(0);
     FUN_0034cf64(r.lo, r.hi, 0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0008e500(0, 0, 0);
 }
 
@@ -3435,7 +3463,7 @@ void sk_runtime_thunk_cbb0(void)
  * runtime, and returns it. Mirrors the write service with a read path.
  * Confidence: low
  * Notes: dispatch-through-slot; enter/leave 0008e518/0008e500. */
-void sk_obj_service_r(void)
+void sk_obj_service_r(unsigned long p1, unsigned long p2, unsigned long p3)
 {
     sk_wide_t r;
 
@@ -3461,26 +3489,26 @@ void sk_obj_service_r(void)
     FUN_00350654();
     FUN_00350440();
     FUN_00350e44();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034c384();
     FUN_0034c674();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00354cb4();
     FUN_003195c8();
     FUN_00350a1c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_003509d4();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00351a74();
     FUN_00351f4c(0, 0x200);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     r = FUN_0034d810();
-    ((void (*)(void))0)(r.lo, r.hi, 0);
-    ((void (*)(void))0)(0);
+    sk_indirect_dispatch(r.lo, r.hi, 0);
+    sk_indirect_dispatch(0);
     FUN_003509d4();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00084180();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0008e500(0, 0, 0);
 }
 
@@ -3535,7 +3563,7 @@ void sk_int64_parse_overflow(void)
     FUN_0034ffdc();
     FUN_00352bb0();
     FUN_00350624(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00310984();
     FUN_0034ba08();
     n = FUN_0034ba08();
@@ -3867,7 +3895,7 @@ void sk_uint128_parse_overflow_c(void)
     FUN_0034ffc8();
     FUN_00352bb0();
     FUN_00350624(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00310984();
     FUN_0034b8dc();
     FUN_00358e94();
@@ -4189,7 +4217,7 @@ bool sk_double_to_int128(double d, void *out)
         r.lo = 0;
     } else {
         if (0x7f < e) { r = (sk_wide_t){0, 0}; goto skip; }
-        r = FUN_00316cd0(mant, 0);
+        r = FUN_00316cd0(mant, 0, 0);
         r.lo <<= e; r.hi = (r.hi << e) | (mant >> (64 - e));
     }
 skip:
@@ -4265,7 +4293,7 @@ void sk_obj_service_m(void)
     FUN_0007c1a4();
     FUN_00658c00_REF();
     FUN_0034dccc();
-    r = FUN_00310d68(0xff, 0);
+    r = (sk_wide_t){FUN_00310d68(0xff, 0), 0};
     FUN_003508e4(r.lo, r.hi, 0x672870);
     FUN_003515b4();
     FUN_003722e4();
@@ -4439,7 +4467,7 @@ void sk_string_builder_loop(void)
         return;
     }
     FUN_00350470(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     r = FUN_0006e778(0x50);
     FUN_00352c68();
     FUN_00208418();
@@ -4515,29 +4543,29 @@ void sk_obj_allocate_and_init(void)
     FUN_00658c00_REF();
     FUN_0034b8bc();
     FUN_00350c68();
-    v = FUN_002412d4();
+    FUN_002412d4();
     FUN_0034dfe4();
     if ((v & 1) != 0) {
         FUN_00354810();
         FUN_00350600();
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         FUN_00349f3c();
         if (0) {
             FUN_00350624();
-            ((void (*)(void))0)();
+            sk_indirect_dispatch(0);
             FUN_00351354();
-            ((void (*)(void))0)();
+            sk_indirect_dispatch(0);
             FUN_003508d8(0);
             v = ((unsigned long (*)(void))0)();
             r = (sk_wide_t){v, 0};
         } else {
             FUN_0034f2c4();
-            ((void (*)(void))0)();
+            sk_indirect_dispatch(0);
             r = FUN_0035a5c0();
         }
     } else {
         FUN_0034f2c4();
-        ((void (*)(void))0)();
+        sk_indirect_dispatch(0);
         r = FUN_0035a5c0();
     }
     FUN_00350268(r.lo, r.hi);
@@ -4587,7 +4615,7 @@ void sk_collection_replace_range(void)
     FUN_00310b38(0);
     FUN_00351f7c();
     FUN_003504dc();
-    ((void (*)(void))0)(0, 0);
+    sk_indirect_dispatch(0, 0);
     FUN_0035ab88();
     FUN_0034bf84();
     v1 = ((unsigned long (*)(void))0)();
@@ -4703,11 +4731,11 @@ void sk_runtime_thunk_44a0(void)
     FUN_003503d0();
     FUN_00310984(0);
     FUN_0035013c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_003109e4();
     FUN_00351f7c();
     FUN_0034ba28();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_002444f8 @ 0x2444f8   (est. sk_runtime_thunk_44f8)
@@ -4722,13 +4750,13 @@ void sk_runtime_thunk_44f8(void)
     FUN_00348f38();
     FUN_003567e0();
     FUN_00351384();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00319748();
     FUN_000dbdf4();
     FUN_0035063c();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_003507bc(0);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_002445ac @ 0x2445ac   (est. sk_obj_format_value)
@@ -4738,7 +4766,7 @@ void sk_runtime_thunk_44f8(void)
  * length (<0x41 small vs larger chunked). Enter/leave 0008e518/0008e500.
  * Confidence: low
  * Notes: 114-line chunked formatter; FUN_000db6e8 block append. */
-void sk_obj_format_value(void)
+void sk_obj_format_value(unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5)
 {
     long n;
     sk_wide_t r;
@@ -4914,10 +4942,10 @@ void sk_runtime_thunk_502c(void)
     FUN_00377bec();
     FUN_003494fc();
     FUN_0034fee0();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_0034cea8();
     FUN_0034f364();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00084234(0);
 }
 
@@ -5278,7 +5306,7 @@ void sk_obj_call_slot_64(void)
     FUN_00352efc();
     FUN_00310d68();
     FUN_00350404();
-    ((void (*)(void))0)(0, (void *)((char *)0x0 + off), 0);
+    sk_indirect_dispatch(0, (void *)((char *)0x0 + off), 0);
 }
 
 /* FUN_002462f4 @ 0x2462f4   (est. sk_obj_call_slot_f4)
@@ -5292,13 +5320,13 @@ void sk_obj_call_slot_f4(void)
     int off = *(int *)(0 + 0x2c);
     sk_wide_t r;
     FUN_0034e81c(*(unsigned long *)(0 + 0x18), 0, 0, *(unsigned long *)(0 + 0x10));
-    r = FUN_00377824(0, 0);
+    r = (sk_wide_t){FUN_00377824(0, 0), 0};
     FUN_003519fc(r.lo, r.hi, r.lo);
     FUN_00377824();
     FUN_00352efc();
     FUN_00310d68();
     FUN_0034ad10();
-    ((void (*)(void))0)((void *)((char *)0x0 + off), 0);
+    sk_indirect_dispatch((unsigned long)((char *)0x0 + off), 0);
 }
 
 /* FUN_00246388 @ 0x246388   (est. sk_obj_store_field_88)
@@ -5359,7 +5387,7 @@ void sk_obj_construct(void)
     layout = FUN_0031ca3c(r.lo, r.hi, 0, 0);
     FUN_003597a0();
     FUN_00351214();
-    r = FUN_00377824();
+    r = (sk_wide_t){FUN_00377824(), 0};
     FUN_00350920(r.lo, r.hi, r.lo);
     FUN_00377824();
     FUN_00350744((void *)((char *)0x0 + *(int *)(layout + 0x2c)));
@@ -5373,7 +5401,7 @@ void sk_obj_construct(void)
     FUN_0034d404();
     FUN_00377824();
     FUN_00349530();
-    ((void (*)(void))0)((void *)0x0);
+    sk_indirect_dispatch((unsigned long)(void *)0x0);
     FUN_003548ac();
     tag = FUN_0019e578();
     *(unsigned long *)((char *)0x0 + *(int *)(layout + 0x30)) = tag;
@@ -5525,16 +5553,16 @@ void sk_obj_service_store(void)
     FUN_000a68c4(*(unsigned long *)(obj + 0x18));
     FUN_00350c50();
     FUN_003510b8();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     off = *(int *)(obj + 0x2c);
     FUN_00350288(0xff);
-    r = FUN_00377824();
+    r = (sk_wide_t){FUN_00377824(), 0};
     FUN_00352720(r.lo, r.hi, r.lo);
     FUN_00377824();
     FUN_00352efc();
     FUN_00310d80();
     r = FUN_00353468(0, (void *)((char *)0x0 + off));
-    FUN_00246490(r.lo, r.hi, *(unsigned long *)(obj + 0x10));
+    FUN_00246490();
     FUN_00084234(r.hi);
 }
 
@@ -5552,7 +5580,7 @@ void sk_obj_service_iter(void)
     long base;
     int off;
 
-    obj = FUN_0008e518();
+    obj = FUN_0008e518().lo;
     FUN_00352078();
     FUN_0035050c();
     FUN_00377824();
@@ -5589,7 +5617,7 @@ void sk_obj_service_iter(void)
     off = *(int *)(obj + 0x2c);
     base = *(long *)((char *)0x0 + off);
     r = FUN_00350554(0);
-    ((void (*)(void))0)(r.lo, r.hi, *(unsigned long *)(obj + 0x10));
+    sk_indirect_dispatch(r.lo, r.hi, *(unsigned long *)(obj + 0x10));
     FUN_00352680(*(unsigned long *)(obj + 0x18));
     if (*(long *)(base + 0x10) == 0) {
         /* empty base: iterate and collect */
@@ -5609,7 +5637,7 @@ void sk_obj_service_iter(void)
         }
         FUN_003507bc(0);
         FUN_0034ece8(((unsigned long (*)(void))0)(), obj);
-        ((void (*)(void))0)(0);
+        sk_indirect_dispatch(0);
     } else {
         FUN_00358bf0();
         FUN_003507bc();
@@ -5621,7 +5649,7 @@ void sk_obj_service_iter(void)
         if (0) {
             FUN_00350560(0);
             FUN_0034ece8(((unsigned long (*)(void))0)(), obj);
-            ((void (*)(void))0)(0);
+            sk_indirect_dispatch(0);
             FUN_00351a08();
         } else {
             FUN_00350a34();
@@ -5639,7 +5667,7 @@ void sk_obj_service_iter(void)
             FUN_00353154();
             FUN_003507e0();
             FUN_0034ece8(((unsigned long (*)(void))0)(), obj);
-            ((void (*)(void))0)(0);
+            sk_indirect_dispatch(0);
             FUN_00351e6c();
         }
     }
@@ -5662,7 +5690,7 @@ void sk_obj_service_poll(void)
     FUN_00349720(v, v);
     FUN_00658c00_REF();
     FUN_00349068();
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
     FUN_00351648(0);
     FUN_0034ef08();
     FUN_002461c0();
@@ -5738,7 +5766,7 @@ long sk_swift_keypath_alloc(void)
         FUN_00351094();
         FUN_001afe4c();
     }
-    ((void (*)(void))0)(l + 0x18, l + 0x18 + count);
+    sk_indirect_dispatch(l + 0x18, l + 0x18 + count);
     return l;
 }
 
@@ -5758,7 +5786,7 @@ long sk_swift_keypath_alloc_b(void)
         FUN_00351094();
         FUN_001afe4c();
     }
-    ((void (*)(void))0)(l + 0x18, l + 0x18 + 0);
+    sk_indirect_dispatch(l + 0x18, l + 0x18 + 0);
     return l;
 }
 
@@ -5777,7 +5805,7 @@ long sk_swift_keypath_alloc_c(void)
         FUN_00351094();
         FUN_001afe4c();
     }
-    ((void (*)(void))0)(l + 0x18, l + 0x18 + 0);
+    sk_indirect_dispatch(l + 0x18, l + 0x18 + 0);
     return l;
 }
 
@@ -5873,7 +5901,7 @@ sk_wide_t sk_collection_element_description(long coll, sk_wide_t *out,
         FUN_002a4c98(r.lo, r.hi, 0, 0);
         r = FUN_001a89a8(">\x0b", 2, 1);  /* DAT_005ce80d */
         FUN_002a4c98(r.lo, r.hi, 0, 0);
-        r = FUN_00208418(0, 0);
+        r = (sk_wide_t){FUN_00208418(0, 0), 0};
         FUN_002a4c98(r.lo, r.hi, 0, 0);
         return r;
     }
@@ -5894,7 +5922,7 @@ unsigned long sk_collection_map_reduce(unsigned long (*cb)(unsigned long, unsign
     unsigned long acc;
 
     r = FUN_002488b4(0x0 + 0x18);
-    acc = cb(&acc, r.lo, r.hi, flags & 0x10101);
+    acc = cb(0, r.lo, r.hi, flags & 0x10101);
     return acc;
 }
 
@@ -5921,7 +5949,7 @@ void sk_collection_apply(void)
     FUN_0034bb84();
     r = FUN_002488b4(0x0 + 0x18);
     FUN_003522d4(r.lo, r.hi, 0x10101);
-    ((void (*)(void))0)();
+    sk_indirect_dispatch(0);
 }
 
 /* FUN_002488b4 @ 0x2488b4   (est. sk_collection_range_get)
@@ -5930,13 +5958,13 @@ void sk_collection_apply(void)
  * where count comes from a runtime helper masked to 24 bits.
  * Confidence: medium
  * Notes: x19 = collection base; range [base+8, base+8+count]. */
-sk_wide_t sk_collection_range_get(void)
+sk_wide_t sk_collection_range_get(unsigned long base)
 {
     uint32_t cnt;
 
     FUN_0034da88();
     cnt = FUN_001ee0c8() & 0xffffff;
-    return (sk_wide_t){0x0 + 8, 0x0 + 8 + cnt};
+    return (sk_wide_t){base + 8, base + 8 + cnt};
 }
 
 /* FUN_00248900 @ 0x248900   (est. sk_collection_reduce_wide)
@@ -5951,7 +5979,7 @@ sk_wide_t sk_collection_reduce_wide(void)
 
     FUN_002488b4(0x0 + 0x18);
     r = FUN_003586d8();
-    FUN_0024893c(&acc, r.lo, r.hi, 0);
+    FUN_0024893c();
     return (sk_wide_t){acc, 0};
 }
 
@@ -5974,7 +6002,7 @@ void sk_collection_sum_wide(void)
     } else {
         n = 0;
         do {
-            uint32_t v = FUN_00248a34();
+            uint32_t v = (uint32_t)FUN_00248a34().lo;
             if ((v & 0x7f000000) != 0x1000000) { acc = 0; goto out; }
             v = v & 0x7fffff;
             if (v == 0x7fffff) {
@@ -6003,7 +6031,7 @@ out:
  * an out-of-range advance). Returns the element value.
  * Confidence: low
  * Notes: element reader FUN_0024c56c; bounds FUN_0024b938; advance 0024c5f4. */
-void sk_collection_next_element(void)
+sk_wide_t sk_collection_next_element(void)
 {
     long base;
     int cur;

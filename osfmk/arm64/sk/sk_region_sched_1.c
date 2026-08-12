@@ -19,6 +19,9 @@
 #define CONCAT44(hi, lo) ((((unsigned long)(hi)) << 32) | ((unsigned long)(lo) & 0xffffffff))
 #define CONCAT31(hi, lo) ((((unsigned long)(hi)) << 8) | ((unsigned long)(lo) & 0xff))
 
+/* ZEXT816 = zero-extend 16-bit to 64-bit */
+#define ZEXT816(x) ((unsigned long)(unsigned short)(x))
+
 /* Ghidra decompiler models indirect calls through a "code *" function pointer (returns x0). */
 typedef unsigned long (*code)();
 
@@ -32,26 +35,23 @@ extern void sk_swift_type_arg2();                                     /* FUN_000
 extern void sk_swift_elem_append(unsigned char v);                    /* FUN_000230f8 */
 extern void sk_swift_buf_ctx(void *out);                              /* FUN_00022c48 */
 extern void sk_swift_error_build(void *out, void *in, void *err);     /* FUN_00025f44 */
-extern void sk_swift_string_build(void *out, void *buf);              /* FUN_000214b0 */
+extern void sk_swift_string_build();              /* FUN_000214b0 */
 extern char sk_swift_result_check(void);                              /* FUN_000217e4 */
 extern unsigned long sk_swift_result_value(void);                     /* FUN_00021904 */
 extern unsigned long sk_swift_result_value2(void);                    /* FUN_00021738 */
-extern unsigned long sk_swift_collection_op(void *out, ...);          /* FUN_000268d0 */
+extern unsigned long sk_swift_collection_op();                        /* FUN_000268d0 */
 extern void sk_swift_retain();                                        /* FUN_003698b0 */
 extern void sk_swift_release();                                       /* FUN_0036993c */
 extern unsigned long sk_swift_err_code(unsigned long a);              /* FUN_00019aac */
-extern long sk_swift_collection_count(void *buf, unsigned long a, unsigned long b); /* FUN_00026754 */
-extern void sk_swift_collection_init();                               /* FUN_000267d4 */
+extern long sk_swift_collection_count();                              /* FUN_00026754 */
+extern unsigned long sk_swift_collection_init();                               /* FUN_000267d4 */
 extern void sk_swift_epilogue(void);                                  /* FUN_00025704 */
 extern void sk_swift_precond_1(unsigned long a);                      /* FUN_002a4ab4 */
 extern void sk_swift_precond_2();                                     /* thunk_FUN_002acbb8 -> FUN_002acbb8 */
 extern void *sk_swift_meta(unsigned long a);                          /* FUN_00027724 */
 extern void sk_swift_abort_tail(unsigned long a);                     /* FUN_003a25d4 */
-extern void sk_swift_fatal_error(const char *msg, int a, int b, unsigned long c,
-                                 unsigned long d, const char *file, int line,
-                                 int e, unsigned long f, unsigned long g)
-    __attribute__((noreturn));                                        /* FUN_001afa84 */
-extern void sk_swift_fatal_error_2(void);                             /* FUN_001afe4c */
+extern void sk_swift_fatal_error();                                        /* FUN_001afa84 */
+extern void sk_swift_fatal_error_2();                             /* FUN_001afe4c */
 extern const char sk_fatal_error_str[];   /* s_Fatal_error_005accd0 */
 extern const char sk_xnu_upcalls_swift[]; /* s_XnuUpcallsV2_XnuUpcallsV2_Swift__005ccbc0 */
 extern const char sk_index_oob_str[];     /* s_Index_out_of_bounds_005cdab0 */
@@ -65,390 +65,861 @@ extern unsigned long DAT_00669c50;
 extern unsigned long DAT_00669c90;
 extern unsigned long FUN_0065a550;
 extern unsigned long FUN_0066a720;
+extern unsigned long sk_alloc_pages();  /* FUN_0036b270 */
+extern void sk_free(void *ptr);  /* FUN_0036b118 */
+extern unsigned long FUN_0018cb24();
 extern void sk_lock_acquire(void);        /* FUN_00354a34 */
 extern void sk_lock_release_simple(void); /* FUN_00356940 */
 extern void *sk_lock_owner(void);         /* FUN_00351dc0 */
-extern void sk_lock_notify(void *a);      /* FUN_00354ef8 */
+extern void sk_lock_notify();      /* FUN_00354ef8 */
 extern void sk_lock_wait(void);           /* FUN_0035a158 */
-extern void sk_memzero_string(void *s);   /* FUN_0006f768 */
+extern void sk_memzero_string();   /* FUN_0006f768 */
 extern void sk_lock_enter(void);          /* FUN_00354318 */
 extern void sk_lock_exit(void);           /* FUN_0035a134 */
 extern unsigned long *DAT_004e7990;       /* dispatch table base (register-indexed) */
 extern unsigned long *DAT_004e79a8;
 extern unsigned int *DAT_004e79c0;
+extern code DAT_00658c00;
+extern unsigned char DAT_006575c0;
+extern unsigned char DAT_004f1950;
+extern unsigned char DAT_00657718;
+extern unsigned char DAT_004f2228;
+extern const char s_UnsafeMutablePointer_deinitializ_005cd730[];
+extern const char s_Swift_UnsafePointer_swift_005cd770[];
+extern const char s_UnsafeMutablePointer_moveInitial_005cd790[];
+extern const char s_Unexpectedly_found_nil_while_unw_005cd7d0[];
+extern const char s_Unexpectedly_found_nil_while_imp_005cd810[];
+extern const char s_invalid_Collection__count_differ_005cd8e0[];
+extern const char s_Swift_ArrayBufferProtocol_swift_005d3ec0[];
+extern const char s_UnsafeMutablePointer_initialize_w_005cd860[];
+extern const char s_UnsafeMutablePointer_initialize_o_005cd8a0[];
+extern const char s_Swift_ArrayShared_swift_005cd920[];
+extern const char s_Index_out_of_range_005cd940[];
+extern const char s_Swift_ContiguousArrayBuffer_swif_005cd960[];
+extern const char s_Array_index_is_out_of_range_005cd9b0[];
+extern const char s_Negative_Array_index_is_out_of_r_005cd9d0[];
+extern const char s_Swift_Array_swift_005cd990[];
+extern const char s_Negative_value_is_not_representa_005ce190[];
+extern const char s_Swift_Integers_swift_005cd680[];
+extern unsigned char DAT_00657778;
+extern unsigned char DAT_004e7f08;
+extern unsigned char DAT_001a1630;
+extern unsigned char DAT_00346bc8;
+extern unsigned char DAT_003471a0;
+extern unsigned char DAT_0019f098;
+extern unsigned char DAT_004e824c;
+extern unsigned long stack_slot_c0;
+extern void FUN_00356d20();
+extern void FUN_001a07bc();
+extern void FUN_001a0908();
+extern void FUN_001a0ef0();
+extern void FUN_001a0fa4();
+extern unsigned long stack0xffffffffffffffc8;
+extern unsigned char DAT_00611b24;
+extern unsigned long LAB_00611b34;
 
 
-/* Out-of-range kernel / Swift-runtime helpers referenced by bodies (signatures from Ghidra;
- * reconstructed by sibling SK range workers). */
+/* Out-of-range helpers (FUN_ addr in comment). */
+extern unsigned long FUN_000218a4(void);
+extern unsigned char FUN_0018200c(void);
+extern unsigned long FUN_0018b1e4(unsigned long, unsigned long);
+extern unsigned long FUN_0018dd04();
+extern void FUN_0018ddd8();
+extern long FUN_00023c78(unsigned long);
+extern long FUN_00023d00(unsigned long);
+extern long FUN_000bd0e4(unsigned long);
+extern void FUN_0018e38c();
+extern long FUN_001477c4(unsigned long);
+extern void FUN_0036b118();
+extern void FUN_003488bc();
+extern void FUN_001dc56c();
+extern void FUN_001dc620();
+extern void FUN_001da01c();
+extern void FUN_0019f1ec();
+extern void FUN_00357874();
+extern unsigned long FUN_0005b140();
+extern void FUN_001150e0();
+extern const char s_integer_overflow_005bb5bd[];
+extern unsigned long FUN_00023f74();
+extern unsigned long FUN_0018c594();
+extern unsigned char DAT_0000118f;
+extern unsigned char DAT_00001197;
+extern unsigned long *DAT_004e7a18;
+extern unsigned int *DAT_004e79c0;
+extern code DAT_00658c00;
+extern unsigned char DAT_006575c0;
+extern unsigned char DAT_004f1950;
+extern unsigned char DAT_00657718;
+extern unsigned char DAT_004f2228;
+extern const char s_UnsafeMutablePointer_deinitializ_005cd730[];
+extern const char s_Swift_UnsafePointer_swift_005cd770[];
+extern const char s_UnsafeMutablePointer_moveInitial_005cd790[];
+extern const char s_Unexpectedly_found_nil_while_unw_005cd7d0[];
+extern const char s_Unexpectedly_found_nil_while_imp_005cd810[];
+extern const char s_invalid_Collection__count_differ_005cd8e0[];
+extern const char s_Swift_ArrayBufferProtocol_swift_005d3ec0[];
+extern const char s_UnsafeMutablePointer_initialize_w_005cd860[];
+extern const char s_UnsafeMutablePointer_initialize_o_005cd8a0[];
+extern const char s_Swift_ArrayShared_swift_005cd920[];
+extern const char s_Index_out_of_range_005cd940[];
+extern const char s_Swift_ContiguousArrayBuffer_swif_005cd960[];
+extern const char s_Array_index_is_out_of_range_005cd9b0[];
+extern const char s_Negative_Array_index_is_out_of_r_005cd9d0[];
+extern const char s_Swift_Array_swift_005cd990[];
+extern const char s_Negative_value_is_not_representa_005ce190[];
+extern const char s_Swift_Integers_swift_005cd680[];
+extern unsigned char DAT_00657778;
+extern unsigned char DAT_004e7f08;
+extern unsigned char DAT_001a1630;
+extern unsigned char DAT_00346bc8;
+extern unsigned char DAT_003471a0;
+extern unsigned char DAT_0019f098;
+extern unsigned char DAT_004e824c;
+extern unsigned long stack_slot_c0;
+extern unsigned long stack0xffffffffffffffc8;
+extern unsigned char DAT_00611b24;
+extern unsigned long LAB_00611b34;
 
-/* ------------------------------------------------------------------ *
- * Opaque Swift type/metadata descriptors (DAT_/LAB_ in comment; bodies reference
- * the renamed extern symbol). */
-extern uint8_t sk_meta_001a1630[];  /* DAT_001a1630 */
-extern uint8_t sk_meta_00319528[];  /* DAT_00319528 */
-extern uint8_t sk_meta_003471a0[];  /* DAT_003471a0 */
-extern uint8_t sk_meta_003471a4[];  /* DAT_003471a4 */
-extern uint8_t sk_meta_003471a8[];  /* DAT_003471a8 */
-extern uint8_t sk_meta_004bbf40[];  /* DAT_004bbf40 */
-extern uint8_t sk_meta_004be910[];  /* DAT_004be910 */
-extern uint8_t sk_meta_004c0690[];  /* DAT_004c0690 */
-extern uint8_t sk_meta_004c06e0[];  /* DAT_004c06e0 */
-extern uint8_t sk_meta_004c0740[];  /* DAT_004c0740 */
-extern uint8_t sk_meta_004c2600[];  /* DAT_004c2600 */
-extern uint8_t sk_meta_004e7ec8[];  /* DAT_004e7ec8 */
-extern uint8_t sk_meta_004e7ed0[];  /* DAT_004e7ed0 */
-extern uint8_t sk_meta_004e7ed8[];  /* DAT_004e7ed8 */
-extern uint8_t sk_meta_004e7f08[];  /* DAT_004e7f08 */
-extern uint8_t sk_meta_004e7f10[];  /* DAT_004e7f10 */
-extern uint8_t sk_meta_004e80f8[];  /* DAT_004e80f8 */
-extern uint8_t sk_meta_004e8100[];  /* DAT_004e8100 */
-extern uint8_t sk_meta_004e8108[];  /* DAT_004e8108 */
-extern uint8_t sk_meta_004e8230[];  /* DAT_004e8230 */
-extern uint8_t sk_meta_004e8268[];  /* DAT_004e8268 */
-extern uint8_t sk_meta_004e83ac[];  /* DAT_004e83ac */
-extern uint8_t sk_meta_004e83c8[];  /* DAT_004e83c8 */
-extern uint8_t sk_meta_004e83e4[];  /* DAT_004e83e4 */
-extern uint8_t sk_meta_004e8400[];  /* DAT_004e8400 */
-extern uint8_t sk_meta_004f18d8[];  /* DAT_004f18d8 */
-extern uint8_t sk_meta_004f1908[];  /* DAT_004f1908 */
-extern uint8_t sk_meta_004f1910[];  /* DAT_004f1910 */
-extern uint8_t sk_meta_004f1948[];  /* DAT_004f1948 */
-extern uint8_t sk_meta_004f1980[];  /* DAT_004f1980 */
-extern uint8_t sk_meta_004f2100[];  /* DAT_004f2100 */
-extern uint8_t sk_meta_004f2108[];  /* DAT_004f2108 */
-extern uint8_t sk_meta_004f2118[];  /* DAT_004f2118 */
-extern uint8_t sk_meta_004f2138[];  /* DAT_004f2138 */
-extern uint8_t sk_meta_004f21b0[];  /* DAT_004f21b0 */
-extern uint8_t sk_meta_004f2220[];  /* DAT_004f2220 */
-extern uint8_t sk_meta_004f2230[];  /* DAT_004f2230 */
-extern uint8_t sk_meta_005a19e0[];  /* DAT_005a19e0 */
-extern uint8_t sk_meta_005a4b20[];  /* DAT_005a4b20 */
-extern uint8_t sk_meta_005be7c0[];  /* DAT_005be7c0 */
-extern uint8_t sk_meta_005d32c2[];  /* DAT_005d32c2 */
-extern uint8_t sk_meta_005d3eba[];  /* DAT_005d3eba */
-extern uint8_t sk_meta_005d3ebd[];  /* DAT_005d3ebd */
-extern uint8_t sk_meta_0060e208[];  /* DAT_0060e208 */
-extern uint8_t sk_meta_0060e230[];  /* DAT_0060e230 */
-extern uint8_t sk_meta_00611b24[];  /* DAT_00611b24 */
-extern uint8_t sk_meta_00612b58[];  /* DAT_00612b58 */
-extern uint8_t sk_meta_00612b90[];  /* DAT_00612b90 */
-extern uint8_t sk_meta_0064c040[];  /* DAT_0064c040 */
-extern uint8_t sk_meta_0064e838[];  /* DAT_0064e838 */
-extern uint8_t sk_meta_0064e888[];  /* DAT_0064e888 */
-extern uint8_t sk_meta_0064e890[];  /* DAT_0064e890 */
-extern uint8_t sk_meta_00657578[];  /* DAT_00657578 */
-extern uint8_t sk_meta_00657580[];  /* DAT_00657580 */
-extern uint8_t sk_meta_006575b8[];  /* DAT_006575b8 */
-extern uint8_t sk_meta_006575f0[];  /* DAT_006575f0 */
-extern uint8_t sk_meta_00657628[];  /* DAT_00657628 */
-extern uint8_t sk_meta_00657658[];  /* DAT_00657658 */
-extern uint8_t sk_meta_00657678[];  /* DAT_00657678 */
-extern uint8_t sk_meta_00657710[];  /* DAT_00657710 */
-extern uint8_t sk_meta_00657720[];  /* DAT_00657720 */
-extern uint8_t sk_meta_00657778[];  /* DAT_00657778 */
-extern uint8_t sk_meta_001a1750[];  /* LAB_001a1750 */
-extern uint8_t sk_meta_00346d60[];  /* LAB_00346d60 */
-extern uint8_t sk_meta_0034724c[];  /* LAB_0034724c */
-extern uint8_t sk_meta_00611b34[];  /* LAB_00611b34 */
-extern uint8_t sk_meta_00657620[];  /* LAB_00657620 */
-extern uint8_t sk_meta_00657638[];  /* LAB_00657638 */
-extern uint8_t sk_meta_006576b8[];  /* LAB_006576b8 */
+
+
+/* Out-of-range helpers referenced by bodies (old-style externs). */
+extern unsigned long FUN_00002534();
+extern unsigned long FUN_00019aac();
+extern unsigned long FUN_0001a1c8();
+extern unsigned long FUN_000214b0();
+extern unsigned long FUN_00021738();
+extern unsigned long FUN_000217e4();
+extern unsigned long FUN_00021904();
+extern unsigned long FUN_00022c48();
+extern unsigned long FUN_000230f8();
+extern unsigned long FUN_000231f0();
+extern unsigned long FUN_00023208();
+extern unsigned long FUN_00023318();
+extern unsigned long FUN_00024068();
+extern unsigned long FUN_00025704();
+extern unsigned long FUN_00025ebc();
+extern unsigned long FUN_00025f44();
+extern unsigned long FUN_000262fc();
+extern unsigned long FUN_00026754();
+extern unsigned long FUN_000267d4();
+extern unsigned long FUN_000268d0();
+extern unsigned long FUN_00027724();
+extern unsigned long FUN_00027754();
+extern unsigned long FUN_00027788();
+extern unsigned long FUN_000277b8();
+extern unsigned long FUN_000277e8();
+extern unsigned long FUN_00027818();
+extern unsigned long FUN_00041138();
+extern unsigned long FUN_0006b3f4();
+extern unsigned long FUN_0006b42c();
+extern unsigned long FUN_0006b6f4();
+extern unsigned long FUN_0006f768();
+extern unsigned long FUN_00077630();
+extern unsigned long FUN_0007766c();
+extern unsigned long FUN_000776cc();
+extern unsigned long FUN_000776d8();
+extern unsigned long FUN_00077708();
+extern unsigned long FUN_0007791c();
+extern unsigned long FUN_0007c028();
+extern unsigned long FUN_0007c1a4();
+extern unsigned long FUN_000839d8();
+extern unsigned long FUN_0008409c();
+extern unsigned long FUN_0008412c();
+extern unsigned long FUN_00084180();
+extern unsigned long FUN_00084220();
+extern unsigned long FUN_00084234();
+extern unsigned long FUN_0008e500();
+extern unsigned long FUN_0008e518();
+extern unsigned long FUN_0009e234();
+extern unsigned long FUN_000a6e14();
+extern unsigned long FUN_000a6f68();
+extern unsigned long FUN_000a6f88();
+extern unsigned long FUN_000bd3a4();
+extern unsigned long FUN_000dbe70();
+extern unsigned long FUN_000dbf08();
+extern unsigned long FUN_000e15d8();
+extern unsigned long FUN_000e72b0();
+extern unsigned long FUN_000feb10();
+extern unsigned long FUN_00100c38();
+extern unsigned long FUN_00100efc();
+extern unsigned long FUN_00117cc4();
+extern unsigned long FUN_00117d14();
+extern unsigned long FUN_0011aa70();
+extern unsigned long FUN_001a0734();
+extern unsigned long FUN_001a0754();
+extern unsigned long FUN_001a0774();
+extern unsigned long FUN_001a16e8();
+extern unsigned long FUN_001a1894();
+extern unsigned long FUN_001a26e0();
+extern unsigned long FUN_001a894c();
+extern unsigned long FUN_001afa84();
+extern unsigned long FUN_001afe4c();
+extern unsigned long FUN_001b89a4();
+extern unsigned long FUN_001b8cf4();
+extern unsigned long FUN_001da1c0();
+extern unsigned long FUN_001da324();
+extern unsigned long FUN_001dd614();
+extern unsigned long FUN_001dd6ac();
+extern unsigned long FUN_001e5438();
+extern unsigned long FUN_001e6608();
+extern unsigned long FUN_00243c60();
+extern unsigned long FUN_002a4ab4();
+extern unsigned long FUN_002acbb8();
+extern unsigned long FUN_0031090c();
+extern unsigned long FUN_00310924();
+extern unsigned long FUN_00310984();
+extern unsigned long FUN_003109e4();
+extern unsigned long FUN_00310a14();
+extern unsigned long FUN_00310a44();
+extern unsigned long FUN_00310aa4();
+extern unsigned long FUN_00310ad4();
+extern unsigned long FUN_00310b08();
+extern unsigned long FUN_00310b38();
+extern unsigned long FUN_00310b68();
+extern unsigned long FUN_00310b98();
+extern unsigned long FUN_00310bc8();
+extern unsigned long FUN_00310bf8();
+extern unsigned long FUN_00310c44();
+extern unsigned long FUN_00310c74();
+extern unsigned long FUN_00310ca4();
+extern unsigned long FUN_00310cd4();
+extern unsigned long FUN_00310d04();
+extern unsigned long FUN_00310d1c();
+extern unsigned long FUN_00310d34();
+extern unsigned long FUN_00310d4c();
+extern unsigned long FUN_00310d68();
+extern unsigned long FUN_00310d80();
+extern unsigned long FUN_00310d98();
+extern unsigned long FUN_00310da8();
+extern unsigned long FUN_00310dd8();
+extern unsigned long FUN_00310e08();
+extern unsigned long FUN_00310e20();
+extern unsigned long FUN_00310e50();
+extern unsigned long FUN_00310e74();
+extern unsigned long FUN_00310ea4();
+extern unsigned long FUN_00310ed4();
+extern unsigned long FUN_00310f04();
+extern unsigned long FUN_00320fc8();
+extern unsigned long FUN_00344d4c();
+extern unsigned long FUN_00347d60();
+extern unsigned long FUN_00347fb4();
+extern unsigned long FUN_00348074();
+extern unsigned long FUN_003480e4();
+extern unsigned long FUN_00348304();
+extern unsigned long FUN_0034834c();
+extern unsigned long FUN_003485b8();
+extern unsigned long FUN_00348718();
+extern unsigned long FUN_003488f4();
+extern unsigned long FUN_003489c0();
+extern unsigned long FUN_00348a80();
+extern unsigned long FUN_00348abc();
+extern unsigned long FUN_00348b5c();
+extern unsigned long FUN_00348b94();
+extern unsigned long FUN_00348bbc();
+extern unsigned long FUN_00348bd8();
+extern unsigned long FUN_00348ce8();
+extern unsigned long FUN_00348d30();
+extern unsigned long FUN_00348d4c();
+extern unsigned long FUN_00348e00();
+extern unsigned long FUN_00348e18();
+extern unsigned long FUN_00348e78();
+extern unsigned long FUN_00348fd8();
+extern unsigned long FUN_00349068();
+extern unsigned long FUN_00349370();
+extern unsigned long FUN_003493c4();
+extern unsigned long FUN_003494b4();
+extern unsigned long FUN_003494e8();
+extern unsigned long FUN_00349530();
+extern unsigned long FUN_00349618();
+extern unsigned long FUN_00349684();
+extern unsigned long FUN_00349748();
+extern unsigned long FUN_003498dc();
+extern unsigned long FUN_0034998c();
+extern unsigned long FUN_003499f0();
+extern unsigned long FUN_00349a18();
+extern unsigned long FUN_00349b3c();
+extern unsigned long FUN_00349db0();
+extern unsigned long FUN_00349f5c();
+extern unsigned long FUN_00349fcc();
+extern unsigned long FUN_0034a198();
+extern unsigned long FUN_0034a210();
+extern unsigned long FUN_0034a2ac();
+extern unsigned long FUN_0034a2f8();
+extern unsigned long FUN_0034a368();
+extern unsigned long FUN_0034a3d8();
+extern unsigned long FUN_0034a74c();
+extern unsigned long FUN_0034a760();
+extern unsigned long FUN_0034a774();
+extern unsigned long FUN_0034a944();
+extern unsigned long FUN_0034a958();
+extern unsigned long FUN_0034aa28();
+extern unsigned long FUN_0034ab20();
+extern unsigned long FUN_0034acd0();
+extern unsigned long FUN_0034ad00();
+extern unsigned long FUN_0034ae94();
+extern unsigned long FUN_0034aebc();
+extern unsigned long FUN_0034aee4();
+extern unsigned long FUN_0034b07c();
+extern unsigned long FUN_0034b0b4();
+extern unsigned long FUN_0034b0c4();
+extern unsigned long FUN_0034b164();
+extern unsigned long FUN_0034b288();
+extern unsigned long FUN_0034b368();
+extern unsigned long FUN_0034b3d8();
+extern unsigned long FUN_0034b3e8();
+extern unsigned long FUN_0034b430();
+extern unsigned long FUN_0034b4c0();
+extern unsigned long FUN_0034b690();
+extern unsigned long FUN_0034b804();
+extern unsigned long FUN_0034b85c();
+extern unsigned long FUN_0034b87c();
+extern unsigned long FUN_0034b8dc();
+extern unsigned long FUN_0034ba98();
+extern unsigned long FUN_0034bc94();
+extern unsigned long FUN_0034bcf0();
+extern unsigned long FUN_0034bddc();
+extern unsigned long FUN_0034bdfc();
+extern unsigned long FUN_0034bec4();
+extern unsigned long FUN_0034bf2c();
+extern unsigned long FUN_0034c044();
+extern unsigned long FUN_0034c084();
+extern unsigned long FUN_0034c0d0();
+extern unsigned long FUN_0034c234();
+extern unsigned long FUN_0034c3f4();
+extern unsigned long FUN_0034c444();
+extern unsigned long FUN_0034c4fc();
+extern unsigned long FUN_0034c7d4();
+extern unsigned long FUN_0034ce28();
+extern unsigned long FUN_0034cee8();
+extern unsigned long FUN_0034cf64();
+extern unsigned long FUN_0034cf84();
+extern unsigned long FUN_0034cfa4();
+extern unsigned long FUN_0034d2e4();
+extern unsigned long FUN_0034d334();
+extern unsigned long FUN_0034d344();
+extern unsigned long FUN_0034d354();
+extern unsigned long FUN_0034d374();
+extern unsigned long FUN_0034d53c();
+extern unsigned long FUN_0034d778();
+extern unsigned long FUN_0034d8d4();
+extern unsigned long FUN_0034da58();
+extern unsigned long FUN_0034db08();
+extern unsigned long FUN_0034db38();
+extern unsigned long FUN_0034dc20();
+extern unsigned long FUN_0034de64();
+extern unsigned long FUN_0034df34();
+extern unsigned long FUN_0034dff4();
+extern unsigned long FUN_0034e064();
+extern unsigned long FUN_0034e0d4();
+extern unsigned long FUN_0034e15c();
+extern unsigned long FUN_0034e1d0();
+extern unsigned long FUN_0034e384();
+extern unsigned long FUN_0034e3ac();
+extern unsigned long FUN_0034e4dc();
+extern unsigned long FUN_0034e52c();
+extern unsigned long FUN_0034e54c();
+extern unsigned long FUN_0034e63c();
+extern unsigned long FUN_0034e72c();
+extern unsigned long FUN_0034e9e8();
+extern unsigned long FUN_0034ede8();
+extern unsigned long FUN_0034ee08();
+extern unsigned long FUN_0034ee98();
+extern unsigned long FUN_0034ef18();
+extern unsigned long FUN_0034ef68();
+extern unsigned long FUN_0034ef78();
+extern unsigned long FUN_0034f064();
+extern unsigned long FUN_0034f424();
+extern unsigned long FUN_0034f4b4();
+extern unsigned long FUN_0034f4f4();
+extern unsigned long FUN_0034f644();
+extern unsigned long FUN_0034f664();
+extern unsigned long FUN_0034fc8c();
+extern unsigned long FUN_0034fde0();
+extern unsigned long FUN_0034fe64();
+extern unsigned long FUN_0034feb0();
+extern unsigned long FUN_0034fec0();
+extern unsigned long FUN_0034fed0();
+extern unsigned long FUN_003501fc();
+extern unsigned long FUN_003502a8();
+extern unsigned long FUN_003503f8();
+extern unsigned long FUN_00350410();
+extern unsigned long FUN_00350428();
+extern unsigned long FUN_00350464();
+extern unsigned long FUN_00350470();
+extern unsigned long FUN_00350488();
+extern unsigned long FUN_00350494();
+extern unsigned long FUN_003504a0();
+extern unsigned long FUN_003504b8();
+extern unsigned long FUN_003504c4();
+extern unsigned long FUN_003504d0();
+extern unsigned long FUN_003504e8();
+extern unsigned long FUN_00350518();
+extern unsigned long FUN_00350530();
+extern unsigned long FUN_00350548();
+extern unsigned long FUN_00350560();
+extern unsigned long FUN_003505e8();
+extern unsigned long FUN_0035060c();
+extern unsigned long FUN_00350618();
+extern unsigned long FUN_00350624();
+extern unsigned long FUN_00350630();
+extern unsigned long FUN_0035063c();
+extern unsigned long FUN_003506cc();
+extern unsigned long FUN_00350704();
+extern unsigned long FUN_00350780();
+extern unsigned long FUN_003507d4();
+extern unsigned long FUN_003507e0();
+extern unsigned long FUN_00350810();
+extern unsigned long FUN_003508c0();
+extern unsigned long FUN_003508cc();
+extern unsigned long FUN_003508fc();
+extern unsigned long FUN_00350944();
+extern unsigned long FUN_00350968();
+extern unsigned long FUN_00350974();
+extern unsigned long FUN_0035098c();
+extern unsigned long FUN_003509bc();
+extern unsigned long FUN_003509d4();
+extern unsigned long FUN_003509e0();
+extern unsigned long FUN_00350a10();
+extern unsigned long FUN_00350a34();
+extern unsigned long FUN_00350a64();
+extern unsigned long FUN_00350a7c();
+extern unsigned long FUN_00350aa0();
+extern unsigned long FUN_00350adc();
+extern unsigned long FUN_00350b00();
+extern unsigned long FUN_00350b24();
+extern unsigned long FUN_00350b48();
+extern unsigned long FUN_00350b54();
+extern unsigned long FUN_00350b90();
+extern unsigned long FUN_00350b9c();
+extern unsigned long FUN_00350bcc();
+extern unsigned long FUN_00350bf0();
+extern unsigned long FUN_00350c50();
+extern unsigned long FUN_00350db4();
+extern unsigned long FUN_00350ea4();
+extern unsigned long FUN_00351048();
+extern unsigned long FUN_003510c4();
+extern unsigned long FUN_003510dc();
+extern unsigned long FUN_00351100();
+extern unsigned long FUN_00351118();
+extern unsigned long FUN_00351124();
+extern unsigned long FUN_0035113c();
+extern unsigned long FUN_00351184();
+extern unsigned long FUN_00351190();
+extern unsigned long FUN_003511b4();
+extern unsigned long FUN_003511c0();
+extern unsigned long FUN_003511d8();
+extern unsigned long FUN_003512c0();
+extern unsigned long FUN_003512cc();
+extern unsigned long FUN_0035130c();
+extern unsigned long FUN_00351360();
+extern unsigned long FUN_00351384();
+extern unsigned long FUN_003513b4();
+extern unsigned long FUN_003513fc();
+extern unsigned long FUN_00351420();
+extern unsigned long FUN_0035145c();
+extern unsigned long FUN_003514b8();
+extern unsigned long FUN_0035156c();
+extern unsigned long FUN_00351584();
+extern unsigned long FUN_003515a8();
+extern unsigned long FUN_003515e4();
+extern unsigned long FUN_0035169c();
+extern unsigned long FUN_003516cc();
+extern unsigned long FUN_003516e4();
+extern unsigned long FUN_003516fc();
+extern unsigned long FUN_003518f4();
+extern unsigned long FUN_00351978();
+extern unsigned long FUN_00351a38();
+extern unsigned long FUN_00351a44();
+extern unsigned long FUN_00351a8c();
+extern unsigned long FUN_00351be0();
+extern unsigned long FUN_00351bec();
+extern unsigned long FUN_00351c28();
+extern unsigned long FUN_00351c70();
+extern unsigned long FUN_00351d0c();
+extern unsigned long FUN_00351d30();
+extern unsigned long FUN_00351dc0();
+extern unsigned long FUN_00351e20();
+extern unsigned long FUN_00351e84();
+extern unsigned long FUN_00351eb4();
+extern unsigned long FUN_00351ec0();
+extern unsigned long FUN_00351ee0();
+extern unsigned long FUN_00351ef8();
+extern unsigned long FUN_003521d4();
+extern unsigned long FUN_003522c8();
+extern unsigned long FUN_00352314();
+extern unsigned long FUN_00352360();
+extern unsigned long FUN_003523f0();
+extern unsigned long FUN_00352498();
+extern unsigned long FUN_0035272c();
+extern unsigned long FUN_00352920();
+extern unsigned long FUN_003529a4();
+extern unsigned long FUN_00352a4c();
+extern unsigned long FUN_00352be0();
+extern unsigned long FUN_00352bf8();
+extern unsigned long FUN_00352c10();
+extern unsigned long FUN_00352c34();
+extern unsigned long FUN_00352e0c();
+extern unsigned long FUN_00352e18();
+extern unsigned long FUN_00352ecc();
+extern unsigned long FUN_00352ee4();
+extern unsigned long FUN_00352efc();
+extern unsigned long FUN_0035308c();
+extern unsigned long FUN_003531c0();
+extern unsigned long FUN_003531f0();
+extern unsigned long FUN_00353274();
+extern unsigned long FUN_003534a4();
+extern unsigned long FUN_003534bc();
+extern unsigned long FUN_003534c8();
+extern unsigned long FUN_003537fc();
+extern unsigned long FUN_00353a0c();
+extern unsigned long FUN_00353a18();
+extern unsigned long FUN_00353a30();
+extern unsigned long FUN_00353ac8();
+extern unsigned long FUN_00353be8();
+extern unsigned long FUN_00353c0c();
+extern unsigned long FUN_00353c48();
+extern unsigned long FUN_00353c54();
+extern unsigned long FUN_00353efc();
+extern unsigned long FUN_003542e8();
+extern unsigned long FUN_0035430c();
+extern unsigned long FUN_00354318();
+extern unsigned long FUN_00354364();
+extern unsigned long FUN_003543f8();
+extern unsigned long FUN_00354708();
+extern unsigned long FUN_00354714();
+extern unsigned long FUN_00354828();
+extern unsigned long FUN_003549c0();
+extern unsigned long FUN_003549d8();
+extern unsigned long FUN_00354a34();
+extern unsigned long FUN_00354d20();
+extern unsigned long FUN_00354db8();
+extern unsigned long FUN_00354ef8();
+extern unsigned long FUN_0035578c();
+extern unsigned long FUN_00355a14();
+extern unsigned long FUN_00355b68();
+extern unsigned long FUN_00355cbc();
+extern unsigned long FUN_00356140();
+extern unsigned long FUN_003561ac();
+extern unsigned long FUN_0035631c();
+extern unsigned long FUN_0035687c();
+extern unsigned long FUN_003568e8();
+extern unsigned long FUN_00356940();
+extern unsigned long FUN_00356964();
+extern unsigned long FUN_00356988();
+extern unsigned long FUN_003569d8();
+extern unsigned long FUN_003569f0();
+extern unsigned long FUN_00356ad0();
+extern unsigned long FUN_00356b2c();
+extern unsigned long FUN_00356c18();
+extern unsigned long FUN_00357694();
+extern unsigned long FUN_003577b4();
+extern unsigned long FUN_00357a34();
+extern unsigned long FUN_00357a9c();
+extern unsigned long FUN_00357bc4();
+extern unsigned long FUN_00357c44();
+extern unsigned long FUN_00357c74();
+extern unsigned long FUN_00357ca0();
+extern unsigned long FUN_00357cb4();
+extern unsigned long FUN_00358134();
+extern unsigned long FUN_00358238();
+extern unsigned long FUN_00358324();
+extern unsigned long FUN_0035847c();
+extern unsigned long FUN_00358bc0();
+extern unsigned long FUN_00358d58();
+extern unsigned long FUN_00358de8();
+extern unsigned long FUN_00358eac();
+extern unsigned long FUN_00358f90();
+extern unsigned long FUN_003592f0();
+extern unsigned long FUN_0035a028();
+extern unsigned long FUN_0035a134();
+extern unsigned long FUN_0035a158();
+extern unsigned long FUN_0035a2b8();
+extern unsigned long FUN_0035a360();
+extern unsigned long FUN_0035a3ac();
+extern unsigned long FUN_0035a3b8();
+extern unsigned long FUN_0035a438();
+extern unsigned long FUN_0035a4c8();
+extern unsigned long FUN_0035a4e0();
+extern unsigned long FUN_0035a640();
+extern unsigned long FUN_0035a664();
+extern unsigned long FUN_0035a738();
+extern unsigned long FUN_0035ac40();
+extern unsigned long FUN_0035b67c();
+extern unsigned long FUN_0035b7ac();
+extern unsigned long FUN_0035b898();
+extern unsigned long FUN_0035bc70();
+extern unsigned long FUN_00365b6c();
+extern unsigned long FUN_003698b0();
+extern unsigned long FUN_0036993c();
+extern unsigned long FUN_0036a908();
+extern unsigned long FUN_0036a940();
+extern unsigned long FUN_0036b270();
+extern unsigned long FUN_003722e4();
+extern unsigned long FUN_00376820();
+extern unsigned long FUN_00377824();
+extern unsigned long FUN_00377bec();
+extern unsigned long FUN_003a25d4();
+extern unsigned long FUN_003a261c();
+extern unsigned long thunk_FUN_000126e8();
+extern unsigned long thunk_FUN_0001612c();
+extern unsigned long thunk_FUN_00024068();
+extern unsigned long thunk_FUN_002acbb8();
 
 
 
 /* Forward declarations of functions reconstructed in this file. */
-unsigned long FUN_001900d4(unsigned long param_1,long param_2);
-unsigned long FUN_001904d8(unsigned long param_1,unsigned long param_2,long param_3);
-void FUN_001908f0(unsigned long param_1,unsigned long param_2);
-unsigned long FUN_00190bbc(unsigned long param_1,unsigned long param_2,long param_3);
-void FUN_00190fd4(unsigned long param_1,unsigned long param_2,unsigned long *param_3);
-void FUN_001913b8(unsigned long param_1,unsigned long param_2,unsigned long *param_3);
-void FUN_0019179c(unsigned long param_1,unsigned long param_2,long param_3);
-void FUN_00191ba8(unsigned long param_1,unsigned char *param_2,unsigned long param_3);
-unsigned long FUN_00191f84(unsigned long param_1,unsigned long param_2);
-unsigned int FUN_0019225c(unsigned long param_1);
-unsigned int FUN_00192528(long param_1);
-void FUN_00192920(unsigned long param_1,unsigned long param_2);
-void FUN_00192bec(unsigned long param_1,unsigned long param_2);
-void FUN_00192eb8(unsigned long param_1,unsigned long param_2);
-void FUN_00193184(unsigned long param_1,unsigned long param_2);
-unsigned long FUN_00193450(unsigned long param_1);
-void FUN_00193718(unsigned long param_1,unsigned long param_2);
-void FUN_001939e4(unsigned long param_1,unsigned long param_2);
-void FUN_00193cb0(unsigned long param_1,unsigned long param_2);
-unsigned int FUN_00193f7c(unsigned long param_1,unsigned long param_2,unsigned char *param_3);
-void FUN_00194370(unsigned long param_1,unsigned long param_2);
-void FUN_0019463c(unsigned long param_1);
-void FUN_001948f8(unsigned long param_1);
-void FUN_00194bb4(unsigned long param_1,unsigned long param_2);
-void FUN_00194e80(unsigned long param_1,unsigned long param_2);
-void FUN_0019514c(unsigned long param_1,unsigned long param_2);
-unsigned int FUN_00195418(unsigned long param_1,unsigned long param_2);
-unsigned int FUN_001956f4(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-unsigned int FUN_001959e8(unsigned long param_1,unsigned long param_2);
-void FUN_00195cc4(unsigned long param_1,unsigned long param_2);
-void FUN_00195f6c(unsigned long param_1);
-unsigned long FUN_00196204(long param_1);
-unsigned long FUN_001964f4(unsigned long param_1,unsigned long param_2);
-void FUN_0019661c(unsigned long param_1);
-void FUN_00196644(unsigned long *param_1,unsigned long param_2);
-void FUN_00196964(unsigned long param_1);
-void FUN_00196c20(unsigned long *param_1,unsigned long param_2);
-unsigned long FUN_00196fec(void);
-unsigned long FUN_001972a4(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-void FUN_00197594(unsigned long param_1);
-void FUN_00197850(unsigned long param_1);
-void FUN_00197be4(unsigned long *param_1);
-void FUN_00197dd0();
+unsigned long FUN_001900d4();
+unsigned long FUN_001904d8();
+void FUN_001908f0();
+unsigned long FUN_00190bbc();
+void FUN_00190fd4();
+void FUN_001913b8();
+void FUN_0019179c();
+void FUN_00191ba8();
+unsigned long FUN_00191f84();
+unsigned int FUN_0019225c();
+unsigned int FUN_00192528();
+void FUN_00192920();
+void FUN_00192bec();
+void FUN_00192eb8();
+void FUN_00193184();
+unsigned long FUN_00193450();
+void FUN_00193718();
+void FUN_001939e4();
+void FUN_00193cb0();
+unsigned int FUN_00193f7c();
+void FUN_00194370();
+void FUN_0019463c();
+void FUN_001948f8();
+void FUN_00194bb4();
+void FUN_00194e80();
+void FUN_0019514c();
+unsigned int FUN_00195418();
+unsigned int FUN_001956f4();
+unsigned int FUN_001959e8();
+void FUN_00195cc4();
+void FUN_00195f6c();
+unsigned long FUN_00196204();
+unsigned long FUN_001964f4();
+void FUN_0019661c();
+void FUN_00196644();
+void FUN_00196964();
+void FUN_00196c20();
+unsigned long FUN_00196fec();
+unsigned long FUN_001972a4();
+void FUN_00197594();
+void FUN_00197850();
+void FUN_00197be4();
+unsigned long FUN_00197dd0();
 void FUN_00197e48();
-unsigned long FUN_00197e74(unsigned long param_1,unsigned long param_2);
-void FUN_00197fec(void);
-unsigned int FUN_00198024(void);
-unsigned int FUN_00198028(void);
-void FUN_0019804c();
+unsigned long FUN_00197e74();
+void FUN_00197fec();
+unsigned int FUN_00198024();
+unsigned int FUN_00198028();
+unsigned long FUN_0019804c();
 void FUN_001980c4();
-unsigned long FUN_001980f0(unsigned long param_1,unsigned long param_2);
-void FUN_00198268(void);
-unsigned int FUN_001982a0(void);
-unsigned int FUN_001982a4(void);
-unsigned long FUN_001982c8(void);
+unsigned long FUN_001980f0();
+void FUN_00198268();
+unsigned int FUN_001982a0();
+unsigned int FUN_001982a4();
+unsigned long FUN_001982c8();
 unsigned int FUN_00198300();
-void FUN_00198370(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-void FUN_00198438(unsigned long param_1,unsigned long param_2);
-void FUN_00198564(void);
-unsigned int FUN_0019859c(void);
-unsigned int FUN_001985a0(void);
-void FUN_001985c4();
+unsigned long FUN_00198370();
+void FUN_001983d4();
+unsigned long FUN_00198438();
+void FUN_00198564();
+unsigned int FUN_0019859c();
+unsigned int FUN_001985a0();
+unsigned long FUN_001985c4();
 void FUN_00198658();
-unsigned long FUN_00198684(unsigned long param_1,unsigned long param_2);
-void FUN_001987dc(void);
-unsigned int FUN_00198814(void);
-unsigned int FUN_00198818(void);
-void FUN_0019883c();
+unsigned long FUN_00198684();
+void FUN_001987dc();
+unsigned int FUN_00198814();
+unsigned int FUN_00198818();
+unsigned long FUN_0019883c();
 void FUN_001988b4();
-void FUN_001988e0(unsigned long param_1,unsigned long param_2);
-void FUN_00198a04(void);
-unsigned int FUN_00198a3c(void);
-unsigned int FUN_00198a40(void);
-long FUN_00198a64(unsigned char *param_1);
+void FUN_001988e0();
+void FUN_00198a04();
+unsigned int FUN_00198a3c();
+unsigned int FUN_00198a40();
+long FUN_00198a64();
 unsigned int FUN_00198acc();
-void FUN_00198b08(long param_1,unsigned long param_2,unsigned long param_3);
-void FUN_00198c20(unsigned char *param_1,unsigned long param_2,unsigned long param_3,unsigned int *param_4);
-void FUN_00198cf0(void);
-unsigned int FUN_00198d28(void);
-unsigned int FUN_00198d2c(void);
-void FUN_00198d50();
+unsigned long FUN_00198b08();
+void FUN_00198bac();
+void FUN_00198c20();
+void FUN_00198cf0();
+unsigned int FUN_00198d28();
+unsigned int FUN_00198d2c();
+unsigned long FUN_00198d50();
 void FUN_00198d68();
-unsigned long FUN_00198d94(unsigned long param_1,unsigned long param_2);
-void FUN_00198ecc(void);
+unsigned long FUN_00198d94();
+void FUN_00198ecc();
 unsigned int FUN_00198f04();
-void FUN_00198f2c();
+unsigned long FUN_00198f2c();
 void FUN_00198f8c();
-void FUN_00198fc8(unsigned long param_1,unsigned long param_2);
-void FUN_001990ec(void);
-unsigned int FUN_00199124(void);
-unsigned int FUN_00199128(void);
+unsigned long FUN_00198fc8();
+void FUN_001990ec();
+unsigned int FUN_00199124();
+unsigned int FUN_00199128();
 void FUN_0019914c();
 void FUN_001991c8();
-unsigned long FUN_00199254(unsigned long param_1,unsigned long param_2);
-void FUN_0019938c(void);
+void FUN_001991f4();
+unsigned long FUN_00199254();
+void FUN_0019938c();
 unsigned int FUN_001993c4();
-void FUN_00199438(long param_1);
-void FUN_0019957c(long param_1,unsigned long param_2,unsigned long param_3);
-unsigned int FUN_001996f0(void);
-unsigned int FUN_001996f4(void);
+void FUN_00199438();
+unsigned long FUN_0019957c();
+unsigned int FUN_001996f0();
+unsigned int FUN_001996f4();
 unsigned int FUN_00199718();
-void FUN_0019978c(long param_1);
-void FUN_001998c8(long param_1,unsigned long param_2,unsigned long param_3);
-unsigned int FUN_00199a34(void);
-unsigned int FUN_00199a38(void);
-void FUN_00199a5c();
+void FUN_0019978c();
+unsigned long FUN_001998c8();
+unsigned int FUN_00199a34();
+unsigned int FUN_00199a38();
+unsigned long FUN_00199a5c();
 void FUN_00199ad4();
-unsigned long FUN_00199b54(unsigned long param_1,unsigned long param_2);
-void FUN_00199ccc(void);
-unsigned int FUN_00199d04(void);
-unsigned int FUN_00199d08(void);
-void FUN_00199d2c();
+void FUN_00199b00();
+unsigned long FUN_00199b54();
+void FUN_00199ccc();
+unsigned int FUN_00199d04();
+unsigned int FUN_00199d08();
+unsigned long FUN_00199d2c();
 void FUN_00199d8c();
-void FUN_00199dc8(unsigned long param_1,unsigned long param_2);
-void FUN_00199eec(void);
-unsigned int FUN_00199f24(void);
-unsigned int FUN_00199f28(void);
-void FUN_00199f4c();
-void FUN_0019a034(unsigned long param_1,unsigned long param_2);
-void FUN_0019a180(void);
-unsigned int FUN_0019a1b8(void);
-unsigned int FUN_0019a1bc(void);
-void FUN_0019a1e0(unsigned long param_1,unsigned long param_2,unsigned long param_3,unsigned int *param_4);
-void FUN_0019a30c(unsigned char *param_1,unsigned long param_2,unsigned int *param_3);
-unsigned long FUN_0019a424(unsigned long param_1,unsigned long param_2);
-void FUN_0019a594(unsigned long param_1,unsigned long param_2);
-void FUN_0019a598(unsigned long param_1,unsigned long param_2);
-void FUN_0019a5c0(void);
-void FUN_0019a5c4(void);
-void FUN_0019a5ec(void);
-void FUN_0019a5f0(void);
+unsigned long FUN_00199dc8();
+void FUN_00199eec();
+unsigned int FUN_00199f24();
+unsigned int FUN_00199f28();
+unsigned long FUN_00199f4c();
+void FUN_00199fe4();
+unsigned long FUN_0019a034();
+void FUN_0019a180();
+unsigned int FUN_0019a1b8();
+unsigned int FUN_0019a1bc();
+void FUN_0019a1e0();
+void FUN_0019a30c();
+unsigned long FUN_0019a424();
+void FUN_0019a4dc();
+void FUN_0019a594();
+void FUN_0019a598();
+void FUN_0019a5c0();
+void FUN_0019a5c4();
+void FUN_0019a5ec();
+void FUN_0019a5f0();
 void FUN_0019a618();
-void FUN_0019a6e4(unsigned long param_1,unsigned long param_2);
-void FUN_0019a6e8(unsigned long param_1,unsigned long param_2);
-void FUN_0019a710(unsigned long *param_1,unsigned long param_2,unsigned int *param_3,code *param_4);
-void FUN_0019a7d8(void);
-void FUN_0019a7dc(void);
-void FUN_0019a804(void);
-void FUN_0019a808(void);
+void FUN_0019a6e4();
+void FUN_0019a6e8();
+void FUN_0019a710();
+void FUN_0019a7d8();
+void FUN_0019a7dc();
+void FUN_0019a804();
+void FUN_0019a808();
 unsigned long FUN_0019a830();
-void FUN_0019ad48(unsigned long param_1,unsigned long param_2);
-void FUN_0019ad4c(unsigned long param_1,unsigned long param_2);
-void FUN_0019ad70(void);
-void FUN_0019ad74(void);
-void FUN_0019ada4(void);
-void FUN_0019ada8(void);
-void FUN_0019addc(void);
-void FUN_0019ade0(void);
-void FUN_0019adf4(void);
-void FUN_0019adf8(void);
-unsigned long FUN_0019ae0c(long param_1);
-void FUN_0019ae2c(unsigned long param_1);
-void FUN_0019ae60(unsigned long param_1,unsigned long param_2);
-unsigned int FUN_0019af88(long param_1,long param_2,long param_3,long param_4);
-unsigned long FUN_0019afb0(long param_1);
-unsigned int FUN_0019afbc(long param_1);
-void FUN_0019afd4(void);
-void FUN_0019b018(void);
-void FUN_0019b25c(void);
+void FUN_0019ad48();
+void FUN_0019ad4c();
+void FUN_0019ad70();
+void FUN_0019ad74();
+void FUN_0019ada4();
+void FUN_0019ada8();
+void FUN_0019addc();
+void FUN_0019ade0();
+void FUN_0019adf4();
+void FUN_0019adf8();
+unsigned long FUN_0019ae0c();
+void FUN_0019ae2c();
+void FUN_0019ae60();
+unsigned int FUN_0019af88();
+unsigned long FUN_0019afb0();
+unsigned int FUN_0019afbc();
+void FUN_0019afd4();
+void FUN_0019b018();
+void FUN_0019b25c();
 void FUN_0019b274();
-void FUN_0019b318(void);
-void FUN_0019b528(void);
-void FUN_0019b66c(void);
-void FUN_0019c03c(void);
-void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-void FUN_0019c20c(void);
-long FUN_0019c258(void);
-void FUN_0019c2b0(void);
-void FUN_0019c2fc(void);
-void FUN_0019c348(void);
-void FUN_0019c3a4(void);
-void FUN_0019c3f0(void);
-void FUN_0019c44c();
-void FUN_0019c968(void);
-unsigned long FUN_0019c9bc(unsigned long param_1);
-unsigned long FUN_0019c9c4(unsigned long param_1);
-void FUN_0019c9cc(void);
-unsigned long FUN_0019cac8(long param_1,unsigned long param_2);
+void FUN_0019b318();
+void FUN_0019b528();
+void FUN_0019b66c();
+void FUN_0019c03c();
+void FUN_0019c078();
+void FUN_0019c20c();
+long FUN_0019c258();
+void FUN_0019c2b0();
+void FUN_0019c2fc();
+void FUN_0019c348();
+void FUN_0019c3a4();
+void FUN_0019c3f0();
+unsigned long FUN_0019c44c();
+void FUN_0019c53c();
+void FUN_0019c968();
+unsigned long FUN_0019c9bc();
+unsigned long FUN_0019c9c4();
+void FUN_0019c9cc();
+unsigned long FUN_0019cac8();
 unsigned long FUN_0019cb68();
-void FUN_0019cbd4(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019cc64(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019ccec(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019cd74(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019cdf8(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019ce60(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d060(void);
-void FUN_0019d15c(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d234(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d338(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d40c(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d498(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d528(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d600(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d6d0(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d7ac(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d888(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019d960(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019dadc(void);
-void FUN_0019dbac(void);
-void FUN_0019dc44(void);
-void FUN_0019dca8(long param_1,long param_2);
+void FUN_0019cbd4();
+void FUN_0019cc64();
+void FUN_0019ccec();
+void FUN_0019cd74();
+void FUN_0019cdf8();
+void FUN_0019ce60();
+void FUN_0019cf3c();
+void FUN_0019d060();
+void FUN_0019d0d0();
+void FUN_0019d15c();
+void FUN_0019d234();
+void FUN_0019d338();
+void FUN_0019d40c();
+void FUN_0019d498();
+void FUN_0019d528();
+void FUN_0019d600();
+void FUN_0019d6d0();
+void FUN_0019d7ac();
+void FUN_0019d888();
+void FUN_0019d960();
+void FUN_0019da34();
+void FUN_0019dadc();
+void FUN_0019dbac();
+void FUN_0019dc44();
+void FUN_0019dca8();
 void FUN_0019dd10();
-void FUN_0019de24(void);
+void FUN_0019de24();
 void FUN_0019dfc4();
-void FUN_0019e058(unsigned long param_1,unsigned long param_2,long param_3,unsigned long param_4);
-bool FUN_0019e128(void);
+void FUN_0019e058();
+bool FUN_0019e128();
 void FUN_0019e1b0();
-void FUN_0019e3b0(void);
-void FUN_0019e410(unsigned long param_1,unsigned long param_2);
-void FUN_0019e434(void);
-void FUN_0019e4bc(void);
+void FUN_0019e3b0();
+void FUN_0019e410();
+void FUN_0019e434();
+void FUN_0019e4bc();
 void FUN_0019e538();
-void FUN_0019e578(void);
-void FUN_0019e5b4(void);
-void FUN_0019e5ec();
-void FUN_0019e618(void);
-void FUN_0019e630(long param_1);
-void FUN_0019e644(long param_1);
-void FUN_0019e658(long param_1);
-void FUN_0019e66c(long param_1,unsigned long param_2);
-void FUN_0019e690(unsigned long param_1,unsigned long param_2,long param_3);
-void FUN_0019e6bc(unsigned long param_1,long param_2);
-void FUN_0019e728();
-void FUN_0019e760(long param_1,long param_2);
-void FUN_0019e814(long param_1,long param_2);
-long FUN_0019e914();
-void FUN_0019e924(long *param_1);
-long FUN_0019e93c();
-void FUN_0019ea20();
-long FUN_0019eb20(long param_1,long param_2);
-void FUN_0019eb70();
-void FUN_0019eb88(unsigned long param_1,long param_2,unsigned long param_3);
-void FUN_0019ec24(unsigned long param_1,unsigned long param_2,long param_3);
-void FUN_0019eca0(void);
-void FUN_0019ecfc(void);
-unsigned long FUN_0019ed3c(void);
-unsigned int FUN_0019ed78(unsigned long param_1,code *param_2);
-void FUN_0019eda4(void);
-void FUN_0019eec0(void);
-void FUN_0019f130(void);
-void FUN_0019f134(void);
-void FUN_0019f148(void);
-void FUN_0019f1ec(unsigned long param_1);
-void FUN_0019f370(unsigned long param_1,unsigned long param_2);
-void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4);
-void FUN_0019f63c(void);
-void FUN_0019f658();
-void FUN_0019f7bc(void);
-void FUN_0019f7e8(void);
-void FUN_0019f810(void);
-void FUN_0019f844(void);
-void FUN_0019f9a8(unsigned long param_1,unsigned long param_2);
-void FUN_0019fa60(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-bool FUN_0019fcc8(unsigned long param_1);
-bool FUN_0019fcd4(void);
-void FUN_0019fd10(void);
-void FUN_0019fe20(unsigned long param_1,unsigned long param_2,unsigned long param_3);
-void FUN_0019fe64(void);
-void FUN_0019fe68(void);
-void FUN_0019fe7c(long param_1,long param_2,long param_3);
-void FUN_0019febc(void);
-void FUN_0019ff2c(void);
-void FUN_0019ff50();
-void FUN_0019fffc(void);
-long thunk_FUN_001a9a84();
+unsigned long FUN_0019e578();
+void FUN_0019e5b4();
 void thunk_FUN_001dc298();
-void thunk_FUN_001dc3b8(unsigned long param_1,long param_2);
-
-
-extern unsigned long FUN_000218a4(void);
-extern unsigned char FUN_0018200c(void);
-extern unsigned long FUN_0018b1e4(unsigned long, unsigned long);
-extern unsigned long FUN_0018dd04(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
-extern void FUN_0018ddd8(unsigned long *, unsigned long, unsigned long, unsigned int *, unsigned long, unsigned long, unsigned long);
-extern long FUN_00023c78(unsigned long);
-extern long FUN_00023d00(unsigned long);
-extern long FUN_000bd0e4(unsigned long);
-extern void FUN_0018e38c(unsigned char *, unsigned char);
-extern long FUN_001477c4(unsigned long);
-
-
-void FUN_001991f4(undefined8, undefined8, undefined8, undefined8, uint *param_5, code *param_6);
-void FUN_00199b00(undefined1 *param_1, undefined8, undefined8, undefined8, undefined4 *param_5, code *param_6);
-void FUN_0019a4dc(undefined8, undefined8, undefined8, undefined4 *param_4, undefined8);
-void FUN_0019cf3c(long, long, long, undefined8, undefined8, undefined8, undefined8);
-void FUN_0019d0d0(undefined8, undefined8, uint, undefined8, ulong, undefined8);
-void FUN_0019f0b0(undefined8, undefined8, undefined8, undefined8, undefined8);
-void FUN_0019f698(undefined8, code *param_2, undefined8, long, undefined8, code *param_6, code *param_7);
-
-
-
+unsigned long FUN_0019e5ec();
+void FUN_0019e618();
+void FUN_0019e630();
+void FUN_0019e644();
+void FUN_0019e658();
+unsigned long FUN_0019e66c();
+void FUN_0019e690();
+void FUN_0019e6bc();
+void FUN_0019e728();
+void FUN_0019e760();
+void FUN_0019e814(long param_1,long param_2)
+{
+  if (*(long *)(param_2 + 0x10) < param_1) {
+    FUN_003488bc(1);
+    FUN_0034a3d8();
+  }
+  else {
+    if (-1 < param_1) {
+      return;
+    }
+    FUN_003488bc(1);
+    FUN_0034a3d8();
+  }
+  FUN_003504b8();
+  /* noreturn fatal */
+  sk_swift_fatal_error_2();
+}
 /*--------------------------------------------------------------------*/
 /* FUN_001900d4 @ 0x001900d4   (est. sk_swift_helper)
  * Ghidra: ulong FUN_001900d4(undefined8 param_1,long param_2)
@@ -608,6 +1079,7 @@ LAB_00190488:
   }
   return result;
 }
+
 
 
 
@@ -776,6 +1248,7 @@ LAB_0019089c:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001908f0 @ 0x001908f0   (est. sk_swift_helper)
  * Ghidra: void FUN_001908f0(undefined8 param_1,undefined8 param_2)
@@ -855,6 +1328,7 @@ LAB_00190ae0:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -1023,6 +1497,7 @@ LAB_00190f80:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00190fd4 @ 0x00190fd4   (est. sk_swift_helper)
  * Ghidra: void FUN_00190fd4(undefined8 param_1,undefined8 param_2,undefined8 *param_3)
@@ -1139,6 +1614,7 @@ LAB_00191180:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001913b8 @ 0x001913b8   (est. sk_swift_helper)
  * Ghidra: void FUN_001913b8(undefined8 param_1,undefined8 param_2,undefined8 *param_3)
@@ -1251,6 +1727,7 @@ LAB_00191564:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -1402,6 +1879,7 @@ LAB_001919f8:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00191ba8 @ 0x00191ba8   (est. sk_swift_helper)
  * Ghidra: void FUN_00191ba8(undefined8 param_1,undefined1 *param_2,undefined8 param_3)
@@ -1507,6 +1985,7 @@ LAB_00191d40:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00191f84 @ 0x00191f84   (est. sk_swift_helper)
  * Ghidra: ulong FUN_00191f84(undefined8 param_1,ulong param_2)
@@ -1602,6 +2081,7 @@ unsigned long FUN_00191f84(unsigned long param_1,unsigned long param_2)
   }
   return param_2;
 }
+
 
 
 
@@ -1707,6 +2187,7 @@ unsigned int FUN_0019225c(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00192528 @ 0x00192528   (est. sk_swift_helper)
  * Ghidra: uint FUN_00192528(long param_1)
@@ -1730,7 +2211,7 @@ unsigned int FUN_00192528(long param_1)
   unsigned char *extraout_x1_00;
   unsigned long extraout_x1_01;
   unsigned long count;
-  unsigned long count;
+  unsigned long count2;
   long ctx_err;
   unsigned int result;
   unsigned long fatal_line;
@@ -1870,6 +2351,7 @@ LAB_001928cc:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00192920 @ 0x00192920   (est. sk_swift_helper)
  * Ghidra: void FUN_00192920(undefined8 param_1,undefined8 param_2)
@@ -1949,6 +2431,7 @@ LAB_00192b10:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -2036,6 +2519,7 @@ LAB_00192ddc:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00192eb8 @ 0x00192eb8   (est. sk_swift_helper)
  * Ghidra: void FUN_00192eb8(undefined8 param_1,undefined8 param_2)
@@ -2119,6 +2603,7 @@ LAB_001930a8:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00193184 @ 0x00193184   (est. sk_swift_helper)
  * Ghidra: void FUN_00193184(undefined8 param_1,undefined8 param_2)
@@ -2198,6 +2683,7 @@ LAB_00193374:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -2300,6 +2786,7 @@ unsigned long FUN_00193450(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00193718 @ 0x00193718   (est. sk_swift_helper)
  * Ghidra: void FUN_00193718(undefined8 param_1,undefined8 param_2)
@@ -2379,6 +2866,7 @@ LAB_00193908:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -2466,6 +2954,7 @@ LAB_00193bd4:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00193cb0 @ 0x00193cb0   (est. sk_swift_helper)
  * Ghidra: void FUN_00193cb0(undefined8 param_1,undefined8 param_2)
@@ -2545,6 +3034,7 @@ LAB_00193ea0:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -2687,6 +3177,7 @@ unsigned int FUN_00193f7c(unsigned long param_1,unsigned long param_2,unsigned c
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00194370 @ 0x00194370   (est. sk_swift_helper)
  * Ghidra: void FUN_00194370(undefined8 param_1,undefined8 param_2)
@@ -2766,6 +3257,7 @@ LAB_00194560:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -2852,6 +3344,7 @@ LAB_0019481c:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001948f8 @ 0x001948f8   (est. sk_swift_helper)
  * Ghidra: void FUN_001948f8(undefined8 param_1)
@@ -2930,6 +3423,7 @@ LAB_00194ad8:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -3017,6 +3511,7 @@ LAB_00194da4:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00194e80 @ 0x00194e80   (est. sk_swift_helper)
  * Ghidra: void FUN_00194e80(undefined8 param_1,undefined8 param_2)
@@ -3100,6 +3595,7 @@ LAB_00195070:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019514c @ 0x0019514c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019514c(undefined8 param_1,undefined8 param_2)
@@ -3179,6 +3675,7 @@ LAB_0019533c:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -3281,6 +3778,7 @@ unsigned int FUN_00195418(unsigned long param_1,unsigned long param_2)
   }
   return (unsigned int)param_2 & 1;
 }
+
 
 
 
@@ -3388,6 +3886,7 @@ unsigned int FUN_001956f4(unsigned long param_1,unsigned long param_2,unsigned l
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001959e8 @ 0x001959e8   (est. sk_swift_helper)
  * Ghidra: uint FUN_001959e8(undefined8 param_1,ulong param_2)
@@ -3490,6 +3989,7 @@ unsigned int FUN_001959e8(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00195cc4 @ 0x00195cc4   (est. sk_swift_helper)
  * Ghidra: void FUN_00195cc4(undefined8 param_1,undefined8 param_2)
@@ -3583,6 +4083,7 @@ void FUN_00195cc4(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00195f6c @ 0x00195f6c   (est. sk_swift_helper)
  * Ghidra: void FUN_00195f6c(undefined8 param_1)
@@ -3671,6 +4172,7 @@ void FUN_00195f6c(unsigned long param_1)
   }
   return;
 }
+
 
 
 
@@ -3779,6 +4281,7 @@ unsigned long FUN_00196204(long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001964f4 @ 0x001964f4   (est. sk_swift_helper)
  * Ghidra: ulong FUN_001964f4(undefined8 param_1,undefined8 param_2)
@@ -3825,6 +4328,7 @@ unsigned long FUN_001964f4(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019661c @ 0x0019661c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019661c(undefined8 param_1)
@@ -3839,6 +4343,7 @@ void FUN_0019661c(unsigned long param_1)
   FUN_0018b1e4(param_1,0x16f2b4d08b00dc82);
   return;
 }
+
 
 
 
@@ -3952,6 +4457,7 @@ LAB_0019690c:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00196964 @ 0x00196964   (est. sk_swift_helper)
  * Ghidra: void FUN_00196964(undefined8 param_1)
@@ -4030,6 +4536,7 @@ LAB_00196b44:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -4135,6 +4642,7 @@ LAB_00196da8:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00196fec @ 0x00196fec   (est. sk_swift_helper)
  * Ghidra: ulong FUN_00196fec(void)
@@ -4229,6 +4737,7 @@ unsigned long FUN_00196fec(void)
   }
   return result;
 }
+
 
 
 
@@ -4333,6 +4842,7 @@ unsigned long FUN_001972a4(unsigned long param_1,unsigned long param_2,unsigned 
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00197594 @ 0x00197594   (est. sk_swift_helper)
  * Ghidra: void FUN_00197594(undefined8 param_1)
@@ -4411,6 +4921,7 @@ LAB_00197774:
   sk_swift_epilogue();
   return;
 }
+
 
 
 
@@ -4503,6 +5014,7 @@ void FUN_00197850(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00197be4 @ 0x00197be4   (est. sk_swift_helper)
  * Ghidra: void FUN_00197be4(undefined8 *param_1)
@@ -4575,6 +5087,7 @@ void FUN_00197be4(unsigned long *param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00197dd0 @ 0x00197dd0   (est. sk_swift_helper)
  * Ghidra: void FUN_00197dd0(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -4583,10 +5096,11 @@ void FUN_00197be4(unsigned long *param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00197dd0(param_1, param_2, param_3)
+unsigned long FUN_00197dd0(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar2;
   unsigned char bv;
@@ -4595,8 +5109,9 @@ void FUN_00197dd0(param_1, param_2, param_3)
   bv = *unaff_x20;
   pcVar2 = (code *)FUN_00023c78(param_3);
   (*pcVar2)(*(unsigned long *)(&DAT_004e7990 + (unsigned long)bv * 8),param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -4614,6 +5129,7 @@ void FUN_00197e48(void)
   FUN_00199b00();
   return;
 }
+
 
 
 
@@ -4662,6 +5178,7 @@ unsigned long FUN_00197e74(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00197fec @ 0x00197fec   (est. sk_swift_helper)
  * Ghidra: void FUN_00197fec(void)
@@ -4683,6 +5200,7 @@ void FUN_00197fec(void)
   }
   return;
 }
+
 
 
 
@@ -4711,6 +5229,7 @@ unsigned int FUN_00198024(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198028 @ 0x00198028   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198028(void)
@@ -4735,6 +5254,7 @@ unsigned int FUN_00198028(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019804c @ 0x0019804c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019804c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -4743,10 +5263,11 @@ unsigned int FUN_00198028(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019804c(param_1, param_2, param_3)
+unsigned long FUN_0019804c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar2;
   unsigned char bv;
@@ -4755,8 +5276,9 @@ void FUN_0019804c(param_1, param_2, param_3)
   bv = *unaff_x20;
   pcVar2 = (code *)FUN_00023c78(param_3);
   (*pcVar2)(*(unsigned long *)(&DAT_004e79a8 + (unsigned long)bv * 8),param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -4774,6 +5296,7 @@ void FUN_001980c4(void)
   FUN_00199b00();
   return;
 }
+
 
 
 
@@ -4822,6 +5345,7 @@ unsigned long FUN_001980f0(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198268 @ 0x00198268   (est. sk_swift_helper)
  * Ghidra: void FUN_00198268(void)
@@ -4843,6 +5367,7 @@ void FUN_00198268(void)
   }
   return;
 }
+
 
 
 
@@ -4871,6 +5396,7 @@ unsigned int FUN_001982a0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001982a4 @ 0x001982a4   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_001982a4(void)
@@ -4895,6 +5421,7 @@ unsigned int FUN_001982a4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001982c8 @ 0x001982c8   (est. sk_swift_helper)
  * Ghidra: undefined8 FUN_001982c8(void)
@@ -4913,6 +5440,7 @@ unsigned long FUN_001982c8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198300 @ 0x00198300   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198300(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -4925,6 +5453,7 @@ unsigned int FUN_00198300(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   unsigned int uVar1;
   unsigned long err;
@@ -4941,6 +5470,7 @@ unsigned int FUN_00198300(param_1, param_2, param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198370 @ 0x00198370   (est. sk_swift_helper)
  * Ghidra: void FUN_00198370(ulong param_1,undefined8 param_2,undefined8 param_3)
@@ -4949,7 +5479,7 @@ unsigned int FUN_00198300(param_1, param_2, param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198370(unsigned long param_1,unsigned long param_2,unsigned long param_3)
+unsigned long FUN_00198370(unsigned long param_1,unsigned long param_2,unsigned long param_3)
 
 {
   code *pcVar2;
@@ -4958,8 +5488,9 @@ void FUN_00198370(unsigned long param_1,unsigned long param_2,unsigned long para
   uVar1 = *(unsigned int *)(&DAT_004e79c0 + (param_1 & 0xff) * 4);
   pcVar2 = (code *)FUN_000bd0e4(param_3);
   (*pcVar2)(uVar1,param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -4972,8 +5503,12 @@ void FUN_00198370(unsigned long param_1,unsigned long param_2,unsigned long para
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_001983d4(unsigned char *param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4,
-                 unsigned int *param_5)
+void FUN_001983d4(param_1, param_2, param_3, param_4, param_5)
+  unsigned char * param_1;
+  unsigned long param_2;
+  unsigned long param_3;
+  unsigned long param_4;
+  unsigned int * param_5;
 
 {
   unsigned int uVar1;
@@ -4994,6 +5529,7 @@ void FUN_001983d4(unsigned char *param_1,unsigned long param_2,unsigned long par
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198438 @ 0x00198438   (est. sk_swift_helper)
  * Ghidra: void FUN_00198438(undefined8 param_1,undefined8 param_2)
@@ -5002,7 +5538,7 @@ void FUN_001983d4(unsigned char *param_1,unsigned long param_2,unsigned long par
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198438(unsigned long param_1,unsigned long param_2)
+unsigned long FUN_00198438(unsigned long param_1,unsigned long param_2)
 
 {
   code *pcVar2;
@@ -5013,7 +5549,7 @@ void FUN_00198438(unsigned long param_1,unsigned long param_2)
   (*pcVar2)(param_1,param_2);
   kind = FUN_0019a830();
   if (kind != '\x16') {
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x2c);
   sk_swift_abort_tail(0xe000000000000000);
@@ -5025,6 +5561,7 @@ void FUN_00198438(unsigned long param_1,unsigned long param_2)
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0xd00000000000002a,0x80000000005cc0b0,
                sk_xnu_upcalls_swift,0x25,2,0xecc,0);
 }
+
 
 
 
@@ -5054,6 +5591,7 @@ void FUN_00198564(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019859c @ 0x0019859c   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_0019859c(void)
@@ -5074,6 +5612,7 @@ unsigned int FUN_0019859c(void)
   }
   return uVar1;
 }
+
 
 
 
@@ -5102,6 +5641,7 @@ unsigned int FUN_001985a0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001985c4 @ 0x001985c4   (est. sk_swift_helper)
  * Ghidra: void FUN_001985c4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -5110,10 +5650,11 @@ unsigned int FUN_001985a0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_001985c4(param_1, param_2, param_3)
+unsigned long FUN_001985c4(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar3;
   unsigned long uVar1;
@@ -5127,8 +5668,9 @@ void FUN_001985c4(param_1, param_2, param_3)
     uVar1 = 0x10ba472b336e7a50;
   }
   (*pcVar3)(uVar1,param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -5146,6 +5688,7 @@ void FUN_00198658(void)
   FUN_001991f4();
   return;
 }
+
 
 
 
@@ -5191,6 +5734,7 @@ unsigned long FUN_00198684(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001987dc @ 0x001987dc   (est. sk_swift_helper)
  * Ghidra: void FUN_001987dc(void)
@@ -5212,6 +5756,7 @@ void FUN_001987dc(void)
   }
   return;
 }
+
 
 
 
@@ -5240,6 +5785,7 @@ unsigned int FUN_00198814(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198818 @ 0x00198818   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198818(void)
@@ -5264,6 +5810,7 @@ unsigned int FUN_00198818(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019883c @ 0x0019883c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019883c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -5272,10 +5819,11 @@ unsigned int FUN_00198818(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019883c(param_1, param_2, param_3)
+unsigned long FUN_0019883c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar2;
   char kind;
@@ -5284,8 +5832,9 @@ void FUN_0019883c(param_1, param_2, param_3)
   kind = *unaff_x20;
   pcVar2 = (code *)FUN_000bd0e4(param_3);
   (*pcVar2)(kind == '\x01',param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -5303,6 +5852,7 @@ void FUN_001988b4(void)
   FUN_001991f4();
   return;
 }
+
 
 
 
@@ -5341,6 +5891,7 @@ void FUN_001988e0(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198a04 @ 0x00198a04   (est. sk_swift_helper)
  * Ghidra: void FUN_00198a04(void)
@@ -5362,6 +5913,7 @@ void FUN_00198a04(void)
   }
   return;
 }
+
 
 
 
@@ -5390,6 +5942,7 @@ unsigned int FUN_00198a3c(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198a40 @ 0x00198a40   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198a40(void)
@@ -5410,6 +5963,7 @@ unsigned int FUN_00198a40(void)
   }
   return uVar1;
 }
+
 
 
 
@@ -5446,6 +6000,7 @@ long FUN_00198a64(unsigned char *param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198acc @ 0x00198acc   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198acc(undefined8 param_1)
@@ -5456,6 +6011,7 @@ long FUN_00198a64(unsigned char *param_1)
 
 unsigned int FUN_00198acc(param_1)
   unsigned long param_1;
+
 {
   unsigned int uVar1;
   long ctx_err;
@@ -5470,6 +6026,7 @@ unsigned int FUN_00198acc(param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198b08 @ 0x00198b08   (est. sk_swift_helper)
  * Ghidra: void FUN_00198b08(long param_1,undefined8 param_2,undefined8 param_3)
@@ -5478,7 +6035,7 @@ unsigned int FUN_00198acc(param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198b08(long param_1,unsigned long param_2,unsigned long param_3)
+unsigned long FUN_00198b08(long param_1,unsigned long param_2,unsigned long param_3)
 
 {
   code *pcVar3;
@@ -5494,8 +6051,9 @@ void FUN_00198b08(long param_1,unsigned long param_2,unsigned long param_3)
     (*pcVar3)(uVar1,param_2,param_3);
     (*pcVar3)(err,param_2,param_3);
   }
-  return;
+  return 0;
 }
+
 
 
 
@@ -5508,8 +6066,12 @@ void FUN_00198b08(long param_1,unsigned long param_2,unsigned long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198bac(unsigned char *param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4,
-                 unsigned int *param_5)
+void FUN_00198bac(param_1, param_2, param_3, param_4, param_5)
+  unsigned char * param_1;
+  unsigned long param_2;
+  unsigned long param_3;
+  unsigned long param_4;
+  unsigned int * param_5;
 
 {
   long ctx_err;
@@ -5527,6 +6089,7 @@ void FUN_00198bac(unsigned char *param_1,unsigned long param_2,unsigned long par
   }
   return;
 }
+
 
 
 
@@ -5567,6 +6130,7 @@ void FUN_00198c20(unsigned char *param_1,unsigned long param_2,unsigned long par
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198cf0 @ 0x00198cf0   (est. sk_swift_helper)
  * Ghidra: void FUN_00198cf0(void)
@@ -5588,6 +6152,7 @@ void FUN_00198cf0(void)
   }
   return;
 }
+
 
 
 
@@ -5616,6 +6181,7 @@ unsigned int FUN_00198d28(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198d2c @ 0x00198d2c   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00198d2c(void)
@@ -5640,6 +6206,7 @@ unsigned int FUN_00198d2c(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198d50 @ 0x00198d50   (est. sk_swift_helper)
  * Ghidra: void FUN_00198d50(void)
@@ -5648,11 +6215,12 @@ unsigned int FUN_00198d2c(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198d50(void)
+unsigned long FUN_00198d50(void)
 {
   FUN_0019914c();
-  return;
+  return 0;
 }
+
 
 
 
@@ -5670,6 +6238,7 @@ void FUN_00198d68(void)
   FUN_001991f4();
   return;
 }
+
 
 
 
@@ -5715,6 +6284,7 @@ unsigned long FUN_00198d94(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198ecc @ 0x00198ecc   (est. sk_swift_helper)
  * Ghidra: void FUN_00198ecc(void)
@@ -5736,6 +6306,7 @@ void FUN_00198ecc(void)
   }
   return;
 }
+
 
 
 
@@ -5763,6 +6334,7 @@ unsigned int FUN_00198f04(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198f2c @ 0x00198f2c   (est. sk_swift_helper)
  * Ghidra: void FUN_00198f2c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -5771,17 +6343,19 @@ unsigned int FUN_00198f04(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198f2c(param_1, param_2, param_3)
+unsigned long FUN_00198f2c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar1;
     
   pcVar1 = (code *)FUN_000bd0e4(param_3);
   (*pcVar1)(1,param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -5794,11 +6368,12 @@ void FUN_00198f2c(param_1, param_2, param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198f8c(param_1, param_2, param_3, )
+void FUN_00198f8c(param_1, param_2, param_3, param_4)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
-  unsigned int *param_4;
+  unsigned int * param_4;
+
 {
   unsigned int uVar1;
   long ctx_err;
@@ -5813,6 +6388,7 @@ void FUN_00198f8c(param_1, param_2, param_3, )
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00198fc8 @ 0x00198fc8   (est. sk_swift_helper)
  * Ghidra: void FUN_00198fc8(undefined8 param_1,undefined8 param_2)
@@ -5821,7 +6397,7 @@ void FUN_00198f8c(param_1, param_2, param_3, )
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00198fc8(unsigned long param_1,unsigned long param_2)
+unsigned long FUN_00198fc8(unsigned long param_1,unsigned long param_2)
 
 {
   code *pcVar2;
@@ -5831,7 +6407,7 @@ void FUN_00198fc8(unsigned long param_1,unsigned long param_2)
   pcVar2 = (code *)FUN_001477c4(param_2);
   iVar1 = (*pcVar2)(param_1,param_2);
   if (iVar1 == 1) {
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x2a);
   sk_swift_abort_tail(0xe000000000000000);
@@ -5843,6 +6419,7 @@ void FUN_00198fc8(unsigned long param_1,unsigned long param_2)
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0xd000000000000028,0x80000000005cc350,
                sk_xnu_upcalls_swift,0x25,2,0xf09,0);
 }
+
 
 
 
@@ -5872,6 +6449,7 @@ void FUN_001990ec(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199124 @ 0x00199124   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00199124(void)
@@ -5892,6 +6470,7 @@ unsigned int FUN_00199124(void)
   }
   return uVar1;
 }
+
 
 
 
@@ -5920,6 +6499,7 @@ unsigned int FUN_00199128(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019914c @ 0x0019914c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019914c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -5932,6 +6512,7 @@ void FUN_0019914c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar1;
     unsigned int err;
@@ -5945,6 +6526,7 @@ void FUN_0019914c(param_1, param_2, param_3)
   (*pcVar1)(err,param_2,param_3);
   return;
 }
+
 
 
 
@@ -5966,6 +6548,7 @@ void FUN_001991c8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001991f4 @ 0x001991f4   (est. sk_swift_helper)
  * Ghidra: void FUN_001991f4(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
@@ -5974,8 +6557,13 @@ void FUN_001991c8(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_001991f4(unsigned long param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4,
-                 unsigned int *param_5,code *param_6)
+void FUN_001991f4(param_1, param_2, param_3, param_4, param_5, param_6)
+  unsigned long param_1;
+  unsigned long param_2;
+  unsigned long param_3;
+  unsigned long param_4;
+  unsigned int * param_5;
+  code * param_6;
 
 {
   unsigned int uVar1;
@@ -5990,6 +6578,7 @@ void FUN_001991f4(unsigned long param_1,unsigned long param_2,unsigned long para
   }
   return;
 }
+
 
 
 
@@ -6035,6 +6624,7 @@ unsigned long FUN_00199254(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019938c @ 0x0019938c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019938c(void)
@@ -6060,6 +6650,7 @@ void FUN_0019938c(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001993c4 @ 0x001993c4   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_001993c4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -6072,6 +6663,7 @@ unsigned int FUN_001993c4(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   unsigned int uVar1;
   unsigned long err;
@@ -6088,6 +6680,7 @@ unsigned int FUN_001993c4(param_1, param_2, param_3)
   }
   return uVar1;
 }
+
 
 
 
@@ -6124,8 +6717,9 @@ void FUN_00199438(long param_1)
   sk_swift_abort_tail(extraout_x1);
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0,0xe000000000000000,
-               sk_xnu_upcalls_swift,0x25,2,&DAT_0000118f,0);
+               sk_xnu_upcalls_swift,0x25,2,DAT_0000118f,0);
 }
+
 
 
 
@@ -6138,7 +6732,7 @@ void FUN_00199438(long param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019957c(long param_1,unsigned long param_2,unsigned long param_3)
+unsigned long FUN_0019957c(long param_1,unsigned long param_2,unsigned long param_3)
 
 {
   code *pcVar1;
@@ -6152,7 +6746,7 @@ void FUN_0019957c(long param_1,unsigned long param_2,unsigned long param_3)
       (*pcVar1)(*(unsigned long *)(param_1 + 0x20 + lVar2),param_2,param_3);
       lVar2 = lVar2 + 8;
     } while (lVar2 != 0x100);
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x3b);
   sk_swift_precond_2(0x5f2865646f636e65,0xea0000000000293a);
@@ -6163,8 +6757,9 @@ void FUN_0019957c(long param_1,unsigned long param_2,unsigned long param_3)
   sk_swift_abort_tail(extraout_x1);
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0,0xe000000000000000,
-               sk_xnu_upcalls_swift,0x25,2,&DAT_0000118f,0);
+               sk_xnu_upcalls_swift,0x25,2,DAT_0000118f,0);
 }
+
 
 
 
@@ -6193,6 +6788,7 @@ unsigned int FUN_001996f0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_001996f4 @ 0x001996f4   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_001996f4(void)
@@ -6217,6 +6813,7 @@ unsigned int FUN_001996f4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199718 @ 0x00199718   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00199718(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -6229,6 +6826,7 @@ unsigned int FUN_00199718(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   unsigned int uVar1;
   unsigned long err;
@@ -6245,6 +6843,7 @@ unsigned int FUN_00199718(param_1, param_2, param_3)
   }
   return uVar1;
 }
+
 
 
 
@@ -6277,8 +6876,9 @@ void FUN_0019978c(long param_1)
   sk_swift_abort_tail(extraout_x1);
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0,0xe000000000000000,
-               sk_xnu_upcalls_swift,0x25,2,&DAT_00001197,0);
+               sk_xnu_upcalls_swift,0x25,2,DAT_00001197,0);
 }
+
 
 
 
@@ -6291,7 +6891,7 @@ void FUN_0019978c(long param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_001998c8(long param_1,unsigned long param_2,unsigned long param_3)
+unsigned long FUN_001998c8(long param_1,unsigned long param_2,unsigned long param_3)
 
 {
   code *pcVar1;
@@ -6301,7 +6901,7 @@ void FUN_001998c8(long param_1,unsigned long param_2,unsigned long param_3)
     pcVar1 = (code *)FUN_00023c78(param_3);
     (*pcVar1)(*(unsigned long *)(param_1 + 0x20),param_2,param_3);
     (*pcVar1)(*(unsigned long *)(param_1 + 0x28),param_2,param_3);
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x3a);
   sk_swift_precond_2(0x5f2865646f636e65,0xea0000000000293a);
@@ -6312,8 +6912,9 @@ void FUN_001998c8(long param_1,unsigned long param_2,unsigned long param_3)
   sk_swift_abort_tail(extraout_x1);
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0,0xe000000000000000,
-               sk_xnu_upcalls_swift,0x25,2,&DAT_00001197,0);
+               sk_xnu_upcalls_swift,0x25,2,DAT_00001197,0);
 }
+
 
 
 
@@ -6342,6 +6943,7 @@ unsigned int FUN_00199a34(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199a38 @ 0x00199a38   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00199a38(void)
@@ -6366,6 +6968,7 @@ unsigned int FUN_00199a38(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199a5c @ 0x00199a5c   (est. sk_swift_helper)
  * Ghidra: void FUN_00199a5c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -6374,10 +6977,11 @@ unsigned int FUN_00199a38(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199a5c(param_1, param_2, param_3)
+unsigned long FUN_00199a5c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar2;
   unsigned char bv;
@@ -6386,8 +6990,9 @@ void FUN_00199a5c(param_1, param_2, param_3)
   bv = *unaff_x20;
   pcVar2 = (code *)FUN_00023c78(param_3);
   (*pcVar2)(*(unsigned long *)(&DAT_004e7a18 + (unsigned long)bv * 8),param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -6409,6 +7014,7 @@ void FUN_00199ad4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199b00 @ 0x00199b00   (est. sk_swift_helper)
  * Ghidra: void FUN_00199b00(undefined1 *param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
@@ -6417,8 +7023,13 @@ void FUN_00199ad4(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199b00(unsigned char *param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4,
-                 unsigned int *param_5,code *param_6)
+void FUN_00199b00(param_1, param_2, param_3, param_4, param_5, param_6)
+  unsigned char * param_1;
+  unsigned long param_2;
+  unsigned long param_3;
+  unsigned long param_4;
+  unsigned int * param_5;
+  code * param_6;
 
 {
   unsigned int uVar1;
@@ -6433,6 +7044,7 @@ void FUN_00199b00(unsigned char *param_1,unsigned long param_2,unsigned long par
   }
   return;
 }
+
 
 
 
@@ -6481,6 +7093,7 @@ unsigned long FUN_00199b54(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199ccc @ 0x00199ccc   (est. sk_swift_helper)
  * Ghidra: void FUN_00199ccc(void)
@@ -6502,6 +7115,7 @@ void FUN_00199ccc(void)
   }
   return;
 }
+
 
 
 
@@ -6530,6 +7144,7 @@ unsigned int FUN_00199d04(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199d08 @ 0x00199d08   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00199d08(void)
@@ -6554,6 +7169,7 @@ unsigned int FUN_00199d08(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199d2c @ 0x00199d2c   (est. sk_swift_helper)
  * Ghidra: void FUN_00199d2c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -6562,17 +7178,19 @@ unsigned int FUN_00199d08(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199d2c(param_1, param_2, param_3)
+unsigned long FUN_00199d2c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar1;
     
   pcVar1 = (code *)FUN_00023c78(param_3);
   (*pcVar1)(0xffffffffffffffff,param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -6585,11 +7203,12 @@ void FUN_00199d2c(param_1, param_2, param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199d8c(param_1, param_2, param_3, )
+void FUN_00199d8c(param_1, param_2, param_3, param_4)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
-  unsigned int *param_4;
+  unsigned int * param_4;
+
 {
   unsigned int uVar1;
   long ctx_err;
@@ -6604,6 +7223,7 @@ void FUN_00199d8c(param_1, param_2, param_3, )
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199dc8 @ 0x00199dc8   (est. sk_swift_helper)
  * Ghidra: void FUN_00199dc8(undefined8 param_1,undefined8 param_2)
@@ -6612,7 +7232,7 @@ void FUN_00199d8c(param_1, param_2, param_3, )
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199dc8(unsigned long param_1,unsigned long param_2)
+unsigned long FUN_00199dc8(unsigned long param_1,unsigned long param_2)
 
 {
   code *pcVar1;
@@ -6622,7 +7242,7 @@ void FUN_00199dc8(unsigned long param_1,unsigned long param_2)
   pcVar1 = (code *)FUN_00023d00(param_2);
   lVar2 = (*pcVar1)(param_1,param_2);
   if (lVar2 == -1) {
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x23);
   sk_swift_abort_tail(0xe000000000000000);
@@ -6634,6 +7254,7 @@ void FUN_00199dc8(unsigned long param_1,unsigned long param_2)
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0xd000000000000021,0x80000000005ccc50,
                sk_xnu_upcalls_swift,0x25,2,0xf2d,0);
 }
+
 
 
 
@@ -6663,6 +7284,7 @@ void FUN_00199eec(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199f24 @ 0x00199f24   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_00199f24(void)
@@ -6683,6 +7305,7 @@ unsigned int FUN_00199f24(void)
   }
   return uVar1;
 }
+
 
 
 
@@ -6711,6 +7334,7 @@ unsigned int FUN_00199f28(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_00199f4c @ 0x00199f4c   (est. sk_swift_helper)
  * Ghidra: void FUN_00199f4c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -6719,10 +7343,11 @@ unsigned int FUN_00199f28(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199f4c(param_1, param_2, param_3)
+unsigned long FUN_00199f4c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   code *pcVar1;
     unsigned long *unaff_x20;
@@ -6732,8 +7357,9 @@ void FUN_00199f4c(param_1, param_2, param_3)
   pcVar1 = (code *)FUN_00023c78(param_3);
   (*pcVar1)(0x94a50a26e372d0f7,param_2,param_3);
   (*pcVar1)(err,param_2,param_3);
-  return;
+  return 0;
 }
+
 
 
 
@@ -6746,8 +7372,12 @@ void FUN_00199f4c(param_1, param_2, param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_00199fe4(unsigned long *param_1,unsigned long param_2,unsigned long param_3,unsigned long param_4,
-                 unsigned int *param_5)
+void FUN_00199fe4(param_1, param_2, param_3, param_4, param_5)
+  unsigned long * param_1;
+  unsigned long param_2;
+  unsigned long param_3;
+  unsigned long param_4;
+  unsigned int * param_5;
 
 {
   unsigned long uVar1;
@@ -6766,6 +7396,7 @@ void FUN_00199fe4(unsigned long *param_1,unsigned long param_2,unsigned long par
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a034 @ 0x0019a034   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a034(undefined8 param_1,undefined8 param_2)
@@ -6774,7 +7405,7 @@ void FUN_00199fe4(unsigned long *param_1,unsigned long param_2,unsigned long par
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019a034(unsigned long param_1,unsigned long param_2)
+unsigned long FUN_0019a034(unsigned long param_1,unsigned long param_2)
 
 {
   code *pcVar1;
@@ -6785,7 +7416,7 @@ void FUN_0019a034(unsigned long param_1,unsigned long param_2)
   lVar2 = (*pcVar1)(param_1,param_2);
   if (lVar2 == -0x6b5af5d91c8d2f09) {
     (*pcVar1)(param_1,param_2);
-    return;
+  return 0;
   }
   sk_swift_precond_1(0x1c);
   sk_swift_abort_tail(0xe000000000000000);
@@ -6797,6 +7428,7 @@ void FUN_0019a034(unsigned long param_1,unsigned long param_2)
   sk_swift_fatal_error(sk_fatal_error_str,0xb,2,0xd00000000000001a,0x80000000005c9590,
                sk_xnu_upcalls_swift,0x25,2,0xf35,0);
 }
+
 
 
 
@@ -6826,6 +7458,7 @@ void FUN_0019a180(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a1b8 @ 0x0019a1b8   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_0019a1b8(void)
@@ -6850,6 +7483,7 @@ unsigned int FUN_0019a1b8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a1bc @ 0x0019a1bc   (est. sk_swift_helper)
  * Ghidra: undefined4 FUN_0019a1bc(void)
@@ -6870,6 +7504,7 @@ unsigned int FUN_0019a1bc(void)
   }
   return uVar1;
 }
+
 
 
 
@@ -6946,6 +7581,7 @@ void FUN_0019a1e0(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a30c @ 0x0019a30c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a30c(undefined1 *param_1,undefined8 param_2,undefined4 *param_3)
@@ -7018,6 +7654,7 @@ void FUN_0019a30c(unsigned char *param_1,unsigned long param_2,unsigned int *par
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a424 @ 0x0019a424   (est. sk_swift_helper)
  * Ghidra: ulong FUN_0019a424(undefined8 param_1,undefined8 param_2)
@@ -7052,6 +7689,7 @@ unsigned long FUN_0019a424(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a4dc @ 0x0019a4dc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a4dc(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined4 *param_4,
@@ -7079,6 +7717,7 @@ void FUN_0019a4dc(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a594 @ 0x0019a594   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a594(undefined8 param_1,undefined8 param_2)
@@ -7093,6 +7732,7 @@ void FUN_0019a594(unsigned long param_1,unsigned long param_2)
   FUN_0019a710(param_1,param_2,FUN_0018c594);
   return;
 }
+
 
 
 
@@ -7115,6 +7755,7 @@ void FUN_0019a598(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a5c0 @ 0x0019a5c0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a5c0(void)
@@ -7129,6 +7770,7 @@ void FUN_0019a5c0(void)
   FUN_0018dd04();
   return;
 }
+
 
 
 
@@ -7151,6 +7793,7 @@ void FUN_0019a5c4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a5ec @ 0x0019a5ec   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a5ec(void)
@@ -7165,6 +7808,7 @@ void FUN_0019a5ec(void)
   FUN_0018ddd8();
   return;
 }
+
 
 
 
@@ -7187,6 +7831,7 @@ void FUN_0019a5f0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a618 @ 0x0019a618   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a618(undefined8 param_1,undefined8 param_2,undefined4 *param_3,code *param_4)
@@ -7195,11 +7840,12 @@ void FUN_0019a5f0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019a618(param_1, param_2, , )
+void FUN_0019a618(param_1, param_2, param_3, param_4)
   unsigned long param_1;
   unsigned long param_2;
-  unsigned int *param_3;
-  code *param_4;
+  unsigned int * param_3;
+  code * param_4;
+
 {
   unsigned int uVar1;
   long ctx_err;
@@ -7254,6 +7900,7 @@ void FUN_0019a618(param_1, param_2, , )
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a6e4 @ 0x0019a6e4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a6e4(undefined8 param_1,undefined8 param_2)
@@ -7272,6 +7919,7 @@ void FUN_0019a6e4(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a6e8 @ 0x0019a6e8   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a6e8(undefined8 param_1,undefined8 param_2)
@@ -7286,6 +7934,7 @@ void FUN_0019a6e8(unsigned long param_1,unsigned long param_2)
   FUN_0019a710(param_1,param_2,FUN_0018cb24);
   return;
 }
+
 
 
 
@@ -7355,6 +8004,7 @@ void FUN_0019a710(unsigned long *param_1,unsigned long param_2,unsigned int *par
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a7d8 @ 0x0019a7d8   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a7d8(void)
@@ -7369,6 +8019,7 @@ void FUN_0019a7d8(void)
   FUN_0018dd04();
   return;
 }
+
 
 
 
@@ -7391,6 +8042,7 @@ void FUN_0019a7dc(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a804 @ 0x0019a804   (est. sk_swift_helper)
  * Ghidra: void FUN_0019a804(void)
@@ -7405,6 +8057,7 @@ void FUN_0019a804(void)
   FUN_0018ddd8();
   return;
 }
+
 
 
 
@@ -7427,6 +8080,7 @@ void FUN_0019a808(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019a830 @ 0x0019a830   (est. sk_swift_helper)
  * Ghidra: undefined8 FUN_0019a830(uint param_1)
@@ -7437,6 +8091,7 @@ void FUN_0019a808(void)
 
 unsigned long FUN_0019a830(param_1)
   unsigned int param_1;
+
 {
   unsigned long uVar1;
   
@@ -7607,6 +8262,7 @@ switchD_0019a860_caseD_3:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ad48 @ 0x0019ad48   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ad48(undefined8 param_1,undefined8 param_2)
@@ -7625,6 +8281,7 @@ void FUN_0019ad48(unsigned long param_1,unsigned long param_2)
                param_2);
   return;
 }
+
 
 
 
@@ -7651,6 +8308,7 @@ void FUN_0019ad4c(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ad70 @ 0x0019ad70   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ad70(void)
@@ -7665,6 +8323,7 @@ void FUN_0019ad70(void)
   FUN_0019a618();
   return;
 }
+
 
 
 
@@ -7687,6 +8346,7 @@ void FUN_0019ad74(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ada4 @ 0x0019ada4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ada4(void)
@@ -7701,6 +8361,7 @@ void FUN_0019ada4(void)
   FUN_0019a618();
   return;
 }
+
 
 
 
@@ -7723,6 +8384,7 @@ void FUN_0019ada8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019addc @ 0x0019addc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019addc(void)
@@ -7737,6 +8399,7 @@ void FUN_0019addc(void)
   FUN_00198d50();
   return;
 }
+
 
 
 
@@ -7759,6 +8422,7 @@ void FUN_0019ade0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019adf4 @ 0x0019adf4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019adf4(void)
@@ -7773,6 +8437,7 @@ void FUN_0019adf4(void)
   FUN_00198f04();
   return;
 }
+
 
 
 
@@ -7795,6 +8460,7 @@ void FUN_0019adf8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ae0c @ 0x0019ae0c   (est. sk_swift_helper)
  * Ghidra: ulong FUN_0019ae0c(long param_1)
@@ -7808,6 +8474,7 @@ unsigned long FUN_0019ae0c(long param_1)
 {
   return (param_1 + 0x9aU) / 0x71;
 }
+
 
 
 
@@ -7835,6 +8502,7 @@ void FUN_0019ae2c(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ae60 @ 0x0019ae60   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ae60(undefined8 param_1,undefined8 param_2)
@@ -7858,6 +8526,7 @@ void FUN_0019ae60(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ae9c @ 0x0019ae9c   (est. sk_swift_helper)
  * Ghidra: FUN_001150e0(s_integer_overflow_005bb5bd);
@@ -7866,12 +8535,12 @@ void FUN_0019ae60(unsigned long param_1,unsigned long param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019ae9c(long param_1,long param_2,long param_3,long param_4)
+unsigned long FUN_0019ae9c(long param_1,long param_2,long param_3,long param_4)
 
 {
   unsigned long uVar1;
   unsigned long err;
-  unsigned char auVar3 [16];
+  unsigned long auVar3;
   
   if (SCARRY8(param_2,param_4)) {
                     /* WARNING: Subroutine does not return */
@@ -7883,7 +8552,7 @@ unsigned char  [16] FUN_0019ae9c(long param_1,long param_2,long param_3,long par
     if (!SCARRY8(param_1 + param_3,uVar1)) {
       auVar3 = param_2 + param_4 + (err / 0x1dcd65) * -1000000000;
       auVar3 = param_1 + param_3 + uVar1;
-      return auVar3;
+      return (unsigned long)auVar3;
     }
                     /* WARNING: Subroutine does not return */
     FUN_001150e0(s_integer_overflow_005bb5bd);
@@ -7891,6 +8560,7 @@ unsigned char  [16] FUN_0019ae9c(long param_1,long param_2,long param_3,long par
                     /* WARNING: Subroutine does not return */
   FUN_001150e0(s_integer_overflow_005bb5bd);
 }
+
 
 
 
@@ -7903,11 +8573,11 @@ unsigned char  [16] FUN_0019ae9c(long param_1,long param_2,long param_3,long par
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019af14(long param_1,long param_2,long param_3,long param_4)
+unsigned long FUN_0019af14(long param_1,long param_2,long param_3,long param_4)
 
 {
   bool bv;
-  unsigned char auVar2 [16];
+  unsigned long auVar2;
   
   while( true ) {
     if (param_4 <= param_2) {
@@ -7932,6 +8602,7 @@ unsigned char  [16] FUN_0019af14(long param_1,long param_2,long param_3,long par
                     /* WARNING: Subroutine does not return */
   FUN_001150e0(s_integer_overflow_005bb5bd);
 }
+
 
 
 
@@ -7968,6 +8639,7 @@ unsigned int FUN_0019af88(long param_1,long param_2,long param_3,long param_4)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019afb0 @ 0x0019afb0   (est. sk_swift_helper)
  * Ghidra: undefined8 FUN_0019afb0(long param_1)
@@ -7987,6 +8659,7 @@ unsigned long FUN_0019afb0(long param_1)
   }
   return uVar1;
 }
+
 
 
 
@@ -8011,6 +8684,7 @@ unsigned int FUN_0019afbc(long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019afd4 @ 0x0019afd4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019afd4(void)
@@ -8025,6 +8699,7 @@ void FUN_0019afd4(void)
   FUN_0019b274();
   return;
 }
+
 
 
 
@@ -8066,6 +8741,7 @@ void FUN_0019b018(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019b25c @ 0x0019b25c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019b25c(void)
@@ -8080,6 +8756,7 @@ void FUN_0019b25c(void)
   FUN_0019b274();
   return;
 }
+
 
 
 
@@ -8110,6 +8787,7 @@ void FUN_0019b274(void)
   (**(code **)(extraout_x16 + 0x10))();
   return;
 }
+
 
 
 
@@ -8172,7 +8850,7 @@ void FUN_0019b318(void)
       FUN_00350470();
       __builtin_trap();
       FUN_0034cf84();
-      res = __builtin_trap();
+      __builtin_trap();
       if ((res & 1) == 0) {
         FUN_00350aa0();
         (*extraout_x8_01)();
@@ -8189,6 +8867,7 @@ void FUN_0019b318(void)
   FUN_0008e500(extraout_x9);
   return;
 }
+
 
 
 
@@ -8243,6 +8922,7 @@ void FUN_0019b528(void)
   (**(code **)(*(long *)(result + -8) + 8))();
   return;
 }
+
 
 
 
@@ -8330,7 +9010,7 @@ void FUN_0019b66c(void)
   unsigned long unaff_x26;
   unsigned long unaff_x28;
   unsigned long unaff_x30;
-  unsigned char auVar15 [16];
+  unsigned long auVar15;
   unsigned long local_30;
   
   FUN_0008e518();
@@ -8363,7 +9043,7 @@ void FUN_0019b66c(void)
   FUN_0034b4c0();
   pcVar6 = (code *)FUN_00310a14(in_x5);
   FUN_0034ef18();
-  count = __builtin_trap();
+  __builtin_trap();
   if ((count & 1) != 0) {
     FUN_00358d58(in_x5);
     FUN_003504c4();
@@ -8377,7 +9057,7 @@ void FUN_0019b66c(void)
       FUN_0034db08();
       (*extraout_x9)();
       FUN_0034ef18();
-      uVar1 = __builtin_trap();
+      __builtin_trap();
       fatal_line = FUN_0034acd0(uVar4);
       err = (*extraout_x8_03)(fatal_line,uVar4);
       count = unaff_x26;
@@ -8421,7 +9101,7 @@ joined_r0x0019ba84:
       }
       else {
         FUN_0034ef18();
-        uVar11 = __builtin_trap();
+        __builtin_trap();
         FUN_003504c4();
         j = (*ctx_err)();
         FUN_0034e15c();
@@ -8523,18 +9203,18 @@ LAB_0019bb34:
 LAB_0019bb64:
   pcVar12 = (code *)FUN_00310a44(in_x5);
   FUN_003504c4();
-  j = __builtin_trap();
+  __builtin_trap();
   pcVar13 = (code *)FUN_00310984(in_x3);
   FUN_0034db08();
-  lVar10 = __builtin_trap();
+  __builtin_trap();
   if (j <= lVar10) {
     FUN_003504c4();
-    j = __builtin_trap();
+    __builtin_trap();
     FUN_0034db08();
-    lVar10 = __builtin_trap();
+    __builtin_trap();
     if (j != lVar10) goto LAB_0019be24;
     FUN_0034ef18();
-    count = __builtin_trap();
+    __builtin_trap();
     if ((count & 1) != 0) goto LAB_0019be24;
   }
   FUN_00310aa4(in_x3);
@@ -8542,15 +9222,15 @@ LAB_0019bb64:
   (*extraout_x9_13)();
   FUN_0035ac40(uVar4);
   FUN_003509e0();
-  puVar14 = (unsigned long *)__builtin_trap();
+  __builtin_trap();
   FUN_0034ef18();
-  uVar1 = __builtin_trap();
+  __builtin_trap();
   if ((((unsigned int)puVar14 ^ uVar1) & 1) == 0) {
     FUN_0034c0d0();
     FUN_003509e0();
     j = (*extraout_x8_14)();
     FUN_003504c4();
-    lVar10 = __builtin_trap();
+    __builtin_trap();
     if (j < lVar10) goto LAB_0019bdcc;
 LAB_0019bd3c:
     FUN_003511c0(*(unsigned long *)(extraout_x16 + 0x10),unaff_x26);
@@ -8583,12 +9263,12 @@ LAB_0019be24:
   }
   else {
     FUN_0034db08();
-    puVar14 = (unsigned long *)__builtin_trap();
+    __builtin_trap();
     FUN_0034c0d0();
     FUN_003509e0();
     j = (*extraout_x8_12)();
     FUN_003504c4();
-    lVar10 = __builtin_trap();
+    __builtin_trap();
     if (((unsigned long)puVar14 & 1) == 0) {
       if (lVar10 <= j) {
         FUN_0034ad00();
@@ -8681,6 +9361,7 @@ LAB_0019bf9c:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c03c @ 0x0019c03c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c03c(void)
@@ -8702,6 +9383,7 @@ void FUN_0019c03c(void)
   (*UNRECOVERED_JUMPTABLE)();
   return;
 }
+
 
 
 
@@ -8732,7 +9414,7 @@ void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long para
   code *extraout_x9_02;
   long extraout_x16;
   unsigned long unaff_x30;
-  unsigned char auVar6 [16];
+  unsigned long auVar6;
   unsigned char local_10 [16];
   
   FUN_0008e518();
@@ -8744,7 +9426,7 @@ void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long para
   FUN_00351bec();
   pcVar1 = (code *)FUN_00027788();
   FUN_0034e064();
-  err = __builtin_trap();
+  __builtin_trap();
   FUN_00350494();
   __builtin_trap();
   FUN_003515a8();
@@ -8780,6 +9462,7 @@ void FUN_0019c078(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c20c @ 0x0019c20c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c20c(void)
@@ -8806,6 +9489,7 @@ void FUN_0019c20c(void)
   }
   return;
 }
+
 
 
 
@@ -8846,6 +9530,7 @@ long FUN_0019c258(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c2b0 @ 0x0019c2b0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c2b0(void)
@@ -8876,6 +9561,7 @@ void FUN_0019c2b0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c2fc @ 0x0019c2fc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c2fc(void)
@@ -8902,6 +9588,7 @@ void FUN_0019c2fc(void)
   }
   return;
 }
+
 
 
 
@@ -8937,6 +9624,7 @@ void FUN_0019c348(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c3a4 @ 0x0019c3a4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c3a4(void)
@@ -8963,6 +9651,7 @@ void FUN_0019c3a4(void)
   }
   return;
 }
+
 
 
 
@@ -8998,6 +9687,7 @@ void FUN_0019c3f0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c44c @ 0x0019c44c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c44c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -9006,10 +9696,11 @@ void FUN_0019c3f0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c44c(param_1, param_2, param_3)
+unsigned long FUN_0019c44c(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   unsigned long uVar1;
   long lVar2;
@@ -9021,7 +9712,7 @@ void FUN_0019c44c(param_1, param_2, param_3)
   long lVar3;
   unsigned long uVar4;
   unsigned long unaff_x30;
-  unsigned char auVar5 [16];
+  unsigned long auVar5;
   
   auVar5 = FUN_00357ca0();
   lVar2 = auVar5;
@@ -9032,7 +9723,7 @@ void FUN_0019c44c(param_1, param_2, param_3)
     FUN_000776cc();
 LAB_0019c500:
     FUN_00357c44(unaff_x20,unaff_x30);
-    return;
+  return 0;
   }
   FUN_00357a34();
   FUN_001a894c(param_3,param_3);
@@ -9060,6 +9751,7 @@ LAB_0019c500:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c53c @ 0x0019c53c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019c53c(undefined8 param_1,undefined8 param_2,long param_3,undefined8 param_4,
@@ -9068,8 +9760,15 @@ LAB_0019c500:
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c53c(unsigned long param_1,unsigned long param_2,long param_3,unsigned long param_4,
-                 unsigned long param_5,long param_6,unsigned long param_7,unsigned long param_8)
+void FUN_0019c53c(param_1, param_2, param_3, param_4, param_5, param_6, param_7, param_8)
+  unsigned long param_1;
+  unsigned long param_2;
+  long param_3;
+  unsigned long param_4;
+  unsigned long param_5;
+  long param_6;
+  unsigned long param_7;
+  unsigned long param_8;
 
 {
   code *pcVar6;
@@ -9098,7 +9797,7 @@ void FUN_0019c53c(unsigned long param_1,unsigned long param_2,long param_3,unsig
   long lVar11;
   long lVar12;
   unsigned long uVar13;
-  unsigned char auVar14 [16];
+  unsigned long auVar14;
   long local_a0;
   long local_98;
   unsigned long uStack_88;
@@ -9159,8 +9858,8 @@ void FUN_0019c53c(unsigned long param_1,unsigned long param_2,long param_3,unsig
                     /* WARNING: Does not return */
       __builtin_trap();
     }
-    *auVar14 = lVar12 + lVar3;
-    (*auVar14)(local_30,0);
+    auVar14 = lVar12 + lVar3;
+    ((code)auVar14)(local_30,0);
   }
   if (param_3 < 1) {
     pcVar6 = *(code **)(*(long *)(param_6 + -8) + 8);
@@ -9192,7 +9891,7 @@ void FUN_0019c53c(unsigned long param_1,unsigned long param_2,long param_3,unsig
         puVar1 = (unsigned long *)(local_a0 + 0x20);
         do {
           FUN_0035169c(local_30);
-          pcVar9 = (code *)__builtin_trap();
+          __builtin_trap();
           FUN_003561ac();
           (*extraout_x8_03)(unaff_x19,extraout_x1,len);
           (*pcVar9)(local_30,local_30,0);
@@ -9218,6 +9917,7 @@ LAB_0019c940:
   FUN_0008e500(extraout_x8);
   return;
 }
+
 
 
 
@@ -9248,6 +9948,7 @@ void FUN_0019c968(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c9bc @ 0x0019c9bc   (est. sk_swift_helper)
  * Ghidra: ulong FUN_0019c9bc(ulong param_1)
@@ -9265,6 +9966,7 @@ unsigned long FUN_0019c9bc(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019c9c4 @ 0x0019c9c4   (est. sk_swift_helper)
  * Ghidra: ulong FUN_0019c9c4(ulong param_1)
@@ -9278,6 +9980,7 @@ unsigned long FUN_0019c9c4(unsigned long param_1)
 {
   return param_1 >> 0x23 & 0x1f;
 }
+
 
 
 
@@ -9334,6 +10037,7 @@ void FUN_0019c9cc(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019cac8 @ 0x0019cac8   (est. sk_swift_helper)
  * Ghidra: undefined8 FUN_0019cac8(long param_1,undefined8 param_2)
@@ -9360,6 +10064,7 @@ unsigned long FUN_0019cac8(long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019cb68 @ 0x0019cb68   (est. sk_swift_helper)
  * Ghidra: undefined8 FUN_0019cb68(long param_1,undefined8 param_2)
@@ -9371,6 +10076,7 @@ unsigned long FUN_0019cac8(long param_1,unsigned long param_2)
 unsigned long FUN_0019cb68(param_1, param_2)
   long param_1;
   unsigned long param_2;
+
 {
   if (-1 < param_1) {
     FUN_00353a30();
@@ -9383,6 +10089,7 @@ unsigned long FUN_0019cb68(param_1, param_2)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 
@@ -9413,6 +10120,7 @@ void FUN_0019cbd4(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019cc64 @ 0x0019cc64   (est. sk_swift_helper)
  * Ghidra: void FUN_0019cc64(ulong param_1,long param_2,ulong param_3)
@@ -9435,6 +10143,7 @@ void FUN_0019cc64(unsigned long param_1,long param_2,unsigned long param_3)
   }
   return;
 }
+
 
 
 
@@ -9465,6 +10174,7 @@ void FUN_0019ccec(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019cd74 @ 0x0019cd74   (est. sk_swift_helper)
  * Ghidra: void FUN_0019cd74(ulong param_1,long param_2,ulong param_3)
@@ -9487,6 +10197,7 @@ void FUN_0019cd74(unsigned long param_1,long param_2,unsigned long param_3)
   }
   return;
 }
+
 
 
 
@@ -9520,6 +10231,7 @@ void FUN_0019cdf8(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ce60 @ 0x0019ce60   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ce60(undefined8 param_1,long param_2,ulong param_3)
@@ -9536,7 +10248,7 @@ void FUN_0019ce60(unsigned long param_1,long param_2,unsigned long param_3)
   long unaff_x20;
   long ctx_err;
   long result;
-  unsigned char auVar2 [16];
+  unsigned long auVar2;
   long local_40;
   
   if (param_2 < 0) {
@@ -9573,6 +10285,7 @@ void FUN_0019ce60(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019cf3c @ 0x0019cf3c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019cf3c(long param_1,long param_2,long param_3,undefined8 param_4,undefined8 param_5,
@@ -9585,7 +10298,6 @@ void FUN_0019cf3c(long param_1,long param_2,long param_3,unsigned long param_4,u
                  unsigned long param_6,unsigned long param_7)
 
 {
-  code *pcVar2;
   unsigned long uVar1;
   char *pcVar2;
   unsigned long res;
@@ -9596,7 +10308,7 @@ void FUN_0019cf3c(long param_1,long param_2,long param_3,unsigned long param_4,u
       FUN_00027754();
       uVar1 = FUN_00027754();
       uVar1 = FUN_00377824(0,uVar1,param_5,&DAT_00611b24,&LAB_00611b34);
-      FUN_0019dadc(param_1,param_2,param_4,uVar1);
+      FUN_0019dadc();
       return;
     }
     res = 0xc5;
@@ -9612,6 +10324,7 @@ void FUN_0019cf3c(long param_1,long param_2,long param_3,unsigned long param_4,u
   sk_swift_fatal_error_2(sk_fatal_error_str,0xb,2,pcVar2,uVar1,2,
                s_Swift_ArrayBufferProtocol_swift_005d3ec0,0x1f,2,res,1);
 }
+
 
 
 
@@ -9634,7 +10347,7 @@ void FUN_0019d060(void)
   sk_lock_acquire();
   sk_lock_release_simple();
   pcVar1 = (code *)sk_lock_owner();
-  err = __builtin_trap();
+  __builtin_trap();
   if ((err & 1) != 0) {
     sk_lock_notify(extraout_x8);
     return;
@@ -9646,6 +10359,7 @@ void FUN_0019d060(void)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 
@@ -9683,6 +10397,7 @@ void FUN_0019d0d0(unsigned long param_1,unsigned long param_2,unsigned int param
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d15c @ 0x0019d15c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d15c(ulong param_1,long param_2,ulong param_3)
@@ -9694,7 +10409,6 @@ void FUN_0019d0d0(unsigned long param_1,unsigned long param_2,unsigned int param
 void FUN_0019d15c(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -9721,6 +10435,7 @@ void FUN_0019d15c(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d234 @ 0x0019d234   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d234(ulong param_1,long param_2,ulong param_3)
@@ -9732,7 +10447,6 @@ void FUN_0019d15c(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d234(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar2;
   unsigned long uVar1;
   char *pcVar2;
   unsigned long res;
@@ -9760,6 +10474,7 @@ void FUN_0019d234(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d338 @ 0x0019d338   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d338(ulong param_1,long param_2,ulong param_3)
@@ -9771,7 +10486,6 @@ void FUN_0019d234(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d338(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -9794,6 +10508,7 @@ void FUN_0019d338(unsigned long param_1,long param_2,unsigned long param_3)
   sk_swift_fatal_error_2(sk_fatal_error_str,0xb,2,pcVar1,err,2,s_Swift_UnsafePointer_swift_005cd770,0x19
                ,2,res,1);
 }
+
 
 
 
@@ -9829,6 +10544,7 @@ void FUN_0019d40c(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d498 @ 0x0019d498   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d498(ulong param_1,long param_2,ulong param_3)
@@ -9860,6 +10576,7 @@ void FUN_0019d498(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d528 @ 0x0019d528   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d528(ulong param_1,long param_2,ulong param_3)
@@ -9871,7 +10588,6 @@ void FUN_0019d498(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d528(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -9898,6 +10614,7 @@ void FUN_0019d528(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d600 @ 0x0019d600   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d600(ulong param_1,long param_2,ulong param_3)
@@ -9909,7 +10626,6 @@ void FUN_0019d528(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d600(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -9936,6 +10652,7 @@ void FUN_0019d600(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d6d0 @ 0x0019d6d0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d6d0(ulong param_1,long param_2,ulong param_3)
@@ -9947,7 +10664,6 @@ void FUN_0019d600(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d6d0(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -9974,6 +10690,7 @@ void FUN_0019d6d0(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d7ac @ 0x0019d7ac   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d7ac(ulong param_1,long param_2,ulong param_3)
@@ -9985,7 +10702,6 @@ void FUN_0019d6d0(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d7ac(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -10012,6 +10728,7 @@ void FUN_0019d7ac(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d888 @ 0x0019d888   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d888(ulong param_1,long param_2,ulong param_3)
@@ -10023,7 +10740,6 @@ void FUN_0019d7ac(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d888(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -10050,6 +10766,7 @@ void FUN_0019d888(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019d960 @ 0x0019d960   (est. sk_swift_helper)
  * Ghidra: void FUN_0019d960(ulong param_1,long param_2,ulong param_3)
@@ -10061,7 +10778,6 @@ void FUN_0019d888(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019d960(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -10088,6 +10804,7 @@ void FUN_0019d960(unsigned long param_1,long param_2,unsigned long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019da34 @ 0x0019da34   (est. sk_swift_helper)
  * Ghidra: void FUN_0019da34(undefined8 param_1,long param_2,ulong param_3)
@@ -10099,7 +10816,7 @@ void FUN_0019d960(unsigned long param_1,long param_2,unsigned long param_3)
 void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3)
 
 {
-  unsigned char auVar1 [16];
+  unsigned long auVar1;
   
   if (param_2 < 0) {
     FUN_003488bc(1);
@@ -10122,6 +10839,7 @@ void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 
@@ -10177,6 +10895,7 @@ LAB_0019dba4:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019dbac @ 0x0019dbac   (est. sk_swift_helper)
  * Ghidra: void FUN_0019dbac(void)
@@ -10206,6 +10925,7 @@ void FUN_0019dbac(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019dc44 @ 0x0019dc44   (est. sk_swift_helper)
  * Ghidra: void FUN_0019dc44(void)
@@ -10231,6 +10951,7 @@ void FUN_0019dc44(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019dca8 @ 0x0019dca8   (est. sk_swift_helper)
  * Ghidra: void FUN_0019dca8(long param_1,long param_2)
@@ -10249,6 +10970,7 @@ void FUN_0019dca8(long param_1,long param_2)
   sk_swift_fatal_error_2(sk_fatal_error_str,0xb,2,s_invalid_Collection__count_differ_005cd8e0,0x3b,2,
                s_Swift_ArrayShared_swift_005cd920,0x17,2,0xad,1);
 }
+
 
 
 
@@ -10308,6 +11030,7 @@ void FUN_0019dd10(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019de24 @ 0x0019de24   (est. sk_swift_helper)
  * Ghidra: void FUN_0019de24(void)
@@ -10338,6 +11061,7 @@ void FUN_0019de24(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019de9c @ 0x0019de9c   (est. sk_swift_helper)
  * Ghidra: FUN_001dd6ac(0,lVar6,0);
@@ -10346,7 +11070,7 @@ void FUN_0019de24(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-undefined * FUN_0019de9c(long param_1)
+unsigned long *FUN_0019de9c(long param_1)
 
 {
   unsigned long uVar1;
@@ -10355,7 +11079,7 @@ undefined * FUN_0019de9c(long param_1)
   unsigned char uVar4;
   unsigned long fatal_v;
   long lVar6;
-  undefined *puVar7;
+  unsigned long *puVar7;
   long j;
   long lVar9;
   unsigned char auStack_b0 [40];
@@ -10363,7 +11087,7 @@ undefined * FUN_0019de9c(long param_1)
   unsigned long uStack_80;
   unsigned long local_78;
   unsigned char local_70;
-  undefined *local_68;
+  unsigned long *local_68;
   
   lVar6 = *(long *)(param_1 + 0x10);
   puVar7 = &DAT_00657778;
@@ -10403,6 +11127,7 @@ undefined * FUN_0019de9c(long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019dfc4 @ 0x0019dfc4   (est. sk_swift_helper)
  * Ghidra: void FUN_0019dfc4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -10415,6 +11140,7 @@ void FUN_0019dfc4(param_1, param_2, param_3)
   unsigned long param_1;
   unsigned long param_2;
   unsigned long param_3;
+
 {
   unsigned long uVar1;
   unsigned long err;
@@ -10438,6 +11164,7 @@ void FUN_0019dfc4(param_1, param_2, param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e058 @ 0x0019e058   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e058(undefined8 param_1,undefined8 param_2,long param_3,undefined8 param_4)
@@ -10455,12 +11182,13 @@ void FUN_0019e058(unsigned long param_1,unsigned long param_2,long param_3,unsig
   
   (*DAT_00658c00)(*(unsigned long *)(*(long *)(param_3 + -8) + 0x40),param_2,param_2);
   (**(code **)(extraout_x12 + 0x10))
-            (&stack0xffffffffffffffc0 + -(extraout_x8 + 0xfU & 0xfffffffffffffff0),extraout_x1,
+            (&stack_slot_c0 + -(extraout_x8 + 0xfU & 0xfffffffffffffff0),extraout_x1,
              param_3);
-  FUN_00365b6c(param_1,&stack0xffffffffffffffc0 + -(extraout_x8 + 0xfU & 0xfffffffffffffff0),param_3
+  FUN_00365b6c(param_1,&stack_slot_c0 + -(extraout_x8 + 0xfU & 0xfffffffffffffff0),param_3
                ,param_4,7);
   return;
 }
+
 
 
 
@@ -10498,6 +11226,7 @@ bool FUN_0019e128(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e1b0 @ 0x0019e1b0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e1b0(void)
@@ -10507,6 +11236,7 @@ bool FUN_0019e128(void)
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 void FUN_0019e1b0(void)
+{
 
     unsigned long err;
   unsigned long res;
@@ -10523,8 +11253,8 @@ void FUN_0019e1b0(void)
   unsigned long uVar4;
   long i;
   unsigned long unaff_x30;
-  unsigned char auVar6 [16];
-  unsigned char auVar7 [16];
+  unsigned long auVar6;
+  unsigned long auVar7;
   unsigned long local_8;
   
   auVar6 = FUN_0008e518();
@@ -10589,6 +11319,7 @@ LAB_0019e394:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e3b0 @ 0x0019e3b0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e3b0(void)
@@ -10622,6 +11353,7 @@ void FUN_0019e3b0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e410 @ 0x0019e410   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e410(undefined8 param_1,undefined8 param_2)
@@ -10639,6 +11371,7 @@ void FUN_0019e410(unsigned long param_1,unsigned long param_2)
   FUN_001dd614(uVar1,0);
   return;
 }
+
 
 
 
@@ -10688,6 +11421,7 @@ void FUN_0019e434(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e4bc @ 0x0019e4bc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e4bc(void)
@@ -10725,6 +11459,7 @@ void FUN_0019e4bc(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e538 @ 0x0019e538   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e538(undefined8 param_1,undefined8 param_2)
@@ -10736,10 +11471,12 @@ void FUN_0019e4bc(void)
 void FUN_0019e538(param_1, param_2)
   unsigned long param_1;
   unsigned long param_2;
+
 {
   FUN_001a1894(param_1,param_2,&DAT_001a1630,FUN_001a16e8,&DAT_00346bc8);
   return;
 }
+
 
 
 
@@ -10752,7 +11489,7 @@ void FUN_0019e538(param_1, param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019e578(void)
+unsigned long FUN_0019e578(void)
 
 {
   code *extraout_x8;
@@ -10762,8 +11499,9 @@ void FUN_0019e578(void)
   FUN_00310da8();
   FUN_0034bcf0();
   (*extraout_x8)();
-  return;
+  return 0;
 }
+
 
 
 
@@ -10791,6 +11529,7 @@ void FUN_0019e5b4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_k_FUN_001dc298 @ 0xk_FUN_001dc298   (est. sk_swift_helper)
  * Ghidra: void thunk_FUN_001dc298(long param_1)
@@ -10801,6 +11540,7 @@ void FUN_0019e5b4(void)
 
 void thunk_FUN_001dc298(param_1)
   long param_1;
+
 {
   unsigned long uVar1;
   unsigned long err;
@@ -10820,6 +11560,7 @@ void thunk_FUN_001dc298(param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e5ec @ 0x0019e5ec   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e5ec(void)
@@ -10828,7 +11569,7 @@ void thunk_FUN_001dc298(param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019e5ec(void)
+unsigned long FUN_0019e5ec(void)
 {
   unsigned long uVar1;
   unsigned long *unaff_x20;
@@ -10836,8 +11577,9 @@ void FUN_0019e5ec(void)
   uVar1 = *unaff_x20;
   FUN_003a261c(uVar1);
   *unaff_x20 = uVar1;
-  return;
+  return 0;
 }
+
 
 
 
@@ -10860,6 +11602,7 @@ void FUN_0019e618(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e630 @ 0x0019e630   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e630(long param_1)
@@ -10874,6 +11617,7 @@ void FUN_0019e630(long param_1)
   FUN_001a07bc(0,*(unsigned long *)(param_1 + 0x10),0,param_1);
   return;
 }
+
 
 
 
@@ -10896,6 +11640,7 @@ void FUN_0019e644(long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e658 @ 0x0019e658   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e658(long param_1)
@@ -10914,6 +11659,7 @@ void FUN_0019e658(long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e66c @ 0x0019e66c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e66c(long param_1,undefined8 param_2)
@@ -10922,12 +11668,13 @@ void FUN_0019e658(long param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019e66c(long param_1,unsigned long param_2)
+unsigned long FUN_0019e66c(long param_1,unsigned long param_2)
 
 {
   FUN_001a0fa4(0,*(unsigned long *)(param_1 + 0x10),0,param_1,param_2);
-  return;
+  return 0;
 }
+
 
 
 
@@ -10954,6 +11701,7 @@ void FUN_0019e690(unsigned long param_1,unsigned long param_2,long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e6bc @ 0x0019e6bc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e6bc(ulong param_1,long param_2)
@@ -10976,6 +11724,7 @@ void FUN_0019e6bc(unsigned long param_1,long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e728 @ 0x0019e728   (est. sk_swift_helper)
  * Ghidra: void FUN_0019e728(ulong param_1,long param_2)
@@ -10987,6 +11736,7 @@ void FUN_0019e6bc(unsigned long param_1,long param_2)
 void FUN_0019e728(param_1, param_2)
   unsigned long param_1;
   long param_2;
+
 {
   if ((-1 < (long)param_1) && (param_1 < *(unsigned long *)(param_2 + 0x10))) {
     return;
@@ -10996,6 +11746,7 @@ void FUN_0019e728(param_1, param_2)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 
@@ -11011,7 +11762,6 @@ void FUN_0019e728(param_1, param_2)
 void FUN_0019e760(long param_1,long param_2)
 
 {
-  code *pcVar1;
   char *pcVar1;
   unsigned long err;
   unsigned long res;
@@ -11037,35 +11787,6 @@ void FUN_0019e760(long param_1,long param_2)
 
 
 
-/*--------------------------------------------------------------------*/
-/* FUN_0019e814 @ 0x0019e814   (est. sk_swift_helper)
- * Ghidra: void FUN_0019e814(long param_1,long param_2)
- * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
- * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
- * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
-
-void FUN_0019e814(long param_1,long param_2)
-
-{
-  if (*(long *)(param_2 + 0x10) < param_1) {
-    FUN_003488bc(1);
-    FUN_0034a3d8();
-  }
-  else {
-    if (-1 < param_1) {
-      return;
-    }
-    FUN_003488bc(1);
-    FUN_0034a3d8();
-  }
-  FUN_003504b8();
-                    /* WARNING: Subroutine does not return */
-  sk_swift_fatal_error_2();
-}
-
-
-
 
 /*--------------------------------------------------------------------*/
 /* FUN_k_FUN_001dc3b8 @ 0xk_FUN_001dc3b8   (est. sk_swift_helper)
@@ -11085,6 +11806,7 @@ void thunk_FUN_001dc3b8(unsigned long param_1,long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e914 @ 0x0019e914   (est. sk_swift_helper)
  * Ghidra: long FUN_0019e914(long param_1,long param_2)
@@ -11096,6 +11818,7 @@ void thunk_FUN_001dc3b8(unsigned long param_1,long param_2)
 long FUN_0019e914(param_1, param_2)
   long param_1;
   long param_2;
+
 {
     
   if (!SCARRY8(param_1,param_2)) {
@@ -11104,6 +11827,7 @@ long FUN_0019e914(param_1, param_2)
                     /* WARNING: Does not return */
   __builtin_trap();
 }
+
 
 
 
@@ -11131,6 +11855,7 @@ void FUN_0019e924(long *param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e93c @ 0x0019e93c   (est. sk_swift_helper)
  * Ghidra: long FUN_0019e93c(long param_1)
@@ -11141,6 +11866,7 @@ void FUN_0019e924(long *param_1)
 
 long FUN_0019e93c(param_1)
   long param_1;
+
 {
     
   if (!SBORROW8(param_1,1)) {
@@ -11153,6 +11879,7 @@ long FUN_0019e93c(param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019e97c @ 0x0019e97c   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -11161,11 +11888,11 @@ long FUN_0019e93c(param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019e97c(long param_1,unsigned long param_2,long param_3)
+unsigned long FUN_0019e97c(long param_1,unsigned long param_2,long param_3)
 
 {
   unsigned long uVar1;
-    unsigned char auVar3 [16];
+    unsigned long auVar3;
   
   uVar1 = param_3 - param_1;
   if (SBORROW8(param_3,param_1)) {
@@ -11180,13 +11907,14 @@ LAB_0019e9b0:
     if (!SCARRY8(param_1,param_2)) {
       auVar3 = 0;
       auVar3 = param_1 + param_2;
-      return auVar3;
+      return (unsigned long)auVar3;
     }
                     /* WARNING: Does not return */
     __builtin_trap();
   }
   return ZEXT816(1) << 0x40;
 }
+
 
 
 
@@ -11203,6 +11931,7 @@ long thunk_FUN_001a9a84(param_1, param_2, param_3)
   long param_1;
   unsigned long param_2;
   long param_3;
+
 {
   unsigned long uVar1;
     long lVar3;
@@ -11230,6 +11959,7 @@ LAB_001a9ab0:
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ea20 @ 0x0019ea20   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ea20(void)
@@ -11238,7 +11968,10 @@ LAB_001a9ab0:
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019ea20(void)
+void FUN_0019ea20(param_1, param_2, param_3)
+  unsigned long param_1;
+  unsigned long param_2;
+  unsigned long param_3;
 {
   unsigned long uVar1;
   unsigned long extraout_x8;
@@ -11263,6 +11996,7 @@ void FUN_0019ea20(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ea94 @ 0x0019ea94   (est. sk_swift_helper)
  * Ghidra: FUN_0034a958();
@@ -11271,7 +12005,7 @@ void FUN_0019ea20(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019ea94(void)
+unsigned long FUN_0019ea94(void)
 
 {
   long extraout_x8;
@@ -11279,7 +12013,7 @@ unsigned char  [16] FUN_0019ea94(void)
   long *unaff_x20;
   long next;
   long ctx_err;
-  unsigned char auVar2 [16];
+  unsigned long auVar2;
   
   FUN_0034a958();
   thunk_FUN_001dc298();
@@ -11293,6 +12027,7 @@ unsigned char  [16] FUN_0019ea94(void)
   auVar2 = FUN_0001a1c8;
   return auVar2;
 }
+
 
 
 
@@ -11317,6 +12052,7 @@ long FUN_0019eb20(long param_1,long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019eb70 @ 0x0019eb70   (est. sk_swift_helper)
  * Ghidra: void FUN_0019eb70(void)
@@ -11325,11 +12061,12 @@ long FUN_0019eb20(long param_1,long param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019eb70(void)
+unsigned long FUN_0019eb70(void)
 {
   FUN_001dc56c();
-  return;
+  return 0;
 }
+
 
 
 
@@ -11353,6 +12090,7 @@ void FUN_0019eb88(unsigned long param_1,long param_2,unsigned long param_3)
   sk_swift_fatal_error_2(sk_fatal_error_str,0xb,2,s_Negative_value_is_not_representa_005ce190,0x23,2,
                s_Swift_Integers_swift_005cd680,0x14,2,0xcf8,1);
 }
+
 
 
 
@@ -11383,6 +12121,7 @@ void FUN_0019ec24(unsigned long param_1,unsigned long param_2,long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019eca0 @ 0x0019eca0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019eca0(void)
@@ -11397,6 +12136,7 @@ void FUN_0019eca0(void)
   FUN_001dc620();
   return;
 }
+
 
 
 
@@ -11426,6 +12166,7 @@ void FUN_0019ecfc(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ed3c @ 0x0019ed3c   (est. sk_swift_helper)
  * Ghidra: ulong FUN_0019ed3c(void)
@@ -11441,6 +12182,7 @@ unsigned long FUN_0019ed3c(void)
   
   return in_x3 >> 1;
 }
+
 
 
 
@@ -11461,6 +12203,7 @@ unsigned int FUN_0019ed78(unsigned long param_1,code *param_2)
   uVar1 = (*param_2)();
   return uVar1 & 1;
 }
+
 
 
 
@@ -11486,8 +12229,8 @@ void FUN_0019eda4(void)
   long extraout_x8;
   code *extraout_x8_00;
   unsigned long unaff_x30;
-  unsigned char auVar7 [16];
-  unsigned char auVar8 [16];
+  unsigned long auVar7;
+  unsigned long auVar8;
   
   auVar7 = FUN_00351e20();
   if (auVar7 < 0) {
@@ -11540,6 +12283,7 @@ void FUN_0019eda4(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019eec0 @ 0x0019eec0   (est. sk_swift_helper)
  * Ghidra: void FUN_0019eec0(void)
@@ -11553,7 +12297,7 @@ void FUN_0019eec0(void)
 {
   long unaff_x19;
   unsigned long *unaff_x20;
-  unsigned char auVar1 [16];
+  unsigned long auVar1;
   
   FUN_00349a18();
   FUN_0036a908(0x40,0xfada);
@@ -11568,6 +12312,7 @@ void FUN_0019eec0(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ef84 @ 0x0019ef84   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -11576,7 +12321,7 @@ void FUN_0019eec0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-undefined * FUN_0019ef84(long *param_1,unsigned long *param_2,unsigned long param_3)
+unsigned long *FUN_0019ef84(long *param_1,unsigned long *param_2,unsigned long param_3)
 
 {
   long next;
@@ -11592,6 +12337,7 @@ undefined * FUN_0019ef84(long *param_1,unsigned long *param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f010 @ 0x0019f010   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -11600,14 +12346,14 @@ undefined * FUN_0019ef84(long *param_1,unsigned long *param_2,unsigned long para
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019f010(long *param_1,unsigned long *param_2,long param_3)
+unsigned long FUN_0019f010(long *param_1,unsigned long *param_2,long param_3)
 
 {
   unsigned char (*pauVar1) [16];
   unsigned long err;
   unsigned long res;
   unsigned long *unaff_x20;
-  unsigned char auVar4 [16];
+  unsigned long auVar4;
   
   pauVar1 = (unsigned char (*) [16])FUN_0036a908(0x40,0x5976);
   *param_1 = (long)pauVar1;
@@ -11626,6 +12372,7 @@ unsigned char  [16] FUN_0019f010(long *param_1,unsigned long *param_2,long param
   auVar4 = &DAT_0019f098;
   return auVar4;
 }
+
 
 
 
@@ -11652,6 +12399,7 @@ void FUN_0019f0b0(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f130 @ 0x0019f130   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f130(void)
@@ -11670,6 +12418,7 @@ void FUN_0019f130(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f134 @ 0x0019f134   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f134(void)
@@ -11684,6 +12433,7 @@ void FUN_0019f134(void)
   FUN_001da01c();
   return;
 }
+
 
 
 
@@ -11727,6 +12477,7 @@ void FUN_0019f148(void)
   FUN_001e6608(0,res,next,lVar2);
   return;
 }
+
 
 
 
@@ -11794,6 +12545,7 @@ void FUN_0019f1ec(unsigned long param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f370 @ 0x0019f370   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f370(ulong param_1,ulong param_2)
@@ -11851,6 +12603,7 @@ void FUN_0019f370(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f410 @ 0x0019f410   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f410(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
@@ -11875,7 +12628,7 @@ void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long para
   long extraout_x16;
   long extraout_x16_00;
   unsigned long unaff_x30;
-  unsigned char auVar6 [16];
+  unsigned long auVar6;
   unsigned long local_30;
   unsigned char auStack_20 [32];
   
@@ -11915,7 +12668,7 @@ void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long para
     FUN_0034fec0();
     (*extraout_x8_02)();
     FUN_00351eb4(auStack_20);
-    pcVar3 = (code *)__builtin_trap();
+    __builtin_trap();
     FUN_003543f8(pcVar4);
     (*extraout_x8_03)();
     FUN_0034cfa4();
@@ -11932,6 +12685,7 @@ void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long para
   FUN_0008e500(unaff_x30);
   return;
 }
+
 
 
 
@@ -11955,6 +12709,7 @@ void FUN_0019f63c(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f658 @ 0x0019f658   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f658(void)
@@ -11972,6 +12727,7 @@ void FUN_0019f658(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f698 @ 0x0019f698   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f698(undefined8 param_1,code *param_2,undefined8 param_3,long param_4,
@@ -11980,8 +12736,14 @@ void FUN_0019f658(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019f698(unsigned long param_1,code *param_2,unsigned long param_3,long param_4,
-                 unsigned long param_5,code *param_6,code *param_7)
+void FUN_0019f698(param_1, param_2, param_3, param_4, param_5, param_6, param_7)
+  unsigned long param_1;
+  code * param_2;
+  unsigned long param_3;
+  long param_4;
+  unsigned long param_5;
+  code * param_6;
+  code * param_7;
 
 {
   unsigned long uVar1;
@@ -12021,6 +12783,7 @@ void FUN_0019f698(unsigned long param_1,code *param_2,unsigned long param_3,long
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f7bc @ 0x0019f7bc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f7bc(void)
@@ -12040,6 +12803,7 @@ void FUN_0019f7bc(void)
   *unaff_x19 = uVar1;
   return;
 }
+
 
 
 
@@ -12067,6 +12831,7 @@ void FUN_0019f7e8(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f810 @ 0x0019f810   (est. sk_swift_helper)
  * Ghidra: void FUN_0019f810(void)
@@ -12083,6 +12848,7 @@ void FUN_0019f810(void)
   FUN_0035272c();
   return;
 }
+
 
 
 
@@ -12106,6 +12872,7 @@ void FUN_0019f844(void)
   *unaff_x19 = uVar1;
   return;
 }
+
 
 
 
@@ -12135,6 +12902,7 @@ undefined * FUN_0019f86c(long *param_1,unsigned long *param_2,long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019f8e4 @ 0x0019f8e4   (est. sk_swift_helper)
  * Ghidra: FUN_0019ea20(lVar1,param_2,param_3,param_4);
@@ -12143,11 +12911,11 @@ undefined * FUN_0019f86c(long *param_1,unsigned long *param_2,long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019f8e4(long *param_1,unsigned long param_2,unsigned long param_3,long param_4)
+unsigned long FUN_0019f8e4(long *param_1,unsigned long param_2,unsigned long param_3,long param_4)
 
 {
   long next;
-  unsigned char auVar2 [16];
+  unsigned long auVar2;
   
   next = *(long *)(param_4 + -8);
   *param_1 = param_4;
@@ -12159,6 +12927,7 @@ unsigned char  [16] FUN_0019f8e4(long *param_1,unsigned long param_2,unsigned lo
   auVar2 = &DAT_003471a8;
   return auVar2;
 }
+
 
 
 
@@ -12184,6 +12953,7 @@ void FUN_0019f9a8(unsigned long param_1,unsigned long param_2)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fa14 @ 0x0019fa14   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -12192,11 +12962,11 @@ void FUN_0019f9a8(unsigned long param_1,unsigned long param_2)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019fa14(unsigned int param_1)
+unsigned long FUN_0019fa14(unsigned int param_1)
 
 {
   unsigned long uVar1;
-  unsigned char auVar2 [16];
+  unsigned long auVar2;
   
   uVar1 = 1;
   if (0xffff < param_1) {
@@ -12210,6 +12980,7 @@ unsigned char  [16] FUN_0019fa14(unsigned int param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fa28 @ 0x0019fa28   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -12218,12 +12989,12 @@ unsigned char  [16] FUN_0019fa14(unsigned int param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019fa28(unsigned int param_1)
+unsigned long FUN_0019fa28(unsigned int param_1)
 
 {
   unsigned long uVar1;
   unsigned long err;
-  unsigned char auVar3 [16];
+  unsigned long auVar3;
   
   uVar1 = 3;
   if (0xffff < param_1) {
@@ -12245,6 +13016,7 @@ unsigned char  [16] FUN_0019fa28(unsigned int param_1)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fa54 @ 0x0019fa54   (est. sk_swift_helper)
  * Ghidra: unknown signature
@@ -12253,15 +13025,16 @@ unsigned char  [16] FUN_0019fa28(unsigned int param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-unsigned char  [16] FUN_0019fa54(unsigned long param_1,unsigned long param_2)
+unsigned long FUN_0019fa54(unsigned long param_1,unsigned long param_2)
 
 {
-  unsigned char auVar1 [16];
+  unsigned long auVar1;
   
   auVar1 = 0;
   auVar1 = param_2 >> 0x38 & 0xf;
   return auVar1 << 0x40;
 }
+
 
 
 
@@ -12297,7 +13070,7 @@ void FUN_0019fa60(unsigned long param_1,unsigned long param_2,unsigned long para
   long extraout_x16_00;
     long unaff_x24;
     unsigned long unaff_x30;
-  unsigned char auVar7 [16];
+  unsigned long auVar7;
   unsigned long local_18;
   
   FUN_0008e518();
@@ -12368,6 +13141,7 @@ void FUN_0019fa60(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fcc8 @ 0x0019fcc8   (est. sk_swift_helper)
  * Ghidra: bool FUN_0019fcc8(ulong param_1)
@@ -12381,6 +13155,7 @@ bool FUN_0019fcc8(unsigned long param_1)
 {
   return (param_1 & 0xff00000000) == 0;
 }
+
 
 
 
@@ -12401,6 +13176,7 @@ bool FUN_0019fcd4(void)
   FUN_0034f064();
   return extraout_x8 == 0;
 }
+
 
 
 
@@ -12459,6 +13235,7 @@ void FUN_0019fd10(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fe20 @ 0x0019fe20   (est. sk_swift_helper)
  * Ghidra: void FUN_0019fe20(undefined8 param_1,undefined8 param_2,undefined8 param_3)
@@ -12485,6 +13262,7 @@ void FUN_0019fe20(unsigned long param_1,unsigned long param_2,unsigned long para
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fe64 @ 0x0019fe64   (est. sk_swift_helper)
  * Ghidra: void FUN_0019fe64(void)
@@ -12503,6 +13281,7 @@ void FUN_0019fe64(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019fe68 @ 0x0019fe68   (est. sk_swift_helper)
  * Ghidra: void FUN_0019fe68(void)
@@ -12517,6 +13296,7 @@ void FUN_0019fe68(void)
   FUN_0019ff50();
   return;
 }
+
 
 
 
@@ -12543,6 +13323,7 @@ void FUN_0019fe7c(long param_1,long param_2,long param_3)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019febc @ 0x0019febc   (est. sk_swift_helper)
  * Ghidra: void FUN_0019febc(void)
@@ -12562,6 +13343,7 @@ void FUN_0019febc(void)
 
 
 
+
 /*--------------------------------------------------------------------*/
 /* FUN_0019ff2c @ 0x0019ff2c   (est. sk_swift_helper)
  * Ghidra: void FUN_0019ff2c(void)
@@ -12577,6 +13359,7 @@ void FUN_0019ff2c(void)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 
@@ -12606,12 +13389,13 @@ void FUN_0019ff50(void)
   FUN_00377bec();
   pcVar2 = (code *)FUN_00310e20();
   FUN_003502a8();
-  res = __builtin_trap();
+  __builtin_trap();
   if ((res & 1) != 0) {
+  code *pcVar2;
     FUN_0034e0d4();
     FUN_00310f04();
     FUN_00351100();
-    res = __builtin_trap();
+    __builtin_trap();
     if ((res & 1) != 0) {
       FUN_00357c44(unaff_x30);
       return;
@@ -12621,6 +13405,7 @@ void FUN_0019ff50(void)
                     /* WARNING: Subroutine does not return */
   sk_swift_fatal_error_2();
 }
+
 
 
 

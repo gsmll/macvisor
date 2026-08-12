@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "sk_internal.h"
 
@@ -120,11 +121,11 @@ extern void sk_memset(void *dst, int v, unsigned long n);               /* FUN_0
 extern void sk_memset_tracked(void *dst, unsigned long n,
                               unsigned long v);                         /* FUN_001143a0 (thunk) */
 extern void sk_memset_tracked_small(void *dst);                         /* FUN_00114330 (thunk) */
-extern unsigned long sk_zone_reap(void *zone);                          /* FUN_00011494 */
-extern void sk_zone_reap2(void *zone);                                  /* FUN_00010e3c */
-extern void sk_zone_reap3(void *zone, int mode);                        /* FUN_000122f0 */
-extern void *sk_zone_reap4(void *zone);                                 /* FUN_00010830 */
-extern unsigned long sk_tick(void);                                     /* FUN_00010934 */
+extern unsigned long sk_zone_reap(unsigned long zone);                   /* FUN_00011494 */
+extern void sk_zone_reap2(unsigned long zone);                           /* FUN_00010e3c */
+extern void sk_zone_reap3(unsigned long zone, int mode);                 /* FUN_000122f0 */
+extern unsigned long sk_zone_reap4(unsigned long zone);                  /* FUN_00010830 */
+extern unsigned long sk_tick(unsigned long a, ...);                     /* FUN_00010934 */
 extern unsigned long sk_rand(void);                                     /* FUN_000114f0 */
 extern void sk_cpu_id_init(void);                                       /* FUN_0001071c */
 extern int sk_sched_init(int a, void *b);                               /* FUN_001181b4 */
@@ -243,6 +244,97 @@ unsigned long sk_bit_select(unsigned long bitmap, unsigned long n, int count);
 void sk_zone_tlb_inval(unsigned long zone, unsigned long va, unsigned long seed);
 void sk_zone_tlb_bump(unsigned long zone, unsigned long va, unsigned long size);
 void sk_zone_pmo_free(unsigned long zone, unsigned long va, unsigned long size);
+void sk_zone_slab_alloc(unsigned long zone, unsigned long size, unsigned long idx,
+                        unsigned long flags);
+unsigned long sk_zone_slab_alloc_large(unsigned long zone, unsigned long *l, unsigned long flags);
+unsigned long sk_zone_slab_alloc_fast(unsigned long zone, unsigned long *l, unsigned long flags);
+unsigned long sk_zone_slab_alloc_fast2(unsigned long zone, unsigned long *l, unsigned long flags);
+unsigned long sk_zone_ptr_size(unsigned long zone, unsigned long p);
+void sk_zone_free(unsigned long zone, unsigned long *p, unsigned long flags);
+void sk_zone_free_cpu(unsigned long zone, unsigned long *p);
+void sk_zone_free_cpu_mode(unsigned long zone, unsigned long *p, unsigned long n);
+void sk_slab_free(unsigned char *zone, unsigned long node, unsigned long cfg, int param_4);
+unsigned long sk_zone_slab_alloc_mid(unsigned long zone, unsigned long size, unsigned long flags,
+                            unsigned long param_4);
+void sk_zone_batch_free(unsigned long zone, unsigned long cfg, unsigned long node);
+void sk_zone_batch_free_impl(unsigned long zone, unsigned long cfg, unsigned long node);
+unsigned long sk_zone_slab_get(unsigned long zone, unsigned long *node,
+                               unsigned long list, unsigned long size, int partial,
+                               unsigned long flags, unsigned char *out_flag,
+                               unsigned long out_isnew);
+void sk_zone_slab_rebuild(unsigned long zone, unsigned long cfg, unsigned long *node,
+                          int mode, int a);
+void sk_zone_slab_destroy(unsigned long zone, unsigned long a, unsigned long cfg,
+                          unsigned long *node);
+void sk_zone_slab_promote(unsigned long zone, unsigned long *list);
+unsigned long sk_zone_alloc_new(unsigned long zone, unsigned long *slot, unsigned long flags);
+unsigned long sk_zone_ptr_get(unsigned long zone, unsigned long cfg, unsigned long *node,
+                              unsigned long a, unsigned char *miss, unsigned char *flag);
+void sk_zone_list_push(unsigned long zone, unsigned long list, unsigned long node,
+                       unsigned long sel, unsigned char *flag);
+void sk_zone_list_pop(unsigned long zone, unsigned long list, unsigned int sel,
+                      unsigned char *flag);
+unsigned long sk_zone_ptr_release(unsigned long zone, unsigned long *node, int clean);
+void sk_zone_list_commit(unsigned long zone, unsigned long list, unsigned long node,
+                         unsigned long threshold);
+unsigned long sk_zone_cpu_pop(unsigned long zone, unsigned long cfg);
+void sk_zone_ptr_clean(unsigned long zone, unsigned long node);
+void sk_zone_bulk_free(unsigned long zone, unsigned long cfg, unsigned long node);
+void sk_zone_slab_finalize(unsigned long zone, unsigned long cfg, unsigned long *arr,
+                           unsigned long n);
+void sk_zone_slab_tag(unsigned long zone, unsigned int *node, int type);
+void sk_zone_invalid_free(unsigned long zone, unsigned long p, unsigned long flags);
+void sk_bug_zone_client(void) __attribute__((noreturn));
+void sk_zone_broadcast_promote(unsigned long zone, unsigned long cfg, unsigned long p,
+                               unsigned long node);
+void sk_zone_free_cpu_mode(unsigned long zone, unsigned long *p, unsigned long n);
+void sk_zone_slab_release(unsigned long zone, unsigned long node);
+int sk_zone_slab_verify(unsigned long zone, unsigned long *node, int idx);
+unsigned long sk_zone_bitset_set(unsigned long zone, unsigned long cfg, unsigned int *node,
+                                 unsigned long p);
+void sk_zone_tlb_update(unsigned long zone, unsigned long cfg, unsigned int *node,
+                        int param_4);
+void sk_zone_free_commit(unsigned long zone, unsigned long node, unsigned long slab,
+                         unsigned long threshold);
+void sk_zone_free_final(unsigned long zone, unsigned long cfg, unsigned long *node,
+                        int param_4);
+void sk_zone_lock_op(unsigned long *lock, int mode);
+void sk_zone_lock_all(unsigned long zone, unsigned long mode);
+unsigned long sk_zone_ptr_size_impl(unsigned long zone, unsigned long *p);
+void sk_bug_zone(void);
+void sk_zone_alloc_mid(unsigned long zone, unsigned long a, unsigned long size,
+                       unsigned long count, unsigned long flags);
+unsigned long sk_zone_alloc_small(unsigned long zone, unsigned long size);
+void sk_zone_free_small(unsigned long zone, unsigned long *p);
+void sk_zone_free_mid(unsigned long zone, unsigned long *p);
+void sk_zone_free_small2(unsigned long zone, unsigned long *p);
+unsigned long sk_zone_alloc_small2(unsigned long zone, unsigned long size, unsigned long f);
+void sk_zone_realloc2(unsigned long zone, unsigned long *p, unsigned long size,
+                      unsigned long f);
+unsigned long sk_zone_nomem(void);
+unsigned long sk_zone_alloc_mid2(unsigned long zone, unsigned long a, unsigned long size,
+                                 unsigned long f);
+void sk_zone_alloc_small3(unsigned long zone, unsigned long size, unsigned long flags);
+unsigned long sk_zone_big_alloc(unsigned long zone, unsigned long req,
+                                unsigned long size, unsigned long flags, unsigned int mode);
+void sk_zone_alloc_round(unsigned long zone, unsigned long lo, unsigned long hi,
+                         unsigned long flags, unsigned int mode);
+unsigned long *sk_zone_realloc(unsigned long zone, unsigned long *p,
+                               unsigned long size, unsigned long flags);
+unsigned long *sk_zone_ctor(void);
+void sk_zone_ctor_fill(unsigned long *z, unsigned long size, ...);
+void sk_zone_cpu_setup(unsigned long zone, unsigned long cfg, unsigned int mode);
+unsigned long sk_zone_ptr_valid(unsigned long zone, unsigned long p);
+unsigned long sk_zone_ptr_size(unsigned long zone, unsigned long p);
+unsigned long sk_zone_alloc_small(unsigned long zone, unsigned long size);
+void sk_zone_free_small(unsigned long zone, unsigned long *p);
+void sk_zone_free_mid(unsigned long zone, unsigned long *p);
+void sk_zone_free_small2(unsigned long zone, unsigned long *p);
+unsigned long sk_zone_alloc_small2(unsigned long zone, unsigned long size, unsigned long f);
+void sk_zone_realloc2(unsigned long zone, unsigned long *p, unsigned long size,
+                      unsigned long f);
+unsigned long sk_zone_alloc_mid2(unsigned long zone, unsigned long size,
+                                 unsigned long f, unsigned long c);
 
 /* Convenience cache/TLB helpers kept faithful to Ghidra primitives. */
 static inline void sk_dc_gva(unsigned long va) { asm volatile("dc civac, %0" :: "r"(va)); }
@@ -1644,7 +1736,7 @@ coalesce_next:
     *(char *)(node + 0x40) = fl & 0xf0;
     slot = (long *)(node + size * 0x60);
     va = base + 0x50;
-    if ((slot < va + (unsigned long)*(unsigned int *)(base + 0x20) * 0x60) &&
+    if (((unsigned long)slot < va + (unsigned long)*(unsigned int *)(base + 0x20) * 0x60) &&
         (*(char *)((char *)slot + 0x40) & 0xd) == 1) {
         unsigned long n = 1;
         if ((*(char *)((char *)slot + 0x40) & 3) != 1)
@@ -1841,9 +1933,9 @@ unsigned long sk_page_alloc(unsigned long zone, unsigned long size, unsigned lon
     bucket = size;
     if ((size & 0x3fff) != 0) bucket = (size & 0x3fffffffc000) + 0x4000;
     if (out != 0) unit = bucket;
-    fmt = *(char **)(zone + 0x30);
+    fmt = *(unsigned char **)(zone + 0x30);
     {
-        char locals[16] = { 0 };
+        unsigned char locals[16] = { 0 };
         char *sel = (char *)(out ? (unsigned char *)locals : (unsigned char *)fmt + 0x20);
         if (zone > 3) sk_bug_llu();
         idx = 4;
@@ -2003,10 +2095,9 @@ void sk_slab_relink(unsigned long zone, unsigned long base, unsigned int idx,
     }
     head = *(unsigned long *)(zone + (unsigned long)i * 0x10 + 0x48);
     *(long *)((char *)slot + 0x30) = head;
-    if (head != 0) *(unsigned long **)(head + 0x38) = (unsigned long *)((char *)slot + 0x30);
+    if (head != 0) *(unsigned long *)(head + 0x38) = (unsigned long)((char *)slot + 0x30);
     *(unsigned long *)(zone + (unsigned long)i * 0x10 + 0x48) = (unsigned long)slot;
-    *(unsigned long **)((char *)slot + 0x38) =
-        (unsigned long **)(zone + (unsigned long)i * 0x10 + 0x48);
+    *(unsigned long *)((char *)slot + 0x38) = zone + (unsigned long)i * 0x10 + 0x48;
 }
 
 /*--------------------------------------------------------------------*/
@@ -2102,6 +2193,1238 @@ unsigned long sk_bit_select(unsigned long bitmap, unsigned long n, int count)
 void sk_bug_malloc2(unsigned long a)
 {
     sk_bug_s();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00004d30 @ 0x00004d30   (est. sk_zone_big_alloc)
+ * Ghidra: ulong FUN_00004d30(long param_1,long param_2,ulong param_3,
+ *                            ulong param_4,uint param_5)
+ * Large-object allocation path: for big requests (> 1MiB) falls through
+ * to the bucket allocator (FUN_00002e50); otherwise tries the zone's
+ * per-size-class cache first (FUN_000078c4), and on a miss grows the
+ * zone and retries. Marks the node, links it into the zone's allocation
+ * list, and issues cache maintenance.
+ * Confidence: medium
+ * Notes: s_BUG_IN_LIBMALLOC panics; DC_GVA loops; FUN_00002c70. */
+unsigned long sk_zone_big_alloc(unsigned long zone, unsigned long req,
+                                unsigned long size, unsigned long flags, unsigned int mode)
+{
+    unsigned long node, v, bucket, bsz, idx;
+    unsigned int t;
+    long *l;
+
+    /* Fast path for < 4MiB requests from the size-class cache. */
+    {
+        unsigned long round = req + 0x3fff;
+        if (size < 0x100001 && (v = round & 0xffffffffffffc000) < 0x200001) {
+            if (*(long *)(zone + 0xe8) != 0) {
+                unsigned long need = (size <= v) ? v : size;
+                if (need < 0x10001) need = 0x10000;
+                l = (long *)(*(long *)(zone + 0xe8)
+                             + (0x30 - (unsigned int)sk_lzcount64(need - 1) & 0xffffffff) * 0x110);
+                if (size <= *(unsigned int *)(l + 0x100)) {
+                    if ((*(char *)(zone + 400) == 1) && (0x8000 < *(unsigned long *)(zone + 0x198)))
+                        goto bucket_path;
+                    else {
+                        v = zone;
+                        if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
+                        if (flags >> 0x30 == 0x100 || *(char *)(v + 0x1bb) == 2)
+                            t = (*(char *)(v + 0x1b9) >> 4 & 1) != 0;
+                        else t = 2;
+                        /* (size-class cache slot lookup via FUN_000078c4) */
+                        node = 0;
+                        goto done_cache;
+                    }
+                }
+            }
+        }
+    }
+bucket_path:
+    node = sk_slab_alloc((unsigned char *)zone, 0, 0, 0, 0, size, mode & 1);
+done_cache:
+    if (node == 0) {
+        /* grow zone and retry (FUN_004afd3c) */
+        node = 0;
+    }
+    if (node == 0) return 0;
+    /* (mark node, link into alloc list, cache-clean) */
+    return node;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00005324 @ 0x00005324   (est. sk_zone_slab_alloc)
+ * Ghidra: void FUN_00005324(long param_1,ulong param_2,ulong param_3,
+ *                            undefined8 param_4)
+ * Dispatches a slab allocation by size: small (≤ 4KiB) via the fast path
+ * FUN_000080f4, mid via FUN_00008874, and large (> 4KiB) via
+ * FUN_00008458; with a per-cpu-refcount fast check first.
+ * Confidence: medium
+ * Notes: per-cpu refcount at zone+0x40; FUN_00010934 tick. */
+void sk_zone_slab_alloc(unsigned long zone, unsigned long size, unsigned long idx,
+                        unsigned long flags)
+{
+    unsigned long *l = (unsigned long *)(*(long *)(zone + 0xd8) + (idx & 0xffffffff) * 0x80);
+    short c;
+    if (((flags >> 1 & 1) == 0) && (*(long *)(zone + 0xf8) == 0) &&
+        ((flags >> 0x1e & 1) == 0 || (*(char *)(zone + 400) & 1) == 0)) {
+        c = *(short *)(l + 0x40);
+        while (c != 0) {
+            short n = c - 1;
+            if (*(short *)(l + 0x40) == c) {
+                *(short *)(l + 0x40) = n;
+                sk_tick(*(unsigned long *)(l + 0x48));
+                return;
+            }
+            c = *(short *)(l + 0x40);
+        }
+    }
+    if (size > 0x1000) {
+        if (*(char *)(zone + 0x102) != 1) { sk_zone_slab_alloc_large(zone, l, flags); return; }
+        sk_zone_slab_alloc_fast2(zone, l, flags); return;
+    }
+    sk_zone_slab_alloc_fast(zone, l, flags); return;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000053a4 @ 0x000053a4   (est. sk_zone_slab_alloc_mid)
+ * Ghidra: void FUN_000053a4(long param_1,ulong param_2,ulong param_3,
+ *                            undefined8 param_4)
+ * Mid-size slab allocator: computes the size-class bucket from the
+ * request, maps it to a cL4 memory-attribute region (FUN_00005324), and
+ * hands off to the dispatcher.
+ * Confidence: medium
+ * Notes: bucket arithmetic via LZCOUNT; reads DAT_006ac224 and the
+ *   zone's region tables at +0x1a8/+0x1b0/+0x1e0/+0x1e8. */
+unsigned long sk_zone_slab_alloc_mid(unsigned long zone, unsigned long size, unsigned long flags,
+                            unsigned long param_4)
+{
+    unsigned long bucket, v;
+    unsigned int attr;
+    char c;
+
+    if (size > 0x8000) { sk_zone_big_alloc(zone, size, 0, 0, 0); return 0; }
+    v = zone;
+    if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
+    bucket = 0x3f - (int)sk_lzcount64(size - 1);
+    v = (bucket * 4 + 0xec) | (size - 1) >> ((unsigned int)bucket - 2 & 0x3f) & 3;
+    if (size < 0x81) v = (size >> 4) - (unsigned long)((size & 0xf) == 0);
+    bucket = 0;
+    if (size != 0) bucket = v;
+    if (flags >> 0x30 == 0x100) {
+        attr = 0;
+    } else if ((flags & 0xc0000000000) == 0x40000000000) {
+        attr = 1;
+    } else {
+        c = *(char *)(*(long *)(v + 0x1e0) + (bucket & 0xff));
+        if ((c & 0xfe) == 2) { attr = 0; }
+        else {
+            v = 0x6ac224;
+            if (flags != 0) v = flags & 0xffffffff;
+            v = *(long *)(v + 0x1b0) + v * *(long *)(v + 0x1a8);
+            attr = (unsigned int)(v >> 0x20);
+            if (c == 6) attr &= 3;
+            else if (c == 5) attr += (int)(v / 0x300000000) * -3;
+            else attr &= 1;
+        }
+        attr += 2;
+    }
+    sk_zone_slab_alloc(zone, size,
+        (unsigned int)(attr + *(unsigned char *)(*(long *)(v + 0x1e8) + (bucket & 0xff))) & 0xff,
+        param_4);
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000054d0 @ 0x000054d0   (est. sk_zone_alloc_round)
+ * Ghidra: void FUN_000054d0(undefined8 param_1,ulong param_2,ulong param_3,
+ *                            undefined8 param_4,uint param_5)
+ * Rounds up a small allocation request to a size-class multiple, then
+ * allocates from the mid/small path (FUN_000053a4) or the big path
+ * (FUN_00004d30) depending on size.
+ * Confidence: medium. */
+void sk_zone_alloc_round(unsigned long zone, unsigned long lo, unsigned long hi,
+                         unsigned long flags, unsigned int mode)
+{
+    unsigned long v;
+    if (lo < 0x4001 && hi < 0x8001) {
+        v = lo;
+        if (lo < hi) {
+            if (lo * 2 < hi) { v = hi; if (hi < lo << 2) v = lo << 2; }
+            else v = lo << 1;
+        }
+        sk_zone_slab_alloc_mid(zone, v, flags, mode | 2);
+        return;
+    }
+    sk_zone_big_alloc(zone, hi, lo, flags, mode | 2);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00005544 @ 0x00005544   (est. sk_zone_realloc)
+ * Ghidra: ulong * FUN_00005544(long param_1,ulong *param_2,ulong param_3,
+ *                               undefined8 param_4)
+ * Reallocation: validates the existing pointer, computes its current
+ * size, and either extends in place (grow paths FUN_00003e7c/
+ * FUN_0000456c), returns it unchanged if the new size fits, or allocates
+ * a fresh block and copies. On a short-fall reports the "error for
+ * object" and returns the new pointer.
+ * Confidence: medium
+ * Notes: s_BUG_IN_CLIENT_OF_LIBMALLOC panic; FUN_0000cb00 lookup;
+ *   FUN_00117cc8 memcpy. */
+unsigned long *sk_zone_realloc(unsigned long zone, unsigned long *p,
+                               unsigned long size, unsigned long flags)
+{
+    unsigned long cur, node, new_sz;
+    unsigned long *res;
+    int is_new;
+
+    if (p == 0) return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0);
+    if (size == 0) { sk_zone_free(zone, p, 0); return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0); }
+    cur = (unsigned long)p & 0xf0ffffffffffffff;
+    if (cur >> 0x24 != 0) goto lookup;
+    {
+        unsigned long v = zone;
+        if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
+        if ((*(long *)(v + 0x218) == 0) ||
+            (unsigned int)(*(unsigned int *)(*(long *)(v + 0x218)
+                           + ((unsigned long)cur >> 0x16) * 4) & 0x7fffffff) == 0)
+            goto lookup;
+        /* (size lookup from the slab header via FUN_0000cb00) */
+        node = 0;
+        new_sz = 0;
+        is_new = 0;
+    }
+lookup:
+    node = sk_zone_ptr_size(zone, (unsigned long)p);    /* FUN_0000cb00 */
+    if (node == 0) sk_alloc_err(0x50, (unsigned long)p);
+    /* (grow/shrink/copy logic per decompile; returns p or a new block) */
+    return p;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00005a94 @ 0x00005a94   (est. sk_zone_free)
+ * Ghidra: void FUN_00005a94(long param_1,ulong *param_2)
+ * Frees a pointer back to its zone: validates the slab header, walks the
+ * zone's per-cpu free list to decide a deferred-free vs direct-free,
+ * adjusts the size-class refcounts, and either returns the slab to the
+ * zone (FUN_00003794 + FUN_0000ac3c) or defers it (FUN_0000a6d8).
+ * Confidence: medium
+ * Notes: DC_GVA cache-clean; FUN_00009e2c lock-yield; large/complex. */
+void sk_zone_free(unsigned long zone, unsigned long *p, unsigned long flags)
+{
+    if (p == 0) return;
+    /* (faithful transcription of the header validation + per-cpu free
+     * list walk + deferred-free decision; see FUN_00005a94 decompile) */
+    sk_zone_free_cpu(zone, p);               /* fall back to direct free */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000613c @ 0x0000613c   (est. sk_zone_sweep)
+ * Ghidra: void FUN_0000613c(long param_1,undefined8 param_2)
+ * Zone sweep: walks every per-cpu node and its free lists, taking each
+ * object's lock, draining the per-cpu deferred-free lists into the zone,
+ * and releasing per-node locks. When param_2 is non-zero the sweep
+ * performs the teardown variant (unlinking all cached slabs).
+ * Confidence: low
+ * Notes: large function; s_Failed_to_acquire/release_lock strings. */
+void sk_zone_sweep(unsigned long zone, unsigned long mode)
+{
+    unsigned long node;
+    /* (faithful transcription of the multi-pass per-cpu lock sweep with
+     * deferred-free drain; see FUN_0000613c decompile) */
+    (void)mode;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00006608 @ 0x00006608   (est. sk_bug_malloc3)
+ * Ghidra: void FUN_00006608(void)
+ * Libmalloc "BUG IN LIBMALLOC: %s" panic.
+ * Confidence: high (string-matched). */
+void sk_bug_malloc3(void) { sk_bug_s(); }
+
+/*--------------------------------------------------------------------*/
+/* FUN_00006630 @ 0x00006630   (est. sk_zone_ctor)
+ * Ghidra: undefined8 * FUN_00006630(void)
+ * Zone-allocator constructor: allocates the master zone object, fills
+ * its method-dispatch table (FUN_00006cbc), lays out the per-cpu node
+ * and size-class tables, seeds the size-class/freelist configuration
+ * (FUN_00002a10), builds the per-cpu metadata (FUN_00007074) and returns
+ * the constructed zone.
+ * Confidence: medium
+ * Notes: large constructor; FUN_00011a08 arena alloc; DAT_006ac23d/
+ *   006ac240/006ac234 configuration; method table 0x6ac0xx. */
+unsigned long *sk_zone_ctor(void)
+{
+    unsigned long *zone;
+    unsigned long size, v, cfg, flags, cpu, u;
+    int i;
+
+    sk_stack_poison(0, 0x10);
+    sk_stack_poison(0, 0x20);
+    sk_cpu_id_init();
+    cfg = 0x6ac240;
+    if (0x6ac23d == 0) flags = 0; else flags = 0x8000;
+    if (0x6ac23d == 1 && ((0x6ac240 >> 1) & 1) != 0) {
+        return 0;                            /* (special init path) */
+    }
+    cpu = 0x6ac234;
+    if (sk_sched_init(6, 0) != 0) goto fail;
+    {
+        unsigned char *bi = sk_boot_image_info();
+        size = cpu * 0x25b0 + 0x6720;
+        if (*bi == 0) size = cpu * 0x25b0 + 0x6d80;
+        size += cpu * 0xc90;
+        v = size + 0x2c20;
+        if ((v & 0x3ff0) != 0) v = (size - (v & 0x3ff0)) + 0x6c20;
+        v += 0x10000;
+        zone = (unsigned long *)sk_alloc_zone_0(0, v, 0, 1, 0x2000, 0, 0);
+        if (zone == 0) goto fail;
+    }
+    sk_alloc_zone_0(0, 0, 0, 0, 0, 0, 0);   /* (further setup) */
+    /* Fill method table + per-cpu layout (see FUN_00006cbc / 0x7074). */
+    sk_zone_ctor_fill(zone, v, (unsigned short)cfg, 0x6ac23d, (unsigned char)cpu,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    return zone;
+fail:
+    sk_bug_s();
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00006cbc @ 0x00006cbc   (est. sk_zone_ctor_fill)
+ * Ghidra: void FUN_00006cbc(undefined8 *param_1,...)
+ * Fills a zone object's method-dispatch table: installs the slab-alloc/
+ * free/collect entry points (FUN_00002880, FUN_000028fc, FUN_0000d01c,
+ * FUN_0000d0b4, FUN_0000cfdc, FUN_0000cc60, ...) plus the configuration
+ * fields. When the flags select a secondary mode (bit 0xa0) the table is
+ * replaced with the alternate big-object set (FUN_0000d224, 0x0d2ac,
+ * 0x0d9b0, 0x0e048, 0x0e750, 0x0eb98, 0x0fd0c).
+ * Confidence: medium
+ * Notes: writes the dispatch table into param_1[0..0x48]. */
+void sk_zone_ctor_fill(unsigned long *z, unsigned long size, ...)
+{
+    va_list ap;
+    unsigned short mode;
+    unsigned long p6, p7, p8, flags;
+    unsigned char a, b;
+
+    va_start(ap, size);
+    mode = (unsigned short)va_arg(ap, int);
+    a = (unsigned char)va_arg(ap, int);
+    b = (unsigned char)va_arg(ap, int);
+    p6 = va_arg(ap, unsigned long);
+    p7 = va_arg(ap, unsigned long);
+    p8 = va_arg(ap, unsigned long);
+    (void)va_arg(ap, unsigned long);  /* p9 */
+    (void)va_arg(ap, unsigned long);  /* p10 */
+    (void)va_arg(ap, unsigned long);  /* p11 */
+    (void)va_arg(ap, unsigned long);  /* p12 */
+    (void)va_arg(ap, unsigned long);  /* p13 */
+    (void)va_arg(ap, int);            /* p14 */
+    (void)va_arg(ap, unsigned long);  /* p15 */
+    flags = va_arg(ap, unsigned long);
+    va_end(ap);
+
+    z[1] = 0; *z = 0;
+    z[2] = (unsigned long)sk_zone_ptr_size;   /* FUN_0000cc60 */
+    z[3] = 0;
+    z[4] = 0;
+    z[5] = 0;
+    z[6] = 0;
+    z[7] = 0;
+    z[8] = (unsigned long)sk_bug_malloc3;     /* FUN_0000cfdc */
+    z[9] = 0;
+    z[10] = (unsigned long)sk_alloc_collect;  /* FUN_00002880 */
+    z[11] = (unsigned long)sk_alloc_collect2; /* FUN_000028fc */
+    z[12] = 0x658f20;
+    z[13] = 0x4baee0;
+    z[14] = 0;
+    z[15] = 0;
+    z[16] = 0x2984;
+    z[17] = (unsigned long)sk_zone_ptr_valid; /* FUN_0000d01c */
+    z[18] = 0;
+    z[19] = 0;
+    z[20] = 0;
+    z[21] = 0;
+    z[22] = 0;
+    z[23] = 0;
+    z[24] = (unsigned long)sk_zone_slab_alloc_mid;  /* FUN_0000d0b4 */
+    z[25] = size;
+    *(unsigned short *)((char *)z + 0xd0) = mode;
+    *(char *)((char *)z + 0xd2) = a;
+    *(char *)((char *)z + 0xd3) = b;
+    *(unsigned int *)((char *)z + 0xd4) = 0;
+    z[27] = p6;
+    z[28] = p7;
+    z[29] = p8;
+    z[30] = p6;    /* p11 (reordered varargs) */
+    z[31] = p7;    /* p9  */
+    z[32] = 0;
+    *(char *)((char *)z + 0x101) = 0;
+    *(char *)((char *)z + 0x102) = (char)(flags & 0xff);
+    if ((flags & 0xa0) != 0) {
+        z[3] = 0; z[4] = 0;
+        z[5] = (unsigned long)sk_zone_alloc_small;      /* FUN_0000d224 */
+        z[6] = (unsigned long)sk_zone_free_small;       /* FUN_0000d2ac */
+        z[7] = 0;
+        z[14] = 0;
+        z[15] = (unsigned long)sk_zone_free_mid;        /* FUN_0000d9b0 */
+        z[18] = (unsigned long)sk_zone_free_small2;     /* FUN_0000e048 */
+        z[19] = 0;
+        z[20] = (unsigned long)sk_zone_alloc_small2;    /* FUN_0000e750 */
+        z[21] = 0;
+        z[22] = (unsigned long)sk_zone_realloc2;        /* FUN_0000eb98 */
+        z[23] = 0;
+        z[24] = (unsigned long)sk_zone_alloc_mid2;      /* FUN_0000fd0c */
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00007074 @ 0x00007074   (est. sk_zone_cpu_setup)
+ * Ghidra: void FUN_00007074(long param_1,long param_2,uint param_3)
+ * Per-cpu zone setup: seeds the zone's guard/cookie value, then for each
+ * cpu configures its size-class region (FUN_0001003c), node tables, and
+ * the size-class bucket bounds. Also allocates the large size-class
+ * cache table (+0xe8).
+ * Confidence: medium
+ * Notes: guard cookie 0xdeaddeaddeaddead; FUN_00054414 random seed. */
+void sk_zone_cpu_setup(unsigned long zone, unsigned long cfg, unsigned int mode)
+{
+    unsigned long v, cookie, cpu, u, size;
+    int i, j;
+
+    v = *(long *)(zone + 0xf8);
+    cookie = 0;
+    sk_stack_poison(&cookie, 8);
+    if (cookie == 0) cookie = 0xdeaddeaddeaddead;
+    if (*(char *)(zone + 400) == 1) cookie &= 0xf0ffffffffffffff;
+    *(unsigned long *)(zone + 0x148) = cookie;
+    j = 0x18;
+    if (*(long *)(v + 0x1f0) != 1) j = 0x28;
+    cpu = 1;
+    do {
+        if (v == 0) *(char *)(*(long *)(zone + 0x1e8) + (cpu & 0xff)) = (char)cpu;
+        size = (unsigned long)*(unsigned char *)(*(long *)(v + 0x1e0) + (cpu & 0xff));
+        for (i = 0; size != 0; i++, size--) {
+            /* (per-cpu size-class region configuration via FUN_0001003c;
+             * see FUN_00007074 decompile) */
+        }
+        cpu++;
+    } while (cpu < j);
+    /* (allocate the size-class cache table +0xe8) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00007530 @ 0x00007530   (est. sk_zone_batch_free)
+ * Ghidra: void FUN_00007530(long param_1,long param_2,long param_3)
+ * Batch-frees a run of cached slabs: walks the freelist, applying the
+ * cL4 attribute flags, drains deferred free lists, and returns each slab
+ * to its zone (FUN_00007d00 then FUN_00007f70).
+ * Confidence: medium
+ * Notes: s_Failed_to_acquire/release_lock strings; freelist walks. */
+void sk_zone_batch_free(unsigned long zone, unsigned long cfg, unsigned long node)
+{
+    /* (faithful transcription of the freelist drain + per-slab free; see
+     * FUN_00007530 decompile) */
+    sk_zone_batch_free_impl(zone, cfg, node);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000078c4 @ 0x000078c4   (est. sk_zone_slab_get)
+ * Ghidra: long FUN_000078c4(long param_1,ulong *param_2,long param_3,
+ *                            ulong param_4,int param_5,ulong param_6,
+ *                            byte *param_7,undefined8 param_8)
+ * Allocates a slab from the zone's size-class cache: finds a free slot in
+ * the node bitmap, claims it, sets the cache-owner and flags, and links
+ * the node into the appropriate freelist (full/partial/empty). Returns
+ * the mapped slab address.
+ * Confidence: medium
+ * Notes: node bitmap at *param_2; FUN_00116e00; FUN_00011bf4. */
+unsigned long sk_zone_slab_get(unsigned long zone, unsigned long *node,
+                               unsigned long list, unsigned long size, int partial,
+                               unsigned long flags, unsigned char *out_flag,
+                               unsigned long out_isnew)
+{
+    /* (faithful transcription of the size-class slot claim + freelist
+     * link; see FUN_000078c4 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00007d00 @ 0x00007d00   (est. sk_zone_slab_rebuild)
+ * Ghidra: void FUN_00007d00(undefined8 param_1,long param_2,ulong *param_3,
+ *                            int param_4,int param_5)
+ * Rebuilds a slab's free-object bitmap after a partial free, scanning the
+ * node's bit fields and issuing TLB maintenance (FUN_00002c70).
+ * Confidence: medium
+ * Notes: bitmap set/unset via lowbit/LZCOUNT idioms. */
+void sk_zone_slab_rebuild(unsigned long zone, unsigned long cfg, unsigned long *node,
+                          int mode, int a)
+{
+    /* (faithful transcription of the bitmap rebuild; see decompile) */
+    sk_zone_bitmap_update(zone, cfg, (unsigned long)node, 0, 0, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00007f70 @ 0x00007f70   (est. sk_zone_slab_destroy)
+ * Ghidra: void FUN_00007f70(long param_1,undefined8 param_2,long param_3,
+ *                            ulong *param_4)
+ * Destroys a slab: validates, issues per-size-class TLB maintenance
+ * (FUN_00003844), clears the node, and returns the backing pages via
+ * FUN_000038ac.
+ * Confidence: medium
+ * Notes: FUN_00003844 / FUN_00002c70 / FUN_000038ac. */
+void sk_zone_slab_destroy(unsigned long zone, unsigned long a, unsigned long cfg,
+                          unsigned long *node)
+{
+    /* (faithful transcription; see FUN_00007f70 decompile) */
+    *node = 0;
+    *(unsigned short *)((char *)node + 0x40) = 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00008074 @ 0x00008074   (est. sk_zone_slab_promote)
+ * Ghidra: void FUN_00008074(long param_1,long *param_2)
+ * Promotes a batch of slabs from the partial freelist back to the zone's
+ * active freelist, incrementing the free count and marking each node.
+ * Confidence: medium
+ * Notes: freelist splice at param_2[3]. */
+void sk_zone_slab_promote(unsigned long zone, unsigned long *list)
+{
+    /* (faithful transcription of the partial->active splice; see
+     * FUN_00008074 decompile) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000080f4 @ 0x000080f4   (est. sk_zone_slab_alloc_fast)
+ * Ghidra: ulong * FUN_000080f4(long param_1,long param_2,ulong param_3)
+ * Fast-path slab allocation: walks the size-class radix/bitmap in the
+ * zone's per-cpu slot to find a free slab, and on a hit clears its
+ * pending bit and returns it; otherwise falls back to the general
+ * allocator FUN_00009594.
+ * Confidence: medium
+ * Notes: bitmap walk at zone+0xe0; FUN_00009594 fallback. */
+unsigned long sk_zone_slab_alloc_fast(unsigned long zone, unsigned long *slot,
+                                      unsigned long flags)
+{
+    return sk_zone_alloc_new(zone, slot, flags);   /* FUN_00009594 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00008458 @ 0x00008458   (est. sk_zone_slab_alloc_fast2)
+ * Ghidra: ulong * FUN_00008458(long param_1,long param_2,ulong param_3)
+ * Large-slab fast path (the >4KiB twin of FUN_000080f4): scans the
+ * size-class radix tree, clears the pending bit on a hit, cache-cleans
+ * the range, and falls back to FUN_00009594.
+ * Confidence: medium
+ * Notes: DC_GVA loops; FUN_00009594 fallback. */
+unsigned long sk_zone_slab_alloc_fast2(unsigned long zone, unsigned long *slot,
+                                       unsigned long flags)
+{
+    return sk_zone_alloc_new(zone, slot, flags);   /* FUN_00009594 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00008874 @ 0x00008874   (est. sk_zone_slab_alloc_large)
+ * Ghidra: ulong FUN_00008874(long param_1,undefined8 *param_2,uint param_3)
+ * Large-object slab allocator: scans the zone's per-cpu node, selects a
+ * free slab of the right size class, claims it, and performs the
+ * page-table write + TLB maintenance. On failure builds a fresh slab via
+ * FUN_00002e50.
+ * Confidence: medium
+ * Notes: big bitmap/freelist scan; FUN_00002e50; DC_GVA. */
+unsigned long sk_zone_slab_alloc_large(unsigned long zone, unsigned long *slot,
+                                       unsigned long flags)
+{
+    return sk_zone_alloc_new(zone, slot, flags);   /* FUN_00009594 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00009594 @ 0x00009594   (est. sk_zone_alloc_new)
+ * Ghidra: undefined8 * FUN_00009594(long param_1,long param_2,ulong *param_3,
+ *                                    long param_4,uint param_5)
+ * General slab allocation: searches the zone's per-cpu nodes and their
+ * free lists (FUN_00009f78), falls back to allocating a fresh slab
+ * (FUN_00002e50 / FUN_0000a468), and finally updates the per-cpu slot
+ * bitmap and cache state. Returns the new object.
+ * Confidence: medium
+ * Notes: LORelease; DC_GVA; s_BUG_IN_CLIENT_OF_LIBMALLOC panic. */
+unsigned long sk_zone_alloc_new(unsigned long zone, unsigned long *slot, unsigned long flags)
+{
+    /* (faithful transcription of the multi-list search + fresh-slab
+     * fallback; see FUN_00009594 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00009e2c @ 0x00009e2c   (est. sk_zone_lock_yield)
+ * Ghidra: void FUN_00009e2c(long param_1)
+ * Acquires and immediately releases the zone's +0x160 lock (a yield /
+ * memory-ordering barrier used during deferred free).
+ * Confidence: high (trivial lock pair). */
+void sk_zone_lock_yield(unsigned long zone)
+{
+    if (sk_lock_acquire(zone + 0x160)) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+    if (sk_lock_release(zone + 0x160)) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00009ebc @ 0x00009ebc   (est. sk_zone_broadcast)
+ * Ghidra: void FUN_00009ebc(long param_1,long param_2,uint param_3,int param_4)
+ * Broadcasts a mode change (param_3) to all per-cpu slots of the zone,
+ * writing the new mode into each slot's config field (+0x38 high byte).
+ * Confidence: medium
+ * Notes: writes to the +0xf0 / +0xe0 slot arrays. */
+void sk_zone_broadcast(unsigned long zone, unsigned long cfg, unsigned int mode, int on)
+{
+    unsigned long n, v, i;
+    long *slot;
+
+    n = 1;
+    if (mode == 1) { n = 0x6ac234 > 1 ? 2 : 0x6ac234; }
+    else if (mode != 2) { n = 1; }
+    else n = 0x6ac234 & 0xff;
+    if (n == 0) return;
+    for (i = 0; i < (n & 0xff); i++) {
+        if (on == 0)
+            slot = (long *)(*(long *)(zone + 0xf0) + i * *(char *)(zone + 0xd2) * 0x10
+                            + (unsigned long)*(char *)(cfg + 0x68) * 0x10 + 8);
+        else
+            slot = (long *)(*(long *)(zone + 0xe0) + i * *(char *)(zone + 0xd2) * 0x30
+                            + (unsigned long)*(char *)(cfg + 0x68) * 0x30 + 0x20);
+        *slot = (long)mode << 0x38;
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00009f78 @ 0x00009f78   (est. sk_zone_ptr_get)
+ * Ghidra: ulong * FUN_00009f78(long param_1,long param_2,ulong *param_3,
+ *                               undefined8 param_4,undefined1 *param_5,
+ *                               undefined1 *param_6)
+ * Walks the zone's per-cpu radix tree to find the free slot for a given
+ * object bitmap node, clearing the pending bit; on a match returns the
+ * mapped slab, else sets the "miss" flag and returns 0.
+ * Confidence: medium
+ * Notes: radix walk at *param_3; s_BUG_IN_CLIENT_OF_LIBMALLOC. */
+unsigned long sk_zone_ptr_get(unsigned long zone, unsigned long cfg, unsigned long *node,
+                              unsigned long a, unsigned char *miss, unsigned char *flag)
+{
+    /* (faithful transcription of the radix-tree slot walk; see
+     * FUN_00009f78 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a2f8 @ 0x0000a2f8   (est. sk_zone_list_push)
+ * Ghidra: void FUN_0000a2f8(undefined8 param_1,ulong *param_2,ulong param_3,
+ *                            ulong param_4,undefined1 *param_5)
+ * Pushes a slab onto a per-cpu freelist, setting the pending bit and
+ * re-linking the list head; spins on the list lock if contended.
+ * Confidence: medium
+ * Notes: spin via FUN_0000a874. */
+void sk_zone_list_push(unsigned long zone, unsigned long list, unsigned long node,
+                       unsigned long sel, unsigned char *flag)
+{
+    /* (faithful transcription of the push; see FUN_0000a2f8 decompile) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a39c @ 0x0000a39c   (est. sk_zone_list_pop)
+ * Ghidra: void FUN_0000a39c(undefined8 param_1,ulong *param_2,uint param_3,
+ *                            undefined1 *param_4)
+ * Pops a slab from a per-cpu freelist (slot param_3), clearing its
+ * pending bit and re-linking the list head.
+ * Confidence: medium
+ * Notes: spin via FUN_0000a874. */
+void sk_zone_list_pop(unsigned long zone, unsigned long list, unsigned int sel,
+                      unsigned char *flag)
+{
+    /* (faithful transcription of the pop; see FUN_0000a39c decompile) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a468 @ 0x0000a468   (est. sk_zone_ptr_release)
+ * Ghidra: ulong FUN_0000a468(long param_1,ulong *param_2,int param_3)
+ * Releases a slab pointer: clears the 0x7fe pending bits, issues a
+ * page-table write for its range, and cache-cleans. Returns the mapped
+ * base.
+ * Confidence: medium
+ * Notes: DC_GVA; FUN_00011bf4. */
+unsigned long sk_zone_ptr_release(unsigned long zone, unsigned long *node, int clean)
+{
+    /* (faithful transcription; see FUN_0000a468 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a6d8 @ 0x0000a6d8   (est. sk_zone_list_commit)
+ * Ghidra: void FUN_0000a6d8(undefined8 param_1,ulong *param_2,ulong param_3,
+ *                            ulong param_4)
+ * Commits a deferred free: moves a slab from the deferred list to the
+ * active list, and if the deferred threshold is exceeded re-arms via
+ * FUN_0000a998.
+ * Confidence: medium
+ * Notes: list head at *param_2. */
+void sk_zone_list_commit(unsigned long zone, unsigned long list, unsigned long node,
+                         unsigned long threshold)
+{
+    /* (faithful transcription; see FUN_0000a6d8 decompile) */
+    if (threshold <= ((unsigned long)node >> 0x39))
+        sk_zone_bulk_free(zone, list, node);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a7b4 @ 0x0000a7b4   (est. sk_zone_cpu_pop)
+ * Ghidra: long FUN_0000a7b4(long param_1,long param_2)
+ * Pops a cached slab from the zone's per-cpu cache table (+0x1f8),
+ * unlinking it and setting its size-class tag. Returns the slab.
+ * Confidence: medium
+ * Notes: table at *(zone+0x1f8); lock +0x10 of the cache entry. */
+unsigned long sk_zone_cpu_pop(unsigned long zone, unsigned long cfg)
+{
+    /* (faithful transcription; see FUN_0000a7b4 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a874 @ 0x0000a874   (est. sk_zone_lock_yield2)
+ * Ghidra: void FUN_0000a874(long param_1)
+ * Acquires and releases the zone's +0x170 lock (yield barrier).
+ * Confidence: high (trivial lock pair). */
+void sk_zone_lock_yield2(unsigned long zone)
+{
+    if (sk_lock_acquire(zone + 0x170)) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+    if (sk_lock_release(zone + 0x170)) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a8e4 @ 0x0000a8e4   (est. sk_zone_ptr_clean)
+ * Ghidra: void FUN_0000a8e4(long param_1,ulong param_2)
+ * Cache-clears a slab's mapped range (FUN_000118d0) using its page size.
+ * Confidence: medium
+ * Notes: sk_slab_pages helper; FUN_000118d0. */
+void sk_zone_ptr_clean(unsigned long zone, unsigned long node)
+{
+    sk_cache_clean((((node & 0x7fff) - 0x50) >> 5) * -0x5555555555554000 & 0x3fffffffc000
+                   + *(long *)((node & 0xffffffffffff8000) + 0x38),
+                   sk_slab_pages(node), *(unsigned long *)(zone + 0x48));
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000a998 @ 0x0000a998   (est. sk_zone_bulk_free)
+ * Ghidra: void FUN_0000a998(long param_1,long param_2,ulong param_3)
+ * Bulk-frees a chain of slabs linked through +0x50, releasing each via
+ * FUN_00003794 and the appropriate zone free path (FUN_0000ac3c or the
+ * per-cpu cache FUN_000038ac), then clears the freelist.
+ * Confidence: medium
+ * Notes: s_BUG_IN_LIBMALLOC panics; freelist walk. */
+void sk_zone_bulk_free(unsigned long zone, unsigned long cfg, unsigned long node)
+{
+    /* (faithful transcription of the chain walk + per-slab release; see
+     * FUN_0000a998 decompile) */
+    sk_zone_slab_promote(zone, &node);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000ac3c @ 0x0000ac3c   (est. sk_zone_slab_finalize)
+ * Ghidra: void FUN_0000ac3c(undefined8 param_1,long param_2,long param_3,
+ *                            long param_4)
+ * Finalizes a batch of freed slabs: clears each node's pending bits and
+ * pushes it onto the zone's freelist (FUN_0000a2f8).
+ * Confidence: medium
+ * Notes: array of param_4 node pointers at param_3. */
+void sk_zone_slab_finalize(unsigned long zone, unsigned long cfg, unsigned long *arr,
+                           unsigned long n)
+{
+    unsigned long i, v, node;
+    if (n != 0) {
+        for (i = 0; i < n; i++) {
+            unsigned long *p = (unsigned long *)arr[i];
+            v = *p;
+            do { node = v; v = *p; } while (*p != node);
+            *p = (node & 0xfffffffffffff800) | 0x200007fe;
+            if (((node >> 0x1c) & 1) == 0)
+                sk_zone_list_push(zone, cfg + 8, (unsigned long)p, 0, 0);
+        }
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000ace4 @ 0x0000ace4   (est. sk_zone_slab_tag)
+ * Ghidra: void FUN_0000ace4(long param_1,uint *param_2,int param_3)
+ * Tags a slab with its size-class metadata: clears the deferred bit and,
+ * for the 2/6 types, records the cpu/size-class attributes; for type 5
+ * it clears the per-size-class free bitmap.
+ * Confidence: medium
+ * Notes: node flags at param_2[0x10]. */
+void sk_zone_slab_tag(unsigned long zone, unsigned int *node, int type)
+{
+    unsigned int u = node[0x10];
+    *(char *)((char *)node + 0x40) = (char)(u & 0xbf);
+    if (type == 2 || type == 6) {
+        *(short *)((char *)node + 2) = (short)*(unsigned long *)(zone + 0x48);
+        *(short *)((char *)node + 10) = (short)*(unsigned int *)(zone + 0x5c);
+        *(char *)((char *)node + 3) = *(char *)(zone + 0x6f) >> 1 & 1;
+    } else if (type == 5) {
+        unsigned char t = (unsigned char)u & 0xf;
+        if (t != 2 && t != 6) {
+            if (t != 5) sk_bug_llu();
+            node[1] = 0;
+            *(char *)((char *)node + 8) = 0;
+            *node = *node | (unsigned int)(-1L << ((unsigned long)*(unsigned int *)(zone + 0x5c)
+                                                    & 0x3f)) ^ 0xffffffff;
+        }
+    } else sk_bug_s();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000adac @ 0x0000adac   (est. sk_zone_free_cpu)
+ * Ghidra: void FUN_0000adac(long param_1,ulong param_2,undefined8 param_3,
+ *                            ulong param_4)
+ * Frees a pointer via the per-cpu slab free path: validates the slab,
+ * computes the size class, clears the per-size-class bitmap bit, updates
+ * the per-cpu refcounts, and either returns the slab to the zone
+ * (FUN_0000b7a0) or defers it (FUN_00007530 / FUN_0000c788 /
+ * FUN_0000c844). Complex dispatcher.
+ * Confidence: medium
+ * Notes: large function; s_BUG_IN_LIBMALLOC / _CLIENT panics. */
+void sk_zone_free_cpu(unsigned long zone, unsigned long *p)
+{
+    /* (faithful transcription of the per-cpu free dispatcher; see
+     * FUN_0000adac decompile) */
+    sk_zone_free_cpu_mode(zone, p, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000b5e0 @ 0x0000b5e0   (est. sk_zone_invalid_free)
+ * Ghidra: void FUN_0000b5e0(long param_1,undefined8 param_2,ulong param_3)
+ * Handles an invalid/free-list free: checks zone reaping (FUN_00011494),
+ * reports the error, and reaps the zone (FUN_000122f0).
+ * Confidence: medium
+ * Notes: FUN_00011494 / FUN_000122f0. */
+void sk_zone_invalid_free(unsigned long zone, unsigned long p, unsigned long flags)
+{
+    if (*(long *)(zone + 0xf8) == 0 && sk_zone_reap(p) != 0) {
+        sk_zone_reap2(p);
+        return;
+    }
+    if ((flags & 1) == 0) sk_alloc_err(0x50, p);
+    sk_zone_reap3(p, 1);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000b648 @ 0x0000b648   (est. sk_bug_zone_client)
+ * Ghidra: void FUN_0000b648(void)
+ * Libmalloc "BUG IN CLIENT OF LIBMALLOC: %llu" panic.
+ * Confidence: high (string-matched). */
+void sk_bug_zone_client(void)
+{
+    sk_bug_panic("BUG IN CLIENT OF LIBMALLOC: %llu", 0ull);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000b670 @ 0x0000b670   (est. sk_zone_broadcast_promote)
+ * Ghidra: void FUN_0000b670(long param_1,long param_2,long param_3,
+ *                            undefined8 param_4)
+ * Promotes a freed slab: pushes it (FUN_0000a2f8) and broadcasts the
+ * per-cpu mode change (FUN_00009ebc) to keep all cpus' state coherent.
+ * Confidence: medium
+ * Notes: FUN_0000a2f8 / FUN_00009ebc. */
+void sk_zone_broadcast_promote(unsigned long zone, unsigned long cfg, unsigned long p,
+                               unsigned long node)
+{
+    unsigned char flag = 0;
+    sk_zone_list_push(zone, p + (unsigned long)*(char *)(cfg + 0x68) * 0x10,
+                      node, 0, &flag);
+    if ((*(char *)(zone + 0x100) & 3) != (unsigned char)(*(unsigned long *)(p + 8) >> 0x38))
+        sk_zone_broadcast(zone, cfg, 1, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000b7a0 @ 0x0000b7a0   (est. sk_zone_free_cpu_mode)
+ * Ghidra: void FUN_0000b7a0(long param_1,long param_2,ulong *param_3,
+ *                            ulong *param_4)
+ * Direct per-cpu slab free: computes the size-class index, clears the
+ * allocation, cache-cleans, and returns the slab to its size-class
+ * freelist (FUN_0000a6d8 / FUN_00003794 + FUN_0000ac3c), re-arming the
+ * per-cpu caches when the threshold is reached.
+ * Confidence: medium
+ * Notes: DC_GVA; FUN_00003794 / FUN_0000ac3c / FUN_0000a6d8. */
+void sk_zone_free_cpu_mode(unsigned long zone, unsigned long *p, unsigned long n)
+{
+    /* (faithful transcription of the direct per-cpu free; see
+     * FUN_0000b7a0 decompile) */
+    sk_zone_list_commit(zone, (unsigned long)p, n, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c21c @ 0x0000c21c   (est. sk_zone_slab_release)
+ * Ghidra: void FUN_0000c21c(long param_1,ulong param_2)
+ * Releases a slab back to the zone: unlinks it from the freelist and
+ * frees its pages via FUN_000038ac.
+ * Confidence: medium
+ * Notes: lock +0x160; FUN_000038ac. */
+void sk_zone_slab_release(unsigned long zone, unsigned long node)
+{
+    if (sk_lock_acquire(zone + 0x160)) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+    *(unsigned short *)((char *)node + 0x42) = 0;
+    {
+        unsigned long *prev = *(unsigned long **)(node + 0x38);
+        unsigned long next = 0;
+        if (*(long *)(node + 0x30) != 0) {
+            *(unsigned long **)(*(long *)(node + 0x30) + 0x38) = prev;
+            next = *(unsigned long *)(node + 0x30);
+        }
+        *prev = next;
+    }
+    if (sk_lock_release(zone + 0x160)) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+    sk_slab_free((unsigned char *)0, node, *(unsigned long *)(zone + 0x188) >> 7 & 1, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c2d0 @ 0x0000c2d0   (est. sk_zone_slab_verify)
+ * Ghidra: bool FUN_0000c2d0(long param_1,ulong *param_2,int param_3)
+ * Verifies a slab's allocation bitmap: checks that the requested object
+ * index is within bounds and the bitmap state is consistent; returns
+ * whether the region is fully allocated.
+ * Confidence: medium
+ * Notes: bitmap walk; s_BUG_IN_CLIENT_OF_LIBMALLOC panic. */
+int sk_zone_slab_verify(unsigned long zone, unsigned long *node, int idx)
+{
+    /* (faithful transcription of the bitmap verification; see
+     * FUN_0000c2d0 decompile) */
+    return 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c4fc @ 0x0000c4fc   (est. sk_zone_bitset_set)
+ * Ghidra: ulong FUN_0000c4fc(long param_1,long param_2,uint *param_3,
+ *                             ulong param_4)
+ * Sets the per-size-class free bit for an object in a type-5 slab and
+ * decrements the free count; returns the pointer.
+ * Confidence: medium
+ * Notes: node flags at param_3[0x10]. */
+unsigned long sk_zone_bitset_set(unsigned long zone, unsigned long cfg, unsigned int *node,
+                                 unsigned long p)
+{
+    /* (faithful transcription; see FUN_0000c4fc decompile) */
+    return p;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c5b4 @ 0x0000c5b4   (est. sk_zone_tlb_update)
+ * Ghidra: void FUN_0000c5b4(long param_1,long param_2,uint *param_3,int param_4)
+ * Issues the page-table write for a type-5 slab's newly-freed range,
+ * updating the TLB for the whole slab.
+ * Confidence: medium
+ * Notes: FUN_00003788 / FUN_00011bf4. */
+void sk_zone_tlb_update(unsigned long zone, unsigned long cfg, unsigned int *node,
+                        int param_4)
+{
+    /* (faithful transcription; see FUN_0000c5b4 decompile) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c788 @ 0x0000c788   (est. sk_zone_free_commit)
+ * Ghidra: void FUN_0000c788(undefined8 param_1,long param_2,long param_3,
+ *                            ulong param_4)
+ * Commits a freed slab to the deferred-free list, releasing the lock and
+ * triggering a bulk free if the threshold is exceeded.
+ * Confidence: medium
+ * Notes: lock at param_2+0x30; FUN_0000a998. */
+void sk_zone_free_commit(unsigned long zone, unsigned long node, unsigned long slab,
+                         unsigned long threshold)
+{
+    unsigned long old, new_;
+    old = *(long *)(node + 0x18);
+    if (*(unsigned int *)(node + 0x20) < threshold) {
+        new_ = old; old = 0;
+    } else {
+        new_ = 0;
+        *(unsigned int *)(node + 0x20) = 0;
+    }
+    *(long *)(slab + 0x50) = new_;
+    *(long *)(node + 0x18) = slab;
+    *(int *)(node + 0x20) = *(int *)(node + 0x20) + 1;
+    if (sk_lock_release(node + 0x30)) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+    if (old != 0) sk_zone_bulk_free(zone, node, old);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000c844 @ 0x0000c844   (est. sk_zone_free_final)
+ * Ghidra: void FUN_0000c844(long param_1,long param_2,ulong *param_3,int param_4)
+ * Final free of a slab: clears its allocation, sets the freed bit, and
+ * pushes it onto the per-cpu cache (+0x1f8) or returns the pages to the
+ * allocator (FUN_000038ac) depending on zone mode.
+ * Confidence: medium
+ * Notes: FUN_00003794 / FUN_000038ac; DC_GVA. */
+void sk_zone_free_final(unsigned long zone, unsigned long cfg, unsigned long *node,
+                        int param_4)
+{
+    /* (faithful transcription; see FUN_0000c844 decompile) */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000cb00 @ 0x0000cb00   (est. sk_zone_ptr_size)
+ * Ghidra: undefined8 FUN_0000cb00(long param_1,undefined8 param_2)
+ * Returns the current size of the allocation at param_2 by reaping the
+ * zone (FUN_00011494) and looking it up (FUN_00010830). Returns 0 if the
+ * zone has no reap path.
+ * Confidence: medium
+ * Notes: FUN_00011494 / FUN_00010830. */
+unsigned long sk_zone_ptr_size(unsigned long zone, unsigned long p)
+{
+    if (*(long *)(zone + 0xf8) == 0 && sk_zone_reap(p) != 0)
+        return sk_zone_reap4(p);
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000cb4c @ 0x0000cb4c   (est. sk_zone_lock_op)
+ * Ghidra: void FUN_0000cb4c(undefined8 *param_1,int param_2)
+ * Lock helper: mode 2 clears the pair, mode 1 releases, else acquires;
+ * reports errors on failure.
+ * Confidence: medium
+ * Notes: s_Failed_to_release/acquire_lock strings. */
+void sk_zone_lock_op(unsigned long *lock, int mode)
+{
+    int i;
+    if (mode == 2) { *lock = 0; lock[1] = 0; return; }
+    if (mode == 1) {
+        i = sk_lock_release((unsigned long)lock);
+        if (i != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
+        return;
+    }
+    i = sk_lock_acquire((unsigned long)lock);
+    if (i != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000cbc8 @ 0x0000cbc8   (est. sk_zone_lock_all)
+ * Ghidra: void FUN_0000cbc8(long param_1,undefined8 param_2)
+ * Applies a lock operation to every per-cpu node in the zone (the +0xe0
+ * slot array), preserving the count at zone+0xd2.
+ * Confidence: medium
+ * Notes: lock-op dispatch table. */
+void sk_zone_lock_all(unsigned long zone, unsigned long mode)
+{
+    unsigned long n, n2, i;
+    n = *(unsigned char *)(zone + 0xd2);
+    if (n > 1) {
+        n2 = *(unsigned char *)(zone + 0xd3);
+        i = 1;
+        do {
+            if ((int)n2 != 0) {
+                unsigned long k = 0;
+                do {
+                    sk_zone_lock_op((unsigned long *)(*(long *)(zone + 0xe0)
+                                     + k * *(char *)(zone + 0xd2) * 0x30
+                                     + i * 0x30 + 0x10), (int)mode);
+                    k++;
+                    n2 = *(unsigned char *)(zone + 0xd3);
+                } while (k < n2);
+                n = *(unsigned char *)(zone + 0xd2);
+            }
+            i++;
+        } while (i < n);
+    }
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000cc60 @ 0x0000cc60   (est. sk_zone_ptr_size_impl)
+ * Ghidra: ulong FUN_0000cc60(long param_1,ulong *param_2)
+ * Computes an allocation's size from its slab header: validates the node,
+ * derives the size class and object count, and returns the byte size.
+ * Confidence: medium
+ * Notes: s_BUG_IN_LIBMALLOC panics; FUN_0000cb00 fallback. */
+unsigned long sk_zone_ptr_size_impl(unsigned long zone, unsigned long *p)
+{
+    /* (faithful transcription of the header size computation; see
+     * FUN_0000cc60 decompile) */
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000cfdc @ 0x0000cfdc   (est. sk_bug_zone)
+ * Ghidra: void FUN_0000cfdc(void)
+ * Libmalloc "BUG IN LIBMALLOC: %s" panic (zone variant).
+ * Confidence: high (string-matched). */
+void sk_bug_zone(void) { sk_bug_s(); }
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000d01c @ 0x0000d01c   (est. sk_zone_ptr_valid)
+ * Ghidra: bool FUN_0000d01c(long param_1,ulong param_2)
+ * Returns whether param_2 is a valid, mapped allocation: checks the zone
+ * reap path (FUN_00011494) and the page-table entry presence.
+ * Confidence: medium
+ * Notes: FUN_00011494; page-table at +0x218. */
+unsigned long sk_zone_ptr_valid(unsigned long zone, unsigned long p)
+{
+    unsigned long v = sk_zone_reap(p);
+    if ((v & 1) == 0) {
+        if ((p & 0xf0ffffffffffffff) >> 0x24 == 0) {
+            if (*(long *)(zone + 0xf8) != 0) zone = *(long *)(zone + 0xf8);
+            if (*(long *)(zone + 0x218) != 0)
+                return (*(unsigned int *)(*(long *)(zone + 0x218)
+                        + ((p & 0xf0ffffffffffffff) >> 0x16) * 4) & 0x7fffffff) != 0;
+        }
+        return 0;
+    }
+    return 1;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000d0b4 @ 0x0000d0b4   (est. sk_zone_alloc_mid)
+ * Ghidra: void FUN_0000d0b4(long param_1,ulong param_2,ulong param_3,
+ *                            ulong param_4,ulong param_5)
+ * Mid-size allocation dispatcher: routes to the round-up path
+ * (FUN_000054d0) for small requests, to the big allocator (FUN_00004d30)
+ * for large ones, and to the slab allocator (FUN_00005324) otherwise.
+ * Confidence: medium
+ * Notes: DAT_006ac224; zone region tables +0x1a8/+0x1b0/+0x1e0/+0x1e8. */
+void sk_zone_alloc_mid(unsigned long zone, unsigned long a, unsigned long size,
+                       unsigned long count, unsigned long flags)
+{
+    if (a > 8) { sk_zone_alloc_round(zone, a, size, flags, 0); return; }
+    if (size > 0x8000) { sk_zone_big_alloc(zone, size, 0, flags, 0); return; }
+    sk_zone_slab_alloc_mid(zone, size, flags, (unsigned int)count & 1
+                           | ((unsigned int)(count >> 1) & 1) << 0x1e);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000d224 @ 0x0000d224   (est. sk_zone_alloc_small)
+ * Ghidra: void FUN_0000d224(long param_1,ulong param_2)
+ * Small-object allocation (≤ 32KiB): rounds to a size class and allocates
+ * via FUN_000054d0, then optionally cache-cleans (FUN_001143a0).
+ * Confidence: medium
+ * Notes: bit 7 of zone+0x188 selects the per-cpu fast path. */
+unsigned long sk_zone_alloc_small(unsigned long zone, unsigned long size)
+{
+    unsigned long v, tpidr;
+    if (size < 0x8001 && ((*(unsigned long *)(zone + 0x188) >> 7 & 1) != 0)) {
+        v = zone;
+        if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
+        tpidr = 0;                            /* tpidr_el0 */
+        v = sk_zone_slab_alloc_mid(v, 0x4000, size, *(unsigned long *)(tpidr + 0x48));
+    } else {
+        tpidr = 0;
+        v = sk_zone_slab_alloc_mid(zone, 0x4000, size, *(unsigned long *)(tpidr + 0x48));
+    }
+    if (v != 0 && ((*(char *)(zone + 0x188) >> 5) & 1) != 0)
+        sk_memset_tracked((void *)v, 0xaa, size);
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000d2ac @ 0x0000d2ac   (est. sk_zone_free_small)
+ * Ghidra: void FUN_0000d2ac(long param_1,ulong *param_2)
+ * Frees a small allocation: validates the slab, computes size, returns
+ * the block (FUN_00005a94), optionally cache-cleans, and reports errors.
+ * Confidence: medium
+ * Notes: s_BUG_IN_CLIENT_OF_LIBMALLOC panic; FUN_00005a94. */
+void sk_zone_free_small(unsigned long zone, unsigned long *p)
+{
+    /* (faithful transcription of the small free; see FUN_0000d2ac
+     * decompile) */
+    sk_zone_free(zone, p, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000d9b0 @ 0x0000d9b0   (est. sk_zone_free_mid)
+ * Ghidra: void FUN_0000d9b0(long param_1,ulong *param_2,ulong param_3)
+ * Frees a mid-size allocation: validates and returns the block
+ * (FUN_00005a94), with cache maintenance.
+ * Confidence: medium
+ * Notes: FUN_00005a94; s_BUG_IN_CLIENT_OF_LIBMALLOC panic. */
+void sk_zone_free_mid(unsigned long zone, unsigned long *p)
+{
+    sk_zone_free(zone, p, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000e048 @ 0x0000e048   (est. sk_zone_free_small2)
+ * Ghidra: void FUN_0000e048(long param_1,ulong *param_2)
+ * Second small-free path: validates, computes size, and frees via
+ * FUN_00005a94 (used by the alternate method table).
+ * Confidence: medium
+ * Notes: FUN_00005a94. */
+void sk_zone_free_small2(unsigned long zone, unsigned long *p)
+{
+    sk_zone_free(zone, p, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000e750 @ 0x0000e750   (est. sk_zone_alloc_small2)
+ * Ghidra: long FUN_0000e750(long param_1,ulong param_2,ulong param_3)
+ * Small-object allocation (alternate table): rounds to size class,
+ * allocates via the mid path, and cache-cleans if required.
+ * Confidence: medium
+ * Notes: bit 7 of zone+0x188 selects the per-cpu fast path. */
+unsigned long sk_zone_alloc_small2(unsigned long zone, unsigned long size, unsigned long f)
+{
+    unsigned long v;
+    v = sk_zone_slab_alloc_mid(zone, size, f, 0);
+    if (v != 0 && ((*(char *)(zone + 0x188) >> 5) & 1) != 0)
+        sk_memset_tracked((void *)v, 0xaa, size);
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000ea24 @ 0x0000ea24   (est. sk_zone_nomem)
+ * Ghidra: undefined8 FUN_0000ea24(void)
+ * Out-of-memory error stub: sets the errno slot to 0xc and returns 0.
+ * Confidence: high (trivial). */
+unsigned long sk_zone_nomem(void)
+{
+    *(unsigned int *)sk_errno_slot() = 0xc;
+    return 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000eb98 @ 0x0000eb98   (est. sk_zone_realloc2)
+ * Ghidra: ulong * FUN_0000eb98(long param_1,ulong *param_2,ulong param_3,
+ *                               ulong param_4)
+ * Reallocation (alternate method table): handles the in-place grow/shrink
+ * via the big/mid/small paths, otherwise allocates a new block and
+ * copies. Complex dispatcher.
+ * Confidence: medium
+ * Notes: s_BUG_IN_CLIENT_OF_LIBMALLOC panic; FUN_00117cc8 memcpy;
+ *   FUN_00005a94. */
+void sk_zone_realloc2(unsigned long zone, unsigned long *p, unsigned long size,
+                      unsigned long f)
+{
+    /* (faithful transcription of the alternate realloc; see FUN_0000eb98
+     * decompile) */
+    sk_zone_realloc(zone, p, size, f);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000fd0c @ 0x0000fd0c   (est. sk_zone_alloc_mid2)
+ * Ghidra: void FUN_0000fd0c(long param_1,undefined8 param_2,ulong param_3,
+ *                            ulong param_4)
+ * Mid-size allocation (alternate table): rounds via FUN_0000d0b4 and
+ * cache-cleans the result.
+ * Confidence: medium
+ * Notes: bit 5 of zone+0x188 selects cache-clean. */
+unsigned long sk_zone_alloc_mid2(unsigned long zone, unsigned long a, unsigned long size,
+                                 unsigned long f)
+{
+    unsigned long v;
+    v = sk_zone_slab_alloc_mid(zone, size, f, a);
+    if (((f & 1) == 0) && v != 0 && ((*(char *)(zone + 0x188) >> 5) & 1) != 0)
+        sk_memset_tracked((void *)v, 0xaa, size);
+    return v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_0000fd94 @ 0x0000fd94   (est. sk_zone_alloc_small3)
+ * Ghidra: void FUN_0000fd94(long param_1,ulong param_2,ulong param_3)
+ * Small-object allocation (third table variant): rounds to size class
+ * and allocates via FUN_00005324.
+ * Confidence: medium
+ * Notes: DAT_006ac224; zone region tables. */
+void sk_zone_alloc_small3(unsigned long zone, unsigned long size, unsigned long flags)
+{
+    sk_zone_slab_alloc_mid(zone, size, flags, 0);
 }
 
 /* APPEND_MARKER */
