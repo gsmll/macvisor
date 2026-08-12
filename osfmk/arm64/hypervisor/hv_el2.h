@@ -128,14 +128,14 @@ extern long vm_fault_enter(void *map, uint64_t addr, uint64_t flags,
                            uint64_t stack, void *stack_arg); /* b89d5f8 */
 extern void  vm_fault_internal(void);                  /* b89de34 */
 extern void  vm_fault_finish(void);                    /* b94c554 */
-extern void  kernel_page_validate(uint64_t, uint64_t *);      /* c0d7b94 */
-extern void  kernel_paddr_type(uint64_t, uint64_t *);         /* c0d7c20 */
+extern int   kernel_page_validate(uint64_t, uint64_t *);      /* c0d7b94 (0 = ok) */
+extern int   kernel_paddr_type(uint64_t, uint64_t *);         /* c0d7c20 (0 = ok) */
 extern int   kernel_memattr_resolve(uint64_t, uint32_t, uint64_t,
                                     void *, uint32_t);        /* b94abbc */
 extern void  kernel_preempt_dec(uint64_t *);                  /* b94172c */
 extern void  kernel_tlb_flush(void);                          /* b96c6d4 */
-extern void  kernel_lock_bit_acquire(uint64_t, int);          /* b7f8d9c */
-extern void  kernel_lock_bit_wait(uint64_t, int, void **);    /* b7f8ce0 */
+extern int   kernel_lock_bit_acquire(uint64_t, int);          /* b7f8d9c (0 = busy) */
+extern void  kernel_lock_bit_wait(uint64_t, int, void **);    /* b7f8ce0 (see hv_el2.c 4-arg form) */
 extern void  kernel_lock_bit_release(uint64_t, int);          /* b7f8e50 */
 extern void  kernel_memory_barrier(int, int);                 /* DataMemoryBarrier */
 extern void  kernel_region_lock(uint64_t);                    /* b78fd40 */

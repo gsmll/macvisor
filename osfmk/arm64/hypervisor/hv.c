@@ -94,7 +94,7 @@ extern void kernel_panic_owner_mismatch(void *obj, uint64_t cpu)
 extern void hv_rbtree_unlink(void *root, void *node);  /* FUN_fffffe000b9860bc, decompiled in hv_vmapple.c */
 
 /* -------------------------------------------------------------------------
- * hv_vmm_present @ 0xfffffe000be39fd0  (est. hv_vmm_present)
+ * hv_vmm_present @ 0xfffffe000be39fd0  (hv_vmm_present)
  * Ghidra: void hv_vmm_present(void)   [uses in_x3 = trap record]
  * Reads the "vmm-present" boot property into a 4-byte local, normalizes it to
  * 0/1, and copies that result out to the caller through the trap record's
@@ -154,7 +154,7 @@ hv_capabilities(hv_trap_record_t *rec)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_create @ 0xfffffe000b985588  (est. hv_vm_create; op table idx1)
+ * hv_vm_create @ 0xfffffe000b985588  (op table idx1)
  * Ghidra: undefined8 hv_vm_create(undefined8 param_1)
  * Creates a hypervisor VM object. Copies the 0x1c-byte user arg block
  * (copyin), then enforces entitlement checks via the sandbox
@@ -604,7 +604,7 @@ join:
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_protect @ 0xfffffe000b986d84  (est. hv_vm_protect; op table idx4)
+ * hv_vm_protect @ 0xfffffe000b986d84  (op table idx4)
  * Ghidra: <no function defined at this address>
  * Op-table index 4 points here, but Ghidra has no function at the address.
  * Raw bytes (verified, read_memory b986d84): `dsb; mov w1,#1; mov w2,#0;
@@ -637,54 +637,66 @@ hv_vm_protect(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vcpu_destroy_trap @ 0xfffffe000b9897bc  (est. hv_vcpu_destroy_trap; op table idx7)
+ * hv_vcpu_destroy_trap @ 0xfffffe000b9897bc  (op table idx7)
  * Ghidra: undefined8 hv_vcpu_destroy_trap(void)
  * Destroys the calling CPU's bound vcpu. Reads the per-cpu vcpu slot
- * (tpidr_el1+0x4d8); takes the vm lock and bumps the per-cpu "in critical
- * section" counter (tpidr_el1+0x1c0). If the vcpu has the AMX feature
+ * (tpidr_el1+0x4d8); takes the vm lock (owner object **vcpu) and bumps the
+ * per-cpu "in critical section" counter (tpidr_el1+0x1c0), then calls
+ * hv_el2_state_activate to leave EL2. If the vcpu has the AMX feature
  * (vcpu+0x411e bit6 set and vcpu[0x18]+0x1400 nonzero) it disables AMX by
  * clearing bit63 of UnkSytemRegRead(3,4,0xf,1,4) around __amx_disable() with
- * isb barriers. If EL2 is enabled (DAT_fffffe0007e0da68) and the vcpu uses
- * streaming SVE (vcpu+0x4118 bit4, vcpu+0x4138&3) it clears bits 0/1 of the
- * svcr register and calls sveStreamingModeStop(). Then it clears the per-cpu
- * vcpu slot, calls hv_vcpu_destroy (est. hv_vcpu_destroy in vcpu-core)
- * to release the vcpu, releases the lock, and returns 0.
- * Confidence: medium (per-cpu vcpu teardown + EL2 AMX/SVE disable is decisive).
- * Notes: EL2 sysreg read/write (3,4,0xf,1,4) = op1=4 ⇒ EL2; register identity
- *   (likely amcr_el2/amair) unverified; __amx_disable / sveStreamingModeStop are
- *   kernel builtins; svcr is the SVE control reg global; err 0xfae94006;
- *   hv_vcpu_destroy owned by vcpu-core tree.
+ * isb barriers. If EL2 is enabled (hv_build_gate/DAT_fffffe0007e0da68) and the
+ * vcpu uses streaming SVE (vcpu+0x4118 bit4, vcpu+0x4138&3) it clears bits
+ * 0/1 of the svcr register and calls sveStreamingModeStop(). It then saves
+ * and clears vcpu[0x1c], clears the per-cpu activation bits, destroys the
+ * vcpu (hv_vcpu_destroy, vcpu-core), syncs the per-vm lock, and frees the
+ * saved block (zfree_waitq). Returns 0xfae94006 if there is no vcpu.
+ * Confidence: high (fresh decompile verified; body rewritten to match it).
+ * Notes: rewrote 2026-08-12 from a fresh decompile. The per-vm lock/cpu-id
+ *   base is `**vcpu` (the vm object at the first qword of the vcpu struct's
+ *   first qword), not `*vcpu`; the tail was reordered to match (hv_vcpu_destroy
+ *   -> lock_sync -> zfree_waitq) and the two per-cpu activation-bit clears
+ *   (byte at vcpu+0xf8 selects the vector entry) were added. EL2 sysreg
+ *   (3,4,0xf,1,4) = op1=4 ⇒ EL2; register identity unverified. Helpers:
+ *   lock_acquire b7f0afc, lock_sync b7f1e80, hv_el2_state_activate b9882ac,
+ *   kernel_panic c0f1874, kernel_tlb_flush b96c6d4, zfree_waitq b793cf4,
+ *   hv_vcpu_destroy b988e70. err 0xfae94006.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vcpu_destroy_trap(void *args __unused)
 {
-	uint64_t u;
-	uint64_t cpu_slot;
-	long    *vcpu;
-	long    *v;
-	int      pending, i;
-	uint32_t prev;
+	uint64_t u;            /* uVar3 */
+	uint64_t cpu_slot;     /* lVar6 */
+	long    *vcpu;         /* plVar10 per-cpu vcpu slot */
+	long    *owner;        /* plVar12 = *vcpu */
+	long    *obj;          /* lVar8 = **vcpu vm object */
+	long    *tofree;       /* lVar11 */
+	uint8_t  b;            /* byte at vcpu+0xf8 */
+	uint64_t base;         /* lVar8 activation-bit base */
+	int      pending, i;   /* iVar5 / iVar7 */
+	int      prev;         /* iVar3/iVar4 */
 
 	pending = hv_debug_flag;
 	cpu_slot = tpidr_el1;
 	vcpu = *(long **)(cpu_slot + 0x4d8);
 	if (vcpu == NULL)
 		return 0xfae94006;
-	v = (long *)*vcpu;
-	u = *(uint64_t *)(v + 1);
+	owner = (long *)*vcpu;                  /* plVar12 = *plVar10 */
+	obj = (long *)*owner;                   /* lVar8 = *plVar12 = **vcpu */
+	u = *(uint64_t *)(obj + 1);             /* stored per-cpu id at (**vcpu)+8 */
 	if (u == 0)
-		*(uint64_t *)(v + 1) = *(uint32_t *)(cpu_slot + 0x518);
+		*(uint64_t *)(obj + 1) = *(uint32_t *)(cpu_slot + 0x518);
 	if (u != 0 || pending != 0)
-		lock_acquire(v, cpu_slot, u, 0);   /* est. lock */
-	*(int *)(cpu_slot + 0x1c0) += 1;               /* critical-section depth */
-	hv_el2_state_activate((long)vcpu);                    /* est. EL2 state activate */
+		lock_acquire(obj, cpu_slot, u, 0);  /* FUN_fffffe000b7f0afc */
+	*(int *)(cpu_slot + 0x1c0) += 1;                /* critical-section depth */
+	hv_el2_state_activate((long)vcpu);              /* FUN_fffffe000b9882ac */
 	if (*(int *)(cpu_slot + 0x1c0) == 0)
-		kernel_panic();                    /* est. panic, no-return */
+		kernel_panic();                     /* FUN_fffffe000c0f1874, no-return */
 	i = *(int *)(cpu_slot + 0x1c0) - 1;
 	*(int *)(cpu_slot + 0x1c0) = i;
 	if (i == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
-		kernel_tlb_flush();                    /* est. post-EL2 hook */
-	*(uint64_t *)(cpu_slot + 0x4d8) = 0;           /* clear per-cpu vcpu slot */
+		kernel_tlb_flush();                 /* FUN_fffffe000b96c6d4 */
+	*(uint64_t *)(cpu_slot + 0x4d8) = 0;            /* clear per-cpu vcpu slot */
 
 	/* AMX disable if enabled on this vcpu. */
 	if (((*(uint8_t *)(vcpu[0x16] + 0x411e) >> 6) & 1) != 0 &&
@@ -714,21 +726,26 @@ hv_vcpu_destroy_trap(void *args __unused)
 		svcr = u & 0xfffffffffffffffd;
 		sveStreamingModeStop();
 	}
-	zfree_waitq(vcpu[0x1c]);
+	tofree = (long *)vcpu[0x1c];            /* lVar11 = plVar10[0x1c] */
 	vcpu[0x1c] = 0;
-	hv_vcpu_destroy(vcpu);                    /* vcpu-core: hv_vcpu_destroy */
-	i = hv_debug_flag;
-	v = (long *)*v;
-	prev = *(uint32_t *)(v + 1);
+	/* Clear the vcpu's activation bit in the per-cpu vector table. */
+	b = *(uint8_t *)((char *)vcpu + 0xf8);  /* *(byte*)(plVar10+0x1f) */
+	base = (uint64_t)*vcpu + ((uint64_t)(b >> 3) & 0x18);
+	*(uint64_t *)(base + 0x18) &= ~(1ULL << (b & 0x3f));
+	*(uint64_t *)((uint64_t)*vcpu + (uint64_t)b * 0x80 + 0x80) = 0;
+	hv_vcpu_destroy(vcpu);                  /* vcpu-core: hv_vcpu_destroy */
+	obj = (long *)*owner;                   /* lVar8 = *plVar12 (re-read) */
+	prev = *(uint32_t *)(obj + 1);
 	if (prev == *(uint32_t *)(cpu_slot + 0x518))
-		*(uint32_t *)(v + 1) = 0;
-	if (prev != *(uint32_t *)(cpu_slot + 0x518) || i != 0)
-		lock_sync(v, cpu_slot);         /* est. per-cpu sync */
+		*(uint32_t *)(obj + 1) = 0;
+	if (prev != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+		lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+	zfree_waitq((char *)tofree);            /* FUN_fffffe000b793cf4 */
 	return 0;
 }
 
 /* -------------------------------------------------------------------------
- * hv_vcpu_run_trap @ 0xfffffe000b9899b0  (est. hv_vcpu_run_trap; op table idx8)
+ * hv_vcpu_run_trap @ 0xfffffe000b9899b0  (op table idx8)
  * Ghidra: undefined8 hv_vcpu_run_trap(void)
  * Runs / resumes the calling CPU's bound vcpu. Reads the per-cpu vcpu slot
  * (tpidr_el1+0x4d8); if none, returns 0xfae94006. Otherwise enters the
@@ -736,9 +753,12 @@ hv_vcpu_destroy_trap(void *args __unused)
  * launch helper) with the vcpu and an EL2 control mask chosen by the EL2-L2
  * feature flag DAT_fffffe0007e0d81d: 0x7fc000000000001f (L2-capable) else
  * 0x7bc000000000001f. Exits the critical section and returns 0.
- * Confidence: medium (vcpu launch with EL2 feature-gated control mask).
- * Notes: reads EL2-L2 flag DAT_fffffe0007e0d81d (set by hv_el2_feature_detect);
- *   hv_vcpu_save_el2_state owned by vcpu-core tree; err 0xfae94006.
+ * Confidence: high (fresh decompile verified; body matches line for line).
+ * Notes: fresh decompile verified 2026-08-12 — body confirmed faithful:
+ *   read vcpu slot, critical++, mask = (DAT_fffffe0007e0d81d & 1) ?
+ *   0x7fc000000000001f : 0x7bc000000000001f, hv_vcpu_save_el2_state(slot, mask),
+ *   critical-- with kernel_panic (c0f1874) at 0 and kernel_tlb_flush (b96c6d4)
+ *   post-exit. hv_vcpu_save_el2_state owned by vcpu-core tree; err 0xfae94006.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vcpu_run_trap(void *args __unused)
@@ -762,22 +782,26 @@ hv_vcpu_run_trap(void *args __unused)
 }
 
 /* -------------------------------------------------------------------------
- * hv_trap_op_10 @ 0xfffffe000b98e488  (est. hv_trap_op_10; op table idx10)
+ * hv_trap_op_10 @ 0xfffffe000b98e488  (op table idx10; identity descriptive)
  * Ghidra: undefined8 hv_trap_op_10(ulong param_1)   [WARNING: Removing
  *   unreachable block (ram,0xfffffe000b98e648); Type propagation not settling]
  * Marks a set of per-cpu vcpu slots dirty/taken according to a bitmask in
  * param_1 (param_1==0 => just a DMB barrier). For each set bit it computes the
  * bit index via a 64-bit reverse-bits + LZCOUNT, tags the per-cpu slot table
- * entry (plVar11 + idx*0x10 + 0x12 = 1), then (if the vm owner at plVar11+0x10
+ * entry (owner + idx*0x10 + 0x12 = 1), then (if the owner at owner+idx*0x10+0x10
  * block exists) takes that owner's lock, flags it busy (|=4), and flushes its
- * state (hv_flush_lock_op / hv_flush). Ends with a DMB and, for
- * a fresh (no vcpu) caller, calls hv_el2_state_finalize to finalize.
- * Confidence: low (bitmask-driven per-CPU vcpu-state flush op; NOT matched to a
- *   public API — attempted: hv_vcpu_exec, hv_vm_map/unmap propagation to all
- *   CPUs, shared-memory sync; none fit the per-CPU-slot flush + owner-refcount
- *   dance, so kept descriptive hv_trap_op_10).
- * Notes: bit index = LZCOUNT(bitrev64(mask)); DMB barrier DataMemoryBarrier(2,3);
- *   helpers b8563f8/b95ecd8/b98e74c shared/el2; err 0xfae94006; LOAcquire/LORelease
+ * state (hv_flush_lock_op). Ends with a DMB and, for a fresh (no vcpu) caller,
+ * calls hv_el2_state_finalize to finalize.
+ * Confidence: high for body fidelity (fresh decompile verified; body rewritten
+ *   to match it); the identity remains descriptive, not matched to a public
+ *   API — attempted: hv_vcpu_exec, hv_vm_map/unmap propagation to all CPUs,
+ *   shared-memory sync; none fit the per-CPU-slot flush + owner-refcount dance.
+ * Notes: rewrote 2026-08-12 from a fresh decompile. Fixed the flush-epilogue
+ *   `l_flush` label: the decompile's LAB_fffffe000b98e680 reassigns a = slot[1]
+ *   before the cpu_signal, but the old body's label landed after `a = slot[1]`,
+ *   so the signal path used `a = *owner` instead of `a = slot[1]`. Bit index =
+ *   LZCOUNT(bitrev64(mask)); DMB barrier DataMemoryBarrier(2,3); helpers
+ *   b8563f8/b95ecd8/b98e74c shared/el2; err 0xfae94006; LOAcquire/LORelease
  *   around the owner busy flag. Takes the trap arg as a 64-bit CPU-bitmask value
  *   (no copyin); owner refcount inc/dec with panic on overflow (c0f86a4).
  * ------------------------------------------------------------------------- */
@@ -857,9 +881,9 @@ hv_trap_op_10(uint64_t mask)
 							goto l_flush;
 					}
 					lock_sync((void *)a, cpu_slot);
+				l_flush:
 					a = slot[1];
 				}
-			l_flush:
 				if (a != 0)
 					cpu_signal(a, 0, 0, 0, 0);   /* est. cpu_signal / flush (b95ecd8) */
 			}
@@ -872,7 +896,7 @@ hv_trap_op_10(uint64_t mask)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_map_shared @ 0xfffffe000b986da4  (est. hv_vm_map_shared; op table idx12)
+ * hv_vm_map_shared @ 0xfffffe000b986da4  (op table idx12)
  * Ghidra: undefined8 hv_vm_map_shared(long param_1)
  * Maps a range of guest physical memory and returns a shared-region handle.
  * Copies the 0x20-byte user arg block (copyin: [gpa(8),
@@ -883,13 +907,13 @@ hv_trap_op_10(uint64_t mask)
  * fails it still notifies the per-cpu state block (tpidr_el1+0x318, via
  * hv_percpu_notify) with the handle's low 32 bits, then returns
  * 0xfae94003.
- * Confidence: medium (map-guest-memory + return-handle is the
- *   hv_vm_map_shared contract; the handle is copied out, not written into a
- *   guest register).
- * Notes: helper b9866d0 (hv_vcpu_map_memory) is owned by the vcpu-core tree;
- *   b95c144/b95d6f4 are the shared copyin/copyout helpers; b866ec4 (per-cpu
- *   base) / b7a1dd8 (per-cpu notify) are kernel deps. Copyin size 0x20, copyout
- *   8 bytes at offset 0x18.
+ * Confidence: high (fresh decompile verified; body matches line for line).
+ * Notes: fresh decompile verified 2026-08-12 — body confirmed faithful:
+ *   copyin 0x20 -> hv_vcpu_map_memory(0, a0, a1, a2 & 0xffffffff, &result) ->
+ *   copyout(&result, args+0x18, 8) -> on copyout failure per_cpu_base
+ *   (b866ec4)+0x318 -> hv_percpu_notify(base, result & 0xffffffff) (b7a1dd8),
+ *   return 0xfae94003. Helper b9866d0 (hv_vcpu_map_memory) is owned by the
+ *   vcpu-core tree; b95c144/b95d6f4 are the shared copyin/copyout helpers.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_map_shared(void *args)
@@ -917,23 +941,26 @@ hv_vm_map_shared(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_set_trap_debug @ 0xfffffe000b986f1c  (est. hv_vm_set_trap_debug; op table idx14)
+ * hv_vm_set_trap_debug @ 0xfffffe000b986f1c  (op table idx14)
  * Ghidra: undefined8 hv_vm_set_trap_debug(undefined8 param_1)
  * Sets a hardware trap-debug register slot on the caller's VM. Copies the
- * 0x18-byte user arg block (copyin: [id(8), value(8),
- * reg-sel(8)]), validates a 0..9 debug-register selector (local_30), looks up
+ * 0x18-byte user arg block (copyin: [id(8), selector(8),
+ * value(8)]), validates a 0..9 debug-register selector (args[1]), looks up
  * the vm owner by id (hv_pmap_resolve_owner), then calls
- * hv_debug_reg_apply(vm_resource, selector, value) to apply the debug
+ * hv_debug_reg_apply(*(vm+0x58), selector, value) to apply the debug
  * register. b954160 panics on "invoked on stage 1 pmap" / "debug exceptions
  * enabled in kernel mode" and manipulates daif (must run with IRQs masked)
  * around the write — it is hardware debug-register configuration. On a fresh
  * (unbound) vm ref it binds/tears down the caller's per-cpu vcpu instead.
- * Confidence: medium (per-vm debug-reg slot + the b954160 daif/debug-exception
- *   panics are decisive for a set-trap-debug op; vm-level lookup => vm, not
- *   vcpu).
- * Notes: err 0xfae94003; panic paths c0e1c3c (bad '-' ref) / c0e11ec (b954160);
- *   helpers b986b34 (owner lookup) / b8afa78 / b793cf4 / b866ec4 kernel.
- *   Copyin 0x18, selector bound 0..9.
+ * Confidence: high (fresh decompile verified; body rewritten to match it).
+ * Notes: rewrote 2026-08-12 from a fresh decompile. Two discrepancies fixed:
+ *   (a) the selector/value qwords were swapped — the decompile uses args[1]
+ *   as the 0..9 selector and args[2] as the applied value, but the old body
+ *   read args[2] as selector and args[1] as value; (b) hv_debug_reg_apply is
+ *   called unconditionally with *(vm+0x58) (the decompile applies even when
+ *   *(vm+0x58)==0), not guarded. err 0xfae94003; panic paths c0e1c3c (bad '-'
+ *   ref) / c0e11ec (b954160); helpers b986b34 (owner lookup) / b8afa78 /
+ *   b793cf4 / b866ec4 kernel. Copyin 0x18, selector bound 0..9.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_set_trap_debug(void *args)
@@ -941,21 +968,21 @@ hv_vm_set_trap_debug(void *args)
 	uint64_t a0 = 0, a1 = 0, a2 = 0;
 	void    *vm;
 	char    *ret;
-	uint64_t idx;
+	uint64_t sel, val;
 	uint64_t cpu_slot;
 	int      r;
 
 	r = copyin(args, &a0, 0x18);
 	if (r != 0)
 		return 0xfae94003;
-	idx = a2;
-	if (idx > 9)
+	sel = a1;                    /* local_30 = args[1] (0..9 selector) */
+	val = a2;                    /* local_28 = args[2] (value) */
+	if (sel > 9)
 		return 0xfae94003;
 	vm = (void *)hv_pmap_resolve_owner(a0, &ret);    /* est. vm owner lookup */
 	if (vm == NULL)
 		return 0xfae94003;
-	if (*(void **)(vm + 0x58) != NULL)
-		hv_debug_reg_apply((long)*(void **)(vm + 0x58), idx, a1); /* set trap-debug slot */
+	hv_debug_reg_apply((long)*(void **)(vm + 0x58), sel, val); /* set trap-debug slot */
 	if (ret != (char *)0xffffffffffffffff) {
 		if (ret == NULL) {
 			cpu_slot = tpidr_el1;
@@ -972,7 +999,7 @@ hv_vm_set_trap_debug(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_trap_op_15 @ 0xfffffe000b98e788  (est. hv_trap_op_15; op table idx15)
+ * hv_trap_op_15 @ 0xfffffe000b98e788  (op table idx15; identity descriptive)
  * Ghidra: undefined8 hv_trap_op_15(ulong param_1)
  * Binds the calling CPU's vcpu to an EL2 execution mode (param_1 in 0..3).
  * Requires a per-cpu vcpu (tpidr_el1+0x4d8) and EL2 enabled (DAT_fffffe0007e0da68).
@@ -984,11 +1011,17 @@ hv_vm_set_trap_debug(void *args)
  * vcpu's execution-mode field (vcpu[0x16]+0x4138) and, when a scratch area
  * exists, forces the mode bits 0x3000000 into the EL2 state word at
  * vcpu[0x16]+0x4040.
- * Confidence: low (guest streaming-SVE / SVCR_EL2 mode select; NOT matched to a
- *   public API — attempted: hv_vcpu_set_vtimer_offset, hv_vcpu_set_exec_mode,
+ * Confidence: high for body fidelity (fresh decompile verified; body rewritten
+ *   to match it); the identity remains descriptive, not matched to a public
+ *   API — attempted: hv_vcpu_set_vtimer_offset, hv_vcpu_set_exec_mode,
  *   hv_vcpu_set_trap_debug; none fit the SVCR/SVE-mode + EL2-scratch alloc, so
- *   kept descriptive hv_trap_op_15).
- * Notes: the field at vcpu[0x16]+0x4138 is SVCR_EL2-style (bit0=ZA, bit1=SM;
+ *   kept descriptive hv_trap_op_15.
+ * Notes: rewrote 2026-08-12 from a fresh decompile. Fixed two bugs: the EL2
+ *   scratch pointer vcpu[0x1a] was assigned an uninitialized `scratch` (now
+ *   stores the mapped VA; the decompile's extraout_x1 is a register leftover,
+ *   the mapped address is the faithful intent), and the `goto store` skipped
+ *   the `scratch = vcpu[0x1a]` load (now loaded on both paths as the decompile
+ *   does). The field at vcpu[0x16]+0x4138 is SVCR_EL2-style (bit0=ZA, bit1=SM;
  *   cf. hv_vcpu_save_el2_state's `+0x4138 >> 1 & 1` streaming-SVE check), and
  *   HCR_EL2 (+0x4040) bits 0x3000000 are forced to trap SVE/SME access; the
  *   0x4000 EL2 scratch (vcpu[0x1a]) holds the SVE save state. err 0xfae94005/3/6;
@@ -1026,11 +1059,11 @@ hv_trap_op_15(uint64_t mode)
 			                          0x1c100008ULL, 0, 0, 0, &f1, &f0, 2); /* est. map */
 			if (r != 0) {
 				kernel_lock_ref(0);
-				kernel_memzero(0, 0, 0 + 0x4000, 1, 0);
+				kernel_memzero(0, 0, 0 + 0x4000, 1, 0);  /* extraout_x1 VA not recoverable; 0 stand-in */
 				return 0xfae94005;
 			}
 			*(int *)(cpu_slot + 0x1c0) += 1;
-			vcpu[0x1a] = (long)scratch;
+			vcpu[0x1a] = (long)va;   /* record EL2 scratch VA (extraout_x1 in decompile) */
 			*(uint64_t *)(v + 0x4148) = va;
 			*(uint64_t *)(v + 0x4118) |= 0x10;
 			if (*(int *)(cpu_slot + 0x1c0) == 0)
@@ -1039,11 +1072,9 @@ hv_trap_op_15(uint64_t mode)
 			*(int *)(cpu_slot + 0x1c0) = r;
 			if (r == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
 				kernel_tlb_flush();
-			goto store;
 		}
 	}
-	scratch = (long *)vcpu[0x1a];
-store:
+	scratch = (long *)vcpu[0x1a];   /* decompile: lVar2 = plVar4[0x1a] on both paths */
 	if (scratch != 0) {
 		u = *(uint64_t *)(vcpu[0x16] + 0x4040);
 		if ((u & 0x3000000) == 0)
@@ -1054,20 +1085,24 @@ store:
 }
 
 /* -------------------------------------------------------------------------
- * hv_trap_op_16 @ 0xfffffe000b98e964  (est. hv_trap_op_16; op table idx16)
+ * hv_trap_op_16 @ 0xfffffe000b98e964  (op table idx16; identity descriptive)
  * Ghidra: undefined8 hv_trap_op_16(void)
  * Requires a per-cpu vcpu (tpidr_el1+0x4d8). If the vcpu's opcode count at
  * vcpu+0x2128 exceeds 2 and the EL2 debug flag DAT_fffffe0007e31628 is set, it
  * invokes the el2-state helper hv_el2_pt_alloc (owned by el2-state tree)
  * and returns 0; otherwise returns 0xfae94005/7.
- * Confidence: low (SoC-feature-gated EL2 page-table alloc hook; NOT matched to a
- *   public API — attempted: hv_vcpu_get_exec_time, hv_vcpu_set_vtimer_offset,
+ * Confidence: high for body fidelity (fresh decompile verified; body matches
+ *   line for line); the identity remains descriptive, not matched to a public
+ *   API — attempted: hv_vcpu_get_exec_time, hv_vcpu_set_vtimer_offset,
  *   a debug/info report; none fit the "opcode count > 2 AND SoC feature index
- *   nonzero -> hv_el2_pt_alloc" gate, so kept descriptive hv_trap_op_16).
- * Notes: err 0xfae94005/6/7; DAT_fffffe0007e31628 is the SoC feature index
- *   (also read by hv_el2_state_build, >4 clears a TCR bit), not a pure debug
- *   flag; b98e344 is owned by the el2-state tree (hv_el2_pt_alloc); the vcpu
- *   opcode counter at vcpu+0x2128 gates it.
+ *   nonzero -> hv_el2_pt_alloc" gate, so kept descriptive hv_trap_op_16.
+ * Notes: fresh decompile verified 2026-08-12 — body confirmed faithful:
+ *   vcpu slot read, *(uint*)(*vcpu+0x2128) > 2 -> if DAT_fffffe0007e31628 != 0
+ *   { hv_el2_pt_alloc(vcpu); return 0; } else return 0xfae94005; else return
+ *   0xfae94007. err 0xfae94005/6/7; DAT_fffffe0007e31628 is the SoC feature
+ *   index (also read by hv_el2_state_build, >4 clears a TCR bit), not a pure
+ *   debug flag; b98e344 is owned by the el2-state tree (hv_el2_pt_alloc); the
+ *   vcpu opcode counter at vcpu+0x2128 gates it.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_trap_op_16(void *args __unused)
@@ -1089,7 +1124,7 @@ hv_trap_op_16(void *args __unused)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_map_region @ 0xfffffe000b986ff4  (est. hv_vm_map_region; op table idx17)
+ * hv_vm_map_region @ 0xfffffe000b986ff4  (op table idx17)
  * Ghidra: undefined8 hv_vm_map_region(undefined8 param_1)
  *   [WARNING: Type propagation algorithm not settling]
  * Full vm-region handler. Copies the 0x34-byte user arg block, optionally
@@ -1106,12 +1141,21 @@ hv_trap_op_16(void *args __unused)
  * plus the shared lock DAT_fffffe000c62c0b8, bumps/drops the owner refcount
  * with LORelease (overflow => panic 0xc0f86a4; last releaser => 0xc0f8674),
  * and increments the version byte at owner+0x428 on a successful insert.
- * Confidence: medium (full decompile; node-insert/overlap semantics and the
- *   region RB-tree are faithful; exact field meanings for [1] and the
- *   op/selectors are estimates).
- * Notes: the inlined ~1000-line RB insert fixup is reproduced as the
- *   static hv_rb_insert_rebalance below; hv_rbtree_insert (declared extern
- *   in hv_internal.h) has NO decompiled body yet, so it is not delegated.
+ * Confidence: high for body fidelity (fresh decompile verified 2026-08-12;
+ *   control flow, validation, lock/refcount epilogues, and the remove/insert
+ *   paths all match the decompile); exact field meanings for [1] and the
+ *   op/selectors remain estimates.
+ * Notes: verified the fresh decompile end to end — copyin 0x34, bind
+ *   (op==0 -> per_cpu_base+0x318 -> b78d064), shared-lock take with
+ *   hv_cached_cpu_id cache + overflow panic, range check (capmask &
+ *   (start|size))==0 && vm+0x28<=start && size!=0 && !CARRY8 && start+size<=vm+0x30,
+ *   sel==2 dispatch (op==1 remove via BST descent + hv_rbtree_unlink /
+ *   os_release / zfree / refcount_dec; op==0 insert with exact/partial/
+ *   duplicate-start handling), sel!=2 -> 0xfae9400f, hv_pmap_unwind epilogue,
+ *   final owner refcount drop + LORelease + zfree(bindret). The inlined
+ *   ~1000-line RB insert fixup is reproduced as the static
+ *   hv_rb_insert_rebalance below; hv_rbtree_insert (declared extern in
+ *   hv_internal.h) has NO decompiled body yet, so it is not delegated.
  *   hv_rbtree_unlink (b9860bc) IS decompiled (hv_vmapple.c) and called by
  *   name on the remove path. err 0xfae94001/3/5/8/0xf; helpers b986b34
  *   (resolve), b9860bc (unlink), b8afa78 (os_release), b8af98c (retain),

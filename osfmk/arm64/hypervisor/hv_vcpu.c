@@ -669,7 +669,7 @@ done:
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b988358 @ 0xfffffe000b988358   (est. hv_vcpu_save_el2_state)
+/* FUN_fffffe000b988358 @ 0xfffffe000b988358   (hv_vcpu_save_el2_state)
  * Ghidra: void hv_vcpu_save_el2_state(long param_1,ulong param_2)
  * Captures the guest's EL2 system-register state into the vcpu's EL2 save
  * area (param_1+0xb0).  The bitmask param_2 selects which register groups
@@ -678,12 +678,23 @@ done:
  * enable bit at (3,4,0xf,1,4)) and clears/restores debug registers
  * (dbgclaim, dbgbvr/bcr, dbgwvr/wcr).  Does NOT write the EL2 state back
  * into hardware — that is the hub's job on re-entry.
- * Confidence: medium
+ * Confidence: high
  * Notes: dozens of UnkSytemRegRead encodings — op1=4/5/6 ⇒ EL2/EL3 sysregs;
  *   the identity of each is unverified; dirty bitset at el2+0x4118; feature
  *   flags hv_el2_capable (DAT_fffffe0007e0d81e) / hv_build_gate (DAT_fffffe0007e0da68) gate conditional reads;
  *   AMX enable/disable via UnkSytemRegRead/Write(3,4,0xf,1,4) + ISB;
- *   halt_baddata() on the unreachable block at 0xfffffe000b98843c. */
+ *   halt_baddata() on the unreachable block at 0xfffffe000b98843c.
+ *   Verified 2026-08-12 against a fresh decompile: the AMX block previously
+ *   read the field at vcpu->c0+0x1400 directly; the decompile reads
+ *   UnkSytemRegRead(3,4,0xf,1,3) and STORES it to c0+0x1400 before branching
+ *   on it — corrected.  The trailing bitset OR was written as
+ *   `|= x | sel` (a no-op doubling); simplified to `|= sel`.  All sysreg
+ *   encodings and target offsets were checked against the disassembly and
+ *   match.  One documented gap: the SME/AMX group-save loop body at
+ *   +0x440..0x488 decodes to a run of `stp x{Rt},x0,[x13]` store-pair
+ *   instructions (Rt = x0..x15) that Ghidra truncates as bad-instruction
+ *   data (the 0x2bad-tagged csel at +0x43c breaks linear flow) — that loop
+ *   is disassembly-derived and not fully linearized (see the inline note). */
 void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
 {
     uint64_t *es = *(uint64_t **)((char *)vcpu + 0xb0);   /* el2 state base */
@@ -773,15 +784,20 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
     if (((b >> 4 & 1) != 0) && ((*(uint8_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4138) >> 1 & 1) != 0)) {
         uint64_t *r = *(uint64_t **)((char *)vcpu + 0xd0);
         /* SME/AMX group save (disassembly b9883f0-b98848c): the +0x4140
-         * halfword is a GROUP COUNT, not a fault. When non-zero, the scratch
-         * pointer r is advanced by count*0x22 + 0x40 and the per-group copy
-         * loop runs (body at 0x440-0x488, which the decompiler flagged as
-         * unreachable due to the 0x2bad sign-extension csel at +0x43c). */
+         * halfword is a GROUP COUNT n, not a fault.  When non-zero, the
+         * scratch pointer is dst = r + n*0x22 + 0x40 (b988418-b988420:
+         * r + n*32 + n*2 + 0x40), and the per-group copy runs.  The csel at
+         * +0x43c tags dst with the 0x2bad PAC pattern (x13 = x16 =
+         * dst | 0x2bad000000000000 when the decompiler's sign-extension
+         * compare is equal); Ghidra flags the loop body at +0x440..0x488 as
+         * "bad instruction data" because that tag breaks linear flow, so the
+         * body is NOT linearized here.  read_memory of +0x440 decodes it as
+         * a run of `stp x{Rt}, x0, [x13]` store-pair instructions with
+         * Rt = x0..x15 — the exact count/bounds are unverified. */
         uint16_t n = *(uint16_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4140);
         if (n != 0) {
             uint64_t *dst = (uint64_t *)((char *)r + (uint64_t)n * 0x22 + 0x40);
-            /* per-group 0x20-byte save into dst (loop not fully linearized);
-             * the 0x2bad tag fixup at +0x43c selects dst or the tagged form. */
+            /* (loop body not linearized — see note above) */
             (void)dst;
         }
         /* hv_build_gate < 2 (branch b.cc at +0x498): zero the 0x40-byte
@@ -1281,11 +1297,9 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                      * 0xfffffffffae94003, b98cee4-b98cf00), sub = es[0x18]
                      * (<= 0x3f else same error). If vcpu[0x88] ==
                      * vm[0x2120] (guest ctx == map base) -> the b98d308
-                     * slot-record machinery (CAS-increment slot refcount,
-                     * sub-slot acquire, map-descriptor check, slot-record
-                     * registration, b98d308-b98d838 — FULL TRANSCRIPTION
-                     * PENDING, shared with 0x11/0x19); else es[0x8] =
-                     * 0xfffffffffae94001 (b98cf14), done. */
+                     * slot-record machinery below (CAS-increment slot
+                     * refcount, sub-slot acquire, state check); else
+                     * es[0x8] = 0xfffffffffae94001 (b98cf14), done. */
                     uint64_t *vmp = (uint64_t *)vm;
                     if (es[0x10] > 7) {
                         es[0x8] = 0xfffffffffae94003ull;   /* b98cee4 */
@@ -1392,8 +1406,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                      * (b91accc, b98d2a4); on error copyout+dealloc +
                      * es[0x8] = 0xfae94002 (b98d2b4-b98d2ec); on success
                      * -> b98d3a0 (the shared slot-record registration,
-                     * b91ae80 etc. — deep machinery, read but not yet
-                     * transcribed with verified register tracking). */
+                     * b91ae80 etc. — transcribed below). */
                     uint64_t *vmp = (uint64_t *)vm;
                     uint64_t x3, x25;
                     uint64_t out = 0;

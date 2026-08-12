@@ -239,15 +239,17 @@ bool hv_el2_guest_exc_check(uint64_t esr, uint64_t elr, uint64_t far,
 }
 
 /*
- * hv_el2_eret_fast @ 0xfffffe000b75e5cc   (est. hv_el2_eret_fast)
+ * hv_el2_eret_fast @ 0xfffffe000b75e5cc   (hv_el2_eret_fast)
  * Ghidra: undefined1 [16] hv_el2_eret_fast(void)
- * Fast-path return-to-guest tail: the same register restore + SVE Z/P reload
- * + ExceptionReturn() as hv_el2_return_to_guest, but reached directly when the
- * preemption re-check is bypassed (bit7 of the exit word set). Restores
- * elr_el1/spsr_el1/fpcr/fpsr from the saved frame (HV_EL2_FRAME_* offsets),
- * reloads SVE state when the guest is in SVE mode (type 0x31 object at
- * tpidr+0x120), re-arms the PAC key (3,0,1,0,5) and T1SZ
- * (3,0,1,0,6,0x10001), then ExceptionReturn(). Confidence: medium.
+ * Fast-path return-to-guest tail: raises DAIF (mask all interrupts), reads
+ * tpidr_el1 (no-op), then performs the shared guest-resume restore —
+ * spsel toggle, "Signed thread state manipulated with interrupts enabled"
+ * JOP-hash verify (FUN_fffffe000b760444), elr_el1/spsr_el1/fpcr/fpsr reload
+ * from the saved frame, SVE Z/P reload when the guest SVE state is active
+ * (type-0x31 object at tpidr+0x120), PAC-key re-arm (3,0,1,0,5) and T1SZ
+ * (3,0,1,0,6,0x10001) — and ExceptionReturn(). The full body lives in the
+ * shared hv_el2_guest_restore_eret. Verified against the fresh decompile
+ * (b75e5cc). Confidence: high.
  */
 void hv_el2_eret_fast(void *state)
 {
@@ -259,13 +261,17 @@ void hv_el2_eret_fast(void *state)
 }
 
 /*
- * hv_el2_exception_exit @ 0xfffffe000b75e420   (est. hv_el2_exception_exit)
+ * hv_el2_exception_exit @ 0xfffffe000b75e420   (hv_el2_exception_exit)
  * Ghidra: undefined1 [16] hv_el2_exception_exit(void)
  * Exception-exit tail shared by the EL1 kernel exception handlers
- * (b75deac/b75df7c/b75e000/b75e058): restores the saved guest state
- * (elr_el1/spsr_el1/fpcr/fpsr, SVE Z/P regs) and erets back to the guest,
- * guarded by the "Signed thread state manipulated with interrupts enabled"
- * JOP-hash verify (FUN_fffffe000b760444). Confidence: medium.
+ * (b75deac/b75df7c/b75e000/b75e058): restores the saved guest state and erets
+ * back to the guest, guarded by the "Signed thread state manipulated with
+ * interrupts enabled" JOP-hash verify (FUN_fffffe000b760444). When the guest
+ * used SP_EL0 (spsr & 0xc == 0) it first drains pending per-CPU work, runs the
+ * AST callouts and the ACTLR/event-write barrier block, then falls into the
+ * shared restore tail. The alternate-SP bit7-clear case re-checks the
+ * preemption count and takes the eret_fast path. Verified against the fresh
+ * decompile (b75e420). Confidence: high.
  */
 void hv_el2_exception_exit(void *state)
 {
@@ -332,12 +338,13 @@ void hv_el2_exception_exit(void *state)
 }
 
 /*
- * hv_el2_preemption_panic @ 0xfffffe000b75e8a8   (est. hv_el2_preemption_panic)
+ * hv_el2_preemption_panic @ 0xfffffe000b75e8a8   (hv_el2_preemption_panic)
  * Ghidra: void hv_el2_preemption_panic(void)
  * noreturn panic "Preemption count negative on thread %p" via
- * kernel_panic_msg_fmt, reached when the per-CPU preemption counter
- * (tpidr+0x1c0) is found negative on the exception-exit path. Confidence:
- * high (message + noreturn observed).
+ * kernel_panic_msg_fmt (FUN_fffffe000c0e11ec), reached when the per-CPU
+ * preemption counter (tpidr+0x1c0) is found negative on the exception-exit
+ * path. Verified against the fresh decompile (b75e8a8): the body is exactly
+ * the tpidr_el1 read plus the single noreturn panic call. Confidence: high.
  */
 void hv_el2_preemption_panic(void)
 {
@@ -497,7 +504,7 @@ void hv_el2_guest_esr_classify(void *state, uint64_t esr, uint64_t far)
 }
 
 /*
- * hv_el2_guest_fault @ 0xfffffe000b967768   (est. hv_el2_guest_fault)
+ * hv_el2_guest_fault @ 0xfffffe000b967768   (hv_el2_guest_fault)
  * Ghidra: void hv_el2_guest_fault(long param_1, ulong param_2, ulong param_3,
  *                                    uint param_4, undefined4 param_5)
  * Handles a guest data/instruction abort from the ESR classifier. param_1 =
@@ -511,7 +518,8 @@ void hv_el2_guest_esr_classify(void *state, uint64_t esr, uint64_t far)
  * (hv_el2_guest_pte_check / b89988c) with the vm_fault path; on a
  * not-EL2-mapped-but-in-guest-IPA-range failure it retries via
  * hv_el2_guest_fault_retry. Writes the fault exit code to state+0x4008.
- * Confidence: medium (fault-table + HPFAR synthesis observed)
+ * Verified against the fresh decompile (b967768) this session.
+ * Confidence: high.
  * Notes: UnkSytemRegRead(3,5,1,0,0) is HPFAR_EL2. vm_fault strings
  *   "vm_fault() KERN_FAILURE from guest fault on state %p @%s:%d" and the
  *   kernel wrappers b94b450/b89988c/b9879b8 are shared kernel, stubbed.
@@ -519,7 +527,6 @@ void hv_el2_guest_esr_classify(void *state, uint64_t esr, uint64_t far)
 void hv_el2_guest_fault(void *state, uint64_t esr, uint64_t far,
                         uint32_t reason, uint32_t which)
 {
-    uint32_t r;
     uint64_t ipa, hpfar;
 
     if (reason > 0x1f) {
@@ -556,7 +563,11 @@ void hv_el2_guest_fault(void *state, uint64_t esr, uint64_t far,
         if ((esr & 0x80) != 0) {
             which = 1;
         }
-        /* validate + vm_fault the IPA in the guest vm */
+        /* validate + vm_fault the IPA in the guest vm. The r=6 (out-of-range)
+         * and r=9 (KERN_MEMORY_ERROR from vm_fault) results write the exit
+         * code and return immediately — only the fall-through paths reach the
+         * `done:` reset to 5 (mirrors LAB_fffffe000b967944/48 vs the uVar5=5
+         * reset at LAB_fffffe000b967820 in the decompile). */
         if ((((reason & 0x3c) == 4) ||
              (far < *(uint64_t *)(*(uint64_t *)(vm + 0x58) + 0x10)) ||
              (*(uint64_t *)(*(uint64_t *)(vm + 0x58) + 0x18) <= far)) ||
@@ -564,215 +575,465 @@ void hv_el2_guest_fault(void *state, uint64_t esr, uint64_t far,
                                    far, which, reason == 0xb) != 0) {
             if ((far < *(uint64_t *)(vm + 0x28)) ||
                 (*(uint64_t *)(vm + 0x30) <= far)) {
-                r = 6;
-            } else {
-                uint64_t faultarg[5] = {2,0,0,0,0};
-                int i = (int)kernel_vm_fault(vm, far, which, 0, 0, 0, 0,
-                                             (uint16_t *)faultarg, 0);
-                if (i != 0) {
-                    if (((reason & 0x3c) != 4) ||
-                        hv_el2_guest_fault_retry(vm, far, (uint32_t)esr,
-                                                 state) == 0) {
-                        if (i == 5) {
-                            kernel_panic_assert();
-                        }
-                        if (i == 0xe) {
-                            r = 9;
-                        } else {
-                            r = 6;
-                        }
-                    } else {
-                        /* retried fault resolved: advance guest PC */
-                        *(uint64_t *)(state + 0x108) += 4;
-                        r = 5;
-                    }
-                } else {
-                    r = 5;
-                }
+                *(uint32_t *)(state + 0x4008) = 6;
+                return;
             }
-        } else {
-            r = 5;
+            uint64_t faultarg[5] = {2,0,0,0,0};
+            int i = (int)kernel_vm_fault(vm, far, which, 0, 0, 0, 0,
+                                         (uint16_t *)faultarg, 0);
+            if (i != 0) {
+                if (((reason & 0x3c) != 4) ||
+                    hv_el2_guest_fault_retry(vm, far, (uint32_t)esr,
+                                             state) == 0) {
+                    if (i == 5) {
+                        kernel_panic_assert();
+                    }
+                    *(uint32_t *)(state + 0x4008) = (i == 0xe) ? 9 : 6;
+                    return;
+                }
+                /* retried fault resolved: advance guest PC, then done: 5 */
+                *(uint64_t *)(state + 0x108) += 4;
+            }
+            /* vm_fault == 0 or retry-resolved: fall to done: 5 */
         }
+        /* pte present / not-a-fault: fall to done: 5 */
     }
 done:
-    r = 5;
-    *(uint32_t *)(state + 0x4008) = r;
+    *(uint32_t *)(state + 0x4008) = 5;
 }
+
+/* Faithful callee externs for hv_el2_guest_pte_check (the hv_el2.h 3-arg
+ * kernel_lock_bit_wait does not match this call's 4-arg arity, so a faithful
+ * form is declared here; the two remaining helpers are only used there). */
+extern int kernel_lock_bit_wait4(uint64_t addr, int field, void **name,
+                                 uint64_t *state);  /* FUN_fffffe000b7f8ce0, 4-arg */
+extern void kernel_lock_bit_clear(uint64_t *slot, int field);  /* FUN_fffffe000b812380 */
+extern void kernel_lock_flush_ack(uint64_t a, uint64_t b, uint64_t c); /* FUN_fffffe000b812f5c */
+extern uint64_t hv_pcpu_fault_stat_270[];   /* DAT_fffffe000c5ed270 : per-cpu fault entry counter */
+extern uint64_t hv_pcpu_fault_stat_278[];   /* DAT_fffffe000c5ed278 : per-cpu fault delta counter */
 
 /* ---- guest-fault vm_fault family (recreated per FULL-AUDIT) ----------- */
 
 /*
- * hv_el2_guest_pte_check @ 0xfffffe000b94b450   (est. hv_el2_guest_pte_check)
- * Ghidra: int hv_el2_guest_pte_check(long *param_1, ulong param_2, uint param_3,
+ * hv_el2_guest_pte_check @ 0xfffffe000b94b450   (hv_el2_guest_pte_check)
+ * Ghidra: int FUN_fffffe000b94b450(long *param_1, ulong param_2, uint param_3,
  *                                  int param_4)
  * Stage-2 guest-page-table walk and attribute check, the first thing
  * hv_el2_guest_fault runs on a guest IPA. Walks the per-owner EL2 translation
- * table (level descriptors anchored at pmap[4], table base pmap[0]) to test
- * whether the faulting IPA has a present, correctly-attribute'd leaf entry.
- * On success returns 0 (the fault is a genuine stage-2 miss -> caller runs
- * vm_fault); returns 5 (not present / bad descriptor) or 2 (present but
- * wrong memory attributes / permission) to take the fault path. Includes the
- * per-CPU "pending sync" preemption counter (tpidr+0x1c0) protection and the
- * compressed-PTE integrity checks ("compressed PTE %p 0x%llx has extra bits
- * 0x%llx: corrupted?").
- * Confidence: medium (walk structure + compressed-PTE checks observed)
- * Notes: the leaf uses UnkSytemRegRead(3,6,0xf,3,0) to probe the stage-2
- *   memory attribute, and kernel_paddr_type (c0d7c20) to require physical
- *   type 0x1b. Per-CPU stats at DAT_fffffe000c5ed270/0x278; memory bounds
- *   DAT_fffffe0007e0c050/0x58. Deeper primitives (b94abbc memattr resolve,
- *   c0d7b94/c0d7c20, lock bits b7f8ce0/b7f8d9c/b7f8e50, TLB flush b96c6d4)
- *   are stubbed externs.
+ * table (level descriptors anchored at pmap[4], root table base pmap[0]) to
+ * test whether the faulting IPA has a present, correctly-attribute'd leaf
+ * entry. Returns 0 (leaf present + correct perms, or resolved) to let the
+ * caller run vm_fault, or 5 (not present / bad descriptor / preempted) or 2
+ * (present but wrong memory attributes / permission) to take the fault path.
+ * Includes: the per-CPU "pending sync" preemption counter (tpidr+0x1c0)
+ * protection (panic on underflow via FUN_fffffe000c0f1874), per-CPU fault
+ * stats (DAT_fffffe000c5ed270/0x278) bumped with a DataMemoryBarrier, the
+ * compressed-PTE integrity check ("compressed PTE %p 0x%llx has extra bits
+ * 0x%llx: corrupted? @%s:%d"), the memory-window paddr_type gate
+ * (kernel_paddr_type c0d7c20, DRAM type 0x1b), the slot-lock acquire/wait
+ * retry path (b7f8d9c/b7f8ce0/b7f8e50) with the memattr-granule upgrade
+ * (b94abbc) and the pmap-attribute comparison, and the TLB-flush-on-counter-
+ * underflow (b96c6d4). Re-verified against the fresh decompile (b94b450)
+ * this session; every branch and callee is transcribed.
+ * Confidence: high.
+ * Notes: kernel callees kept as externs (FULL-AUDIT boundary): kernel_page_
+ *   validate c0d7b94, kernel_paddr_type c0d7c20, kernel_memattr_resolve
+ *   b94abbc, kernel_preempt_dec b94172c, kernel_tlb_flush b96c6d4, lock bits
+ *   b7f8d9c/b7f8ce0/b7f8e50, b812380/b812f5c, kernel_memory_barrier
+ *   (DataMemoryBarrier). The leaf uses UnkSytemRegRead(3,6,0xf,3,0) to probe
+ *   the stage-2 memory attribute. Feature flag at lvl+0x4c (byte 0x260).
+ *   Opaque lock-state constants (DAT_fffffe000c68af18, DAT_fffffe0007d82d70,
+ *   LAB_fffffe000b941704, PTR_s_hw_lock_bit_t_fffffe0007d82e88) are passed
+ *   through to b7f8ce0 as-is. Per-CPU stats are byte-indexed by the cpu id
+ *   extracted from tpidr_el1+0x1b0 >> 16 exactly as decompiled.
  */
 int hv_el2_guest_pte_check(uint64_t *pmap, uint64_t ipa, uint32_t prot,
                            int is_write)
 {
-    uint64_t *lvl = (uint64_t *)pmap[4];   /* level/table descriptor struct */
-    uint64_t *table, *pte;
-    uint64_t next_phys, index, paddr, entry;
-    uint64_t block_mask;
-    uint32_t levels;
+    uint64_t *lvl;              /* level/table descriptor struct (pmap[4]) */
+    uint64_t *table;            /* table base (lvl[0]) */
+    uint64_t *pte;              /* current (walking) descriptor pointer */
+    uint64_t *leaf;             /* leaf descriptor pointer at the walk target */
+    uint64_t lvl_off, index, mask, shift;
+    uint64_t entry, check_entry, paddr, slot, slot_ix, lk, token;
+    uint64_t lkchild;           /* shared page_validate / paddr_type out slot */
+    uint64_t child;             /* validated physical of the current pte */
+    uint64_t cpu, cpu_idx, cur;
+    uint64_t *stat;             /* per-cpu fault-entry counter slot */
+    uint64_t idx, b0;           /* paging-state block (local_a8 / uStack_b0) */
+    uint32_t levels, elow;
+    uint32_t sel, upg, gran;
+    uint64_t attr_ix, attrs, type_sel;
+    bool preempt_safe;
+    bool not_all_masked;
     int ret = 5;
 
-    block_mask = ~lvl[0xb];          /* level block-size mask */
-    ipa &= block_mask;               /* align to the block the table describes */
+    token = 0; idx = 0; b0 = 0;        /* local_b8 / local_a8 / uStack_b0 */
+    cpu = tpidr_el1;
+    if (*(int *)(cpu + 0x1c0) == 0) {
+        preempt_safe = (~(uint32_t)daif & 0x1c0) == 0;
+    } else {
+        preempt_safe = true;
+    }
+    lvl = (uint64_t *)pmap[4];
+    ipa &= ~lvl[0xb];            /* align to the block the table describes */
 
     if (pmap[2] <= ipa && ipa < pmap[3]) {      /* within pmap's VA window */
         levels = *(uint32_t *)(lvl + 8);        /* number of table levels */
         if (levels < 3) {
             table = (uint64_t *)lvl[0];         /* root table base */
-            uint64_t lvl_off = (uint64_t)levels * 0x38;   /* level stride */
-            /* Level-index computation: index = (lvl[0xe] & ipa & level_mask)
-             * >> (level_shift & 0x3f); entry addr = table + index*8. */
-            index = (lvl[0xe] & ipa & *((uint64_t *)((char *)lvl + lvl_off + 0x18)))
-                    >> (*((uint64_t *)((char *)lvl + lvl_off + 0x10)) & 0x3f);
-            pte = table + (index & 0xffffffff) * 8;
+            lvl_off = (uint64_t)levels * 0x38;  /* level stride */
+            /* Entry level-index: mask/shift read from the table at
+             * lvl_off+0x18 / +0x10; descriptor base is pmap[0]. */
+            mask = *(uint64_t *)((uint8_t *)table + lvl_off + 0x18);
+            shift = *(uint64_t *)((uint8_t *)table + lvl_off + 0x10) & 0x3f;
+            index = ((lvl[0xe] & ipa & mask) >> shift) & 0xffffffff;
+            pte = (uint64_t *)((uint8_t *)pmap[0] + index * 8);
             if (levels != 2) {
                 /* Walk the intermediate (non-leaf) levels. */
-                uint64_t remaining = (uint64_t)levels - 2;
-                do {
+                uint64_t remaining = (uint64_t)(levels - 2);
+                for (;;) {
                     if ((~*pte & 3) != 0) {
                         return 5;               /* invalid descriptor */
                     }
-                    kernel_page_validate(*pte & 0xfffffffff000ULL, &next_phys);
-                    index = (lvl[0xe] & *(uint64_t *)((char *)lvl + lvl_off + 0x50)
-                             & ipa)
-                            >> (*(uint64_t *)((char *)lvl + lvl_off + 0x48) & 0x3f);
-                    pte = (uint64_t *)(next_phys != 0 ? next_phys : 0)
-                          + (index & 0xffffffff) * 8;
+                    lkchild = 0;
+                    child = (kernel_page_validate(*pte & 0xfffffffff000ULL,
+                                                  &lkchild) != 0) ? 0 : lkchild;
+                    mask = *(uint64_t *)((uint8_t *)table + lvl_off + 0x50);
+                    shift = *(uint64_t *)((uint8_t *)table + lvl_off + 0x48) & 0x3f;
+                    index = ((lvl[0xe] & mask & ipa) >> shift) & 0xffffffff;
+                    pte = (uint64_t *)((uint8_t *)child + index * 8);
                     lvl_off += 0x38;
-                    if (remaining != -1) remaining += 1;
-                } while (remaining != -1);
+                    if (remaining == (uint64_t)-1) {
+                        break;
+                    }
+                    remaining += 1;
+                }
             }
             if (pte != 0) {
-                /* Leaf walk with per-CPU counter + compressed-PTE checks. */
+                /* Leaf walk: preemption counter + per-CPU stats + the
+                 * compressed-PTE / slot-lock checks. */
                 for (;;) {
-                    *(int *)(tpidr_el1 + 0x1c0) += 1;
-                    if ((~*pte & 3) != 0) break;       /* invalid leaf */
-                    kernel_page_validate(*pte & 0xfffffffff000ULL, &next_phys);
-                    if (next_phys == 0) break;
-                    index = (lvl[0xe] & *(uint64_t *)(lvl + 0x18) & ipa)
-                            >> (*(uint64_t *)(lvl + 0x17) & 0x3f);
-                    pte = (uint64_t *)next_phys + (index & 0xffffffff) * 8;
-                    entry = *pte;
-                    if (entry == 0) break;
-                    /* Compressed PTE: validate reserved bits. */
-                    uint32_t elow = (uint32_t)entry;
-                    int is_compressed = (elow & ~3) != 0 && (int64_t)entry < 0;
-                    if ((entry & 0x3fffffffffffff7fULL) != 0 && is_compressed) {
-                        kernel_panic_msg2(); /* "compressed PTE ... corrupted?" */
+                    *(int *)(cpu + 0x1c0) += 1;
+                    cpu_idx = *(uint64_t *)(cpu + 0x1b0) >> 0x10;
+                    stat = (uint64_t *)((uint8_t *)hv_pcpu_fault_stat_270
+                                        + cpu_idx);
+                    cur = *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_278
+                                        + cpu_idx);
+                    *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_278 + cpu_idx)
+                        = cur + 1;
+                    *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_270 + cpu_idx)
+                        = cur + 1;
+                    kernel_memory_barrier(2, 3);    /* DataMemoryBarrier(2,3) */
+                    if ((~*pte & 3) != 0) {
+                        break;                      /* invalid leaf */
                     }
-                    if (is_compressed) break;          /* fault */
+                    lkchild = 0;
+                    child = (kernel_page_validate(*pte & 0xfffffffff000ULL,
+                                                  &lkchild) != 0) ? 0 : lkchild;
+                    if (child == 0) {
+                        break;
+                    }
+                    mask = *(uint64_t *)((uint8_t *)table + 0xc0);
+                    shift = *(uint64_t *)((uint8_t *)table + 0xb8) & 0x3f;
+                    index = ((lvl[0xe] & mask & ipa) >> shift) & 0xffffffff;
+                    leaf = (uint64_t *)((uint8_t *)child + index * 8);
+                    entry = *leaf;
+                    if (entry == 0) {
+                        break;
+                    }
+                    elow = (uint32_t)entry;
+                    if ((~elow & 3) != 0 && (int64_t)entry < 0) {
+                        /* compressed PTE: validate the reserved bits. */
+                        if ((entry & 0x3fffffffffffff7fULL) != 0) {
+                            kernel_panic_msg2(); /* "compressed PTE ... corrupted? @%s:%d" */
+                        }
+                        break;                      /* fault */
+                    }
                     paddr = entry & 0xfffffffff000ULL;
-                    if (paddr < hv_mem_window_lo ||
-                        hv_mem_window_hi <= paddr) {
+                    if (paddr < hv_mem_window_lo || hv_mem_window_hi <= paddr) {
                         /* paddr outside the memory window: type it. */
-                        if (*(int *)(tpidr_el1 + 0x1c0) == 0) {
-                            kernel_panic_a();          /* c0f1874 */
-                        }
-                        *(int *)(tpidr_el1 + 0x1c0) -= 1;
-                        kernel_paddr_type(paddr, &next_phys);
-                        if ((char)next_phys != 0x1b) {
-                            return 5;                  /* not DRAM */
-                        }
-                        return 2;
-                    }
-                    /* Memory-attribute probe: (3,6,0xf,3,0) attr register. */
-                    uint64_t attr_ix = (entry >> 4) & 0xc;
-                    uint64_t attrs = UnkSytemRegRead(3,6,0xf,3,0);
-                    uint64_t type_sel = (entry >> 0x35);
-                    uint32_t sel = (uint32_t)(attr_ix | (type_sel & 3));
-                    if (((attrs >> (sel << 1) & 3) == 0) &&
-                        (sel > 9 || ((1ULL << sel) & 0x203U) == 0)) {
-                        ret = 5;
-                    } else {
-                        ret = 5;
-                        if (is_write == 0) {
-                            ret = 2;
-                        } else if ((elow >> 10 & 1) != 0) {
-                            ret = 0;                   /* present + writable */
-                        }
-                    }
-                    if (ret == 5 || ret == 2) {
-                        /* Permission-mismatch: ask memattr layer to upgrade. */
-                        uint32_t upg = 0;
-                        /* 0x1000/0x2000/0x3000 page-size select from table
-                         * hv_memattr_granule (per-attr granularity). */
-                        if ((*((uint16_t *)hv_memattr_granule +
-                              (uint64_t)(attr_ix >> 1) * 2) >> 0xc & 1) == 0) {
-                            if ((prot >> 1 & 1) != 0 &&
-                                (*((uint16_t *)hv_memattr_granule +
-                                   (uint64_t)(attr_ix >> 1) * 2) >> 0xd & 1) != 0) {
-                                upg = 0x2000;
+                        *stat = 0;
+                        if (*(int *)(cpu + 0x1c0) != 0) {
+                            int c = *(int *)(cpu + 0x1c0) - 1;
+                            *(int *)(cpu + 0x1c0) = c;
+                            if (c == 0 &&
+                                ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8)
+                                               + 0x4c) >> 2 & 1) != 0)) {
+                                kernel_tlb_flush();
                             }
-                        } else if (*((uint16_t *)hv_memattr_granule +
-                                   (uint64_t)(attr_ix >> 1) * 2) & 0x2000) {
+                            lkchild &= 0xffffffffffffff00ULL;  /* align (local_a0 reuse) */
+                            if (kernel_paddr_type(paddr, &lkchild) != 0) {
+                                kernel_panic_msg2(); /* "sptm_get_paddr_type returned failure ..." */
+                            }
+                            if ((char)lkchild != 0x1b) {
+                                return 5;           /* not DRAM */
+                            }
+                            return 2;
+                        }
+                        goto panic_underflow;
+                    }
+                    slot_ix = (paddr - hv_mem_window_lo) >> 0xe;
+                    slot = slot_ix & 0xffffffff;
+                    lk = slot * 8;
+                    if (kernel_lock_bit_acquire(lk + 4, 0x1d) == 0) {
+                        goto acquire_failed;        /* slot lock busy */
+                    }
+                    /* acquired the slot lock: drop it if the locked bit is set */
+                    if ((*(uint64_t *)lk >> 0x36 & 1) != 0) {
+                        kernel_lock_bit_release(lk + 4, 0x1d);
+                        goto acquire_failed;
+                    }
+                    b0 = 0;
+                    idx = slot_ix & 0xffffffff;
+                    token = *(uint64_t *)lk;
+                    if (token == 0) {
+                        goto empty_slot;
+                    }
+                entry_check:
+                    /* re-read the leaf; if unchanged, run the attribute check */
+                    check_entry = *leaf;
+                    *stat = 0;
+                    if (*(int *)(cpu + 0x1c0) == 0) {
+                        goto panic_underflow;
+                    }
+                    {
+                        int c = *(int *)(cpu + 0x1c0) - 1;
+                        *(int *)(cpu + 0x1c0) = c;
+                        if (c == 0 &&
+                            ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8)
+                                           + 0x4c) >> 2 & 1) != 0)) {
+                            kernel_tlb_flush();
+                        }
+                    }
+                    if (check_entry == entry) {
+                        /* attribute / permission check on the unchanged entry */
+                        if ((*(uint8_t *)(lvl + 0x4c) & 1) == 0) {
+                            attr_ix = (entry >> 4) & 0xc;
+                            attrs = UnkSytemRegRead(3, 6, 0xf, 3, 0);
+                            type_sel = entry >> 0x35;
+                            sel = (uint32_t)(attr_ix | (type_sel & 3));
+                            if (((attrs >> (sel << 1) & 3) == 0) &&
+                                (sel > 9 || ((1ULL << sel) & 0x203U) == 0)) {
+                                ret = 5;
+                                goto upgrade;
+                            }
+                            ret = 5;
+                            if (is_write == 0) {
+                                ret = 2;
+                                goto upgrade;
+                            }
+                            if ((elow >> 10 & 1) == 0) {
+                                goto upgrade;       /* ret stays 5 */
+                            }
+                            ret = 0;                /* present + writable */
+                            goto done;
+                        } else {
+                            ret = 5;
+                            goto upgrade;
+                        }
+                    upgrade:
+                        /* memattr-granule upgrade, then the pmap-attribute
+                         * comparison / memattr resolve retry. */
+                        upg = 0;
+                        gran = *(uint16_t *)((uint8_t *)hv_memattr_granule
+                                             + slot * 2);
+                        if ((gran >> 0xc & 1) == 0) {
+                            if ((prot >> 1 & 1) != 0 && (gran >> 0xd & 1) != 0) {
+                                upg = 0x2000;
+                                goto resolve_upg;
+                            }
+                        } else {
                             upg = 0x1000;
-                            if ((*((uint16_t *)hv_memattr_granule +
-                                   (uint64_t)(attr_ix >> 1) * 2) & 0x2000) != 0 &&
-                                (prot & 2) != 0) {
+                            if ((gran & 0x2000) != 0 && (prot & 2) != 0) {
                                 upg = 0x3000;
                             }
-                        }
-                        if (kernel_memattr_resolve(entry >> 0xe, prot,
-                                                   paddr, 0, upg) != 0) {
-                            ret = 0;
-                        } else if (ret == 5 && (elow >> 10 & 1) != 0) {
-                            /* present but wrong perm: compare with pmap state */
-                            if (pmap == (uint64_t *)hv_special_owner_block) {
-                                if (((entry & 0xc0) == 0x40000000000000 ||
-                                     (((prot >> 1 & 1) == 0 &&
-                                       (entry & 0xc0) == 0x80))) &&
-                                    ((prot >> 2 & 1) == 0 ||
-                                     (entry & 0x60000000000000) == 0x40000000000000)) {
-                                    ret = 0;
-                                }
-                            } else {
-                                uint64_t *t = (uint64_t *)pmap[4];
-                                uint64_t want_c = *(t + 0x38), want_r = *(t + 2);
-                                if (((entry & 0xc0) == want_c ||
-                                     (((prot >> 1 & 1) == 0 &&
-                                       (entry & 0xc0) == want_r))) &&
-                                    ((prot >> 2 & 1) == 0 ||
-                                     (entry & 0x60000000000000) == want_c)) {
-                                    ret = 0;
-                                }
+                        resolve_upg:
+                            if (kernel_memattr_resolve(entry >> 0xe, prot,
+                                                       token, 0, upg) != 0) {
+                                ret = 0;
+                                goto done;
                             }
                         }
+                        if (ret == 5) {
+                            if ((elow >> 10 & 1) != 0) {
+                                if (pmap == (uint64_t *)hv_special_owner_block) {
+                                    /* special owner: want_c=0, want_r=0x80,
+                                     * want_w=0x40000000000000 */
+                                    if (((entry & 0xc0) == 0) ||
+                                        (((prot >> 1 & 1) == 0 &&
+                                          (entry & 0xc0) == 0x80))) {
+                                        ret = 0;
+                                        if ((prot >> 2 & 1) == 0 ||
+                                            (entry & 0x60000000000000)
+                                            == 0x40000000000000ULL) {
+                                            goto done;
+                                        }
+                                    }
+                                } else {
+                                    uint64_t want_c = *(uint64_t *)(lvl + 0x18);
+                                    uint64_t want_r = *(uint64_t *)(lvl + 0x10);
+                                    uint64_t want_w = *(uint64_t *)(lvl + 0x38);
+                                    if (((entry & 0xc0) == want_c) ||
+                                        (((prot >> 1 & 1) == 0 &&
+                                          (entry & 0xc0) == want_r))) {
+                                        ret = 0;
+                                        if ((prot >> 2 & 1) == 0 ||
+                                            (entry & 0x60000000000000)
+                                            == want_w) {
+                                            goto done;
+                                        }
+                                    }
+                                }
+                            }
+                            if (kernel_memattr_resolve(entry >> 0xe, prot,
+                                                       token, leaf, 0) != 0) {
+                                ret = 0;
+                            } else {
+                                ret = 5;
+                            }
+                        }
+                    done:
+                        kernel_preempt_dec(&token); /* FUN_fffffe000b94172c */
+                        if (*(int *)(cpu + 0x1c0) != 0) {
+                            int c = *(int *)(cpu + 0x1c0) - 1;
+                            *(int *)(cpu + 0x1c0) = c;
+                            if (c != 0) {
+                                return ret;
+                            }
+                            if ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8)
+                                              + 0x4c) >> 2 & 1) != 0) {
+                                kernel_tlb_flush();
+                            }
+                            return ret;
+                        }
+                        goto panic_underflow;
                     }
-                    if (*(int *)(tpidr_el1 + 0x1c0) == 0) {
-                        kernel_panic_a();              /* c0f1874 */
+                    /* entry changed under us: release and retry the walk */
+                    kernel_preempt_dec(&token);     /* FUN_fffffe000b94172c */
+                    if (*(int *)(cpu + 0x1c0) == 0) {
+                        goto panic_underflow;
                     }
-                    *(int *)(tpidr_el1 + 0x1c0) -= 1;
-                    return ret;
+                    {
+                        int c = *(int *)(cpu + 0x1c0) - 1;
+                        *(int *)(cpu + 0x1c0) = c;
+                        if (c == 0 &&
+                            ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8)
+                                           + 0x4c) >> 2 & 1) != 0)) {
+                            kernel_tlb_flush();
+                        }
+                    }
+                    /* fall through to re-iterate the leaf walk */
                 }
-                if (*(int *)(tpidr_el1 + 0x1c0) == 0) {
-                    kernel_panic_a();
-                }
-                *(int *)(tpidr_el1 + 0x1c0) -= 1;
+                /* break-out of the leaf walk: release + underflow check */
+                *stat = 0;
+                ret = *(int *)(cpu + 0x1c0);
+                goto underflow_tail;
             }
         }
     }
+    (void)idx;      /* part of the paging-state block; not read in this body */
+    (void)b0;
     return 5;
+
+acquire_failed:
+    token = 0;
+empty_slot:
+    idx = slot_ix & 0xffffffff;
+    b0 = 0;
+    *stat = 0;
+    if (*(int *)(cpu + 0x1c0) == 0) {
+        goto panic_underflow;
+    }
+    {
+        int c = *(int *)(cpu + 0x1c0) - 1;
+        *(int *)(cpu + 0x1c0) = c;
+        if (c == 0 &&
+            ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
+            kernel_tlb_flush();
+        }
+    }
+    if (preempt_safe) {
+        return 5;
+    }
+    not_all_masked = (*(int *)(cpu + 0x1c0) == 0)
+                     ? ((~(uint32_t)daif & 0x1c0) != 0) : false;
+    (void)not_all_masked;           /* dead store in the decompile (local_80) */
+    {
+        /* lock-wait state block passed through to b7f8ce0 unchanged. */
+        uint64_t lkarg[4];
+        lkarg[0] = 0xfffffe000c68af18ULL;      /* local_a0 = &DAT_fffffe000c68af18 */
+        lkarg[1] = 0x40000000ULL;              /* local_98 */
+        lkarg[2] = 0xfffffe000b941704ULL;      /* local_90 = &LAB_fffffe000b941704 */
+        lkarg[3] = 0xfffffe0007d82d70ULL;      /* local_88 = &DAT_fffffe0007d82d70 */
+        for (;;) {
+            while (kernel_lock_bit_wait4(lk + 4, 0x1d,
+                                         (void **)0xfffffe0007d82e88,
+                                         lkarg) == 0) {
+            }
+            token = *(uint64_t *)lk;
+            if ((token >> 0x36 & 1) == 0) {
+                break;                          /* acquired (unlocked) */
+            }
+            kernel_lock_bit_clear((uint64_t *)lk, 0);   /* FUN_fffffe000b812380 */
+            kernel_lock_bit_release(lk + 4, 0x1d);
+            kernel_lock_flush_ack(0, 0, 0);             /* FUN_fffffe000b812f5c */
+        }
+    }
+    /* acquired via wait: re-increment the counter + stats, re-validate pte */
+    b0 = 0;
+    idx = slot_ix & 0xffffffff;
+    *(int *)(cpu + 0x1c0) += 1;
+    cpu_idx = *(uint64_t *)(cpu + 0x1b0) >> 0x10;
+    stat = (uint64_t *)((uint8_t *)hv_pcpu_fault_stat_270 + cpu_idx);
+    cur = *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_278 + cpu_idx);
+    *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_278 + cpu_idx) = cur + 1;
+    *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_270 + cpu_idx) = cur + 1;
+    kernel_memory_barrier(2, 3);
+    /* token is the unlocked entry value read in the wait loop (local_b8) */
+    if ((~*pte & 3) == 0) {
+        lkchild = 0;
+        child = (kernel_page_validate(*pte & 0xfffffffff000ULL,
+                                      &lkchild) != 0) ? 0 : lkchild;
+        if (child != 0) {
+            mask = *(uint64_t *)((uint8_t *)table + 0xc0);
+            shift = *(uint64_t *)((uint8_t *)table + 0xb8) & 0x3f;
+            index = ((lvl[0xe] & mask & ipa) >> shift) & 0xffffffff;
+            leaf = (uint64_t *)((uint8_t *)child + index * 8);
+            goto entry_check;
+        }
+    }
+    *stat = 0;
+    if (*(int *)(cpu + 0x1c0) == 0) {
+        goto panic_underflow;
+    }
+    {
+        int c = *(int *)(cpu + 0x1c0) - 1;
+        *(int *)(cpu + 0x1c0) = c;
+        if (c == 0 &&
+            ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
+            kernel_tlb_flush();
+        }
+    }
+    kernel_preempt_dec(&token);             /* FUN_fffffe000b94172c */
+    ret = *(int *)(cpu + 0x1c0);
+    goto underflow_tail;
+
+underflow_tail:
+    if (ret == 0) {
+        goto panic_underflow;
+    }
+    *(int *)(cpu + 0x1c0) = ret - 1;
+    if ((ret - 1 == 0) &&
+        ((*(uint8_t *)(*(uint64_t *)(cpu + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
+        kernel_tlb_flush();
+        return 5;
+    }
+    return 5;
+
+panic_underflow:
+    kernel_panic_a();                       /* FUN_fffffe000c0f1874, noreturn */
+    return 5;                               /* unreachable */
 }
 
 /* ---- kernel_vm_fault (FUN_fffffe000b89988c) callee externs + helpers ----

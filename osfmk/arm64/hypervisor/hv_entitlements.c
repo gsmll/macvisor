@@ -81,7 +81,7 @@ uint8_t hv_entitlement_tier(void)
 }
 
 /* ------------------------------------------------------------------ *
- * hv_caps_feature_mask @ 0xfffffe000b987d9c   (est. hv_caps_feature_mask)
+ * hv_caps_feature_mask @ 0xfffffe000b987d9c   (hv_caps_feature_mask)
  * Ghidra: void hv_caps_feature_mask(ulong *param_1, uint param_2)
  * Fills a 19-qword (0x98-byte) feature-mask block at param_1 with the
  * hypervisor capability bits that the caller (param_2 = entitlement tier from
@@ -90,11 +90,18 @@ uint8_t hv_entitlement_tier(void)
  * the extended (0x202) capability; tiers 2..3 select progressively richer
  * default masks. Clears a CPU-feature bit when DAT_fffffe0007e0d820 bit 1 is
  * set. Called by op-table index 0 and hv_vm_create.
- * Confidence: medium
+ * Confidence: high
  * Notes: reads DAT_fffffe0007e0d818 (SoC implementer) to clear a feature bit
  *   (uVar9 = 0 when (DAT-3) > 0xfffffffd) and DAT_fffffe0007e0d820 (hv feature
  *   flags). Entitlement dispatch via DAT_fffffe0007e93310 + 0x1c0; current
- *   task via per_cpu_base(current_cpu_datap) + current_task (current_task, recreated in hv_kernel_glue.c). */
+ *   task via per_cpu_base(current_cpu_datap) + current_task (current_task, recreated in hv_kernel_glue.c).
+ *   Verified 2026-08-12 against a fresh decompile: every HV_CAP_MASK_<n>
+ *   literal, the store order, the SoC-implementer feature-bit clear, the
+ *   tier<2 entitlement probe, the tier-2/3 default selection, the post-mask
+ *   recomputation and the DAT_fffffe0007e0d820 bit-1 clear all match
+ *   exactly.  Only the current_task() helper takes the per_cpu_base result
+ *   as an argument here (vs. the decompile's argument-less current_task())
+ *   — a file-local recreated-helper signature convention. */
 /* Fixed capability feature-mask literals for hv_caps_feature_mask().
  * HV_CAP_MASK_<n> is the default mask stored at mask[n]. Index 0x12 (18) is
  * computed at runtime (SoC-dependent) and stays a literal. */

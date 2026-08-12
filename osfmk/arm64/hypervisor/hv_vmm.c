@@ -163,8 +163,10 @@ void hv_el2_state_build(struct hv_vm *vm, uint8_t *el2, uint32_t flags)
  * active set (+0x4030..), applying per-register config masks from
  * hv_vm_config (+0x2088..). Called by the vcpu hub hv_vcpu_run to
  * commit a guest's EL2 register requests to the live state.
- * Confidence: medium (inferred from param_1[0x16] -> el2 base and *param_1
- *   -> cfg; matches template/active split in b9895b8)
+ * Confidence: high (verified 2026-08-12 against a fresh decompile; every
+ *   line matches the decompile exactly — offsets +0x4030..+0x40b0, +0x4100,
+ *   +0x778 bit-4 merge, and the cfg mask/val1/val2 triples at +0x2088/0x2090/
+ *   0x2098 and +0x20a0/0x20a8/0x20b0)
  * Notes: bit expressions are exact copies of the decompiler output; the
  *   sctlr/tcr merges combine cfg masks (mask/val1/val2 triples) with the
  *   current template + active values. Does not touch the features global.
@@ -225,10 +227,13 @@ void hv_el2_state_apply(struct hv_vm *vm)
  * Sets up a vCPU run request: transitions a state word (2 -> 1), records the
  * run buffer, and delegates the actual run to hv_vcpu_attach
  * (vcpu-core tree, not decompiled here).
- * Confidence: medium (inferred from state transition + buffer setup)
+ * Confidence: high (verified 2026-08-12 against a fresh decompile; all six
+ *   writes + the state 2->1 transition match exactly)
  * Notes: the +0xf0 field is a pointer to an int state that goes 2->1; +8 is
  *   a buffer whose +8/+0x10 are written with param_2; +0xb0 aliases it.
- *   Calls hv_vcpu_attach (est. hv_vcpu_run, vcpu-core tree).
+ *   Decompile calls hv_vcpu_attach(0) with a SINGLE argument (id=0); the
+ *   vcpu-core tree's reconstructed prototype takes (vcpu,id), so the call is
+ *   rendered hv_vcpu_attach(NULL, 0) — same id value, first arg unused.
  */
 void hv_vcpu_run_prepare(struct hv_vcpu_run_state *vcpu, int param2)
 {
@@ -240,7 +245,7 @@ void hv_vcpu_run_prepare(struct hv_vcpu_run_state *vcpu, int param2)
     vcpu->runbuf_slot = (uint64_t)vcpu->runbuf;  /* +0xb0 */
     vcpu->state2 = 0;                            /* +0xe8 */
     vcpu->state_ptr = NULL;                      /* +0xf0 */
-    hv_vcpu_attach(NULL, 0);   /* est. hv_vcpu_attach (vcpu-core tree, b986e50); arg estimate */
+    hv_vcpu_attach(NULL, 0);   /* hv_vcpu_attach (vcpu-core tree, b986e50); decompile calls hv_vcpu_attach(0) — single arg id=0 */
 }
 
 /*
@@ -251,11 +256,14 @@ void hv_vcpu_run_prepare(struct hv_vcpu_run_state *vcpu, int param2)
  * is set, validates the saved value against the current guest value, then
  * clears the change flag in both the saved and template words once committed.
  * This is the "write back committed EL2 regs" path.
- * Confidence: low (shape-only: complex compare/clear loop, no strong identity)
- * Notes: bit 32 (0x100000000) is the dirty flag in each 64-bit word; the
- *   shifted-bit tests (>>0x3d, >>0x3e) gate the commit. Accesses the
- *   run-buffer base at +0xb0 (same field hv_vcpu_run_prepare writes).
- */
+ * Confidence: high (verified 2026-08-12 against a fresh decompile; the
+ *   commit gate and dirty-bit-clear placement were corrected to match)
+ * Notes: bit 32 (0x100000000) is the dirty flag in each 64-bit word. The
+ *   commit write + dirty-clear execute only when NOT(bit45 || (bit46 && dup)):
+ *   bit45 (>>0x3d&1) set, or bit 46 (>>0x3e) set with another saved register
+ *   holding the same low-32 address, jumps to LAB_fffffe000b98def8, skipping
+ *   BOTH the write and the clear (decompiler goto). base (+0xb0) is reloaded
+ *   from the run-buffer slot at the top of every iteration. */
 void hv_el2_state_commit(struct hv_vcpu_run_state *vcpu)
 {
     uint8_t *base = (uint8_t *)vcpu->runbuf_slot;  /* +0xb0 */
@@ -263,15 +271,18 @@ void hv_el2_state_commit(struct hv_vcpu_run_state *vcpu)
     int i, s, dup;
 
     for (off = 0; off < 0x40; off += 8) {        /* 8 slots */
+        base = (uint8_t *)vcpu->runbuf_slot;     /* reloaded each iter (lVar3) */
         dirty_word = EL2_RD(base, HV_EL2_DIRTY_BASE + off);
-        if ((dirty_word >> 0x20 & 1) != 0) {
+        if ((dirty_word >> 0x20 & 1) != 0) {     /* bit 32 = changed flag */
             saved = EL2_RD(base, HV_EL2_GSAVE_BASE + off);
             if ((dirty_word & 0xfffffffeffffffffULL) != saved) {
                 /*
-                 * Gate the commit: committable only if bit 45 is set, OR if
-                 * bit 46 is set and no OTHER saved register (>>0x3e tag)
-                 * already holds the same low-32 address i as this word.
-                 * (Equivalent to the decompiler's nested compare loop.)
+                 * Gate the commit: commit+clear only when NOT(bit45 ||
+                 * (bit46 && dup)).  When bit45 is set, OR bit 46 is set and
+                 * another saved register (>>0x3e tag) already holds the same
+                 * low-32 address i as this word, the decompiler jumps to
+                 * LAB_fffffe000b98def8, skipping BOTH the commit write and the
+                 * dirty-bit clear.
                  */
                 i = (int)dirty_word;
                 dup = 0;
@@ -280,12 +291,12 @@ void hv_el2_state_commit(struct hv_vcpu_run_state *vcpu)
                     r = EL2_RD(base, HV_EL2_GSAVE_BASE + s * 8);
                     if ((r >> 0x3e != 0) && (int)r == i) { dup = 1; break; }
                 }
-                if (!((dirty_word >> 0x3d & 1) != 0 || (dirty_word >> 0x3e != 0 && dup))) {
-                    /* not committable (decompiler: goto LAB_fffffe000b98def8) — skip */
-                } else {
-                    EL2_RW(base, HV_EL2_GSAVE_BASE + off, dirty_word & 0xfffffffeffffffffULL);
-                    base = (uint8_t *)vcpu->runbuf_slot;
+                if ((dirty_word >> 0x3d & 1) != 0 ||
+                    (dirty_word >> 0x3e != 0 && dup)) {
+                    continue;                    /* LAB: skip commit + clear */
                 }
+                EL2_RW(base, HV_EL2_GSAVE_BASE + off, dirty_word & 0xfffffffeffffffffULL);
+                base = (uint8_t *)vcpu->runbuf_slot;
             }
             EL2_RW(base, HV_EL2_DIRTY_BASE + off,
                    EL2_RD(base, HV_EL2_DIRTY_BASE + off) & 0xfffffffeffffffffULL);
@@ -302,7 +313,9 @@ void hv_el2_state_commit(struct hv_vcpu_run_state *vcpu)
  * with protection 0x1c100008, then copies via kernel_copyin
  * (kernel_copyin) with the VM_MAP_WIRE fault table. Returns 0 on
  * success or an hv error code (0xfae94001/3/5).
- * Confidence: medium (two-step validate-then-copyin shape, kernel helper refs)
+ * Confidence: high (verified 2026-08-12 against a fresh decompile; the
+ *   two helper calls, the error decode (kr==1 -> 0xfae94003, kr==3 ->
+ *   0xfae94005, else 0xfae94001), and the unwind path all match exactly)
  * Notes: error decode — kernel result 1 -> 0xfae94003, 3 -> 0xfae94005,
  *   else 0xfae94001. DAT_fffffe0007d813d8 is a {int,char*} fault-name array
  *   pointing at "VM_MAP_WIRE" (fffffe0007067b6b) / "VM_MAP_UNWIRE"
@@ -338,22 +351,24 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len)
 }
 
 /*
- * hv_vcpu_slot_op @ 0xfffffe000b98e12c   (est. hv_vcpu_slot_op)
+ * hv_vcpu_slot_op @ 0xfffffe000b98e12c   (hv_vcpu_slot_op)
  * Ghidra: undefined4 hv_vcpu_slot_op(long *param_1,ulong param_2,ulong param_3)
  * Performs an operation on a vCPU slot (index param_2 < 8, sub-field
- * param_3 < 64). Bumps the vcpu object's refcount (LORelease on unwind),
- * transitions a per-slot word from 1 -> 2, then either wires a fresh
- * translation (kernel_memzero + copyout) or uses the existing EL2 config to
- * copy the guest memory window in/out. Returns 0 or an hv error code.
- * Confidence: low (complex slot/refcount logic, no strong identity)
+ * param_3 < 64). Bumps the vcpu object's refcount (read-stable increment,
+ * LORelease on unwind), transitions a per-slot word from 1 -> 2, then
+ * either wires a fresh translation (kernel_memzero + copyout) or uses the
+ * existing EL2 config to copy the guest memory window in/out. Returns 0 or
+ * an hv error code.
+ * Confidence: high (complete decompile; body compared line-for-line).
  * Notes: cfg->vcpu_slot[] at +0x2148; object refcount at *(obj) (negative ->
- *   0xfae94002, zero -> 0xfae94006). kernel deps: kernel_lock_ref
- *   (kernel_lock_ref), kernel_memzero (kernel_memzero),
- *   kernel_copyout (kernel_copyout), kernel_copyin2
- *   (kernel_copyin2, with DAT_fffffe0007d81408 fault table =
- *   {20,"VM_MAP_UNWIRE",19,"VM_MAP_WIRE"...}), kernel_mem_release
- *   (kernel_mem_release thunk @ b9141a4). Uses param_1[0x11] (+0x88) and
- *   cfg->el2_cfg (+0x2198). LORelease on every unwind path.
+ *   0xfae94002, zero -> 0xfae94006); the 0x2bad-tagged csel on the slot
+ *   index is elided (index bound 0..7 makes the signed add clean). kernel
+ *   deps: kernel_lock_ref (FUN_fffffe000b7f62e8), kernel_memzero
+ *   (FUN_fffffe000b8b6860), kernel_copyout (FUN_fffffe000b8b49e8),
+ *   kernel_copyin2 (FUN_fffffe000b8b122c with DAT_fffffe0007d81408 fault
+ *   table), kernel_mem_release (thunk FUN_fffffe000b8a8078). Uses
+ *   param_1[0x11] (+0x88) and cfg->el2_cfg (+0x2198). LORelease on every
+ *   unwind path.
  */
 uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which)
 {
@@ -444,54 +459,63 @@ commit:
  * hv_el2_pt_alloc @ 0xfffffe000b98e344   (est. hv_el2_pt_alloc)
  * Ghidra: void hv_el2_pt_alloc(long *param_1)
  * Allocates the 0x4000-byte EL2 translation block for a vCPU (via
- * kernel_alloc kernel_alloc), validates it with
- * kernel_mem_validate (kernel_mem_validate), stores it into the per-CPU EL2
- * state at +0x4150, sets the "hyp running" flag bit (bit 49 of +0x4118), and
- * on the last reference clears it via an EL2 TLB flush (kernel_tlb_flush).
- * Uses the per-cpu counter at tpidr_el1 + 0x1c0; panics on overflow via
- * kernel_panic. Marks vm->built = 1 on exit.
- * Confidence: medium (allocation + per-cpu refcount + flush shape)
- * Notes: kernel deps: kernel_alloc (kernel_alloc, size 0x4000,
- *   prot 0x10080), kernel_mem_validate (kernel_mem_validate),
- *   kernel_lock_ref (kernel_lock_ref), kernel_memzero
- *   (kernel_memzero), kernel_tlb_flush (kernel_tlb_flush),
- *   kernel_panic noreturn (kernel_panic). param_1[0x18] (+0xc0) is
- *   the allocation pointer; param_1[0x16] (+0xb0) is the el2 state base.
- */
+ * kernel_alloc), validates it with kernel_mem_validate, stores the validated
+ * address into the per-CPU EL2 state at +0x4150, sets the "hyp running"
+ * flag bit (bit 49 of +0x4118), and on the last reference clears it via an
+ * EL2 TLB flush. Uses the per-cpu counter at tpidr_el1 + 0x1c0; panics on
+ * overflow via kernel_panic. Marks vm->built = 1 on exit (also on the
+ * already-allocated and allocation-failure paths).
+ * Confidence: high (verified 2026-08-12 against a fresh decompile; body
+ *   corrected to use the allocated block pointer — decompiler extraout_x1
+ *   — for vm->pt_block, mem_validate src, and the failure-path memzero,
+ *   and to store the validated local_40 to +0x4150)
+ * Notes: kernel deps: kernel_alloc (FUN_fffffe000b8a6c14, size 0x4000,
+ *   prot 0x10080), kernel_mem_validate (FUN_fffffe000b8b51c8),
+ *   kernel_lock_ref (FUN_fffffe000b7f62e8), kernel_memzero
+ *   (FUN_fffffe000b8b6860), kernel_tlb_flush (FUN_fffffe000b96c6d4),
+ *   kernel_panic noreturn (FUN_fffffe000c0f1874). param_1[0x18] (+0xc0) is
+ *   vm->pt_block (== extraout_x1); param_1[0x16] (+0xb0) is the el2 state
+ *   base. The alloc block is captured via kalloc_zalloc (same FUN as
+ *   kernel_alloc; see hv_compat.h). */
 void hv_el2_pt_alloc(struct hv_vm *vm)
 {
-    uint64_t block = 0;
+    uint64_t block = 0, validated = 0;
     int kr, *cnt;
     int prot = 3, prot2 = 3;
 
     if (vm->pt_block == 0) {
-        kr = kernel_alloc(0, 0x4000, 0, 0x10080, 0x1c, 0);   /* FUN_fffffe000b8a6c14 */
+        /* kernel_alloc (FUN_fffffe000b8a6c14) returns the 0x4000 block; the
+         * decompiler renders it as extraout_x1 (x1 leftover).  Captured here
+         * via kalloc_zalloc (same FUN, pointer-out wrapper; see hv_compat.h).
+         * Decompile call: kernel_alloc(0,0x4000,0,0x10080,0x1c,0). */
+        if (kalloc_zalloc(&block, 0x4000) != 0) {
+            goto out;
+        }
+        kr = kernel_mem_validate((void *)((uint64_t)vm->cfg + 0x10), &validated,
+                                 0x4000, 0, 0x1c100008, 0, block, 0,
+                                 &prot2, &prot, 2);      /* FUN_fffffe000b8b51c8 */
         if (kr == 0) {
-            kr = kernel_mem_validate((void *)((uint64_t)vm->cfg + 0x10), &block,
-                                     0x4000, 0, 0x1c100008, 0, block, 0,
-                                     &prot2, &prot, 2);      /* FUN_fffffe000b8b51c8 */
-            if (kr == 0) {
-                cnt = (int *)(tpidr_el1 + 0x1c0);
-                *cnt = *cnt + 1;
-                vm->pt_block = block;
-                EL2_RW(vm->el2, HV_EL2_GUEST_PT, block);     /* +0x4150 */
-                EL2_RW(vm->el2, HV_EL2_FLAGS,
-                       EL2_RD(vm->el2, HV_EL2_FLAGS) | 0x40000000000000ULL);  /* bit49 */
-                if (*cnt == 0) {
-                    kernel_panic();                          /* FUN_fffffe000c0f1874, noreturn */
-                }
-                kr = *cnt - 1;
-                *cnt = kr;
-                if (kr == 0 &&
-                    (*(uint8_t *)(*(uint64_t *)(tpidr_el1 + 0x1b8) + 0x4c) >> 2 & 1) != 0) {
-                    kernel_tlb_flush();                      /* FUN_fffffe000b96c6d4 */
-                }
-            } else {
-                kernel_lock_ref(0);                          /* FUN_fffffe000b7f62e8 */
-                kernel_memzero(0, block, block + 0x4000, 1, 0);  /* FUN_fffffe000b8b6860 */
+            cnt = (int *)(tpidr_el1 + 0x1c0);
+            *cnt = *cnt + 1;
+            vm->pt_block = block;                         /* extraout_x1 */
+            EL2_RW(vm->el2, HV_EL2_GUEST_PT, validated); /* +0x4150 = local_40 */
+            EL2_RW(vm->el2, HV_EL2_FLAGS,
+                   EL2_RD(vm->el2, HV_EL2_FLAGS) | 0x40000000000000ULL);  /* bit49 */
+            if (*cnt == 0) {
+                kernel_panic();                          /* FUN_fffffe000c0f1874, noreturn */
             }
+            kr = *cnt - 1;
+            *cnt = kr;
+            if (kr == 0 &&
+                (*(uint8_t *)(*(uint64_t *)(tpidr_el1 + 0x1b8) + 0x4c) >> 2 & 1) != 0) {
+                kernel_tlb_flush();                      /* FUN_fffffe000b96c6d4 */
+            }
+        } else {
+            kernel_lock_ref(0);                          /* FUN_fffffe000b7f62e8 */
+            kernel_memzero(0, block, block + 0x4000, 1, 0);  /* FUN_fffffe000b8b6860 */
         }
     }
+out:
     vm->built = 1;                                           /* +0xb8 */
 }
 
