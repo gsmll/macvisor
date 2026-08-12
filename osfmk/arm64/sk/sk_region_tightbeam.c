@@ -1799,17 +1799,18 @@ unsigned long *cL4_obj_copy_fixed(unsigned long *dst, unsigned long *src, long o
 }
 
 /* FUN_00385f64 — same/diff-tag copy (dest slot 0x20, copies dst[4]). */
-unsigned long *cL4_obj_copy5_slot20(unsigned long *dst, unsigned long *src)
+    unsigned long *cL4_obj_copy5_slot20(unsigned long *dst, unsigned long *src)
 {
     long srcobj, dstobj;
     unsigned long tmp[3];
+    unsigned long v;
     if (src == dst) return dst;
     if (src[3] == dst[3]) {
         if ((*(unsigned char *)(*(long *)(src[3] - 8) + 0x52) >> 1 & 1) == 0) {
             (**(void (**)(unsigned long*,unsigned long*,long))(*(long *)(src[3] - 8) + 0x28))(dst, src, src[3]);
             return dst;
         }
-        unsigned long v = *dst;
+        v = *dst;
         *dst = *src;
     } else {
         dstobj = *(long *)(dst[3] - 8);
@@ -1826,14 +1827,14 @@ unsigned long *cL4_obj_copy5_slot20(unsigned long *dst, unsigned long *src)
             (**(void (**)(unsigned long*,long))(*(long *)(dst[3] - 8) + 8))(tmp, dst[3]);
             return dst;
         }
-        unsigned long v = *dst;
+        v = *dst;
         dst[4] = src[4];
         dst[3] = src[3];
         if ((*(unsigned char *)(d + 0x52) >> 1 & 1) == 0)
             (**(void (**)(unsigned long*,unsigned long*,long))(*(long *)(src[3] - 8) + 0x20))(dst, src, src[3]);
         else { *dst = *src; }
-        cL4_obj_copy_reverse(&v);
     }
+    cL4_obj_copy_reverse(&v);   /* FUN_0036b118(uVar5) common tail: release displaced */
     return dst;
 }
 
@@ -2768,6 +2769,7 @@ cL4_w16_t cL4_waiter_scan_context(unsigned long *desc, unsigned long start,
                                   unsigned long limit, long base)
 {
     cL4_w16_t out;
+    unsigned long canary = (unsigned long)-0x2c8502b44bfffed6ULL;  /* local_48 */
     unsigned long w = start, u2, u3, i;
     unsigned char c1[72];
     uint32_t d4 = *(uint32_t *)(desc + 3);
@@ -2798,7 +2800,10 @@ cL4_w16_t cL4_waiter_scan_context(unsigned long *desc, unsigned long start,
     }
     base = 0; u2 &= 0xffffffff;
 found:
-    out.lo = base; out.hi = u2; return out;
+    out.lo = base; out.hi = u2;
+    if (canary == (unsigned long)-0x2c8502b44bfffed6ULL) return out;  /* canary ok */
+    cL4_stack_fail();   /* FUN_0011d7e8 noreturn */
+    return out;
 }
 
 /* FUN_00386cc4 @ 0x00386cc4   (est. cL4_tcb_pinned_check)

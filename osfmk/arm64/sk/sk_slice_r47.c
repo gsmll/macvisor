@@ -1211,12 +1211,12 @@ static void sk_vas_store_init(unsigned int *table, unsigned long size)
                 } else {
 sw_path:
                     if ((short)e[5] != 0) {
-                        i = 0;
+                        unsigned long j = 0;
                         do {
                             sk_vas_translate((long)e, (unsigned long)block, (long)block);
-                            i++;
+                            j++;
                             block = block + 0x4000;
-                        } while (i < (unsigned short)e[5]);
+                        } while (j < (unsigned short)e[5]);
                     }
                 }
             }

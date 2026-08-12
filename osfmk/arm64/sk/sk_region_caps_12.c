@@ -416,6 +416,9 @@ void FUN_000b9ac4(int64_t lo_idx, int64_t hi_idx, int64_t cur, int64_t *arr)
     int64_t i = cur;
     do {
         int64_t prev = i - 1;
+        if (prev < 0) {            /* SBORROW8(i,1) -> underflow trap 0xb9c08 */
+            CL4_TRAP(0xb9c08);
+        }
         if (prev < 0 || count <= (uint64_t)i) {
             CL4_TRAP(0xb9c0c);
         }

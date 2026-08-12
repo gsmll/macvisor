@@ -1131,7 +1131,10 @@ bool sk_h_481c90(word_t p)
  * 0x48-byte record (performing a lookup/traversal, retaining the three
  * referenced objects) and commits the new cursor/range into the state slots at
  * +0x58/+0x60/+0xa0/+0xb0/+0xc0. Two symmetric paths handle tag==1 vs tag==0
- * records. Confidence: medium (register-global state pointer). */
+ * records. Confidence: medium (register-global state pointer).
+ * VERIFIED vs decompile; FIXED: hoisted the common commit tail (x20+0x60/0x58/
+ * 0xa0/0xb0/0xc0) out of the tag==0 else so it applies to the tag==1 path too
+ * (was wrongly nested, dropping the commit for tag==1). Compiles 0 err. */
 void sk_h_481cc0(word_t x20)
 {
     sk_r29_pair_t d = sk_h_0035638c();
@@ -1139,12 +1142,14 @@ void sk_h_481cc0(word_t x20)
     long *vp = (long *)(x20 + 0xb8);
     long vec = *vp;
     word_t n = *(word_t *)(vec + 0x10);
+    /* popped-record fields shared by both the tag==1 and tag==0 paths (the
+     * decompile commits them in a common tail after the branch) */
+    long keep = 0; word_t v10 = 0, v11 = 0, v15 = 0, v16 = 0; char c3 = 0;
     if (n == 0) {
         *(unsigned char *)(x20 + 200) = 1;
     } else {
         if (*(char *)(vec + n * 0x48) == 1) {
             sk_h_0049c52c(&(long){0});
-            long keep = 0, v10 = 0, v11 = 0, v15 = 0, v16 = 0; char c3 = 0;
             /* reconstructed from the tagged-stack spill below */
             if (1) {
                 sk_h_004ab7b8();
@@ -1170,6 +1175,7 @@ void sk_h_481cc0(word_t x20)
             sk_h_0036b270(v11);
             sk_h_0036b270(v10);
             sk_h_004a3560((word_t)&(long){0});
+            tag = tag & 0xffffffff;
         } else {
             word_t f = sk_h_003a261c(vec);
             if ((f & 1) == 0) vec = (long)sk_h_0049a468(vec);
@@ -1180,29 +1186,31 @@ void sk_h_481cc0(word_t x20)
             sk_h_004811e8();
             *vp = vec;
             if (*(word_t *)(vec + 0x10) < n) SK_TRAP(0x481f08);
-            word_t v16 = *(word_t *)(slot + 0x20);
-            word_t v15 = *(word_t *)(slot + 0x28);
-            char c3 = *(char *)(slot + 0x30);
-            long keep = *(long *)(slot + 0x50);
-            word_t v11 = *(word_t *)(slot + 0x58);
-            word_t v10 = *(word_t *)(slot + 0x60);
+            v16 = *(word_t *)(slot + 0x20);
+            v15 = *(word_t *)(slot + 0x28);
+            c3 = *(char *)(slot + 0x30);
+            keep = *(long *)(slot + 0x50);
+            v11 = *(word_t *)(slot + 0x58);
+            v10 = *(word_t *)(slot + 0x60);
             sk_h_0036b270(keep);
             sk_h_0036b270(v11);
             sk_h_0036b270(v10);
             tag = tag & 0xffffffff;
-            *(word_t *)(x20 + 0x60) = v16;
-            if (c3 == 1) v15 = *(word_t *)(x20 + 0x58);
-            *(word_t *)(x20 + 0x58) = v15;
-            sk_h_0036b118(*(word_t *)(x20 + 0xa0));
-            *(word_t *)(x20 + 0xa0) = v11;
-            sk_h_0036b118(*(word_t *)(x20 + 0xb0));
-            *(word_t *)(x20 + 0xb0) = v10;
-            if ((tag & 1) == 0) {
-                sk_h_0036b118(*(word_t *)(x20 + 0xc0));
-                *(long *)(x20 + 0xc0) = keep;
-            } else {
-                sk_h_0036b118(keep);
-            }
+        }
+        /* common commit tail (decompile: outside the tag if/else — applies to
+         * both tag==1 and tag==0 paths; was wrongly nested in the else). */
+        *(word_t *)(x20 + 0x60) = v16;
+        if (c3 == 1) v15 = *(word_t *)(x20 + 0x58);
+        *(word_t *)(x20 + 0x58) = v15;
+        sk_h_0036b118(*(word_t *)(x20 + 0xa0));
+        *(word_t *)(x20 + 0xa0) = v11;
+        sk_h_0036b118(*(word_t *)(x20 + 0xb0));
+        *(word_t *)(x20 + 0xb0) = v10;
+        if ((tag & 1) == 0) {
+            sk_h_0036b118(*(word_t *)(x20 + 0xc0));
+            *(long *)(x20 + 0xc0) = keep;
+        } else {
+            sk_h_0036b118(keep);
         }
     }
     sk_h_00356370(d.hi);

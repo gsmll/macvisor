@@ -1932,10 +1932,11 @@ sk_u128_t sk_swift_str_element_find(word_t off)
                 /* WARNING: does not return */
                 rt_001afe4c();
             }
-            hi = mid;
             if (*(word_t *)(buf + 0x20 + mid * 8) >> 0xe <= off >> 0xe) {
-                hi = base + (lo >> 1);
+                /* elem<=off: base=mid, hi unchanged (old hi) */
                 base = mid;
+            } else {
+                hi = mid;
             }
             lo = hi - base;
         } while (1 < (long)lo);
@@ -6516,7 +6517,11 @@ void sk_ubp_append_idx(word_t a, word_t b, void *c, void *d)
  * Ghidra: word_t FUN_002a55c0(undefined8 param_1,undefined8 param_2,word_t param_3,word_t param_4)
  * Appends the slice [param_3,param_4) (scalar counts) of the current buffer value,
  * growing via sk_ubp_insert (002a67a0/002a66f0 family), and stores the result.
- * Confidence: low */
+ * Confidence: low
+ * Notes: VERIFIED vs decompile; FIXED capacity/count field (t.hi&0xff, was t.lo),
+ *   append2 (002a4c98) vs self-recursion, sk_ubp_grow (002a66f0) vs insert4, the
+ *   NULL store (was *(word_t*)0), and the lost 0xe00 record hi. x20 record + guard
+ *   branch kept as documented opaque placeholders per slice convention. Compiles 0 err. */
 word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
 {
     word_t u, v, n;
@@ -6524,6 +6529,9 @@ word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
     sk_u128_t t, r;
     u = 0;
     v = 0;
+    /* x20 record (u=*(x20), v=*(x20+8)) is register-forwarded opaque here;
+     * the guard + insert-family early-return branch below is kept as a
+     * dead-code placeholder per slice convention (rt_003a261c guard opaque). */
     if (0) {
         if ((d >> 0x3c & 1) != 0) {
             return sk_ubp_insert(a,b,c,d,(word_t)&LAB_002a6794,0).lo;
@@ -6531,7 +6539,7 @@ word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
         if ((d >> 0x3d & 1) != 0) {
             r.lo = c;
             r.hi = d & 0xffffffffffffff;
-            return sk_ubp_insert4(a,b,r.lo,d >> 0x38 & 0xf,0).lo;
+            return ((sk_u128_t(*)(word_t,word_t,word_t,word_t,word_t))sk_ubp_grow)(a,b,r.lo,d >> 0x38 & 0xf,0).lo;   /* FUN_002a66f0 */
         }
         if ((c >> 0x3c & 1) == 0) {
             t = rt_002a9ba8(c,d);
@@ -6539,20 +6547,20 @@ word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
             t.lo = c & 0xffffffffffff;
             t.hi = (d & 0xfffffffffffffff) + 0x20;
         }
-        return sk_ubp_insert4(a,b,t.lo,t.hi,0).lo;
+        return ((sk_u128_t(*)(word_t,word_t,word_t,word_t,word_t))sk_ubp_grow)(a,b,t.lo,t.hi,0).lo;
     }
     r.lo = 0;
     r.hi = 0xe000000000000000;
     t = sk_ubp_capacity(u,v);
     l = t.lo;
-    if (((t.lo & 0xff) != 1 && 0xf < l) &&
-       (t = sk_ubp_count2(), (t.lo & 0xff) == 1 || t.lo < (word_t)l)) {
+    if (((t.hi & 0xff) != 1 && 0xf < l) &&
+       (t = sk_ubp_count2(), (t.hi & 0xff) == 1 || t.lo < (word_t)l)) {
         sk_ubp_ensure(l);
     }
     t = rt_002ab8ac(0xf,a,u,v,0xd2,0x50);
     n = t.hi >> 0x10;
     rt_0036b270(v);
-    sk_ubp_append_slice(u,v,t.lo >> 0x10,n);
+    ((void(*)(word_t,word_t,word_t,word_t))sk_ubp_append2)(u,v,t.lo >> 0x10,n);   /* FUN_002a4c98 */
     rt_003a25d4(v);
     u = r.hi;
     v = r.lo & 0xffffffffffff;
@@ -6578,17 +6586,17 @@ word_t sk_ubp_append_slice(word_t a, word_t b, word_t c, word_t d)
             }
             n = d >> 0x38 & 0xf;
         }
-        sk_ubp_append_slice(c,d,0,n);
+        ((void(*)(word_t,word_t,word_t,word_t))sk_ubp_append2)(c,d,0,n);
         r.lo = 0;
-        r.hi = 0;
+        r.hi = 0xe000000000000000;
     }
 store:
     n = v;
     r = rt_001d97b4(b,u,v);
-    sk_ubp_append_slice(n,n,r.lo >> 0x10,r.hi >> 0x10);
+    ((void(*)(word_t,word_t,word_t,word_t))sk_ubp_append2)(n,n,r.lo >> 0x10,r.hi >> 0x10);
     rt_003a25d4(v);
     rt_003a25d4(n);
-    *(word_t *)0 = r.lo;
+    /* decompile: *unaff_x20 = local_70 (the x20 record); register-opaque here */
     return v;
 }
 

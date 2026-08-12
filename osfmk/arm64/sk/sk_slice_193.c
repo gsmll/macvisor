@@ -1591,7 +1591,11 @@ done:
  * Translates a scalar-kind tag (read from the caller x20 record) into the
  * AST node kind and emits it through the writer 0x2298d4 / 0x350878 /
  * 0x1b9084; special-cases quantifiers and the '$' capture-backref kinds.
- * Confidence: low. */
+ * Confidence: medium
+ * Notes: VERIFIED vs decompile; FIXED two-tail structure (LAB_0042d9b8 emit-and-return
+ *   vs the 350878/1b9084 tail were conflated): restored second emits for cases
+ *   1/2, removed spurious 350878/1b9084 from emitW/emitB/case-34/case-36 paths,
+ *   restored case-18/35 missing calls. Compiles 0 err. */
 void sk_re_scan_utf8_detect(word_t a)
 {
         word_t k1 = *(word_t*)(__builtin_frame_address(0) + 0);
@@ -1601,8 +1605,8 @@ void sk_re_scan_utf8_detect(word_t a)
         byte kind = *(byte*)(__builtin_frame_address(0) + 0x20);
         word_t v;
         switch (kind) {
-        case 1: sw_2298d4(1); sw_350878(a); sw_1b9084(0); return;
-        case 2: sw_2298d4(2); sw_350878(a); sw_1b9084(0); v = k3 & 0xff; break;
+        case 1: sw_2298d4(1); sw_350878(a); sw_1b9084(0); sw_2298d4(k3); return;
+        case 2: sw_2298d4(2); sw_350878(a); sw_1b9084(0); sw_2298d4(k3 & 0xff); return;
         case 3: v = 3; break;
         case 4: v = 5; break;
         case 5: v = 6; goto emitW;
@@ -1620,8 +1624,11 @@ void sk_re_scan_utf8_detect(word_t a)
         case 17: v = 0x17; break;
         case 18:
                 sw_2298d4(0x1b);
-                if (k2 != 0) sw_229a3c(1); else sw_229a3c(0);
-                sw_3505c4(a); return;
+                if (k2 != 0) { sw_229a3c(1); sw_350878(a); sw_1b9084(0); }
+                else         { sw_229a3c(0); }
+                sw_3505c4(a);
+                sw_1b9084(0);
+                return;
         case 19: v = 0x1c; break;
         case 20: v = 0x1d; break;
         case 21: v = 0x1e; break;
@@ -1631,16 +1638,14 @@ void sk_re_scan_utf8_detect(word_t a)
         case 25: v = 0x22; break;
         case 26: v = 0x25; goto emitB;
         case 27: v = 0x26; goto emitB;
-        case 28: v = 0x27;
-emitB:  sw_2298d4(v); v = k1 & 0xff; break;
+        case 28: v = 0x27; goto emitB;
         case 29: v = 0x2e; break;
         case 30: v = 0x2f; break;
-        case 31: v = 0x30;
-emitW:  sw_2298d4(v); v = k1; break;
+        case 31: v = 0x30; goto emitW;
         case 32: v = 0x31; break;
         case 33: v = 0x32; break;
-        case 34: sw_2298d4(0x35); sw_2298d4(k1); v = k2; break;
-        case 35: sw_2298d4(0x36); sw_350878(a); sw_1b9084(0); sw_3505c4(a); return;
+        case 34: sw_2298d4(0x35); sw_2298d4(k1); sw_2298d4(k2); return;
+        case 35: sw_2298d4(0x36); sw_350878(a); sw_1b9084(0); sw_3505c4(a); sw_1b9084(0); return;
         case 36:
                 if ((k3 == 0 && k2 == 0) && (k1 == 0 && k4 == 0)) v = 4;
                 else if (k1 == 1 && ((k3 == 0 && k2 == 0) && k4 == 0)) v = 0xb;
@@ -1662,12 +1667,24 @@ emitW:  sw_2298d4(v); v = k1; break;
                 else if (k1 == 17 && ((k3 == 0 && k2 == 0) && k4 == 0)) v = 0x33;
                 else if (k1 == 18 && ((k3 == 0 && k2 == 0) && k4 == 0)) v = 0x34;
                 else v = 0x37;
-                break;
+                goto emitRet;
         default: v = 0; break;
         }
         sw_2298d4(v);
-        if (kind < 0x22) sw_350878(a);
+        sw_350878(a);
         sw_1b9084(0);
+        return;
+emitW:
+        sw_2298d4(v);
+        sw_2298d4(k1);
+        return;
+emitB:
+        sw_2298d4(v);
+        sw_2298d4(k1 & 0xff);
+        return;
+emitRet:
+        sw_2298d4(v);
+        return;
 }
 
 

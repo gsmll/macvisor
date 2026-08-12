@@ -3104,76 +3104,199 @@ static void sk_layout_check(word_t *out, word_t p, word_t type)
  * bit. Also special-cases 0x300/0x301/0x302 (function types) and 0x307
  * (existential) records.
  * Confidence: low */
+/* FUN_0039bf68 @ 0x39bf68  (est. sk_invertible_check)
+ * Check that all "invertible" conformances required by a protocol are
+ * satisfied by a type (used for the erased-protocol generic check): scans
+ * the invertible-bit table and re-runs the requirement decoder for each set
+ * bit. Also special-cases 0x300/0x301/0x302 (function types) and 0x307
+ * (existential) records.
+ * Confidence: medium
+ * Notes: VERIFIED vs decompile; FIXED 0x302 flag logic (was always 0), restored
+ *   the invertible bit-walk loop (was skipped), and split the error box
+ *   dispatchers (FUN_0039d578=sk_box_08_b for "unable to find suppressed
+ *   protocol" vs FUN_0039d8f8=sk_box_10_a for the missing-conformance errors). */
 static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
 {
-    unsigned inv = (unsigned)flags;
-    word_t *e;
-    char *mr = (char*)cL4_mr_block(0);
+    word_t canary = -0x2c8502b44bfffed6;          /* local_80 stack canary */
+    byte *mr;
+    unsigned inv;
+    word_t *e;                                    /* puVar6: error record obj */
+    word_t (*boxfn)(word_t *, int, word_t);       /* pcVar12: error dtor */
+    unsigned short *tab;                                  /* puVar4 */
+    word_t lv;                                    /* lVar5 */
+    word_t u2;                                    /* uVar2 = DAT_004f2940 */
+    cL4_w16_t av;                                 /* auVar17 */
+    word_t *d;                                    /* puVar7 */
+    int n;                                        /* iVar8 */
+    word_t u11, u9, cnt, mask_old;
+    unsigned u10;
+    word_t *wptr;
+    /* stack scratch for the invertible-bit walk */
+    byte auStack_1b8[8], auStack_1b0[24], auStack_188[264];
+    word_t *local_198;                            /* undefined1 *local_198 */
+    word_t local_1c0, local_1c8, local_1e8, local_208, local_228;
+    word_t *local_1d0, *local_1f0, *local_210;
+    byte *puStack_220, *puStack_200, *puStack_1e0;
+
+    mr = (byte *)cL4_mr_block(0);                 /* FUN_0035bd48 */
+    inv = (unsigned)flags;
     if (mr == 0) {
-        int n = 0;
+        n = 0;
         if (*t < 0x800) n = (int)*t;
         if (n < 0x304) {
             if (0x2ff < n) {
                 if (n < 0x302) {
-                    if (((n != 0x300) && (n == 0x301)) && (word_t)(unsigned)t[1] != 0) {
+                    /* 0x300/0x301: recursive over the tuple of function types */
+                    if (((n != 0x300) && (n == 0x301)) &&
+                        ((word_t)(unsigned)t[1] != 0)) {
                         word_t cnt = (unsigned)t[1];
-                        e = t + 3;
-                        do { sk_invertible_check(out, e, inv); if (*(byte*)(out+2) & 1) goto done; cnt--; e += 2; } while (cnt != 0);
+                        word_t *e2 = t + 3;
+                        do {
+                            sk_invertible_check(out, e2, flags);
+                            if ((*(byte *)(out + 2) & 1) != 0) goto done;
+                            cnt--;
+                            e2 += 2;
+                        } while (cnt != 0);
                     }
                 } else if (n == 0x302) {
+                    /* 0x302: function type; need invertible + bit-vector check */
                     word_t cnt = t[1];
-                    if ((long)cnt < 0) { cL4_vec_push_b(t); cnt = t[1]; }
-                    unsigned w = (unsigned)cnt & 0x4ff0000;
-                    unsigned want = w ? 0 : (unsigned)inv;
-                    word_t val = want & ~(unsigned)inv;
-                    if (val != 0) {
-                        e = cL4_alloc(0x10, 0x1050c40a90f5278);
-                        e[0] = (word_t)(void*)"function type missing invertible";
-                        *(short*)(e + 1) = (short)val;
-                        goto err;
+                    if ((int)cnt < 0) {
+                        cL4_vec_push_b(t);        /* FUN_003651f4 */
+                        u10 = 0xffff;             /* extraout_var & 0xffff */
+                        cnt = t[1];
+                    } else {
+                        u10 = 0;
+                    }
+                    unsigned u1 = u10 | 2;
+                    if ((cnt & 0x4ff0000) != 0) u1 = u10;
+                    u1 = u1 & (inv ^ 0xffffffffU);
+                    if (u1 != 0) {
+                        e = (word_t *)cL4_alloc(0x10, 0x1050c40a90f5278);
+                        e[0] = (word_t)(void *)"function type missing invertible";
+                        *(unsigned short *)(e + 1) = (unsigned short)u1;
+                        goto err_10;              /* LAB_0039c264 -> 0039c048, dtor FUN_0039d8f8 */
                     }
                 }
-            } else if ((((n < 0x308) && (0x305 < n)) && n != 0x306) && (n == 0x307 && *(char*)t[1] != 2)) {
-                word_t *d = (word_t*)cL4_pack_inspect(t[1]);
-                if ((word_t)*(short*)((char*)t[1] + 10) != 0) {
-                    word_t cnt = (word_t)*(short*)((char*)t[1] + 10) * 0xc;
-                    do {
-                        if (((*d & 0x1f) == 5) && ((unsigned)*(short*)((char*)d + 10) & ~(unsigned)inv)) {
-                            e = cL4_alloc(0x10, 0x1050c40a90f5278);
-                            e[0] = (word_t)(void*)"existential type missing inverti";
-                            *(short*)(e + 1) = (short)((unsigned)*(short*)((char*)d + 10) & ~(unsigned)inv);
-                            goto err;
-                        }
-                        d += 3; cnt -= 0xc;
-                    } while (cnt != 0);
-                }
+            }
+        } else if ((((n < 0x308) && (0x305 < n)) && (n != 0x306)) &&
+                   (n == 0x307 && (*(char *)t[1] != 2))) {
+            /* 0x307: existential; scan the descriptor records */
+            d = (word_t *)cL4_pack_inspect(t[1]); /* FUN_00367dd4 */
+            if ((word_t)*(unsigned short *)((char *)t[1] + 10) != 0) {
+                word_t cnt = (word_t)*(unsigned short *)((char *)t[1] + 10) * 0xc;
+                do {
+                    if (((*d & 0x1f) == 5) &&
+                        ((unsigned)*(unsigned short *)((char *)d + 10) & (inv ^ 0xffff)) != 0) {
+                        unsigned short u14 =
+                            (unsigned short)((unsigned)*(unsigned short *)((char *)d + 10) & (inv ^ 0xffff));
+                        e = (word_t *)cL4_alloc(0x10, 0x1050c40a90f5278);
+                        e[0] = (word_t)(void *)"existential type missing inverti";
+                        *(unsigned short *)(e + 1) = u14;
+                        goto err_10;
+                    }
+                    d += 3;
+                    cnt -= 0xc;
+                } while (cnt != 0);
             }
         }
     } else if (((*mr >> 5) & 1) != 0) {
-        word_t *tab = (word_t*)sk_conform_invert_table((word_t*)mr);
+        tab = (unsigned short *)sk_conform_invert_table((word_t *)mr);   /* FUN_0039d60c */
         if (tab == 0) {
-            word_t *e = cL4_alloc(8, 0x50c40ee9192b6);
-            e[0] = (word_t)(void*)"unable to find suppressed protoc";
-            goto err2;
+            /* no invertible table: report a suppressed-protocol error */
+            e = (word_t *)cL4_alloc(8, 0x50c40ee9192b6);
+            e[0] = (word_t)(void *)"unable to find suppressed protoc";
+            boxfn = sk_box_08_b;                  /* FUN_0039d578 */
+            goto err_dispatch;
         } else {
-            unsigned mask = (unsigned)*tab & ~(unsigned)inv;
-            if (mask != 0) {
-                word_t *t2 = (word_t*)(uintptr_t)sk_conform_invert_bit(*tab, 0).lo;
-                /* handled via the invertible bit walk */
-                e = cL4_alloc(0x10, 0x1050c40a90f5278);
-                e[0] = (word_t)(void*)"type missing invertible conforma";
-                *(short*)(e + 1) = (short)mask;
-                goto err2;
+            unsigned mask = (unsigned)*tab & (inv ^ 0xffff);
+            if (mask == 0) goto clear_out;        /* LAB_0039c40c */
+            if ((((char)*mr < 0) &&
+                 (lv = cL4_pack_size((word_t)mr, 0), u2 = 0 /*DAT_004f2940*/, lv != 0)) &&
+                ((*(unsigned short *)(lv + 10) >> 1 & 1) != 0)) {
+                unsigned short *puVar4;
+                puVar4 = (unsigned short *)
+                         ((lv + 0xc + (word_t)*(unsigned short *)(lv + 4) + 3 & 0xfffffffffffffffc) +
+                          (word_t)*(unsigned short *)(lv + 6) * 0xc);
+                u9 = (word_t)*(unsigned short *)(lv + 10) & 1;
+                if ((int)u9 == 0) {
+                    u11 = 0;
+                } else {
+                    u11 = (word_t)*puVar4;
+                }
+                u10 = mask & ((unsigned)puVar4[u9 * 2 + u11 * 4] ^ 0xffff);
+                if (u10 == 0) {
+                    /* bit-walk: for each set bit, re-run the requirement decoder */
+                    u10 = 0;
+                    unsigned u1 = mask;
+                    while ((u1 & 1) == 0) {
+                        u10++;
+                        u1 = mask >> (u10 & 0x1f);
+                    }
+                    while (1) {
+                        av = sk_conform_invert_bit(lv, u10 & 0xff);   /* FUN_0039d864 */
+                        cL4_variant_init((word_t *)auStack_1b0, t);   /* FUN_0037d1d8 */
+                        local_1c0 = u2;
+                        local_1d0 = &local_1e8;
+                        local_1e8 = 0x67beb8;
+                        local_1f0 = &local_208;
+                        local_208 = 0x67bf00;
+                        local_228 = 0x67bf48;
+                        puStack_220 = auStack_1b0;
+                        local_210 = &local_228;
+                        puStack_200 = auStack_1b0;
+                        puStack_1e0 = auStack_1b0;
+                        local_1c8 = (word_t)auStack_1b8;
+                        sk_req_decoder(out, lv + 0xc, *(unsigned short *)(lv + 4),
+                                       (word_t *)(uintptr_t)av.lo, (word_t)av.hi,
+                                       &local_1c8, local_1e8, local_208, local_228, 0);
+                        cL4_small_release_a((void *)(uintptr_t)local_228);  /* FUN_0036805c */
+                        cL4_small_release_b((void *)(uintptr_t)local_208);  /* FUN_003680cc */
+                        cL4_small_release_b((void *)(uintptr_t)local_1e8);  /* FUN_003680cc */
+                        if ((*(byte *)(out + 2) & 1) != 0) break;
+                        if (local_1c8 != (word_t)auStack_1b8)
+                            cL4_free(auStack_1b8, 0);                 /* thunk_FUN_00012568 */
+                        if (local_198 != (word_t)auStack_188)
+                            cL4_free(auStack_188, 0);                 /* thunk_FUN_00012568 */
+                        mask = mask & (1u << (u10 & 0x1f) ^ 0xffffffffU);
+                        if (mask == 0) goto clear_out;
+                        do {
+                            u10++;
+                        } while ((mask >> (u10 & 0x1f) & 1) == 0);
+                    }
+                    if (local_1c8 != (word_t)auStack_1b8)
+                        cL4_free(auStack_1b8, 0);
+                    if (local_198 != (word_t)auStack_188)
+                        cL4_free(auStack_188, 0);
+                    goto done;                    /* LAB_0039c414 */
+                }
+                /* u10 != 0: this invertible requirement is genuinely missing */
+                e = (word_t *)cL4_alloc(0x10, 0x1050c40a90f5278);
+                e[0] = (word_t)(void *)"type missing invertible conforma";
+                *(short *)(e + 1) = (short)u10;
+            } else {
+                e = (word_t *)cL4_alloc(0x10, 0x1050c40a90f5278);
+                e[0] = (word_t)(void *)"type missing invertible conforma";
+                *(short *)(e + 1) = (short)mask;
             }
+            boxfn = sk_box_10_a;                  /* FUN_0039d8f8 */
+            goto err_dispatch;                    /* LAB_0039c048 */
         }
     }
-    *(byte*)out = 0; *(byte*)(out+2) = 0;
-    return;
-err:
-    out[0] = (word_t)e; out[1] = (word_t)(void*)sk_box_10_a; *(byte*)(out+2) = 1; return;
-err2:
-    out[0] = (word_t)e; out[1] = (word_t)(void*)sk_box_10_a; *(byte*)(out+2) = 1; return;
-done:
+clear_out:                                        /* LAB_0039c40c */
+    *(byte *)out = 0;
+    *(byte *)(out + 2) = 0;
+    if (canary == -0x2c8502b44bfffed6) return;
+    cL4_runtime_fatal();                          /* FUN_0011d7e8 */
+err_10:                                           /* LAB_0039c264 -> 0039c048, dtor FUN_0039d8f8 */
+    boxfn = sk_box_10_a;
+err_dispatch:                                     /* LAB_0039c048 */
+    out[0] = (word_t)e;
+    out[1] = (word_t)(void *)boxfn;
+    *(byte *)(out + 2) = 1;
+    if (canary == -0x2c8502b44bfffed6) return;
+    cL4_runtime_fatal();
+done:                                             /* LAB_0039c414 */
     return;
 }
 

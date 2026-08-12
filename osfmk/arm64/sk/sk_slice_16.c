@@ -461,9 +461,12 @@ static uint64_t sk_emit_field(uint64_t name_key, uint64_t value, uint64_t tag)
             value = 1;
         }
     }
-    /* auVar1._8_8_=0, auVar1._0_8_=value; auVar2=value; SUB168(value*value,0) */
-    if (((value * value) >> 8) == 0) {
-        sk_nop2(value * value, ((uint8_t)tag & 0xff) != 1);
+    /* auVar1={param_1=name_key,0}, auVar2={param_2=value,0};
+     * product = name_key*value; disasm umulh x8,x19,x0; b.ne trap => high-64==0
+     * is required (product fits in 64 bits) */
+    __uint128_t prod = (__uint128_t)name_key * value;
+    if ((uint64_t)(prod >> 64) == 0) {
+        sk_nop2((uint64_t)prod, ((uint8_t)tag & 0xff) != 1);
         sk_str_append();
         sk_swift_release_masked(0);
         sk_str_append(0x29, 0xe100000000000000);

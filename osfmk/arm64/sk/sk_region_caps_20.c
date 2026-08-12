@@ -67,7 +67,12 @@ unsigned char *cl4_flag_4(void)
     return &cl4_dat_004e4a00;
 }
 extern void *cl4_find_region();      /* FUN_0016d328 */
-extern void cl4_list_lookup();       /* FUN_001670f0 */
+extern unsigned long cl4_iel_slot_a();   /* FUN_0031b614 (out of slice) */
+extern void cl4_iel_slot_b();            /* thunk_FUN_00200b38 (out of slice) */
+extern unsigned long cl4_iel_slot_c();   /* FUN_00319320 (out of slice) */
+extern void *cl4_iel_list_find();        /* FUN_0029207c (out of slice) */
+extern void cl4_iel_list_emit();         /* thunk_FUN_001ef804 (out of slice) */
+
 extern void cl4_list_lock();         /* FUN_001dd77c */
 extern unsigned long cl4_list_index(); /* FUN_001dd858 */
 extern void *cl4_array_grow();       /* FUN_00072d5c */
@@ -141,6 +146,46 @@ extern void cl4_cap_lookup();              /* FUN_000f4838 */
 extern unsigned long cl4_iel_size();       /* FUN_000f480c */
 extern void *cl4_obj_resolve();            /* FUN_001000b8 */
 extern void *cl4_obj_resolve2();           /* FUN_000fd854 / 000fd5d8 */
+
+extern unsigned char DAT_004c3870[];   /* _DAT_004c3870 (log-key table) */
+extern const char LAB_001672b4[];      /* 0x1672b4 (continuation label) */
+
+/* FUN_001670f0 — cl4_list_lookup. Scan the {lo,hi} range list at `list` and,
+ * on a match of `key`, build/emit the result record; otherwise fall back to
+ * the caller object's +0x38 vtable slot. VERIFIED vs decompile 2026-08-12
+ * (missing body added). Confidence: medium. */
+void cl4_list_lookup(unsigned long *out, unsigned long key, void *list)
+{
+    void *obj = 0;   /* decompile param_4 — register-opaque at call sites */
+    unsigned long kv = cl4_log_key(0x652108, &DAT_004c3870);   /* FUN_00002534 */
+    unsigned long ctx = (unsigned long)cl4_iel_tbl4();         /* FUN_000f4234 */
+    unsigned long rec = (unsigned long)cl4_retain(list, kv, (unsigned long)obj, ctx);
+    unsigned long lo = rec;
+    unsigned long r4 = cl4_iel_slot_a(0, kv, (unsigned long)obj, ctx);   /* FUN_0031b614 */
+    unsigned long st;
+    cl4_iel_slot_b(&st, r4, 0x66bb20);                        /* thunk_FUN_00200b38 */
+    cl4_log_fmt(rec);                                          /* FUN_003a25d4 */
+    r4 = cl4_iel_slot_c(0, r4, 0x66bb20);                     /* FUN_00319320 */
+    unsigned long *node = (unsigned long *)cl4_iel_list_find(&LAB_001672b4, 0, r4, 0x66cbb8); /* FUN_0029207c */
+    cl4_log_fmt(st);
+    unsigned long n = node ? *(unsigned long *)((char *)node + 0x10) : 0;
+    if (n != 0) {
+        unsigned long *range = (unsigned long *)((char *)node + 0x20);
+        do {
+            if (range[0] <= key && key <= range[1]) {
+                lo = range[0];
+                cl4_iel_list_emit(out, &lo, list, kv, (unsigned long)obj, ctx); /* thunk_FUN_001ef804 */
+                cl4_release(node);
+                return;
+            }
+            if (key < range[0]) break;
+            range += 2;
+            n--;
+        } while (n != 0);
+    }
+    cl4_release(node);
+    (**(void (**)(void *, long, long, void *))(*(long *)((char *)obj - 8) + 0x38))(out, 1, 1, obj);
+}
 extern void *cl4_lock_registry();          /* FUN_00086440 */
 extern void *cl4_lock_allocator();         /* FUN_00086590 */
 extern void *cl4_vas_map();                /* FUN_00085a54 (register args) */
