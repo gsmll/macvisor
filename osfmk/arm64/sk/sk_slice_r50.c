@@ -166,72 +166,72 @@ extern void cL4_printf2(unsigned long a, unsigned long b);       /* FUN_004b9ed8
  * variadic so the reconstruction compiles against call sites whose exact
  * Ghidra signatures were not all recovered. */
 extern unsigned long sk_type_lookup_389940(unsigned long, unsigned long, unsigned long, unsigned long);
-extern void sk_type_lookup_core_3895e0(unsigned long *, unsigned long, long, unsigned long, unsigned long, void *, void *);
-extern long sk_strbuf_copy_38ef98(long, void *);
-extern long sk_strbuf_copy_38f020(long, void *);
-extern void sk_type_resolve_38a518(unsigned long *, unsigned long, unsigned long, unsigned long *, unsigned long, unsigned long, unsigned long);
-extern long sk_type_field_get_3a3430(unsigned long, ...);
-extern void sk_type_field_set_3a3460(unsigned long, ...);
+extern void sk_type_lookup_core_3895e0();
+extern long sk_strbuf_copy_38ef98();
+extern long sk_strbuf_copy_38f020();
+extern void sk_type_resolve_38a518();
+extern long sk_type_field_get_3a3430();
+extern void sk_type_field_set_3a3460();
 extern unsigned long sk_type_strfield_3a63f70(unsigned long, ...);
-extern long sk_type_a32a0_3a32a0(unsigned long, ...);
-extern void sk_type_decode_38f0a8(unsigned long *, unsigned long *, unsigned long *, unsigned long, unsigned long);
+extern long sk_type_a32a0_3a32a0();
+extern void sk_type_decode_38f0a8();
 extern unsigned long FUN_00377dcc(unsigned long, ...);
-extern void FUN_003a2578(unsigned long, ...);
-extern void cL4_panic_big(unsigned long, ...);
-extern void cL4_list_push_363f10(unsigned long, ...);
+extern void FUN_003a2578();
+extern void cL4_panic_big();
+extern void cL4_list_push_363f10();
 extern unsigned long sk_type_metadata_get_3963b8(unsigned long, ...);
-extern void sk_type_materialize_exist_39517c(unsigned long, ...);
-extern void sk_type_materialize_exist_3950a4(unsigned long, ...);
-extern void sk_type_build_sig_395f3c(unsigned long, ...);
-extern void sk_type_build_owned_395dec(unsigned long, ...);
-extern void sk_type_generic_args_396440(unsigned long, ...);
-extern void sk_type_build_bound_generic_396784(unsigned long, ...);
-extern void sk_type_metadata_of_3bf904(unsigned long, ...);
-extern void sk_type_unpack_pair_37364c(unsigned long, ...);
-extern void sk_type_materialize_394c40(unsigned long, ...);
-extern void sk_type_materialize_397358(unsigned long, ...);
-extern void sk_type_build_pair_397e94(unsigned long, ...);
-extern void sk_type_decode_sig_394404(unsigned long, ...);
-extern void sk_type_build_func_394724(unsigned long, ...);
+extern void sk_type_materialize_exist_39517c();
+extern void sk_type_materialize_exist_3950a4();
+extern void sk_type_build_sig_395f3c();
+extern void sk_type_build_owned_395dec();
+extern void sk_type_generic_args_396440();
+extern void sk_type_build_bound_generic_396784();
+extern void sk_type_metadata_of_3bf904();
+extern void sk_type_unpack_pair_37364c();
+extern void sk_type_materialize_394c40();
+extern void sk_type_materialize_397358();
+extern void sk_type_build_pair_397e94();
+extern void sk_type_decode_sig_394404();
+extern void sk_type_build_func_394724();
 extern unsigned long sk_type_parse_signature_395638(unsigned long, ...);
-extern void sk_type_build_protocol_3973e4(unsigned long, ...);
-extern void sk_type_decode_sig_394734(unsigned long, ...);
-extern void sk_type_build_func_3952c4(unsigned long, ...);
-extern void sk_type_decl_record_39779c(unsigned long, ...);
-extern void sk_type_push8_39780c(unsigned long, ...);
-extern void sk_type_field_push_39787c(unsigned long, ...);
+extern void sk_type_build_protocol_3973e4();
+extern void sk_type_decode_sig_394734();
+extern void sk_type_build_func_3952c4();
+extern void sk_type_decl_record_39779c();
+extern void sk_type_push8_39780c();
+extern void sk_type_field_push_39787c();
 extern unsigned long sk_type_realloc_38d9b4(unsigned long, ...);
-extern void sk_type_flatpair_3978b0(unsigned long, ...);
-extern void sk_type_push98_397998(unsigned long, ...);
-extern void sk_type_build_bound_397a98(unsigned long, ...);
+extern void sk_type_flatpair_3978b0();
+extern void sk_type_push98_397998();
+extern void sk_type_build_bound_397a98();
 extern unsigned long sk_type_lookup_field_398f40(unsigned long, ...);
-extern void sk_type_materialize_req_3972cc(unsigned long, ...);
-extern void sk_type_materialize_req2_3971e8(unsigned long, ...);
-extern void sk_type_build_reqlist_396f78(unsigned long, ...);
-extern void sk_type_65184_365184(unsigned long, ...);
-extern void sk_type_pushreq_39951c(unsigned long, ...);
-extern long sk_type_decode_param_396aec(unsigned long, ...);
-extern long sk_type_decode_result_396d48(unsigned long, ...);
-extern void sk_type_wordlist_grow_3a294c(unsigned long, ...);
-extern void sk_type_build_decl_39779c(unsigned long, ...);
-extern cL4_w16_t sk_type_name_split_38cbb8(unsigned long, ...);
-extern long sk_type_waiter_scan_38c640(unsigned long, ...);
+extern void sk_type_materialize_req_3972cc();
+extern void sk_type_materialize_req2_3971e8();
+extern void sk_type_build_reqlist_396f78();
+extern void sk_type_65184_365184();
+extern void sk_type_pushreq_39951c();
+extern long sk_type_decode_param_396aec();
+extern long sk_type_decode_result_396d48();
+extern void sk_type_wordlist_grow_3a294c();
+extern void sk_type_build_decl_39779c();
+extern cL4_w16_t sk_type_name_split_38cbb8();
+extern long sk_type_waiter_scan_38c640();
 extern unsigned long sk_type_waiter_hash2_38c750(unsigned long, ...);
 extern unsigned long sk_type_capcmp_387fbc(unsigned long, ...);
-extern void sk_type_dbltbl_grow_38d90c(unsigned long, ...);
+extern void sk_type_dbltbl_grow_38d90c();
 extern unsigned long sk_type_dbltbl_hash_38d6e4(unsigned long, ...);
-extern void sk_type_insert_38c3ac(unsigned long, ...);
-extern cL4_w16_t sk_type_read_3a31d8(unsigned long, ...);
+extern void sk_type_insert_38c3ac();
+extern cL4_w16_t sk_type_read_3a31d8();
 extern unsigned long sk_type_cap_build_3a32a0(unsigned long, ...);
-extern void sk_type_wordlist_append_389370(unsigned long, ...);
-extern void FUN_0038e214(unsigned long, ...);
-extern void FUN_0038e458(unsigned long, ...);
-extern void FUN_0038e624(unsigned long, ...);
-extern void FUN_0038e7f0(unsigned long, ...);
-extern void FUN_0038ece8(unsigned long, ...);
-extern void FUN_0038d9fc(unsigned long, ...);
-extern void sk_type_dbltbl_op_38d90c(unsigned long, ...);
-extern void sk_type_release_obj(unsigned long, ...);
+extern void sk_type_wordlist_append_389370();
+extern void FUN_0038e214();
+extern void FUN_0038e458();
+extern void FUN_0038e624();
+extern void FUN_0038e7f0();
+extern void FUN_0038ece8();
+extern void FUN_0038d9fc();
+extern void sk_type_dbltbl_op_38d90c();
+extern void sk_type_release_obj();
 
 /* FUN_00380864 @ 0x380864   (est. sk_mr_send_word_replace)
  * Ghidra: void FUN_00380864(ulong *param_1, undefined8 *param_2, long, long)
@@ -953,6 +953,8 @@ void sk_type_decode_38f0a8(unsigned long *out, unsigned long *ctx, unsigned long
     unsigned long **local_210; unsigned long **stk_208; unsigned long **local_200;
     unsigned long **local_1f8; unsigned long local_1e8; char c1e1; unsigned long **local_100;
     unsigned long **stk_f8; unsigned long local_f0; long canary;
+    unsigned long **pp12; unsigned long u3; unsigned char *pu4;
+    unsigned long local_1f0; unsigned long u_v51;
 
     canary = -0x2c8502b44bfffed6;
     if (0x400 < (unsigned int)depth) {
@@ -1003,6 +1005,13 @@ dispatch:
                     *(unsigned short *)(out + 2) = 0;
                     *out = (unsigned long)pp9;
                     goto joined_r8c8;
+joined_r8c8:
+        if (pp9 == 0) {
+            *out = (unsigned long)s_unknown_error_005d5481;
+            out[1] = (unsigned long)FUN_0037f9f4;
+            *(unsigned short *)(out + 2) = 1;
+        }
+        goto fin;
                 }
                 u37 = 0; u47 = 0;
                 b22 = (unsigned char)((unsigned short *)node)[9];
@@ -1031,6 +1040,10 @@ l92654:
                     local_2a0 = 0;
                     stk_298 = (unsigned long **)FUN_0037f9f8;
                     goto l93930;
+            goto l93930;
+l93930:
+            ((void (*)(unsigned long, int, unsigned long))pc19)(pp9, 3, 0);
+            goto fin;
                 }
                 stk_208 = (unsigned long **)DAT_004f2710;
                 stk_f8 = (unsigned long **)DAT_004f2710;
@@ -1093,10 +1106,33 @@ l8f7ec:
                     if (b22 == 3) { u47 = *(unsigned int *)(node + 4); pu48 = *(unsigned char **)node; }
                     else if (b22 == 5) {
                         if (1 < *(unsigned int *)(node + 4)) { pu25 = *(unsigned short **)node; goto l8f9bc; }
+                        if (1 < *(unsigned int *)(node + 4)) { pu25 = *(unsigned short **)node; goto l8f9bc; }
+l8f9bc:
+                        pu10 = *(unsigned long **)pu25;
+                        u43 = *(unsigned short *)(pu10 + 2);
+                        if (u43 != 0x9b) {
+                            if (*(char *)((long)pu10 + 0x12) == 3) { u47 = *(unsigned int *)(pu10 + 1); pu48 = (unsigned char *)*pu10; }
+                            else { u47 = 0; }
+                            pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+                            *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
+                            *(unsigned int *)(pu10 + 1) = 799;
+                            *(unsigned int *)((long)pu10 + 0xc) = (unsigned int)u43;
+                            *(unsigned int *)(pu10 + 2) = u47;
+                            pc18 = (char *)s_wrong_node_kind_or_no_text_005d55d2;
+                            goto l92940;
+                        }
+                        node = (unsigned short *)pu10;
+                        goto follow_child;
                         if (*(unsigned int *)(node + 4) != 0) { l8 = 0; goto l91644; }
                         u47 = 0; pu48 = (unsigned char *)&DAT_005be7c0;
                     }
                     goto l90cd8;
+                    goto l90cd8;
+l90cd8:
+                    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c401ab4594e);
+                    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
+                    u14 = 0x327;
+                    goto l91754;
                 }
                 if (b22 == 1) { l8 = 0; goto l91648; }
                 if (b22 != 2) goto l90cd8;
@@ -1763,6 +1799,12 @@ l9391c:
             s = (short)local_200;
             goto joined_32e0;
         }
+err_28:
+        pu10[1] = u13;
+        *(unsigned int *)(pu10 + 2) = u47;
+        pu10[3] = (unsigned long)pu48;
+        pc18 = (char *)s_no_children_005d55ed;
+        goto l92944;
 l925f0:
         pu10[4] = u37;
 l925f4:
@@ -1771,10 +1813,20 @@ l925f4:
         pc19 = FUN_00397fc0;
         goto l92960;
     }
+f2fc:
+        node = (unsigned short *)*node;
+        goto l8f3e4;
+l8f3e4:
+follow_child:
+        node = (unsigned short *)*node;
+        depth = (unsigned long)(i41 + 1U);
+        if (i41 + 1U == 0x401) goto too_complex;
+        goto dispatch;
     /* ---- node kinds >= 0x77 ---- */
     if (u36 != 0x134 && 0x133 < u43) {
         if (u36 != 0x13a && 0x139 < u43) {
             if (0x16a < u43) {
+case_16b:
                 if (u36 == 0x16b) {
                     local_210 = (unsigned long **)sk_type_parse_signature_395638(ctx, node, i41 + 1);
                     if (local_210 == 0) {
@@ -2703,6 +2755,40 @@ l90a74:
         *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54b8;
         u13 = DAT_004f2828;
     }
+l8f8e8:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    u14 = 0x3b8;
+l8ffe4:
+    *(unsigned int *)(pu10 + 1) = u14;
+    *(unsigned int *)((long)pu10 + 0xc) = u44;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pu10[3] = (unsigned long)pu48;
+    break;
+l90d60:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    u13 = DAT_004f28d8;
+l91948:
+    pu10[1] = u13;
+    *(unsigned int *)(pu10 + 2) = u47;
+    pu10[3] = (unsigned long)pu48;
+    break;
+l91b14:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    u13 = DAT_004f28c0;
+    goto l925e4;
+l91a64:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    u13 = DAT_004f27d0;
+    goto l925e4;
+l91ab4:
+    pu10 = (unsigned long *)cL4_alloc(0x28, 0x1050c400dfe80cb);
+    *pu10 = (unsigned long)s_TypeDecoder_h__u__Node_kind__u___005d54f0;
+    u13 = DAT_004f2840;
+    goto l925e4;
 l92930:
     pu10[1] = u13;
     *(unsigned int *)(pu10 + 2) = u47;
@@ -2722,6 +2808,7 @@ l92960:
     pu11[4] = pu10[4];
     *out = (unsigned long)pu11;
 l92984:
+    if (canary == -0x2c8502b44bfffed6) { u13 = 0x28; goto l929a4; }l92984:
     if (canary == -0x2c8502b44bfffed6) { u13 = 0x28; goto l929a4; }
     goto canary_fail;
 l92ed0:

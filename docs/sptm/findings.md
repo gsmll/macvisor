@@ -4512,3 +4512,15 @@ Confidence: high
 - **Evidence**: box dispatcher `op==0 unwrap; op==1 release boxed; op==2 alloc+clone of size; else release container` (header doc + bodies).
 - **Severity (hypothesis)**: low — clone size is a caller-controlled argument; any mismatch is a caller bug, not a guest-facing boundary here.
 - **Confidence**: medium
+
+## [ringminus1] 003d95cc-003e66e4 sk_slice_r56 — Swift-runtime message/notification dispatch engine (indirect control-flow hub)
+- **Observation**: This region is a message/notification dispatch engine that builds a per-message context record (held in x22), writes closure/function-pointer slots into it, allocates boxed continuation records, and ends by calling through a context slot or an unrecovered indirect jump table. The indirect-call targets are read from the context record and from type-metadata boxes (e.g. `(**(code **)(ctx+8))(…)`); several functions also set "handled/complete" byte flags at offsets computed from a control-word index (`*(undefined1*)(base + *(int*)(ctrl+0x24/0x28/0x2c)) = 1`).
+- **Evidence**: Functions FUN_003d9b94/003d98d8/003dc97c etc. dispatch via `(**(code **)(unaff_x22 + 8/0x20/0xb0))(...)`; Ghidra emits `WARNING: Could not recover jumptable ... Treating indirect jump as call` at e.g. 0x003d9988/0x003d9e4c; flag writes at `unaff_x24 + *(int*)(lVar1 + 0x24)` (FUN_003dd5d0) and `*(undefined1*)(*(long*)(ctx+0x20) + *(int*)(ctx+0xac)) = 1` (FUN_003e4c70); negative-number-prefix guard in FUN_003dd4c0 branches to FUN_0035ac70 + no-return FUN_001afa84.
+- **Severity (hypothesis)**: medium — indirect dispatch through context-slot function pointers is the trust boundary between the message decoder and the handler table; the target validity depends on the slot stores being well-formed. The unrecovered-jumptable call sites are the highest-value targets for a follow-up audit (the decompiler could not resolve them, so a forged/bad slot value would be dispatched without an explicit bounds check visible here).
+- **Confidence**: medium (dispatch structure is clear; exact target tables are in the adjacent 0x40xxxx helper region owned by another worker).
+
+## [ringminus1] 003dd4c0 sk_prefix_negative_number — fail-closed on invalid numeric-prefix message
+- **Observation**: A message-prefix path rejects a negative number by printing "Can't prefix a negative number of ..." and branching into a non-returning routine (panic), rather than silently accepting an underflowing count.
+- **Evidence**: `if (-1 < param_1) { ... } else { FUN_0035ac70(s_Can_t_prefix_a_negative_number_o_005dbf40); FUN_00406aa4(); FUN_0040697c(); /* WARNING: Subroutine does not return */ FUN_001afa84(); }` — the else branch is fail-closed.
+- **Severity (hypothesis)**: low — a defensive validation; malformed negative counts do not proceed into the dispatch engine.
+- **Confidence**: high (explicit branch + non-returning call).

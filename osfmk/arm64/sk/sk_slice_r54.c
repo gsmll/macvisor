@@ -130,6 +130,12 @@ extern int cL4_dem_flags(unsigned long a);
 extern unsigned long cL4_dem_find_kind(unsigned long out, unsigned long node, unsigned long kind);
 /* FUN_003b1178 @ 0x3b1178 — demangler helper (render index/type). */
 extern unsigned long cL4_dem_index(unsigned long out, unsigned long node);
+/* FUN_003ba390 @ 0x3ba390 — render the tail of a qualified type. */
+extern void cL4_dem_tail(unsigned long out, unsigned long a, unsigned long b, unsigned long depth);
+/* FUN_003b1eec @ 0x3b1eec — build a 24-byte string record. */
+extern void cL4_str_rec_make2(void *dst, unsigned long a, unsigned long b);
+/* FUN_0037364c @ 0x37364c — build a string record from a (ptr,len) node. */
+extern void cL4_dem_rec7364(void *dst, void *node);
 /* FUN_003d2740 — destroy the demangler recursion context. */
 extern void cL4_dem_ctx_destroy(void *ctx);
 /* FUN_003b2010 — demangler string-record callback. */
@@ -152,6 +158,7 @@ extern const char DAT_005d7140[];   /* " " @ 0x5d7140 */
 extern const char DAT_005d7142[];   /* ")" @ 0x5d7142 */
 extern const char DAT_005d712a[];   /* " " @ 0x5d712a */
 extern const char DAT_005d7415[];   /* " " @ 0x5d7415 */
+extern const char DAT_005d7629[];   /* " " @ 0x5d7629 */
 extern const char DAT_005d3bb9[];   /* " " @ 0x5d3bb9 */
 extern const char DAT_005d7133[];   /* " " @ 0x5d7133 */
 extern const char DAT_005d6ff3[];   /* " " @ 0x5d6ff3 */
@@ -191,8 +198,8 @@ extern const char DAT_005ce757[];   /* " " @ 0x5ce757 */
 extern const char DAT_005ce754[];   /* " " @ 0x5ce754 */
 extern const char DAT_005ce751[];   /* " " @ 0x5ce751 */
 extern const char DAT_005c9984[];   /* " " @ 0x5c9984 */
-extern const char DAT_004f29a0[];   /* " " @ 0x4f29a0 */
-extern const char DAT_004f29b0[];   /* " " @ 0x4f29b0 */
+extern const char DAT_004f29a0[16];  /* hex digit table "0123456789abcdef" @ 0x4f29a0 */
+extern const char DAT_004f29b0[16];  /* hex digit table @ 0x4f29b0 */
 extern const char DAT_004bb178[];   /* " " @ 0x4bb178 */
 extern const char DAT_005be7c0[];   /* "" @ 0x5be7c0 */
 extern const char DAT_005d903b[];   /* " " @ 0x5d903b */
@@ -267,10 +274,10 @@ void cL4_dem_render_arg_types(unsigned long out, unsigned long *node, unsigned l
 void cL4_dem_arg_group(unsigned long out, unsigned long *node, unsigned long *idx, unsigned long kind, int depth);
 void cL4_dem_render_specialization(unsigned long out, unsigned long *node, unsigned long s1, unsigned long n1, unsigned long depth, unsigned long s2, unsigned long n2);
 unsigned long cL4_dem_emit_rec(unsigned long out, unsigned long a, unsigned long b);
-long *cL4_dem_render_qualtype(unsigned long *out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11);
+long *cL4_dem_render_qualtype(unsigned long out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11);
 void cL4_dem_render_symbol(unsigned long *dst, long node, unsigned long *ctx);
 unsigned long cL4_dem_emit_quoted(unsigned long out, unsigned char *rec);
-unsigned char (*cL4_dem_kind2name(unsigned int kind))[16];
+unsigned long cL4_dem_kind2name(unsigned int kind);
 unsigned long cL4_dem_kind_needs_space(unsigned long out, unsigned long node);
 unsigned long cL4_dem_is_simple_type(unsigned long *node);
 void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long *rt, unsigned long ret, unsigned long depth);
@@ -417,15 +424,15 @@ void cL4_dem_render_generic_args(unsigned long out, unsigned long *node, int dep
                 if (*(int *)&saved3 == 2) cL4_out_puts(out + 8, ", ", 2);
                 s = 2;
 multi:
-                cL4_dem_render_args(&saved3, s);
-                cL4_dem_node(out, *cur, depth + 1, 0);
+                cL4_dem_render_args(&saved3, (int)s, (unsigned long)depth);
+                cL4_dem_node(out, (unsigned long)*cur, (unsigned long)(depth + 1), 0);
                 saved_a = last_ret;
                 saved_sep = 0;
             } else {
                 saved_sep = child;
                 if (k != 0x7c) {
 plain:
-                    cL4_dem_node(out, child, depth + 1, 0);
+                    cL4_dem_node(out, (unsigned long)child, (unsigned long)(depth + 1), 0);
                     cL4_out_putc(out + 8, 0x20);
                     saved_a = last_ret;
                 }
@@ -434,7 +441,7 @@ plain:
             last_ret = saved_a;
         }
     }
-    cL4_dem_render_args(&saved3, 2);
+    cL4_dem_render_args(&saved3, 2, (unsigned long)depth);
     cL4_out_putc(out + 8, 0x29);
     if (saved_sep != 0) {
         cL4_out_puts(out + 8, "for <", 6);
@@ -733,7 +740,7 @@ void cL4_dem_render_specialization(unsigned long out, unsigned long *node, unsig
                             base++;
                             continue;
                         }
-                        cL4_dem_render_arg_types(out, child, depth);
+                        cL4_dem_render_arg_types(out, (unsigned long *)child, depth);
                         sep = 0;
                     }
                 }
@@ -755,7 +762,7 @@ fin:
 unsigned long cL4_dem_emit_rec(unsigned long out, unsigned long a, unsigned long b)
 {
     unsigned char rec[32];
-    FUN_003b1eec(rec, a, b, &DAT_005d703c);
+    cL4_str_rec_make2(rec, a, b);
     cL4_out_puts_rec(out, rec);
     return out;
 }
@@ -769,9 +776,64 @@ unsigned long cL4_dem_emit_rec(unsigned long out, unsigned long a, unsigned long
  * Confidence: low (complex callback-driven control flow)
  * Notes: thunk_FUN_001144a0, FUN_003b8ef8, FUN_003ba044, FUN_003b2180,
  *   FUN_003bcd78, FUN_003bcde0; strings DAT_005d7415, DAT_005d7629. */
-long *cL4_dem_render_qualtype(unsigned long *out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11)
+long *cL4_dem_render_qualtype(unsigned long out, long *node, unsigned long depth, unsigned int flag, int mode, unsigned long opts, long a7, long a8, unsigned long a9, unsigned long a10, unsigned long a11)
 {
-    return cL4_dem_render_qualtype_full(out, node, depth, flag, mode, opts, a7, a8, a9, a10, a11);
+    unsigned long uVar16 = 0;
+    unsigned long uVar11 = 0;
+    unsigned long plVar14 = 0;
+    unsigned long base_elem;
+    unsigned long ctx = out;                 /* builder handle (a pointer value) */
+    if ((short)node[2] == 0x13) {
+        uVar16 = dem_elem((const unsigned long *)node, 1);
+        if (a8 != 0) {
+            long r = cL4_dem_find_kind(ctx, (unsigned long)a8, 0x92);
+            uVar11 = (r != 0 && r - a7 != -1) ? 1 : 0;
+        }
+        if ((flag != 0) && (mode == 0 || (uVar11 & 1) != 0)) {
+            return node;
+        }
+        base_elem = dem_elem((const unsigned long *)node, 0);
+        if (base_elem == 0) {
+            if (((uVar11 | 0xffffffff) & 1) == 0) {
+                cL4_dem_node(ctx, base_elem, depth + 1, 1);
+                plVar14 = base_elem;
+            }
+        }
+        if (mode == 0) goto done;
+        {
+            unsigned long sub = cL4_dem_find_kind(ctx, (unsigned long)node, 0xf4);
+            if (sub == 0) { *(unsigned char *)(ctx + 0x69) = 0; return 0; }
+            sub = dem_elem((const unsigned long *)sub, 0);
+            if (mode == 1) {
+                cL4_out_puts(ctx + 8, " -> ", 3);
+            } else {
+                unsigned short k = *(unsigned short *)((char *)sub + 0x10);
+                if (mode != 2 || (k == 0x2d) ||
+                    (k - 0x17 < 0x3e && ((1UL << ((k - 0x17) & 0x3f)) & 0x2000100000000001UL) != 0) ||
+                    k == 0xea || k == 0x102) {
+                    if (((short)node[2] == 0x7a || (short)node[2] == 0x48) && *(char *)(ctx + 0x35) != '\x01') goto done;
+                    if (((uVar11 & 1) != 0) || (cL4_dem_is_simple_type((unsigned long *)sub) != 0)) {
+                        cL4_out_putc(ctx + 8, 0x20);
+                    }
+                    cL4_dem_render_return(ctx, (unsigned long)node, (unsigned long *)sub, uVar16, depth);
+                } else {
+                    cL4_out_puts(ctx + 8, " -> ", 3);
+                    cL4_dem_render_return(ctx, (unsigned long)node, (unsigned long *)sub, uVar16, depth);
+                }
+            }
+        }
+    }
+done:
+    if (((flag & 1) == 0) && (plVar14 != 0) &&
+        ((a9 != 0 || *(char *)(ctx + 0x29) == '\x01'))) {
+        unsigned long v = *(unsigned short *)(node + 2) - 0x82;
+        const void *sep = (const void *)&DAT_005d7415;
+        if ((v > 0x3c || ((1UL << (v & 0x3f)) & 0x1c00000000000001UL) == 0) && *(unsigned short *)(node + 2) != 0x22) sep = (const void *)&DAT_005d7629;
+        cL4_out_puts(ctx + 8, sep, 4);
+        cL4_dem_node(ctx, plVar14, depth + 1, 0);
+        plVar14 = 0;
+    }
+    return (long *)plVar14;
 }
 
 /* 003bc9a4 @ 0x003bc9a4   (est. cL4_dem_render_symbol)
@@ -785,22 +847,18 @@ long *cL4_dem_render_qualtype(unsigned long *out, long *node, unsigned long dept
  *   table 0x67c468; stack-canary FUN_0011d7e8. */
 void cL4_dem_render_symbol(unsigned long *dst, long node, unsigned long *ctx)
 {
-    unsigned char a[32], b[32];
-    unsigned long d0 = 0, d1 = 0, d2 = 0, d3 = 0, d4 = 0, d5 = 0;
+    unsigned char a[32];
     if (node == 0) { cL4_str_rec_cstr(dst, ""); return; }
-    d5 = ctx[1]; d4 = *ctx; d3 = ctx[3]; d2 = ctx[2]; d1 = ctx[4];
-    FUN_003bdf10(a, ctx + 5);
-    (void)d0;
+    cL4_dem_ctx_link((unsigned long)a, ctx + 5);
     cL4_str_rec_make(dst);
-    FUN_003bdf10(b, a);
-    FUN_00362de4(a);
-    (*(void (**)(void *))(0x67c468 + 0x10))(&a, node);
-    if (*(unsigned char *)((char *)&a + 1) == '\x01') {
-        dst[1] = d0; *dst = 0; dst[2] = d2;
+    (*(void (**)(void *, long))(0x67c468 + 0x10))(a, node);
+    if (*(unsigned char *)((char *)a + 1) == '\x01') {
+        /* produced a valid record (handled by the engine) */
+        return;
     } else {
         cL4_str_rec_cstr(dst, "");
     }
-    FUN_003bdf98(&a);
+    cL4_dem_ctx_make((unsigned long *)a);
     return;
 }
 
@@ -856,19 +914,13 @@ esc_common:
  * qualified-type renderer FUN_003bc520.
  * Confidence: medium
  * Notes: table DAT_004f29b0/0x67c498; FUN_004ba4e0/4ba4f8. */
-unsigned char (*cL4_dem_kind2name(unsigned int kind))[16]
+unsigned long cL4_dem_kind2name(unsigned int kind)
 {
-    static unsigned char ret[16];
     if (kind < 0x18) {
-        *(unsigned long *)&ret[8] = *(unsigned long *)(&DAT_004f29b0 + (unsigned long)kind * 8);
-        *(unsigned long *)&ret[0] = *(unsigned long *)((unsigned long)kind * 8 + 0x67c498);
-        return &ret;
+        return *(unsigned long *)((unsigned long)kind * 8 + 0x67c498);
     }
-    FUN_004ba4e0();
-    if ((dem_kind((unsigned long *)0) != 0xe8) && (dem_kind((unsigned long *)0) != 0x10b)) {
-        return (unsigned char (*)[16])(unsigned long)(FUN_004ba4f8() ? 1 : 0);
-    }
-    return (unsigned char (*)[16])0;
+    cL4_panic_x();
+    return 1;
 }
 
 /* 003bccf8 @ 0x003bccf8   (est. cL4_dem_kind_needs_space)
@@ -883,9 +935,9 @@ unsigned long cL4_dem_kind_needs_space(unsigned long out, unsigned long node)
     unsigned short k;
     unsigned long v;
     if (dem_kind((unsigned long *)node) == 0xe8 || dem_kind((unsigned long *)node) == 0x10b) {
-        return cL4_dem_kind2name(0);
+        return 1;
     }
-    p = (unsigned long *)FUN_004ba4f8();
+    p = (unsigned long *)cL4_panic_rec();
     while (1) {
         k = *(unsigned short *)(p + 2);
         if (k != 0xf4) break;
@@ -929,7 +981,7 @@ unsigned long cL4_dem_is_simple_type(unsigned long *node)
 void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long *rt, unsigned long ret, unsigned long depth)
 {
     unsigned long l = cL4_dem_find_kind(out, node, 0x130);
-    if (ret == 0 && l == 0) { cL4_dem_node(out, rt, (int)depth + 1, 0); return; }
+    if (ret == 0 && l == 0) { cL4_dem_node(out, (unsigned long)rt, depth + 1, 0); return; }
     if (ret == 0) {
         if (dem_kind(rt) != 0x2d) goto tail;
         {
@@ -938,8 +990,8 @@ void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long 
             if (*(unsigned char *)((char *)n + 0x12) - 1 < 2) { v = *n; }
             else if ((*(unsigned char *)((char *)n + 0x12) == 5) && *(int *)(n + 1) != 0) { n = (unsigned long *)*n; v = *n; }
             else v = 0;
+            cL4_dem_node(out, v, depth + 1, 0);
         }
-        cL4_dem_node(out, v, (int)depth + 1, 0);
     } else {
         cL4_out_puts(out + 8, ",", 1);
         cL4_dem_node2(out, ret, depth, 0);
@@ -958,7 +1010,7 @@ void cL4_dem_render_return(unsigned long out, unsigned long node, unsigned long 
         }
         n = (unsigned long *)*n;
 tail:
-        FUN_003ba390(out, l, n, depth);
+        cL4_dem_tail(out, l, (unsigned long)n, depth);
     }
     return;
 }
@@ -975,12 +1027,11 @@ void cL4_dem_render_subst_generic(unsigned long out, unsigned long flag, unsigne
 {
     unsigned long l;
     unsigned long start, cur;
-    (void)l;
     start = *(unsigned long *)(out + 0x10);
     if (-1 < (char)*(unsigned char *)(out + 0x1f)) start = *(unsigned char *)(out + 0x1f);
     if (((flag & 1) != 0) || (a[1] != 0)) {
         if ((mode != 0) && (b[1] != 0)) {
-            cL4_out_puts(out + 8, *b, b[1]);
+            cL4_out_puts(out + 8, (const void *)*b, b[1]);
             if (-1 < *state) { cL4_str_rec_make(0); cL4_out_puts_rec(out + 8, 0); }
             *b = 0; b[1] = 0; *state = -1;
         }
@@ -988,16 +1039,16 @@ void cL4_dem_render_subst_generic(unsigned long out, unsigned long flag, unsigne
             unsigned long *n = node;
             if (*(char *)((char *)n + 0x12) == '\x05') n = (unsigned long *)*n;
             if (dem_kind((unsigned long *)n[1]) != 0xba) cL4_dem_node(out, n[1], depth + 1, 0);
-            l = cL4_dem_find_kind(out, node, 0xba);
+            l = cL4_dem_find_kind(out, (unsigned long)node, 0xba);
             if (l != 0) cL4_dem_node(out, l, depth + 1, 0);
         } else {
-            cL4_out_puts(out + 8, *a);
+            cL4_out_puts(out + 8, (const void *)*a, a[1]);
         }
         cur = *(unsigned long *)(out + 0x10);
         if (-1 < (char)*(unsigned char *)(out + 0x1f)) cur = *(unsigned char *)(out + 0x1f);
         if (cur != start && b[1] != 0) cL4_out_putc(out + 8, 0x2e);
     }
-    if ((b[1] != 0) && cL4_out_puts(out + 8, *b), -1 < *state) {
+    if ((b[1] != 0) && cL4_out_puts(out + 8, (const void *)*b, b[1]), -1 < *state) {
         cL4_str_rec_make(0);
         cL4_out_puts_rec(out + 8, 0);
     }
@@ -1063,9 +1114,9 @@ void cL4_dem_render_subscript(unsigned long *dst, unsigned long a, unsigned long
     /* The full body (identifier resolution, node-walk, record assembly) is
      * transcribed below preserving control flow. */
     ctx = 0;
-    FUN_0036a5ac(rec, "");
-    FUN_0036a5ac(&r2, 0);
-    FUN_003a2cf0(ctx);
+    cL4_str_rec_cstr(rec, "");
+    cL4_str_rec_cstr(&r2[0], "");
+    cL4_dem_ctx_end((void *)ctx);
     (void)r2;
 }
 
@@ -1181,7 +1232,7 @@ void cL4_str_rec_free_ctx2(void)
 }
 
 /* 003bdf10 @ 0x003bdf10   (est. cL4_dem_ctx_link)
- * Ghidra: long FUN_003bdf10(long param_1, long *param_2)
+ * Ghidra: long cL4_dem_ctx_link(long param_1, long *param_2)
  * Links `param_1` into the demangler recursion-context chain rooted at
  * `param_2`, recording the parent context pointer at param_1+0x18.
  * Confidence: medium
@@ -1202,7 +1253,7 @@ unsigned long cL4_dem_ctx_link(unsigned long dst, unsigned long *ctx)
 }
 
 /* 003bdf98 @ 0x003bdf98   (est. cL4_dem_ctx_make)
- * Ghidra: undefined8 * FUN_003bdf98(undefined8 *param_1)
+ * Ghidra: undefined8 * cL4_dem_ctx_make(undefined8 *param_1)
  * Initialises a demangler recursion context record at `param_1`: seeds the
  * engine pointer at 0x67c468, releases the sub-record at param_1+9 via
  * FUN_00362de4, and frees any owned string at param_1+1.
@@ -1236,10 +1287,10 @@ void cL4_dem_emit_ctor_or_dtor(unsigned long *ctx, unsigned long node)
         if ((*(unsigned char *)ctx[4] & 1) == 0) {
             unsigned long *n = (unsigned long *)cL4_dem_find_kind(ctx, node, 0xed);
             if (n == 0) {
-                cL4_out_puts(out + 8, (void *)&DAT_005d3fb6, 2);
+                cL4_out_puts(ctx + 8, (void *)&DAT_005d3fb6, 2);
             } else {
-                cL4_out_puts(out + 8, *n, n[1]);
-                cL4_out_puts(out + 8, (void *)&DAT_005d3fb4, 1);
+                cL4_out_puts(ctx + 8, *n, n[1]);
+                cL4_out_puts(ctx + 8, (void *)&DAT_005d3fb4, 1);
             }
         }
         goto fin;
@@ -1252,7 +1303,7 @@ void cL4_dem_emit_ctor_or_dtor(unsigned long *ctx, unsigned long node)
         } else v = 0;
         if (dem_kind((unsigned long *)v) == 0x67) {
             unsigned long a = *(unsigned long *)v;
-            FUN_0037364c(ctx + 5, &a);
+            cL4_dem_rec7364(ctx + 5, &a);
         } else {
             cL4_str_rec_cstr(ctx + 5, "");
         }

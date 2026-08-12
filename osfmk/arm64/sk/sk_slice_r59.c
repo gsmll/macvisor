@@ -34,6 +34,11 @@ typedef uint64_t word_t;
 typedef int64_t  sword_t;
 typedef unsigned char byte;
 
+#ifndef ABS
+#define ABS(x)  ((x) < 0 ? -(x) : (x))
+#endif
+
+
 /* 16-byte value returned in x0/x1 by many Swift helpers. */
 typedef struct { unsigned long lo, hi; } cl4_pair_t;
 
@@ -306,6 +311,38 @@ extern unsigned long sk_x_004084c0();   /* FUN_004084c0 */
 extern unsigned long sk_x_0040854c();   /* FUN_0040854c */
 extern unsigned long sk_x_004085a8();   /* FUN_004085a8 */
 extern unsigned long sk_x_004085f0();   /* FUN_004085f0 */
+
+/* Global data slots referenced by this slice (Ghidra names in comments). */
+extern word_t DAT_00658c80;   /* global Swift dispatch slot */
+extern word_t DAT_00611b24;   /* element tag / metadata word */
+extern sword_t DAT_006c0b80;  /* lazily-initialised global (=-1 until set) */
+extern word_t DAT_006adf70;   /* retained global object */
+extern double DAT_004e7cd0;   /* growth bound constant (1.5x growth) */
+
+/* Out-of-range cL4 helpers referenced by later bodies (FUN_ in comment). */
+extern unsigned long sk_x_00002534();   /* FUN_00002534 */
+extern unsigned long sk_x_00027754();   /* FUN_00027754 */
+extern unsigned long sk_x_000277b8();   /* FUN_000277b8 */
+extern unsigned long sk_x_0001a1c8();   /* FUN_0001a1c8 */
+extern unsigned long sk_x_00077888();   /* FUN_00077888 */
+extern unsigned long sk_x_000836a4();   /* FUN_000836a4 */
+extern unsigned long sk_x_000a6e14();   /* FUN_000a6e14 */
+extern unsigned long sk_x_001f2ec4();   /* thunk_FUN_001f2ec4 */
+extern unsigned long sk_x_0021867c();   /* FUN_0021867c */
+extern unsigned long sk_x_0022b584();   /* FUN_0022b584 */
+extern unsigned long sk_x_0028c754();   /* FUN_0028c754 */
+extern unsigned long sk_x_003a25d4();   /* FUN_003a25d4 (release) */
+extern unsigned long sk_x_00404654();   /* FUN_00404654 */
+extern unsigned long sk_x_00404ba4();   /* FUN_00404ba4 */
+extern unsigned long sk_x_00404db0();   /* FUN_00404db0 */
+extern unsigned long sk_x_00404dc8();   /* FUN_00404dc8 */
+extern unsigned long sk_x_00404ed8();   /* FUN_00404ed8 */
+extern unsigned long sk_x_00404fdc();   /* FUN_00404fdc */
+extern unsigned long sk_x_00405088();   /* FUN_00405088 */
+extern unsigned long sk_x_004050b4();   /* FUN_004050b4 */
+extern unsigned long sk_x_00405180();   /* FUN_00405180 */
+extern unsigned long sk_x_00405374();   /* FUN_00405374 */
+extern unsigned long sk_x_0040542c();   /* FUN_0040542c */
 
 /* Retain/release of the (Swift) object at a given address. */
 #define CL4_OBJ_RETAIN(p)  sk_x_0036b270((unsigned long)(p))
@@ -793,13 +830,6 @@ static void sk_col_ins_003f4828(void)
     sk_x_001afe4c();   /* does not return */
 }
 
-/* Global data slots referenced by this slice (Ghidra names in comments). */
-extern word_t DAT_00658c80;   /* global Swift dispatch slot */
-extern word_t DAT_00611b24;   /* element tag / metadata word */
-extern sword_t DAT_006c0b80;  /* lazily-initialised global (=-1 until set) */
-extern word_t DAT_006adf70;   /* retained global object */
-extern double DAT_004e7cd0;   /* growth bound constant (1.5x growth) */
-
 /* FUN_003f4d48 @ 0x003f4d48   (est. sk_col_precond_003f4d48)
  * Ghidra: void FUN_003f4d48(undefined8 param_1,undefined8 param_2,long param_3,
  *                           undefined8 param_4,undefined8 param_5,undefined8 param_6)
@@ -1071,112 +1101,6 @@ static void sk_col_grow_003f54dc(word_t param_1)
     CL4_OBJ_RELEASE(box[0]);
     *box = newcfg;
 }
-extern unsigned long sk_x_00002534();   /* FUN_00002534 */
-extern unsigned long sk_x_000a6e14();   /* FUN_000a6e14 */
-extern unsigned long sk_x_001f2ec4();   /* thunk_FUN_001f2ec4 */
-extern unsigned long sk_x_003a25d4();   /* FUN_003a25d4 (release) */
-extern unsigned long sk_x_00404654();   /* FUN_00404654 */
-extern unsigned long sk_x_00407ab8();   /* FUN_00407ab8 */
-extern unsigned long sk_x_0040754c();   /* FUN_0040754c */
-extern unsigned long sk_x_00404d0c();   /* FUN_00404d0c (16-byte) */
-extern unsigned long sk_x_004050b4();   /* FUN_004050b4 */
-extern unsigned long sk_x_00405180();   /* FUN_00405180 */
-extern unsigned long sk_x_00405374();   /* FUN_00405374 */
-extern unsigned long sk_x_0040542c();   /* FUN_0040542c */
-extern unsigned long sk_x_00404ed8();   /* FUN_00404ed8 */
-extern unsigned long sk_x_00404fdc();   /* FUN_00404fdc */
-extern unsigned long sk_x_00404dc8();   /* FUN_00404dc8 */
-extern unsigned long sk_x_00404db0();   /* FUN_00404db0 */
-extern unsigned long sk_x_00404cbc();   /* FUN_00404cbc */
-extern unsigned long sk_x_00405a78();   /* FUN_00405a78 */
-extern unsigned long sk_x_00405b0c();   /* FUN_00405b0c */
-extern unsigned long sk_x_00405b40();   /* FUN_00405b40 */
-extern unsigned long sk_x_00405b70();   /* FUN_00405b70 */
-extern unsigned long sk_x_00405b90();   /* FUN_00405b90 */
-extern unsigned long sk_x_00405bc0();   /* FUN_00405bc0 */
-extern unsigned long sk_x_00405ca0();   /* FUN_00405ca0 */
-extern unsigned long sk_x_00405cd4();   /* FUN_00405cd4 */
-extern unsigned long sk_x_00405da8();   /* FUN_00405da8 */
-extern unsigned long sk_x_00405dcc();   /* FUN_00405dcc */
-extern unsigned long sk_x_00405604();   /* FUN_00405604 */
-extern unsigned long sk_x_0040567c();   /* FUN_0040567c */
-extern unsigned long sk_x_00405778();   /* FUN_00405778 */
-extern unsigned long sk_x_00405848();   /* FUN_00405848 */
-extern unsigned long sk_x_004058d4();   /* FUN_004058d4 */
-extern unsigned long sk_x_00405904();   /* FUN_00405904 */
-extern unsigned long sk_x_00405968();   /* FUN_00405968 */
-extern unsigned long sk_x_00405994();   /* FUN_00405994 */
-extern unsigned long sk_x_004059c0();   /* FUN_004059c0 */
-extern unsigned long sk_x_004059ec();   /* FUN_004059ec */
-extern unsigned long sk_x_00405a18();   /* FUN_00405a18 */
-extern unsigned long sk_x_00405a44();   /* FUN_00405a44 */
-extern unsigned long sk_x_00405fb4();   /* FUN_00405fb4 */
-extern unsigned long sk_x_0040621c();   /* FUN_0040621c */
-extern unsigned long sk_x_00404d54();   /* FUN_00404d54 */
-extern unsigned long sk_x_00404d24();   /* FUN_00404d24 */
-extern unsigned long sk_x_00404c60();   /* FUN_00404c60 */
-extern unsigned long sk_x_00404c78();   /* FUN_00404c78 */
-extern unsigned long sk_x_00404c08();   /* FUN_00404c08 */
-extern unsigned long sk_x_00404cf4();   /* FUN_00404cf4 */
-extern unsigned long sk_x_00405088();   /* FUN_00405088 */
-extern unsigned long sk_x_00406310();   /* FUN_00406310 */
-extern unsigned long sk_x_0040633c();   /* FUN_0040633c */
-extern unsigned long sk_x_004063d0();   /* FUN_004063d0 */
-extern unsigned long sk_x_004063f4();   /* FUN_004063f4 */
-extern unsigned long sk_x_00406518();   /* FUN_00406518 */
-extern unsigned long sk_x_00406678();   /* FUN_00406678 */
-extern unsigned long sk_x_0040668c();   /* FUN_0040668c */
-extern unsigned long sk_x_004066a4();   /* FUN_004066a4 */
-extern unsigned long sk_x_0040677c();   /* FUN_0040677c */
-extern unsigned long sk_x_0040697c();   /* FUN_0040697c */
-extern unsigned long sk_x_00406d90();   /* FUN_00406d90 */
-extern unsigned long sk_x_004070c0();   /* FUN_004070c0 */
-extern unsigned long sk_x_004070cc();   /* FUN_004070cc */
-extern unsigned long sk_x_00407254();   /* FUN_00407254 */
-extern unsigned long sk_x_004072cc();   /* FUN_004072cc */
-extern unsigned long sk_x_00407300();   /* FUN_00407300 */
-extern unsigned long sk_x_0040753c();   /* FUN_0040753c */
-extern unsigned long sk_x_0040755c();   /* FUN_0040755c */
-extern unsigned long sk_x_0040761c();   /* FUN_0040761c */
-extern unsigned long sk_x_004076d8();   /* FUN_004076d8 */
-extern unsigned long sk_x_00407710();   /* FUN_00407710 */
-extern unsigned long sk_x_00407784();   /* FUN_00407784 */
-extern unsigned long sk_x_00407790();   /* FUN_00407790 */
-extern unsigned long sk_x_00407930();   /* FUN_00407930 */
-extern unsigned long sk_x_00407984();   /* FUN_00407984 */
-extern unsigned long sk_x_00407b34();   /* FUN_00407b34 */
-extern unsigned long sk_x_00407b54();   /* FUN_00407b54 */
-extern unsigned long sk_x_00407b80();   /* FUN_00407b80 */
-extern unsigned long sk_x_00407c20();   /* FUN_00407c20 */
-extern unsigned long sk_x_00407d34();   /* FUN_00407d34 */
-extern unsigned long sk_x_00407d44();   /* FUN_00407d44 */
-extern unsigned long sk_x_00407d64();   /* FUN_00407d64 */
-extern unsigned long sk_x_00407dd0();   /* FUN_00407dd0 */
-extern unsigned long sk_x_00407ed0();   /* FUN_00407ed0 */
-extern unsigned long sk_x_00407eac();   /* FUN_00407eac */
-extern unsigned long sk_x_00407f18();   /* FUN_00407f18 */
-extern unsigned long sk_x_00407f24();   /* FUN_00407f24 */
-extern unsigned long sk_x_00407f54();   /* FUN_00407f54 */
-extern unsigned long sk_x_00407ff0();   /* FUN_00407ff0 */
-extern unsigned long sk_x_00408020();   /* FUN_00408020 */
-extern unsigned long sk_x_00408118();   /* FUN_00408118 */
-extern unsigned long sk_x_004081e4();   /* FUN_004081e4 */
-extern unsigned long sk_x_004081f0();   /* FUN_004081f0 */
-extern unsigned long sk_x_00408258();   /* FUN_00408258 */
-extern unsigned long sk_x_00408294();   /* FUN_00408294 */
-extern unsigned long sk_x_0040841c();   /* FUN_0040841c */
-extern unsigned long sk_x_00408428();   /* FUN_00408428 */
-extern unsigned long sk_x_004084c0();   /* FUN_004084c0 */
-extern unsigned long sk_x_0040854c();   /* FUN_0040854c */
-extern unsigned long sk_x_004085a8();   /* FUN_004085a8 */
-extern unsigned long sk_x_004085f0();   /* FUN_004085f0 */
-extern unsigned long sk_x_00027754();   /* FUN_00027754 */
-extern unsigned long sk_x_000277b8();   /* FUN_000277b8 */
-extern unsigned long sk_x_0014ae44();   /* FUN_0014ae44 */
-extern unsigned long sk_x_000dbd0c();   /* FUN_000dbd0c (16-byte) */
-extern unsigned long sk_x_00084180();   /* FUN_00084180 */
-extern unsigned long sk_x_000836a4();   /* FUN_000836a4 */
-extern unsigned long sk_x_0008409c();   /* FUN_0008409c */
 
 /* FUN_003f55a0 @ 0x003f55a0   (est. sk_col_wrap_003f55a0)
  * Ghidra: undefined8 FUN_003f55a0(undefined8 *param_1,...)
@@ -1229,10 +1153,13 @@ static sword_t sk_col_grow1_5_003f568c(void)
     lVar1 = (sword_t)sk_col_tag_003f5338(0, 0);
     if ((sk_x_00350ab8() & 1) != 0) {
     grow_ret:
-        if (sk_x_00350ab8() <= lVar1) {
-            sk_x_00350ab8() = lVar1;
+        {
+            word_t cur = sk_x_00350ab8();
+            if (cur <= (word_t)lVar1) {
+                cur = (word_t)lVar1;
+            }
+            return (sword_t)cur;
         }
-        return sk_x_00350ab8();
     }
     dVar2 = (double)(sword_t)((double)lVar1 * 1.5);
     if (ABS(dVar2) < 0x7ff0000000000000ULL) {
