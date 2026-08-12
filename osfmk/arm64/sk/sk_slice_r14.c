@@ -43,13 +43,13 @@ extern void sk_h_003509c8(word_t a, word_t b, word_t c);             /* FUN_0035
 extern void sk_h_003515b4(word_t a, word_t b, word_t c);             /* FUN_003515b4 */
 extern void sk_h_00351790(void);                                     /* FUN_00351790 */
 extern void sk_h_00350618(void);                                     /* FUN_00350618 */
-extern cl4_result_t sk_h_003f406c(void);                             /* FUN_003f406c */
+extern cl4_result_t sk_h_003f406c();                                 /* FUN_003f406c (varargs) */
 extern cl4_result_t sk_h_003f7e8c(void);                             /* FUN_003f7e8c */
-extern void sk_h_003f7d48(void);                                     /* FUN_003f7d48 */
-extern void sk_h_00350738(void);                                     /* FUN_00350738 */
+extern void sk_h_003f7d48();                                         /* FUN_003f7d48 (varargs) */
+extern cl4_result_t sk_h_00350738();                                 /* FUN_00350738 (16-byte result) */
 extern void sk_h_0031de7c(void);                                     /* FUN_0031de7c */
 extern void sk_h_0031b37c(void);                                     /* FUN_0031b37c */
-extern void sk_h_00376820(void);                                     /* FUN_00376820 */
+extern void sk_h_00376820();                                         /* FUN_00376820 (varargs) */
 extern void sk_h_00270d80(void *out, void *in, word_t a, word_t b);  /* FUN_00270d80 */
 extern void sk_h_001bb7a0(void *out, word_t n, word_t a, word_t b);  /* FUN_001bb7a0 */
 extern cl4_result_t sk_h_003f7b44(word_t a, word_t b);               /* FUN_003f7b44 */
@@ -71,10 +71,10 @@ extern void sk_h_00351db4(void);                                     /* FUN_0035
 
 /* Message-buffer getters / capacity checks. */
 extern word_t sk_h_003f5ee8(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f5ee8 */
-extern void sk_h_003f60e4(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f60e4 */
-extern word_t sk_h_003f5cf0(void);                                   /* FUN_003f5cf0 (capacity cap) */
-extern word_t sk_h_003f5e68(void);                                   /* FUN_003f5e68 */
-extern word_t sk_h_003f5e78(word_t a, word_t b);                     /* FUN_003f5e78 */
+extern word_t sk_h_003f60e4(word_t *out, word_t a, word_t b, word_t c); /* FUN_003f60e4 */
+extern word_t sk_h_003f5cf0();                                         /* FUN_003f5cf0 (capacity cap, varargs) */
+extern word_t sk_h_003f5e68();                                         /* FUN_003f5e68 (varargs) */
+extern word_t sk_h_003f5e78();                                         /* FUN_003f5e78 (varargs) */
 extern word_t sk_h_003f5c00();                                /* FUN_003f5c00 (varargs) */
 extern void sk_h_003f5c54(void);                                     /* FUN_003f5c54 */
 extern cl4_result_t sk_h_003f5cc4(void);                             /* FUN_003f5cc4 (16-byte) */
@@ -91,10 +91,10 @@ extern void sk_h_003f6ea8(word_t a, word_t b, word_t c);             /* FUN_003f
 extern void sk_h_003f709c(word_t a, word_t b, word_t c);             /* FUN_003f709c */
 extern void sk_h_003f8264(word_t a, word_t b, word_t c);             /* FUN_003f8264 */
 extern void sk_h_003f8f60(cl4_result_t r, word_t a, word_t b);       /* FUN_003f8f60 */
-extern void sk_h_003f540c(void (*fn)(void), word_t *out);            /* FUN_003f540c */
+extern void sk_h_003f540c(void (*fn)(), word_t *out);                /* FUN_003f540c */
 
 /* Cap retain/release (sk_alloc family from sibling slices). */
-extern void sk_h_0036b270(word_t a);                                 /* FUN_0036b270 (cap retain) */
+extern word_t sk_h_0036b270(word_t a);                                /* FUN_0036b270 (cap retain) */
 extern void sk_h_0036b118(word_t a);                                 /* FUN_0036b118 (cap release) */
 
 /* Error/fatal paths (noreturn). */
@@ -115,12 +115,12 @@ extern void sk_h_00407894(void);                                     /* FUN_0040
 extern word_t sk_h_003f6278(void);                                   /* FUN_003f6278 (msg word read) */
 extern void sk_h_00407d44(void);                                     /* FUN_00407d44 */
 extern void sk_h_00407d24(void);                                     /* FUN_00407d24 */
-extern void sk_h_00407e20(void);                                     /* FUN_00407e20 */
+extern word_t sk_h_00407e20();                                        /* FUN_00407e20 (returns value) */
 extern void sk_h_0040668c(void);                                     /* FUN_0040668c */
 extern void sk_h_004066a4(void);                                     /* FUN_004066a4 */
 extern void sk_h_00407324(void);                                     /* FUN_00407324 */
 extern void sk_h_00408524(void);                                     /* FUN_00408524 */
-extern void sk_h_004084e8(word_t a);                                 /* FUN_004084e8 */
+extern word_t sk_h_004084e8(word_t a);                                /* FUN_004084e8 */
 extern void sk_h_004082d4(word_t v);                                 /* FUN_004082d4 (setter: *self = v) */
 extern void sk_h_00407170(void);                                     /* FUN_00407170 (noop thunk) */
 extern void sk_h_00359024(word_t a, word_t b, word_t c);             /* FUN_00359024 */
@@ -128,6 +128,14 @@ extern void sk_h_00350744(word_t a);                                 /* FUN_0035
 extern void sk_h_0034ba48(void);                                     /* FUN_0034ba48 */
 extern void sk_h_000839d8(word_t a, word_t b, word_t c, word_t d);   /* FUN_000839d8 */
 extern void sk_h_00350500(void);                                     /* FUN_00350500 */
+extern void sk_h_000a6e14();                                         /* FUN_000a6e14 */
+
+/* SoftwareBreakpoint(1, addr) guard-rail traps used by this slice. */
+extern void sk_h_overflow_trap_405360(void);                         /* SB(1,0x405360) */
+extern void sk_h_overflow_trap_4055d4(void);                         /* SB(1,0x4055d4) */
+extern void sk_h_overflow_trap_4055dc(void);                         /* SB(1,0x4055dc) */
+extern void sk_h_overflow_trap_405afc(void);                         /* SB(1,0x405afc) */
+extern void sk_h_overflow_trap_405364(void);                         /* SB(1,0x405364) */
 
 /* Global indirect function pointer used by the dispatch preamble. */
 extern void (*sk_g_dispatch_00658c80)(void);                         /* DAT_00658c80 */
@@ -136,6 +144,8 @@ extern word_t sk_g_string_0067f358;                                  /* 0x67f358
 /* ================================================================== *
  * Slice bodies.
  * ================================================================== */
+
+void sk_f_0040548c(word_t param_1, word_t param_2); /* fwd (callback) */
 
 /* FUN_00404ac0 @ 0x00404ac0  (est. sk_f_00404ac0_msg_dispatch)
  * Ghidra: void FUN_00404ac0(undefined8 param_1, undefined8 param_2,
@@ -312,6 +322,7 @@ void sk_f_00404d0c(void)
  */
 void sk_f_00404d24(word_t param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t out1 = 0;
 
     sk_h_00407170();
@@ -327,6 +338,7 @@ void sk_f_00404d24(word_t param_1, word_t param_2, word_t param_3)
  */
 void sk_f_00404d54(word_t param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t out1 = 0;
 
     sk_h_00407170();
@@ -363,6 +375,7 @@ void sk_f_00404d84(void)
  */
 void sk_f_00404dc8(void)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     long slot = *(long *)(ctx + 0x18);
     word_t w0[4];
     uint8_t more = 0;
@@ -390,7 +403,7 @@ void sk_f_00404dc8(void)
 void sk_f_00404e60(word_t param_1, word_t param_2, word_t *param_3)
 {
     long ctx;                    /* unaff_x20 (context, register artifact) */
-    word_t x21 = ((void (*)(void))(*(word_t *)(ctx + 0x20)))();
+    word_t x21 = ((word_t (*)(void))(*(word_t *)(ctx + 0x20)))();
     if (x21 != 0) {
         *param_3 = x21;
     }
@@ -602,12 +615,17 @@ void sk_f_004050b4(word_t param_1, word_t param_2, word_t *param_3)
  */
 void sk_f_00405180(sk_r14_pair_t *param_1, word_t param_2, word_t param_3)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
     word_t slot = *(word_t *)(ctx + 0x18);
     long base = *(long *)(ctx + 0x20);
     word_t spare = *(word_t *)(ctx + 0x28);
     word_t w0[4];
     long len, len2;
+    long upper_bound;            /* lStack_80 (stack upper bound, reg artifact) */
+    long cap2;                   /* local_70 (second cap, reg artifact) */
+    uint8_t more_guard;          /* local_68 (guard byte, reg artifact) */
+    word_t scratch[4];           /* auStack_b8 (16-byte scratch buffer) */
     cl4_result_t r1, r2;
     sk_r14_pair_t out = {0, 0};
 
@@ -655,7 +673,7 @@ void sk_f_00405180(sk_r14_pair_t *param_1, word_t param_2, word_t param_3)
     }
     {
         word_t cap = sk_h_0036b270(spare);
-        sk_r14_pair_t res = sk_h_003f7b44(cap, (word_t)(len + len2));
+        cl4_result_t res = sk_h_003f7b44(cap, (word_t)(len + len2));
         param_1->lo = res.lo;
         param_1->hi = res.hi;
     }
@@ -674,6 +692,7 @@ void sk_f_00405180(sk_r14_pair_t *param_1, word_t param_2, word_t param_3)
  */
 void sk_f_00405374(word_t *param_1, word_t *param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     long off = *(long *)(ctx + 0x18);
     word_t cap = *(word_t *)(ctx + 0x20);
     word_t start, size;
@@ -705,6 +724,7 @@ void sk_f_00405374(word_t *param_1, word_t *param_2)
  */
 void sk_f_0040542c(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t staged[3];
 
     staged[0] = *(word_t *)(ctx + 0x10);
@@ -731,10 +751,13 @@ void sk_f_0040542c(word_t param_1, word_t param_2)
  */
 void sk_f_0040548c(word_t param_1, word_t param_2)
 {
+    long ctx;                    /* unaff_x20 (context, register artifact) */
     word_t info = *(word_t *)(ctx + 0x10);
     word_t *slot_cap = *(word_t **)(ctx + 0x18);
     word_t *counter = *(word_t **)(ctx + 0x20);
     word_t w0[4];
+    word_t scratch[4];           /* auStack (scratch buffer) */
+    word_t w0_len, w0_over;      /* length / overrun register artifacts */
     uint8_t more = 0;
     word_t total;
 

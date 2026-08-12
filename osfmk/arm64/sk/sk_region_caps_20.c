@@ -131,6 +131,15 @@ extern void cl4_cap_lookup();              /* FUN_000f4838 */
 extern unsigned long cl4_iel_size();       /* FUN_000f480c */
 extern void *cl4_obj_resolve();            /* FUN_001000b8 */
 extern void *cl4_obj_resolve2();           /* FUN_000fd854 / 000fd5d8 */
+extern void *cl4_lock_registry();          /* FUN_00086440 */
+extern void *cl4_lock_allocator();         /* FUN_00086590 */
+extern void *cl4_vas_map();                /* FUN_00085a54 (register args) */
+extern void cl4_vas_oom();                 /* FUN_00085374 (VasSlotAlloc fatal) */
+extern void cl4_stack_ptr();               /* FUN_000f4c9c */
+extern void cl4_vas_oom_nop();             /* FUN_000f4b40 (empty) */
+extern void cl4_vas_oom_nop2();            /* FUN_000f4b14 (empty) */
+extern void cl4_memmove();                 /* FUN_00117d14 (register args) */
+extern void cl4_fatal_noreturn(void) __attribute__((noreturn)); /* FUN_001ee9f4 */
 
 /* Forward decls for functions defined later in this file (so that callers
  * that precede the definitions compile). */
@@ -1933,8 +1942,13 @@ void iel_teardown_region(long *region)
  * accumulator and the return list, then validates the total frame count and
  * returns the completed list. Raises "VasSlotAlloc failed on ..." /
  * "Wrong number of frame caps" panics on failure.
- * Confidence: low
- * Notes: removes unreachable blocks 0xefb90/0xefb84/0xefb9c/0xefb78. */
+ * Confidence: medium
+ * Notes: removes unreachable blocks 0xefb90/0xefb84/0xefb9c/0xefb78. Each frame
+ * is appended to BOTH the accumulator and the return list; per frame a pair of
+ * descriptors is built (FUN_00085a54) whose vtable[0x90]/[0xe0] bind the page
+ * and frame cap, then cl4_notify_done + memmove (FUN_00117d14) commit it.
+ * FUN_00085a54 / FUN_000f4c9c / FUN_00117d14 receive register-only args not
+ * recoverable from the decompile (kept as empty calls). */
 void *iel_build_vm_regions(long *region, long seg)
 {
     unsigned long cap = region[2];
@@ -1958,11 +1972,15 @@ void *iel_build_vm_regions(long *region, long seg)
             alloc();
             void *fcap = cl4_frame_alloc();
             if (fcap == 0) {
-                cl4_iel_done();
                 cl4_frame_panic();
+                cl4_vas_oom();   /* "VasSlotAlloc failed on ..." fatal */
             }
             cl4_frame_bind(&iel_local_a8, f);
-            cl4_iel_tlb();
+            if (cl4_result_ok != 0) {
+                cl4_scope_drop(&iel_local_a8);
+                cl4_vas_oom_nop2();
+                cl4_fatal_noreturn();
+            }
             cl4_scope_drop(&iel_local_a8);
             /* grow and append into the accumulator */
             unsigned long grow = cl4_obj_flag(acc);
@@ -1975,6 +1993,45 @@ void *iel_build_vm_regions(long *region, long seg)
                 acc = (unsigned char *)cl4_array_grow2(1 < *(unsigned long *)(acc + 0x18), idx + 1, 1);
             *(unsigned long *)(acc + 0x10) = idx + 1;
             *(long *)(acc + idx * 8 + 0x20) = (long)fcap;
+            /* grow and append into the return list too */
+            grow = cl4_obj_flag(ret);
+            if ((grow & 1) == 0) {
+                cl4_array_free(*(void **)(ret + 0x10));
+                ret = (unsigned char *)cl4_array_grow2(0, *(long *)(ret + 0x10) + 1, 1);
+            }
+            idx = *(unsigned long *)(ret + 0x10);
+            if (*(unsigned long *)(ret + 0x18) >> 1 <= idx)
+                ret = (unsigned char *)cl4_array_grow2(1 < *(unsigned long *)(ret + 0x18), idx + 1, 1);
+            *(unsigned long *)(ret + 0x10) = idx + 1;
+            *(long *)(ret + idx * 8 + 0x20) = (long)fcap;
+            if (cl4_page_size(3) < 0) cl4_trap();   /* 0xefa5c */
+            /* build two frame descriptors and bind the page + its frame cap */
+            void *reg = cl4_lock_registry();
+            void *rec = cl4_log_alloc2(reg, 0x64e1c0);
+            cl4_vas_oom_nop();
+            void *alc = cl4_lock_allocator();
+            cl4_alloc_object(alc, 0x50, 7);
+            cl4_stack_ptr();
+            long *d9 = (long *)cl4_vas_map();
+            if (cl4_page_size(3) < 0) cl4_trap();   /* 0xefa60 */
+            cl4_vas_oom_nop();
+            /* local_88 = rec */
+            cl4_alloc_object(alc, 0x50, 7);
+            cl4_stack_ptr();
+            long *d10 = (long *)cl4_vas_map();
+            (**(void (**)(int, void *))(*(void **)d10 + 0x90))(0, f);
+            (**(void (**)(int, void *))(*(void **)d9 + 0x90))(0, fcap);
+            if ((**(unsigned long (**)(void))(*(void **)d9 + 0xe0))() == 0)
+                cl4_trap();   /* 0xefa7c */
+            if ((**(unsigned long (**)(void))(*(void **)d10 + 0xe0))() == 0)
+                cl4_trap();   /* 0xefa80 */
+            cl4_iel_done();
+            long psz = cl4_page_size();
+            if (psz < 0) cl4_trap();   /* 0xefa64 */
+            cl4_notify_done(psz, 0, psz);
+            cl4_memmove();
+            cl4_release(d9);
+            cl4_release(d10);
             i -= 1;
             frames += 1;
         } while (i != 0);
@@ -2011,7 +2068,11 @@ void *iel_build_vm_regions(long *region, long seg)
         *(unsigned long *)(acc + 0x10) = idx + 1;
         *(long *)(acc + idx * 8 + 0x20) = (long)fcap;
         cl4_frame_bind(&iel_local_a8, fcap);
-        cl4_iel_tlb();
+        if (cl4_result_ok != 0) {
+            cl4_scope_drop(&iel_local_a8);
+            cl4_vas_oom_nop2();
+            cl4_fatal_noreturn();
+        }
         cl4_scope_drop(&iel_local_a8);
         g = cl4_obj_flag(ret);
         if ((g & 1) == 0) {

@@ -33840,9 +33840,10 @@ uint64_t sk_ipc_fault(long *arg1,uint64_t *arg2,unsigned long *arg3)
 /* FUN_000508e8 @ 0x508e8   (est. sk_ipc_scan)
  * Ghidra: void FUN_000508e8(long *arg1)
  * sk_ipc_scan: cL4 sk ipc scan operation.
- * Confidence: medium
- * Notes: name estimated from call-graph role and string usage;
- *   Ghidra identifiers renamed to English in body.
+ * Confidence: high
+ * Notes: verified 2026-08-12; body matches decompile (msg iterate/capacity,
+ *   subgraph extent calc, vspace map op, ipc buf write, arg1 range update).
+ *   name estimated from call-graph role and string usage.
  */
 
 void sk_ipc_scan(long *arg1)
@@ -34646,9 +34647,10 @@ LAB_00051ab4:
 /* FUN_00051ab8 @ 0x51ab8   (est. sk_sec_regions)
  * Ghidra: void FUN_00051ab8(unsigned int *arg1,ulong arg2)
  * sk_sec_regions: cL4 sk sec regions operation.
- * Confidence: medium
- * Notes: name estimated from call-graph role and string usage;
- *   Ghidra identifiers renamed to English in body.
+ * Confidence: high
+ * Notes: verified 2026-08-12; body matches decompile (__DATA/__DATA_CONST
+ *   segment bounds, globals 0x6af888/0x6af8a0/0x6af8a8 write, per-entry
+ *   ipc_src_map loop). name estimated from call-graph role and string usage.
  */
 
 void sk_sec_regions(unsigned int *arg1,unsigned long arg2)
@@ -35765,7 +35767,7 @@ uint64_t sk_exc_abort(uint64_t *arg1)
 /* FUN_00052c54 @ 0x52c54   (est. sk_init_cnodes)
  * Ghidra: void FUN_00052c54(void)
  * sk_init_cnodes: cL4 sk init cnodes operation.
- * Confidence: medium
+ * Confidence: high
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -35853,7 +35855,7 @@ void sk_init_cnodes(void)
             (t9 + 0x10 < t9)))) goto LAB_000532f0;
         t13 = (unsigned int)*(uint8_t *)((long)t9 + 7);
         t14 = (unsigned long)(uint8_t)t9[1] << 0x10 | (unsigned long)*(uint8_t *)((long)t9 + 3) << 0x18 |
-                 (unsigned long)*t9 | (unsigned long)*(uint64_t *)(t9 + 2) << 0x20;
+                 (unsigned long)*t9 | (unsigned long)(*(uint32_t *)(t9 + 2) & 0xffffff) << 0x20;
         if ((*(unsigned long *)(t1 + 0x248) == 0) && (*(long *)(t1 + 0x250) == 0)) {
           *(unsigned long *)(t1 + 0x248) = t14;
 LAB_00052de4:
@@ -35979,7 +35981,7 @@ switchD_00052e18_caseD_1:
             t7 = (unsigned long *)sk_boot_arg(0);
             if (t7 + 1 < t7) goto LAB_000532f0;
             *t7 = (unsigned long)(uint8_t)t9[1] << 0x10 | (unsigned long)*(uint8_t *)((long)t9 + 3) << 0x18
-                       | (unsigned long)*t9 | (unsigned long)*(uint64_t *)(t9 + 2) << 0x20;
+                       | (unsigned long)*t9 | (unsigned long)(*(uint32_t *)(t9 + 2) & 0xffffff) << 0x20;
           }
           else {
             if (t13 != 5) goto switchD_00052e18_caseD_0;
@@ -35990,7 +35992,7 @@ switchD_00052e18_caseD_1:
             if (t7 < (unsigned long *)(t2 + 0x2c8U)) goto LAB_000532f0;
             if (((unsigned long *)(t2 + 0x628U) < t7 + 3) || (t7 + 3 < t7))
             goto LAB_000532f0;
-            t16 = *(uint64_t *)(t9 + 8);
+            t16 = (uint64_t)(*(uint32_t *)(t9 + 8) & 0xffffff);
             *t7 = t14;
             t7[1] = (unsigned long)t16;
             t8 = t9 + 0xc;

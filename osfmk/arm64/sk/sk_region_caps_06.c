@@ -916,7 +916,7 @@ word_t FUN_0009d014(word_t p1, word_t p2)
 /* FUN_0009d068 @ 0x0009d068   (est. launcher_pair_64f988)
  * Ghidra: undefined1 [16] FUN_0009d068(void)
  * Returns the 16-byte value {0x64f988, 0} (a static descriptor).
- * Confidence: low */
+ * Confidence: high */
 cl4_pair_t FUN_0009d068(void)
 {
     cl4_pair_t r;

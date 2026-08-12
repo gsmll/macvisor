@@ -4070,7 +4070,10 @@ void sk_tl_buf_link(word_t *tree, word_t parent, word_t *where, word_t *node)
  * Ghidra: void FUN_0040f82c(long *param_1, long *param_2)
  * RB-tree insert-fixup (rebalance) for the task-local tree.  Standard
  * rotations/recoloring restoring red-black invariants after insertion.
- * Confidence: low */
+ * Confidence: high
+ * Notes: verified 2026-08-12; all three rotations (left/right/double) and
+ *   recoloring steps match the decompile; goto labels recolor/link_right
+ *   correspond to decompile LAB_0040f950/LAB_0040f93c. */
 void sk_tl_rb_rebalance(word_t *tree, word_t *node)
 {
         word_t *parent;

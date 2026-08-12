@@ -1736,7 +1736,11 @@ void ec_region_setup(unsigned long a, unsigned long b)
  * (param_2[0..6]) into *param_1.
  * Confidence: medium
  * Notes: uses _DAT_006ad9d0 granule word; SoftwareBreakpoint(1, ...) guards;
- *   error strings "...but are..." and "...were app..." in printf stream. */
+ *   error strings "...but are..." and "...were app..." in printf stream.
+ *   count at +0x10 (ulong[2]), entries at +0x20 (ulong[4]).  Remaining
+ *   unverified: FUN_000e1498/FUN_0039a128/FUN_000e14e0/FUN_0036a1a0 publish
+ *   chain, FUN_0001a1c8/000e1528/000e1540/001532a0/000027e8 + the +0x1f0/
+ *   +0x70 un-map error path in the walk loop are documented not emitted. */
 void ec_region_map_vaddrs(unsigned long *dst, unsigned long *src, unsigned long c,
                           unsigned long d, unsigned long *region_list)
 {
@@ -1767,11 +1771,12 @@ void ec_region_map_vaddrs(unsigned long *dst, unsigned long *src, unsigned long 
                 m((unsigned long*)&blk, 3, addr + i * p, 0, &blk);
                 /* publish via 0x9e18c/0x276c/0x36b118 on error path */
                 cL4_page_commit((unsigned long *)&blk, i);
-                if (region_list[2] >> 1 <= region_list[1])
-                    cL4_alloc_pages(1 < region_list[2], region_list[1] + 1, 1);
+                unsigned long cnt = region_list[2];          /* count at +0x10 */
+                if (region_list[3] >> 1 <= cnt)              /* capacity marker at +0x18 */
+                    cL4_alloc_pages(1 < region_list[3], cnt + 1, 1);
+                region_list[2] = cnt + 1;                    /* count++ */
+                region_list[cnt * 8 + 4] = blk;              /* entries[cnt] at +0x20 */
                 i += 1;
-                region_list[1] = region_list[1] + 1;
-                region_list[i * 8 + 4] = blk; /* +0x20 */
             }
         }
     } else {
@@ -1780,7 +1785,7 @@ void ec_region_map_vaddrs(unsigned long *dst, unsigned long *src, unsigned long 
     /* shared publish: 0xe1498/0x39a128/0xe14e0/0x36a1a0 */
     if (cL4_ec_regA_word == 0) { /* SoftwareBreakpoint(1,0xe0360) */ }
     gran = (cL4_ec_regA_word != 0) ? src[1] / cL4_ec_regA_word : 0;
-    if (region_list[1] != gran) {
+    if (region_list[2] != gran) {
         /* printf "...cannot deallocate EC memory region..." + noreturn fatal(0x39) */
         cL4_ec_fatal();
     }
@@ -1789,17 +1794,18 @@ void ec_region_map_vaddrs(unsigned long *dst, unsigned long *src, unsigned long 
         addr = src[0];
         unsigned long n = src[3];
         do {
-            if (region_list[1] <= i) { /* SoftwareBreakpoint(1,0xe0344) */ }
+            if (region_list[2] <= i) { /* SoftwareBreakpoint(1,0xe0344) */ }
             if (i * cL4_ec_regA_word /* hi */ != 0) { /* SoftwareBreakpoint(1,0xe0348) */ }
             unsigned long va = addr + i * cL4_ec_regA_word;
             if (/* carry */ addr > va) { /* SoftwareBreakpoint(1,0xe034c) */ }
             unsigned long entry = region_list[i * 8 + 4];
             /* vtable+0x58 method per entry */
+            unsigned long r = (*(unsigned long (*)(void)) ec_vt_method(0, 0x58))();
             if (/* x21 */ 0 != 0) {
                 /* failure: un-map via +0x1f0 and +0x70, release */
             }
             i += 1;
-            cL4_release(/* r */ 0);
+            cL4_release(r);
         } while (gran != i);
     }
     cL4_release((unsigned long)region_list);

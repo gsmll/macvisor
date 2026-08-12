@@ -1,4 +1,3 @@
-
 /* ------------------------------------------------------------------ *
  * 0x0047c528 — message/op dispatch switch.
  * ------------------------------------------------------------------ */
@@ -12,8 +11,9 @@
  * Confidence: medium.
  * Notes: unaff_x20 = self (method-table owner); FUN_000026e8 = msg release;
  *   FUN_0036a940 = alloc; thunk_FUN_0036b270 = refcount acquire. */
-void sk_r28_0047c528(uint64_t self, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
+void sk_r28_0047c528(uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
 {
+    uint64_t self = 0;                 /* unaff_x20: method-table owner */
     uint64_t (*method)(void) = *(uint64_t (**)(void))(self + 0x10);
     uint64_t kind = *(uint8_t *)(self + 0x20);
     switch (kind) {
@@ -43,25 +43,26 @@ void sk_r28_0047c528(uint64_t self, uint64_t a2, uint64_t a3, uint64_t a4, uint6
  * validates a count in_x3 and, if the count is underflowed, traps; otherwise
  * forwards (count-1) to an append helper. Else copies the box words to the
  * caller frame and builds a UTF-8 view descriptor.
- * Confidence: medium.
- * Notes: unaff_x21/x22 = caller frame words; SoftwareBreakpoint(1,0x47c7ac). */
+ * Confidence: low (register-heavy: unaff_x21/x22, in_x3).
+ * Notes: SoftwareBreakpoint(1,0x47c7ac). */
 void sk_r28_0047c62c(void)
 {
+    int64_t in_x3 = 0;                 /* unmodeled caller count register */
+    uint64_t unaff_x21 = 0, unaff_x22 = 0;
     sk_x_003509ec();
     sk_x_004ab128();
-    sk_x_004a4ac4();                 /* reads box into local words */
+    sk_x_004a4ac4(&unaff_x22, &unaff_x21);
     if (/* lStack_78 == 1 */ 1) {
         sk_x_004aaccc();
-        uint64_t v = sk_x_004a4b14(); /* unpacked value */
-        if ((int64_t)in_x3 < 1) {
+        uint64_t v = sk_x_004a4b14(&unaff_x21);
+        if (in_x3 < 1) {
             SoftwareBreakpoint(1, 0x47c7ac);
         }
         sk_x_004ac41c(v, in_x3 - 1);
         sk_r28_0047ce4c();
     } else {
-        /* copy box words to caller frame; build utf8 view */
-        sk_x_004a4ac4();
-        sk_x_004a4b14();
+        sk_x_004a4ac4(&unaff_x22, &unaff_x21);
+        sk_x_004a4b14(&unaff_x21);
     }
 }
 
@@ -70,11 +71,13 @@ void sk_r28_0047c62c(void)
  * Reads a value box via the method at self+0x10 keyed on the kind byte at
  * self+0x20: kind 1/3 copy a UTF-8 scalar and ref it; kind 2 reads directly;
  * otherwise moves the box contents into out with refcount bookkeeping.
- * Confidence: medium.
- * Notes: unaff_x20/x21 = self/flag; FUN_00319808 value copy; FUN_003a25d4
- *   release; FUN_00365b6c scalar build. */
+ * Confidence: low (register-heavy: unaff_x20/x21).
+ * Notes: FUN_00319808 value copy; FUN_003a25d4 release. */
 void sk_r28_0047c7b0(uint64_t *out, uint64_t a2)
 {
+    uint64_t self = 0;                 /* unaff_x20 */
+    int64_t unaff_x21 = 0;             /* unaff_x21: caller flag */
+    uint64_t flag = (uint64_t)unaff_x21;
     uint64_t (*method)(void) = *(uint64_t (**)(void))(self + 0x10);
     uint64_t kind = *(uint8_t *)(self + 0x20);
     uint64_t buf[4];
@@ -98,22 +101,15 @@ void sk_r28_0047c7b0(uint64_t *out, uint64_t a2)
         (*method)(out, buf[0], buf[1], buf[2], buf[3]);
         sk_x_003a25d4(buf[3]);
         if (flag != 0) return;
-        out[1] = buf[3];
-        out[0] = buf[0];
-        out[3] = buf[2];
-        out[2] = buf[1];
+        out[1] = buf[1]; out[0] = buf[0]; out[3] = buf[3]; out[2] = buf[2];
         return;
     default:
         break;
     }
     if (flag == 0) {
-        if (/* local_68 == 0 */ 0) {
-            sk_x_0034cc24();
-            sk_x_004a4b14(buf);
-            out[0] = out[1] = out[2] = out[3] = 0;
-        } else {
-            sk_x_00310d98(buf, out);
-        }
+        sk_x_0034cc24();
+        sk_x_004a4b14(buf);
+        out[0] = out[1] = out[2] = out[3] = 0;
     }
 }
 
@@ -124,6 +120,7 @@ void sk_r28_0047c7b0(uint64_t *out, uint64_t a2)
  * Notes: unaff_x20 = self; FUN_00002834 tag load; FUN_0036a940 alloc. */
 void sk_r28_0047c948(void)
 {
+    uint64_t self = 0;                 /* unaff_x20 */
     sk_x_0008409c();
     sk_x_00002834(0x687d98);
     sk_x_0036a940();
@@ -139,8 +136,7 @@ void sk_r28_0047c948(void)
 /* FUN_0047c9d4 @ 0x0047c9d4   (est. sk_r28_log_args)
  * Ghidra: void FUN_0047c9d4(ulong,long)
  * Folds arg1 and arg2<<16 into a packed argument word and appends it to the
- * in-flight report record. Confidence: medium.
- * Notes: unaff_x16 = spilled arg; FUN_004aa494 pack. */
+ * in-flight report record. Confidence: medium. */
 void sk_r28_0047c9d4(uint64_t a1, int64_t a2)
 {
     sk_x_004aa494(a1 | (uint64_t)a2 << 0x10);
@@ -153,12 +149,12 @@ void sk_r28_0047c9d4(uint64_t a1, int64_t a2)
  * Ghidra: bool FUN_0047ca18(long)
  * Recursive regex group parser: walks the token stream at param+0x10 and
  * handles alternation/open groups, recursing into FUN_0047ca18 for nested
- * groups. Returns whether a group matched. Confidence: medium.
- * Notes: FUN_0049df0c/0049df18 token kind/read; SoftwareBreakpoint-free. */
+ * groups. Returns whether a group matched. Confidence: medium. */
 bool sk_r28_0047ca18(int64_t a1)
 {
     int64_t n = *(int64_t *)(a1 + 0x10);
     uint8_t s1[352], s2[352], s3[352];
+    uint64_t r;
     do {
         while (1) {
             int64_t save = n;
@@ -178,7 +174,7 @@ bool sk_r28_0047ca18(int64_t a1)
         sk_x_004ac4e0();
         sk_x_004ac034(s1);
         sk_x_00352c68();
-        uint64_t r = sk_r28_0047ca18(0);
+        r = (uint64_t)sk_r28_0047ca18(0);
         sk_x_004a3918(s2);
     } while ((r & 1) == 0);
 done:
@@ -190,9 +186,9 @@ done:
  * Unicode scalar scan/compare of a UTF-8 string (params = {buf, len}-packed
  * words). Walks the string by 16-byte page, decoding each scalar, comparing
  * against a 2-char target, and returns whether the first mismatch / end
- * matched. Traps on page overflow. Confidence: medium.
+ * matched. Traps on page overflow. Confidence: low.
  * Notes: unaff_x20 = page cursor; FUN_002b141c utf8 decode; FUN_0001da84
- *   page advance; thunk_FUN_0036b270 refcount; SoftwareBreakpoint(1,0x47cc94). */
+ *   page advance; SoftwareBreakpoint(1,0x47cc94). */
 bool sk_r28_0047cadc(uint64_t a1, uint64_t a2)
 {
     uint64_t len = a1 & 0xffffffffffff;
@@ -203,10 +199,11 @@ bool sk_r28_0047cadc(uint64_t a1, uint64_t a2)
         big = 1;
     sk_x_0036b270(a2);
     uint64_t page = 0xf;
+    uint64_t idx = 0;
     uint64_t target;
-    uint8_t c;
+    uint8_t c = 0;
     do {
-        uint64_t idx = page >> 0xe;
+        idx = page >> 0xe;
         if (idx == len * 4) break;
         uint64_t p = page;
         if ((page & 0xc) == (4ULL << big))
@@ -232,8 +229,9 @@ bool sk_r28_0047cadc(uint64_t a1, uint64_t a2)
             if ((a2 >> 0x3c & 1) != 0) goto again;
             page = (page & 0xffffffffffff0000) + 0x10004;
         } else {
-            if ((a2 >> 0x3c & 1) == 0) { page = (page & 0xffffffffffff0000) + 0x10004; }
-            else {
+            if ((a2 >> 0x3c & 1) == 0) {
+                page = (page & 0xffffffffffff0000) + 0x10004;
+            } else {
 again:
                 if (len <= page >> 0x10)
                     SoftwareBreakpoint(1, 0x47cc98);
@@ -253,12 +251,13 @@ again:
  * Ghidra: uint FUN_0047cc98(long)
  * Recursive regex alternation parser over the token stream at param+0x10;
  * dispatches on token kinds 5/6/7 (open/close/pipe) and recurses.
- * Confidence: medium. Notes: FUN_0049df0c token kind; 0047cc98 self-recursion. */
+ * Confidence: medium. */
 uint32_t sk_r28_0047cc98(int64_t a1)
 {
     int64_t n = *(int64_t *)(a1 + 0x10);
     uint8_t s1[352], s2[352], s3[352];
     uint32_t r = 0;
+    uint64_t rr;
 loop:
     if (n == 0) { r = 0; goto ret; }
     sk_x_004ac3e4(s1);
@@ -272,7 +271,7 @@ loop:
         sk_x_004ac4e0();
         sk_x_004ac034(s3);
         sk_x_00352c68();
-        uint64_t rr = sk_r28_0047cc98(0);
+        rr = (uint64_t)sk_r28_0047cc98(0);
         if ((rr & 1) == 0) { sk_x_004a3918(s1); r = 0; goto ret; }
         break;
     case 6:
@@ -285,7 +284,7 @@ loop:
         goto loop;
     }
     sk_x_0035354c();
-    r = sk_r28_0047cc98(0);
+    r = (uint32_t)sk_r28_0047cc98(0);
     sk_x_004a3918(s1);
 ret:
     return r & 1;
@@ -295,16 +294,16 @@ ret:
  * Ghidra: void FUN_0047cdbc(undefined8,undefined8,undefined8)
  * Builds a string/error box: reads a scalar/char, allocates a descriptor,
  * then invokes the method with the packed value and tears the box down.
- * Confidence: medium.
- * Notes: extraout_x16 = method owner; FUN_00310d68/00310d98 value moves. */
+ * Confidence: low (extraout_x16 = method owner, unmodeled). */
 void sk_r28_0047cdbc(uint64_t a1, uint64_t a2, uint64_t a3)
 {
+    uint64_t owner = 0;                /* extraout_x16: method owner */
     uint64_t u1 = sk_x_00350a28();
     uint64_t box = sk_x_00310d68(0, a3);
     uint8_t buf[24];
     sk_x_00077024(buf);
     uint64_t u2 = sk_x_003509c8();
-    (*(uint64_t (**)(void))(0 + 0x10))(u2, u1);
+    (*(uint64_t (**)(void))(owner + 0x10))(u2, u1);
     sk_x_004ab9e0();
     sk_x_00350774();
     sk_x_000839d8();
@@ -317,9 +316,10 @@ void sk_r28_0047cdbc(uint64_t a1, uint64_t a2, uint64_t a3)
  * Ghidra: void FUN_0047ce4c(void)
  * Finalizes a string record: stores the boxed value into self+0x18, marks
  * ownership, and emits the report close. Confidence: medium.
- * Notes: unaff_x20 = self; FUN_00310d68 value move; FUN_000839d8 report. */
+ * Notes: unaff_x20 = self; FUN_000839d8 report. */
 void sk_r28_0047ce4c(void)
 {
+    uint64_t self = 0;                 /* unaff_x20 */
     sk_x_00352800();
     sk_x_003504e8();
     uint64_t v = sk_x_00310d68();
@@ -332,11 +332,12 @@ void sk_r28_0047ce4c(void)
 /* FUN_0047ce8c @ 0x0047ce8c   (est. sk_r28_string_compare)
  * Ghidra: void FUN_0047ce8c(void)
  * Compares two strings via the shared error/string box and reports the
- * result. Confidence: medium.
- * Notes: unaff_x20 = self; FUN_0009461c trap/report. */
+ * result. Confidence: low (unaff_x20 = self). */
 void sk_r28_0047ce8c(void)
 {
-    uint8_t buf[16], out[16], tmp[24];
+    uint64_t self = 0;                 /* unaff_x20 */
+    uint64_t kind = 0;                 /* lStack_38 local kind */
+    uint8_t out[16], tmp[24];
     sk_x_004ab128();
     sk_x_004a4ac4(self + 8, out);
     if (kind != 1) {
@@ -354,27 +355,26 @@ void sk_r28_0047ce8c(void)
  * Bulk-appends param_6 records (each 0x58 bytes) read at param_6+0x20 into
  * the global array DAT_00657778, decoding each record, growing the array as
  * needed. Then drains the appended records building result objects.
- * Confidence: medium.
- * Notes: heavy use of thunk_FUN_0024d9ac (iterator), FUN_00117cc4 memmove,
- *   FUN_0049a604/FUN_003a261c array-grow pair; SoftwareBreakpoint(1,0x47d348). */
+ * Confidence: low (large; SoftwareBreakpoint(1,0x47d348)).
+ * Notes: heavy use of thunk_FUN_0024d9ac iterator, FUN_00117cc4 memmove. */
 void sk_r28_0047cf0c(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5, int64_t a6)
 {
     uint64_t it = sk_x_0024d9ac(&sk_g_005a4b50);
     int64_t base = a6 + 0x20;
     uint64_t arr = 0x657778;   /* DAT_00657778 (array header) */
-    for (int64_t i = *(int64_t *)(a6 + 0x10); i != 0; i = i - 1) {
+    int64_t i;
+    for (i = *(int64_t *)(a6 + 0x10); i != 0; i = i - 1) {
         uint8_t rec[0x68];
-        sk_x_0049c704(base, &rec);
+        uint8_t tag;
         uint64_t box[2] = { a4, a5 };
+        sk_x_0049c704(base, &rec);
         sk_x_00117cc4(&rec, &box, 0x68);
         sk_x_0036b270(a5);
-        uint8_t tag;
         sk_x_0024917c(&tag, &rec);
         if (tag == 0x01) {
-            uint64_t cap = sk_x_003a261c(&arr);
-            if ((cap & 1) == 0)
-                sk_x_0049a604(0, *(int64_t *)(arr + 0x10) + 1, 1);
-            uint64_t n = *(uint64_t *)(arr + 0x10);
+            uint64_t n;
+            sk_x_003a261c(&arr);
+            n = *(uint64_t *)(arr + 0x10);
             if (*(uint64_t *)(arr + 0x18) >> 1 <= n)
                 sk_x_0049a604(1 < *(uint64_t *)(arr + 0x18), n + 1, 1);
             *(uint64_t *)(arr + 0x10) = n + 1;
@@ -386,17 +386,17 @@ void sk_r28_0047cf0c(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_
     }
     sk_x_0036b118(it);
     /* drain phase */
-    uint64_t cnt = *(uint64_t *)(arr + 0x10);
+    int64_t cnt = *(int64_t *)(arr + 0x10);
+    uint64_t out = 0x657778;
     if (cnt == 0) {
         sk_x_0036b118(arr);
     } else {
-        uint64_t out = 0x657778;
+        int64_t j;
         sk_x_001a0754(0, cnt, 0);
-        int64_t j = 0;
-        do {
+        for (j = 0; j != cnt; j++) {
             uint64_t v = *(uint64_t *)(arr + j * 0x68 + 0x20);
             uint8_t rbox[8];
-            sk_x_004a4ac4((arr + j * 0x68 + 0x20 + 8), &rbox, 0x657be0, &sk_g_005a3c88);
+            sk_x_004a4ac4(arr + j * 0x68 + 0x20 + 8, &rbox, 0x657be0, &sk_g_005a3c88);
             if (kind2 == 1) {
                 sk_x_004a4b14(&rbox, 0x657be0, &sk_g_005a3c88);
                 if ((int64_t)v < 1)
@@ -404,7 +404,6 @@ void sk_r28_0047cf0c(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_
                 sk_x_00455ac8(0x675c68, v - 1, 0x675c68);
                 sk_r28_0047ce4c();
             } else {
-                /* decode + emit record via FUN_0047cdbc in a loop */
                 int64_t k = (int64_t)v;
                 for (; k != 0; k = k - 1) {
                     uint8_t rr[8];
@@ -419,11 +418,10 @@ void sk_r28_0047cf0c(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_
                 sk_x_001a0754(1 < *(uint64_t *)(out + 0x18), n2 + 1, 1);
             *(uint64_t *)(out + 0x10) = n2 + 1;
             sk_x_00310d98(out, out + n2 * 0x20 + 0x20);
-            j++;
-        } while (j != (int64_t)cnt);
-        int64_t n2 = *(int64_t *)(arr + 0x10);
+        }
+        int64_t n3 = *(int64_t *)(arr + 0x10);
         sk_x_0036b118(arr);
-        if ((int64_t)cnt != n2)
+        if (cnt != n3)
             SoftwareBreakpoint(1, 0x47d290);
     }
     /* final: if single element, copy it out; else build an error object */
@@ -445,6 +443,11 @@ void sk_r28_0047cf0c(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_
  * Notes: unaff_x20/x21 = self/flag; FUN_0036a940 alloc; DAT_00687d10 label. */
 void sk_r28_0047d358(void)
 {
+    uint64_t self = 0;                 /* unaff_x20 */
+    int64_t unaff_x21 = 0;             /* unaff_x21: commit flag */
+    uint64_t frame[16] = {0};
+    uint8_t rep[0x90] = {0};
+    uint64_t slot = 0;
     uint64_t u2 = sk_x_00353cfc();
     uint64_t w1 = *(uint64_t *)(self + 0x18);
     uint64_t w0 = *(uint64_t *)(self + 0x10);
@@ -465,8 +468,8 @@ void sk_r28_0047d358(void)
     sk_x_0035060c(p3.lo, p3.hi, 0x677880);
     sk_x_001f0130();
     sk_x_0036b118(h);
-    /* context frame */
     uint64_t f1 = w1, f2 = w1;
+    uint8_t stack[0xe0];
     sk_x_004a363c(&f1, frame);
     sk_x_004a364c(&f2);
     sk_x_00117cc4(stack, &f1, 0xe0);
@@ -475,17 +478,14 @@ void sk_r28_0047d358(void)
         /* zero local_2b8/local_2b0 */
     }
     sk_x_00473244(w);
-    if (flag == 0) {
+    if (unaff_x21 == 0) {
         frame[0] = 0x687d10;
         uint8_t b = sk_x_004934a8(frame, w);
         sk_x_0036b118(frame[0]);
         uint8_t tag = b & 0xfd;
-        uint64_t cap = sk_x_003a261c(slot);
-        if ((cap & 1) == 0) {
-            sk_x_0006b3f4(*(uint64_t *)(slot + 0x10));
-            slot = sk_x_00499158();
-        }
-        uint64_t n = *(uint64_t *)(slot + 0x10);
+        uint64_t n;
+        sk_x_003a261c(slot);
+        n = *(uint64_t *)(slot + 0x10);
         if (*(uint64_t *)(slot + 0x18) >> 1 <= n) {
             sk_x_000ec004();
             slot = sk_x_00499158();
@@ -495,7 +495,7 @@ void sk_r28_0047d358(void)
         sk_x_00474fe8(rep);
         sk_x_0036b118();
         sk_x_004a364c(stack);
-        sk_x_00117cc4(out, rep, 0x90);
+        sk_x_00117cc4(rep, rep, 0x90);
     } else {
         sk_x_0036b118();
         sk_x_004a364c(stack);

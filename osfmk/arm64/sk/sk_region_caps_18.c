@@ -1599,6 +1599,8 @@ void FUN_000e6538(long frame, unsigned long p2, unsigned long p3, unsigned long 
     unsigned long nrows = (count + rows - 1) / rows2;
     unsigned long depth = 1;
     unsigned long off = 0x58;
+    unsigned long lvar34 = 0;   /* decompile lVar34: += 0x1ff per outer iter */
+    long ld0 = 0;               /* decompile local_d0: += -0x1ff per outer iter */
     unsigned long i = 0;
     do {
         if (i == nrows) {
@@ -1624,6 +1626,9 @@ void FUN_000e6538(long frame, unsigned long p2, unsigned long p3, unsigned long 
         if (total < expected) {
             __builtin_trap();
         }
+        if (i == 0x80402010080403) {   /* decompile: SoftwareBreakpoint(1,0xe6a60) debug canary */
+            __builtin_trap();
+        }
         pl[0] = total + i * (unsigned long)-0x1ff;
         pl[1] = (unsigned long)rlen;
         pl[2] = 0;
@@ -1638,7 +1643,7 @@ void FUN_000e6538(long frame, unsigned long p2, unsigned long p3, unsigned long 
             unsigned long limit = lim <= lim2 * depth ? lim : lim2 * depth;
             unsigned long k = 0;
             do {
-                unsigned long idx = k;  /* row-slot index */
+                unsigned long idx = lvar34 + k;  /* decompile uVar22 = lVar34 + uVar19 */
                 if (total <= idx) {
                     __builtin_trap();
                 }
@@ -1728,11 +1733,13 @@ void FUN_000e6538(long frame, unsigned long p2, unsigned long p3, unsigned long 
                 cL4_pt_set_size(entry, idx * kb + p4);
                 k++;
                 soff += 0x40;
-            } while (limit + (unsigned long)0 != k);
+            } while ((unsigned long)(limit + ld0) != k);
         }
         i = i + 1;
         depth = depth + 1;
         off += 0x7fc0;
+        lvar34 = lvar34 + 0x1ff;
+        ld0 = ld0 + -0x1ff;
     } while (true);
 }
 

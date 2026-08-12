@@ -518,6 +518,7 @@ extern unsigned long sk_h_003d3130();  /* FUN_003d3130 */
 extern unsigned long sk_h_003d319c();  /* FUN_003d319c */
 extern unsigned long sk_h_0060e3fc();  /* FUN_0060e3fc */
 extern unsigned long sk_h_0060e40c();  /* FUN_0060e40c */
+extern unsigned long sk_h_0060e404();  /* code label at 0x60e404 (FUN_0060e3fc+8), passed as msg callback */
 
 /* ---- 128-bit / overflow helper macros for transcribed Swift arithmetic ---- */
 static inline sk_u128_t sk_mul_u128(sk_u128_t a, sk_u128_t b)
@@ -1411,7 +1412,7 @@ void sk_slice_002de640()
 /*--------------------------------------------------------------------*/
 /* FUN_002de774 @ 0x002de774  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002de774(undefined8 param_1,undefined8 arg2,undefined8 arg3) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; Swift stdlib / object-service). */
 unsigned long sk_slice_002de774()
 {
     unsigned long arg1;
@@ -1999,7 +2000,7 @@ void sk_slice_002df40c()
         }
         if (0x40 < lval8) goto L002df40c_002df5cc;
         var98 = lval14;
-        tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,((unsigned long)0));
+        tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,sk_h_0060e404);
         fptr7 = (sk_fn)sk_h_0008f728();
         pval1 = var90;
         fptr7(var90,&sk_dat_004c1010,0x100,lval4,tmp9);
@@ -2076,7 +2077,7 @@ void sk_slice_002df40c()
               lval8 = fptr7(arg4,arg5);
               if ((tmp6 & 1) != 0) {
                 if (0x40 < lval8) goto L002df40c_002df980;
-                tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,((unsigned long)0));
+                tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,sk_h_0060e404);
                 fptr7 = (sk_fn)sk_h_0008f728();
                 pval1 = var90;
                 fptr7(var90,&sk_dat_004c1010,0x100,lval4,tmp9);
@@ -2205,7 +2206,7 @@ void sk_slice_002df40c()
 /*--------------------------------------------------------------------*/
 /* FUN_002dfdd4 @ 0x002dfdd4  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002dfdd4(ulong *param_1,undefined8 arg2,long arg3,undefined8 param_4) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; msg-callback &0x60e404 restored). */
 void sk_slice_002dfdd4()
 {
     unsigned long * arg1;
@@ -2266,7 +2267,7 @@ void sk_slice_002dfdd4()
         }
         if (0x40 < lval9) goto L002dfdd4_002dff88;
         var88 = lval17;
-        tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,((unsigned long)0));
+        tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,sk_h_0060e404);
         fptr8 = (sk_fn)sk_h_0008f728();
         pval2 = var80;
         fptr8(var80,&sk_dat_004c1010,0x100,lval5,tmp10);
@@ -2343,7 +2344,7 @@ void sk_slice_002dfdd4()
               lval9 = fptr8(arg3,arg4);
               if ((tmp7 & 1) != 0) {
                 if (0x40 < lval9) goto L002dfdd4_002e0340;
-                tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,((unsigned long)0));
+                tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,sk_h_0060e404);
                 fptr8 = (sk_fn)sk_h_0008f728();
                 pval2 = var80;
                 fptr8(var80,&sk_dat_004c1010,0x100,lval5,tmp10);
@@ -2543,7 +2544,7 @@ void sk_slice_002e079c()
         }
         if (0x40 < lval8) goto L002e079c_002e095c;
         var98 = lval14;
-        tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,((unsigned long)0));
+        tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,sk_h_0060e404);
         fptr7 = (sk_fn)sk_h_0008f728();
         pval1 = var90;
         fptr7(var90,&sk_dat_004c1010,0x100,lval4,tmp9);
@@ -2620,7 +2621,7 @@ void sk_slice_002e079c()
               lval8 = fptr7(arg4,arg5);
               if ((tmp6 & 1) != 0) {
                 if (0x40 < lval8) goto L002e079c_002e0d10;
-                tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,((unsigned long)0));
+                tmp9 = sk_h_00377bec(tmp3,arg4,lval4,sk_h_0060e3fc,sk_h_0060e404);
                 fptr7 = (sk_fn)sk_h_0008f728();
                 pval1 = var90;
                 fptr7(var90,&sk_dat_004c1010,0x100,lval4,tmp9);
@@ -2810,7 +2811,7 @@ void sk_slice_002e1164()
         }
         if (0x40 < lval9) goto L002e1164_002e1318;
         var88 = lval17;
-        tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,((unsigned long)0));
+        tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,sk_h_0060e404);
         fptr8 = (sk_fn)sk_h_0008f728();
         pval2 = var80;
         fptr8(var80,&sk_dat_004c1010,0x100,lval5,tmp10);
@@ -2887,7 +2888,7 @@ void sk_slice_002e1164()
               lval9 = fptr8(arg3,arg4);
               if ((tmp7 & 1) != 0) {
                 if (0x40 < lval9) goto L002e1164_002e16d0;
-                tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,((unsigned long)0));
+                tmp10 = sk_h_00377bec(tmp4,arg3,lval5,sk_h_0060e3fc,sk_h_0060e404);
                 fptr8 = (sk_fn)sk_h_0008f728();
                 pval2 = var80;
                 fptr8(var80,&sk_dat_004c1010,0x100,lval5,tmp10);
@@ -5964,7 +5965,7 @@ void sk_slice_002e5804()
 /*--------------------------------------------------------------------*/
 /* FUN_002e5828 @ 0x002e5828  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e5828(undefined8 param_1,undefined8 arg2,long arg3,long param_4,uint param_5, ulong param_6) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified against decompile; Swift stdlib / object-service). */
 unsigned long sk_slice_002e5828()
 {
     unsigned long arg1;

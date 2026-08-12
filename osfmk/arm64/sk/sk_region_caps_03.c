@@ -280,7 +280,9 @@ void *cL4_array_grow_reserve(void)
  * grown) backing store; param_4/param_5 describe the array type.
  * Confidence: medium
  * Notes: element stride 0x10, fields at +0x20/+0x28; faults at 0x8d888/
- *   0x8d88c/0x8d890/0x8d894/0x8d898/0x8d89c. */
+ *   0x8d88c/0x8d890/0x8d894/0x8d898/0x8d89c.  +0x10 used count, +0x18 = 2x
+ *   capacity marker.  FUN_0008e3f8() after init in the grow path is dropped
+ *   (arg lost by decompiler; see cL4_count_to_cap @0x8e3f8). */
 void *cL4_map_merge_arrays(void *a, void *b, void *(*alloc)(unsigned long, int),
                            unsigned long type_magic, unsigned long type_table)
 {
@@ -288,7 +290,13 @@ void *cL4_map_merge_arrays(void *a, void *b, void *(*alloc)(unsigned long, int),
     unsigned long nb = *(unsigned long *)((char *)b + 0x10);
     unsigned long n = (na < nb) ? na : nb;
 
-    void *dst = (n == 0) ? (void *)&cL4_default_handler : (void *)0;
+    void *dst;
+    if (n == 0) {
+        dst = (void *)&cL4_default_handler;
+    } else {
+        dst = alloc(n, 0);
+        cL4_ref_dec(0);   /* FUN_0036b270() — release ref on the new array */
+    }
     unsigned long *out = (unsigned long *)dst + 4;
     unsigned long cap = *(unsigned long *)((char *)dst + 0x18) >> 1;
     cL4_arr_header_release(dst);
@@ -302,27 +310,12 @@ void *cL4_map_merge_arrays(void *a, void *b, void *(*alloc)(unsigned long, int),
                 CL4_FAULT(0x8d888);
             }
             unsigned long kv = *pb;
-            if (cap == 0) {
-                /* grow the destination array */
-                unsigned long want = *(unsigned long *)((char *)dst + 0x18) & ~1ull;
-                if (*(unsigned long *)((char *)dst + 0x18) < 2) {
-                    want = 1;
-                }
-                unsigned long td = cL4_type_desc(type_magic, type_table);
-                void *fresh = cL4_obj_alloc_typed(td, want * 0x10 + 0x20, 7);
-                cL4_ref_dec(*pa);
-                cL4_ref_dec(kv);
-                cL4_obj_init(fresh);
-                /* copy live prefix, free old header */
-                cL4_arr_header_release(dst);
-                dst = fresh;
-                cap = want;
-                out = (unsigned long *)dst + 4 + (*(unsigned long *)((char *)dst + 0x18) >> 1);
-            }
+            cap -= 1;
             *out = *pa;
             out[1] = kv;
+            cL4_ref_dec(0);    /* FUN_0036b270() — release key */
+            cL4_ref_dec(kv);   /* FUN_0036b270(value) */
             out += 2;
-            cap -= 1;
             na -= 1;
             i += 1;
             pa += 1;
@@ -343,9 +336,13 @@ void *cL4_map_merge_arrays(void *a, void *b, void *(*alloc)(unsigned long, int),
         unsigned long k = *(unsigned long *)((char *)a + 0x20 + n * 8);
         unsigned long v = *(unsigned long *)((char *)b + 0x20 + n * 8);
         if (cap == 0) {
-            /* grow */
-            unsigned long want = *(unsigned long *)((char *)dst + 0x18) & ~1ull;
-            if (*(unsigned long *)((char *)dst + 0x18) < 2) {
+            /* grow the destination array (capacity doubles) */
+            unsigned long old = *(unsigned long *)((char *)dst + 0x18);
+            if ((long)((old >> 1) + 0x4000000000000000) < 0) {
+                CL4_FAULT(0x8d898);
+            }
+            unsigned long want = old & ~1ull;
+            if ((long)old < 2) {
                 want = 1;
             }
             unsigned long td = cL4_type_desc(type_magic, type_table);
@@ -353,9 +350,20 @@ void *cL4_map_merge_arrays(void *a, void *b, void *(*alloc)(unsigned long, int),
             cL4_ref_dec(k);
             cL4_ref_dec(v);
             cL4_obj_init(fresh);
+            *(unsigned long *)((char *)fresh + 0x10) = want;      /* new capacity */
+            *(unsigned long *)((char *)fresh + 0x18) = 2 * want;  /* 2x marker */
+            unsigned long oldn = *(unsigned long *)((char *)dst + 0x18) >> 1;
+            out = (unsigned long *)((char *)fresh + 0x20 + oldn * 0x10);
+            cap = want - oldn;
+            if (*(long *)((char *)dst + 0x10) != 0) {
+                if (fresh != dst ||
+                    (char *)dst + 0x20 + oldn * 0x10 <= (char *)fresh + 0x20) {
+                    cL4_memcpy((char *)fresh + 0x20, (char *)dst + 0x20, oldn << 4);
+                }
+                *(unsigned long *)((char *)dst + 0x10) = 0;
+            }
             cL4_arr_header_release(dst);
             dst = fresh;
-            cap = want;
         } else {
             cL4_ref_dec(k);
             cL4_ref_dec(v);

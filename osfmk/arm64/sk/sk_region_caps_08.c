@@ -13,6 +13,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* 16-byte {lo, hi} register-pair return type (matches sk_internal.h). */
+typedef struct cl4_result { uint64_t lo; uint64_t hi; } cl4_result_t;
+
 /* Ghidra's CONCATn helpers — concatenate the low bytes of two words into a
  * wider value. Only the widths used below are defined. */
 #define CONCAT71(hi, lo) (((uint64_t)(hi) << 8) | ((uint64_t)(lo) & 0xff))
@@ -237,6 +240,7 @@ void cL4_noop_16();
 void cL4_noop_17();
 void cL4_noop_barrier();
 unsigned long cL4_extent(unsigned long obj);
+cl4_result_t cL4_extent_of(unsigned long obj); /* FUN_000e250c out-of-slice: min-extent over obj's list; pair (lo=extent, hi=flag) */
 void cL4_record_write(unsigned long dst, unsigned long idx, ...);
 void cL4_record_copy(void);
 void exclave_msg_copy(unsigned long src);
@@ -1157,10 +1161,14 @@ long exclave_calc_bundle_size(void)
  * table for the kernel magic __MACHOH (0x484f4843414d5f5f), then walks the
  * image's segment64 commands to find the __TEXT segment; returns the
  * computed base address (local_d0) of the kernel text.
- * Confidence: medium
- * Notes: magics 0x484f4843414d5f5f (__MACHOH), 0x545845545f5f (__TEXT);
- *   strings "Can't find kernel component"/"Can't find kernel header"/
- *   "Could not find segment64 command"/"could not parse segment64 comman". */
+ * Confidence: high
+ * Notes: verified 2026-08-12. magics 0x484f4843414d5f5f (__MACHOH),
+ *   0x545845545f5f (__TEXT); strings "Can't find kernel component"/
+ *   "Can't find kernel header"/"Could not find segment64 command"/
+ *   "could not parse segment64 comman". Fixed: the two component/segment
+ *   magic probes were calling their vtable method twice (or dropping the hi
+ *   word) instead of capturing the 16-byte return once; now use cl4_result_t.
+ *   Decompile was partially mangled (unreachable blocks, extraout regs). */
 unsigned long exclave_find_kernel(unsigned long components, unsigned long image)
 {
     unsigned long list = (unsigned long)&DAT_00657778;
@@ -1172,10 +1180,10 @@ unsigned long exclave_find_kernel(unsigned long components, unsigned long image)
         if (*(unsigned long *)(components + 0x10) <= i)
             __builtin_trap();       /* 0xa5ad0 */
         long *comp = *(long **)(components + i * 8 + 0x20);
-        void (*m)(void) = *(void (**)(void))(*comp + 0x70);
+        cl4_result_t (*m)(void) = *(cl4_result_t (**)(void))(*comp + 0x70);
         cL4_obj_retain(comp);
-        unsigned long pair[2] = {((unsigned long (*)(void))m)(), ((unsigned long (*)(void))m)()};
-        long magic_lo = pair[0], magic_hi = pair[1];
+        cl4_result_t magic_pair = m();
+        long magic_lo = (long)magic_pair.lo, magic_hi = (long)magic_pair.hi;
         if (magic_lo == 0x484f4843414d5f5f && magic_hi == -0x10bcb3adbabbbebb) {
             cL4_error_tag(magic_hi);
             /* accept */
@@ -1253,8 +1261,8 @@ unsigned long exclave_find_kernel(unsigned long components, unsigned long image)
             }
             unsigned long l = cL4_der_build(&local_frame);
             cL4_bcopy((unsigned long)&stack_frame, l + 0x28, 0x48);
-            unsigned long e = cL4_array_elem();
-            unsigned long e0 = e, e1 = 0;
+            cl4_result_t e = ((cl4_result_t (*)(void))cL4_array_elem)();
+            unsigned long e0 = e.lo, e1 = e.hi;
             if (e0 == 0x545845545f5f && e1 == -0x1a00000000000000) {
                 cL4_obj_release(list);
                 cL4_obj_release(seg);
@@ -2519,7 +2527,8 @@ long exclave_stackshot_build(unsigned long a, unsigned long b, unsigned long c, 
             __builtin_trap();       /* 0xa7814 */
     }
     /* second pass: build the frame entries */
-    unsigned long size_pair = cL4_extent(out_list);
+    cl4_result_t extent_res = cL4_extent_of(out_list);
+    unsigned long size_pair = extent_res.lo, extent_flag = extent_res.hi;
     cL4_obj_release(out_list);
     unsigned long i2 = 0;
     long c2 = *(long *)(d + 0x10);
@@ -2534,7 +2543,7 @@ long exclave_stackshot_build(unsigned long a, unsigned long b, unsigned long c, 
                 long total = *(long *)(receiver + 0x28);
                 if (total != 0) {
                     unsigned long fhdr = 0;
-                    if ((size_pair & 0xff) != 1)
+                    if ((extent_flag & 0xff) != 1)
                         fhdr = size_pair;
                     unsigned long *head2 = (unsigned long *)cL4_buf_alloc(0x40, 0xffffffffffffffff);
                     *(unsigned long **)(receiver + 0x10) = head2;
