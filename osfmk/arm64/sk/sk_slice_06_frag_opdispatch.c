@@ -1,5 +1,7 @@
 /* sk_slice_06_frag_opdispatch.c — VAS op-dispatch wrappers (0x2ee90-0x2f780). */
 
+#include "sk_slice_06_shared.h"
+
 /* FUN_0002ee90 @ 0x0002ee90  (est. sk_vas_op_0)
  * Ghidra: void FUN_0002ee90(long,undefined8,undefined8,undefined8,long)
  * Reserves a VAS op slot tagged 0x100000012, runs the out-of-slice VAS helper
