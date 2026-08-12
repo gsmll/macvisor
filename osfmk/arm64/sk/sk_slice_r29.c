@@ -813,7 +813,7 @@ void sk_h_48c284();
 void sk_h_48c564();
 void sk_h_48c644();
 void sk_h_48c718();
-word_t sk_h_48ce80(0);
+sk_r29_pair_t sk_h_48ce80();
 void sk_h_48d400();
 bool sk_h_48d554();
 long sk_h_48d694();
@@ -3563,7 +3563,7 @@ sk_r29_pair_t sk_h_48ce80(long p1)
         out = 0x2f2e2f;
         break;
     }
-    return out;
+    { sk_r29_pair_t _r; _r.lo = out; _r.hi = 0; return _r; }
 }
 
 /* FUN_0048d400 @ 0x0048d400   (est. sk_regex_has_multi_branch)
