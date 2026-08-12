@@ -223,7 +223,7 @@ long sk_cont_block(word_t param_1);
 long sk_cont_block_alloc(word_t *block, long size);
 void sk_cont_buf_append(word_t *buf, word_t *value);
 void sk_cont_cancel(word_t task);
-void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t arg5, ...);
+void sk_cont_dequeue(long task, word_t cb, word_t cb_arg, word_t arg4, word_t arg5);
 void sk_cont_enqueue_record(long task, word_t a2, word_t a3, int enable);
 void sk_cont_enqueue_str(long task, word_t str);
 void sk_cont_exception(long task);
@@ -236,7 +236,7 @@ void sk_cont_record_free(word_t block, word_t rec);
 void sk_cont_record_init(word_t param_1);
 bool sk_cont_record_pop(long queue, word_t out);
 void sk_cont_result_dispatch(long consumer, word_t rec);
-void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg, ...);
+void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg);
 void sk_cont_resume_for_task(word_t task);
 void sk_cont_resume_record(word_t rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_save_b(void);
@@ -258,7 +258,7 @@ word_t sk_cont_suspend_and_check(long task);
 word_t sk_cont_suspend_simple(word_t task);
 void sk_cont_teardown_block(long task, long ctx, word_t param_3);
 void sk_cont_wake_cb(word_t *rec, word_t status, word_t param_3);
-uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg);
+uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb, word_t cb_arg, ...);
 void sk_cont_wake_task(word_t arg, long task);
 void sk_cont_wake_task2(word_t arg, long task);
 void sk_continuation_create(word_t kind_hi, word_t param_2);
@@ -321,6 +321,14 @@ void sk_tl_rb_rebalance(word_t *tree, word_t *node);
 word_t sk_tl_value_alloc(word_t task, word_t key, word_t meta, int flag);
 void sk_vtable_dispatch_10(word_t *obj);
 void sk_vtable_dispatch_20(word_t *obj);
+
+/* ---- Tiny region helpers used before their definitions. ---- */
+long sk_ptr_offset_8(long p);
+ulong sk_status_high(long p);
+long sk_task_local_root(word_t task);
+word_t *sk_registry_add(word_t *set, word_t *key, word_t *arg3);
+void sk_cont_free_nodes(long block, word_t head);
+void sk_cont_block_dealloc(word_t *block);
 
 /* =====================================================================
  * Continuation registry primitives.
