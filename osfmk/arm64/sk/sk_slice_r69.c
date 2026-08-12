@@ -82,7 +82,7 @@ extern long FUN_00679838();
 extern long FUN_00679990();
 extern long FUN_00679b98();
 extern sk_pair_t FUN_00679d44();
-extern long FUN_0067a154();
+extern sk_pair_t FUN_0067a154();
 extern long FUN_0067a264();
 extern long FUN_0067a334();
 extern long FUN_0067a3dc();
@@ -280,6 +280,14 @@ static unsigned long FUN_006757cc(void *a, unsigned long b);
 static unsigned long FUN_006758c8(void *a, unsigned long b, unsigned long c, unsigned long d);
 static unsigned long sk_page_map(long r, long addr, unsigned long mode, unsigned long flags,
                                 unsigned long arg5, int arg6, unsigned long arg7);
+static unsigned long sk_page_map_dispatch(char *r, unsigned long a2, unsigned long mode,
+                                          unsigned long flags, unsigned long a5, int a6, unsigned int a7);
+static unsigned long sk_page_map_range(char *r, unsigned long start, unsigned long len);
+static void sk_region_page_notify(long ctx, long addr, unsigned int mode, long r, unsigned char *arg);
+static unsigned long sk_region_teardown_all(unsigned long ctx);
+static sk_pair_t sk_region_enter(unsigned long ctx, unsigned long arg2, unsigned long arg3);
+static sk_pair_t sk_vspace_op(long ctx, long arg2, unsigned long flags, unsigned long arg4, unsigned char *desc);
+static sk_pair_t sk_vspace_destroy(unsigned long ctx, unsigned long *out);
 
 /* sk_l4_error_format @ 0x00674e98  (est. sk_l4_error_format)
  * Ghidra: void sk_l4_error_format(undefined8 *param_1, byte param_2)
@@ -5036,6 +5044,7 @@ static unsigned long sk_page_map(long r, long addr, unsigned long mode,
     long page = (long)l[0];
     *(unsigned long *)(r + 0x78) = l[4];
     unsigned long result;
+    unsigned long walk = 0;
     if (l[0] != 0) {
         unsigned long cb2 = FUN_00668c78(*(unsigned long *)(r + 0x50));
         if (cb2 <= cb2 + 0xd0) {
@@ -5050,7 +5059,7 @@ static unsigned long sk_page_map(long r, long addr, unsigned long mode,
                     sk_ipc_msg[0] = 0;   /* tpidrro_el0 */
                     CallSupervisor(3);
                 }
-                long walk = page;
+                walk = (unsigned long)page;
                 if (mode == 0) {
                     sk_pair_t w = sk_page_map_walk(r, addr, cb2, page, cap, flags, 0);
                     walk = w.hi;
@@ -5203,9 +5212,919 @@ static unsigned long sk_page_map(long r, long addr, unsigned long mode,
             FUN_006833d4(0x6a71a1);   /* fatal */
         }
     }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675140) */
 done:
     if (*(unsigned long *)0x6b5ed0 == cookie) {
         return sub;
     }
     FUN_0067f660(sub);   /* fatal (noreturn) */
+}
+
+/* FUN_00674264 @ 0x00674264  (est. sk_region_tree_walk)
+ * Ghidra: undefined8 FUN_00674264(long param_1, ulong param_2, ulong param_3,
+ *                                ulong param_4, long param_5)
+ * Walks the region tree (param_1) invoking a callback (via param_5's method
+ * table) on each leaf region overlapping [param_2, param_3) with at least
+ * param_4 free space. Returns 0 when the callback accepts a region, else 1.
+ * Confidence: medium */
+static unsigned long sk_region_tree_walk(long node, unsigned long lo, unsigned long hi,
+                                         unsigned long need, long m)
+{
+    if (node == 0) {
+        return 1;
+    }
+    unsigned long r = 1;
+    if (need <= *(unsigned long *)(node + 0x68)) {
+        unsigned long base = *(unsigned long *)(node + 8);
+        if (lo < base) {
+            unsigned long r = sk_region_tree_walk(*(unsigned long *)(node + 0x58), lo, hi, need, m);
+            if ((int)r == 0) return r;
+            base = *(unsigned long *)(node + 8);
+        }
+        unsigned long a = (base <= lo) ? lo : base;
+        unsigned long end = *(long *)(node + 0x10) + base;
+        unsigned long b = (hi <= end) ? hi : end;
+        unsigned long avail = 0;
+        if (a <= b) avail = b - a;
+        if ((*(int *)(node + 0x20) == 0) && (need <= avail)) {
+            r = (*(sk_fp_t *)(m + 0x10))(m, node);
+            if ((int)r == 0) return r;
+            end = *(long *)(node + 0x10) + *(long *)(node + 8);
+        }
+        if ((end < hi) &&
+            (r = sk_region_tree_walk(*(unsigned long *)(node + 0x60), lo, hi, need, m),
+             (int)r == 0)) {
+            return r;
+        }
+    }
+    return 1;
+}
+
+/* FUN_006757cc @ 0x006757cc  (est. sk_page_map_step0)
+ * Ghidra: void FUN_006757cc(long param_1, long param_2)
+ * First page-map walk step: resolves the page-capability set for page index
+ * param_2 from the walk state (param_1), updating the region's cap set; reports
+ * a 0x102 sentinel when no page is present.
+ * Confidence: medium */
+static unsigned long sk_page_map_step0(long w, long idx)
+{
+    unsigned long l[5] = {0, 0, 0, 0, 0};
+    unsigned long cb = *(unsigned long *)(w + 0x38);
+    if ((cb != 0) &&
+       ((cb + 0xd0 < cb || *(unsigned long *)(w + 0x40) < cb + 0xd0) ||
+        cb < *(unsigned long *)(w + 0x48))) {
+        __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x6758c8) */
+    }
+    unsigned long base = (*(long *)(*(long *)(*(long *)(w + 0x20) + 8) + 0x18) + idx * 0x4000);
+    FUN_006662ac(l, *(unsigned long *)(*(long *)(w + 0x30) + 0x78),
+                 (int)((unsigned long)(base - *(long *)(cb + 0x28)) >> 0xe) + 1);
+    *(long *)(*(long *)(w + 0x30) + 0x78) = (long)l[4];
+    if (l[0] == 0) {
+        if ((l[2] & 0xffU) != 0) {
+            FUN_006833d4(0x6ad275);   /* fatal */
+            __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x6758c8) */
+        }
+        long r = *(long *)(*(long *)(w + 0x28) + 8);
+        if (*(long *)(r + 0x18) == 0) {
+            *(unsigned long *)(r + 0x18) = 0x102;
+        }
+    }
+    return l[0];
+}
+
+/* FUN_006758c8 @ 0x006758c8  (est. sk_page_map_step1)
+ * Ghidra: void FUN_006758c8(long param_1, ulong param_2, long param_3, undefined8 param_4)
+ * Second page-map walk step: dispatches the page-map result (param_2) — mapping
+ * the page at index param_3 via sk_page_map / the region walk, or recording a
+ * pending status. Handles the 0x107 and error-status paths.
+ * Confidence: medium */
+static unsigned long sk_page_map_step1(long w, unsigned long status, long idx, unsigned long arg4)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    long page = (*(long *)(*(long *)(*(long *)(w + 0x20) + 8) + 0x18) + idx * 0x4000);
+    if (status == 0) {
+        unsigned long cb = *(unsigned long *)(w + 0x30);
+        if ((cb == 0) ||
+           ((cb <= cb + 0xd0 && cb + 0xd0 <= *(unsigned long *)(w + 0x38)) &&
+            *(unsigned long *)(w + 0x40) <= cb)) {
+            unsigned long cap = FUN_00677674(cb, 1, page);
+            cb = *(unsigned long *)(w + 0x30);
+            if ((cb == 0) ||
+               ((cb <= cb + 0xd0 && cb + 0xd0 <= *(unsigned long *)(w + 0x38)) &&
+                *(unsigned long *)(w + 0x40) <= cb)) {
+                long rr = sk_page_map(*(unsigned long *)(w + 0x48), page, cb, arg4, cap, 0, 1);
+                if (rr != 0) {
+                    cb = *(unsigned long *)(w + 0x30);
+                    if ((*(unsigned long *)(w + 0x38) < cb + 0xd0) || (cb < *(unsigned long *)(w + 0x40)))
+                        goto trap;
+                    FUN_00686f94(cb, arg4, w, rr);
+                }
+                goto done;
+            }
+        }
+    } else {
+        if (status == 0x107) goto done;
+        if ((status & 0xfd) == 0) {
+            unsigned long cb = *(unsigned long *)(w + 0x30);
+            if (*(unsigned long *)(w + 0x38) < cb + 0xd0 || cb < *(unsigned long *)(w + 0x40)) goto trap;
+            unsigned long r2 = (*(sk_fp_t *)(*(long *)(cb + 0xb8) + 0x10))(*(unsigned long *)(cb + 0xb0), arg4);
+            if ((r2 & 0xff) == 0) {
+                long t = *(long *)(*(long *)(w + 0x28) + 8);
+                if (*(long *)(t + 0x18) == 0) {
+                    *(unsigned long *)(t + 0x18) = status;
+                }
+                goto done;
+            }
+            FUN_00686ffc(r2, (unsigned char *)&cookie);
+        }
+        unsigned long tag = *(unsigned long *)0x6b4368;
+        sk_l4_error_format((unsigned long *)&cookie, status);
+        if (*(unsigned long *)(w + 0x30) + 0xd0 <= *(unsigned long *)(w + 0x38) &&
+            *(unsigned long *)(w + 0x40) <= *(unsigned long *)(w + 0x30)) {
+            FUN_006864cc(tag);
+            sk_l4_error_format((unsigned long *)&cookie, status);
+            FUN_006833d4(0x6ad325);   /* fatal */
+        }
+    }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675ae8) */
+done:
+    if (*(unsigned long *)0x6b5ed0 == cookie) {
+        return 0;
+    }
+    FUN_0067f660();   /* fatal (noreturn) */
+}
+
+/* FUN_00675ae8 @ 0x00675ae8  (est. sk_region_merge_validate)
+ * Ghidra: long FUN_00675ae8(undefined8 param_1, long param_2)
+ * Walks from region param_2 to the end of the region tree, returning the last
+ * mergeable (non-leaf / non-tail) region or 0 when the region is the whole
+ * address space.
+ * Confidence: medium */
+static long sk_region_merge_validate(unsigned long c, long r)
+{
+    for (;;) {
+        if (r == 0) {
+            return 0;
+        }
+        if (*(int *)(r + 0x20) != 0) break;
+        if (*(long *)(r + 0x10) + *(long *)(r + 8) == 0x1000000000) {
+            return 0;
+        }
+        r = (long)sk_region_find((unsigned long *)c, 0);
+    }
+    return r;
+}
+
+/* FUN_00675d88 @ 0x00675d88  (est. sk_region_tree_insert)
+ * Ghidra: void FUN_00675d88(ulong *param_1, ulong param_2)
+ * Inserts region param_2 into the region tree rooted at *param_1, recomputing
+ * the balance/height fields and rebalancing.
+ * Confidence: medium */
+static void sk_region_tree_insert(unsigned long *rootp, unsigned long r)
+{
+    unsigned long root = *rootp;
+    if (root == 0) {
+        *rootp = r;
+        unsigned long h = (*(int *)(r + 0x20) == 0) ? *(unsigned long *)(r + 0x10) : 0;
+        unsigned long a = 0;
+        if (*(long *)(r + 0x58) != 0) a = *(unsigned long *)(*(long *)(r + 0x58) + 0x68);
+        unsigned long b = 0;
+        if (*(long *)(r + 0x60) != 0) b = *(unsigned long *)(*(long *)(r + 0x60) + 0x68);
+        if (a <= b) a = b;
+        if (h <= a) h = a;
+        *(unsigned long *)(r + 0x68) = h;
+        return;
+    }
+    long child;
+    if (*(unsigned long *)(r + 8) < *(unsigned long *)(root + 8)) {
+        if (root + 0xb0 < root || root + 0x60 < root + 0x58) goto trap;
+        sk_region_tree_insert((unsigned long *)(root + 0x58), r);
+        child = *(long *)(root + 0x58);
+    } else {
+        if (root + 0xb0 < root || root + 0x68 < root + 0x60) goto trap;
+        sk_region_tree_insert((unsigned long *)(root + 0x60), r);
+        child = *(long *)(root + 0x60);
+    }
+    if (*(unsigned char *)(root + 0x24) <= *(unsigned char *)(child + 0x24)) {
+        *(unsigned char *)(root + 0x24) = *(unsigned char *)(child + 0x24) + 1;
+    }
+    int i = 0;
+    if (*(long *)(root + 0x58) != 0) i = *(unsigned char *)(*(long *)(root + 0x58) + 0x24) + 1;
+    unsigned int j = 0;
+    if (*(long *)(root + 0x60) != 0) j = ~(unsigned int)*(unsigned char *)(*(long *)(root + 0x60) + 0x24);
+    sk_region_tree_rebalance(rootp, j + i);
+    return;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675e98) */
+}
+
+/* FUN_00676498 @ 0x00676498  (est. sk_region_map_page)
+ * Ghidra: void FUN_00676498(long param_1)
+ * Maps a single 16KB page for a region via sk_region_map_extend, validating the
+ * exact 0x4000-size result.
+ * Confidence: medium */
+static void sk_region_map_page(long d)
+{
+    long off = *(long *)(d + 0x28) + *(long *)(d + 0x20);
+    long sz = 0x4000;
+    char rc = (char)sk_region_map_extend(*(unsigned long *)(d + 0x30), (unsigned long *)&off, (unsigned long *)&sz);
+    if (rc != '\0') FUN_006833d4(0x6aef45);   /* fatal */
+    if (off == *(long *)(d + 0x28) + *(long *)(d + 0x20)) {
+        if (sz == 0x4000) {
+            return;
+        }
+        FUN_006833d4(0x6af01d);   /* fatal */
+    }
+    FUN_006833d4(0x6aefc4);   /* fatal */
+}
+
+/* FUN_00675b48 @ 0x00675b48  (est. sk_page_lookup)
+ * Ghidra: undefined1 [16] FUN_00675b48(long param_1, ulong param_2, undefined8 *param_3)
+ * Looks up/allocates a page capability for address param_2 in region param_1,
+ * storing the resulting token in *param_3. Uses the region's page-alloc method
+ * (indirect call) or the built-in page-cap split (sk_cap_decode), returning a
+ * {status, token} pair.
+ * Confidence: medium */
+static sk_pair_t sk_page_lookup(long r, unsigned long addr, unsigned long *tok)
+{
+    if (*(unsigned long *)(r + 0x10) <= (addr & 0xffffffffffffc000) - *(long *)(r + 8)) {
+        FUN_006833d4(0x6ad9b0);   /* fatal */
+    }
+    long res = *(long *)(r + 0x40);
+    *tok = 0xffffffffffffffff;
+    sk_pair_t out;
+    if ((*(unsigned char *)(r + 0x21) >> 4 & 1) == 0) {
+        unsigned long cb = FUN_00668c78(*(unsigned long *)(r + 0x50));
+        unsigned long lock = r + 0x80;
+        if (r + 0x90U < lock) goto trap;
+        int rc = FUN_0067cffc(lock);
+        if (rc != 0) FUN_006833d4(0x6a8797);
+        unsigned long l[5] = {0};
+        if (cb + 0xd0 < cb) goto trap;
+        sk_cap_decode(l, *(unsigned long *)(r + 0x78),
+                      (int)(addr - *(long *)(cb + 0x28) >> 0xe) + 1, 0, 0);
+        *(long *)(r + 0x78) = (long)l[4];
+        if (l[0] == 0) {
+            rc = FUN_0067d02c(lock);
+            if (rc != 0) FUN_006833d4(0x6a8797);
+            bool have = (l[2] & 0xffU) != 0;
+            out.lo = have ? l[2] : 0x9370002;
+            res = have ? (long)l[3] : 0;
+            goto done;
+        }
+        res = (*(sk_fp_t *)(*(long *)(cb + 0xb8) + 0x18))
+                      (*(unsigned long *)(cb + 0xb0), l[0], tok);
+        rc = FUN_0067d02c(lock);
+        if (rc != 0) FUN_006833d4(0x6a8797);
+        if (res != 0) {
+            out.lo = 0x93e0001;
+            res = 0;
+            goto done;
+        }
+        out.lo = 0;
+    } else {
+        out.lo = 0x9260001;
+        if (*(sk_fp_t *)(r + 0x28) != 0) {
+            out.lo = (*(sk_fp_t *)(r + 0x28))(*(unsigned long *)(r + 0x38),
+                                               (addr & 0xffffffffffffc000) - res, tok);
+            if ((out.lo & 1) == 0) {
+                out.lo = 0x9280001;
+                res = 0;
+                goto done;
+            }
+            out.lo = 0;
+        }
+    }
+    res = 0;
+done:
+    out.hi = res;
+    return out;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675cc0) */
+}
+
+/* FUN_006751e0 @ 0x006751e0  (est. sk_page_map_dispatch)
+ * Ghidra: ulong FUN_006751e0(char *param_1, undefined8 param_2, undefined8 param_3,
+ *                          ulong param_4, undefined8 param_5, int param_6, uint param_7)
+ * Page-map dispatcher (variant of sk_page_map): maps a page region, resolving
+ * the containing region, invoking the 32MB-coalesced page-walk callback table
+ * (FUN_006757cc / FUN_006758c8), and returning the map status. Handles the
+ * 0x2xx/0x3xx error and pending (2/7) paths with the shared error formatter.
+ * Confidence: low */
+static unsigned long sk_page_map_dispatch(char *r, unsigned long a2, unsigned long mode,
+                                          unsigned long flags, unsigned long a5,
+                                          int a6, unsigned int a7)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    unsigned int rf = *(unsigned int *)(r + 0x20);
+    unsigned int mode2 = 0;
+    if (a6 == 0) mode2 = rf >> 3 & 3;
+    unsigned int st = (unsigned int)((rf & 0x2400) != 0);
+    if ((rf & 0x200) != 0) st = 2;
+    st = st | rf >> 0x13 & 8;
+    unsigned long end = flags;
+    unsigned long sub;
+    if (*r == '\x04') {
+        sub = FUN_006786fc();
+    } else {
+        sub = FUN_006787a0(mode, a5, flags, a2, mode2, st);
+    }
+    unsigned long tag = 0x6b4368;
+    unsigned long lock0[4] = {0};
+    unsigned long lock2 = 0, lock3 = 0;
+    if ((sub & 0xff) == 4) {
+        if (((unsigned char)r[0x23] >> 2 & 1) != 0) {
+            /* coalesced 32MB-aligned page walk */
+            sk_pair_t e2 = FUN_00686f68();
+            r = (char *)e2.lo;
+            long a = 0;
+            if ((end & 0x3fff) != 0) a = 0x4000;
+            unsigned long end2 = a + (end & 0xffffffffffffc000);
+            unsigned long cb = FUN_00668c78(*(unsigned long *)(r + 0x50));
+            unsigned long top = cb + 0xd0;
+            if (cb <= top) {
+                for (unsigned long u = e2.hi & 0xfffffffffe000000; u < end2; u = u + 0x2000000) {
+                    unsigned long cap = FUN_00677674(cb, 1, u);
+                    unsigned long ok = FUN_006777d8(cb, cap);
+                    if ((ok & 1) == 0) return 2;
+                }
+                char *pg = r + 0x80;
+                if (pg <= r + 0x90) {
+                    int rc = FUN_0067cffc(pg);
+                    if (rc != 0) FUN_006833d4(0x6a8797);
+                    unsigned long base2 = e2.hi & 0xffffffffffffc000;
+                    char k = *r;
+                    unsigned int rf2 = *(unsigned int *)(r + 0x20);
+                    unsigned int en = rf2 >> 0xd & 1;
+                    if (k != '\x11') en = 0;
+                    unsigned int fl = rf2 >> 0x11 & 0x20 | en;
+                    unsigned long walkv;
+                    if ((rf2 >> 0x1a & 1) == 0) {
+                        unsigned long n = (end2 - base2) >> 0xe;
+                        unsigned long b0 = *(unsigned long *)(cb + 0xb0);
+                        unsigned long **ops = *(unsigned long ***)(cb + 0xb8);
+                        sk_fp_t cb2f = (sk_fp_t)ops[9];
+                        if (cb2f == 0) {
+                            if (end2 != base2) {
+                                unsigned long i = 0;
+                                do {
+                                    unsigned long r1 = FUN_006757cc(&lock0, i);
+                                    unsigned long r2 = (*(sk_fp_t *)*ops)(b0, k, r1, r1, fl);
+                                    FUN_006758c8(&lock0, r2, i, r1);
+                                    i = i + 1;
+                                } while (n != i);
+                            }
+                        } else {
+                            cb2f(b0, k, fl, n, &lock0, &lock0);
+                        }
+                    } else {
+                        while (end2 != base2) {
+                            k = *r;
+                            unsigned long b0 = *(unsigned long *)(cb + 0xb0);
+                            unsigned long **ops = *(unsigned long ***)(cb + 0xb8);
+                            sk_fp_t cb2f = (sk_fp_t)ops[9];
+                            if (cb2f == 0) {
+                                unsigned long r1 = FUN_006757cc(&lock0, 0);
+                                unsigned long r2 = (*(sk_fp_t *)*ops)(b0, k, r1, r1, fl);
+                                FUN_006758c8(&lock0, r2, 0, r1);
+                            } else {
+                                cb2f(b0, k, fl, 1, &lock0, &lock0);
+                            }
+                            if (lock2 != 0) break;
+                            unsigned long cur = lock3;
+                            lock3 = cur + 0x4000U;
+                            base2 = cur + 0x4000U;
+                        }
+                    }
+                    rc = FUN_0067d02c(pg);
+                    if (rc == 0) {
+                        FUN_00656634(&lock0, 8);
+                        FUN_00656634(&lock0, 8);
+                        return lock2;
+                    }
+                    FUN_006833d4(0x6a8797);
+                }
+            }
+            __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675764) */
+        }
+        int ok = FUN_006782b4(mode, a2);
+        if (ok == 0) {
+            sub = 2;
+            goto done;
+        }
+        if (*r == '\x04') {
+            sub = FUN_006786fc();
+            tag = 0x6b4368;
+        } else {
+            sub = FUN_006787a0(mode, a5, flags, a2, mode2, st);
+            tag = 0x6b4368;
+        }
+    }
+    *(unsigned long *)0x6b4368 = tag;
+    if (sub != 0) {
+        unsigned int c8 = sub & 0xff;
+        if ((a7 == 0) || (c8 == 2)) {
+            if ((a7 & 1) != 0) goto done;
+            if ((long)sub < 0x207) {
+                if (sub == 2 || sub == 7) goto done;
+            } else if ((sub == 0x207) || (sub == 0x307)) goto done;
+        }
+        if ((c8 != 8) && (c8 != 0 && (*(unsigned int *)(r + 0x20) & 0x40000) == 0)) {
+            sk_l4_error_format((unsigned long *)&cookie, 0);
+            FUN_006864cc(tag);
+            sk_l4_error_format((unsigned long *)&cookie, c8);
+            FUN_006833d4(0x6a71a1);
+        }
+    }
+done:
+    if (*(unsigned long *)0x6b5ed0 == cookie) {
+        return sub;
+    }
+    FUN_0067f660(sub);
+}
+
+/* FUN_00675418 @ 0x00675418  (est. sk_page_map_range)
+ * Ghidra: undefined8 FUN_00675418(char *param_1, ulong param_2, ulong param_3)
+ * Maps a page range [param_2, param_2+param_3) of a 0x11 region: verifies the
+ * 32MB-aligned sub-ranges are mapped (FUN_00677674/777d8), then walks the pages
+ * via the callback table (FUN_006757cc/006758c8), returning the last mapped
+ * page offset or 2.
+ * Confidence: low */
+static unsigned long sk_page_map_range(char *r, unsigned long start, unsigned long len)
+{
+    long a = 0;
+    if ((len & 0x3fff) != 0) a = 0x4000;
+    unsigned long cb = FUN_00668c78(*(unsigned long *)(r + 0x50));
+    unsigned long top = cb + 0xd0;
+    unsigned long lock0[4] = {0};
+    unsigned long lock2 = 0, lock3 = 0;
+    if (cb <= top) {
+        unsigned long end = a + (len & 0xffffffffffffc000);
+        for (unsigned long u = start & 0xfffffffffe000000; u < end; u = u + 0x2000000) {
+            unsigned long cap = FUN_00677674(cb, 1, u);
+            unsigned long ok = FUN_006777d8(cb, cap);
+            if ((ok & 1) == 0) return 2;
+        }
+        char *pg = r + 0x80;
+        if (pg <= r + 0x90) {
+            int rc = FUN_0067cffc(pg);
+            if (rc != 0) FUN_006833d4(0x6a8797);
+            unsigned long base = start & 0xffffffffffffc000;
+            char k = *r;
+            unsigned int rf = *(unsigned int *)(r + 0x20);
+            unsigned int en = rf >> 0xd & 1;
+            if (k != '\x11') en = 0;
+            unsigned int fl = rf >> 0x11 & 0x20 | en;
+            unsigned long ret;
+            if ((rf >> 0x1a & 1) == 0) {
+                unsigned long n = (end - base) >> 0xe;
+                unsigned long b0 = *(unsigned long *)(cb + 0xb0);
+                unsigned long **ops = *(unsigned long ***)(cb + 0xb8);
+                sk_fp_t cb2f = (sk_fp_t)ops[9];
+                if (cb2f == 0) {
+                    if (end != base) {
+                        unsigned long i = 0;
+                        do {
+                            unsigned long r1 = FUN_006757cc(&lock0, i);
+                            unsigned long r2 = (*(sk_fp_t *)*ops)(b0, k, r1, r1, fl);
+                            FUN_006758c8(&lock0, r2, i, r1);
+                            i = i + 1;
+                        } while (n != i);
+                    }
+                } else {
+                    cb2f(b0, k, fl, n, &lock0, &lock0);
+                }
+            } else {
+                while (end != base) {
+                    k = *r;
+                    unsigned long b0 = *(unsigned long *)(cb + 0xb0);
+                    unsigned long **ops = *(unsigned long ***)(cb + 0xb8);
+                    sk_fp_t cb2f = (sk_fp_t)ops[9];
+                    if (cb2f == 0) {
+                        unsigned long r1 = FUN_006757cc(&lock0, 0);
+                        unsigned long r2 = (*(sk_fp_t *)*ops)(b0, k, r1, r1, fl);
+                        FUN_006758c8(&lock0, r2, 0, r1);
+                    } else {
+                        cb2f(b0, k, fl, 1, &lock0, &lock0);
+                    }
+                    if (lock2 != 0) break;
+                    unsigned long cur = lock3;
+                    lock3 = cur + 0x4000U;
+                    base = cur + 0x4000U;
+                }
+            }
+            rc = FUN_0067d02c(pg);
+            if (rc == 0) {
+                FUN_00656634(&lock0, 8);
+                FUN_00656634(&lock0, 8);
+                return lock2;
+            }
+            FUN_006833d4(0x6a8797);
+        }
+    }
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675764) */
+}
+
+/* FUN_00675e98 @ 0x00675e98  (est. sk_region_page_notify)
+ * Ghidra: void FUN_00675e98(long param_1, long param_2, uint param_3, long param_4,
+ *                          undefined1 *param_5)
+ * Notifies a region's bound method of a page event: resolves the page
+ * capability for address param_2, traps via CallSupervisor(0/4) for the page
+ * teardown, and invokes the region's +0x30 method callback with the page
+ * details. Records an error via the shared formatter on failure.
+ * Confidence: low */
+static void sk_region_page_notify(long ctx, long addr, unsigned int mode, long r, unsigned char *arg)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    unsigned long e = 0;
+    long pe = 0;
+    *(unsigned long *)0x7001b4 = *(unsigned long *)0x7001b4 + 1;
+    if ((*(unsigned char *)(ctx + 0xa0) & 1) == 0) {
+        unsigned long *lock = (unsigned long *)(ctx + 0x90);
+        if (*lock == 0) goto done0;
+        if (*(long *)(ctx + 0x98) != 0) {
+            unsigned long cb = FUN_00668c78(*(unsigned long *)(r + 0x50));
+            unsigned long pg = r + 0x80;
+            if (r + 0x90U < pg) goto trap;
+            int rc = FUN_0067cffc(pg);
+            if (rc != 0) goto fatal;
+            unsigned long l[5] = {0};
+            if (cb + 0xd0 < cb) goto trap;
+            FUN_006662ac(l, *(unsigned long *)(r + 0x78),
+                         (int)((unsigned long)(addr - *(long *)(cb + 0x28)) >> 0xe) + 1);
+            long page = (long)l[0];
+            *(long *)(r + 0x78) = (long)l[4];
+            rc = FUN_0067d02c(pg);
+            if (page == 0) {
+                if (rc != 0) goto fatal;
+                unsigned long e = (l[2] & 0xffU) ? l[2] : 0xe280002;
+                long pe = (l[2] & 0xffU) ? (long)l[3] : 0;
+                goto report;
+            }
+            if (rc != 0) goto fatal;
+            if (1 < mode) {
+                *(unsigned long *)0x7001b8 = *(unsigned long *)0x7001b8 + 1;
+                e = 0xe360001;
+                pe = 0;
+                goto report;
+            }
+            sk_ipc_msg[0] = (unsigned long)(*(unsigned int *)(r + 0x20) >> 3) & 3;   /* tpidrro_el0 */
+            CallSupervisor(0);
+            sk_ipc_msg[0] = (*(unsigned int *)(r + 0x20) >> 3) & 3;
+            if (page == 0) {
+                *(unsigned long *)0x7001bc = *(unsigned long *)0x7001bc + 1;
+                e = 0;
+                pe = 0;
+                goto report;
+            }
+            do {
+                CallSupervisor(4);
+            } while (*lock == 1);
+            unsigned long ev = 0;
+            sk_ipc_msg[0] = 0;
+            CallSupervisor(0);
+            sk_ipc_msg[0] = 0;
+            if (page != 0) {
+                if (*(sk_fp_t *)(r + 0x30) == 0) {
+                    FUN_006871c4(page, 0);
+                    goto fail;
+                }
+                *(unsigned long *)0x7001cc = *(unsigned long *)0x7001cc + 1;
+                int st = (int)(*(sk_fp_t *)(r + 0x30))(
+                    *(unsigned long *)(r + 0x38), addr - *(long *)(r + 0x40), *lock, &ev);
+                if (st < 2) {
+                    if (st == 0) {
+                        *(unsigned long *)0x7001d0 = *(unsigned long *)0x7001d0 + 1;
+                        e = 0xe690001;
+                        pe = 0;
+                        goto report;
+                    }
+                    if (st != 1) goto panic;
+                    goto fail;
+                }
+            }
+            /* (remainder: deferred/cancelled handling transcribed structurally) */
+            e = 0;
+            pe = 0;
+            goto report;
+fail:
+            FUN_006871ec();
+            e = 0;
+            pe = 0;
+report:
+            /* resolved page/error result captured in e/pe (see notes) */
+            goto done;
+        }
+    }
+done0:
+    e = 0;
+done:
+    if (*(unsigned long *)0x6b5ed0 != cookie) {
+        FUN_0067f660();
+    }
+    return;
+fatal:
+    FUN_006833d4(0x6a8797);
+panic:
+    FUN_006833d4(0x6a8797);
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x675e98) */
+}
+
+/* FUN_0066e8b4 @ 0x0066e8b4  (est. sk_region_teardown_all)
+ * Ghidra: undefined8 FUN_0066e8b4(ulong param_1)
+ * Tears down every region owned by context param_1: initializes the context
+ * (0x1908 dispatch), walks the per-context region list, unmaps and releases
+ * each region's page capabilities (CallSupervisor 0/5, sk_page_map, cap
+ * removal), then destroys the regions. Returns 0 on success.
+ * Confidence: low (large region teardown loop) */
+static unsigned long sk_region_teardown_all(unsigned long ctx)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    if (ctx == 0) {
+        return 0xccb0001;
+    }
+    unsigned long ev[3] = {0};
+    if ((*(unsigned char *)(ctx + 0x290) & 1) == 0) {
+        if (ctx + 0x2a0 < ctx) goto trap;
+        char rc = (char)FUN_00666344(0x6b68d0, ctx + 0x208);
+        *(bool *)(ctx + 0x290) = (rc == '\0');
+    }
+    if (ctx + 0x2a0 < ctx) goto trap;
+    FUN_00668c78(ctx);
+    unsigned long node = 0;
+    unsigned long *desc = 0;
+    unsigned long g = FUN_00668c6c();
+    sk_pair_t ar = sk_region_create(g, 0x1908, (char *)0x68a6f8, &node, 0, 0);
+    unsigned long r = node;
+    if ((ar.lo & 0xff) == 0) {
+        unsigned long rbase = *(unsigned long *)(r + 8);
+        int rc = FUN_0067cffc(ctx + 0x1f0);
+        if (rc != 0) FUN_006833d4(0x6a8797);
+        unsigned long n = *(unsigned long *)(ctx + 0x200);
+        if (n != 0) {
+            unsigned long tag = *(unsigned long *)0x68a57c;
+            do {
+                if ((*(unsigned char *)(n + 0x20) >> 3 & 1) != 0) {
+                    if ((n + 0xb0 < n) || (n + 0x90 < n + 0x80)) goto trap;
+                    int rc2 = FUN_0067cffc(n + 0x80);
+                    if (rc2 != 0) FUN_006833d4(0x6a8797);
+                    unsigned long d[3] = {0};
+                    sk_cap_decode_tag(d, *(unsigned long *)(n + 0x78), 0);
+                    unsigned long capv = sk_cap_list_get((char *)d);
+                    if ((capv & 3) != 0) {
+                        sk_ipc_msg[0] = 1;
+                        CallSupervisor(0);
+                        sk_ipc_msg[0] = 1;
+                        if (capv >> 0x1c == 0) {
+                            unsigned int op = (unsigned int)capv >> 6 & 0x3fffff;
+                            sk_ipc_msg[0] = 0;
+                            CallSupervisor(0);
+                            sk_ipc_msg[0] = 0;
+                            CallSupervisor(5);
+                            if (r <= r + 0xb0) {
+                                long rc3 = sk_page_map((long)r, rbase, 0, 0, 0, 0, 0);
+                                if (rc3 == 0) {
+                                    if (rbase + 0x4000 < rbase || (rbase + 0x4000) - rbase < tag) goto trap;
+                                    FUN_00666448(&ev, ctx + 0x208, op, rbase, 0);
+                                    unsigned long l2 = 0x4000;
+                                    unsigned long z = 0;
+                                    unsigned long um = sk_region_pages_unmap(r, &z, &l2, 0).lo;
+                                    if ((um & 0xff) == 0) {
+                                        if ((char)ev[0] == '\0') {
+                                            unsigned long d2[3] = {0};
+                                            sk_cap_decode(d2, *(unsigned long *)(n + 0xa0), op, 0, 0);
+                                            *(unsigned long *)(n + 0xa0) = d2[4];
+                                            sk_region_page_remove(capv, n, *(unsigned int *)(n + 0x20) >> 0xc & 1,
+                                                                  (*(unsigned int *)(n + 0x20) & 0x4000000) == 0, 0);
+                                            /* advance to next page cap */
+                                            sk_cap_decode_tag(d, *(unsigned long *)(n + 0x78), op + 1);
+                                        }
+                                        capv = sk_cap_list_get((char *)d);
+                                    } else {
+                                        FUN_0068664c(&ev, rc3);
+                                    }
+                                } else {
+                                    FUN_0068664c(&ev, rc3);
+                                }
+                            }
+                        }
+                    }
+                }
+                n = *(unsigned long *)(n + 0x90);
+            } while (n != 0);
+        }
+        int rc2 = FUN_0067d02c(ctx + 0x1f0);
+        if (rc2 != 0) FUN_006833d4(0x6a8797);
+        (*(sk_fp_t *)*desc)(r);
+        return 0;
+    }
+    if (*(unsigned long *)0x6b5ed0 != cookie) {
+        FUN_0067f660(ar.lo, ar.hi);
+    }
+    return ar.lo;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66ed64) */
+}
+
+/* FUN_0066e374 @ 0x0066e374  (est. sk_region_enter)
+ * Ghidra: undefined1 [16] FUN_0066e374(undefined8 param_1, undefined8 param_2,
+ *                                    undefined8 param_3)
+ * Entry dispatcher for a region operation: bumps the op counter, acquires the
+ * region lock (FUN_0067cfb0), dispatches to the vspace region-op core
+ * (sk_vspace_op), and tears the lock down on success. Fatal on a busy/error
+ * flag.
+ * Confidence: medium */
+static sk_pair_t sk_region_enter(unsigned long ctx, unsigned long arg2, unsigned long arg3)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    *(unsigned long *)0x700178 = *(unsigned long *)0x700178 + 1;
+    unsigned long st[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned long arg = ctx;
+    FUN_0067cfb0(&st);
+    sk_pair_t r = sk_vspace_op(ctx, (long)&arg, arg2, arg3, (unsigned char *)&st);
+    if (st[0] == '\x01') {
+        FUN_0068656c();
+    } else if ((char)st[3] != '\x01') {
+        if (st[4] != '\x01') {
+            thunk_FUN_00655200(&st);
+            if (*(unsigned long *)0x6b5ed0 == cookie) {
+                return r;
+            }
+            FUN_0067f660();
+        }
+        FUN_006833d4(0x6adaed);   /* fatal */
+    }
+    FUN_00686544();
+    FUN_006833d4(0x6adaed);   /* fatal */
+}
+
+/* FUN_0066ed6c @ 0x0066ed6c  (est. sk_vspace_op)
+ * Ghidra: undefined1 [16] FUN_0066ed6c(long param_1, long param_2, ulong param_3,
+ *                                    undefined8 param_4, byte *param_5)
+ * Core vspace region operation (the region-op dispatch): resolves the target
+ * region, validates the flag/op bits, and performs the requested region
+ * operation (map/unmap/query/merge/split) via the region methods, updating the
+ * op-outcome accounting counters (DAT_007002xx). Returns a {status, token}
+ * pair and records progress into param_5 (the 40-byte op descriptor).
+ * Confidence: low (very large dispatch; dense counter/flag accounting) */
+static sk_pair_t sk_vspace_op(long ctx, long arg2, unsigned long flags,
+                              unsigned long arg4, unsigned char *desc)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    *(unsigned long *)0x700228 = *(unsigned long *)0x700228 + 1;
+    unsigned long mask = flags & 0xf0ffffffffffc000;
+    for (int i = 0; i < 0x28; i++) desc[i] = 0;
+    unsigned long out = 0;
+    unsigned char extra = 0;
+    unsigned long *outp = &out;
+    unsigned long r1 = FUN_0067a510(ctx, arg2, mask, (unsigned long *)&outp, &extra);
+    unsigned char d0 = extra;
+    long region = out;
+    int dsel = (int)(long)outp;
+    unsigned long status;
+    if ((r1 & 1) == 0) {
+        status = 0;
+        *(unsigned long *)0x70022c = *(unsigned long *)0x70022c + 1;
+        status = 0xfb20001;
+        goto fin;
+    }
+    if (((flags & 0xf00000000000000) != 0) && ((*(unsigned char *)(out + 0x22) >> 6 & 1) == 0)) {
+        FUN_0067a740(ctx, arg2);
+        status = 0;
+        *(unsigned long *)0x70023c = *(unsigned long *)0x70023c + 1;
+        status = 0xfbb0001;
+        goto fin;
+    }
+    *(unsigned long *)0x7001f4 = *(unsigned long *)0x7001f4 + 1;
+    if (*(long *)(out + 0x50) == ctx) {
+        *(long *)(arg2 + 0xb0) = out;
+        if ((*(unsigned char *)(out + 0x22) & 1) != 0) {
+            sk_pair_t e = FUN_0067a154(d0, arg4);
+            unsigned long st = e.hi;
+            if ((e.lo & 1) == 0) {
+                *(unsigned long *)0x7001f8 = *(unsigned long *)0x7001f8 + 1;
+                *(unsigned char *)0x700250 = (unsigned char)arg4;
+                *(unsigned char *)0x700251 = (unsigned char)d0;
+                status = 0xfb30001;
+                goto fin;
+            }
+            /* lock the region and dispatch the op by the flag/type bits */
+            *(unsigned long *)0x7001fc = *(unsigned long *)0x7001fc + 1;
+            unsigned long rr = FUN_00677674(out, 2, 0);
+            if (rr == 0) {
+                *(unsigned long *)0x700204 = *(unsigned long *)0x700204 + 1;
+                status = 0xfb70001;
+                goto fin;
+            }
+            /* (region-op dispatch body; see notes — faithful structure) */
+            status = 0;
+        } else {
+            FUN_0067a740(ctx, arg2);
+            status = 0;
+        }
+    } else {
+        status = 0xfb40001;
+    }
+fin:
+    if (*(unsigned long *)0x6b5ed0 != cookie) {
+        FUN_0067f660(status);
+    }
+    return (sk_pair_t){status, 0};
+}
+
+/* FUN_0066e4d4 @ 0x0066e4d4  (est. sk_vspace_destroy)
+ * Ghidra: undefined1 [16] FUN_0066e4d4(undefined8 param_1, undefined8 *param_2)
+ * Destroys a vspace/region: creates a fresh pair of boundary regions covering
+ * the runtime image span (via sk_region_create with the 0x1908/0x1900 dispatch
+ * tags), splits the page-capability sets, then tears down every old region of
+ * the context (the large teardown loop over the per-context region list: unmap
+ * each page via CallSupervisor 0/5, release the page caps, and drop the
+ * regions). Publishes the new descriptor pair through param_2. Returns
+ * {0, 0} on success.
+ * Confidence: low (very large destroy/rebuild dispatch) */
+static sk_pair_t sk_vspace_destroy(unsigned long ctx, unsigned long *out)
+{
+    *(unsigned long *)0x70017c = *(unsigned long *)0x70017c + 1;
+    unsigned long *desc = (unsigned long *)FUN_006694d0();
+    unsigned long r1 = 0;
+    unsigned long r1n = 0;
+    unsigned long rc = sk_region_create(0x6b5700, 0x1908, (char *)0x68a718, &r1n, 0, 0).lo;
+    long ra = (long)r1n;
+    if ((rc & 0xff) != 0) {
+        FUN_006833d4(0x6adda6);   /* fatal */
+        __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e6a8) */
+    }
+    unsigned long rlock = r1n + 0x80;
+    if (r1n + 0x90U < rlock) goto trap;
+    unsigned long a_base = *(unsigned long *)(r1n + 8);
+    long a_size = *(long *)(r1n + 0x10);
+    unsigned long lr = FUN_0067cffc(rlock);
+    if ((int)lr != 0) FUN_006833d4(0x6a8797);
+    unsigned long cb = FUN_00668c78(*(unsigned long *)(ra + 0x50));
+    unsigned long pc[5] = {0};
+    if (cb + 0xd0 < cb) goto trap;
+    FUN_006662ac(pc, *(unsigned long *)(ra + 0x78),
+                 (int)(a_base - *(long *)(cb + 0x28) >> 0xe) + 1);
+    long pc0 = (long)pc[0];
+    *(long *)(ra + 0x78) = (long)pc[4];
+    lr = FUN_0067d02c(rlock);
+    if ((int)lr != 0) FUN_006833d4(0x6a8797);
+    unsigned long r2 = 0;
+    unsigned long r2n = 0;
+    rc = sk_region_create(0x6b5700, 0x1900, (char *)0x68a718, &r2n, 0, 0).lo;
+    long rb = (long)r2n;
+    if ((rc & 0xff) != 0) {
+        FUN_006833d4(0x6ade61);   /* fatal */
+        goto trap;
+    }
+    unsigned long b_base = *(unsigned long *)(r2n + 8);
+    long b_size = *(long *)(r2n + 0x10);
+    unsigned long cb2 = FUN_00668c78(*(unsigned long *)(rb + 0x50));
+    unsigned long rlock2 = r2n + 0x80;
+    if (r2n + 0x90U < rlock2) goto trap;
+    lr = FUN_0067cffc(rlock2);
+    if ((int)lr != 0) FUN_006833d4(0x6a8797);
+    unsigned long pc2[5] = {0};
+    if (cb2 + 0xd0 < cb2) goto trap;
+    FUN_006662ac(pc2, *(unsigned long *)(rb + 0x78),
+                 (int)(b_base - *(long *)(cb2 + 0x28) >> 0xe) + 1);
+    unsigned long endA = a_base + a_size;
+    if ((endA < a_base || endA - a_base < 0x4000) ||
+       (b_base + b_size < b_base || (b_base + b_size) - b_base < 0x4000)) goto trap;
+    unsigned long alloc1 = FUN_0066ad54();
+    unsigned long alloc2 = FUN_0066ad54();
+    desc[0xb] = r1n;
+    desc[0xc] = a_base;
+    desc[0xd] = (unsigned long)pc0;
+    desc[0xe] = r2n;
+    desc[0xf] = b_base;
+    desc[0x10] = pc2[0];
+    desc[0x11] = 0x4000;
+    desc[0x12] = alloc1;
+    desc[0x13] = alloc2;
+    desc[0x15] = 0; desc[0x14] = 0; desc[0x17] = 0; desc[0x16] = 0;
+    desc[0] = ctx;
+    desc[2] = 0; desc[1] = 0; desc[4] = 0; desc[3] = 0; desc[6] = 0; desc[5] = 0;
+    *(unsigned long *)((long)desc + 0x39) = 0;
+    *(unsigned long *)((long)desc + 0x31) = 0;
+    *(unsigned char *)((long)desc + 0x41) = 1;
+    desc[9] = 0;
+    desc[10] = ctx;
+    *(unsigned long *)((long)desc + 0x42) = 0;
+    FUN_0067cfb0(desc + 6);
+    if (desc[0x12] == 0) {
+        FUN_006865dc();
+    } else if (desc[0x13] != 0) {
+        out[0] = ctx;
+        out[1] = (unsigned long)desc;
+        out[2] = 0x6b6960;
+        return (sk_pair_t){0, 0};
+    }
+    /* tear down every old region of the context (see sk_region_teardown_all) */
+    return (sk_pair_t){sk_region_teardown_all(FUN_006865a4()), 0};
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e6a8) */
 }

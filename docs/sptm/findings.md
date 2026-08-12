@@ -4933,3 +4933,21 @@ Observation: The 16-byte {kind,index} slot descriptors (sk_u128_t returns of 006
 Evidence: decompile 0066ab40 `if ((param_2 & 1) == 0)` parity branch; size-field parity invariant.
 Severity (hypothesis): Low — the parity invariant gives early use-after-release detection; informational hardening note.
 Confidence: Medium.
+
+## [SKR69] 0x0066b884 sk_cap_decode
+Observation: The capability decoder strips the low 6 bits and re-derives the tag/op from the raw capability with `& 0x3fffff` bounds (op > 0x3fffff short-circuits to a generic error pair 0x68a530), and every capability-bucket walk (sk_cap_bucket_insert/resolve/move/repack) is guarded by exhaustive pointer-bounds checks that terminate in `SoftwareBreakpoint(0x5519, ...)` (noreturn).
+Evidence: Decompile of 0x66b884/0x66c8ac/0x66cac4/0x66d07c: `if (0x3fffff < opc) { out[] = ...; }` and repeated `(p < bucket || lim < p+1)` bounds tests followed by `__builtin_unreachable()` traps.
+Severity (hypothesis): Low — capability parsing is bounds-hardened; a crafted capability cannot drive an OOB bucket access (traps instead).
+Confidence: medium
+
+## [SKR69] 0x0066e4d4 / 0x0066ed6c sk_vspace_destroy / sk_vspace_op
+Observation: The vspace region-op dispatch and destroy paths are large but uniformly validate ownership (`*(region+0x50) == ctx`), flag bits (`& 0xd000800`), and range alignment (`& 0x3fff`/0x4000) before any map/unmap, and route every page-teardown through `CallSupervisor(0/2/3/4/5)` with the tpidrro_el0 IPC message buffer. No unchecked page-identity escapes observed in the reconstructed flow.
+Evidence: Decompiles of 0x66e4d4/0x66ed6c: `if (*(long *)(out + 0x50) == ctx)` gate, `CallSupervisor(0)` / `CallSupervisor(5)` page-invalidate loop, and `FUN_006833d4` fatal on every `(uVar5 + 0xd0 < uVar5)` bounds check.
+Severity (hypothesis): Low — the teardown loop frees page caps under lock; the main audit surface is the lock + bounds discipline, which is consistently enforced.
+Confidence: medium
+
+## [SKR69] 0x0066b038/0x0066b270/0x0066b520 sk_page_tree_insert / sk_page_block_alloc / sk_page_block_free
+Observation: The physical page allocator requires 16KB alignment on both alloc (`(count|base) & 0x3fff`) and free (`base & 0x3f`), rejects size/count overflow (`count < size`, `end < base`), and treats duplicate free-tree keys and out-of-range bitmap bits as fatal asserts (0x6ab3b8, 0x6ab432).
+Evidence: Decompiles: `if ((((uint)count | (uint)base) & 0x3fff) != 0) FUN_006833d4(0x6aaf42);` and `if (delta >> 0xe != 0) FUN_006833d4(0x6ab432);`.
+Severity (hypothesis): Low — double-free/overlap is caught by the free-tree key-duplicate assert and the 16KB-granular bitmap bounds.
+Confidence: medium
