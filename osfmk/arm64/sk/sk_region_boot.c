@@ -22,7 +22,7 @@
 extern void *sk_boot_image_info(void);                                  /* FUN_00054610 */
 extern void sk_boot_diag_write(unsigned long a, unsigned long b);       /* FUN_0004b9e0 */
 extern void sk_boot_tick_init(void);                                    /* FUN_00055288 */
-extern int sk_printf(const char *fmt, ...);                             /* FUN_00118b28 */
+extern unsigned long sk_printf();                              /* FUN_00118b28 */                             /* FUN_00118b28 */
 extern int sk_printf2(const char *fmt, ...);                            /* FUN_00118b94 */
 extern void sk_boot_platform_setup(void);                               /* FUN_00060530 */
 extern void sk_boot_region_store(unsigned long v);                      /* FUN_0006d654 */
@@ -44,8 +44,8 @@ extern void sk_thread_spawn(void **out, void (*entry)(void), unsigned long a,
                              unsigned long b, unsigned long c);         /* FUN_0005eec4 */
 extern void sk_thread_get(void *th);                                    /* FUN_0005fccc */
 extern void *sk_boot_object_get(int type);                              /* FUN_0019ae2c */
-extern unsigned long sk_thread_state(void *th);                         /* FUN_00061630 */
-extern void sk_boot_abort(void *ctx, void *cfg);                        /* FUN_004afbc4 */
+extern unsigned long sk_thread_state();                          /* FUN_00061630 */                         /* FUN_00061630 */
+extern unsigned long sk_boot_abort();                         /* FUN_004afbc4 */                        /* FUN_004afbc4 */
 extern void sk_boot_panic(const char *fmt, ...) __attribute__((noreturn)); /* FUN_00054354 */
 extern void sk_boot_abort2(unsigned long a, void *ctx);                 /* FUN_004afb6c */
 extern unsigned long sk_boot_abort3(void);                              /* FUN_004afc1c */
@@ -89,11 +89,11 @@ extern void *sk_boot_op_probe(unsigned long a, unsigned long b);        /* FUN_0
 extern void sk_platform_init(void);                                     /* FUN_000534c0 */
 
 /* Lite_zone (libmalloc) machine primitives. */
-extern void *sk_alloc(unsigned long size, unsigned long tag);           /* FUN_0036b270 */
-extern void sk_free(void *ptr);                                         /* FUN_0036b118 */
+extern unsigned long sk_alloc();            /* FUN_0036b270 */           /* FUN_0036b270 */
+extern unsigned long sk_free();                                          /* FUN_0036b118 */                                         /* FUN_0036b118 */
 extern void sk_alloc_init_pages(void *obj, unsigned long a, ...);       /* FUN_0036a940 */
-extern void sk_alloc_teardown(void *obj, ...);                          /* FUN_0036a1a0 */
-extern void sk_alloc_finalize(void *obj);                               /* FUN_0036a20c */
+extern unsigned long sk_alloc_teardown();                           /* FUN_0036a1a0 */                          /* FUN_0036a1a0 */
+extern unsigned long sk_alloc_finalize();                                /* FUN_0036a20c */                               /* FUN_0036a20c */
 extern void sk_alloc_link(unsigned long obj, ...);                      /* FUN_0036b588 */
 extern void sk_alloc_link2(unsigned long obj, ...);                     /* FUN_0036b6ac */
 extern void sk_alloc_link3(unsigned long obj, ...);                     /* FUN_0036b21c */
@@ -113,11 +113,9 @@ extern void sk_cache_clean(unsigned long va, unsigned long size,
                            unsigned long dummy);                        /* FUN_000118d0 */
 extern void sk_memset_va(unsigned long va, unsigned long size,
                          unsigned long v);                              /* FUN_00011884 */
-extern void sk_memcpy(unsigned long dst, unsigned long src,
-                      unsigned long n);                                 /* FUN_00117cc4 */
-extern void sk_memcpy2(void *dst, const void *src,
+extern unsigned long sk_memcpy();oid sk_memcpy2(void *dst, const void *src,
                        unsigned long n);                                /* FUN_00117cc8 */
-extern void sk_memset(void *dst, int v, unsigned long n);               /* FUN_00117f8c */
+extern unsigned long sk_memset();                /* FUN_00117f8c */               /* FUN_00117f8c */
 extern void sk_memset_tracked(void *dst, unsigned long n,
                               unsigned long v);                         /* FUN_001143a0 (thunk) */
 extern void sk_memset_tracked_small(void *dst);                         /* FUN_00114330 (thunk) */
@@ -128,7 +126,7 @@ extern unsigned long sk_zone_reap4(unsigned long zone);                  /* FUN_
 extern unsigned long sk_tick(unsigned long a, ...);                     /* FUN_00010934 */
 extern unsigned long sk_rand(void);                                     /* FUN_000114f0 */
 extern void sk_cpu_id_init(void);                                       /* FUN_0001071c */
-extern int sk_sched_init(int a, void *b);                               /* FUN_001181b4 */
+extern unsigned long sk_sched_init();                                /* FUN_001181b4 */                               /* FUN_001181b4 */
 extern void sk_stack_poison(void *p, unsigned long n);                  /* FUN_00054414 (thunk) */
 extern int sk_clz(unsigned long v);                                     /* FUN_00116e00 */
 extern unsigned long sk_bit_rand(void);                                 /* FUN_00116da0 */
@@ -3455,8 +3453,8 @@ typedef uint64_t tcb_t;
  * Out-of-range kernel helpers (bodies reconstructed by sibling range
  * workers; declared extern with their FUN_ address in a comment).
  *------------------------------------------------------------------------- */
-extern void *sk_alloc(unsigned long size, unsigned long tag);             /* FUN_0036a908 */
-extern void sk_free(void *ptr);                                           /* FUN_0036b118 */
+extern unsigned long sk_alloc();              /* FUN_0036a908 */             /* FUN_0036a908 */
+extern unsigned long sk_free();                                            /* FUN_0036b118 */                                           /* FUN_0036b118 */
 extern void *sk_current_tcb(void);                                        /* FUN_000867ec */
 extern void *sk_cpu(void);                                                /* FUN_0008e518 */
 extern void sk_set_error(unsigned int err);                               /* thunk_FUN_0006037c */
@@ -3476,10 +3474,10 @@ extern unsigned long sk_heap_alloc_mode(void *heap, void *a, unsigned long size,
 extern void *sk_alloc_out(void *out);  /* FUN_000127c0 */
 extern unsigned long sk_zone0(void);   /* DAT_006adfe8 */
 extern unsigned long sk_zone_table_grow(void *a, void *b, unsigned long c, unsigned long d); /* FUN_00117d18 */
-extern unsigned long sk_strlen(const char *s); /* thunk_FUN_00115080 */
+extern unsigned long sk_strlen();  /* thunk_FUN_00115080 */ /* thunk_FUN_00115080 */
 extern void sk_strcpy(char *dst, const char *src, unsigned long n, unsigned long m); /* FUN_00117e68 */
 extern void sk_obj_retain(void *obj, unsigned long v); /* FUN_00015984 */
-extern void sk_cap_install(void *a, void *b, void **c); /* FUN_00015468 */
+extern unsigned long sk_cap_install();  /* FUN_00015468 */ /* FUN_00015468 */
 extern void sk_tb_register(void *client); /* FUN_00019aac */
 extern void sk_metadata_encode(unsigned long size, unsigned long tag, void *out); /* helper */
 extern unsigned long sk_alloc_phys(unsigned long flags, unsigned long base, unsigned long size,
@@ -3489,7 +3487,7 @@ extern void sk_perthread_init(void *a, void *b, unsigned long c); /* FUN_0005d47
 extern void *FUN_00013260(void *a, void *b, void *c);
 extern unsigned long sk_dealloc(void *p, void *a, void *size);            /* FUN_001180cc */
 extern unsigned long sk_madvise(void *a, void *base, void *len, unsigned char mode); /* FUN_0011807c */
-extern void sk_memcpy(void *dst, void *src, unsigned long n);             /* FUN_00117cc4 */
+extern unsigned long sk_memcpy();              /* FUN_00117cc4 */             /* FUN_00117cc4 */
 extern unsigned long FUN_00117cc4(unsigned long dst, unsigned long src, unsigned long n);
 extern void FUN_00117d14(unsigned long dst, unsigned long src, unsigned long n);
 extern void FUN_00117d18(void *a, void *b, unsigned long c, unsigned long d);
@@ -3584,7 +3582,7 @@ extern long sk_fill_debug_buffer(unsigned long *buf, unsigned long n); /* FUN_00
 extern void sk_puts_word(unsigned long w);   /* FUN_00118b28 */
 extern void sk_sleep(void *arg);             /* FUN_001183e0 */
 extern void sk_abort_malloc(void) __attribute__((noreturn)); /* FUN_00116d60 */
-extern void sk_printf(const char *fmt, ...); /* FUN_00118b28 */
+extern unsigned long sk_printf();  /* FUN_00118b28 */ /* FUN_00118b28 */
 extern unsigned long sk_buddy_lock(unsigned long a);    /* FUN_0011582c */
 extern unsigned long sk_buddy_unlock(unsigned long a);  /* FUN_00115894 */
 extern void dc_gva_region(unsigned long p, unsigned long size);
@@ -12105,12 +12103,12 @@ extern unsigned long sk_dispatch_async(unsigned long, unsigned long, unsigned lo
 extern void sk_dispatch_free(unsigned long);               /* FUN_0004b664 */
 extern unsigned long sk_validate(unsigned long, unsigned long, unsigned long, unsigned long,
                                  unsigned long, unsigned long); /* FUN_003a26e8 */
-extern unsigned long sk_msg_copy(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_00015a44 */
+extern unsigned long sk_msg_copy();  /* FUN_00015a44 */ /* FUN_00015a44 */
 extern unsigned long sk_object_lock(unsigned long, unsigned long, unsigned long, void *, void *); /* FUN_00377824 */
 extern unsigned long sk_alloc_global(unsigned long, unsigned long, unsigned long, unsigned long,
                                      unsigned long);      /* FUN_00389b64 */
 extern void *sk_realloc(unsigned long, unsigned long);     /* FUN_000102f4 */
-extern void *sk_alloc_pages(unsigned long, unsigned long); /* FUN_00010244 */
+extern unsigned long sk_alloc_pages();  /* FUN_00010244 */ /* FUN_00010244 */
 extern void *sk_alloc_vas(unsigned long);                  /* FUN_000101a0 */
 extern unsigned long sk_retain(unsigned long);             /* FUN_0004b520 */
 extern unsigned long sk_page_resolve(void);                /* FUN_00034f70 */
@@ -19015,9 +19013,9 @@ cl4_result_t vas_msg_recv(long *param_1, unsigned long *param_2, unsigned long p
  * ------------------------------------------------------------------ */
 
 /* Core lock/refcount/allocator primitives (region 0x34xxxx-0x37xxxx). */
-extern void *sk_alloc(unsigned long size, unsigned long tag);        /* FUN_0036a908 */
-extern void *sk_alloc_pages(unsigned long size, unsigned long tag);  /* FUN_0036b270 */
-extern void sk_free(void *ptr);                                      /* FUN_0036b118 */
+extern unsigned long sk_alloc();         /* FUN_0036a908 */        /* FUN_0036a908 */
+extern unsigned long sk_alloc_pages();   /* FUN_0036b270 */  /* FUN_0036b270 */
+extern unsigned long sk_free();                                       /* FUN_0036b118 */                                      /* FUN_0036b118 */
 
 /* Object method-dispatch table base used by object constructors. */
 extern unsigned char sk_obj_methods_0[];  /* DAT_00611b24 */
@@ -19040,8 +19038,8 @@ extern uint8_t  sk_dec_msk[4][16];         /* DAT_004bc740..75c */
 extern uint8_t  sk_dec_hist_table[256];    /* DAT_004bc5e0 */
 
 /* Utility helpers (data/early region). */
-extern void sk_mem_zero(void *dst, unsigned long len);   /* FUN_001143a0 */
-extern void sk_vas_abort(const char *fmt, ...);          /* FUN_004afae4 (VAS abort) */
+extern unsigned long sk_mem_zero();    /* FUN_001143a0 */   /* FUN_001143a0 */
+extern unsigned long sk_vas_abort();           /* FUN_004afae4 (VAS abort) */          /* FUN_004afae4 (VAS abort) */
 extern void sk_vas_fault(void);                          /* FUN_004b1d08 */
 extern int  sk_vm_lock_check(unsigned long);             /* FUN_00118164 */
 extern int  sk_vm_lock_take(unsigned long);              /* FUN_00118194 */
@@ -19087,7 +19085,7 @@ extern void *sk_obj_table_0;               /* DAT_0064c3f0 (table head) */
 /* Boot object-table helpers. */
 extern void sk_obj_table_init(unsigned long, unsigned long, unsigned long);  /* FUN_00034970 / FUN_00034920 */
 extern void sk_list_init(void *head);                         /* FUN_0005ba5c */
-extern void *sk_alloc_big(int, int);                          /* FUN_0005baac */
+extern unsigned long sk_alloc_big();                           /* FUN_0005baac */                          /* FUN_0005baac */
 extern void *sk_vspace_alloc_obj(void);                       /* FUN_000332b8 */
 extern void sk_vspace_init_obj(long, void **, void *, void *, void *); /* FUN_0003264c */
 extern void sk_vspace_done(void *);                           /* FUN_00034a5c */
@@ -27736,7 +27734,7 @@ extern unsigned long sk_x_00064a7c(); /* FUN_00064A7C */
 extern unsigned long sk_memset0(); /* FUN_00114330 */
 extern unsigned long sk_tb_put_bytes(); /* FUN_00114790 */
 extern unsigned long sk_x_00114e50(); /* FUN_00114E50 */
-extern unsigned long sk_strlen(); /* FUN_00115080 */
+extern unsigned long sk_strlen();  /* FUN_00115080 */ /* FUN_00115080 */
 extern unsigned long sk_x_001150e0(); /* FUN_001150E0 */
 extern unsigned long sk_x_00116e80(); /* FUN_00116E80 */
 extern unsigned long sk_x_00116f40(); /* FUN_00116F40 */
@@ -32845,9 +32843,9 @@ extern unsigned long sk_tpidr;
 
 /* Out-of-region kernel helpers (FUN_ addr in the declaration notes). */
 
-/* Ghidra  */ extern uint64_t sk_abort_msg();
+extern unsigned long sk_abort_msg();
 /* Ghidra  */ extern sk_u128_t sk_boot_heap();
-/* Ghidra  */ extern uint64_t sk_boot_next();
+extern unsigned long sk_boot_next();
 /* Ghidra  */ extern uint64_t sk_cap_load();
 /* Ghidra  */ extern uint64_t sk_cap_store();
 /* Ghidra  */ extern uint64_t sk_cnode_alloc();
@@ -32873,10 +32871,10 @@ extern unsigned long sk_tpidr;
 /* Ghidra  */ extern uint64_t sk_ctx_printf();
 /* Ghidra  */ extern uint64_t sk_ctx_push();
 /* Ghidra  */ extern uint64_t sk_ctx_regs();
-/* Ghidra  */ extern uint64_t sk_ctx_save();
+extern unsigned long sk_ctx_save();
 /* Ghidra  */ extern uint64_t sk_ctx_sp();
 /* Ghidra  */ extern uint64_t sk_ctx_stack();
-/* Ghidra  */ extern uint64_t sk_ctx_state();
+extern unsigned long sk_ctx_state();
 /* Ghidra  */ extern uint64_t sk_ctx_trace();
 /* Ghidra  */ extern uint64_t sk_ctx_type();
 /* Ghidra  */ extern uint64_t sk_ctx_vm();
@@ -32902,10 +32900,10 @@ extern unsigned long sk_tpidr;
 /* Ghidra  */ extern sk_u128_t sk_macho_symtab();
 /* Ghidra  */ extern uint64_t sk_macho_uuid2();
 /* Ghidra  */ extern uint64_t sk_memcmp();
-/* Ghidra  */ extern uint64_t sk_memcpy();
-/* Ghidra  */ extern uint64_t sk_memcpy2();
-/* Ghidra  */ extern uint64_t sk_memmove();
-/* Ghidra  */ extern uint64_t sk_memset();
+extern unsigned long sk_memcpy();
+extern unsigned long sk_memcpy2();
+extern unsigned long sk_memmove();
+extern unsigned long sk_memset();
 /* Ghidra  */ extern uint64_t sk_msg_cap_read();
 /* Ghidra  */ extern uint64_t sk_msg_capacity();
 /* Ghidra  */ extern uint64_t sk_msg_count();
@@ -32916,13 +32914,13 @@ extern unsigned long sk_tpidr;
 /* Ghidra  */ extern uint64_t sk_msg_record();
 /* Ghidra  */ extern sk_u128_t sk_msg_zero();
 /* Ghidra  */ extern sk_u128_t sk_noreturn_error();
-/* Ghidra  */ extern uint64_t sk_obj_alloc();
+extern unsigned long sk_obj_alloc();
 /* Ghidra  */ extern uint64_t sk_obj_ref();
 /* Ghidra  */ extern uint64_t sk_panic_log();
 /* Ghidra  */ extern uint64_t sk_phys_to_obj();
 /* Ghidra  */ extern uint64_t sk_pmap_op();
 /* Ghidra  */ extern uint64_t sk_preempt_check();
-/* Ghidra  */ extern uint64_t sk_printf();
+extern unsigned long sk_printf();
 /* Ghidra  */ extern uint64_t sk_rt_assert();
 /* Ghidra  */ extern uint64_t sk_rt_barrier();
 /* Ghidra  */ extern uint64_t sk_rt_check();
@@ -32958,14 +32956,14 @@ extern unsigned long sk_tpidr;
 /* Ghidra  */ extern uint64_t sk_rt_wait();
 /* Ghidra  */ extern uint64_t sk_snprintf();
 /* Ghidra  */ extern uint64_t sk_strchr();
-/* Ghidra  */ extern uint64_t sk_strcmp();
-/* Ghidra  */ extern uint64_t sk_strlen();
+extern unsigned long sk_strcmp();
+extern unsigned long sk_strlen();
 /* Ghidra  */ extern uint64_t sk_syscall_exc();
 /* Ghidra  */ extern uint64_t sk_syscall_get_state();
 /* Ghidra  */ extern uint64_t sk_thread_create();
 /* Ghidra  */ extern uint64_t sk_thread_lock();
 /* Ghidra  */ extern uint64_t sk_thread_resume();
-/* Ghidra  */ extern uint64_t sk_thread_state();
+extern unsigned long sk_thread_state();
 /* Ghidra  */ extern uint64_t sk_thread_switch();
 /* Ghidra  */ extern uint64_t sk_thread_unlock();
 /* Ghidra  */ extern uint64_t sk_thread_yield();
@@ -47354,7 +47352,7 @@ extern sk_word_t __thread_bss;
 
 /* Boot-descriptor iterator helpers (reconstructed by the range worker). */
 sk_word_t sk_boot_begin(void);
-void *sk_boot_next(void);
+extern unsigned long sk_boot_next();
 void *sk_boot_iter(void);
 sk_word_t sk_boot_more(void*);
 void *sk_boot_ent(void*);
@@ -47432,7 +47430,7 @@ int sk_dt_node_name_is(sk_word_t*,const char*);  /* FUN_00065d18 */
 int sk_isprint(unsigned char);  /* FUN_00115448 */
 int sk_log_push(sk_word_t);  /* thunk_FUN_000544d0 */
 int sk_ref_valid(void*);  /* FUN_0011817c */
-int sk_strcmp(const char*,const char*);  /* thunk_FUN_00114d10 */
+extern unsigned long sk_strcmp();   /* thunk_FUN_00114d10 */  /* thunk_FUN_00114d10 */
 long *sk_boot_caps;  /* _DAT_006be890 */
 long sk_boot_cnt(void*);  /* FUN_000556c8 */
 long sk_cb_bind(sk_word_t,sk_word_t);  /* FUN_00376820 */
@@ -47485,7 +47483,7 @@ sk_word_t local_90;  /* iterator state */
 sk_word_t local_90;  /* report frame */
 sk_word_t rd64(const unsigned char*);  /* helper */
 sk_word_t sk_778a0(void);  /* FUN_000778a0 */
-sk_word_t sk_alloc_big(sk_word_t,sk_word_t);  /* FUN_0006d240 */
+extern unsigned long sk_alloc_big();   /* FUN_0006d240 */  /* FUN_0006d240 */
 sk_word_t sk_alloc_rt(sk_word_t,sk_word_t);  /* FUN_0036a9d4 */
 sk_word_t sk_alloc_word(sk_word_t,sk_word_t);  /* FUN_0036a804 */
 sk_word_t sk_amx_bad(sk_word_t) __attribute__((noreturn));  /* FUN_004b7664 */
@@ -47497,7 +47495,7 @@ sk_word_t sk_boot_feature(void*,sk_word_t,int,int,int,int);  /* FUN_003a26e8 */
 sk_word_t sk_boot_obj_helper(sk_word_t);  /* FUN_0001a1c8 */
 sk_word_t sk_boot_pack_key_sel(unsigned char*,int,unsigned int);  /* FUN_0004e774 */
 sk_word_t sk_boot_sz(void*);  /* FUN_000556e4 */
-sk_word_t sk_buf_cap(void*);  /* FUN_003a261c */
+extern unsigned long sk_buf_cap();   /* FUN_003a261c */  /* FUN_003a261c */
 sk_word_t sk_cap1(void), sk_cap2(void), sk_cap3(void);  /* FUN_000552a4/00055328/00055344 */
 sk_word_t sk_cap_addr(sk_word_t,sk_word_t*);  /* FUN_00054c9c */
 sk_word_t sk_cap_of(sk_word_t);  /* FUN_00063970 */
@@ -47568,7 +47566,7 @@ sk_word_t sk_link_of(sk_word_t);  /* FUN_0019afbc */
 sk_word_t sk_log_cpu(void);  /* FUN_0005b8c8 */
 sk_word_t sk_macho_header(void);  /* FUN_00054ba8 */
 sk_word_t sk_macho_slide(void);  /* FUN_00054bc8 */
-sk_word_t sk_msg_copy(sk_word_t,sk_word_t,int,sk_word_t,sk_word_t*,void*);  /* FUN_0011546c */
+extern unsigned long sk_msg_copy();   /* FUN_0011546c */  /* FUN_0011546c */
 sk_word_t sk_perm_hi;  /* s_L4_ErrorCodePermissionInvalid_0068a4e8._6_8_ */
 sk_word_t sk_perm_lo;  /* _DAT_0068a4e6 */
 sk_word_t sk_reg_a(void);  /* FUN_000537c4 */
@@ -47582,7 +47580,7 @@ sk_word_t sk_report_cmp3(long,long);  /* FUN_00068ef8 */
 sk_word_t sk_report_slot(void);  /* FUN_0006b2bc */
 sk_word_t sk_ro_write8u(sk_word_t);  /* FUN_000639a0 */
 sk_word_t sk_sme_bad(sk_word_t) __attribute__((noreturn));  /* FUN_004b76b4 */
-sk_word_t sk_strlen(const char*);  /* thunk_FUN_00115080 */
+extern unsigned long sk_strlen();   /* thunk_FUN_00115080 */  /* thunk_FUN_00115080 */
 sk_word_t sk_sym_resolve(sk_word_t,void*);  /* FUN_00027614 */
 sk_word_t sk_vspace_ready;  /* _DAT_006b2958 */
 sk_word_t thunk_len(sk_word_t,int);  /* thunk_FUN_00114fe0 */
@@ -47613,8 +47611,8 @@ void **sk_exc_slot_p(void);  /* DAT_006b2728 */
 void *prev_after(long,void*);  /* helper */
 void *sk_alloc_ep(int);  /* FUN_0019ae2c */
 void *sk_alloc_names(sk_word_t,sk_word_t);  /* FUN_001fac04 */
-void *sk_alloc_obj(sk_word_t,int,int);  /* FUN_0036a940 */
-void *sk_alloc_pages(sk_word_t,sk_word_t);  /* FUN_0036b270 */
+extern unsigned long sk_alloc_obj();   /* FUN_0036a940 */  /* FUN_0036a940 */
+extern unsigned long sk_alloc_pages();   /* FUN_0036b270 */  /* FUN_0036b270 */
 void *sk_alloc_pagetable(sk_word_t,sk_word_t,int,int,int);  /* FUN_00085a54 */
 void *sk_alloc_small(sk_word_t,int,sk_word_t);  /* FUN_00010244 */
 void *sk_amx_state(void);  /* FUN_00034f70 */
@@ -47622,12 +47620,12 @@ void *sk_boot_data(void*);  /* FUN_00054624 */
 void *sk_boot_data2(void);  /* FUN_0005ace4 */
 void *sk_boot_lookup(int,const char*);  /* FUN_0004dfd0 */
 void *sk_boot_obj_helper2(void*);  /* FUN_00027724 */
-void *sk_buf_grow(void*);  /* FUN_0006b42c + FUN_0006b6d4 + FUN_0006b3e0 */
+extern unsigned long sk_buf_grow();   /* FUN_0006b42c + FUN_0006b6d4 + FUN_0006b3e0 */  /* FUN_0006b42c + FUN_0006b6d4 + FUN_0006b3e0 */
 void *sk_buf_new(void);  /* FUN_0006b3e0 */
 void *sk_cap_resolve(sk_word_t*,int);  /* FUN_0005bc48 */
 void *sk_cpu_phase(void);  /* FUN_004b7098 */
 void *sk_cpu_phase_slow(void);  /* FUN_004b70c8 */
-void *sk_ctx_state(void);  /* FUN_00034f70 */
+extern unsigned long sk_ctx_state();   /* FUN_00034f70 */  /* FUN_00034f70 */
 void *sk_ep_new_thread(void*,int);  /* FUN_0005eec4 */
 void *sk_ep_return(void*,int);  /* FUN_0006393c */
 void *sk_exc_first(void);  /* FUN_000533ec */
@@ -47641,13 +47639,13 @@ void *sk_root_task;  /* DAT_006b26d0 */
 void *sk_sym_e3d6c, *sk_sym_e3dd0, *sk_sym_e3e34, *sk_sym_e3f10;  /* symbols */
 void *sk_tcb_current(void);  /* FUN_0005bb68 */
 
-void sk_alloc_teardown(void);  /* FUN_0036b21c */
+extern unsigned long sk_alloc_teardown();   /* FUN_0036b21c */  /* FUN_0036b21c */
 void sk_altstack_body(void **svc, void *a, void *b);  /* FUN_0005cf18 */
 void sk_amx_free(void*,void*,int);  /* FUN_004b23d8 */
 void sk_amx_setup(void*,long*);  /* FUN_004b7704 */
 void sk_banner(const char*,int,int,char*);  /* FUN_00118abc */
 void sk_bb(sk_word_t*);  /* FUN_0006d7d0 */
-void sk_boot_abort(void) __attribute__((noreturn));  /* FUN_004b82b4 */
+extern unsigned long sk_boot_abort();   /* FUN_004b82b4 */  /* FUN_004b82b4 */
 void sk_boot_attached(long,void*);  /* FUN_000549c0 */
 void sk_boot_bad(void) __attribute__((noreturn));  /* FUN_00116d60 */
 void sk_boot_data_free(void*);  /* FUN_00052c4c */
@@ -47689,11 +47687,11 @@ void sk_console_read_state(void);  /* FUN_001eb088 */
 void sk_cpu_yield(void *cpu);  /* FUN_0005deb4 */
 void sk_ctx_bind_h(sk_word_t,sk_word_t,sk_word_t);  /* FUN_0001a0d0 */
 void sk_ctx_bind_h2(sk_word_t);  /* FUN_0001c2a4 */
-void sk_ctx_finish(void *cs);  /* FUN_004b23d8 */
+extern unsigned long sk_ctx_finish();   /* FUN_004b23d8 */  /* FUN_004b23d8 */
 void sk_ctx_import(sk_word_t,sk_word_t,int);  /* FUN_00114790 */
 void sk_ctx_init(void *ctx, void *a, unsigned long n);  /* FUN_0005ff04 */
 void sk_ctx_restore(void);  /* FUN_001a8564 */
-void sk_ctx_save(int);  /* FUN_001a84f4 */
+extern unsigned long sk_ctx_save();   /* FUN_001a84f4 */  /* FUN_001a84f4 */
 void sk_disp0(sk_word_t);  /* FUN_001404d0/000773f0 */
 void sk_disp_b(sk_word_t,sk_word_t);  /* FUN_0006f69c */
 void sk_disp_c(sk_word_t,sk_word_t);  /* FUN_0006f684 */
@@ -47721,13 +47719,13 @@ void sk_exc_bad2(sk_word_t,sk_word_t*) __attribute__((noreturn));  /* FUN_004b75
 void sk_exc_classify2(sk_word_t*,void*,sk_word_t*);  /* FUN_000651e8 */
 void sk_exc_fail(sk_word_t) __attribute__((noreturn));  /* FUN_004b71a8/FUN_0011d7e8 */
 void sk_exc_handler_cb(void);  /* FUN_00063eb4-based */
-void sk_fatal(const char*,int,int,sk_word_t,sk_word_t,const char*,int,int,int,int) __attribute__((noreturn));  /* FUN_001afa84 */
+extern unsigned long sk_fatal();   /* FUN_001afa84 */  /* FUN_001afa84 */
 void sk_fatal0(void) __attribute__((noreturn));  /* FUN_001afa84 */
 void sk_fmt(char*,const char*,...);  /* FUN_001185ec */
 void sk_fmt_newline(char*);  /* thunk_FUN_001187f4(10,..) */
 void sk_format(sk_word_t,sk_word_t*,sk_word_t,sk_word_t);  /* FUN_002060d4 */
 void sk_format2(sk_word_t*,sk_word_t*,sk_word_t,sk_word_t,sk_word_t);  /* FUN_00205844 */
-void sk_free(void*);  /* FUN_0036b118 */
+extern unsigned long sk_free();   /* FUN_0036b118 */  /* FUN_0036b118 */
 void sk_free2(void);  /* thunk_FUN_00012568 */
 void sk_freeze_ep(sk_word_t,int);  /* FUN_004b7984 */
 void sk_freeze_no_ep(void) __attribute__((noreturn));  /* FUN_004b79c8 */
@@ -47770,8 +47768,8 @@ void sk_log_pop(sk_word_t);  /* thunk_FUN_0005453c */
 void sk_logf(sk_word_t,sk_word_t,int,const char*);  /* FUN_0005b824 */
 void sk_logf0(const char*);  /* FUN_00118b28 */
 void sk_logf1(const char*);  /* FUN_00118b28 */
-void sk_memcpy(void*,const void*,unsigned long);  /* FUN_00117cc4 */
-void sk_memmove(void*,const void*,unsigned long);  /* FUN_00117d14 */
+extern unsigned long sk_memcpy();   /* FUN_00117cc4 */  /* FUN_00117cc4 */
+extern unsigned long sk_memmove();   /* FUN_00117d14 */  /* FUN_00117d14 */
 void sk_msg_copy2(sk_word_t,sk_word_t*,sk_word_t,sk_word_t,void*,void*);  /* FUN_001156c4 */
 void sk_msg_copy3(sk_word_t,sk_word_t*,sk_word_t,int);  /* FUN_001155e0 */
 void sk_obj_link(sk_word_t);  /* FUN_000359ac */
@@ -47827,7 +47825,7 @@ void sk_ro_write8(sk_word_t);  /* helper */
 void sk_root_helper(sk_word_t);  /* FUN_0005562c */
 void sk_root_helper2(sk_word_t);  /* FUN_00055660 */
 void sk_root_helper3(sk_word_t);  /* FUN_00055694 */
-void sk_sched_init(void);  /* FUN_00055164 */
+extern unsigned long sk_sched_init();   /* FUN_00055164 */  /* FUN_00055164 */
 void sk_slide_sync(void);  /* FUN_004b8498 */
 void sk_stack_ctx_init(void*,sk_word_t*);  /* thunk_FUN_00114aa0 */
 void sk_stack_fail(void) __attribute__((noreturn));  /* FUN_0011d7e8 */
