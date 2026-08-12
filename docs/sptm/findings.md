@@ -5214,3 +5214,77 @@ Severity (hypothesis): low. Confidence high.
 ## Verification sweep (V4GroupA, sk_region_boot.c)
 
 - 0x0003730c (sk_span_tree_remove_node): FIXED a real discrepancy — the transcribed body shifted slots one position off (did `table[idx-1] = table[idx]` then `table[idx] = table[idx+1]`), which clobbers the element *before* the removed slot and leaves the target slot's data in place. Ground truth shifts `table[i] = table[i+1]` starting at the removed index (removes slot `i`). Span-tree slot removal is used by sk_span_tree_release for span/granule teardown, so an off-by-one corrupts the live slot table. Corrected to match the decompile do-loop; return value `i & 0xff` preserved. Confidence medium->high.
+
+## [VB2_7] 0x0004fb08 sk_tb_ph_dt (device-tree span mapping)
+Observation: The TB-placeholder device-tree mapper derives a physical frame address from packed placeholder bytes (`(byte[0x12]<<0x10|byte[0x13]<<0x18|CONCAT11(byte[0x11],byte[0x10])|(byte[0x16]<<0x10|byte[0x17]<<0x18|ushort[0x14])<<0x20) * 0x40`), range-checks it against the region (`frame < region[1]`), then allocates a 0x1800-byte device-tree span via an indirect vtable call (`(**(auVar22._8_8_+0x30))(...,0x1800,desc,&out,0,0)`) and maps the frame with `FUN_000510e4`. The 24-byte resolved record is written into the caller's destination array. The `byte[0x17]>>2 != 0` check guards against overflow of the frame computation (else `integer_overflow` fatal).
+Evidence: decompile 0x4fb08: `if ((byte)puVar16[0x17] >> 2 != 0) FUN_001150e0("integer_overflow")`; `uVar17 = (...) * 0x40; if (uVar17 < param_3[1]) lVar15 = uVar17 + *param_3; else lVar15 = 0;`.
+Severity (hypothesis): medium — the phys-frame derivation and the 0x1800 span allocator are the guest-visible memory-mapping surface; correctness of the range check (`frame < region[1]`) determines whether an out-of-range placeholder can map arbitrary physical memory.
+Confidence: medium.
+
+## [VB2_7] 0x0004cafc sk_boot_ep (boot endpoint pack+send)
+Observation: The boot endpoint message is marshalled into the read-only thread-pointer (tpidrro_el0) TLS slots and sent via `CallSupervisor(1)`; the `*(out+0x10)` flag gates whether the supervisor cross happens at all, and `*(out+0x18)`/`*(out+0x20)` (count ptr/value, capped at 0x1a8) control a `sk_svc_copyout` of the payload. The 8-byte message header is written LE into the wire buffer.
+Evidence: disasm 0x4cafc: `ldr x8,[x19,#0x10]` flag gate, `svc 0x1`, `ldr x8,[x19,#0x20]` count, `cmp x8,#0x1a8; csel` clamp, `brk #0x5519` at 0x4cc20 on count underflow.
+Severity (hypothesis): low-medium — the supervisor-boundary cross and the count-clamped copyout are the boot-time endpoint surface; the 0x1a8 clamp bounds the copy but the count is caller-supplied.
+Confidence: medium.
+
+## [VB2_7] 0x0004d1fc sk_reloc_apply (slide relocation apply)
+Observation: Applies the image slide to relocation entries in a range, skipping entries whose target address falls inside __DATA/__DATA_CONST (per the geo-cfg flag). The fixup `sk_ptr_fixup(addr, addr & ~0x4000, width, -slide, slide)` is repeated in a do-while until it returns 0, and the walk advances 4 bytes per entry. The per-iteration bounds checks (p<begin, p+4>end, wrap) trap via SoftwareBreakpoint(0x5519,0x4d360).
+Evidence: disasm 0x4d1fc: `add x26,x8,#0x4` stride, `ldr w8,[x8]` 4-byte read, `cmn w8,#-1` sentinel, `bl 0x0004d150` fixup loop at 0x4d318-0x4d334, `brk #0x5519` at 0x4d360.
+Severity (hypothesis): low — a write primitive (pointer fixup) over the relocation range, gated by the __DATA skip; an incorrect range/skip would corrupt pointers, but this is the standard slide-apply path.
+Confidence: medium.
+
+## [VB2_7] 0x0006166c sk_exc_state_read (exception-state read)
+Observation: Reads the exception/syscall frame through the read-only thread pointer: saves tp[0..7], `CallSupervisor(0)`, restores tp[0..7], then unpacks four 64-bit frame words at tp+8, tp+0x10, tp+0x18, tp+0x20 into out[3], out[1], out[6], out[4], and classifies the pre-call word into kind 0..4 with a 'valid' flag at out byte 5. The kind-0/1 returns do not set the valid flag; kinds 2/3/4 do.
+Evidence: decompile 0x6166c: frame words at puVar6[4..7]/[8..0x13]/[0xc..0x1f] (=> tp+8..+0x20); classification `if ((long)uVar15 < 2) {...goto LAB_00061724...}` with `*param_1=1;return` for kind 1 (no valid flag) and kind 0 via LAB_00061724 (no valid flag).
+Severity (hypothesis): low — the frame layout read from tpidrro_el0 is the EL0-visible exception-state surface; the classification/valid-flag semantics matter for how the kernel interprets the exception record.
+Confidence: medium.
+## VB2_1 verification findings (VerifyV1)
+
+- **sched hook-a fatal handler (5 fns: 0x1c1808/0x1c182c/0x1c1850/0x1c1874/0x1c1898)**: transcribed tail called `sk_fatal_error()` (FUN_001afe4c) but decompile target is `FUN_001afa84` = `sk_swift_fatal_error` — a DIFFERENT noreturn fatal handler. Wrong-callee in the register-deadlock/panic path; corrected to sk_swift_fatal_error. Security: the two fatal handlers differ in arg count/semantics; mislabeled path could hide which handler is invoked on a Swift fatal. Fixed.
+- **0x00020ebc (tightbeam_failure_code)**: missing cases 6,8,0xb-0xf which map to "Unknown" error (0x206e776f6e6b6e55/0xed0000726f727265); they previously fell through to "Success" for values <=0x10 — a wrong error classification returned to the caller on malformed failure indices. Fixed.
+- **0x0000eb98 (sk_zone_realloc2)**: body was a stub delegating to sk_zone_realloc (FUN_00005544), dropping the entire alternate-realloc dispatcher (fast-path (fl&0xa0)==0, null/size0, slab-header resolution, grow/shrink, poison+free). Stub silently routed realloc to the wrong reallocator. Replaced with full 739-line faithful transcription.
+- **0x0001281c (sk_zone_create_desc)**: `desc[0xb]` written as `usable % granule` instead of param_9=(usable/granule)*granule (success)/0(inner-else)/align(outer-else) — wrong zone-descriptor slot count/alignment field persisted to the malloc-zone descriptor. Fixed.
+
+## [VB2_6] 0x0004de08 (sk_region_boot.c, sk_fault_startfault) — dropped platform region-table limit check
+- **Observation**: the decompile aborts the fault-span when `(0x13 < res[4]) OR (DAT_006af2e0 <= res[4])` — the platform's declared region-table limit — but the transcription only tested `res[4] > 0x13`, letting an index past the platform's declared table (up to the 0x13 cap) reach the span lookup.
+- **Severity**: low-to-medium hypothesis — the restored OR-condition bounds the fault-span index against the platform region table. Confidence high (matches fresh decompile).
+
+## [VB2_6] 0x00273310 (sk_region_vspace_part11.c) — dropped collection-flag guard and relocated capacity bounds check on a string-buffer append
+- **Observation**: the transcription dropped the `(uVar2>>0x3c & 1)` collection-flag guard that early-aborts via FUN_0035646c/FUN_0034883c/FUN_001afa84, and replaced the capacity bounds check `(v5+extraout_x8_04)<<2 < cap>>0xe` (trapping via FUN_00347d60/FUN_001afe4c) with a structurally different `(pos+clen)<<2 < cap>>0xe` test on a clz-decoded value.
+- **Severity**: low — a dropped/relocated bounds + early-abort guard on a buffer append. Rewritten to match the fresh decompile exactly (both noreturn trap branches and the bounds check restored); confidence low (opaque extraout/unaff artifacts retained).
+
+## [VB2_6] 0x0067aeb0 (sk_slice_r70.c) — strcmp aligned loop dropped bytes 8-15 comparison
+- **Observation**: the aligned 16-byte compare loop checked only `x0 vs y0` (bytes 0-7), dropping the `x1 vs y1` (bytes 8-15) comparison; two strings differing only in bytes 8-15 (no NUL in the first 16 bytes) would be reported equal — wrong for any name/capability comparison using this strcmp.
+- **Severity**: low-to-medium hypothesis — comparison correctness on an identity/primitives path. Fixed to compare the full 16 bytes; confidence low (opaque in_w18 branches noted).
+
+## [VB2_6] 0x0067a780 (sk_slice_r70.c) — bzero dropped the head 64-byte store
+- **Observation**: both the large (DC_ZVA) and mid paths dropped the initial 64-byte store; when `dst%64` is in 0x38..0x3f the aligned pointer `d=(dst+8)&~0x3f = dst+8` leaves `dst[0..7]` unzeroed, potentially leaving sensitive memory uncleared.
+- **Severity**: low-to-medium hypothesis — a memory-clearing primitive that could leave a tail uncleared. Fixed by restoring the head store; confidence low (opaque in_w18 branch noted).
+
+## [VB2_6] 0x000a50e8 (sk_region_caps_08.c) — DER record built/verified from wrong source + wrong refcounts released
+- **Observation**: `der_build`/`der_verify` were applied to the retained object (`v`) instead of the table-iterate result (`der`), the 16-byte pair return was split into two misaligned calls (+0x68/+0x6c), and the branch/final releases dropped the wrong reference.
+- **Severity**: low-to-medium hypothesis — the verified DER artefact came from the wrong source and the wrong refcounts were released. Rewritten to thread `der` and capture the pair once; confidence medium.
+
+## [VB2_6] 0x000b06a4 (sk_region_caps_10.c) — fabricated parse step altered stored value
+- **Observation**: a shared `sk_parse_store_impl` factoring invented a `sk_parse_u8` step the decompile lacks (FUN_000b06a4 calls `FUN_000b1aac(msg.lo, msg.hi, param_3)` directly), changing the third argument from the caller's `out` pointer to a parse result — altering what value gets stored.
+- **Severity**: low-to-medium hypothesis — capability-slot store value integrity. Made `sk_trap_parse_store2` a faithful standalone body passing `out`; confidence medium.
+
+## [VB2_6] 0x0009087c (sk_region_caps_04.c) — wrong frame buffer used for slot store / capture / restore
+- **Observation**: `cl4_slot_store(msg+0x58)`, `cl4_frame_capture`, and `cl4_frame_restore` used `frame` (auStack_58) instead of `frame2` (auStack_80) per the decompile, so the wrong frame contents were stored into the message field and the wrong frame was captured/restored.
+- **Severity**: low-to-medium hypothesis — wrong GPR frame contents persisted across a capability operation. Corrected to `frame2`; confidence low.
+
+## [VB2_6] 0x0049a2a4 (sk_slice_r31.c) — hash-map lookup dropped the map base
+- **Observation**: the lookup dropped the `unaff_x20` map base, reading the shift count, slot-array pointer, and occupancy bitset from ~0x20/0x30/0x40 instead of `map_base+offset` — a wrong access target that would probe near-zero memory.
+- **Severity**: low-to-medium hypothesis — capability hash-map probe would deref near-null. Restored by declaring `long *unaff_x20` and indexing map+0x20/0x30/0x40 per file convention; confidence medium.
+
+## [VB2_6] 0x0039fb58 (sk_slice_r51.c) — metadata merge overflow guard dereferenced the wrong pointer
+- **Observation**: the 0x300 metadata overflow guard and the conformance-chain step dereferenced the seqlock hi / merged lo instead of the merge-result hi, which could bypass the overflow check or follow the wrong chain.
+- **Severity**: low-to-medium hypothesis — metadata size/conformance validation integrity. Redeclared `cL4_metadata_merge` to return the 16-byte pair, threaded MHI, and deref `*MHI`; confidence medium.
+
+## [VB2_6] 0x004af468 (sk_slice_r39.c) — dropped decoded-reply callback dispatch
+- **Observation**: the decoded-reply callback dispatch at `(call+0x10)` was dropped (rendered as `(void)call`), so the reply handler never runs even though the function's purpose is to dispatch it.
+- **Severity**: low-to-medium hypothesis — reply-callback never invoked. Restored `(**(call+0x10))(call, &reply)`; confidence medium.
+
+## [VB2_6] 0x000ec110 / 0x000ec9d0 (sk_region_caps_20.c) — saved-thread-state wrote shifted/OOB frame indices
+- **Observation**: the saved-thread-state writes used shifted `frame[]` source-register indices and read `frame[9]` out of bounds, so the wrong GPR values were stored into the thread-state block at tcb+0x18..0x49.
+- **Severity**: low-to-medium hypothesis — wrong GPRs persisted into thread state. Corrected to frame[0..7] with CONCAT71/CONCAT17 byte-packing rendered via frame[5..7]; dest offsets +0x18..0x49 already correct; confidence medium.

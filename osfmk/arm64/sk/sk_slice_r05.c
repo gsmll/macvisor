@@ -140,9 +140,13 @@ void cL4_mr_emit_switch(int *out, long ctx, long *desc, int depth)
         else if (kind == 5) { end = (long *)*desc; }
         else                { end = 0; }
     } else {
-        /* kind >= 3: only kind 5 (array) is valid; span = *desc .. +count */
+        /* kind >= 3: only kind 5 (array) is valid; span = *desc .. +count.
+         * For any other kind the decompile resets BOTH start and end to 0
+         * (plVar7 = 0; goto re-enters the inner chain -> plVar4 = 0), so end
+         * must be cleared here too (was uninitialized). */
         if (kind != 5) {
             start = 0;
+            end = 0;
         } else {
             end = (long *)*desc;
             start = end;

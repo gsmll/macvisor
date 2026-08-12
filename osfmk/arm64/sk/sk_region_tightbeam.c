@@ -760,8 +760,13 @@ void cL4_mr_copy_foreach_slot8(long dst, long desc)
     }
 }
 
-/* FUN_003818b4 / 0038198c / 00381a64 / 00381b3c — the 5 dispatch-slot copy
- * variants (slot 0x8/0x10/0x18/0x20/0x28). */
+/* FUN_003818b4 (= cL4_mr_copy_slot10) / 0038198c (slot18) / 00381a64 (slot20)
+ * / 00381b3c (slot28) — the dispatch-slot copy variants (slot 0x10/0x18/0x20/
+ * 0x28); FUN_0038181c = cL4_mr_copy_foreach_slot8 (slot 0x8). Each, when the
+ * object flag bit0 at *(desc-8)+0x52 is clear, does a simple bulk copy of
+ * *(*(desc-8)+0x40) bytes; otherwise loops `count` elements calling the
+ * element-copy op at *(*(*(desc+0x10)-8)+slot) with stride *(*(*(desc+0x10)-8)+0x48).
+ * VERIFIED vs decompile. */
 long cL4_mr_copy_slot8(long dst, long src, long desc)
 {
     long r;

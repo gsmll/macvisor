@@ -20260,6 +20260,12 @@ void vas_fh_detach_sync(long param_1, unsigned long param_2, long param_3)
     (*(void (**)(long, unsigned long))(param_3 + 0x10))(param_3, 0);
 }
 
+/* Forward declarations for TB-placeholder result encoders and the debug
+ * break helper (defined/declared later in this concatenated file). */
+extern void sk_tb_ph_addr(unsigned long out, unsigned long addr);   /* FUN_00046314 */
+extern void sk_tb_ph_none(unsigned long out);                       /* FUN_000462e0 */
+extern uint64_t sk_break(uintptr_t a, ...);
+
 /*--------------------------------------------------------------------*/
 /* FUN_0002db3c @ 0x0002db3c   (est. vas_fh_map_dispatch)
  * Ghidra: void FUN_0002db3c(long param_1, undefined8 param_2, long param_3)
@@ -20315,7 +20321,7 @@ void vas_fh_map_dispatch(long param_1, unsigned long param_2, long param_3)
                 *(unsigned char *)((char *)slot + 4) = 0;
                 slot[4] = 0; slot[5] = 0;
             }
-            sk_tb_ph_addr(&local0, page);   /* FUN_00046314 */
+            sk_tb_ph_addr((unsigned long)&local0, page);   /* FUN_00046314 */
             goto done;
         }
         if (slot != 0) {
@@ -20328,7 +20334,7 @@ void vas_fh_map_dispatch(long param_1, unsigned long param_2, long param_3)
         if (5 < ((unsigned int)status & 0xff) - 1) sk_vas_abort(0x5ae5cc);
         status &= 0xffff00ff;
     }
-    sk_tb_ph_u32_2(&local0, (unsigned int)status);   /* FUN_00046304 */
+    sk_tb_ph_u32_2((unsigned long)&local0, (unsigned int)status);   /* FUN_00046304 */
 done:
     (*(void (**)(long, unsigned long, unsigned long))(param_3 + 0x10))(param_3, local0, local1);
     return;
@@ -20538,7 +20544,7 @@ void vas_fh_clear(long param_1, unsigned long param_2, long param_3)
             *(unsigned char *)((char *)slot + 4) = 0;
             slot[4] = 0; slot[5] = 0;
         }
-        sk_tb_ph_none(&local0);   /* FUN_000462e0 */
+        sk_tb_ph_none((unsigned long)&local0);   /* FUN_000462e0 */
         goto done;
     }
     if (slot != 0) {
@@ -20548,7 +20554,7 @@ void vas_fh_clear(long param_1, unsigned long param_2, long param_3)
         *(unsigned char *)((char *)slot + 4) = 0;
     }
     if (5 < ((unsigned int)status & 0xff) - 1) sk_vas_abort(0x5ae5cc);
-    sk_tb_ph_u32(&local0, (unsigned int)(status & 0xffff00ff));   /* FUN_000462e8 */
+    sk_tb_ph_u32((unsigned long)&local0, (unsigned int)(status & 0xffff00ff));   /* FUN_000462e8 */
 done:
     (*(void (**)(long, unsigned long))(param_3 + 0x10))(param_3, local0);
     return;
@@ -33601,6 +33607,7 @@ unsigned long sk_tb_rec_encode3(unsigned long obj, unsigned long rec)
     unsigned long lv, w, out, u, a, b, c;
 
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x49b10) */
     a = *(unsigned long *)(rec + 8);
     b = *(unsigned long *)(rec + 0x10);
     c = *(unsigned long *)(rec + 0x18);
@@ -33660,6 +33667,7 @@ unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg)
     unsigned long lv, lv2, out, w, u, u7, u11;
     sk_tb_meta_t au, au2;
     unsigned long *pu8;
+    unsigned int f16, f32;
 
     /* ---- level 1 ---- */
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
@@ -33698,9 +33706,11 @@ unsigned long sk_tb_rec_encode4(unsigned long obj, unsigned long arg)
         u11 = u7 >> 0x10;
         sk_tb_tag(w, 1);
         sk_tb_put_len(w, 3);
-        if (((((unsigned int)au.hi >> 0x10) & 0xffff) - 1) & 0xff) < 6) {
-            sk_tb_put_u8(w, ((unsigned int)au.hi >> 0x10) & 0xff);
-            sk_tb_put_u16(w, ((unsigned int)au.hi >> 0x20) & 0xffff);
+        f16 = (unsigned int)(au.hi >> 0x10) & 0xffff;
+        f32 = (unsigned int)(au.hi >> 0x20) & 0xffff;
+        if (((f16 - 1) & 0xff) < 6) {
+            sk_tb_put_u8(w, f16 & 0xff);
+            sk_tb_put_u16(w, f32);
             goto l2done;
         }
     } else {
@@ -33967,51 +33977,211 @@ unsigned long sk_tb_rec_encode7(unsigned long obj, unsigned long rec)
  * nested fields. Returns the L4 error.
  * Confidence: medium
  */
-unsigned long sk_tb_rec_encode8(unsigned long obj, unsigned long rec)
+unsigned long sk_tb_rec_encode8(unsigned long obj, unsigned long param)
 {
-    unsigned long lv, w, out, u, a, b, c;
+    typedef struct { unsigned long lo, hi; } tbmeta_t;
+    extern tbmeta_t sk_tb_desc(unsigned long);   /* FUN_004b53cc, 16-byte {desc, value} */
+    unsigned long lv, w, out, u, kind, val, v1, v2, dsc;
+    tbmeta_t au;
 
+    /* ---- level 1 (root descriptor is the argument itself) ---- */
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
-    a = *(unsigned long *)(rec + 8);
-    b = *(unsigned long *)(rec + 0x10);
-    c = *(unsigned long *)(rec + 0x18);
-    if ((char)*(unsigned long *)rec == 1) u = 4;
-    else if ((char)*(unsigned long *)rec == 0) {
-        if (a == 0x427d55567dfea26 || a == 0x652378e30e8da7d4) u = 9;
-        else if (a == 0x629b90c9626409ac) u = 0x21;
-        else sk_tb_fatal(0x5ba47e);
-    } else u = 0;
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4a600) */
+    u = 4;
+    if ((param & 0xff) != 1) u = 0;
+    kind = param & 0xff;
+    if ((param & 0xff) == 0) u = 1;
     out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
     if ((int)out != 0) return out;
     w = *(unsigned long *)(lv + 0x28);
-    if ((char)*(unsigned long *)rec == 1) {
+    if (kind == 1) {
+        val = param >> 0x10;
         sk_tb_tag(w, 1);
         sk_tb_put_len(w, 3);
-        if (((unsigned long)a - 1 & 0xff) < 6) {
-            sk_tb_put_u8(w, a & 0xff);
-            sk_tb_put_u16(w, a >> 0x10 & 0xffff);
-        } else sk_tb_fatal(0x5ba47e);
-    } else {
-        if ((char)*(unsigned long *)rec == 0) {
-            sk_tb_tag(w, 0);
-            sk_tb_var_w(w, a);
-            if (a == 0x427d55567dfea26 || a == 0x652378e30e8da7d4) {
-                *(unsigned char *)(lv + 0x20) = 1;
-                return out;
-            }
-            if (a == 0x629b90c9626409ac) {
-                sk_tb_put_len(w, 0x10);
-                sk_tb_put_u64(w, b);
-                sk_tb_put_u64(w, c);
-                *(unsigned char *)(lv + 0x20) = 1;
-                return out;
-            }
-            sk_tb_fatal(0x5ba47e);
+        if (((val & 0xffff) - 1 & 0xff) < 6) {
+            sk_tb_put_u8(w, val & 0xff);
+            sk_tb_put_u16(w, (param >> 0x20) & 0xffff);
+            goto L1_done;
         }
-        sk_tb_bad2();
+    } else {
+        if ((param & 0xff) == 0) {
+            sk_tb_tag(w, 0);
+L1_done:
+            *(unsigned char *)(lv + 0x20) = 1;
+            return out;
+        }
+        FUN_004b57a4();   /* bad kind (level 1) */
     }
-    sk_tb_fatal(0x5ba47e);
-    return 0;
+    au = sk_tb_desc(val);
+
+    /* ---- level 2 ---- */
+    lv = *(unsigned long *)(*(unsigned long *)(au.lo + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4a708) */
+    kind = (uint)au.hi & 0xff;
+    u = 4;
+    if (kind != 1) u = 0;
+    if (kind != 0) u = (kind == 1) ? 4 : 0;
+    if (kind != 0) { if (kind == 1) u = 4; }   /* u = 9 if kind==0 else uVar4 */
+    u = (kind == 0) ? 9 : u;
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
+    if ((int)out != 0) return out;
+    w = *(unsigned long *)(lv + 0x28);
+    if (kind == 1) {
+        sk_tb_tag(w, 1);
+        sk_tb_put_len(w, 3);
+        if (((unsigned int)val - 1 & 0xff) < 6) {
+            sk_tb_put_u8(w, val & 0xff);
+            sk_tb_put_u16(w, (val >> 0x10) & 0xffff);
+            goto L2_done;
+        }
+    } else if (kind == 0) {
+        sk_tb_tag(w, 0);
+        sk_tb_var_w(w, val);
+L2_done:
+        *(unsigned char *)(lv + 0x20) = 1;
+        return out;
+    } else {
+        FUN_004b57d4();   /* bad kind (level 2) */
+    }
+    au = sk_tb_desc(val);
+
+    /* ---- level 3 (value treated as pointer to {kind, v1, v2}) ---- */
+    dsc = au.lo;
+    v1 = au.hi;
+    lv = *(unsigned long *)(*(unsigned long *)(dsc + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4a828) */
+    kind = *(unsigned char *)v1;
+    val = *(unsigned long *)(v1 + 8);
+    v2 = *(unsigned long *)(v1 + 0x10);
+    u = (kind == 1) ? 4 : 0;
+    if (kind != 0) u = (kind == 1) ? 4 : 0;
+    u = (kind == 0) ? 0x11 : u;
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
+    if ((int)out != 0) return out;
+    w = *(unsigned long *)(lv + 0x28);
+    if (kind == 1) {
+        sk_tb_tag(w, 1);
+        sk_tb_put_len(w, 3);
+        if (((unsigned int)val - 1 & 0xff) < 6) {
+            sk_tb_put_u8(w, val & 0xff);
+            sk_tb_put_u16(w, (val >> 0x10) & 0xffff);
+            goto L3_done;
+        }
+    } else if (kind == 0) {
+        sk_tb_tag(w, 0);
+        sk_tb_put_len(w, 0x10);
+        sk_tb_put_u64(w, val);
+        sk_tb_put_u64(w, v2);
+L3_done:
+        *(unsigned char *)(lv + 0x20) = 1;
+        return out;
+    } else {
+        FUN_004b5804();   /* bad kind (level 3) */
+    }
+    au = sk_tb_desc(val);
+
+    /* ---- level 4 ---- */
+    dsc = au.lo;
+    v1 = au.hi;
+    lv = *(unsigned long *)(*(unsigned long *)(dsc + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4a948) */
+    kind = *(unsigned char *)v1;
+    val = *(unsigned long *)(v1 + 8);
+    v2 = *(unsigned long *)(v1 + 0x10);
+    u = (kind == 1) ? 4 : 0;
+    if (kind != 0) u = (kind == 1) ? 4 : 0;
+    u = (kind == 0) ? 0x11 : u;
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
+    if ((int)out != 0) return out;
+    w = *(unsigned long *)(lv + 0x28);
+    if (kind == 1) {
+        sk_tb_tag(w, 1);
+        sk_tb_put_len(w, 3);
+        if (((unsigned int)val - 1 & 0xff) < 6) {
+            sk_tb_put_u8(w, val & 0xff);
+            sk_tb_put_u16(w, (val >> 0x10) & 0xffff);
+            goto L4_done;
+        }
+    } else if (kind == 0) {
+        sk_tb_tag(w, 0);
+        sk_tb_put_len(w, 0x10);
+        sk_tb_put_u64(w, val);
+        sk_tb_put_u64(w, v2);
+L4_done:
+        *(unsigned char *)(lv + 0x20) = 1;
+        return out;
+    } else {
+        FUN_004b5834();   /* bad kind (level 4) */
+    }
+    au = sk_tb_desc(val);
+
+    /* ---- levels 5..15: {kind=hi&0xff, value=hi, spill=_10_4_/_12_4_} ---- */
+#define ENC8_LEVEL(SB, BAD, LVL)                                                    \
+    lv = *(unsigned long *)(*(unsigned long *)(au.lo + 0x20) + 8);                  \
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SB(0x5519, SB) */             \
+    kind = (unsigned int)au.hi & 0xff;                                              \
+    u = (kind == 1) ? 4 : 0;                                                         \
+    if ((au.hi & 0xff) == 0) u = 1;                                                  \
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0); \
+    if ((int)out != 0) return out;                                                   \
+    w = *(unsigned long *)(lv + 0x28);                                               \
+    if (kind == 1) {                                                                 \
+        val = au.hi >> 0x10;                                                         \
+        sk_tb_tag(w, 1);                                                             \
+        sk_tb_put_len(w, 3);                                                         \
+        if ((((unsigned int)(au.hi >> 16) - 1 & 0xff) < 6)) {                         \
+            sk_tb_put_u8(w, (au.hi >> 16) & 0xff);                                   \
+            sk_tb_put_u16(w, (au.hi >> 32) & 0xffff);                                \
+            *(unsigned char *)(lv + 0x20) = 1;                                       \
+            return out;                                                              \
+        }                                                                            \
+    } else if ((au.hi & 0xff) == 0) {                                                \
+        sk_tb_tag(w, 0);                                                             \
+        *(unsigned char *)(lv + 0x20) = 1;                                           \
+        return out;                                                                  \
+    } else {                                                                         \
+        BAD;                                                                         \
+    }                                                                                \
+    au = sk_tb_desc(val);
+
+    ENC8_LEVEL(0x4aa48, FUN_004b5864(), 5)
+    ENC8_LEVEL(0x4ab48, FUN_004b5894(), 6)
+    ENC8_LEVEL(0x4ac48, FUN_004b58c4(), 7)
+    ENC8_LEVEL(0x4ad48, FUN_004b58f4(), 8)
+    ENC8_LEVEL(0x4ae48, FUN_004b5924(), 9)
+    ENC8_LEVEL(0x4af48, FUN_004b5954(), 10)
+    ENC8_LEVEL(0x4b048, FUN_004b5984(), 11)
+    ENC8_LEVEL(0x4b148, FUN_004b59b4(), 12)
+    ENC8_LEVEL(0x4b248, FUN_004b5a14(), 13)
+    ENC8_LEVEL(0x4b348, FUN_004b5a44(), 14)
+
+    /* ---- level 15 (terminal) ---- */
+    lv = *(unsigned long *)(*(unsigned long *)(au.lo + 0x20) + 8);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4b448) */
+    kind = (unsigned int)au.hi & 0xff;
+    u = (kind == 1) ? 4 : 0;
+    if ((au.hi & 0xff) == 0) u = 1;
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
+    if ((int)out == 0) {
+        w = *(unsigned long *)(lv + 0x28);
+        if (kind == 1) {
+            sk_tb_tag(w, 1);
+            sk_tb_put_len(w, 3);
+            if (5 < (((unsigned int)(au.hi >> 16) - 1) & 0xff)) goto L15_panic;
+            sk_tb_put_u8(w, (au.hi >> 16) & 0xff);
+            sk_tb_put_u16(w, (au.hi >> 32) & 0xffff);
+        } else {
+            if ((au.hi & 0xff) != 0) {
+L15_panic:
+                sk_tb_desc(val);
+                out = sk_tb_fatal(0x5ba47e);   /* FUN_00118b28 TB_FATAL */
+                return out;
+            }
+            sk_tb_tag(w, 0);
+        }
+        *(unsigned char *)(lv + 0x20) = 1;
+    }
+    return out;
 }
 
 /*--------------------------------------------------------------------*/
@@ -41097,35 +41267,36 @@ unsigned long sk_cnode_scan(void)
   int t0;
   unsigned long t3;
   unsigned short *t2;
-  sk_u128_t stk0;;
-  
-  t0 = sk_domain_state();
-  if (t0 != 0) {
-    t3 = sk_msg_capacity();
-    if ((t3 != 0) && (t3 + 8 < t3)) {
+
+  t0 = sk_tb_ph_ready();          /* FUN_0004fe80 */
+    if (t0 != 0) {
+        unsigned long stk0[2] = {0, 0};
+        t3 = sk_tb_ph_avail();        /* FUN_0004ed48 */
+        if ((t3 != 0) && (t3 + 8 < t3)) {
 LAB_00054de0:
-                    
-      t1 = (sk_code_t )sk_break(0x5519,0x54de4);
-      (*t1)();
-    }
-    stk0 = sk_msg_push_cap();
-    t3 = sk_msg_iter(stk0);
-    while (t3 != 0) {
-      if (t3 + 0xc < t3) goto LAB_00054de0;
-      t0 = sk_msg_next(t3);
-      if (t0 == 0x19) {
-        t2 = (unsigned short *)sk_msg_get(t3,0);
-        if (t2 != (unsigned short *)0x0) {
-          return (unsigned long)(uint8_t)t2[1] << 0x10 | (unsigned long)*(uint8_t *)((long)t2 + 3) << 0x18 |
-                 (unsigned long)*t2 |
-                 (unsigned long)((unsigned int)(uint8_t)t2[3] << 0x10 | (unsigned int)*(uint8_t *)((long)t2 + 7) << 0x18 |
-                        (unsigned int)t2[2]) << 0x20;
+            t1 = (sk_code_t )sk_break(0x5519,0x54de4);
+            (*t1)();
         }
-      }
-      t3 = sk_msg_iter(stk0);
+        sk_tb_ph_iter_init();        /* FUN_0004eb44 (state via regs) */
+        t3 = sk_tb_ph_iter_next((unsigned long)stk0);   /* FUN_0004eb4c */
+        while (t3 != 0) {
+            if (t3 + 0xc < t3) goto LAB_00054de0;
+            t0 = sk_tb_ph_kind(t3);     /* FUN_0004e88c */
+            if (t0 == 0x19) {
+                t2 = (unsigned short *)sk_tb_ph_resolve(t3, 0);   /* FUN_0004e7b8 */
+                if (t2 != (unsigned short *)0x0) {
+                    return (unsigned long)(uint8_t)t2[1] << 0x10 |
+                           (unsigned long)*(uint8_t *)((long)t2 + 3) << 0x18 |
+                           (unsigned long)*t2 |
+                           (unsigned long)((unsigned int)(uint8_t)t2[3] << 0x10 |
+                                (unsigned int)*(uint8_t *)((long)t2 + 7) << 0x18 |
+                                (unsigned int)t2[2]) << 0x20;
+                }
+            }
+            t3 = sk_tb_ph_iter_next((unsigned long)stk0);
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 
