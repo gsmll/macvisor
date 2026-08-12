@@ -91,7 +91,7 @@ extern void txm_bn_mod_op(uint64_t *a, uint64_t n, uint64_t *b); /* FUN_0003e6e4
 
 /* Object/range association + digest helpers used by the region driver. */
 extern uint64_t txm_region_set_digest(uint64_t obj, uint64_t digest); /* FUN_00031ecc */
-extern void txm_region_zero(uint64_t *a, uint64_t n);        /* FUN_00030cc8 */
+extern void txm_region_zero(uint64_t *a, uint64_t *b);       /* FUN_00030cc8 */
 
 /* Boot / debug gating helpers. */
 extern void txm_boot_enter(int);        /* FUN_00023dac */
@@ -138,6 +138,45 @@ extern const void *txm_alg_name_180;  /* FUN_00043d00 */
 #define ENT_OOP_JIT_RUNNER  "com.apple.private.oop-jit-runner"
 #define ENT_SECURITY_RESEARCH "com.apple.private.security.research"
 
+/* Forward declarations for functions defined in this file (used across
+ * sections before their definitions). */
+void txm_region_policy_commit(uint64_t *ctx, uint64_t base, uint64_t size);
+uint32_t txm_policy_rule1(uint64_t *ctx);
+uint32_t txm_policy_rule2(uint64_t *ctx);
+uint32_t txm_policy_rule3(uint64_t *ctx);
+uint64_t *txm_policy_rule4(uint64_t *ctx);
+uint32_t txm_policy_rule67(uint64_t *ctx, uint8_t rule);
+uint64_t *txm_policy_rule_ac(uint64_t *ctx);
+uint32_t txm_policy_rule_ab(uint64_t *ctx);
+uint32_t txm_policy_rule_aa(uint64_t *ctx);
+int txm_policy_rule_02(uint64_t *ctx);
+uint64_t *txm_policy_rule_d1(uint64_t *ctx, uint32_t mode);
+int txm_policy_rule_a0(uint64_t *ctx, uint32_t mode);
+uint32_t txm_policy_rule_a8(uint64_t *ctx, uint32_t mode);
+uint32_t txm_policy_rule_a9(uint64_t *ctx, int mode);
+void txm_sha512_compress(uint64_t *state, uint64_t blocks, const uint8_t *data);
+uint64_t txm_der_len_decode(uint64_t *rng, uint64_t *out, int canonical);
+void txm_der_len_decode_short(uint64_t *rng, uint64_t *out);
+void txm_der_len_decode_full(uint64_t *rng, uint64_t *out);
+uint64_t txm_tag_match(uint64_t *rng, uint64_t tag, uint64_t *out);
+uint64_t txm_trusted_range(uint64_t *rng, uint64_t tag, uint64_t *out);
+uint64_t txm_policy_kind_get(uint64_t ctx, uint8_t *out);
+void txm_der_len_decode_short(uint64_t *rng, uint64_t *out);
+void txm_dit_clear(uint8_t *flag);
+uint64_t txm_bn_prng(void);
+extern uint64_t txm_bn_prng_state;    /* DAT_00070040 */
+uint64_t txm_bn_modulus_ptr(uint64_t desc);
+uint64_t txm_bn_sub_const(uint64_t n, uint64_t *out, uint64_t *a, uint64_t k);
+uint64_t txm_bn_exp_window(uint64_t ctx, uint64_t desc, uint64_t out,
+                           uint64_t base, uint64_t exp);
+void txm_bn_copy(uint64_t n, uint64_t *dst, uint64_t *src);
+void txm_der_oid_read(uint64_t rng, uint64_t *out);
+bool txm_der_oid_byte_match(uint64_t *rng, uint64_t a, uint64_t b);
+uint64_t txm_der_uint_read(uint64_t rng, uint64_t *out);
+uint64_t txm_der_oid_match(uint64_t rng, uint64_t a, uint64_t b, uint64_t c);
+
+
+
 /* ------------------------------------------------------------------ */
 /* Idioms from the decompiler (kept faithful, named for readability). */
 /* ------------------------------------------------------------------ */
@@ -164,6 +203,12 @@ static inline uint64_t txm_ctr_el0(void)
 	uint64_t v;
 	__asm__ volatile("mrs %0, ctr_el0" : "=r"(v));
 	return v;
+}
+/* Breakpoint (SoftwareBreakpoint(code, addr)) — TXM's hard trap. */
+static inline void txm_brk(uint32_t code, uint64_t addr)
+{
+	__asm__ volatile("brk %0" :: "i"(0));
+	(void)code; (void)addr;
 }
 
 /* ------------------------------------------------------------------ */
@@ -307,7 +352,7 @@ uint32_t txm_policy_rule3(uint64_t *ctx)
 			return 0xa5;
 		}
 		{
-			uint32_t e = txm_ent_bits(trust);
+			uint32_t e = txm_ent_bits((uint64_t *)trust);
 			if ((e & 0xff00) != 0) {
 				return (e & 0xffff0000) | 0xa5 | (e & 0xff);
 			}
@@ -355,7 +400,7 @@ uint32_t txm_policy_rule2(uint64_t *ctx)
 	}
 	{
 		uint64_t d = (*(uint64_t (**)(uint64_t *))(vtable + 0x90))(&scratch);
-		uint64_t e = txm_ent_pair(trust, (uint64_t)ENT_OOP_JIT_LOADER,
+		uint64_t e = txm_ent_pair((uint64_t *)trust, (uint64_t)ENT_OOP_JIT_LOADER,
 		                          *(uint64_t *)(0x10fd8 + (uint64_t)kind * 8));
 		(*(void (**)(uint64_t, uint64_t))(vtable + 0x98))(d, scratch);
 		return (e & 0xff00) ? 0x730a7u : 0xa7u;
@@ -390,10 +435,11 @@ uint32_t txm_policy_rule1(uint64_t *ctx)
  * Confidence: medium.
  * Notes: strings at 0x2c39 / 0x2c5a.
  */
-uint32_t txm_policy_rule67(uint64_t *ctx)
+uint32_t txm_policy_rule67(uint64_t *ctx, uint8_t rule)
 {
 	uint64_t vtable = ctx[0];
 	uint8_t kind = 0;
+	(void)rule;
 	int ent = 0;
 
 	txm_buf_fill(ctx[6], ctx[7], &kind, 0);
@@ -402,9 +448,9 @@ uint32_t txm_policy_rule67(uint64_t *ctx)
 	}
 	{
 		uint64_t trust = txm_policy_trust();
-		uint32_t a = txm_ent_lookup(trust, (uint64_t)ENT_OOP_JIT_LOADER, &ent);
+		uint32_t a = txm_ent_lookup((uint64_t *)trust, (uint64_t)ENT_OOP_JIT_LOADER, &ent);
 		if ((a & 0xff00) != 0 || ent == 4) {
-			uint32_t b = txm_ent_lookup(trust, (uint64_t)ENT_OOP_JIT_RUNNER, &ent);
+			uint32_t b = txm_ent_lookup((uint64_t *)trust, (uint64_t)ENT_OOP_JIT_RUNNER, &ent);
 			if ((b & 0xff00) == 0 && ent != 4 && ent != 2) {
 				return 0x326a3u;
 			}
@@ -425,15 +471,15 @@ uint64_t *txm_policy_rule_ac(uint64_t *ctx)
 {
 	uint64_t *ent, *e;
 	uint64_t name = 0;
-	uint32_t st = txm_range_kind(ctx[6], ctx[7], &name);
+	txm_range_kind(ctx[6], ctx[7], &name);
 
 	e = (uint64_t *)*(uint64_t *)(ctx[0] + 0x40);
-	if ((st & 0xff00) != 0 || e == 0) {
+	if (e == 0) {
 		return (uint64_t *)0xac;
 	}
 	ent = e;
 	for (;;) {
-		if (txm_strcmp((char *)name) == 0) {
+		if (txm_strcmp((char *)name, "") == 0) {
 			break;
 		}
 		if (e[0] == 0) {
@@ -466,7 +512,7 @@ uint32_t txm_policy_rule_ab(uint64_t *ctx)
 	if (trust == 0) {
 		return 0x130ab;
 	}
-	return (txm_ent_has(trust, (uint64_t)ENT_SECURITY_RESEARCH, 0) & 0xff00) ? 0xab : 0x130ab;
+	return (txm_ent_has((uint64_t *)trust, (uint64_t)ENT_SECURITY_RESEARCH, 0) & 0xff00) ? 0xab : 0x130ab;
 }
 
 /* FUN_00035760 @ 0x00035760   (est. txm_policy_rule_aa)
@@ -496,7 +542,7 @@ uint32_t txm_policy_rule_aa(uint64_t *ctx)
 	if (trust == 0) {
 		return 0xaa;
 	}
-	return (txm_ent_has(trust, (uint64_t)ENT_SECURITY_RESEARCH, 0) & 0xff00) ? 0xaa : 0x130aa;
+	return (txm_ent_has((uint64_t *)trust, (uint64_t)ENT_SECURITY_RESEARCH, 0) & 0xff00) ? 0xaa : 0x130aa;
 }
 
 /* FUN_00035800 @ 0x00035800   (est. txm_policy_rule_02)
@@ -523,7 +569,7 @@ int txm_policy_rule_02(uint64_t *ctx)
 			uint64_t off = 0;
 			int r = 0x130a2;
 			do {
-				if (txm_ent_has(trust, *(uint64_t *)(0x10ff0 + off), 1) == 0) {
+				if (txm_ent_has((uint64_t *)trust, *(uint64_t *)(0x10ff0 + off), 1) == 0) {
 					return r;
 				}
 				r += 0x10000;
@@ -988,7 +1034,7 @@ uint64_t *txm_region_residual_get(uint64_t ctx, uint64_t *out)
  * faults (0x19). Returns the mark (0x15).
  * Confidence: medium.
  */
-uint32_t txm_code_page_mark_begin(uint64_t *ctx, uint64_t (*out)[16])
+uint32_t txm_code_page_mark_begin(uint64_t *ctx, uint64_t *out)
 {
 	uint64_t vtable = ctx[0];
 	uint64_t span, base, end, p;
@@ -1017,10 +1063,11 @@ uint32_t txm_code_page_mark_begin(uint64_t *ctx, uint64_t (*out)[16])
 	desc[0] = p;
 	if (p <= end && base <= p) {
 		if (*(uint64_t *)(vtable + 200) != 0) {
-			*(uint64_t (*)[16])desc = (*(uint64_t (*[16])(uint64_t *, uint64_t))(vtable + 200))(ctx, p);
+			(*(void (**)(uint64_t *, uint64_t, uint64_t *))(vtable + 200))(ctx, p, desc);
 		}
 		*(uint8_t *)((uint8_t *)ctx + 5) = 1;
-		*(uint64_t (*)[16])out = *(uint64_t (*)[16])desc;
+		out[0] = desc[0];
+		out[1] = desc[1];
 		return 0x15;
 	}
 	txm_fault(0x19);
@@ -1273,7 +1320,7 @@ uint32_t txm_policy_ent_check(uint64_t ctx, uint64_t name)
 		return 0x10410u;
 	}
 	trust = txm_policy_trust();
-	st = txm_ent_has(trust, name, 1);
+	st = txm_ent_has((uint64_t *)trust, name, 1);
 	return (st & 0xff00) ? st : 0x10u;
 }
 
@@ -1292,7 +1339,7 @@ uint32_t txm_policy_ent_pair_check(uint64_t ctx, uint64_t a, uint64_t b)
 		return 0x10411u;
 	}
 	trust = txm_policy_trust();
-	st = txm_ent_pair(trust, a, b);
+	st = txm_ent_pair((uint64_t *)trust, a, b);
 	return (st & 0xff00) ? st : 0x11u;
 }
 
@@ -1362,10 +1409,10 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 		span_hi = (uint64_t)(ev0 >> 0x10 | ev0 << 0x10);
 	}
 	for (;;) {
-		txm_code_region_at(ctx, i, &span_lo, 0, 0);
+		txm_code_region_at((uint64_t)ctx, i, &span_lo, 0, 0);
 		if (span_lo + span_hi == start) {
 			uint32_t idx = 0xffffffff;
-			txm_code_region_lookup(ctx, 0, &idx, 0);
+			txm_code_region_lookup((uint64_t)ctx, 0, &idx, 0);
 			if (i < idx) {
 				return 0x73212;
 			}
@@ -1376,13 +1423,13 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 				pg = pginfo;
 				if (*(uint8_t *)((uint8_t *)ctx + 0x20) & 1) {
 					uint32_t o2 = 0xffffffff;
-					txm_code_page_hash(ctx, 7, 0, &o2);
+					txm_code_page_hash((uint64_t)ctx, 7, 0, &o2);
 					if (i < o2) {
 						return 0x73212;
 					}
 				} else {
 					uint32_t o3 = 0xffffffff;
-					txm_code_page_hash(ctx, 0x10000, 0, &o3);
+					txm_code_page_hash((uint64_t)ctx, 0x10000, 0, &o3);
 					if (i < o3) {
 						ctx[0x22] = 0;
 						ctx[0x23] = 0;
@@ -1489,7 +1536,7 @@ int txm_policy_cdhash_check(uint64_t *ctx, uint64_t other)
 	uint64_t d0 = 0, d1 = 0, d2 = 0, d3 = 0;
 	uint64_t guard = txm_canary;
 
-	txm_policy_kind_get(ctx, &kind);
+	txm_policy_kind_get((uint64_t)ctx, &kind);
 	if (kind == 7) {
 		int r = 0x228b2;
 		if (*(uint64_t *)(vtable + 0x20) != 0) {
@@ -1532,8 +1579,8 @@ uint32_t txm_policy_regions_equal(uint64_t *ctx, uint64_t *other)
 	uint64_t k1 = 0, k2 = 0, f1 = 0, f2 = 0;
 	uint32_t r;
 
-	txm_policy_kind_get(ctx, (uint8_t *)&kind_me + 0);
-	txm_policy_kind_get(other, (uint8_t *)&kind_other);
+	txm_policy_kind_get((uint64_t)ctx, (uint8_t *)&kind_me + 0);
+	txm_policy_kind_get((uint64_t)other, (uint8_t *)&kind_other);
 	if (kind_other == 0) {
 		return 0x12207u;
 	}
@@ -1554,11 +1601,11 @@ uint32_t txm_policy_regions_equal(uint64_t *ctx, uint64_t *other)
 	}
 	if (kind_other < 6) {
 		if (kind_other == 2) {
-			r = txm_policy_runner_chain_check(ctx, other);
+			r = txm_policy_runner_chain_check((uint64_t)ctx, (uint64_t)other);
 			return (r & 0xff00) ? r : 7u;
 		}
 		if (kind_other == 1) {
-			return (txm_policy_ent_check(ctx, (uint64_t)"com.apple.private.amfi-can-execute") & 0xff00)
+			return (txm_policy_ent_check((uint64_t)ctx, (uint64_t)"com.apple.private.amfi-can-execute") & 0xff00)
 			       ? 0x133b0u : 7u;
 		}
 		if (kind_other < kind_me) {
@@ -1575,7 +1622,7 @@ uint32_t txm_policy_regions_equal(uint64_t *ctx, uint64_t *other)
 		return (txm_strcmp((char *)k1, (char *)k2) != 0) ? 0x82907u : 7u;
 	}
 	if (kind_other == 7) {
-		r = txm_policy_cdhash_check(ctx, other);
+		r = txm_policy_cdhash_check(ctx, (uint64_t)other);
 		return (r & 0xff00) ? r : 7u;
 	}
 	return 7u;
@@ -1661,16 +1708,19 @@ void txm_bn_cswap_prng(uint64_t count, uint64_t sel, uint64_t *a, uint64_t *b)
  */
 uint64_t txm_bn_mul_reduce(uint64_t *ctx, uint64_t b, uint64_t c, uint64_t d)
 {
-	uint64_t saved = ctx[2];
 	uint64_t n = txm_bn_count((uint64_t *)b);
-	uint64_t scratch = (*(uint64_t *(*)(uint64_t *, uint64_t))(ctx[3]))(ctx, n);
-	uint64_t v = txm_bn_mod_op(n, scratch, b);
-	if (txm_bn_mod_op(v, scratch, 2) == 0) {
-		ctx[2] = saved;
-		return txm_bn_add_mul(ctx, b, c, d, scratch);
+	uint64_t saved = ctx[2];                       /* +0x10 */
+	uint64_t *scratch = (*(uint64_t *(*)(uint64_t *, uint64_t))(ctx[3]))(ctx, n); /* +0x18 alloc */
+	uint64_t mod = txm_bn_modulus_ptr(b);          /* FUN_000372f8 */
+	uint64_t r;
+
+	if (txm_bn_sub_const(n, scratch, (uint64_t *)mod, 2) == 0) {
+		r = txm_bn_exp_window((uint64_t)ctx, (uint64_t)b, c, d, (uint64_t)scratch);
+	} else {
+		r = 0xffffffff;
 	}
 	ctx[2] = saved;
-	return 0xffffffff;
+	return r;
 }
 
 /* FUN_00037110 @ 0x00037110   (est. txm_bn_window_build)
@@ -1934,6 +1984,7 @@ uint64_t txm_der_tag_decode(uint64_t *rng, uint64_t *out)
 	uint8_t *p = (uint8_t *)*rng;
 	uint8_t b;
 	uint64_t v, n = 0;
+	uint8_t *np;
 
 	if (p == 0 || (uint8_t *)rng[1] <= p) {
 		return 0;
@@ -1982,8 +2033,7 @@ uint64_t txm_tag_match(uint64_t *rng, uint64_t tag, uint64_t *out)
 	uint64_t t = 0;
 	*out = 0;
 	if (txm_der_tag_decode(rng, &t) != 0 && t == tag) {
-		if (tag) { }
-		return txm_der_len_decode_short(rng, out);
+		return txm_der_len_decode(rng, out, 0);
 	}
 	return 0;
 }
@@ -2435,3 +2485,5 @@ applied:
 	*(uint8_t *)((uint8_t *)ctx + 0x102) = rule;
 	return 3;
 }
+
+#endif /* __ASSEMBLER__ */

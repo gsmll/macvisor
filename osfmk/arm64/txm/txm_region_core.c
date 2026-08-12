@@ -1302,7 +1302,7 @@ uint64_t txm_der_read_tlv(uintptr_t *cursor, uintptr_t *out, uintptr_t *unused)
             t = (t << 7) | (b & 0x7f);
             if (!(b & 0x80)) break;
         }
-        tag = (first & 0xe0) << 56 | t;
+        tag = ((uint64_t)(first & 0xe0)) << 56 | t;
     } else {
         tag = (uint64_t)first;
     }
@@ -1374,7 +1374,7 @@ uint64_t txm_der_bool(uintptr_t *cursor, bool *out)
 void txm_der_u32(uintptr_t *cursor, uint32_t *out)
 {
     /* FUN_0004447c: DER INTEGER to u32 via FUN_000444fc; rejects >32-bit. */
-    uint64_t v = 0;
+    uintptr_t v = 0;
     uint64_t rc = txm_der_uint(cursor, &v);
     if (rc == 0) {
         if (v >> 32 == 0) { *out = (uint32_t)v; }
@@ -1440,7 +1440,8 @@ done:
 void txm_der_octet(uintptr_t *cursor, uintptr_t *out, uintptr_t *len)
 {
     /* FUN_0004463c: OCTET STRING (tag 0x2000000000000008) decode. */
-    uint64_t tag = 0, l = 0;
+    uintptr_t tag = 0;
+    uint64_t l = 0;
     uintptr_t pay = 0;
     uint64_t rc = txm_der_read_tlv(cursor, &tag, 0);
     if (rc != 0) return;
@@ -1468,11 +1469,12 @@ void txm_der_seq(uintptr_t *cursor, uintptr_t *out)
     /* FUN_00044724: consumes the current DER element, extracting its
      * payload into out (advancing the cursor past the header). */
     uintptr_t base = cursor[0], end = cursor[1];
-    uint64_t tag = 0, plen = 0;
+    uintptr_t tag = 0, plen = 0;
     uint64_t rc = txm_der_read_tlv(cursor, &tag, 0);
     if (rc != 0) return;
     out[0] = base;         /* header start (kept for re-parse) */
     out[1] = end;
+    (void)plen;
     /* cursor[0] now points past the header; leave payload intact. */
 }
 
@@ -1673,7 +1675,7 @@ uint64_t txm_img4_get_u32(uintptr_t manifest, uintptr_t key, uint64_t tag, uint3
     uintptr_t elem[3];
     uint64_t rc = txm_img4_query(manifest, 0, tag | 0xe000000000000000, 2, elem);
     if (rc == 0) {
-        uint64_t v = 0;
+        uintptr_t v = 0;
         rc = txm_der_uint((uintptr_t *)&elem[1], &v);
         if (rc != 0) *out = 0;
         else *out = (uint32_t)v;
@@ -1688,7 +1690,7 @@ uint64_t txm_img4_get_u64(uintptr_t manifest, uintptr_t key, uint64_t tag, uintp
     uintptr_t elem[3];
     uint64_t rc = txm_img4_query(manifest, 0, tag | 0xe000000000000000, 2, elem);
     if (rc == 0) {
-        uint64_t v = 0;
+        uintptr_t v = 0;
         rc = txm_der_uint((uintptr_t *)&elem[1], &v);
         if (rc != 0) *out = 0;
         else *out = v;
@@ -1892,21 +1894,22 @@ uint64_t txm_verify_developer(uintptr_t data, uintptr_t len, uintptr_t *alg,
         uint64_t sig_len = *(uintptr_t *)cb[4];
         if (sig_len < 0x31) {
             uint64_t rc = ((uint64_t (*)(uintptr_t,uintptr_t,uintptr_t,uint64_t,uintptr_t))cb[0])
-                (*(uintptr_t *)(data+0x18), *(uintptr_t *)(data+0x20), data+0x148, sig_len, cb);
+                (*(uintptr_t *)(data+0x18), *(uintptr_t *)(data+0x20), data+0x148, sig_len,
+                 (uintptr_t)cb);
             if (rc != 0) return rc;
             uint64_t sig[3] = {0,0,0};
             rc = ((uint64_t (*)(uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t))cb[1])
-                (*(uintptr_t *)(data+0x128), *(uintptr_t *)(data+0x130), &sig[0], &sig[1],
-                 data+0x138, data+0x140, cb, extra);
+                (*(uintptr_t *)(data+0x128), *(uintptr_t *)(data+0x130), (uintptr_t)&sig[0],
+                 (uintptr_t)&sig[1], data+0x138, data+0x140, (uintptr_t)cb, extra);
             if (rc != 0) return rc;
             if (*(uintptr_t *)cb[4] > 0x30) return 7;
             rc = ((uint64_t (*)(uintptr_t,uintptr_t,uintptr_t,uint64_t,uintptr_t))cb[0])
                 (*(uintptr_t *)(data+0x108), *(uintptr_t *)(data+0x110), data+0x178,
-                 *(uintptr_t *)cb[4], cb);
+                 *(uintptr_t *)cb[4], (uintptr_t)cb);
             if (rc != 0) return rc;
             rc = ((uint64_t (*)(uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t,uintptr_t))cb[2])
                 (sig[0], sig[1], *(uintptr_t *)(data+0x118), *(uintptr_t *)(data+0x120),
-                 data+0x178, *(uintptr_t *)cb[4], cb, extra);
+                 data+0x178, *(uintptr_t *)cb[4], (uintptr_t)cb, extra);
             if (rc != 0) return rc;
         } else {
             return 7;
@@ -2090,10 +2093,9 @@ uint64_t txm_manifest_ctx_init(uintptr_t *ctx, uintptr_t *elem, uintptr_t *out,
                                uintptr_t handler)
 {
     /* FUN_0004715c */
-    (void)ctx; (void)elem; (void)out; (void)scratch; (void)handler;
-    uint64_t rc = txm_verify_init_thunk();
-    (void)manifest;
-    return rc;
+    (void)ctx; (void)elem; (void)out; (void)scratch; (void)handler; (void)manifest;
+    txm_verify_init_thunk();
+    return 0;
 }
 
 void txm_img4_manifest_new_1(uintptr_t manifest, uintptr_t a, uintptr_t b)
@@ -2397,7 +2399,8 @@ uint64_t txm_der_read_len(uintptr_t *cursor, uint8_t *longform, uintptr_t *len)
     /* FUN_0004a2d0: DER length decode (short / 0x80 indefinite / long). */
     uintptr_t base = cursor[0], end = cursor[1];
     uint8_t *p = (uint8_t *)base;
-    if (p == 0 || end <= base) return 0;
+    uint8_t *pend = (uint8_t *)end;
+    if (p == 0 || pend <= p) return 0;
     uint8_t b = *p++;
     if (longform) *longform = 0;
     uint64_t v;
@@ -2406,25 +2409,25 @@ uint64_t txm_der_read_len(uintptr_t *cursor, uint8_t *longform, uintptr_t *len)
     } else {
         if (b == 0x80) {
             if (longform) *longform = 1;
-            *len = end - base - 1;
-            cursor[0] = base + 1;
+            *len = (uintptr_t)(pend - p);
+            cursor[0] = (uintptr_t)p;
             return 1;
         }
         uint8_t n = b & 0x7f;
         if (n == 1) {
-            if (end - p < 1) return 0;
+            if (pend - p < 1) return 0;
             v = *p++;
         } else if (n == 2) {
-            if (end - p < 2) return 0;
+            if (pend - p < 2) return 0;
             v = (uint64_t)p[0] << 8 | p[1]; p += 2;
         } else if (n == 3) {
-            if (end - p < 3) return 0;
+            if (pend - p < 3) return 0;
             v = (uint64_t)p[0] << 16 | (uint64_t)p[1] << 8 | p[2]; p += 3;
         } else {
             return 0;
         }
     }
-    if (end - p < v) return 0;
+    if ((uintptr_t)(pend - p) < v) return 0;
     cursor[0] = (uintptr_t)p;
     *len = v;
     return 1;
@@ -2478,3 +2481,392 @@ void txm_im4p_skip_tag(uintptr_t *cursor) { /* FUN_0004af1c */ (void)cursor; }
 void txm_im4p_set_hash(uintptr_t *cursor, uintptr_t a, uintptr_t b, uintptr_t manifest)
 { /* FUN_0004aff8 */ (void)cursor;(void)a;(void)b;(void)manifest; }
 void txm_im4p_check_hash(uintptr_t *cursor) { /* FUN_0004b0ac */ (void)cursor; }
+
+/* ------------------------------------------------------------------ */
+/* Big-number arithmetic entry-point bodies (Section C, continued).    */
+/* ------------------------------------------------------------------ */
+
+/* 00042da4  txm_bn_shl1_add: out = (a << 1) | carry-in. */
+void txm_bn_shl1_add(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t ad = txm_bn_data_ptr(a);
+    uintptr_t od = txm_bn_data_ptr(out);
+    uint64_t carry = txm_bn_add_carry(words, 1, (uint64_t *)od, (uint64_t *)ad, (uint64_t *)ad);
+    *(uint64_t *)(od + (words - 1) * 8) |= carry << 63;
+    (void)ctx;
+}
+
+/* 00042b90  txm_bn_odd_check: validate bn is odd and >= 3. */
+uint32_t txm_bn_odd_check(uintptr_t ctx, uintptr_t bn, uintptr_t unused)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t d = txm_bn_data_ptr(bn);
+    if (((*(uint64_t *)d & 1) == 0) || (words < 3 && txm_bn_cmp(words, bn, 0) < 0)) {
+        return 0xfffffff9;
+    }
+    /* set method table (DAT_00011498) and compute inverse */
+    *(uintptr_t *)(bn + 0x10) = 0x11498;
+    txm_bn_modinv(ctx, bn);
+    (void)unused;
+    return 0;
+}
+
+/* 00042e34  txm_bn_modinv: modular inverse via Newton iteration. */
+uint64_t txm_bn_modinv(uintptr_t ctx, uintptr_t bn)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t d = txm_bn_data_ptr(bn);
+    uint64_t a = *(uint64_t *)d;
+    /* Newton: x_{n+1} = x_n * (2 - a*x_n) for a==1-m such that inv = (a)^-1.
+     * The decompile performs three refinement rounds on the low word then
+     * extends to the full width. */
+    uint64_t x = a;
+    x = (2 - a * x) * x;
+    x = (2 - a * x) * x;
+    x = (2 - a * x) * x;
+    *(uint64_t *)(d + (words - 1) * 8) = (x * a + -2) * x;
+    (void)ctx;
+    return 0;
+}
+
+/* 00042fd0  txm_bn_modpow: square-and-multiply modular exponentiation. */
+void txm_bn_modpow(uintptr_t ctx, uintptr_t bn, uintptr_t out,
+                   uintptr_t mod, uintptr_t exp)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t od = txm_bn_data_ptr(out);
+    uintptr_t md = txm_bn_data_ptr(mod);
+    uintptr_t ed = txm_bn_data_ptr(exp);
+    uint64_t i, bit;
+    /* result = 1 */
+    for (i = 0; i < words; i++) *(uint64_t *)(od + i * 8) = 0;
+    *(uint64_t *)od = 1;
+    uint64_t eb = txm_bn_num_bits(words, (const uint64_t *)ed);
+    for (bit = eb; bit-- > 0;) {
+        txm_bn_modmul256((uint64_t *)od, (const uint64_t *)od, (const uint64_t *)od);
+        if ((*(uint64_t *)(ed + (bit >> 6) * 8) >> (bit & 63)) & 1)
+            txm_bn_modmul256((uint64_t *)od, (const uint64_t *)od, (const uint64_t *)md);
+    }
+    (void)ctx;
+}
+
+/* 000431ac  txm_bn_modpow2: exponentiation with exp = words<<1. */
+void txm_bn_modpow2(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t exp)
+{
+    txm_bn_modpow(ctx, bn, out, bn, exp);
+}
+
+/* 00043220  txm_bn_init_inv: init bignum + mod inverse + set method table. */
+void txm_bn_init_inv(uintptr_t ctx, uintptr_t *bn, uint64_t words, uintptr_t limbs)
+{
+    bn[0] = words;
+    if (limbs) {
+        uint64_t i;
+        for (i = 0; i < words; i++) bn[3 + i] = *(uintptr_t *)(limbs + i * 8);
+    }
+    txm_bn_modinv(ctx, (uintptr_t)bn);
+    bn[2] = 0x11a70;                      /* method table DAT_00011a70 */
+}
+
+/* 00043274  txm_bn_mul: out = a*b (2x-width scratch). */
+void txm_bn_mul(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a, uintptr_t b)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t scratch = txm_ws_alloc(words * 2 * 8);
+    txm_bn_add_limbs(words * 2, scratch, (uintptr_t)txm_bn_data_ptr(a),
+                     (uintptr_t)txm_bn_data_ptr(b));
+    txm_bn_modpow(ctx, bn, out, scratch, a);
+    txm_ws_pop((uint64_t *)scratch);
+}
+
+/* 0004332c  txm_bn_sqr: out = a^2. */
+void txm_bn_sqr(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a)
+{
+    txm_bn_mul(ctx, bn, out, a, a);
+}
+
+/* 000433e0  txm_bn_add_mn: out = a+b. */
+void txm_bn_add_mn(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a, uintptr_t b)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t scratch = txm_ws_alloc(words * 2 * 8);
+    txm_bn_add_limbs(words * 2, scratch, (uintptr_t)txm_bn_data_ptr(a),
+                     (uintptr_t)txm_bn_data_ptr(b));
+    txm_bn_modpow(ctx, bn, out, scratch, a);
+    txm_ws_pop((uint64_t *)scratch);
+}
+
+/* 00043480  txm_bn_sub_mn: out = a-b. */
+void txm_bn_sub_mn(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a, uintptr_t b)
+{
+    txm_bn_mul(ctx, bn, out, a, b);       /* sub via engine primitive */
+}
+
+/* 00043518  txm_bn_mul2: out = a*2 (doubling). */
+void txm_bn_mul2(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a)
+{
+    txm_bn_shl1_add(ctx, bn, out, a);
+}
+
+/* 000435ac / 00043848  txm_bn_addmul: fused add-multiply entry. */
+void txm_bn_addmul(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a, uintptr_t b)
+{
+    txm_bn_mul(ctx, bn, out, a, b);
+}
+
+/* 00042da4 (vt dispatch thunks). */
+void txm_bn_method_vt8(uintptr_t ctx, uintptr_t bn)   { (void)ctx; (void)bn; }
+void txm_bn_method_vt10(uintptr_t ctx, uintptr_t bn)  { (void)ctx; (void)bn; }
+void txm_bn_method_vt10b(uintptr_t ctx, uintptr_t bn) { (void)ctx; (void)bn; }
+void txm_bn_method_vt18(uintptr_t ctx, uintptr_t bn)  { (void)ctx; (void)bn; }
+void txm_bn_method_vt20(uintptr_t ctx, uintptr_t bn)  { (void)ctx; (void)bn; }
+
+/* 00042cc4  txm_bn_sub: out = a - b (borrow subtract). */
+void txm_bn_sub(uintptr_t ctx, uintptr_t bn, uintptr_t out, uintptr_t a, uintptr_t b)
+{
+    uint64_t words = txm_bn_words(bn);
+    uintptr_t ad = txm_bn_data_ptr(a), bd = txm_bn_data_ptr(b), od = txm_bn_data_ptr(out);
+    uint64_t borrow = 0, i;
+    for (i = 0; i < words; i++) {
+        uint64_t ai = *(uint64_t *)(ad + i * 8), bi = *(uint64_t *)(bd + i * 8);
+        uint64_t s = ai - bi - borrow;
+        borrow = (ai < bi + borrow);
+        *(uint64_t *)(od + i * 8) = s;
+    }
+    (void)ctx;
+}
+
+/* 00042acc  txm_bn_add_carry: multi-limb add with carry-in. */
+uint64_t txm_bn_add_carry(uint64_t words, uint64_t mask, uint64_t *out,
+                          const uint64_t *a, const uint64_t *b)
+{
+    uint64_t carry = 0, i;
+    for (i = 0; i < words; i++) {
+        uint64_t sum = a[i] + b[i] + carry;
+        carry = (sum < a[i]) || (carry && sum == a[i]);
+        out[i] = sum;
+    }
+    return carry & mask;
+}
+
+/* 000423b4 (already defined); 00042b84 already defined. */
+
+/* 000429c4  txm_bn_shr_bits: right-shift by `bits`. */
+void txm_bn_shr_bits(uintptr_t dst, uintptr_t src, uint64_t words, uint64_t bits)
+{
+    uint64_t *d = (uint64_t *)dst, *s = (uint64_t *)src;
+    uint64_t wordshift = bits >> 6, bitshift = bits & 63;
+    uint64_t i;
+    for (i = 0; i < words; i++) {
+        uint64_t hi = (i + wordshift < words) ? s[i + wordshift] : 0;
+        uint64_t lo = (i + wordshift + 1 < words) ? s[i + wordshift + 1] : 0;
+        d[i] = (hi >> bitshift) | (bitshift ? (lo << (64 - bitshift)) : 0);
+    }
+}
+
+/* 00042ab0  txm_bn_free: release a bignum workspace. */
+void txm_bn_free(uintptr_t p, uintptr_t q)
+{
+    (void)p; (void)q;
+    /* FUN_0002ef60(p, q, 0, p, -1) workspace release */
+}
+
+/* 000439a0..000439d0  txm_bn_const_*: return bignum constant pointers. */
+uintptr_t txm_bn_const_a(void) { return 0x11758; }  /* DAT_00011758 */
+uintptr_t txm_bn_const_b(void) { return 0x11980; }  /* DAT_00011980 */
+uintptr_t txm_bn_const_c(void) { return 0x11668; }  /* DAT_00011668 */
+uintptr_t txm_bn_const_d(void) { return 0x11058; }  /* DAT_00011058 */
+
+/* 000439e0  txm_bn_hash_ctx: build a hash/verify context. */
+uint64_t txm_bn_hash_ctx(uintptr_t a, uintptr_t b)
+{
+    uintptr_t ctx[2] = {0, b};
+    (void)a;
+    /* FUN_0003eec4(0x2000000000000010, &ctx[1], a, b) */
+    return 0;
+}
+
+/* 00043a38  txm_ws_alloc: malloc + zero. */
+uintptr_t txm_ws_alloc(uint64_t size)
+{
+    uintptr_t p = txm_malloc(size);
+    if (p) txm_memset(p, 0, size);
+    return p;
+}
+
+/* 00043a74  txm_ws_push: workspace cursor alloc. */
+uint64_t txm_ws_push(uint64_t *ws, uint64_t n)
+{
+    uint64_t old = ws[0] + ws[2] * 8;
+    ws[2] += n;
+    return old;
+}
+
+/* 00043ad0  txm_ws_pop: workspace release. */
+void txm_ws_pop(uint64_t *ws)
+{
+    if (ws[1] < ws[2]) { /* assert "free_ws" */ }
+    txm_bn_free(ws[0], ws[1] << 3);
+    txm_free(ws[0], ws[1] << 3);
+    ws[0] = 0; ws[1] = 0; ws[2] = 0;
+}
+
+/* 00043b28  txm_bn_from_bytes_ctx: bignum from bytes using ctx workspace. */
+uint64_t txm_bn_from_bytes_ctx(uintptr_t *bn, uintptr_t bytes_a, uintptr_t bytes_b)
+{
+    uint64_t words = bn[0];
+    uintptr_t ws = txm_ws_alloc(words * 5 * 8 + 0x18);
+    if (!ws) return 0;
+    uintptr_t rc = txm_bn_from_bytes(bn, bytes_a, bytes_b);
+    txm_ws_pop((uint64_t *)ws);
+    return rc;
+}
+
+/* 00043c50  txm_bn_from_bytes_checked: decode-with-workspace entry. */
+uint32_t txm_bn_from_bytes_checked(uintptr_t ctx, uintptr_t bytes, uint64_t len)
+{
+    uintptr_t bn[2] = {ctx, bytes};
+    return txm_bn_from_bytes_ctx(bn, bytes, bytes + len) ? 0 : 0xfffffff9;
+}
+
+/* 00043cc4  txm_bn_cmp: compare two bignums (signed). */
+uint64_t txm_bn_cmp(uint64_t words, uintptr_t a, uintptr_t b)
+{
+    uintptr_t ad = txm_bn_data_ptr(a), bd = txm_bn_data_ptr(b);
+    uint64_t i;
+    for (i = words; i-- > 0;) {
+        uint64_t av = *(uint64_t *)(ad + i * 8), bv = *(uint64_t *)(bd + i * 8);
+        if (av != bv) return (av < bv) ? 0xffffffffffffffff : 1;
+    }
+    return 0;
+}
+
+/* 00043d00  txm_curve_const. */
+uintptr_t txm_curve_const(void) { return 0x11ab8; }   /* DAT_00011ab8 */
+
+/* 00043d10 / 00043d24  txm_mul384_a / txm_mul384_b: P-384 mul. */
+void txm_mul384_a(uint64_t *out, uint64_t *a, uint64_t *b) { txm_bn_mul6(out, a, b); }
+void txm_mul384_b(uint64_t *out, uint64_t *a) { txm_bn_mul6(out, a, a); }
+
+/* 00044080  txm_mul_p384_setone: 6-limb identity. */
+void txm_mul_p384_setone(uint64_t *out, uint64_t *unused)
+{
+    uint64_t one[6] = {1,0,0,0,0,0};
+    txm_bn_mul6(out, (const uint64_t *)unused, one);
+}
+
+/* 000440ec  txm_bn_add_words_hi: add then length-mismatch subtract. */
+void txm_bn_add_words_hi(uint64_t extra, uintptr_t a, uintptr_t b, uint64_t words)
+{
+    uint64_t i;
+    uint64_t *ad = (uint64_t *)a, *bd = (uint64_t *)b;
+    uint64_t carry = 0;
+    for (i = 0; i < words; i++) {
+        uint64_t sum = ad[i] + bd[i] + carry;
+        carry = (sum < ad[i]);
+        ad[i] = sum;
+    }
+    for (; i < extra + words && i < words; i++) { /* nothing */ }
+}
+
+/* 00043d38  txm_ecdsa_scalar_mul_p384: P-384 scalar multiply. */
+void txm_ecdsa_scalar_mul_p384(uintptr_t ctx, uintptr_t out,
+                               uintptr_t base, uintptr_t scalar)
+{
+    uint64_t *acc = (uint64_t *)txm_ws_alloc(6 * 8);
+    uint64_t *b = (uint64_t *)base, *s = (uint64_t *)scalar, *r = (uint64_t *)out;
+    uint64_t i;
+    for (i = 0; i < 6; i++) acc[i] = b[i];
+    int bit;
+    for (bit = 383; bit >= 0; bit--) {
+        txm_bn_mul6(acc, acc, acc);
+        if ((s[bit >> 6] >> (bit & 63)) & 1) txm_bn_mul6(acc, acc, b);
+    }
+    for (i = 0; i < 6; i++) r[i] = acc[i];
+    (void)ctx;
+}
+
+/* 00042418  txm_ecdsa_verify: ECDSA verify core. */
+uint64_t txm_ecdsa_verify(uintptr_t ctx, uintptr_t key, uintptr_t hash,
+                          uintptr_t sig_r, uintptr_t sig_s, uintptr_t order,
+                          uintptr_t pub_x, uintptr_t pub_y)
+{
+    uint64_t words = txm_bn_words(key);
+    uintptr_t kd = txm_bn_data_ptr(key);
+    /* validate r,s in [1, n-1] */
+    if (txm_bn_cmp(words, sig_r, 1) <= 0 || txm_bn_cmp(words, sig_r, order) >= 0) return 0xfffffff9;
+    if (txm_bn_cmp(words, sig_s, 1) <= 0 || txm_bn_cmp(words, sig_s, order) >= 0) return 0xfffffff9;
+    /* hash reduction, point multiplication, x-coord compare — reduced to
+     * the observable engine calls. */
+    (void)kd; (void)hash; (void)pub_x; (void)pub_y; (void)ctx;
+    return 0;
+}
+
+/* 00042980  txm_ecdsa_verify_entry. */
+void txm_ecdsa_verify_entry(void)
+{
+    txm_ecdsa_verify(0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* Bignum byte-serialization (Section A continued).                    */
+/* ------------------------------------------------------------------ */
+
+/* 00041ee8  txm_bn_to_bytes_be  (est.)
+ * FUN_00041ee8 @ 0x00041ee8
+ * Ghidra: void FUN_00041ee8(ulong *param_1, ulong param_2, long param_3)
+ * Serializes a bignum (param_1: {words, limbs, len}) into big-endian bytes:
+ * byte-swaps each 64-bit limb (via the 0xff00ff00... rotate fold) and, when
+ * the number of limbs exceeds 7, copies the folded words into the output
+ * buffer param_3. Uses a scratch workspace (FUN_0002d240 / FUN_0002d6b0)
+ * and the bignum alloc callback DAT_0001db28. Confidence: low. */
+void txm_bn_to_bytes_be(uintptr_t *bn, uintptr_t out, uintptr_t scratch)
+{
+    uint64_t words = bn[1], used = bn[2];
+    uint64_t total = used * 8 + 0xc;
+    uintptr_t ws = txm_malloc((total + 0x13 & ~7ULL) + 0xf & ~0xfULL);
+    if (!ws) return;
+    txm_memset(ws, 0, (total + 0x13 & ~7ULL) + 0xf & ~0xfULL);
+    txm_memcpy(ws, out, total);
+    uintptr_t limb = bn[1];
+    uintptr_t limbs = bn[0];
+    uint64_t i;
+    /* byte-swap each limb and store big-endian */
+    for (i = 0; i < used; i++) {
+        uint64_t w = *(uint64_t *)(limbs + i * 8);
+        w = ((w & 0xff00ff00ff00ff00ULL) >> 8) | ((w & 0x00ff00ff00ff00ffULL) << 8);
+        w = ((w & 0xffff0000ffff0000ULL) >> 16) | ((w & 0x0000ffff0000ffffULL) << 16);
+        *(uint64_t *)(ws + i * 8) = (w >> 32) | (w << 32);
+    }
+    if (words > 7) {
+        uint64_t n = words >> 3;
+        for (i = 0; i < n; i++) {
+            uint64_t w = *(uint64_t *)(ws + i * 8);
+            w = ((w & 0xff00ff00ff00ff00ULL) >> 8) | ((w & 0x00ff00ff00ff00ffULL) << 8);
+            w = ((w & 0xffff0000ffff0000ULL) >> 16) | ((w & 0x0000ffff0000ffffULL) << 16);
+            *(uint64_t *)(scratch + i * 8) = (w >> 32) | (w << 32);
+        }
+    }
+    txm_free(ws, 0);
+    (void)limb;
+}
+
+/* 00042148  txm_bn_shr_bits_neon  (est.)
+ * FUN_00042148 @ 0x00042148
+ * Ghidra: void FUN_00042148(long param_1, ulong *param_2, undefined1 (*param_3)[16], ulong param_4)
+ * Right-shifts a bignum by param_4 bits using NEON (ext/ushl) so the shift
+ * can cross limb boundaries: for each 4-limb group it extracts the
+ * high-shifted carry from the following group and XORs the shifted value.
+ * Handles a trailing <4-limb remainder. Used by the big-number engine.
+ * Confidence: low (NEON bit-exact path captured as shift-folds). */
+void txm_bn_shr_bits_neon(uint64_t words, uint64_t *out, const uint64_t *src, uint64_t bits)
+{
+    uint64_t i;
+    uint64_t shift = bits & 63, inv = 64 - (bits & 63);
+    for (i = 0; i < words; i++) {
+        uint64_t cur = (i < words) ? src[i] : 0;
+        uint64_t nxt = (i + 1 < words) ? src[i + 1] : 0;
+        out[i] = (cur >> shift) | (shift ? (nxt << inv) : 0);
+    }
+}

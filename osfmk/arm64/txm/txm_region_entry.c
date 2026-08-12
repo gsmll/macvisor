@@ -59,7 +59,7 @@ extern uint64_t uuid_len;                                                       
  * TXM objects are byte-addressed opaque handles (Ghidra `long`), so object
  * offsets below are byte offsets and fields are dereferenced via casts. */
 typedef uint64_t txm_obj_t;
-extern int txm_lock_acquire(txm_obj_t obj, int arg1, int arg2);   /* FUN_00027128 */
+typedef struct { uint64_t lo, hi; } txm_u128_t;extern int txm_lock_acquire(txm_obj_t obj, int arg1, int arg2);   /* FUN_00027128 */
 extern void txm_lock_release(txm_obj_t obj, int arg1);             /* FUN_00027218 */
 extern txm_obj_t txm_obj_alloc(void);                              /* FUN_00027448 */
 extern void txm_obj_ref(txm_obj_t *obj, int count, int flags);     /* FUN_00027720 */
@@ -183,7 +183,7 @@ extern int  txm_region_type(uint64_t a, uint64_t b);                /* FUN_0002c
 extern txm_obj_t txm_slot_lookup(uint32_t id, uint64_t b, uint64_t c); /* FUN_000221a8 */
 extern txm_rb_node_t txm_rb_find_overlap(txm_obj_t root_slot, uint64_t start, uint64_t end); /* FUN_00021f08 */
 extern uint64_t txm_rb_node_to_obj(txm_rb_node_t n, uint64_t *out, uint64_t flag); /* FUN_00021f64 */
-extern uint64_t txm_entitlement_check(txm_obj_t obj, uint64_t key, uint64_t flag); /* FUN_00022a38 */
+extern int txm_entitlement_check(txm_obj_t obj, uint64_t key, uint64_t flag); /* FUN_00022a38 */
 extern void txm_ce_dict_init(txm_obj_t obj, uint64_t *out, uint64_t a, uint64_t b); /* FUN_00036480 */
 extern uint64_t txm_ce_dict_size(uint64_t d1, uint64_t d2, uint32_t *out); /* FUN_0003407c */
 extern uint64_t txm_ce_get_indexed(uint64_t d1, uint64_t d2, uint64_t idx, uint64_t va); /* FUN_00034204 */
@@ -204,6 +204,7 @@ extern void txm_obj_teardown2(txm_obj_t *obj);                      /* FUN_00028
 extern void txm_obj_release(txm_obj_t *obj);                        /* FUN_00027ab0 */
 extern void txm_node_finalize(txm_obj_t *node);                     /* FUN_00027f44 */
 extern void txm_slot_release_teardown(txm_obj_t *obj);              /* FUN_000283b8 */
+extern void txm_stack_guard_check(void);                            /* FUN_0002f13c-ish */
 extern uint64_t txm_profile_assoc_check(uint64_t handle, uint8_t b); /* FUN_00035178 */
 extern uint64_t txm_profile_handle;                                 /* DAT_000107d8 */
 extern uint64_t txm_region_slot_table;                              /* &DAT_000706c0 */
@@ -216,13 +217,106 @@ extern uint64_t txm_ce_get_bool(txm_obj_t dict, uint64_t key);      /* FUN_00036
 extern uint64_t txm_ce_get_arg(txm_obj_t dict, uint64_t key, uint64_t arg); /* FUN_000367c8 */
 extern uint64_t txm_amfi_can_exec_cdhash(txm_obj_t d1, txm_obj_t d2); /* FUN_00036d44 */
 extern uint64_t txm_verify_cdhash(uint32_t packed);                 /* FUN_000230fc */
-extern uint64_t txm_region_authorize(uint8_t flag);                 /* FUN_00023050 */
-extern uint64_t txm_security_ok(txm_obj_t dict);                    /* FUN_00023cc4 */
-extern void txm_ce_parse_header(txm_obj_t dict, uint64_t *a, uint64_t *b, uint64_t *c); /* FUN_00033c9c */
+extern uint64_t txm_region_authorize(uint64_t flag);                /* FUN_00023050 */
+extern uint8_t txm_security_ok(uint64_t id);                        /* FUN_00023cc4 */
+extern void txm_ce_parse_header(txm_obj_t dict, uint64_t dict2, uint64_t *a, uint64_t *b, uint64_t *c); /* FUN_00033c9c */
 extern void txm_ce_get_info(txm_obj_t dict, uint64_t *a);           /* FUN_00033b88 */
 extern void txm_ce_get_len(txm_obj_t dict, uint64_t *a);            /* FUN_00033b14 */
 extern void txm_ce_field(txm_obj_t d, uint8_t *flag);               /* FUN_000361e0 */
 extern void txm_ce_bind(txm_obj_t d, uint64_t *a);                  /* FUN_000361f8 */
+
+/* Code-signing policy / secure-channel / profile helpers. */
+extern uint64_t txm_profile_authorize(uint64_t handle, uint64_t flag); /* FUN_000350e8 */
+extern uint8_t txm_exec_probe(void);                              /* FUN_00023fac */
+extern uint64_t txm_platform_feature(void);                         /* FUN_0002a354 */
+extern uint64_t txm_platform_flag(void);                            /* FUN_0002a434 */
+extern int  txm_sep_present(void);                                  /* FUN_00029f28 */
+extern uint64_t txm_setup_shared_page(void);                        /* FUN_0002f88c */
+extern void txm_sc_bootstrap_a(void);                               /* FUN_00023840 */
+extern void txm_sc_bootstrap_b(int mode);                           /* FUN_00023878 */
+extern void txm_sc_bootstrap_c(void);                               /* FUN_000238ec */
+
+/* Secure-channel / secure-boot globals. */
+extern uint64_t txm_sc_page_base;      /* DAT_00010518 */
+extern uint64_t txm_sc_page_size;      /* DAT_00010520 */
+extern uint64_t txm_sc_page_extra;     /* DAT_00010528 */
+extern uint8_t  txm_sc_ready;          /* DAT_00071030 */
+extern uint8_t  txm_sc_cap;            /* DAT_00071031 */
+extern uint8_t  txm_sc_flag;           /* DAT_00071032 */
+extern uint8_t  txm_sc_sep;            /* DAT_00071038 */
+extern uint8_t  txm_boot_flag;         /* DAT_000104f0 */
+extern uint8_t  txm_page_er_flag;      /* DAT_000107f5 */
+extern uint8_t  txm_ent_lo_flag;       /* DAT_000104ed */
+extern uint64_t page_size_word;        /* alloc size out */
+extern uint64_t page_extra_word;       /* alloc extra out */
+
+/* Secure-channel / developer-mode helpers (FUN_0002f5a0/5e0/620/660/6a0/368/454). */
+extern uint64_t txm_sc_step(int arg);  /* FUN_0002f5a0 */
+extern uint64_t txm_sc_config(uint64_t arg); /* FUN_0002f5e0 */
+extern uint64_t txm_sc_devmode(int on);  /* FUN_0002f620 */
+extern uint64_t txm_sc_handle(int is_reset); /* FUN_0002f660 */
+extern uint64_t txm_sc_ent(int ent);    /* FUN_0002f6a0 */
+extern uint64_t txm_scrd_read(uint64_t *out); /* FUN_0002f368 */
+extern uint64_t txm_scrd_context(uint64_t *out); /* FUN_0002f454 */
+
+/* Secure-channel state globals. */
+extern uint8_t  txm_sc_lockdown;       /* DAT_00071033 */
+extern uint64_t txm_scrd;              /* DAT_0007103c */
+extern uint8_t  txm_lockdown_mode;     /* DAT_00071035 */
+extern uint8_t  txm_demo_mode;         /* DAT_00071036 */
+extern uint8_t  txm_dev_mode_flag;     /* DAT_000107f6 */
+
+/* Secure-channel verify/enter/exit + build-info helpers. */
+extern uint64_t txm_sc_verify(uint64_t a, uint64_t *b, uint64_t c);  /* FUN_0002f1b0 */
+extern uint64_t txm_sc_enter_impl(uint64_t *ab);                     /* FUN_0002f220 */
+extern uint64_t txm_sc_exit_impl(uint64_t a, uint8_t *flag);         /* FUN_0002f3c8 */
+extern void txm_early_boot(uint64_t a);                              /* FUN_0002940c */
+extern void txm_sys_write(uint64_t slot, const void *data, uint64_t n); /* FUN_0004f2dc */
+extern uint64_t txm_build_version(void);                             /* FUN_00029714 */
+extern void txm_return_exit(uint64_t ctx);                           /* FUN_0002ab70 */
+
+/* Build-info / lockdown globals. */
+extern uint64_t txm_allowed_id_list;     /* DAT_000100b8 */
+extern uint64_t txm_match_flag;          /* DAT_000107f8 */
+extern uint64_t txm_boot_e8;             /* DAT_000104e8 */
+extern uint64_t txm_ctx_return;          /* DAT_00010588 */
+extern uint8_t  txm_build_cfg0;          /* DAT_00070ecc */
+extern uint8_t  txm_build_cfg1;          /* DAT_00070ecd */
+extern uint8_t  txm_build_cfg2;          /* DAT_00070ece */
+extern uint8_t  txm_lockdown_entered;    /* DAT_00010661 */
+extern uint8_t  txm_lockdown_flag;       /* DAT_00010667 */
+extern uint8_t  txm_lockdown_armed;      /* DAT_000107f7 */
+extern uint64_t build_variant_id;        /* &DAT_0002d03c */
+extern uint64_t platform_id;             /* &DAT_0002ced0 */
+
+/* Policy / profile / trust-cache helpers. */
+extern uint64_t txm_platform_code_only(void);                       /* FUN_0002a004 */
+extern uint64_t txm_setup_extra(void);                              /* FUN_0002a894 */
+extern uint64_t txm_ce_legacy_init(uint64_t ctx, int type, uint64_t *a, uint64_t *b, uint64_t max); /* FUN_00031280 */
+extern uint64_t txm_feature_byte(void);                             /* FUN_0002a630 */
+extern uint64_t txm_alloc_zone2(void);                              /* FUN_000278e4 */
+extern int  txm_range_valid(uint64_t p);                            /* FUN_00028594 */
+extern uint64_t txm_range_pull(uint64_t p, uint64_t *out, uint64_t *flag); /* FUN_000285d0 */
+extern uint64_t txm_dict_parse(uint64_t ctx, uint64_t *dst, uint64_t a, uint64_t b); /* FUN_00035acc */
+extern uint64_t txm_dict_finish(txm_obj_t d, uint64_t arg);         /* FUN_00036078 */
+extern void txm_buf_err(uint64_t *buf, uint64_t tag);               /* FUN_00028e20 */
+extern void txm_obj_ref2(txm_obj_t *obj, int a, int b);             /* FUN_00027bb4 */
+extern int  txm_dict_empty(txm_obj_t d, uint64_t *out);             /* FUN_000362c4 */
+extern uint64_t txm_dict_get_ent(txm_obj_t d, uint64_t *out);       /* FUN_000362ec */
+extern uint64_t txm_ent_validate(txm_obj_t d, uint64_t *out);       /* FUN_00035bf0 */
+extern uint64_t txm_ent_validate2(txm_obj_t d, uint64_t flag);      /* FUN_00035df4 */
+extern uint64_t txm_ent_validate3(txm_obj_t d);                     /* FUN_00035f08 */
+extern int  txm_ent_check(uint64_t x);                              /* FUN_0005eb18 */
+extern int  txm_ent_match(uint64_t x);                              /* FUN_0005ed14 */
+extern uint64_t txm_tc_field(uint64_t dict, uint32_t tag, uint64_t *out, int *n); /* FUN_0003653c */
+extern uint64_t txm_tc_build(uint64_t dict, char *a, char *b);      /* FUN_00036824 */
+extern uint64_t txm_tc_count(uint64_t dict, int *n);                /* FUN_00036424 */
+extern uint64_t txm_dict_get_str(txm_obj_t d, uint64_t *out);       /* FUN_00033b88 */
+
+/* Policy / trust-cache globals. */
+extern uint8_t  txm_policy_sel;         /* DAT_00010800 */
+extern uint8_t  txm_probe_flag;         /* DAT_00010678+6 profile byte6 */
+extern uint8_t  txm_feature_flag;       /* DAT_0007103c-ish */
 
 /* FUN_0002081c page-enforcement comm-page / debug policy helper. */
 extern uint64_t txm_page_policy_comm(void);                         /* FUN_0002081c */
@@ -1582,6 +1676,1155 @@ uint64_t txm_slot_destroy(txm_obj_t obj)
 		return 0;
 	}
 	txm_panic(0x6a);
+}
+
+/* FUN_00022568 @ 0x00022568   (est. txm_region_rename)
+ * Ghidra: undefined8 FUN_00022568(undefined4 from_slot, undefined4 to_slot)
+ * Moves an object between slots: looks up the object in `from_slot` (table 0),
+ * requires it be empty of associations (no region at +0x48/+0x28/+0x18), clears
+ * the source slot, re-ids the object (+0x22 = to_slot), and installs it into the
+ * (empty) target slot (table 1). Panics 0x6c/0x6d/0x6e/0x6f/0x7a on invalid state.
+ * Confidence: high (slot-move with explicit state checks)
+ */
+uint64_t txm_region_rename(uint32_t from_slot, uint32_t to_slot)
+{
+	uint16_t desc_from[2] = { (uint16_t)from_slot, 0 };
+	uint16_t desc_to[2] = { (uint16_t)to_slot, 1 };
+	uint64_t base_from = txm_slot_table_base(desc_from, 0);
+	uint64_t base_to = txm_slot_table_base(desc_to, 1);
+	uint64_t obj = txm_slot_lookup(from_slot, 0, 1);
+
+	if (*(uint64_t *)(obj + 0x48) == 0) {
+		if (*(uint64_t *)(obj + 0x28) == 0) {
+			if (*(uint64_t *)(obj + 0x18) == 0) {
+				uint64_t *src = (uint64_t *)(base_from + (uint16_t)from_slot * 8);
+				if (*src == obj) {
+					*src = 0;
+					*(uint32_t *)(obj + 0x22) = to_slot;
+					uint64_t *dst = (uint64_t *)(base_to + (uint16_t)to_slot * 8);
+					if (*dst == 0) {
+						*dst = obj;
+						if (obj + 0x70 <= obj) {
+							txm_panic(0x19);
+						}
+						txm_lock_release(obj, 1);
+						return 0;
+					}
+					txm_panic(0x6f);       /* target slot occupied */
+				}
+				txm_panic(0x6e);           /* source slot mismatch */
+			}
+			txm_panic(0x7a);               /* object has +0x18 */
+		}
+		txm_panic(0x6d);                   /* object has region +0x28 */
+	}
+	txm_panic(0x6c);                       /* object has association +0x48 */
+}
+
+/* FUN_00022660 @ 0x00022660   (est. txm_region_set_range)
+ * Ghidra: undefined8 FUN_00022660(long obj, ulong start, ulong size)
+ * Sets a code object's executable range [start, start+size) at +0x58/+0x60.
+ * Both bounds must be 16 KiB aligned and non-empty; overflow panics 0x42. Only
+ * permitted on a "free" object (+0x24==1 and +0x60==0), else panic 0x87.
+ * Confidence: high (range-setter with alignment/overflow checks)
+ */
+uint64_t txm_region_set_range(uint64_t obj, uint64_t start, uint64_t size)
+{
+	if (((start & 0x3fff) == 0) && ((size & 0x3fff) == 0)) {
+		if (start == 0) {
+			txm_panic(0x40);
+		}
+		if (size == 0) {
+			txm_panic(0x41);
+		}
+		if (start + size < start) {         /* CARRY8 overflow */
+			txm_panic(0x42);
+		}
+		txm_lock_acquire(obj, 1, 0);
+		if (*(uint16_t *)(obj + 0x24) == 1 && *(uint64_t *)(obj + 0x60) == 0) {
+			*(uint64_t *)(obj + 0x58) = start;
+			*(uint64_t *)(obj + 0x60) = start + size;
+			txm_lock_release(obj, 1);
+			return 0;
+		}
+		txm_panic(0x87);
+	}
+	txm_panic(0x86);
+}
+
+/* FUN_0002270c @ 0x0002270c   (est. txm_region_attach)
+ * Ghidra: undefined8 FUN_0002270c(undefined4 obj_slot, undefined4 assoc_slot,
+ *                                 ulong start, ulong size)
+ * Attaches a code-association node to `obj_slot` for the range
+ * [start, start+size), referencing `assoc_slot`. Validates alignment, that the
+ * range lies within the association's range (+0x58/+0x60; panics 0x88/0x89),
+ * increments the association's link count (panic 0x4e overflow), creates the
+ * interval node (insert; overlap panic 0x75) and links it into the object's
+ * tree. Panics 0x70/0x71/0x74 on bad state.
+ * Confidence: high (association-install with range checks)
+ */
+uint64_t txm_region_attach(uint32_t obj_slot, uint32_t assoc_slot,
+                           uint64_t start, uint64_t size)
+{
+	uint64_t end = start + size;
+	uint64_t assoc, obj, node;
+	uint32_t cnt;
+
+	if ((start & 0x3fff) != 0) {
+		txm_panic(0x70);
+	}
+	if ((size & 0x3fff) != 0) {
+		txm_panic(0x71);
+	}
+	if (start == 0) {
+		txm_panic(0x40);
+	}
+	if (size == 0) {
+		txm_panic(0x41);
+	}
+	if (end < start) {                      /* CARRY8 */
+		txm_panic(0x42);
+	}
+
+	assoc = txm_slot_lookup(assoc_slot, 1, 0);
+	if (start < *(uint64_t *)(assoc + 0x58)) {
+		txm_panic(0x88);                     /* below association range */
+	}
+	if (*(uint64_t *)(assoc + 0x60) < end) {
+		txm_panic(0x89);                     /* above association range */
+	}
+	cnt = *(uint32_t *)(assoc + 0x68);
+	*(uint32_t *)(assoc + 0x68) = cnt + 1;
+	if (cnt >= ~txm_link_limit) {
+		txm_panic(0x4e);                     /* link overflow */
+	}
+	if (assoc + 0x70 <= assoc) {
+		txm_panic(0x19);
+	}
+	txm_lock_release(assoc, 0);
+
+	obj = txm_slot_lookup(obj_slot, 0, 1);
+	if (*(uint64_t *)(obj + 0x48) == 0) {
+		node = *(uint64_t *)(obj + 0x38);
+		*(uint8_t *)(node + 0x12) = (*(uint8_t *)(node + 0x12) & 0x80) | 1;
+		*(uint64_t *)(node + 0x28) = *(uint64_t *)(assoc + 0x58);
+		*(uint64_t *)(node + 0x30) = *(uint64_t *)(assoc + 0x60);
+		*(uint64_t *)(node + 0x18) = assoc;
+		if (obj + 0x70 <= obj || node + 0x50 <= node) {
+			txm_panic(0x19);
+		}
+		if (txm_rb_insert((txm_rb_node_t *)(obj + 0x28), node) == 0) {
+			*(uint64_t *)(obj + 0x48) = node;
+			*(uint64_t *)(obj + 0x38) = 0;
+			txm_lock_release(obj, 1);
+			return 0;
+		}
+		txm_panic(0x75);                     /* interval overlap */
+	}
+	txm_panic(0x74);                         /* object already associated */
+}
+
+/* FUN_0002289c @ 0x0002289c   (est. txm_obj_get_assoc)
+ * Ghidra: long FUN_0002289c(undefined8 *assoc_out)
+ * Returns the current context's object (slot lookup via the context id) and,
+ * if it has an association node (+0x40), resolves that node to its backing
+ * object and returns it via *assoc_out (panic 0x82 on failure). Returns the
+ * primary object, or 0 if no context is active.
+ * Confidence: medium
+ */
+long txm_obj_get_assoc(uint64_t *assoc_out)
+{
+	uint32_t id = txm_context_id_get();       /* FUN_0002c834 */
+	uint64_t obj, node, assoc = 0;
+
+	if ((id & 0xffff) == 0) {
+		return 0;
+	}
+	obj = txm_slot_lookup(id, 0, 0);
+	node = *(uint64_t *)(obj + 0x40);
+	if (txm_rb_node_to_obj(node, &assoc, 0) != 0) {
+		txm_panic(0x82);
+	}
+	if (assoc_out == 0) {
+		txm_lock_release(assoc, 0);
+	} else {
+		*assoc_out = assoc;
+	}
+	return obj;
+}
+
+/* FUN_0002292c @ 0x0002292c   (est. txm_release_pair)
+ * Ghidra: void FUN_0002292c(undefined8 a, long b)
+ * Releases two objects (a and b) after a lookup, with a stack-guard check
+ * before the second release. Used to balance acquire/release around
+ * entitlement lookups.
+ * Confidence: medium
+ */
+void txm_release_pair(uint64_t a, uint64_t b)
+{
+	if (b != 0) {
+		txm_lock_release(b, 0);
+	}
+	txm_stack_guard_check();
+	txm_lock_release(a, 0);
+}
+
+/* FUN_00022974 @ 0x00022974   (est. txm_entitlement_lookup)
+ * Ghidra: undefined8 FUN_00022974(long obj)
+ * Looks up an entitlement/string value from the current or associated object's
+ * entitlements dictionary: resolves the object's association (or the current
+ * context's), reads the entry via FUN_00036724, and returns it (0 on failure).
+ * Requires obj+0x10 to be non-empty (panic 0x38).
+ * Confidence: medium
+ */
+uint64_t txm_entitlement_lookup(uint64_t obj)
+{
+	uint64_t assoc = 0, out = 0;
+	uint64_t r;
+
+	if (obj == 0) {
+		if (txm_obj_get_assoc(&assoc) == 0) {
+			return 0;
+		}
+		r = txm_ce_get_entitlement(assoc + 0x28, &out);
+		txm_release_pair(0, assoc);
+	} else {
+		if (*(char *)(obj + 0x10) == '\0') {
+			txm_panic(0x38);
+		}
+		if (txm_rb_node_to_obj(*(uint64_t *)(obj + 0x40), &assoc, 0) != 0) {
+			return 0;
+		}
+		r = txm_ce_get_entitlement(assoc + 0x28, &out);
+		txm_lock_release(assoc, 0);
+	}
+	if ((r & 0xff00) != 0) {
+		out = 0;
+	}
+	return out;
+}
+
+/* FUN_00022a38 @ 0x00022a38   (est. txm_entitlement_check)
+ * Ghidra: bool FUN_00022a38(long obj, undefined8 key, long arg)
+ * Entitlement boolean check: resolves the current/associated object's
+ * entitlements dictionary and tests `key` (optionally with an argument). Used
+ * for com.apple.private.cs.debugger etc. Returns true iff the entry exists
+ * and is truthy. Panics 0x38 if obj+0x10 empty.
+ * Confidence: high (entitlement gate used by page enforcement)
+ */
+int txm_entitlement_check(uint64_t obj, uint64_t key, uint64_t arg)
+{
+	uint64_t assoc = 0, r;
+
+	if (obj == 0) {
+		if (txm_obj_get_assoc(&assoc) == 0) {
+			return 0;
+		}
+	} else {
+		if (*(char *)(obj + 0x10) == '\0') {
+			txm_panic(0x38);
+		}
+		if (txm_rb_node_to_obj(*(uint64_t *)(obj + 0x40), &assoc, 0) != 0) {
+			return 0;
+		}
+	}
+	if (arg == 0) {
+		r = txm_ce_get_bool(assoc + 0x28, key);
+	} else {
+		r = txm_ce_get_arg(assoc + 0x28, key, arg);
+	}
+	if (obj == 0) {
+		txm_release_pair(0, assoc);
+	} else {
+		txm_lock_release(assoc, 0);
+	}
+	return (r & 0xff00) == 0;
+}
+
+/* FUN_00022b10 @ 0x00022b10   (est. txm_exec_debug_mapping_check)
+ * Ghidra: ulong FUN_00022b10(long obj, long assoc, ulong start, ulong size,
+ *                            ulong base)
+ * Executable debug-mapping check (OAH/runtime entitlement gate). Validates the
+ * requested range [start, start+size) against `base` and the association's
+ * code-limit; for legacy (<6) dictionaries it requires the association to span
+ * the whole range (else logs 0xd39 "association spans outside of code limit",
+ * error 0x24); for modern dictionaries it verifies size/base match the
+ * dictionary (0x12/0x13), admits OAH/runtime_arm_internal identifiers (0xcf7/
+ * 0xd1a), enforces the object's debug bit, and for a JIT-debug object validates
+ * the CD-hash chain (FUN_00036d44 + FUN_000230fc) or falls back to region
+ * authorization (FUN_00023050). On success installs a new interval node and
+ * increments the association link count (panic 0x4e on overflow). Returns
+ * packed {low16 err, ...}; error 0x17 on interval overlap.
+ * Confidence: high (executable debug-mapping gate; strings 0xd39/0xd65/0xd95,
+ *   entitlements 0xcf7/0xd1a)
+ */
+uint64_t txm_exec_debug_mapping_check(uint64_t obj, uint64_t assoc,
+                                      uint64_t start, uint64_t size,
+                                      uint64_t base)
+{
+	uint64_t end = start + size;
+	uint64_t node, r, r2, assoc2 = 0, limit;
+	uint32_t cnt, word, low, hi;
+	int ver, i, err = 0;
+	uint8_t flag = 0;
+	uint64_t d_size = 0, d_base = 0, d_ident = 0, d_code = 0;
+	uint64_t d_dict = 0;
+	int oah = 0;
+
+	if ((start & 0x3fff) != 0) txm_panic(0x76);
+	if ((size & 0x3fff) != 0) txm_panic(0x77);
+	if ((base & 0x3fff) != 0) txm_panic(0x78);
+	if (start == 0) txm_panic(0x40);
+	if (size == 0) txm_panic(0x41);
+	if (end < start) txm_panic(0x42);
+
+	node = txm_region_new();
+	if (node == 0) {
+		return 7;
+	}
+	txm_lock_acquire(node, 1, 0);
+	txm_lock_acquire(assoc, 0, 0);
+	txm_lock_acquire(obj, 1, 0);
+
+	if ((*(uint8_t *)(obj + 0x18) & 1) != 0) {
+		txm_panic(0x25);
+	}
+
+	txm_ce_field(assoc + 0x28, &flag);
+	if (flag == 0) {
+		txm_panic(0xc);
+	}
+	txm_ce_dict_init(assoc + 0x28, &d_dict, 0, 0);
+	txm_ce_parse_header(d_dict, 0, &d_base, &d_size, &d_ident);
+	txm_ce_get_info(d_dict, &d_code);
+
+	if (flag < 6) {
+		if (base + size < base) {
+			txm_panic(0x79);
+		}
+		txm_ce_get_len(d_dict, &limit);
+		if (limit < base + size) {
+			txm_log("association spans outside of code limit");   /* 0xd39 */
+			err = 0x24;
+			goto out;
+		}
+		ver = 0;
+	} else {
+		if (size != d_size) {
+			err = 0x12;
+			goto out;
+		}
+		if (base != d_base) {
+			err = 0x13;
+			goto out;
+		}
+		if (txm_uuid_compare((const void *)d_ident, 0xcf7) == 0 ||
+		    txm_uuid_compare((const void *)d_ident, 0xd1a) == 0) {
+			oah = 1;                          /* OAH / runtime_arm_internal */
+		}
+		ver = 1;
+	}
+
+	if (*(uint16_t *)(obj + 0x24) == 1) {
+		if (flag < 6) txm_panic(0x7b);
+		if ((*(uint8_t *)(obj + 0x18) & 2) != 0) txm_panic(0x7c);
+		if (start < *(uint64_t *)(obj + 0x58)) txm_panic(0x8a);
+		if (*(uint64_t *)(obj + 0x60) < end) txm_panic(0x8b);
+		/* allowed */
+		err = 0;
+		goto install;
+	} else if (oah) {
+		/* OAH runtime: allowed for JIT */
+		err = 0;
+		goto install;
+	} else if ((*(uint8_t *)(obj + 0x18) & 2) == 0) {
+		/* Non-JIT: validate CD-hash chain. */
+		if (txm_rb_node_to_obj(*(uint64_t *)(obj + 0x40), &assoc2, 0) != 0) {
+			err = 0;
+			goto out;
+		}
+		r = txm_amfi_can_exec_cdhash(assoc2 + 0x28, assoc + 0x28);
+		low = (uint32_t)(r >> 8) & 0xff;
+		hi = (uint32_t)(r >> 0x10) & 0xffff;
+		word = (uint32_t)r & 0xff;
+		/* ok */
+		txm_lock_release(assoc2, 0);
+		r2 = txm_verify_cdhash(((low & 0xff) << 8) | (hi << 0x10) | (word & 0xff));
+		i = (int)(r2 >> 0x10);
+		assoc2 = r2 >> 0x20;
+		if ((r2 & 0xffff) != 0) {
+			err = (int)(r2 & 0xffff);
+			goto out;
+		}
+		err = 0;
+		goto install;
+	} else {
+		/* JIT-debug object. */
+		assoc2 = *(uint64_t *)(obj + 0x40);
+		if (assoc2 != 0) {
+			txm_lock_acquire(assoc2, 0, 0);
+			if (*(uint64_t *)(assoc2 + 0x28) == start &&
+			    *(uint64_t *)(assoc2 + 0x30) == end) {
+				oah = *(uint64_t *)(assoc2 + 0x18) == base;
+			} else {
+				oah = 0;
+			}
+			txm_lock_release(assoc2, 0);
+			/* region-authorize fallback */
+			r = txm_region_authorize(*(uint8_t *)(obj + 0x20));
+			i = (int)(r >> 0x10);
+			if ((r & 0xffff) != 0) {
+				txm_log("denying executable debug mapping");   /* 0xd65 */
+				assoc2 = r >> 0x20;
+				err = (int)(r & 0xffff);
+				goto out;
+			}
+			assoc2 = r >> 0x20;
+			err = 1;
+			goto install;
+		}
+		txm_ce_bind(assoc + 0x28, (uint64_t *)(obj + 0x20));
+		r = txm_region_authorize(*(uint8_t *)(obj + 0x20));
+		i = (int)(r >> 0x10);
+		if ((r & 0xffff) != 0) {
+			txm_log("denying executable debug mapping");   /* 0xd65 */
+			assoc2 = r >> 0x20;
+			err = (int)(r & 0xffff);
+			goto out;
+		}
+		if ((txm_security_ok(d_code) & 1) == 0) {
+			txm_log("disallowed executable debug mapping");   /* 0xd95 */
+			assoc2 = r >> 0x20;
+			err = 0x2a;
+			goto out;
+		}
+		assoc2 = r >> 0x20;
+		err = 1;
+		goto install;
+	}
+
+install:
+	*(uint8_t *)(node + 0x12) = *(uint8_t *)(node + 0x12) & 0x80;
+	*(uint64_t *)(node + 0x28) = start;
+	*(uint64_t *)(node + 0x30) = end;
+	*(uint64_t *)(node + 0x18) = base;
+	*(uint64_t *)(node + 0x20) = assoc;
+	if (txm_rb_insert((txm_rb_node_t *)(obj + 0x28), node) == 0) {
+		cnt = *(uint32_t *)(assoc + 0x14);
+		*(uint32_t *)(assoc + 0x14) = cnt + 1;
+		if (cnt >= ~txm_link_limit) {
+			txm_panic(0x4e);                 /* link overflow */
+		}
+		if (err != 0) {
+			err = 0;
+			*(uint64_t *)(obj + 0x40) = node;
+		}
+	} else {
+		err = 0x17;                          /* interval overlap */
+	}
+
+out:
+	txm_lock_release(obj, 1);
+	txm_lock_release(assoc, 0);
+	txm_lock_release(node, 1);
+	if ((err & 0xffff) != 0) {
+		txm_obj_ref_drop(&node, 3, 4);
+	}
+	return (uint64_t)(uint32_t)(i << 0x10) | (assoc2 << 0x20) | (err & 0xffff);
+}
+
+/* FUN_00023050 @ 0x00023050   (est. txm_region_authorize)
+ * Ghidra: ulong FUN_00023050(undefined8 flag)
+ * Region authorization against the active profile: when the profile (+0x48)
+ * permits authorization, runs the per-profile authorizer (FUN_000350e8) over
+ * the profile handle and the requested flag; returns the packed status
+ * (0x20/0x21 panic 0xf1). Returns 0 when authorization is disabled.
+ * Confidence: medium
+ */
+uint64_t txm_region_authorize(uint64_t flag)
+{
+	if ((txm_debug_state & 1) == 0) {
+		txm_panic(0x19);
+	}
+	if ((*(uint8_t *)(txm_profile_ctx + 0x48) & 1) == 0) {
+		return 0;
+	}
+	{
+		uint64_t r = txm_profile_authorize(txm_profile_handle, flag);
+		uint32_t cls = (uint32_t)((r >> 8) & 0xff);
+		uint64_t packed;
+		if ((r & 0xff00) == 0) {
+			packed = 0;
+		} else {
+			if (cls == 0x20) txm_panic(((uint32_t)r & 0xffff00ff) | 0x2000);
+			if (cls == 0x21) txm_panic(((uint32_t)r & 0xffff0000) | ((uint32_t)r & 0xff) | 0x2100);
+			packed = 4;
+		}
+		return packed | ((r >> 0x10) << 0x30) | (((r >> 8) & 0xff) << 0x28) | ((r & 0xff) << 0x20);
+	}
+}
+
+/* FUN_000230fc @ 0x000230fc   (est. txm_status_repack)
+ * Ghidra: ulong FUN_000230fc(ulong status)
+ * Re-packs a TXM status word, panicking 0xf1 on the 0x20/0x21 error classes.
+ * Pure status normalization helper.
+ * Confidence: high (trivial repack)
+ */
+uint64_t txm_status_repack(uint64_t status)
+{
+	uint32_t cls = (uint32_t)((status >> 8) & 0xff);
+	uint64_t packed;
+
+	if ((status & 0xff00) == 0) {
+		packed = 0;
+	} else {
+		if (cls == 0x20) txm_panic(((uint32_t)status & 0xffff00ff) | 0x2000);
+		if (cls == 0x21) txm_panic(((uint32_t)status & 0xffff0000) | ((uint32_t)status & 0xff) | 0x2100);
+		packed = 4;
+	}
+	return packed | ((status >> 0x10) << 0x30) | (((status >> 8) & 0xff) << 0x28) | ((status & 0xff) << 0x20);
+}
+
+/* FUN_0002316c @ 0x0002316c   (est. txm_exec_check)
+ * Ghidra: undefined8 FUN_0002316c(long obj)
+ * Execution-eligibility check for a code object (selector 0x28 path). Requires
+ * obj+0x10 non-empty (panic 0x38) and the debug/code-limits state
+ * (DAT_00010678+0x4f, DAT_00071035). When enabled: a non-empty association
+ * (0x50) is denied (0x19); a free region (+0x24==1) with no prior association
+ * is admitted only if the object carries dynamic-codesigning (0xdc6) or
+ * allow-jit (0xdda); an already-JIT object (+0x18 bit1) is admitted. Returns 0
+ * (allowed), 0x26 (denied), 0x18/0x19.
+ * Confidence: high (JIT/exec eligibility; entitlements 0xdc6/0xdda)
+ */
+uint64_t txm_exec_check(uint64_t obj)
+{
+	if ((txm_debug_state & 1) == 0) {
+		txm_panic(0x19);
+	}
+	if (*(char *)(obj + 0x10) == '\0') {
+		txm_panic(0x38);
+	}
+	if ((*(uint8_t *)(txm_profile_ctx + 0x4f) & 1) != 0 &&
+	    (txm_code_limits & 1) == 0) {
+		if (txm_exec_probe() & 1) {
+			return 0x18;
+		}
+		if (*(uint16_t *)(obj + 0x24) == 1) {
+			return 0x26;                 /* free region, no JIT */
+		}
+		if (*(uint64_t *)(obj + 0x50) == 0) {
+			if (txm_entitlement_check(obj, 0xdc6, 0) ||
+			    txm_entitlement_check(obj, 0xdda, 0)) {
+				return 0;                /* dynamic-codesigning / allow-jit */
+			}
+			if ((*(uint8_t *)(obj + 0x18) & 2) != 0) {
+				return 0;                /* JIT bit set */
+			}
+			return 0x26;
+		}
+		return 0x19;
+	}
+	return 0x18;
+}
+
+/* FUN_00023254 @ 0x00023254   (est. txm_code_region_associate)
+ * Ghidra: ulong FUN_00023254(long obj, ulong start, ulong size)
+ * Selector 0x28 handler: creates a code region for [start, start+size) on the
+ * object. Validates 16K alignment (0x7d/0x7e) and non-empty/overflow bounds
+ * (0x40/0x41/0x42), allocates a region node, checks execution eligibility via
+ * txm_exec_check (must be 0), installs the node into the object's interval tree
+ * (overlap -> 0x17), and links it at obj+0x50. Returns 0 or 7 (alloc failure).
+ * Confidence: high (code-region association; selector 0x28)
+ */
+uint64_t txm_code_region_associate(uint64_t obj, uint64_t start, uint64_t size)
+{
+	uint64_t end = start + size;
+	uint64_t node, st;
+
+	if ((start & 0x3fff) != 0) txm_panic(0x7d);
+	if ((size & 0x3fff) != 0) txm_panic(0x7e);
+	if (start == 0) txm_panic(0x40);
+	if (size == 0) txm_panic(0x41);
+	if (end < start) txm_panic(0x42);          /* CARRY8 */
+
+	node = txm_region_new();
+	if (node == 0) {
+		return 7;
+	}
+	txm_lock_acquire(node, 1, 0);
+	txm_lock_acquire(obj, 1, 0);
+	st = txm_exec_check(obj);
+	if (st == 0) {
+		*(uint8_t *)(node + 0x12) = (*(uint8_t *)(node + 0x12) & 0x80) | 2;
+		*(uint64_t *)(node + 0x28) = start;
+		*(uint64_t *)(node + 0x30) = end;
+		if (txm_rb_insert((txm_rb_node_t *)(obj + 0x28), node) == 0) {
+			st = 0;
+			*(uint64_t *)(obj + 0x50) = node;
+		} else {
+			st = 0x17;                           /* interval overlap */
+		}
+	}
+	txm_lock_release(obj, 1);
+	txm_lock_release(node, 1);
+	if ((int)st != 0) {
+		txm_obj_ref_drop(&node, 3, 4);
+	}
+	return st & 0xffffffff;
+}
+
+/* FUN_00023384 @ 0x00023384   (est. txm_cs_debug_policy)
+ * Ghidra: undefined8 FUN_00023384(long obj, ulong start, ulong size)
+ * Selector 0x2a handler: code-signing / debug-mapping policy. Requires the
+ * debugger entitlement (cs.debugger 0xc79) OR the page-state flag DAT_000107f5;
+ * otherwise logs "disallowed non-debugger initiated debug mapping" (0xdfb) and
+ * returns 0x25. It then scans the object's existing regions for any that
+ * overlap/contain [start,end) and marks one (|0x80) to reject the duplicate,
+ * else inserts a new 0x83-flagged node (overlap -> panic 0xd1). Sets a debug
+ * marker on the object (+0x30).
+ * Confidence: high (code-signing/debug-mapping policy; string 0xdfb)
+ */
+uint64_t txm_cs_debug_policy(uint64_t obj, uint64_t start, uint64_t size)
+{
+	uint64_t end = start + size;
+	uint64_t node, st, scan;
+	int dir;
+
+	if ((start & 0x3fff) != 0) txm_panic(0xc4);
+	if ((size & 0x3fff) != 0) txm_panic(0xc5);
+	if (start == 0) txm_panic(0x40);
+	if (size == 0) txm_panic(0x41);
+	if (end < start) txm_panic(0x42);
+
+	if ((txm_entitlement_check(0, 0xc79, 0) & 1) == 0 && (txm_page_er_flag & 1) == 0) {
+		txm_log("disallowed non-debugger initiated debug mapping");   /* 0xdfb */
+		return 0x25;
+	}
+
+	node = txm_region_new();
+	if (node == 0) {
+		return 7;
+	}
+	txm_lock_acquire(node, 1, 0);
+	txm_lock_acquire(obj, 1, 0);
+
+	if ((*(uint8_t *)(obj + 0x30) & 1) == 0) {
+		txm_panic(0x1d);
+	}
+
+	/* Scan the object's regions; if one already covers [start,end), mark it
+	 * and reject the duplicate. */
+	for (scan = *(uint64_t *)(obj + 0x28); scan != 0; ) {
+		if (start < *(uint64_t *)(scan + 0x28) && end <= *(uint64_t *)(scan + 0x28)) {
+			dir = 0x38;
+		} else if (start < *(uint64_t *)(scan + 0x30) || end <= *(uint64_t *)(scan + 0x30)) {
+			txm_lock_acquire(scan, 1, 0);
+			*(uint8_t *)(scan + 0x12) |= 0x80;
+			if (scan + 0x50 <= scan) txm_panic(0x19);
+			txm_lock_release(scan, 1);
+			return 0;
+		} else {
+			dir = 0x40;
+		}
+		scan = *(uint64_t *)(scan + dir);
+	}
+
+	*(uint8_t *)(node + 0x12) = 0x83;
+	*(uint64_t *)(node + 0x28) = start;
+	*(uint64_t *)(node + 0x30) = end;
+	if (txm_rb_insert((txm_rb_node_t *)(obj + 0x28), node) != 0) {
+		txm_panic(0xd1);                         /* overlap */
+	}
+	txm_lock_release(obj, 1);
+	txm_lock_release(node, 1);
+	return 0;
+}
+
+/* FUN_00023574 @ 0x00023574   (est. txm_entitlement_policy)
+ * Ghidra: undefined8 FUN_00023574(long obj)
+ * Selector 0x29 handler: entitlement / debug-mode policy query. Requires the
+ * code-limits flag (DAT_00071034). Grants the debug bit (obj+0x30=1) when the
+ * profile has license-to-operate (0xe2b, gated on DAT_000104ed) OR the object
+ * has get-task-allow (0xe51) OR DAT_000107f5; otherwise returns 0x1d. A
+ * free-region object panics 0x81.
+ * Confidence: high (entitlement query; 0xe2b/0xe51)
+ */
+uint64_t txm_entitlement_policy(uint64_t obj)
+{
+	uint8_t lto;
+
+	if ((txm_code_limits & 1) == 0) {
+		return 0x1b;
+	}
+	lto = txm_entitlement_check(0, 0xe2b, 0);      /* license-to-operate */
+	txm_lock_acquire(obj, 0, 0);
+	if (*(uint16_t *)(obj + 0x24) == 1) {
+		txm_panic(0x81);
+	}
+	if ((((lto & txm_ent_lo_flag & 1) == 0) &&
+	     (txm_entitlement_check(obj, 0xe51, 0) & 1) == 0) &&
+	    (txm_page_er_flag & 1) == 0) {
+		txm_lock_release(obj, 0);
+		return 0x1d;
+	}
+	*(uint8_t *)(obj + 0x30) = 1;
+	txm_lock_release(obj, 0);
+	return 0;
+}
+
+/* FUN_0002364c @ 0x0002364c   (est. txm_get_associated_obj)
+ * Ghidra: long FUN_0002364c(long obj, long *assoc_out)
+ * Returns the object's associated code object (the association node's backing
+ * object, +0x20). Resolves obj+0x40 via txm_rb_node_to_obj; returns 8 if the
+ * association is empty, 0 on success (optionally via *assoc_out).
+ * Confidence: medium
+ */
+long txm_get_associated_obj(uint64_t obj, uint64_t *assoc_out)
+{
+	uint64_t assoc = 0;
+	uint64_t node;
+
+	txm_lock_acquire(obj, 0, 0);
+	node = *(uint64_t *)(obj + 0x40);
+	if (txm_rb_node_to_obj(node, &assoc, 0) != 0) {
+		txm_lock_release(obj, 0);
+		return 8;
+	}
+	assoc = *(uint64_t *)(assoc + 0x20);
+	txm_lock_release(assoc, 0);
+	txm_lock_release(obj, 0);
+	if (assoc == 0) {
+		return 8;
+	}
+	if (assoc_out != 0) {
+		*assoc_out = assoc;
+	}
+	return 0;
+}
+
+/* FUN_000236f0 @ 0x000236f0   (est. txm_secure_channel_init)
+ * Ghidra: void FUN_000236f0(void)
+ * Secure-channel (SecureUI) initialization. Single-init (re-init panics 0xe60
+ * "attempted to initialize secure channel again"). Reads the platform feature
+ * and flag (FUN_0002a354/FUN_0002a434); when the feature is absent (or the boot
+ * flag DAT_000104f0 is set) it gates on SEP presence — a security-boot mode
+ * without SEP panics ("security boot mode without SEP...", 0x1141) — and on
+ * boot state 5/6 allocates the 16 KiB shared page (DAT_00010518/520/528),
+ * marks it ready (DAT_00071030) and bootstraps (FUN_00023840/78/ec) after
+ * "setup the shared page for the secure channel" (0xebb). Unsupported boot
+ * states log 0xe8d "secure channel not supported on this platform".
+ * Confidence: high (strings 0xe60/0xe8d/0xebb explicit)
+ */
+void txm_secure_channel_init(void)
+{
+	uint64_t feat, flag, page, r;
+	int sep;
+
+	if (txm_sc_page_base != 0) {
+		txm_panic(0xe60);                          /* re-init */
+	}
+	txm_sc_cap = (uint8_t)txm_platform_feature();  /* FUN_0002a354 */
+	flag = txm_platform_flag();                    /* FUN_0002a434 */
+	txm_sc_flag = (uint8_t)flag;
+	if (flag == 0 || (txm_boot_flag & 1) != 0) {
+		if ((flag & txm_sc_cap) != 1) {
+			sep = txm_sep_present();
+			if ((txm_sc_cap & 1) == 0 && sep != 0) {
+				txm_panic(0x1141);                 /* security boot without SEP */
+			}
+			txm_sc_sep = (uint8_t)sep;
+			if (4 < txm_boot_state - 1 && txm_boot_state != 7) {
+				txm_log("secure channel not supported on this platform");  /* 0xe8d */
+				return;
+			}
+			txm_sc_ready = 1;
+			txm_alloc_zone(&page, 0x4000, 0x3d);
+			txm_sc_page_size = page_size_word;
+			txm_sc_page_base = page;
+			txm_sc_page_extra = page_extra_word;
+			r = txm_setup_shared_page();
+			if ((int)r == 0) {
+				txm_log("setup the shared page for the secure channel");  /* 0xebb */
+				flag = txm_sc_sep - 1;
+				txm_sc_bootstrap_a();
+				txm_sc_bootstrap_b(flag < 7);
+				txm_sc_bootstrap_c();
+				return;
+			}
+			txm_panic(0xf3, r);
+		}
+		txm_panic(0xd3);
+	}
+	txm_panic(0xd2);
+}
+
+/* FUN_00023840 @ 0x00023840   (est. txm_sc_setup_step1)
+ * Ghidra: void FUN_00023840(void)
+ * Secure-channel bootstrap step 1: if the channel is ready, arm the shared
+ * page (FUN_0002f5a0); error panics 0xf3.
+ * Confidence: medium
+ */
+void txm_sc_setup_step1(void)
+{
+	if ((txm_sc_ready & 1) != 0) {
+		uint64_t r = txm_sc_step(0);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+	}
+}
+
+/* FUN_00023878 @ 0x00023878   (est. txm_sc_setup_step2)
+ * Ghidra: void FUN_00023878(ulong flag)
+ * Secure-channel bootstrap step 2: enables the lockdown marker (DAT_00071033)
+ * when `flag` is set, configures the channel (FUN_0002f5e0), logs the SecureUI
+ * state (0xf2c), and clears the lockdown marker if the flag bit 0 is clear.
+ * Confidence: medium
+ */
+void txm_sc_setup_step2(uint64_t flag)
+{
+	if ((txm_sc_ready & 1) != 0) {
+		if ((int)flag != 0) {
+			txm_sc_lockdown = 1;
+		}
+		uint64_t r = txm_sc_config(flag);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+		txm_log("system SecureUI state: %u");    /* 0xf2c */
+		if ((flag & 1) == 0) {
+			txm_sc_lockdown = 0;
+		}
+	}
+}
+
+/* FUN_000238ec @ 0x000238ec   (est. txm_sc_setup_step3)
+ * Ghidra: void FUN_000238ec(void)
+ * Secure-channel bootstrap step 3: when the channel is ready, the boot flag
+ * (DAT_000104f0) is set, and the platform flag (DAT_00071032) is set, records
+ * the SCRD state 0x15c01 into DAT_0007103c (preserving the high bits).
+ * Confidence: medium
+ */
+void txm_sc_setup_step3(void)
+{
+	if (((txm_sc_ready & 1) != 0) && (txm_boot_flag & 1) != 0 &&
+	    (txm_sc_flag & 1) != 0) {
+		txm_scrd = (txm_scrd & 0xfffe0000) | 0x15c01;
+	}
+}
+
+/* FUN_00023930 @ 0x00023930   (est. txm_sc_report)
+ * Ghidra: void FUN_00023930(void)
+ * Reads and reports the SCRD magic/xART (strings 0xee8 "SecureChannel: SCRD |
+ * Magic: 0x%04X" and 0xf0c "SecureChannel: SCRD | xART: %u") when the SCRD low
+ * word is empty. Error panics 0xf3.
+ * Confidence: high (strings 0xee8/0xf0c explicit)
+ */
+void txm_sc_report(void)
+{
+	if ((uint16_t)txm_scrd == 0) {
+		uint64_t r = txm_scrd_read(&txm_scrd);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+		txm_log("SecureChannel: SCRD | Magic: 0x%04X");   /* 0xee8 */
+		txm_log("SecureChannel: SCRD | xART: %u");        /* 0xf0c */
+	}
+}
+
+/* FUN_000239a8 @ 0x000239a8   (est. txm_sc_report_handle)
+ * Ghidra: void FUN_000239a8(void)
+ * Reports the profile handle to the secure channel (FUN_0002f660) when ready;
+ * error panics 0xf3.
+ * Confidence: medium
+ */
+void txm_sc_report_handle(void)
+{
+	if ((txm_sc_ready & 1) != 0) {
+		uint64_t r = txm_sc_handle(txm_profile_handle == -1);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+	}
+}
+
+/* FUN_000239f8 @ 0x000239f8   (est. txm_sc_report_entitlement)
+ * Ghidra: void FUN_000239f8(void)
+ * Reports the license-to-operate entitlement (DAT_000104ed bit0) to the secure
+ * channel (FUN_0002f6a0) when ready; error panics 0xf3.
+ * Confidence: medium
+ */
+void txm_sc_report_entitlement(void)
+{
+	if ((txm_sc_ready & 1) != 0) {
+		uint64_t r = txm_sc_ent(txm_ent_lo_flag & 1);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+	}
+}
+
+/* FUN_00023a40 @ 0x00023a40   (est. txm_developer_mode)
+ * Ghidra: void FUN_00023a40(long ctx)
+ * Computes and stores the developer-mode state (DAT_00071034). Developer mode
+ * is on when the boot flag DAT_000107f6 is set, or the profile flag
+ * (DAT_00010678+0x4d) is clear, or (boot state 7) the license-to-operate
+ * entitlement, or the SCRD lockdown/demo bits admit it, else based on the
+ * context's developer-mode bit. Logs the mode strings (0xf46/0xf80/0xfb1/
+ * 0x1019/0x104c/0xfe2) and propagates to the secure channel (FUN_0002f620).
+ * Confidence: medium (developer-mode logic; string refs explicit)
+ */
+void txm_developer_mode(uint64_t ctx)
+{
+	uint64_t mode;
+
+	if ((txm_dev_mode_flag & 1) != 0) {
+		mode = 1;
+	} else if ((*(uint8_t *)(txm_profile_ctx + 0x4d) & 1) == 0) {
+		txm_log("developer mode forced");                    /* 0xf46 */
+		mode = 1;
+	} else if (txm_boot_state == 7) {
+		if ((txm_ent_lo_flag & 1) == 0) {
+			txm_log("developer mode disabled (no license)"); /* 0xfb1 */
+		} else {
+			txm_log("developer mode enabled by license");    /* 0xf80 */
+		}
+		mode = txm_ent_lo_flag;
+	} else if ((txm_scrd & 0xffff) == 0 || (txm_scrd & 0x10000) != 0) {
+		mode = 0;
+		if (ctx == 0 || (txm_scrd & 0xffff) == 0) {
+			/* default off */
+		} else if ((*(uint8_t *)(ctx + 0xc) & 1) == 0) {
+			mode = 0;
+			if ((txm_sc_lockdown & 1) == 0) {
+				txm_log("developer mode disabled based on %s");  /* 0x104c */
+			}
+		} else {
+			txm_log("developer mode enabled based on %s");  /* 0x1019 */
+			mode = 1;
+		}
+	} else {
+		txm_log("developer mode lockdown");                   /* 0xfe2 */
+		mode = 1;
+	}
+
+	if ((txm_sc_ready & 1) != 0) {
+		uint64_t r = txm_sc_devmode((int)(mode & 1));
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+	}
+	txm_code_limits = mode & 1;         /* DAT_00071034 */
+}
+
+/* FUN_00023b50 @ 0x00023b50   (est. txm_lockdown)
+ * Ghidra: undefined8 FUN_00023b50(void)
+ * Lockdown/demo-mode readout: when the secure channel is ready, reads the SCRD
+ * (FUN_00023930) and either (a) the SCRD is not lockdown-armed — requires no
+ * SEP (panic 0x12) then developer mode, or (b) reads the lockdown context
+ * (FUN_0002f454), computes developer mode from it, and records lockdown mode
+ * (DAT_00071035) and demo mode (DAT_00071036), logging both (0x1080/0x10a2).
+ * Returns 0 with a stack-canary check (DAT_00006cf0).
+ * Confidence: high (strings 0x1080/0x10a2 explicit)
+ */
+uint64_t txm_lockdown(void)
+{
+	uint64_t guard = txm_canary;
+	uint64_t ctx_buf[4] = { 0, 0, 0, 0 };
+
+	if ((txm_sc_ready & 1) != 0) {
+		txm_sc_report();
+		if (((txm_scrd >> 0x10) & 1) == 0) {
+			if (txm_sc_sep != 0) {
+				txm_panic(0x12);
+			}
+			txm_developer_mode(0);
+		} else {
+			uint64_t r = txm_scrd_context(ctx_buf);
+			if ((int)r != 0) {
+				txm_panic(0xf3, r);
+			}
+			txm_developer_mode((uint64_t)ctx_buf);
+			txm_lockdown_mode = (ctx_buf[1] != 0);
+			txm_log("SecureChannel: Lockdown Mode: %u");   /* 0x1080 */
+			txm_demo_mode = (ctx_buf[2] != 0);
+			txm_log("SecureChannel: Demo Mode: %u");       /* 0x10a2 */
+		}
+	}
+	if (txm_canary != guard) {
+		txm_stack_guard_fail(0);
+	}
+	return 0;
+}
+
+/* FUN_00023c50 / 00023c98 @ 0x00023c50  (est. txm_sc_verify_signature)
+ * Ghidra: undefined8 FUN_00023c50(undefined8 sig, undefined8 p1, undefined8 p2)
+ * SCVerifySignature for developer authorization. When the secure channel is
+ * ready, verifies the developer signature via FUN_0002f1b0; on failure logs
+ * "SCVerifySignature for developer authorization: %u" (0x10c0). When the
+ * channel is not ready, panics 0xf3.
+ * Confidence: high (string 0x10c0 explicit)
+ */
+uint64_t txm_sc_verify_signature(uint64_t sig, uint64_t p1, uint64_t p2)
+{
+	uint64_t ab[2] = { p1, p2 };
+	uint64_t r;
+
+	if ((txm_sc_ready & 1) != 0) {
+		r = txm_sc_verify(0, ab, sig);
+		if ((int)r != 0) {
+			txm_log("SCVerifySignature for developer authorization: %u");   /* 0x10c0 */
+		}
+		return r;
+	}
+	txm_panic(0xf3, 1);
+}
+
+/* FUN_00023cc4 @ 0x00023cc4   (est. txm_security_ok)
+ * Ghidra: byte FUN_00023cc4(undefined8 id)
+ * Checks whether an identifier `id` is in the allowed list (DAT_000100b8, 4
+ * entries of 8 bytes). Only consulted when the channel is ready and the SCRD
+ * low word is empty; if the capability bit (DAT_00071031) is clear, always
+ * allowed; otherwise returns the match flag DAT_000107f8 for a matching entry
+ * or 1 for none.
+ * Confidence: medium
+ */
+uint8_t txm_security_ok(uint64_t id)
+{
+	uint64_t i;
+
+	if ((txm_sc_ready & 1) != 0 && (uint16_t)txm_scrd == 0) {
+		if ((txm_sc_cap & 1) == 0) {
+			return 1;
+		}
+		for (i = 0; i < 0x20; i += 8) {
+			if (txm_uuid_compare((const void *)*(uint64_t *)((uint64_t)&txm_allowed_id_list + i),
+			                     id) == 0) {
+				return txm_match_flag;           /* DAT_000107f8 */
+			}
+		}
+		return 1;
+	}
+	return 1;
+}
+
+/* FUN_00023d64 @ 0x00023d64   (est. txm_sc_enter)
+ * Ghidra: void FUN_00023d64(undefined8 p1, undefined8 p2)
+ * Enters the secure channel with a two-word argument (FUN_0002f220) when ready;
+ * error panics 0xf3.
+ * Confidence: medium
+ */
+void txm_sc_enter(uint64_t p1, uint64_t p2)
+{
+	uint64_t ab[2] = { p1, p2 };
+
+	if ((txm_sc_ready & 1) != 0) {
+		uint64_t r = txm_sc_enter_impl(ab);
+		if ((int)r != 0) {
+			txm_panic(0xf3, r);
+		}
+	}
+}
+
+/* FUN_00023dac @ 0x00023dac   (est. txm_sc_exit)
+ * Ghidra: void FUN_00023dac(undefined8 p)
+ * Exits the secure channel (FUN_0002f3c8), requiring the channel be ready
+ * (panic 0xf3) and the exit flag be set (panic 0x2e otherwise); errors panic
+ * 0xf3.
+ * Confidence: medium
+ */
+void txm_sc_exit(uint64_t p)
+{
+	uint8_t flag = 0;
+	uint64_t r;
+
+	if ((txm_sc_ready & 1) == 0) {
+		txm_panic(0xf3, 1);
+	}
+	r = txm_sc_exit_impl(p, &flag);
+	if ((int)r == 0) {
+		if ((flag & 1) != 0) {
+			return;
+		}
+		txm_panic(0x2e);
+	}
+	txm_panic(0xf3, r);
+}
+
+/* FUN_00023e14 @ 0x00023e14   (est. txm_build_info)
+ * Ghidra: undefined1 [16] FUN_00023e14(void)
+ * Build/configuration reporting: marks boot complete (DAT_000104e8), performs
+ * early boot (FUN_0002940c), writes the build-variant and platform identifiers
+ * (FUN_0004f2dc), prints the version (FUN_00029714) and the fusing/
+ * virtualized/build-type/device-type/research-configuration strings, then
+ * returns to the caller (FUN_0002ab70). Returns a 16-byte config descriptor
+ * {pointer, length} derived from DAT_00070ecc/ecd/ece.
+ * Confidence: medium
+ */
+txm_u128_t txm_build_info(void)
+{
+	uint64_t ptr = 0, len = 0;
+
+	txm_boot_e8 = 1;
+	txm_early_boot(0);
+	txm_sys_write(0, &build_variant_id, 2);
+	txm_sys_write(1, &platform_id, 1);
+	txm_build_version();
+	txm_log("build variant: %s");                  /* 0x1169 */
+	txm_log("fusing: 0x%08X");                     /* 0x117b */
+	txm_log("virtualized: %u");                    /* 0x118a */
+	txm_log("build type: %u");                     /* 0x119a */
+	txm_log("device type: %u");                    /* 0x11a9 */
+	txm_log("research configuration: %u");         /* 0x11b9 */
+	txm_log("extended research configuration: %u");/* 0x11d4 */
+	txm_return_exit(txm_ctx_return);
+
+	if ((txm_build_cfg0 & 1) != 0) {
+		if ((txm_build_cfg1 & 1) != 0) {
+			ptr = (uint64_t)&txm_build_cfg2;
+			len = 0x61;
+		}
+	}
+	return (txm_u128_t){ .lo = ptr, .hi = len };
+}
+
+/* FUN_00023f14 @ 0x00023f14   (est. txm_build_info_inner)
+ * Ghidra: undefined1 [16] FUN_00023f14(void)
+ * Returns the 16-byte build-config descriptor {pointer, length} from the build
+ * configuration globals, or zero when not configured.
+ * Confidence: medium
+ */
+txm_u128_t txm_build_info_inner(void)
+{
+	uint64_t ptr = 0, len = 0;
+
+	if ((txm_build_cfg0 & 1) != 0) {
+		if ((txm_build_cfg1 & 1) != 0) {
+			ptr = (uint64_t)&txm_build_cfg2;
+			len = 0x61;
+		}
+	}
+	return (txm_u128_t){ .lo = ptr, .hi = len };
+}
+
+/* FUN_00023f54 @ 0x00023f54   (est. txm_lockdown_mode_enter)
+ * Ghidra: void FUN_00023f54(void)
+ * Enters lockdown mode for the current session: panics 0x2c if the boot flag
+ * DAT_000104ea is set; clears the lockdown flag (DAT_00010667) unless armed
+ * (DAT_000107f7) and resets DAT_00010661, then logs "entered lockdown mode for
+ * the re..." (0x11f8).
+ * Confidence: medium
+ */
+void txm_lockdown_mode_enter(void)
+{
+	if ((txm_page_state_hi & 1) != 0) {
+		txm_panic(0x2c);
+	}
+	if ((txm_lockdown_armed & 1) == 0) {
+		txm_lockdown_flag = 0;                   /* DAT_00010667 */
+	}
+	txm_lockdown_entered = 0;                    /* DAT_00010661 */
+	txm_log("entered lockdown mode for the re...");   /* 0x11f8 */
 }
 
 #endif /* __ASSEMBLER__ */

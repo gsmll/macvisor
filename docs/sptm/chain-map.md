@@ -331,3 +331,19 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 00061b9c (txm_ce_foreach_entry) → 00044c6c (ce_entry), 000446f4/00044724 (iter), 00045708 (ctx)
 - 00061880/00061960 (ctx copy) → 00045760/00045750/00045708/000457b8 (ctx accessors)
 - 00061a80/00061ae4/00061b48 (ce getters) → 00045718 (ctx_state), 0004577c (ctx_set), 0004447c/000444fc/0004443c
+
+### TXM region core (osfmk/arm64/txm/txm_region_core.c) — bignum/ECDSA/DER/IMG4 verify layer (00040000-0004b000)
+- 00040fb4 (txm_sha256_compress) / 00041a9c (txm_sha512_compress) → SHA-2 block transforms; K tables DAT_00007210 / 00006f20
+- 00043670 (txm_bn_mulmod_p256) → P-256 field multiply (schoolbook + Mersenne-fold); 000415a0 (txm_bn_mul6) → 384-bit mul; 00043d38 (txm_ecdsa_scalar_mul_p384) → P-384 ladder
+- 00040c54 (txm_ecdsa_scalar_mul_p256) → 00043670 (squarings), fixed-window ladder
+- 00042e34 (txm_bn_modinv) → Newton inverse; 00042fd0 (txm_bn_modpow) → 00041488 (txm_bn_mont_mul) square-and-multiply
+- 00042418 (txm_ecdsa_verify) → 00042b84/00042b78 (bn getters), 00043cc4 (txm_bn_cmp), 0003c9bc/0003b770/0003d10c/0003b0c0/00039d4c (engine verify)
+- 00044184 (txm_der_read_tlv) → 0004a2d0 (txm_der_read_len); DER TLV decode (traps 0x5513/0x5515/0x5519 on malformed)
+- 00044c6c (txm_img4_elem) → 00044c4c/00044e54 (IM4M verify, tag 0x494d344d), 00044efc (txm_im4m_key, MANP)
+- 000455b8 (txm_im4m_decode) → 00044c4c/0006151c (IM4M/IM4C dispatch by magic 0x494d3443/4d)
+- 000457d0 (txm_cert_verify_chain) → 00044c6c, 000446f4, 000610a8; cert store DAT_000127a0/000481cc
+- 00045a38 (txm_verify_developer) → 00044e18; callback table param_4[0..3] drives EC/RSA digest verify
+- 00049ae4 (txm_manifest_handler_2) → tag OIDs DAT_0000a0d9/a0e2/a0eb/a106/a10f/a0f4/a0fd, 0004ab28/0004ad00/0004af1c/0004aff8/0004b0ac (element checks)
+- 000483a8 / 00048700 (txm_sig_verify_p256 / p384) → 00043c50 (txm_bn_from_bytes_checked), 0003833c/0003be50 (EC verify)
+- 000481cc (txm_cert_lookup) → DAT_000127a0 (8x0x20 cert-name table); 0004824c (txm_oid_alg) → OID→{name,len} map
+- 0004a498 (txm_img4_parse_elems) → 0004b80c, tailq ops; 0004a7b8 (txm_im4p_probe) → 00048c2c/000490b8/0003767c

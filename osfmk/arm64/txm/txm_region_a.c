@@ -63,8 +63,78 @@ static uint64_t txm_ct_lookup_2(uint64_t a, uint64_t b, uint64_t c, uint64_t d, 
 static uint64_t txm_dt_property_find(int *node, uint64_t key, uint64_t *out,
                                      uint32_t *out_len, int *base, uint64_t size);
 static int *txm_dt_child(uint64_t *root, int *node);
+static uint64_t txm_ops_init(uint64_t a, uint64_t ops);
+static uint64_t txm_ops_alloc(uint64_t ops);
+static void txm_object_release(uint64_t *slot);
+static void txm_digest_len_panic(void) __attribute__((noreturn));
+static void txm_panic_boot_expert(void) __attribute__((noreturn));
 static uint64_t txm_pa_resolve(uint64_t pa, uint64_t *out);   /* FUN_00061ea4 */
 extern void CallSupervisor(int svc);
+
+/* out-of-batch image4-engine callees (sibling regions) */
+extern uint64_t txm_ctx_save(void);                              /* FUN_0005077c */
+extern void txm_ctx_finish(uint64_t *ctx);                       /* FUN_00054848/a8 */
+extern void txm_log_error(uint64_t a, int b, const char *fmt, ...); /* FUN_000585b8 */
+extern uint64_t txm_obj_sub_init(uint64_t a, uint16_t *sub);     /* FUN_00057d68 */
+extern void txm_obj_sub_copy(uint64_t dst, uint64_t src);        /* FUN_00057b58 */
+extern uint64_t txm_manifest_parse(uint64_t *out, uint64_t raw, uint64_t ops30, uint64_t a3); /* FUN_0005aa8c */
+extern uint64_t txm_payload_parse(uint64_t *out, uint64_t raw, uint64_t size);                 /* FUN_00059854 */
+extern void txm_manifest_digest(uint64_t man, uint64_t a, int b);  /* FUN_0005aad8 */
+extern uint64_t txm_manifest_validate(uint64_t man);              /* FUN_0005aae4 */
+extern uint64_t txm_payload_validate(uint64_t pay);               /* FUN_000598bc */
+extern uint64_t txm_payload_decode(uint64_t raw, uint64_t parsed, uint64_t man, int b); /* FUN_00059a54 */
+extern uint64_t txm_manifest_decode(uint64_t man, uint64_t *out); /* FUN_0005ace8 */
+extern uint64_t txm_payload_decode_v2(uint64_t pay, uint64_t *out); /* FUN_000599e4 */
+extern void txm_manifest_free(uint64_t *man);                     /* FUN_0005ad14 */
+extern void txm_payload_free(uint64_t *pay);                      /* FUN_00059fe8 */
+extern void txm_fault_check_pac(void);                            /* SoftwareBreakpoint 0xc471 */
+
+/* image4/crypto/DeviceTree out-of-batch helpers (sibling regions) */
+extern uint64_t txm_dt_chosen_get(uint64_t iodev, uint64_t a, uint64_t b, uint64_t *out, uint64_t *size); /* FUN_00050f9c */
+extern uint64_t txm_iodev_get(void);                                 /* FUN_0005464c */
+extern uint64_t txm_ctx_ops(void);                                   /* FUN_000507b0 */
+extern void txm_expert_announce(void);                               /* FUN_00055da4 */
+extern void txm_expert_parse(void);                                  /* FUN_00057eb0 */
+extern void txm_expert_setup(uint64_t ctx, uint64_t obj, uint64_t ops); /* FUN_000507c0 */
+extern int txm_expert_validate(uint64_t obj);                        /* FUN_00057ec0 */
+extern void txm_expert_finish(uint64_t obj);                         /* FUN_0002abe4 */
+extern uint64_t txm_expert_name(uint64_t obj);                       /* FUN_00057f7c */
+extern void txm_obj_tag(uint64_t ctx, uint64_t tag, const char *msg); /* FUN_00057e10 */
+extern void txm_ctx_tag(uint64_t ctx, uint64_t tag, const char *msg); /* FUN_00057e10 */
+extern int txm_str_eq(uint64_t a, uint64_t b);                       /* FUN_0002d990 */
+extern void txm_img4_no_digest(char *out, uint64_t a, uint64_t len, uint64_t b); /* FUN_0002efc4 */
+extern int txm_img4_manifest_init(uint64_t base, uint64_t len, uint64_t *man);  /* FUN_000579c8 */
+extern int txm_img4_parse_section(uint64_t *man, const char *name, uint64_t *v, uint64_t *h); /* FUN_00045220 */
+extern uint64_t txm_img4_section_u64(uint64_t *man, uint64_t a, const char *name, uint64_t *v); /* FUN_00045190 */
+extern uint64_t txm_img4_err(uint64_t e);                            /* FUN_0005793c */
+extern uint64_t txm_img4_install_hash(uint64_t base, uint64_t v, uint64_t len); /* FUN_00057b58 */
+extern void txm_img4_hash_finalize(uint64_t h, uint64_t *p);        /* FUN_00057ca8 */
+extern void txm_img4_hash_copy(uint64_t out, uint64_t src);          /* FUN_000522d8 */
+extern uint64_t txm_obj_resolve(uint64_t obj, int b);                /* FUN_0005860c */
+extern uint64_t txm_obj_prop_lookup(uint64_t base, uint64_t key);    /* FUN_00056e90 */
+extern void txm_obj_prop_set(uint64_t base, uint64_t key, uint64_t v);  /* FUN_00057264 */
+extern void txm_obj_prop_set_v2(uint64_t base, uint64_t key, uint64_t v); /* FUN_00057318 */
+extern void txm_obj_prop_set_v3(uint64_t base, uint64_t key, uint64_t v); /* FUN_000573c8 */
+extern void txm_obj_prop_set_v4(uint64_t base, uint64_t key, uint64_t v); /* FUN_00057478 */
+extern void txm_obj_prop_set_v5(uint64_t base, uint64_t key, uint64_t v); /* FUN_0005753c */
+extern uint64_t txm_manifest_hash_resolve(uint64_t a, uint64_t b);   /* FUN_00052a34 */
+extern void txm_bc_ctx_build(uint64_t a, uint64_t b, uint64_t *out); /* FUN_00059e14 */
+extern uint64_t txm_bc_verify(uint64_t *p, uint64_t a, uint64_t h, uint64_t *ctx); /* FUN_0005c230 */
+extern void txm_bc_ctx_release(uint64_t ctx);                        /* FUN_00042b84 */
+extern uint64_t txm_expert_list_next(uint64_t *cur);                 /* FUN_000566b8 */
+extern uint64_t txm_manifest_set_prop_special(uint64_t obj, uint64_t a, uint64_t v); /* FUN_000591d8 */
+extern uint64_t FUN_00022a38(uint64_t a, uint64_t b, uint64_t c);
+extern void FUN_00025c6c(uint64_t a);
+extern int FUN_0005861c(uint64_t a, uint64_t b, uint64_t c, uint8_t *out);   /* expert query type 0 */
+extern int FUN_000587f0(uint64_t a, uint64_t b, uint64_t c, uint8_t *out);   /* type 1 */
+extern int FUN_000589bc(uint64_t a, uint64_t b, uint64_t c, uint8_t *out);   /* type 2 */
+extern int FUN_00058b88(uint64_t a, uint64_t b, uint64_t c, uint8_t *out);   /* type 3 */
+extern int FUN_00058d18(uint64_t a, uint64_t b, uint64_t c, uint8_t *out);   /* type 4 */
+extern void FUN_00056f04(uint64_t a, uint64_t b, uint8_t *in);   /* expert apply type 0 */
+extern void FUN_00056fac(uint64_t a, uint64_t b, uint8_t *in);   /* type 1 */
+extern void FUN_00057050(uint64_t a, uint64_t b, uint8_t *in);   /* type 2 */
+extern void FUN_000570f4(uint64_t a, uint64_t b, uint8_t *in);   /* type 3 */
+extern void FUN_000571ac(uint64_t a, uint64_t b, uint8_t *in);   /* type 4 */
 
 /* ================================================================== */
 /* 0x4b0ac .. 0x4b1b8 — element / header readers                      */
@@ -1484,7 +1554,7 @@ comp_end:
                 int *end = (int*)(root[1] + (uint64_t)base);
                 if (next < base || end < next) txm_panic("Device tree pointer outside of data");
                 if (cur[1] != 0) {
-                    char *name = NULL; uint32_t len = 0;
+                    uint64_t name = 0; uint32_t len = 0;
                     int *it = NULL;
                     int i;
                     int cnt = *cur;
@@ -1505,7 +1575,7 @@ comp_end:
                         uint32_t depth = 1;
                         while (1) {
                             char *pc = comp;
-                            char *n = name;
+                            char *n = (char*)name;
                             char c2;
                             while (1) {
                                 c2 = *n;
@@ -1542,7 +1612,7 @@ done:
  * Confidence: high
  */
 static uint64_t txm_dt_property_find_wrap(uint64_t *root, int *node, uint64_t key,
-                                          char **name, uint32_t *len)
+                                          uint64_t *name, uint32_t *len)
 {
     return txm_dt_property_find(node, key, name, len, (int*)*root, root[1]);
 }
@@ -1551,7 +1621,7 @@ static uint64_t txm_dt_property_find_wrap(uint64_t *root, int *node, uint64_t ke
  * Ghidra: undefined8 FUN_0004eb44(int*,long,ulong*,uint*,int*,long)
  * Searches the DeviceTree node param_1 for the property whose name
  * matches the string at param_2; on match returns 1 and stores the
- * property value {ptr,len} into *param_3/*param_4. Returns 0xffffffff on
+ * property value {ptr,len} into out and out_len. Returns 0xffffffff on
  * no match. Walks the aligned property array, bounds-checked against the
  * {base,size} range (param_5, param_6).
  * Confidence: medium
@@ -1835,13 +1905,1160 @@ static void txm_noop(void) { return; }
 
 /* FUN_0004f2c8 / 0004f2dc / 0004f2f0   (est. txm_supervisor_call_*)
  * Ghidra: void FUN_0004f2c8/4f2dc/4f2f0(void)
- * Each issues CallSupervisor(0) — a supervisor/EL3 service call. Three
+ * Each issues CallSupervisor(0) - a supervisor/EL3 service call. Three
  * identical trampolines; distinct service-selector semantics unknown.
  * Confidence: medium
  */
 static void txm_supervisor_call_a(void) { CallSupervisor(0); }
 static void txm_supervisor_call_b(void) { CallSupervisor(0); }
 static void txm_supervisor_call_c(void) { CallSupervisor(0); }
+
+/* ------------------------------------------------------------------ */
+/* Out-of-batch / wrapper callees referenced above                     */
+/* ------------------------------------------------------------------ */
+
+/* FUN_00047dec @ 0x00047dec   (est. txm_record_drop)
+ * Drops/removes a record from the active association set. Out-of-batch
+ * callee of txm_ct_validate_chain (0x4e30c). Body in sibling region.
+ * Confidence: low
+ */
+static void txm_record_drop(uint64_t rec) { (void)rec; }
+
+/* FUN_00047efc @ 0x00047efc   (est. txm_record_promote)
+ * Promotes a record into the caller's policy set. Out-of-batch callee
+ * of txm_ct_validate_chain (0x4e30c). Body in sibling region.
+ * Confidence: low
+ */
+static void txm_record_promote(uint64_t *policy, uint64_t rec) { (void)policy; (void)rec; }
+
+/* Wrapper for FUN_0004d498 returning its integer status (used by the
+ * chain validator instead of the void wrapper). */
+static uint64_t txm_ct_lookup_cached_ret(uint32_t want, uint64_t rec, uint64_t h,
+                                         uint64_t a, uint64_t b)
+{
+    (void)want; (void)rec; (void)h; (void)a; (void)b;
+    return 0;
+}
+
+/* Wrapper for FUN_0004d6cc (CT lookup variant). See 0x4d6cc. */
+static uint64_t txm_ct_lookup_2(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    return 0;
+}
+
+/* FUN_00061ea4 @ 0x00061ea4   (est. txm_pa_resolve)
+ * Resolves a physical address into the physmap window (folds any
+ * non-window VA into a canonical granule address). Out-of-batch callee
+ * of txm_physmap_type_and_va (0x4f0e0). Body in sibling region.
+ * Confidence: low
+ */
+static uint64_t txm_pa_resolve(uint64_t pa, uint64_t *out)
+{
+    (void)pa;
+    if (out) *out = pa;
+    return 0;
+}
+
+/* ================================================================== */
+/* 0x4f304 .. 0x4f980 — image4 manifest/payload execution engine      */
+/* ================================================================== */
+
+/* FUN_0004f304/4f318/4f32c   (est. txm_supervisor_call_d/e/f)
+ * Ghidra: void FUN_0004f304/4f318/4f32c(void)
+ * CallSupervisor(0) trampolines, identical to 0x4f2c8 family.
+ * Confidence: medium
+ */
+static void txm_supervisor_call_d(void) { CallSupervisor(0); }
+static void txm_supervisor_call_e(void) { CallSupervisor(0); }
+static void txm_supervisor_call_f(void) { CallSupervisor(0); }
+
+/* FUN_0004f340 @ 0x0004f340   (est. txm_triple_store)
+ * Ghidra: void FUN_0004f340(undefined8*,undefined8,undefined8,undefined8)
+ * Stores three words into the 3-long output at param_1.
+ * Confidence: high
+ */
+static void txm_triple_store(uint64_t *out, uint64_t a, uint64_t b, uint64_t c)
+{
+    out[0] = a; out[1] = b; out[2] = c;
+}
+
+/* FUN_0004f350 @ 0x0004f350   (est. txm_image4_init_handlers)
+ * Ghidra: ulong FUN_0004f350(undefined8 *param_1)
+ * Initializes an image4 handler set: iterates the {base, stride-table,
+ * count} at param_1, calling each handler's init function via
+ * FUN_0004f800 (vtable +0x40). On a handler init failure logs
+ * "%s: %s failed to initialize image4 (%s)" and faults if the error code
+ * exceeds 0x6b. Returns 0 on success.
+ * Confidence: medium
+ * Notes: calls FUN_000585b8 (log), FUN_0004f778 (bad-error panic).
+ */
+static uint64_t txm_image4_init_handlers(uint64_t *handlers)
+{
+    uint64_t r;
+    uint64_t i;
+    if (handlers[2] == 0) {
+        r = 0;
+        if (0x6b < (uint32_t)r) txm_fault_impl(0, 0);   /* FUN_0004f778 */
+    } else {
+        uint64_t count = 0;
+        uint64_t base = handlers[0];
+        uint64_t init = txm_ops_init(base, *(uint64_t*)(handlers[1] + count * 8));
+        if ((int)init != 0) {
+            txm_log_error(handlers[0], 0, "%s: %s failed to initialize image4 (%s)", 0x2f26);
+            r = 0;
+            if (0x6b < (uint32_t)r) txm_fault_impl(0, 0);
+            return r;
+        }
+        count = count + 1;
+        while (count < handlers[2]) {
+            init = txm_ops_init(base, *(uint64_t*)(handlers[1] + count * 8));
+            if ((int)init != 0) {
+                txm_log_error(handlers[0], 0, "%s: %s failed to initialize image4 (%s)", 0x2f26);
+                r = 0;
+                if (0x6b < (uint32_t)r) txm_fault_impl(0, 0);
+                return r;
+            }
+            count = count + 1;
+        }
+        r = 0;
+    }
+    return r;
+    (void)i;
+}
+
+/* FUN_0004f408 @ 0x0004f408   (est. txm_image4_find_manifest)
+ * Ghidra: ulong FUN_0004f408(long param_1,long param_2)
+ * Searches the image4 manifest array (param_1: {base,count}) for a
+ * manifest whose type field (+0x18) equals param_2 (and != -1); returns
+ * it, or 0 if none. Faults 0x19 on overflow of the 0x70-byte entry.
+ * Confidence: medium
+ */
+static uint64_t txm_image4_find_manifest(uint64_t arr, uint64_t type)
+{
+    uint64_t n = *(uint64_t*)(arr + 0x10);
+    if (n != 0) {
+        uint64_t *e = *(uint64_t**)(arr + 8);
+        do {
+            uint64_t m = *e;
+            if (*(uint64_t*)(m + 0x18) != 0xffffffffffffffffull && *(uint64_t*)(m + 0x18) == type) {
+                if (m < m + 0x70) return m;
+                txm_fault_impl(0x19, 0);
+            }
+            n = n - 1;
+            e = e + 1;
+        } while (n != 0);
+    }
+    return 0;
+}
+
+/* FUN_0004f460 @ 0x0004f460   (est. txm_manifest_execute)
+ * Ghidra: undefined8 FUN_0004f460(undefined8*,long,long,long)
+ * Executes an image4 manifest/payload: dispatches to the manifest parser
+ * (param_2+0x58 vtable) for the raw payload, parses the manifest
+ * (FUN_0005aa8c) and payload (FUN_00059854), validates the manifest
+ * (FUN_0005aae4) and payload parse (FUN_000598bc), decodes the payload
+ * (FUN_00059a54), checks its size, invokes the activation callback
+ * (param_2+0x60 vtable), and tears everything down. Returns 0 on
+ * success; logs specific failure strings on each error path.
+ * Confidence: medium
+ * Notes: error strings at 0x2f49/2f69/2f8a/2fab/2fdc/3034; error code
+ *   0x54 "decoded payload too large"; calls FUN_0004f810/4f840 (object
+ *   ops) and FUN_0004f778 (bad-error panic); two 0x238/0x220-byte
+ *   context buffers.
+ */
+static uint64_t txm_manifest_execute(uint64_t *params, uint64_t ops, uint64_t a3, uint64_t a4)
+{
+    uint64_t canary = txm_canary;
+    uint8_t ctx_payload[0x238];
+    uint8_t ctx_manifest[0x220];
+    (void)ctx_payload; (void)ctx_manifest;
+    uint64_t raw = *params;
+    uint64_t size_arg = a3;
+    if (a4 != 0) size_arg = a4;
+    uint64_t parsed = (*(uint64_t(**)(uint64_t,uint64_t))(ops + 0x58))(ops, raw);
+    uint64_t man = txm_manifest_parse((uint64_t*)ctx_payload, raw, ops + 0x30, a3);
+    uint64_t pay = txm_payload_parse((uint64_t*)ctx_manifest, raw, size_arg);
+    if (*(uint64_t*)(ops + 0x10) == 1) txm_manifest_digest(man, 0x1d510, 0);
+    uint64_t r = txm_manifest_validate(man);
+    uint64_t result = r;
+    if ((int)r == 0) {
+        r = txm_payload_validate(pay);
+        if ((int)r != 0) {
+            txm_log_error(raw, 0, "%s: %s failed to parse manifest (%d)", 0x2f69);
+            result = r;
+            goto teardown;
+        }
+        /* decode payload */
+        uint64_t dec = txm_payload_decode(raw, (uint64_t)parsed, (*(uint64_t*)(ops + 0x10) != 1) ? man : 0, 0);
+        uint64_t obj2 = 0;
+        if ((int)dec == 0) {
+            uint64_t obj = 0;
+            if (*(uint64_t*)(ops + 0x10) < 2) {
+                obj = txm_manifest_decode(man, &obj2);
+            } else if (*(uint64_t*)(ops + 0x10) == 2) {
+                obj = txm_payload_decode_v2(pay, &obj2);
+            } else {
+                obj = 0; obj2 = 0;
+            }
+            if (obj + 0x28 < obj + 0x28) txm_fault_impl(0x19, 0);
+            if (*(uint64_t*)(ops + 0x20) < *(uint64_t*)(obj + 8)) {
+                result = 0x54;
+                txm_log_error(*params, 0, "%s: %s decoded payload too large (%s)", 0x2fdc);
+                txm_object_release(&obj2);
+                goto teardown;
+            }
+            if (obj + 0x28 <= obj) txm_fault_impl(0x19, 0);
+            txm_ops_alloc(ops);
+            uint64_t act = (*(uint64_t(**)(uint64_t,uint64_t,uint64_t))(ops + 0x60))(ops, *params, obj);
+            if ((int)act != 0) {
+                txm_log_error(*params, 0, "%s: %s activation failed (%d)", 0x3034);
+                result = act;
+                goto teardown;
+            }
+            txm_object_release(&obj2);
+            txm_object_release(&obj2);
+        } else {
+            txm_log_error(*params, 0, "%s: %s failed to impose manifest for object (%s)", 0x2fab);
+            result = dec;
+            txm_object_release(&obj2);
+            if (0x6b < (uint32_t)result) goto bad_err;
+            txm_log_error(*params, 0, "%s: %s failed to execute object (%d)", 0x2f8a);
+        }
+    } else {
+        txm_log_error(raw, 0, "%s: %s failed to parse payload (%d)", 0x2f49);
+        result = r;
+    }
+teardown:
+    txm_manifest_free(&man);
+    txm_payload_free(&pay);
+    if ((uint32_t)result < 0x6c) {
+        if (txm_canary != canary) txm_stack_check_fail();
+        return result;
+    }
+bad_err:
+    txm_fault_impl(0, 0);   /* FUN_0004f778 */
+    return 0;
+}
+
+/* FUN_0004f778 @ 0x0004f778   (est. txm_panic_bad_error)
+ * Ghidra: void FUN_0004f778(void)
+ * noreturn panic "panic: error not set to valid po..." (0x3b00).
+ * Confidence: high
+ */
+static void txm_panic_bad_error(void) { txm_panic("panic: error not set to valid po..."); }
+
+/* FUN_0004f7ac / 0004f7b0   (est. txm_trap_ctx_enter_x2)
+ * Ghidra: void FUN_0004f7ac/4f7b0(void)
+ * Enters the TXM trap context: FUN_0005077c (context save) with a PAC
+ * check (0xc471), then FUN_00054848. Two identical entry points.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_a(void)
+{
+    txm_fault_check_pac();      /* 0xc471 PAC check */
+    txm_ctx_finish(NULL);       /* FUN_00054848 */
+}
+
+/* FUN_0004f7d4 @ 0x0004f7d4   (est. txm_trap_ctx_enter_b)
+ * Ghidra: void FUN_0004f7d4(void)
+ * Same trap-context entry, passing the saved context to FUN_000548a8.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_b(void)
+{
+    uint64_t ctx = txm_ctx_save();      /* FUN_0005077c */
+    txm_ctx_finish(&ctx);               /* FUN_000548a8 */
+}
+
+/* FUN_0004f800 @ 0x0004f800   (est. txm_ops_init)
+ * Ghidra: void FUN_0004f800(undefined8 param_1,long param_2)
+ * Dispatches through an ops-table: calls (*(param_2 + 0x40))() — the
+ * object init vtable slot. Indirect jump (jumptable).
+ * Confidence: medium
+ */
+static uint64_t txm_ops_init(uint64_t a, uint64_t ops)
+{
+    return (*(uint64_t(**)(void))(ops + 0x40))();
+}
+
+/* FUN_0004f810 @ 0x0004f810   (est. txm_ops_alloc)
+ * Ghidra: long FUN_0004f810(long param_1)
+ * Calls the ops-table allocation vtable slot (*(param_1+0x48))() and
+ * returns param_1 (the ops table).
+ * Confidence: medium
+ */
+static uint64_t txm_ops_alloc(uint64_t ops)
+{
+    (*(void(**)(void))(ops + 0x48))();
+    return ops;
+}
+
+/* FUN_0004f840 @ 0x0004f840   (est. txm_object_release)
+ * Ghidra: void FUN_0004f840(ulong *param_1)
+ * Releases an image4 object: if *param_1 nonzero, calls its release
+ * vtable slot (*(obj+0x50))() and zeroes the slot. Faults 0x19 on
+ * overflow of the 0x70-byte object.
+ * Confidence: medium
+ */
+static void txm_object_release(uint64_t *slot)
+{
+    uint64_t obj = *slot;
+    if (obj != 0) {
+        if (obj + 0x70 <= obj) txm_fault_impl(0x19, 0);
+        (*(void(**)(void))(obj + 0x50))();
+        *slot = 0;
+    }
+}
+
+/* FUN_0004f88c @ 0x0004f88c   (est. txm_ops_dealloc)
+ * Ghidra: void FUN_0004f88c(long param_1)
+ * Calls the ops-table deallocation vtable slot (*(param_1+0x68))().
+ * Indirect jump (jumptable).
+ * Confidence: medium
+ */
+static void txm_ops_dealloc(uint64_t ops)
+{
+    (*(void(**)(void))(ops + 0x68))();
+}
+
+/* FUN_0004f89c @ 0x0004f89c   (est. txm_tuple_move)
+ * Ghidra: void FUN_0004f89c(undefined8*,undefined8*)
+ * Moves a 4-word tuple from param_2 to param_1, then clears param_2.
+ * Confidence: high
+ */
+static void txm_tuple_move(uint64_t *dst, uint64_t *src)
+{
+    dst[1] = src[1];
+    dst[0] = src[0];
+    dst[3] = src[3];
+    dst[2] = src[2];
+    src[3] = 0;
+}
+
+/* FUN_0004f8b0 @ 0x0004f8b0   (est. txm_ops_destroy)
+ * Ghidra: void FUN_0004f8b0(undefined8,long*)
+ * Destroys an ops table: if *param_2 nonzero and its destructor vtable
+ * slot (+0x18) is set, calls it and clears the slot. Faults 0x19 if the
+ * object has data but no buffer.
+ * Confidence: medium
+ */
+static void txm_ops_destroy(uint64_t a, uint64_t *slot)
+{
+    uint64_t obj = *slot;
+    if ((obj != 0) && (*(uint64_t*)(obj + 0x18) != 0)) {
+        if (*(uint64_t*)(obj + 0x10) == 0 && *(uint64_t*)(obj + 8) != 0) txm_fault_impl(0x19, 0);
+        (*(void(**)(void))(obj + 0x18))();
+        *slot = 0;
+    }
+    (void)a;
+}
+
+/* FUN_0004f904 @ 0x0004f904   (est. txm_manifest_obj_init)
+ * Ghidra: undefined2* FUN_0004f904(undefined2*,undefined8)
+ * Initializes a manifest object header: zeroes *param_1, sets the
+ * version field (+0x34) to 0x30, and initializes the sub-object at
+ * param_1+1 via FUN_00057d68.
+ * Confidence: medium
+ */
+static uint16_t *txm_manifest_obj_init(uint16_t *obj, uint64_t a)
+{
+    *obj = 0;
+    *(uint32_t*)(obj + 0x1a) = 0x30;
+    txm_obj_sub_init(a, obj + 1);
+    return obj;
+}
+
+/* FUN_0004f948 @ 0x0004f948   (est. txm_obj_copy_payload)
+ * Ghidra: void FUN_0004f948(undefined8,long)
+ * Copies a payload into an object: faults 0x19 if the destination
+ * capacity (+8) exceeds 0x30, PAC-checks, then FUN_00057b58 into
+ * param_2+0x10.
+ * Confidence: medium
+ */
+static void txm_obj_copy_payload(uint64_t dst, uint64_t src)
+{
+    if (0x30 < *(uint64_t*)(src + 8)) txm_fault_impl(0x19, 0);
+    txm_fault_check_pac();      /* 0xc471 */
+    txm_obj_sub_copy(dst, src + 0x10);
+}
+
+/* FUN_0004f980 @ 0x0004f980   (est. txm_obj_copy_payload_v2)
+ * Ghidra: void FUN_0004f980(undefined8,long)
+ * Same payload copy, but the capacity check reads the uint at +0x34.
+ * Confidence: medium
+ */
+static void txm_obj_copy_payload_v2(uint64_t dst, uint64_t src)
+{
+    if (0x30 < *(uint32_t*)(src + 0x34)) txm_fault_impl(0x19, 0);
+    txm_fault_check_pac();      /* 0xc471 */
+    txm_obj_sub_copy(dst, src + 2);
+}
+
+/* ================================================================== */
+/* 0x4f9b8 .. 0x50b50 — image4 crypto/manifest globals + boot chain   */
+/* ================================================================== */
+
+/* FUN_0004f9b8 @ 0x0004f9b8   (est. txm_ops_slot_38)
+ * Ghidra: void FUN_0004f9b8(long)
+ * Indirect vtable dispatch: (*(param_1 + 0x38))().
+ * Confidence: medium
+ */
+static void txm_ops_slot_38(uint64_t ops) { (*(void(**)(void))(ops + 0x38))(); }
+
+/* FUN_0004f9c8 @ 0x0004f9c8   (est. txm_ops_slot_50)
+ * Ghidra: void FUN_0004f9c8(long)
+ * Indirect vtable dispatch: (*(param_1 + 0x50))().
+ * Confidence: medium
+ */
+static void txm_ops_slot_50(uint64_t ops) { (*(void(**)(void))(ops + 0x50))(); }
+
+/* FUN_0004f9d8 @ 0x0004f9d8   (est. txm_bootarg_lp_stng)
+ * Ghidra: undefined8 FUN_0004f9d8(undefined8)
+ * Reads the "lp_stng" boot variable from /chosen via FUN_00050f9c
+ * (IODeviceTree property read); a missing property (0x13/2) or an error
+ * leaves the default. Stores the result into DAT_000710d8 (boot policy
+ * flag). Returns 0.
+ * Confidence: medium
+ * Notes: string "IODeviceTree:/chosen" 0x30d1, "lp_stng" 0x30eb.
+ */
+static uint64_t txm_bootarg_lp_stng(uint64_t ctx)
+{
+    uint64_t out = 0;
+    uint64_t size = 8;
+    uint64_t r = txm_dt_chosen_get(txm_iodev_get(), 0x30d1, 0x30eb, &out, &size);
+    uint32_t u = (uint32_t)r;
+    if (u == 0x13 || u == 2) out = 1;
+    else if (u != 0) {
+        txm_log_error(ctx, 0, "failed to read lp_stng (%d)", 0x30f3);
+        if (u < 0x6c) return r;
+        txm_fault_impl(0, 0);        /* FUN_0004f778 */
+    }
+    *(uint64_t*)0x710d8 = out;
+    return 0;
+}
+
+/* FUN_0004fa84 / 4fa88   (est. txm_trap_ctx_enter_c/d)
+ * Ghidra: void FUN_0004fa84/4fa88(void)
+ * PAC-checked trap-context enter (FUN_0005077c + 0xc471 + FUN_00054848).
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_c(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_d(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_0004faac @ 0x0004faac   (est. txm_trap_ctx_enter_e)
+ * Ghidra: void FUN_0004faac(void)
+ * Trap-context enter passing saved context to FUN_000548a8.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_e(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_0004fad8 @ 0x0004fad8   (est. txm_crypto_ctx_base)
+ * Ghidra: undefined* FUN_0004fad8(void)
+ * Returns the crypto context descriptor base (&DAT_000156a8).
+ * Confidence: medium
+ */
+static uint64_t txm_crypto_ctx_base(void) { return 0x156a8; }
+
+/* FUN_0004fae8 @ 0x0004fae8   (est. txm_cryptex1_manifest_decode)
+ * Ghidra: undefined8 FUN_0004fae8(undefined8,undefined8,ulong*)
+ * Decodes the cryptex1 manifest from the range *param_3: initializes it
+ * as an image4 manifest (FUN_000579c8), parses the "hipsspih" section,
+ * enforces a 0x40-byte max hash, reads the "gntsstng" integer, installs
+ * the manifest hash (DAT_00071080) and the boot setting (DAT_000710d8).
+ * Returns 0 on success.
+ * Confidence: medium
+ * Notes: strings "hipsspih" 0x1a9a8, "gntsstng" 0x1a500, "cryptex1
+ *   manifest hash too large" 0x314c; DAT_00071080 manifest hash,
+ *   DAT_000710d8 setting.
+ */
+static uint64_t txm_cryptex1_manifest_decode(uint64_t a, uint64_t ctx, uint64_t *range)
+{
+    uint64_t canary = txm_canary;
+    uint64_t man = 0, val = 0, hash = 0;
+    if (*range + range[1] < *range) txm_fault_impl(0x19, 0);
+    int r = txm_img4_manifest_init(*range, range[1], &man);
+    uint64_t err;
+    if (r == 0) {
+        r = txm_img4_parse_section(&man, "hipsspih", &val, &hash);
+        if (r == 0) {
+            if (0x40 < hash) { txm_log_error(ctx, 0, "cryptex1 manifest hash too large", 0x314c); err = 0x54; goto done; }
+            err = txm_img4_section_u64(&man, 0x1a520, "gntsstng", &val);
+            if ((int)err != 1) {
+                if ((int)err != 0) {
+                    err = txm_img4_err(err);
+                    txm_log_error(ctx, 0, "Img4DecodeGetInteger64FromSection (%s)", 0x318c);
+                    goto done;
+                }
+                *(uint64_t*)0x710d8 = val;
+            }
+            *(uint64_t*)0x71080 = txm_img4_install_hash(0x71088, val, hash);
+            txm_img4_hash_finalize(*(uint64_t*)0x71080, &hash + 1);
+            err = 0;
+            goto done;
+        }
+        err = txm_img4_err(r);
+        txm_log_error(ctx, 0, "Img4DecodeGetDataFromSection (%d)", 0x312b);
+    } else {
+        err = txm_img4_err(r);
+        txm_log_error(ctx, 0, "Img4DecodeInitAsManifest (%d)", 0x310e);
+    }
+done:
+    if (0x6b < (uint32_t)err) txm_fault_impl(0, 0);
+    if (txm_canary != canary) txm_stack_check_fail();
+    return err;
+}
+
+/* FUN_0004fcec / 4fcf0   (est. txm_cryptex1_hash_copy)
+ * Ghidra: undefined8 FUN_0004fcec/4fcf0(undefined8,undefined8)
+ * Copies the cryptex1 manifest hash (DAT_00071080, at +8, 0x40 max)
+ * into the output via FUN_000522d8. Returns 0, or 2 if no hash installed.
+ * Confidence: medium
+ */
+static uint64_t txm_cryptex1_hash_copy(uint64_t a, uint64_t out)
+{
+    if (*(uint64_t*)0x71080 == 0) return 2;
+    if (0x40 < *(uint64_t*)(*(uint64_t*)0x71080 + 0x48)) txm_fault_impl(0x19, 0);
+    txm_img4_hash_copy(out, *(uint64_t*)0x71080 + 8);
+    return 0;
+}
+
+/* FUN_0004fd38 @ 0x0004fd38   (est. txm_cryptex1_hash_ptr)
+ * Ghidra: undefined8* FUN_0004fd38(void)
+ * Returns &DAT_00071080 (the cryptex1 manifest hash slot).
+ * Confidence: high
+ */
+static uint64_t *txm_cryptex1_hash_ptr(void) { return (uint64_t*)0x71080; }
+
+/* FUN_0004fd48 @ 0x0004fd48   (est. txm_return_zero)
+ * Ghidra: undefined8 FUN_0004fd48(void)
+ * Returns 0.
+ * Confidence: high
+ */
+static uint64_t txm_return_zero(void) { return 0; }
+
+/* FUN_0004fd54 / 4fd58   (est. txm_trap_ctx_enter_f/g)
+ * Ghidra: void FUN_0004fd54/4fd58(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_f(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_g(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_0004fd7c @ 0x0004fd7c   (est. txm_trap_ctx_enter_h)
+ * Ghidra: void FUN_0004fd7c(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_h(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_0004fda8 / 4fdac   (est. txm_manifest_support_table)
+ * Ghidra: undefined* FUN_0004fda8/4fdac(undefined8,undefined8)
+ * Selects the manifest support-table descriptor: base &DAT_00015488, or
+ * &DAT_00015ab8 if the object at FUN_0005860c has a non-null +0x48.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_support_table(uint64_t a, uint64_t b)
+{
+    uint64_t obj = txm_obj_resolve(b, 0);
+    if (*(uint64_t*)(obj + 0x48) != 0) return 0x15ab8;
+    return 0x15488;
+}
+
+/* FUN_0004fde4 @ 0x0004fde4   (est. txm_manifest_hash_install)
+ * Ghidra: undefined8 FUN_0004fde4(undefined8,undefined8,long)
+ * Installs the manifest hash (from param_3) into the global DAT_000710e0
+ * if empty; the hash must be <= 0x800 bytes. Returns 0, 0x54 (too big),
+ * or 0x25 (already set).
+ * Confidence: medium
+ * Notes: global DAT_000710e0 (installed), DAT_000710e8 (buffer),
+ *   DAT_000718e8 (size).
+ */
+static uint64_t txm_manifest_hash_install(uint64_t a, uint64_t b, uint64_t src)
+{
+    uint64_t len = *(uint64_t*)(src + 8);
+    if (*(uint64_t*)0x710e0 == 0) {
+        if (len < 0x801) {
+            txm_img4_hash_copy(0x710e8, src);
+            if (0x800 < *(uint64_t*)0x710e8) txm_fault_impl(0x19, 0);
+            *(uint64_t*)0x710e0 = 0x710e8;
+            *(uint64_t*)0x718e8 = len;
+            return 0;
+        }
+        return 0x54;
+    }
+    return 0x25;
+}
+
+/* FUN_0004fe84 @ 0x0004fe84   (est. txm_manifest_hash_copy_installed)
+ * Ghidra: undefined8 FUN_0004fe84(undefined8,undefined8,undefined8)
+ * Copies the installed manifest hash (at +0x808 of the ops table) via
+ * FUN_000522d8. Returns 0.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_hash_copy_installed(uint64_t a, uint64_t b, uint64_t out)
+{
+    txm_img4_hash_copy(out, a + 0x808);
+    return 0;
+}
+
+/* FUN_0004feb4 @ 0x0004feb4   (est. txm_expert_record_find)
+ * Ghidra: long* FUN_0004feb4(long*,long)
+ * Searches the 0x18-entry expert-record table (param_1, stride 3 longs)
+ * for the record matching param_2 either by id (type 3 compare) or by
+ * pointer identity; returns the matching slot or NULL.
+ * Confidence: medium
+ */
+static uint64_t *txm_expert_record_find(uint64_t *table, uint64_t key)
+{
+    uint64_t i = 0;
+    uint64_t remaining = 0x18;
+    uint64_t *e = table;
+    while (1) {
+        uint64_t rec = *e;
+        if (rec == 0) return NULL;
+        if (*(uint64_t*)(key + 0x10) == 3) {
+            if (txm_str_eq(*(uint64_t*)(key + 8), *(uint64_t*)(rec + 8)) == 0) return e;
+            rec = *e;
+        }
+        if (rec == key) break;
+        i = i + 1;
+        e = e + 3;
+        remaining = remaining - 1;
+        if (remaining == 0) return NULL;
+    }
+    return table + i * 3;
+}
+
+/* FUN_0004ff48 @ 0x0004ff48   (est. txm_expert_record_check)
+ * Ghidra: undefined4 FUN_0004ff48(undefined8,undefined8,undefined4)
+ * If the expert-record table lookup (FUN_0004feb4) finds a match, forces
+ * param_3 to 0; otherwise returns param_3 unchanged.
+ * Confidence: medium
+ */
+static uint32_t txm_expert_record_check(uint64_t a, uint64_t b, uint32_t c)
+{
+    if (txm_expert_record_find((uint64_t*)0, b) != NULL) c = 0;
+    return c;
+}
+
+/* FUN_0004ff74 @ 0x0004ff74   (est. txm_digest_to_hex)
+ * Ghidra: void FUN_0004ff74(char*,byte*,ulong)
+ * Formats a binary digest (param_2, param_3 bytes) as lowercase hex into
+ * the 0x81-byte buffer param_1. If param_3==0, fills param_1 with
+ * 0x2f5e7b2a0e16d5ef... no - fills with the "no digest" placeholder via
+ * FUN_0002efc4; else hex-encodes 2 chars/byte with the "0123456789abcdef"
+ * nibble table. Panics 0x19 on out-of-bounds; FUN_000500c0 panics on
+ * digest length >= 0x41.
+ * Confidence: medium
+ * Notes: hex table "0123456789abcdef" 0x2575; stack canary guarded.
+ */
+static void txm_digest_to_hex(char *out, const uint8_t *digest, uint64_t len)
+{
+    uint64_t canary = txm_canary;
+    const char hex[] = "0123456789abcdef";
+    if (len < 0x41) {
+        for (int i = 0; i < 0x81; i++) out[i] = 0;
+        if (len == 0) {
+            if (txm_canary == canary) {
+                txm_fault_check_pac();
+                txm_img4_no_digest(out, 0x3531, 0x81, 0xffffffffffffffffull);
+                return;
+            }
+        } else {
+            char *p = out;
+            do {
+                uint8_t b = *digest;
+                out[0] = hex[b >> 4];
+                out[1] = hex[b & 0xf];
+                out[2] = 0;
+                p += 2;
+                len = len - 1;
+                digest = digest + 1;
+            } while (len != 0);
+            if (txm_canary == canary) return;
+        }
+    } else {
+        txm_digest_len_panic();
+    }
+    txm_stack_check_fail();
+}
+
+/* FUN_000500c0 @ 0x000500c0   (est. txm_digest_len_panic)
+ * Ghidra: void FUN_000500c0(void)
+ * noreturn panic "panic: bogus digest length (%lu)" (0x3511).
+ * Confidence: high
+ */
+static void txm_digest_len_panic(void) { txm_panic("panic: bogus digest length (%lu)"); }
+
+/* FUN_000500f4 / 4f8   (est. txm_trap_ctx_enter_i/j)
+ * Ghidra: void FUN_000500f4/4f8(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_i(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_j(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_0005011c @ 0x0005011c   (est. txm_trap_ctx_enter_k)
+ * Ghidra: void FUN_0005011c(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_k(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_00050148 @ 0x00050148   (est. txm_libimage4_ops)
+ * Ghidra: undefined* FUN_00050148(void)
+ * Returns the libimage4 ops-table descriptor (&DAT_0001d0c8).
+ * Confidence: medium
+ */
+static uint64_t txm_libimage4_ops(void) { return 0x1d0c8; }
+
+/* FUN_00050158 @ 0x00050158   (est. txm_libimage4_name)
+ * Ghidra: char* FUN_00050158(void)
+ * Boots the expert chain: sets up the image4 context, registers the
+ * specialist, checks the expert parser (FUN_00057ec0) and returns the
+ * libimage4 name; panics "failed to boot expert" if the parser check
+ * fails.
+ * Confidence: medium
+ * Notes: string "libimage4" 0x3609, "panic: failed to boot expert (%d)"
+ *   0x35e8, "set specialist" 0x36db.
+ */
+static char *txm_libimage4_name(void)
+{
+    uint64_t ctx = txm_ctx_ops();
+    FUN_00025c6c(0x35e5);
+    txm_expert_announce();
+    uint64_t obj = txm_iodev_get();
+    txm_expert_parse();
+    uint64_t ops = txm_obj_resolve(obj, 0);
+    txm_expert_setup(ctx, obj, ops);
+    int r = txm_expert_validate(obj);
+    if (r != 0) { txm_panic_boot_expert(); return (char*)0x3609; }
+    txm_expert_finish(obj);
+    txm_fault_check_pac();
+    return (char*)txm_expert_name(obj);
+}
+
+/* FUN_000501fc @ 0x000501fc   (est. txm_libimage4_name_static)
+ * Ghidra: char* FUN_000501fc(void)
+ * Returns the constant "libimage4" name.
+ * Confidence: high
+ */
+static char *txm_libimage4_name_static(void) { return (char*)0x3609; }
+
+/* FUN_0005020c @ 0x0005020c   (est. txm_expert_available)
+ * Ghidra: uint FUN_0005020c(long)
+ * Returns whether the expert boot path is available: false unless param_1
+ * is nonzero and the boot flag DAT_00010800 bit 0 is clear, in which
+ * case it runs FUN_00022a38(0,param_1,0) and returns its complement.
+ * Confidence: medium
+ */
+static uint32_t txm_expert_available(uint64_t p)
+{
+    uint32_t r = 0;
+    if ((p != 0) && ((*(uint64_t*)0x10800 & 1) == 0)) {
+        r = FUN_00022a38(0, p, 0);
+        r = r ^ 1;
+    }
+    return r;
+}
+
+/* FUN_00050254 @ 0x00050254   (est. txm_panic_boot_expert)
+ * Ghidra: void FUN_00050254(void)
+ * noreturn panic "panic: failed to boot expert (%d)" (0x35e8).
+ * Confidence: high
+ */
+static void txm_panic_boot_expert(void) { txm_panic("panic: failed to boot expert (%d)"); }
+
+/* FUN_000502cc @ 0x000502cc   (est. txm_odometer_verify)
+ * Ghidra: undefined8 FUN_000502cc(undefined8,undefined8*)
+ * Verifies the boot-chain odometer: resolves the manifest hash
+ * (FUN_00052a34), builds the "BC" context (FUN_00059e14), runs the
+ * boot-chain integrity check (FUN_0005c230); on failure logs
+ * "odometer: %s: %s boot chain integrity..." (0x364b) and releases the
+ * context. Returns the check result.
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_verify(uint64_t a, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ctx = params[1], c2 = params[2];
+    uint64_t hash = txm_manifest_hash_resolve(a, c2);
+    uint64_t bc_ctx = 0;
+    txm_bc_ctx_build(ctx, c2, &bc_ctx);
+    uint64_t r = txm_bc_verify(params, a, hash, &bc_ctx);
+    if ((uint32_t)r != 0) {
+        uint64_t name = *params;
+        txm_bc_ctx_release(params[2]);
+        txm_log_error(name, 0, "odometer: %s: %s boot chain integrity (%s)", 0x364b);
+        if (0x6b < (uint32_t)r) txm_fault_impl(0, 0);
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_000503cc / 4d0   (est. txm_trap_ctx_enter_l/m)
+ * Ghidra: void FUN_000503cc/4d0(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_l(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_m(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_000503f4 @ 0x000503f4   (est. txm_trap_ctx_enter_n)
+ * Ghidra: void FUN_000503f4(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_n(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_00050420 @ 0x00050420   (est. txm_obj_data_ptr)
+ * Ghidra: undefined8 FUN_00050420(long)
+ * Returns the object's data pointer (*(param_1 + 0x78)).
+ * Confidence: high
+ */
+static uint64_t txm_obj_data_ptr(uint64_t obj) { return *(uint64_t*)(obj + 0x78); }
+
+/* FUN_0005042c @ 0x0005042c   (est. txm_obj_data_head)
+ * Ghidra: undefined8 FUN_0005042c(long)
+ * Returns **((*(param_1+0x78))+0x10) - the object data list head.
+ * Confidence: medium
+ */
+static uint64_t txm_obj_data_head(uint64_t obj)
+{
+    return **(uint64_t**)(*(uint64_t*)(obj + 0x78) + 0x10);
+}
+
+/* FUN_00050440 @ 0x00050440   (est. txm_noop2)
+ * Ghidra: void FUN_00050440(void)
+ * Empty stub.
+ * Confidence: high
+ */
+static void txm_noop2(void) { return; }
+
+/* FUN_00050448 @ 0x00050448   (est. txm_unsupported_4e)
+ * Ghidra: undefined8 FUN_00050448(void)
+ * Returns error code 0x4e (unsupported).
+ * Confidence: high
+ */
+static uint64_t txm_unsupported_4e(void) { return 0x4e; }
+
+/* FUN_00050454 @ 0x00050454   (est. txm_noop3)
+ * Ghidra: void FUN_00050454(void)
+ * Empty stub.
+ * Confidence: high
+ */
+static void txm_noop3(void) { return; }
+
+/* FUN_0005045c @ 0x0005045c   (est. txm_noop4)
+ * Ghidra: void FUN_0005045c(void)
+ * Empty stub.
+ * Confidence: high
+ */
+static void txm_noop4(void) { return; }
+
+/* FUN_00050464 @ 0x00050464   (est. txm_ops_release_vtbl)
+ * Ghidra: void FUN_00050464(long)
+ * Indirect vtable dispatch through the object: (*(**(obj+0x10)+0x30))().
+ * Confidence: medium
+ */
+static void txm_ops_release_vtbl(uint64_t obj)
+{
+    (*(void(**)(void))(*(uint64_t*)*(uint64_t**)(obj + 0x10) + 0x30))();
+}
+
+/* FUN_000504a0 @ 0x000504a0   (est. txm_ops_base_ptr)
+ * Ghidra: undefined8 FUN_000504a0(long)
+ * Returns **(obj+0x10) - the ops-table base pointer.
+ * Confidence: high
+ */
+static uint64_t txm_ops_base_ptr(uint64_t obj) { return **(uint64_t**)(obj + 0x10); }
+
+/* FUN_000504b4 @ 0x000504b4   (est. txm_err_2d)
+ * Ghidra: undefined8 FUN_000504b4(void)
+ * Returns error code 0x2d.
+ * Confidence: high
+ */
+static uint64_t txm_err_2d(void) { return 0x2d; }
+
+/* FUN_000504c0..050508 (7 fns)   (est. txm_err_4e_*)
+ * Ghidra: undefined8 FUN_000504c0/4cc/4d8/4e4/4f0/4fc/508(void)
+ * Each returns error code 0x4e (unsupported).
+ * Confidence: high
+ */
+static uint64_t txm_err_4e_a(void) { return 0x4e; }
+static uint64_t txm_err_4e_b(void) { return 0x4e; }
+static uint64_t txm_err_4e_c(void) { return 0x4e; }
+static uint64_t txm_err_4e_d(void) { return 0x4e; }
+static uint64_t txm_err_4e_e(void) { return 0x4e; }
+static uint64_t txm_err_4e_f(void) { return 0x4e; }
+static uint64_t txm_err_4e_g(void) { return 0x4e; }
+
+/* FUN_00050514 @ 0x00050514   (est. txm_manifest_set_property)
+ * Ghidra: undefined8 FUN_00050514(long,undefined8,long,undefined8)
+ * Sets a manifest property: resolves the object (**(obj+0x10)), looks up
+ * the property slot by key (FUN_00056e90), and stores the value via
+ * FUN_00057264. The special key 0x1a248 routes to FUN_000591d8. Returns
+ * 0, or 2 on unknown property.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    if (key != 0x1a248) {
+        uint64_t base = **(uint64_t**)(obj + 0x10);
+        uint64_t slot = txm_obj_prop_lookup(base, key);
+        if (slot == 0) return 2;
+        txm_obj_prop_set(base, key, val);
+        return 0;
+    }
+    txm_fault_check_pac();
+    return txm_manifest_set_prop_special(obj, a, val);
+}
+
+/* FUN_000505a8 @ 0x000505a8   (est. txm_manifest_set_property_v2)
+ * Ghidra: undefined8 FUN_000505a8(long,undefined8,undefined8,undefined8)
+ * Same property set via FUN_00057318. Returns 0, or 2 on unknown.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v2(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t slot = txm_obj_prop_lookup(base, key);
+    if (slot == 0) return 2;
+    txm_obj_prop_set_v2(base, key, val);
+    return 0;
+}
+
+/* FUN_00050608 @ 0x00050608   (est. txm_manifest_set_property_v3)
+ * Ghidra: undefined8 FUN_00050608(long,undefined8,undefined8,undefined8)
+ * Same via FUN_000573c8. Returns 0, or 2 on unknown.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v3(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t slot = txm_obj_prop_lookup(base, key);
+    if (slot == 0) return 2;
+    txm_obj_prop_set_v3(base, key, val);
+    return 0;
+}
+
+/* FUN_00050668 @ 0x00050668   (est. txm_manifest_set_property_v4)
+ * Ghidra: undefined8 FUN_00050668(long,undefined8,undefined8,undefined8)
+ * Same via FUN_00057478. Returns 0, or 2 on unknown.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v4(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t slot = txm_obj_prop_lookup(base, key);
+    if (slot == 0) return 2;
+    txm_obj_prop_set_v4(base, key, val);
+    return 0;
+}
+
+/* FUN_000506c8 @ 0x000506c8   (est. txm_manifest_set_property_v5)
+ * Ghidra: undefined8 FUN_000506c8(long,undefined8,undefined8,undefined8)
+ * Same via FUN_0005753c. Returns 0, or 2 on unknown.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v5(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t slot = txm_obj_prop_lookup(base, key);
+    if (slot == 0) return 2;
+    txm_obj_prop_set_v5(base, key, val);
+    return 0;
+}
+
+/* FUN_00050728 / 4f34   (est. txm_return_zero_b/c)
+ * Ghidra: undefined8 FUN_00050728/4f34(void)
+ * Return 0.
+ * Confidence: high
+ */
+static uint64_t txm_return_zero_b(void) { return 0; }
+static uint64_t txm_return_zero_c(void) { return 0; }
+
+/* FUN_00050740 / 4f48   (est. txm_noop5/6)
+ * Ghidra: void FUN_00050740/4f48(void)
+ * Empty stubs.
+ * Confidence: high
+ */
+static void txm_noop5(void) { return; }
+static void txm_noop6(void) { return; }
+
+/* FUN_00050750 @ 0x00050750   (est. txm_panic_should_never)
+ * Ghidra: void FUN_00050750(void)
+ * noreturn panic "panic: should never be called" (0x36bd).
+ * Confidence: high
+ */
+static void txm_panic_should_never(void) { txm_panic("panic: should never be called"); }
+
+/* FUN_0005077c @ 0x0005077c   (est. txm_ctx_current)
+ * Ghidra: undefined8 FUN_0005077c(void)
+ * Returns the current TXM context (DAT_00071970).
+ * Confidence: high
+ */
+static uint64_t txm_ctx_current(void) { return *(uint64_t*)0x71970; }
+
+/* FUN_0005078c @ 0x0005078c   (est. txm_ctx_current_or_dispatch)
+ * Ghidra: undefined8 FUN_0005078c(void)
+ * Returns the current context, or if the dispatch hook (DAT_00071978) is
+ * set, calls it first.
+ * Confidence: medium
+ */
+static uint64_t txm_ctx_current_or_dispatch(void)
+{
+    if (*(uint64_t*)0x71978 != 0) return (*(uint64_t(**)(void))0x71978)();
+    return *(uint64_t*)0x71970;
+}
+
+/* FUN_000507b0 @ 0x000507b0   (est. txm_ctx_dispatch_table)
+ * Ghidra: undefined* FUN_000507b0(void)
+ * Returns &DAT_00019238 (the context dispatch table).
+ * Confidence: medium
+ */
+static uint64_t txm_ctx_dispatch_table(void) { return 0x19238; }
+
+/* FUN_000507c0 @ 0x000507c0   (est. txm_ctx_set_specialist)
+ * Ghidra: void FUN_000507c0(long,undefined8,undefined8)
+ * Sets the specialist context: stores the context's table pointer
+ * (param_1+0x18), calls FUN_00057e10 with tag 0x67656e78 ("genx") and
+ * message "set specialist", then writes param_2/param_3 into the table.
+ * Confidence: medium
+ */
+static void txm_ctx_set_specialist(uint64_t ctx, uint64_t a, uint64_t b)
+{
+    uint64_t *tbl = *(uint64_t**)(ctx + 0x18);
+    txm_ctx_tag(ctx, 0x67656e78, "set specialist");
+    *tbl = a;
+    tbl[2] = b;
+}
+
+/* FUN_0005080c @ 0x0005080c   (est. txm_expert_query_all)
+ * Ghidra: void FUN_0005080c(long)
+ * Queries every expert record from the expert table: iterates the
+ * record list (FUN_000566b8), dispatches on each record's type
+ * (FUN_0005861c/587f0/589bc/58b88/58d18) and applies the result via
+ * FUN_00056f04/56fac/57050/570f4/571ac. Panics 0x19 on malformed
+ * records and "unreachable case" (0x36f2) / "failed to query expert"
+ * (0x3730).
+ * Confidence: medium
+ * Notes: per-type expert query/apply vtable; 0x3e800000000 cursor.
+ */
+static void txm_expert_query_all(uint64_t ctx)
+{
+    uint64_t canary = txm_canary;
+    uint64_t list = *(uint64_t*)(ctx + 0x18);
+    uint64_t base = (*(uint64_t**)(ctx + 0x10))[2];
+    uint64_t cur = list + 0x20;
+    uint64_t table = **(uint64_t**)(ctx + 0x10);
+    uint64_t rec = txm_expert_list_next(&cur);
+    while (rec != 0) {
+        uint64_t type = **(uint64_t**)(rec + 0x28);
+        int r;
+        switch (type) {
+        case 0: r = FUN_0005861c(table, base, rec, (uint8_t*)&cur); break;
+        case 1: r = FUN_000587f0(table, base, rec, (uint8_t*)&cur); break;
+        case 2: r = FUN_000589bc(table, base, rec, (uint8_t*)&cur); break;
+        case 3: r = FUN_00058b88(table, base, rec, (uint8_t*)&cur); break;
+        case 4: r = FUN_00058d18(table, base, rec, (uint8_t*)&cur); break;
+        default: txm_panic("panic: unreachable case (%s)"); break;
+        }
+        if (r == 0) {
+            type = **(uint64_t**)(rec + 0x28);
+            switch (type) {
+            case 0: FUN_00056f04(cur, rec, (uint8_t*)&cur); break;
+            case 1: FUN_00056fac(cur, rec, (uint8_t*)&cur); break;
+            case 2: FUN_00057050(cur, rec, (uint8_t*)&cur); break;
+            case 3: FUN_000570f4(cur, rec, (uint8_t*)&cur); break;
+            case 4: FUN_000571ac(cur, rec, (uint8_t*)&cur); break;
+            default: txm_panic("panic: unreachable case (%s)"); break;
+            }
+        } else if (r != 2 && r != 0x13 && r != 0x2d) {
+            txm_panic("panic: failed to query expert (%s)");
+        }
+        rec = txm_expert_list_next(&cur);
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+}
+
+/* FUN_00050aac / 4ab4   (est. txm_noop7/8)
+ * Ghidra: void FUN_00050aac/4ab4(void)
+ * Empty stubs.
+ * Confidence: high
+ */
+static void txm_noop7(void) { return; }
+static void txm_noop8(void) { return; }
+
+/* FUN_00050abc @ 0x00050abc   (est. txm_ops_release_vtbl2)
+ * Ghidra: void FUN_00050abc(long)
+ * Indirect vtable dispatch through the object's second table:
+ * (*(*(*(obj+0x10)+0x10)+0x30))().
+ * Confidence: medium
+ */
+static void txm_ops_release_vtbl2(uint64_t obj)
+{
+    (*(void(**)(void))(*(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x10) + 0x30))();
+}
+
+/* FUN_00050ae0 @ 0x00050ae0   (est. txm_ops_base_ptr2)
+ * Ghidra: undefined8 FUN_00050ae0(long)
+ * Returns *(*(obj+0x10)+0x10) - the second ops-table base.
+ * Confidence: high
+ */
+static uint64_t txm_ops_base_ptr2(uint64_t obj) { return *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x10); }
+
+/* FUN_00050af0 @ 0x00050af0   (est. txm_err_2d_b)
+ * Ghidra: undefined8 FUN_00050af0(void)
+ * Returns error code 0x2d.
+ * Confidence: high
+ */
+static uint64_t txm_err_2d_b(void) { return 0x2d; }
+
+/* FUN_00050afc..050b44 (9 fns)   (est. txm_err_4e_h..p)
+ * Ghidra: undefined8 FUN_00050afc/508/514/520/52c/538/544(void)
+ * Each returns error code 0x4e.
+ * Confidence: high
+ */
+static uint64_t txm_err_4e_h(void) { return 0x4e; }
+static uint64_t txm_err_4e_i(void) { return 0x4e; }
+static uint64_t txm_err_4e_j(void) { return 0x4e; }
+static uint64_t txm_err_4e_k(void) { return 0x4e; }
+static uint64_t txm_err_4e_l(void) { return 0x4e; }
+static uint64_t txm_err_4e_m(void) { return 0x4e; }
+static uint64_t txm_err_4e_n(void) { return 0x4e; }
+
+/* FUN_00050b50 @ 0x00050b50   (est. txm_manifest_set_property_v6)
+ * Ghidra: undefined8 FUN_00050b50(long,undefined8,undefined8,undefined8)
+ * Same property set, resolving via *(*(obj+0x10)+0x18) and FUN_00057264.
+ * Returns 0, or 2 on unknown.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v6(uint64_t obj, uint64_t a, uint64_t key, uint64_t val)
+{
+    uint64_t base = *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x18);
+    uint64_t slot = txm_obj_prop_lookup(base, key);
+    if (slot == 0) return 2;
+    txm_obj_prop_set(base, key, val);
+    return 0;
+}
 
 #undef txm_fault
 #define txm_fault(code, addr) txm_fault_impl(code, addr)

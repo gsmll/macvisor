@@ -673,3 +673,63 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `voff = ent>>0x20; vbase = base+voff; out[0]=vbase; out[1]=size-voff;` — no `voff <= size` guard before use (the surrounding overflow trap 0x5519 fires only on the `name+len` addition, not on this offset).
 - **Severity (hypothesis)**: medium — if the name table itself is attacker-influenced (corrupted/stale), a value offset beyond the buffer would be returned as a valid descriptor, potentially leading the caller to read out of bounds. Depends on the table being trusted (it is built at parse time), so likely low in practice.
 - **Confidence**: low (offset-trust is explicit in the decompile; exploitability depends on table provenance)
+
+## [ringminus1] 00022b10 txm_exec_debug_mapping_check — OAH/runtime executable-debug gate
+- **Observation**: The executable debug-mapping authority admits a debug mapping only if the association's DER dictionary is OAH (com.apple.oah.runtime_arm_internal 0xcf7) or runtime_arm_internal (0xd1a), OR (non-JIT) the CD-hash chain validates via txm_amfi_can_exec_cdhash + txm_verify_cdhash, OR (JIT) region-authorize + a security check succeed. A legacy (<6) dictionary is only admitted if the association spans the entire requested code limit (else logged 0xd39, error 0x24). The gate is the boundary between Apple's JIT-debugger support and arbitrary writable-executable memory.
+- **Evidence**: `iVar5 = txm_uuid_compare(local_a0,0xcf7); if (iVar5 != 0) iVar5 = txm_uuid_compare(local_a0,0xd1a);`; legacy path `if (local_a8 < param_5+param_4) FUN_00025c6c(0xd39), err=0x24`; `if (param_4 != local_90) err=0x12; if (param_5 != local_88) err=0x13`; non-JIT `FUN_00036d44(...)` + `FUN_000230fc(...)`; JIT `FUN_00023050(...)` + `FUN_00023cc4(local_a0)` (0xd95 log).
+- **Severity (hypothesis)**: high (hypothesis) — a bypass here would permit unauthenticated executable memory; the identifier compare (0xcf7/0xd1a) against the DER dictionary identifier is the discriminator.
+- **Confidence**: high
+
+## [ringminus1] 0002270c txm_region_attach — association range confinement
+- **Observation**: A code-association node may only be installed for a range that lies fully within the association object's declared range (+0x58/+0x60); out-of-range (below 0x88 / above 0x89) hard-panics. The association link count is incremented (0x4e overflow panic), and the interval insert rejects overlaps (0x75). A single object may host only one association (0x74).
+- **Evidence**: `if (param_3 < *(ulong*)(uVar2+0x58)) panic 0x88; if (*(ulong*)(uVar2+0x60) < param_3+param_4) panic 0x89;`; `*(uint*)(uVar2+0x68)++` with `~DAT_000107f0` check; `FUN_00021ddc(...)` overlap -> 0x75.
+- **Severity (hypothesis)**: medium — the range bounds gate which addresses a code region may be associated/executed; an off-by-one here could extend executability.
+- **Confidence**: high
+
+## [ringminus1] 0002316c txm_exec_check — JIT execution-eligibility gate
+- **Observation**: Execution of a code object is gated on the object carrying dynamic-codesigning (0xdc6) or allow-jit (0xdda), or the JIT bit (+0x18 bit1). A free region (+0x24==1) without prior association is denied (0x26). The check only runs when the profile's debug-enable flag (DAT_00010678+0x4f) is set AND the code-limits global DAT_00071035 is clear; if DAT_00071035 is set the gate returns 0x18 (denied) via txm_exec_probe. This couples exec eligibility to the JIT/debug profile.
+- **Evidence**: `uVar2=FUN_00022a38(param_1,0xdc6,0); if (((uVar2&1)==0) && (uVar2=FUN_00022a38(param_1,0xdda,0),(uVar2&1)==0)) { uVar1=0x26; if ((*(byte*)(param_1+0x18)&2)!=0) uVar1=0; } else uVar1=0;` and gate `(*(byte*)(DAT_00010678+0x4f)&1)!=0 && (DAT_00071035&1)==0`.
+- **Severity (hypothesis)**: high (hypothesis) — the JIT/debug entitlements are the discriminator for allowed executable memory; a profile that grants 0xdc6/0xdda broadly would widen JIT exec.
+- **Confidence**: high
+
+## [ringminus1] 00023384 txm_cs_debug_policy — debug-mapping admission
+- **Observation**: Debug mappings are admitted only when the caller holds com.apple.private.cs.debugger (0xc79) or the boot page-state flag DAT_000107f5 is set; otherwise "disallowed non-debugger initiated debug mapping" (0xdfb, err 0x25). A region already covering the range is marked (|0x80) and the duplicate rejected; insertion of a new 0x83 node into a conflicting interval panics 0xd1. The debugger entitlement is THE gate for creating debug code regions.
+- **Evidence**: `if (((FUN_00022a38(0,0xc79,0)&1)==0) && ((DAT_000107f5&1)==0)) { FUN_00025c6c(0xdfb); uVar5=0x25; }`; region scan `if (overlap) { *(byte*)(uVar3+0x12)|=0x80; ... return 0; }`.
+- **Severity (hypothesis)**: high (hypothesis) — an incorrectly-granted cs.debugger (or forced page-state flag) would permit arbitrary debug code regions.
+- **Confidence**: high
+
+## [ringminus1] 000236f0 txm_secure_channel_init — SEP-gated secure channel
+- **Observation**: The SecureUI/secure-channel shared page (16 KiB) is only created when the platform feature flag is absent but SEP is present, and only on boot states 5/6 (else "secure channel not supported on this platform" 0xe8d). A security-boot mode without SEP is a hard panic (0x1141). Single-init: a second call panics 0xe60.
+- **Evidence**: `if (DAT_00010518!=0) panic 0xe60`; `if (((DAT_00071031&1)==0) && (iVar3!=0)) panic("security boot mode without SEP", 0x1141)`; `if (4 < DAT_000104f2-1 && DAT_000104f2!=7) FUN_00025c6c(0xe8d)`.
+- **Severity (hypothesis)**: low — availability/feature gating; a missing SEP in security boot halts (fail-closed).
+- **Confidence**: high
+
+## [txm-region-core] 00045a38 txm_verify_developer — callback-driven digest verify
+- **Observation**: Developer-authorization verification is driven entirely by a caller-supplied callback table (param_4[0..3]). TXM trusts the callback table to supply the digest/verify functions; the {data_len} bound on the signature value (0x30/0x31) is the only intrinsic size check in the driver. A corrupted callback table would let the caller redirect the verify.
+- **Evidence**: FUN_00045a38: `if (sig_len < 0x31) { (*cb[0])(...); (*cb[1])(...); if (*cb[4] > 0x30) return 7; (*cb[0])(...); (*cb[2])(...); }`; size cap 0x30/0x31.
+- **Severity (hypothesis)**: medium — the verify integrity depends on the callback table being TXM-controlled; the 0x30 size cap bounds the signature.
+- **Confidence**: medium
+
+## [txm-region-core] 000455b8 / 00044e54 txm_im4m_decode / txm_im4m_verify — IMG4 magic dispatch
+- **Observation**: The IM4M/IM4C decoder dispatches on the 4-byte magic (0x494d3443=IM4C, 0x494d344d=IM4M) and requires the manifest header element to be present (out[0x21]!=0) else returns 3. It validates that the declared data length exactly equals the input length (else 7). Fail-closed: unknown magic returns 2.
+- **Evidence**: `if (param_5 == 0x494d3443) { ... } else if (param_5 != 0x494d344d) return 2;`; `if (param_4[0x21]==0) return 3;`; `if (lVar1 != param_2) return 7;` in FUN_000455b8.
+- **Severity (hypothesis)**: low — the length-exactness and magic checks reject malformed IMG4 input before verification proceeds.
+- **Confidence**: high
+
+## [txm-region-core] 00044184 / 0004a2d0 txm_der_read_tlv / txm_der_read_len — fail-closed DER length handling
+- **Observation**: The DER TLV decoder is fail-closed: malformed long-form tags, over-wide tag continuation (> 2^57), and payloads that exceed the remaining buffer all terminate via SoftwareBreakpoint (0x5513/0x5519) rather than returning an error that could be mis-handled. The indefinite-length form (0x80) is accepted and consumes to the end of the current buffer.
+- **Evidence**: `if (uVar7 >> 0x39 != 0) return 3;` (tag width), `if (pos + plen > len) return 3;` (payload bound), trap sites 0x44370/0x4436c/0x44374.
+- **Severity (hypothesis)**: low — fail-closed DER parsing prevents a truncated/malicious TLV from being walked out of bounds; traps are availability-only.
+- **Confidence**: high
+
+## [txm-region-core] 00042418 txm_ecdsa_verify — signature scalar bounds
+- **Observation**: ECDSA verify checks that both r and s lie strictly inside [1, n-1] before any point multiplication; out-of-range components return 0xfffffff9 (-7). This prevents degenerate/scalar-malleability attacks (r=0, s=0, or s >= n).
+- **Evidence**: `if (txm_bn_cmp(words, sig_r, 1) <= 0 || txm_bn_cmp(words, sig_r, order) >= 0) return 0xfffffff9;` (same for sig_s).
+- **Severity (hypothesis)**: low — standard ECDSA sanity; bounds the accepted signature space.
+- **Confidence**: medium
+
+## [txm-region-core] 00047ba0 txm_sig_verify_policy — algorithm-class to digest-table dispatch
+- **Observation**: The signature-policy selector maps the requested algorithm class (1, 4, 8, 16) to a fixed digest table (DAT_00011fe0/12018/12050/12088). An unsupported class returns 0xc0001 without producing a descriptor. The class is a caller-controlled integer, so only the enumerated digest sizes are reachable.
+- **Evidence**: `switch (alg_class) { case 1: table=0x11fe0; case 4: 0x12018; case 8: 0x12050; case 0x10: 0x12088; default: return 0xc0001; }`.
+- **Severity (hypothesis)**: informational — confined algorithm dispatch (no arbitrary size reaches the verify path).
+- **Confidence**: medium
