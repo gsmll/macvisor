@@ -60,7 +60,7 @@ extern void *FUN_00013260(void *a, void *b, void *c);
 extern unsigned long sk_dealloc(void *p, void *a, void *size);            /* FUN_001180cc */
 extern unsigned long sk_madvise(void *a, void *base, void *len, unsigned char mode); /* FUN_0011807c */
 extern void sk_memcpy(void *dst, void *src, unsigned long n);             /* FUN_00117cc4 */
-extern void FUN_00117cc4(unsigned long dst, unsigned long src, unsigned long n);
+extern unsigned long FUN_00117cc4(unsigned long dst, unsigned long src, unsigned long n);
 extern void FUN_00117d14(unsigned long dst, unsigned long src, unsigned long n);
 extern void FUN_00117d18(void *a, void *b, unsigned long c, unsigned long d);
 extern void FUN_00117e68(void *dst, void *src, unsigned long n, unsigned long m);
@@ -82,21 +82,21 @@ extern void thunk_FUN_0006037c(void);
 extern unsigned long thunk_FUN_00061638(void);
 extern void thunk_FUN_0036b270(unsigned long v);
 extern void FUN_0036b118(void *p);
-extern void FUN_0036a908(unsigned long size, unsigned long tag);
-extern void FUN_0036a940(void);
+extern unsigned long FUN_0036a908(unsigned long size, unsigned long tag);
+extern void *FUN_0036a940(unsigned long, unsigned long, unsigned long);
 extern void FUN_0036a1a0(void *a, void *b, unsigned long c, unsigned long d);
-extern void FUN_0036b8b0(void *a);
+extern unsigned long FUN_0036b8b0(void *a);
 extern void FUN_0036b834(void *a, void *b);
 extern void FUN_0036b8c0(void);
 extern void FUN_0036b7f8(void *a, unsigned long b);
 extern void FUN_0036b6ac(void);
 extern void FUN_0036b21c(void);
 extern void FUN_0036a20c(void *p);
-extern void FUN_00376820(void *a, unsigned long b);
-extern void FUN_00376038(void *a, void *b);
+extern unsigned long FUN_00376820(void *a, unsigned long b);
+extern unsigned long FUN_00376038(void *a, void *b);
 extern unsigned long FUN_003698b0(void *a, void *b, unsigned long c, ...);
 extern void FUN_003a25d4(unsigned long v);
-extern void FUN_003a261c(unsigned long v);
+extern unsigned long FUN_003a261c(unsigned long v);
 extern void FUN_00310d34(unsigned long v, void *p);
 extern unsigned long FUN_002b24b8(void);
 extern void FUN_002a9ba8(unsigned long a, unsigned long b);
@@ -104,12 +104,12 @@ extern void FUN_002a4ab4(unsigned long v);
 extern void thunk_FUN_002acbb8(void);
 extern void FUN_001ba7d4(unsigned long v, unsigned long w);
 extern void FUN_0024917c(void *a, void *b);
-extern void thunk_FUN_0024d9ac(void *a);
+extern unsigned long thunk_FUN_0024d9ac(void *a);
 extern void thunk_FUN_0035dc24(void *a, void *b, void *c);
 extern void thunk_FUN_0035d334(void *a, void *b);
 extern void FUN_001e9c78(void *p, unsigned long n);
 extern unsigned long FUN_00006630(unsigned long a, unsigned long b, void *c, unsigned long d);
-extern void FUN_00002534(const char *s, void *t);
+extern unsigned long FUN_00002534(const char *s, void *t);
 extern void FUN_0005b190(unsigned long a, const char *s);
 extern void FUN_0011d7e8(unsigned long);
 extern unsigned long FUN_00034f70(void);
@@ -540,7 +540,7 @@ extern void *FUN_00014628(void *a, void *b);
 extern void FUN_004b03d8(void);
 extern void FUN_004b03f0(void);
 extern long FUN_00015e9c(void *a, long b);
-extern void FUN_00015904(long a, long b);
+extern void FUN_00015904(void *msg, void *host);
 extern unsigned long FUN_00017e94(unsigned long a, void *b, ...);
 extern long FUN_000181f4(void *a, long b, long *c, void *d);
 
@@ -566,7 +566,7 @@ extern unsigned long FUN_00014e34(void **msg, int, void *m, long, unsigned long,
 extern unsigned long FUN_00014f2c(void);
 extern unsigned long FUN_00014f90(void *a, void *b, void *c, void *d);
 extern unsigned long FUN_00015108(unsigned long *head, unsigned long, void *val, void *meta);
-extern unsigned long FUN_000151c8(void **head, long);
+extern unsigned long FUN_000151c8(void **head, void *key);
 extern unsigned long FUN_00015264(unsigned long, unsigned long);
 extern unsigned long FUN_0001532c(unsigned int, unsigned int);
 extern unsigned long FUN_00015388(unsigned int, void *data, unsigned int);
@@ -624,7 +624,7 @@ extern unsigned long FUN_0001db94(long);
 extern unsigned long FUN_0001dc08(long, long);
 extern unsigned long FUN_0001dc8c(long, long);
 extern unsigned long FUN_0001dd00(void *buf);
-extern long FUN_0001dd14(unsigned long keep, unsigned long count, unsigned long opts, void *buf);
+extern long FUN_0001dd14(void);
 extern unsigned long FUN_0001dde4(unsigned long, unsigned long, unsigned long, void *buf);
 extern unsigned long FUN_0001deb0(unsigned long a, unsigned long b, unsigned long c);
 extern unsigned long FUN_0001e12c(long *data, long);
@@ -637,7 +637,7 @@ extern unsigned long FUN_0001f38c(void *data, void *a, void *b, void *c);
 extern unsigned long FUN_0001f414(void *a, void *b);
 extern unsigned long FUN_0001f514(void *a, void *b);
 extern unsigned long FUN_0001f670(unsigned long a, ...);
-extern unsigned long FUN_0001f834(void);
+extern unsigned long FUN_0001f834(void *a, ...);
 extern unsigned long FUN_0001fa18(unsigned long a, ...);
 extern unsigned long FUN_0001fd28(void *reader);
 extern unsigned long FUN_0001fd9c(void *frame);
@@ -784,6 +784,7 @@ extern unsigned long DAT_004bb860;
 extern unsigned long DAT_0064c100;
 extern unsigned long DAT_004ed758;
 extern unsigned long LAB_00659c50;
+extern unsigned long DAT_0065ac38;
 
 
 
@@ -933,7 +934,7 @@ long sk_tcb_msg_accept(long self, void **msg)
     long result = self;
     unsigned long obj = (unsigned long)*msg;
 
-    buf = (long *)FUN_000159b8();
+    buf = (long *)FUN_000159b8((void *)(obj));
     if ((int)FUN_000159c0(self) == 4) {
         if ((int)FUN_000159c8(self) == 1) {
             if (buf == 0 || *buf == 0) {
@@ -952,7 +953,7 @@ long sk_tcb_msg_accept(long self, void **msg)
                 if (msg[6] != 0) {
                     long h = FUN_00015e9c(msg[6], self);
                     if (h == 0) return 0;
-                    FUN_00015904(self, h);
+                    FUN_00015904((void *)(self), (void *)(h));
                 } else {
                     FUN_004b03f0();
                     return (long)sk_tcb_alloc_dispatch(0);
@@ -1101,7 +1102,7 @@ unsigned long sk_msg_accept_complex(void **msg, int *query, void **out, void *fl
         if ((char)query[1] == '\x01') {
             if (FUN_00015b94(query, msg) == 0) return 1;
             FUN_0001585c(query, 3);
-            unsigned long obj = *msg;
+            unsigned long obj = (unsigned long)*msg;
             long *buf = (long *)FUN_000159b8(query);
             if ((((unsigned long)flags >> 1) & 1) == 0) {
                 *(uint16_t *)((char *)buf + 0x2a) |= 0x10;
@@ -1372,7 +1373,7 @@ unsigned long sk_msg_install(void **msg, int mode, void *m, long host, unsigned 
 {
     unsigned long r;
     FUN_00015834(m);
-    unsigned long obj = *msg;
+    unsigned long obj = (unsigned long)*msg;
     if (FUN_000156b8(obj) == 0) {
         if (*(char *)(host + 8) != '\0') goto fail;
     } else {
@@ -1421,7 +1422,7 @@ unsigned long sk_msg_reject(void)
  *   panic 004b0528. */
 void sk_msg_teardown(void **msg, void *b, void *c, void *d)
 {
-    unsigned long obj = *msg;
+    unsigned long obj = (unsigned long)*msg;
     long *buf = (long *)FUN_000159b8(b);
     if (*(char *)((char *)buf + 8) == '\0') {
         if (*(char *)((char *)buf + 0x28) == '\x01') {
@@ -1547,7 +1548,7 @@ unsigned long sk_registry_insert(unsigned long *head, unsigned long key, void *v
         FUN_0011582c((unsigned long)(head));
         cur = (unsigned long *)head[2];
         if (cur == 0) {
-            head[2] = entry;
+            head[2] = (unsigned long)entry;
         } else {
             do {
                 prev = cur;
@@ -1558,7 +1559,7 @@ unsigned long sk_registry_insert(unsigned long *head, unsigned long key, void *v
                 }
                 cur = (unsigned long *)*cur;
             } while (cur != 0);
-            *prev = entry;
+            *prev = (unsigned long)entry;
         }
         FUN_00115894((unsigned long)(head));
         return 1;
@@ -1591,7 +1592,7 @@ void sk_registry_remove(void **head, long key)
         } while (cur[1] != (void *)key);
         *prev = *cur;
     }
-    ((void (**)(void *, void *))cur[3])(cur[3], cur[2]);
+    ((void (*)(void *, void *))cur[3])(cur[3], cur[2]);
     sk_heap_free(cur);
 done:
     FUN_00115894((unsigned long)(head));
@@ -1800,7 +1801,7 @@ void sk_capbuf_init(void **cb, void *obj, void *size)
     *cb = obj;
     *(uint8_t *)(cb + 1) = 1;
     cb[2] = 0;
-    cb[3] = (unsigned long)size;
+    cb[3] = (void *)(unsigned long)size;
     cb[4] = 0;
     cb[6] = 0;
 }
@@ -1819,7 +1820,7 @@ void sk_obj_dispatch(void **obj)
         return;
     }
     if ((void *)obj[0xc] != 0) {
-        ((void (*)(void))**obj[0xc])();
+        ((void (*)(void))*(void **)obj[0xc])();
         return;
     }
     __builtin_trap();  /* SoftwareBreakpoint(1, 0x15570) */
@@ -2583,7 +2584,7 @@ unsigned long *sk_capbuf_accumulate(void *head, void *msg)
         if (((*(uint8_t *)((char *)mbuf + 0x2a) >> 1) & 1) == 0) return 0;
         unsigned long *cb = (unsigned long *)sk_heap_calloc(1, 0x68, (void *)0x1090040b6685729);
         if (cb != 0 && FUN_00014c18(cb, entry[1]) == 0) {
-            FUN_000151c8(head, *entry);
+            FUN_000151c8(head, (void *)(*entry));
             return cb;
         }
     }
@@ -2939,7 +2940,7 @@ void sk_msg_reply_send(void *tcb, void *query, void *msg, void **out)
     unsigned long *entry = (unsigned long *)FUN_00015264((unsigned long)(*(void **)(*(long *)((char *)tcb + 0x80) + 0x68)), key);
 
     if (n < 0x191) {
-        if (entry != 0) FUN_000151c8(*(void **)(*(long *)((char *)tcb + 0x80) + 0x68), *entry);
+        if (entry != 0) FUN_000151c8(*(void **)(*(long *)((char *)tcb + 0x80) + 0x68), (void *)(*entry));
         /* copy payload into the transport region */
         unsigned long len = qb[3];
         unsigned long buf[0x100];
@@ -3142,7 +3143,7 @@ void sk_msg_pipe_accept(void *pipe, void *b, int *msg)
             __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x17e4c) */
         }
     }
-    if ((**(int (**)(void))(client + 0x10))(client, rb, msg, 1) == 0) {
+    if ((**(int (**)(unsigned long, void *, void *, unsigned long))(client + 0x10))(client, rb, msg, 1) == 0) {
         FUN_0001590c(msg);
     } else {
         long *mb = (long *)FUN_000159b8(msg);
@@ -3169,7 +3170,7 @@ void sk_msg_pipe_accept(void *pipe, void *b, int *msg)
         unsigned long flags = (*rb == 0) ? 2 : 0;
         if (FUN_0001485c((void **)(meta), &rmsg, &meta, (void *)(flags)) == 0) {
             if ((*rb & 1) == 0 &&
-                (**(int (**)(void))(client + 0x10))(client, rb, meta, 0) != 0) {
+                (**(int (**)(unsigned long, void *, void *, unsigned long))(client + 0x10))(client, rb, (void *)(meta), 0) != 0) {
                 unsigned long len2 = FUN_000159d0(&rmsg);
                 FUN_00014f90(*(void **)(rb + 8), msg,(void *)( len2), 0);
                 long *mb4 = (long *)FUN_000159b8(msg);
@@ -3202,7 +3203,7 @@ unsigned long sk_msg_cap_accept(void *obj, unsigned long size, unsigned long fla
     /* Structural reconstruction: per-capability accept loop (abridged). */
     if (*(long *)((char *)obj + 0x60) != 0) {
         if (*(long *)(*(long *)((char *)obj + 0x60) + 0x38) == 0) return 0;
-        return FUN_000156e0() < size;
+        return FUN_000156e0(0) < size;
     }
     unsigned long client = FUN_004b0c7c();
     if (FUN_000156b8(client) == 0) return 1;
@@ -3221,12 +3222,12 @@ unsigned long sk_msg_cap_accept(void *obj, unsigned long size, unsigned long fla
             if ((int)r != 0) { FUN_00015630(client, scratch); goto fail; }
             FUN_00117cc4(*scratch + scratch[4], *mb + mb[4] + i, cnt);
             scratch[2] += cnt;
-            if ((unsigned long)(FUN_00015548(client, flags) != 0) { FUN_00015630(client, scratch); sk_heap_free(scratch); FUN_00015904(flags, mb); return r; })
+            if (FUN_00015548(client, flags) != 0) { FUN_00015630(client, scratch); sk_heap_free(scratch); FUN_00015904((void *)(flags), mb); return r; }
         }
         FUN_00015630((unsigned long)((void *)(client)), scratch);
         sk_heap_free(scratch);
         if (out != 0 && n != 0) *out = (unsigned long)flags;
-        FUN_00015904(flags,(unsigned long)( mb));
+        FUN_00015904((void *)(flags),(void *)((unsigned long)( mb)));
         return 0;
     }
 fail:
@@ -3262,12 +3263,12 @@ unsigned long sk_msg_cap_accept_variant(void *a, void *obj, unsigned long size,
             if ((int)r != 0) { FUN_00015630((unsigned long)(obj), scratch); goto fail; }
             FUN_00117cc4(*scratch + scratch[4], *mb + mb[4] + i, cnt);
             scratch[2] += cnt;
-            if ((unsigned long)(FUN_00015548((unsigned long)(obj), size) != 0) { FUN_00015630(obj, scratch); sk_heap_free(scratch); FUN_00015904(size, mb); return r; })
+            if (FUN_00015548((unsigned long)(obj), size) != 0) { FUN_00015630((unsigned long)(obj), scratch); sk_heap_free(scratch); FUN_00015904((void *)(size), mb); return r; }
         }
         FUN_00015630((unsigned long)(obj), scratch);
         sk_heap_free(scratch);
         if (out != 0 && n != 0) *out = (unsigned long)size;
-        FUN_00015904(size,(unsigned long)( mb));
+        FUN_00015904((void *)(size),(void *)((unsigned long)( mb)));
         return 0;
     }
 fail:
@@ -3290,7 +3291,7 @@ fail:
 unsigned long sk_msg_cap_accept_single(void *head, long msg, long *out, void *cb)
 {
     unsigned long obj = FUN_00014470(cb);
-    if (FUN_000156b8() == 0) return 5;
+    if (FUN_000156b8(0) == 0) return 5;
     unsigned long *mb = (unsigned long *)FUN_000159b8((void *)(msg));
     if ((*(uint8_t *)(mb + 5) & 1) == 0) {
         FUN_004b0cdc();
@@ -3356,7 +3357,7 @@ unsigned long sk_msg_cap_send_accept(void *head, void *msg2, long msg, void *b, 
                 FUN_00117cc4(*mb2, src, cnt);
                 *(unsigned long *)(entry + 0x18) = *(long *)(entry + 0x18) + cnt;
                 FUN_0001590c((void *)(msg));
-                if ((unsigned long)(cap <= total) FUN_000151c8(head, *(void **)((char *)msg + 0x18));)
+                if (cap <= total) FUN_000151c8(head, *(void **)((char *)msg + 0x18));
                 return 0;
             }
             __builtin_trap();  /* SoftwareBreakpoint(0x5519, 0x184c4) */
@@ -3410,7 +3411,7 @@ int *sk_msg_region_cursor(int *msg, unsigned long n, unsigned long len)
     }
     FUN_004b0d84();
     /* fallback: find the destination region and copy */
-    int *dst = FUN_004b0d60();
+    int *dst = (int *)FUN_004b0d60();
     if (*dst == 4) {
         unsigned long cap = *(unsigned long *)(*(long *)(dst + 0x14) + 0x18);
         unsigned long cur = *(unsigned long *)(*(long *)(dst + 0x14) + 0x10);
@@ -3420,7 +3421,7 @@ int *sk_msg_region_cursor(int *msg, unsigned long n, unsigned long len)
         FUN_004b0e14();
         FUN_004b0df0();
     }
-    dst = FUN_004b0dcc();
+    dst = (int *)FUN_004b0dcc();
     if (*dst == 1) {
         unsigned long *b = *(unsigned long **)(dst + 0x14);
         unsigned long cur = b[2], cap = b[3];
@@ -3436,7 +3437,7 @@ int *sk_msg_region_cursor(int *msg, unsigned long n, unsigned long len)
         FUN_004b0e38();
         FUN_004b0e80();
     }
-    dst = FUN_004b0e5c();
+    dst = (int *)FUN_004b0e5c();
     if (*dst == 4) {
         unsigned long *b = *(unsigned long **)(dst + 0x14);
         unsigned long cap = b[3];
@@ -3507,7 +3508,7 @@ unsigned long sk_msg_region_copy_in(int *msg, void *src, unsigned long len)
         FUN_004b0e38();
         FUN_004b0e80();
     }
-    int *dst = FUN_004b0e5c();
+    int *dst = (int *)FUN_004b0e5c();
     if (*dst == 4) {
         unsigned long *b = *(unsigned long **)(dst + 0x14);
         unsigned long cap = b[3];
@@ -4516,7 +4517,8 @@ unsigned long sk_capbuf_alloc_meta(unsigned long size, void *b, unsigned long *c
         return 0;
     }
     unsigned long *old = (unsigned long *)FUN_004b0080();
-    unsigned long r2 = (unsigned long)sk_heap_free((void *)(*old));
+    unsigned long r2 = (unsigned long)(*old);
+    sk_heap_free((void *)(*old));
     *old = 0;
     old[3] = 0;
     old[4] = 0;
@@ -6002,7 +6004,7 @@ void sk_tb_conn_handler(long *conn, unsigned long mode)
  * Notes: helpers FUN_0036a940/0001f1d0. */
 unsigned long sk_tb_pipe_alloc(void *a, void *b, void *c, void *d)
 {
-    unsigned long p = FUN_0036a940();
+    unsigned long p = (unsigned long)FUN_0036a940(0, 0, 0);
     FUN_0001f1d0((unsigned long)(a),(unsigned long)( b), c,(unsigned long)( d));
     return p;
 }
@@ -6077,7 +6079,7 @@ unsigned int sk_tb_forward_handler(void *data, void *a, void *b, void *c)
  *   00017b7c/0004b664; globals 0x6ad3a8/DAT_004bb180/0x65a248/FUN_0001f38c. */
 long sk_tb_conn_alloc(void *a, void *b)
 {
-    long c = FUN_0036a940();
+    long c = (long)FUN_0036a940(0, 0, 0);
     *(unsigned long *)(c + 0x10) = 0;
     *(unsigned long *)(c + 0x20) = 0;
     FUN_0036b7f8((void *)(c + 0x18), 0);
@@ -6116,7 +6118,7 @@ void sk_tb_conn_alloc_single(void *a, void *b)
  * Notes: helper FUN_0001f670. */
 unsigned long sk_tb_pipe_alloc5(void *a, void *b, void *c, void *d, void *e)
 {
-    unsigned long p = FUN_0036a940();
+    unsigned long p = (unsigned long)FUN_0036a940(0, 0, 0);
     FUN_0001f670((unsigned long)(a),(unsigned long)( b), c,(unsigned long)( d), e);
     return p;
 }
@@ -6169,7 +6171,7 @@ unsigned int sk_tb_forward_send(void *a, void *b, void *c, unsigned long conn)
         unsigned long arg = *(unsigned long *)(conn + 0x20);
         FUN_000259c0((unsigned long)(buf),(unsigned long)( b));
         unsigned long msg = FUN_0001fd9c(buf);
-        unsigned long (*handler)(void *, void *, void *) = (void *)FUN_0001fde8(arg);
+        unsigned long (*handler)(unsigned long, void *, unsigned long, unsigned long) = (void *)FUN_0001fde8(arg);
         unsigned long v = FUN_0036b270(conn);
         unsigned int r = handler(v, buf, *rdr, arg);
         FUN_0036b118(rdr);
@@ -6188,7 +6190,7 @@ unsigned int sk_tb_forward_send(void *a, void *b, void *c, unsigned long conn)
  * Notes: helper FUN_0001f834. */
 unsigned int sk_tb_forward_send_flag(void)
 {
-    return FUN_0001f834() & 1;
+    return FUN_0001f834(0) & 1;
 }
 
 /*--------------------------------------------------------------------*/
@@ -6199,7 +6201,7 @@ unsigned int sk_tb_forward_send_flag(void)
  * Notes: helper FUN_0001f834. */
 unsigned int sk_tb_forward_send_flag2(void)
 {
-    return FUN_0001f834() & 1;
+    return FUN_0001f834(0) & 1;
 }
 
 /*--------------------------------------------------------------------*/
@@ -6210,7 +6212,7 @@ unsigned int sk_tb_forward_send_flag2(void)
  * Notes: helper FUN_0001fa18. */
 unsigned long sk_tb_pipe_alloc6(void *a, void *b, void *c, void *d, void *e, void *f)
 {
-    unsigned long p = FUN_0036a940();
+    unsigned long p = (unsigned long)FUN_0036a940(0, 0, 0);
     FUN_0001fa18((unsigned long)(a),(unsigned long)( b), c,(unsigned long)( d), e, f);
     return p;
 }

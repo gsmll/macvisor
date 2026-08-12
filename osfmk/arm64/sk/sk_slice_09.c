@@ -68,7 +68,7 @@ typedef union {
 extern unsigned long sk_x_00001378();   /* FUN_00001378 */
 extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
 extern unsigned long sk_x_00011d7c();   /* FUN_00011D7C */
-extern sk_ep_pair_t sk_ep_obj_get();   /* FUN_00034a2c */
+extern sk_ep_pair_t sk_ep_obj_get();   /* FUN_00034a2c: {object, vtable} pair */
 extern unsigned long sk_x_00034f70();   /* FUN_00034F70 */
 extern unsigned long sk_x_00035a78();   /* FUN_00035A78 */
 extern unsigned long sk_x_0004ba18();   /* FUN_0004BA18 */
@@ -1307,7 +1307,7 @@ static void sk_tb_ph_reloc(uint64_t p, uint64_t ph, uint64_t arg, uint64_t seg, 
     }
     cb = *(uint64_t *)(kind * 0x30 + 0x65bf90);
     if ((cb != 0) && (*(long *)(kind * 0x30 + 0x65bf88) != 0 && seg2 != 0)) {
-        base = sk_x_00051ee4();
+        base = sk_x_00051ee4(seg, name);
         if (base != 0) {
             addr = *(long *)(base + 0x20) + off;
             end = addr + *(uint64_t *)(base + 0x28);
@@ -1767,9 +1767,9 @@ static uint64_t sk_strnlen(uint64_t arg1, long arg2)
         if (arg2 == 0) {
             SoftwareBreakpoint(0x5519, 0x50ce8);
         }
-        p = arg1;
+        p = (char *)arg1;
         do {
-            if (arg1 + arg2 < p + 1) {
+            if ((uint64_t)arg1 + arg2 < (uint64_t)(p + 1)) {
                 SoftwareBreakpoint(0x5519, 0x50ce8);
             }
             c = *p;
@@ -2107,14 +2107,14 @@ have_p2:
     out[4] = (uint8_t)((uint64_t)p1 >> 0x20);
     out[7] = (uint8_t)((uint64_t)p1 >> 0x38);
     out[6] = (uint8_t)((uint64_t)p1 >> 0x30);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x28);
-    out[0x{i:x}] = (uint8_t)p2;
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x18);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x10);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 8);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x20);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x38);
-    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x30);
+    out[0xed] = (uint8_t)((uint64_t)p2 >> 0x28);
+    out[0xe8] = (uint8_t)p2;
+    out[0xeb] = (uint8_t)((uint64_t)p2 >> 0x18);
+    out[0xea] = (uint8_t)((uint64_t)p2 >> 0x10);
+    out[0xe9] = (uint8_t)((uint64_t)p2 >> 8);
+    out[0xec] = (uint8_t)((uint64_t)p2 >> 0x20);
+    out[0xef] = (uint8_t)((uint64_t)p2 >> 0x38);
+    out[0xee] = (uint8_t)((uint64_t)p2 >> 0x30);
     u9 = *(uint16_t *)(ph + 0x110);
     u1 = *(uint8_t *)(ph + 0x113);
     u2 = *(uint8_t *)(ph + 0x112);
@@ -2127,22 +2127,22 @@ have_p2:
     u12 = *(uint16_t *)(ph + 0x11c);
     u7 = *(uint8_t *)(ph + 0x11f);
     u8 = *(uint8_t *)(ph + 0x11e);
-    out[0x{i:x}] = (uint8_t)u9;
-    out[0x{i:x}] = (uint8_t)(u12 >> 8);
-    out[0x{i:x}] = (uint8_t)(u11 >> 8);
-    out[0x{i:x}] = (uint8_t)(u10 >> 8);
-    out[0x{i:x}] = u1;
-    out[0x{i:x}] = u2;
-    out[0x{i:x}] = (uint8_t)(u9 >> 8);
-    out[0x{i:x}] = (uint8_t)u11;
-    out[0x{i:x}] = u5;
-    out[0x{i:x}] = (uint8_t)u10;
-    out[0x{i:x}] = u6;
-    out[0x{i:x}] = u3;
-    out[0x{i:x}] = u4;
-    out[0x{i:x}] = (uint8_t)u12;
-    out[0x{i:x}] = u7;
-    out[0x{i:x}] = u8;
+    out[0xf0] = (uint8_t)u9;
+    out[0xfd] = (uint8_t)(u12 >> 8);
+    out[0xf9] = (uint8_t)(u11 >> 8);
+    out[0xf5] = (uint8_t)(u10 >> 8);
+    out[0xf3] = u1;
+    out[0xf2] = u2;
+    out[0xf1] = (uint8_t)(u9 >> 8);
+    out[0xf8] = (uint8_t)u11;
+    out[0xfb] = u5;
+    out[0xf4] = (uint8_t)u10;
+    out[0xfa] = u6;
+    out[0xf7] = u3;
+    out[0xf6] = u4;
+    out[0xfc] = (uint8_t)u12;
+    out[0xff] = u7;
+    out[0xfe] = u8;
 }
 
 /* FUN_00051740 @ 0x00051740   (sk_reloc_bind)
@@ -2376,8 +2376,8 @@ static void sk_region_init(uint32_t *base, uint64_t size)
     sk_region_count_ptr = count_ptr;
     sk_region_lo = (uintptr_t)base;
     sk_region_hi = size;
-    data_seg = sk_macho_seg_named(0, sk_str___DATA);
-    data_const = sk_macho_seg_named(0, sk_str___DATA_CONST);
+    data_seg = sk_macho_seg_named(0, (uint64_t)sk_str___DATA);
+    data_const = sk_macho_seg_named(0, (uint64_t)sk_str___DATA_CONST);
     if ((int)count != 0) {
         i = 0;
         ent = count_ptr + 1;
@@ -2530,7 +2530,7 @@ static uint64_t sk_macho_seg_find(uint64_t mh)
                     if (cmd + 0x12 < cmd) {
                         SoftwareBreakpoint(0x5519, 0x51e5c);
                     }
-                    return cmd;
+                    return (uint64_t)cmd;
                 }
                 p = 0;
                 if (prev != cmd) {
@@ -2636,7 +2636,7 @@ static uint64_t sk_macho_first_pageseg(uint64_t mh)
         cmd = (int *)(mh + 0x20);
         do {
             if (*cmd == 0x1b) {
-                return cmd + 2;
+                return (uint64_t)(cmd + 2);
             }
             cmd = (int *)((long)cmd + (uint64_t)(uint32_t)cmd[1]);
             ncmds = ncmds - 1;
@@ -2661,7 +2661,7 @@ static void sk_macho_linkedit(uint64_t mh, uint64_t *count, uint64_t *off, uint6
     long text_base, link_base;
     int *cmd;
 
-    text_seg = sk_macho_seg_named(mh, sk_str___TEXT);
+    text_seg = sk_macho_seg_named(mh, (uint64_t)sk_str___TEXT);
     ncmds = *(uint32_t *)(mh + 0x10);
     result = *(long *)(text_seg + 0x18);
     if (ncmds != 0) {
@@ -2669,7 +2669,7 @@ static void sk_macho_linkedit(uint64_t mh, uint64_t *count, uint64_t *off, uint6
         cmd = (int *)(mh + 0x20);
         do {
             if (*cmd == 2) {
-                linkedit_seg = sk_macho_seg_named(mh, sk_str___LINKEDIT);
+                linkedit_seg = sk_macho_seg_named(mh, (uint64_t)sk_str___LINKEDIT);
                 if ((linkedit_seg == 0) || (nsyms = (uint64_t)(uint32_t)cmd[3], cmd[3] == 0)) {
                     goto fail;
                 }
@@ -2690,7 +2690,7 @@ static void sk_macho_linkedit(uint64_t mh, uint64_t *count, uint64_t *off, uint6
             ncmds = ncmds - 1;
         } while (ncmds != 0);
     }
-    sk_macho_seg_named(mh, sk_str___LINKEDIT);
+    sk_macho_seg_named(mh, (uint64_t)sk_str___LINKEDIT);
 fail:
     result = 0;
     *count = 0;
@@ -2894,7 +2894,7 @@ panic:
         hi8 = *(uint8_t *)0x6ad6e9;
         lo8 = *(uint8_t *)0x6ad6e8;
         *(uint64_t *)0x6ad6f0 = sk_x_00063aa8((uint64_t)sk_suspend, 0x52988, 0);
-        u = sk_x_000537c4();
+        u = (uint64_t)sk_x_000537c4();
         slot = thread_ptr + *(uint64_t *)0x6ad6f0;
         prev = slot - 1;
         if ((prev < thread_ptr || thread_ptr + 0x1f < slot) || slot < prev)
@@ -2975,7 +2975,7 @@ static void sk_xrt_init(uint64_t flag)
         sk_printf((uint64_t)sk_str_005bb99f);
         rc = sk_x_0005ab94(1, 2);
         if (rc == 1) sk_x_00065020();
-        th = (byte *)sk_tpidrro();
+        th = (byte *)tpidrro_el0;
         th[1] = 0; *th = 0; th[4] = 0; th[2] = 0; th[5] = 0; th[3] = 0; th[6] = 0; th[7] = 0;
         CallSupervisor(0);
         *th = 0; th[7] = 0; th[6] = 0; th[5] = 0; th[4] = 0; th[3] = 0; th[2] = 0; th[1] = 0;
@@ -3431,7 +3431,7 @@ static void sk_cnode_scan(void)
                     case 0x11:
                         if (q < p) goto bad;
 dofill:
-                        sk_x_00053858(p);
+                        sk_x_00053858((long)p);
                         break;
                     }
                 } else {
@@ -3446,7 +3446,7 @@ tagdispatch:
                         if (q < p) goto bad;
                         sk_x_00055948(p);
                         {
-                            uint64_t *slot = (uint64_t *)sk_x_00053598();
+                            uint64_t *slot = (uint64_t *)sk_x_00053598(0);
                             if (slot + 1 < slot) goto bad;
                             *slot = (uint64_t)(uint8_t)p[1] << 0x10
                                   | (uint64_t)*(uint8_t *)((long)p + 3) << 0x18
@@ -4107,9 +4107,9 @@ static uint64_t sk_mmap(uint64_t *out, uint64_t addr, uint32_t len, int prot, lo
                 stk = 0x2000000102;
                 rq2 = 0x11;
                 lo = 0;
-                sk_ep_obj_get(ep);
+                { sk_ep_pair_t _p = sk_ep_obj_get(); ep[0]=_p.lo; ep[1]=_p.hi; }
                 invoke = *(uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) *)(ep[1] + 0x30);
-                v = invoke(ep[0], 8, &rq2, 0x6b0330, 0, &rq2);
+                v = invoke(ep[0], 8, (uint64_t)&rq2, 0x6b0330, 0, (uint64_t)&rq2);
                 v = v & 0xff;
                 if (v != 0) {
                     if ((((uint64_t)0x64cb3f < (uint64_t)0x64cb40 + v) &&
@@ -4154,9 +4154,9 @@ static uint64_t sk_mmap(uint64_t *out, uint64_t addr, uint32_t len, int prot, lo
     }
 do_map:
     if (addr <= UINT64_MAX - v) {               /* !CARRY8(v, addr) */
-        sk_ep_obj_get(ep);
+        { sk_ep_pair_t _p = sk_ep_obj_get(); ep[0]=_p.lo; ep[1]=_p.hi; }
         invoke = *(uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) *)(ep[1] + 0x30);
-        ok = (uint8_t)invoke(ep[0], acc | ((o & 4) << 0x14), &req, extra, 0, 0);
+        ok = (uint8_t)invoke(ep[0], acc | ((o & 4) << 0x14), (uint64_t)&req, (uint64_t)extra, 0, 0);
         if (ok != '\0') {
             return sk_mmap_err((int)ok);
         }
@@ -4260,11 +4260,11 @@ static uint64_t sk_munmap(long a, long b, uint8_t (*frame)[16])
             if (ok != 0) {
                 return sk_x_00054034();
             }
-            *sk_errno_ptr(0) = 0;
+            *((int *)sk_errno_ptr()) = 0;
             return 1;
         }
     }
-    *sk_errno_ptr(0) = 0x16;
+    *((int *)sk_errno_ptr()) = 0x16;
     return 0;
 }
 
@@ -4315,7 +4315,7 @@ static uint64_t sk_mprotect(uint64_t a, uint64_t b, uint8_t (*frame)[16], uint32
     locals[4] = 0;
 
     if (obj == 0) {
-        *sk_errno_ptr(0) = 0x16;
+        *((int *)sk_errno_ptr()) = 0x16;
         return 0;
     }
     if (vtable == 0) {
@@ -4324,7 +4324,7 @@ static uint64_t sk_mprotect(uint64_t a, uint64_t b, uint8_t (*frame)[16], uint32
     st = ((uint64_t (*)(uint64_t, uint64_t *))((uint64_t *)vtable)[1])(obj, &locals[1]);
     if ((a < locals[2]) || (locals[3] < b) ||
         (locals[3] + locals[2] <= a) || (locals[3] + locals[2] < b + a)) {
-        *sk_errno_ptr(0) = 0x16;
+        *((int *)sk_errno_ptr()) = 0x16;
         return 0;
     }
     {
@@ -4334,7 +4334,7 @@ static uint64_t sk_mprotect(uint64_t a, uint64_t b, uint8_t (*frame)[16], uint32
             goto plain_update;
         }
         if (((st >> 0x10) & 1) == 0) {
-            *sk_errno_ptr(0) = 0x2d;
+            *((int *)sk_errno_ptr()) = 0x2d;
             return 0;
         }
         ok = ((char (*)(uint64_t, uint64_t, uint64_t, uint64_t))

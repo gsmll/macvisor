@@ -4589,13 +4589,13 @@ unsigned int sk_boot_dt_integrity_check(void *a, void *b, sk_word_t c, sk_word_t
     *(long *)((char*)o2 + 0x18) = (long)o1;
     sk_word_t (*cb)(sk_word_t*, sk_word_t) = sk_dt_paged_call;
     sk_alloc_pages((sk_word_t)o1, 0);
-    unsigned int r = sk_dt_integrity_parse(c, d, (sk_word_t(*)(sk_word_t*, sk_word_t))sk_dt_boot_cb, (sk_word_t)(uintptr_t)&cb);  /* FUN_0006626c */
+    sk_dt_integrity_parse(c, d, (sk_word_t(*)(sk_word_t*, sk_word_t))sk_dt_boot_cb, (sk_word_t)(uintptr_t)&cb);  /* FUN_0006626c */
     sk_free(o2);
     sk_word_t f = sk_boot_feature(o1, 0x5be7c0, 0xd3, 0x5d, 9, 0);     /* FUN_003a26e8 */
     sk_free(o1);
     if ((f & 1) != 0) sk_breakpoint(1, 0x6667c);
     sk_log1(canary);
-    if (canary) return r & 1;
+    if (canary) return 1;
     sk_stack_fail();
 }
 
@@ -4674,7 +4674,8 @@ unsigned int sk_dt_boot_cb3(void){ return sk_dt_paged_call(0,0) & 1; }
  */
 sk_word_t sk_boot_console_init(sk_word_t a, unsigned int mode)
 {
-    sk_word_t r = sk_dt_node_get(&DAT_005c99ee, a);   /* FUN_00066804 */
+    sk_word_t r = 0;
+    sk_dt_node_get((sk_word_t)&DAT_005c99ee, a, 0);   /* FUN_00066804 */
     if ((mode & 0xff) == 1) return 0;
     sk_console_enter();                          /* FUN_0006b374 */
     sk_console_mem();                            /* FUN_000668a0 */
@@ -4808,7 +4809,7 @@ sk_word_t sk_panic_report_start(sk_word_t a, sk_word_t b)
     sk_report_emit(w[0], v);                     /* thunk_FUN_002acbb8 */
     sk_report_free(v);                           /* FUN_003a25d4 */
     sk_report_emit(0x202d20, 0xe300000000000000);
-    sk_panic_report_body(a, b);                  /* FUN_00069bdc */
+    sk_panic_report_body(a, (void*)(uintptr_t)b);                  /* FUN_00069bdc */
     sk_free(0);
     sk_panic_reset();                            /* FUN_0001df60 */
     sk_report_end();                             /* FUN_0006b550 */
@@ -4836,9 +4837,9 @@ void sk_panic_report_body(sk_word_t a, void *arg)
     sk_word_t v = canary ? w[1] : 0xe900000000000029;
     sk_report_emit(w[0], v);
     sk_report_free(v);
-    void *list = &DAT_00657778;
-    sk_panic_iter_begin(&n, a, arg);
-    while (!(sk_panic_iter_next(&list), *(char*)&list == 1)) {
+    sk_word_t *list = (sk_word_t*)&DAT_00657778;
+    sk_panic_iter_begin();
+    while (!(sk_panic_iter_next((long*)&list), *(char*)&list == 1)) {
         sk_word_t dv[4] = { list[0], list[1], list[2], list[3] };
         sk_word_t sep[2] = { 0x2020207c20, 0xe500000000000000 };   /* '  | ' */
         /* print node name+value via format template 0x65cd58 */
@@ -4859,7 +4860,7 @@ void sk_panic_report_body(sk_word_t a, void *arg)
         *(sk_word_t*)((char*)list + 0x20 + len*0x10) = dv[1];
         *(sk_word_t*)((char*)list + 0x28 + len*0x10) = dv[0];
     }
-    sk_panic_iter_end(&n, a, arg);
+    sk_panic_iter_end();
     /* second pass: emit each node's formatted entry with ' +-' separators */
     sk_word_t done = (*(char*)&list == 1);
     void *ln = arg;
@@ -5087,7 +5088,7 @@ sk_word_t sk_report_kind2(void){ return 2; }
 sk_word_t sk_dt_list_copy(sk_word_t *out, sk_word_t *dst, sk_word_t count, void *list)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
-    sk_word_t total = sk_dt_list_count(list);
+    sk_word_t total = sk_dt_list_count((sk_word_t*)(uintptr_t)list);
     sk_word_t copied = 0;
     if (dst == 0) copied = 0;
     else {
@@ -5099,7 +5100,7 @@ sk_word_t sk_dt_list_copy(sk_word_t *out, sk_word_t *dst, sk_word_t count, void 
             do {
                 if (limit == n) break;
                 sk_word_t e[2] = {0,0};
-                copied = sk_dt_list_get(list, n, &e);
+                copied = sk_dt_list_get((sk_word_t*)(uintptr_t)list, n, &e);
                 if ((copied & 1) == 0) {
                     sk_report_lock(0x16);
                     sk_report_free(0xe000000000000000);
@@ -5150,7 +5151,7 @@ void sk_console_tree_print(sk_word_t list)
     sk_word_t sep[2] = { 0x2f, 0xe100000000000000 };   /* '/' */
     void *out = &DAT_00657778;
     sk_console_enter();
-    sk_word_t total = sk_dt_list_count(list);
+    sk_word_t total = sk_dt_list_count((sk_word_t*)(uintptr_t)list);
     sk_word_t i = 0;
     for (;;) {
         if ((total & ((long)total >> 0x3f ^ 0xffffffffffffffffULL)) == i) {
@@ -5162,7 +5163,7 @@ void sk_console_tree_print(sk_word_t list)
             sk_stack_fail();
         }
         sk_word_t node[2] = {0,0};
-        sk_word_t ok = sk_dt_list_get(list, i, &node);
+        sk_word_t ok = sk_dt_list_get((sk_word_t*)(uintptr_t)list, i, &node);
         if ((ok & 1) == 0) {
             sk_report_lock(0x16);
             sk_report_free(0xe000000000000000);
@@ -5245,7 +5246,7 @@ void sk_iter_next_byte(sk_word_t *out, sk_word_t a, sk_word_t b, unsigned char f
 void sk_iter_begin_wrap(sk_word_t *out)
 {
     sk_word_t st[5];
-    sk_panic_iter_begin(&st[0], *unaff_x20, unaff_x20[1]);
+    sk_panic_iter_begin();
     out[0]=st[0]; out[1]=st[1]; out[2]=st[2]; out[3]=st[3]; ((char*)out)[4]=st[4];
 }
 
@@ -5279,15 +5280,16 @@ void sk_console_ensure(long a, long b)
  */
 sk_word_t sk_hex_dump(sk_word_t a, sk_word_t b, unsigned char *data, void **limit)
 {
-    sk_word_t frame = sk_console_ensure(0, 0);
+    sk_console_ensure(0, 0);
+    sk_word_t frame = 0;
     sk_word_t count;
     void *line;
     if (data == NULL) {
         sk_console_flush();
         line = &DAT_00657778;
     } else {
-        count = (sk_word_t)(limit - data);
-        if ((sk_word_t)(&__thread_bss.flags) < count) {
+        count = (sk_word_t)((char*)limit - (char*)data);
+        if ((sk_word_t)(&__thread_bss) < count) {
             sk_console_flush();
             line = sk_hex_buf();
             sk_hex_line_begin();
@@ -5297,36 +5299,36 @@ sk_word_t sk_hex_dump(sk_word_t a, sk_word_t b, unsigned char *data, void **limi
                 if (sk_isprint(data[i]) == 0) { hv = 0x2e; }  /* '.' */
                 else hv = sk_hex_digit(data[i]);
                 sk_hex_col(hv);                  /* FUN_0006b2fc + 0006b440 */
-                line = sk_hex_push(line, hv);
+                line = (void*)(uintptr_t)sk_hex_push(line, hv);
             }
             sk_hex_emit(0, count, 0);            /* FUN_0006b5a0 */
             sk_hex_col2(count, 0);
-            sk_hex_cat(sk_hex_emit2(), count, 0);  /* FUN_0006b610 + 001bc440 */
+            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);  /* FUN_0006b610 + 001bc440 */
             /* second 8 bytes */
             for (int i = 0; i < 8; i++) {
                 sk_word_t hv;
                 if (sk_isprint(data[count-1-i]) == 0) hv = 0x2e;
                 else hv = sk_hex_digit(data[count-1-i]);
                 sk_hex_col(hv);
-                line = sk_hex_push(line, hv);
+                line = (void*)(uintptr_t)sk_hex_push(line, hv);
             }
             sk_hex_emit(0, count, 0);
-            sk_hex_cat(sk_hex_emit2(), count, 0);
-            sk_hex_emit('|', 0xe100000000000000);   /* '|' */
+            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);
+            sk_hex_emit('|', 0xe100000000000000, 0);   /* '|' */
             /* printable char column */
             for (int i = 0; i < 8; i++) {
                 sk_word_t hv = data[i] < 0x10 ? sk_hex_digit(data[i]) : data[i];
                 sk_hex_col(hv);
-                line = sk_hex_push(line, hv);
+                line = (void*)(uintptr_t)sk_hex_push(line, hv);
             }
-            sk_hex_cat(sk_hex_emit2(), count, 0);
-            sk_hex_emit(' ', 0xe100000000000000);
-            sk_hex_emit(a, b);                    /* trailing pair */
-            sk_hex_emit(']', 0xe100000000000000);
-            sk_hex_emit(':', 0xe200000000000000);
-            sk_hex_emit(a, b);
+            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);
+            sk_hex_emit(' ', 0xe100000000000000, 0);
+            sk_hex_emit(a, b, 0);                    /* trailing pair */
+            sk_hex_emit(']', 0xe100000000000000, 0);
+            sk_hex_emit(':', 0xe200000000000000, 0);
+            sk_hex_emit(a, b, 0);
             sk_hex_done();
-            line = count;
+            line = (void*)(uintptr_t)count;
         } else {
             sk_console_flush();
             line = &DAT_00657778;
@@ -5337,11 +5339,11 @@ sk_word_t sk_hex_dump(sk_word_t a, sk_word_t b, unsigned char *data, void **limi
                 if (sk_isprint(data[idx]) == 0) hv = 0x2e;
                 else hv = sk_hex_digit(data[idx]);
                 sk_hex_col(hv);
-                line = sk_hex_push(line, hv);
+                line = (void*)(uintptr_t)sk_hex_push(line, hv);
                 idx++;
-            } while ((void*)idx != limit);
+            } while ((char*)idx != (char*)limit);
             sk_hex_emit(0, count, 0);
-            sk_hex_cat(sk_hex_emit2(), count, 0);
+            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);
         }
     }
     sk_hex_flush(line);
@@ -5408,7 +5410,7 @@ void sk_dt_iter_cb(sk_word_t *out)
 void sk_iter_end_wrap(sk_word_t *out)
 {
     sk_word_t st[5];
-    sk_panic_iter_end(&st[0], *unaff_x20, unaff_x20[1]);
+    sk_panic_iter_end();
     out[0]=st[0]; out[1]=st[1]; out[2]=st[2]; out[3]=st[3]; ((char*)out)[4]=st[4];
 }
 
@@ -5467,7 +5469,7 @@ void sk_hex_digit2(unsigned char c){ sk_hex_fmt(&c, 0x65d290, &DAT_004bee78); }
 sk_word_t sk_console_tree_dump(void)
 {
     sk_dt_boot_enter();
-    sk_panic_iter_begin(0);
+    sk_panic_iter_begin();
     void *list = &DAT_00657778;
     while (!(sk_panic_iter_next(&list), *(char*)&list == 1)) {
         sk_word_t base = list[0];
@@ -5507,7 +5509,7 @@ sk_word_t sk_console_tree_dump(void)
     }
     sk_word_t count = sk_console_collect(list);   /* FUN_00068c40 */
     sk_console_init4(0,0,0);                       /* FUN_0006a468 */
-    sk_panic_iter_end(0);
+    sk_panic_iter_end();
     if (*(char*)&list == 1) {
         /* recurse into children */
         while (!(sk_dt_next(&list) & 1)) {
@@ -6093,7 +6095,7 @@ void sk_buf_memcpy18(sk_word_t dst, long count, sk_word_t src)
 void *sk_report_nodes16(void)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
-    sk_panic_iter_end(0);
+    sk_panic_iter_end();
     long idx = 0;
     void *out = &DAT_00657778;
     sk_word_t *dst = &DAT_00657798;
@@ -6150,7 +6152,7 @@ void *sk_report_nodes16(void)
 void *sk_report_nodes20(void)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
-    sk_panic_iter_begin(0);
+    sk_panic_iter_begin();
     long idx = 0;
     void *out = &DAT_00657778;
     long *dst = &DAT_00657798;
@@ -6213,7 +6215,7 @@ void *sk_report_nodes20(void)
 void *sk_report_list16(sk_word_t list)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
-    sk_word_t total = sk_dt_list_count(list);
+    sk_word_t total = sk_dt_list_count((sk_word_t*)(uintptr_t)list);
     long idx = 0;
     sk_word_t i = 0;
     void *out = &DAT_00657778;
@@ -6229,7 +6231,7 @@ void *sk_report_list16(sk_word_t list)
             return out;
         }
         sk_word_t e[2] = {0,0};
-        sk_word_t ok = sk_dt_list_get(list, i, &e);
+        sk_word_t ok = sk_dt_list_get((sk_word_t*)(uintptr_t)list, i, &e);
         if ((ok & 1) == 0) {
             sk_report_lock(0x16);
             sk_report_free(0xe000000000000000);
@@ -6721,7 +6723,7 @@ void sk_iter_begin_wrap2(void)
 {
     sk_dt_boot_enter2(0);
     sk_dt_boot_store(0,0,0);
-    if (canary) { sk_panic_iter_begin(0); return; }
+    if (canary) { sk_panic_iter_begin(); return; }
     sk_stack_fail();
 }
 
@@ -6737,7 +6739,7 @@ void sk_iter_end_wrap2(void)
 {
     sk_dt_boot_enter2(0);
     sk_dt_boot_store(0,0,0);
-    if (canary) { sk_panic_iter_end(0,0,0); return; }
+    if (canary) { sk_panic_iter_end(); return; }
     sk_stack_fail();
 }
 

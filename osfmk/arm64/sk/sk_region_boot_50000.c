@@ -27,6 +27,7 @@ typedef uint64_t (*sk_code_t)();
 #define CONCAT23(a,b) ((((uint64_t)(a)) << 16) | ((uint64_t)(b)))
 #define CONCAT32(a,b) ((((uint64_t)(a)) << 24) | ((uint64_t)(b)))
 #define CONCAT41(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CONCAT44(a,b) ((((uint64_t)(a)) << 32) | ((uint64_t)(b)))
 #define CARRY8(a,b) ((((uint64_t)(a)) + ((uint64_t)(b))) < ((uint64_t)(a)))
 
 /* Supervisor-call + debug intrinsics (render of CallSupervisor /
@@ -686,7 +687,7 @@ void sk_register_global_3(uint64_t arg1);
 void sk_register_global(long *arg1);
 long sk_lookup_thread_obj(int arg1,int arg2);
 void sk_list_push(unsigned long *arg1);
-void sk_kernel_get(void);
+uintptr_t sk_kernel_get(void);
 unsigned long * sk_list_head(void);
 unsigned long sk_strtok(long arg1,long *arg2);
 long sk_range_lookup(unsigned long *arg1,int arg2);
@@ -696,7 +697,7 @@ void sk_iter_list_cb(sk_code_t arg1,uint64_t arg2);
 void sk_kernel_set_70(uint64_t arg1,uint64_t arg2);
 void sk_waitq_enqueue(unsigned long *arg1,int arg2);
 void sk_waitq_dequeue(unsigned long *arg1);
-void sk_waitq_dequeue_all(void);
+unsigned long sk_waitq_dequeue_all(void);
 void sk_register_global_2(void);
 unsigned long sk_log_append(uint64_t arg1,unsigned long arg2);
 unsigned long sk_log_consume(unsigned long arg1,unsigned long arg2);
@@ -10032,10 +10033,9 @@ void sk_list_push(unsigned long *arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_kernel_get(void)
+uintptr_t sk_kernel_get(void)
 {
-  sk_global_get(0x6b2568,1,1);
-  return;
+  return sk_global_get(0x6b2568,1,1);
 }
 
 
@@ -10426,7 +10426,7 @@ LAB_0005c06c:
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_waitq_dequeue_all(void)
+unsigned long sk_waitq_dequeue_all(void)
 {
   sk_code_t t1;
   long t0;
@@ -10437,13 +10437,13 @@ void sk_waitq_dequeue_all(void)
   while( true ) {
     t2 = *(unsigned long **)(t0 + 0x20);
     if (t2 == (unsigned long *)0x0) {
-      return;
+      return 0;
     }
     if ((t2 + 0x2f < t2) || (t3 = *t2 & 0xfffffffff, t3 + 0x178 < t3)) break;
     if (*(unsigned long **)(t0 + 0x20) == t2) {
       *(unsigned long *)(t0 + 0x20) = t3;
       *t2 = 0;
-      return;
+      return (unsigned long)t2;
     }
   }
                     
@@ -12980,22 +12980,22 @@ void sk_syscall_print(long arg1,uint64_t arg2,uint64_t arg3,unsigned long arg4)
   if ((arg4 & 1) == 0) {
     sk_buf_advance(&stk0,1,(uint64_t)sk_str_01);
     sk_buf_advance(&stk0,1,(uint64_t)sk_str_02);
-    sk_buf_advance(&stk0,1,sk_str_03);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_03);
     sk_syscall_name(*(uint32_t *)(arg1 + 0xd8));
     sk_syscall_name(*(uint32_t *)(arg1 + 0xe0));
     sk_syscall_name(*(uint32_t *)(arg1 + 0xdc));
     sk_syscall_name(*(uint32_t *)(arg1 + 0xe4));
-    sk_buf_advance(&stk0,1,sk_str_107);
-    sk_buf_advance(&stk0,1,sk_str_53);
-    sk_buf_advance(&stk0,1,sk_str_51);
-    sk_buf_advance(&stk0,1,sk_str_50);
-    sk_buf_advance(&stk0,1,sk_str_49);
-    sk_buf_advance(&stk0,1,sk_str_47);
-    sk_buf_advance(&stk0,1,sk_str_48);
-    sk_buf_advance(&stk0,1,sk_str_45);
-    sk_buf_advance(&stk0,1,sk_str_52);
-    sk_buf_advance(&stk0,1,sk_str_46);
-    sk_buf_advance(&stk0,1,sk_str_41);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_107);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_53);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_51);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_50);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_49);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_47);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_48);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_45);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_52);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_46);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_41);
     t4 = arg1 + 0x160;
     t1 = -0xc;
     do {
@@ -13017,7 +13017,7 @@ LAB_0005e8a0:
           (((((t3 + 9 < t3 || (t3 + 10 < t3)) || (t3 + 0xb < t3)) ||
             ((t3 + 0xc < t3 || (t3 + 0xd < t3)))) ||
            ((t3 + 0xe < t3 || (t3 + 0xf < t3)))))))) goto LAB_0005e8a0;
-      sk_buf_advance(&stk0,1,sk_str_66);
+      sk_buf_advance(&stk0,1,(uint64_t)sk_str_66);
       t4 = t4 + 8;
       t0 = t1 != -1;
       t1 = t1 + 1;
@@ -13550,7 +13550,7 @@ void sk_syscall_cap_dispatch(unsigned long *arg1,uint64_t arg2,unsigned long arg
   if (t24 < 0x400) {
     t20 = sk_waitq_dequeue_all();
     if (t20 != 0) {
-      sk_msg_release();
+      sk_msg_release((long)t20);
       goto LAB_0005ef44;
     }
     stk3 = 0x24000;
@@ -13704,7 +13704,7 @@ LAB_0005f974:
               }
               if (t22 == 0) {
                 t7 = *(long *)(t20 + 0x28);
-                t21 = sk_ipc_retrieve(0,0xb);
+                t21 = sk_ipc_retrieve();
                 *t12 = (char)t21;
                 t28 = (uint8_t)((unsigned long)t21 >> 8);
                 t12[1] = t28;
@@ -13828,7 +13828,8 @@ LAB_0005f584:
                         t11[2] = *(long *)(t7 + 0x10);
                         if (t11 + 0x20 < t11) goto LAB_0005f584;
                         sk_ctx_exc(t11);
-                        stk1 = sk_ctx_state(t20,arg4);
+                        stk1.lo = sk_ctx_state(t20,arg4);
+                        stk1.hi = 0;
                         t21 = stk1.hi;
                         t22 = stk1.lo;
                         if ((*(long *)(t20 + 0x130) - t22) + *(long *)(t20 + 0x138) <
@@ -13915,9 +13916,9 @@ LAB_0005f584:
                           if (t6 == 0) {
                             t5 = sk_thread_lock();
                             if ((arg5 != 0) && (t5 == 0)) {
-                              sk_msg_pop(t20,1);
+                              sk_msg_pop();
                             }
-                            sk_waitq_enqueue(t20,0);
+                            sk_waitq_enqueue((unsigned long *)t20,0);
                             *arg1 = t20;
                             goto LAB_0005f4b4;
                           }
@@ -14032,7 +14033,7 @@ void sk_restore_ctx(long arg1)
     }
     sk_lock_dispatch_18();
     if (t0 == 2) {
-      sk_waitq_dequeue(t8);
+      sk_waitq_dequeue((unsigned long *)t8);
       t1 = sk_kernel_get();
       t4 = (unsigned short *)(t1 + 0x38);
       t5 = *t4;
