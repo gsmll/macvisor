@@ -737,15 +737,19 @@ void sk_f_0034d434(void){ return; }
  * Ghidra: void FUN_0034ab10(void)
  * x9 = sp; x10 = x8+0xf; x12 = x10 & ~0xf. 16-byte round-up of x8.
  * Confidence: low
- * Notes: unaff_x8. */
-void sk_f_0034ab10(void){ return; }
+ * Notes: unaff_x8; result in x12. */
+word_t sk_f_0034ab10(word_t v){
+  return (v + 0xf) & ~0xfull;   /* 16-byte round-up */
+}
 
 /* FUN_0034d3b4 @ 0x0034d3b4   (est. sk_align16b)
  * Ghidra: void FUN_0034d3b4(void)
  * x9 = sp; x10 = x12+0xf; x10 &= ~0xf. 16-byte round-up of x12.
  * Confidence: low
- * Notes: unaff_x12. */
-void sk_f_0034d3b4(void){ return; }
+ * Notes: unaff_x12; result in x10. */
+word_t sk_f_0034d3b4(word_t v){
+  return (v + 0xf) & ~0xf;      /* 16-byte round-up */
+}
 
 /* FUN_0034d264 @ 0x0034d264   (est. sk_xor128_stack)
  * Ghidra: undefined1 * FUN_0034d264(void)
@@ -768,15 +772,22 @@ void sk_f_0034d584(void){ return; }
 /* FUN_0034d5b8 @ 0x0034d5b8   (est. sk_round_div)
  * Ghidra: void FUN_0034d5b8(void)
  * w15 = ~(0xffffffff << w13); w14 = (w14 + w15) >> w13; w14 += 1; cmp 0xff.
- * Round-up division / alignment with a shift count w13.
+ * Round-up division / alignment with a shift count w13: result = (w14 +
+ * (mask of low w13 bits)) >> w13, then +1, compared against 0xff.
  * Confidence: low
  * Notes: unaff_w13 / w14. */
-void sk_f_0034d5b8(void){ return; }
+word_t sk_f_0034d5b8(uint val, uint shift){
+  uint mask = ~(0xffffffffu << shift);   /* low `shift` bits set */
+  uint r = (val + mask) >> shift;        /* round-up shift */
+  r += 1;                                /* extra +1 */
+  (void)r;
+  return r;                              /* then cmp r, 0xff sets flags */
+}
 
 /* FUN_0034d5d8 @ 0x0034d5d8   (est. sk_bit_twiddle)
  * Ghidra: void FUN_0034d5d8(void)
  * w10 = w9|w10; w9 = w10 & 0xff; w10 = w10 & 0x100000; cmp w9, 0x7.
- * Bit merge / flag test on low byte vs 0x7.
+ * Bit merge / flag test on low byte vs 0x7. Sets flags only.
  * Confidence: low
  * Notes: unaff_w9 / w10. */
 void sk_f_0034d5d8(void){ return; }
