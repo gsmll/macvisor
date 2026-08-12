@@ -61,22 +61,33 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: low — the topology-table contents are kernel-owned and
   presumed sane.
 
-## [entitlements] fffffe000c0f8cfc cred_has_entitlement (sandbox probe)
+## [hv-deps] fffffe000c0f8cfc osmeta_reserved_slot_panic (NOT an entitlement probe)
 
-- **Observation**: The universal sandbox entitlement probe (DAT_fffffe0007e93310
-  slot +0x1c0) is referenced from 100+ kernel sysctl/ops tables — it is the
-  single choke point for entitlement checks, so a weakness here affects every
-  hypervisor capability gate. Ghidra's body analysis collapses it to a 4-byte
-  stub (mis-analyzed), so its exact return contract is unverified; callers
-  treat "return 0 == entitled".
-- **Evidence**: analyze_function_complete reports body fffffe000c0f8cfc-
-  c0f8cff (4 bytes, pacibsp only) yet raw bytes show a real prologue
-  (stp x29,x30; adrp; add); xref_count 100. Callers in hv_entitlements.c/
-  hv_vmapple.c rely on `==0` semantics.
-- **Severity (hypothesis)**: informational — universal-primitive trust anchor;
-  no bug observed, but the contract is not independently confirmed.
-- **Confidence**: low — the 4-byte body is a Ghidra analysis artifact, not an
-  observed defect.
+- **Observation**: CORRECTED 2026-08-12 — this address is NOT the sandbox
+  entitlement probe (the earlier cred_has_entitlement de-guess was wrong). It
+  is the OSMetaClass reserved-virtual-slot panic stub: calling it panics the
+  kernel. Decoded body (Ghidra mis-bounds it as a single 4-byte `pacibsp`):
+  `pacibsp; stp x29,x30,[sp,#-0x10]!; mov x29,sp; adrp/add x0,#0xfffffe000c680fc8;
+  mov w1,#N; bl c0f7394`. The helper c0f7394 (0x64 B) calls the class's
+  authenticated vtable+0x168 hook (`ldr x8,[*(x0+0x18)]; autda; add #0x168;
+  ldr x8; blraa`) then panics `"%s::_RESERVED%s%d called. @%s:%d"` (string
+  0xfffffe00070d811f) with `OSMetaClass.cpp` (0xfffffe00070d7f79) line
+  0x57e=1406. The 100+ data xrefs are IOKit class vtables sharing the stub
+  for their reserved slots — not entitlement tables.
+- **Evidence**: raw bytes at fffffe000c0f8cfc: `7f2303d5` (pacibsp 0xd503237f);
+  disassembly of the 0x1c-byte stub and of c0f7394; panic format + file/line
+  strings read at 0xfffffe00070d811f / 0xfffffe00070d7f79; consecutive vtables
+  at 0x7e4...–0x7f0... share the same stub addresses.
+- **The actual entitlement probe** the hypervisor uses (hv_entitlement_tier
+  b985ae4) is `*(*(0x7e93310)+0x1c0)(task, entitlement)` — a boot-time-filled
+  auth pointer (static image value 0 at 0x7e93310), so its identity is not
+  statically resolvable. hv_entitlements.c's `==0`-means-entitled contract
+  applies to THAT probe, not to c0f8cfc.
+- **Severity (hypothesis)**: informational — a reserved-slot call is a panic
+  by design (fail-stop for ABI misuse); the earlier finding's "universal
+  entitlement choke point" concern is unfounded because the probe is
+  boot-resolved, not this stub.
+- **Confidence**: high — stub + helper + panic strings fully decoded.
 
 ## [entitlements] fffffe0007e0d7f0 quota consumption (boot-arg / quota)
 
@@ -143,23 +154,51 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: low — whether release kernels keep the brk (panicking) or
   elide it is unverified; the assert pattern is what the decompiler shows.
 
-## [hv-deps] fffffe000b95c144 copyin (extern, not recreated)
+## [hv-deps] fffffe000b95c144 copyin (recreated 2026-08-12)
 
 - **Observation**: The universal copyin enforces a user-range bounds check
   against the current task's address-space spec before copying
   (`src < as->min` or `as->max < src+len` → returns 0xe EFAULT), and it
-  special-cases a literal zero user address. It is left as an extern (100+
-  kernel callers), so its full fault path is not re-audited here; the observed
-  bounds check is present but the fault/fixup machinery is 2+ levels deep.
-- **Evidence**: `if (uVar4 < *(ulong*)(lVar6+0x28) || *(ulong*)(lVar6+0x30) <
-  uVar4+param_3) return 0xe;` in FUN_fffffe000b95c144; address-space-spec
-  handling via DAT_fffffe000c62b698. Direct callee of hv_vcpu_create (b989040).
+  special-cases a literal zero user address. Now RECREATED with a full body
+  in hv_glue_audit_mem.c (was extern): the observed bounds check is confirmed
+  against the complete decompile, and the surrounding machinery (address-
+  space-spec tagged-address sentinel DAT_fffffe000c62b698, PAN toggling
+  pan=0/1 around the PAN copy with a 0x23 retry, sentinel-map copy,
+  fallback copy, `0x4000001` length ceiling → 0x16) is audited.
+- **Evidence**: `if (va < *(ulong*)(task+0x28) || CARRY8(va,len) ||
+  *(ulong*)(task+0x30) < va+len) return 0xe;` in the recreated body
+  (copyin, hv_glue_audit_mem.c); first copy kernel_copy (b95c414, (dst,len));
+  PAN copy kernel_copy_pan (b75f890); fallback kernel_copy_fallback
+  (b75fed8); sentinel copy kernel_copy_sentinel (b758bd0); panic c0e11ec
+  "NULL task in %s @%s:%d" / "copy_ensure_address_space_spec changed
+  address". Direct callee of hv_vcpu_create (b989040). Decompiler warning:
+  Removing unreachable block (ram,0xfffffe000b95c28c).
 - **Severity (hypothesis)**: informational — copyin is the canonical trusted
   primitive; the hv vCPU-create path passes a user pointer for the 0x10-byte
-  state structure, so the bounds contract matters, but it is kernel-owned and
-  unchanged.
-- **Confidence**: medium — the range check is directly observed in the
-  decompile; the surrounding fault-machinery semantics are inferred.
+  state structure; the bounds contract is present and now fully audited.
+- **Confidence**: high — full ~70-line decompile recreated, matching the
+  earlier observed evidence exactly.
+
+## [hv-deps] fffffe000b95d6f4 copyout (recreated 2026-08-12)
+
+- **Observation**: The universal kernel->user copyout — mirror of copyin with
+  PAN handling, RECREATED with a full body in hv_glue_audit_mem.c (was
+  extern). The PAN-eligible path disables PAN (S3_6_15_1_6 write of
+  0x2020a53a302abae6; state read S3_6_15_1_5) around kernel_copyout_pan
+  (b75fb2c), re-enables it (0x2020a52a302abae6), takes the preemption counter
+  (+0x1c0, kernel_panic c0f1874 at 0, kernel_tlb_flush b96c6d4 when the
+  counter returns to 0 with +0x1b8+0x4c bit 2 set), sets the per-cpu copy
+  flag +0x1f0, then falls through to kernel_copyout_fallback (b76002c).
+- **Evidence**: recreated body (copyout, hv_glue_audit_mem.c); sentinel path
+  kernel_copy_sentinel (b758bd0); panic c0e11ec "copy_ensure_address_space_spec
+  changed address"; bounds contract identical to copyin (+0x28/+0x30, 0xe,
+  CARRY8, 0x4000001 ceiling → 0x16). Direct callee of hv_vcpu_create
+  (b989040) and hv_trap_op_0 (b984fd8). Decompiler warning: Removing
+  unreachable block (ram,0xfffffe000b95d840).
+- **Severity (hypothesis)**: informational — the user destination range is
+  bounds-checked before the copy; the PAN/preemption dance is standard
+  copyout behavior; nothing anomalous observed.
+- **Confidence**: high — full ~120-line decompile recreated.
 
 ## [boot-audit] fffffe000bdbb37c code_signing_monitor_lockdown
 

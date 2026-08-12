@@ -13,8 +13,11 @@
  *      vmapple-ipc tree, decompiled in hv_vmapple.c) returns the calling
  *      task's hypervisor entitlement tier (0/1/3/4) from the three strings
  *      com.apple.security.hypervisor / com.apple.private.hypervisor.vmapple /
- *      com.apple.private.hypervisor via the credential ops table
- *      DAT_fffffe0007e93310 slot +0x1c0.
+ *      com.apple.private.hypervisor via the boot-resolved credential ops
+ *      probe *(*(DAT_fffffe0007e93310)+0x1c0) (double deref; the static
+ *      image value at 0x7e93310 is 0 and is filled by the boot linker —
+ *      NOT the flat slot DAT+0x1c0, which is an OSMetaClass reserved-slot
+ *      panic stub, FUN_fffffe000c0f8cfc).
  *   2. hv_caps_feature_mask (this file, est. hv_caps_feature_mask) folds that
  *      tier into a 19-qword feature-mask block.
  *   3. hv_caps_cpu_report (this file, est. hv_caps_cpu_report) fills the
@@ -41,8 +44,12 @@
  * Confidence: high
  * Notes: resolves the current task via per_cpu_base(current_cpu_datap) and
  *   validates it via current_task (current_task, recreated in
- *   hv_kernel_glue.c); entitlement dispatch is
- *   `(**(code **)(DAT_fffffe0007e93310 + 0x1c0))(cred, string)`. Reads
+ *   hv_kernel_glue.c); entitlement dispatch is the DOUBLE deref
+ *   `(*(uint64_t **)cred_ops)[0x38](cred, string)` — i.e.
+ *   *(*(DAT_fffffe0007e93310)+0x1c0) — where the value at 0x7e93310 is a
+ *   boot-time-filled auth pointer (static image 0), NOT a flat slot read
+ *   (Ghidra's `(**(code **)(DAT + 0x1c0))` rendering drops the outer
+ *   deref; the disassembly at b985b24/28 shows ldr;ldr). Reads
  *   DAT_fffffe0007e255f8 (boot-arg enable flags). Ground truth FUN_ + addr
  *   verified; tier values are inferred from the three string probes. */
 uint8_t hv_entitlement_tier(void)
@@ -57,14 +64,14 @@ uint8_t hv_entitlement_tier(void)
 	if (proc == 0 || (cred = (long)current_task((void *)proc), cred == 0)) {
 		has_security = false;
 	} else {
-		rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
-		                                                  "com.apple.security.hypervisor");   /* DAT_fffffe0007e93310 */
+		rc = ((int (*)(long, const char *))((uint64_t *)cred_ops[0])[0x38])(cred,
+		                                                  "com.apple.security.hypervisor");   /* *(*(DAT_fffffe0007e93310)+0x1c0), boot-resolved probe */
 		has_security = (rc == 0);
 	}
 	tier = has_security;
 
 		if (proc != 0 && (cred = (long)current_task((void *)proc), cred != 0)) {
-			rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
+			rc = ((int (*)(long, const char *))((uint64_t *)cred_ops[0])[0x38])(cred,
 			                                                  "com.apple.private.hypervisor.vmapple");
 		tier = 3;
 		if (rc != 0)
@@ -72,7 +79,7 @@ uint8_t hv_entitlement_tier(void)
 	}
 
 	if (proc != 0 && (cred = (long)current_task((void *)proc), cred != 0) &&
-	    ((rc = ((int (*)(long, const char *))cred_ops[0x38])(cred,
+	    ((rc = ((int (*)(long, const char *))((uint64_t *)cred_ops[0])[0x38])(cred,
 	                                                        "com.apple.private.hypervisor"),
 	      rc == 0)) && ((tier = 3), (hv_bootarg_flags & 0x1010) != 0)) {   /* DAT_fffffe0007e255f8 */
 		tier = 4;
@@ -93,7 +100,8 @@ uint8_t hv_entitlement_tier(void)
  * Confidence: high
  * Notes: reads DAT_fffffe0007e0d818 (SoC implementer) to clear a feature bit
  *   (uVar9 = 0 when (DAT-3) > 0xfffffffd) and DAT_fffffe0007e0d820 (hv feature
- *   flags). Entitlement dispatch via DAT_fffffe0007e93310 + 0x1c0; current
+ *   flags). Entitlement dispatch via the DOUBLE deref *(*(DAT_fffffe0007e93310)+0x1c0)
+ *   (boot-resolved probe; see hv_entitlement_tier header); current
  *   task via per_cpu_base(current_cpu_datap) + current_task (current_task, recreated in hv_kernel_glue.c).
  *   Verified 2026-08-12 against a fresh decompile: every HV_CAP_MASK_<n>
  *   literal, the store order, the SoC-implementer feature-bit clear, the
@@ -162,8 +170,8 @@ void hv_caps_feature_mask(uint64_t *mask, uint32_t tier)
 			if (task == 0) {
 				feat = 2;
 			} else {
-				ent_rc = ((int (*)(long, const char *))cred_ops[0x38])(task,
-				                                                       "com.apple.private.virtualization");   /* DAT_fffffe0007e93310 */
+				ent_rc = ((int (*)(long, const char *))((uint64_t *)cred_ops[0])[0x38])(task,
+				                                                       "com.apple.private.virtualization");   /* *(*(DAT_fffffe0007e93310)+0x1c0) */
 				feat = 0x202;
 				if (ent_rc != 0)
 					feat = 2;

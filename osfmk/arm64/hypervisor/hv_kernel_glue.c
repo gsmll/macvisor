@@ -59,15 +59,21 @@ extern void  refcount_dec(void *, void *);  /* FUN_fffffe000b862b6c */
  *       FUN_fffffe000b812380/812e54/812f5c while the entry is being built.
  *       Used by the CPU-feature report (hv_caps_cpu_report). Universal XNU
  *       cache-topology primitive (7 kernel callers) — extern, NOT recreated.
- *   - cred_has_entitlement : the credential/sandbox entitlement probe reached
- *       via DAT_fffffe0007e93310 slot +0x1c0; returns 0 when the cred carries
- *       the named entitlement. Universal XNU credential ops primitive (100+
- *       sysctl/ops-table callers) — extern, NOT recreated.
- *   - DAT_fffffe0007e93310 : credential/sandbox ops table (slot +0x1c0 = the
- *       entitlement probe above). Shared kernel data. */
+ *   - osmeta_reserved_slot_panic (FUN_fffffe000c0f8cfc) : NOT an entitlement
+ *       probe (earlier de-guess corrected 2026-08-12). It is an OSMetaClass
+ *       reserved-virtual-slot panic stub: `pacibsp; stp; mov x29,sp;
+ *       adrp/add x0,#0xfffffe000c680fc8; mov w1,#N; bl c0f7394`; the helper
+ *       calls the class's authenticated vtable+0x168 hook then panics
+ *       "%s::_RESERVED%s%d called. @%s:%d" (OSMetaClass.cpp line 0x57e=1406).
+ *       Shared by 100+ IOKit class vtables' reserved slots — extern, NOT
+ *       recreated (deep IOKit, 7-instruction stub).
+ *   - DAT_fffffe0007e93310 : the credential/sandbox ops TABLE POINTER slot —
+ *       hv_entitlement_tier (b985ae4) calls *(*(0x7e93310)+0x1c0)(task, ent).
+ *       The static image value at 0x7e93310 is 0 (boot-time-filled auth
+ *       pointer), so the actual probe identity is not statically resolvable. */
 extern long  cache_type_lookup(int idx);   /* FUN_fffffe000b95fe60; universal cache-topology */
-extern int   cred_has_entitlement(void *cred, const char *entitlement); /* FUN_fffffe000c0f8cfc */
-extern uintptr_t cred_ops[];   /* credential/sandbox ops table */
+extern void  osmeta_reserved_slot_panic(void); /* FUN_fffffe000c0f8cfc; reserved-slot panic stub, noreturn via c0f7394 */
+extern uintptr_t cred_ops[];   /* boot-filled ops-table pointer slot (static 0); *(*(0x7e93310)+0x1c0) = entitlement probe */
 
 /*
  * Current-task getter — validated task pointer from a per-CPU credential.

@@ -783,13 +783,13 @@
   {
     "address": "fffffe000c0f8cfc",
     "ghidra_name": "FUN_fffffe000c0f8cfc",
-    "estimated_name": "cred_has_entitlement",
-    "confidence": "medium",
+    "estimated_name": "osmeta_reserved_slot_panic",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
     "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
     "status": "stubbed",
-    "notes": "Credential/sandbox entitlement probe reached via DAT_fffffe0007e93310 slot +0x1c0; returns 0 when cred carries the entitlement. Universal XNU credential ops primitive (100+ callers); Ghidra body mis-analyzed as 4-byte stub. Declared extern in hv_kernel_glue.c; not recreated."
+    "notes": "CORRECTED 2026-08-12 (was cred_has_entitlement, wrong): OSMetaClass reserved-virtual-slot panic stub, NOT an entitlement probe. Decoded body (Ghidra mis-bounds it as 4-byte pacibsp): pacibsp; stp x29,x30,[sp,#-0x10]!; mov x29,sp; adrp/add x0,#0xfffffe000c680fc8; mov w1,#N (6 here); bl c0f7394. c0f7394 calls the class's authenticated vtable+0x168 hook (blraa) then panics '%s::_RESERVED%s%d called. @%s:%d' (string 0xfffffe00070d811f, OSMetaClass.cpp line 0x57e=1406). Shared by 100+ IOKit class vtable reserved slots. The REAL entitlement probe the hypervisor calls (hv_entitlement_tier b985ae4) is *(*(0x7e93310)+0x1c0)(task, ent) — a boot-time-filled auth pointer (static image value 0), identity not statically resolvable; NOT c0f8cfc. Declared extern in hv_kernel_glue.c; not recreated (deep IOKit)."
   },
   {
     "address": "fffffe000b95c144",
@@ -798,9 +798,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Universal user<->kernel copyin with address-space-spec + fault handling (body b95c144-b95c413); 100+ kernel callers; deep XNU core, NOT recreated (extern in hv_kernel_glue.c). Direct callee of hv_vcpu_create (b989040). Callees b95c414/b75f890/b75fed8/b866ec4 stay stubbed."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "Universal user<->kernel copyin, RECREATED with body in hv_glue_audit_mem.c 2026-08-12 (full ~70-line decompile, not a shell): len==0 -> 0; len>=0x4000001 -> 0x16; address-space-spec resolution (tagged-addr sentinel DAT_fffffe000c62b698; 0xf0ffffffffffffff mask); bounds check vs task +0x28/+0x30 with CARRY8 -> 0xe (EFAULT); sentinel-map path kernel_copy_sentinel (b758bd0 — de-guess name kernel_early_init is a misnomer); PAN path pan=0/1 around kernel_copy_pan (b75f890), 0x23 retry; fallback kernel_copy_fallback (b75fed8); first copy kernel_copy (b95c414, (dst,len)); panics c0e11ec 'NULL task in %s @%s:%d' / 'copy_ensure_address_space_spec changed address: 0x%llx->0x%llx @%s:%d'. Direct callee of hv_vcpu_create (b989040). Decompiler warning: Removing unreachable block (ram,0xfffffe000b95c28c)."
   },
   {
     "address": "fffffe000b95d6f4",
@@ -809,9 +809,9 @@
     "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
-    "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
-    "status": "stubbed",
-    "notes": "Universal user<->kernel copyout (body b95d6f4-b95dadb); 100+ kernel callers; deep XNU core, NOT recreated (extern in hv_kernel_glue.c). Direct callee of hv_vcpu_create (b989040) and hv_trap_op_0 (b984fd8)."
+    "file": "osfmk/arm64/hypervisor/hv_glue_audit_mem.c",
+    "status": "decompiled",
+    "notes": "Universal kernel->user copyout, RECREATED with body in hv_glue_audit_mem.c 2026-08-12 (full ~120-line decompile): mirror of copyin with PAN handling — bounds check vs task +0x28/+0x30 -> 0xe; PAN state S3_6_15_1_5/6 written with constants 0x2020a53a302abae6/0x2020a52a302abae6 (est. PAN/UAO toggles) around kernel_copyout_pan (b75fb2c), 0x23 retry; preemption counter +0x1c0 with kernel_panic (c0f1874) at 0 and kernel_tlb_flush (b96c6d4) at zero with +0x1b8+0x4c bit 2; per-cpu flag +0x1f0; sentinel path kernel_copy_sentinel (b758bd0); fallback kernel_copyout_fallback (b76002c); first copy kernel_copy (b95c414, (src,len)); panic c0e11ec. Direct callee of hv_vcpu_create (b989040) and hv_trap_op_0 (b984fd8). Decompiler warning: Removing unreachable block (ram,0xfffffe000b95d840)."
   },
   {
     "address": "fffffe000c0f86a4",

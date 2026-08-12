@@ -2190,6 +2190,16 @@ l_tag_store:
 extern uint64_t hv_percpu_queue_pop(long cpu, long buf, uint64_t flags);   /* FUN_fffffe000b85e180, hv_helpers.c */
 extern uint64_t kernel_feature_flag(void);                             /* FUN_fffffe000b93c6c8, current-cpu/generation */
 
+/* copyin (b95c144) / copyout (b95d6f4) callees */
+extern uint64_t pan;   /* PSTATE.PAN pseudo-register (est.) */
+extern void     kernel_copy(uint64_t dst, uint64_t len);   /* FUN_fffffe000b95c414: (dst, len) */
+extern uint64_t kernel_copy_pan(uint64_t va, void *dst, uint64_t len);  /* FUN_fffffe000b75f890 */
+extern uint64_t kernel_copy_fallback(uint64_t va, void *dst, uint64_t len); /* FUN_fffffe000b75fed8 */
+extern void     kernel_copy_sentinel(uint64_t dest, uint64_t source, uint64_t len); /* FUN_fffffe000b758bd0: (dest, source, len) memcpy-style; verified by disasm — copyin x0=x20(dst), copyout x1=x20(src). de-guess name kernel_early_init is a misnomer */
+extern uint64_t kernel_copyout_pan(void *src, uint64_t va, uint64_t len); /* FUN_fffffe000b75fb2c — 3 args (x0=src, x1=va, x2=len) per disasm b95d998; decompile's 4th pan_state arg is a Ghidra x8 artifact */
+extern uint64_t kernel_copyout_fallback(void *src, uint64_t va, uint64_t len); /* FUN_fffffe000b76002c */
+extern void     kernel_tlb_flush(void);                     /* FUN_fffffe000b96c6d4 */
+
 void *
 hv_zone_alloc(void *zone, int kind)
 {
@@ -3908,4 +3918,244 @@ l_unwire:
     vmap = 0;
     state_block = (uint64_t *)0;
     goto l_done;
+}
+
+/* ================================================================== *
+ * copyin @ 0xfffffe000b95c144   (est. copyin)
+ * Ghidra: undefined8 FUN_fffffe000b95c144(ulong param_1, undefined8 param_2,
+ *          ulong param_3)
+ * The universal user->kernel copyin: copies `len` bytes from the user
+ * address `src` into the kernel buffer `dst`. Returns 0 on success, 0xe
+ * (EFAULT) when the range falls outside the current task's address-space
+ * window (as->min/+0x28 .. as->max/+0x30, carry-checked), 0x16 for an
+ * oversized request (len >= 0x4000001), or the copy primitive's status.
+ * The address-space spec (the tagged-address sentinel DAT_fffffe000c62b698)
+ * selects the sentinel-map copy path (b758bd0) or the PAN-aware copy
+ * (b75f890, with the pan=0/1 disable around it) / fallback copy (b75fed8).
+ * Direct callee of hv.c hv_vm_map_core and hv_vcpu_create.
+ * Confidence: high (complete decompile, ~70 lines)
+ * Notes: callees b95c414 (copy), b75f890 (PAN copy), b75fed8 (copy
+ *   fallback), b758bd0 (sentinel-map copy — the de-guess name
+ *   kernel_early_init for b758bd0 is a misnomer, see manifest), panic
+ *   c0e11ec "copy_ensure_address_space_spec changed address" /
+ *   "NULL task in %s". Warning: Removing unreachable block
+ *   (ram,0xfffffe000b95c28c).
+ * Kernel code recreated for audit (hv-deps). */
+int
+copyin(const void *src, void *dst, size_t len)
+{
+    long     cur;           /* lVar1: tpidr_el1 */
+    long     task;          /* lVar6/lVar2: current task */
+    uint64_t rc;            /* uVar3: copy status */
+    uint64_t va;            /* uVar4: resolved user address */
+    uint64_t *pmap;         /* puVar5: task pmap */
+    uint64_t src_a = (uint64_t)src;   /* param_1 as integer */
+
+    cur = tpidr_el1;
+    if (len == 0) {
+        return 0;
+    }
+    if (len < 0x4000001) {
+        task = *(long *)(cur + 0x420);
+        pmap = *(uint64_t **)(task + 0x58);
+        va = src_a;
+        if (((((hv_fault_boot_threshold < 0x12) && (*(long *)(cur + 0x418) == 0)) ||
+             (task = (long)per_cpu_base(cur), task == 0)) ||
+            ((*(ushort *)(task + 0x6b0) >> 2 & 1) != 0)) &&
+           ((pmap != (uint64_t *)0 && (pmap != (uint64_t *)0)))) {
+            if (src_a == 0) {
+                va = 0;
+            } else if (pmap == &hv_kernel_map_sentinel) {   /* DAT_fffffe000c62b698 */
+                va = src_a | 0xf00000000000000;
+            } else {
+                va = src_a & 0xf0ffffffffffffff;
+            }
+        }
+        if (((va < *(uint64_t *)(task + 0x28)) || (CARRY8(va, len))) ||
+            (*(uint64_t *)(task + 0x30) < va + len)) {
+            return 0xe;                             /* EFAULT */
+        }
+        if ((va & 0xff00000000000000) == 0 || pmap == &hv_kernel_map_sentinel) {
+            kernel_copy((uint64_t)dst, len);        /* FUN_fffffe000b95c414: (dst, len) */
+            pmap = *(uint64_t **)(task + 0x58);
+            if ((pmap == (uint64_t *)0) || (pmap != &hv_kernel_map_sentinel)) {
+                va = src_a & 0xff7fffffffffffff;
+                if (pmap == &hv_kernel_map_sentinel) {
+                    va = src_a | 0x80000000000000;
+                }
+                if (va == src_a) {
+                    task = (long)per_cpu_base(cur);
+                    if (task == 0) {
+                        kernel_panic_msg_fmt("NULL task in %s @%s:%d");
+                    }
+                    if (((((task == 0) || ((*(ushort *)(task + 0x6b0) >> 2 & 1) == 0)) ||
+                         ((*(byte *)(task + 0x361) >> 6 & 1) == 0)) &&
+                        ((*(byte *)(cur + 0x1c8) & 1) == 0)) &&
+                       (((hv_fault_boot_threshold < 0x12 && (*(long *)(cur + 0x418) == 0)) ||
+                         (((*(ushort *)(task + 0x6b0) >> 2 & 1) != 0 ||
+                           (-1 < *(char *)(*(long *)(cur + 0x420) + 0xb2))))))) {
+                        pan = 0;
+                        rc = kernel_copy_pan(va, dst, len);   /* FUN_fffffe000b75f890 */
+                        pan = 1;
+                        if ((int)rc != 0x23) {
+                            return (int)rc;
+                        }
+                    }
+                    rc = kernel_copy_fallback(va, dst, len);   /* FUN_fffffe000b75fed8 */
+                    *(uint8_t *)(cur + 0x1f0) = 0;
+                    return (int)rc;
+                }
+            } else if ((src_a | 0x80000000000000) == src_a) {
+                kernel_copy_sentinel((uint64_t)dst, src_a | 0x80000000000000, len);  /* b758bd0(dest, source, len) — disasm: x0=x20(dst), x2=x19(len) */
+                return 0;
+            }
+            kernel_panic_msg_fmt("copy_ensure_address_space_spec changed address: 0x%llx->0x%llx @%s:%d");
+        }
+    }
+    return 0x16;
+}
+
+/* ================================================================== *
+ * copyout @ 0xfffffe000b95d6f4   (est. copyout)
+ * Ghidra: undefined8 FUN_fffffe000b95d6f4(undefined8 param_1, ulong param_2,
+ *          ulong param_3)
+ * The universal kernel->user copyout: copies `len` bytes from the kernel
+ * buffer `src` to the user address `dst`. Mirror of copyin (b95c144) with
+ * the PAN handling: resolves the address-space spec, bounds-checks dst
+ * against the task window (+0x28/+0x30, carry-checked, 0xe on violation),
+ * and for the PAN-eligible path disables PAN (S3_6_15_1_6 write) around
+ * kernel_copyout_pan (b75fb2c), re-enables it, takes the preemption
+ * counter (+0x1c0) with a TLB flush at zero, then falls through to
+ * kernel_copyout_fallback (b76002c). The sentinel-map path uses
+ * kernel_copy_sentinel (b758bd0). Returns 0 on success, 0xe/0x16 errors.
+ * Direct callee of hv_vcpu_create (b989040) and hv_capabilities (b984fd8).
+ * Confidence: high (complete decompile, ~120 lines)
+ * Notes: PAN state register S3_6_15_1_5/6 written with the constants
+ *   0x2020a53a302abae6/0x2020a52a302abae6 (est. PAN/UAO toggles); callees
+ *   b95c414, b758bd0, b75fb2c, b76002c, b866ec4, panics c0e11ec/c0f1874,
+ *   TLB flush b96c6d4. Warning: Removing unreachable block
+ *   (ram,0xfffffe000b95d840).
+ * Kernel code recreated for audit (hv-deps). */
+int
+copyout(const void *src, void *dst, size_t len)
+{
+    int      rc;            /* iVar1: preemption counter */
+    uint8_t  pan_flag;      /* bVar2: PAN state flag */
+    long     cur;           /* lVar3: tpidr_el1 */
+    long     task;          /* lVar4/lVar11: current task */
+    uint64_t status;        /* uVar5: copy status */
+    uint64_t va;            /* uVar6: resolved user address */
+    uint64_t pan_state;     /* uVar7: PAN register state */
+    uint64_t *pmap;         /* puVar8/puVar10: task pmap */
+    uint64_t dst_a = (uint64_t)dst;   /* param_2 as integer */
+
+    cur = tpidr_el1;
+    if (len == 0) {
+l_zero:
+        status = 0;
+    } else {
+        if (len < 0x4000001) {
+            task = *(long *)(cur + 0x420);
+            pmap = *(uint64_t **)(task + 0x58);
+            va = dst_a;
+            if (((((hv_fault_boot_threshold < 0x12) && (*(long *)(cur + 0x418) == 0)) ||
+                 (task = (long)per_cpu_base(cur), task == 0)) ||
+                ((*(ushort *)(task + 0x6b0) >> 2 & 1) != 0)) &&
+               ((pmap != (uint64_t *)0 && (pmap != (uint64_t *)0)))) {
+                if (dst_a == 0) {
+                    va = 0;
+                } else if (pmap == &hv_kernel_map_sentinel) {   /* DAT_fffffe000c62b698 */
+                    va = dst_a | 0xf00000000000000;
+                } else {
+                    va = dst_a & 0xf0ffffffffffffff;
+                }
+            }
+            if (((va < *(uint64_t *)(task + 0x28)) || (CARRY8(va, len))) ||
+                (*(uint64_t *)(task + 0x30) < va + len)) {
+                return 0xe;                             /* EFAULT */
+            }
+            if ((va & 0xff00000000000000) == 0 || pmap == &hv_kernel_map_sentinel) {
+                kernel_copy((uint64_t)src, len);        /* FUN_fffffe000b95c414: (src, len) */
+                pmap = *(uint64_t **)(task + 0x58);
+                if (pmap == (uint64_t *)0) {
+                    pmap = (uint64_t *)0;
+                } else {
+                    if (pmap == &hv_kernel_map_sentinel) {
+                        if ((dst_a | 0x80000000000000) != dst_a)
+                            goto l_spec_changed;
+                        kernel_copy_sentinel(dst_a | 0x80000000000000, (uint64_t)src, len);  /* b758bd0(dest, source, len) — disasm: x1=x20(src), x2=x19(len) */
+                        goto l_zero;
+                    }
+                }
+                va = dst_a & 0xff7fffffffffffff;
+                if (pmap == &hv_kernel_map_sentinel) {
+                    va = dst_a | 0x80000000000000;
+                }
+                if (va == dst_a) {
+                    task = (long)per_cpu_base(cur);
+                    if (task == 0) {
+                        kernel_panic_msg_fmt("NULL task in %s @%s:%d");
+                    }
+                    if (((((task == 0) || ((*(ushort *)(task + 0x6b0) >> 2 & 1) == 0)) ||
+                         ((*(byte *)(task + 0x361) >> 6 & 1) == 0)) &&
+                        ((*(byte *)(cur + 0x1c8) & 1) == 0)) &&
+                       (((hv_fault_boot_threshold < 0x12 && (*(long *)(cur + 0x418) == 0)) ||
+                         (((*(ushort *)(task + 0x6b0) >> 2 & 1) != 0 ||
+                           (-1 < *(char *)(*(long *)(cur + 0x420) + 0xb2))))))) {
+                        if (pmap == (uint64_t *)0) {
+                            pmap = (uint64_t *)0;
+                        }
+                        pan = 0;
+                        pan_state = (uint64_t)*(uint8_t *)((uint8_t *)pmap + 0x75);
+                        if (((*(uint8_t *)((uint8_t *)pmap + 0x75) & 1) != 0) &&
+                           (pan_state = UnkSytemRegRead(3, 6, 0xf, 1, 5),
+                           ((pan_state ^ 0xffffffffffffffff) & 0x3000000000) == 0)) {
+                            pan_state = 0x2020a53a302abae6;
+                            UnkSytemRegWrite(3, 6, 0xf, 1, 6, 0x2020a53a302abae6);
+                            InstructionSynchronizationBarrier();
+                        }
+                        status = kernel_copyout_pan((void *)src, va, len);   /* FUN_fffffe000b75fb2c; disasm b95d998: x0=src, x1=va, x2=len */
+                        pan = 1;
+                        if (((*(uint8_t *)(*pmap + 0x75) & 1) != 0) &&
+                           (task = (long)UnkSytemRegRead(3, 6, 0xf, 1, 6),
+                            task != 0x2020a52a302abae6)) {
+                            UnkSytemRegWrite(3, 6, 0xf, 1, 6, 0x2020a52a302abae6);
+                            InstructionSynchronizationBarrier();
+                        }
+                        if ((int)status != 0x23) {
+                            return (int)status;
+                        }
+                        pan_flag = *(uint8_t *)(*pmap + 0x75);
+                    } else {
+                        pan_flag = *(uint8_t *)((uint8_t *)pmap + 0x75);
+                    }
+                    if ((pan_flag & 1) != 0) {
+                        *(int *)(cur + 0x1c0) = *(int *)(cur + 0x1c0) + 1;
+                        *(uint8_t *)(cur + 0x1f0) = 1;
+                        if ((*(uint8_t *)(*(long *)(cur + 0x1b8) + 0x6b) & 1) == 0) {
+                            rc = *(int *)(cur + 0x1c0);
+                        } else {
+                            InstructionSynchronizationBarrier();
+                            *(uint8_t *)(*(long *)(cur + 0x1b8) + 0x6b) = 0;
+                            rc = *(int *)(cur + 0x1c0);
+                        }
+                        if (rc == 0) {
+                            kernel_panic();             /* c0f1874, noreturn */
+                        }
+                        *(int *)(cur + 0x1c0) = rc - 1;
+                        if ((rc - 1 == 0) && ((*(uint8_t *)(*(long *)(cur + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
+                            kernel_tlb_flush();          /* b96c6d4 */
+                        }
+                    }
+                    status = kernel_copyout_fallback((void *)src, va, len);   /* FUN_fffffe000b76002c; disasm b95da04: x0=src, x1=va, x2=len */
+                    *(uint8_t *)(cur + 0x1f0) = 0;
+                    return (int)status;
+                }
+l_spec_changed:
+                kernel_panic_msg_fmt("copy_ensure_address_space_spec changed address: 0x%llx->0x%llx @%s:%d");
+            }
+        }
+        status = 0x16;
+    }
+    return (int)status;
 }

@@ -240,7 +240,7 @@ Severity is a **hypothesis**, not a claim (per `AGENTS.md`).
 | entitlements | `b985ae4` | hv_entitlement_tier | low |
 | entitlements | `b987d9c` | hv_caps_feature_mask | informational |
 | entitlements | `b988038` | hv_caps_cpu_report | informational/low |
-| entitlements | `c0f8cfc` | cred_has_entitlement | informational |
+| entitlements | `c0f8cfc` | osmeta_reserved_slot_panic (corrected 2026-08-12; was cred_has_entitlement) | informational |
 | entitlements | `7e0d7f0` | quota consumption | low |
 | hv-deps | `b78fb24` | waitq_validate | informational/low |
 | hv-deps | `b7e0d8c` | hv_object_lookup | low |

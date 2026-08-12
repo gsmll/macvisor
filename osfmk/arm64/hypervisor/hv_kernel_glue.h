@@ -85,10 +85,16 @@ extern void refcount_dec(void *ref, void *free_fn);
  * cache_type_lookup; 7 kernel callers; used by hv_caps_cpu_report. */
 extern long cache_type_lookup(int idx);
 
-/* Credential/sandbox entitlement probe (DAT_fffffe0007e93310 slot +0x1c0);
- * returns 0 when the cred carries the named entitlement. cred_has_entitlement;
- * 100+ sysctl/ops-table callers; Ghidra body mis-analyzed as a 4-byte stub. */
-extern int cred_has_entitlement(void *cred, const char *entitlement);
-extern uintptr_t cred_ops[];   /* credential/sandbox ops table */
+/* OSMetaClass reserved-virtual-slot panic stub (FUN_fffffe000c0f8cfc) — NOT
+ * an entitlement probe (earlier cred_has_entitlement de-guess corrected
+ * 2026-08-12): pacibsp + tail-call c0f7394 which calls the class's
+ * authenticated vtable+0x168 hook then panics "%s::_RESERVED%s%d called.
+ * @%s:%d" (OSMetaClass.cpp:1406). Shared by 100+ IOKit class vtables. */
+extern void osmeta_reserved_slot_panic(void);
+
+/* Boot-filled ops-table pointer slot (static image value 0).
+ * hv_entitlement_tier (b985ae4) dispatches the entitlement probe as
+ * *(*(0x7e93310)+0x1c0)(task, entitlement); identity resolved at boot. */
+extern uintptr_t cred_ops[];
 
 #endif /* _ARM64_HYPERVISOR_HV_KERNEL_GLUE_H_ */

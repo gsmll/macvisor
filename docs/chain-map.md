@@ -316,8 +316,13 @@ Referenced from 3 functions:
 `com.apple.private.hypervisor.vmapple`, else derived from
 `com.apple.security.hypervisor`; level 4 needs `com.apple.private.hypervisor`
 + config bit `DAT_fffffe0007e255f8 & 0x1010`. Called by trap op idx0
-(FUN_fffffe000b984fd8). Entitlement checks via
-`(**(code**)DAT_fffffe0007e93310 + 0x1c0)(task, name)`.
+(FUN_fffffe000b984fd8). Entitlement checks via the DOUBLE deref
+`*(*(DAT_fffffe0007e93310)+0x1c0)(task, name)` — the value at 0x7e93310 is a
+boot-time-filled auth pointer (static image 0); Ghidra's
+`(**(code**)(DAT+0x1c0))` rendering drops the outer deref (disasm at
+b985b24/28 shows `ldr x8,[x8,#0x310]; ldr x8,[x8,#0x1c0]`). NOTE: the flat
+slot DAT+0x1c0 (= c0f8cfc) is an OSMetaClass reserved-slot panic stub, NOT
+the probe (see entitlements tree).
 
 ### hv-deps direct-kernel-callee conversion (scope decision 2026-08-11, updated by hv-deps)
 Direct kernel callees of the hv code were evaluated for body recreation
@@ -334,7 +339,8 @@ Direct kernel callees of the hv code were evaluated for body recreation
   b866ec4 (per-CPU getter, decompiler panic-stub — not recreatable), b7f0afc/
   b7f1e80 (lck_mtx_lock/unlock on hv lock 0xc62c0b8; 100+ callers each),
   b8afa78 (os_release), b793cf4 (zfree), b862b6c (refcount dec), b95fe60
-  (cache_type_lookup, 7 callers), c0f8cfc (cred_has_entitlement, 100+ callers).
+  (cache_type_lookup, 7 callers), c0f8cfc (osmeta_reserved_slot_panic, 100+
+  vtable callers — corrected name; NOT an entitlement probe).
   Newly documented as stubbed manifest entries (tree=hv-deps, file
   hv_kernel_glue.c): copyin b95c144, copyout b95d6f4, panics c0f86a4/c0f8674/
   c0e1c3c, lock variant b7f1e4c. All externs documented with Ghidra addresses.
@@ -346,9 +352,36 @@ Direct kernel callees of the hv code were evaluated for body recreation
   (lck_mtx_lock/unlock, lock_release, os_release, zfree_waitq, refcount_dec,
   the panics, DT/boot-arg getters, kernel_tlb_flush, kernel_page_validate,
   kernel_paddr_type, kernel_memattr_resolve, kernel_preempt_dec, kernel_trace
-  + core). Remaining externs: copyin b95c144 / copyout b95d6f4 (2+ levels,
-  fault machinery), cache_type_lookup b95fe60, cred_has_entitlement c0f8cfc,
-  and per_cpu_base b866ec4 (disassembly reconstruction, low confidence).**
+  + core). LATE UPDATE (same day): copyin b95c144 and copyout b95d6f4 are
+  ALSO recreated with bodies in hv_glue_audit_mem.c (full decompiles; the
+  earlier "kernel_copyin" name for b8afb18 was a misnomer — b8afb18 is
+  vm_map_wire, so the real user copy primitives were never assigned before).
+  Remaining externs: cache_type_lookup b95fe60, osmeta_reserved_slot_panic
+  c0f8cfc (was misnamed cred_has_entitlement — corrected: it is an
+  OSMetaClass reserved-slot panic stub), and per_cpu_base b866ec4
+  (disassembly reconstruction, low confidence).**
+
+### copyin / copyout edges (recreated 2026-08-12, hv_glue_audit_mem.c)
+```
+FUN_fffffe000b95c144 (copyin, decompiled)
+  ├─ kernel_copy        FUN_fffffe000b95c414  (first 2-arg copy)
+  ├─ kernel_copy_pan    FUN_fffffe000b75f890  (PAN disabled around; 0x23 retry)
+  ├─ kernel_copy_fallback FUN_fffffe000b75fed8
+  ├─ kernel_copy_sentinel FUN_fffffe000b758bd0 (sentinel-map path; de-guess
+  │      name kernel_early_init for b758bd0 is a misnomer)
+  ├─ per_cpu_base       FUN_fffffe000b866ec4
+  └─ panic              c0e11ec ("NULL task in %s @%s:%d" /
+                         "copy_ensure_address_space_spec changed address")
+FUN_fffffe000b95d6f4 (copyout, decompiled)
+  ├─ kernel_copy        FUN_fffffe000b95c414
+  ├─ kernel_copy_sentinel FUN_fffffe000b758bd0
+  ├─ kernel_copyout_pan FUN_fffffe000b75fb2c  (PAN S3_6_15_1_5/6 dance)
+  ├─ kernel_copyout_fallback FUN_fffffe000b76002c
+  ├─ per_cpu_base       FUN_fffffe000b866ec4
+  ├─ kernel_panic       c0f1874 (preemption counter 0)
+  ├─ kernel_tlb_flush   b96c6d4
+  └─ panic              c0e11ec
+```
 
 ## entitlements tree (hv_entitlements.c)
 
@@ -379,7 +412,7 @@ FUN_fffffe000b987d9c(owner+0x411, tier).
 ### Data anchors (entitlements)
 | Address | Meaning |
 |---|---|
-| `fffffe0007e93310` | credential/sandbox ops table; slot +0x1c0 (idx 0x38) = entitlement probe (returns 0 = entitled), target FUN_fffffe000c0f8cfc |
+| `fffffe0007e93310` | credential/sandbox ops POINTER slot (boot-filled; static 0); probe = `*(*(0x7e93310)+0x1c0)` (returns 0 = entitled). The flat slot DAT+0x1c0 = c0f8cfc is an OSMetaClass reserved-slot panic stub, NOT the probe |
 | `fffffe0007e255f8` | kernel-config/boot-arg enable flags (bit 4 = hv_apple_isa_vm_quota override; bits 0x1010 gate tier 4) |
 | `fffffe0007e0d818` | SoC implementer (hv_el2_feature_detect write; caps-mask read) |
 | `fffffe0007e0d820` | hv feature flags (bits 1/2 gate caps-mask / cpu-report) |
@@ -411,7 +444,8 @@ Both already decompiled by their owning trees; documented here, not recreated.
   (already by hv-deps).
 - LEFT as externs in hv_kernel_glue.c (universal XNU core): b866ec4
   (per-CPU/task getter), FUN_fffffe000b95fe60 (cache_type_lookup, 7 kernel
-  callers), FUN_fffffe000c0f8cfc (sandbox entitlement probe, 100+ callers).
+  callers), FUN_fffffe000c0f8cfc (osmeta_reserved_slot_panic — corrected
+  2026-08-12; NOT an entitlement probe; 100+ vtable reserved-slot refs).
 - Security observations logged in docs/findings.md (entitlements sections).
 
 ## Correction log
@@ -433,14 +467,17 @@ Both already decompiled by their owning trees; documented here, not recreated.
 ## hv-deps edges (from hv-deps agent, 2026-08-11)
 
 **UPDATE 2026-08-12 (FULL-AUDIT): the "Kept as externs" table below is
-stale — every function in it except copyin b95c144 / copyout b95d6f4 /
-cache_type_lookup b95fe60 / cred_has_entitlement c0f8cfc was recreated with
-a faithful body in `osfmk/arm64/hypervisor/hv_glue_audit_{locks,mem,obj,
-panic,sys}.c` this session (per the maintainer-confirmed FULL-AUDIT rule).
-The manifest entries for those functions now point at the audit files with
-status `decompiled`; per_cpu_base b866ec4 is a disassembly-level
-reconstruction (low confidence). See the new `hv-deps Sys touch-set` section
-below for the current call-graph edges.**
+stale — every function in it except cache_type_lookup b95fe60 /
+osmeta_reserved_slot_panic c0f8cfc / per_cpu_base b866ec4 was recreated
+with a faithful body in `osfmk/arm64/hypervisor/hv_glue_audit_{locks,mem,
+obj,panic,sys}.c` this session (per the maintainer-confirmed FULL-AUDIT
+rule). copyin b95c144 / copyout b95d6f4 are recreated too (late same-day,
+hv_glue_audit_mem.c); c0f8cfc was corrected from cred_has_entitlement to
+osmeta_reserved_slot_panic. The manifest entries for the recreated functions
+now point at the audit files with status `decompiled`; per_cpu_base b866ec4
+is a disassembly-level reconstruction (low confidence). See the `copyin /
+copyout edges` section above and the `hv-deps Sys touch-set` section below
+for the current call-graph edges.**
 
 Direct kernel callees of hv code, with the caller edge each was verified
 against (`get_function_callers`). Every address below has a manifest entry
@@ -460,8 +497,8 @@ the b7e0-b7e9 container-registry cluster — evidence it is kernel, not hv).
 ### Kept as externs (universal XNU core / not recreatable) — evidence
 | Address | Est. name | Caller-count evidence | Why extern |
 |---|---|---|---|
-| b95c144 | copyin | 100+ kernel callers | deep user-copy + fault machinery |
-| b95d6f4 | copyout | 100+ kernel callers | deep user-copy + fault machinery |
+| b95c144 | copyin | 100+ kernel callers | RECREATED 2026-08-12 (hv_glue_audit_mem.c) — row kept for history |
+| b95d6f4 | copyout | 100+ kernel callers | RECREATED 2026-08-12 (hv_glue_audit_mem.c) — row kept for history |
 | b7f0afc | lck_mtx_lock | 100+ kernel callers | full futex/waitq mutex |
 | b7f1e80 | lck_mtx_unlock | 100+ kernel callers | full futex/waitq mutex |
 | b866ec4 | current_cpu_datap | whole-kernel | decompiler collapses to panic stub (body PAC'd) |
@@ -469,7 +506,7 @@ the b7e0-b7e9 container-registry cluster — evidence it is kernel, not hv).
 | b793cf4 | zfree_waitq | universal | zone free w/ waitq teardown |
 | b862b6c | refcount_dec | universal | refcount hash dec + free |
 | b95fe60 | cache_type_lookup | 7 kernel callers | cache-topology primitive |
-| c0f8cfc | cred_has_entitlement | 100+ sysctl/ops callers | sandbox probe choke point |
+| c0f8cfc | osmeta_reserved_slot_panic | 100+ vtable reserved-slot refs | OSMetaClass reserved-slot panic stub (corrected 2026-08-12; NOT an entitlement probe) |
 | c09c084/c09c31c/c09cbf0 | DT/boot-arg getters | 45/55/100+ callers | device-tree / boot-arg parsers |
 | c0f86a4/c0f8674/c0f1874/c0e1c3c | panics | noreturn | universal panic paths |
 | bf77834 | boot_prop_getter | shared | 'vmm-present' boot property |
