@@ -2532,7 +2532,7 @@ static void sk_tb_noop(void)
  * Confidence: medium */
 static void sk_tb_query_wrap(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
 {
-	sk_tb_send_any(a1, 0, a2, a3, a4, a5);
+	sk_tb_send_any((uint64_t *)a1, 0, a2, a3, a4, a5);
 }
 
 /* FUN_00014bec @ 0x00014bec   (est. sk_tb_cancel)
@@ -2593,7 +2593,7 @@ static uint64_t sk_tb_buf_release(uint64_t *d, uint64_t a2, uint64_t a3, uint64_
 		d[0] = 0;
 		d[3] = 0;
 		d[6] = 0;
-		r = sk_tb_msg_reset(d);
+		r = sk_tb_msg_reset((uint64_t)d);
 		*(uint8_t *)((long)d + 0x29) = 1;
 		return r;
 	}
@@ -2660,11 +2660,11 @@ static uint64_t sk_tb_send_buf(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a
 static void sk_tb_send(uint64_t *w, uint64_t m, int kind, uint64_t a4, uint64_t a5)
 {
 	uint32_t k;
-	sk_msg_append(m, 1);
+	sk_msg_append((void *)m, 1);
 	k = 1;
 	if (kind == 1) k = 2;
-	sk_msg_set(m, k);
-	sk_tb_send_buf(sk_tb_get(m), *w, sk_tb_get(m), a4, a5);
+	sk_msg_set((void *)m, k);
+	sk_tb_send_buf(sk_tb_get((void *)m), *w, sk_tb_get((void *)m), a4, a5);
 }
 
 /* FUN_00014e34 @ 0x00014e34   (est. sk_tb_send_any)
@@ -2680,7 +2680,7 @@ static uint64_t sk_tb_send_any(uint64_t *w, int kind, uint64_t m, uint64_t sz, u
 	uint32_t k;
 	uint64_t r;
 
-	sk_msg_init(m);
+	sk_msg_init((void *)m);
 	uint64_t cap = *w;
 	int x = sk_tb_can_receive(cap);
 	if (x == 0) {
@@ -2703,9 +2703,9 @@ busy:
 commit:
 	k = 1;
 	if (kind != 0) k = 2;
-	r = sk_msg_send(m, sz, k);
+	r = sk_msg_send((void *)m, (void *)sz, k);
 	if ((int32_t)r == 0) {
-		sk_msg_commit(m, w);
+		sk_msg_commit((void *)m, w);
 		r = 0;
 	}
 	return r;

@@ -4393,9 +4393,9 @@ void tb_slot_set_if_empty(unsigned long v, long *slot, unsigned long cb)
     if (*slot != 0) {
         return;
     }
-    unsigned long long r = FUN_00376038(v, cb);
-    if (r >> 64 == 0) {
-        *slot = (long)(unsigned int)r;
+    __uint128_t r = FUN_00376038(v, cb);
+    if ((unsigned long)(r >> 64) == 0) {
+        *slot = (long)(unsigned long)r;
     }
 }
 

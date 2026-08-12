@@ -9736,3 +9736,615 @@ static int64_t sk_file_fetcher_fetch_161ed4(void)
        fatal strings "Launcher.FileFetcher" lines 0x42/0x4a. */
     return 0;
 }
+
+/* ============ 0x162b2c - 0x165864 : DART merge / file-fetch plumbing ============ */
+
+/* FUN_00162b2c @ 0x162b2c  (est. sk_file_fetcher_record)
+ * Records a fetched entry into param_1: resolves the "dylib"/"asan_" bundle
+ * name, parses the component graph (0x1f5998), copies the 0x28-byte record
+ * (0x63350), and stores it (0x162da4 path / 0x8e5d8). */
+static void sk_file_fetcher_record_162b2c(void)
+{
+    /* see decompile: 0x632f0/0x63320 path resolve, 0x1f5998 graph parse,
+       FUN_0006e7c0 record copy, 0x63350/0x633b8 store */
+}
+
+/* FUN_00162e44 @ 0x162e44  (est. sk_dart_entry_equal)
+ * Compares two DART entries (param_1, param_2's element at 0x20), resolving
+ * the "asan_"/"asan.dylib" bundle names (0x2abe60 / 0x1ee018 / 0x29f368),
+ * and returns true if they match (auVar14==auVar15), false after the scan
+ * (0x2a0cf8). */
+static bool sk_dart_entry_equal_162e44(int64_t a, int64_t b)
+{
+    (void)a; (void)b;
+    /* while loop over param_2+0x20 entries; 0x632f0 name resolve, 0x2abe60
+       "asan_" / "asan.dylib" bundle match, 0x29f368/0x29fa0c;
+       return auVar14==auVar15 (true) or 0x2a0cf8 result (false) */
+    return true;
+}
+
+/* FUN_001631c0 @ 0x1631c0  (est. sk_array_grow) */
+static void sk_array_grow_1631c0(int64_t p)
+{
+    /* FUN_00074874(0,*(p+0x10),0,p); */
+}
+
+/* FUN_001631d4 @ 0x1631d4  (est. sk_span_array_swap)
+ * Swaps two 0x28-byte array entries (param_3+param_1*0x28, param_3+param_2*0x28). */
+static void sk_span_array_swap_1631d4(uint64_t i, uint64_t j, int64_t base, int64_t n)
+{
+    (void)n;
+    if (i != j) {
+        /* bounds SoftwareBreakpoint; temp copy via 0x77070, swap 5 words */
+    }
+}
+
+/* FUN_0016325c @ 0x16325c  (est. sk_span_subset_apply)
+ * Applies an index offset to a span (0x29f368/0x29fa0c) given a delta. */
+static void sk_span_subset_apply_16325c(int64_t delta, uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* if (delta>=0) { 0x29f368(7|0xb, -delta, 0xf, a, b); 0x29fa0c(0xf,...); }
+       else SoftwareBreakpoint; */
+}
+
+/* FUN_001632f0 @ 0x1632f0  (est. sk_skip_8_h)  base+8 */
+static int64_t sk_skip_8_1632f0(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_00163320 @ 0x163320  (est. sk_skip_0c_g)  base+0xc */
+static int64_t sk_skip_0c_163320(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_00163350 @ 0x163350  (est. sk_dart_cfg_init_ctor)
+ * Object init via type 0x6540f0 vtable +0x10. */
+static uint64_t sk_dart_cfg_init_ctor_163350(uint64_t p, uint64_t q)
+{
+    (void)p; (void)q;
+    return 0;
+}
+
+/* FUN_001633b8 @ 0x1633b8  (est. sk_dart_cfg_dtor_ctor)
+ * Object destroy via type 0x6540f0 vtable +8. */
+static uint64_t sk_dart_cfg_dtor_ctor_1633b8(uint64_t p)
+{
+    (void)p;
+    return 0;
+}
+
+/* FUN_00163418 @ 0x163418  (est. sk_skip_10_h)  base+0x10 */
+static int64_t sk_skip_10_163418(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_00163448 @ 0x163448  (est. sk_dart_array_replace_range)
+ * Replaces the [param_1,param_2) slice of a 0x28-element array with the
+ * [param_3..] tail: shifts elements left via 0x117d14, updates count. */
+static void sk_dart_array_replace_range_163448(int64_t lo, int64_t hi, int64_t keep)
+{
+    /* bounds SoftwareBreakpoint (0x16352c..40); memmove via 0x117d14;
+       *(&obj+0x10) += (keep - (hi-lo)); if keep<1 SB(0x163544); */
+}
+
+/* FUN_00163544 @ 0x163544  (est. sk_dart_array_remove_range)
+ * Removes [param_1,param_2) elements from a 0x28-element array (resize via
+ * 0x74874, then 0x163448 shift). */
+static void sk_dart_array_remove_range_163544(int64_t lo, int64_t hi)
+{
+    (void)lo; (void)hi;
+    /* bounds SB; new_len = count - (hi-lo); 0x74874(resize); 0x163448(lo,hi,0); */
+}
+
+/* FUN_00163610 @ 0x163610  (est. sk_eval_with_trap)
+ * Evaluates param_1 (a function pointer) under an error-handling trampoline:
+ * builds the standard error capsule (0x64c040/0x4bbf40), stores the 16-byte
+ * result at +0x20, and traps (0x26b434/0x36b588). */
+static void sk_eval_with_trap_163610(void)
+{
+    /* FUN_0036a1a0(&DAT_006add10, buf,0,0); if flag: alloc 0x64c040/0x4bbf40,
+       auVar3=(*param_1)(); store at +0x20; 0x26b434/0x36b588; 0x26e8(+0x20); */
+}
+
+/* FUN_001636e0 @ 0x1636e0  (est. sk_dart_replace_if)
+ * Replaces an element if the predicate holds: builds element via type vtable
+ * (+0x10 copy), compares (0x77824/0x77bec, vtable +0x30), and either inserts
+ * (vtable +0x20) or removes (+0x38). */
+static void sk_dart_replace_if_1636e0(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00163a08 @ 0x163a08  (est. sk_ff_forward) */
+static void sk_ff_forward_163a08(void) { /* FUN_00164c60(); */ }
+
+/* FUN_00163a3c @ 0x163a3c  (est. sk_ff_subrange)
+ * Builds a subrange span (param_1..param_2) via 0x1eb088 (0x6726a8);
+ * asserts success (SoftwareBreakpoint 0x163b38/0x163ac0). */
+static void sk_ff_subrange_163a3c(int64_t lo, int64_t hi)
+{
+    (void)lo; (void)hi;
+    /* local={lo, hi-lo, &LAB_00067ecc, 0}; 0x1eb088(&local,0x6726a8,1,0x64e008,..); */
+}
+
+/* FUN_00163b38 @ 0x163b38  (est. sk_span_bundle_load)
+ * Loads a span from a named bundle ("dylib"/"asan_"), resolving via
+ * 0x2abe60 / 0x1ee018 / 0x6325c. */
+static void sk_span_bundle_load_163b38(void)
+{
+    /* uVar1=0x2abe60(p1,p2,p5,p6); if(!ok) ZEXT816(0); else { u2=0x1ee018; 0x6325c; rel; } */
+}
+
+/* FUN_00163bf8 @ 0x163bf8  (est. sk_dart_check_prefix)
+ * Checks/patches a range prefix: builds the element (0x77824), compares via
+ * vtable +0x30; on mismatch fatal "found ;orezu." (0x5c1f60, tag 0x15). */
+static void sk_dart_check_prefix_163bf8(void)
+{
+    /* see decompile; fatal via FUN_001afa84 */
+}
+
+/* FUN_00163fc4 @ 0x163fc4  (est. sk_dart_apply_prefix) */
+static void sk_dart_apply_prefix_163fc4(void) { /* see decompile */ }
+
+/* FUN_001642f0 @ 0x1642f0  (est. sk_dart_apply_prefix_b) */
+static void sk_dart_apply_prefix_1642f0(void) { /* see decompile */ }
+
+/* FUN_001646e4 @ 0x1646e4  (est. sk_dart_map_entries)
+ * Maps entries through a callback: walks the range, invoking param_1
+ * (callback) per element via vtable +0x30 traversal; builds result via
+ * 0x1a0414/0x6e06c and 0x19e578 (0x66b5c8). */
+static uint64_t sk_dart_map_entries_1646e4(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00164c2c @ 0x164c2c  (est. sk_ff_recurse) */
+static void sk_ff_recurse_164c2c(void) { /* FUN_00164c60(); */ }
+
+/* FUN_00164c60 @ 0x164c60  (est. sk_ff_visit)
+ * File-fetcher visitor: calls 0x1646e4 then either the completion callback
+ * (param_10) with the fetched range or the vtable +0x20 unwind. */
+static void sk_ff_visit_164c60(void) { /* see decompile */ }
+
+/* FUN_00164e0c @ 0x164e0c  (est. sk_dart_reduce)
+ * Reduces a range via 0x24fd30 (FUN_001678f8) with vtable +0x30 traversal;
+ * success path computes via 0x10d34 + 0x1bd234 (0x66acf0). */
+static uint64_t sk_dart_reduce_164e0c(void)
+{
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00165180 @ 0x165180  (est. sk_dart_split_insert)  [big]
+ * Splits and inserts a subrange: two-phase match (0x25bca4) against param_2
+ * then param_3; on the second match fatal (0x165864); otherwise builds the
+ * node (0x667868) and schedules split callbacks (0x216900 FUN_00167b04,
+ * 0x20a084 FUN_00167b90, 0x20a3b0 FUN_00167bc8). */
+static void sk_dart_split_insert_165180(void) { /* see decompile */ }
+
+/* FUN_00165864 @ 0x165864  (est. sk_ff_done)
+ * File-fetch completion: checks the resolved range via 0x4ed9c8, returns a
+ * match flag. */
+static uint32_t sk_ff_done_165864(void)
+{
+    /* uVar5=0x2abe60(...); */
+    return 0;
+}
+
+/* ============ 0x165864 - 0x1695c4 : DART range ops / range logging ============ */
+
+/* FUN_00165864 @ 0x165864  (est. sk_range_contains)
+ * Tests whether the range [param_1,param_2) is covered by param_3's span via
+ * 0x14ae44; returns inverted match bit. */
+static uint32_t sk_range_contains_165864(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* uVar2=0x177824(0,d,c,..); uVar3=0x27754(e); uVar1=(*0x14ae44)(a,b,uVar2,uVar3);
+       return (uVar1^0xffffffff)&1; */
+    return 0;
+}
+
+/* FUN_001658f0 @ 0x1658f0  (est. sk_range_contains_b)
+ * Tests coverage via 0x25bca4 (span in param_2). */
+static uint32_t sk_range_contains_b_1658f0(uint64_t a, uint64_t *p2, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)c; (void)d; (void)e;
+    /* FUN_0036a1a0(p2, buf,0,0); u3=*p2; u2=0x177824(0,d,c,..); u1=0x25bca4(a,u3,u2,e);
+       return (u1^0xffffffff)&1; */
+    return 0;
+}
+
+/* FUN_001659ac @ 0x1659ac  (est. sk_range_iterate)
+ * Iterates a range via 0x1ff8fc with the 0x16794c callback and 0x16791c
+ * element builder. */
+static void sk_range_iterate_1659ac(void) { /* see decompile */ }
+
+/* FUN_00165b04 @ 0x165b04  (est. sk_range_apply)
+ * Applies the 0x167a2c operation to the range with the 0x27754 type. */
+static void sk_range_apply_165b04(void) { /* see decompile */ }
+
+/* FUN_00165bb8 @ 0x165bb8  (est. sk_range_fingerprint)
+ * Computes a 32-bit fingerprint over the range's elements: walks with
+ * 0x267510, classifies each element (0x2bd848 / 0x16749c) into a per-index
+ * code recorded at 0x657798 (grow via 0x673e4), then packs the byte codes
+ * big-endian into the result. Returns 0x100000000 on a size mismatch. */
+static uint64_t sk_range_fingerprint_165bb8(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile: DAT_00657788 counter, 0x657798 code bytes */
+    return 0;
+}
+
+/* FUN_00165df8 @ 0x165df8  (est. sk_range_subrange)
+ * Builds a subrange span (param_1..param_2) via 0x1eb088; param_3 is a type
+ * with element size at +0x48. */
+static void sk_range_subrange_165df8(int64_t lo, int64_t hi, int64_t type)
+{
+    (void)lo; (void)hi; (void)type;
+    /* see decompile */
+}
+
+/* FUN_00165f44 @ 0x165f44  (est. sk_range_parse)
+ * Parses a range expression: uses 0x8f6c0/0x8f6f4/0x8f728/0x8f758 readers
+ * and 0x16796c/0x16799c/0x1679cc/0x1679fc ops into param_1. */
+static void sk_range_parse_165f44(void) { /* see decompile */ }
+
+/* FUN_0016622c @ 0x16622c  (est. sk_range_parse_bitmask)
+ * Parses a range with a single-bit mask (1<<param_2). */
+static void sk_range_parse_bitmask_16622c(void) { /* see decompile */ }
+
+/* FUN_00166524 @ 0x166524  (est. sk_range_parse_pair)
+ * Parses two ranges (param_1,param_2) into param_3 via dual 0x16796c/0x167a2c
+ * reads. */
+static void sk_range_parse_pair_166524(void) { /* see decompile */ }
+
+/* FUN_001669a8 @ 0x1669a8  (est. sk_range_parse_n)  [range-family parse]
+ * Range-expression parser family; see decompile. */
+static void sk_range_parse_n_1669a8(void) { /* see decompile */ }
+
+/* FUN_00168748 @ 0x168748  (est. sk_range_insert_update)
+ * Updates/inserts a range entry in the 0x652108 range table (0x71950 /
+ * 0x6806c / 0x19ea20), printing "range permissions vmaPriv vmaAtt ..." and
+ * refreshing the affected leaf (0x1a2abc / 0x8396c). */
+static void sk_range_insert_update_168748(uint64_t p)
+{
+    (void)p;
+    /* see decompile */
+}
+
+/* FUN_00168b20 @ 0x168b20  (est. sk_range_insert_full)
+ * Full range insert with perms/vma/flags (param_3/param_6); checks overlap
+ * (0x1612c), inserts, updates. */
+static void sk_range_insert_full_168b20(void) { /* see decompile */ }
+
+/* FUN_00168e6c @ 0x168e6c  (est. sk_range_split_update)  [big]
+ * Splits an existing range entry around [param_4,param_5) and updates the
+ * table: rebuilds the 3 parts (before/match/after) and rewrites via vtable
+ * +0x20/+0x18. */
+static void sk_range_split_update_168e6c(void) { /* see decompile */ }
+
+/* FUN_001695c4 @ 0x1695c4  (est. sk_range_release)
+ * Releases a range entry. */
+static void sk_range_release_1695c4(void) { /* see decompile */ }
+
+/* ============ 0x1695c8 - 0x16dff4 : range table ops / Stackshot init ============ */
+
+/* FUN_001695c8 @ 0x1695c8  (est. sk_range_del)
+ * Deletes a range via vtable +0x90. */
+static void sk_range_del_1695c8(void) { /* (**(**+0x90))(p1,0,1,p2,p3); */ }
+
+/* FUN_00169604 @ 0x169604  (est. sk_range_alloc_ctor)
+ * Allocates a range object, initializes via vtable type +0x20. */
+static int64_t *sk_range_alloc_ctor_169604(uint64_t p)
+{
+    (void)p;
+    /* pl=FUN_0036a940(); (**(*(**+0x38)-8)+0x20)(pl+*(*+0x48),p); return pl; */
+    return 0;
+}
+
+/* FUN_00169690 @ 0x169690  (est. sk_range_set_a) */
+static void sk_range_set_a_169690(uint64_t p) { (void)p; }
+
+/* FUN_00169694 @ 0x169694  (est. sk_range_set_b) dup */
+static void sk_range_set_b_169694(uint64_t p) { (void)p; }
+
+/* FUN_001696fc @ 0x1696fc  (est. sk_range_dtor) */
+static void sk_range_dtor_1696fc(void) { /* vtable+8 destroy; 0x36b6ac */ }
+
+/* FUN_00169700 @ 0x169700  (est. sk_range_dtor_b) dup */
+static void sk_range_dtor_b_169700(void) { /* dup 0x1696fc */ }
+
+/* FUN_00169780 @ 0x169780  (est. sk_range_find)
+ * Finds the range covering [param_1, param_1+param_2): validates the length
+ * is element-aligned (0xe40f0), searches via 0x16d7c4, and either returns
+ * the matching leaf (0x3d798/0x1a0534) or an error code (5/7). */
+static int64_t sk_range_find_169780(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00169bf0 @ 0x169bf0  (est. sk_range_insert)
+ * Inserts a range of param_3 bytes at param_2 with perms (param_5): validates
+ * alignment, then via 0x16d68c/0x16d6bc/0x16d6ec ops inserts or faults. */
+static void sk_range_insert_169bf0(void) { /* see decompile */ }
+
+/* FUN_00169e1c @ 0x169e1c  (est. sk_range_foreach_update)
+ * Iterates [param_1,param_2) and applies per-entry update via 0x16d738. */
+static void sk_range_foreach_update_169e1c(void) { /* see decompile */ }
+
+/* FUN_0016a2d0 @ 0x16a2d0  (est. sk_range_foreach_element)
+ * Applies 0x16de38 per element of the range table. */
+static void sk_range_foreach_element_16a2d0(void) { /* see decompile */ }
+
+/* FUN_0016a45c @ 0x16a45c  (est. sk_range_adjust)
+ * Adjusts a range by param_2 (element-aligned); see decompile. */
+static void sk_range_adjust_16a45c(void) { /* see decompile */ }
+
+/* FUN_0016ad3c @ 0x16ad3c  (est. sk_range_op_5arg)
+ * Range op (5-arg variant). */
+static void sk_range_op_5arg_16ad3c(void) { /* see decompile */ }
+
+/* FUN_0016b2c4 @ 0x16b2c4  (est. sk_range_op_4arg) */
+static void sk_range_op_4arg_16b2c4(void) { /* see decompile */ }
+
+/* FUN_0016b4b4 @ 0x16b4b4  (est. sk_range_op_3arg) */
+static void sk_range_op_3arg_16b4b4(void) { /* see decompile */ }
+
+/* FUN_0016ba2c @ 0x16ba2c  (est. sk_range_op_2arg) */
+static void sk_range_op_2arg_16ba2c(void) { /* see decompile */ }
+
+/* FUN_0016bf58 @ 0x16bf58  (est. sk_range_op_n)
+ * Range op family. */
+static void sk_range_op_n_16bf58(void) { /* see decompile */ }
+
+/* FUN_0016c700 @ 0x16c700  (est. sk_range_cb1) */
+static void sk_range_cb1_16c700(void) { /* see decompile */ }
+
+/* FUN_0016c7b8 @ 0x16c7b8  (est. sk_range_cb2) */
+static void sk_range_cb2_16c7b8(void) { /* see decompile */ }
+
+/* FUN_0016c81c @ 0x16c81c  (est. sk_range_cb3) */
+static void sk_range_cb3_16c81c(void) { /* see decompile */ }
+
+/* FUN_0016c8ec @ 0x16c8ec  (est. sk_range_cb4) */
+static void sk_range_cb4_16c8ec(void) { /* see decompile */ }
+
+/* FUN_0016cb50 @ 0x16cb50  (est. sk_range_cb5) */
+static void sk_range_cb5_16cb50(void) { /* see decompile */ }
+
+/* FUN_0016cb54 @ 0x16cb54  (est. sk_range_cb5b) */
+static void sk_range_cb5b_16cb54(void) { /* see decompile */ }
+
+/* FUN_0016cb88 @ 0x16cb88  (est. sk_range_cb6) */
+static void sk_range_cb6_16cb88(void) { /* see decompile */ }
+
+/* FUN_0016cbd0 @ 0x16cbd0  (est. sk_range_cb7) */
+static void sk_range_cb7_16cbd0(void) { /* see decompile */ }
+
+/* FUN_0016ccac @ 0x16ccac  (est. sk_range_cb8) */
+static void sk_range_cb8_16ccac(void) { /* see decompile */ }
+
+/* FUN_0016cd50 @ 0x16cd50  (est. sk_range_cb9) */
+static void sk_range_cb9_16cd50(void) { /* see decompile */ }
+
+/* FUN_0016cfbc @ 0x16cfbc  (est. sk_range_cb10) */
+static void sk_range_cb10_16cfbc(void) { /* see decompile */ }
+
+/* FUN_0016d180 @ 0x16d180  (est. sk_range_cb11) */
+static void sk_range_cb11_16d180(void) { /* see decompile */ }
+
+/* FUN_0016d218 @ 0x16d218  (est. sk_range_cb12) */
+static void sk_range_cb12_16d218(void) { /* see decompile */ }
+
+/* FUN_0016d2a0 @ 0x16d2a0  (est. sk_range_cb13) */
+static void sk_range_cb13_16d2a0(void) { /* see decompile */ }
+
+/* FUN_0016d328 @ 0x16d328  (est. sk_range_cb14) */
+static void sk_range_cb14_16d328(void) { /* see decompile */ }
+
+/* FUN_0016d4e8 @ 0x16d4e8  (est. sk_range_cb15) */
+static void sk_range_cb15_16d4e8(void) { /* see decompile */ }
+
+/* FUN_0016d68c @ 0x16d68c  (est. sk_range_op_insert) */
+static void sk_range_op_insert_16d68c(void) { /* see decompile */ }
+
+/* FUN_0016d6bc @ 0x16d6bc  (est. sk_range_op_end) */
+static void sk_range_op_end_16d6bc(void) { /* see decompile */ }
+
+/* FUN_0016d6ec @ 0x16d6ec  (est. sk_range_op_commit) */
+static void sk_range_op_commit_16d6ec(void) { /* see decompile */ }
+
+/* FUN_0016d71c @ 0x16d71c  (est. sk_range_iter_cb)
+ * Range iteration callback. */
+static void sk_range_iter_cb_16d71c(void) { /* see decompile */ }
+
+/* FUN_0016d720 @ 0x16d720  (est. sk_range_skip_40)  base+0x40 */
+static int64_t sk_range_skip_40_16d720(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x40) + (int64_t)*(int32_t *)(p + 0x40);
+}
+
+/* FUN_0016d738 @ 0x16d738  (est. sk_range_skip_30)  base+0x30 */
+static int64_t sk_range_skip_30_16d738(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x30) + (int64_t)*(int32_t *)(p + 0x30);
+}
+
+/* FUN_0016d768 @ 0x16d768  (est. sk_range_cb16) */
+static void sk_range_cb16_16d768(void) { /* see decompile */ }
+
+/* FUN_0016d76c @ 0x16d76c  (est. sk_range_cb17)
+ * Calls 0x16a6f0 with ctx words. */
+static void sk_range_cb17_16d76c(uint64_t p)
+{
+    (void)p;
+    /* FUN_0016a6f0(p, *(x20+0x10), *(x20+0x18)); */
+}
+
+/* FUN_0016d784 @ 0x16d784  (est. sk_range_cb18)
+ * Calls 0x16ad3c with ctx words. */
+static void sk_range_cb18_16d784(uint64_t p)
+{
+    (void)p;
+    /* FUN_0016ad3c(p, ctx[0x10..0x28]); */
+}
+
+/* FUN_0016d788 @ 0x16d788  (est. sk_range_cb18b) dup */
+static void sk_range_cb18b_16d788(uint64_t p) { (void)p; }
+
+/* FUN_0016d7a4 @ 0x16d7a4  (est. sk_range_cb19)
+ * Calls 0x16b4b4 with ctx words. */
+static void sk_range_cb19_16d7a4(uint64_t p)
+{
+    (void)p;
+    /* FUN_0016b4b4(p, ctx[0x10..0x20]); */
+}
+
+/* FUN_0016d7a8 @ 0x16d7a8  (est. sk_range_cb19b) dup */
+static void sk_range_cb19b_16d7a8(uint64_t p) { (void)p; }
+
+/* FUN_0016d7c4 @ 0x16d7c4  (est. sk_skip_28)  base+0x28 */
+static int64_t sk_skip_28_16d7c4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x28) + (int64_t)*(int32_t *)(p + 0x28);
+}
+
+/* FUN_0016d804 @ 0x16d804  (est. sk_range_release_ctx) */
+static void sk_range_release_ctx_16d804(void)
+{
+    /* FUN_0036b118(*(x20+0x18)); FUN_0036b21c(); */
+}
+
+/* FUN_0016d808 @ 0x16d808  (est. sk_range_release_ctx_b) dup */
+static void sk_range_release_ctx_16d808(void) { /* dup 0x16d804 */ }
+
+/* FUN_0016d830 @ 0x16d830  (est. sk_range_cb_call)
+ * Calls the stored callback at +0x10. */
+static void sk_range_cb_call_16d830(void) { /* (**(x20+0x10))(); */ }
+
+/* FUN_0016d858 @ 0x16d858  (est. sk_range_cb_call3)
+ * Calls callback (+0x10) with 3 args, stores byte result. */
+static void sk_range_cb_call3_16d858(void) { /* uVar1=(**(x20+0x10))(*p2,*p3,*p4); *p1=uVar1; */ }
+
+/* FUN_0016d894 @ 0x16d894  (est. sk_skip_3c)  base+0x3c */
+static int64_t sk_skip_3c_16d894(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x3c) + (int64_t)*(int32_t *)(p + 0x3c);
+}
+
+/* FUN_0016d8c4 @ 0x16d8c4  (est. sk_skip_40_b)  base+0x40 */
+static int64_t sk_skip_40_16d8c4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x40) + (int64_t)*(int32_t *)(p + 0x40);
+}
+
+/* FUN_0016d984 @ 0x16d984  (est. sk_skip_54)  base+0x54 */
+static int64_t sk_skip_54_16d984(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x54) + (int64_t)*(int32_t *)(p + 0x54);
+}
+
+/* FUN_0016d9b4 @ 0x16d9b4  (est. sk_skip_50)  base+0x50 */
+static int64_t sk_skip_50_16d9b4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x50) + (int64_t)*(int32_t *)(p + 0x50);
+}
+
+/* FUN_0016d9e4 @ 0x16d9e4  (est. sk_range_meta) */
+static void sk_range_meta_16d9e4(void) { /* FUN_00021480(); */ }
+
+/* FUN_0016dc20 @ 0x16dc20  (est. sk_range_cfg_write)
+ * Writes the 0x67aa60 config via 0x374104. */
+static void sk_range_cfg_write_16dc20(int64_t p)
+{
+    /* local_18=0x67aa60; FUN_00374104(p,0,1,&local_18,p+0x48); */
+}
+
+/* FUN_0016dc98 @ 0x16dc98  (est. sk_range_describe)
+ * Describes the range table (0x67aa60) as a 0x13f-byte span via 0x374104. */
+static void sk_range_describe_16dc98(int64_t p)
+{
+    (void)p;
+    /* see decompile */
+}
+
+/* FUN_0016dd48 @ 0x16dd48  (est. sk_skip_14)  base+0x14 */
+static int64_t sk_skip_14_16dd48(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_0016dd78 @ 0x16dd78  (est. sk_skip_38)  base+0x38 */
+static int64_t sk_skip_38_16dd78(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x38) + (int64_t)*(int32_t *)(p + 0x38);
+}
+
+/* FUN_0016dda8 @ 0x16dda8  (est. sk_skip_0c)  base+0xc */
+static int64_t sk_skip_0c_16dda8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_0016ddd8 @ 0x16ddd8  (est. sk_skip_18)  base+0x18 */
+static int64_t sk_skip_18_16ddd8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x18) + (int64_t)*(int32_t *)(p + 0x18);
+}
+
+/* FUN_0016de08 @ 0x16de08  (est. sk_skip_34)  base+0x34 */
+static int64_t sk_skip_34_16de08(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x34) + (int64_t)*(int32_t *)(p + 0x34);
+}
+
+/* FUN_0016de38 @ 0x16de38  (est. sk_skip_20_b)  base+0x20 */
+static int64_t sk_skip_20_16de38(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x20) + (int64_t)*(int32_t *)(p + 0x20);
+}
+
+/* FUN_0016de78 @ 0x16de78  (est. sk_stackshot_enable)
+ * StackshotConclaveSupport.enable: allocates a stackshot buffer (0x4000
+ * default, or the size from 0x4ad294), maps it (0x4ad388/0x4add1c), and
+ * records it (DAT_006bfed8/0x6bfed0). Traps on failure ("Can't ..."
+ * 0x5c9c11/0x5c9c5c/0x5c9bcf). */
+static void sk_stackshot_enable_16de78(int en)
+{
+    (void)en;
+    /* see decompile; string anchors StackshotConclaveSupport */
+}
+
+/* FUN_0016dff4 @ 0x16dff4  (est. sk_stackshot_init)
+ * StackshotConclaveSupport.init: registers boot args (0x4b520), calls enable(0),
+ * allocates the per-guest entry arrays (0x6bfef0 ptr / 0x6bff00 len), zeroes
+ * the 0x6bff10..0x6c0088 state block, resolves memattr (0x34a2c +0x30),
+ * and initializes the 0x6c0098 kernel region (0x3dde8) + 0x6c0060 token
+ * (0x15388, 0x171324). Fatal on allocation failure. */
+static void sk_stackshot_init_16dff4(void)
+{
+    /* see decompile; 0x5519 SoftwareBreakpoint at 0x16e3a0 on bad state */
+}

@@ -122,6 +122,7 @@ extern unsigned long sk_rt_00024678(unsigned long, ...);                      /*
 extern unsigned long sk_rt_002a4ab4(unsigned long, ...);                      /* FUN_002a4ab4 */
 extern unsigned long sk_rt_002acbb8(unsigned long, ...);                      /* FUN_002acbb8 */
 extern unsigned long sk_rt_001afa84(unsigned long, ...);                      /* FUN_001afa84 */
+extern unsigned long sk_indirect_call(unsigned long, ...);   /* opaque indirect Swift call */
 
 /*-------------------------------------------------------------------------
  * Out-of-range global metadata / string-table addresses (opaque externs).
@@ -154,8 +155,7 @@ extern unsigned long DAT_004bbfcc, DAT_00675c30;
 /*-------------------------------------------------------------------------
  * Forward declarations (same-file cross references; C99 requires decls).
  *------------------------------------------------------------------------- */
-extern unsigned long sk_f_00002534(...);                                     /* FUN_00002534 */
-void tightbeam_message_init_desc(unsigned char *, unsigned long, unsigned long, unsigned long);
+void tightbeam_message_init_desc(unsigned char *, unsigned long, unsigned long, unsigned long, unsigned int *);
 void tightbeam_decoder_init(unsigned char *, unsigned long);
 void tightbeam_decoder_attach(unsigned long);
 void tightbeam_decoder_attached_run(void);
@@ -200,9 +200,9 @@ void vas_codable_encode(unsigned long, unsigned long, unsigned long, unsigned lo
 void vas_codable_encode_out(unsigned long, unsigned long, unsigned long, unsigned int *,
                             unsigned long, unsigned long);
 void vas_object_encode_cb(unsigned long, unsigned long, unsigned int *);
-void sk_type_register(void);
+unsigned long sk_type_register(void);
 unsigned long sk_lock_and_alloc(unsigned long *, long *);
-void sk_type_register_inner(void);
+unsigned long sk_type_register_inner(void);
 long tightbeam_method_8b(unsigned long);
 long tightbeam_method_8c(unsigned long);
 long tightbeam_method_4e(unsigned long);
@@ -236,7 +236,8 @@ long vas_fault_complete(unsigned long, unsigned long, unsigned long, unsigned lo
  * Notes: sk_alloc_aligned(FUN_0036a804); FATAL s_Fatal_error_005accd0.
  */
 void tightbeam_message_init_desc(unsigned char *desc, unsigned long owner,
-                                 unsigned long a, unsigned long b)
+                                 unsigned long a, unsigned long b,
+                                 unsigned int *err)
 {
     unsigned int *state;
     unsigned long buf;
@@ -303,7 +304,7 @@ void tightbeam_decoder_attach(unsigned long payload)
     *(long **)(__builtin_frame_address(0) + 0x10) = job;
     *job = (long)__builtin_frame_address(0);
     job[1] = (long)tightbeam_decoder_attached_run;      /* FUN_00025ac0 */
-    sk_tb_event_post(job, payload, f2, f4, f6, ctx, f3); /* FUN_00024678 */
+    sk_rt_00024678((unsigned long)job, payload, f2, f4, f6, ctx, f3); /* FUN_00024678 */
 }
 
 /*--------------------------------------------------------------------*/
@@ -371,7 +372,7 @@ long tightbeam_method_4b(unsigned long obj)
  */
 unsigned long tightbeam_alloc_and_init(unsigned long obj, unsigned char kind)
 {
-    unsigned long result = cl4_alloc_object();         /* FUN_0036a940 */
+    unsigned long result = cl4_alloc_object(0);         /* FUN_0036a940 */
     tightbeam_kind_select(obj, kind);                  /* FUN_000260e0 */
     return result;
 }
@@ -424,7 +425,7 @@ void tightbeam_message_decode_into(unsigned char *out, unsigned char *msg, int *
         sk_fatal_unavail("Fatal error", 0xb, 2, 0xd000000000000022, 0x80000000005acf60,
                          "Tightbeam TightbeamMessage swift", 0x20, 2, 0x93, 0);
     int rc = (int)sk_msg_decode(*(unsigned long *)(__builtin_frame_address(0) + 0x10),
-                                sp, &base, 2);         /* FUN_0001485c */
+                                sp, (unsigned long)&base, 2);         /* FUN_0001485c */
     if (rc == 0) {
         if (base != 0) {
             if (sp == base) {
@@ -461,7 +462,7 @@ void tightbeam_message_decode_into(unsigned char *out, unsigned char *msg, int *
     }
     int code = rc;
     unsigned long eobj = sk_error_obj(0);              /* FUN_00019aac */
-    sk_rt_003698b0(&code, eobj, DAT_0065a550);         /* FUN_003698b0 */
+    sk_rt_003698b0((unsigned long)&code, eobj, DAT_0065a550);         /* FUN_003698b0 */
     sk_swift_epilogue();                               /* FUN_00025704 */
     *err = code;
     sk_stack_chk_fail();                               /* FUN_0011d7e8 */
@@ -507,7 +508,7 @@ done:
  */
 void tightbeam_ctx_store(unsigned long value)
 {
-    unsigned long obj = cl4_alloc_object();            /* FUN_0036a940 */
+    unsigned long obj = cl4_alloc_object(0);            /* FUN_0036a940 */
     *(unsigned long *)(obj + 0x10) = value;
 }
 
@@ -540,7 +541,7 @@ unsigned long tightbeam_message_commit(unsigned long msg)
             sk_swift_epilogue();
         } else {
             unsigned long eobj = sk_error_obj(0);      /* FUN_00019aac */
-            sk_rt_003698b0(&code, eobj, DAT_0065a550); /* FUN_003698b0 */
+            sk_rt_003698b0((unsigned long)&code, eobj, DAT_0065a550); /* FUN_003698b0 */
             sk_swift_epilogue();
         }
         return rc;
@@ -625,10 +626,10 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
                          unsigned long p4, unsigned long p5, unsigned long p6,
                          unsigned long p7, unsigned long p8)
 {
-    void (*fn)(void);
-    void (*f28)(void);
-    void (*step)(void);
-    void (*next)(void);
+    unsigned long (*fn)(unsigned long, ...);
+    unsigned long (*f28)(unsigned long, ...);
+    unsigned long (*step)(unsigned long, ...);
+    unsigned long (*next)(unsigned long, ...);
     unsigned long *sub;
     unsigned long count;
     long i;
@@ -647,7 +648,7 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
         next(0, p3, p6);
         if ((long)f28 < 0) {
             /* does not return */
-            (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26754);
+            sk_boot_panic();
         }
         step = (unsigned long (*)(unsigned long, ...))tightbeam_method_28(p6); /* FUN_000277e8 */
         count = (unsigned long)(long)f28;
@@ -655,18 +656,18 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
         do {
             /* element buffer */
             unsigned long elem[3];
-            step(&elem, i, p3, p6);
+            step((unsigned long)&elem, i, p3, p6);
             /* invoke store op */
             sk_indirect_call(0, 0, 0);
             sk_indirect_call((unsigned long)&elem, (unsigned long)&elem, 0);
-            iter(0, 0, 0);
+            ((unsigned long (*)(unsigned long, unsigned long, unsigned long))iter)(0, 0, 0);
             sk_indirect_call(0, 0);
             sk_rt_0019e538(i, ctx);                    /* FUN_0019e538 */
             (void)tightbeam_method_60(p6);             /* FUN_00027818 */
             i++;
         } while (i != count);
-        sk_rt_0019dd10();                              /* FUN_0019dd10 */
-        sk_rt_0019e578(&sub, p4, ctx, 0x66b5c8);       /* FUN_0019e578 */
+        sk_rt_0019dd10(0);                              /* FUN_0019dd10 */
+        sk_rt_0019e578((unsigned long)&sub, p4, ctx, 0x66b5c8);       /* FUN_0019e578 */
     }
 }
 
@@ -679,7 +680,7 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
  */
 void vas_codable_dispatch(unsigned long a, unsigned long b, unsigned long method)
 {
-    void (*fn)(void) = (void (*)(void))tightbeam_method_4c(method); /* FUN_000267a4 */
+    unsigned long (*fn)(unsigned long, ...) = (unsigned long (*)(unsigned long, ...))tightbeam_method_4c(method); /* FUN_000267a4 */
     fn(a, b, method);
 }
 
@@ -707,7 +708,7 @@ long tightbeam_method_4c(unsigned long obj)
 void vas_codable_dispatch_result(void)
 {
     unsigned long code;
-    void (*fn)(void) = (void (*)(void))tightbeam_method_8(0); /* FUN_000268a0 */
+    unsigned long (*fn)(unsigned long, ...) = (unsigned long (*)(unsigned long, ...))tightbeam_method_8(0); /* FUN_000268a0 */
     code = (unsigned long)((unsigned int (*)(void))fn)();
     if (__builtin_frame_address(0) == 0)
         return;
@@ -741,7 +742,7 @@ long tightbeam_method_8(unsigned long obj)
 void vas_codable_call_result(unsigned long arg)
 {
     unsigned int code;
-    void (*fn)(void) = (void (*)(void))tightbeam_method_4d(0); /* FUN_000269a4 */
+    unsigned long (*fn)(unsigned long, ...) = (unsigned long (*)(unsigned long, ...))tightbeam_method_4d(0); /* FUN_000269a4 */
     fn(arg);
     if (__builtin_frame_address(0) == 0)
         return;
@@ -775,7 +776,7 @@ long tightbeam_method_4d(unsigned long obj)
 unsigned long vas_iterate_objects_out(unsigned long p1, unsigned long p2, unsigned long p3)
 {
     unsigned long result = 0;
-    vas_iterate_internal(&result, p1, p2, 0x65a898, p3, 0x65a7d0); /* FUN_00026a8c */
+    vas_iterate_internal((unsigned long)&result, p1, p2, 0x65a898, p3, 0x65a7d0); /* FUN_00026a8c */
     return result;
 }
 
@@ -795,7 +796,7 @@ unsigned long vas_iterate_internal(unsigned long out, unsigned long p2, unsigned
     unsigned long ctx = sk_rt_00310d80(0, p3);         /* FUN_00310d80 */
     long n = (long)sk_rt_0001612c(0, p3);              /* thunk_FUN_0001612c */
     if (n < 0)
-        (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26c98);
+        sk_boot_panic();
     unsigned long (*get)(unsigned long, ...) = (unsigned long (*)(unsigned long, ...))sk_rt_00023c78(p6); /* FUN_00023c78 */
     get(n, p4, p6);
     n = (long)sk_rt_0001612c(p2, p3);                  /* thunk_FUN_0001612c */
@@ -804,14 +805,14 @@ unsigned long vas_iterate_internal(unsigned long out, unsigned long p2, unsigned
         long i = 0;
         unsigned long buf[4];
         do {
-            sk_rt_0019ea20(&buf, i, p2, p3);           /* FUN_0019ea20 */
+            sk_rt_0019ea20((unsigned long)&buf, i, p2, p3);           /* FUN_0019ea20 */
             long next = i + 1;
             if (next < i)
-                (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26c94);
+                sk_boot_panic();
             /* invoke store op (element) */
             sk_indirect_call((unsigned long)&buf, (unsigned long)&buf, p3);
             unsigned long elem = p5;
-            result = (*(unsigned long (*)(void))tightbeam_method_8(elem))(out, p4, p6, p3, elem); /* 268a0 */
+            result = ((unsigned long (*)(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long))tightbeam_method_8(elem))(out, p4, p6, p3, elem); /* 268a0 */
             /* invoke release */
             sk_indirect_call((unsigned long)&buf, p3);
             if (__builtin_frame_address(0) != 0)
@@ -874,9 +875,9 @@ unsigned long vas_object_call(unsigned long p1, unsigned long p2, unsigned long 
 {
     long ctx = (long)(*(long (*)(unsigned long, unsigned long))sk_rt_00023d00(p5))(p3, p5); /* FUN_00023d00 */
     if (ctx < 0)
-        (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26e28);
+        sk_boot_panic();
     unsigned int slot[3] = {0, 0, 0};
-    unsigned long meta = sk_f_00002534(&DAT_0064c2d8, &DAT_004bbe30); /* FUN_00002534 */
+    unsigned long meta = sk_f_00002534((unsigned long)&DAT_0064c2d8, (unsigned long)&DAT_004bbe30); /* FUN_00002534 */
     unsigned long eobj = sk_error_obj(0);              /* FUN_00019aac */
     unsigned long type = sk_type_register();           /* FUN_00027580 */
     unsigned long rc = vas_iterate_objects((void (*)(void))vas_object_encode_cb,  /* 274e4 */
@@ -917,7 +918,7 @@ unsigned long vas_object_call2(unsigned long p1, unsigned long p2, unsigned long
 {
     unsigned long result = 0;
     unsigned long ctx = sk_obj_lock2(0);               /* FUN_00310d68 */
-    vas_object_call2_internal(&result, ctx, 0x65a898, p3, 0x65a7d0); /* FUN_00026f40 */
+    vas_object_call2_internal((unsigned long)&result, ctx, 0x65a898, p3, 0x65a7d0); /* FUN_00026f40 */
     return result;
 }
 
@@ -934,16 +935,16 @@ unsigned long vas_object_call2_internal(unsigned long out, unsigned long p2, uns
     unsigned long ctx = p4;
     long obj = *(long *)(p2 - 8);
     /* invoke object op on context */
-    (*(void (**)(void))0)(0, 0, p2);
-    int kind = (**(int (**)(void))(obj + 0x30)) (0, 1, ctx);
+    sk_indirect_call(0, 0, p2);
+    int kind = ((int (*)(unsigned long, unsigned long, unsigned long))(*(unsigned long *)(obj + 0x30)))(0, 1, ctx);
     if (kind == 1) {
         sk_indirect_call(0, p2);
-        (*(void (*)(void))tightbeam_method_8b(p5))(0, p3, p5); /* FUN_000276c4 */
+        ((unsigned long (*)(unsigned long, unsigned long, unsigned long))tightbeam_method_8b(p5))(0, p3, p5); /* FUN_000276c4 */
     } else {
         sk_indirect_call(0, 0, ctx);
-        (*(void (*)(void))tightbeam_method_8b(p5))(1, p3, p5); /* FUN_000276c4 */
+        ((unsigned long (*)(unsigned long, unsigned long, unsigned long))tightbeam_method_8b(p5))(1, p3, p5); /* FUN_000276c4 */
         unsigned long elem = p4;
-        out = (*(unsigned long (*)(void))tightbeam_method_8(elem))(out, p3, p5, ctx, elem); /* 268a0 */
+        out = ((unsigned long (*)(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long))tightbeam_method_8(elem))(out, p3, p5, ctx, elem); /* 268a0 */
         sk_indirect_call(0, ctx);
     }
     return out;
@@ -997,27 +998,27 @@ void vas_codable_encode(unsigned long out, unsigned long p2, unsigned long p3,
                         unsigned int *err)
 {
     unsigned int code;
-    unsigned char kind = (*(unsigned char (*)(void))tightbeam_method_8c(p6))(p4, p6); /* 276f4 */
+    unsigned char kind = ((unsigned char (*)(unsigned long, unsigned long))tightbeam_method_8c(p6))(p4, p6); /* 276f4 */
     if (kind == 1) {
         unsigned long frame[8];
-        (*(void (*)(void))tightbeam_method_4d(p5))(&frame, p2, p4, p6, &code, p3, p5); /* 269a4 */
+        ((unsigned long (*)(unsigned long, unsigned long, unsigned long, unsigned long, unsigned int *, unsigned long, unsigned long))tightbeam_method_4d(p5))((unsigned long)&frame, p2, p4, p6, &code, p3, p5); /* 269a4 */
         if (__builtin_frame_address(0) == 0) {
-            (**(void (**)(void))(*(long *)(p3 - 8) + 0x38))(&frame, 0, 1, p3);
-            (*(void (**)(void))(*(long *)(*(long *)(sk_obj_lock2(0) - 8) + 0x20)))(out, &frame, 0);
+            ((void (*)(unsigned long, unsigned long, unsigned long, unsigned long))(*(unsigned long *)(*(long *)(p3 - 8) + 0x38)))((unsigned long)&frame, 0, 1, p3);
+            ((void (*)(unsigned long, unsigned long, unsigned long))(*(unsigned long *)(*(long *)(sk_obj_lock2(0) - 8) + 0x20)))(out, (unsigned long)&frame, 0);
         } else {
             *err = code;
         }
     } else if (kind != 0) {
-        (**(void (**)(void))(*(long *)(p4 - 8) + 8))(p2, p4);
+        ((void (*)(unsigned long, unsigned long))(*(unsigned long *)(*(long *)(p4 - 8) + 8)))(p2, p4);
         cl4_log_fmt(0xe000000000000000);
         sk_tb_error_push(0);                            /* FUN_002acbb8 */
         cl4_log_fmt(0x80000000005ad2d0);
-        cl4_log_lookup(0x670738);                       /* FUN_00027724 */
+        (void)tightbeam_method_4e(0x670738);                       /* FUN_00027724 */
         sk_tb_error_push(0);
         sk_fatal_unavail("Fatal error", 0xb, 2, 0xd000000000000016, 0x80000000005ad2d0,
                          "Tightbeam TightbeamCodable swift", 0x20, 2); /* FUN_001afa84 */
     }
-    (**(void (**)(void))(*(long *)(p3 - 8) + 0x38))(out, 1, 1, p3);
+    ((void (*)(unsigned long, unsigned long, unsigned long, unsigned long))(*(unsigned long *)(*(long *)(p3 - 8) + 0x38)))(out, 1, 1, p3);
 }
 
 /*--------------------------------------------------------------------*/
@@ -1032,7 +1033,7 @@ void vas_codable_encode_out(unsigned long out, unsigned long p2, unsigned long p
 {
     unsigned int code;
     vas_codable_encode(out, *(unsigned long *)(p5 + 0x10), p2,
-                       *(unsigned long *)((p6 & 0xfffffffffffffffe) - 8), p3, &code);
+                       *(unsigned long *)((p6 & 0xfffffffffffffffe) - 8), p3, 0, &code);
     if (__builtin_frame_address(0) != 0)
         *err = code;
 }
@@ -1052,7 +1053,7 @@ void vas_object_encode_cb(unsigned long p1, unsigned long p2, unsigned int *err)
     unsigned long f4 = *(unsigned long *)(__builtin_frame_address(0) + 0x28);
     unsigned long f6 = *(unsigned long *)(__builtin_frame_address(0) + 0x30);
     unsigned int code;
-    (*(void (*)(void))tightbeam_method_4d(f2))(p1, f6, f3, f4, &code, f1, f2); /* FUN_000269a4 */
+    ((unsigned long (*)(unsigned long, unsigned long, unsigned long, unsigned long, unsigned int *, unsigned long, unsigned long))tightbeam_method_4d(f2))(p1, f6, f3, f4, &code, f1, f2); /* FUN_000269a4 */
     if (__builtin_frame_address(0) != 0)
         *err = code;
 }
@@ -1066,7 +1067,7 @@ void vas_object_encode_cb(unsigned long p1, unsigned long p2, unsigned int *err)
  * Confidence: low (one-shot type registration).
  * Notes: globals DAT_0064c2d8/DAT_0064c2e0/DAT_004bbe30/DAT_004ea760.
  */
-void sk_type_register(void)
+unsigned long sk_type_register(void)
 {
     unsigned long type;
     unsigned long slot;
@@ -1102,13 +1103,14 @@ unsigned long sk_lock_and_alloc(unsigned long *lock, long *meta)
  * byte array at DAT_0064c2e8.
  * Confidence: low (type-metadata store).
  */
-void sk_type_register_inner(void)
+unsigned long sk_type_register_inner(void)
 {
     unsigned long v;
     if (*(unsigned long *)&DAT_0064c2e8 != 0)
-        return;
-    v = sk_obj_reg_get(&DAT_004edbbc, 0x677880);       /* FUN_00376820 */
+        return *(unsigned long *)&DAT_0064c2e8;
+    v = sk_obj_reg_get((unsigned long)&DAT_004edbbc, 0x677880); /* FUN_00376820 */
     *(unsigned long *)&DAT_0064c2e8 = v;
+    return v;
 }
 
 /*--------------------------------------------------------------------*/
@@ -1246,7 +1248,7 @@ long vas_msg_send(unsigned long out, unsigned long p2, unsigned long payload,
     sk_tb_storage_deinit(&storage);                    /* FUN_0001fd9c */
     unsigned long flags = payload | 0x2000000000000000;
     cl4_retain((void *)payload);                       /* FUN_0036b270 */
-    cb(&result, (unsigned char *)&flags, desc);
+    ((void (*)(unsigned long, unsigned long, unsigned long))cb)((unsigned long)&result, (unsigned long)&flags, (unsigned long)desc);
     if ((result & 0xff) == 2)
         return 0;
     unsigned long r = result;
@@ -1343,7 +1345,7 @@ reg:
     cl4_release((void *)opdesc);                       /* FUN_0036b118 */
     unsigned long handle = sk_vas_register(size, reg); /* FUN_000147a0 */
     sk_dispatch_free(reg);                             /* FUN_0004b664 */
-    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long meta = sk_f_00002534((unsigned long)&DAT_0064c040, (unsigned long)&DAT_004bbf40); /* FUN_00002534 */
     unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
     *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
     *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;
@@ -1369,7 +1371,7 @@ reg:
 unsigned long vas_server_create(unsigned long p1, unsigned long p2, unsigned long p3,
                                 unsigned long p4, unsigned long p5, unsigned long p6)
 {
-    unsigned long server = cl4_alloc_object();         /* FUN_0036a940 */
+    unsigned long server = cl4_alloc_object(0);         /* FUN_0036a940 */
     *(unsigned long *)(server + 0x10) = 0;
     unsigned long opdesc = cl4_alloc_object(p4, 0x28, 7); /* FUN_0036a940 */
     *(unsigned long *)(opdesc + 0x10) = server;
@@ -1387,7 +1389,7 @@ unsigned long vas_server_create(unsigned long p1, unsigned long p2, unsigned lon
     cl4_release((void *)opdesc);                       /* FUN_0036b118 */
     unsigned long handle = sk_vas_register(p1, reg);   /* FUN_000147a0 */
     sk_dispatch_free(reg);                             /* FUN_0004b664 */
-    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long meta = sk_f_00002534((unsigned long)&DAT_0064c040, (unsigned long)&DAT_004bbf40); /* FUN_00002534 */
     unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
     *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
     *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;
@@ -1431,7 +1433,7 @@ void vas_server_register_internal(unsigned long p1, unsigned long p2, unsigned l
     cl4_release((void *)opdesc);                       /* FUN_0036b118 */
     unsigned long handle = sk_vas_register(p1, reg);   /* FUN_000147a0 */
     sk_dispatch_free(reg);                             /* FUN_0004b664 */
-    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long meta = sk_f_00002534((unsigned long)&DAT_0064c040, (unsigned long)&DAT_004bbf40); /* FUN_00002534 */
     unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
     *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
     *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;

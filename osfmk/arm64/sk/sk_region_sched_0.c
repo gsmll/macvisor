@@ -40,6 +40,11 @@ typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define EXTRACT13(x)  (((uint32_t)(x) >> 8) & 0x00ffffffu)
 #define SCARRY8(v, bits)    ((int64_t)(v) < 0)
 
+/* Wrap a void-returning call so its (undefined) result can be assigned to a
+ * typed local; the transcription's leftover-register value is modeled as 0. */
+#define CL4_VOID_U64(fn_call)  ((fn_call), 0ull)
+#define CL4_VOID_16(fn_call)   ((cl4_16_t)((fn_call), 0ull))
+
 /* Hand-written simple helper externs (bodies in-file under cl4_* names). */
 
 /* Breakpoint: SoftwareBreakpoint(1, addr). */
@@ -150,7 +155,7 @@ extern uint64_t FUN_002a4ab4();  /* 0x002a4ab4 */
 extern uint64_t FUN_00365b6c();  /* 0x00365b6c */
 extern uint64_t FUN_0036986c();  /* 0x0036986c */
 extern uint64_t FUN_003698b0();  /* 0x003698b0 */
-extern uint64_t FUN_0036993c();  /* 0x0036993c */
+extern cl4_16_t FUN_0036993c();  /* 0x0036993c */
 extern uint64_t FUN_0036a940();  /* 0x0036a940 */
 extern uint64_t FUN_0036b118();  /* 0x0036b118 */
 extern uint64_t FUN_0036b270();  /* 0x0036b270 */
@@ -2490,7 +2495,7 @@ void FUN_00182860(uint64_t p1, uint64_t p2)
   long msgbuf;
   long cpu;
   
-  msgbuf2 = FUN_0018e1c0(0).lo;
+  msgbuf2 = FUN_0018e1c0().lo;
   msgbuf = FUN_0036a940(msgbuf2,0x18,7);
   msgbuf2 = FUN_000262ec(0);
   msgbuf2 = FUN_0036a940(msgbuf2,0x18,7);
@@ -2530,7 +2535,7 @@ void FUN_00182900(void)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00185ce4();
+  FUN_00185ce4(0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2577,7 +2582,7 @@ void FUN_00182aac(char *p1)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00186094(*p1 == '\x01');
+  FUN_00186094(*p1 == '\x01',0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2624,7 +2629,7 @@ void FUN_00182c64(char *p1)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00186460(*p1 == '\x01');
+  FUN_00186460(*p1 == '\x01',0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2671,7 +2676,7 @@ void FUN_00182e1c(char *p1)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_001866dc(*p1 == '\x01');
+  FUN_001866dc(*p1 == '\x01',0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2812,7 +2817,7 @@ void FUN_0018336c(char *p1)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_001871d0(*p1 == '\x01');
+  FUN_001871d0(*p1 == '\x01',0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2859,7 +2864,7 @@ void FUN_00183524(char *p1, char *p2)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_0018758c(*p1 == '\x01',*p2 == '\x01');
+  FUN_0018758c(*p1 == '\x01',*p2 == '\x01',0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -2990,7 +2995,7 @@ uint64_t FUN_001836e8(char *p1, uint64_t p2, uint64_t p3, uint64_t p4)
       fn2 = 0x21;
       goto LAB_00183ad8;
     }
-    slot = FUN_0018569c();
+    slot = CL4_VOID_U64(FUN_0018569c());
     w4 = slot;
     FUN_003698b0(&w4,0x669b78,&dat_004e6898);
     h4 = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -3064,7 +3069,7 @@ void FUN_00183b2c(char *p1)
   char msgbuf3;
   uint8_t msgbuf;
   
-  FUN_00187820(*p1 == '\x01');
+  FUN_00187820(*p1 == '\x01',0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -3254,7 +3259,7 @@ void FUN_00183f50(void)
   long err;
   uint8_t msgbuf;
   
-  FUN_00188718();
+  FUN_00188718(0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -3666,7 +3671,7 @@ uint32_t FUN_0018473c(void)
   long err;
   uint8_t msgbuf;
   
-  msgbuf5 = FUN_0018a37c();
+  msgbuf5 = FUN_0018a37c(0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -3777,7 +3782,7 @@ uint32_t FUN_001848d0(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
       h = 0x21;
       goto LAB_00184c7c;
     }
-    ptr2 = FUN_001857a8();
+    ptr2 = CL4_VOID_U64(FUN_001857a8());
     cnt = CONCAT71(EXTRACT17(cnt),ptr2);
     FUN_003698b0(&cnt,0x669ae8,&dat_004e6878);
     tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -3852,7 +3857,7 @@ uint32_t FUN_00184cd4(void)
   long err;
   uint8_t msgbuf;
   
-  msgbuf5 = FUN_0018a608();
+  msgbuf5 = FUN_0018a608(0,0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -3898,7 +3903,7 @@ uint32_t FUN_00184e68(void)
   long err;
   uint8_t msgbuf;
   
-  msgbuf5 = FUN_0018a8ac();
+  msgbuf5 = FUN_0018a8ac(0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf6 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -3940,7 +3945,7 @@ void FUN_00184ffc(void)
   uint64_t msgbuf2;
   long err;
   
-  FUN_0018ab38();
+  FUN_0018ab38(0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf2 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -4016,7 +4021,7 @@ void FUN_001851e0(void)
   long err;
   uint8_t msgbuf;
   
-  FUN_0018b2f4();
+  FUN_0018b2f4(0,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -4061,7 +4066,7 @@ void FUN_00185370(void)
   long err;
   uint8_t msgbuf;
   
-  FUN_0018b5c4();
+  FUN_0018b5c4(0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -4106,7 +4111,7 @@ void FUN_00185500(void)
   long err;
   uint8_t msgbuf;
   
-  FUN_0018b830(&stack_arg);
+  FUN_0018b830(&stack_arg,0);
   if (err != 0) {
     FUN_0036b270();
     msgbuf5 = FUN_00002534(&dat_0064c260,&dat_004bbc30);
@@ -4149,7 +4154,7 @@ void FUN_0018569c(void)
   uint64_t msgbuf;
   
   FUN_000218a4();
-  msgbuf3 = FUN_0018deb8();
+  msgbuf3 = FUN_0018deb8(0);
   if (msgbuf3 != '\x16') {
     return;
   }
@@ -4400,7 +4405,7 @@ LAB_0018603c:
         st2 = 0x80000000005ccb60;
         goto LAB_0018603c;
       }
-      fn3 = FUN_0018569c();
+      fn3 = CL4_VOID_U64(FUN_0018569c());
       w5 = CONCAT71(EXTRACT17(w5),fn3);
       FUN_003698b0(&w5,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -4560,7 +4565,7 @@ LAB_0018640c:
         st2 = 0x80000000005ccb00;
         goto LAB_0018640c;
       }
-      fn3 = FUN_0018569c();
+      fn3 = CL4_VOID_U64(FUN_0018569c());
       w6 = CONCAT71(EXTRACT17(w6),fn3);
       FUN_003698b0(&w6,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -4654,7 +4659,7 @@ void FUN_00186460(uint8_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000036,0x80000000005ccaa0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xacb,0);
       }
-      tmp = FUN_0018569c();
+      tmp = CL4_VOID_U64(FUN_0018569c());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -4813,7 +4818,7 @@ LAB_00186a54:
         st2 = 0x80000000005cca60;
         goto LAB_00186a54;
       }
-      fn3 = FUN_0018569c();
+      fn3 = CL4_VOID_U64(FUN_0018569c());
       w6 = CONCAT71(EXTRACT17(w6),fn3);
       FUN_003698b0(&w6,0x669b78,&dat_004e6898);
       key = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -4938,7 +4943,7 @@ void FUN_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000035,0x80000000005cca00,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xae1,0);
       }
-      key = FUN_0018569c();
+      key = CL4_VOID_U64(FUN_0018569c());
       tmp = key;
       FUN_003698b0(&tmp,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5062,7 +5067,7 @@ void FUN_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000036,0x80000000005cc9c0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xaec,0);
       }
-      key = FUN_0018569c();
+      key = CL4_VOID_U64(FUN_0018569c());
       tmp = key;
       FUN_003698b0(&tmp,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5219,7 +5224,7 @@ LAB_00187538:
         st2 = 0x80000000005cc980;
         goto LAB_00187538;
       }
-      fn3 = FUN_0018569c();
+      fn3 = CL4_VOID_U64(FUN_0018569c());
       w7 = CONCAT71(EXTRACT17(w7),fn3);
       FUN_003698b0(&w7,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5313,7 +5318,7 @@ void FUN_0018758c(uint8_t p1, uint8_t p2, uint64_t p3)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000035,0x80000000005cc8e0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb02,0);
       }
-      tmp = FUN_0018569c();
+      tmp = CL4_VOID_U64(FUN_0018569c());
       val2 = tmp;
       FUN_003698b0(&val2,0x669b78,&dat_004e6898);
       FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5407,7 +5412,7 @@ uint64_t FUN_00187820(uint8_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000038,0x80000000005cc8a0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb18,0);
       }
-      tmp = FUN_0018569c();
+      tmp = CL4_VOID_U64(FUN_0018569c());
       idx = tmp;
       FUN_003698b0(&idx,0x669b78,&dat_004e6898);
       tag = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5501,7 +5506,7 @@ uint8_t FUN_00187aac(uint8_t p1)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003a,0x80000000005cc860,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb23,0);
       }
-      tmp = FUN_0018569c();
+      tmp = CL4_VOID_U64(FUN_0018569c());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669b78,&dat_004e6898);
       p1 = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
@@ -5594,7 +5599,7 @@ void FUN_00187d28(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003d,0x80000000005cc820,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb2e,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -5687,7 +5692,7 @@ void FUN_00187fa4(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003b,0x80000000005cc7e0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb39,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -5780,7 +5785,7 @@ void FUN_00188220(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003b,0x80000000005cc7a0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb44,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -5873,7 +5878,7 @@ void FUN_0018849c(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003c,0x80000000005cc760,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb4f,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -5966,7 +5971,7 @@ uint64_t FUN_00188718(uint64_t p1)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003f,0x80000000005cc720,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb5a,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx = tmp;
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6060,7 +6065,7 @@ void FUN_00188994(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003d,0x80000000005cc6e0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb65,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6153,7 +6158,7 @@ void FUN_00188c10(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003d,0x80000000005cc6a0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb70,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6246,7 +6251,7 @@ void FUN_00188e8c(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003e,0x80000000005cc660,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb7b,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6384,7 +6389,7 @@ uint32_t FUN_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000042,0x80000000005cc610,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb86,0);
       }
-      st2 = FUN_001857a8();
+      st2 = CL4_VOID_U64(FUN_001857a8());
       h = st2;
       FUN_003698b0(&h,0x669ae8,&dat_004e6878);
       r = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6478,7 +6483,7 @@ void FUN_001894b4(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000045,0x80000000005cc5c0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb91,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6570,7 +6575,7 @@ void FUN_00189730(uint64_t p1)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000038,0x80000000005cc580,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xb9c,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6662,7 +6667,7 @@ void FUN_0018999c(uint64_t p1)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003a,0x80000000005cc540,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xba7,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6755,7 +6760,7 @@ void FUN_00189c08(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000004a,0x80000000005cc4f0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbb2,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6848,7 +6853,7 @@ void FUN_00189e84(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000040,0x80000000005cc4a0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbbd,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -6941,7 +6946,7 @@ void FUN_0018a100(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000042,0x80000000005cc450,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbc8,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669ae8,&dat_004e6878);
       FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -7035,7 +7040,7 @@ uint32_t FUN_0018a37c(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000042,0x80000000005cc400,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbd3,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx = tmp;
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -7131,7 +7136,7 @@ uint32_t FUN_0018a608(uint64_t p1, uint64_t p2, uint64_t p3)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003e,0x80000000005cc3c0,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbe9,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       val = tmp;
       FUN_003698b0(&val,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -7226,7 +7231,7 @@ uint32_t FUN_0018a8ac(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000003c,0x80000000005cc380,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbf4,0);
       }
-      tmp = FUN_001857a8();
+      tmp = CL4_VOID_U64(FUN_001857a8());
       idx = tmp;
       FUN_003698b0(&idx,0x669ae8,&dat_004e6878);
       tag = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
@@ -7316,7 +7321,7 @@ void FUN_0018ab38(uint64_t p1, uint64_t p2)
         FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000044,0x80000000005cc300,
                      s_XnuUpcalls_XnuUpcalls_Swift_swif_005cbff0,0x21,2,0xbff,0);
       }
-      tag = FUN_0018d208();
+      tag = CL4_VOID_U64(FUN_0018d208());
       FUN_003698b0(tag,0x669a58,&dat_004e6528);
       FUN_0036993c(0x669a58,&dat_004e6528,0,0);
       val2 = errword2;
@@ -7907,7 +7912,7 @@ void FUN_0018bd0c(void)
   long err;
   uint32_t msgbuf;
   
-  FUN_0018bc58();
+  FUN_0018bc58(0,0,0,0,0);
   if (err != 0) {
     *in_x3 = msgbuf;
   }
@@ -7927,7 +7932,7 @@ uint32_t FUN_0018bd44(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018bbac();
+  msgbuf = CL4_VOID_U64(FUN_0018bbac(0,0,0));
   if (err == 0) {
     msgbuf = 1;
   }
@@ -7947,7 +7952,7 @@ uint32_t FUN_0018bd48(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018bbac();
+  msgbuf = CL4_VOID_U64(FUN_0018bbac(0,0,0));
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8125,7 +8130,7 @@ uint64_t FUN_0018c078(uint64_t p1, uint64_t p2)
   long msgbuf2;
   long err;
   
-  msgbuf3 = FUN_0018d0e4();
+  msgbuf3 = CL4_VOID_U64(FUN_0018d0e4(0,0));
   if (err == 0) {
     msgbuf = (code_fn_t)FUN_001477c4(p2);
     msgbuf2 = (*msgbuf)(p1,p2);
@@ -8152,7 +8157,7 @@ void FUN_0018c108(void)
   long err;
   uint32_t msgbuf;
   
-  FUN_0018c020();
+  FUN_0018c020(0,0,0,0,0);
   if (err != 0) {
     *in_x3 = msgbuf;
   }
@@ -8172,7 +8177,7 @@ uint32_t FUN_0018c140(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018bf2c();
+  msgbuf = FUN_0018bf2c(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8192,7 +8197,7 @@ uint32_t FUN_0018c144(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018bf2c();
+  msgbuf = FUN_0018bf2c(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8239,7 +8244,7 @@ uint32_t FUN_0018c214(uint64_t p1, uint64_t p2, uint64_t p3)
   
   msgbuf3 = *cpu;
   msgbuf2 = FUN_0036b270(msgbuf3);
-  msgbuf = FUN_0018c3cc(msgbuf2,p2,p3);
+  msgbuf = CL4_VOID_U64(FUN_0018c3cc(msgbuf2,p2,p3));
   FUN_0036b118(msgbuf3);
   if (err == 0) {
     msgbuf = 1;
@@ -8419,7 +8424,7 @@ void FUN_0018c754(void)
   long err;
   uint32_t msgbuf;
   
-  FUN_0018c540();
+  FUN_0018c540(0,0,0,0,0);
   if (err != 0) {
     *in_x3 = msgbuf;
   }
@@ -8439,7 +8444,7 @@ uint32_t FUN_0018c78c(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018c214();
+  msgbuf = FUN_0018c214(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8459,7 +8464,7 @@ uint32_t FUN_0018c790(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018c214();
+  msgbuf = FUN_0018c214(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8484,7 +8489,7 @@ uint32_t FUN_0018c7b8(uint64_t p1, uint64_t p2, uint64_t p3)
   
   msgbuf3 = *cpu;
   msgbuf2 = FUN_0036b270(msgbuf3);
-  msgbuf = FUN_0018c968(msgbuf2,p2,p3);
+  msgbuf = CL4_VOID_U64(FUN_0018c968(msgbuf2,p2,p3));
   FUN_0036b118(msgbuf3);
   if (err == 0) {
     msgbuf = 1;
@@ -8663,7 +8668,7 @@ void FUN_0018cd78(void)
   long err;
   uint32_t msgbuf;
   
-  FUN_0018cad4();
+  FUN_0018cad4(0,0,0,0,0);
   if (err != 0) {
     *in_x3 = msgbuf;
   }
@@ -8683,7 +8688,7 @@ uint32_t FUN_0018cdb0(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018c7b8();
+  msgbuf = FUN_0018c7b8(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8703,7 +8708,7 @@ uint32_t FUN_0018cdb4(void)
   uint32_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018c7b8();
+  msgbuf = FUN_0018c7b8(0,0,0);
   if (err == 0) {
     msgbuf = 1;
   }
@@ -8726,13 +8731,13 @@ void * FUN_0018cdd8(void)
   long msgbuf;
   
   msgbuf = 0x40;
-  FUN_0018de98(0,0x40,0);
+  FUN_0018de98();
   do {
     msgbuf4 = FUN_000218a4();
     msgbuf3 = dat_00657788;
     msgbuf2 = dat_00657788 + 1;
     if (dat_00657790 >> 1 <= dat_00657788) {
-      FUN_0018de98(1 < dat_00657790,msgbuf2,1);
+      FUN_0018de98();
     }
     dat_00657788 = msgbuf2;
     *(uint32_t *)((long)&dat_00657798 + msgbuf3 * 4) = msgbuf4;
@@ -9064,7 +9069,7 @@ void FUN_0018d710(uint64_t *p1, uint64_t p2, uint64_t *p3)
   uint8_t len2;
   
   FUN_000214b0(&w0);
-  w1 = FUN_0018cfe8();
+  w1 = CL4_VOID_U64(FUN_0018cfe8());
   if (err == 0) {
     w2 = FUN_000218a4();
     w3 = FUN_000218a4();
@@ -9755,7 +9760,7 @@ void FUN_0018e290(uint64_t a, uint64_t b)
 {
     /* Sends a three-word upcall reply from the per-CPU words at +0x10/+0x18/+0x20. */
     FUN_0018d414(a, *(uint64_t *)(per_cpu + 0x10), *(uint64_t *)(per_cpu + 0x18),
-                 *(uint64_t *)(per_cpu + 0x20), b);
+                 *(uint64_t *)(per_cpu + 0x20));
 }
 
 
@@ -9766,7 +9771,7 @@ void FUN_0018e290(uint64_t a, uint64_t b)
 void FUN_0018e294(uint64_t a, uint64_t b)
 {
     FUN_0018d414(a, *(uint64_t *)(per_cpu + 0x10), *(uint64_t *)(per_cpu + 0x18),
-                 *(uint64_t *)(per_cpu + 0x20), b);
+                 *(uint64_t *)(per_cpu + 0x20));
 }
 
 
@@ -9781,8 +9786,7 @@ void FUN_0018e2b4(uint64_t p1, uint64_t p2)
   long cpu;
   
   FUN_0018d690(p1,(uint64_t)*(uint8_t *)(cpu + 0x10) |
-                       (uint64_t)*(uint32_t *)(cpu + 0x14) << 0x20,*(uint32_t *)(cpu + 0x18),
-               p2);
+                      (uint64_t)*(uint32_t *)(cpu + 0x14) << 0x20,*(uint32_t *)(cpu + 0x18));
   return;
 }
 
@@ -9799,8 +9803,7 @@ void FUN_0018e2b8(uint64_t p1, uint64_t p2)
   long cpu;
   
   FUN_0018d690(p1,(uint64_t)*(uint8_t *)(cpu + 0x10) |
-                       (uint64_t)*(uint32_t *)(cpu + 0x14) << 0x20,*(uint32_t *)(cpu + 0x18),
-               p2);
+                      (uint64_t)*(uint32_t *)(cpu + 0x14) << 0x20,*(uint32_t *)(cpu + 0x18));
   return;
 }
 

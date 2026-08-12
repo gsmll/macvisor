@@ -309,12 +309,12 @@ extern void FUN_00084234(word_t, ...);
 extern void FUN_0008e388(word_t, ...);
 extern void FUN_0008e500(word_t, ...);
 extern void FUN_0008e518(word_t, ...);
-extern void FUN_0009461c(word_t, ...);
+extern cl4_result_t FUN_0009461c(word_t, ...);
 extern void FUN_000a6f88(word_t, ...);
 extern void FUN_000b4390(word_t, ...);
 extern cl4_result_t FUN_000b43d0(word_t, ...);
 extern void FUN_00114330(word_t, ...);
-extern void FUN_00117cc4(word_t, ...);
+extern word_t FUN_00117cc4(word_t, ...);
 extern void FUN_0031d5a8(word_t, ...);
 
 /* SoftwareBreakpoint intrinsic (unreachable trap). */
@@ -3164,7 +3164,8 @@ long sk_msg_write_commit_b(void)
     if (zero) dst = dst + 1;
     FUN_003594a8(0);
     long frame;
-    if ((zero /*&&...*/) && (ulong)/* x11 */0 < 0x19) {
+    /* condition: (!carry_set || zero) && w9==0 && dst < 0x19 */
+    if (((!0 || zero) && /* w9 */0 == 0) && dst < 0x19) {
         FUN_00356328(0);
         FUN_003513e4(0);
         if (FUN_000839f8(0) != 0) {
@@ -3179,10 +3180,11 @@ long sk_msg_write_commit_b(void)
     } else {
         FUN_00352778(0);
         long r = FUN_00358bb4(0).lo;
-        /* x19 */0 = r + /* x8_00 */0;
+        /* x19 = r + x8_00 (accumulated frame word) */
+        frame = r + /* x8_00 */0;
         FUN_0036b270(0);
     }
-    return /* x19 */0;
+    return frame;
 }
 
 /* FUN_003337c4 @ 0x3337c4 (est. sk_msg_peek_dispatch)
@@ -3249,16 +3251,16 @@ void sk_cap_release_commit(void)
     FUN_00377824(0);
     FUN_00356328(0);
     FUN_003513e4(0);
-    cl4_result_t r = FUN_000839f8(0);
+    word_t r = FUN_000839f8(0);
     long t = *(long *)/* x21+-8 */0;
-    if (r.lo != 0) {
+    if (r != 0) {
         long dst = *(long *)(t + 0x40);
         if (*(int *)(t + 0x54) == 0) dst = dst + 1;
-        FUN_0009461c(r.lo, r.hi, dst);
+        FUN_0009461c(r, 0, dst);   /* .hi dropped under word_t convention */
         FUN_00117cc4(0);
         return;
     }
-    ((void (*)(void))0)();
+    ((void (*)(void))*(void **)(t + 0x20))();   /* indirect dispatch through table+0x20 */
     FUN_0034aed0(0);
     FUN_000839d8(0);
 }

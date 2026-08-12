@@ -1466,3 +1466,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `u = sk_global_cfg(); if (*(ulong*)(u+0x78) != 0) return u; sk_panic(0x5bb783);` — noreturn panic on empty region.
 - **Severity (hypothesis)**: informational — fail-closed resource init gate.
 - **Confidence**: high (string-matched panic).
+
+## [sk] 00013cfc/00013af0 sk_tss_alloc_slot / sk_tss_free_slot — per-thread storage slot allocator (bitmap, fail-closed)
+- **Observation**: Per-thread storage (TSS) slots are tracked by a 64-bit bitmap at region+0x528; allocation finds the first free bit and marks it, panicking "TB_FATAL: no available per-thread key" when the bitmap saturates; free clears the bit, panicking on out-of-range/base-null. Uses a magic-constant division by 0x1b8 (slot stride) for index computation.
+- **Evidence**: `uVar8 = LZCOUNT(...~bitmap...); if (bitmap != 0xffffffffffffffff && uVar8 < 3) { bitmap |= 1<<uVar8; return region + uVar8*0x1b8; } sk_printf("TB_FATAL: no available per-thread key");`; free `if (*(u64*)(base+0x528) & bit) { *(...) &= ~bit; }`.
+- **Severity (hypothesis)**: informational — fail-closed slot exhaustion; no wrap/aliasing observed.
+- **Confidence**: medium (bitmap math partially reconstructed at low confidence).
+
+## [sk] 0001071c sk_mall_zone_init — embedded libmalloc zone bounds
+- **Observation**: The boot libmalloc zone (DAT_006adfd8) is a 1 MiB region at [zone+0x8000, zone+0x100000) managed by a bitmap-based size-class freelist. Every alloc/free path validates the pointer is inside this window before touching the bitmap, and panics via "BUG IN LIBMALLOC" strings otherwise. The `sk_zone_contains` helper answers range checks; a DAT_006adfe0 flag widens the accepted window for madvise'd headers.
+- **Evidence**: `if (z==0 || u<z+0x8000 || z+0x100000<=u) sk_fatal_printf("BUG IN LIBMALLOC: not MFM\n"); if ((ptr&0xf)!=0) sk_fatal_printf("BUG IN CLIENT OF LIBMALLOC\n");`.
+- **Severity (hypothesis)**: informational — all libmalloc entry points bounds-check before bitmap/pointer deref; fail-closed.
+- **Confidence**: medium.
+
+## [sk] 0001485c/00013ee4 sk_tb_query / sk_ipc_send — cL4 IPC transport error handling
+- **Observation**: The IPC send/query paths assert on every transport error with TB_ASSERT strings and SoftwareBreakpoint(1) noreturn traps ("TB_ASSERT: rcv_err == TB_ERROR_SUCCESS", "L4_ErrorCode err", "num_rcv_caps < TB_MAX", "payload_size < max"). The cap-list emitter (sk_ipc_setup) validates the cap count (<=4) and each cap's error code before use, calling CallSupervisor(1) per cap.
+- **Evidence**: `if (n > 4) { sk_printf("TB_ASSERT: num_rcv_caps < TB_MAX"); brk#1 }`; per-cap `CallSupervisor(1); if ((v & 0xff) != 0) { TB_ASSERT L4_ErrorCode; brk }`.
+- **Severity (hypothesis)**: informational — IPC transport is fail-closed on malformed/oversized messages; cap count bounded.
+- **Confidence**: low (large state machine reconstructed at low confidence; structural summary).

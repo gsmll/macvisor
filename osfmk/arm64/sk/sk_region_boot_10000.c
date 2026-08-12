@@ -116,7 +116,7 @@ extern unsigned long FUN_00034f70(void);
 extern unsigned long FUN_00034a2c(void);
 extern void FUN_00054354(void);
 extern unsigned long FUN_0004b520(void *obj);
-extern void FUN_0004b664(void *obj);
+extern void FUN_0004b664(void);
 extern void FUN_0004b23d8(void *slot);
 extern void FUN_0005ed18(unsigned long i, unsigned long v);
 extern void FUN_0005edac(unsigned long i, unsigned long v);
@@ -517,18 +517,24 @@ void sk_zone_register(void *zone);
  * Confidence: high (trivial). *//* In-region forward declarations (restored tail). */
 extern void *sk_heap_calloc(unsigned long count, unsigned long size, void *arg); /* FUN_00010244 */
 extern unsigned long FUN_0001505c(void);
-extern void FUN_000150cc(void *p);
-extern unsigned int FUN_00015448(void *obj);
-extern void FUN_000154d0(void *obj);
-extern unsigned long FUN_000159b8(void *obj);
-extern unsigned int FUN_000159c0(void *msg);
-extern uint8_t FUN_000159c8(void *msg);
+extern void FUN_000150cc(unsigned long p);
+extern unsigned int FUN_00015448(void);
+extern void FUN_000154d0(unsigned long obj);
+extern unsigned long FUN_000159b8();
+extern unsigned int FUN_000159c0(unsigned long msg);
+extern uint8_t FUN_000159c8(long msg);
 extern long FUN_00016458(void *cfg);
-extern unsigned long FUN_000183f0(void *a, void *b, void *c, void *d, void *e);
+extern unsigned long FUN_000183f0(void *a, void *b, long c, void *d, unsigned long e);
 extern void FUN_004b0068(void);
 extern void FUN_004b0408(void);
-extern void *sk_tcb_create_zeroed(void);
+extern void *sk_tcb_create_zeroed(void *cfg);
 extern void *FUN_00014628(void *a, void *b);
+extern void FUN_004b03d8(void);
+extern void FUN_004b03f0(void);
+extern long FUN_00015e9c(void *a, long b);
+extern void FUN_00015904(long a, long b);
+extern unsigned long FUN_00017e94(unsigned long a, void *b, ...);
+extern long FUN_000181f4(void *a, long b, long *c, void *d);
 
 unsigned long sk_ptr_deref(void **p)
 {
@@ -618,7 +624,7 @@ long sk_tcb_obj_bind(void *a, void *b)
 {
     long t = (long)sk_tcb_obj_create(0);  /* FUN_00014510 */
     *(unsigned long *)(t + 0x10) = FUN_0004b520(b);
-    sk_tcb_obj_install_handler(a, (void *)FUN_00014628, t);  /* FUN_00015460 */
+    sk_tcb_obj_install_handler(a, (void *)FUN_00014628, (void *)t);  /* FUN_00015460 */
     *(unsigned long *)(t + 0x38) = FUN_0001505c();
     return t;
 }
@@ -639,7 +645,7 @@ long sk_tcb_msg_accept(long self, void **msg)
 {
     long *buf;
     long result = self;
-    unsigned long obj = *msg;
+    unsigned long obj = (unsigned long)*msg;
 
     buf = (long *)FUN_000159b8();
     if ((int)FUN_000159c0(self) == 4) {
@@ -680,7 +686,7 @@ long sk_tcb_msg_accept(long self, void **msg)
             } else {
                 long m = (long)msg[2];
                 if (m != 0) {
-                    long h = (**(long (**)(void))(m + 0x10))(m, msg, self);
+                    long h = (**(long (**)(long, void **, long))(m + 0x10))(m, msg, self);
                     if (h == 0) return 0;
                     result = h;
                     long *hb = (long *)FUN_000159b8(h);
@@ -7713,8 +7719,9 @@ void sk_tcb_slot_alloc_teardown(void *td)
  * FUN_004b0068 on allocation failure.
  * Confidence: medium
  * Notes: tag 0x1082040eda8e2da; helpers FUN_00010244/FUN_004b0068. */
-void *sk_tcb_create_zeroed(void)
+void *sk_tcb_create_zeroed(void *cfg)
 {
+    (void)cfg;
     unsigned long *tcb = (unsigned long *)sk_heap_calloc(1, 0x118, (void *)0x1082040eda8e2da);  /* FUN_00010244 */
     if (tcb != 0) {
         for (int i = 0; i < 0x23; i++) tcb[i] = 0;

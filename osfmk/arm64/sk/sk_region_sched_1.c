@@ -12003,11 +12003,11 @@ void FUN_0019ea20(param_1, param_2, param_3)
   long ctx_err;
   
   uVar1 = FUN_0034b430();
-  FUN_0019e690(uVar1,0);
+  FUN_0019e690(uVar1,0,0);
   FUN_00350bcc();
                     /* WARNING: Could not recover jumptable at 0x0019ea90. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (**(code **)(extraout_x16 + 0x10))
+  (*(code *)(extraout_x16 + 0x10))
             (extraout_x8,
              unaff_x20 +
              ((unsigned long)*(unsigned char *)(extraout_x16 + 0x50) + 0x20 &
@@ -12388,7 +12388,7 @@ unsigned long FUN_0019f010(long *param_1,unsigned long *param_2,long param_3)
   err = *unaff_x20;
   res = *(unsigned long *)(param_3 + 0x10);
   auVar4 = FUN_0019eb70();
-  *pauVar1 = auVar4;
+  *(unsigned long *)pauVar1 = auVar4;
   *(unsigned long *)pauVar1[1] = err;
   *(unsigned long *)(pauVar1[1] + 8) = res;
   auVar4 = (unsigned long)pauVar1;
@@ -12686,7 +12686,7 @@ void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long para
     pcVar4 = *(code **)(extraout_x16_00 + 0x10);
     (*pcVar4)(local_30,auVar6,uVar1);
     FUN_0034cfa4();
-    (*auVar6)();
+    (*(code)auVar6)();
     pcVar5 = *(code **)(extraout_x16 + 0x10);
     FUN_0034fec0();
     (*extraout_x8_02)();
@@ -12782,7 +12782,7 @@ void FUN_0019f698(param_1, param_2, param_3, param_4, param_5, param_6, param_7)
   res = *(unsigned long *)(lVar2 + 0x10);
   uVar1 = (unsigned long)*(unsigned char *)(*(long *)(*(long *)(param_4 + 0x10) + -8) + 0x50);
   uVar1 = uVar1 + 0x20 & (uVar1 ^ 0xffffffffffffffff);
-  local_70 = FUN_001a26e0(lVar2 + uVar1,res);
+  *(unsigned long *)local_70 = FUN_001a26e0(lVar2 + uVar1,res);
   (*param_2)(param_1,local_70);
   FUN_0034a210();
   if (ctx_err == 0) {
@@ -12917,9 +12917,9 @@ undefined * FUN_0019f86c(long *param_1,unsigned long *param_2,long param_3)
   
   next = FUN_0036a908(0x28,0xbc95);
   *param_1 = next;
-  err = FUN_0019f8e4(next,*param_2,*unaff_x20,*(unsigned long *)(param_3 + 0x10));
+  err = FUN_0019f8e4((long *)next,*param_2,*unaff_x20,*(unsigned long *)(param_3 + 0x10));
   *(unsigned long *)(next + 0x20) = err;
-  return &DAT_003471a4;
+  return (undefined *)&DAT_003471a4;
 }
 
 
@@ -12947,7 +12947,7 @@ unsigned long FUN_0019f8e4(long *param_1,unsigned long param_2,unsigned long par
   param_1[2] = next;
   FUN_0019ea20(next,param_2,param_3,param_4);
   auVar2 = next;
-  auVar2 = &DAT_003471a8;
+  auVar2 = (unsigned long)&DAT_003471a8;
   return auVar2;
 }
 
@@ -13401,6 +13401,7 @@ void FUN_0019ff50(void)
     unsigned long res;
   unsigned long in_x3;
   unsigned long unaff_x30;
+  code *pcVar2;
   
   FUN_00357ca0();
   FUN_00353274();
@@ -13414,7 +13415,6 @@ void FUN_0019ff50(void)
   FUN_003502a8();
   __builtin_trap();
   if ((res & 1) != 0) {
-  code *pcVar2;
     FUN_0034e0d4();
     FUN_00310f04();
     FUN_00351100();

@@ -14,61 +14,61 @@
  * Out-of-range cL4 / Swift runtime helpers (FUN_ addr in comment;
  * reconstructed by sibling SK range workers). Names are estimates.
  * ------------------------------------------------------------------ */
-extern void sk_fatal_error(unsigned long a, unsigned long b, ...) __attribute__((noreturn)); /* FUN_001afe4c */
-extern unsigned long sk_swift_state(unsigned long a, ...);    /* FUN_00348e00 */
-extern unsigned long sk_swift_state2(void);                   /* FUN_00355538 */
-extern unsigned long sk_swift_state3(void);                   /* FUN_00351d18 */
-extern unsigned long sk_swift_gstate(unsigned long a);        /* FUN_0036a940 */
-extern unsigned long sk_swift_gstore(unsigned long a);        /* FUN_00310d98 */
-extern unsigned long sk_swift_flag(unsigned long a);          /* indirect result */
-extern unsigned long sk_swift_flag_set(unsigned long a);      /* FUN_00229a3c */
-extern unsigned long sk_swift_flag_calc(unsigned long a);     /* FUN_00351ca0 */
-extern unsigned long sk_swift_tag(unsigned long a);           /* FUN_001a8564 */
-extern unsigned long sk_swift_done(void);                     /* FUN_000839d8 */
-extern unsigned long sk_swift_cap(unsigned long a);           /* FUN_003a26a0 */
-extern unsigned long sk_swift_cap_rel(unsigned long a);       /* FUN_003a261c */
-extern unsigned long sk_swift_idx(unsigned long a);           /* FUN_003a2898 */
-extern unsigned long sk_swift_idx_cmp(unsigned long a, unsigned long b); /* FUN_002a0f24 */
-extern unsigned long sk_swift_meta(unsigned long a);          /* FUN_003a25d4 */
-extern unsigned long sk_swift_free(unsigned long a);          /* FUN_0036b118 */
-extern unsigned long sk_swift_free_pages(unsigned long a);    /* FUN_0036b270 */
-extern unsigned long sk_swift_bitset_ctor(unsigned long a);   /* FUN_002c2da4 */
-extern unsigned long sk_swift_bitset_end(unsigned long a);    /* FUN_00068e14 */
-extern unsigned long sk_swift_hash(unsigned long a);          /* FUN_00255738 */
-extern unsigned long sk_swift_hash_pair(unsigned long a);     /* FUN_00255738 */
-extern unsigned long sk_swift_attr_get(unsigned long a);      /* FUN_00281cc0 */
-extern unsigned long sk_swift_attr_get2(unsigned long a);     /* FUN_00283a08 */
-extern unsigned long sk_swift_attr_get3(unsigned long a);     /* FUN_00282bc0 */
-extern unsigned long sk_swift_small_string(unsigned long a, unsigned long b, unsigned long c); /* FUN_001a89a8 */
-extern unsigned long sk_swift_empty_string(unsigned long a);  /* FUN_0011e71c */
-extern unsigned long sk_swift_int_string(unsigned long a, unsigned long b); /* FUN_002364dc */
-extern unsigned long sk_swift_string_builder(unsigned long a);/* string builder */
-extern unsigned long sk_swift_string_ref(unsigned long a);    /* FUN_001e8374 */
-extern unsigned long sk_swift_string_ref2(unsigned long a);   /* FUN_001e851c */
-extern unsigned long sk_swift_string_cvt(unsigned long a);    /* FUN_001e9414 */
-extern unsigned long sk_swift_string_cmp2(unsigned long a, unsigned long b, unsigned long c, unsigned long d, unsigned long e); /* FUN_002a0d50 */
-extern unsigned long sk_swift_string_cmp6(unsigned long a, unsigned long b, unsigned long c, unsigned long d); /* FUN_00359214 */
-extern unsigned long sk_swift_utf8_next(void *a, unsigned long b, unsigned long c); /* FUN_002b141c */
-extern unsigned long sk_swift_utf8_prev(void *a, unsigned long b, unsigned long c); /* FUN_002b14c8 */
-extern unsigned long sk_swift_utf8_scalar_at(unsigned long a, unsigned long b, unsigned long c); /* FUN_002a9ba8 */
-extern unsigned long sk_swift_utf8_scalar_prev(unsigned long a, unsigned long b, unsigned long c); /* FUN_00167404 */
-extern unsigned long sk_swift_witness(unsigned long a);       /* FUN_0034b7f4 */
-extern unsigned long sk_swift_witnessB(unsigned long a);      /* FUN_0034b798 */
-extern unsigned long sk_swift_witnessF(unsigned long a);      /* FUN_0034f464 */
-extern unsigned long sk_swift_range(unsigned long a, unsigned long b, unsigned long c); /* FUN_0019eb88 */
-extern unsigned long sk_swift_pair_cvt(unsigned long a, unsigned long b); /* FUN_0001a1c8 */
-extern unsigned long sk_swift_reg(unsigned long a, unsigned long b); /* FUN_003198cc */
-extern unsigned long sk_swift_galloc(unsigned long a, unsigned long b); /* FUN_00083450 */
-extern unsigned long sk_swift_ginit(unsigned long a, unsigned long b);  /* FUN_00389da0 */
-extern unsigned long sk_swift_gfind(unsigned long a, unsigned long b);  /* FUN_00362c34 */
-extern unsigned long sk_swift_gverify(unsigned long a, unsigned long b);/* FUN_00362c00 */
-extern unsigned long sk_swift_glist(unsigned long a);         /* FUN_003629c4 */
-extern unsigned long sk_swift_gstep(unsigned long a);         /* FUN_003629b4 */
-extern unsigned long sk_swift_die(unsigned long a, ...);      /* FUN_00348898 */
-extern unsigned long sk_swift_die2_0(unsigned long a);        /* FUN_00348074 */
-extern unsigned long sk_swift_die2_1(unsigned long a);        /* FUN_00348404 */
-extern unsigned long sk_swift_die3(void);                     /* FUN_0034a368 */
-extern unsigned long sk_swift_string_lit(unsigned long a);    /* FUN_001a89a8 */
+extern void sk_fatal_error(); __attribute__((noreturn)) /* FUN_001afe4c */
+extern unsigned long sk_swift_state(); /* FUN_00348e00 */
+extern unsigned long sk_swift_state2(); /* FUN_00355538 */
+extern unsigned long sk_swift_state3(); /* FUN_00351d18 */
+extern unsigned long sk_swift_gstate(); /* FUN_0036a940 */
+extern unsigned long sk_swift_gstore(); /* FUN_00310d98 */
+extern unsigned long sk_swift_flag(); /* indirect result */
+extern unsigned long sk_swift_flag_set(); /* FUN_00229a3c */
+extern unsigned long sk_swift_flag_calc(); /* FUN_00351ca0 */
+extern unsigned long sk_swift_tag(); /* FUN_001a8564 */
+extern unsigned long sk_swift_done(); /* FUN_000839d8 */
+extern unsigned long sk_swift_cap(); /* FUN_003a26a0 */
+extern unsigned long sk_swift_cap_rel(); /* FUN_003a261c */
+extern unsigned long sk_swift_idx(); /* FUN_003a2898 */
+extern unsigned long sk_swift_idx_cmp(); /* FUN_002a0f24 */
+extern unsigned long sk_swift_meta(); /* FUN_003a25d4 */
+extern unsigned long sk_swift_free(); /* FUN_0036b118 */
+extern unsigned long sk_swift_free_pages(); /* FUN_0036b270 */
+extern unsigned long sk_swift_bitset_ctor(); /* FUN_002c2da4 */
+extern unsigned long sk_swift_bitset_end(); /* FUN_00068e14 */
+extern unsigned long sk_swift_hash(); /* FUN_00255738 */
+extern cl4_result_t sk_swift_hash_pair(); /* FUN_00255738 */
+extern unsigned long sk_swift_attr_get(); /* FUN_00281cc0 */
+extern unsigned long sk_swift_attr_get2(); /* FUN_00283a08 */
+extern unsigned long sk_swift_attr_get3(); /* FUN_00282bc0 */
+extern cl4_result_t sk_swift_small_string(); /* FUN_001a89a8 */
+extern unsigned long sk_swift_empty_string(); /* FUN_0011e71c */
+extern cl4_result_t sk_swift_int_string(); /* FUN_002364dc */
+extern cl4_result_t sk_swift_string_builder(); /* string builder */
+extern unsigned long sk_swift_string_ref(); /* FUN_001e8374 */
+extern unsigned long sk_swift_string_ref2(); /* FUN_001e851c */
+extern unsigned long sk_swift_string_cvt(); /* FUN_001e9414 */
+extern unsigned long sk_swift_string_cmp2(); /* FUN_002a0d50 */
+extern unsigned long sk_swift_string_cmp6(); /* FUN_00359214 */
+extern unsigned long sk_swift_utf8_next(); /* FUN_002b141c */
+extern unsigned long sk_swift_utf8_prev(); /* FUN_002b14c8 */
+extern unsigned long sk_swift_utf8_scalar_at(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_utf8_scalar_prev(); /* FUN_00167404 */
+extern cl4_result_t sk_swift_witness(); /* FUN_0034b7f4 */
+extern unsigned long sk_swift_witnessB(); /* FUN_0034b798 */
+extern cl4_result_t sk_swift_witnessF(); /* FUN_0034f464 */
+extern cl4_result_t sk_swift_range(); /* FUN_0019eb88 */
+extern cl4_result_t sk_swift_pair_cvt(); /* FUN_0001a1c8 */
+extern unsigned long sk_swift_reg(); /* FUN_003198cc */
+extern unsigned long sk_swift_galloc(); /* FUN_00083450 */
+extern unsigned long sk_swift_ginit(); /* FUN_00389da0 */
+extern unsigned long sk_swift_gfind(); /* FUN_00362c34 */
+extern unsigned long sk_swift_gverify(); /* FUN_00362c00 */
+extern unsigned long sk_swift_glist(); /* FUN_003629c4 */
+extern unsigned long sk_swift_gstep(); /* FUN_003629b4 */
+extern unsigned long sk_swift_die(); /* FUN_00348898 */
+extern unsigned long sk_swift_die2_0(); /* FUN_00348074 */
+extern unsigned long sk_swift_die2_1(); /* FUN_00348404 */
+extern unsigned long sk_swift_die3(); /* FUN_0034a368 */
+extern unsigned long sk_swift_string_lit(); /* FUN_001a89a8 */
 extern unsigned long thunk_sk_swift_hash(unsigned long a, unsigned long b); /* FUN_00229ebc */
 extern void thunk_FUN_00054414(unsigned long *a, unsigned long b);
 extern unsigned long thunk_FUN_001a89a8(unsigned long a, unsigned long b, unsigned int c); /* 0x1a89a8 */
@@ -77,73 +77,73 @@ extern void thunk_FUN_002298d4(unsigned long a);                 /* 0x2298d4 */
 extern long thunk_FUN_00284424(void *a, long b, long c, void *d, void *e); /* 0x284424 */
 extern unsigned long thunk_FUN_0036b270(unsigned long a);        /* 0x36b270 */
   /* FUN_00054414 */
-extern unsigned long sk_swift_badlock(unsigned long a, ...);  /* FUN_00347fb4 */
-extern unsigned long sk_swift_shift(unsigned long a, ...);    /* FUN_00356340 */
+extern unsigned long sk_swift_badlock(); /* FUN_00347fb4 */
+extern unsigned long sk_swift_shift(); /* FUN_00356340 */
 
-extern unsigned long sk_sync_ops_1(unsigned long a);             /* FUN_00354a34 */
-extern unsigned long sk_sync_ops_2(unsigned long a);             /* FUN_0035694c */
-extern void sk_bad_pointer(void);                                /* FUN_0034846c */
-extern unsigned long sk_obj_alloc_buf(unsigned long a);          /* FUN_00355968 */
-extern unsigned long sk_swift_overflow(void);                    /* FUN_003583dc */
-extern void sk_swift_fail(void);                                 /* FUN_00348194 */
-extern void sk_swift_fail2(void);                                /* FUN_003523f0 */
-extern unsigned long sk_swift_detect_tiny(unsigned long a);      /* FUN_00356d2c */
-extern unsigned long sk_str_fast_count(unsigned long a);         /* FUN_00255d4c */
-extern void sk_swift_emit(unsigned long a);                      /* FUN_003528ac */
-extern void sk_swift_die2(void);                                 /* FUN_0034a2f8 */
-extern void sk_swift_sync(unsigned long a);                      /* FUN_00357ca0 */
-extern unsigned long sk_swift_sync_ret(void);                    /* FUN_00355d9c */
-extern void sk_swift_pin(unsigned long a);                       /* FUN_00351584 */
-extern void sk_swift_unpin(unsigned long a);                     /* FUN_003591f4 */
-extern void sk_swift_store(unsigned long a, unsigned long b);    /* FUN_00357c44 */
-extern void sk_swift_ckrange(void);                              /* FUN_0035ab60 */
-extern void sk_swift_ckrange2(void);                             /* FUN_003d2dd4 */
-extern void sk_swift_panic_msg(unsigned long a);                 /* FUN_00350410 */
-extern void sk_swift_badptr(void);                               /* FUN_00358ca4 */
-extern void sk_swift_trap_slot(void);                            /* FUN_00353d70 */
-extern void sk_swift_dispatch(void);                             /* FUN_003523fc */
-extern unsigned long sk_swift_classify(unsigned long a);         /* FUN_00354504 */
-extern unsigned long sk_swift_isascii_utf16(unsigned long);      /* FUN_0001da84 */
-extern unsigned long sk_swift_utf16_fwd(unsigned long a);        /* FUN_001676cc */
-extern unsigned long sk_swift_utf16_get(unsigned long);          /* FUN_002a9ba8 */
-extern void sk_swift_memop(unsigned long a, unsigned long b, unsigned long c, unsigned long d); /* FUN_002bbc14 */
-extern unsigned long sk_swift_utf16_set(unsigned long);          /* FUN_002af618 */
-extern void sk_swift_utf16_slice(void);                          /* FUN_00291d70 */
-extern void sk_swift_table(void);                                /* FUN_00346774 */
-extern unsigned long sk_swift_string_lit(unsigned long);         /* FUN_00002534 */
-extern void sk_swift_cast16(void);                               /* FUN_0001d4a0 */
-extern unsigned long sk_swift_uint_conv(unsigned long);          /* FUN_003d2f9c */
-extern void sk_swift_uint_conv2(void);                           /* FUN_003d2f10 */
-extern void sk_swift_load(void);                                 /* FUN_00357cb4 */
-extern void sk_swift_iret(void);                                 /* FUN_00357c74 */
-extern void sk_swift_leave(void);                                /* FUN_00355bb8 */
-extern void sk_swift_lock(void);                                 /* FUN_0034e004 */
-extern void sk_swift_unlock(void);                               /* FUN_00350524 */
-extern void sk_swift_door(void);                                 /* FUN_00351b78 */
-extern void sk_swift_prev(void);                                 /* FUN_0034f688 */
-extern void sk_swift_next(void);                                 /* FUN_00205844 */
-extern unsigned long sk_swift_atomic_load(void);                 /* FUN_00354744 */
-extern void sk_swift_bitset(void);                               /* FUN_0006e778 */
-extern unsigned long sk_swift_cmp(void);                         /* FUN_0034f064 */
-extern void sk_swift_strlen(unsigned long a, ...);               /* FUN_0035354c */
-extern void sk_swift_substr(void);                               /* FUN_00208418 */
-extern void sk_swift_concat(void);                               /* FUN_00354a00 */
-extern unsigned long sk_swift_split(void);                       /* FUN_0034f98c */
-extern void sk_swift_join(void);                                 /* FUN_0034c3a0 */
-extern void sk_swift_append(void);                               /* FUN_003511d8 */
-extern void sk_swift_insert(void);                               /* FUN_0034a390 */
-extern void sk_swift_remove(void);                               /* FUN_0034ef38 */
-extern void sk_swift_replace(void);                              /* FUN_002a4c98 */
-extern void sk_swift_find(void);                                 /* FUN_0034bf64 */
-extern void sk_swift_rfind(void);                                /* FUN_003510b8 */
-extern void sk_swift_trim(void);                                 /* FUN_0034b7c8 */
-extern void sk_swift_lower(void);                                /* FUN_00354e0c */
-extern void sk_swift_upper(void);                                /* FUN_00350868 */
-extern void sk_swift_any(void);                                  /* FUN_0006f768 */
-extern void sk_swift_reserve(void);                              /* FUN_00352c58 */
-extern void sk_swift_scan(void);                                 /* FUN_00357cec */
-extern void sk_swift_get_cap(void);                              /* FUN_002a9ba8 */
-extern void sk_swift_set_cap(void);                              /* FUN_002af618 */
+extern unsigned long sk_sync_ops_1(); /* FUN_00354a34 */
+extern unsigned long sk_sync_ops_2(); /* FUN_0035694c */
+extern unsigned long sk_bad_pointer(); /* FUN_0034846c */
+extern unsigned long sk_obj_alloc_buf(); /* FUN_00355968 */
+extern unsigned long sk_swift_overflow(); /* FUN_003583dc */
+extern unsigned long sk_swift_fail(); /* FUN_00348194 */
+extern unsigned long sk_swift_fail2(); /* FUN_003523f0 */
+extern unsigned long sk_swift_detect_tiny(); /* FUN_00356d2c */
+extern unsigned long sk_str_fast_count(); /* FUN_00255d4c */
+extern unsigned long sk_swift_emit(); /* FUN_003528ac */
+extern unsigned long sk_swift_die2(); /* FUN_0034a2f8 */
+extern unsigned long sk_swift_sync(); /* FUN_00357ca0 */
+extern unsigned long sk_swift_sync_ret(); /* FUN_00355d9c */
+extern unsigned long sk_swift_pin(); /* FUN_00351584 */
+extern unsigned long sk_swift_unpin(); /* FUN_003591f4 */
+extern unsigned long sk_swift_store(); /* FUN_00357c44 */
+extern unsigned long sk_swift_ckrange(); /* FUN_0035ab60 */
+extern unsigned long sk_swift_ckrange2(); /* FUN_003d2dd4 */
+extern unsigned long sk_swift_panic_msg(); /* FUN_00350410 */
+extern unsigned long sk_swift_badptr(); /* FUN_00358ca4 */
+extern unsigned long sk_swift_trap_slot(); /* FUN_00353d70 */
+extern unsigned long sk_swift_dispatch(); /* FUN_003523fc */
+extern unsigned long sk_swift_classify(); /* FUN_00354504 */
+extern unsigned long sk_swift_isascii_utf16(); /* FUN_0001da84 */
+extern unsigned long sk_swift_utf16_fwd(); /* FUN_001676cc */
+extern unsigned long sk_swift_utf16_get(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_memop(); /* FUN_002bbc14 */
+extern unsigned long sk_swift_utf16_set(); /* FUN_002af618 */
+extern unsigned long sk_swift_utf16_slice(); /* FUN_00291d70 */
+extern unsigned long sk_swift_table(); /* FUN_00346774 */
+extern unsigned long sk_swift_string_lit(); /* FUN_00002534 */
+extern unsigned long sk_swift_cast16(); /* FUN_0001d4a0 */
+extern unsigned long sk_swift_uint_conv(); /* FUN_003d2f9c */
+extern unsigned long sk_swift_uint_conv2(); /* FUN_003d2f10 */
+extern unsigned long sk_swift_load(); /* FUN_00357cb4 */
+extern unsigned long sk_swift_iret(); /* FUN_00357c74 */
+extern unsigned long sk_swift_leave(); /* FUN_00355bb8 */
+extern unsigned long sk_swift_lock(); /* FUN_0034e004 */
+extern unsigned long sk_swift_unlock(); /* FUN_00350524 */
+extern unsigned long sk_swift_door(); /* FUN_00351b78 */
+extern unsigned long sk_swift_prev(); /* FUN_0034f688 */
+extern unsigned long sk_swift_next(); /* FUN_00205844 */
+extern unsigned long sk_swift_atomic_load(); /* FUN_00354744 */
+extern unsigned long sk_swift_bitset(); /* FUN_0006e778 */
+extern unsigned long sk_swift_cmp(); /* FUN_0034f064 */
+extern unsigned long sk_swift_strlen(); /* FUN_0035354c */
+extern unsigned long sk_swift_substr(); /* FUN_00208418 */
+extern unsigned long sk_swift_concat(); /* FUN_00354a00 */
+extern unsigned long sk_swift_split(); /* FUN_0034f98c */
+extern unsigned long sk_swift_join(); /* FUN_0034c3a0 */
+extern unsigned long sk_swift_append(); /* FUN_003511d8 */
+extern unsigned long sk_swift_insert(); /* FUN_0034a390 */
+extern unsigned long sk_swift_remove(); /* FUN_0034ef38 */
+extern unsigned long sk_swift_replace(); /* FUN_002a4c98 */
+extern unsigned long sk_swift_find(); /* FUN_0034bf64 */
+extern unsigned long sk_swift_rfind(); /* FUN_003510b8 */
+extern unsigned long sk_swift_trim(); /* FUN_0034b7c8 */
+extern unsigned long sk_swift_lower(); /* FUN_00354e0c */
+extern unsigned long sk_swift_upper(); /* FUN_00350868 */
+extern unsigned long sk_swift_any(); /* FUN_0006f768 */
+extern unsigned long sk_swift_reserve(); /* FUN_00352c58 */
+extern unsigned long sk_swift_scan(); /* FUN_00357cec */
+extern unsigned long sk_swift_get_cap(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_set_cap(); /* FUN_002af618 */
 
 /*--------------------------------------------------------------------*/
 /* Forward declarations of in-range callees defined below. */
@@ -153,6 +153,36 @@ void cl4_swift_validate_msg(long a, unsigned long b, long cap, unsigned long len
 void cl4_swift_validate_msg2(long a, unsigned long b, long cap, unsigned long len,
                              long c, unsigned long d, unsigned long count);
 void cl4_swift_validate_msg3(long a, unsigned long b, long cap, unsigned long len);
+void cl4_swift_msg_resolve();          /* FUN_001b0a7c */
+void cl4_swift_ubp_do();               /* FUN_001b0f78 */
+void cl4_swift_range_math();           /* FUN_001b11bc */
+void cl4_object_service_run3();        /* FUN_001b3c0c */
+void cl4_swift_fill();                 /* FUN_001b5474 */
+void cl4_swift_complete();             /* FUN_001b58b0 */
+unsigned long cl4_swift_string_cmp3(); /* FUN_001b8920 */
+unsigned long cl4_swift_string_cmp4(); /* FUN_001b8c84 */
+unsigned long cl4_swift_string_cmp5(); /* FUN_001b8fcc */
+void cl4_swift_string_append4();       /* FUN_001bd6dc */
+void cl4_swift_string_append6();       /* FUN_001be528 */
+extern unsigned long cl4_swift_utf8_bounds2();  /* FUN_001b798c */
+extern unsigned long sk_swift_gstate_global;    /* DAT_006ade68 */
+
+/* Forward declarations of in-range callees defined below (called before def). */
+void cl4_swift_msg_resolve();
+void cl4_swift_ubp_do();
+void cl4_swift_range_math();
+void cl4_object_service_run3();
+void cl4_swift_fill();
+void cl4_swift_complete();
+void cl4_swift_string_cmp3();
+void cl4_swift_string_cmp4();
+unsigned long cl4_swift_string_cmp5();
+void cl4_swift_string_append4();
+void cl4_swift_string_append6();
+unsigned long cl4_swift_utf8_bounds2();   /* out-of-range; no in-file def */
+
+/* Global gstate word (_DAT_006ade68). */
+extern unsigned long sk_swift_gstate_global;
 
 /*--------------------------------------------------------------------*/
 /* FUN_001b012c @ 0x001b012c   (est. cl4_fatal_abort)
@@ -1057,9 +1087,10 @@ cl4_result_t cl4_swift_utf8_find_char(void *idx, long count, unsigned long targe
     cl4_result_t r = { (unsigned long)idx, 0 };
     unsigned long w = (unsigned long)idx;
     unsigned long sz = 4L << (base >> 0x3b & 1);
+    unsigned long ubase = 0;   /* hoisted: used at retreat: label */
     if ((flags & 0x1000000000000000) == 0) sz = 8;
     if (count < 0) {
-        unsigned long ubase = base & 0xffffffffffff;
+        ubase = base & 0xffffffffffff;
         if (flags & 0x2000000000000000) ubase = flags >> 0x38 & 0xf;
         for (long k = 0; count < k; k--) {
             if ((w ^ target) < 0x4000) { r.lo = 0; r.hi = 1; return r; }
@@ -1082,7 +1113,7 @@ cl4_result_t cl4_swift_utf8_find_char(void *idx, long count, unsigned long targe
             if ((w ^ target) >> 0xe == 0) { r.lo = 0; r.hi = 1; return r; }
             if ((w & 0xc) == sz) w = sk_swift_utf16_fwd(w, base, flags);
             if ((flags >> 0x3c & 1) != 0) {
-                unsigned long ubase = base & 0xffffffffffff;
+                ubase = base & 0xffffffffffff;
                 if (flags & 0x2000000000000000) ubase = flags >> 0x38 & 0xf;
                 if (w >> 0x10 < ubase) {
                     w = (unsigned long)(void *)sk_swift_utf8_next((void *)w, base, flags);
@@ -1669,7 +1700,7 @@ cl4_result_t cl4_swift_bitset_first(void)
     if (cur == 0) {
         while (1) {
             if (__builtin_add_overflow(idx, 1, &idx)) __builtin_trap();  /* SWBP 0x1b5674 */
-            if (0 /* x20[1] */ <= idx) { return sk_swift_bitset_end(0); }  /* FUN_00068e14 */
+            if (0 /* x20[1] */ <= idx) { return (cl4_result_t){ sk_swift_bitset_end(0), 0 }; }  /* FUN_00068e14 */
             /* x20[2] = idx; cur = words[idx]; */
             cur = 0;
             if (cur != 0) break;
@@ -2983,7 +3014,7 @@ unsigned int cl4_swift_idx_ne(void)
  * compare. Result passed to FUN_00356d20.
  * Confidence: low (Swift string compare).
  */
-void cl4_swift_string_cmp3(long w1, unsigned long f1, long w2, unsigned long f2)
+unsigned long cl4_swift_string_cmp3(long w1, unsigned long f1, long w2, unsigned long f2)
 {
     unsigned long r;
     if (w1 == w2 && f1 == f2) r = 0;
@@ -2995,7 +3026,7 @@ void cl4_swift_string_cmp3(long w1, unsigned long f1, long w2, unsigned long f2)
     } else {
         r = sk_swift_string_cmp2(0, 0, 0, 0, 1);   /* FUN_002a0d50 */
     }
-    sk_swift_state(r);   /* FUN_00356d20(r, x30) */
+    return sk_swift_state(r);   /* FUN_00356d20(r, x30) */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3083,7 +3114,7 @@ unsigned int cl4_swift_idx_ne2(void *a, void *b, void *c, void *d)
  * FUN_003576ec, else FUN_002a0d50; result to FUN_00356d20.
  * Confidence: low (Swift string compare).
  */
-void cl4_swift_string_cmp4(long w1, unsigned long f1, long w2, unsigned long f2)
+unsigned long cl4_swift_string_cmp4(long w1, unsigned long f1, long w2, unsigned long f2)
 {
     unsigned long r;
     if (w1 == w2 && f1 == f2) r = 0;
@@ -3094,7 +3125,7 @@ void cl4_swift_string_cmp4(long w1, unsigned long f1, long w2, unsigned long f2)
     } else {
         r = sk_swift_string_cmp2(0, 0, 0, 0, 0);   /* FUN_002a0d50 */
     }
-    sk_swift_state(r);   /* FUN_00356d20(r, x30) */
+    return sk_swift_state(r);   /* FUN_00356d20(r, x30) */
 }
 
 /*--------------------------------------------------------------------*/
