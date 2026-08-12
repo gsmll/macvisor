@@ -3188,57 +3188,144 @@ joined_b110:                        /* joined_r0xfffffe000b89b110 */
 }
 
 /*
- * hv_el2_guest_fault_retry @ 0xfffffe000b9879b8   (est. hv_el2_guest_fault_retry)
+ * hv_el2_guest_fault_retry @ 0xfffffe000b9879b8   (hv_el2_guest_fault_retry)
  * Ghidra: bool hv_el2_guest_fault_retry(ulong param_1, ulong param_2, uint param_3,
  *                                   long param_4)
  * Guest-fault retry helper called by hv_el2_guest_fault when vm_fault
- * (kernel_vm_fault) fails on a non-write guest abort. Re-looks-up the vm's
- * region rbtree (vm+0x427) for the region covering [addr, addr+size), and if
- * found and in-range, posts a fault record (FUN_fffffe000b7e16f0) against the
- * region, releases the region reference, and returns whether the post
- * succeeded. On success the caller advances the guest PC by 4 and resumes.
- * Confidence: medium (region-tree lookup + fault-post observed)
- * Notes: region tree nodes stride 0x30 (node+0x28/0x30 child pointers); the
- *   fault record is a fixed 0x40-byte block (local_a0 = 0x4000000013 header).
- *   Guards on fault_type (param_3 & 0x10003c0) == 0x1000040. Deeper callees
- *   b78fd40 (region lock), b7e16f0 (fault post), b78cc20 (release), LORelease,
- *   and the panic c0f8674 are stubbed externs.
+ * (kernel_vm_fault) fails on a non-write guest abort. Guards on fault_type
+ * (param_3 & 0x10003c0) == 0x1000040, binds the current cpu into the vm
+ * owner slot (owner[0]+8), takes the per-vm lock when needed, then walks the
+ * region rbtree (owner+0x427, nodes stride 0x30, start at node[0], end at
+ * node[3]) for the region whose start == addr and end <= addr, checking
+ * addr + page_size (1<<((fault_type>>0x16)&3)) <= region end. On a match it
+ * locks the region ref (b78fd40), releases the vm lock (b7f1e80), builds a
+ * 0x40-byte fault record {0x4000000013, 0, 0, region[4], region[1], addr,
+ * page_size, <saved reg per uVar4>, 2}, posts it (b7e16f0, size 0x40,
+ * type 0x10), releases the region ref (refcount--, b78cc20 at 1,
+ * panic c0f8674 at 0) and returns whether the post succeeded.
+ * Confidence: high (complete decompile).
+ * Notes: the register slot is param_4+uVar4*8+8 for uVar4 < 0x1d,
+ *   param_4+0x100 for 0x1f, +0xf8 for 0x1e, else +0xf0; uVar4 =
+ *   (param_3>>0x10)&0x1f. Callees b78fd40 (region lock), b7e16f0 (fault
+ *   post), b78cc20 (release) are stubbed externs.
  */
 int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
                              void *state)
 {
-    uint64_t page_size;
-    uint64_t *region;
-    uint64_t rec_ref;
-    int posted;
+    uint64_t page_size, reg_idx;
+    uint64_t *root, *region;
+    uint64_t *owner_block;
+    uint64_t owner_lock, cpu_slot, slot_val;
+    uint64_t rec_ref, region_mid;
+    int pending, prev, rc;
+    uint64_t rec[9];
+    uint64_t *reg_slot;
+    uint64_t *puVar12;
 
-    if ((fault_type & 0x10003c0) != 0x1000040) {
+    if ((fault_type & 0x10003c0) != 0x1000040)
         return 0;
-    }
-    region = *(uint64_t **)(per_cpu_base(0) + 0x628);   /* current vm region tree */
-    page_size = 1ULL << ((fault_type >> 0x16) & 3);     /* page size 1<<[2..3] */
 
-    /* rbtree walk for the region containing [addr, addr+page_size). */
-    while (region != 0) {
-        if (*region < addr) {
-            region = *(uint64_t **)((char *)region + 0x30);
-        } else if (*region <= addr && region[2] >= addr && region[2] <= addr) {
-            break;                                       /* found */
+    cpu_slot = tpidr_el1;
+    owner_block = *(uint64_t **)(per_cpu_base(cpu_slot) + 0x628); /* vm owner block */
+    owner_lock = owner_block[0];               /* owner[0] = the per-vm lock */
+    puVar12 = (uint64_t *)(owner_lock + 8);    /* owner cpu-id slot */
+    slot_val = *puVar12;
+    if (slot_val == 0)
+        *puVar12 = *(uint32_t *)(cpu_slot + 0x518);
+    pending = hv_debug_flag;                   /* DAT_fffffe000c62b3d0 */
+    if (slot_val != 0 || pending != 0)
+        lock_acquire((void *)owner_lock, cpu_slot, slot_val, 0);   /* b7f0afc */
+    root = (uint64_t *)owner_block[0x427];     /* region tree root */
+    hv_debug_flag = pending;
+    if (root == 0)
+        goto no_region;
+
+    page_size = 1ULL << ((fault_type >> 0x16) & 3);
+    reg_idx = (fault_type >> 0x10) & 0x1f;
+    region = 0;
+    puVar12 = root;
+    for (;;) {
+        uint64_t start = *puVar12;
+        uint64_t *next;
+        if (start < addr) {
+            next = (uint64_t *)((char *)puVar12 + 0x30);   /* right */
+            region = (addr != start) ? region : puVar12;
+        } else if (start <= addr) {
+            if (puVar12[2] < addr)
+                next = (uint64_t *)((char *)puVar12 + 0x30);  /* right */
+            else if (puVar12[2] <= addr) {
+                region = puVar12;                /* found (LAB_987aac) */
+                break;
+            } else {
+                next = (uint64_t *)((char *)puVar12 + 0x28);  /* left */
+                region = 0;
+            }
         } else {
-            region = *(uint64_t **)((char *)region + 0x28);
+            next = (uint64_t *)((char *)puVar12 + 0x28);  /* left */
+            region = 0;
         }
+        puVar12 = next;
+        if (puVar12 == 0)
+            break;
     }
-    if (region != 0 && addr + page_size <= region[3]) {
-        kernel_region_lock(region[4]);                   /* b78fd40 */
-        /* post a fault record describing the access to the region. */
+    if (region == 0)
+        goto no_region;
+
+    if (addr + page_size <= region[3]) {
+        region_mid = region[1];
         rec_ref = region[4];
-        posted = kernel_fault_post((void *)0x4000000013ULL, region[1], 0,
-                                   addr, page_size);      /* b7e16f0 */
-        if (region[4] == 1) {
-            kernel_obj_release(rec_ref);                 /* b78cc20 */
+        kernel_region_lock(rec_ref);             /* b78fd40 */
+        /* release the vm lock (b7f1e80): clear owner cpu-id, sync if needed */
+        pending = hv_debug_flag;
+        owner_block = *(uint64_t **)(per_cpu_base(cpu_slot) + 0x628);
+        owner_lock = owner_block[0];
+        prev = *(int *)(cpu_slot + 0x518);
+        rc = *(int *)(owner_lock + 8);
+        if (rc == prev)
+            *(uint32_t *)(owner_lock + 8) = 0;
+        if (rc != prev || pending != 0)
+            lock_sync((void *)owner_lock, cpu_slot);  /* b7f1e80 */
+        /* build the 0x40-byte fault record */
+        rec[0] = 0x4000000013ull;                /* local_a0 */
+        rec[1] = 0;                              /* uStack_88 */
+        rec[2] = 0;                              /* local_90 */
+        if (reg_idx < 0x1d)
+            reg_slot = (uint64_t *)((char *)state + reg_idx * 8 + 8);
+        else if (reg_idx == 0x1f)
+            reg_slot = (uint64_t *)((char *)state + 0x100);
+        else if (reg_idx == 0x1e)
+            reg_slot = (uint64_t *)((char *)state + 0xf8);
+        else
+            reg_slot = (uint64_t *)((char *)state + 0xf0);
+        rec[3] = *reg_slot;                      /* local_70 */
+        rec[4] = 2;                              /* uStack_64 */
+        rec[5] = rec_ref;                        /* local_98 = region[4] */
+        rec[6] = region_mid;                     /* local_80 = region[1] */
+        rec[7] = addr;                           /* uStack_78 = param_2 */
+        rec[8] = page_size;                      /* local_68 = uVar3 */
+        rc = kernel_fault_post(rec, 0x40, 0x10, 0, 0);  /* b7e16f0 */
+        /* release the region reference */
+        prev = *(int *)(rec_ref + 4);
+        *(int *)(rec_ref + 4) = prev - 1;
+        LORelease();
+        if (prev != 0) {
+            if (prev == 1)
+                kernel_obj_release(rec_ref);     /* b78cc20 */
+            return rc == 0;
         }
-        return posted == 0;
+        kernel_panic_b();                        /* c0f8674, noreturn */
     }
+
+no_region:
+    /* release the vm lock (b7f1e80) and return false */
+    owner_block = *(uint64_t **)(per_cpu_base(cpu_slot) + 0x628);
+    owner_lock = owner_block[0];
+    prev = *(int *)(cpu_slot + 0x518);
+    rc = *(int *)(owner_lock + 8);
+    if (rc == prev)
+        *(uint32_t *)(owner_lock + 8) = 0;
+    if (rc != prev || hv_debug_flag != 0)
+        lock_sync((void *)owner_lock, cpu_slot);  /* b7f1e80 */
     return 0;
 }
 
@@ -3350,13 +3437,16 @@ done:
 }
 
 /*
- * hv_el2_guest_fiq @ 0xfffffe000b966c74   (est. hv_el2_guest_fiq)
+ * hv_el2_guest_fiq @ 0xfffffe000b966c74   (hv_el2_guest_fiq)
  * Ghidra: void hv_el2_guest_fiq(undefined8 param_1)
- * Handles a guest FIQ: calls kernel_irq_ack(param_1,3) (irq
- * acknowledgment), then the interrupt-controller dispatch vtable
+ * Handles a guest FIQ: calls kernel_irq_ack(param_1,3) (FUN_fffffe000b966dd8,
+ * irq acknowledgment), then the interrupt-controller dispatch vtable
  * (**(code **)(*DAT_fffffe000c733fc0 + 0x940))(), updates the per-CPU FIQ
- * counter and clock accounting (CNTVCT_EL2 read).
- * Confidence: medium
+ * ring counter (DAT_fffffe000c5ea838 cap 0x800, per-sample timestamp sum
+ * into DAT_fffffe000c5e8838), and does the CNTVCT clock accounting
+ * (per-cpu idle words DAT_fffffe000c5ee650/658/660 + cpu struct +0x338) —
+ * identical tail to hv_el2_guest_irq.
+ * Confidence: high (complete decompile; body matches line-for-line).
  */
 void hv_el2_guest_fiq(void)
 {

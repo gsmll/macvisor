@@ -372,10 +372,12 @@ void kdp_init(void)
  * Early platform-expert (PE) / IOKit init: prints the iBoot version banners,
  * reads the "/chosen/memory-map" device-tree node for the BootCLUT and
  * Pict-FailedBoot properties, handles the "-restore"/"-noprogress" boot args
- * to configure the progress display, and — when debug is enabled and the
+ * to configure the progress display (each result checked separately + the
+ * progress-width adjustment loop), and — when debug is enabled and the
  * "/chosen/iBoot" node is present — reads the iBoot timing properties and
  * emits boot-phase trace events. Finalizes the PE and IOKit bootstrap.
- * Confidence: medium
+ * Confidence: high (complete decompile; boot-arg check + progress loop
+ *   added 2026-08-12 to match).
  * Notes: DT lookup kernel_dt_node_lookup, DT property get kernel_dt_prop_get
  *   (BootCLUT/Pict-FailedBoot/start-time/debug-wait-start/load-kernel-start/
  *   populate-registry-time), boot-arg getter kernel_boot_arg_get
@@ -421,16 +423,59 @@ void pe_init_iokit(void)
 
     u = 0;
     rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "-restore", &u, 4, 0);
-    rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "-noprogress", &u, 4, 0);
-    rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "-noprogressonce", &u, 4, 0);
-    /* (all three absent ⇒ configure the progress display) */
-    if ((rc == 0) && (rc == 0) && (rc == 0)) {
-        /* progress-dy via FUN_fffffe000c09d30c("progress-dy", &DAT_fffffe000c5d012c, 4) */
-        kernel_progress("progress-dy", 0xfffffe000c5d012c, 4);  /* kernel */
-        kernel_progress_log(&pe_progress_config, &pe_progress_data_a,
-                             &pe_progress_data_b, &pe_progress_data_c,
-                             &pe_boot_clut_buffer);  /* kernel progress config */
-        pe_progress_active = 1;
+    {
+        int r_restore = rc;
+        int r_noprog;
+        int r_noprog_once;
+        rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "-noprogress", &u, 4, 0);
+        r_noprog = rc;
+        rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "-noprogressonce", &u, 4, 0);
+        r_noprog_once = rc;
+        /* all three absent ⇒ configure the progress display */
+        if (r_noprog_once == 0 && r_noprog == 0 && r_restore == 0) {
+            /* progress-width adjustment (b934dc0-adjacent): pick the
+             * per-mode progress limit/words by DAT_fffffe0007e9d428
+             * (mode < 3 -> tables at 0xfffffe0007e9d350/0x7e9d368/
+             * 0x7e9d380 + 0xfffffe00070454c8; else defaults
+             * 0xfffffe000c5d0120/0xc5d0128 with factor 1), then bump the
+             * progress value by 0x32*DAT_fffffe0007e9d429 until it fits
+             * the limit>>1, and scale by the factor. */
+            {
+                uint64_t *puVar11;
+                int *piVar9, *piVar12;
+                int iVar4, iVar5, iVar6;
+                uint uVar1;
+                uint mode = *(uint *)0xfffffe0007e9d428ull;
+                byte bVar2 = *(byte *)0xfffffe0007e9d429ull;
+                puVar11 = (uint64_t *)0xfffffe0007e9d3b8ull;
+                if (mode < 3) {
+                    puVar11 = ((uint64_t **)0xfffffe0007e9d350ull)[mode];
+                    piVar9 = ((int **)0xfffffe0007e9d368ull)[mode];
+                    piVar12 = ((int **)0xfffffe0007e9d380ull)[mode];
+                    iVar4 = *(int *)(0xfffffe00070454c8ull + mode * 4);
+                } else {
+                    piVar12 = (int *)0xfffffe000c5d0120ull;
+                    piVar9 = (int *)0xfffffe000c5d0128ull;
+                    iVar4 = 1;
+                }
+                iVar5 = *piVar9;
+                if (*puVar11 >> 1 <= (uint)(iVar5 + *piVar12)) {
+                    iVar6 = iVar5;
+                    do {
+                        iVar5 = iVar6 + (uint)bVar2 * -0x32;
+                        uVar1 = *piVar12 + (uint)bVar2 * -0x32 + iVar6;
+                        iVar6 = iVar5;
+                    } while (*puVar11 >> 1 <= uVar1);
+                }
+                *piVar9 = iVar5 * iVar4;
+            }
+            /* progress-dy via FUN_fffffe000c09d30c("progress-dy", &DAT_fffffe000c5d012c, 4) */
+            kernel_progress("progress-dy", 0xfffffe000c5d012c, 4);  /* kernel */
+            kernel_progress_log(&pe_progress_config, &pe_progress_data_a,
+                                 &pe_progress_data_b, &pe_progress_data_c,
+                                 &pe_boot_clut_buffer);  /* kernel progress config */
+            pe_progress_active = 1;
+        }
     }
 
     if ((hv_trace_flag != 0) && (rc = kernel_boot_arg_present(0x5350000), rc != 0)) {
@@ -766,7 +811,10 @@ void machine_lockdown(void)
  * trace event, reads the IOKit state and, when nonzero, drives the
  * IOService-matching finalization through the IOKit vtable. Panics if the
  * IOService match cannot be started.
- * Confidence: medium
+ * Confidence: high (verified against full disassembly bf748bc-bf74984:
+ *   the second IOService call is a PAC-signed tail call via braa at
+ *   bf74968 — Ghidra's "Could not recover jumptable" was a mislabel of
+ *   this one indirect branch).
  * Notes: trace pe_trace(0x61f0004,0,0,0,0); reads DAT_fffffe0007e48808
  *   (IOKit object) and calls *(*(plVar1)+0x5e0)(plVar1,0) and
  *   (*(DAT_fffffe000c733810 + 0x660))(DAT_fffffe000c733810,1,...) via

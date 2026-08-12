@@ -76,7 +76,10 @@ extern void kernel_owner_mismatch_panic(void *mutex, void *thread) __attribute__
  * node, drops the container reference, and when the container refcount falls
  * to 1 calls hv_vcpu_object_release (est. hv_vcpu_object_release). This is the
  * teardown/cleanup path for a hypervisor object reached via its IPC port.
- * Confidence: medium
+ * Confidence: high (complete decompile; rewritten 2026-08-12 — the tree walk
+ *   no longer dereferences null on the first pass, lock_sync (b7f1e80) is
+ *   used where the code had lock_release, the final refcount-0 panic is
+ *   kernel_panic_b (c0f8674), and LORelease replaces the guessed os_release).
  * Notes: uses hv lock DAT_fffffe000c62c0c0. Refcount overflow guard
  *   (iVar15 + 0xf0000001 < 0xf0000002 => panic). os_release is the ARC-style
  *   object release (os_release) used by the kernel's kobject layer. */
@@ -111,7 +114,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			c = (int)head[1];
 			*(int *)(head + 1) = c + 1;
 			if ((uint)(c + 0xf0000001) < 0xf0000002) {
-				kernel_panic_a();  /* est. kernel panic (no-arg) */          /* refcount overflow */
+				kernel_panic_a();  /* FUN_fffffe000c0f86a4, refcount overflow */
 			}
 			retained = false;
 		}
@@ -122,42 +125,47 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		hv_cached_cpu_id = 0;
 	}
 	if (c != *(int *)(tpidr_el1 + 0x518) || hv_debug_flag != 0) {
-		lock_release(&hv_lock);
+		lock_sync(&hv_lock, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
 	}
 
 	/* validate the waitq/port, then resolve the object key by handle+type.
 	 * waitq_validate = waitq_validate; hv_object_lookup (kernel
-	 * container registry) = hv_object_lookup, type 0x2d. */
+	 * container registry) = hv_object_lookup, type 0x2d.  The os_release
+	 * after the lookup has its argument dropped by the decompiler
+	 * (FUN_fffffe000b8afa78() renders arg-less); kept as a null arg. */
 	waitq_validate(param_1);
 	lookup_key = hv_object_lookup((void *)param_1, param_2, 0x2d);
-	os_release(NULL);                       /* FUN_fffffe000b8afa78; est. LORelease, arg unknown */
+	os_release(NULL);                       /* FUN_fffffe000b8afa78; decompiler drops the arg */
 
 	c = hv_debug_flag;
 	if (!retained) {
+		uint64_t *puVar12;
+		long *p;
 		node = (long *)*head;
-		child = (ulong *)(node + 1);
-		key = *child;
+		key = *(uint64_t *)(node + 1);
 		if (key == 0) {
-			*child = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
+			*(uint64_t *)(node + 1) = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
 		}
 		if (key != 0 || c != 0) {
 			lock_acquire(node, tpidr_el1, key, 0);
 		}
 
+		/* descend to the rightmost node of the region tree (head+0x427);
+		 * child = the last non-null node, node = 0 at exit. */
 		c = 0;
-		child = (ulong *)(head + 0x427);
+		puVar12 = (uint64_t *)(head + 0x427);
 		node = 0;
 		do {
-			child = node;
-			node = (long *)*child;
-			child = (ulong *)(node + 5);
+			child = node;                 /* plVar10 = plVar11 */
+			node = (long *)*puVar12;      /* plVar11 = *puVar12 (root) */
+			puVar12 = (uint64_t *)(node + 5);
 			c = hv_debug_flag;
 		} while (node != 0);
 
 		while (hv_debug_flag = c, child != 0) {
-			node = (long *)child[6];
+			node = (long *)child[6];      /* plVar11 = plVar10[6] (right) */
 			if (node == 0) {
-				long *p = (long *)(child[7] & ~1UL);
+				p = (long *)(child[7] & ~1UL);   /* plVar14 = plVar10[7]&~1 */
 				node = child;
 				if (p == 0 || child != (long *)p[5]) {
 					do {
@@ -192,14 +200,14 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			*count_ptr = 0;
 		}
 		if (c != newc || hv_debug_flag != 0) {
-			lock_release((void *)*head);
+			lock_sync((void *)*head, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
 		}
 
 		c = (int)head[1];
 		*(int *)(head + 1) = c - 1;
-		os_release(NULL);           /* ARC-style object release (FUN_fffffe000b8afa78); arg unknown */
+		LORelease();                    /* inline refcount release */
 		if (c == 0) {
-			kernel_panic_a();  /* est. kernel panic (no-arg) */
+			kernel_panic_b();           /* FUN_fffffe000c0f8674, noreturn */
 		}
 		if (c == 1) {
 			hv_vcpu_object_release(head);

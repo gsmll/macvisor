@@ -143,7 +143,7 @@ static void hv_el2_feature_detect(void)
 }
 
 /* ------------------------------------------------------------------ *
- * hv_available @ 0xfffffe000b984ed8   (est. hv_available)
+ * hv_available @ 0xfffffe000b984ed8   (hv_available)
  * Ghidra: void hv_available(long param_1)
  * Mach-trap entry that dispatches hypervisor operations by command number.
  * Reads the command (param_1+8) and its argument (param_1+0x10); if the
@@ -153,13 +153,14 @@ static void hv_el2_feature_detect(void)
  * entries) and writes the result back to param_1+8. Traces entry (0x10c0015)
  * and exit (0x10c0016) through kernel_trace when the trace flag
  * (DAT_fffffe000c68ac90 bit 0) is set.
- * Confidence: medium
+ * Confidence: high (complete decompile; body matches line-for-line).
  * Notes: dispatches through PTR_hv_op_table (19-entry hv mach-trap
  *   op table; handlers owned by vcpu-core/trap-dispatch trees). Reads
  *   DAT_fffffe0007e41db0 (hv availability). Kernel dep: kernel_trace
  *   (trace). Error codes -0x516bff1=0xfae9400f (hv unavailable),
  *   -0x516bfff=0xfae94001 (default). Decompiler quirk: the table-index
- *   arithmetic (0x2bad000000000000 OR) is pointer sign-extension noise. */
+ *   arithmetic (0x2bad000000000000 OR) is pointer sign-extension noise,
+ *   elided (cmd < 0x13 makes the index clean). */
 static void hv_available(long param_1)
 {
     long   result;
