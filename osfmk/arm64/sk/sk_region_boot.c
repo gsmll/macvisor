@@ -12936,7 +12936,7 @@ void tightbeam_uleb_encode(unsigned int *param_1, unsigned int param_2, unsigned
             *(char *)((char *)param_1 + width) = -(char)param_2;
         }
     } else {
-        /* encode param_2-0xff in width bytes with continuation; write tag iVar7 */ thunk_FUN_00114330(param_1,lw+1); value write; byte count
+        /* encode param_2-0xff in width bytes with continuation; write tag iVar7; thunk_FUN_00114330(param_1,lw+1); value write; byte count */
     }
 }
 
@@ -14864,7 +14864,7 @@ void tightbeam_event_post(unsigned long p1, unsigned long param_2, unsigned long
     evt[0x1b] = param_6;   /* +0xd8 */
     evt[0x18] = param_3;   /* +0xc0 */
     evt[0x19] = param_4;   /* +0xc8 */
-    evt[0x17] = param_2;   /* +0xb8 */ FUN_00408db8(&LAB_000246a4,0,0)
+    evt[0x17] = param_2;   /* +0xb8 ; FUN_00408db8(&LAB_000246a4,0,0) */
 }
 
 /*--------------------------------------------------------------------*/
@@ -15153,7 +15153,7 @@ void tightbeam_message_teardown(void)
         if (kind != 3) {
             if (kind == 1) {
                 buf = *(unsigned long *)((tagged & 0x1fffffffffffffff) + 0x10);
-                if (buf == 0) SWIFT_BREAKPOINT();   /* 0x25814 */ FUN_00014f10(buf, msg)
+                if (buf == 0) SWIFT_BREAKPOINT();   /* 0x25814 ; FUN_00014f10(buf, msg) */
             } else {
                 if ((tagged >> 61) != 0) {
                     st = obj[0x30];
@@ -16424,7 +16424,7 @@ void vas_fault_post(unsigned long p1, unsigned long param_2, unsigned long param
     evt[0x19] = param_4;   /* +0xc8 */
     evt[0x1a] = param_5;   /* +0xd0 */
     evt[0x17] = param_2;   /* +0xb8 */
-    evt[0x18] = param_3;   /* +0xc0 */ FUN_00408db8(&LAB_000283d0,0,0)
+    evt[0x18] = param_3;   /* +0xc0 ; FUN_00408db8(&LAB_000283d0,0,0) */
 }
 
 /*--------------------------------------------------------------------*/
@@ -16594,7 +16594,7 @@ void sk_boot_profile_load(long *param_1, unsigned long param_2, unsigned long pa
     param_1[3] = 0; param_1[2] = 0;
     /* FUN_00035ba0() */
     if (*param_1 == 0) {
-        profile = sk_profile_resolve();   /* FUN_00034f70 */ FUN_00036008(&local, param_2, param_3, profile)
+        profile = sk_profile_resolve();   /* FUN_00034f70 ; FUN_00036008(&local, param_2, param_3, profile) */
         param_1[1] = 0; *param_1 = 0;
         param_1[3] = 0; param_1[2] = 0;
         param_1[4] = 0;
@@ -16773,7 +16773,7 @@ unsigned long *sk_vas_alloc_impl(unsigned long param_1, unsigned long param_2, u
     vas[0x3e] = 0x400;
     vas[0x40] = (unsigned long)fh;
     /* register: FUN_00118164(0x6ac250); *vas = DAT_006ac260; DAT_006ac260=vas */
-    /* install dispatch entries via FUN_0004b520 into vas[5..0x28] */ FUN_000465c4(vas[3], vas+5) register
+    /* install dispatch entries via FUN_0004b520 into vas[5..0x28] ; FUN_000465c4(vas[3], vas+5) register */
     return vas;
 }
 
@@ -17447,7 +17447,7 @@ void vas_record_fill(unsigned long *param_1, char *param_2, unsigned int param_3
     *(bool *)((char *)param_1 + 0x29) = param_2[0x19] != '\0';
     *(unsigned long *)((char *)param_1 + 0x32) = 0;
     param_1[7] = 0;
-    /* FUN_00045d38(param_1+2, src-or-null) ; FUN_00045d38(param_1+6, ...) */ FUN_00045ce8(+0x2a), FUN_00045ce8(+0x2c), FUN_00045ce8(+0x2e) names
+    /* FUN_00045d38(param_1+2, src-or-null) ; FUN_00045d38(param_1+6, ...) ; FUN_00045ce8(+0x2a), FUN_00045ce8(+0x2c), FUN_00045ce8(+0x2e) names */
 }
 
 /*--------------------------------------------------------------------*/
@@ -17481,7 +17481,7 @@ void vas_fh_register(long param_1, unsigned int *param_2, long param_3)
         slot[4] = 0; slot[5] = 0;
     }
     flags = *(unsigned int *)param_2;
-    /* decode handler descriptor into d[] */ lock; if flags&(1<<19)==0: call register method (param_1+0x48 +0x30); else error
+    /* decode handler descriptor into d[] ; lock; if flags&(1<<19)==0: call register method (param_1+0x48 +0x30); else error */
     status = 0;
     if ((status & 0xff) == 0) {
         rec = vas_record_add(*(unsigned long *)(param_1 + 0x20), 0, 0);
@@ -18876,7 +18876,7 @@ cl4_result_t sk_cap_bind_pair(long param_1, long *param_2)
         if (param_2[1] == 0) {
             status = 0x1150002;
         } else {
-            /* (param_1+0x18)(param_2+1,...) — child init */ (param_1+0x10)(...,param_2+6) second
+            /* (param_1+0x18)(param_2+1,...) — child init ; (param_1+0x10)(...,param_2+6) second */
             if (param_2[6] == 0) {
                 /* (param_1+0x20)(param_2+1) — rollback first child */
                 status = 0x11d0002;
@@ -18909,7 +18909,7 @@ void vas_msg_send_packed(unsigned long *param_1, long *param_2, unsigned long pa
         status = 0x12f0007;
     } else {
         if (param_5 == 0) {
-            /* validate buffer ranges; allocate transport block */ FUN_00030780(param_4) kind; copy via FUN_00036008 if success: param_1[0]=0; param_1[1]=0; param_1[2]=block; return
+            /* validate buffer ranges; allocate transport block ; FUN_00030780(param_4) kind; copy via FUN_00036008 if success: param_1[0]=0; param_1[1]=0; param_1[2]=block; return */
             status = 0x1880001;
             goto set;
         }
@@ -22342,7 +22342,7 @@ void sk_vspace_slot_tree_insert(unsigned long *root, unsigned long node)
     bal_r = (*(long *)(cur + 0x40) != 0) ? *(unsigned char *)(*(long *)(cur + 0x40) + 0x22) + 1 : 0;
     h = bal_l > bal_r ? bal_l : bal_r;
     *(char *)(cur + 0x22) = (char)h;
-    /* rotations omitted for brevity of this faithful-but-structural body */ (standard AVL rebalance; the branch structure is preserved above)
+    /* rotations omitted for brevity of this faithful-but-structural body ; standard AVL rebalance; the branch structure is preserved above */
 }
 
 /*--------------------------------------------------------------------*/

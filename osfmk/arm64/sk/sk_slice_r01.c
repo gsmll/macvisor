@@ -2408,6 +2408,7 @@ static void sk_layout_check(word_t *out, word_t p, word_t type)
 static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
 {
     unsigned inv = (unsigned)flags;
+    word_t *e;
     char *mr = (char*)cL4_mr_block(0);
     if (mr == 0) {
         int n = 0;
@@ -2417,8 +2418,8 @@ static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
                 if (n < 0x302) {
                     if (((n != 0x300) && (n == 0x301)) && (word_t)(unsigned)t[1] != 0) {
                         word_t cnt = (unsigned)t[1];
-                        word_t *e = t + 3;
-                        do { sk_invertible_check(out, *e, inv); if (*(byte*)(out+2) & 1) goto done; cnt--; e += 2; } while (cnt != 0);
+                        e = t + 3;
+                        do { sk_invertible_check(out, e, inv); if (*(byte*)(out+2) & 1) goto done; cnt--; e += 2; } while (cnt != 0);
                     }
                 } else if (n == 0x302) {
                     word_t cnt = t[1];
@@ -2427,7 +2428,7 @@ static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
                     unsigned want = w ? 0 : (unsigned)inv;
                     word_t val = want & ~(unsigned)inv;
                     if (val != 0) {
-                        word_t *e = cL4_alloc(0x10, 0x1050c40a90f5278);
+                        e = cL4_alloc(0x10, 0x1050c40a90f5278);
                         e[0] = (word_t)(void*)"function type missing invertible";
                         *(short*)(e + 1) = (short)val;
                         goto err;
@@ -2439,7 +2440,7 @@ static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
                     word_t cnt = (word_t)*(short*)((char*)t[1] + 10) * 0xc;
                     do {
                         if (((*d & 0x1f) == 5) && ((unsigned)*(short*)((char*)d + 10) & ~(unsigned)inv)) {
-                            word_t *e = cL4_alloc(0x10, 0x1050c40a90f5278);
+                            e = cL4_alloc(0x10, 0x1050c40a90f5278);
                             e[0] = (word_t)(void*)"existential type missing inverti";
                             *(short*)(e + 1) = (short)((unsigned)*(short*)((char*)d + 10) & ~(unsigned)inv);
                             goto err;
@@ -2450,7 +2451,7 @@ static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
             }
         }
     } else if (((*mr >> 5) & 1) != 0) {
-        word_t *tab = (word_t*)sk_conform_invert_table(mr);
+        word_t *tab = (word_t*)sk_conform_invert_table((word_t*)mr);
         if (tab == 0) {
             word_t *e = cL4_alloc(8, 0x50c40ee9192b6);
             e[0] = (word_t)(void*)"unable to find suppressed protoc";
@@ -2458,9 +2459,9 @@ static void sk_invertible_check(word_t *out, word_t *t, word_t flags)
         } else {
             unsigned mask = (unsigned)*tab & ~(unsigned)inv;
             if (mask != 0) {
-                word_t *t2 = (word_t*)sk_conform_invert_bit(tab, 0);
+                word_t *t2 = (word_t*)(uintptr_t)sk_conform_invert_bit(*tab, 0).lo;
                 /* handled via the invertible bit walk */
-                word_t *e = cL4_alloc(0x10, 0x1050c40a90f5278);
+                e = cL4_alloc(0x10, 0x1050c40a90f5278);
                 e[0] = (word_t)(void*)"type missing invertible conforma";
                 *(short*)(e + 1) = (short)mask;
                 goto err2;
@@ -2497,7 +2498,7 @@ static cL4_w16_t sk_hash_probe_10(word_t *tbl, word_t k, word_t n, word_t *slots
             if (i - 1 < n) {
                 word_t *ep = (word_t*)(slots + (word_t)(i - 1) * 3);
                 if (*(char*)((char*)tbl + 0x17) < 0) ep = tbl;
-                if ((ep[1] == (word_t*)0 || (cL4_memcmp((void*)ep[0], (void*)ep[1], 0) == 0))) { r.lo = 0; r.hi = (word_t)i - 1; return r; }
+                if ((ep[1] == (word_t)0 || (cL4_memcmp((void*)ep[0], (void*)ep[1], 0) == 0))) { r.lo = 0; r.hi = (word_t)i - 1; return r; }
             }
             h = (h + 1) & ~((word_t)-1 << (capbyte & 0x3f));
             if (h < 2) h = 1;
@@ -2514,7 +2515,7 @@ static cL4_w16_t sk_hash_probe_10(word_t *tbl, word_t k, word_t n, word_t *slots
  * kind 0. */
 static void sk_variant_apply(word_t p1, word_t p2, word_t p3)
 {
-    word_t a[3]; short kind; word_t fn; word_t v;
+    word_t a[3]; short kind; void (*fn)(word_t, int, int); word_t v;
     word_t canary = -0x2c8502b44bfffed6;
     a[0] = p1;
     cL4_variant_build_a((word_t*)&a[1], (word_t*)&a[0], p2, 0, p3);

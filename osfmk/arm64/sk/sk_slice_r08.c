@@ -19,7 +19,7 @@ typedef struct { word_t lo, hi; } sk16_t;
 
 /* Unrecovered register-aliased indirect dispatch: target code pointer is
  * invoked; the decompiler could not recover the arg list (register noise). */
-static inline void sk_dispatch(code_t fn, ...){ if (fn) fn(); }
+static inline word_t sk_dispatch(code_t fn, ...){ if (fn) fn(); return 0; }
 
 /* Ghidra decompiler bit/vector intrinsics (type-check shims). */
 static inline word_t SCARRY8(word_t a, word_t b, ...){ (void)a;(void)b; return 0; }
@@ -306,6 +306,28 @@ extern word_t sk_h_00408db8();
 extern word_t sk_h_0040bb18();
 extern word_t sk_h_0040bd24();
 
+/* Data / string globals referenced by this slice. */
+extern unsigned char DAT_00405fac[1];
+extern unsigned char DAT_00405fdc[1];
+extern unsigned char DAT_004060bc[1];
+extern unsigned char DAT_003fcf24[1];
+extern unsigned char DAT_0059ffbc[1];
+extern unsigned char DAT_0059ffe4[1];
+extern unsigned char DAT_0059fff4[1];
+extern unsigned char DAT_005a0004[1];
+extern unsigned char DAT_005a0024[1];
+extern unsigned char DAT_005a0038[1];
+extern unsigned char DAT_005a005c[1];
+extern unsigned char DAT_005a0064[1];
+extern unsigned char DAT_005a0078[1];
+extern unsigned char DAT_005a0088[1];
+extern unsigned char DAT_005a009c[1];
+extern unsigned char DAT_005a00ac[1];
+extern unsigned char DAT_00614890[1];
+extern unsigned char DAT_00614a5c[1];
+extern unsigned long (*DAT_00658c80)(unsigned long, ...);
+extern char s_Can_t_prefix_a_negative_number_o_005dbf40[];
+
 /* Forward declarations of functions defined in this slice. */
 void sk_f_003d95cc(void);
 void sk_f_003d9600(void);
@@ -316,7 +338,7 @@ void sk_f_003d9b94(void);
 void sk_f_003d9f0c(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003da178(void);
 void sk_f_003da330(void);
-void sk_f_003da7f8(word_t param_1, word_t param_2, word_t param_3, long param_4);
+void sk_f_003da7f8(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5, word_t param_6);
 void sk_f_003dab54(void);
 void sk_f_003dae98(void);
 void sk_f_003db300(void);
@@ -329,26 +351,26 @@ void sk_f_003dc6a0(void);
 void sk_f_003dc724(void);
 void sk_f_003dc97c(void);
 void sk_f_003dcb98(void);
-void sk_f_003dcc4c(void);
+void sk_f_003dcc4c(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5, word_t param_6);
 void sk_f_003dcf90(void);
 void sk_f_003dd1dc(void);
 void sk_f_003dd2e0(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5);
 void sk_f_003dd418(void);
 void sk_f_003dd4c0(long param_1, word_t param_2, word_t param_3);
-void sk_f_003dd540(word_t param_1, word_t param_2, word_t param_3);
+void sk_f_003dd540(void);
 void sk_f_003dd5d0(void);
 void sk_f_003dd660(void);
-void sk_f_003dd840(void);
+void sk_f_003dd840(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5, word_t param_6);
 void sk_f_003dd920(void);
 void sk_f_003ddc10(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5);
 void sk_f_003ddd44(void);
 void sk_f_003dde8c(void);
-void sk_f_003ddecc(void);
+void sk_f_003ddecc(word_t param_1, word_t param_2, word_t param_3);
 void sk_f_003ddf04(void);
 void sk_f_003ddfbc(void);
 void sk_f_003de17c(void);
 void sk_f_003de33c(void);
-void sk_f_003de418(word_t param_1, word_t param_2, word_t param_3, long param_4);
+void sk_f_003de418(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5, word_t param_6);
 void sk_f_003de550(void);
 void sk_f_003de74c(void);
 void sk_f_003de938(void);
@@ -363,7 +385,7 @@ void sk_f_003df9dc(void);
 void sk_f_003dfc60(void);
 void sk_f_003dfe08(word_t param_1, word_t param_2, code_t jt0);
 void sk_f_003e0028(word_t param_1, word_t param_2, code_t jt0);
-void sk_f_003e012c(void);
+void sk_f_003e012c(word_t param_1, word_t param_2, long param_3, word_t param_4, word_t param_5);
 void sk_f_003e025c(void);
 void sk_f_003e0404(word_t param_1, word_t param_2, code_t jt0);
 void sk_f_003e06a0(word_t param_1, word_t param_2, code_t jt0);
@@ -399,7 +421,7 @@ void sk_f_003e34b4(void);
 void sk_f_003e35ec(void);
 void sk_f_003e37c8(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e3a14(void);
-void sk_f_003e3c80(word_t param_1, word_t param_2, word_t param_3, long param_4);
+void sk_f_003e3c80(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5);
 void sk_f_003e3e28(void);
 void sk_f_003e4048(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e42c4(void);
@@ -411,7 +433,7 @@ void sk_f_003e47d4(void);
 void sk_f_003e488c(void);
 void sk_f_003e4a78(void);
 void sk_f_003e4c70(void);
-void sk_f_003e4f34(word_t param_1, word_t param_2, word_t param_3, long param_4);
+void sk_f_003e4f34(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5);
 void sk_f_003e5074(void);
 void sk_f_003e535c(void);
 void sk_f_003e557c(void);
@@ -1034,7 +1056,7 @@ word_t u0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003da7f8(word_t param_1, word_t param_2, word_t param_3, long param_4)
+void sk_f_003da7f8(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5, word_t param_6)
 {
 word_t u0;
   word_t u1;
@@ -1104,7 +1126,7 @@ word_t u0;
   sk_h_0040bb18(u3 & 0xfffffffffffffff0);
   sk_h_00408328();
   a0 = sk_h_0035050c();
-  u2 = sk_h_00377824(a0.lo,a0.hi,u4);
+  u2 = sk_h_00377824(a0.lo,a0.hi,u4).lo;
   *(word_t *)(ux0 + 0xc0) = u2;
   sk_h_000a6f88();
   *(word_t *)(ux0 + 200) = ex13;
@@ -1736,7 +1758,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x20),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c).lo;
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -1746,7 +1768,7 @@ long l0;
   *(long **)(ux0 + 0x30) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_00405fdc;
-  sk_f_003da7f8(pl0,param_1,param_2,param_3,param_5,u0);
+  sk_f_003da7f8((word_t)pl0,param_1,param_2,param_3,param_5,u0);
   return;
 }
 
@@ -1808,7 +1830,7 @@ word_t u0;
   sk_h_0034a210();
   sk_h_00002534();
   a0 = sk_h_003504e8();
-  u3 = sk_h_00377824(a0.lo,a0.hi,u3,&DAT_00614890);
+  u3 = sk_h_00377824(a0.lo,a0.hi,u3,&DAT_00614890).lo;
   sk_h_003513b4(u0);
   sk_h_00365b6c();
   a0 = sk_h_003507e0();
@@ -1992,7 +2014,7 @@ code_t *jt0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003dcc4c(void)
+void sk_f_003dcc4c(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5, word_t param_6)
 {
 word_t u0;
   long l0;
@@ -2144,7 +2166,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x20),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c).lo;
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2154,7 +2176,7 @@ long l0;
   *(long **)(ux0 + 0x30) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_00405fdc;
-  sk_f_003dcc4c(pl0,param_1,param_2,param_3,param_5,u0);
+  sk_f_003dcc4c((word_t)pl0,param_1,param_2,param_3,param_5,u0);
   return;
 }
 
@@ -2210,13 +2232,14 @@ if (-1 < param_1) {
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003dd540(word_t param_1, word_t param_2, word_t param_3)
+void sk_f_003dd540(void)
 {
 long l0;
   long ex0;
   long ex1;
   code_t *ux0;
   sk16_t a0;
+  word_t param_3;  /* register-ABI artifact */
   
   a0 = sk_h_00351da8();
   sk_h_003509c8(param_3,a0.lo,a0.lo);
@@ -2308,7 +2331,7 @@ long l0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003dd840(void)
+void sk_f_003dd840(word_t param_1, word_t param_2, word_t param_3, word_t param_4, long param_5, word_t param_6)
 {
 word_t u0;
   word_t u1;
@@ -2326,7 +2349,7 @@ word_t u0;
   *(word_t *)(ux1 + 0x40) = *(word_t *)(in_x3 + 0x18);
   u1 = *(word_t *)(in_x3 + 0x10);
   *(word_t *)(ux1 + 0x48) = u1;
-  u0 = sk_h_00377824(0);
+  u0 = sk_h_00377824(0).lo;
   *(word_t *)(ux1 + 0x50) = u0;
   sk_h_00352018();
   *(word_t *)(ux1 + 0x58) = ex4;
@@ -2417,7 +2440,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x18),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c).lo;
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2427,7 +2450,7 @@ long l0;
   *(long **)(ux0 + 0x30) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_00405fdc;
-  sk_f_003dd840(pl0,param_1,param_2,param_3,param_5,u0);
+  sk_f_003dd840((word_t)pl0,param_1,param_2,param_3,param_5,u0);
   return;
 }
 
@@ -2466,7 +2489,7 @@ long l0;
   sk_dispatch((code_t)ex1);pc0 = (code_t *)sk_h_000a649c(u2);
   sk_dispatch((code_t)pc0, u1,u2);sk_h_003509c8(a0.lo);
   sk_dispatch(*(code_t *)(ex2 + 8));sk_h_003510c4(ex3);
-  (*a0.hi)();
+  ((code_t)a0.hi)();
   sk_h_0008e500(ux0);
   return;
 }
@@ -2493,7 +2516,7 @@ word_t ex0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003ddecc(void)
+void sk_f_003ddecc(word_t param_1, word_t param_2, word_t param_3)
 {
 sk_h_003eaf4c();
   return;
@@ -2671,7 +2694,7 @@ word_t u0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003de418(word_t param_1, word_t param_2, word_t param_3, long param_4)
+void sk_f_003de418(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5, word_t param_6)
 {
 word_t u0;
   long ex7;
@@ -2879,7 +2902,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x18),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c).lo;
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2889,7 +2912,7 @@ long l0;
   *(long **)(ux0 + 0x30) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_00405fdc;
-  sk_f_003de418(pl0,param_1,param_2,param_3,param_5,u0);
+  sk_f_003de418((word_t)pl0,param_1,param_2,param_3,param_5,u0);
   return;
 }
 
@@ -2921,7 +2944,7 @@ word_t u0;
   *(long *)(ux1 + 0x38) = param_6;
   *(word_t *)(ux1 + 0x20) = param_3;
   *(word_t *)(ux1 + 0x28) = param_4;
-  *(byte (*) [16])(ux1 + 0x10) = a0;
+  *(sk16_t *)(ux1 + 0x10) = a0;
   l0 = *(long *)(param_6 + -8);
   *(long *)(ux1 + 0x50) = l0;
   u0 = sk_h_004078e8(*(word_t *)(l0 + 0x40));
@@ -3376,7 +3399,7 @@ word_t u0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e012c(void)
+void sk_f_003e012c(word_t param_1, word_t param_2, long param_3, word_t param_4, word_t param_5)
 {
 word_t u0;
   word_t in_x3;
@@ -3605,6 +3628,7 @@ uint u0;
   long ux0;
   long *ux1;
   long l1;
+  long stack0xffffffffffffffe8;  /* stack slot -0x18 */
   
   u0 = sk_h_00406fd4().lo;;
   l1 = *ux1;
@@ -3643,7 +3667,7 @@ int i0;
   pl0[1] = (long)(word_t)&sk_lab_003e0aa4;
                     /* WARNING: Could not recover jumptable at 0x003e0aa0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*(code_t *)((long)param_2 + (long)i0))(pl0 + 1,param_1);
+  sk_dispatch(*(code_t *)((long)param_2 + (long)i0), pl0 + 1,param_1);
   return;
 }
 
@@ -4978,7 +5002,7 @@ long l0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e3c80(word_t param_1, word_t param_2, word_t param_3, long param_4)
+void sk_f_003e3c80(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5)
 {
 word_t u0;
   long ex11;
@@ -5255,7 +5279,7 @@ long *pl0;
   *(long **)(ux0 + 0x18) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_004060bc;
-  sk_f_003e3c80(pl0,param_1,param_2,param_3,param_5);
+  sk_f_003e3c80((word_t)pl0,param_1,param_2,param_3,param_5);
   return;
 }
 
@@ -5550,7 +5574,7 @@ long l0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e4f34(word_t param_1, word_t param_2, word_t param_3, long param_4)
+void sk_f_003e4f34(word_t param_1, word_t param_2, word_t param_3, long param_4, long param_5)
 {
 word_t u0;
   long ex7;
@@ -5874,7 +5898,7 @@ long *pl0;
   *(long **)(ux0 + 0x18) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)&DAT_004060bc;
-  sk_f_003e4f34(pl0,param_1,param_2,param_3,param_5);
+  sk_f_003e4f34((word_t)pl0,param_1,param_2,param_3,param_5);
   return;
 }
 
