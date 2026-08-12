@@ -86,7 +86,7 @@ extern unsigned long sk_x_00061044();   /* FUN_00061044 */
 extern unsigned long sk_x_000612D8();   /* FUN_000612D8 */
 extern unsigned long sk_x_000612E0();   /* FUN_000612E0 */
 extern unsigned long sk_x_0006132C();   /* FUN_0006132C */
-extern unsigned long sk_x_000613EC();   /* FUN_000613EC */
+extern sk_u128_t sk_x_000613EC();   /* FUN_000613EC (16-byte) */   /* FUN_000613EC */
 extern unsigned long sk_x_00061488();   /* FUN_00061488 */
 extern unsigned long sk_x_000614F8();   /* FUN_000614F8 */
 extern unsigned long sk_x_0006156C();   /* FUN_0006156C */
@@ -344,9 +344,9 @@ void sk_f_0005d5e8(uint64_t target_thread, uint32_t register_num, uint64_t msg_l
                    uint64_t msg_hi);
 uint64_t sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
                    uint64_t flags);
-uint64_t sk_f_0005d77c(void);
+uint64_t sk_f_0005d77c(uint64_t arg1, uint64_t arg2);
 void sk_f_0005d7c8(int64_t *root_slot);
-void sk_f_0005d84c(void);
+void sk_f_0005d84c(uint64_t thread, int32_t flag);
 void sk_f_0005d870(int64_t thread, int32_t reporting_enabled);
 uint64_t sk_f_0005dab8(uint64_t (*handler)(int64_t, uint64_t), uint64_t target_thread,
                        uint8_t *cross_thread_flag, uint64_t arg);
@@ -382,7 +382,7 @@ void sk_f_0005ee7c(void);
 void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int64_t stack_extra,
                    int32_t flags);
 void sk_f_0005fac0(int64_t thread);
-void sk_f_0005fad8(uint64_t wake_value);
+uint64_t sk_f_0005fad8(uint64_t wake_value);
 void sk_f_0005fbc0(int64_t thread);
 void sk_f_0005fbdc(uint64_t dest, uint64_t value, int64_t cap_count);
 void sk_f_0005fc54(uint64_t dest, uint64_t *value_ptr, uint64_t cap_count);
@@ -2847,8 +2847,10 @@ uint64_t sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *ms
  * Confidence: medium
  * Notes: the callback/argument pair is the code* + undefined8 from the decompile.
  *        Returns the global DAT_006b2688 value. */
-uint64_t sk_f_0005d77c(void)
+uint64_t sk_f_0005d77c(uint64_t arg1, uint64_t arg2)
 {
+    /* decompiler drops the two call-site args (e.g. 0, 0xb from thread_create) */
+    (void)arg1; (void)arg2;
     sk_f_0005d470((uint32_t *)0x6b2680, (void (*)(void *))sk_f_0005d7c8,
                   (void *)&sk_g_006b2688);
     return sk_g_006b2688;
@@ -2900,13 +2902,12 @@ void sk_f_0005d7c8(int64_t *root_slot)
  * indirect call.
  * Confidence: medium
  * Notes: DAT_006b2690 is a code-pointer global; represented via sk_g_006b2690. */
-void sk_f_0005d84c(void)
+void sk_f_0005d84c(uint64_t thread, int32_t flag)
 {
     if (sk_g_006b2690 == 0) {
         sk_g_006b2690 = 0x65c560;
     }
-    ((void (*)(void))sk_g_006b2690)();
-    return;
+    ((void (*)(uint64_t, int32_t))sk_g_006b2690)(thread, flag);
 }
 
 /* FUN_0005d870 @ 0x0005d870   (est. error_code_report)
@@ -4271,6 +4272,7 @@ void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int6
     *counter_ptr = (uint16_t)(counter + 1);
     uint64_t thread = 0;                            /* raw TCB (hoisted for register_thread) */
     uint64_t priority = 0x11;                       /* default thread priority */
+    const char *msg = 0;                           /* hoisted panic message */
 
     if (counter < 0x400) {
         thread = sk_f_0005c0ac();          /* allocate raw TCB */
@@ -4296,9 +4298,9 @@ void sk_f_0005eec4(uint64_t *out_tcb, uint64_t creator, uint64_t entry_arg, int6
         uint64_t check = sk_x_00054DE4();
         if (((check & 1) == 0) &&
             ((char)(((int (*)(void *, uint64_t, uint64_t, uint64_t))rt_ops[10])
-                    (alloc_ctx, 0, 0x4000, 0x20000)) != 0)) {
+                    ((void *)alloc_ctx, 0, 0x4000, 0x20000)) != 0)) {
 fail_stack_alloc:
-            uint64_t msg = (uint64_t)sk_str_005bd182;      /* "Failed to make thread stack" */
+            msg = sk_str_005bd182;      /* "Failed to make thread stack" */
             goto panic_path;
         }
         if (ok != 0) {
@@ -4308,13 +4310,14 @@ fail_stack_alloc:
         if (rt_ops == (uint64_t *)0x0) {
             sk_x_00054354();                               /* noreturn */
         }
-        ((void (*)(void *, void *))rt_ops[1])(alloc_ctx, &priority);
+        ((void (*)(void *, void *))rt_ops[1])((void *)alloc_ctx, &priority);
         thread = sk_x_000612E0(stack_low, stack_size);
         if (thread + 0x178 < thread) goto overflow_trap;
-        int64_t stack_top = sk_x_000613EC(thread, 0);
+        sk_u128_t st_res = sk_x_000613EC(thread, 0);
+        int64_t stack_top = (int64_t)st_res.lo;
         uint64_t avail = (uint64_t)((stack_low - stack_top) + stack_size);
         if (0x1ffff < avail) {
-            uint64_t msg = (uint64_t)sk_str_005bd1af;      /* "Thread stack allocation size..." */
+            msg = sk_str_005bd1af;      /* "Thread stack allocation size..." */
             goto panic_path;
         }
         uint64_t resolved_stack = avail;
@@ -4322,7 +4325,7 @@ fail_stack_alloc:
         if (is_kernel_thread != 0) {
             resolved_stack = 0x20000;
         }
-        ok = ((int (*)(void *, void *))rt_ops[3])(alloc_ctx, &resolved_stack);
+        ok = ((int (*)(void *, void *))rt_ops[3])((void *)alloc_ctx, &resolved_stack);
         if (ok == 0) {
             sk_x_001143A0(thread, 0, 0x178);               /* zero TCB header */
             *(uint64_t *)(thread + 0x30) = alloc_ctx;
@@ -4446,7 +4449,7 @@ alloc_failed_notify:
         } else {
             sk_g_006b26a8 += 1;
         }
-        ((void (*)(void *))rt_ops[0])(alloc_ctx);
+        ((void (*)(void *))rt_ops[0])((void *)alloc_ctx);
     }
     goto decrement;
 
@@ -4513,7 +4516,7 @@ register_thread:
             slot[2] = *(int64_t *)(cur_tpidr + 0x10);
             if (slot + 0x20 < slot) goto overflow_trap;
             sk_x_00063CFC(slot);
-            cl4_result_t range = sk_x_000613EC(thread, stack_extra);  /* 16-byte {lo,hi} */
+            sk_u128_t range = sk_x_000613EC(thread, stack_extra);  /* 16-byte {lo,hi} */
             uint64_t range_hi = range.hi;
             uint64_t range_lo = range.lo;
             if ((*(int64_t *)(thread + 0x130) - (int64_t)range_lo) +
@@ -4556,7 +4559,7 @@ register_thread:
                     if ((flags != 0) && (dbg == 0)) {
                         sk_f_0005d84c(thread, 1);
                     }
-                    sk_f_0005be84(thread, 0);
+                    sk_f_0005be84((uint64_t *)thread, 0);
                     *out_tcb = thread;
                     goto done;
                 }
@@ -4599,13 +4602,13 @@ void sk_f_0005fac0(int64_t thread)
 {
     ((void (*)(uint64_t))*(uint64_t *)(thread + 0x18))(*(uint64_t *)(thread + 0x20));
     uint64_t suspend_arg = sk_f_0005fad8(0);
-    uint64_t thread = sk_x_00060524();
-    if (thread <= thread + 0x178) {
-        sk_f_0005b0bc();
+    uint64_t current_thread = sk_x_00060524();
+    if (current_thread <= current_thread + 0x178) {
+        sk_f_0005b0bc((int64_t)current_thread);
         sk_x_00063DD4();
-        *(uint64_t *)(thread + 0x40) = suspend_arg;
-        *(uint8_t *)(thread + 0x80) = 1;
-        int32_t *wait_reg = (int32_t *)(thread + 0x84);
+        *(uint64_t *)(current_thread + 0x40) = suspend_arg;
+        *(uint8_t *)(current_thread + 0x80) = 1;
+        int32_t *wait_reg = (int32_t *)(current_thread + 0x84);
         uint32_t reg_id = ((uint32_t)wait_reg >> 4) & 0xf;
         uint64_t word = sk_f_0005dc4c(reg_id);
         int32_t wval = *wait_reg;
@@ -4614,19 +4617,18 @@ void sk_f_0005fac0(int64_t thread)
             word = sk_f_0005dc4c(reg_id);
             wval = *wait_reg;
         }
-        sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), (uint64_t)(uintptr_t)(thread + 0x80), 5, 0);
+        sk_f_0005dd70((((uint32_t)(current_thread + 0x80) >> 4) & 0xf), (uint64_t)(uintptr_t)(current_thread + 0x80), 5, 0);
         if (wval == 2) {
-            sk_f_0005bf20(thread);
+            sk_f_0005bf20((uint64_t *)current_thread);
             uint64_t registry = sk_f_0005bb68();
             uint16_t *counter_ptr = (uint16_t *)(registry + 0x38);
             uint16_t counter = *counter_ptr;
             *counter_ptr = (uint16_t)(counter - 1);
-            sk_f_0005be84((((uint64_t)((uint32_t)((uint64_t)counter_ptr >> 32))) << 32) |
-                          (uint64_t)counter, thread, 1);
+            sk_f_0005be84((uint64_t *)(uintptr_t)((((uint64_t)((uint32_t)((uint64_t)counter_ptr >> 32))) << 32) | (uint64_t)counter), 1);
         }
         sk_x_00060524();
         sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
-        sk_f_0005b190(0, (uint64_t)sk_str_005bd02d);   /* noreturn panic */
+        sk_f_0005b190(0, sk_str_005bd02d);   /* noreturn panic */
     }
     SoftwareBreakpoint(0x5519, 0x5fbc0);
 }
@@ -4639,11 +4641,11 @@ void sk_f_0005fac0(int64_t thread)
  * suspend wake value at thread+0x40.
  * Confidence: medium
  * Notes: string sk_str_005bd02d; sk_f_0005b190 noreturn panic. */
-void sk_f_0005fad8(uint64_t wake_value)
+uint64_t sk_f_0005fad8(uint64_t wake_value)
 {
     uint64_t thread = sk_x_00060524();
     if (thread <= thread + 0x178) {
-        sk_f_0005b0bc();
+        sk_f_0005b0bc((int64_t)thread);
         sk_x_00063DD4();
         *(uint64_t *)(thread + 0x40) = wake_value;
         *(uint8_t *)(thread + 0x80) = 1;
@@ -4658,17 +4660,16 @@ void sk_f_0005fad8(uint64_t wake_value)
         }
         sk_f_0005dd70((((uint32_t)(thread + 0x80) >> 4) & 0xf), (uint64_t)(uintptr_t)(thread + 0x80), 5, 0);
         if (wval == 2) {
-            sk_f_0005bf20(thread);
+            sk_f_0005bf20((uint64_t *)thread);
             uint64_t registry = sk_f_0005bb68();
             uint16_t *counter_ptr = (uint16_t *)(registry + 0x38);
             uint16_t counter = *counter_ptr;
             *counter_ptr = (uint16_t)(counter - 1);
-            sk_f_0005be84((((uint64_t)((uint32_t)((uint64_t)counter_ptr >> 32))) << 32) |
-                          (uint64_t)counter, thread, 1);
+            sk_f_0005be84((uint64_t *)(uintptr_t)((((uint64_t)((uint32_t)((uint64_t)counter_ptr >> 32))) << 32) | (uint64_t)counter), 1);
         }
         sk_x_00060524();
         sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
-        sk_f_0005b190(0, (uint64_t)sk_str_005bd02d);   /* noreturn panic */
+        sk_f_0005b190(0, sk_str_005bd02d);   /* noreturn panic */
     }
     SoftwareBreakpoint(0x5519, 0x5fbc0);
 }
@@ -4697,10 +4698,10 @@ void sk_f_0005fbdc(uint64_t dest, uint64_t value, int64_t cap_count)
 {
     uint64_t caps = 0;
     if (cap_count != 0) {
-        caps = sk_f_0005c86c(2, cap_count, 0, 1);
+        caps = sk_f_0005c86c(2, (uint8_t (*)[16])(uintptr_t)cap_count, (uint8_t (*)[16])0, 1);
     }
-    uint64_t value = sk_f_0005c86c(2, value, 0, 0);
-    sk_f_0005d5e8(dest, 2, value, caps);
+    uint64_t msg_value = sk_f_0005c86c(2, (uint8_t (*)[16])(uintptr_t)value, (uint8_t (*)[16])0, 0);
+    sk_f_0005d5e8(dest, 2, msg_value, caps);
     return;
 }
 
@@ -4744,7 +4745,7 @@ void sk_f_0005fccc(int64_t thread)
     if (ok == '\0') {
         return;
     }
-    sk_f_0005b190(0, (uint64_t)sk_str_005bd169);   /* noreturn panic */
+    sk_f_0005b190(0, sk_str_005bd169);   /* noreturn panic */
 }
 
 /* FUN_0005fd24 @ 0x0005fd24   (est. populate_stack_48k)
@@ -4761,7 +4762,7 @@ void sk_f_0005fd24(int64_t thread)
     if (ok == '\0') {
         return;
     }
-    sk_f_0005b190(0, (uint64_t)sk_str_005bd169);   /* noreturn panic */
+    sk_f_0005b190(0, sk_str_005bd169);   /* noreturn panic */
 }
 
 

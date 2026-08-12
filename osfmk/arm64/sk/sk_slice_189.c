@@ -48,6 +48,7 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned char byte;
 typedef void (*code)(void);
+typedef word_t (*vcode)(word_t, ...);
 
 #define SK189_FATAL(addr) __builtin_trap()   /* SoftwareBreakpoint(1,<addr>) path */
 
@@ -327,8 +328,8 @@ long sk_ptr_offset_8(long p);
 ulong sk_status_high(long p);
 long sk_task_local_root(word_t task);
 word_t *sk_registry_add(word_t *set, word_t *key, word_t *arg3);
-void sk_cont_free_nodes(long block, word_t head);
-void sk_cont_block_dealloc(word_t *block);
+long sk_cont_free_nodes(long block, word_t head);
+word_t *sk_cont_block_dealloc(word_t *block);
 
 /* =====================================================================
  * Continuation registry primitives.
@@ -555,7 +556,7 @@ word_t *sk_cont_block_dealloc(word_t *block)
                      (*(byte *)(block + 2) & 1) != 0)) {
                         p = (word_t *)block[1];
                 }
-                sk_cont_free_nodes(block, p + 1);
+                sk_cont_free_nodes((long)block, (word_t)(p + 1));
                 return block;
         }
         sk_precond_fatal(0, 0x5dc7cf); /* "not all allocations are deallocated" */
@@ -573,9 +574,10 @@ long sk_cont_free_nodes(long block, word_t head)
         long node;
         long next;
         long count;
+        word_t *hp = (word_t *)head;
 
-        node = *head;
-        *head = 0;
+        node = *hp;
+        *hp = 0;
         if (node == 0) {
                 count = 0;
         } else {
@@ -695,19 +697,24 @@ void sk_cont_state_dispatch(long queue, long task)
         }
         if (ca != a || cb != b) {
                 do {
+                        bool eq_a;
+                        bool eq_b;
                         a = *(long *)(task + 0x60);
                         b = *(long *)(task + 0x68);
                         if ((a == cb) && (b == ca)) {
                                 *(long *)(task + 0x60) = cb;
                                 *(ulong *)(task + 0x68) = (ulong)((uint)ca & 0xffffc3ff | 0x2000);
                         }
-                        bool eq_a = (a != ca);
-                        bool eq_b = (b != cb);
+                        eq_a = a != ca;
+                        eq_b = b != cb;
                         ca = a;
                         cb = b;
-                } while (eq_a || eq_b);
+                        if (!eq_a && !eq_b) {
+                                break;
+                        }
+                } while (1);
         }
-        sk_runq_append(queue + 0x38, task);
+        sk_runq_append((word_t *)(queue + 0x38), task);
         return;
 }
 
@@ -771,7 +778,7 @@ void sk_cont_resume_for_task(word_t task)
                 if (-1 < DAT_006c0c78) {
                         sk_once_gate(&DAT_006c0c78, 0x40b408);
                 }
-                rec = sk_registry_pop(0x6c0c48, &task);
+                rec = sk_registry_pop(0x6c0c48, (word_t)&task);
                 if (rec == 0) {
                         sk_precond_fatal(0, 0x5dc85e); /* "Resuming continuation for task: ..." */
                 }
@@ -835,7 +842,7 @@ long sk_cont_set_find(word_t *set, word_t *key)
                 if ((word_t)set[2] <= idx) {
                         SK189_FATAL(0x40b548);
                 }
-                node = *(long **)(*set + idx * 8);
+                node = (long)*(long **)(*set + idx * 8);
                 if (node == 0) {
                         return 0;
                 }
@@ -1208,7 +1215,8 @@ void sk_cont_record_free(word_t block, word_t rec)
 uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
                        word_t cb_arg, ...)
 {
-        word_t s, s2;
+        word_t s_lo, s_hi;
+        word_t s_old;
         word_t w;
         uint result;
         word_t *slot;
@@ -1216,43 +1224,48 @@ uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
         word_t *cb_slot;
         word_t newstate;
 
-        s = (ulong)(uint)*rec;
+        s_lo = (ulong)(uint)*rec;
         newstate = state;
         cb_slot = (word_t *)cb;
         cb_arg2 = cb_arg;
         if (((uint)*rec >> 9 & 1) == 0) {
-                s2 = rec[1];
+                s_hi = rec[1];
                 do {
-                        *(ulong *)(newstate + 8) = s2;
-                        slot = (word_t *)(s & 0xffffffff);
-                        byte *recp = (byte *)newstate;
-                        result = ((code)cb_slot)(cb_arg2, *rec, rec[1], &slot);
+                        *(ulong *)(newstate + 8) = s_hi;
+                        slot = (word_t *)(s_lo & 0xffffffff);
+                        result = ((vcode)cb_slot)(cb_arg2, *rec, rec[1], (word_t)&slot);
                         if (result == 0) {
                                 goto wake_done;
                         }
-                        w = *rec;
-                        s2 = rec[1];
-                        s = *(ulong *)(task + 0x60);
-                        s2 = *(ulong *)(task + 0x68);
-                        if ((s == s2) && (s2 == w)) {
-                                *(ulong *)(task + 0x60) = (ulong)recp;
+                        s_old = *rec;
+                        w = rec[1];
+                        s_lo = *(ulong *)(task + 0x60);
+                        s_hi = *(ulong *)(task + 0x68);
+                        if ((s_lo == w) && (s_hi == s_old)) {
+                                *(ulong *)(task + 0x60) = (ulong)(byte *)newstate;
                                 *(word_t **)(task + 0x68) = slot;
                         }
-                        if (s == w && s2 == s2) {
+                        if (s_lo == s_old && s_hi == w) {
                                 goto wake_done;
                         }
-                        *rec = s;
-                        rec[1] = s2;
-                } while (((uint)s >> 9 & 1) == 0);
+                        *rec = s_lo;
+                        rec[1] = s_hi;
+                } while (((uint)s_lo >> 9 & 1) == 0);
         } else {
-                s = *rec;
-                s2 = rec[1];
+                s_lo = *rec;
+                s_hi = rec[1];
         }
         flag = 0;
         slot = &newstate;
-        recp = &flag;
         cb_slot = &cb;
-        sk_cont_suspend(task, s, s2, 0x40cc24, (word_t)&stk, 0x40cc28, (word_t)&slot);
+        {
+                word_t *cbp = &cb;
+                word_t *slp = &slot;
+                byte f = 0;
+                word_t stk2;
+                word_t *wslot = &newstate;
+                sk_cont_suspend(task, s_lo, s_hi, 0x40cc24, (word_t)&stk2, 0x40cc28, (word_t)&wslot);
+        }
         result = (uint)flag;
 wake_done:
         return result & 1;
@@ -1319,7 +1332,7 @@ void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_a
                 s_lo = x4;
         }
 commit:
-        ((code)cb)(cb_arg, x4 | x5 << 0x20, s_hi);
+        ((vcode)cb)(cb_arg, x4 | x5 << 0x20, s_hi);
         if (!flag) {
                 goto exit_atomic;
         }
@@ -1328,16 +1341,12 @@ commit:
                 goto exit_atomic;
         }
         {
-                word_t wait_arg_v;
-                va_list ap;
-                va_start(ap, wait_cb);
-                wait_arg_v = va_arg(ap, word_t);
-                va_end(ap);
+                word_t wait_arg_v = 0;
                 word_t wstate = CONCAT44((int)x5, (int)s_lo);
                 do {
                         x4 = x5 << 0x20 | s_lo & 0xffffffff;
                         word_t prev_hi = s_hi;
-                        ((code)wait_cb)(wait_arg_v, x4, s_hi, &wstate);
+                        ((vcode)wait_cb)(wait_arg_v, x4, s_hi, (word_t)&wstate);
                         x5 = s_hi;
                         while (1) {
                                 s_lo = *(ulong *)(task + 0x60);
@@ -1421,7 +1430,7 @@ void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb,
                         s3 = *rec;
                         s4 = rec[1];
                         if (cb != 0) {
-                                ((code)fn)(cb_arg, s3, s4, &slot);
+                                ((vcode)fn)(cb_arg, s3, s4, (word_t)&slot);
                                 s3 = *rec;
                                 s4 = rec[1];
                         }
@@ -1964,7 +1973,7 @@ void sk_cont_state_cb(word_t *rec, word_t a2, word_t a3, word_t *state)
         *(ulong *)(*target + 8) = state[1];
         st = (ulong)(uint)*state;
         st_hi = *target;
-        rc = (**(int (**)(void))rec[2])(((word_t *)rec[2])[1], *state, state[1], &st);
+        rc = (*(vcode *)rec[2])(((word_t *)rec[2])[1], *state, state[1], &st);
         *(char *)rec[1] = (char)rc;
         if (rc != 0) {
                 state[1] = st_hi;
@@ -2180,7 +2189,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
         LOAcquire();
         st = *cnt;
         *cnt = st | 0x4000000000000000;
-        live = (**(int (**)(void))(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))(group);
         mask = 0x3fffffffffffffff;
         if (live == 0) {
                 mask = 0x7fffffff;
@@ -2192,7 +2201,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                         if ((st & 0x3fffffff80000000) != 0) {
                                 mask = st | 0x4000000000000000;
                                 do {
-                                        live = (**(int (**)(void))(*group + 0x18))(group);
+                                        live = (*(vcode *)(*group + 0x18))(group);
                                         long delta = -0x4000000000000001;
                                         if (live == 0) {
                                                 delta = -0x4000000080000001;
@@ -2300,7 +2309,7 @@ void sk_task_group_add_child(long child, long *group, long body, long *result)
                         LOAcquire();
                         st = group[5];
                         group[5] = st | 0x4000000000000000;
-                        live = (**(int (**)(void))(*group + 0x18))(group);
+                        live = (*(vcode *)(*group + 0x18))(group);
                         mask = 0x3fffffffffffffff;
                         if (live == 0) {
                                 mask = 0x7fffffff;
@@ -2378,18 +2387,18 @@ uint sk_task_group_end(long *group, word_t accepting)
         count = group[5];
         group[5] = count + 1;
         bits = count + 1;
-        i = (**(int (**)(void))(*group + 0x18))();
+        i = (*(vcode *)(*group + 0x18))();
         mask = 0x3fffffffffffffff;
         if (i == 0) {
                 mask = 0x7fffffff;
         }
-        i = (**(int (**)(void))(*group + 0x18))(group);
+        i = (*(vcode *)(*group + 0x18))(group);
         v = 0x3fffffffffffffff;
         if (i == 0) {
                 v = 0x7fffffff;
         }
         if ((mask & bits) == v) {
-                (**(void (**)(void))(*group + 0x18))(group);
+                (*(vcode *)(*group + 0x18))(group);
                 fmt[0] = 0;
                 fmt[1] = 0;
                 fmt[2] = 0;
@@ -2406,7 +2415,7 @@ uint sk_task_group_end(long *group, word_t accepting)
                         p = (word_t *)0x5d6ff3;
                 }
                 sk_str_append2(&fmt, p);
-                mask = (**(word_t (**)(void))(*group + 0x18))(group);
+                mask = (*(vcode *)(*group + 0x18))(group);
                 if ((mask & 1) == 0) {
                         sk_str_append2(&fmt, 0x5dcb81);
                         sk_error_fmt3(&fmt2, bits >> 0x1f & 0x7fffffff);
@@ -2422,7 +2431,7 @@ uint sk_task_group_end(long *group, word_t accepting)
                         }
                 }
                 sk_str_append2(&fmt, 0x5dcb85);
-                i = (**(int (**)(void))(*group + 0x18))(group);
+                i = (*(vcode *)(*group + 0x18))(group);
                 mask = 0x3fffffffffffffff;
                 if (i == 0) {
                         mask = 0x7fffffff;
@@ -2536,7 +2545,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
         result[3] = child;
         group_tail = group[0xd];
         pending = group[5];
-        live = (**(int (**)(void))(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))(group);
         mask = 0x3fffffffffffffff;
         if (live == 0) {
                 mask = 0x7fffffff;
@@ -2545,7 +2554,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                 first = false;
                 do {
                         if ((want_result != 0) &&
-                            (live = (**(int (**)(void))(*group + 0x18))(group), live != 0) &&
+                            (live = (*(vcode *)(*group + 0x18))(group), live != 0) &&
                             (group[0xc] == 0)) {
                                 sk_task_group_store(group + 7, want_result | 1);
                         }
@@ -2584,7 +2593,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                         sk_task_resume(group[3], 0, 0);
                         sk_ctx_save2(token);
                         pending = group[5];
-                        live = (**(int (**)(void))(*group + 0x18))(group);
+                        live = (*(vcode *)(*group + 0x18))(group);
                         mask = 0x3fffffffffffffff;
                         if (live == 0) {
                                 mask = 0x7fffffff;
@@ -2592,7 +2601,7 @@ void sk_task_group_wait(long child, long *group, word_t want_result, long body,
                         first = true;
                 } while ((mask & pending) != 0);
         }
-        live = (**(int (**)(void))(*group + 0x18))(group);
+        live = (*(vcode *)(*group + 0x18))(group);
         if (live == 0) {
                 mask = 0;
                 pending = 0;
@@ -2713,7 +2722,7 @@ void sk_task_local_deinit_b(void)
 void sk_task_local_invoke(word_t *obj)
 {
         sk_cont_resume_record(obj + 1, 0);
-        (**(void (**)(void))*obj)(obj);
+        (*(vcode *)*obj)(obj);
         return;
 }
 
@@ -2752,7 +2761,7 @@ void sk_task_group_child_end(long *group, long child, long body)
                 if ((st >> 0x3e & 1) == 0) {
                         goto no_wait;
                 }
-                live = (**(int (**)(void))(*group + 0x18))(group);
+                live = (*(vcode *)(*group + 0x18))(group);
                 mask = 0x3fffffffffffffff;
                 if (live == 0) {
                         mask = 0x7fffffff;
@@ -2790,7 +2799,7 @@ void sk_task_group_child_end(long *group, long child, long body)
                 sk_task_local_check_wake(child, token);
         }
         if ((st >> 0x3e & 1) != 0) {
-                live = (**(int (**)(void))(*group + 0x18))(group);
+                live = (*(vcode *)(*group + 0x18))(group);
                 mask = 0x3fffffffffffffff;
                 if (live == 0) {
                         mask = 0x7fffffff;
@@ -2854,7 +2863,7 @@ void sk_task_group_store2(word_t group, word_t result)
  * page via sk_free tag 7), advances the value pointer, and frees the key
  * buffer.  Returns the store.
  * Confidence: low */
-word_t *sk_task_local_store(word_t *store, ...)
+word_t sk_task_local_store(word_t store, ...)
 {
         word_t *p;
         word_t *end;
@@ -2862,16 +2871,16 @@ word_t *sk_task_local_store(word_t *store, ...)
         word_t v;
         long diff;
 
-        *store = 0x67f4b0;
-        end = (word_t *)store[8];
-        p = (word_t *)store[9];
-        store[0xc] = 0;
+        *(word_t *)store = 0x67f4b0;
+        word_t *stp=(word_t *)store; end = (word_t *)stp[8];
+        p = (word_t *)stp[9];
+        stp[0xc] = 0;
         diff = (long)p - (long)end;
         while ((diff >> 3) > 2) {
                 sk_free(*end, 0x1000, 7);
-                p = (word_t *)store[9];
+                p = (word_t *)stp[9];
                 end = (word_t *)(store[8] + 8);
-                store[8] = (word_t)end;
+                stp[8] = (word_t)end;
                 diff = (long)p - (long)end;
         }
         v = (diff >> 3);
@@ -2883,7 +2892,7 @@ word_t *sk_task_local_store(word_t *store, ...)
                 }
                 v = 0x200;
         }
-        store[0xb] = v;
+        stp[0xb] = v;
 skip_tag:
         if (end != p) {
                 do {
@@ -2891,16 +2900,16 @@ skip_tag:
                         sk_free(*end, 0x1000, 7);
                         end = q;
                 } while (q != p);
-                diff = store[8] - store[9];
+                diff = stp[8] - stp[9];
                 if (diff != 0) {
-                        store[9] = store[9] + (diff + 7 & 0xfffffffffffffff8);
+                        stp[9] = stp[9] + (diff + 7 & 0xfffffffffffffff8);
                 }
         }
-        diff = store[7];
+        diff = stp[7];
         if (diff != 0) {
-                sk_free(diff, store[10] - diff, 7);
+                sk_free(diff, stp[10] - diff, 7);
         }
-        return store;
+        return (word_t)stp;
 }
 
 /* FUN_0040e258 @ 0x0040e258   (est. sk_cont_record_pop)
@@ -3256,19 +3265,19 @@ void sk_cont_buf_append(word_t *buf, word_t *value)
  * Destroys a growable word buffer: advances the start pointer past any used
  * bytes, then frees the backing allocation.
  * Confidence: low */
-word_t *sk_cont_buf_destroy(word_t *buf)
+word_t sk_cont_buf_destroy(word_t buf, ...)
 {
-        long used;
+        long used; word_t *bp=(word_t *)buf;
 
-        used = buf[1] - buf[2];
+        used = bp[1] - bp[2];
         if (used != 0) {
-                buf[2] = buf[2] + (used + 7 & 0xfffffffffffffff8);
+                bp[2] = bp[2] + (used + 7 & 0xfffffffffffffff8);
         }
-        used = *buf;
+        used = *bp;
         if (used != 0) {
-                sk_free(used, buf[3] - used, 7);
+                sk_free(used, bp[3] - used, 7);
         }
-        return buf;
+        return (word_t)bp;
 }
 
 /* FUN_0040e920 @ 0x0040e920   (est. sk_task_local_deinit_c)
@@ -3304,7 +3313,7 @@ void sk_task_local_deinit_d(void)
 void sk_task_local_invoke2(word_t *obj)
 {
         sk_cont_resume_record(obj + 1, 0);
-        (**(void (**)(void))*obj)(obj);
+        (*(vcode *)*obj)(obj);
         return;
 }
 

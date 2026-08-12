@@ -3553,3 +3553,21 @@ Confidence: medium
 - Evidence: sk_job_alloc `(*(code *)puVar1[2])()` on flag set; sk_job_alloc2 `pdVar2 = (puVar1 + 2)` when param_1 != 0, else `&__thread_bss.cputype`.
 - Severity (hypothesis): medium — arbitrary function-pointer invocation reachable via job alloc if the CAS callback outcome is attacker-influenced.
 - Confidence: low (Swift async ABI; callback path not fully recovered).
+
+## [sk] 0x0005ce54 sync_unlock — lock-ownership validation
+- **Observation**: The sync-unlock primitive validates that the unlocking thread actually owns the lock before releasing: it compares the lock word's owner tag against the current thread id ((current_thread >> 0xe) XOR lock_word) masked to 0xffffff, and panics ("tried to unlock lock I did not own") on mismatch. A lock that is not owned cannot be released; the release then emits LORelease and either bumps the recursion/semaphore counts or wakes a waiter via the dispatch thunk.
+- **Evidence**: sk_f_0005ce54 body: `if ((((uVar2 >> 0xe) ^ uVar3) & 0xffffff) != 0) sk_f_0005b190(0, sk_str_005bc719);` where uVar2=current thread (sk_x_00060524), uVar3=*lock; recursion counter at lock+0xc decremented and +0xe bumped on nested release, else `sk_f_0005dd70(sel, lock, 3, 0)` wake path.
+- **Severity (hypothesis)**: low — enforces lock-owner integrity; a bypass would allow cross-thread lock corruption (deadlock / use-after-free on the sync object).
+- **Confidence**: high (explicit panic string and owner-tag compare).
+
+## [sk] 0x0005dc8c/0x0005dd70/0x0005d84c/0x0005e0dc xrt dispatch thunks — lazily-initialized global fn-ptr table, indirect call
+- **Observation**: Four dispatch entry points lazily initialize a single global function-pointer table (sk_g_006b2690, default image-base table 0x65c560) the first time any is reached, then tail-indirect-call through table+0x08/+0x10/+0x18/+0x20 with the caller's register arguments. The table base is a fixed image-base constant; there is no write of the table pointer from a checked source in this slice (only the null-guard init), so the table's contents are whatever the image carries.
+- **Evidence**: sk_f_0005dc8c: `if (sk_g_006b2690 == 0) sk_g_006b2690 = 0x65c560;` then `handler = *(…(uint64_t*)(sk_g_006b2690 + 0x10); return handler(sel,a,b,c,d);`. Siblings dd70(+0x18), d84c(+0x00), e0dc(+0x08) identical pattern. Callers (ce54, d38c, d394, d470, fac0, fad8) pass up to 5 args that are forwarded verbatim.
+- **Severity (hypothesis)**: medium — the xrt sync/thread path dispatches through a single global code table; if sk_g_006b2690 (DAT_006b2690) could be corrupted or the table image swapped, every sync/wake/suspend operation would indirect-call attacker-chosen code in GL1. The one-time init mitigates against uninitialized reads but not table tampering.
+- **Confidence**: medium (table contents and handler signatures are not recovered from the decompile; only the thunk pattern).
+
+## [sk] 0x0005eec4 thread_create — thread-count cap + TCB allocation bounds
+- **Observation**: Thread creation gates the whole path on a 16-bit counter (< 0x400) read from the registry (registry+0x38), refusing to create beyond the cap; the raw TCB is pulled from a free list with an explicit overflow/wrap trap on the tag field (next+0x178 overflow), and the stack-size check traps "Thread stack allocation size" if the computed available bytes exceed 0x1ffff. Failure tallies are kept in per-counter globals (sk_g_006b26a4..bc).
+- **Evidence**: sk_f_0005eec4: `if (counter < 0x400) { … }` with `*counter_ptr = counter+1`; `thread = sk_f_0005c0ac()` (free-list pop, traps 0x5c11c on `next+0x178<next` overflow); `avail = (stack_low - stack_top) + stack_size; if (0x1ffff < avail) goto panic_path("Thread stack allocation size…")`. Counter decremented on the decrement: path.
+- **Severity (hypothesis)**: low — the 0x400 cap bounds per-registry concurrent threads (prevents TCB/slot exhaustion); the wrap traps close integer-overflow paths on TCB/stack accounting.
+- **Confidence**: high (explicit cap constant and overflow guards in the transcription).

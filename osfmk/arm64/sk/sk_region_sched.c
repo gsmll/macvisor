@@ -36,117 +36,117 @@ typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define CL4_VOID_U64(fn_call)  ((fn_call), 0ull)
 #define CL4_VOID_16(fn_call)   ((cl4_16_t)((fn_call), 0ull))
 #define cl4_break(addr) __asm__ volatile("brk #1" : : : "memory")
-extern uint64_t FUN_00002534();
-extern uint64_t FUN_00019aac();
-extern uint64_t FUN_0002142c();
-extern uint64_t FUN_000214b0();
-extern uint64_t FUN_00021738();
-extern uint64_t FUN_000217e4();
-extern uint64_t FUN_000218a4();
-extern uint64_t FUN_00021904();
-extern uint64_t FUN_00022028();
-extern uint64_t FUN_00022c48();
-extern uint64_t FUN_000230f8();
-extern uint64_t FUN_000231f0();
-extern uint64_t FUN_00023208();
-extern uint64_t FUN_00023318();
-extern uint64_t FUN_00023c78();
-extern uint64_t FUN_00023d00();
-extern uint64_t FUN_00023f74();
-extern uint64_t FUN_00025704();
-extern uint64_t FUN_00025ebc();
-extern uint64_t FUN_00025f44();
-extern uint64_t FUN_000260e0();
-extern uint64_t FUN_000262ec();
-extern uint64_t FUN_00026754();
-extern uint64_t FUN_000267d4();
-extern uint64_t FUN_000268d0();
-extern uint64_t FUN_00027724();
-extern uint64_t FUN_00072c98();
-extern uint64_t FUN_00082484();
-extern uint64_t FUN_000bd0e4();
-extern uint64_t FUN_001477c4();
-extern uint64_t FUN_0017770c();
-extern uint64_t FUN_0017d710();
-extern uint64_t FUN_0017d734();
-extern uint64_t FUN_0017d74c();
-extern uint64_t FUN_0017d768();
-extern uint64_t FUN_0017db0c();
-extern uint64_t FUN_0017db28();
-extern uint64_t FUN_0017db54();
-extern uint64_t FUN_0017db70();
-extern uint64_t FUN_0017db8c();
-extern uint64_t FUN_0017dbac();
-extern uint64_t FUN_0017dbc8();
-extern uint64_t FUN_0017dbe4();
-extern uint64_t FUN_0017dc10();
-extern uint64_t FUN_0017e5dc();
-extern uint64_t FUN_0017f188();
-extern uint64_t FUN_0017f408();
-extern uint64_t FUN_0017f98c();
-extern uint64_t FUN_0017fcc4();
-extern uint64_t FUN_0017fcf4();
-unsigned long FUN_001900d4();
-unsigned long FUN_001904d8();
-void FUN_001908f0();
-unsigned long FUN_00190bbc();
-void FUN_0019179c();
-void FUN_00191ba8();
-unsigned long FUN_00191f84();
-unsigned int FUN_0019225c();
-unsigned int FUN_00192528();
-void FUN_00192920();
-void FUN_00192bec();
-void FUN_00192eb8();
-void FUN_00193184();
-unsigned long FUN_00193450();
-void FUN_00193718();
-void FUN_001939e4();
-void FUN_00193cb0();
-unsigned int FUN_00193f7c();
-void FUN_00194370();
-void FUN_0019463c();
-void FUN_001948f8();
-void FUN_00194bb4();
-void FUN_00194e80();
-void FUN_0019514c();
-unsigned int FUN_00195418();
-unsigned int FUN_001956f4();
-unsigned int FUN_001959e8();
-void FUN_00195cc4();
-void FUN_00195f6c();
-unsigned long FUN_00196204();
-unsigned long FUN_001964f4();
-void FUN_0019661c();
-void FUN_00196644();
-void FUN_00196964();
-void FUN_00196c20();
-unsigned long FUN_00196fec();
-unsigned long FUN_001972a4();
-void FUN_00197594();
-void FUN_00197850();
-void FUN_00197be4();
-extern uint64_t FUN_001a84f4();
-extern uint64_t FUN_001a8564();
-extern uint64_t FUN_001afa84();
-extern uint64_t FUN_00205844();
-extern uint64_t FUN_00208478();
-extern uint64_t FUN_0022995c();
-extern uint64_t FUN_002a4ab4();
-extern uint64_t FUN_00365b6c();
-extern uint64_t FUN_0036986c();
-extern uint64_t FUN_003698b0();
-extern cl4_16_t FUN_0036993c();
-extern uint64_t FUN_0036a940();
-extern uint64_t FUN_0036b118();
-extern uint64_t FUN_0036b270();
-extern uint64_t FUN_003a25d4();
-extern uint64_t FUN_0065a550();
-extern uint64_t FUN_00669298();
-extern uint64_t FUN_0066a720();
-extern uint64_t thunk_FUN_00024068();
-extern uint64_t thunk_FUN_002298d4();
-extern uint64_t thunk_FUN_002acbb8();
+extern uint64_t FUN_00002534(); /* 0x00002534 */
+extern uint64_t FUN_00019aac(); /* 0x00019aac */
+extern uint64_t FUN_0002142c(); /* 0x0002142c */
+extern uint64_t FUN_000214b0(); /* 0x000214b0 */
+extern uint64_t FUN_00021738(); /* 0x00021738 */
+extern uint64_t FUN_000217e4(); /* 0x000217e4 */
+extern uint64_t FUN_000218a4(); /* 0x000218a4 */
+extern uint64_t FUN_00021904(); /* 0x00021904 */
+extern uint64_t FUN_00022028(); /* 0x00022028 */
+extern uint64_t FUN_00022c48(); /* 0x00022c48 */
+extern uint64_t FUN_000230f8(); /* 0x000230f8 */
+extern uint64_t FUN_000231f0(); /* 0x000231f0 */
+extern uint64_t FUN_00023208(); /* 0x00023208 */
+extern uint64_t FUN_00023318(); /* 0x00023318 */
+extern uint64_t FUN_00023c78(); /* 0x00023c78 */
+extern uint64_t FUN_00023d00(); /* 0x00023d00 */
+extern uint64_t FUN_00023f74(); /* 0x00023f74 */
+extern uint64_t FUN_00025704(); /* 0x00025704 */
+extern uint64_t FUN_00025ebc(); /* 0x00025ebc */
+extern uint64_t FUN_00025f44(); /* 0x00025f44 */
+extern uint64_t FUN_000260e0(); /* 0x000260e0 */
+extern uint64_t FUN_000262ec(); /* 0x000262ec */
+extern uint64_t FUN_00026754(); /* 0x00026754 */
+extern uint64_t FUN_000267d4(); /* 0x000267d4 */
+extern uint64_t FUN_000268d0(); /* 0x000268d0 */
+extern uint64_t FUN_00027724(); /* 0x00027724 */
+extern uint64_t FUN_00072c98(); /* 0x00072c98 */
+extern uint64_t FUN_00082484(); /* 0x00082484 */
+extern uint64_t FUN_000bd0e4(); /* 0x000bd0e4 */
+extern uint64_t FUN_001477c4(); /* 0x001477c4 */
+extern uint64_t FUN_0017770c(); /* 0x0017770c */
+extern uint64_t FUN_0017d710(); /* 0x0017d710 */
+extern uint64_t FUN_0017d734(); /* 0x0017d734 */
+extern uint64_t FUN_0017d74c(); /* 0x0017d74c */
+extern uint64_t FUN_0017d768(); /* 0x0017d768 */
+extern uint64_t FUN_0017db0c(); /* 0x0017db0c */
+extern uint64_t FUN_0017db28(); /* 0x0017db28 */
+extern uint64_t FUN_0017db54(); /* 0x0017db54 */
+extern uint64_t FUN_0017db70(); /* 0x0017db70 */
+extern uint64_t FUN_0017db8c(); /* 0x0017db8c */
+extern uint64_t FUN_0017dbac(); /* 0x0017dbac */
+extern uint64_t FUN_0017dbc8(); /* 0x0017dbc8 */
+extern uint64_t FUN_0017dbe4(); /* 0x0017dbe4 */
+extern uint64_t FUN_0017dc10(); /* 0x0017dc10 */
+extern uint64_t FUN_0017e5dc(); /* 0x0017e5dc */
+extern uint64_t FUN_0017f188(); /* 0x0017f188 */
+extern uint64_t FUN_0017f408(); /* 0x0017f408 */
+extern uint64_t FUN_0017f98c(); /* 0x0017f98c */
+extern uint64_t FUN_0017fcc4(); /* 0x0017fcc4 */
+extern uint64_t FUN_0017fcf4(); /* 0x0017fcf4 */
+extern unsigned long FUN_001900d4(); /* 0x001900d4 */
+extern unsigned long FUN_001904d8(); /* 0x001904d8 */
+extern void FUN_001908f0(); /* 0x001908f0 */
+extern unsigned long FUN_00190bbc(); /* 0x00190bbc */
+extern void FUN_0019179c(); /* 0x0019179c */
+extern void FUN_00191ba8(); /* 0x00191ba8 */
+extern unsigned long FUN_00191f84(); /* 0x00191f84 */
+extern unsigned int FUN_0019225c(); /* 0x0019225c */
+extern unsigned int FUN_00192528(); /* 0x00192528 */
+extern void FUN_00192920(); /* 0x00192920 */
+extern void FUN_00192bec(); /* 0x00192bec */
+extern void FUN_00192eb8(); /* 0x00192eb8 */
+extern void FUN_00193184(); /* 0x00193184 */
+extern unsigned long FUN_00193450(); /* 0x00193450 */
+extern void FUN_00193718(); /* 0x00193718 */
+extern void FUN_001939e4(); /* 0x001939e4 */
+extern void FUN_00193cb0(); /* 0x00193cb0 */
+extern unsigned int FUN_00193f7c(); /* 0x00193f7c */
+extern void FUN_00194370(); /* 0x00194370 */
+extern void FUN_0019463c(); /* 0x0019463c */
+extern void FUN_001948f8(); /* 0x001948f8 */
+extern void FUN_00194bb4(); /* 0x00194bb4 */
+extern void FUN_00194e80(); /* 0x00194e80 */
+extern void FUN_0019514c(); /* 0x0019514c */
+extern unsigned int FUN_00195418(); /* 0x00195418 */
+extern unsigned int FUN_001956f4(); /* 0x001956f4 */
+extern unsigned int FUN_001959e8(); /* 0x001959e8 */
+extern void FUN_00195cc4(); /* 0x00195cc4 */
+extern void FUN_00195f6c(); /* 0x00195f6c */
+extern unsigned long FUN_00196204(); /* 0x00196204 */
+extern unsigned long FUN_001964f4(); /* 0x001964f4 */
+extern void FUN_0019661c(); /* 0x0019661c */
+extern void FUN_00196644(); /* 0x00196644 */
+extern void FUN_00196964(); /* 0x00196964 */
+extern void FUN_00196c20(); /* 0x00196c20 */
+extern unsigned long FUN_00196fec(); /* 0x00196fec */
+extern unsigned long FUN_001972a4(); /* 0x001972a4 */
+extern void FUN_00197594(); /* 0x00197594 */
+extern void FUN_00197850(); /* 0x00197850 */
+extern void FUN_00197be4(); /* 0x00197be4 */
+extern uint64_t FUN_001a84f4(); /* 0x001a84f4 */
+extern uint64_t FUN_001a8564(); /* 0x001a8564 */
+extern uint64_t FUN_001afa84(); /* 0x001afa84 */
+extern uint64_t FUN_00205844(); /* 0x00205844 */
+extern uint64_t FUN_00208478(); /* 0x00208478 */
+extern uint64_t FUN_0022995c(); /* 0x0022995c */
+extern uint64_t FUN_002a4ab4(); /* 0x002a4ab4 */
+extern uint64_t FUN_00365b6c(); /* 0x00365b6c */
+extern uint64_t FUN_0036986c(); /* 0x0036986c */
+extern uint64_t FUN_003698b0(); /* 0x003698b0 */
+extern cl4_16_t FUN_0036993c(); /* 0x0036993c */
+extern uint64_t FUN_0036a940(); /* 0x0036a940 */
+extern uint64_t FUN_0036b118(); /* 0x0036b118 */
+extern uint64_t FUN_0036b270(); /* 0x0036b270 */
+extern uint64_t FUN_003a25d4(); /* 0x003a25d4 */
+extern uint64_t FUN_0065a550(); /* 0x0065a550 */
+extern uint64_t FUN_00669298(); /* 0x00669298 */
+extern uint64_t FUN_0066a720(); /* 0x0066a720 */
+extern uint64_t thunk_FUN_00024068(); /* 0x00024068 */
+extern uint64_t thunk_FUN_002298d4(); /* 0x002298d4 */
+extern uint64_t thunk_FUN_002acbb8(); /* 0x002acbb8 */
 extern char s_Fatal_error_005accd0[];
 extern char s_StackshotConclaveSupport_Stacksh_005cbc40[];
 extern char s_XnuProxyStackshotSupport_Stacksh_005cbf60[];
@@ -506,31 +506,31 @@ extern uint64_t dat_006695f8;
 #define ZEXT816(x) ((unsigned long)(unsigned short)(x))
 typedef unsigned long (*code)();
 typedef uint64_t undefined;
-unsigned long sk_swift_frame_init();
-unsigned long sk_swift_string_begin();
-extern unsigned long sk_swift_type_hash();
-extern void sk_swift_type_arg();
-extern void sk_swift_type_arg2();
-extern void sk_swift_elem_append();
-extern void sk_swift_buf_ctx();
-extern void sk_swift_error_build();
-extern void sk_swift_string_build();
-extern char sk_swift_result_check();
-extern unsigned long sk_swift_result_value();
-extern unsigned long sk_swift_result_value2();
-extern unsigned long sk_swift_collection_op();
-extern void sk_swift_retain();
-extern void sk_swift_release();
-extern unsigned long sk_swift_err_code();
-void sk_swift_collection_count();
-extern unsigned long sk_swift_collection_init();
-extern void sk_swift_epilogue();
-extern void sk_swift_precond_1();
-extern void sk_swift_precond_2();
-unsigned long sk_swift_meta();
-extern void sk_swift_abort_tail();
-extern void sk_swift_fatal_error();
-extern void sk_swift_fatal_error_2();
+extern void *sk_swift_frame_init(void *out, unsigned long size, unsigned long a, void *err_out); /* FUN_00025ebc */
+extern void *sk_swift_string_begin(void *out);                        /* thunk_FUN_00024068 -> FUN_00024068 */
+extern unsigned long sk_swift_type_hash(); /* FUN_00023208 */
+extern void sk_swift_type_arg(); /* FUN_000231f0 */
+extern void sk_swift_type_arg2(); /* FUN_00023318 */
+extern void sk_swift_elem_append(); /* FUN_000230f8 */
+extern void sk_swift_buf_ctx(); /* FUN_00022c48 */
+extern void sk_swift_error_build(); /* FUN_00025f44 */
+extern void sk_swift_string_build(); /* FUN_000214b0 */
+extern char sk_swift_result_check(); /* FUN_000217e4 */
+extern unsigned long sk_swift_result_value(); /* FUN_00021904 */
+extern unsigned long sk_swift_result_value2(); /* FUN_00021738 */
+extern unsigned long sk_swift_collection_op(); /* FUN_000268d0 */
+extern void sk_swift_retain(); /* FUN_003698b0 */
+extern void sk_swift_release(); /* FUN_0036993c */
+extern unsigned long sk_swift_err_code(); /* FUN_00019aac */
+extern void sk_swift_collection_count(); /* FUN_00026754 */
+extern unsigned long sk_swift_collection_init(); /* FUN_000267d4 */
+extern void sk_swift_epilogue(); /* FUN_00025704 */
+extern void sk_swift_precond_1(); /* FUN_002a4ab4 */
+extern void sk_swift_precond_2(); /* thunk_FUN_002acbb8 -> FUN_002acbb8 */
+extern void *sk_swift_meta(unsigned long a);                          /* FUN_00027724 */
+extern void sk_swift_abort_tail(); /* FUN_003a25d4 */
+extern void sk_swift_fatal_error(); /* FUN_001afa84 */
+extern void sk_swift_fatal_error_2(); /* FUN_001afe4c */
 extern const char sk_fatal_error_str[];   /* s_Fatal_error_005accd0 */
 extern const char sk_xnu_upcalls_swift[]; /* s_XnuUpcallsV2_XnuUpcallsV2_Swift__005ccbc0 */
 extern const char sk_index_oob_str[];     /* s_Index_out_of_bounds_005cdab0 */
@@ -542,19 +542,17 @@ extern unsigned long DAT_0065a5e8;
 extern unsigned long DAT_0066a708;
 extern unsigned long DAT_00669c50;
 extern unsigned long DAT_00669c90;
-extern unsigned long FUN_0065a550;
-extern unsigned long FUN_0066a720;
-extern unsigned long sk_alloc_pages();
-extern void sk_free();
-void * FUN_0018cb24();
-extern void sk_lock_acquire();
-extern void sk_lock_release_simple();
-unsigned long sk_lock_owner();
-extern void sk_lock_notify();
-extern void sk_lock_wait();
-extern void sk_memzero_string();
-extern void sk_lock_enter();
-extern void sk_lock_exit();
+extern unsigned long sk_alloc_pages(); /* FUN_0036b270 */
+extern void sk_free(); /* FUN_0036b118 */
+extern void * FUN_0018cb24();
+extern void sk_lock_acquire(); /* FUN_00354a34 */
+extern void sk_lock_release_simple(); /* FUN_00356940 */
+extern void *sk_lock_owner(void);         /* FUN_00351dc0 */
+extern void sk_lock_notify(); /* FUN_00354ef8 */
+extern void sk_lock_wait(); /* FUN_0035a158 */
+extern void sk_memzero_string(); /* FUN_0006f768 */
+extern void sk_lock_enter(); /* FUN_00354318 */
+extern void sk_lock_exit(); /* FUN_0035a134 */
 extern unsigned long *DAT_004e7990;       /* dispatch table base (register-indexed) */
 extern unsigned long *DAT_004e79a8;
 extern unsigned int *DAT_004e79c0;
@@ -600,22 +598,22 @@ extern void FUN_003488bc();
 extern void FUN_001dc56c();
 extern void FUN_001dc620();
 extern void FUN_001da01c();
-void FUN_0019f1ec();
+extern void FUN_0019f1ec();
 extern void FUN_00357874();
 extern unsigned long FUN_0005b140();
 extern void FUN_001150e0();
 extern const char s_integer_overflow_005bb5bd[];
-void * FUN_0018c594();
+extern void * FUN_0018c594();
 extern unsigned char DAT_0000118f;
 extern unsigned char DAT_00001197;
 extern unsigned long *DAT_004e7a18;
-extern void FUN_0019ea20();
-void FUN_0019f658();
-extern void FUN_0019f698();
-unsigned long FUN_0019f8e4();
-void FUN_0019fa60();
-void FUN_0019ff50();
-extern long sk_collection_underflow();
+extern void FUN_0019ea20(); /* defined in this file @ 0x0019ea20 */
+extern void FUN_0019f658(); /* defined in this file @ 0x0019f658 */
+extern void FUN_0019f698(); /* defined in this file @ 0x0019f698 */
+extern unsigned long FUN_0019f8e4(); /* defined in this file @ 0x0019f8e4 */
+extern void FUN_0019fa60(); /* defined in this file @ 0x0019fa60 */
+extern void FUN_0019ff50(); /* defined in this file @ 0x0019ff50 */
+extern long sk_collection_underflow(); /* FUN_0019f9c4 caller */
 extern void FUN_003580e4();
 extern void FUN_0034c434();
 extern void FUN_00348384();
@@ -1274,26 +1272,21 @@ typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef ui
 typedef struct { uint64_t lo; uint64_t hi; } reg16;
 typedef struct { uint64_t lo; uint32_t hi; } reg12;
 typedef void (*code_fn)();
-unsigned long sk_alloc();
-unsigned long sk_alloc_special();
-extern unsigned long sk_object_lock();
-extern unsigned long sk_lock_ref();
-extern unsigned long sk_lzcount();
-extern reg16 sk_cpu_current();
-extern void sk_thread_epilogue();
-void sk_swift_fatal();
-unsigned long swift_array_alloc_with_count();
-unsigned long swift_objc_metatype();
-unsigned long swift_array_init();
-unsigned long swift_alloc_small();
-unsigned long sk_current_tcb();
-extern void sk_schedule_yield();
-static inline uint64_t CONCAT17();
-static inline uint64_t CONCAT71();
-static inline uint64_t SBORROW8();
-static inline uint64_t SCARRY8();
-static inline uint64_t SEXT816();
-static inline uint64_t SUB168();
+extern void *sk_alloc(unsigned long size, unsigned long tag);               /* FUN_0036a908 */
+extern void *sk_alloc_special(unsigned long a, unsigned long b, unsigned long tag); /* FUN_0036a940 */
+extern unsigned long sk_object_lock(unsigned long a, unsigned long b,
+                                    unsigned long c, void *dbg1, void *dbg2); /* FUN_00377824 */
+extern unsigned long sk_lock_ref(); /* FUN_00377bec */
+extern unsigned long sk_lzcount(); /* LZCOUNT intrinsic */
+extern reg16 sk_cpu_current(); /* FUN_0008e518 */
+extern void sk_thread_epilogue(); /* FUN_0008e500 */
+extern void sk_swift_fatal();
+extern void *swift_array_alloc_with_count(uint64_t a, void *b);             /* FUN_003a25d4 */
+extern void *swift_objc_metatype();                                     /* FUN_00376820 */
+extern void *swift_array_init();                                        /* FUN_001a042c */
+extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* FUN_003a261c */
+extern void *sk_current_tcb();                                          /* FUN_000867ec */
+extern void sk_schedule_yield(); /* FUN_00084180 */
 uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01, stack_60, x1_01;
 reg16 cpu_leak, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
 uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
@@ -1303,13 +1296,15 @@ extern uint64_t DAT_004baeb0, DAT_004c08a0, DAT_006adf10, DAT_006adf18, sk_array
 extern struct { char *segname; } section_00000068;
 extern struct { uint64_t _0_8_; uint64_t _16_8_; } s_reversed_key;
 extern uint64_t FUN_00072c0c, FUN_00319380, FUN_0031940c, FUN_00346744;
-unsigned long swift_array_alloc();
+void *swift_array_alloc(long count);
 void swift_array_iterator_dispatch();
 void sk_lock_guarded();
 void sk_sched_queue_foreach();
 void sk_swift_array_dispatch_impl();
 void swift_array_destroy();
 void swift_array_init_core();
+extern uint64_t CONCAT17();
+extern uint64_t CONCAT71();
 extern uint64_t FUN_00002688();
 extern uint64_t FUN_000026e8();
 extern uint64_t FUN_00002834();
@@ -1351,9 +1346,9 @@ extern uint64_t FUN_00167404();
 extern uint64_t FUN_0016749c();
 extern uint64_t FUN_001676cc();
 extern uint64_t FUN_0019e93c();
-unsigned long FUN_0019ed3c();
-void FUN_0019fd10();
-void FUN_0019fe7c();
+extern unsigned long FUN_0019ed3c();
+extern void FUN_0019fd10();
+extern void FUN_0019fe7c();
 extern uint64_t FUN_001a0194();
 extern uint64_t FUN_001a0414();
 extern uint64_t FUN_001a0534();
@@ -2162,6 +2157,10 @@ extern uint64_t FUN_0036b2d0();
 extern uint64_t FUN_0036b588();
 extern uint64_t FUN_0036b6ac();
 extern uint64_t FUN_003a2610();
+extern uint64_t SBORROW8();
+extern uint64_t SCARRY8();
+extern uint64_t SEXT816();
+extern uint64_t SUB168();
 extern uint64_t dispatch_slot();
 extern uint64_t sk_alloc_ok();
 extern uint64_t sk_array_append_shared();
@@ -2263,10 +2262,10 @@ extern uint64_t sk_spin_irqsave();
 extern uint64_t sk_tick_b();
 extern uint64_t swift_array_touch_ret();
 extern uint64_t swift_collection_reserve_r();
-uint64_t swift_utf8_decode();
+extern uint64_t swift_utf8_decode();
 extern uint64_t thunk_FUN_00012568();
 extern uint64_t thunk_FUN_00200b38();
-ulong thunk_FUN_0036b270();
+extern ulong thunk_FUN_0036b270();
 extern reg16 FUN_001a9a30();
 extern reg16 FUN_001aaabc();
 extern reg16 FUN_001aaba8();
@@ -2297,146 +2296,148 @@ extern reg16 FUN_0035a758();
 extern reg16 sk_cpu_ctx();
 extern uint64_t FUN_00358da0();
 extern code_fn sk_vtable_resolve();
-extern void sk_fatal_error();
-extern unsigned long sk_swift_state();
-extern unsigned long sk_swift_state2();
-extern unsigned long sk_swift_state3();
-extern unsigned long sk_swift_gstate();
-extern unsigned long sk_swift_gstore();
-extern unsigned long sk_swift_flag();
-extern unsigned long sk_swift_flag_set();
-extern unsigned long sk_swift_flag_calc();
-extern unsigned long sk_swift_tag();
-extern unsigned long sk_swift_done();
-extern unsigned long sk_swift_cap();
-extern unsigned long sk_swift_cap_rel();
-extern unsigned long sk_swift_idx();
-extern unsigned long sk_swift_idx_cmp();
-extern unsigned long sk_swift_free();
-extern unsigned long sk_swift_free_pages();
-extern unsigned long sk_swift_bitset_ctor();
-extern unsigned long sk_swift_bitset_end();
-extern unsigned long sk_swift_hash();
-extern cl4_result_t sk_swift_hash_pair();
-extern unsigned long sk_swift_attr_get();
-extern unsigned long sk_swift_attr_get2();
-extern unsigned long sk_swift_attr_get3();
-extern cl4_result_t sk_swift_small_string();
-extern unsigned long sk_swift_empty_string();
-extern cl4_result_t sk_swift_int_string();
-extern cl4_result_t sk_swift_string_builder();
-extern unsigned long sk_swift_string_ref();
-extern unsigned long sk_swift_string_ref2();
-extern unsigned long sk_swift_string_cvt();
-extern unsigned long sk_swift_string_cmp2();
-extern unsigned long sk_swift_string_cmp6();
-extern unsigned long sk_swift_utf8_next();
-extern unsigned long sk_swift_utf8_prev();
-extern unsigned long sk_swift_utf8_scalar_at();
-extern unsigned long sk_swift_utf8_scalar_prev();
-extern cl4_result_t sk_swift_witness();
-extern unsigned long sk_swift_witnessB();
-extern cl4_result_t sk_swift_witnessF();
-extern cl4_result_t sk_swift_range();
-extern cl4_result_t sk_swift_pair_cvt();
-extern unsigned long sk_swift_reg();
-extern unsigned long sk_swift_galloc();
-extern unsigned long sk_swift_ginit();
-extern unsigned long sk_swift_gfind();
-extern unsigned long sk_swift_gverify();
-extern unsigned long sk_swift_glist();
-extern unsigned long sk_swift_gstep();
-extern unsigned long sk_swift_die();
-extern unsigned long sk_swift_die2_0();
-extern unsigned long sk_swift_die2_1();
-extern unsigned long sk_swift_die3();
-extern unsigned long sk_swift_string_lit();
-extern unsigned long thunk_sk_swift_hash();
+extern void sk_fatal_error(); __attribute__((noreturn)) /* FUN_001afe4c */
+extern unsigned long sk_swift_state(); /* FUN_00348e00 */
+extern unsigned long sk_swift_state2(); /* FUN_00355538 */
+extern unsigned long sk_swift_state3(); /* FUN_00351d18 */
+extern unsigned long sk_swift_gstate(); /* FUN_0036a940 */
+extern unsigned long sk_swift_gstore(); /* FUN_00310d98 */
+extern unsigned long sk_swift_flag(); /* indirect result */
+extern unsigned long sk_swift_flag_set(); /* FUN_00229a3c */
+extern unsigned long sk_swift_flag_calc(); /* FUN_00351ca0 */
+extern unsigned long sk_swift_tag(); /* FUN_001a8564 */
+extern unsigned long sk_swift_done(); /* FUN_000839d8 */
+extern unsigned long sk_swift_cap(); /* FUN_003a26a0 */
+extern unsigned long sk_swift_cap_rel(); /* FUN_003a261c */
+extern unsigned long sk_swift_idx(); /* FUN_003a2898 */
+extern unsigned long sk_swift_idx_cmp(); /* FUN_002a0f24 */
+extern unsigned long sk_swift_free(); /* FUN_0036b118 */
+extern unsigned long sk_swift_free_pages(); /* FUN_0036b270 */
+extern unsigned long sk_swift_bitset_ctor(); /* FUN_002c2da4 */
+extern unsigned long sk_swift_bitset_end(); /* FUN_00068e14 */
+extern unsigned long sk_swift_hash(); /* FUN_00255738 */
+extern cl4_result_t sk_swift_hash_pair(); /* FUN_00255738 */
+extern unsigned long sk_swift_attr_get(); /* FUN_00281cc0 */
+extern unsigned long sk_swift_attr_get2(); /* FUN_00283a08 */
+extern unsigned long sk_swift_attr_get3(); /* FUN_00282bc0 */
+extern cl4_result_t sk_swift_small_string(); /* FUN_001a89a8 */
+extern unsigned long sk_swift_empty_string(); /* FUN_0011e71c */
+extern cl4_result_t sk_swift_int_string(); /* FUN_002364dc */
+extern cl4_result_t sk_swift_string_builder(); /* string builder */
+extern unsigned long sk_swift_string_ref(); /* FUN_001e8374 */
+extern unsigned long sk_swift_string_ref2(); /* FUN_001e851c */
+extern unsigned long sk_swift_string_cvt(); /* FUN_001e9414 */
+extern unsigned long sk_swift_string_cmp2(); /* FUN_002a0d50 */
+extern unsigned long sk_swift_string_cmp6(); /* FUN_00359214 */
+extern unsigned long sk_swift_utf8_next(); /* FUN_002b141c */
+extern unsigned long sk_swift_utf8_prev(); /* FUN_002b14c8 */
+extern unsigned long sk_swift_utf8_scalar_at(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_utf8_scalar_prev(); /* FUN_00167404 */
+extern cl4_result_t sk_swift_witness(); /* FUN_0034b7f4 */
+extern unsigned long sk_swift_witnessB(); /* FUN_0034b798 */
+extern cl4_result_t sk_swift_witnessF(); /* FUN_0034f464 */
+extern cl4_result_t sk_swift_range(); /* FUN_0019eb88 */
+extern cl4_result_t sk_swift_pair_cvt(); /* FUN_0001a1c8 */
+extern unsigned long sk_swift_reg(); /* FUN_003198cc */
+extern unsigned long sk_swift_galloc(); /* FUN_00083450 */
+extern unsigned long sk_swift_ginit(); /* FUN_00389da0 */
+extern unsigned long sk_swift_gfind(); /* FUN_00362c34 */
+extern unsigned long sk_swift_gverify(); /* FUN_00362c00 */
+extern unsigned long sk_swift_glist(); /* FUN_003629c4 */
+extern unsigned long sk_swift_gstep(); /* FUN_003629b4 */
+extern unsigned long sk_swift_die(); /* FUN_00348898 */
+extern unsigned long sk_swift_die2_0(); /* FUN_00348074 */
+extern unsigned long sk_swift_die2_1(); /* FUN_00348404 */
+extern unsigned long sk_swift_die3(); /* FUN_0034a368 */
+extern unsigned long sk_swift_string_lit(); /* FUN_001a89a8 */
+extern unsigned long thunk_sk_swift_hash(); /* FUN_00229ebc */
 extern void thunk_FUN_00054414();
-extern unsigned long thunk_FUN_001a89a8();
-extern void thunk_FUN_00213834();
-extern long thunk_FUN_00284424();
-extern unsigned long sk_swift_badlock();
-extern unsigned long sk_swift_shift();
-extern unsigned long sk_sync_ops_1();
-extern unsigned long sk_sync_ops_2();
-extern unsigned long sk_bad_pointer();
-extern unsigned long sk_obj_alloc_buf();
-extern unsigned long sk_swift_overflow();
-extern unsigned long sk_swift_fail();
-extern unsigned long sk_swift_fail2();
-extern unsigned long sk_swift_detect_tiny();
-extern unsigned long sk_str_fast_count();
-extern unsigned long sk_swift_emit();
-extern unsigned long sk_swift_die2();
-extern unsigned long sk_swift_sync();
-extern unsigned long sk_swift_sync_ret();
-extern unsigned long sk_swift_pin();
-extern unsigned long sk_swift_unpin();
-extern unsigned long sk_swift_store();
-extern unsigned long sk_swift_ckrange();
-extern unsigned long sk_swift_ckrange2();
-extern unsigned long sk_swift_panic_msg();
-extern unsigned long sk_swift_badptr();
-extern unsigned long sk_swift_trap_slot();
-extern unsigned long sk_swift_dispatch();
-extern unsigned long sk_swift_classify();
-extern unsigned long sk_swift_isascii_utf16();
-extern unsigned long sk_swift_utf16_fwd();
-extern unsigned long sk_swift_utf16_get();
-extern unsigned long sk_swift_memop();
-extern unsigned long sk_swift_utf16_set();
-extern unsigned long sk_swift_utf16_slice();
-extern unsigned long sk_swift_table();
-extern unsigned long sk_swift_cast16();
-extern unsigned long sk_swift_uint_conv();
-extern unsigned long sk_swift_uint_conv2();
-extern unsigned long sk_swift_load();
-extern unsigned long sk_swift_iret();
-extern unsigned long sk_swift_leave();
-extern unsigned long sk_swift_lock();
-extern unsigned long sk_swift_unlock();
-extern unsigned long sk_swift_door();
-extern unsigned long sk_swift_prev();
-extern unsigned long sk_swift_next();
-extern unsigned long sk_swift_atomic_load();
-extern unsigned long sk_swift_bitset();
-extern unsigned long sk_swift_cmp();
-extern unsigned long sk_swift_strlen();
-extern unsigned long sk_swift_substr();
-extern unsigned long sk_swift_concat();
-extern unsigned long sk_swift_split();
-extern unsigned long sk_swift_join();
-extern unsigned long sk_swift_append();
-extern unsigned long sk_swift_insert();
-extern unsigned long sk_swift_remove();
-extern unsigned long sk_swift_replace();
-extern unsigned long sk_swift_find();
-extern unsigned long sk_swift_rfind();
-extern unsigned long sk_swift_trim();
-extern unsigned long sk_swift_lower();
-extern unsigned long sk_swift_upper();
-extern unsigned long sk_swift_any();
-extern unsigned long sk_swift_reserve();
-extern unsigned long sk_swift_scan();
-extern unsigned long sk_swift_get_cap();
-extern unsigned long sk_swift_set_cap();
+extern unsigned long thunk_FUN_001a89a8(); /* 0x1a89a8 */
+extern void thunk_FUN_00213834(); /* 0x213834 */
+extern long thunk_FUN_00284424(); /* 0x284424 */
+extern unsigned long sk_swift_badlock(); /* FUN_00347fb4 */
+extern unsigned long sk_swift_shift(); /* FUN_00356340 */
+extern unsigned long sk_sync_ops_1(); /* FUN_00354a34 */
+extern unsigned long sk_sync_ops_2(); /* FUN_0035694c */
+extern unsigned long sk_bad_pointer(); /* FUN_0034846c */
+extern unsigned long sk_obj_alloc_buf(); /* FUN_00355968 */
+extern unsigned long sk_swift_overflow(); /* FUN_003583dc */
+extern unsigned long sk_swift_fail(); /* FUN_00348194 */
+extern unsigned long sk_swift_fail2(); /* FUN_003523f0 */
+extern unsigned long sk_swift_detect_tiny(); /* FUN_00356d2c */
+extern unsigned long sk_str_fast_count(); /* FUN_00255d4c */
+extern unsigned long sk_swift_emit(); /* FUN_003528ac */
+extern unsigned long sk_swift_die2(); /* FUN_0034a2f8 */
+extern unsigned long sk_swift_sync(); /* FUN_00357ca0 */
+extern unsigned long sk_swift_sync_ret(); /* FUN_00355d9c */
+extern unsigned long sk_swift_pin(); /* FUN_00351584 */
+extern unsigned long sk_swift_unpin(); /* FUN_003591f4 */
+extern unsigned long sk_swift_store(); /* FUN_00357c44 */
+extern unsigned long sk_swift_ckrange(); /* FUN_0035ab60 */
+extern unsigned long sk_swift_ckrange2(); /* FUN_003d2dd4 */
+extern unsigned long sk_swift_panic_msg(); /* FUN_00350410 */
+extern unsigned long sk_swift_badptr(); /* FUN_00358ca4 */
+extern unsigned long sk_swift_trap_slot(); /* FUN_00353d70 */
+extern unsigned long sk_swift_dispatch(); /* FUN_003523fc */
+extern unsigned long sk_swift_classify(); /* FUN_00354504 */
+extern unsigned long sk_swift_isascii_utf16(); /* FUN_0001da84 */
+extern unsigned long sk_swift_utf16_fwd(); /* FUN_001676cc */
+extern unsigned long sk_swift_utf16_get(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_memop(); /* FUN_002bbc14 */
+extern unsigned long sk_swift_utf16_set(); /* FUN_002af618 */
+extern unsigned long sk_swift_utf16_slice(); /* FUN_00291d70 */
+extern unsigned long sk_swift_table(); /* FUN_00346774 */
+extern unsigned long sk_swift_cast16(); /* FUN_0001d4a0 */
+extern unsigned long sk_swift_uint_conv(); /* FUN_003d2f9c */
+extern unsigned long sk_swift_uint_conv2(); /* FUN_003d2f10 */
+extern unsigned long sk_swift_load(); /* FUN_00357cb4 */
+extern unsigned long sk_swift_iret(); /* FUN_00357c74 */
+extern unsigned long sk_swift_leave(); /* FUN_00355bb8 */
+extern unsigned long sk_swift_lock(); /* FUN_0034e004 */
+extern unsigned long sk_swift_unlock(); /* FUN_00350524 */
+extern unsigned long sk_swift_door(); /* FUN_00351b78 */
+extern unsigned long sk_swift_prev(); /* FUN_0034f688 */
+extern unsigned long sk_swift_next(); /* FUN_00205844 */
+extern unsigned long sk_swift_atomic_load(); /* FUN_00354744 */
+extern unsigned long sk_swift_bitset(); /* FUN_0006e778 */
+extern unsigned long sk_swift_cmp(); /* FUN_0034f064 */
+extern unsigned long sk_swift_strlen(); /* FUN_0035354c */
+extern unsigned long sk_swift_substr(); /* FUN_00208418 */
+extern unsigned long sk_swift_concat(); /* FUN_00354a00 */
+extern unsigned long sk_swift_split(); /* FUN_0034f98c */
+extern unsigned long sk_swift_join(); /* FUN_0034c3a0 */
+extern unsigned long sk_swift_append(); /* FUN_003511d8 */
+extern unsigned long sk_swift_insert(); /* FUN_0034a390 */
+extern unsigned long sk_swift_remove(); /* FUN_0034ef38 */
+extern unsigned long sk_swift_replace(); /* FUN_002a4c98 */
+extern unsigned long sk_swift_find(); /* FUN_0034bf64 */
+extern unsigned long sk_swift_rfind(); /* FUN_003510b8 */
+extern unsigned long sk_swift_trim(); /* FUN_0034b7c8 */
+extern unsigned long sk_swift_lower(); /* FUN_00354e0c */
+extern unsigned long sk_swift_upper(); /* FUN_00350868 */
+extern unsigned long sk_swift_any(); /* FUN_0006f768 */
+extern unsigned long sk_swift_reserve(); /* FUN_00352c58 */
+extern unsigned long sk_swift_scan(); /* FUN_00357cec */
+extern unsigned long sk_swift_get_cap(); /* FUN_002a9ba8 */
+extern unsigned long sk_swift_set_cap(); /* FUN_002af618 */
 void cl4_swift_dispatch_msg2();
-void cl4_swift_validate_msg();
-void cl4_swift_validate_msg2();
+void cl4_swift_validate_msg(long a, unsigned long b, long cap, unsigned long len,
+                            long c, unsigned long d, unsigned long count);
+void cl4_swift_validate_msg2(long a, unsigned long b, long cap, unsigned long len,
+                             long c, unsigned long d, unsigned long count);
 void cl4_swift_validate_msg3();
-void cl4_swift_msg_resolve();
-void cl4_swift_ubp_do();
-void cl4_swift_range_math();
-void cl4_object_service_run3();
-void cl4_swift_fill();
-void cl4_swift_complete();
-unsigned long cl4_swift_string_cmp3();
-unsigned long cl4_swift_string_cmp4();
-unsigned long cl4_swift_string_cmp5();
-void cl4_swift_string_append4();
-void cl4_swift_string_append6();
-extern unsigned long cl4_swift_utf8_bounds2();
+void cl4_swift_msg_resolve(); /* FUN_001b0a7c */
+void cl4_swift_ubp_do(); /* FUN_001b0f78 */
+void cl4_swift_range_math(); /* FUN_001b11bc */
+void cl4_object_service_run3(); /* FUN_001b3c0c */
+void cl4_swift_fill(); /* FUN_001b5474 */
+void cl4_swift_complete(); /* FUN_001b58b0 */
+unsigned long cl4_swift_string_cmp3(); /* FUN_001b8920 */
+unsigned long cl4_swift_string_cmp4(); /* FUN_001b8c84 */
+unsigned long cl4_swift_string_cmp5(); /* FUN_001b8fcc */
+void cl4_swift_string_append4(); /* FUN_001bd6dc */
+void cl4_swift_string_append6(); /* FUN_001be528 */
+extern unsigned long cl4_swift_utf8_bounds2(); /* FUN_001b798c */
 extern unsigned long sk_swift_gstate_global;    /* DAT_006ade68 */
 typedef struct sk_r4_u128 {
     uint64_t lo;
@@ -2457,7 +2458,7 @@ typedef float float2;
 #define CARRY8(a,b)   CARRYN(a,b)
 #define SEXT8(x)      (int64_t)(x)
 #define SUB8(a,b)     ((uint64_t)(a) - (uint64_t)(b))
-unsigned long SoftwareBreakpoint();
+extern void *SoftwareBreakpoint(int level, unsigned long addr);  /* Ghidra BRK builtin */
 extern uint64_t LAB_00319c6c;  /* Ghidra label (code address) */
 extern uint64_t LAB_00319c9c;  /* Ghidra label (code address) */
 extern uint64_t LAB_00319ccc;  /* Ghidra label (code address) */
@@ -2480,836 +2481,836 @@ extern uint64_t LAB_0031a02c;  /* Ghidra label (code address) */
 extern uint64_t LAB_0031a05c;  /* Ghidra label (code address) */
 extern uint64_t LAB_0031a08c;  /* Ghidra label (code address) */
 extern uint64_t LAB_005ce9e0;  /* Ghidra label (code address) */
-extern void sk_rt_hook_a();
-extern void sk_rt_hook_b();
-extern sk_r4_u128_t sk_rt_hook_c();
-extern void sk_rt_hook_d();
-extern void sk_rt_hook_e();
-extern void sk_rt_hook_f();
-extern void sk_rt_hook_g();
-extern void sk_rt_hook_h();
-extern void sk_rt_hook_i();
-extern uint64_t sk_rt_hook_j();
-extern void sk_rt_hook_k();
-extern sk_r4_u128_t sk_rt_hook_l();
-extern sk_r4_u128_t sk_rt_hook_m();
-extern void sk_rt_hook_n();
-extern uint64_t sk_rt_hook_o();
-extern sk_r4_u128_t sk_rt_hook_p();
-extern void sk_rt_hook_q();
-extern void sk_rt_hook_r();
-extern void sk_rt_hook_s();
-extern void sk_rt_hook_t();
-extern void sk_rt_hook_u();
-extern void sk_rt_hook_v();
-extern void sk_rt_hook_w();
-extern void sk_rt_hook_x();
-extern void sk_rt_hook_y();
-extern void sk_rt_hook_z();
-extern sk_r4_u128_t sk_fatal_msg_tag();
-unsigned long sk_cpu();
-extern void sk_masked_free();
-extern uint64_t sk_enum_err();
-extern uint64_t sk_rt_dispatch();
-extern uint64_t sk_rt_desc();
-extern uint64_t sk_rt_slot();
-extern uint64_t sk_rt_slot2();
-extern uint64_t sk_rt_slot3();
-extern void sk_h_00019858();
-extern uint64_t sk_h_0006a4c0();
-extern void sk_h_0006a4f0();
-extern void sk_h_0006a668();
-extern void sk_h_0006b42c();
-extern void sk_h_0006b6f4();
-extern void sk_h_0006f6b4();
-extern void sk_h_00077070();
-extern void sk_h_0007767c();
-extern sk_r4_u128_t sk_h_00077698();
-extern void sk_h_0007b384();
-extern long sk_h_0007c198();
-extern sk_r4_u128_t sk_h_0007c1c4();
-extern void sk_h_000836a4();
-extern void sk_h_000839d8();
-extern int sk_h_000839f8();
-extern void sk_h_0008409c();
-extern void sk_h_00084174();
-extern void sk_h_00084180();
-extern sk_r4_u128_t sk_h_0008dae4();
-extern sk_r4_u128_t sk_h_0008e388();
-extern void sk_h_0008e500();
-extern void sk_h_0008e5d8();
-extern void sk_h_0009461c();
-extern void sk_h_0009e234();
-extern void sk_h_000a649c();
-extern void sk_h_000a6bb8();
-extern sk_r4_u128_t sk_h_000a6e14();
-extern void sk_h_000a6f88();
-extern void sk_h_000b077c();
-extern void sk_h_000b43e8();
-extern void sk_h_000b4594();
-extern void sk_h_000b45b0();
-extern void sk_h_000bd3a4();
-extern void sk_h_000dbc54();
-extern void sk_h_000dbcc8();
-extern void sk_h_000dbd0c();
-extern uint64_t sk_h_000dbdf4();
-extern void sk_h_000dbe70();
-extern void sk_h_000e15d8();
-extern sk_r4_u128_t sk_h_000e72b0();
-extern void sk_h_000ec044();
-extern void sk_h_000f5e08();
-extern sk_r4_u128_t sk_h_00100c38();
-extern void sk_h_0011aa70();
-extern void sk_h_00163418();
-extern void sk_h_0017e880();
-extern void sk_h_0019de9c();
-extern void sk_h_0019dfc4();
-extern void sk_h_0019ea20();
-extern uint64_t sk_h_001a0a70();
-extern void sk_h_001a18f8();
-extern sk_r4_u128_t sk_h_001a89a8();
-extern void sk_h_001afe4c();
-extern void sk_h_001ba83c();
-extern void sk_h_001bb234();
-extern void sk_h_001bdb28();
-extern sk_r4_u128_t sk_h_001d9840();
-extern void sk_h_001dc430();
-extern sk_r4_u128_t sk_h_001e4cbc();
-extern void sk_h_001efdc4();
-extern uint64_t sk_h_001efe44();
-extern void sk_h_001f6b30();
-extern void sk_h_001fca54();
-extern void sk_h_00205844();
-extern void sk_h_00208418();
-extern void sk_h_00229464();
-extern void sk_h_0022d1b4();
-extern void sk_h_002364dc();
-extern void sk_h_00267820();
-extern void sk_h_0026aa7c();
-extern void sk_h_0028adc4();
-extern long sk_h_002a218c();
-extern void sk_h_002a2698();
-extern void sk_h_002a2748();
-extern void sk_h_002a4c98();
-extern sk_r4_u128_t sk_h_002a9ba8();
-extern void sk_h_002b2078();
-extern void sk_h_002e7eb4();
-extern void sk_h_002e9850();
-extern void sk_h_003198fc();
-extern void sk_h_00319a14();
-extern uint64_t sk_h_00319a4c();
-extern void sk_h_00319a90();
-extern uint64_t sk_h_00319aec();
-extern uint64_t sk_h_00319b1c();
-extern uint64_t sk_h_00319b4c();
-extern uint64_t sk_h_00319b7c();
-extern uint64_t sk_h_00319bac();
-extern void sk_h_00319bdc();
-extern uint64_t sk_h_00319c0c();
-extern void sk_h_00319c3c();
-extern void sk_h_0031a0ec();
-extern void sk_h_0031a11c();
-extern uint64_t sk_h_0031a14c();
-extern void sk_h_0031a17c();
-extern void sk_h_0031a1ac();
-extern sk_r4_u128_t sk_h_0031a1dc();
-extern sk_r4_u128_t sk_h_0031a1f4();
-extern void sk_h_0031a26c();
-extern void sk_h_0031a2b4();
-extern uint64_t sk_h_0031a2cc();
-extern void sk_h_0031a2fc();
-extern void sk_h_0031a32c();
-extern void sk_h_0031a35c();
-extern void sk_h_0031a38c();
-extern void sk_h_0031a44c();
-extern void sk_h_0031a4ac();
-extern void sk_h_0031a56c();
-extern void sk_h_0031a5dc();
-extern void sk_h_0031a60c();
-extern void sk_h_0031a6cc();
-extern void sk_h_0031b2bc();
-extern void sk_h_0031b46c();
-extern uint64_t sk_h_0031bc70();
-extern uint64_t sk_h_0034310c();
-extern void sk_h_00343250();
-extern void sk_h_00343640();
-extern void sk_h_00344d4c();
-extern void sk_h_00347e28();
-extern void sk_h_00348160();
-extern void sk_h_00348304();
-extern void sk_h_0034846c();
-extern void sk_h_003484b4();
-extern sk_r4_u128_t sk_h_00348730();
-extern uint64_t sk_h_00348758();
-extern void sk_h_00348898();
-extern void sk_h_003489c0();
-extern void sk_h_00348a18();
-extern void sk_h_00348a34();
-extern void sk_h_00348a80();
-extern void sk_h_00348abc();
-extern void sk_h_00348cd0();
-extern void sk_h_00348ce8();
-extern void sk_h_00348d4c();
-extern void sk_h_00348d64();
-extern void sk_h_00348d7c();
-extern void sk_h_00348e18();
-extern void sk_h_00348e48();
-extern void sk_h_00348e60();
-extern long sk_h_00348f50();
-extern void sk_h_00349068();
-extern void sk_h_00349150();
-extern void sk_h_003493ac();
-extern void sk_h_003493c4();
-extern void sk_h_0034945c();
-extern long sk_h_0034947c();
-extern void sk_h_00349494();
-extern void sk_h_003494e8();
-extern void sk_h_00349580();
-extern void sk_h_00349600();
-extern void sk_h_00349658();
-extern void sk_h_00349720();
-extern void sk_h_00349734();
-extern void sk_h_00349788();
-extern long sk_h_003497b4();
-extern void sk_h_003497c8();
-extern void sk_h_003497ec();
-extern void sk_h_0034995c();
-extern void sk_h_003499b4();
-extern void sk_h_003499c8();
-extern void sk_h_003499f0();
-extern void sk_h_00349a68();
-extern void sk_h_00349b00();
-extern void sk_h_00349b3c();
-extern void sk_h_00349c14();
-extern uint64_t sk_h_00349cbc();
-extern void sk_h_00349e54();
-extern void sk_h_00349f3c();
-extern void sk_h_0034a0e0();
-extern void sk_h_0034a100();
-extern void sk_h_0034a1e0();
-extern void sk_h_0034a1f8();
-extern void sk_h_0034a210();
-extern sk_r4_u128_t sk_h_0034a540();
-extern void sk_h_0034a558();
-extern void sk_h_0034a570();
-extern void sk_h_0034a674();
-extern void sk_h_0034a798();
-extern void sk_h_0034a7ac();
-extern void sk_h_0034a848();
-extern void sk_h_0034a868();
-extern void sk_h_0034a8cc();
-extern void sk_h_0034a900();
-extern void sk_h_0034aa9c();
-extern void sk_h_0034ab10();
-extern void sk_h_0034ab30();
-extern void sk_h_0034ac64();
-extern void sk_h_0034ad20();
-extern void sk_h_0034ad8c();
-extern void sk_h_0034aed0();
-extern void sk_h_0034aee4();
-extern void sk_h_0034af30();
-extern void sk_h_0034b014();
-extern void sk_h_0034b05c();
-extern sk_r4_u128_t sk_h_0034b1a0();
-extern void sk_h_0034b2c8();
-extern void sk_h_0034b3c8();
-extern void sk_h_0034b3d8();
-extern void sk_h_0034b440();
-extern sk_r4_u128_t sk_h_0034b480();
-extern void sk_h_0034b4c0();
-extern void sk_h_0034b5e8();
-extern void sk_h_0034b690();
-extern void sk_h_0034b758();
-extern void sk_h_0034b778();
-extern void sk_h_0034b824();
-extern void sk_h_0034b87c();
-extern void sk_h_0034b8bc();
-extern sk_r4_u128_t sk_h_0034b8cc();
-extern void sk_h_0034b960();
-extern void sk_h_0034b980();
-extern void sk_h_0034ba48();
-extern void sk_h_0034ba68();
-extern void sk_h_0034ba78();
-extern void sk_h_0034baa8();
-extern void sk_h_0034bab8();
-extern void sk_h_0034bbc8();
-extern void sk_h_0034bc24();
-extern void sk_h_0034bc38();
-extern void sk_h_0034bc6c();
-extern void sk_h_0034bc94();
-extern void sk_h_0034bcf0();
-extern void sk_h_0034bd30();
-extern void sk_h_0034bd90();
-extern void sk_h_0034bddc();
-extern void sk_h_0034beb4();
-extern uint64_t sk_h_0034bf64();
-extern void sk_h_0034c034();
-extern void sk_h_0034c094();
-extern void sk_h_0034c0a4();
-extern void sk_h_0034c130();
-extern void sk_h_0034c1a8();
-extern void sk_h_0034c1bc();
-extern void sk_h_0034c1d0();
-extern void sk_h_0034c290();
-extern void sk_h_0034c2c8();
-extern void sk_h_0034c330();
-extern void sk_h_0034c3a0();
-extern void sk_h_0034c4bc();
-extern void sk_h_0034c51c();
-extern void sk_h_0034c58c();
-extern void sk_h_0034c5bc();
-extern void sk_h_0034c5dc();
-extern void sk_h_0034c6e4();
-extern void sk_h_0034c8b8();
-extern void sk_h_0034c8f8();
-extern void sk_h_0034c960();
-extern void sk_h_0034c9f8();
-extern void sk_h_0034ca18();
-extern void sk_h_0034ca38();
-extern void sk_h_0034cb24();
-extern void sk_h_0034cb38();
-extern void sk_h_0034cb4c();
-extern void sk_h_0034cb74();
-extern void sk_h_0034cca8();
-extern void sk_h_0034cd68();
-extern void sk_h_0034ce68();
-extern void sk_h_0034cf94();
-extern void sk_h_0034cfb4();
-extern void sk_h_0034cfc4();
-extern void sk_h_0034d044();
-extern uint sk_h_0034d0d0();
-extern void sk_h_0034d0e0();
-extern void sk_h_0034d1b0();
-extern void sk_h_0034d1e0();
-extern void sk_h_0034d2b4();
-extern void sk_h_0034d384();
-extern void sk_h_0034d394();
-extern sk_r4_u128_t sk_h_0034d3a4();
-extern void sk_h_0034d464();
-extern void sk_h_0034d4e8();
-extern void sk_h_0034d610();
-extern void sk_h_0034d6c8();
-extern uint64_t sk_h_0034d6d8();
-extern void sk_h_0034d708();
-extern void sk_h_0034d868();
-extern void sk_h_0034d914();
-extern void sk_h_0034d9f8();
-extern void sk_h_0034da08();
-extern void sk_h_0034da28();
-extern void sk_h_0034da48();
-extern void sk_h_0034da78();
-extern void sk_h_0034daa8();
-extern void sk_h_0034db48();
-extern void sk_h_0034db58();
-extern void sk_h_0034dba8();
-extern void sk_h_0034dbc8();
-extern void sk_h_0034dc3c();
-extern void sk_h_0034dce4();
-extern void sk_h_0034dcfc();
-extern void sk_h_0034dd4c();
-extern void sk_h_0034dd84();
-extern sk_r4_u128_t sk_h_0034dda0();
-extern void sk_h_0034de14();
-extern void sk_h_0034dec4();
-extern void sk_h_0034dfe4();
-extern sk_r4_u128_t sk_h_0034e044();
-extern void sk_h_0034e0d4();
-extern void sk_h_0034e0e4();
-extern void sk_h_0034e120();
-extern void sk_h_0034e1ec();
-extern void sk_h_0034e374();
-extern void sk_h_0034e3ac();
-extern void sk_h_0034e56c();
-extern void sk_h_0034e69c();
-extern void sk_h_0034e6ac();
-extern void sk_h_0034e6fc();
-extern void sk_h_0034e7a0();
-extern void sk_h_0034e8d4();
-extern void sk_h_0034e8e8();
-extern void sk_h_0034e910();
-extern void sk_h_0034ea18();
-extern void sk_h_0034eb54();
-extern void sk_h_0034eb74();
-extern void sk_h_0034eb84();
-extern void sk_h_0034ec58();
-extern void sk_h_0034ec68();
-extern void sk_h_0034ec78();
-extern void sk_h_0034ec98();
-extern void sk_h_0034ecb8();
-extern void sk_h_0034ecc8();
-extern void sk_h_0034ece8();
-extern void sk_h_0034ecf8();
-extern void sk_h_0034ed18();
-extern void sk_h_0034ed78();
-extern void sk_h_0034ee68();
-extern void sk_h_0034ee88();
-extern void sk_h_0034eef8();
-extern void sk_h_0034ef28();
-extern void sk_h_0034ef38();
-extern void sk_h_0034ef48();
-extern void sk_h_0034ef98();
-extern uint64_t sk_h_0034f064();
-extern void sk_h_0034f078();
-extern void sk_h_0034f198();
-extern void sk_h_0034f1a8();
-extern void sk_h_0034f21c();
-extern void sk_h_0034f23c();
-extern long sk_h_0034f264();
-extern void sk_h_0034f354();
-extern void sk_h_0034f444();
-extern void sk_h_0034f454();
-extern void sk_h_0034f484();
-extern void sk_h_0034f554();
-extern void sk_h_0034f688();
-extern void sk_h_0034f884();
-extern void sk_h_0034f8a8();
-extern void sk_h_0034f938();
-extern void sk_h_0034f948();
-extern void sk_h_0034f958();
-extern void sk_h_0034f96c();
-extern void sk_h_0034f97c();
-extern void sk_h_0034f9fc();
-extern void sk_h_0034fa4c();
-extern void sk_h_0034fd5c();
-extern void sk_h_0034ffa8();
-extern void sk_h_00350028();
-extern void sk_h_00350058();
-extern void sk_h_003500d4();
-extern void sk_h_0035014c();
-extern void sk_h_00350210();
-extern void sk_h_00350288();
-extern void sk_h_003503d0();
-extern void sk_h_003503f8();
-extern void sk_h_0035041c();
-extern void sk_h_00350434();
-extern void sk_h_00350464();
-extern sk_r4_u128_t sk_h_00350470();
-extern void sk_h_003504a0();
-extern void sk_h_003504ac();
-extern sk_r4_u128_t sk_h_003504c4();
-extern sk_r4_u128_t sk_h_003504d0();
-extern sk_r4_u128_t sk_h_003504e8();
-extern sk_r4_u128_t sk_h_0035050c();
-extern sk_r4_u128_t sk_h_00350518();
-extern void sk_h_00350524();
-extern void sk_h_0035056c();
-extern sk_r4_u128_t sk_h_0035059c();
-extern uint64_t sk_h_003505b0();
-extern void sk_h_003505c4();
-extern void sk_h_003505d0();
-extern sk_r4_u128_t sk_h_003505e8();
-extern sk_r4_u128_t sk_h_0035060c();
-extern void sk_h_00350618();
-extern void sk_h_00350624();
-extern void sk_h_00350630();
-extern uint64_t sk_h_00350648();
-extern uint64_t sk_h_0035066c();
-extern void sk_h_00350720();
-extern sk_r4_u128_t sk_h_0035072c();
-extern void sk_h_00350738();
-extern void sk_h_00350750();
-extern void sk_h_00350768();
-extern void sk_h_00350774();
-extern sk_r4_u128_t sk_h_00350798();
-extern sk_r4_u128_t sk_h_003507c8();
-extern void sk_h_0035084c();
-extern void sk_h_00350884();
-extern void sk_h_003508b4();
-extern void sk_h_003508cc();
-extern void sk_h_003508d8();
-extern void sk_h_003508e4();
-extern void sk_h_003508fc();
-extern sk_r4_u128_t sk_h_00350914();
-extern void sk_h_00350944();
-extern void sk_h_00350968();
-extern sk_r4_u128_t sk_h_003509b0();
-extern void sk_h_003509bc();
-extern void sk_h_003509d4();
-extern sk_r4_u128_t sk_h_003509e0();
-extern void sk_h_00350a04();
-extern uint64_t sk_h_00350a28();
-extern void sk_h_00350a34();
-extern void sk_h_00350a40();
-extern void sk_h_00350a70();
-extern void sk_h_00350a7c();
-extern uint64_t sk_h_00350a88();
-extern sk_r4_u128_t sk_h_00350ab8();
-extern sk_r4_u128_t sk_h_00350af4();
-extern void sk_h_00350b18();
-extern void sk_h_00350b48();
-extern void sk_h_00350b54();
-extern void sk_h_00350b60();
-extern void sk_h_00350b6c();
-extern void sk_h_00350b78();
-extern void sk_h_00350b90();
-extern void sk_h_00350b9c();
-extern void sk_h_00350bc0();
-extern void sk_h_00350bcc();
-extern sk_r4_u128_t sk_h_00350bf0();
-extern void sk_h_00350bfc();
-extern void sk_h_00350c20();
-extern void sk_h_00350c38();
-extern void sk_h_00350c50();
-extern void sk_h_00350c68();
-extern void sk_h_00350c8c();
-extern void sk_h_00350cf4();
-extern void sk_h_00350df4();
-extern void sk_h_00350e54();
-extern void sk_h_00350ea4();
-extern void sk_h_00350ec0();
-extern void sk_h_00350ed0();
-extern void sk_h_0035100c();
-extern void sk_h_0035101c();
-extern void sk_h_0035102c();
-extern sk_r4_u128_t sk_h_003510ac();
-extern void sk_h_003510d0();
-extern sk_r4_u128_t sk_h_003510dc();
-extern void sk_h_00351118();
-extern sk_r4_u128_t sk_h_00351160();
-extern void sk_h_0035116c();
-extern sk_r4_u128_t sk_h_003511a8();
-extern void sk_h_003511e4();
-extern void sk_h_00351214();
-extern void sk_h_00351220();
-extern void sk_h_0035122c();
-extern void sk_h_00351250();
-extern sk_r4_u128_t sk_h_00351274();
-extern long sk_h_0035128c();
-extern void sk_h_00351298();
-extern void sk_h_003512c0();
-extern void sk_h_00351318();
-extern void sk_h_00351348();
-extern sk_r4_u128_t sk_h_00351354();
-extern sk_r4_u128_t sk_h_00351360();
-extern void sk_h_00351384();
-extern void sk_h_00351390();
-extern void sk_h_003513a8();
-extern void sk_h_003513b4();
-extern void sk_h_00351408();
-extern sk_r4_u128_t sk_h_00351450();
-extern sk_r4_u128_t sk_h_0035145c();
-extern void sk_h_0035147c();
-extern void sk_h_00351494();
-extern void sk_h_003514e8();
-extern void sk_h_00351500();
-extern void sk_h_00351554();
-extern void sk_h_0035159c();
-extern void sk_h_003515a8();
-extern void sk_h_003515d8();
-extern void sk_h_003515e4();
-extern void sk_h_003515f0();
-extern void sk_h_003515fc();
-extern void sk_h_0035163c();
-extern void sk_h_00351660();
-extern void sk_h_003516cc();
-extern void sk_h_003516fc();
-extern sk_r4_u128_t sk_h_0035172c();
-extern sk_r4_u128_t sk_h_00351738();
-extern sk_r4_u128_t sk_h_003517a8();
-extern void sk_h_0035187c();
-extern sk_r4_u128_t sk_h_00351888();
-extern void sk_h_003518a0();
-extern void sk_h_00351978();
-extern void sk_h_003519a8();
-extern uint64_t sk_h_00351a14();
-extern void sk_h_00351a44();
-extern void sk_h_00351a50();
-extern void sk_h_00351a5c();
-extern void sk_h_00351aec();
-extern void sk_h_00351ba0();
-extern void sk_h_00351c70();
-extern void sk_h_00351cd0();
-extern void sk_h_00351d0c();
-extern void sk_h_00351d18();
-extern sk_r4_u128_t sk_h_00351d24();
-extern void sk_h_00351d9c();
-extern uint64_t sk_h_00351db4();
-extern void sk_h_00351dcc();
-extern uint64_t sk_h_00351dd8();
-extern void sk_h_00351de4();
-extern void sk_h_00351dfc();
-extern sk_r4_u128_t sk_h_00351e08();
-extern void sk_h_00351e3c();
-extern void sk_h_00351f1c();
-extern void sk_h_00351f28();
-extern void sk_h_00351f64();
-extern void sk_h_00351f70();
-extern void sk_h_00352008();
-extern void sk_h_00352038();
-extern void sk_h_00352048();
-extern void sk_h_00352058();
-extern void sk_h_00352068();
-extern long sk_h_003521a4();
-extern void sk_h_00352370();
-extern void sk_h_00352474();
-extern void sk_h_00352480();
-extern sk_r4_u128_t sk_h_003524a4();
-extern void sk_h_003524c8();
-extern void sk_h_00352554();
-extern void sk_h_00352658();
-extern void sk_h_00352680();
-extern void sk_h_003527e0();
-extern void sk_h_0035292c();
-extern void sk_h_00352938();
-extern uint64_t sk_h_00352980();
-extern void sk_h_00352a34();
-extern void sk_h_00352a40();
-extern void sk_h_00352a58();
-extern void sk_h_00352a70();
-extern void sk_h_00352ae4();
-extern void sk_h_00352b44();
-extern void sk_h_00352b68();
-extern void sk_h_00352b74();
-extern void sk_h_00352b98();
-extern void sk_h_00352c34();
-extern void sk_h_00352c80();
-extern void sk_h_00352cb0();
-extern void sk_h_00352cc8();
-extern void sk_h_00352cd4();
-extern void sk_h_00352cf8();
-extern void sk_h_00352d88();
-extern void sk_h_00352db8();
-extern void sk_h_00352de8();
-extern void sk_h_00352df4();
-extern void sk_h_00352e00();
-extern void sk_h_00352e6c();
-extern void sk_h_00352e78();
-extern void sk_h_00352f48();
-extern long sk_h_00352fd4();
-extern void sk_h_0035310c();
-extern void sk_h_00353154();
-extern void sk_h_003531fc();
-extern uint64_t sk_h_00353378();
-extern long sk_h_00353430();
-extern void sk_h_0035345c();
-extern void sk_h_003534bc();
-extern void sk_h_003534ec();
-extern void sk_h_0035351c();
-extern void sk_h_003535a8();
-extern uint64_t sk_h_0035361c();
-extern void sk_h_0035368c();
-extern void sk_h_0035369c();
-extern void sk_h_003536d0();
-extern void sk_h_003536ec();
-extern void sk_h_003536fc();
-extern void sk_h_0035370c();
-extern void sk_h_003537d4();
-extern void sk_h_003537fc();
-extern void sk_h_00353820();
-extern void sk_h_00353918();
-extern void sk_h_00353948();
-extern void sk_h_0035399c();
-extern void sk_h_003539e4();
-extern void sk_h_00353a24();
-extern void sk_h_00353ad8();
-extern void sk_h_00353b40();
-extern void sk_h_00353b58();
-extern void sk_h_00353b70();
-extern void sk_h_00353c30();
-extern void sk_h_00353c6c();
-extern uint64_t sk_h_00353c78();
-extern void sk_h_00353ccc();
-extern void sk_h_00353cf0();
-extern void sk_h_00353dac();
-extern void sk_h_00353e50();
-extern sk_r4_u128_t sk_h_00353e7c();
-extern uint sk_h_00353ee4();
-extern void sk_h_00353f88();
-extern void sk_h_003540ac();
-extern void sk_h_0035414c();
-extern void sk_h_00354168();
-extern void sk_h_00354184();
-extern void sk_h_003541a0();
-extern void sk_h_003541bc();
-extern void sk_h_003541d8();
-extern void sk_h_003541f4();
-extern void sk_h_00354210();
-extern void sk_h_0035422c();
-extern void sk_h_00354248();
-extern void sk_h_003542c4();
-extern void sk_h_00354318();
-extern void sk_h_00354324();
-extern void sk_h_0035437c();
-extern void sk_h_003543f8();
-extern void sk_h_00354570();
-extern void sk_h_003545d0();
-extern void sk_h_00354624();
-extern void sk_h_00354654();
-extern void sk_h_003546a8();
-extern void sk_h_00354774();
-extern void sk_h_003547ec();
-extern void sk_h_00354858();
-extern void sk_h_003548e8();
-extern void sk_h_00354948();
-extern void sk_h_003549d8();
-extern void sk_h_003549e4();
-extern void sk_h_00354a00();
-extern void sk_h_00354a0c();
-extern void sk_h_00354a6c();
-extern void sk_h_00354a78();
-extern void sk_h_00354ac8();
-extern uint64_t sk_h_00354b5c();
-extern void sk_h_00354b74();
-extern void sk_h_00354b8c();
-extern void sk_h_00354b98();
-extern void sk_h_00354ba4();
-extern void sk_h_00354bd4();
-extern void sk_h_00354c38();
-extern void sk_h_00354cd8();
-extern void sk_h_00354d5c();
-extern void sk_h_00354ddc();
-extern sk_r4_u128_t sk_h_00354e0c();
-extern void sk_h_00354f1c();
-extern void sk_h_0035512c();
-extern void sk_h_003552ac();
-extern void sk_h_00355374();
-extern void sk_h_00355384();
-extern void sk_h_003553a8();
-extern void sk_h_003553e4();
-extern void sk_h_00355418();
-extern void sk_h_0035543c();
-extern void sk_h_0035578c();
-extern void sk_h_003558a8();
-extern void sk_h_00355a14();
-extern void sk_h_00355a58();
-extern void sk_h_00355bc4();
-extern void sk_h_00355be8();
-extern void sk_h_00355c1c();
-extern void sk_h_00355cc8();
-extern void sk_h_00355d40();
-extern void sk_h_00355d6c();
-extern void sk_h_00355d90();
-extern void sk_h_00355e50();
-extern void sk_h_00355e68();
-extern void sk_h_00355e74();
-extern void sk_h_00355eec();
-extern void sk_h_00355f04();
-extern void sk_h_00355ff4();
-extern void sk_h_003560b4();
-extern void sk_h_00356104();
-extern void sk_h_003561e8();
-extern void sk_h_00356200();
-extern void sk_h_00356284();
-extern void sk_h_003562d4();
-extern void sk_h_003562e0();
-extern sk_r4_u128_t sk_h_00356340();
-extern void sk_h_00356370();
-extern void sk_h_0035638c();
-extern void sk_h_003563e0();
-extern void sk_h_00356454();
-extern void sk_h_003564e8();
-extern void sk_h_00356508();
-extern void sk_h_003567d4();
-extern void sk_h_003567e0();
-extern void sk_h_00356858();
-extern void sk_h_0035694c();
-extern void sk_h_00356a38();
-extern sk_r4_u128_t sk_h_00356aa0();
-extern sk_r4_u128_t sk_h_00356b44();
-extern void sk_h_00356b50();
-extern void sk_h_00356b68();
-extern void sk_h_00356c54();
-extern void sk_h_00356c84();
-extern void sk_h_00356cd4();
-extern void sk_h_00356e1c();
-extern void sk_h_00356e28();
-extern uint64_t sk_h_00356e84();
-extern void sk_h_00357068();
-extern uint64_t sk_h_003570a0();
-extern void sk_h_00357198();
-extern void sk_h_0035725c();
-extern void sk_h_00357280();
-extern void sk_h_003572c4();
-extern void sk_h_00357374();
-extern void sk_h_00357380();
-extern void sk_h_00357540();
-extern void sk_h_00357564();
-extern void sk_h_00357688();
-extern void sk_h_0035780c();
-extern void sk_h_0035785c();
-extern void sk_h_00357868();
-extern void sk_h_00357b10();
-extern void sk_h_00357b20();
-extern void sk_h_00357b3c();
-extern void sk_h_00357c2c();
-extern void sk_h_00357c74();
-extern void sk_h_00357cb4();
-extern void sk_h_00357e34();
-extern void sk_h_00358268();
-extern void sk_h_003584f8();
-extern void sk_h_003585e8();
-extern void sk_h_0035860c();
-extern void sk_h_00358618();
-extern uint64_t sk_h_0035866c();
-extern void sk_h_0035869c();
-extern void sk_h_00358828();
-extern void sk_h_00358834();
-extern void sk_h_00358840();
-extern void sk_h_00358858();
-extern void sk_h_0035893c();
-extern void sk_h_00358984();
-extern void sk_h_00358dd0();
-extern void sk_h_00358de8();
-extern void sk_h_00358e00();
-extern void sk_h_00358e18();
-extern void sk_h_00358e58();
-extern void sk_h_00358edc();
-extern uint64_t sk_h_00358fb4();
-extern void sk_h_00358fc8();
-extern void sk_h_0035900c();
-extern void sk_h_00359178();
-extern void sk_h_003591b4();
-extern void sk_h_003593a8();
-extern void sk_h_0035940c();
-extern void sk_h_00359524();
-extern void sk_h_00359658();
-extern void sk_h_003596c4();
-extern void sk_h_003596f8();
-extern void sk_h_0035972c();
-extern void sk_h_00359760();
-extern void sk_h_003597c0();
-extern long sk_h_00359874();
-extern void sk_h_003599cc();
-extern void sk_h_003599e4();
-extern void sk_h_003599f8();
-extern void sk_h_00359a84();
-extern void sk_h_00359aa4();
-extern sk_r4_u128_t sk_h_00359b18();
-extern void sk_h_00359b64();
-extern void sk_h_00359c4c();
-extern void sk_h_00359c90();
-extern void sk_h_00359cd8();
-extern void sk_h_00359ce4();
-extern void sk_h_00359d38();
-extern void sk_h_0035a20c();
-extern void sk_h_0035a238();
-extern void sk_h_0035a25c();
-extern void sk_h_0035a578();
-extern void sk_h_0035a5b4();
-extern void sk_h_0035a608();
-extern void sk_h_0035a684();
-extern void sk_h_0035a69c();
-extern void sk_h_0035a6a8();
-extern sk_r4_u128_t sk_h_0035a6f4();
-extern sk_r4_u128_t sk_h_0035a86c();
-extern void sk_h_0035a924();
-extern void sk_h_0035a938();
-extern void sk_h_0035aaa8();
-extern uint64_t sk_h_0035aab4();
-extern void sk_h_0035aaf0();
-extern void sk_h_0035aafc();
-extern void sk_h_0035acfc();
-extern void sk_h_00361528();
-extern uint64_t sk_h_00365b6c();
-extern void sk_h_0036986c();
-extern long sk_h_0036a940();
-extern long sk_h_0036a9a0();
-extern void sk_h_0036b6ac();
-extern long sk_h_003722e4();
-extern void sk_h_003a25e0();
-extern uint64_t sk_h_003a261c();
-extern void sk_h_00319f3c();
-extern void sk_h_0031a20c();
+extern void sk_rt_hook_a(); /* FUN_00354440 no-op */
+extern void sk_rt_hook_b(); /* FUN_00354428 no-op */
+extern sk_r4_u128_t sk_rt_hook_c(); /* FUN_00353cfc no-op */
+extern void sk_rt_hook_d(); /* FUN_00353d14 no-op */
+extern void sk_rt_hook_e(); /* FUN_0034b2f8 no-op */
+extern void sk_rt_hook_f(); /* FUN_00348fd8 no-op */
+extern void sk_rt_hook_g(); /* FUN_0034b908 no-op */
+extern void sk_rt_hook_h(); /* FUN_0034c908 no-op */
+extern void sk_rt_hook_i(); /* FUN_00349c70 no-op */
+extern uint64_t sk_rt_hook_j(); /* FUN_00357e14 no-op */
+extern void sk_rt_hook_k(); /* FUN_003517b4 no-op */
+extern sk_r4_u128_t sk_rt_hook_l(); /* FUN_0007c0c4 no-op */
+extern sk_r4_u128_t sk_rt_hook_m(); /* FUN_000b43d0 no-op */
+extern void sk_rt_hook_n(); /* FUN_0034b07c no-op */
+extern uint64_t sk_rt_hook_o(); /* FUN_0034b328 no-op */
+extern sk_r4_u128_t sk_rt_hook_p(); /* FUN_0034b5bc no-op */
+extern void sk_rt_hook_q(); /* FUN_0034c998 no-op */
+extern void sk_rt_hook_r(); /* FUN_0034dae8 no-op */
+extern void sk_rt_hook_s(); /* FUN_0034f4d4 no-op */
+extern void sk_rt_hook_t(); /* FUN_0034bccc no-op */
+extern void sk_rt_hook_u(); /* FUN_0034a260 no-op */
+extern void sk_rt_hook_v(); /* FUN_0034a274 no-op */
+extern void sk_rt_hook_w(); /* FUN_0034a2f8 no-op */
+extern void sk_rt_hook_x(); /* FUN_0034ce58 no-op */
+extern void sk_rt_hook_y(); /* FUN_0034ce78 no-op */
+extern void sk_rt_hook_z(); /* FUN_00343a30 no-op */
+extern sk_r4_u128_t sk_fatal_msg_tag(); /* FUN_003495cc */
+extern void *sk_cpu();                                           /* FUN_0008e518 */
+extern void sk_masked_free(); /* FUN_003a25d4 */
+extern uint64_t sk_enum_err(); /* FUN_0006e778 */
+extern uint64_t sk_rt_dispatch(); /* FUN_00310d68 */
+extern uint64_t sk_rt_desc(); /* FUN_00002534 */
+extern uint64_t sk_rt_slot(); /* FUN_0007c1a4 */
+extern uint64_t sk_rt_slot2(); /* FUN_0034b7c8 */
+extern uint64_t sk_rt_slot3(); /* FUN_0034a390 */
+extern void sk_h_00019858(); /* FUN_00019858 out-of-slice */
+extern uint64_t sk_h_0006a4c0(); /* FUN_0006a4c0 out-of-slice */
+extern void sk_h_0006a4f0(); /* FUN_0006a4f0 out-of-slice */
+extern void sk_h_0006a668(); /* FUN_0006a668 out-of-slice */
+extern void sk_h_0006b42c(); /* FUN_0006b42c out-of-slice */
+extern void sk_h_0006b6f4(); /* FUN_0006b6f4 out-of-slice */
+extern void sk_h_0006f6b4(); /* FUN_0006f6b4 out-of-slice */
+extern void sk_h_00077070(); /* FUN_00077070 out-of-slice */
+extern void sk_h_0007767c(); /* FUN_0007767c out-of-slice */
+extern sk_r4_u128_t sk_h_00077698(); /* FUN_00077698 out-of-slice */
+extern void sk_h_0007b384(); /* FUN_0007b384 out-of-slice */
+extern long sk_h_0007c198(); /* FUN_0007c198 out-of-slice */
+extern sk_r4_u128_t sk_h_0007c1c4(); /* FUN_0007c1c4 out-of-slice */
+extern void sk_h_000836a4(); /* FUN_000836a4 out-of-slice */
+extern void sk_h_000839d8(); /* FUN_000839d8 out-of-slice */
+extern int sk_h_000839f8(); /* FUN_000839f8 out-of-slice */
+extern void sk_h_0008409c(); /* FUN_0008409c out-of-slice */
+extern void sk_h_00084174(); /* FUN_00084174 out-of-slice */
+extern void sk_h_00084180(); /* FUN_00084180 out-of-slice */
+extern sk_r4_u128_t sk_h_0008dae4(); /* FUN_0008dae4 out-of-slice */
+extern sk_r4_u128_t sk_h_0008e388(); /* FUN_0008e388 out-of-slice */
+extern void sk_h_0008e500(); /* FUN_0008e500 out-of-slice */
+extern void sk_h_0008e5d8(); /* FUN_0008e5d8 out-of-slice */
+extern void sk_h_0009461c(); /* FUN_0009461c out-of-slice */
+extern void sk_h_0009e234(); /* FUN_0009e234 out-of-slice */
+extern void sk_h_000a649c(); /* FUN_000a649c out-of-slice */
+extern void sk_h_000a6bb8(); /* FUN_000a6bb8 out-of-slice */
+extern sk_r4_u128_t sk_h_000a6e14(); /* FUN_000a6e14 out-of-slice */
+extern void sk_h_000a6f88(); /* FUN_000a6f88 out-of-slice */
+extern void sk_h_000b077c(); /* FUN_000b077c out-of-slice */
+extern void sk_h_000b43e8(); /* FUN_000b43e8 out-of-slice */
+extern void sk_h_000b4594(); /* FUN_000b4594 out-of-slice */
+extern void sk_h_000b45b0(); /* FUN_000b45b0 out-of-slice */
+extern void sk_h_000bd3a4(); /* FUN_000bd3a4 out-of-slice */
+extern void sk_h_000dbc54(); /* FUN_000dbc54 out-of-slice */
+extern void sk_h_000dbcc8(); /* FUN_000dbcc8 out-of-slice */
+extern void sk_h_000dbd0c(); /* FUN_000dbd0c out-of-slice */
+extern uint64_t sk_h_000dbdf4(); /* FUN_000dbdf4 out-of-slice */
+extern void sk_h_000dbe70(); /* FUN_000dbe70 out-of-slice */
+extern void sk_h_000e15d8(); /* FUN_000e15d8 out-of-slice */
+extern sk_r4_u128_t sk_h_000e72b0(); /* FUN_000e72b0 out-of-slice */
+extern void sk_h_000ec044(); /* FUN_000ec044 out-of-slice */
+extern void sk_h_000f5e08(); /* FUN_000f5e08 out-of-slice */
+extern sk_r4_u128_t sk_h_00100c38(); /* FUN_00100c38 out-of-slice */
+extern void sk_h_0011aa70(); /* FUN_0011aa70 out-of-slice */
+extern void sk_h_00163418(); /* FUN_00163418 out-of-slice */
+extern void sk_h_0017e880(); /* FUN_0017e880 out-of-slice */
+extern void sk_h_0019de9c(); /* FUN_0019de9c out-of-slice */
+extern void sk_h_0019dfc4(); /* FUN_0019dfc4 out-of-slice */
+extern void sk_h_0019ea20(); /* FUN_0019ea20 out-of-slice */
+extern uint64_t sk_h_001a0a70(); /* FUN_001a0a70 out-of-slice */
+extern void sk_h_001a18f8(); /* FUN_001a18f8 out-of-slice */
+extern sk_r4_u128_t sk_h_001a89a8(); /* FUN_001a89a8 out-of-slice */
+extern void sk_h_001afe4c(); /* FUN_001afe4c out-of-slice */
+extern void sk_h_001ba83c(); /* FUN_001ba83c out-of-slice */
+extern void sk_h_001bb234(); /* FUN_001bb234 out-of-slice */
+extern void sk_h_001bdb28(); /* FUN_001bdb28 out-of-slice */
+extern sk_r4_u128_t sk_h_001d9840(); /* FUN_001d9840 out-of-slice */
+extern void sk_h_001dc430(); /* FUN_001dc430 out-of-slice */
+extern sk_r4_u128_t sk_h_001e4cbc(); /* FUN_001e4cbc out-of-slice */
+extern void sk_h_001efdc4(); /* FUN_001efdc4 out-of-slice */
+extern uint64_t sk_h_001efe44(); /* FUN_001efe44 out-of-slice */
+extern void sk_h_001f6b30(); /* FUN_001f6b30 out-of-slice */
+extern void sk_h_001fca54(); /* FUN_001fca54 out-of-slice */
+extern void sk_h_00205844(); /* FUN_00205844 out-of-slice */
+extern void sk_h_00208418(); /* FUN_00208418 out-of-slice */
+extern void sk_h_00229464(); /* FUN_00229464 out-of-slice */
+extern void sk_h_0022d1b4(); /* FUN_0022d1b4 out-of-slice */
+extern void sk_h_002364dc(); /* FUN_002364dc out-of-slice */
+extern void sk_h_00267820(); /* FUN_00267820 out-of-slice */
+extern void sk_h_0026aa7c(); /* FUN_0026aa7c out-of-slice */
+extern void sk_h_0028adc4(); /* FUN_0028adc4 out-of-slice */
+extern long sk_h_002a218c(); /* FUN_002a218c out-of-slice */
+extern void sk_h_002a2698(); /* FUN_002a2698 out-of-slice */
+extern void sk_h_002a2748(); /* FUN_002a2748 out-of-slice */
+extern void sk_h_002a4c98(); /* FUN_002a4c98 out-of-slice */
+extern sk_r4_u128_t sk_h_002a9ba8(); /* FUN_002a9ba8 out-of-slice */
+extern void sk_h_002b2078(); /* FUN_002b2078 out-of-slice */
+extern void sk_h_002e7eb4(); /* FUN_002e7eb4 out-of-slice */
+extern void sk_h_002e9850(); /* FUN_002e9850 out-of-slice */
+extern void sk_h_003198fc(); /* FUN_003198fc out-of-slice */
+extern void sk_h_00319a14(); /* FUN_00319a14 out-of-slice */
+extern uint64_t sk_h_00319a4c(); /* FUN_00319a4c out-of-slice */
+extern void sk_h_00319a90(); /* FUN_00319a90 out-of-slice */
+extern uint64_t sk_h_00319aec(); /* FUN_00319aec out-of-slice */
+extern uint64_t sk_h_00319b1c(); /* FUN_00319b1c out-of-slice */
+extern uint64_t sk_h_00319b4c(); /* FUN_00319b4c out-of-slice */
+extern uint64_t sk_h_00319b7c(); /* FUN_00319b7c out-of-slice */
+extern uint64_t sk_h_00319bac(); /* FUN_00319bac out-of-slice */
+extern void sk_h_00319bdc(); /* FUN_00319bdc out-of-slice */
+extern uint64_t sk_h_00319c0c(); /* FUN_00319c0c out-of-slice */
+extern void sk_h_00319c3c(); /* FUN_00319c3c out-of-slice */
+extern void sk_h_0031a0ec(); /* FUN_0031a0ec out-of-slice */
+extern void sk_h_0031a11c(); /* FUN_0031a11c out-of-slice */
+extern uint64_t sk_h_0031a14c(); /* FUN_0031a14c out-of-slice */
+extern void sk_h_0031a17c(); /* FUN_0031a17c out-of-slice */
+extern void sk_h_0031a1ac(); /* FUN_0031a1ac out-of-slice */
+extern sk_r4_u128_t sk_h_0031a1dc(); /* FUN_0031a1dc out-of-slice */
+extern sk_r4_u128_t sk_h_0031a1f4(); /* FUN_0031a1f4 out-of-slice */
+extern void sk_h_0031a26c(); /* FUN_0031a26c out-of-slice */
+extern void sk_h_0031a2b4(); /* FUN_0031a2b4 out-of-slice */
+extern uint64_t sk_h_0031a2cc(); /* FUN_0031a2cc out-of-slice */
+extern void sk_h_0031a2fc(); /* FUN_0031a2fc out-of-slice */
+extern void sk_h_0031a32c(); /* FUN_0031a32c out-of-slice */
+extern void sk_h_0031a35c(); /* FUN_0031a35c out-of-slice */
+extern void sk_h_0031a38c(); /* FUN_0031a38c out-of-slice */
+extern void sk_h_0031a44c(); /* FUN_0031a44c out-of-slice */
+extern void sk_h_0031a4ac(); /* FUN_0031a4ac out-of-slice */
+extern void sk_h_0031a56c(); /* FUN_0031a56c out-of-slice */
+extern void sk_h_0031a5dc(); /* FUN_0031a5dc out-of-slice */
+extern void sk_h_0031a60c(); /* FUN_0031a60c out-of-slice */
+extern void sk_h_0031a6cc(); /* FUN_0031a6cc out-of-slice */
+extern void sk_h_0031b2bc(); /* FUN_0031b2bc out-of-slice */
+extern void sk_h_0031b46c(); /* FUN_0031b46c out-of-slice */
+extern uint64_t sk_h_0031bc70(); /* FUN_0031bc70 out-of-slice */
+extern uint64_t sk_h_0034310c(); /* FUN_0034310c out-of-slice */
+extern void sk_h_00343250(); /* FUN_00343250 out-of-slice */
+extern void sk_h_00343640(); /* FUN_00343640 out-of-slice */
+extern void sk_h_00344d4c(); /* FUN_00344d4c out-of-slice */
+extern void sk_h_00347e28(); /* FUN_00347e28 out-of-slice */
+extern void sk_h_00348160(); /* FUN_00348160 out-of-slice */
+extern void sk_h_00348304(); /* FUN_00348304 out-of-slice */
+extern void sk_h_0034846c(); /* FUN_0034846c out-of-slice */
+extern void sk_h_003484b4(); /* FUN_003484b4 out-of-slice */
+extern sk_r4_u128_t sk_h_00348730(); /* FUN_00348730 out-of-slice */
+extern uint64_t sk_h_00348758(); /* FUN_00348758 out-of-slice */
+extern void sk_h_00348898(); /* FUN_00348898 out-of-slice */
+extern void sk_h_003489c0(); /* FUN_003489c0 out-of-slice */
+extern void sk_h_00348a18(); /* FUN_00348a18 out-of-slice */
+extern void sk_h_00348a34(); /* FUN_00348a34 out-of-slice */
+extern void sk_h_00348a80(); /* FUN_00348a80 out-of-slice */
+extern void sk_h_00348abc(); /* FUN_00348abc out-of-slice */
+extern void sk_h_00348cd0(); /* FUN_00348cd0 out-of-slice */
+extern void sk_h_00348ce8(); /* FUN_00348ce8 out-of-slice */
+extern void sk_h_00348d4c(); /* FUN_00348d4c out-of-slice */
+extern void sk_h_00348d64(); /* FUN_00348d64 out-of-slice */
+extern void sk_h_00348d7c(); /* FUN_00348d7c out-of-slice */
+extern void sk_h_00348e18(); /* FUN_00348e18 out-of-slice */
+extern void sk_h_00348e48(); /* FUN_00348e48 out-of-slice */
+extern void sk_h_00348e60(); /* FUN_00348e60 out-of-slice */
+extern long sk_h_00348f50(); /* FUN_00348f50 out-of-slice */
+extern void sk_h_00349068(); /* FUN_00349068 out-of-slice */
+extern void sk_h_00349150(); /* FUN_00349150 out-of-slice */
+extern void sk_h_003493ac(); /* FUN_003493ac out-of-slice */
+extern void sk_h_003493c4(); /* FUN_003493c4 out-of-slice */
+extern void sk_h_0034945c(); /* FUN_0034945c out-of-slice */
+extern long sk_h_0034947c(); /* FUN_0034947c out-of-slice */
+extern void sk_h_00349494(); /* FUN_00349494 out-of-slice */
+extern void sk_h_003494e8(); /* FUN_003494e8 out-of-slice */
+extern void sk_h_00349580(); /* FUN_00349580 out-of-slice */
+extern void sk_h_00349600(); /* FUN_00349600 out-of-slice */
+extern void sk_h_00349658(); /* FUN_00349658 out-of-slice */
+extern void sk_h_00349720(); /* FUN_00349720 out-of-slice */
+extern void sk_h_00349734(); /* FUN_00349734 out-of-slice */
+extern void sk_h_00349788(); /* FUN_00349788 out-of-slice */
+extern long sk_h_003497b4(); /* FUN_003497b4 out-of-slice */
+extern void sk_h_003497c8(); /* FUN_003497c8 out-of-slice */
+extern void sk_h_003497ec(); /* FUN_003497ec out-of-slice */
+extern void sk_h_0034995c(); /* FUN_0034995c out-of-slice */
+extern void sk_h_003499b4(); /* FUN_003499b4 out-of-slice */
+extern void sk_h_003499c8(); /* FUN_003499c8 out-of-slice */
+extern void sk_h_003499f0(); /* FUN_003499f0 out-of-slice */
+extern void sk_h_00349a68(); /* FUN_00349a68 out-of-slice */
+extern void sk_h_00349b00(); /* FUN_00349b00 out-of-slice */
+extern void sk_h_00349b3c(); /* FUN_00349b3c out-of-slice */
+extern void sk_h_00349c14(); /* FUN_00349c14 out-of-slice */
+extern uint64_t sk_h_00349cbc(); /* FUN_00349cbc out-of-slice */
+extern void sk_h_00349e54(); /* FUN_00349e54 out-of-slice */
+extern void sk_h_00349f3c(); /* FUN_00349f3c out-of-slice */
+extern void sk_h_0034a0e0(); /* FUN_0034a0e0 out-of-slice */
+extern void sk_h_0034a100(); /* FUN_0034a100 out-of-slice */
+extern void sk_h_0034a1e0(); /* FUN_0034a1e0 out-of-slice */
+extern void sk_h_0034a1f8(); /* FUN_0034a1f8 out-of-slice */
+extern void sk_h_0034a210(); /* FUN_0034a210 out-of-slice */
+extern sk_r4_u128_t sk_h_0034a540(); /* FUN_0034a540 out-of-slice */
+extern void sk_h_0034a558(); /* FUN_0034a558 out-of-slice */
+extern void sk_h_0034a570(); /* FUN_0034a570 out-of-slice */
+extern void sk_h_0034a674(); /* FUN_0034a674 out-of-slice */
+extern void sk_h_0034a798(); /* FUN_0034a798 out-of-slice */
+extern void sk_h_0034a7ac(); /* FUN_0034a7ac out-of-slice */
+extern void sk_h_0034a848(); /* FUN_0034a848 out-of-slice */
+extern void sk_h_0034a868(); /* FUN_0034a868 out-of-slice */
+extern void sk_h_0034a8cc(); /* FUN_0034a8cc out-of-slice */
+extern void sk_h_0034a900(); /* FUN_0034a900 out-of-slice */
+extern void sk_h_0034aa9c(); /* FUN_0034aa9c out-of-slice */
+extern void sk_h_0034ab10(); /* FUN_0034ab10 out-of-slice */
+extern void sk_h_0034ab30(); /* FUN_0034ab30 out-of-slice */
+extern void sk_h_0034ac64(); /* FUN_0034ac64 out-of-slice */
+extern void sk_h_0034ad20(); /* FUN_0034ad20 out-of-slice */
+extern void sk_h_0034ad8c(); /* FUN_0034ad8c out-of-slice */
+extern void sk_h_0034aed0(); /* FUN_0034aed0 out-of-slice */
+extern void sk_h_0034aee4(); /* FUN_0034aee4 out-of-slice */
+extern void sk_h_0034af30(); /* FUN_0034af30 out-of-slice */
+extern void sk_h_0034b014(); /* FUN_0034b014 out-of-slice */
+extern void sk_h_0034b05c(); /* FUN_0034b05c out-of-slice */
+extern sk_r4_u128_t sk_h_0034b1a0(); /* FUN_0034b1a0 out-of-slice */
+extern void sk_h_0034b2c8(); /* FUN_0034b2c8 out-of-slice */
+extern void sk_h_0034b3c8(); /* FUN_0034b3c8 out-of-slice */
+extern void sk_h_0034b3d8(); /* FUN_0034b3d8 out-of-slice */
+extern void sk_h_0034b440(); /* FUN_0034b440 out-of-slice */
+extern sk_r4_u128_t sk_h_0034b480(); /* FUN_0034b480 out-of-slice */
+extern void sk_h_0034b4c0(); /* FUN_0034b4c0 out-of-slice */
+extern void sk_h_0034b5e8(); /* FUN_0034b5e8 out-of-slice */
+extern void sk_h_0034b690(); /* FUN_0034b690 out-of-slice */
+extern void sk_h_0034b758(); /* FUN_0034b758 out-of-slice */
+extern void sk_h_0034b778(); /* FUN_0034b778 out-of-slice */
+extern void sk_h_0034b824(); /* FUN_0034b824 out-of-slice */
+extern void sk_h_0034b87c(); /* FUN_0034b87c out-of-slice */
+extern void sk_h_0034b8bc(); /* FUN_0034b8bc out-of-slice */
+extern sk_r4_u128_t sk_h_0034b8cc(); /* FUN_0034b8cc out-of-slice */
+extern void sk_h_0034b960(); /* FUN_0034b960 out-of-slice */
+extern void sk_h_0034b980(); /* FUN_0034b980 out-of-slice */
+extern void sk_h_0034ba48(); /* FUN_0034ba48 out-of-slice */
+extern void sk_h_0034ba68(); /* FUN_0034ba68 out-of-slice */
+extern void sk_h_0034ba78(); /* FUN_0034ba78 out-of-slice */
+extern void sk_h_0034baa8(); /* FUN_0034baa8 out-of-slice */
+extern void sk_h_0034bab8(); /* FUN_0034bab8 out-of-slice */
+extern void sk_h_0034bbc8(); /* FUN_0034bbc8 out-of-slice */
+extern void sk_h_0034bc24(); /* FUN_0034bc24 out-of-slice */
+extern void sk_h_0034bc38(); /* FUN_0034bc38 out-of-slice */
+extern void sk_h_0034bc6c(); /* FUN_0034bc6c out-of-slice */
+extern void sk_h_0034bc94(); /* FUN_0034bc94 out-of-slice */
+extern void sk_h_0034bcf0(); /* FUN_0034bcf0 out-of-slice */
+extern void sk_h_0034bd30(); /* FUN_0034bd30 out-of-slice */
+extern void sk_h_0034bd90(); /* FUN_0034bd90 out-of-slice */
+extern void sk_h_0034bddc(); /* FUN_0034bddc out-of-slice */
+extern void sk_h_0034beb4(); /* FUN_0034beb4 out-of-slice */
+extern uint64_t sk_h_0034bf64(); /* FUN_0034bf64 out-of-slice */
+extern void sk_h_0034c034(); /* FUN_0034c034 out-of-slice */
+extern void sk_h_0034c094(); /* FUN_0034c094 out-of-slice */
+extern void sk_h_0034c0a4(); /* FUN_0034c0a4 out-of-slice */
+extern void sk_h_0034c130(); /* FUN_0034c130 out-of-slice */
+extern void sk_h_0034c1a8(); /* FUN_0034c1a8 out-of-slice */
+extern void sk_h_0034c1bc(); /* FUN_0034c1bc out-of-slice */
+extern void sk_h_0034c1d0(); /* FUN_0034c1d0 out-of-slice */
+extern void sk_h_0034c290(); /* FUN_0034c290 out-of-slice */
+extern void sk_h_0034c2c8(); /* FUN_0034c2c8 out-of-slice */
+extern void sk_h_0034c330(); /* FUN_0034c330 out-of-slice */
+extern void sk_h_0034c3a0(); /* FUN_0034c3a0 out-of-slice */
+extern void sk_h_0034c4bc(); /* FUN_0034c4bc out-of-slice */
+extern void sk_h_0034c51c(); /* FUN_0034c51c out-of-slice */
+extern void sk_h_0034c58c(); /* FUN_0034c58c out-of-slice */
+extern void sk_h_0034c5bc(); /* FUN_0034c5bc out-of-slice */
+extern void sk_h_0034c5dc(); /* FUN_0034c5dc out-of-slice */
+extern void sk_h_0034c6e4(); /* FUN_0034c6e4 out-of-slice */
+extern void sk_h_0034c8b8(); /* FUN_0034c8b8 out-of-slice */
+extern void sk_h_0034c8f8(); /* FUN_0034c8f8 out-of-slice */
+extern void sk_h_0034c960(); /* FUN_0034c960 out-of-slice */
+extern void sk_h_0034c9f8(); /* FUN_0034c9f8 out-of-slice */
+extern void sk_h_0034ca18(); /* FUN_0034ca18 out-of-slice */
+extern void sk_h_0034ca38(); /* FUN_0034ca38 out-of-slice */
+extern void sk_h_0034cb24(); /* FUN_0034cb24 out-of-slice */
+extern void sk_h_0034cb38(); /* FUN_0034cb38 out-of-slice */
+extern void sk_h_0034cb4c(); /* FUN_0034cb4c out-of-slice */
+extern void sk_h_0034cb74(); /* FUN_0034cb74 out-of-slice */
+extern void sk_h_0034cca8(); /* FUN_0034cca8 out-of-slice */
+extern void sk_h_0034cd68(); /* FUN_0034cd68 out-of-slice */
+extern void sk_h_0034ce68(); /* FUN_0034ce68 out-of-slice */
+extern void sk_h_0034cf94(); /* FUN_0034cf94 out-of-slice */
+extern void sk_h_0034cfb4(); /* FUN_0034cfb4 out-of-slice */
+extern void sk_h_0034cfc4(); /* FUN_0034cfc4 out-of-slice */
+extern void sk_h_0034d044(); /* FUN_0034d044 out-of-slice */
+extern uint sk_h_0034d0d0(); /* FUN_0034d0d0 out-of-slice */
+extern void sk_h_0034d0e0(); /* FUN_0034d0e0 out-of-slice */
+extern void sk_h_0034d1b0(); /* FUN_0034d1b0 out-of-slice */
+extern void sk_h_0034d1e0(); /* FUN_0034d1e0 out-of-slice */
+extern void sk_h_0034d2b4(); /* FUN_0034d2b4 out-of-slice */
+extern void sk_h_0034d384(); /* FUN_0034d384 out-of-slice */
+extern void sk_h_0034d394(); /* FUN_0034d394 out-of-slice */
+extern sk_r4_u128_t sk_h_0034d3a4(); /* FUN_0034d3a4 out-of-slice */
+extern void sk_h_0034d464(); /* FUN_0034d464 out-of-slice */
+extern void sk_h_0034d4e8(); /* FUN_0034d4e8 out-of-slice */
+extern void sk_h_0034d610(); /* FUN_0034d610 out-of-slice */
+extern void sk_h_0034d6c8(); /* FUN_0034d6c8 out-of-slice */
+extern uint64_t sk_h_0034d6d8(); /* FUN_0034d6d8 out-of-slice */
+extern void sk_h_0034d708(); /* FUN_0034d708 out-of-slice */
+extern void sk_h_0034d868(); /* FUN_0034d868 out-of-slice */
+extern void sk_h_0034d914(); /* FUN_0034d914 out-of-slice */
+extern void sk_h_0034d9f8(); /* FUN_0034d9f8 out-of-slice */
+extern void sk_h_0034da08(); /* FUN_0034da08 out-of-slice */
+extern void sk_h_0034da28(); /* FUN_0034da28 out-of-slice */
+extern void sk_h_0034da48(); /* FUN_0034da48 out-of-slice */
+extern void sk_h_0034da78(); /* FUN_0034da78 out-of-slice */
+extern void sk_h_0034daa8(); /* FUN_0034daa8 out-of-slice */
+extern void sk_h_0034db48(); /* FUN_0034db48 out-of-slice */
+extern void sk_h_0034db58(); /* FUN_0034db58 out-of-slice */
+extern void sk_h_0034dba8(); /* FUN_0034dba8 out-of-slice */
+extern void sk_h_0034dbc8(); /* FUN_0034dbc8 out-of-slice */
+extern void sk_h_0034dc3c(); /* FUN_0034dc3c out-of-slice */
+extern void sk_h_0034dce4(); /* FUN_0034dce4 out-of-slice */
+extern void sk_h_0034dcfc(); /* FUN_0034dcfc out-of-slice */
+extern void sk_h_0034dd4c(); /* FUN_0034dd4c out-of-slice */
+extern void sk_h_0034dd84(); /* FUN_0034dd84 out-of-slice */
+extern sk_r4_u128_t sk_h_0034dda0(); /* FUN_0034dda0 out-of-slice */
+extern void sk_h_0034de14(); /* FUN_0034de14 out-of-slice */
+extern void sk_h_0034dec4(); /* FUN_0034dec4 out-of-slice */
+extern void sk_h_0034dfe4(); /* FUN_0034dfe4 out-of-slice */
+extern sk_r4_u128_t sk_h_0034e044(); /* FUN_0034e044 out-of-slice */
+extern void sk_h_0034e0d4(); /* FUN_0034e0d4 out-of-slice */
+extern void sk_h_0034e0e4(); /* FUN_0034e0e4 out-of-slice */
+extern void sk_h_0034e120(); /* FUN_0034e120 out-of-slice */
+extern void sk_h_0034e1ec(); /* FUN_0034e1ec out-of-slice */
+extern void sk_h_0034e374(); /* FUN_0034e374 out-of-slice */
+extern void sk_h_0034e3ac(); /* FUN_0034e3ac out-of-slice */
+extern void sk_h_0034e56c(); /* FUN_0034e56c out-of-slice */
+extern void sk_h_0034e69c(); /* FUN_0034e69c out-of-slice */
+extern void sk_h_0034e6ac(); /* FUN_0034e6ac out-of-slice */
+extern void sk_h_0034e6fc(); /* FUN_0034e6fc out-of-slice */
+extern void sk_h_0034e7a0(); /* FUN_0034e7a0 out-of-slice */
+extern void sk_h_0034e8d4(); /* FUN_0034e8d4 out-of-slice */
+extern void sk_h_0034e8e8(); /* FUN_0034e8e8 out-of-slice */
+extern void sk_h_0034e910(); /* FUN_0034e910 out-of-slice */
+extern void sk_h_0034ea18(); /* FUN_0034ea18 out-of-slice */
+extern void sk_h_0034eb54(); /* FUN_0034eb54 out-of-slice */
+extern void sk_h_0034eb74(); /* FUN_0034eb74 out-of-slice */
+extern void sk_h_0034eb84(); /* FUN_0034eb84 out-of-slice */
+extern void sk_h_0034ec58(); /* FUN_0034ec58 out-of-slice */
+extern void sk_h_0034ec68(); /* FUN_0034ec68 out-of-slice */
+extern void sk_h_0034ec78(); /* FUN_0034ec78 out-of-slice */
+extern void sk_h_0034ec98(); /* FUN_0034ec98 out-of-slice */
+extern void sk_h_0034ecb8(); /* FUN_0034ecb8 out-of-slice */
+extern void sk_h_0034ecc8(); /* FUN_0034ecc8 out-of-slice */
+extern void sk_h_0034ece8(); /* FUN_0034ece8 out-of-slice */
+extern void sk_h_0034ecf8(); /* FUN_0034ecf8 out-of-slice */
+extern void sk_h_0034ed18(); /* FUN_0034ed18 out-of-slice */
+extern void sk_h_0034ed78(); /* FUN_0034ed78 out-of-slice */
+extern void sk_h_0034ee68(); /* FUN_0034ee68 out-of-slice */
+extern void sk_h_0034ee88(); /* FUN_0034ee88 out-of-slice */
+extern void sk_h_0034eef8(); /* FUN_0034eef8 out-of-slice */
+extern void sk_h_0034ef28(); /* FUN_0034ef28 out-of-slice */
+extern void sk_h_0034ef38(); /* FUN_0034ef38 out-of-slice */
+extern void sk_h_0034ef48(); /* FUN_0034ef48 out-of-slice */
+extern void sk_h_0034ef98(); /* FUN_0034ef98 out-of-slice */
+extern uint64_t sk_h_0034f064(); /* FUN_0034f064 out-of-slice */
+extern void sk_h_0034f078(); /* FUN_0034f078 out-of-slice */
+extern void sk_h_0034f198(); /* FUN_0034f198 out-of-slice */
+extern void sk_h_0034f1a8(); /* FUN_0034f1a8 out-of-slice */
+extern void sk_h_0034f21c(); /* FUN_0034f21c out-of-slice */
+extern void sk_h_0034f23c(); /* FUN_0034f23c out-of-slice */
+extern long sk_h_0034f264(); /* FUN_0034f264 out-of-slice */
+extern void sk_h_0034f354(); /* FUN_0034f354 out-of-slice */
+extern void sk_h_0034f444(); /* FUN_0034f444 out-of-slice */
+extern void sk_h_0034f454(); /* FUN_0034f454 out-of-slice */
+extern void sk_h_0034f484(); /* FUN_0034f484 out-of-slice */
+extern void sk_h_0034f554(); /* FUN_0034f554 out-of-slice */
+extern void sk_h_0034f688(); /* FUN_0034f688 out-of-slice */
+extern void sk_h_0034f884(); /* FUN_0034f884 out-of-slice */
+extern void sk_h_0034f8a8(); /* FUN_0034f8a8 out-of-slice */
+extern void sk_h_0034f938(); /* FUN_0034f938 out-of-slice */
+extern void sk_h_0034f948(); /* FUN_0034f948 out-of-slice */
+extern void sk_h_0034f958(); /* FUN_0034f958 out-of-slice */
+extern void sk_h_0034f96c(); /* FUN_0034f96c out-of-slice */
+extern void sk_h_0034f97c(); /* FUN_0034f97c out-of-slice */
+extern void sk_h_0034f9fc(); /* FUN_0034f9fc out-of-slice */
+extern void sk_h_0034fa4c(); /* FUN_0034fa4c out-of-slice */
+extern void sk_h_0034fd5c(); /* FUN_0034fd5c out-of-slice */
+extern void sk_h_0034ffa8(); /* FUN_0034ffa8 out-of-slice */
+extern void sk_h_00350028(); /* FUN_00350028 out-of-slice */
+extern void sk_h_00350058(); /* FUN_00350058 out-of-slice */
+extern void sk_h_003500d4(); /* FUN_003500d4 out-of-slice */
+extern void sk_h_0035014c(); /* FUN_0035014c out-of-slice */
+extern void sk_h_00350210(); /* FUN_00350210 out-of-slice */
+extern void sk_h_00350288(); /* FUN_00350288 out-of-slice */
+extern void sk_h_003503d0(); /* FUN_003503d0 out-of-slice */
+extern void sk_h_003503f8(); /* FUN_003503f8 out-of-slice */
+extern void sk_h_0035041c(); /* FUN_0035041c out-of-slice */
+extern void sk_h_00350434(); /* FUN_00350434 out-of-slice */
+extern void sk_h_00350464(); /* FUN_00350464 out-of-slice */
+extern sk_r4_u128_t sk_h_00350470(); /* FUN_00350470 out-of-slice */
+extern void sk_h_003504a0(); /* FUN_003504a0 out-of-slice */
+extern void sk_h_003504ac(); /* FUN_003504ac out-of-slice */
+extern sk_r4_u128_t sk_h_003504c4(); /* FUN_003504c4 out-of-slice */
+extern sk_r4_u128_t sk_h_003504d0(); /* FUN_003504d0 out-of-slice */
+extern sk_r4_u128_t sk_h_003504e8(); /* FUN_003504e8 out-of-slice */
+extern sk_r4_u128_t sk_h_0035050c(); /* FUN_0035050c out-of-slice */
+extern sk_r4_u128_t sk_h_00350518(); /* FUN_00350518 out-of-slice */
+extern void sk_h_00350524(); /* FUN_00350524 out-of-slice */
+extern void sk_h_0035056c(); /* FUN_0035056c out-of-slice */
+extern sk_r4_u128_t sk_h_0035059c(); /* FUN_0035059c out-of-slice */
+extern uint64_t sk_h_003505b0(); /* FUN_003505b0 out-of-slice */
+extern void sk_h_003505c4(); /* FUN_003505c4 out-of-slice */
+extern void sk_h_003505d0(); /* FUN_003505d0 out-of-slice */
+extern sk_r4_u128_t sk_h_003505e8(); /* FUN_003505e8 out-of-slice */
+extern sk_r4_u128_t sk_h_0035060c(); /* FUN_0035060c out-of-slice */
+extern void sk_h_00350618(); /* FUN_00350618 out-of-slice */
+extern void sk_h_00350624(); /* FUN_00350624 out-of-slice */
+extern void sk_h_00350630(); /* FUN_00350630 out-of-slice */
+extern uint64_t sk_h_00350648(); /* FUN_00350648 out-of-slice */
+extern uint64_t sk_h_0035066c(); /* FUN_0035066c out-of-slice */
+extern void sk_h_00350720(); /* FUN_00350720 out-of-slice */
+extern sk_r4_u128_t sk_h_0035072c(); /* FUN_0035072c out-of-slice */
+extern void sk_h_00350738(); /* FUN_00350738 out-of-slice */
+extern void sk_h_00350750(); /* FUN_00350750 out-of-slice */
+extern void sk_h_00350768(); /* FUN_00350768 out-of-slice */
+extern void sk_h_00350774(); /* FUN_00350774 out-of-slice */
+extern sk_r4_u128_t sk_h_00350798(); /* FUN_00350798 out-of-slice */
+extern sk_r4_u128_t sk_h_003507c8(); /* FUN_003507c8 out-of-slice */
+extern void sk_h_0035084c(); /* FUN_0035084c out-of-slice */
+extern void sk_h_00350884(); /* FUN_00350884 out-of-slice */
+extern void sk_h_003508b4(); /* FUN_003508b4 out-of-slice */
+extern void sk_h_003508cc(); /* FUN_003508cc out-of-slice */
+extern void sk_h_003508d8(); /* FUN_003508d8 out-of-slice */
+extern void sk_h_003508e4(); /* FUN_003508e4 out-of-slice */
+extern void sk_h_003508fc(); /* FUN_003508fc out-of-slice */
+extern sk_r4_u128_t sk_h_00350914(); /* FUN_00350914 out-of-slice */
+extern void sk_h_00350944(); /* FUN_00350944 out-of-slice */
+extern void sk_h_00350968(); /* FUN_00350968 out-of-slice */
+extern sk_r4_u128_t sk_h_003509b0(); /* FUN_003509b0 out-of-slice */
+extern void sk_h_003509bc(); /* FUN_003509bc out-of-slice */
+extern void sk_h_003509d4(); /* FUN_003509d4 out-of-slice */
+extern sk_r4_u128_t sk_h_003509e0(); /* FUN_003509e0 out-of-slice */
+extern void sk_h_00350a04(); /* FUN_00350a04 out-of-slice */
+extern uint64_t sk_h_00350a28(); /* FUN_00350a28 out-of-slice */
+extern void sk_h_00350a34(); /* FUN_00350a34 out-of-slice */
+extern void sk_h_00350a40(); /* FUN_00350a40 out-of-slice */
+extern void sk_h_00350a70(); /* FUN_00350a70 out-of-slice */
+extern void sk_h_00350a7c(); /* FUN_00350a7c out-of-slice */
+extern uint64_t sk_h_00350a88(); /* FUN_00350a88 out-of-slice */
+extern sk_r4_u128_t sk_h_00350ab8(); /* FUN_00350ab8 out-of-slice */
+extern sk_r4_u128_t sk_h_00350af4(); /* FUN_00350af4 out-of-slice */
+extern void sk_h_00350b18(); /* FUN_00350b18 out-of-slice */
+extern void sk_h_00350b48(); /* FUN_00350b48 out-of-slice */
+extern void sk_h_00350b54(); /* FUN_00350b54 out-of-slice */
+extern void sk_h_00350b60(); /* FUN_00350b60 out-of-slice */
+extern void sk_h_00350b6c(); /* FUN_00350b6c out-of-slice */
+extern void sk_h_00350b78(); /* FUN_00350b78 out-of-slice */
+extern void sk_h_00350b90(); /* FUN_00350b90 out-of-slice */
+extern void sk_h_00350b9c(); /* FUN_00350b9c out-of-slice */
+extern void sk_h_00350bc0(); /* FUN_00350bc0 out-of-slice */
+extern void sk_h_00350bcc(); /* FUN_00350bcc out-of-slice */
+extern sk_r4_u128_t sk_h_00350bf0(); /* FUN_00350bf0 out-of-slice */
+extern void sk_h_00350bfc(); /* FUN_00350bfc out-of-slice */
+extern void sk_h_00350c20(); /* FUN_00350c20 out-of-slice */
+extern void sk_h_00350c38(); /* FUN_00350c38 out-of-slice */
+extern void sk_h_00350c50(); /* FUN_00350c50 out-of-slice */
+extern void sk_h_00350c68(); /* FUN_00350c68 out-of-slice */
+extern void sk_h_00350c8c(); /* FUN_00350c8c out-of-slice */
+extern void sk_h_00350cf4(); /* FUN_00350cf4 out-of-slice */
+extern void sk_h_00350df4(); /* FUN_00350df4 out-of-slice */
+extern void sk_h_00350e54(); /* FUN_00350e54 out-of-slice */
+extern void sk_h_00350ea4(); /* FUN_00350ea4 out-of-slice */
+extern void sk_h_00350ec0(); /* FUN_00350ec0 out-of-slice */
+extern void sk_h_00350ed0(); /* FUN_00350ed0 out-of-slice */
+extern void sk_h_0035100c(); /* FUN_0035100c out-of-slice */
+extern void sk_h_0035101c(); /* FUN_0035101c out-of-slice */
+extern void sk_h_0035102c(); /* FUN_0035102c out-of-slice */
+extern sk_r4_u128_t sk_h_003510ac(); /* FUN_003510ac out-of-slice */
+extern void sk_h_003510d0(); /* FUN_003510d0 out-of-slice */
+extern sk_r4_u128_t sk_h_003510dc(); /* FUN_003510dc out-of-slice */
+extern void sk_h_00351118(); /* FUN_00351118 out-of-slice */
+extern sk_r4_u128_t sk_h_00351160(); /* FUN_00351160 out-of-slice */
+extern void sk_h_0035116c(); /* FUN_0035116c out-of-slice */
+extern sk_r4_u128_t sk_h_003511a8(); /* FUN_003511a8 out-of-slice */
+extern void sk_h_003511e4(); /* FUN_003511e4 out-of-slice */
+extern void sk_h_00351214(); /* FUN_00351214 out-of-slice */
+extern void sk_h_00351220(); /* FUN_00351220 out-of-slice */
+extern void sk_h_0035122c(); /* FUN_0035122c out-of-slice */
+extern void sk_h_00351250(); /* FUN_00351250 out-of-slice */
+extern sk_r4_u128_t sk_h_00351274(); /* FUN_00351274 out-of-slice */
+extern long sk_h_0035128c(); /* FUN_0035128c out-of-slice */
+extern void sk_h_00351298(); /* FUN_00351298 out-of-slice */
+extern void sk_h_003512c0(); /* FUN_003512c0 out-of-slice */
+extern void sk_h_00351318(); /* FUN_00351318 out-of-slice */
+extern void sk_h_00351348(); /* FUN_00351348 out-of-slice */
+extern sk_r4_u128_t sk_h_00351354(); /* FUN_00351354 out-of-slice */
+extern sk_r4_u128_t sk_h_00351360(); /* FUN_00351360 out-of-slice */
+extern void sk_h_00351384(); /* FUN_00351384 out-of-slice */
+extern void sk_h_00351390(); /* FUN_00351390 out-of-slice */
+extern void sk_h_003513a8(); /* FUN_003513a8 out-of-slice */
+extern void sk_h_003513b4(); /* FUN_003513b4 out-of-slice */
+extern void sk_h_00351408(); /* FUN_00351408 out-of-slice */
+extern sk_r4_u128_t sk_h_00351450(); /* FUN_00351450 out-of-slice */
+extern sk_r4_u128_t sk_h_0035145c(); /* FUN_0035145c out-of-slice */
+extern void sk_h_0035147c(); /* FUN_0035147c out-of-slice */
+extern void sk_h_00351494(); /* FUN_00351494 out-of-slice */
+extern void sk_h_003514e8(); /* FUN_003514e8 out-of-slice */
+extern void sk_h_00351500(); /* FUN_00351500 out-of-slice */
+extern void sk_h_00351554(); /* FUN_00351554 out-of-slice */
+extern void sk_h_0035159c(); /* FUN_0035159c out-of-slice */
+extern void sk_h_003515a8(); /* FUN_003515a8 out-of-slice */
+extern void sk_h_003515d8(); /* FUN_003515d8 out-of-slice */
+extern void sk_h_003515e4(); /* FUN_003515e4 out-of-slice */
+extern void sk_h_003515f0(); /* FUN_003515f0 out-of-slice */
+extern void sk_h_003515fc(); /* FUN_003515fc out-of-slice */
+extern void sk_h_0035163c(); /* FUN_0035163c out-of-slice */
+extern void sk_h_00351660(); /* FUN_00351660 out-of-slice */
+extern void sk_h_003516cc(); /* FUN_003516cc out-of-slice */
+extern void sk_h_003516fc(); /* FUN_003516fc out-of-slice */
+extern sk_r4_u128_t sk_h_0035172c(); /* FUN_0035172c out-of-slice */
+extern sk_r4_u128_t sk_h_00351738(); /* FUN_00351738 out-of-slice */
+extern sk_r4_u128_t sk_h_003517a8(); /* FUN_003517a8 out-of-slice */
+extern void sk_h_0035187c(); /* FUN_0035187c out-of-slice */
+extern sk_r4_u128_t sk_h_00351888(); /* FUN_00351888 out-of-slice */
+extern void sk_h_003518a0(); /* FUN_003518a0 out-of-slice */
+extern void sk_h_00351978(); /* FUN_00351978 out-of-slice */
+extern void sk_h_003519a8(); /* FUN_003519a8 out-of-slice */
+extern uint64_t sk_h_00351a14(); /* FUN_00351a14 out-of-slice */
+extern void sk_h_00351a44(); /* FUN_00351a44 out-of-slice */
+extern void sk_h_00351a50(); /* FUN_00351a50 out-of-slice */
+extern void sk_h_00351a5c(); /* FUN_00351a5c out-of-slice */
+extern void sk_h_00351aec(); /* FUN_00351aec out-of-slice */
+extern void sk_h_00351ba0(); /* FUN_00351ba0 out-of-slice */
+extern void sk_h_00351c70(); /* FUN_00351c70 out-of-slice */
+extern void sk_h_00351cd0(); /* FUN_00351cd0 out-of-slice */
+extern void sk_h_00351d0c(); /* FUN_00351d0c out-of-slice */
+extern void sk_h_00351d18(); /* FUN_00351d18 out-of-slice */
+extern sk_r4_u128_t sk_h_00351d24(); /* FUN_00351d24 out-of-slice */
+extern void sk_h_00351d9c(); /* FUN_00351d9c out-of-slice */
+extern uint64_t sk_h_00351db4(); /* FUN_00351db4 out-of-slice */
+extern void sk_h_00351dcc(); /* FUN_00351dcc out-of-slice */
+extern uint64_t sk_h_00351dd8(); /* FUN_00351dd8 out-of-slice */
+extern void sk_h_00351de4(); /* FUN_00351de4 out-of-slice */
+extern void sk_h_00351dfc(); /* FUN_00351dfc out-of-slice */
+extern sk_r4_u128_t sk_h_00351e08(); /* FUN_00351e08 out-of-slice */
+extern void sk_h_00351e3c(); /* FUN_00351e3c out-of-slice */
+extern void sk_h_00351f1c(); /* FUN_00351f1c out-of-slice */
+extern void sk_h_00351f28(); /* FUN_00351f28 out-of-slice */
+extern void sk_h_00351f64(); /* FUN_00351f64 out-of-slice */
+extern void sk_h_00351f70(); /* FUN_00351f70 out-of-slice */
+extern void sk_h_00352008(); /* FUN_00352008 out-of-slice */
+extern void sk_h_00352038(); /* FUN_00352038 out-of-slice */
+extern void sk_h_00352048(); /* FUN_00352048 out-of-slice */
+extern void sk_h_00352058(); /* FUN_00352058 out-of-slice */
+extern void sk_h_00352068(); /* FUN_00352068 out-of-slice */
+extern long sk_h_003521a4(); /* FUN_003521a4 out-of-slice */
+extern void sk_h_00352370(); /* FUN_00352370 out-of-slice */
+extern void sk_h_00352474(); /* FUN_00352474 out-of-slice */
+extern void sk_h_00352480(); /* FUN_00352480 out-of-slice */
+extern sk_r4_u128_t sk_h_003524a4(); /* FUN_003524a4 out-of-slice */
+extern void sk_h_003524c8(); /* FUN_003524c8 out-of-slice */
+extern void sk_h_00352554(); /* FUN_00352554 out-of-slice */
+extern void sk_h_00352658(); /* FUN_00352658 out-of-slice */
+extern void sk_h_00352680(); /* FUN_00352680 out-of-slice */
+extern void sk_h_003527e0(); /* FUN_003527e0 out-of-slice */
+extern void sk_h_0035292c(); /* FUN_0035292c out-of-slice */
+extern void sk_h_00352938(); /* FUN_00352938 out-of-slice */
+extern uint64_t sk_h_00352980(); /* FUN_00352980 out-of-slice */
+extern void sk_h_00352a34(); /* FUN_00352a34 out-of-slice */
+extern void sk_h_00352a40(); /* FUN_00352a40 out-of-slice */
+extern void sk_h_00352a58(); /* FUN_00352a58 out-of-slice */
+extern void sk_h_00352a70(); /* FUN_00352a70 out-of-slice */
+extern void sk_h_00352ae4(); /* FUN_00352ae4 out-of-slice */
+extern void sk_h_00352b44(); /* FUN_00352b44 out-of-slice */
+extern void sk_h_00352b68(); /* FUN_00352b68 out-of-slice */
+extern void sk_h_00352b74(); /* FUN_00352b74 out-of-slice */
+extern void sk_h_00352b98(); /* FUN_00352b98 out-of-slice */
+extern void sk_h_00352c34(); /* FUN_00352c34 out-of-slice */
+extern void sk_h_00352c80(); /* FUN_00352c80 out-of-slice */
+extern void sk_h_00352cb0(); /* FUN_00352cb0 out-of-slice */
+extern void sk_h_00352cc8(); /* FUN_00352cc8 out-of-slice */
+extern void sk_h_00352cd4(); /* FUN_00352cd4 out-of-slice */
+extern void sk_h_00352cf8(); /* FUN_00352cf8 out-of-slice */
+extern void sk_h_00352d88(); /* FUN_00352d88 out-of-slice */
+extern void sk_h_00352db8(); /* FUN_00352db8 out-of-slice */
+extern void sk_h_00352de8(); /* FUN_00352de8 out-of-slice */
+extern void sk_h_00352df4(); /* FUN_00352df4 out-of-slice */
+extern void sk_h_00352e00(); /* FUN_00352e00 out-of-slice */
+extern void sk_h_00352e6c(); /* FUN_00352e6c out-of-slice */
+extern void sk_h_00352e78(); /* FUN_00352e78 out-of-slice */
+extern void sk_h_00352f48(); /* FUN_00352f48 out-of-slice */
+extern long sk_h_00352fd4(); /* FUN_00352fd4 out-of-slice */
+extern void sk_h_0035310c(); /* FUN_0035310c out-of-slice */
+extern void sk_h_00353154(); /* FUN_00353154 out-of-slice */
+extern void sk_h_003531fc(); /* FUN_003531fc out-of-slice */
+extern uint64_t sk_h_00353378(); /* FUN_00353378 out-of-slice */
+extern long sk_h_00353430(); /* FUN_00353430 out-of-slice */
+extern void sk_h_0035345c(); /* FUN_0035345c out-of-slice */
+extern void sk_h_003534bc(); /* FUN_003534bc out-of-slice */
+extern void sk_h_003534ec(); /* FUN_003534ec out-of-slice */
+extern void sk_h_0035351c(); /* FUN_0035351c out-of-slice */
+extern void sk_h_003535a8(); /* FUN_003535a8 out-of-slice */
+extern uint64_t sk_h_0035361c(); /* FUN_0035361c out-of-slice */
+extern void sk_h_0035368c(); /* FUN_0035368c out-of-slice */
+extern void sk_h_0035369c(); /* FUN_0035369c out-of-slice */
+extern void sk_h_003536d0(); /* FUN_003536d0 out-of-slice */
+extern void sk_h_003536ec(); /* FUN_003536ec out-of-slice */
+extern void sk_h_003536fc(); /* FUN_003536fc out-of-slice */
+extern void sk_h_0035370c(); /* FUN_0035370c out-of-slice */
+extern void sk_h_003537d4(); /* FUN_003537d4 out-of-slice */
+extern void sk_h_003537fc(); /* FUN_003537fc out-of-slice */
+extern void sk_h_00353820(); /* FUN_00353820 out-of-slice */
+extern void sk_h_00353918(); /* FUN_00353918 out-of-slice */
+extern void sk_h_00353948(); /* FUN_00353948 out-of-slice */
+extern void sk_h_0035399c(); /* FUN_0035399c out-of-slice */
+extern void sk_h_003539e4(); /* FUN_003539e4 out-of-slice */
+extern void sk_h_00353a24(); /* FUN_00353a24 out-of-slice */
+extern void sk_h_00353ad8(); /* FUN_00353ad8 out-of-slice */
+extern void sk_h_00353b40(); /* FUN_00353b40 out-of-slice */
+extern void sk_h_00353b58(); /* FUN_00353b58 out-of-slice */
+extern void sk_h_00353b70(); /* FUN_00353b70 out-of-slice */
+extern void sk_h_00353c30(); /* FUN_00353c30 out-of-slice */
+extern void sk_h_00353c6c(); /* FUN_00353c6c out-of-slice */
+extern uint64_t sk_h_00353c78(); /* FUN_00353c78 out-of-slice */
+extern void sk_h_00353ccc(); /* FUN_00353ccc out-of-slice */
+extern void sk_h_00353cf0(); /* FUN_00353cf0 out-of-slice */
+extern void sk_h_00353dac(); /* FUN_00353dac out-of-slice */
+extern void sk_h_00353e50(); /* FUN_00353e50 out-of-slice */
+extern sk_r4_u128_t sk_h_00353e7c(); /* FUN_00353e7c out-of-slice */
+extern uint sk_h_00353ee4(); /* FUN_00353ee4 out-of-slice */
+extern void sk_h_00353f88(); /* FUN_00353f88 out-of-slice */
+extern void sk_h_003540ac(); /* FUN_003540ac out-of-slice */
+extern void sk_h_0035414c(); /* FUN_0035414c out-of-slice */
+extern void sk_h_00354168(); /* FUN_00354168 out-of-slice */
+extern void sk_h_00354184(); /* FUN_00354184 out-of-slice */
+extern void sk_h_003541a0(); /* FUN_003541a0 out-of-slice */
+extern void sk_h_003541bc(); /* FUN_003541bc out-of-slice */
+extern void sk_h_003541d8(); /* FUN_003541d8 out-of-slice */
+extern void sk_h_003541f4(); /* FUN_003541f4 out-of-slice */
+extern void sk_h_00354210(); /* FUN_00354210 out-of-slice */
+extern void sk_h_0035422c(); /* FUN_0035422c out-of-slice */
+extern void sk_h_00354248(); /* FUN_00354248 out-of-slice */
+extern void sk_h_003542c4(); /* FUN_003542c4 out-of-slice */
+extern void sk_h_00354318(); /* FUN_00354318 out-of-slice */
+extern void sk_h_00354324(); /* FUN_00354324 out-of-slice */
+extern void sk_h_0035437c(); /* FUN_0035437c out-of-slice */
+extern void sk_h_003543f8(); /* FUN_003543f8 out-of-slice */
+extern void sk_h_00354570(); /* FUN_00354570 out-of-slice */
+extern void sk_h_003545d0(); /* FUN_003545d0 out-of-slice */
+extern void sk_h_00354624(); /* FUN_00354624 out-of-slice */
+extern void sk_h_00354654(); /* FUN_00354654 out-of-slice */
+extern void sk_h_003546a8(); /* FUN_003546a8 out-of-slice */
+extern void sk_h_00354774(); /* FUN_00354774 out-of-slice */
+extern void sk_h_003547ec(); /* FUN_003547ec out-of-slice */
+extern void sk_h_00354858(); /* FUN_00354858 out-of-slice */
+extern void sk_h_003548e8(); /* FUN_003548e8 out-of-slice */
+extern void sk_h_00354948(); /* FUN_00354948 out-of-slice */
+extern void sk_h_003549d8(); /* FUN_003549d8 out-of-slice */
+extern void sk_h_003549e4(); /* FUN_003549e4 out-of-slice */
+extern void sk_h_00354a00(); /* FUN_00354a00 out-of-slice */
+extern void sk_h_00354a0c(); /* FUN_00354a0c out-of-slice */
+extern void sk_h_00354a6c(); /* FUN_00354a6c out-of-slice */
+extern void sk_h_00354a78(); /* FUN_00354a78 out-of-slice */
+extern void sk_h_00354ac8(); /* FUN_00354ac8 out-of-slice */
+extern uint64_t sk_h_00354b5c(); /* FUN_00354b5c out-of-slice */
+extern void sk_h_00354b74(); /* FUN_00354b74 out-of-slice */
+extern void sk_h_00354b8c(); /* FUN_00354b8c out-of-slice */
+extern void sk_h_00354b98(); /* FUN_00354b98 out-of-slice */
+extern void sk_h_00354ba4(); /* FUN_00354ba4 out-of-slice */
+extern void sk_h_00354bd4(); /* FUN_00354bd4 out-of-slice */
+extern void sk_h_00354c38(); /* FUN_00354c38 out-of-slice */
+extern void sk_h_00354cd8(); /* FUN_00354cd8 out-of-slice */
+extern void sk_h_00354d5c(); /* FUN_00354d5c out-of-slice */
+extern void sk_h_00354ddc(); /* FUN_00354ddc out-of-slice */
+extern sk_r4_u128_t sk_h_00354e0c(); /* FUN_00354e0c out-of-slice */
+extern void sk_h_00354f1c(); /* FUN_00354f1c out-of-slice */
+extern void sk_h_0035512c(); /* FUN_0035512c out-of-slice */
+extern void sk_h_003552ac(); /* FUN_003552ac out-of-slice */
+extern void sk_h_00355374(); /* FUN_00355374 out-of-slice */
+extern void sk_h_00355384(); /* FUN_00355384 out-of-slice */
+extern void sk_h_003553a8(); /* FUN_003553a8 out-of-slice */
+extern void sk_h_003553e4(); /* FUN_003553e4 out-of-slice */
+extern void sk_h_00355418(); /* FUN_00355418 out-of-slice */
+extern void sk_h_0035543c(); /* FUN_0035543c out-of-slice */
+extern void sk_h_0035578c(); /* FUN_0035578c out-of-slice */
+extern void sk_h_003558a8(); /* FUN_003558a8 out-of-slice */
+extern void sk_h_00355a14(); /* FUN_00355a14 out-of-slice */
+extern void sk_h_00355a58(); /* FUN_00355a58 out-of-slice */
+extern void sk_h_00355bc4(); /* FUN_00355bc4 out-of-slice */
+extern void sk_h_00355be8(); /* FUN_00355be8 out-of-slice */
+extern void sk_h_00355c1c(); /* FUN_00355c1c out-of-slice */
+extern void sk_h_00355cc8(); /* FUN_00355cc8 out-of-slice */
+extern void sk_h_00355d40(); /* FUN_00355d40 out-of-slice */
+extern void sk_h_00355d6c(); /* FUN_00355d6c out-of-slice */
+extern void sk_h_00355d90(); /* FUN_00355d90 out-of-slice */
+extern void sk_h_00355e50(); /* FUN_00355e50 out-of-slice */
+extern void sk_h_00355e68(); /* FUN_00355e68 out-of-slice */
+extern void sk_h_00355e74(); /* FUN_00355e74 out-of-slice */
+extern void sk_h_00355eec(); /* FUN_00355eec out-of-slice */
+extern void sk_h_00355f04(); /* FUN_00355f04 out-of-slice */
+extern void sk_h_00355ff4(); /* FUN_00355ff4 out-of-slice */
+extern void sk_h_003560b4(); /* FUN_003560b4 out-of-slice */
+extern void sk_h_00356104(); /* FUN_00356104 out-of-slice */
+extern void sk_h_003561e8(); /* FUN_003561e8 out-of-slice */
+extern void sk_h_00356200(); /* FUN_00356200 out-of-slice */
+extern void sk_h_00356284(); /* FUN_00356284 out-of-slice */
+extern void sk_h_003562d4(); /* FUN_003562d4 out-of-slice */
+extern void sk_h_003562e0(); /* FUN_003562e0 out-of-slice */
+extern sk_r4_u128_t sk_h_00356340(); /* FUN_00356340 out-of-slice */
+extern void sk_h_00356370(); /* FUN_00356370 out-of-slice */
+extern void sk_h_0035638c(); /* FUN_0035638c out-of-slice */
+extern void sk_h_003563e0(); /* FUN_003563e0 out-of-slice */
+extern void sk_h_00356454(); /* FUN_00356454 out-of-slice */
+extern void sk_h_003564e8(); /* FUN_003564e8 out-of-slice */
+extern void sk_h_00356508(); /* FUN_00356508 out-of-slice */
+extern void sk_h_003567d4(); /* FUN_003567d4 out-of-slice */
+extern void sk_h_003567e0(); /* FUN_003567e0 out-of-slice */
+extern void sk_h_00356858(); /* FUN_00356858 out-of-slice */
+extern void sk_h_0035694c(); /* FUN_0035694c out-of-slice */
+extern void sk_h_00356a38(); /* FUN_00356a38 out-of-slice */
+extern sk_r4_u128_t sk_h_00356aa0(); /* FUN_00356aa0 out-of-slice */
+extern sk_r4_u128_t sk_h_00356b44(); /* FUN_00356b44 out-of-slice */
+extern void sk_h_00356b50(); /* FUN_00356b50 out-of-slice */
+extern void sk_h_00356b68(); /* FUN_00356b68 out-of-slice */
+extern void sk_h_00356c54(); /* FUN_00356c54 out-of-slice */
+extern void sk_h_00356c84(); /* FUN_00356c84 out-of-slice */
+extern void sk_h_00356cd4(); /* FUN_00356cd4 out-of-slice */
+extern void sk_h_00356e1c(); /* FUN_00356e1c out-of-slice */
+extern void sk_h_00356e28(); /* FUN_00356e28 out-of-slice */
+extern uint64_t sk_h_00356e84(); /* FUN_00356e84 out-of-slice */
+extern void sk_h_00357068(); /* FUN_00357068 out-of-slice */
+extern uint64_t sk_h_003570a0(); /* FUN_003570a0 out-of-slice */
+extern void sk_h_00357198(); /* FUN_00357198 out-of-slice */
+extern void sk_h_0035725c(); /* FUN_0035725c out-of-slice */
+extern void sk_h_00357280(); /* FUN_00357280 out-of-slice */
+extern void sk_h_003572c4(); /* FUN_003572c4 out-of-slice */
+extern void sk_h_00357374(); /* FUN_00357374 out-of-slice */
+extern void sk_h_00357380(); /* FUN_00357380 out-of-slice */
+extern void sk_h_00357540(); /* FUN_00357540 out-of-slice */
+extern void sk_h_00357564(); /* FUN_00357564 out-of-slice */
+extern void sk_h_00357688(); /* FUN_00357688 out-of-slice */
+extern void sk_h_0035780c(); /* FUN_0035780c out-of-slice */
+extern void sk_h_0035785c(); /* FUN_0035785c out-of-slice */
+extern void sk_h_00357868(); /* FUN_00357868 out-of-slice */
+extern void sk_h_00357b10(); /* FUN_00357b10 out-of-slice */
+extern void sk_h_00357b20(); /* FUN_00357b20 out-of-slice */
+extern void sk_h_00357b3c(); /* FUN_00357b3c out-of-slice */
+extern void sk_h_00357c2c(); /* FUN_00357c2c out-of-slice */
+extern void sk_h_00357c74(); /* FUN_00357c74 out-of-slice */
+extern void sk_h_00357cb4(); /* FUN_00357cb4 out-of-slice */
+extern void sk_h_00357e34(); /* FUN_00357e34 out-of-slice */
+extern void sk_h_00358268(); /* FUN_00358268 out-of-slice */
+extern void sk_h_003584f8(); /* FUN_003584f8 out-of-slice */
+extern void sk_h_003585e8(); /* FUN_003585e8 out-of-slice */
+extern void sk_h_0035860c(); /* FUN_0035860c out-of-slice */
+extern void sk_h_00358618(); /* FUN_00358618 out-of-slice */
+extern uint64_t sk_h_0035866c(); /* FUN_0035866c out-of-slice */
+extern void sk_h_0035869c(); /* FUN_0035869c out-of-slice */
+extern void sk_h_00358828(); /* FUN_00358828 out-of-slice */
+extern void sk_h_00358834(); /* FUN_00358834 out-of-slice */
+extern void sk_h_00358840(); /* FUN_00358840 out-of-slice */
+extern void sk_h_00358858(); /* FUN_00358858 out-of-slice */
+extern void sk_h_0035893c(); /* FUN_0035893c out-of-slice */
+extern void sk_h_00358984(); /* FUN_00358984 out-of-slice */
+extern void sk_h_00358dd0(); /* FUN_00358dd0 out-of-slice */
+extern void sk_h_00358de8(); /* FUN_00358de8 out-of-slice */
+extern void sk_h_00358e00(); /* FUN_00358e00 out-of-slice */
+extern void sk_h_00358e18(); /* FUN_00358e18 out-of-slice */
+extern void sk_h_00358e58(); /* FUN_00358e58 out-of-slice */
+extern void sk_h_00358edc(); /* FUN_00358edc out-of-slice */
+extern uint64_t sk_h_00358fb4(); /* FUN_00358fb4 out-of-slice */
+extern void sk_h_00358fc8(); /* FUN_00358fc8 out-of-slice */
+extern void sk_h_0035900c(); /* FUN_0035900c out-of-slice */
+extern void sk_h_00359178(); /* FUN_00359178 out-of-slice */
+extern void sk_h_003591b4(); /* FUN_003591b4 out-of-slice */
+extern void sk_h_003593a8(); /* FUN_003593a8 out-of-slice */
+extern void sk_h_0035940c(); /* FUN_0035940c out-of-slice */
+extern void sk_h_00359524(); /* FUN_00359524 out-of-slice */
+extern void sk_h_00359658(); /* FUN_00359658 out-of-slice */
+extern void sk_h_003596c4(); /* FUN_003596c4 out-of-slice */
+extern void sk_h_003596f8(); /* FUN_003596f8 out-of-slice */
+extern void sk_h_0035972c(); /* FUN_0035972c out-of-slice */
+extern void sk_h_00359760(); /* FUN_00359760 out-of-slice */
+extern void sk_h_003597c0(); /* FUN_003597c0 out-of-slice */
+extern long sk_h_00359874(); /* FUN_00359874 out-of-slice */
+extern void sk_h_003599cc(); /* FUN_003599cc out-of-slice */
+extern void sk_h_003599e4(); /* FUN_003599e4 out-of-slice */
+extern void sk_h_003599f8(); /* FUN_003599f8 out-of-slice */
+extern void sk_h_00359a84(); /* FUN_00359a84 out-of-slice */
+extern void sk_h_00359aa4(); /* FUN_00359aa4 out-of-slice */
+extern sk_r4_u128_t sk_h_00359b18(); /* FUN_00359b18 out-of-slice */
+extern void sk_h_00359b64(); /* FUN_00359b64 out-of-slice */
+extern void sk_h_00359c4c(); /* FUN_00359c4c out-of-slice */
+extern void sk_h_00359c90(); /* FUN_00359c90 out-of-slice */
+extern void sk_h_00359cd8(); /* FUN_00359cd8 out-of-slice */
+extern void sk_h_00359ce4(); /* FUN_00359ce4 out-of-slice */
+extern void sk_h_00359d38(); /* FUN_00359d38 out-of-slice */
+extern void sk_h_0035a20c(); /* FUN_0035a20c out-of-slice */
+extern void sk_h_0035a238(); /* FUN_0035a238 out-of-slice */
+extern void sk_h_0035a25c(); /* FUN_0035a25c out-of-slice */
+extern void sk_h_0035a578(); /* FUN_0035a578 out-of-slice */
+extern void sk_h_0035a5b4(); /* FUN_0035a5b4 out-of-slice */
+extern void sk_h_0035a608(); /* FUN_0035a608 out-of-slice */
+extern void sk_h_0035a684(); /* FUN_0035a684 out-of-slice */
+extern void sk_h_0035a69c(); /* FUN_0035a69c out-of-slice */
+extern void sk_h_0035a6a8(); /* FUN_0035a6a8 out-of-slice */
+extern sk_r4_u128_t sk_h_0035a6f4(); /* FUN_0035a6f4 out-of-slice */
+extern sk_r4_u128_t sk_h_0035a86c(); /* FUN_0035a86c out-of-slice */
+extern void sk_h_0035a924(); /* FUN_0035a924 out-of-slice */
+extern void sk_h_0035a938(); /* FUN_0035a938 out-of-slice */
+extern void sk_h_0035aaa8(); /* FUN_0035aaa8 out-of-slice */
+extern uint64_t sk_h_0035aab4(); /* FUN_0035aab4 out-of-slice */
+extern void sk_h_0035aaf0(); /* FUN_0035aaf0 out-of-slice */
+extern void sk_h_0035aafc(); /* FUN_0035aafc out-of-slice */
+extern void sk_h_0035acfc(); /* FUN_0035acfc out-of-slice */
+extern void sk_h_00361528(); /* FUN_00361528 out-of-slice */
+extern uint64_t sk_h_00365b6c(); /* FUN_00365b6c out-of-slice */
+extern void sk_h_0036986c(); /* FUN_0036986c out-of-slice */
+extern long sk_h_0036a940(); /* FUN_0036a940 out-of-slice */
+extern long sk_h_0036a9a0(); /* FUN_0036a9a0 out-of-slice */
+extern void sk_h_0036b6ac(); /* FUN_0036b6ac out-of-slice */
+extern long sk_h_003722e4(); /* FUN_003722e4 out-of-slice */
+extern void sk_h_003a25e0(); /* FUN_003a25e0 out-of-slice */
+extern uint64_t sk_h_003a261c(); /* FUN_003a261c out-of-slice */
+extern void sk_h_00319f3c(); /* FUN_00319f3c fn-ptr */
+extern void sk_h_0031a20c(); /* FUN_0031a20c fn-ptr */
 extern uint64_t _DAT_004baeb0;
 extern uint64_t uRam00000000004baeb8;
 extern uint64_t datum_004e7f10;
@@ -3320,1535 +3321,1535 @@ extern uint64_t datum_004f1878;
 extern uint64_t datum_004f18a8;
 extern uint64_t datum_00657798;
 extern uint64_t datum_006577e0;
-extern void();
-extern void sk_h_002060d4();
-void sk_r4_001c050c();
-sk_r4_u128_t sk_r4_001c0528();
-void sk_r4_001c11b4();
-void sk_r4_001c11d8();
-void sk_r4_001c12dc();
-void sk_r4_001c1300();
-void sk_r4_001c133c();
-void sk_r4_001c1388();
-void sk_r4_001c14ac();
-void sk_r4_001c1574();
-void sk_r4_001c169c();
-void sk_r4_001c1700();
-void sk_r4_001c1730();
-void sk_r4_001c1754();
-void sk_r4_001c1778();
-void sk_r4_001c179c();
-void sk_r4_001c17c0();
-void sk_r4_001c17e4();
-void sk_r4_001c1808();
-void sk_r4_001c182c();
-void sk_r4_001c1850();
-void sk_r4_001c1874();
-void sk_r4_001c1898();
-void sk_r4_001c18bc();
-void sk_r4_001c18e0();
-void sk_r4_001c1904();
-void sk_r4_001c1928();
-void sk_r4_001c194c();
-void sk_r4_001c1970();
-void sk_r4_001c1994();
-void sk_r4_001c19b8();
-void sk_r4_001c19dc();
-void sk_r4_001c1a00();
-void sk_r4_001c1a24();
-void sk_r4_001c1a48();
-void sk_r4_001c1a6c();
-void sk_r4_001c1a90();
-void sk_r4_001c1ab4();
-void sk_r4_001c1ad8();
-void sk_r4_001c1afc();
-void sk_r4_001c1b20();
-void sk_r4_001c1b44();
-void sk_r4_001c1b68();
-void sk_r4_001c1b8c();
-void sk_r4_001c1bb0();
-void sk_r4_001c1bd4();
-void sk_r4_001c1bf8();
-void sk_r4_001c1c1c();
-void sk_r4_001c1c40();
-void sk_r4_001c1c70();
-void sk_r4_001c1ca0();
-void sk_r4_001c1cd0();
-void sk_r4_001c1d00();
-void sk_r4_001c1d04();
-void sk_r4_001c1d5c();
-void sk_r4_001c1e34();
-void sk_r4_001c2074();
-void sk_r4_001c20a0();
-void sk_r4_001c22c4();
-void sk_r4_001c22f0();
-void sk_r4_001c22f4();
-void sk_r4_001c2320();
-void sk_r4_001c2324();
-void sk_r4_001c2350();
-void sk_r4_001c2354();
-void sk_r4_001c236c();
-void sk_r4_001c2370();
-void sk_r4_001c239c();
-void sk_r4_001c23a0();
-void sk_r4_001c23cc();
-void sk_r4_001c23d0();
-void sk_r4_001c23fc();
-void sk_r4_001c2400();
-void sk_r4_001c242c();
-void sk_r4_001c2430();
-void sk_r4_001c245c();
-void sk_r4_001c2460();
-void sk_r4_001c2478();
-void sk_r4_001c2584();
-void sk_r4_001c25b0();
-void sk_r4_001c26d0();
-void sk_r4_001c26fc();
-void sk_r4_001c2a6c();
-void sk_r4_001c2a98();
-void sk_r4_001c2ba4();
-void sk_r4_001c2bd0();
-void sk_r4_001c2d08();
-void sk_r4_001c2d34();
-void sk_r4_001c2d38();
-void sk_r4_001c2d64();
-void sk_r4_001c2d68();
-void sk_r4_001c2d94();
-void sk_r4_001c2d98();
-void sk_r4_001c2dc4();
-void sk_r4_001c2dc8();
-void sk_r4_001c2df4();
-void sk_r4_001c2df8();
-void sk_r4_001c2e24();
-void sk_r4_001c2e28();
-void sk_r4_001c2e54();
-void sk_r4_001c2e58();
-void sk_r4_001c2e84();
-void sk_r4_001c2e88();
-void sk_r4_001c2eb4();
-void sk_r4_001c2eb8();
-void sk_r4_001c2ee4();
-void sk_r4_001c2ff0();
-void sk_r4_001c301c();
-void sk_r4_001c3140();
-void sk_r4_001c316c();
-void sk_r4_001c328c();
-void sk_r4_001c32b8();
-void sk_r4_001c33f8();
-void sk_r4_001c3424();
-void sk_r4_001c37cc();
-void sk_r4_001c3868();
-void sk_r4_001c39dc();
-void sk_r4_001c3a48();
-void sk_r4_001c3a78();
-void sk_r4_001c3aa8();
-void sk_r4_001c3ad8();
-void sk_r4_001c3afc();
-void sk_r4_001c3b20();
-void sk_r4_001c3b44();
-void sk_r4_001c3b68();
-void sk_r4_001c3b8c();
-void sk_r4_001c3bb0();
-void sk_r4_001c3bd4();
-void sk_r4_001c3bf8();
-void sk_r4_001c3c1c();
-void sk_r4_001c3c40();
-void sk_r4_001c3c64();
-void sk_r4_001c3c88();
-void sk_r4_001c3cac();
-void sk_r4_001c3cd0();
-void sk_r4_001c3cf4();
-void sk_r4_001c3d18();
-void sk_r4_001c3d3c();
-void sk_r4_001c3d60();
-void sk_r4_001c3d84();
-void sk_r4_001c3da8();
-void sk_r4_001c3dcc();
-void sk_r4_001c3df0();
-void sk_r4_001c3e14();
-void sk_r4_001c3e38();
-void sk_r4_001c3e5c();
-void sk_r4_001c3e80();
-void sk_r4_001c3ea4();
-void sk_r4_001c3ec8();
-void sk_r4_001c3eec();
-void sk_r4_001c3f10();
-void sk_r4_001c3f34();
-void sk_r4_001c3f58();
-void sk_r4_001c3f7c();
-void sk_r4_001c3fa0();
-void sk_r4_001c3fc4();
-void sk_r4_001c3fe8();
-void sk_r4_001c400c();
-void sk_r4_001c4030();
-void sk_r4_001c4058();
-void sk_r4_001c40b0();
-void sk_r4_001c4188();
-void sk_r4_001c4284();
-uint sk_r4_001c43f4();
-uint sk_r4_001c4424();
-uint sk_r4_001c4428();
-uint sk_r4_001c4458();
-void sk_r4_001c45b8();
-void sk_r4_001c45e4();
-void sk_r4_001c4910();
-void sk_r4_001c4928();
-void sk_r4_001c492c();
-void sk_r4_001c4958();
-void sk_r4_001c495c();
-void sk_r4_001c4988();
-void sk_r4_001c498c();
-void sk_r4_001c49a4();
-void sk_r4_001c49a8();
-void sk_r4_001c49c0();
-void sk_r4_001c49c4();
-void sk_r4_001c49dc();
-void sk_r4_001c49e0();
-void sk_r4_001c49f8();
-void sk_r4_001c49fc();
-void sk_r4_001c4a28();
-void sk_r4_001c4a2c();
-void sk_r4_001c4a58();
-void sk_r4_001c4a5c();
-void sk_r4_001c4a74();
-void sk_r4_001c4bd4();
-void sk_r4_001c4bec();
-void sk_r4_001c4d4c();
-void sk_r4_001c4d64();
-void sk_r4_001c4ed8();
-void sk_r4_001c4f00();
-void sk_r4_001c4f04();
-void sk_r4_001c4f30();
-void sk_r4_001c5090();
-void sk_r4_001c50bc();
-void sk_r4_001c5238();
-void sk_r4_001c5264();
-void sk_r4_001c5268();
-void sk_r4_001c5294();
-void sk_r4_001c5298();
-void sk_r4_001c52c4();
-void sk_r4_001c52c8();
-void sk_r4_001c52f4();
-void sk_r4_001c52f8();
-void sk_r4_001c5324();
-void sk_r4_001c5328();
-void sk_r4_001c5354();
-void sk_r4_001c5358();
-void sk_r4_001c5384();
-void sk_r4_001c5388();
-void sk_r4_001c53b4();
-void sk_r4_001c53b8();
-void sk_r4_001c53e4();
-void sk_r4_001c53e8();
-void sk_r4_001c5414();
-void sk_r4_001c5574();
-void sk_r4_001c55a0();
-void sk_r4_001c5700();
-void sk_r4_001c572c();
-void sk_r4_001c588c();
-void sk_r4_001c58b8();
-void sk_r4_001c5a38();
-void sk_r4_001c5a64();
-void sk_r4_001c5c58();
-void sk_r4_001c5c80();
-void sk_r4_001c5fdc();
-void sk_r4_001c6004();
-void sk_r4_001c60f4();
-void sk_r4_001c60f8();
-void sk_r4_001c6120();
-void sk_r4_001c6310();
-void sk_r4_001c637c();
-void sk_r4_001c6380();
-uint sk_r4_001c63b8();
-void sk_r4_001c6454();
-void sk_r4_001c64e0();
-void sk_r4_001c64e4();
-void sk_r4_001c64fc();
-void sk_r4_001c652c();
-void sk_r4_001c65d0();
-sk_r4_u128_t sk_r4_001c6c48();
-void sk_r4_001c6ce8();
-void sk_r4_001c6d74();
-void sk_r4_001c6d78();
-void sk_r4_001c6d90();
-void sk_r4_001c6dbc();
-void sk_r4_001c6e84();
-sk_r4_u128_t sk_r4_001c7534();
-void sk_r4_001c75dc();
-void sk_r4_001c766c();
-void sk_r4_001c7670();
-void sk_r4_001c7688();
-void sk_r4_001c76b4();
-void sk_r4_001c7768();
-sk_r4_u128_t sk_r4_001c7d10();
-void sk_r4_001c7db8();
-void sk_r4_001c7e48();
-void sk_r4_001c7e4c();
-void sk_r4_001c7e64();
-void sk_r4_001c7e90();
-void sk_r4_001c7f48();
-sk_r4_u128_t sk_r4_001c84fc();
-void sk_r4_001c877c();
-void sk_r4_001c87a0();
-void sk_r4_001c87a4();
-void sk_r4_001c87bc();
-uint64_t sk_r4_001c87e8();
-void sk_r4_001c8818();
-void sk_r4_001c8848();
-void sk_r4_001c884c();
-void sk_r4_001c8864();
-void sk_r4_001c8890();
-void sk_r4_001c8894();
-void sk_r4_001c88c0();
-uint64_t sk_r4_001c8918();
-void sk_r4_001c8948();
-void sk_r4_001c8978();
-void sk_r4_001c897c();
-void sk_r4_001c8994();
-void sk_r4_001c89c0();
-void sk_r4_001c89c4();
-void sk_r4_001c89f0();
-uint64_t sk_r4_001c8a48();
-void sk_r4_001c8a78();
-void sk_r4_001c8aa8();
-void sk_r4_001c8aac();
-void sk_r4_001c8ac4();
-void sk_r4_001c8af0();
-void sk_r4_001c8af4();
-void sk_r4_001c8b20();
-uint64_t sk_r4_001c8b78();
-void sk_r4_001c8ba8();
-void sk_r4_001c8bd8();
-void sk_r4_001c8bdc();
-void sk_r4_001c8bf4();
-void sk_r4_001c8c20();
-void sk_r4_001c8c24();
-void sk_r4_001c8c50();
-uint64_t sk_r4_001c8ca8();
-void sk_r4_001c8cd8();
-void sk_r4_001c8d70();
-void sk_r4_001c8da0();
-void sk_r4_001c8e18();
-void sk_r4_001c8e1c();
-void sk_r4_001c8e34();
-void sk_r4_001c8e60();
-void sk_r4_001c8e64();
-void sk_r4_001c8e90();
-void sk_r4_001c8f24();
-void sk_r4_001c8f7c();
-sk_r4_u128_t sk_r4_001c9550();
-void sk_r4_001c9580();
-void sk_r4_001c95b0();
-void sk_r4_001c95b4();
-void sk_r4_001c95cc();
-void sk_r4_001c95f8();
-void sk_r4_001c95fc();
-void sk_r4_001c9628();
-uint64_t sk_r4_001c9680();
-void sk_r4_001c96b0();
-void sk_r4_001c96e0();
-void sk_r4_001c96e4();
-void sk_r4_001c96fc();
-void sk_r4_001c9728();
-void sk_r4_001c972c();
-void sk_r4_001c9758();
-uint64_t sk_r4_001c97a0();
-void sk_r4_001c97d0();
-void sk_r4_001c9864();
-void sk_r4_001c9894();
-void sk_r4_001c9910();
-void sk_r4_001c9914();
-void sk_r4_001c992c();
-void sk_r4_001c9958();
-void sk_r4_001c995c();
-void sk_r4_001c9988();
-void sk_r4_001c9a1c();
-void sk_r4_001c9a74();
-uint64_t sk_r4_001ca040();
-void sk_r4_001ca070();
-void sk_r4_001ca104();
-void sk_r4_001ca134();
-void sk_r4_001ca1b0();
-void sk_r4_001ca1b4();
-void sk_r4_001ca1cc();
-void sk_r4_001ca1f8();
-void sk_r4_001ca1fc();
-void sk_r4_001ca228();
-void sk_r4_001ca2bc();
-void sk_r4_001ca314();
-uint64_t sk_r4_001ca8e0();
-void sk_r4_001ca910();
-void sk_r4_001ca9a4();
-void sk_r4_001ca9d4();
-void sk_r4_001caa50();
-void sk_r4_001caa54();
-void sk_r4_001caa6c();
-void sk_r4_001caa98();
-void sk_r4_001caa9c();
-void sk_r4_001caac8();
-void sk_r4_001cab5c();
-void sk_r4_001cabb4();
-uint64_t sk_r4_001cb180();
-void sk_r4_001cb1b0();
-void sk_r4_001cb1e0();
-void sk_r4_001cb1e4();
-void sk_r4_001cb1fc();
-void sk_r4_001cb228();
-void sk_r4_001cb22c();
-void sk_r4_001cb258();
-sk_r4_u128_t sk_r4_001cb2a0();
-void sk_r4_001cb2d0();
-void sk_r4_001cb368();
-void sk_r4_001cb398();
-void sk_r4_001cb43c();
-void sk_r4_001cb440();
-void sk_r4_001cb458();
-void sk_r4_001cb484();
-void sk_r4_001cb488();
-void sk_r4_001cb4b4();
-void sk_r4_001cb570();
-void sk_r4_001cb5c8();
-void sk_r4_001cbcb4();
-void sk_r4_001cbe48();
-void sk_r4_001cbe4c();
-void sk_r4_001cbe68();
-void sk_r4_001cc030();
-void sk_r4_001cc034();
-void sk_r4_001cc054();
-void sk_r4_001cc198();
-void sk_r4_001cc19c();
-void sk_r4_001cc1c4();
-void sk_r4_001cc1c8();
-void sk_r4_001cc204();
-void sk_r4_001cc208();
-void sk_r4_001cc230();
-void sk_r4_001cc354();
-void sk_r4_001cc358();
-void sk_r4_001cc380();
-void sk_r4_001cc384();
-void sk_r4_001cc3c0();
-void sk_r4_001cc520();
-void sk_r4_001cc524();
-void sk_r4_001cc54c();
-void sk_r4_001cc584();
-void sk_r4_001cc764();
-void sk_r4_001cc768();
-uint64_t sk_r4_001cc790();
-void sk_r4_001cc94c();
-void sk_r4_001cc98c();
-sk_r4_u128_t sk_r4_001cc9c8();
-void sk_r4_001ccd1c();
-sk_r4_u128_t sk_r4_001cd0b8();
-void sk_r4_001cd168();
-void sk_r4_001cd194();
-void sk_r4_001cd1e0();
-void sk_r4_001cd260();
-void sk_r4_001cd3fc();
-void sk_r4_001cd478();
-void sk_r4_001cd618();
-sk_r4_u128_t sk_r4_001cd66c();
-void sk_r4_001cd6e0();
-void sk_r4_001cd70c();
-sk_r4_u128_t sk_r4_001cd778();
-void sk_r4_001cd7e4();
-void sk_r4_001cd80c();
-void sk_r4_001ce58c();
-void sk_r4_001ce6d4();
-void sk_r4_001ce6d8();
-uint64_t sk_r4_001ce704();
-void sk_r4_001cf6f4();
-void sk_r4_001cf8b8();
-void sk_r4_001cf8f8();
-void sk_r4_001cf964();
-void sk_r4_001cf9d0();
-void sk_r4_001cfa34();
-void sk_r4_001cfa94();
-void sk_r4_001cfaf4();
-void sk_r4_001cfb54();
-void sk_r4_001cfb58();
-void sk_r4_001cfb84();
-void sk_r4_001cfb88();
-void sk_r4_001cfbb4();
-void sk_r4_001cfbb8();
-void sk_r4_001cfbd0();
-void sk_r4_001cfc30();
-void sk_r4_001cfc34();
-void sk_r4_001cfc60();
-void sk_r4_001cfcc0();
-void sk_r4_001cfcc4();
-void sk_r4_001cfcf0();
-void sk_r4_001cfd64();
-void sk_r4_001cfd68();
-void sk_r4_001cfd94();
-void sk_r4_001cfe08();
-void sk_r4_001cfe0c();
-void sk_r4_001cfe24();
-void sk_r4_001cfe94();
-void sk_r4_001cfef4();
-void sk_r4_001cfef8();
-void sk_r4_001cff24();
-void sk_r4_001cff9c();
+extern void (*datum_00658c00)();        /* function-pointer global */
+extern void sk_h_002060d4(); /* FUN_002060d4 out-of-slice */
+extern void sk_r4_001c050c();
+extern sk_r4_u128_t sk_r4_001c0528();
+extern void sk_r4_001c11b4();
+extern void sk_r4_001c11d8();
+extern void sk_r4_001c12dc();
+extern void sk_r4_001c1300();
+extern void sk_r4_001c133c();
+extern void sk_r4_001c1388();
+extern void sk_r4_001c14ac();
+extern void sk_r4_001c1574();
+extern void sk_r4_001c169c();
+extern void sk_r4_001c1700();
+extern void sk_r4_001c1730();
+extern void sk_r4_001c1754();
+extern void sk_r4_001c1778();
+extern void sk_r4_001c179c();
+extern void sk_r4_001c17c0();
+extern void sk_r4_001c17e4();
+extern void sk_r4_001c1808();
+extern void sk_r4_001c182c();
+extern void sk_r4_001c1850();
+extern void sk_r4_001c1874();
+extern void sk_r4_001c1898();
+extern void sk_r4_001c18bc();
+extern void sk_r4_001c18e0();
+extern void sk_r4_001c1904();
+extern void sk_r4_001c1928();
+extern void sk_r4_001c194c();
+extern void sk_r4_001c1970();
+extern void sk_r4_001c1994();
+extern void sk_r4_001c19b8();
+extern void sk_r4_001c19dc();
+extern void sk_r4_001c1a00();
+extern void sk_r4_001c1a24();
+extern void sk_r4_001c1a48();
+extern void sk_r4_001c1a6c();
+extern void sk_r4_001c1a90();
+extern void sk_r4_001c1ab4();
+extern void sk_r4_001c1ad8();
+extern void sk_r4_001c1afc();
+extern void sk_r4_001c1b20();
+extern void sk_r4_001c1b44();
+extern void sk_r4_001c1b68();
+extern void sk_r4_001c1b8c();
+extern void sk_r4_001c1bb0();
+extern void sk_r4_001c1bd4();
+extern void sk_r4_001c1bf8();
+extern void sk_r4_001c1c1c();
+extern void sk_r4_001c1c40();
+extern void sk_r4_001c1c70();
+extern void sk_r4_001c1ca0();
+extern void sk_r4_001c1cd0();
+extern void sk_r4_001c1d00();
+extern void sk_r4_001c1d04();
+extern void sk_r4_001c1d5c();
+extern void sk_r4_001c1e34();
+extern void sk_r4_001c2074();
+extern void sk_r4_001c20a0();
+extern void sk_r4_001c22c4();
+extern void sk_r4_001c22f0();
+extern void sk_r4_001c22f4();
+extern void sk_r4_001c2320();
+extern void sk_r4_001c2324();
+extern void sk_r4_001c2350();
+extern void sk_r4_001c2354();
+extern void sk_r4_001c236c();
+extern void sk_r4_001c2370();
+extern void sk_r4_001c239c();
+extern void sk_r4_001c23a0();
+extern void sk_r4_001c23cc();
+extern void sk_r4_001c23d0();
+extern void sk_r4_001c23fc();
+extern void sk_r4_001c2400();
+extern void sk_r4_001c242c();
+extern void sk_r4_001c2430();
+extern void sk_r4_001c245c();
+extern void sk_r4_001c2460();
+extern void sk_r4_001c2478();
+extern void sk_r4_001c2584();
+extern void sk_r4_001c25b0();
+extern void sk_r4_001c26d0();
+extern void sk_r4_001c26fc();
+extern void sk_r4_001c2a6c();
+extern void sk_r4_001c2a98();
+extern void sk_r4_001c2ba4();
+extern void sk_r4_001c2bd0();
+extern void sk_r4_001c2d08();
+extern void sk_r4_001c2d34();
+extern void sk_r4_001c2d38();
+extern void sk_r4_001c2d64();
+extern void sk_r4_001c2d68();
+extern void sk_r4_001c2d94();
+extern void sk_r4_001c2d98();
+extern void sk_r4_001c2dc4();
+extern void sk_r4_001c2dc8();
+extern void sk_r4_001c2df4();
+extern void sk_r4_001c2df8();
+extern void sk_r4_001c2e24();
+extern void sk_r4_001c2e28();
+extern void sk_r4_001c2e54();
+extern void sk_r4_001c2e58();
+extern void sk_r4_001c2e84();
+extern void sk_r4_001c2e88();
+extern void sk_r4_001c2eb4();
+extern void sk_r4_001c2eb8();
+extern void sk_r4_001c2ee4();
+extern void sk_r4_001c2ff0();
+extern void sk_r4_001c301c();
+extern void sk_r4_001c3140();
+extern void sk_r4_001c316c();
+extern void sk_r4_001c328c();
+extern void sk_r4_001c32b8();
+extern void sk_r4_001c33f8();
+extern void sk_r4_001c3424();
+extern void sk_r4_001c37cc();
+extern void sk_r4_001c3868();
+extern void sk_r4_001c39dc();
+extern void sk_r4_001c3a48();
+extern void sk_r4_001c3a78();
+extern void sk_r4_001c3aa8();
+extern void sk_r4_001c3ad8();
+extern void sk_r4_001c3afc();
+extern void sk_r4_001c3b20();
+extern void sk_r4_001c3b44();
+extern void sk_r4_001c3b68();
+extern void sk_r4_001c3b8c();
+extern void sk_r4_001c3bb0();
+extern void sk_r4_001c3bd4();
+extern void sk_r4_001c3bf8();
+extern void sk_r4_001c3c1c();
+extern void sk_r4_001c3c40();
+extern void sk_r4_001c3c64();
+extern void sk_r4_001c3c88();
+extern void sk_r4_001c3cac();
+extern void sk_r4_001c3cd0();
+extern void sk_r4_001c3cf4();
+extern void sk_r4_001c3d18();
+extern void sk_r4_001c3d3c();
+extern void sk_r4_001c3d60();
+extern void sk_r4_001c3d84();
+extern void sk_r4_001c3da8();
+extern void sk_r4_001c3dcc();
+extern void sk_r4_001c3df0();
+extern void sk_r4_001c3e14();
+extern void sk_r4_001c3e38();
+extern void sk_r4_001c3e5c();
+extern void sk_r4_001c3e80();
+extern void sk_r4_001c3ea4();
+extern void sk_r4_001c3ec8();
+extern void sk_r4_001c3eec();
+extern void sk_r4_001c3f10();
+extern void sk_r4_001c3f34();
+extern void sk_r4_001c3f58();
+extern void sk_r4_001c3f7c();
+extern void sk_r4_001c3fa0();
+extern void sk_r4_001c3fc4();
+extern void sk_r4_001c3fe8();
+extern void sk_r4_001c400c();
+extern void sk_r4_001c4030();
+extern void sk_r4_001c4058();
+extern void sk_r4_001c40b0();
+extern void sk_r4_001c4188();
+extern void sk_r4_001c4284();
+extern uint sk_r4_001c43f4();
+extern uint sk_r4_001c4424();
+extern uint sk_r4_001c4428();
+extern uint sk_r4_001c4458();
+extern void sk_r4_001c45b8();
+extern void sk_r4_001c45e4();
+extern void sk_r4_001c4910();
+extern void sk_r4_001c4928();
+extern void sk_r4_001c492c();
+extern void sk_r4_001c4958();
+extern void sk_r4_001c495c();
+extern void sk_r4_001c4988();
+extern void sk_r4_001c498c();
+extern void sk_r4_001c49a4();
+extern void sk_r4_001c49a8();
+extern void sk_r4_001c49c0();
+extern void sk_r4_001c49c4();
+extern void sk_r4_001c49dc();
+extern void sk_r4_001c49e0();
+extern void sk_r4_001c49f8();
+extern void sk_r4_001c49fc();
+extern void sk_r4_001c4a28();
+extern void sk_r4_001c4a2c();
+extern void sk_r4_001c4a58();
+extern void sk_r4_001c4a5c();
+extern void sk_r4_001c4a74();
+extern void sk_r4_001c4bd4();
+extern void sk_r4_001c4bec();
+extern void sk_r4_001c4d4c();
+extern void sk_r4_001c4d64();
+extern void sk_r4_001c4ed8();
+extern void sk_r4_001c4f00();
+extern void sk_r4_001c4f04();
+extern void sk_r4_001c4f30();
+extern void sk_r4_001c5090();
+extern void sk_r4_001c50bc();
+extern void sk_r4_001c5238();
+extern void sk_r4_001c5264();
+extern void sk_r4_001c5268();
+extern void sk_r4_001c5294();
+extern void sk_r4_001c5298();
+extern void sk_r4_001c52c4();
+extern void sk_r4_001c52c8();
+extern void sk_r4_001c52f4();
+extern void sk_r4_001c52f8();
+extern void sk_r4_001c5324();
+extern void sk_r4_001c5328();
+extern void sk_r4_001c5354();
+extern void sk_r4_001c5358();
+extern void sk_r4_001c5384();
+extern void sk_r4_001c5388();
+extern void sk_r4_001c53b4();
+extern void sk_r4_001c53b8();
+extern void sk_r4_001c53e4();
+extern void sk_r4_001c53e8();
+extern void sk_r4_001c5414();
+extern void sk_r4_001c5574();
+extern void sk_r4_001c55a0();
+extern void sk_r4_001c5700();
+extern void sk_r4_001c572c();
+extern void sk_r4_001c588c();
+extern void sk_r4_001c58b8();
+extern void sk_r4_001c5a38();
+extern void sk_r4_001c5a64();
+extern void sk_r4_001c5c58();
+extern void sk_r4_001c5c80();
+extern void sk_r4_001c5fdc();
+extern void sk_r4_001c6004();
+extern void sk_r4_001c60f4();
+extern void sk_r4_001c60f8();
+extern void sk_r4_001c6120();
+extern void sk_r4_001c6310();
+extern void sk_r4_001c637c();
+extern void sk_r4_001c6380();
+extern uint sk_r4_001c63b8();
+extern void sk_r4_001c6454();
+extern void sk_r4_001c64e0();
+extern void sk_r4_001c64e4();
+extern void sk_r4_001c64fc();
+extern void sk_r4_001c652c();
+extern void sk_r4_001c65d0();
+extern sk_r4_u128_t sk_r4_001c6c48();
+extern void sk_r4_001c6ce8();
+extern void sk_r4_001c6d74();
+extern void sk_r4_001c6d78();
+extern void sk_r4_001c6d90(uint8_t (*p1) [16]);
+extern void sk_r4_001c6dbc();
+extern void sk_r4_001c6e84();
+extern sk_r4_u128_t sk_r4_001c7534();
+extern void sk_r4_001c75dc();
+extern void sk_r4_001c766c();
+extern void sk_r4_001c7670();
+extern void sk_r4_001c7688();
+extern void sk_r4_001c76b4();
+extern void sk_r4_001c7768();
+extern sk_r4_u128_t sk_r4_001c7d10();
+extern void sk_r4_001c7db8();
+extern void sk_r4_001c7e48();
+extern void sk_r4_001c7e4c();
+extern void sk_r4_001c7e64();
+extern void sk_r4_001c7e90();
+extern void sk_r4_001c7f48();
+extern sk_r4_u128_t sk_r4_001c84fc();
+extern void sk_r4_001c877c();
+extern void sk_r4_001c87a0();
+extern void sk_r4_001c87a4();
+extern void sk_r4_001c87bc();
+extern uint64_t sk_r4_001c87e8();
+extern void sk_r4_001c8818();
+extern void sk_r4_001c8848();
+extern void sk_r4_001c884c();
+extern void sk_r4_001c8864();
+extern void sk_r4_001c8890();
+extern void sk_r4_001c8894();
+extern void sk_r4_001c88c0();
+extern uint64_t sk_r4_001c8918();
+extern void sk_r4_001c8948();
+extern void sk_r4_001c8978();
+extern void sk_r4_001c897c();
+extern void sk_r4_001c8994();
+extern void sk_r4_001c89c0();
+extern void sk_r4_001c89c4();
+extern void sk_r4_001c89f0();
+extern uint64_t sk_r4_001c8a48();
+extern void sk_r4_001c8a78();
+extern void sk_r4_001c8aa8();
+extern void sk_r4_001c8aac();
+extern void sk_r4_001c8ac4();
+extern void sk_r4_001c8af0();
+extern void sk_r4_001c8af4();
+extern void sk_r4_001c8b20();
+extern uint64_t sk_r4_001c8b78();
+extern void sk_r4_001c8ba8();
+extern void sk_r4_001c8bd8();
+extern void sk_r4_001c8bdc();
+extern void sk_r4_001c8bf4();
+extern void sk_r4_001c8c20();
+extern void sk_r4_001c8c24();
+extern void sk_r4_001c8c50();
+extern uint64_t sk_r4_001c8ca8();
+extern void sk_r4_001c8cd8();
+extern void sk_r4_001c8d70();
+extern void sk_r4_001c8da0();
+extern void sk_r4_001c8e18();
+extern void sk_r4_001c8e1c();
+extern void sk_r4_001c8e34();
+extern void sk_r4_001c8e60();
+extern void sk_r4_001c8e64();
+extern void sk_r4_001c8e90();
+extern void sk_r4_001c8f24();
+extern void sk_r4_001c8f7c();
+extern sk_r4_u128_t sk_r4_001c9550();
+extern void sk_r4_001c9580();
+extern void sk_r4_001c95b0();
+extern void sk_r4_001c95b4();
+extern void sk_r4_001c95cc(uint8_t (*p1) [16]);
+extern void sk_r4_001c95f8();
+extern void sk_r4_001c95fc();
+extern void sk_r4_001c9628();
+extern uint64_t sk_r4_001c9680();
+extern void sk_r4_001c96b0();
+extern void sk_r4_001c96e0();
+extern void sk_r4_001c96e4();
+extern void sk_r4_001c96fc();
+extern void sk_r4_001c9728();
+extern void sk_r4_001c972c();
+extern void sk_r4_001c9758();
+extern uint64_t sk_r4_001c97a0();
+extern void sk_r4_001c97d0();
+extern void sk_r4_001c9864();
+extern void sk_r4_001c9894();
+extern void sk_r4_001c9910();
+extern void sk_r4_001c9914();
+extern void sk_r4_001c992c();
+extern void sk_r4_001c9958();
+extern void sk_r4_001c995c();
+extern void sk_r4_001c9988();
+extern void sk_r4_001c9a1c();
+extern void sk_r4_001c9a74();
+extern uint64_t sk_r4_001ca040();
+extern void sk_r4_001ca070();
+extern void sk_r4_001ca104();
+extern void sk_r4_001ca134();
+extern void sk_r4_001ca1b0();
+extern void sk_r4_001ca1b4();
+extern void sk_r4_001ca1cc();
+extern void sk_r4_001ca1f8();
+extern void sk_r4_001ca1fc();
+extern void sk_r4_001ca228();
+extern void sk_r4_001ca2bc();
+extern void sk_r4_001ca314();
+extern uint64_t sk_r4_001ca8e0();
+extern void sk_r4_001ca910();
+extern void sk_r4_001ca9a4();
+extern void sk_r4_001ca9d4();
+extern void sk_r4_001caa50();
+extern void sk_r4_001caa54();
+extern void sk_r4_001caa6c();
+extern void sk_r4_001caa98();
+extern void sk_r4_001caa9c();
+extern void sk_r4_001caac8();
+extern void sk_r4_001cab5c();
+extern void sk_r4_001cabb4();
+extern uint64_t sk_r4_001cb180();
+extern void sk_r4_001cb1b0();
+extern void sk_r4_001cb1e0();
+extern void sk_r4_001cb1e4();
+extern void sk_r4_001cb1fc();
+extern void sk_r4_001cb228();
+extern void sk_r4_001cb22c();
+extern void sk_r4_001cb258();
+extern sk_r4_u128_t sk_r4_001cb2a0();
+extern void sk_r4_001cb2d0();
+extern void sk_r4_001cb368();
+extern void sk_r4_001cb398();
+extern void sk_r4_001cb43c();
+extern void sk_r4_001cb440();
+extern void sk_r4_001cb458(uint8_t (*p1) [16]);
+extern void sk_r4_001cb484();
+extern void sk_r4_001cb488();
+extern void sk_r4_001cb4b4();
+extern void sk_r4_001cb570();
+extern void sk_r4_001cb5c8();
+extern void sk_r4_001cbcb4();
+extern void sk_r4_001cbe48();
+extern void sk_r4_001cbe4c();
+extern void sk_r4_001cbe68();
+extern void sk_r4_001cc030();
+extern void sk_r4_001cc034();
+extern void sk_r4_001cc054();
+extern void sk_r4_001cc198();
+extern void sk_r4_001cc19c();
+extern void sk_r4_001cc1c4();
+extern void sk_r4_001cc1c8();
+extern void sk_r4_001cc204();
+extern void sk_r4_001cc208();
+extern void sk_r4_001cc230();
+extern void sk_r4_001cc354();
+extern void sk_r4_001cc358();
+extern void sk_r4_001cc380();
+extern void sk_r4_001cc384();
+extern void sk_r4_001cc3c0();
+extern void sk_r4_001cc520();
+extern void sk_r4_001cc524();
+extern void sk_r4_001cc54c();
+extern void sk_r4_001cc584();
+extern void sk_r4_001cc764();
+extern void sk_r4_001cc768();
+extern uint64_t sk_r4_001cc790();
+extern void sk_r4_001cc94c();
+extern void sk_r4_001cc98c();
+extern sk_r4_u128_t sk_r4_001cc9c8();
+extern void sk_r4_001ccd1c();
+extern sk_r4_u128_t sk_r4_001cd0b8();
+extern void sk_r4_001cd168();
+extern void sk_r4_001cd194();
+extern void sk_r4_001cd1e0();
+extern void sk_r4_001cd260();
+extern void sk_r4_001cd3fc();
+extern void sk_r4_001cd478();
+extern void sk_r4_001cd618();
+extern sk_r4_u128_t sk_r4_001cd66c();
+extern void sk_r4_001cd6e0();
+extern void sk_r4_001cd70c();
+extern sk_r4_u128_t sk_r4_001cd778();
+extern void sk_r4_001cd7e4(uint8_t (*p1) [16]);
+extern void sk_r4_001cd80c();
+extern void sk_r4_001ce58c();
+extern void sk_r4_001ce6d4();
+extern void sk_r4_001ce6d8();
+extern uint64_t sk_r4_001ce704();
+extern void sk_r4_001cf6f4();
+extern void sk_r4_001cf8b8();
+extern void sk_r4_001cf8f8();
+extern void sk_r4_001cf964();
+extern void sk_r4_001cf9d0();
+extern void sk_r4_001cfa34();
+extern void sk_r4_001cfa94();
+extern void sk_r4_001cfaf4();
+extern void sk_r4_001cfb54();
+extern void sk_r4_001cfb58();
+extern void sk_r4_001cfb84();
+extern void sk_r4_001cfb88();
+extern void sk_r4_001cfbb4();
+extern void sk_r4_001cfbb8();
+extern void sk_r4_001cfbd0();
+extern void sk_r4_001cfc30();
+extern void sk_r4_001cfc34();
+extern void sk_r4_001cfc60();
+extern void sk_r4_001cfcc0();
+extern void sk_r4_001cfcc4();
+extern void sk_r4_001cfcf0();
+extern void sk_r4_001cfd64();
+extern void sk_r4_001cfd68();
+extern void sk_r4_001cfd94();
+extern void sk_r4_001cfe08();
+extern void sk_r4_001cfe0c();
+extern void sk_r4_001cfe24();
+extern void sk_r4_001cfe94();
+extern void sk_r4_001cfef4();
+extern void sk_r4_001cfef8();
+extern void sk_r4_001cff24();
+extern void sk_r4_001cff9c();
 typedef struct { undefined8 _0_8_; undefined8 _8_8_; undefined8 _8_4_; } sk_c16_t;
 typedef uint32_t undefined4;
 #define concat(a,b) ((uint64_t)((uint64_t)(a) << 32) | (uint32_t)(b))
 #define ovf(a,b) ({ unsigned long long _ovf_out; __builtin_add_overflow((unsigned long long)(a),(unsigned long long)(b),&_ovf_out); })
-extern unsigned long sk_00002534();
-extern unsigned long sk_000026e8();
-extern unsigned long sk_00019858();
-extern unsigned long sk_00027754();
-extern unsigned long sk_00027788();
-extern unsigned long sk_000277b8();
-extern unsigned long sk_000277e8();
-extern unsigned long sk_00027818();
-extern unsigned long sk_00068e14();
-extern unsigned long sk_0006b3f4();
-extern unsigned long sk_0006b42c();
-extern unsigned long sk_0006b6f4();
-extern unsigned long sk_0006f6b4();
-extern unsigned long sk_00077888();
-extern unsigned long sk_0007b384();
-extern unsigned long sk_0007c028();
-extern unsigned long sk_0007c1a4();
-extern unsigned long sk_0007c1c4();
-extern unsigned long sk_000839d8();
-extern unsigned long sk_000839f8();
-extern unsigned long sk_0008409c();
-extern unsigned long sk_0008412c();
-extern unsigned long sk_00084174();
-extern unsigned long sk_00084180();
-extern unsigned long sk_00084220();
-extern unsigned long sk_00084234();
-extern unsigned long sk_000867ec();
-extern unsigned long sk_0008e388();
-extern unsigned long sk_0008e500();
-extern unsigned long sk_0008e518();
-extern unsigned long sk_0008f6c0();
-extern unsigned long sk_0009461c();
-extern unsigned long sk_000a68c4();
-extern unsigned long sk_000a68f4();
-extern unsigned long sk_000a6f68();
-extern unsigned long sk_000a6f88();
-extern unsigned long sk_000b4390();
-extern unsigned long sk_000dbd0c();
-extern unsigned long sk_000dbedc();
-extern unsigned long sk_000dbf08();
-extern unsigned long sk_000e15d8();
-extern unsigned long sk_000e72b0();
-extern unsigned long sk_00100c38();
-extern unsigned long sk_00100efc();
-extern unsigned long sk_00106e3c();
-extern unsigned long sk_00117cc4();
-extern unsigned long sk_0014ae44();
-extern unsigned long sk_0016186c();
-extern unsigned long sk_00167404();
-extern unsigned long sk_001679cc();
-extern unsigned long sk_0019c44c();
-extern unsigned long sk_0019c53c();
-extern unsigned long sk_0019d15c();
-extern unsigned long sk_0019d6d0();
-extern unsigned long sk_0019dadc();
-extern unsigned long sk_0019e578();
-extern unsigned long sk_0019e5ec();
-extern unsigned long sk_0019e66c();
-extern unsigned long sk_0019e690();
-extern unsigned long sk_0019ea20();
-extern unsigned long sk_0019eb20();
-extern unsigned long sk_0019ec24();
-extern unsigned long sk_0019f1ec();
-extern unsigned long sk_0019f370();
-extern unsigned long sk_0019f698();
-extern unsigned long sk_0019fa60();
-extern unsigned long sk_0019fd10();
-extern unsigned long sk_001a0158();
-extern unsigned long sk_001a0194();
-extern unsigned long sk_001a0414();
-extern unsigned long sk_001a04a4();
-extern unsigned long sk_001a0734();
-extern unsigned long sk_001a0754();
-extern unsigned long sk_001a0774();
-extern unsigned long sk_001a0b30();
-extern unsigned long sk_001a10d4();
-extern unsigned long sk_001a10e4();
-extern unsigned long sk_001a16e8();
-extern unsigned long sk_001a1854();
-extern unsigned long sk_001a18f8();
-extern unsigned long sk_001a26e0();
-extern unsigned long sk_001a2740();
-extern unsigned long sk_001a27f0();
-extern unsigned long sk_001a4554();
-extern unsigned long sk_001a5968();
-extern unsigned long sk_001a67bc();
-extern unsigned long sk_001a6ab8();
-extern unsigned long sk_001a76fc();
-extern unsigned long sk_001a7e30();
-extern unsigned long sk_001a7e5c();
-extern unsigned long sk_001a8564();
-extern unsigned long sk_001aeab4();
-extern unsigned long sk_001afe4c();
-extern unsigned long sk_001b07b8();
-extern unsigned long sk_001e3048();
-extern unsigned long sk_001e4cbc();
-extern unsigned long sk_00229a3c();
-extern unsigned long sk_0023b7b8();
-extern unsigned long sk_00257f8c();
-extern unsigned long sk_0027743c();
-extern unsigned long sk_00277474();
-extern unsigned long sk_00277ba8();
-extern unsigned long sk_00281a54();
-extern unsigned long sk_0028e8c0();
-extern unsigned long sk_00291d70();
-extern unsigned long sk_0029eb58();
-extern unsigned long sk_002a0d50();
-extern unsigned long sk_002a200c();
-extern unsigned long sk_002a9ba8();
-extern unsigned long sk_002a9c14();
-extern unsigned long sk_002ab8ac();
-extern unsigned long sk_002bbcd8();
-extern unsigned long sk_002c6d00();
-extern unsigned long sk_0031090c();
-extern unsigned long sk_00310924();
-extern unsigned long sk_00310ad4();
-extern unsigned long sk_00310b38();
-extern unsigned long sk_00310d34();
-extern unsigned long sk_00310d68();
-extern unsigned long sk_00310d80();
-extern unsigned long sk_00310d98();
-extern unsigned long sk_00310dd8();
-extern unsigned long sk_00310df0();
-extern unsigned long sk_00310e08();
-extern unsigned long sk_00310e20();
-extern unsigned long sk_00310f04();
-extern unsigned long sk_00310f34();
-extern unsigned long sk_00310f94();
-extern unsigned long sk_00310fc4();
-extern unsigned long sk_00319218();
-extern unsigned long sk_00319230();
-extern unsigned long sk_003192a8();
-extern unsigned long sk_003192d8();
-extern unsigned long sk_00319308();
-extern unsigned long sk_0031945c();
-extern unsigned long sk_0031948c();
-extern unsigned long sk_003195c8();
-extern unsigned long sk_00319628();
-extern unsigned long sk_00319658();
-extern unsigned long sk_003196e8();
-extern unsigned long sk_00319808();
-extern unsigned long sk_00319a4c();
-extern unsigned long sk_0031a14c();
-extern unsigned long sk_0031a17c();
-extern unsigned long sk_0031a1ac();
-extern unsigned long sk_0031a5dc();
-extern unsigned long sk_0031a60c();
-extern unsigned long sk_0031a63c();
-extern unsigned long sk_0031a66c();
-extern unsigned long sk_0031a69c();
-extern unsigned long sk_0031a6cc();
-extern unsigned long sk_0031a6fc();
-extern unsigned long sk_0031a96c();
-extern unsigned long sk_0031a99c();
-extern unsigned long sk_0031a9cc();
-extern unsigned long sk_0031a9fc();
-extern unsigned long sk_0031aa2c();
-extern unsigned long sk_0031ac9c();
-extern unsigned long sk_0031accc();
-extern unsigned long sk_0031acfc();
-extern unsigned long sk_0031ad2c();
-extern unsigned long sk_0031ad5c();
-extern unsigned long sk_0031ae4c();
-extern unsigned long sk_0031af6c();
-extern unsigned long sk_0031afcc();
-extern unsigned long sk_0031affc();
-extern unsigned long sk_0031b080();
-extern unsigned long sk_0031b0bc();
-extern unsigned long sk_0031b0ec();
-extern unsigned long sk_0031b110();
-extern unsigned long sk_0031b140();
-extern unsigned long sk_0031b164();
-extern unsigned long sk_0031b194();
-extern unsigned long sk_0031b1c4();
-extern unsigned long sk_0031b1f4();
-extern unsigned long sk_0031de7c();
-extern unsigned long sk_0031e4e0();
-extern unsigned long sk_00344ca8();
-extern unsigned long sk_00344e54();
-extern unsigned long sk_00346774();
-extern unsigned long sk_003469a8();
-extern unsigned long sk_00347040();
-extern unsigned long sk_00347d60();
-extern unsigned long sk_00347da8();
-extern unsigned long sk_00348034();
-extern unsigned long sk_003480ac();
-extern unsigned long sk_00348284();
-extern unsigned long sk_00348304();
-extern unsigned long sk_00348384();
-extern unsigned long sk_003483c4();
-extern unsigned long sk_00348508();
-extern unsigned long sk_00348730();
-extern unsigned long sk_003487a4();
-extern unsigned long sk_003488bc();
-extern unsigned long sk_003488f4();
-extern unsigned long sk_0034893c();
-extern unsigned long sk_003489a8();
-extern unsigned long sk_003489c0();
-extern unsigned long sk_003489dc();
-extern unsigned long sk_00348a18();
-extern unsigned long sk_00348a34();
-extern unsigned long sk_00348a9c();
-extern unsigned long sk_00348abc();
-extern unsigned long sk_00348b5c();
-extern unsigned long sk_00348b7c();
-extern unsigned long sk_00348b94();
-extern unsigned long sk_00348bbc();
-extern unsigned long sk_00348bd8();
-extern unsigned long sk_00348bf8();
-extern unsigned long sk_00348c48();
-extern unsigned long sk_00348cd0();
-extern unsigned long sk_00348ce8();
-extern unsigned long sk_00348d00();
-extern unsigned long sk_00348d18();
-extern unsigned long sk_00348d30();
-extern unsigned long sk_00348d4c();
-extern unsigned long sk_00348d64();
-extern unsigned long sk_00348d7c();
-extern unsigned long sk_00348d94();
-extern unsigned long sk_00348dd8();
-extern unsigned long sk_00348e00();
-extern unsigned long sk_00348e18();
-extern unsigned long sk_00348e30();
-extern unsigned long sk_00348e60();
-extern unsigned long sk_00348e9c();
-extern unsigned long sk_00348f14();
-extern unsigned long sk_00348f38();
-extern unsigned long sk_00348f50();
-extern unsigned long sk_00348fd8();
-extern unsigned long sk_003490b8();
-extern unsigned long sk_003490ec();
-extern unsigned long sk_0034911c();
-extern unsigned long sk_0034921c();
-extern unsigned long sk_00349234();
-extern unsigned long sk_0034926c();
-extern unsigned long sk_003492ac();
-extern unsigned long sk_003493c4();
-extern unsigned long sk_00349410();
-extern unsigned long sk_003494d4();
-extern unsigned long sk_00349530();
-extern unsigned long sk_00349618();
-extern unsigned long sk_00349644();
-extern unsigned long sk_00349720();
-extern unsigned long sk_00349748();
-extern unsigned long sk_003497a0();
-extern unsigned long sk_003497b4();
-extern unsigned long sk_00349830();
-extern unsigned long sk_0034987c();
-extern unsigned long sk_003498c4();
-extern unsigned long sk_003498dc();
-extern unsigned long sk_00349910();
-extern unsigned long sk_0034998c();
-extern unsigned long sk_003499c8();
-extern unsigned long sk_003499f0();
-extern unsigned long sk_00349a18();
-extern unsigned long sk_00349a2c();
-extern unsigned long sk_00349a54();
-extern unsigned long sk_00349b3c();
-extern unsigned long sk_00349b88();
-extern unsigned long sk_00349c2c();
-extern unsigned long sk_00349c70();
-extern unsigned long sk_00349ea0();
-extern unsigned long sk_00349ef4();
-extern unsigned long sk_00349f08();
-extern unsigned long sk_00349f3c();
-extern unsigned long sk_0034a1b0();
-extern unsigned long sk_0034a1c8();
-extern unsigned long sk_0034a210();
-extern unsigned long sk_0034a2c0();
-extern unsigned long sk_0034a3c4();
-extern unsigned long sk_0034a3d8();
-extern unsigned long sk_0034a414();
-extern unsigned long sk_0034a450();
-extern unsigned long sk_0034a464();
-extern unsigned long sk_0034a4f8();
-extern unsigned long sk_0034a528();
-extern unsigned long sk_0034a5c8();
-extern unsigned long sk_0034a654();
-extern unsigned long sk_0034a6b0();
-extern unsigned long sk_0034a944();
-extern unsigned long sk_0034a980();
-extern unsigned long sk_0034a9c0();
-extern unsigned long sk_0034a9e8();
-extern unsigned long sk_0034aa14();
-extern unsigned long sk_0034aa28();
-extern unsigned long sk_0034aa9c();
-extern unsigned long sk_0034aac4();
-extern unsigned long sk_0034aadc();
-extern unsigned long sk_0034ab10();
-extern unsigned long sk_0034ab20();
-extern unsigned long sk_0034abb0();
-extern unsigned long sk_0034ac00();
-extern unsigned long sk_0034ac28();
-extern unsigned long sk_0034ac8c();
-extern unsigned long sk_0034acf0();
-extern unsigned long sk_0034ad10();
-extern unsigned long sk_0034ae30();
-extern unsigned long sk_0034ae58();
-extern unsigned long sk_0034ae94();
-extern unsigned long sk_0034aea8();
-extern unsigned long sk_0034aee4();
-extern unsigned long sk_0034af20();
-extern unsigned long sk_0034af60();
-extern unsigned long sk_0034affc();
-extern unsigned long sk_0034b05c();
-extern unsigned long sk_0034b07c();
-extern unsigned long sk_0034b0b4();
-extern unsigned long sk_0034b0c4();
-extern unsigned long sk_0034b0d4();
-extern unsigned long sk_0034b128();
-extern unsigned long sk_0034b13c();
-extern unsigned long sk_0034b164();
-extern unsigned long sk_0034b250();
-extern unsigned long sk_0034b278();
-extern unsigned long sk_0034b2a8();
-extern unsigned long sk_0034b2c8();
-extern unsigned long sk_0034b2f8();
-extern unsigned long sk_0034b308();
-extern unsigned long sk_0034b318();
-extern unsigned long sk_0034b348();
-extern unsigned long sk_0034b358();
-extern unsigned long sk_0034b3c8();
-extern unsigned long sk_0034b3d8();
-extern unsigned long sk_0034b3e8();
-extern unsigned long sk_0034b430();
-extern unsigned long sk_0034b460();
-extern unsigned long sk_0034b470();
-extern unsigned long sk_0034b4c0();
-extern unsigned long sk_0034b508();
-extern unsigned long sk_0034b540();
-extern unsigned long sk_0034b668();
-extern unsigned long sk_0034b708();
-extern unsigned long sk_0034b744();
-extern unsigned long sk_0034b758();
-extern unsigned long sk_0034b778();
-extern unsigned long sk_0034b7e4();
-extern unsigned long sk_0034b804();
-extern unsigned long sk_0034b85c();
-extern unsigned long sk_0034b87c();
-extern unsigned long sk_0034b8cc();
-extern unsigned long sk_0034b960();
-extern unsigned long sk_0034ba28();
-extern unsigned long sk_0034ba68();
-extern unsigned long sk_0034ba78();
-extern unsigned long sk_0034baa8();
-extern unsigned long sk_0034bc80();
-extern unsigned long sk_0034bc94();
-extern unsigned long sk_0034bccc();
-extern unsigned long sk_0034bcdc();
-extern unsigned long sk_0034bcf0();
-extern unsigned long sk_0034bd30();
-extern unsigned long sk_0034bddc();
-extern unsigned long sk_0034be0c();
-extern unsigned long sk_0034be1c();
-extern unsigned long sk_0034be70();
-extern unsigned long sk_0034be94();
-extern unsigned long sk_0034bec4();
-extern unsigned long sk_0034bf1c();
-extern unsigned long sk_0034c074();
-extern unsigned long sk_0034c084();
-extern unsigned long sk_0034c2b4();
-extern unsigned long sk_0034c2c8();
-extern unsigned long sk_0034c2d8();
-extern unsigned long sk_0034c2f8();
-extern unsigned long sk_0034c3b4();
-extern unsigned long sk_0034c3c4();
-extern unsigned long sk_0034c3d4();
-extern unsigned long sk_0034c454();
-extern unsigned long sk_0034c4bc();
-extern unsigned long sk_0034c54c();
-extern unsigned long sk_0034c55c();
-extern unsigned long sk_0034c59c();
-extern unsigned long sk_0034c5dc();
-extern unsigned long sk_0034c664();
-extern unsigned long sk_0034c6b4();
-extern unsigned long sk_0034c754();
-extern unsigned long sk_0034c8b8();
-extern unsigned long sk_0034c8e0();
-extern unsigned long sk_0034c920();
-extern unsigned long sk_0034c9f8();
-extern unsigned long sk_0034ca08();
-extern unsigned long sk_0034ca18();
-extern unsigned long sk_0034cd18();
-extern unsigned long sk_0034cd7c();
-extern unsigned long sk_0034ce68();
-extern unsigned long sk_0034ce78();
-extern unsigned long sk_0034cf14();
-extern unsigned long sk_0034cf34();
-extern unsigned long sk_0034cf94();
-extern unsigned long sk_0034cfa4();
-extern unsigned long sk_0034cff4();
-extern unsigned long sk_0034d024();
-extern unsigned long sk_0034d180();
-extern unsigned long sk_0034d190();
-extern unsigned long sk_0034d254();
-extern unsigned long sk_0034d2a4();
-extern unsigned long sk_0034d2b4();
-extern unsigned long sk_0034d334();
-extern unsigned long sk_0034d344();
-extern unsigned long sk_0034d364();
-extern unsigned long sk_0034d394();
-extern unsigned long sk_0034d3c4();
-extern unsigned long sk_0034d3f4();
-extern unsigned long sk_0034d434();
-extern unsigned long sk_0034d464();
-extern unsigned long sk_0034d49c();
-extern unsigned long sk_0034d574();
-extern unsigned long sk_0034d6d8();
-extern unsigned long sk_0034d734();
-extern unsigned long sk_0034d758();
-extern unsigned long sk_0034d7cc();
-extern unsigned long sk_0034d7dc();
-extern unsigned long sk_0034d844();
-extern unsigned long sk_0034d868();
-extern unsigned long sk_0034d8f4();
-extern unsigned long sk_0034d9f8();
-extern unsigned long sk_0034da38();
-extern unsigned long sk_0034da88();
-extern unsigned long sk_0034da98();
-extern unsigned long sk_0034dad8();
-extern unsigned long sk_0034dae8();
-extern unsigned long sk_0034db28();
-extern unsigned long sk_0034dba8();
-extern unsigned long sk_0034dbb8();
-extern unsigned long sk_0034dbc8();
-extern unsigned long sk_0034dc3c();
-extern unsigned long sk_0034dccc();
-extern unsigned long sk_0034dcfc();
-extern unsigned long sk_0034de64();
-extern unsigned long sk_0034de8c();
-extern unsigned long sk_0034ded4();
-extern unsigned long sk_0034df24();
-extern unsigned long sk_0034df54();
-extern unsigned long sk_0034dfe4();
-extern unsigned long sk_0034e044();
-extern unsigned long sk_0034e0d4();
-extern unsigned long sk_0034e130();
-extern unsigned long sk_0034e1b0();
-extern unsigned long sk_0034e1d0();
-extern unsigned long sk_0034e33c();
-extern unsigned long sk_0034e384();
-extern unsigned long sk_0034e414();
-extern unsigned long sk_0034e434();
-extern unsigned long sk_0034e4b4();
-extern unsigned long sk_0034e57c();
-extern unsigned long sk_0034e5cc();
-extern unsigned long sk_0034e5fc();
-extern unsigned long sk_0034e60c();
-extern unsigned long sk_0034e63c();
-extern unsigned long sk_0034e66c();
-extern unsigned long sk_0034e67c();
-extern unsigned long sk_0034e70c();
-extern unsigned long sk_0034e808();
-extern unsigned long sk_0034ea40();
-extern unsigned long sk_0034eb2c();
-extern unsigned long sk_0034eb40();
-extern unsigned long sk_0034ec48();
-extern unsigned long sk_0034ece8();
-extern unsigned long sk_0034ed28();
-extern unsigned long sk_0034ed88();
-extern unsigned long sk_0034ede8();
-extern unsigned long sk_0034ee28();
-extern unsigned long sk_0034ee48();
-extern unsigned long sk_0034ee68();
-extern unsigned long sk_0034ee98();
-extern unsigned long sk_0034ef08();
-extern unsigned long sk_0034ef48();
-extern unsigned long sk_0034ef68();
-extern unsigned long sk_0034f014();
-extern unsigned long sk_0034f044();
-extern unsigned long sk_0034f088();
-extern unsigned long sk_0034f0c0();
-extern unsigned long sk_0034f1e0();
-extern unsigned long sk_0034f384();
-extern unsigned long sk_0034f3e4();
-extern unsigned long sk_0034f4d4();
-extern unsigned long sk_0034f544();
-extern unsigned long sk_0034f5a4();
-extern unsigned long sk_0034f664();
-extern unsigned long sk_0034f754();
-extern unsigned long sk_0034f7ec();
-extern unsigned long sk_0034f860();
-extern unsigned long sk_0034fce4();
-extern unsigned long sk_0034fd4c();
-extern unsigned long sk_0034fdcc();
-extern unsigned long sk_0034fde0();
-extern unsigned long sk_0034fe64();
-extern unsigned long sk_0034fed0();
-extern unsigned long sk_0034ffdc();
-extern unsigned long sk_00350018();
-extern unsigned long sk_00350048();
-extern unsigned long sk_00350104();
-extern unsigned long sk_003501fc();
-extern unsigned long sk_0035036c();
-extern unsigned long sk_00350390();
-extern unsigned long sk_003503f8();
-extern unsigned long sk_00350410();
-extern unsigned long sk_00350428();
-extern unsigned long sk_00350434();
-extern unsigned long sk_0035044c();
-extern unsigned long sk_00350464();
-extern unsigned long sk_00350470();
-extern unsigned long sk_0035047c();
-extern unsigned long sk_00350488();
-extern unsigned long sk_003504a0();
-extern unsigned long sk_003504ac();
-extern unsigned long sk_003504b8();
-extern unsigned long sk_003504c4();
-extern unsigned long sk_003504e8();
-extern unsigned long sk_003504f4();
-extern unsigned long sk_00350500();
-extern unsigned long sk_0035050c();
-extern unsigned long sk_00350518();
-extern unsigned long sk_00350524();
-extern unsigned long sk_00350530();
-extern unsigned long sk_0035053c();
-extern unsigned long sk_0035056c();
-extern unsigned long sk_003505c4();
-extern unsigned long sk_003505d0();
-extern unsigned long sk_003505e8();
-extern unsigned long sk_003505f4();
-extern unsigned long sk_0035060c();
-extern unsigned long sk_00350618();
-extern unsigned long sk_00350624();
-extern unsigned long sk_00350630();
-extern unsigned long sk_0035063c();
-extern unsigned long sk_00350648();
-extern unsigned long sk_0035066c();
-extern unsigned long sk_003506e8();
-extern unsigned long sk_00350720();
-extern unsigned long sk_0035072c();
-extern unsigned long sk_00350738();
-extern unsigned long sk_00350768();
-extern unsigned long sk_00350774();
-extern unsigned long sk_00350780();
-extern unsigned long sk_00350798();
-extern unsigned long sk_003507bc();
-extern unsigned long sk_003507d4();
-extern unsigned long sk_003507e0();
-extern unsigned long sk_00350810();
-extern unsigned long sk_0035084c();
-extern unsigned long sk_00350878();
-extern unsigned long sk_00350884();
-extern unsigned long sk_0035089c();
-extern unsigned long sk_003508a8();
-extern unsigned long sk_003508b4();
-extern unsigned long sk_003508cc();
-extern unsigned long sk_003508d8();
-extern unsigned long sk_003508e4();
-extern unsigned long sk_003508f0();
-extern unsigned long sk_003508fc();
-extern unsigned long sk_00350908();
-extern unsigned long sk_00350914();
-extern unsigned long sk_00350920();
-extern unsigned long sk_00350944();
-extern unsigned long sk_00350950();
-extern unsigned long sk_00350968();
-extern unsigned long sk_00350974();
-extern unsigned long sk_003509a4();
-extern unsigned long sk_003509b0();
-extern unsigned long sk_003509bc();
-extern unsigned long sk_003509c8();
-extern unsigned long sk_003509d4();
-extern unsigned long sk_003509e0();
-extern unsigned long sk_003509f8();
-extern unsigned long sk_00350a04();
-extern unsigned long sk_00350a1c();
-extern unsigned long sk_00350a28();
-extern unsigned long sk_00350a34();
-extern unsigned long sk_00350a40();
-extern unsigned long sk_00350a70();
-extern unsigned long sk_00350a7c();
-extern unsigned long sk_00350a88();
-extern unsigned long sk_00350aa0();
-extern unsigned long sk_00350aac();
-extern unsigned long sk_00350ab8();
-extern unsigned long sk_00350ad0();
-extern unsigned long sk_00350af4();
-extern unsigned long sk_00350b18();
-extern unsigned long sk_00350b24();
-extern unsigned long sk_00350b30();
-extern unsigned long sk_00350b48();
-extern unsigned long sk_00350b6c();
-extern unsigned long sk_00350b78();
-extern unsigned long sk_00350b84();
-extern unsigned long sk_00350b9c();
-extern unsigned long sk_00350bc0();
-extern unsigned long sk_00350bf0();
-extern unsigned long sk_00350bfc();
-extern unsigned long sk_00350c2c();
-extern unsigned long sk_00350c50();
-extern unsigned long sk_00350c80();
-extern unsigned long sk_00350db4();
-extern unsigned long sk_00350e54();
-extern unsigned long sk_00350ea4();
-extern unsigned long sk_00350ec0();
-extern unsigned long sk_00350eec();
-extern unsigned long sk_00350f7c();
-extern unsigned long sk_0035100c();
-extern unsigned long sk_0035102c();
-extern unsigned long sk_00351058();
-extern unsigned long sk_00351088();
-extern unsigned long sk_00351094();
-extern unsigned long sk_003510ac();
-extern unsigned long sk_003510b8();
-extern unsigned long sk_003510d0();
-extern unsigned long sk_003510dc();
-extern unsigned long sk_003510f4();
-extern unsigned long sk_00351100();
-extern unsigned long sk_0035110c();
-extern unsigned long sk_00351118();
-extern unsigned long sk_00351130();
-extern unsigned long sk_0035113c();
-extern unsigned long sk_00351160();
-extern unsigned long sk_00351184();
-extern unsigned long sk_00351190();
-extern unsigned long sk_0035119c();
-extern unsigned long sk_003511b4();
-extern unsigned long sk_003511cc();
-extern unsigned long sk_003511d8();
-extern unsigned long sk_003511e4();
-extern unsigned long sk_003511f0();
-extern unsigned long sk_00351214();
-extern unsigned long sk_00351220();
-extern unsigned long sk_00351238();
-extern unsigned long sk_00351250();
-extern unsigned long sk_0035125c();
-extern unsigned long sk_00351274();
-extern unsigned long sk_00351280();
-extern unsigned long sk_00351298();
-extern unsigned long sk_003512c0();
-extern unsigned long sk_003512cc();
-extern unsigned long sk_00351300();
-extern unsigned long sk_00351318();
-extern unsigned long sk_00351324();
-extern unsigned long sk_00351330();
-extern unsigned long sk_0035133c();
-extern unsigned long sk_00351348();
-extern unsigned long sk_00351354();
-extern unsigned long sk_00351360();
-extern unsigned long sk_0035136c();
-extern unsigned long sk_00351378();
-extern unsigned long sk_00351384();
-extern unsigned long sk_00351390();
-extern unsigned long sk_0035139c();
-extern unsigned long sk_003513b4();
-extern unsigned long sk_003513d8();
-extern unsigned long sk_00351414();
-extern unsigned long sk_00351420();
-extern unsigned long sk_00351438();
-extern unsigned long sk_00351450();
-extern unsigned long sk_0035145c();
-extern unsigned long sk_003514e8();
-extern unsigned long sk_003515a8();
-extern unsigned long sk_003515b4();
-extern unsigned long sk_003515c0();
-extern unsigned long sk_003515d8();
-extern unsigned long sk_0035166c();
-extern unsigned long sk_003516b4();
-extern unsigned long sk_003516cc();
-extern unsigned long sk_003516d8();
-extern unsigned long sk_003516e4();
-extern unsigned long sk_003516fc();
-extern unsigned long sk_00351714();
-extern unsigned long sk_0035172c();
-extern unsigned long sk_00351744();
-extern unsigned long sk_0035179c();
-extern unsigned long sk_003517c0();
-extern unsigned long sk_003518a0();
-extern unsigned long sk_003518ac();
-extern unsigned long sk_003518b8();
-extern unsigned long sk_003518c4();
-extern unsigned long sk_003518d0();
-extern unsigned long sk_0035190c();
-extern unsigned long sk_00351924();
-extern unsigned long sk_00351984();
-extern unsigned long sk_00351990();
-extern unsigned long sk_00351a08();
-extern unsigned long sk_00351a14();
-extern unsigned long sk_00351a38();
-extern unsigned long sk_00351a44();
-extern unsigned long sk_00351a68();
-extern unsigned long sk_00351ab0();
-extern unsigned long sk_00351ac8();
-extern unsigned long sk_00351ad4();
-extern unsigned long sk_00351af8();
-extern unsigned long sk_00351b20();
-extern unsigned long sk_00351b2c();
-extern unsigned long sk_00351b38();
-extern unsigned long sk_00351b78();
-extern unsigned long sk_00351b84();
-extern unsigned long sk_00351ba0();
-extern unsigned long sk_00351bac();
-extern unsigned long sk_00351bb8();
-extern unsigned long sk_00351bd4();
-extern unsigned long sk_00351bec();
-extern unsigned long sk_00351c4c();
-extern unsigned long sk_00351c88();
-extern unsigned long sk_00351ca0();
-extern unsigned long sk_00351cf4();
-extern unsigned long sk_00351d30();
-extern unsigned long sk_00351df0();
-extern unsigned long sk_00351dfc();
-extern unsigned long sk_00351e20();
-extern unsigned long sk_00351e48();
-extern unsigned long sk_00351e54();
-extern unsigned long sk_00351e84();
-extern unsigned long sk_00351e90();
-extern unsigned long sk_00351e9c();
-extern unsigned long sk_00351ec0();
-extern unsigned long sk_00351ecc();
-extern unsigned long sk_00351ef8();
-extern unsigned long sk_00351f1c();
-extern unsigned long sk_00351f40();
-extern unsigned long sk_00351f4c();
-extern unsigned long sk_00351f70();
-extern unsigned long sk_00351f7c();
-extern unsigned long sk_00351f88();
-extern unsigned long sk_00352008();
-extern unsigned long sk_00352098();
-extern unsigned long sk_0035215c();
-extern unsigned long sk_00352270();
-extern unsigned long sk_00352304();
-extern unsigned long sk_00352314();
-extern unsigned long sk_00352330();
-extern unsigned long sk_00352360();
-extern unsigned long sk_00352370();
-extern unsigned long sk_003523f0();
-extern unsigned long sk_00352420();
-extern unsigned long sk_00352480();
-extern unsigned long sk_00352498();
-extern unsigned long sk_003524b0();
-extern unsigned long sk_003524c8();
-extern unsigned long sk_00352554();
-extern unsigned long sk_00352560();
-extern unsigned long sk_0035256c();
-extern unsigned long sk_00352584();
-extern unsigned long sk_00352680();
-extern unsigned long sk_00352700();
-extern unsigned long sk_003527ec();
-extern unsigned long sk_00352840();
-extern unsigned long sk_0035284c();
-extern unsigned long sk_00352858();
-extern unsigned long sk_00352894();
-extern unsigned long sk_00352914();
-extern unsigned long sk_00352a40();
-extern unsigned long sk_00352a4c();
-extern unsigned long sk_00352ae4();
-extern unsigned long sk_00352b14();
-extern unsigned long sk_00352b2c();
-extern unsigned long sk_00352b50();
-extern unsigned long sk_00352b8c();
-extern unsigned long sk_00352b98();
-extern unsigned long sk_00352bbc();
-extern unsigned long sk_00352be0();
-extern unsigned long sk_00352c40();
-extern unsigned long sk_00352c4c();
-extern unsigned long sk_00352c68();
-extern unsigned long sk_00352d34();
-extern unsigned long sk_00352d64();
-extern unsigned long sk_00352ddc();
-extern unsigned long sk_00352df4();
-extern unsigned long sk_00352e24();
-extern unsigned long sk_00352e60();
-extern unsigned long sk_00352e78();
-extern unsigned long sk_00352ea8();
-extern unsigned long sk_00352eb4();
-extern unsigned long sk_00352efc();
-extern unsigned long sk_00352f18();
-extern unsigned long sk_00352f48();
-extern unsigned long sk_00352f88();
-extern unsigned long sk_00352fd4();
-extern unsigned long sk_0035300c();
-extern unsigned long sk_00353034();
-extern unsigned long sk_00353050();
-extern unsigned long sk_0035308c();
-extern unsigned long sk_003530e8();
-extern unsigned long sk_003530f4();
-extern unsigned long sk_0035310c();
-extern unsigned long sk_00353124();
-extern unsigned long sk_00353160();
-extern unsigned long sk_0035316c();
-extern unsigned long sk_003531d8();
-extern unsigned long sk_003531f0();
-extern unsigned long sk_00353220();
-extern unsigned long sk_0035322c();
-extern unsigned long sk_00353238();
-extern unsigned long sk_00353254();
-extern unsigned long sk_00353274();
-extern unsigned long sk_00353390();
-extern unsigned long sk_00353430();
-extern unsigned long sk_003534bc();
-extern unsigned long sk_003534d4();
-extern unsigned long sk_003534e0();
-extern unsigned long sk_003534ec();
-extern unsigned long sk_003536ac();
-extern unsigned long sk_00353718();
-extern unsigned long sk_00353734();
-extern unsigned long sk_003537d4();
-extern unsigned long sk_003537f0();
-extern unsigned long sk_003537fc();
-extern unsigned long sk_00353918();
-extern unsigned long sk_0035396c();
-extern unsigned long sk_003539e4();
-extern unsigned long sk_003539f4();
-extern unsigned long sk_00353a78();
-extern unsigned long sk_00353b10();
-extern unsigned long sk_00353b34();
-extern unsigned long sk_00353be8();
-extern unsigned long sk_00353c48();
-extern unsigned long sk_00353c54();
-extern unsigned long sk_00353c78();
-extern unsigned long sk_00353cb4();
-extern unsigned long sk_00353cd8();
-extern unsigned long sk_00353cf0();
-extern unsigned long sk_00353cfc();
-extern unsigned long sk_00353d14();
-extern unsigned long sk_00353d94();
-extern unsigned long sk_00353e2c();
-extern unsigned long sk_00353e38();
-extern unsigned long sk_00353e50();
-extern unsigned long sk_00353ef0();
-extern unsigned long sk_00353efc();
-extern unsigned long sk_00353f44();
-extern unsigned long sk_00353f50();
-extern unsigned long sk_00353f88();
-extern unsigned long sk_00354010();
-extern unsigned long sk_00354134();
-extern unsigned long sk_0035414c();
-extern unsigned long sk_00354168();
-extern unsigned long sk_00354184();
-extern unsigned long sk_003541a0();
-extern unsigned long sk_003541bc();
-extern unsigned long sk_003541d8();
-extern unsigned long sk_003541f4();
-extern unsigned long sk_00354210();
-extern unsigned long sk_003542d0();
-extern unsigned long sk_003542e8();
-extern unsigned long sk_00354300();
-extern unsigned long sk_0035430c();
-extern unsigned long sk_00354324();
-extern unsigned long sk_00354394();
-extern unsigned long sk_003543ac();
-extern unsigned long sk_00354404();
-extern unsigned long sk_00354458();
-extern unsigned long sk_003544c8();
-extern unsigned long sk_00354594();
-extern unsigned long sk_003545ac();
-extern unsigned long sk_00354660();
-extern unsigned long sk_003546a8();
-extern unsigned long sk_00354708();
-extern unsigned long sk_00354720();
-extern unsigned long sk_00354744();
-extern unsigned long sk_0035475c();
-extern unsigned long sk_00354780();
-extern unsigned long sk_003547d4();
-extern unsigned long sk_003547ec();
-extern unsigned long sk_003548d0();
-extern unsigned long sk_003549e4();
-extern unsigned long sk_00354a0c();
-extern unsigned long sk_00354a34();
-extern unsigned long sk_00354b14();
-extern unsigned long sk_00354b2c();
-extern unsigned long sk_00354b50();
-extern unsigned long sk_00354b68();
-extern unsigned long sk_00354bb0();
-extern unsigned long sk_00354bbc();
-extern unsigned long sk_00354d14();
-extern unsigned long sk_00354d38();
-extern unsigned long sk_00354d44();
-extern unsigned long sk_00354d5c();
-extern unsigned long sk_00354d94();
-extern unsigned long sk_00354db8();
-extern unsigned long sk_00354ef8();
-extern unsigned long sk_00354f10();
-extern unsigned long sk_00354f34();
-extern unsigned long sk_00354f80();
-extern unsigned long sk_00354f8c();
-extern unsigned long sk_00355068();
-extern unsigned long sk_00355224();
-extern unsigned long sk_00355418();
-extern unsigned long sk_003554d4();
-extern unsigned long sk_003554e0();
-extern unsigned long sk_00355544();
-extern unsigned long sk_00355578();
-extern unsigned long sk_00355594();
-extern unsigned long sk_00355634();
-extern unsigned long sk_00355730();
-extern unsigned long sk_003557a8();
-extern unsigned long sk_00355adc();
-extern unsigned long sk_00355af8();
-extern unsigned long sk_00355b04();
-extern unsigned long sk_00355b74();
-extern unsigned long sk_00355bd0();
-extern unsigned long sk_00355bdc();
-extern unsigned long sk_00355c1c();
-extern unsigned long sk_00355c28();
-extern unsigned long sk_00355d28();
-extern unsigned long sk_00355d78();
-extern unsigned long sk_00355e2c();
-extern unsigned long sk_00355e5c();
-extern unsigned long sk_00355e68();
-extern unsigned long sk_00355e74();
-extern unsigned long sk_00356000();
-extern unsigned long sk_00356030();
-extern unsigned long sk_00356078();
-extern unsigned long sk_003560a8();
-extern unsigned long sk_003560c0();
-extern unsigned long sk_00356140();
-extern unsigned long sk_00356224();
-extern unsigned long sk_00356260();
-extern unsigned long sk_0035626c();
-extern unsigned long sk_00356290();
-extern unsigned long sk_003562ec();
-extern unsigned long sk_00356328();
-extern unsigned long sk_003563a8();
-extern unsigned long sk_003563c4();
-extern unsigned long sk_003565c0();
-extern unsigned long sk_003565e0();
-extern unsigned long sk_00356600();
-extern unsigned long sk_00356644();
-extern unsigned long sk_00356670();
-extern unsigned long sk_0035678c();
-extern unsigned long sk_003567d4();
-extern unsigned long sk_0035681c();
-extern unsigned long sk_00356834();
-extern unsigned long sk_00356870();
-extern unsigned long sk_003568e8();
-extern unsigned long sk_00356964();
-extern unsigned long sk_003569b4();
-extern unsigned long sk_00356a44();
-extern unsigned long sk_00356ac4();
-extern unsigned long sk_00356af4();
-extern unsigned long sk_00356b20();
-extern unsigned long sk_00356b80();
-extern unsigned long sk_00356cfc();
-extern unsigned long sk_0035705c();
-extern unsigned long sk_003570f0();
-extern unsigned long sk_0035725c();
-extern unsigned long sk_0035740c();
-extern unsigned long sk_00357418();
-extern unsigned long sk_00357694();
-extern unsigned long sk_00357788();
-extern unsigned long sk_00357874();
-extern unsigned long sk_00357884();
-extern unsigned long sk_003578a8();
-extern unsigned long sk_00357910();
-extern unsigned long sk_0035792c();
-extern unsigned long sk_00357944();
-extern unsigned long sk_0035798c();
-extern unsigned long sk_00357a34();
-extern unsigned long sk_00357a84();
-extern unsigned long sk_00357ab4();
-extern unsigned long sk_00357b20();
-extern unsigned long sk_00357c20();
-extern unsigned long sk_00357c44();
-extern unsigned long sk_00357c74();
-extern unsigned long sk_00357ca0();
-extern unsigned long sk_00357cb4();
-extern unsigned long sk_00357d54();
-extern unsigned long sk_00357f14();
-extern unsigned long sk_00357f94();
-extern unsigned long sk_00357fd4();
-extern unsigned long sk_003580e4();
-extern unsigned long sk_00358208();
-extern unsigned long sk_003582f8();
-extern unsigned long sk_00358308();
-extern unsigned long sk_003583c0();
-extern unsigned long sk_003583e8();
-extern unsigned long sk_0035841c();
-extern unsigned long sk_00358454();
-extern unsigned long sk_003584c0();
-extern unsigned long sk_00358540();
-extern unsigned long sk_003585f4();
-extern unsigned long sk_00358600();
-extern unsigned long sk_00358624();
-extern unsigned long sk_0035863c();
-extern unsigned long sk_003588d0();
-extern unsigned long sk_00358918();
-extern unsigned long sk_0035893c();
-extern unsigned long sk_00358960();
-extern unsigned long sk_00358978();
-extern unsigned long sk_003589cc();
-extern unsigned long sk_003589d8();
-extern unsigned long sk_00358ae0();
-extern unsigned long sk_00358bc0();
-extern unsigned long sk_00358bcc();
-extern unsigned long sk_00358cd4();
-extern unsigned long sk_00358cec();
-extern unsigned long sk_00358d34();
-extern unsigned long sk_00358dac();
-extern unsigned long sk_00358ddc();
-extern unsigned long sk_00358ea0();
-extern unsigned long sk_00358f0c();
-extern unsigned long sk_00358f78();
-extern unsigned long sk_00359000();
-extern unsigned long sk_00359030();
-extern unsigned long sk_00359088();
-extern unsigned long sk_00359134();
-extern unsigned long sk_003593e8();
-extern unsigned long sk_00359550();
-extern unsigned long sk_003595a8();
-extern unsigned long sk_0035964c();
-extern unsigned long sk_003597d8();
-extern unsigned long sk_00359a48();
-extern unsigned long sk_00359a78();
-extern unsigned long sk_00359ad4();
-extern unsigned long sk_00359b64();
-extern unsigned long sk_00359be0();
-extern unsigned long sk_00359bec();
-extern unsigned long sk_00359ca4();
-extern unsigned long sk_00359d9c();
-extern unsigned long sk_00359e14();
-extern unsigned long sk_00359e40();
-extern unsigned long sk_0035a01c();
-extern unsigned long sk_0035a040();
-extern unsigned long sk_0035a0b8();
-extern unsigned long sk_0035a184();
-extern unsigned long sk_0035a19c();
-extern unsigned long sk_0035a1c0();
-extern unsigned long sk_0035a274();
-extern unsigned long sk_0035a2b8();
-extern unsigned long sk_0035a2c4();
-extern unsigned long sk_0035a3dc();
-extern unsigned long sk_0035a438();
-extern unsigned long sk_0035a4bc();
-extern unsigned long sk_0035a4d4();
-extern unsigned long sk_0035a4f8();
-extern unsigned long sk_0035a590();
-extern unsigned long sk_0035a59c();
-extern unsigned long sk_0035a684();
-extern unsigned long sk_0035a6e8();
-extern unsigned long sk_0035a81c();
-extern unsigned long sk_0035abe4();
-extern unsigned long sk_0035acfc();
-extern unsigned long sk_0036a908();
-extern unsigned long sk_0036a940();
-extern unsigned long sk_0036a9a0();
-extern unsigned long sk_0036b118();
-extern unsigned long sk_0036b270();
-extern unsigned long sk_0036b2d0();
-extern unsigned long sk_003722e4();
-extern unsigned long sk_00376820();
-extern unsigned long sk_00377824();
-extern unsigned long sk_00377bec();
-extern unsigned long sk_003a25d4();
-extern unsigned long sk_003a261c();
-extern unsigned long sk_00610504();
-extern unsigned long sk_t_00012568();
-extern unsigned long sk_t_000126e8();
-extern unsigned long sk_t_001a0754();
-extern unsigned long sk_t_001a0774();
-extern unsigned long sk_t_002298d4();
-void sk_t_0026c2a0();
-extern unsigned long sk_t_002a2698();
-extern unsigned long sk_t_0036b270();
-extern unsigned long sk_breakpoint();
+extern unsigned long sk_00002534(); /* FUN_00002534 (out-of-slice helper) */
+extern unsigned long sk_000026e8(); /* FUN_000026e8 (out-of-slice helper) */
+extern unsigned long sk_00019858(); /* FUN_00019858 (out-of-slice helper) */
+extern unsigned long sk_00027754(); /* FUN_00027754 (out-of-slice helper) */
+extern unsigned long sk_00027788(); /* FUN_00027788 (out-of-slice helper) */
+extern unsigned long sk_000277b8(); /* FUN_000277b8 (out-of-slice helper) */
+extern unsigned long sk_000277e8(); /* FUN_000277e8 (out-of-slice helper) */
+extern unsigned long sk_00027818(); /* FUN_00027818 (out-of-slice helper) */
+extern unsigned long sk_00068e14(); /* FUN_00068e14 (out-of-slice helper) */
+extern unsigned long sk_0006b3f4(); /* FUN_0006b3f4 (out-of-slice helper) */
+extern unsigned long sk_0006b42c(); /* FUN_0006b42c (out-of-slice helper) */
+extern unsigned long sk_0006b6f4(); /* FUN_0006b6f4 (out-of-slice helper) */
+extern unsigned long sk_0006f6b4(); /* FUN_0006f6b4 (out-of-slice helper) */
+extern unsigned long sk_00077888(); /* FUN_00077888 (out-of-slice helper) */
+extern unsigned long sk_0007b384(); /* FUN_0007b384 (out-of-slice helper) */
+extern unsigned long sk_0007c028(); /* FUN_0007c028 (out-of-slice helper) */
+extern unsigned long sk_0007c1a4(); /* FUN_0007c1a4 (out-of-slice helper) */
+extern unsigned long sk_0007c1c4(); /* FUN_0007c1c4 (out-of-slice helper) */
+extern unsigned long sk_000839d8(); /* FUN_000839d8 (out-of-slice helper) */
+extern unsigned long sk_000839f8(); /* FUN_000839f8 (out-of-slice helper) */
+extern unsigned long sk_0008409c(); /* FUN_0008409c (out-of-slice helper) */
+extern unsigned long sk_0008412c(); /* FUN_0008412c (out-of-slice helper) */
+extern unsigned long sk_00084174(); /* FUN_00084174 (out-of-slice helper) */
+extern unsigned long sk_00084180(); /* FUN_00084180 (out-of-slice helper) */
+extern unsigned long sk_00084220(); /* FUN_00084220 (out-of-slice helper) */
+extern unsigned long sk_00084234(); /* FUN_00084234 (out-of-slice helper) */
+extern unsigned long sk_000867ec(); /* FUN_000867ec (out-of-slice helper) */
+extern unsigned long sk_0008e388(); /* FUN_0008e388 (out-of-slice helper) */
+extern unsigned long sk_0008e500(); /* FUN_0008e500 (out-of-slice helper) */
+extern unsigned long sk_0008e518(); /* FUN_0008e518 (out-of-slice helper) */
+extern unsigned long sk_0008f6c0(); /* FUN_0008f6c0 (out-of-slice helper) */
+extern unsigned long sk_0009461c(); /* FUN_0009461c (out-of-slice helper) */
+extern unsigned long sk_000a68c4(); /* FUN_000a68c4 (out-of-slice helper) */
+extern unsigned long sk_000a68f4(); /* FUN_000a68f4 (out-of-slice helper) */
+extern unsigned long sk_000a6f68(); /* FUN_000a6f68 (out-of-slice helper) */
+extern unsigned long sk_000a6f88(); /* FUN_000a6f88 (out-of-slice helper) */
+extern unsigned long sk_000b4390(); /* FUN_000b4390 (out-of-slice helper) */
+extern unsigned long sk_000dbd0c(); /* FUN_000dbd0c (out-of-slice helper) */
+extern unsigned long sk_000dbedc(); /* FUN_000dbedc (out-of-slice helper) */
+extern unsigned long sk_000dbf08(); /* FUN_000dbf08 (out-of-slice helper) */
+extern unsigned long sk_000e15d8(); /* FUN_000e15d8 (out-of-slice helper) */
+extern unsigned long sk_000e72b0(); /* FUN_000e72b0 (out-of-slice helper) */
+extern unsigned long sk_00100c38(); /* FUN_00100c38 (out-of-slice helper) */
+extern unsigned long sk_00100efc(); /* FUN_00100efc (out-of-slice helper) */
+extern unsigned long sk_00106e3c(); /* FUN_00106e3c (out-of-slice helper) */
+extern unsigned long sk_00117cc4(); /* FUN_00117cc4 (out-of-slice helper) */
+extern unsigned long sk_0014ae44(); /* FUN_0014ae44 (out-of-slice helper) */
+extern unsigned long sk_0016186c(); /* FUN_0016186c (out-of-slice helper) */
+extern unsigned long sk_00167404(); /* FUN_00167404 (out-of-slice helper) */
+extern unsigned long sk_001679cc(); /* FUN_001679cc (out-of-slice helper) */
+extern unsigned long sk_0019c44c(); /* FUN_0019c44c (out-of-slice helper) */
+extern unsigned long sk_0019c53c(); /* FUN_0019c53c (out-of-slice helper) */
+extern unsigned long sk_0019d15c(); /* FUN_0019d15c (out-of-slice helper) */
+extern unsigned long sk_0019d6d0(); /* FUN_0019d6d0 (out-of-slice helper) */
+extern unsigned long sk_0019dadc(); /* FUN_0019dadc (out-of-slice helper) */
+extern unsigned long sk_0019e578(); /* FUN_0019e578 (out-of-slice helper) */
+extern unsigned long sk_0019e5ec(); /* FUN_0019e5ec (out-of-slice helper) */
+extern unsigned long sk_0019e66c(); /* FUN_0019e66c (out-of-slice helper) */
+extern unsigned long sk_0019e690(); /* FUN_0019e690 (out-of-slice helper) */
+extern unsigned long sk_0019ea20(); /* FUN_0019ea20 (out-of-slice helper) */
+extern unsigned long sk_0019eb20(); /* FUN_0019eb20 (out-of-slice helper) */
+extern unsigned long sk_0019ec24(); /* FUN_0019ec24 (out-of-slice helper) */
+extern unsigned long sk_0019f1ec(); /* FUN_0019f1ec (out-of-slice helper) */
+extern unsigned long sk_0019f370(); /* FUN_0019f370 (out-of-slice helper) */
+extern unsigned long sk_0019f698(); /* FUN_0019f698 (out-of-slice helper) */
+extern unsigned long sk_0019fa60(); /* FUN_0019fa60 (out-of-slice helper) */
+extern unsigned long sk_0019fd10(); /* FUN_0019fd10 (out-of-slice helper) */
+extern unsigned long sk_001a0158(); /* FUN_001a0158 (out-of-slice helper) */
+extern unsigned long sk_001a0194(); /* FUN_001a0194 (out-of-slice helper) */
+extern unsigned long sk_001a0414(); /* FUN_001a0414 (out-of-slice helper) */
+extern unsigned long sk_001a04a4(); /* FUN_001a04a4 (out-of-slice helper) */
+extern unsigned long sk_001a0734(); /* FUN_001a0734 (out-of-slice helper) */
+extern unsigned long sk_001a0754(); /* FUN_001a0754 (out-of-slice helper) */
+extern unsigned long sk_001a0774(); /* FUN_001a0774 (out-of-slice helper) */
+extern unsigned long sk_001a0b30(); /* FUN_001a0b30 (out-of-slice helper) */
+extern unsigned long sk_001a10d4(); /* FUN_001a10d4 (out-of-slice helper) */
+extern unsigned long sk_001a10e4(); /* FUN_001a10e4 (out-of-slice helper) */
+extern unsigned long sk_001a16e8(); /* FUN_001a16e8 (out-of-slice helper) */
+extern unsigned long sk_001a1854(); /* FUN_001a1854 (out-of-slice helper) */
+extern unsigned long sk_001a18f8(); /* FUN_001a18f8 (out-of-slice helper) */
+extern unsigned long sk_001a26e0(); /* FUN_001a26e0 (out-of-slice helper) */
+extern unsigned long sk_001a2740(); /* FUN_001a2740 (out-of-slice helper) */
+extern unsigned long sk_001a27f0(); /* FUN_001a27f0 (out-of-slice helper) */
+extern unsigned long sk_001a4554(); /* FUN_001a4554 (out-of-slice helper) */
+extern unsigned long sk_001a5968(); /* FUN_001a5968 (out-of-slice helper) */
+extern unsigned long sk_001a67bc(); /* FUN_001a67bc (out-of-slice helper) */
+extern unsigned long sk_001a6ab8(); /* FUN_001a6ab8 (out-of-slice helper) */
+extern unsigned long sk_001a76fc(); /* FUN_001a76fc (out-of-slice helper) */
+extern unsigned long sk_001a7e30(); /* FUN_001a7e30 (out-of-slice helper) */
+extern unsigned long sk_001a7e5c(); /* FUN_001a7e5c (out-of-slice helper) */
+extern unsigned long sk_001a8564(); /* FUN_001a8564 (out-of-slice helper) */
+extern unsigned long sk_001aeab4(); /* FUN_001aeab4 (out-of-slice helper) */
+extern unsigned long sk_001afe4c(); /* FUN_001afe4c (out-of-slice helper) */
+extern unsigned long sk_001b07b8(); /* FUN_001b07b8 (out-of-slice helper) */
+extern unsigned long sk_001e3048(); /* FUN_001e3048 (out-of-slice helper) */
+extern unsigned long sk_001e4cbc(); /* FUN_001e4cbc (out-of-slice helper) */
+extern unsigned long sk_00229a3c(); /* FUN_00229a3c (out-of-slice helper) */
+extern unsigned long sk_0023b7b8(); /* FUN_0023b7b8 (out-of-slice helper) */
+extern unsigned long sk_00257f8c(); /* FUN_00257f8c (out-of-slice helper) */
+extern unsigned long sk_0027743c(); /* FUN_0027743c (out-of-slice helper) */
+extern unsigned long sk_00277474(); /* FUN_00277474 (out-of-slice helper) */
+extern unsigned long sk_00277ba8(); /* FUN_00277ba8 (out-of-slice helper) */
+extern unsigned long sk_00281a54(); /* FUN_00281a54 (out-of-slice helper) */
+extern unsigned long sk_0028e8c0(); /* FUN_0028e8c0 (out-of-slice helper) */
+extern unsigned long sk_00291d70(); /* FUN_00291d70 (out-of-slice helper) */
+extern unsigned long sk_0029eb58(); /* FUN_0029eb58 (out-of-slice helper) */
+extern unsigned long sk_002a0d50(); /* FUN_002a0d50 (out-of-slice helper) */
+extern unsigned long sk_002a200c(); /* FUN_002a200c (out-of-slice helper) */
+extern unsigned long sk_002a9ba8(); /* FUN_002a9ba8 (out-of-slice helper) */
+extern unsigned long sk_002a9c14(); /* FUN_002a9c14 (out-of-slice helper) */
+extern unsigned long sk_002ab8ac(); /* FUN_002ab8ac (out-of-slice helper) */
+extern unsigned long sk_002bbcd8(); /* FUN_002bbcd8 (out-of-slice helper) */
+extern unsigned long sk_002c6d00(); /* FUN_002c6d00 (out-of-slice helper) */
+extern unsigned long sk_0031090c(); /* FUN_0031090c (out-of-slice helper) */
+extern unsigned long sk_00310924(); /* FUN_00310924 (out-of-slice helper) */
+extern unsigned long sk_00310ad4(); /* FUN_00310ad4 (out-of-slice helper) */
+extern unsigned long sk_00310b38(); /* FUN_00310b38 (out-of-slice helper) */
+extern unsigned long sk_00310d34(); /* FUN_00310d34 (out-of-slice helper) */
+extern unsigned long sk_00310d68(); /* FUN_00310d68 (out-of-slice helper) */
+extern unsigned long sk_00310d80(); /* FUN_00310d80 (out-of-slice helper) */
+extern unsigned long sk_00310d98(); /* FUN_00310d98 (out-of-slice helper) */
+extern unsigned long sk_00310dd8(); /* FUN_00310dd8 (out-of-slice helper) */
+extern unsigned long sk_00310df0(); /* FUN_00310df0 (out-of-slice helper) */
+extern unsigned long sk_00310e08(); /* FUN_00310e08 (out-of-slice helper) */
+extern unsigned long sk_00310e20(); /* FUN_00310e20 (out-of-slice helper) */
+extern unsigned long sk_00310f04(); /* FUN_00310f04 (out-of-slice helper) */
+extern unsigned long sk_00310f34(); /* FUN_00310f34 (out-of-slice helper) */
+extern unsigned long sk_00310f94(); /* FUN_00310f94 (out-of-slice helper) */
+extern unsigned long sk_00310fc4(); /* FUN_00310fc4 (out-of-slice helper) */
+extern unsigned long sk_00319218(); /* FUN_00319218 (out-of-slice helper) */
+extern unsigned long sk_00319230(); /* FUN_00319230 (out-of-slice helper) */
+extern unsigned long sk_003192a8(); /* FUN_003192a8 (out-of-slice helper) */
+extern unsigned long sk_003192d8(); /* FUN_003192d8 (out-of-slice helper) */
+extern unsigned long sk_00319308(); /* FUN_00319308 (out-of-slice helper) */
+extern unsigned long sk_0031945c(); /* FUN_0031945c (out-of-slice helper) */
+extern unsigned long sk_0031948c(); /* FUN_0031948c (out-of-slice helper) */
+extern unsigned long sk_003195c8(); /* FUN_003195c8 (out-of-slice helper) */
+extern unsigned long sk_00319628(); /* FUN_00319628 (out-of-slice helper) */
+extern unsigned long sk_00319658(); /* FUN_00319658 (out-of-slice helper) */
+extern unsigned long sk_003196e8(); /* FUN_003196e8 (out-of-slice helper) */
+extern unsigned long sk_00319808(); /* FUN_00319808 (out-of-slice helper) */
+extern unsigned long sk_00319a4c(); /* FUN_00319a4c (out-of-slice helper) */
+extern unsigned long sk_0031a14c(); /* FUN_0031a14c (out-of-slice helper) */
+extern unsigned long sk_0031a17c(); /* FUN_0031a17c (out-of-slice helper) */
+extern unsigned long sk_0031a1ac(); /* FUN_0031a1ac (out-of-slice helper) */
+extern unsigned long sk_0031a5dc(); /* FUN_0031a5dc (out-of-slice helper) */
+extern unsigned long sk_0031a60c(); /* FUN_0031a60c (out-of-slice helper) */
+extern unsigned long sk_0031a63c(); /* FUN_0031a63c (out-of-slice helper) */
+extern unsigned long sk_0031a66c(); /* FUN_0031a66c (out-of-slice helper) */
+extern unsigned long sk_0031a69c(); /* FUN_0031a69c (out-of-slice helper) */
+extern unsigned long sk_0031a6cc(); /* FUN_0031a6cc (out-of-slice helper) */
+extern unsigned long sk_0031a6fc(); /* FUN_0031a6fc (out-of-slice helper) */
+extern unsigned long sk_0031a96c(); /* FUN_0031a96c (out-of-slice helper) */
+extern unsigned long sk_0031a99c(); /* FUN_0031a99c (out-of-slice helper) */
+extern unsigned long sk_0031a9cc(); /* FUN_0031a9cc (out-of-slice helper) */
+extern unsigned long sk_0031a9fc(); /* FUN_0031a9fc (out-of-slice helper) */
+extern unsigned long sk_0031aa2c(); /* FUN_0031aa2c (out-of-slice helper) */
+extern unsigned long sk_0031ac9c(); /* FUN_0031ac9c (out-of-slice helper) */
+extern unsigned long sk_0031accc(); /* FUN_0031accc (out-of-slice helper) */
+extern unsigned long sk_0031acfc(); /* FUN_0031acfc (out-of-slice helper) */
+extern unsigned long sk_0031ad2c(); /* FUN_0031ad2c (out-of-slice helper) */
+extern unsigned long sk_0031ad5c(); /* FUN_0031ad5c (out-of-slice helper) */
+extern unsigned long sk_0031ae4c(); /* FUN_0031ae4c (out-of-slice helper) */
+extern unsigned long sk_0031af6c(); /* FUN_0031af6c (out-of-slice helper) */
+extern unsigned long sk_0031afcc(); /* FUN_0031afcc (out-of-slice helper) */
+extern unsigned long sk_0031affc(); /* FUN_0031affc (out-of-slice helper) */
+extern unsigned long sk_0031b080(); /* FUN_0031b080 (out-of-slice helper) */
+extern unsigned long sk_0031b0bc(); /* FUN_0031b0bc (out-of-slice helper) */
+extern unsigned long sk_0031b0ec(); /* FUN_0031b0ec (out-of-slice helper) */
+extern unsigned long sk_0031b110(); /* FUN_0031b110 (out-of-slice helper) */
+extern unsigned long sk_0031b140(); /* FUN_0031b140 (out-of-slice helper) */
+extern unsigned long sk_0031b164(); /* FUN_0031b164 (out-of-slice helper) */
+extern unsigned long sk_0031b194(); /* FUN_0031b194 (out-of-slice helper) */
+extern unsigned long sk_0031b1c4(); /* FUN_0031b1c4 (out-of-slice helper) */
+extern unsigned long sk_0031b1f4(); /* FUN_0031b1f4 (out-of-slice helper) */
+extern unsigned long sk_0031de7c(); /* FUN_0031de7c (out-of-slice helper) */
+extern unsigned long sk_0031e4e0(); /* FUN_0031e4e0 (out-of-slice helper) */
+extern unsigned long sk_00344ca8(); /* FUN_00344ca8 (out-of-slice helper) */
+extern unsigned long sk_00344e54(); /* FUN_00344e54 (out-of-slice helper) */
+extern unsigned long sk_00346774(); /* FUN_00346774 (out-of-slice helper) */
+extern unsigned long sk_003469a8(); /* FUN_003469a8 (out-of-slice helper) */
+extern unsigned long sk_00347040(); /* FUN_00347040 (out-of-slice helper) */
+extern unsigned long sk_00347d60(); /* FUN_00347d60 (out-of-slice helper) */
+extern unsigned long sk_00347da8(); /* FUN_00347da8 (out-of-slice helper) */
+extern unsigned long sk_00348034(); /* FUN_00348034 (out-of-slice helper) */
+extern unsigned long sk_003480ac(); /* FUN_003480ac (out-of-slice helper) */
+extern unsigned long sk_00348284(); /* FUN_00348284 (out-of-slice helper) */
+extern unsigned long sk_00348304(); /* FUN_00348304 (out-of-slice helper) */
+extern unsigned long sk_00348384(); /* FUN_00348384 (out-of-slice helper) */
+extern unsigned long sk_003483c4(); /* FUN_003483c4 (out-of-slice helper) */
+extern unsigned long sk_00348508(); /* FUN_00348508 (out-of-slice helper) */
+extern unsigned long sk_00348730(); /* FUN_00348730 (out-of-slice helper) */
+extern unsigned long sk_003487a4(); /* FUN_003487a4 (out-of-slice helper) */
+extern unsigned long sk_003488bc(); /* FUN_003488bc (out-of-slice helper) */
+extern unsigned long sk_003488f4(); /* FUN_003488f4 (out-of-slice helper) */
+extern unsigned long sk_0034893c(); /* FUN_0034893c (out-of-slice helper) */
+extern unsigned long sk_003489a8(); /* FUN_003489a8 (out-of-slice helper) */
+extern unsigned long sk_003489c0(); /* FUN_003489c0 (out-of-slice helper) */
+extern unsigned long sk_003489dc(); /* FUN_003489dc (out-of-slice helper) */
+extern unsigned long sk_00348a18(); /* FUN_00348a18 (out-of-slice helper) */
+extern unsigned long sk_00348a34(); /* FUN_00348a34 (out-of-slice helper) */
+extern unsigned long sk_00348a9c(); /* FUN_00348a9c (out-of-slice helper) */
+extern unsigned long sk_00348abc(); /* FUN_00348abc (out-of-slice helper) */
+extern unsigned long sk_00348b5c(); /* FUN_00348b5c (out-of-slice helper) */
+extern unsigned long sk_00348b7c(); /* FUN_00348b7c (out-of-slice helper) */
+extern unsigned long sk_00348b94(); /* FUN_00348b94 (out-of-slice helper) */
+extern unsigned long sk_00348bbc(); /* FUN_00348bbc (out-of-slice helper) */
+extern unsigned long sk_00348bd8(); /* FUN_00348bd8 (out-of-slice helper) */
+extern unsigned long sk_00348bf8(); /* FUN_00348bf8 (out-of-slice helper) */
+extern unsigned long sk_00348c48(); /* FUN_00348c48 (out-of-slice helper) */
+extern unsigned long sk_00348cd0(); /* FUN_00348cd0 (out-of-slice helper) */
+extern unsigned long sk_00348ce8(); /* FUN_00348ce8 (out-of-slice helper) */
+extern unsigned long sk_00348d00(); /* FUN_00348d00 (out-of-slice helper) */
+extern unsigned long sk_00348d18(); /* FUN_00348d18 (out-of-slice helper) */
+extern unsigned long sk_00348d30(); /* FUN_00348d30 (out-of-slice helper) */
+extern unsigned long sk_00348d4c(); /* FUN_00348d4c (out-of-slice helper) */
+extern unsigned long sk_00348d64(); /* FUN_00348d64 (out-of-slice helper) */
+extern unsigned long sk_00348d7c(); /* FUN_00348d7c (out-of-slice helper) */
+extern unsigned long sk_00348d94(); /* FUN_00348d94 (out-of-slice helper) */
+extern unsigned long sk_00348dd8(); /* FUN_00348dd8 (out-of-slice helper) */
+extern unsigned long sk_00348e00(); /* FUN_00348e00 (out-of-slice helper) */
+extern unsigned long sk_00348e18(); /* FUN_00348e18 (out-of-slice helper) */
+extern unsigned long sk_00348e30(); /* FUN_00348e30 (out-of-slice helper) */
+extern unsigned long sk_00348e60(); /* FUN_00348e60 (out-of-slice helper) */
+extern unsigned long sk_00348e9c(); /* FUN_00348e9c (out-of-slice helper) */
+extern unsigned long sk_00348f14(); /* FUN_00348f14 (out-of-slice helper) */
+extern unsigned long sk_00348f38(); /* FUN_00348f38 (out-of-slice helper) */
+extern unsigned long sk_00348f50(); /* FUN_00348f50 (out-of-slice helper) */
+extern unsigned long sk_00348fd8(); /* FUN_00348fd8 (out-of-slice helper) */
+extern unsigned long sk_003490b8(); /* FUN_003490b8 (out-of-slice helper) */
+extern unsigned long sk_003490ec(); /* FUN_003490ec (out-of-slice helper) */
+extern unsigned long sk_0034911c(); /* FUN_0034911c (out-of-slice helper) */
+extern unsigned long sk_0034921c(); /* FUN_0034921c (out-of-slice helper) */
+extern unsigned long sk_00349234(); /* FUN_00349234 (out-of-slice helper) */
+extern unsigned long sk_0034926c(); /* FUN_0034926c (out-of-slice helper) */
+extern unsigned long sk_003492ac(); /* FUN_003492ac (out-of-slice helper) */
+extern unsigned long sk_003493c4(); /* FUN_003493c4 (out-of-slice helper) */
+extern unsigned long sk_00349410(); /* FUN_00349410 (out-of-slice helper) */
+extern unsigned long sk_003494d4(); /* FUN_003494d4 (out-of-slice helper) */
+extern unsigned long sk_00349530(); /* FUN_00349530 (out-of-slice helper) */
+extern unsigned long sk_00349618(); /* FUN_00349618 (out-of-slice helper) */
+extern unsigned long sk_00349644(); /* FUN_00349644 (out-of-slice helper) */
+extern unsigned long sk_00349720(); /* FUN_00349720 (out-of-slice helper) */
+extern unsigned long sk_00349748(); /* FUN_00349748 (out-of-slice helper) */
+extern unsigned long sk_003497a0(); /* FUN_003497a0 (out-of-slice helper) */
+extern unsigned long sk_003497b4(); /* FUN_003497b4 (out-of-slice helper) */
+extern unsigned long sk_00349830(); /* FUN_00349830 (out-of-slice helper) */
+extern unsigned long sk_0034987c(); /* FUN_0034987c (out-of-slice helper) */
+extern unsigned long sk_003498c4(); /* FUN_003498c4 (out-of-slice helper) */
+extern unsigned long sk_003498dc(); /* FUN_003498dc (out-of-slice helper) */
+extern unsigned long sk_00349910(); /* FUN_00349910 (out-of-slice helper) */
+extern unsigned long sk_0034998c(); /* FUN_0034998c (out-of-slice helper) */
+extern unsigned long sk_003499c8(); /* FUN_003499c8 (out-of-slice helper) */
+extern unsigned long sk_003499f0(); /* FUN_003499f0 (out-of-slice helper) */
+extern unsigned long sk_00349a18(); /* FUN_00349a18 (out-of-slice helper) */
+extern unsigned long sk_00349a2c(); /* FUN_00349a2c (out-of-slice helper) */
+extern unsigned long sk_00349a54(); /* FUN_00349a54 (out-of-slice helper) */
+extern unsigned long sk_00349b3c(); /* FUN_00349b3c (out-of-slice helper) */
+extern unsigned long sk_00349b88(); /* FUN_00349b88 (out-of-slice helper) */
+extern unsigned long sk_00349c2c(); /* FUN_00349c2c (out-of-slice helper) */
+extern unsigned long sk_00349c70(); /* FUN_00349c70 (out-of-slice helper) */
+extern unsigned long sk_00349ea0(); /* FUN_00349ea0 (out-of-slice helper) */
+extern unsigned long sk_00349ef4(); /* FUN_00349ef4 (out-of-slice helper) */
+extern unsigned long sk_00349f08(); /* FUN_00349f08 (out-of-slice helper) */
+extern unsigned long sk_00349f3c(); /* FUN_00349f3c (out-of-slice helper) */
+extern unsigned long sk_0034a1b0(); /* FUN_0034a1b0 (out-of-slice helper) */
+extern unsigned long sk_0034a1c8(); /* FUN_0034a1c8 (out-of-slice helper) */
+extern unsigned long sk_0034a210(); /* FUN_0034a210 (out-of-slice helper) */
+extern unsigned long sk_0034a2c0(); /* FUN_0034a2c0 (out-of-slice helper) */
+extern unsigned long sk_0034a3c4(); /* FUN_0034a3c4 (out-of-slice helper) */
+extern unsigned long sk_0034a3d8(); /* FUN_0034a3d8 (out-of-slice helper) */
+extern unsigned long sk_0034a414(); /* FUN_0034a414 (out-of-slice helper) */
+extern unsigned long sk_0034a450(); /* FUN_0034a450 (out-of-slice helper) */
+extern unsigned long sk_0034a464(); /* FUN_0034a464 (out-of-slice helper) */
+extern unsigned long sk_0034a4f8(); /* FUN_0034a4f8 (out-of-slice helper) */
+extern unsigned long sk_0034a528(); /* FUN_0034a528 (out-of-slice helper) */
+extern unsigned long sk_0034a5c8(); /* FUN_0034a5c8 (out-of-slice helper) */
+extern unsigned long sk_0034a654(); /* FUN_0034a654 (out-of-slice helper) */
+extern unsigned long sk_0034a6b0(); /* FUN_0034a6b0 (out-of-slice helper) */
+extern unsigned long sk_0034a944(); /* FUN_0034a944 (out-of-slice helper) */
+extern unsigned long sk_0034a980(); /* FUN_0034a980 (out-of-slice helper) */
+extern unsigned long sk_0034a9c0(); /* FUN_0034a9c0 (out-of-slice helper) */
+extern unsigned long sk_0034a9e8(); /* FUN_0034a9e8 (out-of-slice helper) */
+extern unsigned long sk_0034aa14(); /* FUN_0034aa14 (out-of-slice helper) */
+extern unsigned long sk_0034aa28(); /* FUN_0034aa28 (out-of-slice helper) */
+extern unsigned long sk_0034aa9c(); /* FUN_0034aa9c (out-of-slice helper) */
+extern unsigned long sk_0034aac4(); /* FUN_0034aac4 (out-of-slice helper) */
+extern unsigned long sk_0034aadc(); /* FUN_0034aadc (out-of-slice helper) */
+extern unsigned long sk_0034ab10(); /* FUN_0034ab10 (out-of-slice helper) */
+extern unsigned long sk_0034ab20(); /* FUN_0034ab20 (out-of-slice helper) */
+extern unsigned long sk_0034abb0(); /* FUN_0034abb0 (out-of-slice helper) */
+extern unsigned long sk_0034ac00(); /* FUN_0034ac00 (out-of-slice helper) */
+extern unsigned long sk_0034ac28(); /* FUN_0034ac28 (out-of-slice helper) */
+extern unsigned long sk_0034ac8c(); /* FUN_0034ac8c (out-of-slice helper) */
+extern unsigned long sk_0034acf0(); /* FUN_0034acf0 (out-of-slice helper) */
+extern unsigned long sk_0034ad10(); /* FUN_0034ad10 (out-of-slice helper) */
+extern unsigned long sk_0034ae30(); /* FUN_0034ae30 (out-of-slice helper) */
+extern unsigned long sk_0034ae58(); /* FUN_0034ae58 (out-of-slice helper) */
+extern unsigned long sk_0034ae94(); /* FUN_0034ae94 (out-of-slice helper) */
+extern unsigned long sk_0034aea8(); /* FUN_0034aea8 (out-of-slice helper) */
+extern unsigned long sk_0034aee4(); /* FUN_0034aee4 (out-of-slice helper) */
+extern unsigned long sk_0034af20(); /* FUN_0034af20 (out-of-slice helper) */
+extern unsigned long sk_0034af60(); /* FUN_0034af60 (out-of-slice helper) */
+extern unsigned long sk_0034affc(); /* FUN_0034affc (out-of-slice helper) */
+extern unsigned long sk_0034b05c(); /* FUN_0034b05c (out-of-slice helper) */
+extern unsigned long sk_0034b07c(); /* FUN_0034b07c (out-of-slice helper) */
+extern unsigned long sk_0034b0b4(); /* FUN_0034b0b4 (out-of-slice helper) */
+extern unsigned long sk_0034b0c4(); /* FUN_0034b0c4 (out-of-slice helper) */
+extern unsigned long sk_0034b0d4(); /* FUN_0034b0d4 (out-of-slice helper) */
+extern unsigned long sk_0034b128(); /* FUN_0034b128 (out-of-slice helper) */
+extern unsigned long sk_0034b13c(); /* FUN_0034b13c (out-of-slice helper) */
+extern unsigned long sk_0034b164(); /* FUN_0034b164 (out-of-slice helper) */
+extern unsigned long sk_0034b250(); /* FUN_0034b250 (out-of-slice helper) */
+extern unsigned long sk_0034b278(); /* FUN_0034b278 (out-of-slice helper) */
+extern unsigned long sk_0034b2a8(); /* FUN_0034b2a8 (out-of-slice helper) */
+extern unsigned long sk_0034b2c8(); /* FUN_0034b2c8 (out-of-slice helper) */
+extern unsigned long sk_0034b2f8(); /* FUN_0034b2f8 (out-of-slice helper) */
+extern unsigned long sk_0034b308(); /* FUN_0034b308 (out-of-slice helper) */
+extern unsigned long sk_0034b318(); /* FUN_0034b318 (out-of-slice helper) */
+extern unsigned long sk_0034b348(); /* FUN_0034b348 (out-of-slice helper) */
+extern unsigned long sk_0034b358(); /* FUN_0034b358 (out-of-slice helper) */
+extern unsigned long sk_0034b3c8(); /* FUN_0034b3c8 (out-of-slice helper) */
+extern unsigned long sk_0034b3d8(); /* FUN_0034b3d8 (out-of-slice helper) */
+extern unsigned long sk_0034b3e8(); /* FUN_0034b3e8 (out-of-slice helper) */
+extern unsigned long sk_0034b430(); /* FUN_0034b430 (out-of-slice helper) */
+extern unsigned long sk_0034b460(); /* FUN_0034b460 (out-of-slice helper) */
+extern unsigned long sk_0034b470(); /* FUN_0034b470 (out-of-slice helper) */
+extern unsigned long sk_0034b4c0(); /* FUN_0034b4c0 (out-of-slice helper) */
+extern unsigned long sk_0034b508(); /* FUN_0034b508 (out-of-slice helper) */
+extern unsigned long sk_0034b540(); /* FUN_0034b540 (out-of-slice helper) */
+extern unsigned long sk_0034b668(); /* FUN_0034b668 (out-of-slice helper) */
+extern unsigned long sk_0034b708(); /* FUN_0034b708 (out-of-slice helper) */
+extern unsigned long sk_0034b744(); /* FUN_0034b744 (out-of-slice helper) */
+extern unsigned long sk_0034b758(); /* FUN_0034b758 (out-of-slice helper) */
+extern unsigned long sk_0034b778(); /* FUN_0034b778 (out-of-slice helper) */
+extern unsigned long sk_0034b7e4(); /* FUN_0034b7e4 (out-of-slice helper) */
+extern unsigned long sk_0034b804(); /* FUN_0034b804 (out-of-slice helper) */
+extern unsigned long sk_0034b85c(); /* FUN_0034b85c (out-of-slice helper) */
+extern unsigned long sk_0034b87c(); /* FUN_0034b87c (out-of-slice helper) */
+extern unsigned long sk_0034b8cc(); /* FUN_0034b8cc (out-of-slice helper) */
+extern unsigned long sk_0034b960(); /* FUN_0034b960 (out-of-slice helper) */
+extern unsigned long sk_0034ba28(); /* FUN_0034ba28 (out-of-slice helper) */
+extern unsigned long sk_0034ba68(); /* FUN_0034ba68 (out-of-slice helper) */
+extern unsigned long sk_0034ba78(); /* FUN_0034ba78 (out-of-slice helper) */
+extern unsigned long sk_0034baa8(); /* FUN_0034baa8 (out-of-slice helper) */
+extern unsigned long sk_0034bc80(); /* FUN_0034bc80 (out-of-slice helper) */
+extern unsigned long sk_0034bc94(); /* FUN_0034bc94 (out-of-slice helper) */
+extern unsigned long sk_0034bccc(); /* FUN_0034bccc (out-of-slice helper) */
+extern unsigned long sk_0034bcdc(); /* FUN_0034bcdc (out-of-slice helper) */
+extern unsigned long sk_0034bcf0(); /* FUN_0034bcf0 (out-of-slice helper) */
+extern unsigned long sk_0034bd30(); /* FUN_0034bd30 (out-of-slice helper) */
+extern unsigned long sk_0034bddc(); /* FUN_0034bddc (out-of-slice helper) */
+extern unsigned long sk_0034be0c(); /* FUN_0034be0c (out-of-slice helper) */
+extern unsigned long sk_0034be1c(); /* FUN_0034be1c (out-of-slice helper) */
+extern unsigned long sk_0034be70(); /* FUN_0034be70 (out-of-slice helper) */
+extern unsigned long sk_0034be94(); /* FUN_0034be94 (out-of-slice helper) */
+extern unsigned long sk_0034bec4(); /* FUN_0034bec4 (out-of-slice helper) */
+extern unsigned long sk_0034bf1c(); /* FUN_0034bf1c (out-of-slice helper) */
+extern unsigned long sk_0034c074(); /* FUN_0034c074 (out-of-slice helper) */
+extern unsigned long sk_0034c084(); /* FUN_0034c084 (out-of-slice helper) */
+extern unsigned long sk_0034c2b4(); /* FUN_0034c2b4 (out-of-slice helper) */
+extern unsigned long sk_0034c2c8(); /* FUN_0034c2c8 (out-of-slice helper) */
+extern unsigned long sk_0034c2d8(); /* FUN_0034c2d8 (out-of-slice helper) */
+extern unsigned long sk_0034c2f8(); /* FUN_0034c2f8 (out-of-slice helper) */
+extern unsigned long sk_0034c3b4(); /* FUN_0034c3b4 (out-of-slice helper) */
+extern unsigned long sk_0034c3c4(); /* FUN_0034c3c4 (out-of-slice helper) */
+extern unsigned long sk_0034c3d4(); /* FUN_0034c3d4 (out-of-slice helper) */
+extern unsigned long sk_0034c454(); /* FUN_0034c454 (out-of-slice helper) */
+extern unsigned long sk_0034c4bc(); /* FUN_0034c4bc (out-of-slice helper) */
+extern unsigned long sk_0034c54c(); /* FUN_0034c54c (out-of-slice helper) */
+extern unsigned long sk_0034c55c(); /* FUN_0034c55c (out-of-slice helper) */
+extern unsigned long sk_0034c59c(); /* FUN_0034c59c (out-of-slice helper) */
+extern unsigned long sk_0034c5dc(); /* FUN_0034c5dc (out-of-slice helper) */
+extern unsigned long sk_0034c664(); /* FUN_0034c664 (out-of-slice helper) */
+extern unsigned long sk_0034c6b4(); /* FUN_0034c6b4 (out-of-slice helper) */
+extern unsigned long sk_0034c754(); /* FUN_0034c754 (out-of-slice helper) */
+extern unsigned long sk_0034c8b8(); /* FUN_0034c8b8 (out-of-slice helper) */
+extern unsigned long sk_0034c8e0(); /* FUN_0034c8e0 (out-of-slice helper) */
+extern unsigned long sk_0034c920(); /* FUN_0034c920 (out-of-slice helper) */
+extern unsigned long sk_0034c9f8(); /* FUN_0034c9f8 (out-of-slice helper) */
+extern unsigned long sk_0034ca08(); /* FUN_0034ca08 (out-of-slice helper) */
+extern unsigned long sk_0034ca18(); /* FUN_0034ca18 (out-of-slice helper) */
+extern unsigned long sk_0034cd18(); /* FUN_0034cd18 (out-of-slice helper) */
+extern unsigned long sk_0034cd7c(); /* FUN_0034cd7c (out-of-slice helper) */
+extern unsigned long sk_0034ce68(); /* FUN_0034ce68 (out-of-slice helper) */
+extern unsigned long sk_0034ce78(); /* FUN_0034ce78 (out-of-slice helper) */
+extern unsigned long sk_0034cf14(); /* FUN_0034cf14 (out-of-slice helper) */
+extern unsigned long sk_0034cf34(); /* FUN_0034cf34 (out-of-slice helper) */
+extern unsigned long sk_0034cf94(); /* FUN_0034cf94 (out-of-slice helper) */
+extern unsigned long sk_0034cfa4(); /* FUN_0034cfa4 (out-of-slice helper) */
+extern unsigned long sk_0034cff4(); /* FUN_0034cff4 (out-of-slice helper) */
+extern unsigned long sk_0034d024(); /* FUN_0034d024 (out-of-slice helper) */
+extern unsigned long sk_0034d180(); /* FUN_0034d180 (out-of-slice helper) */
+extern unsigned long sk_0034d190(); /* FUN_0034d190 (out-of-slice helper) */
+extern unsigned long sk_0034d254(); /* FUN_0034d254 (out-of-slice helper) */
+extern unsigned long sk_0034d2a4(); /* FUN_0034d2a4 (out-of-slice helper) */
+extern unsigned long sk_0034d2b4(); /* FUN_0034d2b4 (out-of-slice helper) */
+extern unsigned long sk_0034d334(); /* FUN_0034d334 (out-of-slice helper) */
+extern unsigned long sk_0034d344(); /* FUN_0034d344 (out-of-slice helper) */
+extern unsigned long sk_0034d364(); /* FUN_0034d364 (out-of-slice helper) */
+extern unsigned long sk_0034d394(); /* FUN_0034d394 (out-of-slice helper) */
+extern unsigned long sk_0034d3c4(); /* FUN_0034d3c4 (out-of-slice helper) */
+extern unsigned long sk_0034d3f4(); /* FUN_0034d3f4 (out-of-slice helper) */
+extern unsigned long sk_0034d434(); /* FUN_0034d434 (out-of-slice helper) */
+extern unsigned long sk_0034d464(); /* FUN_0034d464 (out-of-slice helper) */
+extern unsigned long sk_0034d49c(); /* FUN_0034d49c (out-of-slice helper) */
+extern unsigned long sk_0034d574(); /* FUN_0034d574 (out-of-slice helper) */
+extern unsigned long sk_0034d6d8(); /* FUN_0034d6d8 (out-of-slice helper) */
+extern unsigned long sk_0034d734(); /* FUN_0034d734 (out-of-slice helper) */
+extern unsigned long sk_0034d758(); /* FUN_0034d758 (out-of-slice helper) */
+extern unsigned long sk_0034d7cc(); /* FUN_0034d7cc (out-of-slice helper) */
+extern unsigned long sk_0034d7dc(); /* FUN_0034d7dc (out-of-slice helper) */
+extern unsigned long sk_0034d844(); /* FUN_0034d844 (out-of-slice helper) */
+extern unsigned long sk_0034d868(); /* FUN_0034d868 (out-of-slice helper) */
+extern unsigned long sk_0034d8f4(); /* FUN_0034d8f4 (out-of-slice helper) */
+extern unsigned long sk_0034d9f8(); /* FUN_0034d9f8 (out-of-slice helper) */
+extern unsigned long sk_0034da38(); /* FUN_0034da38 (out-of-slice helper) */
+extern unsigned long sk_0034da88(); /* FUN_0034da88 (out-of-slice helper) */
+extern unsigned long sk_0034da98(); /* FUN_0034da98 (out-of-slice helper) */
+extern unsigned long sk_0034dad8(); /* FUN_0034dad8 (out-of-slice helper) */
+extern unsigned long sk_0034dae8(); /* FUN_0034dae8 (out-of-slice helper) */
+extern unsigned long sk_0034db28(); /* FUN_0034db28 (out-of-slice helper) */
+extern unsigned long sk_0034dba8(); /* FUN_0034dba8 (out-of-slice helper) */
+extern unsigned long sk_0034dbb8(); /* FUN_0034dbb8 (out-of-slice helper) */
+extern unsigned long sk_0034dbc8(); /* FUN_0034dbc8 (out-of-slice helper) */
+extern unsigned long sk_0034dc3c(); /* FUN_0034dc3c (out-of-slice helper) */
+extern unsigned long sk_0034dccc(); /* FUN_0034dccc (out-of-slice helper) */
+extern unsigned long sk_0034dcfc(); /* FUN_0034dcfc (out-of-slice helper) */
+extern unsigned long sk_0034de64(); /* FUN_0034de64 (out-of-slice helper) */
+extern unsigned long sk_0034de8c(); /* FUN_0034de8c (out-of-slice helper) */
+extern unsigned long sk_0034ded4(); /* FUN_0034ded4 (out-of-slice helper) */
+extern unsigned long sk_0034df24(); /* FUN_0034df24 (out-of-slice helper) */
+extern unsigned long sk_0034df54(); /* FUN_0034df54 (out-of-slice helper) */
+extern unsigned long sk_0034dfe4(); /* FUN_0034dfe4 (out-of-slice helper) */
+extern unsigned long sk_0034e044(); /* FUN_0034e044 (out-of-slice helper) */
+extern unsigned long sk_0034e0d4(); /* FUN_0034e0d4 (out-of-slice helper) */
+extern unsigned long sk_0034e130(); /* FUN_0034e130 (out-of-slice helper) */
+extern unsigned long sk_0034e1b0(); /* FUN_0034e1b0 (out-of-slice helper) */
+extern unsigned long sk_0034e1d0(); /* FUN_0034e1d0 (out-of-slice helper) */
+extern unsigned long sk_0034e33c(); /* FUN_0034e33c (out-of-slice helper) */
+extern unsigned long sk_0034e384(); /* FUN_0034e384 (out-of-slice helper) */
+extern unsigned long sk_0034e414(); /* FUN_0034e414 (out-of-slice helper) */
+extern unsigned long sk_0034e434(); /* FUN_0034e434 (out-of-slice helper) */
+extern unsigned long sk_0034e4b4(); /* FUN_0034e4b4 (out-of-slice helper) */
+extern unsigned long sk_0034e57c(); /* FUN_0034e57c (out-of-slice helper) */
+extern unsigned long sk_0034e5cc(); /* FUN_0034e5cc (out-of-slice helper) */
+extern unsigned long sk_0034e5fc(); /* FUN_0034e5fc (out-of-slice helper) */
+extern unsigned long sk_0034e60c(); /* FUN_0034e60c (out-of-slice helper) */
+extern unsigned long sk_0034e63c(); /* FUN_0034e63c (out-of-slice helper) */
+extern unsigned long sk_0034e66c(); /* FUN_0034e66c (out-of-slice helper) */
+extern unsigned long sk_0034e67c(); /* FUN_0034e67c (out-of-slice helper) */
+extern unsigned long sk_0034e70c(); /* FUN_0034e70c (out-of-slice helper) */
+extern unsigned long sk_0034e808(); /* FUN_0034e808 (out-of-slice helper) */
+extern unsigned long sk_0034ea40(); /* FUN_0034ea40 (out-of-slice helper) */
+extern unsigned long sk_0034eb2c(); /* FUN_0034eb2c (out-of-slice helper) */
+extern unsigned long sk_0034eb40(); /* FUN_0034eb40 (out-of-slice helper) */
+extern unsigned long sk_0034ec48(); /* FUN_0034ec48 (out-of-slice helper) */
+extern unsigned long sk_0034ece8(); /* FUN_0034ece8 (out-of-slice helper) */
+extern unsigned long sk_0034ed28(); /* FUN_0034ed28 (out-of-slice helper) */
+extern unsigned long sk_0034ed88(); /* FUN_0034ed88 (out-of-slice helper) */
+extern unsigned long sk_0034ede8(); /* FUN_0034ede8 (out-of-slice helper) */
+extern unsigned long sk_0034ee28(); /* FUN_0034ee28 (out-of-slice helper) */
+extern unsigned long sk_0034ee48(); /* FUN_0034ee48 (out-of-slice helper) */
+extern unsigned long sk_0034ee68(); /* FUN_0034ee68 (out-of-slice helper) */
+extern unsigned long sk_0034ee98(); /* FUN_0034ee98 (out-of-slice helper) */
+extern unsigned long sk_0034ef08(); /* FUN_0034ef08 (out-of-slice helper) */
+extern unsigned long sk_0034ef48(); /* FUN_0034ef48 (out-of-slice helper) */
+extern unsigned long sk_0034ef68(); /* FUN_0034ef68 (out-of-slice helper) */
+extern unsigned long sk_0034f014(); /* FUN_0034f014 (out-of-slice helper) */
+extern unsigned long sk_0034f044(); /* FUN_0034f044 (out-of-slice helper) */
+extern unsigned long sk_0034f088(); /* FUN_0034f088 (out-of-slice helper) */
+extern unsigned long sk_0034f0c0(); /* FUN_0034f0c0 (out-of-slice helper) */
+extern unsigned long sk_0034f1e0(); /* FUN_0034f1e0 (out-of-slice helper) */
+extern unsigned long sk_0034f384(); /* FUN_0034f384 (out-of-slice helper) */
+extern unsigned long sk_0034f3e4(); /* FUN_0034f3e4 (out-of-slice helper) */
+extern unsigned long sk_0034f4d4(); /* FUN_0034f4d4 (out-of-slice helper) */
+extern unsigned long sk_0034f544(); /* FUN_0034f544 (out-of-slice helper) */
+extern unsigned long sk_0034f5a4(); /* FUN_0034f5a4 (out-of-slice helper) */
+extern unsigned long sk_0034f664(); /* FUN_0034f664 (out-of-slice helper) */
+extern unsigned long sk_0034f754(); /* FUN_0034f754 (out-of-slice helper) */
+extern unsigned long sk_0034f7ec(); /* FUN_0034f7ec (out-of-slice helper) */
+extern unsigned long sk_0034f860(); /* FUN_0034f860 (out-of-slice helper) */
+extern unsigned long sk_0034fce4(); /* FUN_0034fce4 (out-of-slice helper) */
+extern unsigned long sk_0034fd4c(); /* FUN_0034fd4c (out-of-slice helper) */
+extern unsigned long sk_0034fdcc(); /* FUN_0034fdcc (out-of-slice helper) */
+extern unsigned long sk_0034fde0(); /* FUN_0034fde0 (out-of-slice helper) */
+extern unsigned long sk_0034fe64(); /* FUN_0034fe64 (out-of-slice helper) */
+extern unsigned long sk_0034fed0(); /* FUN_0034fed0 (out-of-slice helper) */
+extern unsigned long sk_0034ffdc(); /* FUN_0034ffdc (out-of-slice helper) */
+extern unsigned long sk_00350018(); /* FUN_00350018 (out-of-slice helper) */
+extern unsigned long sk_00350048(); /* FUN_00350048 (out-of-slice helper) */
+extern unsigned long sk_00350104(); /* FUN_00350104 (out-of-slice helper) */
+extern unsigned long sk_003501fc(); /* FUN_003501fc (out-of-slice helper) */
+extern unsigned long sk_0035036c(); /* FUN_0035036c (out-of-slice helper) */
+extern unsigned long sk_00350390(); /* FUN_00350390 (out-of-slice helper) */
+extern unsigned long sk_003503f8(); /* FUN_003503f8 (out-of-slice helper) */
+extern unsigned long sk_00350410(); /* FUN_00350410 (out-of-slice helper) */
+extern unsigned long sk_00350428(); /* FUN_00350428 (out-of-slice helper) */
+extern unsigned long sk_00350434(); /* FUN_00350434 (out-of-slice helper) */
+extern unsigned long sk_0035044c(); /* FUN_0035044c (out-of-slice helper) */
+extern unsigned long sk_00350464(); /* FUN_00350464 (out-of-slice helper) */
+extern unsigned long sk_00350470(); /* FUN_00350470 (out-of-slice helper) */
+extern unsigned long sk_0035047c(); /* FUN_0035047c (out-of-slice helper) */
+extern unsigned long sk_00350488(); /* FUN_00350488 (out-of-slice helper) */
+extern unsigned long sk_003504a0(); /* FUN_003504a0 (out-of-slice helper) */
+extern unsigned long sk_003504ac(); /* FUN_003504ac (out-of-slice helper) */
+extern unsigned long sk_003504b8(); /* FUN_003504b8 (out-of-slice helper) */
+extern unsigned long sk_003504c4(); /* FUN_003504c4 (out-of-slice helper) */
+extern unsigned long sk_003504e8(); /* FUN_003504e8 (out-of-slice helper) */
+extern unsigned long sk_003504f4(); /* FUN_003504f4 (out-of-slice helper) */
+extern unsigned long sk_00350500(); /* FUN_00350500 (out-of-slice helper) */
+extern unsigned long sk_0035050c(); /* FUN_0035050c (out-of-slice helper) */
+extern unsigned long sk_00350518(); /* FUN_00350518 (out-of-slice helper) */
+extern unsigned long sk_00350524(); /* FUN_00350524 (out-of-slice helper) */
+extern unsigned long sk_00350530(); /* FUN_00350530 (out-of-slice helper) */
+extern unsigned long sk_0035053c(); /* FUN_0035053c (out-of-slice helper) */
+extern unsigned long sk_0035056c(); /* FUN_0035056c (out-of-slice helper) */
+extern unsigned long sk_003505c4(); /* FUN_003505c4 (out-of-slice helper) */
+extern unsigned long sk_003505d0(); /* FUN_003505d0 (out-of-slice helper) */
+extern unsigned long sk_003505e8(); /* FUN_003505e8 (out-of-slice helper) */
+extern unsigned long sk_003505f4(); /* FUN_003505f4 (out-of-slice helper) */
+extern unsigned long sk_0035060c(); /* FUN_0035060c (out-of-slice helper) */
+extern unsigned long sk_00350618(); /* FUN_00350618 (out-of-slice helper) */
+extern unsigned long sk_00350624(); /* FUN_00350624 (out-of-slice helper) */
+extern unsigned long sk_00350630(); /* FUN_00350630 (out-of-slice helper) */
+extern unsigned long sk_0035063c(); /* FUN_0035063c (out-of-slice helper) */
+extern unsigned long sk_00350648(); /* FUN_00350648 (out-of-slice helper) */
+extern unsigned long sk_0035066c(); /* FUN_0035066c (out-of-slice helper) */
+extern unsigned long sk_003506e8(); /* FUN_003506e8 (out-of-slice helper) */
+extern unsigned long sk_00350720(); /* FUN_00350720 (out-of-slice helper) */
+extern unsigned long sk_0035072c(); /* FUN_0035072c (out-of-slice helper) */
+extern unsigned long sk_00350738(); /* FUN_00350738 (out-of-slice helper) */
+extern unsigned long sk_00350768(); /* FUN_00350768 (out-of-slice helper) */
+extern unsigned long sk_00350774(); /* FUN_00350774 (out-of-slice helper) */
+extern unsigned long sk_00350780(); /* FUN_00350780 (out-of-slice helper) */
+extern unsigned long sk_00350798(); /* FUN_00350798 (out-of-slice helper) */
+extern unsigned long sk_003507bc(); /* FUN_003507bc (out-of-slice helper) */
+extern unsigned long sk_003507d4(); /* FUN_003507d4 (out-of-slice helper) */
+extern unsigned long sk_003507e0(); /* FUN_003507e0 (out-of-slice helper) */
+extern unsigned long sk_00350810(); /* FUN_00350810 (out-of-slice helper) */
+extern unsigned long sk_0035084c(); /* FUN_0035084c (out-of-slice helper) */
+extern unsigned long sk_00350878(); /* FUN_00350878 (out-of-slice helper) */
+extern unsigned long sk_00350884(); /* FUN_00350884 (out-of-slice helper) */
+extern unsigned long sk_0035089c(); /* FUN_0035089c (out-of-slice helper) */
+extern unsigned long sk_003508a8(); /* FUN_003508a8 (out-of-slice helper) */
+extern unsigned long sk_003508b4(); /* FUN_003508b4 (out-of-slice helper) */
+extern unsigned long sk_003508cc(); /* FUN_003508cc (out-of-slice helper) */
+extern unsigned long sk_003508d8(); /* FUN_003508d8 (out-of-slice helper) */
+extern unsigned long sk_003508e4(); /* FUN_003508e4 (out-of-slice helper) */
+extern unsigned long sk_003508f0(); /* FUN_003508f0 (out-of-slice helper) */
+extern unsigned long sk_003508fc(); /* FUN_003508fc (out-of-slice helper) */
+extern unsigned long sk_00350908(); /* FUN_00350908 (out-of-slice helper) */
+extern unsigned long sk_00350914(); /* FUN_00350914 (out-of-slice helper) */
+extern unsigned long sk_00350920(); /* FUN_00350920 (out-of-slice helper) */
+extern unsigned long sk_00350944(); /* FUN_00350944 (out-of-slice helper) */
+extern unsigned long sk_00350950(); /* FUN_00350950 (out-of-slice helper) */
+extern unsigned long sk_00350968(); /* FUN_00350968 (out-of-slice helper) */
+extern unsigned long sk_00350974(); /* FUN_00350974 (out-of-slice helper) */
+extern unsigned long sk_003509a4(); /* FUN_003509a4 (out-of-slice helper) */
+extern unsigned long sk_003509b0(); /* FUN_003509b0 (out-of-slice helper) */
+extern unsigned long sk_003509bc(); /* FUN_003509bc (out-of-slice helper) */
+extern unsigned long sk_003509c8(); /* FUN_003509c8 (out-of-slice helper) */
+extern unsigned long sk_003509d4(); /* FUN_003509d4 (out-of-slice helper) */
+extern unsigned long sk_003509e0(); /* FUN_003509e0 (out-of-slice helper) */
+extern unsigned long sk_003509f8(); /* FUN_003509f8 (out-of-slice helper) */
+extern unsigned long sk_00350a04(); /* FUN_00350a04 (out-of-slice helper) */
+extern unsigned long sk_00350a1c(); /* FUN_00350a1c (out-of-slice helper) */
+extern unsigned long sk_00350a28(); /* FUN_00350a28 (out-of-slice helper) */
+extern unsigned long sk_00350a34(); /* FUN_00350a34 (out-of-slice helper) */
+extern unsigned long sk_00350a40(); /* FUN_00350a40 (out-of-slice helper) */
+extern unsigned long sk_00350a70(); /* FUN_00350a70 (out-of-slice helper) */
+extern unsigned long sk_00350a7c(); /* FUN_00350a7c (out-of-slice helper) */
+extern unsigned long sk_00350a88(); /* FUN_00350a88 (out-of-slice helper) */
+extern unsigned long sk_00350aa0(); /* FUN_00350aa0 (out-of-slice helper) */
+extern unsigned long sk_00350aac(); /* FUN_00350aac (out-of-slice helper) */
+extern unsigned long sk_00350ab8(); /* FUN_00350ab8 (out-of-slice helper) */
+extern unsigned long sk_00350ad0(); /* FUN_00350ad0 (out-of-slice helper) */
+extern unsigned long sk_00350af4(); /* FUN_00350af4 (out-of-slice helper) */
+extern unsigned long sk_00350b18(); /* FUN_00350b18 (out-of-slice helper) */
+extern unsigned long sk_00350b24(); /* FUN_00350b24 (out-of-slice helper) */
+extern unsigned long sk_00350b30(); /* FUN_00350b30 (out-of-slice helper) */
+extern unsigned long sk_00350b48(); /* FUN_00350b48 (out-of-slice helper) */
+extern unsigned long sk_00350b6c(); /* FUN_00350b6c (out-of-slice helper) */
+extern unsigned long sk_00350b78(); /* FUN_00350b78 (out-of-slice helper) */
+extern unsigned long sk_00350b84(); /* FUN_00350b84 (out-of-slice helper) */
+extern unsigned long sk_00350b9c(); /* FUN_00350b9c (out-of-slice helper) */
+extern unsigned long sk_00350bc0(); /* FUN_00350bc0 (out-of-slice helper) */
+extern unsigned long sk_00350bf0(); /* FUN_00350bf0 (out-of-slice helper) */
+extern unsigned long sk_00350bfc(); /* FUN_00350bfc (out-of-slice helper) */
+extern unsigned long sk_00350c2c(); /* FUN_00350c2c (out-of-slice helper) */
+extern unsigned long sk_00350c50(); /* FUN_00350c50 (out-of-slice helper) */
+extern unsigned long sk_00350c80(); /* FUN_00350c80 (out-of-slice helper) */
+extern unsigned long sk_00350db4(); /* FUN_00350db4 (out-of-slice helper) */
+extern unsigned long sk_00350e54(); /* FUN_00350e54 (out-of-slice helper) */
+extern unsigned long sk_00350ea4(); /* FUN_00350ea4 (out-of-slice helper) */
+extern unsigned long sk_00350ec0(); /* FUN_00350ec0 (out-of-slice helper) */
+extern unsigned long sk_00350eec(); /* FUN_00350eec (out-of-slice helper) */
+extern unsigned long sk_00350f7c(); /* FUN_00350f7c (out-of-slice helper) */
+extern unsigned long sk_0035100c(); /* FUN_0035100c (out-of-slice helper) */
+extern unsigned long sk_0035102c(); /* FUN_0035102c (out-of-slice helper) */
+extern unsigned long sk_00351058(); /* FUN_00351058 (out-of-slice helper) */
+extern unsigned long sk_00351088(); /* FUN_00351088 (out-of-slice helper) */
+extern unsigned long sk_00351094(); /* FUN_00351094 (out-of-slice helper) */
+extern unsigned long sk_003510ac(); /* FUN_003510ac (out-of-slice helper) */
+extern unsigned long sk_003510b8(); /* FUN_003510b8 (out-of-slice helper) */
+extern unsigned long sk_003510d0(); /* FUN_003510d0 (out-of-slice helper) */
+extern unsigned long sk_003510dc(); /* FUN_003510dc (out-of-slice helper) */
+extern unsigned long sk_003510f4(); /* FUN_003510f4 (out-of-slice helper) */
+extern unsigned long sk_00351100(); /* FUN_00351100 (out-of-slice helper) */
+extern unsigned long sk_0035110c(); /* FUN_0035110c (out-of-slice helper) */
+extern unsigned long sk_00351118(); /* FUN_00351118 (out-of-slice helper) */
+extern unsigned long sk_00351130(); /* FUN_00351130 (out-of-slice helper) */
+extern unsigned long sk_0035113c(); /* FUN_0035113c (out-of-slice helper) */
+extern unsigned long sk_00351160(); /* FUN_00351160 (out-of-slice helper) */
+extern unsigned long sk_00351184(); /* FUN_00351184 (out-of-slice helper) */
+extern unsigned long sk_00351190(); /* FUN_00351190 (out-of-slice helper) */
+extern unsigned long sk_0035119c(); /* FUN_0035119c (out-of-slice helper) */
+extern unsigned long sk_003511b4(); /* FUN_003511b4 (out-of-slice helper) */
+extern unsigned long sk_003511cc(); /* FUN_003511cc (out-of-slice helper) */
+extern unsigned long sk_003511d8(); /* FUN_003511d8 (out-of-slice helper) */
+extern unsigned long sk_003511e4(); /* FUN_003511e4 (out-of-slice helper) */
+extern unsigned long sk_003511f0(); /* FUN_003511f0 (out-of-slice helper) */
+extern unsigned long sk_00351214(); /* FUN_00351214 (out-of-slice helper) */
+extern unsigned long sk_00351220(); /* FUN_00351220 (out-of-slice helper) */
+extern unsigned long sk_00351238(); /* FUN_00351238 (out-of-slice helper) */
+extern unsigned long sk_00351250(); /* FUN_00351250 (out-of-slice helper) */
+extern unsigned long sk_0035125c(); /* FUN_0035125c (out-of-slice helper) */
+extern unsigned long sk_00351274(); /* FUN_00351274 (out-of-slice helper) */
+extern unsigned long sk_00351280(); /* FUN_00351280 (out-of-slice helper) */
+extern unsigned long sk_00351298(); /* FUN_00351298 (out-of-slice helper) */
+extern unsigned long sk_003512c0(); /* FUN_003512c0 (out-of-slice helper) */
+extern unsigned long sk_003512cc(); /* FUN_003512cc (out-of-slice helper) */
+extern unsigned long sk_00351300(); /* FUN_00351300 (out-of-slice helper) */
+extern unsigned long sk_00351318(); /* FUN_00351318 (out-of-slice helper) */
+extern unsigned long sk_00351324(); /* FUN_00351324 (out-of-slice helper) */
+extern unsigned long sk_00351330(); /* FUN_00351330 (out-of-slice helper) */
+extern unsigned long sk_0035133c(); /* FUN_0035133c (out-of-slice helper) */
+extern unsigned long sk_00351348(); /* FUN_00351348 (out-of-slice helper) */
+extern unsigned long sk_00351354(); /* FUN_00351354 (out-of-slice helper) */
+extern unsigned long sk_00351360(); /* FUN_00351360 (out-of-slice helper) */
+extern unsigned long sk_0035136c(); /* FUN_0035136c (out-of-slice helper) */
+extern unsigned long sk_00351378(); /* FUN_00351378 (out-of-slice helper) */
+extern unsigned long sk_00351384(); /* FUN_00351384 (out-of-slice helper) */
+extern unsigned long sk_00351390(); /* FUN_00351390 (out-of-slice helper) */
+extern unsigned long sk_0035139c(); /* FUN_0035139c (out-of-slice helper) */
+extern unsigned long sk_003513b4(); /* FUN_003513b4 (out-of-slice helper) */
+extern unsigned long sk_003513d8(); /* FUN_003513d8 (out-of-slice helper) */
+extern unsigned long sk_00351414(); /* FUN_00351414 (out-of-slice helper) */
+extern unsigned long sk_00351420(); /* FUN_00351420 (out-of-slice helper) */
+extern unsigned long sk_00351438(); /* FUN_00351438 (out-of-slice helper) */
+extern unsigned long sk_00351450(); /* FUN_00351450 (out-of-slice helper) */
+extern unsigned long sk_0035145c(); /* FUN_0035145c (out-of-slice helper) */
+extern unsigned long sk_003514e8(); /* FUN_003514e8 (out-of-slice helper) */
+extern unsigned long sk_003515a8(); /* FUN_003515a8 (out-of-slice helper) */
+extern unsigned long sk_003515b4(); /* FUN_003515b4 (out-of-slice helper) */
+extern unsigned long sk_003515c0(); /* FUN_003515c0 (out-of-slice helper) */
+extern unsigned long sk_003515d8(); /* FUN_003515d8 (out-of-slice helper) */
+extern unsigned long sk_0035166c(); /* FUN_0035166c (out-of-slice helper) */
+extern unsigned long sk_003516b4(); /* FUN_003516b4 (out-of-slice helper) */
+extern unsigned long sk_003516cc(); /* FUN_003516cc (out-of-slice helper) */
+extern unsigned long sk_003516d8(); /* FUN_003516d8 (out-of-slice helper) */
+extern unsigned long sk_003516e4(); /* FUN_003516e4 (out-of-slice helper) */
+extern unsigned long sk_003516fc(); /* FUN_003516fc (out-of-slice helper) */
+extern unsigned long sk_00351714(); /* FUN_00351714 (out-of-slice helper) */
+extern unsigned long sk_0035172c(); /* FUN_0035172c (out-of-slice helper) */
+extern unsigned long sk_00351744(); /* FUN_00351744 (out-of-slice helper) */
+extern unsigned long sk_0035179c(); /* FUN_0035179c (out-of-slice helper) */
+extern unsigned long sk_003517c0(); /* FUN_003517c0 (out-of-slice helper) */
+extern unsigned long sk_003518a0(); /* FUN_003518a0 (out-of-slice helper) */
+extern unsigned long sk_003518ac(); /* FUN_003518ac (out-of-slice helper) */
+extern unsigned long sk_003518b8(); /* FUN_003518b8 (out-of-slice helper) */
+extern unsigned long sk_003518c4(); /* FUN_003518c4 (out-of-slice helper) */
+extern unsigned long sk_003518d0(); /* FUN_003518d0 (out-of-slice helper) */
+extern unsigned long sk_0035190c(); /* FUN_0035190c (out-of-slice helper) */
+extern unsigned long sk_00351924(); /* FUN_00351924 (out-of-slice helper) */
+extern unsigned long sk_00351984(); /* FUN_00351984 (out-of-slice helper) */
+extern unsigned long sk_00351990(); /* FUN_00351990 (out-of-slice helper) */
+extern unsigned long sk_00351a08(); /* FUN_00351a08 (out-of-slice helper) */
+extern unsigned long sk_00351a14(); /* FUN_00351a14 (out-of-slice helper) */
+extern unsigned long sk_00351a38(); /* FUN_00351a38 (out-of-slice helper) */
+extern unsigned long sk_00351a44(); /* FUN_00351a44 (out-of-slice helper) */
+extern unsigned long sk_00351a68(); /* FUN_00351a68 (out-of-slice helper) */
+extern unsigned long sk_00351ab0(); /* FUN_00351ab0 (out-of-slice helper) */
+extern unsigned long sk_00351ac8(); /* FUN_00351ac8 (out-of-slice helper) */
+extern unsigned long sk_00351ad4(); /* FUN_00351ad4 (out-of-slice helper) */
+extern unsigned long sk_00351af8(); /* FUN_00351af8 (out-of-slice helper) */
+extern unsigned long sk_00351b20(); /* FUN_00351b20 (out-of-slice helper) */
+extern unsigned long sk_00351b2c(); /* FUN_00351b2c (out-of-slice helper) */
+extern unsigned long sk_00351b38(); /* FUN_00351b38 (out-of-slice helper) */
+extern unsigned long sk_00351b78(); /* FUN_00351b78 (out-of-slice helper) */
+extern unsigned long sk_00351b84(); /* FUN_00351b84 (out-of-slice helper) */
+extern unsigned long sk_00351ba0(); /* FUN_00351ba0 (out-of-slice helper) */
+extern unsigned long sk_00351bac(); /* FUN_00351bac (out-of-slice helper) */
+extern unsigned long sk_00351bb8(); /* FUN_00351bb8 (out-of-slice helper) */
+extern unsigned long sk_00351bd4(); /* FUN_00351bd4 (out-of-slice helper) */
+extern unsigned long sk_00351bec(); /* FUN_00351bec (out-of-slice helper) */
+extern unsigned long sk_00351c4c(); /* FUN_00351c4c (out-of-slice helper) */
+extern unsigned long sk_00351c88(); /* FUN_00351c88 (out-of-slice helper) */
+extern unsigned long sk_00351ca0(); /* FUN_00351ca0 (out-of-slice helper) */
+extern unsigned long sk_00351cf4(); /* FUN_00351cf4 (out-of-slice helper) */
+extern unsigned long sk_00351d30(); /* FUN_00351d30 (out-of-slice helper) */
+extern unsigned long sk_00351df0(); /* FUN_00351df0 (out-of-slice helper) */
+extern unsigned long sk_00351dfc(); /* FUN_00351dfc (out-of-slice helper) */
+extern unsigned long sk_00351e20(); /* FUN_00351e20 (out-of-slice helper) */
+extern unsigned long sk_00351e48(); /* FUN_00351e48 (out-of-slice helper) */
+extern unsigned long sk_00351e54(); /* FUN_00351e54 (out-of-slice helper) */
+extern unsigned long sk_00351e84(); /* FUN_00351e84 (out-of-slice helper) */
+extern unsigned long sk_00351e90(); /* FUN_00351e90 (out-of-slice helper) */
+extern unsigned long sk_00351e9c(); /* FUN_00351e9c (out-of-slice helper) */
+extern unsigned long sk_00351ec0(); /* FUN_00351ec0 (out-of-slice helper) */
+extern unsigned long sk_00351ecc(); /* FUN_00351ecc (out-of-slice helper) */
+extern unsigned long sk_00351ef8(); /* FUN_00351ef8 (out-of-slice helper) */
+extern unsigned long sk_00351f1c(); /* FUN_00351f1c (out-of-slice helper) */
+extern unsigned long sk_00351f40(); /* FUN_00351f40 (out-of-slice helper) */
+extern unsigned long sk_00351f4c(); /* FUN_00351f4c (out-of-slice helper) */
+extern unsigned long sk_00351f70(); /* FUN_00351f70 (out-of-slice helper) */
+extern unsigned long sk_00351f7c(); /* FUN_00351f7c (out-of-slice helper) */
+extern unsigned long sk_00351f88(); /* FUN_00351f88 (out-of-slice helper) */
+extern unsigned long sk_00352008(); /* FUN_00352008 (out-of-slice helper) */
+extern unsigned long sk_00352098(); /* FUN_00352098 (out-of-slice helper) */
+extern unsigned long sk_0035215c(); /* FUN_0035215c (out-of-slice helper) */
+extern unsigned long sk_00352270(); /* FUN_00352270 (out-of-slice helper) */
+extern unsigned long sk_00352304(); /* FUN_00352304 (out-of-slice helper) */
+extern unsigned long sk_00352314(); /* FUN_00352314 (out-of-slice helper) */
+extern unsigned long sk_00352330(); /* FUN_00352330 (out-of-slice helper) */
+extern unsigned long sk_00352360(); /* FUN_00352360 (out-of-slice helper) */
+extern unsigned long sk_00352370(); /* FUN_00352370 (out-of-slice helper) */
+extern unsigned long sk_003523f0(); /* FUN_003523f0 (out-of-slice helper) */
+extern unsigned long sk_00352420(); /* FUN_00352420 (out-of-slice helper) */
+extern unsigned long sk_00352480(); /* FUN_00352480 (out-of-slice helper) */
+extern unsigned long sk_00352498(); /* FUN_00352498 (out-of-slice helper) */
+extern unsigned long sk_003524b0(); /* FUN_003524b0 (out-of-slice helper) */
+extern unsigned long sk_003524c8(); /* FUN_003524c8 (out-of-slice helper) */
+extern unsigned long sk_00352554(); /* FUN_00352554 (out-of-slice helper) */
+extern unsigned long sk_00352560(); /* FUN_00352560 (out-of-slice helper) */
+extern unsigned long sk_0035256c(); /* FUN_0035256c (out-of-slice helper) */
+extern unsigned long sk_00352584(); /* FUN_00352584 (out-of-slice helper) */
+extern unsigned long sk_00352680(); /* FUN_00352680 (out-of-slice helper) */
+extern unsigned long sk_00352700(); /* FUN_00352700 (out-of-slice helper) */
+extern unsigned long sk_003527ec(); /* FUN_003527ec (out-of-slice helper) */
+extern unsigned long sk_00352840(); /* FUN_00352840 (out-of-slice helper) */
+extern unsigned long sk_0035284c(); /* FUN_0035284c (out-of-slice helper) */
+extern unsigned long sk_00352858(); /* FUN_00352858 (out-of-slice helper) */
+extern unsigned long sk_00352894(); /* FUN_00352894 (out-of-slice helper) */
+extern unsigned long sk_00352914(); /* FUN_00352914 (out-of-slice helper) */
+extern unsigned long sk_00352a40(); /* FUN_00352a40 (out-of-slice helper) */
+extern unsigned long sk_00352a4c(); /* FUN_00352a4c (out-of-slice helper) */
+extern unsigned long sk_00352ae4(); /* FUN_00352ae4 (out-of-slice helper) */
+extern unsigned long sk_00352b14(); /* FUN_00352b14 (out-of-slice helper) */
+extern unsigned long sk_00352b2c(); /* FUN_00352b2c (out-of-slice helper) */
+extern unsigned long sk_00352b50(); /* FUN_00352b50 (out-of-slice helper) */
+extern unsigned long sk_00352b8c(); /* FUN_00352b8c (out-of-slice helper) */
+extern unsigned long sk_00352b98(); /* FUN_00352b98 (out-of-slice helper) */
+extern unsigned long sk_00352bbc(); /* FUN_00352bbc (out-of-slice helper) */
+extern unsigned long sk_00352be0(); /* FUN_00352be0 (out-of-slice helper) */
+extern unsigned long sk_00352c40(); /* FUN_00352c40 (out-of-slice helper) */
+extern unsigned long sk_00352c4c(); /* FUN_00352c4c (out-of-slice helper) */
+extern unsigned long sk_00352c68(); /* FUN_00352c68 (out-of-slice helper) */
+extern unsigned long sk_00352d34(); /* FUN_00352d34 (out-of-slice helper) */
+extern unsigned long sk_00352d64(); /* FUN_00352d64 (out-of-slice helper) */
+extern unsigned long sk_00352ddc(); /* FUN_00352ddc (out-of-slice helper) */
+extern unsigned long sk_00352df4(); /* FUN_00352df4 (out-of-slice helper) */
+extern unsigned long sk_00352e24(); /* FUN_00352e24 (out-of-slice helper) */
+extern unsigned long sk_00352e60(); /* FUN_00352e60 (out-of-slice helper) */
+extern unsigned long sk_00352e78(); /* FUN_00352e78 (out-of-slice helper) */
+extern unsigned long sk_00352ea8(); /* FUN_00352ea8 (out-of-slice helper) */
+extern unsigned long sk_00352eb4(); /* FUN_00352eb4 (out-of-slice helper) */
+extern unsigned long sk_00352efc(); /* FUN_00352efc (out-of-slice helper) */
+extern unsigned long sk_00352f18(); /* FUN_00352f18 (out-of-slice helper) */
+extern unsigned long sk_00352f48(); /* FUN_00352f48 (out-of-slice helper) */
+extern unsigned long sk_00352f88(); /* FUN_00352f88 (out-of-slice helper) */
+extern unsigned long sk_00352fd4(); /* FUN_00352fd4 (out-of-slice helper) */
+extern unsigned long sk_0035300c(); /* FUN_0035300c (out-of-slice helper) */
+extern unsigned long sk_00353034(); /* FUN_00353034 (out-of-slice helper) */
+extern unsigned long sk_00353050(); /* FUN_00353050 (out-of-slice helper) */
+extern unsigned long sk_0035308c(); /* FUN_0035308c (out-of-slice helper) */
+extern unsigned long sk_003530e8(); /* FUN_003530e8 (out-of-slice helper) */
+extern unsigned long sk_003530f4(); /* FUN_003530f4 (out-of-slice helper) */
+extern unsigned long sk_0035310c(); /* FUN_0035310c (out-of-slice helper) */
+extern unsigned long sk_00353124(); /* FUN_00353124 (out-of-slice helper) */
+extern unsigned long sk_00353160(); /* FUN_00353160 (out-of-slice helper) */
+extern unsigned long sk_0035316c(); /* FUN_0035316c (out-of-slice helper) */
+extern unsigned long sk_003531d8(); /* FUN_003531d8 (out-of-slice helper) */
+extern unsigned long sk_003531f0(); /* FUN_003531f0 (out-of-slice helper) */
+extern unsigned long sk_00353220(); /* FUN_00353220 (out-of-slice helper) */
+extern unsigned long sk_0035322c(); /* FUN_0035322c (out-of-slice helper) */
+extern unsigned long sk_00353238(); /* FUN_00353238 (out-of-slice helper) */
+extern unsigned long sk_00353254(); /* FUN_00353254 (out-of-slice helper) */
+extern unsigned long sk_00353274(); /* FUN_00353274 (out-of-slice helper) */
+extern unsigned long sk_00353390(); /* FUN_00353390 (out-of-slice helper) */
+extern unsigned long sk_00353430(); /* FUN_00353430 (out-of-slice helper) */
+extern unsigned long sk_003534bc(); /* FUN_003534bc (out-of-slice helper) */
+extern unsigned long sk_003534d4(); /* FUN_003534d4 (out-of-slice helper) */
+extern unsigned long sk_003534e0(); /* FUN_003534e0 (out-of-slice helper) */
+extern unsigned long sk_003534ec(); /* FUN_003534ec (out-of-slice helper) */
+extern unsigned long sk_003536ac(); /* FUN_003536ac (out-of-slice helper) */
+extern unsigned long sk_00353718(); /* FUN_00353718 (out-of-slice helper) */
+extern unsigned long sk_00353734(); /* FUN_00353734 (out-of-slice helper) */
+extern unsigned long sk_003537d4(); /* FUN_003537d4 (out-of-slice helper) */
+extern unsigned long sk_003537f0(); /* FUN_003537f0 (out-of-slice helper) */
+extern unsigned long sk_003537fc(); /* FUN_003537fc (out-of-slice helper) */
+extern unsigned long sk_00353918(); /* FUN_00353918 (out-of-slice helper) */
+extern unsigned long sk_0035396c(); /* FUN_0035396c (out-of-slice helper) */
+extern unsigned long sk_003539e4(); /* FUN_003539e4 (out-of-slice helper) */
+extern unsigned long sk_003539f4(); /* FUN_003539f4 (out-of-slice helper) */
+extern unsigned long sk_00353a78(); /* FUN_00353a78 (out-of-slice helper) */
+extern unsigned long sk_00353b10(); /* FUN_00353b10 (out-of-slice helper) */
+extern unsigned long sk_00353b34(); /* FUN_00353b34 (out-of-slice helper) */
+extern unsigned long sk_00353be8(); /* FUN_00353be8 (out-of-slice helper) */
+extern unsigned long sk_00353c48(); /* FUN_00353c48 (out-of-slice helper) */
+extern unsigned long sk_00353c54(); /* FUN_00353c54 (out-of-slice helper) */
+extern unsigned long sk_00353c78(); /* FUN_00353c78 (out-of-slice helper) */
+extern unsigned long sk_00353cb4(); /* FUN_00353cb4 (out-of-slice helper) */
+extern unsigned long sk_00353cd8(); /* FUN_00353cd8 (out-of-slice helper) */
+extern unsigned long sk_00353cf0(); /* FUN_00353cf0 (out-of-slice helper) */
+extern unsigned long sk_00353cfc(); /* FUN_00353cfc (out-of-slice helper) */
+extern unsigned long sk_00353d14(); /* FUN_00353d14 (out-of-slice helper) */
+extern unsigned long sk_00353d94(); /* FUN_00353d94 (out-of-slice helper) */
+extern unsigned long sk_00353e2c(); /* FUN_00353e2c (out-of-slice helper) */
+extern unsigned long sk_00353e38(); /* FUN_00353e38 (out-of-slice helper) */
+extern unsigned long sk_00353e50(); /* FUN_00353e50 (out-of-slice helper) */
+extern unsigned long sk_00353ef0(); /* FUN_00353ef0 (out-of-slice helper) */
+extern unsigned long sk_00353efc(); /* FUN_00353efc (out-of-slice helper) */
+extern unsigned long sk_00353f44(); /* FUN_00353f44 (out-of-slice helper) */
+extern unsigned long sk_00353f50(); /* FUN_00353f50 (out-of-slice helper) */
+extern unsigned long sk_00353f88(); /* FUN_00353f88 (out-of-slice helper) */
+extern unsigned long sk_00354010(); /* FUN_00354010 (out-of-slice helper) */
+extern unsigned long sk_00354134(); /* FUN_00354134 (out-of-slice helper) */
+extern unsigned long sk_0035414c(); /* FUN_0035414c (out-of-slice helper) */
+extern unsigned long sk_00354168(); /* FUN_00354168 (out-of-slice helper) */
+extern unsigned long sk_00354184(); /* FUN_00354184 (out-of-slice helper) */
+extern unsigned long sk_003541a0(); /* FUN_003541a0 (out-of-slice helper) */
+extern unsigned long sk_003541bc(); /* FUN_003541bc (out-of-slice helper) */
+extern unsigned long sk_003541d8(); /* FUN_003541d8 (out-of-slice helper) */
+extern unsigned long sk_003541f4(); /* FUN_003541f4 (out-of-slice helper) */
+extern unsigned long sk_00354210(); /* FUN_00354210 (out-of-slice helper) */
+extern unsigned long sk_003542d0(); /* FUN_003542d0 (out-of-slice helper) */
+extern unsigned long sk_003542e8(); /* FUN_003542e8 (out-of-slice helper) */
+extern unsigned long sk_00354300(); /* FUN_00354300 (out-of-slice helper) */
+extern unsigned long sk_0035430c(); /* FUN_0035430c (out-of-slice helper) */
+extern unsigned long sk_00354324(); /* FUN_00354324 (out-of-slice helper) */
+extern unsigned long sk_00354394(); /* FUN_00354394 (out-of-slice helper) */
+extern unsigned long sk_003543ac(); /* FUN_003543ac (out-of-slice helper) */
+extern unsigned long sk_00354404(); /* FUN_00354404 (out-of-slice helper) */
+extern unsigned long sk_00354458(); /* FUN_00354458 (out-of-slice helper) */
+extern unsigned long sk_003544c8(); /* FUN_003544c8 (out-of-slice helper) */
+extern unsigned long sk_00354594(); /* FUN_00354594 (out-of-slice helper) */
+extern unsigned long sk_003545ac(); /* FUN_003545ac (out-of-slice helper) */
+extern unsigned long sk_00354660(); /* FUN_00354660 (out-of-slice helper) */
+extern unsigned long sk_003546a8(); /* FUN_003546a8 (out-of-slice helper) */
+extern unsigned long sk_00354708(); /* FUN_00354708 (out-of-slice helper) */
+extern unsigned long sk_00354720(); /* FUN_00354720 (out-of-slice helper) */
+extern unsigned long sk_00354744(); /* FUN_00354744 (out-of-slice helper) */
+extern unsigned long sk_0035475c(); /* FUN_0035475c (out-of-slice helper) */
+extern unsigned long sk_00354780(); /* FUN_00354780 (out-of-slice helper) */
+extern unsigned long sk_003547d4(); /* FUN_003547d4 (out-of-slice helper) */
+extern unsigned long sk_003547ec(); /* FUN_003547ec (out-of-slice helper) */
+extern unsigned long sk_003548d0(); /* FUN_003548d0 (out-of-slice helper) */
+extern unsigned long sk_003549e4(); /* FUN_003549e4 (out-of-slice helper) */
+extern unsigned long sk_00354a0c(); /* FUN_00354a0c (out-of-slice helper) */
+extern unsigned long sk_00354a34(); /* FUN_00354a34 (out-of-slice helper) */
+extern unsigned long sk_00354b14(); /* FUN_00354b14 (out-of-slice helper) */
+extern unsigned long sk_00354b2c(); /* FUN_00354b2c (out-of-slice helper) */
+extern unsigned long sk_00354b50(); /* FUN_00354b50 (out-of-slice helper) */
+extern unsigned long sk_00354b68(); /* FUN_00354b68 (out-of-slice helper) */
+extern unsigned long sk_00354bb0(); /* FUN_00354bb0 (out-of-slice helper) */
+extern unsigned long sk_00354bbc(); /* FUN_00354bbc (out-of-slice helper) */
+extern unsigned long sk_00354d14(); /* FUN_00354d14 (out-of-slice helper) */
+extern unsigned long sk_00354d38(); /* FUN_00354d38 (out-of-slice helper) */
+extern unsigned long sk_00354d44(); /* FUN_00354d44 (out-of-slice helper) */
+extern unsigned long sk_00354d5c(); /* FUN_00354d5c (out-of-slice helper) */
+extern unsigned long sk_00354d94(); /* FUN_00354d94 (out-of-slice helper) */
+extern unsigned long sk_00354db8(); /* FUN_00354db8 (out-of-slice helper) */
+extern unsigned long sk_00354ef8(); /* FUN_00354ef8 (out-of-slice helper) */
+extern unsigned long sk_00354f10(); /* FUN_00354f10 (out-of-slice helper) */
+extern unsigned long sk_00354f34(); /* FUN_00354f34 (out-of-slice helper) */
+extern unsigned long sk_00354f80(); /* FUN_00354f80 (out-of-slice helper) */
+extern unsigned long sk_00354f8c(); /* FUN_00354f8c (out-of-slice helper) */
+extern unsigned long sk_00355068(); /* FUN_00355068 (out-of-slice helper) */
+extern unsigned long sk_00355224(); /* FUN_00355224 (out-of-slice helper) */
+extern unsigned long sk_00355418(); /* FUN_00355418 (out-of-slice helper) */
+extern unsigned long sk_003554d4(); /* FUN_003554d4 (out-of-slice helper) */
+extern unsigned long sk_003554e0(); /* FUN_003554e0 (out-of-slice helper) */
+extern unsigned long sk_00355544(); /* FUN_00355544 (out-of-slice helper) */
+extern unsigned long sk_00355578(); /* FUN_00355578 (out-of-slice helper) */
+extern unsigned long sk_00355594(); /* FUN_00355594 (out-of-slice helper) */
+extern unsigned long sk_00355634(); /* FUN_00355634 (out-of-slice helper) */
+extern unsigned long sk_00355730(); /* FUN_00355730 (out-of-slice helper) */
+extern unsigned long sk_003557a8(); /* FUN_003557a8 (out-of-slice helper) */
+extern unsigned long sk_00355adc(); /* FUN_00355adc (out-of-slice helper) */
+extern unsigned long sk_00355af8(); /* FUN_00355af8 (out-of-slice helper) */
+extern unsigned long sk_00355b04(); /* FUN_00355b04 (out-of-slice helper) */
+extern unsigned long sk_00355b74(); /* FUN_00355b74 (out-of-slice helper) */
+extern unsigned long sk_00355bd0(); /* FUN_00355bd0 (out-of-slice helper) */
+extern unsigned long sk_00355bdc(); /* FUN_00355bdc (out-of-slice helper) */
+extern unsigned long sk_00355c1c(); /* FUN_00355c1c (out-of-slice helper) */
+extern unsigned long sk_00355c28(); /* FUN_00355c28 (out-of-slice helper) */
+extern unsigned long sk_00355d28(); /* FUN_00355d28 (out-of-slice helper) */
+extern unsigned long sk_00355d78(); /* FUN_00355d78 (out-of-slice helper) */
+extern unsigned long sk_00355e2c(); /* FUN_00355e2c (out-of-slice helper) */
+extern unsigned long sk_00355e5c(); /* FUN_00355e5c (out-of-slice helper) */
+extern unsigned long sk_00355e68(); /* FUN_00355e68 (out-of-slice helper) */
+extern unsigned long sk_00355e74(); /* FUN_00355e74 (out-of-slice helper) */
+extern unsigned long sk_00356000(); /* FUN_00356000 (out-of-slice helper) */
+extern unsigned long sk_00356030(); /* FUN_00356030 (out-of-slice helper) */
+extern unsigned long sk_00356078(); /* FUN_00356078 (out-of-slice helper) */
+extern unsigned long sk_003560a8(); /* FUN_003560a8 (out-of-slice helper) */
+extern unsigned long sk_003560c0(); /* FUN_003560c0 (out-of-slice helper) */
+extern unsigned long sk_00356140(); /* FUN_00356140 (out-of-slice helper) */
+extern unsigned long sk_00356224(); /* FUN_00356224 (out-of-slice helper) */
+extern unsigned long sk_00356260(); /* FUN_00356260 (out-of-slice helper) */
+extern unsigned long sk_0035626c(); /* FUN_0035626c (out-of-slice helper) */
+extern unsigned long sk_00356290(); /* FUN_00356290 (out-of-slice helper) */
+extern unsigned long sk_003562ec(); /* FUN_003562ec (out-of-slice helper) */
+extern unsigned long sk_00356328(); /* FUN_00356328 (out-of-slice helper) */
+extern unsigned long sk_003563a8(); /* FUN_003563a8 (out-of-slice helper) */
+extern unsigned long sk_003563c4(); /* FUN_003563c4 (out-of-slice helper) */
+extern unsigned long sk_003565c0(); /* FUN_003565c0 (out-of-slice helper) */
+extern unsigned long sk_003565e0(); /* FUN_003565e0 (out-of-slice helper) */
+extern unsigned long sk_00356600(); /* FUN_00356600 (out-of-slice helper) */
+extern unsigned long sk_00356644(); /* FUN_00356644 (out-of-slice helper) */
+extern unsigned long sk_00356670(); /* FUN_00356670 (out-of-slice helper) */
+extern unsigned long sk_0035678c(); /* FUN_0035678c (out-of-slice helper) */
+extern unsigned long sk_003567d4(); /* FUN_003567d4 (out-of-slice helper) */
+extern unsigned long sk_0035681c(); /* FUN_0035681c (out-of-slice helper) */
+extern unsigned long sk_00356834(); /* FUN_00356834 (out-of-slice helper) */
+extern unsigned long sk_00356870(); /* FUN_00356870 (out-of-slice helper) */
+extern unsigned long sk_003568e8(); /* FUN_003568e8 (out-of-slice helper) */
+extern unsigned long sk_00356964(); /* FUN_00356964 (out-of-slice helper) */
+extern unsigned long sk_003569b4(); /* FUN_003569b4 (out-of-slice helper) */
+extern unsigned long sk_00356a44(); /* FUN_00356a44 (out-of-slice helper) */
+extern unsigned long sk_00356ac4(); /* FUN_00356ac4 (out-of-slice helper) */
+extern unsigned long sk_00356af4(); /* FUN_00356af4 (out-of-slice helper) */
+extern unsigned long sk_00356b20(); /* FUN_00356b20 (out-of-slice helper) */
+extern unsigned long sk_00356b80(); /* FUN_00356b80 (out-of-slice helper) */
+extern unsigned long sk_00356cfc(); /* FUN_00356cfc (out-of-slice helper) */
+extern unsigned long sk_0035705c(); /* FUN_0035705c (out-of-slice helper) */
+extern unsigned long sk_003570f0(); /* FUN_003570f0 (out-of-slice helper) */
+extern unsigned long sk_0035725c(); /* FUN_0035725c (out-of-slice helper) */
+extern unsigned long sk_0035740c(); /* FUN_0035740c (out-of-slice helper) */
+extern unsigned long sk_00357418(); /* FUN_00357418 (out-of-slice helper) */
+extern unsigned long sk_00357694(); /* FUN_00357694 (out-of-slice helper) */
+extern unsigned long sk_00357788(); /* FUN_00357788 (out-of-slice helper) */
+extern unsigned long sk_00357874(); /* FUN_00357874 (out-of-slice helper) */
+extern unsigned long sk_00357884(); /* FUN_00357884 (out-of-slice helper) */
+extern unsigned long sk_003578a8(); /* FUN_003578a8 (out-of-slice helper) */
+extern unsigned long sk_00357910(); /* FUN_00357910 (out-of-slice helper) */
+extern unsigned long sk_0035792c(); /* FUN_0035792c (out-of-slice helper) */
+extern unsigned long sk_00357944(); /* FUN_00357944 (out-of-slice helper) */
+extern unsigned long sk_0035798c(); /* FUN_0035798c (out-of-slice helper) */
+extern unsigned long sk_00357a34(); /* FUN_00357a34 (out-of-slice helper) */
+extern unsigned long sk_00357a84(); /* FUN_00357a84 (out-of-slice helper) */
+extern unsigned long sk_00357ab4(); /* FUN_00357ab4 (out-of-slice helper) */
+extern unsigned long sk_00357b20(); /* FUN_00357b20 (out-of-slice helper) */
+extern unsigned long sk_00357c20(); /* FUN_00357c20 (out-of-slice helper) */
+extern unsigned long sk_00357c44(); /* FUN_00357c44 (out-of-slice helper) */
+extern unsigned long sk_00357c74(); /* FUN_00357c74 (out-of-slice helper) */
+extern unsigned long sk_00357ca0(); /* FUN_00357ca0 (out-of-slice helper) */
+extern unsigned long sk_00357cb4(); /* FUN_00357cb4 (out-of-slice helper) */
+extern unsigned long sk_00357d54(); /* FUN_00357d54 (out-of-slice helper) */
+extern unsigned long sk_00357f14(); /* FUN_00357f14 (out-of-slice helper) */
+extern unsigned long sk_00357f94(); /* FUN_00357f94 (out-of-slice helper) */
+extern unsigned long sk_00357fd4(); /* FUN_00357fd4 (out-of-slice helper) */
+extern unsigned long sk_003580e4(); /* FUN_003580e4 (out-of-slice helper) */
+extern unsigned long sk_00358208(); /* FUN_00358208 (out-of-slice helper) */
+extern unsigned long sk_003582f8(); /* FUN_003582f8 (out-of-slice helper) */
+extern unsigned long sk_00358308(); /* FUN_00358308 (out-of-slice helper) */
+extern unsigned long sk_003583c0(); /* FUN_003583c0 (out-of-slice helper) */
+extern unsigned long sk_003583e8(); /* FUN_003583e8 (out-of-slice helper) */
+extern unsigned long sk_0035841c(); /* FUN_0035841c (out-of-slice helper) */
+extern unsigned long sk_00358454(); /* FUN_00358454 (out-of-slice helper) */
+extern unsigned long sk_003584c0(); /* FUN_003584c0 (out-of-slice helper) */
+extern unsigned long sk_00358540(); /* FUN_00358540 (out-of-slice helper) */
+extern unsigned long sk_003585f4(); /* FUN_003585f4 (out-of-slice helper) */
+extern unsigned long sk_00358600(); /* FUN_00358600 (out-of-slice helper) */
+extern unsigned long sk_00358624(); /* FUN_00358624 (out-of-slice helper) */
+extern unsigned long sk_0035863c(); /* FUN_0035863c (out-of-slice helper) */
+extern unsigned long sk_003588d0(); /* FUN_003588d0 (out-of-slice helper) */
+extern unsigned long sk_00358918(); /* FUN_00358918 (out-of-slice helper) */
+extern unsigned long sk_0035893c(); /* FUN_0035893c (out-of-slice helper) */
+extern unsigned long sk_00358960(); /* FUN_00358960 (out-of-slice helper) */
+extern unsigned long sk_00358978(); /* FUN_00358978 (out-of-slice helper) */
+extern unsigned long sk_003589cc(); /* FUN_003589cc (out-of-slice helper) */
+extern unsigned long sk_003589d8(); /* FUN_003589d8 (out-of-slice helper) */
+extern unsigned long sk_00358ae0(); /* FUN_00358ae0 (out-of-slice helper) */
+extern unsigned long sk_00358bc0(); /* FUN_00358bc0 (out-of-slice helper) */
+extern unsigned long sk_00358bcc(); /* FUN_00358bcc (out-of-slice helper) */
+extern unsigned long sk_00358cd4(); /* FUN_00358cd4 (out-of-slice helper) */
+extern unsigned long sk_00358cec(); /* FUN_00358cec (out-of-slice helper) */
+extern unsigned long sk_00358d34(); /* FUN_00358d34 (out-of-slice helper) */
+extern unsigned long sk_00358dac(); /* FUN_00358dac (out-of-slice helper) */
+extern unsigned long sk_00358ddc(); /* FUN_00358ddc (out-of-slice helper) */
+extern unsigned long sk_00358ea0(); /* FUN_00358ea0 (out-of-slice helper) */
+extern unsigned long sk_00358f0c(); /* FUN_00358f0c (out-of-slice helper) */
+extern unsigned long sk_00358f78(); /* FUN_00358f78 (out-of-slice helper) */
+extern unsigned long sk_00359000(); /* FUN_00359000 (out-of-slice helper) */
+extern unsigned long sk_00359030(); /* FUN_00359030 (out-of-slice helper) */
+extern unsigned long sk_00359088(); /* FUN_00359088 (out-of-slice helper) */
+extern unsigned long sk_00359134(); /* FUN_00359134 (out-of-slice helper) */
+extern unsigned long sk_003593e8(); /* FUN_003593e8 (out-of-slice helper) */
+extern unsigned long sk_00359550(); /* FUN_00359550 (out-of-slice helper) */
+extern unsigned long sk_003595a8(); /* FUN_003595a8 (out-of-slice helper) */
+extern unsigned long sk_0035964c(); /* FUN_0035964c (out-of-slice helper) */
+extern unsigned long sk_003597d8(); /* FUN_003597d8 (out-of-slice helper) */
+extern unsigned long sk_00359a48(); /* FUN_00359a48 (out-of-slice helper) */
+extern unsigned long sk_00359a78(); /* FUN_00359a78 (out-of-slice helper) */
+extern unsigned long sk_00359ad4(); /* FUN_00359ad4 (out-of-slice helper) */
+extern unsigned long sk_00359b64(); /* FUN_00359b64 (out-of-slice helper) */
+extern unsigned long sk_00359be0(); /* FUN_00359be0 (out-of-slice helper) */
+extern unsigned long sk_00359bec(); /* FUN_00359bec (out-of-slice helper) */
+extern unsigned long sk_00359ca4(); /* FUN_00359ca4 (out-of-slice helper) */
+extern unsigned long sk_00359d9c(); /* FUN_00359d9c (out-of-slice helper) */
+extern unsigned long sk_00359e14(); /* FUN_00359e14 (out-of-slice helper) */
+extern unsigned long sk_00359e40(); /* FUN_00359e40 (out-of-slice helper) */
+extern unsigned long sk_0035a01c(); /* FUN_0035a01c (out-of-slice helper) */
+extern unsigned long sk_0035a040(); /* FUN_0035a040 (out-of-slice helper) */
+extern unsigned long sk_0035a0b8(); /* FUN_0035a0b8 (out-of-slice helper) */
+extern unsigned long sk_0035a184(); /* FUN_0035a184 (out-of-slice helper) */
+extern unsigned long sk_0035a19c(); /* FUN_0035a19c (out-of-slice helper) */
+extern unsigned long sk_0035a1c0(); /* FUN_0035a1c0 (out-of-slice helper) */
+extern unsigned long sk_0035a274(); /* FUN_0035a274 (out-of-slice helper) */
+extern unsigned long sk_0035a2b8(); /* FUN_0035a2b8 (out-of-slice helper) */
+extern unsigned long sk_0035a2c4(); /* FUN_0035a2c4 (out-of-slice helper) */
+extern unsigned long sk_0035a3dc(); /* FUN_0035a3dc (out-of-slice helper) */
+extern unsigned long sk_0035a438(); /* FUN_0035a438 (out-of-slice helper) */
+extern unsigned long sk_0035a4bc(); /* FUN_0035a4bc (out-of-slice helper) */
+extern unsigned long sk_0035a4d4(); /* FUN_0035a4d4 (out-of-slice helper) */
+extern unsigned long sk_0035a4f8(); /* FUN_0035a4f8 (out-of-slice helper) */
+extern unsigned long sk_0035a590(); /* FUN_0035a590 (out-of-slice helper) */
+extern unsigned long sk_0035a59c(); /* FUN_0035a59c (out-of-slice helper) */
+extern unsigned long sk_0035a684(); /* FUN_0035a684 (out-of-slice helper) */
+extern unsigned long sk_0035a6e8(); /* FUN_0035a6e8 (out-of-slice helper) */
+extern unsigned long sk_0035a81c(); /* FUN_0035a81c (out-of-slice helper) */
+extern unsigned long sk_0035abe4(); /* FUN_0035abe4 (out-of-slice helper) */
+extern unsigned long sk_0035acfc(); /* FUN_0035acfc (out-of-slice helper) */
+extern unsigned long sk_0036a908(); /* FUN_0036a908 (out-of-slice helper) */
+extern unsigned long sk_0036a940(); /* FUN_0036a940 (out-of-slice helper) */
+extern unsigned long sk_0036a9a0(); /* FUN_0036a9a0 (out-of-slice helper) */
+extern unsigned long sk_0036b118(); /* FUN_0036b118 (out-of-slice helper) */
+extern unsigned long sk_0036b270(); /* FUN_0036b270 (out-of-slice helper) */
+extern unsigned long sk_0036b2d0(); /* FUN_0036b2d0 (out-of-slice helper) */
+extern unsigned long sk_003722e4(); /* FUN_003722e4 (out-of-slice helper) */
+extern unsigned long sk_00376820(); /* FUN_00376820 (out-of-slice helper) */
+extern unsigned long sk_00377824(); /* FUN_00377824 (out-of-slice helper) */
+extern unsigned long sk_00377bec(); /* FUN_00377bec (out-of-slice helper) */
+extern unsigned long sk_003a25d4(); /* FUN_003a25d4 (out-of-slice helper) */
+extern unsigned long sk_003a261c(); /* FUN_003a261c (out-of-slice helper) */
+extern unsigned long sk_00610504(); /* FUN_00610504 (out-of-slice helper) */
+extern unsigned long sk_t_00012568(); /* FUN_t_00012568 (out-of-slice helper) */
+extern unsigned long sk_t_000126e8(); /* FUN_t_000126e8 (out-of-slice helper) */
+extern unsigned long sk_t_001a0754(); /* FUN_t_001a0754 (out-of-slice helper) */
+extern unsigned long sk_t_001a0774(); /* FUN_t_001a0774 (out-of-slice helper) */
+extern unsigned long sk_t_002298d4(); /* FUN_t_002298d4 (out-of-slice helper) */
+extern void sk_t_0026c2a0(); /* FUN_t_0026c2a0 (out-of-slice helper) */
+extern unsigned long sk_t_002a2698(); /* FUN_t_002a2698 (out-of-slice helper) */
+extern unsigned long sk_t_0036b270(); /* FUN_t_0036b270 (out-of-slice helper) */
+extern unsigned long sk_breakpoint(); /* SoftwareBreakpoint (noreturn trap) */
 extern unsigned long _g_004baeb0; /* Ghidra global */
 extern unsigned long g_003471a4; /* Ghidra global */
 extern unsigned long g_003471a8; /* Ghidra global */
@@ -4870,7 +4871,7 @@ extern unsigned long g_0060e230; /* Ghidra global */
 extern unsigned long g_0060e238; /* Ghidra global */
 extern unsigned long g_0061052c; /* Ghidra global */
 extern unsigned long g_00611b24; /* Ghidra global */
-extern unsigned long sk_t_001dc298();
+extern unsigned long sk_t_001dc298(); /* FUN_t_001dc298 (out-of-slice helper) */
 extern unsigned char L_0031ad8c; extern unsigned char L_0031adbc;
 extern unsigned char L_0031adec; extern unsigned char L_0031ae1c;
 extern unsigned char L_0031ae7c; extern unsigned char L_0031aeac;
@@ -4880,7 +4881,7 @@ extern unsigned char L_0060e218; extern unsigned char L_00611b34;
 extern unsigned long g_0064c260; /* Ghidra global */
 extern unsigned long g_0064e888; /* Ghidra global */
 extern unsigned long g_00657778; /* Ghidra global */
-extern unsigned long();
+extern unsigned long (*g_00658c00)(); /* Ghidra global (function pointer) */
 extern unsigned long ram00000000004baeb8; /* Ghidra global */
 extern unsigned char Can_t_construct_ContiguousArray_w_005cedd0_str[]; /* Ghidra string s_Can_t_construct_ContiguousArray_w_005cedd0 */
 extern unsigned char Can_t_reassign_buffer_in_Array_u_005d39b0_str[]; /* Ghidra string s_Can_t_reassign_buffer_in_Array_u_005d39b0 */
@@ -5056,7 +5057,7 @@ void sk_001d58fc();
 void sk_001d5c90();
 void sk_001d5f58();
 void sk_001d6094();
-void sk_001d614c();
+void sk_001d614c(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)(),undefined8 param_4, undefined8 param_5,undefined8 param_6);
 uint sk_001d69d8();
 void sk_001d6ef0();
 void sk_001d7368();
@@ -5080,10 +5081,10 @@ void sk_001d9a94();
 void sk_001d9b00();
 void sk_001d9b18();
 void sk_001d9f28();
-ulong sk_001da01c();
-long sk_001da1c0();
+ulong sk_001da01c(unsigned long (*param_1)());
+long sk_001da1c0(unsigned long (*param_1)());
 void sk_001da324();
-void sk_001da714();
+void sk_001da714(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)(),undefined8 param_4, undefined8 param_5,undefined8 param_6);
 void sk_001daea8();
 void sk_001db6b0();
 void sk_001db938();
@@ -5106,21 +5107,21 @@ void sk_001dc304();
 void sk_001dc3b8();
 void sk_001dc3e8();
 void sk_001dc430();
-void sk_001dc4c0();
+void sk_001dc4c0(undefined8 param_1,undefined8 param_2,undefined8 param_3,unsigned long (*param_4)(), unsigned long (*param_5)());
 void sk_001dc554();
 void sk_001dc56c();
 void sk_001dc5c4();
 void sk_001dc620();
 void sk_001dc754();
 void sk_001dc870();
-void sk_001dc8f4();
-void sk_001dc9bc();
-void sk_001dcbac();
+void sk_001dc8f4(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
+void sk_001dc9bc(undefined8 param_1,undefined8 param_2,long param_3,undefined8 param_4, unsigned long (*param_5)(),unsigned long (*param_6)(),unsigned long (*jumptable)());
+void sk_001dcbac(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
 void sk_001dcc34();
 void sk_001dccb4();
 void sk_001dccd0();
 undefined * sk_001dcd20();
-void sk_001dce5c();
+void sk_001dce5c(undefined8 *param_1,long param_2,undefined8 param_3,unsigned long (*param_4)());
 void sk_001dcea0();
 void sk_001dcf0c();
 undefined8 sk_001dcf90();
@@ -5135,17 +5136,17 @@ undefined8 sk_001dd24c();
 void sk_001dd264();
 void sk_001dd374();
 void sk_001dd408();
-void sk_001dd420();
+void sk_001dd420(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
 undefined * sk_001dd460();
 void sk_001dd4cc();
-unsigned long sk_001dd58c();
+unsigned long sk_001dd58c(long param_1,uint param_2,unsigned long (*jumptable)());
 void sk_001dd614();
 void sk_001dd6ac();
 void sk_001dd6cc();
 void sk_001dd77c();
-void sk_001dd7f4();
+void sk_001dd7f4(undefined8 param_1,unsigned long (*jumptable)());
 void sk_001dd858();
-void sk_001dd88c();
+void sk_001dd88c(long param_1,undefined8 param_2,unsigned long (*jumptable)());
 void sk_001dd8cc();
 void sk_001ddb2c();
 void sk_001ddd5c();
@@ -5162,8 +5163,8 @@ void sk_001de9bc();
 void sk_001dea34();
 void sk_001dea60();
 void sk_001deae8();
-void sk_001debac();
-void sk_001dec50();
+void sk_001debac(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
+void sk_001dec50(undefined8 param_1,undefined8 param_2,unsigned long (*param_3)());
 void sk_001ded00();
 void sk_001dedcc();
 void sk_001dedd0();
@@ -5179,7 +5180,7 @@ void sk_001df2f8();
 void sk_001df334();
 void sk_001df428();
 void sk_001df4e4();
-void sk_001df510();
+void sk_001df510(long param_1,long param_2,unsigned long (*param_3)(),undefined8 param_4,long param_5);
 void sk_001df5a4();
 void sk_001df5a8();
 void sk_001df5c8();
@@ -5190,40 +5191,40 @@ void sk_001df790();
 void sk_001df7dc();
 void sk_001df7f4();
 void sk_001df870();
-void sk_001df924();
+void sk_001df924(unsigned long (*param_1)());
 void sk_001df958();
-void sk_001df98c();
+void sk_001df98c(undefined8 param_1,unsigned long (*param_2)());
 void sk_001dfa60();
 void sk_001dfadc();
 void sk_001dfb7c();
 void sk_001dfba8();
-void sk_001dfc28();
-void sk_001dfc88();
+void sk_001dfc28(long param_1,long param_2,unsigned long (*param_3)());
+void sk_001dfc88(undefined8 param_1,unsigned long (*param_2)(),undefined8 param_3,undefined8 param_4);
 void sk_001dfec0();
 void sk_001dff60();
 void sk_001dffa0();
 undefined8 sk_001dcd98();
 typedef uint64_t (*code_fn_t)(long, ...);
-extern void sk_cpu_get();
-extern void sk_obj_methods_table();
-extern void sk_lock_release();
-extern void sk_alloc_sized();
-extern code_fn_t sk_obj_method();
-extern code_fn_t sk_obj_method2();
-extern code_fn_t sk_obj_method3();
-extern void sk_fatal_swift();
-extern void sk_sched_dispatch();
-void sk_sched_yield();
-extern void sk_swift_hash_seed();
-extern unsigned long sk_swift_bridge_objc();
-extern void sk_swift_metadata_resolve();
-extern void sk_objc_msgSend();
-extern void sk_swift_collection_insert();
-extern void sk_swift_collection_append();
-extern void sk_memcpy();
-uint64_t sk_dict_bucket_init();
-long sk_swift_str_distance();
-uint sk_dict_contains_key_impl();
+extern void sk_cpu_get(); /* FUN_0008e518 */
+extern void sk_obj_methods_table(); /* FUN_00377824 / DAT_00658c00 obj-method table */
+extern void sk_lock_release(); /* FUN_00377dcc */
+extern void sk_alloc_sized(); /* FUN_0036a940 */
+extern code_fn_t sk_obj_method(); /* FUN_00310e20 */
+extern code_fn_t sk_obj_method2(); /* FUN_00310954 */
+extern code_fn_t sk_obj_method3(); /* FUN_00310f04 */
+extern void sk_fatal_swift(); /* FUN_001afa84 (Swift precondition noreturn) */
+extern void sk_sched_dispatch(); /* FUN_0008412c */
+extern void sk_sched_yield(); /* FUN_001e638c (in-range) */
+extern void sk_swift_hash_seed(); /* FUN_00002534 */
+extern unsigned long sk_swift_bridge_objc(); /* FUN_002110f8 */
+extern void sk_swift_metadata_resolve(); /* FUN_0001a1c8 */
+extern void sk_objc_msgSend(); /* FUN_003a25d4 */
+extern void sk_swift_collection_insert(); /* FUN_0026bdc4 */
+extern void sk_swift_collection_append(); /* FUN_001dffa0 */
+extern void sk_memcpy(); /* FUN_00117d14 */
+extern uint64_t sk_dict_bucket_init(); /* FUN_001e312c */
+extern long sk_swift_str_distance(); /* FUN_001e67d8 */
+extern uint sk_dict_contains_key_impl(); /* FUN_001e4938 */
 typedef uint64_t word_t;
 typedef uint64_t cap_t;
 typedef uint64_t vptr_t;
@@ -6248,12 +6249,20 @@ typedef struct { word_t lo; word_t hi; } cl4_desc_t;
 typedef struct { word_t index; ulong found; } cl4_find_t;
 cl4_desc_t thunk_FUN_00355354();
 #define LZCOUNT(x)          ((unsigned)__builtin_clzll((unsigned long long)(x)))
-static inline word_t bitrev_word();
-extern word_t FUN_00084024();
-extern word_t FUN_0031a29c();
-extern word_t FUN_0031b560();
-extern unsigned long FUN_001f99f4();
-extern void FUN_001f0700();
+static inline word_t bitrev_word(word_t x) {
+    x = (x & 0xaaaaaaaaaaaaaaaa) >> 1 | (x & 0x5555555555555555) << 1;
+    x = (x & 0xcccccccccccccccc) >> 2 | (x & 0x3333333333333333) << 2;
+    x = (x & 0xf0f0f0f0f0f0f0f0) >> 4 | (x & 0xf0f0f0f0f0f0f0f) << 4;
+    x = (x & 0xff00ff00ff00ff00) >> 8 | (x & 0xff00ff00ff00ff) << 8;
+    x = (x & 0xffff0000ffff0000) >> 0x10 | (x & 0xffff0000ffff) << 0x10;
+ return();
+}
+typedef unsigned long code();
+extern word_t FUN_00084024(); /* 0x84024 */
+extern word_t FUN_0031a29c(); /* 0x31a29c */
+extern word_t FUN_0031b560(); /* 0x31b560 */
+extern unsigned long FUN_001f99f4(); /* 0x1f99f4 (this range) */
+extern void FUN_001f0700(); /* 0x1f0700 (this range) */
 
 /* ===================== function bodies (all slices) ===================== */
 void FUN_001807a4(uint64_t p1, uint64_t p2)
@@ -84530,4 +84539,5 @@ done:
     FUN_003596e4();
     FUN_00357c74(extraout_x1);
 }
+
 
