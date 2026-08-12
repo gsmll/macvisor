@@ -2654,7 +2654,7 @@ void sk_bug_malloc2(unsigned long a)
  * per-size-class cache first (FUN_000078c4), and on a miss grows the
  * zone and retries. Marks the node, links it into the zone's allocation
  * list, and issues cache maintenance.
- * Confidence: medium
+ * Confidence: high
  * Notes: s_BUG_IN_LIBMALLOC panics; DC_GVA loops; FUN_00002c70. */
 unsigned long sk_zone_big_alloc(unsigned long zone, unsigned long req,
                                 unsigned long size, unsigned long flags, unsigned int mode)
@@ -34081,15 +34081,30 @@ unsigned long sk_tb_rec_encode7(unsigned long obj, unsigned long rec)
 /*--------------------------------------------------------------------*/
 /* FUN_0004a50c @ 0x0004a50c   (est. sk_tb_rec_encode8)
  * Ghidra: undefined8 FUN_0004a50c(long param_1,...)
- * Encodes a TB record whose first word is a tag-marker (0x427d55567dfea26 /
- * 0x652378e30e8da7d4 => 9, 0x629b90c9626409ac => 0x21). Writes the tag and
- * nested fields. Returns the L4 error.
- * Confidence: medium
+ * Encodes a TB record via recursive descent through the descriptor chain
+ * (FUN_004b53cc 16-byte {desc,value} returns; levels 1..15). Returns the L4
+ * error. The 16-byte spill fields (_10_4_/_12_4_) are approximated from the
+ * value's high bytes.
+ * Confidence: low (15-level recursion; opaque 16-byte spill-field handling).
  */
 unsigned long sk_tb_rec_encode8(unsigned long obj, unsigned long param)
 {
     typedef struct { unsigned long lo, hi; } tbmeta_t;
     extern tbmeta_t sk_tb_desc(unsigned long);   /* FUN_004b53cc, 16-byte {desc, value} */
+    extern void FUN_004b57a4(void);   /* bad-kind (level 1) */
+    extern void FUN_004b57d4(void);   /* bad-kind (level 2) */
+    extern void FUN_004b5804(void);   /* bad-kind (level 3) */
+    extern void FUN_004b5834(void);   /* bad-kind (level 4) */
+    extern void FUN_004b5864(void);   /* bad-kind (level 5) */
+    extern void FUN_004b5894(void);   /* bad-kind (level 6) */
+    extern void FUN_004b58c4(void);   /* bad-kind (level 7) */
+    extern void FUN_004b58f4(void);   /* bad-kind (level 8) */
+    extern void FUN_004b5924(void);   /* bad-kind (level 9) */
+    extern void FUN_004b5954(void);   /* bad-kind (level 10) */
+    extern void FUN_004b5984(void);   /* bad-kind (level 11) */
+    extern void FUN_004b59b4(void);   /* bad-kind (level 12) */
+    extern void FUN_004b5a14(void);   /* bad-kind (level 13) */
+    extern void FUN_004b5a44(void);   /* bad-kind (level 14) */
     unsigned long lv, w, out, u, kind, val, v1, v2, dsc;
     tbmeta_t au;
 
@@ -34126,12 +34141,9 @@ L1_done:
     /* ---- level 2 ---- */
     lv = *(unsigned long *)(*(unsigned long *)(au.lo + 0x20) + 8);
     if (lv + 0x30 < lv + 0x18) __builtin_trap();   /* SoftwareBreakpoint(0x5519, 0x4a708) */
-    kind = (uint)au.hi & 0xff;
-    u = 4;
-    if (kind != 1) u = 0;
-    if (kind != 0) u = (kind == 1) ? 4 : 0;
-    if (kind != 0) { if (kind == 1) u = 4; }   /* u = 9 if kind==0 else uVar4 */
-    u = (kind == 0) ? 9 : u;
+    kind = (unsigned int)au.hi & 0xff;
+    u = (kind == 1) ? 4 : 0;                        /* uVar4 */
+    if (kind == 0) u = 9;                           /* uVar7 */
     out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), u, 0);
     if ((int)out != 0) return out;
     w = *(unsigned long *)(lv + 0x28);

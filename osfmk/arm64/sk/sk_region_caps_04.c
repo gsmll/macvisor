@@ -331,8 +331,8 @@ void cl4_dispatch_guard(unsigned long p1, long p2, unsigned long p3, long p4)
  * Ghidra: undefined * FUN_0008f034(long param_1)
  * Sibling of cl4_obf_fill filling `count` PRNG bytes into the deobfuscation
  * buffer; returns the buffer base (DAT_00657778).
- * Confidence: low
- * Notes: SoftwareBreakpoint traps mark assertion checks. */
+ * Confidence: medium
+ * Notes: SoftwareBreakpoint traps mark assertion checks. VERIFIED vs decompile.
 unsigned char *cl4_obf_fill2(long count)
 {
     unsigned long carry = cl4_obf_cursor[0];
