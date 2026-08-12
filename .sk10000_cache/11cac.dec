@@ -1,0 +1,38 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+ulong FUN_00011cac(undefined8 param_1,long *param_2,uint param_3)
+
+{
+  code *pcVar1;
+  long lVar2;
+  ulong uVar3;
+  long lVar4;
+  ulong uVar5;
+  
+  if (param_3 < _DAT_006ac238) {
+    lVar4 = (ulong)param_3 << 3;
+    uVar5 = (ulong)param_3;
+    do {
+      if (((&DAT_006adfe8 + lVar4 < &DAT_006adfe8 || (undefined1 *)0x6adff8 < &DAT_006adff0 + lVar4)
+           || &DAT_006adff0 + lVar4 < &DAT_006adfe8 + lVar4) ||
+         (uVar3 = *(ulong *)(&DAT_006adfe8 + uVar5 * 8), uVar3 + 200 < uVar3)) {
+                    /* WARNING: Does not return */
+        pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x11d7c);
+        (*pcVar1)();
+      }
+      lVar2 = (**(code **)(uVar3 + 0x10))(uVar3,param_1);
+      if (lVar2 != 0) goto LAB_00011d54;
+      uVar5 = uVar5 + 1;
+      lVar4 = lVar4 + 8;
+    } while (uVar5 < _DAT_006ac238);
+  }
+  lVar2 = 0;
+  uVar3 = 0;
+LAB_00011d54:
+  if (param_2 != (long *)0x0) {
+    *param_2 = lVar2;
+  }
+  return uVar3;
+}
+

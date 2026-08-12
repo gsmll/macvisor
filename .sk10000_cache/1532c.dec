@@ -1,0 +1,17 @@
+
+void FUN_0001532c(undefined4 param_1,undefined4 param_2)
+
+{
+  undefined4 *puVar1;
+  
+  puVar1 = (undefined4 *)FUN_00010244(1,0x60,0x1082040faca7f44);
+  if (puVar1 != (undefined4 *)0x0) {
+    *puVar1 = param_1;
+    puVar1[1] = param_2;
+    *(undefined1 *)(puVar1 + 10) = 1;
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_004b0068();
+}
+

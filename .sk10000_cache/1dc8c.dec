@@ -1,0 +1,24 @@
+
+undefined * FUN_0001dc8c(long param_1,long param_2)
+
+{
+  undefined8 uVar1;
+  undefined *puVar2;
+  long lVar3;
+  
+  if (param_2 <= param_1) {
+    param_2 = param_1;
+  }
+  if (param_2 == 0) {
+    puVar2 = &DAT_00657778;
+  }
+  else {
+    uVar1 = FUN_00002534(s___cstring_0064c108,&DAT_004be910);
+    puVar2 = (undefined *)FUN_0036a940(uVar1,param_2 + 0x20,7);
+    lVar3 = thunk_FUN_000126e8();
+    *(long *)(puVar2 + 0x10) = param_1;
+    *(long *)(puVar2 + 0x18) = lVar3 * 2 + -0x40;
+  }
+  return puVar2;
+}
+

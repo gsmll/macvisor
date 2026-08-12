@@ -925,3 +925,219 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: full decompile of FUN_fffffe000bdbba20 (~2.5KB): panic strings "invalid number of arguments to TXM: selector: %u | %u @%s:%d", "attempted multiple TXM thread associations", "received excessive/fewer than expected return words from TXM"; printf formats "TXM [Error]: CodeSignature: selector: %u | 0x%02X | 0x%02X | %u\n" (status 4), "Errno" (status 5), "TrustCache" (status 3).
 - **Severity (hypothesis)**: low — the non-fatal error paths return a mapped code instead of panicking, so a TXM-initiated error (e.g. a code-signature denial) is surfaced to the caller; only the fatal flag escalates to a panic. The %u-format diagnostics include the raw selector/status, which could disclose endpoint/selector activity to the console, but not to unprivileged callers.
 - **Confidence**: high
+
+## [sk-vspace] 0x2587e0 sk_set_walk_and_apply — slot bitmap is the sole mapping-permission authority
+- **Observation**: The slot-set walk (FUN_002587e0) iterates every set bit of the vspace slot bitmap at +0x40 (MSB-first via bit-reverse+LZCOUNT) and, for each, invokes either the read-callback (+0x10) or the write-callback (+0x20) of the page/aux buffer tables at param_3 — selected by param_2&1 (FUN_00258b20 = write/clear pass, FUN_00258b2c = read pass). There is no per-slot permission check inside the walk: the bitmap itself is the sole authority on which slots are mapped. A caller that can set a bit in the bitmap for a slot it does not own would get the write callback dispatched on that slot.
+- **Evidence**: decompile of FUN_002587e0: `bm = bitmap[word]; do { r=bit_reverse(bm); bm=bm-1&bm; idx=clz(r)|word<<6; if (param_2&1) (**(lVar9+0x20))(dst, page_slot, lVar16); else (**(lVar9+0x10))(dst, page_slot, lVar16); ... sk_buf_copy(); }`; write/clear pass re-fills the bitmap (FUN_001b5474 or `-1L<<`) and resets count when param_2&1.
+- **Severity (hypothesis)**: medium — this is the isolation boundary for vspace mapping; the bitmap's integrity is load-bearing, so any earlier bug that flips a bitmap bit (double-free in the slot set, a miscounted insert) escalates directly to a write callback on an unrelated slot. Fails closed only in the sense that the walk requires the bit to already be set.
+- **Confidence**: high
+
+## [sk-vspace] 0x25a864/0x25acb8 sk_set_insert_key — open-addressing insert has no owner/permission check, fails closed on duplicate
+- **Observation**: The 5-word-key hash-set insert (FUN_0025a864 / FUN_0025acb8) hashes the key, linearly probes the slot bitmap at +0x38, and on a free slot sets the bit and stores the key — with no check that the inserting thread is entitled to reference that key/slot. On a full match it panics (noreturn FUN_0025bddc, duplicate-key message). So the insert both (a) trusts the caller's key as a valid slot reference and (b) converts a duplicate insert into a kernel panic rather than a benign error.
+- **Evidence**: decompile of FUN_0025a864: hash via FUN_0008e5d8/FUN_0031993c; probe `if (!(bit & bitmap[idx])) { bitmap[idx]|=bit; copy key; count++; return; } compare stored (FUN_0031996c/FUN_0031997c); if equal sk_set_dup_panic(0x673a80); uVar3++` (linear probe). Same shape in the pair insert FUN_0025ab30 (panic 0x6753a0) and word inserts FUN_0025aa90/0x25aecc (panics 0x674278/0x677880).
+- **Severity (hypothesis)**: low — an unprivileged caller cannot reach the kernel-internal slot set directly; the panic-on-duplicate is a fail-closed reaction to a double-insert, which prevents silent corruption but could be converted by a hostile caller into a controlled kernel panic (DoS) if any path lets an attacker induce a duplicate key.
+- **Confidence**: high
+
+## [sk-vspace] 0x2557b8 sk_vspace_slot_path_byte — bounds-checked path subscript fails closed
+- **Observation**: The slot-path subscript (FUN_002557b8) bounds-checks the requested byte offset against the encoded path length and, on out-of-range access (negative or >= len), raises a Swift UnsafeBufferPointer fatal (noreturn FUN_001afe4c with s_Swift_UnsafeBufferPointer_swift_005cdc10 and line ids 0x75d/0x75e). The companion level classifier (FUN_002552d4/0x2552fc, thresholds 0x80/0x800/0x10000) and assert wrapper FUN_00255324 reject an index whose level is out of range before subscripting.
+- **Evidence**: decompile of FUN_002557b8: `if (param_2 < 0) panic(0x75d); if (param_2 < len) return path[param_2]; panic(0x75e);` and FUN_00255324: `if (offset < 0 || level <= offset) { FUN_003488bc(1); noreturn; } else path_byte(index, offset);`.
+- **Severity (hypothesis)**: informational — the path/subscript layer validates before use and panics on violation; this is correct defensive behavior at the vspace-name boundary.
+- **Confidence**: high
+
+## [sk-vspace] 0x2553b4/0x2554f4 sk_vspace_hash_compress — slot-key hash feeds mapping decisions but has no secret
+- **Observation**: The slot path is compressed into a 5-word hash state (FUN_002553b4) and/or appended to a growable Swift string buffer (FUN_002554f4). These hashed slot names are used as lookup keys for vspace object names (FUN_00255738 → FUN_002a200c/FUN_00356164). The compression is a non-keyed SHA-512-style limb mix (carry into bit 56), so the slot-key space is not secret and is fully predictable from a known slot index.
+- **Evidence**: FUN_002553b4 constant `+0x100000000000000` (bit-56 carry), 7-limb mix `t0..t4` over state[0..4]; FUN_0025ab30 seeds the same state with the SHA-512-style IV words at DAT_006adf10/18 (0x736f6d6570736575, 0x6c7967656e657261, 0x7465646279746573, 0x646f72616e646f6d).
+- **Severity (hypothesis)**: informational — the hash is a lookup optimization, not a MAC; an attacker who can predict slot indices can predict names, but name prediction alone grants no capability without the slot-set insert path being reachable.
+- **Confidence**: medium
+
+## [sk-vspace] 0026a328/0026a9a8 sk_table_lookup(_c) — open-addressing vspace entry table
+- **Observation**: vspace entries are held in an open-addressing hash table keyed by a 64-bit hash (table at +0x30, bitmap at +0x38, slot shift byte at +0x20, seed at +0x28). Lookup walks from `hash & mask`; on a free slot it INSERTs the key (FUN_0025c33c/0025c9a8) rather than reporting a miss, and returns `bit==0` (true=inserted). The table is guarded by a sentinel write `*tbl = -0x8000000000000000` around the insert (a re-entrancy/transaction marker on the table's owner pointer).
+- **Evidence**: `uVar2 = uVar2 & ~(-1L << (*(byte*)(tbl+0x20)&0x3f)); uVar1 = 1L << (uVar2&0x3f) & *(ulong*)(tbl+0x38+(uVar2>>6)*8);` then on miss `*unaff_x20 = -0x8000000000000000; FUN_0025c33c(key, uVar2, FUN_003a261c(tbl)); *unaff_x20 = tbl;`. This lookup-insert pattern appears identically in 0026a328 and 0026a9a8 (8-byte slots) and 0026a744 (0x28-byte keyed entries).
+- **Severity (hypothesis)**: informational — lookup-insert is a benign data-structure choice; the security-relevant fact is that an out-of-range/hostile slot key would be silently INSERTED into the vspace entry table (unbounded growth / DoS), and the sentinel write is a single global, so a nested/re-entrant table op on the same table would see `*tbl==-0x8000...` and mis-dereference. Worth confirming the table is per-vspace and locked.
+- **Confidence**: medium
+
+## [sk-vspace] 0026a404/0026a560/0026adcc/0026af9c sk_table_put/get — tagged entry identity compare
+- **Observation**: The 2-word and 0x28-byte entry put/get paths compare entry identity using the Swift tagged-value bits (0x6000000000000000 = tag class, >>0x3c/0x3d flags, &0xffffffffffff = 48-bit object). A match releases and returns the existing entry; the identity compare includes a fallback path (FUN_002a0d50) when either side lacks the 0x60... tag, meaning entries whose tag bits are not canonicalized are compared loosely.
+- **Evidence**: `if (((uVar5 ^ 0xffffffffffffffff) & 0x6000000000000000) != 0 || (param_3 & 0x6000000000000000) != 0x6000000000000000) { FUN_00351584(); uVar5 = FUN_002a0d50(); if ((uVar5&1)!=0) goto match; }` — the loose path is taken whenever the stored value lacks the 0x60 tag-class.
+- **Severity (hypothesis)**: low — a non-canonical (e.g. forged) entry value bypasses the strict tag compare and relies on FUN_002a0d50's fallback; if that fallback is weak a hostile entry could collide with a legitimate key. Requires the vspace table to be writable by an untrusted capability holder.
+- **Confidence**: medium
+
+## [sk-vspace] 00267510 sk_vspace_region_check — region range/permission check with fail-closed traps
+- **Observation**: Region permission checks compare the request's page-granular range against the tagged bounds and validate each candidate entry (0xa0d sentinel / 0x8080 class bits) before committing via thunk_FUN_002a2698. Any range mismatch or nil entry hits the noreturn "Fatal error"/"Range requires lowerBound < upperBound" trap (FUN_001afe4c) rather than clamping.
+- **Evidence**: `if (uVar6 + 1 != auVar8._8_8_) { if (auVar8._0_8_ == 0) { FUN_00347f2c(); FUN_001afe4c(); } uVar1 = *(ushort*)(auVar8._0_8_ + uVar6); if (uVar1 == 0xa0d || (uVar1 & 0x8080)) ... }` — fail-closed on nil and sentinel.
+- **Severity (hypothesis)**: informational — fail-closed permission checks (DoS on malformed region, but no bypass). This is the vspace mapping permission boundary; the bounds logic is worth auditing for an off-by-one at the `(uVar4 + (uVar3>>0x10)) < uVar6` comparison.
+- **Confidence**: low
+
+## [sk-vspace] 0026bd30/0026bd5c sk_vspace_bounds_check(_pages) — Swift.Range bounds panic
+- **Observation**: The vspace layer guards against out-of-range index/page-range math with Swift-style fatal-error traps: `sk_vspace_bounds_check` panics if `a > b` (FUN_00347de8(1) + fatal), and the page-granular variant compares `a>>0xe` vs `b>>0xe` (16 KiB granule) before trapping "Range requires lowerBound < upperBound" / "Index out of range" (s_Range_requires_lowerBound_005cda00, s_Index_out_of_range_005cd940).
+- **Evidence**: `if (param_1 > param_2) { FUN_00347de8(1); FUN_001afe4c(); }` and `if (param_1>>0xe <= param_2>>0xe) return; FUN_001afe4c(s_Fatal_error_005accd0,0xb,2,s_Range_requires_lowerBound_<__upp_005cda00,0x27,2,s_Swift_Range_swift_005cda30,0x11,2,0xb5,1);`.
+- **Severity (hypothesis)**: informational — these traps convert malformed range inputs into a deterministic panic (availability), preventing out-of-bounds page walks. The 16 KiB granule (>>0xe) matches cL4 page size; a unit error here would be a correctness/security bug, but no off-by-one observed.
+- **Confidence**: medium
+
+## [sk-vspace] 0026b748 sk_vspace_walk_entries — callback fold with global callback slot
+- **Observation**: The entry-list walk folds every node into a {value,tag} accumulator and finally calls a GLOBAL walk callback pointer `_DAT_006ade70` with the accumulated pair. If `_DAT_006ade70 == 0` the walk falls straight to the indirect jump-table dispatch (UNRECOVERED_JUMPTABLE) — i.e. a NULL global callback is treated as a fast-path direct dispatch rather than an error.
+- **Evidence**: `pcVar1 = _DAT_006ade70; if (_DAT_006ade70 == (code*)0x0) { FUN_0034ca28(); FUN_00354458(); (*UNRECOVERED_JUMPTABLE)(); return; }` — the NULL-callback branch jumps through an unrecovered jumptable.
+- **Severity (hypothesis)**: low — a NULL/forged global callback pointer would be dispatched through an indirect jump table; if the jumptable entry is attacker-influenced this is a control-flow concern. The callback pointer must be write-protected (set once at vspace init). Worth confirming `_DAT_006ade70` is not writable from a capability.
+- **Confidence**: low
+
+## [sk-vspace] 0026c6d8 sk_vspace_obj_check — object-validity gate with error-code panic
+- **Observation**: Object validation for vspace ops performs a two-stage runtime check; failures panic with a fixed error code (0xf6 on first-stage failure, 0xf7 on second), and the success path re-locks and forwards with code 0x101. No silent pass — every invalid object hard-stops.
+- **Evidence**: `if ((r&1)==0) { FUN_0034b348(); u=0xf6; } else { ... if ((r&1)!=0) { ... FUN_0035130c(u,0x101); return; } FUN_0034b348(); u=0xf7; } FUN_003486b8(u); FUN_00349410(); FUN_003504b8(); FUN_001afe4c();`.
+- **Severity (hypothesis)**: informational — fail-closed object gate (DoS on invalid object reference, no bypass observed). The 0xf6/0xf7 codes index a panic table; a null/forged object is rejected before any capability operation.
+- **Confidence**: medium
+
+## [ringminus1] 0x101f4c sk_region_find_insert / 0x102464 sk_alloc_pages (PMM region allocator)
+- **Observation**: The cL4 PMM region allocator maintains a sorted free-list of physical regions (0x28-byte entries with base/end). Region search/insert validates every index and size against the list bounds with hard BRKs (0x1021c0..0x1021d4), and page allocation bounds-checks the page count (>>0x32) and rejects non-16KiB-aligned requests. A "Fatal error"/"PMMInstance.allocUntypedForType" panic path handles exhaustion. No unchecked arithmetic was observed.
+- **Evidence**: FUN_00101f4c: `if (CARRY8(uVar16,param_3)) SoftwareBreakpoint(1,0x1021c0)`; FUN_00102464: `if (param_1>>0x32 != 0) SoftwareBreakpoint(1,0x1025b0)`; `param_1*0x4000`; panic strings s_Fatal_error_005accd0 / "PMMInstance does not free resource".
+- **Severity (hypothesis)**: informational — the physical-memory allocator is the substrate for every guest page; its bounds checks are fail-closed. No weakness observed; errors here would corrupt the guest-physical map.
+- **Confidence**: medium
+
+## [ringminus1] 0x103cb0 sk_prng_ensure / 0x103b2c sk_prng_construct (corecrypto PRNG)
+- **Observation**: The kernel PRNG is constructed from a seed drawn via thunk_FUN_0005c278 (an SVC/GL0 request) of 0x30 bytes, validated to be >= 0x30, then built with corecrypto DRBG ("corecrypto_exclavecore_rng" label). The seed buffer is cleared (FUN_00104f9c) after construction, and the PRNG is single-initialization (global ready flag DAT_006bf580). Seeding requires a caller-provided length >= 0x30, else the "Security assertion"/panic path is taken.
+- **Evidence**: FUN_00103cb0: `uVar1=thunk_FUN_0005c278(&buf,0x30); if (uVar1<0x30) FUN_004b853c(); FUN_00103b2c(uVar1,&buf); FUN_00104f9c(0x30,&buf)`; FUN_00103b2c uses s_corecrypto_exclavecore_prng_005c6d63 and s_corecrypto_exclavecore_rng_005c6d8d; g_prng_ready DAT_006bf580.
+- **Severity (hypothesis)**: medium — the RNG seed comes from GL0/SPTM (the "thunk_FUN_0005c278" supervisor request). If that source is weak or interceptable, all exclave key material derived from this PRNG is at risk. The length gate (>=0x30) and single-init protect against re-seeding, but the trust root is external.
+- **Confidence**: medium
+
+## [ringminus1] 0x104f78 sk_dit_save / 0x104f90 sk_dit_restore (data-independent timing)
+- **Observation**: The crypto/hash layer wraps sensitive operations with DIT (Data-Independent Timing) enable + speculation barrier and restores the prior DIT state. Combined with the constant-time full-scan compares (0x104180, 0x1146d8), this is defense against timing side channels on hashes/compares.
+- **Evidence**: FUN_00104f78 reads SCTLR DIT (reg 3,3,4,2,5), sets `dit=1`, `SpeculationBarrier()`, returns prev; FUN_00104848/00104fb4/00105054 call FUN_00104f78 before the wrapped crypto call and FUN_00105168 after.
+- **Severity (hypothesis)**: informational — good practice; DIT + constant-time compare mitigate timing leakage on secret-dependent branches.
+- **Confidence**: high
+
+## [ringminus1] 0x104043f0 sk_hash_block_pad / 0x10403c sk_hash_absorb (hash message handling)
+- **Observation**: Hash absorb and block-pad use XOR with fixed 0x5c/0x6a constants (HMAC inner/outer padding) and invoke the compression callback through a function-pointer field (param_1[6]/[7]/[0x30]). The buffer growth and length accounting are bounds-checked (CARRY8 checks -> BRK). Message lengths are tracked in bits (*buf += consumed*8).
+- **Evidence**: FUN_001043f0: `*(byte*)(...)=*param_4^0x5c`, `...^0x6a`; FUN_0010403c: `(**(code**)(param_1+0x30))(buf,n,src)`; `*param_2 += uVar6*8`.
+- **Severity (hypothesis)**: informational — HMAC-style construction with callback dispatch; the fixed pad constants and length accounting are standard and correct.
+- **Confidence**: medium
+
+## [ringminus1] 0x1120c4 sk_hash64_wyhash (wyhash-derived 64-bit hash)
+- **Observation**: The kernel uses a wyhash-style 64-bit string hash (seed 0x9ae16a3b2f90404f, primes 0x622015f714c7d297/0x651e95c4d06fbfb1/0x4b6d499041670d8d/0x3c5a37a36834ced9) to index load-commands and capability tables. wyhash is not a cryptographic hash — it is a fast non-crypto hash. If it is used to key or authenticate any security-relevant structure (as opposed to merely bucketing), collisions could be induced.
+- **Evidence**: FUN_001120c4 full-body prime-multiply mixing; `if (param_3==0) return 0x9ae16a3b2f90404f`.
+- **Severity (hypothesis)**: low — wyhash is explicitly non-cryptographic; used for table bucketing (load-command/capability lookup) it is fine, but must not be relied on for MAC/authenticity. Worth confirming no security claim depends on it.
+- **Confidence**: high (algorithm identity: constants match wyhash)
+
+## [ringminus1] 0x10c2b0 sk_cap_id_map / 0x10c378 sk_cap_id_eq (capability-id mapping)
+- **Observation**: Capability-id words are mapped/compared through a fixed table (0x80000028->0x100000002, 2->0x100000006, etc.) and a 40-bit comparison that treats the 0x100000000.. range specially. This is the cL4 capability-tag normalization used when repacking Mach-O load commands into the guest capability space. The repack helpers (0x10d21c..0x10d294) set specific high tag bits (0x20..0xc0 shifted).
+- **Evidence**: FUN_0010c2b0 switch table; FUN_0010c378 `(a & 0xff00000000)==0x100000000` branch; the repack family `*p = *p & 0x1ffffffff | <tag>`.
+- **Severity (hypothesis)**: informational — capability-id canonicalization; the mapping is fixed and deterministic. If the tag bits were attacker-influenced during load-command processing, a capability could be forged, but the repack masks to 33 bits and only sets kernel-chosen tag bits.
+- **Confidence**: medium
+
+## [sk-vspace] 0x249a64 / 0x24a648 sk_vspace_perm_check_a / sk_vspace_perm_check_b — owner-mask isolation gate on the vspace map path
+- **Observation**: The per-CPU vspace map entry point checks two ownership fields of the current operation object before touching page-table state: the per-CPU id masked against `*(obj+0x50) & 0xff` (owner set) and the liveness flag at `*(obj+0x48)`. Only when the current CPU id is in the owner mask AND the object is live does the code recurse into the map dispatch (FUN_0024963c); any other combination falls into a fixed deny sequence (`FUN_00350410; FUN_003488bc; FUN_00349644; FUN_0034fbe4`) that ends in a noreturn Swift fatal trap (FUN_001afe4c). A second owner check is applied to the target at `*( *(x-8)+0x50 ) & 0xff` before the recursion commits.
+- **Evidence**: FUN_00249a64: `if ((*(uint*)(obj+0x50) & cpu & 0xff) == 0) { if (*(long*)(obj+0x48) != 0) { ... if ((*(uint*)(*(long*)(x-8)+0x50) & cpu & 0xff)!=0) goto deny; if (*(long*)(*(long*)(x-8)+0x48)!=0) { FUN_0035aa9c(); FUN_0024963c(); ... return; } } FUN_00350410(); FUN_00348074(); FUN_00351be0(); } else { deny: FUN_00350410(); FUN_003488bc(); FUN_00349644(); FUN_0034fbe4(); } FUN_001afe4c();`. The +0x50 owner mask is a single byte (&0xff), i.e. at most 8 CPUs can co-own a vspace context.
+- **Severity (hypothesis)**: low-medium — this is the isolation boundary between vspace contexts. A context whose owner byte is corrupt/absent is denied rather than mapped, so the risk is availability (an over-restrictive gate) rather than privilege escalation, provided the owner byte is only writable by the kernel. The 8-bit owner mask caps co-ownership at 8 CPUs.
+- **Confidence**: medium
+
+## [sk-vspace] 0x24c2ec sk_vspace_ctx_perm_mod — permission-change path checks the owner mask then panics on non-divisible size mismatch
+- **Observation**: The region permission-modify path runs the change helper (FUN_0034b7e4 + FUN_0034c8e0), then checks the owner mask at `*( *(x-8)+0x50 )`. On a mismatch it calls the region handler only when the two objects' sizes divide cleanly (one divides the other); otherwise it enters the same deny+panic sequence (`FUN_00348b7c; FUN_0034a368; FUN_00352e0c` then FUN_001afe4c). The GCD-style remainder computation (`q = o1/o2; o1 = o1 - q*o2`) means the permission change is refused unless one region size is an exact multiple of the other.
+- **Evidence**: FUN_0024c2ec: `lVar3=*(*(x-8)+0x48); lVar2=*(*(x-8)+0x48); if (lVar2<lVar3){ if(lVar2!=0){lVar1 = (lVar3!=0)?lVar3/lVar2:0; lVar3-=lVar1*lVar2;} if(lVar3==0){ (*param_3)(param_5); ... return;} goto deny;} ...` with deny ending in `FUN_001afe4c()`.
+- **Severity (hypothesis)**: low — permission changes are size-divisibility constrained and owner-gated; the panic path fails closed rather than partially applying the change.
+- **Confidence**: medium
+
+## [sk-vspace] 0x24ad48 sk_vspace_region_compare — descriptor kind/owner equality gate for region matching
+- **Observation**: Region equality is decided by the top-3-bit kind word and the base word for the canonical kinds, and for the leaf/block kinds additionally requires the payload words (indices 0,2,5,6) to be all-zero in the resolved region (the canonical "empty" 0xa000000000000000 / single-page pseudo-descriptors). A region is only considered equal to another if their kinds and bases match exactly and, for the mapped kinds, the range sub-system agrees. Non-matching regions return 0 (no merge) rather than partially merging.
+- **Evidence**: FUN_0024ad48: `case 5: if (kind==0xa000000000000000 && w3==0&&w4==0&&base==0&&w5==0&&w6==0&&a[2]==0){ FUN_00357dc4(); ... if(res[5]||res[6]||res[0]||res[2]) return 0; return 1;}` — the 16-byte OR-reduction over the payload is equivalent to "words 5 and 6 are zero".
+- **Severity (hypothesis)**: informational — equality is conservative; a corrupt extra payload word prevents a match (fail-closed).
+- **Confidence**: medium
+
+## [sk-vspace] 0x20e778..0x20ef0 sk_vspace_trap_restore — trap handlers dispatch through a PAC'd global hook under a per-CPU lock
+- **Observation**: The opening block of the vspace trap handlers (sk_vspace_trap_restore, sk_vspace_trap_restore2, sk_vspace_dispatch_eabc, sk_vspace_dispatch_ebf0, sk_vspace_dispatch_eefc) each: grab per-CPU state (FUN_0008e518), run a long shared-runtime bookkeeping chain, acquire the kernel lock (FUN_00377824), run more helpers, release via FUN_00377bec, and finally make one or more indirect calls through the global hook slot `(*DAT_00658c00)()` before tail-dispatched into the restore routine FUN_0020e5c0 and returning via FUN_0008e500. The hook slot is a single PAC-authenticated function pointer at 0x00658c00; all these handlers route through it, so a corruption/replacement of that slot (were it writable) would hijack every vspace trap.
+- **Evidence**: every body begins `sk_cpu() /*FUN_0008e518*/; rt_352914(); sk_tcb_get() /*FUN_0007c0c4*/; ...; (*DAT_00658c00)(); ... sk_lock_acquire() /*FUN_00377824*/; ... sk_lock_ref() /*FUN_00377bec*/; ... sk_vspace_dispatch_e5c0(0) /*FUN_0020e5c0*/; sk_cpu_current() /*FUN_0008e500*/`. The `(*DAT_00658c00)()` call appears multiple times in sk_vspace_dispatch_eefc (including two calls passing `*(x8+0x40)`).
+- **Severity (hypothesis)**: low — the PAC'd hook slot is the single indirect-dispatch choke point of the whole vspace trap layer; if it were ever attacker-writable the isolation boundary collapses. It is expected to be read-only kernel memory.
+- **Confidence**: medium (call-site structure is high; the writability of 0x00658c00 is not verified here).
+
+## [sk-vspace] 0x20ebf0 / 0x211358 sk_vspace_dispatch_ebf0/_11358 — branch takes noreturn Swift fatal on the "flag set" path
+- **Observation**: sk_vspace_dispatch_ebf0 (and its mirror sk_vspace_dispatch_11358) test a flag produced by FUN_0034f044 (carried in the Z flag). When the flag is NOT set it returns through a vtable slot at +0x20 (normal path). When the flag IS set it runs a further bookkeeping chain and falls into the noreturn Swift fatal trap FUN_001afa84. So the "true" branch is fail-closed panic, the "false" branch is the return path.
+- **Evidence**: `uVar3 = FUN_0034f044(); if (!(bool)in_ZR) { FUN_0034f384(); (**(code**)(extraout_x16_00 + 0x20))(...); FUN_0008e500(); return; } FUN_00352e18(...); ... FUN_00349c58(); FUN_001afa84();` — the false-branch returns, the true-branch reaches the noreturn FUN_001afa84.
+- **Severity (hypothesis)**: informational — a flag-dependent fail-closed panic; availability only.
+- **Confidence**: medium (in_ZR semantics inferred from branch polarity).
+
+## [sk-vspace] 0x20eefc / 0x21166c sk_vspace_dispatch_eefc — two nested Swift existential calls then a result-flag branch to panic
+- **Observation**: The largest handler makes two `FUN_00351c1c(..., s_Swift_ExistentialCollection_swif_005cf680)` calls (Swift runtime existentials) between two recursive dispatches to sk_vspace_dispatch_ebf0, then branches on the low bit of an indirect call result: bit-0 set runs the long teardown tail and returns; bit-0 clear falls to the noreturn panic FUN_001afe4c. So a failed existential/collection operation is fail-closed.
+- **Evidence**: `rt_351c1c(0,0,/*Swift exist*/0); sk_vspace_dispatch_ebf0(); rt_35a420(); rt_351c1c(0,0,0); sk_vspace_dispatch_ebf0(); if ((*(unsigned long(**)())0)() & 1) { ...teardown...; return; } rt_34b348(); rt_35a4d4(); rt_347ef4(); sk_panic_no_return2();` and the mirror in sk_vspace_trap_1166c with FUN_00211358 recursion.
+- **Severity (hypothesis)**: informational — fail-closed on the existential dispatch result; availability only.
+- **Confidence**: medium.
+
+## [sk-vspace] 0x212d50 sk_vspace_obj_dtor_12d50 — vtable method at +0x20 invoked only when the object is non-null
+- **Observation**: The object teardown stubs (sk_vspace_obj_dtor_12d50 and the 0x212c84..0x214720 family) resolve the vtable from the object (in_x5-8), run the hook, and only invoke the vtable method at +0x20 when the object register (unaff_x21) is non-null. The decompiler lost the `this` register to PAC, so the vtable base is modeled as 0 in the transcribed body — a faithful placeholder; the conditional dispatch on object!=0 is the observable guard.
+- **Evidence**: `void *vt = *(void **)(in_x5-8); (*DAT_00658c00)(); if (unaff_x21 != 0) { FUN_0036993c(...); (**(code**)(vt + 0x20))(...); }`.
+- **Severity (hypothesis)**: informational — a null-object guard before indirect vtable dispatch (defensive); note the PAC-lost `this` means the call target is a reconstruction placeholder, so this body is a call-sequence-level transcript, not a precise target.
+- **Confidence**: low (PAC-lost self register).
+
+## [sk-vspace] 0x213c58 / 0x213cd0 / 0x21401c/0x214094 / 0x2145e8/0x214660 sk_vspace_obj_alloc_* — object constructor pairs alloc + init + vtable-method fill
+- **Observation**: Three identical object-constructor pairs allocate a 0x28-byte object (tags 0x1d1c/0xf7b7/0x843d), then the init routine sets obj[0]=vtable-derived value, obj[1]=vtable(param-8), allocates a sub-node sized from vtable+0x40 (tags 0xe087/0x894b/0x7ec4), and calls the vtable method at +0xe8 to fill the node. The size of the sub-allocation is taken from `vtable+0x40` — a runtime field — so a corrupted vtable size field would drive the allocation size.
+- **Evidence**: FUN_00213c58: `lVar1=FUN_0036a908(0x28,0x1d1c); *param_1=lVar1; uVar2=FUN_00213cd0(...); *(lVar1+0x20)=uVar2; return &DAT_003471a4;` and FUN_00213cd0: `*param_1=param_5; lVar1=*(param_5-8); param_1[1]=lVar1; lVar1=FUN_0036a908(*(lVar1+0x40),0xe087); param_1[2]=lVar1; (**(code**)(*param_4+0xe8))(lVar1,...);` (same shape for the 0xf7b7/0x843d twins).
+- **Severity (hypothesis)**: low — the sub-node size is read from the vtable (+0x40) at runtime; if the vtable were attacker-controlled, the allocation size (and thus a potential over/under-allocation) is attacker-influenced. Assumed kernel-writable-only vtable.
+- **Confidence**: medium.
+
+## [sk-vspace] 0x25c33c / 0x25c9a8 / 0x25cc54 sk_set_insert_keyed / sk_set_insert_keyed16 / sk_set_insert_40 — open-addressing duplicate detection is a hard panic
+- **Observation**: The vspace page-table/capability set inserts use open addressing: the probe (`sk_set_hash` on the set seed) walks the occupancy bitmap linearly, and encountering an element whose stored value equals the incoming key raises the noreturn duplicate panic (FUN_0025bddc, "Duplicate elements of type...") instead of replacing or deduplicating. The panic is gated on the exact stored-element equality at `*( *(set+0x30) + slot*8 ) == key` (8/16-byte) or the 40-byte compare via FUN_0031997c.
+- **Evidence**: FUN_0025c33c: `while (slot = slot & ~(-1<<log2), (bitmap[slot>>6]>>(slot&0x3f)&1)!=0) { if (*(*(set+0x30)+slot*8)==key) FUN_0025bddc(0x674278); slot++; }`; FUN_0025c9a8 same with 0x677880; FUN_0025cc54 (40-byte) sets a found flag and swaps rather than always panicking. The insert then commits via FUN_0025c280 (set bit + store + count++) with an overflow trap.
+- **Severity (hypothesis)**: informational/low — the duplicate-insert path fails closed (panic) which is safe but availability-hostile; a buggy or concurrent double-map of the same key halts the kernel. Open addressing means a full/overloaded table degrades to a linear scan (DoS potential if the load factor is not bounded).
+- **Confidence**: high (explicit duplicate string + exact bitmap/compare logic)
+
+## [sk-vspace] 0x25db98 / 0x25dd80 / 0x25dee4 / 0x25e000 sk_set_remove_* — open-addressing remove rehashes the probe chain then clears the bit
+- **Observation**: Element removal performs the classic open-addressing backshift: it walks the removed slot's probe chain, re-hashes each following element (FUN_0022b080 find + sk_swift_string_hash), and moves it into the freed slot only when it belongs to that cluster; then clears the bitmap bit and decrements count (+0x10) with a borrow trap, bumping the generation (+0x24). 8/16/40-byte strides all follow this pattern.
+- **Evidence**: FUN_0025db98: `uVar8=~size; lVar6=FUN_0022b080(slot, word_base, uVar8); uVar11=lVar6+1&uVar8; do { rehash elem; if (in-range) move elem; slot0=slot0+1&uVar8; } while (bitmap bit set); *(word_base+(slot>>3&mask)) &= ~(1<<(slot&0x3f)); if (SBORROW8(count,1)) SoftwareBreakpoint; count--; *(set+0x24)++;`
+- **Severity (hypothesis)**: informational — removal preserves the probe-chain invariant; if the rehash-move predicate were wrong, lookups for displaced elements would break (availability/correctness), but the logic faithfully re-establishes the invariant.
+- **Confidence**: medium
+
+## [sk-vspace] 0x25e370 sk_set_alloc — set object layout fixed: bitmap immediately precedes element array, capacity = 1<<log2
+- **Observation**: The core set allocator lays out the object so that the occupancy bitmap (+0x38) is immediately followed by the element array (+0x30 = base+0x38 + nwords), and the initial bitmap is either `~0 << (nbits&0x3f)` (single-word) or zeroed via FUN_001b5474. The hash seed (+0x24) may be the default 0x100000000 sentinel, and the element seed (+0x28) selects the actual hash function. The +0x20 log2 byte controls both capacity and the probe mask (`~(-1<<log2)`).
+- **Evidence**: `plVar1=(long*)(base+0x38); *(base+0x10)=0; *(base+0x18)=capacity; *(base+0x20)=log2; *(base+0x30)=plVar1+nwords; if (nbits<0x40) *plVar1=-1L<<(nbits&0x3f); else FUN_001b5474(0,nwords,plVar1);`
+- **Severity (hypothesis)**: informational — the bitmap/elements adjacency and capacity bound the table's worst-case behavior; a corrupted log2 could make the probe mask span more than the allocated bitmap (out-of-bounds bitmap access on insert/remove). Kernel-only writable fields.
+- **Confidence**: high
+
+## [sk-vspace] 0x262e9c / 0x263140 / 0x263360 sk_string_utf8_decode / sk_string_scalar / sk_string_scalar2 — UTF-8 decoder rejects over-long/malformed encodings by width
+- **Observation**: The Swift UTF-8 scalar decoder inspects the leading byte's leading-one count (LZCOUNT) to select 1-4 byte decoding, and the grapheme/scalar readers treat a scalar >0xbf as needing the multi-byte path; over-long encodings and the Korean jamo/Hangul ranges are composed via sk_hangul_compose (FUN_002641f8) or decomposed via FUN_00264558/FUN_002646a0. Buffer growth (FUN_001a0908) bounds the grapheme array; out-of-buffer iteration traps via FUN_001afe4c.
+- **Evidence**: FUN_00262e9c: `switch(LZCOUNT(byte<<0x18 ^ 0xffffffff)) { case 2/3/4: decode continuation bytes; }`; scalar readers guard `if (0xbf < scalar) { multi-byte }` and hangul `if ((scalar-0xac00>>2)<0xae9) FUN_00264558(); else FUN_002646a0();`. FUN_00264068 (emit) traps `FUN_00348304(); FUN_001afe4c();` on an overrun.
+- **Severity (hypothesis)**: informational/low — the string machinery is fail-closed (overruns panic); a malformed kernel-supplied path/name string would halt rather than corrupt, so the risk is availability only.
+- **Confidence**: medium
+
+## [sk-vspace] 0x208a90-0x209090 sk_vspace_abstract_vtable — Swift base-class "method must be overridden" abstract vtable on the vspace object-model boundary
+- **Observation**: A contiguous run of 32-byte abstract-method stubs (0x208a90..0x209090, indices 0xd3..0x209) each load Swift type metadata then call FUN_002085a4, which raises the kernel-wide "Method must be overridden" fatal error (s_Method_must_be_overridden_005cf660) and hard-stops (FUN_001afa84, noreturn). This is the abstract virtual-method table of the vspace/page-table object base class: every concrete vspace-object subclass MUST override these slots. Calling an un-overridden slot is a fatal, not a fall-through.
+- **Evidence**: Disassembly per slot: `stp x29,x30; mov x29,sp; mov x3,x30; bl 0x00357cc8; mov x30,x3; mov w3,#<idx>; bl 0x002085a4; pacibsp` with distinct index per slot (0x208a90=0xd3 ... 0x209090=0x209). FUN_002085a4 decompiles to `FUN_0035ac70(s_Method_must_be_overridden_005cf660); FUN_0006f768(s_Fatal_error_005accd0); FUN_001afa84(); /* noreturn */`.
+- **Severity (hypothesis)**: informational — the object model is fail-closed by construction: an abstract (un-implemented) vspace method can never be silently reached, so a mis-typed/mis-classed vspace object triggers a hard kernel trap rather than a partial or default operation. This is defensive, but note the whole vspace permission-checking body lives in the concrete subclasses + out-of-range Swift runtime (0x0034xxxx), so the isolation logic itself is not in this address run.
+- **Confidence**: high (string + structure match)
+
+## [sk-vspace] 0x208bd0/0x208e38/0x208e60 sk_vspace_pair_accessors — pair-field Swift retain/weak accessors on the vspace object
+- **Observation**: These small accessors load two 64-bit fields of the object (`[self+0x10]`,`[self+0x20]`) and run them through Swift runtime retain/unowned helpers (FUN_0036b118 = Swift retain, FUN_0036b270 = Swift weak/unowned load with refcount check). They are the standard Swift `swift_retain`/`swift_weakLoad` shims emitted for the class's stored properties, i.e. the vspace object carries two Swift reference-counted property slots.
+- **Evidence**: FUN_00208e38/208e60: `ldp x0,x19,[x20,#0x10]; bl 0x0036b270; mov x1,x19; retab`; FUN_00208bd0: two `ldr x0,[x20,#0x10/0x20]; bl 0x0036b118`. FUN_0036b270 includes the `if (lVar4<0) return` refcount/liveness bail and a `-1` sentinel check.
+- **Severity (hypothesis)**: informational — standard Swift refcounting on the vspace object; the weak-load sentinel (`==-1`) is a classic retained/released object marker. If the strong/weak balance were corruptible from a lower level the refcount underflow could be attacked, but the accessors themselves are canonical and safe.
+- **Confidence**: high
+
+## [sk-ipc] 00387fbc cL4_cap_authorize
+- **Observation**: The cL4 capability-authorization core (IPC message-register / cap descriptor path) is fail-closed: any descriptor tag/kind/length mismatch returns 0 (deny) and aborts the whole chain walk — there is no partial-grant path. The authorization binds the requesting cap word (param_1) to the descriptor's expanded form (built by 00387e60/00387da0), requires cap equality via a dedicated compare (thunk_FUN_001145b0), and enforces the 't' (transferable) name-exclusion rules for tag 0xf6 records.
+- **Evidence**: All mismatch branches converge on `LAB_0038859c` (returns 0 / canary-guarded, `FUN_0011d7e8` stack-fail on corruption); per-tag checks (0xf4/0xf5/0xc0/0xbf/0xa3/0x49/0x67/0xd9/0xb1/0xf6/0xe7/0x19/0x3f) each `goto LAB_0038859c` on mismatch; equality via `thunk_FUN_001145b0` and the 0x2b0-byte expanded descriptor; `*(param_2+0x12)` length byte gates multi-record chains.
+- **Severity (hypothesis)**: medium — this is the capability authorization gate for IPC/cap transfers; a bypass would grant a cap without matching ownership. All observed checks are hard-deny (no soft-fail), so no bypass observed.
+- **Confidence**: medium
+
+## [sk-ipc] 003876c4 cL4_cap_type_validate
+- **Observation**: The capability type validator gates IPC object operations behind a per-owner gate (FUN_0036f460) and a fail-closed kind switch: the descriptor tag (0x203/0x301 and the 0x7ff range) selects which cap word (param_1[1] vs [5]) is checked, and a kind 2/3 mismatch routes to a noreturn SoftwareBreakpoint trap rather than a graceful deny — an unexpected kind in this path halts the kernel.
+- **Evidence**: `if ((uVar4 & 1) != 0) return false`; kind checks `if (lVar5 != 0x203) { if (lVar5 != 0x301) return false; }`; `uVar1 = *puVar6 >> 0x10 & 3; if (uVar1 < 2) return uVar1 != 0; if (uVar1 != 2) SoftwareBreakpoint(1,0x387868)`.
+- **Severity (hypothesis)**: low — fail-closed type gating; the SoftwareBreakpoint on unexpected kind is an availability concern only.
+- **Confidence**: medium
+
+## [sk-vspace] 0x254e80 / 0x254ed4 sk_swift_xor_string — obfuscated string literal
+- **Observation**: Two helper functions read a byte string (s_uespemosmodnarodarenegylsetybdet_004e7a30 — an obfuscated/reversed Swift constant) and XOR each byte against a key byte obtained at runtime before feeding it to the string builder. This is string obfuscation inside the kernel image; the same key-byte pattern is not present in the surrounding runtime helpers.
+- **Evidence**: `bVar1 = rt_00348c48(); rt_0034ec48(bVar1, &DAT_004e7a30+0x10, bVar1 ^ *(unsigned char*)&DAT_004e7a30)`; second variant reads the word from the context (`*unaff_x20`) and forwards through FUN_001a84f4 / FUN_0022995c.
+- **Severity (hypothesis)**: informational — obfuscation/anti-tamper of a constant; the plaintext is recoverable with the single-byte key in the same function.
+- **Confidence**: medium
+
+## [sk-vspace] 0x254fb4 sk_swift_utf16_encode — surrogate split with trap
+- **Observation**: UTF-16 surrogate encoding for supplementary-plane scalars returns a packed high/low surrogate pair and takes a noreturn SoftwareBreakpoint (0x254ffc) when the encoded value does not fit a code unit; the BMP single-code-unit path asserts (fatal) if the value exceeds 16 bits. The kernel traps rather than silently truncating a non-representable scalar.
+- **Evidence**: `if (param_1==1) { if (uVar2>>0x10 != 0) return uVar2&0x3ff|0xffffdc00; rt_0035047c(); rt_003486b8(0x5b); ... fatal }`; supplementary path computes `(uVar2+0x3ff0000>>10 & 0xffff)+0xd800` then `SoftwareBreakpoint(1,0x254ffc)` if it overflows 16 bits.
+- **Severity (hypothesis)**: informational — fail-closed encoding; a malformed scalar halts rather than producing a corrupt code unit.
+- **Confidence**: high
+
+## [sk-vspace] 0x252e24 / 0x252818 / 0x252a64 sk_swift_buffer_scalar / string advance — bounds-trapping slice/advance
+- **Observation**: The Swift UnsafeBufferPointer scalar decoder and string position-advance helpers hard-trap (noreturn fatal, s_Fatal_error_005accd0 with Swift_Range / Swift_UnsafeBufferPointer / Index_out_of_range strings) on any out-of-range index, nil optional unwrap, or invalid slice rather than returning a partial result. The kernel's embedded Swift runtime is fail-closed on collection bounds.
+- **Evidence**: `FUN_001afe4c(s_Fatal_error_005accd0,0xb,2,s_unsafelyUnwrapped_of_nil_optiona_005ce1c0,0x21,2,s_Swift_Optional_swift_005ce1f0,0x14,2,0x179,1)` and `s_Invalid_slice_005cfa58` / `s_Swift_UnsafeBufferPointer_swift_005cdc10` / `s_Index_out_of_range_005cd940` fatal paths; `(lVar12<0) || (end<upper)` checks gate the copy loop.
+- **Severity (hypothesis)**: informational — bounds violations are converted to deterministic kernel fatals (availability); no partial-write path observed.
+- **Confidence**: high
+
+## [sk-vspace] 0x24f97c/0x2513a8/0x254f50/0x255044/0x2550a0 Swift fatal-code shims
+- **Observation**: Five tiny noreturn shims report a fixed code (1, 0x50, 1, 0x5b, 0x43) then enter the kernel's noreturn fatal handler. These are the Swift runtime's `_fatalError`/precondition entry points embedded in the kernel; they carry no caller-provided message, so any panic from them yields only the fixed code.
+- **Evidence**: each body is `rt_00347de8(1); rt_001afe4c();` (or 0x50/0x5b/0x43 via FUN_003486b8) with FUN_001afe4c / FUN_001afa84 noreturn.
+- **Severity (hypothesis)**: informational — fixed-code panic entry points (availability only).
+- **Confidence**: high

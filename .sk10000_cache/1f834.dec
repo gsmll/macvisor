@@ -1,0 +1,53 @@
+
+uint FUN_0001f834(undefined8 param_1,undefined8 param_2,undefined8 param_3,ulong param_4)
+
+{
+  uint uVar1;
+  undefined8 *puVar2;
+  code *pcVar3;
+  undefined8 uVar4;
+  undefined8 uVar5;
+  undefined8 uVar6;
+  undefined1 auStack_d0 [24];
+  byte local_b8 [8];
+  undefined8 local_b0;
+  undefined8 local_a8;
+  undefined8 uStack_a0;
+  undefined8 local_98;
+  undefined8 uStack_90;
+  undefined1 local_88;
+  undefined8 local_80;
+  byte local_78 [8];
+  ulong local_70;
+  undefined8 local_68;
+  undefined8 uStack_60;
+  undefined8 local_58;
+  undefined8 uStack_50;
+  undefined1 local_48;
+  
+  FUN_0036a1a0(param_4 + 0x18,auStack_d0,0,0);
+  puVar2 = (undefined8 *)FUN_0036b8b0(param_4 + 0x18);
+  if (puVar2 != (undefined8 *)0x0) {
+    uVar6 = *(undefined8 *)(param_4 + 0x20);
+    FUN_000259c0(local_b8,param_2);
+    local_80 = local_b0;
+    FUN_0001fd9c(&local_80);
+    local_70 = param_4 | 0x6000000000000000;
+    local_78[0] = local_b8[0] & 1;
+    uStack_60 = uStack_a0;
+    local_68 = local_a8;
+    uStack_50 = uStack_90;
+    local_58 = local_98;
+    local_48 = local_88;
+    uVar5 = *puVar2;
+    pcVar3 = (code *)FUN_0001fde8(uVar6);
+    uVar4 = FUN_0036b270(param_4);
+    uVar1 = (*pcVar3)(uVar4,local_78,uVar5,uVar6);
+    FUN_0036b118(puVar2);
+    return uVar1 & 1;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000051,0x80000000005acc30,
+               s_Tightbeam_ForwardingConnection_s_005acc20,0x24,2,0x54,0);
+}
+

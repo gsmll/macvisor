@@ -1,0 +1,50 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void FUN_0001071c(void)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  undefined4 uVar3;
+  long *plVar4;
+  undefined8 local_38;
+  undefined8 uStack_30;
+  long local_28;
+  
+  local_28 = -0x2c8502b44bfffed6;
+  local_38 = 0;
+  uStack_30 = 0;
+  DAT_006adfe0 = DAT_006ac23d;
+  uVar3 = 0xa00;
+  if (DAT_006ac23d == '\0') {
+    uVar3 = 0x200;
+  }
+  puVar1 = (undefined8 *)FUN_00011b18(0x100000,0,uVar3,1,&local_38);
+  if (puVar1 == (undefined8 *)0x0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_001150e0(s_BUG_IN_LIBMALLOC___llu___failed_t_005aa76c);
+  }
+  FUN_00011bf4(puVar1,0x8000,2,0x40,&local_38);
+  puVar1[0x1d] = uStack_30;
+  puVar1[0x1c] = local_38;
+  *puVar1 = 0;
+  puVar1[1] = 0;
+  puVar1[0x1f] = 0x8000000000000000;
+  plVar4 = puVar1 + 7;
+  lVar2 = 3;
+  do {
+    plVar4[-1] = lVar2;
+    *plVar4 = lVar2;
+    plVar4 = plVar4 + 2;
+    lVar2 = lVar2 + 1;
+  } while (lVar2 != 0xe);
+  puVar1[0x20] = puVar1[0x20] | 1;
+  _DAT_006adfd8 = puVar1;
+  if (local_28 == -0x2c8502b44bfffed6) {
+    return;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_0011d7e8();
+}
+

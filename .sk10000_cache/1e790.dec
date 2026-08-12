@@ -1,0 +1,11 @@
+
+void FUN_0001e790(void)
+
+{
+  if (DAT_0064c100 != 0) {
+    return;
+  }
+  DAT_0064c100 = FUN_00376820(&DAT_004ed758,0x677790);
+  return;
+}
+

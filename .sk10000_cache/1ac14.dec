@@ -1,0 +1,79 @@
+
+void FUN_0001ac14(undefined8 param_1,undefined8 param_2,long param_3,undefined8 param_4,
+                 undefined8 param_5)
+
+{
+  ulong uVar1;
+  long lVar2;
+  long extraout_x8;
+  long extraout_x12;
+  long unaff_x20;
+  long lVar3;
+  long unaff_x21;
+  long lVar4;
+  code *pcVar5;
+  undefined1 *puVar6;
+  undefined1 auStack_80 [8];
+  undefined8 local_78;
+  long local_70;
+  long local_68;
+  
+  lVar2 = *(long *)(param_3 + -8);
+  local_78 = param_5;
+  (*(code *)&SUB_f9400262d53bd073)(*(undefined8 *)(lVar2 + 0x40));
+  puVar6 = auStack_80 + -(extraout_x8 + 0xfU & 0xfffffffffffffff0);
+  (*(code *)&SUB_f9400262d53bd073)();
+  lVar4 = *(long *)(unaff_x20 + 0x18);
+  uVar1 = FUN_003a261c(lVar4);
+  *(long *)(unaff_x20 + 0x18) = lVar4;
+  if ((uVar1 & 1) == 0) {
+    lVar4 = FUN_0001dd00(lVar4);
+    *(long *)(unaff_x20 + 0x18) = lVar4;
+  }
+  lVar3 = *(long *)(lVar4 + 0x10);
+  lVar4 = lVar4 + 0x20;
+  local_70 = lVar4;
+  local_68 = lVar3;
+  FUN_0001adec(&local_70,param_1,param_2,param_3,param_4,puVar6);
+  if (unaff_x21 == 0) {
+    if (local_70 == 0) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1adec);
+      (*pcVar5)();
+    }
+    if (lVar4 != local_70) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1ade0);
+      (*pcVar5)();
+    }
+    if (local_68 != lVar3) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1ade4);
+      (*pcVar5)();
+    }
+    FUN_00310d34(0,&UINT_006775b0);
+  }
+  else {
+    pcVar5 = *(code **)(lVar2 + 0x20);
+    (*pcVar5)((long)puVar6 - extraout_x12,puVar6,param_3);
+    if (local_70 == 0) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1ade8);
+      (*pcVar5)();
+    }
+    if (lVar4 != local_70) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1add8);
+      (*pcVar5)();
+    }
+    if (local_68 != lVar3) {
+                    /* WARNING: Does not return */
+      pcVar5 = (code *)SoftwareBreakpoint(1,0x1addc);
+      (*pcVar5)();
+    }
+    FUN_00310d34(0,&UINT_006775b0);
+    (*pcVar5)(local_78,(long)puVar6 - extraout_x12,param_3);
+  }
+  return;
+}
+

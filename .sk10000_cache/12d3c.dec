@@ -1,0 +1,12 @@
+
+void FUN_00012d3c(void)
+
+{
+  code *pcVar1;
+  
+  FUN_00118b28(s_TB_ASSERT__td_>received_slot_cou_005aab87);
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x12d70);
+  (*pcVar1)();
+}
+

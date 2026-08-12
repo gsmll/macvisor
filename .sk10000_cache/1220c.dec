@@ -1,0 +1,10 @@
+
+void FUN_0001220c(long param_1)
+
+{
+                    /* WARNING: Could not recover jumptable at 0x00012214. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+  (**(code **)(param_1 + 0x30))();
+  return;
+}
+

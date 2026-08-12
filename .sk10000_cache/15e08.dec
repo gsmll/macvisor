@@ -1,0 +1,15 @@
+
+void FUN_00015e08(ulong param_1)
+
+{
+  ulong uStack0000000000000000;
+  char *pcStack0000000000000008;
+  undefined8 uStack0000000000000010;
+  
+  uStack0000000000000010 = 0x9a;
+  uStack0000000000000000 = param_1 & 0xff;
+  pcStack0000000000000008 = s_tb_message_c_005abb9f;
+  FUN_00118b28(s_TB_ASSERT___disposition____TB_ME_005abbac);
+  return;
+}
+

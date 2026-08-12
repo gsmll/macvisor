@@ -1,0 +1,19 @@
+
+void FUN_0001bd08(long param_1,long param_2)
+
+{
+  code *pcVar1;
+  
+  if ((param_1 != 0) && (0x24 < (ulong)(param_2 - param_1))) {
+    if (-1 < *(long *)(param_1 + 0x15)) {
+      return;
+    }
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1bd28);
+    (*pcVar1)();
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000002b,0x80000000005ac9f0,
+               s_Tightbeam_ComponentInitData_swif_005ac9c0,0x21,2,0x206,0);
+}
+

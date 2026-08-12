@@ -1,0 +1,9 @@
+
+void FUN_0001ced0(void)
+
+{
+                    /* WARNING: Subroutine does not return */
+  FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000002e,0x80000000005aca40,
+               s_Tightbeam_ComponentInitData_swif_005ac9c0,0x21,2,0x318,0);
+}
+

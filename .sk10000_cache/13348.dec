@@ -1,0 +1,52 @@
+
+void FUN_00013348(undefined8 param_1,long param_2)
+
+{
+  undefined8 *puVar1;
+  code *pcVar2;
+  uint uVar3;
+  undefined8 uVar4;
+  uint uVar5;
+  
+  puVar1 = (undefined8 *)(param_2 + 0x88);
+  if (((undefined8 *)(param_2 + 0x118) < puVar1) || ((undefined8 *)(param_2 + 0xf8) < puVar1)) {
+                    /* WARNING: Does not return */
+    pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x133f8);
+    (*pcVar2)();
+  }
+  *(undefined8 *)(param_2 + 0xe0) = 0;
+  *(undefined8 *)(param_2 + 0xd8) = 0;
+  *(undefined8 *)(param_2 + 0xf0) = 0;
+  *(undefined8 *)(param_2 + 0xe8) = 0;
+  *(undefined8 *)(param_2 + 0xc0) = 0;
+  *(undefined8 *)(param_2 + 0xb8) = 0;
+  *(undefined8 *)(param_2 + 0xd0) = 0;
+  *(undefined8 *)(param_2 + 200) = 0;
+  *(undefined8 *)(param_2 + 0xa0) = 0;
+  *(undefined8 *)(param_2 + 0x98) = 0;
+  *(undefined8 *)(param_2 + 0xb0) = 0;
+  *(undefined8 *)(param_2 + 0xa8) = 0;
+  *(undefined8 *)(param_2 + 0x90) = 0;
+  *puVar1 = 0;
+  *(undefined8 *)(param_2 + 0x60) = 0x659008;
+  uVar4 = FUN_00015440();
+  *(undefined8 *)(param_2 + 0x88) = uVar4;
+  uVar3 = FUN_00015450(param_1);
+  if ((uVar3 >> 1 & 1) == 0) {
+    if ((uVar3 & 1) == 0) goto joined_r0x000133e0;
+    uVar5 = 4;
+  }
+  else {
+    uVar5 = uVar3 >> 8 & 0xff;
+  }
+  *(uint *)(param_2 + 0xe8) = uVar5;
+joined_r0x000133e0:
+  if ((uVar3 >> 2 & 1) != 0) {
+    *(undefined1 *)(param_2 + 0xec) = 1;
+  }
+  if ((uVar3 >> 3 & 1) != 0) {
+    *(undefined1 *)(param_2 + 0xed) = 1;
+  }
+  return;
+}
+

@@ -1,0 +1,11 @@
+
+void FUN_0001ef34(undefined8 *param_1)
+
+{
+  undefined8 uVar1;
+  
+  uVar1 = FUN_0001a760();
+  *param_1 = uVar1;
+  return;
+}
+

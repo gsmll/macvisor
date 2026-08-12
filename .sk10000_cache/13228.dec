@@ -1,0 +1,13 @@
+
+void FUN_00013228(void)
+
+{
+  char *pcStack0000000000000000;
+  undefined8 uStack0000000000000008;
+  
+  pcStack0000000000000000 = s_internal_h_005aad1c;
+  uStack0000000000000008 = 0xcc;
+  FUN_00118b28(&DAT_005aacf2);
+  return;
+}
+

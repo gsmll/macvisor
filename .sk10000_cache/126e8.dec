@@ -1,0 +1,34 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+long FUN_000126e8(long param_1)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  long lVar3;
+  long lVar4;
+  ulong uVar5;
+  
+  if ((param_1 != 0) && (_DAT_006ac238 != 0)) {
+    lVar4 = 0;
+    uVar5 = 0;
+    do {
+      if (((&DAT_006adfe8 + lVar4 < &DAT_006adfe8 || (undefined1 *)0x6adff8 < &DAT_006adff0 + lVar4)
+           || &DAT_006adff0 + lVar4 < &DAT_006adfe8 + lVar4) ||
+         (uVar2 = *(ulong *)(&DAT_006adfe8 + uVar5 * 8), uVar2 + 200 < uVar2)) {
+                    /* WARNING: Does not return */
+        pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x1279c);
+        (*pcVar1)();
+      }
+      lVar3 = (**(code **)(uVar2 + 0x10))(uVar2,param_1);
+      if (lVar3 != 0) {
+        return lVar3;
+      }
+      uVar5 = uVar5 + 1;
+      lVar4 = lVar4 + 8;
+    } while (uVar5 < _DAT_006ac238);
+  }
+  return 0;
+}
+

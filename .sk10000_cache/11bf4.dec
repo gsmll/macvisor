@@ -1,0 +1,26 @@
+
+undefined8
+FUN_00011bf4(undefined8 param_1,undefined8 param_2,undefined1 param_3,ulong param_4,
+            undefined8 param_5)
+
+{
+  undefined8 uVar1;
+  int *piVar2;
+  
+  if ((param_4 & 0x83) != 0) {
+    FUN_00011824((uint)param_4 | 0x40,1,s_Unsupported_debug_flags__u_005aa9d4);
+  }
+  uVar1 = FUN_0011807c(param_5,param_1,param_2,param_3);
+  if ((int)uVar1 != 0) {
+    piVar2 = (int *)thunk_FUN_0006037c();
+    if (*piVar2 == 0) {
+      uVar1 = 0;
+    }
+    else {
+      FUN_00011824(param_4,0,s_Failed_to_madvise__d_at_address___005aa9f0);
+      uVar1 = 1;
+    }
+  }
+  return uVar1;
+}
+

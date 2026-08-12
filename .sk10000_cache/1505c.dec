@@ -1,0 +1,20 @@
+
+ulong FUN_0001505c(void)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  
+  uVar2 = FUN_00010244(1,0x20,0x1020040fee5c632);
+  if (uVar2 == 0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_004b0068();
+  }
+  if ((uVar2 <= uVar2 + 0x10) && (FUN_001157f0(uVar2,0), uVar2 <= uVar2 + 0x20)) {
+    return uVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x150c8);
+  (*pcVar1)();
+}
+

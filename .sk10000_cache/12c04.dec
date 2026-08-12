@@ -1,0 +1,51 @@
+
+void FUN_00012c04(long param_1,ulong param_2)
+
+{
+  long *plVar1;
+  ulong uVar2;
+  code *pcVar3;
+  long lVar4;
+  char *pcVar5;
+  
+  plVar1 = (long *)(param_1 + 0x38);
+  if ((long *)(param_1 + 0x68U) < plVar1) {
+LAB_00012c84:
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(0x5519,0x12c88);
+    (*pcVar3)();
+  }
+  if (*(long *)(param_1 + 0x58) == 0) {
+    if (*(long *)(param_1 + 0x60) == 0) {
+      uVar2 = param_2;
+      if (param_2 < 5) {
+        while( true ) {
+          if (uVar2 == 0) {
+            *(ulong *)(param_1 + 0x58) = param_2;
+            *(undefined8 *)(param_1 + 0x60) = 0;
+            return;
+          }
+          lVar4 = FUN_00034f70();
+          *plVar1 = lVar4;
+          if (lVar4 == 0) break;
+          plVar1 = plVar1 + 1;
+          uVar2 = uVar2 - 1;
+        }
+        FUN_004b0034();
+        goto LAB_00012c84;
+      }
+      pcVar5 = s_TB_ASSERT__num_caps_<__TB_MAX_CA_005aabbd;
+    }
+    else {
+      pcVar5 = s_TB_ASSERT__td_>received_slot_cou_005aab87;
+    }
+  }
+  else {
+    pcVar5 = s_TB_ASSERT__td_>allocated_slot_co_005aab3a;
+  }
+  FUN_00118b28(pcVar5);
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x12cec);
+  (*pcVar3)();
+}
+

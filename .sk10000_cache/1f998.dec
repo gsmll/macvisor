@@ -1,0 +1,13 @@
+
+undefined8
+FUN_0001f998(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4,
+            undefined8 param_5,undefined8 param_6)
+
+{
+  undefined8 uVar1;
+  
+  uVar1 = FUN_0036a940();
+  FUN_0001fa18(param_1,param_2,param_3,param_4,param_5,param_6);
+  return uVar1;
+}
+

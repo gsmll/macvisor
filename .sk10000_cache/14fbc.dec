@@ -1,0 +1,13 @@
+
+void FUN_00014fbc(void)
+
+{
+  char *pcStack0000000000000000;
+  undefined8 uStack0000000000000008;
+  
+  pcStack0000000000000000 = s__AppleInternal_Library_BuildRoot_005ab712;
+  uStack0000000000000008 = 0x77;
+  FUN_00118b28(s_TB_FATAL__Attempt_to_retrieve_re_005aba33);
+  return;
+}
+

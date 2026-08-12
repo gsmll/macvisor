@@ -1,0 +1,8 @@
+
+void FUN_00019aac(undefined8 param_1)
+
+{
+  FUN_0001a0d0(param_1,&DAT_0064c098,&LAB_006593e8);
+  return;
+}
+

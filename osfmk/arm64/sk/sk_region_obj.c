@@ -52,6 +52,9 @@ void sk_object_notify_loop(void);
 void sk_object_wake(void);
 unsigned int sk_swift_string_index_cmp(long, unsigned long, long, unsigned long);
 void sk_object_service_w(void *param_1, void *param_2, void *param_3, void *param_4, void *param_5);
+void sk_cap_setup(void *param_1, unsigned long slot, int type_idx, void *table, void *obj);
+void *sk_cap_node_create_impl(void **out, unsigned long p2, unsigned long p3,
+                              void *p4, void *p5, void *p6);
 
 /* Swift runtime fatal-error (noreturn) and element-transform helpers. */
 extern void sk_fatal_error(unsigned long, unsigned long, ...) __attribute__((noreturn)); /* FUN_001afe4c */
@@ -1939,4 +1942,179 @@ done:
     }
     sk_free(src);   /* FUN_0036b118 */
     return l3;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287d08 @ 0x00287d08   (est. sk_cap_badge_store)
+ * Ghidra: void FUN_00287d08(void)
+ * Stores a badge/capability value: resolves the object (FUN_00352194) and
+ * writes the per-object uint field (+8) via FUN_0025bae0.
+ * Confidence: medium (small setter, clean shape).
+ */
+void sk_cap_badge_store(void)
+{
+    unsigned long obj = sk_swift_elem_transform2();  /* FUN_00352194 */
+    /* FUN_0025bae0(obj, *(uint *)(x19+8)); FUN_00357670 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287d34 @ 0x00287d34   (est. sk_cap_tree_walk)
+ * Ghidra: void FUN_00287d34(void)
+ * Walks a capability tree / object table: saves thread state (FUN_0008e518),
+ * reads the object descriptor (+0x10 non-null gate), and iterates entries via
+ * FUN_00359fa0 while the per-object bitmask (x26) is set, invoking the
+ * per-entry handler (extraout_x16+0x10). Returns the final index via
+ * FUN_00359920. Epilogue FUN_0008e500.
+ * Confidence: low (capability-tree walk with bitmask iteration).
+ */
+void sk_cap_tree_walk(void)
+{
+    /* FUN_0008e518 / FUN_00352c34 / FUN_00349720 / (*DAT_00658c00)(x8+0x40) /
+     * FUN_00348f50; if (obj+0x10 != 0):
+     *   lVar1 = FUN_00354948(obj[0x20]);
+     *   while (uVar2 = FUN_00359fa0(lVar1), (extraout_x8_01 >> (x26&0x3f) & 1) != 0):
+     *     FUN_00356260(x16+0x10, uVar2, obj[0x30] + (x16+0x48)*x26);
+     *     FUN_00351ef8; FUN_0034d49c; FUN_00351b20; FUN_00357b04; FUN_00350630;
+     *     uVar2 = (*extraout_x8_04)();
+     *     if (auVar5._0_8_ & 1) { uVar4 = obj[0x24]; goto done; }
+     *   done: uVar4 = 0x100000000;
+     * FUN_00359920; FUN_0008e500 */
+    (*(void (**)(void))(0x658c00))();
+    sk_queue_complete(0, 0);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287d38 / FUN_00287d3c   (est. sk_cap_tree_walk_variants)
+ * Ghidra: void FUN_00287d38(void) / FUN_00287d3c(void)
+ * Identical forwarders to FUN_00287d34.
+ * Confidence: medium.
+ */
+void sk_cap_tree_walk_a(void)  /* FUN_00287d38 */
+{
+    sk_cap_tree_walk();
+}
+void sk_cap_tree_walk_b(void)  /* FUN_00287d3c */
+{
+    sk_cap_tree_walk();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287d54 @ 0x00287d54   (est. sk_obj_desc_read_a)
+ * Ghidra: void FUN_00287d54(undefined1 (*param_1)[12])
+ * Reads a 12-byte object descriptor from the object (via thunk_FUN_0025baa4).
+ * Confidence: medium (trivial 12-byte copy).
+ */
+void sk_obj_desc_read_a(void *out)
+{
+    /* auVar1 = thunk_FUN_0025baa4(*x20); *out = auVar1 (12 bytes) */
+    sk_swift_elem_transform2();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287d84 @ 0x00287d84   (est. sk_obj_desc_read_b)
+ * Ghidra: void FUN_00287d84(undefined1 (*param_1)[12])
+ * Same as above but via thunk_FUN_00355354.
+ * Confidence: medium.
+ */
+void sk_obj_desc_read_b(void *out)
+{
+    /* auVar1 = thunk_FUN_00355354(*x20); *out = auVar1 */
+    sk_swift_elem_transform2();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287db4 @ 0x00287db4   (est. sk_cap_node_create)
+ * Ghidra: undefined * FUN_00287db4(long *param_1, undefined8 *param_2, long param_3)
+ * Allocates a 0x28-byte capability-node object (tag 0x96c4), runs the
+ * constructor FUN_00287e30 with the caller's cap fields, stores the vtable
+ * (DAT_003471a4).
+ * Confidence: medium (allocate + construct + vtable).
+ */
+void *sk_cap_node_create(void **slot, unsigned long *cap, void *obj)
+{
+    void *node = sk_alloc(0x28, 0x96c4);  /* FUN_0036a908(0x28, 0x96c4) */
+    *slot = node;
+    void *v = sk_cap_node_create_impl(node, cap[0], *(unsigned int *)(cap + 1),
+                                      *(void **)0, *(void **)((char *)obj + 0x10),
+                                      *(void **)((char *)obj + 0x18));  /* FUN_00287e30 */
+    *(void **)((char *)node + 0x20) = v;
+    return (void *)0x3471a4;  /* DAT_003471a4 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287e30 @ 0x00287e30   (est. sk_cap_node_create_impl)
+ * Ghidra: undefined1 [16] FUN_00287e30(long *param_1, undefined8 param_2, ...)
+ * Allocates the per-type cap-node instance (tag 0x5732) sized by the type
+ * descriptor (+0x40), and calls the cap-setup FUN_00287c68. Returns a
+ * {vtable, node} 16-byte pair.
+ * Confidence: low (allocator plumbing).
+ */
+void *sk_cap_node_create_impl(void **out, unsigned long p2, unsigned long p3,
+                              void *p4, void *p5, void *p6)
+{
+    (void)p4; (void)p5; (void)p6;
+    long type = *(long *)((char *)p5 - 8);
+    out[0] = p5;
+    out[1] = (void *)type;
+    void *node = sk_alloc(*(unsigned long *)((char *)type + 0x40), 0x5732);  /* FUN_0036a908 */
+    out[2] = node;
+    sk_cap_setup(node, p2, p3, p4, p5);  /* FUN_00287c68 */
+    return node;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287ee8 @ 0x00287ee8   (est. sk_obj_state_reset)
+ * Ghidra: void FUN_00287ee8(long param_1)
+ * Resets object state: runs FUN_00359350 + FUN_00287d34 (tree walk) +
+ * FUN_00357670, then stores a status byte at param_1+0xc and zero at +0xd.
+ * Confidence: medium (state reset with status flags).
+ */
+void sk_obj_state_reset(void *obj)
+{
+    /* FUN_00359350 */
+    sk_cap_tree_walk();  /* FUN_00287d34 */
+    /* FUN_00357670 */
+    *(unsigned char *)((char *)obj + 0xc) = 0;
+    *(unsigned char *)((char *)obj + 0xd) = 0;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287f20 @ 0x00287f20   (est. sk_obj_desc_write)
+ * Ghidra: void FUN_00287f20(undefined1 (*param_1)[12], undefined8 *param_2)
+ * Writes a 12-byte object descriptor from cap fields via thunk_FUN_0025bae0.
+ * Confidence: medium.
+ */
+void sk_obj_desc_write(void *out, unsigned long *cap)
+{
+    /* auVar1 = thunk_FUN_0025bae0(cap[0], *(uint*)(cap+1), *x20); *out = auVar1 */
+    sk_swift_elem_transform2();
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00287c68 @ 0x00287c68   (est. sk_cap_setup)
+ * Ghidra: void FUN_00287c68(undefined8 param_1, ulong param_2, int param_3,
+ *        long param_4, long param_5)
+ * Installs a capability into the object's cap table: validates that the slot
+ * index param_2 is in-bounds (>=0, < the bit width in param_4+0x20, and the
+ * slot bit is set in the bitmap at param_4+0x38) and matches the type index
+ * (param_4+0x24); on success dispatches the per-type cap install handler
+ * (param_5-8 + 0x10) with the element pointer. Any validation failure raises
+ * the noreturn panic FUN_001afe4c.
+ * Confidence: medium (cap-slot install with explicit bounds/bitmap checks).
+ */
+void sk_cap_setup(void *param_1, unsigned long slot, int type_idx, void *table,
+                  void *obj)
+{
+    unsigned long nbits = *(unsigned char *)((char *)table + 0x20) & 0x3f;
+    if (((long)slot >= 0) && ((slot >> nbits) == 0) &&
+        ((*(unsigned long *)((char *)table + (slot >> 6) * 8 + 0x38) >> (slot & 0x3f) & 1) != 0) &&
+        (type_idx == *(int *)((char *)table + 0x24))) {
+        /* indirect jump through obj-8 + 0x10 (cap install handler) */
+        void (*install)(void *, void *, void *) = *(void (**)(void *, void *, void *))((char *)obj - 8 + 0x10);
+        install(param_1, (void *)(*(long *)((char *)table + 0x30) +
+                                  *(long *)((char *)obj - 8 + 0x48) * slot), obj);
+        return;
+    }
+    /* FUN_003488bc(1); FUN_0034a3ec; noreturn FUN_001afe4c */
+    sk_fatal_error(0xb, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }

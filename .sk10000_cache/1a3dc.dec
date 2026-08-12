@@ -1,0 +1,18 @@
+
+void FUN_0001a3dc(long param_1,long param_2)
+
+{
+  code *pcVar1;
+  
+  if (param_1 == 0) {
+    param_2 = 0;
+  }
+  else if (param_2 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1a3f4);
+    (*pcVar1)();
+  }
+  FUN_001e9c78(param_1,param_2);
+  return;
+}
+

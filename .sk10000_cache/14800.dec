@@ -1,0 +1,24 @@
+
+undefined8 * thunk_FUN_00014510(undefined8 param_1)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  undefined8 uVar3;
+  
+  puVar2 = (undefined8 *)FUN_00010244(1,0x40,0x10820409f8ec750);
+  if (puVar2 == (undefined8 *)0x0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_004b0068();
+  }
+  if (puVar2 <= puVar2 + 8) {
+    *puVar2 = param_1;
+    uVar3 = FUN_0001505c();
+    puVar2[6] = uVar3;
+    return puVar2;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x14574);
+  (*pcVar1)();
+}
+

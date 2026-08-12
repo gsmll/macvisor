@@ -1,0 +1,23 @@
+
+void FUN_0001a404(void)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long *unaff_x20;
+  
+  if (*unaff_x20 == 0) {
+    lVar2 = 0;
+  }
+  else {
+    lVar2 = unaff_x20[1];
+    if (lVar2 < 0) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1a424);
+      (*pcVar1)();
+    }
+  }
+  FUN_001e9c78(*unaff_x20,lVar2);
+  return;
+}
+

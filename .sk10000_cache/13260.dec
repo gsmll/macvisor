@@ -1,0 +1,23 @@
+
+void FUN_00013260(undefined8 param_1,undefined8 param_2,undefined8 param_3)
+
+{
+  ulong uVar1;
+  code *UNRECOVERED_JUMPTABLE;
+  undefined8 uVar2;
+  
+  FUN_00060524();
+  uVar1 = FUN_000603bc();
+  if (uVar1 <= uVar1 + 0x50) {
+    UNRECOVERED_JUMPTABLE = (code *)FUN_000636d0();
+    uVar2 = FUN_000636d8(uVar1);
+                    /* WARNING: Could not recover jumptable at 0x000132cc. Too many branches */
+                    /* WARNING: Treating indirect jump as call */
+    (*UNRECOVERED_JUMPTABLE)(uVar2,param_2,param_3);
+    return;
+  }
+                    /* WARNING: Does not return */
+  UNRECOVERED_JUMPTABLE = (code *)SoftwareBreakpoint(0x5519,0x132d4);
+  (*UNRECOVERED_JUMPTABLE)();
+}
+

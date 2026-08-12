@@ -1,0 +1,24 @@
+
+void FUN_00010d84(long param_1,long param_2,undefined8 param_3)
+
+{
+  long lVar1;
+  uint uVar2;
+  long lVar3;
+  long *plVar4;
+  
+  uVar2 = 0x3f - (int)LZCOUNT(param_3);
+  if (9 < uVar2) {
+    uVar2 = 10;
+  }
+  FUN_00011430();
+  plVar4 = (long *)(param_1 + (ulong)uVar2 * 0x10 + 0x30);
+  lVar3 = *plVar4;
+  lVar1 = param_1 + param_2 * 0x10;
+  *(long *)(lVar1 + 0x8000) = lVar3;
+  *(ulong *)(lVar1 + 0x8008) = (ulong)uVar2 + 3;
+  *plVar4 = param_2 + 0x800;
+  *(long *)(param_1 + lVar3 * 0x10 + 8) = param_2 + 0x800;
+  return;
+}
+

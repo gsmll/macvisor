@@ -1,0 +1,15 @@
+
+void FUN_0001cbec(void)
+
+{
+  undefined1 uVar1;
+  undefined1 *unaff_x20;
+  undefined1 auStack_68 [72];
+  
+  uVar1 = *unaff_x20;
+  FUN_001a84f4(auStack_68,0);
+  thunk_FUN_002298d4(uVar1);
+  FUN_001a8564();
+  return;
+}
+

@@ -1,0 +1,91 @@
+
+long FUN_0001dfb4(long param_1)
+
+{
+  undefined *puVar1;
+  ulong uVar2;
+  undefined8 uVar3;
+  code *pcVar4;
+  bool bVar5;
+  undefined8 uVar6;
+  long *plVar7;
+  long lVar8;
+  long lVar9;
+  undefined8 *puVar10;
+  undefined8 local_d8 [5];
+  undefined8 local_b0;
+  undefined8 uStack_a8;
+  undefined8 uStack_a0;
+  undefined8 uStack_98;
+  undefined8 local_90;
+  undefined8 local_80;
+  undefined8 uStack_78;
+  undefined8 uStack_70;
+  undefined8 uStack_68;
+  undefined8 local_60;
+  undefined *local_58;
+  
+  uVar6 = thunk_FUN_0024d9ac(&DAT_004bb860);
+  lVar9 = *(long *)(param_1 + 0x10);
+  if (lVar9 == 0) {
+    FUN_0036b118(uVar6);
+    puVar1 = &DAT_00657778;
+    lVar9 = DAT_00657788;
+  }
+  else {
+    local_58 = &DAT_00657778;
+    FUN_0001deb0(0,lVar9,0);
+    puVar10 = (undefined8 *)(param_1 + 0x20);
+    while( true ) {
+      puVar1 = local_58;
+      lVar9 = lVar9 + -1;
+      uStack_78 = puVar10[1];
+      local_80 = *puVar10;
+      uStack_68 = puVar10[3];
+      uStack_70 = puVar10[2];
+      local_60 = puVar10[4];
+      uStack_a8 = puVar10[1];
+      local_b0 = *puVar10;
+      uStack_98 = puVar10[3];
+      uStack_a0 = puVar10[2];
+      local_90 = puVar10[4];
+      FUN_0001eec8(&local_80,local_d8);
+      FUN_0024917c(local_d8,&local_b0);
+      FUN_0001ef00(&local_80);
+      uVar3 = local_d8[0];
+      uVar2 = *(ulong *)(puVar1 + 0x10);
+      local_58 = puVar1;
+      if (*(ulong *)(puVar1 + 0x18) >> 1 <= uVar2) {
+        FUN_0001deb0(1 < *(ulong *)(puVar1 + 0x18),uVar2 + 1,1);
+      }
+      puVar1 = local_58;
+      *(ulong *)(local_58 + 0x10) = uVar2 + 1;
+      *(undefined8 *)(local_58 + uVar2 * 8 + 0x20) = uVar3;
+      if (lVar9 == 0) break;
+      puVar10 = puVar10 + 5;
+    }
+    FUN_0036b118(uVar6);
+    lVar9 = *(long *)(puVar1 + 0x10);
+  }
+  if (lVar9 == 0) {
+    lVar8 = 0;
+  }
+  else {
+    lVar8 = 0;
+    plVar7 = (long *)(puVar1 + 0x20);
+    do {
+      bVar5 = SCARRY8(lVar8,*plVar7);
+      lVar8 = lVar8 + *plVar7;
+      if (bVar5) {
+                    /* WARNING: Does not return */
+        pcVar4 = (code *)SoftwareBreakpoint(1,0x1e12c);
+        (*pcVar4)();
+      }
+      lVar9 = lVar9 + -1;
+      plVar7 = plVar7 + 1;
+    } while (lVar9 != 0);
+  }
+  FUN_0036b118(puVar1);
+  return lVar8;
+}
+

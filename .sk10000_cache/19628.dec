@@ -1,0 +1,17 @@
+
+void FUN_00019628(void)
+
+{
+  code *pcVar1;
+  int iVar2;
+  
+  iVar2 = FUN_00019670();
+  if (iVar2 == 0) {
+    return;
+  }
+  FUN_00118b28(s_TB_FATAL__tb_message_encode_f64__005ac956);
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x19670);
+  (*pcVar1)();
+}
+

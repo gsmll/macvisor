@@ -1,0 +1,28 @@
+
+ulong FUN_0001da84(ulong param_1,ulong param_2,ulong param_3)
+
+{
+  ulong uVar1;
+  ulong uVar2;
+  ulong uVar3;
+  
+  uVar3 = param_1 >> 0xe & 3;
+  if (((param_3 >> 0x3c & 1) == 0) || ((param_2 >> 0x3b & 1) != 0)) {
+    uVar1 = FUN_002a4614(0xf,param_1 >> 0x10);
+    uVar2 = uVar1 + uVar3 * 0x10000 & 0xffffffffffff0000;
+    if (uVar3 == 0) {
+      uVar2 = uVar1 & 0xfffffffffffffffc | param_1 & 3;
+    }
+    uVar2 = uVar2 | 4;
+  }
+  else {
+    uVar1 = thunk_FUN_001b1ff0(0xf);
+    uVar2 = uVar1 + uVar3 * 0x10000 & 0xffffffffffff0000;
+    if (uVar3 == 0) {
+      uVar2 = uVar1 & 0xfffffffffffffffc | param_1 & 3;
+    }
+    uVar2 = uVar2 | 8;
+  }
+  return uVar2;
+}
+

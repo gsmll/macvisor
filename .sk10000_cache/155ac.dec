@@ -1,0 +1,20 @@
+
+bool FUN_000155ac(long param_1)
+
+{
+  int iVar1;
+  code *pcVar2;
+  
+  pcVar2 = *(code **)(param_1 + 0x10);
+  if (pcVar2 == (code *)0x0) {
+    if (*(long *)(param_1 + 0x60) == 0) {
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(1,0x155e8);
+      (*pcVar2)();
+    }
+    pcVar2 = *(code **)(*(long *)(param_1 + 0x60) + 0x10);
+  }
+  iVar1 = (*pcVar2)();
+  return iVar1 != 0;
+}
+

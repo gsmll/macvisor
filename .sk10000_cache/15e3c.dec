@@ -1,0 +1,17 @@
+
+void FUN_00015e3c(undefined8 param_1,undefined8 *param_2)
+
+{
+  ulong uVar1;
+  long extraout_x1;
+  
+  uVar1 = FUN_00015108(param_1,*param_2,param_2,0x659088);
+  if ((uVar1 & 1) != 0) {
+    return;
+  }
+  FUN_004b060c();
+  thunk_FUN_00012568(*(undefined8 *)(extraout_x1 + 0x18));
+  thunk_FUN_00012568(extraout_x1);
+  return;
+}
+

@@ -1,0 +1,79 @@
+
+undefined1  [16] FUN_0001c6fc(long param_1,long param_2,undefined8 param_3,long param_4)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long lVar3;
+  undefined1 auVar4 [16];
+  
+  lVar2 = FUN_0001c330();
+  if (SCARRY8(lVar2,0x30)) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7b8);
+    (*pcVar1)();
+  }
+  if ((param_1 == 0) || ((ulong)(param_2 - param_1) < 0x30)) {
+                    /* WARNING: Subroutine does not return */
+    FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000002e,0x80000000005aca40,
+                 s_Tightbeam_ComponentInitData_swif_005ac9c0,0x21,2,0x288,0);
+  }
+  lVar3 = *(long *)(param_1 + 0x18);
+  if (lVar3 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7bc);
+    (*pcVar1)();
+  }
+  if (SCARRY8(lVar2 + 0x30,lVar3)) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7c0);
+    (*pcVar1)();
+  }
+  auVar4 = FUN_0001ab00(lVar2 + 0x30 + lVar3,param_1);
+  lVar2 = auVar4._8_8_;
+  lVar3 = auVar4._0_8_;
+  if (lVar3 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7c4);
+    (*pcVar1)();
+  }
+  if (param_2 == 0) {
+    if (0 < lVar2) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7cc);
+      (*pcVar1)();
+    }
+    param_2 = 0;
+  }
+  else {
+    if (param_4 - param_2 < lVar2) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7c8);
+      (*pcVar1)();
+    }
+    param_2 = param_2 + lVar3;
+  }
+  lVar2 = lVar2 - lVar3;
+  if (lVar2 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7b4);
+    (*pcVar1)();
+  }
+  if (lVar2 == 0) {
+    if (param_2 == 0) {
+      lVar2 = 0;
+      goto LAB_0001c788;
+    }
+  }
+  else if (param_2 == 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1c7d0);
+    (*pcVar1)();
+  }
+  lVar2 = param_2 + lVar2;
+LAB_0001c788:
+  auVar4._8_8_ = lVar2;
+  auVar4._0_8_ = param_2;
+  return auVar4;
+}
+

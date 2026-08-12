@@ -1,0 +1,24 @@
+
+void FUN_00012160(undefined8 param_1,long param_2,long param_3)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  ulong uVar3;
+  ulong uVar4;
+  
+  uVar3 = FUN_000120b4();
+  uVar4 = param_3 * param_2;
+  uVar1 = 0;
+  if (uVar3 != 0) {
+    uVar1 = uVar3 + uVar4;
+  }
+  if ((uVar3 <= uVar1) && ((uVar3 == 0 || (uVar4 < uVar1 - uVar3 || uVar4 - (uVar1 - uVar3) == 0))))
+  {
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x121b8);
+  (*pcVar2)();
+}
+

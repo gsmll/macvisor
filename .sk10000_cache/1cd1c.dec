@@ -1,0 +1,88 @@
+
+void FUN_0001cd1c(long param_1,long param_2,undefined8 param_3,long param_4)
+
+{
+  code *pcVar1;
+  long lVar2;
+  long lVar3;
+  long lVar4;
+  long lVar5;
+  long lVar6;
+  undefined1 auVar7 [16];
+  undefined1 auVar8 [12];
+  
+  lVar3 = param_2;
+  auVar7 = FUN_0001ab00(0x20,param_1);
+  lVar4 = auVar7._8_8_;
+  lVar2 = auVar7._0_8_;
+  if ((param_1 == 0) || ((ulong)(param_2 - param_1) < 0x20)) {
+                    /* WARNING: Subroutine does not return */
+    FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000002e,0x80000000005aca40,
+                 s_Tightbeam_ComponentInitData_swif_005ac9c0,0x21,2,0x318,0);
+  }
+  lVar6 = *(long *)(param_1 + 0x10);
+  if (lVar6 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce44);
+    (*pcVar1)();
+  }
+  lVar5 = lVar6 * 0x19;
+  if (SUB168(SEXT816(lVar6) * SEXT816(0x19),8) != lVar5 >> 0x3f) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce48);
+    (*pcVar1)();
+  }
+  if (lVar5 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce4c);
+    (*pcVar1)();
+  }
+  auVar8 = FUN_0001db00(lVar2,lVar5,lVar4,lVar3,param_4);
+  lVar6 = lVar4;
+  if ((auVar8._8_4_ & 0xff) != 1) {
+    lVar6 = auVar8._0_8_;
+  }
+  if (lVar6 < lVar2) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce50);
+    (*pcVar1)();
+  }
+  if (lVar4 < lVar6) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce54);
+    (*pcVar1)();
+  }
+  if (lVar2 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce58);
+    (*pcVar1)();
+  }
+  if (lVar3 == 0) {
+    if (0 < lVar6) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce60);
+      (*pcVar1)();
+    }
+    lVar3 = 0;
+  }
+  else {
+    if (param_4 - lVar3 < lVar6) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce5c);
+      (*pcVar1)();
+    }
+    lVar3 = lVar3 + lVar2;
+  }
+  if (lVar6 - lVar2 < 0) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce40);
+    (*pcVar1)();
+  }
+  if ((lVar6 != lVar2) && (lVar3 == 0)) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1ce64);
+    (*pcVar1)();
+  }
+  return;
+}
+

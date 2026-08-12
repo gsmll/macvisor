@@ -1,0 +1,16 @@
+
+void FUN_0001a0d0(undefined8 param_1,long *param_2,undefined8 param_3)
+
+{
+  undefined1 auVar1 [16];
+  
+  if (*param_2 != 0) {
+    return;
+  }
+  auVar1 = FUN_00376038(param_1,param_3);
+  if (auVar1._8_8_ == 0) {
+    *param_2 = auVar1._0_8_;
+  }
+  return;
+}
+

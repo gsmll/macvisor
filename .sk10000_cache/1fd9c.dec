@@ -1,0 +1,8 @@
+
+undefined8 FUN_0001fd9c(undefined8 param_1)
+
+{
+  (**(code **)(DAT_0065ac38 + 8))();
+  return param_1;
+}
+

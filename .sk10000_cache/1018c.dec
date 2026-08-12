@@ -1,0 +1,8 @@
+
+void FUN_0001018c(void)
+
+{
+  FUN_00011824(0x40,0,s_Failed_to_acquire_lock__p__005a9a23);
+  return;
+}
+

@@ -1,0 +1,61 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+long FUN_00010830(ulong param_1)
+
+{
+  long lVar1;
+  ulong uVar2;
+  long lVar3;
+  ulong uVar4;
+  ulong uVar5;
+  
+  uVar2 = param_1 & 0xf0ffffffffffffff;
+  if (((_DAT_006adfd8 == 0 || uVar2 < _DAT_006adfd8 + 0x8000U) || ((param_1 & 0xf) != 0)) ||
+     (_DAT_006adfd8 + 0x100000U <= uVar2)) {
+    return 0;
+  }
+  uVar2 = (long)(uVar2 - (_DAT_006adfd8 + 0x8000U)) >> 4;
+  lVar1 = _DAT_006adfd8 + 0x100;
+  if ((*(ulong *)(lVar1 + (uVar2 >> 2 & 0x3ffffffffffffff0)) & 1L << (uVar2 & 0x3f) &
+      *(ulong *)(lVar1 + (uVar2 >> 2 & 0x3ffffffffffffff8 | 8))) == 0) {
+    return 0;
+  }
+  uVar2 = uVar2 + 1;
+  uVar4 = uVar2 >> 5 & 0x7fffffffffffffe;
+  uVar5 = *(ulong *)(lVar1 + uVar4 * 8) >> (uVar2 & 0x3f);
+  if (uVar5 == 0) {
+    uVar5 = uVar2 & 0x3f;
+    lVar3 = lVar1 + uVar4 * 8;
+    uVar4 = *(ulong *)(lVar3 + 0x10);
+    if (uVar4 != 0) {
+      uVar2 = (uVar4 & 0xaaaaaaaaaaaaaaaa) >> 1 | (uVar4 & 0x5555555555555555) << 1;
+      uVar2 = (uVar2 & 0xcccccccccccccccc) >> 2 | (uVar2 & 0x3333333333333333) << 2;
+      uVar2 = (uVar2 & 0xf0f0f0f0f0f0f0f0) >> 4 | (uVar2 & 0xf0f0f0f0f0f0f0f) << 4;
+      uVar2 = (uVar2 & 0xff00ff00ff00ff00) >> 8 | (uVar2 & 0xff00ff00ff00ff) << 8;
+      uVar2 = (uVar2 & 0xffff0000ffff0000) >> 0x10 | (uVar2 & 0xffff0000ffff) << 0x10;
+      lVar1 = (LZCOUNT(uVar2 >> 0x20 | uVar2 << 0x20) - uVar5) + 0x41;
+      goto LAB_000108cc;
+    }
+    if (uVar5 < 0x31) {
+      lVar3 = 0;
+    }
+    else {
+      lVar3 = *(long *)(lVar3 + 0x18);
+    }
+    uVar2 = (ulong)((uint)((lVar3 << 1) << (uVar5 ^ 0x3f)) |
+                   (uint)(*(ulong *)(lVar1 + ((uVar2 >> 5) << 3 | 8)) >> uVar5)) & 0xffff;
+  }
+  else {
+    uVar2 = (uVar5 & 0xaaaaaaaaaaaaaaaa) >> 1 | (uVar5 & 0x5555555555555555) << 1;
+    uVar2 = (uVar2 & 0xcccccccccccccccc) >> 2 | (uVar2 & 0x3333333333333333) << 2;
+    uVar2 = (uVar2 & 0xf0f0f0f0f0f0f0f0) >> 4 | (uVar2 & 0xf0f0f0f0f0f0f0f) << 4;
+    uVar2 = (uVar2 & 0xff00ff00ff00ff00) >> 8 | (uVar2 & 0xff00ff00ff00ff) << 8;
+    uVar2 = (uVar2 & 0xffff0000ffff0000) >> 0x10 | (uVar2 & 0xffff0000ffff) << 0x10;
+    uVar2 = LZCOUNT(uVar2 >> 0x20 | uVar2 << 0x20);
+  }
+  lVar1 = uVar2 + 1;
+LAB_000108cc:
+  return lVar1 << 4;
+}
+

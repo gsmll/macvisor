@@ -1,0 +1,7 @@
+
+ulong FUN_000132d4(long param_1)
+
+{
+  return param_1 + 7U >> 3;
+}
+

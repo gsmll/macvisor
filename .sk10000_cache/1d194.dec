@@ -1,0 +1,53 @@
+
+undefined1  [16] FUN_0001d194(long param_1,undefined8 param_2,undefined8 param_3)
+
+{
+  code *pcVar1;
+  long extraout_x1;
+  undefined8 extraout_x1_00;
+  undefined8 uVar2;
+  undefined8 uVar3;
+  undefined1 auVar4 [16];
+  
+  auVar4 = FUN_0001cd1c(param_2,param_3);
+  if ((param_1 < 0) || (auVar4._8_8_ <= param_1)) {
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1d27c);
+    (*pcVar1)();
+  }
+  if (*(long *)(auVar4._0_8_ + param_1 * 0x19) != 0x454e445044415441) {
+    FUN_002a4ab4(0x21);
+    FUN_003a25d4(0xe000000000000000);
+    uVar2 = FUN_0001e790();
+    FUN_001ba7d4(0x677790,uVar2);
+    thunk_FUN_002acbb8();
+    FUN_003a25d4(extraout_x1_00);
+                    /* WARNING: Subroutine does not return */
+    FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000001f,0x80000000005acad0,
+                 s_Tightbeam_ComponentInitData_swif_005ac9c0,0x21,2,0x340,0);
+  }
+  auVar4 = FUN_0001cd1c(param_2,param_3);
+  if (param_1 < auVar4._8_8_) {
+    uVar2 = *(undefined8 *)(auVar4._0_8_ + param_1 * 0x19 + 8);
+    auVar4 = FUN_0001cd1c(param_2,param_3);
+    if (auVar4._8_8_ <= param_1) {
+                    /* WARNING: Does not return */
+      pcVar1 = (code *)SoftwareBreakpoint(1,0x1d284);
+      (*pcVar1)();
+    }
+    uVar3 = *(undefined8 *)(auVar4._0_8_ + param_1 * 0x19 + 0x10);
+    FUN_0001cd1c(param_2,param_3);
+    if (param_1 < extraout_x1) {
+      auVar4._8_8_ = uVar3;
+      auVar4._0_8_ = uVar2;
+      return auVar4;
+    }
+                    /* WARNING: Does not return */
+    pcVar1 = (code *)SoftwareBreakpoint(1,0x1d288);
+    (*pcVar1)();
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x1d280);
+  (*pcVar1)();
+}
+

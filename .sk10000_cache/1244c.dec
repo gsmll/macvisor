@@ -1,0 +1,23 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void FUN_0001244c(ulong param_1)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  ulong uVar3;
+  
+  uVar3 = FUN_00012060(_DAT_006adfe8,param_1);
+  uVar1 = 0;
+  if (uVar3 != 0) {
+    uVar1 = uVar3 + param_1;
+  }
+  if ((uVar3 <= uVar1) && (uVar3 == 0 || param_1 <= uVar1 - uVar3)) {
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x124a4);
+  (*pcVar2)();
+}
+

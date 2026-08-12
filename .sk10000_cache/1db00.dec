@@ -1,0 +1,62 @@
+
+undefined1  [16] FUN_0001db00(long param_1,ulong param_2,ulong param_3,long param_4,long param_5)
+
+{
+  ulong uVar1;
+  ulong uVar2;
+  code *pcVar3;
+  undefined1 auVar4 [16];
+  
+  uVar2 = 0;
+  if (param_4 != 0) {
+    uVar2 = param_5 - param_4;
+  }
+  if (param_1 < 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db7c);
+    (*pcVar3)();
+  }
+  if ((long)uVar2 < param_1) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db80);
+    (*pcVar3)();
+  }
+  if ((long)param_3 < 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db84);
+    (*pcVar3)();
+  }
+  if (uVar2 < param_3) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db88);
+    (*pcVar3)();
+  }
+  param_3 = param_3 - param_1;
+  if ((long)param_2 < 1) {
+    if (((long)param_3 < 1) && ((long)param_2 < (long)param_3)) goto LAB_0001db50;
+  }
+  else if ((-1 < (long)param_3) && (param_3 < param_2)) {
+LAB_0001db50:
+    return ZEXT816(1) << 0x40;
+  }
+  uVar1 = param_1 + param_2;
+  if (SCARRY8(param_1,param_2)) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db8c);
+    (*pcVar3)();
+  }
+  if ((long)uVar1 < 0) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db90);
+    (*pcVar3)();
+  }
+  if (uVar2 < uVar1) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(1,0x1db94);
+    (*pcVar3)();
+  }
+  auVar4._8_8_ = 0;
+  auVar4._0_8_ = uVar1;
+  return auVar4;
+}
+

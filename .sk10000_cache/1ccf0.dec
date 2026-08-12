@@ -1,0 +1,23 @@
+
+undefined1  [16] FUN_0001ccf0(void)
+
+{
+  ulong uVar1;
+  undefined8 uVar2;
+  long unaff_x21;
+  undefined1 auVar3 [16];
+  
+  auVar3 = FUN_0001e694();
+  uVar1 = auVar3._0_8_ & 0xff;
+  if (unaff_x21 == 0) {
+    uVar1 = auVar3._0_8_;
+  }
+  uVar2 = 1;
+  if (unaff_x21 == 0) {
+    uVar2 = auVar3._8_8_;
+  }
+  auVar3._8_8_ = uVar2;
+  auVar3._0_8_ = uVar1;
+  return auVar3;
+}
+

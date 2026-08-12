@@ -1,0 +1,12 @@
+
+void FUN_00015964(undefined4 *param_1)
+
+{
+  *(undefined1 *)(param_1 + 1) = 0;
+  *(undefined8 *)(param_1 + 2) = 0;
+  *(undefined8 *)(param_1 + 8) = 0xffffffffffffffff;
+  *(undefined8 *)(param_1 + 0x14) = 0;
+  *param_1 = 5;
+  return;
+}
+

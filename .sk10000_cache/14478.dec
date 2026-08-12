@@ -1,0 +1,34 @@
+
+long FUN_00014478(undefined8 param_1)
+
+{
+  code *pcVar1;
+  int iVar2;
+  long lVar3;
+  
+  iVar2 = FUN_00015448();
+  if (iVar2 == 0xd) {
+    lVar3 = FUN_00016458(param_1);
+  }
+  else {
+    if (iVar2 == 3) {
+      lVar3 = FUN_00010244(1,0x118,0x1082040eda8e2da);
+      if (lVar3 != 0) {
+        FUN_00013348(param_1,lVar3);
+        return lVar3;
+      }
+                    /* WARNING: Subroutine does not return */
+      FUN_004b0068();
+    }
+    if (iVar2 != 1) goto LAB_00014508;
+    lVar3 = FUN_00012e48(param_1);
+  }
+  if (lVar3 != 0) {
+    return lVar3;
+  }
+LAB_00014508:
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x1450c);
+  (*pcVar1)();
+}
+

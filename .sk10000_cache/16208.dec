@@ -1,0 +1,66 @@
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+undefined8 FUN_00016208(ulong *param_1,ulong *param_2)
+
+{
+  ulong uVar1;
+  code *pcVar2;
+  char cVar3;
+  undefined1 auVar4 [16];
+  undefined8 local_80;
+  ulong uStack_78;
+  undefined8 uStack_70;
+  undefined8 uStack_68;
+  undefined1 local_60;
+  undefined7 local_5f;
+  undefined1 uStack_58;
+  undefined7 uStack_57;
+  long local_50;
+  undefined8 uStack_48;
+  undefined8 local_40;
+  long local_38;
+  
+  if ((param_1[3] & 1) == 0) {
+    local_40 = 0;
+    local_38 = 0;
+    local_60 = 0x11;
+    local_5f = 0;
+    uStack_58 = 0;
+    uStack_57 = 0;
+    uStack_48 = uRam00000000004bb198;
+    local_50 = _DAT_004bb190;
+    auVar4 = FUN_00034a2c();
+    cVar3 = (**(code **)(auVar4._8_8_ + 0x30))(auVar4._0_8_,0x1808,&local_60,&local_40,0,0);
+    if (cVar3 == '\0') {
+      uStack_78 = 0;
+      local_80 = 0;
+      uStack_68 = 0;
+      uStack_70 = 0;
+      if (local_38 == 0) {
+                    /* WARNING: Subroutine does not return */
+        FUN_00054354();
+      }
+      (**(code **)(local_38 + 8))(local_40,&local_80);
+      uVar1 = uStack_78;
+      cVar3 = (**(code **)(local_38 + 0x28))(local_40,0,param_1[2]);
+      if (cVar3 == '\0') {
+        if ((uVar1 != 0) && (uVar1 + local_50 <= uVar1)) {
+                    /* WARNING: Does not return */
+          pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x16318);
+          (*pcVar2)();
+        }
+        *(undefined1 *)(param_1 + 3) = 1;
+        *param_1 = uVar1;
+        param_1[1] = 0x4000;
+        if (param_2 == (ulong *)0x0) {
+          return 0;
+        }
+        *param_2 = uVar1;
+        return 0;
+      }
+    }
+  }
+  return 0xd;
+}
+

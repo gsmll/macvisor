@@ -1,0 +1,12 @@
+
+undefined1  [16] FUN_0001a648(void)
+
+{
+  undefined1 auVar1 [16];
+  long unaff_x20;
+  
+  auVar1 = *(undefined1 (*) [16])(unaff_x20 + 0x10);
+  thunk_FUN_0036b270(*(undefined8 *)(unaff_x20 + 0x18));
+  return auVar1;
+}
+

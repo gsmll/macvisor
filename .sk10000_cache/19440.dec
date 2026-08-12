@@ -1,0 +1,7 @@
+
+undefined8 FUN_00019440(void)
+
+{
+  return 4;
+}
+

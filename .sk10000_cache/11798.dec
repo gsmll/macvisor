@@ -1,0 +1,12 @@
+
+void FUN_00011798(uint param_1)
+
+{
+  if ((param_1 >> 5 & 1) == 0) {
+    thunk_FUN_00060524();
+    FUN_00118b28(s___p__malloc__005aa86b);
+  }
+  FUN_00118b28(&DAT_005aa8b2);
+  return;
+}
+

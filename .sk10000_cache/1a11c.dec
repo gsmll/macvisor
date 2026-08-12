@@ -1,0 +1,10 @@
+
+uint FUN_0001a11c(void)
+
+{
+  uint uVar1;
+  
+  uVar1 = FUN_0001a138();
+  return uVar1 & 1;
+}
+

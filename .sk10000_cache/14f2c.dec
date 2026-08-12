@@ -1,0 +1,25 @@
+
+void FUN_00014f2c(undefined8 *param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined1 auVar3 [16];
+  
+  uVar2 = *param_1;
+  lVar1 = FUN_000159b8(param_2);
+  if (*(char *)(lVar1 + 8) == '\0') {
+    if (*(char *)(lVar1 + 0x28) == '\x01') {
+      FUN_00014c90(lVar1);
+    }
+    else {
+      FUN_00015630(uVar2);
+    }
+    FUN_00015964(param_2);
+    return;
+  }
+  auVar3 = FUN_004b0528();
+  FUN_00014db8(auVar3._0_8_,auVar3._8_8_,1,param_3,param_4);
+  return;
+}
+

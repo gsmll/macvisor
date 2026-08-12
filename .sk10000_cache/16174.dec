@@ -1,0 +1,28 @@
+
+undefined8 FUN_00016174(ulong *param_1,undefined8 param_2)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  undefined8 uVar3;
+  
+  uVar2 = FUN_00010244(1,0x20,0x108004047936fdf);
+  if (uVar2 == 0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_004b0068();
+  }
+  *(undefined8 *)(uVar2 + 0x10) = param_2;
+  *(undefined1 *)(uVar2 + 0x18) = 0;
+  if (uVar2 <= uVar2 + 0x20) {
+    *param_1 = uVar2;
+    uVar3 = FUN_00016208(uVar2,0);
+    if ((int)uVar3 != 0) {
+      FUN_004b0744(uVar2);
+    }
+    return uVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x16204);
+  (*pcVar1)();
+}
+

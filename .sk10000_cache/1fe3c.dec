@@ -1,0 +1,10 @@
+
+ulong FUN_0001fe3c(void)
+
+{
+  ulong uVar1;
+  
+  uVar1 = FUN_0001fee8();
+  return uVar1 & 0xffffffff00ffffff;
+}
+

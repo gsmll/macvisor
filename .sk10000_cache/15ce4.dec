@@ -1,0 +1,76 @@
+
+void FUN_00015ce4(long param_1,long param_2,ulong param_3)
+
+{
+  bool bVar1;
+  ulong uVar2;
+  code *pcVar3;
+  bool bVar4;
+  bool bVar5;
+  char *pcVar6;
+  ulong uVar7;
+  ulong uVar8;
+  ulong uVar9;
+  ulong uVar10;
+  ulong uVar11;
+  ulong uVar12;
+  ulong uVar13;
+  ulong *puVar14;
+  ulong *puVar15;
+  
+  puVar14 = *(ulong **)(param_1 + 0x50);
+  uVar9 = puVar14[2];
+  if (CARRY8(uVar9,param_3)) {
+    FUN_004b05e8();
+  }
+  else {
+    uVar7 = puVar14[3];
+    if (uVar9 + param_3 <= uVar7) {
+      puVar15 = *(ulong **)(param_2 + 0x50);
+      uVar12 = puVar15[2];
+      if (CARRY8(uVar12,param_3)) {
+        FUN_004b05c4();
+      }
+      else {
+        uVar10 = puVar15[3];
+        if (uVar12 + param_3 <= uVar10) {
+          uVar11 = *puVar15;
+          uVar2 = uVar11 + uVar12;
+          uVar13 = *puVar14;
+          uVar8 = uVar7 - uVar9;
+          uVar9 = uVar13 + uVar9;
+          bVar1 = uVar9 <= uVar13 + uVar7;
+          bVar4 = uVar2 < uVar11 + uVar10;
+          bVar5 = uVar2 == uVar11 + uVar10;
+          if ((((((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar4 ||
+                ((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar5) && uVar11 < uVar2 ||
+               (((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar4 ||
+               ((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar5) && uVar11 == uVar2) &&
+               param_3 < uVar10 - uVar12 ||
+               ((((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar4 ||
+                ((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar5) && uVar11 < uVar2 ||
+               (((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar4 ||
+               ((bVar1 && uVar13 <= uVar9) && param_3 <= uVar8) && bVar5) && uVar11 == uVar2) &&
+               param_3 == uVar10 - uVar12) &&
+             (FUN_00117cc4(uVar2,uVar9,param_3), uVar2 <= uVar2 + param_3)) {
+            puVar14[2] = puVar14[2] + param_3;
+            puVar15[2] = puVar15[2] + param_3;
+            return;
+          }
+                    /* WARNING: Does not return */
+          pcVar3 = (code *)SoftwareBreakpoint(0x5519,0x15d78);
+          (*pcVar3)();
+        }
+      }
+      pcVar6 = s_TB_ASSERT__dst_end_<__dst_tpt_bu_005abe0a;
+      goto LAB_00015e00;
+    }
+  }
+  pcVar6 = s_TB_ASSERT__src_end_<__src_tpt_bu_005abdcf;
+LAB_00015e00:
+  FUN_00118b28(pcVar6);
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x15e08);
+  (*pcVar3)();
+}
+

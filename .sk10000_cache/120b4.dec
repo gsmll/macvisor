@@ -1,0 +1,39 @@
+
+ulong FUN_000120b4(long param_1,ulong param_2,ulong param_3,ulong param_4)
+
+{
+  undefined1 auVar1 [16];
+  undefined1 auVar2 [16];
+  code *pcVar3;
+  undefined4 *puVar4;
+  ulong uVar5;
+  ulong uVar6;
+  
+  uVar6 = param_3;
+  if (param_2 != 1) {
+    auVar1._8_8_ = 0;
+    auVar1._0_8_ = param_2;
+    auVar2._8_8_ = 0;
+    auVar2._0_8_ = param_3;
+    if (SUB168(auVar1 * auVar2,8) != 0) {
+      puVar4 = (undefined4 *)thunk_FUN_0006037c();
+      *puVar4 = 0xc;
+      if ((param_4 & 1) == 0) {
+        return 0;
+      }
+      puVar4 = (undefined4 *)thunk_FUN_0006037c();
+      *puVar4 = 0xc;
+      return 0;
+    }
+    uVar6 = param_2 * param_3;
+  }
+  uVar5 = (**(code **)(param_1 + 0x20))(param_1,param_2,param_3);
+  if ((uVar5 <= uVar5 + uVar6) &&
+     ((param_3 * param_2 < uVar6 || param_3 * param_2 - uVar6 == 0) || uVar5 == 0)) {
+    return uVar5;
+  }
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(0x5519,0x12160);
+  (*pcVar3)();
+}
+

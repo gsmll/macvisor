@@ -1,0 +1,25 @@
+
+void FUN_00018fb8(long param_1,undefined8 *param_2)
+
+{
+  undefined8 *puVar1;
+  long lVar2;
+  code *pcVar3;
+  undefined8 *puVar4;
+  undefined8 *puVar5;
+  
+  puVar4 = *(undefined8 **)(param_1 + 0x50);
+  lVar2 = puVar4[2];
+  puVar5 = (undefined8 *)*puVar4;
+  puVar1 = (undefined8 *)((long)puVar5 + lVar2);
+  puVar4[2] = lVar2 + 8;
+  if (((ulong)(puVar4[3] - lVar2) < 8 || (undefined8 *)((long)puVar5 + puVar4[3]) < puVar1) ||
+      puVar1 < puVar5) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(0x5519,0x18fec);
+    (*pcVar3)();
+  }
+  *param_2 = *puVar1;
+  return;
+}
+

@@ -1,0 +1,26 @@
+
+void FUN_0001574c(ulong *param_1,undefined8 *param_2)
+
+{
+  code *pcVar1;
+  ulong uVar2;
+  ulong uVar3;
+  
+  uVar2 = param_2[3];
+  if (uVar2 <= param_1[3]) {
+    uVar3 = *param_1;
+    FUN_00117cc4(uVar3,*param_2,uVar2);
+    if ((uVar3 <= uVar3 + uVar2) && (uVar2 = param_2[3], uVar2 <= param_1[3])) {
+      *(undefined1 *)(param_1 + 1) = *(undefined1 *)(param_2 + 1);
+      param_1[2] = param_2[2];
+      param_1[3] = uVar2;
+      param_1[4] = param_2[4];
+      *(undefined4 *)(param_1 + 5) = *(undefined4 *)(param_2 + 5);
+      return;
+    }
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x157dc);
+  (*pcVar1)();
+}
+

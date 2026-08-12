@@ -1,0 +1,30 @@
+
+void FUN_0001f514(undefined8 param_1,undefined8 param_2)
+
+{
+  undefined8 uVar1;
+  undefined8 uVar2;
+  long unaff_x20;
+  undefined8 local_70;
+  undefined8 local_68;
+  code *local_60;
+  undefined8 uStack_58;
+  undefined *local_50;
+  
+  *(undefined8 *)(unaff_x20 + 0x10) = 0;
+  *(undefined8 *)(unaff_x20 + 0x20) = 0;
+  FUN_0036b7f8(unaff_x20 + 0x18,0);
+  local_50 = &DAT_0001fe38;
+  local_70 = 0x6ad3a8;
+  local_68 = DAT_004bb180;
+  local_60 = FUN_0001f38c;
+  uStack_58 = 0x65a270;
+  uVar1 = FUN_0004b520(&local_70);
+  FUN_0036b270();
+  FUN_0036b118(unaff_x20);
+  uVar2 = FUN_00017b7c(param_1,param_2,uVar1);
+  FUN_0004b664(uVar1);
+  *(undefined8 *)(unaff_x20 + 0x10) = uVar2;
+  return;
+}
+

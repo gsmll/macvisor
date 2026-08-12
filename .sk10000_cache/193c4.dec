@@ -1,0 +1,43 @@
+
+dword * FUN_000193c4(dword *param_1,undefined8 *param_2)
+
+{
+  code *pcVar1;
+  undefined8 *puVar2;
+  ulong uVar3;
+  ulong uVar4;
+  undefined8 *puVar5;
+  
+  if (*param_1 == 4) {
+    puVar2 = *(undefined8 **)(param_1 + 0x14);
+    uVar3 = puVar2[3];
+    if (uVar3 == 0) goto LAB_00019434;
+    uVar4 = puVar2[2];
+    if (uVar4 < 0xfffffffffffffff8) {
+      if (uVar4 + 8 <= uVar3) {
+        puVar5 = (undefined8 *)*puVar2;
+        puVar2[2] = uVar4 + 8;
+        puVar2 = (undefined8 *)((long)puVar5 + uVar4);
+        if (((undefined8 *)((long)puVar5 + uVar3) < puVar2 || puVar2 < puVar5) || uVar3 - uVar4 < 8)
+        {
+                    /* WARNING: Does not return */
+          pcVar1 = (code *)SoftwareBreakpoint(0x5519,0x19420);
+          (*pcVar1)();
+        }
+        *param_2 = *puVar2;
+        return param_1;
+      }
+      goto LAB_0001943c;
+    }
+  }
+  else {
+    FUN_004b17ec();
+LAB_00019434:
+    FUN_004b1858();
+  }
+  FUN_004b1834();
+LAB_0001943c:
+  FUN_004b1810();
+  return &__thread_bss.cputype;
+}
+

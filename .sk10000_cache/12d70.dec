@@ -1,0 +1,44 @@
+
+void FUN_00012d70(long param_1)
+
+{
+  ulong uVar1;
+  ulong uVar2;
+  code *pcVar3;
+  char *pcVar4;
+  ulong uVar5;
+  
+  uVar1 = param_1 + 0x38;
+  if (param_1 + 0x68U < uVar1) {
+                    /* WARNING: Does not return */
+    pcVar3 = (code *)SoftwareBreakpoint(0x5519,0x12e04);
+    (*pcVar3)();
+  }
+  uVar2 = *(ulong *)(param_1 + 0x58);
+  if (uVar2 < *(ulong *)(param_1 + 0x60)) {
+    pcVar4 = s_TB_ASSERT__td_>received_slot_cou_005aac1e;
+  }
+  else {
+    if (uVar2 < 5) {
+      if (uVar2 != 0) {
+        uVar5 = 0;
+        do {
+          if (*(ulong *)(param_1 + 0x60) <= uVar5) {
+            FUN_004b23d8(*(undefined8 *)(uVar1 + uVar5 * 8));
+          }
+          *(undefined8 *)(uVar1 + uVar5 * 8) = 0;
+          uVar5 = uVar5 + 1;
+        } while (uVar2 != uVar5);
+      }
+      *(ulong *)(param_1 + 0x58) = 0;
+      *(undefined8 *)(param_1 + 0x60) = 0;
+      return;
+    }
+    pcVar4 = s_TB_ASSERT__td_>allocated_slot_co_005aac70;
+  }
+  FUN_00118b28(pcVar4);
+                    /* WARNING: Does not return */
+  pcVar3 = (code *)SoftwareBreakpoint(1,0x12e48);
+  (*pcVar3)();
+}
+

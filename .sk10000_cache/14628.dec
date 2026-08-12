@@ -1,0 +1,92 @@
+
+long FUN_00014628(long param_1,undefined8 *param_2)
+
+{
+  int iVar1;
+  long *plVar2;
+  long lVar3;
+  long lVar4;
+  undefined8 uVar5;
+  undefined1 auVar6 [16];
+  long local_40;
+  long local_38;
+  
+  uVar5 = *param_2;
+  local_38 = param_1;
+  plVar2 = (long *)FUN_000159b8();
+  iVar1 = FUN_000159c0(param_1);
+  if (iVar1 == 4) {
+    iVar1 = FUN_000159c8(param_1);
+    if (iVar1 != 1) goto LAB_00014780;
+    if (plVar2 == (long *)0x0) goto LAB_00014788;
+    if (*plVar2 == 0) goto LAB_0001478c;
+    if ((*(ushort *)((long)plVar2 + 0x2a) >> 2 & 1) != 0) {
+      if (param_2[7] != 0) {
+        iVar1 = FUN_000183f0(param_2[7],param_2,param_1,&local_38,uVar5);
+        local_40 = local_38;
+        goto LAB_00014750;
+      }
+      goto LAB_00014790;
+    }
+    if ((*(ushort *)((long)plVar2 + 0x2a) & 1) != 0) {
+      if (param_2[6] != 0) {
+        lVar3 = FUN_00015e9c(param_2[6],param_1);
+        if (lVar3 == 0) {
+          return 0;
+        }
+        FUN_00015904(param_1,lVar3);
+        goto LAB_000146b0;
+      }
+      goto LAB_00014794;
+    }
+LAB_000146b0:
+    if ((code *)param_2[3] != (code *)0x0) {
+      lVar3 = (*(code *)param_2[3])(param_2,param_1,param_2[4]);
+LAB_00014710:
+      if (lVar3 == 0) {
+        return 0;
+      }
+      local_40 = lVar3;
+      lVar4 = FUN_000159b8(lVar3);
+      iVar1 = FUN_00017e94(uVar5,*(undefined8 *)(lVar4 + 0x18));
+      if (iVar1 == 0) {
+        return lVar3;
+      }
+      if (param_2[7] != 0) {
+        iVar1 = FUN_000181f4(param_2[7],lVar3,&local_40,param_2);
+LAB_00014750:
+        if (iVar1 != 0) {
+          local_40 = 0;
+        }
+        return local_40;
+      }
+      goto LAB_0001479c;
+    }
+    lVar3 = param_2[2];
+    if (lVar3 != 0) {
+      lVar3 = (**(code **)(lVar3 + 0x10))(lVar3,param_2,param_1);
+      goto LAB_00014710;
+    }
+  }
+  else {
+    FUN_004b0368(param_1);
+LAB_00014780:
+    FUN_004b03a0(param_1);
+LAB_00014788:
+    FUN_004b0468();
+LAB_0001478c:
+    FUN_004b0438();
+LAB_00014790:
+    FUN_004b03d8();
+LAB_00014794:
+    FUN_004b03f0();
+  }
+  FUN_004b0408();
+LAB_0001479c:
+  auVar6 = FUN_004b03d8();
+  uVar5 = FUN_00014478();
+  lVar3 = FUN_000145bc(uVar5,auVar6._8_8_);
+  FUN_000153ec(auVar6._0_8_);
+  return lVar3;
+}
+

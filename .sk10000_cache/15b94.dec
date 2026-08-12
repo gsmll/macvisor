@@ -1,0 +1,7 @@
+
+bool FUN_00015b94(long param_1,long param_2)
+
+{
+  return *(long *)(param_1 + 8) == param_2;
+}
+

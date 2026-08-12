@@ -1,0 +1,11 @@
+
+void FUN_00019830(undefined8 param_1)
+
+{
+  undefined8 uStack0000000000000000;
+  
+  uStack0000000000000000 = param_1;
+  FUN_00118b28(s_TB_FATAL__TB__overflow_during_de_005ac8c6);
+  return;
+}
+

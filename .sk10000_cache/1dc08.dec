@@ -1,0 +1,29 @@
+
+undefined * FUN_0001dc08(long param_1,long param_2)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined *puVar3;
+  long lVar4;
+  
+  if (param_2 <= param_1) {
+    param_2 = param_1;
+  }
+  if (param_2 == 0) {
+    puVar3 = &DAT_00657778;
+  }
+  else {
+    uVar2 = FUN_00002534(s___cstring_0064c108 + 8,&DAT_004c0740);
+    puVar3 = (undefined *)FUN_0036a940(uVar2,param_2 * 8 + 0x20,7);
+    lVar4 = thunk_FUN_000126e8();
+    lVar1 = lVar4 + -0x19;
+    if (0x1f < lVar4) {
+      lVar1 = lVar4 + -0x20;
+    }
+    *(long *)(puVar3 + 0x10) = param_1;
+    *(long *)(puVar3 + 0x18) = (lVar1 >> 3) << 1;
+  }
+  return puVar3;
+}
+

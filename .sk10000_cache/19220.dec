@@ -1,0 +1,72 @@
+
+dword * FUN_00019220(dword *param_1,undefined4 param_2)
+
+{
+  undefined4 *puVar1;
+  code *pcVar2;
+  dword *pdVar3;
+  undefined4 extraout_w1;
+  undefined4 extraout_var;
+  ulong uVar4;
+  undefined8 *puVar5;
+  ulong uVar6;
+  undefined4 *puVar7;
+  
+  if (*param_1 == 1) {
+    puVar5 = *(undefined8 **)(param_1 + 0x14);
+    uVar4 = puVar5[2];
+    if (0xfffffffffffffffb < uVar4) goto LAB_000192a4;
+    uVar6 = puVar5[3];
+    if (uVar4 + 4 <= uVar6) {
+      puVar7 = (undefined4 *)*puVar5;
+      puVar1 = (undefined4 *)((long)puVar7 + uVar4);
+      if (((puVar1 <= (undefined4 *)((long)puVar7 + uVar6) && puVar7 <= puVar1) && 3 < uVar6 - uVar4
+          ) && (*puVar1 = param_2, puVar1 <= puVar1 + 1)) {
+        *(long *)(*(long *)(param_1 + 0x14) + 0x10) =
+             *(long *)(*(long *)(param_1 + 0x14) + 0x10) + 4;
+        return param_1;
+      }
+                    /* WARNING: Does not return */
+      pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x19278);
+      (*pcVar2)();
+    }
+  }
+  else {
+    FUN_004b1684();
+LAB_000192a4:
+    FUN_004b16cc();
+  }
+  pdVar3 = (dword *)FUN_004b16a8();
+  if (*pdVar3 == 4) {
+    puVar5 = *(undefined8 **)(pdVar3 + 0x14);
+    uVar4 = puVar5[3];
+    if (uVar4 == 0) goto LAB_00019320;
+    uVar6 = puVar5[2];
+    if (uVar6 < 0xfffffffffffffffc) {
+      if (uVar6 + 4 <= uVar4) {
+        puVar7 = (undefined4 *)*puVar5;
+        puVar5[2] = uVar6 + 4;
+        puVar1 = (undefined4 *)((long)puVar7 + uVar6);
+        if (((undefined4 *)((long)puVar7 + uVar4) < puVar1 || puVar1 < puVar7) || uVar4 - uVar6 < 4)
+        {
+                    /* WARNING: Does not return */
+          pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x1930c);
+          (*pcVar2)();
+        }
+        *(undefined4 *)CONCAT44(extraout_var,extraout_w1) = *puVar1;
+        return pdVar3;
+      }
+      goto LAB_00019328;
+    }
+  }
+  else {
+    FUN_004b16f0();
+LAB_00019320:
+    FUN_004b175c();
+  }
+  FUN_004b1738();
+LAB_00019328:
+  FUN_004b1714();
+  return &__thread_bss.cpusubtype;
+}
+

@@ -1,0 +1,54 @@
+
+void FUN_00018c70(int *param_1,undefined4 param_2)
+
+{
+  undefined4 *puVar1;
+  code *pcVar2;
+  ulong uVar3;
+  long lVar4;
+  undefined8 *puVar5;
+  ulong uVar6;
+  undefined4 *puVar7;
+  undefined1 auVar8 [12];
+  
+  if (*param_1 == 1) {
+    puVar5 = *(undefined8 **)(param_1 + 0x14);
+    uVar3 = puVar5[2];
+    if (uVar3 < 0xfffffffffffffffc) {
+      uVar6 = puVar5[3];
+      if (uVar3 + 4 <= uVar6) {
+        puVar7 = (undefined4 *)*puVar5;
+        puVar1 = (undefined4 *)((long)puVar7 + uVar3);
+        if (((puVar1 <= (undefined4 *)((long)puVar7 + uVar6) && puVar7 <= puVar1) &&
+             3 < uVar6 - uVar3) && (*puVar1 = param_2, puVar1 <= puVar1 + 1)) {
+          *(long *)(*(long *)(param_1 + 0x14) + 0x10) =
+               *(long *)(*(long *)(param_1 + 0x14) + 0x10) + 4;
+          return;
+        }
+                    /* WARNING: Does not return */
+        pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x18cc8);
+        (*pcVar2)();
+      }
+      goto LAB_00018cf8;
+    }
+  }
+  else {
+    FUN_004b124c();
+  }
+  FUN_004b1294();
+LAB_00018cf8:
+  auVar8 = FUN_004b1270();
+  puVar5 = *(undefined8 **)(auVar8._0_8_ + 0x50);
+  puVar7 = (undefined4 *)*puVar5;
+  puVar1 = (undefined4 *)((long)puVar7 + puVar5[2]);
+  if (((3 < (ulong)(puVar5[3] - puVar5[2]) && puVar1 <= (undefined4 *)((long)puVar7 + puVar5[3])) &&
+       puVar7 <= puVar1) && (*puVar1 = auVar8._8_4_, puVar1 <= puVar1 + 1)) {
+    lVar4 = *(long *)(auVar8._0_8_ + 0x50);
+    *(long *)(lVar4 + 0x10) = *(long *)(lVar4 + 0x10) + 4;
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x18d28);
+  (*pcVar2)();
+}
+

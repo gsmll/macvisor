@@ -1,0 +1,17 @@
+
+void FUN_0001fcf8(void)
+
+{
+  code *pcVar1;
+  long unaff_x20;
+  
+  if (*(long *)(unaff_x20 + 0x10) != 0) {
+    FUN_00017bd4();
+    FUN_0001fd28(unaff_x20 + 0x18);
+    return;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x1fd28);
+  (*pcVar1)();
+}
+

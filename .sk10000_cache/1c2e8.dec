@@ -1,0 +1,10 @@
+
+void FUN_0001c2e8(undefined8 param_1)
+
+{
+  undefined1 *unaff_x20;
+  
+  thunk_FUN_002298d4(param_1,*unaff_x20);
+  return;
+}
+

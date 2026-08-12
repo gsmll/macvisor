@@ -1,0 +1,19 @@
+
+undefined1  [16] FUN_0001a354(undefined8 param_1)
+
+{
+  code *pcVar1;
+  long lVar2;
+  undefined1 auVar3 [16];
+  
+  lVar2 = thunk_FUN_00115080();
+  if (-1 < lVar2) {
+    auVar3._8_8_ = lVar2;
+    auVar3._0_8_ = param_1;
+    return auVar3;
+  }
+                    /* WARNING: Does not return */
+  pcVar1 = (code *)SoftwareBreakpoint(1,0x1a388);
+  (*pcVar1)();
+}
+

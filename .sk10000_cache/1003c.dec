@@ -1,0 +1,86 @@
+
+void FUN_0001003c(long param_1,ulong param_2,int param_3,undefined1 *param_4)
+
+{
+  long lVar1;
+  long lVar2;
+  byte bVar3;
+  byte bVar4;
+  byte bVar5;
+  undefined1 uVar6;
+  byte bVar7;
+  uint uVar8;
+  undefined1 uVar9;
+  
+  if (((param_2 < 0x8001) && (param_3 != 0)) && ((*(byte *)(param_1 + 0x260) & 1) != 0)) {
+    lVar1 = 0x263;
+    if (0x1000 < param_2) {
+      lVar1 = 0x265;
+    }
+    lVar2 = 0x262;
+    if (0x1000 < param_2) {
+      lVar2 = 0x264;
+    }
+    bVar7 = *(byte *)(param_1 + lVar2);
+    if ((param_2 & 0x3fff) != 0) {
+      param_2 = param_2 + 0x4000;
+    }
+    uVar6 = (undefined1)(param_2 >> 0xe);
+    uVar9 = 1;
+    bVar5 = *(byte *)(param_1 + lVar1);
+    bVar4 = 0;
+  }
+  else {
+    bVar7 = 0;
+    uVar6 = 0;
+    if (param_2 - 0x8001 >> 0xf < 0x3f) {
+      uVar9 = 0;
+      bVar5 = bVar7;
+      bVar4 = bVar7;
+      if ((*(byte *)(param_1 + 0x266) & 1) != 0) {
+        bVar7 = *(byte *)(param_1 + 0x267);
+        bVar5 = *(byte *)(param_1 + 0x268);
+        bVar4 = *(byte *)(param_1 + 0x26b);
+        param_2 = param_2 * bVar7;
+        if (param_2 < 0x1000001) {
+          uVar6 = 0;
+          uVar9 = 2;
+        }
+        else {
+          uVar8 = (uint)(param_2 >> 0x18) & 0xff;
+          bVar3 = 0;
+          if ((param_2 & 0xff000000) != 0) {
+            bVar3 = (byte)(bVar7 / uVar8);
+          }
+          bVar7 = bVar3;
+          bVar3 = 0;
+          if ((param_2 & 0xff000000) != 0) {
+            bVar3 = (byte)(bVar5 / uVar8);
+          }
+          bVar5 = bVar3;
+          bVar3 = 0;
+          if ((param_2 & 0xff000000) != 0) {
+            bVar3 = (byte)(bVar4 / uVar8);
+          }
+          bVar4 = bVar3;
+          FUN_000117e8(4,s_Reducing_guards_for_block_size___005aa72d);
+          uVar6 = 0;
+          uVar9 = 2;
+        }
+      }
+    }
+    else {
+      bVar4 = 0;
+      bVar5 = 0;
+      bVar7 = 0;
+      uVar9 = 0;
+    }
+  }
+  *param_4 = uVar9;
+  param_4[1] = bVar7;
+  param_4[2] = bVar5;
+  param_4[3] = bVar4;
+  param_4[4] = uVar6;
+  return;
+}
+

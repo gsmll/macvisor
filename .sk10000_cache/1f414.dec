@@ -1,0 +1,35 @@
+
+long FUN_0001f414(undefined8 param_1,undefined8 param_2)
+
+{
+  long lVar1;
+  long lVar2;
+  undefined8 uVar3;
+  undefined8 uVar4;
+  undefined8 local_70;
+  undefined8 local_68;
+  code *local_60;
+  undefined8 uStack_58;
+  undefined *local_50;
+  long local_48;
+  
+  lVar2 = FUN_0036a940();
+  *(undefined8 *)(lVar2 + 0x10) = 0;
+  *(undefined8 *)(lVar2 + 0x20) = 0;
+  FUN_0036b7f8(lVar2 + 0x18,0);
+  local_50 = &DAT_0001fe38;
+  local_70 = 0x6ad3a8;
+  local_68 = DAT_004bb180;
+  local_60 = FUN_0001f38c;
+  uStack_58 = 0x65a248;
+  local_48 = lVar2;
+  uVar3 = FUN_0004b520(&local_70);
+  lVar1 = local_48;
+  FUN_0036b270(lVar2);
+  FUN_0036b118(lVar1);
+  uVar4 = FUN_00017b7c(param_1,param_2,uVar3);
+  FUN_0004b664(uVar3);
+  *(undefined8 *)(lVar2 + 0x10) = uVar4;
+  return lVar2;
+}
+

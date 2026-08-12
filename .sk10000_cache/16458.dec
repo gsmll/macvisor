@@ -1,0 +1,32 @@
+
+long FUN_00016458(undefined8 param_1)
+
+{
+  uint uVar1;
+  long lVar2;
+  undefined8 *puVar3;
+  undefined8 uVar4;
+  
+  lVar2 = FUN_00010244(1,0x118,0x10e0040f252f50e);
+  if (lVar2 == 0) {
+                    /* WARNING: Subroutine does not return */
+    FUN_004b0068();
+  }
+  puVar3 = (undefined8 *)FUN_00010244(1,0x70,0x10a0040464bf099);
+  if (puVar3 != (undefined8 *)0x0) {
+    *(undefined8 **)(lVar2 + 0x80) = puVar3;
+    *(undefined8 *)(lVar2 + 0x60) = 0x6590a8;
+    uVar4 = FUN_00015440(param_1);
+    *puVar3 = uVar4;
+    uVar1 = FUN_00015450(param_1);
+    if ((uVar1 >> 2 & 1) != 0) {
+      *(undefined1 *)(puVar3 + 0xc) = 1;
+    }
+    uVar4 = FUN_0001505c();
+    puVar3[0xd] = uVar4;
+    return lVar2;
+  }
+                    /* WARNING: Subroutine does not return */
+  FUN_004b0068();
+}
+

@@ -1,0 +1,43 @@
+
+undefined8 FUN_00015c30(long param_1,long *param_2)
+
+{
+  long *plVar1;
+  long *plVar2;
+  long lVar3;
+  code *pcVar4;
+  long *plVar5;
+  long *plVar6;
+  long lVar7;
+  long *plVar8;
+  
+  plVar6 = (long *)(param_1 + 0x48);
+  lVar7 = *plVar6;
+  if (lVar7 == 0) {
+    return 7;
+  }
+  plVar5 = (long *)(param_1 + 0x28);
+  *param_2 = *plVar5;
+  plVar2 = plVar5;
+  for (lVar3 = lVar7 + -1; lVar3 != 0; lVar3 = lVar3 + -1) {
+    plVar8 = plVar2 + 1;
+    plVar1 = plVar2 + 2;
+    if ((((plVar8 < plVar5 || plVar6 < plVar1) || plVar1 < plVar8) || plVar8 <= plVar2) &&
+        (((plVar8 < plVar5 || plVar6 < plVar1) || plVar1 < plVar8) || plVar2 != plVar8))
+    goto LAB_00015cb8;
+    *plVar2 = plVar2[1];
+    plVar2 = plVar2 + 1;
+  }
+  plVar2 = plVar5 + lVar7;
+  plVar8 = plVar2 + -1;
+  if ((plVar5 <= plVar8 && plVar2 <= plVar6) && plVar8 <= plVar2) {
+    *plVar8 = 0;
+    *plVar6 = lVar7 + -1;
+    return 0;
+  }
+LAB_00015cb8:
+                    /* WARNING: Does not return */
+  pcVar4 = (code *)SoftwareBreakpoint(0x5519,0x15cbc);
+  (*pcVar4)();
+}
+
