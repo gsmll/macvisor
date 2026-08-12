@@ -2823,42 +2823,42 @@ extern unsigned long sk_boot_region_check(void);                 /* FUN_0002fa84
 extern unsigned long sk_boot_handoff2(void);                     /* FUN_0002fb88 */
 extern unsigned long sk_boot_something(void);                    /* FUN_0002ff40 */
 extern unsigned long sk_span_find(void);                         /* FUN_000287e4 */
-extern void sk_walk_span3(void);                                 /* FUN_000402b4 */
-extern void sk_map_span3(void);                                  /* FUN_000403b0 */
+extern unsigned long sk_walk_span3(unsigned long, ...);                                 /* FUN_000402b4 */
+extern unsigned long sk_map_span3(unsigned long, ...);                                  /* FUN_000403b0 */
 extern unsigned long sk_span_find_next3(void);                   /* FUN_000405d0 */
 extern unsigned long sk_span_remap3(void);                       /* FUN_00040630 */
 extern void sk_span_commit3(void);                               /* FUN_00040870 */
 extern unsigned long sk_span_alloc3(void);                       /* FUN_00040980 */
 extern void sk_span_map3(void);                                  /* FUN_00040f80 */
-extern unsigned long sk_obj_method_dispatch3(void);              /* FUN_00042abc */
-extern unsigned long sk_obj_lookup3(void);                       /* FUN_00042c20 */
-extern unsigned long sk_obj_attr3(void);                         /* FUN_000436fc */
-extern unsigned long sk_obj_meta3(void);                         /* FUN_00043b44 */
-extern unsigned long sk_obj_meta4(void);                         /* FUN_00043be8 */
+extern unsigned long sk_obj_method_dispatch3(unsigned long, ...);              /* FUN_00042abc */
+extern unsigned long sk_obj_lookup3(unsigned long, ...);                       /* FUN_00042c20 */
+extern unsigned long sk_obj_attr3(unsigned long, ...);                         /* FUN_000436fc */
+extern unsigned long sk_obj_meta3(unsigned long, ...);                         /* FUN_00043b44 */
+extern unsigned long sk_obj_meta4(unsigned long, ...);                         /* FUN_00043be8 */
 extern unsigned long sk_obj_meta5(void);                         /* FUN_00043c74 */
-extern void sk_obj_unref2(void);                                 /* FUN_00043e88 */
+extern unsigned long sk_obj_unref2(unsigned long, ...);                                 /* FUN_00043e88 */
 extern unsigned long sk_obj_new2(void);                          /* FUN_00043eac */
-extern void sk_obj_wire4(void);                                  /* FUN_00043f28 */
-extern void sk_obj_link4(void);                                  /* FUN_00044be0 */
-extern void sk_obj_unlink4(void);                                /* FUN_00044c94 */
-extern void sk_obj_snapshot4(void);                              /* FUN_00044dec */
-extern unsigned long sk_obj_commit4(void);                       /* FUN_00044ff4 */
-extern unsigned long sk_obj_create5(void);                       /* FUN_000451a0 */
-extern unsigned long sk_obj_attach5(void);                       /* FUN_000455b0 */
+extern unsigned long sk_obj_wire4(unsigned long, ...);                                  /* FUN_00043f28 */
+extern unsigned long sk_obj_link4(unsigned long, ...);                                  /* FUN_00044be0 */
+extern unsigned long sk_obj_unlink4(unsigned long, ...);                                /* FUN_00044c94 */
+extern unsigned long sk_obj_snapshot4(unsigned long, ...);                              /* FUN_00044dec */
+extern unsigned long sk_obj_commit4(unsigned long, ...);                       /* FUN_00044ff4 */
+extern unsigned long sk_obj_create5(unsigned long, ...);                       /* FUN_000451a0 */
+extern unsigned long sk_obj_attach5(unsigned long, ...);                       /* FUN_000455b0 */
 extern unsigned long sk_obj_teardown5(void);                     /* FUN_00045728 */
 extern void sk_obj_finalize5(void);                              /* FUN_000457f8 */
-extern void sk_obj_map5(void);                                   /* FUN_000458a0 */
+extern unsigned long sk_obj_map5(unsigned long, ...);                                   /* FUN_000458a0 */
 extern void sk_obj_init5(void);                                  /* FUN_00045908 */
-extern unsigned long sk_obj_walk5(void);                         /* FUN_00045a68 */
-extern unsigned long sk_obj_state5(void);                        /* FUN_00045c98 */
-extern unsigned long sk_obj_state6(void);                        /* FUN_00045cb8 */
-extern unsigned long sk_obj_unref_block(void);                   /* FUN_0004b8d0 */
+extern unsigned long sk_obj_walk5(unsigned long, ...);                         /* FUN_00045a68 */
+extern unsigned long sk_obj_state5(unsigned long, ...);                        /* FUN_00045c98 */
+extern unsigned long sk_obj_state6(unsigned long, ...);                        /* FUN_00045cb8 */
+extern unsigned long sk_obj_unref_block(unsigned long, ...);                   /* FUN_0004b8d0 */
 extern unsigned long sk_errname3(void);                          /* FUN_000559b8 */
 extern void sk_walk_abort3(void);                                /* FUN_0005b190 */
-extern void sk_stack_check(void);                                /* FUN_00116c78 */
-extern unsigned long sk_mem_move3(void);                         /* FUN_00117d14 */
-extern unsigned long sk_ref_unlink3(void);                       /* FUN_00117f8c */
-extern void sk_percpu_get3(void);                                /* FUN_001180fc */
+extern unsigned long sk_stack_check(unsigned long, ...);                                /* FUN_00116c78 */
+extern unsigned long sk_mem_move3(unsigned long, ...);                         /* FUN_00117d14 */
+extern unsigned long sk_ref_unlink3(unsigned long, ...);                       /* FUN_00117f8c */
+extern unsigned long sk_percpu_get3(unsigned long, ...);                                /* FUN_001180fc */
 extern unsigned long sk_stack_check_fail3(void);                 /* FUN_0011d7e8 */
 
 extern unsigned long sk_vas_fault28(void);                       /* FUN_004b1c84 */
@@ -2921,10 +2921,10 @@ extern void sk_vas_fault84(void);                                /* FUN_004b34d4
 extern unsigned long sk_vas_fault85(void);                       /* FUN_004b350c */
 
 /* additional helpers referenced by the appended bodies */
-extern unsigned long sk_slot_attach_full(void);   /* FUN_0003b820 */
-extern unsigned long sk_span_lookup_build6(void); /* FUN_00035bac */
-extern void sk_region_map_span3(void);            /* FUN_0003df84 */
-extern unsigned long sk_span_find2(void);         /* FUN_000287e4 */
+extern unsigned long sk_slot_attach_full(unsigned long, ...);   /* FUN_0003b820 */
+extern unsigned long sk_span_lookup_build6(unsigned long, ...); /* FUN_00035bac */
+extern unsigned long sk_region_map_span3(unsigned long, ...);            /* FUN_0003df84 */
+extern unsigned long sk_span_find2(unsigned long, ...);         /* FUN_000287e4 */
 
 /* aliases with the decompile-accurate signatures used by the appended bodies */
 extern cl4_result_t sk_pool_method_full(unsigned long);           /* FUN_00034bd8 */
@@ -3248,7 +3248,7 @@ long sk_vspace_slot_alloc_new(void)
                 return 0;
             }
         }
-        node = (unsigned long *)sk_vspace_slot_alloc_frame();    /* FUN_000351a0 */
+        node = (unsigned long *)sk_vspace_node_pop();            /* FUN_000351a0 */
         if (node == 0) {
             sk_pool_touch_full(*(unsigned long *)(*root + 0x10), ck.lo, ck.hi);
             sk_vas_abort("vas_slot_alloc: created %x", 0x5b17aa);
@@ -3437,7 +3437,7 @@ unsigned long sk_vspace_region_alloc_pages(long base, unsigned long count,
     }
     p = base;
     while (size != 0) {
-        node = (unsigned long *)sk_vspace_slot_alloc_frame();    /* FUN_000351a0 */
+        node = (unsigned long *)sk_vspace_node_pop();            /* FUN_000351a0 */
         if (node == 0) {
             sk_vas_fault37();                                    /* FUN_004b270c */
             sk_vas_abort("VAS abort in function %s at line %d", 0x5b1a12);
@@ -3462,7 +3462,7 @@ unsigned long sk_vspace_region_alloc_pages(long base, unsigned long count,
         count -= n;
         size -= 0x4000;
     }
-    return sk_pool_touch_full(*(unsigned long *)(*plist + 0x10), ck.lo, ck.hi); /* FUN_00034d5c */
+    sk_pool_touch_full(*(unsigned long *)(*plist + 0x10), ck.lo, ck.hi); return 0; /* FUN_00034d5c */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3641,7 +3641,7 @@ void sk_span_release(unsigned long *out, unsigned long span, unsigned int count,
         }
     } else {
         /* recursive: delegate to tree delete */
-        leaf = (unsigned long *)sk_span_tree_release(&span, count, cb); /* FUN_000373a4 */
+        leaf = (unsigned long *)sk_span_tree_release(&span, count, cb).lo; /* FUN_000373a4 */
         w = leaf ? leaf + 8 : 0;
         if ((leaf[0] & 0x3f) == 0xc) {
             sk_vspace_obj_free(leaf);              /* FUN_0003481c */
@@ -3673,7 +3673,7 @@ void sk_span_release(unsigned long *out, unsigned long span, unsigned int count,
  */
 void sk_span_cursor_build(unsigned long *out, unsigned long span, unsigned int count)
 {
-    unsigned long *t, *leaf, end;
+    unsigned long *t, *leaf, *end;
     unsigned int kind, i;
 
     kind = (unsigned int)span & 3;
@@ -3741,7 +3741,7 @@ void sk_span_cursor_recurse(unsigned long *span, unsigned int count)
     unsigned long i, base;
 
     end = span + 8;
-    if ((span & 3) == 0xc) {
+    if ((*span & 3) == 0xc) {
         for (i = 0; i < 7; i++) {
             w = span + i;
             if ((*w & 3) == 1 && count <= ((unsigned int)*w >> 6 & 0x3fffff)) {
@@ -3839,7 +3839,7 @@ unsigned int sk_granule_index(unsigned int w)
  */
 void sk_span_release_all(unsigned long span, void (*cb)(unsigned long))
 {
-    unsigned long *t, *w, end;
+    unsigned long *t, *w, *end;
     unsigned int kind, i;
 
     kind = (unsigned int)span & 3;
@@ -4044,7 +4044,7 @@ void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int cou
             }
         }
     } else if (kind == 0xc) {
-        dst = (unsigned long *)sk_vspace_obj_new2(); /* FUN_000347c4 */
+        dst = (unsigned long *)sk_pool_alloc_node_c90(); /* FUN_000347c4 */
         tag = ((unsigned int)*src >> 2) & 0xf;
         if (tag == 1) {
             for (i = 0; i < 4; i++) {
@@ -4073,7 +4073,7 @@ void sk_span_tree_build(unsigned long *out, unsigned long *src, unsigned int cou
             out[0] = 0; out[1] = 0; out[2] = g; out[3] = (unsigned long)dst;
             return;
         }
-        w = (unsigned long *)sk_vspace_obj_new2();  /* FUN_000347c4 */
+        w = (unsigned long *)sk_pool_alloc_node_c90();  /* FUN_000347c4 */
         if (w != 0) {
             *w = (unsigned long)(g << 6 | 5) | (unsigned long)src << 0x1c;
             w[1] = (unsigned long)dst << 0x1c | 1;
@@ -4353,7 +4353,7 @@ unsigned long sk_span_tree_remap(unsigned long root, unsigned long addr,
 
     want = *out_len;
     st[10] = ~0UL; st[0] = 0;
-    sk_span_tree_build_local(st + 1, root, 0, 0);       /* FUN_0003be88 */
+    sk_slot_attach(st + 1, root, 0, 0);       /* FUN_0003be88 */
     span = sk_region_find_span(st + 1, addr);           /* FUN_0003dd68 */
     if (span != 0) {
         if (*(int *)(span + 0x20) != 0) {

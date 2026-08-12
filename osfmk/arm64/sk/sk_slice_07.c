@@ -113,7 +113,7 @@ extern word_t FUN_000553e4(word_t, word_t);
 extern word_t FUN_0005530c(void);
 extern word_t FUN_00055360(void);
 extern word_t FUN_00055344(void);
-extern word_t FUN_00034a2c(void);
+extern sk_pair_t FUN_00034a2c(void);
 extern void   FUN_00035ba0(word_t*, word_t, int);
 extern void   FUN_000287e4(word_t*, word_t, int);
 extern void   FUN_000363ac(word_t*, word_t, int);
@@ -208,7 +208,7 @@ extern sk_pair_t FUN_0004ba18(void);
 extern void   FUN_001185ec(word_t, const char*);
 extern void   FUN_0011858c(word_t);
 extern void   FUN_0011d7e8(word_t, ...);
-extern word_t FUN_00032514(void);
+extern word_t FUN_00032514(word_t, ...);
 extern void   FUN_00033684(void*);
 extern void   FUN_000539fc(void*);
 extern void   FUN_0004b8d0(word_t, int);
@@ -2627,7 +2627,7 @@ static word_t sk_vspace_enter_el2(word_t a1, word_t span, int mode)
  * Confidence: low */
 static void sk_vspace_region_init(void)
 {
-    word_t ctx = FUN_00032514();
+    word_t ctx = FUN_00032514(0);
     sk_pair_t limits = FUN_000411dc(0, 0);
     sk_vspace_region_apply(ctx, limits.lo, limits.hi);
 }
@@ -2671,7 +2671,7 @@ static void sk_vspace_region_apply(word_t vspace, word_t lo, word_t hi)
 static void sk_vspace_region_map_wrapper(word_t a1, word_t a2, word_t a3,
                                          word_t a4, word_t a5)
 {
-    word_t ctx = FUN_00032514();
+    word_t ctx = FUN_00032514(0);
     sk_vspace_region_create(ctx, (uint32_t)a1, (char *)a2, (word_t *)a3,
                             (uint32_t *)a4, (word_t *)a5);
 }
@@ -3078,7 +3078,7 @@ static void sk_shadow_space_setup(word_t a3, word_t a4, word_t a5, word_t a6,
     word_t desc[3] = { 4, 0, table };
     if (table < 0x4001) desc[2] = 0x4000;
     uint8_t flag = (mode != 1) ? 0xfc : 0xfb;
-    word_t cb = FUN_00034a2c();
+    word_t cb = FUN_00034a2c().lo;
     word_t r = (*(word_t (**)(word_t, word_t, word_t *, word_t, word_t, word_t *))(*(word_t *)(cb + 8) + 0x30))
                 (*(word_t *)cb, 0, desc, rec, 0, desc);
     r &= 0xff;
@@ -3213,7 +3213,7 @@ static void sk_shadow_space_setup_v2(word_t rec, word_t mode, word_t a3,
     if (FUN_00118148((void *)(rec + 0xa0), 0) != 0) SK_ABORT("VAS abort");
     word_t desc[3] = { 4, 0, table };
     if (table < 0x4001) desc[2] = 0x4000;
-    word_t cb = FUN_00034a2c();
+    word_t cb = FUN_00034a2c().lo;
     word_t r = (*(word_t (**)(word_t, word_t, word_t *, word_t, word_t, word_t *))(*(word_t *)(cb + 8) + 0x30))
                 (*(word_t *)cb, 0, desc, rec, 0, desc);
     r &= 0xff;
@@ -3944,7 +3944,7 @@ static sk_pair_t sk_faulf_handler_run(word_t vspace)
     FUN_00032cd0(vspace);
     word_t local_b0 = 0;
     word_t *local_a8 = (word_t *)0;
-    word_t ctx = FUN_00032514();
+    word_t ctx = FUN_00032514(0);
     sk_pair_t pr = sk_vspace_region_create(ctx, 0x1908, (char *)&DAT_004bc378, &local_b0, 0, 0);
     word_t u4 = local_b0;
     if ((pr.lo & 0xff) == 0) {

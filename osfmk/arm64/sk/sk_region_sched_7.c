@@ -32,6 +32,9 @@ typedef unsigned long (*fn_any_t)();
 extern void SoftwareBreakpoint(unsigned long, ...);
 extern void cl4_obj_release(word_t);
 extern char s_range_005cf420[];
+extern unsigned long FUN_003535f4();
+extern unsigned long FUN_00357e24();
+extern unsigned long in_CY;
 
 /* forward decls for in-file helpers called before their definition */
 void cl4_sched_op_c();
@@ -4067,6 +4070,7 @@ void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
     long l3 = lStack_18;
     long l4 = (word_t)local_10;
     do {
+body_again:
         while (l4 != 0) {
             FUN_0034f884(l3);
             FUN_00350cf4(*(word_t *)(local_30 + 0x30));
@@ -5977,7 +5981,7 @@ void cl4_sched_scan_apply_main(void)
                 code *pc9 = (code *)*local_e0;
                 FUN_003510ac();
                 (*(fn_any_t)extraout_x8_05)();
-                pc10 = *(word_t *)(uintptr_t)local_e8;
+                pc10 = (code *)(uintptr_t)*(word_t *)(uintptr_t)local_e8;
                 (*(fn_any_t)pc10)(local_108 + i2, l15 + i1, in_x4);
                 i1 = *(int *)(l4 + 0x30);
                 FUN_00355ea4();
@@ -6038,7 +6042,7 @@ void cl4_sched_scan_apply_main(void)
             code *pc9 = (code *)*unaff_x27;
             r = FUN_00084180();
             (*(fn_any_t)pc9)(r_lo, r_hi, 0x6753a0);
-            pc10 = *(word_t *)(uintptr_t)local_e8;
+            pc10 = (word_t)*(word_t *)(uintptr_t)local_e8;
             (*(fn_any_t)pc10)(local_120 + i2, local_90 + i1b, in_x4);
             i1 = *(int *)(local_d8 + 0x30);
             FUN_0034f5b4();
@@ -6318,7 +6322,7 @@ void cl4_sched_resolve_entry(void)
         u5 = (pu1 == unaff_x22);
         if ((long)unaff_x22 <= (long)pu1) break;
         u12 = *(ulong *)(lStack_28 + (long)pu1 * 8);
-        pu3 = pu1;
+        pu3 = (word_t)(uintptr_t)pu1;
     }
 done:
     FUN_0036b118(local_80);
@@ -8204,13 +8208,13 @@ void cl4_sched_read_side28(void)
     FUN_0009461c();
 }
 
-/* FUN_001fc7ac @ 0x001fc7ac   (est. cl4_sched_read5_fill)
+/* FUN_001fc7ac @ 0x001fc7ac   (est. cl4_sched_read5_fill_c)
  * Ghidra: void FUN_001fc7ac(void)
  * Reads a 5-word scheduler tuple: resolves the slot and copies the 5-word value
  * plus the 0x20-byte side into the caller buffers.
  * Confidence: low
  * Notes: FUN_00258c60 index; 0x28-byte value + 0x20-byte side copy. */
-void cl4_sched_read5_fill(void)
+void cl4_sched_read5_fill_c(void)
 {
     FUN_0034b318();
     word_t u4 = *(word_t *)(*unaff_x20 + 0x18);
@@ -10249,7 +10253,7 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
     } else {
         FUN_00359a04(*(word_t *)(unaff_x20 + 0x10));
         if (same) {
-            thunk_FUN_001fca54(auStack_50, 0);
+            thunk_FUN_001fca54((word_t *)(uintptr_t)auStack_50, 0);
             FUN_001f6b30(local_28, auStack_50, c, d, e);
             FUN_00359d38(local_18);
             thunk_FUN_0036b270(0);

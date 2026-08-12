@@ -1586,3 +1586,45 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: frag_lock.c: `if (param_3 + 1 != *(long*)(lock+0x18)) sk_vas_abort(...)` in sk_vas_lock_release; `sk_vas_locked` (34ba4) compares the per-cpu base against the lock owner.
 - **Severity (hypothesis)**: informational — the token pairing prevents a stale/misordered release from unlocking the wrong VAS lock generation.
 - **Confidence**: medium (token structure reconstructed; counter comparison explicit).
+
+## [ringminus1] 00038220 sk_vspace_read — bounds-checked copy-out from a mapped region
+- **Observation**: The cL4 vspace copy-out primitive resolves the span covering the source address and walks its leaf pages (sk_vspace_map_phys) in 16 KiB increments, verifying the requested window stays within the span and that consecutive pages are physically contiguous (`off + base_ptr == next_page`). A non-contiguous or out-of-range read aborts rather than returning a partial/forged buffer.
+- **Evidence**: `avail = (span+8 - addr) + span+0x10; if (avail <= want) want = avail;` then per-16K loop `if ((sk_vspace_map_phys(span, addr+off, &pg) & 0xff) || off + local[10] != pg) break;` returning 0x9580001 on a missing span.
+- **Severity (hypothesis)**: low — bounds/contiguity enforcement on the guest→kernel read path; a bug here could allow reading across an unmapped gap, but the per-page walk closes it.
+- **Confidence**: medium
+
+## [ringminus1] 0003c56c sk_vspace_region_create — fail-closed flag/alignment validation on region factory
+- **Observation**: The VSpace region factory rejects invalid flag/alignment combinations with specific error codes before allocating or mapping: region-type table lookup must succeed, alignment must be <0x24, the requested window must be in-range, alignment bits must not be set, and a covering free span must exist. Many combinations (0x3cf/0x3d1/0x3d3/0x3d7/0x3dc/0x3e2/0x3e9/0x3ec/0x3ee/0x3f3/0x3f6/0x3f8/0x3fc..0x408) return errors; an out-of-window request yields 0x44c0003.
+- **Evidence**: dense `if/else` tree testing `req_flags` bits (0x9/0xa/0xd/0x4/0xf/0xe/0x13/0x10/0x16/0x1a/0x5/0xc) against the region descriptor; `FUN_000559b8(rtype)` type-table lookup; final `sk_vspace_find_region` + `sk_span_split_simple` to carve the exact window.
+- **Severity (hypothesis)**: informational — the factory only maps windows it validated; no weak path observed, but the complexity is a review surface.
+- **Confidence**: medium
+
+## [ringminus1] 0003ee4c / 0003f41c sk_vspace_span_split / sk_vspace_span_merge — buffer-list relink invariants
+- **Observation**: Span split/merge relink the vspace's secondary buffer free-list only after bounds-checking each token (`tok + 0x20 < tok` faults) and the list count byte (<4). The split transfers the metadata via sk_span_encode_meta and re-inserts the second span into the AVL tree, so the two result spans remain consistent with the tree and the free lists.
+- **Evidence**: `if (nb2 < nb) SK_FATAL();` / `if (oldbuf + 4 < oldbuf) SK_FATAL();` / `if (2 < cc) SK_ABORT(...)`; `sk_span_tree_insert_caller(rec, nb)` after the split.
+- **Severity (hypothesis)**: low — the split/merge keep the span tree and free-list consistent; a missed relink would corrupt the allocator (availability/memory-corruption), but each step is bounds-checked.
+- **Confidence**: medium
+
+## [ringminus1] 00039094 sk_faulf_dispatch — fault dispatch routing by span permission bits
+- **Observation**: The fault handler routes a guest fault to the COW / managed / frozen-page path based on the span's flag bits (0x12/0x13/0xc/0x14/0x15), after resolving the span via FUN_00045a68 and requiring the span's owner to be the faulting vspace. A fault whose span lacks the two-stage bit returns an error rather than mapping through the wrong path. The COW path calls the span's fault callback only when the span exposes one, and a callback result of 2/4 (not 0) still requires the "canexec" bit.
+- **Evidence**: `if (*(word_t *)(spanobj + 0x50) == vspace)` gate; callback `(*(word_t (**)(word_t,word_t,word_t,word_t *))(sp + 0x30))(...)` with `crr==2/4` handling and `(f >> 4 & 1)` canexec check before re-mapping.
+- **Severity (hypothesis)**: medium — the fault path's authorization depends on the span flag bits and callback result; a fault routed to COW on a non-COW span would remap shared pages, so the flag gates are the security boundary here.
+- **Confidence**: low (many paths collapsed by the decompiler; flags partly inferred)
+
+## [ringminus1] 00042abc sk_vspace_paddr_lookup — vaddr→paddr translation with index bounds
+- **Observation**: Virtual→physical translation indexes the shadow-space level slot array only after verifying `idx < slot[2]` (the per-level entry count); an out-of-range index aborts rather than returning an OOB physical address. For the self-referential vspace it additionally walks a small (6-entry) LIFO of remapped entries to return the real PTE.
+- **Evidence**: `if (idx < (word_t)slot[2]) { ... return pa; } FUN_004afae4("VAS abort");` with the 6-entry LIFO (`(i/6)*-0x60`) match on `+0x90`.
+- **Severity (hypothesis)**: informational — the level-index bounds prevent translating through an unallocated level slot.
+- **Confidence**: medium
+
+## [ringminus1] 00042ed0 sk_vspace_lookup_phys — preemption-queue drain ordering
+- **Observation**: The physical-address lookup shares a 6-entry ring with the frozen-page path and drains pending remap work after a preempted result (error 5): it calls FUN_00042ed0 recursively, issues CallSupervisor(4) until the remap lands, then invalidates the cap. The entry is recorded in the ring (`+0x88` base, index mod 6) and the count capped by `%6`.
+- **Evidence**: `do { CallSupervisor(4); } while (c == 1);` after `(*(...+0x10))(vs+0xb0, pa)`; `*(word_t*)(rec6+0xf0) = (... + 1U) % 6;` and `if (*(word_t*)(rec6+0xe8) == 0) goto done;`.
+- **Severity (hypothesis)**: low — the mod-6 ring and preemption loop keep the remap queue bounded and drained; a stall there would be availability-only.
+- **Confidence**: low
+
+## [ringminus1] 0003f6c8 / 00040870 sk_span_tree_remove / sk_span_tree_insert — AVL height/extent invariants
+- **Observation**: The span tree is a self-balancing AVL with per-node height (byte +0x24) and subtree extent (word +0x68) maintained on insert/remove. The extent is recomputed as the max of the children's extents and the node's own size; remove rebalances via left/right rotations and re-reads the root after each recursion.
+- **Evidence**: insert sets `*(node+0x68) = max(child extents, own size)`; remove computes `lh = (l?*(l+0x24)+1:0)` and calls `sk_span_tree_rebalance(root, bal2 + bal)` with `bal2 = ~rh`; every tree node pointer is bounds-checked (`node+0xb0 < node` faults).
+- **Severity (hypothesis)**: informational — a height/extent inconsistency could cause the extent-based free-space search (sk_span_tree_find_free) to skip or double-report a free window, but no invariant break observed.
+- **Confidence**: medium

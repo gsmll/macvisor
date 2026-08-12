@@ -2247,6 +2247,7 @@ LAB_001c0f40:
 
 void sk_r4_001c11b4(void)
 {
+  uint64_t p2;
   sk_masked_free(p2);
   sk_h_00019858();
   sk_h_0035187c();
@@ -5870,6 +5871,9 @@ void sk_r4_001c33f8(void)
 
 void sk_r4_001c3424(void)
 {
+  long *p5;
+  code p7;
+  uint64_t p3;
   code *pc1;
   long xo8;
   long xo8_00;
@@ -12607,7 +12611,7 @@ void sk_r4_001c87bc(uint16_t *p1)
   long ax21;
   uint16_t v1;
 
-  v1 = sk_r4_001c84fc();
+  v1 = sk_r4_001c84fc((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -12687,7 +12691,7 @@ void sk_r4_001c8864(uint64_t *p1)
   uint64_t v1;
   long ax21;
 
-  v1 = sk_r4_001c87e8();
+  v1 = sk_r4_001c87e8((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -12809,7 +12813,7 @@ void sk_r4_001c8994(uint8_t *p1)
   uint8_t v1;
   long ax21;
 
-  v1 = sk_r4_001c8918();
+  v1 = sk_r4_001c8918((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -12931,7 +12935,7 @@ void sk_r4_001c8ac4(uint16_t *p1)
   uint16_t v1;
   long ax21;
 
-  v1 = sk_r4_001c8a48();
+  v1 = sk_r4_001c8a48((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -13053,7 +13057,7 @@ void sk_r4_001c8bf4(uint32_t *p1)
   uint32_t v1;
   long ax21;
 
-  v1 = sk_r4_001c8b78();
+  v1 = sk_r4_001c8b78((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -13246,7 +13250,7 @@ void sk_r4_001c8e34(uint64_t *p1)
   uint64_t v1;
   long ax21;
 
-  v1 = sk_r4_001c8ca8();
+  v1 = sk_r4_001c8ca8((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -13737,7 +13741,7 @@ void sk_r4_001c95cc(uint8_t (*p1) [16])
   long ax21;
   sk_r4_u128_t av1;
 
-  av1 = sk_r4_001c9550();
+  av1 = sk_r4_001c9550((uint64_t)0);
   if (ax21 == 0) {
     *((uint64_t *)*p1) = av1.lo;
     *(((uint64_t *)*p1) + 1) = av1.hi;
@@ -13860,7 +13864,7 @@ void sk_r4_001c96fc(uint64_t *p1)
   uint64_t v1;
   long ax21;
 
-  v1 = sk_r4_001c9680();
+  v1 = sk_r4_001c9680((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -14053,7 +14057,7 @@ void sk_r4_001c992c(uint8_t *p1)
   uint8_t v1;
   long ax21;
 
-  v1 = sk_r4_001c97a0();
+  v1 = sk_r4_001c97a0((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -14604,7 +14608,7 @@ void sk_r4_001ca1cc(uint16_t *p1)
   uint16_t v1;
   long ax21;
 
-  v1 = sk_r4_001ca040();
+  v1 = sk_r4_001ca040((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -15155,7 +15159,7 @@ void sk_r4_001caa6c(uint32_t *p1)
   uint32_t v1;
   long ax21;
 
-  v1 = sk_r4_001ca8e0();
+  v1 = sk_r4_001ca8e0((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -15638,7 +15642,7 @@ void sk_r4_001cb1fc(uint64_t *p1)
   uint64_t v1;
   long ax21;
 
-  v1 = sk_r4_001cb180();
+  v1 = sk_r4_001cb180((uint64_t)0);
   if (ax21 == 0) {
     *p1 = v1;
   }
@@ -15837,7 +15841,7 @@ void sk_r4_001cb458(uint8_t (*p1) [16])
   long ax21;
   sk_r4_u128_t av1;
 
-  av1 = sk_r4_001cb2a0();
+  av1 = sk_r4_001cb2a0((uint64_t)0);
   if (ax21 == 0) {
     *((uint64_t *)*p1) = av1.lo;
     *(((uint64_t *)*p1) + 1) = av1.hi;
@@ -16983,7 +16987,7 @@ void sk_r4_001cc764(uint64_t p1,long p2,uint64_t p3)
   uint64_t *ax20;
 
   sk_r4_001cc584(p1,*ax20,*(uint64_t *)(p2 + 0x10),
-               *(uint64_t *)((p3 & 0xfffffffffffffffe) - 8),*(uint64_t *)(p2 + 0x18));
+               *(uint64_t *)((p3 & 0xfffffffffffffffe) - 8));
   return;
 }
 
@@ -17000,7 +17004,7 @@ void sk_r4_001cc768(uint64_t p1,long p2,uint64_t p3)
   uint64_t *ax20;
 
   sk_r4_001cc584(p1,*ax20,*(uint64_t *)(p2 + 0x10),
-               *(uint64_t *)((p3 & 0xfffffffffffffffe) - 8),*(uint64_t *)(p2 + 0x18));
+               *(uint64_t *)((p3 & 0xfffffffffffffffe) - 8));
   return;
 }
 
@@ -17104,6 +17108,7 @@ uint64_t * sk_r4_001cc948(void)
 
 void sk_r4_001cc94c(void)
 {
+  uint64_t *p3;
   sk_r4_u128_t av1;
 
   sk_h_0008409c();
@@ -17547,7 +17552,7 @@ void sk_r4_001cd168(long p1)
 {
   uint8_t iw3;
 
-  sk_r4_001cc9c8();
+  sk_r4_001cc9c8((uint64_t)0, (uint64_t)0);
   sk_h_00359c4c();
   *(uint8_t *)(p1 + 0x18) = iw3;
   return;
@@ -17563,7 +17568,7 @@ void sk_r4_001cd168(long p1)
 void sk_r4_001cd194(long p1)
 
 {
-  sk_r4_001cd0b8();
+  sk_r4_001cd0b8((uint64_t)0);
   sk_h_00359c4c();
   *(uint8_t *)(p1 + 0x18) = 0;
   return;
@@ -17804,7 +17809,7 @@ void sk_r4_001cd618(long *p1,uint64_t p2,uint64_t p3,uint64_t p4)
   uint64_t ax20;
   uint64_t ax21;
 
-  sk_r4_001cd0b8();
+  sk_r4_001cd0b8((uint64_t)0);
   sk_h_00350b90();
   sk_h_00349e54();
   p1[3] = xo8;
@@ -17856,7 +17861,7 @@ void sk_r4_001cd6e0(uint64_t *p1)
   uint64_t v1;
   uint8_t extraout_w1;
 
-  v1 = sk_r4_001cd66c();
+  v1 = sk_r4_001cd66c((uint64_t)0, (uint64_t)0, (uint64_t)0);
   *p1 = v1;
   *(uint8_t *)(p1 + 1) = extraout_w1;
   return;
@@ -17883,7 +17888,7 @@ void sk_r4_001cd70c(uint64_t p1,uint64_t p2,uint64_t p3,uint8_t p4)
   sk_h_003503d0();
   sk_alloc_pages(xo1);
   sk_h_0007c1c4();
-  sk_r4_001cc9c8();
+  sk_r4_001cc9c8((uint64_t)0, (uint64_t)0);
   sk_h_00351a50();
   sk_h_00349e54();
   ax21[3] = xo8;
@@ -17907,6 +17912,7 @@ void sk_r4_001cd70c(uint64_t p1,uint64_t p2,uint64_t p3,uint8_t p4)
 
 void sk_r4_001cd778(void)
 {
+  uint64_t p3;
   code *xo8;
   long xo16;
 
@@ -18768,7 +18774,7 @@ LAB_001cf6e4:
       sk_h_0034e0d4();
       sk_h_00357564();
       sk_h_0035072c();
-      sk_r4_001cf6f4();
+      sk_r4_001cf6f4((uint64_t)0, (uint64_t)0, (uint64_t)0);
       v19 = v19 + 4;
     }
 LAB_001cec80:
@@ -18863,7 +18869,7 @@ LAB_001cec80:
         av20 = sk_h_00350798();
         sk_h_00357564(av20.lo,av20.hi,ax19);
         sk_h_000e15d8();
-        sk_r4_001cf6f4();
+        sk_r4_001cf6f4((uint64_t)0, (uint64_t)0, (uint64_t)0);
         pc11 = pc11 + 0x20;
       }
       goto LAB_001cec80;
@@ -18949,7 +18955,7 @@ LAB_001cf090:
         sk_h_0034ba48();
         sk_h_000839d8();
         sk_h_00357564(0,ax20,ax19);
-        sk_r4_001cf6f4(stk_70,xo15);
+        sk_r4_001cf6f4(stk_70, xo15, (uint64_t)0);
       }
       sk_swift_release(stk_30);
     }
@@ -19141,7 +19147,7 @@ LAB_001cf584:
 LAB_001cf5e8:
           sk_h_00348730();
           av20 = sk_h_00350af4(xo1_01);
-          sk_r4_001c1388(av20.lo,av20.hi,v15,v3,v7,av17,av12);
+          sk_r4_001c1388(av20.lo, av20.hi, v15, v3, v7, av17, av12, (uint64_t)0);
           sk_masked_free(v2);
           sk_free(v7);
           sk_masked_free(av12);
@@ -19187,7 +19193,7 @@ code_r0x001ceec4:
   sk_h_0034e6fc();
   sk_h_00357564();
   sk_h_0009e234();
-  sk_r4_001cf6f4();
+  sk_r4_001cf6f4((uint64_t)0, (uint64_t)0, (uint64_t)0);
   v19 = v19 + 4;
   sk_h_000ec044();
   v14 = ax20;
@@ -19639,6 +19645,9 @@ void sk_r4_001cfcc4(void)
 
 void sk_r4_001cfcf0(void)
 {
+  uint64_t p1;
+  uint64_t p4;
+  code p5;
   uint64_t v1;
   uint64_t v2;
   code *xo8;
@@ -19689,6 +19698,9 @@ void sk_r4_001cfd68(void)
 
 void sk_r4_001cfd94(void)
 {
+  uint64_t p1;
+  uint64_t p4;
+  code p5;
   uint64_t v1;
   uint64_t v2;
   code *xo8;

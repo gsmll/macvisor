@@ -1,7 +1,0 @@
-osfmk/arm64/sk/sk_region_sched_5.c:9167:5: error: non-void function 'sk_001dd58c' should return a value [-Wreturn-mismatch]
-osfmk/arm64/sk/sk_region_sched_5.c:9174:3: error: non-void function 'sk_001dd58c' should return a value [-Wreturn-mismatch]
-osfmk/arm64/sk/sk_region_sched_5.c:9803:35: error: incompatible pointer to integer conversion passing 'unsigned long (*)()' to parameter of type 'long' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9803:77: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9822:35: error: incompatible pointer to integer conversion passing 'unsigned long (*)()' to parameter of type 'long' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:9822:77: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'unsigned long (*)()' [-Wint-conversion]
-osfmk/arm64/sk/sk_region_sched_5.c:10394:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable

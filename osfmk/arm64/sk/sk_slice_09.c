@@ -65,9 +65,6 @@ typedef union {
     struct { void *object, *vtable; };
     struct { uint64_t base, end; };
 } sk_ep_pair_t;
-typedef unsigned int  uint;
-typedef unsigned long ulong;
-typedef unsigned char byte;
 extern unsigned long sk_x_00001378();   /* FUN_00001378 */
 extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
 extern unsigned long sk_x_00011d7c();   /* FUN_00011D7C */
@@ -700,7 +697,7 @@ extern uint32_t sk_g_0064cee8;
  *   (base at .lo, size at .hi); sk_x_00054610 is the per-cpu config getter. */
 static sk_ep_pair_t sk_tb_ph_range2(void)
 {
-    cl4_result_t r;
+    sk_ep_pair_t r;
     uint64_t cfg;
 
     cfg = sk_x_00054610();
@@ -1337,7 +1334,7 @@ static void sk_tb_ph_scan(int do_pdata, uint32_t flags)
 {
     long *img;
     uint64_t u, base, key, key2;
-    cl4_result_t r;
+    sk_ep_pair_t r;
     uint64_t it[2];
     uint64_t ph;
     const uint8_t *pb;
@@ -1401,7 +1398,7 @@ static void sk_tb_ph_reloc_all(int a, int b)
 {
     long *img;
     uint64_t u, base, key, key2, u1;
-    cl4_result_t r;
+    sk_ep_pair_t r;
     uint64_t it[2];
     uint64_t ph;
     const uint8_t *pb;
@@ -1545,7 +1542,7 @@ trap:
  *   violations hit SoftwareBreakpoint(0x5519,0x5082c). */
 static uint64_t sk_tb_ph_lookup(uint64_t p, uint64_t key)
 {
-    cl4_result_t r;
+    sk_ep_pair_t r;
     uint64_t it[2];
     uint64_t ph, ent;
     const uint8_t *pb, *eb;
@@ -1796,8 +1793,6 @@ static uint64_t sk_strnlen(uint64_t arg1, long arg2)
  * artifact kept as scratch. */
 static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
-    long *msg_base = (long *)arg1;
-    uint16_t *dst = (uint16_t *)arg3;
     typedef sk_ep_pair_t sk_obj_t;
     uint16_t *desc;
     uint16_t *slot;
@@ -1812,8 +1807,8 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
     if (*(uint8_t *)(arg2 + 0x117) >> 2 != 0) {
         sk_fatal_printf(sk_str_integer_overflow);
     }
-    desc = dst + 0xc0;
-    d_c2 = dst[0xc2];
+    desc = arg3 + 0xc0;
+    d_c2 = arg3[0xc2];
     t_104 = *(uint8_t *)(arg2 + 0x104);
     t_108 = *(uint16_t *)(arg2 + 0x108);
     t_10b = *(uint8_t *)(arg2 + 0x10b);
@@ -1828,24 +1823,24 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
           (uint64_t)*(uint16_t *)(arg2 + 0x110) |
           (uint64_t)((uint)*(uint8_t *)(arg2 + 0x116) << 0x10 |
                      (uint)*(uint8_t *)(arg2 + 0x117) << 0x18 | (uint)*(uint16_t *)(arg2 + 0x114)) << 0x20) * 0x40;
-    if (sz < (uint64_t)msg_base[1]) {
-        buf = sz + msg_base[0];
+    if (sz < (uint64_t)arg1[1]) {
+        buf = sz + *arg1;
     } else {
         buf = 0;
     }
     t_102 = *(uint8_t *)(arg2 + 0x102);
     t_106 = *(uint8_t *)(arg2 + 0x106);
-    d_c1 = dst[0xc1];
-    d_c3 = dst[0xc3];
+    d_c1 = arg3[0xc1];
+    d_c3 = arg3[0xc3];
     t_101 = *(uint8_t *)(arg2 + 0x101);
     t_100 = *(uint8_t *)(arg2 + 0x100);
     t_103 = *(uint8_t *)(arg2 + 0x103);
     t_105 = *(uint8_t *)(arg2 + 0x105);
     t_107 = *(uint8_t *)(arg2 + 0x107);
-    d_c0 = dst[0xc0];
-    d_183 = *(uint8_t *)((long)dst + 0x183);
-    d_185 = *(uint8_t *)((long)dst + 0x185);
-    d_187 = *(uint8_t *)((long)dst + 0x187);
+    d_c0 = arg3[0xc0];
+    d_183 = *(uint8_t *)((long)arg3 + 0x183);
+    d_185 = *(uint8_t *)((long)arg3 + 0x185);
+    d_187 = *(uint8_t *)((long)arg3 + 0x187);
     if (sk_memcmp((uint64_t)arg2, (uint64_t)sk_str___CAPABILITY_ONLY___, 0x100) != 0) {
         uint64_t block = 0;
         long owner = 0;
@@ -1870,8 +1865,8 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
           (uint64_t)(uint8_t)d_c1 << 0x10 | (uint64_t)d_183 << 0x18 |
           (uint64_t)(uint8_t)d_c0 << 0x20 | (uint64_t)(uint8_t)d_c3 << 0x28 |
           (uint64_t)d_187 << 0x30;
-    slot = dst + idx * 0xc;
-    if (((dst <= slot) && (slot + 0xc <= desc)) && (slot <= slot + 0xc)) {
+    slot = arg3 + idx * 0xc;
+    if (((arg3 <= slot) && (slot + 0xc <= desc)) && (slot <= slot + 0xc)) {
         d = (uint8_t *)slot;
         d[0x15] = (uint8_t)((uint64_t)buf >> 0x28);
         d[0x10] = (uint8_t)buf;
@@ -1897,10 +1892,10 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
         d[0x4] = t_104;
         d[0x7] = t_107;
         d[0x6] = t_106;
-        n = ((uint64_t)(uint8_t)dst[0xc1] << 0x10 | (uint64_t)*(uint8_t *)((long)dst + 0x183) << 0x18 |
+        n = ((uint64_t)(uint8_t)arg3[0xc1] << 0x10 | (uint64_t)*(uint8_t *)((long)arg3 + 0x183) << 0x18 |
              (uint64_t)*desc |
-             (uint64_t)((uint)(uint8_t)dst[0xc3] << 0x10 |
-                        (uint)*(uint8_t *)((long)dst + 0x187) << 0x18 | (uint)dst[0xc2]) << 0x20) + 1;
+             (uint64_t)((uint)(uint8_t)arg3[0xc3] << 0x10 |
+                        (uint)*(uint8_t *)((long)arg3 + 0x187) << 0x18 | (uint)arg3[0xc2]) << 0x20) + 1;
         c = (uint8_t *)desc;
         c[0x0] = (uint8_t)n;
         c[0x6] = (uint8_t)(n >> 0x30);
