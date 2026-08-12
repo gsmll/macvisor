@@ -4606,3 +4606,9 @@ sk_region_tightbeam.c (no bodies present); all 120 flipped to sk_slice_r54.c.
 Severity (hypothesis): low - demangler/arg-formatter; depth cap 0x400 and
 out-commit stack cap 0x10 are fail-closed; unknown tags return NULL/error.
 Confidence: medium.
+
+## [ringminus1] 003b2180 sk_r53_node_pretty_print
+- **Observation**: Recursive tagged-value node pretty-printer (Tightbeam-style stream serializer). It bounds recursion depth at 0x300 (768): once `depth > 0x300` it emits "<<too complex>>" and unwinds, and the per-node child walk tracks depth via `param_3`/`iVar19+1` on every descent. Null node pointers are handled (`<null node pointer>`) instead of dereferenced. Out-of-range tags (`uVar5 > 0x179`) and reserved tag values (0x26/0x2b/0x50/0x51/0xf3/0x174 etc.) route to fatal traps (FUN_004ba408/004ba438/004ba450/004ba480/004ba468 then UndefinedInstructionException(0x3d48,0x3b8700)) — the printer fails closed on unknown input rather than guessing.
+- **Evidence**: Entry: `uVar20=(uint)param_3; if (0x300<uVar20) { sk_out_str(...,"<<too complex>>",0xf); ...}`; `LAB_003b3da8: ... if (0x300<(uint)d3) goto LAB_003b483c;` (depth guard on the child-recurse loop). Null: `LAB_003b21dc: if (param_2==0) { pcVar10="<null node pointer>"; ...}`. Fatal path: `if (0x179<uVar5) goto LAB_003b86f8;` -> `FUN_004ba408()...FUN_004ba468(); UndefinedInstructionException(0x3d48,0x3b8700)`. Child indexing is bounds-checked per sub-type (subt==2 => node[1]; subt==5 => `(uint)node[1]` count checked before `node[i]`).
+- **Severity (hypothesis)**: informational — the printer is a depth-capped, bounds-checked walker over already-trusted in-memory tagged values; the only trust-sensitive spot is the Swift-string reconstruction (`flag<0` heap string => `sk_lock(ptr, len&0x7fffffffffffffff)` free), which assumes the node's embedded string pointer/len are valid.
+- **Confidence**: high (depth cap, null handling, and tag->fatal dispatch are explicit in the decompile).
