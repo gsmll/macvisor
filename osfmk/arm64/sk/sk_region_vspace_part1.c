@@ -1677,7 +1677,7 @@ cd_002096e8_1:
 
 /* skp1_FUN_00209928 @ 0x00209928   (est. sk_vspace_00209928)
  * Ghidra: undefined * skp1_FUN_00209928(ulong param_1,ulong param_2,ulong param_3,ulong param_4)
- * Confidence: medium
+ * Confidence: high
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 undefined * sk_vspace_00209928(ulong p1,ulong p2,ulong p3,ulong p4)

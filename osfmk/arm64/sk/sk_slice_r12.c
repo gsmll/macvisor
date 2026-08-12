@@ -197,6 +197,7 @@ extern cl4_result_t sk_x_003f761c();   /* FUN_003f761c */
 extern unsigned long sk_x_003f7648();   /* FUN_003f7648 */
 extern unsigned long sk_x_003f97bc();   /* FUN_003f97bc */
 extern unsigned long sk_x_003f9bdc();   /* FUN_003f9bdc */
+extern unsigned long sk_x_003fa828();   /* FUN_003fa828 */
 extern unsigned long sk_x_004040a8();   /* FUN_004040a8 */
 extern unsigned long sk_x_00404900();   /* FUN_00404900 */
 extern unsigned long sk_x_00404b8c();   /* FUN_00404b8c */
@@ -340,7 +341,7 @@ static void sk_vas_region_setup_loop(void)
 
     sk_x_0008e518();
     sk_x_0007c028();
-    ((void (*)(void))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
+    ((void (*)(uint64_t))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
     sk_x_000aa4ec();
     sk_x_0040841c();
     sk_x_00310d68(0);
@@ -450,7 +451,7 @@ static void sk_vas_region_setup_loop_sync(void)
 
     sk_x_0008e518();
     sk_x_0007c028();
-    ((void (*)(void))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
+    ((void (*)(uint64_t))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
     sk_x_000aa4ec();
     sk_x_0040841c();
     sk_x_00310d68(0);
@@ -508,13 +509,13 @@ static unsigned int sk_vas_cmp(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p
  * DAT_004e8268 with it through FUN_00376820, then FUN_00350968 dispatches with
  * the local/param_3 and the returned pair; finishes with FUN_003f9bdc.
  * Confidence: low (16-byte pair plumbing). */
-static void sk_vas_op_setup3(uint64_t p1, uint64_t p2, uint64_t p3)
+static unsigned long sk_vas_op_setup3(uint64_t p1, uint64_t p2, uint64_t p3)
 {
     uint64_t local_28 = p1;
     uint64_t w = sk_x_00310d34(0);
     cl4_result_t pair = sk_x_00376820(&sk_g_004e8268, w);
     sk_x_00350968(&local_28, pair.hi, p3, pair.lo);
-    sk_x_003f9bdc();
+    return sk_x_003f9bdc();
 }
 
 /* FUN_003fb3c4 @ 0x003fb3c4  (est. sk_vas_op_setup3_store)
@@ -522,7 +523,7 @@ static void sk_vas_op_setup3(uint64_t p1, uint64_t p2, uint64_t p3)
  * *param_1. Thin forwarder. Confidence: medium. */
 static void sk_vas_op_setup3_store(uint64_t *out, uint64_t p2, uint64_t p3)
 {
-    uint64_t r = sk_x_003fb360(p2, *(uint64_t *)(p3 + 0x10));
+    uint64_t r = sk_vas_op_setup3(p2, *(uint64_t *)(p3 + 0x10), /* param_3 */ 0);
     *out = r;
 }
 
@@ -543,7 +544,7 @@ static void sk_vas_op_iterate(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4
 
     seed = sk_x_0008e518();
     sk_x_0007c028();
-    ((void (*)(void))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
+    ((void (*)(uint64_t))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
     sk_x_000aa4ec();
     sk_x_00350a64();
     sk_x_00310d68();
@@ -553,7 +554,7 @@ static void sk_vas_op_iterate(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4
     sk_x_00407b80();
     sk_x_003f539c(seed.hi, p3);
     sk_x_002298d4();
-    uint64_t it = sk_x_003f761c(seed.hi, p3);
+    uint64_t it = sk_x_003f761c(seed.hi, p3).lo;
     uint64_t ctx = sk_x_00404b8c(0, p3);
     while (true) {
         sk_x_003f7648(ctx);
@@ -595,7 +596,7 @@ static void sk_vas_op_run1(uint64_t p1, uint64_t p2, uint64_t p3)
     uint8_t frame[72];
     uint64_t v = *(uint64_t *)((p3 & 0xfffffffffffffffeULL) - 8);
     sk_x_001a84f4(frame);
-    sk_vas_op_iterate(frame, *(uint64_t *)(x20 + 0), *(uint64_t *)(p2 + 0x10), v);
+    sk_vas_op_iterate((uint64_t)(uintptr_t)frame, *(uint64_t *)(x20 + 0), *(uint64_t *)(p2 + 0x10), v);
     sk_x_001a8564();
 }
 
@@ -622,7 +623,7 @@ static void sk_vas_op_run2_cond(void)
     sk_x_00350720();
     uint64_t k = sk_x_00377824();
     sk_x_000a6f88();
-    ((void (*)(void))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
+    ((void (*)(uint64_t))sk_g_00658c80)(*(uint64_t *)(extraout_x8 + 0x40));
     sk_x_0034ab10();
     uint64_t len = extraout_x9 - extraout_x12;
     ((void (*)(void))sk_g_00658c80)();
@@ -637,7 +638,7 @@ static void sk_vas_op_run2_cond(void)
         sk_x_00408434();
         pair = sk_x_00350618();
         uint64_t v = sk_x_00377bec(pair.lo, pair.hi, k);
-        code op = (code)(uintptr_t)sk_x_003fd3fc();
+        code op = (code)(uintptr_t)sk_x_003fd3fc(/* in_x3 */ 0);
         ((void (*)(uint64_t, uint64_t, uint64_t, uint64_t))op)(extraout_x8, len, k, v);
         code tail = (code)(uintptr_t)(extraout_x16 + 8);
         sk_x_00350524();
