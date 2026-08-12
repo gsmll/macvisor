@@ -60,15 +60,12 @@ extern int  copyout(const void *src, void *dst, size_t len);
 /* Per-CPU struct / task getters. FUN_fffffe000b866ec4 (est. current_cpu_datap)
  * body is PAC'd — the decompiler only sees a panic stub, so it is NOT
  * recreatable and is used by the whole kernel. Extern. */
-extern void *current_cpu_datap(uint64_t cpu);
+extern void *per_cpu_base(uint64_t cpu);
 
 /* XNU mutex on the shared vm/owner lock DAT_fffffe000c62c0b8.
- * lck_mtx_lock (lock), lck_mtx_unlock (unlock),
- * lock_acquire_variant (variant). 100+ kernel callers; full futex/waitq
- * mutex implementation. Extern, NOT recreated. */
-extern void lck_mtx_lock(void *lock, void *arg, uint64_t flags, int tag);
-extern void lck_mtx_unlock(void *lock, void *arg, uint32_t flags);
-extern void lock_acquire(void *lock, uint64_t arg, ...);
+ * Canonical declarations live in hv_internal.h (lck_mtx_lock b7f0afc /
+ * lck_mtx_unlock b7f1e80 / lock_release b7f1e4c). 100+ kernel callers;
+ * full futex/waitq mutex implementation. Extern, NOT recreated. */
 
 /* Kernel panics (all noreturn). FUN_fffffe000c0f86a4 / c0f8674 / c0f1874 /
  * c0e1c3c. Universal noreturn panic paths; not recreated. */

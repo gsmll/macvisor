@@ -86,7 +86,7 @@ hv_pmap_resolve_owner(uint64_t id, char **name_out)
 			if (hv_cached_cpu_id == 0)
 				hv_cached_cpu_id = *(uint32_t *)(p + 0x518);
 			if (old_cpu != 0 || hv_debug_flag != 0)
-				kernel_lock_acquire((uint64_t)&hv_lock, p, old_cpu, 0);
+				lck_mtx_lock(&hv_lock, p, old_cpu, 0);
 			owner = *(long *)((uint8_t *)per_cpu_base((uint64_t)p) + 0x628);
 			if (owner != 0) {
 				rc = *(int *)(owner + 8);
@@ -98,7 +98,7 @@ hv_pmap_resolve_owner(uint64_t id, char **name_out)
 					hv_cached_cpu_id &= 0xffffffff00000000ULL; /* clear low 32 */
 				if (rc != *(int *)(p + 0x518) ||
 				    hv_debug_flag != 0)
-					kernel_lock_release2((uint64_t)&hv_lock, p);
+					lck_mtx_unlock(&hv_lock, p);
 				map_ptr = *(uint64_t *)(owner + 0x2120);  /* host map ptr */
 				kernel_refcount_inc(0);                  /* b8af98c (arg 0) */
 				rc = *(int *)(owner + 8);
@@ -111,7 +111,7 @@ hv_pmap_resolve_owner(uint64_t id, char **name_out)
 				}
 				kernel_panic_b();                        /* c0f8674, noreturn */
 			}
-			kernel_lock_release((uint64_t)&hv_lock);     /* b7f1e4c */
+			lock_release(&hv_lock);     /* b7f1e4c */
 		} else {
 			uint64_t vm = **(uint64_t **)(p + 0x4d8);  /* *(*bound_vcpu) */
 			if (vm != 0)
@@ -162,11 +162,11 @@ hv_pmap_unwind(char *name, uint64_t owner)
 			p = (uint8_t *)tpidr_el1;
 			if (*(long *)(p + 0x4d8) != 0)
 				return;                       /* a vcpu is bound: keep owner */
-			os_release(owner);                 /* b8afa78 */
+			os_release((void *)owner);       /* b8afa78 */
 			return;
 		}
 		if (*name != '-')
 			kernel_panic_msg(name, 0, 0x2d);   /* c0e1c3c, noreturn */
 	}
-	kernel_vcpu_detach(name);                  /* b793cf4 */
+	zfree_waitq();                           /* b793cf4; decompiler drops the arg */
 }

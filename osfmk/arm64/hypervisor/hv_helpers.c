@@ -34,7 +34,7 @@ extern void kernel_panic_b(void) __attribute__((noreturn));            /* FUN_ff
 extern void kernel_panic_msg_fmt(const char *fmt, ...) __attribute__((noreturn)); /* FUN_fffffe000c0e11ec */
 extern void hv_rbtree_unlink(void *root, void *node);   /* FUN_fffffe000b9860bc, decompiled in hv_vmapple.c */
 extern void os_release(void *object);                     /* FUN_fffffe000b8afa78 */
-extern void kfree_type(void *obj);                        /* FUN_fffffe000b793cf4 */
+extern void zfree_waitq();                     /* FUN_fffffe000b793cf4 */
 extern void refcount_dec(void *ref, void *free_fn);       /* FUN_fffffe000b862b6c */
 extern void *mutex_validate_panic(void *mutex); /* FUN_fffffe000c0e4c28: "Invalid/destroyed mutex"; Ghidra shows only the panic path, caller uses the return (the validated mutex) */
 extern void kernel_dtrace_probe(long frame, uint64_t esr);   /* FUN_fffffe000c0d79b8: bti-only stub (disassembled) */
@@ -234,7 +234,7 @@ hv_vm_pool_release(uint32_t *lock, long zone)
 		*(uint64_t *)(l + 8) = *(uint32_t *)(cpu + 0x518);
 	if (u == 0 && i == 0)
 		return;
-	lock_acquire((void *)hv_lock, 0);         /* FUN_fffffe000b7f0afc */
+	lck_mtx_lock((void *)hv_lock, 0);         /* FUN_fffffe000b7f0afc */
 }
 
 /* ------------------------------------------------------------------ *
@@ -552,7 +552,7 @@ hv_vm_owner_teardown(long *owner)
 	if (v == 0)
 		*slot = *(uint32_t *)(cpu + 0x518);
 	if (v != 0 || pending != 0)
-		lock_acquire((void *)obj, cpu, v, 0);
+		lck_mtx_lock((void *)obj, cpu, v, 0);
 
 	slot = (uint64_t *)(owner + 0x427);
 	next = NULL;
@@ -597,7 +597,7 @@ hv_vm_owner_teardown(long *owner)
 		}
 		hv_rbtree_unlink(owner, last);          /* FUN_fffffe000b9860bc */
 		os_release((void *)last[0]);            /* FUN_fffffe000b8afa78 */
-		kfree_type((void *)last[4]);            /* FUN_fffffe000b793cf4 */
+		zfree_waitq((void *)last[4]);            /* FUN_fffffe000b793cf4 */
 		refcount_dec(&hv_region_refcount, last);/* FUN_fffffe000b862b6c, DAT_fffffe0007d54078 */
 		last = t;
 		pending = (int)hv_debug_flag;

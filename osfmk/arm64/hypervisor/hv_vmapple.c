@@ -35,10 +35,10 @@
 #include "hv_kernel_glue.h"   /* os_release / waitq_validate / hv_object_lookup prototypes */
 
 /* ---- externals (shared kernel, not recreated) ---- */
-extern void *current_cpu_datap(uint64_t cpu); /* kernel: returns per-CPU struct (FUN_fffffe000b866ec4) */
+extern void *per_cpu_base(uint64_t cpu); /* kernel: returns per-CPU struct (FUN_fffffe000b866ec4) */
 extern void *os_ref_retain(void *);     /* kernel: refcount retain (FUN_fffffe000b7f089c) */
-extern void *os_ref_release(void *);    /* kernel: refcount release (FUN_fffffe000b8afa78) */
-extern void *kfree_type(void *);        /* kernel: zfree/kfree (FUN_fffffe000b793cf4) */
+extern void  os_release(void *);        /* kernel: refcount release (FUN_fffffe000b8afa78) */
+extern void  zfree_waitq();                 /* kernel: zfree/kfree (FUN_fffffe000b793cf4) */
 extern void *ref_count_dec(void *, void *); /* kernel: lck refcount dec (FUN_fffffe000b862b6c) */
 extern uint64_t hv_object_lookup(uint64_t *container, uint64_t handle, uint64_t type); /* hv-deps recreated (FUN_fffffe000b7e0d8c) */
 extern void  rbtree_unlink(void *, void *); /* hv-internal RB-tree unlink (FUN_fffffe000b9860bc) */
@@ -101,10 +101,10 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		hv_cached_cpu_id = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
 	}
 	if (cpu_ts != 0 || hv_debug_flag != 0) {
-		lock_acquire(&hv_lock, tpidr_el1, cpu_ts, 0);
+		lck_mtx_lock(&hv_lock, tpidr_el1, cpu_ts, 0);
 	}
 
-	head = *(long **)(current_cpu_datap(tpidr_el1) + 0x628);
+	head = *(long **)(per_cpu_base(tpidr_el1) + 0x628);
 	if (head == 0) {
 		head = 0;
 		retained = true;
@@ -125,7 +125,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		hv_cached_cpu_id = 0;
 	}
 	if (c != *(int *)(tpidr_el1 + 0x518) || hv_debug_flag != 0) {
-		lock_sync(&hv_lock, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
+		lck_mtx_unlock(&hv_lock, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
 	}
 
 	/* validate the waitq/port, then resolve the object key by handle+type.
@@ -147,7 +147,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			*(uint64_t *)(node + 1) = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
 		}
 		if (key != 0 || c != 0) {
-			lock_acquire(node, tpidr_el1, key, 0);
+			lck_mtx_lock(node, tpidr_el1, key, 0);
 		}
 
 		/* descend to the rightmost node of the region tree (head+0x427);
@@ -183,8 +183,8 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			}
 			if (lookup_key == (long)*child) {
 				rbtree_unlink(head, child);
-				os_ref_release((void *)*child);
-				kfree_type((void *)child[4]);
+				os_release((void *)*child);
+				zfree_waitq((void *)child[4]);
 				ref_count_dec(&hv_container_refcount, child);
 			}
 			c = 0;
@@ -200,7 +200,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			*count_ptr = 0;
 		}
 		if (c != newc || hv_debug_flag != 0) {
-			lock_sync((void *)*head, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
+			lck_mtx_unlock((void *)*head, tpidr_el1);   /* FUN_fffffe000b7f1e80 */
 		}
 
 		c = (int)head[1];

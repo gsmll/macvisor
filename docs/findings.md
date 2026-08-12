@@ -948,3 +948,69 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Severity (hypothesis)**: informational (a faithful transcription note;
   the tagged pointers are dereferenced as ordinary addresses).
 - **Confidence**: high.
+
+## [kernel-names] Confirmed-wrong assumed kernel names (2026-08-12 audit)
+
+- **Observation**: Three kernel helper names used across the hypervisor
+  reconstruction were assumed, not verified, and the disassembly proves two
+  were wrong and one was misleading:
+  - `kernel_memzero` (b8b6860) is NOT a memzero — it is a no-arg batch
+    vm-object release (param_count=0; drains the global free list calling
+    b8a9e4c = refcount-dec + queue free). Renamed
+    `kernel_vm_object_batch_dealloc(void)`.
+  - `kernel_alloc`/`kalloc_zalloc` (b8a6c14) is a vm-object allocation that
+    returns `{error, block}` in x0/x1 (modelled as `hv_u128_t
+    kernel_alloc(uint64_t, size, c, flags, e, void *f)`). The fabricated
+    `kalloc_zalloc(void *out, size)` wrapper was removed.
+  - `kernel_mem_validate` (b8b51c8) is actually vm_map_enter (11 args) —
+    the name was a guess; the address was right.
+- **Evidence**: instruction-level disassembly of b8b6860 (no argument
+  loads; calls b8a9e4c in a drain loop) and b8a6c14 (writes x0/x1 as
+  {err, block}); fresh decompiles of the callers b986f1c, b986d34,
+  b989040, b988e70, b98533c.
+- **Severity**: high for exploit research — an assumed "memzero" that
+  actually frees objects changes the memory-safety picture of every call
+  site that used it.
+- **Confidence**: high (disassembly-verified).
+
+## [kernel-names] Lock alias unification (b7f0afc/b7f1e80/b7f1e4c, b793cf4, b8afa78, b866ec4)
+
+- **Observation**: Six kernel functions had multiple project names. Fresh
+  decompiles confirmed the real identities and the names were unified to
+  one canonical name per address:
+  - b7f0afc = `lck_mtx_lock` (was lock_acquire/kernel_lock_acquire) — the
+    `s_lck_mtx_t_ilk` string at fffffe0007d790b8 confirms XNU lck_mtx;
+    decompile: 4 args (lock, thread, old, flags), LZCOUNT class table at
+    fffffe000c5b0400.
+  - b7f1e80 = `lck_mtx_unlock` (was lock_sync/kernel_lock_release2) —
+    3 args (lock, thread, flags), validates *(thread+0x518)==(flags&0xfffffff)
+    else panic c0e4d74, handles 0x80000000, TLB flush b96c6d4.
+  - b7f1e4c = `lock_release` (was kernel_lock_release) — fast-path release:
+    clears the cpu-owner slot at *(lock+8) when it equals the current cpu
+    id and the debug flag is clear, else falls through to b7f1e80.
+  - b793cf4 = `zfree_waitq` (was kfree_type/kernel_vcpu_detach) — zone free
+    with waitq teardown; the decompiler drops the argument at most call
+    sites (FUN_fffffe000b793cf4()), so the decl is a no-prototype
+    `extern void zfree_waitq();`.
+  - b8afa78 = `os_release` (was os_ref_release) — ARC-style release.
+  - b866ec4 = `per_cpu_base` (was current_cpu_datap).
+- **Evidence**: fresh decompiles of b7f0afc, b7f1e80, b7f1e4c, b793cf4,
+  b8afa78, b866ec4 and the call sites b986f1c/b986d34 (both render
+  FUN_fffffe000b793cf4() with the arg dropped — the old
+  `kernel_vcpu_detach(name)` passed a fabricated argument).
+- **Severity**: medium (naming correctness for exploit-research use; the
+  fabricated `kernel_vcpu_detach(name)` argument was a latent correctness
+  bug in the reconstruction).
+- **Confidence**: high (fresh decompile per function).
+
+## [kernel-names] zfree_waitq call-site argument-drop pattern
+
+- **Observation**: The decompiler renders b793cf4 with no arguments at
+  several call sites (b986f1c, b986d34) and with the object at others
+  (b987c44). The no-arg form is a faithful rendering of the leftover
+  register (like the b8b6860 batch-free call sites), not a missing free.
+  The canonical decl is deliberately prototype-less.
+- **Evidence**: fresh decompiles of b986f1c (`FUN_fffffe000b793cf4();`)
+  and b986d34 (`FUN_fffffe000b793cf4();`).
+- **Severity**: informational (faithfulness note).
+- **Confidence**: high.

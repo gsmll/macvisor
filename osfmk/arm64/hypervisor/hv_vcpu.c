@@ -145,7 +145,7 @@ uint64_t hv_vcpu_create(void *user_state)
     if (hv_cached_cpu_id == 0)                    /* DAT_fffffe000c62c0c0 */
         hv_cached_cpu_id = *(uint32_t *)(cpu + PERCPU_CPU_ID);
     if (hv_debug_flag != 0)                       /* DAT_fffffe000c62b3d0 */
-        lock_acquire(&hv_lock, cpu);              /* DAT_fffffe000c62c0b8 FUN_fffffe000b7f0afc */
+        lck_mtx_lock(&hv_lock, cpu);              /* DAT_fffffe000c62c0b8 FUN_fffffe000b7f0afc */
 
     /* resolve the current container from the per-cpu struct (FUN_fffffe000b866ec4) */
     container = *(void **)(per_cpu_base(cpu) + 0x628); /* FUN_fffffe000b866ec4 */
@@ -166,7 +166,7 @@ uint64_t hv_vcpu_create(void *user_state)
     if (tmp == 0)
         *(uint64_t *)(*(uint64_t *)container + 8) = *(uint32_t *)(cpu + PERCPU_CPU_ID);
     if (hv_debug_flag != 0)                         /* DAT_fffffe000c62b3d0 */
-        lock_acquire(*(void **)container, cpu);     /* FUN_fffffe000b7f0afc */
+        lck_mtx_lock(*(void **)container, cpu);     /* FUN_fffffe000b7f0afc */
 
     /* allocate + init the vcpu: hv_vcpu_alloc_init(&vcpu, container[2], 0) */
     if (hv_vcpu_alloc_init(&vcpu, ((uint64_t *)container)[2], 0) != 0) {
@@ -460,7 +460,7 @@ void hv_vcpu_object_release(uint64_t *obj)
 
     /* free the auxiliary allocations and the object header */
     hv_cpu_broadcast(0, obj[0x410]);
-    os_release(obj[0x424]);
+    os_release((void *)obj[0x424]);
     hv_vm_pool_release((uint32_t *)*obj, (long)&hv_vm_pool);   /* DAT_fffffe000c5d7068 */
     refcount_dec(&hv_vm_list, obj);            /* DAT_fffffe0007d52478 */
     refcount_dec(&hv_obj_list, obj);           /* DAT_fffffe0007d53e78 */
@@ -688,7 +688,7 @@ uint64_t hv_vcpu_attach(hv_vcpu_t *vcpu, uint64_t id)
     if (s != (char *)0xffffffffffffffff) {
         if (s == 0) {
             if (*(uint64_t *)(cpu + PERCPU_VCPU_SLOT) == 0)
-                os_release(*(uint64_t *)((char *)bound + 0x88));  /* b8afa78 */
+                os_release((void *)*(uint64_t *)((char *)bound + 0x88));  /* b8afa78 */
             goto done;
         }
         if (*s != '-')                              /* container names must not
@@ -1722,12 +1722,12 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                      * b98cff8: slot bitmap vm+0x2188; if != 0xff find the
                      * first clear bit (mvn/ctz, csinv -> 0 when -1,
                      * b98d18c), set it (b98d1bc); release vm[0]+8 (casl
-                     * cpu_id -> 0; on mismatch/flag lock_sync b7f1e80,
+                     * cpu_id -> 0; on mismatch/flag lck_mtx_unlock b7f1e80,
                      * b98d7c0). If the bitmap is 0xff (full): release and
                      * es[0x8] = 0xfffffffffae94003, done (b98d004-b98d044).
                      * b98d1ec: slot = vm+0x2148[bit]; CAS slot[0]: 0 ->
                      * 0x80000000 (casa, acquire); busy (b98d4a0):
-                     * lock_acquire(vm[0],0), clear bit, lock_release,
+                     * lck_mtx_lock(vm[0],0), clear bit, lock_release,
                      * es[0x8] = 0xfffffffffae94002, done.
                      * b98d210: hv_vcpu_map_memory(vm, es[0x10], es[0x18],
                      * (uint32)es[0x20], slot+0x1008) (b9866d0); release
@@ -1753,7 +1753,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                                                     __ATOMIC_ACQUIRE,
                                                     __ATOMIC_RELAXED);
                         if (old != 0 || hv_debug_flag != 0)
-                            lock_acquire((void *)vmp[0], tpidr_el1, 0); /* b98d794 */
+                            lck_mtx_lock((void *)vmp[0], tpidr_el1, 0); /* b98d794 */
                         /* b98cff8: find a free slot bit in vm+0x2188 */
                         if (vmp[0x2188/8] == 0xff) {   /* b98d004 full */
                             uint64_t old2 = cpu_id;
@@ -1762,7 +1762,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                                                         __ATOMIC_RELEASE,
                                                         __ATOMIC_RELAXED);
                             if (old2 != cpu_id || hv_debug_flag != 0)
-                                lock_sync((void *)vmp[0], tpidr_el1); /* b98d038 */
+                                lck_mtx_unlock((void *)vmp[0], tpidr_el1); /* b98d038 */
                             es[0x8] = 0xfffffffffae94003ull;   /* b98d020 */
                             return;
                         }
@@ -1780,7 +1780,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                                                         __ATOMIC_RELEASE,
                                                         __ATOMIC_RELAXED);
                             if (old3 != cpu_id || hv_debug_flag != 0)
-                                lock_sync((void *)vmp[0], tpidr_el1); /* b98d7c0 */
+                                lck_mtx_unlock((void *)vmp[0], tpidr_el1); /* b98d7c0 */
                         }
                         /* b98d1ec: acquire the slot at vm+0x2148[bit] */
                         slot = (uint64_t *)((uint64_t *)((char *)vmp +
@@ -1793,7 +1793,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                                                         __ATOMIC_ACQUIRE,
                                                         __ATOMIC_RELAXED);
                             if (old4 != 0) {        /* b98d4a0 busy */
-                                lock_acquire((void *)vmp[0], 0);   /* b7f0ac8 */
+                                lck_mtx_lock((void *)vmp[0], 0);   /* b7f0ac8 */
                                 vmp[0x2188/8] &= ~(1ull << slot_idx);
                                 lock_release((void *)vmp[0]);       /* b7f1e4c */
                                 es[0x8] = 0xfffffffffae94002ull;    /* b98d4cc */
@@ -1813,7 +1813,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                             return;
                         }
                         /* b98d230 error: clear the bit and surface the err */
-                        lock_acquire((void *)vmp[0], 0);   /* b7f0ac8 */
+                        lck_mtx_lock((void *)vmp[0], 0);   /* b7f0ac8 */
                         vmp[0x2188/8] &= ~(1ull << slot_idx);
                         lock_release((void *)vmp[0]);       /* b7f1e4c */
                         es[0x8] = (int64_t)(int32_t)map;    /* sxtw, b98d260 */
@@ -1836,7 +1836,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                      * (b866ec4), PAC-auth [cpu+0x318] (autda 0x8280, null
                      * -> 0, b98d60c), hv_percpu_notify(x0, slot[0x1008])
                      * (b7a1dd8, b98d610), slot[0x1008] = 0, release busy
-                     * (casl), lock_acquire(vm[0],0) (b7f0ac8), clear bit
+                     * (casl), lck_mtx_lock(vm[0],0) (b7f0ac8), clear bit
                      * idx in vm+0x2188 word, lock_release (b7f1e4c),
                      * es[0x8] = 0, done. */
                     uint64_t *vmp = (uint64_t *)vm;
@@ -1905,7 +1905,7 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                         slot[0x1008/8] = 0;          /* b98d618 */
                         __atomic_store_n((uint32_t *)slot, 0u,
                                          __ATOMIC_RELEASE);   /* b98d61c */
-                        lock_acquire((void *)vmp[0], 0);      /* b7f0ac8 */
+                        lck_mtx_lock((void *)vmp[0], 0);      /* b7f0ac8 */
                         vmp[0x2188/8] &= ~(1ull << idx);      /* b98d630-b98d640 */
                         lock_release((void *)vmp[0]);          /* b7f1e4c */
                         es[0x8] = 0;                 /* b98d64c */
@@ -2087,13 +2087,13 @@ svc19_argcheck:                     /* b98d064 */
                  * (0x1c0 & ~es[0x110]) == 0 else unhandled (b98c0c8).
                  * Then (b98c0cc): CAS vm[0]+8: 0 -> cpu id
                  * (casa, acquire); on old!=0 || hv_debug_flag!=0 take the
-                 * hv lock (b7f0afc, lock_acquire) and continue (b98c0f0).
+                 * hv lock (b7f0afc, lck_mtx_lock) and continue (b98c0f0).
                  * CAS the per-cpu slot flag vm+0x80+idx*0x80+0x14: 0 -> 1
                  * (casal, acquire-release); when it wins call
                  * b7f9088(vm[0], 0, vcpu, 2). Clear the slot flag (stlur,
                  * b98c12c), then CAS vm[0]+8 back cpu id -> 0 (casl,
                  * release, b98c148); if it didn't match or hv_debug_flag
-                 * is set, release via b7f1e80 (lock_sync). -> done. */
+                 * is set, release via b7f1e80 (lck_mtx_unlock). -> done. */
                 if (es[0x10] != 0) {
                     es[0x110] &= 0xfffffe3full;     /* b98bbe0 */
                 } else if ((0x1c0 & ~es[0x110]) != 0) {
@@ -2109,7 +2109,7 @@ svc19_argcheck:                     /* b98d064 */
                                                 /*weak*/0, __ATOMIC_ACQUIRE,
                                                 __ATOMIC_RELAXED);
                     if (old_slot != 0 || hv_debug_flag != 0)
-                        lock_acquire((void *)vmp[0], tpidr_el1, 0);  /* b98d71c */
+                        lck_mtx_lock((void *)vmp[0], tpidr_el1, 0);  /* b98d71c */
                     /* b98c0f0: per-cpu slot flag at vm+0x80+idx*0x80+0x14 */
                     {
                         uint64_t idx = *(uint8_t *)((char *)vcpu + 0xf8);
@@ -2133,7 +2133,7 @@ svc19_argcheck:                     /* b98d064 */
                                                     __ATOMIC_RELEASE,
                                                     __ATOMIC_RELAXED);
                         if (old2 != cpu_id || hv_debug_flag != 0)
-                            lock_sync((void *)vmp[0], tpidr_el1);  /* b98c158 */
+                            lck_mtx_unlock((void *)vmp[0], tpidr_el1);  /* b98c158 */
                     }
                 }
                 return;                             /* b98cf94 */
@@ -2154,7 +2154,7 @@ svc19_argcheck:                     /* b98d064 */
                  * b98b774-b98b7e0) and call hv_flush_lock_op (b8563f8) with
                  * (slot,0,0,1); then the release tail (b98c130) -> done.
                  * Scan end (b98d838): release vm[0]+8 (casl cpu_id -> 0);
-                 * on mismatch or hv_debug_flag take lock_sync (b7f1e80,
+                 * on mismatch or hv_debug_flag take lck_mtx_unlock (b7f1e80,
                  * b98da34); falls to unhandled (b98d860). */
                 {
                     uint64_t *vmp = (uint64_t *)vm;         /* container */
@@ -2168,7 +2168,7 @@ svc19_argcheck:                     /* b98d064 */
                                                 /*weak*/0, __ATOMIC_ACQUIRE,
                                                 __ATOMIC_RELAXED);
                     if (old != 0 || hv_debug_flag != 0)
-                        lock_acquire((void *)vmp[0], tpidr_el1, 0);  /* b98d70c */
+                        lck_mtx_lock((void *)vmp[0], tpidr_el1, 0);  /* b98d70c */
 
                     for (off = 0x80; ; off += 0x80) {
                         uint64_t *slot;
@@ -2224,7 +2224,7 @@ svc19_argcheck:                     /* b98d064 */
                                                         __ATOMIC_RELEASE,
                                                         __ATOMIC_RELAXED);
                             if (old2 != cpu_id || hv_debug_flag != 0)
-                                lock_sync((void *)vmp[0], tpidr_el1);  /* b98c158 */
+                                lck_mtx_unlock((void *)vmp[0], tpidr_el1);  /* b98c158 */
                         }
                         return;                     /* b98cf94 */
                     }
@@ -2241,7 +2241,7 @@ hvc46_release_unhandled:        /* b98d838/b98da34: release + unhandled */
                                             /*weak*/0, __ATOMIC_RELEASE,
                                             __ATOMIC_RELAXED);
                 if (old2 != cpu_id2 || hv_debug_flag != 0)
-                    lock_sync((void *)((uint64_t *)vm)[0], tpidr_el1);  /* b98da34 */
+                    lck_mtx_unlock((void *)((uint64_t *)vm)[0], tpidr_el1);  /* b98da34 */
             }
             goto unhandled_ec;                      /* b98d860 */
         }

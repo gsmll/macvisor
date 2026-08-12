@@ -102,7 +102,9 @@ extern void *kernel_zone_alloc();
 extern uint64_t kernel_zone_meta();
 
 /* zfree_waitq — zone free with waitq teardown. FUN_fffffe000b793cf4.
- * Universal; already stubbed in hv_kernel_glue.h as `zfree`. */
+ * Universal; already stubbed in hv_kernel_glue.h as `zfree`.
+ * No prototype on purpose: the decompiler renders most call sites with a
+ * dropped argument (FUN_fffffe000b793cf4()), some with the object. */
 extern void zfree_waitq();
 
 /* kernel_obj_lookup_core — kernel object-registry lookup core.

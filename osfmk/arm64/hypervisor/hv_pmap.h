@@ -108,16 +108,17 @@ extern int kernel_obj_lookup(uint64_t base, uint64_t id, uint32_t type,
 /* Kernel refcount increment with zone-magic validation (FUN_fffffe000b8af98c). */
 extern void kernel_refcount_inc(uint64_t obj);      /* b8af98c */
 /* XNU object release (FUN_fffffe000b8afa78, est. os_release). */
-extern void os_release(uint64_t obj);               /* b8afa78 */
-/* Detach the currently bound vcpu/owner (FUN_fffffe000b793cf4, kernel). */
-extern void kernel_vcpu_detach(char *name);         /* b793cf4 */
+extern void os_release(void *obj);                  /* b8afa78 */
+/* Zone free with waitq teardown (FUN_fffffe000b793cf4); the decompiler
+ * drops the argument at most call sites. */
+extern void zfree_waitq();            /* b793cf4 */
 /* Per-CPU owner table slot (per_cpu_base + 0x628), current CPU base. */
 extern void *per_cpu_base(uint64_t cpu);            /* b866ec4 */
-/* Lock/unlock around the shared owner lock DAT_fffffe000c62c0b8. */
-extern void kernel_lock_acquire(uint64_t lock, uint8_t *tpidr, uint64_t cpu,
-                                uint64_t arg);      /* b7f0afc */
-extern void kernel_lock_release(uint64_t lock);     /* b7f1e4c */
-extern void kernel_lock_release2(uint64_t lock, uint8_t *tpidr); /* b7f1e80 */
+/* Lock/unlock around the shared owner lock DAT_fffffe000c62c0b8
+ * (canonical names in hv_internal.h; these are the same functions). */
+extern void lck_mtx_lock(void *lock, ...);     /* b7f0afc */
+extern void lock_release(void *lock);          /* b7f1e4c */
+extern void lck_mtx_unlock(void *lock, ...);   /* b7f1e80 */
 /* Panic helpers (noreturn). */
 extern void kernel_panic(void) __attribute__((noreturn));   /* c0f1874 */
 extern void kernel_panic_b(void) __attribute__((noreturn)); /* c0f8674 */

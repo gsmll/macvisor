@@ -82,14 +82,16 @@ extern int  copyin(const void *src, void *dst, size_t len);
 extern int  copyout(const void *src, void *dst, size_t len);
 
 /* Per-CPU object locks around the shared vm/owner lock DAT_fffffe000c62c0b8.
- *   lck_mtx_lock @ 0xfffffe000b7f0afc  (est. lock_acquire)
- *   lock_acquire_variant @ 0xfffffe000b7f1e4c  (est. lock_release)
- *   lck_mtx_unlock @ 0xfffffe000b7f1e80  (est. per-cpu sync / release)
- * Referenced by vcpu-core and trap-dispatch. The decompiles differ in arity
- * (vcpu.c passes 2 args, hv.c up to 4); keep call sites as decompiled. */
-extern void lock_acquire(void *lock, uint64_t arg, ...);
+ * Verified 2026-08-12 from fresh decompiles (the s_lck_mtx_t_ilk string at
+ * 0xfffffe0007d790b8 confirms these are XNU lck_mtx):
+ *   lck_mtx_lock   @ 0xfffffe000b7f0afc  (4 args: lock, thread, old, flags)
+ *   lock_release   @ 0xfffffe000b7f1e4c  (mutex destroy/release variant)
+ *   lck_mtx_unlock @ 0xfffffe000b7f1e80  (3 args: lock, thread, flags)
+ * Referenced by vcpu-core and trap-dispatch. Call sites pass 2-4 args as
+ * decompiled; keep variadic so the arity matches. */
+extern void lck_mtx_lock(void *lock, ...);
 extern void lock_release(void *lock);
-extern void lock_sync(void *lock, uint64_t cpu);
+extern void lck_mtx_unlock(void *lock, ...);
 
 /* Per-CPU state base.
  *   current_cpu_datap @ 0xfffffe000b866ec4  (est. per_cpu_base)

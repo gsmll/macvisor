@@ -3234,7 +3234,7 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
         *puVar12 = *(uint32_t *)(cpu_slot + 0x518);
     pending = hv_debug_flag;                   /* DAT_fffffe000c62b3d0 */
     if (slot_val != 0 || pending != 0)
-        lock_acquire((void *)owner_lock, cpu_slot, slot_val, 0);   /* b7f0afc */
+        lck_mtx_lock((void *)owner_lock, cpu_slot, slot_val, 0);   /* b7f0afc */
     root = (uint64_t *)owner_block[0x427];     /* region tree root */
     hv_debug_flag = pending;
     if (root == 0)
@@ -3284,7 +3284,7 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
         if (rc == prev)
             *(uint32_t *)(owner_lock + 8) = 0;
         if (rc != prev || pending != 0)
-            lock_sync((void *)owner_lock, cpu_slot);  /* b7f1e80 */
+            lck_mtx_unlock((void *)owner_lock, cpu_slot);  /* b7f1e80 */
         /* build the 0x40-byte fault record */
         rec[0] = 0x4000000013ull;                /* local_a0 */
         rec[1] = 0;                              /* uStack_88 */
@@ -3325,7 +3325,7 @@ no_region:
     if (rc == prev)
         *(uint32_t *)(owner_lock + 8) = 0;
     if (rc != prev || hv_debug_flag != 0)
-        lock_sync((void *)owner_lock, cpu_slot);  /* b7f1e80 */
+        lck_mtx_unlock((void *)owner_lock, cpu_slot);  /* b7f1e80 */
     return 0;
 }
 

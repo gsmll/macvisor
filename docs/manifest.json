@@ -608,7 +608,7 @@
     "address": "fffffe000b985e38",
     "ghidra_name": "FUN_fffffe000b985e38",
     "estimated_name": "hv_ikot_hypervisor_handler",
-    "confidence": "medium",
+    "confidence": "high",
     "category": "vmapple",
     "tree": "vmapple-deep",
     "file": "osfmk/arm64/hypervisor/hv_vmapple.c",
@@ -657,7 +657,7 @@
     "tree": "hv-deps",
     "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
     "status": "stubbed",
-    "notes": "XNU mutex acquire on hv lock DAT_fffffe000c62c0b8; 100+ kernel callers, full futex/waitq implementation; universal kernel core, not recreated per glue policy; extern in hv_kernel_glue.c."
+    "notes": "XNU mutex acquire on hv lock DAT_fffffe000c62c0b8; 100+ kernel callers, full futex/waitq implementation; universal kernel core, not recreated per glue policy; extern in hv_kernel_glue.c. Identity confirmed 2026-08-12 from fresh decompile (4 args: lock, thread, old, flags; LZCOUNT class table at fffffe000c5b0400) + the s_lck_mtx_t_ilk string at fffffe0007d790b8. Canonical name lck_mtx_lock (was lock_acquire/kernel_lock_acquire)."
   },
   {
     "address": "fffffe000b7f1e80",
@@ -668,7 +668,7 @@
     "tree": "hv-deps",
     "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
     "status": "stubbed",
-    "notes": "XNU mutex release; 100+ kernel callers, universal kernel core, not recreated; extern in hv_kernel_glue.c."
+    "notes": "XNU mutex release; 100+ kernel callers, universal kernel core, not recreated; extern in hv_kernel_glue.c. Identity confirmed 2026-08-12 from fresh decompile (3 args: lock, thread, flags; validates *(thread+0x518)==(flags&0xfffffff) else panic c0e4d74; handles 0x80000000 sentinel; TLB flush b96c6d4 on the interrupt path). Canonical name lck_mtx_unlock (was lock_sync/kernel_lock_release2)."
   },
   {
     "address": "fffffe000b8afa78",
@@ -838,13 +838,13 @@
   {
     "address": "fffffe000b7f1e4c",
     "ghidra_name": "FUN_fffffe000b7f1e4c",
-    "estimated_name": "lock_acquire_variant",
-    "confidence": "low",
+    "estimated_name": "lock_release",
+    "confidence": "high",
     "category": "shared-dep",
     "tree": "hv-deps",
     "file": "osfmk/arm64/hypervisor/hv_kernel_glue.c",
     "status": "stubbed",
-    "notes": "XNU mutex/lock variant in the b7f lock cluster (sibling of lck_mtx_lock b7f0afc / unlock b7f1e80); universal kernel core, not recreated. Declared extern in hv_internal.h (lock_acquire)."
+    "notes": "XNU mutex fast-path release: clears the cpu-owner slot at *(lock+8) when it equals the current CPU id (tpidr_el1+0x518) and returns early if the debug flag DAT_fffffe000c62b3d0 is clear; otherwise falls through to lck_mtx_unlock b7f1e80. Verified 2026-08-12 against fresh decompile (8 lines). Canonical name lock_release (was kernel_lock_release). Declared extern in hv_internal.h."
   },
   {
     "address": "fffffe000b95af80",
@@ -1306,7 +1306,7 @@
     "tree": "hv-pmap",
     "file": "osfmk/arm64/hypervisor/hv_pmap.c",
     "status": "decompiled",
-    "notes": "Map-layer failure unwind. name==-1 or a named object: detach current vcpu (b793cf4). name==NULL and no vcpu bound (tpidr+0x4d8==0): release owner (os_release b8afa78). name without '-' prefix: panic c0e1c3c. Called by hv_vm_map_core (b9868a8) and hv_vm_map_region (b986ff4)."
+    "notes": "Map-layer failure unwind. name==-1 or a named object: zfree_waitq b793cf4 (decompiler drops the arg at this site; was kernel_vcpu_detach). name==NULL and no vcpu bound (tpidr+0x4d8==0): release owner (os_release b8afa78). name without '-' prefix: panic c0e1c3c. Called by hv_vm_map_core (b9868a8) and hv_vm_map_region (b986ff4). Verified 2026-08-12 against fresh decompile."
   },
   {
     "address": "fffffe000b7e0f30",

@@ -45,10 +45,8 @@
 #include "hv_kernel_glue.h"
 
 /* Universal XNU core primitives — shared kernel, NOT recreated. */
-extern void *current_cpu_datap(uint64_t cpu); /* FUN_fffffe000b866ec4; per-CPU getter (decompiler panic-stub) */
+extern void *per_cpu_base(uint64_t cpu); /* FUN_fffffe000b866ec4; per-CPU getter (decompiler panic-stub) */
 extern void *current_task(void *);      /* FUN_fffffe000b8663e8; task getter (body recreated below) */
-extern void  lck_mtx_lock(void *, void *, uint64_t, int);   /* FUN_fffffe000b7f0afc; hv lock DAT_fffffe000c62c0b8 */
-extern void  lck_mtx_unlock(void *, void *, uint32_t);      /* FUN_fffffe000b7f1e80 */
 extern void  os_release(void *);        /* FUN_fffffe000b8afa78 */
 extern void  zfree(void *);             /* FUN_fffffe000b793cf4; zone free w/ waitq */
 extern void  refcount_dec(void *, void *);  /* FUN_fffffe000b862b6c */

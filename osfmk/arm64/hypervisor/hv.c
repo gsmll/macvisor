@@ -288,7 +288,7 @@ hv_vm_create(void *args)
 											owner[0x431] = 0;
 											*(uint32_t *)(owner + 0x425) = 0;
 											hv_caps_feature_mask((uint64_t *)(owner + 0x411), tier); /* b987d9c */
-											lock_acquire(&hv_lock, 0);   /* FUN_fffffe000b7f0ac8 */
+											lck_mtx_lock(&hv_lock, 0);   /* FUN_fffffe000b7f0ac8 */
 											if (*(long *)(per_cpu + 0x628) != 0) {
 												lock_release(&hv_lock);   /* FUN_fffffe000b7f1e4c */
 												hv_vcpu_object_release((uint64_t *)owner); /* b98533c */
@@ -355,14 +355,14 @@ hv_vm_create(void *args)
  * 0xfae94002 if a pending block still owns the vm.
  * Confidence: high (fresh decompile verified; body rewritten to match it).
  * Notes: rewrote 2026-08-12 from a fresh decompile. Two discrepancies fixed:
- *   (a) the per-vm lock_acquire condition was `cpu != 0 || pending == 0`,
+ *   (a) the per-vm lck_mtx_lock condition was `cpu != 0 || pending == 0`,
  *   correct is `cpu != 0 || pending != 0` (lock taken unless cpu==0 AND
  *   pending==0); (b) the pending-block (else) branch was missing the tail
  *   that clears hv_cached_cpu_id low-32 when it equals this cpu and syncs
  *   &hv_lock. Reads per-cpu id at tpidr_el1+0x518; DAT_fffffe000c62b3d0
  *   (hv_debug_flag) is the global "pending sync" flag; helpers are shared
- *   kernel, stubbed: lock_acquire FUN_fffffe000b7f0afc, lock_release
- *   FUN_fffffe000b7f1e4c, lock_sync FUN_fffffe000b7f1e80, per_cpu_base
+ *   kernel, stubbed: lck_mtx_lock FUN_fffffe000b7f0afc, lock_release
+ *   FUN_fffffe000b7f1e4c, lck_mtx_unlock FUN_fffffe000b7f1e80, per_cpu_base
  *   FUN_fffffe000b866ec4, kernel_panic_b FUN_fffffe000c0f8674. err
  *   0xfae94002/6.
  * ------------------------------------------------------------------------- */
@@ -383,7 +383,7 @@ hv_vm_destroy(void *args __unused)
 	if (hv_cached_cpu_id == 0)
 		hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
 	if (u != 0 || hv_debug_flag != 0)           /* DAT_fffffe000c62b3d0 */
-		lock_acquire(&hv_lock, cpu_slot, u, 0); /* FUN_fffffe000b7f0afc @ DAT_fffffe000c62c0b8 */
+		lck_mtx_lock(&hv_lock, cpu_slot, u, 0); /* FUN_fffffe000b7f0afc @ DAT_fffffe000c62c0b8 */
 
 	owner = (long *)per_cpu_base(cpu_slot);     /* FUN_fffffe000b866ec4 */
 	pending = hv_debug_flag;
@@ -397,7 +397,7 @@ hv_vm_destroy(void *args __unused)
 	if (cpu == 0)
 		*(uint32_t *)(o + 1) = *(uint32_t *)(cpu_slot + 0x518);
 	if (cpu != 0 || pending != 0)               /* lock unless (cpu==0 && pending==0) */
-		lock_acquire(o, cpu_slot, (uint64_t)cpu, 0);
+		lck_mtx_lock(o, cpu_slot, (uint64_t)cpu, 0);
 	o = (long *)vm_owner[3];                    /* pending per-cpu block */
 	pending = hv_debug_flag;
 	hv_debug_flag = pending;
@@ -409,12 +409,12 @@ hv_vm_destroy(void *args __unused)
 		if (prev == i)
 			*(uint32_t *)((long *)*vm_owner + 1) = 0;
 		if (prev != i || pending != 0)
-			lock_sync((void *)*vm_owner, cpu_slot);     /* FUN_fffffe000b7f1e80 */
+			lck_mtx_unlock((void *)*vm_owner, cpu_slot);     /* FUN_fffffe000b7f1e80 */
 		i = (int)hv_cached_cpu_id;
 		if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
 			hv_cached_cpu_id &= 0xffffffff00000000ULL;  /* CONCAT44(_4_4_, 0) */
 		if (i != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
-			lock_sync(&hv_lock, cpu_slot);
+			lck_mtx_unlock(&hv_lock, cpu_slot);
 		i = (int)vm_owner[1];
 		vm_owner[1] = i - 1;
 		LORelease();
@@ -430,12 +430,12 @@ hv_vm_destroy(void *args __unused)
 	if (prev == i)
 		*(uint32_t *)((long *)*vm_owner + 1) = 0;
 	if (prev != i || pending != 0)
-		lock_sync((void *)*vm_owner, cpu_slot);
+		lck_mtx_unlock((void *)*vm_owner, cpu_slot);
 	i = (int)hv_cached_cpu_id;
 	if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
 		hv_cached_cpu_id &= 0xffffffff00000000ULL;
 	if (i != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
-		lock_sync(&hv_lock, cpu_slot);
+		lck_mtx_unlock(&hv_lock, cpu_slot);
 	return 0xfae94002;
 }
 
@@ -655,10 +655,10 @@ hv_vm_protect(void *args)
  * Notes: rewrote 2026-08-12 from a fresh decompile. The per-vm lock/cpu-id
  *   base is `**vcpu` (the vm object at the first qword of the vcpu struct's
  *   first qword), not `*vcpu`; the tail was reordered to match (hv_vcpu_destroy
- *   -> lock_sync -> zfree_waitq) and the two per-cpu activation-bit clears
+ *   -> lck_mtx_unlock -> zfree_waitq) and the two per-cpu activation-bit clears
  *   (byte at vcpu+0xf8 selects the vector entry) were added. EL2 sysreg
  *   (3,4,0xf,1,4) = op1=4 ⇒ EL2; register identity unverified. Helpers:
- *   lock_acquire b7f0afc, lock_sync b7f1e80, hv_el2_state_activate b9882ac,
+ *   lck_mtx_lock b7f0afc, lck_mtx_unlock b7f1e80, hv_el2_state_activate b9882ac,
  *   kernel_panic c0f1874, kernel_tlb_flush b96c6d4, zfree_waitq b793cf4,
  *   hv_vcpu_destroy b988e70. err 0xfae94006.
  * ------------------------------------------------------------------------- */
@@ -687,7 +687,7 @@ hv_vcpu_destroy_trap(void *args __unused)
 	if (u == 0)
 		*(uint64_t *)(obj + 1) = *(uint32_t *)(cpu_slot + 0x518);
 	if (u != 0 || pending != 0)
-		lock_acquire(obj, cpu_slot, u, 0);  /* FUN_fffffe000b7f0afc */
+		lck_mtx_lock(obj, cpu_slot, u, 0);  /* FUN_fffffe000b7f0afc */
 	*(int *)(cpu_slot + 0x1c0) += 1;                /* critical-section depth */
 	hv_el2_state_activate((long)vcpu);              /* FUN_fffffe000b9882ac */
 	if (*(int *)(cpu_slot + 0x1c0) == 0)
@@ -739,7 +739,7 @@ hv_vcpu_destroy_trap(void *args __unused)
 	if (prev == *(uint32_t *)(cpu_slot + 0x518))
 		*(uint32_t *)(obj + 1) = 0;
 	if (prev != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
-		lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+		lck_mtx_unlock((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
 	zfree_waitq((char *)tofree);            /* FUN_fffffe000b793cf4 */
 	return 0;
 }
@@ -821,7 +821,7 @@ hv_trap_op_10(uint64_t mask)
 		if (hv_cached_cpu_id == 0)
 			hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
 		if (u != 0 || hv_debug_flag != 0)
-			lock_acquire(&hv_lock, cpu_slot, u, 0);  /* DAT_fffffe000c62c0b8 */
+			lck_mtx_lock(&hv_lock, cpu_slot, u, 0);  /* DAT_fffffe000c62c0b8 */
 		owner = (long *)per_cpu_base(cpu_slot);
 		owner = *(long **)(owner + 0x628);
 		if (owner == NULL) {
@@ -836,7 +836,7 @@ hv_trap_op_10(uint64_t mask)
 		if ((int)hv_cached_cpu_id == *(uint32_t *)(cpu_slot + 0x518))
 			hv_cached_cpu_id = (hv_cached_cpu_id & 0xffffffff00000000);
 		if (pending != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
-			lock_sync(&hv_lock, cpu_slot);
+			lck_mtx_unlock(&hv_lock, cpu_slot);
 	} else {
 		owner = (long *)*vcpu;
 	}
@@ -871,7 +871,7 @@ hv_trap_op_10(uint64_t mask)
 					if (u == 0)
 						*(uint64_t *)(a + 1) = *(uint32_t *)(cpu_slot + 0x518);
 					if (u != 0 || pending != 0)
-						lock_acquire((void *)a, cpu_slot, u, 0);
+						lck_mtx_lock((void *)a, cpu_slot, u, 0);
 					hv_flush_lock_op((uint32_t *)&hv_flush_lock, (uint64_t)(void *)*slot, 0, 0, 1);  /* DAT_fffffe000c756760 */
 					pending = hv_debug_flag;
 					a = *owner;
@@ -880,7 +880,7 @@ hv_trap_op_10(uint64_t mask)
 						if (pending == 0)
 							goto l_flush;
 					}
-					lock_sync((void *)a, cpu_slot);
+					lck_mtx_unlock((void *)a, cpu_slot);
 				l_flush:
 					a = slot[1];
 				}
@@ -988,7 +988,7 @@ hv_vm_set_trap_debug(void *args)
 			cpu_slot = tpidr_el1;
 			if (*(long *)(cpu_slot + 0x4d8) != 0)
 				return 0;
-			os_release((uint64_t)vm);               /* est. teardown */
+			os_release(vm);                 /* b8afa78 teardown */
 			return 0;
 		}
 		if (*ret != '-')
@@ -1330,7 +1330,7 @@ hv_vm_map_region(void *args)
 	if (hv_cached_cpu_id == 0)
 		hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
 	if (cached != 0 || hv_debug_flag != 0)
-		lock_acquire(&hv_lock, cpu_slot, cached, 0);   /* FUN_fffffe000b7f0afc */
+		lck_mtx_lock(&hv_lock, cpu_slot, cached, 0);   /* FUN_fffffe000b7f0afc */
 
 	owner = *(long **)(per_cpu_base(cpu_slot) + 0x628);
 	if (owner == NULL) {
@@ -1347,7 +1347,7 @@ hv_vm_map_region(void *args)
 	if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
 		hv_cached_cpu_id &= 0xffffffff00000000ULL;   /* clear low 32 bits */
 	if (pending != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
-		lock_sync(&hv_lock, cpu_slot);          /* FUN_fffffe000b7f1e80 */
+		lck_mtx_unlock(&hv_lock, cpu_slot);          /* FUN_fffffe000b7f1e80 */
 
 	if (op < 2 &&
 	    (vm = (void *)hv_pmap_resolve_owner(res, &ret),
@@ -1368,7 +1368,7 @@ hv_vm_map_region(void *args)
 					if (u == 0)
 						*cpuslot = *(uint32_t *)(cpu_slot + 0x518);
 					if (u != 0 || pending != 0)
-						lock_acquire((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
+						lck_mtx_lock((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
 					cur = (uint64_t *)owner[0x427];   /* tree root */
 					if (cur == NULL) {
 						result = 0xfae94008;
@@ -1406,7 +1406,7 @@ hv_vm_map_region(void *args)
 							result = 0xfae94008;
 						else if (cand[3] == start + size) {   /* exact end match */
 							hv_rbtree_unlink(owner, cand);   /* FUN_fffffe000b9860bc */
-							os_release((uint64_t)cand[0]);              /* FUN_fffffe000b8afa78 */
+							os_release((void *)cand[0]);            /* FUN_fffffe000b8afa78 */
 							zfree_waitq((char *)cand[4]);               /* FUN_fffffe000b793cf4 */
 							refcount_dec(&hv_container_refcount, cand); /* FUN_fffffe000b862b6c DAT_fffffe0007d54078 */
 							result = 0;
@@ -1421,7 +1421,7 @@ hv_vm_map_region(void *args)
 					if (u == *(uint32_t *)(cpu_slot + 0x518))
 						*(uint32_t *)(obj + 8) = 0;
 					if (u != *(uint32_t *)(cpu_slot + 0x518) || pending != 0)
-						lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+						lck_mtx_unlock((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
 					refcnt = (int)owner[1];
 					owner[1] = refcnt - 1;
 					LORelease();
@@ -1442,7 +1442,7 @@ hv_vm_map_region(void *args)
 							if (ret != (char *)-1) {
 								if (ret == NULL) {
 									if (*(long *)(cpu_slot + 0x4d8) == 0)
-										os_release((uint64_t)vm);   /* FUN_fffffe000b8afa78 */
+										os_release(vm);   /* FUN_fffffe000b8afa78 */
 									goto out_bind;
 								}
 								if (*ret != '-')
@@ -1471,7 +1471,7 @@ hv_vm_map_region(void *args)
 					if (u == 0)
 						*cpuslot = *(uint32_t *)(cpu_slot + 0x518);
 					if (u != 0 || pending != 0)
-						lock_acquire((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
+						lck_mtx_lock((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
 					obj = owner[0];
 					cpu2 = (uint32_t)(*(uint64_t *)(obj + 8) & 0xfffffff);
 					if (cpu2 != *(uint32_t *)(cpu_slot + 0x518))
@@ -1586,7 +1586,7 @@ hv_vm_map_region(void *args)
 					if (u == cpu2)
 						*(uint32_t *)(obj + 8) = 0;   /* clear cpu id */
 					if (u != cpu2 || pending != 0)
-						lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+						lck_mtx_unlock((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
 					refcnt = (int)owner[1];
 					owner[1] = refcnt - 1;
 					LORelease();
@@ -1596,7 +1596,7 @@ hv_vm_map_region(void *args)
 						hv_vcpu_object_release((uint64_t *)owner);
 					if (!b) {
 						/* node was not linked into the tree: undo its allocations */
-						os_release((uint64_t)node[0]);       /* FUN_fffffe000b8afa78 */
+						os_release((void *)node[0]);       /* FUN_fffffe000b8afa78 */
 						zfree_waitq((char *)node[4]);       /* FUN_fffffe000b793cf4 */
 						refcount_dec(&hv_container_refcount, node); /* FUN_fffffe000b862b6c DAT_fffffe0007d54078 */
 					}
@@ -1605,7 +1605,7 @@ hv_vm_map_region(void *args)
 				if (ret != (char *)-1) {
 					if (ret == NULL) {
 						if (*(long *)(cpu_slot + 0x4d8) == 0)
-							os_release((uint64_t)vm);             /* FUN_fffffe000b8afa78 */
+							os_release(vm);             /* FUN_fffffe000b8afa78 */
 						return result;
 					}
 					if (*ret != '-')
