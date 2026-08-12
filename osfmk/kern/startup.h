@@ -68,6 +68,8 @@ extern int    kernel_boot_arg_get(long base, const char *name, void *val, int si
 extern void   kernel_early_log(unsigned long v);      /* kernel early log/timestamp */
 extern void   kernel_daemon_init(const char *fmt, ...); /* kernel printf */
 extern void   kernel_boot_misc_o(const char *fmt, ...); /* kernel printf (boot) */
+extern void   kernel_trace(uint32_t event, uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_fffffe000bd30528, kernel trace */
+extern void   kernel_tlb_flush(void);                      /* FUN_fffffe000b96c6d4, EL1 TLB invalidate */
 extern void   debug_exceptions_disable(int flag);             /* kernel interrupt/exception state restore */
 extern void   kernel_spinlock_acquire(void *lock);         /* FUN_fffffe000b7f8738, kernel lock acquire */
 extern void   kernel_spinlock_release(void *lock);         /* FUN_fffffe000b7f8a60, kernel lock release */
@@ -250,71 +252,12 @@ extern uintptr_t vm_pages_array;       /* PTR_DAT_fffffe0007d7ffe0 : vm pages ar
  * old-style declarations so the tree compiles; NOT recreated) ---- */
 #endif /* _KERN_STARTUP_H_ */
 
-/* ---- boot-path kernel helpers referenced as calls (identity uncertain;
- * old-style declarations so the tree compiles; NOT recreated) ---- */
-extern int cs_features_enabled();
-extern int early_machine_lockdown();
-extern int iokit_finalize();
-extern int kdp_init_part1();
-extern int kdp_magic_init();
-extern int kdp_register_transport();
-extern int kernel_boot_alloc_init();
-extern int kernel_boot_arg_handle();
-extern int kernel_boot_finalize_a();
-extern int kernel_boot_finalize_b();
-extern int kernel_boot_finalize_c();
-extern int kernel_boot_finalize_d();
-extern int kernel_boot_log();
-extern int kernel_boot_misc();
-extern int kernel_boot_misc_c();
-extern int kernel_boot_misc_d();
-extern int kernel_boot_misc_e();
-extern int kernel_boot_misc_f();
-extern int kernel_boot_misc_g();
-extern int kernel_boot_misc_h();
-extern int kernel_boot_misc_i();
-extern int kernel_boot_misc_j();
-extern int kernel_boot_misc_k();
-extern int kernel_boot_misc_m();
-extern int kernel_boot_misc_n();
-extern int kernel_boot_misc_p();
-extern int kernel_boot_mp_start();
-extern int kernel_boot_policy();
-extern int kernel_boot_sync();
-extern int kernel_callback_register();
-extern int kernel_clock_init();
-extern int kernel_cpu_data_setup();
-extern int kernel_cpu_feature_setup();
-extern int kernel_dt_node_lookup();
-extern int kernel_dt_prop_get();
-extern int kernel_dt_read();
-extern int kernel_flush();
-extern int kernel_kalloc();
-extern int kernel_load_context_check();
-extern int kernel_lockdown_cb();
-extern int kernel_mapping_init();
-extern int kernel_mp_op_a();
-extern int kernel_mp_op_b();
-extern int kernel_percpu_bind();
-extern int kernel_percpu_finalize();
-extern int kernel_percpu_id();
-extern int kernel_progress();
-extern int kernel_sched_init();
-extern int kernel_spl();
-extern int kernel_termfuncs();
-extern int kernel_thread_state_set();
-extern int kernel_tlb_flush();
-extern int kernel_trace();
-extern int kernel_vm_pages();
-extern int machine_idle_continue();
-extern int pe_early_init();
-extern int pe_iokit_finalize();
-extern int pe_trace();
-extern int percpu_boot_continuation();
-extern int kdp_callback_a();
-extern int kdp_callback_b();
-extern int kdp_callback_c();
-extern int kdp_callback_d();
+/* ---- boot-path kernel helper shims (de-guessed; verified externs) ---- *
+ * These were untyped `extern int NAME();` declarations. Each was decompiled
+ * and its guessed name VERIFIED against the real Ghidra function; they are
+ * universal XNU core and are now declared as typed verified externs in
+ * hv_kernel_shims.h (see that file for FUN_ + address + corrected name). */
+#include "hv_kernel_shims.h"
 
 extern void hv_flush_lock_op(uint32_t *lock, uint64_t a, uint64_t b, uint32_t c, uint64_t d); /* decompiled in hv_helpers.c (FUN_fffffe000b8563f8) */
 

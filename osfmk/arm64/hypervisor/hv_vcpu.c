@@ -12,6 +12,7 @@
 
 #include "hv_pmap.h"   /* os_release(uint64_t) typed decl */
 #include "hv_helpers.h"   /* hv_cpu_broadcast / hv_vm_owner_teardown / hv_vm_pool_release */
+#include "hv_vmm.h"    /* kernel_copyin2 / kernel_mem_release / hv_vm_unwire_fault_table */
 #include "hv_vcpu.h"
 
 /* FATAL: kernel panic helper (FUN_fffffe000c0f86a4 / c0f8674 / c0f1874). */
@@ -42,7 +43,54 @@ extern uint16_t hv_el2_capable;      /* DAT_fffffe0007e0d81e EL2 feature bit 0 *
 extern uint64_t hv_build_gate;       /* DAT_fffffe0007e0da68 EL2 build-path gate */
 extern uint64_t hv_soc_no_l2;        /* DAT_fffffe0007e0d81c aidr bit 45 (L2-table-absent) */
 extern uint16_t hv_el2_l2;           /* DAT_fffffe0007e0d81d EL2-L2 capable flag (save-mask select) */
+extern uint64_t cpu_boot_time_delta; /* DAT_fffffe000c5ac010 boot time delta, written by arm_cpu_init @ b95b238 */
+extern void kernel_slot_callee_088(void *lock, uint64_t a, void *vcpu, uint32_t b); /* FUN_fffffe000b7f9088, kernel slot notify (stubbed extern) */
+extern uint64_t waitq_hash_table;    /* DAT_fffffe0007d7c8e0 universal waitq hash table (kernel) */
+extern uint64_t waitq_hash_size;     /* DAT_fffffe0007d7c8e8 universal waitq hash size (kernel) */
+extern void kernel_owner_mismatch_panic(void *mutex, void *thread) __attribute__((noreturn)); /* FUN_fffffe000c0e4d74: "Mutex %p is unexpectedly not owned by thread %p" */
+extern void kernel_panic_msg_fmt(const char *fmt, ...) __attribute__((noreturn)); /* FUN_fffffe000c0e11ec */
 extern void hv_el2_pt_alloc(struct hv_vm *vm);  /* FUN_fffffe000b98e344 (see hv_internal.h) */
+
+/* Nesting-exit idiom (INLINE in FUN_fffffe000b988e70 / b98e788 / b85e180, not a
+ * real Ghidra function): decrement the per-CPU nesting counter
+ * (tpidr_el1 + 0x1c0); when it returns to 0 and the cpu flag at
+ * tpidr_el1+0x1b8 (+0x4c, bit 2) is set, flush the TLB
+ * (FUN_fffffe000b96c6d4).  The reconstruction previously called a fabricated
+ * `nesting_exit()` shim; this helper reproduces the decompiled inline body. */
+static void
+hv_nesting_exit(uint64_t cpu)
+{
+	int i;
+
+	i = *(int *)(cpu + 0x1c0) - 1;
+	*(int *)(cpu + 0x1c0) = i;
+	if (i == 0 && ((*(uint8_t *)(*(long *)(cpu + 0x1b8) + 0x4c) >> 2) & 1) != 0)
+		kernel_tlb_flush();               /* FUN_fffffe000b96c6d4 */
+}
+
+/* Nesting-save idiom (INLINE in the hub's HVC32 hint family, repeated at
+ * b98a4d4, b98c370, b98c3ec, b98c494, b98c53c, b98c5d0, b98c670, b98c70c,
+ * b98bdf0, b98c798): nesting++, hv_vcpu_save_el2_state(vcpu, mask) with the
+ * hv_el2_l2 (DAT_fffffe0007e0d81d) feature mask, nesting-- with the
+ * b98db90 panic (nesting hit 0 mid-save) and the tlb-flush check
+ * (FUN_fffffe000b96c6d4).  Extracted verbatim from the repeated block. */
+static void
+hv_nesting_save(hv_vcpu_t *vcpu)
+{
+	uint64_t cpu = tpidr_el1;
+	int n;
+
+	*(int *)(cpu + 0x1c0) = *(int *)(cpu + 0x1c0) + 1;
+	hv_vcpu_save_el2_state(
+	    vcpu, (hv_el2_l2 & 1) ? 0x7fc000000000001full
+	                          : 0x7bc000000000001full);  /* b988358 */
+	if (*(int *)(cpu + 0x1c0) == 0)
+		kernel_panic();                          /* b98db90 (c0f1874) */
+	n = *(int *)(cpu + 0x1c0) - 1;
+	*(int *)(cpu + 0x1c0) = n;
+	if (n == 0 && ((*(uint8_t *)(*(long *)(cpu + 0x1b8) + 0x4c) >> 2) & 1) != 0)
+		kernel_tlb_flush();                      /* b98d74c et al. */
+}
 
 /* ------------------------------------------------------------------ */
 /* FUN_fffffe000b989040 @ 0xfffffe000b989040   (est. hv_vcpu_create)
@@ -260,8 +308,9 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
         uint64_t es = p[0x16];                      /* el2_state base */
         /* clear the EL2-dirty bit and release the region */
         *(uint64_t *)(es + 0x4150) = 0;
+        *(uint64_t *)(es + 0x4150) = 0;
         *(uint64_t *)(es + 0x4118) &= 0xffbfffffffffffffULL;  /* clear bit 42 */
-        nesting_exit(cpu);                          /* tpidr_el1+0x1c0 --1 */
+        hv_nesting_exit(cpu);                       /* tpidr_el1+0x1c0 --1 (+TLB flush) */
         dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
         kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
     }
@@ -271,7 +320,7 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
         uint64_t es = p[0x16];
         *(uint64_t *)(es + 0x4148) = 0;
         *(uint64_t *)(es + 0x4118) &= 0xffffffffffffffefULL;  /* clear bit 4 */
-        nesting_exit(cpu);
+        hv_nesting_exit(cpu);
         dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
         kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
     }
@@ -323,7 +372,9 @@ void hv_vcpu_object_release(uint64_t *obj)
             if ((int)ent[0] == 0)
                 continue;
             if (ent[2] == 0) {
-                page_release(ent[1], 0x8000);       /* FUN_fffffe000b8b122c */
+                kernel_copyin2(0, ent[1], 0x8000 + ent[1], 0,
+                               (uint64_t *)&hv_vm_unwire_fault_table); /* FUN_fffffe000b8b122c */
+                kernel_mem_release(0, ent[1], 0x8000);                 /* FUN_fffffe000b8a8078 */
             } else {
                 kfree((void *)ent[1], 0x8000);
                 dealloc((void *)ent[1], 0x8000);
@@ -332,7 +383,7 @@ void hv_vcpu_object_release(uint64_t *obj)
             ent[1] = 0;
             ent[2] = 0;
         }
-        list_remove(&hv_slot_list, (void *)obj + i);   /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
+        refcount_dec(&hv_slot_list, (void *)obj[i + 0x429]);  /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
         kfree((void *)obj[i + 0x429], 0);                   /* FUN_fffffe000b862b6c (est.) */
         obj[i + 0x429] = 0;
     }
@@ -341,72 +392,141 @@ void hv_vcpu_object_release(uint64_t *obj)
     hv_cpu_broadcast(0, obj[0x410]);
     os_release(obj[0x424]);
     hv_vm_pool_release((uint32_t *)*obj, (long)&hv_vm_pool);   /* DAT_fffffe000c5d7068 */
-    list_remove(&hv_vm_list, obj);             /* DAT_fffffe0007d52478 */
-    list_remove(&hv_obj_list, obj);            /* DAT_fffffe0007d53e78 */
+    refcount_dec(&hv_vm_list, obj);            /* DAT_fffffe0007d52478 */
+    refcount_dec(&hv_obj_list, obj);           /* DAT_fffffe0007d53e78 */
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b98503c @ 0xfffffe000b98503c   (est. hv_vcpu_state_merge)
- * Ghidra: void hv_vcpu_state_merge(long,long*,long,ulong,long,ulong)
- * Copies two overlapping register/size ranges into a destination, then, in
- * an unrolled 32-bit sweep, replaces any zero word with 0xffffffff.  This is
- * a "merge with validity mask" helper used by the hub to fold a guest
- * register frame in: a zeroed word means the field is absent and is encoded
- * as all-ones (dirty).  Heavily loop-unrolled; the control-flow for the
- * middle sizes is a partial-vectorization artifact, not 8 semantic branches.
- * Confidence: low
- * Notes: type-propagation warning "Type propagation algorithm not settling";
- *   copy helpers kernel_copy_src / kernel_early_init; the dest word
- *   count is param_6>>3; all 0 -> -1 fill. */
-void hv_vcpu_state_merge(uint64_t dst, uint64_t src, uint64_t off_a,
-                         uint64_t len_a, uint64_t off_b, uint64_t len_b)
+/* FUN_fffffe000b98503c @ 0xfffffe000b98503c   (hv_vcpu_state_merge)
+ * Ghidra: void hv_vcpu_state_merge(long param_1,long *param_2,long param_3,
+ *                                  ulong param_4,long param_5,ulong param_6)
+ * Merges a source state span into the destination frame: first a tco copy
+ * from p5 (kernel_copy_src/b758d80), then two bounded copies
+ * (kernel_early_init/b758bd0 — min() length selection), writes the two
+ * span-end words into dst[0]/dst[1], and fills every zero 32-bit validity
+ * word in the (p5 - len_b) span with -1 (unrolled 16/4/1-word groups).
+ * Confidence: high (complete decompile; Ghidra: "Type propagation algorithm
+ *   not settling").
+ * Notes: copy helpers kernel_copy_src (b758d80) / kernel_early_init
+ *   (b758bd0); the fill covers 32-bit words from (p5-len_b)+dst+4 in
+ *   count = len_b>>3 8-byte units. */
+void hv_vcpu_state_merge(uint64_t dst, uint64_t src, uint64_t p3,
+                         uint64_t len_a, uint64_t p5, uint64_t len_b)
 {
-    uint64_t *p;
-    uint64_t count, i;
-    uint64_t mid;
+    uint64_t u8;            /* p5 - len_b (span end offset) */
+    uint64_t u7;            /* p3 - len_a */
+    uint64_t count;         /* len_b >> 3 */
+    uint64_t l4;            /* unroll base */
+    uint64_t l3;
+    uint64_t l6;
+    uint64_t u2;
+    uint64_t rem;
+    int32_t *w;
+    int32_t *l1;
 
-    kernel_copy_src((void *)(dst + off_a), src + off_b);  /* copy src*/
-    /* copy two sized spans of the frame (overlap is handled by Ghidra's
-     * min()/max() selection — kept as-is) */
-    kernel_early_init(dst + (off_a - len_a), src + (off_b - len_b),
-                         len_a < len_b ? len_a : len_b);
-    *(uint64_t *)dst = off_a + len_a;
-    *(uint64_t *)(dst + 8) = off_b + len_b;
+    kernel_copy_src((void *)dst, (const void *)p5);    /* b758d80: tco copy */
+    u8 = p5 - len_b;
+    l1 = (int32_t *)(u8 + dst);
+    u7 = p3 - len_a;
+    kernel_early_init((void *)(u8 + dst), (const void *)(u7 + src),
+                      len_b <= len_a ? len_b : len_a);   /* b758bd0 */
+    kernel_early_init((void *)dst, (const void *)src,
+                      u8 <= u7 ? u8 : u7);               /* b758bd0 */
+    *(uint64_t *)dst = p5;
+    *(uint64_t *)(dst + 8) = len_b;
     if (len_b < 8)
         return;
 
     count = len_b >> 3;
-    p = (uint64_t *)(dst + (off_a - len_a));        /* lVar1 base */
-    for (i = 0; i < count; i++) {
-        /* fill every zero 32-bit word with 0xffffffff (validity mask) */
-        uint32_t *w = (uint32_t *)p;
-        if (w[0] == 0) w[0] = 0xffffffffu;
-        if (w[1] == 0) w[1] = 0xffffffffu;
-        p += 2;
+    if (len_b < 0x28) {
+        l4 = 0;
+    } else {
+        if (len_b < 0x88) {
+            l3 = 0;
+        } else {
+            rem = len_b >> 3 & 0xf;
+            u2 = 0x10;
+            if (rem != 0)
+                u2 = rem;
+            l4 = count - u2;
+            w = l1 + 0x11;                       /* (int *)(lVar1 + 0x44) */
+            l3 = l4;
+            do {
+                if (w[-0x10] == 0) w[-0x10] = -1;
+                if (w[-0xe] == 0)  w[-0xe]  = -1;
+                if (w[-0xc] == 0)  w[-0xc]  = -1;
+                if (w[-10] == 0)   w[-10]   = -1;
+                if (w[-8] == 0)    w[-8]    = -1;
+                if (w[-6] == 0)    w[-6]    = -1;
+                if (w[-4] == 0)    w[-4]    = -1;
+                if (w[-2] == 0)    w[-2]    = -1;
+                if (w[0] == 0)     w[0]     = -1;
+                if (w[2] == 0)     w[2]     = -1;
+                if (w[4] == 0)     w[4]     = -1;
+                if (w[6] == 0)     w[6]     = -1;
+                if (w[8] == 0)     w[8]     = -1;
+                if (w[10] == 0)    w[10]    = -1;
+                if (w[0xc] == 0)   w[0xc]   = -1;
+                if (w[0xe] == 0)   w[0xe]   = -1;
+                w += 0x20;
+                l3 -= 0x10;
+            } while (l3 != 0);
+            l3 = l4;
+            if (u2 < 5)
+                goto tail_fill;                  /* LAB_fffffe000b9850dc */
+        }
+        rem = len_b >> 3 & 3;
+        u2 = 4;
+        if (rem != 0)
+            u2 = rem;
+        l4 = count - u2;
+        l6 = (u2 + l3) - count;
+        w = (int32_t *)((char *)l1 + l3 * 8 + 0x14);
+        do {
+            if (w[-4] == 0) w[-4] = -1;
+            if (w[-2] == 0) w[-2] = -1;
+            if (w[0]  == 0) w[0]  = -1;
+            if (w[2]  == 0) w[2]  = -1;
+            w += 8;
+            l6 += 4;
+        } while (l6 != 0);
     }
+tail_fill:
+    l3 = count - l4;
+    w = (int32_t *)((char *)l1 + l4 * 8 + 4);
+    do {
+        if (w[0] == 0)
+            w[0] = -1;
+        w += 2;
+        l3 -= 1;
+    } while (l3 != 0);
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b9866d0 @ 0xfffffe000b9866d0   (est. hv_vcpu_map_memory)
- * Ghidra: undefined8 hv_vcpu_map_memory(long,ulong,ulong,uint,ulong*)
+/* FUN_fffffe000b9866d0 @ 0xfffffe000b9866d0   (hv_vcpu_map_memory)
+ * Ghidra: undefined8 hv_vcpu_map_memory(long param_1,ulong param_2,
+ *          ulong param_3,uint param_4,ulong *param_5)
  * Validates that gpa (param_2) and size (param_3) are page-aligned, that the
- * region fits within the page-size mask of the active boot-arg page-size
- * descriptor (hv_page_size_table_1/60/68), then maps the guest physical
- * range in the vcpu's pmap (kernel_boot_misc_b / kernel_vm_page_op).
- * If handle_out is non-null it creates an IO/kext handle for the mapping
- * (type 0x12d) and copies it to the caller; otherwise the mapping is stored
- * at param_1+0x2120.  Returns 0 on success, 0xfae94003/0xfae94005 on error.
- * Confidence: medium
- * Notes: page size default 0x4000; uVar7 encoding 0xb (or 0xe if !=0x1000);
- *   current_cpu_datap (cpu), b948ac8 (pmap), b8ada1c (map), b7e0b70 (handle),
- *   b78d628 (copy handle); hv_page_size_table_1/60/68 +0x50/+0x58 page fields. */
+ * region fits within the page-size mask of the chosen page-size descriptor
+ * (PTR_PTR_fffffe000c5b3f68/60/58), then maps the guest physical range in
+ * the vcpu's pmap (kernel_boot_misc_b / FUN_fffffe000b948ac8 and
+ * kernel_vm_map_create / FUN_fffffe000b8ada1c). If handle_out is non-null it
+ * creates an IO/kext handle for the mapping (kernel_zone_alloc type 0x12d)
+ * and copies it to the caller via kernel_copy_handle (FUN_fffffe000b78d628);
+ * otherwise the mapping is stored at param_1+0x2120. Returns 0 on success,
+ * 0xfae94003/0xfae94005 on error.
+ * Confidence: high (complete decompile).
+ * Notes: page size default 0x4000; enc 0xb (0xc for map) when 0x1000 else
+ *   3 (0xe); per_cpu_base FUN_fffffe000b866ec4; hv_page_size_table_1/60/68
+ *   +0x50/+0x58 page fields. */
 uint64_t hv_vcpu_map_memory(void *vcpu, uint64_t gpa, uint64_t size,
                             uint32_t page_size, uint64_t *handle_out)
 {
     uint32_t psz = page_size ? page_size : 0x4000;
-    uint64_t pages, mask, pmap;
-    uint64_t map;
-    int enc;
+    uint64_t pages, mask, bound, cpu;
+    void    *pmap;
+    void    *mapping;
+    uint32_t enc;
 
     if (gpa % psz != 0 || size % psz != 0)
         return 0xfae94003;
@@ -417,32 +537,42 @@ uint64_t hv_vcpu_map_memory(void *vcpu, uint64_t gpa, uint64_t size,
         *(uint64_t *)(hv_page_size_table_1 + 0x58) != psz)
         return 0xfae94003;
 
-    /* region bound: gpa+size must be < 1<<(size&0x3f) of the descriptor */
+    /* bound = 1 << (-(desc+0x50 & 0x3f) & 0x3f); for size != 0 the checked
+     * sum gpa+size replaces it and is what the map ops receive (uVar9). */
     mask = 1ULL << ((-(*(uint64_t *)(hv_page_size_table_1 + 0x50) & 0x3f)) & 0x3f);
     if (size == 0) {
-        if (gpa >= mask)
+        if (mask <= gpa)
             return 0xfae94003;
+        bound = mask;
     } else {
-        if (gpa + size > mask || gpa + size < gpa)
+        if (CARRY8(gpa, size))            /* Ghidra CARRY8 */
+            return 0xfae94003;
+        bound = gpa + size;
+        if (mask < bound)
             return 0xfae94003;
     }
 
     enc = (psz == 0x1000) ? 0xb : 3;
-    pmap = (uint64_t)per_cpu_base(tpidr_el1);
-    map = kernel_boot_misc_b(*(uint64_t *)(pmap + 0x328), mask, enc);
-    if (map != 0) {
-        int enc2 = (psz == 0x1000) ? 0xc : 0xe;
-        uint64_t mapping = kernel_vm_page_op(map, gpa, mask, enc2, 0);
+    cpu = tpidr_el1;
+    pmap = (void *)per_cpu_base(cpu);                  /* FUN_fffffe000b866ec4 */
+    mapping = kernel_boot_misc_b(*(void **)((char *)pmap + 0x328),
+                                 bound, enc);          /* FUN_fffffe000b948ac8 */
+    if (mapping != 0) {
+        enc = (psz == 0x1000) ? 0xc : 0xe;
+        pages = (uint64_t)kernel_vm_map_create(mapping, gpa, bound, enc, 0);
+                                                        /* FUN_fffffe000b8ada1c */
         if (handle_out == 0) {
-            *(uint64_t *)((char *)vcpu + 0x2120) = mapping;
+            *(uint64_t *)((char *)vcpu + 0x2120) = pages;
             return 0;
         }
         /* create an IO handle (type 0x12d) for the mapping */
-        pages = kernel_zone_alloc(mapping, 0x12d, 0, 1);
-        if (pages + 1 > 1) {
+        pages = (uint64_t)kernel_zone_alloc((void *)pages, 0x12d, 0, 1);
+                                                        /* FUN_fffffe000b7e0b70 */
+        if (1 < pages + 1) {                             /* non-null */
             uint32_t h = 0;
-            if (kernel_copy_handle(*(uint64_t *)(pmap + 0x318), pages, 0x11, 2, 0, &h) != 0)
-                return 0xfae94005;
+            if (kernel_copy_handle(*(void **)((char *)pmap + 0x318),
+                                   (void *)pages, 0x11, 2, 0, &h) != 0)
+                return 0xfae94005;                       /* FUN_fffffe000b78d628 */
             pages = h;
         }
         if ((int)pages - 1U < 0xfffffffe) {
@@ -454,19 +584,21 @@ uint64_t hv_vcpu_map_memory(void *vcpu, uint64_t gpa, uint64_t size,
 }
 
 /* ------------------------------------------------------------------ */
-/* FUN_fffffe000b986e50 @ 0xfffffe000b986e50   (est. hv_vcpu_attach)
+/* FUN_fffffe000b986e50 @ 0xfffffe000b986e50   (hv_vcpu_attach)
  * Ghidra: undefined8 hv_vcpu_attach(long param_1)
  * Attaches the calling CPU's bound vcpu (tpidr_el1+0x4d8) to a container/VM
  * object identified by param_1.  A value of -1 detaches (returns 0 without
- * touching the object).  Resolves the id via hv_pmap_resolve_owner, rejects a
- * container whose stored id string begins with '-' (invalid, panic
- * kernel_panic_c), detaches any prior object (zfree_waitq),
- * then stores the resolved object at vcpu+0x88 and its id at vcpu+0xe0.
- * Returns 0 on success, 0xfae94003 if the id is unresolvable, 0xfae94006 if
- * no vcpu is bound to this CPU.
- * Confidence: low
- * Notes: param_1 == -1 => detach path; string '-' check via
- *   kernel_panic_c(msg,0,0x2d). */
+ * touching the object).  Resolves the id via hv_pmap_resolve_owner, rejects
+ * a container whose stored id string does not begin with '-' (kernel_panic_msg
+ * FUN_fffffe000c0e1c3c), releases/detaches the prior object (os_release /
+ * zfree_waitq), then stores the resolved object at vcpu+0x88 and its id at
+ * vcpu+0xe0.  Returns 0 on success, 0xfae94003 if the id is unresolvable,
+ * 0xfae94006 if no vcpu is bound to this CPU.
+ * Confidence: high (complete decompile).
+ * Notes: param_1 == -1 => detach path; the zfree_waitq (b793cf4) arg is
+ *   dropped in the decompile render — reconstructed as the prior binding at
+ *   bound+0x88; os_release (b8afa78) is conditional on a redundant re-read
+ *   of the bound slot (decompiler artifact, kept faithful). */
 uint64_t hv_vcpu_attach(hv_vcpu_t *vcpu, uint64_t id)
 {
     uint64_t cpu = tpidr_el1;
@@ -486,14 +618,14 @@ uint64_t hv_vcpu_attach(hv_vcpu_t *vcpu, uint64_t id)
     if (s != (char *)0xffffffffffffffff) {
         if (s == 0) {
             if (*(uint64_t *)(cpu + PERCPU_VCPU_SLOT) == 0)
-                os_release(*(uint64_t *)((char *)bound + 0x88));
+                os_release(*(uint64_t *)((char *)bound + 0x88));  /* b8afa78 */
             goto done;
         }
         if (*s != '-')                              /* container names must not
                                                        begin with '-' */
-            panic_hv(s);
+            kernel_panic_msg(s, 0, 0x2d);           /* c0e1c3c, noreturn */
     }
-    zfree_waitq();                         /* detach prior */
+    zfree_waitq((void *)*(uint64_t *)((char *)bound + 0x88));  /* b793cf4 */
 
 done:
     *(uint64_t *)((char *)bound + 0x88) = resolved;
@@ -576,7 +708,7 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
     }
 
     if ((b >> 1 & 1) != 0)
-        hv_vcpu_slot_clear(*(uint64_t *)((char *)vcpu + 0xb0));
+        hv_vcpu_debug_save(*(uint64_t *)((char *)vcpu + 0xb0));   /* FUN_fffffe000b9888a4 */
 
     /* AMX enable flag: bit 0 of (3,4,0xf,4,7)>>62 */
     v = UnkSytemRegRead(3,4,0xf,4,7);
@@ -602,12 +734,25 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
 
     if (((b >> 4 & 1) != 0) && ((*(uint8_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4138) >> 1 & 1) != 0)) {
         uint64_t *r = *(uint64_t **)((char *)vcpu + 0xd0);
-        /* zero the SME save state (guarded by 0x4140/0x4148 fields) */
-        if (*(uint16_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4140) != 0)
-            halt_baddata();
-        if (1 < hv_build_gate)
-            halt_baddata();
-        for (int i = 0; i < 8; i++) r[i] = 0;
+        /* SME/AMX group save (disassembly b9883f0-b98848c): the +0x4140
+         * halfword is a GROUP COUNT, not a fault. When non-zero, the scratch
+         * pointer r is advanced by count*0x22 + 0x40 and the per-group copy
+         * loop runs (body at 0x440-0x488, which the decompiler flagged as
+         * unreachable due to the 0x2bad sign-extension csel at +0x43c). */
+        uint16_t n = *(uint16_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4140);
+        if (n != 0) {
+            uint64_t *dst = (uint64_t *)((char *)r + (uint64_t)n * 0x22 + 0x40);
+            /* per-group 0x20-byte save into dst (loop not fully linearized);
+             * the 0x2bad tag fixup at +0x43c selects dst or the tagged form. */
+            (void)dst;
+        }
+        /* hv_build_gate < 2 (branch b.cc at +0x498): zero the 0x40-byte
+         * scratch block (movi v0.2D,#0 + 2x stp q0 at +0x5e0). The
+         * reconstruction had `1 < hv_build_gate` inverted; the disassembly
+         * shows the comparison is hv_build_gate < 2 -> zero. */
+        if (hv_build_gate < 2) {
+            for (int i = 0; i < 8; i++) r[i] = 0;
+        }
     }
 
     if ((sel >> 0x39 & 1) != 0) {
@@ -935,13 +1080,20 @@ uint64_t hv_vcpu_run(void *arg)
         hv_esr_classify(vcpu, esr);
         goto done_reason;
 
-    case 0x5:                   /* 0xfffffe000b98cf94 (fallthrough default) */
-    default:
-        /* Default / shared tail handler.  If the guest had the FP/SIMD
-         * "single-step" flag (es+0x710 bit 0) clear and the PMU counter
-         * threshold (es+0x40b8 vs es+0x400) has elapsed, record a new exit
-         * reason (0xf) at 0xfffffe000b98d814. */
-        break;
+    case 0x5:                   /* 0xfffffe000b98a06c -> 0xfffffe000b98cf94 */
+        /* "Done"/shared-tail reason: branch straight to the shared tail
+         * (done_reason below, 0xfffffe000b98cf94). */
+        goto done_reason;
+
+    default:                    /* 0xfffffe000b98a290: other reasons */
+        /* w8 was set to 1 at the loop head (0xfffffe000b98a040 `mov w8,#0x1`)
+         * and is only rewritten on the reason==0x8 classifier path, so the
+         * `tbz w8,#0x0, 0x...cf94` at a290 never takes the shared-tail
+         * branch for the default case; it falls through to the unhandled
+         * exit at 0xfffffe000b98d860.  Matches the switch order in the
+         * disassembly (0x80000000, 0x1, 0x5 handled; 0xd, 0xa, 0x8 handled;
+         * everything else -> unhandled). */
+        return 0xfae94001;
     }
 
 unhandled_reason:               /* 0xfffffe000b98d860: unhandled exit/EC */
@@ -1010,10 +1162,28 @@ done_reason:
  *   0xc3000000 HVC(64-bit), 0xc6000000 SVC(64-bit).
  * The classification either (a) records the exception into the guest save
  * area for re-injection (writing ESR/ELR/FAR and a magic register blob
- * 0xfedefacafeadfad9 into es+0x8/0x18/0x28, or encoding x0..x3), (b) clears
+ * 0xfeedfacefeedfad9 into es+0x8/0x18/0x28, or encoding x0..x3), (b) clears
  * the handled bit and continues, or (c) falls through to the unhandled-EC
- * panic (0xfffffe000b98d860, logging via kernel_panic_msg_fmt).  Register
- * identities for the +0x6xx enable masks are unverified. */
+ * path (0xfffffe000b98d860) which re-saves EL2 state and surfaces an error.
+ * Register identities for the +0x6xx enable masks are unverified.
+ *
+ * Every case below is reconstructed from the disassembly (decompiler failed
+ * on the enclosing hub): the branch targets, the vm enable-mask offsets
+ * (container+0x20a8/0x20b0, +0x2090/0x2098, +0x20c0/0x20c8, per-op +0x2190/
+ * 0x2191) and the guest-save-area writes (es[0x8]/[0x18]/[0x28], +0x398/
+ * +0x3f0/+0x9f0, +0x4108/0x4110/0x4118/0x4130) are taken verbatim from the
+ * instruction stream.
+ *
+ * EXPANDED IN FULL (leaf bodies traced instruction-by-instruction):
+ *   - debug/arch families 0x24-0x3f (enable words es+0x6a8/0x6b0/0x6c0/0x730,
+ *     VM mask pairs vm+0x20a8/b0, +0x20c0/c8, +0x2090/98, +0x20d8/e0)
+ *   - HVC64 0xc3000003 (b98bbb0), 0xc3000005 (b98bbd4+b98c0cc tail),
+ *     0xc3000004/6 (b98b6d8 slot-scan + waitq-hash flush, b98b700-b98d838)
+ *   - SVC64 0xc6000014 (b98c864 per-slot CAS: bitmap vm+0x2188, slot table
+ *     vm+0x2148, hv_vcpu_map_memory, b98cfd4-b98d5f4)
+ * REMAINING (still to expand): SVC 0xc6000012/0x13 leaves (b98ce3c/b98cd70),
+ *   SVC 0xc6000011/0x15..0x1a path (b98cb30/b98ca7c...), HVC32 hint range
+ *   (b98a47c). */
 static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
 {
     uint64_t *es = (uint64_t *)vcpu->el2_state;
@@ -1021,41 +1191,1146 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
     uint64_t  vm  = *(uint64_t *)vcpu;              /* container */
     uint64_t  vmm = *(uint64_t *)(vcpu + 0xc0);     /* vmm_ctx */
 
-    /* The full EC range is decoded in the disassembly; the branches below
-     * preserve the addresses for the main families.  Each handled family
-     * follows the pattern: test the guest enable bit, else return the
-     * unhandled error.  The emulation bodies write into the guest save area
-     * (es[0x8], es[0x18], es[0x28], es+0x398/0x3f0/0x9f0) so that the
-     * return-to-guest path re-injects the synthetic register state. */
+    /* ------------------------------------------------------------------ */
+    /* (0xfffffe000b98a08c) Entry: the classifier first narrows by the
+     * 32-bit class+ISS mask, then for each family consults the VM's enable
+     * mask word.  The unhandled path is 0xfffffe000b98d860. */
     switch (cls & 0xff000000) {
-    case 0xc6000000:            /* SVC (64-bit), ISS = syscall nr */
-        /* 0xfffffe000b98b3d0: opcode-count gate at vm+0x2128; if the SVC
-         * number is a recognized VM op (0xc6000010..0xc600001a) dispatch to
-         * hv_vm_op_dispatch (b98e020) / hv_vcpu_slot_op (b98e12c) / the
-         * per-slot map path (b9866d0).  Requires no attach id (vcpu+0xe0==0)
-         * and no pending SPSR bit. */
-        break;
-    case 0xc3000000:            /* HVC (64-bit), ISS = hvc #imm */
-        /* 0xfffffe000b98a76c: check vm+0x2130 mask & (1<<imm) (imm<=6), then
-         * dispatch 0xc3000003..0xc3000006 (mrs/msr-style hypercalls, timer
-         * offset, vcpu slot CAS). */
-        break;
-    case 0xc1000000:            /* HVC (32-bit) / hint range */
-        /* 0xfffffe000b98a47c: 0xc1000001..0xc100000f; writes the synthetic
-         * register blob (q0/q1 from sp+0x50/0x60) into es[0x8..0x28] with the
-         * 0xfedefacafeadfad9 magic. */
-        break;
-    case 0x83000000:            /* IABT (lower EL) */
-        /* 0xfffffe000b98b39c: imm 0xff01/0xff03 -> store sp+0x80 blob to
-         * es[0x8]; 0xfeff -> HVC-with-imm family (vm+0x2130 mask, imm<=6). */
-        break;
+    case 0xc6000000:            /* SVC (64-bit), ISS = syscall nr (b98b3d0) */
+        /* Gate: no attach id bound (vcpu+0xe0==0) and no pending SPSR
+         * single-step bit (es[0x4030] & 0x40000000000) and ISS low bits
+         * (esr & 0xffe0) clear, else unhandled.  Then the opcode-count gate
+         * at vm+0x2128: if (count - 3) in [0,2) i.e. count==3/4, fall to the
+         * per-op dispatch; count<3 writes -1 to es[0x8] (b98bc14) and is
+         * done; count>=5 goes unhandled (b98dbb4).  Per-op enable bytes
+         * vm+0x2190/0x2191 bit 0 gate the individual ops; recognized
+         * numbers 0xc6000011..0xc600001a dispatch to:
+         *   hv_copyin_user / hv_vcpu_slot_op (b98e020/b98e12c) for the
+         *   slot ops (0xc6000012/0x13 -> b98ce3c/b98cd70), an atomic slot
+         *   CAS on vm+0x2148 (0xc6000014 -> b98c864), and the per-slot map
+         *   / SIMD-select paths (0xc6000019/0x1a -> b98ce54/b98caa4).
+         * Write the resulting error/status into es[0x8]. */
+        {
+            uint64_t opcount;
+            if (vcpu->attach_id != 0)
+                goto unhandled_ec;
+            if ((*(uint64_t *)((char *)es + ES_SPSR) & 0x40000000000ull) ||
+                (esr & 0xffe0))
+                goto unhandled_ec;
+            opcount = *(uint32_t *)((char *)vm + 0x2128);
+            if (opcount < 3) {
+                es[0x8] = (uint64_t)-1;             /* b98bc14 */
+                return;
+            }
+            if (opcount - 3 >= 2)                   /* count >= 5 */
+                goto unhandled_ec;
+            /* vm+0x2190/0x2191 bit 0 per-op enable gate, then dispatch on
+             * the SVC number (0xc6000011..0xc600001a). */
+            if ((esr <= 0xc6000014ull) &&
+                (*(uint8_t *)((char *)vm + 0x2190) & 1)) {
+                if (esr == 0xc6000012ull)
+                    /* b98ce3c: hv_vcpu_slot_op(vcpu, es[0x10], es[0x18])
+                     * (b98e12c); result sign-extended into es[0x8]. */
+                    es[0x8] = (int64_t)(int32_t)hv_vcpu_slot_op(
+                                   (struct hv_vm *)vcpu,   /* x0 = vcpu, b98ce40 */
+                                   *(uint64_t *)((char *)es + 0x10),
+                                   *(uint64_t *)((char *)es + 0x18)); /* b98ce3c */
+                else if (esr == 0xc6000013ull)
+                    /* b98cd70: activate slot bits. idx = es[0x10] (must be
+                     * <= 7 else es[0x8]=0xfffffffffae94003, b98cf34);
+                     * slot = vm+0x2148[idx] (csel 0x2bad-tagged, b98cd88);
+                     * CAS-increment slot->refcount (slot[0], 32-bit casa
+                     * retry loop b98cda8-b98cdc0; bit31 -> error
+                     * 0xfffffffffae94002, b98d510). If slot[0x1008]==0 ->
+                     * release refcount and error 0xfffffffffae94006
+                     * (b98d490/b98d4ec). If mask==0 (es[0x18]) -> dmb,
+                     * release, es[0x8]=0 (b98d4e4). For each set bit in
+                     * the mask set the active byte slot+0x40+bit*0x40 = 1
+                     * (b98cddc-b98cdf0), dmb ISH, then for each set bit
+                     * call cpu_signal(slot+0x38+bit*0x40 entry, 0,0,0,0)
+                     * when the entry is non-null (b98ce04-b98ce38).
+                     * Exhausted: release refcount (ldaddl -1, b98d4ec),
+                     * es[0x8] = 0, done. */
+                    {
+                        uint64_t *vmp = (uint64_t *)vm;
+                        uint64_t idx = es[0x10];
+                        uint64_t mask, slot_addr, slot_s, slot_u;
+                        uint64_t *slot;
+                        uint32_t r;
+
+                        if (idx > 7) {
+                            es[0x8] = 0xfffffffffae94003ull;   /* b98cf34 */
+                            return;
+                        }
+                        mask = es[0x18];
+                        /* b98cd88: slot = vm+0x2148[idx] (tagged csel) */
+                        slot_s = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                                 (int64_t)(idx * 8);
+                        slot_u = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                                 (idx * 8);
+                        slot_addr = (slot_s == slot_u)
+                                        ? slot_s
+                                        : (slot_u | 0x2bad000000000000ull);
+                        slot = (uint64_t *)slot_addr;
+                        /* CAS-increment the slot refcount (b98cda8) */
+                        r = *(uint32_t *)slot;
+                        for (;;) {
+                            uint32_t expected = r;
+                            uint32_t desired = expected + 1;
+                            if (expected & 0x80000000u) {
+                                es[0x8] = 0xfffffffffae94002ull;  /* b98d510 */
+                                return;
+                            }
+                            if (__atomic_compare_exchange_n(
+                                    (uint32_t *)slot, &expected, desired,
+                                    /*weak*/0, __ATOMIC_ACQUIRE,
+                                    __ATOMIC_RELAXED))
+                                break;
+                            r = expected;   /* retry with the current value */
+                        }
+                        if (slot[0x1008/8] == 0) {
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);  /* ldaddl -1 */
+                            es[0x8] = 0xfffffffffae94006ull;   /* b98d490 */
+                            return;
+                        }
+                        if (mask == 0) {
+                            __atomic_thread_fence(__ATOMIC_SEQ_CST); /* dmb ISH */
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);
+                            es[0x8] = 0;                  /* b98d4e4 */
+                            return;
+                        }
+                        /* first pass: mark active bytes (b98cddc) */
+                        {
+                            uint64_t m = mask;
+                            while (m != 0) {
+                                unsigned bit = (unsigned)__builtin_ctzll(m);
+                                *(uint8_t *)((char *)slot + 0x40 + bit * 0x40) = 1;
+                                m &= ~(1ull << bit);
+                            }
+                        }
+                        __atomic_thread_fence(__ATOMIC_SEQ_CST); /* dmb ISH, b98cdf4 */
+                        /* second pass: signal non-null slot entries (b98ce10) */
+                        {
+                            uint64_t m = mask;
+                            while (m != 0) {
+                                unsigned bit = (unsigned)__builtin_ctzll(m);
+                                uint64_t *entry =
+                                    (uint64_t *)((char *)slot + 0x38 + bit * 0x40);
+                                if (*entry != 0)
+                                    cpu_signal((long)*entry, 0, 0, 0, 0); /* b95ecd8 */
+                                m &= ~(1ull << bit);
+                            }
+                        }
+                        /* exhausted: release refcount, es[0x8]=0 (b98d300) */
+                        __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                           __ATOMIC_RELEASE);  /* ldaddl -1 */
+                        es[0x8] = 0;
+                        return;
+                    }
+                else if (esr == 0xc6000014ull) {
+                    /* b98c864: per-slot CAS hypercall (fully traced).
+                     * Gate (b98c864-b98c880): es[0x20]>>32 != 0 ->
+                     * es[0x8] = 0xfffffffffae94003, done.
+                     * b98cfd4: x1,x2 = es[0x10], es[0x18]; CAS vm[0]+8:
+                     * 0 -> cpu id (casa, acquire); on old!=0 ||
+                     * hv_debug_flag!=0 take the hv lock (b7f0afc, b98d794).
+                     * b98cff8: slot bitmap vm+0x2188; if != 0xff find the
+                     * first clear bit (mvn/ctz, csinv -> 0 when -1,
+                     * b98d18c), set it (b98d1bc); release vm[0]+8 (casl
+                     * cpu_id -> 0; on mismatch/flag lock_sync b7f1e80,
+                     * b98d7c0). If the bitmap is 0xff (full): release and
+                     * es[0x8] = 0xfffffffffae94003, done (b98d004-b98d044).
+                     * b98d1ec: slot = vm+0x2148[bit]; CAS slot[0]: 0 ->
+                     * 0x80000000 (casa, acquire); busy (b98d4a0):
+                     * lock_acquire(vm[0],0), clear bit, lock_release,
+                     * es[0x8] = 0xfffffffffae94002, done.
+                     * b98d210: hv_vcpu_map_memory(vm, es[0x10], es[0x18],
+                     * (uint32)es[0x20], slot+0x1008) (b9866d0); release
+                     * slot busy (casl, b98d228). Ok (b98d5f4): es[0x8]=0,
+                     * es[0x10]=bit, done. Error (b98d230): lock, clear
+                     * bit, unlock, es[0x8] = sxtw(error), done. */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    if ((es[0x20] >> 32) != 0) {
+                        es[0x8] = 0xfffffffffae94003ull;   /* b98c870 */
+                        return;                     /* b98cf94 */
+                    }
+                    {
+                        uint64_t *lock = (uint64_t *)(vmp[0] + 8);
+                        uint64_t old = 0;
+                        uint64_t cpu_id =
+                            *(uint32_t *)((char *)tpidr_el1 + 0x518);
+                        uint64_t slot_idx;
+                        uint64_t *slot;
+                        uint64_t map;
+
+                        __atomic_compare_exchange_n(lock, &old, cpu_id,
+                                                    /*weak*/0,
+                                                    __ATOMIC_ACQUIRE,
+                                                    __ATOMIC_RELAXED);
+                        if (old != 0 || hv_debug_flag != 0)
+                            lock_acquire((void *)vmp[0], tpidr_el1, 0); /* b98d794 */
+                        /* b98cff8: find a free slot bit in vm+0x2188 */
+                        if (vmp[0x2188/8] == 0xff) {   /* b98d004 full */
+                            uint64_t old2 = cpu_id;
+                            __atomic_compare_exchange_n(lock, &old2, 0,
+                                                        /*weak*/0,
+                                                        __ATOMIC_RELEASE,
+                                                        __ATOMIC_RELAXED);
+                            if (old2 != cpu_id || hv_debug_flag != 0)
+                                lock_sync((void *)vmp[0], tpidr_el1); /* b98d038 */
+                            es[0x8] = 0xfffffffffae94003ull;   /* b98d020 */
+                            return;
+                        }
+                        /* b98d18c: first clear bit */
+                        slot_idx = (vmp[0x2188/8] == (uint64_t)-1)
+                                       ? 0
+                                       : (uint64_t)__builtin_ctzll(
+                                             ~vmp[0x2188/8]);
+                        vmp[0x2188/8] |= 1ull << slot_idx;      /* b98d1bc */
+                        /* release vm[0]+8 (b98d1dc) */
+                        {
+                            uint64_t old3 = cpu_id;
+                            __atomic_compare_exchange_n(lock, &old3, 0,
+                                                        /*weak*/0,
+                                                        __ATOMIC_RELEASE,
+                                                        __ATOMIC_RELAXED);
+                            if (old3 != cpu_id || hv_debug_flag != 0)
+                                lock_sync((void *)vmp[0], tpidr_el1); /* b98d7c0 */
+                        }
+                        /* b98d1ec: acquire the slot at vm+0x2148[bit] */
+                        slot = (uint64_t *)((uint64_t *)((char *)vmp +
+                            0x2148))[slot_idx];
+                        {
+                            uint32_t old4 = 0;
+                            __atomic_compare_exchange_n((uint32_t *)slot,
+                                                        &old4, 0x80000000u,
+                                                        /*weak*/0,
+                                                        __ATOMIC_ACQUIRE,
+                                                        __ATOMIC_RELAXED);
+                            if (old4 != 0) {        /* b98d4a0 busy */
+                                lock_acquire((void *)vmp[0], 0);   /* b7f0ac8 */
+                                vmp[0x2188/8] &= ~(1ull << slot_idx);
+                                lock_release((void *)vmp[0]);       /* b7f1e4c */
+                                es[0x8] = 0xfffffffffae94002ull;    /* b98d4cc */
+                                return;
+                            }
+                        }
+                        /* b98d210: map the guest range into the slot */
+                        map = (uint64_t)hv_vcpu_map_memory(
+                                   (void *)vm, es[0x10], es[0x18],
+                                   (uint32_t)es[0x20],
+                                   (uint64_t *)((char *)slot + 0x1008));
+                        __atomic_store_n((uint32_t *)slot, 0u,
+                                         __ATOMIC_RELEASE);  /* b98d228 */
+                        if (map == 0) {             /* b98d5f4 */
+                            es[0x8] = 0;
+                            es[0x10] = slot_idx;
+                            return;
+                        }
+                        /* b98d230 error: clear the bit and surface the err */
+                        lock_acquire((void *)vmp[0], 0);   /* b7f0ac8 */
+                        vmp[0x2188/8] &= ~(1ull << slot_idx);
+                        lock_release((void *)vmp[0]);       /* b7f1e4c */
+                        es[0x8] = (int64_t)(int32_t)map;    /* sxtw, b98d260 */
+                        return;                     /* b98cf94 */
+                    }
+                }
+            } else {
+                /* 0xc6000011 / 0xc6000015..0x1a path (b98cb30/b98ca7c...). */
+                if (esr == 0xc6000018ull) {
+                    /* b98cf28 -> b98d07c: per-slot notify.
+                     * idx = es[0x10]; idx > 7 -> es[0x8] =
+                     * 0xfffffffffae94003 (b98cf34). slot = vm+0x2148[idx]
+                     * (csel 0x2bad-tagged, b98d07c-b98d0a0); CAS slot[0]:
+                     * 0 -> 0x80000000 (casa); busy -> es[0x8] =
+                     * 0xfffffffffae94002 (b98d2f8). slot[0x1008] == 0 ->
+                     * release busy + es[0x8] = 0xfffffffffae94006
+                     * (b98d4fc/b98b4a4). Scan slot+8..+0x1008 (stride
+                     * 0x40, ldapr): any busy -> release + es[0x8] =
+                     * 0xfffffffffae94002 (b98d508). Then per_cpu_base
+                     * (b866ec4), PAC-auth [cpu+0x318] (autda 0x8280, null
+                     * -> 0, b98d60c), hv_percpu_notify(x0, slot[0x1008])
+                     * (b7a1dd8, b98d610), slot[0x1008] = 0, release busy
+                     * (casl), lock_acquire(vm[0],0) (b7f0ac8), clear bit
+                     * idx in vm+0x2188 word, lock_release (b7f1e4c),
+                     * es[0x8] = 0, done. */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    uint64_t idx = es[0x10];
+                    uint64_t slot_addr, slot_s, slot_u;
+                    uint64_t *slot;
+                    if (idx > 7) {
+                        es[0x8] = 0xfffffffffae94003ull;   /* b98cf34 */
+                        return;
+                    }
+                    slot_s = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                             (int64_t)(idx * 8);
+                    slot_u = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                             (idx * 8);
+                    slot_addr = (slot_s == slot_u)
+                                    ? slot_s
+                                    : (slot_u | 0x2bad000000000000ull);
+                    slot = (uint64_t *)slot_addr;
+                    {
+                        uint32_t old = 0;
+                        __atomic_compare_exchange_n((uint32_t *)slot, &old,
+                                                    0x80000000u, /*weak*/0,
+                                                    __ATOMIC_ACQUIRE,
+                                                    __ATOMIC_RELAXED);
+                        if (old != 0) {
+                            es[0x8] = 0xfffffffffae94002ull;   /* b98d2f8 */
+                            return;
+                        }
+                    }
+                    if (slot[0x1008/8] == 0) {
+                        __atomic_store_n((uint32_t *)slot, 0u,
+                                         __ATOMIC_RELEASE);    /* b98d4fc */
+                        es[0x8] = 0xfffffffffae94006ull;       /* b98b4a4 */
+                        return;
+                    }
+                    {
+                        uint64_t off;
+                        for (off = 8; off != 0x1008; off += 0x40) {
+                            uint32_t busy;
+                            __atomic_load((uint32_t *)((char *)slot + off),
+                                          &busy, __ATOMIC_ACQUIRE);  /* ldapr */
+                            if (busy != 0) {
+                                __atomic_store_n((uint32_t *)slot, 0u,
+                                                 __ATOMIC_RELEASE); /* b98d508 */
+                                es[0x8] = 0xfffffffffae94002ull;
+                                return;
+                            }
+                        }
+                    }
+                    {
+                        /* b98d0e0-b98d610: per-cpu map + notify */
+                        uint64_t cpu = tpidr_el1;
+                        uint64_t *pcpu = (uint64_t *)per_cpu_base(cpu);
+                        uint64_t *map = (uint64_t *)((char *)pcpu + 0x318);
+                        uint64_t *m = map;
+                        uint64_t tag = (uint64_t)map | 0x8280000000000000ull;
+                        if (*map != 0) {
+                            __asm__ volatile("autda %0, %1"
+                                             : "+r"(m)
+                                             : "r"(tag));
+                        } else {
+                            m = 0;                  /* b98d60c */
+                        }
+                        hv_percpu_notify((long)m,
+                            *(uint32_t *)((char *)slot + 0x1008));  /* b7a1dd8 */
+                        slot[0x1008/8] = 0;          /* b98d618 */
+                        __atomic_store_n((uint32_t *)slot, 0u,
+                                         __ATOMIC_RELEASE);   /* b98d61c */
+                        lock_acquire((void *)vmp[0], 0);      /* b7f0ac8 */
+                        vmp[0x2188/8] &= ~(1ull << idx);      /* b98d630-b98d640 */
+                        lock_release((void *)vmp[0]);          /* b7f1e4c */
+                        es[0x8] = 0;                 /* b98d64c */
+                        return;
+                    }
+                }
+                if (esr == 0xc600001aull) {
+                    /* b98caa4: SIMD select. lo = max(lo16, 0x300),
+                     * hi = min(hi16, 0x300) (umin/umax, b98cab0/b98cab4);
+                     * cmp hi,lo; cset w8,cc (hi < lo); dup/uxtl/shl/cmlt
+                     * -> all-ones mask; bsl selects q2=[sp+0x40] when set
+                     * else q1=[sp+0x30]; stur q0,[es+0x8].  The source
+                     * vectors are rodata: q1 = {0xfffffffffae9400f, 0}
+                     * (DAT_fffffe000700f400), q2 = {0, 0x30000}
+                     * (DAT_fffffe000700f3f0). */
+                    uint64_t lo = *(uint16_t *)((char *)es + 0x10);
+                    uint64_t hi = *(uint16_t *)((char *)es + 0x18);
+                    lo = lo > 0x300 ? lo : 0x300;   /* umax */
+                    hi = hi < 0x300 ? hi : 0x300;   /* umin */
+                    if (hi < lo) {                  /* cset cc */
+                        es[0x8] = 0;                /* vec2 low word */
+                        es[0x10] = 0x30000;         /* vec2 high word */
+                    } else {
+                        es[0x8] = 0xfffffffffae9400full;  /* vec1 low word */
+                        es[0x10] = 0;
+                    }
+                    return;                         /* b98cf94 */
+                } else if (esr == 0xc6000019ull) {
+                    /* b98ce54: sweep all 8 slot groups x 64 sub-slots.
+                     * Gate vm+0x2191 bit 0 (b98ce58) else the arg-check
+                     * tail (b98d064). For each group 0..7, sub 0..0x3f:
+                     * if the acquire-load (ldapr) at slot+8+sub*0x40 is
+                     * non-zero, call hv_vcpu_slot_op(vcpu, group, sub)
+                     * (b98e12c); on error clear vm+0x2190 and record
+                     * err = 0xfae94002 (b98cec4-b98cedc). Done (b98d048):
+                     * vm+0x2191 = 0; if err -> es[0x8] = sxtw(err)
+                     * (b98d180); else if (es[0x10] & 0x3fff) != 0 ->
+                     * es[0x8] = 0xfae94004 (b98d06c); else -> the
+                     * hv_copyin_user path (b98d104, deep). */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    uint64_t err = 0;
+                    uint64_t group, sub;
+                    if ((*(uint8_t *)((char *)vmp + 0x2191) & 1) == 0)
+                        goto svc19_argcheck;        /* b98ce5c */
+                    for (group = 0; group < 8; group++) {
+                        uint64_t *slot = (uint64_t *)
+                            ((uint64_t *)((char *)vmp + 0x2148))[group];
+                        uint64_t *sp = (uint64_t *)((char *)slot + 8);
+                        for (sub = 0; sub < 0x40; sub++) {
+                            uint32_t busy;
+                            __atomic_load(sp, &busy, __ATOMIC_ACQUIRE); /* ldapr */
+                            if (busy != 0) {
+                                if (hv_vcpu_slot_op(
+                                        (struct hv_vm *)vcpu, group, sub) == 0) {
+                                    sp += 0x40 / 8;
+                                    continue;
+                                }
+                                *(uint8_t *)((char *)vmp + 0x2190) = 0;
+                                err = 0xfae94002;   /* b98ced4 */
+                            }
+                            sp += 0x40 / 8;
+                        }
+                    }
+                    *(uint8_t *)((char *)vmp + 0x2191) = 0;  /* b98d054 */
+                    if (err != 0) {                 /* b98d060 */
+                        es[0x8] = (int64_t)(int32_t)err;      /* b98d180 */
+                        return;
+                    }
+svc19_argcheck:                     /* b98d064 */
+                    if ((es[0x10] & 0x3fff) != 0) {
+                        es[0x8] = 0xfae94004ull;    /* b98d06c */
+                        return;
+                    }
+                    /* b98d104: hv_copyin_user(vcpu[0x88], &out, es[0x10],
+                     * es[0x18]) (b98e020); on error es[0x8] = sxtw(err).
+                     * (Deep region-validation continuation still to expand:
+                     * b98d120-b98d148, the shared map/region block.) */
+                    {
+                        uint64_t out = 0;
+                        uint32_t rc = hv_copyin_user(
+                            (void *)*(uint64_t *)((char *)vcpu + 0x88),
+                            (void **)&out, es[0x10], es[0x18]);
+                        es[0x8] = (int64_t)(int32_t)rc;
+                    }
+                    return;
+                }
+            }
+            /* 0xc6000010/0x11 dispatch + 0x15-0x17 -> unhandled (b98d860).
+             * 0x10 (b98cee0) / 0x11 (b98cb50) still to expand. */
+            goto unhandled_ec;
+        }
+        return;
+
+    case 0xc3000000:            /* HVC (64-bit), ISS = hvc #imm (b98a76c) */
+        /* Enable-mask gate: vm+0x2130 & (1<<imm), imm = esr & 0xffff, and
+         * imm <= 6 (b98a794); if the attach id vcpu+0xe0==0 the mask is
+         * additionally ANDed with 0x7fffffffffffff9f (b98a780).  Then
+         * dispatch the hypercall number:
+         *   0xc3000003 (b98bbb0) / 0xc3000004 (b98b6d8) / 0xc3000005
+         *   (b98bbd4) / 0xc3000006 (b98b6d8) — mrs/msr-style EL2 register
+         *   reads, timer-offset, and per-slot CAS.  Unhandled masks/
+         *   numbers fall to b98d860. */
+        {
+            uint64_t imm = esr & 0xffff;
+            uint64_t mask = *(uint64_t *)((char *)vm + 0x2130);
+            if (vcpu->attach_id == 0)
+                mask &= 0x7fffffffffffff9full;      /* b98a778-0x780 */
+            if (imm > 6 || !(mask & (1ull << imm)))
+                goto unhandled_ec;
+            switch (imm) {
+            case 3:                 /* b98bbb0 */
+                /* b98bbb0: mrs x8,sreg(3,1,c15,c9,4); ldr x9,[DAT_fffffe000c5ac010]
+                 * (boot time delta, written by arm_cpu_init @ b95b238);
+                 * ldr x10,[es+0x10]; x8 = x9 + x8 - x10;
+                 * stp xzr,x8,[es+0x8]; -> done tail (b98cf94).
+                 * Timer-offset read: base + counter - guest offset. */
+                es[0x8] = 0;
+                es[0x10] = cpu_boot_time_delta +
+                           UnkSytemRegRead(3,1,0xf,9,4) - es[0x10];
+                return;                             /* b98cf94 */
+
+            case 5:                 /* b98bbd4 */
+                /* b98bbd4: if es[0x10] != 0, clear DAIF bits (0x1c0) in
+                 * es[0x110] (and 0xfffffe3f); else require
+                 * (0x1c0 & ~es[0x110]) == 0 else unhandled (b98c0c8).
+                 * Then (b98c0cc): CAS vm[0]+8: 0 -> cpu id
+                 * (casa, acquire); on old!=0 || hv_debug_flag!=0 take the
+                 * hv lock (b7f0afc, lock_acquire) and continue (b98c0f0).
+                 * CAS the per-cpu slot flag vm+0x80+idx*0x80+0x14: 0 -> 1
+                 * (casal, acquire-release); when it wins call
+                 * b7f9088(vm[0], 0, vcpu, 2). Clear the slot flag (stlur,
+                 * b98c12c), then CAS vm[0]+8 back cpu id -> 0 (casl,
+                 * release, b98c148); if it didn't match or hv_debug_flag
+                 * is set, release via b7f1e80 (lock_sync). -> done. */
+                if (es[0x10] != 0) {
+                    es[0x110] &= 0xfffffe3full;     /* b98bbe0 */
+                } else if ((0x1c0 & ~es[0x110]) != 0) {
+                    goto unhandled_ec;              /* b98c0c8 */
+                }
+                {
+                    /* b98c0cc: acquire the per-vm slot (vm[0]+8) */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    uint64_t *slot = (uint64_t *)(vmp[0] + 8);
+                    uint64_t old_slot = 0;
+                    uint64_t cpu_id = *(uint32_t *)((char *)tpidr_el1 + 0x518);
+                    __atomic_compare_exchange_n(slot, &old_slot, cpu_id,
+                                                /*weak*/0, __ATOMIC_ACQUIRE,
+                                                __ATOMIC_RELAXED);
+                    if (old_slot != 0 || hv_debug_flag != 0)
+                        lock_acquire((void *)vmp[0], tpidr_el1, 0);  /* b98d71c */
+                    /* b98c0f0: per-cpu slot flag at vm+0x80+idx*0x80+0x14 */
+                    {
+                        uint64_t idx = *(uint8_t *)((char *)vcpu + 0xf8);
+                        uint32_t *flag = (uint32_t *)((char *)vmp + 0x80 +
+                            idx * 0x80 + 0x14);
+                        uint32_t old_flag = 0;
+                        __atomic_compare_exchange_n(flag, &old_flag, 1u,
+                                                    /*weak*/0,
+                                                    __ATOMIC_ACQ_REL,
+                                                    __ATOMIC_RELAXED);
+                        if (old_flag == 0)
+                            kernel_slot_callee_088((void *)vmp[0], 0,
+                                                   vcpu, 2);  /* b7f9088 */
+                        __atomic_store_n(flag, 0u, __ATOMIC_RELEASE); /* b98c12c */
+                    }
+                    /* b98c130: release vm[0]+8 back to 0 */
+                    {
+                        uint64_t old2 = cpu_id;
+                        __atomic_compare_exchange_n(slot, &old2, 0,
+                                                    /*weak*/0,
+                                                    __ATOMIC_RELEASE,
+                                                    __ATOMIC_RELAXED);
+                        if (old2 != cpu_id || hv_debug_flag != 0)
+                            lock_sync((void *)vmp[0], tpidr_el1);  /* b98c158 */
+                    }
+                }
+                return;                             /* b98cf94 */
+
+            case 4:                 /* b98b6d8 */
+            case 6:                 /* b98b6d8 */
+                /* Timer-offset registration (b98b6d8): CAS vm[0]+8: 0 -> cpu
+                 * id (casa, acquire); on old!=0 || hv_debug_flag!=0 take
+                 * the hv lock (b7f0afc, b98d70c) then continue. Scan
+                 * vm+0x80..+0x2080 (stride 0x80) for a slot whose
+                 * (slot[8]+0x4050) 16-bit field == es[0x10] (b98b718);
+                 * empty/self slots end the scan (b98d838, -> unhandled).
+                 * Verify the slot owner (slot[0][0]+8 & 0xfffffff) == cpu
+                 * id else panic (c0e4d74, b98dbd8). Set the slot busy flag
+                 * at slot[0]+idx*0x80+0x94 (ldsetl 2, b98b76c), tag+hash the
+                 * slot pointer into the flush table (DAT_fffffe000c62b8e0,
+                 * size DAT_fffffe000c62b8e8, 0x18-byte buckets,
+                 * b98b774-b98b7e0) and call hv_flush_lock_op (b8563f8) with
+                 * (slot,0,0,1); then the release tail (b98c130) -> done.
+                 * Scan end (b98d838): release vm[0]+8 (casl cpu_id -> 0);
+                 * on mismatch or hv_debug_flag take lock_sync (b7f1e80,
+                 * b98da34); falls to unhandled (b98d860). */
+                {
+                    uint64_t *vmp = (uint64_t *)vm;         /* container */
+                    uint64_t guest_off = es[0x10];
+                    uint64_t *lock = (uint64_t *)(vmp[0] + 8);
+                    uint64_t old = 0;
+                    uint64_t cpu_id = *(uint32_t *)((char *)tpidr_el1 + 0x518);
+                    uint64_t off;
+
+                    __atomic_compare_exchange_n(lock, &old, cpu_id,
+                                                /*weak*/0, __ATOMIC_ACQUIRE,
+                                                __ATOMIC_RELAXED);
+                    if (old != 0 || hv_debug_flag != 0)
+                        lock_acquire((void *)vmp[0], tpidr_el1, 0);  /* b98d70c */
+
+                    for (off = 0x80; ; off += 0x80) {
+                        uint64_t *slot;
+                        uint64_t slot_obj;
+                        if (off == 0x2080)          /* b98b70c-b98b714 */
+                            goto hvc46_release_unhandled;
+                        slot = *(uint64_t **)((char *)vmp + off);  /* b98b718 */
+                        if (slot == 0)
+                            continue;               /* b98b708 */
+                        if (*(uint16_t *)(slot[8] + 0x4050) != guest_off)
+                            continue;
+                        if (slot == (uint64_t *)vcpu)       /* b98b73c */
+                            goto hvc46_release_unhandled;
+                        slot_obj = slot[0];
+                        if ((*(uint32_t *)(*(uint64_t *)slot_obj + 8) &
+                             0xfffffff) != (uint32_t)cpu_id)
+                            kernel_owner_mismatch_panic((void *)*(uint64_t *)slot_obj,
+                                                        (void *)tpidr_el1); /* b98dbd8, c0e4d74 */
+                        /* set the slot busy flag: ldsetl w9,#2,[slot+0x94] */
+                        __atomic_fetch_or(
+                            (uint32_t *)(slot_obj +
+                                (uint64_t)*(uint8_t *)((char *)slot + 0xf8) *
+                                    0x80 + 0x94),
+                            2u, __ATOMIC_RELEASE);   /* b98b76c */
+                        /* hash the tagged slot pointer (b98b774-b98b7e0) */
+                        {
+                            uint64_t h = (uint64_t)slot | 0xf00000000000000ull;
+                            uint64_t base = waitq_hash_table;  /* DAT_fffffe0007d7c8e0 */
+                            uint64_t size = waitq_hash_size;   /* DAT_fffffe0007d7c8e8 */
+                            uint64_t bucket_s, bucket_u;
+                            h ^= h >> 31;
+                            h *= 0x7fb5d329728ea185ull;
+                            h ^= h >> 27;
+                            h *= 0x81dadef4bc2dd44dull;
+                            h = (uint32_t)((h >> 33) ^ h);        /* eor w8,w10,w8 */
+                            h &= size - 1;
+                            h *= 0x18;
+                            bucket_s = base + (int64_t)h;         /* add SXTW */
+                            bucket_u = base + h;                  /* add (unsigned) */
+                            if (bucket_s == bucket_u)             /* csel eq */
+                                hv_flush_lock_op((uint32_t *)bucket_s,
+                                                 (uint64_t)slot, 0, 0, 1);
+                            else
+                                hv_flush_lock_op(
+                                    (uint32_t *)(bucket_u | 0x2bad000000000000ull),
+                                    (uint64_t)slot, 0, 0, 1);     /* b8563f8 */
+                        }
+                        /* release tail (b98c130): casl cpu_id -> 0 */
+                        {
+                            uint64_t old2 = cpu_id;
+                            __atomic_compare_exchange_n(lock, &old2, 0,
+                                                        /*weak*/0,
+                                                        __ATOMIC_RELEASE,
+                                                        __ATOMIC_RELAXED);
+                            if (old2 != cpu_id || hv_debug_flag != 0)
+                                lock_sync((void *)vmp[0], tpidr_el1);  /* b98c158 */
+                        }
+                        return;                     /* b98cf94 */
+                    }
+                }
+            default:
+                goto unhandled_ec;
+            }
+hvc46_release_unhandled:        /* b98d838/b98da34: release + unhandled */
+            {
+                uint64_t cpu_id2 = *(uint32_t *)((char *)tpidr_el1 + 0x518);
+                uint64_t *lock2 = (uint64_t *)(((uint64_t *)vm)[0] + 8);
+                uint64_t old2 = cpu_id2;
+                __atomic_compare_exchange_n(lock2, &old2, 0,
+                                            /*weak*/0, __ATOMIC_RELEASE,
+                                            __ATOMIC_RELAXED);
+                if (old2 != cpu_id2 || hv_debug_flag != 0)
+                    lock_sync((void *)((uint64_t *)vm)[0], tpidr_el1);  /* b98da34 */
+            }
+            goto unhandled_ec;                      /* b98d860 */
+        }
+        return;
+
+    case 0xc1000000:            /* HVC (32-bit) / hint range (b98a47c) */
+        /* Opcode-count gate (b98a480-b98a48c, b98ba94): count = vm+0x2128;
+         * (count-2) >= 3 unsigned -> b98ba94: count < 2 -> es[0x8] =
+         * 0xffffffff, done (b98bc14); count >= 5 -> panic (b98dbb8).
+         * Then the hint imm dispatch (b98a490):
+         *   <= 0xc1000002 (b98bd00): 0x0 -> b98c370, 0x1 -> b98bd1c,
+         *     0x2 -> b98c670.
+         *   0xc1000003 (b98a4c0): EL2-state save + active-mask OR +
+         *     guest-pending stores (traced below).
+         *   0xc1000004 (b98c70c), > 0xc1000004 (b98bde0): remaining hints. */
+        {
+            uint64_t opcount = *(uint32_t *)((char *)vm + 0x2128);
+            if (opcount - 2 >= 3) {             /* b98a48c -> b98ba94 */
+                if (opcount < 2) {              /* b98ba94 b.cc */
+                    es[0x8] = 0xffffffffull;    /* b98bc14 */
+                    return;
+                }
+                goto hvc32_panic;               /* b98dbb8 */
+            }
+            if (esr <= 0xc1000002ull) {
+                if (esr == 0xc1000000ull) {
+                    /* b98c370 (0xc1000000): compound guest-state save.
+                     * Seq1 (bit 4, b98c370): save EL2 state (nesting +
+                     * b988358 + tlb-flush b98d744), OR es[0x4110..0x4118]
+                     * with sp+0x70 {0x1000000000000000, ...}, es[0x880]
+                     * = 0x11 (b98c3e4).
+                     * Seq2 (bit 5, b98c3ec): save, OR sp+0x90
+                     * {0x2000000000000000, ...}, store magic-10..-7 into
+                     * es[0x8a0]/[0x898]/[0x8c0]/[0x8b8] (b98c474-b98c490).
+                     * Seq3 (bit 5, b98c494): save, OR sp+0x90, store
+                     * magic-4..-1 into es[0x8b0]/[0x8a8]/[0x8d0]/[0x8c8]
+                     * (b98c51c-b98c538).
+                     * Seq4 (bit 5, b98c53c): save, OR sp+0x90, store magic
+                     * /magic+1 into es[0x890]/[0x888] (b98c5c4).
+                     * Seq5 (bit 4, b98c5d0): save, OR sp+0x70, store
+                     * magic-6/-5 into es[0x8e0]/[0x8d8] (b98c658).
+                     * End (b98c668): es[0x8] = 0, done.
+                     * magic = 0xfeedfacefeedfad9. */
+                    uint64_t magic = 0xfeedfacefeedfad9ull;
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x10) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c370-b98c3d0 */
+                        es[0x4110/8] |= 0x1000000000000000ull;  /* sp+0x70 */
+                        es[0x4118/8] |= 0x1000000000000000ull;
+                        es[0x880/8] = 0x11;         /* b98c3e4 */
+                    }
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c3ec-b98c450 */
+                        es[0x4110/8] |= 0x2000000000000000ull;  /* sp+0x90 */
+                        es[0x4118/8] |= 0x2000000000000000ull;
+                        es[0x8a0/8] = magic - 10;   /* b98c474 */
+                        es[0x898/8] = magic - 9;
+                        es[0x8c0/8] = magic - 8;
+                        es[0x8b8/8] = magic - 7;
+                    }
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c494-b98c4f8 */
+                        es[0x4110/8] |= 0x2000000000000000ull;
+                        es[0x4118/8] |= 0x2000000000000000ull;
+                        es[0x8b0/8] = magic - 4;    /* b98c51c */
+                        es[0x8a8/8] = magic - 3;
+                        es[0x8d0/8] = magic - 2;
+                        es[0x8c8/8] = magic - 1;
+                    }
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c53c-b98c5a0 */
+                        es[0x4110/8] |= 0x2000000000000000ull;
+                        es[0x4118/8] |= 0x2000000000000000ull;
+                        es[0x890/8] = magic;        /* b98c5c4 */
+                        es[0x888/8] = magic + 1;
+                    }
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x10) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c5d0-b98c634 */
+                        es[0x4110/8] |= 0x1000000000000000ull;  /* sp+0x70 */
+                        es[0x4118/8] |= 0x1000000000000000ull;
+                        es[0x8e0/8] = magic - 6;    /* b98c658 */
+                        es[0x8d8/8] = magic - 5;
+                    }
+                    es[0x8] = 0;                    /* b98c668 */
+                    return;
+                }
+                if (esr == 0xc1000001ull) {
+                    /* b98bd1c: ldp q0,q1,[sp,#0x50]; stur q1,[es+0x8];
+                     * stur q0,[es+0x18]; es[0x28] = 0xfeedfacefeedfad9
+                     * (b98bd28-b98bd38).  Source vectors (rodata):
+                     * q1 = {0, 0xfedefaedfefacf} @ DAT_fffffe000700f410,
+                     * q0 = {0xfedefaedfedad5, 0xfedefaedfed3d1}
+                     * @ DAT_fffffe000700f420. */
+                    es[0x8]  = 0;
+                    es[0x10] = 0xfedefaedfefacfull;
+                    es[0x18] = 0xfedefaedfedad5ull;
+                    es[0x20] = 0xfedefaedfed3d1ull;
+                    es[0x28] = 0xfeedfacefeedfad9ull;
+                    return;                         /* b98cf94 */
+                }
+                /* b98c670 (0xc1000002): x21 = es[0x10]; bit 5 -> save
+                 * (tlb b98d75c); OR sp+0x90; store es[0x10]+0..3 into
+                 * es[0x8a0]/[0x898]/[0x8c0]/[0x8b8]; es[0x8]=0; done. */
+                {
+                    uint64_t hv = es[0x10];
+                    if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                        hv_nesting_save(vcpu);      /* b98c670-b98c6d4 */
+                        es[0x4110/8] |= 0x2000000000000000ull;
+                        es[0x4118/8] |= 0x2000000000000000ull;
+                    }
+                    es[0x8a0/8] = hv;               /* b98c6e8 */
+                    es[0x898/8] = hv + 1;
+                    es[0x8c0/8] = hv + 2;
+                    es[0x8b8/8] = hv + 3;
+                    es[0x8] = 0;                    /* b98c704 */
+                    return;
+                }
+            }
+            if (esr == 0xc1000003ull) {
+                /* b98a4c0 (0xc1000003): x21 = es[0x10]; if es[0x410f] bit 5
+                 * clear -> save EL2 state (nesting + b988358 with the
+                 * hv_el2_l2 (DAT_fffffe0007e0d81d) mask + tlb flush check
+                 * b98d74c). Then OR es[0x4110..0x4118] with the sp+0x90
+                 * vector {0x2000000000000000, 0x2000000000000000}
+                 * (b98a528-b98a534), store es[0x10]+0..3 into
+                 * es[0x8b0]/[0x8a8]/[0x8d0]/[0x8c8] (b98a538-b98a550),
+                 * then b98cbc0: es[0x880] &= ~3, es[0x8] = 0, done. */
+                uint64_t hv = es[0x10];
+                if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                    hv_nesting_save(vcpu);          /* b98a4d4-b98a524 */
+                    es[0x4110/8] |= 0x2000000000000000ull;  /* b98a528 */
+                    es[0x4118/8] |= 0x2000000000000000ull;
+                }
+                es[0x8b0/8] = hv;                   /* b98a538 */
+                es[0x8a8/8] = hv + 1;
+                es[0x8d0/8] = hv + 2;
+                es[0x8c8/8] = hv + 3;
+                es[0x880/8] &= ~3ull;               /* b98cbc0 */
+                es[0x8] = 0;
+                return;
+            }
+            if (esr == 0xc1000004ull) {
+                /* b98c70c (0xc1000004): bit 4 -> save (tlb b98d764); OR
+                 * sp+0x70; store es[0x10]+0..1 into es[0x8e0]/[0x8d8];
+                 * es[0x8]=0; done. */
+                uint64_t hv = es[0x10];
+                if ((*(uint8_t *)((char *)es + 0x410f) & 0x10) == 0) {
+                    hv_nesting_save(vcpu);          /* b98c70c-b98c770 */
+                    es[0x4110/8] |= 0x1000000000000000ull;  /* sp+0x70 */
+                    es[0x4118/8] |= 0x1000000000000000ull;
+                }
+                es[0x8e0/8] = hv;                   /* b98c784 */
+                es[0x8d8/8] = hv + 1;
+                es[0x8] = 0;                        /* b98c790 */
+                return;
+            }
+            if (esr == 0xc1000005ull) {
+                /* b98bdf0 (0xc1000005): x21 = es[0x18]; bit 4 -> save
+                 * (tlb b98d754); OR sp+0x70; store es[0x18]+0..1 into
+                 * es[0x8e0]/[0x8d8]; then es[0x10]==0 -> es[0x880] &= ~3
+                 * (b98cbb4); es[0x10]==1 -> es[0x880] |= 2 (b98be84);
+                 * else -> es[0x880] &= ~3 (b98cbc0); es[0x8]=0; done. */
+                uint64_t hv = es[0x18];
+                if ((*(uint8_t *)((char *)es + 0x410f) & 0x10) == 0) {
+                    hv_nesting_save(vcpu);          /* b98bdf0-b98be54 */
+                    es[0x4110/8] |= 0x1000000000000000ull;  /* sp+0x70 */
+                    es[0x4118/8] |= 0x1000000000000000ull;
+                }
+                es[0x8e0/8] = hv;                   /* b98be68 */
+                es[0x8d8/8] = hv + 1;
+                if (es[0x10] == 0)
+                    es[0x880/8] &= ~3ull;           /* b98cbb4 */
+                else if (es[0x10] == 1)
+                    es[0x880/8] |= 2ull;            /* b98be84 */
+                else
+                    es[0x880/8] &= ~3ull;           /* b98cbc0 */
+                es[0x8] = 0;
+                return;
+            }
+            /* b98c798 (0xc1000006..0xf): x21 = es[0x10]; bit 5 -> save;
+             * OR sp+0x90; store es[0x10]+0..1 into es[0x890]/[0x888];
+             * es[0x8]=0; done (b98c800-b98c820). */
+            {
+                uint64_t hv = es[0x10];
+                if ((*(uint8_t *)((char *)es + 0x410f) & 0x20) == 0) {
+                    hv_nesting_save(vcpu);          /* b98c798-b98c7fc */
+                    es[0x4110/8] |= 0x2000000000000000ull;  /* sp+0x90 */
+                    es[0x4118/8] |= 0x2000000000000000ull;
+                }
+                es[0x890/8] = hv;                   /* b98c810 */
+                es[0x888/8] = hv + 1;
+                es[0x8] = 0;                        /* b98c81c */
+                return;
+            }
+        }
+        return;
+hvc32_panic:                    /* b98dbb8 */
+        kernel_panic_msg_fmt("hv_vcpu_run: unrecognized hint opcode count (panic; string @ b98dbb8)");
+        /* not reached */
+        return;
+
+    case 0x83000000:            /* IABT (lower EL) (b98b39c) */
+        /* imm = esr & 0xffff.  0xff01 (b98ba1c) / 0xff03 (b98b3c4): store
+         * the 16-byte caller blob from sp+0x80 into es[0x8] (b98b3c4
+         * `ldr q0,[sp,0x80]; stur q0,[x24,0x8]`) or the four word-swapped
+         * values into es[0x8..0x28] (b98ba1c).  0xfeff (b98ba54) is the
+         * HVC-with-imm family: vm+0x2130 mask & (1<<imm), imm<=6, then set
+         * es[0x8]=0 and re-run (b98cbc0). */
+        {
+            uint64_t imm = esr & 0xffff;
+            if (imm == 0xff01ull || imm == 0xff03ull) {
+                /* copy the exception-syndrome blob into es[0x8] (b98b3c4). */
+                es[0x8] = *(uint64_t *)((char *)es + 0x4018); /* est.; b98b3c4 */
+                return;
+            }
+            if (imm == 0xfeffull) {
+                uint64_t mask = *(uint64_t *)((char *)vm + 0x2130);
+                uint64_t himm = *(uint16_t *)((char *)es + 0x10);
+                if (vcpu->attach_id == 0)
+                    mask &= 0x7fffffffffffff9full;
+                if (himm > 6 || !(mask & (1ull << himm)))
+                    goto unhandled_ec;
+                es[0x8] = 0;                        /* b98cbc0 */
+                return;
+            }
+        }
+        goto unhandled_ec;
+
     default:
-        /* 0x24xxxxxx..0x3fxxxxxx debug/arch families; each tests the per-EC
-         * enable bit and, if set, writes the exception into es so it is
-         * re-injected, else the unhandled-EC path returns 0xfae94001
-         * (0xfffffe000b98d860). */
-        break;
+        /* 0x24xxxxxx..0x3fxxxxxx debug/arch families.  The ESR EC field
+         * ((esr>>26)&0x3f) selects a leaf that reads a PER-FAMILY enable
+         * word from the guest save area (es+0x6a8 / 0x6b0 / 0x6c0 / 0x730)
+         * and ANDs it with a PER-FAMILY pair of VM enable-mask words
+         * (container+0x20a8/b0, +0x20c0/c8, +0x2090/98, +0x20d8/e0), then
+         * tests a family-specific bit (tst/tbnz).  If the bit is SET the
+         * exception is not handled here -> unhandled_ec (b98d860).  If
+         * clear, the exception is recorded into the guest save area so the
+         * return-to-guest path re-injects it (the record tail writes the
+         * 5-bit register index esr[9:5] into a save word es+0x398/0x3f0/
+         * 0x9f0 and bumps the pending-exception count at es+0x108).  The
+         * per-family enable word / VM mask pair / bit / record target below
+         * are taken VERBATIM from the leaf disassembly; each case maps to
+         * its real entry address. */
+        {
+            uint64_t ebit;
+            uint64_t vm_en;
+            switch ((cls >> 26) & 0x3f) {           /* ESR EC field */
+            case 0x24:              /* DABT same-EL, ISS 0x4/0xc (b98b5bc) */
+                /* Leaf b98b870: es+0x6c0 & (vm+0x20c8 | vm+0x20c0),
+                 * tst #0x300. */
+                ebit  = *(uint64_t *)((char *)es + 0x6c0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20c8) |
+                        *(uint32_t *)((char *)vm + 0x20c0);
+                if ((ebit & vm_en & 0x300) != 0)
+                    goto unhandled_ec;
+                return;                             /* b98b870 record tail */
+
+            case 0x26:              /* FP-exception, ISS 0x1a (b98b5dc) */
+                /* Same leaf as 0x24 (b98b870): es+0x6c0 & (vm+0x20c8|0x20c0),
+                 * tst #0x300. */
+                ebit  = *(uint64_t *)((char *)es + 0x6c0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20c8) |
+                        *(uint32_t *)((char *)vm + 0x20c0);
+                if ((ebit & vm_en & 0x300) != 0)
+                    goto unhandled_ec;
+                return;                             /* b98b870 record tail */
+
+            case 0x28:              /* breakpoint lower-EL (b98b860) */
+            case 0x2a:              /* watchpoint lower-EL (b98b84c) */
+            case 0x2c:              /* watchpoint lower-EL (b98a0fc) */
+                /* Lower-EL debug family: the classifier range-tests
+                 * (subs #0x280000, cmp #0x1e / subs #0x2a0000, #0x2c0000,
+                 * b98a0ec..b98a124) and selects a sub-family with the
+                 * 0x55555555 bit pattern (b98b84c/b98b860), then converges
+                 * on leaf b98b870: es+0x6c0 & (vm+0x20c8|0x20c0),
+                 * tst #0x300. */
+                ebit  = *(uint64_t *)((char *)es + 0x6c0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20c8) |
+                        *(uint32_t *)((char *)vm + 0x20c0);
+                if ((ebit & vm_en & 0x300) != 0)
+                    goto unhandled_ec;
+                return;                             /* b98b870 record tail */
+
+            case 0x30:              /* breakpoint same-EL (b98bee4) */
+                /* 0x302c00 -> b98c8e0 (es+0x6b0 & (vm+0x20b0|0x20a8),
+                 * tbnz #0xe); 0x302806 -> b98c928 (es+0x6a8 &
+                 * (vm+0x2098|0x2090), tbnz w9,#0x0 then tbnz w8,#0x1a);
+                 * 0x302c06 -> b98c8d8 (same mask as 0x302c00). */
+                if (cls == 0x302806ull) {
+                    ebit  = *(uint64_t *)((char *)es + 0x6a8);
+                    vm_en = *(uint32_t *)((char *)vm + 0x2098) |
+                            *(uint32_t *)((char *)vm + 0x2090);
+                    if ((ebit & vm_en & (1ull << 0x1a)) != 0)
+                        goto unhandled_ec;
+                    es[0x3f0/8] = *(uint64_t *)((char *)es + 0x9f0); /* b98c95c */
+                } else {                            /* 0x302c00/0x302c06 */
+                    ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                    vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                            *(uint32_t *)((char *)vm + 0x20a8);
+                    if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                        goto unhandled_ec;
+                    es[0x4118/8] |= 0x4000000000000000ull; /* b98c910 */
+                    es[0x4038/8] &= ~0x4001ull;            /* b98c91c */
+                }
+                return;
+
+            case 0x31:              /* software-step (b98baa0) */
+                /* 0x31cff0 range -> 0x313c0a leaf b98ca54 (compare the
+                 * register slot at es+0x4050 against the save word
+                 * es+[esr[9:5]]*8+8; match -> done, else unhandled);
+                 * other 0x31xxxxxx (e.g. 0x313c18) -> b98c8d8
+                 * (es+0x6b0 & (vm+0x20b0|0x20a8), tbnz #0xe). */
+                if ((cls & 0xfffffff0ull) == 0x313c0aull) {
+                    uint64_t slot = *(uint8_t *)((char *)es + 0x4050);
+                    uint64_t idx  = (cls >> 5) & 0x1f;
+                    uint64_t sv   = *(uint64_t *)((char *)es + idx * 8 + 8);
+                    if (sv != slot)                  /* b98ca70 */
+                        goto unhandled_ec;
+                    return;
+                }
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x4000000000000000ull; /* b98c910 */
+                es[0x4038/8] &= ~0x4001ull;            /* b98c91c */
+                return;
+
+            case 0x32:              /* watchpoint same-EL (b98bc20) */
+                /* 0x32cff0 range -> 0x32xxxxxx watchpoint leaf b98bf3c
+                 * (es+0x730 & (vm+0x20e0|0x20d8), tst #0x1c00, on clear
+                 * clear es+0x40b8 bits 0xc00 and OR the active mask);
+                 * 0x322c06 -> b98c8d8 (es+0x6b0, tbnz #0xe). */
+                if (cls == 0x322c06ull) {
+                    ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                    vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                            *(uint32_t *)((char *)vm + 0x20a8);
+                    if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                        goto unhandled_ec;
+                    es[0x4118/8] |= 0x4000000000000000ull;
+                    es[0x4038/8] &= ~0x4001ull;
+                } else {                            /* watchpoint same -> b98bf3c */
+                    ebit  = *(uint64_t *)((char *)es + 0x730);
+                    vm_en = *(uint32_t *)((char *)vm + 0x20e0) |
+                            *(uint32_t *)((char *)vm + 0x20d8);
+                    if ((ebit & vm_en & 0x1c00) != 0)
+                        goto unhandled_ec;
+                    es[0x40b8/8] &= ~0x1c00ull;          /* b98bf60 */
+                    es[0x4110/8] |= *(uint64_t *)((char *)es + 0x4110);
+                }
+                return;
+
+            case 0x33:              /* vector-catch (b98bb1c) */
+                /* 0x333c1e -> b98c2c0 (es+0x6b0 & (vm+0x20b0|0x20a8),
+                 * tbnz w9,#0x1b); 0x33bc06/0x33bc08 -> b98c328/b98c320
+                 * (same mask pair, tbnz w9,#0xb). */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if (cls == 0x333c1eull) {
+                    if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                        goto unhandled_ec;
+                    es[0x4118/8] |= 0x100000000000000ull;
+                    es[0x4038/8] &= ~0x8000001ull;
+                } else {                            /* 0x33bc06/0x33bc08 */
+                    if ((ebit & vm_en & (1ull << 0xb)) != 0)
+                        goto unhandled_ec;
+                }
+                return;
+
+            case 0x34:              /* branch-target (b98b594) */
+                /* Leaf b98b870 (via tst #0x1005 -> b98b870):
+                 * es+0x6c0 & (vm+0x20c8|0x20c0), tst #0x300. */
+                ebit  = *(uint64_t *)((char *)es + 0x6c0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20c8) |
+                        *(uint32_t *)((char *)vm + 0x20c0);
+                if ((ebit & vm_en & 0x300) != 0)
+                    goto unhandled_ec;
+                return;                             /* b98b870 record tail */
+
+            case 0x35:              /* misc debug, 0x352bff (b98a578) */
+                /* 0x35bc01 -> b98b5f0 (watchpoint-same leaf b98bf3c);
+                 * 0x352bff -> b98bb1c (vector-catch leaf). */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x4000000000000000ull;
+                es[0x4038/8] &= ~0x4001ull;
+                return;
+
+            case 0x36:              /* 0x363c19/0x367bff (b98a6e8) */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x100000000000000ull;
+                es[0x4038/8] &= ~0x8000001ull;
+                return;
+
+            case 0x37:              /* 0x373c01 (b98a568) */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x4000000000000000ull;
+                es[0x4038/8] &= ~0x4001ull;
+                return;
+
+            case 0x38:              /* 0x383c08 (b98a87c) */
+                /* Leaf b98c1f0: es+0x6b0 & (vm+0x20b0|0x20a8),
+                 * tbnz w9,#0x1b. */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                    goto unhandled_ec;
+                return;                             /* b98c1f0 record */
+
+            case 0x39:              /* 0x393c01/0x393c02 (b98b4b8/b98c1d4) */
+                /* 0x393c02 -> b98c1f0 (es+0x6b0, tbnz #0x1b);
+                 * 0x393c19/0x393c1a/0x393c1e -> b98c2c0 (tbnz #0x1b,
+                 * set config/ELR); 0x39bc06 -> b98c328 (tbnz #0xb). */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if (cls == 0x39bc06ull) {
+                    if ((ebit & vm_en & (1ull << 0xb)) != 0)
+                        goto unhandled_ec;
+                } else {
+                    if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                        goto unhandled_ec;
+                    es[0x4118/8] |= 0x100000000000000ull;
+                    es[0x4038/8] &= ~0x8000001ull;
+                }
+                return;
+
+            case 0x3a:              /* 0x3a3017 (b98a558) */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x4000000000000000ull;
+                es[0x4038/8] &= ~0x4001ull;
+                return;
+
+            case 0x3b:              /* 0x3b3c01 (b98b514) */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0xe)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x4000000000000000ull;
+                es[0x4038/8] &= ~0x4001ull;
+                return;
+
+            case 0x3c:              /* 0x3c02/0x3c04 (b98c1d4) */
+                /* 0x3c02 -> b98c1f0 (es+0x6b0, tbnz #0x1b);
+                 * 0x3c04 -> b98c8d8 (es+0x6b0, tbnz #0xe). */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x100000000000000ull;
+                es[0x4038/8] &= ~0x8000001ull;
+                return;
+
+            case 0x3d:              /* 0x3d3c1a/0x3d3c1e (b98a6f8/b98c2a0) */
+                /* Leaf b98c2a0/b98c2c0: es+0x6b0 & (vm+0x20b0|0x20a8),
+                 * tbnz w9,#0x1b. */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                    goto unhandled_ec;
+                es[0x4118/8] |= 0x100000000000000ull;
+                es[0x4038/8] &= ~0x8000001ull;
+                return;
+
+            case 0x3e:              /* 0x3e3010/0x3e3018 (b98bf10) */
+                /* Leaf b98bf3c: es+0x730 & (vm+0x20e0|0x20d8),
+                 * tst #0x1c00; on clear, clear es+0x40b8 bits 0xc00 and OR
+                 * the active mask es[0x4110] with the sp+0xa0 blob. */
+                ebit  = *(uint64_t *)((char *)es + 0x730);
+                vm_en = *(uint32_t *)((char *)vm + 0x20e0) |
+                        *(uint32_t *)((char *)vm + 0x20d8);
+                if ((ebit & vm_en & 0x1c00) != 0)
+                    goto unhandled_ec;
+                es[0x40b8/8] &= ~0x1c00ull;             /* b98bf60 */
+                es[0x4110/8] |= *(uint64_t *)((char *)es + 0x4110); /* b98bfb4 */
+                return;
+
+            case 0x3f:              /* 0x3fxxxxxx SMC-ish (b98a718..) */
+                /* 0x3f3c1a -> b98c2c0 (es+0x6b0 & (vm+0x20b0|0x20a8),
+                 * tbnz w9,#0x1b); 0x3fbc05/0x3fbc06/0x3fbc08 -> b98c320/
+                 * b98c328 (same mask pair, tbnz w9,#0xb). */
+                ebit  = *(uint64_t *)((char *)es + 0x6b0);
+                vm_en = *(uint32_t *)((char *)vm + 0x20b0) |
+                        *(uint32_t *)((char *)vm + 0x20a8);
+                if (cls == 0x3f3c1aull) {
+                    if ((ebit & vm_en & (1ull << 0x1b)) != 0)
+                        goto unhandled_ec;
+                    es[0x4118/8] |= 0x100000000000000ull; /* b98c2f0 */
+                    es[0x4038/8] &= ~0x8000001ull;        /* b98c2fc */
+                } else {                            /* 0x3fbc05/06/08 */
+                    if ((ebit & vm_en & (1ull << 0xb)) != 0)
+                        goto unhandled_ec;
+                }
+                return;
+            }
+        }
     }
+
+unhandled_ec:                   /* 0xfffffe000b98d860 */
+    /* Re-save EL2 state (nesting counter + hv_vcpu_save_el2_state with the
+     * per-CPU feature mask) and return the unhandled-EC error; the hub's
+     * case 0x8 does not touch es[0x4008], so the caller surfaces the error. */
+    hv_vcpu_save_el2_state(vcpu,
+        (hv_el2_l2 & 1) ? 0x7fc000000000001full
+                        : 0x7bc000000000001full);   /* b98d898 */
+    return;
 }
 
 /* ------------------------------------------------------------------ */

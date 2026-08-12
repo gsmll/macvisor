@@ -208,9 +208,11 @@ build:
  * and cache information: the cache block-size shift for 0x1000/0x4000 page
  * sizes, CTR/DCZID/ID_AA64* read-only registers, and the cache-geometry data
  * selected by a population-count decision over DAT_fffffe0007e0c6ac. Reads a
- * couple of raw feature words out of param_1 (the tier block). Ends in a
- * halt_baddata() (decompiler truncation).
- * Confidence: medium
+ * couple of raw feature words out of param_1 (the tier block). Ends with
+ * the ID_AA64* register word dump; the epilogue is a clean return
+ * (disassembly b988038-b9882a8; the decompiler's "Control flow encountered
+ * bad instruction data" was a false alarm on the sysreg read at +0x268).
+ * Confidence: high (full disassembly verified)
  * Notes: reads ctr_el0, dczid_el0, id_aa64dfr0/1_el1, id_aa64isar0/1_el1,
  *   id_aa64mmfr0/1_el1, id_aa64pfr0/1_el1, UnkSytemRegRead(3,0,0,7,2) and
  *   UnkSytemRegRead(3,0,0,4,5)/(3,0,0,4,4). Cache geometry via
@@ -325,6 +327,8 @@ select:
 	report[0x32] = UnkSytemRegRead(3,0,0,4,5);   /* op1=0, CRn=4, CRm=5; identity unverified */
 	report[0x33] = UnkSytemRegRead(3,0,0,4,4);   /* op1=0, CRn=4, CRm=4; identity unverified */
 
-	/* WARNING: Bad instruction - Truncating control flow here */
-	halt_baddata();   /* est. hard halt; Ghidra truncated control flow */
+	/* Function ends here. The decompiler's "Bad instruction - Truncating
+	 * control flow" was a false alarm on the sysreg read at +0x268
+	 * (sreg(3,0,c0x0,c0x7,0x2)); the full disassembly (b988038-b9882a8)
+	 * shows a normal epilogue after these stores. No halt. */
 }

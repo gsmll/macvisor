@@ -36,10 +36,147 @@ extern void hv_rbtree_unlink(void *root, void *node);   /* FUN_fffffe000b9860bc,
 extern void os_release(void *object);                     /* FUN_fffffe000b8afa78 */
 extern void kfree_type(void *obj);                        /* FUN_fffffe000b793cf4 */
 extern void refcount_dec(void *ref, void *free_fn);       /* FUN_fffffe000b862b6c */
-extern long FUN_fffffe000c0e4c28(void);                   /* est. per-cpu struct */
-extern void FUN_fffffe000c0d79b8(long frame, uint64_t esr);            /* est. dtrace probe */
-extern void FUN_fffffe000b9627e0(long frame, uint64_t esr, uint64_t far, int guest); /* est. exception dispatch */
-extern void FUN_fffffe000b9671b4(void);                   /* est. error handler */
+extern void *mutex_validate_panic(void *mutex); /* FUN_fffffe000c0e4c28: "Invalid/destroyed mutex"; Ghidra shows only the panic path, caller uses the return (the validated mutex) */
+extern void kernel_dtrace_probe(long frame, uint64_t esr);   /* FUN_fffffe000c0d79b8: bti-only stub (disassembled) */
+extern void hv_el2_exception_dispatch(int *frame, uint64_t esr, uint64_t far, int panic_mode); /* FUN_fffffe000b9627e0: full ESR-class dispatch (decompiled; body in fill pass) */
+extern void zone_require_ro_panic(void) __attribute__((noreturn));  /* FUN_fffffe000c0eae44 (decompiled) */
+extern void hw_error_report(void *, uint64_t, uint32_t, uint64_t); /* FUN_fffffe000b98f304 (stubbed) */
+extern void kernel_trace(uint32_t code, uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_fffffe000bd30528 */
+
+/* Per-CPU debug breakpoint/watchpoint counts. DAT_fffffe000c71693c /
+ * DAT_fffffe000c716938; read by hv_vcpu_debug_save (b9888a4). */
+extern uint32_t dbg_breakpoint_count;
+extern uint32_t dbg_watchpoint_count;
+
+/* Kernel-address window table (DAT_fffffe0007e0da0..0xdf8, est. pairs):
+ *   window_a [0x7e0da0, 0x7e0da8)   base 0x7e0300
+ *   window_b [0x7e0dc0, 0x7e0dc8)   base 0x7e0dd0
+ *   window_c [0x7e0de8, 0x7e0df0)   base 0x7e0df8 */
+extern uint64_t kernel_win_a_lo, kernel_win_a_hi;   /* DAT_fffffe0007e0da0/0xda8 */
+extern uint64_t kernel_win_b_lo, kernel_win_b_hi;   /* DAT_fffffe0007e0dc0/0xdc8 */
+extern uint64_t kernel_win_c_lo, kernel_win_c_hi;   /* DAT_fffffe0007e0de8/0xdf0 */
+extern uint64_t kernel_win_a_base;                   /* DAT_fffffe0007e0300 */
+extern uint64_t kernel_win_b_base;                   /* DAT_fffffe0007e0dd0 */
+extern uint64_t kernel_win_c_base;                   /* DAT_fffffe0007e0df8 */
+extern uint64_t kernel_boot_threshold;                /* DAT_fffffe0007e9d348 */
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000b867350 @ 0xfffffe000b867350   (est. current_thread_validate)
+ * Ghidra: undefined8 FUN_fffffe000b867350(long param_1)
+ * Validates the current-thread pointer (param_1 = per-cpu base). Outside the
+ * early-boot window (DAT_fffffe0007e9d348 >= 0x12) an invalid or missing
+ * thread panics via zone_require_ro_panic (FUN_fffffe000c0eae44); during
+ * early boot it returns 0 instead. Returns the thread pointer when valid.
+ * Confidence: high (complete decompile).
+ * ------------------------------------------------------------------ */
+uint64_t
+current_thread_validate(uint64_t cpu)
+{
+	if (kernel_boot_threshold < 0x12) {        /* DAT_fffffe0007e9d348 */
+		if (cpu == 0)
+			return 0;
+		if (*(uint64_t *)(cpu + 0x418) == 0)
+			return 0;
+	}
+	zone_require_ro_panic();          /* FUN_fffffe000c0eae44 (noreturn; binary passes 3 in x0, ignored) */
+	return 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000c0e4c28 @ 0xfffffe000c0e4c28   (mutex_validate_panic)
+ * Ghidra: void FUN_fffffe000c0e4c28(long param_1)   -- "does not return"
+ * Validates a mutex being destroyed: runs kernel_lock_magic_cleanup on the
+ * magic at +8, then panics "Invalid/destroyed mutex". Ghidra renders only
+ * the panic path; the sole caller (FUN_fffffe000b7f09dc, hv_vm_pool_release)
+ * uses the return value (the validated mutex), so the success path passes
+ * the mutex back.
+ * Confidence: high (decompile + caller-contract inference).
+ * ------------------------------------------------------------------ */
+void *
+mutex_validate_panic(void *mutex)
+{
+	kernel_lock_magic_cleanup(*(uint32_t *)((char *)mutex + 8) & 0xfffffff);  /* FUN_fffffe000b840ae4 */
+	kernel_panic_msg_fmt("Invalid/destroyed mutex %p: <0x%06x 0x%02x 0x%08x 0x%08x/%p 0x%04x 0x%04x> @%s:%d", mutex);
+	return mutex;   /* unreachable in Ghidra's view; caller contract */
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000c0eae44 @ 0xfffffe000c0eae44   (zone_require_ro_panic)
+ * Ghidra: void FUN_fffffe000c0eae44(void)   -- "does not return"
+ * Panics "zone_require_ro failed: address not in a ro zone". Reached from
+ * the fall-through of current_thread_validate (binary passes a 3 in x0 which
+ * the callee ignores).
+ * Confidence: high (complete decompile; 6 unreachable blocks removed).
+ * ------------------------------------------------------------------ */
+void
+zone_require_ro_panic(void)
+{
+	kernel_panic_msg_fmt("zone_require_ro failed: address not in a ro zone (addr: %p) @%s:%d");
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000c0d79b8 @ 0xfffffe000c0d79b8   (kernel_dtrace_probe)
+ * Ghidra: void FUN_fffffe000c0d79b8(void)   -- "bad instruction data" (truncated)
+ * Disassembly: single `bti c` instruction — a no-op landing stub. The EL1
+ * sync handler calls it as a dtrace probe; it does nothing.
+ * Confidence: high (complete disassembly).
+ * ------------------------------------------------------------------ */
+void
+kernel_dtrace_probe(long frame, uint64_t esr)
+{
+	(void)frame;
+	(void)esr;   /* bti c only */
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000b96368c @ 0xfffffe000b96368c   (est. kernel_addr_in_window)
+ * Ghidra: undefined1 FUN_fffffe000b96368c(void)
+ * Returns 1 when the 47-bit canonicalized address (bits [46:0] of the input,
+ * sign-extended from bit 55) falls inside any of the three kernel address
+ * windows (window_a/b/c above); else 0. Used to decide whether a faulting/
+ * traced address is a kernel VA worth canonicalizing.
+ * Confidence: high (complete disassembly; the decompiler's `return 0` was
+ *   the unreachable-block removal artifact).
+ * ------------------------------------------------------------------ */
+uint64_t
+kernel_addr_in_window(uint64_t addr)
+{
+	uint64_t a = (addr & 0x7fffffffffffULL) | (-(addr >> 55 & 1) & 0xffff800000000000ULL);
+
+	if (a >= kernel_win_b_lo && a < kernel_win_b_hi)
+		return 1;
+	if (a >= kernel_win_a_lo && a < kernel_win_a_hi)
+		return 1;
+	if (a >= kernel_win_c_lo && a < kernel_win_c_hi)
+		return 1;
+	return 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000b96af70 @ 0xfffffe000b96af70   (est. kernel_addr_to_offset)
+ * Ghidra: undefined8 FUN_fffffe000b96af70(void)
+ * Converts a kernel VA to a window-relative offset (for tracing): returns 0
+ * if the canonical address is in none of the windows; otherwise subtracts the
+ * window base (window_b -> 0x7e0dd0, window_c -> 0x7e0df8, else window_a ->
+ * 0x7e0300).
+ * Confidence: high (complete disassembly; decompiler's `return 0` was the
+ *   unreachable-block artifact).
+ * ------------------------------------------------------------------ */
+uint64_t
+kernel_addr_to_offset(uint64_t addr)
+{
+	uint64_t a = (addr & 0x7fffffffffffULL) | (-(addr >> 55 & 1) & 0xffff800000000000ULL);
+
+	if (!(a >= kernel_win_b_lo && a < kernel_win_b_hi) &&
+	    !(a >= kernel_win_a_lo && a < kernel_win_a_hi) &&
+	    !(a >= kernel_win_c_lo && a < kernel_win_c_hi))
+		return 0;
+	if (addr >= kernel_win_b_lo && addr < kernel_win_b_hi)
+		return addr - kernel_win_b_base;
+	if (addr >= kernel_win_c_lo && addr < kernel_win_c_hi)
+		return addr - kernel_win_c_base;
+	return addr - kernel_win_a_base;
+}
 extern uint64_t hv_region_refcount;                       /* DAT_fffffe0007d54078 */
 extern uint64_t hv_signal_timeout;                        /* hv_signal_timeout */
 extern uint64_t hv_signal_use_table;                      /* hv_signal_use_table */
@@ -61,7 +198,7 @@ extern long cpu_cur_thread_frame;                         /* est. current thread
  * (FUN_fffffe000b7f0afc) if a cross-cpu flag is pending.
  * Confidence: high (panic string + header validation are unambiguous).
  * Notes: the "Mutex to destroy still has waiters" string @ fffffe00070674e8;
- *   per-cpu struct via FUN_fffffe000c0e4c28; lock FUN_fffffe000b7f0afc;
+ *   mutex validation FUN_fffffe000c0e4c28; lock FUN_fffffe000b7f0afc;
  *   free FUN_fffffe000b7f007c (kernel). Called by hv_vm_create unwind and
  *   hv_vcpu_object_release as the vm-object lock release.
  * ------------------------------------------------------------------ */
@@ -88,7 +225,7 @@ hv_vm_pool_release(uint32_t *lock, long zone)
 		kernel_panic_msg_fmt("Mutex to destroy still has waiters: %p: <0x%06x 0x%02x 0x%08x 0x%08x/%p 0x%04x 0x%04x> @%s:%d");
 	}
 
-	l = FUN_fffffe000c0e4c28();              /* per-cpu struct (kernel) */
+	l = (long)mutex_validate_panic(lock);  /* FUN_fffffe000c0e4c28: validate mutex, pass back */
 	i = (int)hv_debug_flag;                  /* DAT_fffffe000c62b3d0 */
 	cpu = tpidr_el1;
 	u = *(uint64_t *)(l + 8);
@@ -678,13 +815,13 @@ el1_sync_handler(long frame, uint64_t esr, uint64_t far)
 	} else {
 		is_guest = hv_el2_guest_exc_check(esr, elr, far, spsr_el1);
 		if (is_guest != 0) {
-			FUN_fffffe000c0d79b8(frame, esr);   /* dtrace probe (kernel) */
+			kernel_dtrace_probe(frame, esr);   /* FUN_fffffe000c0d79b8 (kernel) */
 		}
 	}
 	*(uint64_t *)(frame + 0x108) = elr;
 	*(uint64_t *)(frame + 0x118) = far;
-	FUN_fffffe000b9627e0(frame, esr, far, is_guest != 0);   /* exception dispatch (kernel) */
-	hv_el2_exception_exit();
+	hv_el2_exception_dispatch((int *)frame, esr, far, is_guest != 0);   /* FUN_fffffe000b9627e0 (kernel) */
+	hv_el2_exception_exit((void *)frame);
 }
 
 /* ------------------------------------------------------------------ *
@@ -710,7 +847,7 @@ el1_fiq_handler(void)
 	}
 	*(int *)(cpu + 0x1c0) -= 1;
 	SendEventLocally();
-	hv_el2_exception_exit();
+	hv_el2_exception_exit((void *)frame);
 }
 
 /* ------------------------------------------------------------------ *
@@ -725,7 +862,7 @@ el1_irq_handler(void)
 	long cpu = tpidr_el1;
 	long frame = cpu_cur_thread_frame;   /* est. (unaff_x23) */
 
-	hv_el2_guest_irq();
+	hv_el2_guest_irq((void *)frame);
 	*(uint64_t *)(frame + 0xd0) = 0;
 	if (*(int *)(cpu + 0x1c0) == 0) {
 		hv_el2_preemption_panic();
@@ -733,18 +870,138 @@ el1_irq_handler(void)
 	}
 	*(int *)(cpu + 0x1c0) -= 1;
 	SendEventLocally();
-	hv_el2_exception_exit();
+	hv_el2_exception_exit((void *)frame);
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000b9671b4 @ 0xfffffe000b9671b4   (est. hv_el2_serror_entry)
+ * Ghidra: void FUN_fffffe000b9671b4(int *param_1, ulong param_2, ulong param_3)
+ * SERROR (async exception) entry, called by the EL1 SERROR vector handler.
+ * param_1 = saved-guest-state frame, param_2 = ESR, param_3 = FAR.
+ * Marks the current thread as inside an async error (sets bit 0x80 in the
+ * per-CPU words tpidr+0x43c and cpu+0x4c when the thread's +0x18 flag is
+ * set). If tracing is enabled it canonicalizes the FAR (sign-extending
+ * bit 55 and masking to 51 bits) and traces 0x1040001 (SERROR entry).
+ * Unless the ESR is the same-EL async class (0xbd400000 family): clears the
+ * saved FAR/ESR pair (frame+0x118/+0x120) and delivers the error via
+ * hw_error_report (FUN_fffffe000b98f304), then traces 0x1040002 (exit).
+ * Confidence: high (complete decompile).
+ * Notes: current-thread getter FUN_fffffe000b867350; valid-addr check
+ *   FUN_fffffe000b96368c; address canonicalize FUN_fffffe000b96af70;
+ *   trace kernel_trace (0x1040001/2); hw_error_report = b98f304 (stubbed
+ *   shared-dep entry).
+ * ------------------------------------------------------------------ */
+void
+hv_el2_serror_entry(int *frame, uint64_t esr, uint64_t far)
+{
+	uint64_t cpu;
+	long     th;
+	int      valid;
+	uint64_t addr;
+	long     off;
+
+	cpu = tpidr_el1;
+	th = current_thread_validate(cpu);           /* b867350, decompiled above */
+	if ((th != 0) && (*(int *)(th + 0x18) != 0)) {
+		*(uint *)(cpu + 0x43c) |= 0x80;
+		*(uint *)(*(long *)(cpu + 0x1b8) + 0x4c) |= 0x80;
+	}
+
+	if ((hv_trace_flag & 0xfffffff7) != 0) {
+		valid = (int)kernel_addr_in_window(far); /* b96368c, decompiled above */
+		if (valid == 0) {
+			addr = 0;
+		} else {
+			addr = kernel_addr_to_offset(
+			    -(far >> 0x37 & 1) & 0xffff800000000000ULL | far & 0x7fffffffffffULL); /* b96af70 */
+		}
+		kernel_trace(0x1040001, esr, addr, 0, 0);
+	}
+
+	if ((esr & 0xfdc00000) != 0xbd400000) {
+		off = (*frame != 0x14) ? 0x48 : 0x110;   /* frame type -> pstate offset */
+		if ((*(uint8_t *)((long)frame + off) & 0xc) == 0) {
+			frame[0x46] = 0;                     /* +0x118 (saved FAR) */
+			frame[0x47] = 0;                     /* +0x120 (saved ESR) */
+		}
+		hw_error_report(frame, far, 0, esr);     /* FUN_fffffe000b98f304 (stubbed) */
+		if ((hv_trace_flag & 0xfffffff7) != 0) {
+			valid = (int)kernel_addr_in_window(far);
+			if (valid == 0) {
+				addr = 0;
+			} else {
+				addr = kernel_addr_to_offset(
+				    -(far >> 0x37 & 1) & 0xffff800000000000ULL | far & 0x7fffffffffffULL);
+			}
+			kernel_trace(0x1040002, esr, addr, 0, 0);
+		}
+	}
 }
 
 /* ------------------------------------------------------------------ *
  * FUN_fffffe000b75e058 @ 0xfffffe000b75e058   (est. el1_error_handler)
  * Ghidra: void FUN_fffffe000b75e058(void)
- * EL1 error (serror) handler (vector +0x800): runs the error path
- * (FUN_fffffe000b9671b4) then exits through hv_el2_exception_exit.
+ * EL1 SERROR (async exception) vector handler (VBAR_EL1 +0x800). Runs the
+ * async-error entry FUN_fffffe000b9671b4 with the saved frame + FAR/ESR:
+ * it marks the current thread as handling an async error (sets bit 0x80 in
+ * tpidr+0x43c and cpu+0x4c), traces SERROR entry/exit (0x1040001/2) when
+ * tracing is enabled, and — unless the ESR is the same-EL async class
+ * (0xbd400000) — clears the saved FAR/ESR pair (frame+0x118/+0x120) and
+ * delivers the error via hw_error_report (FUN_fffffe000b98f304). Then
+ * hv_el2_exception_exit restores the guest state (incl. SVE) and erets.
+ * Confidence: high (both callees decompiled).
+ * Notes: frame base is the saved-guest-state block (x21); FAR/ESR come from
+ *   the frame (+0x118/+0x110). hw_error_report is a stubbed shared-dep
+ *   entry (b98f304) — the async-abort delivery path.
  * ------------------------------------------------------------------ */
 void
 el1_error_handler(void)
 {
-	FUN_fffffe000b9671b4();   /* est. kernel error handler */
-	hv_el2_exception_exit();
+	uint64_t frame = cpu_cur_thread_frame;   /* est. saved-guest-state base */
+	uint64_t esr = *(uint64_t *)(frame + 0x110);
+	uint64_t far = *(uint64_t *)(frame + 0x118);
+
+	hv_el2_serror_entry((int *)frame, esr, far);   /* b9671b4, decompiled above */
+	hv_el2_exception_exit((void *)frame);
+}
+
+/* ------------------------------------------------------------------ *
+ * FUN_fffffe000b9888a4 @ 0xfffffe000b9888a4   (est. hv_vcpu_debug_save)
+ * Ghidra: void FUN_fffffe000b9888a4(long param_1)
+ * Saves the CPU's EL1 hardware debug state into the vcpu's EL2 save block
+ * (param_1 = el2 state base, the same block hv_vcpu_save_el2_state writes).
+ * Reads DBGCLAIMCLR_EL1 (claims all 16 breakpoints/watchpoints by writing
+ * 0xff back), then stores the live DBGBVR/DBGBCR breakpoint-pair registers
+ * at +0x478 + i*0x10 / +0x480 + i*0x10 and the DBGWVR/DBGWCR watchpoint-pair
+ * registers at +0x578 + i*0x10 / +0x580 + i*0x10, gated by the per-CPU
+ * breakpoint (DAT_fffffe000c71693c) and watchpoint (DAT_fffffe000c716938)
+ * counts. The decompiler unrolls these as a switch over the count (max 0x10).
+ * Confidence: high (the dbgbvr/dbgbcr/dbgwvr/dbgwcr EL1 read + claim sequence
+ *   is the canonical hardware debug-state save; called by
+ *   hv_vcpu_save_el2_state).
+ * Notes: all registers are EL1 debug sysregs, encoded as UnkSytemRegRead
+ *   (op0=2/3, op1=0); the per-register CRm/op2 encodings are the standard
+ *   DBGBVRn_EL1 = (2,0,0,1+(n>>2),(n&3)+4), DBGBCRn_EL1 = (2,0,0,1+(n>>2),n&3),
+ *   DBGWVRn_EL1 = (2,0,0,1+(n>>2),(n&3)+4), DBGWCRn_EL1 = (2,0,0,1+(n>>2),n&3).
+ *   The claim write sets DBGCLAIMCLR_EL1 = 0xff. Count globals live in the
+ *   debug-monitor data (read-only on this path).
+ * ------------------------------------------------------------------ */
+void
+hv_vcpu_debug_save(uint64_t es)
+{
+	uint32_t bp_count = dbg_breakpoint_count;   /* DAT_fffffe000c71693c */
+	uint32_t wp_count = dbg_watchpoint_count;   /* DAT_fffffe000c716938 */
+	int i;
+
+	*(uint64_t *)(es + 0x690) = UnkSytemRegRead(3,0,7,9,6) & 0xff; /* DBGCLAIMCLR_EL1 */
+	UnkSytemRegWrite(3,0,7,9,6, 0xff);                            /* claim all */
+
+	for (i = 0; i < (int)bp_count && i < 0x10; i++) {
+		*(uint64_t *)(es + 0x478 + i * 0x10) = UnkSytemRegRead(2,0,0,1 + (i >> 2), (i & 3) + 4); /* DBGBVRn_EL1 */
+		*(uint64_t *)(es + 0x480 + i * 0x10) = UnkSytemRegRead(2,0,0,1 + (i >> 2), i & 3);       /* DBGBCRn_EL1 */
+	}
+	for (i = 0; i < (int)wp_count && i < 0x10; i++) {
+		*(uint64_t *)(es + 0x578 + i * 0x10) = UnkSytemRegRead(2,0,0,1 + (i >> 2), (i & 3) + 4); /* DBGWVRn_EL1 */
+		*(uint64_t *)(es + 0x580 + i * 0x10) = UnkSytemRegRead(2,0,0,1 + (i >> 2), i & 3);       /* DBGWCRn_EL1 */
+	}
 }

@@ -169,11 +169,11 @@ extern void UnkSytemRegWrite(int op0, int op1, int crn, int crm, int op2,
  * hv_el2.c prototypes — the decompiled EL2 vector handlers and guest-exit
  * helpers. Implemented as faithful C re-creations of the Ghidra decompiles.
  */
-void hv_el2_vector_sync(void);    /* FUN_fffffe000b760b94 (est.) */
-void hv_el2_vector_irq(void);     /* FUN_fffffe000b760f04 (est.) */
-void hv_el2_vector_fiq(void);     /* FUN_fffffe000b761260 (est.) */
-void hv_el2_vector_error(void);   /* FUN_fffffe000b7615bc (est.) */
-void hv_el2_common_dispatch(void);/* FUN_fffffe000b761930 (est.) */
+void hv_el2_vector_sync(void);    /* FUN_fffffe000b760b94 (est.; asm in hv_el2_vectors.s) */
+void hv_el2_vector_irq(void);     /* FUN_fffffe000b760f04 (est.; asm in hv_el2_vectors.s) */
+void hv_el2_vector_fiq(void);     /* FUN_fffffe000b761260 (est.; asm in hv_el2_vectors.s) */
+void hv_el2_vector_error(void);   /* FUN_fffffe000b7615bc (est.; asm in hv_el2_vectors.s) */
+void hv_el2_common_dispatch(void *frame, void (*target)(void)); /* FUN_fffffe000b761930 (est.) */
 void hv_el2_guest_esr_classify(void *state, uint64_t esr, uint64_t far);
                                     /* FUN_fffffe000b96743c (est.) */
 void hv_el2_guest_fault(void *state, uint64_t esr, uint64_t far,
@@ -187,11 +187,12 @@ long kernel_vm_fault(void *vm, uint64_t addr, uint32_t fault_type,
                      void *fault_arg);      /* FUN_fffffe000b89988c (est.) */
 int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
                              void *state);  /* FUN_fffffe000b9879b8 (est.) */
-void hv_el2_return_to_guest(void *state);  /* FUN_fffffe000b75e468/5e5cc */
-void hv_el2_guest_irq(void);      /* FUN_fffffe000b967004 (est.) */
+void hv_el2_return_to_guest(void *state);  /* FUN_fffffe000b75e468 (frame in x21, flag in w0) */
+void hv_el2_eret_fast(void *state);        /* FUN_fffffe000b75e5cc (frame in x21) */
+void hv_el2_guest_irq(void *frame);   /* FUN_fffffe000b967004 (est.) */
 void hv_el2_guest_fiq(void);      /* FUN_fffffe000b966c74 (est.) */
 bool hv_el2_guest_exc_check(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr); /* FUN_fffffe000b9679c8 */
-void hv_el2_exception_exit(void); /* FUN_fffffe000b75e420 */
-void hv_el2_preemption_panic(void) __attribute__((noreturn)); /* est. */
+void hv_el2_exception_exit(void *state); /* FUN_fffffe000b75e420 (frame in x21) */
+void hv_el2_preemption_panic(void) __attribute__((noreturn)); /* FUN_fffffe000b75e8a8 */
 
 #endif /* _HV_EL2_H_ */

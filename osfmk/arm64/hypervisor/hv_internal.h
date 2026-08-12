@@ -244,48 +244,18 @@ uint8_t hv_entitlement_tier(void);
 
 
 
-/* ---- raw kernel/boot helpers referenced as calls (identity uncertain;
- * old-style declarations so the tree compiles; NOT recreated) ---- */
-extern int LOAcquire();
-extern void refcount_dec(void *ref, void *free_fn);  /* typed (hv_kernel_glue.h) */
-extern int kernel_obj_lookup_core();
-extern int hv_rbtree_insert();
-extern int hv_vm_unwind();
-extern int hv_vcpu_slot_clear();
-extern int kernel_daemon_plumbing_b();
-extern int kernel_snprintf();
-extern int kernel_thread_create();
-extern int kernel_thread_create_variant();
-extern int list_remove();
-extern int nesting_exit();
-extern int page_release();
-extern int thread_set_name();
-extern int thread_deallocate();
-extern int kernel_thread_create_core();
-extern int thread_daemon_cont_a();
-extern int thread_daemon_cont_b();
-extern int thread_daemon_cont_c();
-extern int thread_daemon_cont_d();
-extern int thread_bind_core();
-extern int zfree_waitq();
-extern int kernel_thread_state_get();
-extern int kernel_percpu_bind_cpu();
-extern int kernel_zone_alloc();
-extern int kernel_zone_meta();
-extern int kernel_mp_setup();
-extern int kernel_progress_log();
-extern int kernel_log();
-extern int kernel_strlcat_a();
-extern int kernel_strlcat_b();
-extern int kernel_boot_arg_present();
-extern int kernel_unmap();
-extern int kernel_segment_bounds();
-extern int kernel_vm_page_op();
-extern int kernel_copy_handle();
-extern int kernel_copy_src();
-extern int kernel_cpu_data_init();
-extern int kernel_daemon_plumbing_a();
-extern int kernel_early_init();
-extern int kernel_boot_misc_b();
-extern int kernel_boot_misc_l();
+/* ---- kernel/boot helper shims (de-guessed; verified externs) ---- *
+ * These were untyped `extern int NAME();` declarations. Each was decompiled
+ * and its guessed name VERIFIED against the real Ghidra function; they are
+ * universal XNU core and are now declared as typed verified externs in
+ * hv_kernel_shims.h (see that file for FUN_ + address + corrected name). */
+#include "hv_kernel_shims.h"
+
+/* ---- remaining untyped hypervisor-internal helpers (NOT kernel shims;
+ * these are hv-internal and are owned/de-compiled elsewhere) ---- */
+extern void refcount_dec(void *ref, void *free_fn);  /* typed (hv_kernel_glue.h); FUN_fffffe000b862b6c */
+
+/* NOTE: `hv_rbtree_insert` and `hv_vm_unwind` were removed — neither had a
+ * decompiled body nor any call site. The region RB-tree insert is inlined as
+ * the static hv_rb_insert_rebalance in hv.c; hv_vm_unwind had zero references. */
 #endif /* _ARM64_HYPERVISOR_HV_INTERNAL_H_ */

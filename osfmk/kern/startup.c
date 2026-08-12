@@ -128,12 +128,12 @@ void idle_thread_create(void *idle_sched, void *machine_idle)
  * sched_startup @ 0xfffffe000b818990   (est. sched_startup)
  * Ghidra: void sched_startup(void)
  * Initializes the scheduler: sets the scheduling-priority globals, creates
- * the scheduler thread running kernel_thread_create_core, releases its create
+ * the scheduler thread running sched_maintenance_thread, releases its create
  * reference, and calls the preemption/unblock helper kernel_preemption_helper.
  * Confidence: high
  * Notes: writes DAT_fffffe000c6ef5c8=0x11 / DAT_fffffe000c6ef5c0=0;
  *   calls kernel_thread_create_variant (kernel_thread_create, kernel) with
- *   continuation kernel_thread_create_core; LORelease + thread_deallocate on
+ *   continuation sched_maintenance_thread; LORelease + thread_deallocate on
  *   the release path. Panics kernel_panic_msg_fmt("sched_startup @%s:%d")
  *   and kernel_panic_b. */
 void sched_startup(void)
@@ -145,7 +145,7 @@ void sched_startup(void)
     th_out = 0;
     sched_prio_hi = 0x11;   /* sched priority global */
     sched_prio_lo = 0;
-    rc = kernel_thread_create_variant(kernel_thread_create_core, 0, 0x5f, &th_out); /* kernel_thread_create, kernel */
+    rc = kernel_thread_create_variant(sched_maintenance_thread, 0, 0x5f, &th_out); /* kernel_thread_create, kernel */
     if (rc != 0) {
         kernel_panic_msg_fmt("sched_startup @%s:%d");
     }
@@ -156,7 +156,7 @@ void sched_startup(void)
         }
         LORelease();                 /* kernel dep */
         if (*(int *)(th + 0x228) == 1) {
-            thread_deallocate();  /* thread deallocate, kernel */
+            thread_deallocate(th);  /* thread deallocate, kernel */
         }
     }
     kernel_preemption_helper(0, 0, 0);   /* preemption/unblock helper, kernel */
@@ -168,11 +168,11 @@ void sched_startup(void)
  * Initializes the thread daemons: registers the thread-stack, thread-exception
  * and thread-backtrace daemons (and their per-thread queues) by initializing a
  * set of global daemon records and starting three daemon threads via
- * kernel_daemon_plumbing_a. Panics on any registration failure.
+ * thread_daemon_create. Panics on any registration failure.
  * Confidence: high
  * Notes: writes DAT_fffffe000c6efb78/0xfb80/... (thread-stack daemon record),
  *   DAT_fffffe000c6efc10/... (thread-exception), DAT_fffffe000c68e3b8/...
- *   (thread-backtrace). Calls kernel_daemon_plumbing_b, kernel_daemon_plumbing_a
+ *   (thread-backtrace). Calls thread_deallocate_daemon_init, thread_daemon_create
  *   (kernel thread_stack_daemon create) with continuations thread_daemon_cont_c,
  *   thread_daemon_cont_b, thread_daemon_cont_a and names
  *   "daemon.thread-stack"/"daemon.thread-exception"/"daemon.thread-backtrace".
@@ -181,7 +181,7 @@ void thread_daemon_init(void)
 {
     int rc;
 
-    kernel_daemon_plumbing_b();  /* kernel daemon plumbing init, kernel */
+    thread_deallocate_daemon_init();  /* kernel daemon plumbing init, kernel */
     ts_daemon_0 = 1;
     ts_daemon_1 = (uint64_t)thread_daemon_cont_d;
     ts_daemon_2 = (uint64_t)daemon_record_base;
@@ -205,15 +205,15 @@ void thread_daemon_init(void)
     ts_daemon_8 = (uint64_t)&ts_daemon_8;
     ts_daemon_9 = (uint64_t)&ts_daemon_8;
 
-    rc = kernel_daemon_plumbing_a(&ts_daemon_10, thread_daemon_cont_c, 0x5d,
+    rc = thread_daemon_create(&ts_daemon_10, thread_daemon_cont_c, 0x5d,
                               "daemon.thread-stack", 0); /* kernel thread_stack_daemon, kernel */
     if (rc != 0) {
         kernel_panic_msg_fmt("thread_daemon_init: thread_stack_daemon @%s:%d");
     }
-    rc = kernel_daemon_plumbing_a(&daemon_thread_exc, thread_daemon_cont_b, 0x50,
+    rc = thread_daemon_create(&daemon_thread_exc, thread_daemon_cont_b, 0x50,
                               "daemon.thread-exception", 0); /* kernel, kernel */
     if (rc == 0) {
-        rc = kernel_daemon_plumbing_a(&daemon_thread_bt, thread_daemon_cont_a, 0x50,
+        rc = thread_daemon_create(&daemon_thread_bt, thread_daemon_cont_a, 0x50,
                                   "daemon.thread-backtrace", 0); /* kernel, kernel */
         if (rc == 0) {
             return;
@@ -343,7 +343,7 @@ void kdp_init(void)
     /* kdp_match_name boot-arg: serial transport selection */
     name[0] = 0;
     rc = kernel_boot_arg_get(hv_bootarg_table + 0x6c, "kdp_match_name", name, 0x50, 0);
-    if ((rc == 0) || (rc = kernel_mp_setup(name, "serial", 0x50), rc == 0)) {
+    if ((rc == 0) || (rc = kernel_strncmp(name, "serial", 0x50), rc == 0)) {
         kernel_daemon_init(
             "Serial requested, consistent debug disabled or debug boot arg not present, configuring debugging over serial\n");
         kernel_boot_misc_o("Initializing serial KDP\n");
@@ -451,9 +451,9 @@ void pe_init_iokit(void)
             kernel_trace(0x5350000, a0, a1, a2, a3);  /* boot trace, kernel */
             if ((hv_trace_flag & 0xfffffff7) != 0) {
                 kernel_trace(0x5350004,
-                    *(void **)(pe_state + 0x300),
-                    *(void **)(pe_state + 0x308),
-                    *(void **)(pe_state + 0x310), 0);
+                    (uint64_t)*(void **)(pe_state + 0x300),
+                    (uint64_t)*(void **)(pe_state + 0x308),
+                    (uint64_t)*(void **)(pe_state + 0x310), 0);
             }
         }
     }
@@ -623,7 +623,7 @@ void trust_cache_init(void)
  * Confidence: high
  * Notes: logs "Jettisoning kext bootstrap segments." via kernel_log;
  *   walks the Mach-O load commands (segment_command_fffffe000700c020 table,
- *   __KLD/__KLDDATA/__LINKEDIT via kernel_mp_setup strcmp); segment
+ *   __KLD/__KLDDATA/__LINKEDIT via kernel_strncmp strcmp); segment
  *   bounds via kernel_segment_bounds (name→addr/size) and kernel_unmap
  *   (unmap); terminator kernel_termfuncs("__mod_term_func"); symtab
  *   kernel_boot_misc_l(&MACH_HEADER,"__PRELINK","__symtab"); fileset-linkedit
@@ -663,7 +663,7 @@ unsigned long oskext_remove_kext_bootstrap(void)
     seg = &segment_command_fffffe000700c020;
     do {
         if ((seg->cmd == 0x19) &&
-            (rc = kernel_mp_setup(seg->segname, "__KLD", 0x10), rc == 0)) break;
+            (rc = kernel_strncmp(seg->segname, "__KLD", 0x10), rc == 0)) break;
         seg = (segment_command *)(seg->segname + ((unsigned long)seg->cmdsize - 8));
         nseg++;
     } while (nseg < 0x1d);
@@ -672,7 +672,7 @@ unsigned long oskext_remove_kext_bootstrap(void)
     seg = &segment_command_fffffe000700c020;
     do {
         if ((seg->cmd == 0x19) &&
-            (rc = kernel_mp_setup(seg->segname, "__KLDDATA", 0x10), rc == 0)) {
+            (rc = kernel_strncmp(seg->segname, "__KLDDATA", 0x10), rc == 0)) {
             kernel_termfuncs(0, &kernel_mod_term_funcs, 0, seg, "__mod_term_func", 0, 0);  /* termfuncs, kernel */
             rc = kernel_segment_bounds("Kernel-__KLDDATA", &laddr, &lsize);
             if (rc == 0) {
@@ -688,7 +688,7 @@ unsigned long oskext_remove_kext_bootstrap(void)
 
     /* if a __PRELINK __symtab exists, flush it too */
     if (((i != 3) &&
-         (sym = kernel_boot_misc_l(&MACH_HEADER, "__PRELINK", "__symtab"), sym != 0)) &&
+         (sym = (long)kernel_boot_misc_l(&MACH_HEADER, "__PRELINK", "__symtab"), sym != 0)) &&
         (*(long *)(sym + 0x20) != 0) && (*(long *)(sym + 0x28) != 0)) {
         kernel_flush();  /* kernel flush, kernel */
     }
@@ -698,7 +698,7 @@ unsigned long oskext_remove_kext_bootstrap(void)
     seg = &segment_command_fffffe000700c020;
     do {
         if ((seg->cmd == 0x19) &&
-            (rc = kernel_mp_setup(seg->segname, "__LINKEDIT", 0x10), rc == 0)) break;
+            (rc = kernel_strncmp(seg->segname, "__LINKEDIT", 0x10), rc == 0)) break;
         seg = (segment_command *)(seg->segname + ((unsigned long)seg->cmdsize - 8));
         nseg++;
     } while (nseg < 0x1d);
@@ -727,7 +727,7 @@ _overflow:
  * drops to zero. Panics on a negative preemption count.
  * Confidence: high
  * Notes: gated by (**(byte **)(DAT_fffffe0007e9d338+0x318) & 1) → early_machine_lockdown
- *   (early lockdown); calls kernel_boot_misc_c, kernel_boot_finalize_d
+ *   (early lockdown); calls kernel_boot_misc_c, kernel_queue_free_walk
  *   (DAT_fffffe000c7169e8,0), kernel_boot_misc, kernel_spl
  *   (spl), kernel_tlb_flush (TLB flush); sets DAT_fffffe000c7169e1=1,
  *   DAT_fffffe000c62bc78=1; preemption count at tpidr_el1+0x1c0; panic
@@ -741,7 +741,7 @@ void machine_lockdown(void)
         early_machine_lockdown();  /* early machine lockdown, kernel */
     }
     kernel_boot_misc_c();                              /* kernel */
-    kernel_boot_finalize_d(machine_lockdown_state, 0);        /* kernel */
+    kernel_queue_free_walk(machine_lockdown_state, 0);        /* kernel */
     machine_locked = 1;                            /* machine locked */
     kernel_boot_misc();                              /* kernel */
     cur = tpidr_el1;
@@ -771,8 +771,12 @@ void machine_lockdown(void)
  *   (IOKit object) and calls *(*(plVar1)+0x5e0)(plVar1,0) and
  *   (*(DAT_fffffe000c733810 + 0x660))(DAT_fffffe000c733810,1,...) via
  *   kernel_boot_misc_m; panic "Failed to start IOService matching @%s:%d"
- *   via kernel_panic_msg_fmt. Warning: "Could not recover jumptable at
- *   0xfffffe000bf74968. Too many branches" / "Treating indirect jump as call". */
+ *   via kernel_panic_msg_fmt. Verified against full disassembly
+ *   (bf748bc-bf74984): the second IOService call is a PAC-signed tail call
+ *   (braa x16,x17 at bf74968 — Ghidra's "Could not recover jumptable" /
+ *   "Too many branches" was a mislabel of this one indirect branch), so the
+ *   function does not return after it. PAC keys: vtable autda with A-key
+ *   (0xcda1), tail-call braa with B-key (0x981a). */
 void pe_lockdown_iokit(void)
 {
     long *io;
@@ -780,7 +784,7 @@ void pe_lockdown_iokit(void)
 
     pe_trace(0x61f0004, 0, 0, 0, 0);  /* PE trace, kernel */
     io = (long *)iokit_object;
-    v = (long)kernel_boot_misc_m();  /* kernel */
+    v = (long)(uintptr_t)kernel_boot_misc_m();  /* kernel */
     io[0x11] = v;
     if (v != 0) {
         (*(void (**)(void *, int))(*(void **)io + 0x5e0))(io, 0);           /* IOKit vtable call, kernel */
@@ -903,7 +907,7 @@ void kernel_bootstrap_thread(void *param_1)
             ppu += 2;
         } while (i < cnt);
     }
-    kernel_alloc_result = kernel_zone_alloc(&kernel_alloc_zone, 0x125, 0, 0);  /* kernel alloc */
+    kernel_alloc_result = (uint64_t)kernel_zone_alloc(&kernel_alloc_zone, 0x125, 0, 0);  /* kernel alloc */
     gen = kernel_zone_meta(kernel_alloc_result, &kernel_alloc_zone, 0x25);     /* kernel */
     kernel_clock_init(&kernel_clock, 3, gen);            /* kernel clock */
     kernel_sched_init();                 /* kernel */
@@ -1000,7 +1004,7 @@ void kernel_bootstrap_thread(void *param_1)
     kernel_boot_finalize_c(kernel_boot_state);  /* kernel */
     kernel_percpu_op(0);                /* kernel */
     kernel_mapping_init();                 /* kernel */
-    kernel_vm_pages("vm pages array", 0x30, 0xc000000000000000, 0x14, &vm_pages_array); /* kernel VM */
+    zone_create("vm pages array", 0x30, 0xc000000000000000, 0x14, &vm_pages_array); /* kernel VM */
 
     if (boot_stack_marker != marker) {
         kernel_stack_check_panic();             /* stack-check panic, noreturn */

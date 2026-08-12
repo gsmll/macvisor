@@ -86,6 +86,13 @@
 #include "hv_vmm.h"            /* kernel_copyout / kernel_mem_* (est. helpers) */
 #include "hv_helpers.h"        /* hv_vm_pool_release / cpu_signal / hv_debug_reg_apply / ... */
 
+/* Local externs for helpers not declared by the included headers (kept here
+ * so this file is self-contained; ground-truth addresses in comments). */
+extern uint64_t hv_vm_obj_rel_zone;   /* DAT_fffffe0007d53ef8 (est.; owner release zone on pool-retain failure) */
+extern void kernel_panic_owner_mismatch(void *obj, uint64_t cpu)
+	__attribute__((noreturn));        /* FUN_fffffe000c0e4d74 (cpu-id mismatch panic) */
+extern void hv_rbtree_unlink(void *root, void *node);  /* FUN_fffffe000b9860bc, decompiled in hv_vmapple.c */
+
 /* -------------------------------------------------------------------------
  * hv_vmm_present @ 0xfffffe000be39fd0  (est. hv_vmm_present)
  * Ghidra: void hv_vmm_present(void)   [uses in_x3 = trap record]
@@ -157,97 +164,178 @@ hv_capabilities(hv_trap_record_t *rec __unused)
  * granted entitlement tier or the call fails. Allocates the vm object + a
  * 0x430-slot array of per-cpu owner blocks, decrements the global quota
  * counters at DAT_fffffe000c5b83b0, and records the new vm at owner+0x628.
- * Confidence: medium (strong entitlement/quota/alloc evidence for vm_create;
- *   exact field offsets are estimates).
- * Notes: heavy use of shared kernel helpers (b7eb624 alloc, b7f0ac8/b7f1e4c
- *   locks at DAT_fffffe000c62c0b8, b862b6c refcount, b85e180, b7f09dc/b7f089c);
- *   entitlement fns via DAT_fffffe0007e93310+0x1c0; err 0xfae94002/3/5/7/0xfae94fff;
- *   error paths unwind via b98533c (vcpu-core's release) and b987c44/b862b6c.
+ * Confidence: high (full decompile; the only uncertainty is helper naming
+ *   and the exact semantics of the slot array / quota indexes).
+ * Notes: entitlement tier is evaluated INLINE (not via hv_entitlement_tier):
+ *   per_cpu_base(tpidr) -> current_task -> sandbox probe (**(code **)
+ *   (DAT_fffffe0007e93310 + 0x1c0)) against the three entitlement strings;
+ *   tier 3 if vmapple, tier 4 if private.hypervisor AND hv_bootarg_flags
+ *   (DAT_fffffe0007e255f8)&0x1010. Helpers: b7eb624 alloc, b7f089c pool retain,
+ *   b7f09dc pool release, b862b6c refcount, b85e180 per-cpu queue pop,
+ *   b7f0ac8/b7f1e4c hv_lock; b98533c release, b987c44 teardown. The 0x430-slot
+ *   array is 8 sequential allocs from hv_slot_zone (owner[0x429..0x430]);
+ *   quota DAT_fffffe000c5b83b0. err 0xfae94002/3/5/7/0xfae94fff.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_create(void *args)
 {
-	uint64_t in  = 0, out = 0, size = 0;
-	uint32_t tier = 0;
-	uint64_t q0, q1;
-	long    *owner;
-	uint32_t granted;
-	void    *vm;
-	int      r, i, j;
-	uint32_t u;
+	uint64_t in  = 0, out = 0, size = 0;   /* local_60, uStack_58, local_50 */
+	uint32_t tier = 0;                     /* local_48 (requested tier) */
+	uint32_t req;                          /* uVar2 */
+	uint32_t granted;                      /* uVar11 */
+	uint32_t ent;                          /* uVar10 effective granted tier */
+	uint64_t per_cpu;                      /* lVar4 per-cpu base */
+	void    *task;                         /* lVar5 current task */
+	long    *owner;                        /* plVar6 vm owner block */
+	long    *slot;                         /* plVar1 slot array base (owner+0x429) */
+	void    *vm;                           /* lVar5 pool retain / pool object */
+	long    *rnode;                        /* lVar8 temp slot ptr */
+	uint32_t qdef, qidx;                   /* lVar5, lVar8 quota indexes */
+	int      r;                            /* iVar3 */
+	int      n, j;                         /* slot count + loop */
+	typedef int (*entitlement_probe_t)(void *, const char *);
+	entitlement_probe_t probe;
 
 	in = out = size = tier = 0;
 	r = copyin(args, &in, 0x1c);      /* est. copyin 0x1c bytes */
 	if (r != 0)
 		return 0xfae94003;
-	if (tier != 0 && hv_caps_gate == 0) {   /* DAT_fffffe000c649750 */
-		/* Entitlement tier check (condensed). hv_entitlement_tier (b985ae4,
-		 * entitlements tree) reads the current task's granted tier itself. */
-		granted = hv_entitlement_tier();             /* b985ae4: current task's tier */
-		if (tier > granted) {
-			owner = (long *)hv_zone_alloc(&hv_vm_zone, 4); /* est. alloc vm */ /* DAT_fffffe0007d53eb8 */
+	req = tier;
+	if (tier != 0 && hv_caps_gate == 0) {   /* DAT_fffffe000c649750 capability gate */
+		/* --- entitlement tier evaluation (inlined from the decompile) --- */
+		per_cpu = (uint64_t)per_cpu_base(tpidr_el1);   /* FUN_fffffe000b866ec4 */
+		if (per_cpu == 0 || (task = current_task((void *)per_cpu), task == NULL)) {
+			granted = 0;
+		} else {
+			probe = *(entitlement_probe_t *)((char *)cred_ops + 0x1c0);  /* DAT_fffffe0007e93310+0x1c0 */
+			r = probe(task, "com.apple.security.hypervisor");
+			granted = (r == 0);
+		}
+		ent = granted;
+		if (per_cpu != 0 && (task = current_task((void *)per_cpu), task != NULL)) {
+			probe = *(entitlement_probe_t *)((char *)cred_ops + 0x1c0);
+			r = probe(task, "com.apple.private.hypervisor.vmapple");
+			ent = 3;
+			if (r != 0)
+				ent = granted;
+		}
+		if (per_cpu != 0 && (task = current_task((void *)per_cpu), task != NULL) &&
+		    (probe = *(entitlement_probe_t *)((char *)cred_ops + 0x1c0),
+		     r = probe(task, "com.apple.private.hypervisor"), r == 0) &&
+		    (ent = 3, (hv_bootarg_flags & 0x1010) != 0))   /* DAT_fffffe0007e255f8 */
+			ent = 4;
+
+		if (req <= ent) {
+			owner = (long *)hv_zone_alloc(&hv_vm_zone, 4);   /* FUN_fffffe000b7eb624 DAT_fffffe0007d53eb8 */
 			if (owner == NULL)
 				return 0xfae94005;
-			vm = os_ref_retain(&hv_vm_pool); /* FUN_fffffe000b7f089c DAT_fffffe000c5d7068 */
+			vm = os_ref_retain(&hv_vm_pool);   /* FUN_fffffe000b7f089c DAT_fffffe000c5d7068 */
 			*owner = (long)vm;
-			if (vm != NULL) {
-				owner[2] = *(long *)(tier ? 0 : 0);
-				owner[0x427] = 0;
-				r = (int)hv_vcpu_map_memory(owner, in, out, size & 0xffffffff, 0); /* FUN_fffffe000b9866d0 */
-				if (r != 0) {
-					hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool); /* DAT_fffffe000c5d7068 */
-					refcount_dec(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
-					refcount_dec(&hv_owner_list, owner); /* DAT_fffffe0007d53f38 */
-					return r;
-				}
-				/* Allocate 0x430 per-cpu owner slots; each failure decrements the
-				 * quota array DAT_fffffe000c5b83b0 and unwinds. (condensed) */
-				for (j = 0; j < 7; j++) {
-					owner[0x429 + j] = (long)hv_zone_alloc(&hv_slot_zone, 4); /* DAT_fffffe0007d53f78 */
-					if (owner[0x429 + j] == 0)
-						goto unwind;
-				}
-				owner[0x410] = hv_percpu_queue_pop(u, u, 0xa004); /* est. per-cpu queue pop */
-				hv_caps_feature_mask((uint64_t *)(owner + 0x411), tier); /* b987d9c */
-				lock_acquire(&hv_lock, 0);
-				if ((*(long *)(vm + 0x628) != 0)) {
-					lock_release(&hv_lock);
-					hv_vcpu_object_release(owner);   /* vcpu-core release */
-					return 0xfae94002;
-				}
-				if (tier > 1) {
-					q0 = (tier != 2) ? 2 : 1;
-					q1 = (tier != 3) ? q0 : 0;
-					if (hv_quota_derived[q1] < 1) {
-						lock_release(&hv_lock);
-						hv_vcpu_object_release(owner);
-						return 0xfae94fff;
+			if (vm == NULL) {
+				refcount_dec(&hv_vm_obj_rel_zone, owner);   /* DAT_fffffe0007d53ef8 */
+				return 0xfae94005;
+			}
+			owner[2] = *(long *)(per_cpu + 0x28);
+			owner[0x427] = 0;                /* region rbtree root = NULL */
+			*(uint8_t *)(owner + 0x428) = 0; /* version byte */
+			r = (int)hv_vcpu_map_memory(owner, in, out, size & 0xffffffff, 0); /* FUN_fffffe000b9866d0 */
+			if (r != 0) {
+				vm = (void *)*owner;
+				hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool); /* FUN_fffffe000b7f09dc */
+				refcount_dec(&hv_vm_list, vm);   /* FUN_fffffe000b862b6c DAT_fffffe0007d52478 */
+				refcount_dec(&hv_owner_list, owner); /* DAT_fffffe0007d53f38 */
+				return r;
+			}
+			/* --- allocate the 0x430 per-cpu slot array (owner[0x429..0x430]) ---
+			 * eight sequential zone allocs from hv_slot_zone (DAT_fffffe0007d53f78);
+			 * on the first failure n = number already allocated. */
+			slot = owner + 0x429;
+			rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+			if (rnode == NULL) n = 0;
+			else {
+				slot[0] = (long)rnode;
+				rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+				if (rnode == NULL) n = 1;
+				else {
+					owner[0x42a] = (long)rnode;
+					rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+					if (rnode == NULL) n = 2;
+					else {
+						owner[0x42b] = (long)rnode;
+						rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+						if (rnode == NULL) n = 3;
+						else {
+							owner[0x42c] = (long)rnode;
+							rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+							if (rnode == NULL) n = 4;
+							else {
+								owner[0x42d] = (long)rnode;
+								rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+								if (rnode == NULL) n = 5;
+								else {
+									owner[0x42e] = (long)rnode;
+									rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+									if (rnode == NULL) n = 6;
+									else {
+										owner[0x42f] = (long)rnode;
+										rnode = (long *)hv_zone_alloc(&hv_slot_zone, 4);
+										if (rnode == NULL) n = 7;
+										else {
+											owner[0x430] = (long)rnode;
+											/* all 8 slots allocated */
+											owner[0x410] = (long)hv_percpu_queue_pop(0, 8, 0xa004); /* FUN_fffffe000b85e180; decompiler showed args (0,8,0xa004) */
+											owner[3] = 0;
+											owner[0x431] = 0;
+											*(uint32_t *)(owner + 0x425) = 0;
+											hv_caps_feature_mask((uint64_t *)(owner + 0x411), tier); /* b987d9c */
+											lock_acquire(&hv_lock, 0);   /* FUN_fffffe000b7f0ac8 */
+											if (*(long *)(per_cpu + 0x628) != 0) {
+												lock_release(&hv_lock);   /* FUN_fffffe000b7f1e4c */
+												hv_vcpu_object_release((uint64_t *)owner); /* b98533c */
+												return 0xfae94002;
+											}
+											/* --- quota decrement (DAT_fffffe000c5b83b0) --- */
+											if (tier > 1) {
+												qdef = 1;
+												if (tier != 2) qdef = 2;
+												qidx = 0;
+												if (tier != 3) qidx = qdef;
+												if (hv_quota_derived[qidx] < 1) {
+													lock_release(&hv_lock);
+													hv_vcpu_object_release((uint64_t *)owner);
+													return 0xfae94fff;
+												}
+												hv_quota_derived[qidx]--;
+											}
+											*(uint32_t *)(owner + 0x425) = tier;
+											owner[0x426] = hv_quota_cap;   /* DAT_fffffe000c5b83a8 */
+											*(uint8_t *)(owner + 0x432) = (tier - 3) < 2;
+											*(uint8_t *)((char *)owner + 0x2191) = 0;
+											*(uint32_t *)(owner + 1) = 1;
+											*(long **)(per_cpu + 0x628) = owner;
+											lock_release(&hv_lock);
+											return 0;
+										}
+									}
+								}
+							}
+						}
 					}
-					hv_quota_derived[q1]--;
-				}
-				owner[0x425] = tier;
-				owner[0x426] = hv_quota_cap;   /* DAT_fffffe000c5b83a8 */
-				owner[0x432] = (tier - 3) < 2;
-				owner[0x2191] = 0;
-				owner[1] = 1;
-				*(long **)(vm + 0x628) = owner;
-				lock_release(&hv_lock);
-				return 0;
-			}
-		unwind:
-			/* Release any partially allocated owner slots. */
-			for (i = 0; i < 8; i++) {
-				if (owner[0x429 + i] != 0) {
-                                        refcount_dec(&hv_slot_rel_zone, (void *)owner[0x429 + i]); /* DAT_fffffe0007d53fb8 */
-					owner[0x429 + i] = 0;
 				}
 			}
-			hv_vm_owner_teardown(owner);
-			hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool); /* DAT_fffffe000c5d7068 */
-			refcount_dec(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
+			/* --- slot-alloc failure: release slots [n-1..0], teardown owner --- */
+			for (j = n; j > 0; j--) {
+				vm = (void *)slot[j - 1];
+				slot[j - 1] = 0;
+				refcount_dec(&hv_slot_rel_zone, vm);   /* FUN_fffffe000b862b6c DAT_fffffe0007d53fb8 */
+			}
+			hv_vm_owner_teardown(owner);   /* FUN_fffffe000b987c44 */
+			vm = (void *)*owner;
+			hv_vm_pool_release((uint32_t *)vm, (long)&hv_vm_pool);   /* FUN_fffffe000b7f09dc */
+			refcount_dec(&hv_vm_list, vm);   /* DAT_fffffe0007d52478 */
+			refcount_dec(&hv_vm_rel_zone, owner);   /* DAT_fffffe0007d53ff8 */
+			return 0xfae94005;
 		}
-		refcount_dec(&hv_vm_rel_zone, owner); /* DAT_fffffe0007d53ff8 */
-		return 0xfae94005;
 	}
 	return 0xfae94007;
 }
@@ -336,10 +424,12 @@ hv_vm_destroy(void *args __unused)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_map @ 0xfffffe000b986898  (est. hv_vm_map; op table idx3)
+ * hv_vm_map @ 0xfffffe000b986898  (hv_vm_map; op table idx3)
  * Ghidra: void hv_vm_map(undefined8 param_1)
- * Thin wrapper: dispatches the map operation with (op=0, mode=0).
- * Confidence: low (identity from shape; map/unmap pairing with idx5).
+ *   { hv_vm_map_core(param_1,0,0); return; }
+ * Verified decompile — a genuine thin wrapper dispatching the map
+ * operation with (op=0, mode=0). Body matches Ghidra exactly.
+ * Confidence: high (complete decompile).
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_map(void *args)
@@ -348,10 +438,12 @@ hv_vm_map(void *args)
 }
 
 /* -------------------------------------------------------------------------
- * hv_vm_unmap @ 0xfffffe000b986d94  (est. hv_vm_unmap; op table idx5)
+ * hv_vm_unmap @ 0xfffffe000b986d94  (hv_vm_unmap; op table idx5)
  * Ghidra: void hv_vm_unmap(undefined8 param_1)
- * Thin wrapper: dispatches the unmap/protect operation with (op=0, mode=1).
- * Confidence: low.
+ *   { hv_vm_map_core(param_1,0,1); return; }
+ * Verified decompile — a genuine thin wrapper dispatching the
+ * unmap/protect operation with (op=0, mode=1). Body matches Ghidra exactly.
+ * Confidence: high (complete decompile).
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_vm_unmap(void *args)
@@ -485,10 +577,18 @@ join:
  *   core entry. The stub's w1/w2 are hv_vm_map_core's (op, mode).
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_vm_protect(void *args __unused)
+hv_vm_protect(void *args)
 {
-	/* dsb; w1=1(op); w2=0(mode); b core@b9868a8 -> protect path (see header) */
-	return 0;
+	/*
+	 * Faithful to the verified 4-instruction branch stub at b986d84
+	 * (read_memory b986d84, 16 bytes: `dsb sy; mov w1,#1; mov w2,#0;
+	 * b 0xfffffe000b9868a8` = imm26 0x3fffec6, offset -0x4e8 → the
+	 * hv_vm_map_core entry). w1/w2 are hv_vm_map_core's (op, mode), so this
+	 * is the PROTECT member of the map/unmap/protect family: it dispatches
+	 * into the shared core with op=1, mode=0, which routes to the protect
+	 * helper (b8a8078) via the core's op/mode dispatch.
+	 */
+	return hv_vm_map_core(args, 1, 0);
 }
 
 /* -------------------------------------------------------------------------
@@ -947,104 +1047,495 @@ hv_trap_op_16(void *args __unused)
  * hv_vm_map_region @ 0xfffffe000b986ff4  (est. hv_vm_map_region; op table idx17)
  * Ghidra: undefined8 hv_vm_map_region(undefined8 param_1)
  *   [WARNING: Type propagation algorithm not settling]
- * Full vm-region-map handler (the large one). Copies the 0x34-byte user arg
- * block, optionally binds a per-cpu resource, then inserts a (start,size)
- * region into the vm's interval rbtree (root at vm_owner+0x427) after checking
- * the range against the vm caps (vm+0x44) and bounds (vm+0x28/0x30). Handles
- * exact-overlap (returns 0xfae94008) vs. split insertion, tracks the active cpu
- * id in the vm owner (+8), takes/releases the shared lock DAT_fffffe000c62c0b8,
- * and bumps/drops the vm refcount with LORelease (overflow => panic
- * kernel_panic_a). On failure it unwinds the partially inserted node and
- * the per-cpu resource (os_release).
- * Confidence: medium (region-tree insert with quota/cap enforcement is the
- *   vm_map signature; exact field semantics condensed).
- * Notes: because the body is a ~1000-line rbtree insert, only a faithful
- *   structural reconstruction is given here (all DAT_/FUN_ artifacts retained);
- *   see Ghidra for the full node-rotation logic. err codes 0xfae94001/3/5/8/0xf;
- *   helpers b986b34/b9860bc/b8afa78/b793cf4/b7eb624/b7f0afc/b7f1e80/b862b6c;
- *   shared lock DAT_fffffe000c62c0b8.
+ * Full vm-region handler. Copies the 0x34-byte user arg block, optionally
+ * binds a per-cpu resource (op==0), then operates on the vm's interval
+ * rbtree (root at owner+0x427). op==1 removes an exact [start,start+size)
+ * region (unlinks + frees the matching node via hv_rbtree_unlink); op==0
+ * inserts a region node (node[0]=vm,[1]=mid,[2]=start,[3]=start+size,
+ * [4]=ret,[5..7]=rbtree links) after validating the range against the vm
+ * caps (vm+0x44) and bounds (vm+0x28/0x30). The insert is keyed by
+ * (vm, start): an exact overlap returns 0xfae94008, a partial overlap is
+ * silently dropped (0xfae94003), a duplicate start is treated as success,
+ * otherwise the node is linked as a leaf and the tree is rebalanced. Tracks
+ * the active cpu id (obj+8), takes/releases the per-vm lock (obj=owner[0])
+ * plus the shared lock DAT_fffffe000c62c0b8, bumps/drops the owner refcount
+ * with LORelease (overflow => panic 0xc0f86a4; last releaser => 0xc0f8674),
+ * and increments the version byte at owner+0x428 on a successful insert.
+ * Confidence: medium (full decompile; node-insert/overlap semantics and the
+ *   region RB-tree are faithful; exact field meanings for [1] and the
+ *   op/selectors are estimates).
+ * Notes: the inlined ~1000-line RB insert fixup is reproduced as the
+ *   static hv_rb_insert_rebalance below; hv_rbtree_insert (declared extern
+ *   in hv_internal.h) has NO decompiled body yet, so it is not delegated.
+ *   hv_rbtree_unlink (b9860bc) IS decompiled (hv_vmapple.c) and called by
+ *   name on the remove path. err 0xfae94001/3/5/8/0xf; helpers b986b34
+ *   (resolve), b9860bc (unlink), b8afa78 (os_release), b8af98c (retain),
+ *   b793cf4 (zfree), b7eb624 (alloc), b7f0afc/b7f1e80 (lock/sync),
+ *   b862b6c (refcount), c0e4d74 (owner-mismatch panic).
  * ------------------------------------------------------------------------- */
+
+/* Region-node layout: [0]=vm,[1]=mid,[2]=start,[3]=end,[4]=ret,[5]=left,
+ * [6]=right,[7]=parent-with-color (low bit = node's own red flag). Root is
+ * stored at owner[0x427]. These are the red-black tree primitives used by
+ * the region insert. */
+static void
+hv_rb_rotate_left(long *owner, uint64_t *x)
+{
+	uint64_t *y, *parent;
+	uint64_t  xcol;
+
+	y = (uint64_t *)x[6];                 /* y = x->right moves up */
+	parent = (uint64_t *)(x[7] & ~1ULL);
+	xcol = x[7] & 1ULL;
+
+	x[6] = y[5];                          /* x->right = y->left */
+	if (y[5] != 0)
+		*(uint64_t *)(y[5] + 0x38) = (*(uint64_t *)(y[5] + 0x38) & 1ULL) | (uint64_t)x;
+	y[5] = (uint64_t)x;                   /* y->left = x */
+	y[7] = ((uint64_t)parent) | (y[7] & 1ULL);   /* y->parent = parent(x), keep y color */
+	x[7] = (uint64_t)y | xcol;            /* x->parent = y, keep x color */
+	if (parent == NULL)
+		owner[0x427] = (long)y;
+	else if (parent[5] == (uint64_t)x)
+		parent[5] = (uint64_t)y;
+	else
+		parent[6] = (uint64_t)y;
+}
+
+static void
+hv_rb_rotate_right(long *owner, uint64_t *x)
+{
+	uint64_t *y, *parent;
+	uint64_t  xcol;
+
+	y = (uint64_t *)x[5];                 /* y = x->left moves up */
+	parent = (uint64_t *)(x[7] & ~1ULL);
+	xcol = x[7] & 1ULL;
+
+	x[5] = y[6];                          /* x->left = y->right */
+	if (y[6] != 0)
+		*(uint64_t *)(y[6] + 0x38) = (*(uint64_t *)(y[6] + 0x38) & 1ULL) | (uint64_t)x;
+	y[6] = (uint64_t)x;                   /* y->right = x */
+	y[7] = ((uint64_t)parent) | (y[7] & 1ULL);
+	x[7] = (uint64_t)y | xcol;
+	if (parent == NULL)
+		owner[0x427] = (long)y;
+	else if (parent[5] == (uint64_t)x)
+		parent[5] = (uint64_t)y;
+	else
+		parent[6] = (uint64_t)y;
+}
+
+/* Standard red-black insert fixup, transcribed from the rotation block
+ * inlined in hv_vm_map_region (Ghidra FUN_fffffe000b986ff4): walk up from
+ * the freshly linked red `node`; recolor when the uncle is red, rotate when
+ * the uncle is black, and finally force the root black. The region
+ * hv_rbtree_insert (declared extern in hv_internal.h) has no decompiled
+ * body, so the fixup is reproduced inline here rather than delegated. */
+static void
+hv_rb_insert_rebalance(long *owner, uint64_t *node)
+{
+	uint64_t *x = node;
+	uint64_t *p, *g, *u;
+	uint64_t  root;
+
+	while (x != NULL) {
+		p = (uint64_t *)(x[7] & ~1ULL);
+		if (p == NULL || (p[7] & 1) == 0)
+			break;
+		g = (uint64_t *)(p[7] & ~1ULL);
+		if (g == NULL)
+			break;
+
+		if (g[5] == (uint64_t)p) {
+			/* p is the LEFT child of g; uncle = g->right */
+			u = (uint64_t *)g[6];
+			if (u != NULL && (u[7] & 1) != 0) {
+				p[7] &= ~1ULL;
+				u[7] &= ~1ULL;
+				g[7] |= 1ULL;
+				x = g;
+				continue;
+			}
+			if (x == (uint64_t *)p[6]) {     /* x is RIGHT child of p */
+				x = p;
+				hv_rb_rotate_left(owner, x);
+				p = (uint64_t *)(x[7] & ~1ULL);
+				g = (uint64_t *)(p[7] & ~1ULL);
+			}
+			p[7] &= ~1ULL;
+			g[7] |= 1ULL;
+			hv_rb_rotate_right(owner, g);
+		} else {
+			/* p is the RIGHT child of g; uncle = g->left */
+			u = (uint64_t *)g[5];
+			if (u != NULL && (u[7] & 1) != 0) {
+				p[7] &= ~1ULL;
+				u[7] &= ~1ULL;
+				g[7] |= 1ULL;
+				x = g;
+				continue;
+			}
+			if (x == (uint64_t *)p[5]) {     /* x is LEFT child of p */
+				x = p;
+				hv_rb_rotate_right(owner, x);
+				p = (uint64_t *)(x[7] & ~1ULL);
+				g = (uint64_t *)(p[7] & ~1ULL);
+			}
+			p[7] &= ~1ULL;
+			g[7] |= 1ULL;
+			hv_rb_rotate_left(owner, g);
+		}
+	}
+	root = owner[0x427];
+	if (root != 0)
+		*(uint64_t *)(root + 0x38) &= ~1ULL;   /* root always black */
+}
+
 kern_return_t
 hv_vm_map_region(void *args)
 {
-	uint64_t a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0;
-	void    *vm;
-	char    *ret;
-	uint64_t start, size;
-	uint64_t cpu_slot;
-	long    *owner;
-	uint64_t capmask;
-	int      r, refcnt;
-	uint32_t prev;
-	void    *node;
+	uint64_t op = 0, res = 0, mid = 0, start = 0, size = 0, sel = 0;
+	uint32_t arg48 = 0;
+	char    *ret = NULL;          /* local_58 resolve_owner output */
+	char    *bindret = NULL;      /* local_98 resource-bind output */
+	void    *vm;                  /* uVar9 resolved vm */
+	long    *owner;               /* plVar21 vm owner block */
+	uint64_t cpu_slot;            /* lVar10 tpidr */
+	uint64_t cached;              /* uVar9 (early cpu cache) */
+	uint64_t obj;                 /* lVar8 = owner[0] (per-vm lock) */
+	uint64_t u;                   /* uVar15 */
+	uint32_t cpu2;                /* uVar12 28-bit-masked cpu id */
+	int      pending;             /* iVar7 hv_debug_flag */
+	int      refcnt;              /* iVar7 owner refcount */
+	int      r;
+	bool     b;                   /* bVar6 inserted/keep-node flag */
+	kern_return_t result;         /* uVar25 */
+	uint64_t *cpuslot;            /* &obj[1] */
+	uint64_t *cur, *cur2, *cand, *prev, *leaf;   /* tree walk */
+	uint64_t *node;               /* puVar26 */
+	uint64_t  cvm, cstart, key, keyend, newstart;
+	uint64_t  link_off;
+	char     *verslot;            /* owner+0x428 version byte */
+	char      ver;
 
-	r = copyin(args, &a0, 0x34);
+	result = 0xfae94003;
+	r = copyin(args, &op, 0x34);
 	if (r != 0)
 		return 0xfae94003;
-	if (a0 == 0) {                              /* optionally bind per-cpu resource */
+	if (op == 0) {                              /* bind per-cpu resource */
 		cpu_slot = tpidr_el1;
-		vm = (void *)per_cpu_base(cpu_slot);
+		vm = (void *)per_cpu_base(cpu_slot);    /* FUN_fffffe000b866ec4 */
 		vm = (vm != 0) ? *(void **)((char *)vm + 0x318) : 0;
-		r = kernel_obj_lookup_core(vm, a1, 0x13, 1, 7, 0, &ret); /* est. bind resource */
+		r = kernel_obj_lookup_core(vm, arg48, 0x13, 1, 7, 0, &bindret); /* FUN_fffffe000b78d064 */
 		if (r != 0)
 			return 0xfae94001;
 	}
-	start = a3; size = a4;                     /* (est. start/size fields) */
+	/* --- take the shared owner lock --- */
+	cached = hv_cached_cpu_id;
+	cpu_slot = tpidr_el1;
+	if (hv_cached_cpu_id == 0)
+		hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
+	if (cached != 0 || hv_debug_flag != 0)
+		lock_acquire(&hv_lock, cpu_slot, cached, 0);   /* FUN_fffffe000b7f0afc */
 
-	/* Take vm lock + bump refcount (condensed). */
-	lock_acquire(&hv_lock, tpidr_el1, hv_cached_cpu_id, 0);
-	owner = (long *)per_cpu_base(tpidr_el1);
-	owner = *(long **)(owner + 0x628);
+	owner = *(long **)(per_cpu_base(cpu_slot) + 0x628);
 	if (owner == NULL) {
-		lock_release(&hv_lock);
-		zfree_waitq(ret);
+		lock_release(&hv_lock);                 /* FUN_fffffe000b7f1e4c */
+		zfree_waitq(bindret);                   /* FUN_fffffe000b793cf4 */
 		return 0xfae94001;
 	}
 	refcnt = (int)owner[1];
 	owner[1] = refcnt + 1;
 	if ((uint32_t)(refcnt + 0xf0000001) < 0xf0000002)
-		kernel_panic_a();                /* panic on refcount overflow */
+		kernel_panic_a();                       /* FUN_fffffe000c0f86a4 (refcount overflow) */
 
-	vm = (void *)hv_pmap_resolve_owner(a2, &ret);   /* est. vm owner lookup */
-	if (vm != NULL) {
-		capmask = (1ULL << (*(uint16_t *)((char *)vm + 0x44) & 0x3f)) - 1;
-		/* Range check + rbtree insert at owner+0x427 (condensed: exact-overlap
-		 * returns 0xfae94008; otherwise split-insert the node, tracking the
-		 * active cpu id and calling b9860bc on the old owner node). */
-		node = hv_zone_alloc(&hv_region_node_zone, 2); /* est. alloc node */ /* DAT_fffffe0007d54038 */
-		if (node != NULL) {
-			/* node[0]=vm, node[2]=start, node[1]=? , node[3]=start+size,
-			 * node[4]=ret, node[5..7]=rbtree links. */
-			*(void **)node = vm;
-			((uint64_t *)node)[2] = start;
-			((uint64_t *)node)[3] = start + size;
-			((uint64_t *)node)[4] = (uint64_t)ret;
-			((uint64_t *)node)[5] = ((uint64_t *)node)[6] = ((uint64_t *)node)[7] = 0;
-			if (owner[0x427] == 0) {
-				owner[0x427] = (long)node;     /* first node: becomes root */
-			} else {
-			r = hv_rbtree_insert(owner, node); /* est. rbtree insert —
-			                                    * structural placeholder for the
-			                                    * ~1000-line node-rotation body
-			                                    * (see Ghidra hv_vm_map_region) */
-			if (r != 0)
-				return hv_vm_unwind(owner, node, ret, 0xfae94008); /* structural placeholder */
+	pending = (int)hv_cached_cpu_id;
+	if ((int)hv_cached_cpu_id == *(int *)(cpu_slot + 0x518))
+		hv_cached_cpu_id &= 0xffffffff00000000ULL;   /* clear low 32 bits */
+	if (pending != *(int *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+		lock_sync(&hv_lock, cpu_slot);          /* FUN_fffffe000b7f1e80 */
+
+	if (op < 2 &&
+	    (vm = (void *)hv_pmap_resolve_owner(res, &ret),
+	     pending = (int)hv_debug_flag,
+	     vm != NULL)) {
+		/* --- range validation against vm caps + bounds --- */
+		if ((start + size) >= start &&                 /* !CARRY8(size,start) */
+		    (((1ULL << (*(uint16_t *)((char *)vm + 0x44) & 0x3f)) - 1) & (start | size)) == 0 &&
+		    *(uint64_t *)((char *)vm + 0x28) <= start &&
+		    size != 0 &&
+		    (start + size) <= *(uint64_t *)((char *)vm + 0x30)) {
+			if (sel == 2) {
+				if (op == 1) {
+					/* --- REMOVE: find exact [vm,start,end] node, unlink + free --- */
+					obj = owner[0];
+					cpuslot = (uint64_t *)(obj + 8);
+					u = *cpuslot;
+					if (u == 0)
+						*cpuslot = *(uint32_t *)(cpu_slot + 0x518);
+					if (u != 0 || pending != 0)
+						lock_acquire((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
+					cur = (uint64_t *)owner[0x427];   /* tree root */
+					if (cur == NULL) {
+						result = 0xfae94008;
+					} else {
+						/* BST descent keyed by (vm, start); track candidate */
+						prev = NULL;
+						for (;;) {
+							cvm = *cur;
+							cand = cur;
+							if (cvm < (uint64_t)vm) {
+								if ((uint64_t)vm != cvm) cand = prev;
+								cur = (uint64_t *)cur[6];   /* right */
+							} else if (cvm <= (uint64_t)vm) {
+								cstart = cur[2];
+								if (cstart < start) {
+									if ((uint64_t)vm != cvm) cand = prev;
+									cur = (uint64_t *)cur[6];   /* right */
+								} else if (cstart <= start) {
+									break;   /* cand = cur */
+								} else {
+									cand = prev;
+									cur = (uint64_t *)cur[5];   /* left */
+								}
+							} else {
+								cand = prev;
+								cur = (uint64_t *)cur[5];   /* left */
+							}
+							prev = cand;
+							if (cur == NULL)
+								break;
+						}
+						if (cand == NULL)
+							result = 0xfae94008;
+						else if (cand[2] != start)
+							result = 0xfae94008;
+						else if (cand[3] == start + size) {   /* exact end match */
+							hv_rbtree_unlink(owner, cand);   /* FUN_fffffe000b9860bc */
+							os_release((uint64_t)cand[0]);              /* FUN_fffffe000b8afa78 */
+							zfree_waitq((char *)cand[4]);               /* FUN_fffffe000b793cf4 */
+							refcount_dec(&hv_container_refcount, cand); /* FUN_fffffe000b862b6c DAT_fffffe0007d54078 */
+							result = 0;
+						} else {
+							result = 0xfae94008;
+						}
+					}
+					/* remove epilogue: clear cpu id, sync per-vm lock, drop refcount */
+					pending = (int)hv_debug_flag;
+					obj = owner[0];
+					u = *(uint32_t *)(obj + 8);
+					if (u == *(uint32_t *)(cpu_slot + 0x518))
+						*(uint32_t *)(obj + 8) = 0;
+					if (u != *(uint32_t *)(cpu_slot + 0x518) || pending != 0)
+						lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+					refcnt = (int)owner[1];
+					owner[1] = refcnt - 1;
+					LORelease();
+					if (refcnt == 0)
+						kernel_panic_b();               /* FUN_fffffe000c0f8674, no-return */
+					if (refcnt == 1)
+						hv_vcpu_object_release((uint64_t *)owner); /* b98533c */
+				} else {
+					/* --- INSERT (op == 0): alloc node, set fields, insert + rebalance --- */
+					node = (uint64_t *)hv_zone_alloc(&hv_region_node_zone, 2); /* FUN_fffffe000b7eb624 DAT_fffffe0007d54038 */
+					if (node == NULL) {
+						refcnt = (int)owner[1];
+						owner[1] = refcnt - 1;
+						LORelease();
+						if (refcnt != 0) {
+							if (refcnt == 1)
+								hv_vcpu_object_release((uint64_t *)owner);
+							if (ret != (char *)-1) {
+								if (ret == NULL) {
+									if (*(long *)(cpu_slot + 0x4d8) == 0)
+										os_release((uint64_t)vm);   /* FUN_fffffe000b8afa78 */
+									goto out_bind;
+								}
+								if (*ret != '-')
+									kernel_panic_msg(ret, 0, 0x2d);   /* FUN_fffffe000c0e1c3c, no-return */
+							}
+							zfree_waitq(ret);
+						out_bind:
+							zfree_waitq(bindret);       /* FUN_fffffe000b793cf4 */
+							return 0xfae94005;
+						}
+						kernel_panic_b();               /* FUN_fffffe000c0f8674, no-return */
+					}
+					kernel_refcount_inc((uint64_t)vm);  /* FUN_fffffe000b8af98c */
+					node[0] = (uint64_t)vm;
+					node[2] = start;
+					node[1] = mid;
+					node[3] = start + size;
+					node[4] = (uint64_t)bindret;
+					node[6] = 0; node[7] = 0; node[5] = 0;
+
+					/* cpu-id tracking + take per-vm lock (obj = owner[0]) */
+					pending = (int)hv_debug_flag;
+					obj = owner[0];
+					cpuslot = (uint64_t *)(obj + 8);
+					u = *cpuslot;
+					if (u == 0)
+						*cpuslot = *(uint32_t *)(cpu_slot + 0x518);
+					if (u != 0 || pending != 0)
+						lock_acquire((void *)obj, cpu_slot, u, 0);   /* FUN_fffffe000b7f0afc */
+					obj = owner[0];
+					cpu2 = (uint32_t)(*(uint64_t *)(obj + 8) & 0xfffffff);
+					if (cpu2 != *(uint32_t *)(cpu_slot + 0x518))
+						kernel_panic_owner_mismatch((void *)obj, cpu_slot); /* FUN_fffffe000c0e4d74, no-return */
+
+					verslot = (char *)(owner + 0x428);
+					ver = *verslot;
+					if (ver == ' ') {
+						b = false;
+						result = 0xfae94005;
+						goto insert_epilogue;
+					}
+					cur = (uint64_t *)owner[0x427];   /* tree root */
+					if (cur == NULL) {
+						/* empty tree: node becomes red root, then rebalance */
+						node[7] = 1; node[5] = 0; node[6] = 0;
+						owner[0x427] = (long)node;
+						hv_rb_insert_rebalance(owner, node);
+						goto insert_success;
+					}
+					/* non-empty: search for insertion point / overlap */
+					key = node[0];
+					keyend = node[3];
+					prev = NULL;
+					cur2 = cur;
+					for (;;) {
+						cvm = *cur2;
+						cand = cur2;
+						if (cvm < key) {
+							if (key != cvm) cand = prev;
+							cur2 = (uint64_t *)cur2[6];   /* right */
+						} else if (cvm <= key) {
+							cstart = cur2[2];
+							if (cstart < keyend) {
+								if (key != cvm) cand = prev;
+								cur2 = (uint64_t *)cur2[6];   /* right */
+							} else if (cstart <= keyend) {
+								prev = cand;            /* candidate = cur2 */
+								goto overlap_check;
+							} else {
+								cand = prev;
+								cur2 = (uint64_t *)cur2[5];   /* left */
+							}
+						} else {
+							cand = prev;
+							cur2 = (uint64_t *)cur2[5];   /* left */
+						}
+						prev = cand;
+						if (cur2 == NULL)
+							break;
+					}
+					if (prev == NULL)
+						goto leaf_insert;
+					cstart = prev[2];
+				overlap_check:
+					newstart = node[2];
+					if (cstart == newstart && prev[3] == keyend) {
+						/* exact overlap: duplicate region → error, node not kept */
+						b = false;
+						result = 0xfae94008;
+					} else {
+						if (cstart == keyend || prev[3] <= newstart)
+							goto leaf_insert;   /* no overlap → insert leaf */
+						b = false;              /* partial overlap → drop node */
+						goto insert_epilogue;
+					}
+				leaf_insert:
+					/* find the leaf under which to link `node` */
+					newstart = node[2];
+					cur = (uint64_t *)owner[0x427];
+					for (;;) {
+						cvm = *cur;
+						if (key < cvm) {
+							b = true;
+							link_off = 0x28;        /* go left */
+						} else if (key <= cvm) {
+							if (newstart < cur[2]) {
+								b = true;
+								link_off = 0x28;    /* go left */
+							} else if (newstart <= cur[2]) {
+								goto insert_success; /* duplicate start → treated as success */
+							} else {
+								b = false;
+								link_off = 0x30;    /* go right */
+							}
+						} else {
+							b = false;
+							link_off = 0x30;        /* go right */
+						}
+						leaf = (uint64_t *)((char *)cur + link_off);
+						if (leaf == NULL)
+							break;
+						cur = leaf;
+					}
+					/* cur is the leaf; link node as its red child */
+					node[7] = (uint64_t)cur | 1;
+					node[5] = 0; node[6] = 0;
+					if (b)
+						cur[5] = (uint64_t)node;
+					else
+						cur[6] = (uint64_t)node;
+					hv_rb_insert_rebalance(owner, node);
+				insert_success:
+					result = 0;
+					ver = *verslot;
+					*verslot = ver + 1;      /* bump region version */
+					b = true;
+				insert_epilogue:
+					pending = (int)hv_debug_flag;
+					obj = owner[0];
+					u = *(uint32_t *)(obj + 8);
+					if (u == cpu2)
+						*(uint32_t *)(obj + 8) = 0;   /* clear cpu id */
+					if (u != cpu2 || pending != 0)
+						lock_sync((void *)obj, cpu_slot);   /* FUN_fffffe000b7f1e80 */
+					refcnt = (int)owner[1];
+					owner[1] = refcnt - 1;
+					LORelease();
+					if (refcnt == 0)
+						kernel_panic_b();               /* FUN_fffffe000c0f8674, no-return */
+					if (refcnt == 1)
+						hv_vcpu_object_release((uint64_t *)owner);
+					if (!b) {
+						/* node was not linked into the tree: undo its allocations */
+						os_release((uint64_t)node[0]);       /* FUN_fffffe000b8afa78 */
+						zfree_waitq((char *)node[4]);       /* FUN_fffffe000b793cf4 */
+						refcount_dec(&hv_container_refcount, node); /* FUN_fffffe000b862b6c DAT_fffffe0007d54078 */
+					}
+				}
+				/* post insert/remove: reconcile the resolved owner reference */
+				if (ret != (char *)-1) {
+					if (ret == NULL) {
+						if (*(long *)(cpu_slot + 0x4d8) == 0)
+							os_release((uint64_t)vm);             /* FUN_fffffe000b8afa78 */
+						return result;
+					}
+					if (*ret != '-')
+						kernel_panic_msg(ret, 0, 0x2d);   /* FUN_fffffe000c0e1c3c, no-return */
+				}
+				goto common_tail;
 			}
-			prev = (uint32_t)*(uint64_t *)((char *)owner + 0x40); /* est. cpu id */
-			/* ... (see Ghidra for rotation/dirtying) */
-		} else {
-			return hv_vm_unwind(owner, NULL, ret, 0xfae94005);
+			result = 0xfae9400f;    /* sel != 2: unsupported selector */
 		}
-	} else {
-		return hv_vm_unwind(owner, NULL, ret, 0xfae9400f);
+		hv_pmap_unwind(ret, (uint64_t)vm);
 	}
-	/* Release vm lock + drop refcount; last releaser frees (b98533c). */
-	lock_release(&hv_lock);
+	/* shared epilogue: drop owner refcount; last releaser frees */
 	refcnt = (int)owner[1];
 	owner[1] = refcnt - 1;
 	LORelease();
-	if (refcnt == 1)
-		hv_vcpu_object_release(owner);
-	zfree_waitq(ret);
-	return 0;
+	if (refcnt == 0)
+		kernel_panic_b();                       /* FUN_fffffe000c0f8674, no-return */
+	ret = bindret;
+	if (refcnt == 1) {
+		hv_vcpu_object_release((uint64_t *)owner);
+		ret = bindret;
+	}
+common_tail:
+	zfree_waitq(ret);                           /* FUN_fffffe000b793cf4 */
+	return result;
 }

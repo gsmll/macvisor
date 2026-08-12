@@ -655,3 +655,262 @@ hypothesis, never a claim, and carries Ghidra evidence.
 - **Confidence**: medium — the flag address appears as the descriptor value
   target in both records; the "last writer wins" ordering is inferred from
   the shared storage, not a traced call sequence.
+
+## [vcpu-core] fffffe000b98a08c hv_esr_classify — HVC/SVC opcode-count gate bounds
+
+- **Observation**: The in-hub ESR classifier gates the SVC/HVC hypercall
+  dispatch on a per-VM opcode count read from the container at +0x2128. For
+  SVC the gate is `count-3 in [0,2)` (i.e. only count==3 or count==4 are
+  accepted; count<3 writes -1 to the guest return reg es[0x8], count>=5 is
+  rejected). The per-op enable bits live in VM bytes +0x2190/+0x2191 and the
+  HVC64 mask at vm+0x2130 (& (1<<imm), imm<=6). No other validation is applied
+  to the guest-supplied SVC number before it is used to index the VM op table;
+  an unrecognized number in the accepted count window falls to the unhandled
+  path (fail-closed) rather than mis-dispatching.
+- **Evidence**: b98b3f4 `subs w10,w9,#0x3; b.cc bc14` (count<3 -> es[0x8]=-1,
+  b98bc14), `b.cs dbb4` (count>=5 -> unhandled); SVC nr compare tree
+  b98c824..b98caa4; HVC64 mask check b98a790 `cmp x10,#0x6; b.hi d860` +
+  `and x9,x9,x10; cbz x9,d860`; HVC32 hint gate b98a484 `sub w10,w9,#0x2;
+  cmp w10,#0x3; b.cs ba94`.
+- **Severity (hypothesis)**: informational — the bounds are correct
+  (fail-closed on out-of-range), but the opcount window is a shared counter
+  (vm+0x2128) used by both SVC and HVC; a guest that can perturb the count
+  could force the reject path and get a spurious -1 return, not a privilege
+  change.
+- **Confidence**: medium — the gate values (3/4 for SVC, 2..4 for HVC32,
+  imm<=6 for HVC64) are taken from the disassembly; the security impact of
+  the shared counter is inferred.
+
+## [el2-vectors] fffffe000b75e468 hv_el2_return_to_guest — PAC key re-arm nonce derivation
+
+- **Observation**: On every guest resume the hypervisor re-arms APIAKeyLo
+  (3,0,1,0,5) with a nonce derived via pacga from the per-CPU thread key
+  `*pcpu` (a 16-bit signed value) and an incrementing context counter
+  (per-cpu+0xe0), OR'ed with 0x700. The key seed reduces to the 16-bit thread
+  key; if that word is low-entropy or attacker-influenceable, the re-armed PAC
+  key is weak and a guest could forge pointer-authentication codes. The same
+  tail appears in hv_el2_exception_exit (b75e420) and hv_el2_eret_fast
+  (b75e5cc).
+- **Evidence**: `uint64_t k = (uint64_t)(int16_t)*pcpu; na = pacga(k*0x100+3,
+  kc); nb = pacga(k*0x100+0x13, kc); UnkSytemRegWrite(3,0,1,0,5,
+  (na ^ (nb>>32)) | 0x700);` where kc = *(pcpu+0xe0) incremented. Literal
+  (3,0,1,0,5) write; identity unverified per contract.
+- **Severity (hypothesis)**: informational/low — the key is kernel-set per
+  cpu and PACGA + the counter add entropy; the strength still depends on the
+  16-bit thread-key field, which is a kernel datum a guest should not reach.
+- **Confidence**: medium — the pacga/0x700 derivation is directly observed;
+  whether the 16-bit key field is ever attacker-controlled is inferred.
+
+## [el2-vectors] fffffe000b760f04 / b761260 — irq/fiq tails PAC-authenticate the EL2 stack
+
+- **Observation**: The IRQ (b760f04) and FIQ (b761260) vector tails re-derive
+  the EL2 stack pointer via `autda x1,x2` (PAC-Authenticate, key context
+  0xe94d<<48) from the per-CPU thread frame, whereas sync (b760b94) and error
+  (b7615bc) use `mov sp,x21` — the frame base saved at [tpidr_el2+0x28]. The
+  asymmetric handling means the IRQ/FIQ entry path is additionally bound to a
+  PAC-authenticated thread frame, while sync/error trust the saved x21.
+- **Evidence**: `mrs x1,tpidr_el1; ldr x2,[x1,#0x1b8]; add x2,x2,#0x10; ldr
+  x1,[x2]; movk x2,#0xe94d,LSL #48; autda x1,x2; mov sp,x1;` at b76122c (irq)
+  and b761588 (fiq); sync/error do `mov sp,x21` after `ldr x21,[sp,#0x28]`.
+- **Severity (hypothesis)**: informational — both paths are already guarded
+  by the JOP hash; the autda path additionally binds the stack to the
+  thread's PAC, a defense against a forged/raced stack pointer on the
+  interrupt path.
+- **Confidence**: high (directly observed in the disassembly).
+
+## [el2-vectors] fffffe000b9679c8 hv_el2_guest_exc_check — dtrace table walk uses string-address sentinel
+
+- **Observation**: The EC-0x25 dtrace address check walks DAT_fffffe0007045690
+  (4 qwords/entry) terminating only when the walk pointer reaches the address
+  of the "dtrace: %s has an invalid address" string (fffffe00070459d0). If the
+  table were corrupted or the sentinel absent, the walk reads past the table.
+  The 0x1fff8fba970 addition to the PC decodes a tagged address; range
+  membership in the table is the only gate for returning the SVC-ISS 0x11
+  guest-visible path.
+- **Evidence**: `while (pc < dt[0] || dt[1] <= pc) { dt += 4; if
+  ((uintptr_t)dt >= 0xfffffe00070459d0ULL) { ... } }` with pc = elr +
+  0x1fff8fba970.
+- **Severity (hypothesis)**: informational — the table is kernel-owned and
+  presumed valid; the string-address terminator is fragile to corruption but
+  there is no attacker-controlled index.
+- **Confidence**: medium — the walk and sentinel are directly observed; table
+  integrity is assumed.
+
+## [el2-vectors] fffffe000b75e468 — fast-eret path writes 16 bytes below the frame base
+
+- **Observation**: When the preemption count is 0 and the per-cpu +0x4c bit2
+  flag is set, hv_el2_return_to_guest (and hv_el2_exception_exit) store the
+  caller's fp/lr at frame-0x10 / frame-0x8 — 16 bytes below the guest-state
+  frame base — before calling the preempt-clear helper (FUN_fffffe000b7a56d4)
+  and the fast eret. There is no bounds check on this underflow write; the
+  frame is kernel-allocated so the adjacent page is kernel memory.
+- **Evidence**: `*(uint64_t *)(st - 0x10) = /* fp */ 0; *(uint64_t *)(st - 8)
+  = /* lr */ 0;` in the eret_fast branch of b75e468 and b75e420.
+- **Severity (hypothesis)**: informational/low — a fixed 16-byte underflow
+  write; impact is limited to adjacent kernel data, but a frame placed near an
+  allocation boundary could clobber the preceding object.
+- **Confidence**: high (directly observed; offset constant from the decompile).
+
+## [trap-dispatch] fffffe000b986ff4 hv_vm_map_region — duplicate-start insert abandons a live node
+
+- **Observation**: On the insert path, the leaf-search loop treats a node with
+  the same vm whose start is >= the new region's start (`newstart <= cur.start`)
+  as success (jumps to the success epilogue: result=0, version++, keep-node
+  flag set). The freshly allocated region node was already given its fields
+  (node[0]=vm via kernel_refcount_inc b8af98c, node[4]=ret) but is NOT linked
+  into the rbtree and, because the keep-node flag is set, is NOT released in
+  the insert epilogue (`if (!b) { os_release(node[0]); zfree(node[4]);
+  refcount_dec(node); }`). The node, its vm reference and its backing-store
+  reference are left live and unreachable.
+- **Evidence**: Ghidra FUN_fffffe000b986ff4: `if (uVar24 <= puVar13[2]) goto
+  LAB_fffffe000b987790` inside the LAB...454 leaf-search do/while; LAB...790
+  sets `uVar25=0; *plVar2 = cVar4+1; bVar6=true;` and the epilogue
+  LAB...7a4 releases only `if (!bVar6)`. Node was allocated at
+  FUN_fffffe000b7eb624(DAT_fffffe0007d54038) before the search.
+- **Severity (hypothesis)**: low/medium — repeated duplicate-start calls leak
+  node objects, a vm retain and a backing store per call (DoS via memory
+  exhaustion if the user can force it); no memory corruption.
+- **Confidence**: medium — the control flow (allocate, abandon with keep flag
+  set) is directly observed; whether upstream callers ever pass a duplicate
+  start is not established.
+
+## [trap-dispatch] fffffe000b986ff4 hv_vm_map_region — partial-overlap returns generic 0xfae94003 vs exact 0xfae94008
+
+- **Observation**: The insert distinguishes exact overlap (`cstart == newstart
+  && cand.end == keyend` -> 0xfae94008, a specific "already present" error)
+  from partial overlap (node released, result left at the function-default
+  0xfae94003, a generic failure). A caller cannot tell "region already mapped"
+  from any other map failure on the partial-overlap path, and the error-code
+  asymmetry (08 for exact, 03 for partial) is undocumented.
+- **Evidence**: Ghidra FUN_fffffe000b986ff4 LAB...3bc: exact branch sets
+  `uVar25 = 0xfae94008`; the else branch (`cstart==keyend || cand.end<=newstart`
+  false) only sets `bVar6=false` and falls to the epilogue with uVar25 still
+  0xfae94003 from initialization.
+- **Severity (hypothesis)**: informational — inconsistent-but-non-critical
+  error reporting; no privilege/confidentiality impact.
+- **Confidence**: high (directly observed in the decompile).
+
+## [trap-dispatch] fffffe000b985588 hv_vm_create — requested tier is user-copied and compared, not clamped
+
+- **Observation**: The requested tier (local_48, bytes 24..27 of the 0x1c-byte
+  copyin block) is user-controlled and must satisfy `req <= granted_entitlement`
+  or the call fails with 0xfae94007. The granted tier is derived inline from
+  three sandbox entitlements (max tier 4). The user's requested tier is then
+  stored (`owner[0x425] = tier`) and drives quota/caps, so a user can request a
+  LOWER tier than granted (harmless) but never a higher one. The check is
+  correct, but the granted-tier computation is gated on the global
+  `hv_caps_gate == 0`; if that gate is ever set nonzero, VM creation is denied
+  outright (0xfae94007), so the gate cannot be used to bypass the entitlement
+  check.
+- **Evidence**: Ghidra FUN_fffffe000b985588: copyin 0x1c -> local_48;
+  `if (local_48 != 0 && DAT_fffffe000c649750 == 0) { ...probe 3 strings via
+  DAT_fffffe0007e93310+0x1c0... if (uVar2 <= uVar10) { alloc ... } }
+  return 0xfae94007;`
+- **Severity (hypothesis)**: informational — entitlement enforcement is sound;
+  noted for completeness of the tier/quota audit.
+- **Confidence**: high (the `req <= ent` guard and the three-string probe are
+  directly observed).
+
+## [trap-dispatch] fffffe000b986ff4 hv_vm_map_region — region RB rebalance reconstructed inline; hv_rbtree_insert has no body
+
+- **Observation**: The region-tree insert fixup (standard red-black rebalance)
+  is inlined in this function and was reproduced as static
+  hv_rb_insert_rebalance. hv_rbtree_insert (declared extern in hv_internal.h)
+  has NO decompiled body in the tree, so the two implementations are not yet
+  reconciled; if hv_rbtree_insert is later filled with the same algorithm and
+  this function keeps its inline copy, the module would duplicate the fixup.
+  This is a correctness/maintainability note, not a vulnerability.
+- **Evidence**: hv_internal.h:252 `extern int hv_rbtree_insert();` has no
+  definition in osfmk/arm64/hypervisor; hv_vmapple.c provides only
+  hv_rbtree_unlink (b9860bc).
+- **Severity (hypothesis)**: informational.
+- **Confidence**: high (absence of the body verified by grep).
+
+## [vcpu-core] fffffe000b98a08c hv_esr_classify — per-EC enable-bit gates are family-specific
+
+- **Observation**: The debug/arch exception families (ESR EC 0x24-0x3f) are
+  each gated by a family-specific enable bit, NOT a shared mask.  Each family
+  reads a different enable word from the guest save area (es+0x6a8/0x6b0/
+  0x6c0/0x730) ANDed with a different VM mask pair (vm+0x20a8/b0, +0x20c0/c8,
+  +0x2090/98, +0x20d8/e0) and tests a different bit (tbnz/tst #0x300,
+  #0x1c00, bits 0xb/0xe/0x1a/0x1b).  The enable word lives in the *guest
+  save area*, so a guest that can influence its saved EL2 state could set a
+  per-EC enable bit; but the VM mask pair must also be set, and the VM masks
+  are host-owned config words.
+- **Evidence**: leaf b98b870 reads es+0x6c0 with vm+0x20c8|0x20c0 and
+  `tst #0x300`; b98c8e0/b98c8d8 use es+0x6b0, vm+0x20b0|0x20a8, tbnz #0xe;
+  b98c928 uses es+0x6a8, vm+0x2098|0x2090, tbnz #0x1a; b98bf3c uses es+0x730,
+  vm+0x20e0|0x20d8, tst #0x1c00; b98c2c0 uses bit 0x1b; b98c328 bit 0xb.
+- **Severity (hypothesis)**: informational — the enable bits are guest-state
+  AND host-config gated, so no bypass; noted because an earlier collapsed
+  reconstruction incorrectly used a single `& 0x300` for all families.
+- **Confidence**: medium — enable offsets/bits taken from leaf disassembly;
+  the semantic of each bit (which guest debug feature it toggles) unverified.
+
+## [de-guess] fffffe000b9888a4 hv_vcpu_debug_save — debug-state claim may over-write watchpoints
+
+- **Observation**: On the EL2 debug-save path the function writes
+  `DBGCLAIMCLR_EL1 = 0xff`, claiming ALL 16 breakpoints + 16 watchpoints
+  (each of the two count globals is capped at 0x10 in the switch). If the
+  guest was mid-debug with more watchpoints configured than the host count
+  allows, the wholesale claim and per-register save is consistent with
+  standard kernel debug-state save, but the reconstruction had no bounds
+  beyond `count < 0x10`. No guest-visible bypass: it saves then re-reads the
+  count-capped register set into host-owned EL2 save memory.
+- **Evidence**: decompile reads dbgclaimclr_el1 -> es+0x690, writes 0xff back
+  to claim, then loops dbgbvr/dbgbcr (es+0x478/0x480) and dbgwvr/dbgwcr
+  (es+0x578/0x580) up to DAT_fffffe000c71693c / DAT_fffffe000c716938 (each
+  gated `< 0x10`).
+- **Severity (hypothesis)**: informational — standard debug-state save; no
+  unverified guest input, the count is a host-side global.
+- **Confidence**: high (decompile verbatim).
+
+## [de-guess] fffffe000b98e12c hv_vcpu_slot_op — no bounds check between slot-descriptor write and use
+
+- **Observation**: The vcpu slot op validates `slot < 8` and `which < 0x40`,
+  then transitions a per-slot word 1->2 and wires/copies guest memory using
+  lengths read from the EL2 config (`src+0x20`/`src+0x28`). The fault table
+  passed to kernel_copyin2 is the VM_MAP_UNWIRE table (DAT_fffffe0007d81408);
+  sizes come from host config words, not guest-controlled values directly.
+- **Evidence**: decompile: `if (7 < param_2) return 0xfae94003; if (0x3f <
+  param_3) return 0xfae94003;` then `iVar6 = FUN_fffffe000b8b122c(0,lVar11,
+  uVar8+uVar12+lVar11,0,&DAT_fffffe0007d81408)`.
+- **Severity (hypothesis)**: informational — bounds are host config-derived.
+- **Confidence**: high (decompile verbatim).
+
+## [de-guess] fffffe000b986898/fffffe000b986d94 hv_vm_map/hv_vm_unmap — thin wrappers over shared core
+
+- **Observation**: Both op-table handlers (idx 3 / idx 5) are single-call
+  wrappers into `hv_vm_map_core(args, op, mode)` with op=0, mode=0 (map) /
+  mode=1 (unmap). No per-op validation in the wrapper; all arg parsing and
+  bounds live in the shared core (b9868a8). Confirm both remain gated by the
+  same hv_available dispatch (FUN_fffffe000b984ed8).
+- **Evidence**: `hv_vm_map = hv_vm_map_core(param_1,0,0); hv_vm_unmap =
+  hv_vm_map_core(param_1,0,1)`.
+- **Severity (hypothesis)**: informational.
+- **Confidence**: high.
+
+## [de-guess] fffffe000b85f794 zone_create — element-size bound enforced but zone flags trusted
+
+- **Observation**: `zone_create` (previously guessed `kernel_vm_pages`)
+  panics on element size > 0x8000 and on bad/duplicate zone IDs, but the
+  ZC_* flag bits are used directly to configure caching/nogc/destructible
+  behavior without revalidation — expected for a kernel zone allocator; the
+  only caller-relevant surface is that hv must not feed it a non-canonical
+  flag word. Not hv-observable here.
+- **Evidence**: `if (0x8000 < param_2) panic("zone_create: element size too
+  large");` plus ZC_VM/ZC_DESTRUCTIBLE/ZC_OBJ_CACHE/ZC_PERCPU/ZC_READONLY
+  string dispatch.
+- **Severity (hypothesis)**: informational.
+- **Confidence**: high.
+
+## [de-guess] fffffe000b8f6e54 kernel_queue_free_walk — frees caller-controlled list
+
+- **Observation**: Walks `*param_1` as an intrusive list and frees every
+  element (b958108/b8f4310 + b85d440). There is no cycle guard: a cyclic list
+  would loop forever. Called by machine_lockdown / kernel_bootstrap_thread
+  with host-owned lists; not guest-reachable. Noted for the audit doc only.
+- **Evidence**: `do { puVar10 = *param_1; *param_1 = 0; ... } while
+  (puVar10 != 0)`.
+- **Severity (hypothesis)**: informational.
+- **Confidence**: high.

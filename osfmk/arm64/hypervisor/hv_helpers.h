@@ -39,6 +39,10 @@ void hv_el2_state_activate(long vcpu);
 /* FUN_fffffe000b987c44 @ 0xfffffe000b987c44 — VM region-tree teardown. */
 void hv_vm_owner_teardown(long *owner);
 
+/* FUN_fffffe000b9888a4 @ 0xfffffe000b9888a4 — EL1 hardware debug-state save.
+ * Saves DBGBVR/BCR + DBGWVR/WCR into the EL2 save block at `es`. */
+void hv_vcpu_debug_save(uint64_t es);
+
 /* FUN_fffffe000b95ecd8 @ 0xfffffe000b95ecd8 — cross-call / IPI signal (cpu_signal). */
 uint64_t cpu_signal(long cpu, uint32_t signal, uint64_t a, uint64_t b, int arg5);
 
