@@ -365,8 +365,102 @@ HAND_WRITTEN = {
     (void)lo;
     return;
 }"""),
-"0x5dfa8": (
-"""sk_u128_t sk_ipc_msg_frame(unsigned long arg1, unsigned short *msg)
+"0x53db8": ("""uint64_t sk_cnode_create(unsigned long *out, unsigned long base,
+             unsigned int num_caps, int cnode_type, long *slot,
+             unsigned long flags, unsigned int opts)
+{
+    unsigned long head;
+    uint64_t root_pg;
+    uint64_t rec_lo, rec_hi;
+    uint64_t res;
+    uint8_t kind;
+    uint8_t c;
+    uint32_t attr;
+    unsigned long mem;
+    uint64_t *err;
+    sk_u128_t vops;
+
+    head = 0;
+    err = 0;
+    rec_lo = 0;
+    root_pg = 0;
+    if ((slot == 0) || (num_caps > 0x3e) || (out == 0) || ((flags & 1) == 0))
+        goto fail;
+    if (*slot != 0) goto fail;
+
+    err = 0x11;                       /* capability-badge tag */
+    kind = (cnode_type - 1 < 6) ? *(uint32_t *)((char *)sk_global_002 + (cnode_type-1)*4)
+                                : 2;
+    rec_lo = 0;                        /* start building the 64-bit record word */
+
+    /* Encode record: type/badge fields via the byte-packing helpers. */
+    {
+        uint16_t *rw = (uint16_t *)((char *)&rec_lo + 0);
+        *rw = (uint16_t)((0x20000000u << 8) | kind);
+    }
+    {
+        uint8_t *rw = (uint8_t *)((char *)&rec_lo + 0);
+        *rw = (uint8_t)((uint64_t)(((uint64_t)(num_caps)<<8) | (rec_lo & 0xff)) & 0xff);
+    }
+    rec_lo = (rec_lo & 0xffffffffffff0000) | (((uint64_t)0x2000 << 16) | (rec_lo & 0xffff));
+    root_pg = base;
+
+    if (((opts >> 3) & 1) == 0) {
+        attr = 0;
+        rec_lo = (rec_lo & 0xffffffff00000000) |
+                 (((rec_lo >> 0x10) & 0xffff) << 16) |
+                 ((((opts & 0x10) == 0) << 8) | kind);
+        rec_lo = (rec_lo & 0xffffffffffffffff);
+        if (((base >> 0x1e) == 0) && ((opts & 0x10) == 0)) {
+            rec_lo = (rec_lo & 0xffffffffffff0000) | (rec_lo & 0xffff);
+            if (sk_global_002 == 0) {
+                uint64_t a1=0x4000, a2=0x2000000102, a3=0x11, a4=0;
+                vops = sk_vspace_get_ops();
+                res = (*(sk_code_t *)(vops.hi + 0x30))(vops.lo, 8, &a3, 0x6b0330, 0, &a3) & 0xff;
+                if (res != 0) { sk_rt_sync(); goto fail; }
+                sk_global_002 = a4;
+            }
+            attr = 0x20000;
+            head = (unsigned long)sk_global_002;
+        }
+    } else {
+        head = *out;
+        attr = 1;
+    }
+    mem = head;
+    if ((opts & 1) == 0) goto fail;
+    attr = (((unsigned int)flags & 2) | ((flags >> 2) & 1)) << 3 | attr;
+    if (((opts >> 1) & 1) == 0) {
+        attr |= 0x20;
+    } else {
+        unsigned long x;
+        if (((opts >> 5) & 1) == 0) x = 0x2010000;
+        else {
+            uint8_t *f = (uint8_t *)sk_tcb_cur();
+            if (((*f & 1) == 0) && ((sk_ctx_dbg(0) & 1) != 0)) { attr |= 0x10000; goto done_attr; }
+            x = 0x10020;
+        }
+        attr |= x;
+    }
+done_attr:
+    if (((uint64_t)mem + base) >= mem) {
+        vops = sk_vspace_get_ops();
+        c = (*(sk_code_t *)(vops.hi + 0x30))(vops.lo, attr | ((opts & 4) << 0x14),
+                                             &err, slot, 0, 0);
+        if (c != 0) return sk_cnode_check(0,0);
+        if (slot[1] != 0) {
+            (*(sk_code_t *)(slot[1] + 8))(*slot, &err);
+            *out = head;
+            *(uint32_t *)sk_current_cpu(0) = 0;
+            return 1;
+        }
+        sk_tcb_abort(0);
+    }
+fail:
+    *(uint32_t *)sk_current_cpu(0) = 0x16;
+    return 0;
+}"""),
+"0x5dfa8": ("""sk_u128_t sk_ipc_msg_frame(unsigned long arg1, unsigned short *msg)
 {
     unsigned short tag;
     uint64_t word2, word3;
@@ -481,6 +575,7 @@ typedef uint64_t (*sk_code_t)();
 #define CONCAT23(a,b) ((((uint64_t)(a)) << 16) | ((uint64_t)(b)))
 #define CONCAT32(a,b) ((((uint64_t)(a)) << 24) | ((uint64_t)(b)))
 #define CONCAT41(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CARRY8(a,b) ((((uint64_t)(a)) + ((uint64_t)(b))) < ((uint64_t)(a)))
 """
 
 def proto_for(name):
@@ -551,10 +646,10 @@ SIG_OVERRIDE = {
 "0x5b190": "void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...)",
 "0x51e5c": "unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...)",
 "0x51e0c": "int * sk_macho_seg(uintptr_t arg1, int *arg2, ...)",
-"0x53598": "unsigned long * sk_boot_arg(uintptr_t arg1, ...)",
+"0x53598": "unsigned long sk_boot_arg(uintptr_t arg1, ...)",
 "0x5ce54": "void sk_unlock(uintptr_t arg1, ...)",
 "0x54354": "void sk_tcb_abort(uintptr_t arg1, ...)",
-"0x5d394": "void sk_lock_release(uintptr_t arg1, ...)"
+"0x5d394": "void sk_lock_release(unsigned long *arg1, ...)"
 }
 for a, sig in SIG_OVERRIDE.items():
     if a in func_sigs:
@@ -660,6 +755,7 @@ def post_fix(text):
     text = text.replace("sk_error_broadcast()", "sk_error_broadcast(0)")
     text = re.sub(r"sk_boot_arg\(\)", "sk_boot_arg(0)", text)
     text = re.sub(r"sk_unlock\(\)", "sk_unlock(0)", text)
+    text = re.sub(r"sk_tcb_abort\(\)", "sk_tcb_abort(0)", text)
     text = re.sub(r"sk_tcb_abort\(0\)", "sk_tcb_abort(0)", text)
     text = text.replace("t2 = (uintptr_t)sk_global_062 + 1", "t2 = (unsigned int *)((uintptr_t)sk_global_062 + 1)")
     text = re.sub(r't(\d+) = \(uint64_t \*\)sk_boot_arg\(\)', r't\1 = (uint64_t *)(uintptr_t)sk_boot_arg()', text)
@@ -667,9 +763,19 @@ def post_fix(text):
     text = re.sub(r'sk_lock_acquire\(\)', 'sk_lock_acquire(0,0)', text)
     text = re.sub(r'sk_lock_prepare\(\)', 'sk_lock_prepare(0)', text)
     text = re.sub(r'sk_lock_try\(\)', 'sk_lock_try(0)', text)
-    text = re.sub(r'sk_lock_release\(([a-zA-Z_][a-zA-Z0-9_]*),1\)', r'sk_lock_release((unsigned long *)(uintptr_t)\1,1)', text)
     text = re.sub(r'sk_boot_putc\(t([0-9]+)\)', r'sk_boot_putc((long)(uintptr_t)t\1)', text)
     text = re.sub(r'sk_tcb_ai\(t([0-9]+)\)', r'sk_tcb_ai((uint64_t)(uintptr_t)t\1)', text)
+    # 0x53db8 packing: replace ._0_2_ / ._0_3_ partial-word writes on stk4
+    text = re.sub(r'stk4\._0_2_\s*=\s*\(uint16_t\)(CONCAT41\(0x20000000,t6\))',
+                  r'*(uint16_t *)((char *)&stk4 + 0) = (uint16_t)\1', text)
+    text = re.sub(r'stk4\._0_3_\s*=\s*CONCAT12\((.*?)\)',
+                  r'*(uint8_t *)((char *)&stk4 + 0) = (uint8_t)((uint64_t)(\1) & 0xff)', text)
+    text = re.sub(r'stk4\._0_2_\s*=\s*CONCAT11\((.*?)\)',
+                  r'*(uint16_t *)((char *)&stk4 + 0) = (uint16_t)((uint64_t)(\1) & 0xffff)', text)
+    text = text.replace('(undefined2)stk4', '(uint16_t)stk4').replace('(undefined3)stk4','(uint32_t)stk4')
+    text = text.replace('(undefined3)(uVar1 >> 0x10)','(uint32_t)(uVar1 >> 0x10)')
+    # sk_cnode_check zero-arg -> (0,0)
+    text = re.sub(r'sk_cnode_check\(\)', 'sk_cnode_check(0,0)', text)
     return text
     text = text.replace("sk_init_stage2()", "sk_init_stage2(0)")
     text = text.replace("sk_register_global()", "sk_register_global(0)")

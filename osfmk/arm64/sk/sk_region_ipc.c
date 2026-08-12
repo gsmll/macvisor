@@ -9129,3 +9129,269 @@ static void sk_dart_region_map2_15a464(uint64_t a, uint64_t b, uint64_t c, uint6
     (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)out;
     /* see decompile */
 }
+
+/* ============ 0x15a7b4 - 0x15af20 : DART mapper detail ============ */
+
+/* FUN_0015a7b4 @ 0x15a7b4  (est. sk_dart_map3)
+ * DART mapping 3: resolves the descriptor, builds the mapping record via
+ * FUN_0015f8d0, and installs it via FUN_00163a08 (with FUN_0015fde4). */
+static void sk_dart_map3_15a7b4(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g, uint64_t h, uint64_t i)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)i;
+    /* see decompile */
+}
+
+/* FUN_0015aa58 @ 0x15aa58  (est. sk_dart_map_bounds)
+ * DART mapping with bounds validation: resolves the descriptor, validates the
+ * range alignment (16-byte, BRK), and builds the mapping record with the
+ * correct type (1/5/4). */
+static void sk_dart_map_bounds_15aa58(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g, uint8_t (*out)[16])
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)out;
+    /* see decompile */
+}
+
+/* FUN_0015af20 @ 0x15af20  (est. sk_dart_map_final)
+ * DART mapping finalize: validates the mapping bounds and installs the final
+ * mapping record. */
+static uint64_t sk_dart_map_final_15af20(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t *out)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* ============ 0x15af20 - 0x15f8d0 : DART mapper + bootarg parsing ============ */
+
+/* FUN_0015af20 @ 0x15af20  (est. sk_dart_map_full)
+ * DART full mapping: resolves the descriptor, issues the mapping query via the
+ * 0x98 vtable, installs the mapping (FUN_001636e0), handling the DAT_006add10
+ * debug flag. */
+static uint64_t sk_dart_map_full_15af20(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t *out)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015b4a8 @ 0x15b4a8  (est. sk_dart_unmap_all)
+ * DART unmap-all: resolves the descriptor, iterates the mapped regions and
+ * unmaps each (FUN_00157e94/FUN_0015a464 with "chosen"/"exclave-dism"/...). */
+static uint64_t sk_dart_unmap_all_15b4a8(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015b87c @ 0x15b87c  (est. sk_dart_serial)
+ * DART serial check: runs the unmap-all, then checks the bootarg
+ * "serial-able" (FUN_00467468). */
+static uint8_t sk_dart_serial_15b87c(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015b9bc @ 0x15b9bc  (est. sk_bootarg_parse)
+ * Bootarg parsing: reads the bootarg string (FUN_000f5e08), looks up
+ * "serial" (0x3d6c6169726573) and iterates the bootarg list (FUN_000b1e08),
+ * returning whether the "serial=" value is enabled. */
+static bool sk_bootarg_parse_15b9bc(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+    return false;
+}
+
+/* FUN_0015bc70 @ 0x15bc70  (est. sk_dart_serial2)
+ * DART serial check 2 (FUN_00467468 "dart-base" key). */
+static uint8_t sk_dart_serial2_15bc70(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015bde8 @ 0x15bde8  (est. sk_dart_serial3)
+ * DART serial check 3 (checks the "dart-m_elba..." bootarg, inverted). */
+static uint8_t sk_dart_serial3_15bde8(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015bea8 @ 0x15bea8  (est. sk_bootarg_scan)
+ * Bootarg scan: iterates the bootarg list, parses each value (decimal/hex via
+ * the digit tables), and returns the parsed bootarg. */
+static uint64_t *sk_bootarg_scan_15bea8(uint64_t *out)
+{
+    (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015f108 @ 0x15f108  (est. sk_range_parse)
+ * Range parse (hex): parses a hex range [start,end) from the bootarg string,
+ * resolving the range via FUN_002b15d0/FUN_0001da84, handling the +/- sign;
+ * bounds-checked. Returns the 128-bit parsed value. */
+static void sk_range_parse_15f108(int64_t a, int64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_0015f4e0 @ 0x15f4e0  (est. sk_range_parse_dec)
+ * Range parse (decimal): parses a decimal range from the bootarg string. */
+static void sk_range_parse_dec_15f4e0(int64_t a, int64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_0015f850 @ 0x15f850  (est. sk_range_size)
+ * Range size: computes the range size (FUN_0015e780). */
+static uint64_t sk_range_size_15f850(uint64_t a, uint64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_0015f8d0 @ 0x15f8d0  (est. sk_bootarg_lookup)
+ * Bootarg lookup: resolves the bootarg descriptor (FUN_00377824/FUN_00377bec),
+ * parses the bootarg string (FUN_0015f850), and returns the parsed value. */
+static uint64_t sk_bootarg_lookup_15f8d0(uint64_t a, uint64_t b, uint64_t c, uint64_t *out)
+{
+    (void)a; (void)b; (void)c; (void)out;
+    /* see decompile */
+    return 0;
+}
+
+/* ============ 0x15fc84 - 0x15fff8 : DART helpers ============ */
+
+/* FUN_0015fc84 @ 0x15fc84  (est. sk_bootarg_hash)
+ * Bootarg hash: hashes the 0x13f-byte bootarg descriptor (FUN_00377dcc),
+ * returning the digest or a short record. */
+static void sk_bootarg_hash_15fc84(int64_t p)
+{
+    (void)p;
+    /* see decompile */
+}
+
+/* FUN_0015fd30 @ 0x15fd30  (est. sk_patch_const)
+ * Writes a constant to the 0x653ee0 read-only slot. */
+static void sk_patch_const_15fd30(void)
+{
+    /* uRam_653ee0 = 0x940048bf910063e1 */
+}
+
+/* FUN_0015fd84 @ 0x15fd84  (est. sk_skip_0c_d)
+ * Skip-list node advance (base+0xc). */
+static int64_t sk_skip_0c_15fd84(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_0015fdb4 @ 0x15fdb4  (est. sk_obj_share)
+ * Object share (thunk_FUN_0035d334 with 0x6673a0). */
+static uint64_t sk_obj_share_15fdb4(uint64_t p)
+{
+    /* thunk_FUN_0035d334(p, 0x6673a0) */
+    return p;
+}
+
+/* FUN_0015fde4 @ 0x15fde4  (est. sk_dart_cb1)
+ * DART callback 1 (FUN_0015e018). */
+static uint32_t sk_dart_cb1_15fde4(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1 = FUN_0015e018(a, ctx[0x20], ctx[0x28], ctx[0x10], ctx[0x18], b) */
+    return 0;
+}
+
+/* FUN_0015fde8 @ 0x15fde8  (est. sk_dart_cb1_b)
+ * Duplicate of 0x15fde4. */
+static uint32_t sk_dart_cb1_15fde8(uint64_t a, uint64_t b) { /* same as 0x15fde4 */ return 0; }
+
+/* FUN_0015fe0c @ 0x15fe0c  (est. sk_dart_cb2)
+ * DART callback 2 (FUN_0015d01c). */
+static uint32_t sk_dart_cb2_15fe0c(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1 = FUN_0015d01c(a, ctx[0x20], ctx[0x10], ctx[0x18], b) */
+    return 0;
+}
+
+/* FUN_0015fe10 @ 0x15fe10  (est. sk_dart_cb2_b)
+ * Duplicate of 0x15fe0c. */
+static uint32_t sk_dart_cb2_15fe10(uint64_t a, uint64_t b) { /* same as 0x15fe0c */ return 0; }
+
+/* FUN_0015fe34 @ 0x15fe34  (est. sk_skip_0c_e)
+ * Skip-list node advance (base+0xc). */
+static int64_t sk_skip_0c_15fe34(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_0015fe64 @ 0x15fe64  (est. sk_skip_10_e)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_15fe64(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0015fea4 @ 0x15fea4  (est. sk_skip_10_f)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_15fea4(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0015fed4 @ 0x15fed4  (est. sk_obj_init653ee8)
+ * Object init: resolves the type (FUN_00002534 0x653ee8) and calls the vtable
+ * +8 method. */
+static uint64_t sk_obj_init653ee8_15fed4(uint64_t p)
+{
+    (void)p;
+    /* see decompile */
+    return p;
+}
+
+/* FUN_0015ff34 @ 0x15ff34  (est. sk_obj_copy653)
+ * Object copy (thunk_FUN_0035dc24 with 0x6673a0). */
+static uint64_t sk_obj_copy653_15ff34(uint64_t a, uint64_t b)
+{
+    /* thunk_FUN_0035dc24(b, a, 0x6673a0) */
+    return b;
+}
+
+/* FUN_0015ff6c @ 0x15ff6c  (est. sk_obj_release)
+ * Object release (FUN_003a25d4). */
+static void sk_obj_release_15ff6c(uint64_t a, uint64_t b)
+{
+    (void)a;
+    /* FUN_003a25d4(b) */
+}
+
+/* FUN_0015ff94 @ 0x15ff94  (est. sk_obj_op_dispatch)
+ * Object operation dispatch (FUN_00160d70 or FUN_00160da0). */
+static void sk_obj_op_dispatch_15ff94(char flag, uint64_t a, uint64_t b)
+{
+    (void)flag; (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_0015fff8 @ 0x15fff8  (est. sk_report_error)
+ * Error report (FUN_0036993c 0x667580/0x6674c8), returns 0. */
+static uint64_t sk_report_error_15fff8(void)
+{
+    /* FUN_0036993c(0x667580, 0x6674c8, 0, 0); *x1 = 4; x1[1] = 1; FUN_0036986c() */
+    return 0;
+}

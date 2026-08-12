@@ -18,110 +18,110 @@
 
 /*-------------------------------------------------------------------------
  * Out-of-range helpers (reconstructed by sibling SK workers; declared extern
- * with their FUN_ address in a comment). Signatures are loose (variadic)
- * where the exact ABI is not pinned down by the call sites in this slice.
+ * with their FUN_ address in a comment). Concrete signatures; pointer args
+ * are cast to (unsigned long) at call sites.
  *------------------------------------------------------------------------- */
-extern void sk_swift_fatal(const char *fmt, ...) __attribute__((noreturn));      /* FUN_004afae4 */
-extern void sk_fatal_unavail(const char *msg, ...) __attribute__((noreturn));    /* FUN_001afa84 */
-extern void sk_stack_chk_fail(void) __attribute__((noreturn));                   /* FUN_0011d7e8 */
-extern void sk_printf(const char *msg);                                          /* FUN_00118b28 */
-extern void sk_boot_panic(void) __attribute__((noreturn));                       /* FUN_00054354 */
-extern void sk_swift_epilogue(void);                                             /* FUN_00025704 */
-extern void cl4_release(void *ptr);                                              /* FUN_0036b118 */
-extern void cl4_retain(void *ptr);                                               /* FUN_0036b270 */
-extern void cl4_release_op(void *ptr);                                           /* FUN_0036b6ac */
-extern void sk_lock_unref(void);                                                 /* FUN_0036b21c */
-extern unsigned long cl4_alloc_object(...);                                      /* FUN_0036a940 */
-extern unsigned long cl4_alloc_value(...);                                       /* FUN_0036a804 */
-extern unsigned long cl4_log_alloc(...);                                         /* FUN_0036a9a0 */
-extern unsigned long sk_alloc_vas(...);                                          /* FUN_000101a0 */
-extern unsigned long sk_zone_alloc_obj(...);                                     /* FUN_00010244 */
-extern unsigned long sk_realloc(...);                                            /* FUN_000102f4 */
-extern long sk_msg_init(...);                                                    /* FUN_00014bd4 */
-extern long sk_msg_decode(...);                                                  /* FUN_0001485c */
-extern unsigned long sk_error_obj(...);                                          /* FUN_00019aac */
-extern unsigned long sk_phys_alloc(void);                                        /* FUN_00034f70 */
-extern unsigned long sk_boot_object(void);                                       /* FUN_00034a2c */
-extern unsigned long sk_spanmap_get3(...);                                       /* FUN_00036008 */
-extern int sk_page_check(...);                                                   /* FUN_0003c4c0 */
-extern unsigned long sk_current_domain(...);                                     /* FUN_00389b64 */
-extern unsigned long sk_obj_lock2(...);                                          /* FUN_00310d68 */
-extern unsigned long sk_dispatch_async(...);                                     /* FUN_0004b520 */
-extern void sk_dispatch_free(...);                                               /* FUN_0004b664 */
-extern void sk_mtx_lock(...);                                                    /* FUN_00118164 */
-extern void sk_mtx_unlock(...);                                                  /* FUN_00118194 */
-extern void cl4_destroy_elem(...);                                               /* FUN_004b23d8 */
-extern unsigned long sk_obj_reg_get(...);                                        /* FUN_00376820 */
-extern unsigned long sk_lock_acquire(...);                                       /* FUN_00377824 */
-extern void cl4_log_emit(...);                                                   /* FUN_0036b588 */
-extern void cl4_log_fmt(...);                                                    /* FUN_003a25d4 */
-extern void cl4_trace_begin(...);                                                /* FUN_002a4ab4 */
-extern void sk_tb_async_dispatch(...);                                           /* FUN_00408db8 */
-extern void sk_tb_async_release(...);                                            /* FUN_0040bd24 */
-extern unsigned long cl4_mmu_op(...);                                            /* FUN_0001a1c8 */
-extern unsigned long sk_tb_get(void);                                            /* FUN_000159b8 */
-extern void sk_tb_storage_deinit(...);                                           /* FUN_0001fd9c */
-extern void sk_tb_metadata_call(...);                                            /* FUN_003ed2dc */
-extern void sk_tb_error_push(...);                                               /* FUN_002acbb8 */
-extern unsigned long sk_vas_register(...);                                       /* FUN_000147a0 */
-extern unsigned long sk_obj_lock2b(...);                                         /* FUN_00310d80 */
-extern unsigned long sk_tb_event_post(...);                                      /* FUN_00024678 */
-extern unsigned long sk_rt_006f6b4(...);                                         /* FUN_0006f6b4 */
-extern unsigned long sk_rt_0019e410(...);                                        /* FUN_0019e410 */
-extern unsigned long sk_rt_0019e538(...);                                        /* FUN_0019e538 */
-extern unsigned long sk_rt_0019e578(...);                                        /* FUN_0019e578 */
-extern unsigned long sk_rt_001a0414(...);                                        /* FUN_001a0414 */
-extern unsigned long sk_rt_0019ea20(...);                                        /* FUN_0019ea20 */
-extern unsigned long sk_rt_0019dd10(...);                                        /* FUN_0019dd10 */
-extern unsigned long sk_rt_0026b434(...);                                        /* FUN_0026b434 */
-extern unsigned long sk_rt_002a4ab4(...);                                        /* FUN_002a4ab4 */
-extern unsigned long sk_rt_003698b0(...);                                        /* FUN_003698b0 */
-extern unsigned long sk_rt_0036993c(...);                                        /* FUN_0036993c */
-extern unsigned long sk_rt_001ee9f4(...);                                        /* FUN_001ee9f4 */
-extern unsigned long sk_rt_00117d68(...);                                        /* FUN_00117d68 */
-extern unsigned long sk_rt_000465c4(...);                                        /* FUN_000465c4 */
-extern unsigned long sk_rt_0005ab94(...);                                        /* FUN_0005ab94 */
-extern unsigned long sk_rt_00031a8c(...);                                        /* FUN_00031a8c */
-extern unsigned long sk_rt_00035ba0(...);                                        /* FUN_00035ba0 */
-extern unsigned long sk_rt_00045cd8(...);                                        /* FUN_00045cd8 */
-extern unsigned long sk_rt_00045ce8(...);                                        /* FUN_00045ce8 */
-extern unsigned long sk_rt_00045d08(...);                                        /* FUN_00045d08 */
-extern unsigned long sk_rt_00045d38(...);                                        /* FUN_00045d38 */
-extern unsigned long sk_rt_00046288(...);                                        /* FUN_00046288 */
-extern unsigned long sk_rt_000462a0(...);                                        /* FUN_000462a0 */
-extern unsigned long sk_rt_000462c8(...);                                        /* FUN_000462c8 */
-extern unsigned long sk_rt_000462e0(...);                                        /* FUN_000462e0 */
-extern unsigned long sk_rt_000462e8(...);                                        /* FUN_000462e8 */
-extern unsigned long sk_rt_000462f8(...);                                        /* FUN_000462f8 */
-extern unsigned long sk_rt_00046304(...);                                       /* FUN_00046304 */
-extern unsigned long sk_rt_00046314(...);                                       /* FUN_00046314 */
-extern unsigned long sk_rt_00046320(...);                                       /* FUN_00046320 */
-extern unsigned long sk_rt_00046340(...);                                       /* FUN_00046340 */
-extern unsigned long sk_rt_0004636c(...);                                       /* FUN_0004636c */
-extern unsigned long sk_rt_00046380(...);                                       /* FUN_00046380 */
-extern unsigned long sk_rt_0004b710(...);                                       /* FUN_0004b710 */
-extern unsigned long sk_rt_0004b8d0(...);                                       /* FUN_0004b8d0 */
-extern unsigned long sk_rt_0040bb18(...);                                       /* FUN_0040bb18 */
-extern unsigned long sk_rt_004b1a74(...);                                       /* FUN_004b1a74 */
-extern unsigned long sk_rt_004b1aac(...);                                       /* FUN_004b1aac */
-extern unsigned long sk_rt_004b1ae8(...);                                       /* FUN_004b1ae8 */
-extern unsigned long sk_rt_004b1b24(...);                                       /* FUN_004b1b24 */
-extern unsigned long sk_rt_004b1b60(...);                                       /* FUN_004b1b60 */
-extern unsigned long sk_rt_004b1b9c(...);                                       /* FUN_004b1b9c */
-extern unsigned long sk_rt_004b1bd8(...);                                       /* FUN_004b1bd8 */
-extern unsigned long sk_rt_004b1c10(...);                                       /* FUN_004b1c10 */
-extern unsigned long sk_rt_00025e6c(...);                                       /* FUN_00025e6c */
-extern unsigned long sk_rt_0001612c(...);                                       /* FUN_0001612c */
-extern unsigned long sk_rt_00023c78(...);                                       /* FUN_00023c78 */
-extern unsigned long sk_rt_00023d00(...);                                       /* FUN_00023d00 */
-extern unsigned long sk_rt_00014804(void);                                      /* FUN_00014804 */
-extern unsigned long sk_rt_0001483c(void);                                      /* FUN_0001483c */
-extern unsigned long sk_rt_0001532c(...);                                       /* FUN_0001532c */
-extern unsigned long sk_rt_00015388(...);                                       /* FUN_00015388 */
-extern unsigned long sk_rt_00015708(void);                                      /* FUN_00015708 */
-extern unsigned long sk_rt_00014578(...);                                       /* FUN_00014578 */
-extern unsigned long sk_rt_000248a4(...);                                       /* FUN_000248a4 */
-extern unsigned long sk_rt_000248a4b(...);                                      /* FUN_000248a4 */
+extern void sk_swift_fatal(const char *fmt, ...) __attribute__((noreturn));   /* FUN_004afae4 */
+extern void sk_fatal_unavail(const char *msg, ...) __attribute__((noreturn)); /* FUN_001afa84 */
+extern void sk_stack_chk_fail(void) __attribute__((noreturn));                /* FUN_0011d7e8 */
+extern void sk_printf(const char *msg);                                       /* FUN_00118b28 */
+extern void sk_boot_panic(void) __attribute__((noreturn));                    /* FUN_00054354 */
+extern void sk_swift_epilogue(void);                                          /* FUN_00025704 */
+extern void cl4_release(void *ptr);                                           /* FUN_0036b118 */
+extern unsigned long cl4_retain(void *ptr);                                   /* FUN_0036b270 */
+extern void cl4_release_op(void *ptr);                                        /* FUN_0036b6ac */
+extern void sk_lock_unref(void);                                              /* FUN_0036b21c */
+extern unsigned long cl4_alloc_object(unsigned long, ...);                    /* FUN_0036a940 */
+extern unsigned long cl4_alloc_value(unsigned long, ...);                     /* FUN_0036a804 */
+extern unsigned long cl4_log_alloc(unsigned long, unsigned long);             /* FUN_0036a9a0 */
+extern unsigned long sk_alloc_vas(unsigned long);                             /* FUN_000101a0 */
+extern unsigned long sk_zone_alloc_obj(unsigned long, unsigned long, unsigned long); /* FUN_00010244 */
+extern unsigned long sk_realloc(unsigned long, unsigned long, unsigned long); /* FUN_000102f4 */
+extern long sk_msg_init(unsigned long, void *, unsigned long, unsigned long, unsigned long); /* FUN_00014bd4 */
+extern long sk_msg_decode(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_0001485c */
+extern unsigned long sk_error_obj(unsigned long);                             /* FUN_00019aac */
+extern unsigned long sk_phys_alloc(void);                                     /* FUN_00034f70 */
+extern unsigned long sk_boot_object(void);                                    /* FUN_00034a2c */
+extern unsigned long sk_spanmap_get3(void *);                                 /* FUN_00036008 */
+extern int sk_page_check(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_0003c4c0 */
+extern unsigned long sk_current_domain(unsigned long, ...);                   /* FUN_00389b64 */
+extern unsigned long sk_obj_lock2(unsigned long);                             /* FUN_00310d68 */
+extern unsigned long sk_dispatch_async(unsigned long, ...);                   /* FUN_0004b520 */
+extern void sk_dispatch_free(unsigned long);                                  /* FUN_0004b664 */
+extern void sk_mtx_lock(unsigned long);                                       /* FUN_00118164 */
+extern void sk_mtx_unlock(unsigned long);                                     /* FUN_00118194 */
+extern void cl4_destroy_elem(unsigned long);                                  /* FUN_004b23d8 */
+extern unsigned long sk_obj_reg_get(unsigned long, ...);                      /* FUN_00376820 */
+extern unsigned long sk_lock_acquire(unsigned long, unsigned long, unsigned long, void *, void *); /* FUN_00377824 */
+extern void cl4_log_emit(unsigned long);                                      /* FUN_0036b588 */
+extern void cl4_log_fmt(unsigned long);                                       /* FUN_003a25d4 */
+extern void cl4_trace_begin(unsigned long);                                   /* FUN_002a4ab4 */
+extern void sk_tb_async_dispatch(void *, void *, void *);                     /* FUN_00408db8 */
+extern void sk_tb_async_release(unsigned long);                               /* FUN_0040bd24 */
+extern unsigned long cl4_mmu_op(unsigned long, ...);                          /* FUN_0001a1c8 */
+extern unsigned long sk_tb_get(void);                                         /* FUN_000159b8 */
+extern void sk_tb_storage_deinit(unsigned long *);                            /* FUN_0001fd9c */
+extern void sk_tb_metadata_call(unsigned long, unsigned long, unsigned long); /* FUN_003ed2dc */
+extern void sk_tb_error_push(unsigned long);                                  /* FUN_002acbb8 */
+extern unsigned long sk_vas_register(unsigned long, unsigned long);           /* FUN_000147a0 */
+extern unsigned long sk_f_00002534(unsigned long, ...);                       /* FUN_00002534 */
+extern unsigned long sk_rt_003698b0(unsigned long, ...);                      /* FUN_003698b0 */
+extern unsigned long sk_rt_006f6b4(unsigned long, ...);                       /* FUN_0006f6b4 */
+extern unsigned long sk_rt_0019e410(unsigned long, ...);                      /* FUN_0019e410 */
+extern unsigned long sk_rt_0019e538(unsigned long, ...);                      /* FUN_0019e538 */
+extern unsigned long sk_rt_0019e578(unsigned long, ...);                      /* FUN_0019e578 */
+extern unsigned long sk_rt_001a0414(unsigned long, ...);                      /* FUN_001a0414 */
+extern unsigned long sk_rt_0019ea20(unsigned long, ...);                      /* FUN_0019ea20 */
+extern unsigned long sk_rt_0019dd10(unsigned long, ...);                      /* FUN_0019dd10 */
+extern unsigned long sk_rt_0026b434(unsigned long, ...);                      /* FUN_0026b434 */
+extern unsigned long sk_rt_001ee9f4(unsigned long, ...);                      /* FUN_001ee9f4 */
+extern unsigned long sk_rt_00117d68(unsigned long, ...);                      /* FUN_00117d68 */
+extern unsigned long sk_rt_000465c4(unsigned long, ...);                      /* FUN_000465c4 */
+extern unsigned long sk_rt_0005ab94(unsigned long, ...);                      /* FUN_0005ab94 */
+extern unsigned long sk_rt_00031a8c(unsigned long, ...);                      /* FUN_00031a8c */
+extern unsigned long sk_rt_00035ba0(unsigned long, ...);                      /* FUN_00035ba0 */
+extern unsigned long sk_rt_00045cd8(unsigned long, ...);                      /* FUN_00045cd8 */
+extern unsigned long sk_rt_00045ce8(unsigned long, ...);                      /* FUN_00045ce8 */
+extern unsigned long sk_rt_00045d08(unsigned long, ...);                      /* FUN_00045d08 */
+extern unsigned long sk_rt_00045d38(unsigned long, ...);                      /* FUN_00045d38 */
+extern unsigned long sk_rt_00046288(unsigned long, ...);                      /* FUN_00046288 */
+extern unsigned long sk_rt_000462a0(unsigned long, ...);                      /* FUN_000462a0 */
+extern unsigned long sk_rt_000462c8(unsigned long, ...);                      /* FUN_000462c8 */
+extern unsigned long sk_rt_000462e0(unsigned long, ...);                      /* FUN_000462e0 */
+extern unsigned long sk_rt_000462e8(unsigned long, ...);                      /* FUN_000462e8 */
+extern unsigned long sk_rt_000462f8(unsigned long, ...);                      /* FUN_000462f8 */
+extern unsigned long sk_rt_00046304(unsigned long, ...);                      /* FUN_00046304 */
+extern unsigned long sk_rt_00046314(unsigned long, ...);                      /* FUN_00046314 */
+extern unsigned long sk_rt_00046320(unsigned long, ...);                      /* FUN_00046320 */
+extern unsigned long sk_rt_00046340(unsigned long, ...);                      /* FUN_00046340 */
+extern unsigned long sk_rt_0004636c(unsigned long, ...);                      /* FUN_0004636c */
+extern unsigned long sk_rt_00046380(unsigned long, ...);                      /* FUN_00046380 */
+extern unsigned long sk_rt_0004b710(unsigned long, ...);                      /* FUN_0004b710 */
+extern unsigned long sk_rt_0004b8d0(unsigned long, ...);                      /* FUN_0004b8d0 */
+extern unsigned long sk_rt_0040bb18(unsigned long, ...);                      /* FUN_0040bb18 */
+extern unsigned long sk_rt_004b1a74(unsigned long, ...);                      /* FUN_004b1a74 */
+extern unsigned long sk_rt_004b1aac(unsigned long, ...);                      /* FUN_004b1aac */
+extern unsigned long sk_rt_004b1ae8(unsigned long, ...);                      /* FUN_004b1ae8 */
+extern unsigned long sk_rt_004b1b24(unsigned long, ...);                      /* FUN_004b1b24 */
+extern unsigned long sk_rt_004b1b60(unsigned long, ...);                      /* FUN_004b1b60 */
+extern unsigned long sk_rt_004b1b9c(unsigned long, ...);                      /* FUN_004b1b9c */
+extern unsigned long sk_rt_004b1bd8(unsigned long, ...);                      /* FUN_004b1bd8 */
+extern unsigned long sk_rt_004b1c10(unsigned long, ...);                      /* FUN_004b1c10 */
+extern unsigned long sk_rt_0001612c(unsigned long, ...);                      /* FUN_0001612c */
+extern unsigned long sk_rt_00023c78(unsigned long, ...);                      /* FUN_00023c78 */
+extern unsigned long sk_rt_00023d00(unsigned long, ...);                      /* FUN_00023d00 */
+extern unsigned long sk_rt_00014804(void);                                    /* FUN_00014804 */
+extern unsigned long sk_rt_0001483c(void);                                    /* FUN_0001483c */
+extern unsigned long sk_rt_0001532c(unsigned long, ...);                      /* FUN_0001532c */
+extern unsigned long sk_rt_00015388(unsigned long, ...);                      /* FUN_00015388 */
+extern unsigned long sk_rt_00015708(void);                                    /* FUN_00015708 */
+extern unsigned long sk_rt_00014578(unsigned long, ...);                      /* FUN_00014578 */
+extern unsigned long sk_rt_000248a4(unsigned long, ...);                      /* FUN_000248a4 */
+extern unsigned long sk_rt_00310d80(unsigned long, ...);                      /* FUN_00310d80 */
+extern unsigned long sk_rt_00024678(unsigned long, ...);                      /* FUN_00024678 */
+extern unsigned long sk_rt_002a4ab4(unsigned long, ...);                      /* FUN_002a4ab4 */
+extern unsigned long sk_rt_002acbb8(unsigned long, ...);                      /* FUN_002acbb8 */
+extern unsigned long sk_rt_001afa84(unsigned long, ...);                      /* FUN_001afa84 */
 
 /*-------------------------------------------------------------------------
  * Out-of-range global metadata / string-table addresses (opaque externs).
@@ -149,6 +149,80 @@ extern unsigned long DAT_004bbf40, DAT_0064c308, DAT_0064c288, DAT_0064c380;
 extern unsigned long DAT_0064c040, DAT_004bbe30;
 extern unsigned long DAT_0064c2e8, DAT_004edbbc;
 extern unsigned long DAT_004bbfcc, DAT_00675c30;
+
+
+/*-------------------------------------------------------------------------
+ * Forward declarations (same-file cross references; C99 requires decls).
+ *------------------------------------------------------------------------- */
+extern unsigned long sk_f_00002534(...);                                     /* FUN_00002534 */
+void tightbeam_message_init_desc(unsigned char *, unsigned long, unsigned long, unsigned long);
+void tightbeam_decoder_init(unsigned char *, unsigned long);
+void tightbeam_decoder_attach(unsigned long);
+void tightbeam_decoder_attached_run(void);
+void tightbeam_tag_mask(unsigned long *);
+long tightbeam_method_4(unsigned long);
+long tightbeam_method_4b(unsigned long);
+unsigned long tightbeam_alloc_and_init(unsigned long, unsigned char);
+void tightbeam_message_build_out(unsigned long *, unsigned long, unsigned long, unsigned int *);
+void tightbeam_message_decode_into(unsigned char *, unsigned char *, int *);
+void tightbeam_kind_select(unsigned long, unsigned char);
+void tightbeam_ctx_store(unsigned long);
+void tightbeam_frame_store(unsigned long);
+unsigned long tightbeam_message_commit(unsigned long);
+void tightbeam_release_msg(void);
+void tightbeam_release_msg2(void);
+void tightbeam_release_msg_ref(void);
+void tightbeam_release_msg_ref2(void);
+cl4_result_t tightbeam_type_descriptor_a(void);
+void vas_iterate_objects(void (*)(void), unsigned long, unsigned long, unsigned long,
+                         unsigned long, unsigned long, unsigned long, unsigned long);
+void vas_codable_dispatch(unsigned long, unsigned long, unsigned long);
+long tightbeam_method_4c(unsigned long);
+void vas_codable_dispatch_result(void);
+long tightbeam_method_8(unsigned long);
+void vas_codable_call_result(unsigned long);
+long tightbeam_method_4d(unsigned long);
+unsigned long vas_iterate_objects_out(unsigned long, unsigned long, unsigned long);
+unsigned long vas_iterate_internal(unsigned long, unsigned long, unsigned long, unsigned long,
+                                   unsigned long, unsigned long);
+unsigned int vas_iterate_1(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+unsigned int vas_iterate_2(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+unsigned long vas_object_call(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+void vas_object_call_out(unsigned long *, unsigned int, unsigned long, unsigned long,
+                         unsigned int *, unsigned long, unsigned long);
+unsigned long vas_object_call2(unsigned long, unsigned long, unsigned long);
+unsigned long vas_object_call2_internal(unsigned long, unsigned long, unsigned long, unsigned long,
+                                        unsigned long);
+unsigned int vas_object_call3(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+unsigned int vas_object_call4(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+void vas_codable_encode(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long,
+                        unsigned long, unsigned int *);
+void vas_codable_encode_out(unsigned long, unsigned long, unsigned long, unsigned int *,
+                            unsigned long, unsigned long);
+void vas_object_encode_cb(unsigned long, unsigned long, unsigned int *);
+void sk_type_register(void);
+unsigned long sk_lock_and_alloc(unsigned long *, long *);
+void sk_type_register_inner(void);
+long tightbeam_method_8b(unsigned long);
+long tightbeam_method_8c(unsigned long);
+long tightbeam_method_4e(unsigned long);
+long sk_obj_lock_resolve(unsigned long);
+long tightbeam_method_38(unsigned long);
+long tightbeam_method_20(unsigned long);
+long tightbeam_method_28(unsigned long);
+long tightbeam_method_60(unsigned long);
+void vas_server_register(void);
+long vas_msg_send(unsigned long, unsigned long, unsigned long, void (*)(void));
+unsigned long vas_op_invoke(unsigned long, unsigned long, unsigned long);
+void vas_server_init_forward(void);
+cl4_result_t vas_type_descriptor(void);
+unsigned long vas_server_init(unsigned long, unsigned char, unsigned long, unsigned long,
+                              unsigned long, unsigned long, unsigned long);
+unsigned long vas_server_create(unsigned long, unsigned long, unsigned long, unsigned long,
+                                unsigned long, unsigned long);
+void vas_server_register_internal(unsigned long, unsigned long, unsigned long, unsigned long,
+                                  unsigned long, unsigned long);
+long vas_fault_complete(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
 
 /*--------------------------------------------------------------------*/
 /* FUN_000258c8 @ 0x000258c8   (est. tightbeam_message_init_desc)
@@ -981,4 +1055,420 @@ void vas_object_encode_cb(unsigned long p1, unsigned long p2, unsigned int *err)
     (*(void (*)(void))tightbeam_method_4d(f2))(p1, f6, f3, f4, &code, f1, f2); /* FUN_000269a4 */
     if (__builtin_frame_address(0) != 0)
         *err = code;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027580 @ 0x00027580   (est. sk_type_register)
+ * Ghidra: void FUN_00027580(void)
+ * Registers the Tightbeam/VAS type: if already registered (DAT_0064c2e0)
+ * returns; otherwise locks the domain (FUN_00027614), computes the type via
+ * FUN_00027670 and stores it via FUN_00376820.
+ * Confidence: low (one-shot type registration).
+ * Notes: globals DAT_0064c2d8/DAT_0064c2e0/DAT_004bbe30/DAT_004ea760.
+ */
+void sk_type_register(void)
+{
+    unsigned long type;
+    unsigned long slot;
+    if (DAT_0064c2e0 != 0)
+        return;
+    unsigned long dom = sk_lock_and_alloc(&DAT_0064c2d8, &DAT_004bbe30); /* FUN_00027614 */
+    slot = sk_type_register_inner();                   /* FUN_00027670 */
+    type = 0x6720e8;
+    DAT_0064c2e0 = sk_obj_reg_get(&DAT_004ea760, dom, &type); /* FUN_00376820 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027614 @ 0x00027614   (est. sk_lock_and_alloc)
+ * Ghidra: ulong FUN_00027614(ulong *param_1, long *param_2)
+ * Returns the existing tagged lock value at param_1, or allocates a fresh
+ * domain via FUN_00389b64 and stores it tagged.
+ * Confidence: medium (lazy domain allocation).
+ */
+unsigned long sk_lock_and_alloc(unsigned long *lock, long *meta)
+{
+    if (*lock != 0)
+        return *lock & 0xfffffffffffffffe;
+    unsigned long v = sk_current_domain(0xff, (unsigned long)meta + (long)(int)*meta,
+                                        (unsigned long)*meta >> 0x20, 0, 0); /* FUN_00389b64 */
+    *lock = v | 1;
+    return v & 0xfffffffffffffffe;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027670 @ 0x00027670   (est. sk_type_register_inner)
+ * Ghidra: void FUN_00027670(void)
+ * One-shot: stores the 8-byte type metadata from FUN_00376820 into the
+ * byte array at DAT_0064c2e8.
+ * Confidence: low (type-metadata store).
+ */
+void sk_type_register_inner(void)
+{
+    unsigned long v;
+    if (*(unsigned long *)&DAT_0064c2e8 != 0)
+        return;
+    v = sk_obj_reg_get(&DAT_004edbbc, 0x677880);       /* FUN_00376820 */
+    *(unsigned long *)&DAT_0064c2e8 = v;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000276c4 @ 0x000276c4   (est. tightbeam_method_8b)
+ * Ghidra: long FUN_000276c4(ulong param_1)
+ * Method-table resolver for slot offset 8.
+ * Confidence: high.
+ */
+long tightbeam_method_8b(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 8) + (long)*(int *)(obj + 8);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000276f4 @ 0x000276f4   (est. tightbeam_method_8c)
+ * Ghidra: long FUN_000276f4(ulong param_1)
+ * Method-table resolver for slot offset 8.
+ * Confidence: high.
+ */
+long tightbeam_method_8c(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 8) + (long)*(int *)(obj + 8);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027724 @ 0x00027724   (est. tightbeam_method_4e)
+ * Ghidra: long FUN_00027724(ulong param_1)
+ * Method-table resolver for slot offset 4.
+ * Confidence: high.
+ */
+long tightbeam_method_4e(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 4) + (long)*(int *)(obj + 4);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027754 @ 0x00027754   (est. sk_obj_lock_resolve)
+ * Ghidra: long FUN_00027754(ulong param_1)
+ * Resolves an object lock: if untagged returns the method pointer at +4;
+ * if tagged returns the loaded lock pointer at +8.
+ * Confidence: medium (tagged pointer lock resolution).
+ */
+long sk_obj_lock_resolve(unsigned long obj)
+{
+    if ((obj & 1) == 0)
+        return (long)(obj + 4) + (long)*(int *)(obj + 4);
+    return *(long *)((obj & 0xfffffffffffffffe) + 8);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027788 @ 0x00027788   (est. tightbeam_method_38)
+ * Ghidra: long FUN_00027788(ulong param_1)
+ * Method-table resolver for slot offset 0x38.
+ * Confidence: high.
+ */
+long tightbeam_method_38(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 0x38) + (long)*(int *)(obj + 0x38);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000277b8 @ 0x000277b8   (est. tightbeam_method_20)
+ * Ghidra: long FUN_000277b8(ulong param_1)
+ * Method-table resolver for slot offset 0x20.
+ * Confidence: high.
+ */
+long tightbeam_method_20(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 0x20) + (long)*(int *)(obj + 0x20);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000277e8 @ 0x000277e8   (est. tightbeam_method_28)
+ * Ghidra: long FUN_000277e8(ulong param_1)
+ * Method-table resolver for slot offset 0x28.
+ * Confidence: high.
+ */
+long tightbeam_method_28(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 0x28) + (long)*(int *)(obj + 0x28);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027818 @ 0x00027818   (est. tightbeam_method_60)
+ * Ghidra: long FUN_00027818(ulong param_1)
+ * Method-table resolver for slot offset 0x60.
+ * Confidence: high.
+ */
+long tightbeam_method_60(unsigned long obj)
+{
+    if ((obj & 1) != 0)
+        obj = *(unsigned long *)(obj & 0xfffffffffffffffe);
+    return (long)(obj + 0x60) + (long)*(int *)(obj + 0x60);
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027880 @ 0x00027880   (est. vas_server_register)
+ * Ghidra: void FUN_00027880(void)
+ * Registers the VAS server by forwarding to FUN_00027f50.
+ * Confidence: low (forwarder).
+ */
+void vas_server_register(void)
+{
+    vas_server_register_internal(0, 0, 0, 0, 0, 0);   /* FUN_00027f50 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000278a8 @ 0x000278a8   (est. vas_msg_send)
+ * Ghidra: long FUN_000278a8(undefined8, undefined8, ulong, code *)
+ * Sends a VAS message: inits a decoder descriptor (FUN_000259c0), deinits the
+ * storage (FUN_0001fd9c), retains the payload (FUN_0036b270) and invokes the
+ * send callback; returns 0 when the callback reports status 2, else fatal.
+ * Confidence: low (async message send).
+ */
+long vas_msg_send(unsigned long out, unsigned long p2, unsigned long payload,
+                  void (*cb)(void))
+{
+    unsigned char desc[16];
+    unsigned long storage;
+    unsigned long result;
+    tightbeam_decoder_init(desc, p2);                  /* FUN_000259c0 */
+    storage = *(unsigned long *)&desc[8];
+    sk_tb_storage_deinit(&storage);                    /* FUN_0001fd9c */
+    unsigned long flags = payload | 0x2000000000000000;
+    cl4_retain((void *)payload);                       /* FUN_0036b270 */
+    cb(&result, (unsigned char *)&flags, desc);
+    if ((result & 0xff) == 2)
+        return 0;
+    unsigned long r = result;
+    if (r == 0)
+        sk_fatal_unavail("Fatal error", 0xb, 2, 0xd000000000000022, 0x80000000005acf60,
+                         "Tightbeam TightbeamMessage swift", 0x20, 2, 0x93, 0);
+    sk_swift_epilogue();                               /* FUN_00025704 */
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027a98 @ 0x00027a98   (est. vas_op_invoke)
+ * Ghidra: undefined8 FUN_00027a98(long param_1, undefined8, undefined8)
+ * Invokes the operation stored at param_1+0x20 with the retained arg at
+ * param_1+0x28, releasing it afterwards.
+ * Confidence: low (op invocation with retain/release).
+ */
+unsigned long vas_op_invoke(unsigned long self, unsigned long a, unsigned long b)
+{
+    void (*op)(void) = *(void (**)(void))(self + 0x20);
+    unsigned long arg = *(unsigned long *)(self + 0x28);
+    cl4_retain((void *)arg);                           /* FUN_0036b270 */
+    unsigned long rc = (unsigned long)op(a, b);
+    cl4_release((void *)arg);                          /* FUN_0036b118 */
+    return rc;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027b10 @ 0x00027b10   (est. vas_server_init_forward)
+ * Ghidra: void FUN_00027b10(void)
+ * Forwarder to FUN_00027b70.
+ * Confidence: low.
+ */
+void vas_server_init_forward(void)
+{
+    vas_server_init(0, 0, 0, 0, 0, 0, 0);              /* FUN_00027b70 */
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027b38 @ 0x00027b38   (est. vas_type_descriptor)
+ * Ghidra: undefined1 [16] FUN_00027b38(void)
+ * Returns the 16-byte type descriptor pair (0x64c380, 0).
+ * Confidence: low (type-metadata accessor).
+ */
+cl4_result_t vas_type_descriptor(void)
+{
+    cl4_result_t r;
+    r.lo = 0x64c380;
+    r.hi = 0;
+    return r;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027b70 @ 0x00027b70   (est. vas_server_init)
+ * Ghidra: long FUN_00027b70(undefined8, byte, undefined8, undefined8, undefined8,
+ *                           undefined8, undefined8)
+ * Initialises the VAS server: maps the kind to (size, flags) via
+ * FUN_00015388, allocates the server object and a 0x28-byte op descriptor,
+ * wires the op-invoke entry FUN_00027a98, registers via FUN_000147a0, and
+ * stores the server at the owner's +0x10.
+ * Confidence: low (VAS server scaffolding).
+ */
+unsigned long vas_server_init(unsigned long p1, unsigned char kind, unsigned long p3,
+                              unsigned long p4, unsigned long p5, unsigned long p6,
+                              unsigned long p7)
+{
+    unsigned long size, flags;
+    if (kind < 2)
+        size = (kind == 0) ? 3 : 0xd, flags = 0;
+    else if (kind == 2)
+        flags = 1, size = 3;
+    else if (kind != 3) {
+        size = sk_rt_0001532c(1, 0);
+        goto reg;
+    } else
+        flags = 8, size = 3;
+    size = sk_rt_00015388(size, p1, flags);
+reg:
+    unsigned long server = cl4_alloc_object(&DAT_0064c380, 0x18, 7); /* FUN_0036a940 */
+    *(unsigned long *)(server + 0x10) = 0;
+    unsigned long opdesc = cl4_alloc_object(p5, 0x28, 7); /* FUN_0036a940 */
+    *(unsigned long *)(opdesc + 0x10) = server;
+    *(unsigned long *)(opdesc + 0x18) = p3;
+    *(unsigned long *)(opdesc + 0x20) = p4;
+    unsigned long desc[8];
+    desc[0] = 0x6ad3a8;
+    desc[1] = DAT_004bb180;
+    desc[2] = (unsigned long)vas_op_invoke;            /* FUN_00027a98 */
+    desc[3] = p7;
+    desc[4] = p6;
+    unsigned long reg = sk_dispatch_async(&desc[2], &desc[0]); /* FUN_0004b520 */
+    cl4_retain((void *)server);                        /* FUN_0036b270 */
+    cl4_retain((void *)p4);                            /* FUN_0036b270 */
+    cl4_release((void *)opdesc);                       /* FUN_0036b118 */
+    unsigned long handle = sk_vas_register(size, reg); /* FUN_000147a0 */
+    sk_dispatch_free(reg);                             /* FUN_0004b664 */
+    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
+    *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
+    *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;
+    *(unsigned long *)(logobj + 0x38) = 0x6753a0;
+    *(unsigned long *)(logobj + 0x20) = 0xd00000000000001b;
+    *(unsigned long *)(logobj + 0x28) = 0x80000000005ad2f0;
+    sk_rt_0026b434(logobj, 0x20, 0xe100000000000000, 10, 0xe100000000000000); /* FUN_0026b434 */
+    cl4_log_emit(logobj);                              /* FUN_0036b588 */
+    cl4_log_fmt(*(unsigned long *)(logobj + 0x20));    /* FUN_003a25d4 */
+    cl4_release((void *)p4);                           /* FUN_0036b118 */
+    *(unsigned long *)(server + 0x10) = handle;
+    return server;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027d94 @ 0x00027d94   (est. vas_server_create)
+ * Ghidra: long FUN_00027d94(undefined8, undefined8, undefined8, undefined8,
+ *                           undefined8, undefined8)
+ * Creates a VAS server object (without the kind mapping): allocates the server
+ * and op descriptor, wires the op-invoke entry, registers, and stores the
+ * handle at +0x10. Confidence low (mirrors FUN_00027b70).
+ */
+unsigned long vas_server_create(unsigned long p1, unsigned long p2, unsigned long p3,
+                                unsigned long p4, unsigned long p5, unsigned long p6)
+{
+    unsigned long server = cl4_alloc_object();         /* FUN_0036a940 */
+    *(unsigned long *)(server + 0x10) = 0;
+    unsigned long opdesc = cl4_alloc_object(p4, 0x28, 7); /* FUN_0036a940 */
+    *(unsigned long *)(opdesc + 0x10) = server;
+    *(unsigned long *)(opdesc + 0x18) = p2;
+    *(unsigned long *)(opdesc + 0x20) = p3;
+    unsigned long desc[8];
+    desc[0] = 0x6ad3a8;
+    desc[1] = DAT_004bb180;
+    desc[2] = (unsigned long)vas_op_invoke;            /* FUN_00027a98 */
+    desc[3] = p6;
+    desc[4] = p5;
+    unsigned long reg = sk_dispatch_async(&desc[2], &desc[0]); /* FUN_0004b520 */
+    cl4_retain((void *)server);                        /* FUN_0036b270 */
+    cl4_retain((void *)p3);                            /* FUN_0036b270 */
+    cl4_release((void *)opdesc);                       /* FUN_0036b118 */
+    unsigned long handle = sk_vas_register(p1, reg);   /* FUN_000147a0 */
+    sk_dispatch_free(reg);                             /* FUN_0004b664 */
+    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
+    *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
+    *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;
+    *(unsigned long *)(logobj + 0x38) = 0x6753a0;
+    *(unsigned long *)(logobj + 0x20) = 0xd00000000000001b;
+    *(unsigned long *)(logobj + 0x28) = 0x80000000005ad2f0;
+    sk_rt_0026b434(logobj, 0x20, 0xe100000000000000, 10, 0xe100000000000000); /* FUN_0026b434 */
+    cl4_log_emit(logobj);                              /* FUN_0036b588 */
+    cl4_log_fmt(*(unsigned long *)(logobj + 0x20));    /* FUN_003a25d4 */
+    cl4_release((void *)p3);                           /* FUN_0036b118 */
+    *(unsigned long *)(server + 0x10) = handle;
+    return server;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_00027f50 @ 0x00027f50   (est. vas_server_register_internal)
+ * Ghidra: void FUN_00027f50(undefined8, undefined8, undefined8, undefined8,
+ *                           undefined8, undefined8)
+ * Internal VAS server registration on the current frame context: allocates
+ * the op descriptor, registers, and stores the handle at frame +0x10.
+ * Confidence: low.
+ */
+void vas_server_register_internal(unsigned long p1, unsigned long p2, unsigned long p3,
+                                  unsigned long p4, unsigned long p5, unsigned long p6)
+{
+    unsigned long self = __builtin_frame_address(0);
+    *(unsigned long *)(self + 0x10) = 0;
+    unsigned long opdesc = cl4_alloc_object(p4, 0x28, 7); /* FUN_0036a940 */
+    *(unsigned long *)(opdesc + 0x10) = self;
+    *(unsigned long *)(opdesc + 0x18) = p2;
+    *(unsigned long *)(opdesc + 0x20) = p3;
+    unsigned long desc[8];
+    desc[0] = 0x6ad3a8;
+    desc[1] = DAT_004bb180;
+    desc[2] = (unsigned long)vas_op_invoke;            /* FUN_00027a98 */
+    desc[3] = p6;
+    desc[4] = p5;
+    unsigned long reg = sk_dispatch_async(&desc[2], &desc[0]); /* FUN_0004b520 */
+    cl4_retain(0);                                     /* FUN_0036b270 */
+    cl4_retain((void *)p3);                            /* FUN_0036b270 */
+    cl4_release((void *)opdesc);                       /* FUN_0036b118 */
+    unsigned long handle = sk_vas_register(p1, reg);   /* FUN_000147a0 */
+    sk_dispatch_free(reg);                             /* FUN_0004b664 */
+    unsigned long meta = sk_f_00002534(&DAT_0064c040, &DAT_004bbf40); /* FUN_00002534 */
+    unsigned long logobj = cl4_log_alloc(meta, 0);     /* FUN_0036a9a0 */
+    *(unsigned long *)(logobj + 0x18) = DAT_004baeb8;
+    *(unsigned long *)(logobj + 0x10) = DAT_004baeb0;
+    *(unsigned long *)(logobj + 0x38) = 0x6753a0;
+    *(unsigned long *)(logobj + 0x20) = 0xd00000000000001b;
+    *(unsigned long *)(logobj + 0x28) = 0x80000000005ad2f0;
+    sk_rt_0026b434(logobj, 0x20, 0xe100000000000000, 10, 0xe100000000000000); /* FUN_0026b434 */
+    cl4_log_emit(logobj);                              /* FUN_0036b588 */
+    cl4_log_fmt(*(unsigned long *)(logobj + 0x20));    /* FUN_003a25d4 */
+    cl4_release((void *)p3);                           /* FUN_0036b118 */
+    *(unsigned long *)(self + 0x10) = handle;
+}
+
+/*--------------------------------------------------------------------*/
+/* FUN_000280c4 @ 0x000280c4   (est. vas_fault_complete)
+ * Ghidra: long FUN_000280c4(undefined8, undefined8, ulong, undefined8, undefined8)
+ * Completes a VAS fault: builds a decoder descriptor, packs the fault result
+ * tag, and calls the completion path FUN_003ed2dc; returns 0 on tag 2.
+ * Confidence: low (fault-completion).
+ */
+long vas_fault_complete(unsigned long out, unsigned long p2, unsigned long flags,
+                        unsigned long p4, unsigned long p5)
+{
+    unsigned char desc[16];
+    unsigned long storage;
+    tightbeam_decoder_init(desc, p2);                  /* FUN_000259c0 */
+    storage = *(unsigned long *)&desc[8];
+    sk_tb_storage_deinit(&storage);                    /* FUN_0001fd9c */
+    unsigned long fflags = flags | 0x2000000000000000;
+    unsigned long result = 2, rc = 0, r3 = 0, r4 = 0, r5 = 0, r6 = 0;
+    cl4_retain((void *)flags);                         /* FUN_0036b270 */
+    sk_tb_metadata_call(&DAT_004bbfd0, 0, 0x67b148);   /* FUN_003ed2dc */
+    if ((result & 0xff) == 2)
+        return 0;
+    if (rc == 0)
+        sk_fatal_unavail("Fatal error", 0xb, 2, 0xd000000000000022, 0x80000000005acf60,
+                         "Tightbeam TightbeamMessage swift", 0x20, 2, 0x93, 0);
+    sk_swift_epilogue();                               /* FUN_00025704 */
+    return rc;
 }

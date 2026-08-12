@@ -3460,7 +3460,7 @@ void lite_zone_return_run(long param_1, long param_2, unsigned int *param_3, int
     {
         unsigned int tmp = (unsigned int)(-1L << (((unsigned long)(first + 1)) & 0x3f));
         if ((~(tmp << (start & 0x3f)) & (*param_3 ^ 0xffffffff)) != 0) start++;
-        tmp = (unsigned int)(-1L << (((unsigned long)((end - first)) & 0x3f));
+        tmp = (unsigned int)(-1L << (((unsigned long)(end - first)) & 0x3f));
         if ((~(tmp << (first & 0x3f)) & (*param_3 ^ 0xffffffff)) == 0) end++;
     }
     if (start <= end && end - start != 0) {
@@ -3662,7 +3662,7 @@ void lite_zone_alloc_small2(long zone, unsigned long param_2, unsigned long para
     unsigned char b;
 
     if (8 < param_2) {
-        lite_zone_alloc_round((unsigned long)zone, param_2, param_3, param_5);
+        lite_zone_alloc_round((unsigned long)zone, param_2, param_3, param_5, 0);
         return;
     }
     if (0x8000 < param_3) { lite_zone_alloc_large((long)zone, param_3, 0, param_5, 0); return; }

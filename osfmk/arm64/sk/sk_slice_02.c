@@ -26,6 +26,9 @@
 #define SoftwareBreakpoint(code, addr)  __builtin_trap()
 #define CallSupervisor(n)  __asm__ volatile("hvc #0" ::: "memory")
 
+/* dword = 4-byte word (used by the decompile-typed put/get wrappers). */
+typedef uint32_t dword;
+
 /* English-first aliases for the body helpers (bodies use these names). */
 #define sk_heap_calloc(count, size, tag)   FUN_00010244((unsigned long)(count), (unsigned long)(size), (unsigned long)(tag))
 #define sk_heap_realloc(p, n, tag)         FUN_000102f4((unsigned long)(p), (unsigned long)(n), (unsigned long)(tag))
@@ -107,8 +110,8 @@ extern unsigned long FUN_00014db8(unsigned long a, unsigned long b, int c, unsig
 extern unsigned long FUN_00014f90(unsigned long a, unsigned long b, unsigned long c, int d);
 extern unsigned long FUN_00015630(unsigned long a, unsigned long b);
 extern unsigned long FUN_00015670(unsigned long a, unsigned long b, int c, unsigned long d);
-extern unsigned long FUN_000156b8(unsigned long a);
-extern unsigned long FUN_000156e0(unsigned long a);
+extern unsigned long FUN_000156b8(unsigned long a, ...);
+extern unsigned long FUN_000156e0(unsigned long a, ...);
 extern unsigned long FUN_000155e8(unsigned long a, unsigned long b, int c, unsigned long d);
 extern unsigned long FUN_00015548(unsigned long a, unsigned long b);
 extern unsigned long FUN_0001574c(unsigned long a, unsigned long b);
@@ -319,6 +322,13 @@ unsigned long tb_alloc_buffer(unsigned long size, unsigned long kind, unsigned l
 #define FUN_00017a88 tb_capref_create
 #define FUN_00017a08 tb_capref_create2
 #define FUN_00017c14 tb_msg_capref_handler
+#define FUN_0001a11c tb_list_test
+#define FUN_0001a138 tb_sorted_lookup
+#define FUN_00019490 tb_msg_encode_f32
+#define FUN_00019588 tb_msg_decode_f32
+#define FUN_00019670 tb_msg_encode_f64
+#define FUN_00019768 tb_msg_decode_f64
+#define FUN_0001a0d0 tb_slot_set_if_empty
 unsigned long tb_resize_buffer(unsigned long *t, unsigned long kind, unsigned long size);
 unsigned long tb_f32_size(void);
 void tb_msg_encode_f32_chk(void);
@@ -1815,12 +1825,17 @@ build:
      * commit writes its result into the out slot. */
     tb_message_commit((unsigned long)msg2, (unsigned long)&zbuf[0x40], 0, &buf);
     goto done;
+done_e:
+    out = 0;
+    goto done;
+post:
+    goto done;
 tail:
     FUN_004b0b44();
     return;
 }
 
-/* FUN_00016e1c @ 0x00016e1c   (est. tb_message_decode)
+/* FUN_00016a5c @ 0x00016a5c   (est. tb_channel_flush)
  * Ghidra: void tb_message_decode(long *param_1, long param_2, undefined8 *param_3)
  * Decode variant of tb_message_receive. Reads the transport object at param_1
  * (kind check via FUN_000132d4/132e0), materializes the inbound message bytes
@@ -1850,7 +1865,7 @@ unsigned long tb_message_decode(unsigned long *src, unsigned long expect, unsign
         unsigned long r2 = 1;
 chk:
         if (canary == -0x2c8502b44bfffed6) {
-            return;
+            return 0;
         }
         FUN_0011d7e8(r2);
     }
@@ -2048,6 +2063,8 @@ build:
     goto post;
 post:
     goto done;
+done_e:
+    goto done;
 tail:
     FUN_004b0b44();
     return 0;
@@ -2139,7 +2156,7 @@ trap_17848:
         } else {
             unsigned long l = tb_transport_get_or_alloc_b(cr[2]);
             if ((unsigned long)(cr[3] + l) < (unsigned long)cr[3]) goto trap_17848;
-            thunk_FUN_00114330((void *)0, (void *)0, 0);
+            thunk_FUN_00114330(0, 0, 0);
             *(unsigned char *)(cr + 1) = 2;
             cr[5] = 0;
             local_70 = cr[2];
@@ -2196,7 +2213,7 @@ unsigned long tb_capref_create2(unsigned long a, unsigned long b, unsigned long 
 {
     unsigned long h1 = FUN_00014478(a, 1);
     unsigned long h2 = FUN_00014478(b, 0);
-    unsigned long cr = FUN_00017a88(h1, h2, type, cb);
+    unsigned long cr = (unsigned long)tb_capref_create(h1, h2, type, cb);
     FUN_000153ec(a);
     FUN_000153ec(b);
     return cr;
@@ -2214,7 +2231,7 @@ unsigned char *tb_capref_create(unsigned long a, unsigned long b, unsigned long 
     unsigned long tag = 0x10a0040b1493d95;
     unsigned char *rec = (unsigned char *)FUN_00010244(1, 0x20, 0x10a0040b1493d95);
     if (rec == 0) {
-        unsigned long *r = FUN_004b0244();
+        unsigned long *r = (unsigned long *)FUN_004b0244();
         rec = tb_capref_create(r[0], r[1], 0, tag);
         return rec;
     }
@@ -2321,7 +2338,7 @@ void tb_msg_capref_handler(unsigned long rec, unsigned long cb, unsigned int *ms
     unsigned long *tm = (unsigned long *)tb_get_transport((unsigned long)msg);
     unsigned long *rm = (unsigned long *)tb_get_transport((unsigned long)&out);
     if (*(unsigned long *)(tm + 0x18) != *(unsigned long *)(rm + 0x18)) {
-        unsigned long *bad = FUN_004b0c4c();
+        unsigned long *bad = (unsigned long *)FUN_004b0c4c();
         FUN_0004b710(bad[0] + 0x20, *(unsigned long *)(bad[1] + 0x20), 7);
         return;
     }
@@ -2350,7 +2367,7 @@ void tb_msg_capref_handler(unsigned long rec, unsigned long cb, unsigned int *ms
     if (canary == -0x2c8502b44bfffed6) {
         return;
     }
-    FUN_0011d7e8(msg);
+    FUN_0011d7e8((unsigned long)msg);
 }
 
 /* FUN_00017e94 @ 0x00017e94   (est. tb_transport_write)
@@ -2369,9 +2386,9 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
         if (*(unsigned long *)(*(unsigned long *)(m + 0x60) + 0x38) == 0) {
             return 0;
         }
-        return (FUN_000156e0() < off) ? 1 : 0;
+        return (FUN_000156e0(0) < off) ? 1 : 0;
     }
-    unsigned long *scratch = FUN_004b0c7c();
+    unsigned long *scratch = (unsigned long *)FUN_004b0c7c();
     unsigned long msg = scratch[1];
     int r = FUN_000156b8(msg);
     if (r == 0) {
@@ -2387,7 +2404,7 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
     }
     unsigned long *capout = 0;
     unsigned long *cap = scr;
-    unsigned long r2 = FUN_000155e8(msg, step, 0, scr);
+    unsigned long r2 = FUN_000155e8(msg, step, 0, (unsigned long)scr);
     if ((int)r2 == 0) {
         unsigned long base = scratch[0];
         if (total != 0) {
@@ -2398,10 +2415,10 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
                 unsigned long chunk = done + step;
                 if (done + step < done) {
                     /* overflow: re-materialize and continue from the last chunk */
-                    unsigned long *sc2 = FUN_004b0cac();
+                    unsigned long *sc2 = (unsigned long *)FUN_004b0cac();
                     unsigned long m2 = sc2[1];
                     unsigned long v = FUN_00014470((unsigned long)cap);
-                    int r3 = FUN_000156b8();
+                    int r3 = FUN_000156b8(0);
                     if (r3 == 0) {
                         return 5;
                     }
@@ -2427,7 +2444,7 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
                                     if (nr < nr + 4) {
                                         FUN_00015108(sc2[0], oid, (unsigned long)nr, 0x659198);
                                         unsigned long st2 = FUN_000156e0(v);
-                                        unsigned long rc = FUN_00014db8(cap, m2, 1, st2, 0);
+                                        unsigned long rc = FUN_00014db8((unsigned long)cap, (unsigned long)m2, 1, st2, 0);
                                         if ((int)rc != 0) {
                                             return rc;
                                         }
@@ -2456,9 +2473,9 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
                 }
                 unsigned long n = step;
                 if (total <= chunk) n = total - done;
-                unsigned long r4 = FUN_00015670(msg, scr, 0, n);
+                unsigned long r4 = FUN_00015670(msg, (unsigned long)scr, 0, n);
                 if ((int)r4 != 0) {
-                    FUN_00015630(msg, scr);
+                    FUN_00015630(msg, (unsigned long)scr);
                     goto free_scr;
                 }
                 unsigned long b3 = *t;
@@ -2482,7 +2499,7 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
                 if (total > chunk) kind = 1;
                 *(unsigned short *)((unsigned long)scr + 0x2a) = kind;
                 tb_message_set_transport((unsigned long)msg, (unsigned long)scr);
-                FUN_00014bd0(base, msg, (unsigned long *)msg, &last, capout);
+                FUN_00014bd0(base, msg, msg, &last, (unsigned long)capout);
                 if (chunk < total) {
                     capout = 0;
                     cap = flag5;
@@ -2490,36 +2507,36 @@ unsigned long tb_transport_write(unsigned long m, unsigned long off, unsigned lo
                     capout = &last;
                     cap = flag6;
                 }
-                unsigned long r5 = FUN_00015548(msg, (unsigned long *)msg);
+                unsigned long r5 = FUN_00015548(msg, msg);
                 if ((int)r5 != 0) {
-                    FUN_00015630(msg, scr);
+                    FUN_00015630(msg, (unsigned long)scr);
                     thunk_FUN_00012568((void *)scr);
                     tb_message_set_transport((unsigned long)msg, (unsigned long)t);
                     return r5;
                 }
                 if (last != 0) {
                     if (chunk < total) {
-                        FUN_00015630(msg, scr);
+                        FUN_00015630(msg, (unsigned long)scr);
                         thunk_FUN_00012568((void *)scr);
-                        tb_message_set_transport(last, (unsigned long)t);
+                        tb_message_set_transport((unsigned long)last, (unsigned long)t);
                         return 4;
                     }
-                    unsigned long b4 = tb_get_transport();
+                    unsigned long b4 = tb_get_transport(0);
                     cap = *(unsigned long **)(b4 + 0x18);
                     capout = t;
-                    unsigned long r6 = FUN_00014ce0(base, msg, t, cap, 0);
+                    unsigned long r6 = FUN_00014ce0(base, msg, (unsigned long)t, (unsigned long)cap, 0);
                     if ((int)r6 != 0) {
-                        FUN_00015630(msg, scr);
+                        FUN_00015630(msg, (unsigned long)scr);
                         thunk_FUN_00012568((void *)scr);
                         return r6;
                     }
-                    FUN_0001574c(t, (void *)b4);
+                    FUN_0001574c((unsigned long)t, b4);
                 }
                 tb_message_set_transport((unsigned long)msg, (unsigned long)t);
                 done = n + done;
             } while (done < total);
         }
-        FUN_00015630(msg, scr);
+        FUN_00015630(msg, (unsigned long)scr);
         thunk_FUN_00012568((void *)scr);
         if (out != 0 && last != 0) {
             *out = msg;
@@ -2555,7 +2572,7 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
     }
     unsigned long *capout = 0;
     unsigned long *cap = scr;
-    unsigned long r2 = FUN_000155e8(msg2, step, 0, scr);
+    unsigned long r2 = FUN_000155e8(msg2, step, 0, (unsigned long)scr);
     if ((int)r2 == 0) {
         unsigned long base = m;
         if (total != 0) {
@@ -2565,10 +2582,10 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
             do {
                 unsigned long chunk = done + step;
                 if (done + step < done) {
-                    unsigned long *sc2 = FUN_004b0cac();
+                    unsigned long *sc2 = (unsigned long *)FUN_004b0cac();
                     unsigned long m2 = sc2[1];
                     unsigned long v = FUN_00014470((unsigned long)cap);
-                    int r3 = FUN_000156b8();
+                    int r3 = FUN_000156b8(0);
                     if (r3 == 0) {
                         return 5;
                     }
@@ -2594,7 +2611,7 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
                                     if (nr < nr + 4) {
                                         FUN_00015108(sc2[0], oid, (unsigned long)nr, 0x659198);
                                         unsigned long st2 = FUN_000156e0(v);
-                                        unsigned long rc = FUN_00014db8(cap, m2, 1, st2, 0);
+                                        unsigned long rc = FUN_00014db8((unsigned long)cap, (unsigned long)m2, 1, st2, 0);
                                         if ((int)rc != 0) {
                                             return rc;
                                         }
@@ -2623,9 +2640,9 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
                 }
                 unsigned long n = step;
                 if (total <= chunk) n = total - done;
-                unsigned long r4 = FUN_00015670(msg2, scr, 0, n);
+                unsigned long r4 = FUN_00015670(msg2, (unsigned long)scr, 0, n);
                 if ((int)r4 != 0) {
-                    FUN_00015630(msg2, scr);
+                    FUN_00015630(msg2, (unsigned long)scr);
                     goto free_scr;
                 }
                 unsigned long b3 = *t;
@@ -2649,7 +2666,7 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
                 if (total > chunk) kind = 1;
                 *(unsigned short *)((unsigned long)scr + 0x2a) = kind;
                 tb_message_set_transport((unsigned long)msg2, (unsigned long)scr);
-                FUN_00014bd0(base, msg2, (unsigned long *)msg2, &last, capout);
+                FUN_00014bd0(base, msg2, msg2, &last, (unsigned long)capout);
                 if (chunk < total) {
                     capout = 0;
                     cap = flag5;
@@ -2657,36 +2674,36 @@ unsigned long tb_transport_write_variant(unsigned long m, unsigned long msg2, un
                     capout = &last;
                     cap = flag6;
                 }
-                unsigned long r5 = FUN_00015548(msg2, (unsigned long *)msg2);
+                unsigned long r5 = FUN_00015548(msg2, msg2);
                 if ((int)r5 != 0) {
-                    FUN_00015630(msg2, scr);
+                    FUN_00015630(msg2, (unsigned long)scr);
                     thunk_FUN_00012568((void *)scr);
                     tb_message_set_transport((unsigned long)msg2, (unsigned long)t);
                     return r5;
                 }
                 if (last != 0) {
                     if (chunk < total) {
-                        FUN_00015630(msg2, scr);
+                        FUN_00015630(msg2, (unsigned long)scr);
                         thunk_FUN_00012568((void *)scr);
-                        tb_message_set_transport(last, (unsigned long)t);
+                        tb_message_set_transport((unsigned long)last, (unsigned long)t);
                         return 4;
                     }
-                    unsigned long b4 = tb_get_transport();
+                    unsigned long b4 = tb_get_transport(0);
                     cap = *(unsigned long **)(b4 + 0x18);
                     capout = t;
-                    unsigned long r6 = FUN_00014ce0(base, msg2, t, cap, 0);
+                    unsigned long r6 = FUN_00014ce0(base, msg2, (unsigned long)t, (unsigned long)cap, 0);
                     if ((int)r6 != 0) {
-                        FUN_00015630(msg2, scr);
+                        FUN_00015630(msg2, (unsigned long)scr);
                         thunk_FUN_00012568((void *)scr);
                         return r6;
                     }
-                    FUN_0001574c(t, (void *)b4);
+                    FUN_0001574c((unsigned long)t, b4);
                 }
                 tb_message_set_transport((unsigned long)msg2, (unsigned long)t);
                 done = n + done;
             } while (done < total);
         }
-        FUN_00015630(msg2, scr);
+        FUN_00015630(msg2, (unsigned long)scr);
         thunk_FUN_00012568((void *)scr);
         if (out != 0 && last != 0) {
             *out = msg2;
@@ -2709,7 +2726,7 @@ free_scr:
 unsigned long tb_transport_append_cap(unsigned long reg, unsigned long m, unsigned long *out, unsigned long kind)
 {
     unsigned long v = FUN_00014470(kind);
-    int r = FUN_000156b8();
+    int r = FUN_000156b8(0);
     if (r == 0) {
         return 5;
     }
@@ -2858,7 +2875,7 @@ int *tb_put_region(int *m, unsigned long src, unsigned long len)
         FUN_004b0d3c();
 of:     FUN_004b0d84();
     }
-    unsigned long *alt = FUN_004b0d60();
+    unsigned long *alt = (unsigned long *)FUN_004b0d60();
     int *m2 = (int *)alt[0];
     if (m2[0] == 4) {
         unsigned long cap = *(unsigned long *)(*(unsigned long *)(m2 + 0x14) + 0x18);
@@ -2873,12 +2890,12 @@ of:     FUN_004b0d84();
 nz:     FUN_004b0e14();
 ov:     FUN_004b0df0();
     }
-    unsigned long *alt2 = FUN_004b0dcc();
+    unsigned long *alt2 = (unsigned long *)FUN_004b0dcc();
     int *m3 = (int *)alt2[0];
     if (m3[0] == 1) {
         unsigned long *t = *(unsigned long **)(m3 + 0x14);
         unsigned long pos = t[2];
-        if (pos + len < pos) goto ov2;
+        if (pos + len < pos) SoftwareBreakpoint(0x5519, 0x0);
         unsigned long cap = t[3];
         if (pos + len <= cap) {
             unsigned long base = *t;
@@ -2894,14 +2911,14 @@ ov:     FUN_004b0df0();
         FUN_004b0e38();
 ov2:    FUN_004b0e80();
     }
-    unsigned long *alt3 = FUN_004b0e5c();
+    unsigned long *alt3 = (unsigned long *)FUN_004b0e5c();
     unsigned long d3 = alt3[1];
     if (alt3[0] == 4) {
         unsigned long *t = *(unsigned long **)(alt3[0] + 0x14);
         unsigned long cap = t[3];
         if (cap == 0) goto nz2;
         unsigned long pos = t[2];
-        if (pos + len < pos) goto ov3;
+        if (pos + len < pos) SoftwareBreakpoint(0x5519, 0x0);
         if (pos + len <= cap) {
             unsigned long base = *t;
             t[2] = pos + len;
@@ -2944,12 +2961,12 @@ int *tb_get_region(int *m, unsigned long dst, unsigned long len)
 nz:     FUN_004b0e14();
 ov:     FUN_004b0df0();
     }
-    unsigned long *alt = FUN_004b0dcc();
+    unsigned long *alt = (unsigned long *)FUN_004b0dcc();
     int *m2 = (int *)alt[0];
     if (m2[0] == 1) {
         unsigned long *t = *(unsigned long **)(m2 + 0x14);
         unsigned long pos = t[2];
-        if (pos + len < pos) goto ov2;
+        if (pos + len < pos) SoftwareBreakpoint(0x5519, 0x0);
         unsigned long cap = t[3];
         if (pos + len <= cap) {
             unsigned long base = *t;
@@ -2965,14 +2982,14 @@ ov:     FUN_004b0df0();
         FUN_004b0e38();
 ov2:    FUN_004b0e80();
     }
-    unsigned long *alt2 = FUN_004b0e5c();
+    unsigned long *alt2 = (unsigned long *)FUN_004b0e5c();
     unsigned long d2 = alt2[1];
     if (alt2[0] == 4) {
         unsigned long *t = *(unsigned long **)(alt2[0] + 0x14);
         unsigned long cap = t[3];
         if (cap == 0) goto nz2;
         unsigned long pos = t[2];
-        if (pos + len < pos) goto ov3;
+        if (pos + len < pos) SoftwareBreakpoint(0x5519, 0x0);
         if (pos + len <= cap) {
             unsigned long base = *t;
             t[2] = pos + len;
@@ -3020,14 +3037,14 @@ unsigned long tb_put_region_va(int *m, unsigned long src, unsigned long len)
         FUN_004b0e38();
 ov:     FUN_004b0e80();
     }
-    unsigned long *alt = FUN_004b0e5c();
+    unsigned long *alt = (unsigned long *)FUN_004b0e5c();
     unsigned long d2 = alt[1];
     if (alt[0] == 4) {
         unsigned long *t = *(unsigned long **)(alt[0] + 0x14);
         unsigned long cap = t[3];
         if (cap == 0) goto nz;
         unsigned long pos = t[2];
-        if (pos + len < pos) goto ov2;
+        if (pos + len < pos) SoftwareBreakpoint(0x5519, 0x0);
         if (pos + len <= cap) {
             unsigned long base = *t;
             t[2] = pos + len;
@@ -3236,7 +3253,7 @@ void tb_put_bytes(unsigned long m, unsigned long src, unsigned long len)
     }
     SoftwareBreakpoint(0x5519, 0x18a24);
 alt:
-    unsigned long *cur = FUN_004b109c();
+    unsigned long *cur = (unsigned long *)FUN_004b109c();
     if (cur[0] == 4) {
         unsigned long *t2 = *(unsigned long **)(cur[0] + 0x14);
         unsigned long cap = t2[3];
@@ -3598,7 +3615,7 @@ void tb_put_words(unsigned long m, unsigned long src, unsigned long n)
         FUN_004b13d8();
     }
 alt:
-    unsigned long *cur = FUN_004b13b4();
+    unsigned long *cur = (unsigned long *)FUN_004b13b4();
     if (cur[0] == 4) {
         unsigned long *t2 = *(unsigned long **)(cur[0] + 0x14);
         unsigned long cap = t2[3];
@@ -3960,7 +3977,7 @@ dword *tb_put_u64p(dword *m, unsigned long v)
         FUN_004b1780();
 over:   FUN_004b17c8();
     }
-    unsigned long *alt = FUN_004b17a4();
+    unsigned long *alt = (unsigned long *)FUN_004b17a4();
     dword *m2 = (dword *)alt[0];
     if (m2[0] == 4) {
         t = *(unsigned long **)(m2 + 0x14);
@@ -4013,7 +4030,7 @@ dword *tb_put_u64p_b(dword *m, unsigned long v)
         FUN_004b1780();
 over:   FUN_004b17c8();
     }
-    unsigned long *alt = FUN_004b17a4();
+    unsigned long *alt = (unsigned long *)FUN_004b17a4();
     dword *m2 = (dword *)alt[0];
     if (m2[0] == 4) {
         t = *(unsigned long **)(m2 + 0x14);
@@ -4387,7 +4404,7 @@ void tb_slot_set_if_empty(unsigned long v, long *slot, unsigned long cb)
  * Confidence: medium */
 unsigned int tb_list_test(unsigned long h, unsigned long v)
 {
-    unsigned int r = FUN_0001a138(h, v);
+    unsigned int r = tb_sorted_lookup(h, v);
     return r & 1;
 }
 

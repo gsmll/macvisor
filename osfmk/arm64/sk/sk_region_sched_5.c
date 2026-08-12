@@ -1150,7 +1150,7 @@ void sk_001d0100(void)
   long n1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo16;
   undefined8 rx20;
   long *rx22;
@@ -1199,7 +1199,7 @@ void sk_001d01f4(void)
   long n1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo16;
   undefined8 rx20;
   long *rx22;
@@ -1247,9 +1247,9 @@ ulong sk_001d02e8(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 {
   uint t1;
   ulong t2;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034c59c();
@@ -1279,9 +1279,9 @@ void sk_001d0380(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034c59c();
@@ -1312,9 +1312,9 @@ ulong sk_001d0414(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034c59c();
@@ -1345,9 +1345,9 @@ ulong sk_001d04b0(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   uint t2;
   
@@ -1534,11 +1534,11 @@ ulong sk_001d0664(void)
   uint t1;
   ulong t2;
   int iv3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034af60();
   t2 = (*eo8)();
@@ -1589,11 +1589,11 @@ ulong sk_001d072c(void)
   uint t1;
   ulong t2;
   uint t3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034af60();
   t2 = (*eo8)();
@@ -1644,12 +1644,12 @@ ulong sk_001d07e0(void)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
   ulong t2;
-  void (*)() eo8_01;
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034af60();
   t1 = (*eo8)();
@@ -1700,11 +1700,11 @@ void sk_001d0894(void)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034af60();
   t1 = (*eo8)();
@@ -1752,11 +1752,11 @@ void sk_001d093c(void)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034af60();
   t1 = (*eo8)();
@@ -1785,9 +1785,9 @@ void sk_001d09cc(void)
 {
   ulong t1;
   undefined8 ax4;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
   long rx21;
   undefined1 at2 [16];
   
@@ -1826,7 +1826,7 @@ void sk_001d0aa4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 {
   undefined8 t1;
   long n2;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo16;
   undefined8 rx20;
   undefined8 *rx22;
@@ -1869,7 +1869,7 @@ void sk_001d0b8c(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 {
   undefined8 t1;
   long n2;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo16;
   undefined8 rx20;
   undefined8 *rx22;
@@ -1911,7 +1911,7 @@ void sk_001d0c74(void)
 
 {
   undefined8 ax3;
-  void (*)() eo8;
+  void (*eo8)(void);
   
   sk_0034d2b4();
   sk_0031a14c(ax3);
@@ -1930,13 +1930,13 @@ void sk_001d0cd4(void)
   undefined8 t2;
   undefined8 t3;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long eo16;
   long rx19;
-  void (*)() rx28;
+  void (*rx28)(void);
   undefined8 sv00000008;
   undefined8 sv00000038;
   
@@ -1984,13 +1984,13 @@ void sk_001d0e38(void)
   long n1;
   undefined8 t2;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long eo16;
   long rx19;
-  void (*)() rx28;
+  void (*rx28)(void);
   undefined8 sv00000038;
   undefined1 v10 [8];
   long v8;
@@ -2049,12 +2049,12 @@ void sk_001d0fcc(void)
   undefined8 t1;
   undefined8 t2;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx28;
+  void (*rx28)(void);
   undefined8 sv00000028;
   undefined1 v10 [16];
   
@@ -2103,12 +2103,12 @@ void sk_001d1124(void)
   undefined8 t1;
   undefined8 t2;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx28;
+  void (*rx28)(void);
   undefined8 sv00000038;
   undefined1 v8 [4];
   char v4;
@@ -2249,14 +2249,14 @@ void sk_001d1370(void)
   undefined8 t1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() ax5;
+  void (*ax5)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx23;
+  void (*rx23)(void);
   undefined8 sv00000028;
   undefined1 ast10 [16];
   
@@ -2362,14 +2362,14 @@ void sk_001d1564(void)
   undefined8 t1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() ax5;
+  void (*ax5)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx23;
+  void (*rx23)(void);
   undefined8 sv00000008;
   undefined8 sv00000028;
   
@@ -2436,14 +2436,14 @@ void sk_001d16f0(void)
   undefined8 t1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() ax5;
+  void (*ax5)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx23;
+  void (*rx23)(void);
   undefined8 sv00000008;
   undefined8 sv00000028;
   
@@ -2510,14 +2510,14 @@ void sk_001d187c(void)
   undefined8 t1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() ax5;
+  void (*ax5)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long rx21;
-  void (*)() rx23;
+  void (*rx23)(void);
   undefined8 sv00000008;
   undefined8 sv00000028;
   
@@ -2603,14 +2603,14 @@ void sk_001d1a38(void)
   undefined8 t1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() ax5;
+  void (*ax5)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo9)(void);
   long eo16;
   long rx21;
-  void (*)() rx23;
+  void (*rx23)(void);
   undefined8 sv00000018;
   undefined1 v20 [8];
   undefined8 st18;
@@ -2662,14 +2662,14 @@ void sk_001d1bc0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 {
   undefined1 zr;
   undefined8 t1;
-  void (*)() pc2;
+  void (*pc2)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo9;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo9)(void);
   long eo16;
   long rx21;
   undefined8 rx23;
@@ -2756,9 +2756,9 @@ ulong sk_001d1e30(void)
   uint t1;
   ulong t2;
   undefined8 eo1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034cf14();
@@ -2789,9 +2789,9 @@ void sk_001d1ec0(void)
 {
   ulong t1;
   undefined8 eo1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034cf14();
@@ -2823,9 +2823,9 @@ ulong sk_001d1f4c(void)
 {
   ulong t1;
   undefined8 eo1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   
   sk_0034cf14();
@@ -2857,9 +2857,9 @@ ulong sk_001d1fe0(void)
 {
   ulong t1;
   undefined8 eo1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
   uint t2;
   
@@ -3036,11 +3036,11 @@ ulong sk_001d21f0(void)
   uint t1;
   ulong t2;
   int iv3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034be1c();
   t2 = (*eo8)();
@@ -3091,11 +3091,11 @@ ulong sk_001d22b8(void)
   uint t1;
   ulong t2;
   uint t3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034be1c();
   t2 = (*eo8)();
@@ -3144,12 +3144,12 @@ ulong sk_001d2380(void)
 
 {
   ulong t1;
-  void (*)() eo8;
+  void (*eo8)(void);
   ulong t2;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034be1c();
   t1 = (*eo8)();
@@ -3198,11 +3198,11 @@ void sk_001d2448(void)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034be1c();
   t1 = (*eo8)();
@@ -3248,11 +3248,11 @@ void sk_001d2504(void)
 
 {
   ulong t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long rx21;
-  void (*)() rx25;
+  void (*rx25)(void);
   
   sk_0034be1c();
   t1 = (*eo8)();
@@ -3282,9 +3282,9 @@ void sk_001d2594(void)
   ulong t1;
   undefined8 t2;
   undefined8 ax3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
   long rx21;
   
   sk_00354db8();
@@ -3320,7 +3320,7 @@ L_001d25dc:
 void sk_001d2658(void)
 
 {
-  void (*)() eo8;
+  void (*eo8)(void);
   
   sk_00352914();
   sk_00348730();
@@ -3336,7 +3336,7 @@ void sk_001d2658(void)
 void sk_001d269c(void)
 
 {
-  void (*)() eo8;
+  void (*eo8)(void);
   
   sk_00352914();
   sk_00348730();
@@ -3353,7 +3353,7 @@ void sk_001d26e0(void)
 
 {
   long n1;
-  void (*)() eo8;
+  void (*eo8)(void);
   undefined8 rx23;
   undefined8 rx24;
   long *rx26;
@@ -3377,7 +3377,7 @@ void sk_001d2754(void)
 
 {
   long n1;
-  void (*)() eo8;
+  void (*eo8)(void);
   undefined8 rx23;
   undefined8 rx24;
   long *rx26;
@@ -3401,7 +3401,7 @@ void sk_001d27c8(void)
 
 {
   long n1;
-  void (*)() eo8;
+  void (*eo8)(void);
   undefined8 rx23;
   undefined8 rx24;
   long *rx26;
@@ -3425,7 +3425,7 @@ void sk_001d283c(void)
 
 {
   long n1;
-  void (*)() eo8;
+  void (*eo8)(void);
   undefined8 rx23;
   undefined8 rx24;
   long *rx26;
@@ -3448,7 +3448,7 @@ void sk_001d283c(void)
 void sk_001d28b0(void)
 
 {
-  void (*)() eo8;
+  void (*eo8)(void);
   
   sk_0035a2c4();
   sk_00348730();
@@ -3464,7 +3464,7 @@ void sk_001d28b0(void)
 void sk_001d28f4(void)
 
 {
-  void (*)() eo8;
+  void (*eo8)(void);
   
   sk_0035a2c4();
   sk_00348730();
@@ -3506,9 +3506,9 @@ void sk_001d2954(void)
 void sk_001d2c60(void)
 
 {
-  void (*)() eo8;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   undefined8 rx30;
   
   sk_00084220();
@@ -3571,8 +3571,8 @@ void sk_001d2df0(void)
   undefined8 t1;
   ulong t2;
   undefined8 ax3;
-  void (*)() eo8;
-  void (*)() eo8_00;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
   undefined8 rx30;
   
   sk_00357ca0();
@@ -3640,7 +3640,7 @@ void sk_001d2f94(void)
 
 {
   undefined8 t1;
-  void (*)() pc2;
+  void (*pc2)(void);
   ulong t3;
   undefined8 ax3;
   long eo8;
@@ -3679,9 +3679,9 @@ void sk_001d2f94(void)
 void sk_001d30f8(void)
 
 {
-  void (*)() eo8;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   undefined8 rx30;
   
   sk_00084220();
@@ -3712,13 +3712,13 @@ void sk_001d31b0(void)
   int iv1;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long eo16_00;
-  void (*)() pc3;
+  void (*pc3)(void);
   undefined8 sv00000048;
   
   sk_0008e518();
@@ -3770,12 +3770,12 @@ void sk_001d332c(void)
 {
   undefined8 t1;
   ulong t2;
-  void (*)() pc3;
-  void (*)() pc4;
+  void (*pc3)(void);
+  void (*pc4)(void);
   undefined8 ax3;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
   long n5;
   long n6;
   undefined8 rx30;
@@ -3855,15 +3855,15 @@ void sk_001d36e8(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined8 t3;
   long eo8;
   long eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo9;
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo9)(void);
   long eo16;
   long eo16_00;
   undefined8 rx21;
-  void (*)() rx24;
-  void (*)() pc4;
+  void (*rx24)(void);
+  void (*pc4)(void);
   undefined8 rx30;
   undefined8 st28;
   
@@ -4022,7 +4022,7 @@ void sk_001d3fd0(void)
 {
   undefined8 t1;
   long n2;
-  void (*)() jumptable;
+  void (*jumptable)(void);
   long eo8;
   long eo8_00;
   long eo8_01;
@@ -4091,24 +4091,24 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   undefined8 t3;
   undefined8 t4;
   long n5;
-  void (*)() pc6;
+  void (*pc6)(void);
   ulong t7;
   undefined8 eo8;
   long eo8_00;
   long eo8_01;
   long eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo9_02;
-  void (*)() eo9_03;
-  void (*)() eo9_04;
-  void (*)() eo9_05;
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*eo8_07)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo9_02)(void);
+  void (*eo9_03)(void);
+  void (*eo9_04)(void);
+  void (*eo9_05)(void);
   undefined8 eo13;
   long eo16;
   long eo16_00;
@@ -4116,7 +4116,7 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   long eo16_02;
   long rx19;
   undefined8 rx20;
-  void (*)() pc8;
+  void (*pc8)(void);
   undefined8 rx21;
   long rx25;
   long rx28;
@@ -4269,24 +4269,24 @@ void sk_001d4f4c(void)
   int iv1;
   undefined8 t2;
   ulong t3;
-  void (*)() pc4;
+  void (*pc4)(void);
   long eo8;
   long eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo8_09;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo9_02;
-  void (*)() eo9_03;
-  void (*)() eo9_04;
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*eo8_07)(void);
+  void (*eo8_08)(void);
+  void (*eo8_09)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo9_02)(void);
+  void (*eo9_03)(void);
+  void (*eo9_04)(void);
   long eo16;
   long eo16_00;
   undefined8 rx22;
@@ -4304,8 +4304,8 @@ void sk_001d4f4c(void)
   undefined8 v98;
   long v90;
   undefined8 v78;
-  void (*)() v68;
-  void (*)() v50;
+  void (*v68)(void);
+  void (*v50)(void);
   undefined8 v38;
   
   sk_00353cfc();
@@ -4507,9 +4507,9 @@ void sk_001d6094(void)
 {
   undefined8 eo1;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_00)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   
   sk_0034c084();
@@ -4545,25 +4545,25 @@ void sk_001d614c(undefined8 param_1,undefined8 param_2,void (*)() param_3,undefi
   long eo8;
   long eo8_00;
   long eo8_01;
-  void (*)() eo8_02;
-  void (*)() pc7;
+  void (*eo8_02)(void);
+  void (*pc7)(void);
   undefined8 *pt8;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
   long eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo8_09;
-  void (*)() eo8_10;
-  void (*)() eo8_11;
-  void (*)() eo8_12;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
+  void (*eo8_08)(void);
+  void (*eo8_09)(void);
+  void (*eo8_10)(void);
+  void (*eo8_11)(void);
+  void (*eo8_12)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
   long eo9_02;
-  void (*)() eo9_03;
-  void (*)() eo9_04;
+  void (*eo9_03)(void);
+  void (*eo9_04)(void);
   undefined8 eo13;
   long eo14;
   long eo16;
@@ -4572,7 +4572,7 @@ void sk_001d614c(undefined8 param_1,undefined8 param_2,void (*)() param_3,undefi
   long eo16_02;
   long eo16_03;
   long eo16_04;
-  void (*)() pc9;
+  void (*pc9)(void);
   undefined8 rx20;
   long rx21;
   undefined8 rx24;
@@ -4809,7 +4809,7 @@ uint sk_001d69d8(undefined8 param_1,undefined8 param_2,uint param_3,undefined8 p
   long n5;
   undefined8 t6;
   undefined8 t7;
-  void (*)() pc8;
+  void (*pc8)(void);
   ulong t9;
   long eo8;
   long eo8_00;
@@ -4819,13 +4819,13 @@ uint sk_001d69d8(undefined8 param_1,undefined8 param_2,uint param_3,undefined8 p
   long n11;
   long eo12;
   long eo12_00;
-  void (*)() pc12;
+  void (*pc12)(void);
   long n13;
-  void (*)() pc14;
+  void (*pc14)(void);
   undefined1 ast100 [8];
   undefined8 stf8;
   undefined4 astf0 [4];
-  void (*)() ve0;
+  void (*ve0)(void);
   long vd8;
   long vd0;
   long vc8;
@@ -4931,29 +4931,29 @@ void sk_001d6ef0(void)
   undefined8 t3;
   long n4;
   ulong t5;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo8_00;
   long eo8_01;
   long eo8_02;
   long eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() pc6;
-  void (*)() eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo9_02;
-  void (*)() eo9_03;
-  void (*)() eo9_04;
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*pc6)(void);
+  void (*eo8_07)(void);
+  void (*eo8_08)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo9_02)(void);
+  void (*eo9_03)(void);
+  void (*eo9_04)(void);
   long eo16;
   long eo16_00;
   long eo16_01;
   undefined8 rx19;
   undefined8 rx20;
-  void (*)() pc7;
+  void (*pc7)(void);
   long rx28;
   undefined8 rx30;
   undefined1 at8 [16];
@@ -5090,23 +5090,23 @@ void sk_001d7368(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   long n6;
   long eo8_00;
   long eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo9_02;
-  void (*)() eo9_03;
-  void (*)() eo9_04;
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*eo8_07)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo9_02)(void);
+  void (*eo9_03)(void);
+  void (*eo9_04)(void);
   long eo13;
   long eo16;
   long eo16_00;
   undefined8 rx20;
-  void (*)() pc7;
+  void (*pc7)(void);
   long rx21;
   long rx22;
   long rx24;
@@ -5252,24 +5252,24 @@ void sk_001d7814(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   undefined1 zr;
   undefined8 t1;
   undefined8 t2;
-  void (*)() pc3;
-  void (*)() pc4;
+  void (*pc3)(void);
+  void (*pc4)(void);
   ulong t5;
   undefined8 t6;
   undefined8 eo8;
   long eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long eo16_00;
   long eo16_01;
   long eo16_02;
   undefined8 rx27;
-  void (*)() pc7;
+  void (*pc7)(void);
   undefined8 rx30;
   undefined1 at8 [16];
   undefined8 st50;
@@ -5608,25 +5608,25 @@ L_001d7edc:
 void sk_001d80e0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   undefined8 t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   ulong t4;
-  void (*)() pc5;
+  void (*pc5)(void);
   undefined8 t6;
   undefined8 eo8;
   long eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long rx21;
   undefined8 rx22;
   undefined8 rx25;
-  void (*)() pc7;
+  void (*pc7)(void);
   undefined8 rx30;
   undefined1 at8 [16];
   undefined8 st70;
@@ -5715,7 +5715,7 @@ void sk_001d83cc(void)
   undefined8 t1;
   undefined8 ax3;
   undefined8 eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo16;
   long rx21;
   undefined8 sv00000048;
@@ -5755,27 +5755,27 @@ void sk_001d83cc(void)
 void sk_001d852c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   undefined8 t2;
   undefined8 t3;
-  void (*)() pc4;
+  void (*pc4)(void);
   ulong t5;
   undefined8 t6;
-  void (*)() pc7;
+  void (*pc7)(void);
   undefined8 eo1;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long rx21;
   undefined8 rx22;
   undefined8 rx26;
-  void (*)() pc8;
+  void (*pc8)(void);
   undefined8 rx30;
   undefined1 at9 [16];
   undefined8 v78;
@@ -5861,7 +5861,7 @@ void sk_001d8808(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 
 {
   undefined8 t1;
-  void (*)() pc2;
+  void (*pc2)(void);
   long n3;
   undefined1 at4 [16];
   undefined1 ast70 [32];
@@ -5898,7 +5898,7 @@ void sk_001d88fc(undefined8 param_1,void (*)() param_2,undefined8 param_3,long p
   long v80;
   undefined8 v78;
   undefined8 v70;
-  void (*)() v68;
+  void (*v68)(void);
   
   v80 = *(long *)(param_5 + -8);
   v78 = param_8;
@@ -5937,12 +5937,12 @@ void sk_001d8b38(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined1 zr;
   undefined8 t1;
   undefined8 eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo8_01;
-  void (*)() eo9;
+  void (*eo9)(void);
   long eo16;
   long eo16_00;
-  void (*)() pc2;
+  void (*pc2)(void);
   undefined8 rx21;
   undefined8 rx22;
   undefined8 rx30;
@@ -5999,7 +5999,7 @@ uint sk_001d8cdc(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 {
   uint t1;
   undefined8 t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   
   sk_00027754(param_4);
   t2 = sk_00027754();
@@ -6014,7 +6014,7 @@ uint sk_001d8cdc(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefined8 param_4)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   int iv2;
   undefined1 zr;
   undefined8 t3;
@@ -6028,29 +6028,29 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   long eo8_01;
   long eo8_02;
   undefined8 eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
   undefined8 *eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo8_09;
-  void (*)() eo8_10;
-  void (*)() eo8_11;
-  void (*)() eo8_12;
-  void (*)() eo8_13;
-  void (*)() eo8_14;
-  void (*)() eo8_15;
-  void (*)() eo9;
+  void (*eo8_07)(void);
+  void (*eo8_08)(void);
+  void (*eo8_09)(void);
+  void (*eo8_10)(void);
+  void (*eo8_11)(void);
+  void (*eo8_12)(void);
+  void (*eo8_13)(void);
+  void (*eo8_14)(void);
+  void (*eo8_15)(void);
+  void (*eo9)(void);
   ulong t9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo9_02;
-  void (*)() eo16;
-  void (*)() eo16_00;
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo9_02)(void);
+  void (*eo16)(void);
+  void (*eo16_00)(void);
   long eo16_01;
-  void (*)() pc10;
+  void (*pc10)(void);
   long rx21;
-  void (*)() pc11;
+  void (*pc11)(void);
   long rx26;
   undefined1 at12 [16];
   undefined8 sv00000008;
@@ -6065,9 +6065,9 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined1 v58 [16];
   undefined8 *v48;
   ulong v40;
-  void (*)() v38;
-  void (*)() v30;
-  void (*)() v28;
+  void (*v38)(void);
+  void (*v30)(void);
+  void (*v28)(void);
   undefined8 v20;
   long v18;
   undefined8 v10;
@@ -6429,9 +6429,9 @@ void sk_001d9890(void)
   undefined8 ax3;
   undefined8 t2;
   undefined8 ax4;
-  void (*)() eo8;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   undefined8 rx30;
   
@@ -6518,7 +6518,7 @@ void sk_001d9a94(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 
 {
   undefined8 t1;
-  void (*)() eo8;
+  void (*eo8)(void);
   undefined1 at2 [16];
   
   sk_003585f4();
@@ -6551,32 +6551,32 @@ void sk_001d9b18(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 {
   undefined1 zr;
   undefined8 t1;
-  void (*)() pc2;
-  void (*)() pc3;
+  void (*pc2)(void);
+  void (*pc3)(void);
   ulong t4;
   undefined8 t5;
   undefined8 eo8;
   long eo8_00;
   undefined8 eo8_01;
-  void (*)() pc6;
-  void (*)() eo8_02;
+  void (*pc6)(void);
+  void (*eo8_02)(void);
   undefined8 eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo8_09;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*eo8_07)(void);
+  void (*eo8_08)(void);
+  void (*eo8_09)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long n7;
   long eo13;
   long eo16;
   long rx19;
   long rx21;
   undefined8 rx22;
-  void (*)() pc8;
-  void (*)() rx26;
+  void (*pc8)(void);
+  void (*rx26)(void);
   undefined8 rx30;
   undefined1 at9 [16];
   undefined8 v48;
@@ -6832,29 +6832,29 @@ void sk_001da324(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 
 {
   undefined8 t1;
-  void (*)() pc2;
-  void (*)() pc3;
+  void (*pc2)(void);
+  void (*pc3)(void);
   ulong t4;
   undefined8 t5;
-  void (*)() pc6;
-  void (*)() pc7;
+  void (*pc6)(void);
+  void (*pc7)(void);
   long eo8;
   long eo8_00;
   long eo8_01;
   undefined8 *eo8_02;
-  void (*)() eo8_03;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
+  void (*eo8_03)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
   undefined8 *eo10;
   long eo16;
   long rx21;
   undefined8 rx23;
   undefined8 rx24;
-  void (*)() pc8;
+  void (*pc8)(void);
   undefined8 rx27;
   undefined1 at9 [16];
   undefined1 at10 [16];
@@ -6979,22 +6979,22 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*)() param_3,undefi
   long eo8_01;
   long eo8_02;
   undefined1 *eo8_03;
-  void (*)() pc11;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo8_06;
+  void (*pc11)(void);
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo8_06)(void);
   long eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo8_09;
-  void (*)() eo8_10;
-  void (*)() eo8_11;
-  void (*)() eo8_12;
-  void (*)() eo8_13;
-  void (*)() eo8_14;
-  void (*)() eo9;
-  void (*)() eo9_00;
-  void (*)() eo9_01;
-  void (*)() eo11;
+  void (*eo8_08)(void);
+  void (*eo8_09)(void);
+  void (*eo8_10)(void);
+  void (*eo8_11)(void);
+  void (*eo8_12)(void);
+  void (*eo8_13)(void);
+  void (*eo8_14)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
+  void (*eo9_01)(void);
+  void (*eo11)(void);
   long eo12;
   long eo13;
   undefined8 eo14;
@@ -7002,11 +7002,11 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*)() param_3,undefi
   long eo16_00;
   long rx21;
   long rx23;
-  void (*)() pc12;
-  void (*)() pc13;
+  void (*pc12)(void);
+  void (*pc13)(void);
   undefined1 at14 [16];
   undefined1 at15 [16];
-  void (*)() v100;
+  void (*v100)(void);
   undefined8 vf8;
   long v50;
   
@@ -7207,19 +7207,19 @@ void sk_001daea8(void)
   long eo8_00;
   long eo8_01;
   long eo8_02;
-  void (*)() eo8_03;
+  void (*eo8_03)(void);
   undefined8 *pt8;
-  void (*)() eo8_04;
-  void (*)() eo8_05;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_04)(void);
+  void (*eo8_05)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long eo16_00;
   undefined8 rx19;
-  void (*)() pc9;
-  void (*)() pc10;
-  void (*)() pc11;
-  void (*)() pc12;
+  void (*pc9)(void);
+  void (*pc10)(void);
+  void (*pc11)(void);
+  void (*pc12)(void);
   long rx22;
   undefined8 *pt13;
   undefined8 rx26;
@@ -7235,7 +7235,7 @@ void sk_001daea8(void)
   long v58;
   undefined *v28;
   undefined8 *v20;
-  void (*)() v18;
+  void (*v18)(void);
   undefined8 v10;
   
   at14 = sk_0008e518();
@@ -7447,14 +7447,14 @@ void sk_001db6b0(void)
 {
   undefined8 t1;
   ulong t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   undefined8 t4;
-  void (*)() pc5;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo8_02;
-  void (*)() eo9;
+  void (*pc5)(void);
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo8_02)(void);
+  void (*eo9)(void);
   long eo16;
   long eo16_00;
   undefined8 rx20;
@@ -7545,7 +7545,7 @@ void sk_001db938(void)
   undefined8 t2;
   undefined8 eo1;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo12;
   undefined8 rx30;
   undefined8 v8;
@@ -7585,15 +7585,15 @@ void sk_001dba34(void)
 {
   bool bv1;
   undefined8 t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   long n4;
   ulong t5;
   undefined8 ax3;
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   undefined8 rx22;
   undefined8 rx25;
@@ -7679,11 +7679,11 @@ void sk_001dbc14(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 void sk_001dbc64(void)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   undefined8 t2;
   undefined8 ax4;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo16;
   undefined8 rx30;
   
@@ -7722,10 +7722,10 @@ void sk_001dbd68(void)
 
 {
   uint t1;
-  void (*)() pc2;
+  void (*pc2)(void);
   undefined8 ax4;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo16;
   undefined8 rx30;
   
@@ -7764,11 +7764,11 @@ void sk_001dbe74(void)
 {
   uint t1;
   undefined8 t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   undefined8 ax4;
   undefined8 ax5;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo16;
   undefined8 rx30;
   
@@ -7846,7 +7846,7 @@ void sk_001dc050(void)
 void sk_001dc09c(void)
 
 {
-  void (*)() jumptable;
+  void (*jumptable)(void);
   
   sk_0034f664();
   jumptable = (void (*)() )sk_0031948c();
@@ -7869,9 +7869,9 @@ void sk_001dc0fc(undefined8 param_1,ulong param_2)
 void sk_001dc130(void)
 
 {
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
   undefined8 rx30;
   
   sk_00084220();
@@ -7903,7 +7903,7 @@ void sk_001dc130(void)
 void sk_001dc1f4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
-  void (*)() jumptable;
+  void (*jumptable)(void);
   
   sk_00349ef4();
   jumptable = (void (*)() )sk_0031b1f4(param_3);
@@ -7918,7 +7918,7 @@ void sk_001dc23c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
                  undefined8 param_5)
 
 {
-  void (*)() eo9;
+  void (*eo9)(void);
   undefined8 v40;
   undefined8 st38;
   
@@ -7995,7 +7995,7 @@ void sk_001dc3e8(void)
 
 {
   undefined8 t1;
-  void (*)() ax3;
+  void (*ax3)(void);
   undefined8 *rx21;
   
   sk_003530e8();
@@ -8070,7 +8070,7 @@ void sk_001dc56c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 
 {
   undefined8 t1;
-  void (*)() rx19;
+  void (*rx19)(void);
   
   t1 = sk_0034b13c();
   (*param_5)(t1,param_3);
@@ -8100,7 +8100,7 @@ void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_
   undefined8 t2;
   long eo1;
   long n3;
-  void (*)() pc4;
+  void (*pc4)(void);
   undefined8 eo8;
   long eo16;
   undefined8 *rx20;
@@ -8112,8 +8112,8 @@ void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_
   undefined8 sv00000048;
   long sv00000050;
   ulong sv00000058;
-  void (*)() sv000000c0;
-  void (*)() sv000000c8;
+  void (*sv000000c0)(void);
+  void (*sv000000c8)(void);
   
   sk_00355578();
   pc4 = param_8;
@@ -8157,7 +8157,7 @@ void sk_001dc754(void)
 
 {
   long n1;
-  void (*)() pc2;
+  void (*pc2)(void);
   bool bv3;
   long n4;
   undefined8 t5;
@@ -8165,7 +8165,7 @@ void sk_001dc754(void)
   undefined8 ax3;
   undefined8 ax5;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   undefined8 rx30;
   undefined1 at7 [16];
   undefined1 at8 [16];
@@ -8432,7 +8432,7 @@ undefined8 sk_001dcf90(void)
   undefined8 t1;
   long n2;
   undefined8 t3;
-  void (*)() rx21;
+  void (*rx21)(void);
   undefined8 v38;
   
   t1 = sk_0034b470();
@@ -8594,13 +8594,13 @@ void sk_001dd264(void)
 
 {
   undefined8 t1;
-  void (*)() ax3;
+  void (*ax3)(void);
   long eo8;
-  void (*)() eo8_00;
-  void (*)() eo8_01;
+  void (*eo8_00)(void);
+  void (*eo8_01)(void);
   long eo16;
   long rx22;
-  void (*)() pc2;
+  void (*pc2)(void);
   undefined8 rx30;
   
   sk_0008e518();
@@ -8905,7 +8905,7 @@ void sk_001ddb2c(void)
 {
   long n1;
   ulong t2;
-  void (*)() pc3;
+  void (*pc3)(void);
   long n4;
   undefined8 t5;
   long n6;
@@ -9029,7 +9029,7 @@ void sk_001ddd5c(void)
 
 {
   ulong t1;
-  void (*)() pc2;
+  void (*pc2)(void);
   long n3;
   long n4;
   undefined8 t5;
@@ -9192,25 +9192,25 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   long eo8;
   undefined8 eo8_00;
   long eo8_01;
-  void (*)() eo8_02;
+  void (*eo8_02)(void);
   long eo8_03;
   long eo8_04;
-  void (*)() pc8;
+  void (*pc8)(void);
   undefined8 eo8_05;
-  void (*)() eo8_06;
-  void (*)() eo8_07;
-  void (*)() eo8_08;
-  void (*)() eo9;
+  void (*eo8_06)(void);
+  void (*eo8_07)(void);
+  void (*eo8_08)(void);
+  void (*eo9)(void);
   long n9;
   long eo16;
   long eo16_00;
   long eo16_01;
   long *rx20;
-  void (*)() pc10;
+  void (*pc10)(void);
   long *rx21;
   long n11;
   ulong t12;
-  void (*)() pc13;
+  void (*pc13)(void);
   undefined8 rx25;
   ulong t14;
   ulong t15;
@@ -9347,7 +9347,7 @@ L_001de430:
 void sk_001de4d4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   long eo8;
   undefined1 at2 [16];
   
@@ -9365,7 +9365,7 @@ void sk_001de4d4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 void sk_001de4d8(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   long eo8;
   undefined1 at2 [16];
   
@@ -9421,9 +9421,9 @@ void sk_001de698(void)
 void sk_001de6c4(void)
 
 {
-  void (*)() ax4;
+  void (*ax4)(void);
   long eo16;
-  void (*)() rx21;
+  void (*rx21)(void);
   undefined8 rx30;
   
   sk_0008e518();
@@ -9451,7 +9451,7 @@ void sk_001de7c8(void)
 {
   undefined8 t1;
   undefined8 t2;
-  void (*)() ax3;
+  void (*ax3)(void);
   long eo8;
   long *rx20;
   undefined8 rx30;
@@ -9498,7 +9498,7 @@ void sk_001de8a8(void)
 
 {
   undefined8 ax5;
-  void (*)() eo8;
+  void (*eo8)(void);
   long eo16;
   long rx21;
   undefined1 at1 [16];
@@ -9733,7 +9733,7 @@ void sk_001dee70(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   long *rx20;
   undefined8 t2;
   ulong t3;
-  void (*)() rx27;
+  void (*rx27)(void);
   undefined8 rx30;
   undefined1 v70 [16];
   
@@ -9786,14 +9786,14 @@ void sk_001defc8(void)
   uint t2;
   undefined8 t3;
   long eo1;
-  void (*)() ax4;
+  void (*ax4)(void);
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long n4;
   long eo14;
   undefined8 eo14_00;
   undefined8 eo16;
-  void (*)() pc5;
+  void (*pc5)(void);
   long n6;
   undefined8 rx30;
   undefined1 at7 [16];
@@ -9845,10 +9845,10 @@ void sk_001defc8(void)
 void sk_001df16c(void)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   long eo1;
   long eo8;
-  void (*)() eo8_00;
+  void (*eo8_00)(void);
   long eo16;
   long rx22;
   long n2;
@@ -9885,7 +9885,7 @@ void sk_001df16c(void)
 void sk_001df2a0(void)
 
 {
-  void (*)() rx19;
+  void (*rx19)(void);
   undefined8 *rx20;
   long rx21;
   undefined1 ast78 [72];
@@ -9952,7 +9952,7 @@ void sk_001df334(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 void sk_001df428(long *param_1,void (*)() param_2,undefined8 param_3,long param_4)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   long n2;
   long n3;
   long n4;
@@ -10005,7 +10005,7 @@ void sk_001df4e4(void)
 void sk_001df510(long param_1,long param_2,void (*)() param_3,undefined8 param_4,long param_5)
 
 {
-  void (*)() pc1;
+  void (*pc1)(void);
   long n2;
   long n3;
   long rx21;
@@ -10101,10 +10101,10 @@ void sk_001df604(void)
 {
   undefined1 zr;
   undefined8 t1;
-  void (*)() eo8;
-  void (*)() eo8_00;
-  void (*)() eo9;
-  void (*)() eo9_00;
+  void (*eo8)(void);
+  void (*eo8_00)(void);
+  void (*eo9)(void);
+  void (*eo9_00)(void);
   long eo16;
   long eo16_00;
   undefined8 t2;
@@ -10186,7 +10186,7 @@ void sk_001df7f4(undefined8 param_1,undefined8 param_2,long param_3,long param_4
 
 {
   long n1;
-  void (*)() eo9;
+  void (*eo9)(void);
   long eo10;
   
   if (*(long *)(*(long *)(param_5 + -8) + 0x48) * param_4 < 0) {
@@ -10262,7 +10262,7 @@ void sk_001df958(undefined8 param_1,undefined8 param_2,long param_3,undefined8 p
 
 {
   undefined8 t1;
-  void (*)() eo9;
+  void (*eo9)(void);
   
   sk_0035a184();
   t1 = 0;
@@ -10413,9 +10413,9 @@ void sk_001dfc88(undefined8 param_1,void (*)() param_2,undefined8 param_3,undefi
   undefined1 at9 [16];
   undefined1 aste0 [16];
   undefined8 vd0;
-  void (*)() vc0;
+  void (*vc0)(void);
   undefined8 va0;
-  void (*)() pcs98;
+  void (*pcs98)(void);
   undefined8 v90;
   ulong v88;
   ulong v80;
@@ -10539,17 +10539,17 @@ void sk_001dffa0(void)
   undefined8 ax3;
   undefined8 eo8;
   long eo8_00;
-  void (*)() eo8_01;
-  void (*)() pc4;
-  void (*)() eo8_02;
-  void (*)() pc5;
-  void (*)() eo8_03;
+  void (*eo8_01)(void);
+  void (*pc4)(void);
+  void (*eo8_02)(void);
+  void (*pc5)(void);
+  void (*eo8_03)(void);
   long eo16;
   long n6;
   long rx20;
   long rx21;
   long rx23;
-  void (*)() pc7;
+  void (*pc7)(void);
   undefined8 rx30;
   undefined1 at8 [16];
   undefined8 v28;

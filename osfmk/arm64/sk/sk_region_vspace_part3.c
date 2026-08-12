@@ -4623,7 +4623,7 @@ rt16 FUN_00219370( void){
     v5 = v3;
     do {
       av20 = rt_002b439c(v5,v3,v9,v6,v4);
-      v12 = av20;
+      *(rt16*)v12 = av20;
       (*v1)(&v11,v12);
       rt_003a25d4(av20.hi);
       v8 = uStack_68;
@@ -11043,7 +11043,7 @@ LBL_00222690:
         rt_0034ad00();
         v13 = rt_00352584(v310);
         v22 = v281;
-        v8 = (code *)rt_00377bec(v13,v281,v251);
+        v8 = (code *)rt_00377bec(v13,v281,v251).lo;
         v1 = (code *)rt_0008f728();
         rt_00351a74();
         v13 = rt_00351af8(&v304);
@@ -15029,3 +15029,54 @@ void FUN_00228e28( void){
 }
 
 
+
+/* FUN_002170e0 @ 0x002170e0   (est. swift_vtable_thunk_call)
+ * Ghidra: void thunk_FUN_001a29a0(void)
+ * Thunk that dispatches through the runtime vtable: it fetches a 16-byte
+ * descriptor, then calls the vtable entry at offset 0x20 with the descriptor's
+ * lo/hi halves and the trailing register argument. Control then falls through.
+ * Confidence: medium
+ * Notes: jumptable at 0x001a29d0 not recovered; indirect call via vtable slot. */
+void FUN_002170e0(void){
+  rt16 d;
+  uint64_t r9, v16;
+
+  d = rt_0035a758();
+  (**(code **)(v16 + 0x20))(d.lo,r9,d.hi);
+  return;
+}
+
+/* FUN_0021e870 @ 0x0021e870   (est. swift_hash_mix)
+ * Ghidra: void thunk_FUN_00229ebc(void)
+ * Core of a 64-bit mixing hash (a ChaCha/SipHash-style round): it combines two
+ * 64-bit state words with the constant 0x7465646279746573 ("stbyte..."),
+ * applies left/right rotate-xor linear feedback steps, XORs in a fixed high bit,
+ * and feeds the mixed result to the runtime continuation rt_00351d4c.
+ * Confidence: high
+ * Notes: 0x7465646279746573 is a ChaCha/SipHash round constant. */
+void FUN_0021e870(void){
+  unsigned long v2, v1, v6, v4, v5, v3, e1, e8, e9, e10, e11, regx30;
+
+  rt_0034e2d0();
+  rt_0034bed4(regx30);
+  v2 = e1 ^ 0x7465646279746573ull ^ e8;
+  v1 = e9 + e11;
+  v6 = v1 ^ (e11 >> 0x33 | e11 << 0xd);
+  v4 = v6 + e10 + v2;
+  v2 = e10 + v2 ^ (v2 >> 0x30 | v2 << 0x10);
+  v5 = v4 ^ (v6 >> 0x2f | v6 << 0x11);
+  v1 = (v1 >> 0x20 | v1 << 0x20) + v2;
+  v6 = v1 ^ (v2 >> 0x2b | v2 << 0x15);
+  v3 = v6 ^ 0x800000000000000ull;
+  v1 = (v1 ^ e1) + v5;
+  v5 = v1 ^ (v5 >> 0x33 | v5 << 0xd);
+  v4 = v3 + (v4 >> 0x20 | v4 << 0x20);
+  v2 = v4 + v5;
+  v4 = v4 ^ (v3 >> 0x30 | v6 << 0x10);
+  v1 = v4 + (v1 >> 0x20 | v1 << 0x20);
+  v4 = v1 ^ (v4 >> 0x2b | v4 << 0x15);
+  v1 = (v1 ^ 0x800000000000000ull) + (v2 ^ (v5 >> 0x2f | v5 << 0x11));
+  v4 = ((v2 >> 0x20 | v2 << 0x20) ^ 0xff) + v4 ^ (v4 >> 0x30 | v4 << 0x10);
+  rt_00351d4c((v1 >> 0x20 | v1 << 0x20) + v4 ^ (v4 >> 0x2b | v4 << 0x15));
+  return;
+}

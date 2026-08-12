@@ -15,7 +15,7 @@
  * reconstructed by sibling SK range workers). Names are estimates.
  * ------------------------------------------------------------------ */
 extern void sk_fatal_error(unsigned long a, unsigned long b, ...) __attribute__((noreturn)); /* FUN_001afe4c */
-extern unsigned long sk_swift_state(void);                    /* FUN_00348e00 */
+extern unsigned long sk_swift_state(unsigned long a, ...);    /* FUN_00348e00 */
 extern unsigned long sk_swift_state2(void);                   /* FUN_00355538 */
 extern unsigned long sk_swift_state3(void);                   /* FUN_00351d18 */
 extern unsigned long sk_swift_gstate(unsigned long a);        /* FUN_0036a940 */
@@ -64,7 +64,7 @@ extern unsigned long sk_swift_gfind(unsigned long a, unsigned long b);  /* FUN_0
 extern unsigned long sk_swift_gverify(unsigned long a, unsigned long b);/* FUN_00362c00 */
 extern unsigned long sk_swift_glist(unsigned long a);         /* FUN_003629c4 */
 extern unsigned long sk_swift_gstep(unsigned long a);         /* FUN_003629b4 */
-extern unsigned long sk_swift_die(unsigned long a);           /* FUN_00348898 */
+extern unsigned long sk_swift_die(unsigned long a, ...);      /* FUN_00348898 */
 extern unsigned long sk_swift_die2_0(unsigned long a);        /* FUN_00348074 */
 extern unsigned long sk_swift_die2_1(unsigned long a);        /* FUN_00348404 */
 extern unsigned long sk_swift_die3(void);                     /* FUN_0034a368 */
@@ -77,8 +77,8 @@ extern void thunk_FUN_002298d4(unsigned long a);                 /* 0x2298d4 */
 extern long thunk_FUN_00284424(void *a, long b, long c, void *d, void *e); /* 0x284424 */
 extern unsigned long thunk_FUN_0036b270(unsigned long a);        /* 0x36b270 */
   /* FUN_00054414 */
-extern unsigned long sk_swift_badlock(unsigned long a);       /* FUN_00347fb4 */
-extern unsigned long sk_swift_shift(unsigned long a, unsigned long b, unsigned long c, ...); /* FUN_00356340 */
+extern unsigned long sk_swift_badlock(unsigned long a, ...);  /* FUN_00347fb4 */
+extern unsigned long sk_swift_shift(unsigned long a, ...);    /* FUN_00356340 */
 
 extern unsigned long sk_sync_ops_1(unsigned long a);             /* FUN_00354a34 */
 extern unsigned long sk_sync_ops_2(unsigned long a);             /* FUN_0035694c */
@@ -90,7 +90,6 @@ extern void sk_swift_fail2(void);                                /* FUN_003523f0
 extern unsigned long sk_swift_detect_tiny(unsigned long a);      /* FUN_00356d2c */
 extern unsigned long sk_str_fast_count(unsigned long a);         /* FUN_00255d4c */
 extern void sk_swift_emit(unsigned long a);                      /* FUN_003528ac */
-extern void sk_swift_die(void);                                  /* FUN_00348898 */
 extern void sk_swift_die2(void);                                 /* FUN_0034a2f8 */
 extern void sk_swift_sync(unsigned long a);                      /* FUN_00357ca0 */
 extern unsigned long sk_swift_sync_ret(void);                    /* FUN_00355d9c */
@@ -112,7 +111,6 @@ extern unsigned long sk_swift_utf16_set(unsigned long);          /* FUN_002af618
 extern void sk_swift_utf16_slice(void);                          /* FUN_00291d70 */
 extern void sk_swift_table(void);                                /* FUN_00346774 */
 extern unsigned long sk_swift_string_lit(unsigned long);         /* FUN_00002534 */
-extern void sk_swift_meta(void);                                 /* FUN_003a25d4 */
 extern void sk_swift_cast16(void);                               /* FUN_0001d4a0 */
 extern unsigned long sk_swift_uint_conv(unsigned long);          /* FUN_003d2f9c */
 extern void sk_swift_uint_conv2(void);                           /* FUN_003d2f10 */
@@ -120,18 +118,14 @@ extern void sk_swift_load(void);                                 /* FUN_00357cb4
 extern void sk_swift_iret(void);                                 /* FUN_00357c74 */
 extern void sk_swift_leave(void);                                /* FUN_00355bb8 */
 extern void sk_swift_lock(void);                                 /* FUN_0034e004 */
-extern void sk_swift_free_pages(void);                           /* FUN_0036b270 */
 extern void sk_swift_unlock(void);                               /* FUN_00350524 */
-extern void sk_swift_state(void);                                /* FUN_00356364 */
 extern void sk_swift_door(void);                                 /* FUN_00351b78 */
-extern void sk_swift_badlock(void);                              /* FUN_00347fb4 */
 extern void sk_swift_prev(void);                                 /* FUN_0034f688 */
 extern void sk_swift_next(void);                                 /* FUN_00205844 */
 extern unsigned long sk_swift_atomic_load(void);                 /* FUN_00354744 */
 extern void sk_swift_bitset(void);                               /* FUN_0006e778 */
 extern unsigned long sk_swift_cmp(void);                         /* FUN_0034f064 */
-extern void sk_swift_shift(void);                                /* FUN_003563fc */
-extern void sk_swift_strlen(void);                               /* FUN_0035354c */
+extern void sk_swift_strlen(unsigned long a, ...);               /* FUN_0035354c */
 extern void sk_swift_substr(void);                               /* FUN_00208418 */
 extern void sk_swift_concat(void);                               /* FUN_00354a00 */
 extern unsigned long sk_swift_split(void);                       /* FUN_0034f98c */
@@ -150,7 +144,15 @@ extern void sk_swift_reserve(void);                              /* FUN_00352c58
 extern void sk_swift_scan(void);                                 /* FUN_00357cec */
 extern void sk_swift_get_cap(void);                              /* FUN_002a9ba8 */
 extern void sk_swift_set_cap(void);                              /* FUN_002af618 */
-extern void sk_swift_free(void);                                 /* FUN_0036b118 */
+
+/*--------------------------------------------------------------------*/
+/* Forward declarations of in-range callees defined below. */
+void cl4_swift_dispatch_msg2(void *a, void *b, unsigned long len, long cap, unsigned long flags);
+void cl4_swift_validate_msg(long a, unsigned long b, long cap, unsigned long len,
+                            long c, unsigned long d, unsigned long count);
+void cl4_swift_validate_msg2(long a, unsigned long b, long cap, unsigned long len,
+                             long c, unsigned long d, unsigned long count);
+void cl4_swift_validate_msg3(long a, unsigned long b, long cap, unsigned long len);
 
 /*--------------------------------------------------------------------*/
 /* FUN_001b012c @ 0x001b012c   (est. cl4_fatal_abort)

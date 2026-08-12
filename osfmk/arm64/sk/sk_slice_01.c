@@ -75,7 +75,7 @@ extern uint64_t sk_tramp_setup(uint64_t a);                                   /*
 extern uint64_t sk_tramp_get(uint64_t a);                                     /* FUN_000636d8 */
 extern uint64_t sk_cpu_reg_store(uint64_t v);                                 /* FUN_00063a50 */
 extern uint64_t sk_percpu_key(uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_0005ea94 */
-extern void sk_obj_retain(void *o);                                           /* FUN_0004b520 */
+extern uint64_t sk_obj_retain(void *o);                                         /* FUN_0004b520 */
 extern void sk_panic_brk(const char *msg) __attribute__((noreturn));          /* FUN_0005b190 */
 extern void sk_clean_cache(void);                                             /* FUN_0005ee50 */
 extern uint64_t sk_query_type(void);                                          /* FUN_0005ee40 */
@@ -119,7 +119,7 @@ extern int  sk_cap_fallback(void *m, uint64_t cap, void *t, void *o,
 extern int  sk_cap_pre(void *o, void *t, void *p, uint64_t c);                /* FUN_000181f4 */
 extern int  sk_cap_setup(void *o, void *m, void *p, uint64_t c);              /* FUN_000183f0 */
 extern void sk_printf_reg(const char *fmt, ...);                              /* FUN_0011825c */
-extern uint64_t sk_cap_claim(void);                                           /* FUN_00016458 */
+extern uint64_t sk_cap_claim(uint64_t a);                                      /* FUN_00016458 */
 extern int  sk_cap_alloc_claim(uint64_t sz);                                  /* FUN_00016458 */
 extern void sk_mem_bar(void);                                                 /* FUN_00060524 */
 extern void CallSupervisor(uint64_t a);                                       /* cL4 supervisor call opcode */
@@ -249,7 +249,7 @@ static void sk_batch_push(uint64_t zone, uint64_t *block);
 static void sk_tb_alloc_slots(uint64_t tb, uint64_t num);
 static void sk_tb_assert_received(void);
 static void sk_tb_free_slots(uint64_t tb);
-static uint64_t sk_tb_create(uint64_t a);
+static uint64_t sk_tb_create(void);
 static int sk_tb_dup(uint64_t a, uint64_t t, long *out, uint32_t flags);
 static uint64_t sk_cap_alloc(uint64_t a, uint64_t sz, uint64_t c, uint64_t *d);
 static void sk_cap_realloc(uint64_t a, uint64_t *d, uint64_t c, uint64_t sz);
@@ -1597,7 +1597,7 @@ static void sk_tb_free_slots(uint64_t tb)
  * magic 0x658fa8 at offset 0x60.
  * Confidence: medium
  * Notes: FUN_00010244(1,0x118,0x1082040eda8e2da); FUN_004b0068 on failure. */
-static uint64_t sk_tb_create(uint64_t a)
+static uint64_t sk_tb_create(void)
 {
 	uint64_t *tb = (uint64_t *)sk_zone_alloc_obj(1, 0x118, 0x1082040eda8e2daull);
 	if (tb != 0) {
@@ -2246,7 +2246,7 @@ static long sk_tb_alloc_by_kind(uint64_t a)
 		}
 		sk_boot_abort3();
 	} else if (kind == 1) {
-		tb = sk_tb_create(a);
+		tb = sk_tb_create();
 	} else {
 		goto unknown;
 	}
@@ -2294,7 +2294,7 @@ static void sk_tb_obj_free(uint64_t *w)
 static long sk_tb_obj_create(uint64_t a, uint64_t b)
 {
 	uint64_t *w = sk_tb_obj_alloc(0);
-	uint64_t k = (uint64_t)sk_obj_retain(b);
+	uint64_t k = sk_obj_retain((void *)b);
 	*(uint64_t *)(w + 0x10) = k;
 	sk_tb_set_sender(a, (uint64_t)(void *)sk_tb_obj_dispatch, (uint64_t)w);
 	*(uint64_t *)(w + 0x38) = sk_registry_alloc();
@@ -2313,57 +2313,56 @@ static long sk_tb_obj_dispatch(uint64_t a1, uint64_t *w)
 {
 	uint64_t cap = *w;
 	uint64_t obj = a1;
-	long *t = (long *)sk_tb_get(0);
-	int kind = sk_tb_state(a1);
+	long *t = (long *)sk_tb_get((void *)0);
+	int kind = sk_tb_state((void *)a1);
 
 	if (kind == 4) {
-		int k2 = sk_tb_kind(a1);
+		int k2 = sk_tb_kind((void *)a1);
 		if (k2 != 1) goto fallback;
 		if (t == 0 || *t == 0) goto fallback;
 		if ((*(uint16_t *)((long)t + 0x2a) >> 2 & 1) != 0) {
 			if (w[7] != 0) {
-				int r = sk_cap_setup(w[7], w, a1, &obj, cap);
+				int r = sk_cap_setup((void *)w[7], w, (void *)a1, cap);
+				if (r == 0) return obj;
 				return obj;
 			}
 			goto fallback;
 		}
 		if ((*(uint16_t *)((long)t + 0x2a) & 1) != 0) {
 			if (w[6] != 0) {
-				long r = sk_tb_recv(w[6], a1);
+				long r = sk_tb_recv((void *)w[6], (void *)a1);
 				if (r == 0) return 0;
-				sk_tb_sched_go(a1, r);
+				sk_tb_sched_go((void *)a1, (void *)r);
 				goto dispatch;
 			}
 			goto fallback;
 		}
 dispatch:
 		if ((uint64_t (*)(void))w[3] != 0) {
-			long r = (*(long (*)(void))(w[3]))(w, a1, w[4]);
+			long r = (*(long (*)(uint64_t, uint64_t, uint64_t))(w[3]))((uint64_t)w, a1, w[4]);
 			goto handle_result;
 		}
 		long r = (long)w[2];
-		if (r != 0) r = (**(long (**)(void))(r + 0x10))(r, w, a1);
+		if (r != 0) r = (**(long (**)(uint64_t, uint64_t, uint64_t))(r + 0x10))(r, (uint64_t)w, a1);
 handle_result:
 		if (r == 0) return 0;
-		obj = r;
+		obj = (uint64_t)r;
 		{
-			long *rr = sk_tb_get(r);
+			long *rr = (long *)sk_tb_get((void *)r);
 			int rc = sk_cap_check(cap, *(uint64_t *)(rr + 0x18));
 			if (rc == 0) return r;
 			if (w[7] != 0) {
-				int rc2 = sk_cap_pre(w[7], r, &obj, w);
+				int rc2 = sk_cap_pre((void *)w[7], (void *)r, &obj, (uint64_t)w);
 				if (rc2 != 0) obj = 0;
-				return obj;
+				return (long)obj;
 			}
 			goto fallback;
 		}
 	}
 fallback:
 	{
-		uint64_t v;
-		sk_boot_abort9();
-		uint64_t tb = sk_tb_alloc_by_kind(sk_tb_get_kind2());
-		long r = sk_tb_obj_create(tb, v);
+		uint64_t tb = sk_tb_alloc_by_kind(a1);
+		long r = sk_tb_obj_create(tb, 0);
 		sk_tb_obj_free((uint64_t *)r);
 		return r;
 	}
@@ -2433,13 +2432,13 @@ static uint64_t sk_tb_query(uint64_t *w, int *q, long *out, uint64_t flags)
 			if (r == 0) return 1;
 			sk_msg_append(q, 3);
 			uint64_t cap = *w;
-			long *t = sk_tb_get(q);
+			long *t = (long *)sk_tb_get((void *)q);
 			if (((uint32_t)flags >> 1 & 1) == 0)
 				*(uint16_t *)((long)t + 0x2a) |= 0x10;
 			r = sk_cap_check(cap, *(uint64_t *)((long)t + 0x18));
 			uint64_t rr;
 			if (r == 0) rr = sk_tb_do_reply(cap, q, out, flags);
-			else rr = sk_cap_fallback(w, cap, q, out, flags);
+			else rr = sk_cap_fallback((void *)w, cap, (void *)q, (void *)out, flags);
 			if ((int32_t)rr == 0) {
 				uint32_t v = ((*(uint16_t *)((long)t + 0x2a) & 8) == 0) ? 0 : 4;
 				rr = v;
@@ -2447,48 +2446,48 @@ static uint64_t sk_tb_query(uint64_t *w, int *q, long *out, uint64_t flags)
 					if (out == 0 || *out == 0) {
 						rr = 4;
 					} else {
-						sk_msg_append(*out, 4);
-						sk_msg_set(*out, 2);
-						long *o = sk_tb_get(*out);
+						sk_msg_append((void *)*out, 4);
+						sk_msg_set((void *)*out, 2);
+						long *o = (long *)sk_tb_get((void *)*out);
 						if ((*(uint16_t *)((long)o + 0x2a) & 1) != 0) {
-							long b = sk_msg_caps2(*out);
+							long b = sk_msg_caps2((void *)*out);
 							if (b == 0) {
 								uint64_t *local = 0;
-								sk_printf_reg(4, &local);
-								sk_msg_writesize(*out, local[3]);
+								sk_tb_alloc_buf(&local, *(uint64_t *)(*out));
+								sk_msg_writesize((void *)*out, local[3]);
 							}
 							uint64_t recv = w[6];
 							if (recv == 0) {
 								sk_boot_abortA();
 							} else {
-								uint64_t *nb = (uint64_t *)sk_tb_recv(recv, *out);
+								uint64_t *nb = (uint64_t *)sk_tb_recv((void *)recv, (void *)*out);
 								uint64_t *hdr = (uint64_t *)sk_zone_alloc_obj(1, 0x58, 0x102004071d150f8ull);
 								if (hdr != 0) {
 									uint64_t *data = (uint64_t *)sk_zone_alloc_obj(1, 0x68, 0x1090040b6685729ull);
 									if (data == 0) sk_boot_abort3();
-									rr = sk_tb_send_any(w, 0, hdr, (long)data, 0, 0);
+									rr = sk_tb_send_any(w, 0, (uint64_t)hdr, (uint64_t)data, 0, 0);
 									if ((int32_t)rr == 0) {
 										if (nb == 0) {
 											for (;;) {
-												sk_tb_id(hdr);
+												sk_tb_id((void *)hdr);
 												*(uint16_t *)((long)data + 0x2a) |= 4;
-												sk_msg_append(hdr, 3);
-												rr = sk_tb_do_reply(cap, hdr, &hdr, 2);
+												sk_msg_append((void *)hdr, 3);
+												rr = sk_tb_do_reply(cap, hdr, (long *)&hdr, 2);
 												if ((int32_t)rr != 0) break;
-												sk_msg_writesize(hdr, b);
-												nb = (uint64_t *)sk_tb_recv(recv, hdr);
+												sk_msg_writesize((void *)hdr, b);
+												nb = (uint64_t *)sk_tb_recv((void *)recv, (void *)hdr);
 												if (nb != 0) goto found;
-												sk_tb_msg_send(w, hdr, 0, 0, 0);
+												sk_tb_msg_send(w, (uint64_t)hdr, 0, 0);
 											}
 											sk_tb_cancel(w);
 											sk_zone_free_0((uint64_t)data);
 										} else {
 found:
-											sk_tb_cancel(w, hdr);
+											sk_tb_cancel(w);
 											sk_zone_free_0((uint64_t)data);
 											sk_zone_free_0((uint64_t)hdr);
-											uint64_t *t2 = sk_tb_get(*out);
-											sk_tb_msg_join(cap, t2);
+											uint64_t *t2 = (uint64_t *)sk_tb_get((void *)*out);
+											sk_tb_msg_join(cap, (uint64_t)t2);
 											sk_tb_reset(t2);
 											rr = 0;
 											uint64_t sz = nb[3];
@@ -2604,7 +2603,7 @@ static uint64_t sk_tb_buf_release(uint64_t *d, uint64_t a2, uint64_t a3, uint64_
 		if (x != 0) sk_tb_can_send(a2);
 		uint32_t chk = sk_cap_check(a2, a4);
 		if (*(uint8_t *)(a3 + 0x28) == 1) {
-			sk_tb_buf_release((uint64_t *)a3);
+			sk_tb_buf_release((uint64_t *)a3, 0, 0, 0, 0);
 			if ((chk & 1) == 0) {
 				r = sk_tb_send_dispatch(a2, a4, a5, a3);
 				if ((int32_t)r == 0) return 0;
@@ -2784,7 +2783,7 @@ static uint64_t sk_registry_entry_create(uint64_t cap, uint64_t tag, uint64_t ke
 	if (e == 0) sk_boot_abort3();
 	e[1] = cap;
 	e[2] = tag;
-	e[3] = sk_obj_retain(key);
+	e[3] = sk_obj_retain((void *)key);
 	return (uint64_t)e;
 }
 

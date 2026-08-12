@@ -1394,3 +1394,75 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (lVar3 == 2) { param_3 = 2; break; }` in both 00281cc0 and 002821c4; `if (param_3 < 0) FUN_001afe4c(...,0xb5,1)`.
 - **Severity (hypothesis)**: informational — fixed-size stack buffer init; the 2-element cap is a Swift ABI artifact (small-array buffer), not a security boundary.
 - **Confidence**: high (explicit cap + string-matched Range precondition).
+
+## [ringminus1] 000012d4..00010244 sk_boot_launcher_entry..sk_alloc_calloc (SK00 slice: root-task launch + lite_zone)
+- **Observation**: The Secure Kernel embeds a full libmalloc-derived allocator (lite_zone) and its root-task launcher in the same image. The allocator's per-CPU lock path (FUN_0011582c/94) records a "Failed to acquire/release lock" diagnostic on contention rather than a fail-closed panic in most fast paths, but the size-class validity checks all terminate in a BUG_IN_LIBMALLOC panic (fail-closed). Free-path pointer validation (FUN_0000cc60 ptr_size / FUN_0000d01c ptr_owned) rejects out-of-zone pointers, and any invalid free goes to a client-of-libmalloc panic.
+- **Evidence**: Allocator fast-path lock wrappers at 0x2e50/0x3e7c/0x38ac acquire `l2 = zone+0x10` with `sk_lock_acquire`; on failure `sk_lock_error(0x40,0,"Failed to acquire lock: %p")` then continues — a lock-acquire failure in the bump/region path would proceed with the lock held. Size-class dispatch switch statements at 0x3794/0x38ac/0x4acc default to `sk_bug_panic("BUG IN LIBMALLOC: %llu, %s")` (0x005a9249). Free validation in 0xcc60/0xd01c returns 0 and records errno 0xc (via sk_errno_slot FUN_0006037c) instead of panicking on unknown pointers.
+- **Severity (hypothesis)**: low — allocator double-free / cross-zone free is caught (panic), but a lock-acquire failure is logged-and-continued rather than aborted, which under real contention could corrupt the zone free lists.
+- **Confidence**: medium
+
+## [ringminus1] 00002a10 lite_zone_init_memory
+- **Observation**: Zone memory init maps a 0x140000000-byte (5 GiB) region table and, when the zone is configured for the large memory model (`*(char*)(param_1+0x1bf)=='\\x02'`), splits the top of the 32-bit window with a computed 0x1000000-aligned limit; several intermediate misalignment/overflow conditions trap to SoftwareBreakpoint(0x5519).
+- **Evidence**: `sk_alloc_zone_0(0,0x140000000,0x19,1,0x200,5,v+0x20)` for the region table; `(a0 & 0x1ffffff)!=0` / `lim<a0` / `u<=lim` all fall into the "does not return" SoftwareBreakpoint(0x5519) path (FUN_004afc5c/78/94/cc). Bounds guard `uVar1 = uVar3 + uVar7; if (uVar1 <= uVar3) goto bug`.
+- **Severity (hypothesis)**: informational — the 5 GiB region-table mapping is a large fixed carve-out of the secure kernel's VA space at boot.
+- **Confidence**: medium
+
+## [ringminus1] 00006630 lite_zone_create
+- **Observation**: Zone creation sizes the zone struct from the CPU count and boot-image flag (bVar5==0 selects the +0x6d80 layout), allocates it via the bootstrap allocator, and initializes all per-class lock/free-list state before returning it. The 5GiB carve-out and per-class table layout are fixed and derive from a single global CPU count (DAT_006ac234).
+- **Evidence**: `lVar19 = uVar21*0x25b0 + (bVar5==0 ? 0x6d80 : 0x6720) + uVar21*0xc90`; `puVar11[0x34]=lVar18`; `FUN_00006cbc(puVar11,lVar18,1,0xc9,uVar21,...)` installs the method table; per-CPU size derived from DAT_006ac234.
+- **Severity (hypothesis)**: informational — allocator metadata size is O(cpu_count); a maliciously large DT cpu count would inflate the carve-out.
+- **Confidence**: low
+
+## [ringminus1] 000101a0 sk_alloc_malloc / 00010244 sk_alloc_calloc
+- **Observation**: The two exported allocator entry points dispatch through a single global zone pointer (DAT_0064c060) and wrap the result in an explicit overflow check: malloc traps on a wrapped `end=base+size` range, calloc traps on `total=nmemb*size` overflow before returning. A `zone + 200 < zone` wrap (32-bit zone base + 200) also traps.
+- **Evidence**: `lVar3=*DAT_0064c060; if (*(uint*)(lVar3+0x68)<0x10) call(vtable+0x18) else call(vtable+0xa0)`; `(uVar4<=uVar1 && uVar4==0||size<=uVar1-uVar4) && ...` else `SoftwareBreakpoint(0x5519,0x10244)`. calloc: `uVar4=param_2*param_1`; `(uVar3<=uVar1 && uVar3==0||(uVar4<uVar1-uVar3||uVar4-(uVar1-uVar3)==0))` else `SoftwareBreakpoint(0x5519,0x102f4)`.
+- **Severity (hypothesis)**: informational — the calloc path correctly guards integer overflow in the `nmemb*size` product.
+- **Confidence**: high
+
+## [sk-vspace] 0021e870 swift_hash_mix — ChaCha/SipHash-style mixing constant
+- **Observation**: The cL4 kernel's embedded Swift runtime mixes 64-bit state with the ChaCha/SipHash round constant 0x7465646279746573 ("stbyteds"? little-endian of "stbyte...") using rotate-xor linear feedback, then XORs 0x8000000000000000 and 0xff before feeding the result to the continuation. This is a standard non-cryptographic-keyed hash round; the fixed constant makes the mix deterministic (not secret).
+- **Evidence**: thunk_FUN_00229ebc: `v2 = e1 ^ 0x7465646279746573 ^ e8; ... v1 = (v1^e1)+v5; v4 = ((v2>>0x20|v2<<0x20)^0xff)+v4 ^ (v4>>0x30|v4<<0x10); rt_00351d4c(...)`.
+- **Severity (hypothesis)**: informational — hash mix is public-constant, deterministic (expected for a non-keyed hash); no weakness observed.
+- **Confidence**: high
+
+## [sk-vspace] 0021e844/0021e874/0021e8c0/0021e8f0 swift_int_to_grade / swift_char_equal / swift_char_grade / swift_char_load
+- **Observation**: Small helpers grading small integers to 0/1/2 (via FUN_0021e844) and comparing Characters (rt_00149368) used by the string layer. The char-grade function writes the grade into a byte the caller supplies; the load reads the byte and forwards it. These are non-security structural helpers.
+- **Evidence**: 0021e844 returns 0 when param==0, 1 when ==1, else 2; 0021e874 compares rt_00149368(*p1)==rt_00149368(*p2); 0021e8c0 `*p1 = FUN_0021e844(*p2)`; 0021e8f0 `*p1 = rt_00149368(*unaff_x20)`.
+- **Severity (hypothesis)**: informational.
+- **Confidence**: high
+
+## [sk-vspace] 0021ef5c/0021ef80/0021ef30 (+ max/abs variants) float/half/double min-max NaN semantics
+- **Observation**: The min/max functions implement IEEE-754-2019-style semantics: when the second operand is NaN, they return the other operand (and vice-versa via the bit-mask tests on exponent/mantissa); signaling NaN handling is per-spec. These gate arithmetic in the Swift runtime, not the vspace boundary.
+- **Evidence**: 0021ef5c `if (p2<p1){ f=p2; if((u32)p2&0x7fffff) f=p1; p1=p2; if(((u32)p2^0xffffffff)&0x7f800000==0) p1=f; }` — NaN and inf bit tests.
+- **Severity (hypothesis)**: informational — no weakness observed.
+- **Confidence**: high
+
+## [sk-vspace] 0021a660 family string_distance — no unbounded-count loop
+- **Observation**: The Flatten/Collection distance helpers accumulate character counts with SCARRY8 overflow checks and Swift fatal traps on out-of-bounds indices ("String index is out of bounds", "Index out of range"); all index arithmetic is bounds-checked before dereference, and the accumulate multiply/add is carry-checked with a SoftwareBreakpoint on overflow. No unbounded or unchecked count loop observed.
+- **Evidence**: 0021a660/0021acec/0021b1a4/0021b91c/0021bf60/0021c41c each: `if (uVar15<=uVar4) FUN_001afe4c(s_Fatal_error_...,s_String_index_is_out_of_bounds_005ce6a0,...)`; `if (SCARRY8(lVar4,uVar3*lVar13)) SW_BREAK(0x21aab4)`.
+- **Severity (hypothesis)**: informational — defensive bounds/overflow checks in the string layer.
+- **Confidence**: high
+
+## [sk] 0004b520/0004b664 sk_cap_retain / sk_cap_release — refcount saturation guard on capability words
+- **Observation**: The cL4 capability retain/release pair guards the 16-bit refcount against saturation and underflow. `sk_cap_release` returns early when the count is already 0 (`&0xfffe == 0`) or already maxed (`&0xfffe == 0xfffe`), and only invokes the destroy callback + frees the tagged object when the low word is exactly 2 (i.e. the count is about to hit zero). Retain uses an atomic compare-and-retry loop (`do {...} while (*word != u)`).
+- **Evidence**: `if ((uVar1 & 0xfffe) == 0 || (uVar1 & 0xfffe) == 0xfffe) return;` and `if ((uVar1 & 0xffff) == 2) { sk_cap_release_cb; free; }`; retain `do { u=*w; if (((u^0xffffffff)&0xfffe)==0) return; } while (*w != u); *w = u+2;`.
+- **Severity (hypothesis)**: informational — the kernel saturates (never wraps) the tag refcount, preventing double-free/UAF via refcount overflow; fail-closed.
+- **Confidence**: high (explicit 0xfffe saturation checks).
+
+## [sk] 00046694 sk_tb_dispatch — ~50-case TB (tightbeam) message dispatcher
+- **Observation**: The TB dispatch core reads a message tag from the wire buffer and switches over ~50 tags, decoding per-record fields and dispatching each through the caller object's method table (mtab at *(obj+0x20)). Unrecognized tags take a fatal path (helper FUN_004b4358 + fatal strings 0x5ba347/0x5ba47e/0x5ba4bc). The decompiler could not fully settle types ("Type propagation algorithm not settling").
+- **Evidence**: `sk_tb_tag(&tag, buf); mtab = *(obj+0x20); ... sk_x_004b4358(); sk_tb_var_w(mtab[8]+0x28, r); *(mtab[8]+0x20)=1;` — tag-switch with per-tag decode helpers and a noreturn abort on unknown tag.
+- **Severity (hypothesis)**: informational — fail-closed dispatcher; unknown wire tags abort rather than falling through (defense-in-depth against malformed IPC).
+- **Confidence**: medium (huge/partially-unsettled decompile, structural summary).
+
+## [sk] 0004d1fc sk_reloc_apply — pointer-slide relocation across __DATA/__DATA_CONST
+- **Observation**: Boot-time relocation applies the KASLR slide to every tagged pointer in a range, skipping any that fall inside the __DATA or __DATA_CONST segments when the config flag is set (sk_cfg_geo_c==1), and stopping at the 0xffffffff sentinel. Uses sk_ptr_fixup (0004d150) which reconstructs absolute addresses from the 42-bit tag/stride encoding.
+- **Evidence**: `if (*(uint*)begin & 1) w=8; ... if (u==0xffffffff) return; sk_ptr_fixup(u, u&0xffffffffffffc000, w, -slide, slide);` and the __DATA (0x5bb23b)/__DATA_CONST (0x5bb242) bounds checks via sk_x_00051e5c.
+- **Severity (hypothesis)**: informational — correct KASLR slide application; the skip-set is narrow (data-only), pointer targets are validated by fixup. No weakness observed.
+- **Confidence**: medium.
+
+## [sk] 0004ed48 sk_tb_ph_avail — TB placeholder resource availability gate
+- **Observation**: The TB placeholder path validates at boot/alloc time that the placeholder resource region is non-empty (global cfg +0x78 != 0), aborting with the "TBPlaceholder resources could no.." panic (0x5bb783) otherwise. This is a single fail-closed availability gate before any placeholder use.
+- **Evidence**: `u = sk_global_cfg(); if (*(ulong*)(u+0x78) != 0) return u; sk_panic(0x5bb783);` — noreturn panic on empty region.
+- **Severity (hypothesis)**: informational — fail-closed resource init gate.
+- **Confidence**: high (string-matched panic).
