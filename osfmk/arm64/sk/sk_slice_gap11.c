@@ -18,11 +18,11 @@ typedef void (*code_t)(void);
  * hi = high 64 bits. */
 typedef struct { word_t lo, hi; } sk16_t;
 
-/* Called helpers (ground-truth FUN_ addresses). Variadic so the reconstructed
- * call sites type-check under -fsyntax-only. Named from manifest/callee notes:
- *   00310a74 = swift_type_metadata_field_30, 00310b08 = swift_type_metadata_field_14,
- *   0001df60 / 00027754 = boot-region helpers. */
-extern word_t sk_h_00310a74(...);
+/* Called helpers (ground-truth FUN_ addresses). Named from manifest/callee
+ * notes: 00310a74 = swift_type_metadata_field_30, 00310b08 =
+ * swift_type_metadata_field_14, 0001df60 / 00027754 = boot-region helpers.
+ * 00310a74 takes a single word (0 passed where the decompile shows no arg). */
+extern word_t sk_h_00310a74(word_t);
 extern void sk_h_0001df60(void);
 extern void sk_h_00027754(void);
 extern void sk_h_00310b08(void);

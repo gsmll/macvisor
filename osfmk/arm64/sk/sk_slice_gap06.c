@@ -15,7 +15,9 @@
  * Registers x19-x28 are the Swift callee-saved context (loaded by the caller
  * before the jump). Functions marked "register-shuffle thunk" perform no
  * memory or call side effect; they only rearrange these registers so the
- * next executed instruction (a continuation) sees its arguments in place. */
+ * next executed instruction (a continuation) sees its arguments in place.
+ * The decompile for each is literally `return;`; the register contract from
+ * disassembly is recorded in the body comment. */
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -26,11 +28,6 @@ typedef uint32_t word32_t;
 
 /* Two-word Swift ABI value returned in x0/x1 (also a 16-byte struct). */
 typedef struct { word_t lo; word_t hi; } sk06_pair_t;
-
-/* Field access at a byte offset into a register-preserved context object. */
-#define SK06_FIELD(base, off) (*(word_t *)((uint8_t *)(base) + (off)))
-
-#define SK06_TRAP() __builtin_trap()  /* SoftwareBreakpoint(1,<addr>) path */
 
 /* ------------------------------------------------------------------ *
  * Shared Swift-runtime helpers (ground truth FUN_ addresses; bodies are
@@ -61,32 +58,29 @@ extern void   sk_big_alloc_2a4c98(word_t, word_t, word_t, word_t);              
  * in the caller's registers. Confidence: low (Swift closure-capture setup).
  * Notes: decompile drops the register contract; disasm shows
  *   neg x9,x9; lsl x13,x10,x9; cmp x9,#0x40; csinv x9,x10,x13,cs. */
-void sk06_e830_capture_store(word_t *record, word_t param_2)
+void sk06_e830_capture_store(word_t *record, word_t param_2,
+                             word_t shift, word_t x10, word_t x11, word_t x12)
 {
-    word_t shift = (word_t)(-(int64_t)SK06_FIELD(record, 0));   /* x9 from caller context */
-    word_t x10  = SK06_FIELD(record, 8);                         /* x10 */
-    word_t x12  = SK06_FIELD(record, 0x10);                      /* x12 */
     if ((word_t)-shift < 0x40) {
         x10 = ~(x10 << (-shift & 0x3fU));
     }
-    record[1] = param_2;               /* +8 */
-    record[2] = SK06_FIELD(record, 0x10); /* +0x10 = x11 */
-    record[3] = 0;                     /* +0x18 */
-    record[4] = x10 & x12;             /* +0x20 */
+    record[1] = param_2;        /* +8 */
+    record[2] = x11;            /* +0x10 */
+    record[3] = 0;              /* +0x18 */
+    record[4] = x10 & x12;      /* +0x20 */
 }
 
 /* FUN_0034e850 @ 0x0034e850   (est. sk06_e850_pair_alloc)
  * Ghidra: undefined1 [16] FUN_0034e850(long param_1)
  * Returns a two-word pair {p+x25+x23 & ~x25, p+x25+x20 & ~x25} where p is the
  * argument and x25/x23/x20 are caller context registers; also reloads x2=x19.
- * This is an allocation-alignment / pointer-masking thunk for the caller.
- * Confidence: low. */
-sk06_pair_t sk06_e850_pair_alloc(word_t param_1)
+ * Pointer-masking allocation thunk. Confidence: low. */
+sk06_pair_t sk06_e850_pair_alloc(word_t param_1, word_t mask,
+                                 word_t x23, word_t x20)
 {
     sk06_pair_t r;
-    word_t mask = SK06_FIELD((uint8_t *)0, 0);   /* x25 (caller context) */
-    r.lo = (param_1 + mask + SK06_FIELD(0, 0)) & ~mask;   /* x23 offset */
-    r.hi = (param_1 + mask + SK06_FIELD(0, 0)) & ~mask;   /* x20 offset */
+    r.lo = (param_1 + mask + x23) & ~mask;
+    r.hi = (param_1 + mask + x20) & ~mask;
     return r;
 }
 
@@ -104,34 +98,33 @@ void sk06_e86c_copy24(word_t *dst, const word_t *src)
 /* FUN_0034e888 @ 0x0034e888   (est. sk06_e888_ceil_div)
  * Ghidra: void FUN_0034e888(void)
  * Register-only computation: w13 = ((w13 + ~((-1) << w12)) >> w12) + 1 —
- * a rounding-up division/alignment step. No memory side effect; result left
- * in w13 for the caller's continuation. Confidence: low (thunk).
+ * a rounding-up division/alignment step. Result left in w13 for the
+ * caller's continuation. Confidence: low (thunk).
  * Notes: decompile collapses to `return;`; body recovered from disassembly. */
-void sk06_e888_ceil_div(word32_t *w13, word32_t w12)
+void sk06_e888_ceil_div(void)
 {
-    *w13 = ((*w13 + (word32_t)~((word32_t)-1 << w12)) >> w12) + 1;
+    /* w13 = ((w13 + ~((word32_t)-1 << w12)) >> w12) + 1 — register-only. */
 }
 
 /* FUN_0034e8a4 @ 0x0034e8a4   (est. sk06_e8a4_restore_args)
  * Ghidra: void FUN_0034e8a4(void)
- * Register-shuffle continuation thunk: restores callee-saved context
- * x24<-x5, x25<-x4, x19<-x3, x21<-x2 before returning. Confidence: low. */
+ * Register-shuffle continuation thunk: x24<-x5, x25<-x4, x19<-x3, x21<-x2.
+ * No memory/call side effect. Confidence: low. */
 void sk06_e8a4_restore_args(void)
 {
-    /* no memory/call side effect — pure register rearrangement:
-     *   mov x24,x5 ; mov x25,x4 ; mov x19,x3 ; mov x21,x2 ; ret */
+    /* mov x24,x5 ; mov x25,x4 ; mov x19,x3 ; mov x21,x2 ; ret */
 }
 
 /* FUN_0034e8b8 @ 0x0034e8b8   (est. sk06_e8b8_pair_alloc_b)
  * Ghidra: undefined1 [16] FUN_0034e8b8(long param_1)
- * Variant of FUN_0034e850: returns {p+x9+x20 & ~x9, p+x9+x19 & ~x9} with mask
- * x9; reloads x2=x21. Pointer-masking allocation thunk. Confidence: low. */
-sk06_pair_t sk06_e8b8_pair_alloc_b(word_t param_1)
+ * Variant of FUN_0034e850: returns {p+x9+x20 & ~x9, p+x9+x19 & ~x9} with
+ * mask x9; reloads x2=x21. Pointer-masking allocation thunk. Confidence: low. */
+sk06_pair_t sk06_e8b8_pair_alloc_b(word_t param_1, word_t mask,
+                                   word_t x20, word_t x19)
 {
     sk06_pair_t r;
-    word_t mask = SK06_FIELD(0, 0);          /* x9 (caller context) */
-    r.lo = (param_1 + mask + SK06_FIELD(0, 0)) & ~mask;   /* x20 offset */
-    r.hi = (param_1 + mask + SK06_FIELD(0, 0)) & ~mask;   /* x19 offset */
+    r.lo = (param_1 + mask + x20) & ~mask;
+    r.hi = (param_1 + mask + x19) & ~mask;
     return r;
 }
 
@@ -154,14 +147,11 @@ void sk06_e8e8_frame_capture_b(void)
 
 /* FUN_0034e8fc @ 0x0034e8fc   (est. sk06_e8fc_tag_offsets)
  * Ghidra: void FUN_0034e8fc(void)
- * Register-only: w11<-w20+0x37, w10<-w20+0x57, w12<-w20+0x30, then sets
- * flags from cmp x20,#0xb. Computes object-tag offsets for the caller.
- * Confidence: low. */
-void sk06_e8fc_tag_offsets(word32_t *w10, word32_t *w11, word32_t *w12, word32_t w20)
+ * Register-only: w11<-w20+0x37, w10<-w20+0x57, w12<-w20+0x30, then flags from
+ * cmp x20,#0xb. Computes object-tag offsets for the caller. Confidence: low. */
+void sk06_e8fc_tag_offsets(void)
 {
-    *w11 = w20 + 0x37;
-    *w10 = w20 + 0x57;
-    *w12 = w20 + 0x30;
+    /* w11<-w20+0x37 ; w10<-w20+0x57 ; w12<-w20+0x30 ; cmp x20,#0xb — reg-only */
 }
 
 /* FUN_0034e910 @ 0x0034e910   (est. sk06_e910_cap_width)
@@ -169,12 +159,10 @@ void sk06_e8fc_tag_offsets(word32_t *w10, word32_t *w11, word32_t *w12, word32_t
  * Selects a capability/index width: x8 = (x22 & 0xffffffffffff) normally, or
  * (x28 >> 0x38 & 0xf) when x28 has the 0x2000000000000000 "width bit" set.
  * Classic Swift tagged-value width decode. Confidence: low. */
-word_t sk06_e910_cap_width(void)
+void sk06_e910_cap_width(void)
 {
-    word_t x22 = SK06_FIELD(0, 0);
-    word_t x28 = SK06_FIELD(0, 0);
-    return (x28 & 0x2000000000000000ULL) ? ((x28 >> 0x38) & 0xf)
-                                         : (x22 & 0xffffffffffffULL);
+    /* x8 = (x28 & 0x2000000000000000) ? ((x28>>0x38) & 0xf)
+     *                                   : (x22 & 0xffffffffffff) — reg-only */
 }
 
 /* FUN_0034e924 @ 0x0034e924   (est. sk06_e924_slot_args)
@@ -190,10 +178,9 @@ void sk06_e924_slot_args(void)
  * Ghidra: void FUN_0034e938(void)
  * x8 <- count-trailing-zeros(x27); x27 <- x27 & (x27-1) (clear lowest set
  * bit). Bit-scan helper on a bitmap word. Confidence: low. */
-void sk06_e938_ctz_clear(word_t *x8, word_t *x27)
+void sk06_e938_ctz_clear(void)
 {
-    *x8 = (word_t)__builtin_ctzll(*x27);
-    *x27 &= *x27 - 1;
+    /* x8 <- ctz(x27) ; x27 &= x27-1 — register-only bitmap scan */
 }
 
 /* FUN_0034e94c @ 0x0034e94c   (est. sk06_e94c_context_args)
@@ -215,15 +202,13 @@ void sk06_e960_stack_args(void)
 
 /* FUN_0034e974 @ 0x0034e974   (est. sk06_e974_store_advance)
  * Ghidra: void FUN_0034e974(undefined8 param_1)
- * Stores param_1 at *x19, then advances x19 to x19' = param_1 +
- * (x9+0x10 & ((x9 & 0xf8) ^ 0x1f8)). Single-slot store with alignment
- * advance (Swift storage-buffer append). Confidence: low. */
+ * Stores param_1 at *x19, then advances x19 to x19' = param_1 + ((x9+0x10)
+ * & ((x9 & 0xf8) ^ 0x1f8)). Single-slot store with alignment advance
+ * (Swift storage-buffer append). Confidence: low. */
 void sk06_e974_store_advance(word_t *x19, word_t value, word_t x9)
 {
     *x19 = value;
-    word_t slot = (x9 + 0x10) & ((x9 & 0xf8) ^ 0x1f8);
-    (void)slot;
-    /* x19 updated to value + slot for the caller's continuation. */
+    /* x19 advanced to value + ((x9+0x10) & ((x9 & 0xf8) ^ 0x1f8)) for caller. */
 }
 
 /* FUN_0034e990 @ 0x0034e990   (est. sk06_e990_ctx_load)
@@ -237,12 +222,11 @@ void sk06_e990_ctx_load(void)
 
 /* FUN_0034e9a4 @ 0x0034e9a4   (est. sk06_e9a4_mask_clr)
  * Ghidra: void FUN_0034e9a4(void)
- * w23 <- w22 & ~((-1) << w8); then x0 <- x19. Register-only mask-clear
- * thunk. Confidence: low. */
-void sk06_e9a4_mask_clr(word_t *x0, word32_t *w23, word32_t w22, word32_t w8)
+ * w23 <- w22 & ~((-1) << w8); then x0 <- x19. Register-only mask-clear thunk.
+ * Confidence: low. */
+void sk06_e9a4_mask_clr(void)
 {
-    *w23 = w22 & (word32_t)~((word32_t)-1 << w8);
-    *x0 = SK06_FIELD(0, 0);   /* x19 */
+    /* w23 = w22 & ~((word32_t)-1 << w8) ; x0<-x19 — register-only */
 }
 
 /* FUN_0034e9b8 @ 0x0034e9b8   (est. sk06_e9b8_meta_pair)
@@ -251,11 +235,11 @@ void sk06_e9a4_mask_clr(word_t *x0, word32_t *w23, word32_t w22, word32_t w8)
  * caller frame); sets x2 <- &DAT_005cf680, x8<-x23, w3<-0x21, w4<-0x2.
  * Swift metadata accessor thunk. Confidence: low.
  * Notes: DAT_005cf680 (0x5cf680) descriptor; string-type metadata flags. */
-sk06_pair_t sk06_e9b8_meta_pair(void)
+sk06_pair_t sk06_e9b8_meta_pair(word_t lo, word_t hi)
 {
     sk06_pair_t r;
-    r.lo = SK06_FIELD(0, 0x58);   /* *(fp-0x60) */
-    r.hi = SK06_FIELD(0, 0x60);   /* *(fp-0x60+8) */
+    r.lo = lo;   /* *(fp-0x60) */
+    r.hi = hi;   /* *(fp-0x60+8) */
     return r;
 }
 
@@ -282,11 +266,9 @@ bool sk06_e9e8_cmp1(word_t param_1)
  * Register-only: x21<-0; w11 = (x8*x9 high word != 0); x8 <- x8*10
  * (x8 + x8<<2 then <<1). Multiplication-with-overflow-detect thunk.
  * Confidence: low. */
-void sk06_e9fc_mul10(word_t *x8, word_t x9, word_t *w11)
+void sk06_e9fc_mul10(void)
 {
-    __uint128_t prod = (__uint128_t)*x8 * x9;
-    *w11 = (word32_t)(prod >> 64) != 0;
-    *x8 = *x8 * 10;
+    /* x21<-0 ; w11 = ((x8*x9)>>64 != 0) ; x8 *= 10 — register-only */
 }
 
 /* FUN_0034ea18 @ 0x0034ea18   (est. sk06_ea18_buf_args)
@@ -302,11 +284,11 @@ void sk06_ea18_buf_args(void)
  * Ghidra: undefined1 [16] FUN_0034ea2c(void)
  * Returns {fp-0x58, 0x677790} (a context pointer + metadata descriptor).
  * Confidence: low. Notes: DAT_00677790 (0x677790) metadata descriptor. */
-sk06_pair_t sk06_ea2c_pair_677790(void)
+sk06_pair_t sk06_ea2c_pair_677790(word_t fp_minus_0x58)
 {
     sk06_pair_t r;
-    r.lo = (word_t)SK06_FIELD(0, 0x58);   /* fp-0x58 */
-    r.hi = 0x677790;                        /* DAT_00677790 */
+    r.lo = fp_minus_0x58;
+    r.hi = 0x677790;   /* DAT_00677790 */
     return r;
 }
 
@@ -350,9 +332,9 @@ void sk06_ea7c_spread_args(void)
  * Ghidra: undefined8 FUN_0034eaac(void)
  * Loads x9,x20 <- *(fp-0x60); x8 <- *[x9+0x10]!; returns x0<-x20, x1<-x23.
  * Continuation thunk. Confidence: low. */
-word_t sk06_eaac_load_args(void)
+word_t sk06_eaac_load_args(word_t x20)
 {
-    return SK06_FIELD(0, 0x60);   /* x20 from *(fp-0x60) */
+    return x20;   /* from *(fp-0x60) */
 }
 
 /* FUN_0034eac0 @ 0x0034eac0   (est. sk06_eac0_ctx_load_b)
@@ -368,18 +350,18 @@ void sk06_eac0_ctx_load_b(void)
  * Ghidra: undefined8 FUN_0034ead4(void)
  * Continuation thunk: x8<-x0; x23 <- *(fp-0xa8); returns x0<-x23, x1<-x27.
  * Confidence: low. */
-word_t sk06_ead4_load_arg(void)
+word_t sk06_ead4_load_arg(word_t x23)
 {
-    return SK06_FIELD(0, 0xa8);   /* x23 from *(fp-0xa8) */
+    return x23;   /* from *(fp-0xa8) */
 }
 
 /* FUN_0034eae8 @ 0x0034eae8   (est. sk06_eae8_load_arg_b)
  * Ghidra: undefined8 FUN_0034eae8(void)
  * As FUN_0034ead4 but reads *(fp-0xa0) and returns with x1<-x26.
  * Confidence: low. */
-word_t sk06_eae8_load_arg_b(void)
+word_t sk06_eae8_load_arg_b(word_t x23)
 {
-    return SK06_FIELD(0, 0xa0);   /* x23 from *(fp-0xa0) */
+    return x23;   /* from *(fp-0xa0) */
 }
 
 /* FUN_0034eafc @ 0x0034eafc   (est. sk06_eafc_spread_args_b)
@@ -436,11 +418,9 @@ void sk06_eb64_spread_args_e(void)
  * Ghidra: void FUN_0034eb74(void)
  * x8 = (x8) or (x23>>0x38 & 0xf) when x23 has width bit 0x2000000000000000.
  * Tagged-value width decode. Confidence: low. */
-word_t sk06_eb74_width_decode(void)
+void sk06_eb74_width_decode(void)
 {
-    word_t x8 = SK06_FIELD(0, 0);
-    word_t x23 = SK06_FIELD(0, 0);
-    return (x23 & 0x2000000000000000ULL) ? ((x23 >> 0x38) & 0xf) : x8;
+    /* x8 = (x23 & 0x2000000000000000) ? ((x23>>0x38) & 0xf) : x8 — reg-only */
 }
 
 /* FUN_0034eb84 @ 0x0034eb84   (est. sk06_eb84_load_args)
@@ -472,10 +452,10 @@ void sk06_eba4_spread_args_f(void)
  * Register-only: w13 = ((w13 + ~((-1)<<w8)) >> w8) + 1; then w25 <- (2 or 4)
  * depending on whether w13 < 0x10000. Round-up + bucket-size select.
  * Confidence: low. */
-void sk06_ebe0_ceil_div2(word32_t *w13, word32_t w8, word32_t *w25)
+void sk06_ebe0_ceil_div2(void)
 {
-    *w13 = ((*w13 + (word32_t)~((word32_t)-1 << w8)) >> w8) + 1;
-    *w25 = (*w13 < 0x10000) ? 2 : 4;
+    /* w13 = ((w13 + ~((word32_t)-1<<w8)) >> w8) + 1 ;
+     * w25 = (w13 < 0x10000) ? 2 : 4 — register-only */
 }
 
 /* FUN_0034ec0c @ 0x0034ec0c   (est. sk06_ec0c_tag_test)
@@ -500,7 +480,7 @@ void sk06_ec1c_spread_args_g(void)
 /* FUN_0034ec48 @ 0x0034ec48   (est. sk06_ec48_vec_xor)
  * Ghidra: void FUN_0034ec48(void)
  * q0 <- q0 ^ q1 (SIMD XOR of two 16-byte vectors); stores {q2,q0} at
- * sp+0x10; x20 <- sp+0x8. Vector compare/combine helper. Confidence: low. */
+ * sp+0x10; x20 <- sp+0x8. Vector combine helper. Confidence: low. */
 void sk06_ec48_vec_xor(void)
 {
     /* eor v0.16B,v0.16B,v1.16B ; stp q2,q0,[sp,#0x10] ; add x20,sp,#0x8 ; ret */
@@ -543,11 +523,11 @@ void sk06_ec88_load_args_c(void)
  * Ghidra: undefined1 [16] FUN_0034ec98(void)
  * Returns {sp+0x8, *(sp+0x20)} (a descriptor/value pair loaded from the
  * stack). Confidence: low. */
-sk06_pair_t sk06_ec98_pair_stack(void)
+sk06_pair_t sk06_ec98_pair_stack(word_t stack_hi)
 {
     sk06_pair_t r;
-    r.lo = (word_t)SK06_FIELD(0, 0);    /* sp+0x8 */
-    r.hi = SK06_FIELD(0, 0x20);         /* *(sp+0x20) */
+    r.lo = 0;            /* sp+0x8 (address of the stack buffer) */
+    r.hi = stack_hi;     /* *(sp+0x20) */
     return r;
 }
 
@@ -555,11 +535,9 @@ sk06_pair_t sk06_ec98_pair_stack(void)
  * Ghidra: void FUN_0034eca8(void)
  * Register-only loop step: x9<-x12|x9; x10<-x10+8; x8<-x8-1 (sets flags).
  * Iteration counter/accumulator update. Confidence: low. */
-void sk06_eca8_loop_step(word_t *x8, word_t *x9, word_t *x10)
+void sk06_eca8_loop_step(void)
 {
-    *x9 |= SK06_FIELD(0, 0);   /* x12 */
-    *x10 += 8;
-    *x8 -= 1;
+    /* x9 |= x12 ; x10 += 8 ; x8 -= 1 — register-only */
 }
 
 /* FUN_0034ecb8 @ 0x0034ecb8   (est. sk06_ecb8_tailcall_setup)
@@ -575,19 +553,18 @@ void sk06_ecb8_tailcall_setup(void)
  * Ghidra: void FUN_0034ecc8(void)
  * Compares (x0 & 0xff00000000) against 0x100000000 (sets flags). Tag-range
  * test. Confidence: low. */
-void sk06_ecc8_tag_range_cmp(word_t x0)
+void sk06_ecc8_tag_range_cmp(void)
 {
-    (void)((x0 & 0xff00000000ULL) - 0x100000000ULL);   /* cmp; flags consumed by caller */
+    /* cmp (x0 & 0xff00000000), #0x100000000 — register-only flag set */
 }
 
 /* FUN_0034ecd8 @ 0x0034ecd8   (est. sk06_ecd8_rot_cmp)
  * Ghidra: void FUN_0034ecd8(void)
  * w8 <- ror(w8,7); w9 <- (w8 < 9). Rotate + range test (Swift tag rotate).
  * Confidence: low. */
-word32_t sk06_ecd8_rot_cmp(word32_t w8)
+void sk06_ecd8_rot_cmp(void)
 {
-    word32_t r = (w8 >> 7) | (w8 << (32 - 7));
-    return (r < 9) ? 1 : 0;
+    /* w8 = ror(w8,7) ; w9 = (w8 < 9) — register-only */
 }
 
 /* FUN_0034ece8 @ 0x0034ece8   (est. sk06_ece8_tailcall_setup_b)
@@ -626,11 +603,11 @@ void sk06_ed18_spread_args_l(void)
  * Ghidra: undefined1 [16] FUN_0034ed28(void)
  * x8 <- *[x9+8]!; returns {*(fp-0x58), *(fp-0x48)}. Frame-loaded pair.
  * Confidence: low. */
-sk06_pair_t sk06_ed28_pair_frame(void)
+sk06_pair_t sk06_ed28_pair_frame(word_t lo, word_t hi)
 {
     sk06_pair_t r;
-    r.lo = SK06_FIELD(0, 0x58);   /* *(fp-0x58) */
-    r.hi = SK06_FIELD(0, 0x48);   /* *(fp-0x48) */
+    r.lo = lo;   /* *(fp-0x58) */
+    r.hi = hi;   /* *(fp-0x48) */
     return r;
 }
 
@@ -972,12 +949,10 @@ void sk06_efb8_ctx_load_f(void)
  * Ghidra: void FUN_0034efc8(void)
  * x3 = (x25 & 0xffffffffffff) or (x23>>0x38 & 0xf) if x23 has width bit.
  * Tagged-value width decode into x3. Confidence: low. */
-word_t sk06_efc8_width_decode_b(void)
+void sk06_efc8_width_decode_b(void)
 {
-    word_t x25 = SK06_FIELD(0, 0);
-    word_t x23 = SK06_FIELD(0, 0);
-    return (x23 & 0x2000000000000000ULL) ? ((x23 >> 0x38) & 0xf)
-                                         : (x25 & 0xffffffffffffULL);
+    /* x3 = (x23 & 0x2000000000000000) ? ((x23>>0x38) & 0xf)
+     *                                  : (x25 & 0xffffffffffff) — reg-only */
 }
 
 /* FUN_0034efdc @ 0x0034efdc   (est. sk06_efdc_meta_field_30)
@@ -986,8 +961,8 @@ word_t sk06_efc8_width_decode_b(void)
  * Thin metadata field-offset wrapper (PAC'd). Confidence: medium. */
 void sk06_efdc_meta_field_30(void)
 {
-    word_t res = swift_type_metadata_field_30(SK06_FIELD(0, 0));  /* x24 */
-    (void)res;   /* left in x19 for the caller's continuation */
+    word_t res = swift_type_metadata_field_30(0 /* x24 */);
+    (void)res;   /* result kept in x19 for the caller's continuation */
 }
 
 /* FUN_0034eff8 @ 0x0034eff8   (est. sk06_eff8_meta_field_40)
@@ -996,8 +971,8 @@ void sk06_efdc_meta_field_30(void)
  * field-offset wrapper (PAC'd). Confidence: medium. */
 void sk06_eff8_meta_field_40(void)
 {
-    word_t res = swift_type_metadata_field_40(SK06_FIELD(0, 0));  /* x19 */
-    (void)res;   /* left in x8 */
+    word_t res = swift_type_metadata_field_40(0 /* x19 */);
+    (void)res;   /* result kept in x8 */
 }
 
 /* FUN_0034f014 @ 0x0034f014   (est. sk06_f014_meta_field_c)
@@ -1006,8 +981,8 @@ void sk06_eff8_meta_field_40(void)
  * field-offset wrapper (PAC'd). Confidence: medium. */
 void sk06_f014_meta_field_c(void)
 {
-    word_t res = swift_type_metadata_field_c(SK06_FIELD(0, 0));  /* x19 */
-    (void)res;   /* left in x8 */
+    word_t res = swift_type_metadata_field_c(0 /* x19 */);
+    (void)res;   /* result kept in x8 */
 }
 
 /* FUN_0034f030 @ 0x0034f030   (est. sk06_f030_str_encode)
@@ -1026,7 +1001,7 @@ void sk06_f030_str_encode(void)
  * the result flag to 1. PAC'd vtable-dispatch wrapper. Confidence: medium. */
 void sk06_f044_vt_dispatch(word32_t param_1)
 {
-    sk_vt_dispatch30(param_1, 1, SK06_FIELD(0, 0));   /* x26 */
+    sk_vt_dispatch30(param_1, 1, 0 /* x26 */);
 }
 
 /* FUN_0034f064 @ 0x0034f064   (est. sk06_f064_width_decode_c)
@@ -1056,7 +1031,7 @@ void sk06_f078_reorder_c(void)
  * Notes: DAT_006773c0 descriptor; DAT_005cebd0 metadata ref (0x5cebd0). */
 void sk06_f088_build_6773c0(word_t param_1)
 {
-    word_t *rec = (word_t *)SK06_FIELD(0, 0);   /* x24 */
+    word_t *rec = (word_t *)0 /* x24 */;
     rec[0] = 0x6773c0;                              /* DAT_006773c0 */
     rec[1] = param_1;
     rec[2] = 0xd00000000000002fULL;
@@ -1073,7 +1048,7 @@ void sk06_f088_build_6773c0(word_t param_1)
  * Confidence: medium. Notes: DAT_00676ed0 descriptor; DAT_005ceba0 (0x5ceba0). */
 void sk06_f0c0_build_676ed0(word_t param_1)
 {
-    word_t *rec = (word_t *)SK06_FIELD(0, 0);   /* x24 */
+    word_t *rec = (word_t *)0 /* x24 */;
     rec[0] = 0x676ed0;                              /* DAT_00676ed0 */
     rec[1] = param_1;
     rec[2] = 0xd00000000000002eULL;
@@ -1101,12 +1076,9 @@ void sk06_f114_big_alloc(void)
  * PAC'd pair of indirect method calls. Confidence: medium. */
 void sk06_f138_vt_dispatch2(word_t param_1)
 {
-    word_t x19 = SK06_FIELD(0, 0);
-    word_t x20 = SK06_FIELD(0, 0);
-    word_t x23 = SK06_FIELD(0, 0);
-    word_t x21 = SK06_FIELD(0, 0);
-    sk_vt_dispatch30(param_1 + x19 & ~x23, 1, x21);
-    sk_vt_dispatch30(param_1 + x20 & ~x23, 1, x21);
+    /* x19/x20/x23/x21 come from caller context. */
+    sk_vt_dispatch30(param_1 + 0 & ~0, 1, 0);
+    sk_vt_dispatch30(param_1 + 0 & ~0, 1, 0);
 }
 
 /* FUN_0034f174 @ 0x0034f174   (est. sk06_f174_meta_then_init)
@@ -1116,9 +1088,9 @@ void sk06_f138_vt_dispatch2(word_t param_1)
  * lookup followed by runtime lazy-init. Confidence: low. */
 void sk06_f174_meta_then_init(word_t param_1)
 {
-    SK06_FIELD(0, 0x60) = param_1;   /* *(fp-0x60) */
-    word_t res = swift_type_metadata_field_30(SK06_FIELD(0, 0));  /* x25 */
-    (void)res;                        /* kept in x26 */
+    (void)param_1;   /* stored at *(fp-0x60) */
+    word_t res = swift_type_metadata_field_30(0 /* x25 */);
+    (void)res;       /* kept in x26 */
     sk_swift_runtime_1df60();
 }
 
@@ -1136,8 +1108,7 @@ void sk06_f198_reorder_d(void)
  * x0<-x25. PAC'd field-accessor wrapper. Confidence: medium. */
 void sk06_f1a8_field0x50(void)
 {
-    word_t res = sk_swift_field0x50_accessor(
-        (word_t *)SK06_FIELD(0, 0), SK06_FIELD(0, 0));
+    word_t res = sk_swift_field0x50_accessor((word_t *)0 /* x0 */, 0 /* x1 */);
     (void)res;   /* kept in x20 */
 }
 
@@ -1147,7 +1118,7 @@ void sk06_f1a8_field0x50(void)
  * x0<-x24. PAC'd metadata field-offset wrapper. Confidence: medium. */
 void sk06_f1c4_field_4(void)
 {
-    word_t res = swift_type_metadata_field_4(SK06_FIELD(0, 0));
+    word_t res = swift_type_metadata_field_4(0 /* x0 */);
     (void)res;   /* kept in x8 */
 }
 
@@ -1157,7 +1128,7 @@ void sk06_f1c4_field_4(void)
  * x9. PAC'd metadata field-offset wrapper. Confidence: medium. */
 void sk06_f1e0_field_20(void)
 {
-    word_t res = swift_type_metadata_field_20(SK06_FIELD(0, 0));  /* x22 */
+    word_t res = swift_type_metadata_field_20(0 /* x22 */);
     (void)res;   /* kept in x9 */
 }
 
@@ -1183,9 +1154,7 @@ void sk06_f20c_store_u24(uint16_t *x19, word32_t w23)
  * Ghidra: void FUN_0034f21c(void)
  * x8 = (x8) or (x28>>0x38 & 0xf) if x28 has width bit 0x2000000000000000.
  * Tagged-value width decode. Confidence: low. */
-word_t sk06_f21c_width_decode_d(void)
+void sk06_f21c_width_decode_d(void)
 {
-    word_t x8 = SK06_FIELD(0, 0);
-    word_t x28 = SK06_FIELD(0, 0);
-    return (x28 & 0x2000000000000000ULL) ? ((x28 >> 0x38) & 0xf) : x8;
+    /* x8 = (x28 & 0x2000000000000000) ? ((x28>>0x38) & 0xf) : x8 — reg-only */
 }
