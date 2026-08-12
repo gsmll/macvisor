@@ -1134,6 +1134,7 @@ void cL4_tb_ae964(uint64_t src, uint8_t *out) {
 uint64_t cL4_tb_aeae0(uint64_t src, uint8_t *out) {
     uint8_t *p = out + 0x30;
     if (out <= p) {
+        cL4_tb_ae964(src, out);   /* decompile: iVar6 = FUN_004ae964(); if (iVar6 != 0) return; (return unmodeled, helper is void) */
         uint8_t *p2 = out + 0x58;
         if (p <= p2) {
             uint64_t method = 0;

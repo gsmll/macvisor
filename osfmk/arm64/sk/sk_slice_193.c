@@ -2387,7 +2387,7 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         long base = *(long*)__builtin_frame_address(0);
-        if ((rec[8] & 1) == 0) {
+        if ((rec[1] & 1) == 0) {
                 sw128_t h = sw_41e21c(*(word_t*)(base + 0x10), src);
                 if (n == total >> 1) {
                         sw_36b270(src);
@@ -2402,15 +2402,14 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
                 while (true) {
                         char buf[0x50];
                         sw_117cc4((word_t)buf, (word_t)cur, 0x49);
-                        if (buf[0] == '\\0') {
+                        if (buf[0] == '\0') {
                                 word_t g = sw_3a261c(base);
-                                if ((g & 1) == 0) { sw_462710(0); sw_6b3f4(0); base = (long)sw_45636c(0); }
+                                if ((g & 1) == 0) { sw_462710(*(word_t*)(base + 0x10)); sw_6b3f4(0); base = (long)sw_45636c(0); }
                                 word_t cnt = *(word_t*)(base + 0x10);
-                                *(word_t*)(base + 0x10) = cnt + 1;
                                 if (*(word_t*)(base + 0x18) >> 1 <= cnt) { sw_6b42c(0); sw_dbed0(0); base = (long)sw_45636c(0); }
                                 *(word_t*)(base + 0x10) = cnt + 1;
-                                *(word_t*)(base + 0x10) = cnt + 1;
                                 sw_117cc4(base + cnt * 0x50 + 0x20, (word_t)buf, 0x49);
+                                *((long*)rec) = base;
                         }
                         if (rem == 0) break;
                         rem = rem - 1;
@@ -3353,45 +3352,194 @@ void sk_re_diag_inv_scalar(word_t a, word_t b, word_t c, word_t d)
 /* FUN_00430d08 @ 0x00430d08   (est. sk_re_parse_number)
  * Ghidra: void FUN_00430d08(void)
  * Parses a signed/unsigned number with an optional radix prefix: reads the
- * current scalar, chooses base (8/10/16 from the caller's record), decodes
- * the digit run with overflow trapping, and writes the (value, kind) result
- * through the record.  Confidence: low. */
+ * current scalar, chooses the base (8/10/16) from the caller record, decodes
+ * the digit run (decimal string form with +/-/bare accumulation, sign-prefixed
+ * form carrying the radix in x23 bits 56-59, or a strtoul-like helper for
+ * non-decimal radices) with overflow trapping, and writes the 5-word result
+ * record (value, span, x21, x22, kind) through extraout_x8.
+ * Confidence: low (heavy register-forwarding in the digit loops).
+ * Notes: traps 0x431204/0x431208/0x43120c/0x431210; dispatch table 0x6860e8;
+ *   SCARRY8/SBORROW8 overflow checks in the accumulation loops are opaque. */
 sw128_t sk_re_parse_number(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
         sw128_t s = sw_356f9c(0);
+        word_t u12 = *(word_t*)((s.lo & 0xff) * 8 + 0x6860e8);   /* dispatch table */
+        bool bv7 = true;
         sw_68e14(0);
+        word_t u13 = 0;
         sk_re_parse_suffix2();
-        if (0 == 0) {
+        if (0) {   /* extraout_x1 == 0 (opaque gate): degenerate cleanup path */
+                u12 = 0;
                 sw_463f40(0);
-        } else {
-                sw_3562d4(0);
-                uint radix;
-                if ((s.lo & 0xff) == 0) radix = 8;
-                else if (((s.lo >> 0) & 0xff) == 1) radix = 10;
-                else radix = 0x10;
-                word_t value = 0;
-                bool ok = true;
-                word_t span = *(word_t*)(__builtin_frame_address(0) + 0x18) & 0xffffffffffff;
-                if ((*(word_t*)(__builtin_frame_address(0) + 0x20) & 0x2000000000000000) != 0)
-                        span = (*(word_t*)(__builtin_frame_address(0) + 0x20) >> 0x38) & 0xf;
-                /* digit accumulation with overflow checks (faithful summary) */
-                if (span != 0) {
-                        byte d = *(byte*)((*(word_t*)(__builtin_frame_address(0) + 0x20) & 0xfffffffffffffff) + 0x20);
-                        if (d == '+' || d == '-') {
-                                /* sign handling */
-                        } else {
-                                uint ch = d;
-                                if (ch >= 0x30 && ch < 0x30 + radix) value = ch - 0x30;
-                        }
-                }
-                if (ok) {
-                        *(word_t*)(__builtin_frame_address(0) + 0) = value;
-                        *(word_t*)(__builtin_frame_address(0) + 8) = (span) & 0xff;
-                }
+                word_t u15 = 0;   /* extraout_x8_00 (opaque) */
+                goto done;
         }
+        sw_3562d4(0);
+        long radix;
+        if ((s.lo & 0xff) == 0) radix = 8;
+        else {
+                bv7 = ((s.lo >> 0) & 0xff) == 1;
+                radix = 10;
+                if (!bv7) radix = 0x10;
+        }
+        /* span: from unaff_w24:0x40c4 (bits) & 0xffffffffffff, or x23 radix nibble */
+        word_t u11 = 0 & 0xffffffffffff;   /* CONCAT44(0x40c4, unaff_w24) (opaque) */
+        word_t u14 = 0 & 0xf;              /* unaff_x23 >> 0x38 & 0xf (opaque) */
+        word_t u15 = u11;
+        if (0 /* unaff_x23 & 0x2000000000000000 */) u15 = u14;
+        word_t x21 = u12;                  /* unaff_x21 */
+        word_t x22 = u13;                  /* unaff_x22 */
+        sw128_t au21 = {0,0};
+        if (u15 == 0) goto err;
+        if (0 == 0 /* unaff_x23 >> 0x3c & 1 == 0 */) {
+                if (1 /* unaff_x23 >> 0x3d & 1 != 0 */) {
+                        /* sign-prefixed form; radix carried in x23 bits 56-59 */
+                        if (u14 == 0) SW_FATAL(0x431208);
+                        word_t c = 0 & 0xff;   /* unaff_w24 & 0xff (opaque) */
+                        bool u6;
+                        if (c == 0x2b) {        /* '+' */
+                                u6 = u14 != 0;
+                                if (u14 - 1 == 0) { au21 = (sw128_t){0, 1}; goto chk; }
+                                sw_462c7c(u14 - 1);
+                                do {
+                                        sw_46507c(0);
+                                        /* digit/hex accumulation (opaque SCARRY8/SBORROW8) */
+                                        if (1) goto negone;   /* opaque overflow term */
+                                        u6 = 0 != 0;          /* extraout_x8_04 */
+                                } while (0 != 1);             /* extraout_x8_04 != 1 */
+                        } else {
+                                u6 = 0x2c < c;
+                                if (c == 0x2d) {        /* '-' */
+                                        u6 = u14 != 0;
+                                        if (u14 - 1 == 0) { au21 = (sw128_t){0, 1}; goto chk; }
+                                        sw_462c7c(u14 - 1);
+                                        do {
+                                                sw_46507c(0);
+                                                if (1) goto negone;   /* opaque overflow term */
+                                                u6 = 0 != 0;
+                                        } while (0 != 1);
+                                } else {
+                                        sw_462c7c(0);
+                                        do {
+                                                sw_46507c(0);
+                                                if (1) goto negone;   /* opaque overflow term */
+                                                u6 = 0 != 0;
+                                        } while (0 != 1);
+                                }
+                        }
+                        au21.lo = u15; au21.hi = 0;
+                        goto chk;
+                }
+                /* decimal string form: (ptr=lo, len=hi) from aux helpers */
+                sw128_t au22;
+                if (0 /* unaff_000040c4 >> 0x1c & 1 == 0 */) {
+                        sw_350518(0);
+                        au22 = sw_2a9ba8(0);
+                } else {
+                        au22.hi = u11;
+                        au22.lo = (0 & 0xfffffffffffffff) + 0x20;   /* (x23 & mask)+0x20 */
+                }
+                long len = au22.hi;
+                byte *p = (byte*)au22.lo;
+                if (len < 1) SW_FATAL(0x431204);
+                if (*p == '+') {
+                        if ((len != 1) && (p == (byte*)0x0)) SW_FATAL(0x431210);
+                        if (len != 1) {
+                                long r = sw_462c7c(0);
+                                if (r == 0) goto err2;
+                                do {
+                                        sw_46507c(0);
+                                        if (1) goto err;   /* opaque overflow term */
+                                } while (0 != 1);
+                                goto commit2;
+                        }
+                        goto err;
+                }
+                if (*p == '-') {
+                        if ((len != 1) && (p == (byte*)0x0)) SW_FATAL(0x43120c);
+                        if (len == 1) goto err;
+                        long r = sw_462c7c(0);
+                        if (r == 0) goto err2;
+                        do {
+                                sw_46507c(0);
+                                if (1) goto err;   /* opaque overflow term */
+                        } while (0 != 1);
+                        goto commit2;
+                }
+                {
+                        /* bare digit accumulation (radix lVar9, opaque register flow) */
+                        long acc = 0;
+                        while (p != (byte*)0x0) {
+                                byte b = *p;
+                                long hi = 0, hi0 = 0;
+                                /* bVar3 digit class: -0x30/-0x37/-0x57 offsets */
+                                char off;
+                                if (b >= 0x30 && b < (radix == 10 ? 0x3a : radix + 0x37))
+                                        off = -0x30;
+                                else if (b >= 0x41 && b < radix + 0x37) off = -0x37;
+                                else if (b >= 0x61 && b < radix + 0x57) off = -0x57;
+                                else goto err;
+                                acc = acc * radix + (long)(b + off);
+                                len = len - 1;
+                                p = p + 1;
+                                if (len == 0) break;
+                        }
+                        u15 = (word_t)acc;
+                        goto commit2;
+                }
+        } else {
+                /* non-decimal radix via the strtoul-like helper 0xb077c */
+                sw_36b270(0);
+                au21 = sw_350518(0);
+                sw128_t r2 = sw_350518(0);
+                au21 = (sw128_t){ sw_0b077c(r2.lo, r2.hi, radix), 0 };
+                sw_3a25d4(0);
+chk:
+                if ((au21.hi & 0xff) == 1) goto err;
+        }
+        u12 = au21.lo;
+        sw_3a25d4(0);
+        bv7 = false;
+        u15 = au21.hi & 0xff;
+        goto done;
+commit2:
+        au21.lo = u15; au21.hi = 0;
+        u12 = au21.lo;
+        sw_3a25d4(0);
+        bv7 = false;
+        u15 = au21.hi & 0xff;
+        goto done;
+negone:
+        au21 = (sw128_t){0, 1};   /* ZEXT816(1) << 0x40 */
+        goto chk;
+err2:
+        au21 = (sw128_t){0, 0};   /* ZEXT816(0) */
+        u12 = au21.lo;
+        sw_3a25d4(0);
+        bv7 = false;
+        u15 = au21.hi & 0xff;
+        goto done;
+err:
+        sw_464ebc(0);
+        sw_46633c(0);
+        sw_3511d8(0);
+        sk_re_diag_rec_e();
+        sk_re_diag_rec(0);
+        sw_461430(0);
+        sw_3a25d4(0);
+        u12 = 0;
+        bv7 = false;
+        u15 = 1;
+done:
+        /* output record write (extraout_x8): value, span, x21, x22, kind */
+        ((word_t*)rec)[0] = u12;
+        ((word_t*)rec)[1] = u15;
+        ((word_t*)rec)[2] = x21;
+        ((word_t*)rec)[3] = x22;
+        ((byte*)rec)[0x20] = (byte)bv7;
         sw_356f80(s.hi);
-        return (sw128_t){s.lo, s.hi};
+        return (sw128_t){u12, u15};
 }
 
 
@@ -5280,7 +5428,7 @@ void sk_re_parse_concat(void)
                 sw_15e4f8(0);
                 sw128_t r = sw_466690(0);
                 if ((a & 1) == 0) {
-                        sw_84180(r.lo, r.hi, b);
+                        sw_84180(r.lo, r.hi, 0);   /* uVar4 reset to 0 before LAB_00439414 */
                         sw_84234(0);
                         return;
                 }

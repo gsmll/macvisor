@@ -13154,3 +13154,10 @@ static void sk_stackshot_run_17fdd8(uint64_t *out, uint64_t *rec, uint32_t *st, 
     (void)l3;
     (void)0; /* sk_stackshot_run @ 0x17fdd8: runStackshot / runStackshotRedacted top-level: dispatches on the selector id (177a34) among five collection modes (fptr resolves 17fd24/ 17fd54/17fcf4/17fd84/17fcc4), each emitting a different serialized record shape and building the 7-word */
 }
+
+/* FUN_00167c54 @ 0x00167c54  (est. cl4_flag_0)
+ * Returns the address of the fixed flag string/data constant at DAT_004e4a03
+ * in the binary's data segment. Used by sk_region_caps_20 as the per-state
+ * notifier selector (declared extern there as cl4_flag_0).
+ * Confidence: high (trivial). */
+unsigned char *cl4_flag_0(void) { return (unsigned char *)0x4e4a03; }   /* &DAT_004e4a03 */

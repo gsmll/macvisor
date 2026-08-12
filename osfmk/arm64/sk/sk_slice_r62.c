@@ -751,33 +751,44 @@ static void sk_mr_hook_cb_0040548c(sword_t p1, word_t p2)
     word_t u1 = *(word_t *)((word_t)0 + 0x10);
     word_t *pu2 = *(word_t **)((word_t)0 + 0x18);
     sword_t *pl8 = *(sword_t **)((word_t)0 + 0x20);
-    word_t a, b;
+    word_t a;             /* local_88: FUN_003f5ee8 output buffer */
+    sword_t lstack80;     /* lStack_80 / local_58: span cursor */
+    sword_t ltail70;      /* local_70: tail length */
+    word_t fl68;          /* local_68: terminal flag */
+    sword_t l7;
+    word_t u4, u5, u6;
     sk_x_003f5ee8((byte *)&a, p1, p2, u1);
+    lstack80 = (sword_t)a;   /* register fragment: lStack_80 carried from frame */
+    ltail70  = lstack80;     /* local_70 unresolved; same opaque source */
+    fl68     = a;            /* local_68 unresolved terminal flag */
     sk_x_00350500();
-    word_t u4 = sk_x_0031de7c();
-    word_t u5 = sk_x_00408524();
-    word_t u6 = sk_x_00407324();
+    u4 = sk_x_0031de7c();
+    u5 = sk_x_00408524();
+    u6 = sk_x_00407324();
     sk_x_00376820(u6, u4);
     sk_x_0040668c();
-    sk_x_00270d80((byte *)&a, (sword_t *)&a, u4, u5);
+    sk_x_00270d80((byte *)&a, (sword_t *)&lstack80, u4, u5);
     sk_x_003f406c(0, 0, 0, 0, u1);
     sk_x_00351790();
     sk_x_00350618();
     sk_x_003f7d48();
-    sword_t l7 = *pl8 + (sword_t)a;
+    l7 = *pl8 + lstack80;
+    if ((word_t)*pl8 > (word_t)-1 - (word_t)lstack80) CL4_SW_BP(0x4055d4);  /* SCARRY8: carry out; does not return */
     *pl8 = l7;
-    if (*(byte *)((word_t)0 + 0x10) != 1) {
-        if ((sword_t)a + (sword_t)a < (sword_t)a) {
+    if (fl68 != 1) {
+        if ((word_t)lstack80 > (word_t)-1 - (word_t)ltail70) CL4_SW_BP(0x4055d8);  /* SCARRY8; does not return */
+        if (lstack80 + ltail70 < lstack80) {
             sk_x_00347da8();
             sk_x_003504b8();
             sk_x_001afe4c();   /* does not return */
         }
-        sk_x_0028e8fc(a, a + a, *pu2, pu2[1], u1);
+        sk_x_0028e8fc(lstack80, lstack80 + ltail70, *pu2, pu2[1], u1);
         sk_x_003f406c();
         sk_x_00351790();
         sk_x_000a6e14();
         sk_x_003f7d48();
-        l7 = *pl8 + (sword_t)a;
+        l7 = *pl8 + ltail70;
+        if ((word_t)*pl8 > (word_t)-1 - (word_t)ltail70) CL4_SW_BP(0x4055dc);  /* SCARRY8; does not return */
         *pl8 = l7;
     }
     if (l7 != *(sword_t *)(p1 + 8)) {

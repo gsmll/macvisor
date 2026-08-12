@@ -4246,23 +4246,49 @@ long sk_h_48d694(void)
     word_t k = sk_h_00458af8((word_t)&(word_t[20]){0}).lo;
     long out = 0x2365756c6176233c;   /* "<#value<#..." */
     switch (k & 0xffffffff) {
-    case 3:
-        sk_h_00458b14((word_t)&(word_t[20]){0});
+    case 3: {
+        long *p3 = (long *)sk_h_00458b14((word_t)&(word_t[20]){0}).lo;
+        long v100 = *p3, f8 = p3[1], f0 = p3[2];
+        unsigned long e8 = (unsigned long)p3[3];
+        unsigned long e1 = *(unsigned long *)((long)p3 + 0x1f);
         sk_r29_pair_t d = sk_h_48a244();
         out = d.lo;
+        if (d.hi == 0) {
+            long st140 = 0, st138 = 0, st130 = 0;      /* opaque caller-stack slots */
+            unsigned long st128 = 0, st121 = 0;
+            sk_h_000b430c();
+            sk_h_002a4ab4(0x15);
+            out = st140;                     /* local_110 = local_140 */
+            word_t v = sk_h_002acbb8(0xd000000000000013, 0x80000000005e2cc0);
+            st138 = f8; st140 = v100; st128 = e8; st130 = f0; st121 = e1;
+            sk_h_000f4a9c(v, 0 /* auVar6._8_8_ (opaque hi) */, 0x683788);
+            sk_h_00205844((word_t)&st140, (word_t)&out);
+        }
         break;
-    case 4:
-        sk_h_00458b14((word_t)&(word_t[20]){0});
+    }
+    case 4: {
+        unsigned char *p4 = (unsigned char *)sk_h_00458b14((word_t)&(word_t[20]){0}).lo;
         out = 0x5c;
+        sk_h_00414644(*p4);
+        sk_h_002acbb8();
+        sk_h_003a25d4(0);
         break;
-    case 5: case 6: case 7:
-        sk_h_00458b14((word_t)&(word_t[20]){0});
-        out = 0x635c;
+    }
+    case 5: case 6: case 7: {
+        word_t *el = (word_t *)sk_h_00458b14((word_t)&(word_t[20]){0}).lo;
+        if (k == 5) out = 0x635c;
+        else if (k == 6) out = 0x2d4d5c;
+        else out = 0x2d435c2d4d5c;
+        sk_h_002acbb8(el[0], el[1]);
         break;
+    }
     case 8:
         sk_h_00458b14((word_t)&(word_t[20]){0});
         sk_h_004ac8d4();
-        out = 0;
+        out = 0;   /* local_100 = extraout_x9 (opaque) */
+        sk_h_002acbb8(0);   /* extraout_x8_01 (opaque) */
+        word_t a8 = sk_h_00463878();
+        sk_h_002acbb8(a8, 0 /* auVar6._8_8_ (opaque hi) */);
         break;
     case 9: sk_h_00458b14((word_t)&(word_t[20]){0}); sk_h_004ab930(0); out = -8; break;
     case 10: sk_h_00458b14((word_t)&(word_t[20]){0}); sk_h_004ab930(0); out = -0xc; break;
@@ -4272,10 +4298,13 @@ long sk_h_48d694(void)
     case 15: case 16:
         sk_h_00350d94(0x471, k, 0xe90000000000003e);
         sk_h_004abe24(); sk_h_0006f768(); sk_h_001afa84();
+    case 17:
+        break;   /* empty in decompile (case 0x11) */
     default:
         sk_h_00458b14((word_t)&(word_t[20]){0});
         sk_r29_pair_t e = sk_h_00417b60();
         out = e.lo;
+        if (e.hi == 0) SK_TRAP(0x48d918);   /* SoftwareBreakpoint(1,0x48d918) */
         break;
     }
     return out;
@@ -4507,8 +4536,14 @@ void sk_h_48ebd8(void)
         sk_h_000863bc(); sk_h_004ab810(); sk_h_00355754((word_t)&(word_t){c});
         sk_h_001ebfb0();
         sk_h_004abad8(0x755c);   /* "\\u" */
+        word_t plo = 0, phi = 0;   /* {local_e0,uStack_d8} from extraout_x8/x9 (opaque) */
         sk_h_002acbb8(); sk_h_003a25d4(0);
         sk_h_00463878(); sk_h_002acbb8();
+        word_t u5 = plo, u1 = phi;   /* capture pre-overwrite pair */
+        plo = 0x22; phi = 0xe100000000000000;
+        sk_h_002acbb8(u5, u1);
+        sk_h_004657ac(); sk_h_002acbb8();
+        sk_h_003a25d4(u1);
         break;
     }
     case 2: sk_h_0049e2f0((word_t)&(word_t[22]){0}); sk_h_004ab2d0(0); break;  /* TODO: character classes */
@@ -4524,12 +4559,16 @@ void sk_h_48ebd8(void)
         }
         break;
     }
-    case 7:
-        sk_h_0049e2f0((word_t)&(word_t[22]){0});
-        sk_h_00117cc4((word_t)&(word_t){0}, 0, 0xb0);
+    case 7: {
+        word_t uv5 = sk_h_0049e2f0((word_t)&(word_t[22]){0});
+        sk_h_00117cc4((word_t)&(word_t){0}, uv5, 0xb0);
         sk_h_48d694();
         sk_h_00351e08();
         break;
+    }
+    case 8: break;   /* empty in decompile */
+    case 9: break;   /* empty in decompile */
+    case 10: break;  /* empty in decompile */
     }
     sk_h_0007c1c4();
 }

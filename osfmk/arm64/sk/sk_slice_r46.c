@@ -2374,7 +2374,8 @@ void sk_r46_metadata_strings(long base, uint64_t *count, uint64_t *strbase, long
     if (n != 0) {
         srec = *(long *)(rec + 0x18);
         int *r = (int *)(base + 0x20);
-        for (uint32_t i = 0; i < n; i++) {
+        uint32_t left = n;
+        do {
             if (*r == 2) {
                 uint64_t rec2 = sk_r46_metadata_record_by_name((uint64_t)base, 0x6a53f2);
                 if (rec2 == 0 || (n = (uint32_t)r[3], r[3] == 0)) goto fd5c_empty;
@@ -2390,8 +2391,8 @@ void sk_r46_metadata_strings(long base, uint64_t *count, uint64_t *strbase, long
                 goto fd5c_done;
             }
             r = (int *)((long)r + (uint32_t)r[1]);
-            n--;
-        }
+            left--;
+        } while (left != 0);
     }
     sk_r46_metadata_record_by_name((uint64_t)base, 0x6a53f2);
 fd5c_empty:
