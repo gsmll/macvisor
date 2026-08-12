@@ -56,7 +56,7 @@ static void sk_cap_split(uint64_t *out, uint64_t *span, uint64_t phys,
     }
 
     /* How many VAS units the offset occupies (0x30780; only x0 set at site). */
-    count = sk_vas_pt_count(off, 0, 0, 0);
+    count = sk_vas_pt_count((uint32_t *)(uintptr_t)off, NULL, NULL, 0);
     if (count == 0) {
         /* count==0: source stays `off`, window end stays off+stride. */
         seed = 0;
@@ -100,7 +100,7 @@ static void sk_cap_split(uint64_t *out, uint64_t *span, uint64_t phys,
             {
                 uint64_t **head = (uint64_t **)(span + 0xb); /* &span[0xb] */
                 uint64_t *old = *head;
-                node[8] = old;                            /* node+0x40 = old head */
+                node[8] = (uint64_t)old;                  /* node+0x40 = old head */
                 if (old != 0) {
                     if (node + 9 < node + 8)
                         SK_ASRT_PANIC(0x2fe54);
@@ -113,7 +113,7 @@ static void sk_cap_split(uint64_t *out, uint64_t *span, uint64_t phys,
             {
                 uint64_t **list = (uint64_t **)(span + 0xc);
                 uint64_t *old = *list;
-                node[0xa] = old;                          /* node+0x50 = old head */
+                node[0xa] = (uint64_t)old;                /* node+0x50 = old head */
                 node[9] = (uint64_t)(span + 0xb);         /* node+0x48 = &span[0xb] */
                 if (old != 0) {
                     if (node + 0xb < node + 0xa)
@@ -127,6 +127,7 @@ static void sk_cap_split(uint64_t *out, uint64_t *span, uint64_t phys,
             headroom = 0;
             node[0xb] = (uint64_t)(span + 0xc);           /* node+0x58 = &span[0xc] */
             (*(int *)(span + 0xd))++;                     /* *(int*)(span+0x68)++ */
+            goto use_node;
         } else {
             /* Empty node: release it back through vtable[8]. */
             (*(void (**)(uint64_t))(vtable + 8))((uint64_t)node);

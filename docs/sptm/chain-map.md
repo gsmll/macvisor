@@ -429,3 +429,15 @@ Serialization/validation core for the Tightbeam inter-component data layer.
 - TransportBuffer: 0x20448 write, 0x20560 seek, 0x20628/0x208a8 forward/dispatch, 0x209f8/0x20ac8/0x20bb8 pointer getters, 0x20c88 forget.
 - Module singletons: 0x1df60 (ComponentInitData, id 0x677880), 0x1e790 (TransportBuffer, id 0x677790).
 - Fatal-error family (module Tightbeam_ComponentInitData @ 0x5ac9c0 / TransportBuffer @ 0x5accb0): 0x1b998, 0x1bcac, 0x1ced0, 0x1afa84 (shared reporter).
+
+## cL4 Secure Kernel transport-buffer message layer (osfmk/arm64/sk/sk_slice_02.c) — 0x157dc-0x1a1dc
+Transport-buffer (tb_transport) + tb_message serialization layer.
+- Message state machine: 0x15834 reset, 0x1585c set_state, 0x1586c init (encode, kind), 0x1590c state_transition (1/4→2), 0x15964 release, 0x15984 for_type, 0x159c0/0x159c8 state/kind getters.
+- Transport accessors: 0x159b8 get_transport, 0x159d0 end, 0x15cd0 set_pos, 0x15cbc flags_test, 0x15bb4/0x15bbc/0x15be8/0x15c30 slot get/push/pop, 0x15b84/0x15b8c/0x15b94/0x15ba4/0x15bac field accessors.
+- Buffer alloc/resize/map: 0x16134/0x16154 get_or_alloc, 0x16174 alloc, 0x16208 create_virt, 0x16318 create_phys, 0x16af0 alloc_buffer, 0x16ba4 resize_buffer, 0x16458 channel_create, 0x16a5c channel_flush.
+- Copy core: 0x159dc/0x15a44/0x15ce4 transport copy (fail-closed TB_ASSERT), 0x16c24 copy_obj, 0x16d78 message_receive, 0x16e1c message_decode, 0x176a4 message_commit.
+- Write/read: 0x17e94/0x17edc transport_write pair, 0x181f4 append_cap, 0x183f0 transport_read.
+- put/get primitives: u8 0x187a4/0x1882c/0x188fc/0x18984/0x19000, u16 0x18b0c/0x18b98/0x18be8/0x1910c, u32 0x18c70/0x18cfc/0x18d4c/0x19220/0x19224/0x192b0, u64 0x18dd4/0x18e60/0x18f38/0x18fb8/0x19334/0x19338/0x193c4, words 0x18eb0, bytes 0x189d0.
+- f32/f64: 0x19490/0x19588 encode/decode f32 (NaN-reject 6/7), 0x19670/0x19768 encode/decode f64.
+- Capref transport records: 0x17a08/0x17a88 create, 0x17b7c/0x17b88 bind, 0x17b94/0x17bd4 release/destroy, 0x17c14 handler.
+- Utility: 0x18560 flags_check_all, 0x185b8/0x18600/0x18650 region get/put, 0x19aac register, 0x19d40 emit_tag, 0x1a138 sorted_lookup, 0x1a1dc va_cap_resolve.

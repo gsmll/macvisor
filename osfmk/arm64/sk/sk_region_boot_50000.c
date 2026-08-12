@@ -3718,7 +3718,7 @@ uint64_t sk_obj_get(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_release(arg1,1);
+    sk_lock_release(&arg1,1);
     return 0;
   }
                     
@@ -3742,7 +3742,7 @@ void sk_obj_put(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_release(arg1,1);
+    sk_lock_release(&arg1,1);
     return;
   }
                     
@@ -3791,7 +3791,7 @@ uint64_t sk_cpu_boot_get(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_release(arg1,0);
+    sk_lock_release(&arg1,0);
     return 0;
   }
                     
@@ -3976,7 +3976,7 @@ uint64_t sk_cnode_create(unsigned long *out, unsigned long base,
     uint8_t c;
     uint32_t attr;
     unsigned long mem;
-    uint64_t *err;
+    uint64_t err;
     sk_u128_t vops;
 
     head = 0;
@@ -4046,7 +4046,7 @@ done_attr:
         vops = sk_vspace_get_ops();
         c = (*(sk_code_t *)(vops.hi + 0x30))(vops.lo, attr | ((opts & 4) << 0x14),
                                              &err, slot, 0, 0);
-        if (c != 0) return sk_cnode_check(0,0);
+        if (c != 0) return sk_cnode_check(0);
         if (slot[1] != 0) {
             (*(sk_code_t *)(slot[1] + 8))(*slot, &err);
             *out = head;
@@ -4120,12 +4120,12 @@ uint64_t sk_cnode_resolve(long arg1,long arg2,uint8_t (*arg3) [16])
   
   if (arg3 == (uint8_t (*) [16])0x0) {
     stk0 = sk_vspace_get_ops();
-    stk0 = (**(sk_code_t *)(stk0.hi + 0x38))(stk0.lo,arg1,0,0);
+    stk0 = ((sk_u128_t (*)())(stk0.hi + 0x38))(stk0.lo,arg1,0,0);
   }
   else {
-    stk0 = *arg3;
+    stk0 = *(sk_u128_t *)*arg3;
   }
-  t3 = stk0.hi;
+  t3 = (uint64_t *)stk0.hi;
   t1 = stk0.lo;
   lStack_48 = 0;
   stk2 = 0;
@@ -4184,10 +4184,10 @@ uint64_t sk_cnode_op(unsigned long arg1,unsigned long arg2,uint8_t (*arg3) [16],
   
   if (arg3 == (uint8_t (*) [16])0x0) {
     stk0 = sk_vspace_get_ops();
-    stk0 = (**(sk_code_t *)(stk0.hi + 0x38))(stk0.lo,arg1,0,0);
+    stk0 = ((sk_u128_t (*)())(stk0.hi + 0x38))(stk0.lo,arg1,0,0);
   }
   else {
-    stk0 = *arg3;
+    stk0 = *(sk_u128_t *)*arg3;
   }
   t3 = stk0.hi;
   t5 = stk0.lo;

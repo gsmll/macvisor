@@ -31,6 +31,7 @@ typedef struct cl4_16 { uint64_t lo; uint64_t hi; } cl4_16_t;
 #define _0_8_ lo
 #define _8_8_ hi
 #define _0_4_ lo
+#define _4_4_ lo
 #define _8_4_ hi
 #define _12_4_ hi
 #define CONCAT44(hi4, lo4)  (((uint64_t)(hi4) << 32) | (uint64_t)(lo4))
@@ -5511,7 +5512,7 @@ uint8_t FUN_00187aac(uint8_t p1)
       tmp = CL4_VOID_U64(FUN_0018569c());
       idx2 = tmp;
       FUN_003698b0(&idx2,0x669b78,&dat_004e6898);
-      p1 = FUN_0036993c(0x669b78,&dat_004e6898,0,0);
+      p1 = (uint8_t)FUN_0036993c(0x669b78,&dat_004e6898,0,0).lo;
       *msgbuf = tmp;
       val4 = kind;
       w6 = idx;
@@ -6394,7 +6395,7 @@ uint32_t FUN_00189108(uint64_t p1, uint64_t p2, uint64_t *p3)
       st2 = CL4_VOID_U64(FUN_001857a8());
       h = st2;
       FUN_003698b0(&h,0x669ae8,&dat_004e6878);
-      r = FUN_0036993c(0x669ae8,&dat_004e6878,0,0);
+      r = (uint32_t)FUN_0036993c(0x669ae8,&dat_004e6878,0,0).lo;
       *msgbuf = st2;
       kind = CONCAT44(w1,w2);
       w6 = CONCAT44(w3,ptr4);
@@ -8102,11 +8103,11 @@ void FUN_0018bf78(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 void FUN_0018c020(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t *p5)
 {
   long err;
-  cl4_16_t msgbuf [12];
+  cl4_16_t msgbuf;
   
-  msgbuf = FUN_0018c078(p3,p4);
+  msgbuf = (cl4_16_t){ .lo = FUN_0018c078(p3,p4), .hi = 0 };
   if (err == 0) {
-    *p1 = msgbuf[0];
+    *p1 = msgbuf.lo;
     *(int *)(p1 + 4) = msgbuf._4_4_;
     *(int *)(p1 + 8) = msgbuf._8_4_;
   }
@@ -8336,7 +8337,7 @@ void FUN_0018c540(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t 
   uint64_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018c660(p3,p4);
+  msgbuf = (uint64_t)FUN_0018c660(p3,p4);
   if (err == 0) {
     *p1 = msgbuf;
     p1[1] = msgbuf;
@@ -8573,7 +8574,7 @@ void FUN_0018cad4(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t 
   uint64_t msgbuf;
   long err;
   
-  msgbuf = FUN_0018cc2c(p3,p4);
+  msgbuf = (uint64_t)FUN_0018cc2c(p3,p4);
   if (err == 0) {
     *p1 = msgbuf;
   }

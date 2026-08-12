@@ -44,32 +44,32 @@ typedef void (*code)(void);        /* Ghidra `code` = function pointer */
  * comment). Reconstructed by sibling SK range workers. Many of these are no-op Swift runtime
  * hooks (empty bodies in the binary). */
 
-extern void sk_rt_hook_a(...);   /* FUN_00354440 no-op */
-extern void sk_rt_hook_b(...);   /* FUN_00354428 no-op */
-extern sk_r4_u128_t sk_rt_hook_c(...);   /* FUN_00353cfc no-op */
-extern void sk_rt_hook_d(...);   /* FUN_00353d14 no-op */
-extern void sk_rt_hook_e(...);   /* FUN_0034b2f8 no-op */
-extern void sk_rt_hook_f(...);   /* FUN_00348fd8 no-op */
-extern void sk_rt_hook_g(...);   /* FUN_0034b908 no-op */
-extern void sk_rt_hook_h(...);   /* FUN_0034c908 no-op */
-extern void sk_rt_hook_i(...);   /* FUN_00349c70 no-op */
-extern uint64_t sk_rt_hook_j(...);   /* FUN_00357e14 no-op */
-extern void sk_rt_hook_k(...);   /* FUN_003517b4 no-op */
-extern uint64_t sk_rt_hook_l(...);   /* FUN_0007c0c4 no-op */
-extern sk_r4_u128_t sk_rt_hook_m(...);   /* FUN_000b43d0 no-op */
-extern void sk_rt_hook_n(...);   /* FUN_0034b07c no-op */
-extern uint64_t sk_rt_hook_o(...);   /* FUN_0034b328 no-op */
-extern void sk_rt_hook_p(...);   /* FUN_0034b5bc no-op */
-extern void sk_rt_hook_q(...);   /* FUN_0034c998 no-op */
-extern void sk_rt_hook_r(...);   /* FUN_0034dae8 no-op */
-extern void sk_rt_hook_s(...);   /* FUN_0034f4d4 no-op */
-extern void sk_rt_hook_t(...);   /* FUN_0034bccc no-op */
-extern void sk_rt_hook_u(void);   /* FUN_0034a260 no-op */
-extern void sk_rt_hook_v(void);   /* FUN_0034a274 no-op */
-extern void sk_rt_hook_w(void);   /* FUN_0034a2f8 no-op */
-extern void sk_rt_hook_x(void);   /* FUN_0034ce58 no-op */
-extern void sk_rt_hook_y(void);   /* FUN_0034ce78 no-op */
-extern void sk_rt_hook_z(void);   /* FUN_00343a30 no-op */
+extern void sk_rt_hook_a();;   /* FUN_00354440 no-op */
+extern void sk_rt_hook_b();;   /* FUN_00354428 no-op */
+extern sk_r4_u128_t sk_rt_hook_c();;   /* FUN_00353cfc no-op */
+extern void sk_rt_hook_d();;   /* FUN_00353d14 no-op */
+extern void sk_rt_hook_e();;   /* FUN_0034b2f8 no-op */
+extern void sk_rt_hook_f();;   /* FUN_00348fd8 no-op */
+extern void sk_rt_hook_g();;   /* FUN_0034b908 no-op */
+extern void sk_rt_hook_h();;   /* FUN_0034c908 no-op */
+extern void sk_rt_hook_i();;   /* FUN_00349c70 no-op */
+extern uint64_t sk_rt_hook_j();;   /* FUN_00357e14 no-op */
+extern void sk_rt_hook_k();;   /* FUN_003517b4 no-op */
+extern uint64_t sk_rt_hook_l();;   /* FUN_0007c0c4 no-op */
+extern sk_r4_u128_t sk_rt_hook_m();;   /* FUN_000b43d0 no-op */
+extern void sk_rt_hook_n();;   /* FUN_0034b07c no-op */
+extern uint64_t sk_rt_hook_o();;   /* FUN_0034b328 no-op */
+extern void sk_rt_hook_p();;   /* FUN_0034b5bc no-op */
+extern void sk_rt_hook_q();;   /* FUN_0034c998 no-op */
+extern void sk_rt_hook_r();;   /* FUN_0034dae8 no-op */
+extern void sk_rt_hook_s();;   /* FUN_0034f4d4 no-op */
+extern void sk_rt_hook_t();;   /* FUN_0034bccc no-op */
+extern void sk_rt_hook_u();;   /* FUN_0034a260 no-op */
+extern void sk_rt_hook_v();;   /* FUN_0034a274 no-op */
+extern void sk_rt_hook_w();;   /* FUN_0034a2f8 no-op */
+extern void sk_rt_hook_x();;   /* FUN_0034ce58 no-op */
+extern void sk_rt_hook_y();;   /* FUN_0034ce78 no-op */
+extern void sk_rt_hook_z();;   /* FUN_00343a30 no-op */
 
 /* Swift runtime fatalError and tag machinery. */
 extern void sk_fatal_error(void *msg, unsigned long len, unsigned long n,

@@ -167,23 +167,6 @@ void cl4_swift_string_append6();       /* FUN_001be528 */
 extern unsigned long cl4_swift_utf8_bounds2();  /* FUN_001b798c */
 extern unsigned long sk_swift_gstate_global;    /* DAT_006ade68 */
 
-/* Forward declarations of in-range callees defined below (called before def). */
-void cl4_swift_msg_resolve();
-void cl4_swift_ubp_do();
-void cl4_swift_range_math();
-void cl4_object_service_run3();
-void cl4_swift_fill();
-void cl4_swift_complete();
-unsigned long cl4_swift_string_cmp3();
-unsigned long cl4_swift_string_cmp4();
-unsigned long cl4_swift_string_cmp5();
-void cl4_swift_string_append4();
-void cl4_swift_string_append6();
-unsigned long cl4_swift_utf8_bounds2();   /* out-of-range; no in-file def */
-
-/* Global gstate word (_DAT_006ade68). */
-extern unsigned long sk_swift_gstate_global;
-
 /*--------------------------------------------------------------------*/
 /* FUN_001b012c @ 0x001b012c   (est. cl4_fatal_abort)
  * Ghidra: void FUN_001b012c(void)

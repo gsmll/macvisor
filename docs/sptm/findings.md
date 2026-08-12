@@ -1484,3 +1484,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (n > 4) { sk_printf("TB_ASSERT: num_rcv_caps < TB_MAX"); brk#1 }`; per-cap `CallSupervisor(1); if ((v & 0xff) != 0) { TB_ASSERT L4_ErrorCode; brk }`.
 - **Severity (hypothesis)**: informational — IPC transport is fail-closed on malformed/oversized messages; cap count bounded.
 - **Confidence**: low (large state machine reconstructed at low confidence; structural summary).
+
+## [sk] 000159dc/00015a44/00015ce4 sk_tb_transport_copy — transport-buffer copy bounds (TB_ASSERT fail-closed)
+- **Observation**: The transport-buffer copy primitives (start-copy, region-copy, and src→dst copy) validate both source and destination ranges against each buffer's limit before any copy, and every failure path traps via SoftwareBreakpoint (noreturn) after printing a TB_ASSERT "start/end < transport buffer" banner. There is no silent truncation or clamp — an out-of-range copy is a fatal kernel trap.
+- **Evidence**: `*(data)` computed from `base+pos`; `if (pos+len < pos) FUN_004b05e8();` overflow carry checks; `if (pos+len > limit) sk_puts(TB_ASSERT_END_TRANSPORT); SoftwareBreakpoint(1, 0x15e08);`. The copy itself is a single `FUN_00117cc4` (memcpy) with both ends range-checked.
+- **Severity (hypothesis)**: informational — transport layer is fail-closed on buffer overflow; no clamp/truncate path.
+- **Confidence**: medium (bounds logic reconstructed; canary checked).
+
+## [sk] 00016d78/00016e1c sk_tb_message_receive/decode — kind-byte dispatch on untrusted message header
+- **Observation**: The message receive/decode cores dispatch on a kind byte (1..4) taken from the inbound transport-buffer payload, and each kind performs a different action: kind 1 allocates a new physical transport and issues CallSupervisor(2); kind 2 copies into an existing transport cap; kind 3 releases a referenced object (FUN_000151c8); kind 4 copies into a growable cap. The kind byte is validated only against `bytes > 0x17` before the +0x10/-0x28 field reads.
+- **Evidence**: `kb = *sbuf; if (2 < kb) { if (kb==3) FUN_000151c8(...); else if (kb==4) { if (0x17 < bytes) { ... } } } else if (kb==1) { ... } else if (kb==2) { ... }`. Alloc tags 0x103004032233d17 / 0x100004077774924.
+- **Severity (hypothesis)**: low — a forged message kind byte could steer the kernel into object release/alloc paths; the surrounding cap-type checks (`*(char*)(cr+8)==1`/`==2`) and bounds traps (SoftwareBreakpoint 0x5519, 0x17110) mitigate.
+- **Confidence**: low (huge function, "type propagation not settling" warning; structural reconstruction).
+
+## [sk] 00019490/00019588/00019670/00019768 sk_tb_msg_encode/decode f32/f64 — NaN/inf payload rejection
+- **Observation**: The f32/f64 message encode/decode entries explicitly reject NaN/inf bit patterns: encode returns error 6 when `(v & 0x7fffffff) > 0x7f7fffff` (f32) or `(v & 0x7fffffffffffffff) > 0x7fefffffffffffff` (f64), and decode returns error 7 on the same check. This prevents non-finite values from being serialized into the transport buffer.
+- **Evidence**: `if (0x7f7fffff < (param_1 & 0x7fffffff)) return 6;` and decode `uVar5 = 0; if (0x7f7fffff < (uVar8 & 0x7fffffff)) uVar5 = 7; return uVar5;` (and the f64 twins with the wider masks). The `_chk` wrappers fatal on non-zero return.
+- **Severity (hypothesis)**: informational — input validation rejects non-finite floats.
+- **Confidence**: high (straightforward mask compares).

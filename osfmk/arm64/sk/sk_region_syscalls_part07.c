@@ -3195,7 +3195,7 @@ void sk_msg_peek_dispatch(void)
 {
     FUN_003561f4(0);
     word_t w = FUN_00348d94(0).lo;
-    w = FUN_00377824(w, /* x8 */0);
+    w = FUN_00377824(w, /* x8 */0).lo;
     cl4_result_t r = FUN_00351330(0);
     if (FUN_000839f8(r.lo, r.hi, w) != 0) return;
     FUN_003511b4(0);
@@ -3482,12 +3482,14 @@ long sk_msg_tag_store(long frame)
     FUN_00356eb4(0);
     long t = *(long *)(*(long *)/* x9+0x18 */0 + -8);
     ulong dst = *(ulong *)(t + 0x40);
-    if (dst <= *(ulong *)/* x10+0x40 0;
+    if (dst <= *(ulong *)/* x10+0x40 */0) {
+        dst = *(ulong *)/* x10+0x40 */0;
+    }
     uint sel = *(uint *)(t + 0x50) | *(uint *)/* table+0x50 */0;
     if ((7 < (sel & 0xff) || 0x18 < dst + 1) || (sel & 0x100000) != 0) {
         long r = FUN_0035556c(0);
         FUN_0036b270(0);
-        return r + (/* x11 */0);
+        return r + ((/* x11 */0 + 0x10) & (/* x11 */0 ^ 0xffffffffffffffff));
     }
     byte b = *(byte *)((long)/* x1 */0 + dst);
     uint v = (uint)b;
@@ -3496,18 +3498,18 @@ long sk_msg_tag_store(long frame)
         if (dst < 4) w = (uint)dst;
         uint lo;
         switch (w) {
-        default: lo = (uint)(byte)0; break;
-        case 1:  lo = (uint)(byte)0; break;
-        case 2:  lo = (uint)(ushort)0; break;
-        case 3:  lo = (uint)/* uint3 */0; break;
-        case 4:  lo = 0; break;
+        default: lo = (uint)(byte)*((uint *)/* x1 */0); break;
+        case 1:  lo = (uint)(byte)*((uint *)/* x1 */0); break;
+        case 2:  lo = (uint)(ushort)*((uint *)/* x1 */0); break;
+        case 3:  lo = (uint)(uint3)*((uint *)/* x1 */0); break;
+        case 4:  lo = *((uint *)/* x1 */0); break;
         }
         v = lo | (uint)(b - 2) << (((uint)dst & 3) << 3);
         if (3 < dst) v = lo;
         v = v + 2;
     }
     if (v == 1) {
-        ((void (*)(word_t, word_t, long))0)(frame, /* x1 */0);
+        ((void (*)(word_t, word_t, long))0)(frame, /* x1 */0, *(long *)/* x9+0x18 */0);
         *(und1_t *)(frame + dst) = 1;
     } else {
         FUN_00352c04(0);
