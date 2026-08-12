@@ -1560,171 +1560,403 @@ void sk_re_write_delim4(void)
 
 /* FUN_0042dc90 @ 0x0042dc90   (est. sk_re_write_delim5)
  * Ghidra: void FUN_0042dc90(void)
- * The regex diagnostic emitter: dispatches on a diagnostic-kind tag (from
- * the caller x20 record) and formats the corresponding Swift error string
- * ("number overflow" 0x5e0080, "expected ASCII" 0x5dfc80, "invalid escape
- * sequence" 0x5dffe0, "unknown group kind" 0x5dfd60, "unknown callout kind"
- * 0x5dfd40, "unknown text segment mode" 0x5dfd00, "invalid matching option"
- * 0x5dfce0, "unknown character property" 0x5dfba0, "no capture numbered"
- * 0x5df850, "no capture named" 0x5df830, "... already exists" 0x5df810,
- * "range lower bound" 0x5df7c0, etc.), appending the error record.
+ * The regex diagnostic emitter: dispatches on a diagnostic-kind tag byte
+ * (offset 0x20 of the caller's x20 record) and formats the corresponding
+ * Swift error string ("number overflow" 0x5e0080, "expected ASCII" 0x5dfc80,
+ * "invalid escape sequence" 0x5dffe0, "unknown group kind" 0x5dfd60,
+ * "unknown callout kind" 0x5dfd40, "unknown text segment mode" 0x5dfd00,
+ * "invalid matching option" 0x5dfce0, "unknown character property" 0x5dfba0,
+ * "no capture numbered" 0x5df850, "no capture named" 0x5df830, "... already
+ * exists" 0x5df810, "range lower bound" 0x5df7c0, etc.), appending the
+ * error record, then closing via FUN_003507e0 / FUN_00466528. The four
+ * preceding words of the record (k1..k4) carry per-kind operands (scalar
+ * kind bytes, range bounds, branch-count fields). The uVar6 operand in the
+ * decompile corresponds to k3, uVar1 to k2, uVar11 to k1, uVar2 to k4.
  * Confidence: low. */
 void sk_re_write_delim5(void)
 {
-        word_t k1 = *(word_t*)(__builtin_frame_address(0) + 0);
-        word_t k2 = *(word_t*)(__builtin_frame_address(0) + 8);
-        word_t k3 = *(word_t*)(__builtin_frame_address(0) + 0x10);
-        word_t k4 = *(word_t*)(__builtin_frame_address(0) + 0x18);
-        byte kind = *(byte*)(__builtin_frame_address(0) + 0x20);
+        /* Inputs arrive in preserved register x20 (unaff_x20): a 5-word
+         * record whose low byte of word 4 selects the diagnostic kind. */
+        word_t k1;      /* uVar11 = unaff_x20[0] */
+        word_t k2;      /* uVar1  = unaff_x20[1] */
+        word_t k3;      /* uVar6  = unaff_x20[2] */
+        word_t k4;      /* uVar2  = unaff_x20[3] */
+        byte kind;      /* (char)unaff_x20[4] */
+        word_t uVar7;
+        word_t uVar12;
+        word_t uVar10;
+        sw128_t auVar13;
+        sw128_t auVar14;
+        sw128_t auVar3;
+        word_t uVar4 = sw_466568(0);
+
+        (void)k4; (void)auVar14;
+        /* k1..k4 + kind loaded from the x20 record (transcribed as the
+         * caller-passed record; exact load-site is the decompiler's x20). */
+        k1 = 0; k2 = 0; k3 = 0; k4 = 0; kind = 0;
+
         switch (kind) {
-        case 1:
-                sw_462f7c(0); sw_2a4ab4(0x1a); sw_3a25d4(0);
-                sw_462a34(0x5e0080);   /* "number overflow" */
+        default:
+                sw_462f7c(0);
+                sw_2a4ab4(0x13);
+                sw_3a25d4(0);               /* in_stack_00000010 */
+                sw_462a34(0x5e0080);        /* "number overflow" */
                 sw_462ed8(0);
-                goto done;
-        case 2:
-                if ((k3 & 0xff) == 0) { sw_462ed8(0); sw_2acbb8(0); sw_463514(0); sw_2acbb8(0); }
+                goto e43c;
+        case 1:
+                sw_462f7c(0);
+                sw_2a4ab4(0x1a);
+                sw_3a25d4(0);               /* in_stack_00000010 */
+                sw_4628f4(0);
+                sw_4653ec(0);
+                sw_4629b4(0);
+                /* uVar7 = FUN_00462abc(extraout_x16_00); (*extraout_x8)(uVar7,uVar6); */
+                sw_462abc(0);
+                sw_2acbb8(0, k3);           /* indirect call via x8 */
+                sw_2acbb8(0);
+                sw_3a25d4(0);               /* extraout_x1_01 */
+                sw_464dfc(0);
+                sw_2acbb8(0);
                 break;
+        case 2:
+                if ((k3 & 0xff) == 0) {
+                        uVar7 = 0xec0000007265626d;
+                } else {
+                        uVar7 = 0xe600000000000000;
+                        if (((uint)k3 & 0xff) != 1) {
+                                uVar7 = 0x80000000005e0040;   /* tagged ptr 0x5e0040 */
+                        }
+                }
+                k3 = k1 & 0xffffffffffff;
+                if ((k2 & 0x2000000000000000) != 0) {
+                        k3 = (k2 >> 0x38) & 0xf;
+                }
+                if (k3 == 0) {
+                        uVar12 = 0;
+                        uVar10 = 0xe000000000000000;
+                } else {
+                        sw_462ed8(0);
+                        sw_2acbb8(0);
+                        sw_463514(0);
+                        sw_2acbb8(0);
+                        uVar12 = 0x27206e6920;                 /* " in'" (LE) */
+                        uVar10 = 0xe500000000000000;
+                }
+                auVar13.hi = uVar10;
+                auVar13.lo = uVar12;
+                sw_4628f4(0);
+                sw_4653ec(0);
+                sw_3504c4(0);
+                sw_2acbb8(0);
+                sw_3a25d4(uVar7);
+                goto e524;
+        case 3:
+                sw_4627f4(0);
+                break;
+        case 4:
+                sw_36b270(0, k2);           /* thunk_FUN_0036b270(uVar1) */
+                goto e444;
         case 5:
-                sw_462a34(0x5dfe30);   /* "expected 2 branches in condition..." */
-                goto done;
+                sw_462a34(0x5dfe30);        /* "expected 2 branches in condition..." */
+                goto e118;
+        case 6:
+                sw_464e28(0);
+                sw_460dbc(0);
+                sw_463824(0);
+                auVar14.hi = 0x80000000005dfdf0;   /* tagged ptr 0x5dfdf0 */
+                auVar14.lo = 0 + 1;                 /* extraout_x8_01 + 1 */
+                goto e390;
         case 7:
                 sw_462f7c(0); sw_2a4ab4(0x34); sw_464058(0);
-                sw_9e218(0x5dfdd0);    /* "expected 2 expressions in absent..." */
-                sw_463bbc(0);
+                sw_9e218(0x5dfdd0);          /* "expected 2 expressions in absent..." */
+                sw_463bbc(0 + 0x17);         /* extraout_x9_03 + 0x17 */
                 sw_2acbb8(0);
-                goto done;
+                goto e118;
         case 8:
                 sw_462f7c(0); sw_2a4ab4(0x3e); sw_464058(0);
-                sw_465340(0x5dfd80);   /* "matching option ..." */
-                sw_463bbc(0);
-                sw_2acbb8(0); sw_462ed8(0); sw_2acbb8(0);
-                goto done;
+                sw_465340(0x5dfd80);         /* "matching option ..." */
+                sw_463bbc(k3 - 10);
+                sw_2acbb8(0);
+                sw_462ed8(0);
+                sw_2acbb8(0);
+                k3 = k3 + 0x10;
+                goto e438;
         case 9:
-                sw_462a34(0x5dfc80);   /* "expected ASCII for ..." */
-                goto done;
+                sw_462a34(0x5dfc80);         /* "expected ASCII for ..." */
+                break;
         case 10:
-                sw_462a34(0x5dffe0);   /* "invalid escape sequence ..." */
-                goto done;
+                sw_462a34(0x5dffe0);         /* "invalid escape sequence ..." */
+                break;
         case 11:
                 sw_462f7c(0); sw_2a4ab4(0x3d); sw_464058(0);
-                sw_463514(0); sw_2acbb8(0); sw_462ed8(0); sw_2acbb8(0);
-                sw_9e218(0x5dffa0);    /* "... is confusable for a metacharac..." */
-                goto done;
-        case 12:
-                sw_466054(0); sw_462ed8(0); sw_2acbb8(0);
-                sw_9e218(0x5dfea0);    /* "... must appear after expression..." */
-                goto done;
-        case 13:
-                sw_86840(0x5dfe60);    /* "backtracking directive ..." */
+                sw_463514(0); sw_2acbb8(0);
                 sw_462ed8(0); sw_2acbb8(0);
-                goto done;
+                sw_9e218(0x5dffa0);          /* "... is confusable for a metacharac..." */
+                k3 = 0 + 0x1f;               /* extraout_x9_01 + 0x1f */
+                goto e438;
+        case 12:
+                sw_466054(0);
+                sw_462ed8(0); sw_2acbb8(0);
+                sw_9e218(0x5dfea0);          /* "... must appear after expression..." */
+                k3 = 0 + 3;                  /* extraout_x9_02 + 3 */
+                goto e438;
+        case 13:
+                sw_86840(0x5dfe60);          /* "backtracking directive ..." */
+                sw_462ed8(0); sw_2acbb8(0);
+                k3 = 0xd000000000000013;
+                goto e438;
         case 14:
-                sw_462a34(0x5dfd60);   /* "unknown group kind ..." */
-                goto done;
+                sw_462a34(0x5dfd60);         /* "unknown group kind ..." */
+                break;
         case 15:
-                sw_462a34(0x5dfd40);   /* "unknown callout kind ..." */
-                goto done;
+                sw_462a34(0x5dfd40);         /* "unknown callout kind ..." */
+                break;
         case 16:
                 sw_462f7c(0); sw_2a4ab4(0x33); sw_464058(0);
-                sw_465340(0x5dfd00);   /* "unknown text segment mode ..." */
-                sw_463000(0); sw_2acbb8(0); sw_462ed8(0); sw_2acbb8(0);
-                goto done;
+                sw_465340(0x5dfd00);         /* "unknown text segment mode ..." */
+                sw_463000(0);
+                sw_2acbb8(0);
+                sw_462ed8(0); sw_2acbb8(0);
+                k3 = k3 - 5;
+                goto e438;
         case 17:
-                sw_462a34(0x5dfce0);   /* "invalid matching option ..." */
-                goto done;
+                sw_462a34(0x5dfce0);         /* "invalid matching option ..." */
+                break;
         case 18:
-                sw_462a34(0x5dfba0);   /* "unknown character property ..." */
-                goto done;
+                sw_462a34(0x5dfba0);         /* "unknown character property ..." */
+                if (k2 != 0) {
+                        sw_462ed8(0); sw_2acbb8(0);
+                        sw_463bc8(0);
+                        goto e1e4;
+                }
+                goto e1e8;
         case 19:
-                sw_462a34(0x5df9c0);   /* "unrecognized script ..." */
-                goto done;
+                sw_462a34(0x5df9c0);         /* "unrecognized script ..." */
+                break;
         case 20:
-                sw_462a34(0x5df9a0);   /* "unrecognized category ..." */
-                goto done;
+                sw_462a34(0x5df9a0);         /* "unrecognized category ..." */
+                break;
         case 21:
-                sw_462a34(0x5df980);   /* "unrecognized block ..." */
-                goto done;
+                sw_462a34(0x5df980);         /* "unrecognized block ..." */
+                break;
         case 22:
                 sw_462f7c(0); sw_2a4ab4(0x39); sw_464058(0);
-                sw_465340(0x5df920);   /* "invalid age format for ..." */
-                sw_463bbc(0); sw_2acbb8(0); sw_462ed8(0); sw_2acbb8(0);
-                goto done;
+                sw_465340(0x5df920);         /* "invalid age format for ..." */
+                sw_463bbc(k3 - 3);
+                sw_2acbb8(0);
+                sw_462ed8(0); sw_2acbb8(0);
+                k3 = k3 | 4;
+                goto e438;
         case 23:
-                sw_462a34(0x5df900);   /* "invalid numeric value ..." */
-                goto done;
-        case 24:
-                sw_462a34(0x5df960);   /* "unrecognized numeric type ..." */
-                goto done;
-        case 25:
-                sw_462a34(0x5df8d0);   /* "invalid canonical combining clas..." */
-                goto done;
-        case 26:
-                sw_4628f4(0); sw_4653ec(0);
-                if ((k1 & 0xff) == 0) k1 = sw_463684(0);
+                sw_462a34(0x5df900);         /* "invalid numeric value ..." */
                 break;
+        case 24:
+                sw_462a34(0x5df960);         /* "unrecognized numeric type ..." */
+                break;
+        case 25:
+                sw_462a34(0x5df8d0);         /* "invalid canonical combining clas..." */
+                break;
+        case 26:
+                sw_4628f4(0);
+                sw_4653ec(0);
+                if ((k1 & 0xff) == 0) {
+                        uVar7 = sw_463684(0);
+                        auVar13.hi = k1;
+                        auVar13.lo = uVar7;
+                } else {
+                        auVar3.hi = 0xeb00000000676174;   /* "tag\0" LE, tagged */
+                        auVar3.lo = 0x2074756f6c6c6163;   /* "callout " */
+                        auVar13.hi = 0xec000000656d616e;  /* "name\0" LE, tagged */
+                        auVar13.lo = 0x2074756f6c6c6163;  /* "callout " */
+                        if (((uint)k1 & 0xff) != 1) {
+                                auVar13 = auVar3;
+                        }
+                }
+                goto e524;
         case 27:
                 sw_462f7c(0); sw_2a4ab4(0x2c); sw_464058(0);
-                if ((k1 & 0xff) == 0) k1 = sw_463684(0);
-                sw_2acbb8(k1, k2);
-                sw_3a25d4(k2);
-                sw_9e218(0x5dfb10);    /* "must only contain alphanumeric c..." */
-                goto done;
+                if ((k1 & 0xff) == 0) {
+                        uVar7 = sw_463684(0);
+                } else {
+                        uVar7 = 0x2074756f6c6c6163;      /* "callout " */
+                        k1 = 0xec000000656d616e;         /* "name\0" LE, tagged */
+                        if (((uint)k1 & 0xff) != 1) {
+                                k1 = 0xeb00000000676174; /* "tag\0" LE, tagged */
+                        }
+                }
+                sw_2acbb8(uVar7, k1);
+                sw_3a25d4(k1);
+                sw_9e218(0x5dfb10);          /* "must only contain alphanumeric c..." */
+                k3 = 0 + 0xf;                /* extraout_x9_05 + 0xf */
+                goto e438;
         case 28:
                 sw_462f7c(0); sw_2a4ab4(0x1d); sw_464058(0);
-                if ((k1 & 0xff) == 0) k1 = sw_463684(0);
-                sw_2acbb8(k1, k2);
-                sw_3a25d4(k2);
-                sw_463000(0x5dfac0 + 0x10); /* "text segment mode cannot be unse..." */
-                goto done;
+                if ((k1 & 0xff) == 0) {
+                        uVar7 = sw_463684(0);
+                } else {
+                        uVar7 = 0x2074756f6c6c6163;      /* "callout " */
+                        k1 = 0xec000000656d616e;         /* "name\0" LE, tagged */
+                        if (((uint)k1 & 0xff) != 1) {
+                                k1 = 0xeb00000000676174; /* "tag\0" LE, tagged */
+                        }
+                }
+                sw_2acbb8(uVar7, k1);
+                sw_3a25d4(k1);
+                sw_463000(0x5dfac0 + 0x10);  /* "text segment mode cannot be unse..." */
+                goto e43c;
+        case 29:
+                sw_464e28(0);
+                uVar7 = sw_460dbc(0);
+                auVar14 = sw_4635d4(uVar7, 0x80000000005df890);  /* tagged ptr */
+e390:
+                sw_2acbb8(auVar14.lo, auVar14.hi);
+                goto e444;
         case 30:
                 sw_462f7c(0); sw_2a4ab4(0x39); sw_464058(0);
                 sw_462ed8(0); sw_2acbb8(0);
-                sw_9e218(0x5df870);    /* "... is a deprecated Unicode property..." */
-                goto done;
+                sw_9e218(0x5df870);          /* "... is a deprecated Unicode property..." */
+                k3 = 0 + 0x1c;               /* extraout_x9_04 + 0x1c */
+                goto e438;
         case 31:
-                sw_462a34(0x5df850);   /* "no capture numbered" */
-                goto done;
+                sw_462a34(0x5df850);         /* "no capture numbered" */
+e118:
+                sw_f4ae8(0);
+                /* uVar7 = FUN_00462abc(extraout_x16_01); auVar13 = (*extraout_x8_00)(uVar7,uVar11); */
+                sw_462abc(0);
+                sw_2acbb8(0, k1);            /* indirect call via x8 */
+                auVar13.lo = 0; auVar13.hi = 0; /* auVar13 = (result of indirect call) */
+e524:
+                sw_2acbb8(auVar13.lo, auVar13.hi);
+                sw_3a25d4(auVar13.hi);
+                goto e444;
         case 32:
-                sw_462a34(0x5df830);   /* "no capture named ..." */
-                goto done;
+                sw_462a34(0x5df830);         /* "no capture named ..." */
+                break;
         case 33:
-                sw_4647c0(0); sw_462ed8(0); sw_2acbb8(0);
-                sw_9e218(0x5df810);    /* "... already exists" */
-                goto done;
+                sw_4647c0(0);
+                sw_462ed8(0); sw_2acbb8(0);
+                sw_9e218(0x5df810);          /* "... already exists" */
+                k3 = 0 - 0xb;                /* extraout_x9_00 - 0xb */
+                goto e438;
         case 34:
                 sw_462f7c(0); sw_2a4ab4(0x45); sw_464058(0);
-                sw_463bbc(0x5df790 + 0x10, 0xd000000000000013);
-                sw_2acbb8(0); sw_f4ae8(0);
+                sw_463bbc(0x5df790 + 0x10, 0xd000000000000013); /* "must compare less than or equa..." + 0x10 */
+                sw_2acbb8(0);
+                sw_f4ae8(0);
+                /* pcVar5 = (code*)FUN_00027724(extraout_x16); (*pcVar5)(0x677880,uVar11); */
                 sw_27724(0);
-                sw_2acbb8(0); sw_3a25d4(0);
+                sw_2acbb8(0x677880, k1);
+                sw_2acbb8(0);
+                sw_3a25d4(0);                /* extraout_x1 */
                 sw_463bbc(0x5df7c0, 0xd00000000000002d); /* "range lower bound ..." */
-                sw_2acbb8(0); sw_27724(0); sw_2acbb8(0); sw_3a25d4(0);
-                goto done;
+                sw_2acbb8(0);
+                sw_27724(0);
+                sw_2acbb8(0x677880, k1);
+                sw_2acbb8(0);
+                sw_3a25d4(0);                /* extraout_x1_00 */
+                goto e300;
         case 35:
                 sw_462f7c(0); sw_2a4ab4(0x36); sw_464058(0);
-                sw_464d80(0); sw_2acbb8(0); sw_462ed8(0); sw_2acbb8(0);
-                sw_9e218(0x5df790);    /* "... must compare less than or equa..." */
-                sw_463bbc(0);
-                goto done;
+                sw_464d80(0); sw_2acbb8(0);
+                sw_462ed8(0); sw_2acbb8(0);
+                sw_9e218(0x5df790);          /* "... must compare less than or equa..." */
+                sw_463bbc(0 + 0xb);          /* extraout_x9 + 0xb */
+e1e4:
+                sw_2acbb8(0);
+e1e8:
+                sw_e15d8(0);
+                goto e2fc;
         case 36:
                 sw_463824(0);
-                if ((k3 == 0 && k2 == 0) && (k1 == 0 && k4 == 0)) sw_463944(0);
-                else if (k1 == 1 && ((k3 == 0 && k2 == 0) && k4 == 0))
+                if ((k3 == 0 && k2 == 0) && (k1 == 0 && k4 == 0)) {
+                        sw_463944(0);
+                        goto e444;
+                }
+                if (k1 == 1 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
                         sw_465f9c(0x5e0020);   /* "expected non-empty contents..." */
-                else if (k1 == 2 && ((k3 == 0 && k2 == 0) && k4 == 0)) sw_463944(0);
-                else sw_463944(0);
-                break;
-        default:
-                sw_462ed8(0);
-                sw_2acbb8(0);
-                sw_463514(0);
-                break;
+                        goto e444;
+                }
+                if (k1 == 2 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                        /* falls through to e554 */
+                        goto e554;
+                } else {
+                        if (k1 == 3 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                sw_463944(0);
+                                goto e444;
+                        }
+                        if (k1 == 4 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                sw_463944(0);
+                                goto e444;
+                        }
+                        if (k1 == 5 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                sw_463944(0);
+                                goto e444;
+                        }
+                        if (k1 == 6 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                sw_463944(0);
+                                goto e444;
+                        }
+                        if (k1 != 7 || ((k3 != 0 || k2 != 0) || k4 != 0)) {
+                                if (k1 == 8 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 9 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        goto e554;
+                                }
+                                if (k1 == 10 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 11 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 12 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 13 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 14 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 15 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 == 16 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                        sw_463944(0);
+                                        goto e444;
+                                }
+                                if (k1 != 17 || ((k3 != 0 || k2 != 0) || k4 != 0)) {
+                                        if (k1 == 18 && ((k3 == 0 && k2 == 0) && k4 == 0)) {
+                                                sw_463944(0);
+                                        } else {
+                                                sw_463944(0);
+                                        }
+                                        goto e444;
+                                }
+                        }
+                        sw_463944(0);
+                }
+e554:
+                sw_463944(0);
+                goto e444;
         }
-done:
+        sw_462ed8(0);
+e2fc:
         sw_2acbb8(0);
-        sw128_t s = sw_3507e0(0);
-        sw_466528(s.lo, s.hi, 0);
+e300:
+        sw_463514(0);
+e43c:
+        sw_2acbb8(0);
+e444:
+        auVar14 = sw_3507e0(0);
+        sw_466528(auVar14.lo, auVar14.hi, uVar4);
 }
 
 

@@ -48,7 +48,7 @@ extern unsigned long sk_x_00350980();  /* FUN_00350980 */
 extern unsigned long sk_x_0035098c();  /* FUN_0035098c */
 extern unsigned long sk_x_003509c8();  /* FUN_003509c8 */
 extern unsigned long sk_x_00350a04();  /* FUN_00350a04 */
-extern unsigned long sk_x_00350530();  /* FUN_00350530 */
+extern cl4_result_t sk_x_00350530();  /* FUN_00350530 (16-byte result) */
 extern unsigned long sk_x_00350560();  /* FUN_00350560 */
 extern unsigned long sk_x_00350618();  /* FUN_00350618 */
 extern unsigned long sk_x_003507bc();  /* FUN_003507bc */
@@ -65,7 +65,7 @@ extern unsigned long sk_x_000026e8();  /* FUN_000026e8 */
 extern unsigned long sk_x_0006a4c0();  /* FUN_0006a4c0 */extern unsigned long sk_x_00310d68();  /* FUN_00310d68 */
 extern unsigned long sk_x_00310d98();  /* FUN_00310d98 */
 extern unsigned long sk_x_003625e4();  /* FUN_003625e4 */
-extern unsigned long sk_x_00371950();  /* FUN_00371950 */
+extern cl4_result_t sk_x_00371950();  /* FUN_00371950 (16-byte result) */
 extern unsigned long sk_x_00377824();  /* FUN_00377824 */
 extern unsigned long sk_x_00377bec();  /* FUN_00377bec */
 extern unsigned long sk_x_00002534();  /* FUN_00002534 */
@@ -84,13 +84,13 @@ extern unsigned long sk_x_000699d8();  /* FUN_000699d8 */
 extern unsigned long sk_x_00069770();  /* FUN_00069770 */
 extern unsigned long sk_x_0007c028();  /* FUN_0007c028 */
 extern unsigned long sk_x_0007c1a4();  /* FUN_0007c1a4 */
-extern unsigned long sk_x_0007c1c4();  /* FUN_0007c1c4 */
+extern cl4_result_t sk_x_0007c1c4();  /* FUN_0007c1c4 (16-byte result) */
 extern unsigned long sk_x_00077024();  /* FUN_00077024 */
 extern unsigned long sk_x_000776cc();  /* FUN_000776cc */
 extern unsigned long sk_x_00084174();  /* FUN_00084174 */
 extern unsigned long sk_x_00084220();  /* FUN_00084220 */
 extern unsigned long sk_x_00084234();  /* FUN_00084234 */
-extern unsigned long sk_x_0008e518();  /* FUN_0008e518 */
+extern cl4_result_t sk_x_0008e518();  /* FUN_0008e518 (16-byte result) */
 extern unsigned long sk_x_0008e500();  /* FUN_0008e500 */
 extern unsigned long sk_x_000aa4ec();  /* FUN_000aa4ec */
 extern unsigned long sk_x_000a6f88();  /* FUN_000a6f88 */
@@ -127,7 +127,7 @@ extern unsigned long sk_x_0041577c();  /* FUN_0041577c */
 extern unsigned long sk_x_00415aa4();  /* FUN_00415aa4 */
 extern unsigned long sk_x_0041b3d4();  /* FUN_0041b3d4 */
 extern unsigned long sk_x_0042d720();  /* FUN_0042d720 */
-extern unsigned long sk_x_00447144();  /* FUN_00447144 */
+extern cl4_result_t sk_x_00447144(unsigned long idx);  /* FUN_00447144 */
 extern unsigned long sk_x_0044f298();  /* FUN_0044f298 */
 extern unsigned long sk_x_00450848();  /* FUN_00450848 */
 extern unsigned long sk_x_00455990();  /* FUN_00455990 */

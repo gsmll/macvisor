@@ -400,12 +400,12 @@ void sk_f_003e1550(void);
 void sk_f_003e17b4(void);
 void sk_f_003e1968(void);
 void sk_f_003e1c00(void);
-void sk_f_003e1da8(void);
+void sk_f_003e1da8(word_t param_1, word_t param_2, long param_3);
 void sk_f_003e1f00(void);
 void sk_f_003e20c4(void);
 void sk_f_003e22f8(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e2558(void);
-void sk_f_003e262c(void);
+void sk_f_003e262c(word_t param_1, word_t param_2, long param_3);
 void sk_f_003e2784(void);
 void sk_f_003e2948(void);
 void sk_f_003e2b7c(word_t param_1, word_t param_2, code_t jt1);
@@ -3610,7 +3610,7 @@ long l0;
   *(long **)(ux0 + 0x40) = pl0;
   *pl0 = ux0;
   pl0[1] = (long)sk_f_003e08fc;
-  sk_f_003e012c(pl0 + 1,&DAT_005a0038,l0,*(word_t *)(ux0 + 0x20),
+  sk_f_003e012c((word_t)(pl0 + 1),(word_t)&DAT_005a0038,l0,*(word_t *)(ux0 + 0x20),
                *(word_t *)(ux0 + 0x28));
   return;
 }
@@ -4093,7 +4093,7 @@ code_t *pc0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e1da8(void)
+void sk_f_003e1da8(word_t param_1, word_t param_2, long param_3)
 {
 word_t u0;
   word_t u1;
@@ -4354,7 +4354,7 @@ word_t *p0;
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e262c(void)
+void sk_f_003e262c(word_t param_1, word_t param_2, long param_3)
 {
 word_t u0;
   word_t u1;
