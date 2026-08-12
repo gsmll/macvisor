@@ -9,10 +9,100 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdbool.h>
 
 /* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1).
  * Model it as a struct so callers can carry both halves. */
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
+/* ------------------------------------------------------------------ *
+ * Binary globals referenced by these bodies (declared extern; they live in
+ * the kernel image at the given addresses). Scalar words for the runtime
+ * once/executor state; byte arrays for the read-only Unicode property tables.
+ * ------------------------------------------------------------------ */
+extern volatile unsigned long _DAT_006adec5;
+extern volatile unsigned long _DAT_006adee0;
+extern volatile unsigned long _DAT_006adf10;
+extern volatile unsigned long _DAT_006adf18;
+extern volatile unsigned long _DAT_006adf20;
+extern volatile unsigned long _DAT_006adf50;
+extern volatile unsigned long _DAT_006adf58;
+extern volatile unsigned long _DAT_006adf60;
+extern volatile unsigned long _DAT_006adf68;
+extern volatile unsigned long _DAT_006c0b20;
+extern volatile unsigned long _DAT_006c0b30;
+extern volatile unsigned long _DAT_006c0b40;
+extern volatile unsigned long _DAT_006c0b50;
+
+extern unsigned long (*DAT_00658c80)(unsigned long, ...);
+
+extern unsigned char DAT_003697c0[1];
+extern unsigned char DAT_00405fa4[1];
+extern unsigned char DAT_00405fdc[1];
+extern unsigned char DAT_004f2a70[1];
+extern unsigned char DAT_004f2f18[1];
+extern unsigned char DAT_004f3938[1];
+extern unsigned char DAT_004f3c88[1];
+extern unsigned char DAT_004f3d60[1];
+extern unsigned char DAT_004f4b10[1];
+extern unsigned char DAT_004f4e7a[1];
+extern unsigned char DAT_004f5ab0[1];
+extern unsigned char DAT_004f80d2[1];
+extern unsigned char DAT_004f80ec[1];
+extern unsigned char DAT_004fa170[1];
+extern unsigned char DAT_004fb4f8[1];
+extern unsigned char DAT_004fb4fc[1];
+extern unsigned char DAT_00500450[1];
+extern unsigned char DAT_00500a58[1];
+extern unsigned char DAT_00500e70[1];
+extern unsigned char DAT_00500e86[1];
+extern unsigned char DAT_00501670[1];
+extern unsigned char DAT_00501af0[1];
+extern unsigned char DAT_00501ed0[1];
+extern unsigned char DAT_00501fc8[1];
+extern unsigned char DAT_005024e8[1];
+extern unsigned char DAT_00502630[1];
+extern unsigned char DAT_005054e4[1];
+extern unsigned char DAT_005057b0[1];
+extern unsigned char DAT_00505918[1];
+extern unsigned char DAT_00505970[1];
+extern unsigned char DAT_00505a3e[1];
+extern unsigned char DAT_00505e12[1];
+extern unsigned char DAT_0050a214[1];
+extern unsigned char DAT_00532a14[1];
+extern unsigned char DAT_0056adec[1];
+extern unsigned char DAT_005781a0[1];
+extern unsigned char DAT_0058cb70[1];
+extern unsigned char DAT_00590350[1];
+extern unsigned char DAT_00590388[1];
+extern unsigned char DAT_00598508[1];
+extern unsigned char DAT_0059850c[1];
+extern unsigned char DAT_00599fe0[1];
+extern unsigned char DAT_0059a668[1];
+extern unsigned char DAT_0059a808[1];
+extern unsigned char DAT_0059af5a[1];
+extern unsigned char DAT_0059af70[1];
+extern unsigned char DAT_0059e0f8[1];
+extern unsigned char DAT_0059e108[1];
+extern unsigned char DAT_0059ff7c[1];
+extern unsigned char DAT_0059ff8c[1];
+extern unsigned char DAT_0059ff9c[1];
+extern unsigned char DAT_0059ffac[1];
+extern unsigned char DAT_00614564[1];
+extern unsigned char DAT_00614a5c[1];
+extern unsigned char DAT_006adec5[1];
+extern unsigned char DAT_006adee0[1];
+
+extern unsigned char LAB_003d4740[1];
+extern unsigned char LAB_003d5c6c[1];
+extern unsigned char LAB_003d7700[1];
+extern unsigned char LAB_003d7ae4[1];
+extern unsigned char LAB_003d7e74[1];
+extern unsigned char LAB_003d830c[1];
+extern unsigned char LAB_003d8e60[1];
+extern unsigned char LAB_00614a7c[1];
+
+extern unsigned char u_hF____0059e0f8[1];
+
 
 /* ------------------------------------------------------------------ *
  * Out-of-range cL4 helper declarations (declared extern with a one-line
@@ -104,6 +194,337 @@ static inline int cl4_popcount64(unsigned long w)
     return __builtin_popcountll(w);
 }
 
+
+extern unsigned long FUN_0040ab60();
+extern unsigned long FUN_00406420();
+extern void FUN_003dd540();
+/* External kernel/runtime helper FUN_* referenced by these bodies. Declared
+ * as variadic word-returning externs (bodies reconstructed by their owning
+ * range workers; kept in FUN_ form to preserve the address map). */
+extern unsigned long FUN_000027e8();
+extern unsigned long FUN_00027754();
+extern unsigned long FUN_0007c028();
+extern unsigned long FUN_0007c1a4();
+extern unsigned long FUN_0007c1c4();
+extern unsigned long FUN_000839d8();
+extern unsigned long FUN_000839f8();
+extern unsigned long FUN_0008409c();
+extern unsigned long FUN_00084180();
+extern unsigned long FUN_00084220();
+extern unsigned long FUN_00084234();
+extern unsigned long FUN_0008dae4();
+extern unsigned long FUN_0008e1ec();
+extern unsigned long FUN_0009461c();
+extern unsigned long FUN_000aa4ec();
+extern unsigned long FUN_000b430c();
+extern unsigned long FUN_000b4390();
+extern unsigned long FUN_000e15d8();
+extern unsigned long FUN_000e72d4();
+extern unsigned long FUN_00118abc();
+extern unsigned long FUN_0011aa70();
+extern unsigned long FUN_0011b39c();
+extern unsigned long FUN_0014ae44();
+extern unsigned long FUN_001afe4c();
+extern unsigned long FUN_001b1780();
+extern unsigned long FUN_00208418();
+extern unsigned long FUN_00310d68();
+extern unsigned long FUN_0031d5f0();
+extern unsigned long FUN_003488bc();
+extern unsigned long FUN_00349530();
+extern unsigned long FUN_00349f3c();
+extern unsigned long FUN_0034a2f8();
+extern unsigned long FUN_0034a478();
+extern unsigned long FUN_0034a74c();
+extern unsigned long FUN_0034b05c();
+extern unsigned long FUN_0034b7e4();
+extern unsigned long FUN_0034bcf0();
+extern unsigned long FUN_0034e4ec();
+extern unsigned long FUN_003504a0();
+extern unsigned long FUN_003504ac();
+extern unsigned long FUN_003504c4();
+extern unsigned long FUN_00350500();
+extern unsigned long FUN_00350624();
+extern unsigned long FUN_0035063c();
+extern unsigned long FUN_00350744();
+extern unsigned long FUN_00350750();
+extern unsigned long FUN_00350798();
+extern unsigned long FUN_003507e0();
+extern unsigned long FUN_00350968();
+extern unsigned long FUN_00350974();
+extern unsigned long FUN_003509c8();
+extern unsigned long FUN_003509ec();
+extern unsigned long FUN_00350b54();
+extern unsigned long FUN_00350d04();
+extern unsigned long FUN_00351384();
+extern unsigned long FUN_003513b4();
+extern unsigned long FUN_00351f10();
+extern unsigned long FUN_00352018();
+extern unsigned long FUN_00352700();
+extern unsigned long FUN_00353080();
+extern unsigned long FUN_00353c00();
+extern unsigned long FUN_00353d70();
+extern unsigned long FUN_00356b80();
+extern unsigned long FUN_003593c0();
+extern unsigned long FUN_0035a7e8();
+extern unsigned long FUN_0035ac70();
+extern unsigned long FUN_0036986c();
+extern unsigned long FUN_0036b6ac();
+extern unsigned long FUN_00377824();
+extern unsigned long FUN_00377bec();
+extern unsigned long FUN_00377dcc();
+extern unsigned long FUN_0039a128();
+extern unsigned long FUN_003e9df8();
+extern unsigned long FUN_003eaf4c();
+extern unsigned long FUN_003fcafc();
+extern unsigned long FUN_003fcb2c();
+extern unsigned long FUN_003fcb5c();
+extern unsigned long FUN_003fcb8c();
+extern unsigned long FUN_003fcc1c();
+extern unsigned long FUN_003fcc4c();
+extern unsigned long FUN_003fccc4();
+extern unsigned long FUN_003fccd4();
+extern unsigned long FUN_003fcd04();
+extern unsigned long FUN_00406268();
+extern unsigned long FUN_00406288();
+extern unsigned long FUN_004062a8();
+extern unsigned long FUN_004062e8();
+extern unsigned long FUN_0040652c();
+extern unsigned long FUN_0040654c();
+extern unsigned long FUN_00406574();
+extern unsigned long FUN_00406590();
+extern unsigned long FUN_00406608();
+extern unsigned long FUN_00406704();
+extern unsigned long FUN_0040679c();
+extern unsigned long FUN_0040683c();
+extern unsigned long FUN_0040684c();
+extern unsigned long FUN_0040686c();
+extern unsigned long FUN_00406894();
+extern unsigned long FUN_004068f4();
+extern unsigned long FUN_0040697c();
+extern unsigned long FUN_00406aa4();
+extern unsigned long FUN_00406ab4();
+extern unsigned long FUN_00406bb4();
+extern unsigned long FUN_00406bc4();
+extern unsigned long FUN_00406bd4();
+extern unsigned long FUN_00406c3c();
+extern unsigned long FUN_00406cc8();
+extern unsigned long FUN_00406cf0();
+extern unsigned long FUN_00406d70();
+extern unsigned long FUN_00406da8();
+extern unsigned long FUN_00406dd0();
+extern unsigned long FUN_00406e8c();
+extern unsigned long FUN_00406f18();
+extern unsigned long FUN_00406f2c();
+extern unsigned long FUN_00406f40();
+extern unsigned long FUN_00406f50();
+extern unsigned long FUN_00406fc0();
+extern unsigned long FUN_00406fe0();
+extern unsigned long FUN_00407000();
+extern unsigned long FUN_00407018();
+extern unsigned long FUN_004070cc();
+extern unsigned long FUN_004070d8();
+extern unsigned long FUN_00407100();
+extern unsigned long FUN_0040711c();
+extern unsigned long FUN_00407164();
+extern unsigned long FUN_004071c0();
+extern unsigned long FUN_00407214();
+extern unsigned long FUN_00407248();
+extern unsigned long FUN_004072a0();
+extern unsigned long FUN_0040738c();
+extern unsigned long FUN_00407398();
+extern unsigned long FUN_004073cc();
+extern unsigned long FUN_00407450();
+extern unsigned long FUN_004074c4();
+extern unsigned long FUN_00407588();
+extern unsigned long FUN_00407594();
+extern unsigned long FUN_004075c4();
+extern unsigned long FUN_0040761c();
+extern unsigned long FUN_00407670();
+extern unsigned long FUN_00407700();
+extern unsigned long FUN_00407740();
+extern unsigned long FUN_004077a0();
+extern unsigned long FUN_00407824();
+extern unsigned long FUN_004078d4();
+extern unsigned long FUN_004078e8();
+extern unsigned long FUN_004078f4();
+extern unsigned long FUN_0040790c();
+extern unsigned long FUN_00407954();
+extern unsigned long FUN_00407978();
+extern unsigned long FUN_00407984();
+extern unsigned long FUN_004079a8();
+extern unsigned long FUN_004079b4();
+extern unsigned long FUN_004079cc();
+extern unsigned long FUN_00407a04();
+extern unsigned long FUN_00407aa0();
+extern unsigned long FUN_00407c5c();
+extern unsigned long FUN_00407c78();
+extern unsigned long FUN_00407c8c();
+extern unsigned long FUN_00407ca0();
+extern unsigned long FUN_00407cd4();
+extern unsigned long FUN_00407db0();
+extern unsigned long FUN_00407e10();
+extern unsigned long FUN_00407e58();
+extern unsigned long FUN_00407ea0();
+extern unsigned long FUN_00407f48();
+extern unsigned long FUN_00407f9c();
+extern unsigned long FUN_00407fb4();
+extern unsigned long FUN_00408044();
+extern unsigned long FUN_00408058();
+extern unsigned long FUN_004080cc();
+extern unsigned long FUN_004081c0();
+extern unsigned long FUN_004082a8();
+extern unsigned long FUN_00408308();
+extern unsigned long FUN_00408380();
+extern unsigned long FUN_004083b4();
+extern unsigned long FUN_0040841c();
+extern unsigned long FUN_00408454();
+extern unsigned long FUN_004084d4();
+extern unsigned long FUN_00408574();
+extern unsigned long FUN_00408588();
+extern unsigned long FUN_0040859c();
+extern unsigned long FUN_004088d8();
+extern unsigned long FUN_00408db8();
+extern unsigned long FUN_004094ec();
+extern unsigned long FUN_0040a7f0();
+extern unsigned long FUN_0040a860();
+extern unsigned long FUN_0040ada4();
+extern unsigned long FUN_0040bb18();
+extern unsigned long FUN_0040bd24();
+
+/* Helpers that return a 16-byte pair (two words in x0/x1) — override the
+ * generic word-returning externs above. */
+cL4_w16_t FUN_0036993c(unsigned long, unsigned long, unsigned long, unsigned long);
+cL4_w16_t FUN_00406fd4(void);
+cL4_w16_t FUN_0040700c(void);
+cL4_w16_t FUN_00408bdc(unsigned long, unsigned long);
+cL4_w16_t FUN_00351330(void);
+cL4_w16_t FUN_00406fec(void);
+cL4_w16_t FUN_0040678c(void);
+cL4_w16_t FUN_00350518(void);
+
+/* Forward declarations of same-file functions (referenced before
+ * their definitions). Kept in Ghidra FUN_ form to preserve the address map.
+ * Empty-arg decls so call sites with decompiler-dropped register args compile. */
+void FUN_003d2f10();
+void FUN_003d2f9c();
+void FUN_003d2ffc();
+void FUN_003d30b0();
+long FUN_003d30c4();
+long FUN_003d3130();
+void FUN_003d319c();
+void FUN_003d31d8();
+void FUN_003d31e8();
+unsigned long FUN_003d31f8();
+unsigned long FUN_003d3200();
+unsigned int FUN_003d326c();
+long FUN_003d3398();
+bool FUN_003d3470();
+unsigned int FUN_003d34b8();
+bool FUN_003d351c();
+unsigned short FUN_003d3550();
+unsigned int FUN_003d35b0();
+int FUN_003d35f0();
+unsigned long FUN_003d36b0();
+unsigned int FUN_003d3740();
+cL4_w16_t FUN_003d37a4();
+unsigned long FUN_003d37f0();
+unsigned int FUN_003d3838();
+long FUN_003d3964();
+unsigned short FUN_003d3ac0();
+unsigned int FUN_003d3b30();
+unsigned int FUN_003d3b98();
+long FUN_003d3c1c();
+void FUN_003d3c88();
+unsigned char FUN_003d3d4c();
+bool FUN_003d3dac();
+void FUN_003d3dd8();
+void FUN_003d3e94();
+void FUN_003d3ed0();
+void FUN_003d3f0c();
+long FUN_003d3f78();
+void FUN_003d3fcc();
+void FUN_003d40bc();
+void FUN_003d40c0();
+unsigned long FUN_003d40e4();
+void FUN_003d412c();
+void FUN_003d4278();
+void FUN_003d4368();
+void FUN_003d4428();
+void FUN_003d44a8();
+void FUN_003d4518();
+void FUN_003d45b0();
+long FUN_003d4658();
+void FUN_003d4688();
+void FUN_003d47f8();
+void FUN_003d484c();
+void FUN_003d48e8();
+void FUN_003d4980();
+void FUN_003d4a28();
+void FUN_003d4d0c();
+bool FUN_003d4d80();
+void FUN_003d4dbc();
+void FUN_003d4e84();
+unsigned int FUN_003d4ebc();
+void FUN_003d4f18();
+void FUN_003d4f78();
+void FUN_003d4fd8();
+long FUN_003d5028();
+void FUN_003d5058();
+void FUN_003d50cc();
+void FUN_003d5138();
+void FUN_003d5194();
+void FUN_003d51c4();
+void FUN_003d520c();
+unsigned int FUN_003d5284();
+void FUN_003d52d0();
+unsigned int FUN_003d5308();
+void FUN_003d5338();
+unsigned int FUN_003d5370();
+void FUN_003d53bc();
+void FUN_003d53ec();
+void FUN_003d541c();
+void FUN_003d5670();
+void FUN_003d58a0();
+void FUN_003d5a4c();
+void FUN_003d5dc8();
+void FUN_003d6034();
+void FUN_003d62dc();
+void FUN_003d6418();
+void FUN_003d6470();
+void FUN_003d64a0();
+void FUN_003d6530();
+void FUN_003d6724();
+void FUN_003d69f8();
+void FUN_003d6b14();
+void FUN_003d6d50();
+void FUN_003d71b8();
+void FUN_003d72f0();
+void FUN_003d7414();
+void FUN_003d7440();
+void FUN_003d7460();
+void FUN_003d7494();
+void FUN_003d74d0();
+void FUN_003d7540();
+void FUN_003d75f8();
+void FUN_003d77bc();
+void FUN_003d7978();
+void FUN_003d7c18();
+void FUN_003d7d60();
+void FUN_003d7f60();
+void FUN_003d816c();
+void FUN_003d85b8();
+void FUN_003d86f0();
+void FUN_003d871c();
+void FUN_003d873c();
+void FUN_003d87ac();
+void FUN_003d89a4();
+void FUN_003d8b64();
+void FUN_003d8cc0();
+void FUN_003d8fbc();
+void FUN_003d91ac();
+void FUN_003d93f8();
+void FUN_003d952c();
+
 /* ------------------------------------------------------------------ *
  * 0x3d2f10 - 0x3d2ffc : Swift print / fatal-error wrappers and the
  * standard-library float-string parse helpers.
@@ -158,7 +579,7 @@ void FUN_003d2ffc(void)
 {
     int done;
     if (-1 < (long)_DAT_006adee0) {
-        FUN_003d3dd8(&DAT_006adee0, (void *)&DAT_003697c0, 0);
+        FUN_003d3dd8((((unsigned char*)DAT_006adee0)), (void *)(((unsigned char*)DAT_003697c0)), 0);
     }
     done = (DAT_006adec5 != 1);
     if (done) {
@@ -386,7 +807,7 @@ bool FUN_003d3470(unsigned long param_1)
     if ((unsigned int)param_1 < 0xa9) {
         return false;
     }
-    lVar1 = FUN_003d3398(param_1, (long *)&DAT_004f2a70, (long)&DAT_004f2f18);
+    lVar1 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_004f2a70)), (long)(((unsigned char*)DAT_004f2f18)));
     return lVar1 != 0x7fffffffffffffff;
 }
 
@@ -428,7 +849,7 @@ unsigned int FUN_003d34b8(unsigned int param_1)
 bool FUN_003d351c(unsigned long param_1)
 {
     long lVar1;
-    lVar1 = FUN_003d3398(param_1, (long *)&DAT_004f3938, (long)&DAT_004f3c88);
+    lVar1 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_004f3938)), (long)(((unsigned char*)DAT_004f3c88)));
     return lVar1 != 0x7fffffffffffffff;
 }
 
@@ -442,10 +863,10 @@ unsigned short FUN_003d3550(unsigned long param_1)
 {
     long lVar1;
     if (0xbf < (unsigned int)param_1) {
-        lVar1 = FUN_003d3398(param_1, (long *)&DAT_004f3d60, (long)&DAT_004f4b10);
+        lVar1 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_004f3d60)), (long)(((unsigned char*)DAT_004f4b10)));
         if (lVar1 != 0x7fffffffffffffff) {
-            return *(unsigned short *)(&DAT_004f5ab0 +
-                (unsigned long)(unsigned char)(&DAT_004f4e7a)[lVar1] * 2);
+            return *(unsigned short *)((((unsigned char*)DAT_004f5ab0)) +
+                (unsigned long)(unsigned char)((((unsigned char*)DAT_004f4e7a)))[lVar1] * 2);
         }
     }
     return 0;
@@ -455,13 +876,13 @@ unsigned short FUN_003d3550(unsigned long param_1)
  * Ghidra: undefined4 FUN_003d35b0(undefined8)
  * Index a 32-bit property value for the scalar from the 12-range table.
  * Confidence: low
- * Notes: FUN_003d326c(…,0xc,0x67d130,0x67d190,&DAT_004f80d2). */
+ * Notes: FUN_003d326c(…,0xc,0x67d130,0x67d190,(((unsigned char*)DAT_004f80d2))). */
 unsigned int FUN_003d35b0(unsigned long param_1)
 {
     long lVar1;
     lVar1 = FUN_003d326c(param_1, 0xc, (long)0x67d130, (long)0x67d190,
-                         (long)&DAT_004f80d2);
-    return *(unsigned int *)(&DAT_004f80ec + lVar1 * 4);
+                         (long)(((unsigned char*)DAT_004f80d2)));
+    return *(unsigned int *)((((unsigned char*)DAT_004f80ec)) + lVar1 * 4);
 }
 
 /* FUN_003d35f0 @ 0x3d35f0   (est. cL4_unicode_combining_class)
@@ -478,7 +899,7 @@ int FUN_003d35f0(unsigned int param_1, unsigned long param_2)
     long lVar4;
 
     lVar4 = FUN_003d326c(param_2, 4, (long)0x67d1f0, (long)0x67d210,
-                         (long)&DAT_004fa170);
+                         (long)(((unsigned char*)DAT_004fa170)));
     puVar5 = *(unsigned int **)(lVar4 * 8 + 0x67d230);
     uVar6 = *puVar5;
     if (((unsigned int)param_2 == (uVar6 & 0x1fffff)) &&
@@ -525,12 +946,12 @@ unsigned long FUN_003d36b0(unsigned int param_1)
         if (iVar1 == 0x13d4) {
             uVar6 = 0x10ffff;
         } else {
-            uVar6 = (*(unsigned int *)(&DAT_004fb4fc + (long)iVar1 * 4) & 0x1fffff) - 1;
+            uVar6 = (*(unsigned int *)((((unsigned char*)DAT_004fb4fc)) + (long)iVar1 * 4) & 0x1fffff) - 1;
         }
-        uVar2 = *(unsigned int *)(&DAT_004fb4f8 + (long)iVar1 * 4) & 0x1fffff;
+        uVar2 = *(unsigned int *)((((unsigned char*)DAT_004fb4f8)) + (long)iVar1 * 4) & 0x1fffff;
         if (uVar2 <= param_1 && param_1 <= uVar6) {
-            return *(unsigned long *)(&DAT_00500450 +
-                (unsigned long)(*(unsigned int *)(&DAT_004fb4f8 + (long)iVar1 * 4) >> 0x15) * 8);
+            return *(unsigned long *)((((unsigned char*)DAT_00500450)) +
+                (unsigned long)(*(unsigned int *)((((unsigned char*)DAT_004fb4f8)) + (long)iVar1 * 4) >> 0x15) * 8);
         }
         iVar3 = iVar1 - 1;
         if (uVar2 <= param_1) {
@@ -560,7 +981,7 @@ unsigned int FUN_003d3740(unsigned int param_1)
     iVar7 = 0x105;
     do {
         iVar2 = iVar6 + ((unsigned int)(iVar7 - iVar6) >> 1);
-        uVar5 = *(unsigned int *)(&DAT_00500a58 + (long)iVar2 * 4);
+        uVar5 = *(unsigned int *)((((unsigned char*)DAT_00500a58)) + (long)iVar2 * 4);
         uVar3 = uVar5 & 0x1fffff;
         uVar1 = uVar3 + (uVar5 >> 0x15 & 0xff);
         if (uVar3 <= param_1 && param_1 <= uVar1) {
@@ -584,15 +1005,15 @@ unsigned int FUN_003d3740(unsigned int param_1)
  * Return a 16-byte pair whose low 8 bytes hold a mapped 64-bit value for
  * the scalar (from DAT_00501670 via the 11-range index), high 8 bytes 0.
  * Confidence: low
- * Notes: FUN_003d326c(…,0xb,0x67d470,0x67d4c8,&DAT_00500e70). */
+ * Notes: FUN_003d326c(…,0xb,0x67d470,0x67d4c8,(((unsigned char*)DAT_00500e70))). */
 cL4_w16_t FUN_003d37a4(unsigned long param_1)
 {
     long lVar1;
     cL4_w16_t r;
     lVar1 = FUN_003d326c(param_1, 0xb, (long)0x67d470, (long)0x67d4c8,
-                         (long)&DAT_00500e70);
-    r.lo = *(unsigned long *)(&DAT_00501670 +
-        (unsigned long)(unsigned char)(&DAT_00500e86)[lVar1] * 8);
+                         (long)(((unsigned char*)DAT_00500e70)));
+    r.lo = *(unsigned long *)((((unsigned char*)DAT_00501670)) +
+        (unsigned long)(unsigned char)((((unsigned char*)DAT_00500e86)))[lVar1] * 8);
     r.hi = 0;
     return r;
 }
@@ -607,7 +1028,7 @@ unsigned long FUN_003d37f0(unsigned long param_1)
 {
     long lVar1;
     unsigned long uVar2;
-    lVar1 = FUN_003d3398(param_1, (long *)&DAT_00501af0, (long)&DAT_00501ed0);
+    lVar1 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_00501af0)), (long)(((unsigned char*)DAT_00501ed0)));
     if (lVar1 == 0x7fffffffffffffff) {
         uVar2 = 0;
     } else {
@@ -628,9 +1049,9 @@ unsigned int FUN_003d3838(unsigned long param_1, int param_2)
     long lVar1;
     unsigned int uVar2;
 
-    lVar1 = FUN_003d3398(param_1, (long *)&DAT_00501fc8, (long)&DAT_005024e8);
+    lVar1 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_00501fc8)), (long)(((unsigned char*)DAT_005024e8)));
     if (lVar1 != 0x7fffffffffffffff) {
-        uVar2 = *(unsigned int *)(&DAT_00502630 + lVar1 * 4);
+        uVar2 = *(unsigned int *)((((unsigned char*)DAT_00502630)) + lVar1 * 4);
         if (param_2 != 0) {
             if (param_2 == 2) {
                 uVar2 >>= 0x10;
@@ -641,7 +1062,7 @@ unsigned int FUN_003d3838(unsigned long param_1, int param_2)
             }
         }
         if ((uVar2 & 0xff) != 0xff) {
-            return *(unsigned int *)(&DAT_005054e4 + (unsigned long)(uVar2 & 0xff) * 4);
+            return *(unsigned int *)((((unsigned char*)DAT_005054e4)) + (unsigned long)(uVar2 & 0xff) * 4);
         }
     }
     return 0;
@@ -661,13 +1082,13 @@ unsigned char *FUN_003d38c4(unsigned long param_1, int param_2, unsigned long *p
     long lVar2;
     unsigned long uVar4;
 
-    lVar2 = FUN_003d3398(param_1, (long *)&DAT_005057b0, (long)&DAT_00505918);
+    lVar2 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_005057b0)), (long)(((unsigned char*)DAT_00505918)));
     if (lVar2 == 0x7fffffffffffffff) {
         pbVar3 = 0;
     } else {
         pbVar3 = (unsigned char *)((unsigned long)*(unsigned short *)
-                                   (&DAT_00505970 + lVar2 * 2) + 0x505a3f);
-        uVar4 = (unsigned char)(&DAT_00505a3e)[*(unsigned short *)(&DAT_00505970 + lVar2 * 2)];
+                                   ((((unsigned char*)DAT_00505970)) + lVar2 * 2) + 0x505a3f);
+        uVar4 = (unsigned char)((((unsigned char*)DAT_00505a3e)))[*(unsigned short *)((((unsigned char*)DAT_00505970)) + lVar2 * 2)];
         pbVar1 = pbVar3 + uVar4;
         pbVar5 = pbVar1 + 1;
         if (param_2 == 2) {
@@ -703,16 +1124,16 @@ long FUN_003d3964(unsigned long param_1, long param_2, long param_3)
     int iVar10, iVar13, iVar14;
     int *piVar11;
 
-    if (*(unsigned short *)(&DAT_00505e12 + (param_1 >> 7 & 0x1ffffff) * 2) != 0xffff) {
+    if (*(unsigned short *)((((unsigned char*)DAT_00505e12)) + (param_1 >> 7 & 0x1ffffff) * 2) != 0xffff) {
         uVar12 = (unsigned int)param_1 & 0x7f |
-                 (unsigned int)*(unsigned short *)(&DAT_00505e12 +
+                 (unsigned int)*(unsigned short *)((((unsigned char*)DAT_00505e12)) +
                     (param_1 >> 7 & 0x1ffffff) * 2) << 7;
-        iVar3 = *(int *)(&DAT_0050a214 + (unsigned long)uVar12 * 4);
+        iVar3 = *(int *)((((unsigned char*)DAT_0050a214)) + (unsigned long)uVar12 * 4);
         if (((unsigned int)param_1 == 0x20) || (iVar3 != 0)) {
             if (uVar12 == 0xa1ff) {
                 iVar10 = 0x383d6;
             } else {
-                piVar11 = (int *)(&DAT_0050a214 + (unsigned long)uVar12 * 4);
+                piVar11 = (int *)((((unsigned char*)DAT_0050a214)) + (unsigned long)uVar12 * 4);
                 do {
                     piVar11++;
                     iVar10 = *piVar11;
@@ -724,20 +1145,20 @@ long FUN_003d3964(unsigned long param_1, long param_2, long param_3)
             uVar12 = 0;
             iVar13 = 0;
             do {
-                uVar4 = (unsigned char)(&DAT_00532a14)[uVar12 + iVar3];
+                uVar4 = (unsigned char)((((unsigned char*)DAT_00532a14)))[uVar12 + iVar3];
                 if (uVar4 == 0xff) {
                     uVar1 = iVar3 + 1 + uVar12;
                     uVar2 = uVar12 + iVar3 + 2;
                     uVar12 += 2;
-                    uVar4 = (unsigned long)((unsigned char)(&DAT_00532a14)[uVar2] << 8 |
-                                            (unsigned char)(&DAT_00532a14)[uVar1]);
+                    uVar4 = (unsigned long)((unsigned char)((((unsigned char*)DAT_00532a14)))[uVar2] << 8 |
+                                            (unsigned char)((((unsigned char*)DAT_00532a14)))[uVar1]);
                 }
-                bVar6 = (&DAT_005781a0)[*(unsigned int *)(&DAT_0056adec + uVar4 * 4)];
+                bVar6 = ((((unsigned char*)DAT_005781a0)))[*(unsigned int *)((((unsigned char*)DAT_0056adec)) + uVar4 * 4)];
                 iVar14 = iVar13;
                 if ((char)bVar6 >= 0) {
                     lVar5 = (param_3 <= iVar13) ? (long)iVar13 : param_3;
                     lVar7 = lVar5 - iVar13;
-                    pbVar9 = &DAT_005781a0 + *(unsigned int *)(&DAT_0056adec + uVar4 * 4);
+                    pbVar9 = (((unsigned char*)DAT_005781a0)) + *(unsigned int *)((((unsigned char*)DAT_0056adec)) + uVar4 * 4);
                     pbVar8 = (unsigned char *)(param_2 + iVar13);
                     do {
                         pbVar9++;
@@ -786,11 +1207,11 @@ unsigned short FUN_003d3ac0(unsigned long param_1)
     iVar5 = 0x6fb;
     do {
         iVar1 = iVar4 + ((unsigned int)(iVar5 - iVar4) >> 1);
-        uVar6 = *(unsigned long *)(&DAT_0058cb70 + (long)iVar1 * 8);
+        uVar6 = *(unsigned long *)((((unsigned char*)DAT_0058cb70)) + (long)iVar1 * 8);
         uVar7 = uVar6 & 0x1fffff;
         uVar2 = uVar7 + (uVar6 >> 0x20);
         if (uVar7 <= param_1 && param_1 <= uVar2) {
-            return *(unsigned short *)(&DAT_00590350 + (uVar6 >> 0x15 & 0xff) * 2);
+            return *(unsigned short *)((((unsigned char*)DAT_00590350)) + (uVar6 >> 0x15 & 0xff) * 2);
         }
         iVar3 = iVar1 - 1;
         if (uVar7 <= param_1) {
@@ -821,7 +1242,7 @@ unsigned int FUN_003d3b30(unsigned long param_1)
     iVar6 = 0x102f;
     do {
         iVar1 = iVar4 + ((unsigned int)(iVar6 - iVar4) >> 1);
-        uVar7 = *(unsigned long *)(&DAT_00590388 + (long)iVar1 * 8);
+        uVar7 = *(unsigned long *)((((unsigned char*)DAT_00590388)) + (long)iVar1 * 8);
         uVar8 = uVar7 & 0x1fffff;
         uVar2 = uVar8 + (uVar7 >> 0x20);
         if (uVar8 <= param_1 && param_1 <= uVar2) {
@@ -858,11 +1279,11 @@ unsigned int FUN_003d3b98(unsigned int param_1)
         if (iVar1 == 0x6b5) {
             uVar6 = 0x10ffff;
         } else {
-            uVar6 = (*(unsigned int *)(&DAT_0059850c + (long)iVar1 * 4) & 0x1fffff) - 1;
+            uVar6 = (*(unsigned int *)((((unsigned char*)DAT_0059850c)) + (long)iVar1 * 4) & 0x1fffff) - 1;
         }
-        uVar2 = *(unsigned int *)(&DAT_00598508 + (long)iVar1 * 4) & 0x1fffff;
+        uVar2 = *(unsigned int *)((((unsigned char*)DAT_00598508)) + (long)iVar1 * 4) & 0x1fffff;
         if (uVar2 <= param_1 && param_1 <= uVar6) {
-            uVar6 = *(unsigned int *)(&DAT_00598508 + (long)iVar1 * 4) >> 0x15;
+            uVar6 = *(unsigned int *)((((unsigned char*)DAT_00598508)) + (long)iVar1 * 4) >> 0x15;
             return uVar6 & 0xff;
         }
         iVar3 = iVar1 - 1;
@@ -890,11 +1311,11 @@ long FUN_003d3c1c(unsigned long param_1, unsigned char *param_2)
     unsigned short uVar1;
     long lVar2;
 
-    lVar2 = FUN_003d3398(param_1, (long *)&DAT_00599fe0, (long)&DAT_0059a668);
+    lVar2 = FUN_003d3398(param_1, (long *)(((unsigned char*)DAT_00599fe0)), (long)(((unsigned char*)DAT_0059a668)));
     if (lVar2 == 0x7fffffffffffffff) {
         lVar2 = 0;
     } else {
-        uVar1 = *(unsigned short *)(&DAT_0059a808 + lVar2 * 2);
+        uVar1 = *(unsigned short *)((((unsigned char*)DAT_0059a808)) + lVar2 * 2);
         *param_2 = (unsigned char)(uVar1 >> 0xb);
         lVar2 = ((unsigned long)uVar1 & 0x7ff) + 0x59ad42;
     }
@@ -917,14 +1338,14 @@ void FUN_003d3c88(unsigned long param_1, int *param_2)
     unsigned long uVar4, uVar5;
 
     lVar3 = FUN_003d326c(param_1, 0xb, (long)0x67d658, (long)0x67d6b0,
-                         (long)&DAT_0059af5a);
-    uVar4 = *(unsigned long *)(&DAT_0059af70 + lVar3 * 8);
+                         (long)(((unsigned char*)DAT_0059af5a)));
+    uVar4 = *(unsigned long *)((((unsigned char*)DAT_0059af70)) + lVar3 * 8);
     uVar6 = (unsigned int)param_1;
     if (uVar6 == ((unsigned int)uVar4 & 0x1fffff)) {
         if ((long)uVar4 < 0) {
             lVar3 = FUN_003d326c(param_1, 5, (long)0x67d708, (long)0x67d730,
                                  (long)u_hF____0059e0f8);
-            uVar5 = *(unsigned long *)(&DAT_0059e108 + lVar3 * 8);
+            uVar5 = *(unsigned long *)((((unsigned char*)DAT_0059e108)) + lVar3 * 8);
             uVar4 = uVar5 >> 0x3e;
             do {
                 uVar1 = (unsigned int)uVar5 & 0xffff;
@@ -1226,7 +1647,7 @@ void FUN_003d412c(unsigned long param_1, long param_2)
 void FUN_003d4278(unsigned long param_1, long param_2, long param_3)
 {
     long lVar1;
-    void (**pcVar2)(void);
+    void (**pcVar2)();
 
     lVar1 = *(long *)(param_3 + -8);
     (*DAT_00658c80)(*(unsigned long *)(lVar1 + 0x40), param_1, param_1);
@@ -1346,10 +1767,10 @@ void FUN_003d45b0(void)
     uVar2 = *(unsigned long *)0x70;
     *(long *)0x10 = 0;
     *(unsigned long *)0x38 = *(unsigned long *)0x58;
-    *(unsigned long **)0x18 = &DAT_00405fa4;
+    *(unsigned long **)0x18 = (((unsigned char*)DAT_00405fa4));
     uVar4 = FUN_0040ab60((unsigned long)0x18, 0x10, 0);
     FUN_00356b80(uVar4, uVar2, uVar1);
-    FUN_003d44a8();
+    FUN_003d44a8(0, (void (*)(void))0, 0, 0, 0);
     FUN_00408044((unsigned long)0x10, uVar3);
     FUN_0040ada4();
 }
@@ -1408,7 +1829,7 @@ void FUN_003d47f8(void)
 
     FUN_00408574();
     FUN_003504ac();
-    uVar1 = FUN_003d40e4();
+    uVar1 = FUN_003d40e4(0, 0, 0);
     (*(void (**)(void))0)();
     cL4_release(uVar1);
 }
@@ -1422,7 +1843,7 @@ void FUN_003d484c(unsigned long param_1, void (*param_2)(void))
 {
     *(long *)0x10 = 0;
     *(unsigned long *)0x38 = param_1;
-    *(unsigned long **)0x18 = &DAT_00405fa4;
+    *(unsigned long **)0x18 = (((unsigned char*)DAT_00405fa4));
     FUN_0040ab60((unsigned long)0x18, 0x10, 0);
     (*param_2)();
     FUN_0040ada4((unsigned long)0x10);
@@ -1474,7 +1895,7 @@ void FUN_003d4980(void)
     *(void (**)(void))0x18 = FUN_003d4a28;
     uVar4 = FUN_0040ab60((unsigned long)0x18, 0x10, 1);
     FUN_00356b80(uVar4, uVar2, uVar1);
-    FUN_003d44a8();
+    FUN_003d44a8(0, (void (*)(void))0, 0, 0, 0);
     FUN_00408044((unsigned long)0x10, uVar3);
     FUN_0040ada4();
 }
@@ -1525,7 +1946,7 @@ bool FUN_003d4d80(void)
     long lVar2;
 
     uVar1 = FUN_000027e8();
-    lVar2 = FUN_0008dae4(uVar1, 0, (unsigned long)&DAT_00614564);
+    lVar2 = FUN_0008dae4(uVar1, 0, (unsigned long)(((unsigned char*)DAT_00614564)));
     return lVar2 != 0;
 }
 
@@ -1673,7 +2094,7 @@ void FUN_003d50cc(void)
 {
     FUN_004094ec();
     if (_DAT_006adf60 != 0) {
-        cL4_retain();
+        cL4_retain(0);
         return;
     }
     FUN_003488bc(1);
@@ -1704,7 +2125,7 @@ void FUN_003d5138(void)
  * Confidence: low */
 void FUN_003d5194(void)
 {
-    cL4_retain();
+    cL4_retain(0);
 }
 
 /* FUN_003d51c4 @ 0x3d51c4   (est. cL4_async_retain_dispatch)
@@ -1820,7 +2241,7 @@ void FUN_003d53bc(void)
 {
     FUN_00406574();
     FUN_003d53ec();
-    cL4_retain();
+    cL4_retain(0);
 }
 
 /* FUN_003d53ec @ 0x3d53ec   (est. cL4_executor_teardown_body)
@@ -1842,6 +2263,7 @@ void FUN_003d53ec(void)
 void FUN_003d541c(void)
 {
     unsigned long uVar1;
+    cL4_w16_t auVar4;
 
     FUN_00407ca0();
     FUN_0040700c();
@@ -1858,7 +2280,7 @@ void FUN_003d541c(void)
     uVar1 = FUN_004078e8(0);
     *(unsigned long *)0x50 = uVar1;
     FUN_00406da8();
-    uVar1 = FUN_00406fec();
+    uVar1 = FUN_00406fec().lo;
     *(unsigned long *)0x58 = uVar1;
     FUN_00350500();
     uVar1 = FUN_00310d68();
@@ -1871,9 +2293,10 @@ void FUN_003d541c(void)
     *(unsigned long *)0x78 = 0;
     uVar1 = FUN_004078e8(0);
     *(unsigned long *)0x80 = uVar1;
-    uVar1 = FUN_00406fec();
-    *(unsigned long *)0x88 = uVar1.lo;
-    FUN_0007c1c4(uVar1.lo, uVar1.hi, uVar1.lo);
+    auVar4 = FUN_00406fec();
+    uVar1 = auVar4.lo;
+    *(unsigned long *)0x88 = uVar1;
+    FUN_0007c1c4(uVar1, auVar4.hi, uVar1);
     uVar1 = FUN_00377bec();
     *(unsigned long *)0x90 = uVar1;
     FUN_003fcc1c();
@@ -1970,9 +2393,10 @@ void FUN_003d58a0(void)
  * record (LAB_003d5c6c) and an extra result slot at +0xc8.
  * Confidence: low
  * Notes: "Could not recover jumptable at 0x003d5c68". */
-void FUN_003d5a4c(void)
+void FUN_003d5a4c()
 {
     unsigned long uVar1;
+    cL4_w16_t auVar4;
 
     FUN_00407ca0();
     FUN_0040700c();
@@ -1997,7 +2421,7 @@ void FUN_003d5a4c(void)
     *(unsigned long *)0x78 = 0;
     uVar1 = FUN_004078e8(0);
     *(unsigned long *)0x80 = uVar1;
-    uVar1 = FUN_00406fec();
+    uVar1 = FUN_00406fec().lo;
     *(unsigned long *)0x88 = uVar1;
     FUN_00350500();
     uVar1 = FUN_00310d68();
@@ -2010,9 +2434,10 @@ void FUN_003d5a4c(void)
     *(unsigned long *)0xa8 = 0;
     uVar1 = FUN_004078e8(0);
     *(unsigned long *)0xb0 = uVar1;
-    uVar1 = FUN_00406fec();
-    *(unsigned long *)0xb8 = uVar1.lo;
-    FUN_0007c1c4(uVar1.lo, uVar1.hi, uVar1.lo);
+    auVar4 = FUN_00406fec();
+    uVar1 = auVar4.lo;
+    *(unsigned long *)0xb8 = uVar1;
+    FUN_0007c1c4(uVar1, auVar4.hi, uVar1);
     uVar1 = FUN_00377bec();
     *(unsigned long *)0xc0 = uVar1;
     uVar1 = FUN_003fcc4c();
@@ -2122,7 +2547,7 @@ void FUN_003d62dc(unsigned long param_1, unsigned long param_2, unsigned long pa
     *(unsigned long *)0x10 = param_4;
     lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x20),
                          *(unsigned long *)(param_5 + 0x10),
-                         (unsigned long)&DAT_00614a5c, (unsigned long)&LAB_00614a7c);
+                         (unsigned long)(((unsigned char*)DAT_00614a5c)), (unsigned long)&LAB_00614a7c);
     *(long *)0x18 = lVar1;
     lVar1 = *(long *)(lVar1 + -8);
     *(long *)0x20 = lVar1;
@@ -2131,7 +2556,7 @@ void FUN_003d62dc(unsigned long param_1, unsigned long param_2, unsigned long pa
     plVar3 = (long *)FUN_0040bb18(DAT_0059ff7c);
     *(long **)0x30 = plVar3;
     *plVar3 = 0;
-    plVar3[1] = (long)&DAT_00405fdc;
+    plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
     FUN_003d5a4c(plVar3, param_1, param_2, param_3, param_5, uVar2);
 }
 
@@ -2159,7 +2584,7 @@ void FUN_003d6418(long param_1, unsigned long param_2, unsigned long param_3)
  * Ghidra: void FUN_003d6470(void)
  * Post-release executor step forwarding to FUN_003dd540.
  * Confidence: low */
-void FUN_003d6470(void)
+void FUN_003d6470()
 {
     FUN_003dd540();
 }
@@ -2294,10 +2719,12 @@ void FUN_003d6724(void)
  * the job record and result frame, and branch on a worker flag to complete
  * through one of two paths, then schedule the continuation.
  * Confidence: low */
-void FUN_003d69f8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
-                  long param_4)
+void FUN_003d69f8(unsigned long param_1, unsigned long param_2,
+                 unsigned long param_3, long param_4,
+                 unsigned long extra1, unsigned long extra2)
 {
     unsigned long uVar1;
+    (void)param_1; (void)param_2; (void)extra1; (void)extra2;
 
     FUN_00408058();
     FUN_0040700c();
@@ -2453,7 +2880,7 @@ void FUN_003d71b8(unsigned long param_1, unsigned long param_2, unsigned long pa
     *(unsigned long *)0x10 = param_4;
     lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x18),
                          *(unsigned long *)(param_5 + 0x10),
-                         (unsigned long)&DAT_00614a5c, (unsigned long)&LAB_00614a7c);
+                         (unsigned long)(((unsigned char*)DAT_00614a5c)), (unsigned long)&LAB_00614a7c);
     *(long *)0x18 = lVar1;
     lVar1 = *(long *)(lVar1 + -8);
     *(long *)0x20 = lVar1;
@@ -2462,7 +2889,7 @@ void FUN_003d71b8(unsigned long param_1, unsigned long param_2, unsigned long pa
     plVar3 = (long *)FUN_0040bb18(DAT_0059ff8c);
     *(long **)0x30 = plVar3;
     *plVar3 = 0;
-    plVar3[1] = (long)&DAT_00405fdc;
+    plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
     FUN_003d69f8(plVar3, param_1, param_2, param_3, param_5, uVar2);
 }
 
@@ -2509,7 +2936,7 @@ void FUN_003d7414(void)
 {
     FUN_00406574();
     FUN_003d7440();
-    cL4_retain();
+    cL4_retain(0);
 }
 
 /* FUN_003d7440 @ 0x3d7440   (est. cL4_executor_teardown_body_b)
@@ -2736,10 +3163,12 @@ void FUN_003d7978(void)
  * Run a task suite (mirror of FUN_003d69f8) capturing the +0x10 context and
  * a second property set.
  * Confidence: low */
-void FUN_003d7c18(unsigned long param_1, unsigned long param_2, unsigned long param_3,
-                  long param_4)
+void FUN_003d7c18(unsigned long param_1, unsigned long param_2,
+                 unsigned long param_3, long param_4,
+                 unsigned long extra1, unsigned long extra2)
 {
     unsigned long uVar1;
+    (void)param_1; (void)param_2; (void)extra1; (void)extra2;
 
     FUN_00408058();
     FUN_0040700c();
@@ -2822,4 +3251,525 @@ void FUN_003d7d60(unsigned long param_1, unsigned long param_2, unsigned long pa
     FUN_00406d70();
     FUN_00407c78();
     /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d7f60 @ 0x3d7f60   (est. cL4_async_task_continue_b)
+ * Ghidra: void FUN_003d7f60(void)
+ * Continue an async task (mirror of FUN_003d77bc) using +0x78/+0x80/+0x88
+ * slots and the closure machinery.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d8008 / 0x003d809c". */
+void FUN_003d7f60(void)
+{
+    unsigned long uVar2, uVar3, uVar4, uVar6;
+    long lVar1;
+
+    uVar3 = FUN_00407ca0();
+    FUN_0040700c();
+    uVar4 = FUN_00349f3c(*(unsigned long *)0x88);
+    if (0) {
+        FUN_00407f48(*(unsigned long *)0x80, uVar4, *(unsigned long *)0x78);
+        FUN_00350744(*(unsigned long *)0x10);
+        FUN_000839d8();
+        uVar6 = *(unsigned long *)0x88;
+        uVar4 = *(unsigned long *)0x60;
+        uVar2 = *(unsigned long *)0x68;
+        FUN_0040bd24(*(unsigned long *)0x98);
+        FUN_0040bd24(uVar6);
+        FUN_0040bd24(uVar2);
+        FUN_0040bd24(uVar4);
+        FUN_00407e58(0, 0, uVar3);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    lVar1 = *(long *)0xb8;
+    FUN_00406894(*(unsigned long *)0x90, *(unsigned long *)0x98);
+    *(unsigned long *)0xd0 = 0;
+    *(unsigned long *)0xd8 = 0;
+    FUN_003504a0();
+    (*(void (**)(void))0)();
+    FUN_004072a0();
+    *(long **)0xe0 = (long *)FUN_0040bb18(0);
+    FUN_00406bb4(*(unsigned long *)0x98);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d816c @ 0x3d816c   (est. cL4_async_task_finish_suite_b)
+ * Ghidra: void FUN_003d816c(void)
+ * Finish an async task suite (mirror of FUN_003d7978) using the +0xec flag
+ * and the +0x90 continuation.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d8308 / 0x003d82bc". */
+void FUN_003d816c(void)
+{
+    unsigned long uVar2, uVar4, uVar5, uVar6;
+    long lVar3, lVar7;
+    unsigned long *puVar1;
+
+    uVar5 = FUN_0040790c();
+    FUN_004070d8();
+    if ((*(unsigned char *)0xec & 1) != 0) {
+        (*(void (**)(unsigned long, unsigned long))(*(long *)0x90 + 8))
+            (*(unsigned long *)0x98, *(unsigned long *)0x70);
+        lVar7 = *(long *)0xb8;
+        lVar3 = *(long *)0x48;
+        FUN_0040652c();
+        FUN_00406608();
+        FUN_00406e8c();
+        FUN_00406288();
+        FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+        *(unsigned long *)200 = 0;
+        FUN_004083b4(0);
+        if (lVar7 == 0) {
+            FUN_00406f2c();
+        } else {
+            FUN_00407164(*(unsigned long *)0x88);
+        }
+        FUN_00406d70();
+        FUN_004080cc();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    puVar1 = (unsigned long *)(*(long *)0x30 + (long)*(int *)0xe8);
+    FUN_0031d5f0(*(unsigned long *)0xb8, *(unsigned long *)0xc0);
+    *puVar1 = 0;
+    puVar1[1] = 0;
+    FUN_0011aa70();
+    (*(void (**)(void))0)();
+    FUN_00350750(*(unsigned long *)0x10);
+    FUN_000839d8();
+    uVar6 = *(unsigned long *)0x88;
+    uVar2 = *(unsigned long *)0x60;
+    uVar4 = *(unsigned long *)0x68;
+    FUN_0040bd24(*(unsigned long *)0x98);
+    FUN_0040bd24(uVar6);
+    FUN_0040bd24(uVar4);
+    FUN_0040bd24(uVar2);
+    FUN_004079b4(0, 0, uVar5);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d85b8 @ 0x3d85b8   (est. cL4_async_task_suite_setup_c)
+ * Ghidra: void FUN_003d85b8(undefined8, undefined8, undefined8, undefined8, long)
+ * Set up a task suite (variant of FUN_003d62dc) using param_5+0x18 context
+ * and running FUN_003d7c18.
+ * Confidence: low
+ * Notes: DAT_0059ff9c is the size global. */
+void FUN_003d85b8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, long param_5)
+{
+    long lVar1;
+    unsigned long uVar2;
+    long *plVar3;
+
+    *(unsigned long *)0x10 = param_4;
+    lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x18),
+                         *(unsigned long *)(param_5 + 0x10),
+                         (unsigned long)(((unsigned char*)DAT_00614a5c)), (unsigned long)&LAB_00614a7c);
+    *(long *)0x18 = lVar1;
+    lVar1 = *(long *)(lVar1 + -8);
+    *(long *)0x20 = lVar1;
+    uVar2 = FUN_0040bb18(*(long *)(lVar1 + 0x40) + 0xf & 0xfffffffffffffff0);
+    *(unsigned long *)0x28 = uVar2;
+    plVar3 = (long *)FUN_0040bb18(DAT_0059ff9c);
+    *(long **)0x30 = plVar3;
+    *plVar3 = 0;
+    plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
+    FUN_003d7c18(plVar3, param_1, param_2, param_3, param_5, uVar2);
+}
+
+/* FUN_003d86f0 @ 0x3d86f0   (est. cL4_executor_teardown_guard_c)
+ * Ghidra: void FUN_003d86f0(void)
+ * Executor teardown wrapper forwarding to FUN_003d871c.
+ * Confidence: low */
+void FUN_003d86f0(void)
+{
+    FUN_00406574();
+    FUN_003d871c();
+    cL4_retain(0);
+}
+
+/* FUN_003d871c @ 0x3d871c   (est. cL4_executor_teardown_body_c)
+ * Ghidra: void FUN_003d871c(void)
+ * Executor teardown body forwarding to FUN_003eaf4c.
+ * Confidence: low */
+void FUN_003d871c(void)
+{
+    FUN_003eaf4c();
+}
+
+/* FUN_003d873c @ 0x3d873c   (est. cL4_async_store_result_suite_b)
+ * Ghidra: void FUN_003d873c(void)
+ * Store an async result suite (variant): run the prologue, fetch the slot
+ * from FUN_003fcd04+0x24 and pass it to FUN_00407ea0.
+ * Confidence: low */
+void FUN_003d873c(void)
+{
+    long lVar1;
+
+    FUN_0040679c();
+    FUN_0040654c();
+    FUN_00350968();
+    FUN_00377824();
+    FUN_00349530();
+    (*(void (**)(void))0)();
+    FUN_00350798();
+    lVar1 = FUN_003fcd04();
+    FUN_00407ea0((long)*(int *)(lVar1 + 0x24));
+}
+
+/* FUN_003d87ac @ 0x3d87ac   (est. cL4_async_task_suite_capture)
+ * Ghidra: void FUN_003d87ac(void)
+ * Capture an async task suite: run the frame prologue, record the task
+ * context (auVar4._8_8_ + 0x18), build the job record, and dispatch via the
+ * unrecoverable jump table.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d88e4". */
+void FUN_003d87ac(void)
+{
+    long lVar1;
+    unsigned long uVar2;
+    cL4_w16_t auVar4;
+
+    FUN_00407ca0();
+    auVar4 = FUN_0040700c();
+    *(long *)0x18 = auVar4.hi;
+    *(unsigned long *)0x20 = 0;
+    *(long *)0x10 = auVar4.lo;
+    lVar1 = *(long *)(auVar4.hi + 0x18);
+    FUN_00406da8();
+    uVar2 = FUN_00406fec().lo;
+    *(unsigned long *)0x28 = uVar2;
+    FUN_00350500();
+    uVar2 = FUN_00310d68();
+    *(unsigned long *)0x30 = uVar2;
+    FUN_00352018();
+    *(unsigned long *)0x38 = 0;
+    uVar2 = FUN_004078e8(0);
+    *(unsigned long *)0x40 = uVar2;
+    FUN_00406f50();
+    *(unsigned long *)0x48 = 0;
+    uVar2 = FUN_004078e8(0);
+    *(unsigned long *)0x50 = uVar2;
+    auVar4 = FUN_00406fec();
+    uVar2 = auVar4.lo;
+    *(unsigned long *)0x58 = uVar2;
+    FUN_0007c1c4(uVar2, auVar4.hi, uVar2);
+    uVar2 = FUN_00377bec();
+    *(unsigned long *)0x60 = uVar2;
+    FUN_003fcc1c();
+    FUN_00408454();
+    FUN_00377dcc(0, *(unsigned long *)0x58);
+    FUN_00406268();
+    FUN_0040bb18(*(unsigned int *)(lVar1 + 4));
+    *(unsigned long **)0x70 = (unsigned long *)FUN_00406fe0();
+    FUN_004073cc();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d89a4 @ 0x3d89a4   (est. cL4_async_task_continue_c)
+ * Ghidra: void FUN_003d89a4(void)
+ * Continue an async task (mirror of FUN_003d77bc) using +0x28/+0x30/+0x38
+ * slots and closure machinery FUN_00406894/FUN_004062e8.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d8a24 / 0x003d8abc". */
+void FUN_003d89a4(void)
+{
+    unsigned long uVar2, uVar3, uVar5;
+    long lVar1;
+
+    uVar2 = FUN_00407ca0();
+    FUN_0040700c();
+    uVar5 = *(unsigned long *)0x28;
+    uVar3 = FUN_00406420();
+    if (0) {
+        FUN_0040711c(*(unsigned long *)0x38, uVar3, *(unsigned long *)0x30);
+        FUN_00407954();
+        FUN_0040686c();
+        FUN_0040bd24(uVar5);
+        FUN_00407e58(0, 0, uVar2);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    lVar1 = *(long *)0x18;
+    FUN_00406894(*(unsigned long *)0x48, *(unsigned long *)0x50);
+    *(unsigned long *)0x80 = 0;
+    *(unsigned long *)0x88 = 0;
+    FUN_00350624();
+    (*(void (**)(void))0)();
+    FUN_004062e8((long)*(int *)(lVar1 + 0x24));
+    *(long **)0x90 = (long *)FUN_0040bb18(0);
+    FUN_00406bb4(*(unsigned long *)0x50);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d8b64 @ 0x3d8b64   (est. cL4_async_task_dispatch)
+ * Ghidra: void FUN_003d8b64(void)
+ * Dispatch an async task: branch on the flag at +0x98. If set, call the
+ * task's continuation at +0x80 and release; otherwise run the closure at
+ * +0x48 and the teardown path.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d8be0 / 0x003d8c60". */
+void FUN_003d8b64(void)
+{
+    unsigned long *puVar1;
+    long lVar2;
+
+    FUN_00406fd4();
+    if (*(char *)0x98 == 1) {
+        (*(void (**)(unsigned long, unsigned long, unsigned long, unsigned long))
+            (*(unsigned long *)0x80))
+            (*(unsigned long *)0x88, *(unsigned long *)0x10,
+             *(unsigned long *)0x50, *(unsigned long *)0x28);
+        FUN_00407954();
+        FUN_00406cf0();
+        FUN_0040bd24(0);
+        FUN_0040678c();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    (*(void (**)(unsigned long, unsigned long))(*(long *)0x48 + 8))
+        (*(unsigned long *)0x50, *(unsigned long *)0x28);
+    lVar2 = *(long *)0x68;
+    FUN_00377dcc(0, *(unsigned long *)0x58);
+    FUN_00406268();
+    FUN_0040bb18(*(unsigned int *)(lVar2 + 4));
+    *(unsigned long **)0x70 = (unsigned long *)FUN_00406fe0();
+    FUN_004073cc();
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d8cc0 @ 0x3d8cc0   (est. cL4_async_task_suite_enter_c)
+ * Ghidra: void FUN_003d8cc0(void)
+ * Enter a task suite (variant of FUN_003d5a4c) using the +0x40 job slot and
+ * the LAB_003d8e60 continuation.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d8e5c". */
+void FUN_003d8cc0()
+{
+    long lVar1;
+    unsigned long uVar2;
+    cL4_w16_t auVar4;
+
+    FUN_00407ca0();
+    FUN_0040700c();
+    FUN_00406f40();
+    lVar1 = *(long *)(0 + 0x18);
+    FUN_00350798();
+    FUN_00350974();
+    uVar2 = FUN_00377824();
+    *(unsigned long *)0x40 = uVar2;
+    FUN_00352018();
+    *(unsigned long *)0x48 = 0;
+    uVar2 = FUN_004078e8(0);
+    *(unsigned long *)0x50 = uVar2;
+    uVar2 = FUN_00406fec().lo;
+    *(unsigned long *)0x58 = uVar2;
+    FUN_00350500();
+    uVar2 = FUN_00310d68();
+    *(unsigned long *)0x60 = uVar2;
+    FUN_00352018();
+    *(unsigned long *)0x68 = 0;
+    uVar2 = FUN_004078e8(0);
+    *(unsigned long *)0x70 = uVar2;
+    FUN_00406f50();
+    *(unsigned long *)0x78 = 0;
+    uVar2 = FUN_004078e8(0);
+    *(unsigned long *)0x80 = uVar2;
+    auVar4 = FUN_00406fec();
+    uVar2 = auVar4.lo;
+    *(unsigned long *)0x88 = uVar2;
+    FUN_0007c1c4(uVar2, auVar4.hi, uVar2);
+    uVar2 = FUN_00377bec();
+    *(unsigned long *)0x90 = uVar2;
+    FUN_003fcc4c();
+    FUN_00408588();
+    FUN_00406288();
+    FUN_0040bb18(*(unsigned int *)(lVar1 + 4));
+    *(unsigned long **)0xa0 = (unsigned long *)FUN_00406fe0();
+    FUN_00406bc4(*(unsigned long *)0x70);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d8fbc @ 0x3d8fbc   (est. cL4_async_task_continue_d)
+ * Ghidra: void FUN_003d8fbc(void)
+ * Continue an async task (mirror of FUN_003d89a4) using +0x58/+0x60/+0x68
+ * slots.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d9044 / 0x003d90dc". */
+void FUN_003d8fbc(void)
+{
+    unsigned long uVar2, uVar3, uVar5;
+    long lVar1;
+
+    uVar2 = FUN_00407ca0();
+    FUN_0040700c();
+    uVar5 = *(unsigned long *)0x58;
+    uVar3 = FUN_00406420();
+    if (0) {
+        FUN_0040711c(*(unsigned long *)0x68, uVar3, *(unsigned long *)0x60);
+        FUN_00407978();
+        uVar3 = *(unsigned long *)0x50;
+        FUN_0040686c();
+        FUN_0040bd24(uVar5);
+        FUN_0040bd24(uVar3);
+        FUN_00407e58(0, 0, uVar2);
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    lVar1 = *(long *)0x28;
+    FUN_00406894(*(unsigned long *)0x78, *(unsigned long *)0x80);
+    *(unsigned long *)0xb8 = 0;
+    *(unsigned long *)0xc0 = 0;
+    FUN_00350624();
+    (*(void (**)(void))0)();
+    FUN_004062e8((long)*(int *)(lVar1 + 0x24));
+    *(long **)200 = (long *)FUN_0040bb18(0);
+    FUN_00406bb4(*(unsigned long *)0x80);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d91ac @ 0x3d91ac   (est. cL4_async_task_dispatch_b)
+ * Ghidra: void FUN_003d91ac(void)
+ * Dispatch an async task (mirror of FUN_003d8b64) using the +0xd0 flag and
+ * +0xb8 continuation.
+ * Confidence: low
+ * Notes: "Could not recover jumptable at 0x003d9230 / 0x003d92e0". */
+void FUN_003d91ac(void)
+{
+    unsigned long uVar1;
+    unsigned long *puVar2;
+    long lVar3;
+
+    FUN_00406fd4();
+    if (*(char *)0xd0 == 1) {
+        (*(void (**)(unsigned long, unsigned long, unsigned long, unsigned long))
+            (*(unsigned long *)0xb8))
+            (*(unsigned long *)0xc0, *(unsigned long *)0x10,
+             *(unsigned long *)0x80, *(unsigned long *)0x58);
+        FUN_00407978();
+        uVar1 = *(unsigned long *)0x50;
+        FUN_00406cf0();
+        FUN_0040bd24(0);
+        FUN_0040bd24(uVar1);
+        FUN_0040678c();
+        /* jump-table dispatch (unrecovered) */
+        return;
+    }
+    (*(void (**)(unsigned long, unsigned long))(*(long *)0x78 + 8))
+        (*(unsigned long *)0x80, *(unsigned long *)0x58);
+    lVar3 = *(long *)0x98;
+    FUN_00377dcc(0, *(unsigned long *)0x88);
+    FUN_00406288();
+    FUN_0040bb18(*(unsigned int *)(lVar3 + 4));
+    *(unsigned long **)0xa0 = (unsigned long *)FUN_00406fe0();
+    FUN_00406bc4(*(unsigned long *)0x70);
+    /* jump-table dispatch (unrecovered) */
+}
+
+/* FUN_003d93f8 @ 0x3d93f8   (est. cL4_async_task_suite_setup_d)
+ * Ghidra: void FUN_003d93f8(undefined8, undefined8, undefined8, undefined8, long)
+ * Set up a task suite (variant of FUN_003d62dc) using param_5+0x18 context
+ * and running FUN_003d8cc0.
+ * Confidence: low
+ * Notes: DAT_0059ffac is the size global. */
+void FUN_003d93f8(unsigned long param_1, unsigned long param_2, unsigned long param_3,
+                  unsigned long param_4, long param_5)
+{
+    long lVar1;
+    unsigned long uVar2;
+    long *plVar3;
+
+    *(unsigned long *)0x10 = param_4;
+    lVar1 = FUN_00377824(0, *(unsigned long *)(param_5 + 0x18),
+                         *(unsigned long *)(param_5 + 0x10),
+                         (unsigned long)(((unsigned char*)DAT_00614a5c)), (unsigned long)&LAB_00614a7c);
+    *(long *)0x18 = lVar1;
+    lVar1 = *(long *)(lVar1 + -8);
+    *(long *)0x20 = lVar1;
+    uVar2 = FUN_0040bb18(*(long *)(lVar1 + 0x40) + 0xf & 0xfffffffffffffff0);
+    *(unsigned long *)0x28 = uVar2;
+    plVar3 = (long *)FUN_0040bb18(DAT_0059ffac);
+    *(long **)0x30 = plVar3;
+    *plVar3 = 0;
+    plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
+    FUN_003d8cc0(plVar3, param_1, param_2, param_3, param_5, uVar2);
+}
+
+/* FUN_003d952c @ 0x3d952c   (est. cL4_async_task_finish_suite_c)
+ * Ghidra: void FUN_003d952c(void)
+ * Finish an async task suite (variant): run the prologue and closure
+ * machinery, then pass the slot selected by +0x24 to FUN_004082a8.
+ * Confidence: low */
+void FUN_003d952c(void)
+{
+    FUN_00084220();
+    FUN_0008409c();
+    FUN_0040654c();
+    FUN_003513b4();
+    FUN_00377824();
+    FUN_00351f10();
+    FUN_0007c1a4();
+    (*DAT_00658c80)();
+    FUN_0034b05c();
+    FUN_00407100();
+    FUN_00350518();
+    (*(void (**)(void))0)();
+    FUN_004082a8((long)*(int *)(0 + 0x24));
+    FUN_00407700();
+    (*(void (**)(void))0)();
+    FUN_00084234(0);
+}
+
+/* FUN_003d30b0 @ 0x3d30b0   (est. cL4_float_dispatch_helper)
+ * Ghidra: void FUN_003d30b0(void)
+ * Forward to the shared float/parse dispatch helper FUN_00118abc.
+ * Confidence: medium
+ * Notes: trivial wrapper. */
+void FUN_003d30b0(void)
+{
+    FUN_00118abc();
+}
+
+/* FUN_003d30c4 @ 0x3d30c4   (est. cL4_str_to_double_parse)
+ * Ghidra: long FUN_003d30c4(long, undefined8*)
+ * Parse a double from the string in param_1 (double-precision analogue of
+ * FUN_003d3130). If the token is not nan/inf, clear a scratch word and parse
+ * normally, storing the status; otherwise produce the 0x7ff4... bit pattern
+ * (infinity/NaN) and a length-derived value.
+ * Confidence: low
+ * Notes: mirror of FUN_003d3130; 0x7ff4 prefix is the IEEE double infinity
+ *   exponent bit pattern. */
+long FUN_003d30c4(long param_1, unsigned long *param_2)
+{
+    int iVar1;
+    unsigned long uVar3;
+    long local_28;
+
+    iVar1 = FUN_003d3200((unsigned char *)param_1);
+    if (iVar1 == 0) {
+        local_28 = 0;
+        *cL4_thunk_global() = 0;
+        uVar3 = FUN_0011b39c(param_1, &local_28);
+        *param_2 = uVar3;
+    } else {
+        *param_2 = 0x7ff4000000000000;
+        local_28 = cL4_str_parse(param_1);
+        local_28 = param_1 + local_28;
+    }
+    return local_28;
+}
+
+/* FUN_003d319c @ 0x3d319c   (est. cL4_str_to_float_parse)
+ * Ghidra: void FUN_003d319c(undefined8, float2*)
+ * Parse a single-precision float from the string and store it into the
+ * 2-float vector slot param_2 (the low element is the parsed value).
+ * Confidence: medium
+ * Notes: forwards to FUN_003d3130 (the double parser) and narrows. */
+void FUN_003d319c(unsigned long param_1, float *param_2)
+{
+    float local_24;
+
+    FUN_003d3130(param_1, (unsigned int *)&local_24);
+    *param_2 = local_24;
 }
