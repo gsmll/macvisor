@@ -740,7 +740,7 @@ void sk_lock_release(unsigned long *arg1, unsigned int arg2);
 void sk_register_cb2(unsigned int *arg1,sk_code_t arg2,uint64_t arg3);
 void sk_msg_init(void);
 void sk_msg_send2(uint64_t arg1,unsigned int arg2,uint64_t arg3,uint64_t arg4);
-void sk_msg_send(long arg1,uint16_t arg2,uint64_t *arg3,unsigned long arg4);
+long sk_msg_send(long arg1,uint16_t arg2,uint64_t *arg3,unsigned long arg4);
 uint64_t sk_ipc_retrieve(void);
 void sk_msg_push(long *arg1);
 void sk_msg_pop(void);
@@ -11960,7 +11960,7 @@ void sk_msg_send2(uint64_t arg1,unsigned int arg2,uint64_t arg3,uint64_t arg4)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_msg_send(long arg1,uint16_t arg2,uint64_t *arg3,unsigned long arg4)
+long sk_msg_send(long arg1,uint16_t arg2,uint64_t *arg3,unsigned long arg4)
 {
   bool t0;
   long t1;
@@ -12810,7 +12810,7 @@ LAB_0005e33c:
       t12 = (unsigned long)sk_global_054;
       t4 = (unsigned long)sk_global_038;
       t6 = (unsigned long)sk_global_037;
-      t3 = (unsigned int)(unsigned short)sk_str_20._0_2_;
+      t3 = (unsigned int)(unsigned short)*(unsigned short *)&sk_str_20[0];
       t11 = (unsigned int)(uint8_t)sk_str_20[2];
       t5 = (unsigned int)(uint8_t)sk_str_20[3];
       *arg2 = 0x40;
@@ -12976,10 +12976,10 @@ void sk_syscall_print(long arg1,uint64_t arg2,uint64_t arg3,unsigned long arg4)
   
   stk0 = arg2;
   stk1 = arg3;
-  sk_buf_advance(&stk0,0,sk_str_67);
+  sk_buf_advance(&stk0,0,(uint64_t)sk_str_67);
   if ((arg4 & 1) == 0) {
-    sk_buf_advance(&stk0,1,sk_str_01);
-    sk_buf_advance(&stk0,1,sk_str_02);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_01);
+    sk_buf_advance(&stk0,1,(uint64_t)sk_str_02);
     sk_buf_advance(&stk0,1,sk_str_03);
     sk_syscall_name(*(uint32_t *)(arg1 + 0xd8));
     sk_syscall_name(*(uint32_t *)(arg1 + 0xe0));

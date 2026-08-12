@@ -127,6 +127,75 @@ extern void   FUN_0006b404(void);                /* nop */
 extern void   FUN_0006b6e0(void);                /* nop */
 extern word_t FUN_0001a1c8(word_t);              /* hash */
 extern word_t FUN_0001cba4(word_t);              /* hash */
+extern void   FUN_0036b21c(void);                /* closure free */
+extern word_t FUN_0006b360(word_t, word_t, word_t); /* vec wrap */
+extern void   FUN_002060d4(word_t, word_t, word_t, word_t); /* str fmt */
+extern void   FUN_002a3e64(word_t, word_t, word_t, word_t); /* str append */
+extern word_t FUN_0006b6c0(void);
+extern word_t FUN_001bc440(word_t, word_t, word_t, word_t); /* pair pack */
+extern word_t FUN_0006b6f4(void);
+extern word_t FUN_001b798c(void);
+extern word_t FUN_0006b6a0(void);
+extern word_t FUN_0006b42c(void);
+extern void   FUN_0006b4c0(void);
+extern word_t FUN_0006b5a0(void);
+extern word_t FUN_0006b2bc(void);
+extern word_t FUN_0006a3cc(word_t, word_t, word_t, word_t);
+extern void   FUN_0006b700(void);
+extern void   FUN_0006b640(void);
+extern void   FUN_0006b674(void);
+extern word_t FUN_0006b610(void);
+extern word_t FUN_0006b600(void);
+extern void   FUN_0006b540(void);
+extern void   FUN_0006b68c(void);
+extern word_t FUN_001ebfb0(void);
+extern word_t FUN_0006b500(void);
+extern word_t FUN_0006b528(void);
+extern word_t FUN_0006b514(void);
+extern word_t FUN_0006b3d0(void);
+extern word_t FUN_0006b3f4(word_t);
+extern word_t FUN_0006b45c(word_t);
+extern word_t FUN_0006b4ac(void);
+extern word_t FUN_0006b620(void);
+extern word_t FUN_0006b6d4(void);
+extern word_t FUN_0006b6e0(void);
+extern word_t FUN_00229a3c(int);
+extern word_t FUN_002298d4(word_t);
+extern word_t FUN_001a84f4(word_t, word_t);
+extern word_t FUN_001a8564(void);
+extern word_t FUN_0001a1c8(word_t);
+extern void   FUN_00369efc(word_t, word_t, word_t);
+extern void   FUN_0006abac(word_t, word_t, word_t);
+extern word_t FUN_001fac04(word_t, word_t);
+extern void   FUN_0006a4c0(word_t, word_t);
+extern void   FUN_0006a4f0(word_t);
+extern void   FUN_0006a668(word_t);
+extern void   FUN_0006a698(word_t);
+extern void   FUN_0006a7c8(word_t);
+extern void   FUN_0006a520(void);
+extern void   FUN_0006a5e4(void);
+extern void   FUN_0006b404(void);
+extern void   FUN_0006b728(void);
+extern void   FUN_0006b714(void);
+extern void   FUN_0006b65c(void);
+extern void   FUN_001bdb28(void);
+extern void   FUN_001bea18(word_t, word_t, word_t);
+extern void   FUN_000026e8(word_t);
+extern void   FUN_0006b3a4(void);
+extern word_t FUN_0006a374(word_t, word_t, word_t);
+extern word_t FUN_0006a3cc(word_t, word_t, word_t, word_t);
+extern void   FUN_0006b6f4(void);
+extern word_t FUN_00115448(word_t);
+extern word_t FUN_0006b584(word_t, word_t);
+extern word_t FUN_0006b330(void);
+extern word_t FUN_0006b5c0(void);
+extern word_t FUN_0006b5e0(void);
+extern void   FUN_0006b374(void);
+extern word_t FUN_0006b680(void);
+extern word_t FUN_0006b388(void);
+extern void   FUN_0006b6ac(void);
+extern word_t FUN_0006b3e0(void);
+extern void   FUN_0006a414(void);
 
 /* ---- forward decls within this slice ---- */
 static word_t dt_find_entry(word_t list_head, word_t key, word_t *out_payload);

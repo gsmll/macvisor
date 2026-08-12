@@ -1726,10 +1726,10 @@ static void sk_tb_ph_map_subgraph(long *out)
                         if (out_off <= out_off + add) {
                             uint64_t *dst = (uint64_t *)*out;
                             *dst = out_off;
-                            dst[1] = add;
+                            out[1] = add;
                             out_off = out_off + add;
                             if ((out_off == 0) || (out_off <= out_off + 8)) {
-                                dst[2] = out_off;
+                                out[2] = out_off;
                                 return;
                             }
                         }
@@ -1793,6 +1793,8 @@ static uint64_t sk_strnlen(uint64_t arg1, long arg2)
  * artifact kept as scratch. */
 static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
+    long *msg_base = (long *)arg1;
+    uint16_t *dst = (uint16_t *)arg3;
     typedef sk_ep_pair_t sk_obj_t;
     uint16_t *desc;
     uint16_t *slot;
@@ -1807,8 +1809,8 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
     if (*(uint8_t *)(arg2 + 0x117) >> 2 != 0) {
         sk_fatal_printf(sk_str_integer_overflow);
     }
-    desc = arg3 + 0xc0;
-    d_c2 = arg3[0xc2];
+    desc = dst + 0xc0;
+    d_c2 = dst[0xc2];
     t_104 = *(uint8_t *)(arg2 + 0x104);
     t_108 = *(uint16_t *)(arg2 + 0x108);
     t_10b = *(uint8_t *)(arg2 + 0x10b);
@@ -1823,24 +1825,24 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
           (uint64_t)*(uint16_t *)(arg2 + 0x110) |
           (uint64_t)((uint)*(uint8_t *)(arg2 + 0x116) << 0x10 |
                      (uint)*(uint8_t *)(arg2 + 0x117) << 0x18 | (uint)*(uint16_t *)(arg2 + 0x114)) << 0x20) * 0x40;
-    if (sz < (uint64_t)arg1[1]) {
-        buf = sz + *arg1;
+    if (sz < (uint64_t)msg_base[1]) {
+        buf = sz + msg_base[0];
     } else {
         buf = 0;
     }
     t_102 = *(uint8_t *)(arg2 + 0x102);
     t_106 = *(uint8_t *)(arg2 + 0x106);
-    d_c1 = arg3[0xc1];
-    d_c3 = arg3[0xc3];
+    d_c1 = dst[0xc1];
+    d_c3 = dst[0xc3];
     t_101 = *(uint8_t *)(arg2 + 0x101);
     t_100 = *(uint8_t *)(arg2 + 0x100);
     t_103 = *(uint8_t *)(arg2 + 0x103);
     t_105 = *(uint8_t *)(arg2 + 0x105);
     t_107 = *(uint8_t *)(arg2 + 0x107);
-    d_c0 = arg3[0xc0];
-    d_183 = *(uint8_t *)((long)arg3 + 0x183);
-    d_185 = *(uint8_t *)((long)arg3 + 0x185);
-    d_187 = *(uint8_t *)((long)arg3 + 0x187);
+    d_c0 = dst[0xc0];
+    d_183 = *(uint8_t *)((long)dst + 0x183);
+    d_185 = *(uint8_t *)((long)dst + 0x185);
+    d_187 = *(uint8_t *)((long)dst + 0x187);
     if (sk_memcmp((uint64_t)arg2, (uint64_t)sk_str___CAPABILITY_ONLY___, 0x100) != 0) {
         uint64_t block = 0;
         long owner = 0;
@@ -1865,8 +1867,8 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
           (uint64_t)(uint8_t)d_c1 << 0x10 | (uint64_t)d_183 << 0x18 |
           (uint64_t)(uint8_t)d_c0 << 0x20 | (uint64_t)(uint8_t)d_c3 << 0x28 |
           (uint64_t)d_187 << 0x30;
-    slot = arg3 + idx * 0xc;
-    if (((arg3 <= slot) && (slot + 0xc <= desc)) && (slot <= slot + 0xc)) {
+    slot = dst + idx * 0xc;
+    if (((dst <= slot) && (slot + 0xc <= desc)) && (slot <= slot + 0xc)) {
         d = (uint8_t *)slot;
         d[0x15] = (uint8_t)((uint64_t)buf >> 0x28);
         d[0x10] = (uint8_t)buf;
@@ -1892,10 +1894,10 @@ static uint64_t sk_ipc_msg_write(uint64_t arg1, uint64_t arg2, uint64_t arg3)
         d[0x4] = t_104;
         d[0x7] = t_107;
         d[0x6] = t_106;
-        n = ((uint64_t)(uint8_t)arg3[0xc1] << 0x10 | (uint64_t)*(uint8_t *)((long)arg3 + 0x183) << 0x18 |
+        n = ((uint64_t)(uint8_t)dst[0xc1] << 0x10 | (uint64_t)*(uint8_t *)((long)dst + 0x183) << 0x18 |
              (uint64_t)*desc |
-             (uint64_t)((uint)(uint8_t)arg3[0xc3] << 0x10 |
-                        (uint)*(uint8_t *)((long)arg3 + 0x187) << 0x18 | (uint)arg3[0xc2]) << 0x20) + 1;
+             (uint64_t)((uint)(uint8_t)dst[0xc3] << 0x10 |
+                        (uint)*(uint8_t *)((long)dst + 0x187) << 0x18 | (uint)dst[0xc2]) << 0x20) + 1;
         c = (uint8_t *)desc;
         c[0x0] = (uint8_t)n;
         c[0x6] = (uint8_t)(n >> 0x30);
@@ -2060,6 +2062,8 @@ static void sk_err_str_fill(uint64_t out, uint8_t code)
  * Notes: overflow checks at 0x107 / 0x10f. */
 static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
 {
+    long *reg = (long *)region;
+    uint8_t *out = (uint8_t *)dst;
     uint64_t off, cnt;
     long p1, p2;
     uint16_t u9, u10, u11, u12;
@@ -2073,8 +2077,8 @@ static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
            (uint64_t)*(uint16_t *)(ph + 0x100) |
            (uint64_t)((uint)*(uint8_t *)(ph + 0x106) << 0x10 |
                       (uint)*(uint8_t *)(ph + 0x107) << 0x18 | (uint)*(uint16_t *)(ph + 0x104)) << 0x20) * 0x40;
-    if (off < (uint64_t)region[1]) {
-        p1 = off + *region;
+    if (off < (uint64_t)reg[1]) {
+        p1 = off + reg[0];
     } else {
         p1 = 0;
     }
@@ -2088,29 +2092,29 @@ static void sk_tb_ph_encode_elem(uint64_t region, uint64_t ph, uint64_t dst)
             sk_fatal_printf(sk_str_integer_overflow);
         }
         cnt = cnt * 0x40;
-        if (cnt < (uint64_t)region[1]) {
-            p2 = cnt + *region;
+        if (cnt < (uint64_t)reg[1]) {
+            p2 = cnt + reg[0];
             goto have_p2;
         }
     }
     p2 = 0;
 have_p2:
-    dst[0] = (uint8_t)p1;
-    dst[5] = (uint8_t)((uint64_t)p1 >> 0x28);
-    dst[3] = (uint8_t)((uint64_t)p1 >> 0x18);
-    dst[2] = (uint8_t)((uint64_t)p1 >> 0x10);
-    dst[1] = (uint8_t)((uint64_t)p1 >> 8);
-    dst[4] = (uint8_t)((uint64_t)p1 >> 0x20);
-    dst[7] = (uint8_t)((uint64_t)p1 >> 0x38);
-    dst[6] = (uint8_t)((uint64_t)p1 >> 0x30);
-    dst[0xed] = (uint8_t)((uint64_t)p2 >> 0x28);
-    dst[0xe8] = (uint8_t)p2;
-    dst[0xeb] = (uint8_t)((uint64_t)p2 >> 0x18);
-    dst[0xea] = (uint8_t)((uint64_t)p2 >> 0x10);
-    dst[0xe9] = (uint8_t)((uint64_t)p2 >> 8);
-    dst[0xec] = (uint8_t)((uint64_t)p2 >> 0x20);
-    dst[0xef] = (uint8_t)((uint64_t)p2 >> 0x38);
-    dst[0xee] = (uint8_t)((uint64_t)p2 >> 0x30);
+    out[0] = (uint8_t)p1;
+    out[5] = (uint8_t)((uint64_t)p1 >> 0x28);
+    out[3] = (uint8_t)((uint64_t)p1 >> 0x18);
+    out[2] = (uint8_t)((uint64_t)p1 >> 0x10);
+    out[1] = (uint8_t)((uint64_t)p1 >> 8);
+    out[4] = (uint8_t)((uint64_t)p1 >> 0x20);
+    out[7] = (uint8_t)((uint64_t)p1 >> 0x38);
+    out[6] = (uint8_t)((uint64_t)p1 >> 0x30);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x28);
+    out[0x{i:x}] = (uint8_t)p2;
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x18);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x10);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 8);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x20);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x38);
+    out[0x{i:x}] = (uint8_t)((uint64_t)p2 >> 0x30);
     u9 = *(uint16_t *)(ph + 0x110);
     u1 = *(uint8_t *)(ph + 0x113);
     u2 = *(uint8_t *)(ph + 0x112);
@@ -2123,22 +2127,22 @@ have_p2:
     u12 = *(uint16_t *)(ph + 0x11c);
     u7 = *(uint8_t *)(ph + 0x11f);
     u8 = *(uint8_t *)(ph + 0x11e);
-    dst[0xf0] = (uint8_t)u9;
-    dst[0xfd] = (uint8_t)(u12 >> 8);
-    dst[0xf9] = (uint8_t)(u11 >> 8);
-    dst[0xf5] = (uint8_t)(u10 >> 8);
-    dst[0xf3] = u1;
-    dst[0xf2] = u2;
-    dst[0xf1] = (uint8_t)(u9 >> 8);
-    dst[0xf8] = (uint8_t)u11;
-    dst[0xfb] = u5;
-    dst[0xf4] = (uint8_t)u10;
-    dst[0xfa] = u6;
-    dst[0xf7] = u3;
-    dst[0xf6] = u4;
-    dst[0xfc] = (uint8_t)u12;
-    dst[0xff] = u7;
-    dst[0xfe] = u8;
+    out[0x{i:x}] = (uint8_t)u9;
+    out[0x{i:x}] = (uint8_t)(u12 >> 8);
+    out[0x{i:x}] = (uint8_t)(u11 >> 8);
+    out[0x{i:x}] = (uint8_t)(u10 >> 8);
+    out[0x{i:x}] = u1;
+    out[0x{i:x}] = u2;
+    out[0x{i:x}] = (uint8_t)(u9 >> 8);
+    out[0x{i:x}] = (uint8_t)u11;
+    out[0x{i:x}] = u5;
+    out[0x{i:x}] = (uint8_t)u10;
+    out[0x{i:x}] = u6;
+    out[0x{i:x}] = u3;
+    out[0x{i:x}] = u4;
+    out[0x{i:x}] = (uint8_t)u12;
+    out[0x{i:x}] = u7;
+    out[0x{i:x}] = u8;
 }
 
 /* FUN_00051740 @ 0x00051740   (sk_reloc_bind)
