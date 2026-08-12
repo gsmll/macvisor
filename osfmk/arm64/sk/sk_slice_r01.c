@@ -1194,19 +1194,19 @@ static void sk_span_copy(word_t *a, word_t *b)
             one = *(byte*)src;
             if (len == 0) {
                 if (src != dst) {
-                    cL4_pack_sel(&one, (word_t)0xf9000a63a9000a61);
+                    cL4_pack_sel((word_t*)&one, (word_t)0xf9000a63a9000a61);
                     dst = (word_t*)*b;
                     len = 0x40;
                     src = (word_t*)*a;
                     while (src != dst) {
                         if (src == dst) { lv = 0; dst = (word_t*)&lv; }
                         else { lv = 0; hi = (word_t*)a[2]; dst = (word_t*)&lv; }
-                        cL4_pack_sel2(&one, (word_t*)&lv);
+                        cL4_pack_sel2((word_t*)&one, (word_t*)&lv);
                         len = lv + len;
                         dst = (word_t*)*b;
                         src = (word_t*)*a;
                     }
-                    cL4_pack_sel3(&one, &lv, &lv);
+                    cL4_pack_sel3((word_t*)&one, &lv, &lv);
                     goto done;
                 }
                 len = 0x40; break;
@@ -1235,7 +1235,7 @@ done:
  * count in the high bits of param_2) into a float. */
 static float sk_u128_to_float(word_t *p, word_t nwords)
 {
-    word_t n = (nwords >> 8 & 0xffffffff) + 0x3f >> 6;
+    word_t n = ((nwords >> 8 & 0xffffffff) + 0x3f) >> 6;
     if (n == 1) return (float)(long)*p;
     float acc = (float)*p, f = 1.8446744e+19f;
     if (n != 2) {
@@ -1250,7 +1250,7 @@ static float sk_u128_to_float(word_t *p, word_t nwords)
 static cL4_w16_t sk_u128_to_double(word_t *p, word_t nwords)
 {
     cL4_w16_t r;
-    word_t n = (nwords >> 8 & 0xffffffff) + 0x3f >> 6;
+    word_t n = ((nwords >> 8 & 0xffffffff) + 0x3f) >> 6;
     double acc, f;
     if (n == 1) { r.lo = (double)(long)*p; r.hi = 0; return r; }
     acc = (double)*p;
@@ -1591,7 +1591,7 @@ insert:
     for (; src != dst; src += 4) {
         if ((*src | 0x1000) != 0xfffffffffffff000) {
             word_t *slot = 0;
-            sk_hash_lookup_20((byte*)tab, *src, &slot);
+            sk_hash_lookup_20((byte*)tab, *src, (word_t*)&slot);
             slot[0] = *src;
             slot[3] = src[3]; slot[1] = src[1]; slot[2] = src[2];
             *tab = *tab + 2;
@@ -1655,9 +1655,11 @@ static word_t sk_conform_walk(word_t *out, word_t *desc, word_t *type, word_t op
                     cL4_conform_check2((word_t*)&f2, (word_t*)d);
                 }
 ok:
+                {
                 word_t t3 = *desc;
                 if (t3 == 0) t3 = 0;
                 if (d && (cL4_conform_check((word_t)d, t3) & 1)) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
+                }
             } else if (type == (word_t*)*desc) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
             r = cL4_variant_unwrap((word_t*)&f2, (word_t)type | (carry & 0xff));
             type = (word_t*)r.lo; carry = r.hi;
@@ -1937,7 +1939,7 @@ static word_t sk_conform_merge(word_t *ctx, word_t type)
     sk_conform_desc_init((word_t*)d, type);
     sk_conform_walk((word_t*)&res[0], (word_t*)d, *(word_t**)ctx[1], *(byte*)ctx[2]);
     found = res[0];
-    if ((*(byte*)(ctx[3]) & 1) == 0) *(byte*)(ctx[3]) = (byte)(res[1] & res[2] == 0xff);
+    if ((*(byte*)(ctx[3]) & 1) == 0) *(byte*)(ctx[3]) = (byte)(res[1] & (res[2] == 0xff));
     else *(byte*)(ctx[3]) = (byte)res[1];
     if (found == 0) return 0;
     res[0] = 0; res[1] = 0;

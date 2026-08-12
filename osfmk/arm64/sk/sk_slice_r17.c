@@ -85,7 +85,7 @@ extern unsigned long sk_x_0034b264();   /* FUN_0034b264 */
 extern unsigned long sk_x_0034c444();   /* FUN_0034c444 */
 extern unsigned long sk_x_0034d454();   /* FUN_0034d454 */
 extern unsigned long sk_x_0034db28();   /* FUN_0034db28 */
-extern unsigned long sk_x_0034f2f4();   /* FUN_0034f2f4 */
+extern sk_pair_t     sk_x_0034f2f4();   /* FUN_0034f2f4 (16-byte result) */
 extern unsigned long sk_x_0034f3b4();   /* FUN_0034f3b4 */
 extern unsigned long sk_x_0034f8e4();   /* FUN_0034f8e4 */
 extern unsigned long sk_x_00350af4();   /* FUN_00350af4 */
@@ -168,6 +168,33 @@ extern unsigned long sk_x_00466374();   /* FUN_00466374 */
 extern unsigned long sk_x_004663ec();   /* FUN_004663ec */
 extern sk_pair_t     sk_x_00466408();   /* FUN_00466408 (16-byte result) */
 extern unsigned long sk_x_004666c0();   /* FUN_004666c0 */
+extern unsigned long sk_x_004588cc();   /* FUN_004588cc */
+extern void          sk_x_0045c89c();   /* FUN_0045c89c */
+
+/* ------------------------------------------------------------------ *
+ * Local forward declarations (defined later in this slice).
+ * ------------------------------------------------------------------ */
+static void sk_dispatch_00458f00(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t sel);
+static void sk_dispatch_00458f9c(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t sel);
+static void sk_dispatch_00459280(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t mode);
+static void sk_dispatch_004592dc(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t mode);
+static void sk_dispatch_004592f4(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t x7, uint64_t st18,
+                                 uint64_t st30, uint64_t mode);
+static uint64_t sk_dispatch_00459698(void);
+static void sk_dispatch_00459768(uint64_t key, uint64_t *producer, uint64_t *area);
+static uint64_t sk_dispatch_00459800(void);
+static void sk_dispatch_00459888(uint64_t *key, uint64_t *area);
+static void sk_dispatch_0045a5fc(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t mode);
+static void sk_dispatch_0045a658(uint64_t arg0, uint64_t arg1, uint64_t arg2,
+                                 uint64_t arg3, uint64_t x7, uint64_t st18,
+                                 uint64_t st30, uint64_t mode);
+static void sk_dispatch_0045b1a0(uint64_t arg0, uint64_t arg1, uint64_t handler);
 
 /* ------------------------------------------------------------------ *
  * Register-fragment marshaling shims (first block).
@@ -325,7 +352,7 @@ static void sk_dispatch_00458eec(void)
     uint32_t mode = 0;   /* in_w4 register artifact */
 
     if (mode != 0xffffffffu) {
-        sk_dispatch_00458f00();
+        sk_dispatch_00458f00(0, 0, 0, 0, 0);
         return;
     }
 }
@@ -363,7 +390,7 @@ static void sk_dispatch_00458f88(void)
     uint32_t mode = 0;   /* in_w4 register artifact */
 
     if (mode != 0xffffffffu) {
-        sk_dispatch_00458f9c();
+        sk_dispatch_00458f9c(0, 0, 0, 0, 0);
         return;
     }
 }
@@ -522,14 +549,14 @@ static void sk_dispatch_00459138(uint64_t arg0, uint64_t arg1, uint64_t arg2,
         sk_x_0036b118();
         goto push_arg1;
     case 3:
-        sk_dispatch_00459280(arg0, arg1);
+        sk_dispatch_00459280(arg0, arg1, 0, 0, 0);
         return;
     case 9:
     case 10:
-        sk_dispatch_004592dc(arg0, arg1);
+        sk_dispatch_004592dc(arg0, arg1, 0, 0, 0);
         return;
     case 0xb:
-        sk_dispatch_004592f4(arg0, arg1);
+        sk_dispatch_004592f4(arg0, arg1, 0, 0, 0, 0, 0, 0);
         return;
     case 0xc:
         break;
@@ -648,14 +675,14 @@ static void sk_dispatch_004593ac(void)
     uint64_t mode = mode_word & 7;
 
     if (mode == 3) {
-        sk_dispatch_00458db4();
+        sk_dispatch_00458db4(0, 0, 0, 0, 0, 0);
         sk_x_0036b118(mode_word & ~7ULL);
         return;
     }
     if ((mode != 1) && ((mode_word & 7) != 0)) {
         return;
     }
-    sk_dispatch_004592dc();
+    sk_dispatch_004592dc(0, 0, 0, 0, 0);
 }
 
 /* FUN_0045942c @ 0x0045942c   (est. sk_dispatch_0045942c)
@@ -672,7 +699,7 @@ static void sk_dispatch_0045942c(void)
 
     sk_x_0010a9f8();
     sk_x_00464f40(*(uint64_t *)(x20 + 0x50));
-    sk_dispatch_00458db4();
+    sk_dispatch_00458db4(0, 0, 0, 0, 0, 0);
     sk_x_0036b118(*(uint64_t *)(x20 + 0x78) & SK_TAG_MASK);
     sk_x_00465884();
     sk_x_0036b21c();
@@ -793,7 +820,7 @@ static void sk_dispatch_00459548(uint64_t arg0, uint64_t arg1, uint64_t *arg2)
  * Confidence: low */
 static void sk_dispatch_004595a0(void)
 {
-    sk_dispatch_00459888(0x656378, &sk_g_004ea7c8);
+    sk_dispatch_00459888((uint64_t *)0x656378, &sk_g_004ea7c8);
 }
 
 /* FUN_004595a4 @ 0x004595a4   (est. sk_dispatch_004595a4)
@@ -802,7 +829,7 @@ static void sk_dispatch_004595a0(void)
  * Confidence: low */
 static void sk_dispatch_004595a4(void)
 {
-    sk_dispatch_00459888(0x656378, &sk_g_004ea7c8);
+    sk_dispatch_00459888((uint64_t *)0x656378, &sk_g_004ea7c8);
 }
 
 /* FUN_004595d4 @ 0x004595d4   (est. sk_dispatch_004595d4)
@@ -875,7 +902,7 @@ static uint64_t sk_dispatch_00459698(void)
  * Confidence: low */
 static void sk_dispatch_004596ec(void)
 {
-    sk_dispatch_00459888(0x656380, &sk_g_004ea794);
+    sk_dispatch_00459888((uint64_t *)0x656380, &sk_g_004ea794);
 }
 
 /* FUN_004596f0 @ 0x004596f0   (est. sk_dispatch_004596f0)
@@ -884,7 +911,7 @@ static void sk_dispatch_004596ec(void)
  * Confidence: low */
 static void sk_dispatch_004596f0(void)
 {
-    sk_dispatch_00459888(0x656380, &sk_g_004ea794);
+    sk_dispatch_00459888((uint64_t *)0x656380, &sk_g_004ea794);
 }
 
 /* FUN_00459720 @ 0x00459720   (est. sk_dispatch_00459720)
@@ -1487,7 +1514,7 @@ static void sk_dispatch_0045a210(void)
 
     sk_x_00084220();
     sk_x_00462848();
-    sk_dispatch_0045a1f8();
+    sk_dispatch_0045a1f8(0, 0, 0, 0, 0);
     sk_x_004640d0();
     *(uint8_t *)(x20 + 0x20) = w25;
     u = *(uint64_t *)(extraout_x1 + 0x28);
@@ -1515,9 +1542,9 @@ static void sk_dispatch_0045a268(void)
 
     sk_x_00084220();
     sk_x_00462848();
-    sk_dispatch_0045a1f8();
+    sk_dispatch_0045a1f8(0, 0, 0, 0, 0);
     sk_x_0046303c();
-    sk_dispatch_004592dc();
+    sk_dispatch_004592dc(0, 0, 0, 0, 0);
     b = *(uint64_t *)(extraout_x1 + 0x30);
     a = *(uint64_t *)(extraout_x1 + 0x28);
     d = *(uint64_t *)(extraout_x1 + 0x40);
@@ -1544,7 +1571,7 @@ static void sk_dispatch_0045a2d4(void)
     uint64_t u;
 
     sk_x_00463154();
-    sk_dispatch_004592dc();
+    sk_dispatch_004592dc(0, 0, 0, 0, 0);
     u = *(uint64_t *)(x19 + 0x28);
     *(uint64_t *)(x20 + 0x30) = *(uint64_t *)(x19 + 0x30);
     *(uint64_t *)(x20 + 0x28) = u;
@@ -1592,14 +1619,14 @@ static void sk_dispatch_0045a4b4(uint64_t arg0, uint64_t arg1, uint64_t arg2,
         sk_x_0036b270();
         goto push_arg1;
     case 3:
-        sk_dispatch_0045a5fc(arg0, arg1);
+        sk_dispatch_0045a5fc(arg0, arg1, 0, 0, 0);
         return;
     case 9:
     case 10:
-        sk_dispatch_0045a1f8(arg0, arg1);
+        sk_dispatch_0045a1f8(arg0, arg1, 0, 0, 0);
         return;
     case 0xb:
-        sk_dispatch_0045a658(arg0, arg1);
+        sk_dispatch_0045a658(arg0, arg1, 0, 0, 0, 0, 0, 0);
         return;
     case 0xc:
         break;
@@ -1719,7 +1746,7 @@ static void sk_dispatch_0045a774(void)
     byte98 = (uint32_t)*(uint8_t *)(extraout_x1 + 0x98);
     sk_x_00463058();
     sk_x_004627d0();
-    sk_dispatch_0045a4b4();
+    sk_dispatch_0045a4b4(0, 0, 0, 0, 0, 0, 0, 0, 0);
     sk_x_00463080();
     sk_x_00463aa0();
     sk_x_00462fec();
@@ -1736,7 +1763,7 @@ static void sk_dispatch_0045a774(void)
     *(uint64_t *)(x19 + 0x90) = w90;
     *(uint8_t *)(x19 + 0x98) = (uint8_t)byte98;
     sk_x_00462b90();
-    sk_dispatch_00459138();
+    sk_dispatch_00459138(0, 0, 0, 0, 0, 0, 0, 0, 0);
     sk_x_004661a4();
     sk_x_00464ae8();
 }
@@ -1793,7 +1820,7 @@ static void sk_context_copy_0045a830(void)
     x19[0x12] = extraout_x8;
     *(uint8_t *)(x19 + 0x13) = extraout_w9;
     sk_x_0034f8e4();
-    sk_dispatch_00459138();
+    sk_dispatch_00459138(0, 0, 0, 0, 0, 0, 0, 0, 0);
     a = x20[0x14];
     x19[0x15] = x20[0x15];
     x19[0x14] = a;
@@ -1842,7 +1869,7 @@ static void sk_msg_grow_0045a904(uint64_t *frame, uint32_t sz, uint32_t flags)
  * Confidence: low */
 static void sk_dispatch_0045a980(uint64_t arg0, uint64_t arg1)
 {
-    sk_dispatch_0045b1a0(arg0, arg1, &sk_dispatch_00459138);
+    sk_dispatch_0045b1a0(arg0, arg1, (uint64_t)&sk_dispatch_00459138);
 }
 
 /* FUN_0045aa44 @ 0x0045aa44   (est. sk_msg_grow_0045aa44)
@@ -1974,7 +2001,7 @@ static void sk_dispatch_0045ad90(void)
 
     sk_x_00084220();
     sk_x_00462848();
-    sk_dispatch_0045a5fc();
+    sk_dispatch_0045a5fc(0, 0, 0, 0, 0);
     sk_x_004640d0();
     *(uint8_t *)(x20 + 0x20) = w25;
     *(uint16_t *)(x20 + 0x21) = *(uint16_t *)(extraout_x1 + 0x21);
@@ -1994,9 +2021,9 @@ static void sk_dispatch_0045addc(void)
 
     sk_x_00084220();
     sk_x_00462848();
-    sk_dispatch_0045a5fc();
+    sk_dispatch_0045a5fc(0, 0, 0, 0, 0);
     sk_x_0046303c();
-    sk_dispatch_00459280();
+    sk_dispatch_00459280(0, 0, 0, 0, 0);
     u = sk_x_00465770();
     sk_x_00084234(u, unaff_x30);
 }
@@ -2008,7 +2035,7 @@ static void sk_dispatch_0045addc(void)
 static void sk_dispatch_0045ae20(void)
 {
     sk_x_00463154();
-    sk_dispatch_00459280();
+    sk_dispatch_00459280(0, 0, 0, 0, 0);
     sk_x_00465770();
 }
 

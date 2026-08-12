@@ -54,3 +54,19 @@ agents). Use these instead of `xd://mcp__ghidra_*` calls:
 Confirm the current program with `curl -s http://127.0.0.1:8089/health`
 (switch via the MCP `switch_program` when needed). Each decompile returns in
 <1s; if the server is saturated, retry with 10-30s backoff.
+
+## VERIFICATION SWEEP (added 2026-08-12)
+
+Breadth-first decompilation tags confidence but does NOT revisit it. A verification sweep
+is a separate pass that upgrades/confirms low/medium entries:
+
+- Target set: low/medium entries with body >= 100 lines first (highest value), then 30-100.
+  Micro-thunks (<30 lines: no-op witnesses, register shims where the decompiler collapsed
+  to `return;` and the disassembly fallback was already applied) are documented as
+  verified-trivial in the sweep report, NOT re-visited individually.
+- Method per entry: re-fetch decompile (curl 127.0.0.1:8089) + disassembly, diff against
+  the transcribed C body, fix REAL discrepancies (dropped register args, misordered
+  branches, wrong offsets/constants), upgrade confidence when verified, record verdict
+  in ringminus1/logs/verify/VERIFIED.md, log security-relevant discrepancies to findings.md.
+- Batch files: ringminus1/logs/verify/VB*.txt (ADDR SIZE CONFIDENCE FILE per line).
+- Acceptance: edited files compile 0 errors; every entry has a VERIFIED.md verdict line.

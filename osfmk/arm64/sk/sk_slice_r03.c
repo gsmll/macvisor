@@ -184,7 +184,7 @@ static void sk_003b0b28(uint64_t *obj); /* FUN_003b0b28 */
 static uint64_t * sk_003b0b7c(uint64_t *lock); /* FUN_003b0b7c */
 static void sk_003b0be0(uint64_t * st, uint16_t *param_2, void *param_3, uint64_t p4); /* FUN_003b0be0 */
 static uint8_t sk_003b0d64(uint64_t *buf); /* FUN_003b0d64 */
-static void sk_003b0e1c(uint64_t * st, uint64_t p2); /* FUN_003b0e1c */
+extern uint64_t sk_003b0e1c(uint64_t * st, uint64_t p2); /* FUN_003b0e1c */
 static uint64_t sk_003b0ec4(uint64_t a, uint8_t *b); /* FUN_003b0ec4 */
 static uint64_t sk_003b0f48(uint64_t * st, uint64_t p2); /* FUN_003b0f48 */
 static uint64_t sk_003b0fb8(uint64_t * st, uint64_t p2); /* FUN_003b0fb8 */
@@ -862,11 +862,11 @@ static uint64_t *sk_003ae0c8(uint64_t *st)
 static uint64_t sk_003add54(uint64_t *st, uint64_t p2)
 {
     uint64_t pos = STREAM_POS(st);
+    uint64_t pc = 0;
     if (pos < STREAM_END(st)) {
         uint64_t np = pos + 1;
         STREAM_POS(st) = np;
         uint32_t c = STREAM_DATA(st)[pos];
-        uint64_t pc = 0;
         if (c - 0x62 < 0x18) {
             switch (c) {
             case 'c': pc = (uint64_t)s__in_constant_005d5ee4; break;
@@ -986,7 +986,7 @@ static uint64_t sk_003ae36c(uint64_t *st)
             if (NODE_TAG(STACK_ELEM(st, i)) != 0x121) term = true;
             else { term = false; STACK_CNT(st) = i; }
         }
-        uint64_t *e = sk_003ae658(st);
+        uint64_t *e = (uint64_t *)sk_003ae658(st);
         if (!e) break;
         sk_node_add(node, e, st);
         if (!term) { sk_node_finalize(node, 0); return (uint64_t)node; }
