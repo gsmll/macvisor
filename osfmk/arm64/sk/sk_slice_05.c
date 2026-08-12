@@ -2092,58 +2092,58 @@ bounds_fault:
 	record[2] = 0x2b724; record[3] = 0x65b020;	/* FUN_0002b724 */
 	obj[0x14] = sk_dispatch_async(record);
 
-	record[2] = 0x2ba98; record[3] = 0x65b070;	/* FUN_0002ba98 */
+	record[2] = 0x2ba98; record[3] = 0x65b070;	/* vas_fh_handle_state */
 	obj[0x19] = sk_dispatch_async(record);
 
-	record[2] = 0x2bea0; record[3] = 0x65b0b0;	/* FUN_0002bea0 */
+	record[2] = 0x2bea0; record[3] = 0x65b0b0;	/* vas_fh_delete */
 	obj[0x1a] = sk_dispatch_async(record);
 
-	record[2] = 0x2c0c0; record[3] = 0x65b100;	/* FUN_0002c0c0 */
+	record[2] = 0x2c0c0; record[3] = 0x65b100;	/* vas_fh_size */
 	obj[0x1b] = sk_dispatch_async(record);
 
-	record[2] = 0x2c328; record[3] = 0x65b150;	/* FUN_0002c328 */
+	record[2] = 0x2c328; record[3] = 0x65b150;	/* vas_fh_get_range */
 	obj[0x1c] = sk_dispatch_async(record);
 
-	record[2] = 0x2c62c; record[3] = 0x65b1a0;	/* FUN_0002c62c */
+	record[2] = 0x2c62c; record[3] = 0x65b1a0;	/* vas_fh_get_range2 */
 	obj[0x1d] = sk_dispatch_async(record);
 
-	record[2] = 0x2c930; record[3] = 0x65b1e0;	/* FUN_0002c930 */
+	record[2] = 0x2c930; record[3] = 0x65b1e0;	/* vas_fh_unregister */
 	obj[0x1e] = sk_dispatch_async(record);
 
-	record[2] = 0x2cb5c; record[3] = 0x65b260;	/* FUN_0002cb5c */
+	record[2] = 0x2cb5c; record[3] = 0x65b260;	/* vas_fh_move */
 	obj[0x15] = sk_dispatch_async(record);
 
-	record[2] = 0x2d040; record[3] = 0x65b2b0;	/* FUN_0002d040 */
+	record[2] = 0x2d040; record[3] = 0x65b2b0;	/* vas_fh_swap */
 	obj[0x16] = sk_dispatch_async(record);
 
-	record[2] = 0x2d3b0; record[3] = 0x65b300;	/* FUN_0002d3b0 */
+	record[2] = 0x2d3b0; record[3] = 0x65b300;	/* vas_fh_resize */
 	obj[0x17] = sk_dispatch_async(record);
 
-	record[2] = 0x2d6dc; record[3] = 0x65b340;	/* FUN_0002d6dc */
+	record[2] = 0x2d6dc; record[3] = 0x65b340;	/* vas_fh_state_set */
 	obj[0x1f] = sk_dispatch_async(record);
 
-	record[2] = 0x2d93c; record[3] = 0x65b3a0;	/* FUN_0002d93c */
+	record[2] = 0x2d93c; record[3] = 0x65b3a0;	/* vas_fh_detach_sync */
 	obj[0x18] = sk_dispatch_async(record);
 
-	record[2] = 0x2db3c; record[3] = 0x65b3c0;	/* FUN_0002db3c */
+	record[2] = 0x2db3c; record[3] = 0x65b3c0;	/* vas_fh_map_dispatch */
 	obj[0xb] = sk_dispatch_async(record);
 
-	record[2] = 0x2dd1c; record[3] = 0x65b3e0;	/* FUN_0002dd1c */
+	record[2] = 0x2dd1c; record[3] = 0x65b3e0;	/* vas_fh_map6_dispatch */
 	obj[0xc] = sk_dispatch_async(record);
 
-	record[2] = 0x2defc; record[3] = 0x65b400;	/* FUN_0002defc */
+	record[2] = 0x2defc; record[3] = 0x65b400;	/* vas_fh_map15_dispatch */
 	obj[0xd] = sk_dispatch_async(record);
 
-	record[2] = 0x2e0dc; record[3] = 0x65b420;	/* FUN_0002e0dc */
+	record[2] = 0x2e0dc; record[3] = 0x65b420;	/* vas_fh_map14_dispatch */
 	obj[0xe] = sk_dispatch_async(record);
 
-	record[2] = 0x2e2bc; record[3] = 0x65b440;	/* FUN_0002e2bc */
+	record[2] = 0x2e2bc; record[3] = 0x65b440;	/* vas_fh_clear */
 	obj[0xf] = sk_dispatch_async(record);
 
-	record[2] = 0x2e460; record[3] = 0x65b460;	/* FUN_0002e460 */
+	record[2] = 0x2e460; record[3] = 0x65b460;	/* vas_fh_clear2 */
 	obj[0x21] = sk_dispatch_async(record);
 
-	record[2] = 0x2e604; record[3] = 0x65b480;	/* FUN_0002e604 */
+	record[2] = 0x2e604; record[3] = 0x65b480;	/* vas_fh_get */
 	obj[0x22] = sk_dispatch_async(record);
 
 	record[2] = 0x2eb48; record[3] = 0x65b4a0;
@@ -3761,18 +3761,18 @@ void vas_fh_register(long self, unsigned int *src, long reply)
 trap:
     (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ba78);
 }
-/* FUN_0002ba98 @ 0x2ba98   (est. vas_fault_handler_lookup_dispatch)
- * Ghidra: undefined8 FUN_0002ba98(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_handle_state @ 0x2ba98   (est. vas_fault_handler_lookup_dispatch)
+ * Ghidra: undefined8 vas_fh_handle_state(long param_1, undefined8 param_2, long param_3)
  * Claims a request slot (kind 0x10000001b) for a VAS object lookup, locks the
  * server object, resolves the named object via the shared dispatch helper, then
  * encodes the outcome (success value or error code) into the reply. Takes
  * obj (the VAS server), reg_obj (the object name to look up) and reply
  * (whose +0x10 slot is the result-delivery method).
  * Confidence: high
- * Notes: two stacked record descriptors (record_a/record_b); helper FUN_0002bd34
+ * Notes: two stacked record descriptors (record_a/record_b); helper vas_fh_lookup_entry
  *   is called with the descriptor base at &local_128 (the leading &local_118 arg
  *   is a Ghidra calling-convention artifact). */
-unsigned long FUN_0002ba98(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+unsigned long vas_fh_handle_state(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, q, seq;
     unsigned long *hdr;
@@ -3834,15 +3834,15 @@ unsigned long FUN_0002ba98(unsigned long obj, unsigned long reg_obj, unsigned lo
         if ((cur == 0) ||
            ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
             *(unsigned long *)(obj + 0x30) <= cur)) {
-            /* descriptor: local_128 base, method +0x10 = FUN_0002bdb8 */
+            /* descriptor: local_128 base, method +0x10 = vas_fh_map_page */
             unsigned long desc_0 = 0x6ad3a8;
             unsigned long desc_1 = DAT_004bb180;
-            unsigned long desc_2 = 0x2bdb8;    /* FUN_0002bdb8 */
+            unsigned long desc_2 = 0x2bdb8;    /* vas_fh_map_page */
             unsigned long desc_3 = 0x65b040;   /* DAT_0065b040 */
             unsigned long desc_4 = (unsigned long)ptr_a;
             unsigned long desc_5 = (unsigned long)ptr_b;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 if (slot != (unsigned long *)0x0) {
@@ -3852,7 +3852,7 @@ unsigned long FUN_0002ba98(unsigned long obj, unsigned long reg_obj, unsigned lo
                     *(unsigned char *)((unsigned long)slot + 4) = 0;
                 }
                 if (ptr_b + 7 < ptr_b + 3) goto bounds_fail;
-                sk_rt_0002b5e8(&result, ptr_b + 3, *(unsigned int *)(ptr_a + 3)); /* FUN_0002b5e8 */
+                vas_record_fill(&result, ptr_b + 3, *(unsigned int *)(ptr_a + 3)); /* FUN_0002b5e8 */
                 sk_rt_00046320(&result, &result);   /* FUN_00046320 */
             } else {
                 if (slot != (unsigned long *)0x0) {
@@ -3877,8 +3877,8 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002bd34 @ 0x2bd34   (est. vas_dispatch_resolve)
- * Ghidra: undefined1 [16] FUN_0002bd34(long param_1, long param_2, long param_3)
+/* vas_fh_lookup_entry @ 0x2bd34   (est. vas_dispatch_resolve)
+ * Ghidra: undefined1 [16] vas_fh_lookup_entry(long param_1, long param_2, long param_3)
  * Shared VAS dispatch core. If the current domain (FUN_0002fa34) is non-null,
  * resolve the object through the page check (FUN_0003c4c0) and, on success,
  * invoke the method at desc+0x10 with (desc, reg_obj, *(vas+0x178)); otherwise
@@ -3886,7 +3886,7 @@ bounds_fail:
  * status (0 = success).
  * Confidence: high
  * Notes: return read by callers only as low byte; modeled here as low word. */
-unsigned long FUN_0002bd34(unsigned long vas, unsigned long reg_obj, unsigned long *desc)
+unsigned long vas_fh_lookup_entry(unsigned long vas, unsigned long reg_obj, unsigned long *desc)
 {
     unsigned long cur;
     unsigned long cookie;
@@ -3905,15 +3905,15 @@ unsigned long FUN_0002bd34(unsigned long vas, unsigned long reg_obj, unsigned lo
 }
 
 /*----*/
-/* FUN_0002bdb8 @ 0x2bdb8   (est. vas_fault_handler_lookup_fill)
- * Ghidra: undefined1 [16] FUN_0002bdb8(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_map_page @ 0x2bdb8   (est. vas_fault_handler_lookup_fill)
+ * Ghidra: undefined1 [16] vas_fh_map_page(long param_1, undefined8 param_2, long param_3)
  * Inner lookup implementation driven by the dispatcher: validates the request
  * region bounds, calls the (param_3+8) method with (param_2, slot) to obtain a
  * status and stores it into the object's +0x18 field; returns 0 on success.
  * Aborts (boot panic) if param_3 is null.
  * Confidence: high
  * Notes: uses SoftwareBreakpoint(0x5519,0x2be20) on the bounds check. */
-unsigned long FUN_0002bdb8(unsigned long obj, unsigned long reg_obj, unsigned long cb)
+unsigned long vas_fh_map_page(unsigned long obj, unsigned long reg_obj, unsigned long cb)
 {
     unsigned long base = *(unsigned long *)(*(unsigned long *)(obj + 0x28) + 8);
     unsigned long end = base + 0x18;
@@ -3933,39 +3933,39 @@ unsigned long FUN_0002bdb8(unsigned long obj, unsigned long reg_obj, unsigned lo
 }
 
 /*----*/
-/* FUN_0002be24 @ 0x2be24   (est. vas_fault_handler_copy_regs)
- * Ghidra: void FUN_0002be24(long param_1, long param_2)
+/* sk_pair_copy8 @ 0x2be24   (est. vas_fault_handler_copy_regs)
+ * Ghidra: void sk_pair_copy8(long param_1, long param_2)
  * Copies the two 8-byte request-region base words from src (+0x20/+0x28) into
  * dst (+0x20/+0x28). Used to carry the fault-handler request context across a
  * save/restore boundary.
  * Confidence: high */
-void FUN_0002be24(unsigned long dst, unsigned long src)
+void sk_pair_copy8(unsigned long dst, unsigned long src)
 {
     sk_rt_0004b710(dst + 0x20, *(unsigned long *)(src + 0x20), 8);  /* FUN_0004b710 */
     sk_rt_0004b710(dst + 0x28, *(unsigned long *)(src + 0x28), 8);  /* FUN_0004b710 */
 }
 
 /*----*/
-/* FUN_0002be68 @ 0x2be68   (est. vas_fault_handler_teardown_regs)
- * Ghidra: void FUN_0002be68(long param_1)
+/* sk_pair_release @ 0x2be68   (est. vas_fault_handler_teardown_regs)
+ * Ghidra: void sk_pair_release(long param_1)
  * Releases the two request-region base words of a fault-handler record at
  * (+0x28, then +0x20) via FUN_0004b8d0.
  * Confidence: high */
-void FUN_0002be68(unsigned long obj)
+void sk_pair_release(unsigned long obj)
 {
     sk_rt_0004b8d0(*(unsigned long *)(obj + 0x28), 8);  /* FUN_0004b8d0 */
     sk_rt_0004b8d0(*(unsigned long *)(obj + 0x20), 8);  /* FUN_0004b8d0 */
 }
 
 /*----*/
-/* FUN_0002bea0 @ 0x2bea0   (est. vas_fault_handler_map)
- * Ghidra: void FUN_0002bea0(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
+/* vas_fh_delete @ 0x2bea0   (est. vas_fault_handler_map)
+ * Ghidra: void vas_fh_delete(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
  * Claims a request slot (kind 0x10000001c), locks the server, dispatches the
  * (reg_obj, arg) map request, and delivers the status into the reply. Success
  * clears the slot payload; failure encodes the error code.
  * Confidence: high
  * Notes: helper method pointer &LAB_0002c0a4 at desc+0x10; DAT_0065b090 data. */
-void FUN_0002bea0(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
+void vas_fh_delete(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4016,7 +4016,7 @@ void FUN_0002bea0(unsigned long obj, unsigned long reg_obj, unsigned long arg, u
             unsigned long desc_3 = 0x65b090;   /* DAT_0065b090 */
             unsigned long desc_4 = (unsigned long)arg;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 if (slot != (unsigned long *)0x0) {
@@ -4050,14 +4050,14 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002c0c0 @ 0x2c0c0   (est. vas_fault_handler_map_region)
- * Ghidra: undefined8 FUN_0002c0c0(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
+/* vas_fh_size @ 0x2c0c0   (est. vas_fault_handler_map_region)
+ * Ghidra: undefined8 vas_fh_size(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
  * Claims a request slot (kind 0x10000001d) for mapping a region, dispatches the
  * (reg_obj, arg) request, and returns the resulting address (or error code)
  * through the reply. Success writes the resolved handle into the slot.
  * Confidence: high
  * Notes: method &LAB_0002c2f8, DAT_0065b0d0; local_70 record released at end. */
-unsigned long FUN_0002c0c0(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
+unsigned long vas_fh_size(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4110,7 +4110,7 @@ unsigned long FUN_0002c0c0(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_3 = 0x65b0d0;   /* DAT_0065b0d0 */
             unsigned long desc_4 = (unsigned long)&record;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 if (slot != (unsigned long *)0x0) {
@@ -4145,15 +4145,15 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002c328 @ 0x2c328   (est. vas_fault_handler_move)
- * Ghidra: undefined8 FUN_0002c328(long param_1, undefined8 param_2, undefined8 *param_3, long param_4)
+/* vas_fh_get_range @ 0x2c328   (est. vas_fault_handler_move)
+ * Ghidra: undefined8 vas_fh_get_range(long param_1, undefined8 param_2, undefined8 *param_3, long param_4)
  * Claims a request slot (kind 0x10000001e) for a two-value (from,to) move,
  * dispatches, and reports the resulting addresses through the reply. Reads the
  * two word values from *param_3, passes them into the record descriptors, and
  * stores both results back into the slot.
  * Confidence: high
  * Notes: method &LAB_0002c5b4, DAT_0065b120. */
-unsigned long FUN_0002c328(unsigned long obj, unsigned long reg_obj, unsigned long *arg2, unsigned long reply)
+unsigned long vas_fh_get_range(unsigned long obj, unsigned long reg_obj, unsigned long *arg2, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4220,7 +4220,7 @@ unsigned long FUN_0002c328(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_5 = (unsigned long)&r1;
             unsigned long desc_6 = (unsigned long)arg2;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 v2 = (&r1)[3];
@@ -4255,13 +4255,13 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002c62c @ 0x2c62c   (est. vas_fault_handler_move2)
- * Ghidra: undefined8 FUN_0002c62c(long param_1, undefined8 param_2, undefined8 *param_3, long param_4)
+/* vas_fh_get_range2 @ 0x2c62c   (est. vas_fault_handler_move2)
+ * Ghidra: undefined8 vas_fh_get_range2(long param_1, undefined8 param_2, undefined8 *param_3, long param_4)
  * Claims a request slot (kind 0x100000020) for a second two-value move variant
  * and reports the resolved addresses through the reply. Structurally identical
  * to 2c328 except for the slot kind, method (&LAB_0002c8b8) and data tag.
  * Confidence: high */
-unsigned long FUN_0002c62c(unsigned long obj, unsigned long reg_obj, unsigned long *arg2, unsigned long reply)
+unsigned long vas_fh_get_range2(unsigned long obj, unsigned long reg_obj, unsigned long *arg2, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4328,7 +4328,7 @@ unsigned long FUN_0002c62c(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_5 = (unsigned long)&r1;
             unsigned long desc_6 = (unsigned long)arg2;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 v2 = (&r1)[3];
@@ -4363,14 +4363,14 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002c930 @ 0x2c930   (est. vas_fault_handler_unregister)
- * Ghidra: void FUN_0002c930(long param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4, long param_5)
+/* vas_fh_unregister @ 0x2c930   (est. vas_fault_handler_unregister)
+ * Ghidra: void vas_fh_unregister(long param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4, long param_5)
  * Claims a request slot (kind 0x10000001f) to unregister a fault-handler entry,
  * dispatches the (reg_obj, arg) request, destroys the arg element, and delivers
  * the status into the reply.
  * Confidence: high
  * Notes: method &LAB_0002cb40, DAT_0065b1c0; cl4_destroy_elem on param_4. */
-void FUN_0002c930(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long elem, unsigned long reply)
+void vas_fh_unregister(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long elem, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4422,7 +4422,7 @@ void FUN_0002c930(unsigned long obj, unsigned long reg_obj, unsigned long arg, u
             unsigned long desc_4 = (unsigned long)arg;
             unsigned long desc_5 = (unsigned long)elem;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 if (slot != (unsigned long *)0x0) {
@@ -4457,14 +4457,14 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002cb5c @ 0x2cb5c   (est. vas_fault_handler_move_swap)
- * Ghidra: undefined8 FUN_0002cb5c(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
+/* vas_fh_move @ 0x2cb5c   (est. vas_fault_handler_move_swap)
+ * Ghidra: undefined8 vas_fh_move(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
  * Claims a request slot (kind 0x100000021) to move/swap a fault-handler entry:
  * on success it removes both reg_obj and arg from the live-registration list,
  * re-resolves the moved slot via FUN_0002b3ec and reports the resulting handle.
  * Confidence: high
- * Notes: method &DAT_0002ce4c / &LAB_0065b230; two FUN_0002cf20 unregisters. */
-unsigned long FUN_0002cb5c(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
+ * Notes: method &DAT_0002ce4c / &LAB_0065b230; two vas_fh_region_remove unregisters. */
+unsigned long vas_fh_move(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4523,7 +4523,7 @@ unsigned long FUN_0002cb5c(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_7 = (unsigned long)&rec;
             unsigned long desc_8 = (unsigned long)arg;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6; (void)desc_7; (void)desc_8;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             if ((ret & 0xff) != 0) {
                 c = (unsigned int)ret & 0xff;
                 if (slot != (unsigned long *)0x0) {
@@ -4544,17 +4544,17 @@ unsigned long FUN_0002cb5c(unsigned long obj, unsigned long reg_obj, unsigned lo
             if ((cur == 0) ||
                ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                 *(unsigned long *)(obj + 0x30) <= cur)) {
-                sk_rt_0002cf20(cur, reg_obj);   /* FUN_0002cf20 */
+                vas_fh_region_remove(cur, reg_obj);   /* vas_fh_region_remove */
                 cur = *(unsigned long *)(obj + 0x20);
                 if ((cur == 0) ||
                    ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                     *(unsigned long *)(obj + 0x30) <= cur)) {
-                    sk_rt_0002cf20(cur, arg);   /* FUN_0002cf20 */
+                    vas_fh_region_remove(cur, arg);   /* vas_fh_region_remove */
                     cur = *(unsigned long *)(obj + 0x20);
                     if ((cur == 0) ||
                        ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                         *(unsigned long *)(obj + 0x30) <= cur)) {
-                        val = sk_rt_0002b3ec(cur, (&rec)[3], (&rec)[4]);   /* FUN_0002b3ec */
+                        val = vas_record_add(cur, (&rec)[3], (&rec)[4]);   /* FUN_0002b3ec */
                         if (slot != (unsigned long *)0x0) {
                             slot[4] = val;
                             slot[5] = 0;
@@ -4578,15 +4578,15 @@ done:
 }
 
 /*----*/
-/* FUN_0002ce70 @ 0x2ce70   (est. vas_fault_handler_state_get)
- * Ghidra: void FUN_0002ce70(long param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
+/* vas_fh_lookup_dispatch @ 0x2ce70   (est. vas_fault_handler_state_get)
+ * Ghidra: void vas_fh_lookup_dispatch(long param_1, undefined8 param_2, undefined8 param_3, undefined8 param_4)
  * Thin state-get wrapper: builds a descriptor (method &LAB_0002cef0, data
  * &LAB_0065b200) around *(obj+0x20) and dispatches it with param_2 and
  * *(obj+0x40) as the request key. Result is delivered synchronously inside
  * the dispatch; this function returns void.
  * Confidence: high
  * Notes: no request-slot allocation, no lock in this wrapper. */
-void FUN_0002ce70(unsigned long obj, unsigned long a, unsigned long b, unsigned long c)
+void vas_fh_lookup_dispatch(unsigned long obj, unsigned long a, unsigned long b, unsigned long c)
 {
     unsigned long desc_0 = 0x6ad3a8;
     unsigned long desc_1 = DAT_004bb180;
@@ -4596,19 +4596,19 @@ void FUN_0002ce70(unsigned long obj, unsigned long a, unsigned long b, unsigned 
     unsigned long desc_5 = (unsigned long)b;
     unsigned long desc_6 = (unsigned long)c;
     (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-    sk_rt_0002bd34(a, *(unsigned long *)(obj + 0x40), &desc_0);   /* FUN_0002bd34 */
+    vas_fh_lookup_entry(a, *(unsigned long *)(obj + 0x40), &desc_0);   /* vas_fh_lookup_entry */
 }
 
 /*----*/
-/* FUN_0002cf20 @ 0x2cf20   (est. vas_registration_unregister)
- * Ghidra: void FUN_0002cf20(long param_1, long param_2)
+/* vas_fh_region_remove @ 0x2cf20   (est. vas_registration_unregister)
+ * Ghidra: void vas_fh_region_remove(long param_1, long param_2)
  * Removes an entry named param_2 from the current domain's registration list at
  * obj+0x168 (count), obj+0x170 (array). Validates the entry exists, decrements
  * the count and pulls the last element into the vacated slot. Aborts via
  * sk_swift_fatal on any invariant violation.
  * Confidence: high
  * Notes: strings s__VAS_abort_in_function__s_at_lin_005ae904 / _005ae9e0 / _005ae776. */
-void FUN_0002cf20(unsigned long obj, unsigned long key)
+void vas_fh_region_remove(unsigned long obj, unsigned long key)
 {
     unsigned long *list;
     unsigned long *tail;
@@ -4645,14 +4645,14 @@ void FUN_0002cf20(unsigned long obj, unsigned long key)
 }
 
 /*----*/
-/* FUN_0002d040 @ 0x2d040   (est. vas_fault_handler_swap)
- * Ghidra: undefined8 FUN_0002d040(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
+/* vas_fh_swap @ 0x2d040   (est. vas_fault_handler_swap)
+ * Ghidra: undefined8 vas_fh_swap(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
  * Claims a request slot (kind 0x100000022) to swap a fault-handler entry: on
  * success it unregisters reg_obj, resolves two handles (FUN_0002b3ec) and
  * reports both results through the reply.
  * Confidence: high
  * Notes: method &LAB_0002d360, &LAB_0065b280. */
-unsigned long FUN_0002d040(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
+unsigned long vas_fh_swap(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4714,7 +4714,7 @@ unsigned long FUN_0002d040(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_5 = (unsigned long)&r1;
             unsigned long desc_6 = (unsigned long)arg;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             if ((ret & 0xff) != 0) {
                 c = (unsigned int)ret & 0xff;
                 if (slot != (unsigned long *)0x0) {
@@ -4735,17 +4735,17 @@ unsigned long FUN_0002d040(unsigned long obj, unsigned long reg_obj, unsigned lo
             if ((cur == 0) ||
                ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                 *(unsigned long *)(obj + 0x30) <= cur)) {
-                sk_rt_0002cf20(cur, reg_obj);   /* FUN_0002cf20 */
+                vas_fh_region_remove(cur, reg_obj);   /* vas_fh_region_remove */
                 cur = *(unsigned long *)(obj + 0x20);
                 if ((cur == 0) ||
                    ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                     *(unsigned long *)(obj + 0x30) <= cur)) {
-                    v1 = sk_rt_0002b3ec(cur, (&r0)[3], (&r0)[4]);   /* FUN_0002b3ec */
+                    v1 = vas_record_add(cur, (&r0)[3], (&r0)[4]);   /* FUN_0002b3ec */
                     cur = *(unsigned long *)(obj + 0x20);
                     if ((cur == 0) ||
                        ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                         *(unsigned long *)(obj + 0x30) <= cur)) {
-                        v2 = sk_rt_0002b3ec(cur, (&r1)[3], (&r1)[4]);   /* FUN_0002b3ec */
+                        v2 = vas_record_add(cur, (&r1)[3], (&r1)[4]);   /* FUN_0002b3ec */
                         sk_rt_000462f8(&result, v1, v2);   /* FUN_000462f8 */
                         if (slot != (unsigned long *)0x0) {
                             slot[4] = v1;
@@ -4770,15 +4770,15 @@ done:
 }
 
 /*----*/
-/* FUN_0002d3b0 @ 0x2d3b0   (est. vas_fault_handler_resize)
- * Ghidra: undefined8 FUN_0002d3b0(long param_1, undefined8 param_2, undefined8 param_3, ulong param_4, long param_5)
+/* vas_fh_resize @ 0x2d3b0   (est. vas_fault_handler_resize)
+ * Ghidra: undefined8 vas_fh_resize(long param_1, undefined8 param_2, undefined8 param_3, ulong param_4, long param_5)
  * Claims a request slot (kind 0x100000023) to resize a fault-handler entry to a
  * new size (param_4). On success it unregisters reg_obj, resolves the relocated
  * handle and reports it. The reply is invoked once to test delivery and, if it
  * returns 0, invoked again to obtain the final result.
  * Confidence: high
  * Notes: method &LAB_0002d6a0, &LAB_0065b2d0. */
-unsigned long FUN_0002d3b0(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long newsize, unsigned long reply)
+unsigned long vas_fh_resize(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long newsize, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4836,7 +4836,7 @@ unsigned long FUN_0002d3b0(unsigned long obj, unsigned long reg_obj, unsigned lo
             unsigned long desc_5 = (unsigned long)&rec;
             unsigned long desc_6 = (unsigned long)arg;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             if ((ret & 0xff) != 0) {
                 c = (unsigned int)ret & 0xff;
                 if (slot != (unsigned long *)0x0) {
@@ -4857,12 +4857,12 @@ unsigned long FUN_0002d3b0(unsigned long obj, unsigned long reg_obj, unsigned lo
             if ((cur == 0) ||
                ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                 *(unsigned long *)(obj + 0x30) <= cur)) {
-                sk_rt_0002cf20(cur, reg_obj);   /* FUN_0002cf20 */
+                vas_fh_region_remove(cur, reg_obj);   /* vas_fh_region_remove */
                 cur = *(unsigned long *)(obj + 0x20);
                 if ((cur == 0) ||
                    ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
                     *(unsigned long *)(obj + 0x30) <= cur)) {
-                    v = sk_rt_0002b3ec(cur, (&rec)[3], (&rec)[4]);   /* FUN_0002b3ec */
+                    v = vas_record_add(cur, (&rec)[3], (&rec)[4]);   /* FUN_0002b3ec */
                     if (slot != (unsigned long *)0x0) {
                         slot[4] = v;
                         slot[5] = 0;
@@ -4890,14 +4890,14 @@ done:
 }
 
 /*----*/
-/* FUN_0002d6dc @ 0x2d6dc   (est. vas_fault_handler_state_set)
- * Ghidra: void FUN_0002d6dc(long param_1, undefined8 param_2, uint param_3, undefined8 param_4, undefined8 param_5, long param_6)
+/* vas_fh_state_set @ 0x2d6dc   (est. vas_fault_handler_state_set)
+ * Ghidra: void vas_fh_state_set(long param_1, undefined8 param_2, uint param_3, undefined8 param_4, undefined8 param_5, long param_6)
  * Claims a request slot (kind 0x100000024) to set a fault-handler state (param_3,
  * must be <= 4) with two context args (param_4, param_5) and delivers the status.
  * Success stores param_5 into the slot payload.
  * Confidence: high
  * Notes: method &LAB_0002d91c, &DAT_0065b320; string s__unknown_easm_fault_state_0x_x_005aea31. */
-void FUN_0002d6dc(unsigned long obj, unsigned long reg_obj, unsigned int state, unsigned long a1, unsigned long a2, unsigned long reply)
+void vas_fh_state_set(unsigned long obj, unsigned long reg_obj, unsigned int state, unsigned long a1, unsigned long a2, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -4953,7 +4953,7 @@ void FUN_0002d6dc(unsigned long obj, unsigned long reg_obj, unsigned int state, 
             unsigned long desc_5 = (unsigned long)a1;
             unsigned long desc_6 = (unsigned long)a2;
             (void)desc_0; (void)desc_1; (void)desc_2; (void)desc_3; (void)desc_4; (void)desc_5; (void)desc_6;
-            ret = sk_rt_0002bd34(cur, reg_obj, &desc_0);   /* FUN_0002bd34 */
+            ret = vas_fh_lookup_entry(cur, reg_obj, &desc_0);   /* vas_fh_lookup_entry */
             sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
             if ((ret & 0xff) == 0) {
                 if (slot != (unsigned long *)0x0) {
@@ -4987,14 +4987,14 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002d93c @ 0x2d93c   (est. vas_fault_handler_lookup_unregister)
- * Ghidra: void FUN_0002d93c(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_detach_sync @ 0x2d93c   (est. vas_fault_handler_lookup_unregister)
+ * Ghidra: void vas_fh_detach_sync(long param_1, undefined8 param_2, long param_3)
  * Claims a request slot (kind 0x10000001a) for a lookup-then-unregister op:
  * dispatches via the static descriptor &LAB_0065b380, and on success removes
- * reg_obj from the registration list (FUN_0002cf20) and reports success;
+ * reg_obj from the registration list (vas_fh_region_remove) and reports success;
  * otherwise reports the error code. Uses the negated form of the bounds check.
  * Confidence: high */
-void FUN_0002d93c(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_detach_sync(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5039,7 +5039,7 @@ void FUN_0002d93c(unsigned long obj, unsigned long reg_obj, unsigned long reply)
     if ((cur != 0) &&
        ((cur + 0x210 < cur || *(unsigned long *)(obj + 0x28) < cur + 0x210) ||
         cur < *(unsigned long *)(obj + 0x30))) goto bounds_fail;
-    ret = sk_rt_0002bd34(cur, reg_obj, (unsigned long *)0x65b380);   /* FUN_0002bd34, desc &LAB_0065b380 */
+    ret = vas_fh_lookup_entry(cur, reg_obj, (unsigned long *)0x65b380);   /* vas_fh_lookup_entry, desc &LAB_0065b380 */
     if (slot == (unsigned long *)0x0) {
         if ((ret & 0xff) == 0) goto success;
     } else {
@@ -5052,7 +5052,7 @@ success:
             if ((cur != 0) &&
                ((cur + 0x210 < cur || *(unsigned long *)(obj + 0x28) < cur + 0x210) ||
                 cur < *(unsigned long *)(obj + 0x30))) goto bounds_fail;
-            sk_rt_0002cf20(cur, reg_obj);   /* FUN_0002cf20 */
+            vas_fh_region_remove(cur, reg_obj);   /* vas_fh_region_remove */
             sk_rt_000462e0(&lo);   /* FUN_000462e0 */
             goto done;
         }
@@ -5077,8 +5077,8 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002db3c @ 0x2db3c   (est. vas_fault_handler_map_8)
- * Ghidra: void FUN_0002db3c(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_map_dispatch @ 0x2db3c   (est. vas_fault_handler_map_8)
+ * Ghidra: void vas_fh_map_dispatch(long param_1, undefined8 param_2, long param_3)
  * Map-dispatch family member: claims a request slot (kind 0x100000015), phys-
  * allocates a page (FUN_00034f70), and if one is obtained invokes the method
  * table entry at *(*(obj+0x38)+8)+0x10 with (reg_obj, size=8, page). On success
@@ -5086,7 +5086,7 @@ bounds_fail:
  * the error code reported.
  * Confidence: high
  * Notes: the 2db3c/2dd1c/2defc/2e0dc family differs only in kind and size byte. */
-void FUN_0002db3c(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_map_dispatch(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5173,12 +5173,12 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002dd1c @ 0x2dd1c   (est. vas_fault_handler_map_6)
- * Ghidra: void FUN_0002dd1c(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_map6_dispatch @ 0x2dd1c   (est. vas_fault_handler_map_6)
+ * Ghidra: void vas_fh_map6_dispatch(long param_1, undefined8 param_2, long param_3)
  * Map-dispatch family member: kind 0x100000016, size byte 6. Same shape as
  * 2db3c; on page-allocation failure reports code 2.
  * Confidence: high */
-void FUN_0002dd1c(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_map6_dispatch(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5265,12 +5265,12 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002defc @ 0x2defc   (est. vas_fault_handler_map_21)
- * Ghidra: void FUN_0002defc(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_map15_dispatch @ 0x2defc   (est. vas_fault_handler_map_21)
+ * Ghidra: void vas_fh_map15_dispatch(long param_1, undefined8 param_2, long param_3)
  * Map-dispatch family member: kind 0x100000017, size byte 0x15. Same shape as
  * 2db3c; on page-allocation failure reports code 2.
  * Confidence: high */
-void FUN_0002defc(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_map15_dispatch(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5357,12 +5357,12 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002e0dc @ 0x2e0dc   (est. vas_fault_handler_map_20)
- * Ghidra: void FUN_0002e0dc(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_map14_dispatch @ 0x2e0dc   (est. vas_fault_handler_map_20)
+ * Ghidra: void vas_fh_map14_dispatch(long param_1, undefined8 param_2, long param_3)
  * Map-dispatch family member: kind 0x100000018, size byte 0x14. Same shape as
  * 2db3c; on page-allocation failure reports code 2.
  * Confidence: high */
-void FUN_0002e0dc(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_map14_dispatch(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5449,13 +5449,13 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002e2bc @ 0x2e2bc   (est. vas_fault_handler_commit)
- * Ghidra: void FUN_0002e2bc(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_clear @ 0x2e2bc   (est. vas_fault_handler_commit)
+ * Ghidra: void vas_fh_clear(long param_1, undefined8 param_2, long param_3)
  * Claims a request slot (kind 0x100000019) and commits a fault-handler op by
  * invoking the method table entry at *(*(obj+0x38)+0x10)+0x10 with (reg_obj).
  * Reports success/error through the reply.
  * Confidence: high */
-void FUN_0002e2bc(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_clear(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5531,13 +5531,13 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002e460 @ 0x2e460   (est. vas_fault_handler_commit_2)
- * Ghidra: void FUN_0002e460(long param_1, undefined8 param_2, long param_3)
+/* vas_fh_clear2 @ 0x2e460   (est. vas_fault_handler_commit_2)
+ * Ghidra: void vas_fh_clear2(long param_1, undefined8 param_2, long param_3)
  * Claims a request slot (kind 0x10000000c) and runs a second commit variant via
  * the method table entry at *(*(obj+0x38)+0x18)+0x10 with (reg_obj). Reports
  * success/error through the reply.
  * Confidence: high */
-void FUN_0002e460(unsigned long obj, unsigned long reg_obj, unsigned long reply)
+void vas_fh_clear2(unsigned long obj, unsigned long reg_obj, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5613,13 +5613,13 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002e604 @ 0x2e604   (est. vas_fault_handler_add_thread_info)
- * Ghidra: void FUN_0002e604(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
+/* vas_fh_get @ 0x2e604   (est. vas_fault_handler_add_thread_info)
+ * Ghidra: void vas_fh_get(long param_1, undefined8 param_2, undefined8 param_3, long param_4)
  * Claims a request slot (kind 0x100000012) and forwards to the easm server
- * add-thread-info core (FUN_0002e7c4) with the server's +0x40/+0x48 fields,
+ * add-thread-info core (vas_fh_get_internal) with the server's +0x40/+0x48 fields,
  * reg_obj and arg. Reports the outcome through the reply.
  * Confidence: high */
-void FUN_0002e604(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
+void vas_fh_get(unsigned long obj, unsigned long reg_obj, unsigned long arg, unsigned long reply)
 {
     unsigned long cur, end, seq, d;
     unsigned long *hdr;
@@ -5664,8 +5664,8 @@ void FUN_0002e604(unsigned long obj, unsigned long reg_obj, unsigned long arg, u
         if ((cur == 0) ||
            ((cur <= cur + 0x210 && cur + 0x210 <= *(unsigned long *)(obj + 0x28)) &&
             *(unsigned long *)(obj + 0x30) <= cur)) {
-            ret = sk_rt_0002e7c4(cur, *(unsigned long *)(obj + 0x40), *(unsigned long *)(obj + 0x48),
-                                 reg_obj, arg);   /* FUN_0002e7c4 */
+            ret = vas_fh_get_internal(cur, *(unsigned long *)(obj + 0x40), *(unsigned long *)(obj + 0x48),
+                                 reg_obj, arg);   /* vas_fh_get_internal */
             if ((ret & 0xff) == 0) {
                 sk_rt_000462e0(&lo);   /* FUN_000462e0 */
                 if (slot != (unsigned long *)0x0) {
@@ -5699,8 +5699,8 @@ bounds_fail:
 }
 
 /*----*/
-/* FUN_0002e7c4 @ 0x2e7c4   (est. easm_server_add_thread_info)
- * Ghidra: ulong FUN_0002e7c4(long param_1, undefined8 param_2, long param_3, long param_4, ulong param_5)
+/* vas_fh_get_internal @ 0x2e7c4   (est. easm_server_add_thread_info)
+ * Ghidra: ulong vas_fh_get_internal(long param_1, undefined8 param_2, long param_3, long param_4, ulong param_5)
  * Core add-thread-info path for the easm server. Phys-allocates a page, maps it
  * through the param_3 method (+0x40), verifies the entry key at the mapped slot
  * and grows the server's thread-info array at obj+0x1d8 (count) / +0x1e8 (array)
@@ -5711,7 +5711,7 @@ bounds_fail:
  * Notes: string s__easm_server_add_thread_info_005aeac7; magic uVar16 =
  *   0x10e0040669e76eb; bounds SoftwareBreakpoint(0x5519,0x2ea54); globals
  *   DAT_004bc000/008/010/018. */
-unsigned long FUN_0002e7c4(unsigned long obj, unsigned long param_2, unsigned long param_3, unsigned long key, unsigned long val)
+unsigned long vas_fh_get_internal(unsigned long obj, unsigned long param_2, unsigned long param_3, unsigned long key, unsigned long val)
 {
     typedef struct { unsigned long lo; unsigned long hi; } pair_t;
     pair_t a29, a4, a5, a6, boot;

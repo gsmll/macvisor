@@ -221,7 +221,7 @@ extern void FUN_00355160(word_t, ...);
 extern void FUN_003551b0(word_t, ...);
 extern void FUN_00355208(word_t, ...);
 extern void FUN_0035549c(word_t, ...);
-extern cl4_result_t FUN_0035556c(word_t, ...);
+extern word_t FUN_0035556c(word_t, ...);
 extern cl4_result_t FUN_00355694(word_t, ...);
 extern void FUN_00355780(word_t, ...);
 extern void FUN_00355800(word_t, ...);
@@ -3501,7 +3501,7 @@ long sk_msg_tag_store(long frame)
         default: lo = (uint)(byte)*((uint *)/* x1 */0); break;
         case 1:  lo = (uint)(byte)*((uint *)/* x1 */0); break;
         case 2:  lo = (uint)(ushort)*((uint *)/* x1 */0); break;
-        case 3:  lo = (uint)(uint3)*((uint *)/* x1 */0); break;
+        case 3:  lo = (uint)(uint3_t)*((uint *)/* x1 */0); break;
         case 4:  lo = *((uint *)/* x1 */0); break;
         }
         v = lo | (uint)(b - 2) << (((uint)dst & 3) << 3);
@@ -3564,7 +3564,9 @@ void sk_syscall_msg_write_e(word_t p1, word_t p2, long frame)
     FUN_00377824(r.lo, r.hi, u);
     FUN_000a6f88(0);
     FUN_0034d5d8(*(uint *)/* table+0x50 */0 & 0xff);
-    if ((/* carry clear && !zero 0 < 0x19) {
+    /* ((!carry_set || zero) && w10==0) && x11 < 0x19 */
+    if (((/* carry */0 == 0 || /* zero */0 != 0) && /* w10 */0 == 0)
+        && (ulong)/* x11 */0 < 0x19) {
         FUN_0034bfb4(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         FUN_00357154(0);
@@ -3812,44 +3814,31 @@ word_t sk_msg_cap_validate_4(word_t p1, word_t p2, long frame)
     long base = *(long *)/* x8+0x40 */0;
     if (/* w20 */0 == 0) return 0;
     if (/* w20 */0 <= limit) goto out;
+    uint b = 0;
     if ((uint)base < 4) {
         FUN_00355208(w, limit, w);
         base = /* x8_00 */0;
         limit = /* w1 */0;
-        if (0xff < /* w10 */0 >> 0x10) == 0)
-                ? (uint)*(ushort *)((long)/* x19 */0)
-                : *(uint *)((long)/* x19 */0);
-            if (b != 0) {
-                uint sz = (uint)base;
-                if (sz != 0) {
-                    sz = 4;
-                    if (sz < 4) sz = sz;
-                    switch (sz) { default: case 2: case 3: case 4: break; }
-                }
-                return FUN_00352f78(0);
-            }
+        if (0xff < /* w10 */0) {
+            /* wide slot: load 16- or 32-bit field at x19+base */
+            if ((/* w10 */0 >> 0x10) == 0)
+                b = (uint)*(ushort *)((long)/* x19 */0 + base);
+            else
+                b = *(uint *)((long)/* x19 */0 + base);
         } else if (1 < /* w10 */0) {
-            if (b != 0) {
-                uint sz = (uint)base;
-                if (sz != 0) {
-                    sz = 4;
-                    if (sz < 4) sz = sz;
-                    switch (sz) { default: case 2: case 3: case 4: break; }
-                }
-                return FUN_00352f78(0);
-            }
+            b = (uint)*(byte *)((long)/* x19 */0 + base);
         }
     } else {
-        uint b = (uint)*(byte *)((long)/* x19 */0 + base);
-        if (b != 0) {
-            uint sz = (uint)base;
-            if (sz != 0) {
-                sz = 4;
-                if (sz < 4) sz = sz;
-                switch (sz) { default: case 2: case 3: case 4: break; }
-            }
-            return FUN_00352f78(0);
+        b = (uint)*(byte *)((long)/* x19 */0 + base);
+    }
+    if (b != 0) {
+        uint sz = (uint)base;
+        if (sz != 0) {
+            sz = 4;
+            if (sz < 4) sz = sz;
+            switch (sz) { default: case 2: case 3: case 4: break; }
         }
+        return FUN_00352f78(0);
     }
     if (limit == 0) return 0;
 out:

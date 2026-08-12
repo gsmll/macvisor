@@ -306,7 +306,7 @@ static void sk_vas_page_add(uint64_t vas, uint64_t *page)
                 sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);
             /* Walk to the tail of the node list and append the fresh node. */
             walk = slot_head;
-            if ((uint64_t *)(vas + 0x150) < slot_head) break;
+            if ((uint64_t *)(vas + 0x150) < slot_head) goto fail_312dc;
             while ((walk = (uint64_t *)*walk) != (uint64_t *)0) {
                 if (walk + 1 < walk) goto fail_312dc;
             }
@@ -371,7 +371,6 @@ static void sk_vas_page_add(uint64_t vas, uint64_t *page)
         }
         node = (uint64_t *)*node;
     }
-    /* unreachable fall-through (list walk completes) */
 
 group_walk:
     for (;;) {
@@ -418,7 +417,7 @@ add_to_group:
             *p = page[1];
             *(uint8_t *)((long)node + 0x1a) = filled + 1;
             *page = (uint64_t)node;
-            *(uint64_t **)(lv + 0xa0) = node;
+            *(uint64_t **)(prev + 0xa0) = node;
             r = sk_vm_lock_release();          /* FUN_00118194 (block lock lv) */
             if (r != 0)
                 sk_vas_abort("VAS abort in function %s at line %d", __func__, 0x5aed68);

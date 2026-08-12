@@ -688,7 +688,7 @@ void sk_list_push(unsigned long *arg1);
 void sk_kernel_get(void);
 unsigned long * sk_list_head(void);
 unsigned long sk_strtok(long arg1,long *arg2);
-void sk_range_lookup(unsigned long *arg1,int arg2);
+long sk_range_lookup(unsigned long *arg1,int arg2);
 void sk_register_cb(long arg1);
 void sk_list_push_28(unsigned long *arg1);
 void sk_iter_list_cb(sk_code_t arg1,uint64_t arg2);
@@ -4140,7 +4140,7 @@ uint64_t sk_cnode_resolve(long arg1,long arg2,uint8_t (*arg3) [16])
     if ((lStack_48 == arg1) && (stk1 == arg2)) {
       t0 = (*(sk_code_t )*t3)(t1);
       if (t0 != '\0') {
-        t4 = sk_cnode_check(0,0);
+        t4 = sk_cnode_check(0);
         return t4;
       }
       t2 = (uint32_t *)sk_thread_state(0);
@@ -4576,8 +4576,7 @@ void sk_cnode_notify(int arg1)
  */
 
 uintptr_t sk_tcb_cur(void){
-  sk_global_get(0x6b04a8,2,2);
-  return;
+  return sk_global_get(0x6b04a8,2,2);
 }
 
 
@@ -4598,6 +4597,8 @@ uint8_t * sk_setup_cpu_regs(long arg1)
   long t0;
   unsigned long t4;
   long t1;
+  long lRam000000000064ccd0;
+  uint64_t *puRam000000000064ccf0;
   
   t0 = 0;
   t3 = 0;
@@ -4815,9 +4816,9 @@ void sk_cnode_walk(unsigned long arg1,long arg2)
       }
       if (((unsigned int)*(uint64_t *)(t2 + 8) >> 7 & 1) != 0) {
         sk_cnode_map(t2,*(uint64_t *)(t2 + 0x38),*(uint64_t *)(t2 + 0x20),
-                     *(uint64_t *)(t2 + 0x50),*(uint64_t *)(t2 + 0x48));
+                     *(uint64_t *)(t2 + 0x50),*(uint64_t *)(t2 + 0x48),0);
       }
-      sk_list_push(t2);
+      sk_list_push((unsigned long *)t2);
       t2 = t2 + 0x78;
       arg2 = arg2 + -1;
     } while (arg2 != 0);
@@ -4863,7 +4864,7 @@ void sk_cnode_map(long arg1,uint64_t arg2,long arg3,uint64_t arg4,uint64_t arg5 
   *(uint64_t *)(arg1 + 0x68) = stk0;
   *(uint64_t *)(arg1 + 0x70) = stk1;
   *(uint64_t *)(arg1 + 8) = arg6;
-  t3 = sk_macho_uuid(arg2);
+  t3 = (unsigned long)sk_macho_uuid(arg2);
   if (t3 == 0) {
     sk_memset(arg1 + 0x10,0x10);
   }
@@ -4933,7 +4934,7 @@ uint64_t sk_cnode_get(void)
   long t0;
   uint64_t t1;
   
-  t0 = sk_list_head();
+  t0 = (long)sk_list_head();
   t1 = 0;
   if (t0 != 0) {
     t1 = *(uint64_t *)(t0 + 0x38);
@@ -4957,7 +4958,7 @@ uint64_t sk_cnode_get2(void)
   long t0;
   uint64_t t1;
   
-  t0 = sk_list_head();
+  t0 = (long)sk_list_head();
   t1 = 0;
   if (t0 != 0) {
     t1 = *(uint64_t *)(t0 + 0x20);
@@ -5009,7 +5010,7 @@ void sk_cnode_copy(unsigned long arg1)
   sk_code_t t1;
   long t0;
   
-  t0 = sk_list_head();
+  t0 = (long)sk_list_head();
   if (t0 == 0) {
     sk_memset(arg1,0x10);
     return;
@@ -10126,7 +10127,7 @@ unsigned long sk_strtok(long arg1,long *arg2)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_range_lookup(unsigned long *arg1,int arg2)
+long sk_range_lookup(unsigned long *arg1,int arg2)
 {
   long *t0;
   unsigned long t1;
@@ -10135,7 +10136,7 @@ void sk_range_lookup(unsigned long *arg1,int arg2)
   t0 = (long *)*t0;
   do {
     if (t0 == (long *)0x0) {
-      return;
+      return 0;
     }
     if (arg2 == 0) {
       t1 = *arg1;
@@ -10148,7 +10149,7 @@ void sk_range_lookup(unsigned long *arg1,int arg2)
       t1 = *arg1 & 0xffffffffffff;
 LAB_0005bcd0:
       *arg1 = t1;
-      return;
+      return (long)t0;
     }
     t0 = (long *)*t0;
   } while( true );

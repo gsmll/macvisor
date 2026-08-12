@@ -441,3 +441,10 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - f32/f64: 0x19490/0x19588 encode/decode f32 (NaN-reject 6/7), 0x19670/0x19768 encode/decode f64.
 - Capref transport records: 0x17a08/0x17a88 create, 0x17b7c/0x17b88 bind, 0x17b94/0x17bd4 release/destroy, 0x17c14 handler.
 - Utility: 0x18560 flags_check_all, 0x185b8/0x18600/0x18650 region get/put, 0x19aac register, 0x19d40 emit_tag, 0x1a138 sorted_lookup, 0x1a1dc va_cap_resolve.
+
+## Batch SkWave5 (0x200000-0x280000) — cL4 Secure Kernel vspace/MMU layer (osfmk/arm64/sk/sk_region_vspace.c)
+- 1563 functions decompiled (range fully covered), assembled from 13 namespaced slice parts.
+- Region is the cL4 kernel's vspace/page-table/MMU boundary + embedded Swift stdlib runtime (String/Range/Collection/UTF-8, integer formatting, SipHash, KeyPath) that the vspace layer calls.
+- Key security-relevant cores (see docs/sptm/findings.md [sk-vspace]): slot-set bitmap walk 0x2587e0 (bitmap = sole mapping-permission authority, medium), open-addressing slot-key insert 0x25a864/0x25acb8 (no owner check, panic-on-dup), slot-path subscript 0x2557b8 (bounds-checked fail-closed), vspace entry table lookup-insert 0x26a328/0x26a9a8, owner-mask isolation gate 0x249a64/0x24a648, size-divisibility permission gate 0x24c2ec, region-equality gate 0x24ad48.
+- Runtime prologue/epilogue thunks: 0x200150 object-describe root, 0x2023c4 sk_map_region_core, 0x277d80 guarded TLB/ASID flush entry (per-cpu ready gate 0x1e3048).
+- Shared seL4/Swift runtime callees are extern (FUN_ addresses in comments); bodies owned by other waves (0x3xxxxx runtime library, out of this range).

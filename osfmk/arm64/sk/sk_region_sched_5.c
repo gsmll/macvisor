@@ -2096,10 +2096,11 @@ void sk_001d09cc(void)
   unsigned long (*eo8_00)();
   unsigned long (*eo9)();
   long rx21;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
   sk_0031a60c(ax4);
-  at2 = sk_0034e66c();
+  at2._0_8_ = (undefined8)(sk_0034e66c());
+  at2._8_8_ = 0;
   t1 = (*eo8)(at2._0_8_,at2._8_8_,ax4);
   if ((t1 & 1) != 0) {
     sk_0031a63c(ax4);
@@ -2980,11 +2981,12 @@ void sk_001d1bc0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   long eo16;
   long rx21;
   undefined8 rx23;
-  undefined1 at3 [16];
-  undefined1 at4 [16];
+  sk_c16_t at3;
+  sk_c16_t at4;
   undefined8 sv00000018;
   
-  at3 = sk_00353cfc();
+  at3._0_8_ = (undefined8)(sk_00353cfc());
+  at3._8_8_ = 0;
   t1 = sk_0034f860();
   sk_00377824(t1,param_5);
   sk_00348e60();
@@ -3025,7 +3027,8 @@ void sk_001d1bc0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     (*eo8_01)();
     sk_00356af4();
     sk_0031a14c();
-    at4 = sk_0034ce68();
+    at4._0_8_ = (undefined8)(sk_0034ce68());
+    at4._8_8_ = 0;
     (*eo8_02)(at4._0_8_,at4._8_8_,param_6,at3._8_8_);
     sk_00350914(*(undefined8 *)(eo16 + 8));
     (*eo8_03)();
@@ -4428,7 +4431,7 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   long rx25;
   long rx28;
   undefined8 rx30;
-  undefined1 at9 [16];
+  sk_c16_t at9;
   undefined8 v78;
   undefined8 v70;
   undefined8 st58;
@@ -4503,7 +4506,8 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
     (*pc6)();
     sk_00350a34();
     (*pc6)();
-    at9 = sk_0008e388();
+    at9._0_8_ = (undefined8)(sk_0008e388());
+    at9._8_8_ = 0;
     (*eo9_01)(at9._0_8_,at9._8_8_,t4);
     sk_0034c4bc(eo13);
     if ((bool)t2) {
@@ -4531,13 +4535,15 @@ void sk_001d4584(undefined8 param_1,undefined8 param_2,undefined8 param_3)
       sk_00351300(v70 + *(int *)(rx28 + 0x30));
       (*pc8)();
       sk_00351e84();
-      at9 = sk_003508b4();
+      at9._0_8_ = (undefined8)(sk_003508b4());
+      at9._8_8_ = 0;
       (*eo9_04)(at9._0_8_,at9._8_8_,rx28);
       iv1 = *(int *)(rx28 + 0x30);
       sk_00350b6c();
       (*pc8)();
       (*pc6)(st58 + iv1);
-      at9 = sk_003508b4(*(undefined8 *)(eo16 + 0x20));
+      at9._0_8_ = (undefined8)(sk_003508b4(*(undefined8 *)(eo16 + 0x20)));
+      at9._8_8_ = 0;
       (*eo8_06)(at9._0_8_,at9._8_8_,rx28);
       sk_00355e5c((long)*(int *)(rx28 + 0x30),v78 + *(int *)(rx19 + 0x24));
       (*pc8)();
@@ -4771,10 +4777,10 @@ void sk_001d58fc(void)
 
 /* FUN_001d590c @ 0x001d590c   (est. sk_r5_fatal_assert_001d590c) */
 /* Confidence: low (mechanical translation; names heuristic) */
-undefined1  [16] sk_001d590c(ulong param_1,undefined8 param_2,long param_3)
+undefined8 sk_001d590c(ulong param_1,undefined8 param_2,long param_3)
 
 {
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   if ((long)param_1 < 0) {
                         sk_001afe4c(Fatal_error_005accd0_str,0xb,2,Range_requires_lowerBound__str<__upp_005cda00,0x27,2,
@@ -4783,7 +4789,7 @@ undefined1  [16] sk_001d590c(ulong param_1,undefined8 param_2,long param_3)
   if ((long)param_1 <= param_3) {
     at1._8_8_ = 0;
     at1._0_8_ = param_1;
-    return at1 << 0x40;
+    return at1._0_8_ << 0x40;
   }
                       sk_001afe4c(Fatal_error_005accd0_str,0xb,2,&g_005be7c0,0,2,
                Swift_UnsafeBufferPointer_swift_005cdc10_str,0x1f,2,0x293,1);
@@ -4884,15 +4890,16 @@ void sk_001d614c(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
   long rx21;
   undefined8 rx24;
   undefined8 rx27;
-  undefined1 at10 [12];
-  undefined1 at11 [16];
+  sk_c16_t at10;
+  sk_c16_t at11;
   long sv00000008;
   long vf0;
   long vd0;
   void (*apcc8)() [2];
   undefined8 v40;
   
-  at10 = sk_00353cfc();
+  at10._0_8_ = (undefined8)(sk_00353cfc());
+  at10._8_8_ = 0;
   n6 = at10._0_8_;
   pc9 = param_3;
   sk_003548d0();
@@ -4925,7 +4932,8 @@ void sk_001d614c(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
   sk_00350428();
   sk_003509a4();
   sk_00027754(param_6);
-  at11 = sk_00348e30();
+  at11._0_8_ = (undefined8)(sk_00348e30());
+  at11._8_8_ = 0;
   sk_00377824(at11._0_8_,at11._8_8_,param_5);
   sk_000a6f88();
   sk_0007c1a4();
@@ -4977,7 +4985,8 @@ L_001d69c4:
           if ((t5 & 1) != 0) goto L_001d66b4;
           sk_000277e8(param_6);
           t4 = sk_00353cb4();
-          at11 = (*eo8_03)(t4,n6,param_5,param_6);
+          at11._0_8_ = (undefined8)((*eo8_03)(t4,n6,param_5,param_6));
+          at11._8_8_ = 0;
           (**(void (**)() )(eo14 + 0x10))(eo13,at11._8_8_,t3);
           sk_0034c3b4();
           (*at11._0_8_)();
@@ -5039,7 +5048,8 @@ L_001d66b4:
         sk_00351324();
         (*pc9)();
         pc7 = *(void (**)() )(eo16_00 + 0x20);
-        at11 = sk_0035072c();
+        at11._0_8_ = (undefined8)(sk_0035072c());
+        at11._8_8_ = 0;
         (*pc7)(at11._0_8_,at11._8_8_,rx24);
         sk_00355e2c();
         t3 = sk_003595a8();
@@ -5263,7 +5273,7 @@ void sk_001d6ef0(void)
   unsigned long (*pc7)();
   long rx28;
   undefined8 rx30;
-  undefined1 at8 [16];
+  sk_c16_t at8;
   undefined8 v50;
   undefined8 v30;
   
@@ -5342,13 +5352,15 @@ void sk_001d6ef0(void)
         sk_00351ab0(v30 + *(int *)(n2 + 0x30));
         (*pc7)();
         sk_00351c4c();
-        at8 = sk_003508cc();
+        at8._0_8_ = (undefined8)(sk_003508cc());
+        at8._8_8_ = 0;
         (*eo9_03)(at8._0_8_,at8._8_8_,n2);
         iv1 = *(int *)(n2 + 0x30);
         sk_0035190c();
         (*pc7)();
         (*eo8)(v50 + iv1);
-        at8 = sk_003508cc(*(undefined8 *)(eo16 + 0x20));
+        at8._0_8_ = (undefined8)(sk_003508cc(*(undefined8 *)(eo16 + 0x20)));
+        at8._8_8_ = 0;
         (*eo8_07)(at8._0_8_,at8._8_8_,n2);
         sk_00355e5c((long)*(int *)(n2 + 0x30),eo8_02 + *(int *)(n4 + 0x24));
         (*pc7)();
@@ -5419,7 +5431,7 @@ void sk_001d7368(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   long rx24;
   undefined8 rx27;
   undefined8 rx30;
-  undefined1 at8 [16];
+  sk_c16_t at8;
   undefined8 st40;
   undefined8 st18;
   
@@ -5514,13 +5526,15 @@ L_001d7798:
         (*eo8_02)();
         (*eo8_02)(rx21 + *(int *)(n3 + 0x30),rx27);
         sk_003534bc();
-        at8 = sk_003508a8();
+        at8._0_8_ = (undefined8)(sk_003508a8());
+        at8._8_8_ = 0;
         (*eo9_03)(at8._0_8_,at8._8_8_,n3);
         iv1 = *(int *)(n3 + 0x30);
         sk_003510ac();
         (*eo8_02)();
         (*pc7)(st40 + iv1);
-        at8 = sk_003508a8(*(undefined8 *)(eo16 + 0x20));
+        at8._0_8_ = (undefined8)(sk_003508a8(*(undefined8 *)(eo16 + 0x20)));
+        at8._8_8_ = 0;
         (*eo8_05)(at8._0_8_,at8._8_8_,n3);
         (*eo8_02)(rx21 + *(int *)(rx22 + 0x24),st40 + *(int *)(n3 + 0x30))
         ;
@@ -5578,7 +5592,7 @@ void sk_001d7814(undefined8 param_1,undefined8 param_2,undefined8 param_3)
   undefined8 rx27;
   unsigned long (*pc7)();
   undefined8 rx30;
-  undefined1 at8 [16];
+  sk_c16_t at8;
   undefined8 st50;
   undefined8 v28;
   
@@ -5638,7 +5652,8 @@ void sk_001d7814(undefined8 param_1,undefined8 param_2,undefined8 param_3)
       if ((t5 & 1) != 0) break;
       t6 = sk_00351b84();
       sk_00351238(t6,v28);
-      at8 = (*eo8_01)();
+      at8._0_8_ = (undefined8)((*eo8_01)());
+      at8._8_8_ = 0;
       (**(void (**)() )(eo16 + 0x10))(st50,at8._8_8_,t2);
       sk_0034cfa4();
       (*at8._0_8_)();
@@ -5650,7 +5665,8 @@ void sk_001d7814(undefined8 param_1,undefined8 param_2,undefined8 param_3)
       (*eo8_03)();
       if ((t5 & 1) != 0) {
         (**(void (**)() )(eo16_00 + 0x20))(eo8,v28,rx27);
-        at8 = sk_00352c68();
+        at8._0_8_ = (undefined8)(sk_00352c68());
+        at8._8_8_ = 0;
         goto L_001d7b90;
       }
       t6 = sk_00027818();
@@ -5677,12 +5693,12 @@ L_001d7b90:
 
 /* FUN_001d7bb0 @ 0x001d7bb0   (est. sk_r5_fatal_assert_001d7bb0) */
 /* Confidence: low (mechanical translation; names heuristic) */
-undefined1  [16] sk_001d7bb0(ulong param_1,ulong param_2)
+undefined8 sk_001d7bb0(ulong param_1,ulong param_2)
 
 {
   ulong t1;
   ushort t2;
-  undefined1 at3 [16];
+  sk_c16_t at3;
   ulong t4;
   ulong t5;
   long n6;
@@ -5695,7 +5711,7 @@ undefined1  [16] sk_001d7bb0(ulong param_1,ulong param_2)
   ulong t13;
   ulong t14;
   long n15;
-  undefined1 at16 [16];
+  sk_c16_t at16;
   undefined8 t17;
   ulong v70;
   ulong st68;
@@ -5725,7 +5741,7 @@ undefined1  [16] sk_001d7bb0(ulong param_1,ulong param_2)
 L_001d7f5c:
       at16._8_8_ = t8;
       at16._0_8_ = t13;
-      return at16;
+      return at16._0_8_;
     }
     t4 = sk_00167404(t13,param_1,param_2);
     t5 = t4 >> 8 & 0x3f;
@@ -5790,7 +5806,8 @@ L_001d7f18:
     }
     at16 = at3;
     if ((param_1 >> 0x3c & 1) == 0) {
-      at16 = sk_002a9ba8(param_1,param_2);
+      at16._0_8_ = (undefined8)(sk_002a9ba8(param_1,param_2));
+      at16._8_8_ = 0;
     }
     t5 = t14 + 1;
     if (t5 != at16._8_8_) {
@@ -5801,7 +5818,8 @@ L_001d7f18:
 L_001d7c74:
     at16 = at3;
     if ((param_1 >> 0x3c & 1) == 0) {
-      at16 = sk_002a9ba8(param_1,param_2);
+      at16._0_8_ = (undefined8)(sk_002a9ba8(param_1,param_2));
+      at16._8_8_ = 0;
     }
     if (at16._8_8_ < (long)t5) goto L_001d7fcc;
     n6 = 0;
@@ -5819,7 +5837,8 @@ L_001d800c:
     if ((n7 != 0) && (n6 == 0)) goto L_001d8058;
     t10 = sk_002a200c(n6,n7);
 L_001d7d80:
-    at16 = sk_t_002a2698(n6,n7,t10 & 1);
+    at16._0_8_ = (undefined8)(sk_t_002a2698(n6,n7,t10 & 1));
+    at16._8_8_ = 0;
     t5 = at16._8_8_;
     if (at16._0_8_ != 0x30 || t5 != 0xe100000000000000) {
       if (((t5 ^ 0xffffffffffffffff) & 0x6000000000000000) == 0) {
@@ -5846,7 +5865,8 @@ L_001d7dd4:
         if ((param_2 >> 0x3d & 1) == 0) {
           at16 = at3;
           if ((param_1 >> 0x3c & 1) == 0) {
-            at16 = sk_002a9ba8(param_1,param_2);
+            at16._0_8_ = (undefined8)(sk_002a9ba8(param_1,param_2));
+            at16._8_8_ = 0;
           }
           if (t13 + 1 != at16._8_8_) {
             if (at16._0_8_ == 0) goto L_001d8098;
@@ -5892,7 +5912,8 @@ L_001d7eec:
       }
       at16 = at3;
       if ((param_1 >> 0x3c & 1) == 0) {
-        at16 = sk_002a9ba8(param_1,param_2);
+        at16._0_8_ = (undefined8)(sk_002a9ba8(param_1,param_2));
+        at16._8_8_ = 0;
       }
       if (t5 + 1 == at16._8_8_) goto L_001d7eec;
       if (at16._0_8_ == 0) {
@@ -5935,14 +5956,15 @@ void sk_001d80e0(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined8 rx25;
   unsigned long (*pc7)();
   undefined8 rx30;
-  undefined1 at8 [16];
+  sk_c16_t at8;
   undefined8 st70;
   undefined8 st28;
   undefined1 ast20 [32];
   
   pc1 = (unsigned long (*)() )sk_00353cfc();
   sk_00027754(param_4);
-  at8 = sk_00348e30();
+  at8._0_8_ = (undefined8)(sk_00348e30());
+  at8._8_8_ = 0;
   t2 = sk_00377824(at8._0_8_,at8._8_8_,param_3);
   sk_000a6f88();
   sk_0007c1a4();
@@ -5988,7 +6010,8 @@ L_001d83b0:
     }
     pc5 = (unsigned long (*)() )sk_000277e8(param_4);
     pc5 = (unsigned long (*)() )(*pc5)(ast20,rx25,param_3,param_4);
-    at8 = sk_00352b14();
+    at8._0_8_ = (undefined8)(sk_00352b14());
+    at8._8_8_ = 0;
     (*eo8_01)(at8._0_8_,at8._8_8_,t2);
     sk_0034cfa4();
     (*pc5)();
@@ -6001,7 +6024,8 @@ L_001d83b0:
       goto L_001d83b0;
     }
     if ((t4 & 1) != 0) {
-      at8 = sk_00352498(*(undefined8 *)(eo16 + 0x20));
+      at8._0_8_ = (undefined8)(sk_00352498(*(undefined8 *)(eo16 + 0x20)));
+      at8._8_8_ = 0;
       (*eo8_04)(at8._0_8_,at8._8_8_,rx22);
       t2 = 0;
       goto L_001d83a4;
@@ -6084,14 +6108,15 @@ void sk_001d852c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined8 rx26;
   unsigned long (*pc8)();
   undefined8 rx30;
-  undefined1 at9 [16];
+  sk_c16_t at9;
   undefined8 v78;
   undefined8 st30;
   
   pc1 = (unsigned long (*)() )sk_00353cfc();
   t2 = sk_00027754(param_4);
   sk_00027754();
-  at9 = sk_00348e30();
+  at9._0_8_ = (undefined8)(sk_00348e30());
+  at9._8_8_ = 0;
   t3 = sk_00377824(at9._0_8_,at9._8_8_,param_3);
   sk_000a6f88();
   sk_0007c1a4();
@@ -6131,7 +6156,8 @@ void sk_001d852c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     }
     sk_00356078();
     sk_003196e8();
-    at9 = sk_0034d394();
+    at9._0_8_ = (undefined8)(sk_0034d394());
+    at9._8_8_ = 0;
     (*eo8_00)(at9._0_8_,at9._8_8_,t5);
     sk_000277e8(t2);
     t6 = sk_00353cb4();
@@ -6146,7 +6172,8 @@ void sk_001d852c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     (*eo8_03)();
     if (rx21 != 0) break;
     if ((t5 & 1) != 0) {
-      at9 = sk_00350af4(*(undefined8 *)(eo16 + 0x20));
+      at9._0_8_ = (undefined8)(sk_00350af4(*(undefined8 *)(eo16 + 0x20)));
+      at9._8_8_ = 0;
       t2 = (*eo8_04)(at9._0_8_,at9._8_8_,rx26);
       t3 = 0;
 L_001d87c8:
@@ -6170,12 +6197,13 @@ void sk_001d8808(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined8 t1;
   unsigned long (*pc2)();
   long n3;
-  undefined1 at4 [16];
+  sk_c16_t at4;
   undefined1 ast70 [32];
   
   t1 = sk_00027754(param_5);
   pc2 = (unsigned long (*)() )sk_000277e8();
-  at4 = (*pc2)(ast70,param_2,param_4,t1);
+  at4._0_8_ = (undefined8)((*pc2)(ast70,param_2,param_4,t1));
+  at4._8_8_ = 0;
   t1 = sk_00027754(t1);
   n3 = sk_00377824(0,t1,param_4,&g_00611b24,&L_00611b34);
   (**(void (**)() )(*(long *)(n3 + -8) + 0x10))(param_1,at4._8_8_,n3);
@@ -6359,7 +6387,7 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   long rx21;
   unsigned long (*pc11)();
   long rx26;
-  undefined1 at12 [16];
+  sk_c16_t at12;
   undefined8 sv00000008;
   undefined8 v150;
   long v128;
@@ -6379,7 +6407,7 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   long v18;
   undefined8 v10;
   
-  v58 = sk_00353cfc();
+  *(undefined8 *)v58 = sk_00353cfc(); *(undefined8 *)(v58 + 8) = 0;
   sk_0034de64();
   sk_00353160();
   t3 = sk_00377824();
@@ -6395,14 +6423,16 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   sk_003509a4();
   sk_0034e5cc();
   t4 = sk_00377bec();
-  at12 = sk_00350488();
+  at12._0_8_ = (undefined8)(sk_00350488());
+  at12._8_8_ = 0;
   sk_00310e08(at12._0_8_,at12._8_8_,t4);
   sk_0034a450();
   sk_0007c1a4();
   (*g_00658c00)();
   sk_00350428();
   sk_003509a4();
-  at12 = sk_00350920();
+  at12._0_8_ = (undefined8)(sk_00350920());
+  at12._8_8_ = 0;
   sk_00377824(at12._0_8_,at12._8_8_,param_3);
   sk_003490b8(&stk00000030);
   v30 = eo16;
@@ -6467,7 +6497,8 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     t7 = (*eo8_04)();
     if ((t7 & 1) == 0) break;
     pc11 = (unsigned long (*)() )*v48;
-    at12 = sk_00351160();
+    at12._0_8_ = (undefined8)(sk_00351160());
+    at12._8_8_ = 0;
     (*pc11)(at12._0_8_,at12._8_8_,v10);
     sk_003489a8();
     sk_00351af8(&stk00000028);
@@ -6477,10 +6508,11 @@ void sk_001d8d78(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     sk_00351160();
     (*eo9_00)();
     sk_0034de8c();
-    at12 = sk_00350944();
+    at12._0_8_ = (undefined8)(sk_00350944());
+    at12._8_8_ = 0;
     t3 = sk_00377bec(at12._0_8_,at12._8_8_,vd0);
     sk_00352098(&stk00000018);
-    sk_00358cec(v58._0_8_,v58._8_8_,vd0);
+    sk_00358cec(*(undefined8 *)v58,*(undefined8 *)(v58 + 8),vd0);
     sk_001d80e0();
     pc10 = *(void (**)() )pc1;
     sk_00100c38();
@@ -6496,7 +6528,8 @@ L_001d9590:
       return;
     }
     v30 = pc11;
-    at12 = sk_00351bac();
+    at12._0_8_ = (undefined8)(sk_00351bac());
+    at12._8_8_ = 0;
     sk_00350884(at12._0_8_,at12._8_8_,v10);
     t6 = v20;
     if ((bool)zr) {
@@ -6525,19 +6558,21 @@ L_001d9580:
     v38 = (unsigned long (*)() )*eo8_06;
     v40 = (ulong)eo8_06 & 0xffffffffffff | 0x4f8000000000000;
     (*v38)(t6,v10);
-    at12 = sk_00350a04();
+    at12._0_8_ = (undefined8)(sk_00350a04());
+    at12._8_8_ = 0;
     (*v28)(at12._0_8_,at12._8_8_,t8);
     sk_003546a8();
     sk_0034ee98();
     (*pc10)();
     sk_003489a8();
     sk_00351af8(&stk00000008);
-    at12 = sk_00351ec0();
+    at12._0_8_ = (undefined8)(sk_00351ec0());
+    at12._8_8_ = 0;
     sk_001d9890(at12._0_8_,at12._8_8_,t5,param_4);
     sk_003508b4();
     (*eo9_00)();
     sk_0035179c(&stk00000000);
-    sk_001d4f4c(v58._0_8_,v58._8_8_,vd0,t3);
+    sk_001d4f4c(*(undefined8 *)v58,*(undefined8 *)(v58 + 8),vd0,t3);
     if (v18 != 0) {
       (*v38)(v80,v10);
       goto L_001d9568;
@@ -6563,7 +6598,8 @@ L_001d9580:
       goto L_001d95cc;
     }
     sk_00358bcc();
-    at12 = sk_0035084c();
+    at12._0_8_ = (undefined8)(sk_0035084c());
+    at12._8_8_ = 0;
     t3 = v10;
     pc10 = v30;
     (*v30)(at12._0_8_,at12._8_8_,v10);
@@ -6571,14 +6607,16 @@ L_001d9580:
     sk_0035139c();
     (*pc10)();
     sk_003510d0(&v40);
-    at12 = sk_00350914();
+    at12._0_8_ = (undefined8)(sk_00350914());
+    at12._8_8_ = 0;
     (*eo8_09)(at12._0_8_,at12._8_8_,v120);
     iv2 = *(int *)(v120 + 0x30);
     sk_000dbf08(vb8);
     (*pc10)();
     (*v38)(v128 + iv2,t3);
     sk_003510d0(&v48);
-    at12 = sk_00350914();
+    at12._0_8_ = (undefined8)(sk_00350914());
+    at12._8_8_ = 0;
     (*eo8_10)(at12._0_8_,at12._8_8_,v120);
     (*pc10)(vb8 + *(int *)(rx26 + 0x24),v128 + *(int *)(v120 + 0x30),t3);
     sk_003508b4();
@@ -6622,13 +6660,13 @@ L_001d95cc:
 
 /* FUN_001d95f4 @ 0x001d95f4   (est. sk_r5_fatal_assert_001d95f4) */
 /* Confidence: low (mechanical translation; names heuristic) */
-undefined1  [16] sk_001d95f4(ulong param_1,ulong param_2,ulong param_3)
+undefined8 sk_001d95f4(ulong param_1,ulong param_2,ulong param_3)
 
 {
   ulong t1;
   ulong t2;
   uint t3;
-  undefined1 at4 [16];
+  sk_c16_t at4;
   
   t1 = param_2 & 0xffffffffffff;
   if ((param_3 & 0x2000000000000000) != 0) {
@@ -6643,9 +6681,10 @@ undefined1  [16] sk_001d95f4(ulong param_1,ulong param_2,ulong param_3)
     if (t3 == 0) {
       t2 = 0xb;
     }
-    at4 = sk_002ab8ac(param_1,t2 | t1 << 0x10,param_2,param_3,0xd2,0x50);
+    at4._0_8_ = (undefined8)(sk_002ab8ac(param_1,t2 | t1 << 0x10,param_2,param_3,0xd2,0x50));
+    at4._8_8_ = 0;
     sk_t_0036b270(param_3);
-    return at4;
+    return at4._0_8_;
   }
                       sk_001afe4c(Fatal_error_005accd0_str,0xb,2,Range_requires_lowerBound__str<__upp_005cda00,0x27,2,
                Swift_Range_swift_005cda30_str,0x11,2,0x2f9,1);
@@ -6826,12 +6865,13 @@ void sk_001d9a94(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
 {
   undefined8 t1;
   unsigned long (*eo8)();
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
   sk_003585f4();
   sk_00351a68();
   t1 = sk_00027754(param_4);
-  at2 = sk_00349ea0(t1,t1);
+  at2._0_8_ = (undefined8)(sk_00349ea0(t1,t1));
+  at2._8_8_ = 0;
   sk_00377824(at2._0_8_,at2._8_8_,param_3);
   sk_00351a44();
   sk_0014ae44();
@@ -6885,14 +6925,15 @@ void sk_001d9b18(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   unsigned long (*pc8)();
   unsigned long (*rx26)();
   undefined8 rx30;
-  undefined1 at9 [16];
+  sk_c16_t at9;
   undefined8 v48;
   
   sk_00353cfc();
   sk_00353e50();
   sk_00352894(param_4);
   sk_00027754();
-  at9 = sk_00348e30();
+  at9._0_8_ = (undefined8)(sk_00348e30());
+  at9._8_8_ = 0;
   sk_00377824(at9._0_8_,at9._8_8_,param_3);
   sk_000a6f88();
   sk_0007c1a4();
@@ -6943,7 +6984,8 @@ void sk_001d9b18(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
       while( true ) {
         sk_0034be94(eo8_00 - (eo13 + 0xfU & 0xfffffffffffffff0));
         (*pc2)();
-        at9 = sk_003509b0();
+        at9._0_8_ = (undefined8)(sk_003509b0());
+        at9._8_8_ = 0;
         t4 = (*pc3)(at9._0_8_,at9._8_8_,rx19,t1);
         pc8 = *(void (**)() )(n7 + 8);
         sk_00351ec0();
@@ -7163,15 +7205,17 @@ void sk_001da324(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   undefined8 rx24;
   unsigned long (*pc8)();
   undefined8 rx27;
-  undefined1 at9 [16];
-  undefined1 at10 [16];
+  sk_c16_t at9;
+  sk_c16_t at10;
   undefined8 vb8;
   
-  at9 = sk_00353cfc();
+  at9._0_8_ = (undefined8)(sk_00353cfc());
+  at9._8_8_ = 0;
   sk_00352b98();
   sk_00352894(param_4);
   sk_00027754();
-  at10 = sk_00348e30();
+  at10._0_8_ = (undefined8)(sk_00348e30());
+  at10._8_8_ = 0;
   t1 = sk_00377824(at10._0_8_,at10._8_8_,param_3);
   sk_000a6f88();
   (*g_00658c00)(*(undefined8 *)(eo8 + 0x40));
@@ -7217,7 +7261,8 @@ L_001da6f0:
     sk_000277e8(rx24);
     t5 = sk_00353cb4();
     sk_00351f1c(t5,rx23);
-    at10 = (*eo8_03)();
+    at10._0_8_ = (undefined8)((*eo8_03)());
+    at10._8_8_ = 0;
     pc2 = (unsigned long (*)() )*eo10;
     (*pc2)(eo8_00,at10._8_8_,t1);
     sk_0034c3b4();
@@ -7240,9 +7285,11 @@ L_001da6f0:
         (*pc6)();
         t4 = (*pc3)(rx23);
         if ((t4 & 1) == 0) goto L_001da684;
-        at10 = sk_00355634();
+        at10._0_8_ = (undefined8)(sk_00355634());
+        at10._8_8_ = 0;
         pc7 = (unsigned long (*)() )(*eo8_03)(at10._0_8_,at10._8_8_,param_3,rx24);
-        at10 = sk_0035a590();
+        at10._0_8_ = (undefined8)(sk_0035a590());
+        at10._8_8_ = 0;
         (*pc2)(at10._0_8_,at10._8_8_,t1);
         sk_0034c3b4();
         (*pc7)();
@@ -7311,13 +7358,14 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
   long rx23;
   unsigned long (*pc12)();
   unsigned long (*pc13)();
-  undefined1 at14 [16];
-  undefined1 at15 [16];
+  sk_c16_t at14;
+  sk_c16_t at15;
   unsigned long (*v100)();
   undefined8 vf8;
   long v50;
   
-  at14 = sk_00353cfc();
+  at14._0_8_ = (undefined8)(sk_00353cfc());
+  at14._8_8_ = 0;
   n9 = at14._8_8_;
   n2 = at14._0_8_;
   sk_00351ad4(param_6);
@@ -7335,7 +7383,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
   sk_0035626c();
   sk_0035139c();
   t5 = sk_00377bec();
-  at14 = sk_00350488();
+  at14._0_8_ = (undefined8)(sk_00350488());
+  at14._8_8_ = 0;
   sk_00310e08(at14._0_8_,at14._8_8_,t5);
   sk_000a6f88();
   (*g_00658c00)(*(undefined8 *)(eo8_01 + 0x40));
@@ -7353,7 +7402,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
   sk_0034b308();
   (*g_00658c00)();
   (*g_00658c00)();
-  at14 = sk_00350464();
+  at14._0_8_ = (undefined8)(sk_00350464());
+  at14._8_8_ = 0;
   n6 = at14._0_8_;
   if (n2 == 1) {
     t8 = (*param_3)(n9);
@@ -7370,7 +7420,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
       sk_0031afcc();
       sk_00351250();
       (*eo9)(n9,n2 / 2,param_5);
-      at15 = sk_00350944(*(undefined8 *)(eo16_00 + 0x10));
+      at15._0_8_ = (undefined8)(sk_00350944(*(undefined8 *)(eo16_00 + 0x10)));
+      at15._8_8_ = 0;
       (*eo8_04)(at15._0_8_,at15._8_8_,t3);
       sk_00310e20(t5);
       t7 = sk_00350a40();
@@ -7388,7 +7439,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
         t7 = sk_003595a8();
         (*eo8_04)(t7,eo8_03,t3);
         sk_00352a40();
-        at15 = sk_00350524();
+        at15._0_8_ = (undefined8)(sk_00350524());
+        at15._8_8_ = 0;
         sk_00352f88(at15._0_8_,at15._8_8_,n4);
         (*eo9_00)();
         iv1 = *(int *)(n4 + 0x30);
@@ -7396,7 +7448,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
         (*pc11)();
         pc13 = *(void (**)() )(eo16_00 + 8);
         (*pc13)(rx23 + iv1,t3);
-        at15 = sk_00350524(*(undefined8 *)(eo16 + 0x20));
+        at15._0_8_ = (undefined8)(sk_00350524(*(undefined8 *)(eo16 + 0x20)));
+        at15._8_8_ = 0;
         sk_00352554(at15._0_8_,at15._8_8_,n4);
         (*eo8_06)();
         sk_00357f94((long)*(int *)(n4 + 0x30));
@@ -7418,7 +7471,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
                               pc11 = (unsigned long (*)() )sk_breakpoint(1,0x1dae9c);
           (*pc11)();
         }
-        at15 = sk_00352d64(&stk00000010,t7,n9 + *(int *)(n6 + 0x24));
+        at15._0_8_ = (undefined8)(sk_00352d64(&stk00000010,t7,n9 + *(int *)(n6 + 0x24)));
+        at15._8_8_ = 0;
         (*eo11)(at15._0_8_,at15._8_8_,t3);
         t7 = sk_00310e20(t5);
         sk_00350914(t7);
@@ -7429,7 +7483,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
           (*eo11)();
           sk_00351420(v50 + *(int *)(n4 + 0x30));
           (*pc11)();
-          at15 = sk_00350aa0();
+          at15._0_8_ = (undefined8)(sk_00350aa0());
+          at15._8_8_ = 0;
           sk_00353734(at15._0_8_,at15._8_8_,n4);
           (*eo8_09)();
           iv1 = *(int *)(n4 + 0x30);
@@ -7437,7 +7492,8 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
           sk_0034fed0();
           (*pc11)();
           (*pc13)(rx23 + iv1,t3);
-          at15 = sk_00350aa0();
+          at15._0_8_ = (undefined8)(sk_00350aa0());
+          at15._8_8_ = 0;
           sk_00353718(at15._0_8_,at15._8_8_,n4);
           (*eo8_10)();
           sk_00357f94((long)*(int *)(n4 + 0x30));
@@ -7452,18 +7508,21 @@ void sk_001da714(undefined8 param_1,undefined8 param_2,void (*param_3)(),undefin
           sk_00351b20(t5,at14._8_8_,pc11);
           t8 = (*eo8_12)();
           if ((t8 & 1) != 0) {
-            at14 = sk_000dbd0c();
+            at14._0_8_ = (undefined8)(sk_000dbd0c());
+            at14._8_8_ = 0;
             (*pc11)(at14._0_8_,at14._8_8_,t3);
             sk_000dbf08(v50 + *(int *)(n4 + 0x30));
             (*pc11)();
-            at14 = sk_00350aa0();
+            at14._0_8_ = (undefined8)(sk_00350aa0());
+            at14._8_8_ = 0;
             sk_00353734(at14._0_8_,at14._8_8_,n4);
             (*eo8_13)();
             iv1 = *(int *)(n4 + 0x30);
             sk_0034fed0();
             (*pc11)();
             (*pc13)(rx23 + iv1,t3);
-            at14 = sk_00350aa0();
+            at14._0_8_ = (undefined8)(sk_00350aa0());
+            at14._8_8_ = 0;
             sk_00353718(at14._0_8_,at14._8_8_,n4);
             (*eo8_14)();
             sk_00357f94((long)*(int *)(n4 + 0x30));
@@ -7532,8 +7591,8 @@ void sk_001daea8(void)
   undefined8 rx26;
   long rx27;
   undefined8 rx30;
-  undefined1 at14 [16];
-  undefined1 at15 [16];
+  sk_c16_t at14;
+  sk_c16_t at15;
   undefined8 vd8;
   long vd0;
   undefined8 vb0;
@@ -7545,7 +7604,8 @@ void sk_001daea8(void)
   unsigned long (*v18)();
   undefined8 v10;
   
-  at14 = sk_0008e518();
+  at14._0_8_ = (undefined8)(sk_0008e518());
+  at14._8_8_ = 0;
   v10 = at14._8_8_;
   sk_00350950(ax3);
   sk_00352304();
@@ -7564,7 +7624,8 @@ void sk_001daea8(void)
   sk_0035678c();
   sk_00350b18();
   t5 = sk_00377bec();
-  at15 = sk_00350720();
+  at15._0_8_ = (undefined8)(sk_00350720());
+  at15._8_8_ = 0;
   sk_00310e08(at15._0_8_,at15._8_8_,t5);
   sk_00348ce8();
   (*g_00658c00)(*(undefined8 *)(eo8_01 + 0x40));
@@ -7593,9 +7654,11 @@ void sk_001daea8(void)
   sk_0034c2c8();
   pt13 = (undefined8 *)(eo16_00 + 0x10);
   pc10 = (unsigned long (*)() )*pt13;
-  at15 = sk_00355d28();
+  at15._0_8_ = (undefined8)(sk_00355d28());
+  at15._8_8_ = 0;
   (*pc10)(at15._0_8_,at15._8_8_,t3);
-  at15 = sk_0035145c();
+  at15._0_8_ = (undefined8)(sk_0035145c());
+  at15._8_8_ = 0;
   t6 = (*pc10)(at15._0_8_,at15._8_8_,t3);
   sk_00355b04(t6,at14._0_8_ + (long)*(int *)(rx22 + 0x24));
   v20 = pt13;
@@ -7617,7 +7680,8 @@ void sk_001daea8(void)
       v20 = (undefined8 *)(t7 | 0xe3ba000000000000);
       while( true ) {
         pt2 = v20;
-        at14 = sk_00354d14();
+        at14._0_8_ = (undefined8)(sk_00354d14());
+        at14._8_8_ = 0;
         pc9 = v18;
         (*v18)(at14._0_8_,at14._8_8_,v10);
         sk_00350968(v98);
@@ -7628,7 +7692,8 @@ void sk_001daea8(void)
         t7 = (*eo8_04)();
         if ((t7 & 1) == 0) break;
         pc9 = *(void (**)() )(eo16_00 + 0x20);
-        at14 = sk_00350a34();
+        at14._0_8_ = (undefined8)(sk_00350a34());
+        at14._8_8_ = 0;
         t3 = v10;
         (*pc9)(at14._0_8_,at14._8_8_,v10);
         sk_00352858(rx27 + *(int *)(n4 + 0x30));
@@ -7637,7 +7702,8 @@ void sk_001daea8(void)
         sk_00350e54();
         (*eo9)();
         iv1 = *(int *)(n4 + 0x30);
-        at14 = sk_00350c2c();
+        at14._0_8_ = (undefined8)(sk_00350c2c());
+        at14._8_8_ = 0;
         (*pc9)(at14._0_8_,at14._8_8_,t3);
         sk_00354bb0();
         pc11 = (unsigned long (*)() )*pt2;
@@ -7656,18 +7722,22 @@ void sk_001daea8(void)
         t3 = v10;
         if ((t7 & 1) == 0) break;
         (*pc11)(v28,v10);
-        at14 = sk_00350944();
+        at14._0_8_ = (undefined8)(sk_00350944());
+        at14._8_8_ = 0;
         (*pc9)(at14._0_8_,at14._8_8_,t3);
         sk_00351bd4(rx27 + *(int *)(n4 + 0x30));
         (*v18)(v20);
-        at14 = sk_00351354();
+        at14._0_8_ = (undefined8)(sk_00351354());
+        at14._8_8_ = 0;
         (*eo9)(eo16 + 0x10U & 0xffffffffffff | 0xe3ba000000000000,at14._0_8_,
                        at14._8_8_,n4);
         iv1 = *(int *)(n4 + 0x30);
-        at14 = sk_00350c2c();
+        at14._0_8_ = (undefined8)(sk_00350c2c());
+        at14._8_8_ = 0;
         (*pc9)(at14._0_8_,at14._8_8_,t3);
         (*pc11)(va8 + iv1,t3);
-        at14 = sk_00351354();
+        at14._0_8_ = (undefined8)(sk_00351354());
+        at14._8_8_ = 0;
         sk_003570f0(at14._0_8_,at14._8_8_,n4);
         (*eo9_00)();
         (*pc9)(vd0 + *(int *)(rx22 + 0x24),va8 + *(int *)(n4 + 0x30),t3);
@@ -7692,7 +7762,8 @@ void sk_001daea8(void)
             sk_0034ef68();
             (*pc12)(v20);
           }
-          at14 = sk_0035190c();
+          at14._0_8_ = (undefined8)(sk_0035190c());
+          at14._8_8_ = 0;
           t7 = (*pc10)(at14._0_8_,at14._8_8_,v10,pt13);
           if ((t7 & 1) != 0) {
             (*pc11)(vd8,v10);
@@ -7705,7 +7776,8 @@ void sk_001daea8(void)
             goto L_001db688;
           }
         }
-        at14 = sk_0006b6f4();
+        at14._0_8_ = (undefined8)(sk_0006b6f4());
+        at14._8_8_ = 0;
         (*pc9)(at14._0_8_,at14._8_8_,v10);
         sk_003530f4();
         sk_00351b20();
@@ -7717,7 +7789,8 @@ void sk_001daea8(void)
         }
         else {
           (*pc11)(pt8,rx19,v10);
-          at14 = sk_003508f0();
+          at14._0_8_ = (undefined8)(sk_003508f0());
+          at14._8_8_ = 0;
           (*pc9)(at14._0_8_,at14._8_8_,t3);
         }
       }
@@ -7728,7 +7801,8 @@ void sk_001daea8(void)
     (*pc10)(rx26,v10);
     sk_003510b8();
     (*pc10)();
-    at14 = sk_00350768(*(undefined8 *)(eo16_00 + 0x20),eo8);
+    at14._0_8_ = (undefined8)(sk_00350768(*(undefined8 *)(eo16_00 + 0x20),eo8));
+    at14._8_8_ = 0;
     rx26 = at14._8_8_;
     t3 = at14._0_8_;
     pc10 = eo8_03;
@@ -7770,11 +7844,12 @@ void sk_001db6b0(void)
   undefined8 rx23;
   undefined8 rx24;
   undefined8 rx26;
-  undefined1 at7 [16];
+  sk_c16_t at7;
   undefined1 ast20 [32];
   
   sk_00353cfc();
-  at7 = sk_003545ac();
+  at7._0_8_ = (undefined8)(sk_003545ac());
+  at7._8_8_ = 0;
   sk_00354db8();
   t1 = sk_00027754();
   sk_00349ea0(t1,t1);
@@ -7906,7 +7981,7 @@ void sk_001dba34(void)
   undefined8 rx25;
   undefined8 rx26;
   undefined8 rx30;
-  undefined1 at6 [16];
+  sk_c16_t at6;
   undefined8 v18;
   ulong st10;
   undefined1 v8 [8];
@@ -7956,7 +8031,8 @@ void sk_001dba34(void)
         sk_0035a3dc();
         (*pc3)();
         sk_00027818(rx22);
-        at6 = sk_0034f4d4();
+        at6._0_8_ = (undefined8)(sk_0034f4d4());
+        at6._8_8_ = 0;
         (*eo8_01)(at6._0_8_,at6._8_8_,rx22);
         bv1 = 2 < t5;
         t5 = t5 - 1;
@@ -8345,13 +8421,14 @@ void sk_001dc4c0(undefined8 param_1,undefined8 param_2,undefined8 param_3,void (
   long rx21;
   undefined8 t2;
   long rx22;
-  undefined1 at3 [16];
+  sk_c16_t at3;
   
   sk_0034b318();
   (*param_4)(param_3);
   n1 = *rx20;
   t2 = *(undefined8 *)(rx21 + 0x10);
-  at3 = sk_003509bc();
+  at3._0_8_ = (undefined8)(sk_003509bc());
+  at3._8_8_ = 0;
   (*param_5)(at3._0_8_,at3._8_8_,t2);
   sk_003511e4();
                                           (**(void (**)() )(eo16 + 0x28))
@@ -8414,7 +8491,7 @@ void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_
   long n5;
   ulong rx21;
   long rx22;
-  undefined1 at6 [16];
+  sk_c16_t at6;
   undefined8 sv00000040;
   undefined8 sv00000048;
   long sv00000050;
@@ -8424,7 +8501,8 @@ void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_
   
   sk_00355578();
   pc4 = param_8;
-  at6 = sk_003542e8();
+  at6._0_8_ = (undefined8)(sk_003542e8());
+  at6._8_8_ = 0;
   n3 = param_3;
   (*pc4)(param_5,*rx20);
   sk_00084180();
@@ -8451,7 +8529,8 @@ void sk_001dc620(undefined8 param_1,undefined8 param_2,long param_3,ulong param_
   sk_00350720();
   t1 = sk_00310df0();
   t2 = sk_00348d00();
-  at6 = sk_00376820(t2,t1);
+  at6._0_8_ = (undefined8)(sk_00376820(t2,t1));
+  at6._8_8_ = 0;
   sk_00100efc(at6._0_8_,at6._8_8_,&stk00000040);
   (*sv000000c8)();
   sk_00354458(eo8);
@@ -8474,16 +8553,18 @@ void sk_001dc754(void)
   long eo8;
   unsigned long (*eo8_00)();
   undefined8 rx30;
-  undefined1 at7 [16];
-  undefined1 at8 [16];
+  sk_c16_t at7;
+  sk_c16_t at8;
   
-  at7 = sk_00351e20();
+  at7._0_8_ = (undefined8)(sk_00351e20());
+  at7._8_8_ = 0;
   if (at7._0_8_ < 0) {
     sk_003488bc(1);
     sk_0034ae30();
   }
   else {
-    at8 = sk_00353c48();
+    at8._0_8_ = (undefined8)(sk_00353c48());
+    at8._8_8_ = 0;
     if (at8._8_8_ <= eo8) {
       n1 = at7._8_8_ - at8._0_8_;
       if (ovf(at7._8_8_,at8._0_8_)) {
@@ -8531,11 +8612,12 @@ void sk_001dc870(void)
 {
   long rx19;
   undefined8 *rx20;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   sk_00349a18();
   sk_0036a908(0x40,0x952);
-  at1 = sk_003501fc();
+  at1._0_8_ = (undefined8)(sk_003501fc());
+  at1._8_8_ = 0;
   sk_00100efc(at1._0_8_,at1._8_8_,*rx20,*(undefined8 *)(rx19 + 0x10));
   sk_001dc554();
   sk_00357694();
@@ -8550,9 +8632,10 @@ void sk_001dc8f4(undefined8 param_1,undefined8 param_2,void (*param_3)())
 {
   undefined8 *pt1;
   undefined8 rx30;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
-  at2 = sk_0008e518();
+  at2._0_8_ = (undefined8)(sk_0008e518());
+  at2._8_8_ = 0;
   pt1 = (undefined8 *)*at2._0_8_;
   if ((at2._8_8_ & 1) == 0) {
     sk_0034db28(*pt1);
@@ -8581,9 +8664,10 @@ void sk_001dc9bc(undefined8 param_1,undefined8 param_2,long param_3,undefined8 p
   long eo16;
   undefined8 t2;
   long n3;
-  undefined1 at4 [16];
+  sk_c16_t at4;
   
-  at4 = sk_00357cb4();
+  at4._0_8_ = (undefined8)(sk_00357cb4());
+  at4._8_8_ = 0;
   n3 = *at4._8_8_;
   (*param_5)(param_3);
   t2 = *(undefined8 *)(param_3 + 0x10);
@@ -8607,9 +8691,10 @@ void sk_001dcbac(undefined8 param_1,undefined8 param_2,void (*param_3)())
 {
   undefined8 *pt1;
   undefined8 rx30;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
-  at2 = sk_0008e518();
+  at2._0_8_ = (undefined8)(sk_0008e518());
+  at2._8_8_ = 0;
   pt1 = (undefined8 *)*at2._0_8_;
   if ((at2._8_8_ & 1) == 0) {
     sk_0034be0c(*pt1);
@@ -8678,11 +8763,11 @@ undefined * sk_001dcd20(long *param_1,undefined8 *param_2,long param_3)
 
 /* FUN_001dcd98 @ 0x001dcd98   (est. sk_r5_swift_001dcd98) */
 /* Confidence: low (mechanical translation; names heuristic) */
-undefined1  [16] sk_001dcd98(long *param_1,undefined8 param_2,undefined8 param_3,long param_4)
+undefined8 sk_001dcd98(long *param_1,undefined8 param_2,undefined8 param_3,long param_4)
 
 {
   long n1;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
   n1 = *(long *)(param_4 + -8);
   *param_1 = param_4;
@@ -8692,7 +8777,7 @@ undefined1  [16] sk_001dcd98(long *param_1,undefined8 param_2,undefined8 param_3
   sk_001dc430(n1,param_2,param_3,param_4);
   at2._8_8_ = n1;
   at2._0_8_ = &g_003471a8;
-  return at2;
+  return at2._0_8_;
 }
 
 /* FUN_001dce5c @ 0x001dce5c   (est. sk_r5_swift_001dce5c) */
@@ -8864,11 +8949,12 @@ void sk_001dd154(void)
 void sk_001dd1ec(void)
 
 {
-  undefined1 at1 [16];
+  sk_c16_t at1;
   undefined1 ast18 [8];
   
   sk_00352ddc();
-  at1 = sk_00310d34();
+  at1._0_8_ = (undefined8)(sk_00310d34());
+  at1._8_8_ = 0;
   sk_0034921c(at1._0_8_,at1._8_8_,at1._0_8_);
   sk_0019e578(ast18);
   return;
@@ -9160,12 +9246,13 @@ void sk_001dd858(long param_1)
 
 {
   long *rx20;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   if (param_1 + 1 <= (long)(*(ulong *)(*rx20 + 0x18) >> 1)) {
     return;
   }
-  at1 = sk_0006b42c();
+  at1._0_8_ = (undefined8)(sk_0006b42c());
+  at1._8_8_ = 0;
   sk_001a0774(at1._0_8_,at1._8_8_,1);
   return;
 }
@@ -9176,12 +9263,13 @@ void sk_001dd88c(long param_1,undefined8 param_2,void (*jumptable)())
 
 {
   long *rx20;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   if (param_1 + 1 <= (long)(*(ulong *)(*rx20 + 0x18) >> 1)) {
     return;
   }
-  at1 = sk_0006b42c();
+  at1._0_8_ = (undefined8)(sk_0006b42c());
+  at1._8_8_ = 0;
                                           (*jumptable)(at1._0_8_,at1._8_8_,1);
   return;
 }
@@ -9227,10 +9315,11 @@ void sk_001ddb2c(void)
   long n13;
   undefined8 *pt14;
   long n15;
-  undefined1 at16 [16];
-  undefined1 at17 [16];
+  sk_c16_t at16;
+  sk_c16_t at17;
   
-  at16 = sk_0035300c();
+  at16._0_8_ = (undefined8)(sk_0035300c());
+  at16._8_8_ = 0;
   n4 = at16._0_8_;
   t9 = *(ulong *)(n4 + 0x10);
   sk_00353c48();
@@ -9239,7 +9328,8 @@ void sk_001ddb2c(void)
     (*pc3)();
   }
   t5 = sk_0035475c(eo8 + t9);
-  at17 = sk_001dd58c(t5,1);
+  at17._0_8_ = (undefined8)(sk_001dd58c(t5,1));
+  at17._8_8_ = 0;
   n13 = *rx20;
   t2 = (*(ulong *)(n13 + 0x18) >> 1) - *(long *)(n13 + 0x10);
   if ((long)t2 < 0) {
@@ -9260,7 +9350,8 @@ void sk_001ddb2c(void)
       sk_003504b8();
                           sk_001afe4c();
     }
-    at17 = sk_0019d15c(n4 + 0x20,t9,n6 + 0x20);
+    at17._0_8_ = (undefined8)(sk_0019d15c(n4 + 0x20,t9,n6 + 0x20));
+    at17._8_8_ = 0;
     t11 = t9;
   }
   sk_0035050c(at17._0_8_,at17._8_8_,n6 + 0x20);
@@ -9290,7 +9381,8 @@ void sk_001ddb2c(void)
     n7 = n7 + 1;
     do {
       if ((long)(*(ulong *)(n13 + 0x18) >> 1) < n10 + 1) {
-        at17 = sk_0006b42c();
+        at17._0_8_ = (undefined8)(sk_0006b42c());
+        at17._8_8_ = 0;
         sk_001a0734(at17._0_8_,at17._8_8_,1);
       }
       n15 = 0;
@@ -9347,8 +9439,8 @@ void sk_001ddd5c(void)
   ulong t8;
   long n9;
   long n10;
-  undefined1 at11 [16];
-  undefined1 at12 [16];
+  sk_c16_t at11;
+  sk_c16_t at12;
   long lStack0000000000000020;
   long sv00000048;
   long sv00000068;
@@ -9357,7 +9449,8 @@ void sk_001ddd5c(void)
   undefined8 sv00000080;
   undefined8 sv00000088;
   
-  at11 = sk_003583e8();
+  at11._0_8_ = (undefined8)(sk_003583e8());
+  at11._8_8_ = 0;
   n3 = at11._0_8_;
   t7 = *(ulong *)(n3 + 0x10);
   sk_00353c48();
@@ -9365,7 +9458,8 @@ void sk_001ddd5c(void)
                         pc2 = (unsigned long (*)() )sk_breakpoint(1,0x1ddff0);
     (*pc2)();
   }
-  at12 = sk_001dd58c(eo8 + t7,1,sk_t_001a0754);
+  at12._0_8_ = (undefined8)(sk_001dd58c(eo8 + t7,1,sk_t_001a0754));
+  at12._8_8_ = 0;
   lStack0000000000000020 = *rx20;
   t1 = (*(ulong *)(lStack0000000000000020 + 0x18) >> 1) -
           *(long *)(lStack0000000000000020 + 0x10);
@@ -9387,7 +9481,8 @@ void sk_001ddd5c(void)
       sk_003504b8();
                           sk_001afe4c();
     }
-    at12 = sk_0019d6d0(n3 + 0x20,t7,n4 + 0x20);
+    at12._0_8_ = (undefined8)(sk_0019d6d0(n3 + 0x20,t7,n4 + 0x20));
+    at12._8_8_ = 0;
     t8 = t7;
   }
   sk_0035050c(at12._0_8_,at12._8_8_,n4 + 0x20);
@@ -9428,7 +9523,8 @@ void sk_001ddd5c(void)
       sk_003505c4(&stk00000050);
       sk_00344e54();
       if ((long)(*(ulong *)(lStack0000000000000020 + 0x18) >> 1) < n4 + 1) {
-        at12 = sk_0006b42c();
+        at12._0_8_ = (undefined8)(sk_0006b42c());
+        at12._8_8_ = 0;
         sk_001a0754(at12._0_8_,at12._8_8_,1);
       }
       lStack0000000000000020 = *rx20;
@@ -9522,11 +9618,12 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   ulong t14;
   ulong t15;
   undefined8 rx30;
-  undefined1 at16 [16];
+  sk_c16_t at16;
   undefined8 v38;
   
   sk_0008e518();
-  at16 = sk_003518c4();
+  at16._0_8_ = (undefined8)(sk_003518c4());
+  at16._8_8_ = 0;
   sk_00349b3c(at16._0_8_,*(undefined8 *)(at16._8_8_ + 0x10));
   (*g_00658c00)(*(undefined8 *)(eo8 + 0x40));
   sk_003497b4();
@@ -9585,7 +9682,8 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
   if (rx21 == rx20) {
     t15 = *(ulong *)(n11 + 0x10);
     sk_0034b278();
-    at16 = sk_003514e8();
+    at16._0_8_ = (undefined8)(sk_003514e8());
+    at16._8_8_ = 0;
     t7 = sk_00377bec(at16._0_8_,at16._8_8_,t4);
     sk_000a68f4();
     sk_00351184();
@@ -9594,9 +9692,11 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
     t12 = (ulong)(eo16_00 + 0x10) & 0xffffffffffff | 0xe3ba000000000000;
     sk_00359ca4();
     while( true ) {
-      at16 = sk_00351324();
+      at16._0_8_ = (undefined8)(sk_00351324());
+      at16._8_8_ = 0;
       (*pc8)(t12,at16._0_8_,at16._8_8_,t3);
-      at16 = sk_00351330();
+      at16._0_8_ = (undefined8)(sk_00351330());
+      at16._8_8_ = 0;
       iv2 = sk_000839f8(at16._0_8_,at16._8_8_,eo1);
       pc13 = *(void (**)() )(eo16_00 + 8);
       t1 = iv2 == 1;
@@ -9608,7 +9708,8 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
       t14 = *(ulong *)(n6 + 0x18) >> 1;
       n5 = n6 + eo8_04;
       while( true ) {
-        at16 = sk_00350944(n5);
+        at16._0_8_ = (undefined8)(sk_00350944(n5));
+        at16._8_8_ = 0;
         (*pc8)(t12,at16._0_8_,at16._8_8_,t3);
         sk_0034b2c8(v38);
         if ((bool)t1) break;
@@ -9622,7 +9723,8 @@ void sk_001de04c(undefined8 param_1,undefined8 param_2,undefined8 param_3,undefi
           goto L_001de430;
         }
         (*pc13)(eo8_05);
-        at16 = sk_003504ac();
+        at16._0_8_ = (undefined8)(sk_003504ac());
+        at16._8_8_ = 0;
         (*pc10)(eo16 + 0x20U & 0xffffffffffff | 0x48d8000000000000,at16._0_8_,
                    at16._8_8_,eo1);
         t15 = t15 + 1;
@@ -9656,9 +9758,10 @@ void sk_001de4d4(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 {
   unsigned long (*pc1)();
   long eo8;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
-  at2 = sk_00353c48();
+  at2._0_8_ = (undefined8)(sk_00353c48());
+  at2._8_8_ = 0;
   if (!ovf(eo8,at2._0_8_)) {
     sk_001dd614(eo8 + at2._0_8_,1,at2._8_8_,param_3);
     return;
@@ -9674,9 +9777,10 @@ void sk_001de4d8(undefined8 param_1,undefined8 param_2,undefined8 param_3)
 {
   unsigned long (*pc1)();
   long eo8;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   
-  at2 = sk_00353c48();
+  at2._0_8_ = (undefined8)(sk_00353c48());
+  at2._8_8_ = 0;
   if (!ovf(eo8,at2._0_8_)) {
     sk_001dd614(eo8 + at2._0_8_,1,at2._8_8_,param_3);
     return;
@@ -9762,10 +9866,11 @@ void sk_001de7c8(void)
   long eo8;
   long *rx20;
   undefined8 rx30;
-  undefined1 at3 [16];
+  sk_c16_t at3;
   long sv00000018;
   
-  at3 = sk_00357ca0();
+  at3._0_8_ = (undefined8)(sk_00357ca0());
+  at3._8_8_ = 0;
   if ((at3._0_8_ & 1) == 0) {
     sk_0036b118(*rx20);
     sk_000a6f68();
@@ -9808,14 +9913,15 @@ void sk_001de8a8(void)
   unsigned long (*eo8)();
   long eo16;
   long rx21;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   sk_0034b7e4();
   (*g_00658c00)();
   sk_0034c8e0();
   sk_001a76fc();
   if (rx21 != 0) {
-    at1 = sk_00084174(*(undefined8 *)(eo16 + 0x20));
+    at1._0_8_ = (undefined8)(sk_00084174(*(undefined8 *)(eo16 + 0x20)));
+    at1._8_8_ = 0;
     (*eo8)(at1._0_8_,at1._8_8_,ax5);
   }
   return;
@@ -9861,7 +9967,7 @@ void sk_001dea60(undefined8 param_1,undefined8 param_2,void (*param_3)())
 {
   undefined8 t1;
   undefined8 *rx21;
-  undefined1 at2 [16];
+  sk_c16_t at2;
   undefined8 v60;
   undefined8 st58;
   undefined8 st50;
@@ -9876,7 +9982,8 @@ void sk_001dea60(undefined8 param_1,undefined8 param_2,void (*param_3)())
   sk_00376820();
   t1 = sk_0035310c();
   sk_0036b2d0(t1,2);
-  at2 = sk_00357f14();
+  at2._0_8_ = (undefined8)(sk_00357f14());
+  at2._8_8_ = 0;
   sk_003515b4(at2._0_8_,at2._8_8_,5);
   sk_001a67bc();
   rx21[1] = st58;
@@ -9939,10 +10046,11 @@ void sk_001dec50(undefined8 param_1,undefined8 param_2,void (*param_3)())
   long eo8;
   long n4;
   undefined8 rx30;
-  undefined1 at5 [16];
+  sk_c16_t at5;
   undefined8 sv00000008;
   
-  at5 = sk_00357cb4();
+  at5._0_8_ = (undefined8)(sk_00357cb4());
+  at5._8_8_ = 0;
   n3 = at5._0_8_;
   n4 = *(long *)(at5._8_8_ + -8);
   if (n3 == 0) {
@@ -10103,7 +10211,7 @@ void sk_001defc8(void)
   unsigned long (*pc5)();
   long n6;
   undefined8 rx30;
-  undefined1 at7 [16];
+  sk_c16_t at7;
   
   sk_0008e518();
   sk_003539f4();
@@ -10111,7 +10219,8 @@ void sk_001defc8(void)
   (*g_00658c00)(eo16);
   sk_00352330();
   (*g_00658c00)();
-  at7 = sk_00358308();
+  at7._0_8_ = (undefined8)(sk_00358308());
+  at7._8_8_ = 0;
   n4 = *(long *)(at7._0_8_ + 0x10);
   if (n4 == *(long *)(at7._8_8_ + 0x10)) {
     if (n4 == 0 || eo14 == eo1) {
@@ -10416,7 +10525,7 @@ void sk_001df604(void)
   long eo16_00;
   undefined8 t2;
   undefined8 rx30;
-  undefined1 at3 [16];
+  sk_c16_t at3;
   
   sk_0008e518();
   sk_00351cf4();
@@ -10432,11 +10541,13 @@ void sk_001df604(void)
   (*g_00658c00)();
   sk_0034b87c();
   sk_00352b50();
-  at3 = sk_00350a70();
+  at3._0_8_ = (undefined8)(sk_00350a70());
+  at3._8_8_ = 0;
   (*eo9)(at3._0_8_,at3._8_8_,t1);
   sk_00349f3c();
   if (!(bool)zr) {
-    at3 = sk_003509b0();
+    at3._0_8_ = (undefined8)(sk_003509b0());
+    at3._8_8_ = 0;
     sk_00117cc4(at3._0_8_,at3._8_8_,t2);
     sk_00310f94();
     sk_00351ac8();
@@ -10614,10 +10725,11 @@ void sk_001dfa60(undefined8 param_1)
 {
   undefined8 ax3;
   undefined8 ax4;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   sk_t_0036b270(ax3);
-  at1 = sk_00354d44();
+  at1._0_8_ = (undefined8)(sk_00354d44());
+  at1._8_8_ = 0;
   sk_001b07b8(param_1,at1._0_8_,at1._8_8_,ax4);
   sk_003a25d4(ax3);
   return;
@@ -10667,10 +10779,11 @@ void sk_001dfba8(undefined8 param_1)
 {
   undefined8 ax5;
   undefined8 ax6;
-  undefined1 at1 [16];
+  sk_c16_t at1;
   
   sk_t_0036b270(ax5);
-  at1 = sk_00354d44();
+  at1._0_8_ = (undefined8)(sk_00354d44());
+  at1._8_8_ = 0;
   sk_001dfc88(param_1,at1._0_8_,at1._8_8_,ax6);
   sk_003a25d4(ax5);
   return;
@@ -10716,8 +10829,8 @@ void sk_001dfc88(undefined8 param_1,void (*param_2)(),undefined8 param_3,undefin
   ulong *rx20;
   ulong t6;
   ulong t7;
-  undefined1 at8 [16];
-  undefined1 at9 [16];
+  sk_c16_t at8;
+  sk_c16_t at9;
   undefined1 aste0 [16];
   undefined8 vd0;
   unsigned long (*vc0)();
@@ -10737,7 +10850,8 @@ void sk_001dfc88(undefined8 param_1,void (*param_2)(),undefined8 param_3,undefin
   }
   t6 = *rx20 >> 0x10;
   t7 = rx20[1] >> 0x10;
-  at8 = (*g_00658c00)(rx20[2],t5);
+  at8._0_8_ = (undefined8)((*g_00658c00)(rx20[2],t5));
+  at8._8_8_ = 0;
   st58 = at8._8_8_;
   v60 = at8._0_8_;
   va0 = param_4;
@@ -10747,13 +10861,15 @@ void sk_001dfc88(undefined8 param_1,void (*param_2)(),undefined8 param_3,undefin
   v80 = t7;
   if ((st58 >> 0x3d & 1) == 0) {
     if ((v60 >> 0x3c & 1) == 0) {
-      at8 = sk_002a9ba8();
+      at8._0_8_ = (undefined8)(sk_002a9ba8());
+      at8._8_8_ = 0;
     }
     else {
       at8._8_8_ = v60 & 0xffffffffffff;
       at8._0_8_ = (st58 & 0xfffffffffffffff) + 0x20;
     }
-    at9 = sk_0028e8c0(t6,t7,at8._0_8_,at8._8_8_,0x7a8,0x7a9);
+    at9._0_8_ = (undefined8)(sk_0028e8c0(t6,t7,at8._0_8_,at8._8_8_,0x7a8,0x7a9));
+    at9._8_8_ = 0;
     n2 = at9._0_8_;
     if ((n2 < 0) || (at8._8_8_ < at9._8_8_)) {
       v80 = concat(v80._4_4_,1);
@@ -10858,7 +10974,7 @@ void sk_001dffa0(void)
   long rx23;
   unsigned long (*pc7)();
   undefined8 rx30;
-  undefined1 at8 [16];
+  sk_c16_t at8;
   undefined8 v28;
   undefined8 v8;
   
@@ -10908,7 +11024,8 @@ void sk_001dffa0(void)
     (*pc4)(v28 + iv1);
     sk_0034fd4c();
     (*pc5)();
-    at8 = sk_00350798();
+    at8._0_8_ = (undefined8)(sk_00350798());
+    at8._8_8_ = 0;
     n6 = sk_00310f04(at8._0_8_,at8._8_8_,ax3);
     sk_00359d9c((long)*(int *)(n6 + 0x24));
     (*pc7)();

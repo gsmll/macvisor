@@ -125,8 +125,6 @@ extern const char s_InternalExclaveLauncher_PacResou_005bfbb0[];
  * line note; their bodies are reconstructed by the range worker that owns
  * them). Names are estimates. */
 
-const char *s_InternalExclaveLauncher_Commpage;  /* 005bfab0 */
-const char *s_iterator_gt_node_size;  /* s_iterator_>node_size_>... */
 const char *sk_reg_name(sk_word_t);  /* helper */
 int sk_addrspace(sk_word_t*);  /* FUN_0005b860 */
 int sk_commpage_status(void);  /* FUN_0006e6dc */
@@ -8853,7 +8851,6 @@ sk_word_t sk_boot_one(void){ return 1; }
  * Confidence: low
  * Notes: sk_word_t *sk_boot_dt_slot(void){ return &DAT_006577e0; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9075,7 +9072,6 @@ void sk_get16_6e6dc(unsigned short *o, unsigned char *a){ *o = sk_byte_ident(*a)
  * Confidence: low
  * Notes: unsigned char sk_byte_ident(unsigned char b){ return b; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9099,7 +9095,6 @@ void sk_get8_6e744(unsigned int *o, unsigned int *a){ sk_word_t v = sk_u32_ident
  * Confidence: low
  * Notes: unsigned int sk_u32_ident(unsigned int v){ return v; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9232,7 +9227,6 @@ void sk_noop_6f69c(void){ }
  * Confidence: low
  * Notes: void *sk_dt_empty(void){ return &DAT_00657778; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9242,7 +9236,6 @@ high.
  * Confidence: low
  * Notes: void *sk_dt_empty2(void){ return &DAT_00657778; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9252,7 +9245,6 @@ high.
  * Confidence: low
  * Notes: const char *sk_fatal_str(void){ return s_Fatal_error_005accd0; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
@@ -9276,7 +9268,6 @@ void sk_noop_6f70c(void){ }
  * Confidence: low
  * Notes: sk_word_t *sk_dt_empty_tbl(void){ return &DAT_00657798; }
  */
-high.
 
 /*--------------------------------------------------------------------*/
 
