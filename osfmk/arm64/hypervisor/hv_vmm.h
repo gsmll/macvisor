@@ -168,12 +168,12 @@ extern void LORelease(void);                /* XNU object release */
 extern uint64_t UnkSytemRegRead(int op0, int op1, int crn, int crm, int op2);
 
 /* Hypervisor/feature globals (see docs/kernelcache.md anchors). */
-extern uint64_t DAT_fffffe0007e0d800;       /* EL2 features */
-extern uint16_t DAT_fffffe0007e0d81e;       /* feature flag bit 0 */
-extern uint64_t DAT_fffffe0007e0da68;       /* build-path gate (==0) */
-extern uint64_t DAT_fffffe0007e31628;       /* SoC feature index */
-extern uint8_t  DAT_fffffe0007d813d8[];     /* {int,char*} VM_MAP_WIRE fault table */
-extern uint8_t  DAT_fffffe0007d81408[];     /* {int,char*} VM_MAP_UNWIRE fault table */
+extern uint64_t hv_el2_features;            /* DAT_fffffe0007e0d800 EL2 features */
+extern uint16_t hv_el2_capable;             /* DAT_fffffe0007e0d81e feature flag bit 0 */
+extern uint64_t hv_build_gate;              /* DAT_fffffe0007e0da68 build-path gate (==0) */
+extern uint64_t hv_soc_feature_index;       /* DAT_fffffe0007e31628 SoC feature index */
+extern uint8_t  hv_vm_wire_fault_table[];   /* DAT_fffffe0007d813d8 {int,char*} VM_MAP_WIRE fault table */
+extern uint8_t  hv_vm_unwire_fault_table[]; /* DAT_fffffe0007d81408 {int,char*} VM_MAP_UNWIRE fault table */
 extern uint8_t *tpidr_el1;                  /* per-cpu data base (kernel) */
 
 /* vcpu-core tree, not decompiled here (see docs/chain-map.md). */

@@ -47,18 +47,18 @@ static int hv_support_init(void)
     void *dt_node;
 
     cur_el = currentel;
-    if (((cur_el & 0xc) == 8) && (DAT_fffffe0007e0c03c >> 0x18 == 0x61)) {
+    if (((cur_el & 0xc) == 8) && (hv_chip_id >> 0x18 == 0x61)) {
         /* DAT_fffffe0007e0c03c: SoC/chip identifier global; high byte 0x61='a'. */
-        if ((DAT_fffffe0007e0c03c & 0xffe0) == 0x200) {
+        if ((hv_chip_id & 0xffe0) == 0x200) {
             /* AVF/Fusion-class product: set feature bits 0x3. */
-            DAT_fffffe0007e0d820 |= 3;   /* DAT_fffffe0007e0d820: hv feature flags */
+            hv_features |= 3;   /* DAT_fffffe0007e0d820: hv feature flags */
         }
-        quota = DAT_fffffe0007e0c03c >> 4 & 0xfff;
+        quota = hv_chip_id >> 4 & 0xfff;
         if (quota < 0x32 && (1ULL << (quota & 0x3f) & 0x3033f00000000ULL) != 0) {
             /* chip implementer/variant in a supported set: set feature bit 0x4 */
-            DAT_fffffe0007e0d820 |= 4;
+            hv_features |= 4;
         }
-        if ((DAT_fffffe0007e0c03c & 0xffe0) != 0x200) {
+        if ((hv_chip_id & 0xffe0) != 0x200) {
             /* Read ISA VM quota from device tree. */
             dt_node = 0;
             prop_val = 0;
@@ -71,26 +71,26 @@ static int hv_support_init(void)
                 quota = *prop_val;
                 /* clamp to signed INT_MAX (0x7fffffff) */
                 quota = (quota < 0x80000000u) ? quota : 0x7fffffff;
-                DAT_fffffe0007e0d7f0 = quota;   /* hv quota */
-                DAT_fffffe0007e0d7f4 = quota;
-                DAT_fffffe0007e0d7f8 = quota;
-                DAT_fffffe000c5b83b0 = quota;
-                DAT_fffffe000c5b83b4 = quota;
-                DAT_fffffe000c5b83b8 = quota;
+                hv_quota[0] = quota;   /* hv quota */
+                hv_quota[1] = quota;
+                hv_quota[2] = quota;
+                hv_quota_derived[0] = quota;
+                hv_quota_derived[1] = quota;
+                hv_quota_derived[2] = quota;
             }
-            if ((DAT_fffffe0007e255f8 >> 4 & 1) != 0) {
+            if ((hv_bootarg_flags >> 4 & 1) != 0) {
                 /* boot-arg override enabled: read hv_apple_isa_vm_quota */
                 boot_quota = 0;
-                rc = FUN_fffffe000c09cbf0(DAT_fffffe0007e9d440 + 0x6c,
+                rc = FUN_fffffe000c09cbf0(hv_bootarg_table + 0x6c,
                                           "hv_apple_isa_vm_quota",
                                           &boot_quota, 4, 0); /* boot-arg getter, kernel */
                 if (rc != 0) {
-                    DAT_fffffe000c5b83b0 = boot_quota;
-                    DAT_fffffe000c5b83b4 = boot_quota;
-                    DAT_fffffe000c5b83b8 = boot_quota;
-                    DAT_fffffe0007e0d7f0 = boot_quota;
-                    DAT_fffffe0007e0d7f4 = boot_quota;
-                    DAT_fffffe0007e0d7f8 = boot_quota;
+                    hv_quota_derived[0] = boot_quota;
+                    hv_quota_derived[1] = boot_quota;
+                    hv_quota_derived[2] = boot_quota;
+                    hv_quota[0] = boot_quota;
+                    hv_quota[1] = boot_quota;
+                    hv_quota[2] = boot_quota;
                 }
             }
             FUN_fffffe000b987fa8();   /* est. hv_el2_feature_detect */
@@ -125,19 +125,19 @@ static void hv_el2_feature_detect(void)
 
     UnkSytemRegRead(3, 4, 0xc, 0xb, 1);          /* op1=4 ⇒ EL2; register identity unverified */
     el2_feat = UnkSytemRegRead(3, 4, 0xf, 0xc, 6); /* EL2 feature register; identity unverified */
-    DAT_fffffe0007e0d800 = el2_feat & 0xfffffffffffe13ff; /* EL2 features global */
+    hv_el2_features = el2_feat & 0xfffffffffffe13ff; /* EL2 features global */
 
     id = aidr_el1;
-    DAT_fffffe0007e0d818 = (uint)id >> 0xe & 3;  /* SoC implementer field */
+    hv_soc_implementer = (uint)id >> 0xe & 3;  /* SoC implementer field */
 
     id = aidr_el1;
-    DAT_fffffe0007e0d81c = (id & 0x2000000000000ULL) == 0; /* L2-table-absent flag */
+    hv_soc_no_l2 = (id & 0x2000000000000ULL) == 0; /* L2-table-absent flag */
 
     pfr1 = id_aa64pfr1_el1;
     pfr0 = id_aa64pfr0_el1;
     if ((pfr1 & 0xf00000000ULL) == 0x200000000ULL ||
         (pfr0 & 0xf00000000000000ULL) == 0x200000000000000ULL) {
-        DAT_fffffe0007e0d81e = 1;  /* EL2/VMID capable */
+        hv_el2_capable = 1;  /* EL2/VMID capable */
     }
 }
 
@@ -168,12 +168,12 @@ static void hv_available(long param_1)
     cmd = *(ulong *)(param_1 + 8);
     arg = *(ulong *)(param_1 + 0x10);
 
-    if (((byte)DAT_fffffe000c68ac90 & 1) != 0) {
+    if (((byte)hv_trace_flag & 1) != 0) {
         FUN_fffffe000bd30528(0x10c0015, cmd, arg, 0, 0); /* kernel trace */
     }
 
     result = -0x516bfff;   /* 0xfae94001 default error */
-    if (DAT_fffffe0007e41db0 == 0) {   /* hv availability global */
+    if (hv_available_flag == 0) {   /* hv availability global */
         result = -0x516bff1;           /* 0xfae9400f: hypervisor unavailable */
     } else if ((cmd < 0x13 && cmd != 0xd) && cmd != 0x12) {
         /* dispatch through the 19-entry hv operation table at
@@ -183,7 +183,7 @@ static void hv_available(long param_1)
 
     *(long *)(param_1 + 8) = result;
 
-    if (((byte)DAT_fffffe000c68ac90 & 1) == 0) {
+    if (((byte)hv_trace_flag & 1) == 0) {
         return;
     }
     FUN_fffffe000bd30528(0x10c0016, result, 0, 0, 0); /* kernel trace */

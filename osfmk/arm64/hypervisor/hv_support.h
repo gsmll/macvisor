@@ -33,8 +33,8 @@ extern int   FUN_fffffe000c09cbf0(long base, const char *name, int *val, int siz
 extern void  FUN_fffffe000bd30528(int event, ...);  /* kernel trace/log, not recreated */
 
 /* EL2 feature globals (est.), written by hv_el2_feature_detect / hv_support_init */
-extern ulong DAT_fffffe0007e0d800;   /* EL2 features */
-extern uint  DAT_fffffe0007e0d7f0;   /* hv ISA VM quota */
-extern uint  DAT_fffffe0007e41db0;   /* hv availability flag */
+extern ulong hv_el2_features;   /* DAT_fffffe0007e0d800 EL2 features */
+extern uint  hv_quota[3];       /* DAT_fffffe0007e0d7f0/0x7f4/0x7f8 hv ISA VM quota */
+extern uint  hv_available_flag; /* DAT_fffffe0007e41db0 hv availability flag */
 
 #endif /* _ARM64_HYPERVISOR_HV_SUPPORT_H_ */

@@ -58,19 +58,19 @@ void hv_vmm_present(hv_trap_record_t *rec);  /* FUN_fffffe000be39fd0 */
  * (0xfae94xxx family). Estimated identities per table index; every name is a
  * guess (Ghidra FUN_* is ground truth).
  */
-kern_return_t hv_trap_op_0(hv_trap_record_t *rec);   /* idx0  FUN_fffffe000b984fd8 */
+kern_return_t hv_capabilities(hv_trap_record_t *rec); /* idx0  FUN_fffffe000b984fd8 */
 kern_return_t hv_vm_create(void *args);              /* idx1  FUN_fffffe000b985588 */
 kern_return_t hv_vm_destroy(void *args);             /* idx2  FUN_fffffe000b985bf0 */
 kern_return_t hv_vm_map(void *args);                 /* idx3  FUN_fffffe000b986898 */
-kern_return_t hv_trap_op_4(void *args);              /* idx4  FUN_fffffe000b986d84 (stub) */
+kern_return_t hv_vm_protect(void *args);             /* idx4  FUN_fffffe000b986d84 (stub) */
 kern_return_t hv_vm_unmap(void *args);               /* idx5  FUN_fffffe000b986d94 */
-kern_return_t hv_vcpu_destroy(void *args);           /* idx7  FUN_fffffe000b9897bc */
-kern_return_t hv_vcpu_run(void *args);               /* idx8  FUN_fffffe000b9899b0 */
-kern_return_t hv_trap_op_10(void *args);             /* idx10 FUN_fffffe000b98e488 */
-kern_return_t hv_trap_op_12(void *args);             /* idx12 FUN_fffffe000b986da4 */
-kern_return_t hv_trap_op_14(void *args);             /* idx14 FUN_fffffe000b986f1c */
-kern_return_t hv_trap_op_15(void *args);             /* idx15 FUN_fffffe000b98e788 */
-kern_return_t hv_trap_op_16(void *args);             /* idx16 FUN_fffffe000b98e964 */
+kern_return_t hv_vcpu_destroy_trap(void *args);      /* idx7  FUN_fffffe000b9897bc */
+kern_return_t hv_vcpu_run_trap(void *args);          /* idx8  FUN_fffffe000b9899b0 */
+kern_return_t hv_trap_op_10(void *args);             /* idx10 FUN_fffffe000b98e488 (unidentified) */
+kern_return_t hv_vm_map_shared(void *args);          /* idx12 FUN_fffffe000b986da4 */
+kern_return_t hv_vm_set_trap_debug(void *args);      /* idx14 FUN_fffffe000b986f1c */
+kern_return_t hv_trap_op_15(void *args);             /* idx15 FUN_fffffe000b98e788 (unidentified) */
+kern_return_t hv_trap_op_16(void *args);             /* idx16 FUN_fffffe000b98e964 (unidentified) */
 kern_return_t hv_vm_map_region(void *args);          /* idx17 FUN_fffffe000b986ff4 */
 
 /* Shared vm/region mapping core used by hv_vm_map (idx3) and hv_vm_unmap (idx5). */

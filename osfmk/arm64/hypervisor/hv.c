@@ -52,23 +52,34 @@
  * INDEX BY INDEX (read 160 B = 19 * 8 B pointers). This is the real hv
  * mach-trap dispatch table, driven by FUN_fffffe000b984ed8 (est. hv_available /
  * hv_vmm_present dispatcher, support-init tree) on cmd = args+8:
- *   idx0  b984fd8  hv_trap_op_0         idx10 b98e488 hv_trap_op_10
+ *   idx0  b984fd8  hv_capabilities      idx10 b98e488 hv_trap_op_10 (unidentified)
  *   idx1  b985588  hv_vm_create         idx11 b986e50 (vcpu-core)
- *   idx2  b985bf0  hv_vm_destroy        idx12 b986da4 hv_trap_op_12
+ *   idx2  b985bf0  hv_vm_destroy        idx12 b986da4 hv_vm_map_shared
  *   idx3  b986898  hv_vm_map            idx13 NULL
- *   idx4  b986d84  hv_trap_op_4 (stub)  idx14 b986f1c hv_trap_op_14
- *   idx5  b986d94  hv_vm_unmap          idx15 b98e788 hv_trap_op_15
- *   idx6  b989040  (vcpu-core)          idx16 b98e964 hv_trap_op_16
- *   idx7  b9897bc  hv_vcpu_destroy      idx17 b986ff4 hv_vm_map_region
- *   idx8  b9899b0  hv_vcpu_run          idx18 NULL
+ *   idx4  b986d84  hv_vm_protect (stub) idx14 b986f1c hv_vm_set_trap_debug
+ *   idx5  b986d94  hv_vm_unmap          idx15 b98e788 hv_trap_op_15 (unidentified)
+ *   idx6  b989040  (vcpu-core)          idx16 b98e964 hv_trap_op_16 (unidentified)
+ *   idx7  b9897bc  hv_vcpu_destroy_trap  idx17 b986ff4 hv_vm_map_region
+ *   idx8  b9899b0  hv_vcpu_run_trap      idx18 NULL
  *   idx9  b989a44  (vcpu-core hub)
  * Indexes 6/9/11 are owned by the vcpu-core tree (b989040/b989a44/b986e50);
  * 13 and 18 are NULL; 0xd (=13) unavail → 0xfae9400f, default → 0xfae94001.
+ *
+ * NAME MATCHING (this batch): idx0 hv_capabilities (435-byte feature/CPU-ID
+ * report, entitlement-gated); idx4 hv_vm_protect (verified: stub sets
+ * op=1,mode=0 -> protect core b8a8078); idx12 hv_vm_map_shared (map guest
+ * memory + return handle via hv_vcpu_map_memory b9866d0); idx14
+ * hv_vm_set_trap_debug (per-vm debug-reg slot 0..9 via b954160, which panics
+ * on "debug exceptions enabled in kernel mode"). idx10/15/16 remain
+ * hv_trap_op_N (unidentified): idx10 = per-CPU vcpu-slot flush (bitmask);
+ * idx15 = guest SVCR_EL2 streaming-SVE mode select; idx16 = SoC-feature-gated
+ * hv_el2_pt_alloc. See each function's header + docs/chain-map.md.
  * The remaining 14 are reconstructed in this file.
  * ===========================================================================
  */
 
 #include "hv.h"
+#include "hv_internal.h"
 
 /* -------------------------------------------------------------------------
  * FUN_fffffe000be39fd0 @ 0xfffffe000be39fd0  (est. hv_vmm_present)
@@ -94,23 +105,29 @@ hv_vmm_present(hv_trap_record_t *rec)   /* in_x3 */
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b984fd8 @ 0xfffffe000b984fd8  (est. hv_trap_op_0; op table idx0)
+ * FUN_fffffe000b984fd8 @ 0xfffffe000b984fd8  (est. hv_capabilities; op table idx0)
  * Ghidra: undefined4 FUN_fffffe000b984fd8(undefined8 param_1)
- * Builds a hypervisor capabilities report for the caller and copies it out.
- * Reads the calling task's entitlement tier via hv_entitlement_tier
- * (FUN_fffffe000b985ae4), folds it into a feature-mask via hv_caps_feature_mask
- * (FUN_fffffe000b987d9c) and a per-cpu report via hv_caps_cpu_report
+ * Builds a hypervisor capabilities/feature report for the caller and copies it
+ * out. Reads the calling task's entitlement tier via hv_entitlement_tier
+ * (FUN_fffffe000b985ae4), folds it into a 19-qword feature mask via
+ * hv_caps_feature_mask (FUN_fffffe000b987d9c) and a per-cpu CPU/memory report
+ * (cache geometry + ID_AA64* regs) via hv_caps_cpu_report
  * (FUN_fffffe000b988038), then copies the 0x1b3 (435) byte report out to the
  * caller (FUN_fffffe000b95d6f4). Returns error 0xfae94001 on copyout failure.
- * Confidence: low (identity unknown; the 435-byte capabilities report suggests
- *   a get-capabilities / hv_vcpu_run info op).
+ * Matches the Hypervisor.framework capability query: no user copyin, only a
+ * kernel-built report copyout.
+ * Confidence: medium (identity from the 435-byte feature/ID report + the
+ *   entitlement tier input; the entitlements tree also names this
+ *   "hv_capabilities").
  * Notes: b985ae4 / b987d9c / b988038 are OWNED and decompiled by the
  *   entitlements tree (hv_entitlements.c) — called here by estimated name;
  *   b95d6f4 is the shared kernel copyout (stubbed). auStack_270 is a 157-byte
- *   caps buffer, auStack_1d3 a 435-byte report buffer.
+ *   caps buffer, auStack_1d3 a 435-byte report buffer. The report includes
+ *   feature-mask words, cache block-size shifts and id_aa64* feature regs
+ *   (see hv_entitlements.c). No bounds/copyin on the caller side.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_trap_op_0(hv_trap_record_t *rec __unused)
+hv_capabilities(hv_trap_record_t *rec __unused)
 {
 	uint8_t  caps[157];    /* auStack_270 */
 	uint8_t  report[435];  /* auStack_1d3 */
@@ -120,7 +137,7 @@ hv_trap_op_0(hv_trap_record_t *rec __unused)
 	tier = hv_entitlement_tier();                       /* b985ae4: current task's tier */
 	hv_caps_feature_mask((uint64_t *)caps, tier);       /* b987d9c */
 	hv_caps_cpu_report((int64_t *)caps, (uint64_t *)report); /* b988038 */
-	r = FUN_fffffe000b95d6f4(report, rec, 0x1b3);       /* est. copyout 435 bytes */
+	r = copyout(report, rec, 0x1b3);       /* est. copyout 435 bytes */
 	return (r != 0) ? 0xfae94001 : 0;
 }
 
@@ -155,76 +172,76 @@ hv_vm_create(void *args)
 	uint32_t u;
 
 	in = out = size = tier = 0;
-	r = FUN_fffffe000b95c144(args, &in, 0x1c);      /* est. copyin 0x1c bytes */
+	r = copyin(args, &in, 0x1c);      /* est. copyin 0x1c bytes */
 	if (r != 0)
 		return 0xfae94003;
-	if (tier != 0 && DAT_fffffe000c649750 == 0) {
+	if (tier != 0 && hv_caps_gate == 0) {   /* DAT_fffffe000c649750 */
 		/* Entitlement tier check (condensed). hv_entitlement_tier (b985ae4,
 		 * entitlements tree) reads the current task's granted tier itself. */
 		granted = hv_entitlement_tier();             /* b985ae4: current task's tier */
 		if (tier > granted) {
-			owner = (long *)FUN_fffffe000b7eb624(&DAT_fffffe0007d53eb8, 4); /* est. alloc vm */
+			owner = (long *)FUN_fffffe000b7eb624(&hv_vm_zone, 4); /* est. alloc vm */ /* DAT_fffffe0007d53eb8 */
 			if (owner == NULL)
 				return 0xfae94005;
-			vm = FUN_fffffe000b7f089c(&DAT_fffffe000c5d7068, 0);
+			vm = FUN_fffffe000b7f089c(&hv_vm_pool, 0); /* DAT_fffffe000c5d7068 */
 			*owner = (long)vm;
 			if (vm != NULL) {
 				owner[2] = *(long *)(tier ? 0 : 0);
 				owner[0x427] = 0;
 				r = (int)FUN_fffffe000b9866d0(owner, in, out, size & 0xffffffff, 0);
 				if (r != 0) {
-					FUN_fffffe000b7f09dc(vm, &DAT_fffffe000c5d7068);
-					FUN_fffffe000b862b6c(&DAT_fffffe0007d52478, vm);
-					FUN_fffffe000b862b6c(&DAT_fffffe0007d53f38, owner);
+					FUN_fffffe000b7f09dc(vm, &hv_vm_pool); /* DAT_fffffe000c5d7068 */
+					FUN_fffffe000b862b6c(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
+					FUN_fffffe000b862b6c(&hv_owner_list, owner); /* DAT_fffffe0007d53f38 */
 					return r;
 				}
 				/* Allocate 0x430 per-cpu owner slots; each failure decrements the
 				 * quota array DAT_fffffe000c5b83b0 and unwinds. (condensed) */
 				for (j = 0; j < 7; j++) {
-					owner[0x429 + j] = (long)FUN_fffffe000b7eb624(&DAT_fffffe0007d53f78, 4);
+					owner[0x429 + j] = (long)FUN_fffffe000b7eb624(&hv_slot_zone, 4); /* DAT_fffffe0007d53f78 */
 					if (owner[0x429 + j] == 0)
 						goto unwind;
 				}
 				owner[0x410] = FUN_fffffe000b85e180(u, u, 0xa004); /* est. addr width */
 				hv_caps_feature_mask((uint64_t *)(owner + 0x411), tier); /* b987d9c */
-				FUN_fffffe000b7f0ac8(&DAT_fffffe000c62c0b8);
+				lock_acquire(&hv_lock);
 				if ((*(long *)(vm + 0x628) != 0)) {
-					FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
-					FUN_fffffe000b98533c(owner);   /* vcpu-core release */
+					lock_release(&hv_lock);
+					hv_vcpu_object_release(owner);   /* vcpu-core release */
 					return 0xfae94002;
 				}
 				if (tier > 1) {
 					q0 = (tier != 2) ? 2 : 1;
 					q1 = (tier != 3) ? q0 : 0;
-					if ((&DAT_fffffe000c5b83b0)[q1] < 1) {
-						FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
-						FUN_fffffe000b98533c(owner);
+					if (hv_quota_derived[q1] < 1) {
+						lock_release(&hv_lock);
+						hv_vcpu_object_release(owner);
 						return 0xfae94fff;
 					}
-					(&DAT_fffffe000c5b83b0)[q1]--;
+					hv_quota_derived[q1]--;
 				}
 				owner[0x425] = tier;
-				owner[0x426] = DAT_fffffe000c5b83a8;
+				owner[0x426] = hv_quota_cap;   /* DAT_fffffe000c5b83a8 */
 				owner[0x432] = (tier - 3) < 2;
 				owner[0x2191] = 0;
 				owner[1] = 1;
 				*(long **)(vm + 0x628) = owner;
-				FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
+				lock_release(&hv_lock);
 				return 0;
 			}
 		unwind:
 			/* Release any partially allocated owner slots. */
 			for (i = 0; i < 8; i++) {
 				if (owner[0x429 + i] != 0) {
-					FUN_fffffe000b862b6c(&DAT_fffffe0007d53fb8, owner[0x429 + i]);
+					FUN_fffffe000b862b6c(&hv_slot_rel_zone, owner[0x429 + i]); /* DAT_fffffe0007d53fb8 */
 					owner[0x429 + i] = 0;
 				}
 			}
 			FUN_fffffe000b987c44(owner);
-			FUN_fffffe000b7f09dc(vm, &DAT_fffffe000c5d7068);
-			FUN_fffffe000b862b6c(&DAT_fffffe0007d52478, vm);
+			FUN_fffffe000b7f09dc(vm, &hv_vm_pool); /* DAT_fffffe000c5d7068 */
+			FUN_fffffe000b862b6c(&hv_vm_list, vm); /* DAT_fffffe0007d52478 */
 		}
-		FUN_fffffe000b862b6c(&DAT_fffffe0007d53ff8, owner);
+		FUN_fffffe000b862b6c(&hv_vm_rel_zone, owner); /* DAT_fffffe0007d53ff8 */
 		return 0xfae94005;
 	}
 	return 0xfae94007;
@@ -255,18 +272,18 @@ hv_vm_destroy(void *args __unused)
 	int      cpu, i, pending;
 	uint32_t prev;
 
-	u = DAT_fffffe000c62c0c0;
+	u = hv_cached_cpu_id;   /* DAT_fffffe000c62c0c0 */
 	cpu_slot = tpidr_el1;
-	if (DAT_fffffe000c62c0c0 == 0)
-		DAT_fffffe000c62c0c0 = *(uint32_t *)(cpu_slot + 0x518);
-	if (u != 0 || DAT_fffffe000c62b3d0 != 0)
-		FUN_fffffe000b7f0afc(&DAT_fffffe000c62c0b8, cpu_slot, u, 0);  /* est. lock */
+	if (hv_cached_cpu_id == 0)
+		hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
+	if (u != 0 || hv_debug_flag != 0)
+		lock_acquire(&hv_lock, cpu_slot, u, 0);  /* est. lock */
 
-	owner = (long *)FUN_fffffe000b866ec4(cpu_slot);
-	pending = DAT_fffffe000c62b3d0;
+	owner = (long *)per_cpu_base(cpu_slot);
+	pending = hv_debug_flag;
 	vm_owner = *(long **)(owner + 0x628);
 	if (vm_owner == NULL) {
-		FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);   /* est. unlock */
+		lock_release(&hv_lock);   /* est. unlock */
 		return 0xfae94006;
 	}
 	o = (long *)*vm_owner;
@@ -275,33 +292,33 @@ hv_vm_destroy(void *args __unused)
 		*(uint32_t *)(o + 1) = *(uint32_t *)(cpu_slot + 0x518);
 	}
 	if (cpu != 0 || pending == 0) {
-		FUN_fffffe000b7f0afc(o, cpu_slot, (uint64_t)cpu, 0);
+		lock_acquire(o, cpu_slot, (uint64_t)cpu, 0);
 	}
 	o = (long *)vm_owner[3];
-	pending = DAT_fffffe000c62b3d0;
-	DAT_fffffe000c62b3d0 = pending;
+	pending = hv_debug_flag;
+	hv_debug_flag = pending;
 	if (o == NULL) {
 		*(uint64_t *)(owner + 0x628) = 0;
-		pending = DAT_fffffe000c62b3d0;
+		pending = hv_debug_flag;
 		o = (long *)*vm_owner;
 		prev = *(uint32_t *)(o + 1);
 		i = *(uint32_t *)(cpu_slot + 0x518);
 		if (prev == (uint32_t)i)
 			*(uint32_t *)(o + 1) = 0;
 		if (prev != (uint32_t)i || pending != 0)
-			FUN_fffffe000b7f1e80(o, cpu_slot);          /* est. per-cpu sync */
-		i = (int)DAT_fffffe000c62c0c0;
-		if ((int)DAT_fffffe000c62c0c0 == *(uint32_t *)(cpu_slot + 0x518))
-			DAT_fffffe000c62c0c0 = (DAT_fffffe000c62c0c0 & 0xffffffff00000000);
-		if (i != *(uint32_t *)(cpu_slot + 0x518) || DAT_fffffe000c62b3d0 != 0)
-			FUN_fffffe000b7f1e80(&DAT_fffffe000c62c0b8, cpu_slot);
+			lock_sync(o, cpu_slot);          /* est. per-cpu sync */
+		i = (int)hv_cached_cpu_id;
+		if ((int)hv_cached_cpu_id == *(uint32_t *)(cpu_slot + 0x518))
+			hv_cached_cpu_id = (hv_cached_cpu_id & 0xffffffff00000000);
+		if (i != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+			lock_sync(&hv_lock, cpu_slot);
 		i = (int)vm_owner[1];
 		vm_owner[1] = i - 1;
 		LORelease();
 		if (i == 0)
-			FUN_fffffe000c0f8674();                      /* est. panic, no-return */
+			kernel_panic_b();                      /* est. panic, no-return */
 		if (i == 1)
-			FUN_fffffe000b98533c(vm_owner);              /* vcpu-core release */
+			hv_vcpu_object_release(vm_owner);              /* vcpu-core release */
 		return 0;
 	}
 	prev = *(uint32_t *)(o + 1);
@@ -309,7 +326,7 @@ hv_vm_destroy(void *args __unused)
 	if (prev == (uint32_t)i)
 		*(uint32_t *)(o + 1) = 0;
 	if (prev != (uint32_t)i || pending != 0)
-		FUN_fffffe000b7f1e80(o, cpu_slot);
+		lock_sync(o, cpu_slot);
 	return 0xfae94002;
 }
 
@@ -369,7 +386,7 @@ hv_vm_map_core(void *args, int op, int mode)
 	uint64_t arg0, arg1;
 
 	(void)op;
-	r = FUN_fffffe000b95c144(args, &start, 0x28);   /* est. copyin 0x28 bytes */
+	r = copyin(args, &start, 0x28);   /* est. copyin 0x28 bytes */
 	if (r != 0)
 		return 0xfae94003;
 	vm = FUN_fffffe000b986b34(a0, &ret);            /* est. vm owner lookup */
@@ -380,7 +397,7 @@ hv_vm_map_core(void *args, int op, int mode)
 		/* For the special owner block DAT_fffffe000c62b698, force the high
 		 * "unrestricted" bit so the mask check below passes. */
 		v = start & 0xf0ffffffffffffff;
-		if (*(void **)(vm + 0x58) == &DAT_fffffe000c62b698)
+		if (*(void **)(vm + 0x58) == &hv_special_owner_block)
 			v = start | 0xf00000000000000;
 		arg0 = (start != 0) ? v : 0;
 	}
@@ -400,7 +417,7 @@ hv_vm_map_core(void *args, int op, int mode)
 				return 0xfae94003;
 			}
 			if (*ret != '-')
-				FUN_fffffe000c0e1c3c(ret, 0, 0x2d);  /* est. panic on bad ref */
+				kernel_panic_c(ret, 0, 0x2d);  /* est. panic on bad ref */
 		}
 		FUN_fffffe000b793cf4(ret);
 		return 0xfae94003;
@@ -408,7 +425,7 @@ hv_vm_map_core(void *args, int op, int mode)
 	if (mode == 0 && op == 0) {
 		offset = 0; addr_limit = 0;
 		addr_limit = tpidr_el1;
-		v = FUN_fffffe000b866ec4(addr_limit);
+		v = per_cpu_base(addr_limit);
 		v = (v != 0) ? *(long *)(v + 0x28) : 0;
 		r = FUN_fffffe000b8b51c8(vm, &offset, c0, 0, 0x80001100001ULL,
 		                          v, start, 0, (void *)((long)&addr_limit + 4),
@@ -445,24 +462,32 @@ join:
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b986d84 @ 0xfffffe000b986d84  (est. hv_trap_op_4; op table idx4)
+ * FUN_fffffe000b986d84 @ 0xfffffe000b986d84  (est. hv_vm_protect; op table idx4)
  * Ghidra: <no function defined at this address>
  * Op-table index 4 points here, but Ghidra has no function at the address.
- * Raw bytes (verified): dsb; mov w1,#1; mov w2,#0; b 0xfffffe000b98689c —
- * a thin barrier + dispatch stub that branches back into the shared map/state
- * code (region of b986898). Treated as an alias/secondary entry, not a
- * standalone decompilable function.
- * Confidence: low
+ * Raw bytes (verified, read_memory b986d84): `dsb; mov w1,#1; mov w2,#0;
+ * b 0xfffffe000b9868a8` — a thin barrier + dispatch stub that jumps into the
+ * shared map/unmap/protect core (hv_vm_map_core @ b9868a8) with op=1, mode=0.
+ * The core dispatches on (op, mode): (0,0)->map (b8b51c8), op==0->unmap
+ * (b8b49e8), op!=0->protect (b8a8078). So idx4 selects the PROTECT path.
+ * This matches hv_vm_protect, the third member of the map/unmap/protect
+ * family (idx3 map, idx4 protect, idx5 unmap). Treated as an alias/secondary
+ * entry, not a standalone decompilable function.
+ * Confidence: high (op=1/mode=0 -> protect core b8a8078 confirmed from the
+ *   branch stub + core dispatch at b986a10..b986a20).
+ * Notes: the earlier comment claimed the stub branched to b98689c; the branch
+ *   imm (0x17fffec6, imm26=0x3fffec6, offset -0x4e8) resolves to b9868a8, the
+ *   core entry. The stub's w1/w2 are hv_vm_map_core's (op, mode).
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_trap_op_4(void *args __unused)
+hv_vm_protect(void *args __unused)
 {
-	/* dsb; w1=1; w2=0; b 0xfffffe000b98689c  (see header note) */
+	/* dsb; w1=1(op); w2=0(mode); b core@b9868a8 -> protect path (see header) */
 	return 0;
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b9897bc @ 0xfffffe000b9897bc  (est. hv_vcpu_destroy; op table idx7)
+ * FUN_fffffe000b9897bc @ 0xfffffe000b9897bc  (est. hv_vcpu_destroy_trap; op table idx7)
  * Ghidra: undefined8 FUN_fffffe000b9897bc(void)
  * Destroys the calling CPU's bound vcpu. Reads the per-cpu vcpu slot
  * (tpidr_el1+0x4d8); takes the vm lock and bumps the per-cpu "in critical
@@ -481,7 +506,7 @@ hv_trap_op_4(void *args __unused)
  *   FUN_fffffe000b988e70 owned by vcpu-core tree.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_vcpu_destroy(void *args __unused)
+hv_vcpu_destroy_trap(void *args __unused)
 {
 	uint64_t u;
 	uint64_t cpu_slot;
@@ -490,7 +515,7 @@ hv_vcpu_destroy(void *args __unused)
 	int      pending, i;
 	uint32_t prev;
 
-	pending = DAT_fffffe000c62b3d0;
+	pending = hv_debug_flag;
 	cpu_slot = tpidr_el1;
 	vcpu = *(long **)(cpu_slot + 0x4d8);
 	if (vcpu == NULL)
@@ -500,11 +525,11 @@ hv_vcpu_destroy(void *args __unused)
 	if (u == 0)
 		*(uint64_t *)(v + 1) = *(uint32_t *)(cpu_slot + 0x518);
 	if (u != 0 || pending != 0)
-		FUN_fffffe000b7f0afc(v, cpu_slot, u, 0);   /* est. lock */
+		lock_acquire(v, cpu_slot, u, 0);   /* est. lock */
 	*(int *)(cpu_slot + 0x1c0) += 1;               /* critical-section depth */
 	FUN_fffffe000b9882ac(vcpu);                    /* est. EL2 state activate */
 	if (*(int *)(cpu_slot + 0x1c0) == 0)
-		FUN_fffffe000c0f1874();                    /* est. panic, no-return */
+		kernel_panic();                    /* est. panic, no-return */
 	i = *(int *)(cpu_slot + 0x1c0) - 1;
 	*(int *)(cpu_slot + 0x1c0) = i;
 	if (i == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
@@ -523,14 +548,14 @@ hv_vcpu_destroy(void *args __unused)
 		UnkSytemRegWrite(3,4,0xf,1,4, u & 0x7fffffffffffffff);
 		InstructionSynchronizationBarrier();
 		if (*(int *)(cpu_slot + 0x1c0) == 0)
-			FUN_fffffe000c0f1874();
+			kernel_panic();
 		i = *(int *)(cpu_slot + 0x1c0) - 1;
 		*(int *)(cpu_slot + 0x1c0) = i;
 		if (i == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
 			FUN_fffffe000b96c6d4();
 	}
 	/* Streaming SVE stop if EL2 enabled and vcpu is in streaming mode. */
-	if (DAT_fffffe0007e0da68 != 0 &&
+	if (hv_build_gate != 0 &&
 	    ((*(uint8_t *)(vcpu[0x16] + 0x4118) >> 4) & 1) != 0 &&
 	    (*(uint8_t *)(vcpu[0x16] + 0x4138) & 3) != 0) {
 		u = svcr;
@@ -542,18 +567,18 @@ hv_vcpu_destroy(void *args __unused)
 	FUN_fffffe000b793cf4(vcpu[0x1c]);
 	vcpu[0x1c] = 0;
 	FUN_fffffe000b988e70(vcpu);                    /* vcpu-core: hv_vcpu_destroy */
-	i = DAT_fffffe000c62b3d0;
+	i = hv_debug_flag;
 	v = (long *)*v;
 	prev = *(uint32_t *)(v + 1);
 	if (prev == *(uint32_t *)(cpu_slot + 0x518))
 		*(uint32_t *)(v + 1) = 0;
 	if (prev != *(uint32_t *)(cpu_slot + 0x518) || i != 0)
-		FUN_fffffe000b7f1e80(v, cpu_slot);         /* est. per-cpu sync */
+		lock_sync(v, cpu_slot);         /* est. per-cpu sync */
 	return 0;
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b9899b0 @ 0xfffffe000b9899b0  (est. hv_vcpu_run; op table idx8)
+ * FUN_fffffe000b9899b0 @ 0xfffffe000b9899b0  (est. hv_vcpu_run_trap; op table idx8)
  * Ghidra: undefined8 FUN_fffffe000b9899b0(void)
  * Runs / resumes the calling CPU's bound vcpu. Reads the per-cpu vcpu slot
  * (tpidr_el1+0x4d8); if none, returns 0xfae94006. Otherwise enters the
@@ -566,7 +591,7 @@ hv_vcpu_destroy(void *args __unused)
  *   FUN_fffffe000b988358 owned by vcpu-core tree; err 0xfae94006.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_vcpu_run(void *args __unused)
+hv_vcpu_run_trap(void *args __unused)
 {
 	uint64_t mask;
 	uint64_t cpu_slot = tpidr_el1;
@@ -575,10 +600,10 @@ hv_vcpu_run(void *args __unused)
 	if (*(long *)(cpu_slot + 0x4d8) == 0)
 		return 0xfae94006;
 	*(int *)(cpu_slot + 0x1c0) += 1;
-	mask = (DAT_fffffe0007e0d81d & 1) ? 0x7fc000000000001fULL : 0x7bc000000000001fULL;
+	mask = (hv_el2_l2 & 1) ? 0x7fc000000000001fULL : 0x7bc000000000001fULL;
 	FUN_fffffe000b988358(*(long *)(cpu_slot + 0x4d8), mask); /* vcpu-core: launch */
 	if (*(int *)(cpu_slot + 0x1c0) == 0)
-		FUN_fffffe000c0f1874();
+		kernel_panic();
 	i = *(int *)(cpu_slot + 0x1c0) - 1;
 	*(int *)(cpu_slot + 0x1c0) = i;
 	if (i == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
@@ -597,11 +622,14 @@ hv_vcpu_run(void *args __unused)
  * block exists) takes that owner's lock, flags it busy (|=4), and flushes its
  * state (FUN_fffffe000b8563f8 / FUN_fffffe000b95ecd8). Ends with a DMB and, for
  * a fresh (no vcpu) caller, calls FUN_fffffe000b98e74c to finalize.
- * Confidence: low (bitmask-driven per-cpu state op, e.g. hv_vcpu_run/set-trap;
- *   identity unverified).
+ * Confidence: low (bitmask-driven per-CPU vcpu-state flush op; NOT matched to a
+ *   public API — attempted: hv_vcpu_exec, hv_vm_map/unmap propagation to all
+ *   CPUs, shared-memory sync; none fit the per-CPU-slot flush + owner-refcount
+ *   dance, so kept descriptive hv_trap_op_10).
  * Notes: bit index = LZCOUNT(bitrev64(mask)); DMB barrier DataMemoryBarrier(2,3);
  *   helpers b8563f8/b95ecd8/b98e74c shared/el2; err 0xfae94006; LOAcquire/LORelease
- *   around the owner busy flag.
+ *   around the owner busy flag. Takes the trap arg as a 64-bit CPU-bitmask value
+ *   (no copyin); owner refcount inc/dec with panic on overflow (c0f86a4).
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_trap_op_10(uint64_t mask)
@@ -613,28 +641,28 @@ hv_trap_op_10(uint64_t mask)
 	uint32_t prev;
 	uint64_t a;
 
-	u = DAT_fffffe000c62c0c0;
+	u = hv_cached_cpu_id;
 	vcpu = *(long **)(cpu_slot + 0x4d8);
 	if (vcpu == NULL) {
-		if (DAT_fffffe000c62c0c0 == 0)
-			DAT_fffffe000c62c0c0 = *(uint32_t *)(cpu_slot + 0x518);
-		if (u != 0 || DAT_fffffe000c62b3d0 != 0)
-			FUN_fffffe000b7f0afc(&DAT_fffffe000c62c0b8, cpu_slot, u, 0);
-		owner = (long *)FUN_fffffe000b866ec4(cpu_slot);
+		if (hv_cached_cpu_id == 0)
+			hv_cached_cpu_id = *(uint32_t *)(cpu_slot + 0x518);
+		if (u != 0 || hv_debug_flag != 0)
+			lock_acquire(&hv_lock, cpu_slot, u, 0);  /* DAT_fffffe000c62c0b8 */
+		owner = (long *)per_cpu_base(cpu_slot);
 		owner = *(long **)(owner + 0x628);
 		if (owner == NULL) {
-			FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
+			lock_release(&hv_lock);
 			return 0xfae94006;
 		}
 		pending = (int)owner[1];
 		owner[1] = pending + 1;
 		if ((uint32_t)(pending + 0xf0000001) < 0xf0000002)
-			FUN_fffffe000c0f86a4();               /* est. panic on refcount overflow */
-		pending = (int)DAT_fffffe000c62c0c0;
-		if ((int)DAT_fffffe000c62c0c0 == *(uint32_t *)(cpu_slot + 0x518))
-			DAT_fffffe000c62c0c0 = (DAT_fffffe000c62c0c0 & 0xffffffff00000000);
-		if (pending != *(uint32_t *)(cpu_slot + 0x518) || DAT_fffffe000c62b3d0 != 0)
-			FUN_fffffe000b7f1e80(&DAT_fffffe000c62c0b8, cpu_slot);
+			kernel_panic_a();               /* est. panic on refcount overflow */
+		pending = (int)hv_cached_cpu_id;
+		if ((int)hv_cached_cpu_id == *(uint32_t *)(cpu_slot + 0x518))
+			hv_cached_cpu_id = (hv_cached_cpu_id & 0xffffffff00000000);
+		if (pending != *(uint32_t *)(cpu_slot + 0x518) || hv_debug_flag != 0)
+			lock_sync(&hv_lock, cpu_slot);
 	} else {
 		owner = (long *)*vcpu;
 	}
@@ -659,7 +687,7 @@ hv_trap_op_10(uint64_t mask)
 				prev = *(uint32_t *)(owner + idx * 0x80 + 0x94);
 				LOAcquire();
 				*(uint32_t *)(owner + idx * 0x80 + 0x94) = prev | 4;
-				pending = DAT_fffffe000c62b3d0;
+				pending = hv_debug_flag;
 				LORelease();
 				if ((prev & 1) == 0) {
 					a = slot[1];
@@ -669,16 +697,16 @@ hv_trap_op_10(uint64_t mask)
 					if (u == 0)
 						*(uint64_t *)(a + 1) = *(uint32_t *)(cpu_slot + 0x518);
 					if (u != 0 || pending != 0)
-						FUN_fffffe000b7f0afc(a, cpu_slot, u, 0);
-					FUN_fffffe000b8563f8(&DAT_fffffe000c756760, (void *)*slot, 0, 0, 1);
-					pending = DAT_fffffe000c62b3d0;
+						lock_acquire(a, cpu_slot, u, 0);
+					FUN_fffffe000b8563f8(&hv_flush_lock, (void *)*slot, 0, 0, 1);  /* DAT_fffffe000c756760 */
+					pending = hv_debug_flag;
 					a = *owner;
 					if (*(uint32_t *)(a + 1) == *(uint32_t *)(cpu_slot + 0x518)) {
 						*(uint32_t *)(a + 1) = 0;
 						if (pending == 0)
 							goto l_flush;
 					}
-					FUN_fffffe000b7f1e80(a, cpu_slot);
+					lock_sync(a, cpu_slot);
 					a = slot[1];
 				}
 			l_flush:
@@ -694,19 +722,27 @@ hv_trap_op_10(uint64_t mask)
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b986da4 @ 0xfffffe000b986da4  (est. hv_trap_op_12; op table idx12)
+ * FUN_fffffe000b986da4 @ 0xfffffe000b986da4  (est. hv_vm_map_shared; op table idx12)
  * Ghidra: undefined8 FUN_fffffe000b986da4(long param_1)
- * Copies the 0x20-byte user arg block (FUN_fffffe000b95c144), then calls the
- * vcpu-core helper FUN_fffffe000b9866d0 with the args and a result pointer;
- * on success copies an 8-byte result back out (FUN_fffffe000b95d6f4) and, if a
- * per-cpu state block exists (tpidr_el1+0x318), issues FUN_fffffe000b7a1dd8 to
- * the vm owner. Returns 0xfae94003 on copyin/copyout failure.
- * Confidence: low (identity unknown; likely hv_vcpu_create or an object create).
- * Notes: helper b9866d0 is owned by vcpu-core tree; b95c144/b95d6f4 are the
- *   shared copyin/copyout helpers; b866ec4/b7a1dd8 kernel.
+ * Maps a range of guest physical memory and returns a shared-region handle.
+ * Copies the 0x20-byte user arg block (FUN_fffffe000b95c144: [gpa(8),
+ * size(8), page_size/flags(4)...]), calls the vcpu-core helper
+ * hv_vcpu_map_memory (FUN_fffffe000b9866d0, vcpu=0 => current vm) which maps
+ * gpa..gpa+size and produces an 8-byte handle; on success copies the handle
+ * back out at args+0x18 (FUN_fffffe000b95d6f4) and returns 0. If the copyout
+ * fails it still notifies the per-cpu state block (tpidr_el1+0x318, via
+ * FUN_fffffe000b7a1dd8) with the handle's low 32 bits, then returns
+ * 0xfae94003.
+ * Confidence: medium (map-guest-memory + return-handle is the
+ *   hv_vm_map_shared contract; the handle is copied out, not written into a
+ *   guest register).
+ * Notes: helper b9866d0 (hv_vcpu_map_memory) is owned by the vcpu-core tree;
+ *   b95c144/b95d6f4 are the shared copyin/copyout helpers; b866ec4 (per-cpu
+ *   base) / b7a1dd8 (per-cpu notify) are kernel deps. Copyin size 0x20, copyout
+ *   8 bytes at offset 0x18.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_trap_op_12(void *args)
+hv_vm_map_shared(void *args)
 {
 	uint64_t a0 = 0, a1 = 0, a2 = 0, a3 = 0;
 	uint64_t result = 0;
@@ -714,36 +750,43 @@ hv_trap_op_12(void *args)
 	long    *o;
 	int      r;
 
-	r = FUN_fffffe000b95c144(args, &a0, 0x20);
+	r = copyin(args, &a0, 0x20);
 	if (r != 0)
 		return 0xfae94003;
-	r = (int)FUN_fffffe000b9866d0(0, a0, a1, a2 & 0xffffffff, &result); /* vcpu-core */
+	r = (int)FUN_fffffe000b9866d0(0, a0, a1, a2 & 0xffffffff, &result); /* vcpu-core: map mem */
 	if (r != 0)
 		return r;
-	r = FUN_fffffe000b95d6f4(&result, (void *)((long)args + 0x18), 8);  /* copyout */
+	r = copyout(&result, (void *)((long)args + 0x18), 8);  /* copyout handle */
 	if (r == 0)
 		return r;
 	cpu_slot = tpidr_el1;
-	o = (long *)FUN_fffffe000b866ec4(cpu_slot);
+	o = (long *)per_cpu_base(cpu_slot);
 	o = (o != 0) ? *(long **)(o + 0x318) : 0;
-	FUN_fffffe000b7a1dd8(o, result & 0xffffffff);
+	FUN_fffffe000b7a1dd8(o, result & 0xffffffff);           /* per-cpu notify */
 	return 0xfae94003;
 }
 
 /* -------------------------------------------------------------------------
- * FUN_fffffe000b986f1c @ 0xfffffe000b986f1c  (est. hv_trap_op_14; op table idx14)
+ * FUN_fffffe000b986f1c @ 0xfffffe000b986f1c  (est. hv_vm_set_trap_debug; op table idx14)
  * Ghidra: undefined8 FUN_fffffe000b986f1c(undefined8 param_1)
- * Copies the 0x18-byte user arg block (FUN_fffffe000b95c144); validates a
- * 0..9 selector (local_30); looks up the vm owner via FUN_fffffe000b986b34 and,
- * if present, calls FUN_fffffe000b954160 to configure a per-vm resource slot
- * (index local_30). If the vm ref is free it optionally installs the caller's
- * per-cpu vcpu (tpidr_el1+0x4d8) or tears it down (FUN_fffffe000b8afa78).
- * Confidence: low (identity unknown; a per-vm slot config op).
- * Notes: err 0xfae94003; panic path FUN_fffffe000c0e1c3c on a bad '-' ref;
- *   helpers b986b34/b954160/b8afa78/b793cf4/b866ec4 kernel/el2.
+ * Sets a hardware trap-debug register slot on the caller's VM. Copies the
+ * 0x18-byte user arg block (FUN_fffffe000b95c144: [id(8), value(8),
+ * reg-sel(8)]), validates a 0..9 debug-register selector (local_30), looks up
+ * the vm owner by id (FUN_fffffe000b986b34), then calls
+ * FUN_fffffe000b954160(vm_resource, selector, value) to apply the debug
+ * register. b954160 panics on "invoked on stage 1 pmap" / "debug exceptions
+ * enabled in kernel mode" and manipulates daif (must run with IRQs masked)
+ * around the write — it is hardware debug-register configuration. On a fresh
+ * (unbound) vm ref it binds/tears down the caller's per-cpu vcpu instead.
+ * Confidence: medium (per-vm debug-reg slot + the b954160 daif/debug-exception
+ *   panics are decisive for a set-trap-debug op; vm-level lookup => vm, not
+ *   vcpu).
+ * Notes: err 0xfae94003; panic paths c0e1c3c (bad '-' ref) / c0e11ec (b954160);
+ *   helpers b986b34 (owner lookup) / b8afa78 / b793cf4 / b866ec4 kernel.
+ *   Copyin 0x18, selector bound 0..9.
  * ------------------------------------------------------------------------- */
 kern_return_t
-hv_trap_op_14(void *args)
+hv_vm_set_trap_debug(void *args)
 {
 	uint64_t a0 = 0, a1 = 0, a2 = 0;
 	void    *vm;
@@ -752,7 +795,7 @@ hv_trap_op_14(void *args)
 	uint64_t cpu_slot;
 	int      r;
 
-	r = FUN_fffffe000b95c144(args, &a0, 0x18);
+	r = copyin(args, &a0, 0x18);
 	if (r != 0)
 		return 0xfae94003;
 	idx = a2;
@@ -762,7 +805,7 @@ hv_trap_op_14(void *args)
 	if (vm == NULL)
 		return 0xfae94003;
 	if (*(void **)(vm + 0x58) != NULL)
-		FUN_fffffe000b954160(*(void **)(vm + 0x58), idx, a1); /* est. set slot */
+		FUN_fffffe000b954160(*(void **)(vm + 0x58), idx, a1); /* set trap-debug slot */
 	if (ret != (char *)0xffffffffffffffff) {
 		if (ret == NULL) {
 			cpu_slot = tpidr_el1;
@@ -772,7 +815,7 @@ hv_trap_op_14(void *args)
 			return 0;
 		}
 		if (*ret != '-')
-			FUN_fffffe000c0e1c3c(ret, 0, 0x2d);     /* est. panic on bad ref */
+			kernel_panic_c(ret, 0, 0x2d);     /* est. panic on bad ref */
 	}
 	FUN_fffffe000b793cf4();
 	return 0;
@@ -791,9 +834,16 @@ hv_trap_op_14(void *args)
  * vcpu's execution-mode field (vcpu[0x16]+0x4138) and, when a scratch area
  * exists, forces the mode bits 0x3000000 into the EL2 state word at
  * vcpu[0x16]+0x4040.
- * Confidence: low (per-vcpu EL2 execution-mode select; identity unverified).
- * Notes: err 0xfae94005/3/6; helpers b8a6c14/b8b51c8/b7f62e8/b8b6860/b866ec4;
- *   b96c6d4 post-EL2 hook; DAT_fffffe0007e0da68 = EL2-enabled flag.
+ * Confidence: low (guest streaming-SVE / SVCR_EL2 mode select; NOT matched to a
+ *   public API — attempted: hv_vcpu_set_vtimer_offset, hv_vcpu_set_exec_mode,
+ *   hv_vcpu_set_trap_debug; none fit the SVCR/SVE-mode + EL2-scratch alloc, so
+ *   kept descriptive hv_trap_op_15).
+ * Notes: the field at vcpu[0x16]+0x4138 is SVCR_EL2-style (bit0=ZA, bit1=SM;
+ *   cf. hv_vcpu_save_el2_state's `+0x4138 >> 1 & 1` streaming-SVE check), and
+ *   HCR_EL2 (+0x4040) bits 0x3000000 are forced to trap SVE/SME access; the
+ *   0x4000 EL2 scratch (vcpu[0x1a]) holds the SVE save state. err 0xfae94005/3/6;
+ *   helpers b8a6c14/b8b51c8/b7f62e8/b8b6860/b866ec4; b96c6d4 post-EL2 hook;
+ *   DAT_fffffe0007e0da68 = EL2-enabled flag. Takes mode (0..3) as a value arg.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_trap_op_15(uint64_t mode)
@@ -808,7 +858,7 @@ hv_trap_op_15(uint64_t mode)
 	vcpu = *(long **)(cpu_slot + 0x4d8);
 	if (vcpu == NULL)
 		return 0xfae94006;
-	if (DAT_fffffe0007e0da68 == 0)
+	if (hv_build_gate == 0)
 		return 0xfae94005;
 	if (mode > 3)
 		return 0xfae94003;
@@ -834,7 +884,7 @@ hv_trap_op_15(uint64_t mode)
 			*(uint64_t *)(v + 0x4148) = va;
 			*(uint64_t *)(v + 0x4118) |= 0x10;
 			if (*(int *)(cpu_slot + 0x1c0) == 0)
-				FUN_fffffe000c0f1874();
+				kernel_panic();
 			r = *(int *)(cpu_slot + 0x1c0) - 1;
 			*(int *)(cpu_slot + 0x1c0) = r;
 			if (r == 0 && ((*(uint8_t *)(*(long *)(cpu_slot + 0x1b8) + 0x4c) >> 2) & 1) != 0)
@@ -860,9 +910,14 @@ store:
  * vcpu+0x2128 exceeds 2 and the EL2 debug flag DAT_fffffe0007e31628 is set, it
  * invokes the el2-state helper FUN_fffffe000b98e344 (owned by el2-state tree)
  * and returns 0; otherwise returns 0xfae94005/7.
- * Confidence: low (identity unknown; a debug/stat hook).
- * Notes: err 0xfae94005/6/7; DAT_fffffe0007e31628 EL2 debug flag; b98e344 is
- *   owned by the el2-state tree.
+ * Confidence: low (SoC-feature-gated EL2 page-table alloc hook; NOT matched to a
+ *   public API — attempted: hv_vcpu_get_exec_time, hv_vcpu_set_vtimer_offset,
+ *   a debug/info report; none fit the "opcode count > 2 AND SoC feature index
+ *   nonzero -> hv_el2_pt_alloc" gate, so kept descriptive hv_trap_op_16).
+ * Notes: err 0xfae94005/6/7; DAT_fffffe0007e31628 is the SoC feature index
+ *   (also read by hv_el2_state_build, >4 clears a TCR bit), not a pure debug
+ *   flag; b98e344 is owned by the el2-state tree (hv_el2_pt_alloc); the vcpu
+ *   opcode counter at vcpu+0x2128 gates it.
  * ------------------------------------------------------------------------- */
 kern_return_t
 hv_trap_op_16(void *args __unused)
@@ -874,7 +929,7 @@ hv_trap_op_16(void *args __unused)
 	if (vcpu == NULL)
 		return 0xfae94006;
 	if (*(uint32_t *)(*vcpu + 0x2128) > 2) {
-		if (DAT_fffffe0007e31628 != 0) {
+		if (hv_soc_feature_index != 0) {
 			FUN_fffffe000b98e344(vcpu);           /* el2-state helper */
 			return 0;
 		}
@@ -918,12 +973,12 @@ hv_vm_map_region(void *args)
 	uint32_t prev;
 	void    *node;
 
-	r = FUN_fffffe000b95c144(args, &a0, 0x34);
+	r = copyin(args, &a0, 0x34);
 	if (r != 0)
 		return 0xfae94003;
 	if (a0 == 0) {                              /* optionally bind per-cpu resource */
 		cpu_slot = tpidr_el1;
-		vm = (void *)FUN_fffffe000b866ec4(cpu_slot);
+		vm = (void *)per_cpu_base(cpu_slot);
 		vm = (vm != 0) ? *(void **)((char *)vm + 0x318) : 0;
 		r = FUN_fffffe000b78d064(vm, a1, 0x13, 1, 7, 0, &ret); /* est. bind resource */
 		if (r != 0)
@@ -932,18 +987,18 @@ hv_vm_map_region(void *args)
 	start = a3; size = a4;                     /* (est. start/size fields) */
 
 	/* Take vm lock + bump refcount (condensed). */
-	FUN_fffffe000b7f0afc(&DAT_fffffe000c62c0b8, tpidr_el1, DAT_fffffe000c62c0c0, 0);
-	owner = (long *)FUN_fffffe000b866ec4(tpidr_el1);
+	lock_acquire(&hv_lock, tpidr_el1, hv_cached_cpu_id, 0);
+	owner = (long *)per_cpu_base(tpidr_el1);
 	owner = *(long **)(owner + 0x628);
 	if (owner == NULL) {
-		FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
+		lock_release(&hv_lock);
 		FUN_fffffe000b793cf4(ret);
 		return 0xfae94001;
 	}
 	refcnt = (int)owner[1];
 	owner[1] = refcnt + 1;
 	if ((uint32_t)(refcnt + 0xf0000001) < 0xf0000002)
-		FUN_fffffe000c0f86a4();                /* panic on refcount overflow */
+		kernel_panic_a();                /* panic on refcount overflow */
 
 	vm = (void *)FUN_fffffe000b986b34(a2, &ret);   /* est. vm owner lookup */
 	if (vm != NULL) {
@@ -951,7 +1006,7 @@ hv_vm_map_region(void *args)
 		/* Range check + rbtree insert at owner+0x427 (condensed: exact-overlap
 		 * returns 0xfae94008; otherwise split-insert the node, tracking the
 		 * active cpu id and calling b9860bc on the old owner node). */
-		node = FUN_fffffe000b7eb624(&DAT_fffffe0007d54038, 2); /* est. alloc node */
+		node = FUN_fffffe000b7eb624(&hv_region_node_zone, 2); /* est. alloc node */ /* DAT_fffffe0007d54038 */
 		if (node != NULL) {
 			/* node[0]=vm, node[2]=start, node[1]=? , node[3]=start+size,
 			 * node[4]=ret, node[5..7]=rbtree links. */
@@ -979,12 +1034,12 @@ hv_vm_map_region(void *args)
 		return hv_vm_unwind(owner, NULL, ret, 0xfae9400f);
 	}
 	/* Release vm lock + drop refcount; last releaser frees (b98533c). */
-	FUN_fffffe000b7f1e4c(&DAT_fffffe000c62c0b8);
+	lock_release(&hv_lock);
 	refcnt = (int)owner[1];
 	owner[1] = refcnt - 1;
 	LORelease();
 	if (refcnt == 1)
-		FUN_fffffe000b98533c(owner);
+		hv_vcpu_object_release(owner);
 	FUN_fffffe000b793cf4(ret);
 	return 0;
 }

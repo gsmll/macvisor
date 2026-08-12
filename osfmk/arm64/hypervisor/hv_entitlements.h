@@ -33,7 +33,7 @@ void hv_caps_cpu_report(int64_t tier_block, uint64_t *report);
 
 /* Credential/sandbox ops table; slot index 0x38 (offset +0x1c0) is the
  * entitlement probe returning 0 when the cred carries the entitlement. */
-extern uintptr_t DAT_fffffe0007e93310[];
+extern uintptr_t cred_ops[];                         /* DAT_fffffe0007e93310 */
 
 /* Thread->proc accessor (FUN_fffffe000b866ec4) and credential validator
  * (FUN_fffffe000b8663e8, recreated as current_task in hv_kernel_glue.c). */
@@ -43,13 +43,13 @@ extern long  FUN_fffffe000b95fe60(int idx);   /* est. cache_type_lookup */
 
 /* Entitlement-relevant globals (est.). */
 extern uint8_t *tpidr_el1;                     /* per-cpu data base (kernel) */
-extern uint32_t DAT_fffffe0007e255f8;          /* boot-arg enable flags */
-extern uint32_t DAT_fffffe0007e0d818;          /* SoC implementer (hv_el2_feature_detect) */
-extern uint64_t DAT_fffffe0007e0d820;          /* hv feature flags */
-extern uint64_t DAT_fffffe0007e0c6ac;          /* cache/topology flags */
-extern uint64_t *PTR_PTR_fffffe000c5b3f58;     /* page-size table base 1 */
-extern uint64_t *PTR_PTR_fffffe000c5b3f60;     /* page-size table base 2 */
-extern uint64_t *PTR_PTR_fffffe000c5b3f68;     /* page-size table base 3 */
+extern uint32_t hv_bootarg_flags;                  /* DAT_fffffe0007e255f8 boot-arg enable flags */
+extern uint32_t hv_soc_implementer;                /* DAT_fffffe0007e0d818 SoC implementer (hv_el2_feature_detect) */
+extern uint64_t hv_features;                       /* DAT_fffffe0007e0d820 hv feature flags */
+extern uint64_t hv_cache_flags;                    /* DAT_fffffe0007e0c6ac cache/topology flags */
+extern uint64_t *hv_page_size_table_1;             /* PTR_PTR_fffffe000c5b3f58 page-size table base 1 */
+extern uint64_t *hv_page_size_table_2;             /* PTR_PTR_fffffe000c5b3f60 page-size table base 2 */
+extern uint64_t *hv_page_size_table_3;             /* PTR_PTR_fffffe000c5b3f68 page-size table base 3 */
 
 /* EL2 sysreg reads — kept literal; identity unverified. */
 extern uint64_t UnkSytemRegRead(int op0, int op1, int crn, int crm, int op2);

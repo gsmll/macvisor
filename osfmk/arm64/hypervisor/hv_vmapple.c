@@ -94,12 +94,12 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 	bool retained = false;
 	long lookup_key;
 
-	cpu_ts = DAT_fffffe000c62c0c0;
-	if (DAT_fffffe000c62c0c0 == 0) {
-		DAT_fffffe000c62c0c0 = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
+	cpu_ts = hv_cached_cpu_id;
+	if (hv_cached_cpu_id == 0) {
+		hv_cached_cpu_id = (uint64_t)*(uint *)(tpidr_el1 + 0x518);
 	}
-	if (cpu_ts != 0 || DAT_fffffe000c62b3d0 != 0) {
-		hv_lock_hv(&DAT_fffffe000c62c0b8, tpidr_el1, cpu_ts, 0);
+	if (cpu_ts != 0 || hv_debug_flag != 0) {
+		hv_lock_hv(&hv_lock, tpidr_el1, cpu_ts, 0);
 	}
 
 	head = *(long **)(current_cpu_datap(tpidr_el1) + 0x628);
@@ -118,12 +118,12 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		}
 	}
 
-	c = (int)DAT_fffffe000c62c0c0;
-	if ((int)DAT_fffffe000c62c0c0 == *(int *)(tpidr_el1 + 0x518)) {
-		DAT_fffffe000c62c0c0 = 0;
+	c = (int)hv_cached_cpu_id;
+	if ((int)hv_cached_cpu_id == *(int *)(tpidr_el1 + 0x518)) {
+		hv_cached_cpu_id = 0;
 	}
-	if (c != *(int *)(tpidr_el1 + 0x518) || DAT_fffffe000c62b3d0 != 0) {
-		hv_unlock_hv(&DAT_fffffe000c62c0b8, tpidr_el1);
+	if (c != *(int *)(tpidr_el1 + 0x518) || hv_debug_flag != 0) {
+		hv_unlock_hv(&hv_lock, tpidr_el1);
 	}
 
 	/* lookup object key */
@@ -131,7 +131,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 	lookup_key = hv_object_lookup(param_1, param_2, 0x2d);
 	os_ref_release();
 
-	c = DAT_fffffe000c62b3d0;
+	c = hv_debug_flag;
 	if (!retained) {
 		node = (long *)*head;
 		child = (ulong *)(node + 1);
@@ -150,10 +150,10 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 			child = node;
 			node = (long *)*child;
 			child = (ulong *)(node + 5);
-			c = DAT_fffffe000c62b3d0;
+			c = hv_debug_flag;
 		} while (node != 0);
 
-		while (DAT_fffffe000c62b3d0 = c, child != 0) {
+		while (hv_debug_flag = c, child != 0) {
 			node = (long *)child[6];
 			if (node == 0) {
 				long *p = (long *)(child[7] & ~1UL);
@@ -176,11 +176,11 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 				rbtree_unlink(head, child);
 				os_ref_release(*child);
 				kfree_type(child[4]);
-				ref_count_dec(&DAT_fffffe0007d54078, child);
+				ref_count_dec(&hv_container_refcount, child);
 			}
 			c = 0;
 			child = node;
-			c = DAT_fffffe000c62b3d0;
+			c = hv_debug_flag;
 		}
 
 		/* release container */
@@ -190,7 +190,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		if (c == newc) {
 			*count_ptr = 0;
 		}
-		if (c != newc || DAT_fffffe000c62b3d0 != 0) {
+		if (c != newc || hv_debug_flag != 0) {
 			hv_unlock_hv(*head, tpidr_el1);
 		}
 

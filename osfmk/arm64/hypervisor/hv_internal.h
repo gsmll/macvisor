@@ -25,17 +25,18 @@
  * the .c files — declaration ownership is documented here instead (see
  * AGENTS.md "prefer minimal edits").
  *
- * KNOWN PRE-EXISTING COLLISION (not introduced by this header, resolve at
- * integration): hv.h and hv_vcpu.h both declare hv_vcpu_destroy and hv_vcpu_run
- * with DIFFERENT signatures for DIFFERENT Ghidra functions:
- *   hv.h        : kern_return_t hv_vcpu_destroy(void *);   idx7 FUN_fffffe000b9897bc
- *                 kern_return_t hv_vcpu_run(void *);       idx8 FUN_fffffe000b9899b0
- *   hv_vcpu.h   : void hv_vcpu_destroy(hv_vcpu_t *);          FUN_fffffe000b988e70
- *                 uint64_t hv_vcpu_run(void *);               FUN_fffffe000b989a44 hub
- * A single translation unit cannot include both headers today. The main
- * session should rename the trap-dispatch pair (e.g. hv_vcpu_destroy_trap /
- * hv_vcpu_run_trap) at integration; this header declares the vcpu-core
- * versions and documents both addresses.
+ * KNOWN PRE-EXISTING COLLISION (RESOLVED in this cleanup pass): hv.h and
+ * hv_vcpu.h both declared hv_vcpu_destroy and hv_vcpu_run with DIFFERENT
+ * signatures for DIFFERENT Ghidra functions. The trap-dispatch pair in
+ * hv.h/hv.c is now renamed hv_vcpu_destroy_trap / hv_vcpu_run_trap:
+ *   hv.h        : kern_return_t hv_vcpu_destroy_trap(void *);  idx7 FUN_fffffe000b9897bc
+ *                 kern_return_t hv_vcpu_run_trap(void *);      idx8 FUN_fffffe000b9899b0
+ *   hv_vcpu.h   : void hv_vcpu_destroy(hv_vcpu_t *);              FUN_fffffe000b988e70
+ *                 uint64_t hv_vcpu_run(void *);                   FUN_fffffe000b989a44 hub
+ * hv_vcpu_destroy (b988e70) and hv_vcpu_run (b989a44) are the canonical
+ * vcpu-core names; only those two remain under those names. A single
+ * translation unit can now include both headers. This header declares the
+ * vcpu-core versions and documents both addresses.
  *
  * Declaration ownership (which file already declares what):
  *   - hv_support.c/h  : DT property/boot-arg getters (c09c084/c09c31c/c09cbf0),
@@ -96,9 +97,10 @@ extern void *per_cpu_base(uint64_t cpu);
 /* Kernel panic (all noreturn). Referenced by vcpu-core, el2-state and
  * trap-dispatch. Ghidra names kept as identifiers because the .c files call
  * them by FUN_ name; hv_vmm.h aliases c0f1874 as `kernel_panic`. */
-extern void FUN_fffffe000c0f86a4(void) __attribute__((noreturn)); /* est. panic */
-extern void FUN_fffffe000c0f8674(void) __attribute__((noreturn)); /* est. panic */
-extern void FUN_fffffe000c0f1874(void) __attribute__((noreturn)); /* est. panic (hv_vmm.h: kernel_panic) */
+extern void kernel_panic_a(void) __attribute__((noreturn));  /* FUN_fffffe000c0f86a4 */
+extern void kernel_panic_b(void) __attribute__((noreturn));  /* FUN_fffffe000c0f8674 */
+extern void kernel_panic(void) __attribute__((noreturn));    /* FUN_fffffe000c0f1874 (hv_vmm.h: kernel_panic) */
+extern void kernel_panic_c(void) __attribute__((noreturn));  /* FUN_fffffe000c0e1c3c (hv_vcpu_attach path) */
 
 /* XNU object release (refcount decrement, no free).
  * Referenced by el2-state (hv_vmm.c) and trap-dispatch (hv.c). */
@@ -118,16 +120,82 @@ extern int  kernel_mem_validate(void *a, void *b, uint64_t len, int prot,
 extern int  kernel_mem_release(uint64_t a, uint64_t b, uint64_t c);
 extern void kernel_memzero(uint64_t a, uint64_t b, uint64_t c, int d, uint64_t e);
 
-/* --- Shared DAT_ globals used across >=2 files (ground truth: Ghidra) --- */
+/* ======================================================================== *
+ * SHARED GLOBAL NAMING TABLE — one English name per hypervisor global.
+ *
+ * Ground truth is the Ghidra DAT_ address (kept in the comment on every
+ * line for traceability). Code uses the English name; ALL trees in this
+ * subtree MUST use these names so the module compiles as one unit. The
+ * DAT_ addresses appear in comments ONLY (never as code identifiers).
+ *
+ * Provided by the maintainer's cleanup mapping; entries not in that list
+ * carry a best-effort name + "(est.)" note.
+ * ======================================================================== */
 
-extern uint8_t *tpidr_el1;                 /* per-cpu data base (el2-state, vcpu-core, trap-dispatch) */
-extern uint64_t DAT_fffffe0007e0d800;      /* EL2 features (support-init writes, el2-state/vcpu-core read) */
-extern uint16_t DAT_fffffe0007e0d81e;      /* EL2 feature flag bit 0 (el2-state, vcpu-core) */
-extern uint64_t DAT_fffffe0007e0da68;      /* EL2 build-path gate (==0) (el2-state, vcpu-core) */
-extern uint64_t DAT_fffffe000c62c0b8;      /* shared vm/owner lock (vcpu-core, trap-dispatch) */
-extern uint32_t DAT_fffffe000c62b3d0;      /* "pending sync" / lock-storm flag (vcpu-core, trap-dispatch) */
-extern uint64_t DAT_fffffe000c62c0c0;      /* cached per-cpu id (vcpu-core, trap-dispatch) */
-extern uint64_t DAT_fffffe000c5b83b0;      /* hv quota array (support-init, vcpu-core, trap-dispatch) */
+extern uint8_t *tpidr_el1;                 /* per-cpu data base (kernel, el2-state/vcpu-core/trap-dispatch) */
+
+/* ---- Feature / SoC identity (written by support-init / el2 detect) ---- */
+extern uint64_t hv_chip_id;        /* DAT_fffffe0007e0c03c SoC/chip id, high byte 0x61='a' */
+extern uint64_t hv_features;       /* DAT_fffffe0007e0d820 hv feature flags (bits 3/4) */
+extern uint64_t hv_el2_features;   /* DAT_fffffe0007e0d800 EL2 feature-register result */
+extern uint16_t hv_el2_l2;         /* DAT_fffffe0007e0d81d EL2-L2 capable flag (sibling of hv_el2_capable) */
+extern uint16_t hv_el2_capable;    /* DAT_fffffe0007e0d81e EL2 feature bit 0 */
+extern uint64_t hv_build_gate;     /* DAT_fffffe0007e0da68 build-path gate (==0 at runtime) */
+extern uint64_t hv_soc_feature_index; /* DAT_fffffe0007e31628 SoC feature index (el2-state, hv_trap_op_16) */
+extern uint32_t hv_soc_implementer;/* DAT_fffffe0007e0d818 aidr bits [16:15] */
+extern uint64_t hv_soc_no_l2;      /* DAT_fffffe0007e0d81c aidr bit 45 (L2-table-absent) */
+extern uint64_t hv_cache_flags;    /* DAT_fffffe0007e0c6ac cache/topology flag word (est.) */
+
+/* ---- ISA VM quota + derived copies (kept symmetric, 3 qwords each) ---- */
+extern uint32_t hv_quota[3];        /* DAT_fffffe0007e0d7f0/0x7f4/0x7f8 hv ISA VM quota */
+extern uint32_t hv_quota_derived[3];/* DAT_fffffe000c5b83b0/0x3b4/0x3b8 derived quota copies */
+extern uint32_t hv_quota_cap;       /* DAT_fffffe000c5b83a8 quota cap value (hv_vm_create) (est.) */
+
+/* ---- Availability / boot-arg / entitlement ---- */
+extern uint64_t hv_available_flag;  /* DAT_fffffe0007e41db0 hv availability (hv_support_init return) */
+extern uint32_t hv_bootarg_flags;   /* DAT_fffffe0007e255f8 boot-arg enable flags (bit 4 + 0x1010) */
+extern uint64_t hv_bootarg_table;   /* DAT_fffffe0007e9d440 boot-arg descriptor table (+0x6c = hv_apple_isa_vm_quota) (est.) */
+extern uint64_t hv_trace_flag;      /* DAT_fffffe000c68ac90 trace-enable flag, bit 0 (est.) */
+extern uintptr_t cred_ops[];        /* DAT_fffffe0007e93310 credential/sandbox ops table; slot +0x1c0 = entitlement probe */
+extern uint64_t hv_caps_gate;       /* DAT_fffffe000c649750 capability-gate flag (hv_vm_create) (est.) */
+
+/* ---- Shared vm/owner lock + per-CPU bookkeeping ---- */
+extern uint64_t hv_lock;            /* DAT_fffffe000c62c0b8 shared vm/owner lock */
+extern uint64_t hv_cached_cpu_id;   /* DAT_fffffe000c62c0c0 cached per-cpu id */
+extern uint32_t hv_debug_flag;      /* DAT_fffffe000c62b3d0 "pending sync" / lock-storm flag */
+extern uint64_t hv_vcpu_generation; /* DAT_fffffe000c716e40 vcpu generation counter */
+extern uint64_t hv_special_owner_block; /* DAT_fffffe000c62b698 special unrestricted owner block (est.) */
+extern uint64_t hv_flush_lock;      /* DAT_fffffe000c756760 flush/state lock (hv_trap_op_10) (est.) */
+
+/* ---- Object registry / container lists ---- */
+extern uint16_t *hv_object_type_table;   /* DAT_fffffe0007d78658 kernel object-registry type table (stride 0x28) */
+extern uint64_t hv_container_refcount;   /* DAT_fffffe0007d54078 container refcount global (est.) */
+
+/* ---- Zone / allocator descriptors + list heads (0x7d5xxxx region) ---- */
+extern uint64_t hv_vm_zone;          /* DAT_fffffe0007d53eb8 hv vm object zone descriptor (est.) */
+extern uint64_t hv_slot_zone;        /* DAT_fffffe0007d53f78 per-cpu owner slot zone descriptor (est.) */
+extern uint64_t hv_slot_rel_zone;    /* DAT_fffffe0007d53fb8 owner slot release zone descriptor (est.) */
+extern uint64_t hv_vm_rel_zone;      /* DAT_fffffe0007d53ff8 vm unwind/rel zone descriptor (est.) */
+extern uint64_t hv_region_node_zone; /* DAT_fffffe0007d54038 rbtree region-node zone descriptor (est.) */
+extern uint64_t hv_vm_list;          /* DAT_fffffe0007d52478 vm object list head (est.) */
+extern uint64_t hv_owner_list;       /* DAT_fffffe0007d53f38 owner object list head (est.) */
+extern uint64_t hv_slot_list;        /* DAT_fffffe0007d53e38 per-slot registration list head (est.) */
+extern uint64_t hv_obj_list;         /* DAT_fffffe0007d53e78 object global list head (est.) */
+extern uint64_t hv_vm_pool;          /* DAT_fffffe000c5d7068 owner vm pool (est.) */
+
+/* ---- VM_MAP fault-name tables + page-size descriptors ---- */
+extern uint8_t  hv_vm_wire_fault_table[];    /* DAT_fffffe0007d813d8 {int,char*} VM_MAP_WIRE fault table */
+extern uint8_t  hv_vm_unwire_fault_table[];  /* DAT_fffffe0007d81408 {int,char*} VM_MAP_UNWIRE fault table */
+extern uint64_t *hv_page_size_table_1;       /* PTR_PTR_fffffe000c5b3f58 page-size descriptor table 1 */
+extern uint64_t *hv_page_size_table_2;       /* PTR_PTR_fffffe000c5b3f60 page-size descriptor table 2 */
+extern uint64_t *hv_page_size_table_3;       /* PTR_PTR_fffffe000c5b3f68 page-size descriptor table 3 */
+
+/* ---- Task-zone globals (hv_kernel_glue.c current_task) ---- */
+extern uint64_t hv_task_zone_base;   /* DAT_fffffe000c5c5bb0 task-zone base */
+extern uint64_t hv_task_zone_size;   /* DAT_fffffe000c6492c8 task-zone size bound */
+
+/* ---- Boot stack marker (boot path) ---- */
+extern uint64_t boot_stack_marker;   /* DAT_fffffe000c5f0000 boot stack marker */
 
 /* ======================================================================== *
  * (2) hv CROSS-FILE PROTOTYPES — decompiled in another tree's file, called

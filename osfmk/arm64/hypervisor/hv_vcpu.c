@@ -22,10 +22,18 @@ static void __attribute__((noreturn)) panic_hv(const char *msg);
 #define PERCPU_VCPU_SLOT  0x4d8
 #define PERCPU_CPU_ID     0x518
 
-extern uint64_t DAT_fffffe000c62c0c0;  /* cached current cpu id */
-extern uint64_t DAT_fffffe000c62b3d0;  /* debug flag */
-extern uint64_t DAT_fffffe000c62c0b8;  /* per-cpu lock */
-extern uint64_t DAT_fffffe000c716e40;  /* vcpu generation counter */
+extern uint64_t hv_cached_cpu_id;    /* DAT_fffffe000c62c0c0 cached current cpu id */
+extern uint32_t hv_debug_flag;       /* DAT_fffffe000c62b3d0 debug flag */
+extern uint64_t hv_lock;             /* DAT_fffffe000c62c0b8 per-cpu lock */
+extern uint64_t hv_vcpu_generation;  /* DAT_fffffe000c716e40 vcpu generation counter */
+extern uint32_t hv_quota_derived[3]; /* DAT_fffffe000c5b83b0 derived quota copies */
+extern uint64_t hv_slot_list;        /* DAT_fffffe0007d53e38 per-slot registration list head */
+extern uint64_t hv_vm_pool;          /* DAT_fffffe000c5d7068 owner vm pool */
+extern uint64_t hv_vm_list;          /* DAT_fffffe0007d52478 vm object list head */
+extern uint64_t hv_obj_list;         /* DAT_fffffe0007d53e78 object global list head */
+extern uint16_t hv_el2_capable;      /* DAT_fffffe0007e0d81e EL2 feature bit 0 */
+extern uint64_t hv_build_gate;       /* DAT_fffffe0007e0da68 EL2 build-path gate */
+extern uint64_t hv_soc_no_l2;        /* DAT_fffffe0007e0d81c aidr bit 45 (L2-table-absent) */
 
 /* ------------------------------------------------------------------ */
 /* FUN_fffffe000b989040 @ 0xfffffe000b989040   (est. hv_vcpu_create)
@@ -68,15 +76,15 @@ uint64_t hv_vcpu_create(void *user_state)
         return 0xfae94002;             /* a vcpu is already bound here */
 
     /* cache the current cpu id if not done yet */
-    if (DAT_fffffe000c62c0c0 == 0)
-        DAT_fffffe000c62c0c0 = *(uint32_t *)(cpu + PERCPU_CPU_ID);
-    if (DAT_fffffe000c62b3d0 != 0)
-        lock_acquire(&DAT_fffffe000c62c0b8, cpu);   /* FUN_fffffe000b7f0afc */
+    if (hv_cached_cpu_id == 0)                    /* DAT_fffffe000c62c0c0 */
+        hv_cached_cpu_id = *(uint32_t *)(cpu + PERCPU_CPU_ID);
+    if (hv_debug_flag != 0)                       /* DAT_fffffe000c62b3d0 */
+        lock_acquire(&hv_lock, cpu);              /* DAT_fffffe000c62c0b8 FUN_fffffe000b7f0afc */
 
     /* resolve the current container from the per-cpu struct (FUN_fffffe000b866ec4) */
     container = *(void **)(FUN_fffffe000b866ec4(cpu) + 0x628);
     if (container == 0) {
-        lock_release(&DAT_fffffe000c62c0b8);        /* FUN_fffffe000b7f1e4c */
+        lock_release(&hv_lock);         /* DAT_fffffe000c62c0b8 FUN_fffffe000b7f1e4c */
         return 0xfae94006;
     }
 
@@ -91,7 +99,7 @@ uint64_t hv_vcpu_create(void *user_state)
     tmp = *(uint64_t *)(*(uint64_t *)container + 8);
     if (tmp == 0)
         *(uint64_t *)(*(uint64_t *)container + 8) = *(uint32_t *)(cpu + PERCPU_CPU_ID);
-    if (DAT_fffffe000c62b3d0 != 0)
+    if (hv_debug_flag != 0)                         /* DAT_fffffe000c62b3d0 */
         lock_acquire(*(void **)container, cpu);     /* FUN_fffffe000b7f0afc */
 
     /* allocate + init the vcpu: hv_vcpu_alloc_init(&vcpu, container[2], 0) */
@@ -140,8 +148,8 @@ uint64_t hv_vcpu_create(void *user_state)
         panic_hv("vcpu container underflow");
 
     /* bump the global vcpu generation counter and clear the slot status */
-    DAT_fffffe000c716e40 += 1;
-    vcpu_p[0x1b] = DAT_fffffe000c716e40;            /* +0xd8 */
+    hv_vcpu_generation += 1;                        /* DAT_fffffe000c716e40 */
+    vcpu_p[0x1b] = hv_vcpu_generation;              /* DAT_fffffe000c716e40 +0xd8 */
     *(uint8_t *)(*(uint64_t *)vcpu + (uint64_t)*(uint8_t *)((char *)vcpu + 0xf8) * 0x80 + 0x90) = 0;
     *(uint32_t *)(*(uint64_t *)vcpu + (uint64_t)*(uint8_t *)((char *)vcpu + 0xf8) * 0x80 + 0x94) = 0;
 
@@ -288,7 +296,7 @@ void hv_vcpu_object_release(uint64_t *obj)
         type = (*(int *)(obj + 0x425) == 2) ? 1 : 2;
         if (*(int *)(obj + 0x425) == 3)
             type = 2;
-        DAT_fffffe000c5b83b0[type] += 1;            /* (estimate of counter table) */
+        hv_quota_derived[type] += 1;    /* DAT_fffffe000c5b83b0 (estimate of counter table) */
     }
 
     /* resource teardown */
@@ -315,7 +323,7 @@ void hv_vcpu_object_release(uint64_t *obj)
             ent[1] = 0;
             ent[2] = 0;
         }
-        list_remove(&DAT_fffffe0007d53e38, (void *)obj + i);   /* FUN_fffffe000b862b6c */
+        list_remove(&hv_slot_list, (void *)obj + i);   /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
         kfree(obj[i + 0x429], 0);                   /* FUN_fffffe000b862b6c (est.) */
         obj[i + 0x429] = 0;
     }
@@ -323,9 +331,9 @@ void hv_vcpu_object_release(uint64_t *obj)
     /* free the auxiliary allocations and the object header */
     FUN_fffffe000b8627ac(0, obj[0x410]);
     FUN_fffffe000b8afa78(obj[0x424]);
-    FUN_fffffe000b7f09dc(*obj, &DAT_fffffe000c5d7068);
-    list_remove(&DAT_fffffe0007d52478, obj);
-    list_remove(&DAT_fffffe0007d53e78, obj);
+    FUN_fffffe000b7f09dc(*obj, &hv_vm_pool);   /* DAT_fffffe000c5d7068 */
+    list_remove(&hv_vm_list, obj);             /* DAT_fffffe0007d52478 */
+    list_remove(&hv_obj_list, obj);            /* DAT_fffffe0007d53e78 */
 }
 
 /* ------------------------------------------------------------------ */
@@ -497,7 +505,7 @@ done:
  * Confidence: medium
  * Notes: dozens of UnkSytemRegRead encodings — op1=4/5/6 ⇒ EL2/EL3 sysregs;
  *   the identity of each is unverified; dirty bitset at el2+0x4118; feature
- *   flags DAT_fffffe0007e0d81e / DAT_fffffe0007e0da68 gate conditional reads;
+ *   flags hv_el2_capable (DAT_fffffe0007e0d81e) / hv_build_gate (DAT_fffffe0007e0da68) gate conditional reads;
  *   AMX enable/disable via UnkSytemRegRead/Write(3,4,0xf,1,4) + ISB;
  *   halt_baddata() on the unreachable block at 0xfffffe000b98843c. */
 void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
@@ -536,9 +544,9 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
         *(es + 0x438) = UnkSytemRegRead(3,5,5,1,1);
         *(es + 0x440) = UnkSytemRegRead(3,5,0xd,0,1);
         *(es + 0x460) = UnkSytemRegRead(3,4,0xc,0xb,7);
-        if ((DAT_fffffe0007e0d81e & 1) != 0)
+        if ((hv_el2_capable & 1) != 0)
             *(es + 0x468) = UnkSytemRegRead(3,5,0xd,0,7);
-        if (DAT_fffffe0007e0da68 != 0)
+        if (hv_build_gate != 0)
             *(es + 0x470) = UnkSytemRegRead(3,5,1,2,6);
         *(uint64_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x870) = UnkSytemRegRead(3,4,0xf,2,6);
     }
@@ -588,7 +596,7 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
         /* zero the SME save state (guarded by 0x4140/0x4148 fields) */
         if (*(uint16_t *)(*(uint64_t *)((char *)vcpu + 0xb0) + 0x4140) != 0)
             halt_baddata();
-        if (1 < DAT_fffffe0007e0da68)
+        if (1 < hv_build_gate)
             halt_baddata();
         for (int i = 0; i < 8; i++) r[i] = 0;
     }
@@ -604,7 +612,7 @@ void hv_vcpu_save_el2_state(hv_vcpu_t *vcpu, uint64_t dirty_mask)
         /* CNTHPS / EL2 timer group at 0x950..0x9c8 */
         es = *(uint64_t **)((char *)vcpu + 0xb0);
         *(es + 0x950) = UnkSytemRegRead(3,6,0xf,0xf,4);
-        if ((DAT_fffffe0007e0d81c & 1) != 0)
+        if ((hv_soc_no_l2 & 1) != 0)
             *(es + 0x958) = UnkSytemRegRead(3,6,0xf,0xf,5);
         *(es + 0x960) = UnkSytemRegRead(3,6,0xf,0xf,7);
         *(es + 0x968) = UnkSytemRegRead(3,4,0xf,5,2);

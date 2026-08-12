@@ -89,12 +89,12 @@ void hv_el2_state_build(struct hv_vm *vm, uint8_t *el2, uint32_t flags)
     sysreg = UnkSytemRegRead(3,4,0xc,0xb,1);     /* op1=4 ⇒ EL2; identity unverified */
     EL2_RW(el2, HV_EL2_VBAR, sysreg & 0xffffffff);   /* +0x4120 */
 
-    if (DAT_fffffe0007e0da68 == 0) {             /* runtime: 0 (feature global) */
+    if (hv_build_gate == 0) {                    /* runtime: 0 (feature global) */
         EL2_RW(el2, 0x4148, 0);
         sctlr_mask = cfg->sctlr_mask;            /* +0x2088 */
         EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x0, sctlr_mask | 0x100000);   /* sctlr (est) */
         EL2_RW(el2, HV_EL2_TMPL_BASE + 0x0, 0x30000100000);
-        if ((DAT_fffffe0007e0d81e & 1) != 0) {   /* feature bit 0 */
+        if ((hv_el2_capable & 1) != 0) {         /* feature bit 0 */
             EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x0, sctlr_mask | 0x20000000100000);
             EL2_RW(el2, HV_EL2_TMPL_BASE + 0x0,
                    EL2_RD(el2, HV_EL2_TMPL_BASE + 0x0) | 0x20000000000000);
@@ -126,7 +126,7 @@ void hv_el2_state_build(struct hv_vm *vm, uint8_t *el2, uint32_t flags)
         EL2_RW(el2, HV_EL2_TMPL_BASE + 0x50, 0);
         EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x58, 0);
         EL2_RW(el2, HV_EL2_TMPL_BASE + 0x58, 0);
-        EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x60, DAT_fffffe0007e0d800);  /* +0x4090: EL2 features */
+        EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x60, hv_el2_features);  /* DAT_fffffe0007e0d800 +0x4090: EL2 features */
         EL2_RW(el2, HV_EL2_TMPL_BASE + 0x60, 0);
         EL2_RW(el2, HV_EL2_ACTIVE_BASE + 0x68, 0);
         EL2_RW(el2, HV_EL2_TMPL_BASE + 0x68, 0);
@@ -146,7 +146,7 @@ void hv_el2_state_build(struct hv_vm *vm, uint8_t *el2, uint32_t flags)
         sysreg = UnkSytemRegRead(3,4,0xf,0xc,0); /* op1=4 ⇒ EL2; identity unverified */
         EL2_RW(el2, HV_EL2_SYSREG, sysreg);      /* +0x9f0 */
         EL2_RW(el2, HV_EL2_VER, 3);              /* +0xa28 */
-        if (4 < DAT_fffffe0007e31628) {          /* SoC feature index */
+        if (4 < hv_soc_feature_index) {          /* SoC feature index */
             EL2_RW(el2, HV_EL2_TCR, EL2_RD(el2, HV_EL2_TCR) & 0xfffffffffffbffffULL);
         }
         EL2_RW(el2, HV_EL2_HIPR, 0xffffffffffffffffULL);       /* +0x4108 */
@@ -317,7 +317,7 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len)
                              &prot2, &prot, 2);            /* FUN_fffffe000b8b51c8 */
     if (kr == 0) {
         kr = kernel_copyin(0, (uint64_t)*dst, (uint64_t)*dst + len, 3, 0x1c,
-                           0, 0, (uint64_t *)&DAT_fffffe0007d813d8);
+                           0, 0, (uint64_t *)&hv_vm_wire_fault_table);
         /* FUN_fffffe000b8afb18 */
         if (kr == 0) {
             return 0;
@@ -424,7 +424,7 @@ uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which)
 
 commit:
     kr = kernel_copyin2(0, buf, count + len + buf, 0,
-                        (uint64_t *)&DAT_fffffe0007d81408);  /* FUN_fffffe000b8b122c */
+                        (uint64_t *)&hv_vm_unwire_fault_table);  /* FUN_fffffe000b8b122c */
     if (kr != 0) ret = 0xfae94001;
     kr = kernel_mem_release(0, buf, count + len);          /* FUN_fffffe000b8a8078 */
     if (kr != 0) ret = 0xfae94001;
