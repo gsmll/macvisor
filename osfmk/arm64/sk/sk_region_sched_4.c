@@ -31,7 +31,7 @@ typedef uint16_t ushort;
 typedef uint32_t uint;
 typedef uint64_t ulong;
 typedef float float2;
-typedef void (*code)(void);        /* Ghidra `code` = function pointer */
+typedef void (*code)();        /* Ghidra `code` = function pointer (unspecified params) */
 
 /* Ghidra ABS / CONCAT builtins used in the transcription. */
 #define ABS(x)      ((x) < 0 ? -(x) : (x))
@@ -55,7 +55,7 @@ extern void sk_rt_hook_h();   /* FUN_0034c908 no-op */
 extern void sk_rt_hook_i();   /* FUN_00349c70 no-op */
 extern uint64_t sk_rt_hook_j();   /* FUN_00357e14 no-op */
 extern void sk_rt_hook_k();   /* FUN_003517b4 no-op */
-extern uint64_t sk_rt_hook_l();   /* FUN_0007c0c4 no-op */
+extern sk_r4_u128_t sk_rt_hook_l();   /* FUN_0007c0c4 no-op */
 extern sk_r4_u128_t sk_rt_hook_m();   /* FUN_000b43d0 no-op */
 extern void sk_rt_hook_n();   /* FUN_0034b07c no-op */
 extern uint64_t sk_rt_hook_o();   /* FUN_0034b328 no-op */
@@ -72,827 +72,824 @@ extern void sk_rt_hook_y();   /* FUN_0034ce78 no-op */
 extern void sk_rt_hook_z();   /* FUN_00343a30 no-op */
 
 /* Swift runtime fatalError and tag machinery. */
-extern void sk_fatal_error(void *msg, unsigned long len, unsigned long n,
-                           unsigned long a, unsigned long b, void *file,
-                           unsigned long flen, unsigned long m) __attribute__((noreturn)); /* FUN_001afa84 */
-extern sk_r4_u128_t sk_fatal_msg_tag(void);                          /* FUN_003495cc */
+extern void sk_fatal_error() __attribute__((noreturn)); /* FUN_001afa84 */
+extern sk_r4_u128_t sk_fatal_msg_tag();                          /* FUN_003495cc */
 
 /* Allocator / lock / refcount primitives. */
-extern void *sk_alloc(unsigned long size, unsigned long tag);        /* FUN_0036a908 */
-extern void sk_free(void *ptr);                                      /* FUN_0036b118 */
-extern unsigned long sk_alloc_pages(unsigned long size, unsigned long tag); /* FUN_0036b270 */
-extern unsigned long sk_object_lock(unsigned long a, unsigned long b, unsigned long c,
-                                    void *d1, void *d2);             /* FUN_00377824 */
-extern unsigned long sk_lock_ref(unsigned long a);                   /* FUN_00377bec */
-extern void *sk_current_tcb(void);                                   /* FUN_000867ec */
-extern void *sk_cpu(void);                                           /* FUN_0008e518 */
-extern void sk_swift_release(void *obj);                             /* FUN_000026e8 */
-extern void sk_masked_free(unsigned long ptr);                       /* FUN_003a25d4 */
+extern void *sk_alloc();        /* FUN_0036a908 */
+extern void sk_free();                                      /* FUN_0036b118 */
+extern unsigned long sk_alloc_pages(); /* FUN_0036b270 */
+extern unsigned long sk_object_lock();             /* FUN_00377824 */
+extern unsigned long sk_lock_ref();                   /* FUN_00377bec */
+extern void *sk_current_tcb();                                   /* FUN_000867ec */
+extern void *sk_cpu();                                           /* FUN_0008e518 */
+extern void sk_swift_release();                             /* FUN_000026e8 */
+extern void sk_masked_free();                       /* FUN_003a25d4 */
 extern uint64_t sk_enum_err();                            /* FUN_0006e778 */
 extern uint64_t sk_rt_dispatch();                                    /* FUN_00310d68 */
-extern void *sk_rt_desc(void);                                       /* FUN_00002534 */
-extern void sk_rt_slot(void);                                        /* FUN_0007c1a4 */
-extern void sk_rt_slot2(void);                                       /* FUN_0034b7c8 */
-extern void sk_rt_slot3(void);                                       /* FUN_0034a390 */
+extern uint64_t sk_rt_desc();                                       /* FUN_00002534 */
+extern void sk_rt_slot();                                        /* FUN_0007c1a4 */
+extern void sk_rt_slot2();                                       /* FUN_0034b7c8 */
+extern void sk_rt_slot3();                                       /* FUN_0034a390 */
 
 /* Remaining out-of-slice helpers (one-line extern each; FUN_ address in comment). */
-extern void sk_h_00019858(void);  /* FUN_00019858 out-of-slice */
-extern void sk_h_0006a4c0(uint64_t a1, uint64_t a2);  /* FUN_0006a4c0 out-of-slice */
-extern void sk_h_0006a4f0(void);  /* FUN_0006a4f0 out-of-slice */
-extern void sk_h_0006a668(uint64_t a1);  /* FUN_0006a668 out-of-slice */
-extern void sk_h_0006b42c(void);  /* FUN_0006b42c out-of-slice */
-extern void sk_h_0006b6f4(void);  /* FUN_0006b6f4 out-of-slice */
-extern void sk_h_0006f6b4(void);  /* FUN_0006f6b4 out-of-slice */
-extern void sk_h_00077070(uint64_t a1, uint64_t a2);  /* FUN_00077070 out-of-slice */
-extern void sk_h_0007767c(uint64_t a1);  /* FUN_0007767c out-of-slice */
+extern void sk_h_00019858();  /* FUN_00019858 out-of-slice */
+extern void sk_h_0006a4c0();  /* FUN_0006a4c0 out-of-slice */
+extern void sk_h_0006a4f0();  /* FUN_0006a4f0 out-of-slice */
+extern void sk_h_0006a668();  /* FUN_0006a668 out-of-slice */
+extern void sk_h_0006b42c();  /* FUN_0006b42c out-of-slice */
+extern void sk_h_0006b6f4();  /* FUN_0006b6f4 out-of-slice */
+extern void sk_h_0006f6b4();  /* FUN_0006f6b4 out-of-slice */
+extern void sk_h_00077070();  /* FUN_00077070 out-of-slice */
+extern void sk_h_0007767c();  /* FUN_0007767c out-of-slice */
 extern sk_r4_u128_t sk_h_00077698();  /* FUN_00077698 out-of-slice */
-extern void sk_h_0007b384(uint64_t a1);  /* FUN_0007b384 out-of-slice */
+extern void sk_h_0007b384();  /* FUN_0007b384 out-of-slice */
 extern long sk_h_0007c198();  /* FUN_0007c198 out-of-slice */
 extern sk_r4_u128_t sk_h_0007c1c4();  /* FUN_0007c1c4 out-of-slice */
-extern void sk_h_000836a4(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_000836a4 out-of-slice */
-extern void sk_h_000839d8(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4);  /* FUN_000839d8 out-of-slice */
+extern void sk_h_000836a4();  /* FUN_000836a4 out-of-slice */
+extern void sk_h_000839d8();  /* FUN_000839d8 out-of-slice */
 extern int sk_h_000839f8();  /* FUN_000839f8 out-of-slice */
-extern void sk_h_0008409c(void);  /* FUN_0008409c out-of-slice */
-extern void sk_h_00084174(uint64_t a1);  /* FUN_00084174 out-of-slice */
-extern void sk_h_00084180(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00084180 out-of-slice */
+extern void sk_h_0008409c();  /* FUN_0008409c out-of-slice */
+extern void sk_h_00084174();  /* FUN_00084174 out-of-slice */
+extern void sk_h_00084180();  /* FUN_00084180 out-of-slice */
 extern sk_r4_u128_t sk_h_0008dae4();  /* FUN_0008dae4 out-of-slice */
 extern sk_r4_u128_t sk_h_0008e388();  /* FUN_0008e388 out-of-slice */
-extern void sk_h_0008e500(uint64_t a1, uint64_t a2);  /* FUN_0008e500 out-of-slice */
-extern void sk_h_0008e5d8(void);  /* FUN_0008e5d8 out-of-slice */
-extern void sk_h_0009461c(void);  /* FUN_0009461c out-of-slice */
-extern void sk_h_0009e234(uint64_t a1);  /* FUN_0009e234 out-of-slice */
-extern void sk_h_000a649c(uint64_t a1);  /* FUN_000a649c out-of-slice */
-extern void sk_h_000a6bb8(uint64_t a1);  /* FUN_000a6bb8 out-of-slice */
+extern void sk_h_0008e500();  /* FUN_0008e500 out-of-slice */
+extern void sk_h_0008e5d8();  /* FUN_0008e5d8 out-of-slice */
+extern void sk_h_0009461c();  /* FUN_0009461c out-of-slice */
+extern void sk_h_0009e234();  /* FUN_0009e234 out-of-slice */
+extern void sk_h_000a649c();  /* FUN_000a649c out-of-slice */
+extern void sk_h_000a6bb8();  /* FUN_000a6bb8 out-of-slice */
 extern sk_r4_u128_t sk_h_000a6e14();  /* FUN_000a6e14 out-of-slice */
-extern void sk_h_000a6f88(void);  /* FUN_000a6f88 out-of-slice */
-extern void sk_h_000b077c(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_000b077c out-of-slice */
-extern void sk_h_000b43e8(void);  /* FUN_000b43e8 out-of-slice */
-extern void sk_h_000b4594(void);  /* FUN_000b4594 out-of-slice */
-extern void sk_h_000b45b0(uint64_t a1);  /* FUN_000b45b0 out-of-slice */
-extern void sk_h_000bd3a4(uint64_t a1);  /* FUN_000bd3a4 out-of-slice */
-extern void sk_h_000dbc54(uint64_t a1);  /* FUN_000dbc54 out-of-slice */
-extern void sk_h_000dbcc8(uint64_t a1, uint64_t a2);  /* FUN_000dbcc8 out-of-slice */
-extern void sk_h_000dbd0c(uint64_t a1);  /* FUN_000dbd0c out-of-slice */
+extern void sk_h_000a6f88();  /* FUN_000a6f88 out-of-slice */
+extern void sk_h_000b077c();  /* FUN_000b077c out-of-slice */
+extern void sk_h_000b43e8();  /* FUN_000b43e8 out-of-slice */
+extern void sk_h_000b4594();  /* FUN_000b4594 out-of-slice */
+extern void sk_h_000b45b0();  /* FUN_000b45b0 out-of-slice */
+extern void sk_h_000bd3a4();  /* FUN_000bd3a4 out-of-slice */
+extern void sk_h_000dbc54();  /* FUN_000dbc54 out-of-slice */
+extern void sk_h_000dbcc8();  /* FUN_000dbcc8 out-of-slice */
+extern void sk_h_000dbd0c();  /* FUN_000dbd0c out-of-slice */
 extern uint64_t sk_h_000dbdf4();  /* FUN_000dbdf4 out-of-slice */
-extern void sk_h_000dbe70(uint64_t a1);  /* FUN_000dbe70 out-of-slice */
-extern void sk_h_000e15d8(void);  /* FUN_000e15d8 out-of-slice */
+extern void sk_h_000dbe70();  /* FUN_000dbe70 out-of-slice */
+extern void sk_h_000e15d8();  /* FUN_000e15d8 out-of-slice */
 extern sk_r4_u128_t sk_h_000e72b0();  /* FUN_000e72b0 out-of-slice */
-extern void sk_h_000ec044(void);  /* FUN_000ec044 out-of-slice */
-extern void sk_h_000f5e08(void);  /* FUN_000f5e08 out-of-slice */
-extern void sk_h_00100c38(uint64_t a1);  /* FUN_00100c38 out-of-slice */
-extern void sk_h_0011aa70(void);  /* FUN_0011aa70 out-of-slice */
-extern void sk_h_00163418(uint64_t a1);  /* FUN_00163418 out-of-slice */
-extern void sk_h_0017e880(void);  /* FUN_0017e880 out-of-slice */
-extern void sk_h_0019de9c(void);  /* FUN_0019de9c out-of-slice */
-extern void sk_h_0019dfc4(void);  /* FUN_0019dfc4 out-of-slice */
-extern void sk_h_0019ea20(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0019ea20 out-of-slice */
-extern void sk_h_001a0a70(void);  /* FUN_001a0a70 out-of-slice */
-extern void sk_h_001a18f8(uint64_t a1);  /* FUN_001a18f8 out-of-slice */
+extern void sk_h_000ec044();  /* FUN_000ec044 out-of-slice */
+extern void sk_h_000f5e08();  /* FUN_000f5e08 out-of-slice */
+extern sk_r4_u128_t sk_h_00100c38();  /* FUN_00100c38 out-of-slice */
+extern void sk_h_0011aa70();  /* FUN_0011aa70 out-of-slice */
+extern void sk_h_00163418();  /* FUN_00163418 out-of-slice */
+extern void sk_h_0017e880();  /* FUN_0017e880 out-of-slice */
+extern void sk_h_0019de9c();  /* FUN_0019de9c out-of-slice */
+extern void sk_h_0019dfc4();  /* FUN_0019dfc4 out-of-slice */
+extern void sk_h_0019ea20();  /* FUN_0019ea20 out-of-slice */
+extern void sk_h_001a0a70();  /* FUN_001a0a70 out-of-slice */
+extern void sk_h_001a18f8();  /* FUN_001a18f8 out-of-slice */
 extern sk_r4_u128_t sk_h_001a89a8();  /* FUN_001a89a8 out-of-slice */
-extern void sk_h_001afe4c(void);  /* FUN_001afe4c out-of-slice */
-extern void sk_h_001ba83c(void);  /* FUN_001ba83c out-of-slice */
-extern void sk_h_001bb234(uint64_t a1);  /* FUN_001bb234 out-of-slice */
-extern void sk_h_001bdb28(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5);  /* FUN_001bdb28 out-of-slice */
+extern void sk_h_001afe4c();  /* FUN_001afe4c out-of-slice */
+extern void sk_h_001ba83c();  /* FUN_001ba83c out-of-slice */
+extern void sk_h_001bb234();  /* FUN_001bb234 out-of-slice */
+extern void sk_h_001bdb28();  /* FUN_001bdb28 out-of-slice */
 extern sk_r4_u128_t sk_h_001d9840();  /* FUN_001d9840 out-of-slice */
-extern void sk_h_001dc430(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_001dc430 out-of-slice */
+extern void sk_h_001dc430();  /* FUN_001dc430 out-of-slice */
 extern sk_r4_u128_t sk_h_001e4cbc();  /* FUN_001e4cbc out-of-slice */
-extern void sk_h_001efdc4(void);  /* FUN_001efdc4 out-of-slice */
+extern void sk_h_001efdc4();  /* FUN_001efdc4 out-of-slice */
 extern uint64_t sk_h_001efe44();  /* FUN_001efe44 out-of-slice */
-extern void sk_h_001f6b30(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5);  /* FUN_001f6b30 out-of-slice */
-extern void sk_h_001fca54(uint64_t a1, uint64_t a2);  /* FUN_001fca54 out-of-slice */
-extern void sk_h_00205844(uint64_t a1, uint64_t a2);  /* FUN_00205844 out-of-slice */
-extern void sk_h_00208418(uint64_t a1, uint64_t a2);  /* FUN_00208418 out-of-slice */
-extern void sk_h_00229464(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00229464 out-of-slice */
-extern void sk_h_0022d1b4(uint64_t a1, uint64_t a2);  /* FUN_0022d1b4 out-of-slice */
-extern void sk_h_002364dc(void);  /* FUN_002364dc out-of-slice */
-extern void sk_h_00267820(void);  /* FUN_00267820 out-of-slice */
-extern void sk_h_0026aa7c(void);  /* FUN_0026aa7c out-of-slice */
-extern void sk_h_0028adc4(void);  /* FUN_0028adc4 out-of-slice */
+extern void sk_h_001f6b30();  /* FUN_001f6b30 out-of-slice */
+extern void sk_h_001fca54();  /* FUN_001fca54 out-of-slice */
+extern void sk_h_00205844();  /* FUN_00205844 out-of-slice */
+extern void sk_h_00208418();  /* FUN_00208418 out-of-slice */
+extern void sk_h_00229464();  /* FUN_00229464 out-of-slice */
+extern void sk_h_0022d1b4();  /* FUN_0022d1b4 out-of-slice */
+extern void sk_h_002364dc();  /* FUN_002364dc out-of-slice */
+extern void sk_h_00267820();  /* FUN_00267820 out-of-slice */
+extern void sk_h_0026aa7c();  /* FUN_0026aa7c out-of-slice */
+extern void sk_h_0028adc4();  /* FUN_0028adc4 out-of-slice */
 extern long sk_h_002a218c();  /* FUN_002a218c out-of-slice */
-extern void sk_h_002a2698(void);  /* FUN_002a2698 out-of-slice */
-extern void sk_h_002a2748(void);  /* FUN_002a2748 out-of-slice */
-extern void sk_h_002a4c98(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4);  /* FUN_002a4c98 out-of-slice */
+extern void sk_h_002a2698();  /* FUN_002a2698 out-of-slice */
+extern void sk_h_002a2748();  /* FUN_002a2748 out-of-slice */
+extern void sk_h_002a4c98();  /* FUN_002a4c98 out-of-slice */
 extern sk_r4_u128_t sk_h_002a9ba8();  /* FUN_002a9ba8 out-of-slice */
-extern void sk_h_002b2078(void);  /* FUN_002b2078 out-of-slice */
-extern void sk_h_002e7eb4(uint64_t a1, uint64_t a2);  /* FUN_002e7eb4 out-of-slice */
-extern void sk_h_002e9850(uint64_t a1, uint64_t a2);  /* FUN_002e9850 out-of-slice */
-extern void sk_h_003198fc(uint64_t a1);  /* FUN_003198fc out-of-slice */
-extern void sk_h_00319a14(void);  /* FUN_00319a14 out-of-slice */
+extern void sk_h_002b2078();  /* FUN_002b2078 out-of-slice */
+extern void sk_h_002e7eb4();  /* FUN_002e7eb4 out-of-slice */
+extern void sk_h_002e9850();  /* FUN_002e9850 out-of-slice */
+extern void sk_h_003198fc();  /* FUN_003198fc out-of-slice */
+extern void sk_h_00319a14();  /* FUN_00319a14 out-of-slice */
 extern uint64_t sk_h_00319a4c();  /* FUN_00319a4c out-of-slice */
-extern void sk_h_00319a90(uint64_t a1);  /* FUN_00319a90 out-of-slice */
+extern void sk_h_00319a90();  /* FUN_00319a90 out-of-slice */
 extern uint64_t sk_h_00319aec();  /* FUN_00319aec out-of-slice */
-extern void sk_h_00319b1c(uint64_t a1);  /* FUN_00319b1c out-of-slice */
+extern uint64_t sk_h_00319b1c();  /* FUN_00319b1c out-of-slice */
 extern uint64_t sk_h_00319b4c();  /* FUN_00319b4c out-of-slice */
 extern uint64_t sk_h_00319b7c();  /* FUN_00319b7c out-of-slice */
 extern uint64_t sk_h_00319bac();  /* FUN_00319bac out-of-slice */
-extern void sk_h_00319bdc(void);  /* FUN_00319bdc out-of-slice */
+extern void sk_h_00319bdc();  /* FUN_00319bdc out-of-slice */
 extern uint64_t sk_h_00319c0c();  /* FUN_00319c0c out-of-slice */
-extern void sk_h_00319c3c(void);  /* FUN_00319c3c out-of-slice */
-extern void sk_h_0031a0ec(void);  /* FUN_0031a0ec out-of-slice */
-extern void sk_h_0031a11c(void);  /* FUN_0031a11c out-of-slice */
+extern void sk_h_00319c3c();  /* FUN_00319c3c out-of-slice */
+extern void sk_h_0031a0ec();  /* FUN_0031a0ec out-of-slice */
+extern void sk_h_0031a11c();  /* FUN_0031a11c out-of-slice */
 extern uint64_t sk_h_0031a14c();  /* FUN_0031a14c out-of-slice */
-extern void sk_h_0031a17c(uint64_t a1);  /* FUN_0031a17c out-of-slice */
-extern void sk_h_0031a1ac(void);  /* FUN_0031a1ac out-of-slice */
+extern void sk_h_0031a17c();  /* FUN_0031a17c out-of-slice */
+extern void sk_h_0031a1ac();  /* FUN_0031a1ac out-of-slice */
 extern sk_r4_u128_t sk_h_0031a1dc();  /* FUN_0031a1dc out-of-slice */
-extern void sk_h_0031a1f4(uint64_t a1, uint64_t a2);  /* FUN_0031a1f4 out-of-slice */
-extern void sk_h_0031a26c(uint64_t a1);  /* FUN_0031a26c out-of-slice */
-extern void sk_h_0031a2b4(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0031a2b4 out-of-slice */
+extern sk_r4_u128_t sk_h_0031a1f4();  /* FUN_0031a1f4 out-of-slice */
+extern void sk_h_0031a26c();  /* FUN_0031a26c out-of-slice */
+extern void sk_h_0031a2b4();  /* FUN_0031a2b4 out-of-slice */
 extern uint64_t sk_h_0031a2cc();  /* FUN_0031a2cc out-of-slice */
-extern void sk_h_0031a2fc(uint64_t a1);  /* FUN_0031a2fc out-of-slice */
-extern void sk_h_0031a32c(uint64_t a1);  /* FUN_0031a32c out-of-slice */
-extern void sk_h_0031a35c(uint64_t a1);  /* FUN_0031a35c out-of-slice */
-extern void sk_h_0031a38c(void);  /* FUN_0031a38c out-of-slice */
-extern void sk_h_0031a44c(void);  /* FUN_0031a44c out-of-slice */
-extern void sk_h_0031a4ac(void);  /* FUN_0031a4ac out-of-slice */
-extern void sk_h_0031a56c(void);  /* FUN_0031a56c out-of-slice */
-extern void sk_h_0031a5dc(uint64_t a1);  /* FUN_0031a5dc out-of-slice */
-extern void sk_h_0031a60c(uint64_t a1);  /* FUN_0031a60c out-of-slice */
-extern void sk_h_0031a6cc(uint64_t a1);  /* FUN_0031a6cc out-of-slice */
-extern void sk_h_0031b2bc(uint64_t a1);  /* FUN_0031b2bc out-of-slice */
-extern void sk_h_0031b46c(void);  /* FUN_0031b46c out-of-slice */
-extern void sk_h_0031bc70(uint64_t a1);  /* FUN_0031bc70 out-of-slice */
+extern void sk_h_0031a2fc();  /* FUN_0031a2fc out-of-slice */
+extern void sk_h_0031a32c();  /* FUN_0031a32c out-of-slice */
+extern void sk_h_0031a35c();  /* FUN_0031a35c out-of-slice */
+extern void sk_h_0031a38c();  /* FUN_0031a38c out-of-slice */
+extern void sk_h_0031a44c();  /* FUN_0031a44c out-of-slice */
+extern void sk_h_0031a4ac();  /* FUN_0031a4ac out-of-slice */
+extern void sk_h_0031a56c();  /* FUN_0031a56c out-of-slice */
+extern void sk_h_0031a5dc();  /* FUN_0031a5dc out-of-slice */
+extern void sk_h_0031a60c();  /* FUN_0031a60c out-of-slice */
+extern void sk_h_0031a6cc();  /* FUN_0031a6cc out-of-slice */
+extern void sk_h_0031b2bc();  /* FUN_0031b2bc out-of-slice */
+extern void sk_h_0031b46c();  /* FUN_0031b46c out-of-slice */
+extern void sk_h_0031bc70();  /* FUN_0031bc70 out-of-slice */
 extern uint64_t sk_h_0034310c();  /* FUN_0034310c out-of-slice */
-extern void sk_h_00343250(uint64_t a1);  /* FUN_00343250 out-of-slice */
-extern void sk_h_00343640(uint64_t a1);  /* FUN_00343640 out-of-slice */
-extern void sk_h_00344d4c(uint64_t a1, uint64_t a2);  /* FUN_00344d4c out-of-slice */
-extern void sk_h_00347e28(void);  /* FUN_00347e28 out-of-slice */
-extern void sk_h_00348160(void);  /* FUN_00348160 out-of-slice */
-extern void sk_h_00348304(void);  /* FUN_00348304 out-of-slice */
-extern void sk_h_0034846c(void);  /* FUN_0034846c out-of-slice */
-extern void sk_h_003484b4(void);  /* FUN_003484b4 out-of-slice */
+extern void sk_h_00343250();  /* FUN_00343250 out-of-slice */
+extern void sk_h_00343640();  /* FUN_00343640 out-of-slice */
+extern void sk_h_00344d4c();  /* FUN_00344d4c out-of-slice */
+extern void sk_h_00347e28();  /* FUN_00347e28 out-of-slice */
+extern void sk_h_00348160();  /* FUN_00348160 out-of-slice */
+extern void sk_h_00348304();  /* FUN_00348304 out-of-slice */
+extern void sk_h_0034846c();  /* FUN_0034846c out-of-slice */
+extern void sk_h_003484b4();  /* FUN_003484b4 out-of-slice */
 extern sk_r4_u128_t sk_h_00348730();  /* FUN_00348730 out-of-slice */
 extern uint64_t sk_h_00348758();  /* FUN_00348758 out-of-slice */
-extern void sk_h_00348898(uint64_t a1);  /* FUN_00348898 out-of-slice */
-extern void sk_h_003489c0(void);  /* FUN_003489c0 out-of-slice */
-extern void sk_h_00348a18(void);  /* FUN_00348a18 out-of-slice */
-extern void sk_h_00348a34(void);  /* FUN_00348a34 out-of-slice */
-extern void sk_h_00348a80(void);  /* FUN_00348a80 out-of-slice */
-extern void sk_h_00348abc(void);  /* FUN_00348abc out-of-slice */
-extern void sk_h_00348cd0(void);  /* FUN_00348cd0 out-of-slice */
-extern void sk_h_00348ce8(void);  /* FUN_00348ce8 out-of-slice */
-extern void sk_h_00348d4c(void);  /* FUN_00348d4c out-of-slice */
-extern void sk_h_00348d64(void);  /* FUN_00348d64 out-of-slice */
-extern void sk_h_00348d7c(void);  /* FUN_00348d7c out-of-slice */
-extern void sk_h_00348e18(void);  /* FUN_00348e18 out-of-slice */
-extern void sk_h_00348e48(void);  /* FUN_00348e48 out-of-slice */
-extern void sk_h_00348e60(void);  /* FUN_00348e60 out-of-slice */
+extern void sk_h_00348898();  /* FUN_00348898 out-of-slice */
+extern void sk_h_003489c0();  /* FUN_003489c0 out-of-slice */
+extern void sk_h_00348a18();  /* FUN_00348a18 out-of-slice */
+extern void sk_h_00348a34();  /* FUN_00348a34 out-of-slice */
+extern void sk_h_00348a80();  /* FUN_00348a80 out-of-slice */
+extern void sk_h_00348abc();  /* FUN_00348abc out-of-slice */
+extern void sk_h_00348cd0();  /* FUN_00348cd0 out-of-slice */
+extern void sk_h_00348ce8();  /* FUN_00348ce8 out-of-slice */
+extern void sk_h_00348d4c();  /* FUN_00348d4c out-of-slice */
+extern void sk_h_00348d64();  /* FUN_00348d64 out-of-slice */
+extern void sk_h_00348d7c();  /* FUN_00348d7c out-of-slice */
+extern void sk_h_00348e18();  /* FUN_00348e18 out-of-slice */
+extern void sk_h_00348e48();  /* FUN_00348e48 out-of-slice */
+extern void sk_h_00348e60();  /* FUN_00348e60 out-of-slice */
 extern long sk_h_00348f50();  /* FUN_00348f50 out-of-slice */
-extern void sk_h_00349068(void);  /* FUN_00349068 out-of-slice */
-extern void sk_h_00349150(void);  /* FUN_00349150 out-of-slice */
-extern void sk_h_003493ac(void);  /* FUN_003493ac out-of-slice */
-extern void sk_h_003493c4(void);  /* FUN_003493c4 out-of-slice */
-extern void sk_h_0034945c(void);  /* FUN_0034945c out-of-slice */
+extern void sk_h_00349068();  /* FUN_00349068 out-of-slice */
+extern void sk_h_00349150();  /* FUN_00349150 out-of-slice */
+extern void sk_h_003493ac();  /* FUN_003493ac out-of-slice */
+extern void sk_h_003493c4();  /* FUN_003493c4 out-of-slice */
+extern void sk_h_0034945c();  /* FUN_0034945c out-of-slice */
 extern long sk_h_0034947c();  /* FUN_0034947c out-of-slice */
-extern void sk_h_00349494(void);  /* FUN_00349494 out-of-slice */
-extern void sk_h_003494e8(void);  /* FUN_003494e8 out-of-slice */
-extern void sk_h_00349580(uint64_t a1);  /* FUN_00349580 out-of-slice */
-extern void sk_h_00349600(void);  /* FUN_00349600 out-of-slice */
-extern void sk_h_00349658(void);  /* FUN_00349658 out-of-slice */
-extern void sk_h_00349720(void);  /* FUN_00349720 out-of-slice */
-extern void sk_h_00349734(void);  /* FUN_00349734 out-of-slice */
-extern void sk_h_00349788(void);  /* FUN_00349788 out-of-slice */
+extern void sk_h_00349494();  /* FUN_00349494 out-of-slice */
+extern void sk_h_003494e8();  /* FUN_003494e8 out-of-slice */
+extern void sk_h_00349580();  /* FUN_00349580 out-of-slice */
+extern void sk_h_00349600();  /* FUN_00349600 out-of-slice */
+extern void sk_h_00349658();  /* FUN_00349658 out-of-slice */
+extern void sk_h_00349720();  /* FUN_00349720 out-of-slice */
+extern void sk_h_00349734();  /* FUN_00349734 out-of-slice */
+extern void sk_h_00349788();  /* FUN_00349788 out-of-slice */
 extern long sk_h_003497b4();  /* FUN_003497b4 out-of-slice */
-extern void sk_h_003497c8(uint64_t a1, uint64_t a2);  /* FUN_003497c8 out-of-slice */
-extern void sk_h_003497ec(void);  /* FUN_003497ec out-of-slice */
-extern void sk_h_0034995c(uint64_t a1);  /* FUN_0034995c out-of-slice */
-extern void sk_h_003499b4(void);  /* FUN_003499b4 out-of-slice */
-extern void sk_h_003499c8(void);  /* FUN_003499c8 out-of-slice */
-extern void sk_h_003499f0(void);  /* FUN_003499f0 out-of-slice */
-extern void sk_h_00349a68(void);  /* FUN_00349a68 out-of-slice */
-extern void sk_h_00349b00(void);  /* FUN_00349b00 out-of-slice */
-extern void sk_h_00349b3c(void);  /* FUN_00349b3c out-of-slice */
-extern void sk_h_00349c14(void);  /* FUN_00349c14 out-of-slice */
+extern void sk_h_003497c8();  /* FUN_003497c8 out-of-slice */
+extern void sk_h_003497ec();  /* FUN_003497ec out-of-slice */
+extern void sk_h_0034995c();  /* FUN_0034995c out-of-slice */
+extern void sk_h_003499b4();  /* FUN_003499b4 out-of-slice */
+extern void sk_h_003499c8();  /* FUN_003499c8 out-of-slice */
+extern void sk_h_003499f0();  /* FUN_003499f0 out-of-slice */
+extern void sk_h_00349a68();  /* FUN_00349a68 out-of-slice */
+extern void sk_h_00349b00();  /* FUN_00349b00 out-of-slice */
+extern void sk_h_00349b3c();  /* FUN_00349b3c out-of-slice */
+extern void sk_h_00349c14();  /* FUN_00349c14 out-of-slice */
 extern uint64_t sk_h_00349cbc();  /* FUN_00349cbc out-of-slice */
-extern void sk_h_00349e54(void);  /* FUN_00349e54 out-of-slice */
-extern void sk_h_00349f3c(void);  /* FUN_00349f3c out-of-slice */
-extern void sk_h_0034a0e0(void);  /* FUN_0034a0e0 out-of-slice */
-extern void sk_h_0034a100(void);  /* FUN_0034a100 out-of-slice */
-extern void sk_h_0034a1e0(uint64_t a1);  /* FUN_0034a1e0 out-of-slice */
-extern void sk_h_0034a1f8(void);  /* FUN_0034a1f8 out-of-slice */
-extern void sk_h_0034a210(void);  /* FUN_0034a210 out-of-slice */
+extern void sk_h_00349e54();  /* FUN_00349e54 out-of-slice */
+extern void sk_h_00349f3c();  /* FUN_00349f3c out-of-slice */
+extern void sk_h_0034a0e0();  /* FUN_0034a0e0 out-of-slice */
+extern void sk_h_0034a100();  /* FUN_0034a100 out-of-slice */
+extern void sk_h_0034a1e0();  /* FUN_0034a1e0 out-of-slice */
+extern void sk_h_0034a1f8();  /* FUN_0034a1f8 out-of-slice */
+extern void sk_h_0034a210();  /* FUN_0034a210 out-of-slice */
 extern sk_r4_u128_t sk_h_0034a540();  /* FUN_0034a540 out-of-slice */
-extern void sk_h_0034a558(void);  /* FUN_0034a558 out-of-slice */
-extern void sk_h_0034a570(void);  /* FUN_0034a570 out-of-slice */
-extern void sk_h_0034a674(void);  /* FUN_0034a674 out-of-slice */
-extern void sk_h_0034a798(void);  /* FUN_0034a798 out-of-slice */
-extern void sk_h_0034a7ac(void);  /* FUN_0034a7ac out-of-slice */
-extern void sk_h_0034a848(void);  /* FUN_0034a848 out-of-slice */
-extern void sk_h_0034a868(uint64_t a1);  /* FUN_0034a868 out-of-slice */
-extern void sk_h_0034a8cc(void);  /* FUN_0034a8cc out-of-slice */
-extern void sk_h_0034a900(void);  /* FUN_0034a900 out-of-slice */
-extern void sk_h_0034aa9c(void);  /* FUN_0034aa9c out-of-slice */
-extern void sk_h_0034ab10(void);  /* FUN_0034ab10 out-of-slice */
-extern void sk_h_0034ab30(void);  /* FUN_0034ab30 out-of-slice */
-extern void sk_h_0034ac64(void);  /* FUN_0034ac64 out-of-slice */
-extern void sk_h_0034ad20(uint64_t a1);  /* FUN_0034ad20 out-of-slice */
-extern void sk_h_0034ad8c(uint64_t a1);  /* FUN_0034ad8c out-of-slice */
-extern void sk_h_0034aed0(void);  /* FUN_0034aed0 out-of-slice */
-extern void sk_h_0034aee4(void);  /* FUN_0034aee4 out-of-slice */
-extern void sk_h_0034af30(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0034af30 out-of-slice */
-extern void sk_h_0034b014(void);  /* FUN_0034b014 out-of-slice */
-extern void sk_h_0034b05c(void);  /* FUN_0034b05c out-of-slice */
-extern void sk_h_0034b1a0(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0034b1a0 out-of-slice */
-extern void sk_h_0034b2c8(uint64_t a1);  /* FUN_0034b2c8 out-of-slice */
-extern void sk_h_0034b3c8(void);  /* FUN_0034b3c8 out-of-slice */
-extern void sk_h_0034b3d8(void);  /* FUN_0034b3d8 out-of-slice */
-extern void sk_h_0034b440(uint64_t a1);  /* FUN_0034b440 out-of-slice */
+extern void sk_h_0034a558();  /* FUN_0034a558 out-of-slice */
+extern void sk_h_0034a570();  /* FUN_0034a570 out-of-slice */
+extern void sk_h_0034a674();  /* FUN_0034a674 out-of-slice */
+extern void sk_h_0034a798();  /* FUN_0034a798 out-of-slice */
+extern void sk_h_0034a7ac();  /* FUN_0034a7ac out-of-slice */
+extern void sk_h_0034a848();  /* FUN_0034a848 out-of-slice */
+extern void sk_h_0034a868();  /* FUN_0034a868 out-of-slice */
+extern void sk_h_0034a8cc();  /* FUN_0034a8cc out-of-slice */
+extern void sk_h_0034a900();  /* FUN_0034a900 out-of-slice */
+extern void sk_h_0034aa9c();  /* FUN_0034aa9c out-of-slice */
+extern void sk_h_0034ab10();  /* FUN_0034ab10 out-of-slice */
+extern void sk_h_0034ab30();  /* FUN_0034ab30 out-of-slice */
+extern void sk_h_0034ac64();  /* FUN_0034ac64 out-of-slice */
+extern void sk_h_0034ad20();  /* FUN_0034ad20 out-of-slice */
+extern void sk_h_0034ad8c();  /* FUN_0034ad8c out-of-slice */
+extern void sk_h_0034aed0();  /* FUN_0034aed0 out-of-slice */
+extern void sk_h_0034aee4();  /* FUN_0034aee4 out-of-slice */
+extern void sk_h_0034af30();  /* FUN_0034af30 out-of-slice */
+extern void sk_h_0034b014();  /* FUN_0034b014 out-of-slice */
+extern void sk_h_0034b05c();  /* FUN_0034b05c out-of-slice */
+extern sk_r4_u128_t sk_h_0034b1a0();  /* FUN_0034b1a0 out-of-slice */
+extern void sk_h_0034b2c8();  /* FUN_0034b2c8 out-of-slice */
+extern void sk_h_0034b3c8();  /* FUN_0034b3c8 out-of-slice */
+extern void sk_h_0034b3d8();  /* FUN_0034b3d8 out-of-slice */
+extern void sk_h_0034b440();  /* FUN_0034b440 out-of-slice */
 extern sk_r4_u128_t sk_h_0034b480();  /* FUN_0034b480 out-of-slice */
-extern void sk_h_0034b4c0(void);  /* FUN_0034b4c0 out-of-slice */
-extern void sk_h_0034b5e8(void);  /* FUN_0034b5e8 out-of-slice */
-extern void sk_h_0034b690(void);  /* FUN_0034b690 out-of-slice */
-extern void sk_h_0034b758(void);  /* FUN_0034b758 out-of-slice */
-extern void sk_h_0034b778(void);  /* FUN_0034b778 out-of-slice */
-extern void sk_h_0034b824(uint64_t a1);  /* FUN_0034b824 out-of-slice */
-extern void sk_h_0034b87c(void);  /* FUN_0034b87c out-of-slice */
-extern void sk_h_0034b8bc(void);  /* FUN_0034b8bc out-of-slice */
+extern void sk_h_0034b4c0();  /* FUN_0034b4c0 out-of-slice */
+extern void sk_h_0034b5e8();  /* FUN_0034b5e8 out-of-slice */
+extern void sk_h_0034b690();  /* FUN_0034b690 out-of-slice */
+extern void sk_h_0034b758();  /* FUN_0034b758 out-of-slice */
+extern void sk_h_0034b778();  /* FUN_0034b778 out-of-slice */
+extern void sk_h_0034b824();  /* FUN_0034b824 out-of-slice */
+extern void sk_h_0034b87c();  /* FUN_0034b87c out-of-slice */
+extern void sk_h_0034b8bc();  /* FUN_0034b8bc out-of-slice */
 extern sk_r4_u128_t sk_h_0034b8cc();  /* FUN_0034b8cc out-of-slice */
-extern void sk_h_0034b960(void);  /* FUN_0034b960 out-of-slice */
-extern void sk_h_0034b980(void);  /* FUN_0034b980 out-of-slice */
-extern void sk_h_0034ba48(void);  /* FUN_0034ba48 out-of-slice */
-extern void sk_h_0034ba68(void);  /* FUN_0034ba68 out-of-slice */
-extern void sk_h_0034ba78(void);  /* FUN_0034ba78 out-of-slice */
-extern void sk_h_0034baa8(void);  /* FUN_0034baa8 out-of-slice */
-extern void sk_h_0034bab8(void);  /* FUN_0034bab8 out-of-slice */
-extern void sk_h_0034bbc8(void);  /* FUN_0034bbc8 out-of-slice */
-extern void sk_h_0034bc24(void);  /* FUN_0034bc24 out-of-slice */
-extern void sk_h_0034bc38(uint64_t a1);  /* FUN_0034bc38 out-of-slice */
-extern void sk_h_0034bc6c(void);  /* FUN_0034bc6c out-of-slice */
-extern void sk_h_0034bc94(uint64_t a1);  /* FUN_0034bc94 out-of-slice */
-extern void sk_h_0034bcf0(void);  /* FUN_0034bcf0 out-of-slice */
-extern void sk_h_0034bd30(void);  /* FUN_0034bd30 out-of-slice */
-extern void sk_h_0034bd90(void);  /* FUN_0034bd90 out-of-slice */
-extern void sk_h_0034bddc(void);  /* FUN_0034bddc out-of-slice */
-extern void sk_h_0034beb4(void);  /* FUN_0034beb4 out-of-slice */
+extern void sk_h_0034b960();  /* FUN_0034b960 out-of-slice */
+extern void sk_h_0034b980();  /* FUN_0034b980 out-of-slice */
+extern void sk_h_0034ba48();  /* FUN_0034ba48 out-of-slice */
+extern void sk_h_0034ba68();  /* FUN_0034ba68 out-of-slice */
+extern void sk_h_0034ba78();  /* FUN_0034ba78 out-of-slice */
+extern void sk_h_0034baa8();  /* FUN_0034baa8 out-of-slice */
+extern void sk_h_0034bab8();  /* FUN_0034bab8 out-of-slice */
+extern void sk_h_0034bbc8();  /* FUN_0034bbc8 out-of-slice */
+extern void sk_h_0034bc24();  /* FUN_0034bc24 out-of-slice */
+extern void sk_h_0034bc38();  /* FUN_0034bc38 out-of-slice */
+extern void sk_h_0034bc6c();  /* FUN_0034bc6c out-of-slice */
+extern void sk_h_0034bc94();  /* FUN_0034bc94 out-of-slice */
+extern void sk_h_0034bcf0();  /* FUN_0034bcf0 out-of-slice */
+extern void sk_h_0034bd30();  /* FUN_0034bd30 out-of-slice */
+extern void sk_h_0034bd90();  /* FUN_0034bd90 out-of-slice */
+extern void sk_h_0034bddc();  /* FUN_0034bddc out-of-slice */
+extern void sk_h_0034beb4();  /* FUN_0034beb4 out-of-slice */
 extern uint64_t sk_h_0034bf64();  /* FUN_0034bf64 out-of-slice */
-extern void sk_h_0034c034(void);  /* FUN_0034c034 out-of-slice */
-extern void sk_h_0034c094(uint64_t a1);  /* FUN_0034c094 out-of-slice */
-extern void sk_h_0034c0a4(void);  /* FUN_0034c0a4 out-of-slice */
-extern void sk_h_0034c130(void);  /* FUN_0034c130 out-of-slice */
-extern void sk_h_0034c1a8(void);  /* FUN_0034c1a8 out-of-slice */
-extern void sk_h_0034c1bc(uint64_t a1);  /* FUN_0034c1bc out-of-slice */
-extern void sk_h_0034c1d0(void);  /* FUN_0034c1d0 out-of-slice */
-extern void sk_h_0034c290(void);  /* FUN_0034c290 out-of-slice */
-extern void sk_h_0034c2c8(void);  /* FUN_0034c2c8 out-of-slice */
-extern void sk_h_0034c330(void);  /* FUN_0034c330 out-of-slice */
-extern void sk_h_0034c3a0(void);  /* FUN_0034c3a0 out-of-slice */
-extern void sk_h_0034c4bc(void);  /* FUN_0034c4bc out-of-slice */
-extern void sk_h_0034c51c(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0034c51c out-of-slice */
-extern void sk_h_0034c58c(uint64_t a1);  /* FUN_0034c58c out-of-slice */
-extern void sk_h_0034c5bc(void);  /* FUN_0034c5bc out-of-slice */
-extern void sk_h_0034c5dc(void);  /* FUN_0034c5dc out-of-slice */
-extern void sk_h_0034c6e4(uint64_t a1);  /* FUN_0034c6e4 out-of-slice */
-extern void sk_h_0034c8b8(void);  /* FUN_0034c8b8 out-of-slice */
-extern void sk_h_0034c8f8(void);  /* FUN_0034c8f8 out-of-slice */
-extern void sk_h_0034c960(void);  /* FUN_0034c960 out-of-slice */
-extern void sk_h_0034c9f8(void);  /* FUN_0034c9f8 out-of-slice */
-extern void sk_h_0034ca18(uint64_t a1);  /* FUN_0034ca18 out-of-slice */
-extern void sk_h_0034ca38(void);  /* FUN_0034ca38 out-of-slice */
-extern void sk_h_0034cb24(void);  /* FUN_0034cb24 out-of-slice */
-extern void sk_h_0034cb38(void);  /* FUN_0034cb38 out-of-slice */
-extern void sk_h_0034cb4c(void);  /* FUN_0034cb4c out-of-slice */
-extern void sk_h_0034cb74(void);  /* FUN_0034cb74 out-of-slice */
-extern void sk_h_0034cca8(void);  /* FUN_0034cca8 out-of-slice */
-extern void sk_h_0034cd68(void);  /* FUN_0034cd68 out-of-slice */
-extern void sk_h_0034ce68(void);  /* FUN_0034ce68 out-of-slice */
-extern void sk_h_0034cf94(void);  /* FUN_0034cf94 out-of-slice */
-extern void sk_h_0034cfb4(void);  /* FUN_0034cfb4 out-of-slice */
-extern void sk_h_0034cfc4(void);  /* FUN_0034cfc4 out-of-slice */
-extern void sk_h_0034d044(uint64_t a1);  /* FUN_0034d044 out-of-slice */
+extern void sk_h_0034c034();  /* FUN_0034c034 out-of-slice */
+extern void sk_h_0034c094();  /* FUN_0034c094 out-of-slice */
+extern void sk_h_0034c0a4();  /* FUN_0034c0a4 out-of-slice */
+extern void sk_h_0034c130();  /* FUN_0034c130 out-of-slice */
+extern void sk_h_0034c1a8();  /* FUN_0034c1a8 out-of-slice */
+extern void sk_h_0034c1bc();  /* FUN_0034c1bc out-of-slice */
+extern void sk_h_0034c1d0();  /* FUN_0034c1d0 out-of-slice */
+extern void sk_h_0034c290();  /* FUN_0034c290 out-of-slice */
+extern void sk_h_0034c2c8();  /* FUN_0034c2c8 out-of-slice */
+extern void sk_h_0034c330();  /* FUN_0034c330 out-of-slice */
+extern void sk_h_0034c3a0();  /* FUN_0034c3a0 out-of-slice */
+extern void sk_h_0034c4bc();  /* FUN_0034c4bc out-of-slice */
+extern void sk_h_0034c51c();  /* FUN_0034c51c out-of-slice */
+extern void sk_h_0034c58c();  /* FUN_0034c58c out-of-slice */
+extern void sk_h_0034c5bc();  /* FUN_0034c5bc out-of-slice */
+extern void sk_h_0034c5dc();  /* FUN_0034c5dc out-of-slice */
+extern void sk_h_0034c6e4();  /* FUN_0034c6e4 out-of-slice */
+extern void sk_h_0034c8b8();  /* FUN_0034c8b8 out-of-slice */
+extern void sk_h_0034c8f8();  /* FUN_0034c8f8 out-of-slice */
+extern void sk_h_0034c960();  /* FUN_0034c960 out-of-slice */
+extern void sk_h_0034c9f8();  /* FUN_0034c9f8 out-of-slice */
+extern void sk_h_0034ca18();  /* FUN_0034ca18 out-of-slice */
+extern void sk_h_0034ca38();  /* FUN_0034ca38 out-of-slice */
+extern void sk_h_0034cb24();  /* FUN_0034cb24 out-of-slice */
+extern void sk_h_0034cb38();  /* FUN_0034cb38 out-of-slice */
+extern void sk_h_0034cb4c();  /* FUN_0034cb4c out-of-slice */
+extern void sk_h_0034cb74();  /* FUN_0034cb74 out-of-slice */
+extern void sk_h_0034cca8();  /* FUN_0034cca8 out-of-slice */
+extern void sk_h_0034cd68();  /* FUN_0034cd68 out-of-slice */
+extern void sk_h_0034ce68();  /* FUN_0034ce68 out-of-slice */
+extern void sk_h_0034cf94();  /* FUN_0034cf94 out-of-slice */
+extern void sk_h_0034cfb4();  /* FUN_0034cfb4 out-of-slice */
+extern void sk_h_0034cfc4();  /* FUN_0034cfc4 out-of-slice */
+extern void sk_h_0034d044();  /* FUN_0034d044 out-of-slice */
 extern uint sk_h_0034d0d0();  /* FUN_0034d0d0 out-of-slice */
-extern void sk_h_0034d0e0(uint64_t a1);  /* FUN_0034d0e0 out-of-slice */
-extern void sk_h_0034d1b0(void);  /* FUN_0034d1b0 out-of-slice */
-extern void sk_h_0034d1e0(uint64_t a1, uint64_t a2);  /* FUN_0034d1e0 out-of-slice */
-extern void sk_h_0034d2b4(void);  /* FUN_0034d2b4 out-of-slice */
-extern void sk_h_0034d384(void);  /* FUN_0034d384 out-of-slice */
-extern void sk_h_0034d394(void);  /* FUN_0034d394 out-of-slice */
+extern void sk_h_0034d0e0();  /* FUN_0034d0e0 out-of-slice */
+extern void sk_h_0034d1b0();  /* FUN_0034d1b0 out-of-slice */
+extern void sk_h_0034d1e0();  /* FUN_0034d1e0 out-of-slice */
+extern void sk_h_0034d2b4();  /* FUN_0034d2b4 out-of-slice */
+extern void sk_h_0034d384();  /* FUN_0034d384 out-of-slice */
+extern void sk_h_0034d394();  /* FUN_0034d394 out-of-slice */
 extern sk_r4_u128_t sk_h_0034d3a4();  /* FUN_0034d3a4 out-of-slice */
-extern void sk_h_0034d464(void);  /* FUN_0034d464 out-of-slice */
-extern void sk_h_0034d4e8(uint64_t a1);  /* FUN_0034d4e8 out-of-slice */
-extern void sk_h_0034d610(void);  /* FUN_0034d610 out-of-slice */
-extern void sk_h_0034d6c8(uint64_t a1);  /* FUN_0034d6c8 out-of-slice */
+extern void sk_h_0034d464();  /* FUN_0034d464 out-of-slice */
+extern void sk_h_0034d4e8();  /* FUN_0034d4e8 out-of-slice */
+extern void sk_h_0034d610();  /* FUN_0034d610 out-of-slice */
+extern void sk_h_0034d6c8();  /* FUN_0034d6c8 out-of-slice */
 extern uint64_t sk_h_0034d6d8();  /* FUN_0034d6d8 out-of-slice */
-extern void sk_h_0034d708(void);  /* FUN_0034d708 out-of-slice */
-extern void sk_h_0034d868(void);  /* FUN_0034d868 out-of-slice */
-extern void sk_h_0034d914(void);  /* FUN_0034d914 out-of-slice */
-extern void sk_h_0034d9f8(void);  /* FUN_0034d9f8 out-of-slice */
-extern void sk_h_0034da08(uint64_t a1);  /* FUN_0034da08 out-of-slice */
-extern void sk_h_0034da28(uint64_t a1);  /* FUN_0034da28 out-of-slice */
-extern void sk_h_0034da48(void);  /* FUN_0034da48 out-of-slice */
-extern void sk_h_0034da78(void);  /* FUN_0034da78 out-of-slice */
-extern void sk_h_0034daa8(void);  /* FUN_0034daa8 out-of-slice */
-extern void sk_h_0034db48(void);  /* FUN_0034db48 out-of-slice */
-extern void sk_h_0034db58(void);  /* FUN_0034db58 out-of-slice */
-extern void sk_h_0034dba8(uint64_t a1, uint64_t a2);  /* FUN_0034dba8 out-of-slice */
-extern void sk_h_0034dbc8(void);  /* FUN_0034dbc8 out-of-slice */
-extern void sk_h_0034dc3c(void);  /* FUN_0034dc3c out-of-slice */
-extern void sk_h_0034dce4(uint64_t a1, uint64_t a2);  /* FUN_0034dce4 out-of-slice */
-extern void sk_h_0034dcfc(void);  /* FUN_0034dcfc out-of-slice */
-extern void sk_h_0034dd4c(void);  /* FUN_0034dd4c out-of-slice */
-extern void sk_h_0034dd84(uint64_t a1);  /* FUN_0034dd84 out-of-slice */
+extern void sk_h_0034d708();  /* FUN_0034d708 out-of-slice */
+extern void sk_h_0034d868();  /* FUN_0034d868 out-of-slice */
+extern void sk_h_0034d914();  /* FUN_0034d914 out-of-slice */
+extern void sk_h_0034d9f8();  /* FUN_0034d9f8 out-of-slice */
+extern void sk_h_0034da08();  /* FUN_0034da08 out-of-slice */
+extern void sk_h_0034da28();  /* FUN_0034da28 out-of-slice */
+extern void sk_h_0034da48();  /* FUN_0034da48 out-of-slice */
+extern void sk_h_0034da78();  /* FUN_0034da78 out-of-slice */
+extern void sk_h_0034daa8();  /* FUN_0034daa8 out-of-slice */
+extern void sk_h_0034db48();  /* FUN_0034db48 out-of-slice */
+extern void sk_h_0034db58();  /* FUN_0034db58 out-of-slice */
+extern void sk_h_0034dba8();  /* FUN_0034dba8 out-of-slice */
+extern void sk_h_0034dbc8();  /* FUN_0034dbc8 out-of-slice */
+extern void sk_h_0034dc3c();  /* FUN_0034dc3c out-of-slice */
+extern void sk_h_0034dce4();  /* FUN_0034dce4 out-of-slice */
+extern void sk_h_0034dcfc();  /* FUN_0034dcfc out-of-slice */
+extern void sk_h_0034dd4c();  /* FUN_0034dd4c out-of-slice */
+extern void sk_h_0034dd84();  /* FUN_0034dd84 out-of-slice */
 extern sk_r4_u128_t sk_h_0034dda0();  /* FUN_0034dda0 out-of-slice */
-extern void sk_h_0034de14(uint64_t a1);  /* FUN_0034de14 out-of-slice */
-extern void sk_h_0034dec4(void);  /* FUN_0034dec4 out-of-slice */
-extern void sk_h_0034dfe4(void);  /* FUN_0034dfe4 out-of-slice */
+extern void sk_h_0034de14();  /* FUN_0034de14 out-of-slice */
+extern void sk_h_0034dec4();  /* FUN_0034dec4 out-of-slice */
+extern void sk_h_0034dfe4();  /* FUN_0034dfe4 out-of-slice */
 extern sk_r4_u128_t sk_h_0034e044();  /* FUN_0034e044 out-of-slice */
-extern void sk_h_0034e0d4(void);  /* FUN_0034e0d4 out-of-slice */
-extern void sk_h_0034e0e4(void);  /* FUN_0034e0e4 out-of-slice */
-extern void sk_h_0034e120(uint64_t a1);  /* FUN_0034e120 out-of-slice */
-extern void sk_h_0034e1ec(uint64_t a1);  /* FUN_0034e1ec out-of-slice */
-extern void sk_h_0034e374(uint64_t a1);  /* FUN_0034e374 out-of-slice */
-extern void sk_h_0034e3ac(void);  /* FUN_0034e3ac out-of-slice */
-extern void sk_h_0034e56c(void);  /* FUN_0034e56c out-of-slice */
-extern void sk_h_0034e69c(void);  /* FUN_0034e69c out-of-slice */
-extern void sk_h_0034e6ac(void);  /* FUN_0034e6ac out-of-slice */
-extern void sk_h_0034e6fc(void);  /* FUN_0034e6fc out-of-slice */
-extern void sk_h_0034e7a0(uint64_t a1, uint64_t a2);  /* FUN_0034e7a0 out-of-slice */
-extern void sk_h_0034e8d4(void);  /* FUN_0034e8d4 out-of-slice */
-extern void sk_h_0034e8e8(void);  /* FUN_0034e8e8 out-of-slice */
-extern void sk_h_0034e910(void);  /* FUN_0034e910 out-of-slice */
-extern void sk_h_0034ea18(void);  /* FUN_0034ea18 out-of-slice */
-extern void sk_h_0034eb54(void);  /* FUN_0034eb54 out-of-slice */
-extern void sk_h_0034eb74(uint64_t a1);  /* FUN_0034eb74 out-of-slice */
-extern void sk_h_0034eb84(void);  /* FUN_0034eb84 out-of-slice */
-extern void sk_h_0034ec58(uint64_t a1);  /* FUN_0034ec58 out-of-slice */
-extern void sk_h_0034ec68(uint64_t a1);  /* FUN_0034ec68 out-of-slice */
-extern void sk_h_0034ec78(void);  /* FUN_0034ec78 out-of-slice */
-extern void sk_h_0034ec98(void);  /* FUN_0034ec98 out-of-slice */
-extern void sk_h_0034ecb8(void);  /* FUN_0034ecb8 out-of-slice */
-extern void sk_h_0034ecc8(void);  /* FUN_0034ecc8 out-of-slice */
-extern void sk_h_0034ece8(uint64_t a1, uint64_t a2);  /* FUN_0034ece8 out-of-slice */
-extern void sk_h_0034ecf8(void);  /* FUN_0034ecf8 out-of-slice */
-extern void sk_h_0034ed18(void);  /* FUN_0034ed18 out-of-slice */
-extern void sk_h_0034ed78(void);  /* FUN_0034ed78 out-of-slice */
-extern void sk_h_0034ee68(void);  /* FUN_0034ee68 out-of-slice */
-extern void sk_h_0034ee88(uint64_t a1);  /* FUN_0034ee88 out-of-slice */
-extern void sk_h_0034eef8(void);  /* FUN_0034eef8 out-of-slice */
-extern void sk_h_0034ef28(void);  /* FUN_0034ef28 out-of-slice */
-extern void sk_h_0034ef38(void);  /* FUN_0034ef38 out-of-slice */
-extern void sk_h_0034ef48(void);  /* FUN_0034ef48 out-of-slice */
-extern void sk_h_0034ef98(void);  /* FUN_0034ef98 out-of-slice */
+extern void sk_h_0034e0d4();  /* FUN_0034e0d4 out-of-slice */
+extern void sk_h_0034e0e4();  /* FUN_0034e0e4 out-of-slice */
+extern void sk_h_0034e120();  /* FUN_0034e120 out-of-slice */
+extern void sk_h_0034e1ec();  /* FUN_0034e1ec out-of-slice */
+extern void sk_h_0034e374();  /* FUN_0034e374 out-of-slice */
+extern void sk_h_0034e3ac();  /* FUN_0034e3ac out-of-slice */
+extern void sk_h_0034e56c();  /* FUN_0034e56c out-of-slice */
+extern void sk_h_0034e69c();  /* FUN_0034e69c out-of-slice */
+extern void sk_h_0034e6ac();  /* FUN_0034e6ac out-of-slice */
+extern void sk_h_0034e6fc();  /* FUN_0034e6fc out-of-slice */
+extern void sk_h_0034e7a0();  /* FUN_0034e7a0 out-of-slice */
+extern void sk_h_0034e8d4();  /* FUN_0034e8d4 out-of-slice */
+extern void sk_h_0034e8e8();  /* FUN_0034e8e8 out-of-slice */
+extern void sk_h_0034e910();  /* FUN_0034e910 out-of-slice */
+extern void sk_h_0034ea18();  /* FUN_0034ea18 out-of-slice */
+extern void sk_h_0034eb54();  /* FUN_0034eb54 out-of-slice */
+extern void sk_h_0034eb74();  /* FUN_0034eb74 out-of-slice */
+extern void sk_h_0034eb84();  /* FUN_0034eb84 out-of-slice */
+extern void sk_h_0034ec58();  /* FUN_0034ec58 out-of-slice */
+extern void sk_h_0034ec68();  /* FUN_0034ec68 out-of-slice */
+extern void sk_h_0034ec78();  /* FUN_0034ec78 out-of-slice */
+extern void sk_h_0034ec98();  /* FUN_0034ec98 out-of-slice */
+extern void sk_h_0034ecb8();  /* FUN_0034ecb8 out-of-slice */
+extern void sk_h_0034ecc8();  /* FUN_0034ecc8 out-of-slice */
+extern void sk_h_0034ece8();  /* FUN_0034ece8 out-of-slice */
+extern void sk_h_0034ecf8();  /* FUN_0034ecf8 out-of-slice */
+extern void sk_h_0034ed18();  /* FUN_0034ed18 out-of-slice */
+extern void sk_h_0034ed78();  /* FUN_0034ed78 out-of-slice */
+extern void sk_h_0034ee68();  /* FUN_0034ee68 out-of-slice */
+extern void sk_h_0034ee88();  /* FUN_0034ee88 out-of-slice */
+extern void sk_h_0034eef8();  /* FUN_0034eef8 out-of-slice */
+extern void sk_h_0034ef28();  /* FUN_0034ef28 out-of-slice */
+extern void sk_h_0034ef38();  /* FUN_0034ef38 out-of-slice */
+extern void sk_h_0034ef48();  /* FUN_0034ef48 out-of-slice */
+extern void sk_h_0034ef98();  /* FUN_0034ef98 out-of-slice */
 extern uint64_t sk_h_0034f064();  /* FUN_0034f064 out-of-slice */
-extern void sk_h_0034f078(void);  /* FUN_0034f078 out-of-slice */
-extern void sk_h_0034f198(void);  /* FUN_0034f198 out-of-slice */
-extern void sk_h_0034f1a8(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0034f1a8 out-of-slice */
-extern void sk_h_0034f21c(uint64_t a1);  /* FUN_0034f21c out-of-slice */
-extern void sk_h_0034f23c(void);  /* FUN_0034f23c out-of-slice */
+extern void sk_h_0034f078();  /* FUN_0034f078 out-of-slice */
+extern void sk_h_0034f198();  /* FUN_0034f198 out-of-slice */
+extern void sk_h_0034f1a8();  /* FUN_0034f1a8 out-of-slice */
+extern void sk_h_0034f21c();  /* FUN_0034f21c out-of-slice */
+extern void sk_h_0034f23c();  /* FUN_0034f23c out-of-slice */
 extern long sk_h_0034f264();  /* FUN_0034f264 out-of-slice */
-extern void sk_h_0034f354(void);  /* FUN_0034f354 out-of-slice */
-extern void sk_h_0034f444(void);  /* FUN_0034f444 out-of-slice */
-extern void sk_h_0034f454(void);  /* FUN_0034f454 out-of-slice */
-extern void sk_h_0034f484(void);  /* FUN_0034f484 out-of-slice */
-extern void sk_h_0034f554(void);  /* FUN_0034f554 out-of-slice */
-extern void sk_h_0034f688(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_0034f688 out-of-slice */
-extern void sk_h_0034f884(uint64_t a1);  /* FUN_0034f884 out-of-slice */
-extern void sk_h_0034f8a8(void);  /* FUN_0034f8a8 out-of-slice */
-extern void sk_h_0034f938(void);  /* FUN_0034f938 out-of-slice */
-extern void sk_h_0034f948(void);  /* FUN_0034f948 out-of-slice */
-extern void sk_h_0034f958(void);  /* FUN_0034f958 out-of-slice */
-extern void sk_h_0034f96c(void);  /* FUN_0034f96c out-of-slice */
-extern void sk_h_0034f97c(void);  /* FUN_0034f97c out-of-slice */
-extern void sk_h_0034f9fc(void);  /* FUN_0034f9fc out-of-slice */
-extern void sk_h_0034fa4c(void);  /* FUN_0034fa4c out-of-slice */
-extern void sk_h_0034fd5c(void);  /* FUN_0034fd5c out-of-slice */
-extern void sk_h_0034ffa8(void);  /* FUN_0034ffa8 out-of-slice */
-extern void sk_h_00350028(uint64_t a1);  /* FUN_00350028 out-of-slice */
-extern void sk_h_00350058(void);  /* FUN_00350058 out-of-slice */
-extern void sk_h_003500d4(void);  /* FUN_003500d4 out-of-slice */
-extern void sk_h_0035014c(void);  /* FUN_0035014c out-of-slice */
-extern void sk_h_00350210(uint64_t a1);  /* FUN_00350210 out-of-slice */
-extern void sk_h_00350288(uint64_t a1);  /* FUN_00350288 out-of-slice */
-extern void sk_h_003503d0(void);  /* FUN_003503d0 out-of-slice */
-extern void sk_h_003503f8(void);  /* FUN_003503f8 out-of-slice */
-extern void sk_h_0035041c(void);  /* FUN_0035041c out-of-slice */
-extern void sk_h_00350434(void);  /* FUN_00350434 out-of-slice */
-extern void sk_h_00350464(void);  /* FUN_00350464 out-of-slice */
-extern void sk_h_00350470(uint64_t a1);  /* FUN_00350470 out-of-slice */
-extern void sk_h_003504a0(void);  /* FUN_003504a0 out-of-slice */
-extern void sk_h_003504ac(uint64_t a1);  /* FUN_003504ac out-of-slice */
+extern void sk_h_0034f354();  /* FUN_0034f354 out-of-slice */
+extern void sk_h_0034f444();  /* FUN_0034f444 out-of-slice */
+extern void sk_h_0034f454();  /* FUN_0034f454 out-of-slice */
+extern void sk_h_0034f484();  /* FUN_0034f484 out-of-slice */
+extern void sk_h_0034f554();  /* FUN_0034f554 out-of-slice */
+extern void sk_h_0034f688();  /* FUN_0034f688 out-of-slice */
+extern void sk_h_0034f884();  /* FUN_0034f884 out-of-slice */
+extern void sk_h_0034f8a8();  /* FUN_0034f8a8 out-of-slice */
+extern void sk_h_0034f938();  /* FUN_0034f938 out-of-slice */
+extern void sk_h_0034f948();  /* FUN_0034f948 out-of-slice */
+extern void sk_h_0034f958();  /* FUN_0034f958 out-of-slice */
+extern void sk_h_0034f96c();  /* FUN_0034f96c out-of-slice */
+extern void sk_h_0034f97c();  /* FUN_0034f97c out-of-slice */
+extern void sk_h_0034f9fc();  /* FUN_0034f9fc out-of-slice */
+extern void sk_h_0034fa4c();  /* FUN_0034fa4c out-of-slice */
+extern void sk_h_0034fd5c();  /* FUN_0034fd5c out-of-slice */
+extern void sk_h_0034ffa8();  /* FUN_0034ffa8 out-of-slice */
+extern void sk_h_00350028();  /* FUN_00350028 out-of-slice */
+extern void sk_h_00350058();  /* FUN_00350058 out-of-slice */
+extern void sk_h_003500d4();  /* FUN_003500d4 out-of-slice */
+extern void sk_h_0035014c();  /* FUN_0035014c out-of-slice */
+extern void sk_h_00350210();  /* FUN_00350210 out-of-slice */
+extern void sk_h_00350288();  /* FUN_00350288 out-of-slice */
+extern void sk_h_003503d0();  /* FUN_003503d0 out-of-slice */
+extern void sk_h_003503f8();  /* FUN_003503f8 out-of-slice */
+extern void sk_h_0035041c();  /* FUN_0035041c out-of-slice */
+extern void sk_h_00350434();  /* FUN_00350434 out-of-slice */
+extern void sk_h_00350464();  /* FUN_00350464 out-of-slice */
+extern sk_r4_u128_t sk_h_00350470();  /* FUN_00350470 out-of-slice */
+extern void sk_h_003504a0();  /* FUN_003504a0 out-of-slice */
+extern void sk_h_003504ac();  /* FUN_003504ac out-of-slice */
 extern sk_r4_u128_t sk_h_003504c4();  /* FUN_003504c4 out-of-slice */
 extern sk_r4_u128_t sk_h_003504d0();  /* FUN_003504d0 out-of-slice */
 extern sk_r4_u128_t sk_h_003504e8();  /* FUN_003504e8 out-of-slice */
 extern sk_r4_u128_t sk_h_0035050c();  /* FUN_0035050c out-of-slice */
-extern void sk_h_00350518(uint64_t a1);  /* FUN_00350518 out-of-slice */
-extern void sk_h_00350524(uint64_t a1);  /* FUN_00350524 out-of-slice */
-extern void sk_h_0035056c(void);  /* FUN_0035056c out-of-slice */
+extern sk_r4_u128_t sk_h_00350518();  /* FUN_00350518 out-of-slice */
+extern void sk_h_00350524();  /* FUN_00350524 out-of-slice */
+extern void sk_h_0035056c();  /* FUN_0035056c out-of-slice */
 extern sk_r4_u128_t sk_h_0035059c();  /* FUN_0035059c out-of-slice */
-extern void sk_h_003505b0(void);  /* FUN_003505b0 out-of-slice */
-extern void sk_h_003505c4(void);  /* FUN_003505c4 out-of-slice */
-extern void sk_h_003505d0(void);  /* FUN_003505d0 out-of-slice */
+extern void sk_h_003505b0();  /* FUN_003505b0 out-of-slice */
+extern void sk_h_003505c4();  /* FUN_003505c4 out-of-slice */
+extern void sk_h_003505d0();  /* FUN_003505d0 out-of-slice */
 extern sk_r4_u128_t sk_h_003505e8();  /* FUN_003505e8 out-of-slice */
-extern void sk_h_0035060c(uint64_t a1);  /* FUN_0035060c out-of-slice */
-extern void sk_h_00350618(void);  /* FUN_00350618 out-of-slice */
-extern void sk_h_00350624(uint64_t a1);  /* FUN_00350624 out-of-slice */
-extern void sk_h_00350630(uint64_t a1);  /* FUN_00350630 out-of-slice */
+extern sk_r4_u128_t sk_h_0035060c();  /* FUN_0035060c out-of-slice */
+extern void sk_h_00350618();  /* FUN_00350618 out-of-slice */
+extern void sk_h_00350624();  /* FUN_00350624 out-of-slice */
+extern void sk_h_00350630();  /* FUN_00350630 out-of-slice */
 extern uint64_t sk_h_00350648();  /* FUN_00350648 out-of-slice */
 extern uint64_t sk_h_0035066c();  /* FUN_0035066c out-of-slice */
-extern void sk_h_00350720(void);  /* FUN_00350720 out-of-slice */
+extern void sk_h_00350720();  /* FUN_00350720 out-of-slice */
 extern sk_r4_u128_t sk_h_0035072c();  /* FUN_0035072c out-of-slice */
-extern void sk_h_00350738(uint64_t a1);  /* FUN_00350738 out-of-slice */
-extern void sk_h_00350750(uint64_t a1);  /* FUN_00350750 out-of-slice */
-extern void sk_h_00350768(void);  /* FUN_00350768 out-of-slice */
-extern void sk_h_00350774(uint64_t a1, uint64_t a2);  /* FUN_00350774 out-of-slice */
+extern void sk_h_00350738();  /* FUN_00350738 out-of-slice */
+extern void sk_h_00350750();  /* FUN_00350750 out-of-slice */
+extern void sk_h_00350768();  /* FUN_00350768 out-of-slice */
+extern void sk_h_00350774();  /* FUN_00350774 out-of-slice */
 extern sk_r4_u128_t sk_h_00350798();  /* FUN_00350798 out-of-slice */
-extern void sk_h_003507c8(uint64_t a1);  /* FUN_003507c8 out-of-slice */
-extern void sk_h_0035084c(uint64_t a1);  /* FUN_0035084c out-of-slice */
-extern void sk_h_00350884(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00350884 out-of-slice */
-extern void sk_h_003508b4(void);  /* FUN_003508b4 out-of-slice */
-extern void sk_h_003508cc(uint64_t a1);  /* FUN_003508cc out-of-slice */
-extern void sk_h_003508d8(uint64_t a1);  /* FUN_003508d8 out-of-slice */
-extern void sk_h_003508e4(void);  /* FUN_003508e4 out-of-slice */
-extern void sk_h_003508fc(void);  /* FUN_003508fc out-of-slice */
+extern sk_r4_u128_t sk_h_003507c8();  /* FUN_003507c8 out-of-slice */
+extern void sk_h_0035084c();  /* FUN_0035084c out-of-slice */
+extern void sk_h_00350884();  /* FUN_00350884 out-of-slice */
+extern void sk_h_003508b4();  /* FUN_003508b4 out-of-slice */
+extern void sk_h_003508cc();  /* FUN_003508cc out-of-slice */
+extern void sk_h_003508d8();  /* FUN_003508d8 out-of-slice */
+extern void sk_h_003508e4();  /* FUN_003508e4 out-of-slice */
+extern void sk_h_003508fc();  /* FUN_003508fc out-of-slice */
 extern sk_r4_u128_t sk_h_00350914();  /* FUN_00350914 out-of-slice */
-extern void sk_h_00350944(uint64_t a1);  /* FUN_00350944 out-of-slice */
-extern void sk_h_00350968(uint64_t a1);  /* FUN_00350968 out-of-slice */
+extern void sk_h_00350944();  /* FUN_00350944 out-of-slice */
+extern void sk_h_00350968();  /* FUN_00350968 out-of-slice */
 extern sk_r4_u128_t sk_h_003509b0();  /* FUN_003509b0 out-of-slice */
-extern void sk_h_003509bc(void);  /* FUN_003509bc out-of-slice */
-extern void sk_h_003509d4(uint64_t a1);  /* FUN_003509d4 out-of-slice */
+extern void sk_h_003509bc();  /* FUN_003509bc out-of-slice */
+extern void sk_h_003509d4();  /* FUN_003509d4 out-of-slice */
 extern sk_r4_u128_t sk_h_003509e0();  /* FUN_003509e0 out-of-slice */
-extern void sk_h_00350a04(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00350a04 out-of-slice */
-extern void sk_h_00350a28(void);  /* FUN_00350a28 out-of-slice */
-extern void sk_h_00350a34(uint64_t a1);  /* FUN_00350a34 out-of-slice */
-extern void sk_h_00350a40(void);  /* FUN_00350a40 out-of-slice */
-extern void sk_h_00350a70(uint64_t a1);  /* FUN_00350a70 out-of-slice */
-extern void sk_h_00350a7c(void);  /* FUN_00350a7c out-of-slice */
+extern void sk_h_00350a04();  /* FUN_00350a04 out-of-slice */
+extern void sk_h_00350a28();  /* FUN_00350a28 out-of-slice */
+extern void sk_h_00350a34();  /* FUN_00350a34 out-of-slice */
+extern void sk_h_00350a40();  /* FUN_00350a40 out-of-slice */
+extern void sk_h_00350a70();  /* FUN_00350a70 out-of-slice */
+extern void sk_h_00350a7c();  /* FUN_00350a7c out-of-slice */
 extern uint64_t sk_h_00350a88();  /* FUN_00350a88 out-of-slice */
 extern sk_r4_u128_t sk_h_00350ab8();  /* FUN_00350ab8 out-of-slice */
 extern sk_r4_u128_t sk_h_00350af4();  /* FUN_00350af4 out-of-slice */
-extern void sk_h_00350b18(void);  /* FUN_00350b18 out-of-slice */
-extern void sk_h_00350b48(void);  /* FUN_00350b48 out-of-slice */
-extern void sk_h_00350b54(void);  /* FUN_00350b54 out-of-slice */
-extern void sk_h_00350b60(uint64_t a1);  /* FUN_00350b60 out-of-slice */
-extern void sk_h_00350b6c(uint64_t a1);  /* FUN_00350b6c out-of-slice */
-extern void sk_h_00350b78(uint64_t a1);  /* FUN_00350b78 out-of-slice */
-extern void sk_h_00350b90(void);  /* FUN_00350b90 out-of-slice */
-extern void sk_h_00350b9c(void);  /* FUN_00350b9c out-of-slice */
-extern void sk_h_00350bc0(uint64_t a1);  /* FUN_00350bc0 out-of-slice */
-extern void sk_h_00350bcc(void);  /* FUN_00350bcc out-of-slice */
+extern void sk_h_00350b18();  /* FUN_00350b18 out-of-slice */
+extern void sk_h_00350b48();  /* FUN_00350b48 out-of-slice */
+extern void sk_h_00350b54();  /* FUN_00350b54 out-of-slice */
+extern void sk_h_00350b60();  /* FUN_00350b60 out-of-slice */
+extern void sk_h_00350b6c();  /* FUN_00350b6c out-of-slice */
+extern void sk_h_00350b78();  /* FUN_00350b78 out-of-slice */
+extern void sk_h_00350b90();  /* FUN_00350b90 out-of-slice */
+extern void sk_h_00350b9c();  /* FUN_00350b9c out-of-slice */
+extern void sk_h_00350bc0();  /* FUN_00350bc0 out-of-slice */
+extern void sk_h_00350bcc();  /* FUN_00350bcc out-of-slice */
 extern sk_r4_u128_t sk_h_00350bf0();  /* FUN_00350bf0 out-of-slice */
-extern void sk_h_00350bfc(void);  /* FUN_00350bfc out-of-slice */
-extern void sk_h_00350c20(uint64_t a1);  /* FUN_00350c20 out-of-slice */
-extern void sk_h_00350c38(void);  /* FUN_00350c38 out-of-slice */
-extern void sk_h_00350c50(void);  /* FUN_00350c50 out-of-slice */
-extern void sk_h_00350c68(uint64_t a1);  /* FUN_00350c68 out-of-slice */
-extern void sk_h_00350c8c(uint64_t a1);  /* FUN_00350c8c out-of-slice */
-extern void sk_h_00350cf4(uint64_t a1);  /* FUN_00350cf4 out-of-slice */
-extern void sk_h_00350df4(void);  /* FUN_00350df4 out-of-slice */
-extern void sk_h_00350e54(void);  /* FUN_00350e54 out-of-slice */
-extern void sk_h_00350ea4(uint64_t a1);  /* FUN_00350ea4 out-of-slice */
-extern void sk_h_00350ec0(void);  /* FUN_00350ec0 out-of-slice */
-extern void sk_h_00350ed0(uint64_t a1);  /* FUN_00350ed0 out-of-slice */
-extern void sk_h_0035100c(void);  /* FUN_0035100c out-of-slice */
-extern void sk_h_0035101c(void);  /* FUN_0035101c out-of-slice */
-extern void sk_h_0035102c(void);  /* FUN_0035102c out-of-slice */
+extern void sk_h_00350bfc();  /* FUN_00350bfc out-of-slice */
+extern void sk_h_00350c20();  /* FUN_00350c20 out-of-slice */
+extern void sk_h_00350c38();  /* FUN_00350c38 out-of-slice */
+extern void sk_h_00350c50();  /* FUN_00350c50 out-of-slice */
+extern void sk_h_00350c68();  /* FUN_00350c68 out-of-slice */
+extern void sk_h_00350c8c();  /* FUN_00350c8c out-of-slice */
+extern void sk_h_00350cf4();  /* FUN_00350cf4 out-of-slice */
+extern void sk_h_00350df4();  /* FUN_00350df4 out-of-slice */
+extern void sk_h_00350e54();  /* FUN_00350e54 out-of-slice */
+extern void sk_h_00350ea4();  /* FUN_00350ea4 out-of-slice */
+extern void sk_h_00350ec0();  /* FUN_00350ec0 out-of-slice */
+extern void sk_h_00350ed0();  /* FUN_00350ed0 out-of-slice */
+extern void sk_h_0035100c();  /* FUN_0035100c out-of-slice */
+extern void sk_h_0035101c();  /* FUN_0035101c out-of-slice */
+extern void sk_h_0035102c();  /* FUN_0035102c out-of-slice */
 extern sk_r4_u128_t sk_h_003510ac();  /* FUN_003510ac out-of-slice */
-extern void sk_h_003510d0(uint64_t a1);  /* FUN_003510d0 out-of-slice */
-extern void sk_h_003510dc(uint64_t a1);  /* FUN_003510dc out-of-slice */
-extern void sk_h_00351118(void);  /* FUN_00351118 out-of-slice */
+extern void sk_h_003510d0();  /* FUN_003510d0 out-of-slice */
+extern sk_r4_u128_t sk_h_003510dc();  /* FUN_003510dc out-of-slice */
+extern void sk_h_00351118();  /* FUN_00351118 out-of-slice */
 extern sk_r4_u128_t sk_h_00351160();  /* FUN_00351160 out-of-slice */
-extern void sk_h_0035116c(void);  /* FUN_0035116c out-of-slice */
+extern void sk_h_0035116c();  /* FUN_0035116c out-of-slice */
 extern sk_r4_u128_t sk_h_003511a8();  /* FUN_003511a8 out-of-slice */
-extern void sk_h_003511e4(void);  /* FUN_003511e4 out-of-slice */
-extern void sk_h_00351214(uint64_t a1, uint64_t a2);  /* FUN_00351214 out-of-slice */
-extern void sk_h_00351220(void);  /* FUN_00351220 out-of-slice */
-extern void sk_h_0035122c(void);  /* FUN_0035122c out-of-slice */
-extern void sk_h_00351250(void);  /* FUN_00351250 out-of-slice */
-extern void sk_h_00351274(uint64_t a1);  /* FUN_00351274 out-of-slice */
+extern void sk_h_003511e4();  /* FUN_003511e4 out-of-slice */
+extern void sk_h_00351214();  /* FUN_00351214 out-of-slice */
+extern void sk_h_00351220();  /* FUN_00351220 out-of-slice */
+extern void sk_h_0035122c();  /* FUN_0035122c out-of-slice */
+extern void sk_h_00351250();  /* FUN_00351250 out-of-slice */
+extern sk_r4_u128_t sk_h_00351274();  /* FUN_00351274 out-of-slice */
 extern long sk_h_0035128c();  /* FUN_0035128c out-of-slice */
-extern void sk_h_00351298(void);  /* FUN_00351298 out-of-slice */
-extern void sk_h_003512c0(void);  /* FUN_003512c0 out-of-slice */
-extern void sk_h_00351318(void);  /* FUN_00351318 out-of-slice */
-extern void sk_h_00351348(void);  /* FUN_00351348 out-of-slice */
+extern void sk_h_00351298();  /* FUN_00351298 out-of-slice */
+extern void sk_h_003512c0();  /* FUN_003512c0 out-of-slice */
+extern void sk_h_00351318();  /* FUN_00351318 out-of-slice */
+extern void sk_h_00351348();  /* FUN_00351348 out-of-slice */
 extern sk_r4_u128_t sk_h_00351354();  /* FUN_00351354 out-of-slice */
-extern void sk_h_00351360(uint64_t a1);  /* FUN_00351360 out-of-slice */
-extern void sk_h_00351384(uint64_t a1);  /* FUN_00351384 out-of-slice */
-extern void sk_h_00351390(uint64_t a1);  /* FUN_00351390 out-of-slice */
-extern void sk_h_003513a8(void);  /* FUN_003513a8 out-of-slice */
-extern void sk_h_003513b4(uint64_t a1, uint64_t a2);  /* FUN_003513b4 out-of-slice */
-extern void sk_h_00351408(void);  /* FUN_00351408 out-of-slice */
+extern sk_r4_u128_t sk_h_00351360();  /* FUN_00351360 out-of-slice */
+extern void sk_h_00351384();  /* FUN_00351384 out-of-slice */
+extern void sk_h_00351390();  /* FUN_00351390 out-of-slice */
+extern void sk_h_003513a8();  /* FUN_003513a8 out-of-slice */
+extern void sk_h_003513b4();  /* FUN_003513b4 out-of-slice */
+extern void sk_h_00351408();  /* FUN_00351408 out-of-slice */
 extern sk_r4_u128_t sk_h_00351450();  /* FUN_00351450 out-of-slice */
-extern void sk_h_0035145c(uint64_t a1);  /* FUN_0035145c out-of-slice */
-extern void sk_h_0035147c(void);  /* FUN_0035147c out-of-slice */
-extern void sk_h_00351494(uint64_t a1);  /* FUN_00351494 out-of-slice */
-extern void sk_h_003514e8(uint64_t a1);  /* FUN_003514e8 out-of-slice */
-extern void sk_h_00351500(uint64_t a1);  /* FUN_00351500 out-of-slice */
-extern void sk_h_00351554(uint64_t a1);  /* FUN_00351554 out-of-slice */
-extern void sk_h_0035159c(void);  /* FUN_0035159c out-of-slice */
-extern void sk_h_003515a8(void);  /* FUN_003515a8 out-of-slice */
-extern void sk_h_003515d8(void);  /* FUN_003515d8 out-of-slice */
-extern void sk_h_003515e4(void);  /* FUN_003515e4 out-of-slice */
-extern void sk_h_003515f0(void);  /* FUN_003515f0 out-of-slice */
-extern void sk_h_003515fc(uint64_t a1, uint64_t a2);  /* FUN_003515fc out-of-slice */
-extern void sk_h_0035163c(uint64_t a1);  /* FUN_0035163c out-of-slice */
-extern void sk_h_00351660(void);  /* FUN_00351660 out-of-slice */
-extern void sk_h_003516cc(void);  /* FUN_003516cc out-of-slice */
-extern void sk_h_003516fc(uint64_t a1);  /* FUN_003516fc out-of-slice */
+extern sk_r4_u128_t sk_h_0035145c();  /* FUN_0035145c out-of-slice */
+extern void sk_h_0035147c();  /* FUN_0035147c out-of-slice */
+extern void sk_h_00351494();  /* FUN_00351494 out-of-slice */
+extern void sk_h_003514e8();  /* FUN_003514e8 out-of-slice */
+extern void sk_h_00351500();  /* FUN_00351500 out-of-slice */
+extern void sk_h_00351554();  /* FUN_00351554 out-of-slice */
+extern void sk_h_0035159c();  /* FUN_0035159c out-of-slice */
+extern void sk_h_003515a8();  /* FUN_003515a8 out-of-slice */
+extern void sk_h_003515d8();  /* FUN_003515d8 out-of-slice */
+extern void sk_h_003515e4();  /* FUN_003515e4 out-of-slice */
+extern void sk_h_003515f0();  /* FUN_003515f0 out-of-slice */
+extern void sk_h_003515fc();  /* FUN_003515fc out-of-slice */
+extern void sk_h_0035163c();  /* FUN_0035163c out-of-slice */
+extern void sk_h_00351660();  /* FUN_00351660 out-of-slice */
+extern void sk_h_003516cc();  /* FUN_003516cc out-of-slice */
+extern void sk_h_003516fc();  /* FUN_003516fc out-of-slice */
 extern sk_r4_u128_t sk_h_0035172c();  /* FUN_0035172c out-of-slice */
 extern sk_r4_u128_t sk_h_00351738();  /* FUN_00351738 out-of-slice */
 extern sk_r4_u128_t sk_h_003517a8();  /* FUN_003517a8 out-of-slice */
-extern void sk_h_0035187c(void);  /* FUN_0035187c out-of-slice */
+extern void sk_h_0035187c();  /* FUN_0035187c out-of-slice */
 extern sk_r4_u128_t sk_h_00351888();  /* FUN_00351888 out-of-slice */
-extern void sk_h_003518a0(void);  /* FUN_003518a0 out-of-slice */
-extern void sk_h_00351978(void);  /* FUN_00351978 out-of-slice */
-extern void sk_h_003519a8(void);  /* FUN_003519a8 out-of-slice */
+extern void sk_h_003518a0();  /* FUN_003518a0 out-of-slice */
+extern void sk_h_00351978();  /* FUN_00351978 out-of-slice */
+extern void sk_h_003519a8();  /* FUN_003519a8 out-of-slice */
 extern uint64_t sk_h_00351a14();  /* FUN_00351a14 out-of-slice */
-extern void sk_h_00351a44(void);  /* FUN_00351a44 out-of-slice */
-extern void sk_h_00351a50(void);  /* FUN_00351a50 out-of-slice */
-extern void sk_h_00351a5c(void);  /* FUN_00351a5c out-of-slice */
-extern void sk_h_00351aec(void);  /* FUN_00351aec out-of-slice */
-extern void sk_h_00351ba0(uint64_t a1);  /* FUN_00351ba0 out-of-slice */
-extern void sk_h_00351c70(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00351c70 out-of-slice */
-extern void sk_h_00351cd0(uint64_t a1, uint64_t a2);  /* FUN_00351cd0 out-of-slice */
-extern void sk_h_00351d0c(void);  /* FUN_00351d0c out-of-slice */
-extern void sk_h_00351d18(void);  /* FUN_00351d18 out-of-slice */
+extern void sk_h_00351a44();  /* FUN_00351a44 out-of-slice */
+extern void sk_h_00351a50();  /* FUN_00351a50 out-of-slice */
+extern void sk_h_00351a5c();  /* FUN_00351a5c out-of-slice */
+extern void sk_h_00351aec();  /* FUN_00351aec out-of-slice */
+extern void sk_h_00351ba0();  /* FUN_00351ba0 out-of-slice */
+extern void sk_h_00351c70();  /* FUN_00351c70 out-of-slice */
+extern void sk_h_00351cd0();  /* FUN_00351cd0 out-of-slice */
+extern void sk_h_00351d0c();  /* FUN_00351d0c out-of-slice */
+extern void sk_h_00351d18();  /* FUN_00351d18 out-of-slice */
 extern sk_r4_u128_t sk_h_00351d24();  /* FUN_00351d24 out-of-slice */
-extern void sk_h_00351d9c(void);  /* FUN_00351d9c out-of-slice */
+extern void sk_h_00351d9c();  /* FUN_00351d9c out-of-slice */
 extern uint64_t sk_h_00351db4();  /* FUN_00351db4 out-of-slice */
-extern void sk_h_00351dcc(void);  /* FUN_00351dcc out-of-slice */
+extern void sk_h_00351dcc();  /* FUN_00351dcc out-of-slice */
 extern uint64_t sk_h_00351dd8();  /* FUN_00351dd8 out-of-slice */
-extern void sk_h_00351de4(void);  /* FUN_00351de4 out-of-slice */
-extern void sk_h_00351dfc(void);  /* FUN_00351dfc out-of-slice */
+extern void sk_h_00351de4();  /* FUN_00351de4 out-of-slice */
+extern void sk_h_00351dfc();  /* FUN_00351dfc out-of-slice */
 extern sk_r4_u128_t sk_h_00351e08();  /* FUN_00351e08 out-of-slice */
-extern void sk_h_00351e3c(uint64_t a1, uint64_t a2);  /* FUN_00351e3c out-of-slice */
-extern void sk_h_00351f1c(void);  /* FUN_00351f1c out-of-slice */
-extern void sk_h_00351f28(void);  /* FUN_00351f28 out-of-slice */
-extern void sk_h_00351f64(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4);  /* FUN_00351f64 out-of-slice */
-extern void sk_h_00351f70(void);  /* FUN_00351f70 out-of-slice */
-extern void sk_h_00352008(void);  /* FUN_00352008 out-of-slice */
-extern void sk_h_00352038(uint64_t a1);  /* FUN_00352038 out-of-slice */
-extern void sk_h_00352048(uint64_t a1, uint64_t a2);  /* FUN_00352048 out-of-slice */
-extern void sk_h_00352058(void);  /* FUN_00352058 out-of-slice */
-extern void sk_h_00352068(void);  /* FUN_00352068 out-of-slice */
+extern void sk_h_00351e3c();  /* FUN_00351e3c out-of-slice */
+extern void sk_h_00351f1c();  /* FUN_00351f1c out-of-slice */
+extern void sk_h_00351f28();  /* FUN_00351f28 out-of-slice */
+extern void sk_h_00351f64();  /* FUN_00351f64 out-of-slice */
+extern void sk_h_00351f70();  /* FUN_00351f70 out-of-slice */
+extern void sk_h_00352008();  /* FUN_00352008 out-of-slice */
+extern void sk_h_00352038();  /* FUN_00352038 out-of-slice */
+extern void sk_h_00352048();  /* FUN_00352048 out-of-slice */
+extern void sk_h_00352058();  /* FUN_00352058 out-of-slice */
+extern void sk_h_00352068();  /* FUN_00352068 out-of-slice */
 extern long sk_h_003521a4();  /* FUN_003521a4 out-of-slice */
-extern void sk_h_00352370(uint64_t a1);  /* FUN_00352370 out-of-slice */
-extern void sk_h_00352474(void);  /* FUN_00352474 out-of-slice */
-extern void sk_h_00352480(uint64_t a1, uint64_t a2);  /* FUN_00352480 out-of-slice */
+extern void sk_h_00352370();  /* FUN_00352370 out-of-slice */
+extern void sk_h_00352474();  /* FUN_00352474 out-of-slice */
+extern void sk_h_00352480();  /* FUN_00352480 out-of-slice */
 extern sk_r4_u128_t sk_h_003524a4();  /* FUN_003524a4 out-of-slice */
-extern void sk_h_003524c8(void);  /* FUN_003524c8 out-of-slice */
-extern void sk_h_00352554(uint64_t a1);  /* FUN_00352554 out-of-slice */
-extern void sk_h_00352658(void);  /* FUN_00352658 out-of-slice */
-extern void sk_h_00352680(uint64_t a1);  /* FUN_00352680 out-of-slice */
-extern void sk_h_003527e0(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_003527e0 out-of-slice */
-extern void sk_h_0035292c(void);  /* FUN_0035292c out-of-slice */
-extern void sk_h_00352938(void);  /* FUN_00352938 out-of-slice */
+extern void sk_h_003524c8();  /* FUN_003524c8 out-of-slice */
+extern void sk_h_00352554();  /* FUN_00352554 out-of-slice */
+extern void sk_h_00352658();  /* FUN_00352658 out-of-slice */
+extern void sk_h_00352680();  /* FUN_00352680 out-of-slice */
+extern void sk_h_003527e0();  /* FUN_003527e0 out-of-slice */
+extern void sk_h_0035292c();  /* FUN_0035292c out-of-slice */
+extern void sk_h_00352938();  /* FUN_00352938 out-of-slice */
 extern uint64_t sk_h_00352980();  /* FUN_00352980 out-of-slice */
-extern void sk_h_00352a34(void);  /* FUN_00352a34 out-of-slice */
-extern void sk_h_00352a40(void);  /* FUN_00352a40 out-of-slice */
-extern void sk_h_00352a58(void);  /* FUN_00352a58 out-of-slice */
-extern void sk_h_00352a70(uint64_t a1);  /* FUN_00352a70 out-of-slice */
-extern void sk_h_00352ae4(uint64_t a1, uint64_t a2);  /* FUN_00352ae4 out-of-slice */
-extern void sk_h_00352b44(uint64_t a1);  /* FUN_00352b44 out-of-slice */
-extern void sk_h_00352b68(uint64_t a1);  /* FUN_00352b68 out-of-slice */
-extern void sk_h_00352b74(void);  /* FUN_00352b74 out-of-slice */
-extern void sk_h_00352b98(uint64_t a1);  /* FUN_00352b98 out-of-slice */
-extern void sk_h_00352c34(void);  /* FUN_00352c34 out-of-slice */
-extern void sk_h_00352c80(void);  /* FUN_00352c80 out-of-slice */
-extern void sk_h_00352cb0(void);  /* FUN_00352cb0 out-of-slice */
-extern void sk_h_00352cc8(void);  /* FUN_00352cc8 out-of-slice */
-extern void sk_h_00352cd4(void);  /* FUN_00352cd4 out-of-slice */
-extern void sk_h_00352cf8(uint64_t a1);  /* FUN_00352cf8 out-of-slice */
-extern void sk_h_00352d88(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4);  /* FUN_00352d88 out-of-slice */
-extern void sk_h_00352db8(void);  /* FUN_00352db8 out-of-slice */
-extern void sk_h_00352de8(void);  /* FUN_00352de8 out-of-slice */
-extern void sk_h_00352df4(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00352df4 out-of-slice */
-extern void sk_h_00352e00(void);  /* FUN_00352e00 out-of-slice */
-extern void sk_h_00352e6c(void);  /* FUN_00352e6c out-of-slice */
-extern void sk_h_00352e78(void);  /* FUN_00352e78 out-of-slice */
-extern void sk_h_00352f48(uint64_t a1);  /* FUN_00352f48 out-of-slice */
+extern void sk_h_00352a34();  /* FUN_00352a34 out-of-slice */
+extern void sk_h_00352a40();  /* FUN_00352a40 out-of-slice */
+extern void sk_h_00352a58();  /* FUN_00352a58 out-of-slice */
+extern void sk_h_00352a70();  /* FUN_00352a70 out-of-slice */
+extern void sk_h_00352ae4();  /* FUN_00352ae4 out-of-slice */
+extern void sk_h_00352b44();  /* FUN_00352b44 out-of-slice */
+extern void sk_h_00352b68();  /* FUN_00352b68 out-of-slice */
+extern void sk_h_00352b74();  /* FUN_00352b74 out-of-slice */
+extern void sk_h_00352b98();  /* FUN_00352b98 out-of-slice */
+extern void sk_h_00352c34();  /* FUN_00352c34 out-of-slice */
+extern void sk_h_00352c80();  /* FUN_00352c80 out-of-slice */
+extern void sk_h_00352cb0();  /* FUN_00352cb0 out-of-slice */
+extern void sk_h_00352cc8();  /* FUN_00352cc8 out-of-slice */
+extern void sk_h_00352cd4();  /* FUN_00352cd4 out-of-slice */
+extern void sk_h_00352cf8();  /* FUN_00352cf8 out-of-slice */
+extern void sk_h_00352d88();  /* FUN_00352d88 out-of-slice */
+extern void sk_h_00352db8();  /* FUN_00352db8 out-of-slice */
+extern void sk_h_00352de8();  /* FUN_00352de8 out-of-slice */
+extern void sk_h_00352df4();  /* FUN_00352df4 out-of-slice */
+extern void sk_h_00352e00();  /* FUN_00352e00 out-of-slice */
+extern void sk_h_00352e6c();  /* FUN_00352e6c out-of-slice */
+extern void sk_h_00352e78();  /* FUN_00352e78 out-of-slice */
+extern void sk_h_00352f48();  /* FUN_00352f48 out-of-slice */
 extern long sk_h_00352fd4();  /* FUN_00352fd4 out-of-slice */
-extern void sk_h_0035310c(void);  /* FUN_0035310c out-of-slice */
-extern void sk_h_00353154(void);  /* FUN_00353154 out-of-slice */
-extern void sk_h_003531fc(void);  /* FUN_003531fc out-of-slice */
+extern void sk_h_0035310c();  /* FUN_0035310c out-of-slice */
+extern void sk_h_00353154();  /* FUN_00353154 out-of-slice */
+extern void sk_h_003531fc();  /* FUN_003531fc out-of-slice */
 extern uint64_t sk_h_00353378();  /* FUN_00353378 out-of-slice */
 extern long sk_h_00353430();  /* FUN_00353430 out-of-slice */
-extern void sk_h_0035345c(void);  /* FUN_0035345c out-of-slice */
-extern void sk_h_003534bc(void);  /* FUN_003534bc out-of-slice */
-extern void sk_h_003534ec(void);  /* FUN_003534ec out-of-slice */
-extern void sk_h_0035351c(void);  /* FUN_0035351c out-of-slice */
-extern void sk_h_003535a8(void);  /* FUN_003535a8 out-of-slice */
+extern void sk_h_0035345c();  /* FUN_0035345c out-of-slice */
+extern void sk_h_003534bc();  /* FUN_003534bc out-of-slice */
+extern void sk_h_003534ec();  /* FUN_003534ec out-of-slice */
+extern void sk_h_0035351c();  /* FUN_0035351c out-of-slice */
+extern void sk_h_003535a8();  /* FUN_003535a8 out-of-slice */
 extern uint64_t sk_h_0035361c();  /* FUN_0035361c out-of-slice */
-extern void sk_h_0035368c(void);  /* FUN_0035368c out-of-slice */
-extern void sk_h_0035369c(void);  /* FUN_0035369c out-of-slice */
-extern void sk_h_003536d0(void);  /* FUN_003536d0 out-of-slice */
-extern void sk_h_003536ec(void);  /* FUN_003536ec out-of-slice */
-extern void sk_h_003536fc(void);  /* FUN_003536fc out-of-slice */
-extern void sk_h_0035370c(void);  /* FUN_0035370c out-of-slice */
-extern void sk_h_003537d4(void);  /* FUN_003537d4 out-of-slice */
-extern void sk_h_003537fc(void);  /* FUN_003537fc out-of-slice */
-extern void sk_h_00353820(void);  /* FUN_00353820 out-of-slice */
-extern void sk_h_00353918(void);  /* FUN_00353918 out-of-slice */
-extern void sk_h_00353948(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00353948 out-of-slice */
-extern void sk_h_0035399c(void);  /* FUN_0035399c out-of-slice */
-extern void sk_h_003539e4(void);  /* FUN_003539e4 out-of-slice */
-extern void sk_h_00353a24(void);  /* FUN_00353a24 out-of-slice */
-extern void sk_h_00353ad8(void);  /* FUN_00353ad8 out-of-slice */
-extern void sk_h_00353b40(void);  /* FUN_00353b40 out-of-slice */
-extern void sk_h_00353b58(void);  /* FUN_00353b58 out-of-slice */
-extern void sk_h_00353b70(uint64_t a1);  /* FUN_00353b70 out-of-slice */
-extern void sk_h_00353c30(void);  /* FUN_00353c30 out-of-slice */
-extern void sk_h_00353c6c(void);  /* FUN_00353c6c out-of-slice */
+extern void sk_h_0035368c();  /* FUN_0035368c out-of-slice */
+extern void sk_h_0035369c();  /* FUN_0035369c out-of-slice */
+extern void sk_h_003536d0();  /* FUN_003536d0 out-of-slice */
+extern void sk_h_003536ec();  /* FUN_003536ec out-of-slice */
+extern void sk_h_003536fc();  /* FUN_003536fc out-of-slice */
+extern void sk_h_0035370c();  /* FUN_0035370c out-of-slice */
+extern void sk_h_003537d4();  /* FUN_003537d4 out-of-slice */
+extern void sk_h_003537fc();  /* FUN_003537fc out-of-slice */
+extern void sk_h_00353820();  /* FUN_00353820 out-of-slice */
+extern void sk_h_00353918();  /* FUN_00353918 out-of-slice */
+extern void sk_h_00353948();  /* FUN_00353948 out-of-slice */
+extern void sk_h_0035399c();  /* FUN_0035399c out-of-slice */
+extern void sk_h_003539e4();  /* FUN_003539e4 out-of-slice */
+extern void sk_h_00353a24();  /* FUN_00353a24 out-of-slice */
+extern void sk_h_00353ad8();  /* FUN_00353ad8 out-of-slice */
+extern void sk_h_00353b40();  /* FUN_00353b40 out-of-slice */
+extern void sk_h_00353b58();  /* FUN_00353b58 out-of-slice */
+extern void sk_h_00353b70();  /* FUN_00353b70 out-of-slice */
+extern void sk_h_00353c30();  /* FUN_00353c30 out-of-slice */
+extern void sk_h_00353c6c();  /* FUN_00353c6c out-of-slice */
 extern uint64_t sk_h_00353c78();  /* FUN_00353c78 out-of-slice */
-extern void sk_h_00353ccc(void);  /* FUN_00353ccc out-of-slice */
-extern void sk_h_00353cf0(void);  /* FUN_00353cf0 out-of-slice */
-extern void sk_h_00353dac(uint64_t a1);  /* FUN_00353dac out-of-slice */
-extern void sk_h_00353e50(void);  /* FUN_00353e50 out-of-slice */
+extern void sk_h_00353ccc();  /* FUN_00353ccc out-of-slice */
+extern void sk_h_00353cf0();  /* FUN_00353cf0 out-of-slice */
+extern void sk_h_00353dac();  /* FUN_00353dac out-of-slice */
+extern void sk_h_00353e50();  /* FUN_00353e50 out-of-slice */
 extern sk_r4_u128_t sk_h_00353e7c();  /* FUN_00353e7c out-of-slice */
 extern uint sk_h_00353ee4();  /* FUN_00353ee4 out-of-slice */
-extern void sk_h_00353f88(void);  /* FUN_00353f88 out-of-slice */
-extern void sk_h_003540ac(uint64_t a1);  /* FUN_003540ac out-of-slice */
-extern void sk_h_0035414c(void);  /* FUN_0035414c out-of-slice */
-extern void sk_h_00354168(void);  /* FUN_00354168 out-of-slice */
-extern void sk_h_00354184(void);  /* FUN_00354184 out-of-slice */
-extern void sk_h_003541a0(void);  /* FUN_003541a0 out-of-slice */
-extern void sk_h_003541bc(void);  /* FUN_003541bc out-of-slice */
-extern void sk_h_003541d8(void);  /* FUN_003541d8 out-of-slice */
-extern void sk_h_003541f4(void);  /* FUN_003541f4 out-of-slice */
-extern void sk_h_00354210(void);  /* FUN_00354210 out-of-slice */
-extern void sk_h_0035422c(void);  /* FUN_0035422c out-of-slice */
-extern void sk_h_00354248(void);  /* FUN_00354248 out-of-slice */
-extern void sk_h_003542c4(void);  /* FUN_003542c4 out-of-slice */
-extern void sk_h_00354318(void);  /* FUN_00354318 out-of-slice */
-extern void sk_h_00354324(void);  /* FUN_00354324 out-of-slice */
-extern void sk_h_0035437c(void);  /* FUN_0035437c out-of-slice */
-extern void sk_h_003543f8(void);  /* FUN_003543f8 out-of-slice */
-extern void sk_h_00354570(uint64_t a1);  /* FUN_00354570 out-of-slice */
-extern void sk_h_003545d0(void);  /* FUN_003545d0 out-of-slice */
-extern void sk_h_00354624(uint64_t a1);  /* FUN_00354624 out-of-slice */
-extern void sk_h_00354654(void);  /* FUN_00354654 out-of-slice */
-extern void sk_h_003546a8(void);  /* FUN_003546a8 out-of-slice */
-extern void sk_h_00354774(void);  /* FUN_00354774 out-of-slice */
-extern void sk_h_003547ec(void);  /* FUN_003547ec out-of-slice */
-extern void sk_h_00354858(void);  /* FUN_00354858 out-of-slice */
-extern void sk_h_003548e8(void);  /* FUN_003548e8 out-of-slice */
-extern void sk_h_00354948(uint64_t a1);  /* FUN_00354948 out-of-slice */
-extern void sk_h_003549d8(void);  /* FUN_003549d8 out-of-slice */
-extern void sk_h_003549e4(void);  /* FUN_003549e4 out-of-slice */
-extern void sk_h_00354a00(void);  /* FUN_00354a00 out-of-slice */
-extern void sk_h_00354a0c(uint64_t a1);  /* FUN_00354a0c out-of-slice */
-extern void sk_h_00354a6c(void);  /* FUN_00354a6c out-of-slice */
-extern void sk_h_00354a78(void);  /* FUN_00354a78 out-of-slice */
-extern void sk_h_00354ac8(uint64_t a1);  /* FUN_00354ac8 out-of-slice */
+extern void sk_h_00353f88();  /* FUN_00353f88 out-of-slice */
+extern void sk_h_003540ac();  /* FUN_003540ac out-of-slice */
+extern void sk_h_0035414c();  /* FUN_0035414c out-of-slice */
+extern void sk_h_00354168();  /* FUN_00354168 out-of-slice */
+extern void sk_h_00354184();  /* FUN_00354184 out-of-slice */
+extern void sk_h_003541a0();  /* FUN_003541a0 out-of-slice */
+extern void sk_h_003541bc();  /* FUN_003541bc out-of-slice */
+extern void sk_h_003541d8();  /* FUN_003541d8 out-of-slice */
+extern void sk_h_003541f4();  /* FUN_003541f4 out-of-slice */
+extern void sk_h_00354210();  /* FUN_00354210 out-of-slice */
+extern void sk_h_0035422c();  /* FUN_0035422c out-of-slice */
+extern void sk_h_00354248();  /* FUN_00354248 out-of-slice */
+extern void sk_h_003542c4();  /* FUN_003542c4 out-of-slice */
+extern void sk_h_00354318();  /* FUN_00354318 out-of-slice */
+extern void sk_h_00354324();  /* FUN_00354324 out-of-slice */
+extern void sk_h_0035437c();  /* FUN_0035437c out-of-slice */
+extern void sk_h_003543f8();  /* FUN_003543f8 out-of-slice */
+extern void sk_h_00354570();  /* FUN_00354570 out-of-slice */
+extern void sk_h_003545d0();  /* FUN_003545d0 out-of-slice */
+extern void sk_h_00354624();  /* FUN_00354624 out-of-slice */
+extern void sk_h_00354654();  /* FUN_00354654 out-of-slice */
+extern void sk_h_003546a8();  /* FUN_003546a8 out-of-slice */
+extern void sk_h_00354774();  /* FUN_00354774 out-of-slice */
+extern void sk_h_003547ec();  /* FUN_003547ec out-of-slice */
+extern void sk_h_00354858();  /* FUN_00354858 out-of-slice */
+extern void sk_h_003548e8();  /* FUN_003548e8 out-of-slice */
+extern void sk_h_00354948();  /* FUN_00354948 out-of-slice */
+extern void sk_h_003549d8();  /* FUN_003549d8 out-of-slice */
+extern void sk_h_003549e4();  /* FUN_003549e4 out-of-slice */
+extern void sk_h_00354a00();  /* FUN_00354a00 out-of-slice */
+extern void sk_h_00354a0c();  /* FUN_00354a0c out-of-slice */
+extern void sk_h_00354a6c();  /* FUN_00354a6c out-of-slice */
+extern void sk_h_00354a78();  /* FUN_00354a78 out-of-slice */
+extern void sk_h_00354ac8();  /* FUN_00354ac8 out-of-slice */
 extern uint64_t sk_h_00354b5c();  /* FUN_00354b5c out-of-slice */
-extern void sk_h_00354b74(void);  /* FUN_00354b74 out-of-slice */
-extern void sk_h_00354b8c(void);  /* FUN_00354b8c out-of-slice */
-extern void sk_h_00354b98(void);  /* FUN_00354b98 out-of-slice */
-extern void sk_h_00354ba4(void);  /* FUN_00354ba4 out-of-slice */
-extern void sk_h_00354bd4(void);  /* FUN_00354bd4 out-of-slice */
-extern void sk_h_00354c38(void);  /* FUN_00354c38 out-of-slice */
-extern void sk_h_00354cd8(void);  /* FUN_00354cd8 out-of-slice */
-extern void sk_h_00354d5c(void);  /* FUN_00354d5c out-of-slice */
-extern void sk_h_00354ddc(void);  /* FUN_00354ddc out-of-slice */
+extern void sk_h_00354b74();  /* FUN_00354b74 out-of-slice */
+extern void sk_h_00354b8c();  /* FUN_00354b8c out-of-slice */
+extern void sk_h_00354b98();  /* FUN_00354b98 out-of-slice */
+extern void sk_h_00354ba4();  /* FUN_00354ba4 out-of-slice */
+extern void sk_h_00354bd4();  /* FUN_00354bd4 out-of-slice */
+extern void sk_h_00354c38();  /* FUN_00354c38 out-of-slice */
+extern void sk_h_00354cd8();  /* FUN_00354cd8 out-of-slice */
+extern void sk_h_00354d5c();  /* FUN_00354d5c out-of-slice */
+extern void sk_h_00354ddc();  /* FUN_00354ddc out-of-slice */
 extern sk_r4_u128_t sk_h_00354e0c();  /* FUN_00354e0c out-of-slice */
-extern void sk_h_00354f1c(void);  /* FUN_00354f1c out-of-slice */
-extern void sk_h_0035512c(void);  /* FUN_0035512c out-of-slice */
-extern void sk_h_003552ac(void);  /* FUN_003552ac out-of-slice */
-extern void sk_h_00355374(void);  /* FUN_00355374 out-of-slice */
-extern void sk_h_00355384(void);  /* FUN_00355384 out-of-slice */
-extern void sk_h_003553a8(void);  /* FUN_003553a8 out-of-slice */
-extern void sk_h_003553e4(void);  /* FUN_003553e4 out-of-slice */
-extern void sk_h_00355418(uint64_t a1);  /* FUN_00355418 out-of-slice */
-extern void sk_h_0035543c(void);  /* FUN_0035543c out-of-slice */
-extern void sk_h_0035578c(uint64_t a1);  /* FUN_0035578c out-of-slice */
-extern void sk_h_003558a8(void);  /* FUN_003558a8 out-of-slice */
-extern void sk_h_00355a14(void);  /* FUN_00355a14 out-of-slice */
-extern void sk_h_00355a58(void);  /* FUN_00355a58 out-of-slice */
-extern void sk_h_00355bc4(void);  /* FUN_00355bc4 out-of-slice */
-extern void sk_h_00355be8(uint64_t a1, uint64_t a2);  /* FUN_00355be8 out-of-slice */
-extern void sk_h_00355c1c(void);  /* FUN_00355c1c out-of-slice */
-extern void sk_h_00355cc8(void);  /* FUN_00355cc8 out-of-slice */
-extern void sk_h_00355d40(void);  /* FUN_00355d40 out-of-slice */
-extern void sk_h_00355d6c(void);  /* FUN_00355d6c out-of-slice */
-extern void sk_h_00355d90(void);  /* FUN_00355d90 out-of-slice */
-extern void sk_h_00355e50(void);  /* FUN_00355e50 out-of-slice */
-extern void sk_h_00355e68(void);  /* FUN_00355e68 out-of-slice */
-extern void sk_h_00355e74(void);  /* FUN_00355e74 out-of-slice */
-extern void sk_h_00355eec(void);  /* FUN_00355eec out-of-slice */
-extern void sk_h_00355f04(void);  /* FUN_00355f04 out-of-slice */
-extern void sk_h_00355ff4(void);  /* FUN_00355ff4 out-of-slice */
-extern void sk_h_003560b4(void);  /* FUN_003560b4 out-of-slice */
-extern void sk_h_00356104(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00356104 out-of-slice */
-extern void sk_h_003561e8(void);  /* FUN_003561e8 out-of-slice */
-extern void sk_h_00356200(void);  /* FUN_00356200 out-of-slice */
-extern void sk_h_00356284(void);  /* FUN_00356284 out-of-slice */
-extern void sk_h_003562d4(void);  /* FUN_003562d4 out-of-slice */
-extern void sk_h_003562e0(void);  /* FUN_003562e0 out-of-slice */
+extern void sk_h_00354f1c();  /* FUN_00354f1c out-of-slice */
+extern void sk_h_0035512c();  /* FUN_0035512c out-of-slice */
+extern void sk_h_003552ac();  /* FUN_003552ac out-of-slice */
+extern void sk_h_00355374();  /* FUN_00355374 out-of-slice */
+extern void sk_h_00355384();  /* FUN_00355384 out-of-slice */
+extern void sk_h_003553a8();  /* FUN_003553a8 out-of-slice */
+extern void sk_h_003553e4();  /* FUN_003553e4 out-of-slice */
+extern void sk_h_00355418();  /* FUN_00355418 out-of-slice */
+extern void sk_h_0035543c();  /* FUN_0035543c out-of-slice */
+extern void sk_h_0035578c();  /* FUN_0035578c out-of-slice */
+extern void sk_h_003558a8();  /* FUN_003558a8 out-of-slice */
+extern void sk_h_00355a14();  /* FUN_00355a14 out-of-slice */
+extern void sk_h_00355a58();  /* FUN_00355a58 out-of-slice */
+extern void sk_h_00355bc4();  /* FUN_00355bc4 out-of-slice */
+extern void sk_h_00355be8();  /* FUN_00355be8 out-of-slice */
+extern void sk_h_00355c1c();  /* FUN_00355c1c out-of-slice */
+extern void sk_h_00355cc8();  /* FUN_00355cc8 out-of-slice */
+extern void sk_h_00355d40();  /* FUN_00355d40 out-of-slice */
+extern void sk_h_00355d6c();  /* FUN_00355d6c out-of-slice */
+extern void sk_h_00355d90();  /* FUN_00355d90 out-of-slice */
+extern void sk_h_00355e50();  /* FUN_00355e50 out-of-slice */
+extern void sk_h_00355e68();  /* FUN_00355e68 out-of-slice */
+extern void sk_h_00355e74();  /* FUN_00355e74 out-of-slice */
+extern void sk_h_00355eec();  /* FUN_00355eec out-of-slice */
+extern void sk_h_00355f04();  /* FUN_00355f04 out-of-slice */
+extern void sk_h_00355ff4();  /* FUN_00355ff4 out-of-slice */
+extern void sk_h_003560b4();  /* FUN_003560b4 out-of-slice */
+extern void sk_h_00356104();  /* FUN_00356104 out-of-slice */
+extern void sk_h_003561e8();  /* FUN_003561e8 out-of-slice */
+extern void sk_h_00356200();  /* FUN_00356200 out-of-slice */
+extern void sk_h_00356284();  /* FUN_00356284 out-of-slice */
+extern void sk_h_003562d4();  /* FUN_003562d4 out-of-slice */
+extern void sk_h_003562e0();  /* FUN_003562e0 out-of-slice */
 extern sk_r4_u128_t sk_h_00356340();  /* FUN_00356340 out-of-slice */
-extern void sk_h_00356370(uint64_t a1);  /* FUN_00356370 out-of-slice */
-extern void sk_h_0035638c(void);  /* FUN_0035638c out-of-slice */
-extern void sk_h_003563e0(void);  /* FUN_003563e0 out-of-slice */
-extern void sk_h_00356454(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00356454 out-of-slice */
-extern void sk_h_003564e8(void);  /* FUN_003564e8 out-of-slice */
-extern void sk_h_00356508(void);  /* FUN_00356508 out-of-slice */
-extern void sk_h_003567d4(void);  /* FUN_003567d4 out-of-slice */
-extern void sk_h_003567e0(void);  /* FUN_003567e0 out-of-slice */
-extern void sk_h_00356858(void);  /* FUN_00356858 out-of-slice */
-extern void sk_h_0035694c(void);  /* FUN_0035694c out-of-slice */
-extern void sk_h_00356a38(void);  /* FUN_00356a38 out-of-slice */
-extern void sk_h_00356aa0(uint64_t a1);  /* FUN_00356aa0 out-of-slice */
+extern void sk_h_00356370();  /* FUN_00356370 out-of-slice */
+extern void sk_h_0035638c();  /* FUN_0035638c out-of-slice */
+extern void sk_h_003563e0();  /* FUN_003563e0 out-of-slice */
+extern void sk_h_00356454();  /* FUN_00356454 out-of-slice */
+extern void sk_h_003564e8();  /* FUN_003564e8 out-of-slice */
+extern void sk_h_00356508();  /* FUN_00356508 out-of-slice */
+extern void sk_h_003567d4();  /* FUN_003567d4 out-of-slice */
+extern void sk_h_003567e0();  /* FUN_003567e0 out-of-slice */
+extern void sk_h_00356858();  /* FUN_00356858 out-of-slice */
+extern void sk_h_0035694c();  /* FUN_0035694c out-of-slice */
+extern void sk_h_00356a38();  /* FUN_00356a38 out-of-slice */
+extern sk_r4_u128_t sk_h_00356aa0();  /* FUN_00356aa0 out-of-slice */
 extern sk_r4_u128_t sk_h_00356b44();  /* FUN_00356b44 out-of-slice */
-extern void sk_h_00356b50(void);  /* FUN_00356b50 out-of-slice */
-extern void sk_h_00356b68(void);  /* FUN_00356b68 out-of-slice */
-extern void sk_h_00356c54(void);  /* FUN_00356c54 out-of-slice */
-extern void sk_h_00356c84(void);  /* FUN_00356c84 out-of-slice */
-extern void sk_h_00356cd4(void);  /* FUN_00356cd4 out-of-slice */
-extern void sk_h_00356e1c(void);  /* FUN_00356e1c out-of-slice */
-extern void sk_h_00356e28(void);  /* FUN_00356e28 out-of-slice */
+extern void sk_h_00356b50();  /* FUN_00356b50 out-of-slice */
+extern void sk_h_00356b68();  /* FUN_00356b68 out-of-slice */
+extern void sk_h_00356c54();  /* FUN_00356c54 out-of-slice */
+extern void sk_h_00356c84();  /* FUN_00356c84 out-of-slice */
+extern void sk_h_00356cd4();  /* FUN_00356cd4 out-of-slice */
+extern void sk_h_00356e1c();  /* FUN_00356e1c out-of-slice */
+extern void sk_h_00356e28();  /* FUN_00356e28 out-of-slice */
 extern uint64_t sk_h_00356e84();  /* FUN_00356e84 out-of-slice */
-extern void sk_h_00357068(void);  /* FUN_00357068 out-of-slice */
-extern void sk_h_003570a0(uint64_t a1);  /* FUN_003570a0 out-of-slice */
-extern void sk_h_00357198(void);  /* FUN_00357198 out-of-slice */
-extern void sk_h_0035725c(void);  /* FUN_0035725c out-of-slice */
-extern void sk_h_00357280(void);  /* FUN_00357280 out-of-slice */
-extern void sk_h_003572c4(void);  /* FUN_003572c4 out-of-slice */
-extern void sk_h_00357374(void);  /* FUN_00357374 out-of-slice */
-extern void sk_h_00357380(void);  /* FUN_00357380 out-of-slice */
-extern void sk_h_00357540(uint64_t a1);  /* FUN_00357540 out-of-slice */
-extern void sk_h_00357564(uint64_t a1, uint64_t a2, uint64_t a3);  /* FUN_00357564 out-of-slice */
-extern void sk_h_00357688(void);  /* FUN_00357688 out-of-slice */
-extern void sk_h_0035780c(void);  /* FUN_0035780c out-of-slice */
-extern void sk_h_0035785c(void);  /* FUN_0035785c out-of-slice */
-extern void sk_h_00357868(void);  /* FUN_00357868 out-of-slice */
-extern void sk_h_00357b10(void);  /* FUN_00357b10 out-of-slice */
-extern void sk_h_00357b20(void);  /* FUN_00357b20 out-of-slice */
-extern void sk_h_00357b3c(void);  /* FUN_00357b3c out-of-slice */
-extern void sk_h_00357c2c(void);  /* FUN_00357c2c out-of-slice */
-extern void sk_h_00357c74(uint64_t a1);  /* FUN_00357c74 out-of-slice */
-extern void sk_h_00357cb4(void);  /* FUN_00357cb4 out-of-slice */
-extern void sk_h_00357e34(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4);  /* FUN_00357e34 out-of-slice */
-extern void sk_h_00358268(void);  /* FUN_00358268 out-of-slice */
-extern void sk_h_003584f8(void);  /* FUN_003584f8 out-of-slice */
-extern void sk_h_003585e8(void);  /* FUN_003585e8 out-of-slice */
-extern void sk_h_0035860c(void);  /* FUN_0035860c out-of-slice */
-extern void sk_h_00358618(void);  /* FUN_00358618 out-of-slice */
+extern void sk_h_00357068();  /* FUN_00357068 out-of-slice */
+extern uint64_t sk_h_003570a0();  /* FUN_003570a0 out-of-slice */
+extern void sk_h_00357198();  /* FUN_00357198 out-of-slice */
+extern void sk_h_0035725c();  /* FUN_0035725c out-of-slice */
+extern void sk_h_00357280();  /* FUN_00357280 out-of-slice */
+extern void sk_h_003572c4();  /* FUN_003572c4 out-of-slice */
+extern void sk_h_00357374();  /* FUN_00357374 out-of-slice */
+extern void sk_h_00357380();  /* FUN_00357380 out-of-slice */
+extern void sk_h_00357540();  /* FUN_00357540 out-of-slice */
+extern void sk_h_00357564();  /* FUN_00357564 out-of-slice */
+extern void sk_h_00357688();  /* FUN_00357688 out-of-slice */
+extern void sk_h_0035780c();  /* FUN_0035780c out-of-slice */
+extern void sk_h_0035785c();  /* FUN_0035785c out-of-slice */
+extern void sk_h_00357868();  /* FUN_00357868 out-of-slice */
+extern void sk_h_00357b10();  /* FUN_00357b10 out-of-slice */
+extern void sk_h_00357b20();  /* FUN_00357b20 out-of-slice */
+extern void sk_h_00357b3c();  /* FUN_00357b3c out-of-slice */
+extern void sk_h_00357c2c();  /* FUN_00357c2c out-of-slice */
+extern void sk_h_00357c74();  /* FUN_00357c74 out-of-slice */
+extern void sk_h_00357cb4();  /* FUN_00357cb4 out-of-slice */
+extern void sk_h_00357e34();  /* FUN_00357e34 out-of-slice */
+extern void sk_h_00358268();  /* FUN_00358268 out-of-slice */
+extern void sk_h_003584f8();  /* FUN_003584f8 out-of-slice */
+extern void sk_h_003585e8();  /* FUN_003585e8 out-of-slice */
+extern void sk_h_0035860c();  /* FUN_0035860c out-of-slice */
+extern void sk_h_00358618();  /* FUN_00358618 out-of-slice */
 extern uint64_t sk_h_0035866c();  /* FUN_0035866c out-of-slice */
-extern void sk_h_0035869c(void);  /* FUN_0035869c out-of-slice */
-extern void sk_h_00358828(void);  /* FUN_00358828 out-of-slice */
-extern void sk_h_00358834(void);  /* FUN_00358834 out-of-slice */
-extern void sk_h_00358840(uint64_t a1);  /* FUN_00358840 out-of-slice */
-extern void sk_h_00358858(void);  /* FUN_00358858 out-of-slice */
-extern void sk_h_0035893c(void);  /* FUN_0035893c out-of-slice */
-extern void sk_h_00358984(uint64_t a1);  /* FUN_00358984 out-of-slice */
-extern void sk_h_00358dd0(void);  /* FUN_00358dd0 out-of-slice */
-extern void sk_h_00358de8(void);  /* FUN_00358de8 out-of-slice */
-extern void sk_h_00358e00(uint64_t a1);  /* FUN_00358e00 out-of-slice */
-extern void sk_h_00358e18(void);  /* FUN_00358e18 out-of-slice */
-extern void sk_h_00358e58(void);  /* FUN_00358e58 out-of-slice */
-extern void sk_h_00358edc(void);  /* FUN_00358edc out-of-slice */
+extern void sk_h_0035869c();  /* FUN_0035869c out-of-slice */
+extern void sk_h_00358828();  /* FUN_00358828 out-of-slice */
+extern void sk_h_00358834();  /* FUN_00358834 out-of-slice */
+extern void sk_h_00358840();  /* FUN_00358840 out-of-slice */
+extern void sk_h_00358858();  /* FUN_00358858 out-of-slice */
+extern void sk_h_0035893c();  /* FUN_0035893c out-of-slice */
+extern void sk_h_00358984();  /* FUN_00358984 out-of-slice */
+extern void sk_h_00358dd0();  /* FUN_00358dd0 out-of-slice */
+extern void sk_h_00358de8();  /* FUN_00358de8 out-of-slice */
+extern void sk_h_00358e00();  /* FUN_00358e00 out-of-slice */
+extern void sk_h_00358e18();  /* FUN_00358e18 out-of-slice */
+extern void sk_h_00358e58();  /* FUN_00358e58 out-of-slice */
+extern void sk_h_00358edc();  /* FUN_00358edc out-of-slice */
 extern uint64_t sk_h_00358fb4();  /* FUN_00358fb4 out-of-slice */
-extern void sk_h_00358fc8(uint64_t a1);  /* FUN_00358fc8 out-of-slice */
-extern void sk_h_0035900c(void);  /* FUN_0035900c out-of-slice */
-extern void sk_h_00359178(uint64_t a1);  /* FUN_00359178 out-of-slice */
-extern void sk_h_003591b4(void);  /* FUN_003591b4 out-of-slice */
-extern void sk_h_003593a8(void);  /* FUN_003593a8 out-of-slice */
-extern void sk_h_0035940c(uint64_t a1);  /* FUN_0035940c out-of-slice */
-extern void sk_h_00359524(void);  /* FUN_00359524 out-of-slice */
-extern void sk_h_00359658(uint64_t a1);  /* FUN_00359658 out-of-slice */
-extern void sk_h_003596c4(void);  /* FUN_003596c4 out-of-slice */
-extern void sk_h_003596f8(void);  /* FUN_003596f8 out-of-slice */
-extern void sk_h_0035972c(void);  /* FUN_0035972c out-of-slice */
-extern void sk_h_00359760(void);  /* FUN_00359760 out-of-slice */
-extern void sk_h_003597c0(void);  /* FUN_003597c0 out-of-slice */
+extern void sk_h_00358fc8();  /* FUN_00358fc8 out-of-slice */
+extern void sk_h_0035900c();  /* FUN_0035900c out-of-slice */
+extern void sk_h_00359178();  /* FUN_00359178 out-of-slice */
+extern void sk_h_003591b4();  /* FUN_003591b4 out-of-slice */
+extern void sk_h_003593a8();  /* FUN_003593a8 out-of-slice */
+extern void sk_h_0035940c();  /* FUN_0035940c out-of-slice */
+extern void sk_h_00359524();  /* FUN_00359524 out-of-slice */
+extern void sk_h_00359658();  /* FUN_00359658 out-of-slice */
+extern void sk_h_003596c4();  /* FUN_003596c4 out-of-slice */
+extern void sk_h_003596f8();  /* FUN_003596f8 out-of-slice */
+extern void sk_h_0035972c();  /* FUN_0035972c out-of-slice */
+extern void sk_h_00359760();  /* FUN_00359760 out-of-slice */
+extern void sk_h_003597c0();  /* FUN_003597c0 out-of-slice */
 extern long sk_h_00359874();  /* FUN_00359874 out-of-slice */
-extern void sk_h_003599cc(void);  /* FUN_003599cc out-of-slice */
-extern void sk_h_003599e4(void);  /* FUN_003599e4 out-of-slice */
-extern void sk_h_003599f8(void);  /* FUN_003599f8 out-of-slice */
-extern void sk_h_00359a84(uint64_t a1);  /* FUN_00359a84 out-of-slice */
-extern void sk_h_00359aa4(void);  /* FUN_00359aa4 out-of-slice */
+extern void sk_h_003599cc();  /* FUN_003599cc out-of-slice */
+extern void sk_h_003599e4();  /* FUN_003599e4 out-of-slice */
+extern void sk_h_003599f8();  /* FUN_003599f8 out-of-slice */
+extern void sk_h_00359a84();  /* FUN_00359a84 out-of-slice */
+extern void sk_h_00359aa4();  /* FUN_00359aa4 out-of-slice */
 extern sk_r4_u128_t sk_h_00359b18();  /* FUN_00359b18 out-of-slice */
-extern void sk_h_00359b64(void);  /* FUN_00359b64 out-of-slice */
-extern void sk_h_00359c4c(void);  /* FUN_00359c4c out-of-slice */
-extern void sk_h_00359c90(void);  /* FUN_00359c90 out-of-slice */
-extern void sk_h_00359cd8(uint64_t a1);  /* FUN_00359cd8 out-of-slice */
-extern void sk_h_00359ce4(void);  /* FUN_00359ce4 out-of-slice */
-extern void sk_h_00359d38(uint64_t a1);  /* FUN_00359d38 out-of-slice */
-extern void sk_h_0035a20c(void);  /* FUN_0035a20c out-of-slice */
-extern void sk_h_0035a238(void);  /* FUN_0035a238 out-of-slice */
-extern void sk_h_0035a25c(void);  /* FUN_0035a25c out-of-slice */
-extern void sk_h_0035a578(void);  /* FUN_0035a578 out-of-slice */
-extern void sk_h_0035a5b4(void);  /* FUN_0035a5b4 out-of-slice */
-extern void sk_h_0035a608(void);  /* FUN_0035a608 out-of-slice */
-extern void sk_h_0035a684(void);  /* FUN_0035a684 out-of-slice */
-extern void sk_h_0035a69c(void);  /* FUN_0035a69c out-of-slice */
-extern void sk_h_0035a6a8(void);  /* FUN_0035a6a8 out-of-slice */
+extern void sk_h_00359b64();  /* FUN_00359b64 out-of-slice */
+extern void sk_h_00359c4c();  /* FUN_00359c4c out-of-slice */
+extern void sk_h_00359c90();  /* FUN_00359c90 out-of-slice */
+extern void sk_h_00359cd8();  /* FUN_00359cd8 out-of-slice */
+extern void sk_h_00359ce4();  /* FUN_00359ce4 out-of-slice */
+extern void sk_h_00359d38();  /* FUN_00359d38 out-of-slice */
+extern void sk_h_0035a20c();  /* FUN_0035a20c out-of-slice */
+extern void sk_h_0035a238();  /* FUN_0035a238 out-of-slice */
+extern void sk_h_0035a25c();  /* FUN_0035a25c out-of-slice */
+extern void sk_h_0035a578();  /* FUN_0035a578 out-of-slice */
+extern void sk_h_0035a5b4();  /* FUN_0035a5b4 out-of-slice */
+extern void sk_h_0035a608();  /* FUN_0035a608 out-of-slice */
+extern void sk_h_0035a684();  /* FUN_0035a684 out-of-slice */
+extern void sk_h_0035a69c();  /* FUN_0035a69c out-of-slice */
+extern void sk_h_0035a6a8();  /* FUN_0035a6a8 out-of-slice */
 extern sk_r4_u128_t sk_h_0035a6f4();  /* FUN_0035a6f4 out-of-slice */
 extern sk_r4_u128_t sk_h_0035a86c();  /* FUN_0035a86c out-of-slice */
-extern void sk_h_0035a924(void);  /* FUN_0035a924 out-of-slice */
-extern void sk_h_0035a938(void);  /* FUN_0035a938 out-of-slice */
-extern void sk_h_0035aaa8(void);  /* FUN_0035aaa8 out-of-slice */
-extern void sk_h_0035aab4(void);  /* FUN_0035aab4 out-of-slice */
-extern void sk_h_0035aaf0(void);  /* FUN_0035aaf0 out-of-slice */
-extern void sk_h_0035aafc(void);  /* FUN_0035aafc out-of-slice */
-extern void sk_h_0035acfc(void);  /* FUN_0035acfc out-of-slice */
-extern void sk_h_00361528(void);  /* FUN_00361528 out-of-slice */
+extern void sk_h_0035a924();  /* FUN_0035a924 out-of-slice */
+extern void sk_h_0035a938();  /* FUN_0035a938 out-of-slice */
+extern void sk_h_0035aaa8();  /* FUN_0035aaa8 out-of-slice */
+extern void sk_h_0035aab4();  /* FUN_0035aab4 out-of-slice */
+extern void sk_h_0035aaf0();  /* FUN_0035aaf0 out-of-slice */
+extern void sk_h_0035aafc();  /* FUN_0035aafc out-of-slice */
+extern void sk_h_0035acfc();  /* FUN_0035acfc out-of-slice */
+extern void sk_h_00361528();  /* FUN_00361528 out-of-slice */
 extern uint64_t sk_h_00365b6c();  /* FUN_00365b6c out-of-slice */
-extern void sk_h_0036986c(void);  /* FUN_0036986c out-of-slice */
+extern void sk_h_0036986c();  /* FUN_0036986c out-of-slice */
 extern long sk_h_0036a940();  /* FUN_0036a940 out-of-slice */
 extern long sk_h_0036a9a0();  /* FUN_0036a9a0 out-of-slice */
-extern void sk_h_0036b6ac(void);  /* FUN_0036b6ac out-of-slice */
-extern void sk_h_003722e4(uint64_t a1, uint64_t a2);  /* FUN_003722e4 out-of-slice */
-extern void sk_h_003a25e0(uint64_t a1, uint64_t a2);  /* FUN_003a25e0 out-of-slice */
+extern void sk_h_0036b6ac();  /* FUN_0036b6ac out-of-slice */
+extern long sk_h_003722e4();  /* FUN_003722e4 out-of-slice */
+extern void sk_h_003a25e0();  /* FUN_003a25e0 out-of-slice */
 extern uint64_t sk_h_003a261c();  /* FUN_003a261c out-of-slice */
 
 
-extern void sk_h_00319f3c(uint64_t, ...);  /* FUN_00319f3c fn-ptr */
-extern void sk_h_0031a20c(uint64_t, ...);  /* FUN_0031a20c fn-ptr */
+extern void sk_h_00319f3c();  /* FUN_00319f3c fn-ptr */
+extern void sk_h_0031a20c();  /* FUN_0031a20c fn-ptr */
 
 /* Global data references (Ghidra data symbols / DAT_ & uRam_ addresses). */
 extern uint64_t _DAT_004baeb0;
@@ -908,7 +905,7 @@ extern uint64_t datum_006577e0;
 extern void (*datum_00658c00)(...);        /* function-pointer global */
 
 /* Out-of-slice helper referenced as a value (function address passed as argument). */
-extern void sk_h_002060d4(void);           /* FUN_002060d4 out-of-slice */
+extern void sk_h_002060d4();           /* FUN_002060d4 out-of-slice */
 
 /* Functions defined later in this file but referenced (as values) before their
  * definition.  Forward declarations matching the bodies defined below. */
@@ -1078,7 +1075,7 @@ extern void sk_r4_001c4284(void);
 extern uint sk_r4_001c43f4(void);
 extern uint sk_r4_001c4424(void);
 extern uint sk_r4_001c4428(void);
-extern void sk_r4_001c4458(void);
+extern uint sk_r4_001c4458(void);
 extern void sk_r4_001c45b8(void);
 extern void sk_r4_001c45e4(void);
 extern void sk_r4_001c4910(void);
@@ -1156,7 +1153,7 @@ extern void sk_r4_001c64e4(uint64_t);
 extern void sk_r4_001c64fc(byte *p1);
 extern void sk_r4_001c652c(void);
 extern void sk_r4_001c65d0(void);
-extern void sk_r4_001c6c48(void);
+extern sk_r4_u128_t sk_r4_001c6c48(void);
 extern void sk_r4_001c6ce8(void);
 extern void sk_r4_001c6d74(uint64_t);
 extern void sk_r4_001c6d78(uint64_t);
@@ -2164,7 +2161,8 @@ LAB_001c0e1c:
 LAB_001c0ebc:
   v28 = av8.hi;
   sk_h_0034a210();
-  av23 = sk_rt_desc();
+  av23.lo = sk_rt_desc();
+  av23.hi = 0;
   sk_h_0034f688(av23.lo,av23.hi,av23.lo);
   sk_h_00205844(&stack0xffffffffffffff10,&stack0xffffffffffffff20);
   sk_free(stk_f8);
@@ -6324,7 +6322,7 @@ void sk_r4_001c39dc(void)
   long xo16;
   long ax20;
   
-  v1 = sk_rt_hook_l();
+  v1 = sk_rt_hook_l().lo;
   sk_h_0034ece8(v1,*(uint64_t *)(xo8 + 0x188));
   (**(code **)(xo16 + 8))(ax20 + xo9);
   return;
@@ -9206,7 +9204,7 @@ uint sk_r4_001c4428(void)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 
-void sk_r4_001c4458(void)
+uint sk_r4_001c4458(void)
 
 {
   uint v1;
@@ -11121,7 +11119,7 @@ void sk_r4_001c6310(void)
   long xo16;
   long ax20;
   
-  v1 = sk_rt_hook_l();
+  v1 = sk_rt_hook_l().lo;
   sk_h_0034ece8(v1,*(uint64_t *)(xo8 + 400));
   (**(code **)(xo16 + 8))(ax20 + xo9);
   return;
@@ -11696,7 +11694,7 @@ LAB_001c6ad8:
  * Notes: slice 0x1c0000-0x1d0000. */
 
 
-void sk_r4_001c6c48(void)
+sk_r4_u128_t sk_r4_001c6c48(void)
 
 {
   uint64_t v1;

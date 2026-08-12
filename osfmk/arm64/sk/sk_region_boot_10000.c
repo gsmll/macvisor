@@ -779,6 +779,10 @@ extern unsigned long LAB_00659c50;
 extern unsigned long DAT_0065ac38;
 
 
+
+
+
+
 unsigned long sk_ptr_deref(void **p)
 {
     return (unsigned long)*p;

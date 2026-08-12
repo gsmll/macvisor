@@ -28,10 +28,17 @@ typedef unsigned __int128 uint128_t;
 #define CONCAT17(a,b) ((((unsigned long)(a)&0xff)<<56)|((unsigned long)(b)&0x00ffffffffffffff))
 #define CONCAT71(a,b) ((((unsigned long)(a)&0x00ffffffffffffff)<<8)|((unsigned long)(b)&0xff))
 extern struct { unsigned long magic; } __thread_bss;
-typedef void (*fn_any_t)();
+typedef void (*(fn_any_t)fn_any_t)();
 extern void SoftwareBreakpoint(unsigned long, ...);
 extern void cl4_obj_release(word_t);
 extern unsigned long uRam00000000004baeb8;
+extern char s_range_005cf420[];
+
+/* forward decls for in-file helpers called before their definition */
+void cl4_sched_op_c(word_t a, word_t b, word_t ctx);
+void thunk_FUN_001fca54(word_t *out, word_t v);
+ulong thunk_FUN_0036b270(ulong obj);
+cl4_desc_t thunk_FUN_00355354(long set);
 
 extern unsigned long FUN_00002534();
 extern unsigned long FUN_00002688();
@@ -1576,16 +1583,16 @@ void cl4_sched_run_queue_drain(void)
     FUN_0008e518();
     long ctx = FUN_0034cf24();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f38();
     FUN_00349b3c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348f50();
     FUN_003515b4(0);
     long rq = FUN_003722e4();
     FUN_0034ab20();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0d4();
     FUN_00077894(*(word_t *)(ctx + 0x10));
     FUN_001ee140();
@@ -1602,7 +1609,7 @@ void cl4_sched_run_queue_drain(void)
             FUN_00357170();
             FUN_0035190c();
             (*(code **)(extraout_x16 + 0x20))(unaff_x24, unaff_x27 + stride, unaff_x21);
-            FUN_001f99f4(auVar8._0_8_, auVar8._8_8_, unaff_x20);
+            FUN_001f99f4(((word_t)(auVar8)), (*(word_t *)((char *)&(auVar8) + 8)), unaff_x20);
             if ((extraout_x1 & 1) != 0) { /* entry completed -> requeue path */
                 FUN_00350410();
                 FUN_003488bc();
@@ -1792,9 +1799,9 @@ void cl4_sched_notify_scan(void)
     FUN_003548d0();
     FUN_00310d68();
     FUN_00348d4c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348a18();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034ba68();
     if (*(long *)(in_x3 + 0x10) != 0) {
         thunk_FUN_0036b270(in_x3);
@@ -1862,7 +1869,7 @@ void cl4_sched_alloc_and_insert(word_t a, word_t b, code *cb, word_t c, long sch
     long save2 = *unaff_x20;
     thunk_FUN_0036b270(save2);
     if ((ins_hi & 1) == 0) {
-        (*cb)(w1);
+        (*(fn_any_t)cb)(w1);
         (**(code **)(extraout_x16 + 0x10))(w0, r0_hi, v0);
         FUN_00350ea4();
         FUN_00352ae4();
@@ -1938,7 +1945,7 @@ void cl4_sched_insert_without_alloc(word_t a, word_t b, code *cb, word_t c, long
     word_t r0_hi = (word_t)((unsigned __int128)r0 >> 64);
     word_t v0 = *(word_t *)(sched + 0x18);
     FUN_003494e8();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_0034947c();
     word_t cn = FUN_003a261c(*unaff_x20);
     long save = *unaff_x20;
@@ -1954,7 +1961,7 @@ void cl4_sched_insert_without_alloc(word_t a, word_t b, code *cb, word_t c, long
     long save2 = *unaff_x20;
     if ((ins_hi & 1) == 0) {
         thunk_FUN_0036b270(save2);
-        (*cb)();
+        (*(fn_any_t)cb)();
         FUN_0008e388();
         FUN_00351dcc();
         FUN_001f0700();
@@ -1963,7 +1970,7 @@ void cl4_sched_insert_without_alloc(word_t a, word_t b, code *cb, word_t c, long
         code *err = *(code **)(extraout_x16_00 + 8);
         thunk_FUN_0036b270(save2);
         FUN_003511a8();
-        (*err)();
+        (*(fn_any_t)err)();
     }
     long tail = *(long *)(save2 + 0x38);
     FUN_0036b118(save2);
@@ -2036,17 +2043,17 @@ void cl4_sched_teardown_entry(word_t p1, long p2, code *cb, word_t p4, word_t p5
 {
     long l4 = FUN_003722e4(0, p5, p6, s_key_value_005cea2a, 0);
     long f1 = *(long *)(l4 + -8);
-    (*DAT_00658c00)(*(long *)(f1 + 0x40) + 0xfU & 0xfffffffffffffff0);
+    (*(fn_any_t)DAT_00658c00)(*(long *)(f1 + 0x40) + 0xfU & 0xfffffffffffffff0);
     long l10 = (long)&local_a0 - extraout_x8;
     long l5 = FUN_00310d68(0, p7);
     long f2 = *(long *)(l5 + -8);
-    (*DAT_00658c00)(*(long *)(f2 + 0x40) + 0xfU & 0xfffffffffffffff0);
+    (*(fn_any_t)DAT_00658c00)(*(long *)(f2 + 0x40) + 0xfU & 0xfffffffffffffff0);
     long l9 = l10 - extraout_x8_00;
     long f3 = *(long *)(p7 + -8);
     long l7 = p7;
-    (*DAT_00658c00)(*(word_t *)(f3 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(f3 + 0x40));
     long l8 = l9 - (extraout_x8_01 + 0xfU & 0xfffffffffffffff0);
-    (*cb)(l9, p2 + *(int *)(l4 + 0x30));
+    (*(fn_any_t)cb)(l9, p2 + *(int *)(l4 + 0x30));
     if (unaff_x21 == 0) {
         int r = FUN_000839f8(l9, 1, l7);
         if (r == 1) {
@@ -2107,34 +2114,34 @@ void cl4_sched_dispatch_loop(void)
     FUN_00377824(r4_lo, r4_hi, u);
     FUN_00348e60();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0d4();
     FUN_003508e4();
     FUN_0034d464();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034af20();
     FUN_00349c70();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003491ec();
     FUN_0034c920();
     FUN_00377824();
     FUN_00348d64();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b460();
     (**(code **)(*(long *)(in_x4 + -8) + 0x20))(extraout_x8, r3_lo);
     word_t u2 = FUN_00352e24();
-    (*extraout_x8_01)(u2, in_stack_00000008, in_x3);
+    (*(fn_any_t)extraout_x8_01)(u2, in_stack_00000008, in_x3);
     FUN_00352680(in_x5);
     FUN_00350618();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_0034b278();
     FUN_000dbd0c();
     u2 = FUN_00377bec();
     code *next = (code *)FUN_000a68f4();
     do {
-        (*next)(unaff_x23, u2);
+        (*(fn_any_t)next)(unaff_x23, u2);
         FUN_00352560();
         FUN_00350884();
         if ((bool)in_ZR) {
@@ -2145,18 +2152,18 @@ void cl4_sched_dispatch_loop(void)
             goto done;
         }
         FUN_00350944(*(word_t *)(extraout_x16 + 0x20));
-        (*extraout_x8_02)();
-        (*r3_hi)(extraout_x8);
+        (*(fn_any_t)extraout_x8_02)();
+        (*(fn_any_t)r3_hi)(extraout_x8);
         FUN_00350914(*(word_t *)(extraout_x16 + 8));
-        (*extraout_x8_03)();
+        (*(fn_any_t)extraout_x8_03)();
     } while (unaff_x19 == 0);
     FUN_0034ed28();
-    (*extraout_x8_04)();
+    (*(fn_any_t)extraout_x8_04)();
     FUN_00353154();
     next = extraout_x8_05;
 done:
     word_t r5_lo = 0, r5_hi = 0;   /* split-pair scratch (r5 scoped to earlier if-block) */
-    (*next)(r5_lo, r5_hi);
+    (*(fn_any_t)next)(r5_lo, r5_hi);
     FUN_00351348();
     FUN_00353d14(unaff_x23);
 }
@@ -2318,7 +2325,7 @@ void cl4_sched_apply_layout(long a, long b, code *cb, word_t c, word_t d, word_t
     long l1 = FUN_003722e4(0, d, e, s_key_value_005cea2a, 0);
     int s1 = *(int *)(l1 + 0x30);
     long l2 = FUN_003722e4(0, d, e, 0, 0);
-    (*cb)(a, a + *(int *)(l2 + 0x30), b, b + s1);
+    (*(fn_any_t)cb)(a, a + *(int *)(l2 + 0x30), b, b + s1);
 }
 
 /* FUN_001f1878 @ 0x001f1878   (est. cl4_sched_commit_scan)
@@ -2336,11 +2343,11 @@ void cl4_sched_commit_scan(void)
     FUN_00377824();
     FUN_00349e10();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034af20();
     FUN_000a68c4(in_x4);
     word_t u = FUN_0034d434();
-    (*extraout_x9)(u, in_x4);
+    (*(fn_any_t)extraout_x9)(u, in_x4);
     FUN_0034f544();
     FUN_00377bec();
     FUN_0034f374();
@@ -2592,7 +2599,7 @@ void cl4_sched_op_scan(void)
 {
     FUN_0008e518();
     FUN_003499f0();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00349068();
     word_t ctx = *unaff_x20;
     word_t v = *(word_t *)(extraout_x1 + 0x20);
@@ -2610,7 +2617,7 @@ void cl4_sched_op_scan(void)
         FUN_0034ee18();
         FUN_001fc840();
         FUN_0035084c(*(word_t *)(extraout_x16 + 8));
-        (*extraout_x8_00)();
+        (*(fn_any_t)extraout_x8_00)();
         FUN_003511f0();
         FUN_001fb194();
         FUN_0036b118(ctx);
@@ -2706,15 +2713,15 @@ void cl4_sched_dispatch_step(void)
 {
     FUN_0034b430();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003490ec();
     code *m = *(code **)(extraout_x16 + 0x20);
     FUN_00350560();
-    (*m)();
+    (*(fn_any_t)m)();
     FUN_0011aa70();
-    (*m)();
+    (*(fn_any_t)m)();
     FUN_0034f594();
-    (*m)();
+    (*(fn_any_t)m)();
 }
 
 /* FUN_001f21a8 @ 0x001f21a8   (est. cl4_sched_swap_ctx)
@@ -2798,10 +2805,10 @@ uint cl4_sched_try_op(word_t a, word_t b, word_t c, word_t d)
     word_t s = FUN_00350b54();
     word_t st = FUN_0031b62c(c);
     FUN_0034edc8(st);
-    (*extraout_x8)();
+    (*(fn_any_t)extraout_x8)();
     uint r = FUN_00354a6c();
     if ((bool)in_ZR) {
-        (*DAT_00658c00)();
+        (*(fn_any_t)DAT_00658c00)();
         FUN_003539e4();
         *(word_t *)(extraout_x8_00 + -0x20) = unaff_x21;
         *(word_t *)(extraout_x8_00 + -0x18) = unaff_x19;
@@ -3046,8 +3053,8 @@ word_t *cl4_sched_desc_alloc_pair(void)
 void cl4_sched_desc_release_cb(word_t *desc, word_t a, code *cb, code *cb2)
 {
     word_t *p = (word_t *)*desc;
-    (*cb)(p[1], p, p[2], p[3], p[4]);
-    (*cb2)(*p);
+    (*(fn_any_t)cb)(p[1], p, p[2], p[3], p[4]);
+    (*(fn_any_t)cb2)(*p);
     cl4_obj_release(p);   /* thunk_FUN_00012568 */
 }
 
@@ -3063,7 +3070,7 @@ void cl4_sched_cross_apply(word_t a, word_t b, word_t c, long sched)
     FUN_0008409c();
     word_t v4 = *(word_t *)(sched + 0x18);
     FUN_003499f0();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f38();
     word_t i1 = FUN_00258c60(c, *(word_t *)(*unaff_x20 + 0x18), sched);
     long ctx = *unaff_x20;
@@ -3071,11 +3078,11 @@ void cl4_sched_cross_apply(word_t a, word_t b, word_t c, long sched)
     long stride = *(long *)(extraout_x16 + 0x48);
     long off1 = stride * unaff_x21;
     FUN_00353c24(i1, *(long *)(ctx + 0x38) + off1);
-    (*m)();
+    (*(fn_any_t)m)();
     long off2 = stride * unaff_x19;
     FUN_0019ce60(*(long *)(ctx + 0x38) + off2, 1, *(long *)(ctx + 0x38) + off1, v4);
     FUN_0035139c(*(long *)(ctx + 0x38) + off2);
-    (*m)();
+    (*(fn_any_t)m)();
     FUN_00084234(unaff_x30);
 }
 
@@ -3220,10 +3227,10 @@ void cl4_sched_op_b2(void) { FUN_001d9b00(); }
  * Dispatches a callback over three context fields of param_1 plus the caller
  * slot, then runs the post hook FUN_00357670.
  * Confidence: low
- * Notes: (*param_3)(slot, f0x10, f0x18, f0x20); FUN_00357670 tail. */
+ * Notes: (*(fn_any_t)param_3)(slot, f0x10, f0x18, f0x20); FUN_00357670 tail. */
 void cl4_sched_cb_dispatch(long src, word_t a, code *cb)
 {
-    (*cb)(*unaff_x20, *(word_t *)(src + 0x10), *(word_t *)(src + 0x18), *(word_t *)(src + 0x20));
+    (*(fn_any_t)cb)(*unaff_x20, *(word_t *)(src + 0x10), *(word_t *)(src + 0x18), *(word_t *)(src + 0x20));
     FUN_00357670();
 }
 
@@ -3281,10 +3288,10 @@ void cl4_sched_syscall_forward(word_t a, word_t b, word_t c)
  * Dispatches a callback over the caller caps + context fields then runs the post
  * hook FUN_00357670.
  * Confidence: low
- * Notes: (*param_4)(cap0, cap1, slot, f0x10, f0x18, f0x20); FUN_00357670. */
+ * Notes: (*(fn_any_t)param_4)(cap0, cap1, slot, f0x10, f0x18, f0x20); FUN_00357670. */
 void cl4_sched_cb6_dispatch(word_t *caps, long ctx, word_t c, code *cb)
 {
-    (*cb)(*caps, *(uint *)(caps + 1), *unaff_x20,
+    (*(fn_any_t)cb)(*caps, *(uint *)(caps + 1), *unaff_x20,
           *(word_t *)(ctx + 0x10), *(word_t *)(ctx + 0x18), *(word_t *)(ctx + 0x20));
     FUN_00357670();
 }
@@ -3336,7 +3343,7 @@ void cl4_sched_op_dispatch5(void)
 {
     FUN_00357f84();
     FUN_00352ddc();
-    (*in_x4)();
+    (*(fn_any_t)in_x4)();
     FUN_000776c0();
     FUN_00100efc();
     FUN_001a6ab8();
@@ -3565,15 +3572,15 @@ scan:
                 word_t u2 = uStack_168, u1 = local_170;
                 FUN_0006a4c0(auStack_188, local_170);
                 code *c = (code *)FUN_0008e5d8(u2);
-                (*c)(auStack_1b0, u1, u2);
+                (*(fn_any_t)c)(auStack_1b0, u1, u2);
                 u2 = uStack_190;
                 u1 = local_198;
                 FUN_0006a4c0(auStack_1b0, local_198);
                 FUN_0006a4c0(&local_160, uStack_148);
                 code *c2 = (code *)FUN_0008e5d8(uStack_148);
-                (*c2)(auStack_1d8, uStack_148, uStack_148);
+                (*(fn_any_t)c2)(auStack_1d8, uStack_148, uStack_148);
                 code *c3 = (code *)FUN_0031997c(u2);
-                u7 = (*c3)(auStack_1d8, u1, u2);
+                u7 = (*(fn_any_t)c3)(auStack_1d8, u1, u2);
                 FUN_000026e8(auStack_1d8);
                 FUN_000026e8(auStack_1b0);
                 FUN_003199ac(auStack_188);
@@ -3626,6 +3633,7 @@ word_t cl4_sched_iter_member(long a, long b)
     }
     FUN_001fca54(&local_78, a);
     ulong u5 = local_58;
+    word_t r_lo = 0, r_hi = 0;   /* split-pair scratch visible to while-condition */
     do {
         if (u5 == 0) {
             long l4;
@@ -3677,13 +3685,13 @@ void cl4_sched_walk_and_apply(word_t a, word_t b, word_t c, word_t d, word_t e, 
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long l6 = r_hi, l9 = r_lo;
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493c4();
     FUN_0034d5a8();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c074();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     FUN_00351ce8();
     word_t u4 = FUN_0035361c();
@@ -3691,9 +3699,9 @@ void cl4_sched_walk_and_apply(word_t a, word_t b, word_t c, word_t d, word_t e, 
     FUN_0034f554();
     u4 = FUN_00310d68();
     FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_00348a34();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     uint8_t same = (l9 == l6);
     if ((bool)same) {
         u4 = 1;
@@ -3736,16 +3744,16 @@ void cl4_sched_walk_and_apply(word_t a, word_t b, word_t c, word_t d, word_t e, 
             FUN_0035463c();
             FUN_00350cf4(*(word_t *)(unaff_x21 + 0x30));
             FUN_00353e2c(unaff_x28, extraout_x1, c);
-            (*extraout_x8_03)();
+            (*(fn_any_t)extraout_x8_03)();
             FUN_00352038((long)*(int *)(unaff_x24 + 0x30));
-            (*extraout_x9_00)(local_50, unaff_x28 + extraout_x8_04, extraout_x1_00, d);
+            (*(fn_any_t)extraout_x9_00)(local_50, unaff_x28 + extraout_x8_04, extraout_x1_00, d);
             u7 = 0;
 apply:
             FUN_00355be8(unaff_x28, u7);
             FUN_000839d8();
             FUN_00358dac();
             r = FUN_003510dc();
-            (*extraout_x8_05)(r_lo, r_hi, u4);
+            (*(fn_any_t)extraout_x8_05)(r_lo, r_hi, u4);
             FUN_0034c4bc(extraout_x10);
             if ((bool)same) {
                 FUN_0036b118(l6);
@@ -3761,15 +3769,15 @@ apply:
             int i2 = *(int *)(unaff_x24 + 0x30);
             FUN_00354d50();
             r = FUN_003508f0();
-            (*extraout_x8_06)(r_lo, r_hi, c);
+            (*(fn_any_t)extraout_x8_06)(r_lo, r_hi, c);
             u7 = FUN_00355eec();
             FUN_00353474(u7, extraout_x10 + i2);
-            (*extraout_x8_07)();
+            (*(fn_any_t)extraout_x8_07)();
             r = FUN_00350914();
             r = FUN_001f99f4(r_lo, r_hi, e);
             FUN_0034d688();
             FUN_00350914();
-            u7 = (*extraout_x8_08)();
+            u7 = (*(fn_any_t)extraout_x8_08)();
             if ((r_hi & 1) == 0) {
                 FUN_00355ad0(0);
                 FUN_0031b674();
@@ -3780,21 +3788,21 @@ apply:
                 FUN_0036b118();
                 FUN_00355224();
                 FUN_003514e8();
-                (*extraout_x8_11)();
+                (*(fn_any_t)extraout_x8_11)();
                 u4 = 0;
                 goto out;
             }
             FUN_00353aec(*(word_t *)(extraout_x16 + 0x10), u7,
                          *(long *)(l6 + 0x38) + *(long *)(extraout_x16 + 0x48) * r_lo);
-            (*extraout_x8_09)();
+            (*(fn_any_t)extraout_x8_09)();
             FUN_00350adc(f);
             FUN_0035072c();
             FUN_00352e60();
-            u5 = (*extraout_x8_10)();
+            u5 = (*(fn_any_t)extraout_x8_10)();
             code *pc = *(code **)(extraout_x16 + 8);
-            (*pc)(local_78, d);
+            (*(fn_any_t)pc)(local_78, d);
             FUN_003514e8();
-            (*pc)();
+            (*(fn_any_t)pc)();
             unaff_x21 = l6;
         } while ((u5 & 1) != 0);
         FUN_0036b118(l6);
@@ -3822,13 +3830,13 @@ void cl4_sched_walk_and_apply_b(word_t a, word_t b, word_t c, word_t d, word_t e
     FUN_0008e518();
     FUN_00351a80();
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493c4();
     FUN_0034d5a8();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c074();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     FUN_00351ce8();
     word_t u4 = FUN_0035361c();
@@ -3836,9 +3844,9 @@ void cl4_sched_walk_and_apply_b(word_t a, word_t b, word_t c, word_t d, word_t e
     FUN_0034da88();
     u4 = FUN_00310d68();
     FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_00348bbc();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b3d8();
     if (unaff_x20 == unaff_x22) {
         u4 = 1;
@@ -3879,16 +3887,16 @@ void cl4_sched_walk_and_apply_b(word_t a, word_t b, word_t c, word_t d, word_t e
             }
             FUN_00350cf4(*(word_t *)(local_30 + 0x30));
             FUN_00354b80(unaff_x23, extraout_x1, c);
-            (*extraout_x8_03)();
+            (*(fn_any_t)extraout_x8_03)();
             FUN_00352038((long)*(int *)(unaff_x19 + 0x30));
-            (*extraout_x9_00)(local_50, unaff_x23 + extraout_x8_04, extraout_x1_00, d);
+            (*(fn_any_t)extraout_x9_00)(local_50, unaff_x23 + extraout_x8_04, extraout_x1_00, d);
             u6 = 0;
 apply:
             FUN_00350774(unaff_x23, u6);
             FUN_000839d8();
             FUN_00354b14();
             r = FUN_00351274();
-            (*extraout_x8_05)(r_lo, r_hi, u4);
+            (*(fn_any_t)extraout_x8_05)(r_lo, r_hi, u4);
             FUN_00349f3c(unaff_x25);
             if ((bool)same) {
                 FUN_0031b674(0, c, d, e);
@@ -3900,35 +3908,35 @@ apply:
             int i2 = *(int *)(unaff_x19 + 0x30);
             FUN_00354d50();
             r = FUN_003509e0();
-            (*extraout_x8_06)(r_lo, r_hi, c);
+            (*(fn_any_t)extraout_x8_06)(r_lo, r_hi, c);
             FUN_00355eec();
-            (*extraout_x8_07)(unaff_x21, unaff_x25 + i2, d);
+            (*(fn_any_t)extraout_x8_07)(unaff_x21, unaff_x25 + i2, d);
             r = FUN_00084174();
             r = FUN_001f99f4(r_lo, r_hi, e);
             FUN_0034d688();
             FUN_00084174();
-            u6 = (*extraout_x8_08)();
+            u6 = (*(fn_any_t)extraout_x8_08)();
             if ((r_hi & 1) == 0) {
                 FUN_0031b674(0, c, d, e);
                 FUN_000841a0();
                 (**(code **)(extraout_x16_02 + 8))(&local_30);
                 FUN_00355224();
                 FUN_00350c38();
-                (*extraout_x8_11)();
+                (*(fn_any_t)extraout_x8_11)();
                 u4 = 0;
                 goto out;
             }
             r = FUN_00358960(*(word_t *)(extraout_x16 + 0x10), u6,
                              *(long *)(unaff_x22 + 0x38) + *(long *)(extraout_x16 + 0x48) * r_lo);
-            (*extraout_x8_09)(r_lo, r_hi, d);
+            (*(fn_any_t)extraout_x8_09)(r_lo, r_hi, d);
             u6 = FUN_0034d49c(f);
             FUN_003512cc(u6, unaff_x21);
-            u5 = (*extraout_x8_10)();
+            u5 = (*(fn_any_t)extraout_x8_10)();
             code *pc = *(code **)(extraout_x16 + 8);
             FUN_00350618();
-            (*pc)();
+            (*(fn_any_t)pc)();
             FUN_00350c38();
-            (*pc)();
+            (*(fn_any_t)pc)();
             unaff_x23 = local_c0;
         } while ((u5 & 1) != 0);
         FUN_0031b674(0, c, d, e);
@@ -3978,16 +3986,16 @@ void cl4_sched_hash_all(word_t a, long sched)
                 FUN_00117cc4(&local_110, a, 0x48);
                 FUN_0006a4c0(&local_140, l1);
                 code *c = (code *)FUN_0008e5d8(u2);
-                (*c)(auStack_198, l1, u2);
+                (*(fn_any_t)c)(auStack_198, l1, u2);
                 code *c2 = (code *)FUN_00343a30(uStack_178);
-                (*c2)(&local_110, local_180, uStack_178);
+                (*(fn_any_t)c2)(&local_110, local_180, uStack_178);
                 FUN_000026e8(auStack_198);
                 FUN_003199ac(&local_140);
                 FUN_0006a4c0(&local_170, local_158);
                 code *c3 = (code *)FUN_0008e5d8(local_150);
-                (*c3)(auStack_198, local_158, local_150);
+                (*(fn_any_t)c3)(auStack_198, local_158, local_150);
                 code *c4 = (code *)FUN_00343a30(uStack_178);
-                (*c4)(&local_110, local_180, uStack_178);
+                (*(fn_any_t)c4)(&local_110, local_180, uStack_178);
                 FUN_000026e8(auStack_198);
                 FUN_003199ac(&local_170);
                 u8 = FUN_001a8564() ^ u8;
@@ -4025,11 +4033,11 @@ void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
     FUN_00353274();
     FUN_00355fb8();
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003497b4();
     FUN_003509a4();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     FUN_003509a4();
     word_t u6 = FUN_0035361c();
@@ -4037,9 +4045,9 @@ void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
     FUN_0034e57c();
     FUN_00310d68();
     FUN_003490b8(&stack0x00000038);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003489c0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_003509a4();
     thunk_FUN_001fca54(auStack_58, extraout_x1);
@@ -4061,15 +4069,15 @@ void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
         while (l4 != 0) {
             FUN_0034f884(l3);
             FUN_00350cf4(*(word_t *)(local_30 + 0x30));
-            (*extraout_x8_02)(unaff_x27, extraout_x1_00, unaff_x23);
+            (*(fn_any_t)extraout_x8_02)(unaff_x27, extraout_x1_00, unaff_x23);
             FUN_00352038((long)*(int *)(unaff_x25 + 0x30));
             FUN_0035a718(unaff_x27 + extraout_x8_03, extraout_x1_01, unaff_x22);
-            (*extraout_x9)();
+            (*(fn_any_t)extraout_x9)();
             u6 = 0;
             for (;;) {
                 FUN_000839d8(unaff_x27, u6, 1, unaff_x25);
                 u6 = FUN_0034f9ec(&stack0x00000030);
-                (*extraout_x8_04)(u6, unaff_x27, local_c8);
+                (*(fn_any_t)extraout_x8_04)(u6, unaff_x27, local_c8);
                 FUN_0034e1b0(local_b8);
                 if ((bool)in_ZR) {
                     FUN_0036b118(local_30);
@@ -4081,24 +4089,24 @@ void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
                 int i2 = *(int *)(unaff_x25 + 0x30);
                 FUN_003510d0(&stack0x00000000);
                 r = FUN_0006b6f4();
-                (*extraout_x8_05)(r_lo, r_hi, unaff_x23);
+                (*(fn_any_t)extraout_x8_05)(r_lo, r_hi, unaff_x23);
                 u6 = FUN_003510d0(auStack_8);
                 r = FUN_00355e50(u6, local_b8 + i2);
-                (*extraout_x8_06)(r_lo, r_hi, unaff_x22);
+                (*(fn_any_t)extraout_x8_06)(r_lo, r_hi, unaff_x22);
                 FUN_00117cc4(auStack_a0, local_c0, 0x48);
                 FUN_00352698(&stack0x00000020);
                 u6 = FUN_0031945c();
                 FUN_00350810(u6, auStack_a0);
-                (*extraout_x8_07)();
+                (*(fn_any_t)extraout_x8_07)();
                 FUN_003510d0(&local_10);
                 FUN_0007c1c4();
-                (*extraout_x8_08)();
+                (*(fn_any_t)extraout_x8_08)();
                 FUN_00352698(&stack0x00000028);
                 u6 = FUN_0031945c();
                 FUN_00350b48(u6, auStack_a0);
-                (*extraout_x8_09)();
+                (*(fn_any_t)extraout_x8_09)();
                 FUN_003510d0(&lStack_18);
-                (*extraout_x8_10)(unaff_x25, unaff_x22);
+                (*(fn_any_t)extraout_x8_10)(unaff_x25, unaff_x22);
                 u8 = FUN_001a8564() ^ u8;
                 break;
             }
@@ -4127,8 +4135,8 @@ void cl4_sched_hash_dispatch(void)
 {
     FUN_00355684();
     byte b = FUN_00348c48();
-    FUN_0034d264(b, s_uespemosmodnarodarenegylsetybdet_004e7a30._16_8_,
-                 b ^ (byte)s_uespemosmodnarodarenegylsetybdet_004e7a30._0_8_);
+    FUN_0034d264(b, (*(word_t *)((char *)&(s_uespemosmodnarodarenegylsetybdet_004e7a30) + 16)),
+                 b ^ (byte)((word_t)(s_uespemosmodnarodarenegylsetybdet_004e7a30)));
     FUN_001f4dc4();
     FUN_001a8564();
 }
@@ -4389,8 +4397,8 @@ uint cl4_sched_equals_op(word_t a)
 void cl4_sched_hash_op_entry(void)
 {
     byte b = FUN_00348c48();
-    FUN_0034d264(b, s_uespemosmodnarodarenegylsetybdet_004e7a30._16_8_,
-                 b ^ (byte)s_uespemosmodnarodarenegylsetybdet_004e7a30._0_8_);
+    FUN_0034d264(b, (*(word_t *)((char *)&(s_uespemosmodnarodarenegylsetybdet_004e7a30) + 16)),
+                 b ^ (byte)((word_t)(s_uespemosmodnarodarenegylsetybdet_004e7a30)));
     FUN_001f4b3c();
     FUN_001a8564();
 }
@@ -4447,9 +4455,9 @@ void cl4_sched_op_dispatch_pair(void)
     FUN_00310d68();
     FUN_00348e00();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034924c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f50();
     FUN_0035113c();
     FUN_00351f40();
@@ -4460,15 +4468,15 @@ void cl4_sched_op_dispatch_pair(void)
     int c = FUN_00365b6c();
     if (c == 0) {
         FUN_0034bd00();
-        (*extraout_x8_00)();
+        (*(fn_any_t)extraout_x8_00)();
     } else {
         FUN_0034bc94();
         FUN_000839d8();
         code *m = *(code **)(extraout_x16 + 0x20);
         FUN_0034dfc4();
-        (*m)();
+        (*(fn_any_t)m)();
         FUN_003508c0(r_lo);
-        (*m)();
+        (*(fn_any_t)m)();
     }
     word_t v = FUN_00359920();
     FUN_0008e500(v, in_stack_00000048);
@@ -4489,11 +4497,11 @@ void cl4_sched_dispatch_main_loop(void)
     word_t u2 = FUN_0008e518();
     code *cb = in_x4;
     FUN_0007c028(u2, in_x3);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003497b4();
     FUN_003509a4();
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     FUN_003509a4();
     uint128_t r = FUN_0035361c();
@@ -4504,14 +4512,14 @@ void cl4_sched_dispatch_main_loop(void)
     FUN_00352efc();
     FUN_00310d68();
     FUN_003490b8(auStack_30);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_00354b44();
     FUN_00349618();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
     FUN_00348f50();
     FUN_0035125c(in_x5);
     FUN_00349444();
@@ -4519,11 +4527,11 @@ void cl4_sched_dispatch_main_loop(void)
     FUN_00377824();
     FUN_00348e00();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0c4();
     FUN_003192a8(in_x5);
     word_t v3 = FUN_003505d0();
-    ulong v4 = (*extraout_x8_03)(v3, in_x5);
+    ulong v4 = (*(fn_any_t)extraout_x8_03)(v3, in_x5);
     if ((v4 & 1) != 0) {
         FUN_003538b0(&DAT_005d3c8f);
         FUN_0008e500();
@@ -4533,12 +4541,12 @@ void cl4_sched_dispatch_main_loop(void)
     FUN_00359ab0();
     code *tag = (code *)((long)&__thread_bss.magic + 1);
     FUN_00350744();
-    local_18._0_16_ = FUN_001a89a8();
+    (*(unsigned __int128 *)(void *)&(local_18)) = FUN_001a89a8();
     FUN_00350ed0(*(word_t *)(extraout_x16_01 + 0x10));
-    (*extraout_x8_04)();
+    (*(fn_any_t)extraout_x8_04)();
     FUN_003506b0();
     FUN_003504c4();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_003553b8();
     FUN_0034c6b4();
     word_t v5 = FUN_00377bec();
@@ -4552,16 +4560,16 @@ void cl4_sched_dispatch_main_loop(void)
     code *dpcb = unaff_x21;
     do {
         FUN_003526b8(auStack_38);
-        (*next)(unaff_x21, v5);
+        (*(fn_any_t)next)(unaff_x21, v5);
         FUN_003510d0(auStack_58);
         r = FUN_00100efc();
-        (*extraout_x8_07)(r_lo, r_hi, local_130);
+        (*(fn_any_t)extraout_x8_07)(r_lo, r_hi, local_130);
         FUN_00351bac();
         FUN_0034d480();
         if ((bool)in_ZR) {
             FUN_00350bc0(auStack_78);
             FUN_000e72b0();
-            (*extraout_x8_18)();
+            (*(fn_any_t)extraout_x8_18)();
             FUN_00350744(&DAT_005d32c2);
             FUN_001a89a8();
             FUN_00352c80();
@@ -4583,7 +4591,7 @@ void cl4_sched_dispatch_main_loop(void)
         v4 = (ulong)*(int *)(extraout_x1 + 0x30);
         FUN_00355430();
         code *m1 = (code *)*extraout_x8_08;
-        (*m1)(local_f0, local_140, u11);
+        (*(fn_any_t)m1)(local_f0, local_140, u11);
         FUN_00352bbc();
         (*(code *)*extraout_x8_09)(local_e8, local_140 + v4, in_x4);
         if ((int)tag == 0) {
@@ -4592,8 +4600,8 @@ void cl4_sched_dispatch_main_loop(void)
             uVar7 = FUN_00349bfc();
             if ((extraout_x8_10 == 0) && (((uVar7 & (v4 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
                 FUN_003a25d4(v4);
-                local_18._8_8_ = local_140;
-                local_18._0_8_ = tag;
+                (*(word_t *)((char *)&(local_18) + 8)) = local_140;
+                ((word_t)(local_18)) = tag;
             } else {
                 dpcb = (code *)((ulong)local_140 >> 0x38 & 0xf);
                 if ((v4 >> 0x3d & 1) == 0) {
@@ -4609,8 +4617,8 @@ void cl4_sched_dispatch_main_loop(void)
                         FUN_003517c0();
                         FUN_003a25d4(v4);
                         FUN_003a25d4(local_140);
-                        local_18._0_8_ = unaff_x21;
-                        local_18._8_8_ = unaff_x24;
+                        ((word_t)(local_18)) = unaff_x21;
+                        (*(word_t *)((char *)&(local_18) + 8)) = unaff_x24;
                         goto build;
                     }
                 }
@@ -4628,7 +4636,7 @@ build:
         *(word_t *)(unaff_x24 + 0x10) = w3;
         *(ulong *)(unaff_x24 + 0x38) = u11;
         uVar8 = FUN_00319a4c(unaff_x24 + 0x20);
-        (*m1)(uVar8, local_f0, u11);
+        (*(fn_any_t)m1)(uVar8, local_f0, u11);
         FUN_00359a54();
         FUN_003509f8(v4);
         FUN_001a89a8();
@@ -4660,11 +4668,11 @@ build:
                     FUN_00358d70();
                     FUN_003a25d4(u11);
                     FUN_003a25d4(pc10);
-                    local_18._0_8_ = in_x4;
-                    local_18._8_8_ = m1;
+                    ((word_t)(local_18)) = in_x4;
+                    (*(word_t *)((char *)&(local_18) + 8)) = m1;
                     FUN_00357250();
-                    r_hi = local_18._8_8_;
-                    r_lo = local_18._0_8_;
+                    r_hi = (*(word_t *)((char *)&(local_18) + 8));
+                    r_lo = ((word_t)(local_18));
                     goto commit;
                 }
                 FUN_00357250();
@@ -4674,12 +4682,12 @@ build:
             FUN_00351324();
             FUN_00356cd4();
             FUN_003a2610(pc10, 2);
-            r_hi = local_18._8_8_;
-            r_lo = local_18._0_8_;
+            r_hi = (*(word_t *)((char *)&(local_18) + 8));
+            r_lo = ((word_t)(local_18));
             dpcb = pc9;
         }
 commit:
-        local_18._0_16_ = r;
+        (*(unsigned __int128 *)(void *)&(local_18)) = r;
         FUN_0034895c();
         FUN_0034d274(auStack_98, local_18);
         FUN_00353d64();
@@ -4695,8 +4703,8 @@ commit:
         if ((extraout_x8_12 == 0) &&
             (((v4 & ((ulong)unaff_x24 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
             FUN_003a25d4(unaff_x24);
-            local_18._8_8_ = local_140;
-            local_18._0_8_ = unaff_x21;
+            (*(word_t *)((char *)&(local_18) + 8)) = local_140;
+            ((word_t)(local_18)) = unaff_x21;
         } else {
             tag = (code *)((ulong)local_140 >> 0x38 & 0xf);
             if (((ulong)unaff_x24 >> 0x3d & 1) == 0) {
@@ -4713,8 +4721,8 @@ commit:
                 if (!(bool)in_ZR) {
                     FUN_00356508();
                     FUN_003a25d4(local_140);
-                    local_18._0_8_ = dpcb;
-                    local_18._8_8_ = unaff_x24;
+                    ((word_t)(local_18)) = dpcb;
+                    (*(word_t *)((char *)&(local_18) + 8)) = unaff_x24;
                     goto free2;
                 }
             }
@@ -4731,8 +4739,8 @@ free2:
         v4 = FUN_00349bfc();
         if ((extraout_x8_13 == 0) && (((v4 & ((ulong)pc9 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
             uVar8 = FUN_003a25d4(pc9);
-            local_18._8_8_ = local_140;
-            local_18._0_8_ = tag;
+            (*(word_t *)((char *)&(local_18) + 8)) = local_140;
+            ((word_t)(local_18)) = tag;
         } else {
             dpcb = (code *)((ulong)local_140 >> 0x38 & 0xf);
             if (((ulong)pc9 >> 0x3d & 1) == 0) {
@@ -4751,8 +4759,8 @@ free2:
                     FUN_003517c0();
                     FUN_003a25d4(pc9);
                     uVar8 = FUN_003a25d4(local_140);
-                    local_18._0_8_ = unaff_x21;
-                    local_18._8_8_ = unaff_x24;
+                    ((word_t)(local_18)) = unaff_x21;
+                    (*(word_t *)((char *)&(local_18) + 8)) = unaff_x24;
                     goto build2;
                 }
             }
@@ -4771,7 +4779,7 @@ build2:
         *(code **)(tag + 0x38) = in_x4;
         uVar8 = FUN_00319a4c(tag + 0x20);
         FUN_003570f0(uVar8, local_e8, in_x4);
-        (*extraout_x8_14)();
+        (*(fn_any_t)extraout_x8_14)();
         FUN_00359a54();
         FUN_003509f8(pc13);
         FUN_001a89a8();
@@ -4786,8 +4794,8 @@ build2:
         v4 = FUN_00349bfc();
         if ((extraout_x8_15 == 0) && (((v4 & ((ulong)pc9 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
             FUN_003a25d4(pc9);
-            local_18._0_8_ = pc13;
-            local_18._8_8_ = extraout_x1_00;
+            ((word_t)(local_18)) = pc13;
+            (*(word_t *)((char *)&(local_18) + 8)) = extraout_x1_00;
         } else {
             dpcb = (code *)((ulong)extraout_x1_00 >> 0x38 & 0xf);
             if (((ulong)pc9 >> 0x3d & 1) == 0) {
@@ -4805,8 +4813,8 @@ build2:
                         FUN_003542c4();
                         FUN_003a25d4();
                         FUN_003a25d4(extraout_x1_00);
-                        local_18._0_8_ = pc9b;
-                        local_18._8_8_ = pc10;
+                        ((word_t)(local_18)) = pc9b;
+                        (*(word_t *)((char *)&(local_18) + 8)) = pc10;
                         FUN_00357250();
                         in_x4 = pc9b;
                         goto commit2;
@@ -4836,8 +4844,8 @@ commit2:
         if ((extraout_x8_17 == 0) &&
             (((v4 & ((ulong)tag ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
             FUN_003a25d4(tag);
-            local_18._0_8_ = local_140;
-            local_18._8_8_ = m1;
+            ((word_t)(local_18)) = local_140;
+            (*(word_t *)((char *)&(local_18) + 8)) = m1;
         } else {
             if (((ulong)tag >> 0x3d & 1) == 0) {
                 in_ZR = ((ulong)m1 & 0x2000000000000000) == 0;
@@ -4849,8 +4857,8 @@ commit2:
                     FUN_003a25d4();
                     FUN_003a25d4(m1);
                     dpcb = pc10b;
-                    local_18._0_8_ = pc10b;
-                    local_18._8_8_ = tag;
+                    ((word_t)(local_18)) = pc10b;
+                    (*(word_t *)((char *)&(local_18) + 8)) = tag;
                     goto free3;
                 }
             }
@@ -5198,7 +5206,7 @@ void cl4_sched_iter_snapshot(void)
     word_t v = FUN_0031b6a4(0, unaff_x20[2], unaff_x20[3], unaff_x20[4]);
     FUN_0035295c();
     FUN_00350b84(auStack_78);
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     (**(code **)(extraout_x16 + 0x10))(auStack_a8, auStack_78, v);
     FUN_0034d5ec(auStack_a8, &local_d0);
     FUN_001f6fac();
@@ -5216,7 +5224,7 @@ void cl4_sched_result_build(word_t a, word_t b, uint8_t c, word_t d, word_t e, w
     FUN_0008e518();
     FUN_00359b24();
     FUN_0007c028();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348f38();
     FUN_00353178();
     uint128_t r4 = FUN_002db6b8();
@@ -5231,7 +5239,7 @@ void cl4_sched_result_build(word_t a, word_t b, uint8_t c, word_t d, word_t e, w
     FUN_00352b74();
     word_t v2 = FUN_0020c1bc();
     FUN_0034e464(*(word_t *)(extraout_x16 + 0x20));
-    (*extraout_x8_01)();
+    (*(fn_any_t)extraout_x8_01)();
     FUN_0034f9b4();
     FUN_003508d8(auStack_28);
     int i1 = FUN_00365b6c();
@@ -5386,19 +5394,19 @@ void cl4_sched_guard_insert(word_t a, word_t b, long sched)
 {
     word_t u1 = FUN_0008e518();
     FUN_003494e8(u1, u1);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003490ec();
     word_t v1 = *(word_t *)(sched + 0x10);
     FUN_0034b7e4();
-    (*DAT_00658c00)(extraout_x16_00);
+    (*(fn_any_t)DAT_00658c00)(extraout_x16_00);
     FUN_0034d3b4();
     if (*(long *)(*unaff_x20 + 0x10) < unaff_x20[1]) {
         uint128_t r = FUN_00351984();
         word_t r_lo = (word_t)r;
         word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-        (*extraout_x9)(r_lo, r_hi, v1);
+        (*(fn_any_t)extraout_x9)(r_lo, r_hi, v1);
         FUN_0034edc8(*(word_t *)(extraout_x16 + 0x10));
-        (*extraout_x8_00)();
+        (*(fn_any_t)extraout_x8_00)();
         FUN_0034ff88();
         FUN_003558fc();
         FUN_001f7be0();
@@ -5426,10 +5434,10 @@ void cl4_sched_set_insert5(word_t *key, word_t *side, long set)
     word_t u4 = key[3], u7 = key[4];
     FUN_0006a4c0(key, u4);
     code *c = (code *)FUN_0008e5d8(u7);
-    (*c)(auStack_78, u4, u7);
+    (*(fn_any_t)c)(auStack_78, u4, u7);
     FUN_0006a4c0(auStack_78, local_60);
     code *c2 = (code *)FUN_0031993c(uStack_58);
-    u4 = (*c2)(u6, local_60, uStack_58);
+    u4 = (*(fn_any_t)c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u4);
     word_t r_lo = (word_t)r;
@@ -5469,10 +5477,10 @@ void cl4_sched_set_insert_pair(word_t *key, word_t a, word_t b, long set)
     word_t u3 = key[3], u7 = key[4];
     FUN_0006a4c0(key, u3);
     code *c = (code *)FUN_0008e5d8(u7);
-    (*c)(auStack_78, u3, u7);
+    (*(fn_any_t)c)(auStack_78, u3, u7);
     FUN_0006a4c0(auStack_78, local_60);
     code *c2 = (code *)FUN_0031993c(uStack_58);
-    u3 = (*c2)(u6, local_60, uStack_58);
+    u3 = (*(fn_any_t)c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u3);
     word_t r_lo = (word_t)r;
@@ -5508,10 +5516,10 @@ void cl4_sched_set_insert_side20(word_t *key, word_t side, long set)
     word_t u3 = key[3], u7 = key[4];
     FUN_0006a4c0(key, u3);
     code *c = (code *)FUN_0008e5d8(u7);
-    (*c)(auStack_78, u3, u7);
+    (*(fn_any_t)c)(auStack_78, u3, u7);
     FUN_0006a4c0(auStack_78, local_60);
     code *c2 = (code *)FUN_0031993c(uStack_58);
-    u3 = (*c2)(u6, local_60, uStack_58);
+    u3 = (*(fn_any_t)c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u3);
     word_t r_lo = (word_t)r;
@@ -5669,7 +5677,7 @@ void cl4_sched_set_insert_requeue(void)
     word_t v1 = FUN_00353430();
     FUN_00350678(in_x5);
     FUN_0035136c();
-    (*extraout_x8)();
+    (*(fn_any_t)extraout_x8)();
     FUN_00356b8c();
     FUN_00351c58();
     uint128_t r = FUN_001f9dbc();
@@ -5749,7 +5757,7 @@ void cl4_sched_state_set(void)
 {
     word_t v = FUN_0031948c(in_x4);
     FUN_0034b778(v);
-    (*extraout_x8)();
+    (*(fn_any_t)extraout_x8)();
 }
 
 /* FUN_001f7e30 @ 0x001f7e30   (est. cl4_sched_bit_set)
@@ -5887,43 +5895,43 @@ void cl4_sched_scan_apply_main(void)
     FUN_00352efc();
     FUN_00310d68();
     FUN_003490b8(auStack_40);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_00354028();
     r = FUN_00350720();
     FUN_003515b4(r_lo, r_hi, in_x4);
     FUN_003722e4();
     FUN_00349c44(&stack0x00000028);
-    (*DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_003509a4();
     FUN_00349b00();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_003509a4();
     FUN_00349c70();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_0034c754();
     FUN_00351118();
     long l4 = FUN_003722e4();
     FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_03 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_03 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034ba68();
     FUN_00351a20(*(word_t *)(l15 + 0x10));
     u5 = FUN_001ee140();
@@ -5958,7 +5966,7 @@ void cl4_sched_scan_apply_main(void)
                 FUN_001f8978();
                 FUN_003510d0(&stack0x00000040);
                 FUN_0006b6f4();
-                (*extraout_x8_04)();
+                (*(fn_any_t)extraout_x8_04)();
                 FUN_00352888();
                 FUN_0034bffc();
                 if ((bool)u3) goto panic;
@@ -5967,15 +5975,15 @@ void cl4_sched_scan_apply_main(void)
                 int i2 = *(int *)(l4 + 0x30);
                 code *pc9 = (code *)*local_e0;
                 FUN_003510ac();
-                (*extraout_x8_05)();
+                (*(fn_any_t)extraout_x8_05)();
                 pc10 = (code *)*local_e8;
-                (*pc10)(local_108 + i2, l15 + i1, in_x4);
+                (*(fn_any_t)pc10)(local_108 + i2, l15 + i1, in_x4);
                 i1 = *(int *)(l4 + 0x30);
                 FUN_00355ea4();
                 FUN_00084180();
-                u5 = (*pc9)();
+                u5 = (*(fn_any_t)pc9)();
                 r = FUN_00352584(local_10, u5, local_108 + i1);
-                (*pc10)(r_lo, r_hi, in_x4);
+                (*(fn_any_t)pc10)(r_lo, r_hi, in_x4);
                 FUN_00084180();
                 FUN_00351768();
                 FUN_001f7be0();
@@ -6018,7 +6026,7 @@ void cl4_sched_scan_apply_main(void)
             FUN_001f8978();
             FUN_003510d0(&stack0x00000040);
             FUN_003508a8();
-            (*extraout_x8_07)();
+            (*(fn_any_t)extraout_x8_07)();
             FUN_00351330();
             FUN_0034d480();
             in_stack_ffffffffffffff08 = local_90;
@@ -6028,14 +6036,14 @@ void cl4_sched_scan_apply_main(void)
             FUN_00354064();
             code *pc9 = (code *)*unaff_x27;
             r = FUN_00084180();
-            (*pc9)(r_lo, r_hi, 0x6753a0);
+            (*(fn_any_t)pc9)(r_lo, r_hi, 0x6753a0);
             pc10 = (code *)*local_e8;
-            (*pc10)(local_120 + i2, local_90 + i1b, in_x4);
+            (*(fn_any_t)pc10)(local_120 + i2, local_90 + i1b, in_x4);
             i1 = *(int *)(local_d8 + 0x30);
             FUN_0034f5b4();
-            u5 = (*pc9)();
+            u5 = (*(fn_any_t)pc9)();
             r = FUN_00352d64(&pcStack_28, u5, local_120 + i1);
-            (*pc10)(r_lo, r_hi, in_x4);
+            (*(fn_any_t)pc10)(r_lo, r_hi, in_x4);
             r = FUN_00350720();
             FUN_00359ba4(r_lo, r_hi, in_x4, in_x6);
             FUN_00351130();
@@ -6059,7 +6067,7 @@ done:
 panic:
     FUN_0036b118(local_78);
     FUN_00350bc0(auStack_48);
-    (*extraout_x8_08)(in_stack_ffffffffffffff08, local_140);
+    (*(fn_any_t)extraout_x8_08)(in_stack_ffffffffffffff08, local_140);
     FUN_0036b118(u6);
     FUN_0034b348();
     FUN_003489dc(in_x7);
@@ -6078,10 +6086,10 @@ void cl4_sched_entry_apply(void)
 {
     FUN_0008e518();
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00349068();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_00349178();
     FUN_00350328();
     long l2 = FUN_003722e4();
@@ -6093,7 +6101,7 @@ void cl4_sched_entry_apply(void)
     uint128_t r = FUN_00354d68(*(word_t *)(extraout_x16 + 0x10));
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-    (*extraout_x8_02)(r_lo, r_hi, in_x3);
+    (*(fn_any_t)extraout_x8_02)(r_lo, r_hi, in_x3);
     FUN_00351720(extraout_x8 + i1);
     FUN_00365b6c();
     FUN_0034ba48();
@@ -6153,41 +6161,41 @@ void cl4_sched_resolve_entry(void)
     long l7 = FUN_003722e4(r_lo, r_hi, u9, s_key_value_005cea2a, 0);
     FUN_00310d68(0, l7);
     FUN_003490b8(&lStack_28);
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_0034c754();
     FUN_003515b4();
     FUN_003722e4();
     FUN_00349c44(&stack0x00000038);
-    (*DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b8bc();
     FUN_0007c028();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_003509a4();
     FUN_00349b00();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c2c8();
     FUN_00350720();
     FUN_00351b78();
     long l8 = FUN_003722e4();
     FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_02 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034ba68();
     u9 = FUN_001ee140(*(word_t *)(l6 + 0x10));
     FUN_00352b98(extraout_x16_02 + 8);
@@ -6217,7 +6225,7 @@ void cl4_sched_resolve_entry(void)
                 FUN_001f9324();
                 FUN_0034d688();
                 FUN_00350bf0();
-                (*extraout_x8_03)();
+                (*(fn_any_t)extraout_x8_03)();
                 FUN_00352290();
                 FUN_0034bffc();
                 if ((bool)u5) goto panic;
@@ -6227,15 +6235,15 @@ void cl4_sched_resolve_entry(void)
                 FUN_0035735c();
                 code *pc11 = (code *)*unaff_x22;
                 r = FUN_00100c38();
-                (*pc11)(r_lo, r_hi, unaff_x20);
+                (*(fn_any_t)pc11)(r_lo, r_hi, unaff_x20);
                 code *pc14 = (code *)*local_d8;
                 u10 = FUN_00357068(local_30, in_stack_ffffffffffffff00 + i2);
-                (*pc14)(u10, extraout_x8_04 + extraout_x9, in_x4);
+                (*(fn_any_t)pc14)(u10, extraout_x8_04 + extraout_x9, in_x4);
                 i2 = *(int *)(m1 + 0x30);
                 FUN_00350fec();
-                u10 = (*pc11)();
+                u10 = (*(fn_any_t)pc11)();
                 FUN_00352584(auStack_8, u10, in_stack_ffffffffffffff00 + i2, in_x4);
-                (*pc14)();
+                (*(fn_any_t)pc14)();
                 r = FUN_0007c1c4();
                 FUN_001f7be0(r_lo, r_hi, u9, unaff_x20, in_x4, in_x6);
             }
@@ -6272,7 +6280,7 @@ void cl4_sched_resolve_entry(void)
             FUN_001f9324();
             FUN_0034d688();
             FUN_003508a8();
-            (*extraout_x8_06)();
+            (*(fn_any_t)extraout_x8_06)();
             FUN_00351330();
             r = FUN_0034d480();
             if ((bool)u5) {
@@ -6286,18 +6294,18 @@ void cl4_sched_resolve_entry(void)
             FUN_0035735c();
             code *pc4 = (code *)*unaff_x27;
             FUN_00100c38();
-            (*pc4)();
+            (*(fn_any_t)pc4)();
             FUN_0035460c();
             code *pc11 = (code *)*local_30;
             FUN_00353e38();
-            (*pc11)(unaff_x24 + extraout_x8_07, (long)i2 + 0x6753a0, in_x4);
+            (*(fn_any_t)pc11)(unaff_x24 + extraout_x8_07, (long)i2 + 0x6753a0, in_x4);
             i2 = *(int *)(local_c8 + 0x30);
             FUN_00351130();
             FUN_003540ac();
-            (*pc4)();
+            (*(fn_any_t)pc4)();
             u9 = FUN_0035738c();
             r = FUN_00353124(&puStack_18, u9, unaff_x24 + i2);
-            (*pc11)(r_lo, r_hi, in_x4);
+            (*(fn_any_t)pc11)(r_lo, r_hi, in_x4);
             FUN_00359ba4(0, 0x6753a0, in_x4, in_x6);
             FUN_00350c2c();
             FUN_001f7f5c();
@@ -6320,7 +6328,7 @@ panic:
     FUN_0036b118(local_30);
     FUN_00350bc0(&local_30);
     FUN_00357be0(local_30);
-    (*extraout_x8_08)();
+    (*(fn_any_t)extraout_x8_08)();
     FUN_00355e38();
     FUN_0036b118();
     u9 = FUN_00355e38();
@@ -6342,24 +6350,24 @@ void cl4_sched_pair_apply(long a, code *cb, word_t c, long d, long e, long f, lo
     local_68 = a;
     lStack_98 = FUN_00310d68(0, g);
     long f1 = *(long *)(lStack_98 + -8);
-    (*DAT_00658c00)(*(long *)(f1 + 0x40) + 0xfU & 0xfffffffffffffff0);
+    (*(fn_any_t)DAT_00658c00)(*(long *)(f1 + 0x40) + 0xfU & 0xfffffffffffffff0);
     local_90 = *(long *)(e + -8);
     local_80 = e;
     local_78 = (long)&local_b0 - extraout_x8;
-    (*DAT_00658c00)(*(word_t *)(local_90 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(local_90 + 0x40));
     long l8 = ((long)&local_b0 - extraout_x8) - (extraout_x8_00 + 0xfU & 0xfffffffffffffff0);
     local_a8 = *(long *)(g + -8);
-    (*DAT_00658c00)(*(word_t *)(local_a8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(local_a8 + 0x40));
     long l5 = l8 - (extraout_x8_01 + 0xfU & 0xfffffffffffffff0);
     local_b0 = l5;
     long l2 = FUN_00310d68(0, f);
     long l6 = *(long *)(l2 + -8);
-    (*DAT_00658c00)(*(long *)(l6 + 0x40) + 0xfU & 0xfffffffffffffff0);
+    (*(fn_any_t)DAT_00658c00)(*(long *)(l6 + 0x40) + 0xfU & 0xfffffffffffffff0);
     l5 = l5 - extraout_x8_02;
-    (*DAT_00658c00)(*(word_t *)(*(long *)(d + -8) + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(*(long *)(d + -8) + 0x40));
     long l9 = l5 - (extraout_x8_03 + 0xfU & 0xfffffffffffffff0);
     long l7 = *(long *)(f + -8);
-    (*DAT_00658c00)(*(word_t *)(l7 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(l7 + 0x40));
     long l10 = l9 - (extraout_x8_04 + 0xfU & 0xfffffffffffffff0);
     (**(code **)(extraout_x12 + 0x10))(l9, cb, d);
     ulong u3 = FUN_00365b6c(l5, l9, d, f, 6);
@@ -6369,7 +6377,7 @@ void cl4_sched_pair_apply(long a, code *cb, word_t c, long d, long e, long f, lo
     } else {
         FUN_000839d8(l5, 0, 1, f);
         code *pc11 = *(code **)(l7 + 0x20);
-        (*pc11)(l10, l5, f);
+        (*(fn_any_t)pc11)(l10, l5, f);
         long l2b = local_80;
         (**(code **)(local_90 + 0x10))(l8, local_88, local_80);
         l5 = local_78;
@@ -6379,12 +6387,12 @@ void cl4_sched_pair_apply(long a, code *cb, word_t c, long d, long e, long f, lo
             long l6b = local_b0;
             code *pc12 = *(code **)(local_a8 + 0x20);
             local_70 = pc11;
-            (*pc12)(local_b0, l5, g);
+            (*(fn_any_t)pc12)(local_b0, l5, g);
             l5 = FUN_003722e4(0, f, g, s_key_value_005cea2a, 0);
             long l2c = local_68;
             int i1 = *(int *)(l5 + 0x30);
-            (*local_70)(local_68, l10, f);
-            (*pc12)(l2c + i1, l6b, g);
+            (*(fn_any_t)local_70)(local_68, l10, f);
+            (*(fn_any_t)pc12)(l2c + i1, l6b, g);
             u4 = 0;
             goto out;
         }
@@ -6447,14 +6455,14 @@ void cl4_sched_key_exists(void)
     FUN_0008e5d8();
     FUN_00351660();
     FUN_00350470();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     word_t v = in_stack_00000028;
     FUN_0034b440(&stack0x00000008);
     FUN_0031993c();
     uint128_t r = FUN_0034c5cc();
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-    (*extraout_x8)(r_lo, r_hi, v);
+    (*(fn_any_t)extraout_x8)(r_lo, r_hi, v);
     FUN_000026e8(&stack0x00000008);
     FUN_000b43d0();
     uint128_t r2 = FUN_001f9a68();
@@ -6474,7 +6482,7 @@ void cl4_sched_lookup_key(word_t a, word_t b, word_t c)
 {
     word_t salt = *(word_t *)(unaff_x20 + 0x28);
     code *cmp = (code *)FUN_0031948c(c);
-    word_t h = (*cmp)(salt, b, c);
+    word_t h = (*(fn_any_t)cmp)(salt, b, c);
     FUN_001f9dbc(a, h, b, c);
 }
 
@@ -6496,16 +6504,16 @@ cl4_find_t cl4_sched_find_slot(long key, ulong idx)
             word_t u2 = uStack_68, u1 = local_70;
             FUN_0006a4c0(auStack_88, local_70);
             code *c = (code *)FUN_0008e5d8(u2);
-            (*c)(auStack_b0, u1, u2);
+            (*(fn_any_t)c)(auStack_b0, u1, u2);
             word_t u4 = uStack_90, u3 = local_98;
             FUN_0006a4c0(auStack_b0, local_98);
             word_t u1b = *(word_t *)(key + 0x18);
             word_t u2b = *(word_t *)(key + 0x20);
             FUN_0006a4c0(key, u1b);
             code *c2 = (code *)FUN_0008e5d8(u2b);
-            (*c2)(auStack_d8, u1b, u2b);
+            (*(fn_any_t)c2)(auStack_d8, u1b, u2b);
             code *c3 = (code *)FUN_0031997c(u4);
-            found = (*c3)(auStack_d8, u3, u4);
+            found = (*(fn_any_t)c3)(auStack_d8, u3, u4);
             FUN_000026e8(auStack_d8);
             FUN_000026e8(auStack_b0);
             FUN_003199ac(auStack_88);
@@ -6568,7 +6576,7 @@ void cl4_sched_probe_find(void)
             FUN_0034b440(&stack0x00000058);
             FUN_00353b1c();
             FUN_00350470(&stack0x00000030);
-            (*extraout_x9)();
+            (*(fn_any_t)extraout_x9)();
             word_t u2 = in_stack_00000050;
             FUN_0006a4c0(&stack0x00000030, in_stack_00000048);
             word_t u1 = *(word_t *)(r_lo + 0x20);
@@ -6577,11 +6585,11 @@ void cl4_sched_probe_find(void)
             FUN_0008e5d8(u1);
             FUN_00351660();
             FUN_00350a04();
-            (*extraout_x9_00)();
+            (*(fn_any_t)extraout_x9_00)();
             FUN_0031997c(u2);
             FUN_00357b20();
             FUN_003513b4();
-            found = (*extraout_x8_00)();
+            found = (*(fn_any_t)extraout_x8_00)();
             FUN_000026e8(&stack0x00000008);
             FUN_000026e8(&stack0x00000030);
             FUN_003199ac(&stack0x00000058);
@@ -6605,7 +6613,7 @@ cl4_find_t cl4_sched_find_index(word_t a, word_t b, long owner, word_t key)
     long l6 = *(long *)(owner + -8);
     local_80 = a;
     local_78 = key;
-    (*DAT_00658c00)(*(word_t *)(l6 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(l6 + 0x40));
     long l7 = (long)&local_80 - (extraout_x8 + 0xfU & 0xfffffffffffffff0);
     byte b2 = *(byte *)(unaff_x20 + 0x20);
     ulong u8 = extraout_x1;
@@ -6617,7 +6625,7 @@ cl4_find_t cl4_sched_find_index(word_t a, word_t b, long owner, word_t key)
             (l7, *(long *)(unaff_x20 + 0x30) + *(long *)(l6 + 0x48) * u8, owner);
         word_t u3 = FUN_00027754(local_78);
         code *c = (code *)FUN_0014ae44();
-        ulong u5 = (*c)(l7, local_80, owner, u3);
+        ulong u5 = (*(fn_any_t)c)(l7, local_80, owner, u3);
         (**(code **)(l6 + 8))(l7, owner);
         if ((u5 & 1) != 0) break;
         u8 = u8 + 1;
@@ -7134,72 +7142,72 @@ void cl4_sched_priority_dispatch(void)
     word_t u2 = FUN_00377824();
     FUN_0034ab20();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034aab0();
     FUN_0034a774();
     FUN_003523fc();
     word_t u3 = FUN_00377824();
     FUN_0034ab20();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350428();
     FUN_0034911c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003497b4();
     FUN_00349080();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003497b4();
     FUN_003531b4();
     FUN_003564a4();
     FUN_0034b4a0();
-    (*unaff_x22)();
+    (*(fn_any_t)unaff_x22)();
     FUN_003577e4();
     FUN_0034acd0();
-    uint u1 = (*extraout_x8_03)();
+    uint u1 = (*(fn_any_t)extraout_x8_03)();
     if (((unaff_w28 ^ u1) & 1) == 0) {
         FUN_00310a44();
         FUN_0034ae6c();
-        (*extraout_x8_07)();
+        (*(fn_any_t)extraout_x8_07)();
         FUN_00354864();
         FUN_00310a44();
         FUN_0034bfa4();
-        long l5 = (*extraout_x8_08)();
+        long l5 = (*(fn_any_t)extraout_x8_08)();
         if (l5 <= (long)unaff_x22) {
             FUN_0034eaac();
-            (*extraout_x8_13)();
+            (*(fn_any_t)extraout_x8_13)();
             FUN_0034cee8();
             FUN_00353a84();
             FUN_00349f74();
-            (*extraout_x9_00)();
+            (*(fn_any_t)extraout_x9_00)();
             FUN_00348c84();
             goto merge;
         }
         FUN_0034de24();
         FUN_00351720();
-        (*extraout_x8_09)();
+        (*(fn_any_t)extraout_x8_09)();
         FUN_0034d1fc();
         FUN_00352200();
         FUN_00349f8c();
-        (*extraout_x9)();
+        (*(fn_any_t)extraout_x9)();
         FUN_00348e78();
         FUN_0034e51c();
-        (*extraout_x8_10)();
+        (*(fn_any_t)extraout_x8_10)();
         u7 = FUN_0034cd04();
         pc8 = extraout_x8_11;
     } else {
         FUN_0034b4a0();
-        word_t u4 = (*unaff_x22)();
+        word_t u4 = (*(fn_any_t)unaff_x22)();
         FUN_0034c0d0();
         FUN_0034c9a8();
-        long l5 = (*extraout_x8_04)();
+        long l5 = (*(fn_any_t)extraout_x8_04)();
         FUN_0034c368();
         FUN_0034f504();
-        long l6 = (*extraout_x8_05)();
+        long l6 = (*(fn_any_t)extraout_x8_05)();
         if ((u4 & 1) == 0) {
             if (l5 < l6) {
                 FUN_0034de24();
                 FUN_00358ba8();
-                (*extraout_x8_12)();
+                (*(fn_any_t)extraout_x8_12)();
                 goto tail;
             }
             FUN_0034ad00();
@@ -7207,21 +7215,21 @@ void cl4_sched_priority_dispatch(void)
             FUN_00377bec();
             FUN_003493ec();
             FUN_0034abd8();
-            (*extraout_x9_04)();
+            (*(fn_any_t)extraout_x9_04)();
             FUN_0034c384();
             FUN_00352e3c();
             FUN_0034c674();
-            (*extraout_x9_05)();
+            (*(fn_any_t)extraout_x9_05)();
             FUN_0034c480();
             FUN_00310b08();
             FUN_0034eae8();
             FUN_00350a1c();
-            (*extraout_x8_15)();
+            (*(fn_any_t)extraout_x8_15)();
             FUN_0034c888();
-            (*extraout_x9_06)();
+            (*(fn_any_t)extraout_x9_06)();
             if ((u2 & 1) == 0) goto done;
             FUN_0034cf94(*(word_t *)(l5 + 0x10));
-            (*extraout_x8_16)();
+            (*(fn_any_t)extraout_x8_16)();
         } else {
             if (l5 <= l6) {
                 FUN_0034ad00();
@@ -7229,49 +7237,49 @@ void cl4_sched_priority_dispatch(void)
                 FUN_00377bec();
                 FUN_003493ec();
                 FUN_0034abd8();
-                (*extraout_x9_01)();
+                (*(fn_any_t)extraout_x9_01)();
                 FUN_0034c384();
                 uint128_t r = FUN_0034d2f4(extraout_x8_02);
                 word_t r_lo = (word_t)r;
                 word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-                (*extraout_x9_02)(r_lo, r_hi, extraout_x1);
+                (*(fn_any_t)extraout_x9_02)(r_lo, r_hi, extraout_x1);
                 FUN_003496e8();
                 FUN_0034fa1c();
-                (*extraout_x8_14)();
+                (*(fn_any_t)extraout_x8_14)();
                 FUN_0034c870();
-                (*extraout_x9_03)();
+                (*(fn_any_t)extraout_x9_03)();
                 if ((u3 & 1) != 0) goto done;
                 FUN_0034cfb4(*(word_t *)(l5 + 0x10));
-                (*extraout_x8_19)();
+                (*(fn_any_t)extraout_x8_19)();
 tail:
                 FUN_0034d1fc();
                 FUN_00352e30();
                 FUN_00349f8c();
-                (*extraout_x9_08)();
+                (*(fn_any_t)extraout_x9_08)();
                 FUN_00348e78();
                 FUN_0034f434();
-                (*extraout_x8_20)();
+                (*(fn_any_t)extraout_x8_20)();
                 FUN_0034d820();
                 u7 = extraout_x8_00;
                 pc8 = extraout_x8_21;
                 goto fire;
             }
             FUN_0034e94c();
-            (*extraout_x8_06)();
+            (*(fn_any_t)extraout_x8_06)();
         }
         FUN_0034cee8();
         FUN_00352a64();
         FUN_00349f74();
-        (*extraout_x9_07)();
+        (*(fn_any_t)extraout_x9_07)();
         FUN_00348c84();
 merge:
         FUN_0034e034();
-        (*extraout_x8_17)();
+        (*(fn_any_t)extraout_x8_17)();
         u7 = FUN_0034e33c();
         pc8 = extraout_x8_18;
     }
 fire:
-    (*pc8)(u7);
+    (*(fn_any_t)pc8)(u7);
 done:
     u7 = FUN_00352980();
     FUN_0008e500(u7, extraout_x8_00);
@@ -7353,6 +7361,7 @@ void cl4_sched_mask_bitmap(long set)
  * Notes: FUN_003535f4/FUN_00357e24 validation; FUN_0022afd8 clear; noreturn panic. */
 void cl4_sched_slot_clear(word_t a, word_t b, long set)
 {
+    word_t r1_lo = 0, r1_hi = 0, r2_lo = 0, r2_hi = 0;   /* split-pair scratch */
     if ((((-1 < a) && (uint128_t r1 = FUN_003535f4(), !(bool)in_CY)) &&
         (uint128_t r2 = FUN_00357e24(r1_lo, set + 0x40), (extraout_x9 & 1) != 0)) &&
         (r1_hi == *(int *)(set + 0x24))) {
@@ -7557,7 +7566,7 @@ void cl4_sched_op_release_cb(word_t *desc)
     FUN_00258d9c(u1, *(uint8_t *)(p + 8), p[2], p[7], *p,
                  *(word_t *)(p[1] + 0x10), p[3], *(word_t *)(p[1] + 0x20));
     FUN_0006b6f4(*(word_t *)(l2 + 8));
-    (*extraout_x8)();
+    (*(fn_any_t)extraout_x8)();
     cl4_obj_release(u1);   /* thunk_FUN_00012568 */
     cl4_obj_release(p);    /* thunk_FUN_00012568 */
 }
@@ -7577,15 +7586,15 @@ void cl4_sched_op_insert_forward(word_t a, word_t b, long set)
     word_t u1 = FUN_00310d68();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b05c();
     FUN_0034998c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_0034947c();
     FUN_003a261c(*unaff_x20);
     FUN_0035478c();
     FUN_00350b48();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     local_8 = *unaff_x20;
     FUN_00359aec();
     FUN_0034f5e4();
@@ -7597,17 +7606,17 @@ void cl4_sched_op_insert_forward(word_t a, word_t b, long set)
     FUN_00351548();
     FUN_000839d8();
     code *pc2 = *(code **)(extraout_x16 + 8);
-    (*pc2)();
+    (*(fn_any_t)pc2)();
     uint128_t r = FUN_00356ae8(*(word_t *)(extraout_x16 + 0x20));
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-    (*extraout_x8_00)(r_lo, r_hi, u1);
+    (*(fn_any_t)extraout_x8_00)(r_lo, r_hi, u1);
     FUN_0035a134();
     FUN_00258d9c();
     FUN_00350618();
-    (*pc2)();
+    (*(fn_any_t)pc2)();
     FUN_00351414(*(word_t *)(extraout_x16_00 + 8));
-    (*extraout_x8_01)();
+    (*(fn_any_t)extraout_x8_01)();
     FUN_00351584(unaff_x20, &local_8);
     FUN_001fb194();
     FUN_0036b118(local_8);
@@ -7972,10 +7981,10 @@ void cl4_sched_set_grow(void)
 {
     FUN_0008e518();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     long l3 = FUN_003497b4();
     FUN_00349b3c(l3, *(word_t *)(l3 + 0x10));
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     FUN_0031b524(0);
     long l7 = *unaff_x20;
@@ -8010,11 +8019,11 @@ void cl4_sched_set_grow(void)
                 (extraout_x16_00 + 0x10, extraout_x8_01, *(long *)(l7 + 0x30) + l8, extraout_x1_00);
             long l9 = *(long *)(extraout_x16 + 0x48) * u5b;
             FUN_00358f54(u4, *(long *)(l7 + 0x38) + l9);
-            (*extraout_x9_00)(extraout_x16 + 0x10);
+            (*(fn_any_t)extraout_x9_00)(extraout_x16 + 0x10);
             FUN_00351b60(*(long *)(l3 + 0x30) + l8);
-            (*extraout_x9_01)(extraout_x16_00 + 0x20);
+            (*(fn_any_t)extraout_x9_01)(extraout_x16_00 + 0x20);
             FUN_000dbe70(*(long *)(l3 + 0x38) + l9);
-            (*extraout_x9_02)(extraout_x16 + 0x20);
+            (*(fn_any_t)extraout_x9_02)(extraout_x16 + 0x20);
             if (local_8 != 0) break;
 advance:
             do {
@@ -8052,7 +8061,7 @@ void cl4_sched_op_insert_check(word_t a, word_t b, word_t c, long set)
     FUN_00353b10();
     word_t u3 = *(word_t *)(l2 + 0x10);
     FUN_0034998c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493ac();
     uint128_t r = FUN_001fbb74(extraout_x1, c, l2);
     word_t r_lo = (word_t)r;
@@ -8062,16 +8071,16 @@ void cl4_sched_op_insert_check(word_t a, word_t b, word_t c, long set)
         long l1 = *(long *)(*(long *)(set + 0x18) + -8);
         code *pc = *(code **)(l1 + 0x20);
         long l1b = *(long *)(l1 + 0x48);
-        (*pc)();
+        (*(fn_any_t)pc)();
         FUN_003511d8(*(long *)(l2 + 0x38) + l1b * r_lo);
-        (*pc)();
+        (*(fn_any_t)pc)();
         FUN_0034ba48();
         FUN_0008e500();
         FUN_000839d8();
         return;
     }
     r = FUN_00350a34(*(word_t *)(extraout_x16 + 0x10));
-    (*extraout_x8_00)(r_lo, r_hi, u3);
+    (*(fn_any_t)extraout_x8_00)(r_lo, r_hi, u3);
     FUN_00350a04();
     FUN_003523fc();
     FUN_00356170();
@@ -8094,7 +8103,7 @@ void cl4_sched_op_lookup_dispatch(word_t a, word_t b, word_t c, long set)
     long l1 = set;
     FUN_00352798();
     FUN_00349734();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f50();
     uint128_t r = FUN_001fbb74(extraout_x1, c, l1);
     word_t r_lo = (word_t)r;
@@ -8107,7 +8116,7 @@ void cl4_sched_op_lookup_dispatch(word_t a, word_t b, word_t c, long set)
         return;
     }
     FUN_0034c9d8(*(word_t *)(extraout_x16 + 0x10));
-    (*extraout_x8_00)();
+    (*(fn_any_t)extraout_x8_00)();
     FUN_003508c0(r_lo);
     FUN_001f0700();
     FUN_0008e500(unaff_x30);
@@ -8344,14 +8353,14 @@ void cl4_sched_dispatch_all(word_t a, word_t b, long set, word_t d, word_t e, wo
 {
     FUN_00353cfc();
     FUN_003509c8(f);
-    (*DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x16 + 0x40));
     FUN_000aa4ec();
     FUN_0035196c();
     FUN_00349a68();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003490ec();
     FUN_0007c028();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348f38();
     uint128_t r = FUN_003516cc();
     word_t r_lo = (word_t)r;
@@ -8384,15 +8393,15 @@ void cl4_sched_dispatch_all(word_t a, word_t b, long set, word_t d, word_t e, wo
         }
         FUN_00353c24(*(word_t *)(extraout_x16_01 + 0x10), u3,
                      *(long *)(set + 0x38) + *(long *)(extraout_x16_01 + 0x48) * (u5 | l6 << 6));
-        (*extraout_x8_04)();
+        (*(fn_any_t)extraout_x8_04)();
         r = FUN_00350aa0(*(word_t *)(extraout_x16_00 + 0x10));
-        (*extraout_x8_05)(r_lo, r_hi, d);
+        (*(fn_any_t)extraout_x8_05)(r_lo, r_hi, d);
         FUN_00356248();
-        (*extraout_x9_01)();
+        (*(fn_any_t)extraout_x9_01)();
         if (unaff_x21 != 0) break;   /* preemption break */
         FUN_003578b4();
         FUN_00351384();
-        (*extraout_x8_06)();
+        (*(fn_any_t)extraout_x8_06)();
         FUN_0034db68();
         FUN_001f0700();
         l4 = l6;
@@ -8400,10 +8409,10 @@ void cl4_sched_dispatch_all(word_t a, word_t b, long set, word_t d, word_t e, wo
     FUN_0036b118(u2);
     FUN_00351924();
     FUN_003511a8();
-    (*extraout_x8_07)();
+    (*(fn_any_t)extraout_x8_07)();
     FUN_003578b4();
     FUN_00351384();
-    (*extraout_x8_08)();
+    (*(fn_any_t)extraout_x8_08)();
 done:
     word_t u3 = FUN_003567d4(u2);
     FUN_00353d14(u3, u2);
@@ -8520,7 +8529,7 @@ void cl4_sched_run_queue_drain2(void)
     FUN_0031b704();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034aee4();
     uint128_t r = FUN_00348b94(l1);
     word_t r_lo = (word_t)r;
@@ -8528,13 +8537,13 @@ void cl4_sched_run_queue_drain2(void)
     FUN_00377824(r_lo, r_hi, u3);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     r = FUN_0034a760();
     FUN_003504e8(r_lo, r_hi, 0x66bdd0);
     FUN_0031090c();
     FUN_00348d64();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b460();
     FUN_001fd1c0();
     thunk_FUN_002298d4();
@@ -8547,25 +8556,25 @@ void cl4_sched_run_queue_drain2(void)
         ulong u2 = FUN_001fd568(l1 + l4);
         code *pc = *(code **)(extraout_x16 + 8);
         FUN_00356ac4();
-        u3 = (*pc)();
+        u3 = (*(fn_any_t)pc)();
         if ((u2 & 1) != 0) break;
         FUN_001fff64(local_40, l1 + l4, unaff_x19);
         FUN_003567ec();
-        (*extraout_x8)();
+        (*(fn_any_t)extraout_x8)();
         FUN_00350ea4(l1 + l4);
         FUN_001ffc20();
         FUN_003505e8();
-        (*pc)();
+        (*(fn_any_t)pc)();
         FUN_00352c8c();
         u3 = FUN_0031945c();
         FUN_00350c20(u3, unaff_x21);
-        (*extraout_x8_00)();
+        (*(fn_any_t)extraout_x8_00)();
         FUN_00353bf4();
         FUN_003508cc();
-        (*extraout_x8_01)();
+        (*(fn_any_t)extraout_x8_01)();
     }
     FUN_00351630(u3, unaff_x23);
-    (*extraout_x8_02)();
+    (*(fn_any_t)extraout_x8_02)();
     FUN_0008e500(unaff_x30);
 }
 
@@ -8584,10 +8593,10 @@ void cl4_sched_queue_walk_dispatch(word_t a, word_t b, word_t c)
     FUN_00377824();
     FUN_00348e00();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034aab0();
     FUN_00349c70();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003497b4();
     FUN_00350b18(0xff);
     word_t u3 = FUN_00377824();
@@ -8598,7 +8607,7 @@ void cl4_sched_queue_walk_dispatch(word_t a, word_t b, word_t c)
     u4 = FUN_00310e08(u4, u3);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b460();
     long l12 = *(long *)(unaff_x20 + *(int *)(l2 + 0x24));
     long l11 = *(long *)(l12 + 0x10);
@@ -8625,15 +8634,15 @@ void cl4_sched_queue_walk_dispatch(word_t a, word_t b, word_t c)
             thunk_FUN_0026c274(l2);
             FUN_00357b54(local_30);
             FUN_00351300();
-            (*pc5)();
+            (*(fn_any_t)pc5)();
             FUN_00354ab0();
             FUN_003507c8();
-            (*extraout_x8_01)();
+            (*(fn_any_t)extraout_x8_01)();
             u8 = FUN_00352fe8();
-            (*extraout_x8_02)(u8, u4);
-            long l10 = (*pc7)(unaff_x21, u6);
+            (*(fn_any_t)extraout_x8_02)(u8, u4);
+            long l10 = (*(fn_any_t)pc7)(unaff_x21, u6);
             FUN_003507d4(*(word_t *)(extraout_x16 + 8));
-            (*extraout_x8_03)();
+            (*(fn_any_t)extraout_x8_03)();
             bool overflow = SCARRY8(l11, l10);
             l11 = l11 + l10;
             if (overflow) {   /* WARNING: does not return */
@@ -8686,7 +8695,7 @@ void cl4_sched_empty_or_drain(void)
     FUN_00377bec();
     FUN_00349fe0();
     FUN_0034cfd4(unaff_x22 + i1, unaff_x21 + i1);
-    uint u2 = (*extraout_x8)();
+    uint u2 = (*(fn_any_t)extraout_x8)();
     FUN_00084234(u2 & 1, unaff_x30);
 }
 
@@ -8703,7 +8712,7 @@ void cl4_sched_op_prep5(word_t a, word_t b, word_t c)
     FUN_00349748(pc, *(word_t *)(unaff_x21 + 0x18), *(word_t *)(unaff_x21 + 0x10));
     word_t u2 = FUN_00377824();
     FUN_00351c88(u2, u2);
-    (*pc)();
+    (*(fn_any_t)pc)();
 }
 
 /* FUN_001fd668 @ 0x001fd668   (est. cl4_sched_hash_mix)
@@ -8716,9 +8725,9 @@ void cl4_sched_hash_mix(word_t a, word_t b, word_t c)
 {
     FUN_0034a4a4(c);
     byte b1 = FUN_003552f0();
-    FUN_0034d264(b1, s_uespemosmodnarodarenegylsetybdet_004e7a30._16_8_,
-                 b1 ^ (byte)s_uespemosmodnarodarenegylsetybdet_004e7a30._0_8_);
-    (*extraout_x8)();
+    FUN_0034d264(b1, (*(word_t *)((char *)&(s_uespemosmodnarodarenegylsetybdet_004e7a30) + 16)),
+                 b1 ^ (byte)((word_t)(s_uespemosmodnarodarenegylsetybdet_004e7a30)));
+    (*(fn_any_t)extraout_x8)();
     FUN_001a8564();
 }
 
@@ -8740,7 +8749,7 @@ void cl4_sched_empty_or_drain_b(void)
     FUN_00377bec();
     FUN_0035044c();
     FUN_0034cfd4(unaff_x22 + i1, unaff_x21 + i1);
-    uint u2 = (*extraout_x8)();
+    uint u2 = (*(fn_any_t)extraout_x8)();
     FUN_00084234(u2 & 1, unaff_x30);
 }
 
@@ -8762,7 +8771,7 @@ void cl4_sched_debug_string(void)
     FUN_00377824();
     FUN_00348ce8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b05c();
     FUN_0006e778(0x1b);
     uint128_t r8 = FUN_0035a354();
@@ -8805,7 +8814,7 @@ s1:
     local_10 = r9_lo;
     void **pp = local_10;
     FUN_00356260(u2, (long)unaff_x20 + (long)*(int *)((long)p5 + 0x24));
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_00350630();
     FUN_001c050c();
     FUN_00356e28();
@@ -8950,7 +8959,7 @@ uint8_t cl4_sched_desc_build(void)
     FUN_00310d68();
     FUN_00348ce8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0c4();
     FUN_00084180();
     FUN_001fdc74();
@@ -8959,7 +8968,7 @@ uint8_t cl4_sched_desc_build(void)
     FUN_0035401c();
     FUN_001d88fc(&local_41, FUN_0031b734, auStack_70);
     FUN_00351384(*(word_t *)(extraout_x16 + 8));
-    (*extraout_x8)();
+    (*(fn_any_t)extraout_x8)();
     return local_41;
 }
 
@@ -8984,14 +8993,14 @@ void cl4_sched_queue_run_loop(void)
     FUN_00377824();
     FUN_00348d64();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350428();
     FUN_003509a4();
     FUN_0034ce98();
     word_t u3 = FUN_00377824();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034d888();
     FUN_0035298c();
     FUN_00310d68();
@@ -8999,13 +9008,13 @@ void cl4_sched_queue_run_loop(void)
     FUN_00310d68();
     FUN_003490b8(&stack0x00000010);
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b05c();
     FUN_003499c8();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350464();
     FUN_003509a4();
     FUN_003507e0();
@@ -9015,7 +9024,7 @@ void cl4_sched_queue_run_loop(void)
     word_t *pv = (word_t *)FUN_00310e08();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_00350428();
     FUN_0035041c();
     FUN_003594bc();
@@ -9023,9 +9032,9 @@ void cl4_sched_queue_run_loop(void)
     FUN_0034e130();
     word_t u5 = FUN_00310d68();
     FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_00348b5c();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b87c();
     word_t u9 = *(word_t *)(unaff_x20 + *(int *)(r_hi + 0x24));
     FUN_0036b270(u9);
@@ -9048,7 +9057,7 @@ void cl4_sched_queue_run_loop(void)
         FUN_00200bf4(uStack_50, u6);
         FUN_003561ac();
         r2 = FUN_003505e8();
-        (*extraout_x8_03)(r2_lo, r2_hi, u5);
+        (*(fn_any_t)extraout_x8_03)(r2_lo, r2_hi, u5);
         FUN_0034aa54();
         if ((bool)in_ZR) {
             FUN_0036b118(local_20[0]);
@@ -9076,20 +9085,20 @@ void cl4_sched_queue_run_loop(void)
         FUN_00352eb4(u7);
         FUN_0035242c();
         FUN_003517cc();
-        (*extraout_x9)();
+        (*(fn_any_t)extraout_x9)();
         FUN_00354d50();
         FUN_003514e8();
-        (*extraout_x8_04)();
+        (*(fn_any_t)extraout_x8_04)();
         FUN_0034de8c();
         r2 = FUN_00350630();
         FUN_00377bec(r2_lo, r2_hi, u3);
         FUN_0031b0bc();
         FUN_00351f7c();
         FUN_003517cc(r_lo);
-        (*extraout_x9_00)();
+        (*(fn_any_t)extraout_x9_00)();
         FUN_00355eec();
         FUN_003504c4();
-        (*extraout_x8_05)();
+        (*(fn_any_t)extraout_x8_05)();
         r2 = FUN_003524b0();
         FUN_00350884(r2_lo, r2_hi, unaff_x24);
         if (!(bool)in_ZR) {
@@ -9097,17 +9106,17 @@ void cl4_sched_queue_run_loop(void)
             code *pc = (code *)*pv;
             FUN_00353e44();
             FUN_0034edd8();
-            (*pc)();
+            (*(fn_any_t)pc)();
             FUN_0035463c();
             FUN_0034ef78();
-            (*pc)();
+            (*(fn_any_t)pc)();
             r2 = FUN_003524b0();
             FUN_00350884(r2_lo, r2_hi, unaff_x23);
             if (!(bool)in_ZR) {
                 FUN_0036b118(local_20[0]);
                 FUN_0035748c(&stack0x00000000);
                 r = FUN_003507e0();
-                (*extraout_x8_08)(r_lo, r_hi, unaff_x23);
+                (*(fn_any_t)extraout_x8_08)(r_lo, r_hi, unaff_x23);
                 FUN_00357338(&stack0x00000018);
                 FUN_003508cc();
                 FUN_0035063c();
@@ -9125,11 +9134,11 @@ void cl4_sched_queue_run_loop(void)
                 return;
             }
             u9 = FUN_0034f9ec(&stack0x00000028);
-            (*extraout_x8_06)(u9, unaff_x24);
+            (*(fn_any_t)extraout_x8_06)(u9, unaff_x24);
             continue;
         }
         FUN_003510d0(&stack0x00000008);
-        (*extraout_x8_07)(unaff_x25, local_f0);
+        (*(fn_any_t)extraout_x8_07)(unaff_x25, local_f0);
         b2 = false;
     }
 }
@@ -9147,7 +9156,7 @@ void cl4_sched_op_guard_check(word_t a, word_t b, word_t c)
     word_t u2 = FUN_0031b704(0);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b6f4();
     word_t u3 = FUN_00310d68(0xff, u2);
     FUN_0034ce88();
@@ -9155,28 +9164,28 @@ void cl4_sched_op_guard_check(word_t a, word_t b, word_t c)
     FUN_003722e4();
     FUN_00348fd8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b05c();
     FUN_0034998c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348a80();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c2d8();
     FUN_0034e68c();
     FUN_000839d8();
     long l5 = (long)*(int *)(unaff_x28 + 0x30);
     code *pc = *(code **)(extraout_x16_00 + 0x10);
     FUN_003539c8();
-    (*pc)();
+    (*(fn_any_t)pc)();
     FUN_0035478c();
     FUN_003505c4(unaff_x25 + l5);
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_0034ad40();
     if ((bool)in_ZR) {
         FUN_0034ad40(unaff_x25 + l5);
         if ((bool)in_ZR) {
             FUN_00351274(*(word_t *)(extraout_x16_00 + 8));
-            (*extraout_x8_01)();
+            (*(fn_any_t)extraout_x8_01)();
             byte b1 = 0;
             goto out;
         }
@@ -9184,30 +9193,30 @@ void cl4_sched_op_guard_check(word_t a, word_t b, word_t c)
         uint128_t r = FUN_000dbd0c();
         word_t r_lo = (word_t)r;
         word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-        (*pc)(r_lo, r_hi, u3);
+        (*(fn_any_t)pc)(r_lo, r_hi, u3);
         FUN_0034ad40(unaff_x25 + l5);
         if (!(bool)in_ZR) {
             FUN_00354810();
-            (*extraout_x9_00)(local_38, unaff_x25 + l5, u2);
+            (*(fn_any_t)extraout_x9_00)(local_38, unaff_x25 + l5, u2);
             r = FUN_00351354();
             byte b1 = FUN_001fd568(r_lo, r_hi, extraout_x1, c);
             pc = *(code **)(extraout_x16 + 8);
             FUN_00351ec0();
-            (*pc)();
+            (*(fn_any_t)pc)();
             FUN_00351714();
-            (*pc)();
+            (*(fn_any_t)pc)();
             FUN_00351274(*(word_t *)(extraout_x16_00 + 8));
-            (*extraout_x8_04)();
+            (*(fn_any_t)extraout_x8_04)();
             b1 = b1 ^ 1;
             goto out;
         }
         FUN_00351e54();
         FUN_00351714();
-        (*extraout_x8_02)();
+        (*(fn_any_t)extraout_x8_02)();
     }
     FUN_00352420();
     FUN_003510dc();
-    (*extraout_x8_03)();
+    (*(fn_any_t)extraout_x8_03)();
     byte b1 = 1;
 out:
     *extraout_x8 = b1 & 1;
@@ -9232,10 +9241,10 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
     word_t u3 = FUN_00377824();
     FUN_0034ab20();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0d4();
     FUN_0034998c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f38();
     FUN_00350ed0(0xff);
     word_t u4 = FUN_00377824();
@@ -9245,7 +9254,7 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
     u5 = FUN_00310e08(u5, u4);
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b250();
     uint128_t r = FUN_00348b94(u1);
     word_t r_lo = (word_t)r;
@@ -9276,12 +9285,12 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
             FUN_001e7664(&local_18, &local_20, u7);
             thunk_FUN_0026c274(l2);
             u7 = FUN_00352a64();
-            (*pc)(u7, u10, u1);
+            (*(fn_any_t)pc)(u7, u10, u1);
             FUN_00356a70();
             FUN_00350518();
-            (*extraout_x8_00)();
+            (*(fn_any_t)extraout_x8_00)();
             FUN_00354ab0();
-            (*extraout_x8_01)(local_78, u5);
+            (*(fn_any_t)extraout_x8_01)(local_78, u5);
             FUN_00310d80(0, u6);
             FUN_00350600(u1);
             FUN_00377bec();
@@ -9319,7 +9328,7 @@ void cl4_sched_op_dispatch7(void)
     FUN_00377824();
     FUN_00348ce8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b2f8();
     FUN_0035139c(u1);
     word_t u3 = FUN_00377bec();
@@ -9329,7 +9338,7 @@ void cl4_sched_op_dispatch7(void)
     FUN_00310e08(r8_lo, r8_hi, u3);
     FUN_00348cd0();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0c4();
     word_t u6 = *(word_t *)(unaff_x20 + *(int *)(l2 + 0x24));
     r8 = FUN_003504ac();
@@ -9345,9 +9354,9 @@ void cl4_sched_op_dispatch7(void)
     FUN_001fea40();
     FUN_0036b118(u6);
     FUN_00350470(*(word_t *)(extraout_x16 + 0x10));
-    (*extraout_x8_00)();
+    (*(fn_any_t)extraout_x8_00)();
     FUN_00351354(*(word_t *)(extraout_x16_00 + 8));
-    (*extraout_x8_01)();
+    (*(fn_any_t)extraout_x8_01)();
     r8 = FUN_00350500(extraout_x8);
     FUN_001fd4f4(r8_lo, r8_hi, u5, u1);
     FUN_0008e500(r7_hi);
@@ -9384,11 +9393,11 @@ void cl4_sched_drain_epilogue(void)
     FUN_00377824();
     FUN_00351f10();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0c4();
     FUN_00351750(u1);
     FUN_0034c2a4();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_00353c18();
     FUN_00350018();
     FUN_001fd4f4();
@@ -9451,7 +9460,7 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
     FUN_00377824();
     FUN_00348e60();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034d89c();
     FUN_003513a8(0xff);
     FUN_00377824();
@@ -9462,18 +9471,18 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
     long l6 = FUN_00310e08();
     FUN_00350920();
     FUN_0034d464();
-    (*DAT_00658c00)(*(word_t *)(extraout_x16_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x16_00 + 0x40));
     FUN_003493c4();
     FUN_0034acf0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c074();
     long *pl15 = (long *)(l6 + -8);
     long l11 = *pl15;
-    (*DAT_00658c00)(*(word_t *)(l11 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(l11 + 0x40));
     FUN_003489c0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034a9d4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034dc9c();
     word_t u12 = *(word_t *)(unaff_x20 + *(int *)(unaff_x19 + 0x24));
     FUN_0036b270(u12);
@@ -9507,9 +9516,9 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
             FUN_00357274();
             FUN_00352eb4();
             FUN_003504a0(local_a8, pl15);
-            u5 = (*extraout_x9_01)();
+            u5 = (*(fn_any_t)extraout_x9_01)();
             FUN_00351a98(u5, l6);
-            (*extraout_x8_01)();
+            (*(fn_any_t)extraout_x8_01)();
             FUN_0034bec4();
             l6 = FUN_0031b704();
             int i1 = *(int *)(l6 + 0x24);
@@ -9518,10 +9527,10 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
             FUN_00377bec();
             FUN_0035647c();
             FUN_003518a0((long)pv + (long)i1, (long)unaff_x24 + (long)i1);
-            (*extraout_x8_02)();
+            (*(fn_any_t)extraout_x8_02)();
             FUN_00350bc0(&stack0x00000048);
             FUN_00350b78();
-            (*extraout_x8_03)();
+            (*(fn_any_t)extraout_x8_03)();
             goto out;
         }
         FUN_0034878c();
@@ -9534,7 +9543,7 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
             code *pc16 = *(code **)(l11 + 0x20);
             FUN_003567a4();
             FUN_0034b778();
-            (*pc16)();
+            (*(fn_any_t)pc16)();
             FUN_000ec044();
             FUN_00355430();
             u7 = FUN_0034e268();
@@ -9547,12 +9556,12 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
             FUN_00349f3c(u13);
             if (!(bool)u3) {
                 FUN_003504a0(local_88);
-                (*pc16)();
+                (*(fn_any_t)pc16)();
                 FUN_00352abc();
                 FUN_003553cc();
                 FUN_00352d28();
                 FUN_003510a0();
-                (*extraout_x9)();
+                (*(fn_any_t)extraout_x9)();
                 FUN_0034e0c4();
                 l8 = FUN_0031b704();
                 int i1 = *(int *)(l8 + 0x24);
@@ -9562,18 +9571,18 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
                 FUN_00377bec();
                 pc16 = (code *)FUN_00310cd4();
                 FUN_00353c30((long)pv + (long)i1, local_10 + i2);
-                long l9 = (*pc16)();
+                long l9 = (*(fn_any_t)pc16)();
                 code *pc14 = *(code **)(extraout_x16 + 8);
                 FUN_00350738();
-                (*pc14)();
+                (*(fn_any_t)pc14)();
                 FUN_003510a0(local_a8, local_88);
                 FUN_00353e2c();
-                (*extraout_x9_00)();
+                (*(fn_any_t)extraout_x9_00)();
                 FUN_00353bac();
                 FUN_00351dcc(local_88, (long)unaff_x24 + (long)*(int *)(extraout_x8 + 0x24));
-                long l10 = (*pc16)();
+                long l10 = (*(fn_any_t)pc16)();
                 FUN_003510dc();
-                (*pc14)();
+                (*(fn_any_t)pc14)();
                 FUN_0022b584(&local_58, u12);
                 long l8b = local_58 + -1;
                 if (SBORROW8(local_58, 1)) {   /* WARNING: does not return */
@@ -9584,14 +9593,14 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
                     /* noreturn */
                 }
                 pc16 = *(code **)(l11 + 8);
-                (*pc16)(local_88, l6);
+                (*(fn_any_t)pc16)(local_88, l6);
                 u5 = FUN_00359ad4();
-                (*pc16)(u5, l6);
+                (*(fn_any_t)pc16)(u5, l6);
                 local_40 = 1;
                 lStack_38 = l8b;
                 FUN_001ff52c(&local_58, &local_40, u12);
                 FUN_0036b118(local_10);
-                (*DAT_00658c00)();
+                (*(fn_any_t)DAT_00658c00)();
                 u5 = FUN_00355b38();
                 *(word_t *)(extraout_x8_00 + -0x18) = u18;
                 *(word_t *)(extraout_x8_00 + -0x20) = u17;
@@ -9672,9 +9681,9 @@ void cl4_sched_queue_reset(void)
     FUN_00355adc();
     FUN_003722e4();
     FUN_00348e60();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003489c0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c074();
     FUN_0034d130();
     FUN_00377bec();
@@ -9682,42 +9691,42 @@ void cl4_sched_queue_reset(void)
     long l5 = FUN_00310e08();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b460();
     FUN_003597b4();
     code *pc7 = *(code **)(extraout_x16_00 + 0x10);
     uint128_t r10 = FUN_000b43d0();
     word_t r10_lo = (word_t)r10;
     word_t r10_hi = (word_t)((unsigned __int128)r10 >> 64);
-    (*pc7)(r10_lo, r10_hi, u4);
+    (*(fn_any_t)pc7)(r10_lo, r10_hi, u4);
     FUN_00359594();
-    (*pc7)();
+    (*(fn_any_t)pc7)();
     FUN_0035399c();
     FUN_003508a8();
     FUN_00351f4c();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     int i2 = *(int *)(unaff_x26 + 0x30);
     code *pc8 = *(code **)(extraout_x16_00 + 0x20);
     r10 = FUN_00350c80();
-    (*pc8)(r10_lo, r10_hi, u4);
+    (*(fn_any_t)pc8)(r10_lo, r10_hi, u4);
     pc7 = *(code **)(extraout_x16_00 + 8);
-    (*pc7)(unaff_x27 + i2, u4);
+    (*(fn_any_t)pc7)(unaff_x27 + i2, u4);
     FUN_0035a190(*(word_t *)(extraout_x16 + 0x20));
-    (*extraout_x8_01)();
-    (*pc8)(l1 + *(int *)(l5 + 0x24), unaff_x27 + *(int *)(unaff_x20 + 0x30), u4);
+    (*(fn_any_t)extraout_x8_01)();
+    (*(fn_any_t)pc8)(l1 + *(int *)(l5 + 0x24), unaff_x27 + *(int *)(unaff_x20 + 0x30), u4);
     FUN_003508f0();
-    (*pc7)();
+    (*(fn_any_t)pc7)();
     r10 = FUN_003504c4();
     FUN_0028c7d8(r10_lo, r10_hi, l6);
     FUN_00353154();
     FUN_00350b78();
-    (*extraout_x8_02)();
+    (*(fn_any_t)extraout_x8_02)();
     i2 = *(int *)(l6 + 0x28);
     FUN_00356810();
     FUN_00352ecc();
     u4 = FUN_0035949c();
     FUN_00351e3c(u4, r9_lo);
-    (*extraout_x8_03)();
+    (*(fn_any_t)extraout_x8_03)();
     FUN_00350df4();
     r9 = FUN_00348b94();
     FUN_00377824(r9_lo, r9_hi, l1);
@@ -9760,7 +9769,7 @@ void cl4_sched_batch_step(void)
     FUN_0008e518();
     word_t u8 = *(word_t *)(extraout_x1 + 0x10);
     FUN_003499c8();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003497b4();
     word_t u7 = *(word_t *)(extraout_x1_00 + 0x18);
     word_t u2 = FUN_0034c158();
@@ -9768,9 +9777,9 @@ void cl4_sched_batch_step(void)
     FUN_0034b0b4();
     FUN_00359398();
     long l4 = FUN_000a6f88();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003490d0();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034c2c8();
     FUN_00350470();
     FUN_00352438();
@@ -9779,7 +9788,7 @@ void cl4_sched_batch_step(void)
     long l5 = FUN_00310e08();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034aee4();
     int i1 = *(int *)(extraout_x1_00 + 0x24);
     long l6 = *(long *)(l3 + -8);
@@ -9787,30 +9796,30 @@ void cl4_sched_batch_step(void)
     uint128_t r = FUN_0009461c();
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
-    (*pc9)(r_lo, r_hi, l3);
-    (*pc9)(unaff_x19 + *(int *)(l4 + 0x30), unaff_x20 + i1, l3);
+    (*(fn_any_t)pc9)(r_lo, r_hi, l3);
+    (*(fn_any_t)pc9)(unaff_x19 + *(int *)(l4 + 0x30), unaff_x20 + i1, l3);
     FUN_00351c4c();
     FUN_003501a8();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     i1 = *(int *)(l4 + 0x30);
     pc9 = *(code **)(l6 + 0x20);
     r = FUN_0035084c();
-    (*pc9)(r_lo, r_hi, l3);
+    (*(fn_any_t)pc9)(r_lo, r_hi, l3);
     code *pc10 = *(code **)(l6 + 8);
-    (*pc10)(unaff_x22 + i1, l3);
+    (*(fn_any_t)pc10)(unaff_x22 + i1, l3);
     (**(code **)(extraout_x16 + 0x20))();
-    (*pc9)(unaff_x26 + *(int *)(l5 + 0x24), unaff_x22 + *(int *)(l4 + 0x30), l3);
+    (*(fn_any_t)pc9)(unaff_x26 + *(int *)(l5 + 0x24), unaff_x22 + *(int *)(l4 + 0x30), l3);
     FUN_00350c80();
-    (*pc10)();
+    (*(fn_any_t)pc10)();
     r = FUN_00351130();
     FUN_0028c7f0(r_lo, r_hi, extraout_x1_00);
     FUN_00352870();
     FUN_00350ea4();
-    (*extraout_x9_00)();
+    (*(fn_any_t)extraout_x9_00)();
     FUN_00355dd8();
-    (*extraout_x9_01)();
+    (*(fn_any_t)extraout_x9_01)();
     r = FUN_003507d4(*(word_t *)(extraout_x16_00 + 0x10));
-    (*extraout_x8_02)(r_lo, r_hi, l5);
+    (*(fn_any_t)extraout_x8_02)(r_lo, r_hi, l5);
     FUN_00350c68(extraout_x8, unaff_x20);
     FUN_001d3fd0();
     FUN_0008e500(unaff_x30);
@@ -9832,21 +9841,21 @@ void cl4_sched_count_op(void)
     FUN_00377824(r_lo, r_hi, in_x3, &DAT_0060e208);
     FUN_00348e00();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034af20();
     long l4 = *pv;
     FUN_00319628();
     FUN_00351184();
     FUN_00077708();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_0034c6b4();
     FUN_00377bec();
     FUN_00027788();
     FUN_00351ac8();
     FUN_000b4390();
-    long l3 = (*extraout_x8_00)();
+    long l3 = (*(fn_any_t)extraout_x8_00)();
     FUN_003515cc(*(word_t *)(extraout_x16 + 8));
-    (*extraout_x8_01)();
+    (*(fn_any_t)extraout_x8_01)();
     if (!SCARRY8(l4, l3)) {
         *extraout_x8 = l4 + l3;
         FUN_0008e500(unaff_x30);
@@ -9870,7 +9879,7 @@ void cl4_sched_run_loop(void)
     word_t r3_hi = (word_t)((unsigned __int128)r3 >> 64);
     word_t u1 = in_x3;
     FUN_0007c028();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003493ac();
     FUN_00351fb0();
     uint128_t r4 = FUN_003548d0();
@@ -9879,55 +9888,55 @@ void cl4_sched_run_loop(void)
     FUN_00377824(r4_lo, r4_hi, u1);
     FUN_00348fd8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034eb2c();
     FUN_0035113c();
     FUN_0034d464();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b71c();
     FUN_00349c70();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_00349068();
     FUN_0034c920();
     FUN_00377824();
     FUN_00348d64();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034d3c4();
     (**(code **)(extraout_x16 + 0x10))(extraout_x8, r3_lo, in_x4);
     r4 = FUN_00354d68(*(word_t *)(extraout_x16_01 + 0x10));
-    (*extraout_x8_02)(r4_lo, r4_hi, in_x3);
+    (*(fn_any_t)extraout_x8_02)(r4_lo, r4_hi, in_x3);
     FUN_00352680(in_x5);
     FUN_00350618();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     FUN_0034b278();
     FUN_000dbd0c();
     u1 = FUN_00377bec();
     code *next = (code *)FUN_000a68f4();
     do {
-        (*next)(uStack_28, unaff_x23, u1);
+        (*(fn_any_t)next)(uStack_28, unaff_x23, u1);
         r4 = FUN_00351330();
         FUN_00350884(r4_lo, r4_hi, unaff_x28);
         if ((bool)in_ZR) {
             FUN_0035336c();
-            (*extraout_x8_05)(unaff_x20, unaff_x23);
+            (*(fn_any_t)extraout_x8_05)(unaff_x20, unaff_x23);
             goto done;
         }
         FUN_00350e64(*(word_t *)(extraout_x16_00 + 0x20));
-        (*extraout_x8_03)();
+        (*(fn_any_t)extraout_x8_03)();
         FUN_00350a34(unaff_x27);
-        (*r3_hi)();
+        (*(fn_any_t)r3_hi)();
         (**(code **)(extraout_x16_00 + 8))(local_50, unaff_x28);
         if (unaff_x21 != 0) {   /* preemption break */
             FUN_0035336c();
-            (*extraout_x8_06)(unaff_x20, unaff_x23);
+            (*(fn_any_t)extraout_x8_06)(unaff_x20, unaff_x23);
             (**(code **)(extraout_x16 + 8))(extraout_x8, in_x4);
             goto done;
         }
         (**(code **)(extraout_x16 + 8))(extraout_x8, in_x4);
         r4 = FUN_00350944(*(word_t *)(extraout_x16 + 0x20));
-        (*extraout_x8_04)(r4_lo, r4_hi, in_x4);
+        (*(fn_any_t)extraout_x8_04)(r4_lo, r4_hi, in_x4);
     } while (true);
 done:
     FUN_003567d4();
@@ -9952,15 +9961,15 @@ void cl4_sched_batch_advance(void)
     FUN_00377824();
     FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034aab0();
     FUN_0034c454();
     FUN_00377824();
     FUN_00348d7c();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003493c4();
     FUN_0034d244();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034ac3c();
     FUN_0034ed78();
     word_t u4 = FUN_00377bec();
@@ -9969,10 +9978,10 @@ void cl4_sched_batch_advance(void)
     word_t r10_hi = (word_t)((unsigned __int128)r10 >> 64);
     FUN_00310e08(r10_lo, r10_hi, u4);
     FUN_00348fd8();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
     FUN_003493c4();
     FUN_0034cde8();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b87c();
     long l8 = *(long *)(unaff_x20 + *(int *)(unaff_x21 + 0x24));
     FUN_0036b270(l8);
@@ -9983,7 +9992,7 @@ void cl4_sched_batch_advance(void)
     FUN_00352eb4(u2);
     FUN_00352a64();
     FUN_00350c20();
-    (*extraout_x9)();
+    (*(fn_any_t)extraout_x9)();
     r10 = FUN_003504e8();
     long l6 = FUN_0031b704(r10_lo, r10_hi, u2);
     int i3 = *(int *)(l6 + 0x24);
@@ -9992,19 +10001,19 @@ void cl4_sched_batch_advance(void)
     FUN_00377bec();
     FUN_00353d94();
     FUN_00350878(local_20, (long)unaff_x23 + (long)i3);
-    (*extraout_x9_00)();
+    (*(fn_any_t)extraout_x9_00)();
     FUN_003508cc(*(word_t *)(extraout_x16 + 8));
-    (*extraout_x8_02)();
+    (*(fn_any_t)extraout_x8_02)();
     i3 = *(int *)(unaff_x28 + 0x24);
     FUN_0035044c(u4);
     FUN_00351c94(local_20, unaff_x26 + i3);
-    ulong u7 = (*extraout_x8_03)();
+    ulong u7 = (*(fn_any_t)extraout_x8_03)();
     code *pc9 = *(code **)(extraout_x16_01 + 8);
-    (*pc9)();
+    (*(fn_any_t)pc9)();
     if ((u7 & 1) == 0) {
         FUN_00356224();
         FUN_003507c8();
-        (*extraout_x9_01)();
+        (*(fn_any_t)extraout_x9_01)();
         if (SCARRY8(l5, 1)) {   /* WARNING: does not return */
             SoftwareBreakpoint(1, 0x1fff64);
         }
@@ -10018,9 +10027,9 @@ void cl4_sched_batch_advance(void)
         FUN_001fea40();
         FUN_0036b118(l8);
         FUN_0034fe80(*(word_t *)(extraout_x16_00 + 0x10));
-        (*extraout_x8_04)();
+        (*(fn_any_t)extraout_x8_04)();
         FUN_0035620c();
-        (*pc9)();
+        (*(fn_any_t)pc9)();
         r10 = FUN_00351450(extraout_x8);
         local_20 = r10_hi;
         l5 = r10_lo;
@@ -10047,7 +10056,7 @@ void cl4_sched_batch_advance_b(void)
     FUN_00377824();
     word_t u4 = FUN_000a6f88();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034a760();
     FUN_00352f54();
     FUN_0034df64();
@@ -10060,7 +10069,7 @@ void cl4_sched_batch_advance_b(void)
     FUN_00310e08(r8_lo, r8_hi, u5);
     FUN_00348ce8();
     FUN_0007c1a4();
-    (*DAT_00658c00)();
+    (*(fn_any_t)DAT_00658c00)();
     FUN_0034b0c4();
     u5 = *(word_t *)(unaff_x20 + *(int *)(unaff_x28 + 0x24));
     FUN_0036b270(u5);
@@ -10069,9 +10078,9 @@ void cl4_sched_batch_advance_b(void)
     FUN_0036b118(u5);
     FUN_00352eb4(u2);
     r8 = FUN_00350518(local_40);
-    (*extraout_x9)(r8_lo, r8_hi, u2);
+    (*(fn_any_t)extraout_x9)(r8_lo, r8_hi, u2);
     FUN_00351384(*(word_t *)(extraout_x16 + 8));
-    (*extraout_x8_00)();
+    (*(fn_any_t)extraout_x8_00)();
     FUN_00350318();
     long l6 = FUN_0031b704();
     int i3 = *(int *)(l6 + 0x24);
@@ -10081,17 +10090,17 @@ void cl4_sched_batch_advance_b(void)
     FUN_00352ecc();
     u4 = FUN_0035949c();
     FUN_003515fc(u4, (long)unaff_x27 + (long)i3);
-    (*extraout_x8_01)();
+    (*(fn_any_t)extraout_x8_01)();
     FUN_00351a50();
     r8 = FUN_00348b94(u2);
     FUN_00377824(r8_lo, r8_hi, u1);
     FUN_00349530();
     (**(code **)(extraout_x16_00 + 0x10))(extraout_x8, local_40);
     FUN_00351d00();
-    (*pc7)();
+    (*(fn_any_t)pc7)();
     FUN_0035313c();
     FUN_0035084c();
-    (*extraout_x8_02)();
+    (*(fn_any_t)extraout_x8_02)();
     FUN_0008e500(unaff_x30);
 }
 
@@ -10225,7 +10234,7 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
     FUN_0008e518();
     FUN_00356900();
     FUN_00349720();
-    (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
+    (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     uint128_t r8 = FUN_00348f38();
     word_t r8_lo = (word_t)r8;
     word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
@@ -10257,14 +10266,14 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
                 FUN_00353c24(*(word_t *)(extraout_x16 + 0x10), u6,
                              *(long *)(extraout_x9 + 0x30) +
                              *(long *)(extraout_x16 + 0x48) * (extraout_x8_00 | l3 << 6));
-                (*extraout_x8_01)();
+                (*(fn_any_t)extraout_x8_01)();
                 r8 = FUN_00350488();
                 FUN_0031b614(r8_lo, r8_hi, d, e);
                 r8 = FUN_00356bb0(e);
                 FUN_00351360(r8_lo, r8_hi, 0x66bb20);
                 uVar7 = FUN_001f26cc();
                 FUN_00351384(*(word_t *)(extraout_x16 + 8));
-                (*extraout_x8_02)();
+                (*(fn_any_t)extraout_x8_02)();
             } while ((uVar7 & 1) != 0);
             u6 = 0;
 out:

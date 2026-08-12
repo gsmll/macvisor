@@ -464,8 +464,8 @@ void sk_key_not_owned(void);  /* FUN_004b749c */
 void sk_key_owned(void);  /* FUN_004b7480 */
 void sk_link_boot(void*,void*);  /* FUN_0005be48 */
 void sk_link_release(void*);  /* FUN_0005bce0 */
-void sk_lock_acquire(void);  /* FUN_0005cb9c */
-void sk_lock_release_glue(void);  /* FUN_0005ce54 */
+void sk_lock_acquire(void *);  /* FUN_0005cb9c */
+void sk_lock_release_glue(void *);  /* FUN_0005ce54 */
 void sk_log1(sk_word_t);  /* FUN_0005e958 */
 void sk_log_pop(sk_word_t);  /* thunk_FUN_0005453c */
 void sk_logf(sk_word_t,sk_word_t,int,const char*);  /* FUN_0005b824 */
@@ -596,7 +596,7 @@ sk_word_t sk_ipc_load_word(void *tcb);
 void sk_backtrace_dump(char *out, void *tcb);
 bool sk_regs_capture(void *tcb, sk_word_t *buf);
 void sk_regs_dump(char *out, void *tcb);
-void sk_crash_report(char *out, char *a2, void *a3, void *thread, int show_bt, int show_regs, sk_word_t esr, sk_word_t far);
+void sk_crash_report(char *out, int a2, long a3, void *thread, int show_bt, int show_regs, sk_word_t esr, sk_word_t far);
 void sk_rule(char *out, int fill, long text);
 bool sk_flag_test_41(void *obj);
 sk_word_t sk_ref_acquire_flag(void *obj, void *arg);
@@ -1460,7 +1460,7 @@ void sk_boot_main(void *arg0, sk_word_t boot_type, void **rsp, void **arg4, void
             *(void**)(bt - 8) = arg4;
             sk_boot_descr(cur);                             /* FUN_00063ea4 */
         }
-        *cur = bt;
+        *cur = (void*)(uintptr_t)bt;
         hi[-0x5f] = (void*)(bt - 0x178);
     }
 
@@ -2024,7 +2024,7 @@ void sk_exc_state_read_cpu(sk_word_t *out, void *ctx)
     int i; for(i=0;i<5;i++) out[i]=0;
     void *cpu = sk_per_cpu_base();
     if (ctx != *(void **)((char*)cpu + 8))
-        sk_exc_state_read2(*(sk_word_t *)((char*)ctx + 0x28));   /* FUN_000619f0 */
+        sk_exc_state_read2(out, *(sk_word_t *)((char*)ctx + 0x28));   /* FUN_000619f0 */
 }
 
 /*--------------------------------------------------------------------*/
@@ -2073,7 +2073,7 @@ void sk_error_code_str_out(char *out, unsigned char code)
         "L4_ErrorCodeMethodInvalid","L4_ErrorCodeArgumentInvalid",
         "L4_ErrorCodeOperationInvalid","L4_ErrorCodePermissionInvalid"
     };
-    if (code > 9) { sk_memcpy(out, "unknown", 0x20); sk_logf(out,0x20,0x1f,"L4_ErrorCode: %zu"); return; }
+    if (code > 9) { sk_memcpy(out, "unknown", 0x20); sk_logf((sk_word_t)(uintptr_t)out,0x20,0x1f,"L4_ErrorCode: %zu"); return; }
     sk_memcpy(out, names[code], 0x20);
 }
 
@@ -2214,7 +2214,7 @@ void sk_regs_dump(char *out, void *tcb)
  * Confidence: medium
  * Notes: Security-relevant: the kernel's crash-dump path; strings s_Address_Space_____s_005bd6f7, s_Component_____s_005bd70c, s_Mach_O_Header__0x_016lx_005bd71d, s_Mach_O_Slide__0x_016lx_005bd736, s_UUID___02hhX..., s_Thread___s_0x_06x___p___005bd7ba, s_Call_Stack__0x_012zx____0x_012zx_005bd7d3, s_ESR__0x_08zx_FAR__0x_016zx_005bd7f5, s_Apparent_stack_overflow_by_0x_04_005bd811, s_Synchronous_Tag_Check_Fault_005bd83b, s_Registers__005bd858, s_Backtrace__005bd865; stack canary FUN_0011d7e8.
  */
-void sk_crash_report(char *out, char *a2, void *a3, void *thread, int show_bt,
+void sk_crash_report(char *out, int a2, long a3, void *thread, int show_bt,
                        int show_regs, sk_word_t esr, sk_word_t far)
 {
     sk_word_t canary = 0xd37afd4bb400012a;
@@ -2261,12 +2261,12 @@ void sk_rule(char *out, int fill, long text)
     if (text == 0) {
         for (int i = 0x48; i; i--) sk_putch(fill, out);      /* FUN_001187f4 */
     } else {
-        long len = sk_strlen(text);                            /* thunk_FUN_00115080 */
+        long len = sk_strlen((const char*)(uintptr_t)text);                            /* thunk_FUN_00115080 */
         sk_word_t pad = (0x46 - len) >> 1;
         sk_word_t n = pad;
         if (1 < 0x46 - len)
             do { sk_putch(fill, out); } while (--n != 0);
-        sk_fmt(out, "%s", text);                              /* &DAT_005bd9f8 */
+        sk_fmt(out, "%s", (const char*)(uintptr_t)text);                              /* &DAT_005bd9f8 */
         if (len + 2 + pad != 0x48) {
             long extra = len + pad - 0x46;
             do { sk_putch(fill, out); } while (extra++ != -1);
@@ -2469,7 +2469,7 @@ void sk_ep_lock_setup(sk_word_t *ep, sk_word_t key, long *cfg)
             fp = sk_ep_return_dispatch;       /* FUN_00062dcc */
         }
         /* install fp into RO thread pointer, CallSupervisor(0) */
-        sk_ro_write8(fp);
+        sk_ro_write8((sk_word_t)(uintptr_t)fp);
         CallSupervisor(0);
         if ((key & 0xfd) == 0) {
             sk_word_t w = ep[6];
@@ -2503,7 +2503,7 @@ void sk_ep_return_dispatch(void *arg1, void *arg2)
         sk_ep_drain(cpu);                     /* FUN_000636e0 */
         sk_word_t r = (*(sk_word_t(*)(void*,void*,void*))(*(void***)((char*)ep + 0x20)[2]))(
                          *(void**)((char*)ep + 0x28), arg1, arg2);
-        sk_ep_restore();                      /* FUN_00063768 */
+        sk_ep_restore(cpu);                      /* FUN_00063768 */
         sk_ro_write8(r);
         CallSupervisor(0);
         void *act = sk_ep_return(ep, 1);      /* FUN_0006393c */
@@ -2599,13 +2599,13 @@ void sk_ep_create_threads(void *ep, sk_word_t want)
             /* prime register slots for the endpoint's register counts */
             if (*(long *)((char*)ep + 0x38) != 0)
                 for (sk_word_t i = 0; i < *(sk_word_t *)((char*)ep + 0x38); i++) {
-                    sk_word_t v = sk_ctx_state();   /* FUN_00034f70 */
+                    sk_word_t v = (sk_word_t)sk_ctx_state();   /* FUN_00034f70 */
                     *(sk_word_t*)((char*)stk + 0x1c0 + i*8) = v;
                     *(sk_word_t*)((char*)nt + 0xc0 + i*8) = v;
                 }
             if (*(long *)((char*)ep + 0x40) != 0)
                 for (sk_word_t i = 0; i < *(sk_word_t *)((char*)ep + 0x40); i++) {
-                    sk_word_t v = sk_ctx_state();   /* FUN_00034f70 */
+                    sk_word_t v = (sk_word_t)sk_ctx_state();   /* FUN_00034f70 */
                     *(sk_word_t*)((char*)stk + 0x1e0 + i*8) = v;
                     *(sk_word_t*)((char*)nt + 0xe0 + i*8) = v;
                 }
@@ -2654,9 +2654,9 @@ void sk_ep_setup_wrap(sk_word_t *ep, sk_word_t key, void *a, sk_word_t *cfg)
  */
 sk_word_t sk_ep_notif_tail(void)
 {
-    sk_word_t w[2] = sk_ep_state(0);          /* FUN_0005fad8 */
-    sk_word_t *p = (sk_word_t*)(w[0] + 0xc0);
-    sk_word_t *e = p + w[1];
+    sk_word_t *es = sk_ep_state(0);          /* FUN_0005fad8 */
+    sk_word_t *p = (sk_word_t*)(es[0] + 0xc0);
+    sk_word_t *e = p + es[1];
     if ((p <= e && e + 1 <= (sk_word_t*)(w[0] + 0xe0)) && e <= e + 1)
         return *e;
     sk_breakpoint(0x5519, 0x636d0);
@@ -2927,7 +2927,7 @@ sk_word_t sk_key_alloc(void *a, void *b, void *c)
         sk_word_t idx = *tbl;
         if (idx < 0x20) {
             *tbl = idx + 1;
-            sk_key_store(idx, a, b, c);          /* FUN_00063b84 */
+            sk_key_store(idx, (long)(uintptr_t)a, (sk_word_t)(uintptr_t)b, (int)(uintptr_t)c);          /* FUN_00063b84 */
             sk_key_unlock();                     /* FUN_00063c5c */
             return idx;
         }
@@ -2950,7 +2950,7 @@ void sk_key_lock(void)
 {
     void *tcb = sk_tcb_current();
     if ((sk_word_t)((char*)tcb + 0x60) <= (sk_word_t)((char*)tcb + 0x70)) {
-        sk_lock_acquire();                       /* FUN_0005cb9c */
+        sk_lock_acquire((char*)tcb + 0x60);                      /* FUN_0005cb9c */
         return;
     }
     sk_breakpoint(0x5519, 0x63b84);
@@ -2984,7 +2984,7 @@ void sk_key_store(long idx, long val, sk_word_t cb, int do_cb)
         if ((e <= cbp && cbslot <= (sk_word_t*)(t + 0x1f8)) && cbp <= cbslot) {
             *cbp = cb;
             if (val != 0 && do_cb != 0)
-                sk_pending_cb(sk_key_construct_cb, &idx);   /* FUN_0005bd7c + FUN_00063eb4 */
+                sk_pending_cb((void(*)(void))sk_key_construct_cb, &idx);   /* FUN_0005bd7c + FUN_00063eb4 */
             return;
         }
     }
@@ -3003,7 +3003,7 @@ void sk_key_unlock(void)
 {
     void *tcb = sk_tcb_current();
     if ((sk_word_t)((char*)tcb + 0x60) <= (sk_word_t)((char*)tcb + 0x70)) {
-        sk_lock_release_glue();                  /* FUN_0005ce54 */
+        sk_lock_release_glue((char*)tcb + 0x60);                  /* FUN_0005ce54 */
         return;
     }
     sk_breakpoint(0x5519, 0x63c90);
@@ -3031,10 +3031,10 @@ void sk_key_construct_all(long *vals)
     int n = 0x1c;
     while ((sk_word_t*)(t + 0x28) <= (sk_word_t*)(t + 0x100) &&
            (sk_word_t*)(t + 0x20) <= (sk_word_t*)(t + 0x28)) {
-        void (*ctor)(void) = *(void (**)(void))(t + 0x20);
+        long (*ctor)(void) = *(long (**)(void))(t + 0x20);
         long v;
         if (ctor == NULL) v = *src;
-        else { v = (long)ctor(); *src = v; }
+        else { v = ctor(); *src = v; }
         if (v != 0) {
             long *c = (long*)(t + 0x210);
             if (*c != -1) { *c += 1; }

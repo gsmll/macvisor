@@ -251,10 +251,10 @@ extern cl4_result_t FUN_00357104(word_t, ...);
 extern void FUN_00357154(word_t, ...);
 extern word_t FUN_00357acc(word_t, ...);
 extern void FUN_00357c74(word_t, ...);
-extern void FUN_00357cb4(word_t, ...);
+extern word_t FUN_00357cb4(word_t, ...);
 extern void FUN_00357d34(word_t, ...);
 extern void FUN_00357d44(word_t, ...);
-extern void FUN_00357d74(word_t, ...);
+extern cl4_result_t FUN_00357d74(word_t, ...);
 extern void FUN_00357d94(word_t, ...);
 extern void FUN_00357dd4(word_t, ...);
 extern void FUN_00357e04(word_t, ...);
@@ -310,7 +310,7 @@ extern void FUN_0008e388(word_t, ...);
 extern void FUN_0008e500(word_t, ...);
 extern void FUN_0008e518(word_t, ...);
 extern cl4_result_t FUN_0009461c(word_t, ...);
-extern void FUN_000a6f88(word_t, ...);
+extern word_t FUN_000a6f88(word_t, ...);
 extern void FUN_000b4390(word_t, ...);
 extern cl4_result_t FUN_000b43d0(word_t, ...);
 extern void FUN_00114330(word_t, ...);
@@ -4238,7 +4238,7 @@ void sk_syscall_msg_read_e(void)
     long dst = *(long *)/* table+0x40 */0;
     FUN_0034c654(0);
     FUN_00350878(0);
-    word_t w = FUN_00377824(0);
+    word_t w = FUN_00377824(0).lo;
     FUN_0035295c(0);
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ulong addr = dst + base + sel;
@@ -4278,7 +4278,7 @@ void sk_syscall_cap_copy5_10(word_t p1, word_t p2, long frame)
     } else {
         cl4_result_t r = FUN_00357d74(0);
         long l = /* x9 */0;
-        if (/* zero */0 + 1;
+        if (/* zero */0) { l = l + 1; }
         FUN_00359588(r.lo, r.hi, l);
         FUN_00117cc4(0);
     }
@@ -4305,11 +4305,13 @@ void sk_syscall_cap_copy6_18(word_t p1, word_t p2, long frame)
     FUN_0035163c(dst & ~sel);
     int i2 = FUN_000839f8(0);
     FUN_0035163c(/* x8 */0 & ~sel);
-    word_t rr = FUN_000839f8(0);
+    cl4_result_t rr;
+    rr.lo = FUN_000839f8(0);
+    rr.hi = 0;
     cl4_result_t r;
     int st; long l3;
     if (i2 == 0) {
-        if (rr == 0) {
+        if (rr.lo == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x18 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             goto tail;
@@ -4318,7 +4320,7 @@ void sk_syscall_cap_copy6_18(word_t p1, word_t p2, long frame)
         st = *(int *)/* table+0x54 */0;
         l3 = *(long *)/* table+0x40 */0;
     } else {
-        if (rr == 0) {
+        if (rr.lo == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x10 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             FUN_0034c9e8(dst & ~sel);
@@ -4361,7 +4363,7 @@ void sk_syscall_cap_copy5_20(word_t p1, word_t p2, long frame)
     } else {
         cl4_result_t r = FUN_00357d74(0);
         long l = /* x9 */0;
-        if (/* zero */0 + 1;
+        if (/* zero */0) { l = l + 1; }
         FUN_00359588(r.lo, r.hi, l);
         FUN_00117cc4(0);
     }
@@ -4388,11 +4390,13 @@ void sk_syscall_cap_copy6_28(word_t p1, word_t p2, long frame)
     FUN_0035163c(dst & ~sel);
     int i2 = FUN_000839f8(0);
     FUN_0035163c(/* x8 */0 & ~sel);
-    word_t rr = FUN_000839f8(0);
+    cl4_result_t rr;
+    rr.lo = FUN_000839f8(0);
+    rr.hi = 0;
     cl4_result_t r;
     int st; long l3;
     if (i2 == 0) {
-        if (rr == 0) {
+        if (rr.lo == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x28 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             goto tail;
@@ -4401,7 +4405,7 @@ void sk_syscall_cap_copy6_28(word_t p1, word_t p2, long frame)
         st = *(int *)/* table+0x54 */0;
         l3 = *(long *)/* table+0x40 */0;
     } else {
-        if (rr == 0) {
+        if (rr.lo == 0) {
             r = FUN_00352f3c(*(word_t *)/* table+0x20 */0);
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u1);
             FUN_0034c9e8(dst & ~sel);
@@ -4439,53 +4443,41 @@ void sk_msg_cap_validate_write_d(void)
     FUN_0034c11c(0);
     int zero = (*(int *)/* table+0x54 */0 == 0);
     word_t out = 0;
-    if (/* w22 */0);
+    if (/* w22 */0 == 0) {
+        out = 0;
+    } else {
+        FUN_00358194(*(word_t *)/* x8+0x40 */0);
         uint v = /* w11 */0;
-        if (1 /*&& !zero*/) {
+        if (!zero) {
             FUN_003550cc(0);
             long off = /* x12 */0;
             int st = /* w10 */0;
             v = /* w11_00 */0;
-            if (!1 || zero) {
+            uint b = 0;
+            if (zero) {
                 FUN_0034d5b8(0);
                 st = /* w10_00 */0;
                 v = /* w11_01 */0;
-                if (1 && !zero) {
-                    uint b = ((/* w14 */0 >> 0x10) == 0) ? (uint)*(ushort *)((long)/* x19 */0 + /* x12_00 */0) : *(uint *)((long)/* x19 */0 + /* x12_00 */0);
-                    if (b != 0) {
-                        FUN_003525b8(0);
-                        if (/* w12 */0 != 0) {
-                            FUN_003538d4(0);
-                            switch (/* w9 */0) { default: case 2: case 3: FUN_0034e32c(0); case 4: break; }
-                        }
-                        out = FUN_00351538(0);
-                        goto done;
-                    }
+                if (!zero) {
+                    if ((/* w14 */0 >> 0x10) == 0)
+                        b = (uint)*(ushort *)((long)/* x19 */0 + /* x12_00 */0);
+                    else
+                        b = *(uint *)((long)/* x19 */0 + /* x12_00 */0);
                 } else {
-                    long o2 = /* x12_00 */0;
-                    if (1 < /* w14 */0) {
-                        if (b != 0) {
-                            FUN_003525b8(0);
-                            if (/* w12 */0 != 0) {
-                                FUN_003538d4(0);
-                                switch (/* w9 */0) { default: case 2: case 3: FUN_0034e32c(0); case 4: break; }
-                            }
-                            out = FUN_00351538(0);
-                            goto done;
-                        }
-                    }
+                    off = /* x12_00 */0;
+                    if (1 < /* w14 */0) b = (uint)*(byte *)((long)/* x19 */0 + off);
                 }
             } else {
-                uint b = (uint)*(byte *)((long)/* x19 */0 + off);
-                if (b != 0) {
-                    FUN_003525b8(0);
-                    if (/* w12 */0 != 0) {
-                        FUN_003538d4(0);
-                        switch (/* w9 */0) { default: case 2: case 3: FUN_0034e32c(0); case 4: break; }
-                    }
-                    out = FUN_00351538(0);
-                    goto done;
+                b = (uint)*(byte *)((long)/* x19 */0 + off);
+            }
+            if (b != 0) {
+                FUN_003525b8(0);
+                if (/* w12 */0 != 0) {
+                    FUN_003538d4(0);
+                    switch (/* w9 */0) { default: case 2: case 3: FUN_0034e32c(0); case 4: break; }
                 }
+                out = FUN_00351538(0);
+                goto done;
             }
             if (st == 0) { out = 0; goto done; }
         }

@@ -25,19 +25,19 @@ extern unsigned long sk_object_lock(unsigned long a, unsigned long b,
                                     unsigned long c, void *dbg1, void *dbg2); /* FUN_00377824 */
 extern unsigned long sk_lock_ref(unsigned long a);                          /* FUN_00377bec */
 extern unsigned long sk_lzcount(uint32_t v);                                /* LZCOUNT intrinsic */
-extern reg16 sk_cpu_current(void);                                   /* FUN_0008e518 */
-extern void sk_thread_epilogue(void);                                       /* FUN_0008e500 */
+extern reg16 sk_cpu_current();                                   /* FUN_0008e518 */
+extern void sk_thread_epilogue();                                       /* FUN_0008e500 */
 extern void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...);
 
 /* Swift runtime collection alloc helpers. */
 extern void *swift_array_alloc_with_count(uint64_t a, void *b);             /* FUN_003a25d4 */
-extern void *swift_objc_metatype(void);                                     /* FUN_00376820 */
-extern void *swift_array_init(void);                                        /* FUN_001a042c */
+extern void *swift_objc_metatype();                                     /* FUN_00376820 */
+extern void *swift_array_init();                                        /* FUN_001a042c */
 extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* FUN_003a261c */
 
 /* Current-thread / misc helpers (region 0x0008xxxx / 0x0001xxxx). */
-extern void *sk_current_tcb(void);                                          /* FUN_000867ec */
-extern void sk_schedule_yield(void);                                        /* FUN_00084180 */
+extern void *sk_current_tcb();                                          /* FUN_000867ec */
+extern void sk_schedule_yield();                                        /* FUN_00084180 */
 
 
 /* ==================================================================== *
@@ -47,7 +47,7 @@ typedef uint64_t undefined8; typedef uint8_t undefined1; typedef uint64_t undefi
 typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
 typedef uint64_t code;
 typedef struct { uint64_t lo; uint64_t hi; } reg16;
-typedef void (*code_fn)(void);
+typedef void (*code_fn)();
 
 /* Ghidra CONCAT / borrow-carry / sign-extend helpers. */
 static inline uint64_t CONCAT17(uint64_t a, uint64_t b){ return (a<<8)|(b&0xff); }
@@ -58,11 +58,10 @@ static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v
 static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
 
 /* Leaked register / pseudo-stack identifiers (compile-fix globals). */
-uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cpu, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, node, obj, out, r, reg12, s, slot_ptr, src, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_10, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_40, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v, v13b, v14, v14b, v19, v2, v5, v6, v7, v8, vv, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x15, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x20, x21, x22, x23, x24, x25, x26, x27, x28, x3, x30, x4, x5, x6, x7, x8, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_07, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01;
+uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, reg12, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01;
 reg16 cpu, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
-uint64_t *obj, sv_10, sv_40, x20, x22, x25, x26, x3, x8, x8_07;
-void (*entry)(void), (*fn)(void), (*fn1)(void), (*fn10)(void), (*fn12)(void), (*fn14)(void), (*fn17)(void), (*fn2)(void), (*fn3)(void), (*fn5)(void), (*fn5c)(void), (*fn6)(void), (*fn6b)(void), (*fn7)(void), (*fn8)(void), (*fn9)(void), (*jumptable)(void), (*x19_fn)(void), (*x20_fn)(void), (*x24_fn)(void), (*x25_fn)(void), (*x26_fn)(void), (*x27_fn)(void), (*x8_00_fn)(void), (*x8_01_fn)(void), (*x8_02_fn)(void), (*x8_03_fn)(void), (*x8_04_fn)(void), (*x8_05_fn)(void), (*x8_06_fn)(void), (*x8_07_fn)(void), (*x8_08_fn)(void), (*x8_09_fn)(void), (*x8_10_fn)(void), (*x8_11_fn)(void), (*x8_12_fn)(void), (*x8_13_fn)(void), (*x8_14_fn)(void), (*x8_15_fn)(void), (*x8_16_fn)(void), (*x8_17_fn)(void), (*x8_18_fn)(void), (*x8_19_fn)(void), (*x8_20_fn)(void), (*x8_21_fn)(void), (*x8_fn)(void), (*x9_00_fn)(void), (*x9_01_fn)(void), (*x9_02_fn)(void), (*x9_03_fn)(void), (*x9_04_fn)(void), (*x9_05_fn)(void), (*x9_06_fn)(void), (*x9_07_fn)(void), (*x9_08_fn)(void), (*x9_09_fn)(void), (*x9_10_fn)(void), (*x9_11_fn)(void), (*x9_12_fn)(void), (*x9_13_fn)(void), (*x9_14_fn)(void), (*x9_fn)(void);
-void (*fn5b)(void), (*is_b8)(void);
+uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
+uint64_t (*entry)(), (*fn)(), (*fn1)(), (*fn10)(), (*fn12)(), (*fn14)(), (*fn17)(), (*fn2)(), (*fn3)(), (*fn5)(), (*fn5b)(), (*fn5c)(), (*fn6)(), (*fn6b)(), (*fn7)(), (*fn8)(), (*fn9)(), (*is_b8)(), (*jumptable)(), (*x19_fn)(), (*x20_fn)(), (*x24_fn)(), (*x25_fn)(), (*x26_fn)(), (*x27_fn)(), (*x8_00_fn)(), (*x8_01_fn)(), (*x8_02_fn)(), (*x8_03_fn)(), (*x8_04_fn)(), (*x8_05_fn)(), (*x8_06_fn)(), (*x8_07_fn)(), (*x8_08_fn)(), (*x8_09_fn)(), (*x8_10_fn)(), (*x8_11_fn)(), (*x8_12_fn)(), (*x8_13_fn)(), (*x8_14_fn)(), (*x8_15_fn)(), (*x8_16_fn)(), (*x8_17_fn)(), (*x8_18_fn)(), (*x8_19_fn)(), (*x8_20_fn)(), (*x8_21_fn)(), (*x8_fn)(), (*x9_00_fn)(), (*x9_01_fn)(), (*x9_02_fn)(), (*x9_03_fn)(), (*x9_04_fn)(), (*x9_05_fn)(), (*x9_06_fn)(), (*x9_07_fn)(), (*x9_08_fn)(), (*x9_09_fn)(), (*x9_10_fn)(), (*x9_11_fn)(), (*x9_12_fn)(), (*x9_13_fn)(), (*x9_14_fn)(), (*x9_fn)();
 
 /* Swift fatal/string constants (extern char arrays). */
 extern char s_Fatal_error[]; extern char s_array_slice_with_unsafe_mut[]; extern char s_array_with_unsafe_mut[]; extern char s_buf_has_null[]; extern char s_cant_construct_array[]; extern char s_cant_remove_empty[]; extern char s_cant_remove_first[]; extern char s_cant_remove_last[]; extern char s_cant_remove_more[]; extern char s_cant_remove_more2[]; extern char s_count_must_not_neg[]; extern char s_identity_cast_wrong_type[]; extern char s_index_oob[]; extern char s_index_out_of_range[]; extern char s_insufficient_space[]; extern char s_invalid_less_than[]; extern char s_invalid_more_than[]; extern char s_num_to_remove[]; extern char s_range_requires[]; extern char s_reversed_key[]; extern char s_string_index_oob[]; extern char s_swift_array[]; extern char s_swift_array_slice[]; extern char s_swift_builtin[]; extern char s_swift_collection[]; extern char s_swift_contig_buf[]; extern char s_swift_optional[]; extern char s_swift_range[]; extern char s_swift_range_replaceable[]; extern char s_swift_span[]; extern char s_swift_string_utf16[]; extern char s_swift_unicode_helpers[]; extern char s_swift_unsafe_buf[]; extern char s_swift_valid_utf8[]; extern char s_unexpected_nil[]; extern char s_unsafe_mut_buf[]; extern char s_unsafely_unwrapped_nil[];
@@ -1285,6 +1284,45 @@ extern uint64_t thunk_FUN_001dc298();
 extern uint64_t thunk_FUN_00200b38();
 extern uint64_t thunk_FUN_002298d4();
 extern uint64_t thunk_FUN_0036b270();
+
+extern reg16 FUN_001a9a30();
+extern reg16 FUN_001aaabc();
+extern reg16 FUN_001aaba8();
+extern reg16 FUN_001aea6c();
+extern reg16 FUN_001dd408();
+extern reg16 FUN_001e4cbc();
+extern reg16 FUN_0029f368();
+extern reg16 FUN_002ae2c0();
+extern reg16 FUN_002b3f40();
+extern reg16 FUN_0034b8cc();
+extern reg16 FUN_0034cc94();
+extern reg16 FUN_0035012c();
+extern reg16 FUN_003501fc();
+extern reg16 FUN_0035060c();
+extern reg16 FUN_00350bf0();
+extern reg16 FUN_00351648();
+extern reg16 FUN_0035190c();
+extern reg16 FUN_00352800();
+extern reg16 FUN_00352e3c();
+extern reg16 FUN_00353a24();
+extern reg16 FUN_00354a4c();
+extern reg16 FUN_00354d14();
+extern reg16 FUN_00355b1c();
+extern reg16 FUN_0035603c();
+extern reg16 FUN_00356c84();
+extern reg16 FUN_00358374();
+extern reg16 FUN_00358864();
+extern reg16 FUN_00358bfc();
+extern reg16 FUN_00359920();
+extern reg16 FUN_0035a758();
+extern reg16 sk_cpu_ctx();
+extern uint64_t FUN_000277e8();
+extern uint64_t FUN_00027818();
+extern uint64_t FUN_00310a44();
+extern uint64_t FUN_00310bc8();
+extern uint64_t FUN_00353274();
+extern uint64_t FUN_00358da0();
+extern code_fn sk_vtable_resolve();
 /* ==================================================================== */
 /*--------------------------------------------------------------------*/
 /* FUN_001a002c @ 0x001a002c   (est. swift_array_construct_dispatch)

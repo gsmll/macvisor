@@ -1502,3 +1502,27 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (0x7f7fffff < (param_1 & 0x7fffffff)) return 6;` and decode `uVar5 = 0; if (0x7f7fffff < (uVar8 & 0x7fffffff)) uVar5 = 7; return uVar5;` (and the f64 twins with the wider masks). The `_chk` wrappers fatal on non-zero return.
 - **Severity (hypothesis)**: informational — input validation rejects non-finite floats.
 - **Confidence**: high (straightforward mask compares).
+
+## [sk] 00028b14 sk_vas_alloc — VAS faulthandler dispatch table built via async event registration
+- **Observation**: sk_vas_alloc allocates a 0x210-byte VAS faulthandler object and populates ~40 method-handler slots (attach, detach, kind, add_range, lookup, activate, complete, destroy, dump, register, map variants, move, swap, resize, state_set, clear, get, etc.) each registered through FUN_0004b520 (sk_dispatch_async), which wraps the handler code pointers in reference-counted async dispatch records. The dispatch targets are indirect-call resolved via Swift method tables (offset 4/8/0x20/0x28/0x38/0x60). Guest-facing VAS operations resolve a handler by region address and invoke the stored method pointer.
+- **Evidence**: `desc[2] = (unsigned long)vas_fh_attach;` ... `puVar8[0x28] = ...` for all slots, each `sk_dispatch_async(record)`; `*puVar8 = _DAT_006ac260; _DAT_006ac260 = puVar8;` links the object into a global list under a lock (FUN_00118164/194). Bounds checks before every indirect call trap via SoftwareBreakpoint(0x5519, addr).
+- **Severity (hypothesis)**: low — the faulthandler registry is a large indirect-call dispatch surface keyed by guest-supplied region addresses; handlers are validated/bounds-checked (SoftwareBreakpoint traps) and registered only via the controlled alloc path.
+- **Confidence**: low (28b14 is a large structural transcription; method-table dispatch).
+
+## [sk] 00028aa4/0002a784/0002bd34/0002cf20 VAS faulthandler range registration — address-window validation
+- **Observation**: The faulthandler registry validates region lookups and containment against fixed 0x4000-aligned windows: sk_vas_contains_range checks `(param_2 - rec_base) < 0x4000` per active record; sk_vas_lookup_range/sk_vas_lookup_entry scan the record array (0x48-byte stride) matching a stored key, trapping on out-of-bounds via SoftwareBreakpoint(0x5519) rather than returning a bogus record. Removal (sk_vas_alloc's teardown) validates index against the active count before zeroing.
+- **Evidence**: `if ((*(char*)(uVar3-0x28)==1) && ((ulong)(param_2 - *(long*)(uVar3-0x20)) < 0x4000)) return 1;` (28aa4); record scan `for (...uVar3+=0x48...) if (*(long*)(uVar3+0x18)==param_2) { invoke handler; }`; SoftwareBreakpoint(0x5519, 0x28b14/0x2a80c/0x2b1e8).
+- **Severity (hypothesis)**: informational — range/bounds checks are present and fail-closed via kernel trap.
+- **Confidence**: medium (bounds logic reconstructed from decompile).
+
+## [sk] 0002e7c4 vas_fh_get_internal — faulthandler table growth with VAS abort on overflow
+- **Observation**: The faulthandler entry table is grown by doubling (stride 0x58 = 11 words) with explicit capacity-overflow abort paths (`s__VAS_abort_in_function__s_at_lin_...`, noreturn) when the requested size wraps or exceeds bounds, and the new region is zero-filled via FUN_00117d68 before use. Entries are looked up by key (sk_vas_lookup, FUN_00028950) with a range check on the candidate record.
+- **Evidence**: `if (local_f0 < local_100) FUN_004afae4(s__VAS_abort...);` (capacity >= count); `if (uVar17 < local_f0) FUN_004afae4(...005ae7de);` (doubling overflow); zero-fill loop `FUN_00117d68(uVar3,0,0x58,remaining)`; SoftwareBreakpoint(0x5519, 0x2eda0) on table bounds.
+- **Severity (hypothesis)**: informational — table growth is fail-closed on overflow, no silent wraparound.
+- **Confidence**: low (large function; VAS abort strings string-matched).
+
+## [sk] manifest cross-tree conflict — SK05 addresses assigned to TXM region files
+- **Observation**: Seven addresses in the SK05 batch (000262c4, 000268a0, 000268d0, 00027614, 00028a78, 0002b5e8, 0002bdb8) are marked decompiled in the manifest pointing at osfmk/arm64/txm/*.c with txm_* names, but they are cL4 Secure-Kernel functions (tightbeam release/method-table resolvers, sk_lock_and_alloc, VAS lookup/record-fill) faithfully reconstructed in osfmk/arm64/sk/sk_slice_05.c. The txm entries appear to be a misassignment (overlapping address ranges between the SK and TXM batch plans).
+- **Evidence**: manifest.json entries: `000268a0 -> txm_region_entry.c: txm_data_dac8`, `00027614 -> txm_region_runtime.c: txm_obj_free`, `00028a78 -> txm_region_runtime.c: txm_slab_alloc_0x1000`, etc. — none of which are plausible names for the tightbeam method-table resolver (000268a0 = offset-8 Swift witness resolver) or the VAS lock-and-alloc (00027614).
+- **Severity (hypothesis)**: informational — manifest bookkeeping; the SK functions are decompiled in sk_slice_05.c but the entries point to unrelated txm files, so a downstream audit would misattribute them.
+- **Confidence**: high (addresses verified in sk_slice_05.c with English bodies).
