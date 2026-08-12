@@ -3472,3 +3472,315 @@ void FUN_0067c24c(int conv, long buf, unsigned char *fmt, unsigned int prec)
     }
     FUN_00665d70(buf, 0);
 }
+
+/* FUN_0067cad8 @ 0x67cad8
+ * Ghidra: void FUN_0067cad8(long, long)
+ * Seed the PRNG state (two words), panicking on a zero seed. Confidence: medium. */
+void FUN_0067cad8(long lo, long hi)
+{
+    if (hi != 0 || lo != 0) {
+        DAT_006feb88 = lo;
+        DAT_006feb90 = hi;
+        return;
+    }
+    FUN_0067b280(0x6a612a);
+}
+
+/* FUN_0067cb30 @ 0x67cb30
+ * Ghidra: void FUN_0067cb30(long, ulong)
+ * Fill a buffer with n bytes of PRNG output (xoshiro-style mixing). Confidence: low. */
+void FUN_0067cb30(long dst, ulong n)
+{
+    long cookie = _DAT_006b5ed0;
+    ulong done = 0;
+    while (done < n && (n - done) != 0) {
+        ulong s0 = DAT_006feb88, s1 = DAT_006feb90;
+        ulong t = s1 ^ s0;
+        ulong outword = (s0 * 5) | (s0 * 0x280);   /* mixed output word */
+        s1 = s1 ^ s0;
+        s0 = ((s0 >> 0x28 | s0 << 0x18) ^ (s1 << 0x10) ^ s1);
+        s1 = (s1 >> 0x1b | s1 << 0x25);
+        DAT_006feb88 = s0;
+        DAT_006feb90 = s1;
+        outword = (outword >> 0x39 | outword) * 9;  /* final mixer */
+        ulong chunk = (n - done) > 7 ? 8 : (n - done);
+        FUN_0067aa00((unsigned char *)(dst + done), (const unsigned char *)&outword, chunk);
+        if (dst + done + chunk < dst + done) SoftwareBreakpoint(0x5519, 0x67cc14);
+        done += chunk;
+    }
+    if (_DAT_006b5ed0 != cookie)
+        FUN_0067f660();
+}
+
+/* FUN_0067cc18 @ 0x67cc18
+ * Ghidra: void FUN_0067cc18(void)
+ * Close three global FILE objects and trap. Confidence: low. */
+void FUN_0067cc18(void)
+{
+    FUN_0067d050(_DAT_006b4368);
+    FUN_0067d050(_DAT_006b4370);
+    FUN_0067d050(_DAT_006b4378);
+    FUN_0065558c();
+}
+
+/* FUN_0067cc5c @ 0x67cc5c
+ * Ghidra: ulong FUN_0067cc5c(undefined8, ulong, ulong, long, code *)
+ * Generic binary search over an array of `size`-byte elements with a
+ * comparison callback. Confidence: low. */
+ulong FUN_0067cc5c(ulong key, ulong base, ulong count, long size, code *cmp)
+{
+    if (size != 0) {
+        ulong hi = base + count * size;
+        ulong lo = base;
+        for (; count != 0; count = count - ((0 < rc) >> 1)) {
+            ulong mid = lo + (count >> 1) * size;
+            if (mid != 0 && (hi <= mid || mid < base))
+                SoftwareBreakpoint(0x5519, 0x67cd1c);
+            int rc = (*(int (**)(void))cmp)(key, mid);
+            if (rc == 0) {
+                if (mid == 0) return 0;
+                if (mid < hi && base <= mid) return mid;
+                SoftwareBreakpoint(0x5519, 0x67cd1c);
+            }
+            mid = mid + size;
+            if (rc < 1) mid = lo;
+            lo = mid;
+        }
+    }
+    return 0;
+}
+
+/* FUN_0067cd24 @ 0x67cd24 / FUN_0067cd74 @ 0x67cd74
+ * Copy with a size guard (memmove + panic on overflow). Confidence: low. */
+void FUN_0067cd24(ulong dst, ulong src, ulong n, ulong cap)
+{
+    if (n <= cap) { FUN_0067aa00((unsigned char *)dst, (const unsigned char *)src, n); return; }
+    FUN_0067b280(0x6a612a);
+}
+void FUN_0067cd74(ulong dst, ulong src, ulong n, ulong cap)
+{
+    if (n <= cap) { FUN_0067aa00((unsigned char *)dst, (const unsigned char *)src, n); return; }
+    FUN_0067b280(0x6a612a);
+}
+
+/* FUN_0067ce24 @ 0x67ce24
+ * Ghidra: uint FUN_0067ce24(long, ulong, undefined8, ulong, ulong)
+ * Fill a buffer with a byte, returning the fill code. Confidence: low. */
+unsigned int FUN_0067ce24(long dst, ulong ch, ulong src, ulong n, ulong cap)
+{
+    if (n <= cap) {
+        unsigned int code = 0x16;
+        if (dst == 0) return code;
+        ulong lim = ((long)n < 0) ? ch : n;
+        ulong m = (ch <= lim) ? ch : lim;
+        code = 0x54;
+        if (lim <= ch)
+            code = (unsigned int)((long)n >> 0x3f) & 7;
+        FUN_0067a7f0((unsigned char *)dst, ch, m);
+        return code;
+    }
+    FUN_0067b280(0x6a612a);
+}
+
+/* FUN_0067ce74 @ 0x67ce74
+ * Ghidra: ulong FUN_0067ce74(ulong, ulong, ulong, ulong)
+ * Copy a string into a buffer with NUL termination and bounds checks. Confidence: low. */
+ulong FUN_0067ce74(ulong dst, ulong src, ulong size, ulong cap)
+{
+    if (cap < size)
+        FUN_0065c288(0x6b1253);
+    ulong slen = FUN_0067b220(src);
+    if (dst != 0) {
+        ulong n = slen + 1;
+        ulong lim = (size != 0) ? size - 1 : 0;
+        ulong copy = (size <= slen) ? lim : n;
+        if (dst + copy < dst || src + copy < src || copy > size)
+            SoftwareBreakpoint(0x5519, 0x67cefc);
+        FUN_0067aa00((unsigned char *)dst, (const unsigned char *)src, copy);
+        if (copy + 1 == size) {
+            if (dst + size <= dst + copy) SoftwareBreakpoint(0x5519, 0x67cefc);
+            *(unsigned char *)(dst + copy) = 0;
+        }
+    }
+    return slen;
+}
+
+/* ---- lock-init thunks (0x67cf94-0x67d02c) ---- */
+void FUN_0067cf94(ulong *p)      { FUN_006551d0(); }
+void FUN_0067cfb0(ulong *p)      { FUN_00655218(); }
+void FUN_0067cfc8(ulong *p, ulong q) { FUN_00655234(); }
+void FUN_0067cfe0(ulong a, ulong b) { FUN_00655274(a, b); }
+void FUN_0067cffc(ulong *p)      { FUN_006552b0(); }
+void FUN_0067d014(void)          { FUN_006552c4(); }
+void FUN_0067d02c(ulong *p)      { FUN_006552f8(); }
+
+/* FUN_0067d050 @ 0x67d050
+ * Ghidra: undefined8 FUN_0067d050(undefined8 *param_1)
+ * Close a FILE object: flush it and invoke its destructor. Returns 0 or -1. Confidence: low. */
+ulong FUN_0067d050(ulong *fp)
+{
+    if (fp == NULL) return 0xffffffff;
+    thunk_FUN_0065569c();
+    FUN_0067d0cc(fp);
+    code *dtor = (code *)fp[3];
+    if (dtor == NULL) return 0xffffffff;
+    ulong r = (*(ulong (**)(void))dtor)(((ulong)(fp + 3) & 0xffffffffffff) | 0x7b55000000000000,
+                                        *fp);
+    thunk_FUN_00655774(fp);
+    return r;
+}
+
+/* FUN_0067d0cc @ 0x67d0cc
+ * Ghidra: undefined8 FUN_0067d0cc(undefined8 *param_1)
+ * Flush a buffered FILE: if dirty and a write function exists, write the
+ * buffer out; clears state on success. Returns 0 or -1. Confidence: low. */
+ulong FUN_0067d0cc(ulong *fp)
+{
+    if (((*(unsigned char *)(fp + 9) & 1) == 0) && (*(int *)((long)fp + 0x4c) == 0)) {
+        code *fn = (code *)fp[2];
+        if (fn != NULL && (*(char *)((long)fp + 0x21) == 2 || fp[8] != 0)) {
+            if (*(char *)(fp + 4) == 2 && fp[5] != 0) {
+                if ((ulong)fp[7] < (ulong)fp[5])
+                    SoftwareBreakpoint(0x5519, 0x67d190);
+                long r = (*(long (**)(void))fn)(((ulong)(fp + 2) & 0xffffffffffff) |
+                                                0xb85f000000000000, *fp, fp[8]);
+                if (r != fp[5])
+                    return 0xffffffff;
+            }
+            fp[5] = 0;
+            fp[6] = 0;
+            *(char *)(fp + 4) = 0;
+            *(short *)(fp + 10) = 0;
+            return 0;
+        }
+        *(int *)((long)fp + 0x4c) = 0x16;
+    }
+    return 0xffffffff;
+}
+
+/* FUN_0067d190 @ 0x67d190
+ * Ghidra: undefined8 FUN_0067d190(long)
+ * Close a FILE object, setting errno=0x2d on NULL. Confidence: low. */
+ulong FUN_0067d190(long fp)
+{
+    if (fp == 0) {
+        unsigned int *ep = (unsigned int *)thunk_FUN_00661178();
+        *ep = 0x2d;
+        return 0xffffffff;
+    }
+    thunk_FUN_0065569c();
+    ulong r = FUN_0067d0cc(fp);
+    thunk_FUN_00655774(fp);
+    return r;
+}
+
+/* FUN_0067d1f0 @ 0x67d1f0
+ * Ghidra: void FUN_0067d1f0(undefined8, undefined8)
+ * Write a string through the formatted-output path. Confidence: low. */
+void FUN_0067d1f0(ulong out, ulong msg)
+{
+    long cookie = _DAT_006b5ed0;
+    FUN_0067d83c(out, msg, (ulong *)0);
+    if (_DAT_006b5ed0 == cookie)
+        return;
+    FUN_0067f660();
+}
+
+/* FUN_0067d248 @ 0x67d248
+ * Ghidra: void FUN_0067d248(uint, undefined8 *)
+ * Write a single char to a FILE, buffering and flushing as needed. Confidence: low. */
+void FUN_0067d248(unsigned int ch, ulong *fp)
+{
+    long cookie = _DAT_006b5ed0;
+    if (((*(unsigned char *)(fp + 9) & 1) == 0) && (*(int *)((long)fp + 0x4c) == 0)) {
+        code *fn = (code *)fp[2];
+        if (fn != NULL) {
+            char mode = *(char *)((long)fp + 0x21);
+            if (mode == 2) {
+                unsigned char c = (unsigned char)ch;
+                ulong r = (*(ulong (**)(void))fn)(*fp, &c, 1);
+                if (FUN_0067d3b0(fp, r, 1) != 0) ch = 0xffffffff;
+            } else {
+                if (fp[8] == 0) goto err;
+                if (*(char *)(fp + 4) == 1) goto write_direct;
+                ulong cap = fp[7];
+                *(char *)(fp + 4) = 2;
+                ulong used = fp[5];
+                if (used < cap) {
+                    fp[5] = used + 1;
+                    *(unsigned char *)(fp[8] + used) = (unsigned char)ch;
+                    mode = *(char *)((long)fp + 0x21);
+                    cap = fp[7];
+                    used = fp[5];
+                }
+                if ((mode == 1 && ch == 10) || cap <= used) {
+                    if (cap < used)
+                        SoftwareBreakpoint(0x5519, 0x67d3b0);
+                    ulong r = (*(ulong (**)(void))fn)(((ulong)(fp + 2) & 0xffffffffffff) |
+                                                      0xb85f000000000000, *fp, fp[8]);
+                    ulong ok = FUN_0067d3b0(fp, r, fp[5]);
+                    if ((ok & 1) != 0) goto err2;
+                    fp[5] = 0;
+                }
+            }
+            goto done;
+write_direct:
+            {
+                unsigned char c = (unsigned char)ch;
+                ulong r = (*(ulong (**)(void))fn)(*fp, &c, 1);
+                if (FUN_0067d3b0(fp, r, 1) != 0) ch = 0xffffffff;
+            }
+            goto done;
+        }
+err:
+        *(int *)((long)fp + 0x4c) = 0x16;
+err2:
+        ;
+    }
+done:
+    if (_DAT_006b5ed0 != cookie)
+        FUN_0067f660();
+}
+
+/* FUN_0067d3b0 @ 0x67d3b0
+ * Ghidra: undefined1 FUN_0067d3b0(long, ulong, ulong)
+ * Translate a write-result into success/failure, updating the FILE error
+ * state. Confidence: medium. */
+unsigned char FUN_0067d3b0(long fp, ulong n, ulong want)
+{
+    if ((long)n < 0) {
+        *(int *)(fp + 0x4c) = -(int)n;
+        return 1;
+    }
+    if (n == want) {
+        if (*(char *)(fp + 0x20) == 0) return 0;
+        if (n <= *(ulong *)(fp + 0x38)) return 0;
+    }
+    *(char *)(fp + 0x48) = 1;
+    return 1;
+}
+
+/* FUN_0067d3f8 @ 0x67d3f8
+ * Ghidra: undefined8 FUN_0067d3f8(char, undefined8)
+ * fputc wrapper: write a char under the FILE lock. Confidence: medium. */
+ulong FUN_0067d3f8(char ch, ulong fp)
+{
+    thunk_FUN_0065569c(fp);
+    ulong r = FUN_0067d248((unsigned int)ch, (ulong *)fp);
+    thunk_FUN_00655774(fp);
+    return r;
+}
+
+/* FUN_0067d440 @ 0x67d440
+ * Ghidra: undefined4 FUN_0067d440(ulong, undefined8)
+ * fwrite-ish: write a NUL-terminated string to a FILE, returning 1 on full
+ * write. Confidence: low. */
+unsigned int FUN_0067d440(ulong s, ulong fp)
+{
+    long len = FUN_0067b220(s);
+    if (s <= s + len) {
+        long n = FUN_0067d6c0(s, 1, len, fp);
+        return n == len ? 1 : 0xffffffff;
+    }
+    SoftwareBreakpoint(0x5519, 0x67d4a4);
+}

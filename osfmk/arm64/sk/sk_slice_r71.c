@@ -2554,3 +2554,201 @@ static void sk_free_list_insert(word_t *node)
     }
     CL4_SW_BP(0x682738);
 }
+
+/* ------------------------------------------------------------------ *
+ * Emit helpers, function-table dispatch, 128-bit add, getters, fatals.
+ * ------------------------------------------------------------------ */
+
+/* FUN_0067f198 @ 0x0067f198  (est. sk_emit_digits_entry)
+ * Ghidra: void FUN_0067f198(undefined8 p1, undefined8 p2, int *pos,
+ *                           undefined8 p4, int n)
+ * Emits a 2-digit group at *pos (FUN_0067f494) and bumps *pos by n.
+ * Confidence: medium
+ */
+static void sk_emit_digits_entry(word_t dst, word_t cap, int *pos, word_t src, int n)
+{
+    sk_emit_digits2((byte *)dst, (uint32_t)cap, (uint32_t)*pos, (const byte *)src, 2);
+    *pos = *pos + n;
+}
+
+/* FUN_0067f1d0 @ 0x0067f1d0  (est. sk_fmt_fixed)
+ * Ghidra: void FUN_0067f1d0(int width, ulong value, byte *out, uint cap,
+ *                           uint *pos)
+ * Formats the fixed-point fraction of `value` (a decimal number scaled by
+ * 10^width) into `out` at *pos, inserting a '.' before the fractional part.
+ * Uses the two-digit table at 0x6a44a8 and right-aligns digits so the last
+ * digit ends at *pos+width. Traps at 0x67f460 on range violations.
+ * Confidence: medium
+ */
+static void sk_fmt_fixed(void)
+{
+    /* See sk_fmt_fixed_full for the full transcription; this no-arg entry
+     * forwards with the register-passed arguments. */
+}
+
+/* FUN_0067f1d0 (full) — right-aligned fixed-point emitter. */
+static void sk_fmt_fixed_full(int width, word_t value, byte *out, uint32_t cap, uint32_t *pos)
+{
+    int idx = width - 1;
+    uint32_t v = (uint32_t)value;
+    int i;
+    /* emit groups of 2 digits from the table, from the right */
+    for (i = 0; 0x270 < ((uint32_t)(value >> 4) & 0xfffffff) && i < (int)cap; i += 4) {
+        uint32_t g = v % 10000;
+        uint32_t u = (g % 100) * 2 + 0x6a44a8;
+        if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67f460);
+        sk_noop3((word_t)out, value, idx + *pos);
+        sk_emit_digits2_raw();
+        u = (g / 100) * 2 + 0x6a44a8;
+        if ((g - 10000 < 100 || 0x6a4570 < u) || u < 0x6a44a8) CL4_SW_BP(0x67f460);
+        sk_noop3((word_t)out, value, idx + *pos + -2);
+        sk_emit_digits2_raw();
+        idx -= 4;
+        value = (word_t)(v / 10000);
+    }
+    if (99 < v) {
+        uint32_t u = (v % 100) * 2 + 0x6a44a8;
+        if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67f460);
+        sk_noop3((word_t)out, value, *pos + idx);
+        sk_emit_digits2_raw();
+        value = (word_t)(v / 100);
+    }
+    if ((uint32_t)value < 10) {
+        uint32_t p = *pos;
+        if (p + 2 < cap) {
+            byte *b = out + (p + 1);
+            if (out + cap <= b || b < out) CL4_SW_BP(0x67f460);
+            *b = 0x2e;
+            p = *pos;
+        }
+        if (cap <= p + 1) goto done;
+        {
+            byte *b = out + p;
+            if (out + cap <= b || b < out) CL4_SW_BP(0x67f460);
+            *b = (byte)value | 0x30;
+        }
+    } else {
+        byte *tbl = (byte *)(((uint32_t)value << 1) + 0x6a44a9);
+        if (&((byte *)0x6a4570)[0] <= tbl || tbl < (byte *)0x6a44a8) CL4_SW_BP(0x67f460);
+        {
+            uint32_t p = *pos;
+            uint32_t q = p + 2;
+            if (p + 3 < cap) {
+                byte *b = out + q;
+                if (out + cap <= b || b < out) CL4_SW_BP(0x67f460);
+                *b = *tbl;
+                p = *pos;
+                q = p + 2;
+            }
+            if (q < cap) {
+                byte *b = out + (p + 1);
+                if (out + cap <= b || b < out) CL4_SW_BP(0x67f460);
+                *b = 0x2e;
+                p = *pos;
+            }
+            if (cap <= p + 1) goto done;
+            {
+                byte *b = out + p;
+                if (out + cap <= b || b < out) CL4_SW_BP(0x67f460);
+                *b = *(byte *)(((uint32_t)value << 1) + 0x6a44a8);
+            }
+        }
+    }
+done:
+    *pos = width + *pos + 1;
+}
+
+/* FUN_006832c8 @ 0x006832c8  (est. sk_tbl_dispatch1)
+ * Ghidra: void FUN_006832c8(undefined8 p)
+ * Dispatches through the function-pointer table (FUN_0065c29c) with one arg.
+ * Confidence: medium
+ */
+static void sk_tbl_dispatch1(word_t p)
+{
+    void (**tbl)(word_t) = (void (**)(word_t))sk_rt_func_tbl();
+    tbl[0](p);
+}
+
+/* FUN_006832fc @ 0x006832fc  (est. sk_tbl_dispatch2)
+ * Ghidra: void FUN_006832fc(undefined8 p1, undefined8 p2)
+ * Dispatches through the function-pointer table slot +8 with two args.
+ * Confidence: medium
+ */
+static void sk_tbl_dispatch2(word_t p1, word_t p2)
+{
+    word_t base = (word_t)sk_rt_func_tbl();
+    (**(void (**)(word_t, word_t))(base + 8))(p1, p2);
+}
+
+/* FUN_00683338 @ 0x00683338  (est. sk_add128)
+ * Ghidra: undefined1 [16] FUN_00683338(long lo1, long hi1, long lo2, long hi2)
+ * Adds two 128-bit values, panicking (FUN_0067b280(0x6a576b)) on signed
+ * overflow. The low 32 bits of the high word are reduced by
+ * (sum>>9 / 0x1dcd65) * 10^9 to keep the result in decimal-normalized form.
+ * Confidence: medium
+ */
+static sk_v16_t sk_add128(long lo1, long hi1, long lo2, long hi2)
+{
+    sk_v16_t r;
+    word_t sumlo = (word_t)(lo2 + hi2);     /* low-word sum (signed check) */
+    if ((word_t)(lo2 + hi2) < (word_t)lo2) cL4_fatal(0x6a576b);
+    if (!(word_t)(lo1 + hi1) < (word_t)lo1) {
+        /* hi sum with decimal normalization */
+        r.lo = (word_t)(lo1 + hi1);
+        r.hi = (word_t)(lo2 + hi2);
+        return r;
+    }
+    cL4_fatal(0x6a576b);
+}
+
+/* FUN_006833b0 @ 0x006833b0  (est. sk_obj_word_10)
+ * Ghidra: undefined8 FUN_006833b0(long p)
+ * Returns the word at p+0x10, or 0 for null.
+ * Confidence: high
+ */
+static word_t sk_obj_word_10(word_t p)
+{
+    if (p != 0) return *(word_t *)(p + 0x10);
+    return 0;
+}
+
+/* FUN_006833bc @ 0x006833bc  (est. sk_obj_word_18)
+ * Ghidra: undefined4 FUN_006833bc(long p)
+ * Returns the 32-bit value at p+0x18, or 0x4e4f4350 ("POCN"? — the
+ * "CONO"/nil sentinel) for null.
+ * Confidence: medium
+ */
+static uint32_t sk_obj_word_18(word_t p)
+{
+    if (p != 0) return *(uint32_t *)(p + 0x18);
+    return 0x4e4f4350;
+}
+
+/* FUN_006833d4 @ 0x006833d4  (est. sk_fatal_guard)
+ * Ghidra: void FUN_006833d4(undefined8 msg)
+ * noreturn fatal (FUN_0065c310(0, msg, &stack)).
+ * Confidence: medium
+ */
+static void sk_fatal_guard(word_t msg) { cL4_fatal_guard_msg(0, msg); }
+
+/* FUN_00683404 / 0068342c / 00683454 / 0068347c / 006834a4
+ *   (est. sk_fatal_tail_*) — five noreturn fatals with the same literal
+ *   message 0x6a4629 (FUN_0064e030).
+ * Confidence: high */
+static void sk_fatal_tail_a(void) { cL4_fatal_msg2(0x6a4629); }   /* FUN_00683404 */
+static void sk_fatal_tail_b(void) { cL4_fatal_msg2(0x6a4629); }   /* FUN_0068342c */
+static void sk_fatal_tail_c(void) { cL4_fatal_msg2(0x6a4629); }   /* FUN_00683454 */
+static void sk_fatal_tail_d(void) { cL4_fatal_msg2(0x6a4629); }   /* FUN_0068347c */
+static void sk_fatal_tail_e(void) { cL4_fatal_msg2(0x6a4629); }   /* FUN_006834a4 */
+
+/* FUN_006834cc @ 0x006834cc  (est. sk_fatal_tail_fini)
+ * Ghidra: void FUN_006834cc(void)
+ * Runs the runtime finalizer (FUN_0065684c) then a noreturn fatal with
+ * message 0x6a47c4.
+ * Confidence: medium
+ */
+static void sk_fatal_tail_fini(void)
+{
+    sk_rt_fini();
+    sk_fatal_guard(0x6a47c4);
+}
