@@ -1142,21 +1142,43 @@ static void sk_md_45dab4(word_t dst, word_t src)
  * retain/release of the refcounted fields.
  * Confidence: medium
  * Notes: mirror of sk_md_45dab4 with a +0x40..+0x98 prefix stage. */
-static void sk_md_45dbd0(word_t dst, word_t src)
+static void sk_md_45dbd0(word_t dst, word_t src,
+                         word_t sa0, word_t sa1, word_t sa2, word_t sa3,
+                         word_t sa4, word_t sa5, word_t sa6, word_t sa7,
+                         word_t sa8, word_t sa9)
 {
-    word_t a, b, c, d, e, f, g, h;
+    word_t a, b, c, d, e, f, g, h, x;
+    word_t d150;
+    byte d158;
     word_t old;
 
     (void)sk_h_464b04();
     (void)sk_syscall_save_ret();
     (void)sk_h_462e88();
     (void)sk_h_462bd8(0);
+    /* stage 1 prefix: +0x40..0x88 from the stack-passed block args,
+       +0x90/+0x98 from src's own header. */
+    *(word_t *)(dst + 0x40) = sa0;
+    *(word_t *)(dst + 0x48) = sa1;
+    *(word_t *)(dst + 0x50) = sa2;
+    *(word_t *)(dst + 0x58) = sa3;
+    *(word_t *)(dst + 0x60) = sa4;
+    *(word_t *)(dst + 0x68) = sa5;
+    *(word_t *)(dst + 0x70) = sa6;
+    *(word_t *)(dst + 0x78) = sa7;
+    *(word_t *)(dst + 0x80) = sa8;
+    *(word_t *)(dst + 0x88) = sa9;
+    *(word_t *)(dst + 0x90) = *(word_t *)(src + 0x90);
+    *(byte *)(dst + 0x98) = *(byte *)(src + 0x98);
     (void)sk_noop_463058();
     (void)sk_h_4627d0();
     (void)sk_h_45a4b4();
     (void)sk_rt_463080();
     (void)sk_h_463aa0();
     (void)sk_h_462fec(0, 0, 0, 0);
+    (void)sk_h_462b90(0);
+    (void)sk_h_459138();
+    (void)sk_copy2words_61a4();
     a = *(word_t *)(src + 0xb0);
     *(word_t *)(dst + 0xb8) = *(word_t *)(src + 0xb8);
     *(word_t *)(dst + 0xb0) = a;
@@ -1169,10 +1191,15 @@ static void sk_md_45dbd0(word_t dst, word_t src)
     g = *(word_t *)(src + 0xf0);
     h = *(word_t *)(src + 0xf8);
     (void)sk_copy_wordpair_64064(0);
+    x = *(word_t *)(src + 0x150);
+    d158 = *(byte *)(src + 0x158);
     (void)sk_noop_463058();
     (void)sk_h_4627d0();
     (void)sk_h_45a4b4();
     (void)sk_rt_463454(0);
+    /* stage 2: +0xc0..0xf8 from the loaded src words, +0x100..0x148 from
+       the stack block args again, +0x150/+0x158 from src. */
+    d150 = *(word_t *)(dst + 0x150);   /* old header words for 00462b90 */
     *(word_t *)(dst + 0xc0) = a;
     *(word_t *)(dst + 0xc8) = b;
     *(word_t *)(dst + 0xd0) = c;
@@ -1181,12 +1208,26 @@ static void sk_md_45dbd0(word_t dst, word_t src)
     *(word_t *)(dst + 0xe8) = f;
     *(word_t *)(dst + 0xf0) = g;
     *(word_t *)(dst + 0xf8) = h;
+    *(word_t *)(dst + 0x100) = sa0;
+    *(word_t *)(dst + 0x108) = sa1;
+    *(word_t *)(dst + 0x110) = sa2;
+    *(word_t *)(dst + 0x118) = sa3;
+    *(word_t *)(dst + 0x120) = sa4;
+    *(word_t *)(dst + 0x128) = sa5;
+    *(word_t *)(dst + 0x130) = sa6;
+    *(word_t *)(dst + 0x138) = sa7;
+    *(word_t *)(dst + 0x140) = sa8;
+    *(word_t *)(dst + 0x148) = sa9;
+    *(word_t *)(dst + 0x150) = x;
+    *(byte *)(dst + 0x158) = d158;
+    (void)sk_h_462b90(d150);
+    (void)sk_h_459138();
     a = *(word_t *)(src + 0x160);
     *(word_t *)(dst + 0x168) = *(word_t *)(src + 0x168);
     *(word_t *)(dst + 0x160) = a;
     old = *(word_t *)(dst + 0x170);
     *(word_t *)(dst + 0x170) = *(word_t *)(src + 0x170);
-    (void)cL4_ref_retain(0);
+    (void)cL4_ref_retain(*(word_t *)(src + 0x170));
     cL4_ref_release(old);
     (void)sk_h_464ae8();
 }

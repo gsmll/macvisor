@@ -41,6 +41,17 @@ extern long FUN_00118b28();   /* printf (TB_FATAL printer)          */
 extern long FUN_00117cc4();   /* build crash message                */
 extern long FUN_001a84f4();   /* fatal trap                         */
 extern long FUN_00111854();   /* alloc retry hook                   */
+
+/* FUN_00111854 @ 0x00111854  (est. sk_alloc_retry_hook)
+ * Ghidra: undefined8 FUN_00111854(void) { return _DAT_006ad9e8; }
+ * Returns the global allocator retry-hook pointer (DAT_006ad9e8).
+ * Confidence: high (trivial global read; verified vs decompile 2026-08-12)
+ */
+long sk_alloc_retry_hook_00111854(void)
+{
+    extern long sk_dat_006ad9e8;  /* _DAT_006ad9e8 */
+    return sk_dat_006ad9e8;
+}
 extern long FUN_000101a0();   /* atomic allocation attempt          */
 extern long FUN_000124a4();   /* aligned allocation attempt         */
 extern long FUN_0000456c();   /* parse/read word                    */

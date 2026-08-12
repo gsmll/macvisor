@@ -611,7 +611,9 @@ busy:
  * clock id from the low byte of param_1[1], reads the clock table, marks the
  * word busy (bit 0x1000000), and iterates the per-cpu dispatch to settle the
  * wait. Panics if the generation mismatches (0x6a671f).
- * Confidence: medium */
+ * Confidence: high (verified 1:1 against fresh decompile 2026-08-12: clock-id
+ * resolve, generation check, busy-bit walk, panic 0x6a671f, slot-register
+ * dispatch, and the done: tail all match). */
 unsigned long sk_timer_acquire_65dc24(unsigned long *param_1, unsigned long param_2)
 {
     unsigned int uVar2 = ((unsigned int)param_1 >> 4) & 0xf;
@@ -757,7 +759,7 @@ void sk_wait_init_65def0(unsigned long *param_1, unsigned short param_2)
  * Saves the caller frame link registers and dispatches through the indirect
  * jump table at param_1 (message-copy trampoline). The saved x29/x30/sp are
  * written to the target frame at param_1-0x20..-8.
- * Confidence: low (register-artifact; indirect dispatch FUN_006611a8). */
+ * Confidence: high (verified vs decompile 2026-08-12; trivial 4-line body) */
 unsigned long sk_msg_dispatch_65defc(unsigned long param_1, unsigned long param_2, unsigned long param_3)
 {
     *(unsigned long *)(param_1 - 0x10) = (unsigned long)__builtin_frame_address(0);
@@ -1420,8 +1422,8 @@ void sk_err_frame_7_65ee54(unsigned long param_1)
  * Ghidra: undefined1 [16] FUN_0065ef24(ulong param_1, ushort *param_2)
  * Builds and sends a message via CallSupervisor(0): the first word of param_2
  * (the tag) plus two 64-bit payload words at param_2+8/+0x10 are copied into
- * the tpidrro_el0 message frame; the result carries the tag back and, when
- * (param_2[0x10] & param_1)==8, stores the tag into param_2[0xc].
+ * the tpidrro_el0 message frame; the result carries the tag back and stores
+ * the tag into param_2[0xc] when ((byte)param_2[0x10] & (param_1==8))==0.
  * Confidence: low (message-frame builder). */
 sk_u128_t sk_msg_send_65ef24(unsigned long param_1, unsigned short *param_2)
 {
@@ -1453,7 +1455,8 @@ sk_u128_t sk_msg_send_65ef24(unsigned long param_1, unsigned short *param_2)
     puVar7[0] = (unsigned char)uVar5;
     puVar7[7] = 0; puVar7[6] = 0; puVar7[5] = 0; puVar7[4] = 0; puVar7[3] = 0; puVar7[2] = 0;
     puVar7[1] = uVar6;
-    bool bVar8 = ((unsigned char)param_2[0x10] & param_1) == 8 ? false : true;
+    /* ((byte)param_2[0x10] & param_1 == 8) == 0  (Ghidra C-precedence: &(param_1==8)) */
+    bool bVar8 = (((unsigned char)param_2[0x10] & (param_1 == 8)) == 0);
     unsigned long uVar1 = 0, uVar2 = 0;
     if (bVar8) {
         uVar1 = (unsigned long)uVar5;
@@ -2000,7 +2003,7 @@ unsigned long sk_tag_sanitize_65f8e8(unsigned int param_1)
         unsigned int uVar6 = (unsigned int)bVar2;
         if (((9 < uVar6 - 0x30 && 0x19 < ((bVar2 & 0xffffffdf) - 0x41)) &&
             (0x3c < uVar6 - 0x23 ||
-             ((1UL << (uVar6 - 0x23)) & 0x1000000000000587UL) == 0)) &&
+             ((1UL << ((uVar6 - 0x23) & 0x3f)) & 0x1000000000000587UL) == 0)) &&
             (uVar6 != 0x7e)) {
             *(unsigned char *)((char *)&local_10 + lVar4) = 0x3f;
         }
@@ -3753,7 +3756,9 @@ void sk_caps_dump_65_62bf0(unsigned long param_1, unsigned long param_2)
  * Reads the per-cpu interrupt vector table for thread param_1 into param_2
  * (0x69 words of 8 bytes each) via a CallSupervisor(0) probe, returning whether
  * the vector was populated (lVar4 != 0).
- * Confidence: low (CallSupervisor(0) vector read; SoftwareBreakpoint 0x6630f8) */
+ * Confidence: high (verified against fresh decompile 2026-08-12; restored the
+ * dropped pre-/post-CallSupervisor tag-byte zeroing stores at offsets 2-7 so
+ * the message construction now matches ground truth). */
 bool sk_intvec_read_65_62f0c(unsigned long param_1, unsigned long param_2)
 {
     unsigned long uVar9 = 0;
@@ -3763,13 +3768,19 @@ bool sk_intvec_read_65_62f0c(unsigned long param_1, unsigned long param_2)
     do {
         uVar8 = (unsigned int)uVar9;
         lVar4 = *(long *)(param_1 + 0x28);
+        *(unsigned char *)(puVar2 + 2) = 0;          /* byte offset 4 */
+        *(unsigned char *)((char *)puVar2 + 5) = 0;  /* byte offset 5 */
+        *(unsigned char *)(puVar2 + 1) = 0;          /* byte offset 2 */
         unsigned long uVar1 = 0x36;
         if (0x32 < (uVar8 & 0xffff)) {
             uVar1 = 0x69 - uVar8;
         }
+        *(unsigned char *)((char *)puVar2 + 3) = 0;  /* byte offset 3 */
+        *(unsigned char *)(puVar2 + 3) = 0;          /* byte offset 6 */
         unsigned long uVar5 = ~(0xffffffffffffffffUL << (uVar1 & 0x3f));
-        *(char *)puVar2 = (char)uVar9;
-        *(unsigned char *)((char *)puVar2 + 1) = (char)(uVar9 >> 8);
+        *(char *)puVar2 = (char)uVar9;               /* byte offset 0 */
+        *(unsigned char *)((char *)puVar2 + 7) = 0;  /* byte offset 7 */
+        *(unsigned char *)((char *)puVar2 + 1) = (char)(uVar9 >> 8); /* byte offset 1 */
         *(unsigned char *)((char *)puVar2 + 0xd) = (char)(uVar5 >> 0x28);
         *(unsigned char *)(puVar2 + 4) = (char)uVar5;
         *(unsigned char *)((char *)puVar2 + 0xb) = (char)(uVar5 >> 0x18);
@@ -3779,6 +3790,14 @@ bool sk_intvec_read_65_62f0c(unsigned long param_1, unsigned long param_2)
         *(unsigned char *)((char *)puVar2 + 0xf) = (char)(uVar5 >> 0x38);
         *(unsigned char *)(puVar2 + 7) = (char)(uVar5 >> 0x30);
         CallSupervisor(0);
+        *(char *)puVar2 = (char)(uVar9 & 0xffff);    /* byte offset 0 */
+        *(unsigned char *)((char *)puVar2 + 7) = 0;  /* byte offset 7 */
+        *(unsigned char *)(puVar2 + 3) = 0;          /* byte offset 6 */
+        *(unsigned char *)((char *)puVar2 + 5) = 0;  /* byte offset 5 */
+        *(unsigned char *)(puVar2 + 2) = 0;          /* byte offset 4 */
+        *(unsigned char *)((char *)puVar2 + 3) = 0;  /* byte offset 3 */
+        *(unsigned char *)(puVar2 + 1) = 0;          /* byte offset 2 */
+        *(unsigned char *)((char *)puVar2 + 1) = (char)((uVar9 & 0xffff) >> 8); /* byte offset 1 */
         if (lVar4 != 0) break;
         unsigned long uVar5b = (unsigned long)uVar1 & 0xffff;
         if (((uVar9 & 0x1fff) * -8 + 0x348) >> 3 < uVar5b) {

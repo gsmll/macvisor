@@ -2630,7 +2630,8 @@ void skp3_FUN_002165c0(uint64_t param_1, uint64_t param_2, uint64_t param_3){
 /* skp3_FUN_0021662c @ 0x0021662c   (est. swift_loop_dispatch2)
  * Ghidra: void skp3_FUN_0021662c(uint64_t param_1, uint64_t param_2, uint64_t param_3)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; loop dispatch 1:1, both
+ *   (v5&1) break edges, do-while, 0x48d8 mask tail, fatal 001afe4c path)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 void skp3_FUN_0021662c(uint64_t param_1, uint64_t param_2, uint64_t param_3){
   code *v1;
@@ -3670,7 +3671,8 @@ LBL_00217e0c:
 /* skp3_FUN_00217ea0 @ 0x00217ea0   (est. swift_string_pop_first)
  * Ghidra: uint32_t skp3_FUN_00217ea0( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; string-pop-first: UTF8View
+ *   decode, 0x10004 handle advance, out-of-bounds fatal, LBL edges exact)
  * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
 uint32_t skp3_FUN_00217ea0( void){
   unsigned long v3;

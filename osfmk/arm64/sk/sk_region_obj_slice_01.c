@@ -2215,14 +2215,15 @@ void sk_swift_int_add_i32(unsigned int *out, void *p2, void *p3, unsigned int a,
                            (unsigned long)"Swift.Integers", 0x14, 2, 0xdcd, 1);
         }
         if (b < 0x80000000LL) {
-            int x = (int)a + (int)b;
+            int overflow;
             unsigned int v = (unsigned int)(b >> 0x3f) ^ 0x7fffffff;
-            if (!__builtin_add_overflow((unsigned int)a, (int)b, (unsigned int *)0)) {
+            overflow = __builtin_add_overflow((unsigned int)a, (int)b, (unsigned int *)0);
+            if (!overflow) {
                 v = (unsigned int)a + (int)b;
             }
-            *out = (unsigned int)x;
-            pair[0] = __builtin_add_overflow((unsigned int)a, (int)b, (unsigned int *)0) ? 0x8000000000000000ULL : 0;
-            pair[1] = (unsigned long)!__builtin_add_overflow((unsigned int)a, (int)b, (unsigned int *)0);
+            *out = v;
+            pair[0] = overflow ? 0x8000000000000000ULL : 0;
+            pair[1] = (unsigned long)!overflow;
             return;
         }
     }

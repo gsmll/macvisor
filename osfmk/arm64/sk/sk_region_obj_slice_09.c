@@ -820,7 +820,9 @@ long sk_slice_002ddb50()
 /*--------------------------------------------------------------------*/
 /* FUN_002ddbb0 @ 0x002ddbb0  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002ddbb0(undefined8 param_1,ulong arg2) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified vs decompile 2026-08-12; float-char 'x'-prefixed
+ *   sign/hex build, 0x78302d/0x78302b, bval4==0xb branch, u128 tail, 0011d7e8
+ *   noreturn path) */
 void sk_slice_002ddbb0()
 {
     unsigned long arg1;
@@ -3652,6 +3654,10 @@ void sk_slice_002e2058()
 /* FUN_002e25f8 @ 0x002e25f8  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e25f8(void) */
 /* Confidence: low (Swift stdlib / object-service region). */
+/* VB2 2026-08-12: callee sequence, constants, and offsets verified 1:1
+ * (incl. outx8_00(buf4.lo,hi,auVar3.lo), *(lval2+0x10/18/20), sk_g_dispatch).
+ * Register-forwarding values (the extraout_* and unaff_* names) remain opaque,
+ * keeps low. */
 void sk_slice_002e25f8()
 {
     long lval2;
@@ -3861,6 +3867,10 @@ void sk_slice_002e2b84()
 /* FUN_002e2bbc @ 0x002e2bbc  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e2bbc(void) */
 /* Confidence: low (Swift stdlib / object-service region). */
+/* VB2 2026-08-12: callee sequence, constants, offsets, and branches verified
+ * 1:1 (incl. sk_g_dispatch(*(outx8+0x40)), fptr3=*(outx16+0x20), tmp1 load,
+ * the in_ZR if/else). Register-forwarding values (extraout_* and unaff_* names)
+ * remain opaque, keeps low. */
 void sk_slice_002e2bbc()
 {
     unsigned long tmp1;
@@ -4576,7 +4586,9 @@ void sk_slice_002e3df4()
 /*--------------------------------------------------------------------*/
 /* FUN_002e3e50 @ 0x002e3e50  (est. sk_swift_runtime) */
 /* Ghidra: void FUN_002e3e50(void) */
-/* Confidence: low (Swift stdlib / object-service region). */
+/* Confidence: high (verified vs decompile 2026-08-12; array-buffer growth:
+ *   SCARRY8 traps 0x2e3f44/48/4c/50/40, double-capacity or exact-size select,
+ *   realloc via 0036a804 + copy thunk_00012568, element copy loop) */
 void sk_slice_002e3e50()
 {
     unsigned long tmp1;

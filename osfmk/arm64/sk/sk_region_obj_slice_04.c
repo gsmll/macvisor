@@ -752,7 +752,7 @@ unsigned long sk_swift_unicode_scalar_clamp(unsigned long v);
 void sk_swift_unicode_scalar_clamp_b(void);
 unsigned long sk_swift_unicode_scalar_hash(unsigned long c);
 unsigned long sk_swift_unicode_scalar_kind(unsigned long c);
-unsigned long sk_swift_utf8_length(long *out, char *p, long n);
+void sk_swift_utf8_length(long *out, char *p, long n);
 void sk_swift_utf8_scan_scalar(void *o1, void *o2, unsigned long p3);
 
 /* ------------------------------------------------------------------ *
@@ -1564,39 +1564,49 @@ void sk_swift_string_init_out_b(void *out, void *s)
  * Computes the UTF-8 code-point count of a byte string (param_2, param_3
  * bytes) and stores it into *param_1. Handles the empty/offset cases and
  * skips over multi-byte sequences, counting each scalar once.
- * Confidence: high (UTF-8 length via clz on lead bytes).
- */
-unsigned long sk_swift_utf8_length(long *out, char *p, long n)
+ * Confidence: medium (verified body; name estimated, no string match). */
+void sk_swift_utf8_length(long *out, char *p, long n)
 {
-    (void)out;
     long count = 0;
     if (n < 0) {
         sk_rt_00348284();
-        sk_rt_00351094();
-        /* WARNING: noreturn */
-        sk_fatal_error(0, 0);
+        goto fatal;
+    }
+    if (n == 0) {
+        if (p == (char *)0) goto store;
+    } else if (p == (char *)0) {
+        sk_rt_00348508();
+        goto fatal;
     }
     if (n != 0) {
         char *end = p + n;
-        while (p < end) {
-            if ((signed char)*p < -0x40) {
-                long len;
-                if ((unsigned int)(signed char)*p < 0x80000000) {
-                    len = 1;
-                } else {
-                    len = __builtin_clzll(((unsigned int)*p << 0x18) ^ 0xffffffffUL) / 8 + 1;
-                    if (len > 4) len = 4;
-                    if (len == 4) len = 2; /* 4-byte -> 2 (surrogate pair in UTF-16 count) */
-                }
-                p += len;
-                if (p <= end) count += 1;
-            } else {
-                p += 1;
-                count += 1;
+        for (; p < end; p++) {
+            if (-0x41 < *p) {        /* byte not a continuation (0x80-0xBF) */
+                count = 0;
+                do {
+                    unsigned long u5;
+                    if ((unsigned int)(signed char)*p < 0x80000000) {
+                        u5 = 1;      /* ASCII / high bit clear */
+                    } else {
+                        /* u5 = LZCOUNT((uint)*p << 0x18 ^ 0xffffffff) = leading-1s */
+                        u5 = __builtin_clz((unsigned int)(((unsigned int)(unsigned char)*p << 0x18) ^ 0xffffffffU));
+                    }
+                    long l2 = 1;
+                    if (u5 == 4) l2 = 2;   /* 4-byte scalar -> surrogate pair */
+                    p += (long)u5;
+                    if (p <= end) count += l2;
+                } while (p < end);
+                goto store;
             }
         }
     }
-    return count;
+store:
+    *out = count;
+    return;
+fatal:
+    sk_rt_00351094();
+    /* WARNING: noreturn */
+    sk_fatal_error(0, 0);
 }
 
 
@@ -2259,35 +2269,49 @@ void sk_swift_string_init_out_c(void *out, void *s)
  * Ghidra: uint FUN_002b2660(undefined8 param_1, long param_2, undefined8 param_3)
  * Extracts a bit field from a UTF-8 scalar: computes the byte length from
  * the leading-zero count and shifts param_3 right by the bit offset.
- * Faults via sk_fatal_error on invalid sizes.
- * Confidence: low (Swift UTF-8 bit extraction).
+ * Faults via sk_fatal_error on invalid sizes (fault code forwarded to
+ * FUN_003486b8), and traps on signed-carry overflow (SCARRY8, breakpoint
+ * (1, 0x2b2708)).
+ * Confidence: high (verified against fresh decompile; 32-bit LZCOUNT widths,
+ *   SCARRY8 breakpoint, and 0x82/0x83/0x8e/0x8f fault codes restored).
  */
 unsigned long sk_swift_string_utf8_decode_bits(unsigned long a, long b, unsigned long c)
 {
-    (void)b;
-    unsigned long v = sk_rt_002c8c2c(c, c);
+    unsigned long v;
+    unsigned long err = 0;   /* uVar5: fault code 0x82/0x83/0x8e/0x8f */
+    unsigned long clz;
+    long len, idx;
+    unsigned long sh;
+
+    v = sk_rt_002c8c2c(c, c);
     if ((v & 1) == 0) {
         sk_rt_0035047c();
+        err = 0x82;
     } else {
         v = sk_rt_002c8c2c(a, c);
         if ((v & 1) == 0) {
             sk_rt_0035047c();
+            err = 0x83;
         } else {
-            unsigned long clz = __builtin_clzll((unsigned int)c);
-            long len = (long)(clz - __builtin_clzll((unsigned int)a)) >> 3;
-            long idx = b + len;
-            if (idx >= 0) {
-                if ((unsigned long)idx <= 4 - (clz >> 3)) {
-                    unsigned long sh = (unsigned long)((int)idx << 2);
-                    return ((unsigned int)c >> (sh & 0x1f)) >> (sh & 0x1f);
-                }
+            clz = __builtin_clz((unsigned int)c);   /* LZCOUNT((uint)param_3) */
+            len = (long)(clz - (unsigned long)__builtin_clz((unsigned int)a)) >> 3;
+            if (__builtin_add_overflow(b, len, &idx)) {
+                /* SCARRY8(param_2, lVar1) overflow -> breakpoint (1, 0x2b2708) */
+                __builtin_trap();
+            }
+            if (idx < 0) {
                 sk_rt_0035047c();
+                err = 0x8e;
+            } else if ((unsigned long)idx <= 4 - (clz >> 3)) {
+                sh = (unsigned long)((int)idx << 2);
+                return ((unsigned int)c >> (sh & 0x1f)) >> (sh & 0x1f);
             } else {
                 sk_rt_0035047c();
+                err = 0x8f;
             }
         }
     }
-    sk_rt_003486b8(0);
+    sk_rt_003486b8(err);      /* FUN_003486b8(uVar5) */
     sk_rt_00349424();
     /* WARNING: noreturn */
     sk_fatal_error(0, 0);
@@ -2462,47 +2486,221 @@ void sk_swift_unicode_scalar_clamp_b(void)
  * updating the internal continuation-state fields (offset 0x22 / 0x05 /
  * 0x06) and returning a status word. Handles CR/LF, ZWJ, combining and
  * regional-indicator pairs.
- * Confidence: low (Swift Unicode scalar grapheme-cluster advance FSM).
+ * Confidence: low (Swift Unicode scalar grapheme-cluster advance FSM;
+ *   fixed: expanded from an 8-line summary to the full +5 byte-state switch
+ *   (0x101/0x202/0x606/0xd0d/0xe0e/0xf0f), +6 state-field handling and tail
+ *   return; opaque extraout_w* results kept as 0 stand-ins).
  */
 unsigned long sk_swift_unicode_scalar_advance(unsigned long c)
 {
-    unsigned long kind = sk_rt_002b28c8();
+    /* unaff_x20 = state pointer (register-forwarded; stubbed as opaque).
+     * Result words uVar5/uVar6/uVar7/uVar8 come from opaque extraout_w*
+     * registers -> kept as 0 stand-ins, with the structural constants and
+     * state-field writes preserved 1:1. */
     int *st = (int *)0;
-    if (kind == 0xb) {
-        /* CR/LF handling */
-        if ((char)(*(unsigned char *)((char *)st + 6)) == 0) {
-            *(unsigned char *)((char *)st + 6) = 0;
-        }
-        sk_rt_003520c0();
-        *st = (int)c;
-        *(unsigned char *)((char *)st + 1) = (unsigned char)kind;
-        return 0x10000;
+    unsigned long kind = sk_rt_002b28c8();
+    unsigned long u5 = 0, u6 = 0, u7 = 0, u8 = 0;
+    int i = (int)c;
+
+    if ((char)kind == 0xb) {
+        goto crlf;
     }
-    if (kind == 0x10) {
-        /* ZWJ */
-        int r = (int)sk_rt_003d3470(c);
-        if (r == 0) {
-            sk_rt_003520c0();
-            *st = (int)c;
-            return 0x10000;
+    if ((char)kind != 0x1) {
+        if (kind != 0xf) {
+            if (kind == 0x10) goto zwj;
+            goto table;      /* LAB_002b2b04 */
         }
-    }
-    if (kind == 0xf) {
+        if (kind == 0x10) {
+zwj:
+            if ((int)sk_rt_003d3470(c) == 0) goto table;
+            goto case0;      /* switchD_002b2c6c_caseD_0 */
+        }
+        if (kind != 0xf) goto table2;   /* LAB_002b2b44 */
         sk_rt_003520c0();
         sk_rt_00358654();
         *(unsigned short *)((char *)st + 1) = 0xf0f;
-        return 0;
+        goto b2af0;
     }
-    if (kind == 0x1 || kind == 0x3 || kind == 0x5) {
+    if (kind == 0x10 || kind == 0x3 || kind == 0x5) {
+b2b20:                       /* LAB_002b2b20 */
         sk_rt_003520c0();
-        *st = (int)c;
+        *st = i;
         *(unsigned char *)((char *)st + 1) = (unsigned char)kind;
-        return 0;
+        goto b2b2c;
     }
-    /* default path via the continuation-state table */
+    if (kind == 0xb) goto crlf;
+    if (kind == 0x1) {
+        sk_rt_00359690();
+        *st = i;
+        *(unsigned short *)((char *)st + 1) = 0x101;
+        goto b2a6c;          /* extraout_w9 -> u8 */
+    }
+
+table2:                      /* LAB_002b2b44 */
+    if (0xe < *(unsigned char *)((char *)st + 5)) goto case1;
+    switch (*(unsigned char *)((char *)st + 5)) {
+    case 0x1: case 0x3: case 0x5: case 0xb:
+        break;
+    case 0x2:
+        if (kind != 0x6) break;
+        {
+            char s6 = *(char *)((char *)st + 6);
+            u8 = ((unsigned char)(s6 - 1U) < 3) ? (s6 != 0x2) : 0;
+            *(unsigned char *)((char *)st + 6) = 0;
+            *st = i;
+            *(unsigned short *)((char *)st + 1) = 0x606;
+            if (s6 == 0x2) { u5 = 0; goto b2a78; }
+            goto b2ce4;
+        }
+    case 0x4:
+        if ((kind < 0xd) && (sk_rt_00358cb0(), (0 & 0x10d1) != 0)) {
+case0:                       /* switchD_002b2c6c_caseD_0 */
+            sk_rt_003520c0();
+            u8 = *(unsigned char *)((char *)st + 6) - 1;
+            *(unsigned char *)((char *)st + 6) = 0;
+            *st = i;
+            goto b2ae8;
+        }
+        break;
+    case 0x6:
+        if (kind < 0xf) {
+            switch (kind) {
+            default: goto case0;
+            case 0x1: case 0x3: case 0x5: case 0x7: case 0x9:
+            case 0xb: case 0xd:
+                break;
+            case 0x2:
+                u5 = 0; u7 = 0;
+                *(unsigned char *)((char *)st + 6) = 2;
+                *st = i;
+                *(unsigned short *)((char *)st + 1) = 0x202;
+                u6 = 1;
+                goto b2b2c;
+            case 0x8: case 0xa:
+                goto case8;  /* switchD_002b2c6c_caseD_8 */
+            case 0xe:
+                sk_rt_003520c0();
+                sk_rt_00358654();
+                *(unsigned short *)((char *)st + 1) = 0xe0e;
+                goto b2af0;
+            }
+        }
+        break;
+    case 0x7:
+        if (kind == 0x4 || kind == 0x7) goto case0;
+        break;
+    case 0x8:
+        if (kind != 0 && kind != 0x6) break;
+        goto b2bc8;
+    case 0x9:
+        goto case9;          /* switchD_002b2b6c_caseD_9 */
+    case 0xa: case 0xe:
+        if (kind == 0 || kind == 0x6) goto b2bc8;
+        goto case9;
+    case 0xc:
+        if (kind < 0xf) {
+            sk_rt_00358cb0();
+            if ((0 & 0x1041) == 0) {
+                if ((0 & 0x4600) != 0) {
+                    *(unsigned char *)((char *)st + 6) = 3;
+                    sk_rt_0035360c(0);
+                    u6 = 1;
+                    goto b2b2c;
+                }
+                if (kind != 0x4) break;
+            }
+            goto case0;
+        }
+        break;
+    case 0xd:
+        if (kind == 0xd) {
+            int s6 = *(char *)((char *)st + 6) != 0x4;
+            *(unsigned char *)((char *)st + 6) = s6 ? 4 : 0;
+            *st = i;
+            *(unsigned short *)((char *)st + 1) = 0xd0d;
+            u5 = s6 ? 0 : 0x10000;
+            goto b2b2c;
+        }
+        break;
+    default:
+        if (kind < 0xf) {
+            switch (kind) {
+            default: goto case0;
+            case 0x1: case 0x2: case 0x3: case 0x5: case 0x7:
+            case 0x9: case 0xb: case 0xd:
+                break;
+            case 0x8: case 0xa: case 0xe:
+case8:
+                *(unsigned char *)((char *)st + 6) = 1;
+                sk_rt_0035360c(0);
+                goto b2b2c;
+            }
+        }
+        break;
+    }
+
+case1:                       /* switchD_002b2b6c_caseD_1 */
     sk_rt_00359690();
+    goto b2a68;
+
+b2bc8:
+    {
+        unsigned char s6 = *(unsigned char *)((char *)st + 6);
+        *(unsigned char *)((char *)st + 6) = 0;
+        sk_rt_0035360c(s6 & 0xfe);
+        if (0 != 1) goto b2ce4;   /* extraout_w9_06 -> 0 */
+        goto b2bec;
+    }
+case9:                       /* switchD_002b2b6c_caseD_9 */
+    if (kind != 0xc) goto b2a68;
+    {
+        unsigned char s6 = *(unsigned char *)((char *)st + 6);
+        *(unsigned char *)((char *)st + 6) = 0;
+        sk_rt_0035360c(s6 - 1);
+        if (0 == 3) {             /* extraout_w9_05 -> 0 */
+b2bec:
+            sk_rt_003520c0();
+            if (0 == 0) goto b2b2c;   /* extraout_w11_01 -> 0 */
+            goto b2af8;
+        }
+    }
+b2ce4:
+    u5 = 0x10000;
+    if ((0 & 1) != 0) goto b2af8;   /* uVar10 opaque */
+    goto b2a78;
+
+crlf:                        /* LAB_002b2a48 */
+    *(unsigned char *)((char *)st + 6) = 0;
+    if (*st != 0xd || i != 10) goto b2a68;
+    sk_rt_003520c0();
+    *st = 10;
+    goto b2ae8;
+
+b2a68:
     sk_rt_0035360c();
-    return 0x10000;
+    /* u8 = extraout_w9_00 (opaque) */
+b2a6c:
+    u5 = 0x10000;
+    if (u8 < 3) goto b2af8;
+    goto b2a78;
+
+b2ae8:
+    u8 &= 0xff;
+    *(unsigned char *)((char *)st + 1) = (unsigned char)kind;
+    *(unsigned char *)((char *)st + 5) = (unsigned char)kind;
+b2af0:
+    if (2 < u8) goto b2b2c;
+b2af8:
+    u6 = 0; u7 = 0x100;
+    goto b2b2c;
+b2a78:
+    u6 = 0; u7 = 0;
+b2b2c:
+    return u7 | u6 | u5;
+
+table:                       /* LAB_002b2b04 */
+    if ((0x10 < kind) || (sk_rt_00358cb0(), (0 & 0x10028) == 0)) goto table2;
+    goto b2b20;
 }
 
 /*--------------------------------------------------------------------*/
@@ -2723,7 +2921,11 @@ void sk_swift_string_utf16_view_count_c(void)
 unsigned long sk_swift_string_utf16_view_next(unsigned long i, unsigned long s, unsigned long f, unsigned long l, unsigned long m)
 {
     (void)s;
-    unsigned long v = i >> 8 & 0x3f;
+    unsigned long v, base, hi;
+    unsigned char buf[16];   /* local_20(buf+0)/uStack_18(buf+8) */
+    int b2;
+
+    v = i >> 8 & 0x3f;
     if (v == 0) {
         unsigned long p = i >> 0x10;
         if (p == f >> 0x10) {
@@ -2734,8 +2936,16 @@ unsigned long sk_swift_string_utf16_view_next(unsigned long i, unsigned long s, 
                 return sk_rt_002c6d00();
             }
             if ((m >> 0x3d & 1) == 0) {
-                unsigned long base = sk_rt_002a9ba8();
-                if (p + 1 != l) {
+                if ((l >> 0x3c & 1) == 0) {
+                    sk_rt_00355b68();
+                    /* auVar4 = FUN_002a9ba8(); base=._0_8_, hi=._8_8_ */
+                    base = sk_rt_002a9ba8();
+                    hi = 0;               /* auVar4._8_8_ (opaque) */
+                } else {
+                    hi = l & 0xffffffffffff;              /* auVar4._8_8_ = param_4&mask */
+                    base = (m & 0xfffffffffffffff) + 0x20; /* auVar4._0_8_ */
+                }
+                if (p + 1 != hi) {
                     if (base == 0) {
                         sk_rt_00347f2c();
                         /* WARNING: noreturn */
@@ -2746,6 +2956,16 @@ unsigned long sk_swift_string_utf16_view_next(unsigned long i, unsigned long s, 
                         sk_rt_00353178();
                         return sk_rt_002c6d00();
                     }
+                }
+            } else {
+                /* local_20 = param_4; uStack_18 = param_5 & 0xffffffffffffff */
+                *(unsigned long *)&buf[0] = l;
+                *(unsigned long *)&buf[8] = m & 0xffffffffffffff;
+                b2 = p + 1 == (m >> 0x38 & 0xf);
+                sk_rt_00352bd4(*(unsigned short *)((char *)buf + p));
+                if (!b2 && (b2 || 0 != 0)) {  /* b2 || extraout_w9!=0 (opaque -> 0) */
+                    sk_rt_00353178();
+                    return sk_rt_002c6d00();
                 }
             }
             v = 1;
@@ -2806,7 +3026,10 @@ void sk_swift_string_utf16_view_prev_b(void)
  * Advances a UTF-16 view index across a range, handling both forward and
  * backward directions. Emits the final index via sk_rt_00351d30.
  * Confidence: low (Swift String.UTF16View advance loop).
- */
+ * VB2 2026-08-12: fixed backward-branch bound overflow from `break` to the
+ * LAB_002b3f28 panic (noreturn) and restored the loop-carried index (uVar2)
+ * in both loops (was folded to constant base). All forwarded registers are
+ * collapsed to sk_rt_0035a04c() (opaque), keeps low. */
 void sk_swift_string_utf16_view_advance_loop(void)
 {
     sk_rt_00351e20();
@@ -4029,40 +4252,79 @@ unsigned long sk_swift_string_utf8_view_index_c(void)
  */
 void sk_swift_string_utf8_view_index_d(void)
 {
+    unsigned long a, w, v;
+    long l6, l7;
+    int neg;
+
     sk_rt_00353d70();
     sk_rt_00352b20();
     sk_rt_00354a28();
-    unsigned long v = sk_rt_0034a3b0(sk_rt_0035a04c());
-    if (sk_rt_0034bf1c()) {
+    /* uVar2 = extraout_w8 (or 1 if in_ZR); FUN_0034a3b0(uVar2) */
+    sk_rt_0034a3b0(1);            /* in_ZR/extraout_w8 opaque -> 1 */
+    if (0) {                      /* in_ZR opaque -> false */
         sk_rt_00350548();
         sk_rt_0001da84();
     }
-    unsigned long pos = sk_rt_0034a260();
-    if (sk_rt_0035a04c() <= pos >> 0x10) {
+    a = sk_rt_0034a260();
+    if (0 <= a >> 0x10) {         /* extraout_x8 (opaque len) <= a>>0x10 */
         sk_rt_00348614(1);
         sk_rt_0034987c();
         /* WARNING: noreturn */
         sk_fatal_error(0, 0);
     }
-    if ((v >> 0x3c & 1) != 0) {
-        sk_rt_002af4d0();
-    } else {
-        unsigned long b = sk_rt_00358990();
-        if ((v & 0x2000000000000000UL) != 0) {
-            b = v >> 0x3e & 1;
-        }
-        if ((b & 1) != 0) {
-            sk_rt_0035aac0();
-        } else {
-            unsigned char c = *(unsigned char *)(pos);
-            if ((signed char)c < 0) {
-                long len = __builtin_clzll(((unsigned int)c << 0x18) ^ 0xffffffffUL) / 8 + 1;
-                sk_rt_003558c4();
-            } else {
-                sk_rt_003558c4();
-            }
-        }
+    if (0) {                      /* unaff_x20>>0x3c & 1 -> 0 */
+        v = sk_rt_002af4d0();
+        *(unsigned long *)0 = v;  /* *unaff_x19 (opaque) = uVar4 */
+        return;
     }
+    w = sk_rt_00358990();
+    /* uVar1 = extraout_w8_00; if (unaff_x20 & 0x2000000000000000) uVar1=(unaff_x20>>0x3e)&1 */
+    if ((0 & 1) != 0) {           /* uVar1 & 1 (uVar1 opaque -> 0) */
+        sk_rt_0035aac0();
+        v = 0 + 0xd;              /* extraout_x8_00 + 0xd (opaque) */
+        *(unsigned long *)0 = v;
+        return;
+    }
+    neg = (w & 0xc001) == 0;
+    if (neg) {
+        sk_rt_00350548();
+        w = sk_rt_001676cc();
+        if ((0 & 1) != 0) goto doB;   /* unaff_x20>>0x3d & 1 != 0 -> B */
+        goto doA;
+    }
+    if ((0 & 1) == 0) goto doA;       /* else: unaff_x20>>0x3d & 1 == 0 -> A */
+doB:
+    w = sk_rt_00353878();
+    l6 = 0;                       /* extraout_x8_02 opaque */
+    l7 = 0;                       /* extraout_x9_00 opaque */
+    goto afterLoad;
+doA:
+    if ((0 & 1) == 0) {           /* unaff_x21>>0x3c & 1 == 0 */
+        sk_rt_000b43d0();
+        l6 = sk_rt_002a9ba8();    /* lVar6 = FUN_002a9ba8() */
+        l7 = 0;                   /* extraout_x9_01 opaque */
+    } else {
+        w = sk_rt_0008e34c();
+        l6 = 0;                   /* extraout_x8_01 opaque */
+        l7 = 0;                   /* extraout_x9 opaque */
+    }
+afterLoad:
+    if (*(char *)(l6 + l7) < '\0') {
+        w = sk_rt_003558c4();
+        l6 = 0;                   /* extraout_x8_03 opaque */
+        if (neg && (w & 0xc000) == 0) {
+            v = 0x4004;
+            goto store;
+        }
+        if (neg) l6 = 4;          /* (w & 0xc000) != 0 */
+    } else {
+        l6 = 1;
+    }
+    w = w + (unsigned long)l6 * 0x10000;
+    v = 5;
+store:
+    v = w & 0xffffffffffff0000UL | v;
+    *(unsigned long *)0 = v;      /* *unaff_x19 = uVar4 */
 }
 
 /*--------------------------------------------------------------------*/
@@ -4086,13 +4348,21 @@ void sk_swift_string_utf8_view_slice_aa(void *a, void *b, void *c, void *d, void
  */
 unsigned long sk_swift_string_utf8_view_index_e(unsigned long i, unsigned long s, unsigned long f, unsigned long l, unsigned long m)
 {
-    (void)s;
-    unsigned long v = sk_rt_0034a3b0(sk_rt_0035a04c());
-    if (sk_rt_0034bf1c()) {
-        v = sk_rt_0001da84();
+    (void)s; (void)f;
+    unsigned long v, a, n;
+    unsigned char buf[16];   /* uStack_40(buf+0)/local_48(buf+8)/bStack_49(buf+9) */
+    long k;
+    int ovf;
+
+    /* FUN_00354a28(); uVar1 = extraout_w8 (or 1 if in_ZR); FUN_0034a3b0(uVar1) */
+    v = sk_rt_0034a3b0(1);            /* in_ZR/extraout_w8 opaque -> 1 */
+    if (0) {                          /* in_ZR opaque -> false */
+        /* auVar7 = FUN_003504ac(); v = FUN_0001da84(hi,lo,m); i = v; */
         i = v;
     }
-    if ((i < 0x4000) || (sk_rt_00359848(v, l & 0xffffffffffffUL) < i >> 0xe)) {
+    if (i < 0x4000 ||
+        (sk_rt_00359848(v, l & 0xffffffffffffUL), 0 < i >> 0xe)) {
+        /* extraout_x9 (opaque) < i>>0xe -> rendered 0 < i>>0xe */
         sk_rt_00348614(1);
         sk_rt_0034987c();
         /* WARNING: noreturn */
@@ -4101,23 +4371,66 @@ unsigned long sk_swift_string_utf8_view_index_e(unsigned long i, unsigned long s
     if ((m >> 0x3c & 1) != 0) {
         return sk_rt_002af618(i);
     }
-    sk_rt_00359ffc();
-    if ((sk_rt_0035a04c() & 1) == 0) {
-        unsigned long pos = i;
-        if ((i & 1) == 0) {
-            sk_rt_00077894(i);
-            v = sk_rt_001676cc();
-            i = v;
+    v = sk_rt_00359ffc();             /* auVar7._0_8_ */
+    if ((0 & 1) == 0) {               /* extraout_x9_00 (opaque) & 1 == 0 */
+        if ((i & 0xc000) == 0) {
+            a = 0;                    /* extraout_x8 (opaque) */
+            if ((i & 1) == 0) {
+                sk_rt_00077894(i);
+                v = sk_rt_001676cc();
+                a = 0;                /* extraout_x8_00 (opaque) */
+                i = v;
+            }
+            n = i >> 0x10;
+            if ((m >> 0x3d & 1) != 0) {
+                k = 0;
+                *(unsigned long *)&buf[8] = l;   /* local_48 = param_4 */
+                *(unsigned long *)&buf[0] = m & 0xffffffffffffffUL;  /* uStack_40 */
+                for (;;) {
+                    if (n + k == 0) {
+                        sk_rt_0034f314(v, 0);     /* auVar7._8_8_ opaque */
+                        goto fatal;
+                    }
+                    if (a <= n - 1) {             /* a==0 (opaque): 0 <= n-1 */
+                        sk_rt_0034daa8();
+                        goto fatal;
+                    }
+                    if (buf[9 + k + n] != (unsigned char)0xffffffbf &&
+                        !__builtin_add_overflow((int)buf[9 + k + n], 0x41, &ovf)) {
+                        v = 1 - k;
+                        goto packed;
+                    }
+                    k = k - 1;
+                }
+            }
+            if ((l >> 0x3c & 1) == 0) {
+                sk_rt_00100efc();
+                v = sk_rt_002a9ba8();             /* auVar7._0_8_ */
+            } else {
+                v = sk_rt_003577a0();
+            }
+            /* FUN_002bbc14(&local_48, auVar7._0_8_, auVar7._8_8_, n) */
+            sk_rt_002bbc14(&buf[8], v, 0, n);     /* auVar7._8_8_ opaque */
+            v = *(unsigned long *)&buf[8];        /* uVar3 = local_48 */
+packed:
+            if (v == 4) {
+                v = (i & 0xffffffffffff0000UL) - 0x3bffc;  /* surrogate pair */
+            } else {
+                if (__builtin_sub_overflow((long)0, (long)v, &ovf)) {
+                    /* SBORROW8(0,v): SoftwareBreakpoint(1,0x2b6a90) (noreturn) */
+                    sk_fatal_error(0, 0);
+                }
+                v = (n - v) * 0x10000UL | 5;
+            }
+        } else {
+            v = i & 0xffffffffffff0000UL | 5;
         }
-        unsigned long n = i >> 0x10;
-        unsigned char b = *(unsigned char *)(pos);
-        if ((signed char)b < 0) {
-            long len = __builtin_clzll(((unsigned int)b << 0x18) ^ 0xffffffffUL) / 8 + 1;
-            return (i & 0xffffffffffff0000UL) - 0x3bffc; /* surrogate pair */
-        }
-        return (i & 0xffffffffffff0000UL) + 0x10000UL | 5;
+    } else {
+        v = (i & 0xffffffffffff0000UL) - 0xfff3;
     }
-    return (i & 0xffffffffffff0000UL) - 0xfff3;
+    return v;
+fatal:
+    sk_fatal_error(0, 0);
 }
 
 /*--------------------------------------------------------------------*/
@@ -4125,49 +4438,107 @@ unsigned long sk_swift_string_utf8_view_index_e(unsigned long i, unsigned long s
  * Ghidra: void FUN_002b6a90(void)
  * Advances a UTF-8 view index in place through the string buffer, storing
  * the new index back and emitting via sk_rt_0035847c.
- * Confidence: low (Swift String.UTF8View index advance in-place).
+ * Confidence: low (Swift String.UTF8View index advance in-place; fixed: now
+ * mirrors decompile structure — store target *auVar7._0_8_, u3==4 /
+ * (cnt-u3)*0x10000|5 result, in_x4/in_x3 sub-branches; opaque in_x3/x4/in_ZR/
+ * extraout_* kept as 0 stand-ins).
  */
 void sk_swift_string_utf8_view_index_f(void)
 {
-    unsigned long v;
-    unsigned long buf = sk_rt_00041138();
+    /* Opaque register-forwarded inputs (decompiler: in_x3/in_x4, in_ZR,
+     * extraout_w8/x8/x9, in_stack_00000018/20) substituted with 0. */
+    unsigned long in_x3 = 0, in_x4 = 0, in_stack_18 = 0;
+    unsigned long extraout_x9_00 = 0, extraout_x8 = 0, extraout_x8_00 = 0;
+    unsigned long slot_v = sk_rt_00041138();  /* auVar7._0_8_ */
+    unsigned long frm_hi = 0;                 /* auVar7._8_8_ (opaque) */
+    unsigned long *slot = (unsigned long *)slot_v;
+    unsigned long v = *slot;
     sk_rt_00354a28();
-    unsigned long s = sk_rt_0034cad8(sk_rt_0035a04c());
-    if (sk_rt_0034bf1c()) {
-        sk_rt_00350600(buf);
+    unsigned long s = sk_rt_0034cad8(0);       /* extraout_w8 | (in_ZR ? 1 : 0) -> 0 */
+    if (0) {                                   /* in_ZR opaque */
+        sk_rt_00350600(v);
         s = sk_rt_0001da84();
-        buf = s;
+        v = s;
     }
-    if ((buf < 0x4000) || (sk_rt_00359848(s, buf & 0xffffffffffffUL) < buf >> 0xe)) {
+    if ((v < 0x4000) ||
+        (sk_rt_00359848(s, in_x3 & 0xffffffffffffULL) < (v >> 0xe))) {
         sk_rt_00348614(1);
         sk_rt_0034987c();
         /* WARNING: noreturn */
         sk_fatal_error(0, 0);
     }
-    sk_rt_00359ffc();
-    if ((sk_rt_0035a04c() & 1) == 0) {
-        unsigned long idx = buf;
-        if ((buf & 0xc000) == 0) {
-            unsigned long n = idx;
-            if ((idx & 1) == 0) {
-                sk_rt_003562f8();
-                sk_rt_00350600();
-                idx = sk_rt_001676cc();
-            }
-            unsigned long pos = idx >> 0x10;
-            unsigned char b = *(unsigned char *)(pos);
-            if ((signed char)b < 0) {
-                long len = __builtin_clzll(((unsigned int)b << 0x18) ^ 0xffffffffUL) / 8 + 1;
-                idx = (idx & 0xffffffffffff0000UL) - 0x3bffc;
+    unsigned long nv;
+    if ((in_x4 >> 0x3c & 1) == 0) {
+        unsigned long p8lo = sk_rt_00359ffc();  /* auVar8._0_8_ */
+        unsigned long p8hi = 0;                 /* auVar8._8_8_ (opaque) */
+        if ((extraout_x9_00 & 1) == 0) {
+            if ((v & 0xc000) == 0) {
+                unsigned long u3 = extraout_x8;
+                unsigned long u4 = v;
+                if ((v & 1) == 0) {
+                    sk_rt_003562f8();
+                    sk_rt_00350600();
+                    u4 = sk_rt_001676cc();
+                    p8hi = v;
+                    p8lo = u4;
+                    u3 = extraout_x8_00;
+                }
+                unsigned long cnt = u4 >> 0x10;
+                if ((in_x4 >> 0x3d & 1) != 0) {
+                    long l5 = 0;
+                    unsigned char *st17 = (unsigned char *)0;  /* stack0x00000017 (opaque) */
+                    do {
+                        if (cnt + l5 == 0) {
+                            sk_rt_0034f314(p8lo, p8hi);
+                            goto done;
+                        }
+                        if (u3 <= cnt - 1) {
+                            sk_rt_0034daa8();
+                            goto done;
+                        }
+                        if ((st17[l5 + cnt] != 0xbf) &&
+                            !__builtin_add_overflow((unsigned int)st17[l5 + cnt], 0x41,
+                                                    (unsigned int *)0)) {
+                            u3 = 1 - l5;
+                            goto advance;
+                        }
+                        l5 = l5 - 1;
+                    } while (true);
+                }
+                if ((in_x3 >> 0x3c & 1) == 0) {
+                    sk_rt_00350560();
+                    p8lo = sk_rt_002a9ba8();
+                    p8hi = 0;
+                } else {
+                    p8lo = sk_rt_003577a0();
+                    p8hi = 0;
+                }
+                sk_rt_002bbc14(&in_stack_18, p8lo, p8hi, cnt);
+                u3 = in_stack_18;
+advance:
+                if (u3 == 4) {
+                    nv = (u4 & 0xffffffffffff0000) - 0x3bffc;
+                } else {
+                    if (__builtin_sub_overflow((long)0, (long)u3, (long *)0))
+                        __builtin_trap();  /* SBORROW8(0,u3): 0x2b6c54 */
+                    nv = (cnt - u3) * 0x10000 | 5;
+                }
             } else {
-                idx = (idx & 0xffffffffffff0000UL) + 0x10000UL | 5;
+                nv = v & 0xffffffffffff0000 | 5;
             }
-            *(unsigned long *)0 = idx;
+        } else {
+            nv = (v & 0xffffffffffff0000) - 0xfff3;
         }
     } else {
-        *(unsigned long *)0 = (buf & 0xffffffffffff0000UL) - 0xfff3;
+        nv = sk_rt_002af618(v);
     }
-    sk_rt_0035847c(0);
+    *slot = nv;
+    sk_rt_0035847c(frm_hi);
+    return;
+done:
+    sk_rt_003480ac();
+    /* WARNING: noreturn */
+    sk_fatal_error(0, 0);
 }
 
 /*--------------------------------------------------------------------*/

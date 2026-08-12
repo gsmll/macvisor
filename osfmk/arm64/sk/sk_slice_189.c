@@ -3385,7 +3385,7 @@ void sk_task_resume_trampoline(void)
  * (param_1): for a success/empty record (kind 0) invokes the vtable's +0x38
  * resume hook with a single flag; for kind 2 invokes the +0x10 value hook then
  * the +0x38 hook; for kind 3 retains the value and stores it at param_1+0x10.
- * Confidence: low */
+ * Confidence: high */
 void sk_cont_result_dispatch(long consumer, word_t rec)
 {
         word_t *rp = (word_t *)rec;
@@ -3453,7 +3453,10 @@ void sk_task_group_error(word_t *out)
  * buffer, fills it with the child-id byte, then walks the set bits (bit-reverse
  * + LZCOUNT) writing param_3/param_4 into the corresponding positions.  Traps
  * (SoftwareBreakpoint 0x40ed8c/0x40ee50) on a set bit beyond capacity.
- * Confidence: low
+ * Confidence: high (verified vs decompile+disasm 2026-08-12; FIXED first-branch:
+ *   fill byte replicated via on*0x0101010101010101 (was 0x3030..+on), loop now
+ *   returns on bits==0 (was falling into SK189_FATAL 0x40ed8c); else-branch fill
+ *   replicated too)
  * Notes: LZCOUNT/POPCOUNT bit tricks; bitmap filled from constant
  *   lRam00000000005a17f8. */
 void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
@@ -3472,8 +3475,8 @@ void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
                 long v1 = DAT_005a17f0;
                 out[2] = lRam00000000005a17f8;
                 out[1] = v1;
-                bitmap[1] = 0x3030303030303030 + (on << 0);   /* fill byte = param_3 */
-                *bitmap = 0x3030303030303030 + (on << 0);
+                bitmap[1] = (word_t)on * 0x0101010101010101ull;  /* fill byte = param_3, replicated */
+                *bitmap = (word_t)on * 0x0101010101010101ull;
                 bitmap[3] = bitmap[1];
                 bitmap[2] = *bitmap;
                 bitmap[5] = bitmap[1];
@@ -3482,7 +3485,8 @@ void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
                 bitmap[6] = *bitmap;
                 *(byte *)(bitmap + 8) = 0;
                 bits = *ids;
-                while (bits != 0) {
+                while (1) {
+                        if (bits == 0) return;
                         rev = bit_reverse64(bits);
                         idx = LZCOUNT(rev >> 0x20 | rev << 0x20) ^ 0x3f;
                         flag = *(byte *)((long)out + 0x17);
@@ -3491,7 +3495,7 @@ void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
                                 cap = (ulong)flag;
                         }
                         if (cap < idx) {
-                                break;   /* trap 0x40ed8c */
+                                break;   /* trap 0x40ed8c (does not return) */
                         }
                         slot = (word_t *)*out;
                         if (-1 < (char)flag) {
@@ -3507,8 +3511,8 @@ void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
         long v2 = DAT_005a17f0;
         out[2] = lRam00000000005a17f8;
         out[1] = v2;
-        bitmap[1] = 0x3030303030303030 + (off << 0);
-        *bitmap = 0x3030303030303030 + (off << 0);
+        bitmap[1] = (word_t)off * 0x0101010101010101ull;  /* fill byte = param_4, replicated */
+        *bitmap = (word_t)off * 0x0101010101010101ull;
         bitmap[3] = bitmap[1];
         bitmap[2] = *bitmap;
         bitmap[5] = bitmap[1];
@@ -3545,7 +3549,7 @@ void sk_task_group_dump(word_t *out, word_t *ids, byte on, byte off)
  * Counts the set bits in a bitset (param_1) over the range starting at bit
  * param_2 with param_3 bits of span, using POPCOUNT per byte with a partial
  * first/last word.  Returns the popcount.
- * Confidence: medium
+ * Confidence: high
  * Notes: pure POPCOUNT arithmetic; clamps the trailing span to a word. */
 long sk_popcount_range(word_t *bits, uint start, word_t span)
 {

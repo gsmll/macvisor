@@ -3322,7 +3322,7 @@ L_00204004:
 /* FUN_0020405c @ 0x0020405c   (est. skp0_sk_iterate_walk)
  * Ghidra: void FUN_0020405c(void)
  * Iteration walker: while-loop over entries via skp0_rt_0035a1b4/skp0_rt_00351324, dispatching a vtable slot; breaks on runtime branch.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; iterate-walk while-loop exact, both break edges, 0008e500 tail)
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_iterate_walk(void)
@@ -5248,7 +5248,7 @@ word_t skp0_sk_assert_eq_case(word_t param_1,word_t param_2)
 /* FUN_002066b4 @ 0x002066b4   (est. skp0_sk_assert_pair_eq)
  * Ghidra: void FUN_002066b4(word_t param_1,word_t param_2,word_t param_3,word_t param_4)
  * Assert pair-equal: computes a pair via skp0_rt_00319230/skp0_rt_00376820 and compares against saved regs; mismatch panics (noreturn).
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; structure + reg compare exact)
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_assert_pair_eq(word_t param_1,word_t param_2,word_t param_3,word_t param_4)
@@ -6749,9 +6749,10 @@ void skp0_sk_vt_hook_e(word_t param_1)
 /* FUN_002089ec @ 0x002089ec   (est. skp0_sk_dtor_pure_a)
  * Ghidra: void FUN_002089ec(void)
  * Pure-destructor stub A: emits 14 abstract-method traps then releases object +0x10/+0x20. Base-class destructor (must be overridden).
- * Confidence: medium
+ * Confidence: low
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
- *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
+ *   Opaque artifact: savx20 (unaff_x20) is caller-forwarded register storage; the +0x10/+0x20
+ *   release bases are unextractable in C. Structure otherwise 1:1 (14 trap pairs + 2 releases). */
 void skp0_sk_dtor_pure_a(void)
 {
 
@@ -6793,9 +6794,10 @@ void skp0_sk_dtor_pure_a(void)
 /* FUN_002089f0 @ 0x002089f0   (est. skp0_sk_dtor_pure_b)
  * Ghidra: void FUN_002089f0(void)
  * Pure-destructor stub B: same as A (14 traps + release).
- * Confidence: medium
+ * Confidence: low
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
- *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
+ *   Opaque artifact: savx20 (unaff_x20) is caller-forwarded register storage; the +0x10/+0x20
+ *   release bases are unextractable in C. Structure otherwise 1:1 (14 trap pairs + 2 releases). */
 void skp0_sk_dtor_pure_b(void)
 {
 
@@ -6837,9 +6839,10 @@ void skp0_sk_dtor_pure_b(void)
 /* FUN_00208a10 @ 0x00208a10   (est. skp0_sk_dtor_pure_c)
  * Ghidra: void FUN_00208a10(void)
  * Pure-destructor stub C: same (14 traps + release).
- * Confidence: medium
+ * Confidence: low
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
- *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
+ *   Opaque artifact: savx20 (unaff_x20) is caller-forwarded register storage; the +0x10/+0x20
+ *   release bases are unextractable in C. Structure otherwise 1:1 (14 trap pairs + 2 releases). */
 void skp0_sk_dtor_pure_c(void)
 {
 
@@ -6878,8 +6881,8 @@ void skp0_sk_dtor_pure_c(void)
 
 /* FUN_00208a30 @ 0x00208a30   (est. skp0_sk_dtor_pure_d)
  * Ghidra: void FUN_00208a30(void)
- * Pure-destructor stub D: same (14 traps + release).
- * Confidence: medium
+ * Pure-destructor stub D: 12 traps (FUN_00357cc8+FUN_002085a4 pairs) + release.
+ * Confidence: high (verified against fresh decompile; 12 pairs + 2 releases).
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_dtor_pure_d(void)
@@ -6918,8 +6921,8 @@ void skp0_sk_dtor_pure_d(void)
 
 /* FUN_00208a50 @ 0x00208a50   (est. skp0_sk_dtor_pure_e)
  * Ghidra: void FUN_00208a50(void)
- * Pure-destructor stub E: same (14 traps + release).
- * Confidence: medium
+ * Pure-destructor stub E: 11 traps (FUN_00357cc8+FUN_002085a4 pairs) + release.
+ * Confidence: high (verified against fresh decompile; 11 pairs + 2 releases).
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
  *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
 void skp0_sk_dtor_pure_e(void)

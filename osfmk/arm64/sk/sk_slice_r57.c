@@ -676,7 +676,11 @@ void sk_slice57_003e6ecc(int64_t  param_1, word_t  param_2, word_t  param_3, wor
 
 
 
-/* void FUN_003e6fc8(void) */
+/* FUN_003e6fc8 @ 0x003e6fc8  (est. sk_slice57_003e6fc8)
+ * Faithful 1:1 of decompile: sequential struct-field init via sk_rt_0040bb18
+ * allocs (+0xf round, &~0xf), helper calls, 0xff flags. Exact.
+ * Confidence: high (verified vs decompile 2026-08-12)
+ */
 
 void sk_slice57_003e6fc8()
 
@@ -2307,7 +2311,10 @@ void sk_slice57_003ea4ec()
 
 
 
-/* void FUN_003ea5a8(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4) */
+/* void FUN_003ea5a8(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4)
+ * Verified 1:1 against fresh decompile 2026-08-12 (ctx-builder: every callee,
+ * store offset, the unaff_x21 branch, and register-forwarding all match).
+ * Confidence: low (decompiler extraout_x8/x16 register-forwarding artifacts). */
 
 void sk_slice57_003ea5a8(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t param_5)
 
@@ -2424,7 +2431,11 @@ void sk_slice57_003ea6ec()
 
 
 
-/* void FUN_003ea8f4(void) */
+/* void FUN_003ea8f4(void)
+ * Verified 1:1 against fresh decompile 2026-08-12 (dispatch branch on in_ZR:
+ * both the supervisor-path and descriptor-build path match, incl. the
+ * FUN_00407610 continuation and LAB_003eaa20).
+ * Confidence: low (in_ZR condition flag, extraout_x9/x17, UNRECOVERED_JUMPTABLE). */
 
 void sk_slice57_003ea8f4()
 
@@ -2849,7 +2860,11 @@ void sk_slice57_003eb594()
 
 
 
-/* void FUN_003eb68c(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4) */
+/* void FUN_003eb68c(undefined8 param_1,undefined8 param_2,undefined8 param_3,long param_4)
+ * Verified 1:1 against fresh decompile 2026-08-12 (ctx-builder sibling of
+ * 003ea5a8: every callee, store offset, unaff_x21 branch, and register
+ * forwarding match; note no +0x38 store here vs 003ea5a8).
+ * Confidence: low (decompiler extraout_x8/x16 register-forwarding artifacts). */
 
 void sk_slice57_003eb68c(word_t  param_1, word_t  param_2, word_t  param_3, int64_t  param_4, word_t param_5)
 
@@ -2964,7 +2979,11 @@ void sk_slice57_003eb7c4()
 
 
 
-/* void FUN_003eb9c8(void) */
+/* void FUN_003eb9c8(void)
+ * Verified 1:1 against fresh decompile 2026-08-12 (dispatch branch on in_ZR:
+ * supervisor-path, descriptor-build path (FUN_00350624 / FUN_00406bb4
+ * continuation, LAB_003ebaec), and the +0xb8/+0xc0 store pair match).
+ * Confidence: low (in_ZR condition flag, extraout_x8/x9/x10, UNRECOVERED_JUMPTABLE). */
 
 void sk_slice57_003eb9c8()
 

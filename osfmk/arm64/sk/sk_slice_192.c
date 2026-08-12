@@ -4542,7 +4542,7 @@ void sk_f_0041e28c(void){
                                                              ctx == -0x1e00000000000000) ||
                                                            (v5 = sk_h_00462e1c(0x6f6e),
                                                            (v5 & 1) != 0)) ||
-                                                          ((v5 = sk_h_0046493c(),
+                                                          ((v5 = sk_h_0046493c().lo,
                                                            r21 ==
                                                            (v5 & 0xffffffff | 0x6d756e7200000000)
                                                            && ctx == -0x14ffffffff8d9a9e ||
@@ -4936,7 +4936,7 @@ void sk_f_0041f074(void){
           sk_h_004658b4();
           if ((!(bool )v1 || ctx != -0x1b00000000000000) &&
              (v4 = sk_h_00462dd0(), (v4 & 1) == 0)) {
-            v4 = sk_h_00466238();
+            v4 = sk_h_00466238().lo;
             pv5 = (byte  *)(v4 & 0xffffffff | 0x746e6f6300000000);
             v1 = r21 == pv5 && ctx == -0x14ffffffff93908e;
             if ((r21 != pv5 || ctx != -0x14ffffffff93908e) &&
@@ -5365,7 +5365,7 @@ void sk_f_0041f074(void){
                                                              (byte  *)0x7265776f6c6f /* "olower" */ &&
                                                              ctx == -0x1a00000000000000) ||
                                                            (v4 = sk_h_00462dbc(), (v4 & 1) != 0
-                                                           )) || ((v4 = sk_h_0046493c(),
+                                                           )) || ((v4 = sk_h_0046493c().lo,
                                                                   r21 ==
                                                                   (byte *)
                                                                   (v4 & 0xffffffff |
@@ -5379,7 +5379,7 @@ void sk_f_0041f074(void){
                                                               && ctx == -0x1b00000000000000)
                                                             || (v4 = sk_h_00462dd0(),
                                                                (v4 & 1) != 0)) ||
-                                                           (v4 = sk_h_0046493c(),
+                                                           (v4 = sk_h_0046493c().lo,
                                                            r21 ==
                                                            (byte *)
                                                            (v4 & 0xffffffff | 0x74616d7200000000)
@@ -6128,7 +6128,7 @@ void sk_f_00429430(word_t param_1, word_t param_2, word_t param_3, word_t param_
   sk_h_00353b10();
   sk_h_00465cc0();
   if (unaff_x28 == 0) {
-    in_stack_00000020 = CONCAT71(in_stack_00000020._1_7_,1);
+    in_stack_00000020 = CONCAT71((in_stack_00000020 >> 8),1);
     sk_h_00462adc(0);
     in_stack_00000048 = 8;
     in_stack_00000050 = 0;
@@ -6305,7 +6305,7 @@ LAB_00429770:
       sk_h_00355d90();
       sk_h_003a25d4();
       sk_h_00350a04();
-      v4 = sk_f_00420770();
+      v4 = sk_f_00420770(unaff_x26,(word_t*)l_sk_stack);
       v4 = v4 & 0xff;
       if (v4 != 6) goto LAB_00429770;
       v2 = 1;
@@ -6359,11 +6359,11 @@ LAB_00429770:
       sk_h_00350a04((long )(word_t*)l_sk_stack + 6);
       sk_f_00424280((word_t)0);
       sk_h_003a25d4(in_stack_00000078);
-      if ((word_t)in_stack_00000018._6_2_ != 0x141) {
+      if ((word_t)(in_stack_00000018 >> 48) != 0x141) {
         sk_h_004634a4();
         v7 = r21;
         v8 = out1;
-        v6 = (word_t)in_stack_00000018._6_2_;
+        v6 = (word_t)(in_stack_00000018 >> 48);
         cVar3 = '\n';
         goto LAB_0042977c;
       }
@@ -6400,7 +6400,7 @@ LAB_00429770:
     sk_h_002acbb8();
     in_stack_00000030 = in_stack_00000028;
     in_stack_00000028 = in_stack_00000020;
-    in_stack_00000020 = CONCAT71(in_stack_00000020._1_7_,1);
+    in_stack_00000020 = CONCAT71((in_stack_00000020 >> 8),1);
     in_stack_00000048 = 0;
     in_stack_00000050 = 0;
     in_stack_00000038 = param_3;
@@ -6457,7 +6457,6 @@ void sk_f_00429984(word_t param_1, word_t param_2, word_t param_3, word_t param_
   sk16_t sv12;
   sk16_t sv13;
   char  cStack0000000000000048;
-  word_t l_sk_stack;
   word_t  in_stack_00000050;
   word_t  in_stack_00000058;
   char  in_stack_00000068;
@@ -6541,7 +6540,7 @@ LAB_00429d88:
         sk_h_003a25d4(v7);
         sk_h_003a25d4(param_6);
         sk_h_004655f0();
-        sv13 = ZEXT516((uint)CONCAT11(cVar1,cVar3) & 0x1ff);
+        sv13 = (sk16_t){ ZEXT516((uint)CONCAT11(cVar1,cVar3) & 0x1ff), 0 };
         in_stack_00000068 = '\x01';
         goto LAB_00429c04;
       }
@@ -6568,7 +6567,7 @@ LAB_00429d88:
     sk_h_0036b270(v7);
     sk_h_004657d0();
     in_stack_00000058 = 0;
-    l_sk_stack = sv12;
+    l_sk_stack = sv12.lo;
     sk_h_0036b270();
     while( true ) {
       sk_h_0029fb80();
@@ -6671,7 +6670,7 @@ LAB_00429d88:
   unaff_x28 = param_5;
   sv13 = sv12;
 LAB_00429c04:
-  *out8 = sv13;
+  *(sk16_t *)out8 = sv13;
   *(word_t *)out8[1] = unaff_x28;
   *(word_t *)(out8[1] + 8) = v6;
   out8[2][0] = in_stack_00000068;
@@ -7130,7 +7129,7 @@ uint sk_f_0042a8d0(word_t param_1, word_t param_2){
         sv11.lo = (param_2 & 0xfffffffffffffff) + 0x20;
       }
       t5 = sv11.hi;
-      pbVar8 = sv11.lo;
+      pbVar8 = (byte *)sv11.lo;
       if (t5 < 1) {
                     /* WARNING: Does not return */
         pcVar3 = (code_t *)sk_trap(1,0x42ac10);
@@ -7183,7 +7182,7 @@ uint sk_f_0042a8d0(word_t param_1, word_t param_2){
         if (pbVar8 != (byte  *)0x0) {
           v4 = 0;
           do {
-            pbVar8 = sv11.lo;
+            pbVar8 = (byte *)sv11.lo;
             v10 = *pbVar8 - 0x30;
             if (((9 < v10) ||
                 (iVar1 = (v4 & 0xff) * 4 + (v4 & 0xff), (iVar1 * 2 & 0xf00U) != 0)) ||
@@ -7191,7 +7190,7 @@ uint sk_f_0042a8d0(word_t param_1, word_t param_2){
             goto LAB_0042ab8c;
             t5 = sv11.hi + -1;
             sv11.hi = t5;
-            sv11.lo = pbVar8 + 1;
+            sv11.lo = (word_t)(pbVar8 + 1);
           } while (t5 != 0);
           goto LAB_0042ab84;
         }

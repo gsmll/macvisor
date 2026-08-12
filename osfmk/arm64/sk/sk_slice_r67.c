@@ -176,7 +176,7 @@ void sk_dispatch_many(word_t obj)
  * data to a scratch span, shifts the tail right by `param_3` records, and
  * updates the record count at +0x10. Record stride is 0x178. All bounds
  * violations trap via SoftwareBreakpoint(1, addr).
- * Confidence: low (register base + carry/borrow checks reconstructed) */
+ * Confidence: medium (register base + carry/borrow checks reconstructed) */
 void sk_region_insert(word_t param_1, word_t param_2, word_t param_3,
                       word_t reg_base)
 {

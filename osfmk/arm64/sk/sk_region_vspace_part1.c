@@ -1407,7 +1407,8 @@ void sk_vspace_00209090(void)
 
 /* skp1_FUN_002091d0 @ 0x002091d0   (est. sk_vspace_002091d0)
  * Ghidra: void skp1_FUN_002091d0(void)
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; offsets 0xb8/200/0xc0,
+ *   call order, and dispatch exact; pair-hi opaque)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 void sk_vspace_002091d0(void)
@@ -2322,8 +2323,11 @@ void sk_vspace_0020a918(undefined8 p1)
 
 /* skp1_FUN_0020a930 @ 0x0020a930   (est. sk_vspace_0020a930)
  * Ghidra: void skp1_FUN_0020a930(void)
- * Confidence: medium
+ * Confidence: low
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
+ *   Opaque artifact: decompile captures auVar2 = FUN_0020aa80() (16-byte pair return)
+ *   and passes its lo/hi to FUN_0035050c; the callee is void-typed here, so the pair
+ *   is approximated as {0,0}. Rest of body is 1:1 (offset 0x10, constant 0x66da48).
  */
 void sk_vspace_0020a930(void)
 
@@ -2611,7 +2615,7 @@ void sk_vspace_0020af68(undefined8 p1,undefined8 p2,code *p3)
 
 /* skp1_FUN_0020b044 @ 0x0020b044   (est. sk_vspace_0020b044)
  * Ghidra: void skp1_FUN_0020b044(void)
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; disasm 0x20b248 mov x2,x0 confirms pair hi word unused)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 void sk_vspace_0020b044(void)
@@ -4160,7 +4164,8 @@ void sk_vspace_0020d75c(void)
 
 /* skp1_FUN_0020dc18 @ 0x0020dc18   (est. sk_vspace_0020dc18)
  * Ghidra: void skp1_FUN_0020dc18(void)
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; offsets 0x140/0x150/0x148,
+ *   FUN_00027788, call order exact; pair-hi opaque)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 void sk_vspace_0020dc18(void)

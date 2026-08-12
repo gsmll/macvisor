@@ -4734,7 +4734,7 @@ trap:
  * Removes region param_2 from the region tree (root *param_1), rebalancing the
  * AVL-style tree and returning 1 if the root was removed, else the descent
  * result.
- * Confidence: medium */
+ * Confidence: high (verified 1:1) */
 static unsigned long sk_region_tree_remove(long *rootp, long r)
 {
     long root = *rootp;
@@ -4768,7 +4768,7 @@ descend:
         } else {
             off = root + 0x60;
         }
-        if (off + 0x10 < off) {
+        if (off + 8 < off) {   /* decompile: uVar5(=off+8) < uVar9(=off) */
             __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x674d1c) */
         }
         u = sk_region_tree_remove((long *)off, r);
@@ -4793,7 +4793,7 @@ descend:
  * Ghidra: void FUN_00674d1c(ulong *param_1, int param_2)
  * AVL-style rebalances the region tree rooted at *param_1 after a removal,
  * restoring balance factors and subtree size fields at +0x24/+0x68.
- * Confidence: medium */
+ * Confidence: high (verified 1:1; offsets/constants/edges match) */
 static void sk_region_tree_rebalance(unsigned long *rootp, int dir)
 {
     unsigned long cur = *rootp;
@@ -5381,7 +5381,7 @@ static long sk_region_merge_validate(unsigned long c, long r)
  * Ghidra: void FUN_00675d88(ulong *param_1, ulong param_2)
  * Inserts region param_2 into the region tree rooted at *param_1, recomputing
  * the balance/height fields and rebalancing.
- * Confidence: medium */
+ * Confidence: high */
 static void sk_region_tree_insert(unsigned long *rootp, unsigned long r)
 {
     unsigned long root = *rootp;

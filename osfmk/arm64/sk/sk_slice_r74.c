@@ -160,7 +160,10 @@ long sk_crypto_ctx_init(unsigned char *ctx, unsigned char *out)
  * permutation per block; then both locals are XORed into the state words at
  * +0x20/+0x28, the state is committed to +0x30/+0x38, and the block counter
  * is bumped. On success sets phase to 2 and returns 0.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; 0xffffffbc error path,
+ *   12-byte special path +0x1000000 tag, byte-reverse bswap64(len<<3), 16-byte
+ *   block XOR/permute loops, CONCAT XOR of locals into +0x20/+0x28, commit to
+ *   +0x30/+0x38, counter bump, phase->2 all match)
  * Notes: byte-reversal of len<<3 is the standard little-endian bit-length
  *   padding of a sponge/stream primitive. */
 long sk_crypto_absorb(unsigned char *ctx, unsigned long len, const unsigned char *src)

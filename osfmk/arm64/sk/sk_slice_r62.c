@@ -1336,34 +1336,49 @@ static uint sk_ipc_match_tag1_0041a9e4(void)
 {
     word_t l4 = sk_x_003504d0().lo;
     word_t v5 = *(word_t *)(l4 + 8);
-    word_t v6 = ((word_t *)((word_t)0 + 0x19))[1];
+    /* unaff_x19 / unaff_x20 are caller-set base registers the decompiler
+     * could not resolve; held symbolic (offsets preserved). */
+    word_t *x19 = (word_t *)((word_t)0 + 0x19);
+    word_t *x20 = (word_t *)((word_t)0 + 0x20);
+    /* Register-aliased flag/result values (extraout_x8/x8_00/x8_01/x8_02)
+     * the decompiler could not resolve; symbolic, default 0. */
+    word_t e8 = 0, e8_00 = 0, e8_01 = 0, e8_02 = 0;
+    word_t v6 = x19[1];
+    word_t uVar3 = 0;
+    word_t uVar2 = 0;
     if (v5 == 0) {
-        if (v6 == 0) goto LAB_match1_check;
+        if (v6 == 0) goto check;
     } else if (v6 != 0) {
-        bool u1 = (*(word_t *)((word_t)0 + 0x20) == *(word_t *)((word_t)0 + 0x19)) && v6 <= v5;
-        if (*(word_t *)((word_t)0 + 0x20) == *(word_t *)((word_t)0 + 0x19) && v5 == v6) {
+        bool u1 = (x20[0] == x19[0]) && v6 <= v5;
+        if (x20[0] == x19[0] && v5 == v6) {
             sk_x_00464ad0();
-            if (0 != 0) return 0;
+            uVar2 = u1;
+            if (e8_00 != 0) { uVar3 = 0; goto ret; }
         } else {
             sk_x_002a0cf8();
-            word_t m = sk_x_00464a08();
-            if ((0 & 1) == 0) return 0;
-            m = sk_x_00465968();
-            if (!u1) return 0;
+            uVar3 = sk_x_00464a08();
+            if ((e8 & 1) == 0) goto ret;
+            uVar3 = sk_x_00465968();
+            uVar2 = 0;
+            if (u1) goto ret;
         }
         sk_x_004658a8();
-        if (u1) goto LAB_match1_check;
-        return 0;
+        if (!uVar2) goto check;
+        uVar3 = 0;
+        goto ret;
     }
-LAB_match1_check:
-    sk_x_00464d0c(((word_t *)((word_t)0 + 0x20))[4]);
-    if (0 == 0 && (sk_x_00464d0c(((word_t *)((word_t)0 + 0x19))[5]), 0 == 0)) {
-        return sk_x_00448fd0(((word_t *)((word_t)0 + 0x20))[6], ((word_t *)((word_t)0 + 0x20))[7],
-                             ((word_t *)((word_t)0 + 0x20))[8], ((word_t *)((word_t)0 + 0x20))[9],
-                             ((word_t *)((word_t)0 + 0x19))[6], ((word_t *)((word_t)0 + 0x19))[7],
-                             ((word_t *)((word_t)0 + 0x19))[8], ((word_t *)((word_t)0 + 0x19))[9]) & 1;
+    uVar3 = 0;
+    goto ret;
+check:
+    sk_x_00464d0c(x20[4]);
+    if (e8_01 == 0 && (sk_x_00464d0c(x19[5]), e8_02 == 0)) {
+        uVar3 = sk_x_00448fd0(x20[6], x20[7], x20[8], x20[9],
+                              x19[6], x19[7], x19[8], x19[9]);
+        goto ret;
     }
-    return 0;
+    uVar3 = 0;
+ret:
+    return uVar3 & 1;
 }
 
 /* FUN_0041aab4 @ 0x0041aab4   (est. sk_ipc_badge_emit_tag1)
@@ -2408,13 +2423,19 @@ static cl4_pair_t sk_ipc_emit_tag_pair_0041cc98(void)
  * Ghidra: void FUN_0041cd40(void)
  * Emits an array of capability descriptors: walks the source slot array and
  * marshals each descriptor into the destination, then emits the summary.
- * Confidence: low (large multi-slot walk).
+ * Confidence: low (large multi-slot walk; unaffiliated in_x19 + opaque
+ * extraout_x1 register-forwarding remain — verified against fresh decompile
+ * + disassembly 2026-08-12: fixed unaff_x19 mis-modeled as 0 (now in_x19),
+ * FUN_00205844 arg now &in20 (sp+0x20), extraout_x1 arg restored opaque,
+ * descriptor-array base d = in_x19 + x22*0x10 corrected).
  * Notes: &DAT_004e80a0 template; string ref 0x656248. */
 static void sk_ipc_emit_desc_array_0041cd40(void)
 {
     cl4_pair_t v = sk_x_000b4594();
     sword_t n = *(sword_t *)(v.lo + 0x10);
     sword_t l1 = sk_x_000a6fe0();
+    word_t in_x19;        /* unaffiliated x19: caller-supplied msg/ctx pointer (unaff_x19) */
+    word_t extraout_x1;   /* decompiler register-forward from prior call (opaque) */
     word_t x22 = 0;
     word_t saved = 0;
     if (n != 0) {
@@ -2430,21 +2451,21 @@ static void sk_ipc_emit_desc_array_0041cd40(void)
             sk_x_0036b270(p[0]);
             cl4_pair_t t = sk_x_00002534(0x656248, (word_t)&DAT_004e80a0);
             sk_x_0046299c(t.lo, t.hi, t.lo);
-            sk_x_00205844((byte *)&in18);
+            sk_x_00205844((byte *)&in20);
             sk_x_001ed960(0x3f, 0xe100000000000000, u2);
             sk_x_0036b270(0xe000000000000000);
             sk_x_00350a04();
             sk_x_002acbb8();
             sk_x_003a25d4(0xe000000000000000);
-            sk_x_003a25d4(0);
+            sk_x_003a25d4(extraout_x1);
             sk_x_003a25d4(in18);
-            x22 = *(word_t *)((word_t)0 + 0x10);
-            if (*(word_t *)((word_t)0 + 0x18) >> 1 <= x22) {
-                sk_x_0006a374(1 < *(word_t *)((word_t)0 + 0x18), x22 + 1, 1);
+            x22 = *(word_t *)(in_x19 + 0x10);
+            if (*(word_t *)(in_x19 + 0x18) >> 1 <= x22) {
+                sk_x_0006a374(1 < *(word_t *)(in_x19 + 0x18), x22 + 1, 1);
             }
             p += 7;
-            *(word_t *)((word_t)0 + 0x10) = x22 + 1;
-            sword_t d = (sword_t)((word_t)0 + 0x20) + x22 * 0x10;
+            *(word_t *)(in_x19 + 0x10) = x22 + 1;
+            sword_t d = in_x19 + x22 * 0x10;
             *(word_t *)(d + 0x20) = 0;
             *(word_t *)(d + 0x28) = 0xe000000000000000;
             saved = in18;
@@ -2455,7 +2476,7 @@ static void sk_ipc_emit_desc_array_0041cd40(void)
     word_t u2 = sk_x_00462898();
     sk_x_001bc440(0x202c, 0xe200000000000000, x22, u2);
     sk_x_000b43e8();
-    sk_x_0036b118((word_t)((word_t)0 + 0x19));
+    sk_x_0036b118(in_x19);
     sk_x_00465800(0x28);
     sk_x_000b4390();
     sk_x_002acbb8();
@@ -2464,7 +2485,7 @@ static void sk_ipc_emit_desc_array_0041cd40(void)
     sk_x_00100e34();
     sk_x_002acbb8();
     sk_x_003a25d4(saved);
-    sk_x_000b45b0((word_t)((word_t)0 + 0x19), saved, v.hi);
+    sk_x_000b45b0(in_x19, saved, v.hi);
 }
 
 /* FUN_0041cf18 @ 0x0041cf18   (est. sk_ipc_match_object)

@@ -5101,3 +5101,113 @@ Observation: Buffered FILE flush calls a function pointer from `fp[2]` with a ta
 Evidence: 0x67d0cc: `lVar1 = (*pcVar2)((ulong)(param_1 + 2) & 0xffffffffffff | 0xb85f000000000000, *param_1, param_1[8]); if (lVar1 != param_1[5]) return 0xffffffff;`.
 Severity (hypothesis): low — function-pointer dispatch on a tagged object handle is standard; the count check limits buffer-state corruption.
 Confidence: medium.
+
+## [VB2_5] 00004478 sk_slab_mark — inverted size-class branch
+Observation: The transcribed body had `if (type != 2) goto done;` but the decompile is `if (param_2 == 2) goto LAB_0000454c;` — i.e. when the size-class/type == 2, the `first + 0x48 = n` (run-count) store must be SKIPPED, not performed. The transcribed body performed the store for type==2 and skipped it for every other type, the exact opposite. Corrected to `if (type == 2) goto done;`.
+Evidence: FUN_00004478 decompile `if (param_2 == 2) goto LAB_0000454c;` vs original body `if (type != 2) goto done;`.
+Severity (hypothesis): low/medium — wrong size-class run-count metadata written into the slab object header (+0x48) for type==2 runs could corrupt the segregated-freelist size accounting and cause a slab node to be treated as a different size class, potentially yielding an oversized/undersized object on subsequent allocation (heap metadata corruption). Confidence in the original being wrong: high (exact decompile comparison).
+Confidence: high.
+
+## [VB2_4] 0x0042f020 sk_re_scan_newline — UTF-16 path dropped newline detection + advance
+Observation: Transcribed body's UTF-16 branch (`if (flags>>0x3c &1)`) set the decoded unit but had NO `if (ch==10||ch==0xd) return 1;` and NO position advance, so on that flags path the scanner would never detect an LF/CR terminator and could loop without advancing. Ground truth (FUN_0042f020) shares a single LAB_0042f100 that does the newline check + `lVar5 += lVar3` for all three decode branches.
+Evidence: decompile `if ((param_2>>0x3c&1)!=0){ uVar2=FUN_002a49a8(lVar5<<0x10,...); lVar3=extraout_x1; goto LAB_0042f100; }` vs original body which fell through to the loop head with no check/advance.
+Severity (hypothesis): low — regex delimiter/pattern scan path; missed terminator could cause incorrect pattern-span or non-termination on the 16-bit flags path. Corrected; confidence high (exact decompile).
+
+## [VB2_4] 0x004379bc sk_re_parse_group_kind — scalar-match calls routed to wrong helper
+Observation: Transcribed body called `sk_re_scan_newline(0x3f/0x2a/0x50, 0xe1...)` for the `FUN_0042f670` scalar-match calls. FUN_0042f670 is sk_re_diag_emit_str; FUN_0042f020 (sk_re_scan_newline) is a different function (newline scanner). Group-kind recognition ('?', '*', 'P') therefore tested the wrong predicate. Corrected to sk_re_diag_emit_str with the ground-truth scalar-match args documented.
+Evidence: decompile calls `FUN_0042f670(0x3f,0xe100000000000000)` etc; FUN_0042f670 = sk_re_diag_emit_str in this codebase.
+Severity (hypothesis): low — regex group-kind parse path; corrected. Confidence high.
+
+## [VB2_4] 0x0043519c sk_re_parse_mode_option — dropped hi-tag + enabled-flag conditions
+Observation: Every mode branch except the first/last lost the `s.hi==0xe100000000000000` hi-tag check and the `(sw_463130(ch)&1)` enabled-flag OR-alternative (e.g. 'J' fired whenever scalar lo==0x4a). A scalar with a matching lo char but wrong tag (or mode disabled) could select the wrong regex mode option.
+Evidence: decompile `else if ((lVar1==0x4a && lVar3==-0x1f00000000000000) || (uVar2=FUN_00463130(0x4a),(uVar2&1)!=0))`.
+Severity (hypothesis): low — regex mode-option recognition path; corrected to full condition. Confidence high.
+- 0x00485010 (sk_slice_r29.c, sk_regex_match_literal): restored dropped cursor-advance bounds-check SoftwareBreakpoint(1,0x4851b4) `if (u7 <= cur >> 0x10) SK_TRAP(0x4851b4)` in both (p6>>0x3c&1)!=0 advance branches (LAB_0048513c) and restored dropped FUN_00350548() call before the FUN_002b141c byte read. The missing trap would have skipped a buffer-overrun check on the matched-cursor advance in the literal-match loop.
+
+## [VB2_2] 0x00382df4 sk_region_tightbeam.c — dispatch-foreach indirect call
+Observation: Dispatch-foreach iterates a descriptor table and calls a function pointer loaded from *(obj-8)+8 with a caller-supplied destination offset (dst + entry_offset). Untrusted descriptor content would give arbitrary (table-derived) indirect call control.
+Evidence: (**(void(**)(long))(*(long*)(e[-1]-8)+8))(dst + *e) over (desc+0x20) pairs bounded by n=*(desc+8).
+Severity (hypothesis): med — depends on whether the descriptor table is attacker-controlled; object dispatch tables are normal for cL4 and likely kernel-owned. Confidence low.
+
+## [VB2_2] 0x001c4458 sk_region_sched.c — void-vs-uint return mismatch
+Observation: Ghidra models FUN_001c4458 as void, but callers FUN_001c43f4/001c4424/001c4428 read a uint return and mask `& 1`. The transcriber guessed `return 0`; if the real x0 leftover is nonzero, caller return values diverge from the binary.
+Evidence: decompile `void FUN_001c4458(void)` with no return; callers do `uVar1 = FUN_001c4458(); return uVar1 & 1;`.
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x001defc8 sk_region_sched.c — empty-void pair return
+Observation: FUN_00358308 Ghidra-decompiles to an empty void body yet its caller reads a 16-byte x0:x1 pair and compares both halves as pointers (+0x10). The true second half is unknown; the transcription substitutes 0, potentially altering an equality/bounds decision at a Swift runtime dispatch site.
+Evidence: 001defc8: `auVar7 = FUN_00358308(); if (*(lVar4+0x10) == *(auVar7._8_8_+0x10))`.
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x003e488c sk_slice_r56.c — context indirect dispatch selector
+Observation: Message/notification dispatch helper reads a byte selector at ctx[4]+i where i is a 32-bit index loaded from ctx[3]+0x28, then uses its LSB to branch into Swift-runtime-style callback dispatch via UNRECOVERED_JUMPTABLE indirect calls; index not visibly bounds-checked in this fragment.
+Evidence: bVar2 = *(byte*)(*(long*)(x22+0x20) + iVar3); iVar3 = *(int*)(*(long*)(x22+0x18)+0x28); dispatch through unrecovered jumptable.
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x003defbc sk_slice_r56.c — context-carried vtable indirect call
+Observation: Indirect call (**(code**)(l4+8))(uVar8,uVar2) through a context-carried vtable/closure pointer (byte +8) in the carry (error) path; target provenance is register-carried and not statically verifiable.
+Evidence: carry branch calls (**(code**)(lVar4+8))(uVar8,uVar2) where lVar4 = ctx[0x70].
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x00662f0c sk_slice_r49.c — dropped tag-byte zeroing in supervisor message
+Observation: Transcription dropped the tag-byte zeroing stores (offsets 2-7) in the CallSupervisor(0) vector-read message header — the supervisor would have received stale/uninitialized bytes instead of zeros, altering the message contract.
+Evidence: decompile zeroes bytes 2-7 pre- and post-supervisor call; transcription had omitted all such stores. Restored full sequence.
+Severity (hypothesis): low-med (supervisor message-contract sensitive). Confidence medium.
+
+## [VB2_2] 0x0041cd40 sk_slice_r62.c — transcription defect: near-null writes
+Observation: Recreation previously dereferenced unaff_x19 as the literal 0 (msg/ctx pointer reads at +0x10/+0x18 and descriptor-array writes at +0x20..+0x28 became near-null writes) and passed 0x19 instead of the register to sk_x_0036b118/sk_x_000b45b0.
+Evidence: original C used (word_t)0 for unaff_x19 (confirmed wrong via disasm 0041cd74 ldr x19,[sp,#0x48]); fixed with opaque in_x19.
+Severity (hypothesis): low (transcription defect, corrected). Confidence high.
+
+## [VB2_2] 0x0045b330 sk_slice_r65.c — transcription defect: wrong copy source
+Observation: Copy-box recreation read source fields from the destination box instead of the separate extraout_x1 source pointer, and sourced byte-0x98 from box+0x13 (wrong offset).
+Evidence: disasm 0045b358/0045b35c read [x1,#0x40] (extraout_x1) while writes go to [x20]; ldrb w1,[x1,#0x98] is the byte source. Corrected.
+Severity (hypothesis): low (transcription defect, corrected). Confidence high.
+
+## [VB2_2] 0x0039e2a8 sk_slice_r51.c — conformance-insert capacity accounting
+Observation: sk_conform_insert writes the new entry at slot+v*6+2/4/6 after growing only when !slot || *slot<=v; if the grow/rehash capacity accounting is off-by-one, index v*6 (0x18 bytes per entry) could exceed the recorded capacity.
+Evidence: if ((puVar17==0)||(*puVar17<=uVar5)) puVar17=FUN_0039ea90(param_1,puVar17,uVar16); *(ulong*)(puVar17+uVar16*6+2)=param_2&~3; grow allocates round_up((sz+n)*0x18+8) and stores (size-8)/0x18 as capacity.
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x0039bb2c sk_slice_r51.c — deferred-notification alloc without NULL check
+Observation: The two 0x10-byte deferred-notification list nodes are allocated with cL4_raw_alloc and immediately written (nd[0]=,nd[1]=) without a NULL check, unlike the array-grow alloc which traps on NULL; a failed allocation would NULL-deref.
+Evidence: puVar6=FUN_000101a0(0x10,0xa0040aff93c70); *puVar6=_DAT_006c0aa0; puVar6[1]=uVar2; (no null test before the writes).
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x000c1fb4 sk_region_caps_13.c — residual audit surface in frame-table collector
+Observation: The descriptor-map insert (LAB_000c26cc) parses a decimal string (with sign/overflow CARRY8 checks) into a value used as a map key/record value; the parse is register-forward opaque and not 1:1 expressible, leaving a residual audit surface.
+Evidence: digit accumulation `uVar37 = uVar37*10 ± digit` with SUB168/ZEXT816/CARRY8 overflow guards and SoftwareBreakpoint traps 0xc3188/0xc318c/0xc3194/0xc3198.
+Severity (hypothesis): low. Confidence medium.
+
+## [VB2_2] 0x0008d350 sk_region_caps_03.c — dest-vector overrun potential
+Observation: The 6-word cap-record copy writes into a caller-supplied destination vector (unaff_x22) indexed by the collected counter; a mismatch between the caller's limit and the true row-bitmap population is bounded only by the SCARRY(0x8d438) and row-count(0x8d43c) traps and the `collected==limit` break, so an over-large limit could overrun the dest vector if the caller underestimates its capacity.
+Evidence: `if (unaff_x26 == param_3) break; unaff_x22 = unaff_x22 + 6;` with no explicit dest-capacity bound in this function.
+Severity (hypothesis): low. Confidence low.
+
+## [VB2_2] 0x00004574 sk_region_boot.c — sk_page_alloc null PTE target
+Observation: sk_page_alloc PTE-write loop can select a null target pointer when the page index high bits are set (faithful to decompile's `else puVar19 = 0; *puVar19 = ...`), i.e. a potential null-deref on a malformed page index.
+Evidence: decompile LAB_0000cd90 loop: `if (uVar5 >> 0xe == 0) puVar19 = ...; else puVar19 = 0; *puVar19 = uVar14 | ...`. Reproduced faithfully in the fixed body.
+Severity (hypothesis): low — likely unreachable in practice since the loop index derives from the validated node range; kept for fidelity. Confidence low.
+
+## [VB2_2] 0x00279e90 (sk_region_vspace.c) + 0x00215428/0x0020373c/0x0020c6c8 (sk_region_vspace.c) — reconstruction fidelity / audit limitation
+Observation: 16-byte pair returns (auVar16._8_8_) from several runtime callees are collapsed to 0/unspecified in the C model, and heavy extraout_x8_* register-forwarding leaves several indirect-call targets unresolvable, so callees may be missed during full audit.
+Evidence: transcribed body sets loc60=(0u /* hi: unspecified */) where decompile has local_60=auVar16._8_8_; multiple `(0u /* hi: unspecified */)` args; indirect (*fn14/*fn13/*fn15) and (*x8_04.._08) targets come from forward-registers. Confirmed 1:1 against decompile so not a transcription error.
+Severity (hypothesis): low. Confidence high.
+
+## [VB2_4] 0x00091dbc (sk_region_caps_04.c, cl4_ep_connect) — dropped endpoint-connect validation gate
+- **Observation**: the transcribed branch condition gating endpoint creation was hardcoded `if (/* validate ok */ 0)` — a dead success path. The decompile's `extraout_x1` (leftover register of the op-validation) decides whether the endpoint is created and the asid/conclave/pa init report emitted. Fixed to source the condition from cl4_op_validate (FUN_000a0278) and to release the produced endpoint (not re-release the original object) on the success path.
+- **Severity**: low-to-medium hypothesis — the connect path was modeled as always-failing (deny), and the trailing refcount was mis-targeted; the corrected body reflects the validation gate and endpoint lifetime per ground truth. Confidence high (matches decompile).
+
+## [VB2_4] 0x000b2c20 / 0x000b36a4 / 0x000b3440 (sk_region_caps_10.c) — hash-table grow dropped the object/pair re-key
+- **Observation**: the three "grow/_move/_cb" hash-table functions were transcribed as plain `sk_htbl_hash(*(nt+0x28))` re-insertion, dropping the decompiled per-entry re-key: 0x000b2c20/0x000b36a4 dispatch the object's vtable method at *(entry+0xd8) (0x000b2c20 additionally acquires the entry) and 0x000b3440 runs FUN_001b9084(k,v), each after a key-frame init (FUN_001a84f4) and reading the result (FUN_001a8564). Because these are object-keyed capability hash tables, using the wrong key function changes which slots live capabilities land in after a grow. Fixed by adding the re-key dispatch.
+- **Severity**: low-to-medium hypothesis — capability-table slot placement on grow; the corrected bodies match the decompile. Confidence high.
+
+## [VB2_4] 0x000e58cc (sk_region_caps_18.c) — dropped device-tree error codes
+- **Observation**: the three error paths (missing total memory / missing untyped region / empty untyped) called cL4_propagate_error() without the preceding `{code, value, 1}` store into the error frame; the decompile records distinct codes (0xd00000000000002a for total==0, 0 for untyped/base) and values (0x80000000005c46d0 vs 0xe000000000000000). Fixed to store the triple before propagating.
+- **Severity**: low (diagnostics/error-reporting only; no access-control boundary), but the codes distinguish failure causes. Confidence high.
+
+## [BootRunExpand] 0x000017f4 (sk_region_boot.c, sk_boot_run) — boot path is a GL1 trust boundary
+- **Observation**: the fully-expanded boot sequence dispatches ~20 vtable methods through PAC-authenticated pointers (autda/blraa) on the boot object's method table, the device tree (+0xe0), and per-object vtables (+0xf8/+0x98/+0xc0). Every dispatch is wrapped in retain/release (FUN_0036b270/FUN_0036b118). The device-tree walk trusts the node range returned by the +0xe0 method: `lVar6` (hi) is checked `< 0` (trap 0x241c) and the pair {lo,hi} is combined as `lo + hi` (validate path), then handed to sk_devtree_validate_r (FUN_00066424). A malformed DT method returning a negative or misaligned hi can drive `lVar9 + lVar6` to an out-of-range end and is only caught by the validate status byte (w.st & 0xff).
+- **Severity**: medium hypothesis — this runs in GL1 before the cL4 root CNode/TCB/vspace are live; a hostile device tree (or a buggy +0xe0 method) could corrupt the root object table at 0x6ac0xx before the page tables are constructed. The 0x6ac0xx globals are written directly from the 8-word scratch record with no bounds check. Confidence high (matches decompile 1:1).
+- **Observation**: DAT_006add10 (parse/device-tree-ok flag) gates the optional "Common Storage" op-probe (0x53206e6f6d6d6f43) and the "SA init" probe (0xd000000000000015/0x80000000005a8ec0) via sk_boot_op_probe (FUN_00071050); it is also forced to 1 when sk_boot_cpu_count()==2. The flag lives at 0x6add10 — distinct from sk_boot_done (0x6adfd0). Faithful to the decompile's two separate globals.
+- **Severity**: informational — documents a boot-flag that selects additional DT-driven probe paths. Confidence high.

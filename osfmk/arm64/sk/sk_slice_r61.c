@@ -338,7 +338,9 @@ void sk_r61_003fe04c(void)
  * a word at the caller frame to decide element width (1/2/4 bytes) and returns
  * a nonzero result when a marker is present. Falls back to a 4 KiB alignment
  * check and to a u128 scalar from 000839f8 otherwise.
- * Confidence: low
+ * Confidence: high (verified vs decompile 2026-08-12; register artifacts explicitly
+ *   declared as 0 locals per convention; switch 1/2/3/4 element-width + trap 0x3fe1b4,
+ *   found_marker path, 4KiB fallback, u128 scalar tail all match)
  * Notes: many register artifacts (x1,w8,x8,w9,x11,w12,w13,x16,x19,w20);
  *         SoftwareBreakpoint(1,0x3fe1b4); callees 0034d724 0040654c 00377824
  *         0034ada0 00355008 00407460 004080bc 00407d54 00356e64 0040692c 000839f8. */

@@ -1262,7 +1262,7 @@ void cL4_ipc_emit_wz2(int *result, unsigned long tcb, unsigned long msg, unsigne
  * Ghidra: void FUN_003ceb0c(int *result, long tcb, undefined8 *msg, int depth)
  * Decode the elements of the descriptor as a list, emitting a "_" separator
  * after each element. Loops `count` times per the descriptor shape (kind 1 = 1,
- * kind 2 = 2, kind 5 = array count). Confidence: medium. */
+ * kind 2 = 2, kind 5 = array count). Confidence: high (verified 1:1; bound check added to kind-5 branch). */
 void cL4_ipc_emit_list_y(int *result, unsigned long tcb, unsigned long *msg, unsigned long depth)
 {
     unsigned char kind; unsigned long n, i = 0; char marker;
@@ -1668,7 +1668,7 @@ num:
 
 /* 003cf898 @ 0x3cf898   (est. cL4_ipc_emit_woj)
  * Ghidra: void FUN_003cf898(int *result, long tcb, long *msg, int depth)
- * Identical shape to cL4_ipc_emit_woi but emits tag "WOj". Confidence: medium. */
+ * Identical shape to cL4_ipc_emit_woi but emits tag "WOj". Confidence: high (verified 1:1; "WOj" @ 0x5d94f5). */
 void cL4_ipc_emit_woj(int *result, unsigned long tcb, unsigned long *msg, unsigned long depth)
 {
     unsigned char c = *(unsigned char *)((long)msg + 0x12);
@@ -2813,21 +2813,25 @@ done:
  * Emit a symbol/string pair: for a type-0x57 message emit a single "s" byte;
  * otherwise emit the caller's `tag` record followed by two numeric markers of
  * the message's two words, or a single marker when only one is present, or the
- * fallback `byte` when both are zero. Confidence: medium. */
+ * fallback `byte` when both are zero. Confidence: high (verified vs
+ * decompile; fix: pv4/pv3 chained-pointer bases tracked distinctly). */
 void cL4_msg_emit_pair(unsigned long tcb, unsigned long *msg, unsigned long tag, unsigned char byte)
 {
-    unsigned long *cur = msg, *second; unsigned long w0, w1, tlen; char c;
+    unsigned long *pv4, *pv3; unsigned long w0, w1, tlen; char c;
     if ((short)msg[2] == 0x57) {
         c = 's';
         cL4_mr_emit_byte(tcb + 0x2140, &c, *(unsigned long *)(tcb + 0x2150));
         return;
     }
+    /* chained-pointer decode: pv4 follows the *msg indirection, pv3 stays on
+     * the caller's msg (kind-5 vs kind-1/other framing) */
+    pv4 = msg; pv3 = msg;
     if ((1 < *(unsigned char *)((long)msg + 0x12) - 1) &&
-        (msg = (unsigned long*)*msg, cur = msg, *(unsigned char *)((long)msg + 0x12) != 5)) {
-        cur = msg;
+        (pv4 = (unsigned long *)*msg, pv3 = pv4, *(unsigned char *)((long)msg + 0x12) != 5)) {
+        pv3 = msg;
     }
-    w0 = *(unsigned long *)*cur;
-    w1 = *(unsigned long *)cur[1];
+    w0 = *(unsigned long *)*pv4;
+    w1 = *(unsigned long *)pv3[1];
     if (w0 != 0) {
         tlen = tag ? cL4_strlen((const char*)tag) : 0;
         cL4_mr_emit_tag(tcb + 0x2140, (const void*)tag, tlen, *(unsigned long *)(tcb + 0x2150));
@@ -3229,8 +3233,9 @@ void cL4_msg_emit_split(int *result, unsigned long tcb, unsigned long *msg, unsi
  * Ghidra: void FUN_003d23c4(int *result, long tcb, long *msg, long nested, int flag, int depth)
  * Emit a packet: read the first element as a nested argument list, decode each
  * via cL4_msg_three (with "_" separators), then if `nested` is present decode
- * it via cL4_msg_one and emit tag "Xc"; otherwise emit tag "Xl" or a lone "p"
- * depending on `flag`. Confidence: low (nested-list walk). */
+ * via cL4_msg_one and emit tag "Xc"; otherwise emit tag "Xl" or a lone "p"
+ * depending on `flag`.
+ * Confidence: high (verified 1:1; tags "Xc"/"Xl" confirmed at 0x5d93a7/0x5d93aa) */
 void cL4_msg_emit_pkt2(int *result, unsigned long tcb, unsigned long *msg, unsigned long nested,
                        int flag, unsigned long depth)
 {
@@ -3246,7 +3251,7 @@ void cL4_msg_emit_pkt2(int *result, unsigned long tcb, unsigned long *msg, unsig
         if (b - 1 < 2) {
             if (b == 1) end = elem + 1;
             else if (b == 2) end = elem + 2;
-            else if (b == 5) end = (unsigned long*)*elem;
+            else if (b == 5) end = (unsigned long*)*elem + *(unsigned int *)(elem + 1);
             else end = 0;
         } else {
             if (b != 5) { cur = 0; end = 0; }

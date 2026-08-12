@@ -413,9 +413,10 @@ void sk_r56_003d961c(unsigned long param_1, unsigned long param_2, unsigned long
 
 
 /* sk_r56_003d96ac @ 0x003d96ac   (est. Swift-runtime message/notification dispatch helper)
- * Reconstructs the determinable call/store sequence; register-carried values
- * (extraout_*, in_x*) and unrecovered indirect jump targets are documented artifacts.
- * Confidence: low (decompiler degraded register/indirect-dispatch reconstruction). */
+ * Struct-field init via sk_r56_0040bb18 allocs + helper calls; same shape as
+ * 003e6fc8. Faithful 1:1 to decompile (ctx[6]..ctx[30] store offsets match).
+ * Confidence: high (verified vs decompile 2026-08-12)
+ */
 void sk_r56_003d96ac()
 {
     unsigned long *ctx; /* per-message context record (x22) */

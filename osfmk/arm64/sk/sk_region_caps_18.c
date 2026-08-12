@@ -131,8 +131,8 @@ extern unsigned long cL4_dt_untyped(void);
 extern unsigned long cL4_dt_reserved(unsigned long r);
 /* FUN_0006b7ac @ 0x6b7ac — device-tree: free region base. */
 extern unsigned long cL4_dt_free_base(void);
-/* FUN_000aa3ac @ 0xaa3ac — emit an error frame (noreturn-style result). */
-extern void cL4_error_frame(void);
+/* FUN_000aa3ac @ 0xaa3ac — emit an error frame (returns the frame). */
+extern unsigned long *cL4_error_frame(void);
 /* FUN_0036986c @ 0x36986c — propagate a stored error frame. */
 extern void cL4_propagate_error(void);
 /* FUN_002a4ab4 @ 0x2a4ab4 — begin a formatted (printf-style) log frame. */
@@ -845,7 +845,8 @@ unsigned long FUN_000e4700(unsigned long p1, unsigned long p2, unsigned long p3,
 
 /* FUN_000e4788 @ 0xe4788 — build a collector list from the entries of an
  * array; for each entry captures a (name,desc) pair and appends it to the
- * launcher root list, growing the list as needed. */
+ * launcher root list, growing the list as needed. (medium; fixed: the
+ * FUN_0006e7c0 capture now passes both (arr, out) args per decompile.) */
 unsigned long *FUN_000e4788(long arr)
 {
     unsigned long *list = (unsigned long *)&cL4_launcher_root;
@@ -855,7 +856,11 @@ unsigned long *FUN_000e4788(long arr)
         cL4_table_grow(0, n, 0);
         arr += 0x20;
         do {
-            cL4_capture((void *)((uintptr_t)__builtin_frame_address(0) - 0xb8));
+            /* FUN_0006e7c0(arr, out): capture the current array slot into
+             * the frame. The shared extern is declared 1-arg; call the real
+             * 2-arg function with both decompile args. */
+            ((void (*)(long, void *))cL4_capture)(arr,
+                (void *)((uintptr_t)__builtin_frame_address(0) - 0xb8));
             cL4_iter_pair((void *)((uintptr_t)__builtin_frame_address(0) - 0xb8),
                           (void *)((uintptr_t)__builtin_frame_address(0) - 0xe0));
             unsigned long a = cL4_type_desc(0x64e740, 0x4c0590);
@@ -1332,15 +1337,18 @@ void FUN_000e58a8(void)
 
 /* FUN_000e58cc @ 0xe58cc — device-tree memory setup: query total memory
  * and untyped regions; if the device tree is missing or an untyped region
- * is empty, log the corresponding error and build an error frame. */
+ * is empty, log the corresponding error and build an error frame.
+ * (medium; fixed: error paths now store the {code,value,1} triple into the
+ * error frame — code 0xd00000000000002a for total==0 vs 0 for untyped/base —
+ * before propagating; base!=0/x21!=0 path unwinds via FUN_0036b6f4.) */
 void FUN_000e58cc(void)
 {
     long total = (long)cL4_dt_mem_size();
     *(long *)((uintptr_t)__builtin_frame_address(0) + 0x18) = total;
+    unsigned long code, value;
     if (total == 0) {
-        unsigned long err = 0x80000000005c46d0ull;
-        cL4_error_frame();
-        cL4_propagate_error();
+        value = 0x80000000005c46d0ull;
+        code = 0xd00000000000002aull;
     } else {
         long untyped = (long)cL4_dt_untyped();
         if (untyped == 0) {
@@ -1349,8 +1357,6 @@ void FUN_000e58cc(void)
             cL4_log_str(0x671848);
             cL4_log_pair(0);
             cL4_log_val(0);
-            cL4_error_frame();
-            cL4_propagate_error();
         } else {
             unsigned long total2 = *(ulong *)((uintptr_t)__builtin_frame_address(0) + 0x18);
             unsigned long reserved = cL4_dt_reserved(total2);
@@ -1367,22 +1373,30 @@ void FUN_000e58cc(void)
                 unsigned long size = *(unsigned long *)((uintptr_t)__builtin_frame_address(0) + 0x28);
                 unsigned long va = cL4_va_alloc();
                 va = cL4_phys_map(va, untyped, size, base);
-                if (0 == 0) {
+                if (0 == 0) {  /* unaff_x21 == 0 (success) */
                     *(unsigned long *)((uintptr_t)__builtin_frame_address(0) + 0x10) = va;
                     return;
                 }
-            } else {
-                cL4_log_begin(0x3a);
-                cL4_log_pair(0xd000000000000038ull, (unsigned long)"Missing device tree: Empty untyped" | 0x8000000000000000ull);
-                cL4_log_str(0x671848);
-                cL4_log_pair(0);
-                cL4_log_val(0);
-                cL4_error_frame();
-                cL4_propagate_error();
+                cL4_unwind();  /* FUN_0036b6f4 (LAB_000e5a88): error-path unwind */
+                return;
             }
+            cL4_log_begin(0x3a);
+            cL4_log_pair(0xd000000000000038ull, (unsigned long)"Missing device tree: Empty untyped" | 0x8000000000000000ull);
+            cL4_log_str(0x671848);
+            cL4_log_pair(0);
+            cL4_log_val(0);
         }
+        code = 0;
+        value = 0xe000000000000000ull;
     }
-    cL4_unwind();
+    /* Shared error tail (total==0 / untyped==0 / base==0): store the
+     * {code, value, 1} triple into the error frame, then propagate it
+     * (FUN_0036986c). */
+    unsigned long *ef = cL4_error_frame();
+    ef[0] = code;
+    ef[1] = value;
+    *((unsigned char *)ef + 2) = 1;
+    cL4_propagate_error();
 }
 
 /* FUN_000e5ac4 @ 0xe5ac4 — build a mapped region record (flag=1). */

@@ -2909,55 +2909,244 @@ done:
 }
 
 /* FUN_002fc180 @ 0x2fc180  (est. sk_swift_int16_parse_c)
- * Int16 decimal string parse (full digit loop with *10+digit accumulation).
- * Confidence: high (pattern-matched). */
+ * Int16 decimal string parse from a Swift string (param_2,param_3) with a
+ * bound check. When bit 60 of the string tag is clear it performs an
+ * overflow-checked *10+digit accumulation over the buffered (bit 61 clear,
+ * via FUN_002a9ba8 {ptr,len}) or inline (bit 61 set, digits in low bytes of
+ * param_2, length = tag) digit run, honoring an optional leading '+'/'-'
+ * and an embedded signed-slice range (FUN_001d9840 / FUN_001e4cbc); a bad
+ * range takes the "Invalid slice" fatal (0x7db) and an empty slice takes the
+ * 0x75e fatal. When bit 60 is set it delegates to the Int16 parse driver
+ * FUN_0022cf60(_,_,10,FUN_0022e3d4). Writes {value, ok} to out as two bytes.
+ * Confidence: medium (faithful buffered/inline/general dispatch + 16-bit
+ *   *10+digit overflow checks; fixed from the prior pattern-matched summary
+ *   that dropped the string-format dispatch and the fatals). */
 static void sk_swift_int16_parse_c(unsigned short *out, unsigned long s2,
                                    unsigned long s3, unsigned long p4, long bound)
 {
-    unsigned long len;
-    unsigned char *buf;
-    unsigned long self;
-    unsigned char ok;
-    unsigned short result;
-    long i;
-    int digit, acc, prod;
-    (void)p4; (void)bound;
-    len = s3 >> 0x38 & 0xf;
+    extern unsigned long FUN_0022e3d4(unsigned long _a, ...);  /* Int16 digit fn */
+    unsigned long tag, self, acc, prod;
+    long l2, l7, l5, end;
+    unsigned int digit;
+    unsigned char *pb, *buf;
+    sk_i128_t b, idx, sl;              /* {lo=ptr, hi=len} pairs */
+    unsigned char uVar10, uVar14;      /* out byte0 (value), byte1 (ok) */
+    int valid, value;                  /* uVar17 (ok flag), uVar12 (value) */
+
+    (void)p4;
+    tag = s3 >> 0x38 & 0xf;
     self = s2 & 0xffffffffffff;
-    if ((s3 & 0x2000000000000000) != 0) self = len;
+    if ((s3 & 0x2000000000000000) != 0) self = tag;
     if (self == 0) {
         sk_swift_release(s3);
-        ok = 1;
-        result = 0;
-        goto done;
+        valid = 1; value = 0;
+        goto tail;
     }
-    buf = (unsigned char *)((s3 & 0xfffffffffffffff) + 0x20);
-    if (buf[0] == '+') buf++, len--;
-    acc = 0; ok = 1;
-    if (buf[0] == '-') {
-        buf++;
-        for (i = 0; i < (long)len; i++) {
-            digit = buf[i] - 0x30;
-            if (9 < digit) { ok = 0; result = 0; goto done; }
-            prod = acc * 10;
-            acc = prod - digit;
-            if (prod != acc + digit) { ok = 0; result = 0; goto done; }
+    if ((s3 >> 0x3c & 1) == 0) {
+        if ((s3 >> 0x3d & 1) == 0) {
+            /* buffered: pull {ptr,len} from the string buffer */
+            if ((s2 >> 0x3c & 1) == 0)
+                b = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_002a9ba8)(s2, s3);
+            else {
+                b.lo = (s3 & 0xfffffffffffffff) + 0x20;
+                b.hi = s2 & 0xffffffffffff;
+            }
+            l7 = (long)b.hi;
+            buf = (unsigned char *)b.lo;
+            if (0 < l7) {
+                if (buf[0] == '+') {
+                    idx = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001d9840)
+                              (1, (unsigned long)buf);
+                    l5 = (long)idx.lo;
+                    end = (long)idx.hi;
+                    if ((l5 < 0) || (bound < end)) goto fatal_7db;
+                    l2 = 0;
+                    if (l7 != 0) l2 = l7 + l5;
+                    sl = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001e4cbc)
+                              ((unsigned long)l2, (unsigned long)(end - l5));
+                    l7 = (long)sl.hi;
+                    if (l7 == 0) { valid = 1; value = 0; goto rel; }
+                    if (sl.lo != 0) {
+                        acc = 0; valid = 1;
+                        while (l7 != 0) {
+                            pb = (unsigned char *)sl.lo;
+                            digit = *pb - 0x30;
+                            if (9 < digit) { valid = 1; value = 0; goto rel; }
+                            acc = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                            if (((acc & 0xf0000) != 0) ||
+                                (acc = (acc & 0xfffe) + (digit & 0xff),
+                                 (acc & 0xffff0000) != 0))
+                                goto rel;
+                            l7 = (long)sl.hi - 1;
+                            sl.hi = (unsigned long)l7;
+                            sl.lo = (unsigned long)(pb + 1);
+                        }
+                        valid = 0; value = (int)(short)acc;
+                        goto rel;
+                    }
+                    valid = 0; value = 0;
+                    goto rel;
+                }
+                else if (buf[0] == '-') {
+                    idx = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001d9840)
+                              (1, (unsigned long)buf);
+                    l5 = (long)idx.lo;
+                    end = (long)idx.hi;
+                    if ((l5 < 0) || (bound < end)) goto fatal_7db;
+                    l2 = 0;
+                    if (l7 != 0) l2 = l7 + l5;
+                    sl = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001e4cbc)
+                              ((unsigned long)l2, (unsigned long)(end - l5));
+                    if (sl.hi == 0) { valid = 1; value = 0; goto rel; }
+                    if (sl.lo == 0) { valid = 0; value = 0; goto rel; }
+                    acc = 0; valid = 1;
+                    while (sl.hi != 0) {
+                        pb = (unsigned char *)sl.lo;
+                        digit = *pb - 0x30;
+                        if (9 < digit) { valid = 1; value = 0; goto rel; }
+                        prod = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                        acc = (prod & 0xfffe) - (digit & 0xff);
+                        if (((prod & 0xf0000) != 0) || ((acc & 0xffff0000) != 0)) goto rel;
+                        sl.hi = sl.hi - 1;
+                        sl.lo = (unsigned long)(pb + 1);
+                    }
+                    valid = 0; value = (int)(short)acc;
+                    goto rel;
+                }
+                else {
+                    acc = 0; valid = 1;
+                    do {
+                        pb = (unsigned char *)b.lo;
+                        digit = *pb - 0x30;
+                        if (9 < digit) { valid = 1; value = 0; goto rel; }
+                        acc = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                        if (((acc & 0xf0000) != 0) ||
+                            (acc = (acc & 0xfffe) + (digit & 0xff),
+                             (acc & 0xffff0000) != 0))
+                            goto rel;
+                        l7 = (long)b.hi - 1;
+                        b.hi = (unsigned long)l7;
+                        b.lo = (unsigned long)(pb + 1);
+                    } while (l7 != 0);
+                    valid = 0; value = (int)(short)acc;
+                    goto rel;
+                }
+            }
+            goto fatal_75e;   /* 0 < l7 false: empty buffer */
         }
-        result = (unsigned short)acc; goto finish;
+        else {
+            /* inline (bit 61 set): digits in low bytes of param_2, len = tag */
+            if (tag != 0) {
+                digit = (unsigned int)(s2 & 0xff);
+                if (digit == 0x2b) {
+                    idx = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001d9840)
+                              (1, s2 & 0xffffffffffff);
+                    l7 = (long)idx.lo;
+                    end = (long)idx.hi;
+                    if ((l7 < 0) || (bound < end)) goto fatal_7db;
+                    l2 = 0;
+                    if (tag != 0) l2 = (long)tag + l7;
+                    sl = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001e4cbc)
+                              ((unsigned long)l2, (unsigned long)(end - l7));
+                    l7 = (long)sl.hi;
+                    if (l7 == 0) { valid = 1; value = 0; goto rel; }
+                    if (sl.lo != 0) {
+                        acc = 0; valid = 1;
+                        while (l7 != 0) {
+                            pb = (unsigned char *)sl.lo;
+                            digit = *pb - 0x30;
+                            if (9 < digit) { valid = 1; value = 0; goto rel; }
+                            acc = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                            if (((acc & 0xf0000) != 0) ||
+                                (acc = (acc & 0xfffe) + (digit & 0xff),
+                                 (acc & 0xffff0000) != 0))
+                                goto rel;
+                            l7 = (long)sl.hi - 1;
+                            sl.hi = (unsigned long)l7;
+                            sl.lo = (unsigned long)(pb + 1);
+                        }
+                        valid = 0; value = (int)(short)acc;
+                        goto rel;
+                    }
+                    valid = 0; value = 0;
+                    goto rel;
+                }
+                else if (digit == 0x2d) {
+                    idx = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001d9840)
+                              (1, s2 & 0xffffffffffff);
+                    l7 = (long)idx.lo;
+                    end = (long)idx.hi;
+                    if ((l7 < 0) || (bound < end)) goto fatal_7db;
+                    l2 = 0;
+                    if (tag != 0) l2 = (long)tag + l7;
+                    sl = ((sk_i128_t (*)(unsigned long, unsigned long))FUN_001e4cbc)
+                              ((unsigned long)l2, (unsigned long)(end - l7));
+                    l7 = (long)sl.hi;
+                    if (l7 != 0) {
+                        if (sl.lo == 0) { valid = 0; value = 0; goto rel; }
+                        acc = 0; valid = 1;
+                        while (l7 != 0) {
+                            pb = (unsigned char *)sl.lo;
+                            digit = *pb - 0x30;
+                            if (9 < digit) { valid = 1; value = 0; goto rel; }
+                            prod = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                            acc = (prod & 0xfffe) - (digit & 0xff);
+                            if (((prod & 0xf0000) != 0) || ((acc & 0xffff0000) != 0)) goto rel;
+                            l7 = (long)sl.hi - 1;
+                            sl.hi = (unsigned long)l7;
+                            sl.lo = (unsigned long)(pb + 1);
+                        }
+                        valid = 0; value = (int)(short)acc;
+                        goto rel;
+                    }
+                    valid = 1; value = 0;
+                    goto rel;
+                }
+                else {
+                    acc = 0; valid = 1;
+                    pb = (unsigned char *)(s2 & 0xffffffffffff);
+                    do {
+                        digit = *pb - 0x30;
+                        if (9 < digit) { valid = 1; value = 0; goto rel; }
+                        acc = ((acc & 0xffff) * 4 + (acc & 0xffff)) * 2;
+                        if (((acc & 0xf0000) != 0) ||
+                            (acc = (acc & 0xfffe) + (digit & 0xff),
+                             (acc & 0xffff0000) != 0))
+                            goto rel;
+                        tag -= 1;
+                        pb += 1;
+                    } while (tag != 0);
+                    valid = 0; value = (int)(short)acc;
+                    goto rel;
+                }
+            }
+            goto fatal_75e;   /* tag == 0 */
+        }
     }
-    for (i = 0; i < (long)len; i++) {
-        digit = buf[i] - 0x30;
-        if (9 < digit) { ok = 0; result = 0; goto done; }
-        prod = acc * 10;
-        acc = prod + digit;
-        if (prod != acc - digit) { ok = 0; result = 0; goto done; }
+    /* bit 60 set: delegate to the Int16 parse driver */
+    {
+        unsigned long v = FUN_0022cf60(s2, s3, 10, (unsigned long)FUN_0022e3d4);
+        sk_swift_release(s3);
+        valid = (int)(v >> 0x10 & 0xff);
+        value = (int)(short)v;
+        goto tail;
     }
-    result = (unsigned short)acc;
-finish:
-    ok = 0;
-done:
-    *out = result;
-    *((unsigned char *)out + 2) = ok;
+fatal_7db:
+    sk_fatal_error(0xb, 2, "Invalid slice", 0xd, 2,
+                   "Swift.UnsafeBufferPointer", 0x1f, 2, 0x7db, 1);
+    /* noreturn */
+fatal_75e:
+    sk_fatal_error(0xb, 2, "", 0, 2,
+                   "Swift.UnsafeBufferPointer", 0x1f, 2, 0x75e, 1);
+    /* noreturn */
+rel:
+    sk_swift_release(s3);
+tail:
+    uVar14 = (unsigned char)valid;
+    uVar10 = 0;
+    if (valid != 1) uVar10 = (unsigned char)value;
+    *out = uVar10;
+    out[1] = uVar14;
 }
 
 /* FUN_002fc664 @ 0x2fc664  (est. sk_swift_int16_shift_pair_b)

@@ -119,6 +119,7 @@ extern void cL4_save_regs(void);
 extern void cL4_restore_regs(void);
 extern word_t cL4_ctz_inc(void);
 extern word_t cL4_bitfield_mask(void);
+extern void cL4_slot_row_setup(void);   /* FUN_0008e22c (in slice, defined below) */
 
 /* The kernel's "empty" / default handler table base (_DAT_00657778). */
 extern unsigned long cL4_default_handler;
@@ -142,56 +143,71 @@ extern unsigned long cL4_default_handler;
  * advances a cursor (x27) through the rows, and finally commits the count.
  * Confidence: medium
  * Notes: row bitmap / cursor / limit live in caller-reserved registers
- *   (x20..x30); bounds and overflow faults trap via SoftwareBreakpoint
+ *   (x20..x30) and the per-record bit index (x8) is register-forwarded;
+ *   bounds and overflow faults trap via SoftwareBreakpoint
  *   (0x8d438 / 0x8d43c). */
 void cL4_caps_scan_and_collect(word_t kind, word_t opts, long limit)
 {
-    cL4_save_regs();
-    word_t row_bitmap = cL4_bitfield_mask();   /* prime first row mask */
-    word_t row;
+    unsigned long obj = 0;       /* unaff_x20 (caller object base) */
+    unsigned long *dest = 0;     /* unaff_x22 (caller record vector) */
+    unsigned long row_table = 0; /* unaff_x23 (row-bitmap table base) */
+    word_t bitmap = 0;           /* unaff_x25 (current row bitmap) */
+    unsigned long collected = 0; /* unaff_x26 (count collected) */
+    word_t row = 0;              /* unaff_x27 (row cursor) */
+    unsigned long row_count = 0; /* unaff_x28 (row bound) */
+    word_t flag, col, bitidx;
+    unsigned long *src;
 
-    if (row_bitmap == 0) {
+    cL4_save_regs();
+    flag = cL4_bitfield_mask();          /* FUN_0008df78 -> extraout_x1 */
+    if (flag == 0) {
         row = 0;
     } else {
         if (limit < 0) {
-            CL4_FAULT(0x8d43c);               /* negative limit is a fault */
+            CL4_FAULT(0x8d43c);          /* negative limit is a fault */
         }
         if (limit == 0) {
             row = 0;
         } else {
-            /* walk the row table (cursor x27, table base x23, bound x28) */
-            word_t bitmap = row_bitmap;
-            row = 0;
+            cL4_slot_row_setup();        /* primes x22-x28 (incl. bitmap) */
             while (1) {
                 while (bitmap == 0) {
-                    word_t next = row + 1;
-                    if (next < row) {
+                    col = row + 1;
+                    if (col < row) {
                         CL4_FAULT(0x8d438);   /* row cursor overflow */
                     }
-                    if (next >= /* row_count */ 0) {
+                    if (row_count <= col) {
                         goto scan_done;
                     }
-                    row = next;
-                    bitmap = cL4_bitfield_mask();   /* next row's bitmap */
+                    row = col;
+                    bitmap = *(unsigned long *)(row_table + col * 8);
                 }
-                /* isolate and consume the lowest set slot bit */
-                cL4_ctz_inc();
-                bitmap = bitmap - 1;
-                /* compute the slot record address and copy its 6 words into
-                 * the destination vector (x22); the record element size is
-                 * 0x30 bytes and the table base is *container+0x38. */
-                if (/* collected */ 0 == limit) {
+                cL4_ctz_inc();           /* x26++; ctz(x25) -> x8 */
+                bitidx = 0;              /* extraout_x8 (register-forwarded) */
+                bitmap = bitmap - 1 & bitmap;
+                /* copy the 6-word (0x30-byte) cap record at
+                 * *(obj+0x38) + (bitidx | row<<6)*0x30 into the dest vector */
+                src = (unsigned long *)(*(unsigned long *)(obj + 0x38) +
+                                        (bitidx | row << 6) * 0x30);
+                dest[1] = src[1];
+                dest[0] = src[0];
+                dest[2] = src[2];
+                dest[3] = src[3];
+                dest[4] = src[4];
+                *((unsigned char *)dest + 0x28) = *((unsigned char *)src + 0x28);
+                if (collected == (unsigned long)limit) {
                     break;
                 }
-                /* ... 6-word record copy into the destination vector ... */
-                cL4_ref_dec(0);
+                dest += 6;
+                cL4_ref_dec(0);          /* FUN_0036b270() */
             }
-            cL4_ref_dec(0);
+            cL4_ref_dec(0);              /* FUN_0036b270() */
         }
     }
 
 scan_done:
     cL4_scan_publish(row);   /* commit final row count to caller state (x30) */
+    cL4_restore_regs();
 }
 
 /* FUN_0008d43c @ 0x0008d43c   (est. cL4_array_grow_reserve)
@@ -202,70 +218,93 @@ scan_done:
  * one) when the resident capacity is exhausted. Returns the array header.
  * The growth preserves elements while updating the header's used-count field
  * (bits [1..] at +0x18) and resets the dangling extra-data pointer (+0x10).
- * Confidence: medium
+ * Confidence: high (verified against fresh decompile; placeholder gaps filled)
  * Notes: element stride 0x20; allocates uVar15*0x20+0x20 bytes of kind 7;
  *   faults at SoftwareBreakpoint 0x8d5ec/0x8d5f0/0x8d5f8/0x8d5f4. */
 void *cL4_array_grow_reserve(void)
 {
-    cl4_result_t cur = cL4_vec_current();
-    void *dst = (void *)(cur.lo + cur.hi * 0x20 + 0x38);
-    unsigned long idx = cur.hi;
-    void *arr = cL4_default_handler ? (void *)0 : (void *)0;
+    cl4_result_t cur = cL4_vec_current();        /* FUN_00089684 */
+    unsigned long count = cur.hi;
+    long src = cur.lo;
+    long idx = 0;
+    unsigned long used = *(unsigned long *)(src + 0x10);
+    unsigned char *arr = (unsigned char *)&cL4_default_handler;   /* DAT_00657778 */
+    unsigned long *dst = (unsigned long *)(src + count * 0x20 + 0x38);
+    unsigned long *out = (unsigned long *)&cL4_default_handler;   /* DAT_00657798 */
+    unsigned long elem_count = count;
 
     while (1) {
-        if (cur.lo == idx) {
+        if (used == elem_count) {
             /* exhausted the source: trim the destination header and return */
-            cL4_arr_header_release(arr);
-            if (1 < /* cap */ 0) {
-                unsigned long used = /* cap */ 0 >> 1;
-                if (used < idx) {
+            cL4_arr_header_release(arr);         /* FUN_0036b118 */
+            if (1 < *(unsigned long *)(&cL4_default_handler + 0x18)) {
+                unsigned long n = *(unsigned long *)(&cL4_default_handler + 0x18) >> 1;
+                if (n < idx) {
                     CL4_FAULT(0x8d5fc);
                 }
-                /* *((char*)arr+0x10) = used - idx */
+                *(unsigned long *)((char *)&cL4_default_handler + 0x10) = n - idx;
             }
             return arr;
         }
-        if ((long)cur.hi < 0) {
+        if ((long)count < 0) {
             CL4_FAULT(0x8d5ec);
         }
-        if (cur.lo <= idx) {
+        if (used <= elem_count) {
             CL4_FAULT(0x8d5f0);
         }
         /* read the 4-word source record */
-        unsigned long w0 = *((unsigned long *)dst - 3);
-        unsigned long w1 = *((unsigned long *)dst - 2);
-        unsigned long w2 = *((unsigned long *)dst - 1);
-        unsigned long w3 = *(unsigned long *)dst;
+        unsigned long w0 = dst[-3];
+        unsigned long w1 = dst[-2];
+        unsigned long w2 = dst[-1];
+        unsigned long w3 = *dst;
 
         if (idx == 0) {
             /* first element: allocate the backing array if not yet present */
-            if ((long)(/* cap */ 0 >> 1) < 0) {
+            unsigned long cap = *(unsigned long *)(&cL4_default_handler + 0x18);
+            if ((long)((cap >> 1) + 0x4000000000000000) < 0) {
                 CL4_FAULT(0x8d5f8);
             }
-            unsigned long want = /* cap */ 0;
-            if (/* cap */ 0 < 2) {
+            unsigned long want = cap & 0xfffffffffffffffe;
+            if ((long)cap < 2) {
                 want = 1;
             }
-            unsigned long td = cL4_type_desc(0x64f5a8, 0x4c0ff0);
-            void *fresh = cL4_obj_alloc_typed(td, want * 0x20 + 0x20, 7);
-            cL4_ref_dec(w0);
-            arr = cL4_obj_init(fresh);
+            unsigned long td = cL4_type_desc(0x64f5a8, 0x4c0ff0);   /* FUN_00002534 */
+            unsigned char *fresh = cL4_obj_alloc_typed(td, want * 0x20 + 0x20, 7);
+            cL4_ref_dec(w0);                        /* thunk_FUN_0036b270 */
+            arr = cL4_obj_init(fresh);              /* thunk_FUN_000126e8 */
             unsigned long n = ((unsigned long)arr - 0x20) / 0x20;
-            *(unsigned long *)((char *)arr + 0x10) = want;
-            *(unsigned long *)((char *)arr + 0x18) = n << 1;
+            *(unsigned long *)(arr + 0x10) = want;
+            *(unsigned long *)(arr + 0x18) = n << 1;
             /* copy the live prefix from the old header */
-            unsigned long keep = /* old cap */ 0 >> 1;
-            if (/* old extra ptr */ 0 != 0) {
-                cL4_memcpy((char *)arr + 0x20, /* old data */ 0, keep << 5);
-                /* *((char*)old+0x10) = 0 */
+            unsigned long keep = *(unsigned long *)(&cL4_default_handler + 0x18) >> 1;
+            unsigned char *prev_out = arr + 0x20 + keep * 0x20;   /* DAT_00657798 update */
+            idx = (n & 0x7fffffffffffffff) - keep;
+            if (*(long *)((char *)&cL4_default_handler + 0x10) != 0) {
+                if (arr != (unsigned char *)&cL4_default_handler ||
+                    (unsigned char *)&cL4_default_handler + 0x20 + keep * 0x20 <= arr + 0x20) {
+                    cL4_memcpy(arr + 0x20, (unsigned char *)&cL4_default_handler + 0x20,
+                               keep << 5);          /* FUN_00117d14 */
+                }
+                *(unsigned long *)((char *)&cL4_default_handler + 0x10) = 0;
             }
-            cL4_arr_header_release(/* old */ 0);
+            cL4_arr_header_release((unsigned char *)&cL4_default_handler);   /* FUN_0036b118 */
+            out = (unsigned long *)prev_out;
+            arr = fresh;
         } else {
-            cL4_ref_dec(w0);
+            cL4_ref_dec(w0);                        /* thunk_FUN_0036b270 */
         }
         /* append the 4-word record */
-        /* *(dst)=w0; ... push 4 words ... */
-        idx = idx + 1;
+        if (idx < 1) {
+            CL4_FAULT(0x8d5f4);
+        }
+        idx = idx - 1;
+        *out = w0;
+        out[1] = w1;
+        out[2] = w2;
+        out[3] = w3;
+        out += 4;
+        dst += 4;
+        elem_count = elem_count + 1;
     }
 }
 

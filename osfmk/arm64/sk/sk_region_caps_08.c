@@ -977,17 +977,17 @@ unsigned long exclave_der_verify_flow(void)
     cL4_frame_prep(0, frame);
     cL4_msg_copy(0, frame, 0, 0);
     unsigned long obj = *(unsigned long *)(receiver + 0x30);
-    unsigned long v = cL4_obj_retain(obj);
-    unsigned long der = cL4_table_iterate(v, (unsigned long)&method_id_71bbc, (unsigned long)cL4_der_build);
+    unsigned long der = cL4_obj_retain(obj);
+    der = cL4_table_iterate(der, (unsigned long)&method_id_71bbc, (unsigned long)cL4_der_build);
     cL4_error_tag(obj);
     unsigned long block = cL4_registry();
     unsigned long kind = 7;
     cL4_block_alloc(block, 0x18);
-    unsigned long r = cL4_der_build(v);
+    der = cL4_der_build(der);
     cL4_vtbl();
-    unsigned long pair[2] = {(**(unsigned long (**)(void))(reg_x16 + 0x68))(),
-                             (**(unsigned long (**)(void))(reg_x16 + 0x6c))()};
-    unsigned long h = pair[1];
+    /* single call through *(+0x68) returns the 16-byte pair {lo, hi} */
+    cl4_result_t pair = (**(cl4_result_t (**)(void))(reg_x16 + 0x68))();
+    unsigned long h = pair.hi;              /* auVar6._8_8_ */
     if ((kind & 0xff) == 1) {
         cL4_log_str(s_no_DER_artefact__005c1e70);
         cL4_noop_3();
@@ -995,15 +995,15 @@ unsigned long exclave_der_verify_flow(void)
         cL4_fatal_error(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
     unsigned long blk = cL4_block_alloc(0x650118, 0x29, 7);
-    unsigned long vv = cL4_obj_retain(v);
-    cL4_der_verify(vv, pair[0], h, 0);
+    unsigned long vv = cL4_obj_retain(der);
+    cL4_der_verify(vv, pair.lo, h, 0);
     if (fail_reg == 0) {
         cL4_noop_barrier();
         h = (**(unsigned long (**)(void))(reg_x16 + 0x98))();
-        cL4_obj_release(v);
-        v = blk;
+        cL4_obj_release(der);
+        der = blk;
     }
-    cL4_obj_release(v);
+    cL4_obj_release(der);
     return h;
 }
 
@@ -1347,8 +1347,10 @@ void exclave_iter_b(unsigned long table)
  * Iterates a table (param_1) invoking a pre-callback on each entry count
  * and a post-callback after; if the count is zero returns immediately.
  * Panics if the iteration count does not match the initial count.
- * Confidence: medium
- * Notes: generic iterator; callbacks param_2/param_3. */
+ * Confidence: high
+ * Notes: generic iterator; callbacks param_2/param_3.
+ *   Verified: body matches decompile exactly (count==0 early out, pre/post
+ *   callbacks, retain/release, 3 breakpoint traps 0xa5d40/0xa5d1c/0xa5d00). */
 unsigned long cL4_table_iterate(unsigned long table, unsigned long pre, unsigned long post)
 {
     long count = *(long *)(table + 0x10);
@@ -2891,12 +2893,14 @@ long exclave_support_query(unsigned long a, unsigned long b, unsigned long c, un
  * the access kind (param_4): 0=raw read, 1=read-with-mask, 2=write
  * (index-0 or 1), 3=flush. Each case enters/leaves the segment transport
  * and invokes the vtable method at offset 0x48. Returns a {value, result}
- * pair.
- * Confidence: medium */
+ * pair (case 2 leaves the value word unchanged, per decompile uVar1).
+ * Confidence: high
+ * Notes: 16-byte return collapsed to its low word per file convention. */
 unsigned long exclave_support_access(unsigned long a, unsigned long b, unsigned long c,
                                      unsigned char kind, unsigned long *iface)
 {
     unsigned long r = a;
+    unsigned long v2;               /* uVar2 (case-2 vtable result; r unchanged) */
     void (*m)(void) = *(void (**)(void))(*iface + 0x48);
     switch (kind) {
     default:
@@ -2917,19 +2921,19 @@ unsigned long exclave_support_access(unsigned long a, unsigned long b, unsigned 
         if ((c & 0xff) == 0) {
             cL4_seg_transport(a, b, c, 2);
             cL4_seg_enter(b, 0);
-            r = ((unsigned long (*)(void))m)();
+            v2 = ((unsigned long (*)(void))m)();
             cL4_seg_leave(b, 0);
             cL4_obj_release(iface);
             cL4_obj_release(b);
-            b = r;
+            b = v2;
         } else if (((unsigned int)c & 0xff) == 1) {
             cL4_seg_transport(a, b, c, 2);
             cL4_seg_enter(b, 1);
-            r = ((unsigned long (*)(void))m)();
+            v2 = ((unsigned long (*)(void))m)();
             cL4_seg_leave(b, 1);
             cL4_obj_release(iface);
             cL4_obj_release(b);
-            b = r;
+            b = v2;
         } else {
             cL4_seg_enter(b, 2);
             cL4_obj_release(iface);
@@ -2943,8 +2947,9 @@ unsigned long exclave_support_access(unsigned long a, unsigned long b, unsigned 
         cL4_obj_release(c);
         break;
     }
-    unsigned long out[2] = { r, b };
-    return out[0];
+    /* {lo,hi} = {r, b}; 16-byte return collapsed to low word (r) per file
+     * convention — the hi word (b) is dropped. */
+    return r;
 }
 
 /* FUN_000a8ad8 @ 0x000a8ad8   (est. exclave_support_fault)

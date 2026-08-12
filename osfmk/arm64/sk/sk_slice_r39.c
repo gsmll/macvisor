@@ -1375,7 +1375,7 @@ uint64_t cL4_tb_af468(uint64_t *obj, uint64_t key, uint64_t *val, uint64_t call)
             if (9 < (int)code - 0x41) { cL4_tb_fatal("TB_FATAL: invalid value, unexpected"); }
         }
         /* dispatch decoded reply to callback at (call+0x10) */
-        (void)call;
+        ((void (*)(void *, void *))(*(void **)((char *)call + 0x10)))((void *)call, &r);
         err = 0;
     }
     cL4_tb_msg_end(*obj, buf + 1);

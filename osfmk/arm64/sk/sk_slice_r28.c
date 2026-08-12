@@ -2113,7 +2113,7 @@ void sk_r28_0047f808(void)
 /* FUN_0047f868 @ 0x0047f868   (est. sk_r28_utf8_decode_err2)
  * Ghidra: void FUN_0047f868(undefined8,undefined8,undefined8)
  * UTF-8 scalar decode variant that builds a string from the decoded scalar,
- * handling an ASCII literal fast path. Confidence: low.
+ * handling an ASCII literal fast path. Confidence: medium.
  * Notes: unaff_x30; SoftwareBreakpoint(1,0x47f944). */
 void sk_r28_0047f868(uint64_t a1, uint64_t a2, uint64_t a3)
 {

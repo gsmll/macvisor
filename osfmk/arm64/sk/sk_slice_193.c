@@ -836,12 +836,13 @@ void sk_re_delim_ret(word_t *out, word_t a, word_t b)
  * On a successful guard parses a regex fragment through the scalar machinery;
  * on failure formats "cannot parse regular expression: ..." (0x5dd300) into
  * the diagnostic record and returns the error.
- * Confidence: low. */
+ * Confidence: medium. */
 void sk_re_parse_throw(word_t a, word_t b, word_t c)
 {
-        if (1) { /* unaff_x21 == 0 */
-                word_t u2 = 0, u5 = c, u4;
-                sw128_t sc = sk_re_scalar_utf8(0, 0);
+        word_t x21 = 0;   /* unaff_x21: opaque guard from the caller */
+        word_t u2 = 0, u5 = c, u4;
+        sw128_t sc = sk_re_scalar_utf8(0, 0);
+        if (x21 == 0) {
                 u4 = sw_41ca38(0);
                 sw_36b118(c);
                 sw_36b118(sc.lo & 0xfffffffffffffff);
@@ -852,9 +853,13 @@ void sk_re_parse_throw(word_t a, word_t b, word_t c)
                 sw_458e80(out.lo, out.hi, u5, u2);
                 sw_36b270(0);
         } else {
+                /* failure path: format the 4-word error record */
+                word_t hi, v, rc;
+                word_t lo = 0xd000000000000021;   /* error code (local_a0) */
                 sw_2a4ab4(0x23);
                 sw_3a25d4(0xe000000000000000);
                 sw_86840(0x5dd300);   /* "cannot parse regular expression: ..." */
+                hi = 0;   /* uStack_98 = extraout_x8 (opaque) */
                 sw_34a210(0);
                 sw_002534(0); sw_465db0(0); sw_46299c(0);
                 sw_205844(0, 0, 0);
@@ -862,11 +867,23 @@ void sk_re_parse_throw(word_t a, word_t b, word_t c)
                 sw_3a25d4(0xe000000000000000);
                 sw_464234(0);
                 sw_002534(0);
-                sw_365b6c(0, 0, 0, 0, 0xe);
-                sw_461cb8(0, 0x657a10, 0x5a19f8);
+                rc = sw_365b6c(0, 0, 0, 0, 0xe);
+                v = 0;
+                if (rc == 0) {
+                        sw_461cb8(0, 0x657a10, 0x5a19f8);
+                        v = 0;
+                } else {
+                        sw_06a4c0(0, 0);
+                        sw_351a44(0);
+                        sw_458e50(0);
+                        sw_350a88(0);
+                        v = sw_0026e8(0);
+                }
                 sw_463a58(0x684eb8);
                 sw_36993c(0);
+                /* write error record (lo, hi, v, rc==0) via forwarded out ptr */
                 sw_36986c(0);
+                (void)hi; (void)v; (void)rc;
         }
         sw_3509bc(0);
 }
@@ -1131,48 +1148,180 @@ sw128_t sk_re_split_ret(long n, word_t a, word_t b, word_t c, word_t d)
  * The core delimiter scanner: walks candidate delimiter chars (table at
  * 0x685d40), for each looks for a closing '#' in extended mode, then runs the
  * body parse (0x42c60c) and the options suffix, terminating with
- * "No valid delimiters" (0x5e1f00) if none match.  Confidence: low. */
+ * "No valid delimiters" (0x5e1f00) if none match.
+ * Confidence: medium (opaque register-forwarded scalar state noted in body). */
 void sk_re_parse_delims(void)
 {
         sw128_t sc = sw_465540(0);
         long idx = 0;
-        for (;;) {
+        /* Opaque register-forwarded scalar-stream state (unaff_x23/x24,
+         * in_x3); carried across helper calls via registers and not
+         * representable in C, so kept as documented placeholders. */
+        word_t st_span = 0;    /* unaff_x23: scalar-stream end tag */
+        word_t st_flags = 0;   /* unaff_x24: span length / flags tag */
+        word_t x3 = 0;         /* in_x3: scalar-stream flags */
+        do {
                 if (idx == 2) {
-                        sw_2874(0x5e1f00);   /* "No valid delimiters" */
+                        sw_002874(0x5e1f00);   /* "No valid delimiters" */
                         sw_3593c0(0);
-                        sw_2818(0);
-                        sw_1afa84(0);
+                        sw_002818(0);
+                        sw_1afa84(0);          /* no return */
                 }
                 char delim = *(char*)(idx + 0x685d40);
-                if (delim == '\\0') {
-                        byte *cur = (byte*)sw_429398(0xf, sc.lo);
-                        sw_463f34(0);
-                        while (true) {
+                long l9 = (long)sc.hi;
+                byte *cur = (byte*)sw_429398(0xf, sc.lo);
+                sw_463f34(0);
+                long stack10;
+                word_t u13;
+                word_t u3;
+                if (delim == '\0') {
+                        uint shift = (uint)(st_flags >> 0x3b) & 1;
+                        if ((x3 & 0x1000000000000000) == 0) shift = 1;
+                        byte *p = cur;
+                        word_t scan_span = (word_t)st_flags & 0xffffffffffff;
+                        if ((x3 & 0x2000000000000000) != 0) scan_span = (x3 >> 0x38) & 0xf;
+                        while ((word_t)p >> 0xe != st_span >> 0xe) {
+                                sw_3507e0(0);
+                                sw_350bfc(0);
                                 char c = (char)sw_2b5ba0(0).lo;
                                 if (c != '#') break;
-                                cur = (byte*)sw_1da84(0);
-                                cur = (byte*)(0x10004 + ((word_t)cur & 0xffffffffffff0000));
+                                if (((word_t)p & 0xc) == 4L << shift) {
+                                        sw_351744((word_t)p);
+                                        p = (byte*)sw_1da84(0);
+                                        if ((x3 >> 0x3c & 1) == 0) {
+                                                p = (byte*)(0x10004 + ((word_t)p & 0xffffffffffff0000));
+                                        } else {
+                                                if (scan_span <= (word_t)p >> 0x10) SW_FATAL(0x42c560);
+                                                sw_351744((word_t)p);
+                                                p = (byte*)sw_2b141c(0);
+                                        }
+                                } else {
+                                        if ((x3 >> 0x3c & 1) != 0) {
+                                                if (scan_span <= (word_t)p >> 0x10) SW_FATAL(0x42c560);
+                                                sw_351744((word_t)p);
+                                                p = (byte*)sw_2b141c(0);
+                                        } else {
+                                                p = (byte*)(0x10004 + ((word_t)p & 0xffffffffffff0000));
+                                        }
+                                }
                         }
-                        sw_350878(0x2f);
+                        if (st_span >> 0xe < (word_t)cur >> 0xe) SW_FATAL(0x42c55c);
+                        sw_350878((word_t)cur);
                         sw_2ab388(0);
                         sw_351790(0);
-                        sw_2b5ed4(0);
-                        sw_350bfc(0);
+                        stack10 = (long)sw_2b5ed4(0);
+                        sw_350bfc(stack10, (word_t)cur);
                         sw_41e188(0);
                         sw_463f34(0);
-                        sw_3a25d4(0xe100000000000000);
-                        sw_350878(0x2f);
-                        sk_re_parse_delim_ret(0, 0, 0, 0, 0);
-                        sw_3517c0(0);
-                        sw_3a25d4(0xe100000000000000);
+                        u13 = 0xe100000000000000;
+                        u3 = 0x2f;
                 } else {
-                        sw_350878(0x7c23);
-                        sk_re_parse_delim_ret(0, 0, 0, 0, 0);
-                        sw_3517c0(0);
-                        sw_3a25d4(0xe100000000000000);
+                        stack10 = 0;
+                        u13 = 0xe200000000000000;
+                        u3 = 0x7c23;
+                }
+                sw_350878(u3);
+                word_t u11 = st_span;
+                sk_re_retreat();
+                sw_3517c0(0);
+                x3 = u11;
+                sw_3a25d4(st_span);
+                sw_3a25d4(u13);
+                if (u11 == 0) {
+                        sw_465144(0);
+                        delim = '\0';
+                        stack10 = 0;
+                } else {
+                        if (delim == '\0') {
+                                u13 = 0xe100000000000000;
+                                u3 = 0x2f;
+                        } else {
+                                if (stack10 != 0) SW_FATAL(0x42c558);
+                                u13 = 0xe200000000000000;
+                                u3 = 0x237c;
+                        }
+                        long l10 = stack10;
+                        sw_1ed960(0x23, 0xe100000000000000);
+                        byte record[0x100];
+                        *(word_t*)(record + 0x78) = u3;
+                        *(word_t*)(record + 0x80) = u13;
+                        sw_36b270(u13);
+                        sw_3514d0(0);
+                        sw_2acbb8(0);
+                        sw_3a25d4(/* extraout_x1 */ 0);
+                        sw_3a25d4(u13);
+                        sw_34f3b4(*(word_t*)(record + 0x78), *(word_t*)(record + 0x80));
+                        sk_re_retreat();
+                        sw_351a50(0);
+                        sw_3a25d4(*(word_t*)(record + 0x80));
+                        if (x3 != 0) {
+                                sw_3a25d4(u11);
+                                u11 = x3;
+                                st_span = u13;
+                                st_flags = (word_t)(record + 0x78);
+                                l9 = l10;
+                        }
+                        sw_34fe80(0);
+                        sw_460ff4(0);
+                        if (/* extraout_x1_00 */ 0 == 0) {
+                                *(word_t*)(record + 0x58) = st_span;
+                                *(word_t*)(record + 0x60) = st_flags;
+                                *(word_t*)(record + 0x68) = l9;
+                                *(word_t*)(record + 0x70) = u11;
+                                sw_36b270(u11);
+                                word_t s3 = sw_002534(0x656160, 0x4e7fb0);
+                                word_t s5 = sw_365b6c((word_t)(record + 0x30), (word_t)(record + 0x58), 0x675ce8, s3, 6);
+                                if ((s5 & 1) == 0) {
+                                        *(word_t*)(record + 0x50) = 0;
+                                        *(word_t*)(record + 0x38) = 0;
+                                        *(word_t*)(record + 0x30) = 0;
+                                        *(word_t*)(record + 0x48) = 0;
+                                        *(word_t*)(record + 0x40) = 0;
+                                        sw_461cb8((word_t)(record + 0x30), 0x656168, 0x5a3680);
+                                c4e4:
+                                        sw_34fe80(0);
+                                        sw_457e80(0);
+                                        goto c4f0;
+                                }
+                                sw_458ea8((word_t)(record + 0x30), (word_t)(record + 0x78));
+                                word_t s98 = *(word_t*)(record + 0x98);
+                                u13 = *(word_t*)(record + 0x90);
+                                sw_34e1ec((word_t)(record + 0x78));
+                                sw_31b46c(s98);
+                                word_t s6 = sw_350a88(0);
+                                /* opaque: uVar7 = (*extraout_x8)(s6, s98) */
+                                word_t s7 = sw_31b46c(s6);
+                                s98 = *(word_t*)(record + 0x98);
+                                word_t s90 = *(word_t*)(record + 0x90);
+                                if ((s7 & 1) == 0) {
+                                        sw_0026e8((word_t)(record + 0x78));
+                                        goto c4e4;
+                                }
+                                sw_34e1ec((word_t)(record + 0x78));
+                                /* opaque: (*FUN_0031b49c(s98))(record+0x30, FUN_00299540,
+                                 *        0, 0x6753a0, s90, s98) */
+                                sw_31b49c(s98);
+                                sw_0026e8((word_t)(record + 0x78));
+                                u13 = *(word_t*)(record + 0x38);
+                        } else {
+                        c4f0:
+                                sw_351e08(0);
+                        }
+                        sw_36b270(u13);
+                        sw_34fe80(0);
+                        x3 = u11;
+                        word_t s5b = sw_4573b0(0);
+                        sw_3a25d4(u11);
+                        sw_3a25d4(u13);
+                        if ((s5b & 1) == 0) SW_FATAL(0x42c554);
                 }
                 idx = idx + 1;
-        }
+                if (u13 != 0) {
+                        word_t t = sw_07c1c4(0);
+                        sw_465524(t, /* hi */ 0, delim, stack10, /* unaff_x30 */ 0);
+                        return;
+                }
+        } while (1);
 }
 
 
@@ -2315,7 +2464,7 @@ word_t sk_re_scan_newline(word_t str, word_t flags)
  *                            word_t param_4)
  * Like 0x42f020 but scans across a String span [param_1,param_2) with the
  * given flags; decodes UTF-8/UTF-16 scalars and returns 1 if a newline is
- * found.  Confidence: low. */
+ * found.  Confidence: medium. */
 word_t sk_re_parse_scalar2(word_t start, word_t end, word_t a, word_t flags)
 {
         if ((end >> 0xe) != (start >> 0xe)) {
@@ -2703,7 +2852,7 @@ void sk_re_peek_char2(void)
  * Ghidra: void FUN_0042fd4c(void)
  * Completes a diagnostic: if the diagnostic count is positive runs the
  * formatting pipeline and commits the position; else re-initializes the
- * diagnostic record and reports a 'position' error.  Confidence: low. */
+ * diagnostic record and reports a 'position' error.  Confidence: high. */
 sw128_t sk_re_diag_complete(void)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
@@ -3230,43 +3379,117 @@ sw128_t sk_re_parse_number(void)
 
 
 /* FUN_00431210 @ 0x00431210   (est. sk_re_parse_number_radix)
- * Ghidra: void FUN_00431210(word_t *param_1)
- * Parses a number with an explicit radix from the input String: handles a
- * leading +/-, accumulates decimal digits (base 10) with overflow checks,
- * and writes the (value, kind) into the caller's record.  Confidence: low. */
+ * Ghidra: void FUN_00431210(ulong *param_1)
+ * Parses a number with an explicit radix from the input String. The radix is
+ * carried in bits 56-59 of the input word (unaff_x23) and the sign/current
+ * char in unaff_x24. Handles '+'/'-' prefixes and accumulates digits with
+ * overflow checks (trap 0x431524 on a zero radix); the non-decimal radix
+ * path defers to the strtoul-like helper 0xb05bc. Writes the 5-word record
+ * (value, span, curpos, cur, kind) to out.
+ * Confidence: medium. */
 void sk_re_parse_number_radix(word_t *out)
 {
-        byte *rec = (byte*)__builtin_frame_address(0);
+        /* Opaque caller-register inputs (per decompile unaff_* names):
+         * x23 = input String bitfield (radix in bits 56-59, flags 60/61),
+         * x24 = current char, x20 = caller record. */
+        word_t x23 = 0, x24 = 0, x20 = 0;
+        word_t x21 = 0, x22 = 0x5a3558;   /* forwarded record words */
+        word_t value = 0, span = 0, kind = 1, radix, u12 = 0, v25 = 0;
+        sw128_t au;
+        byte *p8 = 0;
+        word_t d;
+
         sw_68e14(0);
         sk_re_parse_suffix();
-        word_t value = 0, kind = 1, span = 0;
-        if (0 != 0) {
-                sw_3562d4(0);
-                word_t r = *(word_t*)(__builtin_frame_address(0) + 0x10);
-                byte d = *(byte*)((*(word_t*)(__builtin_frame_address(0) + 0x18) & 0xfffffffffffffff) + 0x20);
-                if (d == '+' || d == '-') {
-                        /* sign; then digits */
-                        if (d == '-') kind = 0;
-                }
-                /* accumulate base-10 digits */
-                bool ok = true;
-                word_t v = 0;
-                byte *p = (byte*)((*(word_t*)(__builtin_frame_address(0) + 0x18) & 0xfffffffffffffff) + 0x20);
-                while (p && ok) {
-                        byte c = *p;
-                        if (c < 0x30 || 0x3a <= c) break;
-                        word_t nv = v * 10 + (c - 0x30);
-                        if (nv < v) { ok = false; break; }
-                        v = nv;
-                        p = p + 1;
-                }
-                value = v;
+        if (0) {   /* extraout_x1 == 0 (opaque gate): degenerate cleanup path */
+                sw_46592c(0);
+                sw_463f40(0);
+                goto out;
         }
+        span = sw_3562d4(0);
+        radix = (x23 >> 0x38) & 0xf;
+        value = span & 0xffffffffffff;
+        if ((x23 & 0x2000000000000000) != 0) value = radix;
+        x21 = x20;
+        x22 = 0x5a3558;
+        if (value == 0) goto err;
+        if ((x23 >> 0x3c & 1) == 0) {
+                if ((x23 >> 0x3d & 1) != 0) {
+                        /* sign-prefixed form; radix carried in x23 bits 56-59 */
+                        if (radix == 0) SW_FATAL(0x431524);
+                        v25 = 0;
+                        u12 = 1;
+                        goto commit;
+                }
+                /* decimal string form: (ptr=lo, len=hi) from the aux helpers */
+                sw_350518(0);
+                au = sw_2a9ba8(0);
+                p8 = (byte *)au.lo;
+                if (au.hi < 1) SW_FATAL(0x431520);
+                if (*p8 == '+') {
+                        if ((au.hi != 1) && (p8 == (byte*)0x0)) SW_FATAL(0x43152c);
+                        p8 = p8 + 1;
+                        for (;;) {
+                                d = *p8 - 0x30;
+                                if (9 < d) goto err;
+                                v25 = v25 * 10 + d;
+                                if (v25 > 0xffffffffffff) goto err;
+                                p8 = p8 + 1;
+                        }
+                } else if (*p8 == '-') {
+                        if ((au.hi != 1) && (p8 == (byte*)0x0)) SW_FATAL(0x431528);
+                        p8 = p8 + 1;
+                        for (;;) {
+                                d = *p8 - 0x30;
+                                if (9 < d) goto err;
+                                v25 = v25 * 10 + d;
+                                if (v25 > 0xffffffffffff) goto err;
+                                p8 = p8 + 1;
+                        }
+                } else {
+                        /* bare digit accumulation with 16-bit overflow checks */
+                        for (;;) {
+                                d = *p8 - 0x30;
+                                if (9 < d) goto err;
+                                if ((v25 & 0xffff) > 0xffff) goto err;
+                                v25 = (v25 & 0xffff) * 10 + (d & 0xff);
+                                if ((v25 & 0xffff0000) != 0) goto err;
+                                p8 = p8 + 1;
+                        }
+                }
+        } else {
+                /* non-decimal radix via the strtoul-like helper 0xb05bc */
+                sw_36b270(0);
+                au = sw_350518(0);
+                v25 = sw_0b05bc(au.lo, au.hi, 10);
+                sw_3a25d4(0);
+                u12 = (word_t)((uint)(v25 >> 0x10) & 0xffff);
+commit:
+                if ((u12 & 0xff) == 1) goto err;
+        }
+        sw_3a25d4(0);
+        span = 0;
+        kind = 0;
+        value = v25 & 0xffff;
+        goto out;
+err:
+        sw_464ebc(0);
+        sw_46633c(0);
+        sw_3511d8(0);
+        sk_re_diag_rec_e();
+        sk_re_diag_rec(0);
+        sw_461430(0);
+        sw_3a25d4(0);
+        value = 0;
+        kind = 0;
+        span = 1;
+out:
         out[0] = value;
         out[1] = span;
-        out[2] = 0;
-        out[3] = 0;
+        out[2] = x21;
+        out[3] = x22;
         *(byte*)(out + 4) = (byte)kind;
+        (void)p8;
 }
 
 
@@ -4005,7 +4228,7 @@ word_t sk_re_diag_finalize(void)
  * 'm'->2, 'n'->3, 's'->4, 'U'->5, 'x'->6/7 (with optional 'x{...}' block),
  * 'w'->8, 'D'->9, 'P'->10, 'S'->11, 'W'->12, 'y'->13, 'X'->15, 'u'->16,
  * 'b'->17; unknown ->0x14 (with a diagnostic).  Writes the mode byte.
- * Confidence: low. */
+ * Confidence: medium. */
 word_t sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
 {
         byte *out = (byte*)__builtin_frame_address(0);
@@ -4069,15 +4292,15 @@ word_t sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
                 } else {
                         sk_re_parse_quant_star();
                         if (/* x1 out of sk_re_parse_quant_star */ 0 != 0) {
-                                word_t t = sw_351f28();   /* 128-bit scalar (lo) */
+                                word_t t = sw_351f28(0);   /* 128-bit scalar (lo) */
                                 if (t != 0x7d /* || hi != 0xe100000000000000 */) {
-                                        word_t u = sw_3504c4();  /* 128-bit scalar (lo) */
+                                        word_t u = sw_3504c4(0);  /* 128-bit scalar (lo) */
                                         sw_463540(u, /* hi */ 0, 0x7d);
-                                        if ((sw_2a0cf8() & 1) == 0) {
+                                        if ((sw_2a0cf8(0) & 1) == 0) {
                                                 sw_351e3c(0x77, 0xe100000000000000);
-                                                if ((sw_2a0cf8() & 1) == 0) {
+                                                if ((sw_2a0cf8(0) & 1) == 0) {
                                                         sw_351e3c(0x67, 0xe100000000000000);
-                                                        if ((sw_2a0cf8() & 1) == 0) {
+                                                        if ((sw_2a0cf8(0) & 1) == 0) {
                                                                 /* content record: 0x36b270(lVar1),
                                                                  * 0x2a4ab4(0x33),
                                                                  * 0x2acbb8(0xd00000000000001b,0x80000000005dfce0),
@@ -4451,7 +4674,7 @@ void sk_re_bool_ident(byte *out, word_t *p)
  * Ghidra: void FUN_00437070(word_t *param_1, word_t param_2)
  * Parses a numeric/named back-reference: reads the number (0x437eec); if it
  * is a plain number, tries the named-capture match (0x42f890); copies the
- * resulting reference record.  Confidence: low. */
+ * resulting reference record.  Confidence: medium. */
 void sk_re_parse_backref(word_t *out, word_t a)
 {
         word_t rec[10];
@@ -4463,6 +4686,8 @@ void sk_re_parse_backref(word_t *out, word_t a)
                 sw_4653fc(0);
                 word_t hi = rec[3];
                 word_t lo = rec[2];
+                word_t cur = *(word_t*)(__builtin_frame_address(0) + 0x10);
+                if (cur >> 0xe < pos >> 0xe) SW_FATAL(0x4371ac);
                 sw_36b270(hi);
                 sw_350518((word_t)&rec[2]);
                 sw_3511cc(0);
@@ -4470,9 +4695,9 @@ void sk_re_parse_backref(word_t *out, word_t a)
                 sw_3a25d4(hi);
                 if (rec[9] == -1) {
                         sk_re_diag_match2(a, 0xe100000000000000);
-                        rec[9] = '\\0';
+                        rec[9] = '\0';
                         rec[4] = pos;
-                        rec[5] = *(word_t*)(__builtin_frame_address(0) + 0x10);
+                        rec[5] = cur;
                         rec[3] = hi;
                         rec[2] = lo;
                 } else {
@@ -4652,48 +4877,61 @@ done:
  * Parses the group-kind token after '(?': handles '(?P<...>' (named group)
  * and '(?P=...>' (named backref) by building the corresponding AST record
  * via the metadata at 0x4c2450; returns whether the token was recognized.
- * Confidence: low. */
+ * Confidence: medium. */
 word_t sk_re_parse_group_kind(void)
 {
         byte *rec = (byte*)__builtin_frame_address(0);
+        word_t uVar1;
         sw_464adc(0);
         sw_464adc(0);
         sw_4614cc(0, 0);
         sw_464e34(0);
         word_t m = sk_re_diag_emit_str();
         if ((m & 1) == 0) {
-                return 0;
-        }
-        m = sk_re_scan_newline(0x3f, 0xe100000000000000);
-        if ((m & 1) == 0) {
-                return sk_re_scan_newline(0x2a, 0xe100000000000000);
-        }
-        sw_466684(0);
-        sw_466684(0);
-        sw_4614cc(0, 0);
-        m = sk_re_scan_newline(0x50, 0xe100000000000000);
-        sw_46322c(0);
-        if ((m & 1) == 0) {
-                /* '(?P<...>' named group */
-                sw_36a9a0(0, 0);
-                sk_re_record_append_diag(0);
-                sw_4666a8(0);
-                sw_455db8(0);
-                sw_2834(0);
-                sw_36b6ac(0);
+                uVar1 = 0;
         } else {
-                /* '(?P=...>' named backref */
-                sw_36a9a0(0, 0);
-                sk_re_record_append_diag(0);
-                sw_4666a8(0);
-                sw_455db8(0);
-                sw_2834(0);
-                sw_36b6ac(0);
+                m = sk_re_diag_emit_str();   /* ground truth: FUN_0042f670(0x3f,0xe100000000000000) */
+                if ((m & 1) == 0) {
+                        uVar1 = sk_re_diag_emit_str();  /* FUN_0042f670(0x2a,0xe100000000000000) */
+                } else {
+                        sw_466684(0);
+                        sw_466684(0);
+                        sw_4614cc(0, 0);
+                        m = sk_re_diag_emit_str();      /* FUN_0042f670(0x50,0xe100000000000000) */
+                        word_t u3 = sw_46322c(0);
+                        if ((m & 1) == 0) {
+                                /* '(?P<...>' named group: AST kind 0x26 */
+                                long r2 = (long)sw_36a9a0(u3, 0);
+                                /* record @r2: +0x18=uRam004c2458, +0x10=_DAT_004c2450,
+                                 * +0x20=0x26, +0x28=0xe100000000000000,
+                                 * +0x30=0x52, +0x38=0xe100000000000000 */
+                                sk_re_record_append_diag(0);
+                                sw_4666a8(0);
+                                sw_455db8(0);
+                                sw_2834(0);
+                                sw_36b6ac(0);
+                        } else {
+                                /* '(?P=...>' named backref: AST kind 0x3d */
+                                long r2 = (long)sw_36a9a0(u3, 0);
+                                /* record @r2: +0x18=uRam004c2458, +0x10=_DAT_004c2450,
+                                 * +0x20=0x3d, +0x28=0xe100000000000000,
+                                 * +0x30=0x3e, +0x38=0xe100000000000000 */
+                                sk_re_record_append_diag(0);
+                                sw_4666a8(0);
+                                sw_455db8(0);
+                                sw_2834(0);
+                                sw_36b6ac(0);
+                        }
+                        sw_3a25d4(0xe100000000000000);
+                        sk_re_diag_merge(0, 0, 0, 0);
+                        sw_45904c(0);
+                        uVar1 = 1;
+                }
         }
-        sw_3a25d4(0xe100000000000000);
         sk_re_diag_merge(0, 0, 0, 0);
         sw_45904c(0);
-        return 1;
+        sw_466730(uVar1 & 1, 0);
+        return uVar1 & 1;
 }
 
 
@@ -5046,7 +5284,7 @@ void sk_re_parse_concat(void)
  * Ghidra: byte [16] FUN_0043942c(void)
  * Parses an anchor token: runs the sequence parser (0x439a5c); if the
  * resulting kind is a 0x200-series anchor, checks for a following '[' and
- * returns (start, kind); else returns the empty pair.  Confidence: low. */
+ * returns (start, kind); else returns the empty pair.  Confidence: medium. */
 sw128_t sk_re_parse_anchor(void)
 {
         word_t *rec = (word_t*)__builtin_frame_address(0);
@@ -5058,7 +5296,7 @@ sw128_t sk_re_parse_anchor(void)
         sw128_t r = sk_re_parse_sequence();
         sw_461ba0(r.lo, r.hi, 0, 0, 0, 0, 0);
         sw128_t out;
-        if ((r.lo & 0xff00) == 0x200) {
+        if ((r.hi & 0xff00) == 0x200) {   /* kind (word 4) in r.hi */
                 sk_re_diag_merge(0, 0, 0, 0);
                 sw_45904c(0);
                 sw_463534(0x5b);
@@ -5066,7 +5304,8 @@ sw128_t sk_re_parse_anchor(void)
                 if ((m & 1) != 0) {
                         sw_463534(0x5e);
                         word_t m2 = sk_re_diag_emit_str();
-                        if (start >> 0xe < start >> 0xe) SW_FATAL(0x439530);
+                        word_t cur = *(word_t*)(__builtin_frame_address(0) + 0x10);
+                        if (cur >> 0xe < start >> 0xe) SW_FATAL(0x439530);
                         out.lo = m2 & 1;
                         out.hi = 0;
                         return out;

@@ -4271,7 +4271,8 @@ void skp6_sk_buf_store_aligned32(uint32_t v)
  * Finalizes the output buffer: records the final base (FUN_00356a50), writes
  * the count (FUN_00357b60) and commits via FUN_00359bd4; traps if the new
  * range is negative.
- * Confidence: medium.
+ * Confidence: high (verified vs decompile 2026-08-12; SBORROW8 trap 0x24f150,
+ *   commit/fatal paths exact)
  */
 void skp6_sk_buf_finalize(void)
 {

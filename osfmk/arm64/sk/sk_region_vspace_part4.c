@@ -2686,7 +2686,7 @@ void skp4_sk_swift_string_parse_dispatch(void)
 cl4_result_t sk_parse_uint128_str(const unsigned char *p, long len, unsigned long radix, long bound)
 {
     unsigned long lo = 0, hi = 0;
-    unsigned long r = (long)radix >= 0 ? radix : -radix;
+    long rsign = (long)radix >> 0x3f;   /* uVar35: sign-extension of radix (0 or -1) */
     const unsigned char *q = p; long n = len; int neg = 0;
     cl4_result_t slice;
     if (len < 1) skp4_sk_swift_fatal_error(skp4_s_Fatal_error_005accd0,0xb,2,&skp4_DAT_005be7c0,0,2,
@@ -2711,12 +2711,25 @@ cl4_result_t sk_parse_uint128_str(const unsigned char *p, long len, unsigned lon
                 else { lo = 0; hi = 0; break; }
             } else adj = -0x30;
             {
-                unsigned long d = (unsigned char)(c + adj);
-                __uint128_t prod = (__uint128_t)lo * r + d;
-                if ((long)radix < 0) { /* neg */ }
-                if (prod > 0xffffffffffffffffull) { lo = 0; hi = 0; break; } /* overflow */
-                lo = (unsigned long)prod;
-                if (prod >> 64) { lo = 0; hi = 0; break; }
+                unsigned long d = (unsigned char)(c + adj);   /* uVar1 = digit */
+                /* 128-bit accumulate: value_128 = {hi,lo}; new = value*radix + digit,
+                 * detecting overflow beyond 128 bits (decompile CARRY8/SUB168 chain). */
+                unsigned long plo = lo * radix;               /* uVar30 = lo*radix (low) */
+                __uint128_t pfull = (__uint128_t)lo * radix;
+                unsigned long phi = (unsigned long)(pfull >> 64);            /* uVar38 = hi(lo*radix) */
+                unsigned long hmid = (unsigned long)rsign * lo + hi * radix; /* uVar34 = sign*lo + hi*radix */
+                unsigned long hsum = phi + hmid;                             /* uVar32 = uVar38+uVar34 */
+                int cmid = (hsum < phi) ? 1 : 0;                             /* CARRY8(uVar38,uVar34) */
+                unsigned long lo_new = plo + d;                              /* uVar31 = uVar30+digit */
+                int cd = (lo_new < plo) ? 1 : 0;                             /* CARRY8(uVar30,uVar1) */
+                unsigned long hi_new = hsum + (unsigned long)cd;             /* uVar33 = uVar32+carry */
+                int ovf = cmid;
+                if ((hi != 0 && (long)radix < 0) ||
+                    (((__uint128_t)hi * radix) >> 64) != 0 ||
+                    (((__uint128_t)(unsigned long)rsign * lo) >> 64) != 0)
+                    ovf = 1;   /* SUB168(uVar33*radix) / SUB168(uVar35*uVar31) */
+                if (ovf) { lo = 0; hi = 0; break; }   /* LAB_0022d818: return {0,0} */
+                lo = lo_new; hi = hi_new;
             }
         }
     }

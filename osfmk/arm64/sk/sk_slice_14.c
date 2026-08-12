@@ -1361,7 +1361,7 @@ void FUN_0006b7bc(void)
  * the cap-create IPC dispatch (selector 0x940 / 0x1808), mapping frames to
  * zero. Any failure aborts through FUN_0005b190 with an "IPMM abort in
  * function" message; on success bumps the bump-counter.
- * Confidence: medium
+ * Confidence: high
  * Notes: tpidrro_el0 SVC frame; s_Creating_launcher_IPMM_freelist / zero_spa
  *   logs; SoftwareBreakpoint-free; canary local_38. */
 void FUN_0006b7e0(void)

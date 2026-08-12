@@ -491,9 +491,12 @@ void *FUN_000b9e6c(int64_t hint, uint64_t arr, uint64_t limit)
  * their vtable comparator at +0x88; runs are merged with FUN_000b9f14 and
  * the run list is compacted via FUN_000b9c14.  `param_4` is a comparison
  * threshold passed to the merge step.
- * Confidence: medium
+ * Confidence: low
  * Notes: DAT_00657778 static empty vector; extensive SoftwareBreakpoint
- *   index guards; FUN_003a261c checks single-ref before vector growth. */
+ *   index guards; FUN_003a261c checks single-ref before vector growth.
+ *   The inner merge-partition loop is restructured (not 1:1 with the
+ *   decompile's do/while + partition phase) and the many index-guard traps
+ *   are collapsed; unaff_x21 unwind flag rendered as `if (0 != 0)`. */
 void FUN_000b9518(int64_t *runlist, uint64_t scratch, int64_t *array, int64_t limit)
 {
     /* `runlist` points at a dynamic vector of {start,end} run pairs.  The

@@ -973,7 +973,8 @@ void sk_swift_str_prelude(void)
  * Advances a Swift String index by one character (UTF-8/16 scalar width). Reads the
  * current scalar, validates, and returns a packed index word (next char count in
  * bits 16.., low flags 0x5). On a fatal condition it arms the assert path and panics.
- * Confidence: medium */
+ * Confidence: low (opaque register-forwarding: unaff_x20/x21, extraout_x8,
+ *   in_NG/in_OV substituted with 0; structure/constants verified 1:1) */
 word_t sk_swift_str_index_step(void)
 {
     word_t u, sc;
@@ -1808,7 +1809,8 @@ adv_done:
  * Returns the next character's packed index word. Reads the current scalar width,
  * handles ASCII/continuation flag bits, and returns the advanced index (char count
  * in bits 16.., trailing flags). Panics on overflow past the end.
- * Confidence: low */
+ * Confidence: low (opaque register-forwarding: unaff_x19/x20, in_ZR,
+ *   extraout_w8/x8 substituted with 0; structure/constants verified 1:1) */
 word_t sk_swift_str_index_next_char(void)
 {
     uint w;
@@ -2574,11 +2576,13 @@ nl_panic:
  * Tests whether the character at the packed index is a newline (0xa0d) or an
  * 0x8080-marker byte; returns 1 if it is a plain separator boundary, 0 if it is the
  * line terminator, or the UTF-16 width.
- * Confidence: low */
+ * Confidence: high (fixed: pair high word now captured for `a+1==uh`, and
+ *   UTF-16 inline buffer base now uses the local_20 stack copy of param_2) */
 word_t sk_swift_str_is_newline(word_t a, word_t b, word_t c)
 {
-    word_t u, f;
+    word_t u, f, uh;
     unsigned short ch;
+    word_t lc = b;   /* local_20: stack copy of param_2 (UTF-16 inline buffer) */
     if ((a >> 8 & 0x3f) != 0) {
         return a >> 8 & 0x3f;
     }
@@ -2594,15 +2598,18 @@ word_t sk_swift_str_is_newline(word_t a, word_t b, word_t c)
     if ((c >> 0x3c & 1) == 0) {
         if ((c >> 0x3d & 1) == 0) {
             if ((b >> 0x3c & 1) == 0) {
-                u = rt_002a9ba8(b,c).lo;
+                sk_u128_t p = rt_002a9ba8(b, c);
+                u = p.lo;
+                uh = p.hi;
             } else {
+                uh = b & 0xffffffffffff;
                 u = (c & 0xfffffffffffffff) + 0x20;
             }
-            if (a + 1 == 0) {
+            if (a + 1 == uh) {
                 return 1;
             }
             if (u == 0) {
-                rt_00347f2c(a,b,c);
+                rt_00347f2c(a, b, c);
                 /* WARNING: does not return */
                 rt_001afe4c();
             }
@@ -2611,7 +2618,7 @@ word_t sk_swift_str_is_newline(word_t a, word_t b, word_t c)
             if (a + 1 == f) {
                 return 1;
             }
-            ch = *(unsigned short *)(0 + a);
+            ch = *(unsigned short *)((char *)&lc + a);
         }
         if ((ch != 0xa0d) && ((ch & 0x8080) == 0)) {
             return 1;
@@ -4228,12 +4235,16 @@ word_t sk_swift_utf8_check(long a, long b, long c)
  * Scans forward to the start of the next UTF-8 scalar from offset param_3 of
  * param_1, skipping continuation bytes; returns the new offset.
  * Confidence: medium */
+/* VB2 2026-08-12: fixed rt_003d3550 continuation byte (*pbVar3 per case, not *p)
+ * and restored the param_2/lVar4 two-variable semantics in the skip loop
+ * (check address was shifted by collapsing them into one var). */
 long sk_swift_utf8_scanfwd(long a, long b, word_t c)
 {
     unsigned char *p, b0, b3;
     uint v;
     word_t u;
     long off;
+    long pp, lv;
     if ((long)c < b) {
         u = ~c;
         p = (unsigned char *)(a + c);
@@ -4268,11 +4279,17 @@ long sk_swift_utf8_scanfwd(long a, long b, word_t c)
                 }
                 off = off - 1;
                 if (*(char *)(a + off) < -0x40) {
+                    /* decompile keeps param_2 and lVar4 distinct; the loop
+                       checks *(param_1-2+lVar4) with lVar4=param_2 at loop top.
+                       Collapsing both into `off` shifted the check address, so
+                       restore the two-variable semantics here. */
+                    lv = off;           /* lVar4 = param_2 - 1 */
+                    pp = lv + 1;        /* param_2 = lVar4 + 1 */
                     do {
-                        off = off;
-                        off = off - 1;
-                    } while (*(char *)(a - 2 + off) < -0x40);
-                    off = off + -2;
+                        lv = pp;        /* lVar4 = param_2 */
+                        pp = lv - 1;    /* param_2 = lVar4 - 1 */
+                    } while (*(char *)(a - 2 + lv) < -0x40);
+                    off = lv - 2;       /* lVar4 += -2; param_2 = lVar4 */
                 }
                 if (off == 0) {
                     return 0;
@@ -5508,6 +5525,8 @@ void sk_ubp_fatal(void)
  * Advances the buffer index by one element, computing the new packed index word.
  * Panics (noreturn) on overflow past the end.
  * Confidence: low */
+/* VB2 2026-08-12: structure/call order/constants verified 1:1 vs decompile.
+ * in_ZR/unaff/extraout registers folded to 0 (opaque), keeps low. */
 word_t sk_ubp_advance(void)
 {
     word_t u, cur;
@@ -6248,6 +6267,8 @@ norm:
  * Short-buffer initializer taking an explicit 16-byte value; same logic as
  * sk_ubp_init_short.
  * Confidence: low */
+/* VB2 2026-08-12: fixed lo/hi swap in the 16-byte init path (auVar4._8_8_ is
+ * hi/param_1, _0_8_ is lo/param_2). extraout_x12/x9 folded to 0, keeps low. */
 void sk_ubp_init_short2(word_t a, word_t b)
 {
     sk_u128_t t;

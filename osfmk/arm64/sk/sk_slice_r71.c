@@ -1177,8 +1177,11 @@ static void sk_aes128_key_expand(word_t *key, word_t *out)
 /* FUN_0067f860 @ 0x0067f860  (est. sk_aes192_key_expand)
  * Ghidra: void FUN_0067f860(undefined8 *key, undefined8 *out)
  * AES-192 key schedule: 6-word key, 8 rounds (0xc0). 24 bytes -> 208 bytes.
- * Confidence: medium
- */
+ * Confidence: low
+ * Notes: heavily abstracted NEON AES round (sk_aese/sk_aes_mix/sk_ext); not
+ *   1:1 with the decompiled round bytes (each step emits 3 words here, not
+ *   the 2 rendered). The 0xc0 round-count word is stored at out element
+ *   0x1e (= byte 0xf0). */
 static void sk_aes192_key_expand(word_t *key, word_t *out)
 {
     sk_v16_t prev, next, t, rcon, mix, third;
@@ -1190,7 +1193,7 @@ static void sk_aes192_key_expand(word_t *key, word_t *out)
     out[0] = key[0];
     out[1] = key[1];
     out[2] = key[2];
-    *(uint32_t *)((byte *)out + 0x1e) = 0xc0;
+    *(uint32_t *)&out[0x1e] = 0xc0;
     mix.lo = 0; mix.hi = 0;
     rcon.lo = 0; rcon.hi = 0;
     w2 = key[2];
@@ -1228,7 +1231,7 @@ static void sk_aes192_key_expand(word_t *key, word_t *out)
 static void sk_aes256_key_expand(word_t *key, word_t *out)
 {
     sk_v16_t prev, next, t, rcon, mix, third;
-    int i;
+    int i, u1;
     prev.lo = key[0];
     prev.hi = key[1];
     third.lo = key[2];
@@ -1242,6 +1245,7 @@ static void sk_aes256_key_expand(word_t *key, word_t *out)
     rcon.lo = 0; rcon.hi = 0;
     i = 0x34;                       /* 52 */
     do {
+        u1 = i - 4;                 /* copy for the loop bound check */
         /* first half: temp from high half + round const */
         t = sk_ext(prev, third, 12);
         t = sk_aese(t, (sk_v16_t){0, 0});
@@ -1255,7 +1259,6 @@ static void sk_aes256_key_expand(word_t *key, word_t *out)
         out[5] = next.hi;
         out += 2;
         prev = next;
-        i -= 4;
         if (i == 4) return;
         /* second half: extra SubWord step on the low 4 bytes */
         t = sk_aese(prev, (sk_v16_t){0, 0});
@@ -1271,7 +1274,7 @@ static void sk_aes256_key_expand(word_t *key, word_t *out)
         prev = next;
         i -= 8;
         rcon = sk_ext(rcon, rcon, 1);
-    } while (3 < i && i != 0);
+    } while (3 < u1 && i != 0);
 }
 
 /* FUN_0067f9a0 @ 0x0067f9a0  (est. sk_aes_key_expand)

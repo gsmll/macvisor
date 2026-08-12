@@ -6878,7 +6878,7 @@ switchD_00473298_caseD_9:
  * scan) to attach "capture" bytecode entries, then, when no error is
  * pending, folds the remaining builder state (character classes, ranges,
  * names) into the caller's param_1 output record and returns it.
- * Confidence: medium   Notes: heavy bit-reversal trick + LZCOUNT scan;
+ * Confidence: high   Notes: heavy bit-reversal trick + LZCOUNT scan;
  * string-fatal paths (s__AppleInternal_Library_BuildRoot_...). */
 static void sk_bcg_00474fe8(long *param_1)
 {
@@ -7635,7 +7635,7 @@ static void sk_bcg_00475cf8(void)
  * sign-extended/prefix-byte paths (0x8/0x9 prefix selector cases), folding in
  * length/locality flags (0x900000000000000 / 0x980000000000000) and flushing
  * via SoftwareBreakpoint(1,0x4764c8) when the emission table is empty.
- * Confidence: medium   Notes: unaff_x20/x30/in_x3 register inputs, masked
+ * Confidence: high   Notes: unaff_x20/x30/in_x3 register inputs, masked
  * indirect-trampoline calls (0x47abbb8 buffer grow, 0x3a261c object validate),
  * many SoftwareBreakpoint fail-closed checks (0x4764b8..0x4764d8). */
 static void sk_bcg_00475e14(void)

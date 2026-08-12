@@ -4637,9 +4637,9 @@ void sk_f_0005fac0(int64_t thread)
  * Ghidra: void FUN_0005fad8(undefined8 param_1)
  * Core suspend path (shared with thread_suspend): publishes the current TCB, marks
  * it suspended, waits on the message register and decrements the thread count, then
- * reports "suspend should not return" (noreturn panic).  param_1 is stored as the
+ * then reports "suspend should not return" (noreturn panic).  param_1 is stored as the
  * suspend wake value at thread+0x40.
- * Confidence: medium
+ * Confidence: high
  * Notes: string sk_str_005bd02d; sk_f_0005b190 noreturn panic. */
 uint64_t sk_f_0005fad8(uint64_t wake_value)
 {
@@ -4665,10 +4665,12 @@ uint64_t sk_f_0005fad8(uint64_t wake_value)
             uint16_t *counter_ptr = (uint16_t *)(registry + 0x38);
             uint16_t counter = *counter_ptr;
             *counter_ptr = (uint16_t)(counter - 1);
-            sk_f_0005be84((uint64_t *)(uintptr_t)((((uint64_t)((uint32_t)((uint64_t)counter_ptr >> 32))) << 32) | (uint64_t)counter), 1);
+            /* disasm: mov x0,x19(thread); mov w1,#1; bl 0x5be84  -> node=thread, mode=1.
+             * The decompiler's CONCAT44(counter_ptr,counter) first arg is a phantom. */
+            sk_f_0005be84((uint64_t *)thread, 1);
         }
         sk_x_00060524();
-        sk_f_0005db7c((uint64_t *)0);   /* decompiler dropped thread arg */
+        sk_f_0005db7c((uint64_t *)thread);   /* disasm: x0=thread from FUN_00060524 before bl 0x5db7c */
         sk_f_0005b190(0, sk_str_005bd02d);   /* noreturn panic */
     }
     SoftwareBreakpoint(0x5519, 0x5fbc0);

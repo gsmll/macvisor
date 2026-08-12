@@ -55,7 +55,17 @@ extern unsigned char *cl4_flag_0();  /* FUN_00167c54 */
 extern unsigned char *cl4_flag_1();  /* FUN_00167c60 */
 extern unsigned char *cl4_flag_2();  /* FUN_00167c48 */
 extern unsigned char *cl4_flag_3();  /* FUN_00167c3c */
-extern unsigned char *cl4_flag_4();  /* FUN_00167c30 */
+
+/* FUN_00167c30 @ 0x00167c30  (est. cl4_flag_4)
+ * Ghidra: undefined * FUN_00167c30(void) { return &DAT_004e4a00; }
+ * Returns a pointer to a global flag byte (DAT_004e4a00).
+ * Confidence: high (trivial one-line return; verified vs decompile 2026-08-12)
+ */
+unsigned char *cl4_flag_4(void)
+{
+    extern unsigned char cl4_dat_004e4a00;  /* DAT_004e4a00 */
+    return &cl4_dat_004e4a00;
+}
 extern void *cl4_find_region();      /* FUN_0016d328 */
 extern void cl4_list_lookup();       /* FUN_001670f0 */
 extern void cl4_list_lock();         /* FUN_001dd77c */
@@ -235,14 +245,14 @@ void iel_save_thread_state(void *dst, long *src)
     unsigned long frame[9];
     capture(frame);
     if (cl4_result_ok == 0) {
-        *(void **)(cl4_current + 0x20) = (void *)frame[2];
-        *(void **)(cl4_current + 0x18) = (void *)frame[0];
-        *(void **)(cl4_current + 0x30) = (void *)frame[6];
-        *(void **)(cl4_current + 0x28) = (void *)frame[4];
-        *(unsigned long *)(cl4_current + 0x40) = frame[8] | (frame[7] << 8) >> 8; /* CONCAT71 */
-        *(void **)(cl4_current + 0x38) = (void *)frame[7];
-        *(void **)(cl4_current + 0x49) = (void *)frame[9];
-        *(unsigned long *)(cl4_current + 0x41) = frame[8]; /* CONCAT17 */
+        *(void **)(cl4_current + 0x20) = (void *)frame[1];   /* uStack_88 */
+        *(void **)(cl4_current + 0x18) = (void *)frame[0];   /* local_90 */
+        *(void **)(cl4_current + 0x30) = (void *)frame[3];   /* uStack_78 */
+        *(void **)(cl4_current + 0x28) = (void *)frame[2];   /* uStack_80 */
+        *(unsigned long *)(cl4_current + 0x40) = frame[5];   /* CONCAT71(uStack_67, uStack_68) */
+        *(void **)(cl4_current + 0x38) = (void *)frame[4];   /* local_70 */
+        *(unsigned long *)(cl4_current + 0x49) = ((frame[7] & 0xff) << 56) | (frame[6] >> 8);  /* uStack_5f */
+        *(unsigned long *)(cl4_current + 0x41) = ((frame[6] & 0xff) << 56) | (frame[5] >> 8);  /* CONCAT17(uStack_60, uStack_67) */
         void *obj = *(void **)(*(long *)(cl4_current + 0x10) + 0x10);
         void (*sync)(void *f) = *(void (**)(void *))(*(void **)obj + 0x70);
         cl4_retain(obj);
@@ -639,14 +649,14 @@ void iel_save_thread_state2(void *dst, long *src, unsigned long which)
     unsigned long frame[9];
     capture(frame, 1, 0, 0, 0, 0);
     if (cl4_result_ok == 0) {
-        *(void **)(cl4_current + 0x20) = (void *)frame[2];
-        *(void **)(cl4_current + 0x18) = (void *)frame[0];
-        *(void **)(cl4_current + 0x30) = (void *)frame[6];
-        *(void **)(cl4_current + 0x28) = (void *)frame[4];
-        *(unsigned long *)(cl4_current + 0x40) = frame[8] | ((frame[7] << 8) >> 8);
-        *(void **)(cl4_current + 0x38) = (void *)frame[7];
-        *(void **)(cl4_current + 0x49) = (void *)frame[9];
-        *(unsigned long *)(cl4_current + 0x41) = frame[8];
+        *(void **)(cl4_current + 0x20) = (void *)frame[1];   /* uStack_88 */
+        *(void **)(cl4_current + 0x18) = (void *)frame[0];   /* local_90 */
+        *(void **)(cl4_current + 0x30) = (void *)frame[3];   /* uStack_78 */
+        *(void **)(cl4_current + 0x28) = (void *)frame[2];   /* uStack_80 */
+        *(unsigned long *)(cl4_current + 0x40) = frame[5];   /* CONCAT71(uStack_67, uStack_68) */
+        *(void **)(cl4_current + 0x38) = (void *)frame[4];   /* local_70 */
+        *(unsigned long *)(cl4_current + 0x49) = ((frame[7] & 0xff) << 56) | (frame[6] >> 8);  /* uStack_5f */
+        *(unsigned long *)(cl4_current + 0x41) = ((frame[6] & 0xff) << 56) | (frame[5] >> 8);  /* CONCAT17(uStack_60, uStack_67) */
         void *obj = *(void **)(*(long *)(cl4_current + 0x10) + 0x10);
         void (*sync)(void *f);
         if ((which & 1) == 0)
@@ -1628,11 +1638,16 @@ void iel_destroy_object_op2(void)
  * 0xed0000203a535645 ("EVES :") are assembled into the log record. */
 void iel_dump_regions(void)
 {
+    unsigned long g2 = *(unsigned long *)0x4baeb8;
+    unsigned long g1 = *(unsigned long *)0x4baeb0;
     void *fmt = cl4_iel_tbl4();
     void *rec = cl4_log_alloc2(fmt, &iel_log_stack);
-    rec = rec;
-    cl4_log_fmt(0xe000000000000000);
-    cl4_panic_begin();
+    *(unsigned long *)((char *)rec + 0x18) = g2;
+    *(unsigned long *)((char *)rec + 0x10) = g1;
+    *(unsigned long *)((char *)rec + 0x38) = 0x6753a0;
+    *(unsigned long *)((char *)rec + 0x20) = 0x20676e69706d7544;  /* "Dump " */
+    *(unsigned long *)((char *)rec + 0x28) = 0xed0000203a535645;  /* "EVES :" */
+    cl4_log_fmt(0);
     cl4_log_emit(rec);
     cl4_log_finish();
     cl4_release_op(0, 0x20, 7);
@@ -1643,14 +1658,20 @@ void iel_dump_regions(void)
         do {
             void *e = *it;
             void *r2 = cl4_log_alloc2(fmt, &iel_log_stack);
+            *(unsigned long *)((char *)r2 + 0x18) = g2;
+            *(unsigned long *)((char *)r2 + 0x10) = g1;
             void (*m)(void) = *(void (**)(void))(*(void **)e + 0x88);
             cl4_retain(e);
             m();
             cl4_trace_word(0, 0);
-            cl4_log_fmt(0);
+            cl4_log_fmt(0);             /* FUN_003a25d4(extraout_x1): release of opaque x1 */
             cl4_trace_word(0x29, 0xe100000000000000);
-            cl4_log_emit(r2);
+            *(unsigned long *)((char *)r2 + 0x38) = 0x6753a0;
+            *(unsigned long *)((char *)r2 + 0x20) = 0x28206e6f69676552;  /* "Region (" */
+            *(unsigned long *)((char *)r2 + 0x28) = 0xe800000000000000;
+            cl4_log_fmt(r2);
             cl4_release(e);
+            cl4_log_emit(r2);
             cl4_log_finish();
             cl4_release_op(0, 0x20, 7);
             n -= 1;

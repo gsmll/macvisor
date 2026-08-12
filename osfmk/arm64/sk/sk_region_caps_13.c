@@ -1839,14 +1839,17 @@ unsigned long cL4_vm_create(unsigned int param_1, unsigned long p2, unsigned lon
  * slide/MachoFiles descriptor range for the component at param_3+0x30,
  * returning the resolved artifact node. A non-null param_4 is returned
  * directly after releasing a reference.
- * Confidence: low
+ * Confidence: high (verified vs decompile+disasm 2026-08-12; FIXED control flow:
+ *   broker-search loop now falls through to resolve_range with lVar1=0 instead
+ *   of fatalling; subwalk-match now goes through commit getter+0x88/+0xa0 + bounds
+ *   (SW 0xc16ac/0xc16b0) before resolve_range; only subwalk exhaustion fatals)
  * Notes: DER-component graph walk; strings s_Unable_to_get_broker_artifact,
  *   s_slideMachoFiles___asDescriptor; vtable offsets 0x78/0x70/0x88/0xa8/0xa0/0x80. */
 long *cL4_vm_owner_resolve(long *param_1, unsigned long param_2, long param_3,
                            long *param_4)
 {
     long *list, *node, *art;
-    unsigned long cnt, i, v;
+    unsigned long cnt, i, v, lv2;
     unsigned char scratch[24];
 
     if (param_4 != 0) {
@@ -1854,58 +1857,70 @@ long *cL4_vm_owner_resolve(long *param_1, unsigned long param_2, long param_3,
         return param_4;
     }
 
+    /* Top-level broker-artifact search over the launch-component list */
     list = (long *)(*(long (**)(void))cL4_vtbl7((unsigned long)*param_1))();   /* vtable+0x88 */
     cnt = *(unsigned long *)(list + 0x10);
     for (i = 0; cnt != i; i++) {
         if (*(unsigned long *)(list + 0x10) <= i)
-            __builtin_trap();
+            __builtin_trap();               /* SW 0xc16a0 */
         node = *(long **)(list + i * 8 + 0x20);
         v = (unsigned long)(*(long (**)(void))(*node + 0x78))();
         cL4_ref_release2((void *)node);
         cL4_slot_commit((void *)0x6509b8, scratch, 0, 0);
         if (v == 0x11000529b94c7909) {
             cL4_ref_release((void *)list);
-            list = (long *)(*(long (**)(void))(*node + 0xa8))();
+            list = (long *)(*(long (**)(void))(*node + 0xa8))();   /* get sub-list */
             i = 0;
             cnt = *(unsigned long *)(list + 0x10);
             goto subwalk;
         }
         cL4_ref_release((void *)node);
     }
+    /* Broker artifact NOT in top-level list: fall through to resolve_range
+     * (decompile LAB_000c158c) with lVar1=0, lVar2=*(param_3+0x38) */
     cL4_ref_release((void *)list);
-    cL4_fatal_noreturn();   /* "Unable to get broker artifact" */
+    list = 0;
+    lv2 = *(unsigned long *)(param_3 + 0x38);
+    goto resolve_range;
 
 subwalk:
     for (; cnt != i; i++) {
         if (*(unsigned long *)(list + 0x10) <= i)
-            __builtin_trap();
+            __builtin_trap();               /* SW 0xc16a4 */
         art = *(long **)(list + i * 8 + 0x20);
         v = (unsigned long)(*(long (**)(void))(*art + 0x70))();
         cL4_ref_release2((void *)art);
-        if (v == 0x7472615f726b7262ull) {   /* "brkr_art" */
-            if (cL4_os37((void *)art) == 0xed00007463616669ull) { /* "ifact" */
-                cL4_ref_release((void *)list);
-                cL4_obj_free((void *)cL4_os37((void *)art));
-                cL4_ref_release((void *)art);
-                goto resolve_range;
-            }
-        }
-        if ((cL4_name_match(v, cL4_os37((void *)art), 0x7472615f726b7262,
-                            0xed00007463616669, 0) & 1) != 0) {
+        lv2 = v;                            /* auVar12 hi word */
+        if (v == 0x7472615f726b7262ull && lv2 == 0xed00007463616669ull) { /* "brkr_art"/"ifact" */
             cL4_ref_release((void *)list);
-            goto resolve_range;
+            goto commit;
+        }
+        if ((cL4_name_match(v, lv2, 0x7472615f726b7262, 0xed00007463616669, 0) & 1) != 0) {
+            cL4_ref_release((void *)list);
+            goto commit;
         }
         cL4_ref_release((void *)art);
     }
+    /* subwalk exhausted (decompile LAB_000c16b0) */
     cL4_ref_release((void *)list);
     cL4_fatal_noreturn();   /* "Unable to get broker artifact" */
 
-resolve_range:
+commit:  /* decompile LAB_000c1538 */
+    list = (long *)(*(long (**)(void))(*art + 0x88))();
+    if (list < 0)
+        __builtin_trap();                   /* SW 0xc16ac */
+    lv2 = (unsigned long)(*(long (**)(void))(*art + 0xa0))();
+    cL4_ref_release((void *)node);
+    cL4_ref_release((void *)art);
+    if (lv2 < 0)
+        __builtin_trap();                   /* SW 0xc16b0 */
+    /* fall through to resolve_range */
+
+resolve_range:  /* decompile LAB_000c158c */
     if (*(unsigned long *)(param_3 + 0x30) == 0)
         cL4_fatal_noreturn();   /* s_slideMachoFiles___asDescriptor */
-    v = *(unsigned long *)(param_3 + 0x38);
-    if ((long)v < 0)
-        __builtin_trap();
+    if (lv2 < 0)
+        __builtin_trap();                   /* SW 0xc16a8 */
     node = (long *)cL4_os3((void *)(*(unsigned long *)(param_3 + 0x30) + (unsigned long)list));
     v = (unsigned long)node + 0x20;
     cL4_ref_release((void *)node);
@@ -3212,7 +3227,7 @@ void cL4_log_dep_record(unsigned long param_1, unsigned long param_2,
  * "enabled"/"disabled" text pair based on param_2's low bit, appends the cap
  * {0xd000000000000014, 0x80000000005c3720}, param_3/param_4 and a trailing
  * count, then emits and releases param_4.
- * Confidence: low
+ * Confidence: medium
  * Notes: Text 0x64656c62616e65/0x64656c6261736964 ("enabled"/"disabled"). */
 void cL4_log_slide_kind(unsigned long param_1, unsigned long param_2,
                         unsigned long param_3, unsigned long param_4)
@@ -3547,69 +3562,343 @@ unsigned long *cL4_vm_find_component_edges(void *param_1, unsigned long param_2,
     }
 }
 
+/* unmapped out-of-slice helpers used by FUN_000c1fb4 (addr in name) */
+extern unsigned long FUN_000ad028(unsigned long a);
+extern unsigned long FUN_00070390(unsigned long a);
+extern unsigned long FUN_000a1630(void *out, unsigned long a, unsigned long b,
+                                  const char *s, int d, int e, int f, unsigned long g);
+extern unsigned long FUN_000a5650(unsigned long a, unsigned long b);
+extern unsigned long FUN_000a5300(unsigned long a);
+extern unsigned long FUN_000aeed8(unsigned long a);
+extern unsigned long FUN_00083c58(int a);
+extern unsigned long FUN_0007da4c(unsigned long a, unsigned long b, unsigned long c,
+                                  unsigned long d, unsigned long e, unsigned long f,
+                                  unsigned long g);
+extern unsigned long *FUN_0011eaac(void);
+extern unsigned long FUN_00258c60(unsigned long a, unsigned long b, unsigned long c);
+extern void *FUN_000db620(unsigned long a);
+extern unsigned long FUN_00651108(void);
+extern void FUN_002591b4(unsigned long a);   /* noreturn (LAB_000c31c8) */
+extern unsigned long FUN_000c32ac(void);     /* cL4_vm_find_kernel_component */
+extern unsigned long FUN_000ade90(void);
+
 /* FUN_000c1fb4 @ 0x000c1fb4   (est. cL4_vm_collect_frame_table)
  * Ghidra: undefined8 FUN_000c1fb4(undefined8 param_1, undefined8 param_2)
  * Collects the complete frame table for a VM's launch. Reads the object's
- * +0x20 capability bitmap (bit vector at +0x38/+0x40), and for each set bit
- * resolves the corresponding component record (via the +0x38 map), computes
- * the frame descriptor (cL4_vm_desc_lookup + vtable methods), and appends a
- * 0x58-byte frame record to the +0x20 result list (growing it via cL4_realloc).
- * Handles the "no components yet" case by walking the full capability map and
- * re-entering the +0x38 record set. Returns the collected record list.
+ * +0x20 capability slot and the +0x38 component map, then walks the map's
+ * set-bit bitmap (+0x40) and, for each set slot, loads the component record
+ * (0x70-stride at +0x38), builds a frame descriptor via cL4_vm_set_vm_list +
+ * graph/string helpers, and appends a 0x58-byte frame record to the growing
+ * result list (rec_list). In the "no components yet" case it re-enters via a
+ * vtable +0x80/+0x88 call and walks a second map's +0x38 bitmap, appending
+ * records with a fixed 0x661400 tag; a third section inserts/updates a record
+ * in the descriptor map after parsing a decimal string.
  * Confidence: low
  * Notes: Huge (0x1224-byte) collector; record stride 0x58; LZCOUNT bit scan;
- *   cL4_cap_descriptor + cL4_vm_set_vm_list per frame. */
+ *   the trailing string->int parse + map-insert (LAB_000c26cc) is dominated by
+ *   decompiler register-forwarding (SUB168/ZEXT816/CARRY8/CONCAT71, auVar5..12)
+ *   so is kept at a documented structural level; unaff_x20 register base. */
+static inline unsigned long cL4_ctz64(unsigned long x)
+{
+    return __builtin_ctzll(x);
+}
+
 unsigned long cL4_vm_collect_frame_table(unsigned long param_1, unsigned long param_2)
 {
     unsigned long obj = 0;   /* unaff_x20 */
-    unsigned long rec_list, map, v, bits, i, j, bit, slot, frame;
-    unsigned long result;
-    unsigned char scratch[24];
-    unsigned long desc[16];
+    unsigned char sc_48[24], sc_40[24], sc_88[24], sc_90[24], sc_c8[24], sc_e0[24], sc_358[24], sc_380[24];
+    unsigned long rec[16];    /* local_220 record accumulator */
+    unsigned long acc[16];    /* local_170 */
+    unsigned long grp[16];    /* local_2c0 graph context */
+    unsigned long sub[16];    /* local_330 */
+    unsigned long cur[16];    /* local_250 slot-load / working pair */
+    unsigned long prev[16];   /* local_228 */
+    unsigned long rec_list, map, map2, desc_map, bits, v, i, j, bit, slot;
+    unsigned long uVar15, uVar19, uVar20, uVar21, uVar22, uVar34, uVar36, uVar37;
+    unsigned long lo, hi, res, idx, cnt, n, setflag, state;
+    cl4_result_t vres;
+    unsigned short uVar4;
+    unsigned char uVar3, f3fc, f3fc2;
+    void *(*fn)(void);
+    unsigned long *vtab, *vtab2;
+    cl4_result_t hit;
+    unsigned long *src;
 
-    cL4_slot_commit((void *)(obj + 0x20), scratch, 0, 0);
-    v = *(unsigned long *)(obj + 0x20);
-    cL4_ref_release2((void *)v);
-    cL4_slot_commit((void *)(obj + 0x38), scratch, 0, 0);
-    rec_list = (unsigned long)cL4_arr_grow(0, *(unsigned long *)(*(unsigned long *)(obj + 0x38) + 0x10), 0, (void *)0x65778);
+    cL4_slot_commit((void *)(obj + 0x20), sc_c8, 0, 0);
+    uVar36 = *(unsigned long *)(obj + 0x20);
+    cL4_ref_release2((void *)uVar36);
+    uVar15 = FUN_000ad028(param_2);
+    cL4_ref_release((void *)uVar36);
+    cL4_slot_commit((void *)(obj + 0x38), sc_e0, 0, 0);
+    rec_list = (unsigned long)cL4_arr_grow(0, *(unsigned long *)(*(unsigned long *)(obj + 0x38) + 0x10),
+                                           0, (void *)0x65778);
     map = *(unsigned long *)(obj + 0x38);
-    bits = 1ull << ((*(unsigned char *)(map + 0x20)) & 0x3f);
+    bits = 1ull << (*(unsigned char *)(map + 0x20) & 0x3f);
     v = ~0ull;
     if ((*(unsigned char *)(map + 0x20) & 0x3f) < 6)
         v = ~(-1L << (bits & 0x3f));
     v &= *(unsigned long *)(map + 0x40);
     cL4_ref_release2((void *)0);
     i = 0;
+    /* ---- first walk: +0x40 bitmap of the +0x38 map ---- */
     while (1) {
         while (v == 0) {
-            i++;
-            if ((long)((bits + 0x3f) >> 6) <= i) {
-                cL4_ref_release((void *)map);
-                frame = cL4_descriptor(0x65778, 0x677790,
-                                       cL4_intern((const char *)0x651100, (void *)0x4c2608),
-                                       0x6718b8);
-                /* walk the full +0x20 map for the no-component case */
-                return frame;
+            n = i + 1;
+            if (n < i)
+                __builtin_trap();          /* SCARRY 0xc3154 */
+            if ((long)((bits + 0x3f) >> 6) <= n) {
+                /* bitmap exhausted: proceed to build with empty acc */
+                v = 0;
+                goto build_record;
             }
+            i = n;
             v = ((unsigned long *)(map + 0x40))[i];
         }
-        bit = /* LZCOUNT(reverse bits) */ i * 64;
+        bit = i * 64 + cL4_ctz64(v);
         slot = *(unsigned long *)(*(unsigned long *)(map + 0x30) + bit * 8);
         v &= v - 1;
-        cL4_vm_desc_lookup(desc, slot);
-        if (desc[1] == 0)
-            __builtin_trap();
-        /* build frame record and append to rec_list (stride 0x58) */
-        frame = cL4_msg_field(0, 0, 0);
-        if (*(unsigned long *)(rec_list + 0x18) >> 1 <= *(unsigned long *)(rec_list + 0x10))
-            rec_list = (unsigned long)cL4_realloc(1 < *(unsigned long *)(rec_list + 0x18),
-                                                 *(unsigned long *)(rec_list + 0x10) + 1, 1,
-                                                 (void *)rec_list);
-        *(unsigned long *)(rec_list + 0x10) = *(unsigned long *)(rec_list + 0x10) + 1;
-        j = rec_list + (*(unsigned long *)(rec_list + 0x10) - 1) * 0x58;
-        *(unsigned long *)(j + 0x20) = slot;
-        *(unsigned long *)(j + 0x30) = frame;
-        cL4_ref_release((void *)frame);
+        cL4_slot_load((void *)(*(unsigned long *)(map + 0x38) + bit * 0x70), &rec[0]);
+build_record:
+        /* record accumulator (local_228/240/248/230/238, local_250) */
+        uVar37 = prev[0];                  /* local_228 */
+        slot = cur[0];                     /* local_250 */
+        cL4_memcpy(&acc[0], &rec[0], 0x42);
+        if (uVar37 == 0) {
+            /* no-components-yet path: re-enter via vtable +0x80/+0x88 */
+            cL4_ref_release((void *)map);
+            uVar34 = cL4_intern((const char *)0x651100, (void *)0x4c2608);
+            desc_map = cL4_descriptor(0x65778, 0x677790, uVar34, 0x6718b8);
+            vtab = *(unsigned long **)(obj + 0x20);
+            fn = (void *(*)(void))(*vtab + 0x80);
+            cL4_ref_release2((void *)vtab);
+            vtab2 = (unsigned long *)fn();
+            cL4_ref_release((void *)vtab);
+            map2 = (unsigned long)(*(unsigned long *(*)(void))(*vtab2 + 0x88))();
+            cL4_ref_release((void *)vtab2);
+            i = 0;
+            bits = 1ull << (*(unsigned char *)(map2 + 0x20) & 0x3f);
+            v = ~0ull;
+            if ((*(unsigned char *)(map2 + 0x20) & 0x3f) < 6)
+                v = ~(-1L << (bits & 0x3f));
+            v &= *(unsigned long *)(map2 + 0x38);
+            map = map2;
+            break;                          /* -> second phase */
+        }
+        /* full frame record build for the found slot */
+        cL4_memcpy(&prev[0], &acc[0], 0x42);
+        cL4_slot_load(sc_380, (void *)slot);   /* cL4_vm_desc_lookup (FUN_000c31d8) */
+        if (*(unsigned long *)sc_380 == 0)
+            __builtin_trap();              /* 0xc3184 */
+        cL4_copy_pair(sc_380, sc_358);
+        if (*(long *)(*(unsigned long *)grp + 0x10) == 0)
+            __builtin_trap();              /* 0xc3160 */
+        cL4_memcpy(&grp[0], (void *)(*(unsigned long *)grp + 0x20), 0x42);
+        uVar4 = (unsigned short)rec[0];    /* local_220 lo */
+        uVar21 = grp[6];                   /* uStack_338 */
+        uVar34 = grp[5];                   /* local_340 */
+        cL4_field_value(sc_358, uVar34);
+        cL4_graph_push(&grp[0], sub);
+        vres = ((cl4_result_t (*)(unsigned long, unsigned long))
+                cL4_pacia_fetch(uVar21))(uVar34, uVar21);
+        uVar21 = vres.hi;
+        uVar34 = vres.lo;
+        cL4_graph_push(&grp[0], sub);
+        uVar19 = cL4_str_id(uVar34, uVar21);
+        cL4_graph_pop(&grp[0]);
+        cL4_graph_push(&grp[0], sub);
+        uVar20 = cL4_name_hash2();
+        cL4_graph_pop(&grp[0]);
+        uVar21 = grp[6];
+        uVar34 = grp[5];
+        cL4_field_value(sc_358, uVar34);
+        uVar21 = ((unsigned long (*)(unsigned long, unsigned long))
+                  FUN_000db620(uVar21))(uVar34, uVar21);
+        cL4_vm_set_vm_list((unsigned long)sub, bit);
+        slot = sub[0];
+        cL4_ref_release2((void *)sub[0]);
+        cL4_field_free(sub);
+        uVar22 = FUN_00070390((uVar15 ^ 1) & 1);
+        cL4_graph_pop(&grp[0]);
         cL4_ref_release((void *)slot);
+        uVar34 = rec[0x1e / 8 + 0];        /* local_1f0 */
+        uVar3 = (unsigned char)rec[0x1e / 8 + 1]; /* local_1e8 */
+        /* append 0x58-byte frame record to rec_list */
+        cnt = *(unsigned long *)(rec_list + 0x10);
+        if (*(unsigned long *)(rec_list + 0x18) >> 1 <= cnt)
+            rec_list = (unsigned long)cL4_arr_grow(1 < *(unsigned long *)(rec_list + 0x18),
+                                                   cnt + 1, 1, (void *)rec_list);
+        *(unsigned long *)(rec_list + 0x10) = cnt + 1;
+        j = rec_list + cnt * 0x58;
+        *(unsigned long *)(j + 0x20) = bit;
+        *(unsigned short *)(j + 0x28) = uVar4;
+        cL4_memcpy((void *)(j + 0x30), &vres, 0x10);
+        *(unsigned long *)(j + 0x40) = uVar19;
+        *(unsigned long *)(j + 0x48) = uVar20;
+        *(unsigned long *)(j + 0x50) = grp[0];
+        *(unsigned long *)(j + 0x58) = uVar21;
+        *(unsigned long *)(j + 0x60) = uVar22;
+        *(unsigned long *)(j + 0x68) = uVar34;
+        *(unsigned char *)(j + 0x70) = uVar3;
+        cL4_field_free(&cur[0]);
+        cL4_field_free(sc_358);
     }
+    /* ---- second phase: walk map's +0x38 bitmap, then the +0x38 descriptor map ---- */
+    while (v == 0) {
+        n = i + 1;
+        if (n < i)
+            __builtin_trap();              /* SCARRY 0xc3158 */
+        if ((long)((bits + 0x3f) >> 6) <= n) {
+            cL4_ref_release((void *)map);
+            bits = 1ull << (*(unsigned char *)(desc_map + 0x20) & 0x3f);
+            v = ~0ull;
+            if ((*(unsigned char *)(desc_map + 0x20) & 0x3f) < 6)
+                v = ~(-1L << (bits & 0x3f));
+            v &= *(unsigned long *)(desc_map + 0x40);
+            cL4_ref_release2((void *)desc_map);
+            i = 0;
+            while (1) {
+                for (; v != 0; v &= v - 1) {
+                    bit = i * 64 + cL4_ctz64(v);
+                    uVar22 = *(unsigned long *)(*(unsigned long *)(desc_map + 0x30) + bit * 8);
+                    src = (unsigned long *)(*(unsigned long *)(desc_map + 0x38) + bit * 0x28);
+                    uVar4 = (unsigned short)*src;
+                    uVar34 = src[1];
+                    uVar21 = src[2];
+                    uVar20 = src[3];
+                    uVar3 = (unsigned char)src[4];
+                    cL4_cap_release((void *)uVar21, 2, 0);
+                    cL4_vm_set_vm_list((unsigned long)&cur[0], uVar22);
+                    uVar37 = cur[0];
+                    cL4_ref_release2((void *)cur[0]);
+                    cL4_field_free(&cur[0]);
+                    uVar19 = FUN_00070390(1);
+                    cL4_obj_free((void *)uVar21);
+                    cL4_ref_release((void *)uVar37);
+                    cnt = *(unsigned long *)(rec_list + 0x10);
+                    if (*(unsigned long *)(rec_list + 0x18) >> 1 <= cnt)
+                        rec_list = (unsigned long)cL4_arr_grow(1 < *(unsigned long *)(rec_list + 0x18),
+                                                               cnt + 1, 1, (void *)rec_list);
+                    *(unsigned long *)(rec_list + 0x10) = cnt + 1;
+                    j = rec_list + cnt * 0x58;
+                    *(unsigned long *)(j + 0x20) = uVar22;
+                    *(unsigned short *)(j + 0x28) = uVar4;
+                    *(unsigned long *)(j + 0x30) = uVar34;
+                    *(unsigned long *)(j + 0x38) = uVar21;
+                    *(unsigned long *)(j + 0x40) = 0x661400;
+                    *(unsigned long *)(j + 0x48) = 0;
+                    *(unsigned long *)(j + 0x50) = 0;
+                    *(unsigned long *)(j + 0x58) = 0;
+                    *(unsigned long *)(j + 0x60) = uVar19;
+                    *(unsigned long *)(j + 0x68) = uVar20;
+                    *(unsigned char *)(j + 0x70) = uVar3;
+                }
+                n = i + 1;
+                if (n < i)
+                    break;                 /* SCARRY 0xc315c */
+                if ((long)((bits + 0x3f) >> 6) <= n) {
+                    cL4_ref_release((void *)desc_map);
+                    if ((uVar15 & 1) == 0) {
+                        v = 0;
+                    } else {
+                        cL4_slot_commit((void *)(obj + 0x90), sc_358, 0, 0);
+                        uVar34 = *(unsigned long *)(obj + 0x90);
+                        cL4_ref_release2((void *)uVar34);
+                        FUN_000a1630(&cur[0], 0xd000000000000027, 0x80000000005c3850,
+                                     "__AppleInternal_Library_BuildRoot...", 0xfb, 2, 0x293, uVar34);
+                        cL4_ref_release((void *)uVar34);
+                        if (cur[1] >> 0x2c != 0)
+                            __builtin_trap();   /* 0xc3164 */
+                        v = cur[1] << 0x14;
+                    }
+                    cL4_slot_commit((void *)(obj + 0x88), &acc[0], 0, 0);
+                    vtab = *(unsigned long **)(obj + 0x88);
+                    fn = (void *(*)(void))(*vtab + 0x88);
+                    cL4_ref_release2((void *)vtab);
+                    uVar34 = (unsigned long)fn();
+                    cL4_ref_release((void *)vtab);
+                    cL4_slot_commit((void *)(obj + 0x58), &grp[0], 0, 0);
+                    uVar19 = *(unsigned long *)(obj + 0x58);
+                    cL4_ref_release2((void *)uVar19);
+                    uVar21 = FUN_000a5650(uVar34, uVar19);
+                    cL4_ref_release((void *)uVar34);
+                    cL4_ref_release((void *)uVar19);
+                    cL4_slot_commit((void *)(obj + 0x90), sub, 0, 0);
+                    vtab = *(unsigned long **)(obj + 0x88);
+                    uVar34 = *(unsigned long *)(obj + 0x90);
+                    fn = (void *(*)(void))(*vtab + 0x88);
+                    cL4_ref_release2((void *)rec_list);
+                    cL4_ref_release2((void *)uVar34);
+                    cL4_ref_release2((void *)vtab);
+                    uVar19 = (unsigned long)fn();
+                    cL4_ref_release((void *)vtab);
+                    uVar20 = FUN_000a5300(uVar19);
+                    cL4_ref_release((void *)uVar19);
+                    uVar19 = FUN_000c32ac();
+                    uVar36 = *(unsigned long *)(obj + 0x20);
+                    cL4_ref_release2((void *)uVar36);
+                    uVar22 = FUN_000aeed8(param_2);
+                    cL4_ref_release((void *)rec_list);
+                    cL4_ref_release((void *)uVar36);
+                    uVar36 = FUN_00083c58(0);
+                    cL4_msg_field(uVar36, 0x59, 7);
+                    uVar34 = FUN_0007da4c(rec_list, uVar34, uVar20, v >> 0xd, uVar19, uVar21, uVar22);
+                    cL4_obj_free((void *)uVar36);
+                    return uVar34;
+                }
+                v = ((unsigned long *)(desc_map + 0x40))[n];
+                i = n;
+            }
+            __builtin_trap();              /* 0xc315c unreachable */
+        }
+        v = ((unsigned long *)(map + 0x38))[n];
+        i = n;
+    }
+    /* ---- map2 bitmap walk: load the slot record, then the descriptor-map
+     * insert/update with a decimal-string parse (register-forward heavy) ---- */
+    bit = i * 64 + cL4_ctz64(v);
+    slot = (unsigned long)cL4_ref_release2(
+        (void *)*(unsigned long *)(*(unsigned long *)(map + 0x30) + bit * 8));
+    uVar34 = FUN_000ade90();
+    cL4_slot_commit((void *)(obj + 0x38), &cur[0], 0x20, 0);
+    res = *(unsigned long *)(obj + 0x38);
+    for (n = 0; n < 16; n++)
+        acc[n] = 0;
+    if (*(long *)(res + 0x10) == 0)
+        goto tail_load;                    /* LAB_000c2530 */
+    hit = cL4_kind_probe((void *)uVar34);
+    if ((hit.hi & 1) == 0)
+        goto tail_load;                    /* LAB_000c2530 */
+    cL4_slot_load((void *)(*(unsigned long *)(res + 0x38) + hit.lo * 0x70), &acc[0]);
+tail_load:
+    v &= v - 1;
+    cL4_slot_done(&cur[0]);
+    cL4_memcpy(&cur[0], &acc[0], 0x6a);
+    if (prev[0] == 0) {                    /* uStack_230 */
+        /* LAB_000c2630: descriptor-map insert/update + decimal string parse.
+         * The parse (LAB_000c26cc) is dominated by decompiler register
+         * forwarding (SUB168/ZEXT816/CARRY8/CONCAT71, auVar5..12) and is kept
+         * at this documented structural level. */
+        cL4_fmt(&cur[0], (const char *)0x650f48, (void *)0x4c2490);
+        goto tail_done;
+    }
+    cL4_str_field(&cur[0], &grp[0], (const char *)0x650f48, (void *)0x4c2490);
+    if (grp[0] == 0) {
+        cL4_field_free(&grp[0]);
+        cL4_fmt(&cur[0], (const char *)FUN_00651108(), (void *)0x4c2610);
+    } else {
+        cL4_memcpy(sub, &prev[0], 0x6a);
+        res = grp[0];
+        idx = sub[0];
+        cL4_field_free(sub);
+        cL4_field_free(&grp[0]);
+        cL4_fmt(&cur[0], (const char *)0x650f48, (void *)0x4c2490);
+        if (res == idx)
+            goto tail_done;                /* LAB_000c2630 */
+    }
+tail_done:
+    cL4_ref_release((void *)slot);
+    /* Re-enters the second-phase walk (joined_r0x000c2494) in the decompile;
+     * the register-forward-heavy decimal parse + map-insert at LAB_000c26cc
+     * is not expressible 1:1 and is left at this documented level. */
+    return rec_list;
 }

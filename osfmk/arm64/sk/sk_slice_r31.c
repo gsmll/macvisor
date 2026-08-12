@@ -3560,13 +3560,14 @@ void sk_r31_49a2a4(long key_ptr, ulong hash)
     long lVar3;
     char *pcVar4;
     char *pcVar5;
+    long *unaff_x20;      /* map register global */
 
-    uVar1 = (ulong)-1 << ((ulong)*(byte *)(0 + 0x20) & 0x3f);
+    uVar1 = (ulong)-1 << ((ulong)*(byte *)(unaff_x20 + 0x20) & 0x3f);
     hash = hash & (uVar1 ^ 0xffffffffffffffff);
-    if ((*(ulong *)(0 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0) {
+    if ((*(ulong *)(unaff_x20 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0) {
         lVar2 = *(long *)(key_ptr + 0x10);
         do {
-            lVar3 = *(long *)(*(long *)(0 + 0x30) + hash * 8);
+            lVar3 = *(long *)(*(long *)(unaff_x20 + 0x30) + hash * 8);
             if (*(long *)(lVar3 + 0x10) == lVar2) {
                 if ((lVar2 == 0) || (lVar3 == key_ptr)) {
                     return;
@@ -3585,7 +3586,7 @@ void sk_r31_49a2a4(long key_ptr, ulong hash)
                 }
             }
             hash = hash + 1 & ~uVar1;
-        } while ((*(ulong *)(0 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0);
+        } while ((*(ulong *)(unaff_x20 + 0x40 + (hash >> 6) * 8) >> (hash & 0x3f) & 1) != 0);
     }
 }
 

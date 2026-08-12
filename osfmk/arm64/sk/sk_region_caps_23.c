@@ -2065,9 +2065,12 @@ void msg_copy_range(unsigned long dst, unsigned long a, unsigned long b, unsigne
  * Builds an L4 error message word-pair from a severity code: 1=missing
  * resource, 2=invalid argument, 3=serialization error, default=L4
  * Error. Returns {tag, value} with an English message prefix.
- * Confidence: low
+ * Confidence: medium
  * Notes: strings s_Missing_resource__005c6410,
- *   s_Invalid_argument__005c63f0, s_Serialization_error__005c63d0. */
+ *   s_Invalid_argument__005c63f0, s_Serialization_error__005c63d0.
+ *   Verified: switch/pair-build matches decompile exactly; the string fn
+ *   FUN_00086840 is a no-op so out[1] for cases 1-3 is the (indeterminate)
+ *   no-op return, rendered as 0. */
 void msg_error_builder(unsigned long a, unsigned long b, unsigned char kind,
                        unsigned long out[2])
 {

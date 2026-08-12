@@ -405,7 +405,9 @@ void cL4_mr_kind3_implicit(unsigned int *out, long ctx, unsigned long *desc)
  * and a 0x18-shaped object. On a match it emits the tag char (and 'z' first for
  * the 0x18 shape), then marshals the object's second word via cL4_mr_tail.
  * On mismatch sets error 0x7e0 with kind 1.
- * Confidence: medium
+ * Confidence: high (verified vs decompile+disasm 2026-08-12; FIXED control flow:
+ *   simple-match path LAB_003c8530 now emits tag + clears out + returns (was
+ *   falling through into marshal); 0x18 path now emits 'z' THEN tag before marshal)
  */
 void cL4_mr_object_metadata(unsigned int *out, long ctx, long *desc)
 {
@@ -433,7 +435,7 @@ void cL4_mr_object_metadata(unsigned int *out, long ctx, long *desc)
         if (len == 7) {
             if ((int)*p == 0x736f6c63 && *(int *)((char *)p + 3) == 0x65727573) { /* "clos"+"ure" */
                 tag = 0x4b;                    /* 'K' */
-                goto emit_tag;
+                goto simple_match;
             }
         } else {
             if (len != 0xb) {
@@ -441,11 +443,11 @@ void cL4_mr_object_metadata(unsigned int *out, long ctx, long *desc)
                     (*p != 0x5f7373656e746977 || *(long *)((char *)p + 6) != 0x646f6874656d5f73)) /* "twitness_s..." */
                     goto mismatch;
                 tag = 0x57;                    /* 'W' */
-                goto emit_tag;
+                goto simple_match;
             }
             if (*p == 0x74656d5f636a626f && *(long *)((char *)p + 3) == 0x646f6874656d5f63) { /* "objc_met"+"hod_c" */
                 tag = 0x4f;                    /* 'O' */
-                goto emit_tag;
+                goto simple_match;
             }
         }
         goto mismatch;
@@ -457,27 +459,26 @@ void cL4_mr_object_metadata(unsigned int *out, long ctx, long *desc)
         if (len != 5) {
             if ((len == 6) && ((int)*p == 0x6874656d && *(short *)((char *)p + 4) == 0x646f)) { /* "meth"+"od" */
                 tag = 0x4d;                   /* 'M' */
-                goto emit_tag;
+                goto simple_match;
             }
             goto mismatch;
         }
         if ((int)*p != 0x636f6c62 || *(char *)((char *)p + 4) != 'k') goto mismatch; /* "bloc"+"k" */
         tag = 0x42;                           /* 'B' */
     }
+    /* 'c'(1) and "bloc"+"k"(5) fall through here: check kind 2/5-with-refs and 0x18 shape */
     inner = desc;
     if (kind != 2) {
-        if ((kind != 5) || (*(unsigned int *)(desc + 1) < 2)) goto emit_tag;
+        if ((kind != 5) || (*(unsigned int *)(desc + 1) < 2)) goto simple_match;
         inner = (long *)*desc;
     }
     if (*(short *)(inner[1] + 0x10) != 0x18) {
-        goto emit_tag;
+        goto simple_match;
     }
+    /* 0x18-shaped object: emit 'z' then the tag, then marshal */
     tag2 = 0x7a;                              /* 'z' */
     cL4_mr_emit_char(ctx + 0x2140, &tag2, slot);
-    goto emit_char_tag;
-emit_tag:
     cL4_mr_emit_char(ctx + 0x2140, &tag, slot);
-emit_char_tag:
     if (cL4_mr_kind((unsigned long *)desc) != 2) {
         if ((cL4_mr_kind((unsigned long *)desc) != 5) || (*(unsigned int *)(desc + 1) < 2)) {
             len = 0;
@@ -488,6 +489,13 @@ emit_char_tag:
     len = desc[1];
 marshal_tail:
     cL4_mr_tail((unsigned long)out, ctx, len);
+    return;
+simple_match:
+    /* emit tag, clear out, return (no marshal) */
+    cL4_mr_emit_char(ctx + 0x2140, &tag, slot);
+    *out = 0;
+    *(unsigned long *)(out + 2) = 0;
+    out[4] = 0;
     return;
 mismatch:
     *out = 1;
@@ -1244,7 +1252,7 @@ void cL4_mr_op_XM(int *out, long ctx, long *desc, int depth)
  * Classifies a descriptor by length against "@objc_metatype", "thick", and
  * "@thi"+"n" patterns and emits the matching tag ('o','T','t'). On mismatch
  * error 0x981 with kind 0x15.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs decompile, VB2 sweep)
  */
 void cL4_mr_objc_metatype(unsigned int *out, long ctx, long *desc)
 {
@@ -2882,7 +2890,7 @@ void cL4_mr_dispatch_au(unsigned long out, long *desc, int depth)
  * "cp","Tk","tk","pr","TK","Cc","Tt","tT","xs","xg","ug","up","ui","et","st")
  * from a string table at 0x5d6f79. Emits 'w' then the tag string. Indices
  * >=0x18 yield an empty tag. Clears result.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs decompile; tag table read from 0x5d6f79)
  */
 void cL4_mr_small_type(int *out, long ctx, unsigned long *desc, int depth)
 {

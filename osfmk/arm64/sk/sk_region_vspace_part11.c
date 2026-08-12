@@ -2620,35 +2620,35 @@ uint32_t skp11_sk_string_remove_last_scalar(uint64_t idx)
  * on the end word traps; bit 0x3d selects the backing-storage decode path), and
  * computes the trailing scalar value via a two-level LZCOUNT/register switch
  * (caseD_1/2/3), writes the (offset|5) position and stores the scalar. Retains
- * the opaque Ghidra register-forwarding artifacts (extraout_x*/unaff_x20) verbatim.
+ * the opaque Ghidra register-forwarding artifacts (extraout_x*, unaff_x20) verbatim.
  * Confidence: low
  * Notes: Swift_UnicodeHelpers 0x34 trap; FUN_002ab8ac/FUN_002a7c00 append; the
- *   extraout_x*/unaff_x20 values are unextractable register forwardings, so the
+ *   extraout_x* / unaff_x20 values are unextractable register forwardings, so the
  *   per-case scalar computations cannot be fully expressed in C. */
 void skp11_sk_string_scalar_decode(void)
 {
-    ulong v1;                 /* uVar1 = *unaff_x20 */
-    ulong v2;                 /* uVar2 = unaff_x20[1] */
-    ulong cap;                /* uVar4 = allocation capacity */
-    ulong v5;                 /* uVar5 */
-    long v6;                  /* lVar6 */
+    uint64_t v1;              /* uVar1 = *unaff_x20 */
+    uint64_t v2;              /* uVar2 = unaff_x20[1] */
+    uint64_t cap;             /* uVar4 = allocation capacity */
+    uint64_t v5;              /* uVar5 */
+    int64_t v6;               /* lVar6 */
     uint8_t v3;               /* uVar3 */
-    ulong v8;                 /* uVar8 */
-    uint v7;                  /* uVar7 */
-    uint extraout_w8;
-    uint extraout_w8_00;
-    long extraout_x8;
-    long extraout_x8_00;
-    long extraout_x8_01;
-    long extraout_x8_02;
-    long extraout_x8_03;
-    long extraout_x8_04;
-    int extraout_w9;
-    int extraout_w9_00;
-    ulong extraout_x16;
-    ulong extraout_x16_00;
-    ulong *unaff_x20;
-    undefined8 extraout_x1;
+    uint64_t v8;              /* uVar8 */
+    uint32_t v7;              /* uVar7 */
+    uint32_t extraout_w8;
+    uint32_t extraout_w8_00;
+    int64_t extraout_x8;
+    int64_t extraout_x8_00;
+    int64_t extraout_x8_01;
+    int64_t extraout_x8_02;
+    int64_t extraout_x8_03;
+    int64_t extraout_x8_04;
+    int32_t extraout_w9;
+    int32_t extraout_w9_00;
+    uint64_t extraout_x16;
+    uint64_t extraout_x16_00;
+    uint64_t *unaff_x20;
+    uint64_t extraout_x1;
 
     skp11_sk_rt_00041138();
     v1 = *unaff_x20;
@@ -2707,7 +2707,7 @@ c3:
     v7 = extraout_w8_00;
     goto cjoin;
 cjoin:
-    v8 = (ulong)((uint)(v5 >> 0x10) & 0xffffffc0 | v7 & 0x3f);
+    v8 = (uint64_t)((uint32_t)(v5 >> 0x10) & 0xffffffc0 | v7 & 0x3f);
 c0:
     skp11_sk_rt_0034d190();
     v5 = skp11_sk_rt_00167404();

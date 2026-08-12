@@ -275,7 +275,10 @@ void FUN_000e0904(cl4_msg49_t *out, const cl4_msg49_t *in)
  * Marshals param_3's message, dispatches vtable slot +0x80 with two out
  * buffers, and on success copies the two resulting messages into param_1 and
  * param_2.
- * Confidence: medium */
+ * Confidence: medium
+ * Notes: Verified vs decompile: 49B marshal, vtable +0x80 dispatch
+ *   (out,msg,p4,p5), copy r1->out1 / r2->out2 on success. unaff_x20 this
+ *   rendered as 0 (opaque); success=unaff_x21 uninitialized per decompile. */
 void FUN_000e098c(cl4_msg49_t *out1, cl4_msg49_t *out2,
                   const cl4_msg49_t *in, uint64_t p4, uint64_t p5)
 {
@@ -2038,7 +2041,8 @@ void FUN_000e25d8(uint64_t *param_1)
  * Ghidra: uint FUN_000e2618(long param_1)
  * Finds the min and max of a ushort array (count at +0x10, seed at +0x20,
  * elements at +0x22); returns min | (empty ? 0x10000 : 0).
- * Confidence: medium */
+ * Confidence: high
+ * Notes: Verified: body matches decompile exactly. */
 uint32_t FUN_000e2618(uint64_t *param_1)
 {
     uint32_t lo, hi, seed;

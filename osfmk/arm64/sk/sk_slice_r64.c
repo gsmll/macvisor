@@ -3169,11 +3169,20 @@ static void sk_str_guts_init_full_00455778(word_t param_1, word_t param_2,
                                            word_t param_3, word_t param_4)
 {
     cl4_pair_t au6, au7;
-    word_t uVar1, uVar2, uVar4;
+    word_t uVar1, uVar2, uVar4, lVar5, local_8;
+    /* Register-aliased / closure-derived values the decompiler could not
+     * resolve (extraout_x8/x9/x16 and the frame locals local_10/local_30).
+     * Held symbolic so the call sequence and the element-loop control flow
+     * stay faithful; each defaults to 0 (unknown). */
+    word_t x8 = 0, x8_01 = 0, x8_02 = 0, x9 = 0;
+    word_t x16 = 0, x16_00 = 0, x16_01 = 0;
+    word_t local_10 = 0, local_30 = 0;
+    word_t r;
 
     au6 = sk_x_0008e518();
     uVar4 = au6.hi;
     sk_x_0007c028();
+    /* (*DAT_00658cf0)(x8_00 + 0x40);  -- opaque runtime dispatch */
     sk_x_000aa4ec();
     sk_x_00027754(param_4);
     uVar1 = sk_x_00027754();
@@ -3181,16 +3190,28 @@ static void sk_str_guts_init_full_00455778(word_t param_1, word_t param_2,
     uVar2 = sk_x_00377824(au7.lo, au7.hi, uVar4);
     sk_x_000a6f88();
     sk_x_0007c1a4();
+    /* (*DAT_00658cf0)();  -- opaque runtime dispatch */
+    lVar5 = (x9 - x8_01) - x8_02;
     sk_x_003509c8(param_3);
-    sk_x_002b8444(0, param_3);
-    /* element loop: while runs remain, build + 00455990 */
+    local_8 = sk_x_002b8444(x16_01 + 0x40, param_3);
+    /* (**(code **)(x16 + 0x10))(x9 - x8_01, au6.lo, uVar4); -- opaque dispatch */
+    r = sk_x_000a68c4(uVar1);
+    ((void (*)(word_t, word_t, word_t))r)(lVar5, uVar4, uVar1);
+    sk_x_00377bec(uVar1, uVar4, uVar2, DAT_00611b24, (word_t)&sk_x_000a68f4);
+    r = sk_x_000a68f4();
+    /* element loop: 00100efc yields a run; build + 00455990 until local_10==0 */
     while (1) {
-        if (0) break;
-        sk_str_elem_append_00455990(0, 0, 0);
+        sk_x_00100efc();
+        if (local_10 == 0) break;
+        uVar1 = local_30;
+        uVar4 = sk_x_0006a4c0(local_30, local_30);
+        sk_str_elem_append_00455990(uVar4, (word_t)&local_8, uVar1);
         sk_x_000026e8(0);
     }
-    sk_x_00077024();
-    sk_x_003514e8(0);
+    /* (**(code **)(x16_00 + 8))(lVar5, uVar2);  -- opaque dispatch */
+    *(word_t *)(x8 + 0x18) = param_3;
+    uVar1 = sk_x_00077024();
+    sk_x_003514e8(uVar1);
     sk_x_001a29a0();
     sk_x_003514e8();
     sk_x_00359208();

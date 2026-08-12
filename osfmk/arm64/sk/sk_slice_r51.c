@@ -70,7 +70,7 @@ extern cL4_w16_t cL4_seqlock_pair(word_t *p);               /* FUN_00369c08 */
 extern word_t cL4_ref_retain_tls(word_t p, word_t extra);   /* FUN_0036c188 */
 extern void  *cL4_ref_alloc(word_t size, word_t tag);       /* FUN_0036a804 */
 extern void   cL4_ref_release_tls(word_t p);                /* FUN_0036bd84 */
-extern word_t cL4_metadata_merge(word_t a, word_t b);       /* FUN_003a0ed4 */
+extern cL4_w16_t cL4_metadata_merge(word_t a, word_t b); /* FUN_003a0ed4 (16-byte pair return) */
 extern word_t cL4_metadata_canon(word_t *p);                /* FUN_003a0fcc */
 extern word_t cL4_metadata_chain(word_t w);                 /* FUN_003a25a0 */
 extern word_t cL4_hw_seed(void);                            /* FUN_0000456c */
@@ -1087,14 +1087,16 @@ static void sk_hash_copy(word_t *tbl, word_t *src, word_t *end)
 /* FUN_0039bb2c @ 0x39bb2c  (est. sk_conform_table_push)
  * Push a {begin,end} range pair onto the global conformance region table
  * (_DAT_006c0ac0 / _DAT_006c0ab0), growing the array and moving the old
- * free-list. Then acquires the 0x6c0a80 spinlock, drains the deferred list,
- * pushes the {begin,end} pair, and notifies the lock owner.
- * Confidence: low (concurrency heavy) */
+ * free-list. Then acquires the 0x6c0a80 spinlock, steals the pending
+ * deferred-notification words, re-enqueues them, and invokes the conformance
+ * vtable method; finally frees the drained list and destroys the vtable node.
+ * Confidence: medium (verified; no-arg thunk_FUN_00012568 artifact remains) */
 static void sk_conform_table_push(word_t begin, word_t n, word_t end)
 {
     word_t count, newcap;
     word_t *arr = _DAT_006c0ac0;
     word_t *np;
+    word_t guard = 0xd37afd4bb4000f2a;   /* stack canary: local_58 = -0x2c8502b44bfffed6 */
     cL4_ref_acquire(0x6c0ad0);
     count = _DAT_006c0ac0 ? *_DAT_006c0ac0 : 0;
     newcap = (word_t)_DAT_006c0ab0;
@@ -1132,8 +1134,34 @@ static void sk_conform_table_push(word_t begin, word_t n, word_t end)
         _DAT_006c0ae0 = 0;
     }
     cL4_ref_release(0x6c0ad0);
+    /* Lock 0x6c0a80, steal the pending deferred-notification words
+     * (_DAT_006c0a70/_DAT_006c0a68/_DAT_006c0a64), re-enqueue the masked
+     * remainder + the previous tail onto the _DAT_006c0aa0 list, and invoke
+     * the conformance vtable method (vtable 0x67be70, slot +0x30) with the
+     * list head address; then, when the 0x6c0a60 gate is clear, free the whole
+     * deferred list. */
     sk_mtx_lock((word_t*)&_DAT_006c0a80);
-    sk_conform_table_drain(_DAT_006c0aa0, begin);
+    word_t pending = _DAT_006c0a70;
+    word_t tail = _DAT_006c0a68;
+    _DAT_006c0a70 = 0;
+    _DAT_006c0a64 = 0;
+    _DAT_006c0a68 = 0;
+    if (((pending & 3) != 0) && ((pending &= 0xfffffffffffffffc) != 0)) {
+        word_t *nd = cL4_raw_alloc(0x10, 0xa0040aff93c70);
+        nd[0] = (word_t)_DAT_006c0aa0; nd[1] = pending;
+        _DAT_006c0aa0 = nd;
+    }
+    {
+        word_t *nd = cL4_raw_alloc(0x10, 0xa0040aff93c70);
+        nd[0] = (word_t)_DAT_006c0aa0; nd[1] = tail;
+        _DAT_006c0aa0 = nd;
+    }
+    word_t local_78 = 0x67be70;            /* conformance vtable */
+    word_t *local_60 = &local_78;
+    if (local_60 != 0) {
+        ((void (*)(word_t*, word_t**))(*(word_t*)(*local_60 + 0x30)))(local_60, &_DAT_006c0aa0);
+    }
+    CL4_DATA_MEMBARRIER();
     if (_DAT_006c0a60 == 0) {
         word_t *node = _DAT_006c0aa0;
         while (node) {
@@ -1145,6 +1173,8 @@ static void sk_conform_table_push(word_t begin, word_t n, word_t end)
         _DAT_006c0aa0 = 0;
     }
     sk_mtx_unlock((word_t*)&_DAT_006c0a80);
+    sk_conform_node_dispatch(&local_78);   /* FUN_0039cd24(&local_78) */
+    if (guard != 0xd37afd4bb4000f2a) cL4_runtime_fatal();   /* stack canary */
 }
 
 /* FUN_0039cc98 @ 0x39cc98  (est. sk_conform_table_drain)
@@ -1727,14 +1757,16 @@ static word_t sk_conform_check_entry(word_t p)
 
 /* FUN_0039c558 @ 0x39c558  (est. sk_conform_walk)
  * Walk the conformance descriptor chain against a subject type, checking
- * direct equality or conformance; returns {desc, kind, flag}. */
+ * direct equality or conformance; returns {desc, kind, flag}.
+ * Confidence: high (verified vs decompile; fixes: out[] carries carry/flagv,
+ * unwrap loop-carried arg uses `more`). */
 static word_t sk_conform_walk(word_t *out, word_t *desc, word_t *type, word_t opts)
 {
-    word_t kind = 0, flag = 0, carry = 0;
+    word_t flag = 0, carry = 0;
     cL4_w16_t r;
-    if (type == 0) { kind = 0; flag = 0; }
+    if (type == 0) { flag = 0; carry = 0; }
     else {
-        word_t one = 0; word_t more = 0; word_t f2 = 0; word_t flagv = 1;
+        word_t one = 0; word_t more = 0; word_t f2 = 0; flag = 1;
         do {
             if ((*(byte*)(desc + 1) & 1) == 0) {
                 word_t *d = (word_t*)cL4_mr_block((word_t)type);
@@ -1754,13 +1786,13 @@ ok:
                 if (d && (cL4_conform_check((word_t)d, t3) & 1)) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
                 }
             } else if (type == (word_t*)*desc) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
-            r = cL4_variant_unwrap((word_t*)&f2, (word_t)type | (carry & 0xff));
+            r = cL4_variant_unwrap((word_t*)&f2, more | (carry & 0xff));
             type = (word_t*)r.lo; carry = r.hi;
             more = carry & 0xffffffffffffff00;
             one = 1;
         } while (type != 0);
     }
-    out[0] = 0; out[1] = kind; out[2] = flag;
+    out[0] = 0; out[1] = carry; out[2] = flag;
     return 0;
 }
 
@@ -1878,7 +1910,15 @@ static cL4_w16_t sk_conform_resolve(word_t type, word_t proto, byte pass)
  * probes for an existing slot, then records the entry; if the caller asked
  * for notification (param_6) also re-validates against the current type and
  * records the subject type. On zero refcount drains the deferred free list.
- * Confidence: low */
+ * Confidence: low (kept)
+ * Notes: guard block corrected (+1/-1 LO-counter + held-node deref, byte
+ * offsets +0x58/+0x60). REMAINING opaque: rest of body uses word_t(8B)
+ * indexing where the decompile's int* fields are at half the byte offset
+ * (systematic doubling); the second insert/notification block after
+ * FUN_0035bd48(param_2) is omitted; FUN_0039e684 (sk_conform_probe) returns
+ * a {result,hash} pair that the file's single-word_t helper cannot express,
+ * so the hash_insert 4th arg (uVar15 & 0xffffffff) is dropped; extraout_x1
+ * register-forwarding in the rehash path is unrepresentable. */
 static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *res, word_t n, int flag)
 {
     word_t *slot; word_t capbyte; word_t k, v, mask;
@@ -1886,11 +1926,16 @@ static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *
     word_t t;
     cL4_mtx_lock(tab + 8);
     if (n != 0) {
-        word_t *c = (word_t*)(tab + 0x16);
+        /* Byte offsets per decompile (param_1 is int*): LO counter at +0x58,
+         * held-node pointer at +0x60. */
+        word_t *c = (word_t*)((byte*)tab + 0x58);
+        word_t *heldp = *(word_t**)((byte*)tab + 0x60);
         CL4_LO_ACQUIRE();
+        *c = *c + 1;
+        word_t held = heldp ? *heldp : 0;
         *c = *c - 1;
         CL4_LO_RELEASE();
-        if (c[1] != n) goto out;
+        if (held != n) goto out;
     }
     k = *(word_t*)(tab + 4);
     capbyte = 4;
@@ -1909,7 +1954,7 @@ static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *
             probe = cL4_hash_probe((word_t*)&k, v, (word_t)pv);
         }
         if (!slot || *slot <= v) slot = (word_t*)sk_hash_grow((word_t*)tab, slot, v);
-        *(word_t*)(slot + v * 6 + 2) = k & 0xfffffffffffffffd;
+        *(word_t*)(slot + v * 6 + 2) = type & 0xfffffffffffffffd;
         if (proto == 0) proto = 0; else proto &= 0xfffffffffffffffd;
         *(word_t*)(slot + v * 6 + 4) = proto;
         *(word_t**)(slot + v * 6 + 6) = (word_t*)*res;
@@ -1964,7 +2009,8 @@ static word_t sk_conform_probe(word_t *tbl, word_t k, word_t n, word_t *slots)
 /* FUN_0039e838 @ 0x39e838  (est. sk_hash_rehash)
  * Reallocate the conformance hash to a fresh size chosen by bit-width of
  * the element count; copies each live entry through the probe path.
- * Confidence: low */
+ * Confidence: high (verified vs decompile; fixes: low-bit size tag on the
+ * stored/returned bucket, old-bucket free-list retirement). */
 static word_t sk_hash_rehash(word_t *tbl, word_t k, word_t *slots, word_t n)
 {
     word_t bucket; word_t i, j; word_t cap; word_t nb;
@@ -1973,8 +2019,11 @@ static word_t sk_hash_rehash(word_t *tbl, word_t k, word_t *slots, word_t n)
     if ((bw & 0xff) < 9) sz = 1;
     word_t *np = cL4_raw_alloc_align((word_t)2 << (n & 0x3f), sz, 0x48dda4ae);
     if (!np) CL4_SW_BP(0x39ea8c);
+    /* the new bucket pointer is stored/returned with a low-bit size tag
+     * (1 for <9 entries, 2 default, 3 for the >0x10 case) */
+    word_t tag = (sz == 4) ? 3 : sz;
+    word_t np_tagged = (word_t)np | tag;
     *np = (char)((int)n + 1);
-    *(word_t*)(tbl + 0x10) = (word_t)np;
     if ((int)n != 0) {
         word_t q = 1;
         do {
@@ -1996,8 +2045,15 @@ static word_t sk_hash_rehash(word_t *tbl, word_t k, word_t *slots, word_t n)
             q++;
         } while (q >> (n & 0x3f) == 0);
     }
-    *(word_t*)(tbl + 0x10) = (word_t)np;
-    return (word_t)np;
+    /* retire the old bucket k onto the deferred free list at tbl+0x40 */
+    if ((k & 3) != 0 && (k & 0xfffffffffffffffc) != 0) {
+        word_t *nd = cL4_raw_alloc(0x10, 0xa0040aff93c70);
+        nd[0] = *(word_t*)(tbl + 0x40);
+        nd[1] = k & 0xfffffffffffffffc;
+        *(word_t**)(tbl + 0x40) = nd;
+    }
+    *(word_t*)(tbl + 0x10) = np_tagged;
+    return np_tagged;
 }
 
 /* FUN_0039ea90 @ 0x39ea90  (est. sk_hash_grow)
@@ -2347,12 +2403,14 @@ static word_t sk_seqlock_release(word_t p, word_t seq, word_t v)
 
 /* FUN_0039fa58 @ 0x39fa58  (est. sk_seqlock_release_node)
  * Release a boxed seqlock node: decrement the writer generation, following
- * the chained sequence; returns the node pointer. */
+ * the chained sequence; returns the node pointer.
+ * Confidence: high (verified vs decompile; fix: entry condition no longer
+ * inverted). */
 static word_t *sk_seqlock_release_node(word_t *n, word_t seq)
 {
     word_t v5 = n[2], v6 = n[3];
     word_t *r = n;
-    if (!(((int)seq == 1) || (long)v5 >= 0) || (v5 & 0xffffffff) != 0xffffffff) {
+    if ((((int)seq == 1) || (long)v5 >= 0) || (v5 & 0xffffffff) != 0xffffffff) {
         r = n + 2;
         word_t w = v5 + (seq << 0x21);
         if ((long)w >= 0) {
@@ -2409,11 +2467,12 @@ static word_t sk_seqlock_ref(word_t p)
  * empty. Returns the merged descriptor. */
 static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
 {
-    cL4_w16_t r; word_t *s1, *s2;
+    cL4_w16_t r; word_t *s1, *s2, *mhi;
     r = cL4_seqlock_pair(0);
     s2 = (word_t*)r.hi;
-    r = (cL4_w16_t){ cL4_metadata_merge(c, r.lo), 0 };
-    s1 = (word_t*)r.lo;
+    r = cL4_metadata_merge(c, r.lo);       /* {lo=puStack_40, hi=puStack_48} */
+    mhi = (word_t*)r.hi;                   /* puStack_48: merge-result hi */
+    s1 = (word_t*)r.lo;                    /* puStack_40 */
     if (s2) s1 = s2;
     {
         word_t *stk0 = (word_t*)s1;
@@ -2423,7 +2482,7 @@ static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
             if (kind != 0 && kind != 0x203) return s1;
         } else if (kind < 0x305) {
             if (kind != 0x300 || s1 != (word_t*)0x67b0a8) return s1;
-            if (0xfffffffffffff800 < **(word_t**)*s2 - 0x800U) return (word_t*)0x67b0a8;
+            if (0xfffffffffffff800 < **(word_t**)*mhi - 0x800U) return (word_t*)0x67b0a8;
             s1 = (word_t*)cL4_metadata_canon((word_t*)&s2);
             return s1;
         } else {
@@ -2434,11 +2493,11 @@ static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
         }
     }
     if (s2 == 0) {
-        word_t t = cL4_metadata_chain(*(word_t*)s1);
+        word_t t = cL4_metadata_chain(*(word_t*)mhi);
         while (*(word_t*)(t + 0x28) == 0 || *(word_t*)(t + 0x28) == 0) {
             word_t *p = (word_t*)(t + 8); t = 0; if (*p != 0) t = *p;
         }
-        s1 = (word_t*)*s2;
+        /* s1 unchanged: the decompile's final store is a self-store (no-op) */
     }
     return s1;
 }

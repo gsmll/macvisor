@@ -485,7 +485,9 @@ void sk_swift_array_set(void *value, long offset)
  * Swift withUnsafeBufferPointer closure driver: runs the body closure over the
  * two buffer ranges (forward and backward), calling the supplied code pointer
  * for each element with the element-type stride. Bounds-fatal on overrun.
- * Confidence: medium (closure driver faithful; dispatch via meta+0x10/+8).
+ * Confidence: medium (closure driver faithful — forward f-at-head/b-in-body
+ *   stepping and backward stride pass restored; dispatch and metadata bounds
+ *   opaque per file convention).
  */
 void sk_swift_string_with_UnsafeBufferPointer(void *p1, void *p2, long a3, long a4,
                                               unsigned long (*body)(void),
@@ -493,29 +495,57 @@ void sk_swift_string_with_UnsafeBufferPointer(void *p1, void *p2, long a3, long 
 {
     (void)p1; (void)p2; (void)p6;
     unsigned long u1;
-    long cur_f = p7, cur_b = p8;
-    sk_cpu();
-    /* forward pass */
-    while (cur_f < a3 && cur_b < a4) {
-        /* bounds checks */
-        unsigned long m = /* meta + 0x10 */ 0;
-        (*(void (**)(void))m)();
-        if (!(cur_b < a4)) { sk_fatal_error(0xb,2,"Swift.Range",0x11,2,0,1); sk_trap(); }
+    long f = p7, b = p8;   /* param_7 / param_8 loop cursors */
+    long lVar5 = p7;       /* lVar5 = param_7 (sign-checked per iteration) */
+    long lVar2 = p8;       /* lVar2 = param_8 */
+    long k = a3, l = a4;   /* local_28/local_30 = in_stack_60/in_stack_68 */
+
+    sk_cpu();              /* FUN_0008e518 -> per-CPU metadata (auVar6) */
+    /* runtime prologue: FUN_0034a5c8 / DAT_00658c00(+0x40) / FUN_003493c4 /
+     * FUN_0034d234 / DAT_00658c00 / FUN_0034a400 / DAT_00658c00 /
+     * FUN_0034baa8 / DAT_00658c00 / FUN_0034b758 (Swift dispatch prelude) */
+
+    /* forward pass: cursor f advances at the loop head, b advances in the
+     * body. Per-element bounds: sign of lVar5/lVar2, the auVar6._8_8_
+     * metadata upper bound (opaque), and param_4 <= param_8. */
+    for (; f < a3 && b < a4; f = f + 1) {
+        if (lVar5 < 0) goto fatal_lo;         /* LAB_002d1a80 */
+        /* if (auVar6._8_8_ <= f) goto fatal_hi;  (opaque metadata bound) */
+        /* dispatch via (meta+0x10) element table */
+        if (lVar2 < 0) goto fatal_lo;
+        if (a4 <= b) goto fatal_hi;           /* param_4 <= param_8 */
+        /* dispatch via (meta+0x10) with tagged ptr; FUN_003504c4 */
         u1 = body();
+        /* dispatch via (meta+8); FUN_00350b78 / meta+8 / FUN_003511a8 / meta+8 */
         if ((u1 & 1) == 0) break;
-        cur_b++;
-        cur_f++;
+        b = b + 1;
     }
-    /* backward pass */
-    long k = a3, l = a4;
-    while (k > 0 && l > 0) {
-        k--; l--;
-        unsigned long m = /* meta+0x10 */ 0;
-        (*(void (**)(void))m)();
+    /* backward pass: walk both ranges from the end with the element stride
+     * (read from meta+0x48); element addr = meta_lo + stride*k / a3 + stride*l. */
+    do {
+        if (k <= f || l <= b) break;
+        if (k < 1) goto fatal_lo;             /* local_28 < 1 */
+        /* if (auVar6._8_8_ < a3) goto fatal_hi;      (opaque metadata bound) */
+        /* if (param_4 < in_stack_68) goto fatal_hi;  (opaque stack bound) */
+        k = k - 1;
+        /* stride = *(long *)(meta + 0x48); dispatch(meta_lo + stride*k) */
+        if (l < 1) goto fatal_lo;             /* local_30 < 1 */
+        l = l - 1;
+        /* dispatch(a3 + stride*l); FUN_00350ea4 */
         u1 = body();
-        if ((u1 & 1) == 0) break;
-    }
-    sk_thread_epilogue(0);
+        /* dispatch via (meta+8); FUN_003509d4 / meta+8 / meta+8(...) */
+    } while ((u1 & 1) != 0);
+    /* FUN_003504f4 / FUN_00351e3c */
+    sk_thread_epilogue(0);                    /* FUN_0008e500 */
+    return;
+
+fatal_lo:  /* LAB_002d1a80: negative/underflow bound -> FUN_0034b348/FUN_003480ac */
+    sk_fatal_error(0, 0);
+    sk_trap();
+
+fatal_hi:  /* LAB_002d1a8c: upper bound -> FUN_0034b348/FUN_003480ac */
+    sk_fatal_error(0, 0);
+    sk_trap();
 }
 
 /*--------------------------------------------------------------------*/

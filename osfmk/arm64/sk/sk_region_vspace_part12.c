@@ -1003,8 +1003,11 @@ uint64_t skp12_vspace_op_00277d80(void)
 /* FUN_00277de0 @ 0x00277de0  (est. skp12_vspace_op_00277de0)
  * Ghidra: void skp12_vspace_op_00277de0(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
- * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
- * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
+ * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Confidence: low.
+ * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. The
+ *   pair-return high word (auVar12._8_8_) from FUN_0008e518/FUN_0027b8c0 etc.
+ *   is used as the base of +0x10/+0x18 derefs and as arguments; per the part12
+ *   skp12_PAIR convention it is approximated as 0 (opaque register forwarding). */
 uint64_t skp12_vspace_op_00277de0(void)
 {
     uint64_t v1;

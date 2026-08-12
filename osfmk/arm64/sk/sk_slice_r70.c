@@ -2481,6 +2481,8 @@ void FUN_0067a780(unsigned char *dst, ulong len)
     if (len > 0x3f) {
         if (len > 0x7fff) {
             /* large: DC_ZVA 64-byte blocks */
+            unsigned long *w0 = (unsigned long *)dst;
+            w0[0]=w0[1]=w0[2]=w0[3]=w0[4]=w0[5]=w0[6]=w0[7]=0;   /* head 64 bytes */
             unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
             ulong n = (len + (ulong)dst) - (ulong)(d + 0x40);
             if ((ulong)(d + 0x40) <= len + (ulong)dst && n != 0) {
@@ -2494,6 +2496,8 @@ void FUN_0067a780(unsigned char *dst, ulong len)
             return;
         }
         /* mid: 64-byte stores */
+        unsigned long *w1 = (unsigned long *)dst;
+        w1[0]=w1[1]=w1[2]=w1[3]=w1[4]=w1[5]=w1[6]=w1[7]=0;        /* head 64 bytes */
         unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
         ulong n = (len + (ulong)dst) - (ulong)(d + 8);
         if ((ulong)(d + 8) <= len + (ulong)dst && n != 0) {

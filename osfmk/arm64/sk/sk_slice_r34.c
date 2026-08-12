@@ -198,7 +198,7 @@ extern unsigned long sk_x_004aaa9c(); /* FUN_004aaa9c */
 extern unsigned long sk_x_004aaaf4(); /* FUN_004aaaf4 */
 extern unsigned long sk_x_004aaba8(); /* FUN_004aaba8 */
 extern unsigned long sk_x_004aac14(); /* FUN_004aac14 */
-extern cl4_result_t sk_x_004aacb0(); /* FUN_004aacb0 */
+extern unsigned long sk_x_004aacb0(); /* FUN_004aacb0 (decompile: single undefined8) */
 extern unsigned long sk_x_004aaccc(); /* FUN_004aaccc */
 extern unsigned long sk_x_004aad1c(); /* FUN_004aad1c */
 extern unsigned long sk_x_004aae14(); /* FUN_004aae14 */
@@ -2800,8 +2800,9 @@ static void sk_r34_emit_utf8_18b(unsigned long self, unsigned long other)
     long l;
     cl4_result_t p, r;
     unsigned long u3, u4;
+    unsigned long v2, v3;
     sk_x_0008e518();
-    sk_x_004aa550();
+    v2 = sk_x_004aa550();
     sk_x_0034ab20();
     (*(void (**)(void))(0 + 0x18))();
     sk_x_003537c4(*(unsigned long *)(0 + 0x40));
@@ -2819,16 +2820,16 @@ static void sk_r34_emit_utf8_18b(unsigned long self, unsigned long other)
     (*(void (**)(unsigned long, unsigned long))(0 + 0x18))(a + self & (u4 ^ 0xffffffffffffffffULL),
                                                            a + other & (u4 ^ 0xffffffffffffffffULL));
     l = *(long *)(0 + 0x40);
-    sk_x_004aacb0();
-    p = sk_x_004aa47c(0, 0);
-    sk_x_00377824(p.lo, p.hi, 0);
+    v3 = sk_x_004aacb0();
+    p = sk_x_004aa47c(v3, v3);
+    sk_x_00377824(p.lo, p.hi, v2);
     sk_x_00349530();
     u3 = (unsigned long)*(unsigned char *)(0 + 0x50);
     l1 = (a & (u4 ^ 0xffffffffffffffffULL)) + l + u3;
     (*(void (**)(unsigned long, unsigned long))(0 + 0x18))(l1 + self & (u3 ^ 0xffffffffffffffffULL),
                                                            l1 + other & (u3 ^ 0xffffffffffffffffULL));
-    sk_x_004aa638(*(unsigned long *)(0 + 0x40));
-    sk_x_0008e500(0, 0);
+    v2 = sk_x_004aa638(*(unsigned long *)(0 + 0x40));
+    sk_x_0008e500(v2, 0);   /* unaff_x30 opaque -> 0 */
 }
 
 /* FUN_004a79bc @ 0x004a79bc   (est. sk_regex_emit_utf8_20b)
@@ -2841,9 +2842,9 @@ static void sk_r34_emit_utf8_20b(unsigned long self, unsigned long other)
     unsigned long a, l1;
     long l;
     cl4_result_t p;
-    unsigned long u3, u4;
+    unsigned long u3, u4, v2, v3;
     sk_x_0008e518();
-    sk_x_004aa550();
+    v2 = sk_x_004aa550();
     sk_x_0034ab20();
     (*(void (**)(void))(0 + 0x20))();
     sk_x_003537c4(*(unsigned long *)(0 + 0x40));
@@ -2861,16 +2862,16 @@ static void sk_r34_emit_utf8_20b(unsigned long self, unsigned long other)
     (*(void (**)(unsigned long, unsigned long))(0 + 0x20))(a + self & (u4 ^ 0xffffffffffffffffULL),
                                                            a + other & (u4 ^ 0xffffffffffffffffULL));
     l = *(long *)(0 + 0x40);
-    sk_x_004aacb0();
-    p = sk_x_004aa47c(0, 0);
-    sk_x_00377824(p.lo, p.hi, 0);
+    v3 = sk_x_004aacb0();
+    p = sk_x_004aa47c(v3, v3);
+    sk_x_00377824(p.lo, p.hi, v2);
     sk_x_00349530();
     u3 = (unsigned long)*(unsigned char *)(0 + 0x50);
     l1 = (a & (u4 ^ 0xffffffffffffffffULL)) + l + u3;
     (*(void (**)(unsigned long, unsigned long))(0 + 0x20))(l1 + self & (u3 ^ 0xffffffffffffffffULL),
                                                            l1 + other & (u3 ^ 0xffffffffffffffffULL));
-    sk_x_004aa638(*(unsigned long *)(0 + 0x40));
-    sk_x_0008e500(0, 0);
+    v2 = sk_x_004aa638(*(unsigned long *)(0 + 0x40));
+    sk_x_0008e500(v2, 0);   /* unaff_x30 opaque -> 0 */
 }
 
 /* FUN_004a7b04 @ 0x004a7b04   (est. sk_regex_emit_utf8_28b)
@@ -2883,9 +2884,9 @@ static void sk_r34_emit_utf8_28b(unsigned long self, unsigned long other)
     unsigned long a, l1;
     long l;
     cl4_result_t p;
-    unsigned long u3, u4;
+    unsigned long u3, u4, v2, v3;
     sk_x_0008e518();
-    sk_x_004aa550();
+    v2 = sk_x_004aa550();
     sk_x_0034ab20();
     (*(void (**)(void))(0 + 0x28))();
     sk_x_003537c4(*(unsigned long *)(0 + 0x40));
@@ -2903,16 +2904,16 @@ static void sk_r34_emit_utf8_28b(unsigned long self, unsigned long other)
     (*(void (**)(unsigned long, unsigned long))(0 + 0x28))(a + self & (u4 ^ 0xffffffffffffffffULL),
                                                            a + other & (u4 ^ 0xffffffffffffffffULL));
     l = *(long *)(0 + 0x40);
-    sk_x_004aacb0();
-    p = sk_x_004aa47c(0, 0);
-    sk_x_00377824(p.lo, p.hi, 0);
+    v3 = sk_x_004aacb0();
+    p = sk_x_004aa47c(v3, v3);
+    sk_x_00377824(p.lo, p.hi, v2);
     sk_x_00349530();
     u3 = (unsigned long)*(unsigned char *)(0 + 0x50);
     l1 = (a & (u4 ^ 0xffffffffffffffffULL)) + l + u3;
     (*(void (**)(unsigned long, unsigned long))(0 + 0x28))(l1 + self & (u3 ^ 0xffffffffffffffffULL),
                                                            l1 + other & (u3 ^ 0xffffffffffffffffULL));
-    sk_x_004aa638(*(unsigned long *)(0 + 0x40));
-    sk_x_0008e500(0, 0);
+    v2 = sk_x_004aa638(*(unsigned long *)(0 + 0x40));
+    sk_x_0008e500(v2, 0);   /* unaff_x30 opaque -> 0 */
 }
 
 /* FUN_004a7c4c @ 0x004a7c4c   (est. sk_regex_emit_concat2)

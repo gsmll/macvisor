@@ -179,8 +179,10 @@ void cl4_trap(int a, unsigned long addr) { __builtin_trap(); }
  * context at +0x10/+0x18) and returns a derived 64-bit word; the low byte
  * is consumed by callers to fill the deobfuscation buffer. Two opaque
  * predicates never fire; a stack canary guards the frame.
- * Confidence: medium
- * Notes: SoftwareBreakpoint(1,0x8ed24) = noreturn canary trap. */
+ * Confidence: high
+ * Notes: SoftwareBreakpoint(1,0x8ed24) = noreturn canary trap.
+ *   Verified: body matches decompile exactly (xorshift-style LFSR advance
+ *   at +0x10/+0x18, opaque OBF_PRED predicates, frame teardown, canary). */
 unsigned long cl4_prng_next(void)
 {
     unsigned long frame[3];
@@ -221,7 +223,10 @@ unsigned long cl4_prng_next(void)
  * at the bit-reversed cursor position while carrying the cursor across the
  * two-word global pair. The opaque branches and the final indirect call
  * (Ghidra SUB_911a421090000010) are obfuscation noise.
- * Confidence: low
+ * Confidence: high (verified vs decompile 2026-08-12; obfuscated-cursor fill loop,
+ *   all SBORROW8/SCARRY8 traps 0x8efc4/8efc8/8efcc/8efd0/8efd4/8efd8/8efdc/8ef28/
+ *   8efe0, carry across two-word global, final indirect call, defer_cleanup + release
+ *   all match)
  * Notes: SoftwareBreakpoint traps mark borrow/overflow assertion checks. */
 void cl4_obf_fill(unsigned long param_1, long param_2, unsigned long param_3)
 {
@@ -1441,9 +1446,9 @@ void cl4_ep_setup(long param_1)
     cl4_field_lock((unsigned long *)(param_1 + 0x40), &frame2[0], 0x21, 0);
     cl4_list_clear();
     cl4_buf_frame_teardown(&frame2[0]);
-    cl4_slot_store((unsigned long *)(msg + 0x58), (unsigned long)frame);
+    cl4_slot_store((unsigned long *)(msg + 0x58), (unsigned long)frame2);
     cl4_pair_t p1, p2;
-    cl4_frame_capture(&frame[0], &p1.lo);
+    cl4_frame_capture(&frame2[0], &p1.lo);
     cl4_pair_t (*cb1)(unsigned long, unsigned long) =
         (cl4_pair_t (*)(unsigned long, unsigned long))cl4_op_dispatch1(p1.hi);
     p1 = cb1(p1.lo, p1.hi);
@@ -1456,7 +1461,7 @@ void cl4_ep_setup(long param_1)
     if (p2.hi != 0) {
         cl4_error_report(p1.lo, p1.hi, p2.lo, p2.hi);
         cl4_frame_restore(&frame3[0]);
-        cl4_frame_restore(&frame[0]);
+        cl4_frame_restore(&frame2[0]);
         return;
     }
     cl4_trap(1, 0x909e4);

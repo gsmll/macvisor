@@ -64,7 +64,7 @@ extern void    sk_cmp_462bd8(word_t a);                    /* FUN_00462bd8 */
 extern void    sk_rt_462e54(word_t a);                     /* FUN_00462e54 */
 extern void    sk_noop_462e88(word_t a);                   /* FUN_00462e88 */
 extern void    sk_rt_462fec(void);                         /* FUN_00462fec */
-extern void    sk_rt_463028(word_t a,word_t b,word_t c,word_t d); /* FUN_00463028 */
+extern word_t *sk_rt_463028(word_t a,word_t b,word_t c,word_t d); /* FUN_00463028 (x1 pointer return) */
 extern void    sk_rt_46303c(void);                         /* FUN_0046303c */
 extern void    sk_noop_463058(void);                       /* FUN_00463058 */
 extern void    sk_rt_463080(void);                         /* FUN_00463080 */
@@ -1468,26 +1468,40 @@ static void sk_rt_45b1f4(void)
 
 /* FUN_0045b330 @ 0x0045b330  (est. sk_rt_copy_box_40b)
  * Copy a 0x98-byte box: reads source fields, dispatches through the shared
- * store helper, writes all fields, runs copy helpers. Confidence: medium. */
+ * store helper, writes all fields, runs copy helpers.
+ * Confidence: low (verified against fresh decompile + disassembly 2026-08-12:
+ * reads are from opaque extraout_x1 (x1 after sk_462e88), NOT box — disasm
+ * 0045b358 ldp x19,x9,[x1,#0x40]; box[4..7] hold unaffiliated x25..x28 (were
+ * mis-transcribed as 0); byte-0x98 source corrected from box+0x13 to src+0x98;
+ * sk_464ae8 args corrected to (box, in_x30). sk_4640d0's 14 box-field args
+ * remain dropped at the shared 0-arg extern; indirect calls (*extraout_x8)/
+ * (*in_x4) stubbed). */
 static void sk_rt_45b330(void)
 {
-    cL4_w16_t pair;
-    word_t *box = (word_t*)sk_464b04(0);
+    word_t *box;      /* x20: destination box, sk_464b04() return */
+    word_t *src;      /* extraout_x1: source struct ptr in x1 after sk_462e88 (opaque) */
     word_t w[11];
+    byte byte_98;
+    word_t in_x3, in_x30;                      /* unaffiliated input registers */
+    word_t in_x25, in_x26, in_x27, in_x28;     /* unaffiliated regs -> box[4..7] */
     int i;
-    sk_noop_462e88(0);
-    for (i = 0; i < 10; i++) w[i] = *(word_t*)((char*)box + 0x40 + i*8);
-    w[10] = *(word_t*)((char*)box + 0x90);
+
+    box = (word_t *)sk_464b04(0);
+    sk_noop_462e88(in_x3);
+    /* field reads come from extraout_x1 (x1 after sk_462e88), NOT box (x20) */
+    for (i = 0; i < 10; i++) w[i] = *(word_t *)((char *)src + 0x40 + i * 8);
+    w[10] = *(word_t *)((char *)src + 0x90);
+    byte_98 = *(byte *)((char *)src + 0x98);
     sk_gate_4627d0();
-    swift_runtime_stub_noop();
-    sk_4640d0();
-    for (i = 0; i < 4; i++) box[4+i] = 0;
-    for (i = 0; i < 10; i++) *(word_t*)((char*)box + 0x40 + i*8) = w[i];
-    *(word_t*)((char*)box + 0x90) = w[10];
-    *(char*)((char*)box + 0x98) = *(char*)((char*)box + 0x13);
+    swift_runtime_stub_noop();   /* (*extraout_x8)(): opaque indirect call */
+    sk_4640d0();                 /* NOTE: decompile passes 14 box-field reads; shared extern is 0-arg */
+    box[4] = in_x25; box[5] = in_x26; box[6] = in_x27; box[7] = in_x28;
+    for (i = 0; i < 10; i++) *(word_t *)((char *)box + 0x40 + i * 8) = w[i];
+    *(word_t *)((char *)box + 0x90) = w[10];
+    *(byte *)((char *)box + 0x98) = byte_98;
     sk_462b90();
-    swift_runtime_stub_noop();
-    sk_464ae8(0,0);
+    swift_runtime_stub_noop();   /* (*in_x4)(): opaque indirect call */
+    sk_464ae8((word_t)box, in_x30);
 }
 
 /* FUN_0045b458 @ 0x0045b458  (est. sk_rt_copy_box_into)
@@ -1495,15 +1509,28 @@ static void sk_rt_45b330(void)
  * through FUN_0034f8e4. Confidence: medium (structural). */
 static word_t *sk_rt_45b458(word_t *dst, word_t *src, word_t a, word_t b, word_t c)
 {
-    cL4_w16_t pair;
+    word_t *sp;
     word_t u1, u3, u4;
-    int i;
-    sk_rt_463028(c, *dst, a, dst[2]);
+    word_t x10;                        /* extraout_x10 (opaque reg-forward) */
+    byte w11;                          /* extraout_w11 (opaque reg-forward) */
+    word_t x9;                         /* extraout_x9 (opaque reg-forward) */
+    word_t (*fn8)(word_t, word_t);     /* extraout_x8 (opaque reg-forward) */
+    sp = sk_rt_463028(c, *dst, a, dst[2]);
     u1 = dst[0xc]; u3 = dst[0xe]; u4 = dst[0x10];
-    for (i = 0; i < 0x12; i++) dst[i] = dst[i];
-    dst[0x12] = dst[0x12];
-    *(byte*)((char*)dst + 0x13) = *(byte*)((char*)dst + 0x13);
-    swift_runtime_stub_noop();
+    /* copy 0x11 source words from the FUN_00463028 pair pointer into dst */
+    dst[1] = sp[1]; *dst = sp[0];
+    dst[3] = sp[3]; dst[2] = sp[2];
+    dst[5] = sp[5]; dst[4] = sp[4];
+    dst[7] = sp[7]; dst[6] = sp[6];
+    dst[9] = sp[9]; dst[8] = sp[8];
+    dst[0xb] = sp[0xb]; dst[10] = sp[10];
+    dst[0xd] = sp[0xd]; dst[0xc] = sp[0xc];
+    dst[0xf] = sp[0xf]; dst[0xe] = sp[0xe];
+    dst[0x11] = sp[0x11]; dst[0x10] = sp[0x10];
+    dst[0x12] = x10;                   /* extraout_x10 (opaque) */
+    *(byte*)((char*)dst + 0x13) = w11; /* extraout_w11 (opaque) */
+    swift_runtime_stub_noop();         /* FUN_0034f8e4(auVar2, src, u1, u3, u4) */
+    (*fn8)(u1, x9);                    /* (*extraout_x8)(uVar1, extraout_x9) */
     return dst;
 }
 

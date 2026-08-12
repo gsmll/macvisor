@@ -1523,7 +1523,8 @@ void sk_swift_utf8buf_shift_fatal(unsigned int *buf)
 /* FUN_002c8c2c @ 0x002c8c2c   (est. sk_swift_bitset_contains)
  * Ghidra: bool FUN_002c8c2c(...)
  * See function-local comments for behavior.
- */
+ * Confidence: medium (verified 1:1: byte-contains loop over 8-bit lanes,
+ *   `value==0 -> true`, `bits==0 -> false`, lane-hit early return). */
 bool sk_swift_bitset_contains(unsigned int value, unsigned int bits)
 {
     if (value == 0) return true;
@@ -2218,39 +2219,88 @@ out:
  */
 void sk_swift_unsafe_ptr_nil(void)
 {
-    /* UnsafePointer forced-unwrap mirroring sk_swift_unsafe_mutrawptr_nil but
-     * with the "UnsafePointer.nil" message and 0x13 buffer tag. */
+    /* UnsafePointer forced-unwrap. Heavy register forwarding (unaff_x19/x20/x21,
+     * extraout_x8*, in_ZR, in_stack_*) — opaque conditions collapsed to 0 with
+     * notes; exclusive branches and call order preserved. */
     sk_pair_t a = sk_h_00354744();
-    unsigned long p = a.lo;
-    if (p == 0) {
+    unsigned long u3 = a.lo;
+    unsigned long in0, in8, pc, x22;
+
+    if (u3 == 0) {
         sk_h_00358334(sk_str_unsafeptr_005d34d0);
         goto out;
     }
     sk_h_0006e778(0x13);
     sk_h_0035a098();
-    sk_h_0034f064();
-    sk_h_0035a034();
-    sk_h_00356e98(0);
-    sk_h_003524d4(0xd000000000000010);
-    sk_h_002a4c98();
-    sk_h_00350fdc();
-    sk_h_003a25d4();
-    sk_h_00355754(p);
+    sk_h_0034f064();           /* uVar1 = FUN_0034f064() (opaque cond) */
+    if (0) {                   /* extraout_x8_00==0 && (u1&(unaff_x23^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4();
+        in0 = 0xd000000000000010;
+        in8 = 0x80000000005d3490;
+    } else {
+        sk_h_0035a034();
+        if (0 || (sk_h_0034a148(), 0)) {   /* in_ZR opaque -> 0 */
+            sk_h_00356e98(0);
+            sk_h_003524d4(0xd000000000000010);
+            sk_h_002a4c98();
+        } else {
+            sk_h_00350fdc();
+            sk_h_003a25d4();
+            in0 = 0xd000000000000010;
+            in8 = 0;                       /* unaff_x24 opaque */
+        }
+    }
+    x22 = in8;
+    pc = in0;
+    sk_h_00355754(u3);
     sk_h_0023560c();
     sk_h_00352c74();
-    sk_h_0034c094(0);
-    sk_h_003a25d4();
-    sk_h_0034a618();
-    sk_h_0034c9c8();
-    sk_h_002a4c98();
-    sk_h_003a25d4();
+    sk_h_0034c094(pc & 0xffffffffffff);
+    if (0) {                   /* extraout_x8_01==0 && (pc&(x22^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4(x22);
+        in0 = 0;                           /* unaff_x23 opaque */
+        in8 = u3;
+    } else {
+        if (0) {               /* x22>>0x3d & 1 == 0 */
+            sk_h_0034a618();
+        } else if (0) {        /* u3>>0x3d & 1 != 0 */
+            sk_h_00350af4();
+            sk_h_00349c98();
+            if (0) {           /* !in_ZR */
+                sk_h_00355d6c();
+                sk_h_003a25d4(u3);
+                sk_h_003a25d4(x22);
+                sk_h_00354f70();
+                goto out;
+            }
+        }
+        sk_h_0034c9c8();
+        sk_h_002a4c98();
+        sk_h_003a25d4(u3);
+        pc = 0;                /* register0x00000008 (opaque) */
+        u3 = in8;
+        /* unaff_x23 = in0 */
+    }
     sk_h_0034b18c();
-    sk_h_003a25d4();
-    sk_h_00350560();
-    sk_h_00355560();
-    sk_h_0034b7c8();
-    sk_h_0034f584();
-    sk_h_003a25d4();
+    if (0) {                   /* extraout_x8_02==0 && (unaff_x23&(u3^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4(u3);
+        x22 = 0xe100000000000000;
+        pc = 0;                /* segment_command_00000020.segname + 1 (opaque) */
+    } else {
+        if (0) {               /* u3>>0x3d & 1 != 0 */
+            sk_h_00350560();
+            sk_h_00355560();
+            sk_h_0034b7c8();
+            if (0) {           /* !in_ZR */
+                sk_h_0034f584();
+                sk_h_003a25d4();
+                goto out;
+            }
+        }
+        sk_h_0034f114();
+        pc = in0;
+        x22 = in8;
+    }
 out:
     sk_h_003544c8(a.hi);
 }
@@ -2261,39 +2311,88 @@ out:
  */
 void sk_swift_unsafe_mutptr_nil(void)
 {
-    /* UnsafeMutablePointer forced-unwrap: "UnsafeMutablePointer.nil" message,
-     * 0x1a buffer tag. */
+    /* UnsafeMutablePointer forced-unwrap. Heavy register forwarding
+     * (unaff_x19/x20/x21, extraout_x8*, in_ZR, in_stack_*) — opaque conditions
+     * collapsed to 0 with notes; exclusive branches and call order preserved. */
     sk_pair_t a = sk_h_00354744();
-    unsigned long p = a.lo;
-    if (p == 0) {
+    unsigned long u3 = a.lo;
+    unsigned long in0, in8, pc, x22;
+
+    if (u3 == 0) {
         sk_h_00358334(sk_str_unsafemutptr_005d3490);
         goto out;
     }
     sk_h_0006e778(0x1a);
     sk_h_0035a098();
-    sk_h_0034f064();
-    sk_h_0035a034();
-    sk_h_00356e98(0);
-    sk_h_003524d4(0xd000000000000017);
-    sk_h_002a4c98();
-    sk_h_00350fdc();
-    sk_h_003a25d4();
-    sk_h_00355754(p);
+    sk_h_0034f064();           /* uVar1 = FUN_0034f064() (opaque cond) */
+    if (0) {                   /* extraout_x8_00==0 && (u1&(unaff_x23^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4();
+        in0 = 0xd000000000000017;
+        in8 = 0x80000000005d3450;
+    } else {
+        sk_h_0035a034();
+        if (0 || (sk_h_0034a148(), 0)) {   /* in_ZR opaque -> 0 */
+            sk_h_00356e98(0);
+            sk_h_003524d4(0xd000000000000017);
+            sk_h_002a4c98();
+        } else {
+            sk_h_00350fdc();
+            sk_h_003a25d4();
+            in0 = 0xd000000000000017;
+            in8 = 0;                       /* unaff_x24 opaque */
+        }
+    }
+    x22 = in8;
+    pc = in0;
+    sk_h_00355754(u3);
     sk_h_0023560c();
     sk_h_00352c74();
-    sk_h_0034c094(0);
-    sk_h_003a25d4();
-    sk_h_0034a618();
-    sk_h_0034c9c8();
-    sk_h_002a4c98();
-    sk_h_003a25d4();
+    sk_h_0034c094(pc & 0xffffffffffff);
+    if (0) {                   /* extraout_x8_01==0 && (pc&(x22^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4(x22);
+        in0 = 0;                           /* unaff_x23 opaque */
+        in8 = u3;
+    } else {
+        if (0) {               /* x22>>0x3d & 1 == 0 */
+            sk_h_0034a618();
+        } else if (0) {        /* u3>>0x3d & 1 != 0 */
+            sk_h_00350af4();
+            sk_h_00349c98();
+            if (0) {           /* !in_ZR */
+                sk_h_00355d6c();
+                sk_h_003a25d4(u3);
+                sk_h_003a25d4(x22);
+                sk_h_00354f70();
+                goto out;
+            }
+        }
+        sk_h_0034c9c8();
+        sk_h_002a4c98();
+        sk_h_003a25d4(u3);
+        pc = 0;                /* register0x00000008 (opaque) */
+        u3 = in8;
+        /* unaff_x23 = in0 */
+    }
     sk_h_0034b18c();
-    sk_h_003a25d4();
-    sk_h_00350560();
-    sk_h_00355560();
-    sk_h_0034b7c8();
-    sk_h_0034f584();
-    sk_h_003a25d4();
+    if (0) {                   /* extraout_x8_02==0 && (unaff_x23&(u3^~0))>>0x3d&1==0 (opaque) */
+        sk_h_003a25d4(u3);
+        x22 = 0xe100000000000000;
+        pc = 0;                /* segment_command_00000020.segname + 1 (opaque) */
+    } else {
+        if (0) {               /* u3>>0x3d & 1 != 0 */
+            sk_h_00350560();
+            sk_h_00355560();
+            sk_h_0034b7c8();
+            if (0) {           /* !in_ZR */
+                sk_h_0034f584();
+                sk_h_003a25d4();
+                goto out;
+            }
+        }
+        sk_h_0034f114();
+        pc = in0;
+        x22 = in8;
+    }
 out:
     sk_h_003544c8(a.hi);
 }

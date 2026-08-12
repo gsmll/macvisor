@@ -1980,42 +1980,49 @@ void skp10_sk_vspace_lock_leave(void)
  * Vspace object creation/initialization. Allocates via thunk_FUN_0036b270,
  * handles tagged-object bits (>>0x3c&1, >>0x3d&1), resolves the capability
  * via FUN_002a9ba8 / FUN_00356364, and calls FUN_003d30b0 to install it.
- * Confidence: low.
+ * Confidence: medium (opaque register/tag-bit forwarding; structure and
+ *   arg-forwarding verified against fresh decompile — dropped args and
+ *   fabricated branch removed).
  */
-void sk_vspace_object_create()
+void sk_vspace_object_create()   /* empty parens: opaque Swift, callers forward regs */
 {
-    uint64_t a;
-    skp10_sk_rt_0034f064();
-    if (skp10_sk_swift_msg() != 0) {
+    uint64_t a_lo = 0, a_hi = 0;       /* auVar2 16-byte pair */
+    uint64_t st40_lo = 0, st40_hi = 0; /* auStack_40 (opaque stack buffer) */
+    uint64_t s19 = 0, s20 = 0, s21 = 0;/* unaff_x19/x20/x21 (preserved regs) */
+    uint64_t st;
+
+    (void)st40_lo; (void)st40_hi; (void)s21;
+    st = skp10_sk_rt_0034f064();       /* extraout_x8 status */
+    if (st != 0) {
         skp10_sk_rt_003503c0();
-        a = (uint64_t)skp10_sk_alloc_pages(0, 0); /* thunk_FUN_0036b270 */
-        if (a != 0) {
-            if (skp10_sk_swift_msg() != 0) {
-                skp10_sk_rt_0007c1c4();
-                skp10_sk_rt_0001d4a0();
-                skp10_sk_rt_0034bd90();
-                a = skp10_sk_obj_find(0);
-            }
-            if ((skp10_sk_swift_msg() >> 0x3d & 1) == 0) {
-                if ((skp10_sk_swift_msg() >> 0x3c & 1) == 0) {
-                    skp10_sk_rt_0007c1c4();
-                    a = skp10_sk_rt_002a9ba8();
-                    if (a == 0) {
-                        skp10_sk_rt_00348898(1);
-                        skp10_sk_rt_0034a2f8();
-                        skp10_sk_swift_fatal();
-                    }
-                } else {
-                    a = skp10_sk_rt_00356364();
-                }
-                skp10_sk_runtime_install(a, 1, 0);   /* FUN_003d30b0 */
-                skp10_sk_msg_dispatch(0);
-                return;
-            }
-            skp10_sk_rt_003584f8(0, 0, 0);
-            skp10_sk_runtime_install(0, 1);          /* FUN_003d30b0 */
-            skp10_sk_msg_dispatch(0);
+        a_lo = (uint64_t)skp10_sk_alloc_pages(0, 0); /* thunk_FUN_0036b270 */
+        if ((s19 >> 0x3c & 1) != 0) {  /* unaff_x19 tag bit */
+            skp10_sk_rt_0007c1c4();
+            skp10_sk_rt_0001d4a0();
+            skp10_sk_rt_0034bd90();
+            a_lo = skp10_sk_rt_003a25d4(); /* FUN_003a25d4 -> pair (lo) */
+            s19 = s21;
         }
+        if ((s19 >> 0x3d & 1) == 0) {  /* unaff_x19 tag bit */
+            if ((s20 >> 0x3c & 1) == 0) {  /* unaff_x20 tag bit */
+                skp10_sk_rt_0007c1c4();
+                a_lo = skp10_sk_rt_002a9ba8();
+                if (a_lo == 0) {
+                    skp10_sk_rt_00348898(1);
+                    skp10_sk_rt_0034a2f8();
+                    skp10_sk_swift_fatal();  /* FUN_001afe4c, noreturn */
+                }
+            } else {
+                a_lo = skp10_sk_rt_00356364();      /* uVar1 */
+                a_hi = s20 & 0xffffffffffff;        /* auVar2._8_8_ */
+            }
+            skp10_sk_runtime_install(a_lo, 1, a_hi); /* FUN_003d30b0 */
+            skp10_sk_msg_dispatch(s19);              /* FUN_003a25d4 */
+            return;
+        }
+        skp10_sk_rt_003584f8(a_lo, a_hi, s19 >> 0x38 & 0xf);
+        skp10_sk_runtime_install(st40_lo, 1);        /* FUN_003d30b0(auStack_40,1) */
+        skp10_sk_msg_dispatch(s19);                  /* FUN_003a25d4 */
     }
 }
 

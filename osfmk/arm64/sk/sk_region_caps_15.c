@@ -275,7 +275,8 @@ void xrt_dummy_dbf20(void) { return; }
 /* FUN_000dbf48 @ 0xdbf48 — reserved XRT method; no-op. */
 void xrt_dummy_dbf48(void) { return; }
 
-/* FUN_000dc5d4 @ 0xdc5d4 — reserved XRT method; no-op. */
+/* FUN_000dc5d4 @ 0xdc5d4 — reserved XRT method; no-op.
+ * Confidence: high (verified: decompile is an empty body). */
 void xrt_dummy_dc5d4(void) { return; }
 
 /* FUN_000dce18 @ 0xdce18 — reserved XRT method; no-op. */

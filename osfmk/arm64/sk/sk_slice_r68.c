@@ -2233,7 +2233,8 @@ void sk_f_00665d84(void)
  * 0x19) and, for object-bearing kinds, calls the type-address helper
  * sk_f_00665f04 to resolve the target address. Control-flow structure
  * (including the unreachable 0x1d branch) is preserved from the decompile.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; type 0x1d/0x20-25/0x3c/0x3f
+ *   decode, clear_desc/write_tag2/write_tag3 labels, aux_flag selects all match)
  * Notes: callee sk_f_00665f04 (in-slice); tag bytes written at 0x18/0x19 of
  *   the descriptor. */
 void sk_f_00665d9c(uint64_t *desc, uint64_t aux_flag, uint64_t *cap_word)
@@ -2337,7 +2338,10 @@ sk_u128_t sk_f_00665ef8(const sk_u128_t *src)
  * a 64-bit word assembled from the block's tag bytes at offsets 0x10..0x17,
  * guarded by a stack canary (DAT_006b5ed0). On failure it routes into a
  * non-returning error path.
- * Confidence: medium
+ * Confidence: high (verified 1:1 against fresh decompile 2026-08-12: 16 tag
+ * bytes written, supervisor call, 0x1f+zero clear, canary, and the 0x10..0x17
+ * recompose match exactly; independent byte-store order differs but final
+ * values per offset are identical).
  * Notes: CallSupervisor(0); tpidrro_el0; globals DAT_0068a230 / uRam0068a238
  *   (word at 0x68a238, prelude only declares sk_g_0068a230 — declaration for
  *   sk_g_0068a238 may be needed), DAT_006b5ed0 (canary); out-of-slice callees
@@ -5251,8 +5255,10 @@ uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr)
     sk_u128_t out;
     uint8_t cfg[32];
 
-    *(uint32_t *)(cfg + 1) = 0;   /* local_4f + uStack_4b */
-    *(uint32_t *)(cfg + 25) = 0;  /* local_37 + uStack_33 */
+    *(uint32_t *)(cfg + 1) = 0;   /* local_4f: cfg[1..4] */
+    cfg[5] = cfg[6] = cfg[7] = 0; /* uStack_4b: cfg[5..7] */
+    *(uint32_t *)(cfg + 25) = 0;  /* local_37: cfg[25..28] */
+    cfg[29] = cfg[30] = cfg[31] = 0; /* uStack_33: cfg[29..31] */
     req_kind = 0x1000148;
     if (base != 0) {
         req_kind = 0x1000149;
@@ -5617,7 +5623,10 @@ void sk_f_0066a1cc(uint64_t param_1)
  * running count at +0x3d8 is decremented (min tracked at +0x3d9). If the
  * count hits zero it allocates a fresh region block through sk_f_00668e24
  * under the +0xc1 flag. Returns the popped block.
- * Confidence: low
+ * Confidence: low (refill path models the decompiler's opaque extraout_x8/x9/
+ * x10 triple return as re-derived ctx+0x3c0/0x3d8 pointers; rest verified 1:1
+ * against fresh decompile 2026-08-12 — 3-slot probe, SoftwareBreakpoint
+ * 0x66a278/0x66a300, +0xc1 flag re-read, count decrement/min track all match).
  * Notes: refill path returns a (block, slot-ptr, count-ptr) triple in
  *   x0/x1/x2 (extraout_x8/x9/x10) — modeled here as block + re-derived ctx
  *   pointers; identical body to 0x66a1d8. */

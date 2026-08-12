@@ -31,6 +31,9 @@ extern unsigned long sk_htbl_hash2(uint64_t table, uint64_t key);
 extern unsigned long sk_htbl_cmp(uint64_t a, uint64_t b, ...);
 extern unsigned long sk_htbl_cmp2(uint64_t a, uint64_t b);
 extern unsigned long sk_reg_read(uint64_t);
+extern void sk_htbl_key_frame_init(uint64_t *frame, uint64_t seed); /* FUN_001a84f4 */
+extern uint64_t sk_htbl_key_pos(void);                             /* FUN_001a8564 */
+extern void sk_htbl_pair_key(uint64_t *frame, uint64_t k, uint64_t v); /* FUN_001b9084 */
 extern unsigned long sk_atou(void);
 extern unsigned long sk_enter_gl(void);
 extern void sk_defer(void);
@@ -94,7 +97,7 @@ static uint8_t sk_deref_byte(uint8_t *p);
 static uint64_t sk_htbl_count(uint64_t *t);
 static uint8_t *sk_htbl_insert_alloc(long n, uint8_t keep, uint64_t cb,
                                      uint64_t v0, uint64_t v1, uint64_t v2);
-static void sk_htbl_finish(uint64_t *bm, uint64_t nwords, uint64_t count, uint64_t *t);
+static uint64_t *sk_htbl_finish(uint64_t *bm, long nwords, long count, uint64_t *t);
 static void sk_htbl_lookup_cb(uint64_t *arg, uint64_t key);
 static void sk_parse_store_impl(uint64_t a, uint64_t b, uint64_t out, int which);
 static void sk_trap_parse_store3(uint64_t a, uint64_t b, uint64_t c,
@@ -794,7 +797,8 @@ static void sk_htbl_grow_pair(uint64_t min_slots)
 
 /* FUN_000b2c20 @ 0xb2c20   (est. sk_htbl_grow_single_cb)
  * Like sk_htbl_grow_single but entries re-hashed via object vtable key.
- * Confidence: low */
+ * Confidence: medium (fixed: added the object-vtable +0xd8 re-key dispatch
+ *   with entry acquire that was dropped from the original summary) */
 static void sk_htbl_grow_single_cb(uint64_t min_slots)
 {
     uint64_t *t = sk_reg_word;
@@ -813,13 +817,21 @@ static void sk_htbl_grow_single_cb(uint64_t min_slots)
             w = bm[wi];
             while (w != 0) {
                 uint64_t i = sk_lsb(w) | (wi << 6);
-                uint64_t key = *(uint64_t *)(*(uint64_t *)((uint8_t *)t + 0x30) + i * 8);
-                uint64_t pos = sk_htbl_hash(*(uint64_t *)((uint8_t *)nt + 0x28));
+                /* Re-key each live entry via its object vtable method
+                 * (+0xd8): init a key frame from the new table's +0x28
+                 * seed, acquire the entry, dispatch, read the position. */
+                uint64_t *entry = *(uint64_t **)(*(uint64_t *)((uint8_t *)t + 0x30) + i * 8);
+                uint64_t keyframe[3];
+                sk_htbl_key_frame_init(keyframe, *(uint64_t *)((uint8_t *)nt + 0x28));
+                void (*rekey)(uint64_t *) = *(void (**)(uint64_t *))(*(uint64_t *)entry + 0xd8);
+                cL4_ref_acquire((uint64_t)entry);
+                rekey(keyframe);
+                uint64_t pos = sk_htbl_key_pos();
                 for (;;) {
                     pos &= ~(-1ull << (((uint8_t *)nt)[0x20] & 0x3f));
                     if (!(nt[0x38 / 8 + (pos >> 6)] >> (pos & 0x3f) & 1)) {
                         nt[0x38 / 8 + (pos >> 6)] |= 1ull << (pos & 0x3f);
-                        *(uint64_t *)(*(uint64_t *)((uint8_t *)nt + 0x30) + pos * 8) = key;
+                        *(uint64_t *)(*(uint64_t *)((uint8_t *)nt + 0x30) + pos * 8) = (uint64_t)entry;
                         nt[2]++;
                         break;
                     }
@@ -890,7 +902,9 @@ static void sk_htbl_grow_single_move(uint64_t min_slots)
 }
 
 /* FUN_000b3440 @ 0xb3440   (est. sk_htbl_grow_pair_move)
- * Grow for pairs, zero-filling the source bitmap. Confidence: low */
+ * Grow for pairs, zero-filling the source bitmap.
+ * Confidence: medium (fixed: added the pair re-key via FUN_001b9084(k,v)
+ *   that was dropped from the original summary) */
 static void sk_htbl_grow_pair_move(uint64_t min_slots)
 {
     uint64_t *t = sk_reg_word;
@@ -912,7 +926,13 @@ static void sk_htbl_grow_pair_move(uint64_t min_slots)
                 uint64_t i = sk_lsb(w) | (wi << 6);
                 uint64_t *slot = (uint64_t *)(*(uint64_t *)((uint8_t *)t + 0x30) + i * 16);
                 uint64_t k = slot[0], v = slot[1];
-                uint64_t pos = sk_htbl_hash(*(uint64_t *)((uint8_t *)nt + 0x28));
+                /* Re-key the pair via the key routine: init a key frame from
+                 * the new table's +0x28 seed, run FUN_001b9084(k,v), read
+                 * the resulting position. */
+                uint64_t keyframe[3];
+                sk_htbl_key_frame_init(keyframe, *(uint64_t *)((uint8_t *)nt + 0x28));
+                sk_htbl_pair_key(keyframe, k, v);
+                uint64_t pos = sk_htbl_key_pos();
                 for (;;) {
                     pos &= ~(-1ull << (((uint8_t *)nt)[0x20] & 0x3f));
                     if (!(nt[0x38 / 8 + (pos >> 6)] >> (pos & 0x3f) & 1)) {
@@ -1022,7 +1042,8 @@ static void sk_htbl_compact_cb(void)
 
 /* FUN_000b36a4 @ 0xb36a4   (est. sk_htbl_grow_single_move_cb)
  * Grow/compact for object-keyed entries, zero-filling the source bitmap.
- * Confidence: low */
+ * Confidence: medium (fixed: added the object-vtable +0xd8 re-key dispatch,
+ *   no entry acquire on this path, that was dropped from the summary) */
 static void sk_htbl_grow_single_move_cb(uint64_t min_slots)
 {
     uint64_t *t = sk_reg_word;
@@ -1042,13 +1063,20 @@ static void sk_htbl_grow_single_move_cb(uint64_t min_slots)
             w = bm[wi];
             while (w != 0) {
                 uint64_t i = sk_lsb(w) | (wi << 6);
-                uint64_t key = *(uint64_t *)(*(uint64_t *)((uint8_t *)t + 0x30) + i * 8);
-                uint64_t pos = sk_htbl_hash(*(uint64_t *)((uint8_t *)nt + 0x28));
+                /* Re-key each live entry via its object vtable method
+                 * (+0xd8): init a key frame from the new table's +0x28 seed
+                 * and dispatch (no acquire on this path), then read the
+                 * resulting position. */
+                uint64_t *entry = *(uint64_t **)(*(uint64_t *)((uint8_t *)t + 0x30) + i * 8);
+                uint64_t keyframe[3];
+                sk_htbl_key_frame_init(keyframe, *(uint64_t *)((uint8_t *)nt + 0x28));
+                (*(void (**)(uint64_t *))(*(uint64_t *)entry + 0xd8))(keyframe);
+                uint64_t pos = sk_htbl_key_pos();
                 for (;;) {
                     pos &= ~(-1ull << (((uint8_t *)nt)[0x20] & 0x3f));
                     if (!(nt[0x38 / 8 + (pos >> 6)] >> (pos & 0x3f) & 1)) {
                         nt[0x38 / 8 + (pos >> 6)] |= 1ull << (pos & 0x3f);
-                        *(uint64_t *)(*(uint64_t *)((uint8_t *)nt + 0x30) + pos * 8) = key;
+                        *(uint64_t *)(*(uint64_t *)((uint8_t *)nt + 0x30) + pos * 8) = (uint64_t)entry;
                         nt[2]++;
                         break;
                     }
@@ -1266,38 +1294,59 @@ static void sk_htbl_build(uint64_t *bm, uint64_t nwords, uint64_t *t)
 }
 
 /* FUN_000b3cfc @ 0xb3cfc   (est. sk_htbl_finish) — finalize a rebuild:
- * return the empty table / same-size source / a fresh table moved. */
-static void sk_htbl_finish(uint64_t *bm, uint64_t nwords, uint64_t count, uint64_t *src)
+ * return the empty table / same-size source / a fresh table moved.
+ * Confidence: high
+ * Notes: FIXED from a pair (16B k/v) rehash: per decompile this rebuilds a
+ *   single-entry (8B) table storing source-slot pointers, and returns the
+ *   table (empty sentinel / same-size src / fresh). Hash fn pointer is the
+ *   per-source-object method at +0xd8 (rendered via sk_htbl_hash). */
+static uint64_t *sk_htbl_finish(uint64_t *bm, long nwords, long count, uint64_t *src)
 {
     uint64_t *nt;
-    uint64_t wi;
-    (void)count;
+    uint64_t w;
+    long wi;
 
-    nt = (uint64_t *)cL4_alloc_exact2(count ? count : 1, sk_atou());
-    for (wi = 0; wi < nwords; wi++) {
-        uint64_t w = bm[wi];
-        while (w != 0) {
-            uint64_t i = sk_lsb(w) | (wi << 6);
-            uint64_t *ss = (uint64_t *)(*(uint64_t *)((uint8_t *)src + 0x30) + i * 16);
-            uint64_t k = ss[0], v = ss[1];
+    if (count == 0)
+        return (uint64_t *)sk_htbl_empty;
+    if (count == src[2])
+        return src;
+    nt = (uint64_t *)cL4_alloc_exact2((uint64_t)count, sk_atou());
+    w = (nwords < 1) ? 0 : bm[0];
+    wi = 0;
+    do {
+        if (w == 0) {
+            do {
+                long next = wi + 1;
+                if (__builtin_add_overflow(wi, 1, &next))
+                    __builtin_trap();            /* 0xb3f2c */
+                if (nwords <= next)
+                    goto done;
+                w = bm[next];
+                wi = next;
+            } while (w == 0);
+        }
+        {
+            uint64_t i = sk_lsb(w) | ((uint64_t)wi << 6);
+            uint64_t *sp = *(uint64_t **)((uint8_t *)src + 0x30 + i * 8);
             uint64_t pos = sk_htbl_hash(*(uint64_t *)((uint8_t *)nt + 0x28));
             for (;;) {
                 pos &= ~(-1ull << (((uint8_t *)nt)[0x20] & 0x3f));
-                if (!(nt[0x38 / 8 + (pos >> 6)] >> (pos & 0x3f) & 1)) {
+                if ((nt[0x38 / 8 + (pos >> 6)] >> (pos & 0x3f) & 1) == 0) {
                     nt[0x38 / 8 + (pos >> 6)] |= 1ull << (pos & 0x3f);
-                    {
-                        uint64_t *ns = (uint64_t *)(*(uint64_t *)((uint8_t *)nt + 0x30) + pos * 16);
-                        ns[0] = k; ns[1] = v;
-                    }
+                    *(uint64_t **)((uint8_t *)nt + 0x30 + pos * 8) = sp;
                     nt[2]++;
                     break;
                 }
                 pos++;
             }
-            w &= w - 1;
         }
-    }
+        w &= w - 1;                              /* clear lowest set bit */
+        if (__builtin_sub_overflow(count, 1, &count))
+            __builtin_trap();                    /* 0xb3f34 */
+    } while (count != 0);
+done:
     cL4_ref_release((uint64_t)src);
+    return nt;
 }
 
 /* ------------------------------------------------------------------ *
@@ -1577,7 +1626,10 @@ static void sk_trap_defer_thunk(void) { sk_trap_defer(); }
 static void sk_trap_defer_b_thunk(void) { sk_trap_defer_b(); }
 
 /* FUN_000b02f4 @ 0xb02f4   (est. sk_trap_defer2) — defer a pending trap to
- * the registered handler; returns its result. Confidence: low */
+ * the registered handler; returns its result. Confidence: medium
+ * Notes: dispatch structure verified against decompile (preamble/read, the
+ *   >>0x3c/>>0x3d three-level branch, handler dispatch, trap 0xb03cc);
+ *   x21/x22 register forwarding rendered via sk_reg_val (opaque). */
 static cl4_result_t sk_trap_defer2(void)
 {
     cl4_result_t msg;
@@ -1632,12 +1684,49 @@ static void sk_trap_parse_store(uint64_t a, uint64_t b, uint64_t out)
 {
     sk_parse_store_impl(a, b, out, 0);
 }
-/* FUN_000b06a4 @ 0xb06a4   (est. sk_trap_parse_store2) */
+/* FUN_000b06a4 @ 0xb06a4   (est. sk_trap_parse_store2)
+ * Parses/stores via the u8 path: reads the message, unwinds on the high
+ * failure tag, then forwards (msg.lo, msg.hi, out) to the store callee
+ * FUN_000b1aac. On the no-arg (dropped) dispatch path it calls the same
+ * callee with a zeroed third word and traps if msg.lo is non-null.
+ * Confidence: medium */
 static void sk_trap_parse_store2(uint64_t a, uint64_t b, uint64_t out)
 {
-    sk_parse_store_impl(a, b, out, 1);
+    cl4_result_t msg;
+
+    cL4_ref_acquire(b);
+    sk_common_preamble();
+    msg = sk_trap_msg_read2(&a);
+    if ((msg.hi >> 0x3c & 1) != 0) {
+        sk_common_consume2();
+        sk_handle();
+        sk_common_exit();
+        cL4_ref_release(msg.hi);
+        msg.hi = sk_reg_val;
+    }
+    if ((msg.hi >> 0x3d & 1) == 0) {
+        if ((msg.lo >> 0x3c & 1) == 0) {
+            sk_common_consume2();
+            msg = sk_msg_enter2();
+        } else {
+            msg = sk_common_consume(msg.hi & 0xfffffffffffffff);
+        }
+        sk_parse_store2(msg.lo, msg.hi, out);   /* FUN_000b1aac(msg.lo, msg.hi, param_3) */
+    } else {
+        sk_common_dispatch2();
+        sk_parse_store2(msg.lo, msg.hi, 0);     /* FUN_000b1aac() (args dropped) */
+        if (msg.lo != 0) {
+            cL4_ref_release(msg.lo);
+            __builtin_trap();                   /* SoftwareBreakpoint(1,0xb077c) */
+        }
+    }
+    cL4_ref_release(msg.hi);
+    sk_common_done();
 }
-/* common implementation for 04e4 (signed) / 06a4 (u8) */
+
+/* common implementation retained for the 04e4 (signed) wrapper
+ * sk_trap_parse_store; mirrors the 06a4 body modulo the `which` parse
+ * selection. */
 static void sk_parse_store_impl(uint64_t a, uint64_t b, uint64_t out, int which)
 {
     cl4_result_t msg;
@@ -1675,7 +1764,11 @@ static void sk_parse_store_impl(uint64_t a, uint64_t b, uint64_t out, int which)
     sk_common_done();
 }
 
-/* FUN_000b0794 @ 0xb0794   (est. sk_trap_parse_store3) */
+/* FUN_000b0794 @ 0xb0794   (est. sk_trap_parse_store3)
+ * Confidence: medium
+ * Notes: Verified against decompile: acquire(d), msg_read3(4 strings),
+ *   >>0x3c/>>0x3d dispatch, parse-store, release(hi), done, trap 0xb0888.
+ *   Register forwarding (unaff_x22 -> sk_reg_val) opaque. */
 static void sk_trap_parse_store3(uint64_t a, uint64_t b, uint64_t c,
                                  uint64_t d, uint64_t out)
 {
