@@ -1,0 +1,56 @@
+osfmk/arm64/sk/sk_region_sched_5.c:2283:21: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:2284:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:2718:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:2793:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:2868:19: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:4920:19: error: array has incomplete element type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:4926:7: error: incompatible function pointer types assigning to 'unsigned long (*)()' from 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:4938:16: error: use of undeclared identifier 'stk00000018'; did you mean 'sv00000008'?
+osfmk/arm64/sk/sk_region_sched_5.c:5014:12: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:5015:14: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:5039:50: error: use of undeclared identifier 'stk00000008'; did you mean 'sv00000008'?
+osfmk/arm64/sk/sk_region_sched_5.c:5039:49: error: incompatible pointer to integer conversion passing 'long *' to parameter of type 'undefined8' (aka 'unsigned long long') [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:5055:22: error: use of undeclared identifier 'stk00000028'; did you mean 'sv00000008'?
+osfmk/arm64/sk/sk_region_sched_5.c:5058:22: error: use of undeclared identifier 'stk00000040'
+osfmk/arm64/sk/sk_region_sched_5.c:5093:22: error: use of undeclared identifier 'stk00000020'
+osfmk/arm64/sk/sk_region_sched_5.c:5098:22: error: use of undeclared identifier 'stk00000000'; did you mean 'sv00000008'?
+osfmk/arm64/sk/sk_region_sched_5.c:5681:8: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:6232:4: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:6263:7: error: incompatible function pointer types assigning to 'unsigned long (*)()' from 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:7113:10: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:7131:14: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:7181:10: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:7194:14: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:7300:6: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:7301:6: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:7327:10: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:7440:8: error: assigning to 'ulong' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:7505:48: error: use of undeclared identifier 'stk00000010'
+osfmk/arm64/sk/sk_region_sched_5.c:7534:24: error: use of undeclared identifier 'stk00000030'
+osfmk/arm64/sk/sk_region_sched_5.c:7925:6: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:8237:70: error: member reference base type 'unsigned char[]' is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:8238:82: error: member reference base type 'unsigned char[]' is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:8252:64: error: member reference base type 'unsigned char[]' is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:8253:73: error: member reference base type 'unsigned char[]' is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:8536:7: error: incompatible function pointer types assigning to 'unsigned long (*)()' from 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:8567:36: error: use of undeclared identifier 'stk00000040'
+osfmk/arm64/sk/sk_region_sched_5.c:8672:23: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:8704:8: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:8731:23: error: indirection requires pointer operand ('undefined8' (aka 'unsigned long long') invalid)
+osfmk/arm64/sk/sk_region_sched_5.c:8792:8: error: call to undeclared function 'sk_001dcd98'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+osfmk/arm64/sk/sk_region_sched_5.c:8799:12: error: conflicting types for 'sk_001dcd98'
+osfmk/arm64/sk/sk_region_sched_5.c:8812:13: error: incompatible pointer to integer conversion assigning to 'undefined8' (aka 'unsigned long long') from 'unsigned long *' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9077:8: error: incompatible pointer to integer conversion assigning to 'long' from 'undefined *' (aka 'unsigned long long *') [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9497:52: error: incompatible function pointer types passing 'unsigned long ()' to parameter of type 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:9497:28: error: operand of type 'void' where arithmetic or pointer type is required
+osfmk/arm64/sk/sk_region_sched_5.c:9802:45: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'void (*)()' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:9821:45: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'void (*)()' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:10096:8: error: assigning to 'undefined8' (aka 'unsigned long long') from incompatible type 'void'
+osfmk/arm64/sk/sk_region_sched_5.c:10201:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable
+osfmk/arm64/sk/sk_region_sched_5.c:10393:7: error: array type 'undefined1[16]' (aka 'unsigned char[16]') is not assignable
+osfmk/arm64/sk/sk_region_sched_5.c:10825:23: error: incompatible integer to pointer conversion passing 'undefined8' (aka 'unsigned long long') to parameter of type 'void (*)()' [-Wint-conversion]
+osfmk/arm64/sk/sk_region_sched_5.c:10896:9: error: incompatible function pointer types assigning to 'unsigned long (*)()' from 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:10913:23: error: member reference base type 'ulong' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:10915:23: error: member reference base type 'undefined8' (aka 'unsigned long long') is not a structure or union
+osfmk/arm64/sk/sk_region_sched_5.c:10961:23: error: incompatible function pointer types passing 'unsigned long ()' to parameter of type 'void (*)()' [-Wincompatible-function-pointer-types]
+osfmk/arm64/sk/sk_region_sched_5.c:10961:35: error: incompatible pointer to integer conversion passing 'undefined1[16]' (aka 'unsigned char[16]') to parameter of type 'undefined8' (aka 'unsigned long long') [-Wint-conversion]

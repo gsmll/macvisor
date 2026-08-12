@@ -3742,7 +3742,8 @@ void sk_syscall_entry_b(word_t p1, word_t p2, long frame)
     FUN_00377824(0);
     FUN_0034b57c(0);
     r = FUN_0035944c(/* x16 */0);
-    if ((/* carry clear && !zero 0 == 0) {
+    /* ((!carry_set || zero) && x10 < 0x19) && w11 == 0 */
+    if (((/* carry */0 == 0 || /* zero */0 != 0) && (ulong)/* x10 */0 < 0x19) && /* w11 */0 == 0) {
         FUN_0034df14(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
     } else {
@@ -3870,7 +3871,8 @@ void sk_entry_commit_c(void)
         FUN_0034df14(0);
         ((void (*)(void))0)();
         FUN_00349cd0(0);
-        0 = 0;
+        /* *x8 = *x9_00 (copy frame word) */
+        *(word_t *)/* x8 */0 = *(word_t *)/* x9_00 */0;
     } else {
         FUN_00349a9c(0);
         FUN_0036b270(0);
@@ -3923,7 +3925,9 @@ void sk_slot_write_value_b(void)
     FUN_00353844(0);
     long off = /* x9 */0 + 8;
     uint width = 0;
-    if (/* w8 */0 - limit != 0) {
+    if (/* w8 */0 < limit || /* w8 */0 - limit == 0) {
+        width = 0;
+    } else {
         uint size = 2;
         uint sv = ((int)off == 0) ? (/* w8 */0 - limit) + 1 : size;
         if (0xffff < sv) size = 4;
@@ -3931,27 +3935,38 @@ void sk_slot_write_value_b(void)
         width = (1 < sv) ? size : 0;
     }
     int diff = /* w1 */0 - limit;
-    if (/* w1 */0 + off) = 0;
+    if (/* w1 */0 < limit || diff == 0) {
+        /* clear path: store zero of the computed width at x19+off */
+        switch (width) {
+        case 1:
+            *(und1_t *)((long)/* x19 */0 + off) = 0;
             if (/* w1 */0 == 0) return;
             break;
         case 2:
             *(und2_t *)((long)/* x19 */0 + off) = 0;
             break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33676c) 0 + off) = 0;
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33676c) */
+            break;
+        case 4:
+            *(und4_t *)((long)/* x19 */0 + off) = 0;
         default:
-            if (/* w1 */0 != 0) { FUN_000839d8(0); return; }
         }
+        if (/* w1 */0 != 0) { FUN_000839d8(0); return; }
     } else {
+        /* set path: write diff at x19+off */
         if ((int)off != 0) {
             diff = 1;
             FUN_0009461c(0);
             FUN_00114330(0);
-            0 = /* w1 */0 + ~limit;
+            *(uint *)/* x19 */0 = /* w1 */0 + ~limit;
         }
         switch (width) {
         case 1: *(char *)((long)/* x19 */0 + off) = (char)diff; break;
         case 2: *(short *)((long)/* x19 */0 + off) = (short)diff; break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33676c) 0 + off) = diff; break;
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x33676c) */
+            break;
+        case 4: *(int *)((long)/* x19 */0 + off) = diff; break;
+        default: break;
         }
     }
 }
@@ -3974,7 +3989,8 @@ void sk_entry_commit_d(void)
         FUN_0034df14(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
         FUN_00349cd0(0);
-        0 = 0;
+        /* *x8 = *x9_00 (copy frame word) */
+        *(word_t *)/* x8 */0 = *(word_t *)/* x9_00 */0;
     } else {
         FUN_00349a9c(0);
         FUN_0036b270(0);
@@ -4052,19 +4068,25 @@ word_t sk_msg_cap_validate_5(void)
     FUN_00377824(0);
     word_t w = FUN_000a6f88(0);
     if (/* w20 */0 == 0) return 0;
-    if (*(uint *)/* table+0x54 0) {
-        FUN_00355d60(*(word_t *)/* x8+0x40 0, w);
+    if (*(uint *)/* table+0x54 */0 < /* w20 */0) {
+        FUN_00355d60(*(word_t *)/* x8+0x40 */0, w, *(uint *)/* table+0x54 */0, w);
         FUN_00357e04(/* x8_00 */0 + 8U & 0xfffffff8);
-        uint width = (/* w10 */0;
-        uint sel = (1 < /* w10 */0) ? width : 0;
+        uint width = /* w11 */0;
+        if (/* w10 */0 < 0x100) width = 1;
+        uint sel = 0;
+        if (1 < /* w10 */0) sel = width;
         switch (sel) {
         case 1:
-            if (*(char *)(/* x19 */0) != '\0') return FUN_00352f78(0);
+            if (*(char *)/* x19 */0 != '\0') return FUN_00352f78(0);
             break;
         case 2:
-            if (*(short *)(/* x19 */0) != 0) return FUN_00352f78(0);
+            if (*(short *)/* x19 */0 != 0) return FUN_00352f78(0);
             break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336bbc) 0 + /* x9 */0) != 0) return FUN_00352f78(0);
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336bbc) */
+            break;
+        case 4:
+            if (*(int *)/* x19 */0 != 0) return FUN_00352f78(0);
+            break;
         }
         if (/* w1 */0 == 0) return 0;
     }
@@ -4094,27 +4116,38 @@ void sk_slot_write_value_c(word_t p1, word_t p2, uint count, long frame)
         width = (1 < sv) ? size : 0;
     }
     int diff = /* w20 */0 - limit;
-    if (/* w20 */0 + off) = 0;
+    if (/* w20 */0 < limit || diff == 0) {
+        /* clear path: store zero of the computed width at x19+off */
+        switch (width) {
+        case 1:
+            *(und1_t *)((long)/* x19 */0 + off) = 0;
             if (/* w20 */0 == 0) return;
             break;
         case 2:
             *(und2_t *)((long)/* x19 */0 + off) = 0;
             break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336d54) 0 + off) = 0;
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336d54) */
+            break;
+        case 4:
+            *(und4_t *)((long)/* x19 */0 + off) = 0;
         default:
-            if (/* w20 */0 != 0) { FUN_0009461c(0); FUN_000839d8(0); return; }
         }
+        if (/* w20 */0 != 0) { FUN_0009461c(0); FUN_000839d8(0); return; }
     } else {
+        /* set path: write diff at x19+off */
         if ((int)off != 0) {
             diff = 1;
             FUN_003507e0(0);
             FUN_00114330(0);
-            0 = /* w20 */0 + ~limit;
+            *(uint *)/* x19 */0 = /* w20 */0 + ~limit;
         }
         switch (width) {
         case 1: *(char *)((long)/* x19 */0 + off) = (char)diff; break;
         case 2: *(short *)((long)/* x19 */0 + off) = (short)diff; break;
-        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336d54) 0 + off) = diff; break;
+        case 3: SK_BREAKPOINT();   /* SoftwareBreakpoint(1,0x336d54) */
+            break;
+        case 4: *(int *)((long)/* x19 */0 + off) = diff; break;
+        default: break;
         }
     }
 }
@@ -4173,6 +4206,7 @@ void sk_syscall_msg_write_f(void)
         FUN_0009461c(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         ulong a = dst + /* x19 */0;
+        ulong b = dst + /* x20 */0;
         FUN_003513e4(b & mask);
         if (FUN_000839f8(0) == 0) {
             ((void (*)(word_t, word_t, word_t))0)(a & mask, b & mask, sz);

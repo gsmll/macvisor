@@ -25,9 +25,9 @@ extern unsigned long sk_object_lock(unsigned long a, unsigned long b,
                                     unsigned long c, void *dbg1, void *dbg2); /* FUN_00377824 */
 extern unsigned long sk_lock_ref(unsigned long a);                          /* FUN_00377bec */
 extern unsigned long sk_lzcount(uint32_t v);                                /* LZCOUNT intrinsic */
-extern void sk_cpu_current(void);                                           /* FUN_0008e518 */
+extern reg16 sk_cpu_current(void);                                   /* FUN_0008e518 */
 extern void sk_thread_epilogue(void);                                       /* FUN_0008e500 */
-extern void sk_swift_fatal(uint64_t a, uint64_t b, ...);                    /* FUN_001afe4c (noreturn) */
+extern void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...);
 
 /* Swift runtime collection alloc helpers. */
 extern void *swift_array_alloc_with_count(uint64_t a, void *b);             /* FUN_003a25d4 */
@@ -39,14 +39,1253 @@ extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* F
 extern void *sk_current_tcb(void);                                          /* FUN_000867ec */
 extern void sk_schedule_yield(void);                                        /* FUN_00084180 */
 
-/* Forward declarations of functions defined in this file (used across bodies). */
-void sk_sched_size_class(uint32_t n);
-long sk_sched_capacity(uint32_t n);
-void *sk_swift_array_construct(uint64_t elem, long count);
-void *sk_swift_array_alloc(long count);
-void sk_swift_array_destroy(long handle);
-void sk_swift_array_update(void);
 
+/* ==================================================================== *
+ * compile-fix: generated declarations (register pseudos, types, externs)      *
+ * ==================================================================== */
+typedef uint64_t undefined8; typedef uint8_t undefined1; typedef uint64_t undefined;
+typedef uint8_t byte; typedef uint16_t ushort; typedef uint32_t uint; typedef uint64_t ulong;
+typedef uint64_t code;
+typedef struct { uint64_t lo; uint64_t hi; } reg16;
+typedef void (*code_fn)(void);
+
+/* Ghidra CONCAT / borrow-carry / sign-extend helpers. */
+static inline uint64_t CONCAT17(uint64_t a, uint64_t b){ return (a<<8)|(b&0xff); }
+static inline uint64_t CONCAT71(uint64_t a, uint64_t b){ return (a<<7)|(b&0x7f); }
+static inline uint64_t SBORROW8(uint64_t a, uint64_t b){ return ((int64_t)a < (int64_t)b); }
+static inline uint64_t SCARRY8(uint64_t a, uint64_t b){ return (((uint64_t)a + (uint64_t)b) < (uint64_t)a); }
+static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v & 0xff); }
+static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
+
+/* Leaked register / pseudo-stack identifiers (compile-fix globals). */
+uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cpu, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, node, obj, out, r, reg12, s, slot_ptr, src, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_10, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_40, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v, v13b, v14, v14b, v19, v2, v5, v6, v7, v8, vv, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x15, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x20, x21, x22, x23, x24, x25, x26, x27, x28, x3, x30, x4, x5, x6, x7, x8, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_07, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01;
+reg16 cpu, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
+uint64_t *obj, sv_10, sv_40, x20, x22, x25, x26, x3, x8, x8_07;
+void (*entry)(void), (*fn)(void), (*fn1)(void), (*fn10)(void), (*fn12)(void), (*fn14)(void), (*fn17)(void), (*fn2)(void), (*fn3)(void), (*fn5)(void), (*fn5c)(void), (*fn6)(void), (*fn6b)(void), (*fn7)(void), (*fn8)(void), (*fn9)(void), (*jumptable)(void), (*x19_fn)(void), (*x20_fn)(void), (*x24_fn)(void), (*x25_fn)(void), (*x26_fn)(void), (*x27_fn)(void), (*x8_00_fn)(void), (*x8_01_fn)(void), (*x8_02_fn)(void), (*x8_03_fn)(void), (*x8_04_fn)(void), (*x8_05_fn)(void), (*x8_06_fn)(void), (*x8_07_fn)(void), (*x8_08_fn)(void), (*x8_09_fn)(void), (*x8_10_fn)(void), (*x8_11_fn)(void), (*x8_12_fn)(void), (*x8_13_fn)(void), (*x8_14_fn)(void), (*x8_15_fn)(void), (*x8_16_fn)(void), (*x8_17_fn)(void), (*x8_18_fn)(void), (*x8_19_fn)(void), (*x8_20_fn)(void), (*x8_21_fn)(void), (*x8_fn)(void), (*x9_00_fn)(void), (*x9_01_fn)(void), (*x9_02_fn)(void), (*x9_03_fn)(void), (*x9_04_fn)(void), (*x9_05_fn)(void), (*x9_06_fn)(void), (*x9_07_fn)(void), (*x9_08_fn)(void), (*x9_09_fn)(void), (*x9_10_fn)(void), (*x9_11_fn)(void), (*x9_12_fn)(void), (*x9_13_fn)(void), (*x9_14_fn)(void), (*x9_fn)(void);
+void (*fn5b)(void), (*is_b8)(void);
+
+/* Swift fatal/string constants (extern char arrays). */
+extern char s_Fatal_error[]; extern char s_array_slice_with_unsafe_mut[]; extern char s_array_with_unsafe_mut[]; extern char s_buf_has_null[]; extern char s_cant_construct_array[]; extern char s_cant_remove_empty[]; extern char s_cant_remove_first[]; extern char s_cant_remove_last[]; extern char s_cant_remove_more[]; extern char s_cant_remove_more2[]; extern char s_count_must_not_neg[]; extern char s_identity_cast_wrong_type[]; extern char s_index_oob[]; extern char s_index_out_of_range[]; extern char s_insufficient_space[]; extern char s_invalid_less_than[]; extern char s_invalid_more_than[]; extern char s_num_to_remove[]; extern char s_range_requires[]; extern char s_reversed_key[]; extern char s_string_index_oob[]; extern char s_swift_array[]; extern char s_swift_array_slice[]; extern char s_swift_builtin[]; extern char s_swift_collection[]; extern char s_swift_contig_buf[]; extern char s_swift_optional[]; extern char s_swift_range[]; extern char s_swift_range_replaceable[]; extern char s_swift_span[]; extern char s_swift_string_utf16[]; extern char s_swift_unicode_helpers[]; extern char s_swift_unsafe_buf[]; extern char s_swift_valid_utf8[]; extern char s_unexpected_nil[]; extern char s_unsafe_mut_buf[]; extern char s_unsafely_unwrapped_nil[];
+/* Data / memory symbols. */
+extern uint64_t DAT_004baeb0, DAT_004c08a0, DAT_006adf10, DAT_006adf18, section_00000068, sk_array_metatype, sk_cstring, sk_empty_array, uRam_4baeb8, uRam_4c08a8;
+extern uint64_t FUN_00072c0c, FUN_001a0d1c, FUN_002a9d64, FUN_00310d34, FUN_00319380, FUN_0031940c, FUN_00346744;
+
+/* Forward declarations of in-file functions (used before definition). */
+void sk_lock_guarded();
+void sk_sched_queue_foreach();
+void sk_swift_array_dispatch_impl();
+void swift_array_destroy();
+void swift_array_init_core();
+
+/* Permissive externs for out-of-range helpers (arity unknown). */
+extern uint64_t CONCAT17();
+extern uint64_t CONCAT71();
+extern uint64_t FUN_00002534();
+extern uint64_t FUN_00002688();
+extern uint64_t FUN_000026e8();
+extern uint64_t FUN_00002834();
+extern uint64_t FUN_00002850();
+extern uint64_t FUN_0001a1c8();
+extern reg16 FUN_0001d4a0();
+extern uint64_t FUN_0001da84();
+extern uint64_t FUN_00027614();
+extern uint64_t FUN_00027754();
+extern uint64_t FUN_00027788();
+extern uint64_t FUN_000277b8();
+extern reg16 FUN_00041138();
+extern uint64_t FUN_00068e14();
+extern uint64_t FUN_0006a4c0();
+extern uint64_t FUN_0006b3f4();
+extern uint64_t FUN_0006b42c();
+extern uint64_t FUN_0006e778();
+extern reg16 FUN_0006f6b4();
+extern uint64_t FUN_0006f768();
+extern uint64_t FUN_00071bd0();
+extern uint64_t FUN_00077070();
+extern uint64_t FUN_00077630();
+extern uint64_t FUN_0007767c();
+extern uint64_t FUN_00077698();
+extern uint64_t FUN_000776cc();
+extern uint64_t FUN_00077888();
+extern uint64_t FUN_0007c028();
+extern uint64_t FUN_0007c1a4();
+extern uint64_t FUN_0007c1c4();
+extern uint64_t FUN_000839d8();
+extern uint64_t FUN_000839f8();
+extern uint64_t FUN_00083a18();
+extern reg16 FUN_0008409c();
+extern reg16 FUN_00084180();
+extern reg16 FUN_00084220();
+extern uint64_t FUN_00084234();
+extern uint64_t FUN_0008e0d4();
+extern uint64_t FUN_0008e388();
+extern uint64_t FUN_0008e518();
+extern uint64_t FUN_0008f5f4();
+extern uint64_t FUN_0008f6f4();
+extern reg16 FUN_0009461c();
+extern reg16 FUN_0009e234();
+extern uint64_t FUN_000a6894();
+extern uint64_t FUN_000a68f4();
+extern uint64_t FUN_000a6f68();
+extern uint64_t FUN_000a6f88();
+extern uint64_t FUN_000a6fe0();
+extern uint64_t FUN_000aa4ec();
+extern uint64_t FUN_000b4390();
+extern uint64_t FUN_000b43e8();
+extern reg16 FUN_000b4594();
+extern uint64_t FUN_000b45b0();
+extern uint64_t FUN_000dbcc8();
+extern uint64_t FUN_000dbd0c();
+extern uint64_t FUN_000dbdf4();
+extern uint64_t FUN_000dbe70();
+extern uint64_t FUN_000dbf08();
+extern uint64_t FUN_000e15d8();
+extern uint64_t FUN_000e72b0();
+extern reg16 FUN_00100c38();
+extern uint64_t FUN_00100efc();
+extern uint64_t FUN_0011e71c();
+extern uint64_t FUN_0014ae44();
+extern reg16 FUN_00167404();
+extern reg16 FUN_0016749c();
+extern uint64_t FUN_001676cc();
+extern uint64_t FUN_0019c03c();
+extern uint64_t FUN_0019c078();
+extern uint64_t FUN_0019c20c();
+extern uint64_t FUN_0019c258();
+extern uint64_t FUN_0019c2fc();
+extern uint64_t FUN_0019c44c();
+extern uint64_t FUN_0019c53c();
+extern uint64_t FUN_0019cb68();
+extern uint64_t FUN_0019cc64();
+extern uint64_t FUN_0019ce60();
+extern uint64_t FUN_0019d15c();
+extern uint64_t FUN_0019d40c();
+extern uint64_t FUN_0019d6d0();
+extern uint64_t FUN_0019da34();
+extern uint64_t FUN_0019dadc();
+extern uint64_t FUN_0019dd10();
+extern uint64_t FUN_0019e538();
+extern reg16 FUN_0019e578();
+extern uint64_t FUN_0019e644();
+extern reg16 FUN_0019e93c();
+extern uint64_t FUN_0019ea20();
+extern reg16 FUN_0019ed3c();
+extern uint64_t FUN_0019f1ec();
+extern uint64_t FUN_0019fa60();
+extern uint64_t FUN_0019fd10();
+extern uint64_t FUN_0019fe7c();
+extern uint64_t FUN_001a0194();
+extern uint64_t FUN_001a0414();
+extern uint64_t FUN_001a0534();
+extern uint64_t FUN_001a0640();
+extern uint64_t FUN_001a06b8();
+extern uint64_t FUN_001a0a70();
+extern uint64_t FUN_001a0c98();
+extern uint64_t FUN_001a0d1c();
+extern uint64_t FUN_001a0dac();
+extern uint64_t FUN_001a0fa4();
+extern reg16 FUN_001a10d4();
+extern reg16 FUN_001a10e4();
+extern uint64_t FUN_001a1138();
+extern uint64_t FUN_001a16e8();
+extern uint64_t FUN_001a2128();
+extern reg16 FUN_001a26e0();
+extern uint64_t FUN_001a2740();
+extern reg16 FUN_001a27f0();
+extern uint64_t FUN_001a4554();
+extern uint64_t FUN_001a4bbc();
+extern uint64_t FUN_001a5110();
+extern uint64_t FUN_001a5250();
+extern uint64_t FUN_001a5968();
+extern uint64_t FUN_001a5be8();
+extern uint64_t FUN_001a67bc();
+extern uint64_t FUN_001a6ab8();
+extern uint64_t FUN_001a73cc();
+extern uint64_t FUN_001a7914();
+extern uint64_t FUN_001a7e5c();
+extern uint64_t FUN_001a7fcc();
+extern uint64_t FUN_001a8068();
+extern uint64_t FUN_001a8368();
+extern uint64_t FUN_001a842c();
+extern uint64_t FUN_001a8498();
+extern uint64_t FUN_001a84f4();
+extern uint64_t FUN_001a8564();
+extern uint64_t FUN_001a894c();
+extern reg16 FUN_001a89a8();
+extern uint64_t FUN_001a8b9c();
+extern reg16 FUN_001a8cf0();
+extern uint64_t FUN_001a9064();
+extern uint64_t FUN_001a91c4();
+extern uint64_t FUN_001a9640();
+extern uint64_t FUN_001a964c();
+extern uint64_t FUN_001a9714();
+extern uint64_t FUN_001a97d4();
+extern uint64_t FUN_001a983c();
+extern uint64_t FUN_001a989c();
+extern uint64_t FUN_001a9a84();
+extern uint64_t FUN_001a9ac8();
+extern uint64_t FUN_001a9b28();
+extern reg16 FUN_001a9bf0();
+extern uint64_t FUN_001a9c54();
+extern uint64_t FUN_001a9cb8();
+extern uint64_t FUN_001a9dd8();
+extern uint64_t FUN_001aa318();
+extern uint64_t FUN_001aa330();
+extern uint64_t FUN_001aa538();
+extern uint64_t FUN_001aa800();
+extern uint64_t FUN_001aaa0c();
+extern uint64_t FUN_001aab34();
+extern reg16 FUN_001aab58();
+extern reg16 FUN_001aad30();
+extern uint64_t FUN_001aad64();
+extern uint64_t FUN_001aadec();
+extern uint64_t FUN_001aaef0();
+extern uint64_t FUN_001ab008();
+extern uint64_t FUN_001ab07c();
+extern uint64_t FUN_001ab1ac();
+extern uint64_t FUN_001ab52c();
+extern uint64_t FUN_001ab924();
+extern reg16 FUN_001ab9e0();
+extern uint64_t FUN_001abe00();
+extern uint64_t FUN_001ad190();
+extern uint64_t FUN_001ad494();
+extern uint64_t FUN_001ad668();
+extern uint64_t FUN_001ad6e0();
+extern reg16 FUN_001ad884();
+extern uint64_t FUN_001adf20();
+extern uint64_t FUN_001ae254();
+extern uint64_t FUN_001aeab4();
+extern reg16 FUN_001af990();
+extern uint64_t FUN_001afa84();
+extern uint64_t FUN_001afd38();
+extern uint64_t FUN_001b012c();
+extern uint64_t FUN_001b0174();
+extern uint64_t FUN_001b05d8();
+extern uint64_t FUN_001d2d1c();
+extern reg16 FUN_001d96e0();
+extern reg16 FUN_001d974c();
+extern uint64_t FUN_001d9b18();
+extern uint64_t FUN_001dd614();
+extern uint64_t FUN_001de6c4();
+extern uint64_t FUN_001de8a8();
+extern uint64_t FUN_001dea60();
+extern uint64_t FUN_001ded00();
+extern uint64_t FUN_001dedf8();
+extern uint64_t FUN_001defc8();
+extern uint64_t FUN_001df334();
+extern uint64_t FUN_001df428();
+extern reg16 FUN_001dff60();
+extern reg16 FUN_001e3730();
+extern uint64_t FUN_001e5438();
+extern uint64_t FUN_001e67d8();
+extern uint64_t FUN_001e74ac();
+extern uint64_t FUN_001ee030();
+extern uint64_t FUN_001f1878();
+extern uint64_t FUN_002060d4();
+extern uint64_t FUN_0020c1bc();
+extern uint64_t FUN_0020c5b0();
+extern uint64_t FUN_0020c634();
+extern reg16 FUN_0021398c();
+extern uint64_t FUN_00228e78();
+extern uint64_t FUN_00254fb4();
+extern uint64_t FUN_00255324();
+extern uint64_t FUN_00255d4c();
+extern uint64_t FUN_00267510();
+extern uint64_t FUN_00267820();
+extern reg16 FUN_0026bd30();
+extern uint64_t FUN_00273fe0();
+extern uint64_t FUN_00281cc0();
+extern uint64_t FUN_00281d4c();
+extern uint64_t FUN_00281ef4();
+extern uint64_t FUN_002821c4();
+extern uint64_t FUN_00282bc0();
+extern uint64_t FUN_00282e84();
+extern uint64_t FUN_002830f4();
+extern uint64_t FUN_00283290();
+extern uint64_t FUN_002835c4();
+extern uint64_t FUN_00283be4();
+extern uint64_t FUN_00283d14();
+extern uint64_t FUN_00283e7c();
+extern reg16 FUN_00284148();
+extern uint64_t FUN_0029b9a8();
+extern uint64_t FUN_0029e8dc();
+extern uint64_t FUN_0029fb80();
+extern uint64_t FUN_002a4c98();
+extern uint64_t FUN_002a5400();
+extern uint64_t FUN_002a7c00();
+extern uint64_t FUN_002a95b4();
+extern reg16 FUN_002a9ba8();
+extern uint64_t FUN_002a9d64();
+extern uint64_t FUN_002ab4d4();
+extern reg16 FUN_002ab5bc();
+extern uint64_t FUN_002ab6a0();
+extern uint64_t FUN_002ab8ac();
+extern uint64_t FUN_002af74c();
+extern uint64_t FUN_002afd38();
+extern uint64_t FUN_002b0c84();
+extern uint64_t FUN_002b3b84();
+extern uint64_t FUN_002b4120();
+extern reg16 FUN_002b439c();
+extern uint64_t FUN_002b64cc();
+extern uint64_t FUN_002b7088();
+extern uint64_t FUN_002b71c4();
+extern uint64_t FUN_002c8c2c();
+extern reg16 FUN_002db6b8();
+extern uint64_t FUN_002dc564();
+extern uint64_t FUN_002dc5a4();
+extern uint64_t FUN_002e1c9c();
+extern uint64_t FUN_00310924();
+extern uint64_t FUN_00310954();
+extern uint64_t FUN_00310a14();
+extern uint64_t FUN_00310aa4();
+extern uint64_t FUN_00310ad4();
+extern uint64_t FUN_00310b08();
+extern uint64_t FUN_00310b68();
+extern uint64_t FUN_00310bf8();
+extern reg16 FUN_00310d34();
+extern uint64_t FUN_00310d68();
+extern reg16 FUN_00310d80();
+extern uint64_t FUN_00310d98();
+extern uint64_t FUN_00310da8();
+extern uint64_t FUN_00310dd8();
+extern uint64_t FUN_00310df0();
+extern uint64_t FUN_00310e08();
+extern uint64_t FUN_00310e20();
+extern uint64_t FUN_00310f64();
+extern uint64_t FUN_00310f94();
+extern uint64_t FUN_00310fc4();
+extern uint64_t FUN_003191e8();
+extern uint64_t FUN_00319230();
+extern uint64_t FUN_00319248();
+extern uint64_t FUN_00319278();
+extern uint64_t FUN_003192a8();
+extern uint64_t FUN_003192d8();
+extern uint64_t FUN_00319308();
+extern uint64_t FUN_00319320();
+extern uint64_t FUN_00319338();
+extern uint64_t FUN_00319350();
+extern uint64_t FUN_003193f4();
+extern uint64_t FUN_0031945c();
+extern uint64_t FUN_0031948c();
+extern uint64_t FUN_003194e0();
+extern uint64_t FUN_003194f8();
+extern uint64_t FUN_00319568();
+extern uint64_t FUN_00319598();
+extern uint64_t FUN_003195b0();
+extern uint64_t FUN_003195c8();
+extern uint64_t FUN_003195f8();
+extern uint64_t FUN_00319688();
+extern uint64_t FUN_00319808();
+extern reg16 FUN_003198cc();
+extern uint64_t FUN_0031997c();
+extern uint64_t FUN_003199ac();
+extern uint64_t FUN_00319a4c();
+extern uint64_t FUN_0031c3d0();
+extern uint64_t FUN_0031d488();
+extern uint64_t FUN_0031d798();
+extern uint64_t FUN_003206bc();
+extern uint64_t FUN_00321084();
+extern uint64_t FUN_003430dc();
+extern uint64_t FUN_00343a30();
+extern uint64_t FUN_00344d4c();
+extern uint64_t FUN_00344e54();
+extern uint64_t FUN_00347d60();
+extern uint64_t FUN_00347f2c();
+extern uint64_t FUN_00348034();
+extern uint64_t FUN_00348074();
+extern uint64_t FUN_003480ac();
+extern uint64_t FUN_00348128();
+extern uint64_t FUN_00348194();
+extern uint64_t FUN_00348284();
+extern uint64_t FUN_003482c4();
+extern uint64_t FUN_0034834c();
+extern uint64_t FUN_003483c4();
+extern uint64_t FUN_0034846c();
+extern uint64_t FUN_00348508();
+extern uint64_t FUN_00348638();
+extern uint64_t FUN_003487a4();
+extern uint64_t FUN_00348898();
+extern uint64_t FUN_003488bc();
+extern uint64_t FUN_003488f4();
+extern uint64_t FUN_0034895c();
+extern uint64_t FUN_003489a8();
+extern uint64_t FUN_003489c0();
+extern uint64_t FUN_003489dc();
+extern uint64_t FUN_00348a34();
+extern uint64_t FUN_00348a9c();
+extern uint64_t FUN_00348b5c();
+extern uint64_t FUN_00348b7c();
+extern reg16 FUN_00348b94();
+extern uint64_t FUN_00348c48();
+extern uint64_t FUN_00348cd0();
+extern uint64_t FUN_00348ce8();
+extern uint64_t FUN_00348d00();
+extern uint64_t FUN_00348d18();
+extern uint64_t FUN_00348d30();
+extern uint64_t FUN_00348d4c();
+extern uint64_t FUN_00348d64();
+extern uint64_t FUN_00348d7c();
+extern uint64_t FUN_00348e00();
+extern uint64_t FUN_00348e78();
+extern uint64_t FUN_00348e9c();
+extern uint64_t FUN_00348f14();
+extern reg16 FUN_00348f38();
+extern uint64_t FUN_00348f50();
+extern uint64_t FUN_00349068();
+extern uint64_t FUN_00349080();
+extern uint64_t FUN_003490ec();
+extern uint64_t FUN_00349178();
+extern uint64_t FUN_0034921c();
+extern uint64_t FUN_0034924c();
+extern uint64_t FUN_0034926c();
+extern uint64_t FUN_003492ac();
+extern uint64_t FUN_00349370();
+extern uint64_t FUN_003493ac();
+extern uint64_t FUN_003493c4();
+extern uint64_t FUN_003493ec();
+extern uint64_t FUN_00349410();
+extern uint64_t FUN_003494fc();
+extern uint64_t FUN_00349644();
+extern uint64_t FUN_00349720();
+extern uint64_t FUN_003497b4();
+extern uint64_t FUN_003497ec();
+extern uint64_t FUN_00349830();
+extern uint64_t FUN_00349844();
+extern uint64_t FUN_003498c4();
+extern uint64_t FUN_003498dc();
+extern uint64_t FUN_0034998c();
+extern uint64_t FUN_003499c8();
+extern uint64_t FUN_003499f0();
+extern uint64_t FUN_00349a04();
+extern uint64_t FUN_00349a18();
+extern uint64_t FUN_00349b00();
+extern uint64_t FUN_00349b3c();
+extern uint64_t FUN_00349b50();
+extern uint64_t FUN_00349bfc();
+extern uint64_t FUN_00349c70();
+extern uint64_t FUN_00349de8();
+extern uint64_t FUN_00349ee0();
+extern uint64_t FUN_00349ef4();
+extern uint64_t FUN_00349fb8();
+extern uint64_t FUN_0034a000();
+extern uint64_t FUN_0034a148();
+extern uint64_t FUN_0034a180();
+extern uint64_t FUN_0034a210();
+extern uint64_t FUN_0034a2ac();
+extern uint64_t FUN_0034a2f8();
+extern uint64_t FUN_0034a3c4();
+extern uint64_t FUN_0034a3d8();
+extern uint64_t FUN_0034a414();
+extern uint64_t FUN_0034a464();
+extern uint64_t FUN_0034a5dc();
+extern uint64_t FUN_0034a5f0();
+extern uint64_t FUN_0034a62c();
+extern uint64_t FUN_0034a654();
+extern uint64_t FUN_0034a688();
+extern uint64_t FUN_0034a69c();
+extern uint64_t FUN_0034a74c();
+extern uint64_t FUN_0034a798();
+extern uint64_t FUN_0034a808();
+extern uint64_t FUN_0034a958();
+extern uint64_t FUN_0034a9c0();
+extern uint64_t FUN_0034aa14();
+extern uint64_t FUN_0034aa28();
+extern uint64_t FUN_0034ab10();
+extern uint64_t FUN_0034ab20();
+extern uint64_t FUN_0034ac50();
+extern uint64_t FUN_0034ac78();
+extern uint64_t FUN_0034ad00();
+extern uint64_t FUN_0034ad40();
+extern uint64_t FUN_0034ad60();
+extern uint64_t FUN_0034ae58();
+extern uint64_t FUN_0034aea8();
+extern uint64_t FUN_0034aee4();
+extern uint64_t FUN_0034af20();
+extern uint64_t FUN_0034b05c();
+extern uint64_t FUN_0034b0b4();
+extern uint64_t FUN_0034b0c4();
+extern uint64_t FUN_0034b0d4();
+extern uint64_t FUN_0034b1a0();
+extern uint64_t FUN_0034b278();
+extern uint64_t FUN_0034b288();
+extern uint64_t FUN_0034b2a8();
+extern uint64_t FUN_0034b2c8();
+extern uint64_t FUN_0034b2f8();
+extern uint64_t FUN_0034b348();
+extern uint64_t FUN_0034b358();
+extern uint64_t FUN_0034b3e8();
+extern uint64_t FUN_0034b440();
+extern uint64_t FUN_0034b460();
+extern uint64_t FUN_0034b470();
+extern uint64_t FUN_0034b508();
+extern uint64_t FUN_0034b518();
+extern uint64_t FUN_0034b5a8();
+extern uint64_t FUN_0034b708();
+extern uint64_t FUN_0034b778();
+extern uint64_t FUN_0034b788();
+extern uint64_t FUN_0034b7b8();
+extern uint64_t FUN_0034b7c8();
+extern uint64_t FUN_0034b7e4();
+extern uint64_t FUN_0034b804();
+extern uint64_t FUN_0034b824();
+extern uint64_t FUN_0034b85c();
+extern uint64_t FUN_0034b89c();
+extern uint64_t FUN_0034b8bc();
+extern uint64_t FUN_0034b918();
+extern uint64_t FUN_0034ba28();
+extern uint64_t FUN_0034ba38();
+extern uint64_t FUN_0034ba48();
+extern uint64_t FUN_0034ba68();
+extern uint64_t FUN_0034baa8();
+extern uint64_t FUN_0034baf0();
+extern uint64_t FUN_0034bc94();
+extern uint64_t FUN_0034bca4();
+extern uint64_t FUN_0034bcf0();
+extern uint64_t FUN_0034bd00();
+extern uint64_t FUN_0034bd6c();
+extern uint64_t FUN_0034bd80();
+extern uint64_t FUN_0034bdfc();
+extern uint64_t FUN_0034be0c();
+extern uint64_t FUN_0034be54();
+extern uint64_t FUN_0034bea4();
+extern uint64_t FUN_0034bec4();
+extern uint64_t FUN_0034bed4();
+extern uint64_t FUN_0034befc();
+extern uint64_t FUN_0034bfb4();
+extern uint64_t FUN_0034c034();
+extern uint64_t FUN_0034c094();
+extern uint64_t FUN_0034c0a4();
+extern uint64_t FUN_0034c158();
+extern uint64_t FUN_0034c234();
+extern uint64_t FUN_0034c280();
+extern uint64_t FUN_0034c2c8();
+extern uint64_t FUN_0034c2e8();
+extern uint64_t FUN_0034c368();
+extern uint64_t FUN_0034c434();
+extern uint64_t FUN_0034c444();
+extern uint64_t FUN_0034c4bc();
+extern uint64_t FUN_0034c4dc();
+extern uint64_t FUN_0034c654();
+extern uint64_t FUN_0034c664();
+extern uint64_t FUN_0034c684();
+extern uint64_t FUN_0034c818();
+extern uint64_t FUN_0034c8a0();
+extern uint64_t FUN_0034c8b8();
+extern uint64_t FUN_0034ce58();
+extern uint64_t FUN_0034ce98();
+extern uint64_t FUN_0034ced8();
+extern uint64_t FUN_0034cfb4();
+extern uint64_t FUN_0034cfc4();
+extern uint64_t FUN_0034cff4();
+extern uint64_t FUN_0034d0d0();
+extern uint64_t FUN_0034d180();
+extern uint64_t FUN_0034d190();
+extern uint64_t FUN_0034d1fc();
+extern uint64_t FUN_0034d244();
+extern reg16 FUN_0034d264();
+extern uint64_t FUN_0034d274();
+extern uint64_t FUN_0034d2b4();
+extern uint64_t FUN_0034d334();
+extern uint64_t FUN_0034d364();
+extern uint64_t FUN_0034d384();
+extern uint64_t FUN_0034d3c4();
+extern uint64_t FUN_0034d3f4();
+extern uint64_t FUN_0034d464();
+extern uint64_t FUN_0034d53c();
+extern uint64_t FUN_0034d688();
+extern uint64_t FUN_0034d698();
+extern uint64_t FUN_0034d734();
+extern uint64_t FUN_0034d7dc();
+extern uint64_t FUN_0034d868();
+extern uint64_t FUN_0034d8f4();
+extern uint64_t FUN_0034d954();
+extern uint64_t FUN_0034da18();
+extern uint64_t FUN_0034dba8();
+extern uint64_t FUN_0034dd14();
+extern uint64_t FUN_0034df94();
+extern uint64_t FUN_0034dfc4();
+extern uint64_t FUN_0034dfe4();
+extern uint64_t FUN_0034e004();
+extern uint64_t FUN_0034e014();
+extern uint64_t FUN_0034e054();
+extern uint64_t FUN_0034e1b0();
+extern uint64_t FUN_0034e2d0();
+extern uint64_t FUN_0034e33c();
+extern uint64_t FUN_0034e384();
+extern uint64_t FUN_0034e3ac();
+extern uint64_t FUN_0034e4ec();
+extern uint64_t FUN_0034e52c();
+extern uint64_t FUN_0034e55c();
+extern uint64_t FUN_0034e57c();
+extern uint64_t FUN_0034e64c();
+extern uint64_t FUN_0034e784();
+extern uint64_t FUN_0034e808();
+extern uint64_t FUN_0034e81c();
+extern uint64_t FUN_0034eb10();
+extern uint64_t FUN_0034eb2c();
+extern uint64_t FUN_0034ec0c();
+extern uint64_t FUN_0034ed08();
+extern uint64_t FUN_0034ee68();
+extern uint64_t FUN_0034ee98();
+extern uint64_t FUN_0034eea8();
+extern uint64_t FUN_0034eef8();
+extern uint64_t FUN_0034ef08();
+extern uint64_t FUN_0034ef58();
+extern uint64_t FUN_0034ef98();
+extern uint64_t FUN_0034f030();
+extern uint64_t FUN_0034f1c4();
+extern uint64_t FUN_0034f1e0();
+extern uint64_t FUN_0034f264();
+extern uint64_t FUN_0034f3c4();
+extern uint64_t FUN_0034f3d4();
+extern uint64_t FUN_0034f414();
+extern uint64_t FUN_0034f484();
+extern uint64_t FUN_0034f554();
+extern uint64_t FUN_0034f594();
+extern uint64_t FUN_0034f5a4();
+extern uint64_t FUN_0034f624();
+extern uint64_t FUN_0034f730();
+extern uint64_t FUN_0034f764();
+extern uint64_t FUN_0034f99c();
+extern uint64_t FUN_0034f9b4();
+extern uint64_t FUN_0034facc();
+extern uint64_t FUN_0034fcf4();
+extern uint64_t FUN_0034fd5c();
+extern uint64_t FUN_0034fe64();
+extern uint64_t FUN_0034fe80();
+extern uint64_t FUN_0034ffc8();
+extern uint64_t FUN_0034fff0();
+extern uint64_t FUN_00350028();
+extern uint64_t FUN_00350078();
+extern uint64_t FUN_00350164();
+extern uint64_t FUN_003501d0();
+extern uint64_t FUN_00350210();
+extern uint64_t FUN_003502b8();
+extern uint64_t FUN_00350308();
+extern uint64_t FUN_00350410();
+extern uint64_t FUN_00350428();
+extern uint64_t FUN_00350464();
+extern uint64_t FUN_0035047c();
+extern reg16 FUN_00350488();
+extern uint64_t FUN_00350494();
+extern uint64_t FUN_003504a0();
+extern uint64_t FUN_003504ac();
+extern uint64_t FUN_003504b8();
+extern reg16 FUN_003504c4();
+extern reg16 FUN_003504d0();
+extern uint64_t FUN_003504e8();
+extern reg16 FUN_003504f4();
+extern uint64_t FUN_00350500();
+extern uint64_t FUN_0035050c();
+extern uint64_t FUN_00350518();
+extern uint64_t FUN_00350524();
+extern uint64_t FUN_00350530();
+extern uint64_t FUN_0035053c();
+extern uint64_t FUN_00350560();
+extern uint64_t FUN_0035056c();
+extern uint64_t FUN_003505c4();
+extern uint64_t FUN_003505d0();
+extern uint64_t FUN_003505f4();
+extern uint64_t FUN_00350618();
+extern uint64_t FUN_00350624();
+extern reg16 FUN_00350630();
+extern uint64_t FUN_0035063c();
+extern uint64_t FUN_00350648();
+extern reg16 FUN_0035066c();
+extern uint64_t FUN_003506b0();
+extern uint64_t FUN_003506cc();
+extern uint64_t FUN_00350720();
+extern reg16 FUN_0035072c();
+extern uint64_t FUN_00350738();
+extern uint64_t FUN_00350744();
+extern uint64_t FUN_0035075c();
+extern uint64_t FUN_00350774();
+extern reg16 FUN_00350798();
+extern uint64_t FUN_003507bc();
+extern uint64_t FUN_003507d4();
+extern reg16 FUN_003507e0();
+extern uint64_t FUN_00350810();
+extern uint64_t FUN_0035084c();
+extern uint64_t FUN_00350858();
+extern uint64_t FUN_00350878();
+extern uint64_t FUN_0035089c();
+extern uint64_t FUN_003508a8();
+extern uint64_t FUN_003508b4();
+extern uint64_t FUN_003508c0();
+extern reg16 FUN_003508cc();
+extern uint64_t FUN_003508d8();
+extern uint64_t FUN_003508e4();
+extern reg16 FUN_003508f0();
+extern uint64_t FUN_003508fc();
+extern reg16 FUN_00350914();
+extern uint64_t FUN_00350920();
+extern reg16 FUN_00350944();
+extern uint64_t FUN_00350950();
+extern uint64_t FUN_00350974();
+extern uint64_t FUN_00350980();
+extern uint64_t FUN_003509a4();
+extern reg16 FUN_003509b0();
+extern uint64_t FUN_003509bc();
+extern reg16 FUN_003509d4();
+extern reg16 FUN_003509e0();
+extern uint64_t FUN_003509f8();
+extern reg16 FUN_00350a04();
+extern uint64_t FUN_00350a28();
+extern reg16 FUN_00350a34();
+extern uint64_t FUN_00350a40();
+extern uint64_t FUN_00350a4c();
+extern uint64_t FUN_00350a64();
+extern uint64_t FUN_00350a70();
+extern uint64_t FUN_00350a7c();
+extern reg16 FUN_00350a88();
+extern uint64_t FUN_00350a94();
+extern uint64_t FUN_00350aa0();
+extern uint64_t FUN_00350ab8();
+extern uint64_t FUN_00350ad0();
+extern uint64_t FUN_00350adc();
+extern reg16 FUN_00350af4();
+extern reg16 FUN_00350b00();
+extern uint64_t FUN_00350b18();
+extern uint64_t FUN_00350b24();
+extern uint64_t FUN_00350b30();
+extern uint64_t FUN_00350b3c();
+extern uint64_t FUN_00350b48();
+extern uint64_t FUN_00350b54();
+extern uint64_t FUN_00350b6c();
+extern uint64_t FUN_00350b78();
+extern uint64_t FUN_00350b90();
+extern uint64_t FUN_00350bb4();
+extern uint64_t FUN_00350bc0();
+extern uint64_t FUN_00350bcc();
+extern uint64_t FUN_00350bd8();
+extern uint64_t FUN_00350c20();
+extern uint64_t FUN_00350c2c();
+extern uint64_t FUN_00350c38();
+extern uint64_t FUN_00350c44();
+extern uint64_t FUN_00350c50();
+extern uint64_t FUN_00350c5c();
+extern uint64_t FUN_00350c74();
+extern reg16 FUN_00350c80();
+extern uint64_t FUN_00350d24();
+extern uint64_t FUN_00350e94();
+extern uint64_t FUN_00350ea4();
+extern uint64_t FUN_00350ed0();
+extern uint64_t FUN_00351088();
+extern uint64_t FUN_00351094();
+extern uint64_t FUN_003510a0();
+extern reg16 FUN_003510ac();
+extern uint64_t FUN_003510b8();
+extern uint64_t FUN_003510c4();
+extern reg16 FUN_003510dc();
+extern uint64_t FUN_00351100();
+extern uint64_t FUN_0035110c();
+extern uint64_t FUN_00351118();
+extern uint64_t FUN_00351130();
+extern uint64_t FUN_0035113c();
+extern uint64_t FUN_00351154();
+extern reg16 FUN_00351160();
+extern uint64_t FUN_00351184();
+extern uint64_t FUN_003511a8();
+extern uint64_t FUN_003511b4();
+extern uint64_t FUN_003511c0();
+extern uint64_t FUN_003511cc();
+extern uint64_t FUN_00351244();
+extern uint64_t FUN_00351250();
+extern uint64_t FUN_0035125c();
+extern uint64_t FUN_00351274();
+extern uint64_t FUN_00351280();
+extern uint64_t FUN_003512c0();
+extern uint64_t FUN_003512cc();
+extern uint64_t FUN_003512f4();
+extern uint64_t FUN_00351300();
+extern uint64_t FUN_0035130c();
+extern uint64_t FUN_00351324();
+extern reg16 FUN_00351330();
+extern uint64_t FUN_0035133c();
+extern uint64_t FUN_00351348();
+extern uint64_t FUN_00351354();
+extern uint64_t FUN_00351360();
+extern uint64_t FUN_0035136c();
+extern uint64_t FUN_00351378();
+extern uint64_t FUN_00351384();
+extern uint64_t FUN_003513cc();
+extern uint64_t FUN_003513d8();
+extern uint64_t FUN_003513f0();
+extern uint64_t FUN_003513fc();
+extern uint64_t FUN_00351450();
+extern uint64_t FUN_0035145c();
+extern uint64_t FUN_00351494();
+extern uint64_t FUN_003514b8();
+extern reg16 FUN_003514d0();
+extern uint64_t FUN_003514dc();
+extern uint64_t FUN_003514e8();
+extern uint64_t FUN_0035156c();
+extern uint64_t FUN_00351584();
+extern uint64_t FUN_0035159c();
+extern uint64_t FUN_003515a8();
+extern uint64_t FUN_003515b4();
+extern reg16 FUN_003515cc();
+extern uint64_t FUN_003515f0();
+extern uint64_t FUN_003515fc();
+extern uint64_t FUN_00351624();
+extern uint64_t FUN_0035163c();
+extern uint64_t FUN_0035166c();
+extern uint64_t FUN_003516a8();
+extern uint64_t FUN_003516b4();
+extern uint64_t FUN_003516cc();
+extern uint64_t FUN_003516e4();
+extern uint64_t FUN_00351714();
+extern uint64_t FUN_00351774();
+extern reg16 FUN_003517a8();
+extern uint64_t FUN_003517d8();
+extern uint64_t FUN_003518a0();
+extern uint64_t FUN_003518b8();
+extern uint64_t FUN_003518c4();
+extern uint64_t FUN_003518d0();
+extern uint64_t FUN_003518f4();
+extern uint64_t FUN_00351900();
+extern uint64_t FUN_00351918();
+extern reg16 FUN_0035193c();
+extern uint64_t FUN_0035196c();
+extern uint64_t FUN_00351990();
+extern uint64_t FUN_003519c0();
+extern uint64_t FUN_00351a08();
+extern uint64_t FUN_00351a14();
+extern uint64_t FUN_00351a50();
+extern uint64_t FUN_00351a5c();
+extern uint64_t FUN_00351a8c();
+extern uint64_t FUN_00351a98();
+extern uint64_t FUN_00351aa4();
+extern uint64_t FUN_00351ab0();
+extern uint64_t FUN_00351ad4();
+extern uint64_t FUN_00351b20();
+extern uint64_t FUN_00351b2c();
+extern uint64_t FUN_00351b38();
+extern uint64_t FUN_00351b78();
+extern uint64_t FUN_00351be0();
+extern uint64_t FUN_00351bec();
+extern uint64_t FUN_00351c28();
+extern uint64_t FUN_00351c7c();
+extern uint64_t FUN_00351cc4();
+extern uint64_t FUN_00351d00();
+extern uint64_t FUN_00351d0c();
+extern uint64_t FUN_00351d18();
+extern uint64_t FUN_00351d4c();
+extern uint64_t FUN_00351dfc();
+extern uint64_t FUN_00351e3c();
+extern uint64_t FUN_00351e54();
+extern uint64_t FUN_00351e6c();
+extern uint64_t FUN_00351e84();
+extern uint64_t FUN_00351e90();
+extern uint64_t FUN_00351ea8();
+extern uint64_t FUN_00351ef8();
+extern uint64_t FUN_00351f10();
+extern uint64_t FUN_00351f1c();
+extern uint64_t FUN_00351f40();
+extern reg16 FUN_00351f64();
+extern uint64_t FUN_00351f7c();
+extern uint64_t FUN_00352008();
+extern uint64_t FUN_00352098();
+extern uint64_t FUN_003520b4();
+extern uint64_t FUN_003520f8();
+extern uint64_t FUN_003521a4();
+extern uint64_t FUN_003521d4();
+extern uint64_t FUN_00352260();
+extern uint64_t FUN_00352314();
+extern uint64_t FUN_003523f0();
+extern uint64_t FUN_00352444();
+extern uint64_t FUN_0035245c();
+extern uint64_t FUN_00352474();
+extern uint64_t FUN_003524c8();
+extern uint64_t FUN_003524d4();
+extern uint64_t FUN_00352554();
+extern uint64_t FUN_00352590();
+extern uint64_t FUN_00352680();
+extern uint64_t FUN_003526d8();
+extern uint64_t FUN_0035272c();
+extern uint64_t FUN_003527e0();
+extern uint64_t FUN_00352858();
+extern uint64_t FUN_00352870();
+extern uint64_t FUN_00352894();
+extern uint64_t FUN_003528ac();
+extern uint64_t FUN_00352920();
+extern uint64_t FUN_00352974();
+extern uint64_t FUN_003529a4();
+extern uint64_t FUN_00352abc();
+extern uint64_t FUN_00352ae4();
+extern uint64_t FUN_00352bbc();
+extern uint64_t FUN_00352c10();
+extern uint64_t FUN_00352c1c();
+extern uint64_t FUN_00352c40();
+extern uint64_t FUN_00352c4c();
+extern uint64_t FUN_00352c74();
+extern uint64_t FUN_00352c80();
+extern uint64_t FUN_00352c8c();
+extern uint64_t FUN_00352cc8();
+extern uint64_t FUN_00352d34();
+extern uint64_t FUN_00352db8();
+extern uint64_t FUN_00352ddc();
+extern uint64_t FUN_00352ea8();
+extern uint64_t FUN_00352eb4();
+extern uint64_t FUN_00352ecc();
+extern uint64_t FUN_00352ee4();
+extern reg16 FUN_00352efc();
+extern uint64_t FUN_00352f60();
+extern uint64_t FUN_0035300c();
+extern uint64_t FUN_00353098();
+extern uint64_t FUN_003530d8();
+extern uint64_t FUN_003530e8();
+extern uint64_t FUN_00353124();
+extern uint64_t FUN_00353148();
+extern uint64_t FUN_00353154();
+extern uint64_t FUN_00353160();
+extern uint64_t FUN_00353178();
+extern uint64_t FUN_003531a8();
+extern uint64_t FUN_00353208();
+extern uint64_t FUN_00353214();
+extern uint64_t FUN_00353238();
+extern uint64_t FUN_00353360();
+extern reg16 FUN_00353390();
+extern uint64_t FUN_003534a4();
+extern uint64_t FUN_003534bc();
+extern uint64_t FUN_003534d4();
+extern uint64_t FUN_003534f8();
+extern uint64_t FUN_00353504();
+extern uint64_t FUN_00353540();
+extern uint64_t FUN_0035362c();
+extern uint64_t FUN_003536bc();
+extern reg16 FUN_003537f0();
+extern uint64_t FUN_003537fc();
+extern uint64_t FUN_00353984();
+extern uint64_t FUN_00353a84();
+extern uint64_t FUN_00353aa0();
+extern uint64_t FUN_00353b1c();
+extern uint64_t FUN_00353b40();
+extern uint64_t FUN_00353ba0();
+extern uint64_t FUN_00353bc4();
+extern uint64_t FUN_00353c48();
+extern uint64_t FUN_00353c54();
+extern uint64_t FUN_00353ccc();
+extern reg16 FUN_00353cf0();
+extern uint64_t FUN_00353cfc();
+extern uint64_t FUN_00353d14();
+extern uint64_t FUN_00353d64();
+extern uint64_t FUN_00353db8();
+extern uint64_t FUN_00353e2c();
+extern uint64_t FUN_00353e5c();
+extern uint64_t FUN_00353e88();
+extern uint64_t FUN_00353efc();
+extern uint64_t FUN_00353f14();
+extern uint64_t FUN_00353f38();
+extern uint64_t FUN_00353f5c();
+extern uint64_t FUN_00353fd4();
+extern uint64_t FUN_00354040();
+extern uint64_t FUN_00354088();
+extern uint64_t FUN_00354128();
+extern reg16 FUN_003542e8();
+extern uint64_t FUN_00354364();
+extern uint64_t FUN_003543a0();
+extern uint64_t FUN_003543c4();
+extern uint64_t FUN_00354410();
+extern uint64_t FUN_00354474();
+extern uint64_t FUN_00354504();
+extern uint64_t FUN_00354618();
+extern uint64_t FUN_0035466c();
+extern uint64_t FUN_00354858();
+extern uint64_t FUN_003548a0();
+extern uint64_t FUN_003548c4();
+extern uint64_t FUN_00354924();
+extern uint64_t FUN_003549a8();
+extern uint64_t FUN_003549d8();
+extern reg16 FUN_00354a34();
+extern uint64_t FUN_00354a58();
+extern uint64_t FUN_00354ab0();
+extern uint64_t FUN_00354afc();
+extern uint64_t FUN_00354b08();
+extern uint64_t FUN_00354b20();
+extern uint64_t FUN_00354b38();
+extern uint64_t FUN_00354b50();
+extern uint64_t FUN_00354bb0();
+extern uint64_t FUN_00354bec();
+extern reg16 FUN_00354cfc();
+extern uint64_t FUN_00354d08();
+extern uint64_t FUN_00354db8();
+extern uint64_t FUN_00354dc4();
+extern uint64_t FUN_00354ef8();
+extern uint64_t FUN_00354f34();
+extern uint64_t FUN_00355018();
+extern uint64_t FUN_00355074();
+extern uint64_t FUN_0035512c();
+extern uint64_t FUN_00355160();
+extern uint64_t FUN_00355224();
+extern uint64_t FUN_00355270();
+extern uint64_t FUN_00355334();
+extern uint64_t FUN_00355340();
+extern uint64_t FUN_003553b8();
+extern uint64_t FUN_003553cc();
+extern uint64_t FUN_003554d4();
+extern uint64_t FUN_00355538();
+extern uint64_t FUN_00355594();
+extern uint64_t FUN_00355604();
+extern uint64_t FUN_00355684();
+extern uint64_t FUN_003556e0();
+extern uint64_t FUN_0035583c();
+extern uint64_t FUN_00355a14();
+extern uint64_t FUN_00355ab4();
+extern uint64_t FUN_00355af8();
+extern uint64_t FUN_00355b74();
+extern uint64_t FUN_00355c1c();
+extern uint64_t FUN_00355cbc();
+extern uint64_t FUN_00355d10();
+extern uint64_t FUN_00355f88();
+extern uint64_t FUN_00355f94();
+extern reg16 FUN_00355fa0();
+extern uint64_t FUN_00355fac();
+extern uint64_t FUN_00355fb8();
+extern uint64_t FUN_00356030();
+extern uint64_t FUN_003560f8();
+extern uint64_t FUN_00356188();
+extern uint64_t FUN_003561dc();
+extern uint64_t FUN_00356248();
+extern uint64_t FUN_003562bc();
+extern uint64_t FUN_00356328();
+extern uint64_t FUN_00356358();
+extern uint64_t FUN_00356364();
+extern uint64_t FUN_00356370();
+extern uint64_t FUN_0035638c();
+extern uint64_t FUN_003563a8();
+extern uint64_t FUN_003563c4();
+extern uint64_t FUN_00356780();
+extern uint64_t FUN_00356798();
+extern uint64_t FUN_0035681c();
+extern uint64_t FUN_00356834();
+extern uint64_t FUN_00356870();
+extern uint64_t FUN_00356940();
+extern uint64_t FUN_00356958();
+extern uint64_t FUN_003569b4();
+extern uint64_t FUN_00356a14();
+extern uint64_t FUN_00356ac4();
+extern uint64_t FUN_00356b5c();
+extern uint64_t FUN_00356ba4();
+extern uint64_t FUN_00356cfc();
+extern uint64_t FUN_00356d5c();
+extern uint64_t FUN_00356e28();
+extern uint64_t FUN_00356fcc();
+extern uint64_t FUN_00356ff4();
+extern uint64_t FUN_00357050();
+extern uint64_t FUN_00357198();
+extern uint64_t FUN_003571a4();
+extern uint64_t FUN_00357228();
+extern uint64_t FUN_00357400();
+extern uint64_t FUN_00357418();
+extern uint64_t FUN_00357664();
+extern uint64_t FUN_0035767c();
+extern uint64_t FUN_00357694();
+extern uint64_t FUN_00357970();
+extern uint64_t FUN_003579d8();
+extern uint64_t FUN_00357a34();
+extern uint64_t FUN_00357ab4();
+extern uint64_t FUN_00357b20();
+extern uint64_t FUN_00357bf8();
+extern reg16 FUN_00357c20();
+extern uint64_t FUN_00357c38();
+extern uint64_t FUN_00357c44();
+extern reg16 FUN_00357ca0();
+extern uint64_t FUN_00357cb4();
+extern uint64_t FUN_00357d0c();
+extern uint64_t FUN_00357d64();
+extern uint64_t FUN_00357e44();
+extern uint64_t FUN_00357f24();
+extern uint64_t FUN_00357fc4();
+extern uint64_t FUN_00358024();
+extern uint64_t FUN_003580e4();
+extern uint64_t FUN_003582b8();
+extern uint64_t FUN_003582d8();
+extern uint64_t FUN_00358344();
+extern uint64_t FUN_003583dc();
+extern uint64_t FUN_0035847c();
+extern uint64_t FUN_00358534();
+extern uint64_t FUN_0035863c();
+extern uint64_t FUN_00358684();
+extern uint64_t FUN_003586fc();
+extern uint64_t FUN_00358768();
+extern uint64_t FUN_0035881c();
+extern uint64_t FUN_003588b8();
+extern uint64_t FUN_00358918();
+extern uint64_t FUN_00358984();
+extern uint64_t FUN_00358cc8();
+extern uint64_t FUN_00358d10();
+extern uint64_t FUN_00358e7c();
+extern uint64_t FUN_00358eb8();
+extern uint64_t FUN_00358fa8();
+extern uint64_t FUN_00358fe8();
+extern uint64_t FUN_00359018();
+extern uint64_t FUN_003591e8();
+extern uint64_t FUN_003592f0();
+extern uint64_t FUN_00359350();
+extern uint64_t FUN_003593e8();
+extern uint64_t FUN_00359418();
+extern uint64_t FUN_003595a8();
+extern uint64_t FUN_00359634();
+extern uint64_t FUN_003597b4();
+extern uint64_t FUN_003597c0();
+extern reg16 FUN_003597d8();
+extern uint64_t FUN_00359810();
+extern uint64_t FUN_003598a0();
+extern uint64_t FUN_0035992c();
+extern uint64_t FUN_00359a54();
+extern uint64_t FUN_00359a84();
+extern uint64_t FUN_00359aa4();
+extern uint64_t FUN_00359ab0();
+extern uint64_t FUN_00359b30();
+extern uint64_t FUN_00359b3c();
+extern uint64_t FUN_00359b64();
+extern uint64_t FUN_00359be0();
+extern uint64_t FUN_00359ca4();
+extern uint64_t FUN_00359de8();
+extern uint64_t FUN_00359f48();
+extern uint64_t FUN_0035a040();
+extern uint64_t FUN_0035a0b8();
+extern uint64_t FUN_0035a25c();
+extern uint64_t FUN_0035a3a0();
+extern uint64_t FUN_0035a3b8();
+extern uint64_t FUN_0035a490();
+extern uint64_t FUN_0035a4bc();
+extern uint64_t FUN_0035a4c8();
+extern uint64_t FUN_0035a578();
+extern uint64_t FUN_0035a5cc();
+extern uint64_t FUN_0035a5d8();
+extern uint64_t FUN_0035a7a4();
+extern uint64_t FUN_0035a858();
+extern uint64_t FUN_0035a8fc();
+extern uint64_t FUN_0035ace8();
+extern uint64_t FUN_00365b6c();
+extern uint64_t FUN_0036a940();
+extern reg16 FUN_0036a9a0();
+extern uint64_t FUN_0036b118();
+extern uint64_t FUN_0036b2d0();
+extern uint64_t FUN_0036b588();
+extern uint64_t FUN_0036b6ac();
+extern uint64_t FUN_003722e4();
+extern reg16 FUN_00377824();
+extern uint64_t FUN_00377bec();
+extern reg16 FUN_003a25d4();
+extern uint64_t FUN_003a2610();
+extern uint64_t FUN_003a261c();
+extern uint64_t SBORROW8();
+extern uint64_t SCARRY8();
+extern uint64_t SEXT816();
+extern uint64_t SUB168();
+extern uint64_t dispatch_slot();
+extern uint64_t sk_alloc_ok();
+extern uint64_t sk_array_append_shared();
+extern uint64_t sk_array_apply_shared();
+extern uint64_t sk_array_elem_helper();
+extern uint64_t sk_collection_apply_shared();
+extern uint64_t sk_collection_init();
+extern uint64_t sk_collection_reserve();
+extern uint64_t sk_count_a();
+extern uint64_t sk_ctx_restore();
+extern uint64_t sk_ctx_save();
+extern uint64_t sk_ctx_touch();
+extern uint64_t sk_elem_accessor();
+extern uint64_t sk_elem_destroy();
+extern uint64_t sk_elem_prep();
+extern uint64_t sk_elem_prep2();
+extern uint64_t sk_elem_reserve();
+extern uint64_t sk_elem_reserve_b();
+extern uint64_t sk_elem_reserve_b2();
+extern uint64_t sk_elem_reserve_c();
+extern uint64_t sk_elem_reserve_str();
+extern uint64_t sk_elem_retain();
+extern uint64_t sk_elem_retain_b();
+extern uint64_t sk_elem_retain_c();
+extern uint64_t sk_elem_retain_d();
+extern uint64_t sk_elem_retain_e();
+extern uint64_t sk_elem_retain_f();
+extern uint64_t sk_elem_retain_g();
+extern uint64_t sk_elem_retain_h();
+extern uint64_t sk_irqrestore();
+extern uint64_t sk_lock_a();
+extern uint64_t sk_lock_aa();
+extern uint64_t sk_lock_ab();
+extern uint64_t sk_lock_ac();
+extern uint64_t sk_lock_ad();
+extern uint64_t sk_lock_ae();
+extern uint64_t sk_lock_af();
+extern uint64_t sk_lock_ag();
+extern uint64_t sk_lock_ah();
+extern uint64_t sk_lock_ai();
+extern uint64_t sk_lock_aj();
+extern uint64_t sk_lock_ak();
+extern uint64_t sk_lock_al();
+extern uint64_t sk_lock_am();
+extern uint64_t sk_lock_an();
+extern uint64_t sk_lock_ao();
+extern uint64_t sk_lock_ap();
+extern uint64_t sk_lock_aq();
+extern uint64_t sk_lock_ar();
+extern uint64_t sk_lock_as();
+extern uint64_t sk_lock_at();
+extern uint64_t sk_lock_au();
+extern uint64_t sk_lock_av();
+extern uint64_t sk_lock_b();
+extern uint64_t sk_lock_c();
+extern uint64_t sk_lock_f();
+extern uint64_t sk_lock_g();
+extern uint64_t sk_lock_h();
+extern uint64_t sk_lock_i();
+extern uint64_t sk_lock_j();
+extern uint64_t sk_lock_k();
+extern uint64_t sk_lock_l();
+extern uint64_t sk_lock_m();
+extern uint64_t sk_lock_n();
+extern uint64_t sk_lock_o();
+extern uint64_t sk_lock_p();
+extern uint64_t sk_lock_q();
+extern uint64_t sk_lock_r();
+extern uint64_t sk_lock_s();
+extern uint64_t sk_lock_size_class();
+extern uint64_t sk_lock_t();
+extern uint64_t sk_lock_u();
+extern uint64_t sk_lock_v();
+extern uint64_t sk_lock_w();
+extern uint64_t sk_lock_x();
+extern uint64_t sk_lock_y();
+extern uint64_t sk_lock_z();
+extern uint64_t sk_meta_a();
+extern uint64_t sk_meta_b();
+extern uint64_t sk_metatype();
+extern uint64_t sk_metatype_for();
+extern uint64_t sk_obj_release();
+extern uint64_t sk_obj_release2();
+extern uint64_t sk_obj_retain();
+extern uint64_t sk_objc_metatype();
+extern uint64_t sk_ow_borrow();
+extern uint64_t sk_ow_check();
+extern uint64_t sk_ow_done();
+extern uint64_t sk_ow_force();
+extern uint64_t sk_ow_norm();
+extern uint64_t sk_queue_realloc();
+extern uint64_t sk_queue_realloc8();
+extern uint64_t sk_sched_enqueue_core();
+extern uint64_t sk_sched_flag();
+extern uint64_t sk_sched_grow();
+extern uint64_t sk_sched_tick_shared();
+extern uint64_t sk_sched_touch();
+extern uint64_t sk_spin_irqsave();
+extern uint64_t sk_tick_b();
+extern uint64_t swift_array_alloc();
+extern uint64_t swift_array_touch_ret();
+extern uint64_t swift_collection_reserve_r();
+extern uint64_t swift_utf8_decode();
+extern uint64_t thunk_FUN_00012568();
+extern uint64_t thunk_FUN_000126e8();
+extern uint64_t thunk_FUN_001dc298();
+extern uint64_t thunk_FUN_00200b38();
+extern uint64_t thunk_FUN_002298d4();
+extern uint64_t thunk_FUN_0036b270();
+/* ==================================================================== */
 /*--------------------------------------------------------------------*/
 /* FUN_001a002c @ 0x001a002c   (est. swift_array_construct_dispatch)
  * Ghidra: void FUN_001a002c(undefined8 param_1)
@@ -164,10 +1403,10 @@ void swift_array_append_b(uint64_t a, uint64_t b) { sk_array_append_shared(a, b)
  * Notes: FUN_0034f664 / FUN_00027788 / FUN_00084180; indirect jump at
  *   0x001a01cc "too many branches".
  */
-void sk_swift_array_dispatch_impl(void)
+void sk_swift_array_dispatch_impl()
 {
     sk_lock_f();                    /* FUN_0034f664 */
-    code_fn *entry = (code_fn *)sk_vtable_resolve(); /* FUN_00027788 */
+    code_fn entry = (code_fn)sk_vtable_resolve(); /* FUN_00027788 */
     sk_schedule_yield();            /* FUN_00084180 */
     entry();                        /* jumptable via FUN_00027788 result */
 }
@@ -213,7 +1452,7 @@ void sk_swift_array_reserve(void)
         sk_lock_n();      /* FUN_0034a3d8 */
     }
     sk_lock_r();          /* FUN_003504b8 */
-    sk_swift_fatal();     /* FUN_001afe4c — noreturn */
+    sk_swift_fatal(0, 0, 0);     /* FUN_001afe4c — noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -368,7 +1607,7 @@ void swift_array_destroy(long handle)
     sk_count_a(1);      /* FUN_003488bc */
     sk_lock_n();        /* FUN_0034a3d8 */
     sk_lock_r();        /* FUN_003504b8 */
-    sk_swift_fatal();   /* FUN_001afe4c — noreturn */
+    sk_swift_fatal(0, 0, 0);   /* FUN_001afe4c — noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -530,7 +1769,7 @@ long swift_array_reserve_generic(uint64_t flags, uint64_t need, uint64_t uniq, l
         sk_elem_destroy();                              /* FUN_0019cbd4 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -595,7 +1834,7 @@ long swift_array_reserve_variant(uint64_t flags, uint64_t need, uint64_t uniq, l
         sk_elem_destroy();                              /* FUN_0019cc64 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -626,7 +1865,7 @@ long swift_array_reserve_variant2(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                              /* FUN_0019cc64 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -660,7 +1899,7 @@ long swift_array_reserve_variant3(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                      /* FUN_0019cdf8 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                               /* FUN_0036b118 */
+    sk_free((void *)arr);                               /* FUN_0036b118 */
     return ret;
 }
 
@@ -691,7 +1930,7 @@ long swift_array_reserve_variant4(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                              /* FUN_0019ccec */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -722,7 +1961,7 @@ long swift_array_reserve_variant5(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                              /* FUN_0019cd74 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -842,7 +2081,7 @@ long swift_array_reserve_variant6(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                              /* FUN_0019cbd4 */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -873,7 +2112,7 @@ long swift_array_reserve_variant7(uint64_t flags, uint64_t need, uint64_t uniq, 
         sk_elem_destroy();                              /* FUN_0019ccec */
         *(uint64_t *)(arr + 0x10) = 0;
     }
-    sk_free(arr);                                   /* FUN_0036b118 */
+    sk_free((void *)arr);                                   /* FUN_0036b118 */
     return ret;
 }
 
@@ -906,7 +2145,7 @@ long swift_array_reserve_variant8(uint64_t flags, uint64_t need, uint64_t uniq, 
     else {
         sk_elem_retain_h(arr + off, elem, ret + off, p5); /* FUN_0019ce60 */
         *(uint64_t *)(arr + 0x10) = 0;
-        sk_free(arr);                                   /* FUN_0036b118 */
+        sk_free((void *)arr);                                   /* FUN_0036b118 */
     }
     return ret;
 }
@@ -950,7 +2189,7 @@ void sk_sched_thread_enqueue(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
  */
 reg16 sk_sched_queue_node_alloc(uint64_t a, uint64_t b)
 {
-    long node = sk_alloc_special(0x678d78, 0x20, 7);   /* FUN_0036a940 */
+    long node = (long)sk_alloc_special(0x678d78, 0x20, 7);   /* FUN_0036a940 */
     *(uint64_t *)(node + 0x10) = a;
     *(uint64_t *)(node + 0x18) = b;
     return (reg16){ FUN_0001a1c8, node };
@@ -1071,7 +2310,7 @@ void sk_sched_runqueue_requeue(uint64_t p1, uint64_t p2, long p3, void (*cb)(uin
                     long cnt2 = (stride != 0) ? rem / stride : 0;
                     FUN_0019cb68(cnt2, v10, t);
                     *(uint64_t *)(u9 + 0x10) = 0;
-                    sk_free(u9);                    /* FUN_0036b118 */
+                    sk_free((void *)u9);                    /* FUN_0036b118 */
                     goto requeue_done;
                 }
             }
@@ -1082,7 +2321,7 @@ void sk_sched_runqueue_requeue(uint64_t p1, uint64_t p2, long p3, void (*cb)(uin
     }
     /* fallthrough */
 requeue_done:
-    sk_swift_fatal();   /* FUN_001afe4c — noreturn */
+    sk_swift_fatal(0, 0, 0);   /* FUN_001afe4c — noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1101,7 +2340,7 @@ void sk_sched_run_foreach(void) { sk_sched_queue_foreach((void*)0x00346d60); } /
  * Confidence: medium
  * Notes: FUN_003592f0 (try-lock), FUN_0006b3f4.
  */
-void sk_sched_queue_foreach(void)
+void sk_sched_queue_foreach()
 {
     uint32_t locked = FUN_003592f0();
     *x20 = x21;
@@ -1141,7 +2380,7 @@ void sk_sched_queue_grow_if_needed(long need, void *(*alloc_fn)(uint64_t, long, 
 {
     long *q = x20;
     if ((long)(*(unsigned long *)(*q + 0x18) >> 1) < need + 1) {
-        *q = alloc_fn(1 < *(unsigned long *)(*q + 0x18), need + 1, 1);
+        *q = (long)alloc_fn(1 < *(unsigned long *)(*q + 0x18), need + 1, 1);
         *x20 = *q;
     }
 }
@@ -1284,7 +2523,7 @@ void swift_buffer_append_region(long src)
     }
     dst = FUN_001a27f0(0, copied, dst + 0x20, avail);
     if ((long)n <= dst) {
-        sk_free(src);                           /* FUN_0036b118 */
+        sk_free((void *)src);                           /* FUN_0036b118 */
         if (dst != 0) {
             if (SCARRY8(*(long *)(q + 0x10), dst)) __builtin_trap();  /* 0x1a1ac4 */
             *(long *)(q + 0x10) = *(long *)(q + 0x10) + dst;
@@ -1320,7 +2559,7 @@ void sk_sched_queue_merge(void)
     if (avail < 0) {
         FUN_003487a4();
         FUN_003524c8();
-        sk_swift_fatal();                               /* noreturn */
+        sk_swift_fatal(0, 0, 0);                               /* noreturn */
     }
     long dst = q + *(long *)(q + 0x10) * 0x10;
     FUN_00351b78(&stack_arg, dst + 0x20);
@@ -1332,7 +2571,7 @@ void sk_sched_queue_merge(void)
         FUN_00355594();
         FUN_0034a3d8();
         FUN_003504b8();
-        sk_swift_fatal();                               /* noreturn */
+        sk_swift_fatal(0, 0, 0);                               /* noreturn */
     }
     if (got != 0) {
         if (SCARRY8(*(long *)(q + 0x10), got)) __builtin_trap();   /* 0x1a1bf8 */
@@ -1340,7 +2579,7 @@ void sk_sched_queue_merge(void)
     }
     if (v.lo != avail) {
         /* LAB_001a1b74 */
-        sk_free(lv3);                                   /* FUN_0036b118 */
+        sk_free((void *)lv3);                                   /* FUN_0036b118 */
         *x20 = q;
         FUN_000b45b0(src.hi);                           /* FUN_000b45b0 */
         return;
@@ -1412,7 +2651,7 @@ void sk_sched_queue_merge(void)
         *(long *)(q + 0x10) = len;
     }
 merge_done:
-    sk_free(lv3);                                       /* FUN_0036b118 */
+    sk_free((void *)lv3);                                       /* FUN_0036b118 */
     *x20 = q;
     FUN_000b45b0(src.hi);                               /* FUN_000b45b0 */
 }
@@ -1439,7 +2678,7 @@ void sk_sched_queue_append_str(void)
     if ((long)avail < 0) {
         FUN_003487a4();
         FUN_003524c8();
-        sk_swift_fatal();                               /* noreturn */
+        sk_swift_fatal(0, 0, 0);                               /* noreturn */
     }
     long dst = x23 + x8_00 * 0x20;
     uint64_t copied;
@@ -1471,7 +2710,7 @@ void sk_sched_queue_append_str(void)
 str_fatal:
     FUN_0034a3d8();
     FUN_003504b8();
-    sk_swift_fatal();                                   /* noreturn */
+    sk_swift_fatal(0, 0, 0);                                   /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1495,7 +2734,7 @@ void sk_sched_queue_append_str2(void)
     if ((long)avail < 0) {
         FUN_003487a4();
         FUN_003524c8();
-        sk_swift_fatal();                               /* noreturn */
+        sk_swift_fatal(0, 0, 0);                               /* noreturn */
     }
     long dst = x23 + x8_00 * 0x10;
     uint64_t copied;
@@ -1527,7 +2766,7 @@ void sk_sched_queue_append_str2(void)
 str2_fatal:
     FUN_0034a3d8();
     FUN_003504b8();
-    sk_swift_fatal();                                   /* noreturn */
+    sk_swift_fatal(0, 0, 0);                                   /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1561,7 +2800,7 @@ void swift_buffer_append_region2(long src)
     }
     dst = FUN_001a27f0(0, copied, dst + 0x20, avail);
     if ((long)n <= dst) {
-        sk_free(src);                                   /* FUN_0036b118 */
+        sk_free((void *)src);                                   /* FUN_0036b118 */
         if (dst != 0) {
             if (SCARRY8(*(long *)(q + 0x10), dst)) __builtin_trap();  /* 0x1a2128 */
             *(long *)(q + 0x10) = *(long *)(q + 0x10) + dst;
@@ -1629,7 +2868,7 @@ void sk_sched_queue_batch_insert(uint64_t p1, uint64_t p2, long p3, uint64_t p4)
         FUN_00355594();
         FUN_0034a3d8();
         FUN_003504b8();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     FUN_0034dfe4();
     (**(code_fn **)(x16_01 + 8))();
@@ -1767,7 +3006,7 @@ void sk_sched_count_precondition(long base, long count)
         FUN_00349a04();
     }
     FUN_003524c8();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1807,7 +3046,7 @@ void sk_sched_borrow_check(long lo, long hi)
     if (!SBORROW8(hi, lo)) return;
     FUN_0035047c(hi - lo);
     FUN_003480ac();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1920,7 +3159,7 @@ void swift_array_remove_at_stride(void)
     }
     FUN_00348638(1);
     FUN_00349de8();
-    sk_swift_fatal();                   /* noreturn */
+    sk_swift_fatal(0, 0, 0);                   /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -1968,7 +3207,7 @@ void swift_buffer_init_pair(void)
     }
     FUN_00349ee0(fatal_str);
     FUN_00351a8c();
-    sk_swift_fatal();                   /* noreturn */
+    sk_swift_fatal(0, 0, 0);                   /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -2062,7 +3301,7 @@ long swift_string_from_count(uint64_t count)
 long swift_array_from_pair(uint64_t a, uint64_t b)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x30, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x30, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 2;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2087,7 +3326,7 @@ long swift_array_from_pair(uint64_t a, uint64_t b)
 long swift_buffer_init_u32(uint64_t v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2105,7 +3344,7 @@ long swift_buffer_init_u32(uint64_t v)
 long swift_buffer_init_u16(uint64_t v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2123,7 +3362,7 @@ long swift_buffer_init_u16(uint64_t v)
 long swift_buffer_init_u8(uint64_t v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2141,7 +3380,7 @@ long swift_buffer_init_u8(uint64_t v)
 long swift_buffer_init_int(int v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2159,7 +3398,7 @@ long swift_buffer_init_int(int v)
 long swift_buffer_init_int16(short v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2177,7 +3416,7 @@ long swift_buffer_init_int16(short v)
 long swift_buffer_init_int8(char v)
 {
     uint64_t meta = FUN_00002534(0x64e670, (void*)0x004c2600);
-    long buf = sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
+    long buf = (long)sk_alloc_special(meta, 0x28, 7);     /* FUN_0036a940 */
     long stride = thunk_FUN_000126e8();
     *(uint64_t *)(buf + 0x10) = 1;
     *(long *)(buf + 0x18) = (stride - 0x20) / 8 << 1;
@@ -2599,7 +3838,7 @@ long swift_array_dedupe(long src)
 dedupe_fatal:
     FUN_00349ee0();
     FUN_00351a8c();
-    sk_swift_fatal();                               /* noreturn */
+    sk_swift_fatal(0, 0, 0);                               /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -2698,7 +3937,7 @@ void sk_sched_queue_rebuild(uint64_t p1, uint64_t p2, uint64_t p3)
     }
     FUN_00349ee0();
     FUN_00351a8c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 rebuild_done:
     sk_thread_epilogue(v, x30);             /* FUN_0008e500 */
 }
@@ -2799,7 +4038,7 @@ void sk_sched_queue_notify_rearm(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t
         return;
     }
     FUN_00347d60();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3028,7 +4267,7 @@ void swift_collection_remove_first_dispatch(void)
         FUN_0034a69c();
     }
     FUN_00353f14();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3249,7 +4488,7 @@ void sk_sched_queue_insert_dispatch(uint64_t p1, uint64_t p2, uint64_t p3)
     }
     FUN_00353f14();
 insert_fatal:
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 insert_epilogue:
     sk_thread_epilogue(x30);                /* FUN_0008e500 */
 }
@@ -3312,7 +4551,7 @@ void sk_sched_queue_construct(void)
             FUN_003593e8();
             FUN_00349410();
             FUN_003504b8();
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         reg16 v = FUN_00350b00(*(uint64_t *)(x16 + 0x20));
         x8_00_fn(v.lo, v.hi, lock);
@@ -3818,7 +5057,7 @@ void sk_sched_ctx_init_full(uint64_t p1, uint64_t p2, uint8_t p3, uint64_t p4,
     *(uint64_t *)(obj + 0x20) = p8;
     FUN_0034f5a4(FUN_00319380);
     FUN_001f1878();
-    sk_free(obj);                           /* FUN_0036b118 */
+    sk_free((void *)obj);                           /* FUN_0036b118 */
     FUN_00351354(*(uint64_t *)(x16_00 + 8));
     x8_02_fn();
     sv_8 = p8;
@@ -4405,7 +5644,7 @@ void swift_buffer_validate_ptr(long *buf, long base, long len)
     FUN_003488bc(1);
     FUN_0034a3d8();
     FUN_003504b8();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -4432,7 +5671,7 @@ void swift_array_with_unsafe_mut_fatal(void)
 void swift_fatal_error_alt(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4)
 {
     FUN_0006f768(p4, s_Fatal_error, p2, p3, p1, p2);
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -4446,7 +5685,7 @@ void sk_sched_borrow_fatal(void)
 {
     FUN_0035047c();
     FUN_003480ac();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -4591,7 +5830,7 @@ void swift_buffer_multiply_check(long base, long count, long desc)
         FUN_00349644();
     }
     FUN_00351094();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -4651,7 +5890,7 @@ void swift_buffer_multiply_check2(long base, long count, long desc)
         FUN_00348508();
     }
     FUN_00351094();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -5137,7 +6376,7 @@ uint64_t swift_small_string_encode(uint64_t p1, uint64_t count, uint32_t flags)
 {
     if ((long)count < 0) {
         FUN_0034846c();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     if (count == 0) return FUN_0011e71c();
     bool is_large = 0xe < count;
@@ -5176,7 +6415,7 @@ uint64_t swift_small_string_encode(uint64_t p1, uint64_t count, uint32_t flags)
 encode_fatal:
     FUN_00348034();
     FUN_003504b8();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -5288,7 +6527,7 @@ void sk_sched_runqueue_advance(uint64_t p1, uint64_t p2, uint64_t p3, long p4,
         us_28 = p8;
         sv_20 = p3;
         FUN_001a1138(&sv_8, x1, p4, (void*)0x00319528, aus_50, p5, p7);
-        sk_free(u6);                                    /* FUN_0036b118 */
+        sk_free((void *)u6);                                    /* FUN_0036b118 */
         FUN_0034b3e8();
         (**(code_fn **)(x16 + 8))(p3, p6);
         sk_thread_epilogue(x8);                         /* FUN_0008e500 */
@@ -5444,7 +6683,7 @@ void sk_sched_queue_push(uint64_t p1, uint64_t p2, uint64_t p3)
         reg16 node = FUN_001a10e4();
         FUN_003524d4(&stack_8, node.hi, p3, node.lo);
         FUN_001a1138();
-        sk_free(node.hi);                   /* FUN_0036b118 */
+        sk_free((void *)node.hi);                   /* FUN_0036b118 */
     }
     sk_irqrestore(v, x30);                  /* FUN_00357c74 */
     sk_free(NULL);                          /* FUN_0036b118 */
@@ -5527,8 +6766,8 @@ void sk_sched_runqueue_walk_advance(uint64_t p1, uint64_t p2, uint64_t p3, uint6
         FUN_001a10e4();
         FUN_0035a5cc();
         FUN_001a1138(sv_10, l3, 0);
-        sk_free(p5);                        /* FUN_0036b118 */
-        sk_free(v5);                        /* FUN_0036b118 */
+        sk_free((void *)p5);                        /* FUN_0036b118 */
+        sk_free((void *)v5);                        /* FUN_0036b118 */
         FUN_0031c3d0(p4);
         v5 = FUN_00350a88();
         long l6 = x8_01_fn(v5, p4);
@@ -5591,7 +6830,7 @@ void sk_sched_queue_alloc_pages(void)
 void sk_sched_queue_reset(void)
 {
     FUN_00349a18();
-    sk_free(*x20);                          /* FUN_0036b118 */
+    sk_free((void *)*x20);                          /* FUN_0036b118 */
     *x20 = x23;
     x20[1] = x22;
     x20[2] = x21;
@@ -5638,7 +6877,7 @@ void swift_array_reserve_core(void)
             return;
         }
         FUN_00347d60();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     __builtin_trap();                       /* 0x1a9700 */
 }
@@ -5717,7 +6956,7 @@ void swift_array_index_check(long idx, uint64_t p2, uint64_t p3, long lo, uint64
         FUN_003488bc(1);
         FUN_00352974();
         FUN_00349b50();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
 }
 
@@ -5752,7 +6991,7 @@ void swift_array_index_check2(long idx, uint64_t p2, uint64_t p3, long lo, uint6
         FUN_0034baf0();
     }
     FUN_0035110c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -5947,7 +7186,7 @@ void swift_array_assign_range(uint64_t p1, uint64_t p2, long p3, uint64_t p4,
     if (x1 + stride * q == v.hi + stride * p3) {
         if ((long)(p4 >> 1) < p3) {
             FUN_00347d60();
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         if (x22 == p3 && x21 == p4 >> 1) {
             FUN_000b45b0(v.lo, x30);
@@ -6023,7 +7262,7 @@ void swift_array_replace_realloc(void)
         FUN_0034baf0();
     }
     FUN_0035110c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -6068,7 +7307,7 @@ void swift_array_replace_dispatch(void)
         FUN_0034be0c();
         FUN_0035a3a0();
         FUN_001a9cb8();
-        sk_free(*head);                     /* FUN_0036b118 */
+        sk_free((void *)*head);                     /* FUN_0036b118 */
     }
     FUN_00084234(head, x30);
     thunk_FUN_00012568();
@@ -6117,7 +7356,7 @@ void swift_array_elem_set(uint64_t val, long *idxp, long arr)
  */
 void *swift_array_iterator_alloc2(long *out, uint64_t *p2, uint64_t p3)
 {
-    long obj = sk_alloc(0x28, 0xc7af);      /* FUN_0036a908 */
+    long obj = (long)sk_alloc(0x28, 0xc7af);      /* FUN_0036a908 */
     *out = obj;
     uint64_t u = FUN_001a9b28(obj, *p2, p3);
     *(uint64_t *)(obj + 0x20) = u;
@@ -6172,7 +7411,7 @@ void swift_array_iterator_dispatch(void)
         FUN_0034c444();
         FUN_0035a3a0();
         FUN_001a9cb8();
-        sk_free(*head);                     /* FUN_0036b118 */
+        sk_free((void *)*head);                     /* FUN_0036b118 */
     }
     FUN_00084234(head, x30);
     thunk_FUN_00012568();
@@ -6306,7 +7545,7 @@ void swift_collection_convert2(uint64_t *out)
  */
 void *swift_array_iterator_alloc3(long *out, uint64_t *p2, long p3)
 {
-    long obj = sk_alloc(0x28, 0xb73a);      /* FUN_0036a908 */
+    long obj = (long)sk_alloc(0x28, 0xb73a);      /* FUN_0036a908 */
     *out = obj;
     uint64_t u = FUN_001aa538(obj, *p2, x20[0], x20[1], x20[2], x20[3], *(uint64_t *)(p3 + 0x10));
     *(uint64_t *)(obj + 0x20) = u;
@@ -6486,7 +7725,7 @@ void swift_array_build_core(void)
         FUN_0034baf0();
     }
     FUN_0035110c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 store_done:
     *x8 = x23;
     x8[1] = x21;
@@ -6627,7 +7866,7 @@ void sk_sched_queue_remove_all(uint64_t p1, uint64_t p2, uint64_t p3)
         FUN_003488bc();
         FUN_0034baf0();
         FUN_0035110c();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     if (x1 == 0) {
         (**(code_fn **)(x16 + 8))(v5.lo, p3);
@@ -6648,7 +7887,7 @@ void sk_sched_queue_remove_all(uint64_t p1, uint64_t p2, uint64_t p3)
             if (n == 0) {
                 FUN_00348034();
                 FUN_003504b8();
-                sk_swift_fatal();           /* noreturn */
+                sk_swift_fatal(0, 0, 0);           /* noreturn */
             }
             reg16 v7 = FUN_00354d14();
             fn2(v7.lo, v7.hi, p3);
@@ -6739,7 +7978,7 @@ uint64_t sk_sched_queue_dealloc(long count)
     FUN_003488bc(1);
     FUN_0034baf0();
     FUN_0035110c();
-    sk_swift_fatal();                           /* noreturn */
+    sk_swift_fatal(0, 0, 0);                           /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -6808,7 +8047,7 @@ void swift_array_reserve_realloc(void)
     FUN_001a964c();
     FUN_00350b90();
     FUN_0035a4c8();
-    sk_free(l9);                                /* FUN_0036b118 */
+    sk_free((void *)l9);                                /* FUN_0036b118 */
     *x20 = (long)&sv_70;
     x20[1] = l8;
     x20[2] = l4;
@@ -6829,7 +8068,7 @@ done:
 long swift_array_copy_elements(uint64_t p1, uint64_t p2, long p3, uint64_t p4, long p5)
 {
     FUN_0035089c();
-    sk_free(p4);                                /* FUN_0036b118 */
+    sk_free((void *)p4);                                /* FUN_0036b118 */
     if (!SBORROW8(x22, x23)) {
         FUN_0034b518();
         long stride = *(long *)(x16 + 0x48);
@@ -6997,7 +8236,7 @@ void swift_array_reserve_grow(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4
             FUN_00355594();
             FUN_0034baf0();
             FUN_0035110c();
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         FUN_0034c664();
         (**(code_fn **)(x16_01 + 8))(cpu.lo, p3);
@@ -7079,7 +8318,7 @@ void swift_array_reserve_extra(void)
     FUN_003488bc(1);
     FUN_0034baf0();
     FUN_0035110c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -7126,7 +8365,7 @@ void swift_array_append_elem(void)
         return;
     }
     FUN_00347d60();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -7146,7 +8385,7 @@ void swift_array_reset_or_grow(void)
     uint64_t u5 = *(uint64_t *)(t + 0x10);
     if ((v.lo & 1) == 0) {
         FUN_001aab58(u5);
-        sk_free(*x20);                      /* FUN_0036b118 */
+        sk_free((void *)*x20);                      /* FUN_0036b118 */
         FUN_000a6f68();
         *x20 = x8;
         x20[1] = x1;
@@ -7166,7 +8405,7 @@ void swift_array_reset_or_grow(void)
             FUN_001a964c();
             FUN_00350b90();
             FUN_0035a490();
-            sk_free(u6);                    /* FUN_0036b118 */
+            sk_free((void *)u6);                    /* FUN_0036b118 */
             *x20 = u2;
             x20[1] = u5;
             x20[2] = x23;
@@ -7241,7 +8480,7 @@ uint64_t swift_array_capacity_check(void)
 void swift_array_empty_init(uint64_t *out, long p2)
 {
     FUN_001aab34(*(uint64_t *)(p2 + 0x10));
-    *out = (void*)0x00657778;
+    *out = (uint64_t)0x00657778;
     out[1] = x1;
     uint64_t u1 = DAT_004c08a0;
     out[3] = uRam_4c08a8;
@@ -7488,7 +8727,7 @@ void swift_string_append_core(uint64_t p1, uint64_t p2, uint64_t p3)
         }
         FUN_00347d60();
     }
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -7757,7 +8996,7 @@ void sk_sched_queue_insert_dispatch2(uint64_t p1, uint64_t p2, uint64_t p3)
     }
     FUN_00353f14();
 ins2_fatal:
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 ins2_epilogue:
     sk_thread_epilogue();                   /* FUN_0008e500 */
 }
@@ -7965,7 +9204,7 @@ void swift_array_reserve_inplace(uint64_t p1, uint64_t p2, long p3)
             if (!SCARRY8(hi - l1, cnt)) {
                 if ((hi - l1) + cnt < (lo - l1) + cnt) {
                     FUN_00347d60();
-                    sk_swift_fatal();       /* noreturn */
+                    sk_swift_fatal(0, 0, 0);       /* noreturn */
                 }
                 FUN_00350720();
                 uint64_t u8 = FUN_00310dd8();
@@ -7974,7 +9213,7 @@ void swift_array_reserve_inplace(uint64_t p1, uint64_t p2, long p3)
                 FUN_00350a04();
                 FUN_00352ae4();
                 FUN_0019c53c();
-                sk_free(u6);                /* FUN_0036b118 */
+                sk_free((void *)u6);                /* FUN_0036b118 */
                 long l5 = l1 + free;
                 if (!SCARRY8(l1, free)) {
                     if (!SCARRY8(l5, delta)) {
@@ -7991,7 +9230,7 @@ void swift_array_reserve_inplace(uint64_t p1, uint64_t p2, long p3)
         FUN_0034834c(1);
     }
     FUN_00351be0();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -8433,7 +9672,7 @@ void sk_sched_queue_foreach_apply(uint64_t p1, uint64_t p2, void (*cb)(uint64_t)
             x8_04_fn();
             FUN_00352260();
             x8_05_fn();
-            sk_free(is_8);            /* FUN_0036b118 */
+            sk_free((void *)is_8);            /* FUN_0036b118 */
             goto foreach_done;
         }
         if ((u2 & 1) == 0) {
@@ -8521,7 +9760,7 @@ void sk_sched_queue_foreach_apply2(void)
             x8_06_fn();
             FUN_00352260();
             x8_07_fn();
-            sk_free(is_8);            /* FUN_0036b118 */
+            sk_free((void *)is_8);            /* FUN_0036b118 */
             goto fae_done;
         }
         if ((u4 & 1) == 0) {
@@ -8974,7 +10213,7 @@ void sk_sched_runqueue_tick(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4,
     FUN_00348194();
 tick_fatal:
     FUN_003523f0();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 tick_done:
     FUN_003506cc();
     FUN_0034e014(x8, cpu.lo);
@@ -9012,7 +10251,7 @@ uint32_t swift_optional_read_flag(uint32_t *p, uint64_t p2, long p3, uint64_t p4
         if (!direct) goto opt_fatal;
         if (*p == 0) {
             FUN_00347f2c();
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         uint32_t v7 = *p - 1;
         uint32_t v1 = (uint32_t)(char)v7;
@@ -9029,7 +10268,7 @@ opt_fatal:
     FUN_003488bc(1);
     FUN_00349844();
     FUN_00350a94();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -9044,7 +10283,7 @@ void swift_optional_fatal(void)
     FUN_003488bc(1);
     FUN_00349844();
     FUN_00350a94();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -9073,7 +10312,7 @@ void sk_sched_queue_next_avail2(void)
     FUN_003509bc(*(uint64_t *)(x16 + 8));
     x8_00_fn();
     FUN_00348128();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -9188,7 +10427,7 @@ void swift_string_fatal_precondition(uint64_t p1, uint64_t p2, uint64_t p3, uint
             uint64_t u4 = FUN_003583dc(x8);
             FUN_00348194();
             FUN_003523f0(u4);
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         if ((0x10 < u3 >> 0x10) || (0xfffffffffffff7ff < u3 - 0xe000)) goto invalid;
         int len;
@@ -9218,7 +10457,7 @@ inline_path:
     if (u3 == 0) goto invalid;
     if (v.hi < 0) {
         FUN_0034846c();
-        sk_swift_fatal();                   /* noreturn */
+        sk_swift_fatal(0, 0, 0);                   /* noreturn */
     }
     u4 = 0x1afb44;
     v2 = thunk_FUN_0036b270(p5);            /* alloc pages */
@@ -9272,7 +10511,7 @@ format:
 invalid:
     FUN_00348898(1, u3, x8);
     FUN_0034a2f8();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }
 
 /*--------------------------------------------------------------------*/
@@ -9338,7 +10577,7 @@ void swift_string_fatal_dispatch(void)
  *   FUN_00354504 / FUN_00255d4c / FUN_00348898 / FUN_0034a2f8; trap at
  *   0x1aff14.
  */
-void sk_swift_fatal(uint64_t p1, uint64_t p2, uint32_t p3, ...)
+void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...)
 {
     FUN_00354a34();
     uint64_t u5 = x8;
@@ -9348,7 +10587,7 @@ void sk_swift_fatal(uint64_t p1, uint64_t p2, uint32_t p3, ...)
         if (msg != NULL) {
             if (v.hi < 0) {
                 FUN_0034846c();
-                sk_swift_fatal();           /* noreturn */
+                sk_swift_fatal(0, 0, 0);           /* noreturn */
             }
             goto print_trap;
         }
@@ -9357,7 +10596,7 @@ void sk_swift_fatal(uint64_t p1, uint64_t p2, uint32_t p3, ...)
             u5 = FUN_003583dc(u5);
             FUN_00348194();
             FUN_003523f0(u5);
-            sk_swift_fatal();               /* noreturn */
+            sk_swift_fatal(0, 0, 0);               /* noreturn */
         }
         if (((uint64_t)msg >> 0x10 < 0x11) && (msg - 0x1c00 < (uint64_t *)0xfffffffffffff800)) {
             bool small = (section_00000068.segname + 7 < (char *)msg);
@@ -9385,7 +10624,7 @@ void sk_swift_fatal(uint64_t p1, uint64_t p2, uint32_t p3, ...)
     }
     FUN_00348898(1, msg, u5);
     FUN_0034a2f8();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 print_trap:
     FUN_00352ae4(msg);
     FUN_001b0174();
@@ -9433,5 +10672,5 @@ void sk_sched_queue_tick_step(void)
     FUN_0034b348();
     FUN_00349de8(s_Fatal_error);
     FUN_001b012c();
-    sk_swift_fatal();                       /* noreturn */
+    sk_swift_fatal(0, 0, 0);                       /* noreturn */
 }

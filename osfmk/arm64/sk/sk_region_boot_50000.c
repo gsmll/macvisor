@@ -108,7 +108,7 @@ extern unsigned long sk_tpidr;
 /* Ghidra  */ extern uint64_t sk_msg_get();
 /* Ghidra  */ extern uint64_t sk_msg_iter();
 /* Ghidra  */ extern uint64_t sk_msg_next();
-/* Ghidra  */ extern uint64_t sk_msg_push_cap();
+/* Ghidra  */ extern sk_u128_t sk_msg_push_cap();
 /* Ghidra  */ extern uint64_t sk_msg_record();
 /* Ghidra  */ extern sk_u128_t sk_msg_zero();
 /* Ghidra  */ extern sk_u128_t sk_noreturn_error();
@@ -514,7 +514,7 @@ void sk_cnode_notify(int arg1);
 uintptr_t sk_tcb_cur(void);
 uint8_t * sk_setup_cpu_regs(long arg1);
 void sk_tcb_set(uint64_t arg1);
-void sk_global_ensure(void);
+uintptr_t sk_global_ensure(void);
 void sk_cnode_walk(unsigned long arg1,long arg2);
 void sk_cnode_map(long arg1,uint64_t arg2,long arg3,uint64_t arg4,uint64_t arg5 ,uint64_t arg6);
 void sk_cnode_record(uint64_t *arg1,uint64_t arg2,uint64_t arg3,uint64_t arg4, uint64_t arg5,uint64_t arg6,uint64_t arg7,uint64_t arg8, uint64_t arg9);
@@ -4782,10 +4782,9 @@ void sk_tcb_set(uint64_t arg1)
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_global_ensure(void)
+uintptr_t sk_global_ensure(void)
 {
-  sk_global_get(0x6b04b0,2,6);
-  return;
+  return sk_global_get(0x6b04b0,2,6);
 }
 
 
@@ -5049,7 +5048,7 @@ void sk_cnode_revoke(uint64_t arg1,uint64_t arg2)
       t1 = (sk_code_t )sk_break(0x5519,0x54cfc);
       (*t1)();
     }
-    sk_macho_bind(stk0,arg2,*(unsigned long *)(t0 + 0x58),*(uint64_t *)(t0 + 0x68),
+    sk_macho_bind(stk0,(long *)arg2,*(unsigned long *)(t0 + 0x58),*(uint64_t *)(t0 + 0x68),
                  *(uint64_t *)(t0 + 0x70));
   }
   return;
@@ -5138,7 +5137,7 @@ void sk_cnode_scan3(void)
   long stk0;
   
   stk0 = -0x2c8502b44bfffed6;
-  t0 = sk_log_consume(&stk1,0x10);
+  t0 = sk_log_consume((unsigned long)&stk1,0x10);
   if (t0 == 0x10) {
     sk_printf(stk1,stk2);
     if (stk0 == -0x2c8502b44bfffed6) {
@@ -5191,7 +5190,8 @@ long sk_cnode_tokenize(long arg1,char *arg2,long arg3)
   sk_u128_t stk0;;
   
   if ((arg1 != 0x64cd78) || (t2 = sk_cnode_alloc(arg2,arg3), t2 != 0)) {
-    stk0 = sk_cpu_irq();
+    stk0.hi = 0;
+    stk0.lo = sk_cpu_irq();
     t17 = stk0.hi;
     t2 = stk0.lo;
     t7 = (uint8_t *)sk_tpidrro;
@@ -5205,7 +5205,7 @@ long sk_cnode_tokenize(long arg1,char *arg2,long arg3)
     if (arg3 != 0) {
       t4 = 0;
       do {
-        if ((arg1 == 0x64d038) && (t3 = sk_tcb_ap(t2,t17), t3 != 0)) {
+        if ((arg1 == 0x64d038) && (t3 = sk_tcb_ap(), t3 != 0)) {
           t17 = sk_tcb_ap();
           t5 = arg2 + t4;
           if ((arg2 + arg3 <= t5) || (t5 < arg2)) {

@@ -34,15 +34,15 @@ extern void sk_lock_unref(void);                                              /*
 extern unsigned long cl4_alloc_object(unsigned long, ...);                    /* FUN_0036a940 */
 extern unsigned long cl4_alloc_value(unsigned long, ...);                     /* FUN_0036a804 */
 extern unsigned long cl4_log_alloc(unsigned long, unsigned long);             /* FUN_0036a9a0 */
-extern unsigned long sk_alloc_vas(unsigned long);                             /* FUN_000101a0 */
-extern unsigned long sk_zone_alloc_obj(unsigned long, unsigned long, unsigned long); /* FUN_00010244 */
-extern unsigned long sk_realloc(unsigned long, unsigned long, unsigned long); /* FUN_000102f4 */
+extern unsigned long sk_alloc_vas(unsigned long, ...);                             /* FUN_000101a0 */
+extern unsigned long sk_zone_alloc_obj(unsigned long, ...); /* FUN_00010244 */
+extern unsigned long sk_realloc(unsigned long, ...); /* FUN_000102f4 */
 extern long sk_msg_init(unsigned long, void *, unsigned long, unsigned long, unsigned long); /* FUN_00014bd4 */
 extern long sk_msg_decode(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_0001485c */
 extern unsigned long sk_error_obj(unsigned long);                             /* FUN_00019aac */
 extern unsigned long sk_phys_alloc(void);                                     /* FUN_00034f70 */
-extern unsigned long sk_boot_object(void);                                    /* FUN_00034a2c */
-extern unsigned long sk_spanmap_get3(void *);                                 /* FUN_00036008 */
+extern cl4_result_t sk_boot_object(void);                                    /* FUN_00034a2c */
+extern unsigned long sk_spanmap_get3(unsigned long, ...);                                 /* FUN_00036008 */
 extern int sk_page_check(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_0003c4c0 */
 extern unsigned long sk_current_domain(unsigned long, ...);                   /* FUN_00389b64 */
 extern unsigned long sk_obj_lock2(unsigned long);                             /* FUN_00310d68 */
@@ -110,6 +110,8 @@ extern unsigned long sk_rt_004b1c10(unsigned long, ...);                      /*
 extern unsigned long sk_rt_0001612c(unsigned long, ...);                      /* FUN_0001612c */
 extern unsigned long sk_rt_00023c78(unsigned long, ...);                      /* FUN_00023c78 */
 extern unsigned long sk_rt_00023d00(unsigned long, ...);                      /* FUN_00023d00 */
+extern unsigned long sk_rt_0002fa34(unsigned long, ...);   /* FUN_0002fa34 */
+extern unsigned long sk_rt_00028950(unsigned long, ...);   /* FUN_00028950 */
 extern unsigned long sk_rt_00014804(void);                                    /* FUN_00014804 */
 extern unsigned long sk_rt_0001483c(void);                                    /* FUN_0001483c */
 extern unsigned long sk_rt_0001532c(unsigned long, ...);                      /* FUN_0001532c */
@@ -133,6 +135,8 @@ extern unsigned long DAT_004bbc24, DAT_004bbe30, DAT_004bbf40, DAT_004bbfcc, DAT
 extern unsigned long DAT_0064c040, DAT_004bbf40, DAT_004ea760, DAT_004edbbc;
 extern unsigned long DAT_0060e208, DAT_0060e230, DAT_00611b24, DAT_00611b34;
 extern unsigned long DAT_004bc000, DAT_004bc008, DAT_004bc010, DAT_004bc018;
+extern unsigned long _DAT_004bc000, _DAT_004bc008, _DAT_004bc010, _DAT_004bc018;
+extern unsigned long _DAT_006ac260;   /* opaque list head */
 extern unsigned long DAT_0064cb40, DAT_0064cb48, DAT_0064cb80;
 extern unsigned long DAT_0065b1a0, DAT_0065b1c0, DAT_0065b1e0, DAT_0065b300, DAT_0065b320;
 extern unsigned long DAT_0065b3c0, DAT_0065b400, DAT_0065b440;
@@ -149,6 +153,15 @@ extern unsigned long DAT_004baeb0, DAT_004baeb8, DAT_004bb180, DAT_0067b148;
 extern unsigned long DAT_004bbf40, DAT_0064c308, DAT_0064c288, DAT_0064c380;
 extern unsigned long DAT_0064c040, DAT_004bbe30;
 extern unsigned long DAT_0064c2e8, DAT_004edbbc;
+
+/* Opaque helper calls pass pointers/words interchangeably; the exact ABI is
+ * not pinned, so downgrade the conversion diagnostics to warnings. */
+#pragma clang diagnostic ignored "-Wint-conversion"
+#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
+#pragma clang diagnostic ignored "-Wincompatible-function-pointer-types"
+#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+
 extern unsigned long DAT_004bbfcc, DAT_00675c30;
 
 
@@ -222,6 +235,24 @@ unsigned long vas_server_create(unsigned long, unsigned long, unsigned long, uns
                                 unsigned long, unsigned long);
 void vas_server_register_internal(unsigned long, unsigned long, unsigned long, unsigned long,
                                   unsigned long, unsigned long);
+
+/* Forward declarations for part-defined (in-slice) functions referenced
+ * before their definition. Signatures match the defining bodies. */
+void vas_fault_apply(void);
+void vas_fault_dispatch(void);
+void vas_dispatch_setup(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+unsigned long vas_fh_lookup_range(long, long, long);
+unsigned long vas_fh_activate(long, unsigned long *);
+unsigned long vas_fh_complete_fault(long, long);
+void vas_fh_deactivate(unsigned long *, unsigned long);
+unsigned long vas_fh_destroy_cb(long, long);
+void vas_fh_table_remove(long, unsigned long *);
+long vas_record_add(long, long, long);
+void vas_record_fill(unsigned long *, char *, unsigned int);
+unsigned long vas_fh_lookup_entry(unsigned long, unsigned long, unsigned long *);
+void vas_fh_region_remove(unsigned long, unsigned long);
+unsigned long vas_fh_get_internal(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
+
 long vas_fault_complete(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
 
 /*--------------------------------------------------------------------*/
@@ -1627,11 +1658,11 @@ vas_release_op_a(void)
 	long *self;
 
 	if (*(long *)((char *)self + 0x10) != 0) {
-		sk_rt_00014578();			/* thunk_FUN_00014578 */
+		sk_rt_00014578(0);			/* thunk_FUN_00014578 */
 		return;
 	}
 	/* noreturn bounds/state fault */
-	(*(void (**)(void))SoftwareBreakpoint)(1, 0x286a8);
+	sk_boot_panic();
 }
 
 /*----*/
@@ -1648,11 +1679,11 @@ vas_release_op_b(void)
 	long *self;
 
 	if (*(long *)((char *)self + 0x10) != 0) {
-		sk_rt_00014578();			/* thunk_FUN_00014578 */
+		sk_rt_00014578(0);			/* thunk_FUN_00014578 */
 		return;
 	}
 	/* noreturn bounds/state fault */
-	(*(void (**)(void))SoftwareBreakpoint)(1, 0x286a8);
+	sk_boot_panic();
 }
 
 /*----*/
@@ -1670,12 +1701,12 @@ vas_release_op_c(void)
 	long *self;
 
 	if (*(long *)((char *)self + 0x10) != 0) {
-		sk_rt_00014578();			/* thunk_FUN_00014578 */
-		cl4_release_op();			/* FUN_0036b6ac */
+		sk_rt_00014578(0);			/* thunk_FUN_00014578 */
+		cl4_release_op(0);			/* FUN_0036b6ac */
 		return;
 	}
 	/* noreturn bounds/state fault */
-	(*(void (**)(void))SoftwareBreakpoint)(1, 0x286dc);
+	sk_boot_panic();
 }
 
 /*----*/
@@ -1692,12 +1723,12 @@ vas_release_op_d(void)
 	long *self;
 
 	if (*(long *)((char *)self + 0x10) != 0) {
-		sk_rt_00014578();			/* thunk_FUN_00014578 */
-		cl4_release_op();			/* FUN_0036b6ac */
+		sk_rt_00014578(0);			/* thunk_FUN_00014578 */
+		cl4_release_op(0);			/* FUN_0036b6ac */
 		return;
 	}
 	/* noreturn bounds/state fault */
-	(*(void (**)(void))SoftwareBreakpoint)(1, 0x286dc);
+	sk_boot_panic();
 }
 
 /*----*/
@@ -1763,7 +1794,7 @@ vas_spanmap_alloc(long *param_1, unsigned long param_2, unsigned long param_3)
 	param_1[0] = 0;
 	param_1[3] = 0;
 	param_1[2] = 0;
-	sk_rt_00035ba0();				/* FUN_00035ba0 */
+	sk_rt_00035ba0(0);				/* FUN_00035ba0 */
 	if (*param_1 == 0) {
 		phys = sk_phys_alloc();			/* FUN_00034f70 */
 		sk_spanmap_get3(&span[0], param_2, param_3, phys);	/* FUN_00036008 */
@@ -1819,7 +1850,7 @@ vas_object_clone(unsigned long param_1, unsigned long *param_2)
 		return clone;
 	}
 	/* noreturn bounds fault */
-	(*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x28950);
+	sk_boot_panic();
 	return 0;	/* unreachable */
 }
 
@@ -1861,7 +1892,7 @@ vas_lookup_core(long param_1, long param_2, long param_3, long param_4)
 				if (((end < entry + 0xb) || (entry + 0xb < entry)) || (entry < base)) {
 out_of_bounds:
 					/* noreturn bounds fault */
-					(*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x28a10);
+					sk_boot_panic();
 				}
 				if (*entry == param_4)
 					return entry;
@@ -1960,7 +1991,7 @@ vas_range_lookup(long param_1, long param_2)
 			if ((entry != 0x48) &&
 			    (((entry - 0x48 < param_1 + 400) || (param_1 + 0x1d8 < entry)) || (entry < entry - 0x48))) {
 				/* noreturn bounds fault */
-				(*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x28b14);
+				sk_boot_panic();
 			}
 			if ((*(char *)(entry - 0x28) == '\x01') &&
 			    ((unsigned long)(param_2 - *(long *)(entry - 0x20)) < 0x4000))
@@ -2032,7 +2063,7 @@ vas_type_register(unsigned long param_1, unsigned long param_2,
 	     ((unsigned long)(((long)(buf_hi - buf_lo) >> 4) * -0x5555555555555555) < buf_count))) {
 bounds_fault:
 		/* noreturn bounds fault */
-		(*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x299dc);
+		sk_boot_panic();
 	}
 	/* zero-init the whole record, then apply the fixed words */
 	for (count = 0; count < 0x42; count++)
@@ -2172,7 +2203,7 @@ bounds_fault:
 		return obj;
 
 	/* first request-slot allocation (12-word records) */
-	lvar = (long *)sk_rt_004b1a74();		/* FUN_004b1a74 */
+	lvar = (long *)sk_rt_004b1a74(0);		/* FUN_004b1a74 */
 	tail_a = (unsigned long)lvar;
 	tail_b = (unsigned long)obj;			/* auVar21._8_8_ placeholder */
 	rcode = *(unsigned long *)((char *)lvar + 0x20);
@@ -2216,11 +2247,11 @@ bounds_fault:
 			*(unsigned char *)(slot + 1) = 0;
 		}
 		/* indirect dispatch through (auVar21._8_8_ + 0x10) */
-		return (unsigned long *)(*(void (**)(unsigned long, long))
+		return (unsigned long *)(*(unsigned long *(*)(unsigned long, long))
 		       *(unsigned long *)(tail_b + 0x10))(tail_b, (long)lvar);
 	}
 	/* second request-slot allocation (6-word records) */
-	lvar = (long *)sk_rt_004b1aac();		/* FUN_004b1aac */
+	lvar = (long *)sk_rt_004b1aac(0);		/* FUN_004b1aac */
 	tail_b = (unsigned long)lvar;
 	rcode = *(unsigned long *)((char *)lvar + 0x20);
 	if ((rcode < *(unsigned long *)((char *)lvar + 0x28)) ||
@@ -2281,10 +2312,10 @@ finish:
 	slot_base = (unsigned long *)r1;
 	rcode = r3;
 	/* caller completion callback through param_4[2] */
-	return (unsigned long *)(*(void (**)(long *, unsigned long *))cl[2])(cl, &slot_hi);
+	return (unsigned long *)(*(unsigned long *(*)(long *, unsigned long *))cl[2])(cl, &slot_hi);
 bounds_fault2:
 	/* noreturn bounds fault */
-	(*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x29c6c);
+	sk_boot_panic();
 	return 0;	/* unreachable */
 }
 /*--------------------------------------------------------------------*/
@@ -2316,7 +2347,7 @@ void vas_fh_attach(long self, unsigned long key, unsigned long size, long reply)
     if ((((end_over || end < ring) || start_under) || (unsigned long *)(ring + 0x208) <= freebase) &&
         (((end_over || end < ring) || start_under) || freebase != (unsigned long *)(ring + 0x208))) {
         /* ring out of bounds: trap 0x5519 @0x29e2c */
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x29e2c);
+        sk_boot_panic();
     }
     count = *freebase;
     if (count == 0) {
@@ -2331,7 +2362,7 @@ void vas_fh_attach(long self, unsigned long key, unsigned long size, long reply)
         freebase = *(unsigned long **)(ring + 0x200);
         slot = freebase + ((next + 1) - idx * count) * 6;
         if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x29e2c);
+            sk_boot_panic();
         }
         *slot = 0x100000003;
         slot[1] = key;
@@ -2407,7 +2438,7 @@ void vas_fh_detach(long self, long reply)
     if ((((end_over || end < ring) || start_under) || (unsigned int *)(ring + 0x208) <= freebase) &&
         (((end_over || end < ring) || start_under) || freebase != (unsigned int *)(ring + 0x208))) {
         /* ring out of bounds: trap 0x5519 @0x29fe0 */
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x29fe0);
+        sk_boot_panic();
     }
     count = *(unsigned long *)freebase;
     if (count == 0) {
@@ -2422,7 +2453,7 @@ void vas_fh_detach(long self, long reply)
         freebase = *(unsigned int **)(ring + 0x200);
         slot = freebase + ((next + 1) - idx * count) * 0xc;
         if ((slot < freebase || freebase + count * 0xc < slot + 0xc) || slot + 0xc < slot) {
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x29fe0);
+            sk_boot_panic();
         }
         *slot = 4;
         *(unsigned char *)((unsigned int *)slot + 1) = 1;
@@ -2501,7 +2532,7 @@ void vas_fh_kind(long self, unsigned long key, unsigned int kind, long reply)
     freebase = (unsigned long *)(ring + 0x1f0);
     if ((((end_over || end < ring) || start_under) || (unsigned long *)(ring + 0x208) <= freebase) &&
         (((end_over || end < ring) || start_under) || freebase != (unsigned long *)(ring + 0x208))) {
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a1ac);
+        sk_boot_panic();
     }
     count = *freebase;
     if (count == 0) {
@@ -2516,7 +2547,7 @@ void vas_fh_kind(long self, unsigned long key, unsigned int kind, long reply)
         freebase = *(unsigned long **)(ring + 0x200);
         slot = freebase + ((next + 1) - idx * count) * 6;
         if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a1ac);
+            sk_boot_panic();
         }
         *slot = 0x100000007;
         slot[1] = key;
@@ -2607,7 +2638,7 @@ void vas_fh_add_range(long self, long reply)
     freebase = (unsigned int *)(ring + 0x1f0);
     if ((((end_over || end < ring) || start_under) || (unsigned int *)(ring + 0x208) <= freebase) &&
         (((end_over || end < ring) || start_under) || freebase != (unsigned int *)(ring + 0x208))) {
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+        sk_boot_panic();
     }
     count = *(unsigned long *)freebase;
     if (count == 0) {
@@ -2622,7 +2653,7 @@ void vas_fh_add_range(long self, long reply)
         freebase = *(unsigned int **)(ring + 0x200);
         slot = freebase + ((next + 1) - idx * count) * 0xc;
         if ((slot < freebase || freebase + count * 0xc < slot + 0xc) || slot + 0xc < slot) {
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+            sk_boot_panic();
         }
         *slot = 8;
         *(unsigned char *)((unsigned int *)slot + 1) = 1;
@@ -2638,7 +2669,7 @@ void vas_fh_add_range(long self, long reply)
     sk_mtx_lock(**(unsigned long **)(self + 0x38));           /* FUN_00118164 */
     ring = *(unsigned long *)(self + 0x20);
     if (*(unsigned long *)(self + 0x28) < ring + 0x210 || ring < *(unsigned long *)(self + 0x30)) {
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+        sk_boot_panic();
     }
     if (*(long *)(ring + 0x188) == 0) {
         r0 = 0;
@@ -2663,7 +2694,7 @@ void vas_fh_add_range(long self, long reply)
                 if ((ring != 0) &&
                    (((ring + 0x210 < ring) || (*(unsigned long *)(self + 0x28) < ring + 0x210)) ||
                     (ring < *(unsigned long *)(self + 0x30)))) {
-                    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+                    sk_boot_panic();
                 }
                 range_id = *(long *)(ring + 0x180);
                 cnt = *(long *)(ring + 0x188);
@@ -2673,7 +2704,7 @@ void vas_fh_add_range(long self, long reply)
                     while (1) {
                         if (((next < entries) || (ring + 0x1d8 < next + 0x48)) ||
                             (next + 0x48 < next)) {
-                            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+                            sk_boot_panic();
                         }
                         if (range_id != *(long *)(next + 0x18)) break;
                         range_id = range_id + 1;
@@ -2684,7 +2715,7 @@ void vas_fh_add_range(long self, long reply)
                     cnt = cnt + -1;
                     while (cnt != 0) {
                         if (((next < entries) || (ring + 0x1d8 < next + 0x48)) || (next + 0x48 < next)) {
-                            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+                            sk_boot_panic();
                         }
                         if (range_id == *(long *)(next + 0x18)) {
                             range_id = range_id + 1;
@@ -2703,7 +2734,7 @@ void vas_fh_add_range(long self, long reply)
                     (slot2 = (unsigned long *)(ring + 400) + *(long *)(ring + 0x188) * 9,
                      (slot2 < (unsigned long *)(ring + 400) ||
                      (unsigned long *)(ring + 0x1d8) < slot2 + 9) || slot2 + 9 < slot2)) {
-                    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+                    sk_boot_panic();
                 }
                 slot2[1] = r1;
                 *slot2 = r0;
@@ -2717,7 +2748,7 @@ void vas_fh_add_range(long self, long reply)
                 ring = *(unsigned long *)(self + 0x20);
                 if ((*(unsigned long *)(self + 0x28) < ring + 0x210) ||
                     (ring < *(unsigned long *)(self + 0x30))) {
-                    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a508);
+                    sk_boot_panic();
                 }
                 *(long *)(ring + 0x188) = *(long *)(ring + 0x188) + 1;
                 sk_mtx_unlock(**(unsigned long **)(self + 0x38));     /* FUN_00118194 */
@@ -2801,7 +2832,7 @@ unsigned long vas_fh_lookup(long self, unsigned long key, unsigned long param3,
             freebase = *(unsigned long **)(ring + 0x200);
             slot = freebase + ((next + 1) - idx * count) * 6;
             if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a774);
+                sk_boot_panic();
             }
             *slot = 0x100000009;
             slot[1] = key;
@@ -2862,7 +2893,7 @@ unsigned long vas_fh_lookup(long self, unsigned long key, unsigned long param3,
             return ret;
         }
     }
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a774);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -2886,7 +2917,7 @@ unsigned long vas_fh_lookup_range(long self, long key, long desc)
             if ((entry != 0) &&
                (((entry < self + 400) || (self + 0x1d8 < entry + 0x48)) ||
                 (entry + 0x48 < entry))) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2a80c);
+                sk_boot_panic();
             }
             if (*(long *)(entry + 0x18) == key) {
                 return (*(unsigned long (**)(long, long))(desc + 0x10))(desc, entry);
@@ -2938,7 +2969,7 @@ unsigned long vas_fh_activate(long self, unsigned long *rec)
                 /* range not mapped: validate + commit mapping */
                 map_slot = *(unsigned long **)(*(long *)(self + 0x20) + 8);
                 if (map_slot + 0x7 < map_slot + 0x3) goto trap;
-                sk_rt_00046288();
+                sk_rt_00046288(0);
                 map_slot = *(unsigned long **)(self + 0x38);
                 if (map_slot != (unsigned long *)0) {
                     *(unsigned char *)((char *)map_slot + 4) = 0;
@@ -2952,8 +2983,8 @@ unsigned long vas_fh_activate(long self, unsigned long *rec)
                 cbuffer[0] = (unsigned char)(sk_boot_object().hi & 0xff);
                 status = (*(unsigned long (**)(unsigned long, unsigned long, unsigned int,
                                                unsigned long))
-                          (((unsigned long *)sk_boot_object())[1] + 0x40))
-                         (((unsigned long *)sk_boot_object())[0], prep[3], 1, page);
+                          (sk_boot_object().hi + 0x40))
+                         (sk_boot_object().lo, prep[3], 1, page);
                 status = status & 0xff;
                 if (status != 0) {
                     /* FUN_004afae4 s_easm_faulthandler_failed_to_copy_005ad5c5 */
@@ -2988,7 +3019,7 @@ unsigned long vas_fh_activate(long self, unsigned long *rec)
             }
             map_slot = *(unsigned long **)(*(long *)(self + 0x20) + 8);
             if ((unsigned long)map_slot + 0x38 < (unsigned long)(map_slot + 3)) goto trap;
-            sk_rt_000462c8();
+            sk_rt_000462c8(0);
         }
         status = 0;
     } else {
@@ -2997,7 +3028,7 @@ unsigned long vas_fh_activate(long self, unsigned long *rec)
     }
     return status;
 trap:
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2aa84);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3043,7 +3074,7 @@ void vas_fh_complete(long self, unsigned long key, unsigned long param3,
             freebase = *(unsigned long **)(ring + 0x200);
             slot = freebase + ((next + 1) - idx * count) * 6;
             if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ac74);
+                sk_boot_panic();
             }
             *slot = 0x10000000a;
             slot[1] = key;
@@ -3095,7 +3126,7 @@ void vas_fh_complete(long self, unsigned long key, unsigned long param3,
             return;
         }
     }
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ac74);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3156,7 +3187,7 @@ void vas_fh_deactivate(unsigned long *rec, unsigned long result)
         if (status != 0) {
             /* FUN_004afae4 s_easm_completefault_failed_to_dep_005ae606 */
             sk_swift_fatal("easm completefault failed to dep");
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ae28);
+            sk_boot_panic();
         }
         (*(void (**)(unsigned long, unsigned long, unsigned long, unsigned long))
           (rec[2] + 8))(*rec, rec[1], rec[5], result);
@@ -3206,7 +3237,7 @@ void vas_fh_destroy(long self, unsigned long key, long reply)
             freebase = *(unsigned long **)(ring + 0x200);
             slot = freebase + ((next + 1) - idx * count) * 6;
             if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b01c);
+                sk_boot_panic();
             }
             *slot = 0x10000000b;
             slot[1] = key;
@@ -3258,7 +3289,7 @@ void vas_fh_destroy(long self, unsigned long key, long reply)
             return;
         }
     }
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b01c);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3282,7 +3313,7 @@ unsigned long vas_fh_destroy_cb(long self, long rec)
     if ((table != 0) &&
        ((table + 0x210 < table || *(unsigned long *)(self + 0x30) < table + 0x210) ||
         table < *(unsigned long *)(self + 0x38))) {
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b0cc);
+        sk_boot_panic();
     }
     vas_fh_table_remove(table, rec);   /* FUN_0002b0cc */
     return 0;
@@ -3320,7 +3351,7 @@ void vas_fh_table_remove(long self, unsigned long *rec)
     if (idx - count != 0) {
         last = base + count * 9;
         if ((last < base || (unsigned long *)(self + 0x1d8) < last + 9) || last + 9 < last) {
-            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b1e8);
+            sk_boot_panic();
         }
         v0 = *last;
         rec[1] = last[1];
@@ -3353,7 +3384,7 @@ void vas_fh_table_remove(long self, unsigned long *rec)
         last[2] = 0;
         return;
     }
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b1e8);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3399,7 +3430,7 @@ void vas_fh_activate_slot(long self, unsigned long key, long reply)
             freebase = *(unsigned long **)(ring + 0x200);
             slot = freebase + ((next + 1) - idx * count) * 6;
             if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b3ec);
+                sk_boot_panic();
             }
             *slot = 0x100000006;
             slot[1] = key;
@@ -3409,7 +3440,7 @@ void vas_fh_activate_slot(long self, unsigned long key, long reply)
             slot[5] = 0;
         }
         /* zero result record */
-        for (i = 0; i < 10; i++) out[i] = 0;
+        for (unsigned int i = 0; i < 10; i++) out[i] = 0;
         id = 0;
         sk_mtx_lock(**(unsigned long **)(self + 0x38));       /* FUN_00118164 */
         desc[0] = (*(unsigned long (**)(unsigned long, unsigned long, unsigned int *,
@@ -3434,7 +3465,7 @@ void vas_fh_activate_slot(long self, unsigned long key, long reply)
             if ((ring != 0) &&
                (((ring + 0x210 < ring) || (*(unsigned long *)(self + 0x28) < ring + 0x210)) ||
                 (ring < *(unsigned long *)(self + 0x30)))) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b3ec);
+                sk_boot_panic();
             }
             r[0] = vas_record_add(ring, desc[0], desc[1]);   /* FUN_0002b3ec */
             vas_record_fill(&r[1], (char *)&out[0], id);     /* FUN_0002b5e8 */
@@ -3443,7 +3474,7 @@ void vas_fh_activate_slot(long self, unsigned long key, long reply)
         (*(void (**)(long, unsigned long *))(reply + 0x10))(reply, out);
         return;
     }
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b3ec);
+    sk_boot_panic();
 }
 
 /*--------------------------------------------------------------------*/
@@ -3494,7 +3525,7 @@ long vas_record_add(long self, long key, long desc)
                                                   ncap << 3, 0x100004000313f17);   /* FUN_000102f4 */
                 if (arr == (unsigned long *)0) {
                     /* out-of-memory: build a record from the source descriptor */
-                    fill = (unsigned long *)sk_rt_004b1ae8();
+                    fill = (unsigned long *)sk_rt_004b1ae8(0);
                     fill[0] = fill[0] & 0xfff9fffe;
                     /* type of source desc */
                     c0 = ((char *)fill)[1] == 0x11 ? 1 : 2;   /* frame vs cnode */
@@ -3511,7 +3542,7 @@ long vas_record_add(long self, long key, long desc)
                     fill = arr + used;
                     do {
                         if (((fill < arr) || (arr + used + ncap < fill + 1)) || (fill + 1 < fill)) {
-                            (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2b530);
+                            sk_boot_panic();
                         }
                         *fill = 0;
                         ncap = ncap + -1;
@@ -3530,7 +3561,7 @@ long vas_record_add(long self, long key, long desc)
         }
         return key;
     }
-    sk_rt_004b1b24();
+    sk_rt_004b1b24(0);
 abort:
     /* FUN_004afae4 s__VAS_abort_in_function__s_at_lin_005ae6ec */
     sk_swift_fatal("VAS abort in function %s at lin");
@@ -3641,10 +3672,10 @@ void vas_fh_register(long self, unsigned int *src, long reply)
     r0 = 0;
     r1 = 0;
     if (src + 8 < src + 4) goto trap;
-    p7 = (unsigned long *)sk_rt_00045d08();
+    p7 = (unsigned long *)sk_rt_00045d08(0);
     if ((src + 0x10 < src) || (src + 0x10 < src + 0xc)) goto trap;
-    for (i = 0; i < 10; i++) out[i] = 0;
-    p8 = (unsigned long *)sk_rt_00045d08();
+    for (unsigned int i = 0; i < 10; i++) out[i] = 0;
+    p8 = (unsigned long *)sk_rt_00045d08(0);
     p9 = (unsigned char *)sk_rt_00045cd8((long)src + 0x2a);
     p10 = (unsigned char *)sk_rt_00045cd8(src + 0xb);
     p11 = (unsigned char *)sk_rt_00045cd8((long)src + 0x2e);
@@ -3705,7 +3736,7 @@ void vas_fh_register(long self, unsigned int *src, long reply)
             freebase = *(unsigned long **)(ring + 0x200);
             slot = freebase + ((next + 1) - idx * count) * 6;
             if ((slot < freebase || freebase + count * 6 < slot + 6) || slot + 6 < slot) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ba78);
+                sk_boot_panic();
             }
             *slot = 0x100000005;
             slot[1] = cap_word;
@@ -3734,7 +3765,7 @@ void vas_fh_register(long self, unsigned int *src, long reply)
             if ((ring != 0) &&
                (((ring + 0x210 < ring) || (*(unsigned long *)(self + 0x28) < ring + 0x210)) ||
                 (ring < *(unsigned long *)(self + 0x30)))) {
-                (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ba78);
+                sk_boot_panic();
             }
             r[0] = vas_record_add(ring, r0, r1);   /* FUN_0002b3ec */
             vas_record_fill(&r[1], (char *)&cap_word, d4);   /* FUN_0002b5e8 */
@@ -3759,7 +3790,7 @@ void vas_fh_register(long self, unsigned int *src, long reply)
         return;
     }
 trap:
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ba78);
+    sk_boot_panic();
 }
 /* vas_fh_handle_state @ 0x2ba98   (est. vas_fault_handler_lookup_dispatch)
  * Ghidra: undefined8 vas_fh_handle_state(long param_1, undefined8 param_2, long param_3)
@@ -3873,7 +3904,7 @@ unsigned long vas_fh_handle_state(unsigned long obj, unsigned long reg_obj, unsi
     }
 bounds_fail:
     /* WARNING: does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2bd24);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -3892,7 +3923,7 @@ unsigned long vas_fh_lookup_entry(unsigned long vas, unsigned long reg_obj, unsi
     unsigned long cookie;
     int ok;
 
-    if ((reg_obj != 0) && (cur = sk_rt_0002fa34(), cur != 0)) {   /* FUN_0002fa34 */
+    if ((reg_obj != 0) && (cur = sk_rt_0002fa34(0), cur != 0)) {   /* FUN_0002fa34 */
         cookie = *(unsigned long *)(vas + 0x178);
         ok = sk_page_check(*(unsigned long *)(vas + 8), *(unsigned long *)(vas + 0x10),
                            reg_obj, cookie);                       /* FUN_0003c4c0 */
@@ -3912,7 +3943,8 @@ unsigned long vas_fh_lookup_entry(unsigned long vas, unsigned long reg_obj, unsi
  * status and stores it into the object's +0x18 field; returns 0 on success.
  * Aborts (boot panic) if param_3 is null.
  * Confidence: high
- * Notes: uses SoftwareBreakpoint(0x5519,0x2be20) on the bounds check. */
+ * Notes: uses sk_boot_panic();
+ */
 unsigned long vas_fh_map_page(unsigned long obj, unsigned long reg_obj, unsigned long cb)
 {
     unsigned long base = *(unsigned long *)(*(unsigned long *)(obj + 0x28) + 8);
@@ -3921,7 +3953,7 @@ unsigned long vas_fh_map_page(unsigned long obj, unsigned long reg_obj, unsigned
 
     if (base + 0x38U < end) {
         /* does not return */
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2be20);
+        sk_boot_panic();
     }
     if (cb != 0) {
         status = (*(unsigned int (*)(unsigned long, unsigned long))*(unsigned long **)(cb + 8))(reg_obj, end);
@@ -4046,7 +4078,7 @@ void vas_fh_delete(unsigned long obj, unsigned long reg_obj, unsigned long arg, 
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2c084);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -4141,7 +4173,7 @@ unsigned long vas_fh_size(unsigned long obj, unsigned long reg_obj, unsigned lon
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2c2d8);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -4251,7 +4283,7 @@ unsigned long vas_fh_get_range(unsigned long obj, unsigned long reg_obj, unsigne
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2c594);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -4359,7 +4391,7 @@ unsigned long vas_fh_get_range2(unsigned long obj, unsigned long reg_obj, unsign
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2c898);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -4453,7 +4485,7 @@ void vas_fh_unregister(unsigned long obj, unsigned long reg_obj, unsigned long a
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2cb20);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -4569,7 +4601,7 @@ unsigned long vas_fh_move(unsigned long obj, unsigned long reg_obj, unsigned lon
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ce2c);
+    sk_boot_panic();
 done:
     sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
     result = (*(unsigned long (*)(unsigned long, unsigned long, unsigned long))*(unsigned long **)(reply + 0x10))(reply, result, 0);
@@ -4616,13 +4648,13 @@ void vas_fh_region_remove(unsigned long obj, unsigned long key)
     unsigned long count;
     unsigned long cap;
 
-    list = (unsigned long *)sk_rt_0002fa34();   /* FUN_0002fa34 */
+    list = (unsigned long *)sk_rt_0002fa34(0);   /* FUN_0002fa34 */
     if (list == (unsigned long *)0x0) {
         sk_swift_fatal("VAS abort in function %s at line %d", __func__, 0); /* FUN_004afae4 s__VAS_abort_in_function__s_at_lin_005ae904 */
     }
     count = *(unsigned long *)(obj + 0x168);
     if (count == 0) {
-        sk_rt_004b1b60();   /* FUN_004b1b60 */
+        sk_rt_004b1b60(0);   /* FUN_004b1b60 */
     } else if (count <= *(unsigned long *)(obj + 0x160)) {
         if (list <= list + 1) {
             if (*list != key) {
@@ -4638,7 +4670,7 @@ void vas_fh_region_remove(unsigned long obj, unsigned long key)
             }
         }
         /* does not return */
-        (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2cfb4);
+        sk_boot_panic();
     }
     /* does not return */
     sk_swift_fatal("VAS abort in function %s at line %d", __func__, 0); /* FUN_004afae4 s__VAS_abort_in_function__s_at_lin_005ae776 */
@@ -4760,7 +4792,7 @@ unsigned long vas_fh_swap(unsigned long obj, unsigned long reg_obj, unsigned lon
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2d340);
+    sk_boot_panic();
 done:
     sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
     result = (*(unsigned long (*)(unsigned long, unsigned long *))*(unsigned long **)(reply + 0x10))(reply, &result);
@@ -4876,7 +4908,7 @@ unsigned long vas_fh_resize(unsigned long obj, unsigned long reg_obj, unsigned l
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2d658);
+    sk_boot_panic();
 done:
     sk_mtx_unlock(**(unsigned long **)(obj + 0x38));
     r1 = (*(int (*)(unsigned long, unsigned long, unsigned long))*(unsigned long **)(reply + 0x10))(reply, result, 0);
@@ -4983,7 +5015,7 @@ void vas_fh_state_set(unsigned long obj, unsigned long reg_obj, unsigned int sta
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2d8ec);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5073,7 +5105,7 @@ done:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2db0c);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5169,7 +5201,7 @@ deliver:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2dcfc);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5261,7 +5293,7 @@ deliver:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2dedc);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5353,7 +5385,7 @@ deliver:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2e0bc);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5445,7 +5477,7 @@ deliver:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2e29c);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5527,7 +5559,7 @@ done:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2e440);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5609,7 +5641,7 @@ done:
     return;
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2e5e4);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5695,7 +5727,7 @@ void vas_fh_get(unsigned long obj, unsigned long reg_obj, unsigned long arg, uns
     }
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2e7a4);
+    sk_boot_panic();
 }
 
 /*----*/
@@ -5709,7 +5741,7 @@ bounds_fail:
  * 128-bit auVar29 value is the boot-object / record descriptor pair.
  * Confidence: medium
  * Notes: string s__easm_server_add_thread_info_005aeac7; magic uVar16 =
- *   0x10e0040669e76eb; bounds SoftwareBreakpoint(0x5519,0x2ea54); globals
+ *   0x10e0040669e76eb; bounds sk_boot_panic(); globals
  *   DAT_004bc000/008/010/018. */
 unsigned long vas_fh_get_internal(unsigned long obj, unsigned long param_2, unsigned long param_3, unsigned long key, unsigned long val)
 {
@@ -5729,7 +5761,7 @@ unsigned long vas_fh_get_internal(unsigned long obj, unsigned long param_2, unsi
     uvar16 = 0x10e0040669e76eb;
     page = sk_phys_alloc();   /* FUN_00034f70 */
     if (page == 0) {
-        sk_rt_004b1bd8();   /* FUN_004b1bd8 */
+        sk_rt_004b1bd8(0);   /* FUN_004b1bd8 */
         goto abort_line;
     }
     ret = (*(unsigned long (*)(unsigned long, unsigned long, unsigned long, unsigned long))*(unsigned long **)(param_3 + 0x40))(param_2, val, 0, page);
@@ -5737,7 +5769,7 @@ unsigned long vas_fh_get_internal(unsigned long obj, unsigned long param_2, unsi
         /* descriptor built from DAT_004bc000/008/010/018 */
         unsigned long d0 = _DAT_004bc000, d1 = _DAT_004bc008, d2 = _DAT_004bc010, d3 = _DAT_004bc018;
         (void)d0; (void)d1; (void)d2; (void)d3;
-        boot = sk_boot_object();   /* FUN_00034a2c, returns 128-bit */
+        cl4_result_t b0 = sk_boot_object(); boot.lo = b0.lo; boot.hi = b0.hi;   /* FUN_00034a2c, returns 128-bit */
         ret = (*(unsigned long (*)(unsigned long, unsigned long, unsigned long *, unsigned long *, unsigned long, unsigned long *)) * (unsigned long **)(boot.hi + 0x30))(boot.lo, 0x1800, &d0, &base, 0, &d1);
         if ((ret & 0xff) != 0) goto e874;
         r = (*(unsigned long (*)(unsigned long, unsigned long, unsigned long)) * (unsigned long **)((unsigned long *)&base)[5])(base, 0, page);
@@ -5771,7 +5803,7 @@ e874:
         nbuf = sk_realloc(*(unsigned long *)(obj + 0x1e8), u23);   /* FUN_000102f4 */
         if (nbuf == 0) {
             /* nested request-slot allocation to report the failure (kind 0x14) */
-            a29 = sk_rt_004b1b9c();   /* FUN_004b1b9c, returns 128-bit */
+            a29.lo = sk_rt_004b1b9c(0);   /* FUN_004b1b9c, returns 128-bit (lo) */
             cur = *(unsigned long *)(a29.lo + 0x20);
             end = cur + 0x210;
             cap_lo = (*(unsigned long *)(a29.lo + 0x28) < end);
@@ -5834,7 +5866,7 @@ ed10:
                                 }
                                 u18 = *(unsigned long *)(cur + 0x1e0);
                                 if (u18 == 0) {
-                                    sk_rt_004b1c10();   /* FUN_004b1c10 */
+                                    sk_rt_004b1c10(0);   /* FUN_004b1c10 */
                                     goto abort_line;
                                 }
                                 u17 = *(unsigned long *)(cur + 0x1d8);
@@ -5933,11 +5965,11 @@ edd4:
     }
 overflow:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2ea54);
+    sk_boot_panic();
 abort_line:
     /* does not return */
     sk_swift_fatal("VAS abort in function %s at line %d", __func__, 0); /* FUN_004afae4 s__easm_server_add_thread_info_005aeac7 */
 bounds_fail:
     /* does not return */
-    (*(void (**)(void))SoftwareBreakpoint)(0x5519, 0x2eda0);
+    sk_boot_panic();
 }

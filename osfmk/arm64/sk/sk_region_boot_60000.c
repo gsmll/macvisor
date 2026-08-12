@@ -51,7 +51,8 @@ static inline unsigned int LZCOUNT(sk_word_t v){ return v?__builtin_clzll(v):64;
 /* Register / frame placeholders (values passed in registers at the call
  * site; reconstructed from the decompiler). */
 extern sk_word_t in_w8, in_x3, in_x4, extraout_x1, extraout_x8, extraout_x9;
-extern sk_word_t unaff_x20, unaff_x21, unaff_x22, unaff_x23, unaff_x27;
+extern sk_word_t *unaff_x20, *unaff_x22, *unaff_x27;
+extern sk_word_t unaff_x21, unaff_x23;
 extern sk_word_t uVar3, canary, local_88, local_90, local_38;
 extern sk_word_t __thread_bss;
 
@@ -291,7 +292,8 @@ sk_word_t thunk_len(sk_word_t,int);  /* thunk_FUN_00114fe0 */
 sk_word_t uRam00000000004bf008;  /* err fallback w1 */
 sk_word_t uRam00000000004bf018;  /* err fallback w3 */
 sk_word_t uVar3;  /* supervisor status */
-sk_word_t unaff_x20, unaff_x21, unaff_x22, unaff_x23, unaff_x27;  /* registers */
+sk_word_t *unaff_x20, *unaff_x22, *unaff_x27;  /* registers (pointer) */
+sk_word_t unaff_x21, unaff_x23;  /* registers (scalar) */
 unsigned char *sk_boot_strings(void);  /* FUN_00054610 */
 unsigned char sk_flag_1;  /* DAT_006b26c8 */
 unsigned char sk_flag_2;  /* DAT_006b26c9 */
@@ -400,10 +402,8 @@ void sk_disp_pair(sk_word_t,sk_word_t);  /* FUN_0014aea4 */
 void sk_dt_begin(void);  /* FUN_00066210 */
 void sk_dt_boot_enter(void);  /* FUN_0006b2ec */
 void sk_dt_boot_enter2(sk_word_t);  /* FUN_0006b2dc */
-void sk_dt_boot_publish(int,sk_word_t,sk_word_t);  /* FUN_000651bc */
-void sk_dt_boot_publish(int,sk_word_t,sk_word_t,sk_word_t);  /* FUN_000651bc variant */
-void sk_dt_boot_publish2(sk_word_t,sk_word_t,sk_word_t);  /* FUN_000651bc */
-void sk_dt_boot_publish2(void);  /* FUN_000651bc */
+void sk_dt_boot_publish(void);  /* FUN_000651bc: no-op stub */
+void sk_dt_boot_publish2(void);  /* FUN_000651bc: no-op stub */
 void sk_dt_boot_store(sk_word_t,sk_word_t,sk_word_t);  /* FUN_0006b360 */
 void sk_dt_fail(void) __attribute__((noreturn));  /* FUN_00066204 */
 void sk_dt_iter_init(sk_word_t,sk_word_t,void(*)(void));  /* FUN_00068700 */
@@ -567,9 +567,9 @@ void sk_boot_phase_notify(void *phase);
 void sk_boot_phase_drain(void);
 sk_word_t sk_stack_alloc_top(sk_word_t size);
 void sk_boot_main(void *arg0, sk_word_t boot_type, void **rsp, void **arg4, void *arg5);
-sk_word_t sk_ipc_msg_dispatch(void *tcb, sk_word_t *word, void *a, void *b, sk_word_t flags, void *c);
+sk_word_t sk_ipc_msg_dispatch(void *tcb, sk_word_t *word, void *a, sk_word_t b, sk_word_t flags, unsigned char c);
 void sk_ipc_msg_dispatch_fwd(void);
-sk_word_t sk_ipc_msg_dispatch2(void *tcb, sk_word_t *word, void *a, void *b, sk_word_t flags, void *c);
+sk_word_t sk_ipc_msg_dispatch2(void *tcb, sk_word_t *word, void *a, sk_word_t b, sk_word_t flags, unsigned char c);
 sk_word_t sk_ipc_transfer(void *mr, sk_word_t *word, sk_word_t *dst, sk_word_t lim, sk_word_t mode, unsigned char k, sk_word_t *extra, unsigned char *consumed);
 void sk_obj_slot_set(void *obj, sk_word_t v);
 sk_word_t sk_stack_alloc(sk_word_t size, sk_word_t off);
@@ -1075,7 +1075,7 @@ sk_word_t sk_altstack_setup(sk_word_t *frame, void *arg1, void *arg2)
             if ((cur <= dst) || ((cur -= 0x800) < dst)) break;
             sk_ctx_frame_t cf = sk_ctx_frame();   /* FUN_00034a2c */
             sk_word_t (*cfn)(void*,void*,void*,void*) = *(sk_word_t(**)(void*,void*,void*,void*))(uintptr_t)cf.v0;
-            done = cfn(cf.v0, cur, 0, cs);
+            done = cfn((void*)(uintptr_t)cf.v0, cur, 0, cs);
             do { CallSupervisor(4); } while ((long)cs == 1);
             off += 0x4000;
         } while (!done);
@@ -1595,8 +1595,8 @@ fail_taken:
  * Confidence: medium
  * Notes: FUN_00061e20 (load current message word); SoftwareBreakpoint(0x5519,0x61044) on bad range.
  */
-sk_word_t sk_ipc_msg_dispatch(void *tcb, sk_word_t *word, void *a, void *b,
-                                sk_word_t flags, void *c)
+sk_word_t sk_ipc_msg_dispatch(void *tcb, sk_word_t *word, void *a, sk_word_t b,
+                                sk_word_t flags, unsigned char c)
 {
     sk_word_t w; unsigned char consumed = 0;
     if ((int)flags == 0) {
@@ -1634,8 +1634,8 @@ void sk_ipc_msg_dispatch_fwd(void){ sk_ipc_msg_dispatch(0,0,0,0,0,0); }
  * Confidence: medium
  * Notes: FUN_000610b8 transfer.
  */
-sk_word_t sk_ipc_msg_dispatch2(void *tcb, sk_word_t *word, void *a, void *b,
-                                 sk_word_t flags, void *c)
+sk_word_t sk_ipc_msg_dispatch2(void *tcb, sk_word_t *word, void *a, sk_word_t b,
+                                 sk_word_t flags, unsigned char c)
 {
     sk_word_t w = *word; unsigned char consumed = 0; sk_word_t out = 0;
     if ((flags & 1) == 0) {
@@ -4509,14 +4509,14 @@ void sk_dt_boot_parse(void)
     sk_word_t w[2] = sk_dt_boot_enter();         /* FUN_0006b2ec */
     sk_word_t base = w[0];
     if (base == 0) {
-        sk_dt_boot_publish(0, 0, 0);
+        sk_dt_boot_publish();
         return;
     }
     sk_word_t out[2] = {0,0};
     sk_word_t r = sk_dt_parse(base, w[1] - base, &out);
     sk_word_t v0 = (r & 1) == 0 ? 0 : out[0];
     sk_word_t v1 = (r & 1) == 0 ? 0 : out[1];
-    sk_dt_boot_publish(0, v0, v1);               /* FUN_000651bc */
+    sk_dt_boot_publish();               /* FUN_000651bc */
     if ((r & 1) != 0) return;
     sk_stack_fail();
 }
@@ -4705,7 +4705,7 @@ void sk_dt_node_get(sk_word_t key, sk_word_t a, sk_word_t b)
         st = 0;
         v1 = size + base;
     }
-    sk_dt_boot_publish(0, v0, v1, st);           /* FUN_000651bc */
+    sk_dt_boot_publish();           /* FUN_000651bc */
     if (canary) return;
     sk_stack_fail();
 }
@@ -4882,14 +4882,14 @@ void sk_panic_report_body(sk_word_t a, void *arg)
             p += 4; i--;
         }
         sk_free(list);
-        sk_dt_boot_publish2(canary, 0, 0);
+        sk_dt_boot_publish2();
         if (canary) return;
         sk_stack_fail();
         return;
     }
     /* ... (iterative path elided; equivalent to the loop above) ... */
     sk_free(list);
-    sk_dt_boot_publish2(canary, 0, 0);
+    sk_dt_boot_publish2();
     if (canary) return;
     sk_stack_fail();
 }
@@ -5022,7 +5022,7 @@ void sk_dt_lookup_fatal(sk_word_t key)
         sk_report_flush();
         sk_breakpoint(1, 0x677c4);
     }
-    sk_dt_boot_publish(out[0], out[1], 0);
+    sk_dt_boot_publish();
     if (canary) return;
     sk_stack_fail();
 }
@@ -7143,7 +7143,7 @@ void sk_noop_6b6ac(void){ }
  * Stores the report entry (frame base, key, value) into the slot indexed by the caller registers.
  * Confidence: medium
  */
-void sk_report_store_slot(void){ *(sk_word_t*)((char*)unaff_x27 + 0x10) = unaff_x20; *(sk_word_t*)((char*)unaff_x27 + unaff_x23*0x10 + 0x20) = unaff_x21; *(sk_word_t*)((char*)unaff_x27 + unaff_x23*0x10 + 0x28) = unaff_x22; }
+void sk_report_store_slot(void){ *(sk_word_t*)((char*)unaff_x27 + 0x10) = (sk_word_t)unaff_x20; *(sk_word_t*)((char*)unaff_x27 + unaff_x23*0x10 + 0x20) = unaff_x21; *(sk_word_t*)((char*)unaff_x27 + unaff_x23*0x10 + 0x28) = (sk_word_t)unaff_x22; }
 
 /*--------------------------------------------------------------------*/
 

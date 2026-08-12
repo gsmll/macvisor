@@ -1683,6 +1683,8 @@ void cl4_sched_bitmap_insert_find_free(ulong key, word_t val, word_t side, word_
 {
     long base = arr;
     uint128_t r = FUN_00084024(arr + (key >> 6) * 8);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t *slot = (word_t *)(*(long *)(base + 0x30) + r_lo * 0x10);
     slot[0] = r_hi;
     slot[1] = val;
@@ -1726,6 +1728,8 @@ void cl4_sched_bitmap_insert_find(ulong key, word_t a, word_t side, long arr)
 void cl4_sched_bitmap_insert_word(ulong key, word_t val, word_t side, long arr)
 {
     uint128_t r = FUN_00084024(arr + (key >> 6) * 8);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     *(long *)(*(long *)(arr + 0x30) + r_lo * 8) = r_hi;
     *(word_t *)(*(long *)(arr + 0x38) + r_lo * 8) = side;
     if (!SCARRY8(*(long *)(arr + 0x10), 1)) {
@@ -1747,6 +1751,8 @@ void cl4_sched_bitmap_requeue(void)
 {
     ulong key = FUN_00350a10();
     uint128_t r = FUN_00084024(in_x3 + (key >> 6) * 8);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (**(code **)(*(long *)(in_x4 + -8) + 0x20))
         (*(long *)(in_x3 + 0x30) + *(long *)(*(long *)(in_x4 + -8) + 0x48) * r_lo, r_hi, in_x4);
     FUN_003511b4();
@@ -1793,6 +1799,8 @@ void cl4_sched_notify_scan(void)
     if (*(long *)(in_x3 + 0x10) != 0) {
         thunk_FUN_0036b270(in_x3);
         uint128_t r = FUN_003504c4();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         FUN_001f99f4(r_lo, r_hi, in_x6);
         if ((extraout_x1_00 & 1) == 0) {
             FUN_0036b118(in_x3);
@@ -1831,6 +1839,8 @@ void cl4_sched_notify_scan(void)
 void cl4_sched_alloc_and_insert(word_t a, word_t b, code *cb, word_t c, long sched)
 {
     uint128_t r0 = FUN_0035193c();
+    word_t r0_lo = (word_t)r0;
+    word_t r0_hi = (word_t)((unsigned __int128)r0 >> 64);
     word_t v0 = *(word_t *)(sched + 0x10);
     FUN_00349734();
     word_t w0 = FUN_0036a908(*(word_t *)(extraout_x8 + 0x40), 0x1535);
@@ -1844,6 +1854,8 @@ void cl4_sched_alloc_and_insert(word_t a, word_t b, code *cb, word_t c, long sch
     FUN_003502e8();
     FUN_00359ba4();
     uint128_t ins = FUN_001fbb74(r0_hi, cn);
+    word_t ins_lo = (word_t)ins;
+    word_t ins_hi = (word_t)((unsigned __int128)ins >> 64);
     FUN_00351900();
     FUN_001fb194();
     FUN_0036b118(save);
@@ -1892,6 +1904,8 @@ void cl4_sched_insert_compact(void)
     FUN_00359ba4();
     FUN_00355458();
     uint128_t r = FUN_001fbb74();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_003552a0();
     FUN_0034f3b4();
     FUN_001fb194();
@@ -1920,6 +1934,8 @@ word_t cl4_sched_get_field_38(long ctx)
 void cl4_sched_insert_without_alloc(word_t a, word_t b, code *cb, word_t c, long sched)
 {
     uint128_t r0 = FUN_0008e518();
+    word_t r0_lo = (word_t)r0;
+    word_t r0_hi = (word_t)((unsigned __int128)r0 >> 64);
     word_t v0 = *(word_t *)(sched + 0x18);
     FUN_003494e8();
     (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
@@ -1930,6 +1946,8 @@ void cl4_sched_insert_without_alloc(word_t a, word_t b, code *cb, word_t c, long
     FUN_0034d014();
     FUN_00359ba4();
     uint128_t ins = FUN_001fbb74(r0_hi, cn);
+    word_t ins_lo = (word_t)ins;
+    word_t ins_hi = (word_t)((unsigned __int128)ins >> 64);
     FUN_003518a0();
     FUN_001fb194();
     FUN_0036b118(save);
@@ -1995,8 +2013,12 @@ word_t cl4_sched_dispatch_builder(word_t a, word_t b, word_t c, word_t d, word_t
 {
     word_t local_48 = c;
     uint128_t r0 = FUN_0035869c();
+    word_t r0_lo = (word_t)r0;
+    word_t r0_hi = (word_t)((unsigned __int128)r0 >> 64);
     word_t local_80 = d, uStack_78 = e, local_70 = f, uStack_68 = g;
     uint128_t r1 = FUN_003516cc();
+    word_t r1_lo = (word_t)r1;
+    word_t r1_hi = (word_t)((unsigned __int128)r1 >> 64);
     word_t o1 = FUN_0031a29c(r1_lo, r1_hi, e, g);
     FUN_0034d3f4();
     word_t o2 = FUN_0031b560();
@@ -2052,6 +2074,8 @@ void cl4_sched_layout_dispatch(void)
     FUN_000867ec();
     FUN_00353c48();
     uint128_t r = FUN_00258c60(1, extraout_x8 + 1);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00100efc(r_lo, r_hi, *unaff_x20,
                  *(word_t *)(unaff_x19 + 0x10),
                  *(word_t *)(unaff_x19 + 0x18),
@@ -2071,11 +2095,15 @@ void cl4_sched_dispatch_loop(void)
 {
     FUN_00353cfc();
     uint128_t r3 = FUN_00355e68();
+    word_t r3_lo = (word_t)r3;
+    word_t r3_hi = (word_t)((unsigned __int128)r3 >> 64);
     word_t out2_hi = in_x4;
     word_t out2_lo = extraout_x8;
     word_t u = in_x3;
     FUN_0035454c();
     uint128_t r4 = FUN_003548d0();
+    word_t r4_lo = (word_t)r4;
+    word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_00377824(r4_lo, r4_hi, u);
     FUN_00348e60();
     FUN_0007c1a4();
@@ -2111,6 +2139,8 @@ void cl4_sched_dispatch_loop(void)
         FUN_00350884();
         if ((bool)in_ZR) {
             uint128_t r5 = FUN_0034ed28();
+            word_t r5_lo = (word_t)r5;
+            word_t r5_hi = (word_t)((unsigned __int128)r5 >> 64);
             next = extraout_x8_06;
             goto done;
         }
@@ -2125,6 +2155,7 @@ void cl4_sched_dispatch_loop(void)
     FUN_00353154();
     next = extraout_x8_05;
 done:
+    word_t r5_lo = 0, r5_hi = 0;   /* split-pair scratch (r5 scoped to earlier if-block) */
     (*next)(r5_lo, r5_hi);
     FUN_00351348();
     FUN_00353d14(unaff_x23);
@@ -2141,6 +2172,8 @@ void cl4_sched_entry_setup(word_t a, word_t b, long src)
 {
     FUN_0034c084();
     uint128_t r = FUN_0031a2b4(0, *(word_t *)(src + 0x10), *(word_t *)(src + 0x18), *(word_t *)(src + 0x20));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0034ffb8(r_lo, r_hi, r_lo);
     FUN_001f142c();
 }
@@ -2162,6 +2195,8 @@ void cl4_sched_common_op(void)
     FUN_0031b560();
     FUN_00357a84();
     uint128_t r = FUN_0034cdd8();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_001fc3b4(r_lo, r_hi, cn);
     FUN_003552a0();
     FUN_00351cd0();
@@ -2221,6 +2256,8 @@ void cl4_sched_op_commit(void)
 void cl4_sched_entry_construct(word_t a, word_t b, word_t c, long src)
 {
     uint128_t r = FUN_003563c4();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     in_stack_00000058 = r_lo;
     thunk_FUN_00200b38(&stack0x00000030, src);
     FUN_003a25d4(r_lo);
@@ -2410,6 +2447,8 @@ word_t cl4_sched_read_caps(void)
 {
     FUN_0035a010();
     uint128_t r = FUN_001f98e8();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     if ((r_hi & 1) == 0) {
         local_58[0] = FUN_00019858();
     } else {
@@ -2525,6 +2564,8 @@ word_t cl4_sched_read_2word(void)
 {
     FUN_0035a010();
     uint128_t r = FUN_001f9964();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     if ((r_hi & 1) == 0) {
         local_70[0] = FUN_00019858();
     } else {
@@ -2557,6 +2598,8 @@ void cl4_sched_op_scan(void)
     word_t v = *(word_t *)(extraout_x1 + 0x20);
     thunk_FUN_0036b270(ctx);
     uint128_t r = FUN_003508b4();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_001f99f4(r_lo, r_hi, v);
     FUN_0036b118(ctx);
     if ((extraout_x1_00 & 1) != 0) {
@@ -2643,6 +2686,8 @@ cl4_desc_t cl4_sched_entry_alloc_desc(void)
     p[4] = *(word_t *)(unaff_x19 + 0x20);
     p[0] = 0x8000000000000000;
     uint128_t r = FUN_0031a2b4(0);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_003509bc(r_lo, r_hi, r_lo);
     FUN_001f2104();
     cl4_desc_t out;
@@ -2833,6 +2878,8 @@ void cl4_sched_set_result(void)
     word_t v2 = *(word_t *)(extraout_x1 + 0x20);
     thunk_FUN_0036b270(v0);
     uint128_t r = FUN_0009461c();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_001fb26c(r_lo, r_hi, v1, in_x3, v2);
     FUN_00353918();
     FUN_0036b118(v0);
@@ -3506,6 +3553,8 @@ scan:
             for (;;) {
                 if (lStack_118 == 0) goto fail_ret;
                 uint128_t r = FUN_001f9964(&local_130);
+                word_t r_lo = (word_t)r;
+                word_t r_hi = (word_t)((unsigned __int128)r >> 64);
                 FUN_003199ac(&local_130);
                 if ((r_hi & 1) == 0) {
                     FUN_00344e54(&local_98, &DAT_00657590, &DAT_004f1920);
@@ -3603,6 +3652,8 @@ word_t cl4_sched_iter_member(long a, long b)
         uVar2 = LZCOUNT(uVar2) | l4 << 6;
         long l6 = *(long *)(*(long *)(local_78 + 0x38) + uVar2 * 8);
         uint128_t r = FUN_001f98a8(*(word_t *)(*(long *)(local_78 + 0x30) + uVar2 * 8));
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     } while (((r_hi & 1) != 0) &&
              (lStack_60 = l4, *(long *)(*(long *)(b + 0x38) + r_lo * 8) == l6));
     thunk_FUN_0036b270(a);
@@ -3622,6 +3673,8 @@ word_t cl4_sched_iter_member(long a, long b)
 void cl4_sched_walk_and_apply(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
     uint128_t r = FUN_0008e518();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long l6 = r_hi, l9 = r_lo;
     FUN_00349a68();
     (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
@@ -3765,6 +3818,7 @@ out:
  * Notes: mirror of FUN_001f41b4. */
 void cl4_sched_walk_and_apply_b(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f)
 {
+    uint128_t r; word_t r_lo; word_t r_hi;   /* split-pair scratch */
     FUN_0008e518();
     FUN_00351a80();
     FUN_00349a68();
@@ -3966,6 +4020,7 @@ void cl4_sched_hash_all(word_t a, long sched)
  * Notes: LZCOUNT bit scan; SoftwareBreakpoint overflow; thunk_FUN_002298d4 tail. */
 void cl4_sched_hash_walk(word_t a, word_t b, word_t c)
 {
+    uint128_t r; word_t r_lo; word_t r_hi;   /* split-pair scratch */
     FUN_0008e518();
     FUN_00353274();
     FUN_00355fb8();
@@ -4232,6 +4287,8 @@ word_t *cl4_sched_copy_set_insert(long src)
         FUN_00310d98(auStack_108, auStack_e8);
         FUN_000dbd0c();
         uint128_t r = FUN_001f98e8();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         u8 = r_lo;
         if ((r_hi & 1) == 0) {
             if ((ulong)dst[3] <= (ulong)dst[2]) {
@@ -4363,6 +4420,8 @@ void cl4_sched_op_prep6(word_t a, word_t b, word_t c, word_t d, word_t e, word_t
 {
     FUN_003530e8(a, c);
     uint128_t r = FUN_00352ddc();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0031a29c(r_lo, r_hi, d, f);
     FUN_00356b5c();
     thunk_FUN_0036b270();
@@ -4382,6 +4441,8 @@ void cl4_sched_op_prep6(word_t a, word_t b, word_t c, word_t d, word_t e, word_t
 void cl4_sched_op_dispatch_pair(void)
 {
     uint128_t r = FUN_0008e518();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_003548d0();
     FUN_00310d68();
     FUN_00348e00();
@@ -4436,6 +4497,8 @@ void cl4_sched_dispatch_main_loop(void)
     FUN_003497b4();
     FUN_003509a4();
     uint128_t r = FUN_0035361c();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u11 = r_hi;
     FUN_003722e4(r_lo, u11, cb);
     FUN_00352efc();
@@ -4818,6 +4881,8 @@ void cl4_sched_dispatch_enter(void)
     FUN_00350b54();
     FUN_00352ddc();
     uint128_t r = FUN_0031a29c();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00352920(r_lo, r_hi, r_lo, in_x3, in_x4, 0x66ba38);
     FUN_001f5d68();
 }
@@ -4846,6 +4911,8 @@ void cl4_sched_init_a(void) { FUN_001f67ec(); }
 void cl4_sched_init(void)
 {
     uint128_t r = FUN_0035a7e8();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t v = FUN_003625e4(r_lo, r_hi, 0);
     FUN_00208418(v, 1);
 }
@@ -5153,9 +5220,13 @@ void cl4_sched_result_build(word_t a, word_t b, uint8_t c, word_t d, word_t e, w
     FUN_00348f38();
     FUN_00353178();
     uint128_t r4 = FUN_002db6b8();
+    word_t r4_lo = (word_t)r4;
+    word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_00350914();
     FUN_00319350();
     uint128_t r5 = FUN_00350720();
+    word_t r5_lo = (word_t)r5;
+    word_t r5_hi = (word_t)((unsigned __int128)r5 >> 64);
     FUN_003193f4(r5_lo, r5_hi, h);
     FUN_00352b74();
     word_t v2 = FUN_0020c1bc();
@@ -5214,6 +5285,8 @@ void cl4_sched_cap_setup(void)
     word_t v = FUN_00354924();
     FUN_003a25e0(v, 2);
     uint128_t r = FUN_00357f14();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_003515b4(r_lo, r_hi, 6);
     FUN_001a67bc();
     FUN_0035a1d4();
@@ -5253,6 +5326,8 @@ void cl4_sched_run_entry(word_t a, long sched)
     if (!empty) {
         int i2 = *(int *)(l3 + 0x30);
         uint128_t r = FUN_001fb1cc(ctx);
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         FUN_001f1a20(a, a + i2, r_lo, r_hi, sched);
     }
     FUN_00351548(a, empty);
@@ -5319,6 +5394,8 @@ void cl4_sched_guard_insert(word_t a, word_t b, long sched)
     FUN_0034d3b4();
     if (*(long *)(*unaff_x20 + 0x10) < unaff_x20[1]) {
         uint128_t r = FUN_00351984();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         (*extraout_x9)(r_lo, r_hi, v1);
         FUN_0034edc8(*(word_t *)(extraout_x16 + 0x10));
         (*extraout_x8_00)();
@@ -5355,6 +5432,8 @@ void cl4_sched_set_insert5(word_t *key, word_t *side, long set)
     u4 = (*c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u4);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u5 = r_lo;
     if ((r_hi & 1) == 0) {
         long b = set + (u5 >> 6) * 8;
@@ -5396,6 +5475,8 @@ void cl4_sched_set_insert_pair(word_t *key, word_t a, word_t b, long set)
     u3 = (*c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u3);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u4 = r_lo;
     if ((r_hi & 1) == 0) {
         long b2 = set + (u4 >> 6) * 8;
@@ -5433,6 +5514,8 @@ void cl4_sched_set_insert_side20(word_t *key, word_t side, long set)
     u3 = (*c2)(u6, local_60, uStack_58);
     FUN_000026e8(auStack_78);
     uint128_t r = FUN_001f9a68(key, u3);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u4 = r_lo;
     if ((r_hi & 1) == 0) {
         long b = set + (u4 >> 6) * 8;
@@ -5475,6 +5558,8 @@ void cl4_sched_set_insert2_obfuscated(word_t a, word_t b, word_t side, long set)
     FUN_001b9084(&local_88, a, b);
     word_t h = FUN_001a8564();
     uint128_t r = FUN_0006af08(a, b, h);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u4 = r_lo;
     if ((r_hi & 1) == 0) {
         long b2 = set + (u4 >> 6) * 8;
@@ -5511,6 +5596,8 @@ void cl4_sched_set_insert2_side5(word_t a, word_t b, word_t *side, long set)
     FUN_001b9084(&local_88, a, b);
     word_t h = FUN_001a8564();
     uint128_t r = FUN_0006af08(a, b, h);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u3 = r_lo;
     if ((r_hi & 1) == 0) {
         long b2 = set + (u3 >> 6) * 8;
@@ -5551,6 +5638,8 @@ void cl4_sched_set_insert2_pair(word_t a, word_t b, word_t c, word_t d, long set
     FUN_001b9084(&local_88, a, b);
     word_t h = FUN_001a8564();
     uint128_t r = FUN_0006af08(a, b, h);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u4 = r_lo;
     if ((r_hi & 1) == 0) {
         long b2 = set + (u4 >> 6) * 8;
@@ -5584,6 +5673,8 @@ void cl4_sched_set_insert_requeue(void)
     FUN_00356b8c();
     FUN_00351c58();
     uint128_t r = FUN_001f9dbc();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     if ((r_hi & 1) == 0) {
         long i = FUN_00084024(unaff_x19 + (r_lo >> 6) * 8);
         (**(code **)(*(long *)(in_x3 + -8) + 0x20))
@@ -5684,6 +5775,8 @@ void cl4_sched_swap_slots(word_t a, word_t b, long sched, word_t d, word_t e)
 {
     FUN_0034ba88();
     uint128_t r = FUN_00354010(*(word_t *)(sched + 0x30));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0019ce60(extraout_x8 + *(long *)(extraout_x16 + 0x48) * r_lo, 1,
                  extraout_x8 + *(long *)(extraout_x16 + 0x48) * r_hi);
     FUN_003522b8(*(word_t *)(unaff_x20 + 0x38));
@@ -5700,6 +5793,8 @@ void cl4_sched_swap_slots_b(word_t a, word_t b, long sched, word_t d, word_t e)
 {
     FUN_0034ba88();
     uint128_t r = FUN_00354010(*(word_t *)(sched + 0x30));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_001f2104(extraout_x8 + *(long *)(extraout_x16 + 0x48) * r_lo,
                  extraout_x8 + *(long *)(extraout_x16 + 0x48) * r_hi, d);
     FUN_003522b8(*(word_t *)(unaff_x20 + 0x38));
@@ -5720,6 +5815,8 @@ void cl4_sched_dict_lookup(word_t a, word_t b, long sched)
     long ctx = *unaff_x20;
     long l3 = *(long *)(sched + 0x10);
     uint128_t r = FUN_001f99f4(a, l3, *(word_t *)(sched + 0x20));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long i1 = r_lo;
     if ((r_hi & 1) != 0) {
         long l4 = *(long *)(sched + 0x18);
@@ -5750,6 +5847,8 @@ void cl4_sched_op_dispatch6(void)
 {
     FUN_00354744();
     uint128_t r = FUN_0034d2b4();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     thunk_FUN_0036b270(*r_lo);
     FUN_00350018();
     FUN_001f8144();
@@ -5780,6 +5879,8 @@ void cl4_sched_scan_apply_main(void)
     FUN_0008e518();
     word_t u5 = in_x4;
     uint128_t r = FUN_00358da0();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long l8 = r_hi, l15 = r_lo;
     r = FUN_00353160();
     FUN_003722e4(r_lo, r_hi, u5, s_key_value_005cea2a, 0);
@@ -5990,6 +6091,8 @@ void cl4_sched_entry_apply(void)
     FUN_0035359c();
     FUN_00365b6c();
     uint128_t r = FUN_00354d68(*(word_t *)(extraout_x16 + 0x10));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (*extraout_x8_02)(r_lo, r_hi, in_x3);
     FUN_00351720(extraout_x8 + i1);
     FUN_00365b6c();
@@ -6009,6 +6112,8 @@ void cl4_sched_op_forward3(void)
 {
     FUN_00354744();
     uint128_t r = FUN_00352068();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t ctx = *r_lo;
     thunk_FUN_0036b270(ctx);
     FUN_00351300();
@@ -6040,6 +6145,8 @@ void cl4_sched_resolve_entry(void)
     FUN_0008e518();
     word_t u9 = in_x4;
     uint128_t r = FUN_00353e88();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     code *m1 = r_hi;
     long l6 = r_lo;
     r = FUN_00353160();
@@ -6321,6 +6428,8 @@ void cl4_sched_lookup_find(void)
     FUN_00077894();
     FUN_001b9084();
     uint128_t r = FUN_001a8564();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00100efc(r_lo, r_hi, r_lo);
     FUN_0006af08();
 }
@@ -6343,10 +6452,14 @@ void cl4_sched_key_exists(void)
     FUN_0034b440(&stack0x00000008);
     FUN_0031993c();
     uint128_t r = FUN_0034c5cc();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (*extraout_x8)(r_lo, r_hi, v);
     FUN_000026e8(&stack0x00000008);
     FUN_000b43d0();
     uint128_t r2 = FUN_001f9a68();
+    word_t r2_lo = (word_t)r2;
+    word_t r2_hi = (word_t)((unsigned __int128)r2 >> 64);
     FUN_0035847c(r2_lo, r2_hi & 1, extraout_x1);
 }
 
@@ -6445,6 +6558,8 @@ void cl4_sched_probe_find(void)
 {
     FUN_00356f9c();
     uint128_t r = FUN_00354948(*(uint8_t *)(unaff_x20 + 0x20));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     ulong u4 = r_hi & (extraout_x8 ^ 0xffffffffffffffff);
     uint found = 0;
     if ((*(ulong *)(unaff_x20 + 0x40 + (u4 >> 6) * 8) >> (u4 & 0x3f) & 1) != 0) {
@@ -6882,6 +6997,8 @@ word_t cl4_sched_set_alloc_10b(word_t shift, ulong cap, ulong seed, char interna
 void cl4_sched_set_resize(word_t shift, word_t cls, ulong seed, uint internal)
 {
     uint128_t r = FUN_00351e20();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t u7 = r_hi;
     ulong u12 = (ulong)r[0];
     ulong u11 = 1L << (u12 & 0x3f);
@@ -7115,6 +7232,8 @@ void cl4_sched_priority_dispatch(void)
                 (*extraout_x9_01)();
                 FUN_0034c384();
                 uint128_t r = FUN_0034d2f4(extraout_x8_02);
+                word_t r_lo = (word_t)r;
+                word_t r_hi = (word_t)((unsigned __int128)r >> 64);
                 (*extraout_x9_02)(r_lo, r_hi, extraout_x1);
                 FUN_003496e8();
                 FUN_0034fa1c();
@@ -7255,6 +7374,8 @@ cl4_find_t cl4_sched_find_or_empty(word_t a, long set)
 {
     if (*(long *)(set + 0x10) != 0) {
         uint128_t r = FUN_003577cc();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         word_t u1 = r_lo;
         cl4_find_t out;
         if ((r_hi & 1) == 0) {
@@ -7391,6 +7512,8 @@ void cl4_sched_found_dispatch(word_t a, word_t b, long set, word_t d, word_t e)
 void cl4_sched_op_build_dispatch(word_t a, word_t b, word_t c, long set)
 {
     uint128_t r = FUN_00084220();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t *p = (word_t *)FUN_0036a908(0x48, 0x6bb9);
     *r_lo = (long)p;
     p[1] = set;
@@ -7406,6 +7529,8 @@ void cl4_sched_op_build_dispatch(word_t a, word_t b, word_t c, long set)
     u3 = FUN_0036a908(*(word_t *)(extraout_x8 + 0x40), 0x6bb9);
     p[6] = u3;
     uint128_t r2 = FUN_001fbb74(r_hi, c, set);
+    word_t r2_lo = (word_t)r2;
+    word_t r2_hi = (word_t)((unsigned __int128)r2 >> 64);
     p[7] = r2_lo;
     *(byte *)(p + 8) = r2[8] & 1;
     bool absent = (r2_hi & 1) == 0;
@@ -7474,6 +7599,8 @@ void cl4_sched_op_insert_forward(word_t a, word_t b, long set)
     code *pc2 = *(code **)(extraout_x16 + 8);
     (*pc2)();
     uint128_t r = FUN_00356ae8(*(word_t *)(extraout_x16 + 0x20));
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (*extraout_x8_00)(r_lo, r_hi, u1);
     FUN_0035a134();
     FUN_00258d9c();
@@ -7500,17 +7627,23 @@ void cl4_sched_op_cmp(word_t a, word_t b, uint mode)
     FUN_00355d9c();
     FUN_001f98e8();
     uint128_t r4 = FUN_000775b8();
+    word_t r4_lo = (word_t)r4;
+    word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     word_t u3 = r4_lo;
     if (SCARRY8(extraout_x8, extraout_x9)) {   /* WARNING: does not return */
         SoftwareBreakpoint(1, 0x1fba80);
     }
     FUN_00350914();
     uint128_t r6 = FUN_00002534();
+    word_t r6_lo = (word_t)r6;
+    word_t r6_hi = (word_t)((unsigned __int128)r6 >> 64);
     FUN_00356ad0(mode & 1, r6_hi, r6_lo);
     ulong u2 = FUN_00258c60();
     if ((u2 & 1) != 0) {
         FUN_00351384();
         uint128_t r5 = FUN_001f98e8();
+        word_t r5_lo = (word_t)r5;
+        word_t r5_hi = (word_t)((unsigned __int128)r5 >> 64);
         u3 = r5_lo;
         if ((r4_hi & 1) != (r5_hi & 1)) {
             FUN_003593dc();
@@ -7529,14 +7662,20 @@ void cl4_sched_op_cmp(word_t a, word_t b, uint mode)
 void cl4_sched_op_cmp_b(void)
 {
     uint128_t r4 = FUN_00084220();
+    word_t r4_lo = (word_t)r4;
+    word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_001f9964();
     uint128_t r5 = FUN_000775b8();
+    word_t r5_lo = (word_t)r5;
+    word_t r5_hi = (word_t)((unsigned __int128)r5 >> 64);
     word_t u3 = r5_lo;
     if (SCARRY8(extraout_x8, extraout_x9)) {   /* WARNING: does not return */
         SoftwareBreakpoint(1, 0x1fbb68);
     }
     FUN_000a6e14();
     uint128_t r6 = FUN_00002534();
+    word_t r6_lo = (word_t)r6;
+    word_t r6_hi = (word_t)((unsigned __int128)r6 >> 64);
     FUN_00356ad0(r4_hi & 1, r6_hi, r6_lo);
     ulong u2 = FUN_00258c60();
     if ((u2 & 1) != 0) {
@@ -7571,6 +7710,8 @@ void cl4_sched_insert_helper(word_t a, word_t b, long set)
     if ((u3 & 1) != 0) {
         FUN_0034ed78();
         uint128_t r5 = FUN_001f99f4();
+        word_t r5_lo = (word_t)r5;
+        word_t r5_hi = (word_t)((unsigned __int128)r5 >> 64);
         u2 = r5_lo;
         if ((extraout_w1_00 & 1) != (r5_hi & 1)) {
             /* WARNING: subroutine does not return */
@@ -7914,6 +8055,8 @@ void cl4_sched_op_insert_check(word_t a, word_t b, word_t c, long set)
     (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_003493ac();
     uint128_t r = FUN_001fbb74(extraout_x1, c, l2);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     l2 = *unaff_x20;
     if ((r_hi & 1) != 0) {
         long l1 = *(long *)(*(long *)(set + 0x18) + -8);
@@ -7954,6 +8097,8 @@ void cl4_sched_op_lookup_dispatch(word_t a, word_t b, word_t c, long set)
     (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     FUN_00348f50();
     uint128_t r = FUN_001fbb74(extraout_x1, c, l1);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     if ((r_hi & 1) != 0) {
         long l1b = *(long *)(*(long *)(set + 0x18) + -8);
         /* WARNING: could not recover jumptable at 0x1fc5cc; indirect jump as call */
@@ -8105,6 +8250,8 @@ void cl4_sched_read_dispatch(void)
 void cl4_sched_set_rehash(void)
 {
     uint128_t r = FUN_00084220();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long l5 = r_hi;
     long l6 = *unaff_x20;
     if ((r_lo & 1) == 0) {
@@ -8207,6 +8354,8 @@ void cl4_sched_dispatch_all(word_t a, word_t b, long set, word_t d, word_t e, wo
     (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348f38();
     uint128_t r = FUN_003516cc();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0031b524(r_lo, r_hi, f, g);
     FUN_003515a8();
     word_t u2 = FUN_001fa18c();
@@ -8374,6 +8523,8 @@ void cl4_sched_run_queue_drain2(void)
     (*DAT_00658c00)();
     FUN_0034aee4();
     uint128_t r = FUN_00348b94(l1);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00377824(r_lo, r_hi, u3);
     FUN_000a6f88();
     FUN_0007c1a4();
@@ -8460,6 +8611,8 @@ void cl4_sched_queue_walk_dispatch(word_t a, word_t b, word_t c)
         long l11 = 0;
         do {
             uint128_t r = FUN_00351648(u3);
+            word_t r_lo = (word_t)r;
+            word_t r_hi = (word_t)((unsigned __int128)r >> 64);
             FUN_001fea40(r_lo, r_hi, u3, c);
             FUN_0034ef88();
             word_t u8 = FUN_0031b71c();
@@ -8602,6 +8755,8 @@ void cl4_sched_empty_or_drain_b(void)
 void cl4_sched_debug_string(void)
 {
     uint128_t r7 = FUN_0008e518();
+    word_t r7_lo = (word_t)r7;
+    word_t r7_hi = (word_t)((unsigned __int128)r7 >> 64);
     void ***p5 = r7_lo;
     FUN_00349748(p5, p5[3], p5[2]);
     FUN_00377824();
@@ -8611,9 +8766,13 @@ void cl4_sched_debug_string(void)
     FUN_0034b05c();
     FUN_0006e778(0x1b);
     uint128_t r8 = FUN_0035a354();
+    word_t r8_lo = (word_t)r8;
+    word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     local_10 = r8_lo;
     FUN_00353e14(s_range_005cf420);
     uint128_t r9 = FUN_001a89a8();
+    word_t r9_lo = (word_t)r9;
+    word_t r9_hi = (word_t)((unsigned __int128)r9 >> 64);
     ulong u3 = r9_hi;
     FUN_0034b824(unaff_x28 & 0xffffffffffff);
     void ***p4 = unaff_x20;
@@ -8815,6 +8974,8 @@ uint8_t cl4_sched_desc_build(void)
 void cl4_sched_queue_run_loop(void)
 {
     uint128_t r = FUN_0008e518();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00353b70();
     long l1 = *(long *)(extraout_x1 + 0x10);
     word_t u7 = *(word_t *)(extraout_x1 + 0x18);
@@ -8875,6 +9036,8 @@ void cl4_sched_queue_run_loop(void)
     FUN_0031b760(0, u6, 0x66d5d8);
     FUN_00200bd0(local_20);
     uint128_t r2 = FUN_003504e8();
+    word_t r2_lo = (word_t)r2;
+    word_t r2_hi = (word_t)((unsigned __int128)r2 >> 64);
     u6 = FUN_0031b778(r2_lo, r2_hi, 0x66d5d8);
     FUN_00354128(extraout_x16 + 0x20);
     FUN_00353360(extraout_x16 + 8);
@@ -9019,6 +9182,8 @@ void cl4_sched_op_guard_check(word_t a, word_t b, word_t c)
         }
     } else {
         uint128_t r = FUN_000dbd0c();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         (*pc)(r_lo, r_hi, u3);
         FUN_0034ad40(unaff_x25 + l5);
         if (!(bool)in_ZR) {
@@ -9083,6 +9248,8 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
     (*DAT_00658c00)();
     FUN_0034b250();
     uint128_t r = FUN_00348b94(u1);
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t u6 = FUN_00377824(r_lo, r_hi, u10);
     FUN_00350798();
     word_t u7 = FUN_001a0414();
@@ -9141,6 +9308,8 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
 void cl4_sched_op_dispatch7(void)
 {
     uint128_t r7 = FUN_0008e518();
+    word_t r7_lo = (word_t)r7;
+    word_t r7_hi = (word_t)((unsigned __int128)r7 >> 64);
     long l2 = r7_lo;
     word_t u5 = *(word_t *)(l2 + 0x10);
     word_t u1 = *(word_t *)(l2 + 0x18);
@@ -9155,6 +9324,8 @@ void cl4_sched_op_dispatch7(void)
     FUN_0035139c(u1);
     word_t u3 = FUN_00377bec();
     uint128_t r8 = FUN_00350488();
+    word_t r8_lo = (word_t)r8;
+    word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     FUN_00310e08(r8_lo, r8_hi, u3);
     FUN_00348cd0();
     FUN_0007c1a4();
@@ -9234,6 +9405,8 @@ void cl4_sched_per_entry_op(void)
     FUN_003503d0();
     FUN_0034d024();
     uint128_t r = FUN_00310e08();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_0007c1c4(r_lo, r_hi, r_lo);
     FUN_001dc430();
 }
@@ -9252,6 +9425,8 @@ void cl4_sched_op_prep7(long src)
     FUN_00377824();
     FUN_003513a8(u1);
     uint128_t r = FUN_00377bec();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00084174(r_lo, r_hi, r_lo);
     FUN_001fe95c();
 }
@@ -9311,6 +9486,8 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
         lStack_50 = *unaff_x24;
         local_40 = u12;
         uint128_t r = FUN_00350798();
+        word_t r_lo = (word_t)r;
+        word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         u5 = FUN_0031b71c(r_lo, r_hi, u5);
         FUN_00002534(0x6561e0, &DAT_004e8038);
         word_t u7 = FUN_00348c30();
@@ -9483,6 +9660,8 @@ uint8_t cl4_sched_buffer_index(long i, long lo, long hi, char *base, long len)
 void cl4_sched_queue_reset(void)
 {
     uint128_t r9 = FUN_0008e518();
+    word_t r9_lo = (word_t)r9;
+    word_t r9_hi = (word_t)((unsigned __int128)r9 >> 64);
     long l6 = r9_hi;
     long l1 = *(long *)(l6 + 0x10);
     word_t u4 = *(word_t *)(l6 + 0x18);
@@ -9508,6 +9687,8 @@ void cl4_sched_queue_reset(void)
     FUN_003597b4();
     code *pc7 = *(code **)(extraout_x16_00 + 0x10);
     uint128_t r10 = FUN_000b43d0();
+    word_t r10_lo = (word_t)r10;
+    word_t r10_hi = (word_t)((unsigned __int128)r10 >> 64);
     (*pc7)(r10_lo, r10_hi, u4);
     FUN_00359594();
     (*pc7)();
@@ -9604,6 +9785,8 @@ void cl4_sched_batch_step(void)
     long l6 = *(long *)(l3 + -8);
     code *pc9 = *(code **)(l6 + 0x10);
     uint128_t r = FUN_0009461c();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (*pc9)(r_lo, r_hi, l3);
     (*pc9)(unaff_x19 + *(int *)(l4 + 0x30), unaff_x20 + i1, l3);
     FUN_00351c4c();
@@ -9644,6 +9827,8 @@ void cl4_sched_count_op(void)
     FUN_0008e518();
     long *pv = (long *)FUN_00352ce0();
     uint128_t r = FUN_00350488();
+    word_t r_lo = (word_t)r;
+    word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00377824(r_lo, r_hi, in_x3, &DAT_0060e208);
     FUN_00348e00();
     FUN_0007c1a4();
@@ -9681,12 +9866,16 @@ void cl4_sched_count_op(void)
 void cl4_sched_run_loop(void)
 {
     uint128_t r3 = FUN_00353cfc();
+    word_t r3_lo = (word_t)r3;
+    word_t r3_hi = (word_t)((unsigned __int128)r3 >> 64);
     word_t u1 = in_x3;
     FUN_0007c028();
     (*DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_003493ac();
     FUN_00351fb0();
     uint128_t r4 = FUN_003548d0();
+    word_t r4_lo = (word_t)r4;
+    word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_00377824(r4_lo, r4_hi, u1);
     FUN_00348fd8();
     FUN_0007c1a4();
@@ -9776,6 +9965,8 @@ void cl4_sched_batch_advance(void)
     FUN_0034ed78();
     word_t u4 = FUN_00377bec();
     uint128_t r10 = FUN_00350720();
+    word_t r10_lo = (word_t)r10;
+    word_t r10_hi = (word_t)((unsigned __int128)r10 >> 64);
     FUN_00310e08(r10_lo, r10_hi, u4);
     FUN_00348fd8();
     (*DAT_00658c00)(*(word_t *)(extraout_x8_01 + 0x40));
@@ -9864,6 +10055,8 @@ void cl4_sched_batch_advance_b(void)
     FUN_0034db68();
     word_t u5 = FUN_00377bec();
     uint128_t r8 = FUN_003504e8();
+    word_t r8_lo = (word_t)r8;
+    word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     FUN_00310e08(r8_lo, r8_hi, u5);
     FUN_00348ce8();
     FUN_0007c1a4();
@@ -10034,6 +10227,8 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
     FUN_00349720();
     (*DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
     uint128_t r8 = FUN_00348f38();
+    word_t r8_lo = (word_t)r8;
+    word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     bool same = (r8_lo == r8_hi);
     if (same) {
         u6 = 1;
