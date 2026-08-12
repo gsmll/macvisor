@@ -829,7 +829,7 @@ static void sk_err_reply_dispose(word_t obj, word_t r, word_t r3)
         } else {
             c128 = sk_128_zero();
             if (*(char *)(obj + 0x20) == '\0') {
-                c128.lo = (word_t)sk_copy128(obj, 0); /* FUN_0040c2d8(obj,0) */
+                c128 = sk_copy128(obj, 0); /* FUN_0040c2d8(obj,0) */
             }
         }
     } else {
@@ -973,7 +973,7 @@ static void sk_future_resume(word_t a, word_t b, word_t c)
         s1 = pl[1];
         s2 = pl[2];
     }
-    lv6 = (word_t)sk_copy128(lv, 0); /* FUN_0040c2d8 */
+    lv6 = sk_copy128(lv, 0).lo; /* FUN_0040c2d8 */
     if (s0 == b) {
         if (lv6 == s2) {
             /* early return through indirect vtable (unrecoverable jumptable) */
@@ -1010,13 +1010,13 @@ after_ref:
         if (pl != (word_t *)0) {
             *pl = b;
             pl[1] = c;
-            *(sk_128_t *)(pl + 2) = (sk_128_t)(word_t)sk_copy128(lv, 0); /* FUN_0040c2d8 */
+            *(sk_128_t *)(pl + 2) = sk_copy128(lv, 0); /* FUN_0040c2d8 */
             (**(void(**)(word_t *))(lv + 0x38))((word_t *)(lv + 0x38));
             return;
         }
         {
             char f1 = 1, f2 = 0, f3 = 0;
-            sk_128_t frm = (sk_128_t)(word_t)sk_copy128(lv, 0); /* local_88 */
+            sk_128_t frm = sk_copy128(lv, 0); /* local_88 */
             stk = *slot_perm;
             *slot_perm = (word_t)&stk;
             *(word_t *)&stk = b;
@@ -1352,15 +1352,17 @@ static word_t sk_run_job(word_t self, word_t job, word_t *out, word_t a4,
 /* FUN_004097cc @ 0x004097cc — sk_future_get: returns the future value stored
  * at p+0x18, merged through the object identity hash (FUN_003a25b8 +
  * FUN_003d52d0); 0 if the pointer at p+0x10 is empty. */
-static word_t sk_future_get(word_t p)
+static sk_128_t sk_future_get(word_t p)
 {
     word_t v;
     word_t lp = *(word_t *)(p + 0x10);
     if (lp == 0) {
-        return 0;
+        v = 0;
+    } else {
+        v = sk_identity_hash(lp);  /* FUN_003a25b8 */
+        v = sk_obj_merge(lp, v, *(word_t *)(p + 0x18)); /* FUN_003d52d0 */
     }
-    v = sk_identity_hash(lp);  /* FUN_003a25b8 */
-    return sk_obj_merge(lp, v, *(word_t *)(p + 0x18)); /* FUN_003d52d0 */
+    return (sk_128_t){ v, 0 };
 }
 
 /* FUN_00409818 / 0x0040981c — sk_job_teardown / _teardown2: free the async

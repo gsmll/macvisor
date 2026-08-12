@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "sk_internal.h"
+#include <stdarg.h>
 
 /* ------------------------------------------------------------------ *
  * Hardware / intrinsic helpers (same semantics as the Ghidra pseudo-ops
@@ -50,7 +51,9 @@ static uint8_t sk_tpidr_area[0x100] __attribute__((aligned(16)));
 
 /* External callees (outside this slice). Address-based names; each
  * declared `unsigned long` (64-bit ABI word) so any call site compiles.
- * Ghidra FUN_ address is ground truth. */
+ * Ghidra FUN_ address is ground truth. 0019AE9C returns a 16-byte pair. */
+typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
+
 extern unsigned long sk_x_0000178C();   /* FUN_0000178C */
 extern unsigned long sk_x_0000178c();   /* FUN_0000178C */
 extern unsigned long sk_x_00034A2C();   /* FUN_00034A2C */
@@ -66,6 +69,7 @@ extern unsigned long sk_x_00054DE4();   /* FUN_00054DE4 */
 extern unsigned long sk_x_000552C0();   /* FUN_000552C0 */
 extern unsigned long sk_x_00055AFC();   /* FUN_00055AFC */
 extern unsigned long sk_x_00055B20();   /* FUN_00055B20 */
+extern unsigned long sk_x_0005FDAC();   /* FUN_0005FDAC */
 extern unsigned long sk_x_000600F0();   /* FUN_000600F0 */
 extern unsigned long sk_x_000603AC();   /* FUN_000603AC */
 extern unsigned long sk_x_000603C4();   /* FUN_000603C4 */
@@ -121,7 +125,7 @@ extern unsigned long sk_x_00118C38();   /* FUN_00118C38 */
 extern __attribute__((noreturn)) unsigned long sk_x_0011D7E8();   /* FUN_0011D7E8 */
 extern unsigned long sk_x_0019AE2C();   /* FUN_0019AE2C */
 extern unsigned long sk_x_0019AE60();   /* FUN_0019AE60 */
-extern unsigned long sk_x_0019AE9C();   /* FUN_0019AE9C */
+extern sk_u128_t sk_x_0019AE9C();   /* FUN_0019AE9C (16-byte) */
 extern unsigned long sk_x_0019AF14();   /* FUN_0019AF14 */
 extern unsigned long sk_x_0019AF88();   /* FUN_0019AF88 */
 extern unsigned long sk_x_0019AFB0();   /* FUN_0019AFB0 */
@@ -274,7 +278,7 @@ void sk_f_0005b140(void);
 uint64_t sk_f_0005b160(void);
 void __attribute__((noreturn)) sk_f_0005b190(uint64_t thread, const char *reason);
 void sk_f_0005b1b0(uint64_t thread, const char *reason, uint64_t arg3);
-void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, uint64_t d);
+void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, const char *d);
 uint64_t sk_f_0005b860(uint64_t *out_name);
 uint64_t sk_f_0005b89c(void);
 uint32_t sk_f_0005b8c8(void);
@@ -338,7 +342,7 @@ void sk_f_0005d470(uint32_t *slot, void (*completion)(void *), void *callback_ar
 void sk_f_0005d5dc(void);
 void sk_f_0005d5e8(uint64_t target_thread, uint32_t register_num, uint64_t msg_lo,
                    uint64_t msg_hi);
-void sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
+uint64_t sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
                    uint64_t flags);
 uint64_t sk_f_0005d77c(void);
 void sk_f_0005d7c8(int64_t *root_slot);
@@ -348,9 +352,10 @@ uint64_t sk_f_0005dab8(uint64_t (*handler)(int64_t, uint64_t), uint64_t target_t
                        uint8_t *cross_thread_flag, uint64_t arg);
 void sk_f_0005db7c(uint64_t *thread);
 uint64_t sk_f_0005dc4c(uint64_t cpu_index);
-void sk_f_0005dc8c(void);
+uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t *queue, uint64_t *ref,
+                       uint64_t owner, uint64_t flag);
 void sk_f_0005dcb0(uint32_t selector, uint64_t msg0, uint64_t msg1, uint64_t thread, uint32_t flags);
-void sk_f_0005dd70(void);
+void sk_f_0005dd70(uint64_t selector, uint64_t *queue, uint64_t wake, uint64_t flag);
 void sk_f_0005dd94(uint32_t wake_idx, uint64_t msg0, uint32_t selector, uint64_t target_thread);
 void sk_f_0005deb4(void);
 void sk_f_0005ded8(uint64_t thread);
@@ -361,7 +366,7 @@ void sk_f_0005e100(uint64_t cap_arg, uint8_t *selbuf);
 void sk_f_0005e4ac(uint8_t error_code);
 void sk_f_0005e4cc(void);
 void sk_f_0005e4d8(int64_t thread, uint64_t out_lo, uint64_t out_hi, uint64_t flags);
-void sk_f_0005e8a4(uint64_t *out, uint64_t mode, uint64_t fmt);
+void sk_f_0005e8a4(uint64_t *out, uint64_t mode, const char *fmt);
 uint64_t sk_f_0005e958(uint32_t name);
 int64_t sk_f_0005ea94(uint64_t src, uint64_t size, uint64_t offset, uint32_t nul_flag);
 int64_t sk_f_0005eb78(uint64_t dst, uint64_t size, uint64_t offset);
@@ -780,7 +785,7 @@ select_done:
     } else {
         name = (char *)&sk_g_005bc4e9;
     }
-    sk_f_0005b824((uint64_t)name, 0x130, 0x40, (uint64_t)name_buf);
+    sk_f_0005b824((uint64_t)name, 0x130, 0x40, (const char *)name_buf);
 
     /* Assemble thread-context fields (dead writes in this body; the record
      * is consumed by the panic subsystem via the stack layout). */
@@ -939,7 +944,7 @@ select_done:
  * width/flag. Returns after the underlying print.
  * Confidence: medium
  * Notes: &stack0x00000000 represented as address of a local. */
-void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, const char *d)
 {
     uint64_t frame;
     sk_x_00116BCC(a, c, 0, b, d, (uint64_t)&frame);
@@ -2047,7 +2052,10 @@ bounds_fail:
  * Functions 0005cb18..0005d134. All sk_f_/sk_x_/sk_g_/sk_str_ symbols are
  * declared in the shared prelude; nothing here re-declares them. */
 
-typedef struct { uint64_t lo; uint64_t hi; } sk11_u128_t;
+/* Real linker symbol for the shared-cache record array (7-long records). */
+extern int64_t __shared_cache[];
+
+
 
 /* FUN_0005cb18 @ 0x0005cb18   (est. set_xrt_global_byte)
  * Ghidra: void FUN_0005cb18(undefined1 param_1)
@@ -2087,7 +2095,7 @@ void sk_f_0005cb24(uint64_t token, uint64_t dividend, uint8_t (*out)[16], uint64
     uint64_t scratch1;
     uint64_t quotient;
     uint64_t remainder;
-    sk11_u128_t result;
+    sk_u128_t result;
 
     multiply = 0;
     divisor_lo = 0;
@@ -2113,7 +2121,7 @@ void sk_f_0005cb24(uint64_t token, uint64_t dividend, uint8_t (*out)[16], uint64
     if ((flags & 1) == 0) {
         result = sk_x_0019AE9C(quotient, remainder, rec0, rec1);
     }
-    *(sk11_u128_t *)*out = result;
+    *(sk_u128_t *)*out = result;
     return;
 }
 
@@ -2518,7 +2526,7 @@ uint16_t sk_f_0005d38c(uint64_t *queue, uint64_t queue_token)
     if (*queue == queue_word) {
         *queue = queue_word & 0xffff000000000000ULL | queue_word & 0xffffffffULL |
                  (uint64_t)(ticket & 0xffff) << 0x20;
-        sk_f_0005ce54(queue_token);
+        sk_f_0005ce54((uint64_t *)queue_token);
         current_word = queue_word;
     } else {
         do {
@@ -2528,7 +2536,7 @@ uint16_t sk_f_0005d38c(uint64_t *queue, uint64_t queue_token)
         } while (*queue != previous_word);
         *queue = previous_word & 0xffff000000000000ULL | previous_word & 0xffffffffULL |
                  (uint64_t)(ticket & 0xffff) << 0x20;
-        sk_f_0005ce54(queue_token);
+        sk_f_0005ce54((uint64_t *)queue_token);
         current_word = previous_word;
         if ((int32_t)previous_word != original_ticket) {
             waiter_delta = 1;
@@ -2578,7 +2586,7 @@ finish:
         *queue = current_word & 0xffff00000000ULL | (uint64_t)computed_delta << 0x30 |
                  previous_word;
     }
-    sk_f_0005cb9c(queue_token);
+    sk_f_0005cb9c((uint64_t *)queue_token);
     return waiter_delta;
 }
 
@@ -2774,7 +2782,7 @@ void sk_f_0005d5e8(uint64_t target_thread, uint32_t register_num, uint64_t msg_l
  * Confidence: medium
  * Notes: canary return path is nested inside the success branch. config (config_word)
  *        is passed by address through sk_f_0005dab8 as an opaque uint64_t. */
-void sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
+uint64_t sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_payload,
                    uint64_t flags)
 {
     bool is_cross_thread;
@@ -2824,7 +2832,7 @@ void sk_f_0005d64c(int64_t target_thread, uint16_t config_word, uint64_t *msg_pa
             status = stored_status;
         }
         if (stack_guard == -0x2c8502b44bfffed6ULL) {
-            return;
+            return status;
         }
     } else {
         status = sk_x_004B6938(run_result, error_buf);
@@ -2871,11 +2879,10 @@ void sk_f_0005d7c8(int64_t *root_slot)
     }
     *root_slot = vas_root;
     if (vas_root != 0) {
-        /* obj_vt = sk_x_00034A2C(); -- 16-byte aggregate: [0..8) object, [8..16) vtable */
-        struct { uint64_t obj; uint64_t vtable; } obj_vt =
-            ((struct { uint64_t obj; uint64_t vtable; } (*)(void))sk_x_00034A2C)();
-        object_id = obj_vt.obj;
-        vtable = obj_vt.vtable;
+        /* obj_vt = sk_x_00034A2C(); -- 16-byte aggregate: lo=object, hi=vtable */
+        sk_u128_t obj_vt = ((sk_u128_t (*)(void))sk_x_00034A2C)();
+        object_id = obj_vt.lo;
+        vtable = obj_vt.hi;
         status = ((char (*)(uint64_t, int64_t))(*(uint64_t *)(vtable + 0x48)))(object_id,
                                                                               *root_slot);
         if (status == '\0') {
@@ -3025,7 +3032,7 @@ uint64_t sk_f_0005dab8(uint64_t (*handler)(int64_t, uint64_t), uint64_t target_t
         resolved_thread = target_thread;
         if (cross_thread_flag != (uint8_t *)0) {
             thread_state = *(int64_t *)(current_thread + 0x70);
-            current_thread = sk_f_0005fdac(target_thread, thread_state);
+            current_thread = sk_x_0005FDAC(target_thread, thread_state);
             if ((current_thread & 1) == 0) {
                 *cross_thread_flag = 1;
                 return 0;
@@ -3123,13 +3130,17 @@ uint64_t sk_f_0005dc4c(uint64_t cpu_index)
  * Confidence: low
  * Notes: _DAT_006b2690 holds the dispatch-table address; 0x65c560 is the default
  * table image address. Sibling handlers dispatch at +0x08/+0x18/+0x20. */
-void sk_f_0005dc8c(void)
+uint64_t sk_f_0005dc8c(uint64_t selector, uint64_t *queue, uint64_t *ref,
+                       uint64_t owner, uint64_t flag)
 {
+    uint64_t (*handler)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
+
     if (sk_g_006b2690 == 0) {
         sk_g_006b2690 = 0x65c560;
     }
-    (*(void (**)(void))(sk_g_006b2690 + 0x10))();
-    return;
+    handler = *(uint64_t (**)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t))
+              (sk_g_006b2690 + 0x10);
+    return handler(selector, (uint64_t)queue, (uint64_t)ref, owner, flag);
 }
 
 /* FUN_0005dcb0 @ 0x0005dcb0   (est. sync_wait)
@@ -3190,13 +3201,15 @@ void sk_f_0005dcb0(uint32_t selector, uint64_t msg0, uint64_t msg1, uint64_t thr
  * that table (indirect call). Returns after the handler returns.
  * Confidence: low
  * Notes: _DAT_006b2690 dispatch-table address; default table at 0x65c560. */
-void sk_f_0005dd70(void)
+void sk_f_0005dd70(uint64_t selector, uint64_t *queue, uint64_t wake, uint64_t flag)
 {
+    void (*handler)(uint64_t, uint64_t, uint64_t, uint64_t);
+
     if (sk_g_006b2690 == 0) {
         sk_g_006b2690 = 0x65c560;
     }
-    (*(void (**)(void))(sk_g_006b2690 + 0x18))();
-    return;
+    handler = *(void (**)(uint64_t, uint64_t, uint64_t, uint64_t))(sk_g_006b2690 + 0x18);
+    handler(selector, (uint64_t)queue, wake, flag);
 }
 
 /* FUN_0005dd94 @ 0x0005dd94   (est. sync_wake)
@@ -3801,7 +3814,7 @@ void sk_f_0005e4d8(int64_t thread, uint64_t out_lo, uint64_t out_hi, uint64_t fl
  * Confidence: medium
  * Notes: FUN_00116bb4 is the format helper (sk_x_00116BB4); `va` stands in for the
  *        Ghidra `&stack0x00000000` vararg anchor. */
-void sk_f_0005e8a4(uint64_t *out, uint64_t mode, uint64_t fmt)
+void sk_f_0005e8a4(uint64_t *out, uint64_t mode, const char *fmt)
 {
   uint64_t room;
   uint64_t len;
@@ -4706,9 +4719,9 @@ void sk_f_0005fc54(uint64_t dest, uint64_t *value_ptr, uint64_t cap_count)
     sk_p9_store_le64(&value128[8], 0);
     uint64_t cap = sk_f_0005c924(2);
     sk_f_0005cb24(2, cap, value128, 0);
-    cl4_result_t combined = sk_x_0019AE9C(sk_p9_load_le64(&value128[0]),
-                                          sk_p9_load_le64(&value128[8]),
-                                          value_ptr[0], value_ptr[1]);
+    sk_u128_t combined = sk_x_0019AE9C(sk_p9_load_le64(&value128[0]),
+                                       sk_p9_load_le64(&value128[8]),
+                                       value_ptr[0], value_ptr[1]);
     sk_p9_store_le64(&value128[0], combined.lo);
     sk_p9_store_le64(&value128[8], combined.hi);
     sk_f_0005fbdc(dest, (uint64_t)(uintptr_t)value128, cap_count);
