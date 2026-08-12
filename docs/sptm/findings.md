@@ -4951,3 +4951,27 @@ Observation: The physical page allocator requires 16KB alignment on both alloc (
 Evidence: Decompiles: `if ((((uint)count | (uint)base) & 0x3fff) != 0) FUN_006833d4(0x6aaf42);` and `if (delta >> 0xe != 0) FUN_006833d4(0x6ab432);`.
 Severity (hypothesis): Low — double-free/overlap is caught by the free-tree key-duplicate assert and the 16KB-granular bitmap bounds.
 Confidence: medium
+
+## [SKR73] 0x006860f4 cL4_frame_bitmap_free
+Observation: The frame-bitmap release path validates every index before touching the bitmap: `diff = idx - bitmap[5]; if (0x3fff < diff) fatal(0x6aae67)` bounds the frame index to the bitmap's 16KB window, the owning bit is verified set before clearing (`if ((*bitmap & bit) == 0) fatal(0x6aaecd)`), and an overflow/out-of-order overlap condition trips a noreturn SoftwareBreakpoint(0x5519, 0x68620c). A double-free of an unowned frame therefore cannot silently corrupt the bitmap — it traps.
+Evidence: Decompile of 0x6860f4: `if (0x3fff < uVar6) FUN_006833d4(0x6aae67);`, `if ((*puVar2 & uVar6) == 0) FUN_006833d4(0x6aaecd);`, and `pcVar3 = SoftwareBreakpoint(0x5519,0x68620c)` on the overlap test.
+Severity (hypothesis): Low — the allocator is self-validating; double-free/overlap terminates instead of corrupting.
+Confidence: medium
+
+## [SKR73] 0x0068784c cL4_bounds_check_copy
+Observation: A bounds-checked copy helper computes `elem = base + index; next = elem+1;` and only writes `*out = *elem` when `elem` is within [base, limit) with no pointer overflow (`(elem>=base && limit>=next) && next>=elem`). It returns a bool that is exactly the overflow/out-of-bounds condition, so the caller can detect (and abort) on a malicious index rather than copying OOB. This mirrors the seL4 memory-copy hardening pattern.
+Evidence: Decompile of 0x68784c: the overlap test `return (puVar2 < param_3 || param_4 < puVar1) || puVar1 < puVar2;` gating `*param_5 = *puVar2`.
+Severity (hypothesis): Low — OOB read is prevented by the range+overflow check; the return flag drives the caller's abort path.
+Confidence: medium
+
+## [SKR73] 0x0067f660 cL4_syscall_validate (callee, referenced by batch)
+Observation: The supervisor-call selector validator rejects unknown selectors, returning 0xfffffff9 (-7), and only admits a small whitelist (bitset 0x101010000U covering selectors 0x20/0x21, plus 0x80, 0x100, 0xc0) before running the diagnostic core FUN_0067f9a0. Every syscall-result abort path in this batch funnels into this validator — an invalid selector is a hard rejection, not a fall-through. This is the seL4-style syscall filter for the guarded level.
+Evidence: Decompile of 0x67f660: `if ((param_3 < 0x21) && ((1L << (param_3 & 0x3f) & 0x101010000U) != 0))` / `else if (param_3==0x80||param_3==0x100||param_3==0xc0)` → core; else `return 0xfffffff9;`.
+Severity (hypothesis): Low — unknown syscall selectors are rejected rather than dispatched; defense-in-depth for the guest/host syscall boundary.
+Confidence: medium
+
+## [SKR73] 0x685cd8-0x687b48 __DATA fatal table — unresolved message strings
+Observation: The entire batch is a dense table of noreturn abort handlers in the __DATA segment, each passing a distinct message address (0x6a8xxx-0x6b1xxx) to the central fatal (FUN_006833d4). Those addresses lie beyond both the on-disk file (0x69e450) and Ghidra's ram block (0x69dfcf), so the message text is not recoverable from this payload. An analyst needing the abort reasons must load the full mapped image (__DATA extends to 0x6c4000) or the strings must be resolved at runtime.
+Evidence: ram block 0x0-0x69dfcf; file size 0x69e450; message addrs 0x6a9122..0x6b1023 > file size; uniform thunk bodies `FUN_006833d4(<addr>)`.
+Severity (hypothesis): Info — completeness gap for abort-message forensics, not a code defect.
+Confidence: high
