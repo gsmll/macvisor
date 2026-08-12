@@ -313,7 +313,7 @@ void sk_f_003d961c(word_t param_1, word_t param_2, word_t param_3);
 void sk_f_003d96ac(void);
 void sk_f_003d98d8(void);
 void sk_f_003d9b94(void);
-void sk_f_003d9f0c(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE);
+void sk_f_003d9f0c(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003da178(void);
 void sk_f_003da330(void);
 void sk_f_003da7f8(word_t param_1, word_t param_2, word_t param_3, long param_4);
@@ -361,12 +361,12 @@ void sk_f_003df548(void);
 void sk_f_003df748(void);
 void sk_f_003df9dc(void);
 void sk_f_003dfc60(void);
-void sk_f_003dfe08(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00);
-void sk_f_003e0028(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00);
+void sk_f_003dfe08(word_t param_1, word_t param_2, code_t jt0);
+void sk_f_003e0028(word_t param_1, word_t param_2, code_t jt0);
 void sk_f_003e012c(void);
 void sk_f_003e025c(void);
-void sk_f_003e0404(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00);
-void sk_f_003e06a0(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00);
+void sk_f_003e0404(word_t param_1, word_t param_2, code_t jt0);
+void sk_f_003e06a0(word_t param_1, word_t param_2, code_t jt0);
 void sk_f_003e0848(void);
 void sk_f_003e08fc(void);
 void sk_f_003e09e4(word_t param_1, int *param_2);
@@ -381,12 +381,12 @@ void sk_f_003e1c00(void);
 void sk_f_003e1da8(void);
 void sk_f_003e1f00(void);
 void sk_f_003e20c4(void);
-void sk_f_003e22f8(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE);
+void sk_f_003e22f8(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e2558(void);
 void sk_f_003e262c(void);
 void sk_f_003e2784(void);
 void sk_f_003e2948(void);
-void sk_f_003e2b7c(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE);
+void sk_f_003e2b7c(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e2ddc(void);
 void sk_f_003e3064(void);
 void sk_f_003e3160(word_t param_1, word_t param_2, code_t param_3);
@@ -397,11 +397,11 @@ void sk_f_003e3454(void);
 void sk_f_003e3484(void);
 void sk_f_003e34b4(void);
 void sk_f_003e35ec(void);
-void sk_f_003e37c8(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE);
+void sk_f_003e37c8(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e3a14(void);
 void sk_f_003e3c80(word_t param_1, word_t param_2, word_t param_3, long param_4);
 void sk_f_003e3e28(void);
-void sk_f_003e4048(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE);
+void sk_f_003e4048(word_t param_1, word_t param_2, code_t jt1);
 void sk_f_003e42c4(void);
 void sk_f_003e462c(word_t param_1, word_t param_2, word_t param_3, word_t param_4, word_t param_5);
 void sk_f_003e4700(void);
@@ -429,6 +429,43 @@ void sk_f_003e64e0(void);
 void sk_f_003e66e4(void);
 
 /* ---- function bodies ---- */
+
+extern void sk_lab_003da07c(void);
+extern void sk_lab_003da25c(void);
+extern void sk_lab_003db214(void);
+extern void sk_lab_003db4f8(void);
+extern void sk_lab_003db70c(void);
+extern void sk_lab_003dc214(void);
+extern void sk_lab_003dca9c(void);
+extern void sk_lab_003dce40(void);
+extern void sk_lab_003dd0b8(void);
+extern void sk_lab_003dda40(void);
+extern void sk_lab_003de0c0(void);
+extern void sk_lab_003de298(void);
+extern void sk_lab_003de86c(void);
+extern void sk_lab_003df130(void);
+extern void sk_lab_003df8b0(void);
+extern void sk_lab_003dff30(void);
+extern void sk_lab_003e05a8(void);
+extern void sk_lab_003e0aa4(void);
+extern void sk_lab_003e1460(void);
+extern void sk_lab_003e1b10(void);
+extern void sk_lab_003e1ff0(void);
+extern void sk_lab_003e2458(void);
+extern void sk_lab_003e2874(void);
+extern void sk_lab_003e2cdc(void);
+extern void sk_lab_003e370c(void);
+extern void sk_lab_003e3908(void);
+extern void sk_lab_003e3f5c(void);
+extern void sk_lab_003e4194(void);
+extern void sk_lab_003e49bc(void);
+extern void sk_lab_003e4b90(void);
+extern void sk_lab_003e4dec(void);
+extern void sk_lab_003e5494(void);
+extern void sk_lab_003e57c0(void);
+extern void sk_lab_003e60e4(void);
+extern void sk_lab_003e6808(void);
+extern void sk_lab_00614a7c(void);
 
 /* FUN_003d95cc @ 0x003d95cc   (est. sk_f_003d95cc — Swift-runtime object/ARC helper)
  * Ghidra: void FUN_003d95cc(void)
@@ -589,7 +626,7 @@ int i0;
   code_t *jt1;
   
   u0 = sk_h_00407e6c();
-  a0 = sk_h_00407924().lo;;
+  a0 = sk_h_00407924();
   i0 = *(int *)(*(long *)(ux0 + 0x18) + 0x3c);
   *(int *)(ux0 + 0x158) = i0;
   if ((*(byte *)(*(long *)(ux0 + 0x20) + (long)i0) & 1) != 0) {
@@ -604,7 +641,7 @@ int i0;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24(ex4);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004076a8(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003d9988. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -621,8 +658,7 @@ int i0;
                  *(word_t *)(ux0 + 200));
     *(code_t *)(ux0 + 0x120) = ex5;
     *(word_t *)(ux0 + 0x128) = ex6;
-    (*ex5)();
-    sk_h_0040652c();
+    sk_dispatch((code_t)ex5);sk_h_0040652c();
     sk_h_00406608();
     sk_h_004068f4();
     sk_h_00406268();
@@ -630,7 +666,7 @@ int i0;
     p0 = (word_t *)sk_h_00406fe0();
     *(word_t **)(ux0 + 0x130) = p0;
     *p0 = ex9;
-    a0 = sk_h_00406b84().lo;;
+    a0 = sk_h_00406b84();
     jt1 = ex8;
   }
   else {
@@ -639,15 +675,14 @@ int i0;
                           *(word_t *)(ux0 + 0xd8));
     *(code_t *)(ux0 + 0x100) = ex0;
     *(word_t *)(ux0 + 0x108) = ex1;
-    (*ex0)(a0.lo,a0.hi,u2);
-    u2 = sk_h_004067f8();
+    sk_dispatch((code_t)ex0, a0.lo,a0.hi,u2);u2 = sk_h_004067f8();
     sk_h_003fcc1c();
     l0 = sk_h_004062c8();
     sk_h_0040bb18(*(word_t *)(l0 + 4));
     p0 = (word_t *)sk_h_00406fe0();
     *(word_t **)(ux0 + 0x110) = p0;
     *p0 = ex3;
-    a0 = sk_h_00406b24().lo;;
+    a0 = sk_h_00406b24();
     jt1 = ex2;
   }
   sk_h_004076a8(a0.lo,a0.hi,u2,jt1,u0);
@@ -696,13 +731,11 @@ word_t u0;
   sk_h_00406be4();
   if ((bool)zf) {
     l0 = *(long *)(ux0 + 0x90);
-    *(code_t *)(*(long *))(ux0 + 0xe0) + 8))
-              (*(word_t *)(ux0 + 0xf0),*(word_t *)(ux0 + 0xc0));
-    sk_h_003507e0(*(word_t *)(l0 + 8));
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0xe0) + 8), *(word_t *)(ux0 + 0xf0),*(word_t *)(ux0 + 0xc0));sk_h_003507e0(*(word_t *)(l0 + 8));
     sk_dispatch((code_t)ex7);sk_h_00407764();
     sk_dispatch((code_t)ex0);jt0 = *(code_t *)(ux0 + 0xc0);
     sk_h_00350744(*(long *)(ux0 + 0x20) + (long)*(int *)(ux0 + 0x15c));
-    a0 = sk_h_000839d8().lo;;
+    a0 = sk_h_000839d8();
     sk_h_00406fb0(*(word_t *)(ux0 + 0xf8),a0.lo,a0.hi,
                  *(word_t *)(ux0 + 200));
     sk_dispatch((code_t)ex1);sk_h_00406420();
@@ -712,8 +745,7 @@ word_t u0;
                    *(word_t *)(ux0 + 200));
       *(code_t *)(ux0 + 0x120) = ex8;
       *(word_t *)(ux0 + 0x128) = ex9;
-      (*ex8)();
-      sk_h_0040652c();
+      sk_dispatch((code_t)ex8);sk_h_0040652c();
       sk_h_00406608();
       sk_h_004068f4();
       sk_h_00406268();
@@ -729,8 +761,7 @@ word_t u0;
                              *(word_t *)(ux0 + 0xd8));
       *(code_t *)(ux0 + 0x100) = ex4;
       *(word_t *)(ux0 + 0x108) = ex5;
-      (*ex4)(a0.lo,a0.hi,u3);
-      sk_h_004067f8();
+      sk_dispatch((code_t)ex4, a0.lo,a0.hi,u3);sk_h_004067f8();
       sk_h_003fcc1c();
       l0 = sk_h_004062c8();
       sk_h_0040bb18(*(word_t *)(l0 + 4));
@@ -769,7 +800,7 @@ word_t u0;
   sk_h_0040bd24(p0);
   sk_h_0040bd24(p1);
   sk_h_0040bd24(ex2);
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_00407504(a0.lo,a0.hi,u3);
                     /* WARNING: Could not recover jumptable at 0x003d9dbc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -777,11 +808,11 @@ word_t u0;
 }
 
 /* FUN_003d9f0c @ 0x003d9f0c   (est. sk_f_003d9f0c — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003d9f0c(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE)
+ * Ghidra: void FUN_003d9f0c(undefined8 param_1,undefined8 param_2,code *jt1)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003d9f0c(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE)
+void sk_f_003d9f0c(word_t param_1, word_t param_2, code_t jt1)
 {
 long l0;
   int i0;
@@ -818,7 +849,7 @@ long l0;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24(ex2);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004076a8(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003d9fdc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -832,7 +863,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x140) = p0;
   *p0 = ex4;
-  p0[1] = &LAB_003da07c;
+  p0[1] = (word_t)&sk_lab_003da07c;
   sk_h_00408380(*(word_t *)(ux0 + 0x30),*(word_t *)(ux0 + 0x70));
   sk_h_004076a8();
                     /* WARNING: Could not recover jumptable at 0x003da078. Too many branches */
@@ -872,7 +903,7 @@ word_t u0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x148) = p0;
   *p0 = ex1;
-  p0[1] = &LAB_003da25c;
+  p0[1] = (word_t)&sk_lab_003da25c;
   sk_h_00407814(*(word_t *)(ux0 + 0x98),*(word_t *)(ux0 + 0xc0));
   sk_h_00407c78();
                     /* WARNING: Could not recover jumptable at 0x003da258. Too many branches */
@@ -921,13 +952,11 @@ word_t u0;
   if ((bool)zf) {
     jt0 = *(code_t *)(ux0 + 0x120);
     l0 = *(long *)(ux0 + 0x90);
-    (*(code_t *)(*(long *)(ux0 + 0xe0) + 8))
-              (*(word_t *)(ux0 + 0xe8),*(word_t *)(ux0 + 0xc0));
-    sk_h_003507e0(*(word_t *)(l0 + 8));
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0xe0) + 8), *(word_t *)(ux0 + 0xe8),*(word_t *)(ux0 + 0xc0));sk_h_003507e0(*(word_t *)(l0 + 8));
     sk_dispatch((code_t)ex6);sk_h_00408410();
     sk_dispatch((code_t)jt0);jt0 = *(code_t *)(ux0 + 0xc0);
     sk_h_00350744(*(long *)(ux0 + 0x20) + (long)*(int *)(ux0 + 0x15c));
-    a0 = sk_h_000839d8().lo;;
+    a0 = sk_h_000839d8();
     sk_h_00406fb0(*(word_t *)(ux0 + 0xf8),a0.lo,a0.hi,
                  *(word_t *)(ux0 + 200));
     sk_dispatch((code_t)ex0);sk_h_00406420();
@@ -937,8 +966,7 @@ word_t u0;
                    *(word_t *)(ux0 + 200));
       *(code_t *)(ux0 + 0x120) = ex7;
       *(word_t *)(ux0 + 0x128) = ex8;
-      (*ex7)();
-      sk_h_0040652c();
+      sk_dispatch((code_t)ex7);sk_h_0040652c();
       sk_h_00406608();
       sk_h_004068f4();
       sk_h_00406268();
@@ -954,8 +982,7 @@ word_t u0;
                              *(word_t *)(ux0 + 0xd8));
       *(code_t *)(ux0 + 0x100) = ex3;
       *(word_t *)(ux0 + 0x108) = ex4;
-      (*ex3)(a0.lo,a0.hi,u5);
-      sk_h_004067f8();
+      sk_dispatch((code_t)ex3, a0.lo,a0.hi,u5);sk_h_004067f8();
       sk_h_003fcc1c();
       l0 = sk_h_004062c8();
       sk_h_0040bb18(*(word_t *)(l0 + 4));
@@ -995,7 +1022,7 @@ word_t u0;
   sk_h_0040bd24(p0);
   sk_h_0040bd24(l1);
   sk_h_0040bd24(ex2);
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_00407504(a0.lo,a0.hi,u5);
                     /* WARNING: Could not recover jumptable at 0x003da548. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1076,7 +1103,7 @@ word_t u0;
   *(word_t *)(ux0 + 0xa8) = u0;
   sk_h_0040bb18(u3 & 0xfffffffffffffff0);
   sk_h_00408328();
-  a0 = sk_h_0035050c().lo;;
+  a0 = sk_h_0035050c();
   u2 = sk_h_00377824(a0.lo,a0.hi,u4);
   *(word_t *)(ux0 + 0xc0) = u2;
   sk_h_000a6f88();
@@ -1186,7 +1213,7 @@ int i0;
   code_t *jt1;
   
   u0 = sk_h_00407840();
-  a0 = sk_h_00407ad0().lo;;
+  a0 = sk_h_00407ad0();
   i0 = *(int *)(*(long *)(ux0 + 0x28) + 0x3c);
   *(int *)(ux0 + 0x1e8) = i0;
   if ((*(byte *)(*(long *)(ux0 + 0x30) + (long)i0) & 1) != 0) {
@@ -1213,7 +1240,7 @@ int i0;
     sk_h_0040bd24(sv8);
     sk_h_0040bd24(sv9);
     sk_h_0040bd24(jt1);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004074e8(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003dac5c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1229,8 +1256,7 @@ int i0;
                  *(word_t *)(ux0 + 0x150));
     *(code_t *)(ux0 + 0x1b0) = ex4;
     *(word_t *)(ux0 + 0x1b8) = ex5;
-    (*ex4)();
-    sk_h_0040652c();
+    sk_dispatch((code_t)ex4);sk_h_0040652c();
     u0 = sk_h_00406608();
     *(word_t *)(ux0 + 0x1c0) = u0;
     u0 = sk_h_00406e8c();
@@ -1240,7 +1266,7 @@ int i0;
     p0 = (word_t *)sk_h_00406fe0();
     *(word_t **)(ux0 + 0x1d0) = p0;
     *p0 = ex8;
-    p0[1] = &LAB_003db214;
+    p0[1] = (word_t)&sk_lab_003db214;
     sk_h_004067b8(*(word_t *)(ux0 + 0xb0));
     jt1 = ex7;
   }
@@ -1250,8 +1276,7 @@ int i0;
                           *(word_t *)(ux0 + 0x160));
     *(code_t *)(ux0 + 0x198) = ex0;
     *(word_t *)(ux0 + 0x1a0) = ex1;
-    (*ex0)(a0.lo,a0.hi,u0);
-    sk_h_004067f8();
+    sk_dispatch((code_t)ex0, a0.lo,a0.hi,u0);sk_h_004067f8();
     sk_h_003fcc4c();
     l0 = sk_h_00406374();
     sk_h_0040bb18(*(word_t *)(l0 + 4));
@@ -1321,12 +1346,10 @@ code_t *pc0;
   sk_dispatch((code_t)ex8);sk_h_00406420();
   if ((bool)zf) {
     l0 = *(long *)(ux0 + 0xe8);
-    *(code_t *)(*(long *))(ux0 + 0x168) + 8))
-              (*(word_t *)(ux0 + 0x178),*(word_t *)(ux0 + 0x148));
-    sk_h_003507e0(*(word_t *)(l0 + 8));
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x168) + 8), *(word_t *)(ux0 + 0x178),*(word_t *)(ux0 + 0x148));sk_h_003507e0(*(word_t *)(l0 + 8));
     sk_dispatch((code_t)ex7);sk_h_00407764();
     sk_dispatch((code_t)ex0);sk_h_00350744(*(long *)(ux0 + 0x30) + (long)*(int *)(ux0 + 0x1ec));
-    a0 = sk_h_000839d8().lo;;
+    a0 = sk_h_000839d8();
     sk_h_00406fb0(*(word_t *)(ux0 + 400),a0.lo,a0.hi,
                  *(word_t *)(ux0 + 0x150));
     sk_dispatch((code_t)ex1);sk_h_00406420();
@@ -1336,8 +1359,7 @@ code_t *pc0;
                    *(word_t *)(ux0 + 0x150));
       *(code_t *)(ux0 + 0x1b0) = ex2;
       *(word_t *)(ux0 + 0x1b8) = ex9;
-      (*ex2)();
-      sk_h_0040652c();
+      sk_dispatch((code_t)ex2);sk_h_0040652c();
       u2 = sk_h_00406608();
       *(word_t *)(ux0 + 0x1c0) = u2;
       u2 = sk_h_00406e8c();
@@ -1347,7 +1369,7 @@ code_t *pc0;
       p0 = (word_t *)sk_h_00406fe0();
       *(word_t **)(ux0 + 0x1d0) = p0;
       *p0 = ex11;
-      p0[1] = &LAB_003db214;
+      p0[1] = (word_t)&sk_lab_003db214;
       sk_h_004067b8(*(word_t *)(ux0 + 0xb0));
       jt0 = ex10;
     }
@@ -1357,8 +1379,7 @@ code_t *pc0;
                              *(word_t *)(ux0 + 0x160));
       *(code_t *)(ux0 + 0x198) = ex3;
       *(word_t *)(ux0 + 0x1a0) = ex4;
-      (*ex3)(a0.lo,a0.hi,u2);
-      sk_h_004067f8();
+      sk_dispatch((code_t)ex3, a0.lo,a0.hi,u2);sk_h_004067f8();
       sk_h_003fcc4c();
       l0 = sk_h_00406374();
       sk_h_0040bb18(*(word_t *)(l0 + 4));
@@ -1413,7 +1434,7 @@ code_t *pc0;
   sk_h_0040bd24(u5);
   sk_h_0040bd24(pc0);
   sk_h_0040bd24(u1);
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_004074e8(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003db17c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1459,14 +1480,12 @@ int i0;
   u3 = *(word_t *)(ux0 + 0x60);
   sk_h_0040833c(*(word_t *)(ux0 + 0xa0),u1,*(word_t *)(ux0 + 0xb0),
                *(word_t *)(ux0 + 0x98));
-  sk_dispatch((code_t)ex1);a0 = sk_h_00351d24().lo;;
+  sk_dispatch((code_t)ex1);a0 = sk_h_00351d24();
   i0 = sk_h_000839f8(a0.lo,a0.hi,u3);
   l1 = *(long *)(ux0 + 0x30);
   if (i0 == 1) {
     i0 = *(int *)(ux0 + 0x1e8);
-    *(code_t *)(*(long *))(ux0 + 0xa0) + 8))
-              (*(word_t *)(ux0 + 0xa8),*(word_t *)(ux0 + 0x98));
-    *(byte *)(l1 + i0) = 1;
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0xa0) + 8), *(word_t *)(ux0 + 0xa8),*(word_t *)(ux0 + 0x98));*(byte *)(l1 + i0) = 1;
     sk_h_00406624();
     sk_h_00350744();
     sk_h_000839d8();
@@ -1490,22 +1509,20 @@ int i0;
     sk_h_0040bd24(sv8);
     sk_h_0040bd24(sv9);
     sk_h_0040bd24(sv10);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004074e8(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003db44c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
     sk_dispatch((code_t)jt0);return;
   }
   l0 = *(long *)(ux0 + 0x28);
-  *(code_t *)(*(long *))(ux0 + 0x68) + 0x20))
-            (*(word_t *)(ux0 + 0x70),*(word_t *)(ux0 + 0xa8),
-             *(word_t *)(ux0 + 0x60));
-  sk_h_004062a8(*(word_t *)(l1 + *(int *)(l0 + 0x34)));
+  sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x68) + 0x20), *(word_t *)(ux0 + 0x70),*(word_t *)(ux0 + 0xa8),
+             *(word_t *)(ux0 + 0x60));sk_h_004062a8(*(word_t *)(l1 + *(int *)(l0 + 0x34)));
   sk_h_0040bb18(*(word_t *)(ex0 + 4));
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x1d8) = p0;
   *p0 = ex3;
-  p0[1] = &LAB_003db4f8;
+  p0[1] = (word_t)&sk_lab_003db4f8;
   jt1 = ex2;
   sk_h_004074e8(*(word_t *)(ux0 + 0x48),*(word_t *)(ux0 + 0x70),ex2,
                u0);
@@ -1546,7 +1563,7 @@ word_t u0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x1e0) = p0;
   *p0 = ex1;
-  p0[1] = &LAB_003db70c;
+  p0[1] = (word_t)&sk_lab_003db70c;
   sk_h_00407990(*(word_t *)(ux0 + 0xf8),*(word_t *)(ux0 + 0x18),
                *(word_t *)(ux0 + 0x20),*(word_t *)(ux0 + 0x128),
                *(word_t *)(ux0 + 0x148));
@@ -1610,12 +1627,10 @@ code_t *pc0;
   if ((bool)zf) {
     pc0 = *(code_t *)(ux0 + 0x1b0);
     l0 = *(long *)(ux0 + 0xe8);
-    (*(code_t *)(*(long *)(ux0 + 0x168) + 8))
-              (*(word_t *)(ux0 + 0x170),*(word_t *)(ux0 + 0x148));
-    sk_h_003507e0(*(word_t *)(l0 + 8));
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x168) + 8), *(word_t *)(ux0 + 0x170),*(word_t *)(ux0 + 0x148));sk_h_003507e0(*(word_t *)(l0 + 8));
     sk_dispatch((code_t)ex6);sk_h_00408410();
     sk_dispatch((code_t)pc0);sk_h_00350744(*(long *)(ux0 + 0x30) + (long)*(int *)(ux0 + 0x1ec));
-    a0 = sk_h_000839d8().lo;;
+    a0 = sk_h_000839d8();
     sk_h_00406fb0(*(word_t *)(ux0 + 400),a0.lo,a0.hi,
                  *(word_t *)(ux0 + 0x150));
     sk_dispatch((code_t)ex0);sk_h_00406420();
@@ -1625,8 +1640,7 @@ code_t *pc0;
                    *(word_t *)(ux0 + 0x150));
       *(code_t *)(ux0 + 0x1b0) = ex1;
       *(word_t *)(ux0 + 0x1b8) = ex8;
-      (*ex1)();
-      sk_h_0040652c();
+      sk_dispatch((code_t)ex1);sk_h_0040652c();
       u4 = sk_h_00406608();
       *(word_t *)(ux0 + 0x1c0) = u4;
       u4 = sk_h_00406e8c();
@@ -1636,7 +1650,7 @@ code_t *pc0;
       p0 = (word_t *)sk_h_00406fe0();
       *(word_t **)(ux0 + 0x1d0) = p0;
       *p0 = ex10;
-      p0[1] = &LAB_003db214;
+      p0[1] = (word_t)&sk_lab_003db214;
       sk_h_004067b8(*(word_t *)(ux0 + 0xb0));
       jt0 = ex9;
     }
@@ -1646,8 +1660,7 @@ code_t *pc0;
                              *(word_t *)(ux0 + 0x160));
       *(code_t *)(ux0 + 0x198) = ex2;
       *(word_t *)(ux0 + 0x1a0) = ex3;
-      (*ex2)(a0.lo,a0.hi,u4);
-      sk_h_004067f8();
+      sk_dispatch((code_t)ex2, a0.lo,a0.hi,u4);sk_h_004067f8();
       sk_h_003fcc4c();
       l0 = sk_h_00406374();
       sk_h_0040bb18(*(word_t *)(l0 + 4));
@@ -1702,7 +1715,7 @@ code_t *pc0;
   sk_h_0040bd24(u0);
   sk_h_0040bd24(u1);
   sk_h_0040bd24(u7);
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_004074e8(a0.lo,a0.hi,u4);
                     /* WARNING: Could not recover jumptable at 0x003dbab4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1723,7 +1736,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x20),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,&LAB_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -1753,7 +1766,7 @@ long l0;
   
   sk_h_00407ca0();
   sk_h_0040700c();
-  a0 = sk_h_00352700().lo;;
+  a0 = sk_h_00352700();
   *(word_t *)(ux0 + 0x30) = param_5;
   *(word_t *)(ux0 + 0x38) = param_6;
   *(word_t *)(ux0 + 0x20) = param_3;
@@ -1765,7 +1778,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x40) = p0;
   *p0 = ex0;
-  p0[1] = &LAB_003dc214;
+  p0[1] = (word_t)&sk_lab_003dc214;
   sk_h_00406ab4(a0.lo);
                     /* WARNING: Could not recover jumptable at 0x003dc210. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1794,14 +1807,14 @@ word_t u0;
   *(word_t *)(ux0 + 0x10) = *(word_t *)(ux0 + 0x48);
   sk_h_0034a210();
   sk_h_00002534();
-  a0 = sk_h_003504e8().lo;;
+  a0 = sk_h_003504e8();
   u3 = sk_h_00377824(a0.lo,a0.hi,u3,&DAT_00614890);
   sk_h_003513b4(u0);
   sk_h_00365b6c();
-  a0 = sk_h_003507e0().lo;;
+  a0 = sk_h_003507e0();
   u2 = sk_h_00377bec(a0.lo,a0.hi,u3,&DAT_00614890);
   sk_h_003698b0(u0,u3,u2);
-  a0 = sk_h_00406a94().lo;;
+  a0 = sk_h_00406a94();
   sk_h_004078f4(a0.lo,a0.hi,u1);
                     /* WARNING: Could not recover jumptable at 0x003dc3ec. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1832,14 +1845,12 @@ word_t *p0;
   u1 = sk_h_0040654c();
   sk_h_00377824(u1,in_x5);
   sk_h_00349530();
-  *(code_t *)(ex1 + 0x20))(ex0);
-  sk_h_0034d004(0);
-  l0 = (*ux0)();
-  p0 = (word_t *)(ex0 + *(int *)(l0 + 0x2c));
+  sk_dispatch(*(code_t *)(ex1 + 0x20), ex0);sk_h_0034d004(0);
+  l0 = sk_dispatch((code_t)ux0);p0 = (word_t *)(ex0 + *(int *)(l0 + 0x2c));
   *p0 = ux2;
   p0[1] = ux1;
   sk_h_00084234(ux3);
-  return;)
+  return;
 }
 
 /* FUN_003dc724 @ 0x003dc724   (est. sk_f_003dc724 — Swift-runtime object/ARC helper)
@@ -1863,7 +1874,7 @@ long l0;
   sk16_t a0;
   
   sk_h_0040790c();
-  a0 = sk_h_004070d8().lo;;
+  a0 = sk_h_004070d8();
   *(long *)(ux1 + 0x18) = a0.hi;
   *(word_t *)(ux1 + 0x20) = ux0;
   *(long *)(ux1 + 0x10) = a0.lo;
@@ -1935,7 +1946,7 @@ long l0;
     sk_h_00408374();
     sk_h_00406c5c();
     sk_h_0040bd24(u3);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003dc9fc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -1949,7 +1960,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x68) = p0;
   *p0 = ex3;
-  p0[1] = &LAB_003dca9c;
+  p0[1] = (word_t)&sk_lab_003dca9c;
   sk_h_00407610(p0,*(word_t *)(ux0 + 0x50));
                     /* WARNING: Could not recover jumptable at 0x003dca98. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2026,7 +2037,7 @@ word_t u0;
   *(word_t *)(ux0 + 0x80) = u1;
   sk_h_00351cd0(0xff,u3);
   u1 = sk_h_00377824().lo;;
-  a0 = sk_h_000dbd0c().lo;;
+  a0 = sk_h_000dbd0c();
   sk_h_00377bec(a0.lo,a0.hi,u1,&DAT_00614a5c);
   pi0 = (int *)sk_h_003fcc4c();
   sk_h_00377dcc(0,u1);
@@ -2035,7 +2046,7 @@ word_t u0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x88) = p0;
   *p0 = ex4;
-  p0[1] = &LAB_003dce40;
+  p0[1] = (word_t)&sk_lab_003dce40;
   sk_h_00406ab4(u0);
   sk_h_004076a8();
                     /* WARNING: Could not recover jumptable at 0x003dce3c. Too many branches */
@@ -2077,7 +2088,7 @@ long l0;
     sk_h_00406c5c();
     sk_h_0040bd24(u3);
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003dd018. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2091,7 +2102,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xa0) = p0;
   *p0 = ex3;
-  p0[1] = &LAB_003dd0b8;
+  p0[1] = (word_t)&sk_lab_003dd0b8;
   sk_h_00407610(p0,*(word_t *)(ux0 + 0x80));
                     /* WARNING: Could not recover jumptable at 0x003dd0b4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2133,7 +2144,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x20),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,&LAB_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2207,13 +2218,11 @@ long l0;
   code_t *ux0;
   sk16_t a0;
   
-  a0 = sk_h_00351da8().lo;;
+  a0 = sk_h_00351da8();
   sk_h_003509c8(param_3,a0.lo,a0.lo);
-  *(code_t *)(ex1 + 0x20))(ex0);
-  sk_h_00350548(0);
-  l0 = (*ux0)();
-  *(long *)(ex0 + *(int *)(l0 + 0x24)) = a0.hi;
-  return;)
+  sk_dispatch(*(code_t *)(ex1 + 0x20), ex0);sk_h_00350548(0);
+  l0 = sk_dispatch((code_t)ux0);*(long *)(ex0 + *(int *)(l0 + 0x24)) = a0.hi;
+  return;
 }
 
 /* FUN_003dd5d0 @ 0x003dd5d0   (est. sk_f_003dd5d0 — Swift-runtime object/ARC helper)
@@ -2233,11 +2242,9 @@ long l0;
   sk_h_0040654c();
   sk_h_00377824();
   sk_h_00349530();
-  *(code_t *)(ex0 + 0x20))();
-  sk_h_00350548(0);
-  l0 = (*ux0)();
-  *(word_t *)(ux2 + *(int *)(l0 + 0x24)) = ux1;
-  return;)
+  sk_dispatch(*(code_t *)(ex0 + 0x20));sk_h_00350548(0);
+  l0 = sk_dispatch((code_t)ux0);*(word_t *)(ux2 + *(int *)(l0 + 0x24)) = ux1;
+  return;
 }
 
 /* FUN_003dd660 @ 0x003dd660   (est. sk_f_003dd660 — Swift-runtime object/ARC helper)
@@ -2289,7 +2296,7 @@ long l0;
   sk_h_00377824(0);
   sk_h_00350744(u3);
   sk_h_000839d8();
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003dd788. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2375,7 +2382,7 @@ long l0;
     p0 = (word_t *)sk_h_00406fe0();
     *(word_t **)(ux0 + 0x78) = p0;
     *p0 = ex0;
-    p0[1] = &LAB_003dda40;
+    p0[1] = (word_t)&sk_lab_003dda40;
     sk_h_00406f2c();
     sk_h_00406d70();
                     /* WARNING: Could not recover jumptable at 0x003dd9ec. Too many branches */
@@ -2389,7 +2396,7 @@ long l0;
   sk_h_00350744(u2);
   sk_h_000839d8();
   sk_h_0040bd24(*(word_t *)(ux0 + 0x60));
-  a0 = sk_h_0040678c().lo;;
+  a0 = sk_h_0040678c();
   sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003dda3c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2410,7 +2417,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x18),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,&LAB_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2444,7 +2451,7 @@ long l0;
   word_t ux0;
   sk16_t a0;
   
-  a0 = sk_h_0008e518().lo;;
+  a0 = sk_h_0008e518();
   u1 = *(word_t *)(a0.lo + 0x10);
   sk_h_0007c028();
   sk_dispatch((code_t)DAT_00658c80, *(word_t *)(ex0 + 0x40));sk_h_000aa4ec();
@@ -2458,11 +2465,10 @@ long l0;
   sk_h_003510a0(*(word_t *)(ex4 + 0x10));
   sk_dispatch((code_t)ex1);pc0 = (code_t *)sk_h_000a649c(u2);
   sk_dispatch((code_t)pc0, u1,u2);sk_h_003509c8(a0.lo);
-  *(code_t *)(ex2 + 8))();
-  sk_h_003510c4(ex3);
+  sk_dispatch(*(code_t *)(ex2 + 8));sk_h_003510c4(ex3);
   (*a0.hi)();
   sk_h_0008e500(ux0);
-  return;)
+  return;
 }
 
 /* FUN_003dde8c @ 0x003dde8c   (est. sk_f_003dde8c — Swift-runtime object/ARC helper)
@@ -2476,7 +2482,7 @@ word_t ex0;
   sk16_t a0;
   
   sk_h_00407478();
-  a0 = sk_h_0035a7e8().lo;;
+  a0 = sk_h_0035a7e8();
   sk_f_003ddecc(a0.lo,a0.hi,ex0);
   sk_h_0036b270(ex0);
   return;
@@ -2549,7 +2555,7 @@ long l0;
     sk_h_00407604();
     sk_h_0040686c();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004079b4(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003de024. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2564,7 +2570,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x68) = p0;
   *p0 = ex1;
-  p0[1] = &LAB_003de0c0;
+  p0[1] = (word_t)&sk_lab_003de0c0;
   sk_h_00406ab4(*(word_t *)(ux0 + 0x50));
   jt1 = ex0;
   sk_h_004080cc();
@@ -2605,7 +2611,7 @@ long l0;
     sk_dispatch((code_t)ex3);sk_h_00407604();
     sk_h_0040686c();
     sk_h_0040bd24(u2);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003de1fc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2620,7 +2626,7 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0x88) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003de298;
+  pl0[1] = (long)(word_t)&sk_lab_003de298;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x60));
                     /* WARNING: Could not recover jumptable at 0x003de294. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2649,7 +2655,7 @@ word_t u0;
   }
   else {
     sk_h_00408280();
-    sk_dispatch((code_t)ex0);a0 = sk_h_00408354().lo;;
+    sk_dispatch((code_t)ex0);a0 = sk_h_00408354();
   }
   sk_h_004069b0(a0.lo,a0.hi);
   sk_h_004070a0();
@@ -2747,7 +2753,7 @@ word_t u0;
     sk_h_0040686c();
     sk_h_0040bd24();
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004079b4(a0.lo,a0.hi,u1);
                     /* WARNING: Could not recover jumptable at 0x003de5c0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2804,7 +2810,7 @@ long l0;
     sk_h_0040686c();
     sk_h_0040bd24();
     sk_h_0040bd24(u1);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003de7d0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2819,7 +2825,7 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0xc0) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003de86c;
+  pl0[1] = (long)(word_t)&sk_lab_003de86c;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x90));
                     /* WARNING: Could not recover jumptable at 0x003de868. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -2841,16 +2847,12 @@ word_t u0;
   
   sk_h_00406fd4();
   if (*(char *)(ux0 + 200) == '\x01') {
-    u1 = *(code_t *)(ux0 + 0xb0))
-                      (*(word_t *)(ux0 + 0xb8),*(word_t *)(ux0 + 0x10),
-                       *(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));
-    a0.hi = 0;
+    u1 = sk_dispatch(*(code_t *)(ux0 + 0xb0), *(word_t *)(ux0 + 0xb8),*(word_t *)(ux0 + 0x10),
+                       *(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));a0.hi = 0;
     a0.lo = u1;
   }
   else {
-    (*(code_t *)(*(long *))(ux0 + 0x88) + 8))
-              (*(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));
-    a0 = sk_h_00408354().lo;;
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x88) + 8), *(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));a0 = sk_h_00408354();
   }
   sk_h_00407bb8(a0.lo,a0.hi);
   u0 = *(word_t *)(ux0 + 0x60);
@@ -2877,7 +2879,7 @@ long l0;
   
   *(word_t *)(ux0 + 0x10) = param_4;
   l0 = sk_h_00377824(0,*(word_t *)(param_5 + 0x18),*(word_t *)(param_5 + 0x10),
-                       &DAT_00614a5c,&LAB_00614a7c);
+                       &DAT_00614a5c,(word_t)&sk_lab_00614a7c);
   *(long *)(ux0 + 0x18) = l0;
   l0 = *(long *)(l0 + -8);
   *(long *)(ux0 + 0x20) = l0;
@@ -2912,7 +2914,7 @@ word_t u0;
   long ux1;
   sk16_t a0;
   
-  a0 = sk_h_00406fd4().lo;;
+  a0 = sk_h_00406fd4();
   *(word_t *)(ux1 + 0x40) = param_7;
   *(word_t *)(ux1 + 0x48) = ux0;
   *(word_t *)(ux1 + 0x30) = param_5;
@@ -2981,14 +2983,12 @@ word_t u0;
   u0 = *(word_t *)(ux0 + 0xa0);
   l0 = *(long *)(ux0 + 0x90);
   u1 = *(word_t *)(ux0 + 0x40);
-  *(code_t *)(*(long *))(ux0 + 0x50) + 0x10))
-            (*(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x18),
-             *(word_t *)(ux0 + 0x38));
-  sk_h_0035136c(*(word_t *)(l0 + 0x10),u2);
+  sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x50) + 0x10), *(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x18),
+             *(word_t *)(ux0 + 0x38));sk_h_0035136c(*(word_t *)(l0 + 0x10),u2);
   sk_dispatch((code_t)ex0);sk_h_004070e4(u1);
   sk_h_00350618();
   sk_dispatch((code_t)ex1);sk_h_004068bc();
-  a0 = sk_h_000dbd0c().lo;;
+  a0 = sk_h_000dbd0c();
   u2 = sk_h_00377bec(a0.lo,a0.hi,u0);
   *(word_t *)(ux0 + 0xb8) = u2;
   u2 = sk_h_003fcc1c();
@@ -3044,34 +3044,30 @@ word_t u0;
     l0 = *(long *)(ux0 + 0x70);
     u8 = *(word_t *)(ux0 + 0x58);
     sk_h_00353c00(*(word_t *)(ux0 + 0xa8),u4,*(word_t *)(ux0 + 0xa0));
-    sk_dispatch((code_t)ex1);*(code_t *)(l0 + 8))(u6,u1);
-    sk_h_0040bd24(u2);
+    sk_dispatch((code_t)ex1);sk_dispatch(*(code_t *)(l0 + 8), u6,u1);sk_h_0040bd24(u2);
     sk_h_0040bd24(u0);
     sk_h_0040bd24(u7);
     sk_h_0040bd24(u6);
     sk_h_0040bd24(u8);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004078f4(a0.lo,a0.hi,u3);
                     /* WARNING: Could not recover jumptable at 0x003df078. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
-    return;
+    sk_dispatch((code_t)jt0);return;
   }
   pi0 = *(int **)(ux0 + 0x20);
   sk_h_00406bd4(*(word_t *)(ux0 + 0x80),*(word_t *)(ux0 + 0x88));
-  (*ex0)();
-  jt1 = (code_t *)((long)pi0 + (long)*pi0);
+  sk_dispatch((code_t)ex0);jt1 = (code_t *)((long)pi0 + (long)*pi0);
   sk_h_0040bb18(pi0[1]);
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xd8) = p0;
   *p0 = ex2;
-  p0[1] = &LAB_003df130;
+  p0[1] = (word_t)&sk_lab_003df130;
   sk_h_004078f4(*(word_t *)(ux0 + 0x58),*(word_t *)(ux0 + 0x10),
                *(word_t *)(ux0 + 0x88),jt1,u3);
                     /* WARNING: Could not recover jumptable at 0x003df12c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt1)();
-  return;)
+  sk_dispatch((code_t)jt1);return;
 }
 
 /* FUN_003df278 @ 0x003df278   (est. sk_f_003df278 — Swift-runtime object/ARC helper)
@@ -3088,10 +3084,8 @@ word_t *p0;
   long ux0;
   
   sk_h_00407000();
-  *(code_t *)(*(long *))(ux0 + 0x50) + 0x20))
-            (*(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x58),
-             *(word_t *)(ux0 + 0x38));
-  sk_h_004062a8(*(word_t *)(ux0 + 0xc0));
+  sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x50) + 0x20), *(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x58),
+             *(word_t *)(ux0 + 0x38));sk_h_004062a8(*(word_t *)(ux0 + 0xc0));
   sk_h_0040bb18(*(word_t *)(ex0 + 4));
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 200) = p0;
@@ -3132,14 +3126,11 @@ word_t u0;
   sk_h_0007c028(*(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x18),
                *(word_t *)(ux0 + 0x38));
   *(word_t *)(ux0 + 0xa8) = ex3;
-  *(code_t *)(ex1 + 0x20))();
-  sk_h_0035136c(*(word_t *)(l0 + 0x10),u2);
-  (*ex0)();
-  sk_h_004070e4(u0);
+  sk_dispatch(*(code_t *)(ex1 + 0x20));sk_h_0035136c(*(word_t *)(l0 + 0x10),u2);
+  sk_dispatch((code_t)ex0);sk_h_004070e4(u0);
   sk_h_00350618();
-  (*ex2)();
-  sk_h_004068bc();
-  a0 = sk_h_000dbd0c().lo;;
+  sk_dispatch((code_t)ex2);sk_h_004068bc();
+  a0 = sk_h_000dbd0c();
   u2 = sk_h_00377bec(a0.lo,a0.hi,u1);
   *(word_t *)(ux0 + 0xb0) = u2;
   u2 = sk_h_003fcc1c();
@@ -3153,8 +3144,7 @@ word_t u0;
   sk_h_004078f4();
                     /* WARNING: Could not recover jumptable at 0x003df654. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt0)();
-  return;)
+  sk_dispatch((code_t)jt0);return;
 }
 
 /* FUN_003df748 @ 0x003df748   (est. sk_f_003df748 — Swift-runtime object/ARC helper)
@@ -3193,32 +3183,28 @@ word_t u0;
     u1 = *(word_t *)(ux0 + 0x58);
     l0 = *(long *)(ux0 + 0x60);
     sk_h_00353c00(*(word_t *)(ux0 + 0x98),u4,*(word_t *)(ux0 + 0x90));
-    sk_dispatch((code_t)ex1);*(code_t *)(l0 + 8))(u5,u1);
-    sk_h_0040bd24(u2);
+    sk_dispatch((code_t)ex1);sk_dispatch(*(code_t *)(l0 + 8), u5,u1);sk_h_0040bd24(u2);
     sk_h_0040bd24(u0);
     sk_h_0040bd24(u6);
     sk_h_0040bd24(u5);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004079b4(a0.lo,a0.hi,u3);
                     /* WARNING: Could not recover jumptable at 0x003df7f8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
-    return;
+    sk_dispatch((code_t)jt0);return;
   }
   pi0 = *(int **)(ux0 + 0x20);
   sk_h_00406bd4(*(word_t *)(ux0 + 0x70),*(word_t *)(ux0 + 0x78));
-  (*ex0)();
-  jt1 = (code_t *)((long)pi0 + (long)*pi0);
+  sk_dispatch((code_t)ex0);jt1 = (code_t *)((long)pi0 + (long)*pi0);
   pl0 = (long *)sk_h_0040bb18(pi0[1]);
   *(long **)(ux0 + 0xd0) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003df8b0;
+  pl0[1] = (long)(word_t)&sk_lab_003df8b0;
   sk_h_004080cc(*(word_t *)(ux0 + 0x10),*(word_t *)(ux0 + 0x78),
                jt1,u3);
                     /* WARNING: Could not recover jumptable at 0x003df8ac. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt1)();
-  return;)
+  sk_dispatch((code_t)jt1);return;
 }
 
 /* FUN_003df9dc @ 0x003df9dc   (est. sk_f_003df9dc — Swift-runtime object/ARC helper)
@@ -3288,11 +3274,11 @@ word_t u0;
 }
 
 /* FUN_003dfe08 @ 0x003dfe08   (est. sk_f_003dfe08 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003dfe08(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE_00)
+ * Ghidra: void FUN_003dfe08(undefined8 param_1,undefined8 param_2,code *jt0)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003dfe08(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00)
+void sk_f_003dfe08(word_t param_1, word_t param_2, code_t jt0)
 {
 word_t u0;
   word_t u1;
@@ -3330,7 +3316,7 @@ word_t u0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xa0) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003dff30;
+  pl0[1] = (long)(word_t)&sk_lab_003dff30;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x48));
                     /* WARNING: Could not recover jumptable at 0x003dff2c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -3338,11 +3324,11 @@ word_t u0;
 }
 
 /* FUN_003e0028 @ 0x003e0028   (est. sk_f_003e0028 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e0028(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE_00)
+ * Ghidra: void FUN_003e0028(undefined8 param_1,undefined8 param_2,code *jt0)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e0028(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00)
+void sk_f_003e0028(word_t param_1, word_t param_2, code_t jt0)
 {
 word_t u0;
   word_t u1;
@@ -3476,11 +3462,11 @@ word_t u0;
 }
 
 /* FUN_003e0404 @ 0x003e0404   (est. sk_f_003e0404 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e0404(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE_00)
+ * Ghidra: void FUN_003e0404(undefined8 param_1,undefined8 param_2,code *jt0)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e0404(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00)
+void sk_f_003e0404(word_t param_1, word_t param_2, code_t jt0)
 {
 word_t u0;
   word_t u1;
@@ -3518,7 +3504,7 @@ word_t u0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xa0) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e05a8;
+  pl0[1] = (long)(word_t)&sk_lab_003e05a8;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x48));
                     /* WARNING: Could not recover jumptable at 0x003e0528. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -3526,11 +3512,11 @@ word_t u0;
 }
 
 /* FUN_003e06a0 @ 0x003e06a0   (est. sk_f_003e06a0 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e06a0(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE_00)
+ * Ghidra: void FUN_003e06a0(undefined8 param_1,undefined8 param_2,code *jt0)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e06a0(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE_00)
+void sk_f_003e06a0(word_t param_1, word_t param_2, code_t jt0)
 {
 word_t u0;
   word_t u1;
@@ -3631,13 +3617,12 @@ uint u0;
     u0 = (u0 ^ 0xffffffff) & 1;
   }
   else {
-    jt0 = *(code_t **)(l0 + 8);
+    jt0 = *(code_t *)(l0 + 8);
     u0 = 0;
   }
                     /* WARNING: Could not recover jumptable at 0x003e09e0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt0)(u0);
-  return;)
+  sk_dispatch((code_t)jt0, u0);return;
 }
 
 /* FUN_003e09e4 @ 0x003e09e4   (est. sk_f_003e09e4 — Swift-runtime object/ARC helper)
@@ -3655,7 +3640,7 @@ int i0;
   pl0 = (long *)sk_h_0040bb18(param_2[1]);
   *(long **)(ux0 + 0x10) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e0aa4;
+  pl0[1] = (long)(word_t)&sk_lab_003e0aa4;
                     /* WARNING: Could not recover jumptable at 0x003e0aa0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*(code_t *)((long)param_2 + (long)i0))(pl0 + 1,param_1);
@@ -3744,10 +3729,8 @@ long l0;
     u6 = *(word_t *)(ux0 + 0x10);
     sk_h_00407ce4();
     sk_h_003510c4();
-    (*ex3)();
-    jt0 = (code_t *)sk_h_0014ae44(u4);
-    u2 = (*jt0)(u1,u6,pc0,u4);
-    sk_h_00350560(*(word_t *)(l0 + 8));
+    sk_dispatch((code_t)ex3);jt0 = (code_t *)sk_h_0014ae44(u4);
+    u2 = sk_dispatch((code_t)jt0, u1,u6,pc0,u4);sk_h_00350560(*(word_t *)(l0 + 8));
     u1 = sk_dispatch((code_t)ex2);if ((u2 & 1) == 0) {
       sk_h_004062a8(*(word_t *)(ux0 + 0x88));
       sk_h_0040bb18(*(word_t *)(ex0 + 4));
@@ -3803,7 +3786,7 @@ word_t u0;
   sk_h_00407070(*(word_t *)(ux0 + 0x60),u0,*(word_t *)(ux0 + 0x18));
   sk_dispatch((code_t)ex1);sk_h_004067cc();
   sk_dispatch((code_t)ex0);sk_h_004068bc();
-  a0 = sk_h_00350470().lo;;
+  a0 = sk_h_00350470();
   u1 = sk_h_00377bec(a0.lo,a0.hi,u1);
   *(word_t *)(ux0 + 0x88) = u1;
   u1 = sk_h_003fcc1c();
@@ -3849,37 +3832,33 @@ word_t u0;
   sk_h_00406420();
   if ((bool)zf) {
     sk_h_00408348();
-    *(code_t *)(ex1 + 8))();
-    sk_h_00407aac();
+    sk_dispatch(*(code_t *)(ex1 + 8));sk_h_00407aac();
     u0 = *(word_t *)(ux0 + 0x50);
     u1 = *(word_t *)(ux0 + 0x58);
     sk_h_0040686c();
     sk_h_0040bd24(u3);
     sk_h_0040bd24(u1);
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003e13c4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
-    return;
+    sk_dispatch((code_t)jt0);return;
   }
   l1 = *(long *)(ux0 + 0x20);
   sk_h_00406894(*(word_t *)(ux0 + 0x48),*(word_t *)(ux0 + 0x50));
   *(word_t *)(ux0 + 0xa8) = ex2;
   *(word_t *)(ux0 + 0xb0) = ex3;
   sk_h_00350624();
-  (*ex0)();
-  sk_h_004065c8();
+  sk_dispatch((code_t)ex0);sk_h_004065c8();
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xb8) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e1460;
+  pl0[1] = (long)(word_t)&sk_lab_003e1460;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x50));
                     /* WARNING: Could not recover jumptable at 0x003e145c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt1)();
-  return;)
+  sk_dispatch((code_t)jt1);return;
 }
 
 /* FUN_003e1550 @ 0x003e1550   (est. sk_f_003e1550 — Swift-runtime object/ARC helper)
@@ -3908,8 +3887,7 @@ code_t *pc0;
     pc0 = *(code_t *)(ux0 + 0xa8);
     sk_h_00408348();
     sk_h_00407954();
-    (*(code_t *)(ex1 + 8))();
-    sk_h_0011aa70();
+    sk_dispatch(*(code_t *)(ex1 + 8));sk_h_0011aa70();
     sk_dispatch((code_t)pc0);sk_h_00407aac();
     u0 = *(word_t *)(ux0 + 0x50);
     u1 = *(word_t *)(ux0 + 0x58);
@@ -3917,15 +3895,13 @@ code_t *pc0;
     sk_h_0040bd24();
     sk_h_0040bd24(u1);
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003e15f4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
     sk_dispatch((code_t)jt0);return;
   }
-  *(code_t *)(*(long *))(ux0 + 0x48) + 8))
-            (*(word_t *)(ux0 + 0x50),*(word_t *)(ux0 + 0x40));
-  sk_h_004062a8(*(word_t *)(ux0 + 0x90));
+  sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x48) + 8), *(word_t *)(ux0 + 0x50),*(word_t *)(ux0 + 0x40));sk_h_004062a8(*(word_t *)(ux0 + 0x90));
   sk_h_0040bb18(*(word_t *)(ex0 + 4));
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x98) = p0;
@@ -3961,7 +3937,7 @@ word_t u0;
   sk_h_00407070(*(word_t *)(ux0 + 0x60),u0,*(word_t *)(ux0 + 0x38));
   sk_dispatch((code_t)ex1);sk_h_004067cc();
   sk_dispatch((code_t)ex0);sk_h_004068bc();
-  a0 = sk_h_00350470().lo;;
+  a0 = sk_h_00350470();
   u1 = sk_h_00377bec(a0.lo,a0.hi,u1);
   *(word_t *)(ux0 + 0x88) = u1;
   u1 = sk_h_003fcc1c();
@@ -4007,37 +3983,33 @@ word_t u0;
   sk_h_00406420();
   if ((bool)zf) {
     sk_h_00408348();
-    *(code_t *)(ex1 + 8))();
-    sk_h_00407aac();
+    sk_dispatch(*(code_t *)(ex1 + 8));sk_h_00407aac();
     u0 = *(word_t *)(ux0 + 0x50);
     u1 = *(word_t *)(ux0 + 0x58);
     sk_h_0040686c();
     sk_h_0040bd24(u3);
     sk_h_0040bd24(u1);
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003e19fc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*jt0)();
-    return;
+    sk_dispatch((code_t)jt0);return;
   }
   l1 = *(long *)(ux0 + 0x18);
   sk_h_00406894(*(word_t *)(ux0 + 0x48),*(word_t *)(ux0 + 0x50));
   *(word_t *)(ux0 + 0xa8) = ex2;
   *(word_t *)(ux0 + 0xb0) = ex3;
   sk_h_00350624();
-  (*ex0)();
-  sk_h_004065c8();
+  sk_dispatch((code_t)ex0);sk_h_004065c8();
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xb8) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e1b10;
+  pl0[1] = (long)(word_t)&sk_lab_003e1b10;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x50));
                     /* WARNING: Could not recover jumptable at 0x003e1a94. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*jt1)();
-  return;)
+  sk_dispatch((code_t)jt1);return;
 }
 
 /* FUN_003e1c00 @ 0x003e1c00   (est. sk_f_003e1c00 — Swift-runtime object/ARC helper)
@@ -4066,8 +4038,7 @@ code_t *pc0;
     pc0 = *(code_t *)(ux0 + 0xa8);
     sk_h_00408348();
     sk_h_00407954();
-    (*(code_t *)(ex1 + 8))();
-    sk_h_0011aa70();
+    sk_dispatch(*(code_t *)(ex1 + 8));sk_h_0011aa70();
     sk_dispatch((code_t)pc0);sk_h_00407aac();
     u0 = *(word_t *)(ux0 + 0x50);
     u1 = *(word_t *)(ux0 + 0x58);
@@ -4075,15 +4046,13 @@ code_t *pc0;
     sk_h_0040bd24();
     sk_h_0040bd24(u1);
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003e1ca4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
     sk_dispatch((code_t)jt0);return;
   }
-  *(code_t *)(*(long *))(ux0 + 0x48) + 8))
-            (*(word_t *)(ux0 + 0x50),*(word_t *)(ux0 + 0x40));
-  sk_h_004062a8(*(word_t *)(ux0 + 0x90));
+  sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x48) + 8), *(word_t *)(ux0 + 0x50),*(word_t *)(ux0 + 0x40));sk_h_004062a8(*(word_t *)(ux0 + 0x90));
   sk_h_0040bb18(*(word_t *)(ex0 + 4));
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0x98) = p0;
@@ -4181,7 +4150,7 @@ word_t u0;
   sk_h_00407070(*(word_t *)(ux0 + 0x80),u0,*(word_t *)(ux0 + 0x38));
   sk_dispatch((code_t)ex1);sk_h_004067cc();
   sk_dispatch((code_t)ex0);sk_h_004068bc();
-  a0 = sk_h_00350470().lo;;
+  a0 = sk_h_00350470();
   sk_h_00377bec(a0.lo,a0.hi,u1);
   sk_h_004083cc();
   u1 = sk_h_003fcc1c();
@@ -4191,7 +4160,7 @@ word_t u0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xb8) = p0;
   *p0 = ex2;
-  p0[1] = &LAB_003e1ff0;
+  p0[1] = (word_t)&sk_lab_003e1ff0;
   sk_h_00407814(*(word_t *)(ux0 + 0x60),*(word_t *)(ux0 + 0x90));
   sk_h_00407c78();
                     /* WARNING: Could not recover jumptable at 0x003e1fec. Too many branches */
@@ -4238,7 +4207,7 @@ byte zf;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004079b4(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e2178. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4262,11 +4231,11 @@ byte zf;
 }
 
 /* FUN_003e22f8 @ 0x003e22f8   (est. sk_f_003e22f8 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e22f8(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE)
+ * Ghidra: void FUN_003e22f8(undefined8 param_1,undefined8 param_2,code *jt1)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e22f8(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE)
+void sk_f_003e22f8(word_t param_1, word_t param_2, code_t jt1)
 {
 byte zf;
   long *pl0;
@@ -4306,7 +4275,7 @@ byte zf;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xe8) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e2458;
+  pl0[1] = (long)(word_t)&sk_lab_003e2458;
   sk_h_00408360(*(word_t *)(ux0 + 0x70),pl0,*(word_t *)(ux0 + 0x78));
                     /* WARNING: Could not recover jumptable at 0x003e2454. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4341,10 +4310,8 @@ word_t *p0;
     jt0 = *(code_t *)(ux0 + 200);
     u1 = *(word_t *)(ux0 + 0x40);
     sk_h_0006b6f4();
-    (*ex0)();
-    a0 = sk_h_0007c1c4().lo;;
-    (*jt0)(a0.lo,a0.hi,u1);
-  }
+    sk_dispatch((code_t)ex0);a0 = sk_h_0007c1c4();
+    sk_dispatch((code_t)jt0, a0.lo,a0.hi,u1);}
   sk_h_004062a8(*(word_t *)(ux0 + 0xb0));
   sk_h_0040bb18(*(word_t *)(ex1 + 4));
   p0 = (word_t *)sk_h_00406fe0();
@@ -4444,7 +4411,7 @@ word_t u0;
   sk_h_00407070(*(word_t *)(ux0 + 0x80),u0,*(word_t *)(ux0 + 0x38));
   sk_dispatch((code_t)ex1);sk_h_004067cc();
   sk_dispatch((code_t)ex0);sk_h_004068bc();
-  a0 = sk_h_00350470().lo;;
+  a0 = sk_h_00350470();
   sk_h_00377bec(a0.lo,a0.hi,u1);
   sk_h_004083cc();
   u1 = sk_h_003fcc1c();
@@ -4454,7 +4421,7 @@ word_t u0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xb8) = p0;
   *p0 = ex2;
-  p0[1] = &LAB_003e2874;
+  p0[1] = (word_t)&sk_lab_003e2874;
   sk_h_00407814(*(word_t *)(ux0 + 0x60),*(word_t *)(ux0 + 0x90));
   sk_h_00407c78();
                     /* WARNING: Could not recover jumptable at 0x003e2870. Too many branches */
@@ -4501,7 +4468,7 @@ byte zf;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_004079b4(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e29fc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4525,11 +4492,11 @@ byte zf;
 }
 
 /* FUN_003e2b7c @ 0x003e2b7c   (est. sk_f_003e2b7c — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e2b7c(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE)
+ * Ghidra: void FUN_003e2b7c(undefined8 param_1,undefined8 param_2,code *jt1)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e2b7c(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE)
+void sk_f_003e2b7c(word_t param_1, word_t param_2, code_t jt1)
 {
 byte zf;
   long *pl0;
@@ -4569,7 +4536,7 @@ byte zf;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(l1 + 4));
   *(long **)(ux0 + 0xe8) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e2cdc;
+  pl0[1] = (long)(word_t)&sk_lab_003e2cdc;
   sk_h_00408360(*(word_t *)(ux0 + 0x78),pl0,*(word_t *)(ux0 + 0x70));
                     /* WARNING: Could not recover jumptable at 0x003e2cd8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4604,10 +4571,8 @@ word_t *p0;
     jt0 = *(code_t *)(ux0 + 200);
     u1 = *(word_t *)(ux0 + 0x40);
     sk_h_0006b6f4();
-    (*ex0)();
-    a0 = sk_h_0007c1c4().lo;;
-    (*jt0)(a0.lo,a0.hi,u1);
-  }
+    sk_dispatch((code_t)ex0);a0 = sk_h_0007c1c4();
+    sk_dispatch((code_t)jt0, a0.lo,a0.hi,u1);}
   sk_h_004062a8(*(word_t *)(ux0 + 0xb0));
   sk_h_0040bb18(*(word_t *)(ex1 + 4));
   p0 = (word_t *)sk_h_00406fe0();
@@ -4665,8 +4630,7 @@ uint u0;
   
   u0 = sk_dispatch((code_t)param_3);/* WARNING: Could not recover jumptable at 0x003e31bc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  *(code_t *)(ux0 + 8))(u0 & 1);
-  return;)
+  sk_dispatch(*(code_t *)(ux0 + 8), u0 & 1);return;
 }
 
 /* FUN_003e31e8 @ 0x003e31e8   (est. sk_f_003e31e8 — Swift-runtime object/ARC helper)
@@ -4725,8 +4689,7 @@ long ex0;
   sk_h_0040bd24(u0);
                     /* WARNING: Could not recover jumptable at 0x003e33d4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  *(code_t *)(l0 + 8))();
-  return;)
+  sk_dispatch(*(code_t *)(l0 + 8));return;
 }
 
 /* FUN_003e33d8 @ 0x003e33d8   (est. sk_f_003e33d8 — Swift-runtime object/ARC helper)
@@ -4746,7 +4709,7 @@ uint u0;
   sk_h_00406e34();
   pc0 = (code_t *)sk_h_0016186c(in_x5);
   sk_h_00350798();
-  a0 = sk_h_00377824().lo;;
+  a0 = sk_h_00377824();
   sk_h_00350518(a0.lo,a0.hi,a0.lo);
   u0 = sk_dispatch((code_t)pc0);sk_h_00084234(u0 & 1,ux0);
   return;
@@ -4860,7 +4823,7 @@ long l0;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e3678. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4875,7 +4838,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xa0) = p0;
   *p0 = ex0;
-  p0[1] = &LAB_003e370c;
+  p0[1] = (word_t)&sk_lab_003e370c;
   sk_h_00406ab4(*(word_t *)(ux0 + 0x80));
                     /* WARNING: Could not recover jumptable at 0x003e3708. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4883,11 +4846,11 @@ long l0;
 }
 
 /* FUN_003e37c8 @ 0x003e37c8   (est. sk_f_003e37c8 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e37c8(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE)
+ * Ghidra: void FUN_003e37c8(undefined8 param_1,undefined8 param_2,code *jt1)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e37c8(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE)
+void sk_f_003e37c8(word_t param_1, word_t param_2, code_t jt1)
 {
 long l0;
   int i0;
@@ -4918,7 +4881,7 @@ long l0;
     sk_h_0040bd24((long)i0);
     sk_h_0040bd24(1);
     sk_h_0040bd24(l1);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e3868. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4932,7 +4895,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xb0) = p0;
   *p0 = ex3;
-  p0[1] = &LAB_003e3908;
+  p0[1] = (word_t)&sk_lab_003e3908;
   sk_h_00407824(*(word_t *)(ux0 + 0x40),*(word_t *)(ux0 + 0x90));
                     /* WARNING: Could not recover jumptable at 0x003e3904. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -4979,7 +4942,7 @@ long l0;
       p0 = (word_t *)sk_h_00406fe0();
       *(word_t **)(ux0 + 0xa0) = p0;
       *p0 = ex3;
-      p0[1] = &LAB_003e370c;
+      p0[1] = (word_t)&sk_lab_003e370c;
       sk_h_00406ab4(*(word_t *)(ux0 + 0x80));
       jt1 = ex2;
       sk_h_004080cc();
@@ -5003,7 +4966,7 @@ long l0;
   sk_h_0040bd24(u3);
   sk_h_0040bd24(u4);
   sk_h_0040bd24(u5);
-  a0 = sk_h_00406e64().lo;;
+  a0 = sk_h_00406e64();
   sk_h_004079b4(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e3af8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5118,7 +5081,7 @@ long l0;
     sk_h_0040bd24();
     sk_h_0040bd24();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e3ebc. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5135,7 +5098,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xe8) = p0;
   *p0 = ex0;
-  p0[1] = &LAB_003e3f5c;
+  p0[1] = (word_t)&sk_lab_003e3f5c;
   sk_h_004067b8(*(word_t *)(ux0 + 0xa8));
   sk_h_00407990();
   sk_h_00407c78();
@@ -5145,11 +5108,11 @@ long l0;
 }
 
 /* FUN_003e4048 @ 0x003e4048   (est. sk_f_003e4048 — Swift-runtime object/ARC helper)
- * Ghidra: void FUN_003e4048(undefined8 param_1,undefined8 param_2,code *UNRECOVERED_JUMPTABLE)
+ * Ghidra: void FUN_003e4048(undefined8 param_1,undefined8 param_2,code *jt1)
  * Confidence: medium
  * Notes: register-aliased / unrecovered indirect dispatch noise; call
  *   sequence and object-field accesses preserved faithfully. */
-void sk_f_003e4048(word_t param_1, word_t param_2, code_t UNRECOVERED_JUMPTABLE)
+void sk_f_003e4048(word_t param_1, word_t param_2, code_t jt1)
 {
 long l0;
   int i0;
@@ -5180,7 +5143,7 @@ long l0;
     sk_h_0040bd24(1);
     sk_h_0040bd24(l1);
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e40f4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5194,7 +5157,7 @@ long l0;
   p0 = (word_t *)sk_h_00406fe0();
   *(word_t **)(ux0 + 0xf0) = p0;
   *p0 = ex3;
-  p0[1] = &LAB_003e4194;
+  p0[1] = (word_t)&sk_lab_003e4194;
   sk_h_00408380(*(word_t *)(ux0 + 0x50),*(word_t *)(ux0 + 0xb8));
   sk_h_00407c78();
                     /* WARNING: Could not recover jumptable at 0x003e4190. Too many branches */
@@ -5243,7 +5206,7 @@ long l0;
       p0 = (word_t *)sk_h_00406fe0();
       *(word_t **)(ux0 + 0xe8) = p0;
       *p0 = ex2;
-      p0[1] = &LAB_003e3f5c;
+      p0[1] = (word_t)&sk_lab_003e3f5c;
       sk_h_004067b8(*(word_t *)(ux0 + 0xa8));
       jt1 = ex1;
       sk_h_004080cc();
@@ -5258,7 +5221,7 @@ long l0;
     sk_h_00407aa0();
     sk_h_0011aa70();
     sk_dispatch((code_t)ux1);sk_h_003504a0();
-    sk_dispatch((code_t)ux1);a0 = sk_h_00407bf8().lo;;
+    sk_dispatch((code_t)ux1);a0 = sk_h_00407bf8();
   }
   u1 = *(word_t *)(ux0 + 0xa8);
   u3 = *(word_t *)(ux0 + 0x88);
@@ -5270,7 +5233,7 @@ long l0;
   sk_h_0040bd24(u3);
   sk_h_0040bd24(u4);
   sk_h_0040bd24(u5);
-  a0 = sk_h_00406e64().lo;;
+  a0 = sk_h_00406e64();
   sk_h_004079b4(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e43b0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5342,10 +5305,9 @@ long l0;
   sk_h_00350968();
   sk_h_00377824();
   sk_h_00349530();
-  *(code_t *)(ex0 + 0x20))();
-  sk_h_00407ea0((long)*(int *)(l0 + 0x24));
+  sk_dispatch(*(code_t *)(ex0 + 0x20));sk_h_00407ea0((long)*(int *)(l0 + 0x24));
   sk_h_00084234(ux1);
-  return;)
+  return;
 }
 
 /* FUN_003e47d4 @ 0x003e47d4   (est. sk_f_003e47d4 — Swift-runtime object/ARC helper)
@@ -5411,7 +5373,7 @@ long l0;
     sk_h_00406f18();
     sk_h_004081c0();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e4900. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5430,13 +5392,13 @@ long l0;
   if ((b0 & 1) == 0) {
     *(word_t **)(ux0 + 0x70) = ex0;
     *ex0 = ex2;
-    ex0[1] = &LAB_003e49bc;
+    ex0[1] = (word_t)&sk_lab_003e49bc;
     sk_h_00407740();
   }
   else {
     *(word_t **)(ux0 + 0xa0) = ex0;
     *ex0 = ex2;
-    ex0[1] = &LAB_003e4dec;
+    ex0[1] = (word_t)&sk_lab_003e4dec;
     sk_h_00407670();
   }
   sk_h_00406ab4();
@@ -5479,7 +5441,7 @@ long l0;
     sk_dispatch((code_t)ex3);sk_h_00406f18();
     sk_h_004081c0();
     sk_h_0040bd24(u2);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e4af4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5494,7 +5456,7 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0x90) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e4b90;
+  pl0[1] = (long)(word_t)&sk_lab_003e4b90;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x60));
                     /* WARNING: Could not recover jumptable at 0x003e4b8c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5534,7 +5496,7 @@ long l0;
     u4 = *(word_t *)(ux0 + 0x38);
     u2 = *(word_t *)(ux0 + 0x10);
     *(byte *)(*(long *)(ux0 + 0x20) + (long)*(int *)(ux0 + 0xac)) = 1;
-    sk_dispatch((code_t)jt1, u1,u2,u3,u4);a0 = sk_h_00407bf8().lo;;
+    sk_dispatch((code_t)jt1, u1,u2,u3,u4);a0 = sk_h_00407bf8();
   }
   else {
     sk_h_00407cd4();
@@ -5552,13 +5514,13 @@ long l0;
       if ((b0 & 1) == 0) {
         *(word_t **)(ux0 + 0x70) = ex0;
         *ex0 = ex3;
-        ex0[1] = &LAB_003e49bc;
+        ex0[1] = (word_t)&sk_lab_003e49bc;
         sk_h_00407740();
       }
       else {
         *(word_t **)(ux0 + 0xa0) = ex0;
         *ex0 = ex3;
-        ex0[1] = &LAB_003e4dec;
+        ex0[1] = (word_t)&sk_lab_003e4dec;
         sk_h_00407670();
       }
       sk_h_00406ab4();
@@ -5576,7 +5538,7 @@ long l0;
   u1 = *(word_t *)(ux0 + 0x50);
   sk_h_0040bd24(*(word_t *)(ux0 + 0x60));
   sk_h_0040bd24(u1);
-  a0 = sk_h_00406e64().lo;;
+  a0 = sk_h_00406e64();
   sk_h_00407c78(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e4d2c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5684,7 +5646,7 @@ word_t u0;
     sk_h_0040bd24();
     sk_h_0040bd24(u1);
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407c78(a0.lo,a0.hi,u2);
                     /* WARNING: Could not recover jumptable at 0x003e510c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5725,7 +5687,7 @@ word_t u0;
     p0 = (word_t *)sk_h_00406fe0();
     *(word_t **)(ux0 + 0xf8) = p0;
     *p0 = ex1;
-    p0[1] = &LAB_003e57c0;
+    p0[1] = (word_t)&sk_lab_003e57c0;
     sk_h_00407164();
     u2 = *(word_t *)(ux0 + 0x10);
   }
@@ -5774,7 +5736,7 @@ long l0;
     sk_h_0040bd24();
     sk_h_0040bd24(u0);
     sk_h_0040bd24(u2);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u1);
                     /* WARNING: Could not recover jumptable at 0x003e53f8. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5789,7 +5751,7 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0xd8) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e5494;
+  pl0[1] = (long)(word_t)&sk_lab_003e5494;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x90));
                     /* WARNING: Could not recover jumptable at 0x003e5490. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5834,9 +5796,7 @@ code_t *pc0;
     u3 = ex1;
   }
   else {
-    *(code_t *)(*(long *))(ux0 + 0x88) + 8))
-              (*(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));
-    if ((*(byte *)(ux0 + 0x108) & 1) == 0) {
+    sk_dispatch(*(code_t *)(*(long *)(ux0 + 0x88) + 8), *(word_t *)(ux0 + 0x90),*(word_t *)(ux0 + 0x68));if ((*(byte *)(ux0 + 0x108) & 1) == 0) {
       i0 = *(int *)(*(long *)(ux0 + 0x28) + 0x2c);
       *(int *)(ux0 + 0x104) = i0;
       b0 = *(byte *)(*(long *)(ux0 + 0x30) + (long)i0);
@@ -5872,7 +5832,7 @@ code_t *pc0;
         p0 = (word_t *)sk_h_00406fe0();
         *(word_t **)(ux0 + 0xf8) = p0;
         *p0 = ex2;
-        p0[1] = &LAB_003e57c0;
+        p0[1] = (word_t)&sk_lab_003e57c0;
         sk_h_00407164();
         u0 = *(word_t *)(ux0 + 0x10);
       }
@@ -5892,7 +5852,7 @@ code_t *pc0;
   sk_h_0040bd24(u5);
   sk_h_0040bd24(u1);
   sk_h_0040bd24(u3);
-  a0 = sk_h_00406e64().lo;;
+  a0 = sk_h_00406e64();
   sk_h_00407c78(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e5658. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -5956,8 +5916,7 @@ long ex0;
   sk_h_00350404();
                     /* WARNING: Could not recover jumptable at 0x003e5c80. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  *(code_t *)(ex0 + 0x10))(param_1);
-  return;)
+  sk_dispatch(*(code_t *)(ex0 + 0x10), param_1);return;
 }
 
 /* FUN_003e5d50 @ 0x003e5d50   (est. sk_f_003e5d50 — Swift-runtime object/ARC helper)
@@ -6022,7 +5981,7 @@ long l0;
     sk_h_00407604();
     sk_h_0040686c();
     sk_h_0040bd24();
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e5e80. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6076,7 +6035,7 @@ long l0;
     sk_dispatch((code_t)ex3);sk_h_00407604();
     sk_h_0040686c();
     sk_h_0040bd24(u2);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e6048. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6091,7 +6050,7 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0x90) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e60e4;
+  pl0[1] = (long)(word_t)&sk_lab_003e60e4;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x60));
                     /* WARNING: Could not recover jumptable at 0x003e60e0. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6142,13 +6101,13 @@ long l0;
   }
   else {
     sk_h_00407d14(*(word_t *)(ux0 + 0x88));
-    sk_dispatch((code_t)ex1);a0 = sk_h_00407bf8().lo;;
+    sk_dispatch((code_t)ex1);a0 = sk_h_00407bf8();
   }
   u2 = *(word_t *)(ux0 + 0x50);
   sk_h_0040738c(a0.lo,a0.hi);
   sk_h_004075a4();
   sk_h_0040bd24(u2);
-  a0 = sk_h_00406e64().lo;;
+  a0 = sk_h_00406e64();
   sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e6260. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6265,7 +6224,7 @@ word_t u0;
     sk_h_0040686c();
     sk_h_0040bd24();
     sk_h_0040bd24(u0);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u1);
                     /* WARNING: Could not recover jumptable at 0x003e6560. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6323,7 +6282,7 @@ long l0;
     sk_h_0040686c();
     sk_h_0040bd24(u2);
     sk_h_0040bd24(u1);
-    a0 = sk_h_0040678c().lo;;
+    a0 = sk_h_0040678c();
     sk_h_00407e58(a0.lo,a0.hi,u0);
                     /* WARNING: Could not recover jumptable at 0x003e676c. Too many branches */
                     /* WARNING: Treating indirect jump as call */
@@ -6338,82 +6297,10 @@ long l0;
   pl0 = (long *)sk_h_0040bb18(*(word_t *)(ex2 + 4));
   *(long **)(ux0 + 0xd0) = pl0;
   *pl0 = ux0;
-  pl0[1] = (long)&LAB_003e6808;
+  pl0[1] = (long)(word_t)&sk_lab_003e6808;
   sk_h_00406bb4(*(word_t *)(ux0 + 0x88));
                     /* WARNING: Could not recover jumptable at 0x003e6804. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   sk_dispatch((code_t)jt1);return;
 }
 
-/* closure continuation address taken as a value (Ghidra LAB_003da07c) */
-extern void sk_lab_003da07c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003da25c) */
-extern void sk_lab_003da25c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003db214) */
-extern void sk_lab_003db214(void);
-/* closure continuation address taken as a value (Ghidra LAB_003db4f8) */
-extern void sk_lab_003db4f8(void);
-/* closure continuation address taken as a value (Ghidra LAB_003db70c) */
-extern void sk_lab_003db70c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dc214) */
-extern void sk_lab_003dc214(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dca9c) */
-extern void sk_lab_003dca9c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dce40) */
-extern void sk_lab_003dce40(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dd0b8) */
-extern void sk_lab_003dd0b8(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dda40) */
-extern void sk_lab_003dda40(void);
-/* closure continuation address taken as a value (Ghidra LAB_003de0c0) */
-extern void sk_lab_003de0c0(void);
-/* closure continuation address taken as a value (Ghidra LAB_003de298) */
-extern void sk_lab_003de298(void);
-/* closure continuation address taken as a value (Ghidra LAB_003de86c) */
-extern void sk_lab_003de86c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003df130) */
-extern void sk_lab_003df130(void);
-/* closure continuation address taken as a value (Ghidra LAB_003df8b0) */
-extern void sk_lab_003df8b0(void);
-/* closure continuation address taken as a value (Ghidra LAB_003dff30) */
-extern void sk_lab_003dff30(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e05a8) */
-extern void sk_lab_003e05a8(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e0aa4) */
-extern void sk_lab_003e0aa4(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e1460) */
-extern void sk_lab_003e1460(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e1b10) */
-extern void sk_lab_003e1b10(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e1ff0) */
-extern void sk_lab_003e1ff0(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e2458) */
-extern void sk_lab_003e2458(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e2874) */
-extern void sk_lab_003e2874(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e2cdc) */
-extern void sk_lab_003e2cdc(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e370c) */
-extern void sk_lab_003e370c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e3908) */
-extern void sk_lab_003e3908(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e3f5c) */
-extern void sk_lab_003e3f5c(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e4194) */
-extern void sk_lab_003e4194(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e49bc) */
-extern void sk_lab_003e49bc(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e4b90) */
-extern void sk_lab_003e4b90(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e4dec) */
-extern void sk_lab_003e4dec(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e5494) */
-extern void sk_lab_003e5494(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e57c0) */
-extern void sk_lab_003e57c0(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e60e4) */
-extern void sk_lab_003e60e4(void);
-/* closure continuation address taken as a value (Ghidra LAB_003e6808) */
-extern void sk_lab_003e6808(void);
-/* closure continuation address taken as a value (Ghidra LAB_00614a7c) */
-extern void sk_lab_00614a7c(void);

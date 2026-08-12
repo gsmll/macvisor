@@ -54,7 +54,8 @@ extern void sk_boot_fatal(void) __attribute__((noreturn));              /* FUN_0
 extern unsigned long sk_boot_ec_switch(unsigned long a, int b);         /* FUN_0005b190 */
 extern void sk_boot_ec_setup(int state);                                /* FUN_0005cb18 */
 extern void sk_boot_error_print(unsigned long a, int sel, int z,
-                                unsigned long b, const char *fmt, ...); /* FUN_00116bcc */ Memory / physical-map helpers.
+                                unsigned long b, const char *fmt, ...); /* FUN_00116bcc */
+/* Memory / physical-map helpers. */
 extern unsigned long sk_mem_avail_hi(void);                             /* FUN_0006d6b8 */
 extern unsigned long sk_mem_avail_lo(void);                             /* FUN_0006d698 */
 extern unsigned long sk_phys_map_region_va(void);                       /* FUN_0006d660 */
@@ -84,7 +85,8 @@ extern unsigned long sk_btree_0(unsigned long a, unsigned long b);      /* FUN_0
 extern void sk_boot_pll(int mode);                                      /* FUN_0006bb34 */
 extern void sk_boot_gate(void);                                         /* FUN_000d0020 */
 extern void *sk_boot_op_probe(unsigned long a, unsigned long b);        /* FUN_00071050 */
-extern void sk_platform_init(void);                                     /* FUN_000534c0 */ Lite_zone (libmalloc) machine primitives.
+extern void sk_platform_init(void);                                     /* FUN_000534c0 */
+/* Lite_zone (libmalloc) machine primitives. */
 extern unsigned long sk_alloc();             /* FUN_0036b270 */
 extern unsigned long sk_free();                                           /* FUN_0036b118 */
 extern void sk_alloc_init_pages(void *obj, unsigned long a, ...);       /* FUN_0036a940 */
@@ -98,7 +100,8 @@ extern void sk_alloc_touch_extern(unsigned long obj, unsigned long a,
 extern void sk_alloc_bump_region(unsigned long a, unsigned long b,
                                  unsigned long tag);                    /* FUN_0035bc70 */
 extern unsigned long sk_obj_name(unsigned long obj, unsigned long a,
-                                 unsigned long b, ...);                 /* FUN_00389910 */ Kernel / arch helpers used by the allocator.
+                                 unsigned long b, ...);                 /* FUN_00389910 */
+/* Kernel / arch helpers used by the allocator. */
 extern unsigned long sk_pt_write(unsigned long va, unsigned long size, int type,
                                  int gran, ...);                        /* FUN_00011bf4 */
 extern void sk_pt_invalidate(unsigned long va, unsigned long size, int type,
@@ -173,7 +176,8 @@ extern unsigned long sk_image_base;      /* DAT_006adfc0 */
 extern unsigned long sk_image_end;       /* DAT_006adfc8 */
 extern unsigned long sk_boot_cfg;        /* DAT_006ad6e0 */
 extern unsigned long sk_boot_done;       /* DAT_006adfd0 */
-extern unsigned long sk_boot_mem_hi;     /* DAT_006add08 */ Local forward declarations.
+extern unsigned long sk_boot_mem_hi;     /* DAT_006add08 */
+/* Local forward declarations. */
 void sk_boot_launcher_entry(void);
 unsigned long sk_launcher_root(void);
 unsigned long sk_boot_thread_main(void);
@@ -641,8 +645,10 @@ unsigned long sk_boot_run(void)
 
     bootobj = sk_object_boot_0();
     sk_alloc_touch2((unsigned long)bootobj, 0);   /* FUN_00002828 */
-    sk_boot_nop();                                /* FUN_000027d8 */ Primary method-table record for the boot object ("launcher" name).
-    SK_FCALL1(bootobj, 0x58, 1);                  /* method at +0x58 */ Store the boot-object record (16 bytes) into global table.
+    sk_boot_nop();                                /* FUN_000027d8 */
+/* Primary method-table record for the boot object ("launcher" name). */
+    SK_FCALL1(bootobj, 0x58, 1);                  /* method at +0x58 */
+/* Store the boot-object record (16 bytes) into global table. */
     {
         unsigned long *rec = (unsigned long *)0x6ac000;
         rec[0] = 0x726568636e75616c;
@@ -653,7 +659,8 @@ unsigned long sk_boot_run(void)
         rec[5] = 0x80000000005a8d10;
     }
     sk_boot_done = 0;
-    sk_alloc_init_pages((void *)sk_boot_memtype(0), 0x10, 7);   /* FUN_0036a940 */ CNode ("parse bu") record and boot-caps slot.
+    sk_alloc_init_pages((void *)sk_boot_memtype(0), 0x10, 7);   /* FUN_0036a940 */
+/* CNode ("parse bu") record and boot-caps slot. */
     v = sk_boot_caps();                       /* FUN_0019ae0c */
     if (v >> 0x32 != 0) __builtin_trap();     /* trap 1 at 0x2418 */
     sk_boot_mem_hi = v << 0xe;
@@ -669,7 +676,8 @@ unsigned long sk_boot_run(void)
     sk_alloc_link(0);                         /* FUN_0036b588 */
     sk_alloc_step();                          /* FUN_00002688 */
     sk_boot_nop3();                           /* FUN_00002834 */
-    sk_alloc_link2(0);                        /* FUN_0036b6ac */ Root CNode frame slot from the nlist record.
+    sk_alloc_link2(0);                        /* FUN_0036b6ac */
+/* Root CNode frame slot from the nlist record. */
     v = (unsigned long)sk_btree_0(0, 0);      /* FUN_000b7c9c */
     sk_boot_nop2();                           /* FUN_000027e8 */
     SK_FCALL0(objtab, 0xb0);                  /* vtable +0xb0 */
@@ -2462,7 +2470,8 @@ unsigned long *sk_zone_ctor(void)
         zone = (unsigned long *)sk_alloc_zone_0(0, v, 0, 1, 0x2000, 0, 0);
         if (zone == 0) goto fail;
     }
-    sk_alloc_zone_0(0, 0, 0, 0, 0, 0, 0);   /* (further setup) */ Fill method table + per-cpu layout (see FUN_00006cbc / 0x7074).
+    sk_alloc_zone_0(0, 0, 0, 0, 0, 0, 0);   /* (further setup) */
+/* Fill method table + per-cpu layout (see FUN_00006cbc / 0x7074). */
     sk_zone_ctor_fill(zone, v, (unsigned short)cfg, 0x6ac23d, (unsigned char)cpu,
                       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     return zone;
@@ -3570,7 +3579,8 @@ extern unsigned long sk_printf();   /* FUN_00118b28 */
 extern unsigned long sk_buddy_lock(unsigned long a);    /* FUN_0011582c */
 extern unsigned long sk_buddy_unlock(unsigned long a);  /* FUN_00115894 */
 extern void dc_gva_region(unsigned long p, unsigned long size);
-extern void sk_mem_clear_range(unsigned long p, unsigned long size, unsigned long fill); /* FUN_00117f8c */ Internal buddy helpers (static, defined near end of region).
+extern void sk_mem_clear_range(unsigned long p, unsigned long size, unsigned long fill); /* FUN_00117f8c */
+/* Internal buddy helpers (static, defined near end of region). */
 static unsigned long buddy_run_len(unsigned long bitmap, unsigned long idx);
 static void unlink_buddy_region(unsigned long arena, unsigned long idx);
 
@@ -8000,7 +8010,8 @@ void sk_msg_recv_collect(void *msg, void *tcb)
 }
 
 /*--------------------------------------------------------------------*/
-/* FUN_000176a4 helper forward already declared; remaining tail: */ FUN_000179c8-000183f0 above; 16a5c/16d78/16e1c above.
+/* FUN_000176a4 helper forward already declared; remaining tail: */
+/* FUN_000179c8-000183f0 above; 16a5c/16d78/16e1c above. */
 
 /*--------------------------------------------------------------------*/
 /* FUN_00019aac @ 0x00019aac   (est. sk_tightbeam_register)
@@ -11743,7 +11754,8 @@ unsigned long sk_cap_transfer(void *tcb, void *msg, void *cap)
  * TSS (thread-specific-storage) subsystem.
  *------------------------------------------------------------------------- */
 
-extern unsigned long FUN_0005acac(unsigned long a, int b, int c);  /* per-CPU descriptor allocator */ Forward declarations for the TSS subsystem (mutually recursive).
+extern unsigned long FUN_0005acac(unsigned long a, int b, int c);  /* per-CPU descriptor allocator */
+/* Forward declarations for the TSS subsystem (mutually recursive). */
 long sk_tss_base_get(void);
 long sk_tss_alloc_slot(void);
 unsigned long sk_tss_new_region(void);
@@ -12074,7 +12086,8 @@ static void tightbeam_obj_bind_reset(unsigned long a, unsigned long b, unsigned 
 static void tightbeam_msg_write_end(void);         /* 0x23448 */
 static void tightbeam_msg_write_begin(void);       /* 0x234bc */
 static void tightbeam_decoder_encode_dispatch(unsigned long, unsigned long, unsigned long,
-                                              unsigned long, unsigned long); /* 0x23f74 */ Externs owned by sibling SK range workers.
+                                              unsigned long, unsigned long); /* 0x23f74 */
+/* Externs owned by sibling SK range workers. */
 extern unsigned long sk_dispatch_async(unsigned long, unsigned long, unsigned long,
                                        unsigned long, unsigned long, unsigned long,
                                        unsigned long, unsigned long); /* FUN_0004b520 */
@@ -12097,7 +12110,8 @@ extern unsigned long sk_msg_decode(unsigned long, unsigned long, unsigned long, 
 extern unsigned long sk_msg_init_5(unsigned long, void *, unsigned long, unsigned long, unsigned long); /* FUN_00014bd4 */
 extern unsigned long sk_page_check(unsigned long, unsigned long, unsigned long, unsigned long); /* FUN_0003c4c0 */
 extern unsigned long sk_error_obj(void);                   /* FUN_00019aac */
-extern unsigned long sk_obj_lock2(unsigned long);          /* FUN_00310d68 */ Global once-cells used by the type-registration helpers. Forward declarations for functions defined later in this file.
+extern unsigned long sk_obj_lock2(unsigned long);          /* FUN_00310d68 */
+/* Global once-cells used by the type-registration helpers. Forward declarations for functions defined later in this file. */
 static cl4_result_t tightbeam_msg_kind_status(unsigned long tag);
 static unsigned long tightbeam_lock_and_get(unsigned long a, unsigned long b);
 static void tightbeam_obj_bind_reset(unsigned long a, unsigned long b, unsigned long c);
@@ -12404,7 +12418,8 @@ void tightbeam_transport_init(void)
 cl4_result_t tightbeam_transport_alloc(void)
 {
     cl4_result_t r;
-    r.lo = (uint64_t)sk_alloc_aligned(0x68, 0xffffffffffffffffu);  /* FUN_0036a804 */ FUN_00015708 ctor
+    r.lo = (uint64_t)sk_alloc_aligned(0x68, 0xffffffffffffffffu);  /* FUN_0036a804 */
+/* FUN_00015708 ctor */
     r.hi = (uint64_t)0x1a1c8;   /* FUN_0001a1c8 method table */
     return r;
 }
@@ -12992,7 +13007,8 @@ void tightbeam_message_reset(void)
 {
     unsigned long *obj;   /* unaff_x20 */
     obj = (unsigned long *)__builtin_frame_address(0);
-    if (obj[2] != 0) {   /* +0x10 */ FUN_000159d0
+    if (obj[2] != 0) {   /* +0x10 */
+/* FUN_000159d0 */
         return;
     }
     sk_fatal_error("Fatal error", 0xb, 2, 0xd000000000000022, 0x80000000005acf60,
@@ -15923,7 +15939,8 @@ void vas_codable_encode(unsigned long param_1, unsigned long param_2, long param
     if (kind == '\x01') {
         void (*enc)(void) = (void (*)(void))tightbeam_method_4d(param_5);
         enc();
-        if (__builtin_frame_address(0) == 0) {   /* unaff_x21 */ success: write encoded result to param_1
+        if (__builtin_frame_address(0) == 0) {   /* unaff_x21 */
+/* success: write encoded result to param_1 */
         } else {
             *param_7 = status;
         }
@@ -18975,10 +18992,13 @@ cl4_result_t vas_msg_recv(long *param_1, unsigned long *param_2, unsigned long p
 /* Core lock/refcount/allocator primitives (region 0x34xxxx-0x37xxxx). */
 extern unsigned long sk_alloc();          /* FUN_0036a908 */
 extern unsigned long sk_alloc_pages();    /* FUN_0036b270 */
-extern unsigned long sk_free();                                        /* FUN_0036b118 */ Object method-dispatch table base used by object constructors.
+extern unsigned long sk_free();                                        /* FUN_0036b118 */
+/* Object method-dispatch table base used by object constructors. */
 extern unsigned char sk_obj_methods_0[];  /* DAT_00611b24 */
-extern unsigned char sk_obj_methods_1[];  /* DAT_00611b34 / DAT_00611b3c LAB_00611b2c */ Boot handoff helper owned by the earlier range (0x2xxxx).
-extern void sk_boot_handoff_stage(void);   /* FUN_0002ff48 */ Decompressor constant tables (data region 0x4bcxxx).
+extern unsigned char sk_obj_methods_1[];  /* DAT_00611b34 / DAT_00611b3c LAB_00611b2c */
+/* Boot handoff helper owned by the earlier range (0x2xxxx). */
+extern void sk_boot_handoff_stage(void);   /* FUN_0002ff48 */
+/* Decompressor constant tables (data region 0x4bcxxx). */
 extern uint32_t sk_dec_magic;              /* DAT_004bc6e0 */
 extern uint32_t sk_dec_mask0;              /* DAT_004bc6f0 */
 extern uint32_t sk_dec_mask1;              /* DAT_004bc6f4 */
@@ -18989,7 +19009,8 @@ extern uint32_t sk_dec_maskb;              /* DAT_004bc714 */
 extern uint32_t sk_dec_maskc;              /* DAT_004bc718 */
 extern uint32_t sk_dec_maskd;              /* DAT_004bc71c */
 extern uint8_t  sk_dec_msk[4][16];         /* DAT_004bc740..75c */
-extern uint8_t  sk_dec_hist_table[256];    /* DAT_004bc5e0 */ Utility helpers (data/early region).
+extern uint8_t  sk_dec_hist_table[256];    /* DAT_004bc5e0 */
+/* Utility helpers (data/early region). */
 extern unsigned long sk_mem_zero();     /* FUN_001143a0 */
 extern unsigned long sk_vas_abort();            /* FUN_004afae4 (VAS abort) */
 extern void sk_vas_fault(void);                          /* FUN_004b1d08 */
@@ -19003,7 +19024,8 @@ extern void sk_vas_fault4(void);                         /* FUN_004b1ec8 */
 extern void sk_vas_fault5(void);                         /* FUN_004b1f04 */
 extern void sk_vas_fault6(void);                         /* FUN_004b1f3c */
 extern void sk_vas_fault7(void);                         /* FUN_004b1e1c */
-extern void sk_vas_fault8(void);                         /* FUN_004b1e58 */ vspace subsystem helpers (same region).
+extern void sk_vas_fault8(void);                         /* FUN_004b1e58 */
+/* vspace subsystem helpers (same region). */
 extern unsigned long sk_vspace_new_small(void);          /* FUN_00033da4 */
 extern unsigned long sk_vspace_new_large(void);          /* FUN_00033e64 */
 extern unsigned long sk_vspace_small_release(void);      /* FUN_00033e00 */
@@ -19013,7 +19035,8 @@ extern void sk_vspace_store_release(long, unsigned long);/* FUN_000314b4 */
 extern void *sk_vspace_node_alloc(void);                 /* FUN_000333a8 */
 extern void *sk_vspace_block_alloc(void);                /* FUN_0003335c */
 extern void sk_vspace_level_bump(long);                  /* FUN_00031bf4 */
-extern void *sk_vspace_alloc_big(unsigned long, int, int);/* FUN_0005acac */ Early vspace globals (data region 0x64cxxx / 0x6axxxx).
+extern void *sk_vspace_alloc_big(unsigned long, int, int);/* FUN_0005acac */
+/* Early vspace globals (data region 0x64cxxx / 0x6axxxx). */
 extern void *sk_vspace_root_obj;           /* DAT_0064c3f0 */
 extern unsigned long sk_vspace_free_head;  /* DAT_0064c528 */
 extern void *sk_vspace_free_tail;          /* DAT_0064c530 */
@@ -19028,7 +19051,8 @@ extern unsigned long sk_vspace_sentinel_eff0;  /* sk_vspace_sentinel_eff0 */
 extern unsigned long sk_vspace_free_sentinel;  /* sk_vspace_free_sentinel */
 extern unsigned long sk_vspace_lock_6af000;/* 0x6af000 */
 extern unsigned long sk_vspace_lock_6ad2b0;/* 0x6ad2b0 */
-extern void *sk_obj_table_0;               /* DAT_0064c3f0 (table head) */ Boot object-table helpers.
+extern void *sk_obj_table_0;               /* DAT_0064c3f0 (table head) */
+/* Boot object-table helpers. */
 extern void sk_obj_table_init(unsigned long, unsigned long, unsigned long);  /* FUN_00034970 / FUN_00034920 */
 extern void sk_list_init(void *head);                         /* FUN_0005ba5c */
 extern unsigned long sk_alloc_big();                            /* FUN_0005baac */
@@ -19043,11 +19067,13 @@ extern void sk_vas_fault12(void);                             /* FUN_004b2084 */
 extern void sk_vas_fault13(void);                             /* FUN_004b1fd4 */
 extern void sk_vas_fault14(void);                             /* FUN_004b1fac */
 extern void sk_vas_fault15(void);                             /* FUN_004b225c */
-extern long sk_vspace_fault_28b14(void);                      /* FUN_004b2034 (see notes) */ L4 error-code fixed word block (data 0x4bc188).
+extern long sk_vspace_fault_28b14(void);                      /* FUN_004b2034 (see notes) */
+/* L4 error-code fixed word block (data 0x4bc188). */
 extern unsigned long sk_l4_err_word0;   /* sk_l4_err_word0 */
 extern unsigned long sk_l4_err_word1;   /* sk_l4_err_word1 */
 extern unsigned long sk_l4_err_word2;   /* sk_l4_err_word2 */
-extern unsigned long sk_l4_err_word3;   /* sk_l4_err_word3 */ More vspace lifecycle helpers.
+extern unsigned long sk_l4_err_word3;   /* sk_l4_err_word3 */
+/* More vspace lifecycle helpers. */
 extern void sk_vspace_teardown_store(long);          /* FUN_00032888 */
 extern void sk_vspace_unlink_cleanup(void);         /* FUN_00034ad0 */
 extern void sk_vspace_obj_free(void *);             /* FUN_00033304 */
@@ -19098,7 +19124,8 @@ extern void sk_vas_fault24(void);                          /* FUN_004b262c */
 extern void sk_vas_fault25(void);                          /* FUN_004b269c */
 extern void sk_vas_fault26(void);                          /* FUN_004b25bc */
 extern void sk_vas_fault27(void);                          /* FUN_004b2664 */
-extern long *sk_obj_table_init2(long, long, long *);       /* FUN_00034970 */ Object-pool free-list allocator (this region).
+extern long *sk_obj_table_init2(long, long, long *);       /* FUN_00034970 */
+/* Object-pool free-list allocator (this region). */
 unsigned long *sk_pool_init(unsigned long, unsigned short *, int);
 void sk_pool_link(unsigned long, unsigned short *, void **);
 
@@ -19476,7 +19503,8 @@ unsigned long sk_boot_image_compress(uint32_t *src, uint32_t *dst, char *ctrl,
                                  ((uint64_t)(h1 | (uint8_t)(((b1 >> 24) | (s1 >> 56)) >> 6)) << 56);
                     *lit++ = (uint32_t)w;
                     *lit++ = (uint32_t)(w >> 32);
-                    /* ... interleave remainder */ FALLBACK: faithful byte-interleave
+                    /* ... interleave remainder */
+/* FALLBACK: faithful byte-interleave */
                 } while (pc < ctrl + 0x1000);
                 /* trailer */
                 {
@@ -19700,7 +19728,8 @@ unsigned long sk_vspace_slot_alloc(long param_1)
                 if (ncells * 0x800 + acc == 0) break;
             }
         }
-        bitmask = sk_vm_bitmap_find(base + 0x42, base);  /* FUN_004b1d40 */ bitmask/addr/off returned via registers (extraout)
+        bitmask = sk_vm_bitmap_find(base + 0x42, base);  /* FUN_004b1d40 */
+/* bitmask/addr/off returned via registers (extraout) */
         {
             unsigned long i = 0;
             while (((bitmask >> (i & 0x3f)) & 1) == 0) i++;
@@ -21850,7 +21879,8 @@ extern unsigned long sk_vas_fault85();
 extern unsigned long sk_slot_attach_full(unsigned long *, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);   /* FUN_0003b820 */
 extern void sk_span_lookup_build6(unsigned long *, unsigned long, unsigned long, unsigned long, unsigned int); /* FUN_00035bac */
 extern void sk_span_prefetch_pages(char *, unsigned long, long); /* FUN_0003df84 */
-extern unsigned long sk_span_find2();         /* FUN_000287e4 */ aliases with the decompile-accurate signatures used by appended bodies
+extern unsigned long sk_span_find2();         /* FUN_000287e4 */
+/* aliases with the decompile-accurate signatures used by appended bodies */
 extern cl4_result_t sk_pool_method_full(unsigned long);           /* FUN_00034bd8 */
 extern void sk_pool_touch_full(unsigned long, unsigned long, unsigned long); /* FUN_00034d5c */
 extern unsigned long sk_vas_fault14r();
@@ -21876,7 +21906,8 @@ extern unsigned long sk_obj_methods_2[];     /* DAT_004bc358 */
 extern unsigned long sk_vspace_lock_6af000;  /* 0x6af000 */
 extern unsigned long sk_fault_span_next3();   /* FUN_000405d0 */
 extern void sk_slot_detach_inner(void *);   /* FUN_0003bac0 */
-extern void sk_slot_push_f();   /* FUN_0003e640 push variant */ prototypes
+extern void sk_slot_push_f();   /* FUN_0003e640 push variant */
+/* prototypes */
 long sk_vspace_attach_spanmap(long param_1, long param_2);
 void sk_boot_vspace_early_init(void);
 cl4_result_t sk_vspace_slot_alloc_frame(void);
@@ -22093,8 +22124,10 @@ void sk_boot_vspace_early_init(void)
     sk_list_init2((void *)&sk_vspace_free_head);   /* FUN_0005ba5c */
     sk_vspace_root_obj = (void *)sk_vspace_root(); /* FUN_00032514 */
     entry = (long *)&sk_vspace_lock_6af000;        /* DAT_0064c728 */
-    *entry = 0;                                    /* DAT_004bc3b8 stamp */ primary pool descriptor from common/bss layout
-    sk_vspace_free_head = (unsigned long)(sk_vspace_free_tail - (void *)0);  /* sizes */ ... boot object-table walk
+    *entry = 0;                                    /* DAT_004bc3b8 stamp */
+/* primary pool descriptor from common/bss layout */
+    sk_vspace_free_head = (unsigned long)(sk_vspace_free_tail - (void *)0);  /* sizes */
+/* ... boot object-table walk */
     bss = sk_vspace_new_small2();   /* FUN_00033da4 */
     (void)bss;
     sk_obj_table_init2b(0, 0x3397c, (unsigned long)&sk_vspace_lock_6af000); /* FUN_00034b10 */
@@ -23649,7 +23682,8 @@ cl4_result_t sk_span_destroy(unsigned char *span)
         r.lo = 0x5b10001; r.hi = 0;
         return r;
     }
-    if (sk_obj_state6(owner) != 0) {            /* FUN_00045cb8 */ unlink from owner list under lock
+    if (sk_obj_state6(owner) != 0) {            /* FUN_00045cb8 */
+/* unlink from owner list under lock */
         if (sk_vm_lock_check(owner + 0x1f0) != 0) {
             sk_vas_abort("VAS abort in function %s at line %d", 0x5aed68);
             __builtin_unreachable();
@@ -24569,7 +24603,8 @@ cl4_result_t sk_region_create(long owner, unsigned int attrs, char *desc,
         u16 = *(unsigned long *)(desc + 0x10);
         c8 = desc[0x18]; c9 = desc[0x19]; b10 = desc[0x1a]; b11 = desc[0x1b];
         u6 = *(unsigned int *)(desc + 0x1c);
-        if (sk_errname3(c7) == 0xe) {           /* FUN_000559b8 */ method 0xe: attribute validation
+        if (sk_errname3(c7) == 0xe) {           /* FUN_000559b8 */
+/* method 0xe: attribute validation */
             if ((attrs & 0xc0) == 0x80) { r.lo = 0x3cd0001; r.hi = 0; return r; }
             if (((attrs ^ 0xffffffff) & 0x60) == 0) { r.lo = 0x3d10001; r.hi = 0; return r; }
             if (((attrs ^ 0xffffffff) & 0x81000) == 0) { r.lo = 0x3d30001; r.hi = 0; return r; }
@@ -25525,7 +25560,8 @@ cl4_result_t sk_region_split(long tree, unsigned long owner, unsigned long *regi
         region[0xe] = end;
         if (*(int *)(region + 4) != 0) {
             sk_region_desc_fill(region);                        /* FUN_0003ea28 */
-            sk_region_desc_fill(newspan);                       /* FUN_0003ea28 */ relink the split halves
+            sk_region_desc_fill(newspan);                       /* FUN_0003ea28 */
+/* relink the split halves */
             if (*(unsigned int *)(region + 4) >> 6 & 1) {
                 /* reorder by descriptor order */
             }
@@ -27889,7 +27925,8 @@ extern unsigned long sk_x_004b5c44(); /* FUN_004B5C44 */
 extern unsigned long sk_x_004b5d28(); /* FUN_004B5D28 */
 extern unsigned long sk_x_004b5d40(); /* FUN_004B5D40 */
 extern unsigned long sk_x_004b5d80(); /* FUN_004B5D80 */
-extern unsigned long sk_x_0064cbc0(); /* FUN_0064CBC0 */ ---- Shared per-CPU / stat config globals referenced by this region.
+extern unsigned long sk_x_0064cbc0(); /* FUN_0064CBC0 */
+/* ---- Shared per-CPU / stat config globals referenced by this region. */
 extern unsigned long sk_cfg_flag;      /* DAT_006af2b8 */
 extern unsigned long sk_cfg_geo_a;     /* DAT_006af2b9 */
 extern unsigned long sk_cfg_geo_b;     /* DAT_006af2ba */
@@ -27912,7 +27949,8 @@ extern unsigned long sk_vas_stack_top; /* DAT_006af2b0 */
 extern unsigned long sk_vas_root;      /* DAT_0064cba0 */
 extern unsigned long sk_pmm_pgtable;   /* DAT_004bc520 */
 extern unsigned long sk_err_codes;     /* DAT_0064cb40 */
-extern unsigned long sk_err_codes2;    /* DAT_0064cb80 */ arm64e trap helpers (compiled in).
+extern unsigned long sk_err_codes2;    /* DAT_0064cb80 */
+/* arm64e trap helpers (compiled in). */
 #undef SoftwareBreakpoint
 #undef CallSupervisor
 extern void SoftwareBreakpoint(unsigned short kind, ...);
@@ -28815,7 +28853,8 @@ void sk_vas_init_root_impl(unsigned long p, long a, long b)
             }
             *(unsigned long *)(span + 0x80) = 3;
             if (span <= span + 0x110)
-                sk_vm_obj_add_cb(span, sk_vas_fh_validate, 0);  /* FUN_000446ec validate */ second walk remapping pte frames (condensed)
+                sk_vm_obj_add_cb(span, sk_vas_fh_validate, 0);  /* FUN_000446ec validate */
+/* second walk remapping pte frames (condensed) */
             *(unsigned char *)(cfg + 0x100) = 1;
         }
     }
@@ -33033,7 +33072,8 @@ extern uint64_t sk_global_126;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_127;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_128;  /* Ghidra DAT_/global */
 extern uint64_t sk_global_129;  /* Ghidra DAT_/global */
-extern uint64_t sk_global_130;  /* Ghidra DAT_/global */ String literals referenced by this region (s_ labels).
+extern uint64_t sk_global_130;  /* Ghidra DAT_/global */
+/* String literals referenced by this region (s_ labels). */
 
 extern const char sk_str_00[];  /* Ghidra string label */
 extern const char sk_str_01[];  /* Ghidra string label */
@@ -33150,7 +33190,8 @@ extern const char sk_str_95[];  /* Ghidra string label */
 extern const char sk_str_96[];  /* Ghidra string label */
 extern const char sk_str_97[];  /* Ghidra string label */
 extern const char sk_str_98[];  /* Ghidra string label */
-extern const char sk_str_99[];  /* Ghidra string label */ Forward declarations of functions defined in this region.
+extern const char sk_str_99[];  /* Ghidra string label */
+/* Forward declarations of functions defined in this region. */
 
 void sk_sec_mem_scan(int arg1,int arg2);
 void sk_sec_mem_scan2(uint64_t arg1);
@@ -36711,7 +36752,8 @@ uint64_t sk_cnode_create(unsigned long *out, unsigned long base,
     err = 0x11;                       /* capability-badge tag */
     kind = (cnode_type - 1 < 6) ? *(uint32_t *)((char *)sk_global_002 + (cnode_type-1)*4)
                                 : 2;
-    rec_lo = 0;                        /* start building the 64-bit record word */ Encode record: type/badge fields via byte-packing helpers.
+    rec_lo = 0;                        /* start building the 64-bit record word */
+/* Encode record: type/badge fields via byte-packing helpers. */
     {
         uint16_t *rw = (uint16_t *)((char *)&rec_lo + 0);
         *rw = (uint16_t)((0x20000000u << 8) | kind);
@@ -49609,7 +49651,8 @@ void sk_tightbeam_lookup(int kind, unsigned int sub)
         void *e = sk_boot_ent(it);             /* FUN_0004eb4c */
         if (e && e + 0xc < (void*)e) sk_breakpoint(0x5519, 0x62bc8);
         if (sk_boot_code(e) == want) {         /* FUN_0004e88c */
-            unsigned char *p = sk_boot_key(e, sel);  /* FUN_0004e7b8 */ p now points at resource; kind-selected offset then packed key
+            unsigned char *p = sk_boot_key(e, sel);  /* FUN_0004e7b8 */
+/* p now points at resource; kind-selected offset then packed key */
             sk_word_t k = sk_boot_pack_key_sel(p, kind, sel);   /* FUN_0004e774 */
             sk_boot_ret(k);                    /* FUN_0004ed84 */
             return;
@@ -51447,7 +51490,8 @@ sk_word_t sk_dt_parse_driver(sk_word_t ctx0, sk_word_t *root, sk_word_t (*cb)(sk
         r = sk_dt_validate_range(*root, root[1], &c);
         if ((int)r != 0) {
             unsigned int more;
-            while ((more = sk_dt_next(&c)) & 1) ;  /* first check */ iterate children
+            while ((more = sk_dt_next(&c)) & 1) ;  /* first check */
+/* iterate children */
             do {
                 sk_word_t ch[2] = {0,0};
                 r = sk_dt_node_children(&c, &ch);
@@ -52049,7 +52093,8 @@ void sk_panic_report_body(sk_word_t a, void *arg)
     sk_panic_iter_begin();
     while (!(sk_panic_iter_next((long*)&list), *(char*)&list == 1)) {
         sk_word_t dv[4] = { list[0], list[1], list[2], list[3] };
-        sk_word_t sep[2] = { 0x2020207c20, 0xe500000000000000 };   /* ' | */ print node name+value via format template 0x65cd58
+        sk_word_t sep[2] = { 0x2020207c20, 0xe500000000000000 };   /* ' | */
+/* print node name+value via format template 0x65cd58 */
         sk_word_t r = sk_report_buf();            /* FUN_0006b388 */
         sk_format(r, &sep, 0x65cd58, 0x6753a0);   /* FUN_002060d4 */
         sk_report_emit(sep[0], sep[1]);
@@ -52511,7 +52556,8 @@ sk_word_t sk_hex_dump(sk_word_t a, sk_word_t b, unsigned char *data, void **limi
             }
             sk_hex_emit(0, count, 0);            /* FUN_0006b5a0 */
             sk_hex_col2(count, 0);
-            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);  /* FUN_0006b610 + 001bc440 */ second 8 bytes
+            sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);  /* FUN_0006b610 + 001bc440 */
+/* second 8 bytes */
             for (int i = 0; i < 8; i++) {
                 sk_word_t hv;
                 if (sk_isprint(data[count-1-i]) == 0) hv = 0x2e;
@@ -52521,7 +52567,8 @@ sk_word_t sk_hex_dump(sk_word_t a, sk_word_t b, unsigned char *data, void **limi
             }
             sk_hex_emit(0, count, 0);
             sk_hex_cat((sk_word_t)sk_hex_emit2(), count, 0);
-            sk_hex_emit('|', 0xe100000000000000, 0);   /* '|' */ printable char column
+            sk_hex_emit('|', 0xe100000000000000, 0);   /* '|' */
+/* printable char column */
             for (int i = 0; i < 8; i++) {
                 sk_word_t hv = data[i] < 0x10 ? sk_hex_digit(data[i]) : data[i];
                 sk_hex_col(hv);
@@ -54509,7 +54556,8 @@ void sk_ipmm_setup(void)
         volatile unsigned char *tp = (volatile unsigned char *)__builtin_thread_pointer_ro();
         tp[0]=0x11; wr64(tp+8, base + 0xfc000); wr64(tp+0x10, l1);
         CallSupervisor(0);
-        if ((uVar3 & 0xff) != 0) sk_ipmm_abort_cap(uVar3);   /* FUN_004b7ba0 */ create launcher IPMM freelist
+        if ((uVar3 & 0xff) != 0) sk_ipmm_abort_cap(uVar3);   /* FUN_004b7ba0 */
+/* create launcher IPMM freelist */
         sk_word_t d1 = _DAT_004beea0, d2 = uRam00000000004beea8, d3 = _DAT_004beeb0, d4 = uRam00000000004beeb8;
         void *pt = sk_pt_ctx();
         unsigned char ok = (*(unsigned char(*)(void*,sk_word_t,sk_word_t*,void*,int,int))
@@ -54985,7 +55033,8 @@ add_region:
                         *(sk_word_t *)(off + 0x6b2b08) = w1 >> 0x2c & 0xff;   /* type */
                         *(sk_word_t *)(off + 0x6b2b10) = base;
                         *(sk_word_t *)(off + 0x6b2b18) = sz2;
-                        *(sk_word_t *)(off + 0x6b2b40) = cap[3];   /* phys */ DART/MMU and zero-space mapping for type bits
+                        *(sk_word_t *)(off + 0x6b2b40) = cap[3];   /* phys */
+/* DART/MMU and zero-space mapping for type bits */
                         if ((w1 & 0xff00000000000) != 0) {
                             sk_word_t t = (unsigned)(w1 >> 0x2c) & 0xff;
                             if (t == 3) { *(volatile sk_word_t*)0x64e1b0 = count; }

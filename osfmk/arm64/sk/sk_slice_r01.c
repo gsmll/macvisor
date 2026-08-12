@@ -73,8 +73,8 @@ extern word_t cL4_metadata_canon(word_t *p);                /* FUN_003a0fcc */
 extern word_t cL4_metadata_chain(word_t w);                 /* FUN_003a25a0 */
 extern word_t cL4_hw_seed(void);                            /* FUN_0000456c */
 extern void   cL4_tls_init(void);                           /* FUN_0036c408 */
-extern void   cL4_tls_check(word_t *ctl, word_t *slot, word_t extra); /* FUN_003d3dd8 */
-extern void   cL4_mtx_init(word_t *m, word_t attr);         /* FUN_00118148 */
+extern void   cL4_tls_check(word_t *ctl, word_t *slot, word_t *extra); /* FUN_003d3dd8 */
+extern int     cL4_mtx_init(word_t *m, word_t attr);         /* FUN_00118148 */
 extern int    cL4_mtx_lock(word_t *m);                      /* FUN_00118164 */
 extern int    cL4_mtx_unlock(word_t *m);                    /* FUN_00118194 */
 extern void   cL4_ref_acquire(word_t obj);                  /* FUN_0037a48c */
@@ -1436,14 +1436,14 @@ static word_t sk_pack_push(word_t *v, word_t val)
  * follows the descriptor's mode/entry; kind 3 (mode 0x1f) returns the
  * conformance via cL4_conform_desc2. Unsupported kinds trip a breakpoint.
  * Confidence: low */
-static word_t sk_conform_desc(word_t *p)
+static word_t sk_conform_desc(word_t p)
 {
     unsigned k = *(unsigned*)(p + 0xc) >> 3 & 7;
     word_t r;
     if (k - 2 > 1) {
         word_t (*fn)(word_t);
         if (k > 1) { CL4_SW_BP(0x39a2a4); }
-        word_t *f = (word_t*)cL4_deref_field((word_t)(p + 4), 0);
+        word_t *f = (word_t*)cL4_deref_field(p + 4, 0);
         if (!f) return 0;
         unsigned w = *f;
         if (((w >> 4 & 1) == 0) || !f) {
@@ -1544,7 +1544,7 @@ static word_t sk_hash_realloc_20(word_t *tab, word_t n)
         word_t oldbase = *(word_t*)(tab + 2);
         unsigned oldcap = tab[4];
         if (n < 5) *tab |= 1;
-        else { *(word_t*)(tab + 2) = cL4_raw_realloc((word_t)n << 5, 8); tab[4] = n; }
+        else { *(word_t*)(tab + 2) = (word_t)cL4_raw_realloc((word_t)n << 5, 8); tab[4] = n; }
         sk_hash_copy_20(tab, (word_t*)oldbase, (word_t*)(oldbase + oldcap * 0x20));
         cL4_raw_free((void*)oldbase, oldcap << 5, 8);
         return 0;
@@ -1565,10 +1565,10 @@ static word_t sk_hash_realloc_20(word_t *tab, word_t n)
         } while (i != 0x80);
         if (4 < n) {
             *tab &= 0xfffffffe;
-            *(word_t*)(tab + 2) = cL4_raw_realloc((word_t)n << 5, 8);
+            *(word_t*)(tab + 2) = (word_t)cL4_raw_realloc((word_t)n << 5, 8);
             tab[4] = n;
         }
-        sk_hash_copy_20(tab, local, (word_t)out);
+        sk_hash_copy_20(tab, local, out);
     }
     return 0;
 }
@@ -1611,7 +1611,7 @@ static word_t *sk_conform_desc_init(word_t *out, word_t p)
 {
     word_t d;
     out[0] = 0; *(byte*)(out + 1) = 0;
-    d = cL4_deref_field(p + 4, *(unsigned*)(p + 0xc) >> 3 & 7);
+    d = cL4_deref_field((word_t)(p + 4), *(unsigned*)(p + 0xc) >> 3 & 7);
     if (d == 0) {
         d = sk_conform_desc(p);
         if (d == 0) return out;
@@ -1657,7 +1657,7 @@ static word_t sk_conform_walk(word_t *out, word_t *desc, word_t *type, word_t op
 ok:
                 word_t t3 = *desc;
                 if (t3 == 0) t3 = 0;
-                if (d && (cL4_conform_check(d, t3) & 1)) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
+                if (d && (cL4_conform_check((word_t)d, t3) & 1)) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
             } else if (type == (word_t*)*desc) { out[0] = (word_t)type; *(byte*)(out+1) = 0; *(byte*)(out+2) = 0; return 0; }
             r = cL4_variant_unwrap((word_t*)&f2, (word_t)type | (carry & 0xff));
             type = (word_t*)r.lo; carry = r.hi;
@@ -1694,8 +1694,9 @@ static word_t sk_conform_find_b(word_t type, word_t proto) { return sk_conform_f
  * conformance. */
 static word_t sk_conform_cache_guard(word_t key, word_t *p)
 {
+    word_t (*cb)(word_t, word_t, word_t) = (void*)_DAT_006adf00;
     if (p && *p != 0 && _DAT_006adf00 && _DAT_006adf00) {
-        if ((_DAT_006adf00)(0xd1b80000006adf00, *p, p[1]) & 1) return 0;
+        if (cb(0xd1b80000006adf00, *p, p[1]) & 1) return 0;
     }
     return 1;
 }
@@ -1760,7 +1761,7 @@ static cL4_w16_t sk_conform_resolve(word_t type, word_t proto, byte pass)
                         CL4_LO_ACQUIRE();
                         word_t nb = _DAT_006c0ac0 ? *_DAT_006c0ac0 : 0;
                         CL4_LO_RELEASE();
-                        sk_conform_insert((word_t*)&DAT_006c0a60, (word_t)tt, p, (word_t*)&found, nb, 0);
+                        sk_conform_insert((word_t*)&_DAT_006c0a60, (word_t)tt, p, (word_t*)&found, nb, 0);
                         CL4_LO_RELEASE();
                         _DAT_006c0a60--;
                         r.lo = found; r.hi = loc2; return r;
@@ -1802,7 +1803,7 @@ static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *
     v = tab[1];
     slot = *(word_t**)(tab + 2);
     pv = slot ? slot + 2 : 0;
-    probe = sk_hash_probe((word_t*)&k, v, (word_t)pv);
+    probe = cL4_hash_probe((word_t*)&k, v, (word_t)pv);
     if (probe == 0) {
         word_t lim = (word_t)1 << (capbyte & 0x3f);
         word_t next = v + 1;
@@ -1810,7 +1811,7 @@ static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *
         word_t q = 0; if (d != 0) q = lim / d;
         if (q > 3) {
             k = sk_hash_rehash((word_t*)tab, k, (word_t*)&slot, (word_t)pv);
-            probe = sk_hash_probe((word_t*)&k, v, (word_t)pv);
+            probe = cL4_hash_probe((word_t*)&k, v, (word_t)pv);
         }
         if (!slot || *slot <= v) slot = (word_t*)sk_hash_grow((word_t*)tab, slot, v);
         *(word_t*)(slot + v * 6 + 2) = k & 0xfffffffffffffffd;
@@ -1818,7 +1819,7 @@ static word_t sk_conform_insert(word_t *tab, word_t type, word_t proto, word_t *
         *(word_t*)(slot + v * 6 + 4) = proto;
         *(word_t**)(slot + v * 6 + 6) = (word_t*)*res;
         tab[1] = next;
-        sk_hash_insert((word_t*)&k, tab + 4, next, 3);
+        cL4_hash_insert((word_t*)&k, (word_t)(tab + 4), next, 3);
     }
 out:
     CL4_DATA_MEMBARRIER();
@@ -1845,7 +1846,7 @@ static word_t sk_conform_probe(word_t *tbl, word_t k, word_t n, word_t *slots)
     word_t key = *tbl;
     word_t capbyte = 4;
     if ((k & 3) != 0 && *(byte*)(k & 0xfffffffffffffffc) != 0) capbyte = *(byte*)(k & 0xfffffffffffffffc);
-    h = cL4_hash_compute(0, 0, 0, 0, 0, tbl + 1) & ~((word_t)-1 << (capbyte & 0x3f));
+    h = cL4_hash_compute(0, 0, 0, 0, 0, (word_t)(tbl + 1)) & ~((word_t)-1 << (capbyte & 0x3f));
     if (h < 2) h = 1;
     i = cL4_hash_probe(tbl, h, 2);
     if (i != 0) {
@@ -1892,9 +1893,9 @@ static word_t sk_hash_rehash(word_t *tbl, word_t k, word_t *slots, word_t n)
                 else if (sub) sub = (word_t*)*sub;
                 /* re-probe into the new table */
                 cL4_hash_compute(0,0,0,0,0,0);
-                word_t *ns = 0;
+                word_t ns = 0;
                 if (sk_hash_lookup_20((byte*)np, key, &ns) == 0) {
-                    ns[0] = key; ns[1] = sub;
+                    ((word_t*)ns)[0] = key; ((word_t*)ns)[1] = (word_t)sub;
                 }
             }
             q++;
@@ -1914,7 +1915,7 @@ static word_t sk_hash_grow(word_t *tab, word_t *old, word_t n)
     if (!np) CL4_SW_BP(0x39eb70);
     *np = (word_t)((sz - 8) / 0x18);
     if (old) {
-        cL4_memcpy_v((word_t)(np + 2), (word_t)old + 8, n * 0x18, 0);
+        cL4_memcpy_v((word_t)(np + 2), (word_t)old + 8, n * 0x18);
         word_t *nd = cL4_raw_alloc(0x10, 0xa0040aff93c70);
         nd[0] = *(word_t*)(tab + 0x40); nd[1] = (word_t)old;
         *(word_t**)(tab + 0x40) = nd;
@@ -1936,8 +1937,8 @@ static word_t sk_conform_merge(word_t *ctx, word_t type)
     sk_conform_desc_init((word_t*)d, type);
     sk_conform_walk((word_t*)&res[0], (word_t*)d, *(word_t**)ctx[1], *(byte*)ctx[2]);
     found = res[0];
-    if ((*(byte**)ctx[3] & 1) == 0) *(byte**)ctx[3] = (byte)(res[1] & res[2] == 0xff);
-    else *(byte**)ctx[3] = (byte)res[1];
+    if ((*(byte*)(ctx[3]) & 1) == 0) *(byte*)(ctx[3]) = (byte)(res[1] & res[2] == 0xff);
+    else *(byte*)(ctx[3]) = (byte)res[1];
     if (found == 0) return 0;
     res[0] = 0; res[1] = 0;
     found = sk_conform_find(type, found, &res[0]);
@@ -2057,17 +2058,17 @@ static word_t sk_conform_invert_table(word_t *p)
     if (((*p >> 5) & 1) == 0) return 0;
     k = *p & 0x1f;
     if (k < 0x11) {
-        if (k == 4) { if (!p) p = 0; if (!p) p = 0; word_t t = cL4_pack_lookup(p); return t + (word_t)*(short*)((char*)p + 2) * 4; }
+        if (k == 4) { if (!p) p = 0; if (!p) p = 0; word_t t = cL4_pack_lookup((word_t)p); return t + (word_t)*(short*)((char*)p + 2) * 4; }
         if (k != 0x10) return 0;
         if (!p) p = 0; if (!p) p = 0;
-        return cL4_pack_lookup2(p);
+        return cL4_pack_lookup2((word_t)p);
     } else if (k == 0x11) {
         if (!p) p = 0; if (!p) p = 0;
-        return cL4_pack_lookup3(p);
+        return cL4_pack_lookup3((word_t)p);
     } else {
         if (k != 0x12) return 0;
         if (!p) p = 0; if (!p) p = 0;
-        return cL4_pack_lookup4(p);
+        return cL4_pack_lookup4((word_t)p);
     }
 }
 
@@ -2164,7 +2165,7 @@ static word_t sk_md_obj_init(word_t *obj)
     if (-1 < _DAT_006adee0) cL4_tls_check(&_DAT_006adee0, (word_t*)0x3697c0, 0);
     *(byte*)((char*)o + 0x99) = 0;
     cL4_tls_init();
-    return obj;
+    return (word_t)obj;
 }
 
 /* ================================================================== *
@@ -2179,6 +2180,7 @@ static word_t *sk_seqlock_get(word_t *p, int alloc)
 {
     word_t v = *(word_t*)p;
     word_t *r;
+    word_t cur;
     if ((long)v < 0 && (v & 0xffffffff) != 0xffffffff) {
         r = (word_t*)(v << 3);
     } else if (alloc == 0 || ((v >> 0x20) & 1) == 0) {
@@ -2187,12 +2189,12 @@ static word_t *sk_seqlock_get(word_t *p, int alloc)
         do {
             if (alloc != 0 && ((v >> 0x20) & 1) != 0) return 0;
             np[2] = v; np[3] = 1;
-            word_t cur = *(word_t*)p;
+            cur = *(word_t*)p;
             if (cur == v) { *(word_t*)p = (word_t)np >> 3 | 0xc000000000000000; return np; }
             v = cur;
         } while (!((long)cur >= 0) || ((cur & 0xffffffff) == 0xffffffff));
         r = (word_t*)(cur << 3);
-        cL4_free(np, 0x20, 0xf);
+        cL4_free(np, 0x20);
     } else return 0;
     return r;
 }
@@ -2229,7 +2231,7 @@ static word_t sk_seqlock_update(word_t *p, word_t seq)
             s0 = c0;
             if ((c0 >> 0x20 & 1) != 0) return 0;
         }
-        if ((int)s0 != -1) return sk_seqlock_update(w, s0, s1 & 0xffffffff | in_x10 << 0x20);
+        if ((int)s0 != -1) return sk_seqlock_retain(w, s0).lo;
         return 1;
     }
     return 0;
@@ -2305,16 +2307,19 @@ static word_t sk_seqlock_ref(word_t p)
  * unwraps the metadata chain (0x303/0x203/0x300/0x305/0x305-0x500/0x400),
  * following the protocol-conformance indirection when the canonical slot is
  * empty. */
+/* FUN_0039fb58 / 0x39fb68  (est. sk_type_merge)
+ * Merge a type metadata descriptor against a canonical "merged" type:
+ * resolves the metadata chain (0x303/0x203/0x300/0x305/0x305-0x500/0x400),
+ * following the protocol-conformance indirection when the canonical slot is
+ * empty. Returns the merged descriptor. */
 static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
 {
-    cL4_w16_t r; word_t *slot; word_t **sp; word_t *s1, *s2;
-    word_t v;
+    cL4_w16_t r; word_t *s1, *s2;
     r = cL4_seqlock_pair(0);
-    s1 = (word_t*)r.hi;
-    r = cL4_metadata_merge(c, r.lo);
-    s2 = (word_t*)r.hi; s1 = (word_t*)r.lo;
-    if (s1) s1 = (word_t*)(word_t)((s1 == 0) ? s2 : s1);
-    s2 = s1;
+    s2 = (word_t*)r.hi;
+    r = (cL4_w16_t){ cL4_metadata_merge(c, r.lo), 0 };
+    s1 = (word_t*)r.lo;
+    if (s2) s1 = s2;
     {
         word_t *stk0 = (word_t*)s1;
         int kind = 0;
@@ -2338,7 +2343,7 @@ static word_t *sk_type_merge(word_t a, word_t *b, word_t c)
         while (*(word_t*)(t + 0x28) == 0 || *(word_t*)(t + 0x28) == 0) {
             word_t *p = (word_t*)(t + 8); t = 0; if (*p != 0) t = *p;
         }
-        s1 = *s2;
+        s1 = (word_t*)*s2;
     }
     return s1;
 }

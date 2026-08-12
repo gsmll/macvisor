@@ -39,14 +39,14 @@ static void sk_capop_003e6cf0(void);
 static void sk_capop_003e6d08(void);
 static void sk_capop_003e6da8(uint64_t arg1);
 static void sk_capop_003e6dd0(uint64_t arg1, int64_t arg2);
-static void sk_capop_003e6ecc(long param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5, uint64_t param_6, uint64_t param_7, uint64_t param_8, uint64_t (*param_9);
+static void sk_capop_003e6ecc(long param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5, uint64_t param_6, uint64_t param_7, uint64_t param_8, uint64_t (*param_9)(uint64_t, uint64_t *));
 static void sk_capop_003e6fc8(void);
 static void sk_capop_003e7228(void);
 static void sk_capop_003e74fc(void);
 static void sk_capop_003e788c(void);
 static void sk_capop_003e7b14(void);
 static void sk_capop_003e7d20(void);
-static void sk_capop_003e838c(uint64_t param_1, uint64_t param_2, uint64_t param_3, int64_t param_4);
+static void sk_capop_003e838c(uint64_t param_1, uint64_t param_2, uint64_t param_3, int64_t param_4, uint64_t param_5_unused);
 static void sk_capop_003e86c8(void);
 static void sk_capop_003e89f0(void);
 static void sk_capop_003e8e28(void);
@@ -64,14 +64,14 @@ static void sk_capop_003ea0a4(void);
 static void sk_capop_003ea260(void);
 static void sk_capop_003ea494(void);
 static void sk_capop_003ea4ec(void);
-static void sk_capop_003ea5a8(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4);
+static void sk_capop_003ea5a8(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5_unused);
 static void sk_capop_003ea6ec(void);
 static void sk_capop_003ea8f4(void);
 static void sk_capop_003eab58(void);
 static void sk_capop_003ead6c(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5);
 static void sk_capop_003eae24(void);
 static void sk_capop_003eaef4(void);
-static void sk_capop_003eaf34(void);
+static void sk_capop_003eaf34(uint64_t arg1, uint64_t arg2, uint64_t arg3);
 static void sk_capop_003eaf4c(void);
 static void sk_capop_003eafc8(uint64_t arg1, int64_t arg2);
 static void sk_capop_003eb0a4(void);
@@ -79,7 +79,7 @@ static void sk_capop_003eb120(void);
 static void sk_capop_003eb1d8(void);
 static void sk_capop_003eb398(void);
 static void sk_capop_003eb594(void);
-static void sk_capop_003eb68c(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4);
+static void sk_capop_003eb68c(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5_unused);
 static void sk_capop_003eb7c4(void);
 static void sk_capop_003eb9c8(void);
 static void sk_capop_003ebbd4(void);
@@ -127,7 +127,7 @@ static void sk_capop_003ecddc(void);
 static void sk_capop_003ed0a8(void);
 static void sk_capop_003ed0ec(void);
 static void sk_capop_003ed14c(void);
-static void sk_capop_003ed1a4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7);
+static void sk_capop_003ed1a4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, uint64_t arg6);
 static void sk_capop_003ed2dc(uint64_t arg1, uint64_t arg2, uint64_t arg3);
 static void sk_capop_003ed340(void);
 static void sk_capop_003ed4d4(void);
@@ -143,14 +143,14 @@ static void sk_capop_003ee3c8(void);
 static void sk_capop_003ee47c(void);
 static void sk_capop_003ee520(void);
 static void sk_capop_003ee5e8(uint64_t arg1, uint64_t arg2, uint64_t arg3, int64_t arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7, uint64_t arg8);
-static void sk_capop_003ee688(uint64_t arg1, uint64_t arg2, uint64_t (*tail);
+static void sk_capop_003ee688(uint64_t arg1, uint64_t arg2, uint64_t (*tail)(void));
 static void sk_capop_003ee818(void);
 static void sk_capop_003ee8e4(void);
 static void sk_capop_003eead0(void);
 static void sk_capop_003eeb6c(void);
 static void sk_capop_003eebf0(void);
 static void sk_capop_003eec90(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5, uint64_t param_6, uint64_t param_7, uint64_t param_8);
-static void sk_capop_003eed30(uint64_t param_1, uint64_t param_2, void (*UNRECOVERED_JUMPTABLE);
+static void sk_capop_003eed30(uint64_t param_1, uint64_t param_2, void (*UNRECOVERED_JUMPTABLE)(void));
 static void sk_capop_003eeef4(void);
 
 #define tpidr_el0    ((uint8_t *)sk_tpidr_area)
@@ -187,13 +187,13 @@ extern uint8_t  sk_g_005dc0d0;          /* string s_Unavailable_in_Exclaves_005d
 extern unsigned long sk_x_00002534();   /* FUN_00002534 */
 extern unsigned long sk_x_000026e8();   /* FUN_000026e8 */
 extern unsigned long sk_x_00019858();   /* FUN_00019858 */
-extern cl4_result_t sk_x_00027614();   /* FUN_00027614 */
+extern unsigned long sk_x_00027614();   /* FUN_00027614 */
 extern unsigned long sk_x_00027724();   /* FUN_00027724 */
 extern unsigned long sk_x_0006a4c0();   /* FUN_0006a4c0 */
 extern unsigned long sk_x_0007c028();   /* FUN_0007c028 */
 extern unsigned long sk_x_0007c1a4();   /* FUN_0007c1a4 */
 extern unsigned long sk_x_000836a4();   /* FUN_000836a4 */
-extern cl4_result_t sk_x_000839d8();   /* FUN_000839d8 */
+extern unsigned long sk_x_000839d8();   /* FUN_000839d8 */
 extern unsigned long sk_x_000839f8();   /* FUN_000839f8 */
 extern unsigned long sk_x_0008409c();   /* FUN_0008409c */
 extern unsigned long sk_x_00084180();   /* FUN_00084180 */
@@ -230,7 +230,7 @@ extern unsigned long sk_x_0034d2b4();   /* FUN_0034d2b4 */
 extern unsigned long sk_x_00350404();   /* FUN_00350404 */
 extern unsigned long sk_x_00350500();   /* FUN_00350500 */
 extern unsigned long sk_x_0035050c();   /* FUN_0035050c */
-extern cl4_result_t sk_x_00350518();   /* FUN_00350518 */
+extern unsigned long sk_x_00350518();   /* FUN_00350518 */
 extern unsigned long sk_x_00350548();   /* FUN_00350548 */
 extern unsigned long sk_x_00350624();   /* FUN_00350624 */
 extern unsigned long sk_x_00350744();   /* FUN_00350744 */
@@ -255,10 +255,10 @@ extern unsigned long sk_x_00352efc();   /* FUN_00352efc */
 extern unsigned long sk_x_00353080();   /* FUN_00353080 */
 extern unsigned long sk_x_00353498();   /* FUN_00353498 */
 extern unsigned long sk_x_00353930();   /* FUN_00353930 */
-extern cl4_result_t sk_x_00356b98();   /* FUN_00356b98 */
+extern unsigned long sk_x_00356b98();   /* FUN_00356b98 */
 extern unsigned long sk_x_003591d0();   /* FUN_003591d0 */
 extern unsigned long sk_x_003593c0();   /* FUN_003593c0 */
-extern cl4_result_t sk_x_0035a7e8();   /* FUN_0035a7e8 */
+extern unsigned long sk_x_0035a7e8();   /* FUN_0035a7e8 */
 extern unsigned long sk_x_0035ac70();   /* FUN_0035ac70 */
 extern unsigned long sk_x_00369340();   /* FUN_00369340 */
 extern unsigned long sk_x_0036986c();   /* FUN_0036986c */
@@ -298,14 +298,14 @@ extern unsigned long sk_x_00406608();   /* FUN_00406608 */
 extern unsigned long sk_x_004066bc();   /* FUN_004066bc */
 extern unsigned long sk_x_00406704();   /* FUN_00406704 */
 extern unsigned long sk_x_0040676c();   /* FUN_0040676c */
-extern cl4_result_t sk_x_0040678c();   /* FUN_0040678c */
+extern unsigned long sk_x_0040678c();   /* FUN_0040678c */
 extern unsigned long sk_x_0040679c();   /* FUN_0040679c */
 extern unsigned long sk_x_004067b8();   /* FUN_004067b8 */
 extern unsigned long sk_x_004067f8();   /* FUN_004067f8 */
 extern unsigned long sk_x_0040683c();   /* FUN_0040683c */
 extern unsigned long sk_x_0040684c();   /* FUN_0040684c */
 extern unsigned long sk_x_0040686c();   /* FUN_0040686c */
-extern cl4_result_t sk_x_00406894();   /* FUN_00406894 */
+extern unsigned long sk_x_00406894();   /* FUN_00406894 */
 extern unsigned long sk_x_004068bc();   /* FUN_004068bc */
 extern unsigned long sk_x_004068f4();   /* FUN_004068f4 */
 extern unsigned long sk_x_0040691c();   /* FUN_0040691c */
@@ -325,7 +325,7 @@ extern unsigned long sk_x_00406cf0();   /* FUN_00406cf0 */
 extern unsigned long sk_x_00406d70();   /* FUN_00406d70 */
 extern unsigned long sk_x_00406dd0();   /* FUN_00406dd0 */
 extern unsigned long sk_x_00406e34();   /* FUN_00406e34 */
-extern cl4_result_t sk_x_00406e64();   /* FUN_00406e64 */
+extern unsigned long sk_x_00406e64();   /* FUN_00406e64 */
 extern unsigned long sk_x_00406e8c();   /* FUN_00406e8c */
 extern unsigned long sk_x_00406ee4();   /* FUN_00406ee4 */
 extern unsigned long sk_x_00406f08();   /* FUN_00406f08 */
@@ -391,7 +391,7 @@ extern unsigned long sk_x_00407c04();   /* FUN_00407c04 */
 extern unsigned long sk_x_00407c78();   /* FUN_00407c78 */
 extern unsigned long sk_x_00407c8c();   /* FUN_00407c8c */
 extern unsigned long sk_x_00407ca0();   /* FUN_00407ca0 */
-extern cl4_result_t sk_x_00407ce4();   /* FUN_00407ce4 */
+extern unsigned long sk_x_00407ce4();   /* FUN_00407ce4 */
 extern unsigned long sk_x_00407d14();   /* FUN_00407d14 */
 extern unsigned long sk_x_00407db0();   /* FUN_00407db0 */
 extern unsigned long sk_x_00407e10();   /* FUN_00407e10 */
@@ -409,7 +409,7 @@ extern unsigned long sk_x_004081b4();   /* FUN_004081b4 */
 extern unsigned long sk_x_00408280();   /* FUN_00408280 */
 extern unsigned long sk_x_004082a8();   /* FUN_004082a8 */
 extern unsigned long sk_x_00408328();   /* FUN_00408328 */
-extern cl4_result_t sk_x_00408354();   /* FUN_00408354 */
+extern unsigned long sk_x_00408354();   /* FUN_00408354 */
 extern unsigned long sk_x_00408374();   /* FUN_00408374 */
 extern unsigned long sk_x_0040838c();   /* FUN_0040838c */
 extern unsigned long sk_x_004083c0();   /* FUN_004083c0 */
@@ -512,7 +512,8 @@ static void sk_capop_003e68f0(void)
     sk_x_004075a4(*(uint64_t *)(ctx + 0x10), r5);
     sk_x_0040bd24(r6);
     sk_x_0040bd24(*(uint64_t *)(ctx + 0x58));
-    auVar7 = sk_x_00406e64();
+    auVar7.lo = sk_x_00406e64();
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00407e58(auVar7.lo, auVar7.hi, r3);
     /* tail dispatch: indirect jump, jumptable at 0x003e69a8 not recovered by Ghidra */
     (*tail_00)();
@@ -576,7 +577,8 @@ static void sk_capop_003e74fc(void)
         (*extraout_x8_00)();
         tail_00 = *(uint64_t (**)(void))(ctx + 0xd8);
         sk_x_00350744(*(int64_t *)(ctx + 0x20) + (int64_t)*(int *)(ctx + 0x17c));
-        auVar11 = sk_x_000839d8();
+        auVar11.lo = sk_x_000839d8();
+    auVar11.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00406fb0(*(uint64_t *)(ctx + 0x110), auVar11.lo, auVar11.hi,
                       *(uint64_t *)(ctx + 0xe0));
         (*extraout_x8_01)();
@@ -600,8 +602,9 @@ static void sk_capop_003e74fc(void)
         }
         else {
             r3 = *(uint64_t *)(ctx + 0xd8);
-            auVar11 = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
+            auVar11.lo = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
                                     *(uint64_t *)(ctx + 0xf0));
+    auVar11.hi = 0; /* extraout_x1: second word of return pair */
             *(uint64_t (**)(void))(ctx + 0x118) = extraout_x9_02;
             *(uint64_t *)(ctx + 0x120) = extraout_x10_00;
             ((void (*)(uint64_t, uint64_t, uint64_t))extraout_x9_02)(auVar11.lo, auVar11.hi, r3);
@@ -651,7 +654,8 @@ static void sk_capop_003e74fc(void)
     sk_x_0040bd24(extraout_x9_01);
     sk_x_0040bd24(extraout_x8_02);
     sk_x_0040bd24(r6);
-    auVar11 = sk_x_0040678c();
+    auVar11.lo = sk_x_0040678c();
+    auVar11.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00407504(auVar11.lo, auVar11.hi, r3);
     /* tail dispatch: indirect jump, jumptable at 0x003e773c not recovered by Ghidra */
     (*tail)();
@@ -770,7 +774,8 @@ static void sk_capop_003ebbd4(void)
     else {
         ((void (*)(uint64_t, uint64_t))(*(uint64_t *)(*(uint64_t *)(ctx + 0x80) + 8)))(
             *(uint64_t *)(ctx + 0x88), *(uint64_t *)(ctx + 0x60));
-        auVar3 = sk_x_00408354();
+        auVar3.lo = sk_x_00408354();
+    auVar3.hi = 0; /* extraout_x1: second word of return pair */
     }
     sk_x_00407960(auVar3.lo, auVar3.hi);
     r1 = *(uint64_t *)(ctx + 0x58);
@@ -1064,7 +1069,8 @@ static void sk_capop_003e788c(void)
         sk_x_0040bd24(extraout_x9_00);
         sk_x_0040bd24(extraout_x8);
         sk_x_0040bd24(r4);
-        auVar7 = sk_x_0040678c();
+        auVar7.lo = sk_x_0040678c();
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407878(auVar7.lo, auVar7.hi, r3);
         /* tail dispatch: indirect jump, jumptable at 0x003e7964 not recovered by Ghidra */
         (*tail_00)();
@@ -1225,7 +1231,6 @@ static void sk_capop_003ec780(void)
 
     sk_x_00407030();
     sk_x_00406490();
-    /* WARNING: Does not return */
     /* WARNING: Does not return */
     SoftwareBreakpoint(1, 0x3ec7a8);
 }
@@ -1401,9 +1406,11 @@ static void sk_capop_003e7b14(void)
     ctx_90 = *(uint64_t *)(ctx + 0x90);
     base = *(uint64_t *)(ctx + 0x30);
     ctx_28 = *(uint64_t *)(ctx + 0x28);
-    auVar7 = sk_x_00407ce4(value, *(uint64_t *)(ctx + 0x40));
+    auVar7.lo = sk_x_00407ce4(value, *(uint64_t *)(ctx + 0x40));
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
     extraout_x9(auVar7.lo, auVar7.hi, ctx_28);
-    auVar7 = sk_x_00350518(*(uint64_t *)(base + 0x10));
+    auVar7.lo = sk_x_00350518(*(uint64_t *)(base + 0x10));
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
     extraout_x8(auVar7.lo, auVar7.hi, ctx_28);
     sk_x_004070e4(ctx_90);
     extraout_x9_00(ctx_28, ctx_90);
@@ -1451,8 +1458,9 @@ static void sk_capop_003e9db0(void)
  * Notes: unaff_x21/unaff_x22 are register artifacts; extraout_x8* are address
  *   bases used with +0x40 derefs; extraout_x8_02 is a tail-called function
  *   pointer in the else branch. */
-static void sk_capop_003ea5a8(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4)
+static void sk_capop_003ea5a8(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5_unused)
 {
+    (void)param_5_unused;
     uint64_t value;
     uint64_t extraout_x8 = 0; /* extraout_x8 */
     uint64_t extraout_x8_00 = 0; /* extraout_x8_00 */
@@ -1652,7 +1660,7 @@ static void sk_capop_003ed0a8(void)
 
     word0 = *unaff_x20;
     sk_x_001a84f4(auStack_68);
-    sk_capop_003ec8a0(auStack_68, word0);
+    sk_capop_003ec8a0((uint64_t)auStack_68, word0);
     sk_x_001a8564();
     return;
 }
@@ -1814,7 +1822,8 @@ static void sk_capop_003e7d20(void)
         /* tail dispatch: indirect jump, jumptable at 0x003e7fe0 not recovered by Ghidra */
         dispatch = *(uint64_t *)(ctx + 0xd8);   /* tail dispatch: indirect jump, jumptable at 0x003e7fe0 not recovered by Ghidra */
         sk_x_00350744(*(int64_t *)(ctx + 0x20) + (int64_t)*(int *)(ctx + 0x17c));
-        pair = sk_x_000839d8();
+        pair.lo = sk_x_000839d8();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00406fb0(*(uint64_t *)(ctx + 0x110), pair.lo, pair.hi,
                       *(uint64_t *)(ctx + 0xe0));
         ((void (*)(void))extraout_x8_00)();
@@ -1837,8 +1846,9 @@ static void sk_capop_003e7d20(void)
             sk_x_00406b54();
         } else {
             msg = *(uint64_t *)(ctx + 0xd8);
-            pair = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
+            pair.lo = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
                                  *(uint64_t *)(ctx + 0xf0));
+    pair.hi = 0; /* extraout_x1: second word of return pair */
             *(uint64_t *)(ctx + 0x118) = extraout_x9_01;
             *(uint64_t *)(ctx + 0x120) = extraout_x10_00;
             ((void (*)(uint64_t, uint64_t, uint64_t))extraout_x9_01)(pair.lo, pair.hi, msg);
@@ -1888,7 +1898,8 @@ static void sk_capop_003e7d20(void)
     sk_x_0040bd24(extraout_x9_00);
     sk_x_0040bd24(extraout_x8_02);
     sk_x_0040bd24(arg);
-    pair = sk_x_0040678c();
+    pair.lo = sk_x_0040678c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00407504(pair.lo, pair.hi, msg);
     /* tail dispatch: indirect jump, jumptable at 0x003e7f50 not recovered by Ghidra */
     return;
@@ -1940,7 +1951,8 @@ static void sk_capop_003ea6ec(void)
         sk_x_00406c5c(*(uint64_t *)(ctx + 0x10));
         sk_x_0040bd24();
         sk_x_0040bd24(ref);
-        pair = sk_x_0040678c();
+        pair.lo = sk_x_0040678c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(pair.lo, pair.hi, msg);
         /* tail dispatch: indirect jump, jumptable at 0x003ea76c not recovered by Ghidra */
         return;
@@ -2067,8 +2079,8 @@ static void sk_capop_003ec7fc(void)
 
     sk_x_00407030();
     sk_x_00406490();
-    pcVar1 = (uint64_t)SoftwareBreakpoint(1, 0x3ec824);
-    ((void (*)(void))pcVar1)();
+    /* WARNING: Does not return */
+    SoftwareBreakpoint(1, 0x3ec824);
 }
 
 /* FUN_003ecb48 @ 0x003ecb48   (est. sk_capop_003ecb48)
@@ -2164,7 +2176,8 @@ sk_capop_003e6d08(void)
     int64_t base;
     cl4_result_t r;
 
-    r = sk_x_0034d2b4();
+    r.lo = sk_x_0034d2b4();
+    r.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_003509c8(0 /*in_x3*/, r.lo, r.lo);
     ((void (*)(uint64_t, uint64_t, uint64_t))(*(uint64_t *)(0 /*extraout_x16*/ + 0x20)))(0 /*extraout_x8*/, 0 /*extraout_x1*/, 0 /*in_x3*/);
     base = ((int64_t (*)(uint64_t, void *))0 /*in_x7*/)(0, (void *)0); /* arg2: &stack0xffffffffffffff90 */
@@ -2190,8 +2203,9 @@ sk_capop_003e6d08(void)
  *   allocator, FUN_0040bd24 a per-op-frame release; one indirect call through
  *   code* extraout_x8_08. */
 static void
-sk_capop_003e838c(uint64_t param_1, uint64_t param_2, uint64_t param_3, int64_t param_4)
+sk_capop_003e838c(uint64_t param_1, uint64_t param_2, uint64_t param_3, int64_t param_4, uint64_t param_5_unused)
 {
+    (void)param_5_unused;
     uint64_t v;
     uint64_t s;
     uint64_t n;
@@ -2322,7 +2336,8 @@ sk_capop_003e9df8(void)
     cl4_result_t r;
 
     sk_x_00084220();
-    r = sk_x_00407484();
+    r.lo = sk_x_00407484();
+    r.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_003509c8(0 /*in_x3*/, r.lo, r.lo);
     ((void (*)(uint64_t, uint64_t, uint64_t))(*(uint64_t *)(0 /*extraout_x16*/ + 0x20)))(0 /*extraout_x8*/, 0 /*extraout_x1*/, 0 /*in_x3*/);
     sk_x_0034d004(0);
@@ -2373,7 +2388,8 @@ sk_capop_003ea8f4(void)
         sk_x_00406c5c();
         sk_x_0040bd24(f);
         sk_x_0040bd24(val);
-        r = sk_x_0040678c();
+        r.lo = sk_x_0040678c();
+    r.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(r.lo, r.hi, arg);
         /* WARNING: Could not recover jumptable at 0x003ea980. Too many branches */
         /* WARNING: Treating indirect jump as call */
@@ -2424,7 +2440,8 @@ sk_capop_003eb1d8(void)
         sk_x_00407604();
         sk_x_0040686c();
         sk_x_0040bd24();
-        r = sk_x_0040678c();
+        r.lo = sk_x_0040678c();
+    r.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_004079b4(r.lo, r.hi, arg);
         /* WARNING: Could not recover jumptable at 0x003eb240. Too many branches */
         /* WARNING: Treating indirect jump as call */
@@ -2500,7 +2517,8 @@ sk_capop_003ec438(void)
 {
     cl4_result_t r;
 
-    r = sk_x_00407128();
+    r.lo = sk_x_00407128();
+    r.hi = 0; /* extraout_x1: second word of return pair */
     /* WARNING: Could not recover jumptable at 0x003ec450. Too many branches */
     /* WARNING: Treating indirect jump as call */
     ((void (*)(uint64_t))r.hi)(r.lo & 0xffffffffffff | 0xd707000000000000);
@@ -2523,8 +2541,8 @@ sk_capop_003ec824(void)
     sk_x_00407030();
     sk_x_00406490();
     /* WARNING: Does not return */
-    fn = (uint8_t *)SoftwareBreakpoint(1, 0x3ec84c);
-    ((void (*)(void))fn)();
+    /* WARNING: Does not return */
+    SoftwareBreakpoint(1, 0x3ec84c);
 }
 
 /* FUN_003ecb4c @ 0x003ecb4c   (est. sk_capop_003ecb4c)
@@ -2684,7 +2702,8 @@ static void sk_capop_003e86c8(void)
     uint64_t tail = /* UNRECOVERED_JUMPTABLE */ 0;
 
     result = sk_x_00407afc();
-    pair = sk_x_00407f60();
+    pair.lo = sk_x_00407f60();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     code = *(int *)(*(uint64_t *)(ctx + 0x28) + 0x3c);
     *(int *)(ctx + 0x1e0) = code;
     if ((*(uint8_t *)(*(uint64_t *)(ctx + 0x30) + (uint64_t)code) & 1) != 0) {
@@ -2707,7 +2726,8 @@ static void sk_capop_003e86c8(void)
         sk_x_0040bd24(sp4);
         sk_x_0040bd24(sp5);
         sk_x_0040bd24(tail);
-        pair = sk_x_0040678c();
+        pair.lo = sk_x_0040678c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_004075d0(pair.lo, pair.hi, result);
         /* tail dispatch: indirect jump, jumptable at 0x003e87b0 not recovered by Ghidra */
         return;
@@ -2740,9 +2760,10 @@ static void sk_capop_003e86c8(void)
     }
     else {
         result = *(uint64_t *)(ctx + 0x128);
-        pair = sk_x_00406894(*(uint64_t *)(ctx + 0x148),
+        pair.lo = sk_x_00406894(*(uint64_t *)(ctx + 0x148),
                                                            *(uint64_t *)(ctx + 0x158),
                                                            *(uint64_t *)(ctx + 0x140));
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         *(uint64_t *)(ctx + 0x178) = extraout_x9_00;
         *(uint64_t *)(ctx + 0x180) = extraout_x10_00;
         ((void (*)(uint64_t, uint64_t, uint64_t))extraout_x9_00)(pair.lo, pair.hi, result);
@@ -2852,7 +2873,8 @@ static void sk_capop_003eb398(void)
         sk_x_00407604();
         sk_x_0040686c();
         sk_x_0040bd24(saved);
-        pair = sk_x_0040678c();
+        pair.lo = sk_x_0040678c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(pair.lo, pair.hi, result);
         /* tail dispatch: indirect jump, jumptable at 0x003eb418 not recovered by Ghidra */
         return;
@@ -2944,8 +2966,8 @@ static void sk_capop_003ec84c(void)
     sk_x_00407030();
     sk_x_00406490();
     /* WARNING: Does not return */
-    trap = (uint64_t)SoftwareBreakpoint(1, 0x3ec874);
-    ((void (*)(void))trap)();
+    /* WARNING: Does not return */
+    SoftwareBreakpoint(1, 0x3ec874);
 }
 
 /* FUN_003ecb64 @ 0x003ecb64   (est. sk_capop_003ecb64)
@@ -2996,7 +3018,7 @@ static void sk_capop_003ecb64(uint64_t arg1, uint64_t arg2)
  *   an emulated frame slot (extraout_x8 is a 0-valued local); param_5/6 are
  *   declared but unused in the decompiled body. */
 static void sk_capop_003ed1a4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4,
-                              uint64_t arg5, uint64_t arg6, uint64_t arg7)
+                              uint64_t arg5, uint64_t arg6)
 {
     uint64_t anchor;
     uint64_t frame;
@@ -3006,7 +3028,7 @@ static void sk_capop_003ed1a4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint6
     uint8_t stackbuf[0x40]; /* emulated stack slot at 0xffffffffffffffa0 */
 
     anchor = sk_x_00027614(&sk_g_0064c260, &sk_g_004bbc30);
-    frame = sk_x_0031dc0c(0, arg7, anchor, 0x66c1c8);
+    frame = sk_x_0031dc0c(0, /* arg7: not passed by callers */ 0, anchor, 0x66c1c8);
     dtab = *(uint64_t *)(frame + -8);
     ((void (*)(uint64_t))sk_g_00658c80)((*(uint64_t *)(dtab + 0x40) + 0xfU) & 0xfffffffffffffff0);
     scratch = (uint8_t *)((uint64_t)stackbuf - extraout_x8);
@@ -3061,7 +3083,8 @@ static void sk_capop_003eeb6c(void)
     slot = (uint64_t *)sk_x_00407ac4();
     *slot = extraout_x17;
     slot[1] = (uint64_t)sk_capop_003eebf0; /* FUN_003eebf0 */
-    pair = sk_x_00019858((uint64_t)(slot + 1));
+    pair.lo = sk_x_00019858((uint64_t)(slot + 1));
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_003ef924(pair.lo, pair.hi, result);
     return;
 }
@@ -3148,7 +3171,8 @@ sk_capop_003e89f0(void)
 		sk_x_00407764();
 		e8_00();
 		sk_x_00350744(*(int64_t *)(ctx + 0x30) + (int64_t)*(int32_t *)(ctx + 0x1e4));
-		result_pair = sk_x_000839d8();
+		result_pair.lo = sk_x_000839d8();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
 		sk_x_00406fb0(*(uint64_t *)(ctx + 0x170), result_pair.lo, result_pair.hi,
 		              *(uint64_t *)(ctx + 0x130));
 		e8_01();
@@ -3175,9 +3199,10 @@ sk_capop_003e89f0(void)
 			tail_00 = e16;
 		} else {
 			u4 = *(uint64_t *)(ctx + 0x128);
-			result_pair = sk_x_00406894(*(uint64_t *)(ctx + 0x148),
+			result_pair.lo = sk_x_00406894(*(uint64_t *)(ctx + 0x148),
 			                            *(uint64_t *)(ctx + 0x158),
 			                            *(uint64_t *)(ctx + 0x140));
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
 			*(uint64_t *)(ctx + 0x178) = (uint64_t)e9_00;
 			*(uint64_t *)(ctx + 0x180) = e10_00;
 			e9_00(result_pair.lo, result_pair.hi, u4);
@@ -3236,7 +3261,8 @@ sk_capop_003e89f0(void)
 	sk_x_0040bd24((uint64_t)msg_fn);
 	sk_x_0040bd24(u3);
 	sk_x_0040bd24(u7);
-	result_pair = sk_x_0040678c();
+	result_pair.lo = sk_x_0040678c();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
 	sk_x_004075d0(result_pair.lo, result_pair.hi, u4);
 	/* tail dispatch: indirect jump, jumptable at 0x003e8ca0 not recovered by Ghidra */
 	return;
@@ -3328,7 +3354,8 @@ sk_capop_003eb594(void)
 	} else {
 		sk_x_00408280();
 		req_fn_00();
-		result = sk_x_00408354();
+		result.lo = sk_x_00408354();
+    result.hi = 0; /* extraout_x1: second word of return pair */
 	}
 	sk_x_004069b0(result.lo, result.hi);
 	sk_x_004070a0();
@@ -3372,7 +3399,8 @@ sk_capop_003ec598(void)
 	sk_x_00407000();
 	sk_x_0031dc0c(0, *(uint64_t *)(ctx + 0x20), *(uint64_t *)(ctx + 0x28),
 	              *(uint64_t *)(ctx + 0x30));
-	result = sk_x_0035a7e8();
+	result.lo = sk_x_0035a7e8();
+    result.hi = 0; /* extraout_x1: second word of return pair */
 	sk_x_00369340(result.lo, result.hi, 0);
 	sk_x_00407128();
 	/* tail dispatch: indirect jump, jumptable at 0x003ec5f4 not recovered by Ghidra */
@@ -3396,8 +3424,7 @@ sk_capop_003ec874(void)
 	sk_x_00407030();
 	sk_x_00406490();
 	/* does not return */
-	bp_fn = (void (*)())SoftwareBreakpoint(1, 0x3ec89c);
-	bp_fn();
+	SoftwareBreakpoint(1, 0x3ec89c);
 }
 
 /* FUN_003ecc18 @ 0x003ecc18   (est. sk_capop_003ecc18)
@@ -3553,12 +3580,14 @@ static void sk_capop_003e6ecc(long param_1, uint64_t param_2, uint64_t param_3, 
     msg_d = param_8;
     frame = (*param_9)(0, &msg_a);
     off38 = *(int *)(frame + 0x38);
-    pair = sk_x_00350500();
+    pair.lo = sk_x_00350500();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00377824(pair.lo, pair.hi, param_6, &sk_g_00614a5c);
     sk_x_00350744(param_1 + off38);
     sk_x_000839d8();
     *(uint8_t *)(param_1 + *(int *)(frame + 0x3c)) = 0;
-    pair = sk_x_0035050c();
+    pair.lo = sk_x_0035050c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00377824(pair.lo, pair.hi, param_5, &sk_g_00614a5c);
     sk_x_00349530();
     ((void (*)(uint64_t, uint64_t))(*(uint64_t *)(tail_x16 + 0x20)))(param_1, param_2);
@@ -3633,7 +3662,8 @@ static void sk_capop_003e8e28(void)
         sk_x_0040bd24(stack_4);
         sk_x_0040bd24(stack_5);
         sk_x_0040bd24(stack_6);
-        pair = sk_x_0040678c();
+        pair.lo = sk_x_0040678c();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_004075d0(pair.lo, pair.hi, saved);
         /* tail dispatch: indirect jump, jumptable at 0x003e8f20 not recovered by Ghidra */
         ((void (*)(void))tail_x9b)();       /* UNRECOVERED_JUMPTABLE_00: register-held target */
@@ -3679,7 +3709,8 @@ static void sk_capop_003e9fcc(void)
     uint8_t *ctx = 0;           /* unaff_x22: current op context */
     cl4_result_t pair;          /* auVar3 */
 
-    pair = sk_x_00407000();
+    pair.lo = sk_x_00407000();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     frame_hi = pair.hi;
     *(uint64_t *)(ctx + 0x18) = frame_hi;
     *(uint64_t *)(ctx + 0x20) = in_arg;
@@ -3755,8 +3786,9 @@ static void sk_capop_003eae24(void)
  * Notes: unaff_x22 is the op context, unaff_x21 selects the branch. The many
  *   extraout_x8_* / extraout_x16_* are implicit register results/bases, and
  *   extraout_x8_02 is an implicit register tail call on the chained path. */
-static void sk_capop_003eb68c(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4)
+static void sk_capop_003eb68c(uint64_t param_1, uint64_t param_2, uint64_t param_3, uint64_t param_4, uint64_t param_5_unused)
 {
+    (void)param_5_unused;
     uint64_t res;               /* uVar1 */
     uint64_t base_a = 0;        /* extraout_x8 */
     uint64_t base_b = 0;        /* extraout_x8_00 */
@@ -3908,7 +3940,8 @@ static void sk_capop_003ed340(void)
     uint8_t *ctx = 0;           /* unaff_x22: current op context */
     cl4_result_t pair;          /* auVar4 */
 
-    pair = sk_x_00406fd4();
+    pair.lo = sk_x_00406fd4();
+    pair.hi = 0; /* extraout_x1: second word of return pair */
     *(uint64_t *)(ctx + 0x10) = pair.lo;
     *(uint64_t *)(ctx + 0x18) = in_arg3;
     capword = *(uint64_t *)(in_arg3 + -8);
@@ -4148,9 +4181,11 @@ static void sk_capop_003e90f4(void)
     uVar5 = *(uint64_t *)(ctx + 0xb8);
     lVar2 = *(uint64_t *)(ctx + 0x40);
     uVar6 = *(uint64_t *)(ctx + 0x38);
-    auVar7 = sk_x_00407ce4(uVar1, *(uint64_t *)(ctx + 0x50));
+    auVar7.lo = sk_x_00407ce4(uVar1, *(uint64_t *)(ctx + 0x50));
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
     (*extraout_x9)(auVar7.lo, auVar7.hi, uVar6);
-    auVar7 = sk_x_00350518(*(uint64_t *)(lVar2 + 0x10));
+    auVar7.lo = sk_x_00350518(*(uint64_t *)(lVar2 + 0x10));
+    auVar7.hi = 0; /* extraout_x1: second word of return pair */
     (*extraout_x8)(auVar7.lo, auVar7.hi, uVar6);
     sk_x_004070e4(uVar5);
     (*extraout_x9_00)(uVar6, uVar5);
@@ -4200,7 +4235,8 @@ static void sk_capop_003ea0a4(void)
         sk_x_00407604();
         sk_x_00406c5c(*(uint64_t *)(ctx + 0x10));
         sk_x_0040bd24();
-        auVar5 = sk_x_0040678c();
+        auVar5.lo = sk_x_0040678c();
+    auVar5.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(auVar5.lo, auVar5.hi, uVar3);
         /* tail dispatch: indirect jump, jumptable at 0x003ea118 not recovered by Ghidra */
         return;
@@ -4235,7 +4271,8 @@ static void sk_capop_003eaef4(void)
     cl4_result_t auVar1;
 
     sk_x_00407478();
-    auVar1 = sk_x_0035a7e8();
+    auVar1.lo = sk_x_0035a7e8();
+    auVar1.hi = 0; /* extraout_x1: second word of return pair */
     sk_capop_003eaf34(auVar1.lo, auVar1.hi, extraout_x1);
     sk_x_0036b270(extraout_x1);
     return;
@@ -4271,7 +4308,8 @@ static void sk_capop_003eb7c4(void)
         sk_x_0040686c();
         sk_x_0040bd24();
         sk_x_0040bd24(uVar1);
-        auVar5 = sk_x_0040678c();
+        auVar5.lo = sk_x_0040678c();
+    auVar5.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_004079b4(auVar5.lo, auVar5.hi, uVar3);
         /* tail dispatch: indirect jump, jumptable at 0x003eb834 not recovered by Ghidra */
         return;
@@ -4320,8 +4358,7 @@ static void sk_capop_003ec708(void)
 
     sk_x_00407030();
     sk_x_00406490();
-    pcVar1 = (void (*)(void))SoftwareBreakpoint(1, 0x3ec730);
-    (*pcVar1)();
+    SoftwareBreakpoint(1, 0x3ec730);
 }
 
 /* FUN_003ec8c8 @ 0x003ec8c8   (est. sk_capop_003ec8c8)
@@ -4385,10 +4422,12 @@ static void sk_capop_003ed4d4(void)
     uVar3 = *(uint64_t *)(ctx + 0x28);
     uVar1 = *(uint64_t *)(ctx + 0x18);
     sk_x_0034a210();
-    auVar4 = sk_x_00027614();
+    auVar4.lo = sk_x_00027614();
+    auVar4.hi = 0; /* extraout_x1: second word of return pair */
     uVar2 = sk_x_004063b4(auVar4.lo, auVar4.hi, auVar4.lo);
     sk_x_0031dc0c(uVar2, uVar1);
-    auVar4 = sk_x_00356b98();
+    auVar4.lo = sk_x_00356b98();
+    auVar4.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_00369340(auVar4.lo, auVar4.hi, 0);
     sk_x_0040bd24(uVar3);
     sk_x_00407128();
@@ -4489,7 +4528,8 @@ static void sk_capop_003e7228(void)
     uint64_t jt;                 /* UNRECOVERED_JUMPTABLE */
 
     v2 = sk_x_00407b18();
-    result_pair = sk_x_00407fcc();
+    result_pair.lo = sk_x_00407fcc();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
     op_index = *(int *)(*(long *)(ctx + 0x18) + 0x3c);
     *(int *)(ctx + 0x178) = op_index;
     if ((*(uint8_t *)(*(long *)(ctx + 0x20) + (long)op_index) & 1) != 0) {
@@ -4507,7 +4547,8 @@ static void sk_capop_003e7228(void)
         sk_x_0040bd24(ret_x9);
         sk_x_0040bd24(ret_x8);
         sk_x_0040bd24(v5);
-        result_pair = sk_x_0040678c();
+        result_pair.lo = sk_x_0040678c();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407878(result_pair.lo, result_pair.hi, v2);
         /* tail dispatch: indirect jump, jumptable at 0x003e72f0 not recovered by Ghidra */
         return;
@@ -4533,13 +4574,15 @@ static void sk_capop_003e7228(void)
         frame_ptr = (uint64_t *)sk_x_00406fe0();
         *(uint64_t **)(ctx + 0x148) = frame_ptr;
         *frame_ptr = ret_x17;
-        result_pair = sk_x_00406b54();
+        result_pair.lo = sk_x_00406b54();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         jt = ret_x16;
     }
     else {
         v5 = *(uint64_t *)(ctx + 0xd8);
-        result_pair = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
+        result_pair.lo = sk_x_00406894(*(uint64_t *)(ctx + 0xf8), *(uint64_t *)(ctx + 0x108),
                                     *(uint64_t *)(ctx + 0xf0));
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         *(uint64_t *)(ctx + 0x118) = ret_x9_01;
         *(uint64_t *)(ctx + 0x120) = ret_x10_00;
         ((void (*)(uint64_t, uint64_t, uint64_t))ret_x9_01)(result_pair.lo, result_pair.hi, v5);
@@ -4550,7 +4593,8 @@ static void sk_capop_003e7228(void)
         frame_ptr = (uint64_t *)sk_x_00406fe0();
         *(uint64_t **)(ctx + 0x128) = frame_ptr;
         *frame_ptr = ret_x17_00;
-        result_pair = sk_x_00406ac4();
+        result_pair.lo = sk_x_00406ac4();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         jt = ret_x16_00;
     }
     sk_x_00407878(result_pair.lo, result_pair.hi, v5, jt, v2);
@@ -4623,7 +4667,8 @@ static void sk_capop_003e9310(void)
         sk_x_00408410();
         ((void (*)(void))slot_fn)();
         sk_x_00350744(*(long *)(ctx + 0x30) + (long)*(int *)(ctx + 0x1e4));
-        result_pair = sk_x_000839d8();
+        result_pair.lo = sk_x_000839d8();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00406fb0(*(uint64_t *)(ctx + 0x170), result_pair.lo, result_pair.hi,
                       *(uint64_t *)(ctx + 0x130));
         ((void (*)(void))ret_x8_00)();
@@ -4651,8 +4696,9 @@ static void sk_capop_003e9310(void)
         }
         else {
             v7 = *(uint64_t *)(ctx + 0x128);
-            result_pair = sk_x_00406894(*(uint64_t *)(ctx + 0x148), *(uint64_t *)(ctx + 0x158),
+            result_pair.lo = sk_x_00406894(*(uint64_t *)(ctx + 0x148), *(uint64_t *)(ctx + 0x158),
                                         *(uint64_t *)(ctx + 0x140));
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
             *(uint64_t *)(ctx + 0x178) = ret_x9_00;
             *(uint64_t *)(ctx + 0x180) = ret_x10_00;
             ((void (*)(uint64_t, uint64_t, uint64_t))ret_x9_00)(result_pair.lo, result_pair.hi, v7);
@@ -4710,7 +4756,8 @@ static void sk_capop_003e9310(void)
     sk_x_0040bd24(v3);
     sk_x_0040bd24(v4);
     sk_x_0040bd24(v10);
-    result_pair = sk_x_0040678c();
+    result_pair.lo = sk_x_0040678c();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
     sk_x_004075d0(result_pair.lo, result_pair.hi, v7);
     /* tail dispatch: indirect jump, jumptable at 0x003e95ac not recovered by Ghidra */
     return;
@@ -4756,7 +4803,8 @@ static void sk_capop_003ea260(void)
         sk_x_00408374();
         sk_x_00406c5c();
         sk_x_0040bd24(v6);
-        result_pair = sk_x_0040678c();
+        result_pair.lo = sk_x_0040678c();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(result_pair.lo, result_pair.hi, v3);
         /* tail dispatch: indirect jump, jumptable at 0x003ea2e0 not recovered by Ghidra */
         return;
@@ -4782,8 +4830,9 @@ static void sk_capop_003ea260(void)
  * 003eaf4c. The whole body is a single tail call followed by a return.
  * Confidence: low
  * Notes: none — no Ghidra artifacts beyond the single in-slice callee. */
-static void sk_capop_003eaf34(void)
+static void sk_capop_003eaf34(uint64_t arg1, uint64_t arg2, uint64_t arg3)
 {
+    (void)arg1; (void)arg2; (void)arg3;
     sk_capop_003eaf4c();
     return;
 }
@@ -4829,7 +4878,8 @@ static void sk_capop_003eb9c8(void)
         sk_x_0040686c();
         sk_x_0040bd24(v5);
         sk_x_0040bd24(v3);
-        result_pair = sk_x_0040678c();
+        result_pair.lo = sk_x_0040678c();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
         sk_x_00407e58(result_pair.lo, result_pair.hi, v2);
         /* tail dispatch: indirect jump, jumptable at 0x003eba50 not recovered by Ghidra */
         return;
@@ -4877,8 +4927,8 @@ static void sk_capop_003ec730(void)
     sk_x_00407030();
     sk_x_00406490();
     /* WARNING: Does not return */
-    trap_fn = (uint64_t)SoftwareBreakpoint(1, 0x3ec758);
-    ((void (*)(void))trap_fn)();
+    /* WARNING: Does not return */
+    SoftwareBreakpoint(1, 0x3ec758);
 }
 
 /* FUN_003ec918 @ 0x003ec918   (est. sk_capop_003ec918)
@@ -4896,7 +4946,7 @@ static void sk_capop_003ec918(void)
     uint8_t stack_scratch[72];   /* auStack_68 local stack scratch */
 
     sk_x_001a84f4(stack_scratch);
-    sk_capop_003ec8a0(stack_scratch, *ctx_base);
+    sk_capop_003ec8a0((uint64_t)stack_scratch, *ctx_base);
     sk_x_001a8564();
     return;
 }
@@ -4938,14 +4988,16 @@ static void sk_capop_003ed5f8(uint64_t param_1, uint64_t param_2, uint64_t param
     cl4_result_t result_pair;  /* auVar2 16-byte pair */
 
     sk_x_0034a210();
-    result_pair = sk_x_00027614();
+    result_pair.lo = sk_x_00027614();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
     msg_val = sk_x_004063b4(result_pair.lo, result_pair.hi, result_pair.lo);
     msg_val = sk_x_0031dc0c(msg_val, param_3);
     sk_x_000a6f88();
     sk_x_0007c1a4();
     ((void (*)(void))sk_g_00658c80)(); /* (*DAT_00658c80)() */
     sk_x_00407b80();
-    result_pair = sk_x_00351384(*(uint64_t *)(ret_x12 + 0x10));
+    result_pair.lo = sk_x_00351384(*(uint64_t *)(ret_x12 + 0x10));
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
     ((void (*)(uint64_t, uint64_t, uint64_t))ret_x8)(result_pair.lo, result_pair.hi, msg_val);
     sk_x_0027ed7c(param_1, msg_val, reply_slot);
     return;
@@ -4972,7 +5024,8 @@ static void sk_capop_003ee520(void)
     uint8_t *ctx = 0;            /* unaff_x22: current op context */
     cl4_result_t result_pair;  /* auVar4 16-byte pair */
 
-    result_pair = sk_x_00407000();
+    result_pair.lo = sk_x_00407000();
+    result_pair.hi = 0; /* extraout_x1: second word of return pair */
     v3 = *(uint64_t *)(ctx + 0x38);
     sk_x_00351d24(result_pair.lo, result_pair.hi, *(uint64_t *)(ctx + 0x20));
     probe = sk_x_000839f8();
