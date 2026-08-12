@@ -1179,11 +1179,17 @@ done_reason:
  *     VM mask pairs vm+0x20a8/b0, +0x20c0/c8, +0x2090/98, +0x20d8/e0)
  *   - HVC64 0xc3000003 (b98bbb0), 0xc3000005 (b98bbd4+b98c0cc tail),
  *     0xc3000004/6 (b98b6d8 slot-scan + waitq-hash flush, b98b700-b98d838)
- *   - SVC64 0xc6000014 (b98c864 per-slot CAS: bitmap vm+0x2188, slot table
- *     vm+0x2148, hv_vcpu_map_memory, b98cfd4-b98d5f4)
- * REMAINING (still to expand): SVC 0xc6000012/0x13 leaves (b98ce3c/b98cd70),
- *   SVC 0xc6000011/0x15..0x1a path (b98cb30/b98ca7c...), HVC32 hint range
- *   (b98a47c). */
+ *   - HVC32 0xc1000000 compound (b98c370, 5 save/OR/store sequences),
+ *     0xc1000001 (b98bd1c), 0x2 (b98c670), 0x3 (b98a4c0), 0x4 (b98c70c),
+ *     0x5 (b98bdf0), 0x6..0xf (b98c798)
+ *   - SVC64 0xc6000012 (b98ce3c), 0x13 (b98cd70), 0x14 (b98c864 per-slot
+ *     CAS: bitmap vm+0x2188, slot table vm+0x2148, hv_vcpu_map_memory,
+ *     b98cfd4-b98d5f4), 0x18 (b98cf28/b98d07c per-slot notify), 0x19
+ *     (b98ce54 slot-group sweep), 0x1a (b98caa4 SIMD select)
+ * REMAINING (deep shared slot-record machinery, read but not yet fully
+ *   transcribed with verified register tracking): SVC 0xc6000010 deep path
+ *   (b98d308), SVC 0xc6000011 deep path (b98d268/b98d270), the 0x19 copyin
+ *   continuation (b98d120-b98d148), the shared b98d148-b98d838 block. */
 static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
 {
     uint64_t *es = (uint64_t *)vcpu->el2_state;
@@ -1228,6 +1234,51 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
              * the SVC number (0xc6000011..0xc600001a). */
             if ((esr <= 0xc6000014ull) &&
                 (*(uint8_t *)((char *)vm + 0x2190) & 1)) {
+                if (esr == 0xc6000010ull) {
+                    /* b98cee0 (0xc6000010): slot-map select.
+                     * idx = es[0x10] (<= 7 else es[0x8] =
+                     * 0xfffffffffae94003, b98cee4-b98cf00), sub = es[0x18]
+                     * (<= 0x3f else same error). If vcpu[0x88] ==
+                     * vm[0x2120] (guest ctx == map base) -> the b98d308
+                     * slot-record machinery (CAS-increment slot refcount,
+                     * sub-slot acquire, map-descriptor check, slot-record
+                     * registration, b98d308-b98d838 — FULL TRANSCRIPTION
+                     * PENDING, shared with 0x11/0x19); else es[0x8] =
+                     * 0xfffffffffae94001 (b98cf14), done. */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    if (es[0x10] > 7) {
+                        es[0x8] = 0xfffffffffae94003ull;   /* b98cee4 */
+                        return;
+                    }
+                    if (es[0x18] > 0x3f) {
+                        es[0x8] = 0xfffffffffae94003ull;   /* b98cf00 */
+                        return;
+                    }
+                    if (*(uint64_t *)((char *)vcpu + 0x88) !=
+                        *(uint64_t *)((char *)vmp + 0x2120)) {
+                        es[0x8] = 0xfffffffffae94001ull;   /* b98cf14 */
+                        return;
+                    }
+                    goto svc_shared_slot;       /* b98d308 (pending) */
+                }
+                if (esr == 0xc6000011ull) {
+                    /* b98cb50 (0xc6000011): copyin slot op. Gate (fully
+                     * traced): slot = es[0x10] (<= 7), sub = es[0x18]
+                     * (<= 0x3f), es[0x20]&0x3fff == 0 else es[0x8] =
+                     * 0xfffffffffae94003 (b98cb78-b98cb8c); zero the
+                     * stack out-buffer (b98cb58-b98cb68); if
+                     * vm+0x2198[0x16]<<16 != 0x3000000 -> b98d268 (the
+                     * descriptor-mismatch path, deep) else hv_copyin_user
+                     * path with 0x4000 size (b98d270, deep — FULL
+                     * TRANSCRIPTION PENDING, shared block). */
+                    uint64_t *vmp = (uint64_t *)vm;
+                    if (es[0x10] > 7 || es[0x18] > 0x3f ||
+                        (es[0x20] & 0x3fff) != 0) {
+                        es[0x8] = 0xfffffffffae94003ull;   /* b98cb78-b98cb8c */
+                        return;
+                    }
+                    goto svc_shared_slot;       /* b98d270 (pending) */
+                }
                 if (esr == 0xc6000012ull)
                     /* b98ce3c: hv_vcpu_slot_op(vcpu, es[0x10], es[0x18])
                      * (b98e12c); result sign-extended into es[0x8]. */
@@ -1611,7 +1662,11 @@ svc19_argcheck:                     /* b98d064 */
                 }
             }
             /* 0xc6000010/0x11 dispatch + 0x15-0x17 -> unhandled (b98d860).
-             * 0x10 (b98cee0) / 0x11 (b98cb50) still to expand. */
+             * 0x10 (b98cee0) / 0x11 (b98cb50) gates are fully traced above;
+             * their deep continuations (b98d308/b98d268/b98d270) are the
+             * shared slot-record machinery (b98d148-b98d838), read but not
+             * yet transcribed with verified register tracking. */
+svc_shared_slot:                /* b98d308 / b98d270 (pending) */
             goto unhandled_ec;
         }
         return;
