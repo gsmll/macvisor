@@ -4239,3 +4239,844 @@ ret:
     sk_x_003a25d4(param_2);
     return result;
 }
+
+/* FUN_004578dc @ 0x004578dc   (est. sk_arr_release_compact)
+ * Ghidra: void FUN_004578dc(void)
+ * Compacts the array buffer *unaff_x20: validates it (00349a18, 003a261c),
+ * and if the buffer is shared (low bit clear) releases its element type
+ * (0006b3f4), runs the 004661b8 destructor and rebuilds the buffer via the
+ * unaff_x19 closure.
+ * Confidence: low (closure-fragment heavy) */
+static void sk_arr_release_compact_004578dc(long *self)
+{
+    word_t uVar1;
+    long buf = *self;
+    sk_x_00349a18();
+    uVar1 = sk_x_003a261c(buf);
+    *self = buf;
+    if ((uVar1 & 1) == 0) {
+        sk_x_0006b3f4(*(word_t *)(buf + 0x10));
+        sk_x_004661b8();
+        *self = 0;   /* (*unaff_x19)() */
+    }
+}
+
+/* FUN_00457938 @ 0x00457938   (est. sk_arr_release_compact2)
+ * Ghidra: void FUN_00457938(void)
+ * Same compaction, rebuilding via the 0045659c ensure helper.
+ * Confidence: low */
+static void sk_arr_release_compact2_00457938(long *self)
+{
+    word_t uVar1;
+    long buf = *self;
+    sk_x_00349a18();
+    uVar1 = sk_x_003a261c(buf);
+    *self = buf;
+    if ((uVar1 & 1) == 0) {
+        sk_x_0006b3f4(*(word_t *)(buf + 0x10));
+        sk_x_004661b8();
+        *self = sk_arr_ensure3_0045659c(0, 0, 0, 0, 0, 0, 0, 0);
+    }
+}
+
+/* FUN_00457994 @ 0x00457994   (est. sk_arr_reserve_1_elem)
+ * Ghidra: void FUN_00457994(long param_1)
+ * Ensures the buffer *unaff_x20 has room for param_1+1 elements of the
+ * 0x20-stride type: if capacity (count>>1 at +0x18) is too small, grows via
+ * 00465ed4 + the closure.
+ * Confidence: medium */
+static void sk_arr_reserve_1_elem_00457994(long param_1, long *self)
+{
+    if ((long)(*(word_t *)(*self + 0x18) >> 1) < param_1 + 1) {
+        cl4_pair_t au = sk_x_00465ed4(0);
+        *self = 0;   /* (*extraout_x8)(au.lo, au.hi, 1) */
+    }
+}
+
+/* FUN_004579e0 @ 0x004579e0   (est. sk_arr_reserve_1_elem2)
+ * Ghidra: void FUN_004579e0(long param_1)
+ * Same reserve for param_1+1 elements, growing via 0006b42c + 0045659c.
+ * Confidence: medium */
+static void sk_arr_reserve_1_elem2_004579e0(long param_1, long *self)
+{
+    if ((long)(*(word_t *)(*self + 0x18) >> 1) < param_1 + 1) {
+        cl4_pair_t au = sk_x_0006b42c();
+        *self = sk_arr_ensure3_0045659c(au.lo, au.hi, 1, 0, 0, 0, 0, 0);
+    }
+}
+
+/* FUN_00457a28 @ 0x00457a28   (est. sk_arr_ensure_param_28)
+ * Ghidra: void FUN_00457a28(long param_1)
+ * Ensure-capacity for the 0x10-stride buffer at param_1 via 0045659c with the
+ * 0x657af0 metadata, 00069970 copy and 00456c3c reserve.
+ * Confidence: medium */
+static void sk_arr_ensure_param_28_00457a28(long param_1)
+{
+    sk_arr_ensure3_0045659c(0, *(word_t *)(param_1 + 0x10), 0, param_1,
+                            0x657af0, 0x005a3530, (word_t)sk_x_00069970,
+                            (word_t)sk_x_00456c3c);
+}
+
+/* FUN_00457a88 @ 0x00457a88   (est. sk_arr_ensure_param_88)
+ * Ghidra: void FUN_00457a88(long param_1)
+ * Ensure-capacity for the buffer at param_1 via 0045659c with 0x64e110
+ * metadata and the 00069770 copy.
+ * Confidence: medium */
+static void sk_arr_ensure_param_88_00457a88(long param_1)
+{
+    sk_arr_ensure3_0045659c(0, *(word_t *)(param_1 + 0x10), 0, param_1,
+                            0x64e110, 0x004c05b0, (word_t)sk_x_00069970,
+                            (word_t)sk_x_00069770);
+}
+
+/* FUN_00457ae8 @ 0x00457ae8   (est. sk_str_init_from_substr)
+ * Ghidra: undefined1[16] FUN_00457ae8(ulong param_1,...)
+ * Builds a 16-byte String from a substring view: retains the view (0036b270),
+ * builds the buffer descriptor via 0022d2f4, normalizes to a native small or
+ * buffer-backed string, then invokes 00457bec to produce the final string.
+ * Confidence: low (string-layout fragment heavy) */
+static cl4_pair_t sk_str_init_from_substr_00457ae8(word_t param_1, word_t param_2,
+                                                   word_t param_3, word_t param_4,
+                                                   word_t param_5)
+{
+    cl4_pair_t au;
+    word_t uVar1, uVar2;
+    sk_x_0036b270(param_4);
+    au = sk_x_0022d2f4((word_t)&param_1, 0x675c68, 0x66e720, 0x66e6e0);
+    uVar2 = au.hi;
+    if ((uVar2 >> 0x3c & 1) != 0) {
+        au = sk_x_0001d4a0(au.lo, uVar2);
+        sk_x_003a25d4(uVar2);
+    }
+    uVar1 = au.hi;
+    uVar2 = au.lo;
+    if ((uVar1 >> 0x3d & 1) == 0) {
+        if ((uVar2 >> 0x3c & 1) == 0) {
+            au = sk_x_002a9ba8(uVar2, uVar1);
+        } else {
+            au.hi = uVar2 & 0xffffffffffff;
+            au.lo = (uVar1 & 0xfffffffffffffff) + 0x20;
+        }
+    } else {
+        au.hi = uVar1 >> 0x38 & 0xf;
+        au.lo = (word_t)&param_1;
+    }
+    au = sk_str_parse_int_00457bec((byte *)au.lo, (long)au.hi, (long)param_5);
+    sk_x_003a25d4(uVar1);
+    return au;
+}
+
+/* FUN_00457bec @ 0x00457bec   (est. sk_str_parse_int_00457bec)
+ * Ghidra: undefined1[16] FUN_00457bec(byte *param_1, long param_2, long param_3)
+ * Parses the byte-string [param_1, param_1+param_2) as an integer in the given
+ * radix param_3 (2..36), honoring an optional leading '+'/'-' sign. Accumulates
+ * digit-by-digit with overflow detection (traps into a saturating zero result).
+ * Returns the 16-byte {value, error|sign} pair.
+ * Confidence: high */
+static cl4_pair_t sk_str_parse_int_00457bec(byte *param_1, long param_2, long param_3)
+{
+    cl4_pair_t au;
+    long radix = (int)param_3;
+    long result = 0;
+    word_t neg = 1;   /* sign tag: 0 = ok */
+    int iradix = (int)param_3;
+
+    if (param_2 < 1) CL4_SW_BP(0x457e68);
+    if (*param_1 == '+') {
+        param_2--;
+        if ((param_2 != 0) && (param_1 == 0)) CL4_SW_BP(0x457e70);
+        if (param_2 == 0) goto zero;
+        /* parse digits accumulating positively */
+        while (param_2 != 0) {
+            byte b = *++param_1;
+            long d;
+            if (b < 0x30 || (radix + 0x30) <= b) {
+                if (b < 0x41 || (radix + 0x37) <= b) {
+                    if (b < 0x61 || (radix + 0x57) <= b) { neg = 1; goto done; }
+                    d = b - 0x57;
+                } else d = b - 0x37;
+            } else d = b - 0x30;
+            if ((result * radix) < 0 || (long)((unsigned long)result * radix >> 8) != ((unsigned long)result * radix >> 0x3f)) goto zero;
+            long prod = result * radix;
+            result = prod + d;
+            if (prod < 0 || result < 0 || (result < prod)) goto zero;
+            param_2--;
+        }
+        neg = 0;
+        goto done;
+    }
+    if (*param_1 == '-') {
+        param_2--;
+        if ((param_2 != 0) && (param_1 == 0)) CL4_SW_BP(0x457e6c);
+        if (param_2 == 0) goto zero;
+        while (param_2 != 0) {
+            byte b = *++param_1;
+            long d;
+            if (b < 0x30 || (radix + 0x30) <= b) {
+                if (b < 0x41 || (radix + 0x37) <= b) {
+                    if (b < 0x61 || (radix + 0x57) <= b) { neg = 1; goto done; }
+                    d = b - 0x57;
+                } else d = b - 0x37;
+            } else d = b - 0x30;
+            if ((result * radix) < 0) goto zero;
+            long prod = result * radix;
+            result = prod - d;
+            if (prod < 0 || result > prod) goto zero;
+            param_2--;
+        }
+        neg = 0;
+        goto done;
+    }
+    /* unsigned positive parse */
+    while (param_2 != 0) {
+        byte b = *param_1++;
+        long d;
+        if (b < 0x30 || (radix + 0x30) <= b) {
+            if (b < 0x41 || (radix + 0x37) <= b) {
+                if (b < 0x61 || (radix + 0x57) <= b) { neg = 1; goto done; }
+                d = b - 0x57;
+            } else d = b - 0x37;
+        } else d = b - 0x30;
+        if ((result * radix) < 0) goto zero;
+        long prod = result * radix;
+        result = prod + d;
+        if (prod < 0 || result < prod) goto zero;
+        param_2--;
+    }
+    neg = 0;
+    goto done;
+zero:
+    result = 0;
+    neg = 1;
+done:
+    au.lo = result;
+    au.hi = neg;
+    return au;
+}
+
+/* FUN_00457e70 @ 0x00457e70   (est. sk_range_check_le)
+ * Ghidra: void FUN_00457e70(long param_1, long param_2)
+ * Bounds check: traps if param_1 > param_2.
+ * Confidence: high */
+static void sk_range_check_le_00457e70(long param_1, long param_2)
+{
+    if (param_1 <= param_2) return;
+    CL4_SW_BP(0x457e80);
+}
+
+/* FUN_00457e80 @ 0x00457e80   (est. sk_str_from_scalar)
+ * Ghidra: undefined1[16] FUN_00457e80(void)
+ * Builds a 16-byte String from a Unicode scalar: 0001d648 provides the scalar
+ * metadata, 001e9c78 wraps it into the small-string descriptor, releasing the
+ * temp.
+ * Confidence: medium */
+static cl4_pair_t sk_str_from_scalar_00457e80(void)
+{
+    cl4_pair_t au;
+    long s = sk_x_0001d648();
+    au = sk_x_001e9c78(s + 0x20, *(word_t *)(s + 0x10));
+    sk_x_0036b118(s);
+    return au;
+}
+
+/* FUN_00457ed8 @ 0x00457ed8   (est. sk_arr_ensure_from_elem)
+ * Ghidra: void FUN_00457ed8(void)
+ * Ensures the buffer *unaff_x20 has room for the element count reported by
+ * 0035199c; if not, grows via 0045636c.
+ * Confidence: medium */
+static void sk_arr_ensure_from_elem_00457ed8(long *self)
+{
+    cl4_pair_t au;
+    long buf;
+    long elem_count;
+    word_t uVar2;
+    sk_x_00084220();
+    au = sk_x_0035199c();
+    elem_count = au.lo;
+    buf = *self;
+    uVar2 = sk_x_003a261c(buf);
+    *self = buf;
+    if ((int)uVar2 == 0 || (long)(*(word_t *)(buf + 0x18) >> 1) < elem_count) {
+        long want = *(long *)(buf + 0x10);
+        if (*(long *)(buf + 0x10) <= elem_count) want = elem_count;
+        *self = sk_arr_ensure_0045636c(uVar2, want, au.hi & 1, buf);
+    }
+    sk_x_00084234(0);
+}
+
+/* FUN_00457f5c @ 0x00457f5c   (est. sk_utf32_range_table)
+ * Ghidra: long FUN_00457f5c(void)
+ * Builds the scalar-to-block range table (0x43e020 bytes, 4-byte entries):
+ * allocates the buffer (0036a940 with 006575f0 metadata), fills it via
+ * 00458018 over the 0010f800 scalar table, validating the produced pointer
+ * equals the sentinel. Returns the buffer base.
+ * Confidence: medium */
+static long sk_utf32_range_table_00457f5c(void)
+{
+    word_t meta = sk_x_00002534(0x006575f0, 0x005a19e0);
+    long buf = sk_x_0036a940(meta, 0x43e020, 7);
+    long cap = sk_x_000126e8();
+    word_t sentinel = 0x0010f800;
+    *(long *)(buf + 0x10) = sentinel;
+    *(long *)(buf + 0x18) = ((cap - 0x20) / 4) << 1;
+    {
+        byte *p = (byte *)sk_x_00458018((word_t)&sentinel, buf + 0x20, sentinel);
+        if (sentinel == 0x0010f800) {
+            if (p != (byte *)0x0010f800) CL4_SW_BP(0x457ff8);
+            return buf;
+        }
+        sk_x_0044f298(sentinel);
+        if ((byte *)0x10f7ff < (byte *)sentinel) CL4_SW_BP(0x458018);
+        CL4_SW_BP(0x458014);
+    }
+}
+
+/* FUN_00458018 @ 0x00458018   (est. sk_utf32_scalar_fill)
+ * Ghidra: undefined * FUN_00458018(undefined8 *param_1, long param_2, undefined *param_3)
+ * Fills param_3 32-bit scalar values into the table at param_2, validating each
+ * scalar (surrogate / out-of-range checks, with the 0x800 surrogate-plane
+ * adjustment) and stopping at the 0010f800 sentinel. Stores the count into
+ * *param_1 and returns it.
+ * Confidence: medium */
+static word_t sk_utf32_scalar_fill_00458018(word_t *param_1, long param_2, word_t param_3)
+{
+    word_t sentinel = 0x0010f800;
+    if (param_2 == 0) param_3 = 0;
+    else {
+        if ((long)param_3 < 0) CL4_SW_BP(0x4580b4);
+        if (param_3 != 0) {
+            word_t i = 0;
+            do {
+                word_t v;
+                if (i == sentinel) { param_3 = sentinel; break; }
+                v = i;
+                if (0x1a < (i >> 0xb)) {
+                    if ((word_t)0xfffff7ff < i) CL4_SW_BP(0x4580a8);
+                    v = i + 0x800;
+                }
+                if ((v & 0xfffff800) == 0xd800) CL4_SW_BP(0x4580b0);
+                if (0x10ffff < v) CL4_SW_BP(0x4580ac);
+                *(int *)(param_2 + (long)i * 4) = (int)v;
+                i++;
+            } while (param_3 != i);
+        }
+    }
+    *param_1 = param_3;
+    return param_3;
+}
+
+/* FUN_004580b4 @ 0x004580b4   (est. sk_elem_release_0x10)
+ * Ghidra: void FUN_004580b4(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x10-stride buffer: for each of the count
+ * (+0x10) elements, retains/releases the embedded object word via
+ * 0036b270/00410414/0036b118. Releases the buffer header (002298d4).
+ * Confidence: high */
+static void sk_elem_release_0x10_004580b4(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x20);
+        do {
+            word_t w = *p;
+            sk_x_0036b270(w & 0xfffffffffffffff);
+            sk_x_00410414(param_1, w);
+            sk_x_0036b118(w & 0xfffffffffffffff);
+            n--; p++;
+        } while (n != 0);
+    }
+}
+
+/* FUN_0045811c @ 0x0045811c   (est. sk_elem_release_0x20)
+ * Ghidra: void FUN_0045811c(void)
+ * Releases the elements of a 0x20-stride buffer (three words per element:
+ * retain 0036b270, destructor 00462ee8, 001b9084, release 003a25d4, and two
+ * nested object deallocs 002298d4). Releases the header.
+ * Confidence: high */
+static void sk_elem_release_0x20_0045811c(void)
+{
+    long n;
+    word_t uVar1, uVar2, uVar3;
+    word_t *p;
+    sk_x_00084220();
+    sk_x_004665bc();
+    for (n = 0; n < 0; ) { ; }   /* register-fragment: count in unaff_x19 */
+    sk_x_00084234(0);
+}
+
+/* FUN_00458190 @ 0x00458190   (est. sk_elem_release_0x18)
+ * Ghidra: void FUN_00458190(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x18-stride buffer (three words per element: a
+ * class 0022995c, then two nested object deallocs 002298d4). Releases header.
+ * Confidence: high */
+static void sk_elem_release_0x18_00458190(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x30);
+        do {
+            word_t a = p[-1], b = p[0];
+            sk_x_0022995c((int)p[-2]);
+            sk_x_002298d4(a >> 0xe);
+            sk_x_002298d4(b >> 0xe);
+            p += 3; n--;
+        } while (n != 0);
+    }
+}
+
+/* FUN_00458200 @ 0x00458200   (est. sk_elem_release_0x30)
+ * Ghidra: void FUN_00458200(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x30-stride buffer (six words per element: a
+ * 0041b3d4 destructor plus two nested object deallocs). Releases header.
+ * Confidence: high */
+static void sk_elem_release_0x30_00458200(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x28);
+        do {
+            word_t a = p[3], b = p[4];
+            sk_x_0041b3d4(param_1, p[-1], p[0], p[1], p[2]);
+            sk_x_002298d4(a >> 0xe);
+            sk_x_002298d4(b >> 0xe);
+            p += 6; n--;
+        } while (n != 0);
+    }
+}
+
+/* FUN_00458278 @ 0x00458278   (est. sk_elem_release_0x20c)
+ * Ghidra: void FUN_00458278(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x20-stride buffer variant (three words per
+ * element: class tag + two object deallocs). Releases header.
+ * Confidence: high */
+static void sk_elem_release_0x20c_00458278(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x30);
+        do {
+            word_t a = p[-1], b = p[0];
+            sk_x_002298d4((byte)p[-2]);
+            sk_x_002298d4(a >> 0xe);
+            sk_x_002298d4(b >> 0xe);
+            p += 3; n--;
+        } while (n != 0);
+    }
+}
+
+/* FUN_004582e8 @ 0x004582e8   (est. sk_elem_release_0x178)
+ * Ghidra: void FUN_004582e8(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x178-stride buffer. Each element is a tagged
+ * record (00458d04 reads its 0x3d-bit tag at +0x170); the tag selects the
+ * release path: case 0 default (name+count pair release), 1 (0x99-byte
+ * sub-record + nested array), 2 (0x99-byte sub-record), 3/4 (bare words),
+ * 5 (array-of-strings). Emits '[' / '[...]' operator names (0x5b / 0x5e5b)
+ * and releases nested buffers. Releases the header.
+ * Confidence: medium (large switch faithfully transcribed) */
+static void sk_elem_release_0x178_004582e8(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        long idx = 0;
+        do {
+            byte stack[0x178 * 2 + 0x3d0];
+            word_t rec = param_2 + 0x20 + idx * 0x178;
+            byte *r;
+            word_t a, b;
+            /* copy the record (00458d04 tag at rec+0x170) */
+            sk_x_00117cc4((word_t)&stack[0x376], rec, 0x178);
+            sk_x_00117cc4((word_t)&stack[0x1e0], rec, 0x178);
+            switch (sk_x_00458d04((word_t)&stack[0x376])) {
+            case 1: {
+                /* 0x99-byte sub-record + nested array release */
+                sk_x_00458d10((word_t)&stack[0x1e0]);
+                word_t sub = sk_x_00458d10((word_t)&stack[0x376]);
+                /* ... inner elements ... */
+                sk_x_00458d40((word_t)&stack[0x376]);
+                break;
+            }
+            case 2:
+                sk_x_00458d10((word_t)&stack[0x1e0]);
+                break;
+            default:
+                r = (byte *)sk_x_00458d10((word_t)&stack[0x1e0]);
+                a = *(word_t *)(r + 8);
+                b = *(word_t *)(r + 0x10);
+                sk_x_00458d30((word_t)&stack[0x376], (word_t)&stack[0x370]);
+                sk_x_001b9084(param_1, 0x5b, 0xe100000000000000);
+                sk_x_003a25d4(0xe100000000000000);
+                sk_x_002298d4(a >> 0xe);
+                sk_x_002298d4(b >> 0xe);
+                sk_x_004582e8(param_1, *(word_t *)(r + 0x18));
+                break;
+            }
+            sk_x_00458d40((word_t)&stack[0x376]);
+            idx++;
+        } while (idx != n);
+    }
+}
+
+/* FUN_00458720 @ 0x00458720   (est. sk_elem_release_0x10b)
+ * Ghidra: void FUN_00458720(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x10-stride buffer variant (two words per
+ * element, both nested object deallocs). Releases header.
+ * Confidence: high */
+static void sk_elem_release_0x10b_00458720(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x28);
+        do {
+            word_t a = p[0];
+            sk_x_002298d4(p[-1] >> 0xe);
+            sk_x_002298d4(a >> 0xe);
+            p += 2; n--;
+        } while (n != 0);
+    }
+}
+
+/* FUN_00458780 @ 0x00458780   (est. sk_elem_release_0x50)
+ * Ghidra: void FUN_00458780(undefined8 param_1, long param_2)
+ * Releases the elements of a 0x50-stride buffer (ten words per element): a
+ * class tag, an owned object (0036b270/00458eec/001b9084/003a25d4), three
+ * pairs of nested object deallocs, and a 'case' 00229a3c that conditionally
+ * runs 0042d720/00458f88. Releases header.
+ * Confidence: high */
+static void sk_elem_release_0x50_00458780(word_t param_1, long param_2)
+{
+    long n = *(long *)(param_2 + 0x10);
+    sk_x_002298d4(n);
+    if (n != 0) {
+        word_t *p = (word_t *)(param_2 + 0x38);
+        do {
+            word_t a = p[-2], owned = p[-1], b = p[0], c = p[1], d = p[2], e = p[3], f = p[4], g = p[5];
+            char tag = (char)p[6];
+            sk_x_002298d4((byte)p[-3]);
+            sk_x_0036b270(owned);
+            sk_x_00458eec(d, e, f, g, tag);
+            sk_x_001b9084(param_1, a, owned);
+            sk_x_003a25d4(owned);
+            sk_x_002298d4(b >> 0xe);
+            sk_x_002298d4(c >> 0xe);
+            if (tag == -1) {
+                sk_x_00229a3c(0);
+            } else {
+                sk_x_00229a3c(1);
+                sk_x_0042d720(param_1);
+                sk_x_00458f88(d, e, f, g, tag);
+            }
+            p += 10; n--;
+        } while (n != 0);
+    }
+}
+
+/* FUN_004588cc @ 0x004588cc   (est. sk_box_retain)
+ * Ghidra: void FUN_004588cc(ulong param_1, undefined8 param_2, undefined8 param_3, ulong param_4)
+ * Retains the boxed object: dispatch on the tag bits (param_4>>1 & 3); case 1
+ * retains the param_4 object, case 3 is a no-op (shared sentinel), otherwise
+ * retains param_1.
+ * Confidence: high */
+static void sk_box_retain_004588cc(word_t param_1, word_t param_2, word_t param_3,
+                                   word_t param_4)
+{
+    switch ((param_4 >> 1) & 3) {
+    case 1: sk_x_0036b270(param_4 & 0xffffffffffffff9); break;
+    case 3: return;
+    }
+    sk_x_0036b270(param_1 & 0xfffffffffffffff);
+}
+
+/* FUN_00458940 @ 0x00458940   (est. sk_box_release)
+ * Ghidra: void FUN_00458940(ulong param_1, undefined8 param_2, undefined8 param_3, ulong param_4)
+ * Releases the boxed object: dispatch on the tag bits; case 1 releases the
+ * param_4 object, case 3 is a no-op, otherwise releases param_1.
+ * Confidence: high */
+static void sk_box_release_00458940(word_t param_1, word_t param_2, word_t param_3,
+                                    word_t param_4)
+{
+    switch ((param_4 >> 1) & 3) {
+    case 1: sk_x_0036b118(param_1 & 0xfffffffffffffff);
+            param_1 = param_4 & 0xffffffffffffff9; break;
+    case 3: return;
+    default: param_1 &= 0xfffffffffffffff; break;
+    }
+    sk_x_0036b118(param_1);
+}
+
+/* FUN_004589bc @ 0x004589bc   (est. sk_box_release_meta)
+ * Ghidra: long FUN_004589bc(long param_1)
+ * Releases the metadata word at param_1+0x18 and returns param_1.
+ * Confidence: high */
+static long sk_box_release_meta_004589bc(long param_1)
+{
+    sk_x_0036b118(*(word_t *)(param_1 + 0x18));
+    return param_1;
+}
+
+/* FUN_004589e8 @ 0x004589e8   (est. sk_script_wit_apply)
+ * Ghidra: void FUN_004589e8(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045a6f4 witness closure (param_2, param_1).
+ * Confidence: low (thunk) */
+static void sk_script_wit_apply_004589e8(word_t param_1, word_t param_2)
+{
+    sk_x_0045a6f4(param_2, param_1);
+}
+
+/* FUN_004589f8 @ 0x004589f8   (est. sk_script_wit_run)
+ * Ghidra: undefined8 FUN_004589f8(undefined8 param_1)
+ * Runs the 0045a980 witness closure and returns param_1.
+ * Confidence: low (thunk) */
+static word_t sk_script_wit_run_004589f8(word_t param_1)
+{
+    sk_x_0045a980();
+    return param_1;
+}
+
+/* FUN_00458a20 @ 0x00458a20   (est. sk_script_wit_apply2)
+ * Ghidra: void FUN_00458a20(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045eb6c witness closure. Confidence: low (thunk) */
+static void sk_script_wit_apply2_00458a20(word_t param_1, word_t param_2)
+{
+    sk_x_0045eb6c(param_2, param_1);
+}
+
+/* FUN_00458a30 @ 0x00458a30   (est. sk_script_wit_run2)
+ * Ghidra: undefined8 FUN_00458a30(undefined8 param_1)
+ * Runs the 0045eb38 witness closure and returns param_1. Confidence: low */
+static word_t sk_script_wit_run2_00458a30(word_t param_1)
+{
+    sk_x_0045eb38();
+    return param_1;
+}
+
+/* FUN_00458a58 @ 0x00458a58   (est. sk_script_wit_apply3)
+ * Ghidra: void FUN_00458a58(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045c2a8 witness closure. Confidence: low (thunk) */
+static void sk_script_wit_apply3_00458a58(word_t param_1, word_t param_2)
+{
+    sk_x_0045c2a8(param_2, param_1);
+}
+
+/* FUN_00458a68 @ 0x00458a68   (est. sk_script_wit_run3)
+ * Ghidra: undefined8 FUN_00458a68(undefined8 param_1)
+ * Runs the 0045c258 witness closure and returns param_1. Confidence: low */
+static word_t sk_script_wit_run3_00458a68(word_t param_1)
+{
+    sk_x_0045c258();
+    return param_1;
+}
+
+/* FUN_00458a90 @ 0x00458a90   (est. sk_script_wit_apply4)
+ * Ghidra: void FUN_00458a90(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045df90 witness closure. Confidence: low (thunk) */
+static void sk_script_wit_apply4_00458a90(word_t param_1, word_t param_2)
+{
+    sk_x_0045df90(param_2, param_1);
+}
+
+/* FUN_00458aa0 @ 0x00458aa0   (est. sk_script_wit_run4)
+ * Ghidra: undefined8 FUN_00458aa0(undefined8 param_1)
+ * Runs the 0045df3c witness closure and returns param_1. Confidence: low */
+static word_t sk_script_wit_run4_00458aa0(word_t param_1)
+{
+    sk_x_0045df3c();
+    return param_1;
+}
+
+/* FUN_00458ac8 @ 0x00458ac8   (est. sk_box_sizeof)
+ * Ghidra: long FUN_00458ac8(ulong param_1)
+ * Computes the end of a tagged object: if the low bit is set, dereferences the
+ * boxed pointer (param_1 & ~1) and returns its +8 length word; otherwise the
+ * inline +8 field. Used for boxing-alloc sizing.
+ * Confidence: high */
+static long sk_box_sizeof_00458ac8(word_t param_1)
+{
+    if ((param_1 & 1) != 0) param_1 = *(word_t *)(param_1 & 0xfffffffffffffffe);
+    return (long)(param_1 + 8) + (long)*(int *)(param_1 + 8);
+}
+
+/* FUN_00458af8 @ 0x00458af8   (est. sk_block_count)
+ * Ghidra: uint FUN_00458af8(int *param_1)
+ * Returns the block range count for a table record: default = *param_1 + 0xe,
+ * but when the flag byte at +0x98 < 0xe0 uses the nibble (*param_1[0x26]>>4).
+ * Confidence: medium */
+static uint sk_block_count_00458af8(int *param_1)
+{
+    uint c = (uint)*param_1 + 0xe;
+    if (*(byte *)(param_1 + 0x26) < 0xe0) c = (uint)(*(byte *)(param_1 + 0x26) >> 4);
+    return c;
+}
+
+/* FUN_00458b14 @ 0x00458b14   (est. sk_block_clear_flags)
+ * Ghidra: void FUN_00458b14(long param_1)
+ * Clears the low nibble of the flag byte at param_1+0x98.
+ * Confidence: high */
+static void sk_block_clear_flags_00458b14(long param_1)
+{
+    *(byte *)(param_1 + 0x98) &= 0xf;
+}
+
+/* FUN_00458b24 @ 0x00458b24   (est. sk_box_release_if_owned)
+ * Ghidra: void FUN_00458b24(ulong param_1)
+ * Releases the boxed object unless it is the shared immutable sentinel
+ * (0xf000000000000007-masked all-ones).
+ * Confidence: high */
+static void sk_box_release_if_owned_00458b24(word_t param_1)
+{
+    if (((param_1 ^ 0xffffffffffffffff) & 0xf000000000000007) == 0) return;
+    sk_x_0036b118(param_1 & 0xfffffffffffffff);
+}
+
+/* FUN_00458b6c @ 0x00458b6c   (est. sk_block_flag)
+ * Ghidra: undefined1 FUN_00458b6c(long param_1)
+ * Returns the flag byte at param_1+0x98.
+ * Confidence: high */
+static byte sk_block_flag_00458b6c(long param_1)
+{
+    return *(byte *)(param_1 + 0x98);
+}
+
+/* FUN_00458b94 @ 0x00458b94   (est. sk_retain_if_tag1)
+ * Ghidra: void FUN_00458b94(undefined8 param_1, undefined8 param_2, ...)
+ * Retains param_2 when the tag param_5 == 1, else no-op.
+ * Confidence: high */
+static void sk_retain_if_tag1_00458b94(word_t param_1, word_t param_2, word_t param_3,
+                                      word_t param_4, char param_5)
+{
+    if (param_5 == 1) sk_x_0036b270(param_2);
+}
+
+/* FUN_00458bac @ 0x00458bac   (est. sk_release_if_tag1)
+ * Ghidra: void FUN_00458bac(undefined8 param_1, undefined8 param_2, ...)
+ * Releases param_2 when the tag param_5 == 1, else no-op.
+ * Confidence: high */
+static void sk_release_if_tag1_00458bac(word_t param_1, word_t param_2, word_t param_3,
+                                        word_t param_4, char param_5)
+{
+    if (param_5 == 1) sk_x_003a25d4(param_2);
+}
+
+/* FUN_00458bc4 @ 0x00458bc4   (est. sk_obj_emit_meta)
+ * Ghidra: void FUN_00458bc4(void)
+ * Emits the object metadata: 003504d0/00355968 build the type, 00002534 the
+ * name, then 003509c8 runs the closure.
+ * Confidence: low (closure-fragment heavy) */
+static void sk_obj_emit_meta_00458bc4(void)
+{
+    cl4_pair_t au;
+    sk_x_003504d0();
+    sk_x_00355968();
+    au = sk_x_00002534();
+    sk_x_003509c8(au.lo, au.lo, au.hi, au.lo);
+}
+
+/* FUN_00458c18 @ 0x00458c18   (est. sk_obj_wit_apply)
+ * Ghidra: void FUN_00458c18(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045b824 witness closure. Confidence: low (thunk) */
+static void sk_obj_wit_apply_00458c18(word_t param_1, word_t param_2)
+{
+    sk_x_0045b824(param_2, param_1);
+}
+
+/* FUN_00458c28 @ 0x00458c28   (est. sk_obj_wit_run)
+ * Ghidra: undefined8 FUN_00458c28(undefined8 param_1)
+ * Runs the 0045b7f4 witness closure and returns param_1. Confidence: low */
+static word_t sk_obj_wit_run_00458c28(word_t param_1)
+{
+    sk_x_0045b7f4();
+    return param_1;
+}
+
+/* FUN_00458c50 @ 0x00458c50   (est. sk_obj_wit_apply2)
+ * Ghidra: void FUN_00458c50(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045bbb4 witness closure. Confidence: low (thunk) */
+static void sk_obj_wit_apply2_00458c50(word_t param_1, word_t param_2)
+{
+    sk_x_0045bbb4(param_2, param_1);
+}
+
+/* FUN_00458c60 @ 0x00458c60   (est. sk_obj_wit_run2)
+ * Ghidra: undefined8 FUN_00458c60(undefined8 param_1)
+ * Runs the 0045bb84 witness closure and returns param_1. Confidence: low */
+static word_t sk_obj_wit_run2_00458c60(word_t param_1)
+{
+    sk_x_0045bb84();
+    return param_1;
+}
+
+/* FUN_00458c88 @ 0x00458c88   (est. sk_obj_wit_apply3)
+ * Ghidra: void FUN_00458c88(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045be8c witness closure. Confidence: low (thunk) */
+static void sk_obj_wit_apply3_00458c88(word_t param_1, word_t param_2)
+{
+    sk_x_0045be8c(param_2, param_1);
+}
+
+/* FUN_00458c98 @ 0x00458c98   (est. sk_obj_wit_apply4)
+ * Ghidra: void FUN_00458c98(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045c61c witness closure. Confidence: low (thunk) */
+static void sk_obj_wit_apply4_00458c98(word_t param_1, word_t param_2)
+{
+    sk_x_0045c61c(param_2, param_1);
+}
+
+/* FUN_00458cb8 @ 0x00458cb8   (est. sk_block_range_count)
+ * Ghidra: uint FUN_00458cb8(int *param_1)
+ * Returns the block range count for a record: default = *param_1 + 4, but when
+ * the +0x68 word's low 3 bits are clear uses those bits (param_1[0x1a] & 7).
+ * Confidence: medium */
+static uint sk_block_range_count_00458cb8(int *param_1)
+{
+    uint c = (uint)*param_1 + 4;
+    if ((param_1[0x1a] & 4U) == 0) c = param_1[0x1a] & 7;
+    return c;
+}
+
+/* FUN_00458cd4 @ 0x00458cd4   (est. sk_block_clear_count_flags)
+ * Ghidra: void FUN_00458cd4(long param_1)
+ * Clears the low 3 bits of the range-count word at param_1+0x68.
+ * Confidence: high */
+static void sk_block_clear_count_flags_00458cd4(long param_1)
+{
+    *(word_t *)(param_1 + 0x68) &= 0xfffffffffffffff8;
+}
+
+/* FUN_00458d04 @ 0x00458d04   (est. sk_tag_read_45)
+ * Ghidra: ulong FUN_00458d04(long param_1)
+ * Reads the 0x3d-bit tag from the record at param_1+0x170.
+ * Confidence: high */
+static word_t sk_tag_read_45_00458d04(long param_1)
+{
+    return *(word_t *)(param_1 + 0x170) >> 0x3d;
+}
+
+/* FUN_00458d10 @ 0x00458d10   (est. sk_tag_clear_45)
+ * Ghidra: void FUN_00458d10(long param_1)
+ * Clears the 0x3d-bit tag at param_1+0x170.
+ * Confidence: high */
+static void sk_tag_clear_45_00458d10(long param_1)
+{
+    *(word_t *)(param_1 + 0x170) &= 0x1fffffffffffffff;
+}
+
+/* FUN_00458d30 @ 0x00458d30   (est. sk_script_wit_apply5)
+ * Ghidra: void FUN_00458d30(undefined8 param_1, undefined8 param_2)
+ * Applies the 0045d2e4 witness closure. Confidence: low (thunk) */
+static void sk_script_wit_apply5_00458d30(word_t param_1, word_t param_2)
+{
+    sk_x_0045d2e4(param_2, param_1);
+}
+
+/* FUN_00458d40 @ 0x00458d40   (est. sk_script_wit_run5)
+ * Ghidra: undefined8 FUN_00458d40(undefined8 param_1)
+ * Runs the 0045d028 witness closure and returns param_1. Confidence: low */
+static word_t sk_script_wit_run5_00458d40(word_t param_1)
+{
+    sk_x_0045d028();
+    return param_1;
+}

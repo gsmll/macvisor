@@ -4783,3 +4783,21 @@ Confidence: Medium
 - **Evidence**: 00459aa0 `*puVar1 = extraout_x8; acquire(extraout_x8 & mask); release(uVar2 & mask);` — store happens before the retained acquire of the same value.
 - **Severity (hypothesis)**: low — transient window where the slot holds an unretained pointer during the swap.
 - **Confidence**: low
+
+## [ringminus1] 003fc70c sk_executor_unimplemented_fatal
+- **Observation**: The cL4 Swift-concurrency executor for unsupported paths traps via SoftwareBreakpoint(1, ...) after loading the string "There is no executor implementation" (0x5dc2e0) and the `Concurrency.UnimplementedExecutor` associated-type selector (0x5dc2b0, len 0x28, kind 2). The same fatal shape repeats across 003fc76c/003fc79c/003fc81c and the main-executor enqueue stubs (003fc850/860, string "swift_task_enqueueMainExecutor..." 0x5dc330). These are hard failure stubs: any guest/thread that reaches an unsupported task-enqueue or executor path faults instead of silently dropping work — a fail-closed design.
+- **Evidence**: `FUN_001afa84(u1,0xb,2,0xd00000000000002a,0x8000000000000000|..., s__Concurrency_UnimplementedExecut_005dc2b0,0x28,2);` and `SoftwareBreakpoint(1,0x3fc79c)` etc. across 003fc70c-003fc860.
+- **Severity (hypothesis)**: informational — the executor is a deliberate fail-closed boundary; no unchecked memory access on these paths (they only read fixed string addresses).
+- **Confidence**: high (string-matched, explicit breakpoint traps).
+
+## [ringminus1] 003fdb80 sk_job_count_probe
+- **Observation**: The job/queue count-probe reads an element at `saved_x19 + x11` using a width switch (case 1/2/3/4 = byte/short/trap/int) derived from the queue element metadata. On a zero-count it returns 0 without dereferencing; the width-3 (int) path with no matching element takes a `SoftwareBreakpoint(1, 0x3fdc90)` trap. The probe reads exactly one element of the metadata-selected width before deciding termination.
+- **Evidence**: `if (*(char *)(unaff_x19 + extraout_x11) != '\0') goto term;` (case 1); `if (*(short *)... != 0) goto term;` (case 2); `SoftwareBreakpoint(1,0x3fdc90)` (case 3); `if (*(int *)... != 0) goto term;` (case 4). Count clamped: `if (uVar9 < 0x1000) uVar1 = 0xfff;` then `if (uVar1 < unaff_w20)`.
+- **Severity (hypothesis)**: low — the read pointer (x19 + x11) is derived from an already-validated queue context; the width is metadata-controlled but reads a single bounded element.
+- **Confidence**: medium (register-derived offsets x19/x11 from the decompiler are indirect).
+
+## [ringminus1] 003fbc58 sk_secs_nanos_add
+- **Observation**: Time arithmetic helper computes secs*1e18 + nsecs*1e9 with an explicit overflow guard. A negative nsecs count traps via FUN_001afe4c (noreturn); a carry overflow in the low multiply adds 1 to the high word before packing the 16-byte {lo,hi} result. This is a correctly-normalized addition with fail-closed overflow handling rather than silent wraparound.
+- **Evidence**: `if ((long)param_2 < 0) { FUN_003488bc(1); FUN_00349a54(); FUN_001afe4c(); }`; `if (CARRY8(param_1*1e18, param_2*1e9)) lVar3 = lVar3 + 1;`; `SoftwareBreakpoint(1,0x3fbc98)` fallthrough.
+- **Severity (hypothesis)**: informational — negative/overflowing time inputs trap rather than wrap, which is the safe behavior for a scheduler/job-deadline source.
+- **Confidence**: high (explicit bounds checks and carry logic in the decompile).

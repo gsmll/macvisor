@@ -662,7 +662,7 @@ static void sk_r60_3fb0bc_task_context_capture_x20(uint64_t *out, long p2,
 {
     unsigned long d0, d1, d2, d3, d4, d5;
     unsigned char b1, b2;
-    sk_r60_3fb028_task_context_capture(&d0, saved_x20, *(unsigned long *)(p2 + 0x10));
+    sk_r60_3fb028_task_context_capture((uint64_t *)&d0, saved_x20, *(unsigned long *)(p2 + 0x10));
     out[1] = d1;
     out[0] = d0;
     out[3] = ((uint64_t)b2 << 56) | d3;

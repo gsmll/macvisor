@@ -179,6 +179,13 @@ static void sk_cap_decode_tag(unsigned long *out, unsigned long cap, unsigned in
 static void sk_cap_bucket_move(unsigned long *out, unsigned long *bucket,
                                unsigned int cap, unsigned long flag);
 static void sk_cap_bucket_free_rec(unsigned long *bucket, sk_fp_t cb);
+static void sk_page_region_init(long base, long end, long count);
+static unsigned long sk_cap_value_base(unsigned long cap);
+static void sk_cap_remove(unsigned long *out, unsigned long cap, unsigned int op, sk_fp_t cb);
+static void sk_cap_merge(unsigned long *out, long a, unsigned long b);
+static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long limit);
+static unsigned int sk_cap_bucket_slot_remove(unsigned long *b, unsigned int idx, unsigned int cnt);
+static sk_pair_t sk_cap_bucket_repack(unsigned long *bucket, unsigned int op, sk_fp_t cb);
 
 /* sk_l4_error_format @ 0x00674e98  (est. sk_l4_error_format)
  * Ghidra: void sk_l4_error_format(undefined8 *param_1, byte param_2)
@@ -1542,4 +1549,816 @@ static void sk_tail_fatal_0a(unsigned long v)
 {
     unsigned long saved = v;
     FUN_006833d4(0x6ada99);   /* fatal assert, message string @0x6ada99 (noreturn) */
+}
+
+/* FUN_0066b750 @ 0x0066b750  (est. sk_page_region_init)
+ * Ghidra: void FUN_0066b750(long param_1, long param_2, long param_3)
+ * Registers a page region [param_1, param_2) of param_3*0x40 bytes with the
+ * page allocator: warms up helpers, allocates the region via sk_page_block_alloc,
+ * then performs a device-tree/init dispatch (FUN_0067203c) to publish it; marks
+ * the init flag DAT_006fea50. Idempotent (guarded by the flag).
+ * Confidence: medium */
+static void sk_page_region_init(long base, long end, long count)
+{
+    if ((DAT_006fea50 & 1) == 0) {
+        FUN_00668128();
+        FUN_00676a7c(base, end, count);
+        FUN_00669618();
+        FUN_00671ca8();
+        long sz = (end - base) + count * 0x40;
+        sk_page_block_alloc(base, end - base, sz);
+        FUN_0067728c();
+        unsigned char d[8] = {4, 0, 0, 0, 0xff, 0, 0, 0};
+        unsigned long out[2] = {0, 0};
+        long r = base;
+        long rsz = sz;
+        unsigned long uVar4 = FUN_0067203c(0x1000001, &d, &out, 0, 0);
+        if ((uVar4 & 0xff) != 0) {
+            long off = (uVar4 & 0xff) * 8;
+            unsigned char *p = (unsigned char *)(off + 0x6b5e50);
+            if (((unsigned char *)0x6b5e4f < p) &&
+               ((unsigned char *)0x6b5e58 + off < (unsigned char *)0x6b5e91 && p <= (unsigned char *)0x6b5e58 + off)) {
+                FUN_006833d4(0x6ab4a8);   /* fatal: error string table overrun */
+            }
+            __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66b870) */
+        }
+        FUN_00669a48();
+        DAT_006fea50 = 1;
+    }
+}
+
+/* FUN_0066bce8 @ 0x0066bce8  (est. sk_cap_value_base)
+ * Ghidra: ulong FUN_0066bce8(ulong param_1)
+ * Resolves a raw capability param_1 to its referenced bucket/base value: type
+ * 0/1 returns it (or its tag), type 2 returns the first bucket entry, and type
+ * 3 follows the pointer-chain until a type-0xc (full) bucket is found and
+ * returns its tag. Software-breakpoint on bounds failure.
+ * Confidence: medium */
+static unsigned long sk_cap_value_base(unsigned long cap)
+{
+    unsigned int tag = (unsigned int)cap & 3;
+    if (tag == 1 || (cap & 3) == 0) {
+        unsigned long v = (unsigned long)tag;
+        if ((cap & 3) != 0) v = cap;
+        return v;
+    }
+    if (tag == 2) {
+        unsigned long *b = (unsigned long *)(cap >> 0x1c);
+        unsigned long *e = b + 8;
+        if (((unsigned long *)(cap >> 0x1c) <= e) &&
+           ((b == 0 || (0x38 < (long)e - (long)b)))) {
+            unsigned long *lim = 0;
+            if (b != 0) lim = e;
+            if ((b <= b + 1) && (b + 1 <= lim)) {
+                return *b;
+            }
+        }
+    } else {
+        unsigned long *b = (unsigned long *)(cap >> 0x1c);
+        unsigned long *e = b + 8;
+        if (((unsigned long *)(cap >> 0x1c) <= e) &&
+           ((b == 0 || (0x38 < (long)e - (long)b)))) {
+            unsigned long *lim = 0;
+            if (b != 0) lim = e;
+            if ((b <= lim) && ((b == 0 || (0x38 < (unsigned long)((long)lim - (long)b))))) {
+                for (;;) {
+                    unsigned long *e2 = 0;
+                    if (b != 0) e2 = b + 8;
+                    if (e2 < b + 1) break;
+                    unsigned long v = *b;
+                    if ((v & 0x3c) == 0xc) {
+                        return v;
+                    }
+                    b = (unsigned long *)(v >> 0x1c);
+                    e = b + 8;
+                    if ((e < (unsigned long *)(v >> 0x1c)) ||
+                       ((b != 0 && ((long)e - (long)b < 0x39)))) break;
+                    lim = 0;
+                    if (b != 0) lim = e;
+                    if ((lim < b) || ((b != 0 && ((unsigned long)((long)lim - (long)b) < 0x39)))) break;
+                }
+            }
+        }
+    }
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66bdf0) */
+}
+
+/* FUN_0066bdf4 @ 0x0066bdf4  (est. sk_cap_remove)
+ * Ghidra: void FUN_0066bdf4(undefined8 *param_1, ulong param_2, uint param_3,
+ *                          code *param_4)
+ * Removes a capability with op param_3 from the capability value param_2.
+ * Direct (type 0/1) match invokes the callback param_4 and clears the result;
+ * the type-2 bucket form scans slots, invokes the callback, removes the slot
+ * (sk_cap_bucket_slot_remove), and collapses/repacks the bucket (merging the
+ * running tag/base into slot 0); the type-3 pointer-chain form resolves via
+ * sk_cap_bucket_resolve and repacks. On no-match returns the original value.
+ * Confidence: medium */
+static void sk_cap_remove(unsigned long *out, unsigned long cap, unsigned int op, sk_fp_t cb)
+{
+    unsigned int tag = (unsigned int)cap;
+    unsigned long d0 = *(unsigned long *)0x68a550;
+    unsigned long d1 = *(unsigned long *)0x68a558;
+    if ((tag & 3) == 1 || (cap & 3) == 0) {
+        if (((cap & 3) != 0) && ((tag >> 6 & 0x3fffff) == op)) {
+            if (cb != 0) {
+                cb(cap >> 0x1c);
+            }
+            out[0] = 0;
+            out[1] = 0;
+            out[2] = 0;
+            return;
+        }
+nomatch:
+        out[1] = d1;
+        out[0] = d0;
+        out[2] = cap;
+        return;
+    }
+    if ((tag & 3) == 2) {
+        unsigned long *b = (unsigned long *)(cap >> 0x1c);
+        unsigned long *e = b + 8;
+        if (((unsigned long *)(cap >> 0x1c) <= e) &&
+           ((b == 0 || (0x38 < (long)e - (long)b)))) {
+            long i = 0;
+            unsigned long *p = b;
+            unsigned long *lim = 0;
+            if (b != 0) lim = e;
+            do {
+                if (((p < b) || (lim < p + 1)) || (p + 1 < p)) goto trap;
+                unsigned long v = *p;
+                if ((v & 3) == 1 && ((unsigned int)v >> 6 & 0x3fffff) == op) {
+                    if (cb != 0) cb(v >> 0x1c);
+                    if ((unsigned long)((long)e - (long)b) < 0x39) goto trap;
+                    sk_cap_bucket_slot_remove(b, (unsigned int)i & 0xff, 8);
+                    unsigned long v2 = (unsigned long)(tag + 0x3c) & 0x3c;
+                    if (v2 == 4) {
+                        long k = 0;
+                        unsigned long t = 0;
+                        unsigned long bs = 0;
+                        unsigned long r1 = 0;
+                        unsigned long r2 = 0;
+                        do {
+                            unsigned long e2 = *(unsigned long *)((long)b + k);
+                            unsigned int eop = (unsigned int)e2 >> 6 & 0x3fffff;
+                            unsigned long eb = e2 >> 0x1c;
+                            if ((e2 & 3) != 1) {
+                                eop = t;
+                                eb = bs;
+                            }
+                            bs = eb;
+                            k = k + 8;
+                            t = eop;
+                        } while (k != 0x40);
+                        if ((b == 0) || ((b + 1 <= e && (b <= b + 1)))) {
+                            FUN_0066a6b4(b);
+                            unsigned long res = (unsigned long)(r1 << 6) | bs << 0x1c | 1;
+                            goto store;
+                        }
+                        goto trap;
+                    }
+                    cap = cap & 0xffffffffffffffc3;
+                    goto store2;
+                }
+                i = i + 1;
+                p = p + 1;
+            } while (i != 8);
+            goto nomatch;
+        }
+    } else {
+        unsigned long bs = cap >> 0x1c;
+        unsigned long e = bs + 0x40;
+        if ((cap >> 0x1c <= e) && ((bs == 0 || (0x38 < (long)(e - bs))))) {
+            unsigned long e2 = 0;
+            if (bs != 0) e2 = e;
+            if ((bs <= e2) && (((bs == 0 || (0x38 < e2 - bs)) && (bs + 8 <= e2)))) {
+                sk_pair_t r = sk_cap_bucket_repack((unsigned long *)bs, 0, 0);
+                unsigned long *pb = (unsigned long *)r.hi;
+                unsigned long *pe = 0;
+                if (pb != 0) pe = pb + 8;
+                if ((r.lo & 0xff) == 1) {
+                    if ((pb <= pe) &&
+                       ((d0 = *(unsigned long *)0x68a540, d1 = *(unsigned long *)0x68a548,
+                         pb == 0 || (0x38 < (long)pe - (long)pb)))) goto nomatch;
+                } else if ((((pb <= pe) &&
+                           ((pb == 0 || (0x38 < (long)pe - (long)pb)))) &&
+                          ((pb == 0 || (0x38 < (unsigned long)((long)pe - (long)pb))))) &&
+                         (pb + 1 <= pe)) {
+                    if ((*pb & 0x3f) == 0xc) {
+                        FUN_0066a6b4(pb);
+                        bs = 0;
+                    } else {
+                        bs = cap & 0x3f | (unsigned long)pb << 0x1c;
+                        cap = (unsigned long)(tag + 0xfffffc0) & 0xfffffc0;
+store2:
+                        bs = bs | cap;
+                    }
+store:
+                    out[0] = 0;
+                    out[1] = 0;
+                    out[2] = bs;
+                    return;
+                }
+            }
+        }
+    }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66bf88) */
+}
+
+/* FUN_0066c480 @ 0x0066c480  (est. sk_cap_merge)
+ * Ghidra: void FUN_0066c480(undefined8 *param_1, long param_2, undefined8 param_3)
+ * Merges two capability values param_2/param_3 (ordered by tag type) into a
+ * single capability, iterating the union of their entries via sk_cap_list_get
+ * and re-inserting each through sk_cap_decode. On an unmatchable entry returns
+ * the invalid-capability error 0x2de0007.
+ * Confidence: medium */
+static void sk_cap_merge(unsigned long *out, long a, unsigned long b)
+{
+    unsigned int ta = (unsigned int)a & 3;
+    if (1 < ta) {
+        ta = (ta == 3) ? ((unsigned int)a >> 6 & 0x3fffff) : ((unsigned int)a >> 2 & 0xf);
+    }
+    unsigned int tb = (unsigned int)b & 3;
+    if (1 < tb) {
+        tb = (tb == 3) ? ((unsigned int)b >> 6 & 0x3fffff) : ((unsigned int)b >> 2 & 0xf);
+    }
+    unsigned long lo = b;
+    if (ta <= tb) {
+        lo = (unsigned long)a;
+        a = (long)b;
+    }
+    unsigned long vb = sk_cap_value_base(lo);
+    long local[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned long op = vb >> 6 & 0x3fffff;
+    sk_cap_decode_tag(local + 5, lo, op);
+    do {
+        unsigned long v = sk_cap_list_get((char *)(local + 5));
+        if ((v & 3) == 0) {
+            sk_cap_decode_tag(local + 5, lo, op);
+            while (v = sk_cap_list_get((char *)(local + 5)), (v & 3) != 0) {
+                local[4] = 0; local[1] = 0; local[0] = 0; local[3] = 0; local[2] = 0;
+                sk_cap_decode(local, (unsigned long)a, (unsigned int)v >> 6 & 0x3fffff, v >> 0x1c, 1);
+                a = local[4];
+            }
+            sk_cap_iterate_free(lo, 0);
+            out[0] = 0;
+            out[1] = 0;
+            out[2] = (unsigned long)a;
+            return;
+        }
+        local[4] = 0; local[1] = 0; local[0] = 0; local[3] = 0; local[2] = 0;
+        sk_cap_decode(local, (unsigned long)a, v >> 6 & 0x3fffff, 0, 0);
+    } while (local[0] == 0);
+    out[1] = 0;
+    out[2] = 0;
+    out[0] = 0x2de0007;
+    return;
+}
+
+/* FUN_0066c76c @ 0x0066c76c  (est. sk_cap_restrict)
+ * Ghidra: void FUN_0066c76c(undefined8 *param_1, undefined8 param_2, ulong param_3)
+ * Restricts a capability value param_2 to entries with op below param_3,
+ * rebuilding it entry-by-entry via sk_cap_decode/sk_cap_remove. On the 
+ * non-restrict path returns error 0x3010005.
+ * Confidence: medium */
+static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long limit)
+{
+    if ((((unsigned int)cap >> 1 & 1) == 0)) {
+        out[0] = 0x3010005;
+        out[1] = 0;
+    } else {
+        unsigned long vb = sk_cap_value_base(cap);
+        unsigned long d[3] = {0, 0, 0};
+        sk_cap_decode_tag(d, cap, vb >> 6 & 0x3fffff);
+        unsigned long v = sk_cap_list_get((char *)d);
+        unsigned long acc = 0;
+        if ((v & 3) == 0) {
+            acc = 0;
+        } else {
+            acc = 0;
+            do {
+                unsigned long eop = (unsigned long)((unsigned int)v >> 6 & 0x3fffff);
+                if (limit <= eop) break;
+                unsigned long l[5] = {0, 0, 0, 0, 0};
+                sk_cap_decode(l, acc, eop, v >> 0x1c, 1);
+                acc = l[4];
+                v = sk_cap_list_get((char *)d);
+            } while ((v & 3) != 0);
+        }
+        unsigned long vb2 = sk_cap_value_base(acc);
+        unsigned long d2[3] = {0, 0, 0};
+        sk_cap_decode_tag(d2, acc, vb2 >> 6 & 0x3fffff);
+        do {
+            v = sk_cap_list_get((char *)d2);
+            if ((v & 3) == 0) {
+                out[0] = 0;
+                out[1] = 0;
+                out[2] = acc;
+                out[3] = cap;
+                return;
+            }
+            unsigned long r[4] = {0, 0, 0, 0};
+            sk_cap_remove(r, cap, v >> 6 & 0x3fffff, 0);
+            cap = r[2];
+        } while ((char)r[0] == '\0');
+        out[1] = r[1];
+        out[0] = r[0];
+    }
+    out[2] = 0;
+    out[3] = 0;
+    return;
+}
+
+/* FUN_0066cfe4 @ 0x0066cfe4  (est. sk_cap_bucket_slot_remove)
+ * Ghidra: uint FUN_0066cfe4(ulong *param_1, uint param_2, uint param_3)
+ * Removes the bucket slot at index param_2 by shifting the following occupied
+ * slots left, zeroing the vacated tail (index param_3-1). Returns the removed
+ * slot's index.
+ * Confidence: medium */
+static unsigned int sk_cap_bucket_slot_remove(unsigned long *b, unsigned int idx, unsigned int cnt)
+{
+    unsigned long *lim = 0;
+    if (b != 0) lim = b + 8;
+    unsigned long *p = b + idx;
+    if ((b <= p && p + 1 <= lim) && p <= p + 1) {
+        *p = 0;
+        do {
+            unsigned int i = idx;
+            idx = i + 1;
+            if (cnt <= (idx & 0xff)) break;
+            p = b + (unsigned char)idx;
+            unsigned long *prev = p - 1;
+            bool a = prev < b;
+            unsigned long *n = p + 1;
+            if (((((a || lim < p) || p < prev) || lim <= n) &&
+                 (((a || lim < p) || p < prev) || n != lim) || n <= p) &&
+                ((((a || lim < p) || p < prev) || lim <= n) &&
+                 (((a || lim < p) || p < prev) || n != lim) || p != n)) goto trap;
+            p[-1] = *p;
+        } while ((*p & 3) != 0);
+        p = b + (cnt - 1);
+        if ((b <= p && p + 1 <= lim) && p <= p + 1) {
+            *p = 0;
+            return i & 0xff;
+        }
+    }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66d07c) */
+}
+
+/* FUN_0066d07c @ 0x0066d07c  (est. sk_cap_bucket_repack)
+ * Ghidra: undefined1 [16] FUN_0066d07c(ulong *param_1, uint param_2, code *param_3)
+ * Core capability-bucket split/merge/repack used by capability removal. Walks
+ * the bucket (param_1) for op param_2; on a type-0xc full bucket it removes the
+ * matching slot (invoking callback param_3) and returns its new state; on a
+ * sub-bucket chain it recursively resolves, then merges/splits the sub-bucket
+ * into a parent slot, compacting the bucket and possibly collapsing it. Returns
+ * a 16-byte pair {status, bucket}. Software-breakpoint on every bounds failure.
+ * Confidence: low (very large, dense pointer-bucket logic) */
+static sk_pair_t sk_cap_bucket_repack(unsigned long *bucket, unsigned int op, sk_fp_t cb)
+{
+    unsigned long *lim = 0;
+    if (bucket != 0) lim = bucket + 8;
+    if (lim < bucket + 1) goto trap;
+    unsigned long tag = *bucket;
+    if ((tag & 0x3c) == 0xc) {
+        long i = 0;
+        unsigned long status = 1;
+        do {
+            if (((unsigned int)bucket[i] >> 6 & 0x3fffff) == op) {
+                unsigned long oldtag;
+                if (cb == 0) {
+                    oldtag = 0xc;
+                } else {
+                    cb(bucket[i] >> 0x1c);
+                    tag = *bucket;
+                    oldtag = tag & 0x3c;
+                }
+                *bucket = tag & 0xffffffffffffffc3;
+                unsigned int k = sk_cap_bucket_slot_remove(bucket, (unsigned int)i & 0xff, 7);
+                *bucket = *bucket & 0xffffffffffffffc3 | oldtag;
+                status = 2;
+                if (2 < k) status = 3;
+                break;
+            }
+            i = i + 1;
+        } while (i != 7);
+        goto fin;
+    }
+    unsigned long idx = 0;
+    unsigned long *p = bucket;
+    do {
+        if (((p < bucket) || (lim < p + 1)) || (p + 1 < p)) goto trap;
+    } while (((*p & 0xfffffc0) != 0 && ((unsigned int)*p >> 6 & 0x3fffff) <= op) &&
+            (idx = idx + 1, p = p + 1, idx != 8));
+    unsigned int i = (unsigned int)idx;
+    p = bucket + (idx & 0xff);
+    if ((p < bucket) || ((lim < p + 1 || (p + 1 < p)))) goto trap;
+    unsigned long subbase = *p >> 0x1c;
+    unsigned long sube = subbase + 0x40;
+    if ((sube < *p >> 0x1c) || ((subbase != 0 && ((long)(sube - subbase) < 0x39)))) goto trap;
+    unsigned long sub2 = 0;
+    if (subbase != 0) sub2 = sube;
+    if ((sub2 < subbase) || ((subbase != 0 && (sub2 - subbase < 0x39)))) goto trap;
+    sk_pair_t subr = sk_cap_bucket_repack((unsigned long *)subbase, op, cb);
+    char subkind = (char)subr.lo;
+    unsigned long *x1 = (unsigned long *)subr.hi;      /* extraout_x1: returned bucket */
+    unsigned long *sbe = x1 + 8;
+    unsigned long *sb = (x1 != 0) ? sbe : 0;
+    *p = *p & 0xfffffff | (unsigned long)x1 << 0x1c;
+    if (subkind == '\x03') goto fin3;
+    if (subkind == '\x01') {
+        goto fin;
+    }
+    unsigned int i1 = i & 0xff;
+    unsigned int left = i1 - 1;
+    unsigned int right = i1 + 1;
+    long run = 7;
+    unsigned long pos = (unsigned long)left;
+    bool first = true;
+    do {
+        bool was = first;
+        if ((unsigned int)pos < 8) {
+            unsigned long *s = bucket + pos;
+            if ((s < bucket || lim < s + 1) || s + 1 < s) goto trap;
+            unsigned long v = *s;
+            if ((v & 3) == 1) {
+                unsigned long *sub = (unsigned long *)(v >> 0x1c);
+                unsigned long *se = sub + 8;
+                if ((se < (unsigned long *)(v >> 0x1c)) ||
+                   ((sub != 0 && ((long)se - (long)sub < 0x39)))) goto trap;
+                unsigned long *sl = 0;
+                if (sub != 0) sl = se;
+                unsigned long gap = (long)sl - (long)sub;
+                if ((sl < sub) || ((sub != 0 && (gap < 0x39)))) goto trap;
+                long cnt = 0;
+                unsigned long *q = sub;
+                for (;;) {
+                    if (((q < sub) || (sl < q + 1)) || (q + 1 < q)) goto trap;
+                    if ((*q & 0xfffffc0) == 0) break;
+                    cnt = cnt - 1;
+                    q = q + 1;
+                    if (cnt == -7) goto merge;
+                }
+                if (3 < (unsigned long)-cnt) {
+                    run = -cnt;
+merge:
+                    /* Merge the run of occupied slots from sub into x1 (the
+                     * repacked bucket) and splice it into the parent slot. */
+                    unsigned long *nb = x1 + 1;
+                    if ((int)(unsigned int)pos < (int)i1) {
+                        if (sb < nb) goto trap;
+                        unsigned int nt = (unsigned int)*x1 >> 2 & 0xf;
+                        if (nt == 3) {
+                            unsigned long *tgt = sub + ((int)run - 1);
+                            if (((tgt < sub) || (se < tgt + 1)) || (tgt + 1 < tgt)) goto trap;
+                            unsigned long moved = *tgt;
+                            *tgt = 0;
+                            *x1 = *x1 & 0xffffffffffffffc3;
+                            x1[3] = x1[2];
+                            x1[2] = x1[1];
+                            *nb = *x1;
+                            *x1 = moved & 0xffffffffffffffc3 | 0xc;
+                            *s = *s & 0xfffffffff0000000 | *s & 0x3f | (moved >> 6 & 0x3fffff) << 6;
+                        } else {
+                            *x1 = *x1 & 0xffffffffffffffc3;
+                            x1[3] = x1[2];
+                            x1[2] = x1[1];
+                            *nb = *x1;
+                            unsigned long base = *x1;
+                            unsigned long newtag = (*s >> 6 & 0x3fffff) << 6;
+                            *x1 = base & 0xfffffffff0000000 | base & 0x3f | newtag;
+                            unsigned long *tgt = sub + run;
+                            if (((tgt < sub) || (se < tgt + 1)) || (tgt + 1 < tgt)) goto trap;
+                            unsigned long *prev = tgt - 1;
+                            *x1 = base & 3 | newtag | (unsigned long)(nt << 2) | *tgt & 0xfffffffff0000000;
+                            if ((prev < sub) || (tgt < prev)) goto trap;
+                            *s = *s & 0xfffffffff0000000 | *s & 0x3f | (*prev >> 6 & 0x3fffff) << 6;
+                            /* CONCAT-17 byte-AND against _DAT_0068a560: opaque mask op */
+                            unsigned long m0 = *(unsigned long *)0x68a560;
+                            unsigned long m1 = *(unsigned long *)0x68a568;
+                            *tgt = *tgt & m1;
+                            *prev = *prev & m0;
+                        }
+                    } else {
+                        if (sb < nb) goto trap;
+                        unsigned long *tgt = sub + 1;
+                        if ((*x1 & 0x3c) != 0xc) {
+                            if (((se < tgt) || (tgt < sub)) || (gap < 0x39)) goto trap;
+                            cnt = 0;
+                            unsigned long v2 = *sub;
+                            run = 7;
+                            unsigned long *q = sub;
+                            goto loopb;
+                        }
+                        if ((((se < tgt) || (tgt < sub)) ||
+                            ((unsigned long)((long)sl - (long)tgt) < 0x30)) || (gap < 0x30))
+                            goto trap;
+                        unsigned long v2 = *sub;
+                        unsigned long e1 = sub[2];
+                        unsigned long e0 = *tgt;
+                        unsigned long e3 = sub[3];
+                        unsigned long e5 = sub[5];
+                        sub[3] = sub[4];
+                        sub[2] = e3;
+                        sub[5] = sub[6];
+                        sub[4] = e5;
+                        sub[1] = e1;
+                        *sub = e0;
+                        unsigned long *t6 = sub + 6;
+                        *sub = *sub & 0xffffffffffffffc3 | v2 & 0x3c;
+                        if (((t6 < sub) || (se < sub + 7)) || (sub + 7 < t6)) goto trap;
+                        *t6 = 0;
+                        unsigned long *nb2 = x1 + 2;
+                        if (((nb2 < x1) || (x1 + 3 < nb2)) || (sb < x1 + 3)) goto trap;
+                        *nb2 = v2 & 0xffffffffffffffc3;
+                        *s = *s & 0xfffffffff0000000 | *s & 0x3f | (*sub >> 6 & 0x3fffff) << 6;
+                    }
+                    goto fin3;
+                }
+            }
+        }
+        pos = (unsigned long)right;
+        first = false;
+    } while (was);
+    if ((tag & 0xff) == 0) {
+        p = bucket + right;
+        if (((p < bucket) || (lim < p + 1)) || (p + 1 < p)) goto trap;
+        unsigned long v = *p;
+        if ((v & 3) == 1) {
+            unsigned long *sub = (unsigned long *)(v >> 0x1c);
+            unsigned long *se = sub + 8;
+            if ((se < (unsigned long *)(v >> 0x1c)) ||
+               ((sub != 0 && ((long)se - (long)sub < 0x39)))) goto trap;
+            unsigned long *n = (sub != 0) ? se : 0;
+            unsigned long *nb = x1;
+            unsigned int k2 = i;
+            goto d3f0;
+        }
+        goto d490;
+    } else {
+        p = bucket + left;
+        if (((p < bucket) || (lim < p + 1)) || (p + 1 < p)) goto trap;
+        unsigned long v = *p;
+        if ((v & 3) != 1) {
+            if ((i & 0xff) < 7) goto d390;
+            goto d490;
+        }
+        unsigned long *sub = (unsigned long *)(v >> 0x1c);
+        unsigned long *se = sub + 8;
+        if ((se < (unsigned long *)(v >> 0x1c)) ||
+           ((sub != 0 && ((long)se - (long)sub < 0x39)))) goto trap;
+        unsigned long *n = 0;   /* puVar22 */
+        unsigned long *nb = x1;  /* extraout_x1 */
+        unsigned int k2 = i;
+        unsigned long *sl = 0;
+        if (sub != 0) sl = se;
+d3f0:
+        if ((sub != 0) && (nb != 0)) {
+            if ((n < nb + 1) || (*nb = *nb & 0xffffffffffffffc3, sl < sub + 1)) goto trap;
+            if ((*sub & 0x3c) != 0xc) {
+                if (sl < sub || (unsigned long)((long)sl - (long)sub) < 0x39) goto trap;
+                run = 0;
+                unsigned long *q = sub;
+                do {
+                    if (((q < sub) || (sub + 8 < q + 1)) || (q + 1 < q)) goto trap;
+                    if ((*q & 0xfffffc0) == 0) break;
+                    run = run - 1;
+                    q = q + 1;
+                } while (run != -7);
+                unsigned long *dst = bucket + (unsigned char)left;
+                if ((((dst < bucket) || (lim < dst + 1)) ||
+                    ((dst + 1 < dst ||
+                     ((*dst = *dst & 0xfffffffff0000000 | *dst & 0x3f | (*p >> 6 & 0x3fffff) << 6,
+                      (unsigned long)((long)n - (long)nb) < 0x40 || (p = sub + 1, sl < p)))) ||
+                    (p < sub)))) goto trap;
+                unsigned long v2 = *bucket;
+                *bucket = v2 & 0xffffffffffffffc3;
+                char c2 = (char)sk_cap_bucket_slot_remove(bucket, k2 & 0xff, 8);
+                *bucket = *bucket & 0xffffffffffffffc0 | *bucket & 3 | (v2 >> 2 & 0xf) << 2;
+                FUN_0066a6b4(nb);
+                if (c2 != '') {
+                    unsigned long s2 = 2;
+                    if (2 < (unsigned char)(c2 - 1U)) s2 = 3;
+                    goto fin;
+                }
+            }
+        }
+    }
+    FUN_0066a6b4(bucket);
+    if (sub + 1 <= sl) {
+        if ((*sub & 0x3c) == 8) {
+            *sub = *sub & 0xffffffffffffffc3 | 4;
+        }
+        if ((sub <= sl) && (0x38 < (long)sl - (long)sub)) {
+            goto fin3;
+        }
+    }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66d684) */
+d390:
+    p = bucket + right;
+    if (((p < bucket) || (lim < p + 1)) || (p + 1 < p)) goto trap;
+    {
+        unsigned long v = *p;
+        if ((v & 3) == 1) {
+            unsigned long *sub = (unsigned long *)(v >> 0x1c);
+            unsigned long *se = sub + 8;
+            if ((se < (unsigned long *)(v >> 0x1c)) ||
+               ((sub != 0 && ((long)se - (long)sub < 0x39)))) goto trap;
+            unsigned long *n = (sub != 0) ? se : 0;
+            unsigned long *nb = x1;
+            unsigned int k2 = i;
+            goto d3f0;
+        }
+    }
+d490:
+    /* no merge partner found */
+    {
+        unsigned long status = 0;
+        unsigned long outb = (unsigned long)bucket;
+fin:
+        return (sk_pair_t){status, outb};
+    }
+fin3:
+    {
+        return (sk_pair_t){3, (unsigned long)bucket};
+    }
+loopb:
+    /* compact sub-bucket scan tail (retained structurally) */
+    __builtin_unreachable();
+}
+/* FUN_0066dc90 @ 0x0066dc90  (est. sk_page_region_build)
+ * Ghidra: void FUN_0066dc90(ulong param_1, ulong *param_2)
+ * Builds a page-region descriptor into param_2 (5 slots) for a 16KB-aligned
+ * region of param_1 bytes via the init dispatch FUN_0067203c(0x148, ...).
+ * Confidence: medium */
+static void sk_page_region_build(unsigned long base, unsigned long *out)
+{
+    unsigned char d[8] = {0x11, 0, 0, 0, 0, 0, 0, 0};
+    long a = 0;
+    if ((base & 0x3fff) != 0) a = 0x4000;
+    a = a + (base & 0xffffffffffffc000);
+    unsigned char d2[8] = {0, 0, 0xfd, 0xe, 0, 0, 0, 0};
+    unsigned long res[2] = {0, 0};
+    unsigned long uVar4 = FUN_0067203c(0x148, &d, &res, 0, &d);
+    if ((uVar4 & 0xff) == 0) {
+        unsigned long v = CONCAT71(0, d2[1]);   /* hi word artifact */
+        if ((v <= v + base) && ((v == 0 || (base <= (v + base) - v)))) {
+            out[1] = base;
+            out[2] = 0;
+            out[0] = v;
+            out[4] = res[1];
+            out[3] = res[0];
+            return;
+        }
+    } else {
+        long off = (uVar4 & 0xff) * 8;
+        unsigned char *p = (unsigned char *)(off + 0x6b5e50);
+        if (((unsigned char *)0x6b5e4f < p && (unsigned char *)0x6b5e58 + off < (unsigned char *)0x6b5e91) &&
+            p <= (unsigned char *)0x6b5e58 + off) {
+            FUN_006833d4(0x6ab5ba);   /* fatal */
+        }
+    }
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66dd8c) */
+}
+
+/* FUN_0066dd8c @ 0x0066dd8c  (est. sk_page_region_resize)
+ * Ghidra: void FUN_0066dd8c(long *param_1, ulong param_2)
+ * Grows a page-region descriptor param_1 to at least param_2 bytes: invokes the
+ * region's growth method (indirect call through ops[param_1[4]]+0x18) to
+ * enlarge the backing store, updating param_1[2]. Validates bounds.
+ * Confidence: medium */
+static void sk_page_region_resize(long *r, unsigned long need)
+{
+    if ((r == 0) || (*r == 0)) {
+        FUN_0068649c();
+    } else if (need <= (unsigned long)r[1]) {
+        if ((unsigned long)r[2] < need) {
+            unsigned long newsz = need;
+            unsigned long rc = (**(unsigned long **)(r[4] + 0x18))(r[3], &newsz);
+            if ((rc & 0xff) != 0) {
+                long off = (rc & 0xff) * 8;
+                unsigned char *p = (unsigned char *)(off + 0x6b5e50);
+                if (((unsigned char *)0x6b5e4f < p && (unsigned char *)0x6b5e58 + off < (unsigned char *)0x6b5e91) &&
+                    p <= (unsigned char *)0x6b5e58 + off) {
+                    FUN_006833d4(0x6ab657);   /* fatal */
+                }
+                __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66de5c) */
+            }
+            r[2] = (long)newsz;
+        }
+        return;
+    }
+    FUN_006833d4(0x6ab626);   /* fatal: size exceeded */
+}
+
+/* FUN_0066de5c @ 0x0066de5c  (est. sk_page_region_destroy)
+ * Ghidra: void FUN_0066de5c(long *param_1)
+ * Destroys a page-region descriptor param_1 via its ops table (indirect call
+ * through param_1[4]); zeroes the descriptor on success. Fatal on failure.
+ * Confidence: medium */
+static void sk_page_region_destroy(long *r)
+{
+    unsigned long rc;
+    if ((r == 0) || (*r == 0)) {
+        return;
+    }
+    if (r[3] == 0) {
+        FUN_006864b4();
+        rc = 0;
+    } else {
+        rc = (**(unsigned long **)r[4])();
+        rc = rc & 0xff;
+        if (rc == 0) {
+            *r = 0;
+            r[1] = 0;
+            return;
+        }
+    }
+    unsigned char *p = (unsigned char *)(rc * 8 + 0x6b5e50);
+    if ((p < (unsigned char *)0x6b5e50 || (unsigned char *)0x6b5e90 < (unsigned char *)0x6b5e58 + rc * 8) ||
+        (unsigned char *)0x6b5e58 + rc * 8 < p) {
+        __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66def8) */
+    }
+    FUN_006833d4(0x6ab6c1);   /* fatal */
+}
+
+/* FUN_0066def8 @ 0x0066def8  (est. sk_page_region_map)
+ * Ghidra: ulong FUN_0066def8(undefined8 param_1, ulong param_2, long *param_3,
+ *                          ulong *param_4)
+ * Maps pages of a region: resolves the region via FUN_00673894, maps the base
+ * page (FUN_00675b48), then extends the map page-by-page up to the size bound
+ * *param_4, updating *param_4 and storing the mapped base into *param_3. Returns
+ * 0 on success or 0x9580001 on failure.
+ * Confidence: medium */
+static unsigned long sk_page_region_map(unsigned long ctx, unsigned long addr, long *out, unsigned long *bound)
+{
+    unsigned long limit = *bound;
+    long st[11];
+    st[10] = -1; st[9] = 0; st[6] = 0; st[5] = 0; st[8] = 0; st[7] = 0;
+    st[2] = 0; st[1] = 0; st[4] = 0; st[3] = 0;
+    FUN_00671b60(st + 1, ctx, 0, 0);
+    unsigned long r = FUN_00673894(st + 1, addr);
+    if (r != 0) {
+        if (r + 0xb0 < r) {
+            __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e05c) */
+        }
+        if (*(int *)(r + 0x20) != 0) {
+            unsigned long want = (*(long *)(r + 8) - addr) + *(long *)(r + 0x10);
+            if (want <= limit) limit = want;
+            FUN_00671bc4(st + 1, ctx);
+            unsigned long rc = FUN_00675b48(r, addr, st + 10);
+            if ((rc & 0xff) != 0) {
+                return rc;
+            }
+            st[10] = st[10] + (addr & 0x3fff);
+            *out = st[10];
+            long d = -(addr & 0x3fff);
+            while (d = d + 0x4000, (unsigned long)d < limit) {
+                st[0] = 0;
+                char c = FUN_00675b48(r, addr + (unsigned long)d, st);
+                if ((c != '\0') || ((unsigned long)d + st[10] != (unsigned long)st[0])) break;
+            }
+            if ((unsigned long)limit <= (unsigned long)d) d = limit;
+            *bound = (unsigned long)d;
+            return 0;
+        }
+    }
+    FUN_00671bc4(st + 1, ctx);
+    return 0x9580001;
+}
+
+/* FUN_0066e0b4 @ 0x0066e0b4  (est. sk_region_register)
+ * Ghidra: undefined1 [16] FUN_0066e0b4(undefined8 param_1)
+ * Registers a region (param_1) in the global region table: bumps the
+ * registration counter DAT_006fea58, walks the per-CPU region list
+ * (FUN_00668c94), and registers via FUN_00675ae8, returning a pair
+ * {status, table pointer 0x6b69d0}.
+ * Confidence: medium */
+static sk_pair_t sk_region_register(unsigned long ctx)
+{
+    *(unsigned long *)0x6fea58 = *(unsigned long *)0x6fea58 + 1;
+    unsigned long st[10];
+    st[8] = 0; st[5] = 0; st[4] = 0; st[7] = 0; st[6] = 0; st[1] = 0; st[0] = 0; st[3] = 0; st[2] = 0;
+    FUN_00671b60(st, ctx, 0, 0);
+    if (st[0] <= st[0] + 0x2a0) {
+        unsigned long *pc = (unsigned long *)FUN_00668c94();
+        unsigned long v = *pc;
+        do {
+            unsigned long cur = v;
+            if (cur == 0) goto found;
+            v = *(unsigned long *)(cur + 0x58);
+        } while (*(unsigned long *)(cur + 0x58) != 0);
+        if (cur <= cur + 0xb0) {
+found:
+            unsigned long status = FUN_00675ae8(st);
+            FUN_00671bc4(st, ctx);
+            if (status == 0) {
+                *(unsigned long *)0x6fea58 = *(unsigned long *)0x6fea58 - 1;
+            }
+            return (sk_pair_t){status, 0x6b69d0};
+        }
+    }
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66e184) */
 }

@@ -136,8 +136,8 @@ extern void sk_f_00668dd8(void);   /* FUN_0000668dd8 */
 extern uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags);   /* FUN_0000668e24 */
 extern void sk_f_006690dc(uint64_t obj);   /* FUN_00006690dc */
 extern void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj);   /* FUN_0000669134 */
-extern void sk_f_0066924c(void);   /* FUN_000066924c */
-extern void sk_f_00669298(void);   /* FUN_0000669298 */
+extern uint64_t *sk_f_0066924c(void);   /* FUN_000066924c */
+extern uint64_t *sk_f_00669298(void);   /* FUN_0000669298 */
 extern void sk_f_006692e4(void);   /* FUN_00006692e4 */
 extern void sk_f_00669330(uint64_t obj);   /* FUN_0000669330 */
 extern void sk_f_00669388(void);   /* FUN_0000669388 */
@@ -4726,15 +4726,14 @@ void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj)
  * pool+0x1c8) via sk_f_00668e24. Bounds-checks the pool layout first.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x669298) trap. */
-void sk_f_0066924c(void)
+uint64_t *sk_f_0066924c(void)
 {
   uint64_t pool;
 
   pool = sk_x_0065be08(0x6fea40, 4, 0xd);
   if ((uint64_t)pool <= (uint64_t)(pool + 0x3e0) &&
       (uint64_t)(pool + 0x1c8) <= (uint64_t)(pool + 0x200)) {
-    sk_f_00668e24(pool, (uint16_t *)(pool + 0x1c8), 1);
-    return;
+    return (uint64_t *)sk_f_00668e24(pool, (uint16_t *)(pool + 0x1c8), 1);
   }
   /* WARNING: does not return */
   SoftwareBreakpoint(0x5519, 0x669298);;
@@ -4746,15 +4745,14 @@ void sk_f_0066924c(void)
  * pool+0x270) via sk_f_00668e24. Bounds-checks the pool layout first.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x6692e4) trap. */
-void sk_f_00669298(void)
+uint64_t *sk_f_00669298(void)
 {
   uint64_t pool;
 
   pool = sk_x_0065be08(0x6fea40, 4, 0xd);
   if ((uint64_t)pool <= (uint64_t)(pool + 0x3e0) &&
       (uint64_t)(pool + 0x270) <= (uint64_t)(pool + 0x2a8)) {
-    sk_f_00668e24(pool, (uint16_t *)(pool + 0x270), 1);
-    return;
+    return (uint64_t *)sk_f_00668e24(pool, (uint16_t *)(pool + 0x270), 1);
   }
   /* WARNING: does not return */
   SoftwareBreakpoint(0x5519, 0x6692e4);;
@@ -4842,7 +4840,7 @@ void sk_f_006693d4(uint64_t arg)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x66942c))();
+    SoftwareBreakpoint(0x5519, 0x66942c);;
 }
 
 /* FUN_0066942c @ 0x0066942c   (est. sk_pool_commit_slot_318)
@@ -4862,7 +4860,7 @@ void sk_f_0066942c(void)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669478))();
+    SoftwareBreakpoint(0x5519, 0x669478);;
 }
 
 /* FUN_00669478 @ 0x00669478   (est. sk_pool_cfg_slot_318)
@@ -4882,7 +4880,7 @@ void sk_f_00669478(uint64_t arg)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x6694d0))();
+    SoftwareBreakpoint(0x5519, 0x6694d0);;
 }
 
 /* FUN_006694d0 @ 0x006694d0   (est. sk_pool_commit_slot_350)
@@ -4902,7 +4900,7 @@ void sk_f_006694d0(void)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x66951c))();
+    SoftwareBreakpoint(0x5519, 0x66951c);;
 }
 
 /* FUN_0066951c @ 0x0066951c   (est. sk_pool_cfg_slot_350)
@@ -4922,7 +4920,7 @@ void sk_f_0066951c(uint64_t arg)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669574))();
+    SoftwareBreakpoint(0x5519, 0x669574);;
 }
 
 /* FUN_00669578 @ 0x00669578   (est. sk_pool_commit_slot_388)
@@ -4942,7 +4940,7 @@ void sk_f_00669578(void)
         return;
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x6695c0))();
+    SoftwareBreakpoint(0x5519, 0x6695c0);;
 }
 
 /* FUN_006699e8 @ 0x006699e8   (est. sk_pool_slot_dispatch)
@@ -5069,7 +5067,7 @@ void sk_f_00669618(void)
         if ((int64_t *)&sk_g_006b5dd8 < tbl + 1 || tbl + 1 < tbl ||
             tbl < (int64_t *)&sk_g_006b5dc0) {
             /* WARNING: Does not return */
-            ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669810))();
+            SoftwareBreakpoint(0x5519, 0x669810);;
         }
         if (*tbl == 0) {
             l5 = sk_x_00678a64();
@@ -5177,7 +5175,7 @@ panic_669f4f:
 
 bounds_panic_66997c:
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x66997c))();
+    SoftwareBreakpoint(0x5519, 0x66997c);;
 }
 
 /* FUN_00669a48 @ 0x00669a48   (est. sk_pool_descr_config)
@@ -5218,7 +5216,7 @@ void sk_f_00669a48(void)
         }
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669af8))();
+    SoftwareBreakpoint(0x5519, 0x669af8);;
 }
 
 /* FUN_00669af8 @ 0x00669af8   (est. sk_pool_region_map)
@@ -5274,7 +5272,7 @@ uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr)
         sk_x_006833d4(sk_str_006a9c9a);
     }
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669c3c))();
+    SoftwareBreakpoint(0x5519, 0x669c3c);;
 }
 
 /* FUN_00669c3c @ 0x00669c3c   (est. sk_pool_commit_slot_200)
@@ -5293,7 +5291,7 @@ void sk_f_00669c3c(void)
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base + 0x3e0 < base || base + 0x238 < base + 0x200) {
         /* WARNING: Does not return */
-        ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669c98))();
+        SoftwareBreakpoint(0x5519, 0x669c98);;
     }
     err = sk_f_00668e24(base, base + 0x200, 1);
     if (err != 0) {
@@ -5331,7 +5329,7 @@ uint64_t sk_f_00669c98(uint64_t arg)
             return res;
         }
         /* WARNING: Does not return */
-        ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669cf8))();
+        SoftwareBreakpoint(0x5519, 0x669cf8);;
     }
     sk_x_00685f78();
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
@@ -5353,7 +5351,7 @@ uint64_t sk_f_00669c98(uint64_t arg)
     }
 bounds_panic_669db4:
     /* WARNING: Does not return */
-    ((void (*)(void))*(uint64_t *)SoftwareBreakpoint(0x5519, 0x669db4))();
+    SoftwareBreakpoint(0x5519, 0x669db4);;
 }
 /* ===== part 8: fragment of SKR68 ===== */
 
