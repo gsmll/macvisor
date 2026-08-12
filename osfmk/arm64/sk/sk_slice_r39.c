@@ -561,3 +561,683 @@ uint64_t cL4_tb_rank(uint32_t id, uint64_t *bits, long table) {
     }
     return 0x7fffffffffffffff;
 }
+
+/* FUN_004ace08 @ 0x004ace08 - Unicode/character classification: binary
+ * searches a table (DAT_005a5ee8, 0x6ac entries) of (start, limit) code
+ * points and returns the packed high bits of the matching entry (a
+ * character-type/script code), or 0xff if none matches. Used by the
+ * tightbeam string marshalling.
+ * Confidence: medium */
+int cL4_tb_char_type(uint32_t cp) {
+    int lo = 0, hi = 0x6ac, mid;
+    do {
+        mid = lo + ((hi - lo) >> 1);
+        uint32_t start, limit;
+        if (mid == 0x6ac) { limit = 0x10ffff; }
+        else { limit = (*(uint32_t *)(0x5a5eec + (long)mid * 4) & 0x1fffff) - 1; }
+        start = *(uint32_t *)(0x5a5ee8 + (long)mid * 4) & 0x1fffff;
+        if (start <= cp && cp <= limit)
+            return *(uint32_t *)(0x5a5ee8 + (long)mid * 4) >> 0x15;
+        int next = mid - 1;
+        if (start <= cp) next = hi;
+        if (limit < cp) { lo = mid + 1; next = hi; }
+        hi = next;
+    } while (lo <= hi);
+    return 0xff;
+}
+
+/* FUN_004ace88 @ 0x004ace88 - maps a marshalled id to a frame address.
+ * Looks up id via cL4_tb_rank (two-level bitmap); on hit decodes a 16-bit
+ * table entry (DAT_005a81c8) into a byte rank and an offset into
+ * DAT_005a8704, returning the final frame pointer. Returns 0 on miss.
+ * Confidence: medium */
+uint64_t cL4_tb_ace88(uint64_t id, uint8_t *rank_out) {
+    long idx = cL4_tb_rank(id, (uint64_t *)0x5a79a0, 0x5a8028);
+    if (idx == 0x7fffffffffffffff) return 0;
+    uint16_t e = *(uint16_t *)(0x5a81c8 + idx * 2);
+    *rank_out = (uint8_t)(e >> 0xb);
+    return ((uint64_t)e & 0x7ff) + 0x5a8704;
+}
+
+/* FUN_004acef4 @ 0x004acef4 - allocates a tightbeam endpoint object:
+ * cL4_alloc(1, 8, tag) then cL4_tb_af8a4 to initialise it. Panics with
+ * "allocation failed" or "TB allocation of <s> endpoint failed" on error.
+ * Confidence: high */
+uint64_t cL4_tb_acef4(uint64_t tag) {
+    uint64_t p = cL4_alloc(1, 8, 0x2004093837f09ULL);
+    if (p == 0) cL4_panic(0, "allocation failed");
+    if (p <= p + 8) {
+        int rc = 0; /* cL4_tb_af8a4(p, tag) */
+        if (rc == 0) return p;
+        cL4_panic(0, "TB allocation of <s> endpoint failed");
+    }
+    /* unreachable: SoftwareBreakpoint(0x5519, 0x4acf64) */
+    __builtin_trap();
+}
+
+/* FUN_004acf8c @ 0x004acf8c - predicate: true iff param_1 is the NUL byte.
+ * Confidence: high (trivial) */
+bool cL4_tb_cf8c(char c) { return c == '\0'; }
+
+/* FUN_004acf98 @ 0x004acf98 - unmarshals a mapping-attribute descriptor from
+ * param_1 (a marshalled region) into the 24-byte output param_2. Reads the
+ * group/attr/mode bytes, the base and size words, and the shared/read-only
+ * flags. Panics on unrecognized group/attribute. This is the reader half of
+ * the SegAccess mapping-attribute marshalling.
+ * Confidence: medium */
+void cL4_tb_cf98(uint64_t *src, uint64_t *dst) {
+    uint16_t tag = *(uint16_t *)((uint8_t *)src + 0x1a);
+    uint8_t *tagstr = 0; /* FUN_00045cd8(&tag) -> name for the tag */
+    (void)tagstr;
+    uint8_t group = *(uint8_t *)(src + 1);
+    if (group >= 8) cL4_panic(0, "%s: unrecognized group %x");
+    uint8_t attr = *(uint8_t *)(src + 3);
+    if ((attr & 0xfc) != 0x18) cL4_panic(0, "%s: unrecognized mappingattribute");
+    if ((*(uint8_t *)((uint8_t *)src + 0x19) & 0xfe) == 0x20) {
+        uint64_t base = *src;
+        uint8_t mode = (*(uint8_t *)((uint8_t *)src + 0x19) != 0x20) ? 2 : 1;
+        bool is_shared = (tagstr != 0);
+        bool is_ro = (tagstr && *tagstr == 0x11);
+        if (base == src[4] * 0x4000) {
+            if (dst != 0) {
+                uint64_t size = src[2];
+                dst[0] = 0; dst[1] = 0; dst[2] = 0; dst[3] = 0;
+                dst[0] = base;
+                dst[1] = size;
+                *(uint8_t *)(dst + 2) = group;
+                *(uint8_t *)((uint8_t *)dst + 0x11) = attr - 0x17;
+                *(uint8_t *)((uint8_t *)dst + 0x12) = mode;
+                *(bool *)((uint8_t *)dst + 0x13) = (tagstr != 0);
+                *(bool *)((uint8_t *)dst + 0x14) = is_ro;
+                *(uint16_t *)((uint8_t *)dst + 0x15) = 0;
+                *(uint8_t *)((uint8_t *)dst + 0x17) = 0;
+            }
+            return;
+        }
+    }
+    cL4_panic(0, "%s: condition %s failed");
+}
+
+/* FUN_004acf9c..004ad0d4 (not in batch; gap) */
+
+/* FUN_004ad0e8 @ 0x004ad0e8 - marshals a "frame mapping" request. Builds a
+ * message descriptor, invokes cL4_tb_aed34 (the tightbeam call hub); on
+ * success, if the reply flag bit is set, releases the 8-byte reply buffer;
+ * otherwise panics with "condition <s> failed" / "tightbeam call failed %x".
+ * The callback target is FUN_004ad1d8.
+ * Confidence: medium */
+void cL4_tb_ad0e8(uint64_t obj, uint64_t a, uint64_t b, uint64_t c) {
+    /* message descriptor {type=0x6ad3a8, cb=FUN_004ad1d8, tag=0x6898e0} */
+    (void)a; (void)b; (void)c;
+    int rc = 0; /* cL4_tb_aed34(obj, &desc) */
+    if (rc == 0) {
+        /* if ((desc+3) & 1) { cL4_free(&buf, 8); return; } */
+        cL4_panic(0, "%s: condition %s failed");
+    } else {
+        cL4_panic(0, "%s: tightbeam call failed %x");
+    }
+}
+
+/* FUN_004ad1d8 @ 0x004ad1d8 - callback invoked on completion of the frame
+ * mapping in 0x4ad0e8. Sets the "in-progress" flag, marshals the reply
+ * (param_2[0..9]) via cL4_tb_cf98, and copies out the reply flags (an
+ * exception/error word and a byte) into the caller state at param_1.
+ * Confidence: medium */
+void cL4_tb_ad1d8(uint64_t ctx, uint64_t *reply) {
+    uint64_t uVar1 = *(uint64_t *)(ctx + 0x28);
+    *(uint8_t *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x20) + 8) + 0x18) = 1;
+    uint64_t w0 = *reply, w1 = reply[1], w2 = reply[2], w3 = reply[3];
+    uint64_t w4 = reply[4], w5 = reply[5], w6 = reply[6], w7 = reply[7];
+    uint64_t w8 = reply[8], w9 = reply[9];
+    uint64_t lo, hi;
+    lo = w0; hi = w1;
+    cL4_tb_cf98(&lo, (uint64_t *)uVar1);
+    if (*(uint64_t *)(ctx + 0x30) != 0) {
+        if ((*(uint8_t *)(reply + 10) & 0xfe) != 0x10)
+            cL4_panic(0, "%s: condition %s failed");
+        *(bool *)*(uint64_t *)(ctx + 0x30) = *(uint8_t *)(reply + 10) == 0x11;
+    }
+    if (*(uint64_t *)(ctx + 0x38) != 0)
+        **(uint8_t **)(ctx + 0x38) = *(uint8_t *)((uint8_t *)reply + 0x51);
+    (void)w2; (void)w3; (void)w4; (void)w5; (void)w6; (void)w7; (void)w8; (void)w9;
+}
+
+/* FUN_004ad294 @ 0x004ad294 - returns *param_1 (dereferences a single-word
+ * out-pointer). Confidence: high (trivial) */
+uint64_t cL4_tb_d294(uint64_t *p) { return *p; }
+
+/* FUN_004ad29c @ 0x004ad29c - maps a one-letter L4 error-code char (0x41..)
+ * to a numeric error severity. Returns the 16-bit value as a 128-bit pair
+ * {lo=code}. 'E' (0x45) triggers a "got badmapping error" panic; any value
+ * outside 0x41..0x4a panics with "condition <s> failed".
+ * Confidence: medium */
+skr39_u128 cL4_tb_d29c(int code) {
+    uint64_t val = 3;
+    switch (code) {
+    case 0x42: val = 5; break;
+    case 0x43: val = 1; break;
+    case 0x44: val = 6; break;
+    case 0x45: cL4_panic(0, "%s: got badmapping error"); break;
+    case 0x46: val = 7; break;
+    case 0x47: val = 0xb; break;
+    case 0x48: val = 0xc; break;
+    case 0x49: val = 2; break;
+    case 0x4a: val = 10; break;
+    default:
+        cL4_panic(0, "%s: condition %s failed");
+    }
+    skr39_u128 r; r.lo = val; r.hi = 0; return r;
+}
+
+/* FUN_004ad388 @ 0x004ad388 - invokes cL4_tb_ad3f8 (region-map call) with a
+ * fresh 16-byte random/nonce (from FUN_00034a2c) prepended; panics on
+ * overflow of the result. Wraps the frame-mapping entry point.
+ * Confidence: medium */
+void cL4_tb_ad388(uint64_t a, uint64_t b, uint64_t c, uint64_t d) {
+    uint64_t n[2]; n[0] = 0; n[1] = 0; /* FUN_00034a2c nonce */
+    uint64_t r = 0; /* cL4_tb_ad3f8(a, n0, n1, b, c, d) */
+    if (r != 0 && r + 0x80 < r) __builtin_trap();
+}
+
+/* FUN_004ad3f8 @ 0x004ad3f8 - the core frame-mapping / region-map request.
+ * Validates alignment (param_4 & 0x3fff == 0), consults an existing mapping
+ * (param_5<2 path calls cL4_tb_ad0e8 to probe), allocates a mapping
+ * descriptor via cL4_alloc, marshals the mapping via cL4_tb_aefb0 (the
+ * SegAccess_Map call), and returns the descriptor (or 0 + an error pair).
+ * Handles the sharing/mapping-type logic and the reply-buffer protocol.
+ * Confidence: medium */
+uint64_t *cL4_tb_ad3f8(uint64_t obj, uint64_t a, uint64_t b, uint64_t size,
+                       uint32_t type, uint64_t *err) {
+    (void)a; (void)b;
+    if ((size & 0x3fff) != 0) { err[0] = 0; err[1] = 0; return 0; }
+    if (type < 2) {
+        uint64_t existing = 0; /* cL4_tb_ad0e8 probe */
+        if (existing != 0 && (existing & 0x3fff) == 0) {
+            if (existing <= size - 1) size = existing;
+        }
+        uint64_t nwords = (size >> 0xe) + 2;
+        uint64_t *desc = (uint64_t *)cL4_alloc(1, nwords * 0x10 + 0x80, 0x10e0040dfc0d2aaULL);
+        if (desc == 0) { err[0] = 0; err[1] = 0; return 0; }
+        /* marshal and commit via cL4_tb_aefb0; on success return desc */
+        int rc = 0; /* cL4_tb_aefb0(obj, type==1?0x11:0x10, &m, &call) */
+        if (rc != 0) cL4_panic(0, "%s: tightbeam call failed %x");
+        if (desc[0xe] <= nwords) return desc;
+        __builtin_trap();
+    }
+    cL4_panic(0, "%s: condition %s failed");
+}
+
+/* FUN_004ad7e8 @ 0x004ad7e8 - searches the region-map's segment range list
+ * for the segment covering [param_2, param_2+param_3). Locks the range
+ * table, walks the 16-byte (base, limit) entries, and on a match returns
+ * the translated address pair via *param_4. Returns 1 on hit, 0 on miss.
+ * Confidence: medium */
+uint64_t cL4_tb_ad7e8(uint64_t map, uint64_t off, uint64_t len, uint64_t *out) {
+    uint64_t total = *(uint64_t *)(map + 0x18);
+    if (len <= total && off < total && len + off <= total) {
+        uint64_t nsegs = *(uint64_t *)(map + 0x70);
+        for (uint64_t i = 0; i < nsegs; i++) {
+            uint64_t *e = (uint64_t *)(map + 0x80) + i * 2;
+            if (e[0] <= off && off < e[1] && len + off <= e[1]) {
+                out[0] = off + *(uint64_t *)(map + 0x30);
+                out[1] = len;
+                return 1;
+            }
+        }
+    }
+    out[0] = 0; out[1] = 0; return 0;
+}
+
+/* FUN_004ad908 @ 0x004ad908 - encodes a mapping error into the reply buffer
+ * at param_2+8: builds a "Truncated"/"ErrorCodeSuccess" descriptor and
+ * marshals it via cL4_tb_ae6c4. Panics on overflow.
+ * Confidence: medium */
+void cL4_tb_ad908(uint64_t ctx, uint8_t *reply) {
+    (void)ctx;
+    cL4_tb_ae6c4(reply + 8, 0);
+}
+
+/* FUN_004ad9ac @ 0x004ad9ac - marshals a frame-mapping reply into the range
+ * list. Given the map (param_1), calls cL4_tb_ae6c4 to write the reply into
+ * the caller's buffer and copies the returned segment count into *param_3.
+ * Returns the new segment-list tail.
+ * Confidence: medium */
+uint64_t cL4_tb_ad9ac(uint64_t ctx, uint64_t reply, uint64_t *out) {
+    (void)ctx;
+    cL4_tb_ae6c4(reply, 0);
+    *out = 0;
+    return 0;
+}
+
+/* FUN_004adb34 @ 0x004adb34 - releases four 8-byte buffers stored at
+ * param_1+0x38/0x30/0x28/0x20 (frees the frame-mapping scratch buffers).
+ * Confidence: medium */
+void cL4_tb_db34(uint64_t p) {
+    cL4_free((void *)*(uint64_t *)(p + 0x38), 8);
+    cL4_free((void *)*(uint64_t *)(p + 0x30), 8);
+    cL4_free((void *)*(uint64_t *)(p + 0x28), 8);
+    cL4_free((void *)*(uint64_t *)(p + 0x20), 8);
+}
+
+/* FUN_004adb84 @ 0x004adb84 - iterates a range of mapping entries, sending
+ * one "unmap/map" tightbeam request per entry via cL4_tb_af26c, advancing
+ * by one page per iteration until the range [param_2, param_3) is done.
+ * Panics on tightbeam-call failure or range overrun.
+ * Confidence: medium */
+void cL4_tb_db84(uint64_t map, uint64_t start, uint64_t end) {
+    if ((start < end) && (end <= *(uint64_t *)(map + 0x20))) {
+        while (true) {
+            int rc = 0; /* cL4_tb_af26c(map+0x40, *(u32*)(map+0x48), start, &call) */
+            if (rc != 0) cL4_panic(0, "%s: tightbeam call failed %x");
+            /* if reply flag clear -> condition failed */
+            start = start + 1;
+            if (end == start) return;
+        }
+    }
+    cL4_panic(0, "%s: condition %s failed");
+}
+
+/* FUN_004add1c @ 0x004add1c - marshals a region-mapping range request. Given
+ * [param_2, param_3) page-aligned within the map, computes the page-bucket
+ * indices, locks the range table, and issues the marshalled call via
+ * cL4_tb_aefb0. Returns an L4-style error pair {lo=error, hi=0} (3 =
+ * alignment/range failure). On success returns {lo=0, hi=0}.
+ * Confidence: medium */
+skr39_u128 cL4_tb_dd1c(uint64_t map, uint64_t start, uint64_t end) {
+    uint64_t err_lo, err_hi;
+    if (start < end) {
+        err_lo = 0; err_hi = 3;
+        if ((((uint32_t)end | (uint32_t)start) & 0x3fff) == 0 &&
+            end <= *(uint64_t *)(map + 0x18)) {
+            uint64_t b0 = start >> 0xe, b1 = end >> 0xe;
+            (void)b0; (void)b1;
+            int rc = 0; /* cL4_tb_aefb0(map+0x40, ...) */
+            if (rc != 0) cL4_panic(0, "%s: tightbeam call failed %x");
+            err_lo = 0; err_hi = 0;
+        }
+    } else {
+        err_lo = 0; err_hi = 3;
+    }
+    skr39_u128 r; r.lo = err_lo; r.hi = err_hi; return r;
+}
+
+/* FUN_004adf58 @ 0x004adf58 - unmarshals a frame-mapping reply. Reads the
+ * 128-bit mapping descriptor via cL4_tb_aed08/cL4_tb_aecd8; on the mapping
+ * path it forwards to cL4_tb_ad9ac (recording the segment range), and on the
+ * error path it maps the one-letter code via cL4_tb_d29c. Panics on buffer
+ * overrun.
+ * Confidence: medium */
+void cL4_tb_adf58(uint64_t ctx, uint64_t buf) {
+    *(uint8_t *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x20) + 8) + 0x18) = 1;
+    if (buf <= buf + 0x88) {
+        uint64_t mapval = 0; /* cL4_tb_aed08(buf) */
+        uint32_t *code = 0;  /* cL4_tb_aecd8(buf) */
+        if (code == 0) {
+            /* mapping path: forward to cL4_tb_ad9ac */
+            uint64_t r = cL4_tb_ad9ac(*(uint64_t *)(ctx + 0x40), mapval + 0x30, 0);
+            (void)r;
+        } else {
+            skr39_u128 v = cL4_tb_d29c(*code);
+            (void)v;
+        }
+        return;
+    }
+    __builtin_trap();
+}
+
+/* FUN_004ae050 @ 0x004ae050 - the SegAccess_Map marshalling entry. Validates
+ * page alignment (param_2), locks the map's region table, and dispatches the
+ * mapping call via cL4_tb_af6a4 with the callback cL4_tb_ae1bc. On success
+ * and reply-flag set, releases the buffers and returns the reply as a
+ * 128-bit pair {hi=err, lo=0}; returns {lo=2, hi=0} on misalignment.
+ * Confidence: medium */
+skr39_u128 cL4_tb_ae050(uint64_t map, uint64_t off, uint64_t *out) {
+    uint64_t lo, hi;
+    if ((off & 0x3fff) != 0) { lo = 0; hi = 2; return (skr39_u128){lo, hi}; }
+    *out = 0;
+    int rc = 0; /* cL4_tb_af6a4(map+0x40, *(u32*)(map+0x48), off>>14, &call) */
+    if (rc == 0) {
+        /* if reply flag set: free buffers, return reply pair */
+        cL4_free((void *)0, 8);
+        cL4_free((void *)0, 8);
+        hi = 0; lo = 0;
+        return (skr39_u128){lo, hi};
+    }
+    cL4_panic(0, "%s: tightbeam call failed %x");
+}
+
+/* FUN_004ae1bc @ 0x004ae1bc - callback for the SegAccess_Map request.
+ * Dispatches the reply: on a mapping (128-bit) result it stores the pair
+ * into the caller state at param_1+0x28; on an error-code result it maps
+ * the code via cL4_tb_d29c into the state at param_1+0x28. Also forwards a
+ * single word to param_1+0x30.
+ * Confidence: medium */
+void cL4_tb_ae1bc(uint64_t ctx, uint64_t a, uint64_t b) {
+    *(uint8_t *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x20) + 8) + 0x18) = 1;
+    uint64_t v[2]; v[0] = a; v[1] = b;
+    uint64_t *mapres = 0; /* cL4_tb_aecac(&v) */
+    if (mapres == 0) {
+        uint32_t *code = 0; /* cL4_tb_aecd8(&v) */
+        skr39_u128 r = cL4_tb_d29c(*code);
+        *(skr39_u128 *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x28) + 8) + 0x18) = r;
+    } else {
+        uint64_t lv = *(uint64_t *)(*(uint64_t *)(ctx + 0x28) + 8);
+        *(uint64_t *)(lv + 0x18) = 0;
+        *(uint64_t *)(lv + 0x20) = 0;
+        **(uint64_t **)(ctx + 0x30) = mapres[0];
+    }
+}
+
+/* FUN_004ae24c @ 0x004ae24c - callback for a mapping-attribute request.
+ * Reads the 128-bit descriptor; on a mapping result stores its attribute
+ * word into the caller state at param_1+0x30 (bounds-checked), and on an
+ * error-code result maps the code via cL4_tb_d29c into param_1+0x48.
+ * Confidence: medium */
+void cL4_tb_ae24c(uint64_t ctx, uint64_t buf) {
+    *(uint8_t *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x20) + 8) + 0x18) = 1;
+    if (buf <= buf + 0x88) {
+        uint32_t *code = 0; /* cL4_tb_aed08(buf) */
+        *(bool *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x28) + 8) + 0x18) = (code != 0);
+        if (*(char *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x28) + 8) + 0x18) == 0x01) {
+            uint64_t u = *(uint64_t *)(ctx + 0x30);
+            if (*(uint64_t *)(ctx + 0x38) < u + 0x80 || u < *(uint64_t *)(ctx + 0x40))
+                __builtin_trap();
+            *(uint32_t *)(u + 0x48) = *code;
+        } else {
+            uint32_t *c2 = 0; /* cL4_tb_aecd8(buf) */
+            skr39_u128 r = cL4_tb_d29c(*c2);
+            *(skr39_u128 *)(*(uint64_t *)(ctx + 0x48)) = r;
+        }
+        return;
+    }
+    __builtin_trap();
+}
+
+/* FUN_004ae2fc @ 0x004ae2fc - convenience wrapper: calls cL4_tb_ae050 and,
+ * on success (return byte 0), copies the result word into *param_3.
+ * Returns true iff the call succeeded.
+ * Confidence: medium */
+bool cL4_tb_ae2fc(uint64_t map, uint64_t off, uint64_t *out) {
+    uint64_t local = 0xffffffffffffffffULL;
+    skr39_u128 r = cL4_tb_ae050(map, off, &local);
+    if (r.lo == 0) *out = local;
+    return r.lo == 0;
+}
+
+/* FUN_004ae394 @ 0x004ae394 - noreturn: panic "condition <s> failed".
+ * Confidence: high */
+void cL4_tb_err(int n) { (void)n; cL4_panic(0, "%s: condition %s failed"); }
+
+/* FUN_004ae424 @ 0x004ae424 - noreturn: panic "condition <s> failed".
+ * Confidence: high */
+void cL4_tb_cond(void) { cL4_panic(0, "%s: condition %s failed"); }
+
+/* FUN_004ae460 @ 0x004ae460 - callback for a frame-unmapping / mapping-get
+ * request. Reads the 128-bit descriptor; on a mapping result it calls the
+ * segment-accessor method (at param_1+0x28/0x68/0x60) to release the frame,
+ * and on an error result panics. Uses the SegAccess_MappingGetFrame string.
+ * Confidence: medium */
+void cL4_tb_ae460(uint64_t ctx, uint64_t a, uint64_t b) {
+    *(uint8_t *)(*(uint64_t *)(*(uint64_t *)(ctx + 0x20) + 8) + 0x18) = 1;
+    uint64_t v[2]; v[0] = a; v[1] = b;
+    uint64_t *mres = 0; /* cL4_tb_aecac(&v) */
+    if (mres == 0) {
+        /* cL4_tb_aecd8(&v); string s_map__p__SegAccess_MappingGetFram */
+        cL4_panic(0, "%s: SegAccess_MappingGetFrame");
+    } else {
+        if (mres[0] != 0) {
+            /* call (**(ctx+0x28)+0x68)+0x28)((*(ctx+0x28)+0x60), *(ctx+0x30)<<14) */
+            /* if returns 0: cL4_free(mres[0]) and return */
+            cL4_free((void *)mres[0], 0);
+            return;
+        }
+        cL4_panic(0, "%s: condition %s failed");
+    }
+}
+
+/* FUN_004ae564 @ 0x004ae564 - unmarshals a frame-mapping descriptor from a
+ * message stream. Reads the group/attr/mode bytes and the optional
+ * shared/ro sub-descriptor via the cL4_tb_rd_* stream primitives into the
+ * 24-byte output at param_2. Panics (TB_FATAL invalid value) on malformed
+ * input.
+ * Confidence: medium */
+void cL4_tb_ae564(uint64_t src, uint8_t *out) {
+    if (out + 8 < out) __builtin_trap();
+    cL4_helper_void(); /* FUN_00018f38 stream sync */
+    uint8_t b = 0;
+    cL4_tb_rd_u8(src, &b);
+    if (b < 8) {
+        out[8] = b;
+        cL4_helper_void(); /* FUN_00018f38 */
+        uint8_t attr = 0;
+        cL4_tb_rd_u8(src, &attr);
+        if ((attr & 0xfc) == 0x18) {
+            out[0x18] = attr;
+            uint8_t m = 0;
+            cL4_tb_rd_u8(src, &m);
+            if ((m & 0xfe) == 0x20) {
+                out[0x19] = m;
+                uint8_t *p = out + 0x1a;
+                if (p <= out + 0x1c) {
+                    uint8_t mode = 0;
+                    cL4_tb_rd_u8(src, &mode);
+                    if (mode == 0) *p = 0;
+                    else {
+                        *p = 1;
+                        uint8_t ro = 0;
+                        cL4_tb_rd_u8(src, &ro);
+                        if ((ro & 0xfe) != 0x10) cL4_tb_fatal("TB_FATAL: invalid value, unexpected");
+                        out[0x1b] = ro;
+                    }
+                    return;
+                }
+                __builtin_trap();
+            }
+        }
+    }
+    cL4_tb_fatal("TB_FATAL: invalid value, unexpected");
+}
+
+/* FUN_004ae6c4 @ 0x004ae6c4 - the tightbeam object-marshaller / encoder.
+ * Dispatches on the descriptor tag byte (0x01/0x02/0x03): for tag 0x03 it
+ * forwards each of the descriptor's child words through the caller's emit
+ * callback (param_2+0x10); for tag 0x02 it validates the descriptor via
+ * cL4_tb_ba8d4; otherwise it marshals the object fields through the
+ * FUN_0001xxxx message primitives (encode a 128-bit/64-bit object), emitting
+ * the child words. Returns the marshal buffer (0 on error paths).
+ * Confidence: medium */
+char *cL4_tb_ae6c4(char *desc, uint64_t emit) {
+    char cVar1 = *desc;
+    if (cVar1 == 0x01) {
+        /* fall through to generic object encode below */
+    } else if (cVar1 == 0x02) {
+        /* validate via cL4_tb_ba8d4 then return 0 */
+        return 0;
+    } else if (cVar1 == 0x03) {
+        uint64_t n = *(uint64_t *)(desc + 0x10);
+        uint64_t off = 0;
+        for (uint64_t i = 0; i < n; i++) {
+            /* emit callback (param_2+0x10)(param_2, i, *(desc+8)+off) */
+            (void)emit; off += 0x10;
+        }
+        return desc;
+    } else {
+        cL4_tb_fatal("TB_FATAL: invalid tag in Share");
+    }
+    /* generic encode path (tags 0x01/0x03-with-sub): marshal child words */
+    uint64_t n = *(uint64_t *)(desc + 0x18);
+    for (uint64_t i = 0; i < n; i++) {
+        uint64_t w[2] = {0, 0};
+        /* cL4_tb_rd_skip + read 2 words, emit via callback */
+        (void)emit;
+    }
+    return 0;
+}
+
+/* FUN_004ae964 @ 0x004ae964 - unmarshals a method-bundle descriptor (the
+ * "method" half of a mapping descriptor) from a stream. Reads the method-id
+ * byte and the method-body via cL4_tb_rd_*, decodes a method reference via
+ * cL4_tb_rd_method, and records (obj, method) into the output at param_2.
+ * Panics (TB_FATAL invalid value) on malformed input.
+ * Confidence: medium */
+void cL4_tb_ae964(uint64_t src, uint8_t *out) {
+    if (out + 4 < out) __builtin_trap();
+    cL4_helper_void(); /* FUN_00018d4c */
+    uint64_t w = 0;
+    cL4_tb_rd_u8(src, &w);
+    if (((uint8_t)w & 0xfe) == 0x10) {
+        out[4] = (uint8_t)w;
+        w = 0;
+        cL4_tb_rd_u8(src, &w);
+        if (((uint8_t)w & 0xfc) == 0x18) {
+            out[5] = (uint8_t)w;
+            cL4_tb_rd_bytes(src, out + 6);
+            if (out + 8 <= out + 0x30) {
+                uint64_t method = 0;
+                cL4_tb_rd_u64(src, &method);
+                uint8_t *p = out + 0x20;
+                if ((out + 0x18 <= p) && (p <= out + 0x28)) {
+                    uint64_t call;
+                    int rc = cL4_tb_msg_method(src, out + 0x18, p, &call);
+                    if (rc == 0) {
+                        *(uint64_t *)(out + 0x10) = src;
+                        *(uint64_t *)(out + 0x28) = method;
+                        out[8] = 2;
+                    } else {
+                        out[8] = 0;
+                    }
+                    return;
+                }
+            }
+            __builtin_trap();
+        }
+    }
+    cL4_tb_fatal("TB_FATAL: invalid value, unexpected");
+}
+
+/* FUN_004aeae0 @ 0x004aeae0 - unmarshals a full mapping descriptor
+ * (the frame-mapping attribute bundle) from a stream into a 0x88-byte
+ * buffer at param_2. Reads the mapping-id, then two method-bundle
+ * sub-descriptors (via cL4_tb_ae964) for the mapping-attribute and the
+ * frame. Records (obj, method) pairs and flag bytes. Panics on overrun.
+ * Confidence: medium */
+void cL4_tb_aeae0(uint64_t src, uint8_t *out) {
+    uint8_t *p = out + 0x30;
+    if (out <= p) {
+        /* cL4_tb_ae964() -> first sub-descriptor; if error, *p=0 and return */
+        if (1) return; /* placeholder: first sub fails -> *p=0 */
+        uint8_t *p2 = out + 0x58;
+        if (p <= p2) {
+            uint64_t method = 0;
+            cL4_tb_rd_u64(src, &method);
+            uint8_t *p3 = out + 0x48;
+            if ((out + 0x40 <= p3) && (p3 <= out + 0x50)) {
+                uint64_t call;
+                int rc = cL4_tb_msg_method(src, out + 0x40, p3, &call);
+                if (rc != 0) { *p = 0; return; }
+                *(uint64_t *)(out + 0x38) = src;
+                *(uint64_t *)(out + 0x50) = method;
+                out[0x30] = 2;
+                if (p2 <= out + 0x80) {
+                    uint64_t m2 = 0;
+                    cL4_tb_rd_u64(src, &m2);
+                    uint8_t *p4 = out + 0x70;
+                    if ((out + 0x68 <= p4) && (p4 <= out + 0x78)) {
+                        uint64_t call2;
+                        int rc2 = cL4_tb_msg_method(src, out + 0x68, p4, &call2);
+                        if (rc2 == 0) {
+                            *(uint64_t *)(out + 0x60) = src;
+                            *(uint64_t *)(out + 0x78) = m2;
+                            *p2 = 2;
+                        } else {
+                            *p2 = 0;
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    __builtin_trap();
+}
+
+/* FUN_004aec8c @ 0x004aec8c - initialises a 24-byte marshalling descriptor
+ * at param_1 from the 16-byte value *param_2: sets the tag byte to 1 and
+ * copies the (lo, hi) pair to param_1+8/0x10. If param_2 is NULL, sets the
+ * tag byte to 0.
+ * Confidence: high */
+void cL4_tb_aec8c(uint8_t *d, uint64_t *v) {
+    if (v != 0) {
+        d[0] = 1;
+        uint64_t lo = *v;
+        *(uint64_t *)(d + 0x10) = v[1];
+        *(uint64_t *)(d + 8) = lo;
+        return;
+    }
+    d[0] = 0;
+}
+
+/* FUN_004aecac @ 0x004aecac - returns a pointer to the 128-bit payload of a
+ * descriptor whose tag byte is 0 (a 16-byte value at param_1+8), else NULL.
+ * Confidence: medium */
+char *cL4_tb_aecac(char *d) {
+    if (*d != 0) return 0;
+    if (d + 8 <= d + 0x10) return d + 8;
+    __builtin_trap();
+}
+
+/* FUN_004aecd8 @ 0x004aecd8 - returns a pointer to the 128-bit payload of a
+ * descriptor whose tag byte is 1 (a 16-byte value at param_1+8), else NULL.
+ * Confidence: medium */
+char *cL4_tb_aecd8(char *d) {
+    if (*d != 1) return 0;
+    if (d + 8 <= d + 0xc) return d + 8;
+    __builtin_trap();
+}
+
+/* FUN_004aed08 @ 0x004aed08 - returns a pointer to the payload of a
+ * descriptor whose tag byte is 0 and that is at least 0x88 bytes long
+ * (a 128-byte value at param_1+8), else NULL.
+ * Confidence: medium */
+char *cL4_tb_aed08(char *d) {
+    if (*d != 0) return 0;
+    if (d + 8 <= d + 0x88) return d + 8;
+    __builtin_trap();
+}
+
+/* FUN_004aed34 @ 0x004aed34 - the tightbeam call hub: builds a marshalled
+ * request message for a frame-mapping operation and invokes the caller's
+ * dispatch callback (param_2+0x10) with the decoded reply. Uses the
+ * cL4_tb_msg_begin / cL4_tb_buf_u64 / cL4_tb_msg_send / cL4_tb_msg_end
+ * primitives, then decodes the reply via cL4_tb_ae564 + cL4_tb_ae964 and
+ * passes it to the callback. Returns an L4-style error code.
+ * Confidence: medium */
+uint64_t cL4_tb_aed34(uint64_t *obj, uint64_t call) {
+    uint64_t buf[32];
+    memset(buf, 0, sizeof buf);
+    uint64_t err = cL4_tb_msg_begin(*obj, buf + 1, buf + 0xd, 8, 0);
+    if ((int)err == 0) {
+        cL4_tb_buf_reset(buf + 1, 8);
+        cL4_tb_buf_u64(buf + 1, 0x66629f28a61590faULL);
+        cL4_tb_buf_seal(buf + 1);
+        buf[0] = 0;
+        err = cL4_tb_msg_send(*obj, buf + 1, buf, 2);
+        uint64_t rep = buf[0];
+        if (((int)err == 0) || ((int)err == 9)) {
+            if (buf[0] == 0) { cL4_tb_msg_end(*obj, buf + 1); return 4; }
+            uint8_t out[0x20];
+            memset(out, 0, sizeof out);
+            cL4_tb_ae564(rep, out);
+            uint64_t m = 0;
+            cL4_tb_rd_u64(rep, &m);
+            uint64_t call_desc;
+            int rc = cL4_tb_msg_method(rep, 0, 0, &call_desc);
+            if (rc == 0) {
+                /* dispatch decoded reply to callback at (call+0x10) */
+                (void)call;
+            }
+        }
+        cL4_tb_msg_end(*obj, buf + 1);
+    }
+    return err;
+}

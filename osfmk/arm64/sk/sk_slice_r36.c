@@ -43,7 +43,7 @@ extern void sk_x_00117cc4(void *dst, const void *src, unsigned long n); /* FUN_0
 extern void sk_x_001ee9f4(void);                                  /* FUN_001ee9f4 - does not return */
 extern void sk_x_00365b6c(unsigned long a, unsigned long b);      /* FUN_00365b6c - node release helper */
 extern void sk_x_0036993c(void);                                  /* FUN_0036993c */
-extern void sk_x_0036b270();                                      /* FUN_0036b270 - node teardown/release (vararg) */
+extern void sk_x_0036b270(unsigned long a);                      /* FUN_0036b270 - node teardown/release */
 extern void sk_x_0044ca60(void);                                  /* FUN_0044ca60 */
 extern void sk_x_004846dc(unsigned char c);                       /* FUN_004846dc */
 extern void sk_x_0049747c(void);                                  /* FUN_0049747c */
@@ -553,7 +553,7 @@ static void sk_r36_copy_and_teardown(unsigned long dst, unsigned long src)
 {
     *(unsigned char *)(dst + 0x30) = *(unsigned char *)(src + 0x30);
     *(unsigned long *)(dst + 0x38) = *(unsigned long *)(src + 0x38);
-    sk_x_0036b270();
+    sk_x_0036b270(0);
 }
 
 /* FUN_004ab248 @ 0x004ab248   (est. sk_regex_witness_noop_18)
@@ -724,9 +724,9 @@ static void sk_r36_inc_field_10b(unsigned long node, unsigned long v)
  * Confidence: low
  * Notes: in_x9/in_x10 register-globals; in_stack_00000068 caller slot.
  */
-static void sk_r36_store_pair_fields(unsigned long p, unsigned long *sp_slot)
+static void sk_r36_store_pair_fields(unsigned long dst, unsigned long v, unsigned long p, unsigned long *sp_slot)
 {
-    *(unsigned long *)(0 + 0x20) = 0;
+    *(unsigned long *)(dst + 0x20) = v;
     *(unsigned long *)(sp_slot + 8) = p;
 }
 
@@ -1288,7 +1288,7 @@ static void sk_r36_copy68_and_teardown(unsigned long dst, unsigned long src)
 {
     *(unsigned char *)(dst + 0x68) = *(unsigned char *)(src + 0x68);
     *(unsigned long *)(dst + 0x70) = *(unsigned long *)(src + 0x70);
-    sk_x_0036b270();
+    sk_x_0036b270(0);
 }
 
 /* FUN_004ab74c @ 0x004ab74c   (est. sk_regex_copy_fields_58)
@@ -1387,8 +1387,8 @@ static void sk_r36_noop_67(void)
  * Confidence: low
  * Notes: in_x9/in_x10 register-globals; self = unaff_x19.
  */
-static void sk_r36_store_self8_b(unsigned long p, unsigned long self, unsigned long off)
+static void sk_r36_store_self8_b(unsigned long dst, unsigned long v, unsigned long p, unsigned long self)
 {
-    *(unsigned long *)(off + 0x20) = 0;
+    *(unsigned long *)(dst + 0x20) = v;
     *(unsigned long *)(self + 8) = p;
 }

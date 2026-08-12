@@ -8272,6 +8272,7 @@ static word_t sk_bcg_004769a4(void)
     wpair_t auVar5;
     word_t extraout_x8, extraout_x8_00, extraout_x8_01, extraout_x8_02, extraout_x8_03;
     word_t extraout_x8_04, extraout_x8_05, extraout_x8_06, extraout_x8_07;
+    word_t extraout_x8_08, extraout_x8_09, extraout_x16;
     unsigned char stack_b0[160];    /* auStack_b0 */
 
     uVar1 = FUN_0048ee9c();
@@ -8424,7 +8425,8 @@ static void sk_bcg_00476c28(byte *param_1, byte *param_2)
 static void sk_bcg_00476c58(u64 param_1, word_t param_2)
 {
     long lVar1;
-    long *ctx = unaff_x20;              /* emitter context (unaff_x20) */
+    word_t unaff_x20, extraout_x16, extraout_x8, extraout_x9;
+    long *ctx = (long *)unaff_x20;              /* emitter context (unaff_x20) */
 
     lVar1 = FUN_0048185c();
     FUN_004aa3e4();
@@ -8521,6 +8523,7 @@ static wpair_t sk_bcg_00476d88(long param_1)
  * Confidence: medium   Notes: straight-line emitter chain. */
 static void sk_bcg_00476dd0(long param_1, word_t param_2)
 {
+    word_t extraout_x16;
     FUN_004aa494(param_2 & 1 | param_1 << 0x10);
     FUN_00498b28(extraout_x16);
     FUN_004aaf58();
@@ -8539,7 +8542,8 @@ static void sk_bcg_00476dd0(long param_1, word_t param_2)
 static void sk_bcg_00476e18(u64 param_1, u64 param_2, uint param_3)
 {
     long lVar2;
-    long ctx = unaff_x20;               /* emitter context (unaff_x20) */
+    word_t unaff_x20, in_ZR, extraout_x16;
+    long ctx = (long)unaff_x20;               /* emitter context (unaff_x20) */
 
     FUN_0041c1d8(param_1, param_2, *(u64 *)(ctx + 0xa0));
     lVar2 = FUN_00351db4().lo;
@@ -8679,7 +8683,7 @@ static void sk_bcg_00476fd0(word_t p1, word_t p2, word_t p3, word_t p4)
 
     FUN_0035089c();
     anchor = sk_bcg_004772d0();
-    range = sk_bcg_00477338(1);
+    range = sk_bcg_00477338(1, 0); /* register-residue arg */
     end = p4 >> 1;
     FUN_0036b270();
     idx = p3;
@@ -9135,7 +9139,7 @@ static word_t sk_bcg_004776c4(long vec)
  * 0x477da0..0x477dbc) on exhausted vectors / negative offsets. Reads global
  * 16-byte constant at 0x4baeb0.
  * Confidence: medium   Notes: enormous switch; many register artifacts
- * (extraout_x8*/x9/x16, unaff_x20 ctx, unaff_x30); indirect grow helpers. */
+ * (extraout_x8_* / x9 / x16, unaff_x20 ctx, unaff_x30); indirect grow helpers. */
 static void sk_bcg_004776ec(word_t p1, word_t p2, long p3, long p4, word_t p5)
 {
     word_t *ctx;            /* unaff_x20 - implicit context pointer (mutated) */
@@ -9533,7 +9537,7 @@ static void sk_bcg_00477e10(void)
  * (local_20/30/40 = unaff_x20/22/24). Traps SWBP 0x4780d8/0x4780dc on
  * out-of-range child indices.
  * Confidence: medium   Notes: recursive; heavy implicit-register (unaff_x20/
- * x22/x24) state; register artifacts extraout_x8*/x9/x10. */
+ * x22/x24) state; register artifacts extraout_x8_* / x9 / x10. */
 static word_t sk_bcg_00477e8c(word_t desc)
 {
     word_t kind;            /* uVar1 - kind selector */
