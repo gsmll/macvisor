@@ -293,3 +293,14 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - IO-frame paths: FUN_000e56ac/0xe5c80 (map/unmap) → FUN_000e4e74 (check_owner), FUN_000e5958 (refcount_ex), FUN_000e5090 (release); FUN_000e45a8 (io_frame_add) → FUN_000e3d7c, FUN_000d9940 (commit)
 - IOMMU state: FUN_000e4424 (state_alloc) / FUN_000e4d78 (state_get) — per-dispatch state arrays (DAT_00095320/0x95328/0x95330)
 - DRAM/paddr: FUN_000e35b4 (dram_update_type), FUN_000e3a14 (sptm_paddr_in_dram), FUN_000e384c (sptm_paddr_type) — DRAM byte table DAT_000952e8
+- SPTM pmap/guest-adjacent region (000eb004-000f89b4, sptm_region_pmap.c):
+  - 000eb004 (sptm_hib_restore) → 000ecd20 (sptm_hib_disjoint_region), 000ed0f0 (sptm_hib_disjoint_update), 000ed244 (sptm_hib_ctrr_region), 000b25a0/000ae8b4/000aeaa4/000bf874 (SHA), 000becd0 (ctrr key), 000b211c (gcm decrypt), 000b2584 (key zeroize), 000e9ecc/000e9f28 (panic)
+  - 000ecd20 → 000ed464 (sptm_ctrr_print_hex) [debug output], 000eaa44 (sptm_alloc)
+  - 000ed244 → 000ae8b4/000aeaa4 (SHA), 000bf4bc (crypto finalize), 000e9ecc (panic)
+  - 000ed340 (sptm_exception_dispatch) → 000ed464 (sptm_ctrr_print_hex), 0009c2c8 (sptm_fatal); caller 0009c2dc (sptm_vector_context_save)
+  - 000eefd4 (sptm_fte_acquire) → 000ef4e0 (sptm_root_ft), 000ef8c8 (sptm_shared_ft)
+  - 000ef1f8 (sptm_fte_validate) → 000ef468 (sptm_fte_next_paddr); called by 000ee278 (sptm_map_page)
+  - PTE layer: 000f25fc (sptm_pte_enter), 000f2878 (sptm_pte_remove), 000f29f0 (sptm_pte_update) → 000f2eec (sptm_pte_perm_check), 000f2f54 (sptm_fte_ptep), 000e2e2c (sptm_write_pte), 000e0a10 (sptm_cacheattr); 000f2fb4 (sptm_pte_remove_final)
+  - Region/TLB: 000f4d60 (sptm_parse_region2) → 000f2304 (sptm_parse_region); 000f61c0 (sptm_root_acquire_shared) called by 000f5f2c/000f6368/000f6634/000f6aec; 000f6aec (sptm_region_tlb_flush) → 000f61c0, 000d76fc (sptm_tlb_op); 000f6d54 (sptm_tlb_maintenance) / 000f7108 (sptm_invalid_op) pair
+  - GCM (exclave protected-metadata): 000f7ff4 (sptm_gcm_ctx_setup) → 000b0cc8 (gcm_ctx_init), 000b1140 (ghash table), ops->keysched; 000f8084 (sptm_gcm_key_iv_setup); 000f8214 (sptm_gcm_update) → 000b2204 (state adv), 000b0cb4 (ghash_step), 000b20d0 (counter bump), 000afad0 (aes_gcm_core)
+  - Panic printers: 000f84e4 (sptm_panic_format) → 000ad278 (snprintf), 000c15b4 (serial), 000ae278 (strlcpy_chk), 000a1374 (sptm_guest_exit_handoff); 000f8804 (sptm_panic) → 000f84e4, 000c5a18 (panicking cpu), 000f8714 (sptm_panic_record), 000e7678 (dispatch name); 000f8844 (sptm_panic_code) / 000f8824 (sptm_panic_fmt) / 000f8834 (sptm_panic_bad_dt); 000f89b4 (sptm_invalid_genter) → 000c59f4, 000f8804

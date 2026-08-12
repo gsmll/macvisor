@@ -541,3 +541,81 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `sptm_ctrr_puts("Assertion failed: "); ...; sptm_wait_forever()`; CTRR write gated on `if (tpidrro_el0 && (ctx[0x600]&1) && (ctx[0x61c] & config_mask))`.
 - **Severity (hypothesis)**: informational — the trace channel write is best-effort, the panic always halts.
 - **Confidence**: high
+
+## [ringminus1] 000eb004 sptm_hib_restore — immutable-page exclusion on restore
+- **Observation**: Restore aborts (does not overwrite) any destination page that falls in the immutable range [cpu+0x80, cpu+0x88) but outside the carved exception [cpu+0x90, cpu+0x98). A fatal panic 0xd0a "attempting to restore immutable page" fires instead.
+- **Evidence**: `FUN_000e9f28(file,0xd0a,msg,cur_paddr,0)` guarded by the 4-range check on paddr_bytes = cur_paddr<<14 against cpu+0x80/0x88/0x90/0x98.
+- **Severity (hypothesis)**: medium — protects immutable/code pages from being overwritten by a crafted hibernation image; the carve-out range is an attack surface if attacker-controllable.
+- **Confidence**: high
+
+## [ringminus1] 000eb004 sptm_hib_restore — image1 size bounds before use
+- **Observation**: image1 size must be nonzero, must not overflow image_paddr+size (CARRY8), and image_end must not exceed 0x3fffffffc000, else panic 0xc19 "Invalid image1 size" with the size as the panic value. The bound feeds all subsequent source-list range checks.
+- **Evidence**: `FUN_000e9f28(file,0xc19,s_Invalid_image1_size, size=*(hib_ctx+8), 0)` after zero/carry/cap checks.
+- **Severity (hypothesis)**: medium — bounds the source ranges accepted into the restore walk.
+- **Confidence**: high
+
+## [ringminus1] 000eb004 sptm_hib_restore — dual SHA/HMAC digest binding
+- **Observation**: Two independent digests bind the image: (a) 'HOFF'|img_base|img_len|imgdata hashed, ace-finalized, memcmp'd vs header handoffHeader (+0x214, panic 0x993); (b) 'PAG1'|each restored paddr|page-data hashed, ace-finalized, memcmp'd vs image1Paddr (+0x244, panic 0xa7c). Both the header counters and the actually-restored page list are bound to stored digests.
+- **Evidence**: sptm_sha_init/update + vtable-finalize (sha_ctx+0x38) + FUN_000bf874 + memcmp vs hib_ctx+0x214 / +0x244.
+- **Severity (hypothesis)**: medium — hash-order/counter binding detects header/region tampering.
+- **Confidence**: high
+
+## [ringminus1] 000eb004 sptm_hib_restore — CTRR key derivation hygiene
+- **Observation**: CTRR keys are derived from the per-CPU CTRR counter (cpu+0x1b8) with distinct KDF labels 'key-sptm-ctrr'(0x10f30), 'key-xnu-ctrr'(0x10f3e), 'key-exclave-original'(0x10f4b), 'key-exclave'(0x10f60), and every derived key is zeroized after use (FUN_000b2584 with 0x30/0x20).
+- **Evidence**: FUN_000becd0(cpu+0x1b8, dst, key, 0x30/0x20) calls + FUN_000b2584(len, buf) zeroize; string values confirmed via read_memory.
+- **Severity (hypothesis)**: low — key hygiene is good; cpu+0x1b8 is the shared KDF context.
+- **Confidence**: high
+
+## [ringminus1] 000eb004 sptm_hib_restore — GCM decrypt gated on io-range table count
+- **Observation**: In-place GCM decryption of compressed/protected pages is only reachable when the per-CPU io-range table count (cpu+0x7a8) is nonzero; with an empty table the encrypted page is written back un-decrypted.
+- **Evidence**: in-place FUN_000b211c at LAB_000ec054 is enclosed by `if (lVar19 != 0)` on cpu+0x7a8.
+- **Severity (hypothesis)**: low — an empty/controlled io-range table could leave protected pages compressed (integrity/availability), though likely always non-empty in practice.
+- **Confidence**: medium
+
+## [ringminus1] 000ed340 sptm_exception_dispatch — terminal dump-and-halt, not a 4-arg dispatcher
+- **Observation**: The batch-anchored claim that 0xed340 is a 4-arg per-CPU "vector dispatcher" does not match the decompile: FUN_000ed340 takes a single frame pointer and is a register-dump-then-halt terminal (x0-x28 + fp/lr/sp/pc/cpsr/far/esr, then WaitForEvent spin / sptm_fatal 0xc0ffee). It is the terminal exception handler, not a dispatch that continues.
+- **Evidence**: decompile_function 0x000ed340 shows `void FUN_000ed340(ulong param_1)` looping 0x1d regs via FUN_000ed464 then fatal FUN_0009c2c8(0xc0ffee); only caller FUN_0009c2dc builds the 0x330 frame and calls it. sptm_boot.c already declares the 4-arg sptm_exception_dispatch extern, so the name is retained with unused args.
+- **Severity (hypothesis)**: informational — signature kept matching sptm_boot.c extern; body faithful to decompile.
+- **Confidence**: high
+
+## [ringminus1] 000ecd20 sptm_hib_disjoint_region — wkdm expansion loop truncated by decompiler
+- **Observation**: The general wkdm decompression loop is not recovered in C: the decompiler emits "Bad instruction - Truncating control flow here" (halt_baddata). Only the validation preamble and the size==4 / size==0x4000 fast paths are reconstructable; the expansion loop is marked __builtin_trap() pending disassemble+pcode fallback.
+- **Evidence**: decompile_function 0x000ecd20 warning "Control flow encountered bad instruction data" + halt_baddata at the size!=4 && size!=0x4000 branch.
+- **Severity (hypothesis)**: medium — the actual decompression algorithm is unverified; confidence low for this function.
+- **Confidence**: high
+
+## [ringminus1] 000f175c sptm_surt_ft — signature mismatch vs existing pmap.c extern
+- **Observation**: The faithful decompile consumes a surt_frame paddr in x0 (0x4000-aligned, range-checked, indexed into the frame table), but sptm_pmap.c declares/calls `sptm_ret2_t sptm_surt_ft(void)` (no arg) at lines 1414/1497. Callers sptm_surt_alloc/free must pass the SURT frame address.
+- **Evidence**: Disassembly of 000f175c: `tst x0,#0x3fff; b.ne` panic, range check vs DAT_00095d18/20, `subs x10,x0,x8`, index into DAT_00095460. pmap.c:200 `extern sptm_ret2_t sptm_surt_ft(void);`.
+- **Severity (hypothesis)**: medium — a no-arg call would read a stale/garbage x0 as the frame address; needs reconciliation in pmap.c.
+- **Confidence**: high
+
+## [ringminus1] 000ef4e0 sptm_root_ft — SURT frame special-case re-lock
+- **Observation**: Root FTE validator special-cases XNU_SUBPAGE_USER_ROOT_TABLES (0x28): after locking the SURT frame FTE it re-locks the FTE at physmap-va+0x40 and validates the in-flight/use bit at va+0x50, then reads the effective type from va+0x42. Only path dereferencing the SURT per-index FTE out of the frame table proper.
+- **Evidence**: disassembly 000ef4e0 @0xef578-0xef61c: physmap branch, `add x0,x8,#0x40`, second ldaddah lock, `ldrb w9,[x8,#0x50]` bit0 check, `ldrb w8,[x8,#0x42]`.
+- **Severity (hypothesis)**: informational — confirms SURT frames carry per-index FTEs at va+0x40.
+- **Confidence**: high
+
+## [ringminus1] 000f29f0 sptm_pte_update — DAT_00095d54 read width/stride convention conflict
+- **Observation**: The FTE refcount-flag table DAT_00095d54 is read here as a 16-bit value at stride 0x90 (`*(uint16_t*)&sptm_fte_ref[type*0x90]`), whereas sptm_region_dispatch.c's SPTM_FTE_REF treats it as a byte table at stride 0x48. Disassembly confirms 16-bit reads at byte offset type*0x90.
+- **Evidence**: disasm 0x2c4c `ldrh w15,[x15,#0x4]` with x15=0x95d50+type*0x90.
+- **Severity (hypothesis)**: informational — convention conflict to reconcile across regions.
+- **Confidence**: high
+
+## [ringminus1] 000f29f0 sptm_pte_update — three PTE permission-transition tables mapped
+- **Observation**: Three uint32 arrays at DAT_000134f8 / 00013578 / 00013478 (indexed by a combined permission code) enforce PTE permission transitions. Named sptm_pte_trans_allow / _cond / _merge; previously unmapped in the repo.
+- **Evidence**: disasm 0x2c80/0x2c9c/0x2cbc `ldr w16/w14` from 0x134f8/0x13578/0x13478 + idx*4.
+- **Severity (hypothesis)**: informational — permission-transition policy tables.
+- **Confidence**: high
+
+## [ringminus1] 000f55f4 sptm_region_flags_update — non-atomic flags RMW under shared guard
+- **Observation**: The flag-word update `obj[5] = (obj[5] & ~clear) | (clear & set)` is a non-atomic read-modify-write performed under only a shared (+2) rw-guard acquire, which does not exclude other shared holders — a concurrent flags update could lose a bit. The decompiler also shows a `while (puVar4[5] != puVar4[5])` self-read artifact that may conceal a barrier.
+- **Evidence**: FUN_000f55f4: shared acquire `*puVar4 += 2` (LOAcquire) then plain `puVar4[5] = puVar4[5] & ~param_3 | param_3 & param_2`.
+- **Severity (hypothesis)**: low — hypothesis only; shared-guard semantics may allow concurrent readers by design.
+- **Confidence**: low
+
+## [ringminus1] 000f84e4/000f8804 sptm_panic_format / sptm_panic — per-CPU panic buffer + WFE halt
+- **Observation**: The core panic printer formats into a per-CPU 0xa28-byte buffer (cpu+3) and, after recording, halts the CPU in an unbounded WFE spin. A format overflow emits "PANIC_BUF_SIZE ... TRUNCATED ORIGINAL PANIC" instead of corrupting the buffer. The guarded-dispatch path hands off (FUN_000a1374) and breaks first. sptm_init.c declares sptm_panic_bad_dt(void) and sptm_panic_fmt(uint32_t,...) — signature guesses that do not match the variadic decompiles (to reconcile).
+- **Evidence**: f84e4 body: snprintf into cpu+3 (0xa28), overflow branch prints truncation strings, SCTLR==0x2f selects record base, `for(;;) wfe;`. f8804 recurses with "%s: [%s] %s at pc 0x%016llx lr 0x%016llx" (0xf0b7).
+- **Severity (hypothesis)**: informational — fail-closed formatting; no overflow possible.
+- **Confidence**: medium
