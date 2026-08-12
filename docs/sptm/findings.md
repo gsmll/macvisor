@@ -4843,3 +4843,93 @@ Confidence: Medium.
 - **Evidence**: decompile 00457650/004573b0: `SoftwareBreakpoint(1,0x4578d4/0x457648/0x457650/0x45764c)`; `thunk_FUN_0036b270(param_2)` at entry and `FUN_003a25d4(param_2)` at the shared `ret` label.
 - **Severity (hypothesis)**: Low — balanced retain/release and fail-closed bounds traps; main concern is that a malformed string descriptor (wrong count word) could walk out of the buffer before the trap fires.
 - **Confidence**: medium.
+
+## [SKR68] 0x00663d3c sk_scratchpad_drain_reply
+Observation: Drains reply slots from a per-object scratch queue, saving/restoring the tpidrro_el0 mailbox bytes around each blocking CallSupervisor(0), and on an empty-queue head aborts via noreturn sk_x_0065c2f0(0,0x6a7de6). The message word (queue_count) is copied into the EL0-visible tpidr mailbox before the supervisor call and read back after.
+Evidence: decompile 00663d3c; `sk_x_0065fdb8(head,0,obj,0,0)`; `CallSupervisor(0)` around `*mb = b0..b7` byte writes; `sk_x_0065c2f0(0,0x6a7de6)`.
+Severity (hypothesis): Medium — the supervisor round-trip uses the user-addressable tpidrro_el0 block as a data channel; a racing reader could observe partially-updated message bytes.
+Confidence: Medium.
+
+## [SKR68] 0x006645bc sk_obj_get_code
+Observation: Returns a code word for an object; when the object is invalid it returns the default sentinel 0x4e4f4550 (little-endian "PEON") instead of failing, which could be ambiguous with a real stored code word.
+Evidence: decompile 006645bc default `return 0x4e4f4550`.
+Severity (hypothesis): Low — sentinel is a recognizable constant; ambiguity only if a valid object legitimately stores that exact value.
+Confidence: Medium.
+
+## [SKR68] 0x006648dc / 0x00664a8c sk_pool_sweep_entries / sk_pool_slot_hook
+Observation: The shared global slot pool (sk_g_006fe7e8) per-slot activity counters at pool+0x210/+0x1f8 increment; when the previous value is -1 the code faults via noreturn sk_x_0065c2f0(0,0x6a7f0f), treating counter overflow as fatal. Slot writes are guarded by explicit window bounds checks (pool+8..+0x100, +0x1f8) with SoftwareBreakpoint(0x5519) overflow traps.
+Evidence: decompile 006648dc/00664a8c; `*(int64_t *)(pool+0x210)` wrap check; `SoftwareBreakpoint(0x5519,0x6648dc)`; `sk_x_0065c2f0(0,0x6a7f0f)`.
+Severity (hypothesis): Medium — counter overflow is a potential DoS (fatal fault on wrap), and per-slot hooks at pool+slot*8 are invoked without provenance checks (corrupted pool could redirect control flow).
+Confidence: Medium.
+
+## [SKR68] 0x0066512c sk_l4_fault_dispatch
+Observation: The fault-handler id is bounds-checked against the 0x6b5e50..0x6b5e91 table before dispatch, but an out-of-range id traps via SoftwareBreakpoint(0x5519,0x665354). Since the id derives from the fault word, a controllable/privilege-adjacent id is a debug-trap DoS vector.
+Evidence: decompile 0066512c `SoftwareBreakpoint(0x5519,0x665354)` on id out of table bounds.
+Severity (hypothesis): Medium — fail-closed but a non-fatal debug trap on a controllable input.
+Confidence: Medium.
+
+## [SKR68] 0x006654b8 / 0x00665660 sk_l4_send_msg_code3 / code2
+Observation: Lazily allocates a capability object (tag 0x15/0x14 via FUN_006832c8), writes it + a message code into the TCB message word (tpidrro_el0) and issues CallSupervisor(0); the raw capability pointer is passed into the guarded level via the TCB with selector 0x13. Allocation failure paths are noreturn faults (sk_x_0065c2f0).
+Evidence: decompile 006654b8/00665660; `FUN_006832c8(0x15)`; `CallSupervisor(0)`; tpidr mailbox stores.
+Severity (hypothesis): Medium — the capability pointer crosses the GL boundary via the user-visible TCB; the send paths gate on the preemption guard sk_g_006b5ed0 and trap via noreturn FUN_0067f660 if it changes mid-send (guard-violation detection present).
+Confidence: Medium.
+
+## [SKR68] 0x00665a38 sk_l4_msg_list_send
+Observation: Unbounded while(1) walk of a global list (head via FUN_0065cb74) with only a pointer-overflow SoftwareBreakpoint check; a corrupted/cyclic list could loop indefinitely or trap, though it runs under a lock (FUN_00655708/00655774).
+Evidence: decompile 00665a38 `while(1)` walking list; `SoftwareBreakpoint(0x5519,...)` overflow.
+Severity (hypothesis): Low — lock-guarded, fail-closed on overflow; cyclic-list DoS only if the lock protects an already-corrupt list.
+Confidence: Low.
+
+## [SKR68] 0x00665d9c sk_cap_type_decode
+Observation: Decodes capability type/flag fields (bits 26-31, aux flag for 0x3c/0x3f) into a descriptor. Capability-type parsing is a security boundary — a mis-decode could misclassify a capability object kind.
+Evidence: decompile 00665d9c; bit-field extraction (bits 26..31) with an unreachable 0x1d branch noted by the fragment.
+Severity (hypothesis): Medium — capability-kind classification is a boundary; confidence limited by the decompiler's unreachable-branch artifact.
+Confidence: Low.
+
+## [SKR68] 0x00665f04 sk_supercall_result
+Observation: Stamps two 64-bit tag values into the user-addressable tpidrro_el0 block then issues CallSupervisor(0); later reassembles a return word from block bytes at 0x10-0x17 with only a stack-canary check, and on failure routes to a noreturn error path. Reads the global word 0x68a238.
+Evidence: decompile 00665f04; tpidrro_el0 byte writes; `CallSupervisor(0)`; sk_g_0068a238 read.
+Severity (hypothesis): Low — the reconstructed return word derives from bytes written before the supervisor call; a corrupt canary would trap, but crafted tag data could influence the reconstructed value.
+Confidence: Medium.
+
+## [SKR68] 0x00666d90 bitmap_page_decompress
+Observation: The 0x4321-magic decompress path zeroes a 16KB region then scatters input-controlled (4-byte value, 2-byte offset) 6-byte records at arbitrary offsets into it. The 2-byte offset comes directly from the input stream and relies on the enclosing validation for safety.
+Evidence: decompile 00666d90; 0x4321 magic; input-driven (value,offset) record scatter; extensive integer-overflow/pointer-underflow checks before each access.
+Severity (hypothesis): Medium — an attacker-controlled compressed bitmap with a crafted offset could write outside the target region if the enclosing length validation is bypassed.
+Confidence: Medium.
+
+## [SKR68] 0x0066834c sk_buffer_map_pages
+Observation: Page/table mapping is dispatched through two function pointers loaded from writable globals sk_g_006b6928/sk_g_006b6938. If those global slots can be corrupted, the map pass invokes arbitrary code (control-flow-integrity concern). The function ends with a stack-canary check (sk_g_006b5ed0 vs saved) calling sk_x_0067f660 on mismatch.
+Evidence: decompile 0066834c; indirect calls via `(**(code **))(sk_g_006b6928)` and `sk_g_006b6938`; stack-protector epilogue.
+Severity (hypothesis): Medium — writable-global indirect calls; worth verifying sk_g_006b6928/006b6938 are write-protected/initialized at boot.
+Confidence: Low.
+
+## [SKR68] 0x00668e24 sk_slab_alloc
+Observation: Fixed-size slab allocator sharing one pool resolved via sk_x_0065be08(0x6fea40,4,0xd); splits 0x4000-byte chunks, maintains a pending-free stack at the freelist head, and zeroes returned memory. Structural/overflow violations trap via SoftwareBreakpoint(0x5519) rather than recover; a corrupted freelist/size could trip these panics (DoS-relevant validation surface).
+Evidence: decompile 00668e24; `req = *free_list; if (0x3fff < req) sk_x_006833d4(0x6a9ef7);`; SoftwareBreakpoint(0x5519,0x669048).
+Severity (hypothesis): Medium — the freelist head/count fields (free_list+4, +0xc) track outstanding/freed objects; the free path validates the returned pointer falls inside the recorded slab size before linking.
+Confidence: Medium.
+
+## [SKR68] 0x00669618 sk_pool_table_init
+Observation: Multiple noreturn panic sites (sk_x_006833d4 with 0x6a9f4f/0x6aa0db) on object-state invariants (sub-slot count > 2), and dispatches an object's virtual method at +0x10 on an object found via sk_x_00685e44 — an untrusted-lookup-derived indirect call. The 0x6fe8e0..0x6fea40 descriptor region is densely written with fixed constants.
+Evidence: decompile 00669618; `(**(code **)(uVar6 + 0x10))(...)` after `uVar6 = FUN_00685e44()`; panics on sub-slot-count > 2.
+Severity (hypothesis): Medium — indirect call through an object resolved from a lookup; a corrupted object pointer redirects control flow.
+Confidence: Medium.
+
+## [SKR68] 0x00669af8 sk_pool_region_map
+Observation: Hard-panics (sk_x_006833d4 / 0x6a9c9a) on a nonzero-base region-map failure, but on a zero-base failure only logs (sk_x_0067d72c / 0x6a9c4f) and returns 0 — asymmetric error handling: a zero-base map failure is survivable, a nonzero-base failure is fatal.
+Evidence: decompile 00669af8; two failure branches with distinct panic/log strings.
+Severity (hypothesis): Low — intentional asymmetry (base 0 = unprivileged, nonzero = privileged base must never fail); worth confirming the zero-base path does not skip a required permission check.
+Confidence: Medium.
+
+## [SKR68] 0x0066ad54 sk_frame_alloc_slot
+Observation: The page-frame allocator allocates frames from a per-page 64-bit slot bitmap via bit-reversal + LZCOUNT; all state mutations are guarded by validation callbacks (sk_x_0067cfe0/0067cffc/0067d02c) and noreturn panics (sk_x_006833d4) on token/liveness mismatch, size-field overflow, wrap-around, and invalid parity/indices. Corruption of the allocator state block at 0x6fea48 (offsets 0x10/0x18/0x28/0x30/0x44/0x48) is detected via panic, not silently tolerated.
+Evidence: decompile 0066ad54; bit-reversal LZCOUNT slot scan; validation callbacks + panics on invariant violations; SoftwareBreakpoint(0x5519) on arithmetic-overflow paths (0066a8f4/0066af84).
+Severity (hypothesis): Medium — strong fail-closed design, but physical-frame allocation is a high-value target; the 0x100-slots-per-page free-list accounting with state-quota checks is worth a manual review.
+Confidence: Medium.
+
+## [SKR68] 0x0066ab40 page_allocator_region_release_slot
+Observation: The 16-byte {kind,index} slot descriptors (sk_u128_t returns of 0066a8c4/0066a9bc) follow a strict low-byte parity acquire/release pairing invariant on the size field — a use-after-release guard. Violations panic.
+Evidence: decompile 0066ab40 `if ((param_2 & 1) == 0)` parity branch; size-field parity invariant.
+Severity (hypothesis): Low — the parity invariant gives early use-after-release detection; informational hardening note.
+Confidence: Medium.

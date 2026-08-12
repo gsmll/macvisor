@@ -119,7 +119,7 @@ extern unsigned long sk_f_00666d90(unsigned int *src, unsigned int *dst, unsigne
 extern unsigned long sk_f_00667040(unsigned int *src, unsigned int *out, char *scratch, long budget);   /* FUN_0000667040 */
 extern unsigned long sk_f_006673ec(unsigned long *obj);   /* FUN_00006673ec */
 extern uint64_t * sk_f_0066745c(uint64_t * desc, uint64_t region);   /* FUN_000066745c */
-extern void sk_f_00667530(long buf, long * out);   /* FUN_0000667530 */
+extern uint64_t sk_f_00667530(long buf, long * out);   /* FUN_0000667530 */
 extern bool sk_f_00667568(long buf);   /* FUN_0000667568 */
 extern bool sk_f_00667578(long buf);   /* FUN_0000667578 */
 extern uint64_t sk_f_00667588(long self);   /* FUN_0000667588 */
@@ -136,7 +136,7 @@ extern void sk_f_00668dc4(uint64_t arg);   /* FUN_0000668dc4 */
 extern void sk_f_00668dd8(void);   /* FUN_0000668dd8 */
 extern uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags);   /* FUN_0000668e24 */
 extern void sk_f_006690dc(uint64_t obj);   /* FUN_00006690dc */
-extern void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj);   /* FUN_0000669134 */
+extern uint64_t sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj);   /* FUN_0000669134 */
 extern uint64_t *sk_f_0066924c(void);   /* FUN_000066924c */
 extern uint64_t *sk_f_00669298(void);   /* FUN_0000669298 */
 extern void sk_f_006692e4(void);   /* FUN_00006692e4 */
@@ -152,7 +152,7 @@ extern void sk_f_00669618(void);   /* FUN_0000669618 */
 extern void sk_f_006699e8(int64_t desc);   /* FUN_00006699e8 */
 extern void sk_f_00669a48(void);   /* FUN_0000669a48 */
 extern uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr);   /* FUN_0000669af8 */
-extern void sk_f_00669c3c(void);   /* FUN_0000669c3c */
+extern uint64_t sk_f_00669c3c(void);   /* FUN_0000669c3c */
 extern uint64_t sk_f_00669c98(uint64_t arg);   /* FUN_0000669c98 */
 extern uint64_t sk_f_00669cfc(void);   /* FUN_0000669cfc */
 extern uint64_t *sk_f_00669db4(void);   /* FUN_0000669db4 */
@@ -174,12 +174,12 @@ extern sk_u128_t sk_f_0066a8c4(void);   /* FUN_000066a8c4 */
 extern void sk_f_0066a8f4(uint64_t region, uint64_t arg2, uint64_t arg3);   /* FUN_000066a8f4 */
 extern bool sk_f_0066a988(int64_t region);   /* FUN_000066a988 */
 extern sk_u128_t sk_f_0066a9bc(int64_t region);   /* FUN_000066a9bc */
-extern void sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index);   /* FUN_000066ab40 */
+extern uint64_t sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index);   /* FUN_000066ab40 */
 extern int64_t sk_f_0066ad54(void);   /* FUN_000066ad54 */
-extern void sk_f_0066af84(void);   /* FUN_000066af84 */
+extern uint64_t sk_f_0066af84(void);   /* FUN_000066af84 */
 extern void sk_f_0066afe8(uint64_t *flist);   /* FUN_000066afe8 */
 
-extern unsigned long sk_x_0064e07c();   /* FUN_000064e07c */
+extern sk_u128_t sk_x_0064e07c();   /* FUN_000064e07c */
 extern unsigned long sk_x_0064effc();   /* FUN_000064effc */
 extern unsigned long sk_x_00654cc8();   /* FUN_0000654cc8 */
 extern unsigned long sk_x_006551c4();   /* FUN_00006551c4 */
@@ -251,7 +251,7 @@ extern unsigned long sk_x_006856a8();   /* FUN_00006856a8 */
 extern unsigned long sk_x_00685864();   /* FUN_0000685864 */
 extern unsigned long sk_x_00685928();   /* FUN_0000685928 */
 extern unsigned long sk_x_0068596c();   /* FUN_000068596c */
-extern unsigned long sk_x_00685a6c();   /* FUN_0000685a6c */
+extern sk_u128_t sk_x_00685a6c();   /* FUN_0000685a6c */
 extern unsigned long sk_x_00685acc();   /* FUN_0000685acc */
 extern unsigned long sk_x_00685b50();   /* FUN_0000685b50 */
 extern unsigned long sk_x_00685b88();   /* FUN_0000685b88 */
@@ -1659,7 +1659,7 @@ long sk_f_0066512c(uint64_t arg0, uint64_t fault, int64_t tcb)
             if (hresult == 1) {
                 result = 0xffff0000;
             } else {
-                result = sk_f_0066599c(tcb, &msg_word0);
+                result = sk_f_0066599c((uint64_t)tcb, (int64_t)(uintptr_t)&msg_word0);
             }
         } else {
             do {
@@ -1679,9 +1679,9 @@ long sk_f_0066512c(uint64_t arg0, uint64_t fault, int64_t tcb)
                     if (hresult - 1U < 2) break;
                 }
                 result = (hresult == 1) ? 0xffff0000
-                                        : sk_f_0066599c(tcb, &msg_word0);
+                                        : sk_f_0066599c((uint64_t)tcb, (int64_t)(uintptr_t)&msg_word0);
             } else {
-                result = sk_f_0066599c(tcb, &msg_word0);
+                result = sk_f_0066599c((uint64_t)tcb, (int64_t)(uintptr_t)&msg_word0);
             }
         }
     } else {
@@ -1934,7 +1934,7 @@ void sk_f_006657d8(int64_t obj)
 
     guard = sk_g_006b5ed0;
     if (*(int64_t *)(obj + 0x88) == 0) {
-        backing = sk_f_00665860();
+        backing = sk_f_00665860(0);   /* decompiler dropped arg */
         *(int64_t *)(obj + 0x88) = backing;
         status = 0;
         if (backing == 0) {
@@ -2140,7 +2140,7 @@ void sk_f_00665cec(void)
 {
     uint8_t local_buf[0x20];
 
-    sk_f_00665354((uint64_t)local_buf);
+    sk_f_00665354((uint64_t)local_buf, 0);
 }
 /* ===== part 3: fragment of SKR68 ===== */
 
@@ -2220,7 +2220,7 @@ void sk_f_00665d70(void)
  * Notes: sole body is a call to FUN_00665354 (in-slice). */
 void sk_f_00665d84(void)
 {
-    sk_f_00665354();
+    sk_f_00665354(0, 0);
     return;
 }
 
@@ -2468,7 +2468,7 @@ void sk_f_006661d4(uint64_t val)
  * Notes: reads DAT_006fe800; callee sk_f_006661f4 (in-slice). */
 void sk_f_006661e0(uint64_t a, uint64_t b)
 {
-    sk_f_006661f4(sk_g_006fe800, a, b);
+    sk_f_006661f4((unsigned long *)sk_g_006fe800, a, (unsigned long *)b);
     return;
 }
 /* ===== part 4: fragment of SKR68 ===== */
@@ -2638,7 +2638,7 @@ unsigned long sk_f_00666448(unsigned long *out, long *pool, unsigned long key, u
             ((sz = pool[1], sz != 0 &&
              ((sz + 4 < sz) || (sz + pool[2] < sz + 4)))))
             goto hardfail;
-        idx = (unsigned int)sk_f_00667040(size);
+        idx = (unsigned int)sk_f_00667040((unsigned int *)(uintptr_t)size, 0, 0, 0);
         if (idx == 0) {
             sz = 0;
             avail = 4;
@@ -2757,7 +2757,7 @@ hardfail:
  * Notes: FUN_00666808. */
 unsigned long sk_f_00666800(void)
 {
-    sk_f_00666808();
+    sk_f_00666808(0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -2769,7 +2769,7 @@ unsigned long sk_f_00666800(void)
  * Notes: FUN_00666808. */
 unsigned long sk_f_00666d84(void)
 {
-    sk_f_00666808();
+    sk_f_00666808(0, 0, 0, 0, 0);
     return 0;
 }
 
@@ -2823,7 +2823,7 @@ unsigned long sk_f_00666808(long *fs, unsigned long *pg, unsigned long tok, unsi
                           ((unsigned int *)((long)ext + (unsigned long)sk_g_0068a580) < ext + 1))))) ||
                         ((base = fs[1], base != 0 && ((base + 4 < base) || (base + fs[2] < base + 4)))))
                         goto hardfail;
-                    sk_f_00666d90(u2, ext, (unsigned char *)base, (long)low);
+                    sk_f_00666d90((unsigned int *)(uintptr_t)u2, ext, (unsigned char *)base, (long)low);
                 } else {
                     if (mode != 0) {
                         err = 0x1cf0007;
@@ -3619,12 +3619,12 @@ uint64_t * sk_f_0066745c(uint64_t * desc, uint64_t region)
  * type faults through sk_x_00685b50. Traps on the overflow/type check failing.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x667568) on failure. */
-void sk_f_00667530(long buf, long * out)
+uint64_t sk_f_00667530(long buf, long * out)
 {
 	if (*(short *)(buf + 0x40) == 0x1fe) {
 		*out = buf;
 		if (*(unsigned long *)(buf + 0x18) <= *(unsigned long *)(buf + 0x18) + 0x4000) {
-			return;
+			return 0;
 		}
 	} else {
 		sk_x_00685b50();
@@ -3760,7 +3760,7 @@ LAB_006676b4:
 			if (rc == 0) {
 				if (pending != 0) {
 					if ((type_byte & 1) == 0) {
-						sk_f_00669c98();
+						sk_f_00669c98(0);
 					} else {
 						sk_f_0066a08c(pending);
 					}
@@ -4108,8 +4108,8 @@ void sk_f_00668128(void)
 {
 	int rc;
 
-	sk_f_006673ec(0x6ff120);
-	sk_f_0066a808(0x6b5700, 0x6b68f8, 0x6b68b0);
+	sk_f_006673ec((unsigned long *)(uintptr_t)0x6ff120);
+	sk_f_0066a808(0x6b5700, 0x6b68f8, (int64_t *)(uintptr_t)0x6b68b0);
 	sk_g_006b5838 = 0;
 	sk_g_006b5840 = (uint64_t)&sk_g_006b5838;
 	rc = sk_x_0067cfe0(0x6b58f0, 0);
@@ -4129,7 +4129,7 @@ void sk_f_00668128(void)
 			sk_g_006fe828 = 0x1001;
 			sk_g_006fe818 = 0x6fe830;
 			sk_x_0065cbbc(0x6b59c0);
-			sk_f_0066a7b8(&sk_g_006fe818);
+			sk_f_0066a7b8((uint64_t)&sk_g_006fe818);
 			sk_g_006fe8b0 = 0x6fe810;
 			rc = sk_x_0067cffc(0x6b5740);
 			if (rc != 0) {
@@ -4348,7 +4348,7 @@ LAB_00668a70:
 					}
 					vaddr = sk_g_006b4368;
 					if ((result & 0xff) != 0) {
-						sk_f_00668cb0(&out_root);
+						sk_f_00668cb0(&out_root, 0);
 						sk_x_00685acc(vaddr);
 						sk_f_00668cb0(&out_root, result);
 						sk_x_006833d4(0x6a71a1);
@@ -4692,14 +4692,14 @@ void sk_f_006690dc(uint64_t obj)
  * (sk_f_0066ab40). Traps if the object is out of range.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519,0x66921c) trap; panics sk_x_006833d4(0x6a9e9a). */
-void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj)
+uint64_t sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj)
 {
   uint16_t rec_size;
   uint64_t v3, v4;
   sk_u128_t tmp;
 
   if (obj == 0) {
-    return;
+    return 0;
   }
   if (pool_base <= (uint64_t)(pool_base + 0x30)) {
     tmp = sk_f_0066a9bc(pool_base);
@@ -4722,7 +4722,7 @@ void sk_f_00669134(uint64_t pool_base, uint16_t *free_list, uint64_t *obj)
       *(int64_t *)((uint8_t *)free_list + 0xc) += 1;
       *(uint64_t **)((uint8_t *)free_list + 0x10) = obj;
       sk_f_0066ab40(pool_base, tmp.lo, tmp.hi);
-      return;
+      return 0;
     }
   }
   /* WARNING: does not return */
@@ -5172,7 +5172,7 @@ panic_669f4f:
                 if (obj + l4 + 0x120 < u7) {
                     goto bounds_panic_66997c;
                 }
-                l4 = sk_f_00668e24(obj, (uint16_t *)(u7), 0);
+                l4 = (uint64_t)(uintptr_t)sk_f_00668e24(obj, (uint16_t *)(u7), 0);
                 if (l4 == 0) {
                     goto LAB_6699b8;
                 }
@@ -5292,7 +5292,7 @@ uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr)
  * sk_f_006673ec. Returns void.
  * Confidence: medium
  * Notes: pool lookup FUN_0065be08(0x6fea40,4,0xd); error path sk_f_006673ec. */
-void sk_f_00669c3c(void)
+uint64_t sk_f_00669c3c(void)
 {
     uint64_t base;
     int64_t err;
@@ -5302,12 +5302,12 @@ void sk_f_00669c3c(void)
         /* WARNING: Does not return */
         SoftwareBreakpoint(0x5519, 0x669c98);;
     }
-    err = sk_f_00668e24(base, (uint16_t *)(base + 0x200), 1);
+    err = (uint64_t)(uintptr_t)sk_f_00668e24(base, (uint16_t *)(base + 0x200), 1);
     if (err != 0) {
         sk_f_006673ec(0);
-        return;
+        return 0;
     }
-    return;
+    return 0;
 }
 
 /* FUN_00669c98 @ 0x00669c98   (est. sk_pool_dispatch)
@@ -5343,11 +5343,11 @@ uint64_t sk_f_00669c98(uint64_t arg)
     sk_x_00685f78();
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x238 <= base + 0x270) {
-        err = sk_f_00668e24(base, (uint16_t *)(base + 0x238), 1);
+        err = (uint64_t)(uintptr_t)sk_f_00668e24(base, (uint16_t *)(base + 0x238), 1);
         if (err != 0) {
-            partner = sk_f_00669db4();
+            partner = (uint64_t)(uintptr_t)sk_f_00669db4();
             if (partner != 0) {
-                res = sk_f_0066745c(err, partner);
+                res = (uint64_t)(uintptr_t)sk_f_0066745c((uint64_t *)err, partner);
                 return res;
             }
             base = sk_x_0065be08(0x6fea40, 4, 0xd);
@@ -5381,11 +5381,11 @@ uint64_t sk_f_00669cfc(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x3e0 && ctx + 0x238 <= ctx + 0x270) {
-        lock = sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x238), 1);
+        lock = (uint64_t)(uintptr_t)sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x238), 1);
         if (lock != 0) {
-            blk = sk_f_00669db4();
+            blk = (uint64_t)(uintptr_t)sk_f_00669db4();
             if (blk != 0) {
-                result = sk_f_0066745c(lock, blk);
+                result = (uint64_t)(uintptr_t)sk_f_0066745c((uint64_t *)lock, blk);
                 return result;
             }
             ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
@@ -5655,7 +5655,7 @@ pop:
             *(uint8_t *)(ctx + 0xc1) = 1;
             blk = sk_x_0065be08(0x6fea40, 4, 0xd);
             if (blk <= blk + 0x3e0 && blk + 0xe8 <= blk + 0x120) {
-                blk = sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
+                blk = (uint64_t)(uintptr_t)sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
                 *(uint8_t *)(ctx + 0xc1) = 0;
                 if (blk <= blk + 0x48) {
                     return blk;
@@ -5714,7 +5714,7 @@ pop:
             *(uint8_t *)(ctx + 0xc1) = 1;
             blk = sk_x_0065be08(0x6fea40, 4, 0xd);
             if (blk <= blk + 0x3e0 && blk + 0xe8 <= blk + 0x120) {
-                blk = sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
+                blk = (uint64_t)(uintptr_t)sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
                 *(uint8_t *)(ctx + 0xc1) = 0;
                 if (blk <= blk + 0x48) {
                     return blk;
@@ -5874,7 +5874,7 @@ void sk_f_0066a65c(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x3e0 && ctx + 0x120 <= ctx + 0x158) {
-        ctx = sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x120), 1);
+        ctx = (uint64_t)(uintptr_t)sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x120), 1);
         if (ctx <= ctx + 0x40) {
             return;
         }
@@ -6180,7 +6180,7 @@ sk_u128_t sk_f_0066a9bc(int64_t region)
  * Notes: calls sk_x_00661318, thunk sk_x_006551c4, indirect call at
  * region+0x20, sk_x_0067d02c (validate), sk_x_006833d4 (noreturn panic:
  * strings 0x6aaa84, 0x6aaaf4, 0x6aab8f, 0x6a8797). */
-void sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index)
+uint64_t sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index)
 {
     int cmp;
     uint64_t token;
@@ -6200,7 +6200,7 @@ void sk_f_0066ab40(int64_t region, uint8_t parity, uint64_t index)
         sk_x_006833d4(0x6aab8f);
     }
     if ((parity & 1) == 0) {
-        (*(void (**)(void))(region + 0x20))(*(uint64_t *)(region + 0x28));
+        (*(void (**)(uint64_t))(region + 0x20))(*(uint64_t *)(region + 0x28));
         token = sk_x_00661318();
         cmp = sk_x_006551c4(token, *(uint64_t *)(region + 0x10));
         if (cmp == 0) {
@@ -6350,7 +6350,7 @@ LAB_release:
  * Confidence: medium
  * Notes: calls sk_x_0065be08 (state), SoftwareBreakpoint(0x5519,0x66afe8);
  * decompiler notes a non-recoverable jumptable at 0x0066afe0. */
-void sk_f_0066af84(void)
+uint64_t sk_f_0066af84(void)
 {
     uint64_t *flist;
     uint64_t head;
@@ -6360,11 +6360,11 @@ void sk_f_0066af84(void)
     if (head == 0) {
         /* noreturn (indirect jumptable dispatch) */
         (*(void (**)(void))*flist)();
-        return;
+        return 0;
     }
     flist[5] = *(uint64_t *)(head + 0x30);
     if (head <= head + 0x48) {
-        return;
+        return 0;
     }
     /* noreturn */
     SoftwareBreakpoint(0x5519, 0x66afe8);

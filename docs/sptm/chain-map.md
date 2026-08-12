@@ -716,3 +716,17 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 004582e8 -> 00458d04/00458d10/00458d30/00458d40, 004589e8, 00461d68, 0041360c, 001b9084, 003a25d4, 002298d4 (0x178 element teardown)
 - 00458780 -> 00458eec, 00458f88, 0042d720, 00458eec, 001b9084, 00229a3c (0x50 element teardown)
 - 004588cc/00458940 -> 0036b270/0036b118 (box retain/release dispatch)
+
+## SKR68 (0x00663c04-0x0066afe8) — error-code/IPC-result stringification + pool/slab/page-allocator layer
+- 00663c04/00665354/0066609c/00668cb0 -> 0067aa00 (log-write), 0064effc (msg dispatch), sk_str_00689f40..0068a4e8 (per-group L4 error string tables)
+- 00663d3c -> 0065fdb8, 0065c2f0(0,0x6a7de6), 0067f660, 00662098, 006853e4 (blocking scratchpad drain + supervisor roundtrip)
+- 006645ec/006646f4/006648dc/00664a8c -> 006fe7e8 global slot pool, 0065c2f0, 006fe7f8 head (pool slot alloc/sweep)
+- 0066512c -> 0065ccc8 (per-cpu ctx), 0x6b5e50 fault-handler table, SoftwareBreakpoint(0x5519,0x665354) (fault dispatch)
+- 006654b8/00665660 -> 006832c8 (cap alloc), CallSupervisor(0), 0067f660 (guard-violation abort) (L4 send msg code3/code2)
+- 0066599c/00665a38 -> 0065ccc8, 0065cb74 (list), 0065c2f0, indirect call at ctx+0x80/+0x10 (L4 method call / list send)
+- 006661f4/0066628c/00666298/006662ac/00666344 -> region entry lookup / two-stage (0x6fe800 entry root)
+- 00666448/00666808/00666d90/00667040 -> 006fea40 pool, 006832c8, 0065cc0c (page pool alloc / bitmap compress/decompress)
+- 00668e24/00669134/0066924c/00669298/006692e4/006693d4..00669578 -> 0065be08(0x6fea40,4,0xd), 0069db4, 0066a9bc, 0066ab40 (slab alloc/free + pool slot commit/cfg)
+- 00667588/00667870/00667d74/00667e54/00668128/0066834c -> 006fea40 pool, 0069c3c/0069cfc, 00669c98, 0069db4, 0067d02c/0067cffc/0067cfe0 validation callbacks (buffer/slot allocator + map)
+- 0066ad54/0066a1d4/0066a1d8/0066a8c4/0066a8f4/0066a988/0066a9bc/0066ab40/0066af84 -> 006fea48 page-frame allocator, 00661318 (token), 006551c4, 0067cffc/0067d02c (frame slot bitmap alloc + release)
+- 006699e8/00669af8/00669c3c/00669c98/00669cfc/0066a08c/0066a300 -> pool region map/dispatch, 00685e44 (object lookup), indirect call at +0x10
