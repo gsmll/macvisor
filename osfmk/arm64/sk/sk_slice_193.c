@@ -2216,8 +2216,8 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
                         if (buf[0] == '\\0') {
                                 word_t g = sw_3a261c(base);
                                 if ((g & 1) == 0) { sw_462710(0); sw_6b3f4(0); base = (long)sw_45636c(0); }
-                                *(word_t*)(base + 0x10) = cnt + 1;
                                 word_t cnt = *(word_t*)(base + 0x10);
+                                *(word_t*)(base + 0x10) = cnt + 1;
                                 if (*(word_t*)(base + 0x18) >> 1 <= cnt) { sw_6b42c(0); sw_dbed0(0); base = (long)sw_45636c(0); }
                                 *(word_t*)(base + 0x10) = cnt + 1;
                                 *(word_t*)(base + 0x10) = cnt + 1;
