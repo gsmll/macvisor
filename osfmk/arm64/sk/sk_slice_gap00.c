@@ -11,6 +11,12 @@
  * (UnsafeBufferPointer / _fatalError preconditions) appear as error raisers.
  */
 
+/* Recreated from cl4_kernel.raw (cL4 Secure Kernel, arm64e, image base 0) —
+ * the cL4 microkernel (GL1), "cL4 (679.100.61)". Ground truth: Ghidra FUN_
+ * names + addresses in program cl4_kernel.raw.
+ * Slice 05: 0x3224a0-0x327bf8 syscall/exception-entry region.
+ * All names are estimates unless string/header-matched. */
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -481,12 +487,6 @@ static void sk_sys_ipc_send_wrapper(void)
  * FUN_003540d0) then delegate to the generic IPC handler FUN_00322a88,
  * returning its low bit. Distinct syscall ids sharing one body.
  * Confidence: medium */
-static void sk_sys_ipc_send_wrapper(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
 static void sk_sys_ipc_send_wrapper_alt(void)
 {
     sk_sys_pre();                       /* FUN_003552d0 */
@@ -499,18 +499,6 @@ static void sk_sys_ipc_send_wrapper_alt(void)
  * FUN_003540d0) then delegate to the generic IPC handler FUN_00322a88,
  * returning its low bit. Distinct syscall ids sharing one body.
  * Confidence: medium */
-static void sk_sys_ipc_send_wrapper(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
-static void sk_sys_ipc_send_wrapper_alt(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
 static void sk_sys_ipc_send_wrapper2(void)
 {
     sk_sys_pre();                       /* FUN_003552d0 */
@@ -523,24 +511,6 @@ static void sk_sys_ipc_send_wrapper2(void)
  * FUN_003540d0) then delegate to the generic IPC handler FUN_00322a88,
  * returning its low bit. Distinct syscall ids sharing one body.
  * Confidence: medium */
-static void sk_sys_ipc_send_wrapper(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
-static void sk_sys_ipc_send_wrapper_alt(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
-static void sk_sys_ipc_send_wrapper2(void)
-{
-    sk_sys_pre();                       /* FUN_003552d0 */
-    sk_sys_post();                      /* FUN_003540d0 */
-    sk_sys_ipc_common();                /* FUN_00322a88 */
-}
 static void sk_sys_ipc_send_wrapper3(void)
 {
     sk_sys_pre();                       /* FUN_003552d0 */
@@ -831,7 +801,6 @@ static void sk_obj_method_set_thunk(uint64_t arg){ uint64_t x20=0;
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_a(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_b(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_c(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_d(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
@@ -987,8 +956,6 @@ static void sk_sys_cap_op_common(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_a(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
-static void sk_wrap_cap_op_b(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_c(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_d(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 
@@ -1075,9 +1042,6 @@ static void sk_obj_method_set_thunk(uint64_t arg){ uint64_t x20=0;
  * Ghidra: uint FUN_00323254(void) — wrappers: lookup + ipc_send preamble then
  * delegate to the generic cap-op handler FUN_00323304, return its low bit.
  * Confidence: medium */
-static void sk_wrap_cap_op_a(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
-static void sk_wrap_cap_op_b(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
-static void sk_wrap_cap_op_c(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 static void sk_wrap_cap_op_d(void) { sk_lookup_cur(); sk_ipc_send(); sk_sys_cap_op_common(); }
 
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
@@ -1393,7 +1357,6 @@ static void sk_obj_method_set_thunk(uint64_t arg){ uint64_t x20=0;
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_a(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_b(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_c(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_d(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
@@ -1472,8 +1435,6 @@ static void sk_obj_method_set_thunk(uint64_t arg){ uint64_t x20=0;
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_a(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
-static void sk_wrap_sys_op_b(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_c(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_d(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 
@@ -1551,9 +1512,6 @@ static void sk_obj_method_set_thunk(uint64_t arg){ uint64_t x20=0;
 /* FUN_00323dd4/e38/e9c/f00 (est. sk_wrap_sys_op_N)
  * Ghidra: uint FUN_00323dd4(void) — wrappers delegating to FUN_00323f64.
  * Confidence: medium */
-static void sk_wrap_sys_op_a(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
-static void sk_wrap_sys_op_b(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
-static void sk_wrap_sys_op_c(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 static void sk_wrap_sys_op_d(void) { sk_hlp_0034f90c(); sk_ipc_send(); sk_sys_op_common(); }
 
 /* FUN_0032439c @ 0x32439c (est. sk_obj_set_ready)
@@ -2882,7 +2840,6 @@ static void sk_obj_method_slots_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
  * Releases the two heap objects referenced from the base object (x20) at
  * +0x18 and +0x30 via sk_free, then runs the zone-teardown FUN_0036b21c.
  * Confidence: medium */
-static void sk_obj_release_pair(void){ uint64_t x20=0; sk_free(*(uint64_t*)(x20+0x18)); sk_free(*(uint64_t*)(x20+0x30)); sk_hlp_0036b21c(); }
 static void sk_obj_release_pair_b(void){ uint64_t x20=0; sk_free(*(uint64_t*)(x20+0x18)); sk_free(*(uint64_t*)(x20+0x30)); sk_hlp_0036b21c(); }
 
 /* FUN_00324bf0 @ 0x324bf0 (est. sk_get_meta_0x6573a0)
@@ -2956,7 +2913,6 @@ static void sk_obj_method_slots_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
  * Releases the heap object at (x20)+0x20 via sk_free, runs the teardown
  * FUN_00359018 and FUN_0036b21c.
  * Confidence: medium */
-static void sk_obj_release_meta(void){ uint64_t x20=0; sk_free(*(uint64_t*)(x20+0x20)); sk_hlp_00359018(); sk_hlp_0036b21c(); }
 static void sk_obj_release_meta_b(void){ uint64_t x20=0; sk_free(*(uint64_t*)(x20+0x20)); sk_hlp_00359018(); sk_hlp_0036b21c(); }
 
 /* FUN_00324c34 @ 0x324c34 (est. sk_tls_read7) */
@@ -2991,8 +2947,6 @@ static void sk_obj_method_slots_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
  * Forwards two args plus six slots from the base object (x20) to the backing
  * routine FUN_00320dbc.
  * Confidence: medium */
-static void sk_obj_method_slots_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
-    sk_hlp_00320dbc(a,b,*(uint64_t*)(x20+0x20),*(uint64_t*)(x20+0x28),*(uint64_t*)(x20+0x30),*(uint64_t*)(x20+0x38),*(uint64_t*)(x20+0x10),*(uint64_t*)(x20+0x18)); }
 static void sk_obj_method_slots_thunk_b(uint64_t a,uint64_t b){ uint64_t x20=0;
     sk_hlp_00320dbc(a,b,*(uint64_t*)(x20+0x20),*(uint64_t*)(x20+0x28),*(uint64_t*)(x20+0x30),*(uint64_t*)(x20+0x38),*(uint64_t*)(x20+0x10),*(uint64_t*)(x20+0x18)); }
 /* FUN_00324c80 / 0x324c84 (est. sk_obj_method_four_thunk)
@@ -3005,8 +2959,6 @@ static void sk_obj_method_four_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
  * Ghidra: void FUN_00324c80(undefined8, undefined8)
  * Forwards two args plus two object slots (+0x18,+0x10) to FUN_002e3b64.
  * Confidence: medium */
-static void sk_obj_method_four_thunk(uint64_t a,uint64_t b){ uint64_t x20=0;
-    sk_hlp_002e3b64(a,*(uint64_t*)(x20+0x18),*(uint64_t*)(x20+0x10),b); }
 static void sk_obj_method_four_thunk_b(uint64_t a,uint64_t b){ uint64_t x20=0;
     sk_hlp_002e3b64(a,*(uint64_t*)(x20+0x18),*(uint64_t*)(x20+0x10),b); }
 /* FUN_00324ca0 @ 0x324ca0 (est. sk_ilst_elem_at_0x10b) */
@@ -6277,7 +6229,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Ghidra: void FUN_00324de4(undefined8, undefined8)
  * Delegates to FUN_00324e3c with the metadata comparator FUN_00310d04.
  * Confidence: medium */
-static void sk_check_meta1(uint64_t a,uint64_t b){ sk_check_meta_common(a,b,sk_hlp_00310d04); }
 static void sk_check_meta1_b(uint64_t a,uint64_t b){ sk_check_meta_common(a,b,sk_hlp_00310d04); }
 
 /* FUN_00324e10/e14 (est. sk_check_meta2)
@@ -7179,7 +7130,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
 /* FUN_00324e10/e14 (est. sk_check_meta2)
  * Ghidra: void FUN_00324e10(undefined8, undefined8) — comparator FUN_00310d1c.
  * Confidence: medium */
-static void sk_check_meta2(uint64_t a,uint64_t b){ sk_check_meta_common(a,b,sk_hlp_00310d1c); }
 static void sk_check_meta2_b(uint64_t a,uint64_t b){ sk_check_meta_common(a,b,sk_hlp_00310d1c); }
 
 /* FUN_00324e8c/e90 (est. sk_buffer_meta_unmut_ptr)
@@ -8087,7 +8037,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Raises the "UnsafeMutableRawBufferPointer with negative stride" error via
  * FUN_00324ee4 (code 0xfc7, file 0x31, line 0x74).
  * Confidence: high (string DAT_005cde70 matches). */
-static void sk_buffer_meta_unmut_ptr(uint64_t a,uint64_t b){ sk_raise_buffer_err(a,b,0x5cde70,0x31,0x74,0xfc7); }
 static void sk_buffer_meta_unmut_ptr_b(uint64_t a,uint64_t b){ sk_raise_buffer_err(a,b,0x5cde70,0x31,0x74,0xfc7); }
 
 /* FUN_00324eb8/ebc (est. sk_buffer_meta_neg_ptr)
@@ -8963,7 +8912,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Raises the "UnsafeRawBufferPointer with negative..." error via FUN_00324ee4
  * (code 0x323, file 0x2a, line 0x4c1).
  * Confidence: high (string DAT_005cdef0 matches). */
-static void sk_buffer_meta_neg_ptr(uint64_t a,uint64_t b){ sk_raise_buffer_err(a,b,0x5cdef0,0x2a,0x4c1,0x323); }
 static void sk_buffer_meta_neg_ptr_b(uint64_t a,uint64_t b){ sk_raise_buffer_err(a,b,0x5cdef0,0x2a,0x4c1,0x323); }
 
 /* FUN_00324f78 @ 0x324f78 (est. sk_slot_init_0x10)
@@ -12305,7 +12253,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Ghidra: void FUN_00325214(void) — FUN_00355244 with two address slots and a
  * data descriptor (DAT_004e84f0).
  * Confidence: medium */
-static void sk_init_handlers_pair(void){ sk_hlp_00355244(0x656388,0x656390,(uint64_t)&sk_dat_004e84f0); }
 static void sk_init_handlers_pair_b(void){ sk_hlp_00355244(0x656388,0x656390,(uint64_t)&sk_dat_004e84f0); }
 
 /* FUN_00325258/5c (est. sk_install_handler_656398)
@@ -13088,7 +13035,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Ghidra: void FUN_00325258(void)
  * Installs the dispatch handler for DAT_004e8514 + 0x6726c8 into slot 0x656398.
  * Confidence: medium */
-static void sk_install_handler_656398(void){ sk_gv_656398=sk_dispatch_leave((uint64_t)&sk_dat_004e8514,0x6726c8); }
 static void sk_install_handler_656398_b(void){ sk_gv_656398=sk_dispatch_leave((uint64_t)&sk_dat_004e8514,0x6726c8); }
 
 /* FUN_00325318 @ 0x325318 (est. sk_slot_init_0x10_b)
@@ -14634,7 +14580,6 @@ static void sk_slot_bind_cur(uint64_t a,uint64_t b,uint64_t *p3)
  * Ghidra: void FUN_00325414(void) — badge-mask2 (FUN_00352220) then err
  * (FUN_003581fc) stored at (x19)+8. Three identical bodies.
  * Confidence: medium */
-static void sk_slot_err_3x_a(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
 static void sk_slot_err_3x_b(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
 static void sk_slot_err_3x_c(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
 
@@ -14664,8 +14609,6 @@ static void sk_slot_bind_cur(uint64_t a,uint64_t b,uint64_t *p3)
  * Ghidra: void FUN_00325414(void) — badge-mask2 (FUN_00352220) then err
  * (FUN_003581fc) stored at (x19)+8. Three identical bodies.
  * Confidence: medium */
-static void sk_slot_err_3x_a(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
-static void sk_slot_err_3x_b(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
 static void sk_slot_err_3x_c(void){ uint64_t x19=0; sk_badgemsk2(); *(uint64_t*)(x19+8)=sk_err(); }
 
 /* FUN_00325864 / 0x325ac0 / 0x325d40 (est. sk_slot_badge_ck_3x)
@@ -17177,7 +17120,6 @@ static void sk_slot_bind_cur(uint64_t a,uint64_t b,uint64_t *p3)
  * Ghidra: void FUN_00325864(void) — badge (FUN_00352210) + cap_check
  * (FUN_0035142c) then dispatch result at (x19)+8. Three identical bodies.
  * Confidence: medium */
-static void sk_slot_badge_ck_3x_a(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
 static void sk_slot_badge_ck_3x_b(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
 static void sk_slot_badge_ck_3x_c(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
 
@@ -17579,7 +17521,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Ghidra: void FUN_00325b4c(undefined8) — FUN_00356dbc, dispatch tail, then
  * notify (FUN_00349e70) and dispatch. Two identical bodies.
  * Confidence: medium */
-static void sk_dispatch_notify_2x_a(uint64_t p){ sk_hlp_00356dbc(); sk_dispatch_leave(); uint64_t v=sk_notify(); sk_dispatch_leave(v,p); }
 static void sk_dispatch_notify_2x_b(uint64_t p){ sk_hlp_0035081c(); sk_dispatch_leave(); uint64_t v=sk_notify(); sk_dispatch_leave(v,p); }
 
 /* FUN_00325bc0 / 0x327948 (est. sk_dispatch_ntfn_2x)
@@ -17932,8 +17873,6 @@ static void sk_sys_ipc_5cap(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,uint
  * Ghidra: void FUN_00325864(void) — badge (FUN_00352210) + cap_check
  * (FUN_0035142c) then dispatch result at (x19)+8. Three identical bodies.
  * Confidence: medium */
-static void sk_slot_badge_ck_3x_a(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
-static void sk_slot_badge_ck_3x_b(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
 static void sk_slot_badge_ck_3x_c(void){ uint64_t x19=0; sk_badge(); sk_cap_check(); *(uint64_t*)(x19+8)=sk_dispatch_leave(); }
 
 /* FUN_00325a10 @ 0x325a10   (est. sk_slot_bind_cur)

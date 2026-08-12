@@ -93,7 +93,7 @@ void sk_gap18_init_slot_026e8(void)
 {
     /* Calls sk_adj_026e8 (FUN_000026e8) on the caller's stack slot at
      * [sp+8] — initializes an object/method-table slot. */
-    sk_adj_026e8((void *)&((char){0}) );  /* [stack+8] */
+    sk_adj_026e8((void *)0 );  /* [stack+8] — caller frame slot */
     return;
 }
 
@@ -555,7 +555,7 @@ void sk_gap18_frame_store_7_f04(word_t p2, word_t p3, word_t p4,
 void *sk_gap18_stack_ptr_8_f14(void)
 {
     /* Returns the caller's stack slot address [sp+8]. */
-    return (void *)&((char){0});
+    return (void *)0;   /* [sp+8] — caller frame slot, unreachable here */
 }
 
 /* sk_store_two_f24 @ 0x00357f24   (FUN_00357f24)

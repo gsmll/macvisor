@@ -232,10 +232,13 @@ void sk_f_0034d3c4(void){ return; }
  * result = x24 & 0xffffffffffff (48-bit field); else result = (x20>>0x38)&0xf
  * (4-bit tag). Result returned in x8. Also saves x0->x23, x1->x22.
  * Confidence: medium
- * Notes: unaff_x24 / x20 / x8. */
-word_t sk_f_0034aaf4(void){
-  /* result selects between a 48-bit field of x24 and a 4-bit tag of x20 */
-  return 0; /* [x8 = csel; unaff inputs not modelled] */
+ * Notes: unaff_x24 / x20 / x8. The two inputs are caller registers; the
+ * selection is the classic cL4 tagged-captype discriminator. */
+word_t sk_f_0034aaf4(word_t field_48, word_t tag_word){
+  /* x8 = flag(x20).clear ? (x24 & 0xffffffffffff) : ((x20 >> 0x38) & 0xf) */
+  if ((tag_word & 0x2000000000000000ull) == 0)
+    return field_48 & 0xffffffffffffull;
+  return (tag_word >> 0x38) & 0xf;
 }
 
 /* FUN_0034ab88 @ 0x0034ab88   (est. sk_tag_decode_2)
@@ -244,8 +247,10 @@ word_t sk_f_0034aaf4(void){
  * flag-bit-clear ? x21 & 0xffffffffffff : (x19>>0x38)&0xf.
  * Confidence: medium
  * Notes: unaff_x21 / x19 / x8. */
-word_t sk_f_0034ab88(void){
-  return 0; /* [x8 = csel; unaff inputs not modelled] */
+word_t sk_f_0034ab88(word_t field_48, word_t tag_word){
+  if ((tag_word & 0x2000000000000000ull) == 0)
+    return field_48 & 0xffffffffffffull;
+  return (tag_word >> 0x38) & 0xf;
 }
 
 /* FUN_0034d0e0 @ 0x0034d0e0   (est. sk_tag_decode_3)
@@ -254,8 +259,10 @@ word_t sk_f_0034ab88(void){
  * flag-bit-clear ? x8 : (x26>>0x38)&0xf.
  * Confidence: medium
  * Notes: unaff_x26 / x8. */
-word_t sk_f_0034d0e0(void){
-  return 0; /* [x8 = csel; unaff inputs not modelled] */
+word_t sk_f_0034d0e0(word_t field_48, word_t tag_word){
+  if ((tag_word & 0x2000000000000000ull) == 0)
+    return field_48 & 0xffffffffffffull;
+  return (tag_word >> 0x38) & 0xf;
 }
 
 /* FUN_0034ab20 @ 0x0034ab20   (est. sk_object_header_fetch)
@@ -780,9 +787,6 @@ void sk_f_0034d5d8(void){ return; }
  * No-op / placeholder stubs (bare `ret` in the binary). These are the
  * bulk of the remaining addresses: pure register shuffles or empties.
  * ==================================================================== */
-
-/* FUN_0034aaf4 is decoded above. Remaining empty/no-op entries: */
-void sk_f_0034aaf4(void){ return; } /* (kept for parity) */
 
 /* ==================================================================== *
  * Family (8): fatal-error path. Calls the Swift fatal-error printer with a
