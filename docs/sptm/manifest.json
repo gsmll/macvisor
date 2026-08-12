@@ -80,45 +80,45 @@
     "address": "000b26b0",
     "ghidra_name": "FUN_000b26b0",
     "estimated_name": "sptm_uat_get_info",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00001674 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT get info: query 0-9 returns driver config/root paddr/root VA (translated)."
   },
   {
     "address": "000b2928",
     "ghidra_name": "FUN_000b2928",
     "estimated_name": "sptm_uat_remove_ctx_id",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00001607 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT remove ctx id: clear ctx entry present bits, counters, TLBI (0,9,1,2) or full UAT flush, clear state ctx."
   },
   {
     "address": "000b2f54",
     "ghidra_name": "FUN_000b2f54",
     "estimated_name": "sptm_uat_set_ctx_id",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x000015bf (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT set ctx id: take per-CPU guard, program vttbr0/vttbr1 ctx entries (shared-mode aware), publish with DMB."
   },
   {
     "address": "000b32d0",
     "ghidra_name": "FUN_000b32d0",
     "estimated_name": "sptm_uat_unmap_continue",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x0000157d (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT unmap continue: phase machine (1=leaf walk, 2=TLBI pending, 3=clear ctx, 4=table walk) with SAPT boot-stage checks; decompiler truncated at 0x000b33cc."
   },
   {
     "address": "000b4068",
@@ -168,45 +168,45 @@
     "address": "000b5608",
     "ghidra_name": "FUN_000b5608",
     "estimated_name": "sptm_uat_unmap_table",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x0000132f (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT unmap table: clear entry, TLB invalidate block, release table + parent refs."
   },
   {
     "address": "000b5904",
     "ghidra_name": "FUN_000b5904",
     "estimated_name": "sptm_uat_map_table",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00001305 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT map table: walk to entry at va (level 1/2), program (paddr&0x1fffffff000)|3."
   },
   {
     "address": "000b5be0",
     "ghidra_name": "FUN_000b5be0",
     "estimated_name": "sptm_uat_destroy_state",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00001280 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT destroy state: mark roots destroying, require ctx unset, release state+root refs, reset root fields."
   },
   {
     "address": "000b5fd0",
     "ghidra_name": "FUN_000b5fd0",
     "estimated_name": "sptm_uat_init_state",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x000011f7 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "UAT init state: validate root FTEs, mark setup, install 1/2 root tables, ref state+roots, release temp refs."
   },
   {
     "address": "000b7eec",
@@ -542,34 +542,34 @@
     "address": "000c2dec",
     "ghidra_name": "FUN_000c2dec",
     "estimated_name": "sptm_nvme_unmap_pages",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x0000447d (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "NVMe unmap pages: direction-specific guard (|3/|4), ANS ack wait loop with WFE timeout, releases page refs, zeroes TCB/page array."
   },
   {
     "address": "000c3434",
     "ghidra_name": "FUN_000c3434",
     "estimated_name": "sptm_nvme_map_pages",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x0000439f (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "NVMe map pages: validates feature/domain/entry/count/paddrs, enforces TCB WR bits not both set, refs pages (4KB/2MB), publishes TCB + page array, cache-cleans."
   },
   {
     "address": "000c5a28",
     "ghidra_name": "FUN_000c5a28",
     "estimated_name": "sptm_sart_unmap_region",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x000056cc (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "SART unmap region: region guard, zero 3 parallel SART tables, restore perms, power canary magic check, free 20B entry + unref 16KB granules."
   },
   {
     "address": "000c7424",
@@ -729,12 +729,12 @@
     "address": "000cd0bc",
     "ghidra_name": "FUN_000cd0bc",
     "estimated_name": "sptm_t8110dart_unmap",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00007320 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "T8110 DART unmap: clear 16KB blocks in range (reject mixed WR + absent unless flag), TLB invalidate, release block pages + leaf table."
   },
   {
     "address": "000ce144",
@@ -751,23 +751,23 @@
     "address": "000cef24",
     "ghidra_name": "FUN_000cef24",
     "estimated_name": "sptm_t8110dart_unmap_table",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00007232 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "T8110 DART unmap table: collect per-level entry ptrs, release leaf paddr, clear entry, TLB invalidate, release parent/leaf refs."
   },
   {
     "address": "000cfaec",
     "ghidra_name": "FUN_000cfaec",
     "estimated_name": "sptm_t8110dart_map_table",
-    "confidence": "high",
+    "confidence": "low",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x000071ae (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "T8110 DART map table: validate instance/client/level, FTE instance/client/level match, walk DART levels allocating intermediate tables, program leaf PTE, DSB+TLB broadcast."
   },
   {
     "address": "000d6524",
@@ -1092,34 +1092,34 @@
     "address": "000f5f2c",
     "ghidra_name": "FUN_000f5f2c",
     "estimated_name": "sptm_guest_stage1_tlb_op",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00011d6e (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "Stage-1 TLB op: 10 TLBI variants dispatched by op, enters/exits guest, releases shared state ref."
   },
   {
     "address": "000f6368",
     "ghidra_name": "FUN_000f6368",
     "estimated_name": "sptm_guest_enter",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x000127fd (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "Guest enter: masks IRQs, validates per-CPU guest state FTE type, programs HCR/HACR/VTCR/VTTBR_EL2, bumps nested refcnt, releases shared state ref (rw_guard)."
   },
   {
     "address": "000f6634",
     "ghidra_name": "FUN_000f6634",
     "estimated_name": "sptm_guest_exit",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00011d8a (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "Guest exit: validates VTTBR_EL2 vs state, tears down VNCR/AVNCR UAT ctx refs + per-CPU slots, resets HCR_EL2/VTTBR_EL2, releases shared state ref."
   },
   {
     "address": "000f6e30",
@@ -1169,12 +1169,12 @@
     "address": "000f7924",
     "ghidra_name": "FUN_000f7924",
     "estimated_name": "sptm_guest_dispatch",
-    "confidence": "high",
+    "confidence": "medium",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00011f45 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "Guest dispatch: copies 0xa60 guest state to handoff scratch, programs VNCR/AVNCR (0x0b ctx FTEs) when switch flag set, enters guest, optional TLBI broadcast, clears handoff."
   },
   {
     "address": "000f7cc0",
@@ -1183,9 +1183,9 @@
     "confidence": "high",
     "category": "sptm-fn",
     "tree": "ringminus1",
-    "file": "",
-    "status": "claimed",
-    "notes": "Name from SPTM __cstring trace tag at 0x00012047 (xref from enclosing function); high confidence."
+    "file": "osfmk/arm64/sptm/sptm_guest_io.c",
+    "status": "decompiled",
+    "notes": "Guest va_to_ipa: AT S1E1R into PAR_EL1, returns IPA or all-ones on fault; header-matched name."
   },
   {
     "address": "000f84b4",
@@ -3008,6 +3008,160 @@
     "estimated_name": "",
     "confidence": "",
     "category": "uat",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bc084",
+    "ghidra_name": "FUN_bc084",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bc19c",
+    "ghidra_name": "FUN_bc19c",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bc338",
+    "ghidra_name": "FUN_bc338",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bc3d0",
+    "ghidra_name": "FUN_bc3d0",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bdd34",
+    "ghidra_name": "FUN_bdd34",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bddd0",
+    "ghidra_name": "FUN_bddd0",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bdf54",
+    "ghidra_name": "FUN_bdf54",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000be044",
+    "ghidra_name": "FUN_be044",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000be150",
+    "ghidra_name": "FUN_be150",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000becd0",
+    "ghidra_name": "FUN_becd0",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bf298",
+    "ghidra_name": "FUN_bf298",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bf4bc",
+    "ghidra_name": "FUN_bf4bc",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bf5d0",
+    "ghidra_name": "FUN_bf5d0",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
+    "tree": "ringminus1",
+    "file": "",
+    "status": "claimed",
+    "notes": ""
+  },
+  {
+    "address": "000bf874",
+    "ghidra_name": "FUN_bf874",
+    "estimated_name": "",
+    "confidence": "",
+    "category": "trace",
     "tree": "ringminus1",
     "file": "",
     "status": "claimed",

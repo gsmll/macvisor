@@ -154,7 +154,11 @@ static inline void sptm_halt(void) { __asm__ volatile("hlt #0"); }
 #define DART_MAX_IDX(c)  (*(uint32_t *)((c) + 0xba4))
 #define DART_VERSION(c)  (*(uint16_t *)((c) + 0xbdc))
 #define DART_STATE(c)    (*(uint8_t *)((c) + 0xbe0))
+#define DART_GUARD(c)    ((c) + 0xbdf)
 #define DART_INST(c, i)  (*(uint8_t **)((c) + 8 + (uint64_t)(i) * 0x78))
+
+/* The stream-allocation bitmap lives at ctrl+0xa38. */
+static inline uint64_t *bitmap_ctrl(uint8_t *ctrl);
 
 /* =====================================================================
  * UAT — Unified Address Translator DMA window management
@@ -177,8 +181,7 @@ void sptm_uat_unmap_begin(uint64_t ctx, uint64_t guest_paddr, uint64_t seg_count
     uint64_t src_phys;
     uint64_t idx, n;
 
-    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 2, 0xf);
-    dbg = 0; /* the true debug tag is consumed by sptm_uat_begin */
+    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 2, 0xf, &dbg); /* the true debug tag is consumed by sptm_uat_begin */
 
     if ((sptm_debug_flags & 1) == 0 &&
         (*(uint64_t *)(sptm_global_cfg[0x138 / 8] + 8) != 0x4b1d000000000002)) {
@@ -257,12 +260,13 @@ uint64_t sptm_uat_prepare_fw_unmap_continue(uint64_t ctx, uint64_t param_2)
     uint64_t region_start;
     uint64_t result;
     int finish_state;
+    uint64_t dbg;
 
     (void)param_2;
     if ((sptm_debug_flags & 1) != 0) {
         sptm_panic(0x400001c, 0, "__s__s__d_____s___llx__00011410");
     }
-    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 4, 0xf);
+    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 4, 0xf, &dbg);
 
     progress = *(uint64_t *)(uat_obj + 0x28);
     total_segs = *(uint64_t *)(uat_obj + 0x30);
@@ -359,9 +363,10 @@ uint64_t sptm_uat_prepare_fw_unmap_begin(uint64_t ctx, uint64_t guest_paddr, uin
 {
     uint8_t *uat_obj;
     uint64_t phys, local;
+    uint64_t dbg;
 
     if ((sptm_debug_flags & 1) == 0) {
-        uat_obj = (uint8_t *)sptm_uat_begin(ctx, 2, 0xf);
+        uat_obj = (uint8_t *)sptm_uat_begin(ctx, 2, 0xf, &dbg);
         if (*(uint64_t *)(sptm_global_cfg[0x138 / 8] + 8) != 0x4b1d000000000002) {
             sptm_panic(0x4000020, 0, "__s__s__d_____s___llx____s___llx__00011690");
         }
@@ -411,10 +416,9 @@ uint64_t sptm_uat_map_continue(uint64_t ctx)
     uint64_t dbg;
     uint32_t flags, att_val;
     uint8_t obj_state;
-    int seg_done;
+    int seg_done, last_seg;
 
-    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 3, 0xf);
-    dbg = 0;
+    uat_obj = (uint8_t *)sptm_uat_begin(ctx, 3, 0xf, &dbg);
 
     cur_seg = *(uint64_t *)(uat_obj + 0x28);
     seg_idx = *(uint64_t *)(uat_obj + 0x30);
@@ -461,8 +465,8 @@ uint64_t sptm_uat_map_continue(uint64_t ctx)
             flags = *(uint32_t *)(uat_obj + 0x40) & 0x300;
             if (((seg_vaddr >> 0x28 != 1 && flags != 0) ||
                  ((uint32_t)seg_vaddr >> 0x2a != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) ||
-                ((seg_vaddr + size_bytes >> 0x28 != 1 && flags != 0)) ||
-                (seg_vaddr + size_bytes >> 0x2a != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) {
+                (((seg_vaddr + size_bytes) >> 0x28 != 1 && flags != 0)) ||
+                ((seg_vaddr + size_bytes) >> 0x2a != 0 && (*(uint32_t *)(uat_obj + 0x40) & 3) != 0)) {
                 sptm_panic(0x4000009, size_bytes, "__s__s__d_____s___llx____s___llx__000111dc");
             }
             sptm_guest_range_validate(map_base, size_bytes, uat_obj, NULL);
@@ -566,7 +570,7 @@ uint64_t sptm_uat_map_continue(uint64_t ctx)
             } while (rem != 0);
         }
         map_base += n_map * 0x4000;
-        int last_seg = (seg_idx == cur_seg - 1);
+        last_seg = (seg_idx == cur_seg - 1);
         cur_off += n_map;
         seg_done = (cur_off == seg_pages);
         if (seg_done) { seg_idx++; cur_off = 0; }
@@ -651,6 +655,7 @@ void sptm_nvme_ans_sha_reg(uint64_t guest_paddr, uint64_t dbg, uint32_t attr)
     }
     *(uint64_t *)(sptm_uat_nvme_state + 0x9f8) = guest_paddr;
 skip_lock:
+    {
     uint32_t cur = *(uint32_t *)(sptm_uat_nvme_state + 0xa00);
     if (cur != 0xffffffff && (attr & 3) != cur) {
         sptm_panic(0x300000d, dbg, "__s__s__d_____s___llx__00011410");
@@ -2375,5 +2380,231 @@ ps_underflow:
     sptm_assert_fail("__s__dart__s__s__d__ps_refcount_u_0000a303");
 guard_mismatch:
     sptm_assert_fail("__s__state_guard_release_____llx__0000720b");
+}
+
+/* FUN_000ce144 @ 0x000ce144   (est. sptm_t8110dart_map)
+ * Ghidra: void FUN_000ce144(byte param_1, ulong param_2, ulong param_3,
+ *                           ulong param_4, ulong param_5, ulong param_6)
+ * Maps a guest physical range into the DART: validates the IO virtual address
+ * range and attributes, then programs the translation-table entries for each
+ * 16 KiB page, locking the backing pages. param_2 = stream, param_3 = iova,
+ * param_4 = guest paddr, param_5 = size, param_6 = memattr.
+ * SECURITY: rejects out-of-range / non-canonical iova and mismatched PTE
+ *   attributes; verifies the backing page type is consistent with the IO
+ *   window before locking.
+ * Confidence: high */
+void sptm_t8110dart_map(uint8_t dart_id, uint64_t stream, uint64_t iova,
+                        uint64_t guest_paddr, uint64_t size, uint64_t memattr)
+{
+    uint64_t dbg;
+    if (sptm_dart_id_map[dart_id] == -1) {
+        sptm_panic(0x6000006, 0, "__s__s__d_____s___llx__00011410");
+    }
+    uint8_t *percpu = (uint8_t *)sptm_percpu_base(0, &dbg);
+    uint8_t *ctrl = percpu + 0x10;
+    if (0xf < memattr) {
+        sptm_panic(0x600000d, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+    }
+    if (*(uint8_t *)(ctrl + 0xbe0) == 0) {
+        sptm_panic(0x6000016, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+    }
+    uint32_t st = (uint32_t)stream & 0xff;
+    uint64_t ok;
+    if ((*(uint8_t *)(ctrl + 0xbf1) & 1) != 0) {
+        ok = sptm_dart_acquire_v2(ctrl, st, &dbg);
+    } else {
+        ok = sptm_dart_acquire_v1(ctrl, st, &dbg);
+    }
+    if ((ok & 1) == 0) {
+        sptm_panic(0x6000009, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+    }
+    if ((st < *(uint32_t *)(ctrl + 0xb98)) &&
+        ((uint64_t)slice = (uint64_t)*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238), slice != 0) &&
+        ((*(uint8_t *)(slice + 0x1d) & 1) != 0)) {
+        sptm_panic(0x600001f, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+    }
+    if (0x2000000 < size) {
+        sptm_panic(0x600000c, dbg, "__s__s__d_____s___llx__00011410");
+    }
+    if ((7 < memattr) && ((*(uint8_t *)(ctrl + 0xbef) & 1) == 0)) {
+        sptm_panic(0x6000013, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+    }
+    uint64_t cb = sptm_cpu_base();
+    uint8_t *guard = (uint8_t *)(*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238) + 0x1f);
+    if (*guard != 0) {
+        sptm_panic(0x6000001, dbg, "__s__s__d_____s___llx____s___llx__000112f5");
+    }
+    *guard = sptm_uat_guard(cb);
+
+    if (iova >> 0x2a != 0) {
+        sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
+    }
+    uint8_t *slice = *(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238);
+    uint32_t pg = (uint32_t)(iova >> 0xe);
+    if (((pg < *(uint32_t *)(slice + 0x14)) || (*(uint32_t *)(slice + 0x10) <= pg)) &&
+        ((*(uint8_t *)(ctrl + 0xbec) & 1) == 0)) {
+        sptm_panic(0x600000e, dbg, "__s__s__d_____s___llx____s___llx__000112f5");
+    }
+    uint64_t end = iova + size;
+    if (end >> 0x2a != 0) {
+        sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
+    }
+    uint32_t pg_end = (uint32_t)(end >> 0xe);
+    if (((pg_end < *(uint32_t *)(slice + 0x14)) || (*(uint32_t *)(slice + 0x10) <= pg_end)) &&
+        ((*(uint8_t *)(ctrl + 0xbec) & 1) == 0)) {
+        sptm_panic(0x600000e, dbg, "__s__s__d_____s___llx____s___llx__000112f5");
+    }
+    if ((iova & 0x3fffe000000) + 0x2000000 < end) {
+        sptm_panic(0x600000f, dbg, "__s__s__d_____s___llx____s___llx__000111dc");
+    }
+    uint32_t scratch = ((uint32_t)size + 0x3fff + ((uint32_t)iova & 0x3fff)) >> 0xb & 0x1fff8;
+    if (0x4000 < scratch) {
+        sptm_assert_fail("__s__dart__p___s__u___The_scratch_0000728c");
+    }
+    if ((guest_paddr < sptm_guest_mem_start || sptm_guest_mem_end <= guest_paddr) ||
+        (guest_paddr < sptm_guest_mem_start || sptm_guest_mem_end <= guest_paddr)) {
+        sptm_panic(6, scratch, "__s__s__d_____s___llx____s___llx__000112f5");
+    }
+    uint64_t *win = (uint64_t *)sptm_dart_pte_lookup(guest_paddr, scratch, 1, 0);
+
+    uint64_t local = 0;
+    uint64_t tt_dbg;
+    uint8_t *tt = (uint8_t *)sptm_dart_tt_lookup(ctrl, st, iova, &local);
+    tt_dbg = 0;
+
+    uint64_t *range = *(uint64_t **)(*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238) + 8);
+    if ((range == NULL) || (local < range[0]) || (range[1] <= local)) {
+        sptm_kernel_ref(local, 0x44);
+    }
+
+    int sp_count = 0;
+    if (iova < end) {
+        uint32_t tmp = ((uint32_t)memattr & 0xaaaaaaaa) >> 1 | ((uint32_t)memattr & 0x55555555) << 1;
+        uint32_t att = ((tmp & 0xcccccccc) >> 2 | (tmp & 0x33333333) << 2) & 0xf;
+        uint32_t prev_attr = 0xffffffff;
+        int mapped = 0;
+        int changed = 0;
+        uint64_t cur_iova = iova;
+        uint64_t *w = win;
+        do {
+            uint64_t pa = *w;
+            uint16_t *meta;
+            if (pa < sptm_guest_mem_start || sptm_guest_mem_end <= pa) {
+                uint64_t d2;
+                meta = (uint16_t *)sptm_phys_lookup(pa, &d2);
+            } else {
+                meta = (uint16_t *)(sptm_guest_meta_base + ((pa - sptm_guest_mem_start) >> 10 & 0xffffffff0));
+            }
+            char ptype = *(char *)(meta + 1);
+
+            int in_dart = (*(uint64_t *)(ctrl + 0xb88) <= cur_iova) && (cur_iova < *(uint64_t *)(ctrl + 0xb90));
+            if (ptype == '=') {
+                if ((*(uint8_t *)(ctrl + 0xbf6) & 1) == 0) goto bad_type;
+            }
+            if (in_dart && ((*(uint8_t *)(ctrl + 0xbfa) & 1) == 0)) goto bad_type;
+            if (ptype == '=') {
+                if ((!in_dart) && ((*(uint8_t *)(ctrl + 0xbf9) & 1) != 0)) goto bad_type;
+                if (7 < memattr) {
+                    sptm_panic(0x6000013, dbg, "__s__s__d_____s___llx____s___llx__00011690");
+                }
+            } else if (in_dart && ((*(uint8_t *)(ctrl + 0xbf9) & 1) != 0)) {
+                goto bad_type;
+            }
+
+            if (*(uint64_t *)(ctrl + 0xb80) == 0) {
+                if (0x3ffffffffff < pa) goto bad_va;
+            } else if (*(uint64_t *)(ctrl + 0xb80) <= pa) {
+bad_va:
+                sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
+            }
+            uint64_t idx = (cur_iova >> 0xe) & 0x7ff;
+            uint64_t newpte = (uint64_t)att | (cur_iova >> 2) << 0x34 | (pa >> 4) & 0x3ffffffc00;
+            uint64_t chunk = 0x4000 - (cur_iova & 0x3fff);
+            uint64_t rem = end - cur_iova;
+            if (chunk + cur_iova <= end) { rem = chunk; }
+            uint64_t entry = newpte | 0xfff0000000001;
+            if (rem >> 0xe == 0) {
+                entry = ((uint64_t)((int32_t)((int32_t)rem + (int32_t)cur_iova) << 0x26) +
+                         0xfffc000000000 & 0xfff0000000000) | newpte | 1;
+            }
+            uint64_t old = *(uint64_t *)(tt + idx * 8);
+            if ((old & 1) == 0) {
+                sp_count++;
+                uint32_t pa_attr = prev_attr;
+lock_same:
+                uint32_t t = 1;
+                if ((entry & 4) == 0) t = 2;
+                sptm_phys_lock(pa, t);
+                prev_attr = pa_attr;
+            } else {
+                if (((old ^ entry) & 0x3ffffffc00) != 0) {
+                    if ((memattr < 8) || (((uint32_t)old >> 2 & 1) == 0)) goto attr_mismatch;
+                    uint64_t oldpa = (old & 0x3ffffffc00) * 0x10;
+                    if ((*(uint8_t *)(ctrl + 0xbf0) & 1) != 0) {
+                        uint16_t *m2;
+                        if (oldpa < sptm_guest_mem_start || sptm_guest_mem_end <= oldpa) {
+                            uint64_t d3;
+                            m2 = (uint16_t *)sptm_phys_lookup(oldpa, &d3);
+                        } else {
+                            m2 = (uint16_t *)(sptm_guest_meta_base + ((oldpa - sptm_guest_mem_start) >> 10 & 0xfffffff0));
+                        }
+                        if (*(char *)(m2 + 1) != 0x1a) goto attr_mismatch;
+                    }
+                    win[mapped] = oldpa;
+                    uint32_t old_t = (uint32_t)(*(uint64_t *)(tt + idx * 8) >> 2) & 1;
+                    mapped++;
+                    if ((prev_attr != 0xffffffff) && (prev_attr != old_t)) {
+                        sptm_panic(0x6000014, dbg, "__s__s__d_____s___llx____s___llx__00011254");
+                    }
+                    goto lock_same;
+                }
+                if (entry != old) {
+attr_mismatch:
+                    sptm_panic(0x6000023, dbg, "__s__s__d_____s___llx____s___llx__00011452");
+                }
+            }
+            changed |= (entry != old);
+            *(uint64_t *)(tt + idx * 8) = entry;
+            cur_iova = rem + cur_iova;
+            w++;
+        } while (cur_iova < end);
+
+        uint32_t t = 1;
+        if (prev_attr == 0) t = 2;
+        sptm_dsb(3, 3, 0);
+        if (!(7 < memattr || (changed ^ 1) == 0)) {
+            if (((end + 0x3fff >> 0x2a & 1) != 0)) {
+                sptm_panic(0x6000021, dbg, "__s__s__d_____s___llx__00011410");
+            }
+            sptm_dart_tlb_flush(ctrl, st, iova >> 0xe, (uint32_t)(end + 0x3fff >> 0xe) - 1, 0);
+        }
+        for (; mapped != 0; mapped--) {
+            sptm_phys_unlock(*win, t);
+            win++;
+        }
+    } else {
+        sptm_dsb(3, 3, 0);
+    }
+
+    /* Release the per-range refcount once all pages are processed. */
+    uint64_t *range2 = *(uint64_t **)(*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238) + 8);
+    if ((range2 == NULL) || (local < range2[0]) || (range2[1] <= local)) {
+        sptm_kernel_ref_add(local, sp_count);
+        range2 = *(uint64_t **)(*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238) + 8);
+        if (range2 != NULL && range2[0] <= local && local < range2[1]) {
+            goto guard_release;
+        }
+    }
+    sptm_kernel_unref(local);
+guard_release:
+    cb = sptm_cpu_base();
+    guard = (uint8_t *)(*(uint8_t **)(ctrl + (uint64_t)st * 8 + 0x238) + 0x1f);
+    if (*guard == sptm_uat_guard(cb)) {
+        *guard = 0;
+        return;
+    }
+    sptm_assert_fail("__s__state_guard_release_____llx__0000720b");
+bad_type:
+    sptm_panic(0x6000023, dbg, "__s__s__d_____s___llx____s___llx__000111dc");
 }
 

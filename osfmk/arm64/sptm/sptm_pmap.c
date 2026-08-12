@@ -198,6 +198,7 @@ extern sptm_frame_table_entry_t *sptm_walk(sptm_frame_table_entry_t *root, uint6
 extern sptm_ret2_t    sptm_root_ft(uint64_t root_paddr);            /* FUN_000ef4e0 */
 extern sptm_ret2_t    sptm_shared_ft(uint64_t va);                  /* FUN_000ef8c8 */
 extern sptm_ret2_t    sptm_surt_ft(void);                          /* FUN_000f175c */
+extern void __attribute__((noreturn)) sptm_shared_mismatch(void);  /* FUN_000e260c */
 extern sptm_ret2_t    sptm_root_attr(sptm_frame_table_entry_t *root);  /* FUN_000f0584 */
 extern sptm_ret2_t    sptm_parse_region(uint64_t a, uint64_t b, uint64_t max, 
 		sptm_frame_table_entry_t *root, uint64_t *count_out);        /* FUN_000f2304 */
@@ -336,7 +337,7 @@ sptm_wide_shift(const sptm_type_params_t *tp, uint64_t n)
 /* Common per-type FTE flag field preservation: write the byte only when the
  * type's "preserve" bitmask (DAT_00095db0) has the corresponding bit set. */
 static uint8_t
-sptm_preserve_byte(const sptm_type_params_t *tp, uint8_t cur, uint8_t newval, unsigned bit)
+sptm_preserve_byte(const sptm_type_params_t *tp, uint8_t newval, unsigned bit)
 {
 	return ((tp->preserve >> bit) & 1) ? newval : 0;
 }
@@ -386,10 +387,8 @@ sptm_retype(sptm_paddr_t paddr, sptm_frame_type_t current_type,
 	sptm_frame_table_entry_t *fte;
 	uint16_t rc;
 	uint8_t ft_type;
-	uint64_t ti;
 	uint64_t new_type_v = new_type & 0xff;
 	bool cpu_taggable;
-	uint16_t preserve;
 	uint8_t out[2];
 	uint64_t t;
 
@@ -423,7 +422,6 @@ sptm_retype(sptm_paddr_t paddr, sptm_frame_type_t current_type,
 	}
 
 	ft_type = fte->f.type;
-	ti = (uint64_t)ft_type * 0x90;
 
 	/* If a source type is requested, the per-CPU attribute byte must match the
 	 * current type's cache-attribute entry. */
@@ -533,24 +531,23 @@ sptm_retype(sptm_paddr_t paddr, sptm_frame_type_t current_type,
 	} else {
 		cpu_taggable = false;
 	}
-	preserve = g_type_params[ft_type].preserve;
 
 	/* Preserve type-specific FTE flag fields per the current type's mask;
 	 * otherwise zero them. */
 	{
 		uint8_t *fb = fte->bytes.b;
-		fb[4]  = sptm_preserve_byte(&g_type_params[ft_type], fb[4],  fb[4],  4);
-		fb[5]  = sptm_preserve_byte(&g_type_params[ft_type], fb[5],  fb[5],  5);
-		fb[6]  = sptm_preserve_byte(&g_type_params[ft_type], fb[6],  fb[6],  6);
-		fb[7]  = sptm_preserve_byte(&g_type_params[ft_type], fb[7],  fb[7],  7);
-		fb[8]  = sptm_preserve_byte(&g_type_params[ft_type], fb[8],  fb[8],  8);
-		fb[9]  = sptm_preserve_byte(&g_type_params[ft_type], fb[9],  fb[9],  9);
-		fb[10] = sptm_preserve_byte(&g_type_params[ft_type], fb[10], fb[10], 10);
-		fb[11] = sptm_preserve_byte(&g_type_params[ft_type], fb[11], fb[11], 11);
-		fb[12] = sptm_preserve_byte(&g_type_params[ft_type], fb[12], fb[12], 12);
-		fb[13] = sptm_preserve_byte(&g_type_params[ft_type], fb[13], fb[13], 13);
-		fb[14] = sptm_preserve_byte(&g_type_params[ft_type], fb[14], fb[14], 14);
-		fb[15] = sptm_preserve_byte(&g_type_params[ft_type], fb[15], fb[15], 15);
+		fb[4]  = sptm_preserve_byte(&g_type_params[ft_type], fb[4],  4);
+		fb[5]  = sptm_preserve_byte(&g_type_params[ft_type], fb[5],  5);
+		fb[6]  = sptm_preserve_byte(&g_type_params[ft_type], fb[6],  6);
+		fb[7]  = sptm_preserve_byte(&g_type_params[ft_type], fb[7],  7);
+		fb[8]  = sptm_preserve_byte(&g_type_params[ft_type], fb[8],  8);
+		fb[9]  = sptm_preserve_byte(&g_type_params[ft_type], fb[9],  9);
+		fb[10] = sptm_preserve_byte(&g_type_params[ft_type], fb[10], 10);
+		fb[11] = sptm_preserve_byte(&g_type_params[ft_type], fb[11], 11);
+		fb[12] = sptm_preserve_byte(&g_type_params[ft_type], fb[12], 12);
+		fb[13] = sptm_preserve_byte(&g_type_params[ft_type], fb[13], 13);
+		fb[14] = sptm_preserve_byte(&g_type_params[ft_type], fb[14], 14);
+		fb[15] = sptm_preserve_byte(&g_type_params[ft_type], fb[15], 15);
 	}
 
 	/* Per-type retype callback produces the cache attribute (and prot byte). */
@@ -594,7 +591,7 @@ sptm_retype(sptm_paddr_t paddr, sptm_frame_type_t current_type,
 				uint8_t *p = &g_sapt[idx];
 				uint8_t old = *p;
 				if (old == (uint8_t)cur) {
-					*p = (uint8_t)cur & ~(uint8_t)(3 << shift) | (uint8_t)(perm << shift);
+					*p = ((uint8_t)cur & ~(uint8_t)(3 << shift)) | (uint8_t)(perm << shift);
 				}
 				bool did = (old == (uint8_t)cur);
 				cur = old;
@@ -654,17 +651,16 @@ sptm_return_t
 sptm_map_page(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr,
               sptm_pte_t new_pte, sptm_map_flags_t flags)
 {
-	sptm_frame_table_entry_t *root, *leaf, *data_ft, *user_map_ft;
+	sptm_frame_table_entry_t *root, *leaf, *data_ft;
 	sptm_frame_table_entry_t *out_ft = NULL;
 	sptm_ret2_t r;
 	uint64_t *papt;
-	uint64_t pa, cur, merged, pte2, t;
+	uint64_t pa, cur, merged, t;
 	uint8_t b2, b3;
 	uint64_t perm_idx, v5, result = 0, extra_x1 = 0;
 	uint32_t attrs;
 	uint16_t rc, sub_rc;
 	uint64_t cpu;
-	uint8_t out2[2];
 
 	if (1 < flags) {
 		sptm_violation(0x10, vaddr, "%s %s %s %d %s %llx");
@@ -797,7 +793,7 @@ sptm_map_page(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr,
 						sptm_violation(0x19, result, "%s %s %s %d %s %llx %s %s %llx");
 					}
 				}
-				merged = old & 0xf39fffffffffff3fULL | new_pte & 0xc600000000000c0ULL;
+				merged = (old & 0xf39fffffffffff3fULL) | (new_pte & 0xc600000000000c0ULL);
 			}
 			uint64_t wnx = merged & 0x80;
 			if (b3 != XNU_STAGE2_ROOT_TABLE) {
@@ -1001,10 +997,10 @@ sptm_map_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr,
 	sptm_frame_table_entry_t *root, *parent_ft, *data_ft, *tmp;
 	sptm_ret2_t r;
 	uint64_t *papt;
-	uint64_t tte_pa, n, trans_lo, trans_hi, bit_lo, bit_hi;
+	uint64_t tte_pa, bit_lo, bit_hi;
 	uint64_t page_size;
 	uint16_t rc;
-	uint8_t b4, b5, b3;
+	uint8_t b4, b5;
 	uint64_t err, result = 0;
 
 	root = (sptm_frame_table_entry_t *)sptm_get_current_root(root_pt_paddr).lo;
@@ -1092,10 +1088,8 @@ sptm_map_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr,
 		if ((b5 & 0x40) == 0) {
 			bit_lo = bit; bit_hi = 0;
 		}
-		uint64_t rt = FTE_B4(root) * 0x90;
 		bool r_ok = ((g_type_params[FTE_B4(root)].trans_lo & bit_lo) != 0) ||
 		            ((g_type_params[FTE_B4(root)].trans_hi & bit_hi) != 0);
-		uint64_t pt = FTE_B4(parent_ft) * 0x90;
 		bool p_ok = ((g_type_params[FTE_B4(parent_ft)].trans_lo & bit_lo) != 0) ||
 		            ((g_type_params[FTE_B4(parent_ft)].trans_hi & bit_hi) != 0);
 		if (!r_ok || !p_ok) {
@@ -1222,7 +1216,7 @@ sptm_unmap_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr, sptm_pt_level_t
 	sptm_frame_table_entry_t *root, *leaf_ft, *data_ft, *tmp;
 	sptm_ret2_t r;
 	uint64_t *papt;
-	uint64_t va, tte, t, bit_lo, bit_hi, bit;
+	uint64_t va, tte, bit_lo, bit_hi, bit;
 	uint64_t page_size, entries, n, count;
 	uint16_t rc;
 	uint8_t b3;
@@ -1408,6 +1402,7 @@ void
 sptm_surt_alloc(sptm_paddr_t surt_frame, uint8_t surt_index, uint8_t attr_idx,
                 uint8_t flags, sptm_asid_t asid)
 {
+	(void)surt_frame;
 	sptm_frame_table_entry_t *ft;
 	sptm_ret2_t r;
 	uint64_t vaddr, paddr;
@@ -1492,6 +1487,7 @@ sptm_surt_alloc(sptm_paddr_t surt_frame, uint8_t surt_index, uint8_t attr_idx,
 void
 sptm_surt_free(sptm_paddr_t surt_frame, uint8_t surt_index)
 {
+	(void)surt_frame;
 	sptm_frame_table_entry_t *ft;
 	sptm_ret2_t r;
 	uint64_t vaddr, paddr;
@@ -1616,17 +1612,19 @@ sptm_leaf_table_condemn_op(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr, bool 
 	}
 
 release:
-	/* Release data_ft, leaf_ft, root. */
-	if (g_type_params[FTE_B4(data_ft)].type_class != 6) {
-		if ((g_type_params[FTE_B4(data_ft)].flags3 & 1) == 0) {
-			data_ft->f.refcnt = 0;
-			data_ft->f.type = 0;
-		} else {
-			rc = data_ft->f.refcnt;
-			data_ft->f.refcnt = rc - 2;
-			LORelease();
-			if (rc == 0 || (rc & 1) != 0) {
-				sptm_assert_fail("rw_guard_release_shared");
+	/* Release data_ft (only set in the condemn branch), leaf_ft, root. */
+	if (data_ft != NULL) {
+		if (g_type_params[FTE_B4(data_ft)].type_class != 6) {
+			if ((g_type_params[FTE_B4(data_ft)].flags3 & 1) == 0) {
+				data_ft->f.refcnt = 0;
+				data_ft->f.type = 0;
+			} else {
+				rc = data_ft->f.refcnt;
+				data_ft->f.refcnt = rc - 2;
+				LORelease();
+				if (rc == 0 || (rc & 1) != 0) {
+					sptm_assert_fail("rw_guard_release_shared");
+				}
 			}
 		}
 	}
@@ -2335,4 +2333,486 @@ sptm_update_disjoint_multipage(sptm_paddr_t multipage_ops_pa, size_t num_entries
 		}
 		i = next;
 	}
+}
+
+/* ============================================================================
+ * sptm_configure_shared_region — FUN_000f3f60
+ *
+ * Ghidra: void FUN_000f3f60(undefined8 shared_root_pt_paddr,
+ *                           undefined8 start_vaddr, undefined8 page_count)
+ *
+ * Configures the VA range a shared root table will back. The shared root FTE
+ * is claimed, the region is parsed against the shared-root geometry, and the
+ * region bounds are recorded in the global shared-region table
+ * (g_shared_region_papt / g_shared_region_size) with the state machine
+ * 1 -> 2 -> 3 (unconfigured -> configuring -> configured). Must be called once
+ * before sptm_set_shared_region()/sptm_nest_region()/sptm_unnest_region().
+ * Confidence: high (SDK header name + full decompile)
+ */
+void
+sptm_configure_shared_region(sptm_paddr_t shared_root_pt_paddr, sptm_vaddr_t start_vaddr,
+                             unsigned int page_count)
+{
+	sptm_frame_table_entry_t *ft;
+	sptm_ret2_t r;
+	uint64_t count = 0;
+	uint8_t id;
+	uint64_t idx, page_size;
+
+	r = sptm_shared_ft(shared_root_pt_paddr);
+	ft = (sptm_frame_table_entry_t *)r.lo;
+	if (ft->f.refcnt != 2) {
+		sptm_violation(0x3e, r.hi, "%s %s %s %llx");
+	}
+	ft->f.refcnt = 1;
+	if (g_type_params[FTE_B4(ft)].type_class == 1) {
+		sptm_pt_geom_t *geom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(ft)];
+		page_size = *(uint64_t *)((uint8_t *)geom + 0x48);
+		r = sptm_parse_region(start_vaddr, page_count,
+		                      0x1000000000ULL >> (geom->level_shift & 0x3f) & 0xffffffff,
+		                      ft, &count);
+		if (g_type_params[FTE_B4(ft)].type_class == 1) {
+			id = FTE_B4(ft);
+			if (id == 0xff) {
+				sptm_assert_fail("Unexpected shared region ID");
+			}
+			idx = id * 0x20;
+			if ((int8_t)g_shared_region_state[idx] == -1) {
+				sptm_assert_fail("Unexpected shared region sta");
+			}
+			page_size = *(uint64_t *)((uint8_t *)geom + 0x48);
+			if (g_shared_region_state[idx] != 1) {
+				sptm_violation(0x48, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			g_shared_region_state[idx] = 2;
+			g_shared_region_papt[id * 4] = r.lo;
+			g_shared_region_size[idx] = count * page_size;
+			if (g_shared_region_state[idx] == 2) {
+				g_shared_region_state[idx] = 3;
+				ft->f.refcnt = 0;
+				ft->f.type = 0;
+				return;
+			}
+			sptm_assert_fail("Unexpected failure while att");
+		}
+	}
+	sptm_assert_fail("Type %d class of FTE %p %d");
+}
+
+/* ============================================================================
+ * sptm_set_shared_region — FUN_000f4188
+ *
+ * Ghidra: void FUN_000f4188(undefined8 user_root_pt_paddr,
+ *                           undefined8 shared_root_pt_paddr)
+ *
+ * Associates a user root table with a previously-configured shared root table:
+ * binds the shared region into the user address space and bumps the shared
+ * root's refcount. Both roots must share the same page-table attribute index;
+ * the shared region must be configured (state 3) and the user root must not
+ * already reference one.
+ * Confidence: high (SDK header name + full decompile)
+ */
+void
+sptm_set_shared_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_paddr)
+{
+	sptm_frame_table_entry_t *user_ft, *shared_ft, *tmp;
+	sptm_ret2_t r;
+	uint8_t id;
+	uint64_t cpu;
+	uint16_t rc;
+
+	r = sptm_root_ft(user_root_pt_paddr);
+	user_ft = (sptm_frame_table_entry_t *)r.lo;
+	if (user_ft->f.refcnt != 2) {
+		sptm_violation(0x3e, r.hi, "%s %s %s %llx");
+	}
+	user_ft->f.refcnt = 1;
+	r = sptm_shared_ft(shared_root_pt_paddr);
+	shared_ft = (sptm_frame_table_entry_t *)r.lo;
+	if ((g_type_params[FTE_B4(user_ft)].type_class == 1) &&
+	    (g_type_params[FTE_B4(shared_ft)].type_class == 1)) {
+		if ((int8_t)FTE_B12(user_ft) != (int8_t)FTE_B12(shared_ft)) {
+			sptm_violation(0x3c, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+		}
+		id = FTE_B4(shared_ft);
+		if (id == 0xff) {
+			sptm_assert_fail("Unexpected shared region ID");
+		}
+		if (g_shared_region_state[id * 0x20] != 3) {
+			sptm_violation(0x4a, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+		}
+		if ((int8_t)FTE_B4(user_ft) != -1) {
+			sptm_violation(0x3b, r.hi, "%s %s %s %llx");
+		}
+		user_ft->f.word4 = (user_ft->f.word4 & 0xffffff00) | id;
+		if (g_type_params[FTE_B4(user_ft)].type_class == 1) {
+			cpu = sptm_cpu_state_base();
+			sptm_shared_bind(*(uint64_t *)(cpu + 0xa58), user_ft->f.word4, id,
+			                 g_shared_region_papt[id * 4], g_shared_region_size[id * 0x20]);
+			if (g_type_params[FTE_B4(shared_ft)].type_class == 1) {
+				rc = shared_ft->f.sub_refcnt;
+				shared_ft->f.sub_refcnt = rc + 1;
+				if (0xfff4 < rc) {
+					sptm_violation(0x46, 0, "%s %s %s %d %s %llx %s %s %llx");
+				}
+				rc = shared_ft->f.refcnt;
+				shared_ft->f.refcnt = rc - 2;
+				LORelease();
+				if (rc != 0 && (rc & 1) == 0) {
+					user_ft->f.refcnt = 2;
+					user_ft->f.type = 0;
+					rc = user_ft->f.refcnt;
+					user_ft->f.refcnt = rc - 2;
+					LORelease();
+					if (rc != 0 && (rc & 1) == 0) {
+						if (g_type_params[FTE_B4(user_ft)].type_class == 1) {
+							if ((user_ft->f.parent_flags >> 7) & 1) {
+								uint64_t pp = sptm_get_parent_paddr(user_ft);
+								tmp = (pp < g_sptm_first_phys || g_sptm_last_phys <= pp)
+									? &g_invalid_ft : sptm_ft_index(pp);
+								rc = tmp->f.refcnt;
+								tmp->f.refcnt = rc - 2;
+								LORelease();
+								if (rc == 0 || (rc & 1) != 0) {
+									sptm_assert_fail("rw_guard_release_shared");
+								}
+							}
+							return;
+						}
+						goto panic;
+					}
+				}
+				sptm_assert_fail("rw_guard_release_shared");
+			}
+		}
+	}
+panic:
+	sptm_assert_fail("Type %d class of FTE %p %d");
+}
+
+/* ============================================================================
+ * sptm_nest_region — FUN_000f458c
+ *
+ * Ghidra: void FUN_000f458c(undefined8 user_root, undefined8 shared_root,
+ *                           undefined8 start_vaddr, undefined8 page_count)
+ *
+ * Nests a VA range of a configured shared root table into a user address
+ * space: for each entry in the shared root's table it validates the shared
+ * table is XNU_PAGE_TABLE_SHARED (0x15) and installs the shared PTE into the
+ * user root's page table.
+ * Confidence: high (SDK header name + full decompile)
+ */
+void
+sptm_nest_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_paddr,
+                 sptm_vaddr_t start_vaddr, unsigned int page_count)
+{
+	sptm_frame_table_entry_t *user_ft, *shared_ft, *shared_leaf, *user_leaf, *data_ft, *tmp;
+	sptm_ret2_t r;
+	uint64_t *shared_papt, *user_papt;
+	uint64_t count = 0, va, size, page_size, mask, mask2, n;
+	int64_t i;
+	uint8_t id;
+	uint16_t rc;
+
+	user_ft = (sptm_frame_table_entry_t *)sptm_root_ft(user_root_pt_paddr).lo;
+	r = sptm_shared_ft(shared_root_pt_paddr);
+	shared_ft = (sptm_frame_table_entry_t *)r.lo;
+	if (g_type_params[FTE_B4(shared_ft)].type_class != 1) {
+		sptm_assert_fail("Type %d class of FTE %p %d");
+	}
+	id = FTE_B4(shared_ft);
+	if (g_type_params[FTE_B4(user_ft)].type_class != 1) {
+		sptm_assert_fail("Type %d class of FTE %p %d");
+	}
+	if (id != FTE_B4(user_ft)) {
+		sptm_violation(0x49, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	shared_papt = NULL;
+	sptm_pt_geom_t *sgeom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(shared_ft)];
+	r = sptm_parse_region2(start_vaddr, page_count,
+	                       *(uint64_t *)((uint8_t *)sgeom + 0x38) >> (sgeom->level_shift & 0x3f),
+	                       shared_ft, &count);
+	va = r.lo;
+	shared_leaf = sptm_walk(shared_ft, va, 2, 1, &shared_papt);
+	if (shared_leaf == NULL) {
+		sptm_violation(0x23, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	if (id == 0xff) {
+		sptm_assert_fail("Unexpected shared region ID");
+	}
+	page_size = *(uint64_t *)(g_cpu_pt_attr[FTE_B12(user_ft)] + 0x48);
+	size = count * page_size;
+	if ((va < g_shared_region_papt[id * 4]) ||
+	    (g_shared_region_size[id * 0x20] + g_shared_region_papt[id * 4] < size + va)) {
+		sptm_violation(8, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	user_papt = NULL;
+	user_leaf = sptm_walk(user_ft, va, 2, 1, &user_papt);
+	if (user_leaf == NULL) {
+		sptm_violation(0x23, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	{
+		sptm_pt_geom_t *ugeom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(user_ft)];
+		uint64_t lvl = ugeom->rsvd[6];   /* level mask */
+		uint64_t a = *(uint64_t *)((uint8_t *)ugeom + 0x80);
+		uint64_t b = *(uint64_t *)((uint8_t *)ugeom + 0x88);
+		n = (int64_t)(((lvl & b & ((va - page_size) + size)) >> (a & 0x3f)) -
+		              ((b & lvl & va) >> (a & 0x3f)));
+	}
+	if (n != (uint64_t)-1) {
+		uint64_t idx = n + 1;
+		uint64_t *sp = shared_papt;
+		uint64_t *up = user_papt;
+		while (idx--) {
+			uint64_t sp_pte = *sp;
+			if ((~sp_pte & 3) != 0) {
+				sptm_violation(0x1a, 0, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			r = sptm_ft_for_paddr(sp_pte & 0xfffffffff000ULL);
+			data_ft = (sptm_frame_table_entry_t *)r.lo;
+			if ((*sp & 0xfffffffff000ULL) != (sp_pte & 0xfffffffff000ULL)) {
+				sptm_violation(0x53, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			if (data_ft->f.type != XNU_PAGE_TABLE_SHARED) {
+				sptm_violation(0x28, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			if (g_bootstrap_stage_flag != 2) {
+				sptm_assert_fail("Type %d class of FTE %p %d");
+			}
+			if ((FTE_B4(data_ft) != 3) ||
+			    ((g_type_params[FTE_B4(user_leaf)].attr >> 5) & 1) == 0) {
+				sptm_violation(0x28, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			if (*up != 0) {
+				sptm_violation(0x1a, 0, "%s %s %s %d %s %llx %s %s %llx");
+			}
+			*up = sp_pte;
+			sptm_clear_pte(user_leaf, data_ft, 0);
+			if (g_type_params[FTE_B4(data_ft)].type_class != 6) {
+				if ((g_type_params[FTE_B4(data_ft)].flags3 & 1) == 0) {
+					data_ft->f.refcnt = 0;
+					data_ft->f.type = 0;
+				} else {
+					rc = data_ft->f.refcnt;
+					data_ft->f.refcnt = rc - 2;
+					LORelease();
+					if (rc == 0 || (rc & 1) != 0) {
+						sptm_assert_fail("rw_guard_release_shared");
+					}
+				}
+			}
+			sp++;
+			up++;
+		}
+	}
+	DataMemoryBarrier(2, 3);
+	InstructionSynchronizationBarrier();
+
+	if (shared_leaf != shared_ft) {
+		rc = shared_leaf->f.refcnt;
+		shared_leaf->f.refcnt = rc - 2;
+		LORelease();
+		if (rc == 0 || (rc & 1) != 0) {
+			sptm_assert_fail("rw_guard_release_shared");
+		}
+	}
+	rc = shared_ft->f.refcnt;
+	shared_ft->f.refcnt = rc - 2;
+	LORelease();
+	if (rc != 0 && (rc & 1) == 0) {
+		if (user_leaf != user_ft) {
+			rc = user_leaf->f.refcnt;
+			user_leaf->f.refcnt = rc - 2;
+			LORelease();
+			if (rc == 0 || (rc & 1) != 0) {
+				sptm_assert_fail("rw_guard_release_shared");
+			}
+		}
+		rc = user_ft->f.refcnt;
+		user_ft->f.refcnt = rc - 2;
+		LORelease();
+		if (rc != 0 && (rc & 1) == 0) {
+			if (g_type_params[FTE_B4(user_ft)].type_class == 1) {
+				if ((user_ft->f.parent_flags >> 7) & 1) {
+					uint64_t pp = sptm_get_parent_paddr(user_ft);
+					tmp = (pp < g_sptm_first_phys || g_sptm_last_phys <= pp)
+						? &g_invalid_ft : sptm_ft_index(pp);
+					rc = tmp->f.refcnt;
+					tmp->f.refcnt = rc - 2;
+					LORelease();
+					if (rc == 0 || (rc & 1) != 0) {
+						sptm_assert_fail("rw_guard_release_shared");
+					}
+				}
+				return;
+			}
+			goto npanic;
+		}
+	}
+	sptm_assert_fail("rw_guard_release_shared");
+npanic:
+	sptm_assert_fail("Type %d class of FTE %p %d");
+}
+
+/* ============================================================================
+ * sptm_unnest_region — FUN_000f4eec
+ *
+ * Ghidra: void FUN_000f4eec(undefined8 user_root, undefined8 shared_root,
+ *                           undefined8 start_vaddr, undefined8 page_count)
+ *
+ * Removes a previously-nested shared region from a user address space: clears
+ * the shared PTEs from the user root's page table and flushes the TLB. The
+ * user and shared roots must reference the same configured shared region.
+ * Confidence: high (SDK header name + full decompile)
+ */
+void
+sptm_unnest_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_paddr,
+                   sptm_vaddr_t start_vaddr, unsigned int page_count)
+{
+	sptm_frame_table_entry_t *user_ft, *shared_ft, *shared_leaf, *user_leaf, *data_ft, *tmp;
+	sptm_ret2_t r;
+	uint64_t *shared_papt, *user_papt;
+	uint64_t count = 0, va, size, page_size, mask, mask2;
+	uint8_t id, user_attr;
+	uint16_t rc;
+	uint64_t n, i = 0;
+
+	user_ft = (sptm_frame_table_entry_t *)sptm_root_ft(user_root_pt_paddr).lo;
+	shared_ft = (sptm_frame_table_entry_t *)sptm_shared_ft(shared_root_pt_paddr).lo;
+	if ((g_type_params[FTE_B4(shared_ft)].type_class != 1) ||
+	    (g_type_params[FTE_B4(user_ft)].type_class != 1)) {
+		sptm_assert_fail("Type %d class of FTE %p %d");
+	}
+	user_attr = FTE_B12(user_ft);
+	shared_papt = NULL;
+	sptm_pt_geom_t *sgeom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(shared_ft)];
+	r = sptm_parse_region2(start_vaddr, page_count,
+	                       *(uint64_t *)((uint8_t *)sgeom + 0x38) >> (sgeom->level_shift & 0x3f),
+	                       shared_ft, &count);
+	va = r.lo;
+	shared_leaf = sptm_walk(shared_ft, va, 2, 1, &shared_papt);
+	if (shared_leaf == NULL) {
+		sptm_violation(0x23, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	id = FTE_B4(shared_ft);
+	if (id != FTE_B4(user_ft)) {
+		sptm_violation(0x49, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	if (id == 0xff) {
+		sptm_assert_fail("Unexpected shared region ID");
+	}
+	page_size = *(uint64_t *)(g_cpu_pt_attr[user_attr * 8] + 0x48);
+	size = count * page_size;
+	if ((va < g_shared_region_papt[id * 4]) ||
+	    (g_shared_region_size[id * 0x20] + g_shared_region_papt[id * 4] < size + va)) {
+		sptm_violation(8, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	user_papt = NULL;
+	user_leaf = sptm_walk(user_ft, va, 2, 1, &user_papt);
+	if (user_leaf == NULL) {
+		sptm_violation(0x23, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+	}
+	{
+		sptm_pt_geom_t *ugeom = (sptm_pt_geom_t *)g_cpu_pt_attr[FTE_B12(shared_ft)];
+		uint64_t lvl = ugeom->rsvd[6];
+		uint64_t a = *(uint64_t *)((uint8_t *)ugeom + 0x80);
+		uint64_t b = *(uint64_t *)((uint8_t *)ugeom + 0x88);
+		n = (int64_t)(((lvl & b & ((va - page_size) + size)) >> (a & 0x3f)) -
+		              ((b & lvl & va) >> (a & 0x3f))) + 1;
+	}
+	uint8_t *handoff = sptm_handoff_region();
+	uint64_t *collected = (uint64_t *)handoff;
+	uint64_t ncol = 0;
+	uint64_t *up = user_papt;
+	for (uint64_t k = 0; k < n; k++) {
+		uint64_t pte = *up;
+		if ((~pte & 3) == 0) {
+			r = sptm_ft_for_paddr(pte & 0xfffffffff000ULL);
+			data_ft = (sptm_frame_table_entry_t *)r.lo;
+			if (data_ft->f.type == XNU_PAGE_TABLE_SHARED) {
+				if (*up != pte) {
+					sptm_violation(0x1b, r.hi, "%s %s %s %d %s %llx %s %s %llx");
+				}
+				*up = 0;
+				collected[ncol++] = pte & 0xfffffffff000ULL;
+			} else {
+				sptm_shared_mismatch();
+			}
+		}
+		up++;
+	}
+	DataSynchronizationBarrier(2, 2, 0);
+	uint64_t tf = sptm_tlb_root(user_ft).lo;
+	sptm_tlb_op((sptm_frame_table_entry_t *)tf,
+	            va & ~(*(uint64_t *)((uint8_t *)sgeom + 0x78)),
+	            (page_size >> 3 & 0x1fffffff) * n, 4);
+	DataSynchronizationBarrier(2, 3, 1);
+	InstructionSynchronizationBarrier();
+	for (i = 0; i < ncol; i++) {
+		uint64_t pp = collected[i];
+		sptm_frame_table_entry_t *df;
+		if (pp < g_sptm_first_phys || g_sptm_last_phys <= pp) {
+			df = &g_invalid_ft;
+		} else {
+			df = sptm_ft_index(pp);
+		}
+		sptm_clear_pte(user_leaf, df, 1);
+		if (g_type_params[FTE_B4(df)].type_class != 6) {
+			if ((g_type_params[FTE_B4(df)].flags3 & 1) == 0) {
+				df->f.refcnt = 0;
+				df->f.type = 0;
+			} else {
+				rc = df->f.refcnt;
+				df->f.refcnt = rc - 2;
+				LORelease();
+				if (rc == 0 || (rc & 1) != 0) {
+					sptm_assert_fail("rw_guard_release_shared");
+				}
+			}
+		}
+	}
+	if (shared_leaf != shared_ft) {
+		rc = shared_leaf->f.refcnt;
+		shared_leaf->f.refcnt = rc - 2;
+		LORelease();
+		if (rc == 0 || (rc & 1) != 0) {
+			sptm_assert_fail("rw_guard_release_shared");
+		}
+	}
+	rc = shared_ft->f.refcnt;
+	shared_ft->f.refcnt = rc - 2;
+	LORelease();
+	if (rc != 0 && (rc & 1) == 0) {
+		if (user_leaf != user_ft) {
+			rc = user_leaf->f.refcnt;
+			user_leaf->f.refcnt = rc - 2;
+			LORelease();
+			if (rc == 0 || (rc & 1) != 0) {
+				sptm_assert_fail("rw_guard_release_shared");
+			}
+		}
+		rc = user_ft->f.refcnt;
+		user_ft->f.refcnt = rc - 2;
+		LORelease();
+		if (rc != 0 && (rc & 1) == 0) {
+			if (g_type_params[FTE_B4(user_ft)].type_class == 1) {
+				if ((user_ft->f.parent_flags >> 7) & 1) {
+					uint64_t pp = sptm_get_parent_paddr(user_ft);
+					tmp = (pp < g_sptm_first_phys || g_sptm_last_phys <= pp)
+						? &g_invalid_ft : sptm_ft_index(pp);
+					rc = tmp->f.refcnt;
+					tmp->f.refcnt = rc - 2;
+					LORelease();
+					if (rc == 0 || (rc & 1) != 0) {
+						sptm_assert_fail("rw_guard_release_shared");
+					}
+				}
+				return;
+			}
+			goto upanic;
+		}
+	}
+	sptm_assert_fail("rw_guard_release_shared");
+upanic:
+	sptm_assert_fail("Type %d class of FTE %p %d");
 }

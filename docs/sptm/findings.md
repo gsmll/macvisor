@@ -205,3 +205,33 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: ae504: multiple `pacia x16,x17` with keys 0xe2e,0x392e,0xa0a9,0x307a storing into [x8+0x10..0x48]; `str x19,[x8]`; `str x16,[x8+0x20/0x28/0x30/0x38]`; table ptr at 0x100000.
 - **Severity (hypothesis)**: informational — control-flow integrity via PAC on crypto callbacks.
 - **Confidence**: low (function identities inferred from call sites)
+
+## [ringminus1] 000c3434 sptm_nvme_map_pages — TCB WR-permission enforcement
+- **Observation**: When programming an NVMe TCB, SPTM rejects a descriptor that sets both the host-to-IP and IP-to-host write bits, and stores only a masked permission field into the per-entry perms slot.
+- **Evidence**: `if (nvme_state[0x7b9] & 1 && ((tcb[0] ^ 0xffff) & 0x300) == 0) panic "Both WR bits are set"`; perms stored via `*(nvme_state + 0x140 + entry*2) = tcb[0] & 0x1f00`. Page type (4KB/2MB) for the IOMMU page ref is derived from perms bit 0x100.
+- **Severity (hypothesis)**: medium — gates which DMA write directions an NVMe TCB may carry; the guard is gated on `nvme_state[0x7b9]`, so if that config bit is clear the WR-direction check is skipped.
+- **Confidence**: medium
+
+## [ringminus1] 000cfaec / 000cd0bc sptm_t8110dart_map_table / sptm_t8110dart_unmap — DMA address range gating
+- **Observation**: DART map/unmap restrict the physical addresses that can be placed into the IOMMU page tables: a hard top bound (0x3ffffffffff) and an optional per-DART upper bound, plus a per-client guard serializing every table edit.
+- **Evidence**: map_table: `if (dart+0xb80 == 0) { if (paddr > 0x3ffffffffff) panic 0x6000021; } else if (dart+0xb80 <= paddr) panic 0x6000021;` and the leaf FTE is validated to match instance/client/level before the PTE is written. unmap: `if (size > 0x2000000) panic 0x600000c`, and a mixed WR-direction block run is rejected (`0x6000014`), as is an absent block unless flag bit 1 is set (`0x6000022`).
+- **Severity (hypothesis)**: high — these bounds and identity checks gate exactly which physical memory a DART client can DMA to/from.
+- **Confidence**: medium
+
+## [ringminus1] 000f7924 / 000f6368 sptm_guest_dispatch / sptm_guest_enter — guest-state validation
+- **Observation**: Guest dispatch requires interrupts masked (DAIF 0x1c0) and validates the guest state block is an SPTM-managed physical address before copying it into scratch; guest_enter re-validates the per-CPU guest state FTE class and that VTTBR_EL2 still corresponds to the live state on exit.
+- **Evidence**: dispatch: `if (~daif & 0x1c0) panic 0x54` and `if (paddr < mem_low || mem_high <= paddr) panic 6` before `sptm_copy_to_scratch(paddr, 0xa60, 1, 0)`. enter/exit validate `sptm_fte_class[state_type*0x90] == 1` and compare the reconstructed VTTBR against the live register (`panic 0x5d` on mismatch).
+- **Severity (hypothesis)**: medium — prevents entering a guest with a forged/non-SPTM state block or with interrupts enabled mid-dispatch; the VTTBR consistency check on exit catches tampered translation state.
+- **Confidence**: medium
+
+## [ringminus1] 000c5a28 sptm_sart_unmap_region — permission restore + power-canary
+- **Observation**: SART region teardown zeroes the three parallel SART table entries for the region, re-reads them to require they are actually zero, optionally restores saved permissions, and (when the power-gating feature is on) validates a canary magic (-0x54012113) before decrementing the region count, then releases the per-16KB-granule page references.
+- **Evidence**: `if (*(datatbl+o1) || *(datatbl+o2) || *(datatbl+o3)) panic "could not zero sart region"`; canary: `if (*(int*)(sart[0x84] + sart[0x87]) != -0x54012113) panic 0x200000c`; page unref loop over `sz >> 0xe` granules.
+- **Severity (hypothesis)**: medium — prevents stale SART DMA permissions from surviving region teardown; the canary check guards against use of a power-gated (stale) region table.
+- **Confidence**: low
+
+## [ringminus1] 000b2f54 / 000b2928 sptm_uat_set_ctx_id / sptm_uat_remove_ctx_id — ctx-id lifecycle
+- **Observation**: UAT context ids are bound/unbound under a per-CPU guard (uat+0x60); remove clears both VTTBR present bits, bumps start/completion counters, and issues a TLBI (0,9,1,2) or a full UAT flush before the id can be reused; a live context in the per-cpu ctx table faults 0x4000016.
+- **Evidence**: remove: `ttb[1] &= ~1; ttb[0] &= ~1;` then `sptm_tlbi(9,1,2,0, ctx<<0x30)` (or `sptm_uat_tlb_invalidate(...,0x1000000000,0x6000000000,0)`); the current-ctx check `if (uat[0x138] + 0x18 == ctx) panic 0x400001d`.
+- **Severity (hypothesis)**: low — TLB invalidation ordering prevents stale UAT translations from being re-used after ctx teardown.
+- **Confidence**: low
