@@ -244,13 +244,13 @@ void sk_cont_save_c(void);
 void sk_cont_save_d(void);
 void sk_cont_save_e(void);
 word_t sk_cont_set_alloc(word_t block, word_t size);
-long sk_cont_set_find(word_t set, word_t key);
+long sk_cont_set_find(word_t *set, word_t *key);
 word_t sk_cont_set_link(word_t *rec, word_t a2, word_t a3, word_t *flags);
 word_t sk_cont_set_link_b(word_t *rec, word_t a2, word_t a3, word_t *flags);
-word_t sk_cont_set_remove(word_t set, word_t node);
+word_t sk_cont_set_remove(word_t set, word_t *node);
 void sk_cont_set_status(long task, uint status, word_t param_3, long param_4, ...);
 ulong sk_cont_set_status2(long task, ulong want);
-void sk_cont_set_unlink(word_t out, word_t set, word_t node);
+void sk_cont_set_unlink(word_t *out, word_t *set, word_t *node);
 void sk_cont_state_cb(word_t *rec, word_t a2, word_t a3, word_t *state);
 void sk_cont_state_dispatch(long queue, long task);
 void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_arg, word_t wait_cb, ...);
@@ -781,9 +781,9 @@ bool sk_registry_pop(word_t registry, word_t task)
 {
         long node;
 
-        node = sk_cont_set_find(task);
+        node = sk_cont_set_find((word_t *)task, (word_t *)task);
         if (node != 0) {
-                sk_cont_set_remove(registry, node);
+                sk_cont_set_remove(registry, (word_t *)node);
         }
         return node != 0;
 }
@@ -795,7 +795,7 @@ bool sk_registry_pop(word_t registry, word_t task)
  * pair; returns the node or 0.  Traps (SoftwareBreakpoint 0x40b548) on an
  * out-of-range bucket index.
  * Confidence: medium */
-long sk_cont_set_find(word_t set, word_t key)
+long sk_cont_set_find(word_t *set, word_t *key)
 {
         word_t hash, keyv;
         word_t mask;
@@ -864,14 +864,14 @@ long sk_cont_set_find(word_t set, word_t key)
  * Removes a node from the continuation set: unlinks it (FUN_0040b598) and
  * returns its stored value.  Traps if the node is null.
  * Confidence: medium */
-word_t sk_cont_set_remove(word_t set, word_t node)
+word_t sk_cont_set_remove(word_t set, word_t *node)
 {
         word_t value;
         long free_list[3];
 
         if (node != 0) {
                 value = *node;
-                sk_cont_set_unlink(free_list);
+                sk_cont_set_unlink((word_t *)free_list, (word_t *)0, (word_t *)0);
                 long head = free_list[0];
                 free_list[0] = 0;
                 if (head != 0) {
@@ -890,7 +890,7 @@ word_t sk_cont_set_remove(word_t set, word_t node)
  * Confidence: low
  * Notes: node at +8 holds the hash, +0x10 the key; param_1 receives the
  *   {node, bucket-head, flags} free-list record. */
-void sk_cont_set_unlink(word_t out, word_t set, word_t node)
+void sk_cont_set_unlink(word_t *out, word_t *set, word_t *node)
 {
         word_t bucket_count;
         word_t hash;
@@ -1218,7 +1218,7 @@ uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
                         *(ulong *)(newstate + 8) = s2;
                         slot = (word_t *)(s & 0xffffffff);
                         byte *recp = (byte *)newstate;
-                        result = (*cb_slot)(cb_arg2, *rec, rec[1], &slot);
+                        result = ((code)cb_slot)(cb_arg2, *rec, rec[1], &slot);
                         if (result == 0) {
                                 goto wake_done;
                         }
@@ -1244,7 +1244,7 @@ uint sk_cont_wake_loop(long task, word_t state, word_t *rec, word_t cb,
         slot = &newstate;
         recp = &flag;
         cb_slot = &cb;
-        sk_cont_suspend(task, s, s2, 0x40cc24, &stk, 0x40cc28, &slot);
+        sk_cont_suspend(task, s, s2, 0x40cc24, (word_t)&stk, 0x40cc28, (word_t)&slot);
         result = (uint)flag;
 wake_done:
         return result & 1;
@@ -1311,7 +1311,7 @@ void sk_cont_suspend(long task, word_t s_lo, word_t s_hi, word_t cb, word_t cb_a
                 s_lo = x4;
         }
 commit:
-        (*cb)(cb_arg, x4 | x5 << 0x20, s_hi);
+        ((code)cb)(cb_arg, x4 | x5 << 0x20, s_hi);
         if (!flag) {
                 goto exit_atomic;
         }
@@ -1329,7 +1329,7 @@ commit:
                 do {
                         x4 = x5 << 0x20 | s_lo & 0xffffffff;
                         word_t prev_hi = s_hi;
-                        (*wait_cb)(wait_arg_v, x4, s_hi, &wstate);
+                        ((code)wait_cb)(wait_arg_v, x4, s_hi, &wstate);
                         x5 = s_hi;
                         while (1) {
                                 s_lo = *(ulong *)(task + 0x60);
@@ -1413,7 +1413,7 @@ void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb,
                         s3 = *rec;
                         s4 = rec[1];
                         if (cb != 0) {
-                                (*fn)(cb_arg, s3, s4, &slot);
+                                ((code)fn)(cb_arg, s3, s4, &slot);
                                 s3 = *rec;
                                 s4 = rec[1];
                         }
@@ -1433,7 +1433,7 @@ void sk_cont_resume_async(long task, word_t state, word_t *rec, word_t cb,
         slot = &newstate;
         cbs = &fn;
         wslot = slot;
-        sk_cont_suspend(task, *rec, rec[1], 0x40cc9c, &wslot, 0x40cccc, &slot);
+        sk_cont_suspend(task, *rec, rec[1], 0x40cc9c, (word_t)&wslot, 0x40cccc, (word_t)&slot);
         return;
 }
 
@@ -1772,7 +1772,7 @@ void sk_task_local_free_node(long task)
         if (s4 == 0) {
                 return;
         }
-        sk_cont_suspend(task, s5, s4, 0x40cab4, &flag, 0);
+        sk_cont_suspend(task, s5, s4, 0x40cab4, (word_t)&flag, 0);
         return;
 }
 
@@ -1864,7 +1864,7 @@ ulong sk_cont_set_status2(long task, ulong want)
                                         slot = &st;
                                         wslot = &s4;
                                         st = want;
-                                        sk_cont_suspend(task, s4, s5, 0x40cb40, &slot, 0);
+                                        sk_cont_suspend(task, s4, s5, 0x40cb40, (word_t)&slot, 0);
                                 }
                                 return (ulong)(val & 0xff);
                         }

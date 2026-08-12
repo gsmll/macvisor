@@ -1722,8 +1722,12 @@ do_header:
         pu11[7] = (word_t)pu15;
         pu11[8] = (word_t)pu1;
     }
+    /* Ghidra: "Read-only address (ram,0x00657998) is written" — a raw
+     * instruction word 0xf900143f39008040 is emitted to the fixed address
+     * 0x00657998, and the two stores below patch the freshly-allocated job
+     * (0x3900803f to +0x24, 0xf900143f to +0x48). */
     *(uint32_t *)((word_t)pu11 + 0x24) = 0x3900803f;   /* raw instruction word */
-    *(uint32_t *)((word_t)pu11 + 0x24) = 0x3900803f;
+    *(uint32_t *)((word_t)pu11 + 0x48) = 0xf900143f;   /* raw instruction word */
     if (lvar3 != 0) {
         pu11[0x18] = lvar9;
         pu11[0x19] = 0;
