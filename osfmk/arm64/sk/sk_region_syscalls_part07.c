@@ -2829,7 +2829,8 @@ ulong sk_msg_count_cap_b(word_t p1, uint count)
     cl4_result_t c = FUN_00355008(r, *(uint *)/* table+0x54 */0);
     word_t cnt = c.hi;
     if (count == 0) return 0;
-    if (/* w9 */0, c.lo, cnt, c.lo);
+    if (/* w9 */0 < count) {
+        FUN_00356638(*(word_t *)/* x8+0x40 */0, c.lo, cnt, c.lo);
         ulong off = /* x10 */0 + 0x10;
         uint size = 2;
         if ((off & 0xfffffff8) == 0) size = /* w12 */0 + 1;
@@ -2877,7 +2878,7 @@ void sk_cap_validate_commit_b(void)
     cl4_result_t r = FUN_00377dcc(0);
     if (r.hi < 0x40) {
         long *p = (long *)(r.lo + -8);
-        FUN_00351244(p, r.hi, *p + 0x40);
+        FUN_00351244((word_t)p, r.hi, *p + 0x40);
         FUN_0036851c(0);
         FUN_00019858(0);
     }
@@ -2980,7 +2981,7 @@ void sk_entry_copy_commit(void)
     long base = *(long *)/* x9+0x40 */0 + 7;
     if ((sel < 8 && (/*...*/0 & 0x100000) == 0) &&
         (base + (sel + 1 & ~sel) & 0xfffffffffffffff8) + 0x10 < 0x19) {
-        */* x19 */0 = *(uint1_t *)/* x20 */0;
+        /* reg copy: *x19 = *x20 */
         FUN_0006b6f4(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
         FUN_003535e4(base + ((ulong)(/* x19 */0 + sel + 1) & ~sel) & 0xfffffffffffffff8);
@@ -3075,7 +3076,7 @@ word_t sk_msg_slot_read_b(void)
     FUN_0034d724(0);
     FUN_00349830(0);
     FUN_00377824(0);
-    word_t w = FUN_0034f924(0);
+    word_t w = FUN_0034f924(0).lo;
     uint lim = *(uint *)/* table+0x54 */0;
     uint top = (lim < 0x1001) ? 0x1000 : lim;
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
@@ -3177,8 +3178,8 @@ long sk_msg_write_commit_b(void)
         FUN_000839d8(0);
     } else {
         FUN_00352778(0);
-        long r = FUN_00358bb4(0);
-        /* x19 */0;
+        long r = FUN_00358bb4(0).lo;
+        /* x19 */0 = r + /* x8_00 */0;
         FUN_0036b270(0);
     }
     return /* x19 */0;
@@ -3328,7 +3329,8 @@ ulong sk_msg_cap_validate_2(void)
         if (!(2 < p) || p == 3) {
             if (/* w11 */0 < 2) goto fault;
             p = (uint)*(byte *)((long)/* x19 */0 + base);
-        } else if ((/* w11 */0 + base);
+        } else if ((/* w11 */0 >> 0x10) == 0) {
+            p = (uint)*(ushort *)((long)/* x19 */0 + base);
         } else {
             p = *(uint *)((long)/* x19 */0 + base);
         }
@@ -3343,10 +3345,10 @@ ulong sk_msg_cap_validate_2(void)
             val = 4;
             if (idx < 4) val = idx;
             switch (val) {
-            default: val = (uint)(byte)0; break;
-            case 2:   val = (uint)(ushort)0; break;
+            default: val = (uint)(byte)*/* x19 */0; break;
+            case 2:   val = (uint)(ushort)*/* x19 */0; break;
             case 3:   FUN_0034e32c(0); val = /* w9 */0; bit = /* w10_00 */0; a = /* w8_00 */0; break;
-            case 4:   val = 0; break;
+            case 4:   val = */* x19 */0; break;
             }
         }
         return (ulong)(a + (val | bit) + 1);

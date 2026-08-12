@@ -23,6 +23,9 @@ typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
 typedef uint64_t (*sk_code_t)();
 /* Byte-concatenation helper (Ghidra CONCAT11 macro). */
 #define CONCAT11(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CONCAT12(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CONCAT23(a,b) ((((uint64_t)(a)) << 16) | ((uint64_t)(b)))
+#define CONCAT32(a,b) ((((uint64_t)(a)) << 24) | ((uint64_t)(b)))
 #define CONCAT41(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
 
 /* Supervisor-call + debug intrinsics (render of CallSupervisor /
@@ -445,7 +448,7 @@ unsigned long sk_sec_region_find(uintptr_t arg1, unsigned long arg2);
 void sk_sec_regions(unsigned int *arg1,unsigned long arg2);
 unsigned long sk_macho_vmrange(long arg1);
 unsigned long sk_macho_vmrange2(long arg1);
-int * sk_macho_seg(uintptr_t a, int *b, ...);
+int * sk_macho_seg(uintptr_t arg1, int *arg2, ...);
 unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...);
 unsigned long sk_macho_seg_off(long arg1,uint64_t arg2);
 int * sk_macho_uuid(long arg1);
@@ -657,7 +660,7 @@ void sk_syscall_boot(void);
 void thunk_FUN_000558c0(uint64_t arg1,uint64_t arg2,uint64_t arg3);
 uint32_t sk_error_register(unsigned long arg1,unsigned int arg2);
 unsigned long sk_error_get(void);
-void sk_global_get(uintptr_t arg1, ...);
+uintptr_t sk_global_get(uintptr_t arg1, ...);
 void sk_error_clear(void);
 uint64_t sk_error_status(void);
 void sk_error_reset(void);
@@ -665,7 +668,7 @@ void sk_error_set(long arg1);
 void sk_error_emit(uint64_t arg1,long arg2,uint64_t arg3,int arg4);
 void sk_error_fmt(long arg1,uint64_t arg2,uint64_t arg3);
 void sk_error_release(long arg1,uint64_t arg2);
-void sk_error_broadcast(void);
+void sk_error_broadcast(uintptr_t arg1, ...);
 void sk_error_cpu(uint64_t arg1);
 void sk_error_cpu2(uint64_t arg1);
 void sk_error_sync(void);
@@ -1447,7 +1450,7 @@ void sk_ipc_buf_write(long arg1,uint64_t arg2,long arg3,unsigned long arg4)
         t2 = sk_str_05;
 LAB_00051340:
                     
-        sk_panic_msg(0,t2);
+        sk_panic_msg(0,(uintptr_t)(void *)t2);
       }
       t5 = (**(sk_code_t *)(arg3 + 0x28))(arg2,t6 << 0xe,t0);
       t5 = t5 & 0xff;
@@ -1823,7 +1826,7 @@ unsigned long sk_sec_region_find(uintptr_t arg1, unsigned long arg2){
   unsigned int *t2;
   
   if ((sk_global_061 != 0) && (t7 = (unsigned long)*(unsigned int *)(uintptr_t)sk_global_062, *(unsigned int *)(uintptr_t)sk_global_062 != 0)) {
-    t2 = (uintptr_t)sk_global_062 + 1;
+    t2 = (unsigned int *)((uintptr_t)sk_global_062 + 1);
     t1 = t2 + t7;
     t4 = (uintptr_t)sk_global_063 + (uintptr_t)sk_global_064;
     do {
@@ -1911,8 +1914,8 @@ LAB_00051b24:
   sk_global_062 = (uintptr_t)t9;
   sk_global_063 = (uintptr_t)arg1;
   sk_global_064 = (uintptr_t)arg2;
-  t3 = sk_macho_seg_by(0,sk_str_60);
-  t0 = sk_macho_seg_by(0,sk_str_61);
+  t3 = sk_macho_seg_by(0,(uintptr_t)(void *)sk_str_60);
+  t0 = sk_macho_seg_by(0,(uintptr_t)(void *)sk_str_61);
   if ((int)t12 != 0) {
     t13 = 0;
     t5 = t9 + 1;
@@ -2054,14 +2057,14 @@ unsigned long sk_macho_vmrange2(long arg1)
 
 
 /* FUN_00051e0c @ 0x51e0c   (est. sk_macho_seg)
- * Ghidra: int * FUN_00051e0c(uintptr_t a, int *b, ...)
+ * Ghidra: int * FUN_00051e0c(uintptr_t arg1, int *arg2, ...)
  * sk_macho_seg: cL4 sk macho seg operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-int * sk_macho_seg(uintptr_t a, int *b, ...){
+int * sk_macho_seg(uintptr_t arg1, int *arg2, ...){
   sk_code_t t0;
   int *t1;
   int *t2;
@@ -2115,7 +2118,7 @@ unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...){
   t2 = 0;
   do {
     if ((t2 != 0) && ((t3 < t2 + 0x48 || (t2 + 0x48 < t2)))) goto LAB_00051ee0;
-    t2 = sk_macho_seg(arg1,(int *)(uintptr_t)t2);
+    t2 = (unsigned long)(uintptr_t)sk_macho_seg(arg1,(int *)(uintptr_t)t2);
     if (t2 == 0) {
       return 0;
     }
@@ -2912,10 +2915,10 @@ void sk_init_cpu_region(unsigned long arg1)
     if (t1 == 0) {
       sk_global_122 = arg1;
                     
-      sk_register_global();
+      sk_register_global(0);
                     
       sk_global_123 = 0x6af8e0;
-      sk_register_global();
+      sk_register_global(0);
       for (t3 = (unsigned short *)sk_global_get(0x6aff18,2,4); t3 != (unsigned short *)0xffffffffffffffff;
           t3 = (unsigned short *)
                    ((unsigned long)(uint8_t)t3[5] << 0x10 | (unsigned long)*(uint8_t *)((long)t3 + 0xb) << 0x18 |
@@ -3176,7 +3179,7 @@ LAB_00052de4:
           case 0x11:
             if (t5 < t9) goto LAB_000532f0;
 LAB_00052ff4:
-            sk_boot_putc(t9);
+            sk_boot_putc((long)(uintptr_t)t9);
           }
         }
         else {
@@ -3193,8 +3196,8 @@ switchD_00052e18_caseD_1:
           }
           else if (t11 == t13) {
             if (t5 < t9) goto LAB_000532f0;
-            sk_tcb_ai(t9);
-            t7 = (unsigned long *)sk_boot_arg();
+            sk_tcb_ai((uint64_t)(uintptr_t)t9);
+            t7 = (unsigned long *)(uintptr_t)sk_boot_arg();
             if (t7 + 1 < t7) goto LAB_000532f0;
             *t7 = (unsigned long)(uint8_t)t9[1] << 0x10 | (unsigned long)*(uint8_t *)((long)t9 + 3) << 0x18
                        | (unsigned long)*t9 | (unsigned long)*(uint64_t *)(t9 + 2) << 0x20;
@@ -3402,7 +3405,7 @@ uint64_t sk_boot_done(void)
   uint64_t *t1;
   uint64_t t2;
   
-  t1 = (uint64_t *)sk_boot_arg();
+  t1 = (uint64_t *)(uintptr_t)sk_boot_arg();
   t2 = 0;
   if (t1 != (uint64_t *)0x0) {
     if (t1 + 1 < t1) {
@@ -3715,7 +3718,7 @@ uint64_t sk_obj_get(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_release(arg1,1);
+    sk_lock_release((unsigned long *)(uintptr_t)arg1,1);
     return 0;
   }
                     
@@ -3739,7 +3742,7 @@ void sk_obj_put(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_release(arg1,1);
+    sk_lock_release((unsigned long *)(uintptr_t)arg1,1);
     return;
   }
                     
@@ -3814,7 +3817,7 @@ uint32_t sk_cpu_cmp(unsigned long arg1,unsigned long arg2)
   uint32_t t2;
   
   if ((arg1 <= arg1 + 0x10) && (arg2 <= arg2 + 0x10)) {
-    t0 = sk_lock_acquire();
+    t0 = sk_lock_acquire(0,0);
     t2 = 0;
     if (t0 == 0) {
       t2 = 4;
@@ -3886,7 +3889,7 @@ void sk_cpu_init(unsigned long arg1)
   sk_code_t t0;
   
   if (arg1 <= arg1 + 0x10) {
-    sk_lock_prepare();
+    sk_lock_prepare(0);
     return;
   }
                     
@@ -3912,7 +3915,7 @@ uint32_t sk_cpu_ready(unsigned long arg1)
   uint32_t t2;
   
   if (arg1 <= arg1 + 0x10) {
-    t0 = sk_lock_try();
+    t0 = sk_lock_try(0);
     t2 = 0;
     if (t0 == 0) {
       t2 = 3;
@@ -3962,7 +3965,7 @@ uint64_t sk_cpu_wait(unsigned long arg1)
 uint64_t sk_cnode_create(unsigned long *arg1,unsigned long arg2,unsigned int arg3,int arg4,long *arg5,unsigned long arg6, unsigned int arg7)
 {
   uint64_t t4;
-  undefined3 t9;
+  uint32_t t9;
   uint16_t t10;
   sk_code_t t2;
   char t0;
@@ -4007,12 +4010,12 @@ LAB_0005402c:
   stk4._0_2_ = (uint16_t)CONCAT41(0x20000000,t6);
   t10 = (uint16_t)stk4;
   stk4._0_3_ = CONCAT12((char)arg3,(uint16_t)stk4);
-  t4 = CONCAT23(0x2000,(undefined3)stk4);
+  t4 = CONCAT23(0x2000,(uint32_t)stk4);
   stk4 = (unsigned long)t4;
   stk5 = arg2;
   if ((arg7 >> 3 & 1) == 0) {
     t8 = 0;
-    t9 = (undefined3)(t4 >> 0x10);
+    t9 = (uint32_t)(t4 >> 0x10);
     stk4._0_2_ = CONCAT11((arg7 & 0x10) == 0,t6);
     stk4 = (unsigned long)CONCAT32(t9,(uint16_t)stk4);
     if ((arg2 >> 0x1e == 0) && ((arg7 & 0x10) == 0)) {
@@ -4772,7 +4775,7 @@ uint8_t * sk_setup_cpu_regs(long arg1)
                     
                     
   puRam000000000064ccf0 = &sk_global_047;
-  sk_register_global();
+  sk_register_global(0);
   return &sk_global_047;
 }
 
@@ -4797,7 +4800,7 @@ void sk_tcb_set(uint64_t arg1)
   }
   sk_global_124 = arg1;
                     
-  sk_register_global();
+  sk_register_global(0);
   return;
 }
 
@@ -9166,14 +9169,14 @@ unsigned long sk_error_get(void)
 
 
 /* FUN_0005acac @ 0x5acac   (est. sk_global_get)
- * Ghidra: void FUN_0005acac(uintptr_t arg1, ...)
+ * Ghidra: uintptr_t FUN_0005acac(uintptr_t arg1, ...)
  * sk_global_get: cL4 sk global get operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_global_get(uintptr_t arg1, ...){
+uintptr_t sk_global_get(uintptr_t arg1, ...){
   long t0;
   
   if (*arg1 == 0) {
@@ -9250,7 +9253,7 @@ void sk_error_reset(void)
 {
                     
   sk_global_127 = 0x64da80;
-  sk_register_global();
+  sk_register_global(0);
   return;
 }
 
@@ -9411,14 +9414,14 @@ void sk_error_release(long arg1,uint64_t arg2)
 
 
 /* FUN_0005b0bc @ 0x5b0bc   (est. sk_error_broadcast)
- * Ghidra: void FUN_0005b0bc(void)
+ * Ghidra: void FUN_0005b0bc(uintptr_t arg1, ...)
  * sk_error_broadcast: cL4 sk error broadcast operation.
  * Confidence: medium
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
 
-void sk_error_broadcast(void){
+void sk_error_broadcast(uintptr_t arg1, ...){
   char *t0;
   
   t0 = (char *)sk_global_get(0x6b04b8,1,3);
@@ -9945,7 +9948,7 @@ void sk_register_global_3(uint64_t arg1)
                     
   sk_global_128 = 0x6b24d0;
   sk_global_106 = arg1;
-  sk_register_global();
+  sk_register_global(0);
   return;
 }
 
@@ -10497,7 +10500,7 @@ void sk_register_global_2(void)
 {
                     
   sk_global_129 = 0x6b2570;
-  sk_register_global();
+  sk_register_global(0);
   return;
 }
 
@@ -12431,7 +12434,7 @@ void sk_lock_release_recursive(unsigned int arg1,uint64_t arg2,uint64_t arg3,lon
     t0 = sk_str_111;
   }
                     
-  sk_panic_msg(0,t0);
+  sk_panic_msg(0,(uintptr_t)(void *)t0);
 }
 
 
@@ -13241,7 +13244,7 @@ LAB_0005eae4:
     t1 = sk_str_99;
   }
                     
-  sk_panic_msg(0,t1);
+  sk_panic_msg(0,(uintptr_t)(void *)t1);
 }
 
 
@@ -13278,7 +13281,7 @@ long sk_syscall_table_lookup2(unsigned long arg1,unsigned long arg2,unsigned lon
     t2 = sk_str_99;
   }
                     
-  sk_panic_msg(0,t2);
+  sk_panic_msg(0,(uintptr_t)(void *)t2);
 }
 
 
@@ -13607,7 +13610,7 @@ LAB_0005f95c:
       t10 = sk_str_75;
 LAB_0005f974:
                     
-      sk_panic_msg(0,t10);
+      sk_panic_msg(0,(uintptr_t)(void *)t10);
     }
     if (t2 != '\0') {
       sk_global_110 = sk_global_110 + 1;

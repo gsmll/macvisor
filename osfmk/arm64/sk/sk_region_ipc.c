@@ -8188,3 +8188,944 @@ static void sk_ipc_send_data4_14f4ac(uint64_t a, uint64_t b, long c, uint64_t (*
     (void)a; (void)b; (void)c; (void)cb; (void)d; (void)e;
     /* see decompile */
 }
+
+/* ============ 0x14f810 - 0x14fd34 : cL4 IPC syscall core ============ */
+
+/* FUN_0014f810 @ 0x14f810  (est. sk_skip_48)
+ * Skip-list node advance (base+0x48). */
+static int64_t sk_skip_48_14f810(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x48) + (int64_t)*(int32_t *)(p + 0x48);
+}
+
+/* FUN_0014fb10 @ 0x14fb10  (est. sk_svc0_send5)
+ * cL4 syscall 0 send with 5 args. */
+static void sk_svc0_send5_14fb10(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    uint64_t *blk = (uint64_t *)0;
+    blk[0] = b; blk[1] = c; blk[2] = d; blk[3] = e;
+    /* CallSupervisor(0) */
+    blk[0] = b;
+}
+
+/* FUN_0014fb4c @ 0x14fb4c  (est. sk_svc_read)
+ * Reads the per-thread syscall arg slot (param_1+2). */
+static uint64_t sk_svc_read_14fb4c(int idx)
+{
+    /* return *(uint64_t*)(tpidrro_el0 + (idx+2)*8) */
+    return 0;
+}
+
+/* FUN_0014fb5c @ 0x14fb5c  (est. sk_svc0_recv)
+ * cL4 syscall 0 receive: writes {type, arg}, issues SVC 0, returns the result
+ * into *param_4. */
+static void sk_svc0_recv_14fb5c(uint64_t a, uint64_t b, uint64_t c, uint64_t *out)
+{
+    uint64_t *blk = (uint64_t *)0;
+    blk[0] = b; blk[1] = c;
+    /* CallSupervisor(0) */
+    blk[0] = b;
+    *out = b;
+}
+
+/* FUN_0014fb88 @ 0x14fb88  (est. sk_svc0_recv1)
+ * cL4 syscall 0 receive (single arg). */
+static void sk_svc0_recv1_14fb88(uint64_t a, uint64_t b, uint64_t *out)
+{
+    uint64_t *blk = (uint64_t *)0;
+    blk[0] = b;
+    /* CallSupervisor(0) */
+    blk[0] = b;
+    *out = b;
+}
+
+/* FUN_0014fbb4 @ 0x14fbb4  (est. sk_svc0_recv_loop)
+ * cL4 syscall 0 receive loop (repeats while param_1==1). */
+static void sk_svc0_recv_loop_14fbb4(int64_t flag, uint64_t b, int32_t c)
+{
+    uint64_t *blk = (uint64_t *)0;
+    blk[0] = b; blk[1] = (int64_t)c;
+    do { /* CallSupervisor(0) */ blk[0] = b; } while (flag == 1);
+}
+
+/* FUN_0014fbf0 @ 0x14fbf0  (est. sk_svc3_send)
+ * cL4 syscall 3 send with 5 args. */
+static void sk_svc3_send_14fbf0(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g)
+{
+    uint64_t *blk = (uint64_t *)0;
+    blk[0] = c; blk[1] = d; blk[2] = e; blk[3] = f; blk[4] = g;
+    /* CallSupervisor(3) */
+}
+
+/* FUN_0014fc08 @ 0x14fc08  (est. sk_obj_free_wrap_b)
+ * Object free wrapper (FUN_0014baf4). */
+static void sk_obj_free_wrap_14fc08(void) { /* FUN_0014baf4() */ }
+
+/* FUN_0014fc0c @ 0x14fc0c  (est. sk_obj_free_wrap_c)
+ * Duplicate of 0x14fc08. */
+static void sk_obj_free_wrap_14fc0c(void) { /* FUN_0014baf4() */ }
+
+/* FUN_0014fc20 @ 0x14fc20  (est. sk_obj_op_wrap)
+ * Object operation wrapper (FUN_0014c200). */
+static void sk_obj_op_wrap_14fc20(void) { /* FUN_0014c200() */ }
+
+/* FUN_0014fc24 @ 0x14fc24  (est. sk_obj_op_wrap_b)
+ * Duplicate of 0x14fc20. */
+static void sk_obj_op_wrap_14fc24(void) { /* FUN_0014c200() */ }
+
+/* FUN_0014fc38 @ 0x14fc38  (est. sk_obj_op_wrap_c)
+ * Object operation wrapper (FUN_0014bd04). */
+static void sk_obj_op_wrap_14fc38(void) { /* FUN_0014bd04() */ }
+
+/* FUN_0014fc3c @ 0x14fc3c  (est. sk_obj_op_wrap_d)
+ * Duplicate of 0x14fc38. */
+static void sk_obj_op_wrap_14fc3c(void) { /* FUN_0014bd04() */ }
+
+/* FUN_0014fc50 @ 0x14fc50  (est. sk_obj_op_wrap_e)
+ * Object operation wrapper (FUN_0014bcd8). */
+static void sk_obj_op_wrap_14fc50(void) { /* FUN_0014bcd8() */ }
+
+/* FUN_0014fc54 @ 0x14fc54  (est. sk_obj_op_wrap_f)
+ * Duplicate of 0x14fc50. */
+static void sk_obj_op_wrap_14fc54(void) { /* FUN_0014bcd8() */ }
+
+/* FUN_0014fc68 @ 0x14fc68  (est. sk_obj_op_wrap_g)
+ * Object operation wrapper (FUN_0014cdb0). */
+static void sk_obj_op_wrap_14fc68(void) { /* FUN_0014cdb0() */ }
+
+/* FUN_0014fc6c @ 0x14fc6c  (est. sk_obj_op_wrap_h)
+ * Duplicate of 0x14fc68. */
+static void sk_obj_op_wrap_14fc6c(void) { /* FUN_0014cdb0() */ }
+
+/* FUN_0014fc80 @ 0x14fc80  (est. sk_obj_op_wrap_i)
+ * Object operation wrapper (FUN_0014d118). */
+static void sk_obj_op_wrap_14fc80(void) { /* FUN_0014d118() */ }
+
+/* FUN_0014fc84 @ 0x14fc84  (est. sk_obj_op_wrap_j)
+ * Duplicate of 0x14fc80. */
+static void sk_obj_op_wrap_14fc84(void) { /* FUN_0014d118() */ }
+
+/* FUN_0014fc98 @ 0x14fc98  (est. sk_obj_op_wrap_k)
+ * Object operation wrapper (FUN_0014bfcc). */
+static void sk_obj_op_wrap_14fc98(void) { /* FUN_0014bfcc() */ }
+
+/* FUN_0014fc9c @ 0x14fc9c  (est. sk_obj_op_wrap_l)
+ * Duplicate of 0x14fc98. */
+static void sk_obj_op_wrap_14fc9c(void) { /* FUN_0014bfcc() */ }
+
+/* FUN_0014fcb0 @ 0x14fcb0  (est. sk_obj_op_wrap_m)
+ * Object operation wrapper (FUN_0014bb94). */
+static void sk_obj_op_wrap_14fcb0(void) { /* FUN_0014bb94() */ }
+
+/* FUN_0014fcb4 @ 0x14fcb4  (est. sk_obj_op_wrap_n)
+ * Duplicate of 0x14fcb0. */
+static void sk_obj_op_wrap_14fcb4(void) { /* FUN_0014bb94() */ }
+
+/* FUN_0014fcc8 @ 0x14fcc8  (est. sk_obj_op_wrap_o)
+ * Object operation wrapper (FUN_0014bb68). */
+static void sk_obj_op_wrap_14fcc8(void) { /* FUN_0014bb68() */ }
+
+/* FUN_0014fccc @ 0x14fccc  (est. sk_obj_op_wrap_p)
+ * Duplicate of 0x14fcc8. */
+static void sk_obj_op_wrap_14fccc(void) { /* FUN_0014bb68() */ }
+
+/* FUN_0014fce0 @ 0x14fce0  (est. sk_obj_op_wrap_q)
+ * Object operation wrapper (FUN_0014c860). */
+static void sk_obj_op_wrap_14fce0(void) { /* FUN_0014c860() */ }
+
+/* FUN_0014fce4 @ 0x14fce4  (est. sk_obj_op_wrap_r)
+ * Duplicate of 0x14fce0. */
+static void sk_obj_op_wrap_14fce4(void) { /* FUN_0014c860() */ }
+
+/* FUN_0014fcf8 @ 0x14fcf8  (est. sk_obj_op_wrap_s)
+ * Object operation wrapper (FUN_0014c5d0). */
+static void sk_obj_op_wrap_14fcf8(void) { /* FUN_0014c5d0() */ }
+
+/* FUN_0014fcfc @ 0x14fcfc  (est. sk_obj_op_wrap_t)
+ * Duplicate of 0x14fcf8. */
+static void sk_obj_op_wrap_14fcfc(void) { /* FUN_0014c5d0() */ }
+
+/* FUN_0014fd10 @ 0x14fd10  (est. sk_obj_op_wrap_u)
+ * Object operation wrapper (FUN_0014d250). */
+static void sk_obj_op_wrap_14fd10(void) { /* FUN_0014d250() */ }
+
+/* FUN_0014fd14 @ 0x14fd14  (est. sk_obj_op_wrap_v)
+ * Duplicate of 0x14fd10. */
+static void sk_obj_op_wrap_14fd14(void) { /* FUN_0014d250() */ }
+
+/* FUN_0014fd34 @ 0x14fd34  (est. sk_objflag3_get)
+ * Reads the object flag at 0x653e18; returns 0x42. */
+static uint8_t sk_objflag3_get_14fd34(void)
+{
+    /* FUN_0036a1a0(0x653e18, buf, 0, 0) */
+    return 0x42;
+}
+
+/* ============ 0x14fd78 - 0x154404 : cL4 object utils ============ */
+
+/* FUN_0014fd78 @ 0x14fd78  (est. sk_objflag3_set)
+ * Sets the object flag at 0x653e18. */
+static void sk_objflag3_set_14fd78(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e18, buf, 1, 0); uRam_653e18 = v */
+}
+
+/* FUN_0014fdc0 @ 0x14fdc0  (est. sk_objflag3_share)
+ * Shares the object flag at 0x653e18. */
+static void sk_objflag3_share_14fdc0(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e18, v, 0x21, 0); return {&DAT_0007bf58, 0x653e18} */
+}
+
+/* FUN_0014fe24 @ 0x14fe24  (est. sk_objflag4_get)
+ * Reads the object flag at 0x653e19; returns 0x91. */
+static uint8_t sk_objflag4_get_14fe24(void)
+{
+    /* FUN_0036a1a0(0x653e19, buf, 0, 0) */
+    return 0x91;
+}
+
+/* FUN_0014fe68 @ 0x14fe68  (est. sk_objflag4_set)
+ * Sets the object flag at 0x653e19. */
+static void sk_objflag4_set_14fe68(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e19, buf, 1, 0); uRam_653e19 = v */
+}
+
+/* FUN_0014feb0 @ 0x14feb0  (est. sk_objflag4_share)
+ * Shares the object flag at 0x653e19. */
+static void sk_objflag4_share_14feb0(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e19, v, 0x21, 0); return {&LAB_0006f910, 0x653e19} */
+}
+
+/* FUN_0014ff08 @ 0x14ff08  (est. sk_obj_dispatch_a)
+ * Object dispatch (FUN_00150398). */
+static void sk_obj_dispatch_14ff08(void) { /* FUN_00150398() */ }
+
+/* FUN_0014ff0c @ 0x14ff0c  (est. sk_obj_dispatch_b)
+ * Duplicate of 0x14ff08. */
+static void sk_obj_dispatch_14ff0c(void) { /* FUN_00150398() */ }
+
+/* FUN_0014ff74 @ 0x14ff74  (est. sk_obj_dispatch_c)
+ * Object dispatch (FUN_00150398). */
+static void sk_obj_dispatch_14ff74(void) { /* FUN_00150398() */ }
+
+/* FUN_0014ff78 @ 0x14ff78  (est. sk_obj_dispatch_d)
+ * Duplicate of 0x14ff74. */
+static void sk_obj_dispatch_14ff78(void) { /* FUN_00150398() */ }
+
+/* FUN_0014ffe0 @ 0x14ffe0  (est. sk_ipc_op1)
+ * IPC operation (FUN_00377824/FUN_00377bec + FUN_001500a8 handler). */
+static void sk_ipc_op1_14ffe0(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001500a8 @ 0x1500a8  (est. sk_skip_14_b)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_skip_14_1500a8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_001500d8 @ 0x1500d8  (est. sk_obj_dispatch_e)
+ * Object dispatch (FUN_00150398). */
+static void sk_obj_dispatch_1500d8(void) { /* FUN_00150398() */ }
+
+/* FUN_001500dc @ 0x1500dc  (est. sk_obj_dispatch_f)
+ * Duplicate of 0x1500d8. */
+static void sk_obj_dispatch_1500dc(void) { /* FUN_00150398() */ }
+
+/* FUN_00150144 @ 0x150144  (est. sk_ipc_op2)
+ * IPC operation 2 (handler FUN_00150218). */
+static void sk_ipc_op2_150144(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00150218 @ 0x150218  (est. sk_skip_0c_b)
+ * Skip-list node advance (base+0xc). */
+static int64_t sk_skip_0c_150218(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_00150248 @ 0x150248  (est. sk_ipc_op3)
+ * IPC operation 3 (handler FUN_0015032c). */
+static void sk_ipc_op3_150248(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0015032c @ 0x15032c  (est. sk_skip_10_b)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_15032c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0015035c @ 0x15035c  (est. sk_obj_dispatch_g)
+ * Object dispatch (FUN_00150398). */
+static void sk_obj_dispatch_15035c(void) { /* FUN_00150398() */ }
+
+/* FUN_00150360 @ 0x150360  (est. sk_obj_dispatch_h)
+ * Duplicate of 0x15035c. */
+static void sk_obj_dispatch_150360(void) { /* FUN_00150398() */ }
+
+/* FUN_00150398 @ 0x150398  (est. sk_obj_dispatch)
+ * Object dispatch core: resolves via FUN_00377824/FUN_00377bec, invokes the
+ * param_6 callback. */
+static void sk_obj_dispatch_150398(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001504bc @ 0x1504bc  (est. sk_objflag5_get)
+ * Reads the object flag at 0x653e1a; returns 0x49. */
+static uint8_t sk_objflag5_get_1504bc(void)
+{
+    /* FUN_0036a1a0(0x653e1a, buf, 0, 0) */
+    return 0x49;
+}
+
+/* FUN_00150500 @ 0x150500  (est. sk_objflag5_set)
+ * Sets the object flag at 0x653e1a. */
+static void sk_objflag5_set_150500(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e1a, buf, 1, 0); uRam_653e1a = v */
+}
+
+/* FUN_00150548 @ 0x150548  (est. sk_objflag5_share)
+ * Shares the object flag at 0x653e1a. */
+static void sk_objflag5_share_150548(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e1a, v, 0x21, 0); return {&LAB_0006f910, 0x653e1a} */
+}
+
+/* FUN_001505a0 @ 0x1505a0  (est. sk_ipc_op4)
+ * IPC operation 4 (handler FUN_00150674). */
+static void sk_ipc_op4_1505a0(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00150674 @ 0x150674  (est. sk_skip_0c_c)
+ * Skip-list node advance (base+0xc). */
+static int64_t sk_skip_0c_150674(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_001506a4 @ 0x1506a4  (est. sk_ipc_op5)
+ * IPC operation 5 (handler FUN_0015076c). */
+static void sk_ipc_op5_1506a4(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0015076c @ 0x15076c  (est. sk_skip_10_c)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_15076c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0015079c @ 0x15079c  (est. sk_ipc_op6)
+ * IPC operation 6 (handler FUN_00150870). */
+static void sk_ipc_op6_15079c(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00150870 @ 0x150870  (est. sk_skip_14_c)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_skip_14_150870(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_001508a0 @ 0x1508a0  (est. sk_ipc_send_obj)
+ * IPC object send: dispatches via FUN_0014b2f0 with the callback
+ * FUN_00150908. */
+static void sk_ipc_send_obj_1508a0(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* FUN_0014b2f0(a, FUN_00150908, buf, c, 0x666288, d, FUN_006661e0, e) */
+}
+
+/* FUN_00150908 @ 0x150908  (est. sk_ipc_send_obj_cb)
+ * IPC object send callback (FUN_0015079c). */
+static uint64_t sk_ipc_send_obj_cb_150908(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1 = FUN_0015079c(b, ctx[0x20], a, ctx[0x10], ctx[0x18]); if (err) report */
+    return 0;
+}
+
+/* FUN_00150980 @ 0x150980  (est. sk_global_4e3658)
+ * Returns &DAT_004e3658. */
+static void *sk_global_150980(void) { /* return &DAT_004e3658 */ return 0; }
+
+/* FUN_0015098c @ 0x15098c  (est. sk_global_4e3660)
+ * Returns &DAT_004e3660. */
+static void *sk_global_15098c(void) { /* return &DAT_004e3660 */ return 0; }
+
+/* FUN_00150998 @ 0x150998  (est. sk_global_4e3668)
+ * Returns &DAT_004e3668. */
+static void *sk_global_150998(void) { /* return &DAT_004e3668 */ return 0; }
+
+/* FUN_00150b04 @ 0x150b04  (est. sk_obj_memcmp)
+ * Object memory compare (16-byte NEON, like the earlier memcmp helpers). */
+static void sk_obj_memcmp_150b04(uint64_t *a, long b)
+{
+    (void)a; (void)b;
+    /* see decompile */
+}
+
+/* FUN_00153904 @ 0x153904  (est. sk_ipc_op7)
+ * IPC operation 7 (handler FUN_001539d8). */
+static void sk_ipc_op7_153904(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001539d8 @ 0x1539d8  (est. sk_skip_1c)
+ * Skip-list node advance (base+0x1c). */
+static int64_t sk_skip_1c_1539d8(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x1c) + (int64_t)*(int32_t *)(p + 0x1c);
+}
+
+/* FUN_00153a08 @ 0x153a08  (est. sk_ipc_send_obj2)
+ * IPC object send 2 (callback FUN_00153a70). */
+static void sk_ipc_send_obj2_153a08(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e;
+    /* FUN_0014b2f0(a, FUN_00153a70, buf, c, 0x666a50, d, 0x6669a8, e) */
+}
+
+/* FUN_00153a70 @ 0x153a70  (est. sk_ipc_send_obj2_cb)
+ * IPC object send 2 callback (FUN_00153904). */
+static uint64_t sk_ipc_send_obj2_cb_153a70(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1 = FUN_00153904(b, ctx[0x20], a, ctx[0x10], ctx[0x18]) */
+    return 0;
+}
+
+/* FUN_00153b20 @ 0x153b20  (est. sk_const16)
+ * Returns 16-byte {0x11e71c, 0}. */
+static void sk_const16_153b20(void) { /* returns {0x11e71c, 0} */ }
+
+/* FUN_00153b3c @ 0x153b3c  (est. sk_check_then_panic)
+ * Runs callback param_1; if it returns nonzero, return; else runs param_3 and
+ * panics with the error record. */
+static void sk_check_then_panic_153b3c(uint64_t (*a)(void), uint64_t b, uint64_t (*c)(void), uint64_t d, uint64_t e, uint64_t f, uint64_t g, uint64_t h)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h;
+    /* see decompile */
+}
+
+/* FUN_00153be0 @ 0x153be0  (est. sk_obj_get50)
+ * Calls vtable 0x50, stores result. */
+static void sk_obj_get50_153be0(uint64_t *out, uint64_t *ctx)
+{
+    (void)out; (void)ctx;
+    /* *out = (**(code**)(*(long*)*ctx + 0x50))() */
+}
+
+/* FUN_00153c24 @ 0x153c24  (est. sk_obj_set20)
+ * Sets the object at param_2+0x20 (releasing old). */
+static void sk_obj_set20_153c24(uint64_t *p, int64_t *ctx)
+{
+    (void)p; (void)ctx;
+    /* uVar1 = *p; lVar2 = *ctx; FUN_0036a1a0(lVar2+0x20, buf, 1, 0); *(lVar2+0x20) = uVar1 */
+}
+
+/* FUN_00153c68 @ 0x153c68  (est. sk_obj_get20)
+ * Reads the object at ctx+0x20. */
+static uint64_t sk_obj_get20_153c68(void)
+{
+    /* FUN_0036a1a0(ctx+0x20, buf, 0, 0); return *(ctx+0x20) */
+    return 0;
+}
+
+/* FUN_00153c9c @ 0x153c9c  (est. sk_obj_set20_b)
+ * Sets the object at ctx+0x20. */
+static void sk_obj_set20_153c9c(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(ctx+0x20, buf, 1, 0); *(ctx+0x20) = v */
+}
+
+/* FUN_00153cdc @ 0x153cdc  (est. sk_arr_new)
+ * Allocates then runs the array constructor 0x153d1c. */
+static uint64_t sk_arr_new_153cdc(uint64_t p)
+{
+    (void)p;
+    uint64_t v = /* FUN_0036a940() */ 0;
+    /* FUN_00153d1c(p) */
+    return v;
+}
+
+/* FUN_00153d1c @ 0x153d1c  (est. sk_arr_init)
+ * Array initializer: validates the count (>= 0), builds the element array via
+ * FUN_002a3ff0. */
+static void sk_arr_init_153d1c(int64_t n)
+{
+    (void)n;
+    /* see decompile */
+}
+
+/* FUN_00153d5c @ 0x153d5c  (est. sk_arr_iterate)
+ * Array iteration: runs FUN_00153dfc over each element, then flushes via
+ * thunk_FUN_00320078. */
+static void sk_arr_iterate_153d5c(void)
+{
+    /* see decompile */
+}
+
+/* FUN_00153dfc @ 0x153dfc  (est. sk_arr_iter_one)
+ * Array iteration for one element (bounds-checked). */
+static void sk_arr_iter_one_153dfc(int64_t idx, int64_t a, int64_t n, int64_t p)
+{
+    (void)idx; (void)a; (void)n; (void)p;
+    /* if (idx >= 0 && idx < n) FUN_0019cb68(1, a + *(p-8+0x48)*idx, p); else BRK */
+}
+
+/* FUN_00153e34 @ 0x153e34  (est. sk_arr_iterate_td)
+ * Array iterate then teardown. */
+static void sk_arr_iterate_td_153e34(void) { /* FUN_00153d5c(); FUN_0036b6ac() */ }
+
+/* FUN_00153e38 @ 0x153e38  (est. sk_arr_iterate_td_b)
+ * Duplicate of 0x153e34. */
+static void sk_arr_iterate_td_153e38(void) { /* FUN_00153d5c(); FUN_0036b6ac() */ }
+
+/* FUN_00153e5c @ 0x153e5c  (est. sk_arr_append)
+ * Array append: validates the index range, calls the vtable +0x20 write,
+ * increments the count. */
+static void sk_arr_append_153e5c(uint64_t v)
+{
+    (void)v;
+    /* see decompile */
+}
+
+/* FUN_00153fac @ 0x153fac  (est. sk_arr_is_empty)
+ * Returns whether the array count (vtable 0x50) is 0. */
+static bool sk_arr_is_empty_153fac(void)
+{
+    /* return (**(code**)(*ctx + 0x50))() == 0 */
+    return false;
+}
+
+/* FUN_00153fb0 @ 0x153fb0  (est. sk_arr_is_empty_b)
+ * Duplicate of 0x153fac. */
+static bool sk_arr_is_empty_153fb0(void) { /* same as 0x153fac */ return false; }
+
+/* FUN_00153fe4 @ 0x153fe4  (est. sk_arr_is_full)
+ * Returns whether the array count equals the capacity (0x68). */
+static bool sk_arr_is_full_153fe4(void)
+{
+    /* return (**(code**)(*ctx + 0x50))() == (**(code**)(*ctx + 0x68))() */
+    return false;
+}
+
+/* FUN_00154044 @ 0x154044  (est. sk_arr_remove)
+ * Array remove: validates the count (>=1), decrements, copies out the last
+ * element via FUN_00154148. */
+static void sk_arr_remove_154044(uint64_t v)
+{
+    (void)v;
+    /* see decompile */
+}
+
+/* FUN_00154148 @ 0x154148  (est. sk_arr_copy_out)
+ * Array copy-out of one element (bounds-checked). */
+static void sk_arr_copy_out_154148(int64_t idx, int64_t a, int64_t n, int64_t p)
+{
+    (void)idx; (void)a; (void)n; (void)p;
+    /* if (idx >= 0 && idx < n) FUN_001a29a0(a + *(p-8+0x48)*idx, p); else BRK */
+}
+
+/* FUN_0015417c @ 0x15417c  (est. sk_arr_for_each)
+ * Array for-each: iterates the count elements, calling the callback param_1
+ * on each. */
+static void sk_arr_for_each_15417c(uint64_t (*cb)(void))
+{
+    (void)cb;
+    /* see decompile */
+}
+
+/* FUN_00154258 @ 0x154258  (est. sk_arr_remove_all)
+ * Array remove-all: removes and processes each element via the callback. */
+static void sk_arr_remove_all_154258(uint64_t (*cb)(void))
+{
+    (void)cb;
+    /* see decompile */
+}
+
+/* FUN_00154404 @ 0x154404  (est. sk_arr_new_with)
+ * Array constructor with a count: allocates the 0x28 array object. */
+static int64_t *sk_arr_new_with_154404(uint64_t (*cb)(void), uint64_t a, uint64_t b)
+{
+    (void)cb; (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* ============ 0x1545c4 - 0x154e80 : L4Swift NonCopyableUtils array ============ */
+
+/* FUN_001545c4 @ 0x1545c4  (est. sk_arr_type)
+ * Array type resolution (FUN_00021480). */
+static void sk_arr_type_1545c4(void)
+{
+    /* FUN_00021480() */
+}
+
+/* FUN_001545dc @ 0x1545dc  (est. sk_arr_drain)
+ * Array drain: iterates the count elements, copying each out (FUN_00154148)
+ * and releasing via the vtable +0x78; drains the array. */
+static int64_t *sk_arr_drain_1545dc(uint64_t (*cb)(void), uint64_t a, uint64_t b)
+{
+    (void)cb; (void)a; (void)b;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00154854 @ 0x154854  (est. sk_arr_copy_n)
+ * Array copy of the first n elements: allocates the 0x28 array object, copies
+ * the elements (FUN_00154148), and normalizes the count. */
+static int64_t *sk_arr_copy_n_154854(int64_t n)
+{
+    (void)n;
+    /* see decompile */
+    return 0;
+}
+
+/* FUN_00154a1c @ 0x154a1c  (est. sk_arr_get)
+ * Array element get: validates the index, returns {FUN_0001a1c8, element ptr};
+ * panics "L4Swift.NonCopyableUtils.swift" on out-of-range. */
+static void sk_arr_get_154a1c(uint64_t a, int64_t idx)
+{
+    (void)a; (void)idx;
+    /* see decompile */
+}
+
+/* FUN_00154b08 @ 0x154b08  (est. sk_arr_get_b)
+ * Array element get variant. */
+static void sk_arr_get_154b08(uint64_t a, int64_t idx)
+{
+    (void)a; (void)idx;
+    /* see decompile */
+}
+
+/* FUN_00154bf4 @ 0x154bf4  (est. sk_arr_set)
+ * Array element set: validates the index, calls the vtable +8 (release) and
+ * +0x20 (assign) methods. */
+static void sk_arr_set_154bf4(uint64_t v, int64_t idx)
+{
+    (void)v; (void)idx;
+    /* see decompile */
+}
+
+/* FUN_00154d40 @ 0x154d40  (est. sk_cfg_parse)
+ * Config parse (FUN_00374104 with the 0x4e3e08 descriptor). */
+static void sk_cfg_parse_154d40(int64_t p)
+{
+    (void)p;
+    /* see decompile */
+}
+
+/* FUN_00154d9c @ 0x154d9c  (est. sk_objflag6_get)
+ * Reads the object flag at 0x653e3b; returns 0x79. */
+static uint8_t sk_objflag6_get_154d9c(void)
+{
+    /* FUN_0036a1a0(0x653e3b, buf, 0, 0) */
+    return 0x79;
+}
+
+/* FUN_00154de0 @ 0x154de0  (est. sk_objflag6_set)
+ * Sets the object flag at 0x653e3b. */
+static void sk_objflag6_set_154de0(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3b, buf, 1, 0); uRam_653e3b = v */
+}
+
+/* FUN_00154e28 @ 0x154e28  (est. sk_objflag6_share)
+ * Shares the object flag at 0x653e3b. */
+static void sk_objflag6_share_154e28(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3b, v, 0x21, 0); return {&LAB_0006f910, 0x653e3b} */
+}
+
+/* FUN_00154e80 @ 0x154e80  (est. sk_arr_wrap)
+ * Array wrapper (FUN_00155368). */
+static void sk_arr_wrap_154e80(void) { /* FUN_00155368() */ }
+
+/* ============ 0x154edc - 0x15a464 : DART/IO mapper ============ */
+
+/* FUN_00154edc @ 0x154edc  (est. sk_dart_op)
+ * DART operation (FUN_00377824/FUN_00377bec + FUN_001554ac handler). */
+static void sk_dart_op_154edc(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint32_t e, uint64_t f, uint64_t g, uint64_t h)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h;
+    /* see decompile */
+}
+
+/* FUN_00154fd0 @ 0x154fd0  (est. sk_dart_op_w)
+ * DART operation wrapper (0,1,1,0). */
+static void sk_dart_op_154fd0(void)
+{
+    /* auVar3 = FUN_00154edc(a, 0, 1, b, 0, c, d, e) */
+}
+
+/* FUN_00154fd4 @ 0x154fd4  (est. sk_dart_op_wb)
+ * Duplicate of 0x154fd0. */
+static void sk_dart_op_154fd4(void) { /* same as 0x154fd0 */ }
+
+/* FUN_00155018 @ 0x155018  (est. sk_dart_op2)
+ * DART operation wrapper (1,0,0,1). */
+static void sk_dart_op2_155018(void)
+{
+    /* auVar3 = FUN_00154edc(a, b, 0, 0, 1, c, d, e) */
+}
+
+/* FUN_0015501c @ 0x15501c  (est. sk_dart_op2_b)
+ * Duplicate of 0x155018. */
+static void sk_dart_op2_15501c(void) { /* same as 0x155018 */ }
+
+/* FUN_0015505c @ 0x15505c  (est. sk_dart_op3)
+ * DART operation wrapper (1,0,1,0). */
+static void sk_dart_op3_15505c(void)
+{
+    /* auVar3 = FUN_00154edc(a, b, 0, c, 0, d, e, f) */
+}
+
+/* FUN_00155060 @ 0x155060  (est. sk_dart_op3_b)
+ * Duplicate of 0x15505c. */
+static void sk_dart_op3_155060(void) { /* same as 0x15505c */ }
+
+/* FUN_001550a0 @ 0x1550a0  (est. sk_dart_send)
+ * DART send: dispatches via FUN_0014b2f0 with FUN_00155110. */
+static void sk_dart_send_1550a0(uint64_t a, uint64_t b, uint8_t c, uint64_t d, uint8_t e, uint64_t f, uint64_t g, uint64_t h)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h;
+    /* FUN_0014b2f0(a, FUN_00155110, buf, f, 0x666b80, g, 0x666ad0) */
+}
+
+/* FUN_00155110 @ 0x155110  (est. sk_dart_send_cb)
+ * DART send callback. */
+static uint64_t sk_dart_send_cb_155110(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1 = FUN_00154edc(b, ctx[0x20], ctx[0x28], ctx[0x30], ctx[0x38], a, ctx[0x10], ctx[0x18]) */
+    return 0;
+}
+
+/* FUN_00155194 @ 0x155194  (est. sk_dart_send2)
+ * DART send 2. */
+static void sk_dart_send2_155194(uint64_t a, uint64_t b, uint8_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
+    /* see decompile */
+}
+
+/* FUN_00155208 @ 0x155208  (est. sk_dart_wrap)
+ * DART wrapper (FUN_00155270). */
+static void sk_dart_wrap_155208(void) { /* FUN_00155270() */ }
+
+/* FUN_0015520c @ 0x15520c  (est. sk_dart_wrap_b)
+ * Duplicate of 0x155208. */
+static void sk_dart_wrap_15520c(void) { /* FUN_00155270() */ }
+
+/* FUN_00155224 @ 0x155224  (est. sk_skip_14_d)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_skip_14_155224(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_00155254 @ 0x155254  (est. sk_dart_wrap_c)
+ * DART wrapper (FUN_00155270). */
+static void sk_dart_wrap_155254(void) { /* FUN_00155270() */ }
+
+/* FUN_00155258 @ 0x155258  (est. sk_dart_wrap_d)
+ * Duplicate of 0x155254. */
+static void sk_dart_wrap_155258(void) { /* FUN_00155270() */ }
+
+/* FUN_00155270 @ 0x155270  (est. sk_dart_op_core)
+ * DART operation core (handler FUN_00155224). */
+static void sk_dart_op_core_155270(void)
+{
+    /* see decompile */
+}
+
+/* FUN_0015533c @ 0x15533c  (est. sk_dart_wrap2)
+ * DART wrapper 2 (FUN_00155368). */
+static void sk_dart_wrap2_15533c(void) { /* FUN_00155368() */ }
+
+/* FUN_00155340 @ 0x155340  (est. sk_dart_wrap2_b)
+ * Duplicate of 0x15533c. */
+static void sk_dart_wrap2_155340(void) { /* FUN_00155368() */ }
+
+/* FUN_00155368 @ 0x155368  (est. sk_dart_op_core2)
+ * DART operation core 2. */
+static void sk_dart_op_core2_155368(void)
+{
+    /* see decompile */
+}
+
+/* FUN_001554ac @ 0x1554ac  (est. sk_skip_10_d)
+ * Skip-list node advance (base+0x10). */
+static int64_t sk_skip_10_1554ac(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_001554e8 @ 0x1554e8  (est. sk_objflag7_get)
+ * Reads the object flag at 0x653e3c; returns 0xa9. */
+static uint8_t sk_objflag7_get_1554e8(void)
+{
+    /* FUN_0036a1a0(0x653e3c, buf, 0, 0) */
+    return 0xa9;
+}
+
+/* FUN_0015552c @ 0x15552c  (est. sk_objflag7_set)
+ * Sets the object flag at 0x653e3c. */
+static void sk_objflag7_set_15552c(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3c, buf, 1, 0); uRam_653e3c = v */
+}
+
+/* FUN_00155574 @ 0x155574  (est. sk_objflag7_share)
+ * Shares the object flag at 0x653e3c. */
+static void sk_objflag7_share_155574(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3c, v, 0x21, 0); return {&LAB_0006f910, 0x653e3c} */
+}
+
+/* FUN_001555e8 @ 0x1555e8  (est. sk_objflag8_get)
+ * Reads the object flag at 0x653e3d; returns 0xe. */
+static uint8_t sk_objflag8_get_1555e8(void)
+{
+    /* FUN_0036a1a0(0x653e3d, buf, 0, 0) */
+    return 0xe;
+}
+
+/* FUN_0015562c @ 0x15562c  (est. sk_objflag8_set)
+ * Sets the object flag at 0x653e3d. */
+static void sk_objflag8_set_15562c(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3d, buf, 1, 0); uRam_653e3d = v */
+}
+
+/* FUN_00155674 @ 0x155674  (est. sk_objflag8_share)
+ * Shares the object flag at 0x653e3d. */
+static void sk_objflag8_share_155674(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3d, v, 0x21, 0); return {&LAB_0006f910, 0x653e3d} */
+}
+
+/* FUN_001556d8 @ 0x1556d8  (est. sk_objflag9_get)
+ * Reads the object flag at 0x653e3e; returns 0x40. */
+static uint8_t sk_objflag9_get_1556d8(void)
+{
+    /* FUN_0036a1a0(0x653e3e, buf, 0, 0) */
+    return 0x40;
+}
+
+/* FUN_0015571c @ 0x15571c  (est. sk_objflag9_set)
+ * Sets the object flag at 0x653e3e. */
+static void sk_objflag9_set_15571c(uint8_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3e, buf, 1, 0); uRam_653e3e = v */
+}
+
+/* FUN_00155764 @ 0x155764  (est. sk_objflag9_share)
+ * Shares the object flag at 0x653e3e. */
+static void sk_objflag9_share_155764(uint64_t v)
+{
+    (void)v;
+    /* FUN_0036a1a0(0x653e3e, v, 0x21, 0); return {&DAT_0007bf58, 0x653e3e} */
+}
+
+/* FUN_001557bc @ 0x1557bc  (est. sk_dart_wrap3)
+ * DART wrapper 3 (FUN_00155aa4). */
+static void sk_dart_wrap3_1557bc(void) { /* FUN_00155aa4() */ }
+
+/* FUN_00155850 @ 0x155850  (est. sk_dart_wrap3_b)
+ * Duplicate of 0x1557bc. */
+static void sk_dart_wrap3_155850(void) { /* FUN_00155aa4() */ }
+
+/* FUN_001558e4 @ 0x1558e4  (est. sk_dart_wrap4)
+ * DART wrapper 4 (FUN_00155bec). */
+static void sk_dart_wrap4_1558e4(void) { /* FUN_00155bec() */ }
+
+/* FUN_00155934 @ 0x155934  (est. sk_skip_14_e)
+ * Skip-list node advance (base+0x14). */
+static int64_t sk_skip_14_155934(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x14) + (int64_t)*(int32_t *)(p + 0x14);
+}
+
+/* FUN_0015972c @ 0x15972c  (est. sk_dart_map_io)
+ * DART IO-space mapping: resolves the DART mapper descriptor ("mapper_dart",
+ * 0x9630), maps the IO region (FUN_00157e94/FUN_0015881c), and installs the
+ * mapping via FUN_001ef804. This maps an IO range into a DART's address space. */
+static void sk_dart_map_io_15972c(uint64_t a, uint64_t b, uint64_t c, uint64_t *out)
+{
+    (void)a; (void)b; (void)c; (void)out;
+    /* see decompile: "mapper_dart" mapping */
+}
+
+/* FUN_00159b18 @ 0x159b18  (est. sk_dart_map2)
+ * DART mapping 2 (multi-level descriptor resolution). */
+static void sk_dart_map2_159b18(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g, uint64_t h, uint64_t *out, uint64_t (*cb)(void))
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)out; (void)cb;
+    /* see decompile */
+}
+
+/* FUN_00159d28 @ 0x159d28  (est. sk_dart_region_map)
+ * DART region mapping: resolves the region descriptor, maps it via
+ * FUN_0015a464/FUN_0015a7b4/FUN_0015aa58 ("range" check), handling the
+ * DAT_006add10 debug flag. */
+static void sk_dart_region_map_159d28(uint64_t a, uint8_t *b, uint64_t *c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile: "range" 0x97cd, DAT_006add10 debug */
+}
+
+/* FUN_0015a464 @ 0x15a464  (est. sk_dart_region_map2)
+ * DART region mapping 2: builds the mapping record and installs it via the
+ * vtable (0x30/0x20 dispatch). */
+static void sk_dart_region_map2_15a464(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g, uint64_t h, uint8_t (*out)[16])
+{
+    (void)a; (void)b; (void)c; (void)d; (void)e; (void)f; (void)g; (void)h; (void)out;
+    /* see decompile */
+}

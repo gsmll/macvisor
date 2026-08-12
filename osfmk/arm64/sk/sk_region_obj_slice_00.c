@@ -803,7 +803,18 @@ void FUN_00287d34();
 void FUN_00288a80();
 void FUN_002890d8();
 void FUN_0028b918();
-word_t FUN_0028d1a8();
+/*--------------------------------------------------------------------*
+ * FUN_0028d1a8 @ 0x0028d1a8   (est. sk_swift_slice_range_build)
+ * Ghidra: void FUN_0028d1a8(void)
+ * Swift slice range build: wrapper to the sibling slice helper
+ * FUN_0028e94c.
+ * Confidence: low. */
+word_t FUN_0028d1a8(long a1, long a2, word_t a3, word_t a4, long a5)
+{
+    (void)a1; (void)a2; (void)a3; (void)a4; (void)a5;
+    FUN_0028e94c();
+    return 0;
+}
 void FUN_0028adc4();
 uint8_t *FUN_00287e30(long *, word_t, word_t, word_t, long, word_t);
 void thunk_FUN_00287c68();
@@ -5571,6 +5582,12 @@ void FUN_0028c754(word_t p1, long p2)
         (p1, x20 + *(int *)(p2 + 0x28));
 }
 
+/* thunk_FUN_0028c754: register thunk to FUN_0028c754 (same body). */
+void thunk_FUN_0028c754(word_t p1, long p2)
+{
+    FUN_0028c754(p1, p2);
+}
+
 /*--------------------------------------------------------------------*
  * FUN_0028c784 @ 0x0028c784   (est. sk_swift_element_dispatch4)
  * Ghidra: void FUN_0028c784(void)
@@ -6138,4 +6155,523 @@ void FUN_0028d7cc(word_t p1, word_t p2, word_t p3)
     FUN_00351d00();
     ((code)(long)i1)();
     FUN_0008e500(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028da60 @ 0x0028da60   (est. sk_object_service_run_i)
+ * Ghidra: void FUN_0028da60(undefined8 x4)
+ * Object-service run variant: CPU, prelude + dispatch slots, method-table
+ * dispatch (+0x10/+0x20/+8), and the epilogue FUN_0008e500.
+ * Confidence: low (object-service run; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00350950 / FUN_0034d574 /
+ *   FUN_003513a8 / FUN_00377824 / FUN_0034b0b4 / FUN_00355adc /
+ *   FUN_003722e4 / FUN_00348e60 / FUN_003489c0 / FUN_0034c2c8 /
+ *   FUN_0008e388 / FUN_00352bec / FUN_00377bec / FUN_0034e414 /
+ *   FUN_00310e08 / FUN_000a6f88 / FUN_0007c1a4 / FUN_0034b2f8 /
+ *   FUN_003597b4 / FUN_0009461c / FUN_003595a8 / FUN_00351990 /
+ *   FUN_003508cc / FUN_00351f4c / FUN_003518b8 / FUN_0035a190 /
+ *   FUN_003508f0 / FUN_0028c7d8 / FUN_003529a4 / FUN_003504c4 /
+ *   FUN_00310ed4 / FUN_00356284 / FUN_0008e500. */
+void FUN_0028da60(word_t p1, word_t p2, long p3, word_t p4)
+{
+    int i1;
+    word_t u2, u4;
+    long l3, l5;
+    word_t e8, e8_1;
+    code cb = 0;
+    long e16, e16b;
+    long x20, x26, x27;
+    word_t x30;
+    wpair_t v8, v9;
+    code pc6 = 0, pc7 = 0;
+
+    v8.lo = FUN_0008e518();
+    v8.hi = FUN_0008e518();
+    FUN_00350950(p4);
+    l5 = *(long *)(p3 + 0x10);
+    FUN_0034d574();
+    FUN_003513a8(0xff);
+    u2 = FUN_00377824();
+    FUN_0034b0b4();
+    FUN_00355adc();
+    FUN_003722e4();
+    FUN_00348e60();
+    (*DAT_00658c00)(*(word_t *)(e8 + 0x40));
+    FUN_003489c0();
+    (*DAT_00658c00)();
+    FUN_0034c2c8();
+    FUN_0008e388();
+    FUN_00352bec();
+    FUN_00377bec();
+    FUN_0034e414();
+    l3 = (long)FUN_00310e08();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034b2f8();
+    i1 = *(int *)(p3 + 0x24);
+    FUN_003597b4();
+    pc6 = *(code *)(e16b + 0x10);
+    v9.lo = FUN_0009461c();
+    if (pc6) pc6(v9.lo, v9.hi, u2);
+    u4 = FUN_003595a8();
+    if (pc6) pc6(u4, x20 + i1, u2);
+    FUN_00351990();
+    FUN_003508cc();
+    FUN_00351f4c();
+    if (cb) cb();
+    i1 = *(int *)(x26 + 0x30);
+    pc7 = *(code *)(e16b + 0x20);
+    v9.lo = FUN_003518b8();
+    if (pc7) pc7(v9.lo, v9.hi, u2);
+    pc6 = *(code *)(e16b + 8);
+    if (pc6) pc6(x27 + i1, u2);
+    ((code)(*(word_t *)(e16 + 0x20)))();
+    if (pc7) pc7(l5 + *(int *)(l3 + 0x24), x27 + *(int *)(x20 + 0x30), u2);
+    FUN_003508f0();
+    if (pc6) pc6();
+    v9.lo = FUN_0008e388();
+    FUN_0028c7d8(v9.lo, v9.hi, p3);
+    FUN_003529a4();
+    FUN_003504c4();
+    if (cb) cb();
+    FUN_00310ed4(p4);
+    FUN_00356284();
+    if (cb) cb(v8.lo, v8.hi, l5, p4);
+    FUN_0008e500(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028dccc @ 0x0028dccc   (est. sk_object_service_init)
+ * Ghidra: void FUN_0028dccc(void)
+ * Object-service initialiser: allocates the service slots
+ * (FUN_0036a908, tag 0x6dcb), binds the descriptor (FUN_003497a0 /
+ * FUN_00377824), and runs the service loop FUN_0028d7cc; exits via
+ * FUN_0008e500 with the DAT_0028ddec descriptor.
+ * Confidence: low (object-service init; heavy indirect dispatch). */
+void FUN_0028dccc(void)
+{
+    word_t u1, u2;
+    long e8, e8b;
+    code cb = 0;
+    word_t e16, e16b;
+    long x22, x24 = 0;          /* unaff_x24 */
+    word_t x30;
+    wpair_t v3;
+
+    FUN_0008e518();
+    FUN_0034c2e8();
+    u1 = FUN_00358c2c();
+    FUN_0036a908(u1, 0x6dcb);
+    FUN_003528b8();
+    FUN_00351bec();
+    FUN_00350bd8();
+    u1 = *(word_t *)(x22 + 0x10);
+    v3.lo = FUN_003497a0();
+    u1 = FUN_00377824(v3.lo, v3.hi, u1);
+    *(word_t *)(x24 + 0x18) = u1;
+    FUN_00352018();
+    *(word_t *)(x24 + 0x20) = e16;
+    u2 = *(word_t *)(e8 + 0x40);
+    u1 = FUN_0036a908(u2, 0x6dcb);
+    *(word_t *)(x24 + 0x28) = u1;
+    u1 = FUN_0036a908(u2, 0x6dcb);
+    *(word_t *)(x24 + 0x30) = u1;
+    FUN_00349748();
+    FUN_00351214();
+    FUN_00377824();
+    FUN_00348d7c();
+    u2 = FUN_0036a908(*(word_t *)(e8b + 0x40), 0x6dcb);
+    *(word_t *)(x24 + 0x38) = u2;
+    FUN_0035136c(*(word_t *)(e16b + 0x10));
+    if (cb) cb();
+    FUN_0034b508(u1);
+    FUN_0028d7cc(0, 0, 0);
+    FUN_0008e500((word_t)(uintptr_t)(void *)0x28ddec, u1, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028de04 @ 0x0028de04   (est. sk_swift_collection_teardown_cb)
+ * Ghidra: void FUN_0028de04(undefined8,undefined8,code*)
+ * Swift collection teardown callback: branches on the collection flag;
+ * each path runs the teardown helpers and the callback, then releases the
+ * value refs (thunk_FUN_00012568) and exits via FUN_0008e500.
+ * Confidence: low (Swift collection teardown; indirect). */
+void FUN_0028de04(word_t p1, word_t p2, code cb)
+{
+    word_t u1;
+    long l2;
+    code m8 = 0;
+    word_t *x19 = 0;            /* unaff_x19 */
+    wpair_t v3;
+
+    FUN_0008e518();
+    v3.lo = FUN_00357e84();
+    v3.hi = FUN_00357e84();
+    if ((v3.hi & 1) == 0) {
+        FUN_000e15d8(v3.lo, v3.hi, x19[0], x19[1]);
+        if (cb) cb();
+    } else {
+        u1 = x19[3];
+        l2 = x19[4];
+        v3.lo = FUN_0034e4a4(l2);
+        if (m8) m8(v3.lo, v3.hi, u1);
+        FUN_0008e388();
+        FUN_00351f40();
+        if (cb) cb();
+        FUN_0009e234(*(word_t *)(l2 + 8));
+        if (m8) m8();
+    }
+    thunk_FUN_00012568();
+    thunk_FUN_00012568();
+    thunk_FUN_00012568();
+    FUN_0008e500();
+    thunk_FUN_00012568();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028debc @ 0x0028debc   (est. sk_object_service_run_j)
+ * Ghidra: void FUN_0028debc(undefined8 x3)
+ * Object-service run variant: CPU, prelude + dispatch slots, method-table
+ * dispatch (+0x10/+0x20/+8), and the epilogue FUN_0008e500.
+ * Confidence: low (object-service run; heavy indirect dispatch).
+ * Notes: helpers FUN_0008e518 / FUN_00359f08 / FUN_003494e8 /
+ *   FUN_003497b4 / FUN_00351c10 / FUN_00351bec / FUN_0034c158 /
+ *   FUN_00350974 / FUN_00377824 / FUN_0034b0b4 / FUN_00359398 /
+ *   FUN_00348fd8 / FUN_003490d0 / FUN_0034b758 / FUN_0034ff98 /
+ *   FUN_00377bec / FUN_0034c55c / FUN_00310e08 / FUN_000a6f88 /
+ *   FUN_0007c1a4 / FUN_0034aee4 / FUN_00350aa0 / FUN_0035399c /
+ *   FUN_000e15d8 / FUN_0035084c / FUN_003556f4 / FUN_00350c80 /
+ *   FUN_00351130 / FUN_0028c7f0 / FUN_00352870 / FUN_000e72b0 /
+ *   FUN_00355dd8 / FUN_003507d4 / FUN_00350c68 / FUN_001d3fd0 /
+ *   FUN_0008e500. */
+void FUN_0028debc(word_t p1, word_t p2, word_t p3)
+{
+    int i1;
+    long l2, l3;
+    word_t x1, x8, x8_1, x9_0;
+    code cb = 0;
+    long e16, e16b;
+    long x20, x22, x23, x26, x28;
+    word_t x30;
+    wpair_t v6;
+    word_t l8;
+    code pc5 = 0;
+
+    FUN_0008e518();
+    FUN_00359f08();
+    FUN_003494e8();
+    (*DAT_00658c00)(*(word_t *)(x8 + 0x40));
+    FUN_003497b4();
+    FUN_00351c10();
+    FUN_00351bec(p3);
+    FUN_0034c158();
+    FUN_00350974();
+    l2 = (long)FUN_00377824();
+    FUN_0034b0b4();
+    FUN_00359398();
+    FUN_00348fd8();
+    (*DAT_00658c00)(*(word_t *)(x8_1 + 0x40));
+    FUN_003490d0();
+    (*DAT_00658c00)();
+    FUN_0034b758();
+    FUN_0034ff98();
+    FUN_00377bec();
+    FUN_0034c55c();
+    FUN_00310e08();
+    FUN_000a6f88();
+    FUN_0007c1a4();
+    (*DAT_00658c00)();
+    FUN_0034aee4();
+    i1 = *(int *)(x1 + 0x24);
+    l3 = *(long *)(l2 - 8);
+    {
+        code pc4 = *(code *)(l3 + 0x10);
+        v6.lo = FUN_00350aa0();
+        if (pc4) pc4(v6.lo, v6.hi, l2);
+        if (pc4) pc4(x23 + *(int *)(x28 + 0x30), x20 + i1, l2);
+    }
+    FUN_0035399c();
+    FUN_000e15d8();
+    if (cb) cb();
+    i1 = *(int *)(x28 + 0x30);
+    {
+        code pc4 = *(code *)(l3 + 0x20);
+        v6.lo = FUN_0035084c();
+        if (pc4) pc4(v6.lo, v6.hi, l2);
+    }
+    {
+        code pc5 = *(code *)(l3 + 8);
+        if (pc5) pc5(x22 + i1, l2);
+    }
+    ((code)(*(word_t *)(e16 + 0x20)))();
+    FUN_003556f4();
+    {
+        code pc4 = *(code *)(l3 + 0x20);
+        if (pc4) pc4(x26 + x9_0, x22 + x8_1, l2);
+    }
+    FUN_00350c80();
+    if (pc5) pc5();
+    v6.lo = FUN_00351130();
+    FUN_0028c7f0(v6.lo, v6.hi, x1);
+    FUN_00352870();
+    FUN_000e72b0();
+    if (cb) cb();
+    FUN_00355dd8();
+    if (cb) cb();
+    FUN_003507d4(*(word_t *)(e16b + 0x10));
+    if (cb) cb();
+    FUN_00350c68(l8, x20);
+    FUN_001d3fd0();
+    FUN_0008e500(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028e16c @ 0x0028e16c   (est. sk_object_service_run_k)
+ * Ghidra: void FUN_0028e16c(void)
+ * Object-service run variant: prelude + dispatch slots, method-table
+ * dispatch (+8), and the teardown epilogue FUN_003544c8.
+ * Confidence: low (object-service run; heavy indirect dispatch). */
+void FUN_0028e16c(void)
+{
+    word_t x3;
+    long e16, e16b;
+    word_t x30;
+
+    FUN_00354744();
+    FUN_0034c034();
+    FUN_00349e38();
+    FUN_00376820();
+    FUN_00354534();
+    FUN_0008412c();
+    FUN_00257020();
+    FUN_0035125c(x3);
+    FUN_0034d2a4();
+    FUN_0034be0c(0xff);
+    FUN_00377824();
+    FUN_000e15d8();
+    FUN_003516d8();
+    FUN_00377bec();
+    FUN_0034e414();
+    FUN_00310e08();
+    FUN_000841a0();
+    ((code)(*(word_t *)(e16 + 8)))();
+    FUN_0034b3e8();
+    ((code)(*(word_t *)(e16b + 8)))();
+    FUN_003544c8(x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028e23c @ 0x0028e23c   (est. sk_object_service_init2)
+ * Ghidra: void FUN_0028e23c(void)
+ * Object-service initialiser: allocates the service slots (FUN_0036a908,
+ * tag 0xcfa7), binds the descriptor, runs the service loop FUN_0028debc,
+ * and exits via FUN_00353978 / FUN_0007767c.
+ * Confidence: low (object-service init; heavy indirect dispatch). */
+void FUN_0028e23c(void)
+{
+    word_t u1, u3, u4;
+    long l2;
+    word_t e8, e8b;
+    code cb = 0;
+    word_t e16, e16b;
+    long x24 = 0;               /* unaff_x24 */
+    word_t x30;
+    wpair_t v5;
+
+    FUN_00077698();
+    u1 = FUN_0034c2e8();
+    FUN_0036a908(0x38, 0xcfa7);
+    FUN_003528b8();
+    l2 = (long)FUN_003499f0();
+    *(word_t *)(l2 + 0x18) = e16;
+    u4 = *(word_t *)(e8 + 0x40);
+    u3 = FUN_0036a908(u4, 0xcfa7);
+    *(word_t *)(x24 + 0x20) = u3;
+    u3 = FUN_0036a908(u4, 0xcfa7);
+    *(word_t *)(x24 + 0x28) = u3;
+    FUN_00351ad4();
+    FUN_003582f8();
+    FUN_00352840(0xff);
+    FUN_00377824();
+    FUN_00350a04();
+    FUN_00351e14();
+    FUN_00377bec();
+    FUN_0034fce4();
+    FUN_00310e08();
+    FUN_00348e18();
+    u4 = FUN_0036a908(*(word_t *)(e8b + 0x40), 0xcfa7);
+    *(word_t *)(x24 + 0x30) = u4;
+    FUN_00350768(*(word_t *)(e16b + 0x10));
+    if (cb) cb();
+    FUN_0034b508(u3);
+    FUN_0028debc(0, 0, 0);
+    v5.lo = FUN_00353978(u1);
+    FUN_0007767c(v5.lo, v5.hi, x30);
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028e374 @ 0x0028e374   (est. sk_object_service_release)
+ * Ghidra: void FUN_0028e374(void)
+ * Object-service release: enters the service, reads the box descriptor,
+ * runs FUN_0028e16c on either the fast or slow path, releases the value
+ * refs (thunk_FUN_00012568), and exits via FUN_00084234.
+ * Confidence: low (object-service release; indirect). */
+void FUN_0028e374(void)
+{
+    word_t u1, u2, u3, u6;
+    long l4;
+    code cb = 0, m8 = 0;
+    word_t *pu5;
+    word_t x30;
+    wpair_t v7;
+
+    v7.lo = FUN_00084220();
+    v7.hi = FUN_00084220();
+    pu5 = (word_t *)(uintptr_t)v7.lo;
+    u1 = pu5[5];
+    u3 = pu5[6];
+    u6 = pu5[4];
+    if ((v7.hi & 1) == 0) {
+        FUN_000e15d8(v7.lo, v7.hi, pu5[0], pu5[1]);
+        FUN_0028e16c();
+    } else {
+        l4 = pu5[3];
+        u2 = pu5[0];
+        v7.lo = FUN_0034e4a4(l4);
+        if (cb) cb(v7.lo, v7.hi, u2);
+        FUN_0008e388();
+        FUN_003516d8();
+        FUN_0028e16c();
+        FUN_0009e234(*(word_t *)(l4 + 8));
+        if (m8) m8();
+    }
+    thunk_FUN_00012568(u3);
+    thunk_FUN_00012568(u1);
+    thunk_FUN_00012568(u6);
+    FUN_00084234(pu5, x30);
+    thunk_FUN_00012568();
+}
+
+/*--------------------------------------------------------------------*
+ * FUN_0028cdbc @ 0x0028cdbc   (est. sk_swift_buffer_slice_convert)
+ * Ghidra: void FUN_0028cdbc(undefined8 x9)
+ * Swift UnsafeBufferPointer slice conversion: builds the buffer descriptor
+ * (FUN_00377824 / FUN_0031b080 / FUN_000277b8 / FUN_00310cd4), computes
+ * the slice range (FUN_0028d1a8), and either copies the slice via the
+ * offset helpers (FUN_0021867c / FUN_0022b584 / FUN_0028c754 /
+ * FUN_001e4cbc) invoking the completion callback, or traps on a
+ * range/invalid-slice precondition.
+ * Confidence: low (Swift buffer slice conversion; heavy indirect).
+ * Notes: helpers FUN_00377824 / FUN_0031b080 / FUN_000277b8 /
+ *   FUN_00310cd4 / FUN_00027754 / FUN_0028d1a8 / FUN_0031b37c /
+ *   FUN_00376820 / FUN_0021867c / FUN_0022b584 / FUN_0028c754 /
+ *   FUN_001e4cbc; SoftwareBreakpoint(1,0x28d158); fatal on range /
+ *   "Invalid slice". */
+void FUN_0028cdbc(word_t p1, word_t p2, word_t p3, long p4, code cb,
+                  word_t p6, word_t p7, word_t p8, word_t p9)
+{
+    long l1, l2, l4, l9, l10, l11;
+    word_t u5, u6;
+    code pc3 = 0;
+    char *msg, *ty;
+    wpair_t v12;
+    uint8_t st110[8];
+    word_t st108;
+    uint32_t st100[4];
+    word_t lf0, ste8;
+    code le0;
+    uint8_t lb0[16];
+    word_t la0, st98;
+    long l90, l88;
+    uint8_t l80[16];
+    word_t l70, st68;
+    long l58;
+    word_t e8;
+
+    lf0 = p1;
+    ste8 = p6;
+    le0 = cb;
+    l1 = (long)FUN_00377824(0, p9, p7, (void *)0x60e208, (void *)0x60e230);
+    l9 = *(long *)(l1 - 8);
+    (*DAT_00658c00)(*(long *)(l9 + 0x40) + 0xf & 0xfffffffffffffff0ull);
+    l10 = -e8;
+    l11 = (long)&lf0 + l10;
+    l2 = (long)FUN_0031b080(0, p7, p9);
+    pc3 = (code)(uintptr_t)FUN_000277b8(p9);
+    if (pc3) pc3(l11, p7, p9);
+    pc3 = (code)(uintptr_t)FUN_00310cd4(p9);
+    l4 = (long)pc3(l11, p4, p7, p9);
+    ((code)(*(word_t *)(l9 + 8)))(l11, l1);
+    l1 = (long)pc3(p4, p4 + *(int *)(l2 + 0x24), p7, p9);
+    if (SCARRY8(l4, l1)) __builtin_trap();   /* SoftwareBreakpoint(1,0x28d158) */
+    if (l4 + l1 < l4) {
+        *(uint32_t *)((long)st100 + l10) = 1;
+        *(word_t *)((long)&st108 + l10) = 0x2f9;
+        st110[l10] = 2;
+        msg = "Range requires lowerBound < upperBound";
+        ty = "Swift.Range";
+        u5 = 0x27;
+        u6 = 0x11;
+    } else {
+        u5 = FUN_00027754(p9);
+        l2 = (long)FUN_00377824(0, u5, p7, (void *)0x611b24, (void *)0x611b34);
+        v12.lo = FUN_0028d1a8(l4, l4 + l1, p2, p3, l2);
+        l70 = p2;
+        st68 = p3;
+        l80[0] = (uint8_t)v12.lo;
+        u5 = FUN_0031b37c(0xff, l2);
+        u6 = FUN_00376820((void *)0x4edd94, u5);
+        u6 = FUN_0031b080(0, u5, u6);
+        FUN_0021867c(lb0);
+        if (-1 < (long)(int8_t)lb0[0]) {
+            l70 = p2;
+            st68 = p3;
+            l80[0] = (uint8_t)v12.lo;
+            FUN_0022b584(&l58, u6);
+            l1 = l58;
+            la0 = p2;
+            st98 = p3;
+            lb0[0] = (uint8_t)v12.lo;
+            thunk_FUN_0028c754((word_t)&l90, (long)u6);
+            if (l1 <= l88) {
+                l70 = p2;
+                st68 = p3;
+                l80[0] = (uint8_t)v12.lo;
+                u6 = FUN_00376820((void *)0x4edd94, u5);
+                u5 = FUN_0031b080(0, u5, u6);
+                thunk_FUN_0028c754((word_t)&l90, 0);
+                l10 = l90;
+                if (l90 == 0) {
+                    l10 = 0;
+                } else {
+                    la0 = p2;
+                    st98 = p3;
+                    lb0[0] = (uint8_t)v12.lo;
+                    FUN_0021867c(&l58, u5);
+                    l10 = l10 + *(long *)(*(long *)(l2 - 8) + 0x48) * l58;
+                }
+                l70 = p2;
+                st68 = p3;
+                l80[0] = (uint8_t)v12.lo;
+                FUN_0022b584(&l90, u5);
+                la0 = p2;
+                st98 = p3;
+                lb0[0] = (uint8_t)v12.lo;
+                FUN_0021867c(&l58, u5);
+                FUN_001e4cbc(l10, l90 - l58);
+                if (le0) le0(lf0);
+                return;
+            }
+        }
+        *(uint32_t *)((long)st100 + l10) = 1;
+        *(word_t *)((long)&st108 + l10) = 0x7db;
+        st110[l10] = 2;
+        msg = "Invalid slice";
+        ty = "Swift.UnsafeBufferPointer";
+        u5 = 0xd;
+        u6 = 0x1f;
+    }
+    SWF_FATAL(msg, u5, ty, u6, 0);
+    __builtin_trap();
 }

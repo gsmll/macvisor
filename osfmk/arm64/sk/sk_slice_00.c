@@ -218,8 +218,7 @@ unsigned long lite_zone_alloc_large(long zone, long param_2, unsigned long param
                                     unsigned long param_4, unsigned int param_5);
 void lite_zone_alloc_class(long zone, unsigned long size, unsigned long param_3,
                            unsigned long param_4);
-void lite_zone_alloc_round(unsigned long zone, unsigned long param_2, unsigned long param_3,
-                           unsigned long param_4, unsigned int param_5);
+void lite_zone_alloc_round();
 void lite_zone_free_block(unsigned char *zone, unsigned long block, unsigned long param_3,
                           int param_4);
 void lite_zone_free_small(long zone, unsigned long *ptr);
@@ -232,6 +231,8 @@ long lite_zone_free_walk_full(long zone, unsigned long type, char *meta, long *f
 void lite_zone_link_free();
 void lite_zone_segment_alloc(unsigned char *zone, unsigned long size, unsigned long param_3,
                              long *out);
+unsigned long lite_zone_segment_alloc_ret(unsigned char *zone, unsigned long size,
+                                          unsigned long param_3, long *out);
 unsigned long lite_zone_segment_alloc2(long zone, unsigned long type, unsigned long tag,
                                      unsigned long param_4, unsigned long count,
                                      unsigned long size);
@@ -256,16 +257,16 @@ void lite_zone_push_free(unsigned long param_1, unsigned long *param_2, unsigned
 void lite_zone_lock_op(unsigned long *lock, int op);
 void lite_zone_lock_all(long param_1, unsigned long param_2);
 void lite_zone_assign_block_x(long param_1, unsigned long *param_2);
-unsigned long lite_zone_assign_block(long param_1, unsigned long *param_2, long param_3,
-                                     unsigned long param_4, int param_5, unsigned long param_6,
-                                     unsigned char *param_7, unsigned long param_8);
+long lite_zone_assign_block(long param_1, unsigned long *param_2, long param_3,
+                            unsigned long param_4, int param_5, unsigned long param_6,
+                            unsigned char *param_7, unsigned long param_8);
 void lite_zone_reset_block(unsigned long param_1, long param_2, unsigned long *param_3,
                            int param_4, int param_5);
 void lite_zone_free_block_pages(long param_1, unsigned long param_2, long param_3,
                                 unsigned long *param_4);
 void lite_zone_check_size(unsigned long param_1, unsigned long param_2, unsigned long param_3);
 void lite_zone_lock_fail(void);
-unsigned long lite_zone_malloc(long zone, unsigned long size, unsigned long param_3);
+long lite_zone_malloc(long zone, unsigned long size, unsigned long param_3);
 unsigned long *lite_zone_realloc(long zone, unsigned long *ptr, unsigned long new_size,
                                  unsigned long param_4);
 void lite_zone_calloc(long zone, unsigned long param_2, unsigned long size,
@@ -316,7 +317,10 @@ long lite_zone_pop_partial(long param_1, long param_2);
 void lite_zone_set_generation(long param_1, long param_2, unsigned int param_3, int param_4);
 void lite_zone_pop_free(unsigned long param_1, unsigned long *param_2, unsigned int param_3,
                         unsigned char *param_4);
-void lite_zone_scan_run(void);
+unsigned long *lite_zone_scan_run(long param_1, long param_2, unsigned long *param_3,
+                                  unsigned long param_4, unsigned char *param_5,
+                                  unsigned char *param_6);
+void lite_zone_bug3(void);
 void lite_zone_merge_blocks(long region, unsigned int param_2, unsigned int param_3);
 long lite_zone_carve(long region, int param_2, unsigned long param_3, unsigned int param_4);
 void lite_zone_after_push(long param_1, long param_2, long param_3, unsigned long param_4);
@@ -1259,12 +1263,12 @@ void lite_zone_init_memory(long param_1)
         a1 = 0;
     } else {
         base = *(long *)(param_1 + 0x200);
-        a1 = sk_alloc_zone_0(0, lim + 0x100000000, 0x19, 1, 0x200, 4, base + 0x90);
+        a1 = sk_alloc_zone_0(0, lim + 0x100000000, 0x19, 1, 0x200, 4, (void **)(base + 0x90));
         if (a1 == 0) sk_bug_panic("BUG IN LIBMALLOC: %s");  /* 005a8f7f */
         base = base + 0x70;
     }
     v = *(long *)(param_1 + 0x200);
-    a2 = sk_alloc_zone_0(0, 0x140000000, 0x19, 1, 0x200, 5, v + 0x20);
+    a2 = sk_alloc_zone_0(0, 0x140000000, 0x19, 1, 0x200, 5, (void **)(v + 0x20));
     if (a2 == 0) sk_bug_panic("BUG IN LIBMALLOC: %s");  /* 005a8f7f */
     *(unsigned long *)(v + 0x50) = a2;
     *(unsigned long *)(v + 0x58) = 0x140000000;
@@ -1465,14 +1469,14 @@ unsigned long lite_zone_alloc_block(unsigned char *zone, unsigned long type,
         r = 0;
         if (0x3fffff < size) r = size;
         out = 0;
-        rc = (int)lite_zone_segment_alloc(zone, (unsigned long)param_4 << 0xe, r, (long *)&out);
-        if (rc != 0) return out;
+        { unsigned long segrc = lite_zone_segment_alloc_ret(zone, (unsigned long)param_4 << 0xe, r, (long *)&out);
+          if (segrc != 0) return out; }
         return 0;
     }
     l2 = zone + 0x10;
     rc = sk_lock_acquire((unsigned long)l2);
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");   /* 005a9a23 */
-    r = lite_zone_free_walk(zone, type, tag, param_5, param_4, size);
+    r = lite_zone_free_walk((long)zone, type, (char *)(unsigned long)tag, (long *)param_5, param_4, size);
     if (r == 0) {
         rc2 = sk_lock_try((unsigned long)(zone + 0x20));
         rc3 = sk_lock_release((unsigned long)l2);
@@ -1484,7 +1488,7 @@ unsigned long lite_zone_alloc_block(unsigned char *zone, unsigned long type,
             if (rc2 != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
             rc2 = sk_lock_acquire((unsigned long)l2);
             if (rc2 != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
-            r = lite_zone_free_walk(zone, type, tag, param_5, param_4, size);
+            r = lite_zone_free_walk((long)zone, type, (char *)(unsigned long)tag, (long *)param_5, param_4, size);
             rc3 = sk_lock_release((unsigned long)l2);
             if (rc3 != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
             if (r != 0) {
@@ -1492,7 +1496,7 @@ unsigned long lite_zone_alloc_block(unsigned char *zone, unsigned long type,
                 goto done;
             }
         }
-        r = lite_zone_segment_alloc2(zone, type, tag, param_5, param_4, size);
+        r = lite_zone_segment_alloc2((long)zone, type, tag, (unsigned long)param_5, param_4, size);
     } else {
         rc = sk_lock_release((unsigned long)l2);
 done:
@@ -1529,11 +1533,12 @@ unsigned long lite_zone_segment_alloc2(long zone, unsigned long type, unsigned l
     int rc;
     unsigned long r = 0;
 
-    rc = (int)lite_zone_segment_alloc((unsigned char *)zone,
-                                      (count & 0xffffffff) << 0xe, 0, 0);
+    { unsigned long segrc = lite_zone_segment_alloc_ret((unsigned char *)zone,
+                                            (count & 0xffffffff) << 0xe, 0, 0);
+      (void)segrc; }
     if (rc != 0) {
         r = lite_zone_free_walk(zone, type, (char *)tag, (long *)param_4, count, size);
-        rc = sk_lock_release(zone + 0x10);
+        rc = sk_lock_release((unsigned long)(zone + 0x10));
         if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
     }
     rc = sk_lock_release(zone + 0x20);
@@ -1656,7 +1661,7 @@ bug_9249:
             }
         }
     }
-    rc = sk_lock_acquire(zone + 0x10);
+    rc = sk_lock_acquire((unsigned long)(zone + 0x10));
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
     tag = *(unsigned char *)(block + 0x40);
     base = base & block;
@@ -1673,7 +1678,7 @@ bug_9249:
     lite_zone_link_free(zone, base, (int)((block - (base + 0x50)) >> 5) * -0x55555555,
                         1, *(unsigned char *)(block + 0x40) >> 7);
     *(int *)(base + 0x18) -= 1;
-    rc = sk_lock_release(zone + 0x10);
+    rc = sk_lock_release((unsigned long)(zone + 0x10));
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
 }
 
@@ -1695,7 +1700,7 @@ unsigned long lite_zone_grow_block(unsigned char *zone, long base, unsigned long
     if (*(unsigned int *)(block + 0x48) >= param_4) {
         /* shrink: split off the tail. */
         if (*(unsigned int *)(block + 0x48) != param_4) {
-            rc = sk_lock_acquire(zone + 0x10);
+            rc = sk_lock_acquire((unsigned long)(zone + 0x10));
             if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
             slots = *(unsigned int *)(block + 0x48) - param_4;
             seg = block + (unsigned long)param_4 * 0x60;
@@ -1706,18 +1711,18 @@ unsigned long lite_zone_grow_block(unsigned char *zone, long base, unsigned long
                             slots < 2 ? 2 : 7,
                             (int)((seg - (block & 0xffffffffffff8000) - 0x50) >> 5) * -0x55555555,
                             slots);
-            rc = sk_lock_release(zone + 0x10);
+            rc = sk_lock_release((unsigned long)(zone + 0x10));
             if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
             if (slots < 2) {
                 idx = lite_zone_page_idx(seg, 0xffffffffffff8000);
                 sk_pt_write(idx, 0x4000, 8, 0x40);
             }
-            lite_zone_free_block(zone, seg);
+            lite_zone_free_block((unsigned char *)zone, (unsigned long)seg, 0, 0);
         }
         return 1;
     }
     /* grow: acquire lock and merge neighbor. */
-    rc = sk_lock_acquire(zone + 0x10);
+    rc = sk_lock_acquire((unsigned long)(zone + 0x10));
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
     cur = *(unsigned int *)(block + 0x48);
     add = param_4 - cur;
@@ -1725,7 +1730,7 @@ unsigned long lite_zone_grow_block(unsigned char *zone, long base, unsigned long
     /* next block must be a single free slot large enough */
     if (base + 0x50 + (unsigned long)*(unsigned int *)(base + 0x20) * 0x60 <= seg ||
         (*(unsigned char *)(seg + 0x40) & 0xd) != 1) {
-        rc = sk_lock_release(zone + 0x10);
+        rc = sk_lock_release((unsigned long)(zone + 0x10));
         if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
         return 0;
     }
@@ -1740,7 +1745,7 @@ unsigned long lite_zone_grow_block(unsigned char *zone, long base, unsigned long
                             *(unsigned char *)(seg + 0x40) >> 7);
     }
     *(unsigned int *)(block + 0x48) = param_4;
-    rc = sk_lock_release(zone + 0x10);
+    rc = sk_lock_release((unsigned long)(zone + 0x10));
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
     return 1;
 }
@@ -1872,13 +1877,21 @@ void lite_zone_segment_alloc(unsigned char *zone, unsigned long size, unsigned l
     if (out != 0) {
         slot = (unsigned long)lite_zone_carve((long)slot_meta /*unused*/, 8, 0, (unsigned int)n);
     } else {
-        rc = sk_lock_acquire(zone + 0x10);
+        rc = sk_lock_acquire((unsigned long)(zone + 0x10));
         if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
         lite_zone_link_free(zone, 0, 0, (unsigned int)n, 1, size > 0x400000);
         (void)rc;
     }
     /* populate region page table + return head */
     if (out != 0) *out = slot;
+}
+
+unsigned long lite_zone_segment_alloc_ret(unsigned char *zone, unsigned long size,
+                                           unsigned long param_3, long *out)
+{
+    long *h = out;
+    lite_zone_segment_alloc(zone, size, param_3, out);
+    return h != 0 ? 1 : 0;
 }
 
 /* FUN_00004888 @ 0x00004888   (est. lite_zone_region_take)
@@ -1974,11 +1987,12 @@ void lite_zone_link_free(long zone, long base, unsigned int param_3, unsigned in
             cls = n;
     }
     head = (long *)(zone + (unsigned long)cls * 0x10 + 0x48);
-    next = *head;
-    *(long *)(blk + 0x30) = (long)next;
-    if (next != 0) *(long **)(next + 0x38) = (long *)(blk + 0x30);
-    *head = blk;
-    *(long **)(blk + 0x38) = head;
+    { long nx = *head;
+      *(long *)(blk + 0x30) = nx;
+      if (nx != 0) *(long **)(nx + 0x38) = (long *)(blk + 0x30);
+      *head = blk;
+      *(long **)(blk + 0x38) = head;
+    }
 }
 
 /* FUN_00004acc @ 0x00004acc   (est. lite_zone_merge_blocks)
@@ -2094,7 +2108,7 @@ unsigned long lite_zone_alloc_large(long zone, long param_2, unsigned long param
     if (end >> 0x2e != 0) goto fail;
     reg = (unsigned char *)(*(long *)(zone + 0x208) + (unsigned long)lite_zone_class_of(zone,param_4) * 0x2b0);
     base = lite_zone_alloc_block(reg, 8, 0, (unsigned int)(end >> 0xe), 0, param_3,
-                                 (int)(param_5 & 1), *(unsigned long *)(zone + 0x188) >> 7 & 1);
+                                 (int)(param_5 & 1));
     if (base == 0) goto fail;
     *(unsigned short *)(base + 0x42) = *(unsigned short *)(zone + 0xd0);
     rc = sk_lock_acquire(zone + 0x160);
@@ -2107,7 +2121,7 @@ unsigned long lite_zone_alloc_large(long zone, long param_2, unsigned long param
     rc = sk_lock_release(zone + 0x160);
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
     /* optional cache-clean of the new block */
-    blocksz = lite_zone_block_size(base);
+    blocksz = lite_zone_block_size((unsigned long *)base);
     base = lite_zone_page_idx(base, base & 0xffffffffffff8000);
     if ((*(char *)(zone + 400) == '\x01') && blocksz <= *(unsigned long *)(zone + 0x198)) {
         if ((blocksz & 0x1ff) == 0) {
@@ -2164,7 +2178,7 @@ void lite_zone_alloc_small(long zone, unsigned long size, unsigned long cls,
     }
     if (0x1000 < size) {
         if (*(char *)(zone + 0x102) != '\x01') {
-            lite_zone_alloc_medium(zone, l1, param_4);
+            lite_zone_alloc_medium(zone, (unsigned long *)l1, param_4);
             return;
         }
         lite_zone_alloc_large2(zone, l1, param_4);
@@ -2185,7 +2199,7 @@ void lite_zone_alloc_class(long zone, unsigned long size, unsigned long param_3,
     unsigned long c;
     unsigned char b;
 
-    if (0x8000 < size) { lite_zone_alloc_large(zone, size, 0); return; }
+    if (0x8000 < size) { lite_zone_alloc_large(zone, size, 0, 0, 0); return; }
     z = zone;
     if (*(long *)(zone + 0xf8) != 0) z = *(long *)(zone + 0xf8);
     cls = 0x3f - (unsigned int)sk_clz(size - 1);
@@ -2221,7 +2235,7 @@ void lite_zone_alloc_class(long zone, unsigned long size, unsigned long param_3,
  * Round-up allocation: picks the rounded size between param_2 and param_3
  * and routes to the small-class or large allocator. */
 void lite_zone_alloc_round(unsigned long zone, unsigned long param_2, unsigned long param_3,
-                           unsigned long param_4, unsigned int param_5)
+                           unsigned long param_4, unsigned int param_5, ...)
 {
     unsigned long v;
 
@@ -2281,7 +2295,7 @@ void lite_zone_free_large(long zone, unsigned long *ptr)
                 (seg = ((unsigned long)ptr >> 0xe & 0xff) * 6 * 0x20 |
                        ((unsigned long)idx & 0x7fffffff) << 0xf,
                  (*(unsigned char *)(seg + 0x90) & 0xf) != 2)) {
-                lite_zone_free_fail(zone);
+                lite_zone_free_fail(zone, (unsigned long)ptr, 0);
                 return;
             }
             p = (unsigned long *)(seg + 0x50);
@@ -2302,7 +2316,7 @@ void lite_zone_free_large(long zone, unsigned long *ptr)
             }
         }
     }
-    lite_zone_free_fail(zone);
+    lite_zone_free_fail(zone, (unsigned long)ptr, 0);
 }
 
 /* FUN_0000613c @ 0x0000613c   (est. lite_zone_destroy)
@@ -2321,9 +2335,9 @@ void lite_zone_destroy(long zone, unsigned long mode)
     unsigned long base;
 
     if (mode == 0) {
-        lite_zone_lock_op(zone + 0x170, 2);
-        lite_zone_lock_op(zone + 0x160, 0);
-        lite_zone_lock_op(zone, 0);
+        lite_zone_lock_op((unsigned long *)(zone + 0x170), 2);
+        lite_zone_lock_op((unsigned long *)(zone + 0x160), 0);
+        lite_zone_lock_op((unsigned long *)zone, 0);
     }
     if (1 < *(unsigned char *)(zone + 0xd2)) {
         nsub = *(unsigned char *)(zone + 0xd3);
@@ -2370,7 +2384,7 @@ void lite_zone_destroy(long zone, unsigned long mode)
         }
     }
     if (mode != 0) {
-        lite_zone_lock_op(zone, mode);
+        lite_zone_lock_op((unsigned long *)zone, (int)mode);
         lite_zone_lock_op((unsigned long *)zone + 0x160, mode);
         lite_zone_lock_op((unsigned long *)zone + 0x170, mode);
     }
@@ -2432,9 +2446,9 @@ unsigned long *lite_zone_create(void)
     *(unsigned char *)((unsigned char *)zone + 0x26a) = img ^ 1;
     lite_zone_init_zone(zone, sz, cpu_count);
     lite_zone_init_memory((long)zone);
-    lite_zone_class_setup(zone);
+    lite_zone_class_setup((long)zone, 0, 0);
     lite_zone_setup_locks(zone);
-    lite_zone_vtable_setup(zone, (unsigned long *)sz, (unsigned long)sk_zone_present);
+    lite_zone_vtable_setup(zone, (unsigned long)sz, (unsigned long)sk_zone_present);
     return zone;
 }
 
@@ -2455,8 +2469,8 @@ void lite_zone_vtable_setup(unsigned long *zone, unsigned long sz, unsigned long
     zone[7] = 0xcfd0;
     zone[8] = (unsigned long)lite_zone_bug3;          /* FUN_0000cfdc */
     zone[9] = 0;
-    zone[10] = (unsigned long)lite_zone_collect;      /* FUN_00002880 */
-    zone[0xb] = (unsigned long)lite_zone_release_list;/* FUN_000028fc */
+    zone[10] = (unsigned long)sk_zone_collect;      /* FUN_00002880 */
+    zone[0xb] = (unsigned long)sk_zone_release_list;/* FUN_000028fc */
     zone[0xc] = 0x658f20;
     zone[0xd] = 0x4baee0;
     zone[0xe] = 0xd004;
@@ -2536,7 +2550,7 @@ void lite_zone_class_setup(long zone, long param_2, unsigned int param_3)
         for (n = 0; n != 6; n++) {
             sz = 0x8000L << ((n + 1) & 0x3f);
             l1 = *(long *)(zone + 0xe8) + n * 0x110;
-            for (i_tmp = 0; i_tmp < 32; i_tmp++) ((unsigned long *)l1)[i_tmp] = 0;
+            for (unsigned long _it = 0; _it < 32; _it++) ((unsigned long *)l1)[_it] = 0;
             *(int *)(l1 + 0x20) = (int)sz;
             /* vtable sub-region free-list init */
         }
@@ -2565,7 +2579,7 @@ void lite_zone_reap(long zone, long param_2, long param_3)
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
     /* detach the sub-region's partial list, walk + classify each block */
     node = (unsigned long *)(param_3 + 0x30);
-    list = (unsigned long *)*(param_3 + 0x38);
+    list = (unsigned long *)*(unsigned long *)(param_3 + 0x38);
     if (*(unsigned long **)(param_3 + 0x30) != 0) {
         pn = *(unsigned long **)(param_3 + 0x30);
         do {
@@ -2594,8 +2608,8 @@ void lite_zone_reap(long zone, long param_2, long param_3)
             continue;
         }
         /* unlink + release pages */
-        lite_zone_free_block_pages(zone, *(unsigned long *)((free_head & 0x7fffffffffffffff) + 0x10),
-                                   param_2, free_head);
+        lite_zone_free_block_pages(zone, *(unsigned long *)((((unsigned long)free_head) & 0x7fffffffffffffff) + 0x10),
+                                   (long)param_2, (unsigned long *)free_head);
         free_head = pn;
     }
     rc = sk_lock_release((unsigned long)&uStack_80);
@@ -2753,7 +2767,7 @@ void lite_zone_free_block_pages(long param_1, unsigned long param_2, long param_
         }
         for (i = 0; i < c; i++) {
             if ((*(unsigned long *)(param_1 + 0x188) >> 7 & 1) != 0)
-                lite_zone_check_size(param_1, param_3, (unsigned long)param_4, i, 0);
+                lite_zone_check_size((unsigned long)param_1, (unsigned long)param_3, (unsigned long)param_4);
         }
         if (bit != 0) lite_zone_release_pages(param_1, param_3, (unsigned long)param_4, 0, bit, 0);
     }
@@ -2783,7 +2797,7 @@ void lite_zone_relink(long param_1, long *param_2)
         v = *(long *)(param_1 + 0x20);
         *p = v;
         if (v != 0) *(long **)(v + 0x38) = p;
-        *(long *)(param_1 + 0x20) = head;
+        *(long *)(param_1 + 0x20) = (long)head;
         *(long **)(head + 0x38) = (long *)(param_1 + 0x20);
         *(int *)(param_1 + 0x10) += 1;
         *(unsigned char *)(head + 0x40) |= 0x20;
@@ -2814,7 +2828,7 @@ unsigned long *lite_zone_alloc_tiny(long param_1, long param_2, unsigned long pa
  * mirror of lite_zone_alloc_tiny for the next size class. */
 unsigned long *lite_zone_alloc_large2(long param_1, long param_2, unsigned long param_3)
 {
-    return (unsigned long *)lite_zone_alloc_medium(param_1, param_2, param_3);
+    return (unsigned long *)lite_zone_alloc_medium(param_1, (unsigned long *)param_2, param_3);
 }
 
 /* FUN_00008874 @ 0x00008874   (est. lite_zone_alloc_medium)
@@ -2837,10 +2851,10 @@ unsigned long lite_zone_alloc_medium(long param_1, unsigned long *param_2, unsig
     base = lite_zone_alloc_block((unsigned char *)param_2 + 0xe, 5,
                                  (unsigned long)((unsigned int)*(unsigned char *)((long)param_2 + 0x43) +
                                                  (unsigned int)*(unsigned char *)((long)param_2 + 0x42)) & 0xff,
-                                 4, 0, 0, 0, 0);
+                                 4, 0, 0, 0);
     if (base == 0) { *(unsigned int *)sk_errno_slot() = 0xc; return 0; }
     *(unsigned char *)((long)base + 0x41) = *(unsigned char *)(param_2 + 0xd);
-    blk = lite_zone_assign_block(param_1, (unsigned long *)base, param_2 + 6, 0, 0, 0, 0, 0);
+    blk = lite_zone_assign_block(param_1, (unsigned long *)base, (long)(param_2 + 6), 0, 0, 0, 0, 0);
     (void)blk;
     slot = base;
     if (*(unsigned char *)((long)param_2 + 0x6f) >> 1 & 1) {
@@ -2864,8 +2878,8 @@ unsigned long *lite_zone_alloc_small_slow(long param_1, long param_2, unsigned l
     unsigned long *blk;
     unsigned long v;
 
-    blk = lite_zone_alloc_block((unsigned char *)(param_2 + 0x70), 6, (unsigned long)(param_2 + 0),
-                                8, &v, 0, 0, 0);
+    blk = (unsigned long *)lite_zone_alloc_block((unsigned char *)(param_2 + 0x70), 6,
+                                  (unsigned long)(param_2 + 0), 8, (unsigned long)&v, 0, 0);
     if (blk == 0) { *(unsigned int *)sk_errno_slot() = 0xc; return 0; }
     return blk;
 }
@@ -3033,7 +3047,7 @@ void lite_zone_push_head(unsigned long param_1, unsigned long *param_2, unsigned
         v = *param_2;
     } while (b);
     *param_2 = u1 & 0x1ff800000000000 | param_3 & 0x7fffffffffff | u6;
-    if (param_4 <= u5) lite_zone_free_blocks(param_1, param_2, (unsigned long)param_3);
+    if (param_4 <= u5) lite_zone_free_blocks((long)param_1, (long)param_2, (unsigned long)param_3);
 }
 
 /* FUN_0000a7b4 @ 0x0000a7b4   (est. lite_zone_pop_partial)
@@ -3052,10 +3066,11 @@ long lite_zone_pop_partial(long param_1, long param_2)
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
     blk = *list;
     if (blk != 0) {
-        pv = (unsigned long **)(blk + 0x38);
-        nx = 0;
-        if (*(long *)(blk + 0x30) != 0) { **(unsigned long ***)(blk + 0x30 + 0x38) = *pv; nx = *(unsigned long *)(blk + 0x30); }
-        *pv = nx;
+        { unsigned long *pvx = *(unsigned long **)(blk + 0x38);
+          unsigned long nxx = 0;
+          if (*(long *)(blk + 0x30) != 0) { *(unsigned long **)(*(long *)(blk + 0x30) + 0x38) = pvx; nxx = *(unsigned long *)(blk + 0x30); }
+          *pvx = nxx;
+        }
         *(unsigned short *)(blk + 0x42) = *(unsigned short *)(param_2 + 0x6a);
     }
     rc = sk_lock_release((unsigned long)(list + 2));
@@ -3114,7 +3129,7 @@ void lite_zone_free_blocks(long param_1, long param_2, unsigned long param_3)
         param_3 = n;
     } while (n != 0);
     if ((b & 0xb) == 2) {
-        lite_zone_relink_chain(param_1, param_2, list, i);
+        lite_zone_relink_chain(param_1, param_2, (long)list, i);
     } else {
         if ((b & 0xf) != 5) sk_bug_panic("BUG IN LIBMALLOC: %llu, %s");
         long z = param_1;
@@ -3252,11 +3267,11 @@ found:
     sz = *(unsigned long *)((zone + 0xd8) + (unsigned long)*(unsigned char *)((long)run + 0x41) * 0x80 + 0x48);
     /* dispatch on class */
     if (t == 5) {
-        lite_zone_free_small_block(zone, run, pv, ptr);
+        lite_zone_free_small_block((long)zone, (unsigned long)run);
         return;
     }
     if (t == 2 || t == 6) {
-        lite_zone_free_medium_block(zone, run, pv, ptr);
+        lite_zone_free_medium_block((long)zone, (long)run, (unsigned long *)pv, (unsigned long *)ptr);
         return;
     }
     if (t == 10) {
@@ -3273,12 +3288,12 @@ fail:
  * bad pointer and aborts the zone ("BUG IN CLIENT OF LIBMALLOC"). */
 void lite_zone_free_fail(long zone, unsigned long ptr, unsigned long param_3)
 {
-    if ((*(long *)(zone + 0xf8) == 0) && (sk_zone_reap(ptr) != 0)) {
-        sk_zone_reap2(ptr);
+    if ((*(long *)(zone + 0xf8) == 0) && (sk_zone_reap((void *)ptr) != 0)) {
+        sk_zone_reap2((void *)ptr);
         return;
     }
     if ((param_3 & 1) == 0) sk_zone_bad_ptr_log(0x50, ptr);
-    sk_zone_reap3(ptr, 1);
+    sk_zone_reap3((void *)ptr, 1);
 }
 
 /* FUN_0000b648 @ 0x0000b648   (est. lite_zone_client_bug)
@@ -3301,7 +3316,7 @@ void lite_zone_after_push(long param_1, long param_2, long param_3, unsigned lon
     int rc;
 
     slot = param_3 + (unsigned long)*(unsigned char *)(param_2 + 0x68) * 0x10;
-    lite_zone_push_free(param_1, slot, param_4, 0, &local_31);
+    lite_zone_push_free(param_1, (unsigned long *)slot, param_4, 0, &local_31);
     gen = *(unsigned char *)(param_1 + 0x100) & 3;
     if (((unsigned char)(*(unsigned long *)(slot + 8) >> 0x38) != gen) &&
         ((*(unsigned long *)(slot + 8) & 0xffffff00000000) != 0 || local_31 != '\0')) {
@@ -3351,10 +3366,11 @@ void lite_zone_free_small_block(long zone, unsigned long block)
     rc = sk_lock_acquire(zone + 0x160);
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to acquire lock: %p");
     *(unsigned short *)(block + 0x42) = 0;
-    pv = *(unsigned long **)(block + 0x38);
-    nx = 0;
-    if (*(long *)(block + 0x30) != 0) { *(unsigned long **)(*(long *)(block + 0x30) + 0x38) = pv; nx = *(unsigned long *)(block + 0x30); }
-    *pv = nx;
+    { unsigned long *pvx = *(unsigned long **)(block + 0x38);
+      unsigned long nxx = 0;
+      if (*(long *)(block + 0x30) != 0) { *(unsigned long **)(*(long *)(block + 0x30) + 0x38) = pvx; nxx = *(unsigned long *)(block + 0x30); }
+      *pvx = nxx;
+    }
     rc = sk_lock_release(zone + 0x160);
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
     lite_zone_free_block((unsigned char *)((block & 0xffffffffffff8000) + 0x10), block,
@@ -3440,8 +3456,12 @@ void lite_zone_return_run(long param_1, long param_2, unsigned int *param_3, int
     v = lite_zone_page_idx((unsigned long)param_3, base);
     start = (unsigned int)(v >> 0xe);
     end = (unsigned int)((sz + v - 1) >> 0xe);
-    if ((~((unsigned int)(-1L << (((unsigned long)(first + 1)) & 0x3f)) << (start & 0x3f) & (*param_3 ^ 0xffffffff))) != 0) start++;
-    if ((~((unsigned int)(-1L << (((unsigned long)((end - first)) & 0x3f)) << (first & 0x3f) & (*param_3 ^ 0xffffffff))) == 0) end++;
+    {
+        unsigned int tmp = (unsigned int)(-1L << (((unsigned long)(first + 1)) & 0x3f));
+        if ((~(tmp << (start & 0x3f)) & (*param_3 ^ 0xffffffff)) != 0) start++;
+        tmp = (unsigned int)(-1L << (((unsigned long)((end - first)) & 0x3f));
+        if ((~(tmp << (first & 0x3f)) & (*param_3 ^ 0xffffffff)) == 0) end++;
+    }
     if (start <= end && end - start != 0) {
         lite_zone_return_pages(*(unsigned long *)((base & (unsigned long)param_3) + 0x10),
                                l5 + (unsigned long)start * 0x4000, (unsigned long)(end - start));
@@ -3489,8 +3509,8 @@ void lite_zone_free_block2(long zone, long param_2, unsigned long *param_3, int 
  * reap-validate helper, or 0 if not in this zone. */
 unsigned long lite_zone_lookup_block(long zone, unsigned long ptr)
 {
-    if ((*(long *)(zone + 0xf8) == 0) && (sk_zone_reap(ptr) != 0)) {
-        return (unsigned long)sk_zone_reap4(ptr);
+    if ((*(long *)(zone + 0xf8) == 0) && (sk_zone_reap((void *)ptr) != 0)) {
+        return (unsigned long)sk_zone_reap4((void *)ptr);
     }
     return 0;
 }
@@ -3614,7 +3634,7 @@ bool lite_zone_ptr_owned(long zone, unsigned long ptr)
 {
     unsigned long v;
 
-    v = sk_zone_reap(ptr);
+    v = sk_zone_reap((void *)ptr);
     if ((v & 1) == 0) {
         if ((ptr & 0xf0ffffffffffffff) >> 0x24 == 0) {
             if (*(long *)(zone + 0xf8) != 0) zone = *(long *)(zone + 0xf8);
@@ -3684,8 +3704,9 @@ void lite_zone_alloc_tiny2(long zone, unsigned long size)
     if (size < 0x8001 && ((*(unsigned long *)(zone + 0x188) >> 7 & 1) != 0)) {
         if (*(long *)(zone + 0xf8) != 0) z = *(long *)(zone + 0xf8);
     }
-    block = lite_zone_alloc_round((unsigned long)z, 0x4000, size,
-                                  *(unsigned long *)(0 /*tpidr_el0*/ + 0x48), 0);
+    lite_zone_alloc_round((unsigned long)z, 0x4000, size,
+                          *(unsigned long *)(0 /*tpidr_el0*/ + 0x48), 0);
+    block = 0;
     if (block != 0 && ((*(unsigned char *)(zone + 0x188) >> 5 & 1) != 0)) {
         sk_memset_tracked((void *)block, 0xaa, size);
     }
@@ -4129,7 +4150,7 @@ unsigned long lite_zone_alloc_large_small(long zone, unsigned long param_3, unsi
                 /* fresh large segment fallback */
                 unsigned char *reg = (unsigned char *)(*(long *)(z + 0x208) + u7 * 0x2b0);
                 blk = lite_zone_alloc_block(reg, 8, 0, (unsigned int)(got >> 0xe), 0, param_3,
-                                            (int)(param_5 & 1), *(unsigned long *)(zone + 0x188) >> 7 & 1);
+                                            (int)(param_5 & 1));
                 if (blk == 0) return 0;
                 *(unsigned short *)(blk + 0x42) = *(unsigned short *)(zone + 0xd0);
                 u = lite_zone_assign_block(zone, (unsigned long *)blk,
@@ -4300,7 +4321,7 @@ unsigned long *lite_zone_alloc_tiny_full(long param_1, long param_2, unsigned lo
     rc = sk_lock_release((unsigned long)(list + 2));
     if (rc != 0) sk_lock_error(0x40, 0, "Failed to release lock: %p");
     slot = lite_zone_alloc_block((unsigned char *)param_2 + 0xe, 5, (unsigned long)(param_2 + 0),
-                                 4, 0, 0, 0, 0);
+                                 4, 0, 0, 0);
     if (slot == 0) { *(unsigned int *)sk_errno_slot() = 0xc; return 0; }
     sz = lite_zone_block_size((unsigned long *)slot);
     return (unsigned long *)slot;
@@ -4337,7 +4358,7 @@ void lite_zone_reap_vtable(long zone, long base, long i, unsigned long mode)
 
     blk = *(unsigned long *)(base + 0x38);
     while (blk != 0) {
-        next = *blk;
+        next = *(unsigned long *)(blk + 0x30);
         lite_zone_lock_op((unsigned long *)(blk + 4), mode);
         if (mode == 0) lite_zone_relink(base, (long *)(blk + 4));
         blk = next;

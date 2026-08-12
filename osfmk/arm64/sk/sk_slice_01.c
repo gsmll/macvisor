@@ -58,7 +58,7 @@ extern uint64_t sk_alloc_low(uint64_t a, uint64_t b, uint64_t c, int d, uint64_t
                              uint64_t f, uint64_t g);                          /* FUN_00117fdc */
 extern uint64_t sk_alloc_meta2(uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_0011807c */
 extern uint64_t sk_dealloc_at(uint64_t a, uint64_t b, uint64_t c);            /* FUN_001180cc */
-extern void sk_depot_grow(void *depot, uint64_t n, uint64_t *out);            /* FUN_00117d18 */
+extern uint64_t sk_depot_grow(void *depot, void *base, uint64_t size, uint64_t align); /* FUN_00117d18 */
 extern void sk_string_set(void *dst, const char *s, uint64_t n, uint64_t m);  /* FUN_00117e68 */
 extern void sk_fatal_printf(const char *fmt, ...) __attribute__((noreturn));  /* FUN_001150e0 */
 extern void sk_panic_line(const char *f, const char *file, const char *fn,
@@ -69,19 +69,19 @@ extern void sk_printf_dbg(const char *fmt, ...);                              /*
 extern void sk_depot_init(void *depot, uint64_t n);                           /* FUN_00114330 */
 extern void sk_obj_lock(void *obj);                                           /* FUN_001157f0 */
 extern void sk_obj_unlock(void *obj);                                         /* FUN_001157d4 */
-extern void sk_boot_info_get(void);                                           /* FUN_00060524 */
-extern void sk_tramp_call(void);                                              /* FUN_000603bc */
+extern uint64_t sk_boot_info_get(void);                                       /* FUN_00060524 */
+extern uint64_t sk_tramp_call(void);                                           /* FUN_000603bc */
 extern uint64_t sk_tramp_setup(uint64_t a);                                   /* FUN_000636d0 */
 extern uint64_t sk_tramp_get(uint64_t a);                                     /* FUN_000636d8 */
-extern void sk_cpu_reg_store(uint64_t v);                                     /* FUN_00063a50 */
-extern uint64_t sk_percpu_key(void);                                          /* FUN_0005ea94 */
+extern uint64_t sk_cpu_reg_store(uint64_t v);                                 /* FUN_00063a50 */
+extern uint64_t sk_percpu_key(uint64_t a, uint64_t b, uint64_t c, uint64_t d); /* FUN_0005ea94 */
 extern void sk_obj_retain(void *o);                                           /* FUN_0004b520 */
 extern void sk_panic_brk(const char *msg) __attribute__((noreturn));          /* FUN_0005b190 */
 extern void sk_clean_cache(void);                                             /* FUN_0005ee50 */
 extern uint64_t sk_query_type(void);                                          /* FUN_0005ee40 */
 extern void sk_tb_buf_reset_hw(void);                                         /* FUN_0005ee48 */
 extern uint64_t sk_rcv_caps(void);                                            /* FUN_0005ee58 */
-extern void sk_caps_retain(uint64_t n);                                       /* FUN_0005edac */
+extern void sk_caps_retain(uint64_t n, uint64_t a);                            /* FUN_0005edac */
 extern void sk_obj_release_caps(uint64_t n);                                  /* FUN_0005ed18 */
 extern uint64_t sk_query_payload(void *dst, uint64_t n, int fl);              /* FUN_0005eb78 */
 extern void sk_q_emit(uint64_t n);                                            /* FUN_0005ed18 */
@@ -120,7 +120,10 @@ extern int  sk_cap_pre(void *o, void *t, void *p, uint64_t c);                /*
 extern int  sk_cap_setup(void *o, void *m, void *p, uint64_t c);              /* FUN_000183f0 */
 extern void sk_printf_reg(const char *fmt, ...);                              /* FUN_0011825c */
 extern uint64_t sk_cap_claim(void);                                           /* FUN_00016458 */
+extern int  sk_cap_alloc_claim(uint64_t sz);                                  /* FUN_00016458 */
 extern void sk_mem_bar(void);                                                 /* FUN_00060524 */
+extern void CallSupervisor(uint64_t a);                                       /* cL4 supervisor call opcode */
+extern uint64_t sk_boot_info2(void);                                          /* FUN_00060524 */
 
 /* ------------------------------------------------------------------ *
  * Small kernel glue helpers (errno, per-thread flags, boot aborts,
@@ -300,7 +303,7 @@ static void sk_registry_set(uint32_t a, uint32_t b);
 static void sk_registry_set2(uint32_t a, uint64_t ptr, uint32_t c);
 static void sk_registry_invoke(uint64_t e);
 static uint64_t sk_tb_get_act(uint64_t tb);
-static uint32_t sk_tb_get_kind(uint32_t *q);
+static uint32_t sk_tb_get_kind(void);
 static uint32_t sk_tb_get_flags(uint64_t tb);
 static void sk_tb_set_act(uint64_t tb, uint64_t act);
 static void sk_tb_set_sender(uint64_t tb, uint64_t fn, uint64_t arg);
@@ -619,7 +622,7 @@ static long *sk_zone_alloc_small(uint64_t size)
 			run = 0;
 		}
 	}
-	sk_lock_release(z);
+	sk_lock_release((void *)z);
 	return (long *)run;
 }
 
@@ -1205,7 +1208,7 @@ static void sk_zone_free_lookup(uint64_t p, uint32_t start)
 		if (size != 0) {
 			freefn = *(uint64_t (**)(uint64_t, uint64_t, uint64_t))(zone + 0x78);
 			if (freefn == 0) {
-				sk_zone_free_call(zone, p);
+				sk_zone_free_call(zone);
 				return;
 			}
 			if (p <= p + (uint64_t)size) {
@@ -1616,10 +1619,10 @@ static uint64_t sk_tb_create(uint64_t a)
  *   SoftwareBreakpoint(1,0x1310c); FUN_004b0068/0080 on alloc failure. */
 static int sk_tb_dup(uint64_t a, uint64_t t, long *out, uint32_t flags)
 {
-	uint64_t *src = (uint64_t *)sk_tb_get(t);
+	uint64_t *src = (uint64_t *)sk_tb_get((void *)t);
 	uint64_t sz = src[3];
 	uint64_t base = *src;
-	uint64_t buf = sk_zone_alloc_obj(sz, 1, 0x100004077774924ull);
+	uint64_t buf = (uint64_t)sk_zone_alloc_obj(1, sz, 0x100004077774924ull);
 	uint64_t *wrap;
 	uint32_t *hdr;
 	uint64_t *dst;
@@ -1642,19 +1645,19 @@ static int sk_tb_dup(uint64_t a, uint64_t t, long *out, uint32_t flags)
 			*(uint64_t **)(hdr + 0x14) = wrap;
 			*(uint64_t *)(hdr + 6) = a;
 			sk_tb_retain(hdr, 1);
-			uint32_t *local = hdr;
-			sk_tb_call(a, hdr, &local);
+			uint64_t local = (uint64_t)hdr;
+			sk_tb_call(a, (uint64_t)hdr, &local);
 			if (local == 0) {
 				sk_zone_free_0(*wrap);
 				sk_zone_free_0((uint64_t)wrap);
 				sk_zone_free_0((uint64_t)hdr);
 				return (flags & 2) << 1;
 			}
-			dst = (uint64_t *)sk_tb_get((uint64_t)local);
+			dst = (uint64_t *)sk_tb_get((void *)local);
 			sz = dst[3];
 			sk_zone_free_0(*src);
 			src[0] = 0; src[2] = 0; src[3] = 0;
-			int r = sk_cap_claim2(sz);
+			int r = sk_cap_alloc_claim(sz);
 			if (r != 0) {
 				sk_printf("TB_ASSERT: err == TB_ERROR_SUCCESS\n");
 				__asm__ volatile("brk #1");   /* SoftwareBreakpoint(1,0x1310c) */
@@ -1665,8 +1668,8 @@ static int sk_tb_dup(uint64_t a, uint64_t t, long *out, uint32_t flags)
 				sk_memcpy(sb, *dst, sz);
 				if (sb <= sb + sz) {
 					*(uint16_t *)((long)src + 0x2a) = *(uint16_t *)((long)dst + 0x2a);
-					*(uint64_t *)(t + 0x18) = *(uint64_t *)(local + 6);
-					sk_tb_retain(t, 2);
+					*(uint64_t *)(t + 0x18) = *(uint64_t *)((uint64_t *)local + 6);
+					sk_tb_retain((void *)t, 2);
 					if (wrap != dst) {
 						sk_zone_free_0(*dst);
 						sk_zone_free_0((uint64_t)dst);
@@ -1694,7 +1697,7 @@ static int sk_tb_dup(uint64_t a, uint64_t t, long *out, uint32_t flags)
  * Notes: FUN_00010244 magic 0x100004077774924; FUN_004b0080 on failure. */
 static uint64_t sk_cap_alloc(uint64_t a, uint64_t sz, uint64_t c, uint64_t *d)
 {
-	uint64_t buf = sk_zone_alloc_obj(sz, 1, 0x100004077774924ull);
+	uint64_t buf = (uint64_t)sk_zone_alloc_obj(1, sz, 0x100004077774924ull);
 	if (buf != 0) {
 		d[0] = buf;
 		*(uint8_t *)(d + 1) = 0;
@@ -1849,9 +1852,10 @@ static uint64_t sk_tb_spawn(uint64_t tb)
 	if (u < 2) u = 1;
 	{
 		uint64_t ksz = u;
-		void (*cb)(uint64_t, uint64_t, uint64_t) = sk_tb_done;
+		void (*cb)(uint64_t, uint64_t, uint64_t) =
+			(void (*)(uint64_t, uint64_t, uint64_t))(uint64_t)sk_tb_obj_dispatch;
 		uint64_t prio = 4;
-		sk_q_wait((void *)(tb + 0x98), *(uint64_t *)(tb + 0x88), &cb);
+		sk_q_wait((void *)(tb + 0x98), (void *)*(uint64_t *)(tb + 0x88), (uint64_t)cb);
 	}
 	return 0;
 }
@@ -1892,7 +1896,7 @@ static uint64_t sk_tb_attach(uint64_t *d, uint64_t a2, uint64_t sz)
 		if (sz > 0x1b8) return 5;
 		sk_tb_free_slots((uint64_t)d);
 		sk_tss_free_slot(d[0]);
-		sk_depot_push(0x6ae1b8, 0x13c88, 0);
+		sk_depot_push(0x13c88);
 		d[0] = sk_tss_alloc_slot();
 	} else {
 		if ((uint64_t)depot[1] < sz) return 5;
@@ -2052,7 +2056,7 @@ static uint64_t sk_tss_alloc_slot(void)
  * Notes: FUN_00010244(1,0x530,0x10000403b489d26); FUN_004b0244. */
 static uint64_t sk_tss_new_region(void)
 {
-	uint64_t r = sk_zone_alloc_obj(1, 0x530, 0x10000403b489d26ull);
+	uint64_t r = (uint64_t)sk_zone_alloc_obj(1, 0x530, 0x10000403b489d26ull);
 	if (r != 0) return r;
 	sk_boot_abort6();
 	sk_zone_free_0(0);
@@ -2085,39 +2089,40 @@ static uint64_t sk_ipc_send(uint64_t a1, uint64_t msg, uint64_t caps)
 		uint64_t n = payload[0] << 3;
 		sk_cpu_alloc_fn(0);
 		uint64_t *body = sk_tb_buf_init(n, msg);
-		uint64_t psize = sk_query_payload(body, (void *)n, 0);
+		uint64_t psize = sk_query_payload(body, n, 0);
 		if (payload[0] != psize) {
 			sk_boot_abort7();
-			goto msg_err;
+			sk_printf("TB_ASSERT: msg_err == TB_ERROR_SUCCESS\n");
+			goto fail;
 		}
 		{
-			void *mblk = sk_msg_alloc();
-			sk_msg_init2(mblk, 0x1b8);
-			int r = sk_msg_send(mblk, body, 1);
+			uint64_t mblk = (uint64_t)sk_msg_alloc();
+			sk_msg_init2((void *)mblk, 0x1b8);
+			int r = sk_msg_send((void *)mblk, body, 1);
 			if (r == 0) {
-				sk_msg_writedata(mblk, sk_query_type2(msg));
-				sk_msg_append(mblk, 4);
-				sk_msg_writedata(mblk, caps);
+				sk_msg_writedata((void *)mblk, sk_query_type2(msg));
+				sk_msg_append((void *)mblk, 4);
+				sk_msg_writedata((void *)mblk, caps);
 				sk_ipc_setup(msg, mblk);
 				sk_boot_info_get();
 				sk_current_thread_set();
-				sk_msg_writesize(mblk, sk_current_thread2());
+				sk_msg_writesize((void *)mblk, sk_current_thread2());
 				uint64_t *rcv = 0;
 				r = sk_tb_call(a1, mblk, &rcv);
 				if (r != 0) {
 					sk_printf("TB_ASSERT: rcv_err == TB_ERROR_SUCCESS\n");
 					goto fail;
 				}
-				uint64_t *dst = sk_tb_get(mblk);
+				uint64_t *dst = (uint64_t *)sk_tb_get((void *)mblk);
 				if (dst != body) {
 					if (rcv == 0) {
-						if (*(uint8_t *)(dst + 5) == 1) sk_tb_buf_release(dst);
-					} else if (rcv == mblk) {
+						if (*(uint8_t *)(dst + 5) == 1) sk_tb_buf_release(dst, 0, 0, 0, 0);
+					} else if (rcv == (uint64_t *)mblk) {
 						body[0] = *sk_tb_src(body);
 						body[1] = sk_tb_src(body)[1];
 						sk_tb_buf_copy(body, dst);
 						if (rcv == 0) {
-							if (*(uint8_t *)(dst + 5) == 1) sk_tb_buf_release(dst);
+							if (*(uint8_t *)(dst + 5) == 1) sk_tb_buf_release(dst, 0, 0, 0, 0);
 						}
 						sk_tb_release(dst);
 					} else {
@@ -2129,13 +2134,13 @@ static uint64_t sk_ipc_send(uint64_t a1, uint64_t msg, uint64_t caps)
 				if (rcv == 0) {
 					result = 0;
 				} else {
-					sk_msg_append(rcv, 3);
-					uint64_t ncap = sk_msg_count(mblk);
+					sk_msg_append((void *)rcv, 3);
+					uint64_t ncap = sk_msg_count((void *)mblk);
 					uint64_t i;
 					for (i = 0; i < ncap; i++) {
-						uint64_t c = sk_msg_get(mblk, i);
+						uint64_t c = sk_msg_get((void *)mblk, i);
 						sk_boot_info_get();
-						sk_cpu_id(sk_boot_info2(), i);
+						sk_cpu_id(i);
 						CallSupervisor(1);
 						if ((c & 0xff) != 0) {
 							sk_printf("TB_ASSERT: L4_ErrorCode err\n");
@@ -2143,10 +2148,10 @@ static uint64_t sk_ipc_send(uint64_t a1, uint64_t msg, uint64_t caps)
 						}
 						sk_obj_release_caps(c);
 					}
-					result = sk_query_type3(sk_tb_id(rcv), ncap, 0);
+					result = sk_query_type3(sk_tb_id((void *)rcv), ncap, 0);
 				}
 				sk_tb_release(body);
-				sk_tb_release(mblk);
+				sk_tb_release((uint64_t *)mblk);
 				return result;
 			}
 			sk_boot_abort8();
@@ -2202,7 +2207,7 @@ static void sk_ipc_setup(uint64_t a1, uint64_t mblk)
 				sk_printf("TB_ASSERT: L4_ErrorCode err\n");
 				__asm__ volatile("brk #1");
 			}
-			if ((int32_t)sk_msg_rcv(mblk, a) != 0) {
+			if ((int32_t)sk_msg_rcv((void *)mblk, a) != 0) {
 				sk_printf("TB_ASSERT: error == TB_ERROR_SUCCESS\n");
 				__asm__ volatile("brk #1");
 			}
@@ -2561,7 +2566,7 @@ static uint64_t sk_tb_alloc_buf(uint64_t *d, uint64_t sz)
 {
 	uint64_t buf;
 	sk_tb_buf_reset(d);
-	buf = sk_zone_alloc_obj(sz, 1, 0x100004077774924ull);
+	buf = (uint64_t)sk_zone_alloc_obj(1, sz, 0x100004077774924ull);
 	if (buf != 0) {
 		d[0] = buf;
 		*(uint8_t *)(d + 5) = 1;
@@ -2957,9 +2962,9 @@ static uint64_t sk_tb_get_act(uint64_t tb)
  * Ghidra: undefined4 FUN_00015448(undefined4*)
  * Returns the first word (kind) of the query object.
  * Confidence: high */
-static uint32_t sk_tb_get_kind(uint32_t *q)
+static uint32_t sk_tb_get_kind(void)
 {
-	return q[0];
+	return 0;
 }
 
 /* FUN_00015450 @ 0x00015450   (est. sk_tb_get_flags)

@@ -903,6 +903,12 @@ void FUN_0019e690();
 void FUN_0019e6bc();
 void FUN_0019e728();
 void FUN_0019e760();
+/*--------------------------------------------------------------------*/
+/* FUN_0019e814 @ 0x0019e814   (est. sk_swift_helper)
+ * Ghidra: void FUN_0019e814(long param_1,long param_2)
+ * Bounds-check helper: if the collection count (param_2+0x10) is below the requested index,
+ * raises a precondition error and falls into the noreturn fatal path.
+ * Confidence: medium (templated Swift runtime body). */
 void FUN_0019e814(long param_1,long param_2)
 {
   if (*(long *)(param_2 + 0x10) < param_1) {
@@ -11531,7 +11537,7 @@ void FUN_0019e5b4(void)
 
 
 /*--------------------------------------------------------------------*/
-/* FUN_k_FUN_001dc298 @ 0xk_FUN_001dc298   (est. sk_swift_helper)
+/* FUN_0019e5e8 @ 0x0019e5e8   (est. sk_swift_helper)
  * Ghidra: void thunk_FUN_001dc298(long param_1)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
@@ -11789,7 +11795,7 @@ void FUN_0019e760(long param_1,long param_2)
 
 
 /*--------------------------------------------------------------------*/
-/* FUN_k_FUN_001dc3b8 @ 0xk_FUN_001dc3b8   (est. sk_swift_helper)
+/* FUN_0019e8d8 @ 0x0019e8d8   (est. sk_swift_helper)
  * Ghidra: void thunk_FUN_001dc3b8(undefined8 param_1,long param_2)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
@@ -11920,7 +11926,7 @@ LAB_0019e9b0:
 
 
 /*--------------------------------------------------------------------*/
-/* FUN_k_FUN_001a9a84 @ 0xk_FUN_001a9a84   (est. sk_swift_helper)
+/* FUN_0019e9c8 @ 0x0019e9c8   (est. sk_swift_helper)
  * Ghidra: long thunk_FUN_001a9a84(long param_1,ulong param_2,long param_3)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.

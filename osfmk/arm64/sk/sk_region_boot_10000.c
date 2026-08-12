@@ -510,40 +510,26 @@ void sk_zone_named(unsigned long zone);
 void sk_zone_ref_run(unsigned long zone, void **run);
 void sk_zone_register(void *zone);
 
-
-void sk_cap_slots_install(void *tcb, void *m)
-{
-    unsigned long n = FUN_0005ee40();
-    unsigned long *caps = (unsigned long *)(FUN_00060524() << 3 ? 0 : 0);
-    unsigned long *src = (unsigned long *)((char *)0 + 0x1e0);  /* tpidrro_el0 */
-
-    if (n > 4) {
-        sk_puts("TB_ASSERT: num_rcv_caps < TB_MAX_RCV_CAPS");  /* 0x5ab59c */
-        __builtin_trap();
-    }
-    for (unsigned long i = 0; i < n; i++) {
-        /* copy cap word from per-thread receive area */
-        FUN_0005edac(i, 0);
-    }
-    for (unsigned long i = 0; i < n; i++) {
-        long slot = FUN_00034f70();
-        if (slot == 0) {
-            sk_puts("TB_ASSERT: error == TB_ERROR_SUCCESS");  /* 0x5ab644 */
-            __builtin_trap();
-        }
-        CallSupervisor(1);
-        if (FUN_00015be8(tcb, slot) != 0) {
-            sk_puts("TB_ASSERT: error == TB_ERROR_SUCCESS");  /* 0x5ab644 */
-            __builtin_trap();
-        }
-    }
-}
-
 /*--------------------------------------------------------------------*/
 /* FUN_00014470 @ 0x00014470   (est. sk_ptr_deref)
  * Ghidra: undefined8 FUN_00014470(undefined8 *p)
  * Dereferences and returns *p.
- * Confidence: high (trivial). */
+ * Confidence: high (trivial). *//* In-region forward declarations (restored tail). */
+extern void *sk_heap_calloc(unsigned long count, unsigned long size, void *arg); /* FUN_00010244 */
+extern unsigned long FUN_0001505c(void);
+extern void FUN_000150cc(void *p);
+extern unsigned int FUN_00015448(void *obj);
+extern void FUN_000154d0(void *obj);
+extern unsigned long FUN_000159b8(void *obj);
+extern unsigned int FUN_000159c0(void *msg);
+extern uint8_t FUN_000159c8(void *msg);
+extern long FUN_00016458(void *cfg);
+extern unsigned long FUN_000183f0(void *a, void *b, void *c, void *d, void *e);
+extern void FUN_004b0068(void);
+extern void FUN_004b0408(void);
+extern void *sk_tcb_create_zeroed(void);
+extern void *FUN_00014628(void *a, void *b);
+
 unsigned long sk_ptr_deref(void **p)
 {
     return (unsigned long)*p;

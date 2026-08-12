@@ -237,6 +237,7 @@ STR_EXT = {s: f"sk_str_{i:02d}" for i,s in enumerate(sorted(s_refs))}
 def fix_types(s):
     s = s.replace('undefined8','uint64_t').replace('undefined4','uint32_t')
     s = s.replace('undefined2','uint16_t').replace('undefined1','uint8_t')
+    s = s.replace('undefined3','uint32_t').replace('undefined5','uint64_t')
     s = re.sub(r'\bundefined\b','uint8_t',s)
     s = re.sub(r'\buint3\b','uint64_t',s).replace('uint5','uint64_t')
     s = s.replace('ulong','unsigned long').replace('ushort','unsigned short')
@@ -476,6 +477,9 @@ typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
 typedef uint64_t (*sk_code_t)();
 /* Byte-concatenation helper (Ghidra CONCAT11 macro). */
 #define CONCAT11(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CONCAT12(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
+#define CONCAT23(a,b) ((((uint64_t)(a)) << 16) | ((uint64_t)(b)))
+#define CONCAT32(a,b) ((((uint64_t)(a)) << 24) | ((uint64_t)(b)))
 #define CONCAT41(a,b) ((((uint64_t)(a)) << 8) | ((uint64_t)(b)))
 """
 
@@ -538,11 +542,11 @@ SIG_OVERRIDE = {
 "0x537c4": "unsigned long * sk_boot_list(void)",
 "0x5cb18": "uintptr_t sk_set_cap_class(uint8_t arg1, ...)",
 "0x5295c": "void sk_init_stage2(uintptr_t arg1)",
-"0x5b0bc": "void sk_error_broadcast(void)",
+"0x5b0bc": "void sk_error_broadcast(uintptr_t arg1, ...)",
 "0x5cf4c": "void sk_notify_domain(uintptr_t arg1, ...)",
 "0x5c650": "void sk_error_from_code(uintptr_t code, ...)",
 
-"0x5acac": "void sk_global_get(uintptr_t arg1, ...)",
+"0x5acac": "uintptr_t sk_global_get(uintptr_t arg1, ...)",
 "0x5ba5c": "void sk_register_global(uintptr_t arg1, ...)",
 "0x5b190": "void sk_panic_msg(uintptr_t arg1, uintptr_t arg2, ...)",
 "0x51e5c": "unsigned long sk_macho_seg_by(uintptr_t arg1, uintptr_t arg2, ...)",
@@ -561,6 +565,7 @@ for a, sig in SIG_OVERRIDE.items():
         func_sigs[a] = (sig, body)
 
 
+import sys; print('DBG 5acac:', func_sigs.get('0x5acac',('MISSING',))[0], file=sys.stderr)
 out = [HDR, HW_DECL, "/* Out-of-region kernel helpers (FUN_ addr in the declaration notes). */\n", ext_fn_lines, "", "/* Out-of-region globals (DAT_ refs). */\n", glob_lines, "", "/* String literals referenced by this region (s_ labels). */\n", str_lines, ""]
 
 # Forward declarations use the real prototypes (matching definitions) so there
@@ -627,12 +632,17 @@ def post_fix(text):
     text = text.replace("sk_ipc_msg_read(stk0,arg1)", "sk_ipc_msg_read((uintptr_t)(void *)stk0,(uint8_t)arg1)")
     text = re.sub(r'sk_panic_msg\(([a-zA-Z_][a-zA-Z0-9_]*),t([0-9]+)\)',
                   r'sk_panic_msg(\1,(uintptr_t)(void *)t\2)', text)
+    text = re.sub(r'sk_panic_msg\((0),t([0-9]+)\)',
+                  r'sk_panic_msg(\1,(uintptr_t)(void *)t\2)', text)
     text = text.replace("sk_global_061 = arg1", "sk_global_061 = (uintptr_t)arg1")
     text = text.replace("sk_global_062 = t9", "sk_global_062 = (uintptr_t)t9")
     text = text.replace("sk_global_063 = arg1", "sk_global_063 = (uintptr_t)arg1")
     text = text.replace("sk_global_064 = arg2", "sk_global_064 = (uintptr_t)arg2")
     text = text.replace("sk_global_062 + 1", "(uintptr_t)sk_global_062 + 1")
+    text = re.sub(r"t(\d+) = sk_macho_seg\(([^)]*)\)", r"t\1 = (unsigned long)(uintptr_t)sk_macho_seg(\2)", text)
     text = re.sub(r'sk_macho_seg_by\(([a-zA-Z_][a-zA-Z0-9_]*),sk_str_([0-9]+)\)',
+                  r'sk_macho_seg_by(\1,(uintptr_t)(void *)sk_str_\2)', text)
+    text = re.sub(r'sk_macho_seg_by\((0),sk_str_([0-9]+)\)',
                   r'sk_macho_seg_by(\1,(uintptr_t)(void *)sk_str_\2)', text)
     text = re.sub(r'sk_macho_seg_by\(([a-zA-Z_][a-zA-Z0-9_]*),t([0-9]+)\)',
                   r'sk_macho_seg_by(\1,(uintptr_t)(void *)t\2)', text)
@@ -641,8 +651,21 @@ def post_fix(text):
     text = re.sub(r't17 = sk_boot_list\(\)', 't17 = (uint64_t)(uintptr_t)sk_boot_list()', text)
     text = text.replace("sk_sec_region_find()", "sk_sec_region_find(0,0)")
     text = text.replace("sk_ipc_cap_check()", "sk_ipc_cap_check(0,0)")
-    text = text.replace("sk_error_broadcast()", "sk_error_broadcast(0)")
     text = text.replace("sk_init_stage2()", "sk_init_stage2(0)")
+    text = text.replace("sk_register_global()", "sk_register_global(0)")
+    text = text.replace("sk_error_broadcast()", "sk_error_broadcast(0)")
+    text = text.replace("t2 = (uintptr_t)sk_global_062 + 1", "t2 = (unsigned int *)((uintptr_t)sk_global_062 + 1)")
+    text = re.sub(r't(\d+) = \(uint64_t \*\)sk_boot_arg\(\)', r't\1 = (uint64_t *)(uintptr_t)sk_boot_arg()', text)
+    text = re.sub(r't(\d+) = \(unsigned long \*\)sk_boot_arg\(\)', r't\1 = (unsigned long *)(uintptr_t)sk_boot_arg()', text)
+    text = re.sub(r'sk_lock_acquire\(\)', 'sk_lock_acquire(0,0)', text)
+    text = re.sub(r'sk_lock_prepare\(\)', 'sk_lock_prepare(0)', text)
+    text = re.sub(r'sk_lock_try\(\)', 'sk_lock_try(0)', text)
+    text = re.sub(r'sk_lock_release\(([a-zA-Z_][a-zA-Z0-9_]*),1\)', r'sk_lock_release((unsigned long *)(uintptr_t)\1,1)', text)
+    text = re.sub(r'sk_boot_putc\(t([0-9]+)\)', r'sk_boot_putc((long)(uintptr_t)t\1)', text)
+    text = re.sub(r'sk_tcb_ai\(t([0-9]+)\)', r'sk_tcb_ai((uint64_t)(uintptr_t)t\1)', text)
+    return text
+    text = text.replace("sk_init_stage2()", "sk_init_stage2(0)")
+    text = text.replace("sk_register_global()", "sk_register_global(0)")
     return text
 
 out_text = "\n".join(out)

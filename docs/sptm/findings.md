@@ -1286,3 +1286,111 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `local_18 = -0x2c8502b44bfffed6; ... if (local_18 == -0x2c8502b44bfffed6) return; FUN_0011d7e8(...)`.
 - **Severity (hypothesis)**: integrity control — Swift stack-scratch canary detects writer overruns into the scratch slot; any corruption faults instead of propagating.
 - **Confidence**: high (explicit sentinel compare + noreturn fault handler).
+
+## [sk-caps] 0x00084824 cL4 supervisor call (FUN_00084824)
+- **Observation**: The cL4 SK issues a supervisor call (CallSupervisor(0), svc #0) with a 3-word message block rooted at the per-CPU tpidrro_el0 register {kind=0x11, arg0, arg1}, then restores kind to 0x11. This is the SK's exit/syscall interface into the hypervisor/SPTM guarded levels.
+- **Evidence**: decompile: msg block at tpidrro_el0 = {0x11, param_2, param_3}; CallSupervisor(0); *puVar1 = 0x11.
+- **Severity (hypothesis)**: info — the SK-to-hypervisor boundary crossing mechanism.
+- **Confidence**: medium.
+
+## [sk-caps] 0x00084368 cL4 exclave-launch device-tree mapping (FUN_00084368)
+- **Observation**: The InternalExclaveLauncher maps the device tree (DTBlob) received from the hypervisor into the exclave VAS at fixed high addresses (0xe000000000000000 region) in 16 KiB pages via the vas-map op, after resolving the DeviceTree node. The hypervisor-supplied device tree is treated as trusted and mapped verbatim into the exclave.
+- **Evidence**: strings 'InternalExclaveLauncher/DTBlob.swift', 'InternalExclaveLauncher/VASExtension.swift', 'DEVICETREE FROM HYPERVISOR ON ADDRESSES 0x', 'mapDeviceTree()'; loop maps 0x4000-byte units; log address base 0xe000000000000000.
+- **Severity (hypothesis)**: hypothesis — hypervisor-supplied DT is trusted input to the exclave; a malicious DT could steer exclave memory mapping.
+- **Confidence**: medium.
+
+## [sk-caps] 0x00084ee0 cL4 VAS error encoding (FUN_00084ee0)
+- **Observation**: VAS operations encode errors as inline-ASCII tag words (e.g. 0x6563637553736176 'vasSucce', 0x6f46746f4e736176 'vasNtoFo') packed into 64-bit literals alongside status codes; messages 'vasOperationInvalid' and 'vasVirtualSpaceUnavailable' are logged. The packed word format is a cL4-specific ABI detail.
+- **Evidence**: switch on op<8 with literal ASCII words; log_86840('vasOperationInvalid')/('vasVirtualSpaceUnavailable').
+- **Severity (hypothesis)**: info.
+- **Confidence**: medium.
+
+## [sk-caps] 0x0008553c cL4 VAS dealloc is fail-stop (FUN_0008553c)
+- **Observation**: VAS deallocation failure logs 'Could not deallocate vas span <code>' and traps (SoftwareBreakpoint 0x8562c) instead of recovering — VAS span deallocation is fatal on error.
+- **Evidence**: decompile: cL4_log_86840('Could not deallocate vas span '); breakpoint 0x8562c after status check.
+- **Severity (hypothesis)**: info.
+- **Confidence**: medium.
+
+## [sk-caps] 0x000dc860 cL4 capability-free has no rollback (FUN_000dc860)
+- **Observation**: Capability-free validates the capability name length and faults if >0xff, but on resolution failure panics via a fatal-error path rather than returning an error; free is destructive with no rollback.
+- **Evidence**: len=FUN_00157308(param_2); if(0xff<len) SoftwareBreakpoint(1,0xdc91c); on resolve fail calls 'Could not free cap' 0x5c3f70 then xrt_fatal_dce40 (noreturn).
+- **Severity (hypothesis)**: informational — free is a one-shot destructive op.
+- **Confidence**: medium.
+
+## [sk-caps] 0x000dc634 / 0x000dc9f4 / 0x000dca30 cL4 boot capability stubs are fail-stop
+- **Observation**: conclaveId:asid init hard-faults if the mode arg is negative and panics if the PMM state object is absent. getIrqCap and allocUntyped are explicit unimplemented stubs that panic (noreturn) — the cL4 boot environment lacks IRQ-cap and untyped-cap retrieval; any caller hits a noreturn fault.
+- **Evidence**: 'getIrqCap unimplemented' 0x5c3fc0; 'allocUntyped unimplemented' 0x5c3fe0; panic 'Couldn't get PMM reference' 0x5c4000; all route to noreturn FUN_001afa84.
+- **Severity (hypothesis)**: low — absent capability paths fault rather than silently downgrade.
+- **Confidence**: high.
+
+## [sk-caps] 0x000dca30 cL4 Swift stack canary on boot-cap paths
+- **Observation**: Stack canary check (sentinel 0xd17a4fb44b02d2a = -0x2c8502b44bfffed6) present on boot-path functions; failure calls a noreturn handler. The same canary guards the tightbeam read/append wrappers across the caps region.
+- **Evidence**: local seeded to -0x2c8502b44bfffed6, checked at return, else FUN_0011d7e8.
+- **Severity (hypothesis)**: integrity control — detects writer overruns into stack scratch slots.
+- **Confidence**: high.
+
+## [sk-caps] 0x000ff47c / 0x000ff728 InternalExclaveLauncher object dispatch and allocation
+- **Observation**: The InternalExclaveLauncher component (banner 'InternalExclaveLauncher_Component' 0x5c6300) carries an exception-frame vtable probe and builds error/success results with hardcoded seL4-style error words 0xeb00000000287974 and 0xe000000000000000. Object-type dispatch: type 0x14 routes to allocate-with, anything else triggers a noreturn fatal 'Unknown ObjectType' panic (FUN_001afa84, line 0x1af).
+- **Evidence**: decompile of 0xff47c shows vtable call at frame+0x48 and both branches writing these constant error words; kind!=0x14 path calls FUN_002a4ab4, FUN_003a25d4, FUN_00086840('Unknown ObjectType'), then noreturn FUN_001afa84.
+- **Severity (hypothesis)**: informational — type-checked allocation with fail-stop on unknown type.
+- **Confidence**: medium.
+
+## [sk-caps] 0x000ffba8 InternalExclaveLauncher teardown sentinel
+- **Observation**: Teardown writes sentinel value -0x7fffffffffa39b90 into two consecutive words at x24+4 — a deliberate poison/canary pattern distinguishing a live from a torn-down launcher object.
+- **Evidence**: decompile: extraout_x1[0]=unaff_x24+4, extraout_x1[1]=-0x7fffffffffa39b90.
+- **Severity (hypothesis)**: informational.
+- **Confidence**: low.
+
+## [sk-caps] 0x000f6d20 et al. capability retirement paths (sched_retire_cap_*)
+- **Observation**: Multiple cap-retirement continuations (0xf6d20, 0xf6d88, 0xf6dec, 0xf6f04, 0xf6f3c) share branch-continuation structure (extraout_x8 register carry), indicating a common scheduler capability-retirement/teardown flow spread across many small thunks.
+- **Evidence**: decompiles show `extraout_x8` carry and shared retire structure.
+- **Severity (hypothesis)**: info — map of the cap-teardown path.
+- **Confidence**: low.
+
+## [sk-caps] 0x0009ea60 / 0x0009ea90 cL4 IPC-buffer resolve and supervisor tail
+- **Observation**: IPC-buffer resolution is relocatable object-image ref resolution (base+4+offset); the supervisor tail does a TPIDRRO_EL0 handshake + CallSupervisor(0). Together they form the exclave's IPC-in / IPC-out boundary into the SK.
+- **Evidence**: decompile of 0x9ea60 (ref resolution) and 0x9ea90 (supervisor call).
+- **Severity (hypothesis)**: info.
+- **Confidence**: medium.
+
+## [sk-caps] 0x0009955c exclave_launcher_run — cap build from raw-AS table
+- **Observation**: The core run path builds capabilities from a raw address-space table and maps region caps (map_all_caps frames), marshaling registers and setting the SC badge/cap-set — the exclave's capability-context establishment on launch.
+- **Evidence**: decompile: walk cap list, marshal regs, sc badge/cap-set 9d444/9d460; frame alloc 0x4000 + map.
+- **Severity (hypothesis)**: info — cap-context construction boundary.
+- **Confidence**: low.
+
+## [sk-obj] 00287c68 sk_cap_setup — cap-slot install bounds+bitmap validation
+- **Observation**: Installing a capability into an object's cap table validates (a) the slot index is non-negative, (b) it is < the table's declared bit width (param_4+0x20), (c) the slot's bit is set in the bitmap at param_4+0x38, and (d) the caller-supplied type index equals the table's stored type (+0x24). Any check failure raises the noreturn panic FUN_001afe4c. The install then dispatches through the per-type handler (obj-8+0x10).
+- **Evidence**: `if (((-1 < slot) && (slot >> nbits == 0)) && (bitmap[slot>>6]>>(slot&0x3f)&1) && (type_idx == *(int*)(table+0x24)))` then `(**(table-8+0x10))(param_1, table+0x30 + (type+0x48)*slot, obj)`; else `FUN_003488bc(1); FUN_0034a3ec(); FUN_001afe4c()` (noreturn).
+- **Severity (hypothesis)**: low — fail-closed cap install: an out-of-range/forged slot or type-index mismatch cannot reach the install handler; all failure modes are hard panics.
+- **Confidence**: high (explicit bounds + bitmap + type checks before the indirect install call).
+
+## [sk-obj] 00281d4c / 00281ef4 sk_swift_string_utf16/utf8_append — Swift runtime collection bounds traps
+- **Observation**: The embedded Swift runtime's UTF-16/UTF-8 string append helpers enforce destination capacity with hard noreturn preconditions: negative count, index-out-of-range (0x136), index-out-of-bounds (0x2ca), and invalid UTF-8 scalar index (0x1e2) all raise the noreturn Swift fatal error (FUN_001afe4c). A SoftwareBreakpoint(1, 0x281ef4) guards the surrogate/continuation path.
+- **Evidence**: multiple `FUN_001afe4c("Fatal error",0xb,2,"Index out of range",0x12,2,"Swift.Range",0x11,2,0x136,1)` and `SoftwareBreakpoint(1,0x281ef4)` when `surrogate>>0x10 != 0`.
+- **Severity (hypothesis)**: informational — fail-closed bounds checking in the kernel's embedded Swift stdlib (defense-in-depth; the fatal paths are preconditions, not attacker-controlled checks).
+- **Confidence**: high (string-matched Swift precondition messages).
+
+## [sk-obj] 00287794 sk_swift_set_apply — Set insert path hash-probe + dedup
+- **Observation**: The Swift Set builder (00287580) and Set apply (00287794) use an open-addressing hash probe (bitmask at set+7 / +0x20) and de-duplicate keys by comparing stored vs incoming (FUN_002a0d50 string compare, 0x6000000000000000 sentinel checks) before inserting, releasing the duplicate string (FUN_003a25d4). String keys are released after insert.
+- **Evidence**: `while ((bitmap[h>>6]>>(h&0x3f)&1)!=0) { slot=...; if (skey==key||...string_cmp...) { release; goto next; } h++; } insert(...)`.
+- **Severity (hypothesis)**: informational — correct key de-duplication and hash probing; no observed weakness.
+- **Confidence**: medium.
+
+## [sk-obj] 00287580 sk_swift_string_set_build — XOR-obfuscated string constants in set builder
+- **Observation**: The Set builder constructs its descriptor strings via XOR against the global key DAT_006adf18/006adf10 (e.g. 0x7465646279746573^key = "setedbyted", 0x646f72616e646f6d^key = "random..."). This is the seL4/cL4 metadata obfuscation pattern also seen in the object descriptor region.
+- **Evidence**: `local_88 = _DAT_006adf18 ^ 0x7465646279746573; uStack_90 = _DAT_006adf10 ^ puVar8[5] ^ 0x6c7967656e657261;` etc.
+- **Severity (hypothesis)**: informational — cosmetic string obfuscation (static-key XOR), not a real secrecy boundary.
+- **Confidence**: medium.
+
+## [sk-obj] 00284148 sk_swift_uint_setbit_map — Set iterator bit-reversal + overflow trap
+- **Observation**: The Swift Set/bitmap iterator extracts set-bit indices via full 64-bit bit reversal and a trailing-zero (LZCOUNT) computation, and traps (SoftwareBreakpoint(1, 0x2842e4)) if the word-index arithmetic overflows (SCARRY8). The index is bounded by the bitmap's declared width.
+- **Evidence**: `if (SCARRY8(lVar11,1)) { SoftwareBreakpoint(1,0x2842e4); }` and `if ((long)(0x3f-uVar9>>6) <= next) { word=0; goto done; }`.
+- **Severity (hypothesis)**: informational — the iterator bounds itself to the bitmap width and traps on overflow (no unbounded walk).
+- **Confidence**: medium.
+
+## [sk-obj] 00281cc0/002821c4 sk_swift_array_init_repeat — Swift Array init repeat capacity cap
+- **Observation**: Swift `Array(repeating:count:)` in this build hard-caps the element count at 2 for the 8/16-byte element variants: a requested count > 2 is silently truncated to 2 (via the `if (i==2) { count=2; break; }` sentinel) rather than allocating more storage. Counts < 0 raise the Range noreturn precondition.
+- **Evidence**: `if (lVar3 == 2) { param_3 = 2; break; }` in both 00281cc0 and 002821c4; `if (param_3 < 0) FUN_001afe4c(...,0xb5,1)`.
+- **Severity (hypothesis)**: informational — fixed-size stack buffer init; the 2-element cap is a Swift ABI artifact (small-array buffer), not a security boundary.
+- **Confidence**: high (explicit cap + string-matched Range precondition).

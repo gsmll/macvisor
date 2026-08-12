@@ -51,7 +51,7 @@ static inline unsigned int LZCOUNT(sk_word_t v){ return v?__builtin_clzll(v):64;
 /* Register / frame placeholders (values passed in registers at the call
  * site; reconstructed from the decompiler). */
 extern sk_word_t in_w8, in_x3, in_x4, extraout_x1, extraout_x8, extraout_x9;
-extern sk_word_t *unaff_x20, *unaff_x21, *unaff_x22, *unaff_x23, *unaff_x27;
+extern sk_word_t unaff_x20, unaff_x21, unaff_x22, unaff_x23, unaff_x27;
 extern sk_word_t uVar3, canary, local_88, local_90, local_38;
 extern sk_word_t __thread_bss;
 
@@ -70,7 +70,23 @@ unsigned char *sk_err_out(void);
 
 /* Out-of-range data globals referenced by this region. */
 extern sk_word_t DAT_005c99ee;
-extern sk_word_t DAT_006b2b10, DAT_006b2b18, DAT_006b2960, DAT_006b2b20, DAT_006b2b28;
+
+/* Short-form boot strings referenced by bodies. */
+extern const char s_Fatal_error[];
+extern const char s_DeviceTreeKit_DeviceTreeKit_swif[];
+extern const char s_InternalExclaveLauncher_PacResou[];
+extern const char s_Swift_NativeDictionary_swift[];
+extern const char s__AppleInternal_Library_BuildRoot[];
+extern const char s_context____NULL[];
+extern const char s_device_tree_integrity_parse_call[];
+extern const char s_device_tree_node_children_iterat[];
+extern const char s_iterator_gt_node_size[];
+extern const char s_InternalExclaveLauncher_Commpage[];
+extern sk_word_t DAT_004be938, DAT_004bed40, DAT_004bee78, DAT_004ea504, DAT_005a4b80;
+/* Stray reconstruction locals (declared globally for -fsyntax-only). */
+extern sk_word_t bit, ctx, dp, entry, keep, local88, local_30, local_b0, q, uStack_28, val;
+extern sk_word_t unaff_x19;
+
 extern sk_word_t DAT_006be46c, DAT_006be674, DAT_006be660, DAT_006be868;
 extern sk_word_t DAT_006b2830, DAT_006b27f0, _DAT_006b2838, _DAT_006b27f8, _DAT_006b2840;
 extern sk_word_t _DAT_004bee90, uRam00000000004bee98, _DAT_004beea0, uRam00000000004beea8;
@@ -84,7 +100,7 @@ extern sk_word_t _DAT_2bc686b8528, _DAT_2bc686b8530, _DAT_2bc686b8538, _DAT_2bc6
 extern sk_word_t _DAT_2bc686b8548, _DAT_2bc686b8550, _DAT_2bc686b8378;
 extern sk_word_t _DAT_4d5e91ca80, _DAT_4d5e91c8a0, _DAT_9fd86d1380, _DAT_9fd86d11a0;
 extern sk_word_t _DAT_ee50745750;
-extern sk_word_t DAT_00657778, DAT_00657788, DAT_00657790, DAT_00657798, DAT_006577e0;
+
 extern sk_word_t DAT_006ad900, DAT_006ad980, DAT_006b26c8, DAT_006b26c9;
 extern sk_word_t DAT_006b26d0, DAT_006b26d8, DAT_006b2710, DAT_006b2718, DAT_006b2720;
 extern sk_word_t DAT_006b2728, DAT_006b2730, DAT_006b2738, DAT_006b2740, DAT_006b2748;
@@ -841,8 +857,8 @@ void sk_ipmm_init_flag(void);
 void sk_ipmm_setup(void);
 void sk_ipmm_log(void);
 sk_word_t sk_ipmm_count_get(void);
-sk_word_t sk_ipmm_alloc_count(void);
-sk_word_t sk_ipmm_free_count(void);
+sk_word_t sk_ipmm_alloc_stat(void);
+sk_word_t sk_ipmm_free_stat(void);
 void sk_err_rec_fill(sk_word_t *rec, unsigned char code);
 void sk_err_rec_print(sk_word_t rec);
 sk_word_t sk_ipmm_alloc(sk_word_t a, sk_word_t type, sk_word_t size, sk_word_t pa, unsigned int flags);
@@ -7342,21 +7358,21 @@ sk_word_t sk_ipmm_count_get(void){ return _DAT_006b2928; }
 
 /*--------------------------------------------------------------------*/
 
-/* FUN_0006bb98 @ 0x6bb98   (est. sk_ipmm_alloc_count)
+/* FUN_0006bb98 @ 0x6bb98   (est. sk_ipmm_alloc_stat)
  * Ghidra: undefined8 FUN_0006bb98(void)
  * Returns the IPMM allocation count (DAT_006b2930).
  * Confidence: high
  */
-sk_word_t sk_ipmm_alloc_count(void){ return _DAT_006b2930; }
+sk_word_t sk_ipmm_alloc_stat(void){ return _DAT_006b2930; }
 
 /*--------------------------------------------------------------------*/
 
-/* FUN_0006bba4 @ 0x6bba4   (est. sk_ipmm_free_count)
+/* FUN_0006bba4 @ 0x6bba4   (est. sk_ipmm_free_stat)
  * Ghidra: undefined8 FUN_0006bba4(void)
  * Returns the IPMM free count (DAT_006b2938).
  * Confidence: high
  */
-sk_word_t sk_ipmm_free_count(void){ return _DAT_006b2938; }
+sk_word_t sk_ipmm_free_stat(void){ return _DAT_006b2938; }
 
 /*--------------------------------------------------------------------*/
 

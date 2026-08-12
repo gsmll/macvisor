@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include "sk_internal.h"
 
-typedef void (*code)(void);   /* Ghidra 'code *' function-pointer alias */
+typedef uint64_t (*code)(void *, ...);   /* Ghidra 'code *' (variadic) fn pointer */
 typedef uint64_t (*sk_fnv_t)(uint64_t, ...);  /* variadic dispatch fn */
 
 /* Ghidra primitive aliases used in this translation. */
@@ -32,6 +32,9 @@ typedef struct sk_pair { uint64_t lo; uint64_t hi; } sk_pair_t;
 #endif
 #ifndef CONCAT44
 #define CONCAT44(a,b) ((uint64_t)((uint32_t)(a)<<32)|(uint32_t)(b))
+#endif
+#ifndef LZCOUNT
+#define LZCOUNT(x) __builtin_clzll((unsigned long long)(x))
 #endif
 #ifndef DataMemoryBarrier
 #define DataMemoryBarrier(o,v) __asm__ volatile("dmb ish" ::: "memory")
@@ -75,7 +78,7 @@ extern unsigned long _DAT_006c07d8, _DAT_006c0750, _DAT_006c0744, _DAT_006c0748;
 extern unsigned long _DAT_006c0780, _DAT_006c0520, _DAT_006c0380, _DAT_006c06b0;
 extern unsigned long DAT_004f2710, DAT_004f2748;
 extern void *FUN_0036a804(unsigned long size, unsigned long tag);
-extern void FUN_003a2578(char *msg);              /* fatal */
+extern void FUN_003a2578(void *msg, ...);              /* fatal */
 extern void FUN_0036a668_(void);
 extern uint64_t FUN_0036a668(void);
 extern uint64_t FUN_00362e54(void *p, ...);
@@ -140,9 +143,30 @@ extern uint64_t FUN_0037c68c(ulong p);
 extern uint64_t FUN_0037c82c(uint64_t *p);
 extern uint64_t FUN_0037c770(uint64_t *p, long a);
 extern uint64_t FUN_0037c8e4(uint64_t p, ...);
+extern uint64_t FUN_0037c88c(uint64_t p, ...);
+extern uint64_t FUN_0037c930(uint64_t p, ...);
+extern sk_pair_t FUN_0037ca00(uint64_t p, ...);
+extern uint64_t FUN_0037c9a0(uint64_t p, ...);
+extern sk_pair_t FUN_0037cd8c(int *p, uint64_t *q, ...);
+extern void FUN_0037ccbc(uint64_t *p1, long p2, uint64_t *p3, uint64_t p4, uint64_t *p5, uint64_t *p6);
+extern sk_pair_t FUN_0037d0dc(void *p1, long p2, void *p3);
+extern sk_pair_t FUN_0037e348(void *p1, ulong p2, ulong p3, void *p4);
+extern uint32_t FUN_0037def8(void *p, ...);
+extern long FUN_0037df58(void *p, ...);
+extern void FUN_0037e484(void *p);
+extern void FUN_0037e868(long a, long b, long c, uint64_t d);
+extern void FUN_0037e614(ulong *p, long a);
+extern void FUN_0037e720(long *p, ulong *a, ulong *b);
+extern void FUN_0037e58c(uint64_t *p, uint64_t a, ulong b);
+extern sk_pair_t FUN_0037e348(void *p1, ulong p2, ulong p3, void *p4);
+extern uint64_t FUN_0037cec4(long p1, uint64_t *p2, uint64_t p3);
+extern uint64_t FUN_0037cf2c(long p1, uint64_t p2, long *p3);
+extern ulong *FUN_0037a744(ulong *p1, uint64_t *p2, long p3, uint32_t p4, ulong p5);
+extern long FUN_0037d95c(uint32_t *p1, ...);
+extern void FUN_0037d700(long *p1, ulong p2);
 extern uint64_t FUN_0037a340(ulong *p, ulong a, int b);
 extern void FUN_0037a668(ulong *p, ulong *q, uint a, ulong b, int c);
-extern uint64_t FUN_0036e7ec(void *a, ...);
+extern uint64_t FUN_0036e7ec(uint64_t a, ...);
 extern uint64_t FUN_00118148(void *p, unsigned long n);
 extern uint64_t FUN_00118164(void);
 extern uint64_t FUN_00118194(void);
@@ -161,7 +185,6 @@ extern uint64_t FUN_0037a19c(short *p1, short *p2);
 extern void sk_meta_write_elem(ulong *p1, ulong *p2, uint a, ulong b, int c);
 extern uint32_t FUN_0037aaac(uint32_t *p, ulong a);
 extern uint64_t FUN_0037ab2c(long p, int a);
-extern uint64_t FUN_0037a9ac(uint64_t *p, uint64_t a, uint64_t b);
 extern uint64_t FUN_00369758(void *out, ulong a, ulong b);
 extern uint64_t FUN_00351a38(void);
 extern uint64_t FUN_0022a474(ulong a, ...);
@@ -208,7 +231,6 @@ extern long FUN_0039a1b0(void *p);
 extern void FUN_00371af8(void);
 extern void FUN_003704ac(void);
 extern uint64_t FUN_0037f3d0(void);
-extern uint64_t FUN_0036fb10(void *p);
 extern uint64_t FUN_00376838(ulong a, uint32_t *b, long c);
 extern uint64_t FUN_0037dfa8(uint64_t a, uint64_t b, uint64_t c);
 extern uint64_t FUN_0037edf0(void *p);
@@ -247,43 +269,7 @@ uint64_t sk_msg_build_metadata(long param_1, uint32_t param_2, ulong param_3,
 extern uint64_t FUN_0036a338(uint64_t arg);
 extern void *FUN_0036a358(void *arg);
 extern uint64_t FUN_003a25b8(uint64_t arg);
-extern uint64_t FUN_003a2b38(uint64_t a, uint64_t b);
-extern uint64_t FUN_00378498(long *p1, long *p2);
-extern uint64_t FUN_00379f6c(uint64_t *p1, uint64_t *p2);
-extern uint64_t FUN_0037a19c(short *p1, short *p2);
 extern void sk_meta_write_elem(ulong *p1, ulong *p2, uint a, ulong b, int c);
-extern uint32_t FUN_0037aaac(uint32_t *p, ulong a);
-extern uint64_t FUN_0037ab2c(long p, int a);
-extern uint64_t FUN_0037a9ac(uint64_t *p, uint64_t a, uint64_t b);
-extern uint64_t FUN_00369758(void *out, ulong a, ulong b);
-extern uint64_t FUN_00351a38(void);
-extern uint64_t FUN_0022a474(ulong a, ...);
-extern void FUN_0024c8bc(void);
-extern void FUN_003504e8(void);
-extern void FUN_00100efc(void);
-extern void FUN_0024daf8(void);
-extern void FUN_00355cbc(void);
-extern void FUN_00356310(void);
-extern uint64_t FUN_003794d0(void *p, ...);
-extern uint64_t FUN_0037954c(void *p, ...);
-extern uint64_t FUN_003795a8(void *p, ...);
-extern uint64_t FUN_00379608(void *p, ...);
-extern uint64_t FUN_0037969c(void *p, ...);
-extern uint64_t FUN_00379720(void *p, ...);
-extern uint64_t FUN_003797a4(void *p, ...);
-extern uint64_t FUN_0037982c(void *p, ...);
-extern uint64_t FUN_003798d0(void *p, ...);
-extern uint64_t FUN_003799d0(void *p, ...);
-extern uint64_t FUN_00379a58(void *p, ...);
-extern sk_pair_t FUN_00379ae8(void *p, ...);
-extern uint64_t FUN_00379b84(void *p, ...);
-extern uint64_t FUN_00379c0c(void *p, ...);
-extern uint64_t FUN_00379cb0(void *p, ...);
-extern uint64_t FUN_00379d74(void *p, ...);
-extern uint64_t FUN_00379dec(void *p, ...);
-extern uint64_t FUN_00379e78(void *p, ...);
-extern uint64_t FUN_00379eec(void *p, ...);
-extern uint64_t FUN_00363f10(void *a, void *b);
 extern uint64_t FUN_00384b74(void *table, void *key);   /* probe */
 extern uint64_t FUN_00384c08(void *key, unsigned long mask, unsigned long cnt,
                              void *slots);               /* hash insert */
@@ -305,14 +291,11 @@ extern uint64_t FUN_00387e60(void *out, ...);
 extern sk_pair_t FUN_00383a1c(void *key, unsigned long mask, unsigned long cnt,
                               void *slots);
 extern uint64_t FUN_00383b08(unsigned long v);
-extern uint64_t FUN_0037f3d0(void);
 extern uint64_t FUN_0037f4bc(void *key, unsigned long mask, unsigned long cnt,
                              void *slots);
 extern uint64_t FUN_0037f5b0(void *table, void *key);
 extern uint64_t FUN_0037a48c(unsigned long n, void *dbg);
-extern ulong FUN_0037a7f8(void);
 extern uint64_t FUN_0037a978(unsigned long dbg);
-extern uint64_t FUN_0037b350(void *p, ...);
 extern uint64_t FUN_0035b178(void *tbl, unsigned long i, unsigned long a);
 extern void FUN_0035b588(void *tbl, void *a, unsigned long i, unsigned long v,
                          unsigned long b);
@@ -2718,7 +2701,7 @@ void sk_meta_backing_release(long *param_1)
         param_1[4] = 0;
         if (lVar1 != 0) thunk_FUN_00012568((void *)lVar1, 0x20);
         thunk_FUN_00053aa0(param_1 + 2);
-        thunk_FUN_00012568(param_1, 0x40, 0xf);
+        thunk_FUN_00012568((void *)param_1, 0x40, 0xf);
         return;
     }
     *param_1 = *param_1 - 1;
@@ -3515,7 +3498,7 @@ void sk_meta_parse_desc(uint64_t *param_1, long param_2)
     ulong uVar4 = param_2 + 0xc + (ulong)*(ushort *)(param_2 + 4) + 3 & 0xfffffffffffffffc;
     uint32_t uVar5 = ((*(ushort *)(param_2 + 10) & 1) != 0)
         ? *(uint32_t *)(uVar4 + (ulong)*(ushort *)(param_2 + 6) * 0xc) : 0;
-    uint64_t uVar1 = FUN_003658a0(param_2);
+    uint64_t uVar1 = FUN_003658a0((void *)param_2);
     uint32_t uVar6 = ((*(ushort *)(param_2 + 10) >> 2 & 1) != 0)
         ? *(uint32_t *)FUN_0037c8e4((uint64_t)(uintptr_t)param_2) : 0;
     uint64_t uVar3 = FUN_0037c88c((uint64_t)(uintptr_t)param_2);
@@ -3543,8 +3526,8 @@ uint64_t *sk_meta_hdr_zero(uint64_t *param_1)
     FUN_0037a850(param_1 + 4, 0);
     param_1[6] = 0;
     param_1[7] = 0;
-    uint64_t uVar1 = FUN_00111890(0x10, 0x1000c40451b5be8);
-    uVar1 = FUN_0037a850(uVar1, 0);
+    uint64_t uVar1 = (uint64_t)FUN_00111890(0x10, 0x1000c40451b5be8);
+    uVar1 = FUN_0037a850((void *)uVar1, 0);
     param_1[8] = uVar1;
     return param_1;
 }
@@ -3579,7 +3562,7 @@ sk_pair_t sk_meta_subfield_tab(long param_1)
  */
 long sk_meta_subfield_base(uint64_t param_1)
 {
-    long lVar1 = FUN_0037c930();
+    long lVar1 = FUN_0037c930(0);
     uint64_t pair[2] = SKPAIR(FUN_0037ca00(param_1));
     ulong uVar2 = (pair[1] == 0) ? 0 : (ulong)*(ushort *)(pair[0] + pair[1] * 2 + -2);
     return lVar1 + uVar2 * 0xc;
@@ -3599,7 +3582,7 @@ ulong sk_meta_tab_base(long param_1)
     ushort uVar1 = *(ushort *)(param_1 + 10);
     ulong uVar4 = (ulong)uVar1 & 1;
     ulong uVar5 = ((int)uVar4 == 0) ? 0 : (ulong)*puVar3;
-    ulong uVar2 = FUN_0037c9a0();
+    ulong uVar2 = FUN_0037c9a0(0);
     return (ulong)puVar3 + (uVar2 & 0xffffffff) * 2 + ((ulong)uVar1 & 2) + uVar5 * 8 + uVar4 * 4 + 3 &
            0xfffffffffffffffc;
 }
@@ -3642,7 +3625,7 @@ sk_pair_t sk_meta_tab_slice(long param_1)
         uVar1 = (ulong)*(ushort *)(param_1 + 10) & 1;
         ulong uVar2 = ((int)uVar1 == 0) ? 0 : (ulong)*puVar3;
         puVar3 = puVar3 + uVar1 * 2 + uVar2 * 4 + 1;
-        uVar1 = FUN_0037c9a0() & 0xffffffff;
+        uVar1 = FUN_0037c9a0(0) & 0xffffffff;
     }
     return SKPAIR2((uint64_t)puVar3, uVar1);
 }
@@ -3709,10 +3692,8 @@ ulong sk_meta_hash_desc(long *param_1)
                         ulong uVar10 = 1;
                         do {
                             uVar5 = (uVar5 >> 10 | uVar5 << 0x36) ^ *puVar9 >> 0x13 ^ *puVar9;
-                            bool bVar4 = uVar10 < uVar8;
                             puVar9++;
-                            uVar10++;
-                        } while (bVar4);
+                        } while (uVar10++ < uVar8);
                     }
                     uVar7++;
                     continue;
@@ -3743,13 +3724,13 @@ void sk_dep_materialize(uint64_t *param_1, long param_2, uint64_t *param_3,
     uint64_t local_60 = param_3[0], uStack_58 = param_3[1];
     uint64_t local_50 = param_3[2], uStack_48 = param_3[3];
     long local_78 = param_2 + 0x40;
-    uint64_t result[2] = SKPAIR(FUN_0037cd8c(param_2, &local_60, &local_78, param_4, param_5, param_6));
-    uint64_t uVar1 = result[0];
-    if ((result[1] & 1) == 0) {
-        result = FUN_0037a9ac(uVar1, param_2 + 0x40, *param_4);
+    sk_pair_t rr = FUN_0037cd8c((int *)param_2, (uint64_t *)&local_60, (uint64_t *)&local_78, param_4, param_5, param_6);
+    uint64_t uVar1 = rr.lo;
+    if ((rr.hi & 1) == 0) {
+        uVar1 = FUN_0037a9ac((uint64_t *)uVar1, (uint64_t)(param_2 + 0x40), *param_4);
     } else {
-        if (local_70 != 0) local_68 = CONCAT11(local_68._1_1_, 1);
-        FUN_0037ccbc(&local_60, uVar1, &local_78, *param_4, param_5, param_6);
+        if (local_70 != 0) local_68 = 1;
+        FUN_0037ccbc(&local_60, uVar1, &local_78, *param_4, (uint64_t *)param_5, (uint64_t *)param_6);
         if ((char)local_50 == '\x01') {
             *param_1 = uVar1;
             param_1[2] = uStack_58;
@@ -3757,10 +3738,10 @@ void sk_dep_materialize(uint64_t *param_1, long param_2, uint64_t *param_3,
             FUN_0037b350(&local_78);
             return;
         }
-        result = FUN_0037ac0c(uVar1, &local_78, *param_4);
+        uVar1 = FUN_0037ac0c(uVar1, (uint64_t *)&local_78, *param_4);
     }
     *param_1 = uVar1;
-    *(uint64_t *)(param_1 + 1) = result;
+    *(uint64_t *)(param_1 + 1) = uVar1;
     FUN_0037b350(&local_78);
 }
 
@@ -3778,17 +3759,17 @@ void sk_dep_resolve_one(uint64_t *param_1, long param_2, uint64_t *param_3,
 {
     if (*(char *)((long)param_3 + 0x11) == '\0') {
         uint8_t res[12];
-        uint64_t val[2] = SKPAIR(FUN_0037d0dc(param_2, *param_5, *param_6));
-        *(char *)((long)param_3 + 0x11) = ((uint8_t*)&val)[8];
-        *(long *)(param_2 + 0x20) = val[0];
-        if (((uint8_t*)&val)[8] != 4) {
+        sk_pair_t vv = FUN_0037d0dc((void *)param_2, 0, (void *)*param_5);
+        *(char *)((long)param_3 + 0x11) = (char)vv.hi;
+        *(long *)(param_2 + 0x20) = vv.lo;
+        if (vv.hi != 4) {
             FUN_0037b288(*(uint64_t *)*param_3, (long *)&param_3);
             *param_1 = 0;
             param_1[1] = 0;
             return;
         }
-        FUN_0037b170(param_2, param_3, 0);
-        *param_1 = val[0];
+        FUN_0037b170((uint64_t)param_2, param_3, 0, 0, 0);
+        *param_1 = vv.lo;
     } else if (*(char *)((long)param_3 + 0x11) == '\x04') {
         *param_1 = *(uint64_t *)(param_2 + 0x20);
     } else {
@@ -3818,7 +3799,7 @@ sk_pair_t sk_dep_find(int *param_1, uint64_t *param_2, uint64_t param_3,
     }
     /* acquire lock, insert into table via FUN_0037a238 + FUN_0037cec4 */
     long entry = 0;
-    FUN_0037cec4((long)param_1, param_2, &entry);
+    FUN_0037cec4((long)param_1, (uint64_t *)param_2, (uint64_t)(uintptr_t)&entry);
     *(long *)(param_1 + 0xe) = entry;
     return SKPAIR2(entry, 0);
 }
@@ -3835,7 +3816,7 @@ void sk_meta_lock_store(long param_1, uint64_t *param_2, uint64_t param_3)
     uint64_t local_50 = param_2[0], uStack_48 = param_2[1];
     uint64_t uStack_40 = param_2[2], uStack_38 = param_2[3];
     sk_mtx_lock_checked();
-    FUN_0037cf2c(param_1, &local_50, (long *)&param_3);
+    FUN_0037cf2c(param_1, local_50, (long *)&param_3);
     sk_meta_drain_deferred((int *)param_1);
     sk_mtx_unlock_checked();
 }
@@ -3858,7 +3839,7 @@ void sk_meta_insert(long param_1, uint64_t param_2, long *param_3)
     uint32_t *puVar12 = *(uint32_t **)(param_1 + 8);
     uint32_t *puVar2 = (puVar12 != 0) ? puVar12 + 2 : 0;
     ulong local_88 = uVar13;
-    uint64_t res[2] = SKPAIR(FUN_0037a238(param_2, uVar13, uVar11, puVar2));
+    uint64_t res[2] = SKPAIR(FUN_0037a238((long)param_2, uVar13, uVar11, (long)puVar2));
     ulong uVar10 = res[1];
     if (res[0] == 0) {
         ulong uVar7 = 1L << (uVar14 & 0x3f);
@@ -3866,25 +3847,25 @@ void sk_meta_insert(long param_1, uint64_t param_2, long *param_3)
         ulong uVar9 = uVar7 - uVar1;
         ulong uVar5 = (uVar9 != 0) ? uVar7 / uVar9 : 0;
         if (3 < uVar5) {
-            local_88 = FUN_0037a4c0(param_1, uVar13, uVar14, puVar2);
-            FUN_0037a238(param_2, local_88, uVar11, puVar2);
+            local_88 = FUN_0037a4c0(param_1, uVar13, uVar14, (long)puVar2);
+            FUN_0037a238((long)param_2, local_88, uVar11, (long)puVar2);
         }
         if (puVar12 == 0 || *puVar12 <= uVar4)
-            puVar12 = (uint32_t *)FUN_0037a5e0(param_1, puVar12, uVar11);
+            puVar12 = (uint32_t *)FUN_0037a5e0(param_1, (long)puVar12, uVar11);
         long lVar8 = *param_3;
-        uint64_t slot = FUN_00369758(&local_88,
+        uint64_t slot = (uint64_t)FUN_00369758(&local_88,
             ((ulong)*(ushort *)(lVar8 + 8) + (ulong)*(ushort *)(lVar8 + 0xe) +
              (ulong)*(ushort *)(lVar8 + 10)) * 8 + 0x28, 8);
         uint64_t *puVar3 = (uint64_t *)*param_3;
         uint64_t local_80[4] = { puVar3[0], puVar3[1], puVar3[2], puVar3[3] };
-        FUN_0037a744(&local_88, local_80, param_3[1], 0, 0);
+        FUN_0037a744(&local_88, (uint64_t *)&local_80, param_3[1], 0, 0);
         *(uint64_t *)(puVar12 + uVar11 * 2 + 2) = slot;
         *(uint64_t *)param_3[5] = slot;
         *(uint8_t *)param_3[6] = 1;
         *(uint32_t *)(param_1 + 4) = uVar1;
-        FUN_0037a668(&local_88, (ulong *)(param_1 + 0x10), (ulong)uVar1, uVar10 & 0xffffffff, 3);
+        FUN_0037a668(&local_88, (ulong *)(param_1 + 0x10), (uint)uVar1, uVar10 & 0xffffffff, 3);
     } else {
-        *(uint64_t *)param_3[5] = *res[0];
+        *(uint64_t *)param_3[5] = res[0];
         *(uint8_t *)param_3[6] = 0;
     }
 }
@@ -3952,7 +3933,7 @@ uint32_t *sk_meta_cap_info(uint32_t *param_1, long param_2)
  */
 sk_pair_t sk_cap2_field_ptr(uint32_t *param_1)
 {
-    if ((*(uint8_t *)((long)param_1 + 3) >> 6 & 1) == 0) return 0;
+    if ((*(uint8_t *)((long)param_1 + 3) >> 6 & 1) == 0) return SKPAIR2(0,0);
     uint32_t *puVar3 = param_1 ? param_1 : 0;
     long lVar2 = FUN_00379dec(puVar3);
     lVar2 = lVar2 + ((*puVar3 >> 0x1e) & 1) * 4;
@@ -3986,7 +3967,7 @@ long sk_cap2_field_off(uint32_t *param_1)
  */
 sk_pair_t sk_cap2_field_range(uint32_t *param_1)
 {
-    if ((*(uint8_t *)((long)param_1 + 2) >> 6 & 1) == 0) return 0;
+    if ((*(uint8_t *)((long)param_1 + 2) >> 6 & 1) == 0) return SKPAIR2(0,0);
     uint32_t *puVar2 = param_1 ? param_1 : 0;
     long lVar4 = FUN_0037d95c(puVar2);
     uint32_t uVar1 = *puVar2;
@@ -4102,7 +4083,7 @@ void sk_hashset_grow(long *param_1, ulong param_2)
             return;
         }
         if (param_2 >> 0x3d != 0) FUN_004b89f8();
-        long lVar3 = FUN_00111890(param_2 << 3, 0x20c0093837f09);
+        long lVar3 = (long)FUN_00111890(param_2 << 3, 0x20c0093837f09);
         long lVar4 = *param_1;
         *param_1 = lVar3;
         ulong uVar11 = 0xffffffffffffffff;
@@ -4152,7 +4133,7 @@ void sk_hashset_grow(long *param_1, ulong param_2)
     }
     if (param_2 < uVar11) {
         ulong uVar5 = (ulong)((float)(ulong)param_1[4] / *(float *)(param_1 + 5));
-        if ((uVar11 < 3) || ((uVar11 & uVar11 - 1) != 0)) uVar5 = FUN_001124fc();
+        if ((uVar11 < 3) || ((uVar11 & uVar11 - 1) != 0)) uVar5 = FUN_001124fc(0);
         else if (1 < uVar5) uVar5 = 1L << (-LZCOUNT(uVar5 - 1) & 0x3fU);
         if (param_2 <= uVar5) param_2 = uVar5;
         if (param_2 < uVar11) { /* shrink path */ return; }
@@ -4199,11 +4180,12 @@ long sk_hashset_find(long *param_1, long *param_2)
         if ((ulong)param_1[2] <= uVar6) __builtin_trap();
         long *plVar4 = *(long **)(*param_1 + uVar6 * 8);
         if (plVar4 == 0) return 0;
+        ulong uVar7 = 0;
         do {
             while (1) {
                 plVar4 = (long *)*plVar4;
                 if (plVar4 == 0) return 0;
-                ulong uVar7 = plVar4[1];
+                uVar7 = plVar4[1];
                 if (uVar3 != uVar7) break;
                 if (plVar4[2] == lVar9) return (long)plVar4;
             }
@@ -4264,7 +4246,7 @@ uint64_t *sk_desc_copy_cap(uint64_t *param_1, uint64_t *param_2)
         (**(code **)(*(long *)(param_2[3] - 8) + 0x10))(param_1);
     else {
         *param_1 = *param_2;
-        FUN_0036b270();
+        sk_alloc_pages(0,0);
     }
     return param_1;
 }
@@ -4278,6 +4260,7 @@ uint64_t *sk_desc_copy_cap(uint64_t *param_1, uint64_t *param_2)
  */
 uint64_t *sk_desc_assign(uint64_t *param_1, uint64_t *param_2)
 {
+    uint64_t uVar6 = 0;
     if (param_2 != param_1) {
         long lVar4 = param_2[3];
         long lVar5 = param_1[3];
@@ -4302,13 +4285,13 @@ uint64_t *sk_desc_assign(uint64_t *param_1, uint64_t *param_2)
                 (**(code **)(*(long *)(lVar5 - 8) + 8))(buf, lVar5);
                 return param_1;
             }
-            uint64_t uVar6 = *param_1;
+            uVar6 = *param_1;
             param_1[3] = param_2[3];
             if ((*(uint8_t *)(lVar3 + 0x52) >> 1 & 1) == 0)
                 (**(code **)(*(long *)(lVar4 - 8) + 0x20))(param_1, param_2, lVar4);
             else *param_1 = *param_2;
         }
-        FUN_0036b118(uVar6);
+        FUN_0036b118((uint64_t)uVar6);
     }
     return param_1;
 }
@@ -4410,11 +4393,11 @@ uint64_t sk_meta_insert_triple(uint64_t param_1, uint64_t param_2, uint64_t para
             /* ... (rehash loop) */
             _DAT_006c0750 = uVar24;
             FUN_0037e348(&local_90, uVar24, uVar22, puVar18);
-            uVar25 = extraout_x1;
+            uVar25 = 0;
         }
         if (puVar9 == 0 || *puVar9 <= uVar8) {
             uint64_t uVar24 = (uVar8 >> 2) < 2 ? 1 : (uVar8 >> 2);
-            uint64_t uVar24b = FUN_0001279c((uVar24 + uVar22) * 0x18 + 8);
+            uint64_t uVar24b = (uint64_t)FUN_0001279c((uVar24 + uVar22) * 0x18 + 8);
             uint32_t *puVar18 = (uint32_t *)FUN_000101a0(uVar24b, 0x1060040ffda0b6d);
             if (puVar18 == 0) __builtin_trap();
             *puVar18 = (uint32_t)((uVar24b - 8) / 0x18);
@@ -4835,8 +4818,8 @@ void sk_meta_backing_reinit(uint64_t *param_1)
     for (int i = 0; i < 8; i++) param_1[i] = 0;
     FUN_0037a850(param_1 + 4, 0);
     param_1[6] = 0; param_1[7] = 0;
-    uint64_t uVar1 = FUN_00111890(0x10, 0x1000c40451b5be8);
-    uVar1 = FUN_0037a850(uVar1, 0);
+    uint64_t uVar1 = (uint64_t)FUN_00111890(0x10, 0x1000c40451b5be8);
+    uVar1 = FUN_0037a850((void *)uVar1, 0);
     param_1[8] = uVar1;
 }
 
@@ -5039,8 +5022,8 @@ void sk_meta_backing_init2(uint64_t *param_1)
     for (int i = 0; i < 8; i++) param_1[i] = 0;
     FUN_0037a850(param_1 + 4, 0);
     param_1[6] = 0; param_1[7] = 0;
-    uint64_t uVar1 = FUN_00111890(0x10, 0x1000c40451b5be8);
-    uVar1 = FUN_0037a850(uVar1, 0);
+    uint64_t uVar1 = (uint64_t)FUN_00111890(0x10, 0x1000c40451b5be8);
+    uVar1 = FUN_0037a850((void *)uVar1, 0);
     param_1[8] = uVar1;
 }
 
