@@ -193,6 +193,12 @@ extern uint64_t FUN_00059000(void);                             /* image array *
 extern uint64_t FUN_00059980(uint64_t a);                       /* image digest */
 extern uint64_t FUN_0005c134(uint64_t *params, uint64_t img, uint64_t *q); /* boot ctx query */
 extern void FUN_0005400c(void);                                 /* fallback */
+
+/* locks/secure-boot out-of-batch helpers */
+extern uint64_t FUN_00029b94(void);                             /* DT root alloc */
+extern uint64_t FUN_00055ddc(void);                             /* global buffer */
+extern void FUN_000298ec(uint32_t code, uint64_t a) __attribute__((noreturn)); /* lock fault */
+extern void txm_lock_fault(uint32_t code) __attribute__((noreturn));
 extern void FUN_00051c78(void) __attribute__((noreturn));       /* optional not set panic */
 extern void FUN_00051ce0(uint64_t *p);                        /* name deref side-effect (54034) */
 extern uint64_t FUN_00051ccc(uint64_t *p);                      /* name or default (54024) */
@@ -5144,6 +5150,554 @@ chk:
     FUN_0005400c();
     txm_stack_check_fail();
     return 0;
+}
+
+/* ================================================================== */
+/* 0x5400c .. 0x54dc0 — locks / subsystem / secure-boot region        */
+/* ================================================================== */
+
+/* FUN_0005400c @ 0x0005400c   (est. txm_panic_no_restore)
+ * Ghidra: void FUN_0005400c(void)
+ * noreturn panic "panic: boot object has no restor..." (0x4501).
+ * Confidence: high
+ */
+static void txm_panic_no_restore(void) { txm_panic_msg(0x4501); }
+
+/* FUN_00054024 @ 0x00054024   (est. txm_default_name)
+ * Ghidra: undefined* FUN_00054024(void)
+ * Returns the default object name (&DAT_0001b378).
+ * Confidence: high
+ */
+static uint64_t txm_default_name(void) { return 0x1b378; }
+
+/* FUN_00054034 @ 0x00054034   (est. txm_obj_name_resolve)
+ * Ghidra: long FUN_00054034(long)
+ * Resolves the object's name: returns *(obj+0x28) if set, else the
+ * dynamic name from the vtable slot (+0x58), else checks the boot-state
+ * flags (returning 0x46/0x5a/6) and the fallback slot (+0x60).
+ * Confidence: medium
+ */
+static uint64_t txm_obj_name_resolve(uint64_t obj)
+{
+    uint64_t r;
+    if (*(uint64_t*)(obj + 0x28) != 0) return *(uint64_t*)(obj + 0x28);
+    if (*(uint64_t*)(obj + 0x58) != 0) {
+        txm_fault_check_pac();
+        return (*(uint64_t(**)(void))(obj + 0x58))();
+    }
+    uint64_t flags = *(uint32_t*)(*(uint64_t*)(txm_default_name() + 0x20) + 1);
+    if ((flags >> 1 & 1) != 0) return 0x46;
+    if ((flags >> 3 & 1) == 0) {
+        if ((*(uint8_t*)(txm_default_name() + 0x18) >> 1 & 1) != 0) return 0x5a;
+        uint64_t (*fb)(void) = *(uint64_t(**)(void))(txm_default_name() + 0x60);
+        if (fb != NULL) return fb();
+        return 0;
+    }
+    return 6;
+    (void)r;
+}
+
+/* FUN_00054074 @ 0x00054074   (est. txm_nonce_name_resolve)
+ * Ghidra: undefined8 FUN_00054074(long,long)
+ * Resolves a nonce slot name: checks the boot-state flags (0x46/6), the
+ * object byte (0x5a), and the fallback vtable slot (+0x60). Returns 0
+ * on success.
+ * Confidence: medium
+ */
+static uint64_t txm_nonce_name_resolve(uint64_t obj, uint64_t slot)
+{
+    uint32_t flags = *(uint32_t*)(*(uint64_t*)(slot + 0x20) + 1);
+    if ((flags >> 1 & 1) != 0) return 0x46;
+    if ((flags >> 3 & 1) != 0) return 6;
+    if ((*(uint8_t*)(obj + 0x18) >> 1 & 1) != 0) return 0x5a;
+    if (*(uint64_t*)(obj + 0x60) != 0) return (*(uint64_t(**)(void))(obj + 0x60))();
+    return 0;
+}
+
+/* FUN_000540c0 @ 0x000540c0   (est. txm_panic_illegal_nonce_desc)
+ * Ghidra: void FUN_000540c0(void)
+ * noreturn panic "panic: illegal nonce descriptor c..." (0x4578).
+ * Confidence: high
+ */
+static void txm_panic_illegal_nonce_desc(void) { txm_panic_msg(0x4578); }
+
+/* FUN_000540ec @ 0x000540ec   (est. txm_nonce_descriptor_absent)
+ * Ghidra: bool FUN_000540ec(void)
+ * Returns whether the nonce descriptor is absent: true if the hash is
+ * unresolved, else whether the descriptor short (obj+0x1b0) is zero.
+ * Confidence: medium
+ */
+static int txm_nonce_descriptor_absent(void)
+{
+    /* Resolve the nonce descriptor from the boot object context.
+     * FUN_000540ec decompiles via a 16-byte aux pair (ctx + obj). */
+    uint64_t ctx = txm_ctx_current_or_dispatch();
+    uint64_t obj = txm_obj_resolve(ctx, 0);
+    uint64_t h = txm_manifest_hash_resolve(ctx, *(uint64_t*)(obj + 0x10));
+    if (h == 0) return 1;
+    return *(uint16_t*)(obj + 0x1b0) == 0;
+}
+
+/* FUN_0005413c @ 0x0005413c   (est. txm_odometer_verify_chain)
+ * Ghidra: undefined8 FUN_0005413c(undefined8,undefined8*)
+ * Verifies the boot chain: runs the boot-chain check (FUN_0005c230)
+ * with the optional anti-replay nonce (param_2+0x29); an error 2 is
+ * tolerated if the policy flags (0x1d628/0x1d648) permit. Logs
+ * "odometer: %s: %s boot chain integrity" (0x364b) on real failure.
+ * Returns 0 on success.
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_verify_chain(uint64_t a, uint64_t *params)
+{
+    uint64_t hash = txm_manifest_hash_resolve(a, params[2]);
+    uint64_t *nonce = NULL;
+    if (*(uint16_t*)(params + 0x36) != 0) nonce = params + 0x29;
+    uint64_t r = txm_bc_verify(params, a, hash, nonce);
+    uint32_t u = (uint32_t)r;
+    if (u != 0) {
+        if ((u == 2) && ((FUN_0005bfb4(params, 0x1d628) == 0 ||
+                          (FUN_0005bfb4(params, 0x1d648) & 1) != 0))) {
+            r = 0;
+        } else {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s boot chain integrity (%s)", 0x364b);
+            if (0x6b < u) txm_fault_impl(0, 0);
+        }
+    }
+    return r;
+}
+
+/* FUN_00054228 @ 0x00054228   (est. txm_ecid_parse)
+ * Ghidra: undefined8 FUN_00054228(byte*,undefined1*)
+ * Parses a 36-char ECID hex string (param_1) into a binary ECID blob
+ * (param_2). Requires 0x24 chars; validates the format (digits and
+ * '-' separators at positions 0x842100 mask), decodes 6 hex fields
+ * into the 20-byte output. Returns 0 on success, 0xffffffff on
+ * malformed input, faults 0x19 on overflow.
+ * Confidence: medium
+ * Notes: 0x842100 = bitmask of '-' positions in the ECID string.
+ */
+static uint64_t txm_ecid_parse(uint8_t *s, uint8_t *out)
+{
+    uint64_t len = txm_str_len((uint64_t)s);
+    if (len != 0x24) return 0xffffffff;
+    uint8_t buf[0x14];
+    uint64_t end = (uint64_t)(s + len + 1);
+    for (uint64_t i = 0; (int)i != 0x24; i = i + 1) {
+        uint8_t *p = s + i;
+        if (end <= (uint64_t)p) txm_fault_impl(0x19, 0);
+        if (((uint32_t)i < 0x18) && ((1u << ((uint32_t)i & 0x1f) & 0x842100u) != 0)) {
+            if (*p != 0x2d) return 0xffffffff;
+        } else {
+            if (end <= (uint64_t)p) txm_fault_impl(0x19, 0);
+            if ((0x36 < *p - 0x30) || ((1ull << ((*p - 0x30) & 0x3f) & 0x7e0000007e03ffull) == 0))
+                return 0xffffffff;
+        }
+    }
+    uint32_t f0 = (uint32_t)FUN_0002ebb8((uint64_t)s, 0, 0x10);
+    uint16_t f1 = (uint16_t)FUN_0002ebb8((uint64_t)(s + 9), 0, 0x10);
+    uint16_t f2 = (uint16_t)FUN_0002ebb8((uint64_t)(s + 0xe), 0, 0x10);
+    uint16_t f3 = (uint16_t)FUN_0002ebb8((uint64_t)(s + 0x13), 0, 0x10);
+    uint64_t out64 = 0;
+    uint8_t tail[8] = {0};
+    int k = 0;
+    uint8_t *p = s + 0x18;
+    while ((end > (uint64_t)p) && ((uint64_t)s <= (uint64_t)p)) {
+        uint8_t *q = p + 1;
+        tail[0] = *p;
+        if ((end <= (uint64_t)q) || ((uint64_t)q < (uint64_t)s)) break;
+        tail[1] = *q;
+        int l = 0;
+        while (l < 3 && tail[l] != 0) l = l + 1;
+        if (l == 3) txm_fault_impl(0x19, 0);
+        out64 = out64 | ((uint64_t)FUN_0002ebb8((uint64_t)tail, 0, 0x10) << ((k + 2) * 8));
+        k = k + 1;
+        p = p + 2;
+        if (k == 6) {
+            *(uint16_t*)(out + 2) = (uint16_t)(f0 >> 8) & 0xff | (uint16_t)((f0 & 0xff00ff) << 8);
+            out[1] = (char)(f0 >> 0x10);
+            out[0] = (char)(f0 >> 0x18);
+            out[5] = (char)f1;
+            out[4] = (char)((uint16_t)f1 >> 8);
+            out[7] = (char)f2;
+            out[6] = (char)((uint16_t)f2 >> 8);
+            out[9] = (char)f3;
+            out[8] = (char)((uint16_t)f3 >> 8);
+            *(uint32_t*)(out + 10) = (uint32_t)(out64 >> 16);
+            *(uint16_t*)(out + 0xe) = (uint16_t)(out64 >> 48);
+            return 0;
+        }
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_000544e0 @ 0x000544e0   (est. txm_secure_boot_state)
+ * Ghidra: ulong FUN_000544e0(void)
+ * Queries the secure-boot state: reads the production (0x1c778) and
+ * research (0x1a3e8) flags; returns 0xd if in research mode, else 0.
+ * Logs "slot: %s: failed to query ..." errors at 0x4962/0x4990.
+ * Confidence: medium
+ */
+static uint64_t txm_secure_boot_state(void)
+{
+    uint64_t ctx = txm_ctx_current_or_dispatch();
+    uint16_t prod = 0, research = 0;
+    uint64_t r = FUN_0005861c(ctx, 0, 0x1c778, (uint8_t*)&prod + 1);
+    if ((int)r == 0) {
+        r = FUN_0005861c(ctx, 0, 0x1a3e8, (uint8_t*)&research);
+        if ((int)r == 0) {
+            uint32_t v = 0xd;
+            if ((((uint8_t)research | (uint8_t)(research >> 8) ^ 0xff) & 1) != 0) v = 0;
+            return v;
+        }
+        txm_log_error(ctx, 0, "slot: %s: failed to query research-mode (%s)", 0x4990);
+    } else {
+        txm_log_error(ctx, 0, "slot: %s: failed to query production-mode (%s)", 0x4962);
+    }
+    return r;
+}
+
+/* FUN_000545bc / 4f5c0   (est. txm_boot_object_get)
+ * Ghidra: undefined8 FUN_000545bc/4f5c0(void)
+ * Returns the boot object pointer: **(obj+0x70) or 0 if unset.
+ * Confidence: medium
+ */
+static uint64_t txm_boot_object_get(void)
+{
+    uint64_t ctx = txm_ctx_current_or_dispatch();
+    uint64_t obj = txm_obj_resolve(ctx, 0);
+    if (*(uint64_t**)(obj + 0x70) == NULL) return 0;
+    return **(uint64_t**)(obj + 0x70);
+}
+static uint64_t txm_boot_object_get_b(void) { return txm_boot_object_get(); }
+
+/* FUN_000545f0 / 4f5f4   (est. txm_secure_boot_support)
+ * Ghidra: undefined* FUN_000545f0/4f5f4(void)
+ * Returns the secure-boot support descriptor (&DAT_0001aa60 or
+ * &DAT_00019dd0 if the object has a non-null +0x48).
+ * Confidence: medium
+ */
+static uint64_t txm_secure_boot_support(void)
+{
+    uint64_t ctx = txm_ctx_current_or_dispatch();
+    uint64_t obj = txm_obj_resolve(ctx, 0);
+    if (*(uint64_t*)(obj + 0x48) != 0) return 0x19dd0;
+    return 0x1aa60;
+}
+static uint64_t txm_secure_boot_support_b(void) { return txm_secure_boot_support(); }
+
+/* FUN_0005462c @ 0x0005462c   (est. txm_anti_replay_none3)
+ * Ghidra: undefined8 FUN_0005462c(undefined8,undefined8,undefined1*)
+ * Sets the anti-replay mode byte to 0 and returns 0.
+ * Confidence: high
+ */
+static uint64_t txm_anti_replay_none3(uint64_t a, uint64_t b, uint8_t *out)
+{
+    *out = 0;
+    return 0;
+}
+
+/* FUN_0005463c @ 0x0005463c   (est. txm_chip_ops)
+ * Ghidra: undefined* FUN_0005463c(void)
+ * Returns the chip ops descriptor (&DAT_0001c380).
+ * Confidence: medium
+ */
+static uint64_t txm_chip_ops(void) { return 0x1c380; }
+
+/* FUN_0005464c @ 0x0005464c   (est. txm_get_secure_dt_root)
+ * Ghidra: undefined8 FUN_0005464c(long)
+ * Tags the context with "get SecureDT root" and returns the root node
+ * (**(obj+0x10)).
+ * Confidence: medium
+ */
+static uint64_t txm_get_secure_dt_root(uint64_t ctx)
+{
+    txm_ctx_tag(ctx, 0x7472786d, "get SecureDT root");
+    return **(uint64_t**)(ctx + 0x10);
+}
+
+/* FUN_00054688 @ 0x00054688   (est. txm_set_release_type)
+ * Ghidra: undefined8 FUN_00054688(long,undefined8)
+ * Sets the release type: if unset, copies the 0x40-byte release-type
+ * into the object (+0x158) and records it (+0x150). Returns 0, or 0x25
+ * if already set.
+ * Confidence: medium
+ */
+static uint64_t txm_set_release_type(uint64_t ctx, uint64_t rt)
+{
+    uint64_t obj = *(uint64_t*)(ctx + 0x18);
+    txm_ctx_tag(ctx, 0x7472786d, "set release type");
+    if (*(uint64_t*)(obj + 0x150) == 0) {
+        uint64_t dst = obj + 0x158;
+        if (obj + 0x198 < dst) txm_fault_impl(0x19, 0);
+        txm_memzero((void*)dst, 0x40);
+        *(uint64_t*)(obj + 0x150) = dst;
+        return 0;
+    }
+    return 0x25;
+}
+
+/* FUN_0005470c @ 0x0005470c   (est. txm_set_boot_uuid)
+ * Ghidra: undefined8 FUN_0005470c(long,undefined8)
+ * Sets the boot UUID: if unset, copies the 0x10-byte UUID into the
+ * object (+0x198) and marks it set (+0x1e8). Returns 0, or 0x25 if
+ * already set.
+ * Confidence: medium
+ */
+static uint64_t txm_set_boot_uuid(uint64_t ctx, uint64_t uuid)
+{
+    uint64_t obj = *(uint64_t*)(ctx + 0x18);
+    txm_ctx_tag(ctx, 0x7472786d, "set boot uuid");
+    if (*(uint16_t*)(obj + 0x1e8) == 0) {
+        if (obj + 0x1f0 <= obj) txm_fault_impl(0x19, 0);
+        txm_img4_install_hash(obj + 0x198, uuid, 0x10);
+        *(uint16_t*)(obj + 0x1e8) = 1;
+        return 0;
+    }
+    return 0x25;
+}
+
+/* FUN_00054784 @ 0x00054784   (est. txm_lock_entry)
+ * Ghidra: long FUN_00054784(long)
+ * Locks the TXM entry lock: tags "lock entry lock" and sets the lock
+ * byte (+0x29) to -1; faults 0x36 if already locked. Returns the ctx.
+ * Confidence: medium
+ */
+static uint64_t txm_lock_entry(uint64_t ctx)
+{
+    uint64_t obj = *(uint64_t*)(ctx + 0x18);
+    txm_ctx_tag(ctx, 0x7472786d, "lock entry lock");
+    char *lock = (char*)(obj + 0x29);
+    if (*lock != '\0') txm_lock_fault(0x36);
+    *lock = -1;
+    return ctx;
+}
+
+/* FUN_000547e4 @ 0x000547e4   (est. txm_unlock_entry)
+ * Ghidra: void FUN_000547e4(long*)
+ * Unlocks the TXM entry lock: verifies the lock byte (+0x29) is held
+ * (faults 0x38 if not), clears it, and zeroes *param_1.
+ * Confidence: medium
+ */
+static void txm_unlock_entry(uint64_t *ctx)
+{
+    uint64_t c = *ctx;
+    if (c != 0) {
+        txm_ctx_tag(c, 0x7472786d, "unlock entry lock");
+        char *lock = (char*)(*(uint64_t*)(c + 0x18) + 0x29);
+        if (*lock != -1) txm_lock_fault(0x38);
+        lock[0] = 0; lock[1] = 0; lock[2] = 0; lock[3] = 0;
+        *ctx = 0;
+    }
+}
+
+/* FUN_00054848 @ 0x00054848   (est. txm_lock_subsystem)
+ * Ghidra: long FUN_00054848(long)
+ * Locks the TXM subsystem lock: tags "lock subsystem lock" and sets the
+ * lock byte (+0x2a) to -1; faults 0x36 if already locked. Returns ctx.
+ * Confidence: medium
+ */
+static uint64_t txm_lock_subsystem(uint64_t ctx)
+{
+    uint64_t obj = *(uint64_t*)(ctx + 0x18);
+    txm_ctx_tag(ctx, 0x7472786d, "lock subsystem lock");
+    char *lock = (char*)(obj + 0x2a);
+    if (*lock != '\0') txm_lock_fault(0x36);
+    *lock = -1;
+    return ctx;
+}
+
+/* FUN_000548a8 @ 0x000548a8   (est. txm_unlock_subsystem)
+ * Ghidra: void FUN_000548a8(long*)
+ * Unlocks the TXM subsystem lock (+0x2a); faults 0x38 if not held.
+ * Confidence: medium
+ */
+static void txm_unlock_subsystem(uint64_t *ctx)
+{
+    uint64_t c = *ctx;
+    if (c != 0) {
+        txm_ctx_tag(c, 0x7472786d, "unlock subsystem lock");
+        char *lock = (char*)(*(uint64_t*)(c + 0x18) + 0x2a);
+        if (*lock != -1) txm_lock_fault(0x38);
+        lock[0] = 0; lock[1] = 0; lock[2] = 0; lock[3] = 0;
+        *ctx = 0;
+    }
+}
+
+/* FUN_0005490c @ 0x0005490c   (est. txm_boot_ctx_init)
+ * Ghidra: void FUN_0005490c(long)
+ * Initializes the boot context: allocates the DT root (FUN_00029b94),
+ * resolves /chosen, /product, and /chosen/manifest-properties nodes
+ * (FUN_0004e8b4), and builds the manifest-property context
+ * (FUN_000511f8) and the boot-property context (FUN_0004f340). Panics
+ * "failed to get chosen node" (0x4ac7), "failed to get product node"
+ * (0x4aec), "failed to get manifest properties" (0x4b12).
+ * Confidence: medium
+ * Notes: strings "/chosen" 0x18d7, "/product" 0x207c,
+ *   "/chosen/manifest-properties" 0x4a9e, "/chosen/asmb" 0x4aba,
+ *   boot UUID 0x4b3f.
+ */
+static void txm_boot_ctx_init(uint64_t ctx)
+{
+    uint64_t *dt = *(uint64_t**)(ctx + 0x18);
+    *dt = FUN_00029b94();
+    if (dt + 0x3e <= dt) txm_fault_impl(0x19, 0);
+    if (txm_dt_path_resolve((uint64_t*)dt[0], 0, (char*)0x18d7, dt + 1) != 1)
+        txm_panic_msg(0x4ac7);
+    if (txm_dt_path_resolve((uint64_t*)dt[0], 0, (char*)0x207c, dt + 2) != 1)
+        txm_panic_msg(0x4aec);
+    if (txm_dt_path_resolve((uint64_t*)dt[0], 0, (char*)0x4a9e, dt + 3) == 1) {
+        txm_dt_path_resolve((uint64_t*)dt[0], 0, (char*)0x4aba, dt + 4);
+        uint64_t *m = txm_cryptex_ctx_init(dt + 7, ctx, (uint64_t*)0x703d8, 0xc);
+        dt[6] = (uint64_t)m;
+        txm_magazine_name_store((uint64_t)m, 0x4b3f);
+        txm_triple_store(dt + 0x27, ctx, 0x70438, 3);
+        return;
+    }
+    txm_panic_msg(0x4b12);
+}
+
+/* FUN_00054a48 @ 0x00054a48   (est. txm_image_init)
+ * Ghidra: undefined8 FUN_00054a48(long)
+ * Initializes the image objects: parses the magazine (FUN_0005130c),
+ * sets the object data (FUN_000512fc), parses the stamp (FUN_000516c0)
+ * and nonces (FUN_000517f8), then initializes the image handlers
+ * (FUN_0004f350). Returns 0 on success; logs "image initialization
+ * failed (%d)" (0x4b69).
+ * Confidence: medium
+ */
+static uint64_t txm_image_init(uint64_t ctx)
+{
+    uint64_t canary = txm_canary;
+    uint64_t mag = *(uint64_t*)(*(uint64_t*)(ctx + 0x10) + 0x30);
+    uint64_t h = *(uint64_t*)(*(uint64_t*)(ctx + 0x10) + 0x130);
+    uint64_t header[0x11] = {0};
+    uint64_t r = txm_magazine_parse(mag, &header[0]);
+    if (((int)r == 0x46) || ((int)r == 0)) {
+        txm_obj_set_data(mag, 0x19738);
+        txm_magazine_stamp_parse(mag, (uint64_t)&header[0]);
+        txm_magazine_load_nonces(mag);
+        r = txm_image4_init_handlers((uint64_t*)h);
+        if ((int)r == 0) goto done;
+        txm_log_error(ctx, 0, "image initialization failed (%d)", 0x4b69);
+    }
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+done:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00054b4c @ 0x00054b4c   (est. txm_boot_log_buffer)
+ * Ghidra: void FUN_00054b4c(undefined8,long,undefined8,undefined8)
+ * Allocates and formats a boot log buffer: if param_2 is 0, zeroes the
+ * 0x100-byte buffer and formats the boot header. Canary-guarded.
+ * Confidence: medium
+ */
+static void txm_boot_log_buffer(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    uint64_t canary = txm_canary;
+    txm_libimage4_name_static();
+    if (b == 0) {
+        txm_memzero((void*)0x150, 0x100);
+        FUN_00025c6c(0x4b89);
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+    (void)a; (void)c; (void)d;
+}
+
+/* FUN_00054c18 @ 0x00054c18   (est. txm_boot_log_msg)
+ * Ghidra: void FUN_00054c18(undefined8,undefined8)
+ * Logs a "%6s %36s (0x%llx)" formatted message.
+ * Confidence: medium
+ */
+static void txm_boot_log_msg(uint64_t a, uint64_t b)
+{
+    txm_log_error(a, b, "%6s %36s (0x%llx)", 0x4b90);
+}
+
+/* FUN_00054c68 @ 0x00054c68   (est. txm_buffer_select)
+ * Ghidra: ulong* FUN_00054c68(undefined8,long,long)
+ * Selects between two buffers (the object vtable +0x30 result and the
+ * global FUN_00055ddc result) based on param_3; returns the one with
+ * the smaller length. Faults 0x19 on overflow and panics on an
+ * invalid selector.
+ * Confidence: medium
+ */
+static uint64_t *txm_buffer_select(uint64_t a, uint64_t obj, uint64_t which)
+{
+    uint64_t *p1 = (uint64_t*)(*(uint64_t(**)(void))(obj + 0x30))();
+    uint64_t *p2 = (uint64_t*)FUN_00055ddc();
+    if (which != 0) {
+        if (which != 1) txm_panic_msg(0x36f2);
+        if (*p2 < *p1) {
+            p1 = p2;
+            if (p2 + 10 <= p2) txm_fault_impl(0x19, 0);
+        } else if (p1 + 10 <= p1) txm_fault_impl(0x19, 0);
+    }
+    return p1;
+}
+
+/* FUN_00054d14 @ 0x00054d14   (est. txm_return_4)
+ * Ghidra: undefined8 FUN_00054d14(void)
+ * Returns 4.
+ * Confidence: high
+ */
+static uint64_t txm_return_4(void) { return 4; }
+
+/* FUN_00054d20 @ 0x00054d20   (est. txm_secure_boot_state_query)
+ * Ghidra: undefined8 FUN_00054d20(long,ulong*)
+ * Queries the secure-boot state from the lp_smb0/lp_smb1 properties:
+ * sums their values and requires <= 2 ("panic: invalid secure boot
+ * state", 0x4bbc). Returns the state into *param_2.
+ * Confidence: medium
+ */
+static uint64_t txm_secure_boot_state_query(uint64_t obj, uint64_t *out)
+{
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t node = (*(uint64_t**)(obj + 0x10))[4];
+    uint64_t r = 0;
+    if (node == 0) {
+        r = 0;
+    } else {
+        uint32_t a = 0, b = 0;
+        txm_dt_property_read_u32(&a);
+        txm_dt_property_read_u32(&b);
+        r = (uint64_t)(uint32_t)(a + b);
+        if (2 < (uint32_t)(a + b)) txm_panic_msg(0x4bbc);
+    }
+    *out = r;
+    return 0;
+}
+
+/* FUN_00054dc0 @ 0x00054dc0   (est. txm_secure_boot_policy)
+ * Ghidra: void FUN_00054dc0(long,long)
+ * Loads the secure-boot policy from the SecureDT properties
+ * (use-ddi-secure-boot, allow-ecid-mismatch, uses-avp-root-ca) and
+ * selects the matching root-CA table (0x17778/0x17be0/0x18b58 or the
+ * default 0x1c498) indexed by param_2. Faults 0x19 on invalid index.
+ * Confidence: medium
+ * Notes: strings at 0x4be2/0x4bf6/0x4c0a.
+ */
+static void txm_secure_boot_policy(uint64_t obj, uint64_t idx)
+{
+    uint64_t canary = txm_canary;
+    uint64_t base = **(uint64_t**)(obj + 0x10);
+    uint64_t node = (*(uint64_t**)(obj + 0x10))[1];
+    uint64_t rootca[4] = { 0x1c498, 0x1c4a0, 0x1c4a8, 0x1c4b0 };
+    uint16_t use_ddi = 0, allow_mismatch = 0;
+    uint8_t uses_avp = 0;
+    txm_dt_property_read_u8((uint8_t*)&use_ddi);
+    if ((use_ddi & 0x100) != 0) rootca[0] = 0x17778;
+    txm_dt_property_read_u8((uint8_t*)&allow_mismatch);
+    if ((allow_mismatch & 1) != 0) rootca[0] = 0x17be0;
+    txm_dt_property_read_u8(&uses_avp);
+    if ((uses_avp & 1) != 0) rootca[0] = 0x18b58;
+    uint64_t *sel = &rootca[0] + idx;
+    if ((sel < &rootca[0] + 4) && (rootca <= sel)) {
+        if (txm_canary == canary) return;
+    }
+    txm_fault_impl(0x19, 0);
 }
 
 #undef txm_fault

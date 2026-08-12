@@ -793,3 +793,75 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (lVar4 == 8) FUN_00050d70(s_panic__property_is_not_constrain_00005dd1)`; operator dispatch on `**(long**)(param_1+0x30)`.
 - **Severity (hypothesis)**: medium — the constraint engine is the policy backstop for boot-chain/anti-replay values; operator 8 panicking on "not constrained" means a mis-tagged property aborts boot.
 - **Confidence**: high
+
+## [ringminus1] 0002a674 txm_trust_cache_range — TrustCache DT range read w/o presence gate
+- **Observation**: The /chosen/memory-map "TrustCache" property (base+size, 16 bytes) is read and 16K-aligned but the base is only checked for non-zero and 16K alignment, and on ANY parse failure (missing node/property/bad length) the function returns {0,0} — it never panics on absence, it silently yields an empty range. Callers that treat an empty range as "no trust cache" vs "error" must be audited; a missing TrustCache entry silently disables the range rather than failing closed.
+- **Evidence**: FUN_0002a674: on `dt_get_property(...)!=1` or `len!=0x10` logs "unable to find TrustCache property" / "invalid length for TrustCache property" and returns {0,0}; alignment checks panic 0x40-0x43/0xc0 only when the property WAS found.
+- **Severity (hypothesis)**: low — a boot config error (missing TrustCache) degrades to an empty range instead of halting; depends on whether downstream code treats empty as fatal.
+- **Confidence**: high (string refs "/chosen/memory-map", "TrustCache" explicit)
+
+## [ringminus1] 0002a004/2a0d8/2a1ac/2a280/2a354/2a434 txm_* DT getters — absent property default directions
+- **Observation**: The /chosen boot-config getters return *val!=0 when the property exists, but diverge on absence: amfi_only_platform_code/research_enabled/erm/vmm_present return false (fail-closed), whereas sepfw_load_at_boot returns 1 (fail-open "load") and sepfw_never_boot returns 0 (fail-open "not never") when the property is missing or mis-sized. These defaults determine whether sepfw/amfi features are treated as enabled at boot.
+- **Evidence**: 2a354: on parse-failure paths `return 1;`; 2a434: `return 0;`; the four *bool getters all `return false` after logging. All panic 0x11/0x29 if the DT is unavailable.
+- **Severity (hypothesis)**: low — inconsistent fail-open/closed defaults across sibling getters; a stripped property set could silently enable/disable security features.
+- **Confidence**: high
+
+## [ringminus1] 0002adec txm_enter — selector dispatch is fail-closed on invalid opcode
+- **Observation**: The txm_enter hub accepts opcodes 0x0-0x33; the reserved range 0x2e-0x33 and the default case return status 0x26 (and opcodes >0x33 panic 0xa1), i.e. an unknown selector yields an error status rather than silently executing. Opcode 0xd (trust-cache unload) and 0x1a (255-byte blob) add explicit `+len` overflow asserts before dispatch.
+- **Evidence**: `if (0x32 < (uint)(op-1)) txm_panic(0xa1,0)`; case 0x2e..0x33 -> result=0x26; opcode 0xd `if (p2+0x10<p2) txm_assert(0x19)`; 0x1a `if (p2+0x61<p2) txm_assert(0x19)`.
+- **Severity (hypothesis)**: informational — fail-closed dispatch; availability only (bad selector panics).
+- **Confidence**: high
+
+## [ringminus1] 0002cbd0 txm_image4_dispatch — handler null + input-size checked before parse
+- **Observation**: The image4 dispatch validates that the handler pointer is non-null (else panic "image4 dispatch: handler %llu") and that the supplied input size exactly equals the expected size for the kind (else "image4 dispatch: input size %llu" panic) BEFORE running the handler. This prevents a partially-initialized or size-mismatched image4 payload from reaching the trust handler.
+- **Evidence**: `handler = txm_img4_handler(); if (handler==0) txm_panic_str("image4 dispatch: handler %llu");` and `expected = txm_img4_input_size(kind); if (size != expected) txm_panic_str("image4 dispatch: input size %llu")`. Kind 5 additionally range-translates the code+data segments (0x29/0x3b) before calling the handler.
+- **Severity (hypothesis)**: informational — fail-closed gate on the image4 handler dispatch.
+- **Confidence**: high
+
+## [ringminus1] 00032630/00032910 txm_codedir_parse / txm_codedir_mark — CodeDirectory superblob bounds + single-mark
+- **Observation**: The CodeDirectory/superblob parser validates the embedded blob magic (0xcfaeddee family via -0x3ff32106 = 0xcfaeddee? no: 0xcfaeddee is -0x30511212; the checked value 0xcfaeddee? the constant -0x3ff32106 = 0xc00cdec...) and bounds-checks each entry offset/stride against the blob size (per-field 0x2xxx panics), and the mark routine (32910) refuses to mark the same CodeDirectory magic twice (bit0 set -> 0x22b61) — a duplicate CodeDirectory in one superblob is rejected. Hash-slot count * stride is validated to not overflow the blob.
+- **Evidence**: 32630: magic `blob[0]==(unsigned)-0x3ff32106`, per-entry `off+sz<=total` checks with 0x2xxx class panics; 32910: `if ((*markp & 1)!=0) return 0x22b61; *markp=1;` per magic (0xfade7171/7172/8181/0c02/0b01 etc).
+- **Severity (hypothesis)**: medium — a malformed superblob is rejected by hard bounds checks; duplicate-command rejection prevents CDHash ambiguity.
+- **Confidence**: high (CodeDirectory magic constants are explicit)
+
+## [ringminus1] 000345f4 txm_trust_eval — the trust decision (cdhash handling)
+- **Observation**: The trust-class decision for a signed image is computed from the AMFI CMS flags vs the owner's policy masks, NOT directly from the cdhash lookup table: flags bit0 (apple) vs m0, bit1 (developer) vs m1, bit2 (adhoc) vs m2 determine trust 6/5/4/10. The cdhash/CDHash is verified during 31714 (amfi_cms_verify) via the cert-chain digest compare (318c8) and 319a8 (signature verify against the parsed CodeDirectory hash), and the per-entry cdhash membership check is gated on the profile's allow flags — an image whose cdhash is not in an allow-list but whose AMFI flags satisfy the policy masks is trusted via the flags path. This is the core authorization: AMFI CMS trust flags + policy masks + (optionally) cdhash cert-chain verification.
+- **Evidence**: 345f4: `local_b8[0] & m0/m1/m2` selects trust 6 (apple flag set) / 5 / 4 (developer) / 10 or 5 (adhoc, gated on *pf and profile bits d1/d4); `txm_amfi_cms_verify` (31714) runs 3154c+476a0 hash + 47754 chain verify; 318c8 compares the cert-chain hash via memcmp. Trust result written to param_2; failure class 0x40000 on unapproved.
+- **Severity (hypothesis)**: high — this is the trust decision gate; an error in the flags-vs-policy comparison or a skipped cert-chain verify would directly permit/deny code execution.
+- **Confidence**: medium (flags semantics inferred from the m0/m1/m2 masks; the verify chain is explicit)
+
+## [ringminus1] 0002fa00 txm_image4_eval — per-kind error-class mapping (AppleImage4 status)
+- **Observation**: The top-level image4 evaluation maps each kind (0x0-0x19) to an AppleImage4 class/error triplet and treats a `prep` failure as an immediate error (classes 0x7-0xa0000). The status callback 2fc9c converts Image4 status codes to packed form and logs a specific message per code; unknown codes collapse to 0xaaf03.
+- **Evidence**: `if (kind<3) { koperr=kind*0x10000+0x10000; kindclass=0x2100; }` else per-kind `getfn/prepfn` dispatch; 2fc9c switch on status (0/2/8/0xd/0x21/0x46/0x4f/0x50/0x5c) mapping to 0x9ab03/0x3a203/0x7a503/... and default 0xaaf03 with distinct log strings.
+- **Severity (hypothesis)**: informational — the eval result is a packed error word; the exact per-kind class mapping is the API contract.
+- **Confidence**: medium
+
+## [ringminus1] 00026350 txm_trust_cache_load — entitlement gate on trust-cache load
+- **Observation**: The trust-cache load path requires, for opcode <3 or <=0x19, that either the per-kind handler slot is null OR the global allow flag DAT_10800 is set OR the caller holds the `com.apple.private.pmap.load-trust-cache` entitlement (22a38) — otherwise the load is denied (error 0xe). This is the entitlement gate protecting trust-cache population.
+- **Evidence**: `if (((*(long*)(&DAT_100f8 + kind*0x28)!=0) && (DAT_10800&1)==0) && (txm_entitled(0,"com.apple.private.pmap.load-trust-cache")==0)) { uVar6=0xe; ... }`; the load then calls `FUN_31060(&DAT_10590, kind, state+0x20, ...)`.
+- **Severity (hypothesis)**: high — this gate controls who may add entries to a trust cache; if the entitlement check is bypassable, an unprivileged caller could populate a trust cache and authorize arbitrary code.
+- **Confidence**: medium (entitlement string is explicit; gate logic inferred)
+
+## [ringminus1] 00035f08 txm_policy_check_dispatch — restricted-execution policy dispatch
+- **Observation**: TXM's code-signing policy dispatch is keyed on a rule id byte (ctx+0x101) and runs a mandatory chain of shared selectors (00035aa0/35a38/3596c/358a4/35800/35760/356e4/35650) before the per-rule checks. Two of those selectors (000356e4, 00035760) gate restricted execution on the "com.apple.private.security.research..." entitlement, and 00035800 on one of six entitlements in DAT_00010ff0. A rule id of 0 (unset) or an already-applied id (ctx+0x102) is rejected (0x10503 / 0x23403). This is the access-control boundary for which callers may run code under each policy kind.
+- **Evidence**: FUN_00035f08 calls the shared selectors then FUN_000351c8/35264/35364/354c8/35550 by rule id; the 0xa0-0xac/0xe3-0xe5 base codes with class prefixes (0x10000/0x20000/...) are checked via (ret>>8)&0xff. Strings "com.apple.private.oop-jit-loader" (0x2c39), "com.apple.private.oop-jit-runner" (0x2c5a), "com.apple.private.security.research" (0x2c7b/0x2cbd).
+- **Severity (hypothesis)**: medium — the policy engine's per-rule selectors are the gate TXM applies before allowing JIT/restricted code execution; an error in an entitlement test would over- or under-approve.
+- **Confidence**: medium
+
+## [ringminus1] 0003a604 / 0003a33c / 0003be50 ECDSA verify — signature verification core
+- **Observation**: TXM verifies code-signing signatures via a P-256-family ECDSA verify: the core (0003a33c) validates the signature length against the curve order, imports r/s, computes u1/u2 with the big-number point ops, and combines the 16-byte digest by XOR with 0x89. The -0x92 ("hash mismatch") error is mapped to 0 (success-but-deny) at the wrappers (0003833c/0003be50/0003f6b0), and the digest comparison is constant-time (0003bf90, full-scan XOR with DIT). The verify is DIT-guarded throughout.
+- **Evidence**: 0003a33c uses txm_bn_modpow + point-multiply; the digest XOR `mac[8]^mac[4]^mac[3]^mac[0xd] ^ 0x89 ^ ...`; wrappers test `r2 == -0x92`. 0003bf90 XOR-accumulates all bytes under DIT. Constants: 0x7dcdc05e magic, -0x92 = 0xffffff6e.
+- **Severity (hypothesis)**: informational — the code-signing signature verify is the trust anchor; the constant-time digest compare and fail-closed error mapping are good practice.
+- **Confidence**: medium
+
+## [ringminus1] 0003d430 / 0003d05c / 0003e984 / 0003f070 big-number conditional ops — PRNG-masked constant-time selection
+- **Observation**: The big-number arithmetic layer implements conditional select/subtract using a xorshift PRNG (DAT_00070040, FUN_0003d498) to derive a rotate amount, combined with the 0x5555... mask so a masked select is applied to every limb. This is the constant-time (DIT) way to avoid branch-on-secret in the ECC scalar multiply and ECDSA verify.
+- **Evidence**: 0003d430/0003d05c/0003e984/0003f070 all compute `rot = (sel | rng<<1) & 0x3f` then `x & rmask ^ x & mask ^ ...`; DAT_00070040 is updated by the xorshift `x ^= x<<13; x ^= x>>7; x ^= x<<17`.
+- **Severity (hypothesis)**: informational — constant-time hygiene in the crypto core; a timing leak here could leak scalar/key bits.
+- **Confidence**: low (masked-select semantics inferred from the bit pattern)
+
+## [ringminus1] 0003737c / 00037584 / 0003780c / 00037900 DER/ASN.1 reader — bounds-checked element decode
+- **Observation**: TXM's DER element reader bounds-checks every length/tag decode: length fields (0x3737c) reject a canonical-form violation (leading zero / negative) and overflow, the high-tag-number decoder (0x37584) rejects underflow and >61-bit tag numbers, and the encoders (0x3780c/0x37900) fail (return 0) rather than write past the {ptr,end} buffer. Malformed input never produces an unbounded read/write.
+- **Evidence**: 0x3737c checks `(long)end-(long)np < 1/2/3/4` before each long-form; 0x37584 returns 0 on `prev >> 0x39` or `>> 0x36` overflow; 0x3780c/0x37900 return 0 when `start+len > end`. This is the parser TXM uses to walk code-signing and trust-cache structures.
+- **Severity (hypothesis)**: low — defense-in-depth; a parser bug here could mis-parse an attacker-controlled DER blob (availability/confusion), but all paths are fail-closed (return 0 / trap 0x19).
+- **Confidence**: high (standard DER decode + explicit bounds)

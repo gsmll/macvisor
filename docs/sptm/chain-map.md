@@ -364,3 +364,39 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 0005e374 family (CoreEntitlements subset) → 0005f1d0 (count), 0005ed6c/0x5ef74 (dict apply), 0005f5a4 (key lookup), 0005f690 (data cmp)
 - 0005fb88 (entitlements blob parse) → 00044178 (DER), 00060230 (decode object), 0006037c (parse ident), 0005db20 (dict parse), 0005e168 (dict init)
 - 000576f0-00057850 (runtime callback table) → 00057870 (chain builder), 00029784 (panic "function should never be called")
+
+## TXM trust-cache / txm_enter dispatch region (TxmT2, osfmk/arm64/txm/txm_region_trustcache.c, 0x2a000-0x35000)
+
+- 0002adec (txm_enter) → 0002b380/0002b3e8/0002b470/0002b4f8/0002b58c/0002b5e8/0002b644/0002b760/0002b870/0002b974/0002ba18/0002bad8/0002bbac/0002bc08/0002bc50/0002bc84/0002bd5c/0002bdb8/0002be18/0002be60/0002bf3c/0002c018/0002c134/0002c18c/0002c1f4/0002c258/0002c2c8/0002c314/0002c3a0/0002c3f8  [per-op handlers]
+- 0002adec (txm_enter) → 0002ab70 (finalize_state_string)  [state block commit]
+- 0002abec (txm_enter_platform_ops) → 0002ab70, 0002ab30, 0002aba4, 0002abb0  [secondary platform dispatch]
+- 0002b644 (load_trust_cache) → 00026350 (txm_trust_cache_load) → 00028594/000285d0/0002c5a4/0002c76c/00027284/00031060
+- 00026350 (txm_trust_cache_load) → 00031060 (txm_cert_register_full) → 0002fa00 (txm_image4_eval)
+- 0002c3f8 (txm_op_image4_dispatch) → 0002cbd0 (txm_image4_dispatch) → 000535e0 (img4 handler) + 00053cb0 (input size)
+- 0002a674 (txm_trust_cache_range) → 0004e8b4/0004eb24 (DT node/prop)
+- 0002a004..0002a434 (DT getters) → 0004e8b4/0004eb24 (DT)
+- 0002c5a4/0002c76c (range_translate/flush) → 0002c6a8 (range_page_translate) → 0002c84c (range_resolve) → 00061ea4 (translate)
+- 0002cbd0 (image4_dispatch kind 5) → 0002c5a4/0002c76c (code+data range translate)
+- 00032630 (txm_codedir_parse) → 00033150/000331b8/00033254/00033334/00033414/000334cc (per-version parsers) + 00032910 (mark)
+- 00032b38 (superblob_find_command) → 0002d4d0 (memcmp)
+- 00032c70 (superblob_parse) → 00032c30 (get_cmd), 00033150/000331b8/00033254/00033334/00033414/000334cc
+- 00031714 (txm_amfi_cms_verify) → 0003154c (hash_amfi) + 000476a0 + 00047754 + 000318c8 (chain verify)
+- 000345f4 (txm_trust_eval) → 00031714 + 000319a8 + 00031b44 + 000318c8
+- 00031b70 (txm_cectx_create) → 0003161c (amfi_cms_parse) → 00047588
+- 00031cb0 (txm_cectx_init_with_type) → 00031714 + 0005fb88 + 00034e90 + 00034dc4 + 00034420
+- 0002fa00 (txm_image4_eval) → 0002fc9c (status callback), 00052e90 (prepare), 00055ecc/00055dec/00055f00/00055f88/0005642c (img4 core)
+- fortified libc: 0002d240 (bzero), 0002d2b0 (memset), 0002d4d0 (memcmp), 0002d5f0 (ct_memcmp), 0002d6b0 (memmove), 0002d990 (strcmp), 0002da90 (strncmp), 0002dbe0/2dc80 (strlen), 0002efc4 (strlcpy), 0002ddf0 (vsnprintf core), 0002eba8/2ebb8 (strtol/strtoul)
+
+## Batch T3 (0x35000-0x40000) — code-signing policy engine + crypto toolkit
+- 00035f08 (txm_policy_check_dispatch) → 00035aa0/35a38/3596c/358a4/35800/35760/356e4/35650 (shared selectors) + 000351c8/35264/35364/354c8/35550 (per-rule)
+- 000350c0/350e8/35178 (restricted-execution enable/disable state machine) ← 0002b4f8 (caller, "system_does_not_support_restricted") / 00022348
+- 00035f08 → 00034b18 (trust context), 00031388/31424/314b0 (entitlement checks), 00033c9c/33bf4/33ad4 (range checks)
+- 00035acc (policy prepare) → 00032630/33d40 (region resolve), 00034b30/34b50 (trust probes)
+- 00035d24 (policy commit) → 00034028/325b0 (digest) — digest stored at ctx+0x40
+- 0003a604 (txm_ecdsa_verify) → 0003a33c (core) → 0003f574 (modpow-mul), 0003d568 (exp window), 0003ecf0 (finalize), 0003f0e4 (GF combine), 0003bf90 (ct_memcmp)
+- 0003b784 (scalarmul window) → 00037110/371a0 (window build/next), 00038cb4 (pt double), 000393bc/39d60 (pt add/sub wrap)
+- 0003a6f4 (scalarmul ladder) → 0003b0d4/3b354/38cb4 (point ops), 00036fc4/37d84/3d430/3f070/3e984 (PRNG conditional ops), 0003d498 (PRNG)
+- 0003c3d8 (modinv) → 0003d81c/3d8e4 (divstep), 0003c7e4 (inv step), 0003c2f0/3e8a0 (muladd)
+- 0003eec4/0003ff50 (SHA-512 core) ← 00036f54/3ece8 (thunks)
+- 0003f270 (SHA-256 core), 0003f9fc (SHA-1 core)
+- 00039f60 (digest alg dispatch) → 000388b0/3e258/40c1c/43d00/38b9c (alg name tables)

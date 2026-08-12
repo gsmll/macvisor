@@ -753,8 +753,10 @@ unsigned long txm_state_string_end(long p) { return (unsigned long)(p + 0x68); }
  * Confidence: low */
 void txm_page_op_16k(unsigned long a, unsigned long b, unsigned long c) { txm_syscall_26(); }
 
-/* thunk_FUN_0004f2f0 / 4efd4 / 4ef48 / 4f0e0 / 61ea4 — passthrough thunks
- * (these are glue to deeper TXM machinery; keep as thin calls). */
+/* FUN_0002abbc/2abc4/2abcc/2abd4/2abdc @ 0x2abbc (est. txm_thunk_4f2f0)
+ * @ 0x2abc4 (est. txm_thunk_4efd4) @ 0x2abcc (est. txm_thunk_4ef48)
+ * @ 0x2abd4 (est. txm_thunk_4f0e0) @ 0x2abdc (est. txm_thunk_61ea4)
+ * Passthrough thunks (glue to deeper TXM machinery; thin calls). */
 void txm_thunk_4f2f0(void) { txm_syscall_26(); }
 unsigned long txm_thunk_4efd4(unsigned long a, void *b) { return txm_syscall_26(); }
 unsigned long txm_thunk_4ef48(unsigned long a, void *b) { return txm_syscall_26(); }
@@ -1772,7 +1774,8 @@ unsigned long txm_state_base(void) {
 
 /* ---- fortified libc / string helpers (2d22c-2f0ec) ---- */
 
-/* FUN_0002d22c/2d230 @ 0x2d230  (est. txm_hang)
+/* FUN_0002d22c @ 0x2d22c (est. thunk_txm_hang)
+ * FUN_0002d230 @ 0x2d230  (est. txm_hang)
  * Ghidra: void FUN_0002d230(void)
  * Infinite do-nothing spin (fail-stop dead end).
  * Confidence: high */
@@ -2174,7 +2177,10 @@ unsigned long txm_fmt_write(unsigned char *state, const void *src, unsigned long
     return 1;
 }
 
-/* empty helpers 2ea9c/2eabc/2eacc/2eb04/2eb14 — no-ops */
+/* FUN_0002ea9c/2eabc/2eacc/2eb04/2eb14 @ 0x2ea9c (est. txm_fmt_noop_a)
+ * @ 0x2eabc (txm_fmt_noop_b) @ 0x2eacc (txm_fmt_noop_c)
+ * @ 0x2eb04 (txm_fmt_noop_d) @ 0x2eb14 (txm_fmt_noop_e)
+ * Empty helpers (no-ops). */
 void txm_fmt_noop_a(void) { }
 void txm_fmt_noop_b(void) { }
 void txm_fmt_noop_c(void) { }
@@ -2214,7 +2220,8 @@ int txm_snprintf_chk(char *out, unsigned long cap, unsigned long off,
     return 0;
 }
 
-/* FUN_0002eba8 / 2ebb8 @ 0x2eba8 (est. txm_strtol) 0x2ebb8 (est. txm_strtoul)
+/* FUN_0002eba8 @ 0x2eba8 (est. txm_strtol)
+ * FUN_0002ebb8 @ 0x2ebb8 (est. txm_strtoul)
  * Ghidra: ulong / ulong
  * strtol/strtoul: parse an optional sign, optional 0x/0X hex or 0 octal prefix,
  * accumulate digits with overflow detection (errno 0x16/0x22 via 29750), and
@@ -2248,7 +2255,10 @@ unsigned long txm_strtol(const char *s, char **end, unsigned base) {
     return neg ? (unsigned long)-(long)v : v;
 }
 
-/* FUN_0002ee30/2ee38/2ee40 — thunks to 2d3c0/2d4d0/2d6b0 */
+/* FUN_0002ee30 @ 0x2ee30 (est. txm_thunk_memrchr)
+ * FUN_0002ee38 @ 0x2ee38 (est. txm_thunk_memcmp)
+ * FUN_0002ee40 @ 0x2ee40 (est. txm_thunk_memmove)
+ * Thunks to 2d3c0/2d4d0/2d6b0. */
 void txm_thunk_memrchr(void) { }
 void txm_thunk_memcmp(void) { }
 void txm_thunk_memmove(void) { }
@@ -2263,7 +2273,7 @@ void txm_memcpy_chk(void *dst, const void *src, unsigned long n, unsigned long c
     txm_memmove(dst, src, n);
 }
 
-/* FUN_0002eea4 — thunk to 2d2b0 */
+/* FUN_0002eea4 @ 0x2eea4 (est. txm_thunk_memset) — thunk to 2d2b0 */
 void txm_thunk_memset(void) { }
 
 /* FUN_0002eeac @ 0x2eeac  (est. txm_memset_chk)
@@ -2298,7 +2308,7 @@ void txm_memset_s_chk(void *dst, unsigned long dlen, int c, unsigned long off,
     txm_memset_s(dst, dlen, c, max);
 }
 
-/* FUN_0002efbc — thunk to 2d990 */
+/* FUN_0002efbc @ 0x2efbc (est. txm_thunk_strcmp) — thunk to 2d990 */
 void txm_thunk_strcmp(void) { }
 
 /* FUN_0002efc4 @ 0x2efc4  (est. txm_strlcpy_chk)
@@ -2328,7 +2338,12 @@ unsigned long txm_strlcpy_chk(char *dst, const char *src, unsigned long cap,
  * Confidence: high */
 void txm_strlcpy_assert(void) { txm_panic_str("Security assertion failed: %s f\n"); }
 
-/* FUN_0002f10c/2f114/2f11c/2f124/2f12c/2f134 — thunks */
+/* FUN_0002f10c @ 0x2f10c (est. txm_thunk_strncmp)
+ * FUN_0002f114 @ 0x2f114 (est. txm_thunk_strlen2)
+ * FUN_0002f11c @ 0x2f11c (est. txm_thunk_strstr2)
+ * FUN_0002f124 @ 0x2f124 (est. txm_thunk_bzero2)
+ * FUN_0002f12c @ 0x2f12c (est. txm_thunk_errno)
+ * FUN_0002f134 @ 0x2f134 (est. txm_thunk_29750) — thunks */
 void txm_thunk_strncmp(void) { }
 void txm_thunk_strlen2(void) { }
 void txm_thunk_strstr2(void) { }
@@ -2341,7 +2356,7 @@ void txm_thunk_errno(void) { }
  * Confidence: high */
 void txm_stack_check_fail(void) { txm_panic_str("stack check fail"); }
 
-/* FUN_0002f188 — thunk to 299fc */
+/* FUN_0002f188 @ 0x2f188 (est. txm_thunk_299fc) — thunk to 299fc */
 void txm_thunk_299fc(void) { }
 
 
@@ -2779,9 +2794,16 @@ unknown:
  * Confidence: high */
 unsigned long txm_err_not_supported(void) { return 8; }
 
-/* Global descriptor-pointer getters 2fe84..2ff78 — return the address of a
- * fixed global data table (DAT_0da98/daa8/dab8/dac8/dad8/15598/163e0/16a60/
- * 170e0/16da0/17420/17e00/18290/197c8). These are per-format/algorithm data. */
+/* Global descriptor-pointer getters 2fe84..2ff78 — each returns the address
+ * of a fixed global data table (per-format/algorithm data).
+ * @ 0x2fe84 (txm_gdesc_0da98) @ 0x2fe94 (txm_gdesc_0daa8)
+ * @ 0x2feac (txm_gdesc_0dac8) @ 0x2febc (txm_gdesc_0dab8)
+ * @ 0x2fecc (txm_gdesc_15598) @ 0x2fedc (txm_gdesc_0dad8)
+ * @ 0x2feec (txm_gdesc_163e0) @ 0x2fefc (txm_gdesc_16a60)
+ * @ 0x2ff0c (txm_gdesc_170e0) @ 0x2ff38 (txm_gdesc_17e00)
+ * @ 0x2ff48 (txm_gdesc_18290) @ 0x2ff58 (txm_gdesc_17420)
+ * @ 0x2ff68 (txm_gdesc_197c8) @ 0x2ff78 (txm_gdesc_16da0)
+ * (2fea4 and 2ff1c/2ff30 are thunks to 56578/5a8d8/5a914.) */
 unsigned long txm_gdesc_0da98(void) { return (unsigned long)DAT_0000da98; }
 unsigned long txm_gdesc_0daa8(void) { return (unsigned long)DAT_0000daa8; }
 unsigned long txm_gdesc_0dab8(void) { return (unsigned long)DAT_0000dab8; }
@@ -2797,7 +2819,10 @@ unsigned long txm_gdesc_17e00(void) { return (unsigned long)DAT_00017e00; }
 unsigned long txm_gdesc_18290(void) { return (unsigned long)DAT_00018290; }
 unsigned long txm_gdesc_197c8(void) { return (unsigned long)DAT_000197c8; }
 
-/* thunks 2ff1c/2ff30/2fea4 — glue to 5a8d8/5a914/56578 */
+/* FUN_0002fea4 @ 0x2fea4 (est. thunk_56578)
+ * FUN_0002ff1c @ 0x2ff1c (est. thunk_5a8d8)
+ * FUN_0002ff30 @ 0x2ff30 (est. thunk_5a914)
+ * Thunks — glue to 5a8d8/5a914/56578. */
 void txm_thunk_5a8d8(void) { }
 void txm_thunk_5a914(void) { }
 void txm_thunk_56578(void) { }
