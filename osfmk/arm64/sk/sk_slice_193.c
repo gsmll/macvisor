@@ -2212,7 +2212,7 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
                 long cur = h.hi + n * 0x50;
                 while (true) {
                         char buf[0x50];
-                        sw_117cc4(buf, cur, 0x49);
+                        sw_117cc4((word_t)buf, (word_t)cur, 0x49);
                         if (buf[0] == '\\0') {
                                 word_t g = sw_3a261c(base);
                                 if ((g & 1) == 0) { sw_462710(0); sw_6b3f4(0); base = (long)sw_45636c(0); }
@@ -2221,7 +2221,7 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
                                 if (*(word_t*)(base + 0x18) >> 1 <= cnt) { sw_6b42c(0); sw_dbed0(0); base = (long)sw_45636c(0); }
                                 *(word_t*)(base + 0x10) = cnt + 1;
                                 *(word_t*)(base + 0x10) = cnt + 1;
-                                sw_117cc4(base + cnt * 0x50 + 0x20, buf, 0x49);
+                                sw_117cc4(base + cnt * 0x50 + 0x20, (word_t)buf, 0x49);
                         }
                         if (rem == 0) break;
                         rem = rem - 1;
@@ -2249,7 +2249,7 @@ word_t sk_re_scan_newline(word_t str, word_t flags)
                                 ch = (uint)sw_2a49a8(pos << 0x10, str, flags);
                         } else if ((flags >> 0x3d & 1) == 0) {
                                 long base = (flags & 0xfffffffffffffff) + 0x20;
-                                if ((str >> 0x3c & 1) == 0) base = sw_2a9ba8(str, flags);
+                                if ((str >> 0x3c & 1) == 0) base = sw_2a9ba8(str, flags).lo;
                                 byte *b = (byte*)(base + pos);
                                 uint u = *b;
                                 long adv;
@@ -2319,7 +2319,7 @@ adv:                    pos = pos >> 0x10;
                         byte *b;
                         if ((flags >> 0x3d & 1) == 0) {
                                 long base = (flags & 0xfffffffffffffff) + 0x20;
-                                if ((a >> 0x3c & 1) == 0) base = sw_2a9ba8(a, flags);
+                                if ((a >> 0x3c & 1) == 0) base = sw_2a9ba8(a, flags).lo;
                                 b = (byte*)(base + pos);
                         } else {
                                 word_t pair[2]; pair[0] = a; pair[1] = flags & 0xffffffffffffff;
@@ -2839,7 +2839,7 @@ sw128_t sk_re_peek_scalar2(void)
 sw128_t sk_re_record_append_diag(word_t a)
 {
         word_t head[2];
-        sw_117cc4(&head[0]);
+        sw_117cc4((word_t)&head[0]);
         sw128_t cur = sk_re_peek_char();
         sw128_t r;
         if (cur.hi == 0) {
@@ -3248,7 +3248,7 @@ void sk_re_parse_number_radix(word_t *out)
 sw128_t sk_re_parse_group_number(word_t tag)
 {
         word_t res[3];
-        sw_117cc4(res);
+        sw_117cc4((word_t)res);
         sk_re_parse_number(&res);
         sw128_t r;
         if (((byte*)res)[0] == '\\x01') {
@@ -3833,7 +3833,7 @@ commit:
                 }
         } else {
                 word_t x = *(word_t*)(__builtin_frame_address(0) + 0x50);
-                sw_117cc4(0, __builtin_frame_address(0));
+                sw_117cc4(0, (word_t)__builtin_frame_address(0));
                 sw_36b270(x);
                 sw_45904c(0);
                 sw_36b118(x);
@@ -4184,7 +4184,7 @@ sw128_t sk_re_parse_lookaround(void)
         out[1] = 0; out[2] = 0; out[3] = 0; out[4] = 0;
         out[5] = 0; out[6] = 0; out[7] = 0; out[8] = 0; out[9] = 0;
         *(byte*)(out + 10) = (byte)kind;
-        sw_117cc4(0, out, 0x50);
+        sw_117cc4(0, (word_t)out, 0x50);
         sw_8e500(0);
         return (sw128_t){out[0], (word_t)kind};
 }

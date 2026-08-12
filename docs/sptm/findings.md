@@ -4063,3 +4063,21 @@ Confidence: Medium.
 - **Evidence**: decompile 0x7c4c — `case 3: pcVar7 = (code *)SoftwareBreakpoint(1,0x4a7f78); (*pcVar7)();`.
 - **Severity (hypothesis)**: low — width-3 trap is a deliberate bound; but widths 1/2/4 still decode from the pattern buffer without an independent per-element length check.
 - **Confidence**: medium.
+
+## [SkR33] 0x004a0a94 — variable-width tag read selected by scratch size register, no per-element bound
+- **Observation**: sk_x_004a0a94 reads a tag from a freshly returned 12-byte pair (sk_x_004abf7c): the access width (byte/halfword/word) is chosen purely from the register artifact extraout_w10 (`< 0x100` -> byte, `>>0x10==0` -> halfword, else word) at an offset extraout_x9, then a second switch (default/2/3/4) reads a 1/2/3/4-byte element at `*puVar2` and combines it with a shifted length to build a key for sk_x_0006b438. Neither width selector is validated against the actual pair buffer length before the read; a forged width/offset would read past the 12-byte pair.
+- **Evidence**: decompile 0x4a0a94 — `if (extraout_w10 < 0x100) { ... *(byte*)(puVar2+off) } else if (extraout_w10>>0x10==0) { *(ushort*)... } else { *(uint*)... }`; second `switch(uVar6){case 3: uint3 read; case 4: *(uint*)puVar2}`; both driven by register-residue width/offset.
+- **Severity (hypothesis)**: medium — an over-read up to 4 bytes past a 12-byte object if a caller ever supplies an unvalidated width/offset via registers; depends on attacker control of the width selectors.
+- **Confidence**: low (register-sourced operands, object semantics inferred).
+
+## [SkR33] 0x004a217c — packed variable-length index decode with 3-byte reads driven by length-prefix byte
+- **Observation**: sk_x_004a217c decodes a variable-length packed index: it computes a byte-length `uVar8` from a length-prefix byte (`*(byte*)(lVar7+0x50)` AND its complement), shifts, and then reads the payload with a switch selecting 1/2/3/4-byte width (`case 3: uint3`). The read address is `unaff_x19 + lVar7` where lVar7 is derived from the prefix byte and an offset register artifact extraout_x9. No explicit check that `prefix-declared length <= remaining buffer` exists before the `*(uint*)(x19+lVar7)` reads.
+- **Evidence**: decompile 0x4a217c — `uVar8 = (uint)lVar7; uVar3 = uVar8<<3; if (uVar8<4) { uVar9 = ((w21-uVar1)+~( -1<<(uVar3&0x1f))>>(uVar3&0x1f))+1; if (0xff<uVar9) {...*(ushort/uint*)(x19+lVar7)} ...}` then `switch(uVar6){case 3: (uint)(uint3)*unaff_x19; case 4: *unaff_x19}`. Guard is only `uVar1 < uVar6` at the tail (bounds the index arithmetic), not a buffer-length check.
+- **Severity (hypothesis)**: low-medium — 3-byte packed reads on an untrusted length-prefixed stream could read past the element if the prefix overstates length; downstream result feeds sk_x_004ac168 (a bounds helper).
+- **Confidence**: low.
+
+## [SkR33] 0x004a1e84 / 0x004a1d6c / 0x004a1fb4 / 0x004a204c / 0x004a20e4 — message-send trampolines with unrecovered indirect jumps
+- **Observation**: This cluster of near-identical trampolines dispatches through an unrecovered jumptable (0x4a1f18 "Too many branches") / indirect calls through `*(extraout_x8)(...)` function pointers and method-table offsets (+0x18/0x20/0x28). The indirect targets are carried in preserved registers (extraout_x*/unaff_x19/x20) from preceding calls and are never validated against a known dispatch table, so a corrupt preserved register would transfer control to an arbitrary address in the kernel.
+- **Evidence**: decompile 0x4a1e84 — `/* WARNING: Could not recover jumptable at 0x004a1f18. Too many branches */ /* Treating indirect jump as call */`; 0x1d6c/0x1fb4/0x204c/0x20e4 call `(*extraout_x8)()` / `(*(code**)(base+0x18/0x20/0x28))()` with register-derived targets.
+- **Severity (hypothesis)**: medium — indirect control transfer from unvalidated register-residue targets is a standard COOP/function-pointer confusion surface if any of these are reachable with attacker-influenced registers.
+- **Confidence**: low (register artifacts obscure the real targets).

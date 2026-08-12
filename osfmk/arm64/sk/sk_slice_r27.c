@@ -3765,16 +3765,16 @@ extern void SUB_54ffff60f100041f(void); /* masked self-modifying/trampoline fn *
 /* Forward declarations of this part's own static functions (cross-calls). */
 static void sk_bcg_0047042c(void);
 static void sk_bcg_00470644(word_t p1, word_t p2, word_t p3, word_t p4);
-static void sk_bcg_00470998(void);
-static void sk_bcg_00470ae4(void);
-static void sk_bcg_00470c28(void);
+static void sk_bcg_00470998(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470ae4(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00470c28(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
 static void sk_bcg_00470d88(void);
-static void sk_bcg_00470ebc(void);
+static void sk_bcg_00470ebc(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
 static void sk_bcg_00470ff8(word_t p1, word_t p2, long p3);
-static void sk_bcg_0047153c(void);
-static void sk_bcg_00471644(void);
+static void sk_bcg_0047153c(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6);
+static void sk_bcg_00471644(word_t p1, word_t p2, word_t p3, long param_4, code *param_5, word_t p6, word_t p7, word_t p8, word_t p9, word_t param_10);
 static void sk_bcg_00471aec(word_t p1, word_t p2, word_t p3);
-static void sk_bcg_00471c14(void);
+static void sk_bcg_00471c14(word_t p1, word_t p2, word_t p3, word_t p4, word_t p5, word_t p6, word_t p7, word_t p8, word_t p9, word_t p10, word_t p11, word_t p12);
 static void sk_bcg_00471cfc(void);
 static void sk_bcg_00471e78(void);
 static void sk_bcg_00471f20(void);
