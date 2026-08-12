@@ -78,7 +78,7 @@ extern void sptm_slice_update(uint64_t va, uint64_t pages, uint64_t mode,
 extern void sptm_memcpy_bulk(uintptr_t dst, uintptr_t src, uint64_t n);       /* thunk_FUN_000abeb0 */
 extern void sptm_bzero_chk(uintptr_t dst, uint64_t n, uint64_t fill);         /* FUN_000ae3e0 */
 extern void sptm_qsort(void *base, uint64_t n, uint64_t size, void *cmp);     /* FUN_000ad3b0 */
-extern void sptm_dart_state(void);                                            /* FUN_000e4424 */
+extern uint64_t sptm_dart_state(uintptr_t regs);                              /* FUN_000e4424 */
 extern uint64_t sptm_dart_write_gate(uintptr_t dart_regs, uint32_t sel);      /* FUN_000c9364 */
 extern uint64_t sptm_dart_write_gate_slow(uintptr_t dart_regs,
     uint32_t sel);                                                            /* FUN_000c92e8 */
@@ -100,7 +100,7 @@ extern uint64_t g_bootstrap_stages;             /* DAT_001012d8 */
 
 /* Boot-frame allocator: allocation cursor + base. */
 extern uintptr_t g_boot_alloc_base;             /* DAT_001012a0 */
-extern uint32_t  g_boot_alloc_off;              /* DAT_001012a8 */
+extern uint64_t  g_boot_alloc_off;              /* DAT_001012a8 */
 
 /* Papt (physical) window: [g_mem_phys_base, g_mem_phys_end). */
 extern uint64_t g_mem_phys_base;                /* DAT_00095d18 */
@@ -334,7 +334,7 @@ uint64_t sptm_dart_lookup_active(uint8_t dart_id, uintptr_t caller)
         sptm_panic_code(0x6000006, caller, "%s: %s: %d: ... %s: 0x%llx", 0, 0, 0, 0, 0);
     }
     if (g_gapf_mode == 0x01) {
-        uintptr_t state = sptm_percpu_dart_state(g_dart_id_table[dart_id]);
+        uintptr_t state = sptm_percpu_dart_state();
         if (*(uint8_t *)(*(uintptr_t *)(state + 0x10) + 0xbe0) == 0x03) {
             *(uint8_t *)(*(uintptr_t *)(state + 0x10) + 0xbf5) = 1;
             return 1;
@@ -355,7 +355,7 @@ uint64_t sptm_dart_lookup_active(uint8_t dart_id, uintptr_t caller)
 void sptm_dart_clock_protection_setup(uint8_t dart_id, uintptr_t caller)
 {
     if (g_dart_id_table[dart_id] != 0xffff) {
-        uintptr_t state = sptm_percpu_dart_state(g_dart_id_table[dart_id]);
+        uintptr_t state = sptm_percpu_dart_state();
         sptm_clock_protection_op(*(uintptr_t *)(state + 0x10), 1);
         return;
     }
@@ -506,8 +506,9 @@ void sptm_dart_read_config(uint8_t *out, uintptr_t size, uint32_t packed,
 void sptm_dart_t8110_init(void)
 {
     uintptr_t iter = g_dt_root;
+    uint64_t sr_region = 0;
 
-    for (size_t i = 0; i < sizeof(g_dart_id_table) / sizeof(g_dart_id_table[0]); i++) {
+    for (uint32_t i = 0; i < 0x100; i++) {
         g_dart_id_table[i] = 0xffff;
     }
     if (g_dt_root == 0) {
@@ -782,6 +783,7 @@ void sptm_dart_sid_setup(uintptr_t dart, uint64_t sid, uintptr_t *iter,
     }
     /* SID end-page bound. */
     {
+        uint32_t base2 = *(uint32_t *)(dart + 0xb7c);
         uint32_t bound = (base2 >> 0x1a == 0) ? 0x400000 : 0x10000000;
         if (bound < end) {
             sptm_panic("%s: %s %s %s %u ... SID %u end p...", 0, 0, 0, 0, 0);
@@ -931,9 +933,9 @@ void sptm_dart_sid_walk_teardown(uintptr_t dart, uint64_t sid, uint64_t va,
     for (uint64_t i = 0; i < 0x800; i++) {
         uint64_t pte = *(uint64_t *)((va - table[0]) + table_va + i * 8);
         if (pte & 1) {
+            uint64_t paddr = (pte & 0x3ffffffc00) << 4;
             if (*(uintptr_t *)(dart + 0xb28) != 0 && va != *(uintptr_t *)(dart + 0xb28)) {
                 /* Not the live SID; validate TZ-D windows before freeing. */
-                uint64_t paddr = (pte & 0x3ffffffc00) << 4;
                 if (level == 3) {
                     if (g_pmap_io_range_count != 0 && *g_pmap_io_ranges <= paddr) {
                         uint64_t *last = g_pmap_io_ranges + (g_pmap_io_range_count - 1) * 3;
@@ -1358,6 +1360,7 @@ root_resolved:
         ((leveltab[0xc] & va & *(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x18)) >>
          (*(uint64_t *)((uintptr_t)leveltab + cur * 0x38 + 0x10) & 0x3f) & 0xffffffff) * 8);
     uint64_t val = *pte;
+    uint64_t next_pa = 0;
     if (cur != level) {
         for (;;) {
             if (table_out != NULL && level - 1 == cur) {

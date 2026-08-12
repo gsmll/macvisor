@@ -263,13 +263,13 @@ sptm_boot_stage_txm(void)
  * dispatches into TXM. Confidence: medium. Notes: per-CPU state via
  *   sptm_per_cpu_state(); UAT handoff magic at 0x142e + percpu + 10. */
 void
-sptm_sk_bootstrap_complete(uint64_t param_1)
+sptm_sk_bootstrap_complete(uint64_t boot_base)
 {
     uint64_t percpu, aligned, n_pages;
     int16_t handoff_magic;
 
     sptm_dbg_print("SK bootstrap complete");
-    g_slide = param_1 - g_kern_base;
+    g_slide = boot_base - g_kern_base;
 
     percpu = sptm_per_cpu_state();
     handoff_magic = *(int16_t *)(UAT_HANDOFF_MAGIC + percpu + 10);
@@ -286,7 +286,7 @@ sptm_sk_bootstrap_complete(uint64_t param_1)
     }
 
     sptm_teardown_el2_alloc(0x1000);
-    aligned = param_1 + 0x3fff & 0xffffffffffffc000;
+    aligned = boot_base + 0x3fff & 0xffffffffffffc000;
     n_pages = (aligned - g_boot_va) >> 0xe;
     sptm_map_handoff(g_boot_va, n_pages, 0, 0x3e);
     g_boot_va = aligned;
@@ -306,16 +306,16 @@ sptm_sk_bootstrap_complete(uint64_t param_1)
  * per-CPU state (0xa30=5, 0xa68=0, 0xa60=5) and enters dispatch domain 1.
  * Confidence: medium. */
 void
-sptm_boot_stage_sk_handoff(uint64_t param_1)
+sptm_boot_stage_sk_handoff(uint64_t percpu_state)
 {
     uint64_t percpu;
 
     if (((uint32_t)g_feature_flags >> 0x11 & 1) == 0) {
         sptm_panic_assert("Expected bootstrap stages not met");
     }
-    sptm_cpu_init((uint32_t)*(int16_t *)(UAT_HANDOFF_MAGIC + param_1 + 10));
-    sptm_init_sched((uint8_t *)param_1);
-    *(uint8_t *)(param_1 + 1) = 1;
+    sptm_cpu_init((uint32_t)*(int16_t *)(UAT_HANDOFF_MAGIC + percpu_state + 10));
+    sptm_init_sched((uint8_t *)percpu_state);
+    *(uint8_t *)(percpu_state + 1) = 1;
     if ((g_dt_handoff_flag & 1) != 0) {
         sptm_txm_handoff();
         sptm_sk_entry_early();
@@ -512,7 +512,6 @@ void
 sptm_trace_region_add(uint64_t address, uint64_t size)
 {
     uint32_t *entry;
-    uint32_t count;
 
     if (((uint32_t)g_feature_flags >> 0x14 & 1) != 0) {
         sptm_panic_assert("Unexpected bootstrap stages r");
@@ -527,7 +526,7 @@ sptm_trace_region_add(uint64_t address, uint64_t size)
         }
         entry = (uint32_t *)0x949b0 + (*(uint64_t *)0x94978) * 4; /* DAT_000949b0 */
         if (((uint64_t)entry & 0xffc0000000000000) != 0) {
-            entry = (uint32_t *)((uint64_t)entry & 0xffffffffffff |
+            entry = (uint32_t *)(((uint64_t)entry & 0xffffffffffff) |
                                  0xc8a2000000000000);
         }
         *entry = (uint32_t)(address >> 0xe);
@@ -726,7 +725,6 @@ sptm_sha_hash_range(uint32_t tag, uint64_t start, uint64_t end,
     uint8_t *page_va;
     uint64_t pa;
     uint8_t digest[0x20];
-    uint8_t scratch[0x4000];
     uint32_t tag32 = tag;
 
     sptm_sha_reset(g_sha_obj, g_sha_ctx);

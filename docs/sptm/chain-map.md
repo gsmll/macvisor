@@ -242,3 +242,34 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - FUN_000c59b8 (sptm_snprintf_wrap) → FUN_000ad278
 - FUN_000c59f4 (sptm_uat_handoff_magic) → reads handoff magic at sptm_uat_driver_state+cpu+10 (FUN_000f89b4 callee)
 - FUN_000c5a18 (sptm_hang_spin) → infinite `mov x0,#0x9898; b .` fail-stop
+
+<!-- trace region (sptm_region_trace.c) -->
+- FUN_000bc084 (sptm_sk_bootstrap_complete) → FUN_000c15b4 (sptm_dbg_print), FUN_000d7f80 (sptm_teardown_el2_alloc), FUN_000d8bf8 (sptm_map_handoff), FUN_000b8230 (sptm_dispatch_engine_init), FUN_000bb61c/FUN_000a10e0 (sptm_start_txm/sptm_txm_entry), FUN_000a121c (sptm_enter_domain), sptm_per_cpu_state
+- FUN_000bc19c (sptm_boot_stage_bootkc) → FUN_000d9be8 (sptm_memmap_available), thunk_FUN_000ac190 (sptm_strcmp), PAPT table DAT_001012f8, FUN_000f8844/8804, SCTLR_EL1
+- FUN_000bc338 (sptm_boot_stage_txm) → FUN_000d9be8 (sptm_memmap_available), FUN_000f8804
+- FUN_000bc3d0 (sptm_boot_stage_sk_handoff) → FUN_000dce04 (sptm_cpu_init), FUN_000baa60 (sptm_init_sched), FUN_000d8a58 (sptm_txm_handoff), FUN_000a11e0 (sptm_sk_entry_early), FUN_000a121c (sptm_enter_domain)
+- FUN_000bdd34 (sptm_cputrace_carveout_start) → reads *(DAT_00095d40+0x18)
+- FUN_000bddd0 (sptm_cputrace_carveout_init) → FUN_000e4424 (sptm_subsys_register), FUN_000e4d78 (sptm_percpu_base), FUN_000b79e8/000b7c04 (DT), FUN_000e41bc (sptm_alloc_elements), FUN_000d8a58 (sptm_txm_handoff)
+- FUN_000bdf54 (sptm_trace_region_add) → FUN_000f8804; region table 0x949b0/count 0x94978
+- FUN_000be044 (sptm_dt_key_read) → FUN_000b79e8/000b7c04 (DT), FUN_000e9f28 (sptm_panic_hib)
+- FUN_000be150 (sptm_memmove) → self-contained
+- FUN_000becd0 (sptm_dt_key_copy) → FUN_000be044 (sptm_dt_key_read), FUN_000b2584 (sptm_bzero_block), FUN_000e9f28 (sptm_panic_hib)
+- FUN_000bf298 (sptm_sha_hash_range) → FUN_000ae8b4 (sptm_sha_reset), FUN_000aeaa4 (sptm_sha_update), FUN_000e3d7c (sptm_frame_lookup), FUN_000e03f4/000e0770/000e05bc (zero page), FUN_000e40ec (sptm_va_lookup), g_sha_obj->finalize, FUN_000bf4bc (sptm_crypto_finalize)
+- FUN_000bf4bc (sptm_crypto_finalize) → FUN_000b25b0 (sptm_crypto_ctx), FUN_000b07bc (sptm_gcm_update_barr), FUN_000aeaa4 (sptm_sha_update), FUN_000b0504 (sptm_gcm_finalize_barr), FUN_000b2584 (sptm_bzero_block)
+- FUN_000bf5d0 (sptm_nvram / SK-HIB begin) → FUN_000ae8b4/000aeaa4 (SHA), FUN_000e3d7c (sptm_frame_lookup), FUN_000f8804, FUN_000b2608 (sptm_sk_hib_patchup); FTE class2 table DAT_00095d51, refcnt desc+6
+- FUN_000bf874 (sptm_ace_finalize) → FUN_000f8804; ACE ctx input +0x200 / result +0x100
+
+## bootstrap/io region (0xd0000-0xe0000) — sptm_region_io.c
+- 000d0c98 (sptm_dart_t8110_init) -> 000d1b2c (sptm_dart_register)  [per dart-t8110 node]
+- 000d1b2c (sptm_dart_register) -> 000d4d30, 000d4dd4, 000d4efc, 000d5a40, 000d5bd8
+- 000d4efc (sptm_dart_sid_setup) -> 000d5a40 (sptm_dart_sid_alloc), 000d5bd8
+- 000d056c/000d0610/000d06c0/000d074c (dart lookup/clock-protection helpers) -> FUN_000e4d78 (per-CPU dart state), FUN_000c786c (clock-protection op), FUN_000c9364/FUN_000c92e8 (dart write gates)
+- 000d9aa8 (sptm_map_boot_region) <- called by 000b8f84 (sptm_init) for each boot region
+- 000d9be8 (sptm_retype_boot_range) -> 000d8bf8 (sptm_retype_frames)
+- 000d9d44 (sptm_papt_commit) -> sptm_qsort; produces g_committed_range_{base,va,pages}
+- 000d9940 (sptm_phystokv) -> 000d8f94 (sptm_papt_walk_alloc), 000d941c (sptm_papt_install_leaf)
+- 000d8f94 -> 000d823c (sptm_alloc_frames), 000d8bf8, 000d8a58 (sptm_va_to_pa)
+- 000d823c -> 000d8914 (sptm_papt_unmap_leaf), 000d8784 (sptm_papt_update_root_pte)
+- 000d8914 -> 000d8a58; 000d8bf8 -> 000d8914/000d8784; 000d7348 -> 000d6f00 (sptm_papt_walk) -> 000d76fc (slice update)
+- 000d6124/000d617c (copy-to-scratch) -> FUN_000f8714, FUN_000e3d7c, FUN_000e40ec
+- 000dcf80 (sptm_io_bootstrap) -> 000d6860 (sptm_dt_parse_io_space), 000d9940, 000d823c, sptm_enable_iommu (FUN_000e61f0), 000d64d0/000d6e64 (comparators)

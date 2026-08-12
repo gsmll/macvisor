@@ -439,3 +439,75 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `sptm_paddr_validate(id,0x18)`; alignment `if (off != q*stride || 0x4000 < stride+off) panic 0x4000005`; `if (*(int*)(va+4) != 0) { fte_get(id); panic 0x4000000; }`; `if ((*state & mask)==0) panic 0x4000002`; `if (b != mode) panic 0x4000004`.
 - **Severity (hypothesis)**: low — prevents acquiring a UAT state backed by a referenced (in-use) or misaligned frame (state-confusion between UAT roots).
 - **Confidence**: high
+
+## [trace] 000bc19c sptm_boot_stage_bootkc — XNU EL2 exception vector published only inside BootKC PAPT range
+- **Observation**: The BootKC bootstrap stage publishes the runtime EL1 exception vector (vbar_el1) into the XNU exception-vector slot only after proving it lies within the BootKC_rx PAPT range; a vbar outside the range panics (0x2c). This confines the address XNU's exceptions are delivered to at stage transition.
+- **Evidence**: `vbar = vbar_el1`; walks PAPT table DAT_001012f8 (stride 5, name at [0]) matching "BootKC_rx" by sptm_strcmp (thunk_FUN_000ac190); `if (vbar < range[3] || range[3]+range[4]*0x4000 <= vbar) sptm_panic(0x2c,...)`; on match `*DAT_00095cf8 = vbar`, sets stage bit 0x10, SCTLR_EL1 bit0, LORelease.
+- **Severity (hypothesis)**: low — fail-closed: a forged/misplaced vbar cannot be installed as the EL1 exception vector (control-flow-of-exception integrity at the SK->XNU handoff).
+- **Confidence**: medium (range semantics from table stride; panic code explicit).
+
+## [trace] 000bc19c / 000bc338 sptm_boot_stage_bootkc / sptm_boot_stage_txm — single-shot stage announcement
+- **Observation**: Both stage-announce helpers hard-panic ("Attempted to announce bootstrap stage twice") if their stage bit is already set, and panic on "Unexpected bootstrap stages" if a preceding stage already ran. The bootstrap-stage bitmap (DAT_001012d8) is a monotonic, fail-closed state machine: each stage can be announced at most once.
+- **Evidence**: bootkc `if ((g_feature_flags>>0x10)&1) panic_assert("Unexpected...")` then `g_feature_flags|=0x10000` with LORelease, followed by `if (!(old>>0x10)&1) return; panic_assert("Attempted...")`. txm identical with bit 0xe / 0x4000.
+- **Severity (hypothesis)**: low — prevents stage replay/rollback from re-running a stage's mappings (defense-in-depth; availability via panic).
+- **Confidence**: high (bit patterns and both panic strings explicit).
+
+## [trace] 000bdf54 sptm_trace_region_add — bounded, aligned trace-region table
+- **Observation**: The trace/hibernation region table is capped at 10 entries (panic "Reached the maximum number of regions") and every entry must be 16 KiB aligned (panic otherwise). Registration is gated on the bootstrap stage bit 0x13 and skipped while hibernation is enabled (DAT_00100e00 bit0), and is refused during an unexpected later stage (bit 0x14).
+- **Evidence**: `if ((addr|size)&0x3fff) panic_assert("address %llx or size %zu not 16K aligned")`; `if (9 < *(u64*)0x94978) panic_assert("Reached the maximum...")`; entry at 0x949b0 + count*4 stores (addr>>14, size>>14).
+- **Severity (hypothesis)**: low — bounds the set of regions accepted into the trace/hib map (availability + integrity of the region list).
+- **Confidence**: high
+
+## [trace] 000becd0 sptm_dt_key_copy — all-zero DT key rejected
+- **Observation**: The DT key reader/copy helper treats a key whose bytes are all zero as invalid and panics ("key is all zero"), in addition to panicking when the key is absent or its size mismatches. A zeroed key cannot be used as a hibernation secret/seed.
+- **Evidence**: scans value[0..exp_size): if every byte is '\0' → `sptm_panic_hib(...,"key is all zero",...)`; size mismatch → "key has unexpected size"; NULL → "key property found but key is NULL"; absent node → "chosen/hibernation node not found".
+- **Severity (hypothesis)**: low — prevents an all-zero seed/key from being accepted into the hibernation crypto (weak-secret prevention; fail-closed panic).
+- **Confidence**: high
+
+## [trace] 000bf5d0 sptm_nvram — FTE refcount drain with underflow panic + SK-HIB begin
+- **Observation**: The SK-HIB begin (misnamed sptm_nvram) drains the per-CPU callback FTE reference counts: each callback page's descriptor class must be 3 and its refcnt is decremented, with an underflow panic ("refcnt_underflow") and a class-mismatch panic ("Type %d class of FTE"). It then resets the SHA context with a phase salt and re-arms the per-CPU state (0xa30=4, 0xa68=1, 0xa60=0xc) before running the SK HIB patchup.
+- **Evidence**: loop over DAT_00100cb0 callback pages: `if (g_ftype_class2[desc[1]*0x90] != 3) panic_assert("Type %d class of FTE")`; `refcnt = *(int*)(desc+6); if (refcnt==0) panic_assert("refcnt_underflow")`; else `*(int*)(desc+6)=refcnt-1`; sha_reset+update(4,&0x12f70); `if (bit 0xc && sptm_sk_hib_patchup()) panic_assert("SK HIB patchup returned error")`.
+- **Severity (hypothesis)**: low — fail-closed refcount accounting during SK-HIB teardown; a double-free/underflow of a callback page is converted to a panic rather than memory corruption.
+- **Confidence**: high (panic strings explicit).
+
+## [trace] 000bf298 sptm_sha_hash_range — page-range hash selects content by FTE class
+- **Observation**: The page-range hash feeds the global SHA-2 object from each 16 KiB page, but the hashed content is chosen by the page's FTE class: a zero-page-class page is hashed from a zeroed scratch buffer (so a physically-absent/zero page contributes a canonical zero block), while all other pages are hashed from their translated VA. Out-of-DRAM pages resolve through the frame descriptor; in-DRAM pages use the page-desc table.
+- **Evidence**: zero-page class (`g_ftype_class[desc[1]*0x90] == 0xff`) → sptm_zero_page_begin/addr/release; else translate via linear offset (g_linear_offset) or sptm_va_lookup; SHA reset+4-byte tag then 0x4000 per page; finalize via g_sha_obj->finalize then sptm_crypto_finalize.
+- **Severity (hypothesis)**: informational — the hash content reflects the SPTM's notion of the page (zero vs data), which is the basis of the hibernation image digest; a mis-classified page would change the digest (integrity gate still catches it).
+- **Confidence**: medium
+
+## [ringminus1] 000d9ec8 / 000dcf80 sptm_bootstrap_early / sptm_io_bootstrap — IO-space bounds enforcement
+- **Observation**: Both large bootstrap stages gate every physical address admitted into the PAPT/IO tables. bootstrap_early rejects non-16K-aligned virt/phys/first-avail/mem-size and any page count that overflows 32 bits (mem_size >> 0x2e), and validates the /chosen dram-base/dram-size window is page-aligned. io_bootstrap, when registering pmap-io-ranges, rejects misaligned base/length, wrap-around (a+l<a), and any non-bypass range that overlaps the managed DRAM window; the sorted adjacent-range scan panics on overlap. The io-filter table likewise rejects offset+length > 0x4000 and overlapping filters, and the final IO-range table sort validates class-6 rows and adjacent overlap ("IO_Ranges %u and %u overlap").
+- **Evidence**: bootstrap_early: `(param_2 & 0x3fff)`/`param_4>>0x2e` panics; io_bootstrap: `(a&0x3fff)`/`(l&0x3fff)`/CARRY(a,l)/`a < g_mem_phys_end && g_mem_phys_base < a+l` panics; post-sort `r[i+1] < r[i]+r[i].len` panic; io-filter `offset+len > 0x4000` panic.
+- **Severity (hypothesis)**: medium — these bounds gate exactly which physical ranges become SPTM-managed/IO mappings; a validation gap would admit an attacker-chosen physical window into the page tables.
+- **Confidence**: high
+
+## [ringminus1] 000d9940 sptm_phystokv — mapping-count ceiling enforced
+- **Observation**: The phys->VA mapping helper validates the running mapping count against a ceiling (g_max_mappings, DAT_00095108) before committing each region ("request for %u mappings exce..."), and refuses to run after the final bootstrap stage (bit 0x11). The region is carved from a monotonically-increasing VA cursor.
+- **Evidence**: `if (g_max_mappings < g_mapping_count + num_pages) panic("request for %u mappings exce...")`; `if (g_bootstrap_stages bit 0x11) panic "Unexpected bootstrap stages"`; VA cursor g_mapping_va_cursor advanced by num_pages*0x4000.
+- **Severity (hypothesis)**: low — bounds the number of IO/physical mappings SPTM will create, preventing unbounded VA-space exhaustion.
+- **Confidence**: high
+
+## [ringminus1] 000d6124 / 000d617c sptm_copy_phys_to_scratch(_checked) — rw-guard + frame bounds
+- **Observation**: The copy-to-scratch helpers take a per-frame rw-guard refcount (+2), panic on an odd/overflowing guard (0x3d), require the source frame to be managed (class-1, panic 9), bound the copy to the 0x4000 frame (panic 0xb) and to the 0x4000 scratch (panic "Offset into scratch page cro..."), and panic on guard release underflow. The _checked variant additionally gates the whole copy on the io-mapping-enforcement (DAT_00095278) and debug-enforce (bit 0x12) bits.
+- **Evidence**: `*guard = rc+2; if (rc>0xffe9 || rc&1) panic 0x3d`; `if (!(g_fte_class[guard[1]*0x90]&1)) panic 9`; `if (nbytes>0x4000 || (pa&0x3fff)+nbytes>0x4000) panic 0xb`; `if (nbytes+off>0x4000) panic "Offset into scratch page cro..."`.
+- **Severity (hypothesis)**: medium — the rw-guard and size bounds prevent a translation/copy from reading/writing outside the intended managed frame or clobbering the scratch buffer.
+- **Confidence**: high
+
+## [ringminus1] 000d6088 sptm_iommu_lookup — IOMMU id / type-id bounds
+- **Observation**: The IOMMU dispatch lookup bounds the high IOMMU id byte to < 9 (after subtracting 1) before indexing the per-IOMMU dispatch table (DAT_00095320), and panics "IOMMU with id %d not support..." for any non-zero unknown id. Only id 0 (global table) and 0xff (SPTM table) bypass the per-id check; a type-id >= 0xffffff would index past the 0x15578/0x15ae8 tables, but the panic path covers unknown ids.
+- **Evidence**: `id = iommu_id - 1; if ((id&0xff)<9 && (DAT_00095320+id*0x20 &1)) return table[id][type+0x58]`; `else panic "IOMMU with id %d not support..."`.
+- **Severity (hypothesis)**: low — bounds the IOMMU selector to the supported device table before dispatch.
+- **Confidence**: medium
+
+## [ringminus1] 000d1b2c sptm_dart_register — DART/SID/APF/carveout validation
+- **Observation**: DART registration validates almost every DT-derived value with a distinct panic: dart-id < 256 and unique, vm-base/vm-size within the SoC window, vm-alignment a power of two (1..64), SID count <= 0x100, every remap src/dst SID within the SID count and distinct, sid-table length a multiple of 4, APF slice windows must not overlap the managed DRAM window or fall outside a dual-VC carveout/trusted limit, and PIOGW/clock-protection entry counts must match the instance tags. This is the primary input-validation boundary of the T8110 IOMMU driver.
+- **Evidence**: `if (dart_id>0xff) panic "error: invalid..."`; `if (g_dart_id_table[id]!=-1) panic "DART_ID %u us..."`; vm-base bound `vm_bound<=vm_base -> panic`; `vm_align-1>0x3f || popcount>1 -> panic "invalid vm..."`; remap `if (sid>cnt || remap_dst) panic`; APF `for (va=win1; win0<=va; va-=0x4000) if (managed) panic "APF_slice..."`.
+- **Severity (hypothesis)**: medium — these bounds confine each DART's DMA address window and SID remap to SPTM-sanctioned ranges.
+- **Confidence**: medium
+
+## [ringminus1] 000d7348 sptm_update_papt_pte — PTE-update flag validation
+- **Observation**: The PTE-update path validates the paddr is managed ("paddr isn't managed"), that the flag set is exactly legal (nonzero and no bits 2-5), that the PAPT permission bit is set before a permission update, and that the cache attribute index is <= 7; every violation panics. It also refuses an update when the leaf is not present unless a fresh mapping is being installed.
+- **Evidence**: `if (paddr < g_mem_phys_base || g_mem_phys_end <= paddr) panic "paddr isn't managed"`; `if (flags==0 || flags&0x3c) panic "invalid flag found while upd..."`; `if (attr>7) panic "invalid cache attribute inde..."`.
+- **Severity (hypothesis)**: low — bounds what PTE mutations are expressible by callers.
+- **Confidence**: high

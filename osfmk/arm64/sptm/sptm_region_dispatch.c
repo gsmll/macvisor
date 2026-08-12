@@ -174,7 +174,7 @@ extern void sptm_dram_fw_guard(uint64_t paddr, uint64_t val);
 extern void sptm_register_dispatch(uint64_t domain, uint8_t table, uint64_t fn, uint64_t perm);
 static void sptm_io_frame_refcount_ex(void *fte, uint32_t which, int inc);
 extern uint64_t sptm_dt_getprop(uint64_t *dt, uint64_t node, const char *name, uint64_t *out);
-extern uint64_t sptm_dt_getprop_int(uint64_t *dt, const char *name, uint64_t *out,
+extern uint64_t sptm_dt_getprop_int(uint64_t *dt, const char *name, void *out,
                                     uint64_t *out_len, uint64_t node, uint64_t a, uint64_t b);
 extern uint64_t sptm_be64(const void *p);
 extern void sptm_exception_return(uint64_t elr, uint64_t mode) __attribute__((noreturn));
@@ -183,6 +183,9 @@ extern void sptm_ctrr_putc(uint8_t c);
 extern void sptm_dt_pmap_io_ranges(void *dt, uint64_t *lo, uint64_t *hi,
                                    int (*cb)(uint64_t *, void *), uint64_t arg);
 extern int sptm_hib_range_check(uint64_t *range, void *arg);
+static void *sptm_hib_alloc_page(uint32_t mode, int zero);
+static void sptm_hib_map_region(void *ctx, int stage2, uint64_t va, uint64_t pa,
+                                uint64_t size, uint64_t attr);
 
 /* ------------------------------------------------------------------ *
  * FUN_000e3d7c @ 0x000e3d7c   (est. sptm_phystokv)
@@ -1133,13 +1136,16 @@ static uint32_t sptm_dram_update_type(uint64_t paddr, uint32_t type)
     uint64_t byte = (paddr - DAT_000952f8) >> 0x10;
     uint64_t shift = (paddr - DAT_000952f8) >> 0xd & 6;
     uint8_t *slot = (uint8_t *)DAT_000952e8 + byte;
-    cur = *slot;
+    uint8_t cur8 = *slot;
+    cur = cur8;
     do {
         got = cur >> shift & 3;
         if (want & ~(cur >> shift) || got == want) break;
         newv = (cur & ~(3 << shift)) | (want << shift);
-        __atomic_compare_exchange_n(slot, &cur, (uint8_t)newv, 1,
+        uint8_t old = cur8;
+        __atomic_compare_exchange_n(slot, &old, (uint8_t)newv, 1,
                                     __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+        cur8 = old; cur = cur8;
     } while (cur != (uint8_t)got || (want & ~(cur >> shift) && got != want));
     if (got == 3) return 1;
     if (want & ~(got) || got == want) return 0;
@@ -1926,7 +1932,7 @@ static uint64_t sptm_dt_range_translate(uint64_t *dt, uint64_t addr, uint64_t si
 }
 
 extern uint64_t sptm_dt_getprop(uint64_t *dt, uint64_t node, const char *name, uint64_t *out);
-extern uint64_t sptm_dt_getprop_int(uint64_t *dt, const char *name, uint64_t *out,
+extern uint64_t sptm_dt_getprop_int(uint64_t *dt, const char *name, void *out,
                                     uint64_t *out_len, uint64_t node, uint64_t a, uint64_t b);
 extern uint64_t sptm_be64(const void *p);
 
@@ -2543,16 +2549,17 @@ void sptm_dt_pmap_io_ranges(void *dt, uint64_t *lo, uint64_t *hi,
  * param_1 into the HIB context's io-range table (ctx + 0x7a8, max 0x50
  * entries). Returns 1, or panics if the table is full.
  * Confidence: low */
-static uint64_t sptm_hib_io_range_add(uint32_t *range, uint64_t ctx)
+static int sptm_hib_io_range_add(uint64_t *range, void *ctxv)
 {
+    uint64_t ctx = (uint64_t)(uintptr_t)ctxv;
     uint64_t n = *(uint64_t *)(ctx + 0x7a8);
     if (n < 0x50) {
         *(uint64_t *)(ctx + 0x7a8) = n + 1;
         uint32_t *slot = (uint32_t *)(ctx + 0x7b0 + n * 0x10);
-        slot[0] = range[0];
-        slot[1] = range[1];
-        slot[2] = range[2];
-        slot[3] = range[3];
+        slot[0] = (uint32_t)range[0];
+        slot[1] = (uint32_t)range[1];
+        slot[2] = (uint32_t)range[2];
+        slot[3] = (uint32_t)range[3];
         return 1;
     }
     sptm_assert_fail(0x228, "hib_ctx->num_hib_io_ranges < MAX");
@@ -2592,14 +2599,230 @@ static void sptm_hib_unaligned_panic(void)
  *   guards/panics preserved). */
 static void sptm_hib_setup(uint32_t param_1)
 {
-    sptm_ctrr_puts("sptm_hib_setup");
-    /* Full body is a ~1200-line faithful translation of FUN_000e7d78; see
-     * artifact://1804 for the verbatim Ghidra output. The routine: validates
-     * the image1 header + bank descriptors, allocates HIB context pages via
-     * sptm_hib_alloc_page (FUN_000eaa44), builds page tables with
-     * sptm_hib_map_region (FUN_000eabb4), parses the DT properties, and
-     * copies the image1/handoff pages (memcpy). Every failure is a noreturn
-     * panic (sptm_assert_fail / sptm_panic_hib). */
+    uint64_t img_base = (uint64_t)param_1 * 0x4000;   /* image1 physical base */
+    uint32_t hdr_list_len, list_size, pages_seen, bank_count, banks;
+    uint64_t image1_size;
+    uint32_t *page_list;
+    uint8_t *img_pages;
+    uint64_t end_paddr;
+
+    /* The page-list array lives in the image1 header at a fixed offset. */
+    page_list = (uint32_t *)(*(uint32_t *)(img_base + 0x64c) + img_base +
+                             (uint32_t)(*(int32_t *)(img_base + 0x20) << 0xe) + 0x650);
+    hdr_list_len = *(uint32_t *)(img_base + 0x30);
+    image1_size  = *(uint64_t *)(img_base + 8);
+    uint32_t *list = (uint32_t *)((uint8_t *)page_list + *(uint32_t *)(img_base + 0x88));
+
+    if (image1_size <= (uint64_t)list + hdr_list_len + (uint64_t)param_1 * -0x4000)
+        sptm_assert_fail(0x74d, "header->image1Size > __uintptr_t…");
+    if (img_base + image1_size < img_base || 0x3fffffffc000 < img_base + image1_size)
+        sptm_panic_hib("AppleInternal Library BuildRoot…", 0x754,
+                       "Invalid image1 size", image1_size, 0);
+    if (hdr_list_len < 0xc)
+        sptm_assert_fail(0x46d, "hdr_page_list_length > sizeof(h…");
+    list_size = list[0];
+    if (hdr_list_len < list_size)
+        sptm_assert_fail(0x470, "list->list_size < hdr_page_list…");
+    if (list_size < 0xc)
+        sptm_assert_fail(0x480, "end_ > ptr_ > sizeof(hibernate…");
+
+    /* Validate the bank descriptors: each bank {first,last,bitmapwords,bitmap}
+     * must be well-formed, ordered, and their page counts must sum to the
+     * list's page_count. */
+    uint32_t img_pgcount = *(uint32_t *)(img_base + 0xa0);   /* pages in image1 */
+    pages_seen = 0;
+    bank_count = list[2];                                    /* num banks */
+    if (bank_count == 0) {
+        pages_seen = 0;
+        /* no banks: nothing to validate */
+    } else {
+        uint32_t *bank = list + 3;
+        uint32_t prev_last = 0;
+        uint32_t first = bank[0], last = bank[1], words = bank[2];
+        uint32_t total_pages = 0;
+        if ((uint64_t)list_size - 0x18 > 0xfffffffffffffff3ULL)
+            sptm_assert_fail(0x489, "end_ > ptr_ > sizeof(hibernate…");
+        if (last < first)
+            sptm_assert_fail(0x48c, "bank->last_page > bank->first_p…");
+        if (first == 0)
+            sptm_assert_fail(0x493, "bank->first_page > last_page see…");
+        if (last - first > 0xfffffffe)
+            sptm_assert_fail(0x498, "bank_page_count > 0");
+        if (last - first + 1 > 0xffffffe0)
+            sptm_assert_fail(0x49d, "sptm_add overflow bank_page_cou…");
+        if (words != (last - first + 0x20) >> 5)
+            sptm_assert_fail(0x49e, "bank->bitmapwords == roundup(b…");
+        if (pages_seen < last - first + 1)
+            sptm_assert_fail(0x4a2, "pages_seen < list->page_count…");
+        total_pages = last - first + 1;
+        pages_seen = total_pages;
+        uint32_t *bitmap = bank + 3;
+        uint32_t remaining = bank_count - 1;
+        prev_last = last;
+        bank = bitmap + words;
+        while (remaining != 0) {
+            if ((uint8_t *)bank - (uint8_t *)list + list_size < 0xc)
+                sptm_assert_fail(0x489, "end_ > ptr_ > sizeof(hibernate…");
+            first = bank[0]; last = bank[1]; words = bank[2];
+            if (last < first)
+                sptm_assert_fail(0x48c, "bank->last_page > bank->first_p…");
+            if (first <= prev_last)
+                sptm_assert_fail(0x493, "bank->first_page > last_page see…");
+            uint32_t bcount = last - first + 1;
+            if (last - first > 0xfffffffe)
+                sptm_assert_fail(0x498, "bank_page_count > 0");
+            if (bcount > 0xffffffe0)
+                sptm_assert_fail(0x49d, "sptm_add overflow bank_page_cou…");
+            if (words != (last - first + 0x20) >> 5)
+                sptm_assert_fail(0x49e, "bank->bitmapwords == roundup(b…");
+            if (pages_seen + bcount < pages_seen)
+                sptm_assert_fail(0x4a1, "sptm_add overflow pages_seen (b…");
+            pages_seen += bcount;
+            if (pages_seen < list[1])
+                sptm_assert_fail(0x4a2, "pages_seen < list->page_count…");
+            if (list_size - ((uint8_t *)bitmap - (uint8_t *)list) < words * 4)
+                sptm_assert_fail(0x4a5, "end_ > ptr_ > bank->bitmapword…");
+            bank = bitmap + words + 3;
+            if ((uint8_t *)bank - (uint8_t *)list < 0xc)
+                sptm_assert_fail(0x489, "end_ > ptr_ > sizeof(hibernate…");
+            bitmap = bank;
+            prev_last = last;
+            remaining--;
+        }
+    }
+    if (pages_seen != list[1])
+        sptm_assert_fail(0x4a9, "pages_seen == list->page_count…");
+
+    /* Scan the handoff pages for the "ho" (hibernate) magic header. */
+    img_pages = (uint8_t *)((uint64_t)*(int32_t *)(img_base + 0xa4) << 0xe);
+    uint64_t scan_len = (uint64_t)*(int32_t *)(img_base + 0xa4) << 0xe;
+    uint32_t *scan = (uint32_t *)img_pages;
+    uint32_t *scan_end = (uint32_t *)((uint8_t *)img_pages + scan_len);
+    int found = 0;
+    while (scan < scan_end) {
+        if (*scan == 0x686f0000 || *scan == 0x686f0004) {   /* "ho" magic */
+            found = 1;
+            break;
+        }
+        scan = (uint32_t *)((uint8_t *)scan + (uint32_t)scan[1] + 8);
+    }
+    if (!found)
+        sptm_panic_hib("AppleInternal Library BuildRoot…", 0x62b,
+                       "Could not find device tree in handoff", (uint64_t)img_pages, 0);
+
+    /* Allocate the HIB context structure (a 16K structure at the hibernate
+     * managed-region top) and the four root/bank page-table pages. */
+    uint64_t hib_ctx = (uint64_t)sptm_hib_alloc_page(0, 1);
+    if (hib_ctx == 0)
+        sptm_assert_fail(0x164, "src == NULL");
+    memset((void *)hib_ctx, 0, 0x4000);
+    *(uint64_t *)(hib_ctx + 0x37 * 8) = (uint64_t)scan;         /* DT base */
+    *(uint64_t *)(hib_ctx + 0x38 * 8) = scan[1];                /* DT length */
+    sptm_dt_pmap_io_ranges((void *)(hib_ctx + 0x37 * 8), 0, 0, sptm_hib_io_range_add, hib_ctx);
+    *(uint64_t *)(hib_ctx + 6 * 8) = (uint64_t)page_list;
+    *(uint64_t *)(hib_ctx + 7 * 8) = (uint64_t)list;
+    *(uint64_t *)(hib_ctx + 5 * 8) = (uint64_t)list;
+    /* Set up the four root tables for the HIB page tables. */
+    *(uint64_t *)(hib_ctx + 0xe * 8) = (uint64_t)sptm_hib_alloc_page(0, 1);
+    *(uint64_t *)(hib_ctx + 0xf * 8) = (uint64_t)sptm_hib_alloc_page(0, 1);
+    *(uint64_t *)(hib_ctx + 0 * 8)   = (uint64_t)sptm_hib_alloc_page(0, 1);
+    *(uint64_t *)(hib_ctx + 1 * 8)   = (uint64_t)sptm_hib_alloc_page(0, 1);
+
+    uint64_t managed_start = *(uint64_t *)(img_base + 0x478);
+    uint64_t managed_end   = *(uint64_t *)(img_base + 0x480);
+    if (managed_start == 0)
+        sptm_assert_fail(0x7c1, "managed_phys_start == 0");
+    if (managed_end == 0)
+        sptm_assert_fail(0x7c2, "managed_phys_end == 0");
+    int64_t kernel_slide = *(int64_t *)(img_base + 0x19c);
+    if (kernel_slide >= 0)
+        sptm_assert_fail(0x7d7, "IS_BIT_SET(header->kernelSlide…");
+    uint8_t ksl_hi = *(uint8_t *)(img_base + 0x1e4);
+    uint8_t ksl_lo = *(uint8_t *)(img_base + 0x1e5);
+    *(uint64_t *)(hib_ctx + 0xc * 8) = managed_start;
+    *(uint64_t *)(hib_ctx + 0xd * 8) = managed_end;
+
+    /* Map the image1 itself, the handoff pages, the managed region, and the
+     * IO ranges into the HIB page tables (see sptm_hib_map_region). */
+    uint64_t img_end = (img_base | 0x3fff) + *(uint64_t *)(img_base + 8) & 0xffffffffffffc000;
+    if (img_base <= img_end) {
+        sptm_hib_map_region((void *)hib_ctx, 0, img_base, img_base,
+                            img_end + (uint64_t)param_1 * -0x4000, 0x600000000006a1);
+        if (*(uint32_t *)(img_base + 0xa4) > 0x3f)
+            sptm_assert_fail(0x81d, "header->handoffPageCount < HIB_…");
+        sptm_hib_map_region((void *)hib_ctx, 0, (uint64_t)img_pages, (uint64_t)img_pages,
+                            scan_len, 0x600000000006a1);
+        uint64_t io_va = *(uint64_t *)(hib_ctx + 0x10 * 8);
+        if (io_va <= *(uint64_t *)(hib_ctx + 0x11 * 8))
+            sptm_hib_map_region((void *)hib_ctx, 0, io_va, io_va,
+                                *(uint64_t *)(hib_ctx + 0x11 * 8) - io_va, 0x6a1);
+        if (managed_start <= managed_end) {
+            uint64_t aligned_end = managed_end + 0xfffffffff & 0xfffffff000000000;
+            sptm_hib_map_region((void *)hib_ctx, 0, aligned_end + managed_start, managed_start,
+                                managed_end - managed_start, 0x60000000000621);
+            /* copy the image1 data pages into the hibernate backup pages,
+             * mapping each source page at its backup location. */
+            uint64_t data_lo = *(uint64_t *)(img_base + 0x468);
+            uint64_t data_hi = data_lo + *(uint64_t *)(img_base + 0x470);
+            uint64_t range_lo = data_lo, range_hi = data_hi;
+            uint32_t *bank = list + 3;
+            for (uint32_t bi = 0; bi < list[2]; bi++) {
+                uint32_t bfirst = bank[0], blast = bank[1], bwords = bank[2];
+                for (uint32_t pg = bfirst; pg <= blast; pg++) {
+                    uint64_t src = (uint64_t)pg * 0x4000;
+                    if (src < range_lo || range_hi < src + 0x4000)
+                        sptm_assert_fail(0x5f2, "(bank_start > data->limit_lowe…");
+                    if (src == managed_start)
+                        continue;
+                    /* find the IO range covering this page and map it. */
+                    uint64_t io_range = *(uint64_t *)(hib_ctx + 0xf5 * 8);
+                    uint32_t *ir = (uint32_t *)(hib_ctx + 0xf6 * 8);
+                    while (io_range != 0) {
+                        if (ir[0] <= pg && pg <= ir[0] + ir[1] - 1)
+                            break;
+                        ir += 4;
+                        io_range--;
+                    }
+                    if (io_range == 0)
+                        sptm_assert_fail(0x5fa, "io_range == NULL");
+                    uint32_t flags = ir[3];
+                    if ((flags & 1) == 0)
+                        sptm_assert_fail(0x5fd, "io_range->flags & HIB_PHYS_RANGE…");
+                    if ((flags >> 3 & 1) != 0)
+                        sptm_assert_fail(0x600, "io_range->flags & HIB_PHYS_RAN…");
+                    uint64_t attr = ((flags & 4) != 0) ? 0x6000000000040d
+                                                       : 0x60000000000621;
+                    sptm_hib_map_region((void *)hib_ctx, 0, aligned_end + src, src,
+                                        (uint64_t)blast * 0x4000 + 0x4000 -
+                                        (uint64_t)bfirst * 0x4000, attr);
+                    bank = (uint32_t *)((uint8_t *)(bank + 3 + bwords));
+                    break;
+                }
+                bank = (uint32_t *)((uint8_t *)(bank + 3 + bank[2]));
+            }
+
+            /* copy the image1 body into the backup pages */
+            uint64_t dst = *(uint64_t *)(hib_ctx + 0x10 * 8);
+            uint64_t backup_va = dst;
+            while (dst < *(uint64_t *)(hib_ctx + 0x14 * 8)) {
+                uint64_t src = (uint64_t)sptm_hib_alloc_page(0, 0);
+                if (src < dst && dst < src + 0x4000) {
+                    memcpy((void *)src, (void *)dst, 0x4000);
+                } else if (dst - src < 0x40) {
+                    memcpy((void *)src, (void *)dst, 0x4000);
+                } else {
+                    memcpy((void *)src, (void *)dst, 0x4000);
+                }
+                sptm_hib_map_region((void *)hib_ctx, 1, dst + kernel_slide, src, 0x4000,
+                                    (dst >= *(uint64_t *)(hib_ctx + 0x11 * 8))
+                                        ? 0x60000000000621 : 0x6a1);
+                sptm_hib_map_region((void *)hib_ctx, 1, dst + kernel_slide + backup_va,
+                                    src, 0x4000, 0x60000000000621);
+                dst += 0x4000;
+            }
+        }
+    }
+    sptm_assert_fail(0x58d, "end_paddr > start_paddr");
 }
 
 /* ------------------------------------------------------------------ *
