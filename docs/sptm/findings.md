@@ -1748,3 +1748,119 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (0x1f < local_c8) trap(1,0x69df4)`; `SCARRY8(local_c8,1)` / `lVar1<0` / `local_d0<0` traps before `ptr[3]=a+d`.
 - **Severity (hypothesis)**: informational — per-node limits enforced; a node with >0x20 properties or negative lengths is rejected, not over-read.
 - **Confidence**: medium
+
+## [SK187] 00407a04 sk_continuation_fatal
+- **Observation**: The Swift `_Concurrency.CheckedContinuation` fatal path in the cL4 async transport emits a `"Fatal error"` noreturn panic (FUN_001afa84) when a CheckedContinuation is resumed incorrectly. This is the canonical Swift concurrency misuse-abort; in a kernel this converts a caller-resume-protocol violation into a synchronous kernel halt rather than a recoverable error.
+- **Evidence**: `FUN_001afa84(s_Fatal_error_005accd0,0xb,2,in_x3,in_x4,s__Concurrency_CheckedContinuation_005dbd70,0x26,2)` — noreturn (decompile header "Subroutine does not return"); strings `s_Fatal_error_005accd0` and `s__Concurrency_CheckedContinuation_005dbd70` at 0x5accd0/0x5dbd70.
+- **Severity (hypothesis)**: low — availability only; continuation misuse is a kernel-internal bug, not attacker-controllable from a guest. A guest able to trigger double-resume of a shared continuation could force a kernel panic (DoS).
+- **Confidence**: medium
+
+## [SK187] 00407ae8 sk_async_span_swap_release
+- **Observation**: The async span swap writes a two-word value into the buffer at self(x21) after masking the source pointer to 8-byte alignment (`param_1 & ~0x7`), then releases the previously-held first word via cl4_release (FUN_0036b118). The 8-byte alignment mask on an untrusted/loosely-typed pointer could drop low address bits if a value were ever passed with a nonzero offset, releasing/misreading a wrong object.
+- **Evidence**: `uVar1 = unaff_x21[1]; uVar2 = *(param_1 & 0xfffffffffffffff8); unaff_x21[1] = ((param_1 & 0xfffffffffffffff8))[1]; *unaff_x21 = uVar2; FUN_0036b118(uVar1);` — release of the overwritten low word.
+- **Severity (hypothesis)**: informational — the alignment mask is a Swift span/ArrayBuffer codegen idiom (pointer is always already aligned); the release is a standard ARC release of the previous value.
+- **Confidence**: medium
+
+## [SK187] 0040807c sk_async_lock_acquire
+- **Observation**: The async job acquisition path calls sk_lock_acquire (FUN_00377824) with a fixed tag 0xff and two lock-table addresses (DAT_00614a5c/DAT_00614a74), coupling the Swift async-transport object graph to the kernel's lock registry. The tag/table selection is hard-coded per call site.
+- **Evidence**: `FUN_00377824(0xff,param_2,param_3,&DAT_00614a5c,&DAT_00614a74)` — lock registry tag 0xff with table descriptors.
+- **Severity (hypothesis)**: informational — lock tagging is an audit/classifier primitive; no direct security exposure.
+- **Confidence**: low
+
+## [SK186] 0040774c sk_conc_pair_copy_retain
+- **Observation**: The concurrency value-copy helper clears the low 3 bits of the source pointer (`param_1 & ~0x7`) and reads two words from the masked address, then ARC-retains the second word via FUN_0036b270. The alignment mask on a loosely-typed/tagged pointer would silently drop any nonzero low offset bits, retaining/reading a misaligned object if a caller ever passed a pointer carrying a tag or an offset.
+- **Evidence**: `uint64_t *src = (uint64_t *)(param_1 & 0xfffffffffffffff8ull); uVar1 = src[1]; uVar3 = src[0]; dst[1] = src[1]; dst[0] = uVar3; FUN_0036b270(uVar1);` — 16-byte read from the masked pointer plus a retain on the second word.
+- **Severity (hypothesis)**: informational — the `&~0x7` mask is the standard Swift/ArrayBuffer codegen idiom (pointers are always already 8-aligned); no guest-controllable input reaches this path directly.
+- **Confidence**: medium
+
+## [SK186] 00406eb0 sk_conc_unimplemented_executor_fatal
+- **Observation**: The Swift `_Concurrency.UnimplementedExecutor` trap path in the cL4 async transport raises a `"Fatal error"` noreturn panic (FUN_001afa84) with the tag bit 0x8000000000000000 OR-ed into the supplied parameter. Reaching an unimplemented executor converts a runtime dispatch miss into a synchronous kernel halt.
+- **Evidence**: `FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd00000000000002a,param_1|0x8000000000000000,s__Concurrency_UnimplementedExecut_005dc2b0,0x28,2)` — noreturn; string `s__Concurrency_UnimplementedExecut_005dc2b0` at 0x5dc2b0.
+- **Severity (hypothesis)**: low — availability only; reachable only via a kernel-internal executor-registration miss, not from a guest.
+- **Confidence**: medium
+
+## [sk_region_boot] cL4 Secure Kernel GL1 boot-region decompilation findings (0x0-0x80000)
+
+## [sk_region_boot_00000] 0x00001378 sk_launcher_root
+Observation: The boot launcher maps the kernel image pages into the root task's address space by writing a raw argument block (maptype 0x11) into the per-CPU TPIDRRO area and issuing an `svc 0x0` supervisor call, then polls the boot object's completion via the DAT_006adfd0 flag in a loop.
+Evidence: Decompile of FUN_00001378: `puVar1 = (undefined8 *)tpidrro_el0; *puVar1 = 0x11; puVar1[1] = va-delta; puVar1[2] = phys; CallSupervisor(0);` followed by a `do { ... svc 0x0 ... } while` loop keyed on `DAT_006adfd0`.
+Severity (hypothesis): Low — standard kernel boot page-mapping via SVC; informational.
+Confidence: Medium (naming from strings + structure).
+
+## [sk_region_boot_00000] 0x000016b4 sk_boot_ec_switch_impl
+Observation: The boot EC switch performs unchecked bounds/overflow arithmetic on memory extents and on failure drops into a software breakpoint (`SoftwareBreakpoint(0x5519, 0x1728)`), which on a production image would trap to the debugger rather than panic cleanly.
+Evidence: Decompile FUN_000016b4 tail: `pcVar2 = (code *)SoftwareBreakpoint(0x5519,0x1728); (*pcVar2)();` after the `FUN_0005b190(..., "Failed to switch boot EC for the ...")` path.
+Severity (hypothesis): Low/Medium (hypothesis) — leftover debug breakpoint in a boot path; a malformed boot image could hang the boot rather than fail fast.
+Confidence: Medium (decompile-observed).
+
+## [sk_region_boot_00000] 0x00002a10 sk_zone_boot_layout
+Observation: The zone allocator's boot layout computes node/region boundaries with unsigned overflow checks (`if (hi_lo <= arena)`, `if (node_lo < arena)`) and panics via the libmalloc `BUG IN LIBMALLOC` path on any violation — no unchecked arithmetic path observed.
+Evidence: Decompile FUN_00002a10 contains explicit overflow guards `goto LAB_00002bfc/2c00/2c04` leading to `FUN_001150e0(s_BUG_IN_LIBMALLOC___)`.
+Severity (hypothesis): Info — defensive overflow checking in the allocator bootstrap.
+Confidence: High (decompile-observed).
+
+## [sk-boot-20000] 0x00020ebc tightbeam_failure_code
+Observation: Tightbeam message-failure index maps to a 16-byte error descriptor where error tags are embedded as packed little-endian ASCII in literal constants (e.g. 0x6f6e20646c756f43 = "Clound es en"). Message-create/activation/reply/decode failures return tagged message pointers with a 0x8000000000000000 high-bit marker.
+Evidence: decompile switchD_00020efc_caseD_*; string refs s_Message_create_failed_005acf30, s_Activation_failed_005acf10, s_Reply_send_failed_005aced0, s_Message_decode_failed_005aceb0.
+Severity (hypothesis): info — failure-code encoding, no direct privilege boundary.
+Confidence: medium.
+
+## [sk-boot-20000] 0x00021554 tightbeam_decoder_unwrap
+Observation: The decoder unwrap path copies a caller-supplied byte span into an internal buffer after checking `used + span <= cap`, but on the failure branch (`goto LAB_00018798`) it calls FUN_004b0ec8/FUN_004b0eec and returns 1 rather than trapping — a non-fatal error path that may leave the decoder in a partially-consumed state.
+Evidence: decompile branches at 0x18768 (SoftwareBreakpoint 0x5519) vs the return-1 path at LAB_00018798.
+Severity (hypothesis): low — potential state-inconsistency on malformed decode input, gated behind caller validation.
+Confidence: low.
+
+## [sk-boot-20000] 0x00028b14 sk_vas_alloc
+Observation: VAS allocation installs ~40 operation dispatch entries (FUN_00029c7c..FUN_0002f780) plus a fault-handler ring buffer (0x400 entries). The fault-handler slot claim logic computes `slot = base + (counter % count) * 6` with explicit bounds checks that trap (SoftwareBreakpoint 0x5519) on overflow, but the counter is a plain increment without saturation — a 32-bit wrap could reorder/alias slots.
+Evidence: decompile ring-buffer claim at 0x299e0..0x29ae0; bounds checks LAB_000299d8/LAB_00029ae0.
+Severity (hypothesis): low — ring-buffer slot reuse on counter wrap could let a fault handler be clobbered, within a trusted-initialization context.
+Confidence: low.
+
+## [sk-boot-20000] 0x0002b3ec vas_record_add
+Observation: VAS record-array add grows the array by 2x (FUN_000102f4 realloc) when full, and on allocation failure builds the record inline via FUN_0002b5e8 (frame/cnode descriptor copy) — the failure path copies type 0x11 (frame) or 0x04 (cnode) capability descriptors. Any other type aborts with "Type 0x%x is not frame or cnode".
+Evidence: decompile at 0x2b3ec; s_Type_0x_x_is_not_frame_or_cnode_005ae8e4.
+Severity (hypothesis): info — capability-type validation before record insertion.
+Confidence: medium.
+
+## [sk-boot-20000] 0x0002a80c vas_fh_activate
+Observation: Fault-handler activation maps a 0x4000-byte fault page via the handler's map method and records the mapping; failures distinguish copy-failure ("easm faulthandler failed to copy") from map-failure ("...failed to map c"). Activation is guarded by an "already active" assertion returning 0x3230001.
+Evidence: decompile; s_easm_faulthandler_failed_to_copy_005ad5c5, s_easm_faulthandler_failed_to_map_c_005ad5ff, s_easm__d_FH__lld__p_is_already_ac_005ad5a0.
+Severity (hypothesis): info — fault-page mapping boundary, well-validated.
+Confidence: medium.
+
+## [sk-region-boot-30000] 0x304d0/0x30780 sk_boot_image_decompress/sk_boot_image_compress
+Observation: The SK boot path embeds a custom LZ/bitplane decompressor (magic 0x4321 uncompressed marker) plus its encoder. This is the image-inflation mechanism used at early boot to unpack the kernel image/entitlements.
+Evidence: 0x304d0 reads magic 0x4321, zeroes a 16 KiB run via DC_ZVA, and splices (value,off16) pairs; otherwise nibble-unpacks 4 source words against the mask tables DAT_004bc6f0..6fc and runs an LZ history decode using DAT_004bc5e0. 0x30780 is the exact inverse (writes control bytes 0/1/2/3, history index to +0x1000, low-10-bit stream to +0x2000).
+Severity (hypothesis): Informational (custom codec is not a documented industry standard; decompressed content is attacker-influenced only if the boot chain is already compromised).
+Confidence: medium.
+
+## [sk-region-boot-30000] 0x31594 sk_vspace_mark_alloc
+Observation: The vspace slot allocator validates slot offsets against per-store capacities (0x7e/0x1fe) and aborts via VAS on out-of-range slot writes, including a check that a slot is not double-allocated (bit already set in the bitmap).
+Evidence: 0x31594 walks store chain from +0x148, computes (param_2-base)>>5, sets bit (idx&0x3f) in cell (idx>>6) of bitmap at store+0x28; double-set triggers VAS abort 005af0a5; OOB triggers 005aef1a/005aeff5.
+Severity (hypothesis): Defense-in-depth (internal integrity guard; prevents overlapping vspace slot use).
+Confidence: medium.
+
+## [sk-region-boot-30000] 0x33c60 sk_vspace_alloc_region
+Observation: VAS private/heap region allocation requests map through the trap FUN_0003c510 with memory-attribute selectors 0x1000148 (zero base / private) vs 0x1000149 (nonzero base). A failure for a zero-base region returns 0 with a printed diagnostic rather than aborting; nonzero-base failure aborts.
+Evidence: selector uVar3 = 0x1000148 if param_2==0 else 0x1000149; failure path for param_2==0 calls FUN_00118b28 ('Could not allocate for VAS private...' 005b060a) and returns 0; nonzero aborts (VAS 005b0655).
+Severity (hypothesis): Informational (heap exhaustion handling distinguishes private vs mapped regions).
+Confidence: medium.
+
+## [sk-boot-40000] 0x000403b0 sk_spanmap_cap_op — capability op on spanmap lacks a bounds check before invoking the span object's handler
+Observation: When op&0xfd==0 the span object's method at +0xb8/+0x10 is invoked with the caller's raw arg after only checking the span cursor range; a nonzero (error) result is folded into the L4 error word.
+Evidence: Decompile: "res = (**(code **)(*(long *)(span + 0xb8) + 0x10))(*(void **)(span + 0xb0), arg);" with no capability-tag validation; nonzero → sk_vas_err + "Unexpected L4 Error" abort.
+Severity (hypothesis): low — errors abort rather than silently corrupt.
+Confidence: low
+
+## [sk-boot-40000] 0x00042808 sk_vas_populate_level — bulk-unmap loop treats 0x107 as success and clears the whole vspace on any error
+Observation: The per-entry PTE-clear loop stops on 0x107 (preempted) or 0 and treats them as success; on the no-regions path a nonzero return from the teardown method causes the entire 0x1a-word vspace header to be zeroed.
+Evidence: Decompile: "if (ent == 0x107 || ent == 0) break;" and "if ((ent & 0xff) == 0) { for ... vas[i]=0; return; }".
+Severity (hypothesis): medium — a mis-sized input could clear a live vspace.
+Confidence: low
+
+## [sk-boot-40000] 0x00040980 sk_spanmap_startfault_cow — COW fault uses supervisor call to select an attribute derived from vspace flags
+Observation: The COW attribute is derived from vspace flags bitfield (param_4+0x20 >>3 & 3) and passed via CallSupervisor(0) without further validation, then a fresh page is allocated and the fault record written with the untrusted VA.
+Evidence: Decompile: "fl = (*(uint*)(vas+0x20) >> 3) & 3; CallSupervisor(0); ... out[0]=1; *(long*)(out+0x10)=va;".
+Severity (hypothesis): low — supervisor call mediates the actual mapping.
+Confidence: low

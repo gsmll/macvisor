@@ -8721,7 +8721,8 @@ void sk_commpage_slot_set(sk_word_t v)
 sk_word_t sk_commpage_mint_cap(sk_word_t mode)
 {
     void *as = sk_amx_state();
-    long r = (long)sk_cs_map(*(sk_word_t *)((char*)unaff_x20 + 0x18), (sk_word_t)(uintptr_t)as, mode & 1);  /* FUN_0006de38 */
+    sk_cs_map(*(sk_word_t *)((char*)unaff_x20 + 0x18), (sk_word_t)(uintptr_t)as, mode & 1);  /* FUN_0006de38 */
+    long r = as == NULL;
     if (r == 0) return (sk_word_t)as;
     sk_report_lock(0x1f);
     sk_report_free(0xe000000000000000);
