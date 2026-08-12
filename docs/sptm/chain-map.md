@@ -497,3 +497,15 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 0041465c -> 00462b80, 002a0cf8 (syscall-number decode)
 - 00413b68 -> 00414dec, 00414bf4, 004150e8 (typed Swift value encoding)
 - cross-region helpers: 0036b270/0036b118 (alloc/free), 002a0cf8 (flag check), 002298d4 (logger)
+
+## SkGap07 (0x0034f22c-0x0034fb14, Swift-runtime stub region)
+- 0034f6a8 -> 001afa84 (swift_string_fatal_precondition; GraphemeBreaking fatal)
+- 0034fa9c -> 001afa84 (swift_string_fatal_precondition; FloatingPointToString fatal)
+- 0034f958 -> 001a89a8 (swift_small_string_encode; "Cannot initialize")
+- 0034f6dc -> 00376820 (sk_obj_resolve_forward; &DAT_004eb948)
+- 0034f6f8 -> 00376820 (sk_obj_resolve_forward; &DAT_004ead58)
+- 0034f714 -> 0006a4c0 (shared helper)
+- 0034f7ec -> 0036a940 (0x66aa10,0x20,0xf)
+- 0034f9b4 -> 00002534 (0x6560e8,&DAT_004e7ed0)
+- 0034fadc -> 003246ec, 003722e4
+- 0034fb14 -> 001fab14 (cl4_sched_grow_capacity)
