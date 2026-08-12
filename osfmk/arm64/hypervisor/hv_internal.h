@@ -223,7 +223,7 @@ uint32_t hv_copyin_user(void *vm, void **dst, uint64_t src, uint64_t len);/* FUN
 uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which);/* FUN_fffffe000b98e12c */
 void hv_el2_pt_alloc(struct hv_vm *vm);                                   /* FUN_fffffe000b98e344; called by hv.c (op16) */
 uint64_t hv_el2_pt_alloc_wrapper(uint64_t vcpu);                          /* FUN_fffffe000b98e99c */
-extern void hv_el2_state_finalize(uint64_t owner);  /* est. hv_el2_state_finalize, el2-state; called by hv_trap_op_10 (hv.c). NOT yet in manifest — needs an el2-state entry. */
+void hv_el2_state_finalize(uint64_t owner);   /* FUN_fffffe000b98e74c; el2-state, decompiled in hv_vmm.c; called by hv_trap_op_10 (hv.c) */
 
 /* ---- from osfmk/arm64/hypervisor/hv_vcpu.c (vcpu-core tree) ---- */
 uint64_t hv_vcpu_create(void *user_state);              /* FUN_fffffe000b989040 */

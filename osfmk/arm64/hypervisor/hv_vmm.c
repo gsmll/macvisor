@@ -538,3 +538,38 @@ uint64_t hv_el2_pt_alloc_wrapper(uint64_t vcpu)
     hv_el2_pt_alloc((struct hv_vm *)vcpu);
     return 0;
 }
+
+/* -------------------------------------------------------------------------
+ * hv_el2_state_finalize @ 0xfffffe000b98e74c   (est. hv_el2_state_finalize)
+ * Ghidra: void FUN_fffffe000b98e74c(long param_1)
+ * Finalizes the per-CPU owner state when hv_trap_op_10 (the per-CPU vcpu-slot
+ * flush op, b98e488) runs with no vcpu bound: drops the owner block's
+ * reference count at owner+8 (refcount-- + LORelease), panics if it was
+ * already 0 (kernel_panic_b c0f8674, noreturn), and when the count was 1
+ * releases the vcpu object (hv_vcpu_object_release b98533c, arg dropped by
+ * the decompiler).
+ * Confidence: high (complete 10-line decompile, fresh 2026-08-12)
+ * Notes: param_1 = the owner block resolved by hv_trap_op_10 from
+ *   per_cpu_base+0x628 (same refcount slot as the ikot container release).
+ *   The hv_vcpu_object_release call renders arg-less in Ghidra
+ *   (FUN_fffffe000b98533c()); kept as a no-arg call.
+ */
+extern void hv_vcpu_object_release(uint64_t *object);   /* b98533c, in hv_internal.h */
+
+void hv_el2_state_finalize(uint64_t owner)
+{
+    int *ref;
+    int old;
+
+    ref = (int *)(owner + 8);
+    old = *ref;
+    *ref = old - 1;
+    LORelease();                        /* inline refcount release */
+    if (old == 0) {
+        kernel_panic_b();               /* c0f8674, noreturn */
+    }
+    if (old != 1) {
+        return;
+    }
+    hv_vcpu_object_release(NULL);       /* b98533c, decompiler drops the arg */
+}

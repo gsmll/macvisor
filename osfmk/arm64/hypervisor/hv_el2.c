@@ -1295,7 +1295,13 @@ static inline uint64_t *hv_pcpu_slot(uint64_t *base, uint64_t cpu_idx)
  *   modeled as locals initialized to 0: the hv_el2.h 9-param prototype cannot
  *   carry them (callers pass 9 args) and their values are only forwarded
  *   opaquely to vm_fault_enter / kernel_trace / b89e03c. The Ghidra
- *   x1_carry* post-call register values are likewise modeled as 0.
+ *   extraout_x1* post-call register values are likewise modeled as 0
+ *   (x1_carry). Naming: 2026-08-12 the decompiler register locals were
+ *   renamed to English (cur, obj, page_obj, cur_obj, status, rc,
+ *   enter_flags, ...); where Ghidra reuses one register for several roles
+ *   (e.g. page_obj also carries the per-CPU index, saved_irq the paging
+ *   count, cur the trace code) the single name is kept with the decompile's
+ *   register semantics and a comment at the reuse site.
  */
 long kernel_vm_fault(void *vm, uint64_t addr, uint32_t fault_type_arg,
                      uint32_t fault_flags, void **vnode_mp, uint64_t mp_size,
