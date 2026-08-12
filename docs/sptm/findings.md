@@ -3589,3 +3589,27 @@ Confidence: medium
 - **Evidence**: `if ((ulong)set[2] <= idx) SoftwareBreakpoint(1,0x40b96c)`; node alloc FUN_00111890(0x18); growth when `load_factor * count < size+1`; rehash FUN_0037d700.
 - **Severity (hypothesis)**: low — the registry holds outstanding kernel continuations; the bounds trap is defensive, but a collision-chain hash collision could degrade to O(n) lookup (availability).
 - **Confidence**: medium
+
+## [sk-sched] 001807a4-00180f90 cL4 upcall dispatch entry (XnuUpcallsV2)
+- **Observation**: The 0x180000 region is the cL4 Secure Kernel's XNU upcall/syscall dispatch layer. A family of 4-byte entry aliases (e.g. 001807a4/001807a8 both tail-call 001807dc with error code 0xed; 001807c0/001807c4 with 0xcc) route through a common marshalling routine that copies message registers, checks a per-CPU gate (FUN_0017770c), and on the Swift path funnels failures into a noreturn `s_Fatal_error` trap with the `StackshotConclaveSupport` source annotation. A mismatched marshalling gate or unchecked register copy could allow an upcall to reach a handler with a forged message-register frame.
+- **Evidence**: FUN_001807dc: `if ((FUN_0017770c()&1)==0) {...copy 6 regs...}` then on the Swift/error path `FUN_001afa84("Fatal error",0xb,2,0xd000000000000033,...,"StackshotConclaveSupport",0x36,2,...)` (noreturn). Entry aliases 001807a4/a8 pass 0xed, c0/c4 pass 0xcc to 001807dc.
+- **Severity (hypothesis)**: low — the entries are dispatch shims; the real authorization is in the marshalling gate. Availability only (a bad upcall panics).
+- **Confidence**: medium
+
+## [sk-sched] 001f00ac cl4_thread_free_cb — TCB teardown releases inner + drop hook
+- **Observation**: Thread/TCB free runs an indirect "drop hook" from the object at +0x60 with (obj+0x20, 0), releases the inner object (thunk_FUN_00012568) and the outer object. The teardown ordering (drop hook → inner release → outer release) is a refcount/RCU discipline; a wrong hook target or a double-release would corrupt the TCB free list.
+- **Evidence**: `(*(code *)(*obj+0x60))(*obj+0x20,0); FUN_0006b6f4(*(word_t*)(inner+8)); cl4_obj_release(inner2); cl4_obj_release(*obj);`
+- **Severity (hypothesis)**: low — release discipline; no observed bypass.
+- **Confidence**: medium
+
+## [sk-sched] 001f0130 cl4_sched_run_queue_drain — scheduler dispatch loop with fatal-error trap
+- **Observation**: The run-queue drain loop dispatches per-entry callbacks and, when the completion flag is set, takes a "subroutine does not return" path into FUN_001afe4c (fatal). Any misclassified completion state escalates to a kernel panic rather than continuing with a corrupted queue — fail-closed scheduling.
+- **Evidence**: `if ((extraout_x1&1)!=0) { ... FUN_0035110c(); /* noreturn */ FUN_001afe4c(); }`
+- **Severity (hypothesis)**: low — fail-closed; availability only.
+- **Confidence**: medium
+
+## [sk-sched] 001fb26c cl4_sched_find_or_empty — empty-set marker class 0x100000000
+- **Observation**: The scheduler slot lookup returns an explicit empty marker `{index=0, found=0x100000000}` (class 0x100000000, a non-canonical 33-bit value) rather than a valid slot; the entry-present path returns found=*unaff_x20+0x24. A caller that fails to distinguish the empty marker from a real class-1 slot could treat an empty result as a valid scheduling target.
+- **Evidence**: `out.index=0; out.found=0x100000000;` vs `out.found=(ulong)*(uint*)(unaff_x20+0x24); out.index=u1;`
+- **Severity (hypothesis)**: informational — the marker is unambiguous (class bit 32 set); standard seL4-style sentinel.
+- **Confidence**: medium
