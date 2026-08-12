@@ -41,3 +41,16 @@ C, exactly like the hypervisor decompilation.
   record the fallback in `notes`.
 - Never modify another agent's claimed/decompiled manifest entries.
 - Do NOT run formatters/linters/project-wide tests.
+
+## FAST PATH (verified 2026-08-12, all ring-1 programs)
+
+The Ghidra HTTP server at `http://127.0.0.1:8089` serves the same endpoints
+directly via curl, bypassing the MCP bridge (which saturates under concurrent
+agents). Use these instead of `xd://mcp__ghidra_*` calls:
+- `curl -s "http://127.0.0.1:8089/decompile_function?address=0xNNNN"`
+- `curl -s "http://127.0.0.1:8089/get_function_by_address?address=0xNNNN"`
+- `curl -s "http://127.0.0.1:8089/get_function_callers/callees?address=0xNNNN"`
+- `curl -s "http://127.0.0.1:8089/search_strings?search_term=WORD"`
+Confirm the current program with `curl -s http://127.0.0.1:8089/health`
+(switch via the MCP `switch_program` when needed). Each decompile returns in
+<1s; if the server is saturated, retry with 10-30s backoff.

@@ -69,9 +69,12 @@ extern unsigned long cL4_msg_state_advance(unsigned long *word, unsigned int opt
 /* Global: the current thread / TCB pointer (_DAT_006c0380). */
 extern unsigned long cL4_current_thread;  /* _DAT_006c0380 */
 
-/* cL4 returns many values as a 16-byte pair (two 64-bit words in x0/x1).
- * Model it as a struct so callers can carry both halves. */
-typedef struct { unsigned long lo, hi; } cL4_w16_t;
+/* In-range function prototypes (bodies below). */
+cL4_w16_t cL4_msg_result(unsigned long *msg_word, int kind);
+cL4_w16_t cL4_msg_send_finalize(unsigned long *msg_word, void *obj, unsigned int opts);
+void cL4_msg_finish(unsigned long *msg_word, void *obj, unsigned long d0,
+                    unsigned long d1, unsigned long extra);
+void cL4_msg_wake(unsigned long tcb, void *obj, unsigned long d0, unsigned long d1);
 
 /* FUN_003802a4 @ 0x003802a4   (est. cL4_msg_result)
  * Ghidra: undefined1[16] FUN_003802a4(long param_1, int param_2)
@@ -146,7 +149,7 @@ cL4_w16_t cL4_msg_send_finalize(unsigned long *msg_word, void *obj, unsigned int
             endpoint += ((*mr & 0x30000) == 0x20000) * 4;
             /* indirect call through the endpoint's dispatch table slot */
             int off = *(int *)(endpoint + 8);
-            long (*handler)(...) = 0;
+            cL4_w16_t (*handler)(long, void **, long) = 0;
             if (off != 0) handler = (void*)((long)off + endpoint + 8);
             m = handler(tcb, list, 0);
             if (m.lo == 0) goto collect;
@@ -234,7 +237,7 @@ cL4_w16_t cL4_ipc_recv_wait(unsigned long *msg_word, unsigned long opts)
     unsigned long alloc = 0;
 
     word = *msg_word;
-    mkind = cL4_msg_classify(&word);
+    mkind = cL4_msg_classify(&word, 0);
     if (mkind < 2) {
         out = cL4_msg_result(msg_word, word & 7);
         return out;
@@ -286,5 +289,41 @@ done:
     if (pending != 0) cL4_msg_list_push((unsigned long*)&pending);
     cL4_msg_free(staging);
     return out;
+}
+
+
+/* FUN_003807a8 @ 0x003807a8   (est. cL4_msg_finish)
+ * Ghidra: void FUN_003807a8(ulong*, undefined8*, long, long, long)
+ * Finalizes an IPC handshake for a thread. If either collected data word
+ * (param_3) or the extra word (param_5) is nonzero, allocates a 3-word
+ * message node {d0,d1,d2} (tag 0x1060c4048d9c6c4). Then acquires a reference
+ * on the peer object, stores the node pointer OR the handshake byte into the
+ * thread's message word (*param_1), releases the IPC object locks, clears the
+ * handshake/queue state, and releases the peer reference.
+ * Confidence: medium
+ */
+void cL4_msg_finish(unsigned long *msg_word, void *obj, unsigned long d0,
+                    unsigned long d1, unsigned long extra)
+{
+    unsigned char hb = *(unsigned char *)((char*)obj + 0x11);
+    long *node;
+    unsigned long peer;
+
+    if (d0 == 0 && extra == 0) {
+        node = 0;
+    } else {
+        node = cL4_alloc(0x20, 0x1060c4048d9c6c4ULL);
+        node[0] = d0;
+        node[1] = d1;
+        node[2] = extra;
+    }
+    peer = *(unsigned long *)*(unsigned long **)obj;
+    cL4_ref_acquire(peer);
+    *msg_word = (unsigned long)node | (unsigned long)hb;
+    cL4_release(((unsigned long *)obj)[1] + 0x10);
+    cL4_ref_release(((unsigned long *)obj)[1]);
+    cL4_release(peer);
+    *(unsigned short *)((char*)obj + 0x10) = 0;   /* *(undefined1*)(param_2+2)=0 (byte at +0x10) */
+    ((unsigned long *)obj)[1] = 0;
 }
 

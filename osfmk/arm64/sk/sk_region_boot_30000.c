@@ -26,3 +26,19 @@ extern void sk_free(void *ptr);                                      /* FUN_0036
 extern unsigned char sk_obj_methods_0[];  /* DAT_00611b24 */
 extern unsigned char sk_obj_methods_1[];  /* DAT_00611b34 / DAT_00611b3c / LAB_00611b2c */
 
+/* Boot handoff helper owned by the earlier range (0x2xxxx). */
+extern void sk_boot_handoff_stage(void);   /* FUN_0002ff48 */
+
+/*--------------------------------------------------------------------*/
+/* FUN_000304c4 @ 0x000304c4   (est. sk_boot_cpu_trampoline)
+ * Ghidra: undefined FUN_000304c4(void)
+ * Thin forwarder: unconditionally jumps into the earlier-stage boot
+ * handoff routine FUN_0002ff48. Used during the secondary-CPU bring-up
+ * trampoline to re-enter the shared boot path.
+ * Confidence: medium (trivial wrapper).
+ */
+void sk_boot_cpu_trampoline(void)
+{
+    sk_boot_handoff_stage();   /* FUN_0002ff48 */
+}
+
