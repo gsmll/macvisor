@@ -4825,3 +4825,21 @@ Observation: The payload encoder writes into a caller-supplied destination span 
 Evidence: decompile 0041d180 `if (param_3 != 0) { FUN_00002874(...); FUN_003593c0(); FUN_00002818(); FUN_001afa84(); }`; emit via FUN_0041d14c with CL4_SW_BP bounds traps at 0x41d178/0x41d17c/0x41d180.
 Severity (hypothesis): Low — bounds are enforced but only via fail-closed traps; a non-fatal caller misusing the encoder could trigger a fatal abort.
 Confidence: Medium.
+
+## [SKR64] 0x00457bec sk_str_parse_int
+- **Observation**: The integer-from-string parser (radix 2..36, optional sign) validates each digit and performs overflow checking before accumulating. The sign-handling path uses a wrapped-add/subtract with carry detection and traps (CL4_SW_BP) on overflow, falling back to a zero result with a non-zero error tag. This is fail-closed on malformed/overflowing numeric input.
+- **Evidence**: decompile 00457bec: `if (SUB168(SEXT816(lVar9) * SEXT816(param_3),8) != lVar12 >> 0x3f) goto zero;` carry/overflow checks; `SoftwareBreakpoint(1,0x457e68)` on empty; digit bounds `0x30..0x3a / 0x41 / 0x61` per radix.
+- **Severity (hypothesis)**: informational — overflow/malformed input saturates to zero with an error tag rather than wrapping, which is safe for an object-count/ID parser in the cL4 metadata layer.
+- **Confidence**: high.
+
+## [SKR64] 0x004582e8 sk_elem_release_0x178
+- **Observation**: The 0x178-stride element teardown dispatches on a 3-bit tag (0x3d-bit at +0x170) read by 00458d04; each case walks and releases nested arrays / sub-records. Case 5 reads an operator-name index (bVar4) and dereferences the DAT_005a3a50 operator table with an 8-byte stride, then recurses into 004582e8. The release order is retain-validate-release per element with nested recursion into owned buffers.
+- **Evidence**: decompile 004582e8 `switch(FUN_00458d04(...))` cases 1..5 + default; case 5: `FUN_001b9084(param_1,*(undefined8 *)(&DAT_005a3a50 + (ulong)bVar4 * 8),0xe200000000000000)`; recursive `FUN_004582e8(param_1,uVar13)`.
+- **Severity (hypothesis)**: Medium — the per-element tag selects which words are released; a tag/kind confusion between the 0x99-byte sub-record and bare-word layouts could release a wrong-typed object (classic object-reclaim bug surface in the collection/boxing layer).
+- **Confidence**: medium.
+
+## [SKR64] 0x00457650 / 0x004573b0 sk_str_suffix_equiv / sk_str_contains_equiv
+- **Observation**: The String suffix/contains primitives iterate the small-string via the _StringGuts iterator (0001da84/002a9ba8/002b141c), reading UTF-8 bytes with per-step bounds traps (CL4_SW_BP). Both retain the reference string (thunk 0036b270) and release it (003a25d4) on every return path, so ownership is balanced even on the early-exit mismatch branches.
+- **Evidence**: decompile 00457650/004573b0: `SoftwareBreakpoint(1,0x4578d4/0x457648/0x457650/0x45764c)`; `thunk_FUN_0036b270(param_2)` at entry and `FUN_003a25d4(param_2)` at the shared `ret` label.
+- **Severity (hypothesis)**: Low — balanced retain/release and fail-closed bounds traps; main concern is that a malformed string descriptor (wrong count word) could walk out of the buffer before the trap fires.
+- **Confidence**: medium.

@@ -27,6 +27,7 @@
 typedef uint64_t word_t;
 typedef int64_t  sword_t;
 typedef unsigned char byte;
+typedef unsigned int uint;
 
 /* 16-byte value returned in x0/x1 by many Swift helpers. */
 typedef struct { unsigned long lo, hi; } cl4_pair_t;
@@ -54,7 +55,7 @@ extern unsigned long sk_x_000699a4();   /* FUN_000699a4 */
 extern unsigned long sk_x_000699d8();   /* FUN_000699d8 */
 extern unsigned long sk_x_0006a4c0();   /* FUN_0006a4c0 */
 extern unsigned long sk_x_0006b3f4();   /* FUN_0006b3f4 */
-extern unsigned long sk_x_0006b42c();   /* FUN_0006b42c (16-byte) */
+extern cl4_pair_t sk_x_0006b42c();      /* FUN_0006b42c (16-byte) */
 extern unsigned long sk_x_0006b6e0();   /* FUN_0006b6e0 */
 extern unsigned long sk_x_00077024();   /* FUN_00077024 */
 extern unsigned long sk_x_000776cc();   /* FUN_000776cc */
@@ -301,6 +302,12 @@ static word_t sk_tag_read_45_00458d04(long param_1);
 static void sk_tag_clear_45_00458d10(long param_1);
 static void sk_script_wit_apply5_00458d30(word_t param_1, word_t param_2);
 static word_t sk_script_wit_run5_00458d40(word_t param_1);
+static void sk_script_wit_apply_004589e8(word_t param_1, word_t param_2);
+static word_t sk_buf_copy_020_004568d8(long param_1, long param_2, word_t param_3, long param_4);
+static word_t sk_buf_copy_018_00456b28(long param_1, long param_2, word_t param_3, long param_4);
+static word_t sk_utf32_scalar_fill_00458018(word_t *param_1, long param_2, word_t param_3);
+static long sk_utf32_range_table_00457f5c(void);
+static void sk_str_elem_type_00455a68(word_t *param_1, long param_2);
 
 /* ===================================================================== *
  * Function bodies (address order)
@@ -4139,13 +4146,13 @@ static word_t sk_str_contains_equiv_004573b0(byte *param_1, word_t param_2, word
     if ((param_4 & 0x1000000000000000) == 0) uVar10 = 1;
     word_t uVar2 = param_3 & 0xffffffffffff;
     if ((param_4 & 0x2000000000000000) != 0) uVar2 = (param_4 >> 0x38) & 0xf;
+    word_t result;
     sk_x_0036b270(param_6);
     word_t iter = 0xf;
     byte *pc = param_1;
     do {
         word_t uVar12 = iter >> 0xe;
         char c1, c2;
-        word_t result;
         if (uVar12 == uVar1 * 4) {
             if (((word_t)pc ^ param_2) < 0x4000) { result = 1; goto ret; }
             c1 = 0;
@@ -4215,13 +4222,13 @@ static word_t sk_str_suffix_equiv_00457650(word_t param_1, word_t param_2, byte 
     if ((param_2 & 0x2000000000000000) != 0) uVar2 = (param_2 >> 0x38) & 0xf;
     int uVar10 = (int)(param_1 >> 0x3b) & 1;
     if ((param_2 & 0x1000000000000000) == 0) uVar10 = 1;
+    word_t result;
     sk_x_0036b270(param_2);
     word_t iter = 0xf;
     byte *pc = param_3;
     do {
         word_t uVar13 = (word_t)pc ^ param_4;
         char c1, c2;
-        word_t result;
         if (uVar13 < 0x4000) {
             if (uVar2 * 4 == (iter >> 0xe)) { result = 1; goto ret; }
             c1 = 0;
@@ -4546,7 +4553,7 @@ static long sk_utf32_range_table_00457f5c(void)
     *(long *)(buf + 0x10) = sentinel;
     *(long *)(buf + 0x18) = ((cap - 0x20) / 4) << 1;
     {
-        byte *p = (byte *)sk_utf32_scalar_fill_00458018((word_t)&sentinel, buf + 0x20, sentinel);
+        byte *p = (byte *)sk_utf32_scalar_fill_00458018((word_t *)&sentinel, buf + 0x20, sentinel);
         if (sentinel == 0x0010f800) {
             if (p != (byte *)0x0010f800) CL4_SW_BP(0x457ff8);
             return buf;
@@ -4705,42 +4712,130 @@ static void sk_elem_release_0x20c_00458278(word_t param_1, long param_2)
 static void sk_elem_release_0x178_004582e8(word_t param_1, long param_2)
 {
     long n = *(long *)(param_2 + 0x10);
+    word_t uVar16, uVar1, uVar11, uVar2, uVar15, uVar9;
     sk_x_002298d4(n);
     if (n != 0) {
         long idx = 0;
         do {
-            byte stack[0x178 * 2 + 0x3d0];
-            word_t rec = param_2 + 0x20 + idx * 0x178;
-            byte *r;
-            word_t a, b;
-            /* copy the record (00458d04 tag at rec+0x170) */
-            sk_x_00117cc4((word_t)&stack[0x376], rec, 0x178);
-            sk_x_00117cc4((word_t)&stack[0x1e0], rec, 0x178);
-            switch (sk_tag_read_45_00458d04((word_t)&stack[0x376])) {
+            byte rec538[376], rec3c0[376], rec6b0[376];
+            byte sub[168];
+            word_t lVar8 = param_2 + 0x20 + idx * 0x178;
+            word_t tag;
+            sk_x_00117cc4((word_t)rec538, lVar8, 0x178);
+            sk_x_00117cc4((word_t)rec3c0, lVar8, 0x178);
+            tag = sk_tag_read_45_00458d04((word_t)rec538);
+            switch (tag) {
+            default: {
+                /* tagged name+count record release */
+                char *pc = (char *)(word_t)rec3c0;   /* FUN_00458d10's x0 carries the buffer */
+                char cVar3 = *pc;
+                uVar16 = *(word_t *)(pc + 8);
+                uVar1 = *(word_t *)(pc + 0x10);
+                uVar11 = *(word_t *)(pc + 0x18);
+                uVar2 = *(word_t *)(pc + 0x20);
+                uVar15 = *(word_t *)(pc + 0x28);
+                sk_x_002298d4(0);
+                word_t op = (cVar3 == 1) ? 0x5e5b : 0x5b;
+                word_t tagw = (cVar3 == 1) ? 0xe200000000000000 : 0xe100000000000000;
+                sk_script_wit_apply5_00458d30((word_t)rec538, (word_t)rec6b0);
+                sk_x_001b9084(param_1, op, tagw);
+                sk_x_003a25d4(tagw);
+                sk_x_002298d4(uVar16 >> 0xe);
+                sk_x_002298d4(uVar1 >> 0xe);
+                sk_elem_release_0x178_004582e8(param_1, uVar11);
+                sk_x_002298d4(uVar2 >> 0xe);
+                break;
+            }
             case 1: {
                 /* 0x99-byte sub-record + nested array release */
-                sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
-                word_t sub = sk_tag_clear_45_00458d10((word_t)&stack[0x376]);
-                /* ... inner elements ... */
-                sk_script_wit_run5_00458d40((word_t)&stack[0x376]);
+                byte sub2[160];
+                word_t subptr = (word_t)rec3c0;   /* x0 after 00458d10 */
+                sk_x_002298d4(1);
+                sk_x_00117cc4((word_t)sub2, subptr, 0x99);
+                sk_x_00117cc4((word_t)rec6b0, (word_t)rec538, 0x178);
+                word_t uVar9 = (word_t)rec6b0;
+                sk_x_00461d68(uVar9, 0);
+                sk_x_0041360c(param_1);
+                uVar16 = *(word_t *)(subptr + 0xa8);
+                sk_x_002298d4(*(word_t *)(subptr + 0xa0) >> 0xe);
+                sk_x_002298d4(uVar16 >> 0xe);
+                uVar16 = *(word_t *)(subptr + 0xb8);
+                sk_x_002298d4(*(word_t *)(subptr + 0xb0) >> 0xe);
+                sk_x_002298d4(uVar16 >> 0xe);
+                sk_x_00117cc4((word_t)sub, subptr + 0xc0, 0x99);
+                sk_x_0041360c(param_1);
+                uVar16 = *(word_t *)(subptr + 0x168);
+                sk_x_002298d4(*(word_t *)(subptr + 0x160) >> 0xe);
+                sk_x_002298d4(uVar16 >> 0xe);
+                word_t inner = *(word_t *)(subptr + 0x170);
+                long inner_n = *(long *)(inner + 0x10);
+                sk_x_002298d4(inner_n);
+                if (inner_n != 0) {
+                    word_t *p = (word_t *)(inner + 0x38);
+                    do {
+                        word_t a = p[-3], b = p[-2], c = p[-1], d = p[0];
+                        sk_x_0036b270(b);
+                        sk_x_001b9084(param_1, a, b);
+                        sk_x_003a25d4(b);
+                        sk_x_002298d4(c >> 0xe);
+                        sk_x_002298d4(d >> 0xe);
+                        p += 4;
+                        inner_n--;
+                    } while (inner_n != 0);
+                }
+                sk_script_wit_run5_00458d40((word_t)rec538);
                 break;
             }
-            case 2:
-                sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
-                break;
-            default:
-                r = (byte *)sk_tag_clear_45_00458d10((word_t)&stack[0x1e0]);
-                a = *(word_t *)(r + 8);
-                b = *(word_t *)(r + 0x10);
-                sk_script_wit_apply5_00458d30((word_t)&stack[0x376], (word_t)&stack[0x370]);
-                sk_x_001b9084(param_1, 0x5b, 0xe100000000000000);
-                sk_x_003a25d4(0xe100000000000000);
-                sk_x_002298d4(a >> 0xe);
-                sk_x_002298d4(b >> 0xe);
-                sk_x_004582e8(param_1, *(word_t *)(r + 0x18));
+            case 2: {
+                /* 0x99-byte sub-record release */
+                word_t subptr = (word_t)rec3c0;
+                sk_x_002298d4(2);
+                sk_x_00117cc4((word_t)sub, subptr, 0x99);
+                sk_x_00117cc4((word_t)rec6b0, (word_t)rec538, 0x178);
+                word_t uVar9 = (word_t)rec6b0;
+                sk_script_wit_apply_004589e8(uVar9, 0);
+                sk_x_0041360c(param_1);
+                uVar15 = *(word_t *)(subptr + 0xa8);
+                sk_x_002298d4(*(word_t *)(subptr + 0xa0) >> 0xe);
                 break;
             }
-            sk_script_wit_run5_00458d40((word_t)&stack[0x376]);
+            case 3:
+            case 4: {
+                word_t *p = (word_t *)(word_t)rec3c0;
+                uVar9 = p[0]; uVar11 = p[1]; uVar16 = p[2]; uVar15 = p[3];
+                word_t tagn = tag;   /* 3 or 4 */
+                sk_x_002298d4(tagn);
+                sk_x_00117cc4((word_t)rec6b0, (word_t)rec538, 0x178);
+                word_t lVar8 = (word_t)rec6b0;
+                sk_x_0036b270(*(word_t *)(lVar8 + 8));
+                sk_x_001b9084(param_1, uVar9, uVar11);
+                sk_x_002298d4(uVar16 >> 0xe);
+                break;
+            }
+            case 5: {
+                word_t *p = (word_t *)(word_t)rec3c0;
+                uVar11 = p[0];
+                byte bVar4 = *(byte *)(p + 1);
+                uVar16 = p[2];
+                uVar15 = p[3];
+                word_t uVar13 = p[4];
+                sk_x_002298d4(5);
+                sk_x_00117cc4((word_t)rec6b0, (word_t)rec538, 0x178);
+                word_t *q = (word_t *)(word_t)rec6b0;
+                uVar9 = q[4];
+                sk_x_0036b270(q[0]);
+                sk_x_0036b270(uVar9);
+                sk_elem_release_0x178_004582e8(param_1, uVar11);
+                sk_x_001b9084(param_1, *(word_t *)((word_t)&DAT_005a3a50 + (word_t)bVar4 * 8), 0xe200000000000000);
+                sk_x_003a25d4(0xe200000000000000);
+                sk_x_002298d4(uVar16 >> 0xe);
+                sk_x_002298d4(uVar15 >> 0xe);
+                sk_elem_release_0x178_004582e8(param_1, uVar13);
+                sk_script_wit_run5_00458d40((word_t)rec538);
+                break;
+            }
+            }
+            sk_script_wit_run5_00458d40((word_t)rec538);
             idx++;
         } while (idx != n);
     }
@@ -4995,10 +5090,11 @@ static void sk_release_if_tag1_00458bac(word_t param_1, word_t param_2, word_t p
 static void sk_obj_emit_meta_00458bc4(void)
 {
     cl4_pair_t au;
+    word_t m;
     sk_x_003504d0();
     sk_x_00355968();
-    au = sk_x_00002534();
-    sk_x_003509c8(au.lo, au.lo, au.hi, au.lo);
+    m = sk_x_00002534();
+    sk_x_003509c8(m, m, m, m);
 }
 
 /* FUN_00458c18 @ 0x00458c18   (est. sk_obj_wit_apply)

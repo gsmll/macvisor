@@ -66,7 +66,7 @@ extern sk_pair_t FUN_0066a9bc();
 extern long FUN_0066ab40();
 extern long FUN_0066ad54();
 extern long FUN_0066af84();
-extern long FUN_006766cc();
+extern sk_pair_t FUN_006766cc();
 extern long FUN_00676a7c();
 extern long FUN_0067728c();
 extern long FUN_00677674();
@@ -81,7 +81,7 @@ extern long FUN_00679784();
 extern long FUN_00679838();
 extern long FUN_00679990();
 extern long FUN_00679b98();
-extern long FUN_00679d44();
+extern sk_pair_t FUN_00679d44();
 extern long FUN_0067a154();
 extern long FUN_0067a264();
 extern long FUN_0067a334();
@@ -134,11 +134,11 @@ extern long FUN_00686c74();
 extern sk_pair_t FUN_00686c8c();
 extern long FUN_00686d10();
 extern long FUN_00686d58();
-extern long FUN_00686d90();
-extern long FUN_00686dc8();
+extern sk_pair_t FUN_00686d90();
+extern sk_pair_t FUN_00686dc8();
 extern long FUN_00686e00();
-extern long FUN_00686e38();
-extern long FUN_00686e70();
+extern sk_pair_t FUN_00686e38();
+extern sk_pair_t FUN_00686e70();
 extern long FUN_00686ea8();
 extern long FUN_00686ee0();
 extern long FUN_00686f08();
@@ -201,7 +201,7 @@ static unsigned long FUN_00673894(void *a, unsigned long b);
 static void FUN_00671b60(void *a, unsigned long b, unsigned long c, unsigned long d);
 static void FUN_00671bc4(void *a, unsigned long b);
 static unsigned long FUN_00675b48(unsigned long a, unsigned long b, long *c);
-static unsigned long FUN_00675ae8(void *a);
+static unsigned long FUN_00675ae8(void *a, ...);
 static sk_pair_t sk_region_query(unsigned long ctx, unsigned long key, int *type, unsigned long *out);
 static unsigned long sk_region_unlock(unsigned long ctx, unsigned long key, int mode);
 static sk_pair_t sk_supervisor_op2(void);
@@ -211,11 +211,41 @@ static unsigned long sk_region_map_extend(long r, unsigned long *off, unsigned l
 static unsigned long FUN_006736ec(unsigned long a, unsigned long b, unsigned long *c, long *d);
 static void FUN_00673914(long a, unsigned long b, ...);
 static unsigned long FUN_00675418(long a, unsigned long b, unsigned long c);
-static void FUN_00674688(void);
+static void FUN_00674688(void *a, long *b, unsigned long *c, int d);
 static void FUN_00671f38(long a);
 static void FUN_0066e8b4(void);
 static sk_pair_t sk_region_free(unsigned long r);
 static unsigned long FUN_00674fac(long a, unsigned long b, void *c, int d);
+static void FUN_006745f4(unsigned long a, long b);
+static unsigned long FUN_0067483c(void *a, long b, unsigned long c, ...);
+static int FUN_006714f8(unsigned long *a, unsigned long b, int c, unsigned int d, unsigned int e, unsigned int f);
+static void FUN_00671a48(unsigned long *a, unsigned long b, unsigned long *c);
+static sk_pair_t FUN_00674934(unsigned long *a, unsigned long b, long c, long d, unsigned long *e, long *f);
+static sk_pair_t FUN_00674364(unsigned long *a, unsigned long b, long c, unsigned long d, unsigned long *e, long *f);
+static sk_pair_t FUN_00672098(unsigned long a, unsigned long b, void *c, long *d, unsigned long e, unsigned long f);
+static sk_pair_t sk_region_merge(long *a, long *b, long type, long *out);
+static sk_pair_t sk_region_split(long r, unsigned long off, long *out1, long *out2);
+static sk_pair_t sk_region_subdivide(unsigned long *r, unsigned long size, unsigned int flags, unsigned long *out);
+static sk_pair_t sk_region_remove(long *rp);
+static unsigned long *sk_free_slot0_get(long ctx);
+static void sk_free_slot0_put(long ctx, unsigned long *n);
+static unsigned long sk_ctx_init(unsigned long *c, unsigned long owner,
+                                 unsigned long n0, unsigned long n1,
+                                 unsigned long n2, unsigned long n3);
+static unsigned long sk_ctx_init_commit(unsigned long *c, unsigned long owner,
+                                        unsigned long a, unsigned long b,
+                                        unsigned long n0, unsigned long n1,
+                                        unsigned long n2, unsigned long n3);
+static void sk_ctx_commit(long *c, long owner, unsigned long a, unsigned long b);
+static void sk_ctx_commit2(long *c, long owner, unsigned long a);
+static void sk_ctx_begin(unsigned long *c, unsigned long owner, unsigned long a, unsigned long b);
+static void sk_ctx_end(long *c, long owner);
+static void sk_ctx_teardown(unsigned long *c);
+static void sk_region_register2(unsigned long *c, unsigned long r);
+static void sk_ctx_register(void);
+static void sk_region_caps_release(long r);
+static unsigned long FUN_00673adc(unsigned long *c);
+static void FUN_00675d88(unsigned long a, unsigned long b);
 
 /* sk_l4_error_format @ 0x00674e98  (est. sk_l4_error_format)
  * Ghidra: void sk_l4_error_format(undefined8 *param_1, byte param_2)
@@ -2606,14 +2636,14 @@ static unsigned long sk_region_map_extend(long r, unsigned long *off, unsigned l
                         if (((rc != 7) && (rc != 0x307)) && (rc != 0x207)) {
 panicpath:
                             FUN_00686d10(rc, (unsigned char *)&sb);
-                            FUN_00674688();
-                            return;
+                            FUN_00674688(0, 0, 0, 0);
+                            return 0;
                         }
                         rc = (rc & 0x7fff) << 0x10 | 0x80000001;
                     }
                 }
                 if (*(unsigned long *)0x6b5ed0 == cookie2) {
-                    return;
+                    return 0;
                 }
                 FUN_0067f660(rc, 0);   /* fatal (noreturn) */
             }
@@ -2624,4 +2654,1137 @@ panicpath:
     }
     FUN_0067f660(0x6800001, 0);   /* fatal (noreturn) */
     return 0;
+}
+
+/* FUN_0066fb0c @ 0x0066fb0c  (est. sk_region_free)
+ * Ghidra: undefined1 [16] FUN_0066fb0c(undefined1 *param_1)
+ * Frees a region (param_1): removes it from the per-CPU active list, computes
+ * its live range, unmaps its pages (FUN_00674688), tears down its page state
+ * (FUN_00671f38), and rejoins it to its owning region's map. Walks the
+ * neighboring regions (FUN_00673894 / FUN_0067483c) to coalesce free space.
+ * Returns the status pair; 0x5660001 if not unmappable.
+ * Confidence: medium */
+static sk_pair_t sk_region_free(unsigned long rarg)
+{
+    unsigned char *r = (unsigned char *)rarg;
+    long base = *(long *)(r + 0x50);
+    unsigned long st[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned long rc = 0;
+    if ((((unsigned char)r[0x23] >> 3 & 1) == 0)) {
+        if (FUN_0067a760() != 0) {
+            unsigned long lock = base + 0x1f0;
+            if (base + 0x200U < lock) goto trap;
+            if (FUN_0067cffc(lock) != 0) {
+                FUN_006833d4(0x6a8797);   /* fatal */
+            }
+            long *prev = *(long **)(r + 0x90);
+            long *next = *(long **)(r + 0x98);
+            if (prev != 0) {
+                *(long **)(prev + 0x98) = next;
+            }
+            *next = (long)prev;
+            if (FUN_0067d02c(lock) != 0) {
+                FUN_006833d4(0x6a8797);   /* fatal */
+            }
+        }
+        long live;
+        if ((*(unsigned int *)(r + 0x20) >> 7 & 1) == 0) {
+            live = *(long *)(r + 8);
+        } else {
+            live = (*(long *)(r + 0x10) - *(long *)(r + 0x48)) + *(long *)(r + 8);
+        }
+        long d = live - *(long *)(r + 8);
+        long o = 0x10;
+        if ((*(unsigned int *)(r + 0x20) & 0x40) != 0) {
+            o = 0x48;
+        }
+        unsigned long len = *(unsigned long *)(r + o);
+        FUN_00674688(r, &d, &len, 1);
+        unsigned char *pg = r + 0x80;
+        if (r + 0x90 < pg) goto trap;
+        if (FUN_0067cffc(pg) != 0) {
+            FUN_006833d4(0x6a8797);   /* fatal */
+        }
+        FUN_00671f38((long)r);
+        if (FUN_0067d02c(pg) != 0) {
+            FUN_006833d4(0x6a8797);   /* fatal */
+        }
+        FUN_00671b60(st, base, *(unsigned long *)(r + 8), *(unsigned long *)(r + 0x10));
+        if ((*(unsigned int *)(r + 0x20) >> 0x18 & 1) == 0) {
+            if ((*(unsigned int *)(r + 0x20) >> 0x10 & 1) != 0) {
+                FUN_0067a334(st, base, (long)r);
+            }
+            long *slot = *(long **)(r + 0x70);
+            if (slot == 0) {
+                FUN_006833d4(0x6acd4e);   /* fatal */
+            }
+            /* re-link the region into the owner's span list */
+            if (2 < st[1]) {
+                FUN_006833d4(0x6ac2e0);   /* fatal */
+            }
+            *slot = st[2];
+            *(unsigned long *)(r + 0x70) = 0;
+            *(unsigned int *)(r + 0x20) = 0;
+            *r = 0;
+            *(unsigned long *)(r + 0x30) = 0;
+            *(unsigned long *)(r + 0x28) = 0;
+            *(unsigned long *)(r + 0x40) = 0;
+            *(unsigned long *)(r + 0x38) = 0;
+            st[2] = (long)slot;
+            FUN_006745f4(*(unsigned long *)(st[0] + 0x58), (long)r);
+            unsigned long u = FUN_00673894(st, *(unsigned long *)(r + 8) - 0x4000);
+            if ((0x3fff < *(unsigned long *)(r + 8)) && u != 0) {
+                if (u + 0xb0 < u) goto trap;
+                if (*(int *)(u + 0x20) == 0) {
+                    r = (unsigned char *)FUN_0067483c(st, base, u, (long)r);
+                }
+            }
+            u = FUN_00673894(st, 0);
+            if ((*(long *)(r + 0x10) + *(long *)(r + 8) != 0x1000000000) && u != 0) {
+                if (u + 0xb0 < u) goto trap;
+                if (*(int *)(u + 0x20) == 0) {
+                    FUN_0067483c(st, base, (long)r);
+                }
+            }
+            rc = 0;
+        } else {
+            rc = 0x5660001;
+        }
+        FUN_00671bc4(st, base);
+    } else {
+        FUN_0067d72c(0x6acd07);
+        rc = 0x5b10001;
+    }
+    return (sk_pair_t){rc, 0};
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x66fd78) */
+}
+
+/* FUN_0066feb8 @ 0x0066feb8  (est. sk_region_unmap)
+ * Ghidra: void FUN_0066feb8(long param_1, uint param_2)
+ * Unmaps pages from a region (param_1) according to the flag mask param_2:
+ * clears the requested flag bits (validating the unmap set), then walks the
+ * region's live pages and releases each 16KB block (sk_cap_decode/free via the
+ * page descriptor, CallSupervisor(0) for the TLB/teardown). Rejects invalid
+ * masks with 0x5df0001/0x5e70001.
+ * Confidence: medium */
+static void sk_region_unmap(long r, unsigned int mask)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    unsigned int flags = *(unsigned int *)(r + 0x20);
+    unsigned long rc;
+    if ((mask & (flags ^ 0xffffffff)) == 0) {
+        unsigned int cleared = flags & (mask ^ 0xffffffff);
+        if ((cleared & 0xd08d9c1) == 0) {
+            flags = flags & mask;
+            *(unsigned int *)(r + 0x20) = flags;
+            if ((cleared & 0x18) != 0) {
+                long live;
+                if ((flags >> 7 & 1) == 0) {
+                    live = *(long *)(r + 8);
+                } else {
+                    live = (*(long *)(r + 0x10) - *(long *)(r + 0x48)) + *(long *)(r + 8);
+                }
+                unsigned long pg = r + 0x80;
+                if ((flags >> 7 & 1) != 0) goto ff74;
+ff6c:
+                long cur = *(long *)(r + 8);
+                do {
+                    long o = 0x10;
+                    if ((flags & 0x40) != 0) {
+                        o = 0x48;
+                    }
+                    if (*(unsigned long *)(r + o) <= (unsigned long)(live - cur)) break;
+                    unsigned long cb = FUN_00668c78(*(unsigned long *)(r + 0x50));
+                    if (r + 0x90U < pg) goto trap;
+                    if (FUN_0067cffc(pg) != 0) {
+                        FUN_006833d4(0x6a8797);   /* fatal */
+                    }
+                    unsigned long l[5] = {0, 0, 0, 0, 0};
+                    if (cb + 0xd0 < cb) goto trap;
+                    sk_cap_decode(l, *(unsigned long *)(r + 0x78),
+                                  (int)((unsigned long)(live - *(long *)(cb + 0x28)) >> 0xe) + 1, 0, 0);
+                    unsigned long blk = l[0];
+                    *(unsigned long *)(r + 0x78) = l[4];
+                    if (l[0] == 0) {
+                        if (FUN_0067d02c(pg) != 0) {
+                            FUN_006833d4(0x6a8797);   /* fatal */
+                        }
+                        if ((char)l[2] != '\0') {
+                            FUN_00686c74();
+                            FUN_006833d4(0x6a8797);   /* fatal */
+                        }
+                    } else {
+                        sk_ipc_msg[0] = (unsigned long)(flags >> 3 & 3);   /* tpidrro_el0 */
+                        CallSupervisor(0);
+                        sk_ipc_msg[0] = (flags >> 3 & 3);
+                        if (FUN_0067d02c(pg, 0) != 0) {
+                            FUN_006833d4(0x6a8797);   /* fatal */
+                        }
+                        unsigned long v = 0;
+                        if ((blk & 0xff) != 4) {
+                            v = blk;
+                        }
+                        if ((v & 0xff) != 0) {
+                            FUN_00686c2c(v, l);
+                            FUN_006833d4(0x6a8797);   /* fatal */
+                        }
+                    }
+                    live = live + 0x4000;
+                    flags = *(unsigned int *)(r + 0x20);
+                    if ((flags >> 7 & 1) == 0) goto ff6c;
+ff74:
+                    cur = (*(long *)(r + 0x10) - *(long *)(r + 0x48)) + *(long *)(r + 8);
+                } while (true);
+            }
+            rc = 0;
+        } else {
+            rc = 0x5e70001;
+        }
+    } else {
+        rc = 0x5df0001;
+    }
+    if (*(unsigned long *)0x6b5ed0 != cookie) {
+        FUN_0067f660(rc, 0);   /* fatal (noreturn) */
+    }
+    return;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x6700a4) */
+}
+
+/* FUN_00671018 @ 0x00671018  (est. sk_free_slot_get)
+ * Ghidra: undefined8 * FUN_00671018(long param_1)
+ * Pops a node from a small free-list (head at +0x18, count byte at +0x32).
+ * Fatal if the list is empty or the count is out of range.
+ * Confidence: high */
+static unsigned long *sk_free_slot_get(long ctx)
+{
+    unsigned char c = *(unsigned char *)(ctx + 0x32);
+    if (c == 0) {
+        FUN_006833d4(0x6ab6fa);   /* fatal: empty free list */
+    }
+    if (c < 4) {
+        *(unsigned char *)(ctx + 0x32) = c - 1;
+        unsigned long *n = *(unsigned long **)(ctx + 0x18);
+        if (n != 0) {
+            *(unsigned long *)(ctx + 0x18) = *n;
+            *n = 0;
+            return n;
+        }
+        FUN_006833d4(0x6ab7e0);   /* fatal: list head mismatch */
+    }
+    FUN_006833d4(0x6ab780);   /* fatal: count overrun */
+}
+
+/* FUN_006710e8 @ 0x006710e8  (est. sk_free_slot_put)
+ * Ghidra: void FUN_006710e8(long param_1, undefined8 *param_2)
+ * Pushes a node onto the small free-list (head +0x18, count byte +0x32).
+ * Confidence: high */
+static void sk_free_slot_put(long ctx, unsigned long *n)
+{
+    if (n != 0) {
+        unsigned char c = *(unsigned char *)(ctx + 0x32);
+        if (2 < c) {
+            FUN_006833d4(0x6ab780);   /* fatal: count overrun */
+        }
+        *n = *(unsigned long *)(ctx + 0x18);
+        *(unsigned long **)(ctx + 0x18) = n;
+        *(unsigned char *)(ctx + 0x32) = c + 1;
+    }
+}
+
+/* FUN_00671150 @ 0x00671150  (est. sk_free_slot2_get)
+ * Ghidra: undefined8 * FUN_00671150(long param_1)
+ * Pops a node from the second small free-list (head +0x20, count byte +0x33).
+ * Confidence: high */
+static unsigned long *sk_free_slot2_get(long ctx)
+{
+    unsigned char c = *(unsigned char *)(ctx + 0x33);
+    if (c == 0) {
+        FUN_006833d4(0x6ab86e);   /* fatal: empty free list */
+    }
+    if (c < 4) {
+        *(unsigned char *)(ctx + 0x33) = c - 1;
+        unsigned long *n = *(unsigned long **)(ctx + 0x20);
+        if (n != 0) {
+            *(unsigned long *)(ctx + 0x20) = *n;
+            *n = 0;
+            return n;
+        }
+        FUN_006833d4(0x6ab95e);   /* fatal: list head mismatch */
+    }
+    FUN_006833d4(0x6ab8f6);   /* fatal: count overrun */
+}
+
+/* FUN_00671220 @ 0x00671220  (est. sk_free_slot2_put)
+ * Ghidra: void FUN_00671220(long param_1, undefined8 *param_2)
+ * Pushes a node onto the second small free-list (head +0x20, count byte +0x33).
+ * Confidence: high */
+static void sk_free_slot2_put(long ctx, unsigned long *n)
+{
+    if (n != 0) {
+        unsigned char c = *(unsigned char *)(ctx + 0x33);
+        if (2 < c) {
+            FUN_006833d4(0x6ab8f6);   /* fatal: count overrun */
+        }
+        *n = *(unsigned long *)(ctx + 0x20);
+        *(unsigned long **)(ctx + 0x20) = n;
+        *(unsigned char *)(ctx + 0x33) = c + 1;
+    }
+}
+
+/* FUN_00671288 @ 0x00671288  (est. sk_free_slot3_get)
+ * Ghidra: undefined8 * FUN_00671288(long param_1)
+ * Pops a node from the large free-list (head +0x28, count +0x38).
+ * Confidence: high */
+static unsigned long *sk_free_slot3_get(long ctx)
+{
+    if (*(long *)(ctx + 0x38) == 0) {
+        FUN_006833d4(0x6ab9de);   /* fatal: empty free list */
+    }
+    *(long *)(ctx + 0x38) = *(long *)(ctx + 0x38) - 1;
+    unsigned long *n = *(unsigned long **)(ctx + 0x28);
+    if (n != 0) {
+        *(unsigned long *)(ctx + 0x28) = *n;
+        *n = 0;
+        return n;
+    }
+    FUN_006833d4(0x6abacc);   /* fatal: list head mismatch */
+}
+
+/* FUN_00671320 @ 0x00671320  (est. sk_free_slot3_put)
+ * Ghidra: void FUN_00671320(long param_1, undefined8 *param_2)
+ * Pushes a node onto the large free-list (head +0x28, count +0x38).
+ * Confidence: high */
+static void sk_free_slot3_put(long ctx, unsigned long *n)
+{
+    if (n != 0) {
+        long c = *(long *)(ctx + 0x38);
+        if (c == -1) {
+            FUN_006833d4(0x6aba65);   /* fatal: count underflow */
+        }
+        *n = *(unsigned long *)(ctx + 0x28);
+        *(unsigned long **)(ctx + 0x28) = n;
+        *(long *)(ctx + 0x38) = c + 1;
+    }
+}
+
+/* FUN_00671384 @ 0x00671384  (est. sk_free_slot_peek)
+ * Ghidra: undefined8 FUN_00671384(long param_1)
+ * Peeks the large free-list: returns a node if any are available, else 0.
+ * Confidence: high */
+static unsigned long sk_free_slot_peek(long ctx)
+{
+    if (*(long *)(ctx + 0x38) != 0) {
+        return (unsigned long)sk_free_slot3_get(ctx);
+    }
+    return 0;
+}
+
+/* FUN_00671398 @ 0x00671398  (est. sk_alloc_ensure_capacity)
+ * Ghidra: bool FUN_00671398(long param_1, long param_2, undefined8 param_3,
+ *                          undefined8 param_4, ulong param_5)
+ * Ensures the free-list has at least param_5 nodes: if the count at ctx+0x38 is
+ * below the target, allocates additional nodes (FUN_006692e4) until satisfied,
+ * releases the parent's lock, and re-asserts ownership. Returns true when
+ * capacity is sufficient.
+ * Confidence: medium */
+static bool sk_alloc_ensure_capacity(long owner, long parent, unsigned long a, unsigned long b, unsigned long need)
+{
+    bool ok;
+    if (*(unsigned long *)(parent + 0x50) != (unsigned long)owner) {
+        FUN_006833d4(0x6abb4b);   /* fatal: wrong owner */
+    }
+    if (*(unsigned long *)(owner + 0x38) < need) {
+        *(unsigned long *)(parent + 0x50) = 0;
+        int rc = FUN_0067d02c(parent + 0x40);
+        if (rc != 0) {
+            FUN_006833d4(0x6a8797);   /* fatal */
+        }
+        if (*(unsigned long *)(owner + 0x38) < need) {
+            do {
+                long n = FUN_006692e4();
+                ok = n != 0;
+                if (n == 0) break;
+                sk_free_slot3_put(owner, (unsigned long *)n);
+            } while (*(unsigned long *)(owner + 0x38) < need);
+        } else {
+            ok = true;
+        }
+        FUN_00679838(parent, a, b);
+        if (*(long *)(parent + 0x50) != 0) {
+            FUN_006833d4(0x6abb4b);   /* fatal: ownership raced */
+        }
+        *(long *)(parent + 0x50) = owner;
+    } else {
+        ok = true;
+    }
+    return ok;
+}
+
+/* FUN_006704ac @ 0x006704ac  (est. sk_region_merge)
+ * Ghidra: undefined1 [16] FUN_006704ac(long *param_1, long *param_2, long param_3,
+ *                                    long *param_4)
+ * Merges two adjacent regions (param_1/param_2) of the given type param_3 into a
+ * single region: validates compatibility, joins their page-capability sets
+ * (sk_cap_merge), splits the union back (FUN_00674934), and returns the merged
+ * region descriptors through param_4/param_2. Performs the inverse split
+ * (FUN_00674364) of the union region.
+ * Confidence: low (complex region algebra) */
+static sk_pair_t sk_region_merge(long *a, long *b, long type, long *out)
+{
+    unsigned long cookie = *(unsigned long *)0x6b5ed0;
+    sk_pair_t r = (sk_pair_t){0, 0};
+    if (type == 0x6b6978) {
+        long a_ = 0;
+        long sp[12] = {0};
+        long owner = a[10];
+        unsigned long alen = b[1];
+        long aowner = owner;
+        long *pa = a;
+        if (alen < (unsigned long)a[1]) {
+            if (a + 0x16 < a) goto trap;
+            alen = a[1];
+            aowner = b[10];
+            pa = b;
+            b = a;
+        }
+        if (aowner == b[10]) {
+            if (*(unsigned int *)(pa + 4) == *(unsigned int *)(b + 4)) {
+                if ((*(unsigned int *)(pa + 4) & 0xd000800) == 0) {
+                    if (alen == 0) {
+                        r = (sk_pair_t){0x75c0001, 0};
+                    } else {
+                        unsigned long rr = 0;
+                        if (pa[2] + pa[1] != alen) {
+                            rr = 0x75d0001;
+                        }
+                        r = (sk_pair_t){rr, 0};
+                    }
+                } else {
+                    r = (sk_pair_t){0x75b0001, 0};
+                }
+            } else {
+                r = (sk_pair_t){0x75a0001, 0};
+            }
+        } else {
+            r = (sk_pair_t){0x7590001, 0};
+        }
+        if ((r.lo & 0xff) == 0) {
+            unsigned int f = *(unsigned int *)(pa + 4) >> 0x10 & 1;
+            unsigned long st[11] = {0};
+            int rc = FUN_006714f8(st + 3, owner, 0, *(unsigned int *)(pa + 4) != 0, f, f);
+            if (rc != 0) {
+                unsigned long c8[11] = {0};
+                FUN_00679990(owner, c8 + 1, pa[1], b[2] + pa[2]);
+                long *l1 = pa + 0x10;
+                if (l1 <= pa + 0x12) {
+                    int rc1 = FUN_0067cffc(l1);
+                    if (rc1 != 0) FUN_006833d4(0x6a8797);
+                    long *l2 = b + 0x10;
+                    if (l2 <= b + 0x12) {
+                        int rc2 = FUN_0067cffc(l2);
+                        if (rc2 != 0) FUN_006833d4(0x6a8797);
+                        FUN_00671a48(st + 3, owner, c8 + 1);
+                        sk_pair_t m = FUN_00674934(st + 3, owner, (long)pa, (long)b, c8, &a_);
+                        FUN_00671bc4(st + 3, owner);
+                        long r1 = c8[0];
+                        long r2 = a_;
+                        if (c8[0] != 0) {
+                            unsigned long l[3] = {0};
+                            sk_cap_merge(l, *(unsigned long *)(c8[0] + 0x78), *(unsigned long *)(a_ + 0x78));
+                            if ((l[0] & 0xff) != 0) {
+                                goto trap;
+                            }
+                            *(unsigned long *)(r1 + 0x78) = l[2];
+                            *(unsigned long *)(r2 + 0x78) = 0x68a570;
+                        }
+                        int rc3 = FUN_0067d02c(l1);
+                        if (rc3 != 0) FUN_006833d4(0x6a8797);
+                        int rc4 = FUN_0067d02c(l2);
+                        if (rc4 != 0) FUN_006833d4(0x6a8797);
+                        FUN_00679b98(owner, c8 + 1);
+                        if (a_ != 0) {
+                            *(unsigned long *)(a_ + 0x50) = 0;
+                            FUN_006690dc();
+                        }
+                        unsigned int st8 = m.lo & 0xff;
+                        if (c8[0] == 0) {
+                            if (st8 != 0) {
+                                out[0] = 0;
+                                out[1] = 0;
+                                goto done;
+                            }
+                        } else {
+                            if (st8 == 0) {
+                                out[0] = c8[0];
+                                out[1] = 0x6b6978;
+                                goto done;
+                            }
+                            FUN_00686d58();
+                        }
+                        /* inverse split of the merged union */
+                        sk_pair_t rr = FUN_00686d90();
+                        unsigned long ctx = rr.hi;
+                        long src = (long)rr.lo;
+                        unsigned long stk[12];
+                        stk[0xb] = *(unsigned long *)0x6b5ed0;
+                        stk[0] = 0;
+                        unsigned int f2 = *(unsigned int *)(src + 0x20);
+                        unsigned long e;
+                        if ((f2 & 0xd000800) == 0) {
+                            unsigned long v1 = 0x7fb0001;
+                            if (ctx != 0) v1 = 0;
+                            e = 0x7f80001;
+                            if (ctx < *(unsigned long *)(src + 0x10)) {
+                                e = v1;
+                            }
+                        } else {
+                            e = 0x7f60001;
+                        }
+                        sk_pair_t r2b = (sk_pair_t){e, 0};
+                        if ((e & 0xff) == 0) {
+                            unsigned long sc = *(unsigned long *)(src + 0x50);
+                            unsigned long v = 0;
+                            if (f2 != 0) v = 2;
+                            unsigned int f3 = f2 >> 0x10 & 1;
+                            unsigned long st2[11] = {0};
+                            unsigned long rr2 = FUN_006714f8(&st2[7], sc, 1, v, f3, f3);
+                            if ((rr2 & 1) == 0) {
+                                r2b = (sk_pair_t){0x85f0002, 0};
+                            } else {
+                                long base = *(long *)(src + 8);
+                                unsigned long sp2[12] = {0};
+                                FUN_00679990(sc, sp2 + 1, base, *(unsigned long *)(src + 0x10));
+                                unsigned long pg = src + 0x80;
+                                if (src + 0x90U < pg) goto trap;
+                                int rc5 = FUN_0067cffc(pg);
+                                if (rc5 != 0) FUN_006833d4(0x6a8797);
+                                FUN_00671a48(&st2[7], sc, sp2 + 1);
+                                sk_pair_t sp3 = FUN_00674364(&st2[7], sc, src, ctx, sp2, &stk[0]);
+                                FUN_00671bc4(&st2[7], sc);
+                                long r3 = sp2[0];
+                                long r4 = stk[0];
+                                unsigned int st9 = sp3.lo & 0xff;
+                                if (st9 == 0) {
+                                    if (sp2[0] != src) FUN_006833d4(0x6ad653);
+                                    unsigned long p2 = stk[0] + 0x80;
+                                    if (stk[0] + 0x90U < p2) goto trap;
+                                    int rc6 = FUN_0067cffc(p2);
+                                    if (rc6 != 0) FUN_006833d4(0x6a8797);
+                                    unsigned long cb = FUN_00668c78(sc);
+                                    unsigned long l4[3] = {0};
+                                    if (cb + 0xd0 < cb) goto trap;
+                                    sk_cap_restrict(l4, *(unsigned long *)(src + 0x78),
+                                                    (int)((base + ctx) - *(long *)(cb + 0x28) >> 0xe) + 1);
+                                    *(unsigned long *)(r3 + 0x78) = l4[2];
+                                    *(unsigned long *)(r4 + 0x78) = l4[1];
+                                    int rc7 = FUN_0067d02c(p2);
+                                    if (rc7 != 0) FUN_006833d4(0x6a8797);
+                                }
+                                int rc8 = FUN_0067d02c(pg);
+                                if (rc8 != 0) FUN_006833d4(0x6a8797);
+                                FUN_00679b98(sc, sp2 + 1);
+                                if (st9 == 0) {
+                                    if ((sp2[0] == 0) || (stk[0] == 0)) FUN_006833d4(0x6ad707);
+                                    *pa = sp2[0];
+                                    pa[1] = 0x6b6978;
+                                    *b = stk[0];
+                                    b[1] = 0x6b6978;
+                                } else if (sp2[0] != 0 || stk[0] != 0) {
+                                    FUN_006833d4(0x6ad7a4);
+                                }
+                            }
+                        }
+                        if (*(unsigned long *)0x6b5ed0 != stk[0xb]) {
+                            FUN_0067f660();
+                        }
+                        return r2b;
+                    }
+                }
+            }
+        }
+trap:
+        __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x6708c4) */
+    } else {
+        r = (sk_pair_t){0x7a60001, 0};
+    }
+done:
+    if (*(unsigned long *)0x6b5ed0 != cookie) {
+        FUN_0067f660();
+    }
+    return r;
+}
+
+/* FUN_006708cc @ 0x006708cc  (est. sk_region_split)
+ * Ghidra: undefined1 [16] FUN_006708cc(long param_1, ulong param_2, long *param_3,
+ *                                    long *param_4)
+ * Splits a region (param_1) at offset param_2 into two regions, writing the two
+ * result descriptors into param_3/param_4. Resolves the split via
+ * FUN_00674364 and restricts the page-capability set on each half.
+ * Confidence: low */
+static sk_pair_t sk_region_split(long r, unsigned long off, long *out1, long *out2)
+{
+    unsigned long st[12];
+    st[0xb] = *(unsigned long *)0x6b5ed0;
+    st[0] = 0;
+    unsigned int f = *(unsigned int *)(r + 0x20);
+    unsigned long e;
+    if ((f & 0xd000800) == 0) {
+        unsigned long v1 = 0x7fb0001;
+        if (off != 0) v1 = 0;
+        e = 0x7f80001;
+        if (off < *(unsigned long *)(r + 0x10)) {
+            e = v1;
+        }
+    } else {
+        e = 0x7f60001;
+    }
+    sk_pair_t r2 = (sk_pair_t){e, 0};
+    if ((e & 0xff) == 0) {
+        unsigned long sc = *(unsigned long *)(r + 0x50);
+        unsigned long v = 0;
+        if (f != 0) v = 2;
+        unsigned int f3 = f >> 0x10 & 1;
+        unsigned long st2[11] = {0};
+        unsigned long rc0 = FUN_006714f8(&st2[6], sc, 1, v, f3, f3);
+        if ((rc0 & 1) == 0) {
+            r2 = (sk_pair_t){0x85f0002, 0};
+        } else {
+            long base = *(long *)(r + 8);
+            unsigned long sp[12] = {0};
+            FUN_00679990(sc, sp + 1, base, *(unsigned long *)(r + 0x10));
+            unsigned long pg = r + 0x80;
+            if (r + 0x90U < pg) goto trap;
+            int rc1 = FUN_0067cffc(pg);
+            if (rc1 != 0) FUN_006833d4(0x6a8797);
+            FUN_00671a48(&st2[6], sc, sp + 1);
+            sk_pair_t sp2 = FUN_00674364(&st2[6], sc, r, off, sp, &st[0]);
+            FUN_00671bc4(&st2[6], sc);
+            long r3 = sp[0];
+            long r4 = st[0];
+            unsigned int st3 = sp2.lo & 0xff;
+            if (st3 == 0) {
+                if (sp[0] != r) FUN_006833d4(0x6ad653);
+                unsigned long p2 = st[0] + 0x80;
+                if (st[0] + 0x90U < p2) goto trap;
+                int rc2 = FUN_0067cffc(p2);
+                if (rc2 != 0) FUN_006833d4(0x6a8797);
+                unsigned long cb = FUN_00668c78(sc);
+                unsigned long l4[3] = {0};
+                if (cb + 0xd0 < cb) goto trap;
+                sk_cap_restrict(l4, *(unsigned long *)(r + 0x78),
+                                (int)((base + off) - *(long *)(cb + 0x28) >> 0xe) + 1);
+                *(unsigned long *)(r3 + 0x78) = l4[2];
+                *(unsigned long *)(r4 + 0x78) = l4[1];
+                int rc3 = FUN_0067d02c(p2);
+                if (rc3 != 0) FUN_006833d4(0x6a8797);
+            }
+            int rc4 = FUN_0067d02c(pg);
+            if (rc4 != 0) FUN_006833d4(0x6a8797);
+            FUN_00679b98(sc, sp + 1);
+            if (st3 == 0) {
+                if ((sp[0] == 0) || (st[0] == 0)) FUN_006833d4(0x6ad707);
+                *out1 = sp[0];
+                out1[1] = 0x6b6978;
+                *out2 = st[0];
+                out2[1] = 0x6b6978;
+            } else if (sp[0] != 0 || st[0] != 0) {
+                FUN_006833d4(0x6ad7a4);
+            }
+        }
+    }
+    if (*(unsigned long *)0x6b5ed0 != st[0xb]) {
+        FUN_0067f660();
+    }
+    return r2;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x670b90) */
+}
+
+/* FUN_00670cbc @ 0x00670cbc  (est. sk_region_subdivide)
+ * Ghidra: undefined1 [16] FUN_00670cbc(undefined8 *param_1, ulong param_2,
+ *                                    uint param_3, undefined8 *param_4)
+ * Carves a subrange of size param_2 out of region param_1, returning a new
+ * region descriptor through param_4. Validates the range/type, splits the
+ * parent via FUN_006708cc, allocates a fresh region node (FUN_00672098), merges
+ * it in (FUN_006704ac), and installs the resulting capability set. Returns the
+ * new-region status pair.
+ * Confidence: low */
+static sk_pair_t sk_region_subdivide(unsigned long *r, unsigned long size,
+                                     unsigned int flags, unsigned long *out)
+{
+    unsigned int ty = *(unsigned int *)(r + 4);
+    if ((ty & 0xd000800) != 0) {
+        return (sk_pair_t){0x8940001, 0};
+    }
+    if (ty == 0) {
+        return (sk_pair_t){0x8950001, 0};
+    }
+    unsigned int swap = (unsigned int)(flags ^ ((ty & 0x80) == 0));
+    unsigned int bad = 0;
+    if (0x1000000000 - r[1] < size) {
+        bad = swap;
+    }
+    if ((bad & 1) != 0) {
+        return (sk_pair_t){0x8960001, 0};
+    }
+    unsigned long avail = r[2];
+    unsigned int bad2 = swap;
+    if (size <= avail + r[1]) {
+        bad2 = 1;
+    }
+    if (bad2 != 1) {
+        return (sk_pair_t){0x8970001, 0};
+    }
+    if ((flags != 0) && ((ty >> 6 & 1) != 0)) {
+        return (sk_pair_t){0x8980001, 0};
+    }
+    unsigned long rem = avail - size;
+    if (rem == 0) {
+        return (sk_pair_t){0, 0};
+    }
+    unsigned long newbase;
+    unsigned long *dst = 0;
+    unsigned long old4 = r[3];
+    unsigned long newsize = rem;
+    if (avail < size) {
+        dst = (unsigned long *)r[1];
+        newbase = *r;
+        old4 = r[3];
+        newsize = rem;
+        if ((swap & 1) != 0) {
+            dst = (unsigned long *)((long)dst + avail);
+            goto e30;
+        }
+    } else {
+        newbase = 0;
+        dst = 0;
+        unsigned long *o1;
+        unsigned long *o2;
+        if ((swap & 1) == 0) {
+            o1 = &newbase;
+            o2 = out;
+        } else {
+            rem = size;
+            o1 = out;
+            o2 = &newbase;
+        }
+        sk_pair_t sp = sk_region_split((long)r, rem, (long *)o1, (long *)o2);
+        if ((sp.lo & 0xff) != 0) {
+            return sp;
+        }
+        /* invoke the ops-method on the new subregion */
+        if ((*(sk_fp_t *)*dst)(newbase) == '\0') goto zero;
+        FUN_00686e00();
+        size = 0;
+        avail = 0;
+    }
+    dst = (unsigned long *)((size - avail) + (long)dst);
+e30:
+    unsigned long d[4] = {newbase, 0, newsize, old4};
+    long node = 0;
+    unsigned long *pnode = 0;
+    sk_pair_t ar = FUN_00672098(r[10], 0, &d, &node, 0, 0);
+    unsigned long *pk = pnode;
+    long nd = node;
+    if ((ar.lo & 0xff) != 0) {
+        return ar;
+    }
+    *(unsigned short *)(nd + 0x19) = *(unsigned short *)((long)r + 0x19);
+    unsigned long *pv = pnode;
+    sk_pair_t ar2 = sk_region_merge((long *)r, (long *)nd, (long)pk, out);
+    if ((ar2.lo & 0xff) == 0) {
+        return ar2;
+    }
+    if ((*(sk_fp_t *)*pv)(nd) == '\0') {
+        return ar2;
+    }
+    sk_pair_t rr = FUN_00686dc8();
+    long src = (long)rr.lo;
+    if ((*(unsigned char *)(src + 0x22) & 1) == 0) {
+        return (sk_pair_t){0x101a0001, 0};
+    }
+    if (rr.hi != 4) {
+        FUN_00673914(src, (unsigned long)pv, out);
+    }
+    return FUN_00679d44(*(unsigned long *)(src + 0x50), src, rr.hi, (unsigned long)pv, out);
+zero:
+    return (sk_pair_t){0, 0};
+}
+
+/* FUN_00670f30 @ 0x00670f30  (est. sk_region_remove)
+ * Ghidra: undefined1 [16] FUN_00670f30(long *param_1)
+ * Unregisters a region (param_1): resolves its owner, deregisters it via
+ * FUN_00675ae8, and returns the region descriptor pair. Decrements the region
+ * counter on success.
+ * Confidence: medium */
+static sk_pair_t sk_region_remove(long *rp)
+{
+    long r = *rp;
+    unsigned long ctx = 0;
+    if (r != 0) {
+        unsigned long d[8] = {0};
+        ctx = *(unsigned long *)(r + 0x50);
+        FUN_00671b60(d, ctx, 0, 0);
+        if (*(int *)(r + 0x20) == 0) {
+            sk_pair_t rr = FUN_00686e38();
+            *(unsigned long *)rr.lo = 0;
+            *(unsigned long *)0x6fea58 = *(unsigned long *)0x6fea58 - 1;
+            return rr;
+        }
+        unsigned long u;
+        if (*(long *)(r + 0x10) + *(long *)(r + 8) == 0x1000000000) {
+            u = 0;
+        } else {
+            u = FUN_00673894(d, 0);
+        }
+        long nr = FUN_00675ae8(d, u);
+        *rp = nr;
+        FUN_00671bc4(d, ctx);
+        if (nr == 0) {
+            *(unsigned long *)0x6fea58 = *(unsigned long *)0x6fea58 - 1;
+        }
+    }
+    return (sk_pair_t){(unsigned long)r, 0x6b6978};
+}
+
+/* FUN_00671e28 @ 0x00671e28  (est. sk_free_slot0_get)
+ * Ghidra: undefined8 * FUN_00671e28(long param_1)
+ * Pops a node from the context free-list (head +8, count byte +0x30).
+ * Confidence: high */
+static unsigned long *sk_free_slot0_get(long ctx)
+{
+    unsigned char c = *(unsigned char *)(ctx + 0x30);
+    if (c == 0) {
+        FUN_006833d4(0x6ac605);   /* fatal: empty free list */
+    }
+    if (c < 4) {
+        *(unsigned char *)(ctx + 0x30) = c - 1;
+        unsigned long *n = *(unsigned long **)(ctx + 8);
+        if (n != 0) {
+            *(unsigned long *)(ctx + 8) = *n;
+            *n = 0;
+            return n;
+        }
+        FUN_006833d4(0x6ac67b);   /* fatal: list head mismatch */
+    }
+    FUN_006833d4(0x6ac261);   /* fatal: count overrun */
+}
+
+/* FUN_00671730 @ 0x00671730  (est. sk_free_slot0_put)
+ * Ghidra: void FUN_00671730(long param_1, undefined8 *param_2)
+ * Pushes a node onto the context free-list (head +8, count byte +0x30).
+ * Confidence: high */
+static void sk_free_slot0_put(long ctx, unsigned long *n)
+{
+    if (n != 0) {
+        unsigned char c = *(unsigned char *)(ctx + 0x30);
+        if (2 < c) {
+            FUN_006833d4(0x6ac261);   /* fatal: count overrun */
+        }
+        *n = *(unsigned long *)(ctx + 8);
+        *(unsigned long **)(ctx + 8) = n;
+        *(unsigned char *)(ctx + 0x30) = c + 1;
+    }
+}
+
+/* FUN_006714f8 @ 0x006714f8  (est. sk_ctx_init)
+ * Ghidra: undefined8 FUN_006714f8(undefined8 *param_1, undefined8 param_2,
+ *                                ulong param_3, ulong param_4, ulong param_5,
+ *                                ulong param_6)
+ * Initializes a capability-context descriptor (param_1) bound to owner param_2,
+ * pre-allocating the four free-lists to the requested capacities param_3..param_6.
+ * Returns 1 on success (all lists filled), 0 after draining on failure.
+ * Confidence: medium */
+static unsigned long sk_ctx_init(unsigned long *c, unsigned long owner,
+                                 unsigned long n0, unsigned long n1,
+                                 unsigned long n2, unsigned long n3)
+{
+    if (3 < n0) FUN_006833d4(0x6abbca);   /* fatal */
+    if (3 < n1) FUN_006833d4(0x6abc45);   /* fatal */
+    if (3 < n2) FUN_006833d4(0x6abca4);   /* fatal */
+    c[0] = owner;
+    c[6] = 0; c[5] = 0; c[2] = 0; c[1] = 0; c[4] = 0; c[3] = 0; c[7] = 0;
+    *(unsigned short *)(c + 8) = (unsigned short)n0 | (unsigned short)((int)n1 << 4) |
+                                 (unsigned short)((int)n2 << 8) | (unsigned short)((int)n3 << 0xc);
+    *(unsigned int *)((long)c + 0x42) = 0;
+    *(unsigned short *)((long)c + 0x46) = 0;
+    while (*(unsigned char *)(c + 6) < n0) {
+        long n = FUN_00668dd8();
+        if (n == 0) goto fail;
+        sk_free_slot0_put((long)c, (unsigned long *)n);
+    }
+    unsigned long k = (unsigned long)*(unsigned char *)((long)c + 0x31);
+    while (k < n1) {
+        unsigned long *n = (unsigned long *)FUN_00667588(owner);
+        if (n == 0) goto fail;
+        *(unsigned char *)(n + 3) = 0;   /* in_wzr artifact */
+        unsigned char b = *(unsigned char *)((long)c + 0x31);
+        if (2 < b) FUN_006833d4(0x6ac2e0);   /* fatal */
+        *n = c[2];
+        c[2] = (unsigned long)n;
+        k = (unsigned long)b + 1;
+        *(char *)((long)c + 0x31) = (char)k;
+    }
+    while (*(unsigned char *)((long)c + 0x32) < n2) {
+        long n = FUN_0066942c();
+        if (n == 0) goto fail;
+        sk_free_slot_put((long)c, (unsigned long *)n);
+    }
+    if (n3 != 0 || n2 != 0) {
+        long n = FUN_00669388();
+        if (n == 0) goto fail;
+        sk_free_slot2_put((long)c, (unsigned long *)n);
+    }
+    for (;;) {
+        if (n3 <= (unsigned long)c[7]) {
+            return 1;
+        }
+        long n = FUN_006692e4();
+        if (n == 0) break;
+        sk_free_slot3_put((long)c, (unsigned long *)n);
+    }
+fail:
+    sk_ctx_teardown(c);
+    return 0;
+}
+
+/* FUN_00671af0 @ 0x00671af0  (est. sk_ctx_init_commit)
+ * Ghidra: undefined8 FUN_00671af0(8 args)
+ * Initializes a context (sk_ctx_init) and, on success, commits it
+ * (sk_ctx_commit). Returns the init status.
+ * Confidence: medium */
+static unsigned long sk_ctx_init_commit(unsigned long *c, unsigned long owner,
+                                        unsigned long a, unsigned long b,
+                                        unsigned long n0, unsigned long n1,
+                                        unsigned long n2, unsigned long n3)
+{
+    unsigned long rc = sk_ctx_init(c, owner, n0, n1, n2, n3);
+    if ((int)rc != 0) {
+        sk_ctx_commit(c, owner, a, b);
+    }
+    return rc;
+}
+
+/* FUN_00671978 @ 0x00671978  (est. sk_ctx_commit)
+ * Ghidra: void FUN_00671978(long *param_1, long param_2, undefined8 param_3,
+ *                          undefined8 param_4)
+ * Commits a context: asserts param_2 owns *param_1, publishes the binding
+ * (FUN_00679838), and stores the owning context pointer at param_2+0x50.
+ * Confidence: medium */
+static void sk_ctx_commit(long *c, long owner, unsigned long a, unsigned long b)
+{
+    if (*c != owner) FUN_006833d4(0x6abd06);   /* fatal */
+    if (owner == 0x6b5700) {
+        FUN_00678a40();
+    }
+    FUN_00679838(owner, a, b);
+    if (*(long *)(owner + 0x50) == 0) {
+        *(long **)(owner + 0x50) = c;
+        return;
+    }
+    FUN_006833d4(0x6abd69);   /* fatal */
+}
+
+/* FUN_00671a48 @ 0x00671a48  (est. sk_ctx_commit2)
+ * Ghidra: void FUN_00671a48(long *param_1, long param_2, undefined8 param_3)
+ * Commits a context variant: asserts ownership and publishes via FUN_00679784.
+ * Confidence: medium */
+static void sk_ctx_commit2(long *c, long owner, unsigned long a)
+{
+    if (*c != owner) FUN_006833d4(0x6abd06);   /* fatal */
+    FUN_00679784(owner, a);
+    if (*(long *)(owner + 0x50) == 0) {
+        *(long **)(owner + 0x50) = c;
+        return;
+    }
+    FUN_006833d4(0x6abd69);   /* fatal */
+}
+
+/* FUN_00671b60 @ 0x00671b60  (est. sk_ctx_begin)
+ * Ghidra: void FUN_00671b60(undefined8 param_1, undefined8 param_2,
+ *                          undefined8 param_3, undefined8 param_4)
+ * Begins a context transaction: initializes the descriptor and commits it; if
+ * the init fails, drains a queued failure context (FUN_00686e70) and tears it
+ * down.
+ * Confidence: medium */
+static void sk_ctx_begin(unsigned long *c, unsigned long owner, unsigned long a, unsigned long b)
+{
+    unsigned long rc = sk_ctx_init(c, owner, 0, 0, 0, 0);
+    if ((rc & 1) != 0) {
+        sk_ctx_commit(c, owner, a, b);
+        return;
+    }
+    sk_pair_t e = FUN_00686e70();
+    long eo = (long)e.hi;
+    long *ep = (long *)e.lo;
+    if (eo != *ep) FUN_006833d4(0x6abed9);   /* fatal */
+    if (*(long **)(eo + 0x50) != ep) FUN_006833d4(0x6abb4b);   /* fatal */
+    *(unsigned long *)(eo + 0x50) = 0;
+    int rc2 = FUN_0067d02c(eo + 0x40);
+    if (rc2 == 0) {
+        sk_ctx_teardown((unsigned long *)ep);
+        return;
+    }
+    FUN_006833d4(0x6a8797);   /* fatal */
+}
+
+/* FUN_00671bc4 @ 0x00671bc4  (est. sk_ctx_end)
+ * Ghidra: void FUN_00671bc4(long *param_1, long param_2)
+ * Ends a context transaction: asserts ownership, clears the binding, and tears
+ * down the context descriptor.
+ * Confidence: medium */
+static void sk_ctx_end(long *c, long owner)
+{
+    if (owner != *c) FUN_006833d4(0x6abed9);   /* fatal */
+    if (*(long **)(owner + 0x50) == c) {
+        *(unsigned long *)(owner + 0x50) = 0;
+        int rc = FUN_0067d02c(owner + 0x40);
+        if (rc == 0) {
+            sk_ctx_teardown((unsigned long *)c);
+            return;
+        }
+        FUN_006833d4(0x6a8797);   /* fatal */
+    }
+    FUN_006833d4(0x6abb4b);   /* fatal */
+}
+
+/* FUN_00671798 @ 0x00671798  (est. sk_ctx_teardown)
+ * Ghidra: void FUN_00671798(undefined8 *param_1)
+ * Tears down a context descriptor: releases every bound region, drains and
+ * frees all four free-lists (validating each is empty), and zeroes the
+ * descriptor block.
+ * Confidence: medium */
+static void sk_ctx_teardown(unsigned long *c)
+{
+    unsigned long owner = c[0];
+    char cnt = *(char *)(c + 6);
+    while (cnt != '\0') {
+        unsigned long r = (unsigned long)sk_free_slot0_get((long)c);
+        if (r + 0xb0 < r) goto trap;
+        *(unsigned long *)(r + 0x50) = 0;
+        FUN_006690dc();
+        cnt = *(char *)(c + 6);
+    }
+    if (c[1] != 0) FUN_006833d4(0x6ac340);   /* fatal */
+    for (;;) {
+        if (*(char *)((long)c + 0x31) == '\0') {
+            if (c[2] != 0) FUN_006833d4(0x6ac3ad);   /* fatal */
+            while (*(char *)((long)c + 0x32) != '\0') {
+                sk_free_slot_get((long)c);
+                FUN_00669478();
+            }
+            if (c[3] != 0) FUN_006833d4(0x6ac409);   /* fatal */
+            while (*(char *)((long)c + 0x33) != '\0') {
+                sk_free_slot2_get((long)c);
+                FUN_006693d4();
+            }
+            if (c[4] != 0) FUN_006833d4(0x6ac464);   /* fatal */
+            while (c[7] != 0) {
+                sk_free_slot3_get((long)c);
+                FUN_00669330();
+            }
+            if (c[5] != 0) FUN_006833d4(0x6ac4c6);   /* fatal */
+            FUN_0067a7f0(c, 0xffffffc0, 8);
+            return;
+        }
+        unsigned long r = FUN_00673adc(c);
+        if (r + 0x20 < r) break;
+        FUN_00667e54(owner, r);
+    }
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x6718c8) */
+}
+
+/* FUN_00671ef8 @ 0x00671ef8  (est. sk_region_register2)
+ * Ghidra: void FUN_00671ef8(ulong *param_1, undefined8 param_2)
+ * Registers a region (param_2) in the per-CPU table (FUN_00675d88) after
+ * validating the context bounds.
+ * Confidence: medium */
+static void sk_region_register2(unsigned long *c, unsigned long r)
+{
+    if (*c <= *c + 0x2a0) {
+        unsigned long pc = FUN_00668c94();
+        FUN_00675d88(pc, r);
+        return;
+    }
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x671f38) */
+}
+
+/* FUN_00671ca8 @ 0x00671ca8  (est. sk_ctx_register)
+ * Ghidra: void FUN_00671ca8(void)
+ * Registers the root region for the current context: initializes the context,
+ * allocates a region node covering the runtime image span, and links it into
+ * the context.
+ * Confidence: medium */
+static void sk_ctx_register(void)
+{
+    long ctx = FUN_00668c6c();
+    sk_pair_t span = FUN_006766cc(0, 0);
+    unsigned long base = span.lo;
+    unsigned long d[8] = {0};
+    unsigned long rc = sk_ctx_init(d, ctx, 1, 0, 0, 0);
+    if ((rc & 1) == 0) FUN_006833d4(0x6abf43);   /* fatal */
+    sk_ctx_commit(d, ctx, 0, 0);
+    unsigned long *r = sk_free_slot0_get((long)d);
+    long len = (long)(span.hi - base);
+    if (base <= span.hi && len != 0) {
+        *(unsigned long *)(ctx + 0x28) = base;
+            *(unsigned long *)(ctx + 0x30) = span.hi;
+        if (r <= r + 0x16) {
+            r[0] = 0;
+            r[1] = base;
+            r[2] = len;
+            r[4] = 0; r[3] = 0; r[6] = 0; r[5] = 0; r[8] = 0; r[7] = 0;
+            r[9] = 0;
+            r[10] = ctx;
+            r[0xb] = 0; r[0xc] = 0;
+            r[0xd] = len;
+            r[0xf] = 0; r[0xe] = 0;
+            r[0x11] = 0; r[0x10] = 0;
+            r[0x13] = 0; r[0x12] = 0;
+            r[0x15] = 0; r[0x14] = 0;
+            sk_region_register2(d, (unsigned long)r);
+            sk_ctx_end(d, ctx);
+            return;
+        }
+        __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x671dd4) */
+    }
+    FUN_006833d4(0x6abff8);   /* fatal */
+}
+
+/* FUN_00671f38 @ 0x00671f38  (est. sk_region_caps_release)
+ * Ghidra: void FUN_00671f38(long param_1)
+ * Releases a region's capability sets (the +0x78 and +0xa0 page-capability
+ * buckets) via sk_cap_iterate_free, freeing each referenced page through
+ * FUN_006860f4.
+ * Confidence: medium */
+static void sk_region_caps_release(long r)
+{
+    unsigned long empty = 0x68a570;
+    if ((*(unsigned char *)(*(long *)(r + 0x50) + 0x290) & 1) != 0) {
+        unsigned long cb = FUN_00668c78();
+        unsigned long d[3] = {0};
+        sk_cap_decode_tag(d, *(unsigned long *)(r + 0xa0), 0);
+        unsigned long v = sk_cap_list_get((char *)d);
+        if ((v & 3) != 0) {
+            if (cb + 0xd0 < cb) goto trap;
+            do {
+                unsigned long lock = *(long *)(r + 0x50) + 0x208;
+                if (*(long *)(r + 0x50) + 0x290U < lock) goto trap;
+                FUN_00666d84(lock, v >> 0x1c,
+                             (v & 0xfffffc0) * 0x100 + *(long *)(cb + 0x28) + -0x4000);
+                v = sk_cap_list_get((char *)d);
+            } while ((v & 3) != 0);
+        }
+        sk_cap_iterate_free(*(unsigned long *)(r + 0xa0), 0);
+        empty = 0x68a570;
+        *(unsigned long *)(r + 0xa0) = 0x68a570;
+    }
+    sk_cap_iterate_free(*(unsigned long *)(r + 0x78), FUN_006860f4);
+    *(unsigned long *)(r + 0x78) = empty;
+    return;
+trap:
+    __builtin_unreachable(); /* trap: SoftwareBreakpoint(0x5519,0x67203c) */
 }

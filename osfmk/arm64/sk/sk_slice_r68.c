@@ -47,8 +47,9 @@ static inline void sk_break(uint64_t a, uint64_t b) __attribute__((noreturn))
 #define SK_CANARY (-0x2c8502b44bfffed6LL)
 
 static uint8_t sk_tpidr_area[0x100] __attribute__((aligned(16)));
-#define tpidr_el0    ((uint8_t *)sk_tpidr_area)
-#define tpidrro_el0  ((uint8_t *)sk_tpidr_area)
+static uint8_t *volatile sk_tpidr_ptr = sk_tpidr_area;
+#define tpidr_el0    (sk_tpidr_ptr)
+#define tpidrro_el0  (sk_tpidr_ptr)
 
 /* External callees (outside this slice). Address-based names; each declared
  * `unsigned long` (64-bit ABI word) with an unspecified parameter list so any
@@ -922,7 +923,7 @@ bounds_fault:
 void sk_f_0066453c(void)
 {
     uint64_t scratch;
-    sk_f_00663c04(&scratch, 0);
+    sk_f_00663c04((uint64_t)&scratch, 0);
     return;
 }
 
@@ -1074,7 +1075,7 @@ uint64_t sk_f_006646f4(uint64_t slot_value, uint64_t slot_meta, uint64_t registe
 {
     uint64_t slot;
     uint64_t *pool;
-    int64_t tls = tpidr_el0;
+    int64_t tls = (int64_t)(uintptr_t)tpidr_el0;
 
     if (*(int64_t *)(tls + 0xf8) == 0) {
         pool = (uint64_t *)sk_g_006fe7e8;
@@ -1265,7 +1266,7 @@ void sk_f_006649b4(void)
     uint64_t *addr;
     uint64_t *fnslot;
     void (*hook)(uint64_t);
-    int64_t tls = tpidr_el0;
+    int64_t tls = (int64_t)(uintptr_t)tpidr_el0;
     int64_t off;
 
     pool = (uint64_t *)sk_g_006fe7e8;
@@ -1314,7 +1315,7 @@ breakpoint:
  * Notes: writes tpidr_el0. */
 void sk_f_00664a84(uint64_t new_tls)
 {
-    tpidr_el0 = new_tls;
+    sk_tpidr_ptr = (uint8_t *)(uintptr_t)new_tls;
 }
 
 /* FUN_00664a8c @ 0x00664a8c   (est. pool_slot_hook)
@@ -1444,7 +1445,7 @@ void sk_f_00664cbc(void)
     uint64_t head = sk_g_0068a0b0;
     uint64_t head2 = sk_g_0068a0b8;
     uint64_t head3 = sk_g_0068a0c0;
-    sk_f_006642bc(0x6ff0b0, u20, stackbuf, &head);
+    sk_f_006642bc((uint64_t *)0x6ff0b0, u20, (uint64_t)(uintptr_t)stackbuf, &head);
     u20 = sk_g_006fe7f0;
     msg = (uint8_t *)tpidrro_el0;
     msg[2] = 0x5d;
@@ -2032,7 +2033,7 @@ uint64_t sk_f_0066599c(uint64_t recv, int64_t tcb)
     dtable = sk_x_0065ccc8();
     dtable = *(int64_t *)(dtable + 0x80);
     if ((dtable != 0) &&
-        res = ((uint64_t (*)(uint64_t, uint64_t, int64_t))*(uint64_t *)(dtable + 0x10))(
+        (res = ((uint64_t (*)(uint64_t, uint64_t, int64_t))*(uint64_t *)(dtable + 0x10))(
                      *(uint64_t *)(dtable + 8), recv, tcb),
          res == 1)) {
         return 0xffff0000;
@@ -4549,7 +4550,7 @@ uint64_t *sk_f_00668e24(uint64_t pool_base, uint16_t *free_list, int flags)
   sk_u128_t tmp;
 
   if (pool_base <= (uint64_t)(pool_base + 0x30)) {
-    tmp = sk_f_0066a9bc();
+    tmp = sk_f_0066a9bc(0);
     /* validate freelist sits inside the pool region */
     if (0xc < (uint64_t)(((int64_t)((int64_t)free_list + (-0xe8 - (int64_t)pool_base)) >> 3) *
                          0x6db6db6db6db6db7)) {
@@ -4844,7 +4845,7 @@ void sk_f_006693d4(uint64_t arg)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x2e0 <= base + 0x318) {
-        sk_f_00669134(base, base + 0x2e0, arg);
+        sk_f_00669134(base, (uint16_t *)(base + 0x2e0), (uint64_t *)(arg));
         return;
     }
     /* WARNING: Does not return */
@@ -4854,7 +4855,7 @@ void sk_f_006693d4(uint64_t arg)
 /* FUN_0066942c @ 0x0066942c   (est. sk_pool_commit_slot_318)
  * Ghidra: void FUN_0066942c(void)
  * Resolves the 0x6fea40 pool region, validates the [base+0x318, base+0x350)
- * sub-slot, then commits it via sk_f_00668e24(base, base+0x318, 1). Bounds
+ * sub-slot, then commits it via sk_f_00668e24(base, (uint16_t *)(base+0x318), 1). Bounds
  * failure traps via SoftwareBreakpoint(0x5519, 0x669478).
  * Confidence: medium
  * Notes: pool lookup FUN_0065be08(0x6fea40,4,0xd); commit flag 1. */
@@ -4864,7 +4865,7 @@ void sk_f_0066942c(void)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x318 <= base + 0x350) {
-        sk_f_00668e24(base, base + 0x318, 1);
+        sk_f_00668e24(base, (uint16_t *)(base + 0x318), 1);
         return;
     }
     /* WARNING: Does not return */
@@ -4884,7 +4885,7 @@ void sk_f_00669478(uint64_t arg)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x318 <= base + 0x350) {
-        sk_f_00669134(base, base + 0x318, arg);
+        sk_f_00669134(base, (uint16_t *)(base + 0x318), (uint64_t *)(arg));
         return;
     }
     /* WARNING: Does not return */
@@ -4894,7 +4895,7 @@ void sk_f_00669478(uint64_t arg)
 /* FUN_006694d0 @ 0x006694d0   (est. sk_pool_commit_slot_350)
  * Ghidra: void FUN_006694d0(void)
  * Resolves the 0x6fea40 pool region, validates the [base+0x350, base+0x388)
- * sub-slot, then commits it via sk_f_00668e24(base, base+0x350, 1). Bounds
+ * sub-slot, then commits it via sk_f_00668e24(base, (uint16_t *)(base+0x350), 1). Bounds
  * failure traps via SoftwareBreakpoint(0x5519, 0x66951c).
  * Confidence: medium
  * Notes: pool lookup FUN_0065be08(0x6fea40,4,0xd); commit flag 1. */
@@ -4904,7 +4905,7 @@ void sk_f_006694d0(void)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x350 <= base + 0x388) {
-        sk_f_00668e24(base, base + 0x350, 1);
+        sk_f_00668e24(base, (uint16_t *)(base + 0x350), 1);
         return;
     }
     /* WARNING: Does not return */
@@ -4924,7 +4925,7 @@ void sk_f_0066951c(uint64_t arg)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x350 <= base + 0x388) {
-        sk_f_00669134(base, base + 0x350, arg);
+        sk_f_00669134(base, (uint16_t *)(base + 0x350), (uint64_t *)(arg));
         return;
     }
     /* WARNING: Does not return */
@@ -4934,7 +4935,7 @@ void sk_f_0066951c(uint64_t arg)
 /* FUN_00669578 @ 0x00669578   (est. sk_pool_commit_slot_388)
  * Ghidra: void FUN_00669578(void)
  * Resolves the 0x6fea40 pool region, validates the [base+0x388, base+0x3c0)
- * sub-slot, then commits it via sk_f_00668e24(base, base+0x388, 1). Bounds
+ * sub-slot, then commits it via sk_f_00668e24(base, (uint16_t *)(base+0x388), 1). Bounds
  * failure traps via SoftwareBreakpoint(0x5519, 0x6695c0).
  * Confidence: medium
  * Notes: pool lookup FUN_0065be08(0x6fea40,4,0xd); commit flag 1. */
@@ -4944,7 +4945,7 @@ void sk_f_00669578(void)
 
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x388 <= base + 0x3c0) {
-        sk_f_00668e24(base, base + 0x388, 1);
+        sk_f_00668e24(base, (uint16_t *)(base + 0x388), 1);
         return;
     }
     /* WARNING: Does not return */
@@ -5084,7 +5085,7 @@ void sk_f_00669618(void)
                 if (obj + 0x30 < obj) {
                     goto bounds_panic_66997c;
                 }
-                u7 = sk_f_0066a988();
+                u7 = sk_f_0066a988(0);
                 if ((u7 & 1) == 0) {
                     goto panic_669f4f;
                 }
@@ -5171,11 +5172,11 @@ panic_669f4f:
                 if (obj + l4 + 0x120 < u7) {
                     goto bounds_panic_66997c;
                 }
-                l4 = sk_f_00668e24(obj, u7, 0);
+                l4 = sk_f_00668e24(obj, (uint16_t *)(u7), 0);
                 if (l4 == 0) {
                     goto LAB_6699b8;
                 }
-                sk_f_00669134(obj, u7, l4);
+                sk_f_00669134(obj, (uint16_t *)(u7), (uint64_t *)(l4));
                 l4 = 0;
             }
         }
@@ -5287,7 +5288,7 @@ uint64_t sk_f_00669af8(uint8_t kind, int64_t base, uint64_t size, uint8_t attr)
  * Ghidra: void FUN_00669c3c(void)
  * Resolves the 0x6fea40 pool region, validates the [base+0x200, base+0x238)
  * sub-slot (trapping on a bounds failure), commits it via
- * sk_f_00668e24(base, base+0x200, 1), and on a nonzero error result calls
+ * sk_f_00668e24(base, (uint16_t *)(base+0x200), 1), and on a nonzero error result calls
  * sk_f_006673ec. Returns void.
  * Confidence: medium
  * Notes: pool lookup FUN_0065be08(0x6fea40,4,0xd); error path sk_f_006673ec. */
@@ -5301,9 +5302,9 @@ void sk_f_00669c3c(void)
         /* WARNING: Does not return */
         SoftwareBreakpoint(0x5519, 0x669c98);;
     }
-    err = sk_f_00668e24(base, base + 0x200, 1);
+    err = sk_f_00668e24(base, (uint16_t *)(base + 0x200), 1);
     if (err != 0) {
-        sk_f_006673ec();
+        sk_f_006673ec(0);
         return;
     }
     return;
@@ -5315,7 +5316,7 @@ void sk_f_00669c3c(void)
  * reports active (bit 0), it configures the [base+0x200, base+0x238) sub-slot
  * with the argument via sk_f_00669134 and returns its result. Otherwise it
  * runs sk_x_00685f78, commits the [base+0x238, base+0x270) sub-slot via
- * sk_f_00668e24(...,1); on error it looks up a partner via sk_f_00669db4 and,
+ * sk_f_00668e24(..., (uint16_t *)(1)); on error it looks up a partner via sk_f_00669db4 and,
  * if found, returns sk_f_0066745c(error, partner), else re-configures the
  * sub-slot with the error and returns 0. Bounds failures trap via
  * SoftwareBreakpoint(0x5519, 0x669cf8 / 0x669db4).
@@ -5329,11 +5330,11 @@ uint64_t sk_f_00669c98(uint64_t arg)
     int64_t err;
     int64_t partner;
 
-    base = sk_f_00667578();
+    base = sk_f_00667578(0);
     if ((base & 1) != 0) {
         base = sk_x_0065be08(0x6fea40, 4, 0xd);
         if (base <= base + 0x3e0 && base + 0x200 <= base + 0x238) {
-            res = sk_f_00669134(base, base + 0x200, arg);
+            res = sk_f_00669134(base, (uint16_t *)(base + 0x200), (uint64_t *)(arg));
             return res;
         }
         /* WARNING: Does not return */
@@ -5342,7 +5343,7 @@ uint64_t sk_f_00669c98(uint64_t arg)
     sk_x_00685f78();
     base = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (base <= base + 0x3e0 && base + 0x238 <= base + 0x270) {
-        err = sk_f_00668e24(base, base + 0x238, 1);
+        err = sk_f_00668e24(base, (uint16_t *)(base + 0x238), 1);
         if (err != 0) {
             partner = sk_f_00669db4();
             if (partner != 0) {
@@ -5353,7 +5354,7 @@ uint64_t sk_f_00669c98(uint64_t arg)
             if ((base + 0x3e0 < base) || (base + 0x270 < base + 0x238)) {
                 goto bounds_panic_669db4;
             }
-            sk_f_00669134(base, base + 0x238, err);
+            sk_f_00669134(base, (uint16_t *)(base + 0x238), (uint64_t *)(err));
         }
         return 0;
     }
@@ -5380,7 +5381,7 @@ uint64_t sk_f_00669cfc(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x3e0 && ctx + 0x238 <= ctx + 0x270) {
-        lock = sk_f_00668e24(ctx, ctx + 0x238, 1);
+        lock = sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x238), 1);
         if (lock != 0) {
             blk = sk_f_00669db4();
             if (blk != 0) {
@@ -5389,7 +5390,7 @@ uint64_t sk_f_00669cfc(void)
             }
             ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
             if ((ctx + 0x3e0 < ctx) || (ctx + 0x270 < ctx + 0x238)) goto fatal_669db0;
-            sk_f_00669134(ctx, ctx + 0x238, lock);
+            sk_f_00669134(ctx, (uint16_t *)(ctx + 0x238), (uint64_t *)(lock));
         }
         return 0;
     }
@@ -5421,12 +5422,12 @@ uint64_t *sk_f_00669db4(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx + 0x30 < ctx) goto fatal_669fc4;
-    save1 = sk_f_0066a9bc();
+    save1 = sk_f_0066a9bc(0);
     head = *(uint64_t **)(ctx + 0xd0);
     if (head == 0) {
         uVar6 = sk_x_0065be08(0x6fea40, 4, 0xd);
         if (uVar6 + 0x30 < uVar6) goto fatal_669fc4;
-        save2 = sk_f_0066a9bc();
+        save2 = sk_f_0066a9bc(0);
         if ((uVar6 + 0x3e0 < uVar6) || (uVar6 + 0x78 < uVar6 + 0x40)) goto fatal_669fc4;
         puVar7 = (uint64_t *)sk_f_0066a404(uVar6, (uint8_t *)(uVar6 + 0x40));
         if (puVar7 == 0) {
@@ -5435,7 +5436,7 @@ uint64_t *sk_f_00669db4(void)
                 /* Continuation frame for sk_f_00667568: it may resume into
                    sk_f_0066a08c with frame values (uVar6+0x3e0, ctx, save1,
                    saved sp). */
-                ctx = sk_f_00667568();
+                ctx = sk_f_00667568(0);
                 if ((ctx & 1) == 0) {
                     uVar9 = sk_x_00685fe8();
                     head = (uint64_t *)sk_x_0066b520(uVar9, 0x40);
@@ -5450,10 +5451,10 @@ uint64_t *sk_f_00669db4(void)
                     if ((uint64_t *)(delta + ((uint64_t)head & 0xffffffffffffc000)) == head) {
                         uVar6 = sk_x_0065be08(0x6fea40, 4, 0xd);
                         if ((uVar6 <= uVar6 + 0x3e0) && (uVar6 + 0x238 <= uVar6 + 0x270)) {
-                            sk_f_00669134(uVar6, uVar6 + 0x238, uVar9);
+                            sk_f_00669134(uVar6, (uint16_t *)(uVar6 + 0x238), (uint64_t *)(uVar9));
                             uVar6 = sk_x_0065be08(0x6fea40, 4, 0xd);
                             if (uVar6 <= uVar6 + 0x30) {
-                                save1 = sk_f_0066a9bc();
+                                save1 = sk_f_0066a9bc(0);
                                 uVar9 = *(uint64_t *)(uVar6 + 0xe0);
                                 uVar13 = *(uint64_t *)(uVar6 + 0xd0);
                                 head[1] = *(uint64_t *)(uVar6 + 0xd8);
@@ -5557,7 +5558,7 @@ void sk_f_0066a08c(uint64_t param_1)
     sk_u128_t save;
     uint64_t err_out;
 
-    uVar3 = sk_f_00667568();
+    uVar3 = sk_f_00667568(0);
     if ((uVar3 & 1) == 0) {
         uVar5 = sk_x_00685fe8();
         sk_x_0066b520(uVar5, 0x40);
@@ -5573,10 +5574,10 @@ void sk_f_0066a08c(uint64_t param_1)
             uVar3 = sk_x_0065be08(0x6fea40, 4, 0xd);
             if (uVar3 <= uVar3 + 0x3e0) {
                 if (uVar3 + 0x238 <= uVar3 + 0x270) {
-                    sk_f_00669134(uVar3, uVar3 + 0x238, uVar5);
+                    sk_f_00669134(uVar3, (uint16_t *)(uVar3 + 0x238), (uint64_t *)(uVar5));
                     uVar3 = sk_x_0065be08(0x6fea40, 4, 0xd);
                     if (uVar3 <= uVar3 + 0x30) {
-                        save = sk_f_0066a9bc();
+                        save = sk_f_0066a9bc(0);
                         uVar5 = *(uint64_t *)(uVar3 + 0xe0);
                         uVar6 = *(uint64_t *)(uVar3 + 0xd0);
                         blk[1] = *(uint64_t *)(uVar3 + 0xd8);
@@ -5654,7 +5655,7 @@ pop:
             *(uint8_t *)(ctx + 0xc1) = 1;
             blk = sk_x_0065be08(0x6fea40, 4, 0xd);
             if (blk <= blk + 0x3e0 && blk + 0xe8 <= blk + 0x120) {
-                blk = sk_f_00668e24(blk, blk + 0xe8, 1);
+                blk = sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
                 *(uint8_t *)(ctx + 0xc1) = 0;
                 if (blk <= blk + 0x48) {
                     return blk;
@@ -5713,7 +5714,7 @@ pop:
             *(uint8_t *)(ctx + 0xc1) = 1;
             blk = sk_x_0065be08(0x6fea40, 4, 0xd);
             if (blk <= blk + 0x3e0 && blk + 0xe8 <= blk + 0x120) {
-                blk = sk_f_00668e24(blk, blk + 0xe8, 1);
+                blk = sk_f_00668e24(blk, (uint16_t *)(blk + 0xe8), 1);
                 *(uint8_t *)(ctx + 0xc1) = 0;
                 if (blk <= blk + 0x48) {
                     return blk;
@@ -5749,7 +5750,7 @@ int64_t sk_f_0066a300(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x30) {
-        save = sk_f_0066a9bc();
+        save = sk_f_0066a9bc(0);
         *(uint8_t *)(ctx + 0xc1) = 1;
         if (ctx <= ctx + 0x3e0) {
             blk = sk_f_0066a404(ctx, (uint8_t *)(ctx + 0x78));
@@ -5791,7 +5792,7 @@ uint64_t sk_f_0066a404(uint64_t ctx, uint8_t *desc)
 fatal_6a4c8:
         SoftwareBreakpoint(0x5519, 0x66a4cc);
     }
-    r = sk_f_0066a988();
+    r = sk_f_0066a988(0);
     if ((r & 1) == 0) {
         sk_x_006833d4(0x6a9f4f);   /* noreturn */
     }
@@ -5841,7 +5842,7 @@ void sk_f_0066a558(uint64_t ctx, int64_t desc, int64_t block)
     if (ctx + 0x30 < ctx) {
         SoftwareBreakpoint(0x5519, 0x66a5d8);
     }
-    r = sk_f_0066a988();
+    r = sk_f_0066a988(0);
     if ((r & 1) != 0) {
         if ((*(uint8_t *)(desc + 1) & 1) == 0) {
             sk_x_006860bc();
@@ -5873,7 +5874,7 @@ void sk_f_0066a65c(void)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x3e0 && ctx + 0x120 <= ctx + 0x158) {
-        ctx = sk_f_00668e24(ctx, ctx + 0x120, 1);
+        ctx = sk_f_00668e24(ctx, (uint16_t *)(ctx + 0x120), 1);
         if (ctx <= ctx + 0x40) {
             return;
         }
@@ -5895,7 +5896,7 @@ void sk_f_0066a6b4(uint64_t param_1)
 
     ctx = sk_x_0065be08(0x6fea40, 4, 0xd);
     if (ctx <= ctx + 0x3e0 && ctx + 0x120 <= ctx + 0x158) {
-        sk_f_00669134(ctx, ctx + 0x120, param_1);
+        sk_f_00669134(ctx, (uint16_t *)(ctx + 0x120), (uint64_t *)(param_1));
         return;
     }
     SoftwareBreakpoint(0x5519, 0x66a70c);
