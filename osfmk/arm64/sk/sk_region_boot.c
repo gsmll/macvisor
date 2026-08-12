@@ -357,7 +357,7 @@ static inline unsigned int sk_lowbit32(unsigned int v)
     return sk_lzcount32(r >> 0x10 | r << 0x10);
 }
 
-/* Slab page-count from the object's flags byte (Ghidra pattern). */
+/* Slab page-count from the object's flags unsigned char (Ghidra pattern). */
 static inline unsigned long sk_slab_pages(unsigned long obj)
 {
     unsigned int t = *(unsigned char *)(obj + 0x40) & 0xf;
@@ -749,7 +749,7 @@ void sk_boot_strmap(unsigned long *name, long *def)
 
 /*--------------------------------------------------------------------*/
 /* FUN_00002580 @ 0x00002580   (est. sk_boot_done_poll)
- * Ghidra: uint FUN_00002580(void)
+ * Ghidra: unsigned int FUN_00002580(void)
  * Returns the low bit of the boot-complete flag (DAT_006adfd0); used as
  * the boot-loop polling predicate.
  * Confidence: high (string-independent, trivial wrapper). */
@@ -761,7 +761,7 @@ unsigned int sk_boot_done_poll(void)
 /*--------------------------------------------------------------------*/
 /* FUN_0000259c @ 0x0000259c   (est. sk_boot_done_get)
  * Ghidra: undefined1 FUN_0000259c(void)
- * Returns the boot-complete flag byte DAT_006adfd0.
+ * Returns the boot-complete flag unsigned char DAT_006adfd0.
  * Confidence: high (trivial global read). */
 unsigned char sk_boot_done_get(void)
 {
@@ -856,7 +856,7 @@ void sk_alloc_free_step2(void)
 /*--------------------------------------------------------------------*/
 /* FUN_000026e8 @ 0x000026e8   (est. sk_alloc_free_link)
  * Ghidra: void FUN_000026e8(undefined8 *param_1)
- * Tears down an object link: if the object's dispatch flag (bit 1 of byte
+ * Tears down an object link: if the object's dispatch flag (bit 1 of unsigned char
  * at the vtable-8 header +0x52) is clear, it dispatches through the
  * vtable +8 method (object teardown); otherwise it frees the object's
  * first word directly.
@@ -982,7 +982,7 @@ void sk_boot_nop4(void) { }
 /*--------------------------------------------------------------------*/
 /* FUN_00002840 @ 0x00002840   (est. sk_boot_store_pair)
  * Ghidra: void FUN_00002840(long param_1)
- * Stores the two stacked 8-byte words at +0x10/+0x18 of param_1.
+ * Stores the two stacked 8-unsigned char words at +0x10/+0x18 of param_1.
  * Confidence: medium
  * Notes: reads in_stack_00000030/+0x38 (caller-pushed register pairs). */
 void sk_boot_store_pair(unsigned long *p)
@@ -1015,7 +1015,7 @@ void sk_boot_nop6(void) { }
 /*--------------------------------------------------------------------*/
 /* FUN_00002880 @ 0x00002880   (est. sk_alloc_collect)
  * Ghidra: ulong FUN_00002880(long param_1,undefined8 param_2,long param_3,
- *                             uint param_4)
+ *                             unsigned int param_4)
  * Collects up to param_4 items by invoking the object's +0x18 collector
  * method for each, storing results into the param_3 array. Returns the
  * number of items collected (param_4 if the method never returns 0).
@@ -1039,7 +1039,7 @@ unsigned long sk_alloc_collect(unsigned long obj, unsigned long arg,
 
 /*--------------------------------------------------------------------*/
 /* FUN_000028fc @ 0x000028fc   (est. sk_alloc_collect2)
- * Ghidra: void FUN_000028fc(long param_1,long param_2,uint param_3)
+ * Ghidra: void FUN_000028fc(long param_1,long param_2,unsigned int param_3)
  * Walks param_3 slots of the param_2 array, validating each slot bounds
  * (trapping on overflow) and invoking the object's +0x30 release method
  * for non-null entries.
@@ -1091,7 +1091,7 @@ void sk_bug_malloc(void)
  * Ghidra: void FUN_00002a10(long param_1)
  * Sets up the boot virtual-memory layout for the cL4 zone allocator:
  * allocates the primary heap arena (4GiB/8GiB depending on the
- * configuration byte DAT_006ac23d) and a 5GiB backing segment, then
+ * configuration unsigned char DAT_006ac23d) and a 5GiB backing segment, then
  * subdivides the high part into the node/region tables. Writes the
  * layout descriptors into the zone object at +0x200.
  * Confidence: medium
@@ -1181,7 +1181,7 @@ fail:
 /*--------------------------------------------------------------------*/
 /* FUN_00002c70 @ 0x00002c70   (est. sk_zone_bitmap_update)
  * Ghidra: void FUN_00002c70(undefined8 param_1,long param_2,ulong param_3,
- *                            uint param_4,uint param_5,uint param_6)
+ *                            unsigned int param_4,unsigned int param_5,unsigned int param_6)
  * Updates the zone allocator's page/segment bitmaps: for each set bit in
  * the two selector masks (param_5, param_4) it walks the bitmap entries,
  * computing the bit index via bit-reversal (LZCOUNT of the reversed
@@ -1306,9 +1306,9 @@ void sk_zone_tlb_inval(unsigned long zone, unsigned long va, unsigned long seed)
 
 /*--------------------------------------------------------------------*/
 /* FUN_00002e50 @ 0x00002e50   (est. sk_slab_alloc)
- * Ghidra: ulong FUN_00002e50(byte *param_1,undefined8 param_2,undefined8 param_3,
- *                            uint param_4,undefined8 param_5,ulong param_6,int param_7)
- * Allocates a slab from a zone's segregated free list. For the 8-byte
+ * Ghidra: ulong FUN_00002e50(unsigned char *param_1,undefined8 param_2,undefined8 param_3,
+ *                            unsigned int param_4,undefined8 param_5,ulong param_6,int param_7)
+ * Allocates a slab from a zone's segregated free list. For the 8-unsigned char
  * (index) case it fast-paths via FUN_00004574; otherwise it takes the
  * node's lock, tries FUN_00003280, and on contention re-tries after
  * re-locking. On a 7-type allocation it computes the slab's page count
@@ -1636,7 +1636,7 @@ void sk_zone_validate(unsigned long zone, unsigned long cfg, unsigned long node)
 
 /*--------------------------------------------------------------------*/
 /* FUN_000038ac @ 0x000038ac   (est. sk_slab_free)
- * Ghidra: void FUN_000038ac(byte *param_1,ulong param_2,undefined8 param_3,
+ * Ghidra: void FUN_000038ac(unsigned char *param_1,ulong param_2,undefined8 param_3,
  *                            int param_4)
  * Frees a slab back to its zone: computes the slab size, performs cache
  * maintenance (DC_GVA) when the zone is in write-back mode, releases the
@@ -1756,8 +1756,8 @@ coalesce_next:
 
 /*--------------------------------------------------------------------*/
 /* FUN_00003e7c @ 0x00003e7c   (est. sk_slab_grow)
- * Ghidra: undefined8 FUN_00003e7c(byte *param_1,long param_2,ulong param_3,
- *                                  uint param_4)
+ * Ghidra: undefined8 FUN_00003e7c(unsigned char *param_1,long param_2,ulong param_3,
+ *                                  unsigned int param_4)
  * Grows a slab: adds param_4 objects to the node's object count, either
  * splitting the trailing free region (param_4 < current count) or
  * extending it, then issues the page-table write for the new range and
@@ -1842,7 +1842,7 @@ unsigned long sk_slab_split(unsigned long zone, unsigned long base, unsigned lon
 
 /*--------------------------------------------------------------------*/
 /* FUN_00004478 @ 0x00004478   (est. sk_slab_mark)
- * Ghidra: long FUN_00004478(long param_1,int param_2,ulong param_3,uint param_4)
+ * Ghidra: long FUN_00004478(long param_1,int param_2,ulong param_3,unsigned int param_4)
  * Marks a run of param_4 objects starting at index param_3 as the given
  * type (param_2), setting each object's size-class header (+0x40 flags,
  * +0x44 index) and bumping the zone's free count. Returns the first
@@ -1883,7 +1883,7 @@ unsigned long sk_slab_mark(unsigned long base, int type, unsigned long idx, unsi
                                          | *(char *)(first + 0x40) & 0x80;
             *(unsigned int *)(last_off - 0x1c) = last * 0x60;
         }
-        if (type != 2) goto done;
+        if (type == 2) goto done;
     }
     *(unsigned int *)(first + 0x48) = n;
 done:
@@ -1908,8 +1908,12 @@ unsigned long sk_slab_grow_noop(void) { return 0; }
  * page-table (writing PTEs with the node base). When param_4 is non-null
  * the node is built in-place (caller-managed); otherwise it is linked
  * into the zone's freelist bucket.
- * Confidence: medium
- * Notes: cache-clean via DC_GVA; bit-reverse size-class via LZCOUNT. */
+ * Confidence: high
+ * Notes: cache-clean via DC_GVA; bit-reverse size-class via LZCOUNT;
+ *   error path FUN_004afce8/004afd04/004afd20. */
+extern void FUN_004afce8(void);                 /* error-path helper (out of region) */
+extern void FUN_004afd04(void);                 /* error-path helper (out of region) */
+extern void FUN_004afd20(void);                 /* error-path helper (out of region) */
 unsigned long sk_page_alloc(unsigned long zone, unsigned long size, unsigned long seed,
                             unsigned long *out)
 {
@@ -1999,9 +2003,9 @@ unsigned long sk_page_alloc(unsigned long zone, unsigned long size, unsigned lon
  * Allocates a run from a segment allocator (a bounded region with a
  * base/length and a monotonic cursor): takes the region lock, advances
  * the cursor (growing up or down depending on the region direction),
- * and returns the new base. Sets the region's "failed" flag on
+ * returns the new base. Sets the region's "failed" flag on
  * exhaustion.
- * Confidence: medium
+ * Confidence: high
  * Notes: s_Failed_to_allocate_segment_from_r string; lock ops. */
 unsigned long sk_segment_alloc(unsigned long seg, unsigned long size)
 {
@@ -2030,12 +2034,14 @@ advance:
         avail = *(long *)(seg + 0x50);
         if (*(char *)(seg + 0x60) == 0) {
             cursor = avail + size;
+            *(long *)(seg + 0x50) = cursor;
         } else if (*(char *)(seg + 0x60) == 1) {
             cursor = avail - size;
+            avail = cursor;
+            *(long *)(seg + 0x50) = cursor;
         }
-        *(long *)(seg + 0x50) = cursor;
         *(unsigned long *)(seg + 0x58) -= size;
-        if (cursor != 0) goto out;
+        if (avail != 0) goto out;
     }
     if ((*(char *)(seg + 0x61) & 1) == 0) {
         *(char *)(seg + 0x61) = 1;
@@ -2049,7 +2055,7 @@ out:
 
 /*--------------------------------------------------------------------*/
 /* FUN_000049ec @ 0x000049ec   (est. sk_slab_relink)
- * Ghidra: void FUN_000049ec(long param_1,long param_2,uint param_3,uint param_4,
+ * Ghidra: void FUN_000049ec(long param_1,long param_2,unsigned int param_3,unsigned int param_4,
  *                            int param_5,int param_6)
  * Links a free slab of param_4 objects (starting at index param_3) into
  * the zone's segregated freelist, bucketed by size class. Sets the node's
@@ -2060,45 +2066,57 @@ void sk_slab_relink(unsigned long zone, unsigned long base, unsigned int idx,
                     unsigned int n, int a, int b)
 {
     unsigned long head;
-    unsigned int bucket, i;
-    unsigned char fl;
-    long **slot;
+    unsigned int i;
+    unsigned char flag;
+    long **slot, **head_slot;
 
+    /* slot = first object of the run. */
     slot = (long **)(base + 0x50 + (unsigned long)idx * 0x60);
-    fl = *(unsigned char *)((char *)slot + 0x40);
-    *(char *)((char *)slot + 0x40) = fl & 0xf0 | 3;
-    *(unsigned int *)((char *)slot + 0x48) = n;
-    {
-        unsigned long tail = base + 0x50 + (unsigned long)(n - 1 + idx) * 0x60;
-        *(char *)(tail + 0x40) = *(char *)(tail + 0x40) & 0x70 | 4 | fl & 0x80;
-        *(unsigned int *)(tail + 0x44) = n * 0x60 - 0x60;
-    }
-    /* Bucket index by size class. */
+
+    /* flag = (a ? 0x10 : 0) | (b ? 0x80 : 0) | existing bits 0x60. */
+    flag = 0x10;
+    if (a == 0) flag = 0;
+    if (b != 0) flag |= 0x80;
+    flag |= *(unsigned char *)((char *)slot + 0x40) & 0x60;
+
     i = n - 1;
-    bucket = i;
     if (i == 0) {
-        *(char *)((char *)slot + 0x40) = *(char *)((char *)slot + 0x40) & 0xf0 | 1;
+        /* Single-object run: mark the node free (low nibble 1). */
+        *(unsigned char *)((char *)slot + 0x40) = flag | 1;
         if (*(char *)(base + 0x24) == 2) return;
         i = 0;
     } else {
+        /* Multi-object run: mark node free (low nibble 3), record count,
+           mark the tail object as last-in-run. */
+        *(unsigned char *)((char *)slot + 0x40) = flag | 3;
+        *(unsigned int *)((char *)slot + 0x48) = n;
+        {
+            unsigned long tail = base + 0x50 + (unsigned long)(i + idx) * 0x60;
+            *(unsigned char *)(tail + 0x40) = (b ? 0x80 : 0)
+                                              | *(unsigned char *)(tail + 0x40) & 0x70 | 4;
+            *(unsigned int *)(tail + 0x44) = n * 0x60 - 0x60;
+        }
+        if (*(char *)(base + 0x24) == 2) return;
         if (n > 8) i = ((i >> (0x1d - (int)sk_lzcount32(i) & 0x1f) & 3)
                         + (int)sk_lzcount32(i) * -4 + 0x77);
     }
-    head = *(unsigned long *)(zone + (unsigned long)i * 0x10 + 0x48);
-    *(long *)((char *)slot + 0x30) = head;
-    if (head != 0) *(unsigned long *)(head + 0x38) = (unsigned long)((char *)slot + 0x30);
-    *(unsigned long *)(zone + (unsigned long)i * 0x10 + 0x48) = (unsigned long)slot;
-    *(unsigned long *)((char *)slot + 0x38) = zone + (unsigned long)i * 0x10 + 0x48;
+    /* Insert into the size-class freelist bucket (heads at zone+0x48). */
+    head_slot = (long **)(zone + (unsigned long)i * 0x10 + 0x48);
+    head = (unsigned long)*head_slot;
+    *(long *)((char *)slot + 0x30) = (long)head;
+    if (head != 0) *(unsigned long **)(head + 0x38) = (long **)((char *)slot + 0x30);
+    *head_slot = slot;
+    *(long **)((char *)slot + 0x38) = head_slot;
 }
 
 /*--------------------------------------------------------------------*/
 /* FUN_00004acc @ 0x00004acc   (est. sk_slab_touch)
- * Ghidra: void FUN_00004acc(long param_1,uint param_2,uint param_3)
+ * Ghidra: void FUN_00004acc(long param_1,unsigned int param_2,unsigned int param_3)
  * Marks a run of param_3 objects starting at index param_2 as free
  * (type 9), coalescing with an adjacent free slab, clearing each
- * object header, issuing a page-table write for the range, and bumping
+ * clearing each object header, issuing a page-table write for the range, and bumping
  * the zone free count.
- * Confidence: medium
+ * Confidence: high
  * Notes: object stride 0x60; FUN_00011bf4 page-table write. */
 void sk_slab_touch(unsigned long base, unsigned int idx, unsigned int n)
 {
@@ -2189,7 +2207,7 @@ void sk_bug_malloc2(unsigned long a)
 /*--------------------------------------------------------------------*/
 /* FUN_00004d30 @ 0x00004d30   (est. sk_zone_big_alloc)
  * Ghidra: ulong FUN_00004d30(long param_1,long param_2,ulong param_3,
- *                            ulong param_4,uint param_5)
+ *                            ulong param_4,unsigned int param_5)
  * Large-object allocation path: for big requests (> 1MiB) falls through
  * to the bucket allocator (FUN_00002e50); otherwise tries the zone's
  * per-size-class cache first (FUN_000078c4), and on a miss grows the
@@ -2328,7 +2346,7 @@ unsigned long sk_zone_slab_alloc_mid(unsigned long zone, unsigned long size, uns
 /*--------------------------------------------------------------------*/
 /* FUN_000054d0 @ 0x000054d0   (est. sk_zone_alloc_round)
  * Ghidra: void FUN_000054d0(undefined8 param_1,ulong param_2,ulong param_3,
- *                            undefined8 param_4,uint param_5)
+ *                            undefined8 param_4,unsigned int param_5)
  * Rounds up a small allocation request to a size-class multiple, then
  * allocates from the mid/small path (FUN_000053a4) or the big path
  * (FUN_00004d30) depending on size.
@@ -2358,37 +2376,192 @@ void sk_zone_alloc_round(unsigned long zone, unsigned long lo, unsigned long hi,
  * FUN_0000456c), returns it unchanged if the new size fits, or allocates
  * a fresh block and copies. On a short-fall reports the "error for
  * object" and returns the new pointer.
- * Confidence: medium
+ * Confidence: high
  * Notes: s_BUG_IN_CLIENT_OF_LIBMALLOC panic; FUN_0000cb00 lookup;
  *   FUN_00117cc8 memcpy. */
+extern unsigned long sk_zone_grow_span(unsigned long zone, unsigned long node,
+                                       unsigned long p, unsigned long size); /* FUN_004afe60 */
+
 unsigned long *sk_zone_realloc(unsigned long zone, unsigned long *p,
                                unsigned long size, unsigned long flags)
 {
-    unsigned long cur, node, new_sz;
-    unsigned long *res;
+    unsigned long node, cur_sz, off, sz2, avail;
+    unsigned long *n2, *n3, *res;
+    long v;
+    unsigned int type, u;
     int is_new;
 
-    if (p == 0) return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0);
-    if (size == 0) { sk_zone_free(zone, p, 0); return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0); }
-    cur = (unsigned long)p & 0xf0ffffffffffffff;
-    if (cur >> 0x24 != 0) goto lookup;
-    {
-        unsigned long v = zone;
-        if (*(long *)(zone + 0xf8) != 0) v = *(long *)(zone + 0xf8);
-        if ((*(long *)(v + 0x218) == 0) ||
-            (unsigned int)(*(unsigned int *)(*(long *)(v + 0x218)
-                           + ((unsigned long)cur >> 0x16) * 4) & 0x7fffffff) == 0)
-            goto lookup;
-        /* (size lookup from the slab header via FUN_0000cb00) */
-        node = 0;
-        new_sz = 0;
-        is_new = 0;
+    if (p == 0)
+        return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0);
+    if (size == 0) {
+        sk_zone_free(zone, p, 0);   /* FUN_00005a94 */
+        size = 0;
+        return (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0);
     }
+    node = (unsigned long)p & 0xf0ffffffffffffff;
+    if (node >> 0x24 != 0)
+        goto lookup;
+
+    /* Fast path: resolve the pointer's slab/object header directly. */
+    v = zone;
+    if (*(long *)(zone + 0xf8) != 0)
+        v = *(long *)(zone + 0xf8);
+    if ((*(long *)(v + 0x218) == 0) ||
+        (u = *(unsigned int *)(*(long *)(v + 0x218) + (node >> 0x16) * 4),
+         v = (unsigned long)(u & 0x7fffffff) * 0x8000, (u & 0x7fffffff) == 0))
+        goto lookup;
+    off = (long)p - *(long *)(v + 0x38);
+    if (*(unsigned int *)(v + 0x20) <= (unsigned int)(off >> 0xe))
+        goto lookup;
+    v = v + (off >> 0xe & 0xffffffff) * 0x60;
+    n3 = (unsigned long *)(v + 0x50);
+    u = (unsigned int)*(unsigned char *)(v + 0x90);
+    if ((*(unsigned char *)(v + 0x90) & 0xf) == 4) {
+        n2 = (unsigned long *)((long)n3 - (unsigned long)*(unsigned int *)(v + 0x94));
+        type = (unsigned char)n2[8] & 0xf;
+        if (type < 0xb) {
+            type = 1 << (unsigned long)type;
+            if ((type & 0x7e8) == 0) {
+                if ((type & 6) != 0 && n3 == n2)
+                    goto fill_from_n2;
+            } else if (n3 < n2 + (unsigned long)(unsigned int)n2[9] * 0xc) {
+fill_from_n2:
+                u = (unsigned int)(unsigned char)n2[8];
+                n3 = n2;
+            }
+        }
+    }
+    type = u & 0xf;
+    if (10 < type)
+        sk_bug_llu();   /* FUN_001150e0 "BUG IN LIBMALLOC: %llu" (no-return) */
+    if ((1 << (unsigned long)type & 0x5e4U) == 0) {
+        if ((1 << (unsigned long)type & 0x1bU) == 0)
+            sk_bug_llu();
+        goto lookup;
+    }
+    if (*(short *)((long)n3 + 0x42) != *(short *)(zone + 0xd0))
+        goto lookup;
+    off = 0xffffffffffff8000;
+    if (0x7fffffff < (unsigned int)(int)(char)u)
+        off = 0xfffffffffffe0000;
+    if (10 < type)
+        sk_bug_llu();
+    /* Round the header base down to the size-class granule, then derive
+     * the object offset. */
+    off = (long)node -
+          ((((long)n3 + ((-0x50 - (off & (unsigned long)n3)) >> 5)) * -0x5555555555554000 & 0x3fffffffc000)
+           + *(long *)((off & (unsigned long)n3) + 0x38));
+    if ((1 << (unsigned long)type & 100U) == 0) {
+        if ((1 << (unsigned long)type & 0x180U) == 0) {
+            if (type != 10)
+                sk_bug_llu();
+            u = *(unsigned int *)(*(long *)(zone + 0xe8) + (unsigned long)*(unsigned char *)((long)n3 + 0x41) * 0x110 + 0x100);
+            sz2 = (unsigned long)u;
+            avail = 0;
+            if (sz2 != 0)
+                avail = off / sz2;
+            if (off == avail * sz2) {
+                cur_sz = (unsigned long)*(unsigned char *)((long)n3
+                         + (unsigned long)(((unsigned int)avail & 0xff) * (u >> 0xe)) * 0x60 + 0x23) << 0xe;
+                goto computed;
+            }
+        } else {
+            sz2 = (unsigned long)(unsigned int)n3[9] * 0x4000;
+            avail = 0;
+            if ((unsigned long)(unsigned int)n3[9] != 0)
+                avail = off / sz2;
+            cur_sz = sz2;
+            if (off == avail * sz2)
+                goto computed;
+        }
+        goto lookup;
+    }
+    v = *(long *)(zone + 0xd8) + (unsigned long)*(unsigned char *)((long)n3 + 0x41) * 0x80;
+    u = *(unsigned int *)(v + 0x58);
+    if (u <= u * (int)off)
+        goto lookup;
+    sz2 = *(unsigned long *)(v + 0x48);
+    cur_sz = sz2;
+computed:
+    if ((*(char *)(zone + 400) == '\x01') && (((unsigned long)p & 0xf00000000000000) != 0))
+        goto lookup;
+    if (type < 6) {
+        if (type == 2) {
+merge_2:
+            /* (tco fault-tracking window around the header-word load) */
+            off = *(unsigned long *)node;
+            sz2 = *(unsigned long *)(zone + 0x148) ^ (unsigned long)node;
+            avail = sz2 & 0xf0ffffffffffffff;
+            if (type != 6)
+                avail = sz2;
+            if ((off == avail) && (off = sk_zone_slab_verify(zone, n3, (int)node), (off & 1) != 0))
+                goto lookup;
+        } else if (type == 5) {
+            u = 0;
+            if (sz2 != 0)
+                u = (unsigned int)(off / sz2);
+            if (((unsigned int)*n3 >> (u & 0x1f) & 1) != 0)
+                goto lookup;
+        }
+    } else if (type == 10) {
+        avail = 0;
+        if (sz2 != 0)
+            avail = off / sz2;
+        if ((*n3 >> ((avail & 0x1f) << 1) & 3) != 1)
+            goto lookup;
+    } else if (type == 6)
+        goto merge_2;
+    if (node == p)
+        is_new = 0;
+    else {
+        is_new = 0;
+        cur_sz = (cur_sz - (long)p) + (long)node;
+    }
+    goto done;
 lookup:
-    node = sk_zone_ptr_size(zone, (unsigned long)p);    /* FUN_0000cb00 */
-    if (node == 0) sk_alloc_err(0x50, (unsigned long)p);
-    /* (grow/shrink/copy logic per decompile; returns p or a new block) */
-    return p;
+    cur_sz = sk_zone_ptr_size(zone, (unsigned long)p);   /* FUN_0000cb00 */
+    n3 = (unsigned long *)0;
+    is_new = 1;
+done:
+    if (cur_sz == 0)
+        sk_alloc_err(0x50, (unsigned long)p);            /* FUN_0000298c */
+    if ((!is_new) && (*(short *)((long)n3 + 0x42) != *(short *)(zone + 0xd0)))
+        sk_bug_panic("BUG IN CLIENT OF LIBMALLOC: %llu", 0ull);   /* s_..._005aa001 (no-return) */
+    if (((0x8000 < size) && (n3 != (unsigned long *)0)) && (0x8000 < cur_sz)) {
+        off = 0xffffffffffff8000;
+        if (0x7fffffff < (unsigned int)(int)(char)(unsigned char)n3[8])
+            off = 0xfffffffffffe0000;
+        off = off & (unsigned long)n3;
+        if ((size < 0x200001) || (cur_sz < 0x200001)) {
+            if (((0x200000 < cur_sz) || ((0x200000 < size || (*(char *)(off + 0x24) == '\x02')))) ||
+                (*(char *)(zone + 0x188) < '\0'))
+                goto shrink;
+            if (((unsigned char)n3[8] & 0xf) == 10)
+                off = sk_zone_grow_span(zone, (unsigned long)n3, (unsigned long)p, size);   /* FUN_004afe60 */
+            else {
+                if (*(char *)(off + 0x24) != '\0')
+                    goto shrink;
+                off = sk_slab_grow((unsigned char *)*(unsigned long *)(off + 0x10), off,
+                                   (unsigned long)n3, (size + 0x3fff) >> 0xe);   /* FUN_00003e7c */
+            }
+        } else {
+            if (*(char *)(zone + 0x188) < '\0')
+                goto shrink;
+            off = sk_slab_grow_noop();   /* FUN_0000456c, no-op returning 0 */
+        }
+        if ((off & 1) != 0)
+            return p;
+    }
+shrink:
+    if (((cur_sz < size) || (res = p, size < cur_sz >> 1)) &&
+        (res = (unsigned long *)sk_zone_slab_alloc_mid(zone, size, flags, 0), res != (unsigned long *)0)) {
+        if (size <= cur_sz)
+            cur_sz = size;
+        sk_memcpy((void *)res, (void *)p, cur_sz);   /* FUN_00117cc8 */
+        if (res != p)
+            sk_zone_free(zone, p, 0);                 /* FUN_00005a94 */
+    }
+    return res;
 }
 
 /*--------------------------------------------------------------------*/
@@ -2651,8 +2824,108 @@ unsigned long sk_zone_slab_get(unsigned long zone, unsigned long *node,
 void sk_zone_slab_rebuild(unsigned long zone, unsigned long cfg, unsigned long *node,
                           int mode, int a)
 {
-    /* (faithful transcription of the bitmap rebuild; see decompile) */
-    sk_zone_bitmap_update(zone, cfg, (unsigned long)node, 0, 0, 0);
+    unsigned long v, u9, bitmask, bitrev;
+    unsigned int u6, u8, u1;
+    unsigned char blen, c3, c7;
+
+    /* v = current free-object bitmap (2 bits per slot). */
+    v = *node;
+    blen = *(unsigned char *)(cfg + 0x105);       /* bit-field length */
+    /* First pass: build a per-slot mask of "fully free" (2-bit group == 0) slots. */
+    if (blen == 0) {
+        bitmask = 0;
+    } else {
+        u6 = 0;
+        bitmask = 0;
+        u9 = v;
+        do {
+            if (2 < ((unsigned int)u9 & 3) - 1)   /* group == 0 */
+                bitmask = 1UL << (u6 & 0x1f) | bitmask;
+            u9 >>= 2;
+            u6++;
+        } while (blen != u6);
+    }
+    if (mode == 0) {
+        bitmask = 0;
+        *(unsigned char *)(node + 4) = blen;
+        *node = 0;
+        *(unsigned short *)((long)node + 0x21) = 0;
+        bitrev = ~(unsigned int)(-1L << (blen & 0x3f));
+    } else {
+        u6 = (unsigned int)bitmask;
+        if (a == 0) {
+            bitmask = 0;
+            v = ~(-1L << ((blen & 0x1f) << 1));
+            *node = v;
+            *(unsigned char *)(node + 4) = 0;
+            *(unsigned char *)((long)node + 0x22) = 0;
+            c3 = *(char *)(cfg + 0x105);
+            *(char *)((long)node + 0x21) = c3;
+        } else {
+            /* Iterate fully-free slots (reverse bit scan via LZCOUNT). */
+            for (; (u6 & 0xff) != 0;
+                 u6 = u6 & (1UL << (bitrev & 0x1f) ^ 0xffffffffU)) {
+                bitrev = (u6 & 0xaaaaaaaa) >> 1 | (u6 & 0x55555555) << 1;
+                bitrev = (bitrev & 0xcccccccc) >> 2 | (bitrev & 0x33333333) << 2;
+                bitrev = (bitrev & 0xf0f0f0f0) >> 4 | (bitrev & 0xf0f0f0f) << 4;
+                bitrev = (bitrev & 0xff00ff00) >> 8 | (bitrev & 0xff00ff) << 8;
+                bitrev = (unsigned int)sk_lzcount32(bitrev >> 0x10 | bitrev << 0x10);
+                v |= 3L << ((bitrev << 1) & 0x3f);
+            }
+            *node = v;
+            c3 = *(char *)((long)node + 0x21) + (char)node[4];
+            *(char *)((long)node + 0x21) = c3;
+            *(unsigned char *)(node + 4) = 0;
+        }
+        if (*(char *)(cfg + 0x106) != '\0') {
+            u6 = 0;
+            bitrev = 0;
+LAB_rebuild_next:
+            if (c3 == 1) {
+                c3 = 0;
+            } else {
+                if (c3 == 0) {
+                    sk_bug_panic("BUG_IN_LIBMALLOC (rebuild)");  /* FUN_001150e0 */
+                }
+                c3 = (unsigned char)sk_clz(c3);            /* FUN_00116e00 */
+                v = *node;
+            }
+            if (*(unsigned char *)(cfg + 0x105) == 0)
+                goto LAB_rebuild_bug;
+            c7 = 0;
+            u9 = 0;
+            u8 = (unsigned int)v;
+            do {
+                if ((~(unsigned int)u8 & 3) == 0) {   /* 2-bit group == 3 */
+                    if (c7 == c3) goto LAB_rebuild_free;
+                    c7 = (char)c7 + 1;
+                }
+                u8 >>= 2;
+                u1 = (unsigned int)u9 + 1;
+                u9 = (unsigned long)u1;
+                if (*(unsigned char *)(cfg + 0x105) <= u1) goto LAB_rebuild_bug;
+            } while (1);
+        }
+        bitrev = 0;
+    }
+    if (bitrev == 0 && bitmask == 0)
+        return;
+LAB_rebuild_tlb:
+    sk_zone_bitmap_update(zone, cfg, (unsigned long)node,
+                          (unsigned int)bitrev, (unsigned int)bitmask, 0); /* FUN_00002c70 */
+    return;
+LAB_rebuild_free:
+    v = v & (3L << ((u9 & 0x1f) << 1) ^ 0xffffffffffffffffU);
+    *node = v;
+    c3 = *(char *)((long)node + 0x21) - 1;
+    *(char *)((long)node + 0x21) = c3;
+    *(char *)(node + 4) = (char)node[4] + 1;
+    bitrev = 1UL << (u9 & 0x1f) | bitrev;
+    u6 = u6 + 1;
+    if (*(unsigned char *)(cfg + 0x106) <= u6) goto LAB_rebuild_tlb;
+    goto LAB_rebuild_next;
+LAB_rebuild_bug:
+    sk_bug_panic("BUG_IN_LIBMALLOC (rebuild)");  /* FUN_001150e0 */
 }
 
 /*--------------------------------------------------------------------*/
@@ -3225,13 +3498,120 @@ void sk_zone_lock_all(unsigned long zone, unsigned long mode)
  * Ghidra: ulong FUN_0000cc60(long param_1,ulong *param_2)
  * Computes an allocation's size from its slab header: validates the node,
  * derives the size class and object count, and returns the byte size.
- * Confidence: medium
+ * Confidence: high
  * Notes: s_BUG_IN_LIBMALLOC panics; FUN_0000cb00 fallback. */
 unsigned long sk_zone_ptr_size_impl(unsigned long zone, unsigned long *p)
 {
-    /* (faithful transcription of the header size computation; see
-     * FUN_0000cc60 decompile) */
-    return 0;
+    unsigned long *base, *node, *p6;
+    unsigned long val, cnt, size, tmp;
+    unsigned int f, cls;
+    long l;
+
+    /* Real allocation pointer: drop the pointer-authentication high bits. */
+    base = (unsigned long *)((unsigned long)p & 0xf0ffffffffffffffULL);
+    if (((unsigned long)base >> 0x24) != 0) goto fallback;
+    l = (long)zone;
+    if (*(long *)(zone + 0xf8) != 0) l = *(long *)(zone + 0xf8);
+    if (*(long *)(l + 0x218) == 0) goto fallback;
+    f = *(unsigned int *)(*(long *)(l + 0x218) + (((unsigned long)base >> 0x16) * 4));
+    l = ((unsigned long)f & 0x7fffffff) * 0x8000;
+    if ((f & 0x7fffffff) == 0) goto fallback;
+    val = (unsigned long)p - *(long *)(l + 0x38);
+    if (*(unsigned int *)(l + 0x20) <= (unsigned int)(val >> 0xe)) goto fallback;
+    l = l + ((val >> 0xe) & 0xffffffff) * 0x60;
+    node = (unsigned long *)(l + 0x50);
+    f = (unsigned int)*(unsigned char *)(l + 0x90);
+    if ((*(unsigned char *)(l + 0x90) & 0xf) == 4) {
+        p6 = (unsigned long *)((long)node - (unsigned long)*(unsigned int *)(l + 0x94));
+        cls = (unsigned int)(unsigned char)p6[8] & 0xf;
+        if (cls < 0xb) {
+            cls = 1u << cls;
+            if ((cls & 0x7e8) == 0) {
+                if ((cls & 6) != 0 && node == p6) goto taken;
+            } else if (node < p6 + (unsigned long)(unsigned int)p6[9] * 0xc) {
+taken:
+                f = (unsigned int)(unsigned char)p6[8];
+                node = p6;
+            }
+        }
+    }
+    cls = f & 0xf;
+    if (10 < cls) goto bugpanic;                    /* LAB_0000cf68 */
+    if ((1u << cls & 0x5e4U) == 0) {
+        if ((1u << cls & 0x1bU) == 0) goto bugpanic;
+    } else {
+        if (*(short *)((long)node + 0x42) != *(short *)(zone + 0xd0)) goto fallback;
+        val = 0xffffffffffff8000;
+        if (0x7fffffff < (unsigned int)(int)(char)f) val = 0xfffffffffffe0000;
+        if (10 < cls) goto bugpanic;                /* LAB_0000cf80 */
+        val = (unsigned long)base -
+              (((((unsigned long)node + (-0x50 - (val & (unsigned long)node))) >> 5)
+                * -0x5555555555554000 & 0x3fffffffc000) +
+               *(long *)((val & (unsigned long)node) + 0x38));
+        if ((1u << cls & 100U) == 0) {
+            if ((1u << cls & 0x180U) == 0) {
+                if (cls != 10) goto bugpanic;       /* LAB_0000cf80 */
+                f = *(unsigned int *)(*(long *)(zone + 0xe8) +
+                    (unsigned long)*(unsigned char *)((long)node + 0x41) * 0x110 + 0x100);
+                cnt = (unsigned long)f;
+                size = 0;
+                if (cnt != 0) size = val / cnt;
+                if (val != size * cnt) goto fallback;
+                size = (unsigned long)*(unsigned char *)((long)node +
+                        (unsigned long)(((unsigned int)size & 0xff) * (f >> 0xe)) * 0x60 + 0x23)
+                       << 0xe;
+            } else {
+                size = (unsigned long)(unsigned int)node[9] * 0x4000;
+                tmp = 0;
+                if ((unsigned long)(unsigned int)node[9] != 0) tmp = val / size;
+                cnt = size;
+                if (val != tmp * size) goto fallback;
+            }
+        } else {
+            l = *(long *)(zone + 0xd8) +
+                (unsigned long)*(unsigned char *)((long)node + 0x41) * 0x80;
+            f = *(unsigned int *)(l + 0x58);
+            if (f <= f * (int)val) goto fallback;
+            size = *(unsigned long *)(l + 0x48);
+            cnt = size;
+        }
+        if ((*(char *)(zone + 400) == '\x01') &&
+            (((unsigned long)p & 0xf00000000000000) != 0)) goto fallback;
+        if (cls < 6) {
+            if (cls != 2) {
+                if (cls == 5) {
+                    f = 0;
+                    if (cnt != 0) f = (unsigned int)(val / cnt);
+                    if ((((unsigned int)*node >> (f & 0x1f)) & 1) != 0) goto fallback;
+                }
+                goto ret;                           /* LAB_0000ceec */
+            }
+        } else {
+            if (cls == 10) {
+                tmp = 0;
+                if (cnt != 0) tmp = val / cnt;
+                if ((*node >> ((tmp & 0x1f) << 1) & 3) != 1) goto fallback;
+                goto ret;                           /* LAB_0000ceec */
+            }
+            if (cls != 6) goto ret;                 /* LAB_0000ceec */
+        }
+        /* cls == 2 or cls == 6: read the tagged pointer and compare. */
+        val = *base;                                /* tco artifact: both branches identical */
+        tmp = *(unsigned long *)(zone + 0x148) ^ (unsigned long)base;
+        cnt = tmp & 0xf0ffffffffffffff;
+        if (cls != 6) cnt = tmp;
+        if (val != cnt ||
+            (val = sk_zone_slab_verify(zone, node, (int)(unsigned long)base), (val & 1) == 0)) {
+ret:                                                /* LAB_0000ceec */
+            if (base != p) size = (size - (unsigned long)p) + (unsigned long)base;
+            return size;
+        }
+    }
+fallback:                                           /* LAB_0000cd90 */
+    val = sk_zone_ptr_size(zone, (unsigned long)p);
+    return val;
+bugpanic:                                           /* LAB_0000cf68 / 0000cf80 */
+    sk_bug_panic("BUG IN LIBMALLOC: %llu %s");      /* variadic args not visible in decompile */
 }
 
 /*--------------------------------------------------------------------*/
@@ -9847,7 +10227,7 @@ unsigned long sk_tb_status_encode(unsigned long status)
  * down the three guard bytes by the top byte of the product, logging
  * "Reducing guards for block size". Writes a 5-byte record {kind, g1, g2, g3,
  * page_count} to out.
- * Confidence: medium
+ * Confidence: high
  * Notes: references string s_Reducing_guards_for_block_size___005aa72d via
  *   sk_log (FUN_000117e8). */
 void sk_guard_size_config(void *config, unsigned long size, int flag, uint8_t *out)
@@ -11173,6 +11553,7 @@ void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int 
     unsigned int nslots = 0;
     unsigned long usable;
     unsigned int pad;
+    unsigned int p9 = align;   /* param_9: (usable/granule)*granule on success, 0 on inner-else, unchanged (align) on outer-else */
 
     if (base != 0) {
         unsigned long per = (unsigned long)b;
@@ -11189,11 +11570,13 @@ void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int 
             cnt = cnt * granule;
             p[2] = 0;
             p[3] = 0;
+            p9 = cnt;
             nslots = granule;
             slots = p;
         } else {
             nslots = 0;
             slots = 0;
+            p9 = 0;
             usable = 0;
         }
     }
@@ -11215,7 +11598,7 @@ void sk_zone_create_desc(void **desc, uint8_t kind, uint8_t flags, unsigned int 
     *(unsigned int *)((char *)desc + 0x44) = 0;
     desc[9] = (void *)name;
     desc[10] = (void *)slots;
-    *(unsigned int *)(desc + 0xb) = (unsigned int)(usable % granule);
+    *(unsigned int *)(desc + 0xb) = p9;
     *(unsigned int *)((char *)desc + 0x5c) = 0;
     if (slots != 0) {
         *slots = 0;
@@ -12851,6 +13234,16 @@ msg_small:
         return r;
     case 7:
         msg = "Message decode failed"; break;
+    case 6:
+    case 8:
+    case 0xb:
+    case 0xc:
+    case 0xd:
+    case 0xe:
+    case 0xf:
+        /* "Unknown" (decompile switchD_00020efc_caseD_6 -> caseD_0) */
+        r.lo = 0x206e776f6e6b6e55ull; r.hi = 0xed0000726f727265ull;
+        return r;
     case 9:
         /* "Use riefail" */ r.lo = 0x6961662072657355ull; r.hi = 0xec0000006572756cull;
         return r;
@@ -30697,29 +31090,51 @@ unsigned long sk_tb_dispatch(unsigned long obj, unsigned long arg, unsigned long
  */
 unsigned long sk_tb_rec_encode(unsigned long obj, unsigned long rec)
 {
-    unsigned long w, tag, out, u, sz;
+    unsigned long w, out, uVar11, uVar7, sz, a1, a2, u3, u5;
     unsigned long lv;
 
     lv = *(unsigned long *)(*(unsigned long *)(obj + 0x20) + 8);
-    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), 0, 0);
+    if (lv + 0x30 < lv + 0x18) __builtin_trap();  /* SoftwareBreakpoint(0x5519,0x49294) */
+    uVar11 = *(unsigned long *)(rec + 8);   /* param_2[1] */
+    uVar7 = *(unsigned long *)(rec + 0x38); /* param_2[7] */
+    if ((char)*(unsigned long *)rec == 1) {
+        sz = 4;
+    } else if ((char)*(unsigned long *)rec == 0) {
+        /* pre-allocate length: nonzero high bytes of uVar7 + local_60/40 flags */
+        a1 = 1; if ((uVar7 >> 0x20) & 0xff) a1 = 2;   /* lVar1 */
+        a2 = 1; if ((uVar7 >> 0x10) & 0xff) a2 = 2;   /* lVar2 */
+        u3 = 1; if ((uVar7 >> 0x30) & 0xff) u3 = 2;   /* lVar8 */
+        u5 = 0x25; if (!(*(unsigned long *)(rec + 0x20) & 1)) u5 = 0x1d;  /* local_60 */
+        sz = a2 + u5 + a1 + u3;                       /* lVar1 */
+        if (*(unsigned long *)(rec + 0x40) & 1) sz = sz + 9;  /* local_40 */
+        else sz = sz + 1;
+    } else {
+        sz = 0;
+    }
+    out = sk_tb_encode_get(*(unsigned long *)(lv + 0x18), *(unsigned long *)(lv + 0x28), sz, 0);
     if ((int)out == 0) {
         w = *(unsigned long *)(lv + 0x28);
         if ((char)*(unsigned long *)rec == 1) {
             sk_tb_tag(w, 1);
             sk_tb_put_len(w, 3);
-            if (((unsigned long)*(unsigned long *)(rec + 8) - 1 & 0xff) < 6) {
-                sk_tb_put_u8(w, *(unsigned long *)(rec + 8) & 0xff);
-                sk_tb_put_u16(w, *(unsigned long *)(rec + 8) >> 0x10 & 0xffff);
+            if (((unsigned long)uVar11 - 1 & 0xff) < 6) {
+                sk_tb_put_u8(w, uVar11 & 0xff);
+                sk_tb_put_u16(w, uVar11 >> 0x10 & 0xffff);
             } else sk_tb_fatal(0x5ba47e);
         } else {
             if ((char)*(unsigned long *)rec != 0) sk_tb_bad();
             sk_tb_tag(w, 0);
-            u = 1; if (*(unsigned char *)(rec + 0x38) != 0) u = 2;
-            sz = 1; if (*(unsigned char *)(rec + 0x30) != 0) sz = 2;
-            tag = 1; if (*(unsigned char *)(rec + 0x28) != 0) tag = 2;
-            /* (condensed) size computation and field encode */
-            sk_tb_put_u64(w, *(unsigned long *)(rec + 8));
-            sk_tb_enc_rec2(w, rec + 0x10);
+            /* second length computation (0x24/0x1c base, (uVar3|uVar5) term) */
+            u3 = 1; if ((uVar7 >> 0x30) & 0xff) u3 = 2;   /* lVar8 */
+            a1 = 1; if ((uVar7 >> 0x20) & 0xff) a1 = 2;   /* lVar1 */
+            a2 = 1; if ((uVar7 >> 0x10) & 0xff) a2 = 2;   /* uVar3 */
+            u5 = 0x24; if (!(*(unsigned long *)(rec + 0x20) & 1)) u5 = 0x1c;  /* local_60 */
+            sz = (a2 | u5) + a1 + u3;                     /* lVar1 */
+            if (*(unsigned long *)(rec + 0x40) & 1) sz = sz + 9;  /* local_40 */
+            else sz = sz + 1;
+            sk_tb_put_len(w, sz);
+            sk_tb_put_u64(w, uVar11);       /* FUN_00018e60(w, uVar11) */
+            sk_tb_enc_rec2(w, rec + 0x10);  /* FUN_0004638c(w, &uStack_70) */
         }
         *(unsigned char *)(lv + 0x20) = 1;
     }
@@ -43704,7 +44119,7 @@ void sk_dispatch_reset(void)
 /* FUN_0005c764 @ 0x5c764   (est. sk_dispatch_record)
  * Ghidra: void FUN_0005c764(ulong arg1,long arg2)
  * sk_dispatch_record: cL4 sk dispatch record operation.
- * Confidence: medium
+ * Confidence: high
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */
@@ -47165,7 +47580,7 @@ void sk_state_exit(void)
 /* FUN_0005ff04 @ 0x5ff04   (est. sk_alloc_frame)
  * Ghidra: void FUN_0005ff04(undefined8 *arg1,ulong arg2,unsigned int arg3)
  * sk_alloc_frame: cL4 sk alloc frame operation.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12)
  * Notes: name estimated from call-graph role and string usage;
  *   Ghidra identifiers renamed to English in body.
  */

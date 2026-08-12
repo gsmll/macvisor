@@ -16,6 +16,8 @@
 #define skp12_PAIR(x) (x)
 #define skp12_SBORROW8(a,b) ((int64_t)(a) - (int64_t)(b) < 0)
 #define skp12_SCARRY8(a,b)  ((int64_t)(a) + (int64_t)(b) < 0)
+/* 16-byte register-pair return (x0/x1); both halves are meaningful and passed. */
+typedef struct { uint64_t lo; uint64_t hi; } skp12_u128;
 
 /* ------------------------------------------------------------------ *
  * Out-of-range cL4 helper declarations. These live in the shared runtime
@@ -53,7 +55,7 @@ extern uint64_t skp12_FUN_0008e0d4();
 extern uint64_t skp12_FUN_0008e388();
 extern uint64_t skp12_FUN_0008e500();
 extern uint64_t skp12_FUN_0008e518();
-extern uint64_t skp12_FUN_0009e234();
+extern skp12_u128 skp12_FUN_0009e234(); /* 16-byte pair return (x0/x1) */
 extern uint64_t skp12_FUN_000a68f4();
 extern uint64_t skp12_FUN_000a6e14();
 extern uint64_t skp12_FUN_000a6f88();
@@ -440,7 +442,7 @@ extern uint64_t skp12_FUN_00350944();
 extern uint64_t skp12_FUN_0035098c();
 extern uint64_t skp12_FUN_00350998();
 extern uint64_t skp12_FUN_003509a4();
-extern uint64_t skp12_FUN_003509b0();
+extern skp12_u128 skp12_FUN_003509b0(); /* 16-byte pair return (x0/x1) */
 extern uint64_t skp12_FUN_003509bc();
 extern uint64_t skp12_FUN_003509d4();
 extern uint64_t skp12_FUN_003509e0();
@@ -2174,7 +2176,10 @@ uint64_t skp12_vspace_op_00279d78(void)
  * Ghidra: void skp12_vspace_op_00279e90(void)
  * Faithful mechanical transcription; registers preserved (x8/x16/x19-30),
  * vtable indirect calls kept, SoftwareBreakpoint->trap fns. Conf: low-med.
- * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack. */
+ * Notes: out-of-range callees extern; DAT_ globals extern; STK=stack.
+ * VB2-verified: structure faithful vs FUN_00279e90 (all LAB_0027a170/a2cc/a598/a65c/a3f0
+ *   edges, offsets, indirect calls, fatal FUN_001afe4c). Kept low-med: 16-byte pair-return
+ *   high words (auVar16._8_8_) set to 0/unspecified, and extraout_x8_* forwarding opaque. */
 uint64_t skp12_vspace_op_00279e90(void)
 {
     int i1;
@@ -2517,7 +2522,7 @@ uint64_t skp12_vspace_op_0027a6e0(void)
     int64_t l11;
     int64_t l12;
     uint64_t x30;
-    uint64_t av13;
+    skp12_u128 av13;
     uint64_t loca8;
     int64_t loc98;
     uint64_t loc88;
@@ -2579,7 +2584,7 @@ LAB_0027a918:
   (*x8_04)();
   for (; l12 < l10; l12 = l12 + 1) {
     av13 = skp12_FUN_003509b0(x24);
-    v4 = skp12_FUN_001dc430(av13,(0u /* hi: unspecified */),x1);
+    v4 = skp12_FUN_001dc430(av13.lo,av13.hi,x1);
     skp12_FUN_003548ac(v4,x24 + *(int *)(x1 + 0x24));
     (*x9)();
     skp12_FUN_00354bbc();
@@ -2595,7 +2600,7 @@ LAB_0027a918:
   do {
     if (l10 <= l12) break;
     av13 = skp12_FUN_003509b0(x24);
-    skp12_FUN_001dc430(av13,(0u /* hi: unspecified */),x1);
+    skp12_FUN_001dc430(av13.lo,av13.hi,x1);
     skp12_FUN_003510a0(loc88);
     (*x9_00)();
     skp12_FUN_000dbd0c(*(uint64_t *)(x16_00 + 8));
@@ -2657,7 +2662,7 @@ LAB_0027ab88:
     (*x19)();
     skp12_FUN_003510d0(STK);
     av13 = skp12_FUN_0009e234();
-    (*x8_11)(av13,(0u /* hi: unspecified */),l3);
+    (*x8_11)(av13.lo,av13.hi,l3);
     i1 = *(int *)(l3 + 0x30);
     skp12_FUN_00355100(STK);
     skp12_FUN_00077894();
@@ -2665,7 +2670,7 @@ LAB_0027ab88:
     (*x9_01)(loc98 + i1,x21);
     skp12_FUN_003510d0(STK);
     av13 = skp12_FUN_0009e234();
-    (*x8_12)(av13,(0u /* hi: unspecified */),l3);
+    (*x8_12)(av13.lo,av13.hi,l3);
     (*x19)(loc50 + (int64_t)*(int *)(x1 + 0x24),loc98 + *(int *)(l3 + 0x30),
                  x21);
     skp12_FUN_00100efc();

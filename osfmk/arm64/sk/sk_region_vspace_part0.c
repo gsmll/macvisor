@@ -2969,7 +2969,10 @@ void skp0_sk_node_config(word_t param_1,word_t param_2,word_t param_3)
  * Node release helper: runtime prologue, resolves object slots, calls the table-update dispatch, ends with a cleanup.
  * Confidence: medium
  * Notes: mechanical decompiler transcription; out-of-scope runtime calls are rt_<addr> externs.
- *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body. */
+ *   Check for skp0_SoftwareBreakpoint traps / unrecovered-jumptable artifacts in the body.
+ * VB2-verified: call-for-call, arg-for-arg 1:1 vs FUN_0020373c. Confidence kept
+ *   medium: register-forwarding (extraout_x8/x16, unaff_x19/x30, in_x3) gives
+ *   opaque indirect-call targets (outx8/outx16) not expressible in C. */
 void skp0_sk_node_release(void)
 {
 

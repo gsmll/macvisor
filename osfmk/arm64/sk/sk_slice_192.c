@@ -301,7 +301,7 @@ extern word_t sk_h_00464874();
 extern word_t sk_h_004648c4();
 extern word_t sk_h_004648fc();
 extern word_t sk_h_00464930();
-extern word_t sk_h_0046493c();
+extern sk16_t sk_h_0046493c();
 extern word_t sk_h_00464978();
 extern word_t sk_h_0046499c();
 extern word_t sk_h_004649d8();
@@ -391,7 +391,7 @@ extern word_t sk_h_004661f0();
 extern word_t sk_h_00466208();
 extern word_t sk_h_00466214();
 extern word_t sk_h_0046622c();
-extern word_t sk_h_00466238();
+extern sk16_t sk_h_00466238();
 extern word_t sk_h_00466250();
 extern word_t sk_h_00466270();
 extern word_t sk_h_0046627c();
@@ -423,7 +423,9 @@ extern sk16_t sk_h_00077888();
  * type-check; CONCAT* values are only compared/OR-ed in the source). */
 static inline word_t SCARRY8(word_t a, word_t b, ...){ (void)a;(void)b; return 0; }
 static inline word_t SBORROW8(word_t a, word_t b, ...){ (void)a;(void)b; return 0; }
+static inline word_t SBORROW4(word_t a, word_t b, ...){ (void)a;(void)b; return 0; }
 static inline word_t ZEXT416(word_t x){ return x; }
+static inline word_t ZEXT516(word_t x){ return x; }
 static inline word_t ZEXT816(word_t x){ return x; }
 static inline word_t ZEXT824(word_t x){ return x; }
 static inline word_t ZEXT832(word_t x){ return x; }
@@ -467,7 +469,7 @@ word_t sk_f_0041a9e4(byte* op);
 void sk_f_0041aab4(void);
 void sk_f_0041ab70(void);
 void sk_f_0041abcc(void);
-void sk_f_0041ac6c(word_t param_1, byte param_2, word_t param_3, word_t param_4);
+void sk_f_0041ac6c(byte *param_1, byte param_2, word_t param_3, word_t param_4);
 void sk_f_0041acb4(void);
 void sk_f_0041ad20(void);
 void sk_f_0041adbc(word_t param_1);
@@ -531,7 +533,7 @@ uint sk_f_0041cb8c(word_t param_1, word_t* param_2);
 uint sk_f_0041cc48(word_t param_1, word_t* param_2);
 sk16_t sk_f_0041cc98(void);
 void sk_f_0041cd40(void);
-void sk_f_0041cf18(word_t param_1, word_t param_2, long param_3, word_t param_4, long param_5, long param_6, long param_7, word_t param_8);
+word_t sk_f_0041cf18(word_t param_1, word_t param_2, long param_3, word_t param_4, long param_5, long param_6, long param_7, word_t param_8);
 void sk_f_0041d070(void);
 void sk_f_0041d14c(byte param_1, long param_2, long param_3, long param_4);
 void sk_f_0041d180(word_t param_1, word_t param_2, long param_3, word_t param_4, uint param_5, word_t param_6, word_t param_7, long* param_8);
@@ -565,7 +567,7 @@ sk16_t sk_f_004292ac(word_t param_1, word_t param_2, word_t param_3, word_t para
 sk16_t sk_f_00429398(word_t param_1, word_t param_2, word_t param_3);
 void sk_f_00429430(word_t param_1, word_t param_2, word_t param_3, word_t param_4);
 void sk_f_00429984(word_t param_1, word_t param_2, word_t param_3, word_t param_4, word_t param_5, word_t param_6, word_t param_7, word_t param_8);
-void sk_f_00429ed8(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f, word_t g, word_t h);
+void sk_f_00429ed8(byte (*param_1)[16], byte *param_2, long param_3, word_t param_4, word_t param_5);
 uint sk_f_0042a8d0(word_t param_1, word_t param_2);
 void sk_f_0042ac28(void);
 void sk_f_0042aca4(void);
@@ -1357,7 +1359,7 @@ void sk_f_0041abcc(void){
  * 
  * Confidence: medium
  * Notes:  */
-void sk_f_0041ac6c(word_t param_1, byte param_2, word_t param_3, word_t param_4){
+void sk_f_0041ac6c(byte *param_1, byte param_2, word_t param_3, word_t param_4){
   sk_h_002298d4(param_2);
   sk_h_002298d4(param_3 >> 0xe);
   sk_h_002298d4(param_4 >> 0xe);
@@ -1862,7 +1864,7 @@ void sk_f_0041b6f4(void){
   byte  l_68 [72];
   
   sk_h_004080b0();
-  sk_f_0041b3d4(l_68, *ctx, ctx[1], ctx[2], ctx[3]);
+  sk_f_0041b3d4((word_t)l_68, *ctx, ctx[1], ctx[2], ctx[3]);
   sk_h_00465234(ctx[4]);
   sk_h_00464eb0();
   sk_h_001a8564();
@@ -2353,7 +2355,7 @@ void sk_f_0041bd68(byte (*param_1)[16]){
   sk16_t sv1;
   
   sv1 = (sk16_t){ sk_h_0044bd08(), 0 };
-  *param_1 = sv1;
+  *(sk16_t *)param_1 = sv1;
   return;
 }
 
@@ -2494,7 +2496,7 @@ void sk_f_0041c0c0(void){
   sk16_t sv9;
   
   sv9 = (sk16_t){ sk_h_00466568(), 0 };
-  pv1 = sv9.lo;
+  pv1 = (word_t *)sv9.lo;
   sk_h_00458da0(pv1,(word_t*)l_sk_stack);
   sk_h_004578dc(sk_h_00455f60,sk_h_000722b0,sk_h_00456858,sk_h_0045636c);
   sk_h_00463708();
@@ -3172,7 +3174,7 @@ void sk_f_0041cd40(void){
  * 
  * Confidence: medium
  * Notes:  */
-void sk_f_0041cf18(word_t param_1, word_t param_2, long param_3, word_t param_4, long param_5, long param_6, long param_7, word_t param_8){
+word_t sk_f_0041cf18(word_t param_1, word_t param_2, long param_3, word_t param_4, long param_5, long param_6, long param_7, word_t param_8){
   word_t  v1;
   word_t  v2;
   byte  v3;
@@ -3239,9 +3241,9 @@ LAB_0041d034:
     }
     v5 = v5 & 1;
   }
-LAB_0041d038:
+ LAB_0041d038:
   sk_h_00084234(v5,out8);
-  return;
+  return v5;
 }
 
 /* FUN_0041d070 @ 0x0041d070   (est. sk_f_0041d070)
@@ -3519,7 +3521,7 @@ void sk_f_0041d430(word_t param_1, word_t param_2, word_t param_3, word_t param_
   l_68 = 0;
   l_58 = 0xe000000000000000;
   sk_h_00463600();
-  sk_f_0041d4a4(l_88, (word_t)0, (word_t)0, (word_t)0, (word_t)0);
+  sk_f_0041d4a4((long)l_88, (word_t)0, (word_t)0, (word_t)0, (word_t)0);
   l_60 = 0;
   l_58 = 0xe000000000000000;
   sk_h_004590e0(l_88);
@@ -3672,7 +3674,7 @@ sk16_t sk_f_0041d778(void){
   sk16_t sv1;
   long  ctx;
   
-  sv1 = *(byte  (*) [16])(ctx + 0x28);
+  sv1 = *(sk16_t *)(ctx + 0x28);
   *(word_t *)(ctx + 0x28) = 0;
   *(word_t *)(ctx + 0x30) = 0xe000000000000000;
   return sv1;
@@ -6601,7 +6603,7 @@ LAB_00429d88:
     v6 = sv13.lo;
     sk_h_003a25d4(in_stack_000000a0);
     sv13 = (sk16_t){ sk_h_003512c0(), 0 };
-    sk_f_00429ed8(sv13.lo,sv13.hi,param_5,param_6,ctx,param_7,param_8,v4);
+    sk_f_00429ed8((byte (*)[16])sv13.lo, (byte *)sv13.hi, param_5, param_6, ctx);
     v5 = in_stack_00000058;
     v10 = in_stack_00000050;
     v11 = l_sk_stack;
@@ -6623,7 +6625,7 @@ LAB_00429d88:
         sk_h_003534e0();
         sk_h_003a25d4(v9);
         sv13 = (sk16_t){ sk_h_00350738(), 0 };
-        sk_f_00429ed8(sv13.lo,sv13.hi,param_5,param_6,ctx,param_7,param_8,v4);
+        sk_f_00429ed8((byte (*)[16])sv13.lo, (byte *)sv13.hi, param_5, param_6, ctx);
         sk_h_003a25d4(0xff);
         in_stack_00000068 = -1;
         sk_h_003a25d4(param_6);
@@ -6682,7 +6684,7 @@ LAB_00429c04:
  * 
  * Confidence: medium
  * Notes:  */
-void sk_f_00429ed8(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f, word_t g, word_t h){
+void sk_f_00429ed8(byte (*param_1)[16], byte *param_2, long param_3, word_t param_4, word_t param_5){
   code_t  *pcVar1;
   byte  v2;
   bool  b3;
@@ -6757,7 +6759,7 @@ void sk_f_00429ed8(word_t a, word_t b, word_t c, word_t d, word_t e, word_t f, w
         sk_f_00429020();
         sv10 = (sk16_t){ sk_h_0035292c(), 0 };
         if (!(bool )v2) {
-          *param_1 = sv10;
+          *(sk16_t *)param_1 = sv10;
           *(word_t *)param_1[1] = 0;
           *(word_t *)(param_1[1] + 8) = 0;
           v2 = 9;

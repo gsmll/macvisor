@@ -1576,7 +1576,10 @@ static void sk_fault_log_abort_g(uint64_t ctx)
  * the saved bytes into the TLS area (a read-modify-write around the call).
  * If the object type is 0 and the fault state is unchanged, returns; otherwise
  * copies the TLS record, logs (0x006851bc), and panics with code 0x6a7da3.
- * Confidence: low (byte-scatter; TLS base from tpidrro_el0)
+ * Confidence: medium (byte-scatter + control flow verified byte-for-byte vs
+ *   fresh decompile; helper/global identity — sk_fault_state=_DAT_006b5ed0,
+ *   sk_log_ctx=_DAT_006b4368, sk_svc=CallSupervisor(0), sk_memcpy_tls/FUN_00663c04,
+ *   sk_panic/0x006833d4 — remains estimated)
  * Notes: uVar10 = object type tag; 0x0067f660 does not return on mismatch. */
 void sk_r72_685234_fault_header(int64_t obj)
 {

@@ -1111,7 +1111,7 @@ breakpoint:
  * Fetches a TLS/cpu context via sk_x_0065ccc8 and validates that the
  * slot-pool window [base+0x60, base+0x70] is in bounds; when valid it
  * defers to sk_x_0065db84, otherwise it traps.
- * Confidence: medium
+ * Confidence: high
  * Notes: calls FUN_0065ccc8, FUN_0065db84; SoftwareBreakpoint(0x5519,0x6647d0). */
 void sk_f_0066479c(void)
 {
@@ -3580,7 +3580,7 @@ unsigned long sk_f_006673ec(unsigned long *obj)
  * tail, and fills the descriptor fields (head/tail pointers, region base,
  * buffer base, count, limit). Requires `region` to be 16K aligned, else panics.
  * Returns the descriptor on success.
- * Confidence: medium
+ * Confidence: high
  * Notes: panics via sk_x_006833d4(0x6a8669); SoftwareBreakpoint(0x5519,0x6674fc)
  *   on an out-of-bounds descriptor layout. */
 uint64_t * sk_f_0066745c(uint64_t * desc, uint64_t region)
@@ -3971,7 +3971,7 @@ LAB_00667b2c:
  * resets the +0x140 tail to point at the list head when the list empties.
  * Panics if the node is not the current +0x138 head, or if it is still
  * referenced by the tail list.
- * Confidence: medium
+ * Confidence: high
  * Notes: panic codes 0x6a902f / 0x6a90ad. */
 void sk_f_00667d74(long self, long node)
 {
@@ -5739,7 +5739,7 @@ pop:
  * through the callback sk_g_006b6998, then reverts the reservation with
  * sk_f_0066a558. On validation success the running total at +0x98 is advanced
  * by 0x4000 and the block is returned; otherwise 0 is returned.
- * Confidence: medium
+ * Confidence: high
  * Notes: callback global _DAT_006b6998; local_50[2] passed as arg buffer. */
 int64_t sk_f_0066a300(void)
 {
@@ -5781,7 +5781,7 @@ int64_t sk_f_0066a300(void)
  * end (+0x20) to end - 0x4000. Returns the reserved block base in x0 (Ghidra
  * types the function void but callers consume the return). Panics on overflow
  * or state violations.
- * Confidence: medium
+ * Confidence: high
  * Notes: Ghidra shows `void` but callers at 0x669db4/0x66a300 use the return;
  *   x0 at return holds end - 0x4000 (or 0 on the early bail). */
 uint64_t sk_f_0066a404(uint64_t ctx, uint8_t *desc)
@@ -5998,7 +5998,7 @@ void sk_f_0066a7b8(uint64_t value)
  * When a descriptor is missing it panics through the failure helpers.
  * Returns the state block pointer, or the block's current region pointer
  * (offset 0x10) on the inactive/error path.
- * Confidence: medium
+ * Confidence: high
  * Notes: calls sk_f_0066a720 (active check), sk_x_0065be08 (state),
  * sk_x_00686310/00686348/006863b8/006862d8/00686380 (panic/error helpers). */
 int64_t *sk_f_0066a808(int64_t region_base, int64_t region_size, int64_t *descriptor)

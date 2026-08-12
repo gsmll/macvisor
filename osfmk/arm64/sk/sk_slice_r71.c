@@ -1750,7 +1750,7 @@ static word_t sk_prf_method_38(long ctx, word_t p2, word_t p3, word_t p4)
  * State-machine transition: if the 2-byte state at +0x50 is 2 and the low
  * nibble of the byte at +0x58 is set, runs the GF multiply (FUN_00681538)
  * over the 16 bytes at ctx+0x10 and moves to state 3.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12)
  */
 static void sk_prf_state_advance(long ctx)
 {
@@ -2717,38 +2717,75 @@ static void sk_alloc_extend(word_t lo, word_t hi)
 
 /* FUN_006825d0 @ 0x006825d0  (est. sk_free_list_insert)
  * Ghidra: void FUN_006825d0(undefined8 *node)
- * Inserts a free block into the coalescing free list, merging it with any
- * adjacent free block (by address) so the list stays sorted and compact.
- * Traps at 0x682738 on list corruption.
- * Confidence: low
+ * Inserts free block `node` into the coalescing free list, keeping the list
+ * sorted by address and merging `node` with its adjacent free blocks (the
+ * successor after it, then the predecessor before it) so the list stays
+ * compact. The list is headed by a sentinel node at 0x6fec20 whose next field
+ * (_DAT_006fec20) points to itself and whose length (_DAT_006fec28) is 0;
+ * sk_alloc_free_head (_DAT_006fec08) is the rotating cursor that always holds
+ * the block preceding the next insertion point. On the first insert the
+ * sentinel is initialised. Free blocks are {next, len} pairs and a block's
+ * extent is base + len*2*8, so two blocks are contiguous when
+ * base + len*0x10 == neighbour. Traps at 0x682738 on list/range corruption;
+ * a duplicate (already-present) insert is reported by FUN_00682784 and then
+ * fatals via FUN_0065c288 (noreturn). The bounds checks around each pointer
+ * update validate node's range [node[1]..node[2]].
+ * Confidence: low -> medium (list/coalesce mechanics faithful to the
+ *   decompile; block metadata layout {next,len} and the sentinel/cursor
+ *   roles are estimated from context).
  */
 static void sk_free_list_insert(word_t *node)
 {
-    word_t *head = (word_t *)sk_alloc_free_head;
-    word_t *cur, *next;
-    if (head == NULL) {
-        sk_free_list_sentinel_next = 0x6fec20;
-        sk_free_list_sentinel_len = 0;
-        head = (word_t *)0x6fec20;
-        sk_alloc_free_head = (void *)0x6fec20;
+    word_t *head, *cur, *prev;
+    word_t *nx, *hi;
+
+    if (sk_alloc_free_head == NULL) {
+        *(word_t *)sk_free_list_sentinel = sk_free_list_sentinel;  /* _DAT_006fec20 = &sentinel */
+        *(word_t *)(sk_free_list_sentinel + 8) = 0;                /* _DAT_006fec28 = 0 */
+        head = (word_t *)sk_free_list_sentinel;
+        sk_alloc_free_head = (void *)sk_free_list_sentinel;
     }
-    cur = node;
-    next = (word_t *)*node;
-    for (;;) {
-        /* walk to find the sorted position, merging adjacent blocks */
-        if (cur == head) cL4_alloc_fatal();
-        /* merge with next if contiguous */
-        if (cur + cur[1] * 2 == next) {
-            cur[1] = next[1] + cur[1];
-            next = (word_t *)*next;
+    nx = (word_t *)*node;                    /* node->next */
+    cur = (word_t *)sk_alloc_free_head;      /* start search at the cursor */
+    do {
+        prev = cur;
+        /* found insertion point when prev < node < cur(=*prev) */
+        if ((prev < nx) && (cur = (word_t *)*prev, nx < cur)) break;
+        if (prev == nx) {
+            /* duplicate insert — node already on the list: report + fatal */
+            sk_oom();       /* FUN_00682784 report; FUN_0065c288 fatal (noreturn) */
         }
-        *cur = (word_t)next;
-        /* merge with previous if contiguous */
-        if ((word_t *)((byte *)cur - cur[1] * 0x10) == cur) {
-            break;
-        }
+        cur = (word_t *)*prev;
+    } while (prev < cur || (nx <= prev && cur <= nx));
+
+    hi = (word_t *)node[2];                  /* node's high bound (range guard) */
+    if ((word_t *)node[1] < nx + 2 || nx < hi) goto trap_682738;
+    if (nx + nx[1] * 2 == cur) {             /* node abuts successor: merge */
+        nx[1] = cur[1] + nx[1];
+        nx = (word_t *)*node;
+        if ((word_t *)node[1] < nx + 2 || nx < hi) goto trap_682738;
         cur = (word_t *)*cur;
     }
+    *nx = (word_t)cur;                       /* node->next = successor */
+    nx = (word_t *)*node;
+    if (prev + prev[1] * 2 == nx) {          /* node abuts predecessor: merge */
+        hi = (word_t *)node[2];
+        if ((word_t *)node[1] < nx + 2 || nx < hi) goto trap_682738;
+        prev[1] = nx[1] + prev[1];
+        nx = (word_t *)*node;
+        if ((word_t *)node[1] < nx + 2 || nx < hi) goto trap_682738;
+        nx = (word_t *)*nx;
+    } else if ((nx != (word_t *)0x0) &&
+               (nx + 2 < nx || (word_t *)node[1] < nx + 2 ||
+                nx < (word_t *)node[2])) {
+        goto trap_682738;
+    }
+    *prev = (word_t)nx;                      /* predecessor->next = node(merged) */
+    if (prev <= prev + 2) {
+        sk_alloc_free_head = (void *)prev;   /* _DAT_006fec08 = prev (new cursor) */
+        return;
+    }
+trap_682738:
     CL4_SW_BP(0x682738);
 }
 

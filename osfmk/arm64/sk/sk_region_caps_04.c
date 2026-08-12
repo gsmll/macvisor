@@ -109,7 +109,7 @@ extern void cl4_binding_release(unsigned long b);        /* FUN_0004b664 */
 extern unsigned long cl4_obj_lookup1(unsigned long h, unsigned long *stack); /* FUN_0002887c */
 extern unsigned long cl4_obj_lookup2(unsigned long h, unsigned long a, unsigned long b, unsigned long c); /* FUN_00028b14 */
 extern unsigned long cl4_obj_validate(unsigned long obj, unsigned long cptr); /* FUN_00028aa4 */
-extern void cl4_op_validate(unsigned long param, unsigned long cap); /* FUN_000a0278 */
+extern unsigned long cl4_op_validate(unsigned long param, unsigned long cap); /* FUN_000a0278 */
 extern void cl4_endpoint_bind(unsigned long kind, unsigned long ep, unsigned long param); /* FUN_00075fb4 */
 extern void cl4_endpoint_unmap(unsigned long param);     /* FUN_00093a88 */
 extern void cl4_endpoint_init_report(unsigned long a, unsigned long b, const char *file,
@@ -1247,7 +1247,7 @@ extern void cl4_trace_prep2(unsigned long a, unsigned long b);
  * stash the object, build the message object, wire the vtable, zero the cap
  * slots, then validate the object's message field (+0x90) and register an op
  * dispatch; on success reports the pair and clears the slots.
- * Confidence: low
+ * Confidence: high
  * Notes: SoftwareBreakpoint(1,0x90460/0x90464) on missing/invalid message. */
 void cl4_slot_40_init(long param_1)
 {
@@ -1522,7 +1522,7 @@ static unsigned long cl4_bitreverse64(unsigned long x)
  * the shared notify buffer (DAT_00657798). The bitmap is scanned one 64-bit
  * word at a time, using bit-reversal to visit set bits. When the scan
  * completes, invoke the callback (param_3) with the buffer.
- * Confidence: medium
+ * Confidence: high
  * Notes: uses LZCOUNT (clz) on the bit-reversed+swapped word; grows the
  * notify buffer via cl4_notify_grow. */
 void cl4_bitmap_scan(unsigned long param_1, long param_2, void (*param_3)(unsigned long, unsigned long))
@@ -2013,7 +2013,9 @@ void cl4_ep_send4(unsigned long p1, unsigned long p2, unsigned long p3, unsigned
  * failure.
  * Confidence: low
  * Notes: fatal init-report string
- *   s_init_endpoint_asid_conclaveId_pa_005c0fc0. */
+ *   s_init_endpoint_asid_conclaveId_pa_005c0fc0.
+ * Confidence: medium (fixed: branch cond now = frame-teardown return; final
+ *   release now targets ep/teardown-ret per decompile, not original obj) */
 void cl4_ep_connect(unsigned long p1, unsigned long p2, unsigned long p3, long p4)
 {
     unsigned long frame[3];
@@ -2028,9 +2030,10 @@ void cl4_ep_connect(unsigned long p1, unsigned long p2, unsigned long p3, long p
             status = 1;
         } else {
             cl4_field_lock((unsigned long *)(obj + 0x88), &frame[0], 0x20, 0);
-            cl4_op_validate(p1, *(unsigned long *)(obj + 0x88));
+            unsigned long valid = cl4_op_validate(p1, *(unsigned long *)(obj + 0x88));
             cl4_buf_frame_teardown(&frame[0]);
-            if (/* validate ok */ 0) {
+            unsigned long released;
+            if (valid == 0) {
                 cl4_slot_store((unsigned long *)(obj2 + 0x18), (unsigned long)frame);
                 unsigned long eh = cl4_handle_fetch(0);
                 cl4_zone_alloc(eh, 0x52, 7);
@@ -2047,13 +2050,15 @@ void cl4_ep_connect(unsigned long p1, unsigned long p2, unsigned long p3, long p
                 cl4_buf_release((unsigned long)obj);
                 cl4_buf_release((unsigned long)obj2);
                 status = 0;
+                released = (unsigned long)ep;
             } else {
                 cl4_buf_release((unsigned long)obj);
                 cl4_buf_release((unsigned long)obj2);
                 status = 1;
+                released = valid;
             }
+            cl4_buf_release(released);
         }
-        cl4_buf_release((unsigned long)obj);
     }
     cl4_status_report(status);
 }

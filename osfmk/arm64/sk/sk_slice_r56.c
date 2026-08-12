@@ -738,7 +738,7 @@ void sk_r56_003d9f0c(unsigned long param_1, unsigned long param_2, unsigned long
     sk_r56_00407924();
     v4 = sk_r56_00406420();
     if (carry) {
-        i2 = *((int*)ctx+0x158);
+        i2 = *((int*)((char*)ctx + 0x158));
         l6 = ctx[4];
         sk_r56_0040711c(ctx[11],v4,ctx[10]);
         (*rx9)();
@@ -2983,7 +2983,7 @@ void sk_r56_003defbc()
         /* WARNING: Could not recover jumptable at 0x003df078. Too many branches */ /* WARNING: Treating indirect jump as call */ (*UNRECOVERED_JUMPTABLE_00)();
         return;
     }
-    pi9 = *(int **)(ctx + 0x20);
+    pi9 = *(int **)((char*)ctx + 0x20);
     sk_r56_00406bd4(ctx[16],ctx[17]);
     (*rx9_00)();
     UNRECOVERED_JUMPTABLE = (unsigned long(*)())((unsigned long(*)())((long)pi9 + (long)*pi9));
@@ -3120,7 +3120,7 @@ void sk_r56_003df748()
         /* WARNING: Could not recover jumptable at 0x003df7f8. Too many branches */ /* WARNING: Treating indirect jump as call */ (*UNRECOVERED_JUMPTABLE_00)();
         return;
     }
-    pi9 = *(int **)(ctx + 0x20);
+    pi9 = *(int **)((char*)ctx + 0x20);
     sk_r56_00406bd4(ctx[14],ctx[15]);
     (*rx9_00)();
     UNRECOVERED_JUMPTABLE = (unsigned long(*)())((unsigned long(*)())((long)pi9 + (long)*pi9));
@@ -3825,7 +3825,7 @@ void sk_r56_003e1550()
         /* WARNING: Could not recover jumptable at 0x003e15f4. Too many branches */ /* WARNING: Treating indirect jump as call */ (*UNRECOVERED_JUMPTABLE_00)();
         return;
     }
-    ((unsigned long(*)())(ctx[9] + 8))(ctx[10],ctx[8]);
+    ((unsigned long(*)())(*(unsigned long *)(ctx[9] + 8)))(ctx[10],ctx[8]);
     sk_r56_004062a8(ctx[18]);
     sk_r56_0040bb18(*((int*)((char*)rx8_00 + 4)));
     p5 = (unsigned long *)sk_r56_00406fe0();
@@ -3977,7 +3977,7 @@ void sk_r56_003e1c00()
         /* WARNING: Could not recover jumptable at 0x003e1ca4. Too many branches */ /* WARNING: Treating indirect jump as call */ (*UNRECOVERED_JUMPTABLE_00)();
         return;
     }
-    ((unsigned long(*)())(ctx[9] + 8))(ctx[10],ctx[8]);
+    ((unsigned long(*)())(*(unsigned long *)(ctx[9] + 8)))(ctx[10],ctx[8]);
     sk_r56_004062a8(ctx[18]);
     sk_r56_0040bb18(*((int*)((char*)rx8_00 + 4)));
     p5 = (unsigned long *)sk_r56_00406fe0();
@@ -4807,7 +4807,7 @@ void sk_r56_003e37c8(unsigned long param_1, unsigned long param_2, unsigned long
     sk_r56_00407aac();
     v4 = sk_r56_00406420();
     if (carry) {
-        i2 = *((int*)ctx+0xc0);
+        i2 = *((int*)((char*)ctx + 0xc0));
         l6 = ctx[4];
         sk_r56_0040711c(ctx[15],v4,ctx[14]);
         (*rx9)();
@@ -5011,7 +5011,7 @@ void sk_r56_003e3e28()
     sk_r56_0040700c();
     ctx[26] = (unsigned long)(ctx);
     i3 = *((int*)((char*)ctx[5] + 0x30));
-    *((int*)ctx+0x100) = i3;
+    *((int*)((char*)ctx + 0x100)) = i3;
     b2 = *((unsigned char*)((char*)ctx[6] + i3));
     *((unsigned char*)ctx+0x104) = b2;
     if ((b2 & 1) != 0) {
@@ -5070,7 +5070,7 @@ void sk_r56_003e4048(unsigned long param_1, unsigned long param_2, unsigned long
     sk_r56_0040700c();
     v4 = sk_r56_00406420();
     if (carry) {
-        i2 = *((int*)ctx+0x100);
+        i2 = *((int*)((char*)ctx + 0x100));
         l6 = ctx[6];
         sk_r56_0040711c(ctx[20],v4,ctx[19]);
         (*rx9)();
@@ -5309,7 +5309,7 @@ void sk_r56_003e488c()
     sk_r56_0040700c();
     ctx[13] = (unsigned long)(ctx);
     i3 = *((int*)((char*)ctx[3] + 0x28));
-    *((int*)ctx+0xa8) = i3;
+    *((int*)((char*)ctx + 0xa8)) = i3;
     b2 = *((unsigned char*)((char*)ctx[4] + i3));
     *((unsigned char*)ctx+0xb0) = b2;
     if ((b2 & 1) != 0) {
@@ -5322,7 +5322,7 @@ void sk_r56_003e488c()
         return;
     }
     i3 = *((int*)((char*)ctx[3] + 0x2c));
-    *((int*)ctx+0xac) = i3;
+    *((int*)((char*)ctx + 0xac)) = i3;
     b2 = *((unsigned char*)((char*)ctx[4] + i3));
     l1 = ctx[6];
     sk_r56_0040652c();
@@ -6159,7 +6159,7 @@ void sk_r56_003e64e0()
     sk_r56_0040700c();
     ctx[20] = (unsigned long)(ctx);
     i4 = *((int*)((char*)ctx[5] + 0x28));
-    *((int*)ctx+0xe0) = i4;
+    *((int*)((char*)ctx + 0xe0)) = i4;
     b3 = *((unsigned char*)((char*)ctx[6] + i4));
     *((unsigned char*)ctx+0xe4) = b3;
     if ((b3 & 1) != 0) {

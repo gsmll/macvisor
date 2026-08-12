@@ -1969,7 +1969,7 @@ void sk_vspace_0020a05c(undefined8 p1,undefined8 p2)
 
 /* skp1_FUN_0020a084 @ 0x0020a084   (est. sk_vspace_0020a084)
  * Ghidra: void skp1_FUN_0020a084(undefined8 param_1,undefined8 param_2,undefined8 *param_3,undefined8 *param_4)
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12; disasm shows only x0->x2 passed to no-op FUN_003488f4, pair hi word correctly unused)
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
  */
 void sk_vspace_0020a084(undefined8 p1,undefined8 p2,undefined8 *p3,undefined8 *p4)
@@ -3540,6 +3540,9 @@ void sk_vspace_0020c634(undefined8 p1,undefined8 p2,undefined8 p3,undefined8 p4)
  * Ghidra: void skp1_FUN_0020c6c8(void)
  * Confidence: medium
  * Notes: Swift-object-model vspace/page-table method. See part-file header.
+ * VB2-verified: call-for-call, arg-for-arg 1:1 vs FUN_0020c6c8. Confidence kept
+ *   medium: register-forwarding (extraout_x8/x9/x10/x16, unaff_x19/x27) yields
+ *   opaque indirect-call targets (eox9/eox10/eox8_00) not expressible in C.
  */
 void sk_vspace_0020c6c8(void)
 

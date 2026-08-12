@@ -4230,7 +4230,7 @@ word_t sk_swift_utf8_check(long a, long b, long c)
  * Confidence: medium */
 long sk_swift_utf8_scanfwd(long a, long b, word_t c)
 {
-    unsigned char *p, b0;
+    unsigned char *p, b0, b3;
     uint v;
     word_t u;
     long off;
@@ -4253,14 +4253,16 @@ long sk_swift_utf8_scanfwd(long a, long b, word_t c)
                 v = (uint)b0;
                 switch ((int)LZCOUNT((int)b0 << 0x18 ^ 0xffffffff)) {
                 default: goto skip;
-                case 2: v = (v & 0x1f) << 6; break;
-                case 3: v = (v & 0xf) << 0xc | (p[1] & 0x3f) << 6; break;
-                case 4: v = (v & 0xf) << 0x12 | (p[1] & 0x3f) << 0xc | (p[2] & 0x3f) << 6;
+                /* decompile advances pbVar3 = pcVar6+1/+2/+3 per case; the byte
+                   OR'd into rt_003d3550 is *pbVar3, not *p (pcVar6). */
+                case 2: v = (v & 0x1f) << 6; b3 = p[1]; break;
+                case 3: v = (v & 0xf) << 0xc | (p[1] & 0x3f) << 6; b3 = p[2]; break;
+                case 4: v = (v & 0xf) << 0x12 | (p[1] & 0x3f) << 0xc | (p[2] & 0x3f) << 6; b3 = p[3]; break;
                 }
                 if (v < 0x300) {
                     return off;
                 }
-                u = rt_003d3550(v | *p & 0x3f).lo;
+                u = rt_003d3550(v | b3 & 0x3f).lo;
                 if ((u & 0x7fe) == 0) {
                     return off;
                 }
@@ -6255,8 +6257,9 @@ void sk_ubp_init_short2(word_t a, word_t b)
     }
     if ((b >> 0x3c & 1) == 0) {
         if ((a >> 0x3c & 1) != 0) {
-            t.lo = a & 0xffffffffffff;
-            t.hi = (b & 0xfffffffffffffff) + 0x20;
+            /* decompile: auVar4._8_8_ (=hi)=param_1&mask; _0_8_ (=lo)=(param_2&mask)+0x20 */
+            t.hi = a & 0xffffffffffff;
+            t.lo = (b & 0xfffffffffffffff) + 0x20;
             goto norm;
         }
     } else {
@@ -6749,7 +6752,7 @@ sk_u128_t sk_ubp_append_pair(word_t a, word_t b, word_t c, word_t d)
     rt_0036b270(v);
     sk_ubp_append_slice(u,v,t.lo >> 0x10,n);
     rt_003a25d4(v);
-    sk_ubp_merge(0,0);
+    sk_ubp_merge(c,d);        /* FUN_002a70d8(param_3,param_4) */
     t.lo = 0;
     t.hi = 0;
     r = rt_001d97b4(b,u,v);

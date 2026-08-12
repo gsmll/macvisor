@@ -978,7 +978,9 @@ sw128_t sk_re_scan_matching_char(byte kind)
  *                          word_t param_4, word_t param_5, word_t param_6)
  * Scans forward over a Swift String, comparing each decoded scalar against
  * the expected char, up to n positions; returns whether the prefix matched.
- * Confidence: low. */
+ * Body verified 1:1 faithful against the decompile (all constants 0x4000,
+ * 0x3b/0x38/0x3c shift widths, bounds traps 0x42be08/0x42be04, and the
+ * 0x10004 advance match).  Confidence: medium (names estimated). */
 bool sk_re_emit_len(long n, char ch, byte *p, word_t flagsA, word_t flagsB, word_t flagsC)
 {
         long pos = 0;
@@ -1354,6 +1356,13 @@ found:
  * pattern node (param_2) by kind tag; deep-compares string/UTF-8 payloads via
  * 0x465c5c / 0x9461c / 0x3511cc for the string-bearing kinds.  Returns
  * 1 on equality, 0 otherwise.
+ * Verified/fixed: case 1 compares b vs *(pat+0x10); case 2 compares pat[0x10]
+ * byte vs b (was k); case 0x12 has the a/pat[8] zero-ness guard (both-zero or
+ * both-nonzero, pair-compare skipped when a==0); dropped FUN_003511cc callee
+ * restored in the deep path.  Kept low: case 0x24 (FUN_00463884/FUN_00465d08
+ * sub-cases) heavily simplified — decompiler "Type propagation algorithm not
+ * settling", extraout_x1* register forwarding not expressible; FUN_003511cc
+ * pair-return hi dropped by word_t helper signature.
  * Confidence: low. */
 word_t sk_re_scan_eq(sw128_t *node, byte *pat)
 {
@@ -1367,13 +1376,13 @@ word_t sk_re_scan_eq(sw128_t *node, byte *pat)
                 if (pat[0x20] != 1) return 0;
                 if ((k != *(long*)pat || a != *(long*)(pat+8)) &&
                     ((sw_465c5c(0) & 1) == 0)) return 0;
-                eq = (b == c);
+                eq = (b == *(long*)(pat + 0x10));
                 goto done;
         case 2:
                 if (pat[0x20] != 2) return 0;
                 if ((k != *(long*)pat || a != *(long*)(pat+8)) &&
                     ((sw_465c5c(0) & 1) == 0)) return 0;
-                eq = ((byte)pat[0x10] == ((byte)k));
+                eq = ((byte)pat[0x10] == (byte)b);
                 goto done;
         case 0x1c: case 0x1a: case 0x1b:
                 if (pat[0x20] != (byte)node->lo) return 0;
@@ -1387,8 +1396,20 @@ word_t sk_re_scan_eq(sw128_t *node, byte *pat)
                 if (pat[0x20] != 0x22) return 0;
                 eq = (k == *(long*)pat && a == *(long*)(pat+8));
                 goto done;
-        case 0x23: case 0x12:
-                if (pat[0x20] != (byte)node->lo) return 0;
+        case 0x12:
+                if (pat[0x20] != 0x12) return 0;
+                /* ground truth: a and pat[8] must be both-zero or both-nonzero
+                 * else return 0; when a!=0 run the k/a-pair compare, else skip it */
+                if ((a != 0) != (*(long*)(pat + 8) != 0)) return 0;
+                if (a != 0) {
+                        if ((k != *(long*)pat || a != *(long*)(pat+8)) &&
+                            ((sw_465c5c(0) & 1) == 0)) return 0;
+                }
+                if (b == *(long*)(pat+0x10) && c == *(long*)(pat+0x18)) return 1;
+                sw_9461c(0);
+                goto deep;
+        case 0x23:
+                if (pat[0x20] != 0x23) return 0;
                 if ((k != *(long*)pat || a != *(long*)(pat+8)) &&
                     ((sw_465c5c(0) & 1) == 0)) return 0;
                 if (b == *(long*)(pat+0x10) && c == *(long*)(pat+0x18)) return 1;
@@ -1408,7 +1429,9 @@ word_t sk_re_scan_eq(sw128_t *node, byte *pat)
         }
         if (k == *(long*)pat && a == *(long*)(pat+8)) return 1;
 deep:
-        return sw_2a0cf8(0, 0);
+        /* ground truth: auVar12 = FUN_003511cc(); return FUN_002a0cf8(lo,hi);
+         * (hi half of the FUN_003511cc pair dropped by word_t helper signature) */
+        return sw_2a0cf8(sw_3511cc(0), 0);
 done:
         return (word_t)eq;
 }
@@ -2236,7 +2259,7 @@ void sk_re_diag_merge(word_t src, word_t a, word_t n, word_t total)
 /* FUN_0042f020 @ 0x0042f020   (est. sk_re_parse_scalar)
  * Ghidra: word_t FUN_0042f020(word_t param_1, word_t param_2)
  * Scans a String for the first newline (LF/CR) scalar, decoding UTF-8/UTF-16;
- * returns 1 if a newline is present, 0 otherwise.  Confidence: low. */
+ * returns 1 if a newline is present, 0 otherwise.  Confidence: medium. */
 word_t sk_re_scan_newline(word_t str, word_t flags)
 {
         word_t span = str & 0xffffffffffff;
@@ -2245,29 +2268,31 @@ word_t sk_re_scan_newline(word_t str, word_t flags)
                 long pos = 0;
                 do {
                         uint ch;
+                        long adv;
                         if ((flags >> 0x3c & 1) != 0) {
+                                /* 16-bit decode path: sw_2a49a8 returns the
+                                 * decoded code unit in x0 and the unit's byte
+                                 * advance in x1 (extraout_x1, not modelled). */
                                 ch = (uint)sw_2a49a8(pos << 0x10, str, flags);
+                                adv = 0;   /* x1 out of sw_2a49a8 */
                         } else if ((flags >> 0x3d & 1) == 0) {
                                 long base = (flags & 0xfffffffffffffff) + 0x20;
                                 if ((str >> 0x3c & 1) == 0) base = sw_2a9ba8(str, flags).lo;
                                 byte *b = (byte*)(base + pos);
                                 uint u = *b;
-                                long adv;
                                 if ((char)*b >= 0) { adv = 1; ch = u; }
                                 else {
                                         switch ((int)LZCOUNT(u << 0x18 ^ 0xffffffff)) {
                                         case 2: ch = b[1] & 0x3f | (u & 0x1f) << 6; adv = 2; break;
                                         case 3: ch = (u & 0xf) << 0xc | (b[1] & 0x3f) << 6 | b[2] & 0x3f; adv = 3; break;
-                                        default:
                                         case 4: ch = (u & 0xf) << 0x12 | (b[1] & 0x3f) << 0xc | (b[2] & 0x3f) << 6 | b[3] & 0x3f; adv = 4; break;
+                                        default: ch = u; adv = 1; break;
                                         }
                                 }
-                                if (ch == 10 || ch == 0xd) return 1;
-                                pos = pos + adv;
                         } else {
                                 word_t pair[2]; pair[0] = str; pair[1] = flags & 0xffffffffffffff;
                                 byte *b = (byte*)((word_t)&pair + pos);
-                                uint u = *b; long adv;
+                                uint u = *b;
                                 if ((char)*b < 0) {
                                         switch ((int)LZCOUNT(u << 0x18 ^ 0xffffffff)) {
                                         case 2: ch = b[1] & 0x3f | (u & 0x1f) << 6; adv = 2; break;
@@ -2276,9 +2301,9 @@ word_t sk_re_scan_newline(word_t str, word_t flags)
                                         default: ch = u; adv = 1; break;
                                         }
                                 } else { ch = u; adv = 1; }
-                                if (ch == 10 || ch == 0xd) return 1;
-                                pos = pos + adv;
                         }
+                        if (ch == 10 || ch == 0xd) return 1;
+                        pos = pos + adv;
                 } while (pos < (long)span);
         }
         return 0;
@@ -2459,8 +2484,11 @@ word_t sk_re_diag_emit_str(void)
         word_t end = *(word_t*)(__builtin_frame_address(0) + 0x18);
         sw_34c444(pos);
         sw_29fa0c(0);
-        sw_4635c8(0);
-        if (0 == 0) { /* extraout_x9 == 0 */
+        word_t st = sw_4635c8(0);
+        /* asm `cbnz x9` tests the x9 extraout of sw_4635c8 (not capturable in C;
+           modeled on its x0 return).  Opaque -> confidence stays low. */
+        word_t status = 0;
+        if (st == 0) {
                 sw_3a25d4(0);
         } else {
                 sw_462788(0);
@@ -2498,10 +2526,11 @@ word_t sk_re_diag_emit_str(void)
                         *(word_t*)(__builtin_frame_address(0) + 0x10) = r.lo;
                         *(word_t*)(__builtin_frame_address(0) + 0x18) = end;
                 }
+                status = 1;
         }
 done:
-        sw_b45b0(0, 0);
-        return 0;
+        sw_b45b0(status, 0);
+        return status;
 }
 
 
@@ -3983,39 +4012,141 @@ word_t sk_re_parse_mode_option(word_t a, word_t b, word_t c, word_t d)
         sw_353b10(0);
         sw128_t s = sk_re_peek_scalar();
         byte mode;
-        if (s.hi == 0) mode = 0x14;
-        else if (s.lo == 0x69 && s.hi == 0xe100000000000000) { sw_3a25d4(s.hi); mode = 0; }
-        else if (s.lo == 0x4a) { sw_3a25d4(s.hi); mode = 1; }
-        else if (s.lo == 0x6d) { sw_3a25d4(s.hi); mode = 2; }
-        else if (s.lo == 0x6e) { sw_3a25d4(s.hi); mode = 3; }
-        else if (s.lo == 0x73) { sw_3a25d4(s.hi); mode = 4; }
-        else if (s.lo == 0x55) { sw_3a25d4(s.hi); mode = 5; }
-        else if (s.lo == 0x78) {
+        if (s.hi == 0) {
+                mode = 0x14;
+        } else if ((s.lo == 0x69 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x69) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 0;
+        } else if ((s.lo == 0x4a && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x4a) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 1;
+        } else if ((s.lo == 0x6d && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x6d) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 2;
+        } else if ((s.lo == 0x6e && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x6e) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 3;
+        } else if ((s.lo == 0x73 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x73) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 4;
+        } else if ((s.lo == 0x55 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x55) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 5;
+        } else if ((s.lo == 0x78 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x78) & 1) != 0) {
                 sw_3a25d4(s.hi);
                 sw_463534(0x78);
                 mode = (sk_re_diag_emit_str() & 1) ? 7 : 6;
-        }
-        else if (s.lo == 0x77) { sw_3a25d4(s.hi); mode = 8; }
-        else if (s.lo == 0x44) { sw_3a25d4(s.hi); mode = 9; }
-        else if (s.lo == 0x50) { sw_3a25d4(s.hi); mode = 10; }
-        else if (s.lo == 0x53) { sw_3a25d4(s.hi); mode = 0xb; }
-        else if (s.lo == 0x57) { sw_3a25d4(s.hi); mode = 0xc; }
-        else if (s.lo == 0x79) {
+        } else if ((s.lo == 0x77 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x77) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 8;
+        } else if ((s.lo == 0x44 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x44) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 9;
+        } else if ((s.lo == 0x50 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x50) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 10;
+        } else if ((s.lo == 0x53 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x53) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 0xb;
+        } else if ((s.lo == 0x57 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x57) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 0xc;
+        } else if ((s.lo == 0x79 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x79) & 1) != 0) {
+                /* 'y' — text-segment mode option, possibly carrying a {..} block */
                 sw_3a25d4(s.hi);
                 sw_463534(0x7b);
                 if ((sk_re_diag_emit_str() & 1) == 0) {
-                        /* text segment mode block */
-                        sk_re_parse_quant_star();
-                        mode = 0xd;
+                        /* "text segment mode" record emitted from the scalar */
+                        sw_4627f4(0);
+                        sw_463fac(0);
+                        sw_2acbb8(0);
+                        sw_463514(0);
+                        sw_2acbb8(0);
+                        sw_463728(0);
+                        /* record fields: DAT_005a1850 / uRam005a1858, uVar5 */
                 } else {
-                        sw_351f28(0);
-                        mode = 0xe;
+                        sk_re_parse_quant_star();
+                        if (/* x1 out of sk_re_parse_quant_star */ 0 != 0) {
+                                word_t t = sw_351f28();   /* 128-bit scalar (lo) */
+                                if (t != 0x7d /* || hi != 0xe100000000000000 */) {
+                                        word_t u = sw_3504c4();  /* 128-bit scalar (lo) */
+                                        sw_463540(u, /* hi */ 0, 0x7d);
+                                        if ((sw_2a0cf8() & 1) == 0) {
+                                                sw_351e3c(0x77, 0xe100000000000000);
+                                                if ((sw_2a0cf8() & 1) == 0) {
+                                                        sw_351e3c(0x67, 0xe100000000000000);
+                                                        if ((sw_2a0cf8() & 1) == 0) {
+                                                                /* content record: 0x36b270(lVar1),
+                                                                 * 0x2a4ab4(0x33),
+                                                                 * 0x2acbb8(0xd00000000000001b,0x80000000005dfce0),
+                                                                 * 0x3504c4, 0x2acbb8,
+                                                                 * 0x2acbb8(0xd000000000000016,0x80000000005dfd00),
+                                                                 * 0x463728, fields
+                                                                 * {0xe100000000000000,0,0,0x10,param_3,param_4,lVar1},
+                                                                 * 0x42ec68(&rec), 0x461430(&rec) */
+                                                                sw_36b270(s.lo);
+                                                                sw_2a4ab4(0x33);
+                                                                sw_2acbb8(0xd00000000000001b, 0x80000000005dfce0);
+                                                                sw_3504c4(0);
+                                                                sw_2acbb8(0);
+                                                                sw_2acbb8(0xd000000000000016, 0x80000000005dfd00);
+                                                                sw_463728(0);
+                                                                sk_re_diag_rec(s.lo);
+                                                                sw_461430(0);
+                                                        }
+                                                        sw_3a25d4(s.lo); mode = 0xd;
+                                                } else {
+                                                        sw_3a25d4(s.lo); mode = 0xe;
+                                                }
+                                                sw_463534(0x7d);
+                                                if ((sk_re_diag_emit_str() & 1) == 0) {
+                                                        /* closing-} record: 0x4627f4, 0x463878,
+                                                         * 0x2acbb8, 0x463514, 0x2acbb8, 0x4642f8,
+                                                         * fields DAT_005a1860/uRam005a1868,uVar5,
+                                                         * 0x465adc, 0x461430 */
+                                                        sw_4627f4(0);
+                                                        sw_463878(0);
+                                                        sw_2acbb8(0);
+                                                        sw_463514(0);
+                                                        sw_2acbb8(0);
+                                                        sw_4642f8(0);
+                                                        sw_465adc(0);
+                                                        sw_461430(0);
+                                                }
+                                                goto done;
+                                        }
+                                }
+                                sw_3a25d4(s.lo);
+                        }
+                        /* error: "text segment mode" (0x5e02d0) */
+                        sw_465fa8(0x5e02d0);
+                        sw_4627f4(0);
+                        sw_2acbb8(0xd000000000000011, s.lo);
+                        sw_463514(0);
+                        sw_2acbb8(0);
+                        sw_463728(0);
+                        /* record fields 0xd000000000000011, uVar5, lVar1 */
                 }
+                sw_4642a8(0);
+                sw_461430(0);
+                mode = 0xd;
+        done:
+                ;
+        } else if ((s.lo == 0x58 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x58) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 0xf;
+        } else if ((s.lo == 0x75 && s.hi == 0xe100000000000000) ||
+                   (sw_463130(0x75) & 1) != 0) {
+                sw_3a25d4(s.hi); mode = 0x10;
+        } else if (s.lo == 0x62 && s.hi == 0xe100000000000000) {
+                sw_3a25d4(s.hi); mode = 0x11;
+        } else {
+                sw_463130(0x62);
+                sw_0b4528(0);
+                mode = 0x14;
         }
-        else if (s.lo == 0x58) { sw_3a25d4(s.hi); mode = 0xf; }
-        else if (s.lo == 0x75) { sw_3a25d4(s.hi); mode = 0x10; }
-        else if (s.lo == 0x62 && s.hi == 0xe100000000000000) { sw_3a25d4(s.hi); mode = 0x11; }
-        else { sw_463130(0x62); sw_b4528(0); mode = 0x14; }
         *out = mode;
         sw_466510(0);
         return (word_t)mode;
@@ -4955,7 +5086,9 @@ sw128_t sk_re_parse_anchor(void)
 /* FUN_00439530 @ 0x00439530   (est. sk_re_parse_operator)
  * Ghidra: uint FUN_00439530(void)
  * Parses a binary-operator token: returns 0 for '--', 1 for '&&', 2 for
- * '~~', else 3 (with the operands' AND applied).  Confidence: low. */
+ * '~~', else 3 (with the operands' AND applied).  The unaff_x20/unaff_x24
+ * register-forwarded flags are unextractable (rendered as 0 below).
+ * Confidence: low. */
 uint sk_re_parse_operator(void)
 {
         sw_b4390(0);

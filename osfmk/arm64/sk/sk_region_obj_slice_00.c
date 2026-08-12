@@ -1142,7 +1142,11 @@ long FUN_00282bc0(uint32_t *out, long dest, long count, word_t src)
  * packed with its word index (idx = lz | word<<6).  Returns count of
  * bits collected; out-pair updated with (base,size,pos,bit).  Traps on
  * negative count / index-out-of-range.
- * Confidence: medium (Swift Set/bitmap enumeration).
+ * Confidence: high
+ * VB2-verified: 1:1 vs FUN_00282c40 (empty/zero-count/negative-count edges,
+ *   SCARRY8 break, nbits<=i1 bound, bitreverse+LZCOUNT fold, out[0..3] write).
+ *   sk_bitreverse64 (incl. final 32-bit-half swap) == decompile inline reverse
+ *   + LZCOUNT(uVar2>>0x20 | uVar2<<0x20).
  * Notes: SCARRY8 overflow -> SoftwareBreakpoint trap. */
 long FUN_00282c40(word_t *out, word_t *indices, long count, word_t *bits, long nbits)
 {
@@ -1326,7 +1330,9 @@ word_t FUN_00282e84(word_t *out, uint8_t *dest, word_t count, word_t lo, word_t 
  * (nbits+1) bits, then collects set-bit indices into out[] (idx =
  * LZCOUNT(bitreverse(bit)) | word<<6).  Returns count collected; updates
  * out-pair (base,size,pos,bit).  Traps on negative count / OOB.
- * Confidence: medium (Swift Set drain with bit-mask).
+ * Confidence: high
+ * VB2-verified: 1:1 vs FUN_00282f94 (low-(nbits+1)-bit mask ~(-1L<<((nbits+1)&0x3f)),
+ *   (nbits+0x40)>>6 loop bound, bitreverse+LZCOUNT fold, out[0..3] write).
  * Notes: bitreverse + LZCOUNT enumeration. */
 long FUN_00282f94(long *out, word_t *indices, long count, word_t *bits, long nbits)
 {

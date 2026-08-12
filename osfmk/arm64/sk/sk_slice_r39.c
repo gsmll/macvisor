@@ -1293,7 +1293,7 @@ uint64_t cL4_tb_aefb0(uint64_t *obj, uint64_t type, char *desc, uint64_t call) {
             if (9 < (int)code - 0x41) goto badval;
         }
         /* dispatch decoded reply to callback at (call+0x10) */
-        (void)call;
+        (*(void (**)(uint64_t, uint8_t *))(call + 0x10))(call, r);
         err = 0;
     }
     cL4_tb_msg_end(*obj, buf + 1);

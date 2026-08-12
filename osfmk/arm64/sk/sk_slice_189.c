@@ -324,7 +324,7 @@ void sk_vtable_dispatch_10(word_t *obj);
 void sk_vtable_dispatch_20(word_t *obj);
 
 /* ---- Tiny region helpers used before their definitions. ---- */
-word_t sk_task_local_store(word_t store, ...);
+word_t sk_task_local_store(word_t store);
 word_t sk_cont_buf_destroy(word_t buf, ...);
 
 long sk_ptr_offset_8(long p);
@@ -2860,8 +2860,9 @@ void sk_task_group_store2(word_t group, word_t result)
  * Tears down a task-local store: frees the value buffers (each 0x1000-byte
  * page via sk_free tag 7), advances the value pointer, and frees the key
  * buffer.  Returns the store.
- * Confidence: low */
-word_t sk_task_local_store(word_t store, ...)
+ * Confidence: high (verified 1:1 vs decompile+disasm; clean logic, no opaque
+ * register-forwarding) */
+word_t sk_task_local_store(word_t store)
 {
         word_t *p;
         word_t *end;

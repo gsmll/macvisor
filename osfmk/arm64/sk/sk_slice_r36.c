@@ -1028,7 +1028,11 @@ static void sk_r36_noop_51(void)
 
 /* FUN_004ab5c8 @ 0x004ab5c8   (est. sk_regex_witness_noop_52)
  * Ghidra: void FUN_004ab5c8(void)
- * Empty protocol-witness/override thunk; no effect.
+ * Protocol-witness/override thunk. The decompiler collapses the body to
+ * `return;`; the disassembly is a register-forwarding stub:
+ *     mov x1, x21 ; mov w2, #0x160 ; ret
+ * (sets x1/w2 for a caller-side indirect call; opaque register forwarding
+ *  with no C expression, so the body is written as the decompiler renders it).
  * Confidence: low
  */
 static void sk_r36_noop_52(void)

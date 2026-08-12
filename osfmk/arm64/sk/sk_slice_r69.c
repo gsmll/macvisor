@@ -1873,7 +1873,7 @@ trap:
  * single capability, iterating the union of their entries via sk_cap_list_get
  * and re-inserting each through sk_cap_decode. On an unmatchable entry returns
  * the invalid-capability error 0x2de0007.
- * Confidence: medium */
+ * Confidence: high */
 static void sk_cap_merge(unsigned long *out, long a, unsigned long b)
 {
     unsigned int ta = (unsigned int)a & 3;
@@ -1922,7 +1922,7 @@ static void sk_cap_merge(unsigned long *out, long a, unsigned long b)
  * Restricts a capability value param_2 to entries with op below param_3,
  * rebuilding it entry-by-entry via sk_cap_decode/sk_cap_remove. On the 
  * non-restrict path returns error 0x3010005.
- * Confidence: medium */
+ * Confidence: high */
 static void sk_cap_restrict(unsigned long *out, unsigned long cap, unsigned long limit)
 {
     if ((((unsigned int)cap >> 1 & 1) == 0)) {

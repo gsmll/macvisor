@@ -3708,7 +3708,7 @@ void sk_r31_49a4a4(long buf)
  * Ghidra: void FUN_0049a4b8(long)
  * Generic resize wrapper passing the 4-byte-element alloc (sk_r31_4982ac),
  * move (FUN_00071fe4) and done (FUN_00074a28) functions.
- * Confidence: low */
+ * Confidence: high */
 void sk_r31_49a4b8(long buf)
 {
     sk_r31_498e50(0, *(long *)(buf + 0x10), 0, buf,

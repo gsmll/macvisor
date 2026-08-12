@@ -946,10 +946,11 @@ write_out:
  * maps the contiguous region at param_2 (must be 16K-aligned) through the frame table,
  * following indirect/leaf entries (with __data slide) and returning 1 if any entry was
  * resolved, else 0. Handles both physical and indirect (pointer) descriptors.
- * Confidence: medium */
+ * Confidence: high (verified vs decompile 2026-08-12; FIXED loop-bound clobber:
+ *   bound uVar1 given its own var, no longer aliased by inner-loop mask=*q) */
 static unsigned long sk_vas_translate(long vas, unsigned long addr, long out_base)
 {
-    unsigned long i, slot, mask, mask2, stride;
+    unsigned long i, slot, mask, mask2, stride, bound;
     long base;
     unsigned short *idx;
     unsigned short count, total;
@@ -964,7 +965,7 @@ static unsigned long sk_vas_translate(long vas, unsigned long addr, long out_bas
         }
         if (addr < 0xffffffffffffc000) {
             mask2 = 0;
-            mask = addr + 0x4000;
+            bound = addr + 0x4000;      /* uVar1: loop bound, never modified */
             base = *(long *)(vas + 8);
             data = __data;
             if (_DAT_006bb920 == 0) {
@@ -1030,7 +1031,7 @@ have_ptr:
                 }
                 addr = i + base;
                 i = i + count;
-                if (mask <= addr) {
+                if (bound <= addr) {
                     return mask2;
                 }
             } while (1);

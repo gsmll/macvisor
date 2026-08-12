@@ -1924,7 +1924,10 @@ void skp3_FUN_002152b8(uint64_t param_1, uint64_t param_2, uint64_t param_3){
  * Ghidra: void skp3_FUN_00215428( void)
  * Swift stdlib runtime support embedded in the cL4 kernel.
  * Confidence: medium
- * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment). */
+ * Notes: out-of-slice runtime callees declared as rt_* externs (FUN_ addr in comment).
+ * VB2-verified: call-for-call, branch-for-branch 1:1 vs FUN_00215428. Confidence
+ *   kept medium: decompiler register-forwarding (extraout_x8/x16, in_x3) yields
+ *   opaque indirect-call targets (v10/v9/v11/v12/v13) not expressible in C. */
 void skp3_FUN_00215428( void){
   long v2;
   bool v6;

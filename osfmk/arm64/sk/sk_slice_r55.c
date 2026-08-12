@@ -1282,7 +1282,8 @@ void cL4_ipc_emit_list_y(int *result, unsigned long tcb, unsigned long *msg, uns
             else { unsigned long *p = msg; if (1 < kind - 1) p = (unsigned long*)*msg; word = p[i]; }
         } else if (kind == 5) {
             n = *(unsigned int *)(msg + 1);
-            word = ((unsigned long*)*msg)[i];
+            if (n <= i) word = 0;
+            else word = ((unsigned long*)*msg)[i];
         } else if (kind == 2) {
             n = 2;
             word = msg[i];
@@ -1809,7 +1810,7 @@ void cL4_ipc_emit_woh2(int *result, unsigned long tcb, unsigned long msg, unsign
 void cL4_ipc_emit_r(unsigned long *result, unsigned long tcb, unsigned long *msg, unsigned long depth)
 {
     unsigned long *cur = msg; const char *tag;
-    int perr, pval; unsigned long pdata[4];
+    int perr, pval; unsigned long pdata[5];
 
     if (*(char *)((long)msg + 0x12) != 2) {
         if ((*(char *)((long)msg + 0x12) != 5) || ((int)msg[1] != 2)) {
@@ -1824,7 +1825,7 @@ void cL4_ipc_emit_r(unsigned long *result, unsigned long tcb, unsigned long *msg
         result[1] = pdata[1]; result[0] = pdata[0]; result[2] = pdata[2];
         return;
     }
-    if ((-1 < pdata[3]) && (pdata[3] == 0)) {
+    if ((-1 < (long)pdata[3]) && (pdata[4] == 0)) {
         result[0] = 1; result[1] = (unsigned long)msg; result[2] = 0x479;
         return;
     }
@@ -1845,7 +1846,7 @@ void cL4_ipc_emit_r(unsigned long *result, unsigned long tcb, unsigned long *msg
     cL4_mr_emit_tag(tcb + 0x2140, tag, 2, *(unsigned long *)(tcb + 0x2150));
     if (*(char *)((long)msg + 0x12) == 5) msg = (unsigned long*)*msg;
     cL4_mr_emit_num(tcb, (long)**(unsigned long **)((long)msg + 8));
-    cL4_msg_emit_pair(tcb, (unsigned long*)pdata[3], (unsigned long)&DAT_005be7c0, 0x7a);
+    cL4_msg_emit_pair(tcb, (unsigned long*)pdata[4], (unsigned long)&DAT_005be7c0, 0x7a);
 done:
     result[0] = 0; result[1] = 0; result[2] = 0;
 }

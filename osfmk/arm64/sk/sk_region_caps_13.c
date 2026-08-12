@@ -2670,7 +2670,7 @@ bool cL4_vm_has_mmpx_component(void)
  * (via 0x6ae9c lookup) comparing name/kind pairs; if the node is found it
  * decrements the source counter and re-checks; sets the result flag bit
  * accordingly. Copies the descriptor fields and finalizes via cL4_slot_load.
- * Confidence: low */
+ * Confidence: high */
 void cL4_vm_cmp_component_node(unsigned long *param_1, unsigned long *param_2,
                                long *param_3)
 {
@@ -2688,16 +2688,18 @@ void cL4_vm_cmp_component_node(unsigned long *param_1, unsigned long *param_2,
         cL4_obj_free((void *)map);
         if ((hit.hi & 1) != 0) {
             map = *param_3;
+            if (*(long *)(map + 0x10) == 0)
+                __builtin_trap();   /* SoftwareBreakpoint 0xc8384 */
             cL4_ref_release2((void *)map);
             hit = cL4_map_lookup(w, param_2[3]);
             if ((hit.hi & 1) == 0) {
                 cL4_obj_free((void *)map);
-                __builtin_trap();
+                __builtin_trap();   /* SoftwareBreakpoint 0xc8394 */
             }
             idx = *(unsigned long *)(*(unsigned long *)(map + 0x38) + hit.lo * 8);
             cL4_obj_free((void *)map);
             if (idx == 0)
-                __builtin_trap();
+                __builtin_trap();   /* SoftwareBreakpoint 0xc8388 */
             cL4_os27((void *)(idx - 1), w);
             map = *param_3;
             if (*(long *)(map + 0x10) != 0) {
@@ -2708,13 +2710,16 @@ void cL4_vm_cmp_component_node(unsigned long *param_1, unsigned long *param_2,
                 else {
                     idx = *(unsigned long *)(*(unsigned long *)(map + 0x38) + hit.lo * 8);
                     cL4_obj_free((void *)map);
-                    if (idx == 0)
+                    if (idx == 0) {
                         res = 1;
+                        goto done;   /* skip the res=0 reset (LAB_000c8328) */
+                    }
                 }
             }
         }
         res = 0;
     }
+done:
     param_1[0] = v;
     param_1[2] = param_2[2];
     param_1[1] = param_2[1];
@@ -3371,12 +3376,14 @@ unsigned long cL4_cap_to_string(unsigned long param_1, unsigned long param_2)
  * and appends a 0x28-byte record to the growing result list, growing it as
  * needed (cL4_realloc). When the count is exhausted it releases all
  * temporaries and returns the record list (unaff_x20+0x10).
- * Confidence: low
- * Notes: Record stride 0x28; DAT_00657778 result head; cL4_collect per entry. */
+ * Confidence: medium
+ * Notes: Record stride 0x28; DAT_00657778 result head; cL4_collect per entry;
+ *   record fields at +0x20..+0x40 of each 0x28-byte cell; only the
+ *   decompiler register-forwarding (unaff_x20) is opaque. */
 long cL4_cap_log_set_walk(long param_1, unsigned long param_2)
 {
-    unsigned long *result = (unsigned long *)0x65778;
-    unsigned long cnt, i, v9, v1, r1, r2, r3, r4, r5;
+    unsigned char *result = (unsigned char *)0x65778;
+    unsigned long cnt, i, v9, v1, r0, r1, r2, r3, r4, state, n;
     unsigned long obj = 0; /* unaff_x20 */
     unsigned char scratch[40];
 
@@ -3398,28 +3405,37 @@ long cL4_cap_log_set_walk(long param_1, unsigned long param_2)
             return obj;
         }
         if (*(unsigned long *)(param_1 + 0x10) <= i)
-            __builtin_trap();
-        v9 = *(unsigned long *)(param_1 + 0x28 + i * 0x10);
-        v1 = *(unsigned long *)(param_1 + 0x28 + i * 0x10 + 8);
+            __builtin_trap();   /* SoftwareBreakpoint 0xbea28 */
+        v9 = *(unsigned long *)(param_1 + 0x20 + i * 0x10);
+        v1 = *(unsigned long *)(param_1 + 0x28 + i * 0x10);
         cL4_ref_release2((void *)v9);
         cL4_ref_release2((void *)v1);
         cL4_collect(scratch, v9, v1, param_2);
-        r5 = cL4_field_value(scratch, 0);
+        r0 = cL4_field_value(scratch, 0);
+        r1 = cL4_field_value(scratch, 1);
+        r2 = cL4_field_value(scratch, 2);
+        r3 = cL4_field_value(scratch, 3);
+        r4 = cL4_field_value(scratch, 4);
         cL4_ref_release((void *)v1);
         cL4_ref_release((void *)v9);
-        if (r3 != 0) {
-            /* append record */
-            if (*(unsigned long *)(result + 0x18) >> 1 <= *(unsigned long *)(result + 0x10))
-                result = (unsigned long *)cL4_realloc(1 < *(unsigned long *)(result + 0x18),
-                                                     *(unsigned long *)(result + 0x10) + 1, 1,
-                                                     result);
-            *(unsigned long *)(result + 0x10) = *(unsigned long *)(result + 0x10) + 1;
-            *(unsigned long *)(result + *(unsigned long *)(result + 0x10) * 0x28 - 0x8) = r2;
-            *(long *)(result + *(unsigned long *)(result + 0x10) * 0x28) = r3;
-            *(unsigned long *)(result + *(unsigned long *)(result + 0x10) * 0x28 + 8) = r4;
-            *(unsigned long *)(result + *(unsigned long *)(result + 0x10) * 0x28 + 0x10) = r5;
-        }
         i++;
+        if (r1 == 0)
+            continue;           /* entry skipped (no record emitted) */
+        /* append 0x28-byte record; grow the result list as needed */
+        state = cL4_obj_state(result);
+        if ((state & 1) == 0)
+            result = (unsigned char *)cL4_realloc(0, *(unsigned long *)(result + 0x10) + 1, 1,
+                                                  result);
+        n = *(unsigned long *)(result + 0x10);
+        if (*(unsigned long *)(result + 0x18) >> 1 <= n)
+            result = (unsigned char *)cL4_realloc(1 < *(unsigned long *)(result + 0x18),
+                                                  n + 1, 1, result);
+        *(unsigned long *)(result + 0x10) = n + 1;
+        *(unsigned long *)(result + n * 0x28 + 0x20) = r0;
+        *(long *)(result + n * 0x28 + 0x28) = r1;
+        *(unsigned long *)(result + n * 0x28 + 0x30) = r2;
+        *(unsigned long *)(result + n * 0x28 + 0x38) = r3;
+        *(unsigned long *)(result + n * 0x28 + 0x40) = r4;
     }
 }
 

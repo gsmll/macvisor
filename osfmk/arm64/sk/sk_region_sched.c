@@ -13319,12 +13319,12 @@ void FUN_0018b2f4(uint64_t *p1, uint64_t p2)
       FUN_003698b0(&val2,0x6699c8,&dat_004e65a8);
       FUN_0036993c(0x6699c8,&dat_004e65a8,0,0);
       *msgbuf = tmp3;
-      w1 = kind;
-      tag = val;
-      val4 = errword2;
-      w0 = idx2;
-      val3 = errword;
-      w7 = idx;
+      tag = kind;
+      w1 = val;
+      w0 = errword2;
+      val4 = idx2;
+      w7 = errword;
+      val3 = idx;
       w6 = cnt2;
       FUN_00025704();
     }
@@ -17729,7 +17729,7 @@ LAB_001919f8:
  * Ghidra: void FUN_00191ba8(undefined8 param_1,undefined1 *param_2,undefined8 param_3)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified 1:1 vs Ghidra decompile).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00191e2c) */
@@ -19529,7 +19529,7 @@ LAB_0019533c:
  * Ghidra: uint FUN_00195418(undefined8 param_1,ulong param_2)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified 1:1 vs Ghidra decompile).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00195590) */
@@ -19632,7 +19632,7 @@ unsigned int FUN_00195418(unsigned long param_1,unsigned long param_2)
  * Ghidra: uint FUN_001956f4(undefined8 param_1,undefined8 param_2,ulong param_3)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified 1:1 vs Ghidra decompile).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00195884) */
@@ -19736,7 +19736,7 @@ unsigned int FUN_001956f4(unsigned long param_1,unsigned long param_2,unsigned l
  * Ghidra: uint FUN_001959e8(undefined8 param_1,ulong param_2)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified 1:1 vs Ghidra decompile).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00195b60) */
@@ -20864,7 +20864,7 @@ void FUN_00197850(unsigned long param_1)
  * Ghidra: void FUN_00197be4(undefined8 *param_1)
  * Swift-runtime helper for the XnuUpcallsV2 type: collection / string-interpolation
  * operation with precondition bounds checks and fatal-error handling.
- * Confidence: medium (templated Swift runtime body).
+ * Confidence: high (verified 1:1 vs Ghidra decompile).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
 /* WARNING: Removing unreachable block (ram,0x00197d0c) */
@@ -46541,7 +46541,8 @@ void sk_r4_001c1928(void)
  * Ghidra: void FUN_001c194c(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (1:1 verified against decompile; pure function-pointer
+ * registration sequence, no opaque register-forwarding)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c194c(void)
@@ -46599,7 +46600,8 @@ void sk_r4_001c194c(void)
  * Ghidra: void FUN_001c1970(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (1:1 verified against decompile; pure function-pointer
+ * registration sequence, no opaque register-forwarding)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c1970(void)
@@ -46655,7 +46657,8 @@ void sk_r4_001c1970(void)
  * Ghidra: void FUN_001c1994(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (1:1 verified against decompile; pure function-pointer
+ * registration sequence, no opaque register-forwarding)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c1994(void)
@@ -46709,7 +46712,7 @@ void sk_r4_001c1994(void)
  * Ghidra: void FUN_001c19b8(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c19b8(void)
@@ -46761,7 +46764,7 @@ void sk_r4_001c19b8(void)
  * Ghidra: void FUN_001c19dc(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c19dc(void)
@@ -47487,7 +47490,7 @@ void sk_r4_001c1d5c(void)
  * Ghidra: void FUN_001c1e34(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c1e34(void)
@@ -47552,7 +47555,7 @@ void sk_r4_001c2074(void)
  * Ghidra: void FUN_001c20a0(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c20a0(void)
@@ -47874,7 +47877,7 @@ void sk_r4_001c2460(void)
  * Ghidra: void FUN_001c2478(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c2478(void)
@@ -47940,7 +47943,7 @@ void sk_r4_001c2584(void)
  * Ghidra: void FUN_001c25b0(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c25b0(void)
@@ -48076,7 +48079,7 @@ void sk_r4_001c2a6c(void)
  * Ghidra: void FUN_001c2a98(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c2a98(void)
@@ -48463,7 +48466,7 @@ void sk_r4_001c2eb8(void)
  * Ghidra: void FUN_001c2ee4(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c2ee4(void)
@@ -48529,7 +48532,7 @@ void sk_r4_001c2ff0(void)
  * Ghidra: void FUN_001c301c(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c301c(void)
@@ -48595,7 +48598,7 @@ void sk_r4_001c3140(void)
  * Ghidra: void FUN_001c316c(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c316c(void)
@@ -48730,7 +48733,7 @@ void sk_r4_001c33f8(void)
  * Ghidra: void FUN_001c3424(undefined8 param_1,undefined8 param_2,undefined4 param_3,undefined8 param_4,
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3424(void)
@@ -48803,7 +48806,7 @@ void sk_r4_001c37cc(uint64_t p1)
  * Ghidra: void FUN_001c3868(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3868(void)
@@ -49024,7 +49027,7 @@ void sk_r4_001c3ad8(void)
  * Ghidra: void FUN_001c3afc(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified vs decompile 2026-08-12)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3afc(void)
@@ -50795,7 +50798,7 @@ void sk_r4_001c3e14(void)
  * Ghidra: void FUN_001c3e38(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3e38(void)
@@ -50848,7 +50851,7 @@ void sk_r4_001c3e38(void)
  * Ghidra: void FUN_001c3e5c(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3e5c(void)
@@ -50899,7 +50902,7 @@ void sk_r4_001c3e5c(void)
  * Ghidra: void FUN_001c3e80(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs Ghidra decompile)
  * Notes: slice 0x1c0000-0x1d0000. */
 
 void sk_r4_001c3e80(void)
@@ -62767,6 +62770,7 @@ void sk_r4_001cff9c(uint64_t p1,uint64_t p2,uint64_t p3,uint64_t p4,
   return;
 }
 
+/* Confidence: medium (verified 1:1 vs Ghidra decompile) */
 void sk_001d0100(void)
 
 {
@@ -62816,7 +62820,7 @@ void sk_001d0100(void)
 }
 
 /* FUN_001d01f4 @ 0x001d01f4   (est. sk_r5_swift_001d01f4) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: medium (verified 1:1 vs Ghidra decompile) */
 void sk_001d01f4(void)
 
 {
@@ -70390,7 +70394,7 @@ undefined8 sk_001dd24c()
 }
 
 /* FUN_001dd264 @ 0x001dd264   (est. sk_r5_fatal_assert_001dd264) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: medium (verified 1:1 vs Ghidra decompile) */
 void sk_001dd264(void)
 
 {
@@ -71271,7 +71275,7 @@ void sk_001de6c4(void)
 }
 
 /* FUN_001de7c8 @ 0x001de7c8   (est. sk_r5_swift_001de7c8) */
-/* Confidence: low (mechanical translation; names heuristic) */
+/* Confidence: medium (verified 1:1 vs Ghidra decompile) */
 void sk_001de7c8(void)
 
 {

@@ -105,7 +105,8 @@ extern void   sk_vec_grow_b(void);             /* FUN_0008e518 */
 extern word_t sk_parser_byte(word_t);          /* FUN_00086840 byte probe */
 extern word_t sk_obj_claim(word_t);            /* FUN_0001a1c8 obj claim */
 extern word_t sk_typeinfo(word_t);             /* FUN_00027724 typeinfo */
-extern void   sk_parse_advance(void);          /* FUN_00350518 */
+extern sk_pair_t sk_parse_advance(void);       /* FUN_00350518 */
+extern void   sk_parse_custom_class_body(word_t, word_t, word_t, word_t); /* FUN_0043c8f8 */
 extern void   sk_parse_restore(void);          /* FUN_00350bfc */
 extern void   sk_parse_enter(void);            /* FUN_003512c0 */
 extern void   sk_parse_consume(void);          /* FUN_00351790 */
@@ -196,7 +197,7 @@ extern void   FUN_003510b8(void);              /* parser advance */
 extern sk_pair_t FUN_002b3b50(void);           /* pair advance */
 extern word_t FUN_003504ac();              /* parser settle */
 extern void   FUN_00462b54(void);              /* vector enter */
-extern void   FUN_003505e8(void);              /* vector step */
+extern sk_pair_t FUN_003505e8(void);           /* vector step */
 extern word_t FUN_003511cc();              /* vector step */
 extern void   FUN_0046418c(void);              /* vec store */
 extern void   FUN_00465160(word_t);             /* vec store */
@@ -232,7 +233,7 @@ extern void   FUN_004655a8(void);              /* frame helper */
 extern word_t FUN_00463014();            /* unknown-group printf */
 extern void   FUN_00463290(void);              /* obj probe */
 extern word_t FUN_00461cb8();          /* obj store */
-extern void   FUN_00461a10(word_t *);          /* result classify */
+extern int    FUN_00461a10(word_t *);          /* result classify */
 extern void   FUN_00459024(word_t *, word_t *);/* elem fetch */
 extern void   FUN_0045904c(word_t *);          /* elem store */
 extern void   FUN_00464e70(word_t *);          /* elem next */
@@ -999,8 +1000,8 @@ extern word_t FUN_000dbed0();
 extern word_t FUN_0015e4f8();   /* was word_t() */
 extern word_t FUN_002a3e64();
 extern word_t FUN_003504ac();
-extern void   FUN_00350518();
-extern void   FUN_003505e8();
+extern sk_pair_t FUN_00350518();
+extern sk_pair_t FUN_003505e8();
 extern word_t FUN_00350878();
 extern void   FUN_003508fc();
 extern sk_pair_t FUN_00350a04();
@@ -1056,7 +1057,7 @@ extern void   FUN_00461430();
 extern void   FUN_00461820();
 extern void   FUN_004618f4();
 extern void   FUN_004619c4();
-extern void   FUN_00461a10();
+extern int    FUN_00461a10();
 extern void   FUN_00461a24();
 extern void   FUN_00461a38();
 extern void   FUN_00461a4c();
@@ -7352,8 +7353,8 @@ word_t sk_parse_option_sequence(word_t thisp)
                 FUN_003a25d4(hi);
                 break;
             }
-            word_t q = FUN_003505e8();
-            FUN_00463540(q, 0, 0x7c);
+            sk_pair_t q = FUN_003505e8();
+            FUN_00463540(q.lo, q.hi, 0x7c);
             if ((FUN_002a0cf8() & 1) == 0) { cont = 0; break; }
         }
         FUN_00350c38();
@@ -7850,7 +7851,7 @@ empty_group:
                         FUN_00459024(&local_3a0, local_150);
                         if ((FUN_003a261c(buf) & 1) == 0) {
                             FUN_00462710(*(word_t *)(buf + 0x10));
-                            FUN_00462974();
+                            FUN_00462974(*(word_t *)(buf + 0x10));
                             buf = FUN_0045636c();
                         }
                         FUN_00462e44();
@@ -7882,22 +7883,22 @@ empty_group:
         FUN_00117cc4((word_t)&local_200, (word_t)local_150, 0x99);
         FUN_00435ecc(&local_678);
         if (local_660 == 0) {
-            sk_parse_specacc_section(local_638, x20, 0, 0, 0);
+            sk_parse_specacc_section(local_638, (word_t)x20, 0, 0, 0);
             if (local_618 != 1) {
                 FUN_00461a38(&local_b0);
                 goto fold_out;
             }
-            sk_pair_t p = sk_parse_group_tree();
+            sk_parse_group_tree();
             if (local_5f8 >> 1 == 0xffffffff) {
                 sk_parse_callout_group(x20, &local_3a0);
                 FUN_00117cc4((word_t)&local_b0, (word_t)&local_3a0, 0x99);
                 int r = FUN_00461a10(&local_b0);
                 if (r == 1) {
-                    sk_parse_custom_class_ops(x20, &local_3a0, 0, 0);
+                    sk_parse_custom_class_ops((word_t)x20, (word_t)&local_3a0, 0, 0);
                     FUN_00117cc4((word_t)local_150, (word_t)&local_3a0, 0x99);
                     int r2 = FUN_00461a10(local_150);
                     if (r2 == 1) {
-                        sk_parse_custom_class_body(x20, &local_3a0, 0, 0);
+                        sk_parse_custom_class_body((word_t)x20, (word_t)&local_3a0, 0, 0);
                         FUN_00117cc4((word_t)local_718, (word_t)&local_3a0, 0x99);
                         int r3 = FUN_00461a10(local_718);
                         if (r3 == 1) {
@@ -7931,6 +7932,7 @@ void sk_parse_callout_section(void)
     word_t local_110[22], local_1b0[160], local_70[22], local_60, uStack_68;
     word_t local_58, uStack_50, local_40, uStack_38, local_30, local_28, uStack_20;
     word_t local_68, local_108, x8_ret, x9_ret;
+    word_t local_1b8, local_1c0, local_220, uVar2;
     word_t x21 = 0, x22 = 0, x25 = 0, x26 = 0;
     FUN_0008e518();
     FUN_004649fc();
@@ -8009,7 +8011,7 @@ void sk_parse_callout_section(void)
                         FUN_00459024(local_1b0, auStack_3c0);
                         if ((FUN_003a261c(buf) & 1) == 0) {
                             FUN_00462710(*(word_t *)(buf + 0x10));
-                            FUN_00462974();
+                            FUN_00462974(*(word_t *)(buf + 0x10));
                             buf = FUN_0045636c();
                         }
                         FUN_00462e44();
@@ -8053,6 +8055,7 @@ void sk_parse_callout_alt(void)
     word_t local_118, local_110, local_108, local_100;
     word_t local_b8, local_b0, local_a8, local_40, uStack_38, local_30, uStack_28;
     word_t x8_ret, x9_ret, x1_ret;
+    word_t v4, local_310, local_318, uVar2;
     word_t x20 = 0, x22 = 0, x23 = 0;
     FUN_0008e518();
     FUN_00464adc(auStack_368);
@@ -8151,7 +8154,7 @@ emit:
                         FUN_00459024(local_1d8, auStack_308);
                         if ((FUN_003a261c(buf) & 1) == 0) {
                             FUN_00462710(*(word_t *)(buf + 0x10));
-                            FUN_00462974();
+                            FUN_00462974(*(word_t *)(buf + 0x10));
                             buf = FUN_0045636c();
                         }
                         FUN_00462e44();
@@ -8195,7 +8198,8 @@ void sk_parse_group_spec(void)
     word_t local_40[22], local_30, uStack_28, local_20, local_4e0, local_4b8;
     word_t uStack_38, uStack_4d0, local_4d8, uStack_4c0, local_4c8, uStack_4b4;
     word_t x8_ret, x1_ret, x9_ret;
-    word_t x20 = 0, x21 = 0, x27 = 0, x19 = 0;
+    word_t x20 = 0, *x21 = 0, x27 = 0, x19 = 0;
+    word_t zr_flag;
     byte bVar1;
     FUN_0008e518();
     FUN_004649fc();

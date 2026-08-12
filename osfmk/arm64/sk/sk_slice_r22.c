@@ -177,7 +177,7 @@ void FUN_004640a4(word_t a, word_t b, word_t c)
  * Ghidra: void FUN_004640b8(long param_1,long param_2)
  * Copies the 8-byte word at offset +8 of the source struct to the same offset
  * of the destination struct.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs decompile; single word copy, no opaque items)
  * Notes: single word copy. */
 void FUN_004640b8(word_t dst, word_t src)
 {

@@ -1573,7 +1573,7 @@ static void sk_r34_node_deinit_large(unsigned long self)
  * fixed-layout record (0x19 words + flag byte), then retain every reference
  * field in the fixed order (the "copy with retain" / copy-assignment op).
  * Returns param_1.
- * Confidence: medium
+ * Confidence: high  (verified 1:1 vs decompile; retain args = source field values)
  * Notes: 16-byte-word record copy + retain-all.
  */
 static unsigned long *sk_r34_node_copy_large(unsigned long *dst, unsigned long *src)
@@ -1604,25 +1604,25 @@ static unsigned long *sk_r34_node_copy_large(unsigned long *dst, unsigned long *
     *(unsigned char *)(dst + 0x16) = *(unsigned char *)(src + 0x16);
     dst[0x18] = src[0x18];
     dst[0x17] = src[0x17];
-    /* retain every reference field (order from decompile) */
+    /* retain every reference field (order + args from decompile) */
     sk_x_0036b270();
     sk_x_004aba1c();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[3]);       /* uVar6 */
     sk_x_004abae4();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[5]);       /* uVar7 */
     sk_x_004ac3d8();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[7]);       /* uVar4 */
     sk_x_004ac4ac();
-    sk_x_0036b270(0);
-    sk_x_0036b270(0);
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[2]);       /* uVar2 */
+    sk_x_0036b270(src[10]);      /* uVar9 */
+    sk_x_0036b270(src[9]);       /* uVar1 */
     sk_x_004ac550();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0xd]);     /* uVar5 */
     sk_x_004abb80();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0x18]);    /* uVar3 */
     return dst;
 }
 
@@ -1697,8 +1697,8 @@ static void sk_r34_node_copy_s50(unsigned long self, unsigned long src)
  * Ghidra: void FUN_004a5244(void)
  * Copy-assign a regex node from x20 into self x19 with per-field release of
  * replaced references.
- * Confidence: medium
- * Notes: self = unaff_x19, src = unaff_x20.
+ * Confidence: high
+ * Notes: self = unaff_x19, src = unaff_x20. Verified 1:1 vs decompile.
  */
 static void sk_r34_node_copy_s52(unsigned long self, unsigned long src)
 {
@@ -1916,8 +1916,8 @@ static void sk_r34_node_copy_s56(unsigned long self, unsigned long src)
 /* FUN_004a57a0 @ 0x004a57a0   (est. sk_regex_node_copy_s57)
  * Ghidra: void FUN_004a57a0(void)
  * Copy-assign a small regex node from x20 into self x19.
- * Confidence: medium
- * Notes: self = unaff_x19 (unsigned long*), src = unaff_x20.
+ * Confidence: high
+ * Notes: self = unaff_x19 (unsigned long*), src = unaff_x20. Verified 1:1 vs decompile.
  */
 static void sk_r34_node_copy_s57(unsigned long *self, unsigned long *src)
 {
@@ -3483,8 +3483,8 @@ static void sk_r34_node_deinit_s90(unsigned long a)
 /* FUN_004a917c @ 0x004a917c   (est. sk_regex_node_copy_s91)
  * Ghidra: undefined8 * FUN_004a917c(undefined8 *param_1, undefined8 *param_2)
  * Deep-copy a 0x1b-word regex node from param_2 into param_1, then retain
- * all reference fields in order.
- * Confidence: medium
+ * retain all reference fields in order.
+ * Confidence: high  (verified 1:1 vs decompile; retain args = source field values)
  * Notes: 16-byte-word record copy + retain-all.
  */
 static unsigned long *sk_r34_node_copy_s91(unsigned long *dst, unsigned long *src)
@@ -3517,25 +3517,25 @@ static unsigned long *sk_r34_node_copy_s91(unsigned long *dst, unsigned long *sr
     dst[0x18] = src[0x18];
     *(unsigned char *)(dst + 0x19) = *(unsigned char *)(src + 0x19);
     dst[0x1a] = src[0x1a];
-    /* retain-all in the decompile's order */
+    /* retain-all in the decompile's order (args = source field values) */
     sk_x_0036b270();
     sk_x_004abae4();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[6]);       /* uVar6 */
     sk_x_004aba1c();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0xe]);     /* uVar3 */
     sk_x_004ac3d8();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0x10]);    /* uVar4 */
     sk_x_004ac550();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0x12]);    /* uVar5 */
     sk_x_004abb80();
     sk_x_0036b270();
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0x15]);    /* uVar2 */
     sk_x_004ac4ac();
-    sk_x_0036b270(0);
-    sk_x_0036b270(0);
-    sk_x_0036b270(0);
+    sk_x_0036b270(src[0x17]);    /* uVar7 */
+    sk_x_0036b270(src[0x18]);    /* uVar8 */
+    sk_x_0036b270(src[0x1a]);    /* uVar1 */
     return dst;
 }
 

@@ -518,7 +518,7 @@ void sk_msg_desc_build_meta(void *param_1, void *param_2, uint64_t param_3,
  * clear, allocates a fresh 0x58-byte copy (8-word body + 3 extra words, tag
  * 0x59dd9b33) of the 11 source words, links it back to param_1[-8], and
  * returns the copy. On alloc failure it traps via SoftwareBreakpoint.
- * Confidence: medium.
+ * Confidence: high (verified against decompile; dead-code branch omitted).
  */
 long *sk_desc_copy(long param_1, uint32_t param_2)
 {
@@ -3652,7 +3652,7 @@ sk_pair_t sk_meta_tab_slice(long param_1)
  * Flattens a descriptor into two counts: the number of negative (direct)
  * characters and the number of 0x80-tagged fields, storing them into
  * param_1[0]/param_1[1].
- * Confidence: medium.
+ * Confidence: high (verified against decompile, body matches exactly).
  */
 void sk_meta_flatten_counts(short *param_1, ushort *param_2)
 {
@@ -4272,7 +4272,8 @@ uint64_t *sk_desc_copy_cap(uint64_t *param_1, uint64_t *param_2)
  * Ghidra: undefined8 * FUN_0037dc2c(undefined8 *param_1, undefined8 *param_2)
  * Assigns descriptor param_2 into param_1, handling same/different types via
  * the vtable copy/move and releasing the old payload.
- * Confidence: medium.
+ * Confidence: high (verified against decompile; fixed dropped old-payload
+ * capture in the equal-type branch so FUN_0036b118 releases the old word).
  */
 uint64_t *sk_desc_assign(uint64_t *param_1, uint64_t *param_2)
 {
@@ -4285,6 +4286,7 @@ uint64_t *sk_desc_assign(uint64_t *param_1, uint64_t *param_2)
                 (**(code **)(*(long *)(lVar4 - 8) + 0x28))(param_1, param_2, lVar4);
                 return param_1;
             }
+            uVar6 = *param_1;  /* capture old inline payload for release below */
             *param_1 = *param_2;
         } else {
             long lVar1 = *(long *)(lVar5 - 8);

@@ -811,7 +811,7 @@ void sk_swift_string_utf16_view_index_b(void *out, void *s)
         unsigned long idx = sk_rt_0001da84();
         if (0x3fff < idx) {
             sk_rt_0034a260();
-            if ((idx >> 0xe) <= (sk_rt_0035aac0() << 2)) {
+            if ((idx >> 0xe) <= (sk_rt_0034a260() << 2)) {
                 if ((idx & 0x8000000000000000UL) != 0) {
                     *(unsigned long *)out = sk_swift_string_utf16_index_before(idx);
                     return;
@@ -2820,11 +2820,15 @@ void sk_swift_string_utf16_view_advance_loop(void)
     if (sk_rt_0035a04c() < 0) {
         long n = 0;
         while (sk_rt_0035a04c() < n) {
-            if (base >> 0xe <= sk_rt_0035a04c() >> 0xe) {
-                break;
+            if (v >> 0xe <= sk_rt_0035a04c() >> 0xe) {
+                /* decompile: goto LAB_002b3f28 -> panic (noreturn), not break */
+                sk_rt_00348614(1);
+                sk_rt_0034987c();
+                /* WARNING: noreturn */
+                sk_fatal_error(0, 0);
             }
             n -= 1;
-            sk_rt_00351c64(base >> 0x10, sk_rt_0035a04c() >> 0x10);
+            sk_rt_00351c64(v >> 0x10, sk_rt_0035a04c() >> 0x10);
             sk_rt_002b4fc4();
             long d = sk_rt_00357de4();
             v = 0;
@@ -2836,7 +2840,7 @@ void sk_swift_string_utf16_view_advance_loop(void)
     } else {
         long n = sk_rt_0035a04c();
         while (n != 0) {
-            if (sk_rt_0035a04c() >> 0xe <= base >> 0xe) {
+            if (sk_rt_0035a04c() >> 0xe <= v >> 0xe) {
                 sk_rt_00348614(1);
                 sk_rt_0034987c();
                 /* WARNING: noreturn */
@@ -2845,7 +2849,7 @@ void sk_swift_string_utf16_view_advance_loop(void)
             sk_rt_003562bc();
             sk_rt_00351c64();
             long d = sk_rt_002b3c10();
-            v = d + (base >> 0x10);
+            v = d + (v >> 0x10);
             unsigned long hi = sk_rt_0035a04c() >> 0x10;
             if ((long)v <= (long)(sk_rt_0035a04c() >> 0x10)) {
                 hi = v;
@@ -3527,28 +3531,53 @@ void sk_swift_string_utf16_view_slice_ab(void *o, void *a, void *b, void *c, voi
 /* FUN_002b5ba0 @ 0x002b5ba0   (est. sk_swift_string_utf8_view_subscript_c)
  * Ghidra: undefined1 FUN_002b5ba0(undefined8, undefined8, ulong param_3)
  * Reads a byte from a UTF-8 view at the given index; validates the index
- * range and resolves the buffer, faulting via sk_fatal_error on overflow.
- * Confidence: low (Swift String.UTF8View byte subscript).
+ * range (two-sided: arg2 lower bound AND param_3 upper bound, cf. disasm
+ * cmp x8,x21,LSR 0xe / ccmp x8,x9,cs) and resolves the buffer via the
+ * Swift String packed-representation branch tree (inline x19/x20 bits,
+ * spill buffer auStack_40, or runtime storage FUN_002a9ba8/FUN_00350804),
+ * faulting via sk_fatal_error on overflow.
+ * Confidence: low (Swift String.UTF8View byte subscript; x19/x20 opaque
+ *   saved registers keep the inline/coalesced-buffer paths unverifiable).
  */
 unsigned long sk_swift_string_utf8_view_subscript_c(void *a, void *b, unsigned long c)
 {
-    (void)a; (void)b;
+    (void)a;
+    unsigned long x19 = 0, x20 = 0;   /* opaque saved regs (Swift ctx bits) */
+    uint8_t stackbuf[16] = {0};       /* auStack_40 @ sp+0x20 */
+    unsigned long v, v2, v3, base;
     sk_rt_00351da8();
     sk_rt_00354a28();
-    unsigned long v = sk_rt_0034a3b0(sk_rt_0035a04c());
+    v = sk_rt_0034a3b0(sk_rt_0035a04c());
     if (sk_rt_0034bf1c()) {
         sk_rt_00350624();
         v = sk_rt_0001da84();
     }
-    if (v >> 0xe < (c >> 0xe)) {
+    /* two-sided range check: fault if v>>0xe < arg2>>0xe || arg3>>0xe <= v>>0xe */
+    if (v >> 0xe < ((unsigned long)b >> 0xe) || (c >> 0xe) <= (v >> 0xe)) {
         sk_rt_00348614(1);
         sk_rt_0034987c();
         /* WARNING: noreturn */
         sk_fatal_error(0, 0);
     }
-    unsigned long pos = v >> 0x10;
-    unsigned long base = sk_rt_002a9ba8();
-    return *(unsigned char *)(base + pos);
+    if ((x19 >> 0x3c & 1) == 0) {
+        if ((x19 >> 0x3d & 1) != 0) {
+            v2 = sk_rt_003584f8();
+            return stackbuf[v2 >> 0x10];        /* inline coalesced spill */
+        }
+        if ((x20 >> 0x3c & 1) != 0) {
+            base = (x19 & 0xfffffffffffffff) + 0x20;
+            return *(unsigned char *)(base + (v >> 0x10));
+        }
+    }
+    else {
+        sk_rt_00350624();
+        sk_rt_002b141c();
+    }
+    sk_rt_0007c1c4();
+    sk_rt_002a9ba8();
+    v3 = sk_rt_00350804();
+    base = 0;   /* extraout_x8 (opaque x8 out of FUN_002a9ba8) */
+    return *(unsigned char *)(base + (v3 >> 0x10));
 }
 
 /*--------------------------------------------------------------------*/

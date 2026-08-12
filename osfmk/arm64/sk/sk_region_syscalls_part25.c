@@ -1010,7 +1010,7 @@ void sk_syscall_stub_356e98(void)
 }
 
 /* FUN_00356ea8 @ 0x00356ea8  (est. sk_panic_1afa84_356ea8)
- * Noreturn panic path: tail call FUN_001afa84. Confidence: medium */
+ * Noreturn panic path: tail call FUN_001afa84. Confidence: high */
 void sk_panic_1afa84_356ea8(void)
 {
     sk_panic_path(); /* [Ghidra: FUN_001afa84, no return] */

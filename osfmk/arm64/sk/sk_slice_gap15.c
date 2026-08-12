@@ -268,7 +268,7 @@ void FUN_00354968(void) { FUN_002b81b4(); }
  * Ghidra: void FUN_00354988(undefined8, undefined8, undefined8)
  * Inserts an object into a container: forwards (p1, p3, p3) to the object
  * allocation/insert helper with the set-flags bit (1) cleared from the last arg.
- * Confidence: medium
+ * Confidence: high (verified against decompile, body matches exactly)
  * Notes: calls FUN_002a4b90(p1, p3, p3, 1). */
 void FUN_00354988(uint64_t p1, uint64_t p2, uint64_t p3)
 {

@@ -309,7 +309,7 @@ void exclave_load_begin(unsigned long load_ctx)
  * that records the loaded image; on failure allocates a 0x18-byte block
  * carrying the error. Stores the result word and the caller's payload in
  * *param_2 and returns param_2.
- * Confidence: medium
+ * Confidence: high
  * Notes: Mach-O string 0x5c2000; fatal-error path on lookup failure; table
  *   DAT_004c1920. */
 long exclave_load_entry(long frame, long out)
@@ -2723,53 +2723,47 @@ void exclave_tls_setup_b(void)
  * Ghidra: void FUN_000a7d50(undefined8 *param_1)
  * Snapshots the full 0x110-byte descriptor held at x20+0x10 into *param_1,
  * calling the vtable method at offset 0x48 for the final (status) word.
- * Confidence: medium */
+ * Confidence: high */
 void exclave_desc_snapshot(unsigned long *out)
 {
-    unsigned long *src = (unsigned long *)(receiver + 0x10);
-    unsigned long w0  = src[0x10 / 8];
-    unsigned long w1  = src[0x20 / 8];
-    unsigned long w2  = src[0x18 / 8];
-    unsigned long w3  = src[0x30 / 8];
-    unsigned long w4  = src[0x28 / 8];
-    unsigned long w5  = src[0x40 / 8];
-    unsigned long w6  = src[0x38 / 8];
-    unsigned long w7  = src[0x50 / 8];
-    unsigned long w8  = src[0x48 / 8];
-    unsigned long w9  = src[0x60 / 8];
-    unsigned long w10 = src[0x58 / 8];
-    unsigned long w11 = src[0x70 / 8];
-    unsigned long w12 = src[0x68 / 8];
-    unsigned long w13 = src[0x80 / 8];
-    unsigned long w14 = src[0x78 / 8];
-    unsigned long w15 = src[0x90 / 8];
-    unsigned long w16 = src[0x88 / 8];
-    unsigned long w17 = src[0xa0 / 8];
-    unsigned long w18 = src[0x98 / 8];
-    unsigned long w19 = src[0xb0 / 8];
-    unsigned long w20 = src[0xa8 / 8];
-    unsigned long w21 = src[0xc0 / 8];
-    unsigned long w22 = src[0xb8 / 8];
-    unsigned long w23 = src[0xd0 / 8];
-    unsigned long w24 = src[0xc8 / 8];
-    unsigned long w25 = src[0xe0 / 8];
-    unsigned long w26 = src[0xd8 / 8];
-    unsigned long w27 = src[0xf0 / 8];
-    unsigned long w28 = src[0xe8 / 8];
-    unsigned long w29 = src[0x100 / 8];
-    unsigned long w30 = src[0xf8 / 8];
-    unsigned long w31 = src[0x110 / 8];
-    unsigned long w32 = src[0x108 / 8];
+    /* The descriptor base is the pointer stored at receiver+0x10 (ldr x8,[x20,#0x10]),
+     * not the address receiver+0x10 itself. */
+    unsigned long *src = *(unsigned long **)(receiver + 0x10);
     unsigned long status = (**(unsigned long (**)(void))(*receiver + 0x48))();
-    out[0] = w0; out[1] = w1; out[2] = w2; out[3] = w3;
-    out[4] = w4; out[5] = w5; out[6] = w6; out[7] = w7;
-    out[8] = w8; out[9] = w9; out[10] = w10; out[11] = w11;
-    out[12] = w12; out[13] = w13; out[14] = w14; out[15] = w15;
-    out[16] = w16; out[17] = w17; out[18] = w18; out[19] = w19;
-    out[20] = w20; out[21] = w21; out[22] = w22; out[23] = w23;
-    out[24] = w24; out[25] = w25; out[26] = w26; out[27] = w27;
-    out[28] = w28; out[29] = w29; out[30] = w30; out[31] = w31;
-    out[32] = w32;
+    /* Dense sequential copy: out[k] = src[0x10 + k*8] for k = 0..0x20, then status. */
+    out[0]  = src[0x10 / 8];
+    out[1]  = src[0x18 / 8];
+    out[2]  = src[0x20 / 8];
+    out[3]  = src[0x28 / 8];
+    out[4]  = src[0x30 / 8];
+    out[5]  = src[0x38 / 8];
+    out[6]  = src[0x40 / 8];
+    out[7]  = src[0x48 / 8];
+    out[8]  = src[0x50 / 8];
+    out[9]  = src[0x58 / 8];
+    out[10] = src[0x60 / 8];
+    out[11] = src[0x68 / 8];
+    out[12] = src[0x70 / 8];
+    out[13] = src[0x78 / 8];
+    out[14] = src[0x80 / 8];
+    out[15] = src[0x88 / 8];
+    out[16] = src[0x90 / 8];
+    out[17] = src[0x98 / 8];
+    out[18] = src[0xa0 / 8];
+    out[19] = src[0xa8 / 8];
+    out[20] = src[0xb0 / 8];
+    out[21] = src[0xb8 / 8];
+    out[22] = src[0xc0 / 8];
+    out[23] = src[0xc8 / 8];
+    out[24] = src[0xd0 / 8];
+    out[25] = src[0xd8 / 8];
+    out[26] = src[0xe0 / 8];
+    out[27] = src[0xe8 / 8];
+    out[28] = src[0xf0 / 8];
+    out[29] = src[0xf8 / 8];
+    out[30] = src[0x100 / 8];
+    out[31] = src[0x108 / 8];
+    out[32] = src[0x110 / 8];
     out[33] = status;
 }
 

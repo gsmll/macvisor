@@ -2552,7 +2552,7 @@ void cl4_caps_partition_insert(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t *
             prev[1] = x1;
             wp -= 2;
             p3 = r;
-            if (r == p1) continue;
+            if (r != p1) continue;  /* bubble down while below predecessor and above start */
         }
         p3 = w + 1;
         wp = ws + 2;

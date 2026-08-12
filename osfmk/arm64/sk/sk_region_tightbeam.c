@@ -1056,7 +1056,10 @@ LAB_finish_setup:
  * is the single-arg form.
  * ------------------------------------------------------------------ */
 
-/* FUN_00382df4 / 00383490 — slot-8 foreach (no per-entry source). */
+/* FUN_00382df4 / 00383490 — slot-8 foreach (no per-entry source).
+ * Verified 1:1 against Ghidra decompile of 0x382df4: n = *(desc+8); iterate
+ * (desc+0x20) entry pairs {obj,offset} calling (*(*(obj-8)+8))(dst+off).
+ * Confidence: high. */
 static void cL4_dispatch_foreach_slot8(long dst, long desc)
 {
     long n = *(long *)(desc + 8);
@@ -1713,7 +1716,8 @@ unsigned long *cL4_obj_copy4(unsigned long *dst, unsigned long *src)
     return dst;
 }
 
-/* FUN_00384740 — 5-word copy (dest slot 0x10, copies dst[4] too). */
+/* FUN_00384740 — 5-word copy (dest slot 0x10, copies dst[4] too).
+ * Confidence: high (verified against decompile). */
 unsigned long *cL4_obj_copy5(unsigned long *dst, unsigned long *src)
 {
     long srcobj, dstobj;

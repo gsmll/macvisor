@@ -968,8 +968,8 @@ unsigned long FUN_003a0b04(unsigned long param_1, unsigned long param_2)
  * Foreign Reference Type, Heap Local Variable, Heap Generic Local Variable, ErrorType
  * Object, Extended Existential) or "Unknown" for unrecognized values. NULL for a few
  * reserved tags. No side effects.
- * Confidence: medium
- * Notes: String literals at 0x5d64ed-0x5d65d7 (rendered as literal char* addresses). */
+ * Confidence: high
+ * Notes: String literals at 0x5d64ed-0x5d65d7 (rendered as literal char* addresses). Verified 1:1 vs decompile. */
 char *FUN_003a0c90(unsigned long *tag_ptr)
 {
     int iv1;

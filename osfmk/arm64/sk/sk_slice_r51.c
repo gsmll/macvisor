@@ -61,7 +61,7 @@ extern void   cL4_raw_free(void *p, word_t bytes, word_t align); /* thunk_FUN_00
 extern void  *cL4_raw_realloc(word_t round, word_t align);  /* thunk_FUN_004bab7c */
 extern word_t cL4_round_up(word_t n);                       /* FUN_0001279c */
 extern int    cL4_memcmp(const void *a, const void *b, word_t n); /* thunk_FUN_001145b0 */
-extern void  *cL4_memcpy(word_t dst, word_t src, word_t n); /* FUN_00117cc8 */
+extern void  *cL4_memcpy(word_t dst, word_t src, word_t unit, word_t count); /* FUN_00117cc8 */
 extern void   cL4_memcpy_v(word_t dst, word_t src, word_t n); /* FUN_00117cc4 */
 extern void   cL4_memmove_v(word_t dst, word_t src, word_t n); /* FUN_00117d14 */
 extern word_t cL4_str_len(word_t s);                        /* thunk_FUN_00115080 */
@@ -135,7 +135,7 @@ extern word_t cL4_conform_desc2(word_t p);                  /* FUN_00374e2c */
 extern word_t cL4_conform_major(word_t p);                  /* FUN_0039c84c */
 extern word_t cL4_conform_next(word_t p);                   /* FUN_0039c888 */
 extern cL4_w16_t cL4_pack_slice(word_t p, word_t n);        /* FUN_0039d994 */
-extern void   cL4_pack_sel(word_t *p, word_t n);            /* FUN_0037e58c */
+extern void   cL4_pack_sel(word_t *p, word_t *q, word_t t); /* FUN_0037e58c */
 extern void   cL4_pack_sel2(word_t *p, word_t *q);          /* FUN_0037e614 */
 extern void   cL4_pack_sel3(word_t *p, word_t *q, word_t *r); /* FUN_0037ebe4 */
 extern void   cL4_pack_sel4(word_t *p, word_t n);           /* FUN_0037eb4c */
@@ -1240,49 +1240,82 @@ static word_t *sk_tagged_deref(unsigned *p)
  * escapes the canary trips the runtime fatal. */
 static void sk_span_copy(word_t *a, word_t *b)
 {
-    word_t *src = (word_t*)*a;
-    word_t *dst = (word_t*)*b;
-    long stage = -0x2c8502b44bfffed6;
-    word_t len = 0, lv = 0;
-    byte one = 0;
-    if (src == dst) { len = 0; goto done; }
-    {
-        word_t *hi = (word_t*)a[2];
-        len = 0x40; lv = 0;
-        do {
-            if (src == hi) { CL4_SW_BP(0x3987d4); }
-            one = *(byte*)src;
-            if (len == 0) {
-                if (src != dst) {
-                    cL4_pack_sel((word_t*)&one, (word_t)0xf9000a63a9000a61);
-                    dst = (word_t*)*b;
-                    len = 0x40;
-                    src = (word_t*)*a;
-                    while (src != dst) {
-                        if (src == dst) { lv = 0; dst = (word_t*)&lv; }
-                        else { lv = 0; hi = (word_t*)a[2]; dst = (word_t*)&lv; }
-                        cL4_pack_sel2((word_t*)&one, (word_t*)&lv);
-                        len = lv + len;
-                        dst = (word_t*)*b;
-                        src = (word_t*)*a;
-                    }
-                    cL4_pack_sel3((word_t*)&one, &lv, &lv);
-                    goto done;
-                }
-                len = 0x40; break;
-            }
-            len = lv + 1;
-            cL4_pack_sel4((word_t*)&one, len);
-            src = (word_t*)((char*)src + 1);
-            *a = (word_t)src;
-            dst = (word_t*)*b;
-            len--;
-            lv = len;
-        } while (src != dst);
+    byte local_d1;
+    byte local_d0[56];
+    byte auStack_98[64];
+    long local_58 = -0x2c8502b44bfffed6;   /* canary */
+    byte *puVar6 = (byte*)*a;              /* src */
+    byte *puVar2 = (byte*)*b;              /* dst */
+    long lVar3 = 0, lVar4, lVar7;
+    byte *puVar5, *puVar8;
+    if (puVar6 == puVar2) {
+        lVar3 = 0;
     }
-    cL4_pack_sel5((word_t*)&one, len, 0xf9000a63a9000a61);
-done:
-    if (stage != -0x2c8502b44bfffed6) return;
+    else {
+        puVar8 = (byte*)a[2];              /* hi bound */
+        lVar4 = 0x40;
+        lVar7 = 0;
+        do {
+            if (puVar6 == puVar8) { CL4_SW_BP(0x3987d4); }
+            local_d0[0] = *puVar6;
+            if (lVar4 == 0) {
+                if (puVar6 != puVar2) {
+                    cL4_pack_sel((word_t*)local_d0, (word_t*)auStack_98, 0xf9000a63a9000a61);
+                    puVar2 = (byte*)*b;
+                    lVar3 = 0x40;
+                    puVar6 = (byte*)*a;
+                    while (puVar6 != puVar2) {
+                        if (puVar6 == puVar2) {
+                            lVar7 = 0;
+                            puVar2 = auStack_98;
+                        }
+                        else {
+                            lVar7 = 0;
+                            puVar8 = (byte*)a[2];
+                            puVar2 = auStack_98;
+                            do {
+                                if (puVar6 == puVar8) { CL4_SW_BP(0x3987d4); }
+                                puVar5 = puVar6 + 1;
+                                local_d1 = *puVar6;
+                                if (lVar7 == -0x40) {
+                                    lVar7 = 0x40;
+                                    goto LAB_39874c;
+                                }
+                                cL4_memcpy((word_t)puVar2, (word_t)&local_d1, 1, lVar7 + 0x40);
+                                *a = (word_t)puVar5;
+                                lVar7 = lVar7 + -1;
+                                puVar2 = puVar2 + 1;
+                                puVar6 = puVar5;
+                            } while (puVar5 != (byte*)*b);
+                            lVar7 = -lVar7;
+                        }
+                    LAB_39874c:
+                        cL4_pack_sel3((word_t*)auStack_98, (word_t*)puVar2, (word_t*)&local_58);
+                        cL4_pack_sel2((word_t*)local_d0, (word_t*)auStack_98);
+                        lVar3 = lVar7 + lVar3;
+                        puVar2 = (byte*)*b;
+                        puVar6 = (byte*)*a;
+                    }
+                    cL4_pack_sel4((word_t*)local_d0, lVar3);
+                    goto LAB_39879c;
+                }
+                lVar3 = 0x40;
+                break;
+            }
+            lVar3 = lVar7 + 1;
+            cL4_memcpy((word_t)(auStack_98 + lVar7), (word_t)local_d0, 1, lVar4);
+            puVar6 = puVar6 + 1;
+            *a = (word_t)puVar6;
+            puVar2 = (byte*)*b;
+            lVar4 = lVar4 + -1;
+            lVar7 = lVar3;
+        } while (puVar6 != puVar2);
+    }
+    cL4_pack_sel5((word_t*)auStack_98, lVar3, 0xf9000a63a9000a61);
+LAB_39879c:
+    if (local_58 == -0x2c8502b44bfffed6) {
+        return;
+    }
     cL4_runtime_fatal();
 }
 

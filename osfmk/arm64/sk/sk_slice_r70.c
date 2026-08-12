@@ -2150,7 +2150,7 @@ map:
                         cur = (ulong *)*nxt;
                     } while ((ulong *)*nxt != NULL);
                 }
-                cL4_w16_t o = { (ulong)node, 0 };
+                cL4_w16_t o = { (ulong)node, r.hi };
                 return o;
             }
             if (base == 0 && *(long *)(obj + 0x10) == span) {
@@ -2660,7 +2660,10 @@ void FUN_0067ad00(unsigned char *dst, unsigned long pat, ulong len)
 
 /* FUN_0067aeb0 @ 0x67aeb0
  * Ghidra: long FUN_0067aeb0(byte *, byte *)
- * strcmp: compare two NUL-terminated strings, 16 bytes at a time. Confidence: low. */
+ * strcmp: compare two NUL-terminated strings, 16 bytes at a time. Confidence: low.
+ * Notes: opaque compiler-rt artifacts dropped — in_w18&1 early branch calls
+ * FUN_0067b3b0(); DAT_006feca0/tco NEON trace-control path; _DAT_0067aea0 mask.
+ * Core 16-byte-compare semantics (incl. bytes 8-15) rendered faithfully. */
 long FUN_0067aeb0(const unsigned char *a, const unsigned char *b)
 {
     while ((ulong)a & 0xf) {
@@ -2684,10 +2687,7 @@ long FUN_0067aeb0(const unsigned char *a, const unsigned char *b)
                       d2 = (unsigned char)(x1>>16), d3 = (unsigned char)(x1>>24),
                       d4 = (unsigned char)(x1>>32), d5 = (unsigned char)(x1>>40),
                       d6 = (unsigned char)(x1>>48), d7 = (unsigned char)(x1>>56);
-        if (c0!=y0||c1!=(unsigned char)(y0>>8)||c2!=(unsigned char)(y0>>16)||
-            c3!=(unsigned char)(y0>>24)||c4!=(unsigned char)(y0>>32)||
-            c5!=(unsigned char)(y0>>40)||c6!=(unsigned char)(y0>>48)||
-            c7!=(unsigned char)(y0>>56)) {
+        if (x0 != y0 || x1 != y1) {
             long i = 0;
             while (1) {
                 unsigned char ca = a[i], cb = b[i];

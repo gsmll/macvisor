@@ -1578,7 +1578,7 @@ void cL4_mr_op_TZ(int *out, long ctx, long desc, int depth)
  * If the payload tag is not 0x18, marshals via cL4_mr_wrap3 then emits "XB".
  * Otherwise marshals all element words in reverse, emits "XzB", and marshals
  * the descriptor's first word via cL4_mr_tail.
- * Confidence: medium
+ * Confidence: high (verified 1:1 vs decompile+disasm; loop bound fixed)
  */
 void cL4_mr_op_XB(int *out, long ctx, long *desc, int depth)
 {
@@ -1610,7 +1610,7 @@ not_shape:
     i = (int)n;
     while (1) {
         i = i - 1;
-        if (i < 0) break;
+        if (i == 0) break;   /* lVar5==0 in asm: op runs for i=n-1..1; first word via tail */
         cL4_mr_op((unsigned long)out, ctx, (unsigned long)desc, i, (unsigned long)(depth + 1));
         if (*out != 0) return;
     }

@@ -2360,7 +2360,10 @@ oob:
  * collection (0x222), validates the index bounds, folds the first byte into
  * the map, and returns index-1. Traps on empty (0x222), invalid range (0x2f9),
  * invalid UTF-8 (0xc1/0xc2/0xa7), or out-of-bounds (0x2ca).
- * Confidence: medium
+ * Confidence: high
+ * VB2-verified: call-for-call, arg-for-arg match vs FUN_00272820 decompile
+ *   (incl. reuse of FUN_002c88f8 result for the second FUN_002c8c2c, the
+ *   LZCOUNT/clz folding shift, all fatal codes 0x222/0x2f9/0xc1/0xc2/0xa7/0x2ca).
  * Notes: strings skp11_s_Can_t_remove_from_an_empty_colle_005d0370,
  *   skp11_s_Swift_RangeReplaceableCollection_005cdd20, skp11_s_Range_requires_lowerBound_... */
 int32_t sk_collection_remove_first(uint64_t idx)
@@ -2612,46 +2615,128 @@ uint32_t skp11_sk_string_remove_last_scalar(uint64_t idx)
 
 /* FUN_00273310 @ 0x00273310   (est. skp11_sk_string_scalar_decode)
  * Ghidra: void FUN_00273310(void)
- * Decodes and emits the scalar at a string index: validates the index, decodes
- * the UTF-8 sequence (LZCOUNT switch), computes the scalar length, writes the
- * (offset|5) position, and stores the scalar via the typed append.
- * Confidence: medium
- * Notes: Swift_UnicodeHelpers 0x34 trap; FUN_002ab8ac/FUN_002a7c00 append. */
+ * String collection scalar decode/append helper. Reads the buffer bounds
+ * (*unaff_x20[0]/[1]), allocates capacity, guards the collection flags (bit 0x3c
+ * on the end word traps; bit 0x3d selects the backing-storage decode path), and
+ * computes the trailing scalar value via a two-level LZCOUNT/register switch
+ * (caseD_1/2/3), writes the (offset|5) position and stores the scalar. Retains
+ * the opaque Ghidra register-forwarding artifacts (extraout_x*/unaff_x20) verbatim.
+ * Confidence: low
+ * Notes: Swift_UnicodeHelpers 0x34 trap; FUN_002ab8ac/FUN_002a7c00 append; the
+ *   extraout_x*/unaff_x20 values are unextractable register forwardings, so the
+ *   per-case scalar computations cannot be fully expressed in C. */
 void skp11_sk_string_scalar_decode(void)
 {
-    uint64_t *buf = 0; /* unaff_x20 */
-    uint64_t b = buf[0];
-    uint64_t e = buf[1];
+    ulong v1;                 /* uVar1 = *unaff_x20 */
+    ulong v2;                 /* uVar2 = unaff_x20[1] */
+    ulong cap;                /* uVar4 = allocation capacity */
+    ulong v5;                 /* uVar5 */
+    long v6;                  /* lVar6 */
+    uint8_t v3;               /* uVar3 */
+    ulong v8;                 /* uVar8 */
+    uint v7;                  /* uVar7 */
+    uint extraout_w8;
+    uint extraout_w8_00;
+    long extraout_x8;
+    long extraout_x8_00;
+    long extraout_x8_01;
+    long extraout_x8_02;
+    long extraout_x8_03;
+    long extraout_x8_04;
+    int extraout_w9;
+    int extraout_w9_00;
+    ulong extraout_x16;
+    ulong extraout_x16_00;
+    ulong *unaff_x20;
+    undefined8 extraout_x1;
+
     skp11_sk_rt_00041138();
-    uint64_t cap = skp11_sk_rt_0034c094(b & 0xffffffffffff);
-    if (cap == 0) {
+    v1 = *unaff_x20;
+    v2 = unaff_x20[1];
+    cap = skp11_sk_rt_0034c094(v1 & 0xffffffffffff);
+    if (extraout_x8 == 0) {
         skp11_sk_rt_003488bc(1);
         skp11_sk_rt_0034a69c();
         skp11_sk_rt_00353f14();
-        skp11_sk_rt_001afe4c();
+        skp11_sk_rt_001afe4c();           /* no return */
     }
     skp11_sk_rt_00351190();
-    uint64_t pos = skp11_sk_rt_00167404() >> 0x10;
-    uint64_t cp = 0;
-    uint64_t l = (e >> 0x3d & 1) != 0 ? 0 : (b >> 0x3c & 1) == 0 ? skp11_sk_rt_002a9ba8() : (e & 0xfffffffffffffff) + 0x20;
-    uint8_t c0 = *(uint8_t *)(l + pos);
-    uint32_t clen = 1;
-    if ((int8_t)c0 < 0) {
-        switch (__builtin_clzll((uint64_t)(uint32_t)((c0 << 0x18) ^ 0xffffffffu))) {
-        case 2: cp = *(uint8_t *)(l + pos + 1) & 0x3f | (c0 & 0x1f) << 6; clen = 2; break;
-        case 3: cp = (c0 & 0xf) << 0xc | (*(uint8_t *)(l + pos + 1) & 0x3f) << 6 | (*(uint8_t *)(l + pos + 2) & 0x3f); clen = 3; break;
-        case 4: cp = (c0 & 0xf) << 0x12 | (*(uint8_t *)(l + pos + 1) & 0x3f) << 0xc | (*(uint8_t *)(l + pos + 2) & 0x3f) << 6 | (*(uint8_t *)(l + pos + 3) & 0x3f); clen = 4; break;
+    v5 = skp11_sk_rt_00167404();
+    if ((v2 >> 0x3c & 1) != 0) {
+        skp11_sk_rt_0035646c();
+        skp11_sk_rt_0034883c();
+        skp11_sk_rt_001afa84();           /* no return */
+    }
+    v8 = v5 >> 0x10;
+    if ((v2 >> 0x3d & 1) != 0) {
+        skp11_sk_rt_003599a0(v2 & 0xffffffffffffff);
+        skp11_sk_rt_0035a16c(extraout_x8_01 + v8);
+        if (-1 < extraout_w9_00) goto c0;
+        skp11_sk_rt_00352af0();
+        v6 = extraout_x8_02;
+        switch (extraout_x16_00) {
+        default: goto c0;
+        case 1: goto c1;
+        case 2: goto c2;
+        case 3: goto c3;
         }
     }
-    skp11_sk_rt_0034b3f8(cp);
-    if (((pos + clen) << 2) < (cap >> 0xe)) {
-        skp11_sk_rt_00347d60();
-        skp11_sk_rt_001afe4c();
+    if ((v1 >> 0x3c & 1) == 0) {
+        skp11_sk_rt_003504ac();
+        v6 = skp11_sk_rt_002a9ba8();
+    } else {
+        v6 = (v2 & 0xfffffffffffffff) + 0x20;
     }
-    skp11_sk_rt_00350a1c(cap, (pos + clen) * 0x10000 | 5);
+    skp11_sk_rt_0035a16c(v6 + v8);
+    if (-1 < extraout_w9) goto c0;
+    skp11_sk_rt_00352af0();
+    v6 = extraout_x8_00;
+    switch (extraout_x16) {
+    default: goto c0;
+    case 1: goto c1;
+    case 2: goto c2;
+    case 3: goto c3;
+    }
+c2:
+    skp11_sk_rt_0034fb88();
+    v7 = extraout_w8;
+    goto cjoin;
+c3:
+    skp11_sk_rt_0034c6d4();
+    skp11_sk_rt_0035367c();
+    v7 = extraout_w8_00;
+    goto cjoin;
+cjoin:
+    v8 = (ulong)((uint)(v5 >> 0x10) & 0xffffffc0 | v7 & 0x3f);
+c0:
+    skp11_sk_rt_0034d190();
+    v5 = skp11_sk_rt_00167404();
+    v5 = v5 >> 0x10;
+    if ((v2 >> 0x3d & 1) == 0) {
+        if ((v1 >> 0x3c & 1) == 0) {
+            skp11_sk_rt_003504ac();
+            v6 = skp11_sk_rt_002a9ba8();
+        } else {
+            v6 = (v2 & 0xfffffffffffffff) + 0x20;
+        }
+        v3 = *(uint8_t *)(v6 + v5);
+    } else {
+        skp11_sk_rt_003599a0(v2 & 0xffffffffffffff);
+        v3 = *(uint8_t *)(extraout_x8_03 + v5);
+    }
+    skp11_sk_rt_0034b3f8(v3);
+    if ((v5 + extraout_x8_04 & 0xffffffffffff) << 2 < cap >> 0xe) {
+        skp11_sk_rt_00347d60();
+        skp11_sk_rt_001afe4c();           /* no return */
+    }
+    skp11_sk_rt_00350a1c(cap, (v5 + extraout_x8_04) * 0x10000 | 5);
     skp11_sk_rt_002ab8ac();
     skp11_sk_rt_002a7c00();
-    skp11_sk_rt_0035847c(cp);
+    skp11_sk_rt_0035847c(v8, extraout_x1);
+    return;
+c1:
+    skp11_sk_rt_0034f2d4(*(uint8_t *)(v6 + 1));
+    goto c0;
 }
 
 /* FUN_00273880 @ 0x00273880   (est. skp11_sk_string_remove_last_reset)
