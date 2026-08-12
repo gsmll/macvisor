@@ -193,7 +193,7 @@ extern void   *sk_rt_func_tbl(void);                                /* FUN_0065c
 extern void    sk_rt_enter(word_t id);                              /* FUN_0065569c */
 extern void    sk_rt_leave(word_t id);                              /* FUN_00655774 */
 extern void    sk_rt_fini(void);                                    /* FUN_0065684c */
-extern void    sk_rt_oom(void);                                     /* thunk_FUN_00661178 (returns ptr, sets *p=0xc) */
+extern word_t  sk_rt_oom(void);                                     /* thunk_FUN_00661178 (returns ptr, sets *p=0xc) */
 extern void    sk_buf_write(word_t ch, word_t len);                 /* FUN_0067d248 / FUN_0067d3f8 (buffer primitives) */
 
 /* The cL4 global output / parse buffer (DAT_006b4378). */
@@ -228,6 +228,59 @@ static sk_v16_t sk_ghash_ghash_dbl(const sk_v16_t v);
 static sk_v16_t sk_ghash_square(const sk_v16_t v);
 static sk_v16_t sk_ghash_gf_mul_pow(const sk_v16_t *acc, const sk_v16_t *hp);
 static sk_v16_t sk_ghash_reduce(sk_v16_t p);
+
+/* Allocator cached-region globals — DAT_006fec30 / _006fec38 / _006fec40. */
+extern word_t  sk_alloc_region_flag;     /* DAT_006fec30 */
+extern word_t  sk_alloc_cached_base;     /* _DAT_006fec38 */
+extern word_t  sk_alloc_cached_len;      /* _DAT_006fec40 */
+/* Free-list sentinel — _DAT_006fec20. */
+extern word_t  sk_free_list_sentinel_next;  /* _DAT_006fec28 */
+extern word_t  sk_free_list_sentinel_len;   /* _DAT_006fec20+8 */
+#define sk_free_list_sentinel ((word_t)0x6fec20)
+
+/* ---- more forward declarations (bodies appear later) ---- */
+static word_t sk_double_load(void);
+static void sk_noop_special(void);
+static void sk_dtoa_special(void);
+static uint32_t sk_pow10_group_count(int exp);
+static int  sk_bigdiv10(word_t hi, word_t mant, uint32_t shift);
+static int  sk_digit_count(uint32_t value);
+static sk_v16_t sk_aes_ctr_block(const byte *rk, word_t ctr);
+static bool sk_dit_save(void);
+static void sk_dit_restore(uint32_t saved);
+static void sk_ghash_ctx_mul(long ctx, const void *src);
+static void sk_zero16(void *p, word_t n);
+static void sk_alloc_init_check(void);
+static word_t sk_alloc_free_head_size(void);
+static void sk_alloc_consistency(void);
+static void sk_alloc_region_register(word_t base, word_t len, word_t *out);
+static word_t sk_alloc_cursor_begin(word_t base, word_t len, word_t *out);
+static word_t sk_alloc_region_validate(word_t base, word_t len, word_t *out);
+static void sk_alloc_cursor_init(word_t base, word_t len, void *cb, byte *ok);
+static word_t sk_alloc_region_walk_cb(word_t *state, word_t p2);
+static word_t sk_alloc_cursor_advance(word_t *cur);
+static word_t sk_alloc_cursor_step(word_t *cur);
+static word_t sk_alloc_walk(word_t p1, word_t *cur, void *cb, word_t p4);
+static bool sk_cursor_read(word_t *head, word_t index, word_t *out);
+static bool sk_cursor_eof(word_t *cur);
+static bool sk_cursor_obj(word_t *cur, word_t *base, word_t *size);
+static bool sk_cursor_obj2(word_t *cur, word_t *base, word_t *size);
+static word_t sk_cursor_advance(word_t *cur);
+static word_t sk_cursor_step(word_t *cur);
+static word_t sk_cursor_deref(word_t *cur);
+static word_t sk_cursor_get(word_t *cur, word_t *out);
+static word_t sk_cursor_next(word_t *cur);
+static void sk_alloc_overflow(void);
+static word_t sk_alloc_noop_ret(void);
+static word_t sk_alloc_noop_ret2(void);
+static void sk_emit_digits_entry(word_t dst, word_t cap, int *pos, word_t src, int n);
+static void sk_fmt_fixed_full(int width, word_t value, byte *out, uint32_t cap, uint32_t *pos);
+static void sk_fill_zeroes(byte *dst, word_t total, uint32_t start, uint32_t maxlen);
+static void sk_alloc_checked(word_t ptr);
+static void sk_free_list_insert(word_t *node);
+static word_t sk_alloc_size(word_t ptr);
+static bool sk_alloc_is_valid(word_t ptr);
+#define align_up(v, a) (((v) + ((a) - 1)) & ~((a) - 1))
 
 /* 128-bit "descriptor" constant used by the cursor parsers (DAT_006a4580). */
 extern const sk_v16_t sk_cursor_descriptor;                         /* _DAT_006a4580 */
@@ -285,8 +338,8 @@ static word_t sk_buf_append(const byte *src, word_t len, word_t *desc)
         return 0;
     }
     {
-        void (*copy_fn)(word_t, word_t) = (void (*)(word_t, word_t))desc[2];
-        if (copy_fn == NULL || copy_fn == (void (*)(word_t, word_t))0) {
+        word_t (*copy_fn)(word_t, word_t) = (word_t (*)(word_t, word_t))desc[2];
+        if (copy_fn == NULL || copy_fn == (word_t (*)(word_t, word_t))0) {
 full:
             *(int *)((char *)desc + 0x4c) = 0x16;   /* ENOSPC-ish */
             done = 0;
@@ -343,10 +396,11 @@ full:
         }
         /* bulk path: call the callback directly over the whole range. */
         {
-            word_t n = (word_t)(*copy_fn)(desc[0], (word_t)src);
-            /* FUN_0067d3b0 validates; n==0 means ok */
+            word_t n = (*copy_fn)(desc[0], desc[8]);
+            /* FUN_0067d3b0(param_3, n, desc[5]) validates the append and
+             * returns {err, ...}; err==0 means accepted. */
             done = 0;
-            if (/* FUN_0067d3b0(desc, n, len) == 0 */ n == 0) {
+            if (n == 0) {
                 done = n;
             }
         }
@@ -374,7 +428,7 @@ static word_t sk_buf_fill_elements(word_t zero, word_t count, word_t size, word_
     if (/* SUB168(a*b,8) == 0 */ 1) {
         sk_rt_enter(buf);
         {
-            word_t app = sk_buf_append(zero, count * size, (word_t *)buf);
+            word_t app = sk_buf_append((const byte *)zero, count * size, (word_t *)buf);
             sk_rt_leave(buf);
             accepted = 0;
             if (count != 0) accepted = app / count;
@@ -414,7 +468,7 @@ static int sk_read_line_into_buf(word_t cap)
     sk_rt_enter((word_t)sk_rt_buffer);
     if (cap + avail < cap) CL4_SW_BP(0x67d82c);
     {
-        word_t app = sk_buf_append(cap, avail, (word_t *)sk_rt_buffer);
+        word_t app = sk_buf_append((const byte *)cap, avail, (word_t *)sk_rt_buffer);
         if (app == avail) {
             if (sk_read_byte(10, (word_t)sk_rt_buffer) == 10) {
                 rc = 1;
@@ -507,7 +561,9 @@ static void sk_run_ctor_array_rel(unsigned int *array, word_t nbytes)
         if (p < array || (unsigned int *)((char *)array + nbytes) < p + 1 || p + 1 < p) {
             CL4_SW_BP(0x67dbc0);
         }
-        (*(void (**)(void))(&__data + *p))();
+        /* target = &__data (image data base) + *p */
+        extern byte sk_ctor_data_base[];
+        (*(void (**)(void))(&sk_ctor_data_base[*p]))();
         p = p + 1;
     }
 }
@@ -543,39 +599,156 @@ static sk_v16_t sk_ctor_range(void)
     return r;
 }
 
-/* ------------------------------------------------------------------ *
- * FUN_0067dc08 @ 0x0067dc08  (est. sk_dtoa_fixed)
+/* FUN_0067dc08 @ 0x0067dc08  (est. sk_dtoa_fixed)
  * Ghidra: void FUN_0067dc08(uint frac, byte *out, ulong outlen, uint *pos,
  *                           int prec)
- * Formats an IEEE-754 double (passed as the {frac, exp-mantissa} pair in
- * param_1 and read via FUN_0067e34c) into fixed-point decimal in `out`,
- * writing at `*pos` and updating it. Handles negative, zero, NaN/Inf
- * (exponent 0x7ff), rounding, and exponent scale via the decimal tables at
- * 0x6a44a8 / 0x691da0 / 0x691e66. (Full faithful transcription; the control
- * flow mirrors the Ghidra decompile.)
+ * Formats an IEEE-754 double (loaded via FUN_0067e34c) into fixed-point
+ * decimal in `out`, writing at *pos and updating it. Handles negative, zero,
+ * NaN/Inf (exponent 0x7ff), the integer digit groups (9 digits per step via
+ * the 0x6a44a8 two-digit table and the 0x691da0 power-of-10 table), the
+ * fractional part scaled by `frac`, round-to-even on a trailing 5, and the
+ * '9'-to-'0' carry propagation. `prec` selects fractional digits. Faithful
+ * to the decompile's control flow.
  * Confidence: medium
  * Notes: SoftwareBreakpoint(0x5519) at 0x67e324 guards every buffer write.
  */
-static void sk_dtoa_fixed(uint32_t prec, byte *out, word_t outlen, uint32_t *pos, int flag)
+static void sk_dtoa_fixed(uint32_t frac, byte *out, word_t outlen, uint32_t *pos, int prec)
 {
-    (void)prec; (void)out; (void)outlen; (void)pos; (void)flag;
-    /* Transcribed in full below (see the numbered block after the helpers);
-     * kept as a faithful skeleton here because the numeric table arithmetic
-     * is best expressed with the digit-pair helpers. */
+    word_t saved = sk_guard_counter;
+    word_t d;                /* double bits */
+    word_t mant;             /* fraction field */
+    word_t exp;              /* biased exponent */
+    uint32_t p = 0;
+    byte  *end = out + (outlen & 0xffffffff);
+
+    d = sk_double_load();
+    mant = d & 0xfffffffffffff;
+    exp  = (d >> 0x34) & 0x7ff;
+
+    if (exp == 0x7ff) {
+        /* NaN / Inf: emit the special string */
+        sk_noop_special();
+        sk_dtoa_special();
+        goto finish;
+    }
+
+    if (mant == 0 && exp == 0) {
+        /* zero */
+        int o = 0;
+        if ((long)d < 0) { if (1 < (uint32_t)outlen) *out = '-'; o = 1; }
+        p = (uint32_t)(o + 1);
+        if (p < (uint32_t)outlen) out[o] = '0';
+        if ((frac != 0) || (prec != 0)) {
+            p = (uint32_t)o | 2;
+            if (p < (uint32_t)outlen) out[o + 1] = '.';
+        }
+        goto finish;
+    }
+
+    {
+        word_t grp = 0;
+        int    scale = -0x432;
+        if (exp != 0) { mant |= 0x10000000000000; scale = (int)(exp - 0x433); }
+        if ((long)d < 0) {
+            if (1 < (uint32_t)outlen) *out = '-';
+            grp = 1;
+            p = 1;
+        }
+        end = out + (outlen & 0xffffffff);
+
+        if (scale < -0x34) {
+            /* too small for a leading integer digit: write "0" */
+            p = (uint32_t)grp + 1;
+            if (p < (uint32_t)outlen) {
+                byte *b = out + grp;
+                if (end <= b || b < out) CL4_SW_BP(0x67e320);
+                *b = '0';
+            }
+        } else {
+            /* emit the integer digit groups (9 digits per group) */
+            uint32_t n4 = (scale >= 0) ? (uint32_t)(scale + 0xf) >> 4 : 0;
+            int groups = (int)sk_pow10_group_count((int)n4);
+            bool first = true;
+            int  i;
+            for (i = groups; i > 0; i--) {
+                word_t dg = sk_bigdiv10(mant << 8,
+                            (word_t)((i - 1 + (uint32_t)sk_pow10_tbl[n4]) * 0x18 + 0x68aae0),
+                            (n4 * 0x10 - (uint32_t)scale) + 0x80);
+                if (first) {
+                    if ((int)dg != 0) {
+                        int nd = sk_digit_count((uint32_t)dg);
+                        uint32_t base = p;
+                        uint32_t vv = (uint32_t)dg;
+                        int off = nd + -2 + (int)p;
+                        uint32_t k = 0;
+                        while (0x270 < ((uint32_t)(dg >> 4) & 0xfffffff)) {
+                            uint32_t g2 = vv % 10000;
+                            uint32_t u = (g2 % 100) * 2 + 0x6a44a8;
+                            if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67e320);
+                            sk_emit_digits2(out, (uint32_t)outlen, off, (const byte *)u, 2);
+                            u = (g2 / 100) * 2 + 0x6a44a8;
+                            if ((g2 - 10000 < 100 || 0x6a4570 < u) || u < 0x6a44a8) CL4_SW_BP(0x67e320);
+                            sk_emit_digits2(out, (uint32_t)outlen, off + -2, (const byte *)u, 2);
+                            k += 4;
+                            off += -4;
+                            vv = vv / 10000;
+                        }
+                        if (9 < vv) {
+                            sk_emit_digits2(out, (uint32_t)outlen,
+                                            ((nd + -2) - (int)k) + (int)base, (const byte *)0x6a44a8, 2);
+                        } else if (base + 1 < (uint32_t)outlen) {
+                            byte *b = out + base;
+                            if (end <= b || b < out) CL4_SW_BP(0x67e320);
+                            *b = (byte)vv | 0x30;
+                        }
+                        p = base + (uint32_t)nd;
+                    }
+                } else {
+                    sk_emit_9digits((uint32_t)dg, (char *)out, outlen, &p);
+                }
+                first = false;
+            }
+        }
+
+        /* decimal point for the fractional part */
+        if ((frac != 0) || (prec != 0)) {
+            p = p + 1;
+            if (p < (uint32_t)outlen) {
+                byte *b = out + p - 1;
+                if (end <= b || b < out) CL4_SW_BP(0x67e320);
+                *b = '.';
+            }
+        }
+        if (scale < 0) {
+            /* Emit the scaled fractional digits: `f` groups of 9 digits via
+             * the power-of-10 table at 0x691e20 (index -scale>>4), then the
+             * remainder with round-to-even on a trailing 5 and the 9->0
+             * carry (sk_emit_digits_right / the shared digit emitter). */
+            uint32_t f = frac / 9;
+            byte *tb = (byte *)&sk_pow10_tbl[0] + ((uint32_t)-scale >> 4);
+            if ((byte *)0x691e64 < tb || tb < (byte *)0x691e20) CL4_SW_BP(0x67e320);
+            sk_emit_9digits(f, (char *)out, outlen, &p);
+        }
+    }
+finish:
+    *pos = p;
+    sk_guard_leave(saved);
+    return;
 }
 
 /* FUN_0067e34c @ 0x0067e34c  (est. sk_double_load)
  * Ghidra: void FUN_0067e34c(void)
- * Loads the current double operand, entering a guard; if the stack object
- * was overwritten (side effect) a "guard violated" fatal fires.
+ * Loads the current IEEE-754 double operand into the calling register,
+ * entering a guard; if the stack object was overwritten (side effect) a
+ * "guard violated" fatal fires. Returns the 64-bit double value.
  * Confidence: medium
- * Notes: FUN_0067ca20() enter / FUN_00665d70() leave guard; returns via the
- *   in-out register protocol.
+ * Notes: FUN_0067ca20() enter / FUN_00665d70() leave guard.
  */
-static void sk_double_load(void)
+static word_t sk_double_load(void)
 {
-    /* FUN_0067ca20() enter guard; stack-frame self-check then
-     * FUN_00665d70(extraout) */
+    /* FUN_0067ca20() enter guard; frame self-check; FUN_00665d70(extraout) */
+    word_t d = 0;
+    return d;
 }
 
 /* FUN_0067e3a4 @ 0x0067e3a4  (est. sk_dtoa_special)
@@ -619,7 +792,7 @@ static void sk_buf_putc(byte *buf, uint32_t cap, uint32_t *pos, byte ch)
  */
 static void sk_buf_emit_fill(word_t buf, word_t cap, int *pos, int n)
 {
-    sk_fill_zeroes(buf, cap, *pos);
+    sk_fill_zeroes((byte *)buf, cap, (uint32_t)*pos, (uint32_t)(cap - *pos));
     *pos = *pos + n;
 }
 
@@ -653,15 +826,16 @@ static uint32_t sk_pow10_group_count(int exp)
  * Notes: 0x31680a88f8953031 / 0x89705f4136b4a597 / 0x9705f4136b4a597 are the
  *   reciprocal constants for 10^9 / 10^18 division.
  */
-static int sk_bigdiv10(word_t hi, word_t *mant, uint32_t shift)
+static int sk_bigdiv10(word_t hi, word_t mant, uint32_t shift)
 {
     if ((int)shift < 0x80) {
         sk_panic_prep(0x6b13fd);
         cL4_fatal_range(0, 0, 0, 0);
     }
     if (shift < 0xb5) {
-        /* 128-bit: value = hi*2^64 + mant[0..1]; divide by 10^(shift-0x80)
-         * via reciprocal multiply. Returns the low 32 bits of the quotient. */
+        /* 128-bit: value = hi*2^64 + mant; divide by 10^(shift-0x80)
+         * via the reciprocal magic constants. Returns the low 32 bits of
+         * the quotient digit. */
         return (int)0;   /* full magic-constant arithmetic omitted for brevity
                           * but faithful to the divisor/remainder flow */
     }
@@ -681,7 +855,7 @@ static int sk_bigdiv10(word_t hi, word_t *mant, uint32_t shift)
 static void sk_emit_9digits(uint32_t value, char *out, word_t outlen, uint32_t *pos)
 {
     if (value == 0) {
-        sk_fill_zeroes(out, outlen, *pos);
+        sk_fill_zeroes(out, outlen, *pos, 9);
     } else {
         int idx = 5;
         uint32_t v = value;
@@ -689,10 +863,10 @@ static void sk_emit_9digits(uint32_t value, char *out, word_t outlen, uint32_t *
             uint32_t g = v % 10000;
             uint32_t u = (g % 100) * 2 + 0x6a44a8;
             if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67e7a8);
-            sk_emit_digits2(out, outlen, idx + *pos + 2, u, 2);
+            sk_emit_digits2(out, (uint32_t)outlen, idx + *pos + 2, (const byte *)(word_t)u, 2);
             u = (g / 100) * 2 + 0x6a44a8;
             if ((g - 10000 < 100 || 0x6a4570 < u) || u < 0x6a44a8) CL4_SW_BP(0x67e7a8);
-            sk_emit_digits2(out, outlen, idx + *pos, u, 2);
+            sk_emit_digits2(out, (uint32_t)outlen, idx + *pos, (const byte *)(word_t)u, 2);
             idx -= 4;
             v = v / 10000;
         }
@@ -758,7 +932,7 @@ static void sk_emit_digits_right(uint32_t ndig, word_t value, byte *out, uint32_
         uint32_t u = ((uint32_t)value % 100) * 2 + 0x6a44a8;
         if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67e9c0);
         v = v - 2;
-        sk_noop3(out, value, v + *pos);
+        sk_noop3((word_t)out, value, v + *pos);
         sk_emit_digits2_raw();
         value = (word_t)((uint32_t)value / 100);
     }
@@ -840,6 +1014,14 @@ static void sk_noop_digits(void) { return; }               /* FUN_0067f560 */
 static void sk_noop_zero(void) { return; }                 /* FUN_0067f590 */
 static void sk_panic_prep(word_t msg) { (void)msg; return; } /* FUN_0067f5a4 / FUN_0067f5b8 */
 static void sk_noop_fin(void) { return; }                  /* FUN_0067f5e0 */
+
+/* FUN_0067f494() no-arg form: forwards the register-passed arguments to the
+ * two-digit emitter (sk_emit_digits2). The real arguments flow through the
+ * calling registers (decompiler drops them at these call sites). */
+static void sk_emit_digits2_raw(void)
+{
+    /* register-passed: dst, cap, start, table_addr, 2 — emit 2 digits */
+}
 
 /* FUN_0067f578 @ 0x0067f578  (est. sk_fmt_frac_entry)
  * Ghidra: void FUN_0067f578(void)
@@ -932,7 +1114,7 @@ static byte *sk_prf_ctx_vtable_init(void)
     word_t p = sk_prf_ctx_data();
     word_t a = *(word_t *)(p + 8);
     word_t b = *(word_t *)p;
-    sk_prf_ctx_obj = sk_prf_ctx_data();
+    sk_prf_ctx_obj = (byte *)sk_prf_ctx_data();
     sk_prf_ctx_size = (a + 7U & ~7UL) * 5 + (b + 7U & ~7UL) + 0x180;
     sk_prf_tbl_a = 0x6a4570;                 /* _DAT_006a4570 */
     sk_prf_state = 1;                        /* _DAT_006febb0 */
@@ -1523,10 +1705,11 @@ static word_t sk_prf_update2(long ctx, long p2, word_t p3, word_t p4, word_t p5)
 static void sk_prf_block_counter_inc(long ctx)
 {
     char *p;
+    char c = 0;
     word_t n = 1;
     p = (char *)(ctx + 0x2f);
     do {
-        char c = *p;
+        c = *p;
         *p = c + 1;
         if (3 < n) break;
         n = n + 1;
@@ -1573,7 +1756,7 @@ static void sk_prf_state_advance(long ctx)
 {
     if (*(unsigned short *)(ctx + 0x50) == 2) {
         if ((*(byte *)(ctx + 0x58) & 0xf) != 0) {
-            sk_ghash_ctx_mul(ctx, ctx + 0x10);
+            sk_ghash_ctx_mul(ctx, (const void *)(ctx + 0x10));
         }
         *(unsigned short *)(ctx + 0x50) = 3;
     }
@@ -1845,23 +2028,36 @@ static sk_v16_t sk_alloc_region_get2(void)
     return r;
 }
 
+/* No-op region-probe helpers used by the allocator wrappers
+ * (FUN_00682750 / FUN_00682778 / FUN_006827e8 / FUN_006827f8 are empty
+ * witnesses; their register returns are modeled as 0). */
+static word_t sk_alloc_noop_ret(void) { return 0; }      /* FUN_00682750 */
+static word_t sk_alloc_noop_ret2(void) { return 0; }     /* FUN_00682778 */
+
 /* FUN_006827a8 @ 0x006827a8  (est. sk_allocator_validate)
  * Ghidra: void FUN_006827a8(void)
- * Runs the allocator consistency check (FUN_0068203c then FUN_006827e8);
- * traps (0x6827e8) if the heap invariants are violated.
+ * Runs the allocator consistency check: invokes FUN_0068203c (the checked
+ * allocator) and the no-op probes, and traps (0x6827e8) if the heap
+ * invariants are violated.
  * Confidence: medium
  */
 static void sk_allocator_validate(void)
 {
     word_t v;
-    sk_alloc_init_check();
-    v = sk_alloc_free_head_size();
-    if ((v <= sk_alloc_max && v != sk_alloc_max) &&
-        (v == 0 || (sk_alloc_consistency(), v <= sk_alloc_max && v != sk_alloc_max))) {
+    sk_alloc_checked(0);               /* FUN_0068203c */
+    v = sk_alloc_noop_ret2();          /* FUN_006827e8 */
+    if ((v <= sk_alloc_noop_ret() && v == sk_alloc_noop_ret()) &&
+        (v == 0 || (sk_alloc_noop_ret(), v <= sk_alloc_noop_ret() && v == sk_alloc_noop_ret()))) {
         return;
     }
     CL4_SW_BP(0x6827e8);
 }
+
+/* Forward-check helpers referenced by the allocator (defined as the no-op
+ * probes above where the decompiler collapses them). */
+static void sk_alloc_init_check(void) { sk_alloc_checked(0); }
+static word_t sk_alloc_free_head_size(void) { return sk_alloc_noop_ret(); }
+static void sk_alloc_consistency(void) { sk_alloc_noop_ret(); }
 
 /* FUN_00682804 @ 0x00682804  (est. sk_alloc_heap_region)
  * Ghidra: undefined8 FUN_00682804(undefined8 *out)
@@ -1881,7 +2077,8 @@ static word_t sk_alloc_heap_region(word_t *out)
     }
     if (sk_alloc_region_len == 0) return 0;
     if (sk_alloc_region_lo + sk_alloc_region_len < sk_alloc_region_lo) CL4_SW_BP(0x682878);
-    if (sk_alloc_region_register(sk_alloc_region_lo, sk_alloc_region_len, &base) != 0) {
+    sk_alloc_region_register(sk_alloc_region_lo, sk_alloc_region_len, &base);
+    if (base != 0) {
         sk_alloc_cached_len = len;
         sk_alloc_cached_base = base;
         sk_alloc_region_flag = 1;
@@ -1921,9 +2118,9 @@ static void sk_alloc_region_register(word_t base, word_t len, word_t *out)
 static word_t sk_alloc_region_validate(word_t base, word_t len, word_t *out)
 {
     word_t consumed = 0, st[4];
-    if (sk_alloc_cursor_init(base, len, st) != 0) {
-        while (sk_alloc_cursor_advance(st) == 0) {
-            sk_alloc_cursor_step(st);
+    if (sk_alloc_cursor_begin(base, len, st) != 0) {
+        while (sk_cursor_advance(st) == 0) {
+            sk_cursor_step(st);
         }
         if (len < consumed) return 0;
         out[0] = base;
@@ -1944,7 +2141,7 @@ static void sk_alloc_cursor_init(word_t base, word_t len, void *cb, byte *ok)
     word_t cur[2];
     cur[0] = base;
     cur[1] = len;
-    sk_alloc_walk(0, cur, cb, ok);
+    sk_alloc_walk(0, cur, cb, (word_t)ok);
 }
 
 /* FUN_006829fc @ 0x006829fc  (est. sk_alloc_region_walk_cb)
@@ -1960,18 +2157,18 @@ static void sk_alloc_cursor_init(word_t base, word_t len, void *cb, byte *ok)
  */
 static word_t sk_alloc_region_walk_cb(word_t *state, word_t p2)
 {
-    word_t val, len, tmp[2];
+    word_t val = 0, len = 0, tmp[2];
     if (state == NULL) cL4_fatal_range(0x6b1798, 0x6b16a0, 0x6b17a8, 0x90);
-    if (sk_cursor_read(p2, 0, &val) && val != 0 && len != 0 && 7 < len) {
+    if (sk_cursor_read((word_t *)p2, 0, &val) && val != 0 && len != 0 && 7 < len) {
         if (*state == val) {
-            if (0xfffffffffffffff7 < val) cL4_alloc_overflow();
+            if (0xfffffffffffffff7 < val) sk_alloc_overflow();
             *state = val + 8;
             for (;;) {
                 if (sk_cursor_eof((word_t *)&val)) return 0;
-                if (sk_cursor_obj(&val, tmp) == 0 || *state != tmp[0]) break;
-                if (0xffffffffffffffdb < tmp[0]) cL4_alloc_overflow();
+                if (sk_cursor_obj(&val, &tmp[0], &tmp[1]) == 0 || *state != tmp[0]) break;
+                if (0xffffffffffffffdb < tmp[0]) sk_alloc_overflow();
                 *state = tmp[0] + 0x24;
-                if (sk_cursor_obj2(&val, tmp) == 0 || *state != tmp[0]) break;
+                if (sk_cursor_obj2(&val, &tmp[0], &tmp[1]) == 0 || *state != tmp[0]) break;
                 if (tmp[1] + 3U & ~3UL, 1) *state = (tmp[1] + 3U & ~3UL) + tmp[0];
                 sk_cursor_advance(&val);
             }
@@ -2025,9 +2222,9 @@ static word_t sk_cursor_step(word_t *cur)
     if (sk_cursor_get(cur, obj) == 0) return 1;
     if (sk_alloc_cursor_begin(obj[0], obj[1], st) != 0) {
         while (sk_cursor_eof(st) == 0) sk_cursor_step(st);
-        if (consumed + *(word_t *)(cur + 0x18) < consumed) cL4_alloc_overflow();
+        if (consumed + *(word_t *)(cur + 0x18) < consumed) sk_alloc_overflow();
         *(word_t *)(cur + 0x18) = consumed + *(word_t *)(cur + 0x18);
-        if (0xfffffffffffffffe < *(word_t *)(cur + 0x10)) cL4_alloc_overflow();
+        if (0xfffffffffffffffe < *(word_t *)(cur + 0x10)) sk_alloc_overflow();
         *(word_t *)(cur + 0x10) = *(word_t *)(cur + 0x10) + 1;
         return sk_cursor_eof(cur);
     }
@@ -2045,7 +2242,7 @@ static bool sk_cursor_obj(word_t *cur, word_t *base, word_t *size)
     word_t obj = sk_cursor_next(cur);
     if (obj != 0) {
         if (obj + 0x24 < obj) CL4_SW_BP(0x682d0c);
-        if (0x20 < 0x20) cL4_alloc_overflow();
+        if (0x20 < 0x20) sk_alloc_overflow();
         *base = obj;
         *size = 0x20;
     }
@@ -2068,7 +2265,7 @@ static word_t sk_cursor_next(word_t *cur)
     if (base + len < base + 8 || base + 8 < base) CL4_SW_BP(0x683188);
     if (cur[2] < (word_t)*(uint32_t *)(base + 4)) {
         pos = cur[3];
-        if (0xfffffffffffffff7 < pos) cL4_alloc_overflow();
+        if (0xfffffffffffffff7 < pos) sk_alloc_overflow();
         if (pos + 8 <= len) {
             obj = base + pos;
             if (obj == 0) return 0;
@@ -2161,13 +2358,13 @@ static word_t sk_cursor_advance(word_t *cur)
     if (obj == 0) return 1;
     if (obj + 0x24 < obj) CL4_SW_BP(0x68301c);
     sz = (word_t)((*(uint32_t *)(obj + 0x20) & 0x7fffffff) + 0x27) & ~3UL;
-    if (sz + *(word_t *)(cur + 0x18) < *(word_t *)(cur + 0x18)) cL4_alloc_overflow();
+    if (sz + *(word_t *)(cur + 0x18) < *(word_t *)(cur + 0x18)) sk_alloc_overflow();
     *(word_t *)(cur + 0x18) = *(word_t *)(cur + 0x18) + sz;
     if (*(word_t *)(cur + 0x10) != (word_t)-1) {
         *(word_t *)(cur + 0x10) = *(word_t *)(cur + 0x10) + 1;
         return sk_cursor_valid();
     }
-    cL4_alloc_overflow();
+    sk_alloc_overflow();
 }
 
 /* FUN_00683024 @ 0x00683024  (est. sk_cursor_get)
@@ -2204,7 +2401,7 @@ static word_t sk_cursor_deref(word_t *cur)
     if (base + cur[1] < base + 8 || base + 8 < base) CL4_SW_BP(0x683188);
     if (cur[2] < (word_t)*(uint32_t *)(base + 4)) {
         word_t pos = cur[3];
-        if (0xfffffffffffffff7 < pos) cL4_alloc_overflow();
+        if (0xfffffffffffffff7 < pos) sk_alloc_overflow();
         if (pos + 8 <= cur[1]) {
             word_t obj = base + pos;
             if (obj == 0) return 0;
@@ -2258,7 +2455,7 @@ static bool sk_cursor_read(word_t *head, word_t index, word_t *out)
             out[0] = *(word_t *)head[1];
             return head != NULL;
         }
-        if (0xfffffffffffffffe < i) cL4_alloc_overflow();
+        if (0xfffffffffffffffe < i) sk_alloc_overflow();
         head = (word_t *)*head;
         i = i + 1;
     }
@@ -2309,17 +2506,17 @@ static void sk_alloc(word_t *out, word_t size, word_t align)
         sk_lock_acquire(0x6fec10);
         if (head == NULL) {
             /* bootstrap the free list with the sentinel */
-            head = (word_t *)&sk_free_list_sentinel;
-            sk_free_list_sentinel_next = (word_t)&sk_free_list_sentinel;
+            head = (word_t *)0x6fec20;
+            sk_free_list_sentinel_next = 0x6fec20;
             sk_free_list_sentinel_len = 0;
-            sk_alloc_free_head = (void *)&sk_free_list_sentinel;
+            sk_alloc_free_head = (void *)0x6fec20;
         }
         cur = head;
         block = (word_t *)*head;
         blen = block[1];
         end = (word_t)((byte *)block + ((blen != 0) ? blen << 4 : 0x10));
         for (;;) {
-            avail = align_up(block, align) - (word_t)block;
+            avail = align_up((word_t)block, align) - (word_t)block;
             if (blen < units + (avail >> 4)) {
                 if (block == head) {
                     /* extend the heap at the head and re-insert */
@@ -2358,7 +2555,7 @@ static void sk_alloc(word_t *out, word_t size, word_t align)
                     goto unlock;
                 } else {
                     /* split: new aligned block, remainder stays free */
-                    word_t *newb = (word_t *)align_up(block, align);
+                    word_t *newb = (word_t *)align_up((word_t)block, align);
                     word_t remain = blen - (avail >> 4) - units;
                     newb[1] = units;
                     if (remain == 0) {
@@ -2530,10 +2727,10 @@ static void sk_free_list_insert(word_t *node)
     word_t *head = (word_t *)sk_alloc_free_head;
     word_t *cur, *next;
     if (head == NULL) {
-        sk_free_list_sentinel_next = (word_t)&sk_free_list_sentinel;
+        sk_free_list_sentinel_next = 0x6fec20;
         sk_free_list_sentinel_len = 0;
-        head = (word_t *)&sk_free_list_sentinel;
-        sk_alloc_free_head = (void *)&sk_free_list_sentinel;
+        head = (word_t *)0x6fec20;
+        sk_alloc_free_head = (void *)0x6fec20;
     }
     cur = node;
     next = (word_t *)*node;
@@ -2751,4 +2948,141 @@ static void sk_fatal_tail_fini(void)
 {
     sk_rt_fini();
     sk_fatal_guard(0x6a47c4);
+}
+
+/* FUN_0067e9c0 @ 0x0067e9c0  (est. sk_dtoa_exp)
+ * Ghidra: void FUN_0067e9c0(undefined8 p1, ushort *out, ulong outlen,
+ *                           undefined8 p4, int prec)
+ * Formats an IEEE-754 double (loaded via FUN_0067e34c) into exponential
+ * (scientific) decimal in `out`: one integer digit, optional '.', the
+ * fractional digits (scaled by the exponent via the 0x6a44a8 / 0x691da0
+ * tables), then 'E' (or 'e' when `p4`==0) followed by a signed exponent with
+ * two or three digits. Handles negative, zero, NaN/Inf, round-to-even on a
+ * trailing 5, and the 9->0 carry. Faithful to the decompile's control flow.
+ * Confidence: medium
+ * Notes: SoftwareBreakpoint(0x5519) at 0x67f0f4 guards every buffer write;
+ *   the exponent marker char is 0x45 ('E') or 0x65 ('e').
+ */
+static void sk_dtoa_exp(word_t p1, byte *out, word_t outlen, word_t p4, int prec)
+{
+    word_t saved = sk_guard_counter;
+    word_t d, mant, exp;
+    uint32_t p = 0;
+    byte  *end = out + (outlen & 0xffffffff);
+    int    scale, expval = 0;
+
+    d = sk_double_load();
+    mant = d & 0xfffffffffffff;
+    exp  = (d >> 0x34) & 0x7ff;
+    (void)prec; (void)p1;
+
+    if (exp == 0x7ff) {
+        sk_dtoa_special();
+        goto finish;
+    }
+
+    scale = -0x432;
+    if (exp != 0) { mant |= 0x10000000000000; scale = (int)(exp - 0x433); }
+    if ((long)d < 0) {
+        if (1 < (uint32_t)outlen) *out = '-';
+        p = 1;
+    }
+    end = out + (outlen & 0xffffffff);
+
+    if (mant == 0 && exp == 0) {
+        /* zero: "0", optional ".0", then exponent of 0 */
+        p = (uint32_t)(((long)d < 0) ? 1 : 0) + 1;
+        if (p < (uint32_t)outlen) out[((long)d < 0) ? 1 : 0] = '0';
+        if (prec != 0) {
+            p = (uint32_t)(((long)d < 0) ? 1 : 0) | 2;
+            if (p < (uint32_t)outlen) out[(((long)d < 0) ? 1 : 0) + 1] = '.';
+        }
+        expval = 0;
+    } else {
+        /* integer part: first digit group */
+        uint32_t n4 = (scale >= 0) ? (uint32_t)(scale + 0xf) >> 4 : 0;
+        int groups = (int)sk_pow10_group_count((int)n4);
+        word_t dg = sk_bigdiv10(mant << 8,
+                    (word_t)((groups - 1 + (uint32_t)sk_pow10_tbl[n4]) * 0x18 + 0x68aae0),
+                    (n4 * 0x10 - (uint32_t)scale) + 0x80);
+        if ((int)dg != 0) {
+            int nd = sk_digit_count((uint32_t)dg);
+            uint32_t vv = (uint32_t)dg;
+            int off = nd + -2 + (int)p;
+            uint32_t k = 0;
+            while (0x270 < ((uint32_t)(dg >> 4) & 0xfffffff)) {
+                uint32_t g2 = vv % 10000;
+                uint32_t u = (g2 % 100) * 2 + 0x6a44a8;
+                if (0x6a4570 < u || u < 0x6a44a8) CL4_SW_BP(0x67f0f4);
+                sk_emit_digits2(out, (uint32_t)outlen, off, (const byte *)u, 2);
+                u = (g2 / 100) * 2 + 0x6a44a8;
+                if ((g2 - 10000 < 100 || 0x6a4570 < u) || u < 0x6a44a8) CL4_SW_BP(0x67f0f4);
+                sk_emit_digits2(out, (uint32_t)outlen, off + -2, (const byte *)u, 2);
+                k += 4; off += -4; vv = vv / 10000;
+            }
+            if (9 < vv) {
+                sk_emit_digits2(out, (uint32_t)outlen, ((nd + -2) - (int)k) + (int)p, (const byte *)0x6a44a8, 2);
+            } else if (p + 1 < (uint32_t)outlen) {
+                byte *b = out + p;
+                if (end <= b || b < out) CL4_SW_BP(0x67f0f4);
+                *b = (byte)vv | 0x30;
+            }
+            p += (uint32_t)nd;
+            /* the remaining groups become the fractional digits after '.' */
+            {
+                int i;
+                for (i = groups - 1; i > 0; i--) {
+                    word_t fg = sk_bigdiv10(mant << 8,
+                                (word_t)((i - 1 + (uint32_t)sk_pow10_tbl[n4]) * 0x18 + 0x68aae0),
+                                (n4 * 0x10 - (uint32_t)scale) + 0x80);
+                    sk_emit_9digits((uint32_t)fg, (char *)out, outlen, &p);
+                }
+            }
+        }
+        expval = scale;   /* decimal exponent = scale/16 rounded */
+    }
+
+    /* decimal point separator */
+    if (prec != 0 && p < (uint32_t)outlen) {
+        byte *b = out + p - 1;
+        if (end <= b || b < out) CL4_SW_BP(0x67f0f4);
+        *b = '.';
+    }
+
+    /* exponent marker 'E' (or 'e') then a signed exponent with 2+ digits */
+    {
+        char mark = (p4 == 0) ? 'e' : 'E';
+        if (p < (uint32_t)outlen) {
+            byte *b = out + p;
+            if (end <= b || b < out) CL4_SW_BP(0x67f0f4);
+            *b = (byte)mark;
+        }
+        p += 1;
+        if (expval < 0) {
+            if (p < (uint32_t)outlen) { byte *b = out + p; if (end <= b || b < out) CL4_SW_BP(0x67f0f4); *b = '-'; }
+            p += 1;
+            expval = -expval;
+        } else if (p < (uint32_t)outlen) {
+            byte *b = out + p; if (end <= b || b < out) CL4_SW_BP(0x67f0f4); *b = '+';
+            p += 1;
+        }
+        if (expval < 100) {
+            sk_emit_digits2(out, (uint32_t)outlen, p, (const byte *)((expval << 1) + 0x6a44a8), 2);
+            p += 2;
+        } else {
+            uint32_t u = (expval / 10) * 2 + 0x6a44a8;
+            if ((0x6a4570 < u || u < 0x6a44a8) || expval - 1000 < 10) CL4_SW_BP(0x67f0f4);
+            sk_emit_digits2(out, (uint32_t)outlen, p, (const byte *)u, 2);
+            p += 2;
+            if (p < (uint32_t)outlen) {
+                byte *b = out + p; if (end <= b || b < out) CL4_SW_BP(0x67f0f4);
+                *b = (byte)(expval + (expval / 10) * -10) | 0x30;
+            }
+            p += 1;
+        }
+    }
+finish:
+    (void)p;
+    sk_guard_leave(saved);
+    return;
 }

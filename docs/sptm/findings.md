@@ -5023,3 +5023,51 @@ Confidence: high
 - **Evidence**: `if (len==0xc) { state_w0=*(ulong*)src; *(uint32*)(ctx+0x28)=*(uint32*)(src+8); *(ulong*)(ctx+0x20)=state_w0; *(uint32*)(ctx+0x2c)=0x1000000; }`.
 - **Severity (hypothesis)**: informational — the fixed tag is a construction constant, not attacker data; no weakness observed.
 - **Confidence**: medium
+
+## [SKR71] 0x006812f8 / 0x00681e58 / 0x00681e70 sk_consttime_compare / sk_dit_save / sk_dit_restore — DIT data-independent-timing secure compare
+- **Observation**: The cL4 runtime's secret-key equality check is a constant-time XOR-accumulate compare wrapped in the ARM DIT (Data-Independent-Timing) control: sk_dit_save() reads the DIT system register (op 3,3,4,2,5), forces DIT on and issues a speculation barrier, and sk_dit_restore() clears it if it was clear. The GMAC tag verification (see 0x0068136c) uses this compare, so a tag/secret mismatch is not observable via timing. This is a deliberate constant-time crypto hardening choice.
+- **Evidence**: `sk_consttime_compare`: `acc = a[n-1] ^ b[n-1] | acc;` per byte with no early exit; `sk_dit_save`: `UnkSytemRegRead(3,3,4,2,5); dit=1; SpeculationBarrier();`; sk_dit_restore: `if ((saved & 1)==0) dit=0;`.
+- **Severity (hypothesis)**: informational (positive) — constant-time tag/secret comparison prevents timing side channels; no defect.
+- **Confidence**: high
+
+## [SKR71] 0x0068136c sk_prf_update — GMAC tag verification magic 0x13337, fail-closed mismatch
+- **Observation**: The PRF update/finalize (AES-GMAC/CMAC-style) marks the context done (state 4) and, when ctx+0x78 holds the verify magic 0x13337, constant-time compares the computed tag against the caller's buffer and returns 0xffffffbb (-69) on mismatch; otherwise it copies up to 16 bytes of the tag out and returns 0. The state machine (2-byte field at ctx+0x50) advances 2->3 via a GF(2^128) multiply only when the bit-counter low nibble is set, and refuses work in any other phase (returns 0xffffffbc). This is a fail-closed authentication-verification primitive.
+- **Evidence**: `if (*(short*)(ctx+0x50)==3) { ... if (*(int*)(ctx+0x78)==0x13337) { ne=sk_consttime_compare(len,&tag,out); rc=(-(ne!=0))&0xffffffbb; } ... *(ushort*)(ctx+0x50)=4; } else rc=0xffffffbc;`; the 64-bit bit-counter is written as 8 bytes at ctx+0x40..0x4f.
+- **Severity (hypothesis)**: low — mismatch is rejected, not silently accepted; the phase gate prevents a skipped-state forgery; the magic constant is a construction marker, not a backdoor.
+- **Confidence**: medium
+
+## [SKR71] 0x006820c0 / 0x006823d4 / 0x006825d0 sk_alloc / sk_free / sk_free_list_insert — free-list allocator with pointer-validity and overflow traps
+- **Observation**: The slab allocator validates every free/alloc pointer against the region bounds and the size field (sk_alloc_is_valid), traps on free-list corruption and on pointer-overflow (SoftwareBreakpoint 0x5519 at 0x682398 / 0x683188), and on heap exhaustion records error 0xc and returns a null allocation rather than corrupting the free list. The free list coalesces adjacent blocks under the allocator lock (0x6fec10).
+- **Evidence**: `sk_alloc_is_valid`: `if (ptr<lo || top<ptr || hi<=ptr) return false; return *(ulong*)(ptr-8) <= (hi-lo>>4);`; OOM: `err[0]=0xc;`; `if (obj+0x24 < obj) SoftwareBreakpoint(0x5519,0x682ec8);`.
+- **Severity (hypothesis)**: informational — heap metadata is bounds-validated and overflow is trapped; consistent with seL4-style allocator hardening.
+- **Confidence**: medium
+
+## [SKR71] 0x0067f608 sk_runtime_seed_guard — guard counter seeded from 8 bytes
+- **Observation**: The guarded-section side-effect counter (_DAT_006b5ed0) is seeded by reading 8 bytes (FUN_0065564c) once (init flag at DAT_006feb98). Every guarded routine saves it and aborts (guard panic) if it changed, detecting unexpected re-entrancy/side effects across the runtime.
+- **Evidence**: `if ((DAT_006feb98&1)==0) { sk_rt_read8(&seed,8); _DAT_006b5ed0=seed; DAT_006feb98=1; }`; guard sites compare `_DAT_006b5ed0` after the operation.
+- **Severity (hypothesis)**: informational — a re-entrancy/side-effect canary; no defect observed.
+- **Confidence**: medium
+
+## [SKR63] 0x00424280 / 0x0041e28c / 0x0041f074 / 0x004207b0 — Unicode script / general-category / property classifiers: unknown input silently maps to a fallback id (no fail-closed)
+- **Observation**: Four large classifier decision trees map untrusted Unicode strings to a small integer id: 0x424280 maps script/block names to an ISO-15924-like script id (default 0xe on no match), 0x41e28c maps a 16-byte token to a Unicode general-category index (0..0x26), 0x41f074 maps name tags to property indices (0..0x43), and 0x4207b0 maps script short names to script codes (0..0xac). None of them fails closed: an unmatched name falls through to a default/fallback id and is committed via the out-pointer. If any of these ids gates a later permission/entitlement decision, an unknown (attacker-controlled) input receives the default classification rather than a denial.
+- **Evidence**: 0x424280 epilogue `LAB_004242d0` stores the fallback id (default 0xe) to *out_id for every path that fails all string matches; 0x4207b0 commits a default script code when no branch matches; 0x41e28c writes uVar6 default 0 when no category matches. The out-pointer is written unconditionally on all paths.
+- **Severity (hypothesis)**: medium — classifier fallback could mis-bind unknown Unicode to a permissive default id if the result feeds policy (no evidence of such use in this slice alone).
+- **Confidence**: medium
+
+## [SKR63] 0x0042a8d0 / 0x0041dfe4 / 0x0041e0a0 / 0x0041e188 — fail-closed SoftwareBreakpoint traps on arithmetic/range overflow
+- **Observation**: The numeric-string parser and the 16-byte range/descriptor builders trap via SoftwareBreakpoint(1, addr) when accumulation overflows (bit 8+ set during digit accumulation), when a length goes negative, or when a computed range crosses a 16 KB superpage boundary. These are fail-closed guards that halt rather than returning a partially-constructed value.
+- **Evidence**: 0x42a8d0 `if ((value & 0xffffff00) != 0) goto abort;` + `CL4_SW_BP(0x42ac10)` on count<1; 0x41dfe4/0x41e188 trap when `(size<<2) < (desc>>0xe)` or the clamped range's 14-bit page differs; 0x41e0a0 traps on negative count (0x41e150).
+- **Severity (hypothesis)**: informational — protective overflow/range guards; fail-closed by design (availability over incorrect output).
+- **Confidence**: high
+
+## [SKR63] 0x0041d8f4 / 0x0041dae0 — inert 0x675c68 sentinel id in boxed-value decode
+- **Observation**: The Swift boxed-value array decoder treats the constant 0x675c68 as an inert sentinel id (keeps id 0) and rejects a negative element count via SoftwareBreakpoint. The 0x675c68 value appears to be a "no id" marker rather than a valid category id.
+- **Evidence**: `if (rec[2] != 0x675c68) id = rec[2];` and `if (arg < 0) CL4_SW_BP(0x41dae0);`.
+- **Severity (hypothesis)**: informational — sentinel handling is defensive; no weakness observed.
+- **Confidence**: medium
+
+## [SKR63] 0x0044f964 / 0x0044fc8c — indirect dispatch through register-resident function pointers (DAT_00658cf0 and artifact fps)
+- **Observation**: Two span-decoder functions perform indirect calls through a data pointer (DAT_00658cf0, a function-pointer table entry) and several register-resident targets (pcVar4/pcVar8/extraout_x9_*). The targets are not resolvable from the payload (compiler register-allocation artifacts); they are modeled as extern function pointers. If any indirect target were mis-bound this would change dispatch, but within this slice they are data-driven calls into the same module.
+- **Evidence**: `(*DAT_00658cf0)(*(word_t*)(base+0x40)); (*pcVar4)(lVar9, lVar10, ...);` with the targets documented as decompiler artifacts.
+- **Severity (hypothesis)**: low — unresolvable indirect-call targets are a completeness gap for call-graph forensics, not a confirmed defect.
+- **Confidence**: medium

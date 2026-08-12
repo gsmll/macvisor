@@ -743,3 +743,27 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - 00684d1c (object teardown) -> 0065c218/0065eafc/0065d080/006832fc (method dispatch tags 0x15/0x14/6)/006860f4 (frame release); CallSupervisor(5)/(4) drain; indirect destructor at obj+0x38
 - 00685588 (export gate) -> 00662628 tag 0x65787074/00660b20; CallSupervisor(5) drain
 - 00684e30/00684e44 -> global event counters 006fe794/006fe790
+
+## SKR71 crypto / allocator / formatting edges (0x67d4a4-0x6834cc)
+
+- FUN_0067f6d8 (sk_prf_ctx_vtable_init) → FUN_0068136c (sk_prf_update), FUN_00681548 (sk_prf_init), FUN_00687d18 / FUN_00687da8 / FUN_00687be4 / FUN_00687f34 (crypto absorb/stream ops)  [registers the PRF dispatch table at _DAT_006feba0]
+- FUN_0067f660 (sk_aes_key_size_select) → FUN_0067f9a0 (sk_aes_key_expand)  [key-length dispatch]
+- FUN_0067f9a0 (sk_aes_key_expand) → FUN_0067f7f0 (AES-128), FUN_0067f860 (AES-192), FUN_0067f8f0 (AES-256)
+- FUN_0067fa10 (sk_aes_roundkey_imix) → FUN_0067f9a0 (sk_aes_key_expand)
+- FUN_0067fac0 / FUN_00680a10 (sk_gcm_encrypt_blocks*) → FUN_006815c0 H-table, FUN_006818c0 (GF mul), FUN_00681940 (GHASH update)  [GCM CTR+GHASH bulk]
+- FUN_00681538 (sk_ghash_ctx_mul) → FUN_006818c0 (sk_ghash_gf_mul)
+- FUN_0068136c (sk_prf_update) → FUN_00681e08 (state advance), FUN_00681538 (GF mul), FUN_006812f8 (const-time compare)
+- FUN_00681940 (sk_ghash_update) → FUN_006818c0 (sk_ghash_gf_mul)
+- FUN_006815c0 (sk_ghash_htable_gen) → FUN_006818c0 (sk_ghash_gf_mul)
+- FUN_0068136c → FUN_006812f8 (sk_consttime_compare)  [verify mode magic 0x13337]
+- FUN_00681e58 (sk_dit_save) / FUN_00681e70 (sk_dit_restore) — DIT constant-time control used by FUN_006812f8, FUN_00681c28, FUN_00681d20, FUN_00681d9c
+- FUN_006820c0 (sk_alloc) → FUN_00681f64 (sk_align_size), FUN_006825d0 (sk_free_list_insert)  [free-list allocator]
+- FUN_0068203c (sk_alloc_checked) → FUN_006820c0 (sk_alloc)
+- FUN_006823d4 (sk_free) → FUN_006824cc (sk_alloc_is_valid), FUN_00682508 (sk_alloc_size), FUN_006825d0 (sk_free_list_insert)
+- FUN_00682544 (sk_alloc_region_init) / FUN_006825bc (sk_alloc_extend) — region (re)init
+- FUN_006829fc (sk_alloc_region_walk_cb) → FUN_00683254 (sk_cursor_read), FUN_00682f6c/00682f9c/00682ca0/00682e74 (cursor walk)
+- FUN_006829d0 (sk_alloc_cursor_init) → FUN_00683198 (sk_alloc_walk)
+- FUN_00683198 (sk_alloc_walk) → FUN_00683024 (sk_cursor_get), FUN_00682b48 (sk_alloc_cursor_begin)
+- FUN_0067dc08 (sk_dtoa_fixed) / FUN_0067e9c0 (sk_dtoa_exp) → FUN_0067e34c (sk_double_load), FUN_0067e4dc (sk_pow10_group_count), FUN_0067e544 (sk_bigdiv10), FUN_0067e64c (sk_emit_9digits), FUN_0067e7a8 (sk_digit_count), FUN_0067e8bc (sk_emit_digits_right), FUN_0067e884 (sk_mask_check)
+- FUN_0067e64c (sk_emit_9digits) → FUN_0067f460 (sk_fill_zeroes), FUN_0067f494 (sk_emit_digits2)
+- FUN_0067f1d0 (sk_fmt_fixed) → FUN_0067f494 (sk_emit_digits2)

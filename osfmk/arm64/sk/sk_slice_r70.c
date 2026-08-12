@@ -18,6 +18,13 @@
 typedef struct { unsigned long lo, hi; } cL4_w16_t;
 typedef unsigned long ulong;
 typedef void *code;                         /* opaque function-pointer slot */
+/* Typed callback slots (vtables / method tables). */
+typedef void   (*cf2)(ulong, ulong);
+typedef ulong  (*cfu1)(ulong);
+typedef ulong  (*cfu2)(ulong, ulong);
+typedef ulong  (*cfu3)(ulong, ulong, ulong);
+typedef ulong  (*cfu5)(ulong, ulong, ulong, ulong, ulong);
+typedef int    (*cfi3)(ulong, ulong, ulong);
 
 /* ------------------------------------------------------------------ *
  * Out-of-region callees (declared extern; live elsewhere in the kernel).
@@ -25,63 +32,65 @@ typedef void *code;                         /* opaque function-pointer slot */
 extern void FUN_006833d4(ulong msg);                 /* noreturn panic(message addr) */
 extern void FUN_0067f660(void);                      /* noreturn stack-canary fail */
 extern ulong FUN_0065be08(ulong, int, int);          /* percpu/global state getter */
-extern void FUN_0065cc0c(int, int);                  /* init helper */
-extern void FUN_006568d0(void);                      /* read config byte */
-extern void FUN_00656908(void);
-extern void FUN_006568ec(void);
+extern long FUN_0065cc0c(int, int);                  /* init helper */
+extern unsigned char FUN_006568d0(void);             /* read config byte */
+extern unsigned char FUN_00656908(void);
+extern unsigned char FUN_006568ec(void);
 extern void FUN_0065cbbc(ulong);                     /* release/note helper */
 extern void FUN_0064e07c(void);                      /* 16-byte return */
-extern void FUN_00654d4c(void);                      /* list head getter */
 extern void FUN_0064effc(ulong *, int);              /* copy descriptor */
+extern ulong FUN_00654d4c(void);                     /* list head getter */
+extern ulong FUN_0065be08(ulong, int, int);          /* percpu/global state getter */
 extern unsigned char FUN_0068761c(void);             /* read boot error-code byte */
 extern void FUN_00687654(void);
 extern void FUN_006876a4(void);
-extern void FUN_0068767c(ulong, ulong);
+extern cL4_w16_t FUN_0068767c(ulong, ulong);
 extern void FUN_006876cc(ulong, ulong, ulong, ulong);
 extern void FUN_00687758(void);
 extern void FUN_00687784(ulong, ulong);
-extern void FUN_006877ec(void);
 extern void FUN_006878a0(void);
 extern void FUN_00687814(void);
-extern void FUN_0068784c(void);
-extern void FUN_0066a8f4(ulong, ulong, ulong);       /* install callback */
+extern ulong FUN_0068784c(void);
+extern void FUN_0066a8f4(ulong, code, ulong);        /* install callback */
 extern void FUN_0066a1cc(ulong);                     /* release one slot */
 extern void FUN_00687524(void);                      /* panic/report path */
 extern void FUN_00687550(void);                      /* unreachable/bad state */
 extern void FUN_00687564(ulong, ulong);
 extern void FUN_006875c0(ulong, ulong);
-extern void FUN_00656978(void);                      /* 16-byte return op */
-extern void FUN_00656924(void);
+extern cL4_w16_t FUN_00656978(ulong, ulong, ulong);  /* 16-byte return op */
+extern cL4_w16_t FUN_006877ec(void);
+extern cL4_w16_t FUN_00656924(ulong, ulong, ulong, ulong);
 extern void FUN_0066bce0(ulong *, ulong, int, ulong); /* build mapping entry */
-extern void FUN_00655e7c(void);                      /* ints-disabled check */
-extern void FUN_0066a988(ulong);                     /* try-lock state */
-extern void FUN_0066a9bc(ulong);                     /* 16-byte return */
+extern ulong FUN_00655e7c(void);                     /* ints-disabled check */
+extern ulong FUN_0066a988(ulong);                    /* try-lock state */
+extern cL4_w16_t FUN_0066a9bc(ulong);                /* 16-byte return */
 extern void FUN_0066ab40(ulong, ulong, ulong);       /* restore state */
 extern void FUN_006874b4(ulong, ...);                /* fatal report w/ args */
 extern void FUN_006878cc(ulong, ulong);
-extern void FUN_00687928(void);
+extern cL4_w16_t FUN_00687928(void);
 extern void FUN_00687960(void);
 extern void FUN_00687998(ulong, ulong);
 extern void FUN_00672e5c(ulong, ulong *, ulong *);   /* clip range */
 extern void FUN_006879f4(void);
-extern void FUN_00687a2c(void);
+extern cL4_w16_t FUN_00687a2c(void);
 extern void FUN_00671320(ulong);
 extern void FUN_00671220(ulong, ulong);
-extern void FUN_00671150(ulong);
-extern void FUN_00671384(ulong);
-extern void FUN_00671018(void);
+extern ulong FUN_00671150(ulong);
+extern ulong FUN_00671384(ulong);
+extern ulong FUN_00671018(void);
 extern void FUN_006710e8(ulong, ulong);
-extern void FUN_00671af0(ulong*,ulong,ulong,ulong,ulong,ulong,ulong,int); /* 16-byte? */
-extern void FUN_00671398(void);
+extern ulong FUN_00671af0(ulong*,ulong,ulong,ulong,ulong,ulong,ulong,int);
+extern ulong FUN_00671398(ulong *, ulong, ulong, long, int);
 extern void FUN_00671bc4(ulong*,ulong);
-extern void FUN_00687a9c(void);
+extern cL4_w16_t FUN_00687a9c(void);
 extern void FUN_00687ad4(void);
+extern void FUN_00687a64(void);
 extern void FUN_00687b0c(void);
 extern void FUN_00687b48(void);
 extern void FUN_00687b74(void);
-extern void FUN_00687bac(void);
+extern long FUN_00687bac(void);
 extern void FUN_00655650(void);
-extern void FUN_006555fc(ulong);
+extern cL4_w16_t FUN_006555fc(ulong);
 extern void FUN_0065569c(void);
 extern void FUN_00655774(void);
 extern void FUN_006551d0(void);
@@ -120,7 +129,18 @@ extern volatile unsigned long _DAT_006b4370;
 extern volatile unsigned long _DAT_006b4378;
 extern volatile unsigned long _DAT_006b4360;
 extern volatile unsigned char  DAT_006feb78;
+extern volatile unsigned char  DAT_006feb79;
+extern volatile unsigned char  DAT_006feb7a;
+extern volatile unsigned char  DAT_006feb7b;
 extern volatile unsigned long  DAT_006feb80;
+extern volatile unsigned long  DAT_006feb58;
+extern volatile unsigned long  DAT_0068a880;
+extern volatile unsigned long  DAT_0068a888;
+extern volatile unsigned long  DAT_0068a890;
+extern volatile unsigned long  DAT_0068a898;
+extern volatile unsigned long  DAT_0068a8a0;         /* level-size table */
+extern volatile unsigned long  DAT_0068a8b8;         /* per-type level table */
+extern volatile unsigned long  DAT_0068a928;         /* per-type span table */
 extern volatile unsigned long  DAT_006feb88;        /* PRNG state lo */
 extern volatile unsigned long  DAT_006feb90;        /* PRNG state hi */
 extern volatile unsigned char  DAT_006feca0;        /* tco toggle flag */
@@ -138,6 +158,128 @@ extern volatile unsigned long  _DAT_0067b178;
 extern unsigned long tpidrro_el0;                   /* RO thread ptr (u/s boundary) */
 extern unsigned long tpidr_el0;
 extern int tco;                                     /* errno-ish toggle */
+
+/* ---- Forward declarations of the functions defined in this file ---- */
+void FUN_006766b0(void);
+void FUN_006766cc(ulong, ulong *);
+unsigned char FUN_006767f8(void);
+unsigned long FUN_0067686c(unsigned int);
+long FUN_006768b4(int);
+long FUN_00676924(long, int, ulong, long, ulong, ulong);
+void FUN_00676a7c(ulong, long, long);
+void FUN_0067728c(void);
+ulong FUN_0067747c(void);
+void FUN_006774ac(ulong *, unsigned char);
+unsigned int FUN_006775c0(long, ulong);
+long FUN_00677674(long, long, long);
+ulong FUN_006777d8(long, ulong);
+ulong FUN_006778bc(ulong, ulong);
+ulong FUN_00677a88(ulong, ulong);
+ulong FUN_006782b4(long, ulong, ulong, ulong, ulong, ulong, ulong, ulong);
+ulong FUN_00678338(long, ulong, ulong, ulong, ulong, ulong, ulong, ulong);
+cL4_w16_t FUN_006786fc(long, ulong, ulong, ulong);
+cL4_w16_t FUN_006787a0(long, ulong, ulong, ulong, ulong, ulong);
+ulong FUN_0067882c(ulong, ulong, ulong, ulong);
+ulong FUN_00678a40(void);
+ulong FUN_00678a64(void);
+void FUN_00678ae0(long, ulong, ulong, ulong, long);
+void FUN_00678e48(ulong *, ulong, ulong, long, unsigned int);
+void FUN_006792a4(void);
+void FUN_00679348(void);
+void FUN_00679368(void);
+void FUN_00679394(void);
+void FUN_006793b0(ulong);
+void FUN_006793c4(void);
+void FUN_006793d0(void);
+void FUN_006793e0(ulong);
+void FUN_006793f4(ulong, ulong, long);
+void FUN_00679784(long, long);
+void FUN_00679838(long, ulong, long, ulong);
+void FUN_00679990(long, long *, ulong, ulong);
+void FUN_00679a68(long, long *, ulong, long, unsigned int);
+void FUN_00679b98(long, long *);
+cL4_w16_t FUN_00679d44(ulong, long, ulong, ulong, long);
+ulong *FUN_0067a064(long, ulong);
+void FUN_0067a0f0(ulong, long);
+bool FUN_0067a154(int, int);
+ulong FUN_0067a1b8(ulong *, ulong, ulong, int);
+void FUN_0067a264(ulong, long, ulong, ulong, int, long);
+void FUN_0067a334(ulong, long, long);
+void FUN_0067a3dc(ulong, ulong, long, long);
+void FUN_0067a444(ulong, ulong, long, ulong, ulong);
+bool FUN_0067a510(long, long, ulong, ulong *, unsigned char *);
+ulong FUN_0067a740(ulong, long);
+unsigned char FUN_0067a760(long);
+void FUN_0067a780(unsigned char *, ulong);
+void FUN_0067a7f0(unsigned char *, ulong, ulong);
+long FUN_0067a900(ulong, char, long);
+void FUN_0067aa00(unsigned char *, const unsigned char *, ulong);
+void FUN_0067ad00(unsigned char *, unsigned long, ulong);
+long FUN_0067aeb0(const unsigned char *, const unsigned char *);
+long FUN_0067aff0(const unsigned char *, const unsigned char *, ulong);
+long FUN_0067b180(ulong, long);
+long FUN_0067b220(ulong);
+void FUN_0067b280(ulong);
+char *FUN_0067b2ac(char *, int, long);
+void FUN_0067b2e8(unsigned char *, const unsigned char *, ulong);
+void FUN_0067b37c(unsigned char *, unsigned char, long);
+int FUN_0067b3b0(const unsigned char *, const unsigned char *);
+long FUN_0067b3e4(long);
+int FUN_0067b3fc(const unsigned char *, const unsigned char *, long);
+long FUN_0067b42c(long, long);
+ulong FUN_0067b454(ulong, ulong, int, long, ulong, code *);
+ulong FUN_0067b478(ulong, int, int, long, ulong, code *);
+ulong FUN_0067b580(long, long, ulong, unsigned int *);
+ulong FUN_0067b664(ulong, long, ulong, long, code *, ulong);
+ulong FUN_0067b704(long, unsigned int *);
+void FUN_0067b758(void);
+ulong FUN_0067b768(void);
+void FUN_0067b774(long, ulong, ulong, const unsigned char *, ulong);
+ulong FUN_0067bde4(char *, ulong);
+void FUN_0067bea4(ulong, ulong, ulong, int, int, ulong);
+ulong FUN_0067c18c(unsigned char *, ulong *, long *);
+void FUN_0067c24c(int, long, unsigned char *, unsigned int);
+ulong FUN_0067c628(long, unsigned char *, ulong, long, ulong, ulong);
+void FUN_0067c720(ulong, unsigned char *, ulong, unsigned int);
+ulong FUN_0067c778(char *, ulong, ulong);
+ulong FUN_0067c878(char *, ulong, ulong);
+void FUN_0067c994(void);
+void FUN_0067c9a4(void);
+void FUN_0067c9b4(void);
+cL4_w16_t FUN_0067c9c4(void);
+void FUN_0067c9d8(void);
+void FUN_0067c9ec(void);
+void FUN_0067ca00(void);
+void FUN_0067ca10(void);
+cL4_w16_t FUN_0067ca20(void);
+cL4_w16_t FUN_0067ca30(void);
+cL4_w16_t FUN_0067ca44(void);
+unsigned int FUN_0067ca58(void);
+void FUN_0067ca6c(ulong, ulong, ulong, ulong);
+void FUN_0067ca84(ulong, ulong, ulong, ulong, ulong, ulong);
+void FUN_0067cad8(long, long);
+void FUN_0067cb30(long, ulong);
+void FUN_0067cc18(void);
+ulong FUN_0067cc5c(ulong, ulong, ulong, long, code *);
+void FUN_0067cd24(ulong, ulong, ulong, ulong);
+void FUN_0067cd74(ulong, ulong, ulong, ulong);
+unsigned int FUN_0067ce24(long, ulong, ulong, ulong, ulong);
+ulong FUN_0067ce74(ulong, ulong, ulong, ulong);
+void FUN_0067cf94(ulong *);
+void FUN_0067cfb0(ulong *);
+ulong FUN_0067cfc8(ulong *, ulong);
+void FUN_0067cfe0(ulong, ulong);
+ulong FUN_0067cffc(ulong *);
+void FUN_0067d014(void);
+ulong FUN_0067d02c(ulong *);
+ulong FUN_0067d050(ulong *);
+ulong FUN_0067d0cc(ulong *);
+ulong FUN_0067d190(long);
+void FUN_0067d1f0(ulong, ulong);
+void FUN_0067d248(unsigned int, ulong *);
+unsigned char FUN_0067d3b0(long, ulong, ulong);
+ulong FUN_0067d3f8(char, ulong);
+unsigned int FUN_0067d440(ulong, ulong);
 
 /* ================================================================== *
  * L4 error code descriptors + region (page-range) management.
@@ -178,9 +320,9 @@ unsigned char FUN_006767f8(void)
     if ((DAT_006feb78 & 1) == 0) {
         long r = FUN_0065cc0c(4, 0xc);
         if (r == 0) {
-            *(volatile unsigned char *)&DAT_006feb79 = FUN_006568d0();
-            *(volatile unsigned char *)&DAT_006feb7a = FUN_00656908();
-            *(volatile unsigned char *)&DAT_006feb7b = FUN_006568ec();
+            DAT_006feb79 = FUN_006568d0();
+            DAT_006feb7a = FUN_00656908();
+            DAT_006feb7b = FUN_006568ec();
             FUN_0065cbbc(0x6b5eb0);
         }
         DAT_006feb78 = 1;
@@ -244,14 +386,14 @@ long FUN_00676924(long region, int level, ulong base, long end, ulong cb0, ulong
             nlevels = nlevels + 1;
     }
 
-    ulong idx = 0, accum = 0, lv = 0;
+    ulong idx = 0, accum = 0, lv = 0, nxt = 0;
     do {
         unsigned char *slot = (unsigned char *)(region + 0x38) + idx * 0x18;
         if (slot < (unsigned char *)(region + 0x38) ||
             (unsigned char *)(region + 0x98) < slot + 0x18 || slot + 0x18 < slot)
             SoftwareBreakpoint(0x5519, 0x676a5c);
         ulong mask = -1L << ((ulong)((int)lv * 0xb + 0x16) & 0x3f) & base;
-        ulong span = (end + ~(-0x4000L << (idx * 0xb & 0x3f))) - mask >>
+        ulong span = ((end + ~(-0x4000L << (idx * 0xb & 0x3f))) - mask) >>
                      (idx * 0xb + 0xe & 0x3f);
         *(ulong *)(slot + 8) = mask;
         *(ulong *)(slot + 0x10) = span;
@@ -259,7 +401,7 @@ long FUN_00676924(long region, int level, ulong base, long end, ulong cb0, ulong
         if ((span & 0xff) != 0)
             w = 0x100;
         accum = accum + (w + (span & 0x3ffffffffffff00)) * 0x40;
-        ulong nxt = (ulong)((int)lv + 1);
+        nxt = (ulong)((int)lv + 1);
         lv = nxt;
     } while ((unsigned char)nxt <= (unsigned char)nlevels);
     return accum;
@@ -275,7 +417,7 @@ void FUN_00676a7c(ulong arg1, long base, long len)
     long cookie = _DAT_006b5ed0;
     long r = FUN_0065cc0c(4, 0xb);
     if (r == 0) {
-        *(volatile unsigned long *)&DAT_006feb58 = 0x6b5760;
+        DAT_006feb58 = 0x6b5760;
         FUN_0065cbbc(0x6b5e90);
     }
     long st = FUN_0065be08(0x6feb70, 4, 0xb);
@@ -395,7 +537,7 @@ bad:
                 } while (j != -0xc0);
                 *(ulong *)(obj + 0x80) = 3;
                 if (obj <= obj + 0x110) {
-                    FUN_0066a8f4(obj, FUN_006792a4, 0);
+                    FUN_0066a8f4(obj, (code)FUN_006792a4, 0);
                     /* re-walk the object list and fix up PTEs for page objects */
                     for (ulong *o = (ulong *)FUN_00654d4c(); o != (ulong *)-1;
                          o = (ulong *)o[1]) {
@@ -443,9 +585,9 @@ bad:
                     }
                     /* drain the deferred-unmap queue for page mappings */
                     long *q = (long *)FUN_00654d4c();
-                    cL4_w16_t st3 = (cL4_w16_t)FUN_0065be08(0x6feb70, 4, 0xb);
+                    ulong st3 = FUN_0065be08(0x6feb70, 4, 0xb);
                     if (q != (long *)-1) {
-                        ulong rgn = *(ulong *)(st3.lo + 0xf8);
+                        ulong rgn = *(ulong *)(st3 + 0xf8);
                         do {
                             long n = *q;
                             if (n != 0) {
@@ -465,14 +607,14 @@ bad:
                                         } else if (k == 0) {
                                             if ((unsigned char)(bt - 0xcU) < 5) {
                                                 ulong v = tag & 0xffffffffffffff;
-                                                cL4_w16_t r = (cL4_w16_t)FUN_00677674(rgn,
+                                                ulong r = FUN_00677674(rgn,
                                                     *(ulong *)(&DAT_0068a928 +
                                                     (ulong)(unsigned char)(bt - 0xc) * 8),
                                                     (e[2] & 0xffffffffff) << 0xc);
-                                                if (v != r.lo) {
+                                                if (v != r) {
                                                     CallSupervisor(1);
                                                     if ((tag & 0xff) == 5) {
-                                                        ulong ok = FUN_006777d8(rgn, r.lo);
+                                                        ulong ok = FUN_006777d8(rgn, r);
                                                         if ((ok & 1) == 0) goto badstate;
                                                         CallSupervisor(1);
                                                     }
@@ -480,7 +622,7 @@ bad:
                                                         FUN_006875c0(v, (ulong)0);
                                                         goto badstate;
                                                     }
-                                                    *e = r.lo & 0xffffffffffffff |
+                                                    *e = r & 0xffffffffffffff |
                                                          (ulong)*(unsigned char *)((long)e + 7) << 0x38;
                                                 }
                                             }
@@ -707,11 +849,10 @@ ulong FUN_006777d8(long region, ulong vaddr)
         FUN_006876a4();
         return 0;
     }
-    cL4_w16_t st = (cL4_w16_t)FUN_0065be08(0x6feb70, 4, 0xb);
-    if (region == *(long *)(st.lo + 0xf8)) {
-        cL4_w16_t r = (cL4_w16_t)FUN_00677a88(vaddr, 0);
-        vaddr = r.hi;
-        return r.lo != 0;
+    ulong st = FUN_0065be08(0x6feb70, 4, 0xb);
+    if (region == *(long *)(st + 0xf8)) {
+        ulong r = FUN_00677a88(vaddr, 0);
+        return r;
     }
     if (*(char *)(region + 0x98) == 2) {
         return 0;
@@ -719,23 +860,24 @@ ulong FUN_006777d8(long region, ulong vaddr)
     CallSupervisor(1);
     if (vaddr != 5) {
         if ((vaddr & 0xfb) != 0) {
-            cL4_w16_t r = (cL4_w16_t)FUN_0068767c(vaddr, (ulong)0);
+            cL4_w16_t r = FUN_0068767c(vaddr, (ulong)0);
             ulong phys = r.hi;
-            ulong *slot = r.lo;
+            ulong slot = r.lo;
             ulong arg3 = 0x40;
             long st2 = FUN_0065be08(0x6feb70, 4, 0xb);
-            if (slot == *(ulong **)(st2 + 0xf8))
+            if (slot == *(ulong *)(st2 + 0xf8))
                 FUN_006833d4(0x6affaa);
-            long clip = phys - slot[2];
-            if (phys < (ulong)slot[2])
+            long clip = phys - *(ulong *)(slot + 2);
+            if (phys < *(ulong *)(slot + 2))
                 FUN_006833d4(0x6b00b9);
-            ulong *lk = slot + 0x14;
+            ulong lk = slot + 0x14;
             if (lk <= slot + 0x16) {
-                if (FUN_0067cffc(lk) != 0)
+                if (FUN_0067cffc((ulong *)lk) != 0)
                     FUN_006833d4(0x6a8797);
-                unsigned char rc = (**(unsigned char (**)(void))(slot[1] + 0x20))
-                                    (*slot, &clip, &arg3);
-                if (FUN_0067d02c(lk) != 0)
+                typedef unsigned char (*f3)(ulong, ulong *, ulong *);
+                unsigned char rc = ((f3)(*(ulong *)(slot + 1) + 0x20))
+                                    (*(ulong *)slot, (ulong *)&clip, &arg3);
+                if (FUN_0067d02c((ulong *)lk) != 0)
                     FUN_006833d4(0x6a8797);
                 if (rc == 0)
                     return phys;
@@ -745,32 +887,33 @@ ulong FUN_006777d8(long region, ulong vaddr)
             }
             SoftwareBreakpoint(0x5519, 0x677a88);
         }
-        FUN_006778bc(region, vaddr);
+        FUN_006778bc((ulong)region, vaddr);
         vaddr = 1;
     }
     return 1;
 }
 
 /* FUN_006778bc @ 0x6778bc
- * Ghidra: ulong FUN_006778bc(undefined8 *param_1, ulong param_2)
- * Unmap the exact frame at param_2 through the object's methods, returning
+ * Ghidra: ulong FUN_006778bc(undefined8 *, ulong)
+ * Unmap the exact frame at vaddr through the object's methods, returning
  * the (possibly adjusted) frame address. Confidence: low. */
-ulong FUN_006778bc(ulong *obj, ulong vaddr)
+ulong FUN_006778bc(ulong obj, ulong vaddr)
 {
     long st = FUN_0065be08(0x6feb70, 4, 0xb);
-    if (obj == *(ulong **)(st + 0xf8))
+    if (obj == *(ulong *)(st + 0xf8))
         FUN_006833d4(0x6affaa);
     ulong arg2 = 0x40;
-    long clip = vaddr - obj[2];
-    if (vaddr < (ulong)obj[2])
+    long clip = vaddr - *(ulong *)(obj + 2);
+    if (vaddr < *(ulong *)(obj + 2))
         FUN_006833d4(0x6b00b9);
-    ulong *lk = obj + 0x14;
+    ulong lk = obj + 0x14;
     if (lk <= obj + 0x16) {
-        if (FUN_0067cffc(lk) != 0)
+        if (FUN_0067cffc((ulong *)lk) != 0)
             FUN_006833d4(0x6a8797);
-        unsigned char rc = (**(unsigned char (**)(void))(obj[1] + 0x20))
-                            (*obj, &clip, &arg2);
-        if (FUN_0067d02c(lk) != 0)
+        typedef unsigned char (*f3)(ulong, ulong *, ulong *);
+        unsigned char rc = ((f3)(*(ulong *)(obj + 1) + 0x20))
+                            (*(ulong *)obj, (ulong *)&clip, &arg2);
+        if (FUN_0067d02c((ulong *)lk) != 0)
             FUN_006833d4(0x6a8797);
         if (rc == 0)
             return vaddr;
@@ -816,7 +959,7 @@ loop_drain:
         {
             ulong st2 = FUN_0065be08(0x6feb70, 4, 0xb);
             if (st2 + 0x30 < st2) goto trap;
-            cur = FUN_0066a988();
+            cur = FUN_0066a988(0);
             if ((cur & 1) == 0) {
                 if (st2 <= st2 + 0x110)
                     FUN_006833d4(0x6afe41);
@@ -840,7 +983,7 @@ loop_drain:
                     }
 drain_free:
                     do { CallSupervisor(4); } while (tag == 1);
-                    (**(void (**)(void))(*(long *)(rgn + 0xb8) + 0x10))
+                    ((*(cf2 *)(*(long *)(rgn + 0xb8) + 0x10)))
                         (*(ulong *)(rgn + 0xb0), arg);
                     FUN_0067d1f0(_DAT_006b4368, 0x6aff07);
                     FUN_0067d190(_DAT_006b4368);
@@ -854,7 +997,7 @@ drain_next:
                 ulong *q = (ulong *)FUN_0065be08(0x6feb70, 4, 0xb);
                 ulong *qslot = q + 6;
                 if (qslot < q) goto trap;
-                ulong qfl = FUN_0066a988();
+                ulong qfl = FUN_0066a988(0);
                 if ((qfl & 1) == 0) {
                     if (q <= q + 0x22) FUN_006833d4(0x6afe41);
                     goto trap;
@@ -874,7 +1017,7 @@ drain_next:
         ulong *q = (ulong *)FUN_0065be08(0x6feb70, 4, 0xb);
         ulong *qslot = q + 6;
         if (qslot < q) goto trap;
-        ulong qfl = FUN_0066a988();
+        ulong qfl = FUN_0066a988(0);
         if ((qfl & 1) == 0) {
             if (q <= q + 0x22) FUN_006833d4(0x6afe41);
             goto trap;
@@ -906,13 +1049,13 @@ drain_next:
             ps = 0xc0d0e04 >> (ulong)(((unsigned int)level & 3) << 3);
             if (3 < level) ps = 4;
         }
-        long cb = (*(long (**)(void))**(ulong **)(region + 0xb8))
+        long cb = ((*(cfu5 *)(*(ulong *)(region + 0xb8))))
                     (*(ulong *)(region + 0xb0), ps & 0xff, rc, tag, 0);
         if (cb != 0) {
             ulong *q2 = (ulong *)FUN_0065be08(0x6feb70, 4, 0xb);
             ulong *qs2 = q2 + 6;
             if (qs2 < q2) goto trap;
-            ulong f2 = FUN_0066a988();
+            ulong f2 = FUN_0066a988(0);
             if ((f2 & 1) == 0) {
                 if (q2 <= q2 + 0x22) FUN_006833d4(0x6afe41);
                 goto trap;
@@ -929,18 +1072,18 @@ drain_next:
         }
         /* try the next level down */
         ulong phys = FUN_00677674(region, lvl, target);
-        ulong r2 = FUN_006786fc(region, phys, tag, target);
+        ulong r2 = FUN_006786fc(region, phys, tag, target).lo;
         if ((r2 & 0xff) == 4) {
             long lv2 = FUN_00677a88(target, lvl);
             if (lv2 != 0)
-                r2 = FUN_006786fc(region, lv2, tag, target);
+                r2 = FUN_006786fc(region, lv2, tag, target).lo;
             else {
-                (**(void (**)(void))(*(long *)(region + 0xb8) + 0x10))
+                ((*(cf2 *)(*(long *)(region + 0xb8) + 0x10)))
                     (*(ulong *)(region + 0xb0), rc);
                 ulong *q3 = (ulong *)FUN_0065be08(0x6feb70, 4, 0xb);
                 ulong *qs3 = q3 + 6;
                 if (qs3 < q3) goto trap;
-                ulong f3 = FUN_0066a988();
+                ulong f3 = FUN_0066a988(0);
                 if ((f3 & 1) == 0) {
                     if (q3 <= q3 + 0x22) FUN_006833d4(0x6afe41);
                     goto trap;
@@ -954,12 +1097,12 @@ drain_next:
             }
         }
         if (r2 != 0) {
-            (**(void (**)(void))(*(long *)(region + 0xb8) + 0x10))
+            ((*(cf2 *)(*(long *)(region + 0xb8) + 0x10)))
                 (*(ulong *)(region + 0xb0), rc);
             ulong *q4 = (ulong *)FUN_0065be08(0x6feb70, 4, 0xb);
             ulong *qs4 = q4 + 6;
             if (qs4 < q4) goto trap;
-            ulong f4 = FUN_0066a988();
+            ulong f4 = FUN_0066a988(0);
             if ((f4 & 1) == 0) {
                 if (q4 <= q4 + 0x22) FUN_006833d4(0x6afe41);
                 goto trap;
@@ -974,7 +1117,7 @@ drain_next:
         /* record the successful unmap in the ring */
         ulong st3 = FUN_0065be08(0x6feb70, 4, 0xb);
         if (st3 + 0x30 < st3) goto trap;
-        ulong f5 = FUN_0066a988();
+        ulong f5 = FUN_0066a988(0);
         if ((f5 & 1) == 0) {
             if (st3 <= st3 + 0x110) FUN_006833d4(0x6afe41);
             goto trap;
@@ -1019,7 +1162,7 @@ ulong FUN_006782b4(long region, ulong vaddr, ulong level, ulong unused,
         FUN_00678338(region, vaddr, 1, unused, p5, p6, p7, p8);
         return 1;
     }
-    cL4_w16_t r0 = (cL4_w16_t)FUN_006877ec();
+    cL4_w16_t r0 = FUN_006877ec();
     ulong v = r0.hi;
     long obj = r0.lo;
     long cookie = _DAT_006b5ed0;
@@ -1041,7 +1184,7 @@ ulong FUN_006782b4(long region, ulong vaddr, ulong level, ulong unused,
     long lvl = level + 1;
     ulong mask = -1L << ((unsigned long)level * -3 + (unsigned long)lvl * 0xe & 0x3f);
     ulong target = mask & v;
-    ulong phys = FUN_00677674(obj, level);
+    ulong phys = FUN_00677674(obj, level, 0);
     FUN_006778bc(obj, phys);
     CallSupervisor(1);
     if (phys != 5) {
@@ -1053,7 +1196,7 @@ ulong FUN_006782b4(long region, ulong vaddr, ulong level, ulong unused,
                 return 4;
             }
             if (k2 == 1)
-                return FUN_00656978(res, target, unused);
+                return FUN_00656978(res, target, unused).lo;
             if (k2 != 0) FUN_006833d4(0x6af267);
             ulong *tp = (ulong *)tpidrro_el0;
             tp[0] = target; tp[1] = unused; tp[2] = 0; tp[3] = 0;
@@ -1074,7 +1217,7 @@ ulong FUN_006782b4(long region, ulong vaddr, ulong level, ulong unused,
                 ps = 0xc0d0e04 >> (ulong)(((unsigned int)level & 3) << 3);
                 if (3 < level) ps = 4;
             }
-            ulong r = (*(ulong (**)(void))**(ulong **)(obj + 0xb8))
+            ulong r = ((*(cfu5 *)(*(ulong *)(obj + 0xb8))))
                         (*(ulong *)(obj + 0xb0), ps & 0xff, phys, phys,
                          *(unsigned int *)(obj + 0xc0));
             ulong g = _DAT_006b4368;
@@ -1090,16 +1233,16 @@ ulong FUN_006782b4(long region, ulong vaddr, ulong level, ulong unused,
             if (*(char *)(obj + 0x98) != 1 || (*(unsigned int *)(obj + 0xc0) & 1) != 0)
                 break;
             *(unsigned int *)(obj + 0xc0) |= 1;
-            (**(void (**)(void))(*(long *)(obj + 0xb8) + 0x10))
+            ((*(cf2 *)(*(long *)(obj + 0xb8) + 0x10)))
                 (*(ulong *)(obj + 0xb0), phys);
         }
-        long l2 = FUN_00678338(obj, mask & v, lvl);
+        long l2 = FUN_00678338(obj, mask & v, lvl, 0, 0, 0, 0, 0);
         if (l2 != 0) {
             FUN_006786fc(obj, l2, phys, mask & v);
 done_lbl:
             return 0;
         }
-        (**(void (**)(void))(*(long *)(obj + 0xb8) + 0x10))
+        ((*(cf2 *)(*(long *)(obj + 0xb8) + 0x10)))
             (*(ulong *)(obj + 0xb0), phys);
         return 0;
     }
@@ -1134,7 +1277,7 @@ ulong FUN_00678338(long obj, ulong vaddr, ulong level, ulong unused,
     long lvl = level + 1;
     ulong mask = -1L << ((unsigned long)level * -3 + (unsigned long)lvl * 0xe & 0x3f);
     ulong target = mask & vaddr;
-    ulong phys = FUN_00677674(obj, level);
+    ulong phys = FUN_00677674(obj, level, 0);
     FUN_006778bc(obj, phys);
     CallSupervisor(1);
     if (phys != 5) {
@@ -1143,7 +1286,7 @@ ulong FUN_00678338(long obj, ulong vaddr, ulong level, ulong unused,
             ulong res = r2.hi;
             char k2 = *(char *)(r2.lo + 0x98);
             if (k2 == 2) return 4;
-            if (k2 == 1) return FUN_00656978(res, target, unused);
+            if (k2 == 1) return FUN_00656978(res, target, unused).lo;
             if (k2 != 0) FUN_006833d4(0x6af267);
             ulong *tp = (ulong *)tpidrro_el0;
             tp[0] = target; tp[1] = unused; tp[2] = 0; tp[3] = 0;
@@ -1164,7 +1307,7 @@ ulong FUN_00678338(long obj, ulong vaddr, ulong level, ulong unused,
                 ps = 0xc0d0e04 >> (ulong)(((unsigned int)level & 3) << 3);
                 if (3 < level) ps = 4;
             }
-            ulong r = (*(ulong (**)(void))**(ulong **)(obj + 0xb8))
+            ulong r = ((*(cfu5 *)(*(ulong *)(obj + 0xb8))))
                         (*(ulong *)(obj + 0xb0), ps & 0xff, phys, phys,
                          *(unsigned int *)(obj + 0xc0));
             ulong g = _DAT_006b4368;
@@ -1180,7 +1323,7 @@ ulong FUN_00678338(long obj, ulong vaddr, ulong level, ulong unused,
             if (*(char *)(obj + 0x98) != 1 || (*(unsigned int *)(obj + 0xc0) & 1) != 0)
                 break;
             *(unsigned int *)(obj + 0xc0) |= 1;
-            (**(void (**)(void))(*(long *)(obj + 0xb8) + 0x10))
+            ((*(cf2 *)(*(long *)(obj + 0xb8) + 0x10)))
                 (*(ulong *)(obj + 0xb0), phys);
         }
         long l2 = FUN_00678338(obj, mask & vaddr, lvl, unused, p5, p6, p7, p8);
@@ -1189,7 +1332,7 @@ ulong FUN_00678338(long obj, ulong vaddr, ulong level, ulong unused,
 out_lbl:
             return 0;
         }
-        (**(void (**)(void))(*(long *)(obj + 0xb8) + 0x10))
+        ((*(cf2 *)(*(long *)(obj + 0xb8) + 0x10)))
             (*(ulong *)(obj + 0xb0), phys);
         return 0;
     }
@@ -1385,15 +1528,16 @@ void FUN_00678ae0(long region, ulong base, ulong len, ulong clip, long cb)
     if ((end & 0x3fff) != 0) round = 0x4000;
     ulong endr = round + (end & 0xffffffffffffc000);
     ulong span = endr - base;
+    ulong n = span >> 0xe;
     ulong phys0 = FUN_00677674(region, 0, base);
     unsigned int u9 = (unsigned int)cb;
     if ((int)clip != 0 && span != 0) {
-        ulong n = span >> 0xe;
         ulong owner = *(ulong *)(region + 0xb0);
         long vt = *(long *)(region + 0xb8);
         ulong cur = phys0;
         if (*(code **)(vt + 0x30) != 0) {
-            ulong r = (**(ulong (**)(void))(vt + 0x30))(owner, cur, n);
+            ulong r = ((*(cfu3 *)(vt + 0x30)))
+(owner, cur, n);
             cur = 0;
             while ((r & 0xff) != 0) {
                 FUN_006878cc(r, (ulong)0);
@@ -1404,7 +1548,8 @@ void FUN_00678ae0(long region, ulong base, ulong len, ulong clip, long cb)
         } else {
 inner:
             while (1) {
-                ulong r = (**(ulong (**)(void))(vt + 0x10))(owner, cur);
+                ulong r = ((*(cfu2 *)(vt + 0x10)))
+(owner, cur);
                 u9 = (unsigned int)cb;
                 n = n - 1;
                 cur = cur + 0x40;
@@ -1426,9 +1571,9 @@ deeper:
             if (region == *(long *)(st + 0xf8)) {
                 if (st + 0x110 < st) SoftwareBreakpoint(0x5519, 0x678ddc);
                 if (FUN_0066a988(st) != 0) {
-                    cL4_w16_t r3 = (cL4_w16_t)FUN_00687928();
+                    cL4_w16_t r3 = FUN_00687928();
                     ulong obj = r3.hi;
-                    ulong *slots = r3.lo;
+                    ulong *slots = (ulong *)r3.lo;
                     long stack_cookie = _DAT_006b5ed0;
                     ulong lv = 0xb;
                     ulong lof = 0;
@@ -1485,13 +1630,15 @@ deeper:
                             long vt = slots[0x17];
                             if (*(code **)(vt + 0x30) == 0) {
                                 do {
-                                    ulong r = (**(ulong (**)(void))(vt + 0x10))(owner, lo);
+                                    ulong r = ((*(cfu2 *)(vt + 0x10)))
+(owner, lo);
                                     cnt = cnt - 1;
                                     lo = lo + 0x40;
                                     if (r != 0x107 && r != 0) goto err_cb;
                                 } while (cnt != 0);
                             } else {
-                                ulong r = (**(ulong (**)(void))(vt + 0x30))(owner, lo, cnt);
+                                ulong r = ((*(cfu3 *)(vt + 0x30)))
+(owner, lo, cnt);
 err_cb:
                                 if ((r & 0xff) != 0) {
                                     FUN_00687998(r, (ulong)0);
@@ -1508,8 +1655,8 @@ err_cb:
                                 long args[4];
                                 args[0] = loA - slots[2];
                                 args[1] = hiA - loA;
-                                ulong r = (**(ulong (**)(void))(slots[1] + 0x30))
-                                            (*slots, args, args + 1);
+                                ulong r = ((*(cfu3 *)(slots[1] + 0x30)))
+                                            (*slots, (ulong)args, (ulong)(args + 1));
                                 if ((r & 0xff) != 0) {
                                     if ((ulong)(r & 0xff) * 8 + 0x6b5e50 - 1 < (ulong)0x6b5e50 ||
                                         (unsigned long *)0x6b5e58 + (r & 0xff) * 8 >
@@ -1532,18 +1679,18 @@ trap:
                 ulong ints = FUN_00655e7c();
                 if ((ints & 1) == 0)
                     FUN_00678a40();
-                cL4_w16_t s2 = (cL4_w16_t)FUN_0066a9bc(st);
-                FUN_00678e48(region, base, endr, cb, 0);
+                cL4_w16_t s2 = FUN_0066a9bc(st);
+                FUN_00678e48((ulong *)region, base, endr, cb, 0);
                 if (_DAT_006b5ed0 == cookie) {
                     FUN_0066ab40(st, s2.lo, s2.hi);
                     return;
                 }
                 FUN_0067f660();
             }
-            if (FUN_0067cffc(region + 0xa0) != 0)
+            if (FUN_0067cffc((ulong *)(region + 0xa0)) != 0)
                 FUN_006833d4(0x6a8797);
-            FUN_00678e48(region, base, endr, cb, 0);
-            if (FUN_0067d02c(region + 0xa0) != 0)
+            FUN_00678e48((ulong *)region, base, endr, cb, 0);
+            if (FUN_0067d02c((ulong *)(region + 0xa0)) != 0)
                 FUN_006833d4(0x6a8797);
         }
     }
@@ -1608,13 +1755,15 @@ void FUN_00678e48(ulong *slots, ulong lo, ulong hi, long clip, unsigned int flag
             long vt = slots[0x17];
             if (*(code **)(vt + 0x30) == 0) {
                 do {
-                    ulong r = (**(ulong (**)(void))(vt + 0x10))(owner, lo2);
+                    ulong r = ((*(cfu2 *)(vt + 0x10)))
+(owner, lo2);
                     cnt = cnt - 1;
                     lo2 = lo2 + 0x40;
                     if (r != 0x107 && r != 0) goto err2;
                 } while (cnt != 0);
             } else {
-                ulong r = (**(ulong (**)(void))(vt + 0x30))(owner, lo2, cnt);
+                ulong r = ((*(cfu3 *)(vt + 0x30)))
+(owner, lo2, cnt);
 err2:
                 if ((r & 0xff) != 0) {
                     FUN_00687998(r, (ulong)0);
@@ -1631,7 +1780,8 @@ err2:
                 long args[4];
                 args[0] = loA - slots[2];
                 args[1] = hiA - loA;
-                ulong r = (**(ulong (**)(void))(slots[1] + 0x30))(*slots, args, args + 1);
+                ulong r = ((*(cfu3 *)(slots[1] + 0x30)))
+(*slots, (ulong)args, (ulong)(args + 1));
                 if ((r & 0xff) != 0) {
                     if ((ulong)(r & 0xff) * 8 + 0x6b5e50 - 1 < (ulong)0x6b5e50 ||
                         (unsigned long *)0x6b5e58 + (r & 0xff) * 8 > (unsigned long *)0x6b5e90)
@@ -1770,7 +1920,7 @@ void FUN_00679784(long obj, long target)
 {
     if (obj + 0x50U < obj + 0x40U)
         SoftwareBreakpoint(0x5519, 0x679804);
-    if (FUN_0067cffc() != 0)
+    if (FUN_0067cffc(NULL) != 0)
         FUN_006833d4(0x6a8797);
     long node = *(long *)(obj + 0x1e0);
     for (;;) {
@@ -1793,15 +1943,15 @@ void FUN_00679838(long obj, ulong base, long len, ulong p4)
     ulong lock = obj + 0x40;
     if (lock <= obj + 0x50U) {
         long lo = len;
-        if (FUN_0067cffc(lock) != 0)
+        if (FUN_0067cffc((ulong *)lock) != 0)
             FUN_006833d4(0x6a8797);
         if (len != 0) {
             ulong end = round + (len + base & 0xffffffffffffc000);
             if (end == (base & 0xffffffffffffc000)) {
                 /* empty range: allocate a fresh node and recurse */
-                cL4_w16_t r = (cL4_w16_t)FUN_00687a2c();
-                long *node = r.hi;
-                long nbase = r.lo;
+                cL4_w16_t r = FUN_00687a2c();
+                long *node = (long *)r.hi;
+                long nbase = (long)r.lo;
                 node[0] = nbase; node[1] = 0; node[2] = 0;
                 node[3] = 0; node[4] = 0; node[5] = 0;
                 node[6] = 0; node[7] = 0; node[8] = 0; node[9] = 0;
@@ -1810,11 +1960,12 @@ void FUN_00679838(long obj, ulong base, long len, ulong p4)
                 FUN_00679a68(nbase, node, (ulong)lo, (long)p4, 0);
                 if (nbase + 0x50U < nbase + 0x40U)
                     SoftwareBreakpoint(0x5519, 0x679a34);
-                if (FUN_0067d02c() == 0)
+                if (FUN_0067d02c(NULL) == 0)
                     return;
                 FUN_006833d4(0x6a8797);
             }
-            while ((long n = *(long *)(obj + 0x1e0)) != 0) {
+            long n = *(long *)(obj + 0x1e0);
+            while (n != 0) {
                 if (end <= base) { FUN_006879f4(); goto done_lbl; }
                 for (;;) {
                     ulong a = *(ulong *)(n + 8);
@@ -1826,7 +1977,7 @@ void FUN_00679838(long obj, ulong base, long len, ulong p4)
                     if (n == 0) return;
                 }
                 *(char *)(n + 0x42) = 1;
-                if (FUN_0067cfc8(n + 0x30, lock) != 0)
+                if (FUN_0067cfc8((ulong *)(n + 0x30), lock) != 0)
                     FUN_006833d4(0x6a8797);
             }
         }
@@ -1849,7 +2000,7 @@ void FUN_00679990(long obj, long *node, ulong base, ulong len)
     FUN_00679a68(obj, node, base, (long)len, 0);
     if (obj + 0x50U < obj + 0x40U)
         SoftwareBreakpoint(0x5519, 0x679a34);
-    if (FUN_0067d02c() == 0)
+    if (FUN_0067d02c(NULL) == 0)
         return;
     FUN_006833d4(0x6a8797);
 }
@@ -1896,7 +2047,7 @@ void FUN_00679b98(long obj, long *node)
     ulong lock = obj + 0x40;
     if (obj + 0x50U < lock)
         SoftwareBreakpoint(0x5519, 0x679c60);
-    if (FUN_0067cffc(lock) != 0)
+    if (FUN_0067cffc((ulong *)lock) != 0)
         FUN_006833d4(0x6a8797);
     if (obj != *node)
         FUN_006833d4(0x6b0832);
@@ -1908,10 +2059,10 @@ void FUN_00679b98(long obj, long *node)
         *next = prev;
         *(char *)(node + 8) = 0;
         char wasmarked = *(char *)((long)node + 0x42);
-        if (FUN_0067d02c(lock) != 0)
+        if (FUN_0067d02c((ulong *)lock) != 0)
             FUN_006833d4(0x6a8797);
         if (wasmarked != 0)
-            FUN_0067cf94(node + 6);
+            FUN_0067cf94((ulong *)(node + 6));
         if ((*(unsigned char *)((long)node + 0x41) & 1) != 0)
             return;
         if ((char)node[8] != 1) {
@@ -1971,11 +2122,11 @@ map:
             long span = end - base;
             ulong t[5] = {0,0,0,0,0};
             if ((FUN_00671af0(t, owner, flags + base, span, 0, 0, 0, 1) & 1) == 0) {
-                cL4_w16_t r = (cL4_w16_t)FUN_00687a9c();
+                cL4_w16_t r = FUN_00687a9c();
                 ulong **head = *(ulong ***)(r.lo + 0x1d8);
                 ulong *node = NULL;
                 if (head != NULL) {
-                    ulong *cur = head, *prev = NULL, *prv_end = NULL;
+                    ulong *cur = head, *prev = NULL, *prv_end = NULL, *nxt;
                     do {
                         ulong *np = cur + 6;
                         if (*cur <= r.hi && r.hi < cur[1] + *cur) {
@@ -1990,7 +2141,7 @@ map:
                             node = cur;
                             break;
                         }
-                        ulong *nxt = cur + 5;
+                        nxt = cur + 5;
                         prev = cur;
                         prv_end = np;
                         cur = (ulong *)*nxt;
@@ -2000,9 +2151,9 @@ map:
                 return o;
             }
             if (base == 0 && *(long *)(obj + 0x10) == span) {
-                long node = FUN_0067a064(owner, flags);
+                long node = (long)FUN_0067a064(owner, flags);
                 if (*(long *)(node + 0x18) != 0)
-                    FUN_0067a0f0(&t[0]);
+                    FUN_0067a0f0((ulong)&t[0], 0);
                 err = 0;
                 *(long *)(node + 0x18) = 0;
                 *(char *)(node + 0x10) = (char)psize;
@@ -2015,7 +2166,7 @@ map:
                             FUN_00687ad4();
                             FUN_006833d4(0x6b0ed7);
                         }
-                        long node = FUN_0067a064(owner, flags);
+                        long node = (long)FUN_0067a064(owner, flags);
                         if (node == 0) {
                             err = 0x1160001;
                             goto finish;
@@ -2025,11 +2176,11 @@ map:
                             FUN_00687ad4();
                             FUN_006833d4(0x6b0ed7);
                         }
+                        long off = 0;
                         if (va < flags + err) {
-                            long off = 0;
                             do {
-                                ulong *pg = (ulong *)FUN_0067a1b8(node + 0x18U,
-                                            va + off, &t[0], 1);
+                                ulong *pg = (ulong *)FUN_0067a1b8((ulong *)(node + 0x18U),
+                                            va + off, (ulong)&t[0], 1);
                                 if (pg == NULL) break;
                                 ulong idx = (va + off + (ulong)(unsigned int)-(int)pg[0x25])
                                             >> 0xe & 0x3ffff;
@@ -2064,7 +2215,7 @@ ulong *FUN_0067a064(long owner, ulong addr)
 {
     ulong *head = *(ulong **)(owner + 0x1d8);
     if (head != NULL) {
-        ulong *cur = head, *prev = NULL, *prv_end = NULL;
+        ulong *cur = head, *prev = NULL, *prv_end = NULL, *nxt;
         do {
             ulong *np = cur + 6;
             if (*cur <= addr && addr < cur[1] + *cur) {
@@ -2079,7 +2230,7 @@ ulong *FUN_0067a064(long owner, ulong addr)
 trap3:
                 SoftwareBreakpoint(0x5519, 0x67a0f0);
             }
-            ulong *nxt = cur + 5;
+            nxt = cur + 5;
             prev = cur;
             prv_end = np;
             cur = (ulong *)*nxt;
@@ -2128,7 +2279,7 @@ ulong FUN_0067a1b8(ulong *headp, ulong addr, ulong owner, int alloc)
     if (head == NULL) {
         if (alloc == 0) return 0;
         head = (ulong *)FUN_00671150(owner);
-        *headp = head;
+        *headp = (ulong)head;
     }
     for (ulong p = *head; p != 0; p = *(ulong *)(p + 0x130)) {
         if (*(ulong *)(p + 0x128) == (addr & 0xffffffffffc00000))
@@ -2180,16 +2331,17 @@ void FUN_0067a264(ulong owner, long obj, ulong base, ulong len, int psize, long 
 void FUN_0067a334(ulong owner, long obj, long src)
 {
     long *p = (long *)(obj + 0x1d8);
+    long n;
     if (p <= (long *)(obj + 0x1e0U)) {
         do {
-            long n = *p;
+            n = *p;
             if (n == 0)
                 FUN_006833d4(0x6b0f9e);
             if (*(long *)(n + 0x20) == src) {
                 *p = *(long *)(n + 0x28);
                 *(long *)(n + 0x28) = 0;
                 if (*(long *)(n + 0x18) != 0)
-                    FUN_0067a0f0(owner);
+                    FUN_0067a0f0(owner, 0);
                 FUN_006710e8(owner, n);
                 return;
             }
@@ -2237,17 +2389,17 @@ bool FUN_0067a510(long owner, long node, ulong addr, ulong *outobj, unsigned cha
 {
     if ((*(unsigned char *)(node + 0xa1) & 1) == 0) {
         ulong page = addr & 0xffffffffffffc000;
-        FUN_00679838(owner, page, 0x4000);
-        ulong n = FUN_0067a064(owner, page);
+        FUN_00679838(owner, page, 0x4000, 0);
+        ulong n = (ulong)FUN_0067a064(owner, page);
         if (n == 0) {
             if (owner + 0x40U <= owner + 0x50U) {
-                if (FUN_0067d02c() != 0)
+                if (FUN_0067d02c(NULL) != 0)
                     FUN_006833d4(0x6a8797);
                 return n != 0;
             }
             SoftwareBreakpoint(0x5519, 0x67a704);
         }
-        FUN_00679a68(owner, node, page, 0x4000, 1);
+        FUN_00679a68(owner, (long *)node, page, 0x4000, 1);
         *(char *)(node + 0xa1) = 1;
         *(ulong *)(node + 0xa8) = page;
         if (n + 0x30 < n) goto trap4;
@@ -2278,7 +2430,7 @@ found:
             *outps = ps;
             *outobj = *(ulong *)(n + 0x20);
             if (owner + 0x50U < owner + 0x40U) goto trap4;
-            if (FUN_0067d02c() == 0)
+            if (FUN_0067d02c(NULL) == 0)
                 return n != 0;
             goto trap4;
         }
@@ -2296,7 +2448,8 @@ ulong FUN_0067a740(ulong owner, long node)
 {
     if ((*(unsigned char *)(node + 0xa1) & 1) != 0) {
         *(char *)(node + 0xa1) = 0;
-        return FUN_00679b98(owner, node);
+        FUN_00679b98(owner, (long *)node);
+        return 0;
     }
     long o = FUN_00687bac();
     if (*(char *)(o + 0x18) == 0x11)
@@ -2326,8 +2479,8 @@ void FUN_0067a780(unsigned char *dst, ulong len)
         if (len > 0x7fff) {
             /* large: DC_ZVA 64-byte blocks */
             unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-            ulong n = (len + (ulong)dst) - (d + 0x40);
-            if (d + 0x40 <= len + (ulong)dst && n != 0) {
+            ulong n = (len + (ulong)dst) - (ulong)(d + 0x40);
+            if ((ulong)(d + 0x40) <= len + (ulong)dst && n != 0) {
                 do { DC_ZVA((ulong)d); d += 0x40; n -= 0x40; } while (n > 0x3f && n != 0);
             }
             unsigned char *tail = d + n;
@@ -2339,8 +2492,8 @@ void FUN_0067a780(unsigned char *dst, ulong len)
         }
         /* mid: 64-byte stores */
         unsigned char *d = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-        ulong n = (len + (ulong)dst) - (d + 8);
-        if (d + 8 <= len + (ulong)dst && n != 0) {
+        ulong n = (len + (ulong)dst) - (ulong)(d + 8);
+        if ((ulong)(d + 8) <= len + (ulong)dst && n != 0) {
             do {
                 d[0]=d[1]=d[2]=d[3]=d[4]=d[5]=d[6]=d[7]=0;
                 d[8]=d[9]=d[10]=d[11]=d[12]=d[13]=d[14]=d[15]=0;
@@ -2378,8 +2531,8 @@ void FUN_0067a7f0(unsigned char *dst, ulong val, ulong len)
         for (ulong i = 0; i < 0x40 && (ulong)(d - dst) < len; i += 8)
             *(ulong *)(d + i) = word;
         unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-        ulong n = (len + (ulong)dst) - (p + 8);
-        if (p + 8 <= len + (ulong)dst && n != 0) {
+        ulong n = (len + (ulong)dst) - (ulong)(p + 8);
+        if ((ulong)(p + 8) <= len + (ulong)dst && n != 0) {
             do {
                 *(ulong *)(p+0)=word; *(ulong *)(p+8)=word; *(ulong *)(p+16)=word;
                 *(ulong *)(p+24)=word; *(ulong *)(p+32)=word; *(ulong *)(p+40)=word;
@@ -2396,8 +2549,8 @@ void FUN_0067a7f0(unsigned char *dst, ulong val, ulong len)
     if (word != 0) {
         for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = word;
         unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-        ulong n = (len + (ulong)dst) - (p + 8);
-        if (p + 8 <= len + (ulong)dst && n != 0) {
+        ulong n = (len + (ulong)dst) - (ulong)(p + 8);
+        if ((ulong)(p + 8) <= len + (ulong)dst && n != 0) {
             do {
                 *(ulong *)(p+0)=word; *(ulong *)(p+8)=word; *(ulong *)(p+16)=word;
                 *(ulong *)(p+24)=word; *(ulong *)(p+32)=word; *(ulong *)(p+40)=word;
@@ -2412,8 +2565,8 @@ void FUN_0067a7f0(unsigned char *dst, ulong val, ulong len)
     /* zero fill via DC_ZVA */
     for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = 0;
     unsigned char *z = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-    ulong n = (len + (ulong)dst) - (z + 0x40);
-    if (z + 0x40 <= len + (ulong)dst && n != 0) {
+    ulong n = (len + (ulong)dst) - (ulong)(z + 0x40);
+    if ((ulong)(z + 0x40) <= len + (ulong)dst && n != 0) {
         do { DC_ZVA((ulong)z); z += 0x40; n -= 0x40; } while (n > 0x3f && n != 0);
     }
     unsigned char *tail = z + n;
@@ -2491,8 +2644,8 @@ void FUN_0067ad00(unsigned char *dst, unsigned long pat, ulong len)
     }
     for (ulong i = 0; i < 0x40; i += 8) *(ulong *)(dst + i) = pat;
     unsigned char *p = (unsigned char *)((ulong)(dst + 8) & ~0x3fUL);
-    ulong n = (len + (ulong)dst) - (p + 8);
-    if (p + 8 <= len + (ulong)dst && n != 0) {
+    ulong n = (len + (ulong)dst) - (ulong)(p + 8);
+    if ((ulong)(p + 8) <= len + (ulong)dst && n != 0) {
         do {
             for (int i = 0; i < 8; i++) *(ulong *)(p + i*8) = pat;
             p += 0x40; n -= 0x40;
@@ -2782,14 +2935,14 @@ long FUN_0067b42c(long s, long max)
  * counting child nodes too. Confidence: low. */
 ulong FUN_0067b454(ulong a, ulong b, int countchildren, long root, ulong cookie, code *fn)
 {
-    cL4_w16_t start = (cL4_w16_t)FUN_006555fc(0x6b108f);
+    cL4_w16_t start = FUN_006555fc(0x6b108f);
     ulong p = start.lo;
     ulong count = 0;
     ulong *node;
     while ((node = (ulong *)(root + p)) != NULL &&
-           (fn == NULL || (*(int (**)(void))fn)(node, 0, cookie) != 0)) {
+           (fn == NULL || ((cfi3)fn)(node, 0, cookie) != 0)) {
         if ((start.hi != 0) && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
-            while (c != NULL && (fn == NULL || (*(int (**)(void))fn)(c, 1, cookie) != 0)) {
+            while (c != NULL && (fn == NULL || ((cfi3)fn)(c, 1, cookie) != 0)) {
                 long *next = (long *)0;
                 if (c[1] != 0) {
                     if (FUN_00655650(c[1]) != 0) {
@@ -2817,9 +2970,9 @@ ulong FUN_0067b478(ulong p0, int countchildren, int brk, long root, ulong cookie
     ulong count = 0;
     ulong *node;
     while ((node = (ulong *)(root + p0)) != NULL &&
-           (fn == NULL || (*(int (**)(void))fn)(node, 0, cookie) != 0)) {
+           (fn == NULL || ((cfi3)fn)(node, 0, cookie) != 0)) {
         if (countchildren != 0 && (long *c = (long *)FUN_0067b704(node, 0)) != NULL) {
-            while (c != NULL && (fn == NULL || (*(int (**)(void))fn)(c, 1, cookie) != 0)) {
+            while (c != NULL && (fn == NULL || ((cfi3)fn)(c, 1, cookie) != 0)) {
                 long *next = (long *)0;
                 if (c[1] != 0) {
                     if (FUN_00655650(c[1]) != 0) {
@@ -3608,11 +3761,11 @@ ulong FUN_0067ce74(ulong dst, ulong src, ulong size, ulong cap)
 /* ---- lock-init thunks (0x67cf94-0x67d02c) ---- */
 void FUN_0067cf94(ulong *p)      { FUN_006551d0(); }
 void FUN_0067cfb0(ulong *p)      { FUN_00655218(); }
-void FUN_0067cfc8(ulong *p, ulong q) { FUN_00655234(); }
+ulong FUN_0067cfc8(ulong *p, ulong q) { FUN_00655234(); return 0; }
 void FUN_0067cfe0(ulong a, ulong b) { FUN_00655274(a, b); }
-void FUN_0067cffc(ulong *p)      { FUN_006552b0(); }
+ulong FUN_0067cffc(ulong *p)      { FUN_006552b0(); return 0; }
 void FUN_0067d014(void)          { FUN_006552c4(); }
-void FUN_0067d02c(ulong *p)      { FUN_006552f8(); }
+ulong FUN_0067d02c(ulong *p)      { FUN_006552f8(); return 0; }
 
 /* FUN_0067d050 @ 0x67d050
  * Ghidra: undefined8 FUN_0067d050(undefined8 *param_1)
@@ -3784,3 +3937,8 @@ unsigned int FUN_0067d440(ulong s, ulong fp)
     }
     SoftwareBreakpoint(0x5519, 0x67d4a4);
 }
+
+/* FUN_006766b0 @ 0x6766b0
+ * Ghidra: void FUN_006766b0(void)
+ * Empty placeholder (no-op). Confidence: medium. */
+void FUN_006766b0(void) { }
