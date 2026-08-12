@@ -432,6 +432,8 @@ void FUN_0018ddb0(void);
 void FUN_0018ddd8(uint64_t *p1, uint64_t p2, uint64_t p3, uint64_t *p4, uint64_t p5, uint64_t p6, uint64_t p7);
 void FUN_0018de98(void);
 uint64_t FUN_0018deb8(uint32_t p1);
+void * FUN_0018c660(uint64_t p1, uint64_t p2);
+void * FUN_0018cc2c(uint64_t p1, uint64_t p2);
 cl4_16_t FUN_0018e1c0(void);
 void FUN_0018e290(uint64_t a, uint64_t b);
 void FUN_0018e294(uint64_t a, uint64_t b);
@@ -8058,8 +8060,8 @@ uint32_t FUN_0018bf2c(uint64_t p1, uint64_t p2, uint64_t p3)
   uint8_t *cpu;
   long err;
   
-  msgbuf = FUN_0018bf78(p1,(uint64_t)*cpu | (uint64_t)*(uint32_t *)(cpu + 4) << 0x20,
-                       *(uint32_t *)(cpu + 8),p2,p3);
+  msgbuf = CL4_VOID_U64(FUN_0018bf78(p1,(uint64_t)*cpu | (uint64_t)*(uint32_t *)(cpu + 4) << 0x20,
+                       *(uint32_t *)(cpu + 8),p2));
   if (err == 0) {
     msgbuf = 1;
   }

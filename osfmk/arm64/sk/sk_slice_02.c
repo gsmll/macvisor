@@ -1835,7 +1835,7 @@ tail:
     return;
 }
 
-/* FUN_00016a5c @ 0x00016a5c   (est. tb_channel_flush)
+/* FUN_00016e1c @ 0x00016e1c   (est. tb_message_decode)
  * Ghidra: void tb_message_decode(long *param_1, long param_2, undefined8 *param_3)
  * Decode variant of tb_message_receive. Reads the transport object at param_1
  * (kind check via FUN_000132d4/132e0), materializes the inbound message bytes

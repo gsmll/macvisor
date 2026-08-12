@@ -174,8 +174,8 @@ void cl4_swift_range_math();
 void cl4_object_service_run3();
 void cl4_swift_fill();
 void cl4_swift_complete();
-void cl4_swift_string_cmp3();
-void cl4_swift_string_cmp4();
+unsigned long cl4_swift_string_cmp3();
+unsigned long cl4_swift_string_cmp4();
 unsigned long cl4_swift_string_cmp5();
 void cl4_swift_string_append4();
 void cl4_swift_string_append6();
@@ -1729,7 +1729,7 @@ cl4_result_t cl4_swift_bitset_next(void)
         cl4_result_t r = { (unsigned long)__builtin_clzll(rev), 0 };
         return r;
     }
-    return sk_swift_bitset_end(0);   /* FUN_00068e14 */
+    return (cl4_result_t){ sk_swift_bitset_end(0), 0 };   /* FUN_00068e14 */
 }
 
 /*--------------------------------------------------------------------*/

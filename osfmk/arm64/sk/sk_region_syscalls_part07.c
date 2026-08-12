@@ -3347,10 +3347,10 @@ ulong sk_msg_cap_validate_2(void)
             val = 4;
             if (idx < 4) val = idx;
             switch (val) {
-            default: val = (uint)(byte)*/* x19 */0; break;
-            case 2:   val = (uint)(ushort)*/* x19 */0; break;
+            default: val = (uint)(byte)*((uint *)/* x19 */0); break;
+            case 2:   val = (uint)(ushort)*((uint *)/* x19 */0); break;
             case 3:   FUN_0034e32c(0); val = /* w9 */0; bit = /* w10_00 */0; a = /* w8_00 */0; break;
-            case 4:   val = */* x19 */0; break;
+            case 4:   val = *((uint *)/* x19 */0); break;
             }
         }
         return (ulong)(a + (val | bit) + 1);
@@ -3407,7 +3407,11 @@ void sk_syscall_entry_commit(void)
 {
     FUN_00349d3c(0);
     FUN_00357104(0);
-    if (/* carry clear && !zero && w12==0 && x10 large 0 = 0;
+    /* condition: (!carry_set || zero) && w12==0 && x10 has high bit set */
+    if (((/* carry */0 == 0 || /* zero */0 != 0) && /* w12 */0 == 0)
+        && (ulong)/* x10 */0 > 0xffffffffffffffe6) {
+        /* *x19 = *x1 (copy incoming word) */
+        *(word_t *)/* x19 */0 = *(word_t *)/* x1 */0;
         FUN_00358750(0);
         ((void (*)(void))0)();
     } else {
@@ -3600,7 +3604,7 @@ void sk_dispatch4_18(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel);
 }
 
 /* FUN_00335770 @ 0x335770 (est. sk_dispatch4_20) table+0x20 */
@@ -3615,7 +3619,7 @@ void sk_dispatch4_20(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel);
 }
 
 /* FUN_00335808 @ 0x335808 (est. sk_dispatch4_28) table+0x28 */
@@ -3630,7 +3634,7 @@ void sk_dispatch4_28(void)
     FUN_00349530(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
     long addr = dst + sel;
-    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel);
+    ((void (*)(word_t, word_t))0)(addr + /* x21 */0 & ~sel, addr + /* x20 */0 & ~sel);
 }
 
 /* FUN_003358a0 @ 0x3358a0 (est. sk_msg_cap_validate_3)
