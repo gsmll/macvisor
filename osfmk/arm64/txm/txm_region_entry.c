@@ -173,7 +173,9 @@ typedef uint64_t txm_rb_node_t;
 extern uint64_t txm_asid_table;              /* DAT_000104f8 */
 extern uint64_t txm_asid_count;              /* DAT_000104f4 */
 extern uint64_t txm_page_state_hi;           /* DAT_000104ea */
-extern void txm_alloc_zone(uint64_t *out, uint64_t size, uint32_t tag);  /* FUN_000269b4 */
+extern void txm_alloc_zone_impl(uint64_t *out, uint64_t size, uint64_t tag); /* FUN_0002c4a8 */
+extern void txm_alloc_zone(uint64_t *out, uint64_t size, uint64_t tag);      /* FUN_000269b4 */
+extern void txm_mem_commit(uint64_t a, uint64_t b);                         /* thunk_FUN_0002d240 */
 extern uint64_t base_size;                   /* allocated-size output */
 extern uint64_t txm_boot_page_state;         /* DAT_000107f4 */
 
@@ -207,6 +209,9 @@ extern void txm_slot_release_teardown(txm_obj_t *obj);              /* FUN_00028
 extern void txm_stack_guard_check(void);                            /* FUN_0002f13c-ish */
 extern uint64_t txm_profile_assoc_check(uint64_t handle, uint8_t b); /* FUN_00035178 */
 extern uint64_t txm_profile_handle;                                 /* DAT_000107d8 */
+extern void txm_trace_hi(void);   /* FUN_00056578 */
+extern void txm_trace_lo(void);   /* FUN_0005a8d8 */
+extern void txm_trace_mid(void);  /* FUN_0005a914 */
 extern uint64_t txm_region_slot_table;                              /* &DAT_000706c0 */
 
 /* Region-association / entitlement / code-execution helpers. */
@@ -279,7 +284,7 @@ extern void txm_return_exit(uint64_t ctx);                           /* FUN_0002
 extern uint64_t txm_allowed_id_list;     /* DAT_000100b8 */
 extern uint64_t txm_match_flag;          /* DAT_000107f8 */
 extern uint64_t txm_boot_e8;             /* DAT_000104e8 */
-extern uint64_t txm_ctx_return;          /* DAT_00010588 */
+extern uint64_t txm_boot_mem;             /* DAT_00010588 */
 extern uint8_t  txm_build_cfg0;          /* DAT_00070ecc */
 extern uint8_t  txm_build_cfg1;          /* DAT_00070ecd */
 extern uint8_t  txm_build_cfg2;          /* DAT_00070ece */
@@ -294,23 +299,119 @@ extern uint64_t txm_platform_code_only(void);                       /* FUN_0002a
 extern uint64_t txm_setup_extra(void);                              /* FUN_0002a894 */
 extern uint64_t txm_ce_legacy_init(uint64_t ctx, int type, uint64_t *a, uint64_t *b, uint64_t max); /* FUN_00031280 */
 extern uint64_t txm_feature_byte(void);                             /* FUN_0002a630 */
+
+/* Policy-init scratch/labels (addresses). */
+extern uint64_t txm_ce_ctx;              /* 0x10688 */
+extern uint64_t txm_rsm_support;         /* fn ptr @0x10698 */
+extern uint64_t txm_rsm_flag;            /* fn ptr @0x106a0 */
+extern uint64_t txm_policy_fn_a, txm_policy_fn_b, txm_policy_fn_c;
+extern uint64_t txm_policy_fn_d, txm_policy_fn_e;
+extern uint64_t txm_build_info_alt;      /* fn ptr @0x10700 */
+extern uint64_t buf_scratch;             /* scratch range tag */
+extern uint64_t prospective_policy_gen;  /* string @0x3ff9 */
+extern uint64_t txm_ce_ctx2;             /* 0x10750 entitlements ctx */
+
+/* Build-config / CD-hash registration helpers. */
+extern void txm_config_apply(uint64_t cfg);        /* FUN_00024f14 */
+extern void txm_build_data_write_impl(uint64_t p, uint64_t n);  /* FUN_00024fc8 */
+extern uint64_t txm_ent_accel_eval(uint64_t ent, uint64_t *out); /* FUN_0005e9c8 */
+extern uint64_t txm_ent_accel(uint64_t ent);       /* FUN_0005eb3c */
+extern uint64_t txm_build_dict_get(uint64_t d, uint64_t *out); /* FUN_00036318 */
+extern uint64_t txm_build_dict_next(uint64_t d, uint64_t *out); /* FUN_0003634c */
+extern uint64_t txm_accel_alloc(uint64_t *out, uint64_t tag);  /* FUN_00026ba4 */
+extern uint64_t txm_accel_link(uint64_t *list);    /* FUN_00026cc4 */
+extern int  txm_swift_lookup(uint64_t ent, uint64_t *tbl);     /* thunk_FUN_0002d4d0 */
+
+/* Build/CD-hash globals. */
+extern uint64_t txm_accel_count0;        /* DAT_00071000 */
+extern uint64_t txm_accel_count1;        /* DAT_00071004 */
+extern uint64_t txm_accel_count2;        /* DAT_00071008 */
+extern uint64_t txm_accel_count3;        /* DAT_0007100c */
+extern uint64_t txm_accel_count4;        /* DAT_00071010 */
+extern uint8_t  txm_build_cfg_ready;     /* DAT_00070ecd (txm_build_cfg1) */
+extern uint8_t  txm_build_cfg_extra;     /* DAT_00070f2e */
+extern uint64_t txm_build_cfg_store_block[12]; /* 0x70ede */
+extern uint8_t  txm_swift_state;         /* DAT_00070f2f */
+extern uint64_t txm_swift_state_block[7]; /* 0x70f30 */
+extern uint64_t txm_swift_size;          /* 0x70f60 */
+extern uint64_t txm_swift_table;         /* 0x70f30 */
+extern uint8_t  txm_amfi_state;          /* DAT_00070f68 */
+extern uint64_t txm_amfi_state_block[7]; /* 0x70f70 */
+extern uint64_t txm_amfi_size;           /* 0x70fa0 */
+
+/* Policy handler helpers. */
+extern uint64_t txm_region_owner(uint64_t obj);  /* FUN_00027814 */
+extern void txm_region_copy(uint64_t *out, uint64_t *rng, uint8_t typ); /* FUN_0002ca50 */
+extern void txm_tc_add_impl(uint64_t *list, uint64_t arg);          /* FUN_00030c00 */
+extern void txm_tc_remove_impl(uint64_t *list, uint64_t arg, uint64_t size, uint64_t extra); /* FUN_00030224 */
+extern int  txm_amfi_lookup(uint64_t ent, uint64_t *tbl);           /* thunk_FUN_0002d4d0 */
+extern uint8_t  txm_page_flag;           /* DAT_000107fc */
+
+/* Logging infrastructure (FUN_00025bec/25c6c/25c98/25dfc/25e38). */
+extern long txm_vsnprintf(uint64_t out, uint64_t size, uint64_t a, uint64_t b, const char *fmt, ...); /* FUN_0002eb44 */
+extern uint32_t *txm_log_error_code(void);                          /* thunk_FUN_00029750 */
+
+/* Logging globals. */
+extern uint64_t txm_log_base;            /* DAT_00010500 */
+extern uint64_t txm_log_size;            /* DAT_00010508 */
+extern uint64_t txm_log_extra;           /* DAT_00010510 */
+extern uint64_t txm_log_slot;            /* DAT_00070694 */
+extern uint64_t txm_log_count;           /* DAT_00070698 */
+extern uint8_t  txm_debug_bit;           /* DAT_000104ee */
+
+/* Trust-cache loader helpers. */
+extern int  txm_external_modules(void);  /* FUN_0002a79c */
+extern uint64_t txm_dt_range_parse(uint64_t *rng, uint64_t tag);    /* FUN_0002c84c */
+extern txm_u128_t txm_dt_trust_cache_get(void);                     /* FUN_0002a674 */
+extern void txm_range_copy(uint64_t *out, const void *src, uint64_t n, uint64_t a, uint64_t tag); /* FUN_0002c4a8 */
+extern uint64_t txm_tc_parse_module(uint64_t *list, uint64_t idx, uint64_t *slots, void *data, uint64_t len); /* FUN_00030f00 */
+extern void txm_tc_slot_copy(uint64_t *dst, uint64_t *src);         /* FUN_000309ec */
+extern uint64_t txm_ctx_alloc_extra(void);                          /* FUN_00026e80 */
+extern void txm_obj_ref3(txm_obj_t *obj, int a, int b);             /* FUN_00027284 */
+extern uint8_t txm_erm_tc_disallow(uint64_t node);                    /* FUN_0002623c */
+extern uint64_t txm_tc_install(uint64_t *list, uint64_t idx, uint64_t module, uint64_t size, uint64_t typ, uint64_t extra); /* FUN_00031060 */
+extern uint64_t txm_tc_remove(uint64_t *list, uint64_t arg, uint64_t *out); /* FUN_0003120c */
+extern uint64_t txm_tc_module_base(uint64_t module);                /* FUN_00026de0 */
+extern void txm_dt_get_uint(uint64_t node, uint32_t key, uint64_t *out); /* FUN_00052e34 */
+
+/* Trust-cache globals. */
+extern uint64_t txm_tc_array;            /* DAT_00010590 */
+extern uint64_t txm_tc_array2;           /* DAT_0001d350 */
+extern uint64_t txm_tc_state;            /* DAT_00010598 */
+extern uint64_t txm_tc_count;            /* DAT_0007101c */
+extern uint64_t txm_tc_code_size;        /* DAT_00071020 */
+extern uint64_t txm_tc_data_size;        /* DAT_00071024 */
+extern uint64_t txm_tc_data_size2;       /* DAT_00071028 */
+extern uint64_t txm_tc_data_size3;       /* DAT_0007102c */
+extern uint64_t txm_tc_load_count;       /* DAT_000105c0 */
+extern uint64_t txm_tc_mod_count;        /* DAT_00071014 */
+extern uint64_t txm_tc_mod_count2;       /* DAT_00071018 */
+extern uint8_t  txm_tc_ext_flag;         /* DAT_000107f9 */
+extern uint8_t  txm_boot_flag_e0;        /* DAT_000104ef */
+extern uint64_t size_word, extra_word;   /* alloc result words */
+extern uint8_t  txm_tc_boot_profile;     /* parsed-boot-profile flag */
+extern uint64_t txm_tc_array2_state;     /* 0x105a0/5a8 state */
+extern uint64_t txm_tc_module_table;     /* DAT_0001d350 table */
+extern uint64_t txm_tc_erm_disallow;     /* fn ptr @0x105b8 */
+extern uint64_t txm_tc_slot_a, txm_tc_slot_b, txm_tc_slot_c;  /* slot scratch */
+extern void txm_dt_trust_cache_parse(uint64_t lo, uint64_t hi, uint64_t tag); /* FUN_00026a74 */
 extern uint64_t txm_alloc_zone2(void);                              /* FUN_000278e4 */
 extern int  txm_range_valid(uint64_t p);                            /* FUN_00028594 */
 extern uint64_t txm_range_pull(uint64_t p, uint64_t *out, uint64_t *flag); /* FUN_000285d0 */
-extern uint64_t txm_dict_parse(uint64_t ctx, uint64_t *dst, uint64_t a, uint64_t b); /* FUN_00035acc */
+extern uint64_t txm_dict_parse(uint64_t *ctx, uint64_t *dst, uint64_t a, uint64_t b); /* FUN_00035acc */
 extern uint64_t txm_dict_finish(txm_obj_t d, uint64_t arg);         /* FUN_00036078 */
 extern void txm_buf_err(uint64_t *buf, uint64_t tag);               /* FUN_00028e20 */
 extern void txm_obj_ref2(txm_obj_t *obj, int a, int b);             /* FUN_00027bb4 */
 extern int  txm_dict_empty(txm_obj_t d, uint64_t *out);             /* FUN_000362c4 */
 extern uint64_t txm_dict_get_ent(txm_obj_t d, uint64_t *out);       /* FUN_000362ec */
-extern uint64_t txm_ent_validate(txm_obj_t d, uint64_t *out);       /* FUN_00035bf0 */
+extern uint64_t txm_ent_validate(txm_obj_t d);                       /* FUN_00035bf0 */
 extern uint64_t txm_ent_validate2(txm_obj_t d, uint64_t flag);      /* FUN_00035df4 */
 extern uint64_t txm_ent_validate3(txm_obj_t d);                     /* FUN_00035f08 */
 extern int  txm_ent_check(uint64_t x);                              /* FUN_0005eb18 */
 extern int  txm_ent_match(uint64_t x);                              /* FUN_0005ed14 */
 extern uint64_t txm_tc_field(uint64_t dict, uint32_t tag, uint64_t *out, int *n); /* FUN_0003653c */
 extern uint64_t txm_tc_build(uint64_t dict, char *a, char *b);      /* FUN_00036824 */
-extern uint64_t txm_tc_count(uint64_t dict, int *n);                /* FUN_00036424 */
+extern uint64_t txm_tc_count_dict(uint64_t dict, int *n);          /* FUN_00036424 */
 extern uint64_t txm_dict_get_str(txm_obj_t d, uint64_t *out);       /* FUN_00033b88 */
 
 /* Policy / trust-cache globals. */
@@ -322,7 +423,6 @@ extern uint8_t  txm_feature_flag;       /* DAT_0007103c-ish */
 extern uint64_t txm_page_policy_comm(void);                         /* FUN_0002081c */
 
 /* External module loader / TC parse externs. */
-extern void txm_tc_parse_module(uint64_t profile);                  /* FUN_00031e34-ish */
 extern uint64_t txm_boot_page_state;                                /* DAT_000107f4 */
 
 /* FUN_00020000 @ 0x00020000   (est. txm_entry_init / __text)
@@ -2777,7 +2877,7 @@ txm_u128_t txm_build_info(void)
 	txm_log("device type: %u");                    /* 0x11a9 */
 	txm_log("research configuration: %u");         /* 0x11b9 */
 	txm_log("extended research configuration: %u");/* 0x11d4 */
-	txm_return_exit(txm_ctx_return);
+	txm_return_exit(txm_boot_mem);
 
 	if ((txm_build_cfg0 & 1) != 0) {
 		if ((txm_build_cfg1 & 1) != 0) {
@@ -2825,6 +2925,1459 @@ void txm_lockdown_mode_enter(void)
 	}
 	txm_lockdown_entered = 0;                    /* DAT_00010661 */
 	txm_log("entered lockdown mode for the re...");   /* 0x11f8 */
+}
+
+/* FUN_00023fac @ 0x00023fac   (est. txm_exec_probe)
+ * Ghidra: byte FUN_00023fac(void)
+ * Execution probe: returns the profile byte6 (DAT_00010678+6) unless the
+ * channel is in lockdown (DAT_00071033) or armed (DAT_00071030 with SCRD low
+ * word nonzero and lockdown bit set), in which case returns 1. Used by the
+ * exec-eligibility gate.
+ * Confidence: medium
+ */
+uint8_t txm_exec_probe(void)
+{
+	if ((txm_sc_lockdown & 1) == 0 &&
+	    ((txm_sc_ready & 1) == 0 ||
+	     ((txm_scrd & 0xffff) != 0 && (txm_scrd & 0x10000) != 0))) {
+		return *(uint8_t *)(txm_profile_ctx + 6);
+	}
+	return 1;
+}
+
+/* FUN_00024000 @ 0x00024000   (est. txm_policy_init)
+ * Ghidra: void FUN_00024000(void)
+ * Selects and installs the active system policy table based on the boot state
+ * (DAT_000104f2 0-7; unassignable states panic 0x1332). Copies the 12-word
+ * policy table (one of 0x6d18/0x6d78/0x6dd8/0x10df8/0x10e58/0x10eb8/0x10f18/
+ * 0x10f78) into the policy context at 0x10618..0x10678, records the
+ * platform-code-only flag (0x1351), installs the policy function table
+ * (0x10680..0x10748), arms the profile handle, logs "restricted execution mode
+ * support..." (0x136f), and initializes developer mode (FUN_00023a40) and the
+ * per-feature policy handlers (FUN_00031280 entitlements init, FUN_0002a630).
+ * Panics 0x1c/0x27/0xd0 on unsupported combinations.
+ * Confidence: medium (policy-table install; boot-state keyed)
+ */
+void txm_policy_init(void)
+{
+	uint64_t *tbl;
+	uint64_t r;
+	uint32_t cls;
+
+	txm_policy_sel = 0;
+	switch (txm_boot_state) {
+	case 0:  txm_policy_sel = 1; tbl = (uint64_t *)0x6d18; break;
+	case 1:  tbl = (uint64_t *)0x10df8; break;
+	case 2:  tbl = (uint64_t *)0x10e58; break;
+	case 3:  tbl = (uint64_t *)0x10f18; break;
+	case 4:  tbl = (uint64_t *)0x10f78; break;
+	case 5:  tbl = (uint64_t *)0x10eb8; break;
+	case 6:  tbl = (uint64_t *)0x6d78; break;
+	case 7:  tbl = (uint64_t *)0x6dd8; break;
+	default: txm_panic(0x1332);                  /* unassignable system policy */
+	}
+
+	*(uint64_t *)0x10640 = tbl[5];
+	*(uint64_t *)0x10638 = tbl[4];
+	*(uint64_t *)0x10650 = tbl[7];
+	*(uint64_t *)0x10648 = tbl[6];
+	*(uint64_t *)0x10660 = tbl[9];
+	*(uint64_t *)0x10658 = tbl[8];
+	*(uint64_t *)0x10670 = tbl[0xb];
+	*(uint64_t *)0x10668 = tbl[10];
+	*(uint64_t *)0x10620 = tbl[1];
+	*(uint64_t *)0x10618 = tbl[0];
+	*(uint64_t *)0x10630 = tbl[3];
+	*(uint64_t *)0x10628 = tbl[2];
+	txm_profile_ctx = 0x10618;
+	txm_ce_ctx = 0x10548;
+
+	if ((txm_platform_code_only() & 1) != 0) {
+		*(uint64_t *)0x10618 = (*(uint64_t *)0x10618 & 0xffff) | (1ULL << 16);
+	}
+	txm_log("platform code only policy: %u");   /* 0x1351 */
+	*(uint64_t *)0x10680 = (uint64_t)&txm_exec_probe;
+	*(uint64_t *)0x10728 = (uint64_t)0x259d4;
+
+	if ((txm_sc_ready & 1) == 0 && (*(uint64_t *)0x10660 & 1) != 0) {
+		txm_panic(0x1c);
+	}
+	*(uint64_t *)0x70ec8 = 0;
+	txm_profile_handle = 0x70ec8;
+	txm_sc_report_handle();
+	txm_log("restricted execution mode support: %u");   /* 0x136f */
+	*(uint64_t *)0x10690 = 0;
+	*(uint64_t *)0x10698 = (uint64_t)&txm_rsm_support;
+	*(uint64_t *)0x106a0 = (uint64_t)&txm_rsm_flag;
+	*(uint64_t *)0x106a8 = 1;
+	*(uint64_t *)0x106a9 = 0;
+	*(uint64_t *)0x106b8 = 0;
+	*(uint64_t *)0x106b0 = 0;
+	*(uint64_t *)0x106c8 = 0;
+	*(uint64_t *)0x106c0 = 0;
+	*(uint64_t *)0x106d8 = 0;
+	*(uint64_t *)0x106d0 = 0;
+	txm_setup_extra();
+	*(uint64_t *)0x106e0 = (uint64_t)&txm_boot_signature_authorize;
+	if ((txm_sc_ready & 1) == 0 && (*(uint8_t *)(txm_profile_ctx + 0x4d) & 1) != 0) {
+		txm_panic(0x27);
+	}
+	txm_developer_mode(0);
+	*(uint64_t *)0x10718 = (uint64_t)0x25ab0;
+	if ((txm_sc_ready & 1) != 0 || (*(uint8_t *)(txm_profile_ctx + 0x4e) & 1) == 0) {
+		*(uint64_t *)0x10720 = (uint64_t)&txm_policy_fn_a;
+		*(uint64_t *)0x10730 = (uint64_t)&txm_policy_fn_b;
+		*(uint64_t *)0x10738 = (uint64_t)&txm_policy_fn_c;
+		if ((*(uint8_t *)(txm_profile_ctx + 0x4a) & 1) != 0) {
+			r = txm_ce_legacy_init(txm_ce_ctx, 1, (uint64_t *)0x10750, (uint64_t *)0x6bc4, 299);
+			cls = (uint32_t)(r >> 8) & 0xff;
+			if (cls != 0) {
+				txm_panic(0xf1, r);
+			}
+			*(uint64_t *)0x106e8 = (uint64_t)&txm_build_info_inner;
+			*(uint64_t *)0x106f0 = (uint64_t)&txm_build_info;
+			*(uint64_t *)0x106f8 = (uint64_t)(uint64_t *)0x10750;
+		}
+		if ((*(uint8_t *)(txm_profile_ctx + 0x4b) & 1) != 0) {
+			*(uint64_t *)0x10700 = (uint64_t)&txm_build_info_alt;
+		}
+		if ((*(uint8_t *)(txm_profile_ctx + 0x49) & 1) != 0) {
+			*(uint64_t *)0x10708 = (uint64_t)&txm_policy_fn_d;
+			*(uint64_t *)0x10710 = (uint64_t)&txm_policy_fn_e;
+		}
+		*(uint64_t *)0x10740 = (uint64_t)&txm_feature_byte;
+		*(uint8_t *)0x1074b = (uint8_t)txm_feature_byte();
+		*(uint64_t *)0x10748 = 0;
+		*(uint64_t *)0x1074a = 0;
+		*(uint64_t *)0x1074c = 0;
+		txm_page_state = (*(uint64_t *)0x107fc >> 1) & 1;
+		*(uint64_t *)0x107f4 = 0;
+		*(uint64_t *)0x107fa = 0;
+		return;
+	}
+	txm_panic(0xd0);
+}
+
+/* FUN_000243b8 @ 0x000243b8   (est. txm_profile_load_obj)
+ * Ghidra: ulong FUN_000243b8(ulong start, ulong size, undefined8 arg, long *out)
+ * Loads a profile object from a memory range [start, start+size): allocates an
+ * object (FUN_000278e4), validates the range (16K-aligned etc.), parses the
+ * profile dictionary (FUN_00035acc) over obj+0x28, re-arms the buffer tag, and
+ * returns the object via *out. A non-direct (range-backed) profile is pulled
+ * via FUN_000285d0 first. Returns packed status.
+ * Confidence: medium
+ */
+uint64_t txm_profile_load_obj(uint64_t start, uint64_t size, uint64_t arg, uint64_t *out)
+{
+	uint64_t obj = txm_alloc_zone2();
+	uint64_t end, st;
+	int direct;
+
+	if (obj == 0) {
+		return 7;
+	}
+	*(uint8_t *)(obj + 0x12) = 0x43;
+	txm_lock_acquire(obj, 1, 0);
+
+	direct = txm_range_valid(size);
+	if (direct == 0) {
+		end = size + 0x3fff & ~0x3fffUL;
+		if (end < size) txm_panic(0x43);
+		if (start == 0) txm_panic(0x40);
+		if (end == 0) txm_panic(0x41);
+		if (start + end < start) txm_panic(0x42);
+		if ((start & 0x3fff) != 0) txm_panic(0xc0);
+		/* parse direct */
+		{
+			uint64_t rng[3] = { start, end, size };
+			txm_buf_begin(&buf_scratch, rng, 0x29, 0x3a);
+			*(uint8_t *)(obj + 0x12) = 0x3a;
+			st = txm_dict_parse(&txm_profile_ctx, (uint64_t *)(obj + 0x28), start, end);
+			if ((st & 0xff00) != 0) {
+				txm_panic(st);
+			}
+			txm_dict_finish(obj + 0x28, arg);
+			if (out != 0) {
+				*out = obj;
+			}
+			txm_lock_release(obj, 1);
+			return 0;
+		}
+	}
+
+	/* Range-backed profile: pull the backing range then parse. */
+	{
+		uint64_t rng2[3] = { 0, 0, 0x43 };
+		uint64_t pulled = txm_range_pull(size, &rng2[0], &rng2[2]);
+		end = rng2[1];
+		if (pulled != 0) {
+			*(uint8_t *)(obj + 0x12) = (uint8_t)rng2[2];
+			if (rng2[1] < size || pulled < start || end < rng2[1]) {
+				txm_panic(0x19);
+			}
+			st = txm_dict_parse(&txm_profile_ctx, (uint64_t *)(obj + 0x28), start, end);
+			if ((st & 0xff00) == 0) {
+				txm_dict_finish(obj + 0x28, arg);
+				if (out != 0) *out = obj;
+				txm_lock_release(obj, 1);
+				return 0;
+			}
+			txm_panic(st);
+		}
+		txm_lock_release(obj, 1);
+		txm_obj_ref2(&obj, 3, 4);
+		return 7;
+	}
+}
+
+/* FUN_00024678 @ 0x00024678   (est. txm_profile_teardown)
+ * Ghidra: undefined8 FUN_00024678(long obj, ulong *range_out)
+ * Tears down a profile object: validates it is unassociated (0x57), releases
+ * entitlements (0x122e), re-arms the buffer tag, zeroes the object's entire
+ * 0x150-byte state, releases it, and returns the profile range via *range_out.
+ * Confidence: medium
+ */
+uint64_t txm_profile_teardown(uint64_t obj, uint64_t *range_out)
+{
+	uint64_t linked = 0, ent = 0, size = 0, addr = 0;
+	uint64_t end;
+	uint32_t cls;
+
+	txm_lock_acquire(obj, 1, 0);
+	txm_obj_ref2(&obj, 2, 5);
+	if (txm_dict_empty(obj + 0x28, &linked) != 0) {
+		txm_panic(0x57);
+	}
+	txm_dict_get_ent(obj + 0x28, &ent);
+	if (ent != 0 && txm_ent_check(0) == 0 && txm_ent_match(ent) != 0) {
+		txm_panic(0x122e);
+	}
+	cls = (uint32_t)((txm_dict_get_str(obj + 0x28, &size) >> 8) & 0xff);
+	if (cls != 0) {
+		txm_panic(0xf1, cls);
+	}
+	if (*(char *)(obj + 0x12) == ':') {
+		end = (addr + 0x3fff) & ~0x3fffUL;
+		if (end < addr) txm_panic(0x43);
+		if (size == 0) txm_panic(0x40);
+		if (end == 0) txm_panic(0x41);
+		if (size + end < end) txm_panic(0x42);
+		if ((size & 0x3fff) != 0) txm_panic(0xc0);
+		txm_buf_end(&buf_scratch, 0x3a);
+	} else {
+		txm_buf_err(0, 0);
+	}
+	/* zero the whole object state */
+	for (uint64_t o = 0x28; o <= 0x140; o += 8) {
+		*(uint64_t *)(obj + o) = 0;
+	}
+	if (*(int *)(obj + 0x14) == 0) {
+		txm_obj_release(&obj);
+		if (obj == 0) goto out;
+	}
+	txm_lock_release(obj, 1);
+out:
+	if (range_out != 0) {
+		range_out[1] = addr;
+		range_out[0] = size;
+	}
+	return 0;
+}
+
+/* FUN_00024838 @ 0x00024838   (est. txm_profile_validate_chain)
+ * Ghidra: ulong FUN_00024838(long obj)
+ * Validates a profile object's entitlement chain via a three-stage validator
+ * (FUN_00035bf0/35df4/35f08). Rejects an in-use object (panic 0x50). Returns
+ * the packed status.
+ * Confidence: medium
+ */
+uint64_t txm_profile_validate_chain(uint64_t obj)
+{
+	uint64_t st;
+
+	txm_lock_acquire(obj, 1, 0);
+	if ((*(uint8_t *)(obj + 0x18) & 1) != 0) {
+		txm_panic(0x50);
+	}
+	st = txm_ent_validate(obj + 0x28);
+	if ((st & 0xff00) != 0) {
+		txm_panic(0xf1, st);
+	}
+	st = txm_ent_validate2(obj + 0x28, 0);
+	if ((st & 0xff00) != 0) {
+		txm_panic(0xf1, st);
+	}
+	st = txm_ent_validate3(obj + 0x28);
+	if ((st & 0xff00) != 0) {
+		txm_panic(0xf1, st);
+	}
+	txm_lock_release(obj, 1);
+	return 0;
+}
+
+/* FUN_00024970 @ 0x00024970   (est. txm_trust_cache_load)
+ * Ghidra: ulong FUN_00024970(long obj, ulong *out)
+ * Loads a prospective/local trust cache from the object's dictionary: walks
+ * the DER entries (tags via FUN_0003653c over a const tag table), computes the
+ * code-limit range, builds the trust-cache (FUN_00036824), verifies the entry
+ * count (0x54) and the code-limit pointers (0x5d/0x5e), and returns the
+ * {start,size,offset} range via *out. Rejects an in-use object (0x51) or an
+ * unsupported dictionary version (0x52/0x13). Marks the object (+0x18=1).
+ * Confidence: medium (DER/trust-cache walk; strings 0x3ff9)
+ */
+uint64_t txm_prospective_tc_load(uint64_t obj, uint64_t *out)
+{
+	uint64_t buf[3];
+	int n = 0, cnt = 0, idx = 0, prev = -1;
+	char flag = 0;
+	uint64_t dict = 0, range = 0, ptr = 0;
+	uint64_t st, end, ident;
+
+	txm_lock_acquire(obj, 1, 0);
+	if ((*(uint8_t *)(obj + 0x18) & 1) != 0) {
+		txm_panic(0x51);
+	}
+	txm_ce_field(obj + 0x28, &flag);
+	if (flag == 0) {
+		txm_panic(0x52);
+	}
+	txm_dict_get_str(obj + 0x28, &range);
+	if (ptr < (uint64_t)&prospective_policy_gen + 8) {
+		/* short buffer */
+		txm_lock_release(obj, 1);
+		*(uint8_t *)(obj + 0x18) = 1;
+		return 0;
+	}
+	st = txm_dict_get_ent(obj + 0x28, &buf);
+	if (txm_dict_get_ent(obj + 0x28, &dict) != 0) {
+		txm_panic(0xf1, st);
+	}
+	/* walk the const tag table (5 entries) */
+	end = 0;
+	idx = 0;
+	{
+		static const uint32_t tc_tags[] = { 0, 0, 0, 0, 0 };
+		for (int t = 0; t < 5; t++) {
+			uint64_t item = 0;
+			int len = 0;
+			uint64_t r = txm_tc_field(obj + 0x28, tc_tags[t], &item, &len);
+			if ((r & 0xff00) == 0) {
+				if (len == 0) {
+					/* empty */
+				}
+			} else {
+				txm_panic(0xf1, r);
+			}
+		}
+	}
+	{
+		char *b0 = (char *)range;
+		char *b1 = b0 + end;
+		if ((((uint64_t)b0 ^ (uint64_t)b1) & 0xffc0000000000000) != 0) {
+			b1 = (char *)((uint64_t)b1 & 0xffffffffffff | 0xc8a2000000000000);
+		}
+		char *b2 = b0 + (long)ptr;
+		if (b1 < b2 || b2 < b0) {
+			txm_panic(0x19);
+		}
+	}
+	if (out != 0) {
+		out[0] = (uint64_t)range;
+		out[1] = end;
+	}
+	*(uint8_t *)(obj + 0x18) = 1;
+	txm_lock_release(obj, 1);
+	return 0;
+}
+
+/* FUN_00024d24 @ 0x00024d24   (est. txm_profile_get_ident)
+ * Ghidra: ulong FUN_00024d24(long obj, undefined8 *out)
+ * Returns the profile's identifier string (FUN_00033b88 over the dict) via
+ * *out. An empty/unsupported profile returns a not-loaded status (0xc).
+ * Confidence: medium
+ */
+uint64_t txm_profile_get_ident(uint64_t obj, uint64_t *out)
+{
+	uint64_t st;
+	char flag = 0;
+	uint64_t dict = 0, ident = 0;
+
+	txm_lock_acquire(obj, 0, 0);
+	txm_ce_field(obj + 0x28, &flag);
+	if (flag == 0) {
+		txm_lock_release(obj, 0);
+		return 0xc;
+	}
+	st = txm_dict_get_ent(obj + 0x28, &dict);
+	if ((st & 0xff00) == 0) {
+		txm_dict_get_str(dict, &ident);
+	}
+	txm_lock_release(obj, 0);
+	if ((st & 0xff00) == 0) {
+		if (out != 0) {
+			*out = ident;
+		}
+		return 0;
+	}
+	return (st >> 0x10) << 0x30 | (st >> 8 & 0xff) << 0x28 | (st & 0xff) << 0x20;
+}
+
+/* FUN_00024e80 @ 0x00024e80   (est. txm_profile_set_linked)
+ * Ghidra: undefined8 FUN_00024e80(long obj, long linked)
+ * Binds a linked object (e.g. a trust-cache module) to a profile at obj+0x20,
+ * if not already set (else 0x25). Empty profile returns 0xc; null linked
+ * returns 8.
+ * Confidence: medium
+ */
+uint64_t txm_profile_set_linked(uint64_t obj, uint64_t linked)
+{
+	uint64_t r;
+	char flag = 0;
+
+	txm_lock_acquire(obj, 1, 0);
+	txm_ce_field(obj + 0x28, &flag);
+	if (flag == 0) {
+		r = 0xc;
+	} else if (*(uint64_t *)(obj + 0x20) == 0) {
+		if (linked == 0) {
+			r = 8;
+		} else {
+			*(uint64_t *)(obj + 0x20) = linked;
+			r = 0;
+		}
+	} else {
+		r = 0x25;
+	}
+	txm_lock_release(obj, 1);
+	return r;
+}
+
+/* FUN_000250f0 @ 0x000250f0   (est. txm_config_apply_wrapper)
+ * Ghidra: void FUN_000250f0(undefined8 a, undefined8 cfg)
+ * Applies a stored configuration (FUN_00024f14).
+ * Confidence: low (trivial wrapper)
+ */
+void txm_config_apply_wrapper(uint64_t a, uint64_t cfg)
+{
+	txm_config_apply(cfg);
+}
+
+/* FUN_000250fc / 00025100 @ 0x000250fc  (est. txm_build_data_write)
+ * Ghidra: void FUN_000250fc(undefined8 a, ulong p, ulong n)
+ * Writes `n` bytes of build data at `p` (FUN_00024fc8) with bounds checks:
+ * p<8 or n>=0xfffffffffffffff8 panic (0x5b/0x5c); p+n wrap panics 0x19.
+ * Confidence: medium
+ */
+void txm_build_data_write(uint64_t a, uint64_t p, uint64_t n)
+{
+	if (p < 8) {
+		txm_panic(0x5b);
+	}
+	if (n >= 0xfffffffffffffff8) {
+		txm_panic(0x5c);
+	}
+	if (p + n < p) {
+		txm_panic(0x19);
+	}
+	txm_build_data_write_impl(p, n);
+}
+
+/* FUN_00025160 @ 0x00025160   (est. txm_cdhash_accelerate)
+ * Ghidra: ulong FUN_00025160(long obj, long *out)
+ * Accelerates the object's CD hashes / entitlements: requires the object be
+ * committed (+0x18 bit0), reads the build dictionary, evaluates the
+ * entitlements for acceleration (0x1254 "unable to evaluate for
+ * acceleration"), and — when the entitlement range is a build-embedded pointer
+ * — builds a 0x1337-magic accelerated entry in a 8-aligned buffer linked into
+ * the acceleration list, bumping the per-path counters (DAT_00071000/004/008/
+ * 00c/010). Errors panic 0x58, log 0x1280/0x12aa, or return 0x26/0x27/0x28/7.
+ * Confidence: medium (acceleration cache; strings 0x1254/0x1280/0x12aa)
+ */
+uint64_t txm_cdhash_accelerate(uint64_t obj, uint64_t *out)
+{
+	uint64_t st, dict = 0, ent = 0, ident = 0, ev = 0;
+	char *range = 0;
+	uint64_t count = 0;
+	int r;
+
+	txm_lock_acquire(obj, 1, 0);
+	if ((*(uint8_t *)(obj + 0x18) & 1) == 0) {
+		txm_lock_release(obj, 1);
+		return 0x26;
+	}
+	txm_dict_get_ent(obj + 0x28, &dict);
+	txm_dict_get_str(dict, &ident);
+	st = txm_dict_get_ent(obj + 0x28, &ent);
+	if ((st & 0xff00) != 0) {
+		txm_panic(0xf1, st);
+	}
+	if (ent == 0) {
+		/* no entitlements to accelerate */
+		txm_lock_release(obj, 1);
+		return 0;
+	}
+	r = txm_ent_accel_eval(ent, &ev);
+	if (r != 0) {
+		if (r != 0xff05) {
+			txm_log("%s: unable to evaluate for acceleration");   /* 0x1254 */
+			txm_lock_release(obj, 1);
+			return 0x27;
+		}
+		txm_lock_release(obj, 1);
+		return 0;
+	}
+	if ((uint64_t)ev >> 0xe != 0) {
+		txm_lock_release(obj, 1);
+		return 0x28;
+	}
+	if (ev == 0) {
+		txm_panic(0x58);
+	}
+	if (ev < (uint64_t)&prospective_policy_gen) {
+		/* build-embedded: allocate an accelerated entry and link it. */
+		uint64_t buf = 0, size = 0;
+		txm_build_dict_get(obj + 0x28, &range);
+		if (range < (char *)ev + 0xf) {
+			if (txm_range_valid((uint64_t)ev + 8) == 0) {
+				uint64_t acc = 0;
+				if (txm_accel_alloc(&acc, 0x3a) != 0) {
+					txm_lock_release(obj, 1);
+					return 7;
+				}
+				uint64_t *e = (uint64_t *)acc;
+				uint64_t *endp = e + (size / 8);
+				if (e + 1 > endp) txm_panic(0x19);
+				*(uint16_t *)e = 0x1337;
+				*(uint32_t *)((char *)e + 4) = (uint32_t)ev;
+				*(uint8_t *)((char *)e + 2) = 1;
+				txm_accel_link(&acc);
+				*(uint64_t *)obj = (uint64_t)e;
+				txm_accel_count2++;
+			}
+		} else {
+			uint64_t acc = 0, sz2 = 0;
+			txm_build_dict_next(obj + 0x28, &acc);
+			uint64_t *e = (uint64_t *)((acc + 7) & ~7UL);
+			*(uint16_t *)e = 0x1337;
+			*(uint32_t *)((char *)e + 4) = (uint32_t)ev;
+			*(uint8_t *)((char *)e + 2) = 0;
+			txm_accel_count0++;
+		}
+		r = txm_ent_accel(ent);
+		if (r != 0) {
+			txm_panic(0x1280);                 /* unable to accelerate */
+		}
+		if (txm_ent_check(ent) != 0) {
+			txm_panic(0x12aa);                 /* entitlements not marked accelerable */
+		}
+	}
+	txm_lock_release(obj, 1);
+	if (out != 0 && ent != 0) {
+		*out = ent;
+	}
+	return 0;
+}
+
+/* FUN_00025528 @ 0x00025528   (est. txm_build_cfg_store)
+ * Ghidra: undefined8 FUN_00025528(undefined8 *cfg)
+ * Stores the build configuration block (12 words) into the config globals
+ * (DAT_00070ecd..0x70f2e). Single-init (re-init panics 0x55); null cfg 0x40;
+ * out-of-bounds 0x42.
+ * Confidence: medium
+ */
+uint64_t txm_build_cfg_store(uint64_t *cfg)
+{
+	if (txm_build_cfg0 != 0) {
+		txm_panic(0x55);
+	}
+	if (cfg == 0) {
+		txm_panic(0x40);
+	}
+	if ((uint64_t)cfg >= 0xffffffffffffff9f) {
+		txm_panic(0x42);
+	}
+	txm_build_cfg0 = 1;
+	txm_build_cfg1 = 1;
+	for (int i = 0; i < 12; i++) {
+		((uint64_t *)&txm_build_cfg_store_block)[i] = cfg[i];
+	}
+	txm_build_cfg_extra = cfg[12];
+	return 0;
+}
+
+/* FUN_000255c0 @ 0x000255c0   (est. txm_swift_policy_set)
+ * Ghidra: undefined8 FUN_000255c0(undefined8 *cfg)
+ * Stores the Swift policy block (7 words) into DAT_00070f2f..0x70f60. Gated on
+ * the com.apple.private.enable_swift_p... entitlement (0x12d5) unless a policy
+ * is already selected (DAT_00010800); a re-set panics 0x36. Bounds 0x40/0x42.
+ * Confidence: medium (entitlement 0x12d5)
+ */
+uint64_t txm_swift_policy_set(uint64_t *cfg)
+{
+	if (cfg == 0) {
+		txm_panic(0x40);
+	}
+	if ((uint64_t)cfg >= 0xffffffffffffffc8 || (uint64_t)cfg[6] >= 0x31) {
+		txm_panic(0x42);
+	}
+	if ((txm_policy_sel & 1) == 0 &&
+	    txm_entitlement_check(0, 0x12d5, 0) == 0) {
+		return 0xe;                              /* not entitled */
+	}
+	if (txm_swift_state != 0) {
+		txm_panic(0x36);                         /* re-set */
+	}
+	for (int i = 0; i < 7; i++) {
+		((uint64_t *)&txm_swift_state_block)[i] = cfg[i];
+	}
+	txm_swift_state = 0;
+	return 0;
+}
+
+/* FUN_000256a0 @ 0x000256a0   (est. txm_swift_policy_apply)
+ * Ghidra: undefined8 FUN_000256a0(long ent)
+ * Applies the Swift policy: claims the per-slot lock (DAT_00070f2f), and when
+ * the stored size matches the entry's size (ent+0x30), validates/looks up the
+ * entry against the Swift table (thunk_FUN_0002d4d0), clearing the table on a
+ * match and returning 1. Releases the lock (LORelease). Panics 0x38/0x36 on
+ * lock-state errors.
+ * Confidence: medium
+ */
+uint64_t txm_swift_policy_apply(uint64_t ent)
+{
+	uint8_t old;
+	int matched = 0;
+
+	old = txm_swift_state;
+	if (txm_swift_state < 0xfe) {
+		do {
+			uint8_t cur = txm_swift_state;
+			if (txm_swift_state == old) {
+				txm_swift_state = old + 1;
+			}
+			if (cur == old) {
+				old = cur;
+				break;
+			}
+		} while (old < 0xfe);
+
+		if (*(uint64_t *)(ent + 0x30) == (uint64_t)txm_swift_size) {
+			if (txm_swift_size > 0x30) txm_panic(0x19);
+			if (txm_swift_lookup(ent, &txm_swift_table) != 0) {
+				return 0;
+			}
+			txm_swift_size = 0;
+			for (int i = 0; i < 7; i++) ((uint64_t *)&txm_swift_table)[i] = 0;
+			matched = 1;
+		}
+		if (txm_swift_state - 1 < 0xfe) {
+			txm_swift_state = txm_swift_state - 1;
+			LORelease();
+			return matched;
+		}
+		txm_panic(0x38);
+	}
+	txm_panic(0x36);
+}
+
+/* FUN_00025780 @ 0x00025780   (est. txm_amfi_cdhash_reg)
+ * Ghidra: undefined8 FUN_00025780(undefined8 *cfg)
+ * Registers the amfi.can-load-cdhash policy block (7 words) into
+ * DAT_00070f68..0x70fa0. Gated on com.apple.private.amfi.can-load-cdhash
+ * (0x130b) unless a policy is selected; re-registration panics 0x36.
+ * Confidence: high (string 0x130b amfi.can-load-cdhash)
+ */
+uint64_t txm_amfi_cdhash_reg(uint64_t *cfg)
+{
+	if (cfg == 0) {
+		txm_panic(0x40);
+	}
+	if ((uint64_t)cfg >= 0xffffffffffffffc8 || (uint64_t)cfg[6] >= 0x31) {
+		txm_panic(0x42);
+	}
+	if ((txm_policy_sel & 1) == 0 &&
+	    txm_entitlement_check(0, 0x130b, 0) == 0) {
+		return 0xe;                              /* not entitled */
+	}
+	if (txm_amfi_state != 0) {
+		txm_panic(0x36);                         /* re-register */
+	}
+	for (int i = 0; i < 7; i++) {
+		((uint64_t *)&txm_amfi_state_block)[i] = cfg[i];
+	}
+	txm_amfi_state = 0;
+	return 0;
+}
+
+/* FUN_00025860 @ 0x00025860   (est. txm_amfi_cdhash_lookup)
+ * Ghidra: bool FUN_00025860(long ent)
+ * Looks up a CD hash / entitlement in the amfi table (thunk_FUN_0002d4d0),
+ * claiming and releasing the per-slot lock (DAT_00070f68). Returns whether the
+ * entry is present. Panics 0x36/0x38 on lock-state errors.
+ * Confidence: medium
+ */
+int txm_amfi_cdhash_lookup(uint64_t ent)
+{
+	uint8_t old;
+	int found;
+
+	old = txm_amfi_state;
+	if (txm_amfi_state < 0xfe) {
+		do {
+			uint8_t cur = txm_amfi_state;
+			if (txm_amfi_state == old) {
+				txm_amfi_state = old + 1;
+			}
+			if (cur == old) {
+				old = cur;
+				break;
+			}
+		} while (old < 0xfe);
+
+		if (txm_amfi_size == 0x14) {
+			found = txm_amfi_lookup(ent, &txm_amfi_state_block) == 0;
+		} else {
+			if (*(uint64_t *)(ent + 0x30) == txm_amfi_size) {
+				if (txm_amfi_size > 0x30) txm_panic(0x19);
+				found = txm_amfi_lookup(ent, &txm_amfi_state_block) == 0;
+			} else {
+				found = 0;
+			}
+		}
+		if (txm_amfi_state - 1 < 0xfe) {
+			txm_amfi_state = txm_amfi_state - 1;
+			LORelease();
+			return found;
+		}
+		txm_panic(0x38);
+	}
+	txm_panic(0x36);
+}
+
+/* FUN_0002592c @ 0x0002592c   (est. txm_code_region_resolve)
+ * Ghidra: undefined1 [16] FUN_0002592c(long obj, ulong addr, long size)
+ * Resolves a code address to a 16 KiB-aligned region descriptor {base, size}.
+ * Validates the address range (0x43/0x5f/0x40), retrieves the owning region
+ * (FUN_00027814) and copies the 0x4000-byte region (FUN_0002ca50) tagged with
+ * the owner's type. Returns {aligned_base + (addr&0x3fff), size}.
+ * Confidence: medium
+ */
+txm_u128_t txm_code_region_resolve(uint64_t obj, uint64_t addr, uint64_t size)
+{
+	uint64_t base, owner;
+	uint64_t rng[3];
+
+	if (addr >= 0xffffffffffffc000) {
+		txm_panic(0x43);
+	}
+	base = addr & ~0x3fffUL;
+	if (base + 0x4000 < addr + size) {
+		txm_panic(0x5f);                         /* crosses a region boundary */
+	}
+	owner = txm_region_owner(obj - 0x28);
+	if (base == 0) {
+		txm_panic(0x40);
+	}
+	rng[0] = base;
+	rng[1] = 0x4000;
+	rng[2] = 0x4000;
+	{
+		uint64_t out[3];
+		txm_region_copy(out, rng, *(uint8_t *)(owner + 0x12));
+		return (txm_u128_t){ .lo = out[0] + (addr & 0x3fff), .hi = size };
+	}
+}
+
+/* FUN_000259ec / 000259f0 @ 0x000259ec  (est. txm_tc_module_add)
+ * Ghidra: void FUN_000259ec(undefined8 a, long module, undefined8 c)
+ * Adds a trust-cache module to the TC array (FUN_00030c00 over DAT_00010590),
+ * validating the module size (+0x30 <= 0x30). Requires debug state (panic 0x18).
+ * Confidence: medium
+ */
+void txm_tc_module_add(uint64_t a, uint64_t module, uint64_t c)
+{
+	if (*(uint64_t *)(module + 0x30) > 0x30) {
+		txm_panic(0x19);
+	}
+	if ((txm_debug_state & 1) != 0) {
+		txm_tc_add_impl(&txm_trust_cache_array, a);
+		return;
+	}
+	txm_panic(0x18);
+}
+
+/* FUN_00025a50 / 00025a54 @ 0x00025a50  (est. txm_tc_module_remove)
+ * Ghidra: void FUN_00025a50(long module, undefined8 b)
+ * Removes a trust-cache module from the TC array (FUN_00030224 over
+ * DAT_00010590), validating module size (+0x30). Requires debug state (0x18).
+ * Confidence: medium
+ */
+void txm_tc_module_remove(uint64_t module, uint64_t b)
+{
+	if (*(uint64_t *)(module + 0x30) > 0x30) {
+		txm_panic(0x19);
+	}
+	if ((txm_debug_state & 1) != 0) {
+		txm_tc_remove_impl(&txm_trust_cache_array, module,
+		                     *(uint64_t *)(module + 0x30), b);
+		return;
+	}
+	txm_panic(0x18);
+}
+
+/* FUN_00025ac8 @ 0x00025ac8   (est. txm_demo_mode_check)
+ * Ghidra: byte FUN_00025ac8(void)
+ * Returns the demo-mode state (DAT_00071036), recomputing it via txm_lockdown
+ * when the secure-channel capability is set, unless the boot flag DAT_000107fc
+ * forces it on.
+ * Confidence: medium
+ */
+uint8_t txm_demo_mode_check(void)
+{
+	uint8_t d;
+
+	if ((txm_page_flag & 1) == 0) {
+		d = txm_demo_mode;
+		if ((txm_sc_cap & 1) != 0) {
+			txm_lockdown();
+			d = txm_demo_mode;
+		}
+	} else {
+		d = 1;
+	}
+	return d & 1;
+}
+
+/* FUN_00025b20 @ 0x00025b20   (est. txm_license_to_operate)
+ * Ghidra: byte FUN_00025b20(void)
+ * Returns the license-to-operate entitlement flag (DAT_000104ed bit0).
+ * Confidence: high
+ */
+uint8_t txm_license_to_operate(void)
+{
+	return txm_ent_lo_flag & 1;
+}
+
+/* FUN_00025b38 @ 0x00025b38   (est. txm_debug_flag_check)
+ * Ghidra: byte FUN_00025b38(void)
+ * Returns the debug flag DAT_000104ee bit0.
+ * Confidence: high
+ */
+uint8_t txm_debug_flag_check(void)
+{
+	return txm_debug_bit & 1;
+}
+
+/* FUN_00025b50 @ 0x00025b50   (est. txm_get_assoc_dict)
+ * Ghidra: long FUN_00025b50(long *out)
+ * Returns the current object's association dictionary: resolves the current
+ * object and its association (FUN_0002289c) and returns assoc+0x28, with the
+ * object via *out. Panics 0x82 if no association.
+ * Confidence: medium
+ */
+long txm_get_assoc_dict(uint64_t *out)
+{
+	uint64_t assoc = 0;
+	uint64_t obj = txm_obj_get_assoc(&assoc);
+
+	if (obj != 0) {
+		*out = obj;
+		return assoc + 0x28;
+	}
+	txm_panic(0x82);
+}
+
+/* FUN_00025ba0 @ 0x00025ba0   (est. txm_release_owner_pair)
+ * Ghidra: void FUN_00025ba0(long obj, undefined8 b)
+ * Releases the current object (FUN_0002811c) and the owner region of `obj`
+ * (FUN_00027814) as a pair (FUN_0002292c).
+ * Confidence: medium
+ */
+void txm_release_owner_pair(uint64_t obj, uint64_t b)
+{
+	uint64_t cur = txm_obj_get_current();
+	uint64_t owner = txm_region_owner(obj - 0x28);
+	txm_release_pair(cur, owner);
+}
+
+/* Forward declarations (logging family). */
+void txm_logf(uint64_t fmt, uint64_t args);
+long txm_log_hdr(uint64_t out, uint64_t size, const char *tag);
+void txm_log_error(int slot, uint64_t code);
+
+/* FUN_00025bec @ 0x00025bec   (est. txm_log_init)
+ * Ghidra: void FUN_00025bec(void)
+ * Allocates the 0x8000-byte log ring buffer (DAT_00010500/508/510).
+ * Single-init: a second call panics 0x1395 ("attempted to initialize logging
+ * again"). Logs "setup logging: %u bytes: %u...".
+ * Confidence: high (string 0x1395/0x13bb)
+ */
+void txm_log_init(void)
+{
+	uint64_t base;
+
+	if (txm_log_base == 0) {
+		txm_alloc_zone(&base, 0x8000, 0x3c);
+		txm_log_base = base;
+		txm_log_size = base_size;
+		txm_log_extra = base_size;
+		txm_log("setup logging: %u bytes: %u...");    /* 0x13bb */
+		return;
+	}
+	txm_panic(0x1395);
+}
+
+/* FUN_00025c6c @ 0x00025c6c   (est. txm_log)
+ * Ghidra: void FUN_00025c6c(undefined8 fmt)
+ * Logs a formatted message into the ring buffer (FUN_00025c98). This is the
+ * TXM console/trace writer.
+ * Confidence: high
+ */
+void txm_log(const char *fmt, ...)
+{
+	txm_logf((uint64_t)fmt, (uint64_t)&fmt + 8);
+}
+
+/* FUN_00025c98 @ 0x00025c98   (est. txm_logf)
+ * Ghidra: void FUN_00025c98(undefined8 fmt, undefined8 args)
+ * Formatted log writer: formats into a per-slot 0x80-byte region of the ring
+ * buffer (DAT_00010500, size DAT_00010508, 256 slots of 0x80 via DAT_00070694),
+ * writing the "TXM [Log]: " header (0x13dd) then the message (FUN_0002eb44),
+ * and increments the slot counter (DAT_00070698). On overflow calls
+ * FUN_00025e38 to report the log-add error. Panics 0x19/0x2b on bad state.
+ * Confidence: high (ring-buffer logger)
+ */
+void txm_logf(uint64_t fmt, uint64_t args)
+{
+	uint64_t base = txm_log_base, size = txm_log_size;
+	uint64_t slot, slot_off, end, buf;
+	long n;
+
+	if (txm_log_base == 0) {
+		txm_panic(0x2b);
+	}
+	slot = (txm_log_slot + 1) & 0xff;
+	txm_log_slot = slot;
+	slot_off = (slot & 0xff) << 7;
+	end = txm_log_base + txm_log_size;
+	if (((txm_log_base ^ end) & 0xffc0000000000000) != 0) {
+		end = end & 0xffffffffffff | 0xc8a2000000000000;
+	}
+	buf = txm_log_base + slot_off;
+	if ((buf <= end && txm_log_base <= buf) && txm_log_size - slot_off > 0x7f) {
+		n = txm_log_hdr(buf, 0xffffffffffffffff, "TXM [Log]: ");   /* 0x13dd */
+		if (n != -1) {
+			buf += n;
+			if (end < buf || buf < base || txm_log_size - slot_off - n < (0x80 - n)) {
+				txm_panic(0x19);
+			}
+			n = txm_vsnprintf(buf, 0x80 - n, 0, 0xffffffffffffffff, (const char *)fmt, args);
+			if (n != -1) {
+				txm_log_count++;
+				LORelease();
+				return;
+			}
+		}
+		txm_log_error(slot, *txm_log_error_code());
+		return;
+	}
+	txm_panic(0x19);
+}
+
+/* FUN_00025dfc @ 0x00025dfc   (est. txm_log_hdr)
+ * Ghidra: void FUN_00025dfc(...)
+ * Writes the fixed "TXM [Log]: " header into a 0x80-byte log slot.
+ * Confidence: high
+ */
+long txm_log_hdr(uint64_t out, uint64_t size, const char *tag)
+{
+	return txm_vsnprintf(out, 0x80, 0, size, tag);
+}
+
+/* FUN_00025e38 @ 0x00025e38   (est. txm_log_error)
+ * Ghidra: void FUN_00025e38(int slot, ...)
+ * Reports a log-add error for the given slot, writing "TXM [Log]: error adding
+ * log for this slot: %d" (0x13e9) into the slot and releasing the lock.
+ * Confidence: high (string 0x13e9)
+ */
+void txm_log_error(int slot, uint64_t code)
+{
+	uint64_t end = txm_log_base + txm_log_size;
+	uint64_t buf;
+
+	if (((txm_log_base ^ end) & 0xffc0000000000000) != 0) {
+		end = end & 0xffffffffffff | 0xc8a2000000000000;
+	}
+	buf = txm_log_base + (uint32_t)(slot << 7);
+	if ((buf <= end && txm_log_base <= buf) && txm_log_size - (uint64_t)(slot << 7) > 0x7f) {
+		txm_log_hdr(buf, 0xffffffffffffffff, "TXM [Log]: error adding log for this slot: %d");  /* 0x13e9 */
+		txm_log_count++;
+		LORelease();
+		return;
+	}
+	txm_panic(0x19);
+}
+
+/* FUN_00025ec4 @ 0x00025ec4   (est. txm_external_tc_load)
+ * Ghidra: void FUN_00025ec4(void)
+ * Loads external trust-cache modules at boot: parses the DT trust-cache range
+ * (FUN_0002a674), and for each module in the range parses/installs it into the
+ * TC array (FUN_00030f00), bumping the per-path counters (DAT_00071014/018).
+ * Errors: missing range (0x1495), zero length (0x14c0), bad count (0x22-0x26),
+ * failed module load (0x14de, panic 0xf0). Logs "loaded external trust cache
+ * modules: %u/%u" (0x150d). Runs on first boot or when external modules exist.
+ * Confidence: high (strings 0x1495/0x14c0/0x14de/0x150d)
+ */
+void txm_external_tc_load(void)
+{
+	int is_boot = (txm_boot_state == 0);
+	int want_ext = (txm_boot_flag_e0 == 1) || (txm_external_modules() != 0);
+
+	txm_tc_ext_flag = 0;
+	txm_tc_state = (uint64_t)(uint8_t)((want_ext ? 1 : 0) | (is_boot ? 1 << 8 : 0));
+	txm_tc_array = (uint64_t)&txm_tc_module_table;
+	txm_tc_erm_disallow = (uint64_t)&txm_erm_tc_disallow;
+
+	{
+		txm_u128_t r = txm_dt_trust_cache_get();
+		uint64_t len = r.hi;
+		if (r.lo == 0) {
+			txm_log("missing trust cache range from device tree");   /* 0x1495 */
+		} else if (len == 0) {
+			txm_log("trust cache range is 0 length");                /* 0x14c0 */
+		} else if (len < 4) {
+			txm_panic(0x22);
+		} else {
+			uint64_t src, end;
+			uint32_t count;
+			txm_range_copy(&src, (const void *)r.lo, len, 0, 0x3b);
+			end = src + size_word;
+			if (end < src + 1) txm_panic(0x19);
+			count = *(uint32_t *)src;
+			if (count == 0) {
+				txm_panic(0x23);
+			}
+			if ((count >> 0x1e) == 0 && count != 0x3fffffff &&
+			    (uint64_t)count * 4 + 4 <= len) {
+				for (uint32_t i = 0; i < count; i++) {
+					uint64_t off = *(uint32_t *)((char *)src + 4 + i * 4);
+					void *mod = (void *)((char *)src + off);
+					if (mod < (void *)(src + 1) || (char *)end < (char *)mod) {
+						txm_panic(0x19);
+					}
+					uint64_t r2;
+					if (i == 0) {
+						r2 = txm_tc_parse_module(&txm_tc_array, 0,
+						                         &txm_tc_slot_a, mod,
+						                         size_word - off);
+						if (txm_tc_slot_b < txm_tc_slot_c) {
+							txm_tc_slot_copy(&txm_tc_slot_a, &txm_tc_slot_b);
+						}
+						txm_tc_load_count++;
+						txm_tc_mod_count++;
+					} else if (i == 1 && (txm_tc_state & 1) != 0) {
+						r2 = txm_tc_parse_module(&txm_tc_array, 0,
+						                         &txm_tc_slot_a, mod,
+						                         size_word - off);
+						txm_tc_mod_count++;
+					} else if ((txm_tc_state & 0x100) != 0) {
+						uint64_t extra = txm_ctx_alloc_extra();
+						if (extra != 0) {
+							r2 = txm_tc_parse_module(&txm_tc_array, 1,
+							                         (uint64_t *)(extra + 0x20),
+							                         mod, size_word - off);
+							txm_tc_mod_count2++;
+						} else {
+							txm_panic(0x26);
+						}
+					}
+				}
+				txm_log("loaded external trust cache modules: %u/%u");  /* 0x150d */
+			} else {
+				txm_panic(0x24);
+			}
+		}
+	}
+}
+
+/* FUN_0002623c @ 0x0002623c   (est. txm_erm_tc_disallow)
+ * Ghidra: byte FUN_0002623c(undefined8 node)
+ * Disallows loading an ERM trust cache on the system: reads the node's type/
+ * styp properties and, when the type is research (3) and styp is 100 and debug
+ * mode is off, logs "disallowed loading ERM trust cache on the system" (0x1417)
+ * and returns "disallowed". Returns allowed otherwise.
+ * Confidence: high (string 0x1417)
+ */
+uint8_t txm_erm_tc_disallow(uint64_t node)
+{
+	uint64_t typ = 0, styp = 0;
+
+	txm_dt_get_uint(node, 0x74797065, (uint64_t *)&typ + 1);   /* 'type' */
+	txm_dt_get_uint(node, 0x73747970, &styp);                  /* 'styp' */
+	if (((uint32_t)typ != 3) && ((int)styp != 100) &&
+	    (txm_debug_bit & 1) == 0) {
+		txm_log("disallowed loading ERM trust cache on the system");  /* 0x1417 */
+	}
+	return ((uint32_t)typ != 3 || (int)styp != 100) | (txm_debug_bit & 1);
+}
+
+/* FUN_000262c4 @ 0x000262c4   (est. txm_tc_lock)
+ * Ghidra: void FUN_000262c4(undefined8 *range)
+ * Locks the TC subsystem before a load: requires debug state (0x19) and the
+ * profile's TC flag (+0x48), a valid profile handle (not -1, else 0x21), and a
+ * non-armed state (DAT_000107f9); then enters the secure channel with the
+ * range's first word (FUN_00023d64). Bounds-checks the range (0x19).
+ * Confidence: medium
+ */
+void txm_tc_lock(uint64_t *range)
+{
+	if ((txm_debug_state & 1) == 0) {
+		txm_panic(0x19);
+	}
+	if ((*(uint8_t *)(txm_profile_ctx + 0x48) & 1) != 0) {
+		if (txm_profile_handle == -1) {
+			txm_panic(0x21);
+		}
+		if ((txm_tc_ext_flag & 1) == 0) {
+			if (range[1] < range[2]) {
+				txm_panic(0x19);
+			}
+			txm_sc_enter(range[0], 0);
+		}
+	}
+}
+
+/* FUN_00026350 @ 0x00026350   (est. txm_trust_cache_load)
+ * Ghidra: ulong FUN_00026350(ulong idx, ulong *range, ulong *out)
+ * Loads a trust-cache module (selector 0x03). Validates the module handle
+ * (FUN_00026e80; 7 if none), requires the com.apple.private.pmap.load-trust-cache
+ * entitlement (0x1448) or a pre-selected policy, locks the TC subsystem
+ * (FUN_000262c4), installs the module into the TC array (FUN_00031060), and
+ * updates the counters (DAT_0007101c/20/24/28). Bounds the module index (idx<3
+ * → error 9, idx>0x19 → 10). Errors panic 0xf0 on the 0x20 class.
+ * Confidence: high (selector 0x03; string 0x1448)
+ */
+uint64_t txm_trust_cache_load(uint64_t idx, uint64_t *range, uint64_t *out)
+{
+	uint64_t module = txm_ctx_alloc_extra();
+	uint64_t st, size, src, off;
+	int pull;
+
+	if (module == 0) {
+		return 7;
+	}
+
+	if (txm_range_valid(range[2]) == 0) {
+		src = 0;
+		size = 0;
+		pull = 0;
+	} else {
+		src = txm_range_pull(range[2], &off, 0);
+		if (src == 0) {
+			txm_obj_ref3(&module, 3, 4);
+			return 7;
+		}
+		if (range[1] < range[2] || off < range[2]) {
+			txm_panic(0x19);
+		}
+		pull = 1;
+	}
+
+	txm_buf_begin(&buf_scratch, range, 0x29, 0x3b);
+	txm_buf_begin(&buf_scratch, out, 0x29, 0x3b);
+
+	if (idx < 3) {
+		if (pull) txm_buf_end(&buf_scratch, 0x3b);
+		txm_obj_ref3(&module, 3, 4);
+		return 9;
+	}
+	if (idx > 0x19) {
+		if (pull) txm_buf_end(&buf_scratch, 0x3b);
+		txm_obj_ref3(&module, 3, 4);
+		return 10;
+	}
+	if ((*(uint64_t *)(0x100f8 + idx * 0x28) != 0) &&
+	    (txm_policy_sel & 1) == 0 &&
+	    txm_entitlement_check(0, 0x1448, 0) == 0) {
+		if (pull) txm_buf_end(&buf_scratch, 0x3b);
+		txm_obj_ref3(&module, 3, 4);
+		return 0xe;
+	}
+
+	txm_lock_acquire(module, 1, 0);
+	txm_tc_lock((uint64_t *)&buf_scratch);
+	if ((txm_debug_state & 1) == 0) {
+		txm_panic(0x18);
+	}
+	if (range[1] < range[2]) {
+		txm_panic(0x19);
+	}
+	st = txm_tc_install(&txm_tc_array, idx, module + 0x20, size, src, out[0]);
+	txm_lock_release(module, 1);
+	if ((st >> 8 & 0xff) == 0) {
+		uint32_t cnt = (uint32_t)src;
+		*(uint32_t *)(module + 0x14) = cnt;
+		if (pull) {
+			*(uint32_t *)(module + 0x18) = (uint32_t)off;
+			*(uint8_t *)(module + 0x1c) = 1;
+			txm_tc_count++;
+			txm_tc_code_size += cnt;
+			txm_tc_data_size2 += (uint32_t)off;
+		} else {
+			*(uint32_t *)(module + 0x18) = (uint32_t)range[1];
+			*(uint8_t *)(module + 0x1c) = 0;
+			txm_tc_count++;
+			txm_tc_code_size += cnt;
+			txm_tc_data_size += (uint32_t)range[1];
+		}
+		txm_buf_end(&buf_scratch, 0x3b);
+		return 0;
+	}
+	txm_buf_end(&buf_scratch, 0x3b);
+	txm_obj_ref3(&module, 3, 4);
+	return 3;
+}
+
+/* FUN_0002670c @ 0x0002670c   (est. txm_unload_trust_cache)
+ * Ghidra: ulong FUN_0002670c(undefined8 idx)
+ * Unloads a trust-cache module (selector 0x0d). Requires the com.apple.private.
+ * unload-trust-cache entitlement (0x1470) or a pre-selected policy; requires
+ * debug state (0x19) and the profile TC flag; removes the module from the array
+ * (FUN_0003120c) and decrements the counters (DAT_0007101c/20/24/28/2c).
+ * Confidence: high (selector 0x0d; string 0x1470)
+ */
+uint64_t txm_unload_trust_cache(uint64_t idx)
+{
+	uint64_t module = 0, st;
+	int code;
+
+	if ((txm_policy_sel & 1) == 0 &&
+	    txm_entitlement_check(0, 0x1470, 0) == 0) {
+		return 0xe;
+	}
+	if ((txm_debug_state & 1) == 0) {
+		txm_panic(0x19);
+	}
+	if ((*(uint8_t *)(txm_profile_ctx + 0x48) & 1) == 0) {
+		st = txm_tc_remove(&txm_tc_array, idx, &module);
+		code = (int)(st & 0xffffffff);
+		if (((code >> 8) & 0xff) == 0) {
+			uint64_t m = txm_tc_module_base(module - 0x20);
+			txm_tc_count--;
+			txm_tc_code_size -= *(uint32_t *)(m + 0x14);
+			if ((*(uint8_t *)(m + 0x1c) & 1) == 0) {
+				txm_tc_data_size -= *(uint32_t *)(m + 0x18);
+			} else {
+				txm_tc_data_size2 -= *(uint32_t *)(m + 0x18);
+			}
+			txm_tc_data_size3 += *(uint32_t *)(m + 0x18);
+			return 0;
+		}
+		txm_panic(0xf0, st);
+	}
+	return 0x29;
+}
+
+/* FUN_0002686c @ 0x0002686c   (est. txm_handle_slot)
+ * Ghidra: undefined8 FUN_0002686c(void)
+ * Returns the constant 8 (a fixed error/handle value).
+ * Confidence: high
+ */
+uint64_t txm_handle_slot(void)
+{
+	return 8;
+}
+
+/* FUN_00026878 @ 0x00026878   (est. txm_data_serial_base)
+ * Ghidra: undefined * FUN_00026878(void)
+ * Returns a data pointer (0xda98).
+ * Confidence: high
+ */
+uint64_t txm_data_serial_base(void)
+{
+	return 0xda98;
+}
+
+/* FUN_00026888 @ 0x00026888   (est. txm_data_serial_base2)
+ * Ghidra: undefined * FUN_00026888(void)
+ * Returns a data pointer (0xdaa8).
+ * Confidence: high
+ */
+uint64_t txm_data_serial_base2(void)
+{
+	return 0xdaa8;
+}
+
+/* thunk_FUN_00056578 @ 0x00026898  (est. txm_trace_hi_thunk)
+ * Ghidra: void thunk_FUN_00056578(void)
+ * Thunk into FUN_00056578.
+ * Confidence: high (thunk)
+ */
+void txm_trace_hi_thunk(void)
+{
+	txm_trace_hi();
+}
+
+/* FUN_000268a0 @ 0x000268a0   (est. txm_data_dac8)
+ * Ghidra: undefined * FUN_000268a0(void)
+ * Returns data pointer 0xdac8.
+ * Confidence: high
+ */
+uint64_t txm_data_dac8(void) { return 0xdac8; }
+
+/* FUN_000268b0 @ 0x000268b0   (est. txm_data_dab8)
+ * Ghidra: undefined * FUN_000268b0(void)
+ * Returns data pointer 0xdab8.
+ * Confidence: high
+ */
+uint64_t txm_data_dab8(void) { return 0xdab8; }
+
+/* FUN_000268c0 @ 0x000268c0   (est. txm_data_15598)
+ * Ghidra: undefined * FUN_000268c0(void)
+ * Returns data pointer 0x15598.
+ * Confidence: high
+ */
+uint64_t txm_data_15598(void) { return 0x15598; }
+
+/* FUN_000268d0 @ 0x000268d0   (est. txm_data_dad8)
+ * Ghidra: undefined * FUN_000268d0(void)
+ * Returns data pointer 0xdad8.
+ * Confidence: high
+ */
+uint64_t txm_data_dad8(void) { return 0xdad8; }
+
+/* FUN_000268e0 @ 0x000268e0   (est. txm_data_163e0)
+ * Ghidra: undefined * FUN_000268e0(void)
+ * Returns data pointer 0x163e0.
+ * Confidence: high
+ */
+uint64_t txm_data_163e0(void) { return 0x163e0; }
+
+/* FUN_000268f0 @ 0x000268f0   (est. txm_data_16a60)
+ * Ghidra: undefined * FUN_000268f0(void)
+ * Returns data pointer 0x16a60.
+ * Confidence: high
+ */
+uint64_t txm_data_16a60(void) { return 0x16a60; }
+
+/* FUN_00026900 @ 0x00026900   (est. txm_data_170e0)
+ * Ghidra: undefined * FUN_00026900(void)
+ * Returns data pointer 0x170e0.
+ * Confidence: high
+ */
+uint64_t txm_data_170e0(void) { return 0x170e0; }
+
+/* thunk_FUN_0005a8d8 @ 0x00026910  (est. txm_trace_lo_thunk)
+ * Ghidra: void thunk_FUN_0005a8d8(void)
+ * Thunk into FUN_0005a8d8.
+ * Confidence: high (thunk)
+ */
+void txm_trace_lo_thunk(void)
+{
+	txm_trace_lo();
+}
+
+/* FUN_00026918 @ 0x00026918   (est. txm_const_4)
+ * Ghidra: undefined8 FUN_00026918(void)
+ * Returns the constant 4.
+ * Confidence: high
+ */
+uint64_t txm_const_4(void) { return 4; }
+
+/* thunk_FUN_0005a914 @ 0x00026924  (est. txm_trace_mid_thunk)
+ * Ghidra: void thunk_FUN_0005a914(void)
+ * Thunk into FUN_0005a914.
+ * Confidence: high (thunk)
+ */
+void txm_trace_mid_thunk(void)
+{
+	txm_trace_mid();
+}
+
+/* FUN_0002692c @ 0x0002692c   (est. txm_data_17e00)
+ * Ghidra: undefined * FUN_0002692c(void)
+ * Returns data pointer 0x17e00.
+ * Confidence: high
+ */
+uint64_t txm_data_17e00(void) { return 0x17e00; }
+
+/* FUN_0002693c @ 0x0002693c   (est. txm_data_18290)
+ * Ghidra: undefined * FUN_0002693c(void)
+ * Returns data pointer 0x18290.
+ * Confidence: high
+ */
+uint64_t txm_data_18290(void) { return 0x18290; }
+
+/* FUN_0002694c @ 0x0002694c   (est. txm_data_17420)
+ * Ghidra: undefined * FUN_0002694c(void)
+ * Returns data pointer 0x17420.
+ * Confidence: high
+ */
+uint64_t txm_data_17420(void) { return 0x17420; }
+
+/* FUN_0002695c @ 0x0002695c   (est. txm_data_197c8)
+ * Ghidra: undefined * FUN_0002695c(void)
+ * Returns data pointer 0x197c8.
+ * Confidence: high
+ */
+uint64_t txm_data_197c8(void) { return 0x197c8; }
+
+/* FUN_0002696c @ 0x0002696c   (est. txm_data_16da0)
+ * Ghidra: undefined * FUN_0002696c(void)
+ * Returns data pointer 0x16da0.
+ * Confidence: high
+ */
+uint64_t txm_data_16da0(void) { return 0x16da0; }
+
+/* FUN_0002697c @ 0x0002697c   (est. txm_boot_mem_init)
+ * Ghidra: void FUN_0002697c(long desc)
+ * Initializes the boot memory region base (DAT_00010588) from desc+0x30.
+ * Single-init: a second call panics 0x1740 ("attempted to initialize boot
+ * memory again").
+ * Confidence: high (string 0x1740)
+ */
+void txm_boot_mem_init(uint64_t desc)
+{
+	if (txm_boot_mem == 0) {
+		txm_boot_mem = *(uint64_t *)(desc + 0x30);
+		return;
+	}
+	txm_panic(0x1740);
+}
+
+/* FUN_000269b4 @ 0x000269b4   (est. txm_alloc_zone)
+ * Ghidra: void FUN_000269b4(undefined8 *out, ulong size, undefined8 tag)
+ * Zone allocator: allocates `size` bytes (16 KiB aligned, non-empty) from the
+ * boot memory region (DAT_00010588), writing {base, size, extra} into the
+ * 3-word `out`. Commits the range (thunk_FUN_0002d240) and advances the boot
+ * memory cursor and the code-limits counter (DAT_00070fa8). Panics on null/
+ * empty/misaligned/overflow (0x40-0x42/0xc0/0xc1).
+ * Confidence: high (boot-zone allocator)
+ */
+void txm_alloc_zone(uint64_t *out, uint64_t size, uint64_t tag)
+{
+	out[0] = 0;
+	out[1] = 0;
+	out[2] = 0;
+	if (txm_boot_mem == 0) {
+		txm_panic(0x40);
+	}
+	if (size == 0) {
+		txm_panic(0x41);
+	}
+	if (txm_boot_mem + size < txm_boot_mem) {   /* CARRY8 */
+		txm_panic(0x42);
+	}
+	if ((txm_boot_mem & 0x3fff) != 0) {
+		txm_panic(0xc0);
+	}
+	if ((size & 0x3fff) != 0) {
+		txm_panic(0xc1);
+	}
+	txm_alloc_zone_impl(out, size, tag);       /* FUN_0002c4a8 */
+	txm_mem_commit(out[0], out[1]);            /* thunk_FUN_0002d240 */
+	txm_boot_mem += size;
+	txm_code_limits += (int)size;              /* DAT_00070fa8 */
 }
 
 #endif /* __ASSEMBLER__ */

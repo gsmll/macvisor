@@ -30,32 +30,23 @@ typedef int bool;
 #define InstructionSynchronizationBarrier() __asm__ volatile("isb")
 
 /* device-tree + TXM primitives (externs into other TXM regions) */
-extern int dt_find_node(unsigned long *tree, int parent, const char *name, unsigned long *out);
-extern int dt_get_property(unsigned long *tree, unsigned long node, const char *name, unsigned long *out, int *len);
+extern int dt_find_node(void *tree, int parent, const char *name, unsigned long *out);
+extern int dt_get_property(void *tree, unsigned long node, const char *name, void **out, int *len);
 extern void txm_log(const char *fmt, ...);
 extern void txm_log_state(unsigned long v);
 extern void txm_panic(unsigned long code, unsigned long arg);
 extern void txm_assert(unsigned long code);
 extern void txm_panic_str(const char *msg);
-extern void txm_stack_check_fail(void);
 extern unsigned long txm_syscall_26(void);
-extern int txm_strcmp(const char *a, const char *b);
-extern int txm_strncmp(const char *a, const char *b, unsigned long n);
-extern unsigned long txm_strlen(const char *s);
-extern unsigned long txm_strlen_v(const char *s);
-extern unsigned long txm_strlcpy_chk(char *dst, const char *src, unsigned long cap, unsigned long max);
-extern int txm_snprintf_chk(char *out, unsigned long cap, unsigned long off, unsigned long max, const char *fmt, ...);
-extern void txm_memcpy_chk(void *dst, const void *src, unsigned long n, unsigned long cap);
-extern void txm_memset(void *p, int byte, unsigned long n);
-extern void txm_bzero(void *p, unsigned long n);
-extern int txm_memcmp(const void *a, const void *b, unsigned long n);
-extern void *txm_memmove(void *dst, const void *src, unsigned long n);
 extern void txm_panic_msg(void);
 
 /* per-op implementation primitives (deeper TXM machinery, stubbed externs) */
 extern void txm_op_2(void);
 extern void txm_op_5(void);
+extern unsigned long txm_op_5full(unsigned short, unsigned long, unsigned long, unsigned long);
 extern unsigned long txm_op_8(void);
+extern unsigned long txm_op_6(void);
+extern unsigned long txm_op_7(void);
 extern void txm_op_9(unsigned long);
 extern void txm_op_10(unsigned long);
 extern unsigned long txm_op_11(void);
@@ -70,7 +61,7 @@ extern unsigned long txm_op_20(unsigned long, void*);
 extern unsigned long txm_op_21(unsigned long);
 extern unsigned long txm_op_22(unsigned long, void*, void*);
 extern unsigned long txm_op_23(unsigned long);
-extern void txm_op_24(unsigned long);
+extern unsigned long txm_op_24(unsigned long);
 extern unsigned long txm_op_24b(void);
 extern unsigned long txm_op_25(unsigned long);
 extern unsigned long txm_op_26(unsigned long);
@@ -97,8 +88,6 @@ extern unsigned long txm_trust_cache_unload(unsigned long);
 extern void txm_validate_range(unsigned long*, unsigned long);
 extern unsigned long txm_trust_cache_load(unsigned long, unsigned long*, unsigned long*);
 extern unsigned long txm_tc_num_entries(unsigned long);
-extern unsigned long txm_img4_lookup(unsigned long*, unsigned long, unsigned long, unsigned long, unsigned long*);
-extern unsigned long txm_img4_flags(unsigned long*, unsigned long, unsigned long, unsigned long*);
 extern unsigned long txm_img4_identifier(unsigned long*, unsigned long, unsigned long);
 extern void txm_op_verify_do(unsigned long, unsigned long);
 extern unsigned long txm_op_handle(unsigned long);
@@ -121,13 +110,7 @@ extern void txm_ctx_begin(unsigned long, unsigned long, unsigned long);
 extern void txm_ctx_end(unsigned long, unsigned long);
 extern unsigned long txm_ctx_begin_new(unsigned long);
 extern short txm_verification(unsigned long, unsigned long*);
-extern unsigned long txm_image4_dispatch(long, unsigned long*, unsigned long);
-extern unsigned long txm_range_resolve(unsigned long*);
-extern void txm_range_page_translate(unsigned long*, unsigned long, unsigned long);
-extern void txm_page_op_16k(unsigned long, unsigned long, unsigned long);
-extern void txm_copy_range_do(unsigned long*, unsigned long, unsigned long);
 extern unsigned long txm_translate(unsigned long, unsigned long*);
-extern unsigned char txm_range_resolve_local(unsigned long, char*);
 extern unsigned long txm_indirect_op(void);
 extern unsigned long txm_img4_handler(void);
 extern unsigned long txm_img4_input_size(long);
@@ -142,7 +125,7 @@ extern void txm_enter_platform_ops_result(unsigned long, unsigned long, unsigned
 extern unsigned long txm_cap_probe(unsigned long);
 extern void txm_boot_page_register(unsigned long, unsigned long, unsigned long);
 extern void txm_boot_arg_get(unsigned long*, unsigned long);
-extern void txm_copy_block(void*, void*, unsigned long);
+extern void txm_copy_block(void*, const void*, unsigned long);
 extern void txm_op_copy_state_do(unsigned long, unsigned long*);
 extern short txm_op_get_state_do(unsigned long, unsigned long*);
 extern unsigned long txm_hash_data(unsigned long, unsigned long*);
@@ -151,21 +134,14 @@ extern void txm_kernel_boot_2(void);
 extern void txm_kernel_boot_3(void);
 extern void txm_handoff(unsigned long*, unsigned long, unsigned long, unsigned long*);
 extern unsigned long txm_handoff_get(void);
+extern unsigned long txm_hash_ctx_a(void);
+extern unsigned long txm_hash_ctx_init(unsigned long, void*, const void*, void*);
 extern unsigned long txm_key_schedule(unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, void*);
 extern unsigned long txm_verify(void*, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long*);
 extern unsigned long txm_finalize(unsigned long, void*, unsigned long*);
 extern unsigned long txm_crypto_ctx_init(unsigned long);
-extern int txm_cectx_check(unsigned long);
 extern unsigned long txm_cap_probe2(unsigned long, unsigned long);
-extern void txm_cap_apply(unsigned*, unsigned*);
-extern unsigned long txm_codedir_dispatch(unsigned*);
-extern unsigned long txm_cert_find_all(unsigned long);
-extern void txm_codedir_get_base(unsigned*, unsigned long, unsigned long*);
-extern unsigned long txm_cert_get_base_flag(unsigned long*, unsigned long*);
 extern void txm_cert_aux2(unsigned long, unsigned long*);
-extern unsigned long txm_cert_list_head(unsigned long*);
-extern void txm_cert_list_push(unsigned long*, unsigned long*);
-extern unsigned long txm_cert_find_by_handle(unsigned long, unsigned long, unsigned long*);
 extern unsigned long txm_dict_init(unsigned long, const char*, unsigned long*);
 extern int txm_dict_int(unsigned long*, unsigned*);
 extern int txm_dict_value(unsigned long*, unsigned long);
@@ -185,19 +161,19 @@ extern unsigned long txm_hash_2(const void*, unsigned long, const void*);
 extern unsigned long txm_hash_4(const void*, unsigned long, const void*);
 extern unsigned long txm_hash_8(const void*, unsigned long, const void*);
 extern unsigned long txm_kernel_profile(unsigned long, unsigned, unsigned long*);
-extern unsigned long txm_entitlements_set(unsigned long);
-extern unsigned long txm_profile_flags(void);
-extern unsigned long txm_cectx_profile_update(unsigned long*);
 extern void txm_handoff_block(void*, unsigned long*);
 extern unsigned long txm_profile_flags2(unsigned long*);
 extern unsigned long txm_cectx_value2(unsigned long, const char*, unsigned long);
 extern void txm_ctx_begin2(unsigned long, unsigned long, unsigned long);
 extern unsigned long txm_platform_status2(void);
-extern void txm_cectx_clear_caps(unsigned long);
-extern unsigned long txm_apple_internal_check(unsigned long);
-extern unsigned long txm_team_identifier(unsigned long, unsigned long*);
-extern unsigned long txm_cectx_value(unsigned long, const char*, unsigned long);
 extern unsigned long txm_platform_token2(unsigned long, unsigned long*);
+extern unsigned long txm_img4_core(void*, unsigned long);
+extern void txm_img4_run(unsigned long, unsigned long, void*, unsigned, void*, unsigned long);
+extern void txm_img4_result(unsigned long, void*);
+extern void txm_img4_finalize(unsigned long, unsigned long);
+extern int txm_img4_prepare(unsigned long, unsigned long*);
+extern unsigned long txm_img4_hash_ctx(unsigned long);
+extern unsigned long txm_state_handoff(void);
 extern unsigned long txm_trust_cache_load2(unsigned long, unsigned long*, unsigned long*);
 extern unsigned long txm_op_nonce2(void);
 
@@ -221,8 +197,12 @@ extern unsigned long DAT_00010590, DAT_000105c0, DAT_00010608, DAT_00010610;
 extern unsigned long DAT_00010678, DAT_000107d8, DAT_000107e8;
 extern unsigned long DAT_00070008, DAT_00070028, DAT_00070038;
 extern unsigned long DAT_0006cf8;
+extern unsigned long DAT_00006cf8;
+extern unsigned long DAT_00010810, DAT_00010818, DAT_00010820, DAT_00010828;
 extern unsigned long DAT_00071ad0;
-extern unsigned char DAT_00010c20[], DAT_00010c44[], DAT_00010da0[];
+extern unsigned long DAT_00010c20[];
+extern unsigned char DAT_00010c44[];
+extern unsigned char DAT_00010da0[];
 extern unsigned char DAT_00006e39[];
 extern unsigned char DAT_00007180[];
 extern unsigned char DAT_0000da98[], DAT_0000daa8[], DAT_0000dab8[], DAT_0000dac8[];
@@ -230,16 +210,278 @@ extern unsigned char DAT_0000dad8[], DAT_00015598[], DAT_000163e0[], DAT_00016a6
 extern unsigned char DAT_000170e0[], DAT_00016da0[], DAT_00017420[], DAT_00017e00[];
 extern unsigned char DAT_00018290[], DAT_000197c8[];
 extern unsigned long DAT_00070694, DAT_00070698;
-
-/* forward decls for functions defined later in this file */
-unsigned long txm_state_base(void);
-void txm_finalize_state_string(void);
-void txm_page_op_16k(unsigned long, unsigned long, unsigned long);
-unsigned long txm_op_6(void);
-unsigned long txm_op_7(void);
-
 extern unsigned long DAT_00010500;
 extern const char s_prospective_local_policy_gen[];
+
+
+
+/* ---- forward declarations (functions defined in this file) ---- */
+bool txm_amfi_only_platform_code(void);
+bool txm_research_enabled(void);
+bool txm_sec_research_erm_enabled(void);
+bool txm_vmm_present(void);
+unsigned long txm_sepfw_load_at_boot(void);
+unsigned long txm_sepfw_never_boot(void);
+bool txm_booted_device_recovery(void);
+bool txm_internal_device_variant(void);
+void txm_trust_cache_range(unsigned long out[2]);
+bool txm_iboot_development_build(void);
+void txm_unique_device_id(char *out);
+void txm_format_chip_id(char *out, unsigned long arg);
+void txm_finalize_state_string(void);
+unsigned long txm_state_string_end(long p);
+void txm_page_op_16k(unsigned long a, unsigned long b, unsigned long c);
+void txm_thunk_4f2f0(void);
+unsigned long txm_thunk_4efd4(unsigned long a, void *b);
+unsigned long txm_thunk_4ef48(unsigned long a, void *b);
+unsigned long txm_thunk_4f0e0(unsigned long a, unsigned long b, void *c);
+void txm_thunk_61ea4(void);
+void txm_noop(void);
+void txm_enter_platform_ops(int op, ushort a, ulong b, ulong c, ulong d, ulong e);
+void txm_enter(int op, unsigned long p2, void *p3, void *p4, void *p5, void *p6);
+void txm_op_security_boot_state(void);
+unsigned long txm_op_get_security_boot(void);
+void txm_op_set_security_boot_mode(unsigned long mode);
+unsigned long txm_op_enable_restricted_entitlement(void);
+void txm_op_register_boot_page(unsigned long base);
+unsigned long txm_op_get_boot_arg(void);
+unsigned long txm_op_load_trust_cache(unsigned long kind, unsigned long dbase, unsigned long dsize, unsigned long cbase, unsigned long csize);
+unsigned long txm_op_eval_signature(unsigned long kind, unsigned long base, unsigned long size);
+unsigned long txm_op_get_signature_flags(unsigned long base, unsigned long size);
+unsigned long txm_op_get_identifier(unsigned long base);
+void txm_op_hash_data(unsigned long base, unsigned long size);
+void txm_op_copy_state(unsigned long kind, unsigned long *p, long len);
+void txm_op_get_state(unsigned long kind);
+void txm_op_verify_data(unsigned long a, unsigned long b);
+unsigned long txm_op_get_platform_status(void);
+unsigned long txm_op_get_certificate(unsigned long base, unsigned long size, unsigned long kind);
+void txm_op_get_cert_hash(unsigned long kind);
+void txm_op_get_cert_attr(unsigned long kind);
+unsigned long txm_op_get_nonce(void);
+void txm_op_verify_entitlements(unsigned long base, unsigned long size);
+void txm_op_verify_entitlements2(unsigned long base, unsigned long size);
+void txm_op_check_entitlements(unsigned long base, unsigned long size);
+void txm_op_get_cdhash(unsigned long kind);
+unsigned long txm_op_get_platform_token(unsigned long kind);
+void txm_op_get_resolution(unsigned long a, unsigned long b);
+void txm_op_nested_verify(unsigned long a, unsigned long b, unsigned long c, unsigned long d, unsigned long e);
+unsigned long txm_op_reset_verification(void);
+unsigned long txm_op_begin_verification(unsigned long handle);
+void txm_op_get_verification(unsigned long kind);
+void txm_op_image4_dispatch(unsigned long kind, unsigned long base, unsigned long size);
+void txm_set_syscall_result(long p);
+void txm_copy_range_pages(unsigned long *out, long src, unsigned long size, unsigned long dst_type, unsigned long src_type);
+void txm_range_translate(unsigned long *out, unsigned long *in, unsigned long dst_type, unsigned long src_type);
+void txm_range_page_translate(unsigned long *page, unsigned long dst_type, unsigned long src_type);
+void txm_range_flush(unsigned long *range, unsigned long dst_type);
+void txm_flush_all(void);
+unsigned long txm_range_resolve(unsigned long *range);
+unsigned char txm_range_resolve_local(unsigned long base, char *p);
+void txm_copy_range_do(unsigned long *out, unsigned long src, unsigned long size);
+void txm_alloc_translate_range(unsigned long *out, unsigned long *in, unsigned long type);
+void txm_write_range(unsigned long base, unsigned long type, unsigned long len);
+void txm_write_range_chk(unsigned long *range, unsigned long len);
+void txm_jumptable_dispatch(void);
+unsigned long txm_image4_dispatch(long kind, unsigned long *p, unsigned long size);
+void txm_supervisor_call(void);
+unsigned long txm_state_base(void);
+void txm_hang(void);
+void txm_bzero(void *p, unsigned long n);
+void txm_memset(void *p, int byte, unsigned long n);
+void *txm_memrchr(const void *s, int c, unsigned long n);
+int txm_memcmp(const void *a, const void *b, unsigned long n);
+int txm_ct_memcmp(const void *a, const void *b, unsigned long n);
+void *txm_memmove(void *dst, const void *src, unsigned long n);
+int txm_strcmp(const char *a, const char *b);
+int txm_strncmp(const char *a, const char *b, unsigned long n);
+unsigned long txm_strlen(const char *s);
+unsigned long txm_strlen_v(const char *s);
+char *txm_strstr(char *haystack, const char *needle);
+char *txm_strstr2(char *haystack, const char *needle);
+void txm_assert_fail(void);
+bool txm_isspace(int c);
+bool txm_isupper(int c);
+int txm_tolower(int c);
+long txm_vsnprintf_core(char *out, unsigned long size, unsigned long *count, const char *fmt, void *args);
+unsigned long txm_fmt_putc(unsigned char *state, unsigned char c);
+void txm_fmt_write_integer(unsigned long *out, unsigned char *flags, unsigned long val, int sign, int neg, unsigned base);
+unsigned long txm_va_arg(unsigned char *fmt, unsigned long *out, long *va);
+unsigned long txm_fmt_emit(unsigned long *state, unsigned char *fmt, void *prefix, long pfxlen, const char *digits, unsigned long dlen);
+unsigned long txm_fmt_pad(unsigned char *state, unsigned char c, unsigned long n);
+unsigned long txm_fmt_write(unsigned char *state, const void *src, unsigned long n);
+void txm_fmt_noop_a(void);
+void txm_fmt_noop_b(void);
+void txm_fmt_noop_c(void);
+void txm_fmt_noop_d(void);
+void txm_fmt_noop_e(void);
+void txm_va_ptr(unsigned long out[2]);
+void txm_va_fetch(void);
+void txm_vsnprintf(char *out, unsigned long size, const char *fmt, void *args);
+int txm_snprintf_chk(char *out, unsigned long cap, unsigned long off, unsigned long max, const char *fmt, ...);
+unsigned long txm_strtoul(const char *s, char **end, unsigned base);
+unsigned long txm_strtol(const char *s, char **end, unsigned base);
+void txm_thunk_memrchr(void);
+void txm_thunk_memcmp(void);
+void txm_thunk_memmove(void);
+void txm_memcpy_chk(void *dst, const void *src, unsigned long n, unsigned long cap);
+void txm_thunk_memset(void);
+void txm_memset_chk(void *dst, int c, unsigned long n, unsigned long cap);
+unsigned txm_memset_s(void *dst, unsigned long dlen, int c, unsigned long slen);
+void txm_memset_s_chk(void *dst, unsigned long dlen, int c, unsigned long off, unsigned long max);
+void txm_thunk_strcmp(void);
+unsigned long txm_strlcpy_chk(char *dst, const char *src, unsigned long cap, unsigned long max);
+void txm_strlcpy_assert(void);
+void txm_thunk_strncmp(void);
+void txm_thunk_strlen2(void);
+void txm_thunk_strstr2(void);
+void txm_thunk_bzero2(void);
+void txm_thunk_errno(void);
+void txm_stack_check_fail(void);
+void txm_thunk_299fc(void);
+unsigned long txm_state_reset(void);
+unsigned long txm_state_find_owner(unsigned long kind, unsigned long *desc, unsigned long arg);
+void txm_read_boot_args(unsigned long *out);
+unsigned long txm_read_boot_arg_magic(unsigned *out);
+unsigned long txm_read_boot_arg_flag(int which, unsigned char *out);
+void txm_read_boot_profile(unsigned long *out);
+void txm_write_boot_arg32(unsigned v);
+void txm_write_boot_arg_flag4(unsigned char v);
+void txm_write_boot_arg_flag5(unsigned char v);
+void txm_write_boot_arg_flag6(unsigned char v);
+void txm_write_boot_arg_flag7(unsigned char v);
+unsigned long txm_owner_lookup(unsigned *result, unsigned long *desc, unsigned long arg);
+unsigned long txm_state_gate(void);
+void txm_state_init(void);
+unsigned long txm_state_block_base(void);
+unsigned long txm_state_get(unsigned long *out);
+unsigned long txm_state_get_owner(int which, unsigned long *out);
+unsigned txm_image4_eval(unsigned long *handles, unsigned long kind, unsigned long a, unsigned long b, unsigned long c, unsigned long d, unsigned long *out_status, unsigned long *out_result);
+void txm_image4_status_callback(unsigned long a, unsigned long b, int status, unsigned long *out);
+unsigned long txm_err_not_supported(void);
+unsigned long txm_gdesc_0da98(void);
+unsigned long txm_gdesc_0daa8(void);
+unsigned long txm_gdesc_0dab8(void);
+unsigned long txm_gdesc_0dac8(void);
+unsigned long txm_gdesc_0dad8(void);
+unsigned long txm_gdesc_15598(void);
+unsigned long txm_gdesc_163e0(void);
+unsigned long txm_gdesc_16a60(void);
+unsigned long txm_gdesc_170e0(void);
+unsigned long txm_gdesc_16da0(void);
+unsigned long txm_gdesc_17420(void);
+unsigned long txm_gdesc_17e00(void);
+unsigned long txm_gdesc_18290(void);
+unsigned long txm_gdesc_197c8(void);
+void txm_thunk_5a8d8(void);
+void txm_thunk_5a914(void);
+void txm_thunk_56578(void);
+unsigned long txm_const_4(void);
+unsigned long txm_plus4(unsigned long p);
+unsigned txm_codedir_validate_v3(unsigned *cd, unsigned long size);
+void *txm_codedir_find_v3(unsigned long cd, const void *hash, unsigned long len, unsigned long *out);
+unsigned char txm_codedir_get_type(unsigned long cd, unsigned long e);
+unsigned txm_img4_flags(unsigned long *state, unsigned long kind, unsigned long base, unsigned long size);
+unsigned txm_codedir_validate_v0(unsigned *cd, unsigned long size);
+void *txm_codedir_find_v0(unsigned long cd, const void *hash, unsigned long *out);
+unsigned txm_codedir_validate_v1(unsigned *cd, unsigned long size);
+void *txm_codedir_find_v1(unsigned long cd, const void *hash, unsigned long *out);
+unsigned char txm_codedir_hash_type(unsigned long cd);
+unsigned txm_codedir_validate_v2(unsigned *cd, unsigned long size);
+void *txm_codedir_find_v2(unsigned long cd, const void *hash, unsigned long *out);
+unsigned long txm_codedir_dispatch(unsigned *cd);
+unsigned txm_codedir_validate(unsigned *cd, unsigned long size);
+void *txm_codedir_get_entry(unsigned *cd, unsigned long *out);
+unsigned txm_codedir_find(unsigned *cd, const void *hash, unsigned long len, unsigned long *out);
+void *txm_codedir_get_base(unsigned *cd, unsigned long e, unsigned long *out);
+unsigned long txm_cert_list_push(unsigned long *list, unsigned long *node);
+unsigned long txm_cert_list_head(unsigned long *p);
+unsigned txm_cert_find_by_handle(unsigned long h, unsigned long kind, unsigned long *out);
+void txm_cert_validate(unsigned long p);
+void *txm_cert_get_type_entry(unsigned long p, unsigned long *out);
+unsigned long txm_cert_lookup(unsigned long kind, const void *hash, unsigned long len, unsigned long *out);
+unsigned long txm_cert_lookup_all(unsigned long p, const void *hash, unsigned long len, unsigned long *out);
+unsigned txm_img4_lookup(unsigned long state, int which, const void *hash, unsigned long len, unsigned long *out);
+void txm_cert_get_type(unsigned long *p);
+void txm_cert_get_base_flag(unsigned long *p, unsigned long *out);
+unsigned long txm_cert_flag_shift(unsigned long *p, unsigned char *out);
+unsigned long txm_cert_find_in_list(unsigned long kind, const void *key);
+unsigned long txm_cert_find_all(unsigned long p);
+void *txm_ctx_alloc(unsigned long *out, unsigned long base, unsigned long size);
+void txm_cert_register(unsigned long p, int slot, unsigned long *out, unsigned long base, unsigned long size);
+void txm_cert_register_full(unsigned long *p, unsigned long kind, unsigned long *out, unsigned long cbase, unsigned long csize, unsigned long dbase, unsigned long dsize);
+void *txm_cert_activate(unsigned long a, unsigned long b, unsigned long *out);
+unsigned txm_cectx_init(unsigned long kind, unsigned long flags, unsigned long *ctx, unsigned long base, unsigned long size);
+unsigned txm_cectx_validate(unsigned long kind, unsigned long ctx);
+void *txm_cectx_teamid(unsigned long kind, unsigned long ctx, unsigned *out);
+unsigned txm_cectx_value(unsigned long kind, unsigned long ctx, unsigned long arg);
+unsigned txm_cectx_flags(unsigned long kind, unsigned long ctx, unsigned long arg);
+void *txm_hash_amfi(int kind, const void *data, unsigned long len, const void *b, unsigned long *out_len);
+int txm_amfi_cms_parse(unsigned long *ctx, unsigned char type, unsigned long base, unsigned long size);
+void txm_amfi_cms_verify(unsigned long *ctx, unsigned long base, unsigned long size);
+unsigned txm_amfi_cert_chain_verify(unsigned long ctx, unsigned long base, unsigned long size);
+unsigned txm_amfi_verify_signature(unsigned long ctx, unsigned long base, unsigned long size, int algo);
+void *txm_amfi_get_data(unsigned long *ctx, unsigned long *out);
+void *txm_amfi_get_digest(unsigned long ctx, unsigned long *out);
+void *txm_amfi_get_digest2(unsigned long ctx, unsigned long *out);
+void *txm_amfi_get_flags(unsigned long ctx, unsigned long *out);
+void *txm_cectx_create(unsigned long *owner, unsigned long *ctx, unsigned long base, unsigned long size);
+void *txm_cectx_init_with_type(unsigned long *ctx);
+void *txm_cectx_finalize(unsigned long *ctx, unsigned long arg);
+unsigned txm_cectx_compare(unsigned long *a, unsigned long *b);
+void *txm_cectx_get_data(unsigned long ctx, unsigned long *out);
+void *txm_cectx_get_type_flags(unsigned long ctx, unsigned *out);
+void *txm_cectx_get_hash(unsigned long ctx);
+void *txm_cectx_get_entitlements(unsigned long ctx, unsigned long *out);
+unsigned txm_cectx_check(unsigned long ctx, unsigned long other);
+unsigned txm_cectx_team_id(unsigned long ctx, unsigned long arg);
+void txm_cectx_dev_certs(unsigned long ctx, unsigned long base, unsigned long size);
+void txm_apple_internal_check(unsigned long ctx);
+void txm_cectx_clear_caps(unsigned long ctx);
+unsigned txm_version_compare(unsigned a, unsigned b);
+void *txm_hash_dispatch(int kind, const void *data, unsigned long len, void *digest);
+unsigned txm_codedir_parse(unsigned *blob, unsigned long size, unsigned long *out);
+void *txm_codedir_mark(unsigned char *seen, unsigned magic, unsigned *dir);
+void txm_superblob_find_command(unsigned *blob, unsigned long size, unsigned type, unsigned magic, unsigned *index);
+void *txm_superblob_get_cmd(unsigned *blob, unsigned size, unsigned *magic, unsigned long *out);
+unsigned txm_superblob_parse(unsigned long *out, unsigned *blob, unsigned long size);
+unsigned long txm_platform_of(unsigned long platform, unsigned char *out);
+bool txm_codedir_hash_ok(unsigned long cd, unsigned size, unsigned long *out);
+unsigned txm_codedir_v0_parse(unsigned long cd, unsigned long size, unsigned long page);
+int txm_codedir_v1_parse(unsigned long cd, unsigned size, unsigned long page);
+unsigned txm_codedir_v2_parse(unsigned long cd, unsigned size, unsigned long page);
+int txm_codedir_v3_parse(unsigned long cd, unsigned long size, unsigned long page);
+void *txm_codedir_verify(unsigned long blob, unsigned long size, unsigned long hashbase, unsigned long hashsize);
+void txm_codedir_find_slot(unsigned long base, unsigned long size, unsigned magic, unsigned long *out);
+void txm_codedir_hash(unsigned long base, unsigned long size, unsigned long cmd, unsigned long hashbase, unsigned hashsize);
+unsigned txm_codedir_compare(char *a, unsigned long asize, char *b, unsigned long bsize);
+unsigned long txm_codedir_get_count(unsigned long cd, unsigned size, unsigned *out);
+unsigned long txm_codedir_get_hash_size(unsigned long cd, unsigned size, unsigned long *out);
+unsigned long txm_codedir_get_identifier(char *cd, unsigned size, unsigned long *out);
+void *txm_codedir_team(char *cd, unsigned size, unsigned long *out);
+void *txm_codedir_get_special(unsigned long cd, unsigned size, unsigned long *a, unsigned long *b, unsigned long *c);
+unsigned txm_superblob_parse_full(unsigned long state, unsigned long blob, unsigned long size, unsigned long *out);
+unsigned long txm_codedir_get_platform(unsigned long cd, unsigned size, unsigned char *plat, unsigned char *ht);
+unsigned long txm_codedir_get_page_size(unsigned long cd, unsigned size, int *out);
+void *txm_codedir_get_hash_slot(unsigned long cd, unsigned size, unsigned char *plat, unsigned long *out);
+void *txm_codedir_get_hash_flags(unsigned long cd, unsigned size, unsigned char *flags, unsigned short *out);
+void txm_codedir_verify_hash(unsigned long cd, unsigned long size, unsigned idx, void *hash, unsigned long hashsize);
+unsigned txm_cectx_profile_update(unsigned long *ctx);
+unsigned long txm_profile_flags(unsigned long *ctx);
+unsigned txm_trust_eval(unsigned long *ctx, unsigned char *result);
+void *txm_trust_platform_check(unsigned long *ctx, unsigned char *out);
+void *txm_trust_adhoc_check(unsigned long *ctx, unsigned char *out);
+void *txm_trust_developer_check(unsigned long *ctx, unsigned char *out);
+unsigned long txm_ctx_get_ent(unsigned long ctx);
+void txm_ctx_find_embedded(unsigned long ctx);
+void *txm_ctx_parse_embedded(unsigned long *ctx);
+void txm_cap_apply(unsigned *flags, unsigned *cap);
+bool txm_apple_internal_profile(unsigned long ctx);
+unsigned long txm_ctx_get_provisions(unsigned long ctx);
+bool txm_provisions_all_devices(unsigned long ctx);
+unsigned txm_entitlements_set(unsigned long ctx);
+unsigned long txm_profile_entitlements(unsigned long *ctx);
+unsigned txm_team_identifier(unsigned long ctx, unsigned long *out);
+unsigned txm_app_audience(unsigned long ctx, unsigned long arg);
 
 /* FUN_0002a004 @ 0x2a004  (est. txm_amfi_only_platform_code)
  * Ghidra: bool FUN_0002a004(void)
@@ -479,6 +721,7 @@ void txm_unique_device_id(char *out) {
     }
 }
 
+
 /* FUN_0002ab30 @ 0x2ab30  (est. txm_format_chip_id)
  * Ghidra: void FUN_0002ab30(undefined8 param_1, undefined8 param_2)
  * snprintf helper into param_1 with the "%08X%016llX" format (params=0x30).
@@ -502,7 +745,7 @@ void txm_finalize_state_string(void) {
  * Ghidra: void FUN_0002aba4(long param_1)
  * Logs/commits the state string at param_1+0x68 (est: publish/commit).
  * Confidence: low */
-unsigned long txm_state_string_end(unsigned long p) { return (unsigned long)(p + 0x68); }
+unsigned long txm_state_string_end(long p) { return (unsigned long)(p + 0x68); }
 
 /* FUN_0002abb0 @ 0x2abb0  (est. txm_page_op_16k)
  * Ghidra: void FUN_0002abb0(void)
@@ -674,6 +917,7 @@ void txm_enter(int op, unsigned long p2, void *p3, void *p4, void *p5, void *p6)
     txm_finalize_state_string();
 }
 
+
 /* FUN_0002b380 @ 0x2b380  (est. txm_op_security_boot_state)
  * Ghidra: void FUN_0002b380(void)
  * Records the security-boot state descriptor into the txm state block: type 6,
@@ -709,7 +953,7 @@ unsigned long txm_op_get_security_boot(void) {
     block[0] = DAT_00010518; block[1] = DAT_00010520; block[2] = DAT_00010528;
     txm_validate_range(block, 0x3b);   /* est: validate/copy 3x8 block */
     *(unsigned long*)(s + 0x18) = 2;
-    txm_copy_block(s + 0x20, block, 3);
+    txm_copy_block((void*)(s + 0x20), block, 3);
     return 0;
 }
 
@@ -827,7 +1071,7 @@ unsigned long txm_op_eval_signature(unsigned long kind, unsigned long base, unsi
     if (base + size < base) txm_panic(0x42, 0);
     if (base + size < base) txm_assert(0x19);
     if ((DAT_000104e9 & 1) != 0) {
-        r = txm_img4_lookup(&DAT_00010590, kind, base, size, &out0);
+        r = txm_img4_lookup((unsigned long)&DAT_00010590, (int)kind, (const void*)base, size, &out0);
         if ((r & 0xffff) >> 8 == 0) {
             *(unsigned long*)(s + 0x18) = 2;
             *(unsigned long*)(s + 0x28) = out1;
@@ -854,7 +1098,7 @@ unsigned long txm_op_get_signature_flags(unsigned long base, unsigned long size)
     if (base + size < base) txm_panic(0x42, 0);
     if (base + size < base) txm_assert(0x19);
     if ((DAT_000104e9 & 1) != 0) {
-        r = txm_img4_flags(&DAT_00010590, base, size, &flag);
+        r = txm_img4_flags((unsigned long*)&DAT_00010590, base, size, 0);
         if ((r & 0xffff) >> 8 == 0) {
             *(unsigned long*)(s + 0x18) = 1;
             *(unsigned long*)(s + 0x20) = flag;
@@ -1029,7 +1273,7 @@ unsigned long txm_op_get_nonce(void) {
     txm_op_nonce(n);
     if (n[0] == 0) return 8;
     *(unsigned long*)(s + 0x18) = 2;
-    txm_copy_block(s + 0x20, n, 2);
+    txm_copy_block((void*)(s + 0x20), n, 2);
     return 0;
 }
 
@@ -1209,6 +1453,7 @@ void txm_op_image4_dispatch(unsigned long kind, unsigned long base, unsigned lon
     if (base + size < base) txm_assert(0x19);
     txm_image4_dispatch(kind, (unsigned long*)base, size);
 }
+
 
 /* FUN_0002c464 @ 0x2c464  (est. txm_set_syscall_result)
  * Ghidra: void FUN_0002c464(long param_1)
@@ -1520,10 +1765,10 @@ void txm_supervisor_call(void) { CallSupervisor(0x26); }
  * Returns the per-CPU TXM state block base: the current stack page rounded to
  * 16K + 0x3c00. This is the anchor for all state-block field accesses.
  * Confidence: high */
-unsigned long txm_state_base(void);
 unsigned long txm_state_base(void) {
-    return (unsigned long)&__builtin_frame_address(0) & ~0x3fffUL;
+    unsigned long sp; __asm__("mov %0, sp" : "=r"(sp)); return (sp & ~0x3fffUL) + 0x3c00;
 }
+
 
 /* ---- fortified libc / string helpers (2d22c-2f0ec) ---- */
 
@@ -1806,9 +2051,6 @@ long txm_vsnprintf_core(char *out, unsigned long size, unsigned long *count,
  * growing/terminating as needed. Returns 1 on success, 0 on overflow.
  * SoftwareBreakpoint on out-of-window. Bumps the length at +0x20.
  * Confidence: medium */
-unsigned long txm_fmt_emit(unsigned long*, unsigned char*, void*, long, const char*, unsigned long);
-unsigned long txm_fmt_pad(unsigned char*, unsigned char, unsigned long);
-unsigned long txm_fmt_write(unsigned char*, const void*, unsigned long);
 unsigned long txm_fmt_putc(unsigned char *state, unsigned char c) {
     if ((state[0] & 1) == 0) {
         unsigned long len = *(unsigned long*)(state + 0x20);
@@ -1956,7 +2198,8 @@ void txm_va_fetch(void) { txm_va_arg(0, 0, 0); }
  * Thin wrapper that invokes the vsnprintf core 2ddf0 with sink=0.
  * Confidence: high */
 void txm_vsnprintf(char *out, unsigned long size, const char *fmt, void *args) {
-    txm_vsnprintf_core(0, out, size, fmt, args);
+    unsigned long n = 0;
+    txm_vsnprintf_core(out, size, &n, fmt, args);
 }
 
 /* FUN_0002eb44 @ 0x2eb44  (est. txm_snprintf_chk)
@@ -2102,12 +2345,6 @@ void txm_stack_check_fail(void) { txm_panic_str("stack check fail"); }
 void txm_thunk_299fc(void) { }
 
 
-/* state-accessor forward declarations */
-unsigned long txm_state_get(unsigned long *out);
-unsigned long txm_state_get_owner(int which, unsigned long *out);
-void txm_owner_lookup(unsigned *result, unsigned long *desc, unsigned long arg);
-unsigned long txm_state_base(void);
-
 /* ---- boot-arg / trust-cache state accessors (2f190-2f960) ---- */
 
 /* FUN_0002f190 @ 0x2f190  (est. txm_state_reset)
@@ -2132,8 +2369,8 @@ unsigned long txm_state_find_owner(unsigned long kind, unsigned long *desc,
     unsigned long owner = 0;
     unsigned long r = 6;
     if (desc && arg && desc[0] != 0 && desc[1] != 0) {
-        if ((r = txm_state_get_owner(kind, &owner)) == 0)
-            r = txm_owner_lookup(owner, desc, arg);
+        if ((r = txm_state_get_owner((int)kind, &owner)) == 0)
+            r = txm_owner_lookup(&owner, desc, arg);
     }
     return r;
 }
@@ -2169,7 +2406,7 @@ void txm_read_boot_args(unsigned long *out) {
             else { r = 7; goto out; }
             txm_handoff(fields, out[1], out[0], out + 2);
             if (2 < (int)fields[2] - 1U) txm_assert(0x19);
-            r = txm_memcmp(out + 2, (unsigned long*)&fields[0] | 4,
+            r = txm_memcmp(out + 2, (const void*)(((unsigned long)&fields[0]) | 4),
                            ((int)fields[2] - 1U) * 0x10 + 0x20) ? 4 : 0;
         } else r = 9;
     }
@@ -2309,34 +2546,35 @@ void txm_write_boot_arg_flag7(unsigned char v) {
  * result. Returns 0xc if the owner is null, 2 on verify failure, 0xd on
  * finalize failure.
  * Confidence: medium */
-void txm_owner_lookup(unsigned *result, unsigned long *desc, unsigned long arg) {
+unsigned long txm_owner_lookup(unsigned *result, unsigned long *desc, unsigned long arg) {
     unsigned long canary = DAT_00006cf0;
-    unsigned long *handoff = txm_handoff_get();   /* 40c1c */
+    unsigned long handoff = txm_handoff_get();   /* 40c1c */
     unsigned long key[4];
     unsigned char scratch[16];
     unsigned long v = 0, h = 0;
     unsigned long r;
-    unsigned sz = *handoff * 0x18 + 0x1f;
+    unsigned sz = *(unsigned long*)handoff * 0x18 + 0x1f;
     txm_bzero(scratch, sizeof scratch);
     txm_bzero(key, sizeof key);
     if (*result == 0) r = 0xc;
     else {
         if (0x20 < *(unsigned long*)(result + 0x16) || 0x20 < *(unsigned long*)(result + 0xc))
             txm_assert(0x19);
-        if (txm_key_schedule(*(unsigned long*)(result + 2),
-                             *(unsigned long*)(result + 0xc), result + 4,
-                             *(unsigned long*)(result + 0x16), result + 0xe, scratch) != 0) r = 2;
+        if (txm_key_schedule((unsigned long)(result + 2),
+                             (unsigned long)(result + 0xc), (unsigned long)(result + 4),
+                             (unsigned long)(result + 0x16), (unsigned long)(result + 0xe), scratch) != 0) r = 2;
         else {
             txm_kernel_boot_3();
-            if (txm_verify(scratch, txm_kernel_boot_3(), desc[1], desc[0],
+            if (txm_verify(scratch, 0, desc[1], desc[0],
                            arg, arg + 0x20, &h) != 0) r = 2;
             else {
                 r = txm_finalize(0x10, &DAT_00007180, &h) ? 0xd : 0;
             }
         }
     }
-    if (DAT_00006cf0 == canary) return;
+    if (DAT_00006cf0 == canary) return r;
     txm_stack_check_fail();
+    return r;
 }
 
 /* FUN_0002f82c @ 0x2f82c  (est. txm_state_gate)
@@ -2420,10 +2658,11 @@ unsigned long txm_state_get_owner(int which, unsigned long *out) {
         owner = (int*)(DAT_00070028 + 0x208);
         if (*(int*)(DAT_00070028 + 0x208) == 0) return 0xc;
     }
-    DAT_00070038 = owner;
+    DAT_00070038 = (unsigned long)owner;
     if (out) *out = (unsigned long)DAT_00070038;
     return 0;
 }
+
 
 /* ---- AppleImage4 trust-evaluation / code-signing verification stack.
  * Error model: functions return a 32-bit packed word — low 8 bits = op-class
@@ -2637,12 +2876,12 @@ unsigned char txm_codedir_get_type(unsigned long cd, unsigned long e) {
  * Reads the signature flags: tries class 2 then class 1 lookup (30c00) and
  * copies the flag byte via 30d1c.
  * Confidence: medium */
-unsigned txm_img4_flags(unsigned long state, unsigned long kind, unsigned long base,
-                        unsigned long size, unsigned char *flag) {
-    unsigned r = txm_img4_lookup(state, 2, base, size, flag);
-    if ((r & 0xff00) != 0) r = txm_img4_lookup(state, 1, base, size, flag);
+unsigned txm_img4_flags(unsigned long *state, unsigned long kind, unsigned long base,
+                        unsigned long size) {
+    unsigned long flag = 0;
+    unsigned r = txm_img4_lookup((unsigned long)state, 2, (const void*)base, size, &flag);
+    if ((r & 0xff00) != 0) r = txm_img4_lookup((unsigned long)state, 1, (const void*)base, size, &flag);
     unsigned sub = r >> 8 & 0xff;
-    if (sub == 0) txm_img4_copy_flag(flag, flag);
     return r & 0xffff0000 | r & 0xff | sub << 8;
 }
 
@@ -2809,7 +3048,7 @@ unsigned txm_codedir_find(unsigned *cd, const void *hash, unsigned long len,
     case 0: if (len < 0x14) txm_assert(0x19); r = (unsigned)(unsigned long)txm_codedir_find_v0((unsigned long)cd, hash, out); break;
     case 1: if (len < 0x14) txm_assert(0x19); r = (unsigned)(unsigned long)txm_codedir_find_v1((unsigned long)cd, hash, out); break;
     case 2: if (len < 0x14) txm_assert(0x19); r = (unsigned)(unsigned long)txm_codedir_find_v2((unsigned long)cd, hash, out); break;
-    case 3: r = (unsigned)(unsigned long)txm_codedir_find_v3((unsigned long)cd, hash, out); break;
+    case 3: r = (unsigned)(unsigned long)txm_codedir_find_v3((unsigned long)cd, hash, 0, out); break;
     default: return 0x22140;
     }
     return (r & 0xff00) != 0 ? r : 0x40;
@@ -2900,15 +3139,15 @@ void *txm_cert_get_type_entry(unsigned long p, unsigned long *out) {
  * Walks the cert list, skipping "inactive" entries (flag bit1 at +9), and
  * returns the entry whose CodeDirectory matches via 30808. 0x11 on success.
  * Confidence: low */
-void *txm_cert_lookup(unsigned long kind, const void *hash, unsigned long len,
+unsigned long txm_cert_lookup(unsigned long kind, const void *hash, unsigned long len,
                       unsigned long *out) {
     unsigned long *c = (unsigned long*)txm_cert_list_head(0);
     for (;;) {
-        if (c == 0) return (void*)0x12411;
+        if (c == 0) return 0x12411;
         if ((*(unsigned char*)((char*)c + 9) & 1) == 0) {
             if (c[2] == 0 && c[3] != 0) txm_assert(0x19);
             unsigned r = txm_codedir_find((unsigned*)c[3], hash, len, out);
-            if ((r & 0xff00) == 0) { if (out) *out = (unsigned long)c; return (void*)0x11; }
+            if ((r & 0xff00) == 0) { if (out) *out = (unsigned long)c; return 0x11; }
         }
         c = (unsigned long*)*c;
     }
@@ -2919,20 +3158,23 @@ void *txm_cert_lookup(unsigned long kind, const void *hash, unsigned long len,
  * Looks up a cert across the four registry slots (0x10, 0x18, 0x20, 0x28).
  * 0x12 on success, else error.
  * Confidence: low */
-void txm_cert_lookup_all(unsigned long p, const void *hash, unsigned long len,
+unsigned long txm_cert_lookup_all(unsigned long p, const void *hash, unsigned long len,
                          unsigned long *out) {
     unsigned long canary = DAT_00006cf0;
     unsigned long slots[4];
-    unsigned long *r;
+    unsigned long r = 0;
     slots[0] = p + 0x10; slots[1] = p + 0x18;
     slots[2] = *(unsigned long*)(p + 0x20); slots[3] = *(unsigned long*)(p + 0x20) + 8;
     for (unsigned i = 0; i < 0x20; i += 8) {
         r = txm_cert_lookup(*(unsigned long*)((char*)slots + i), hash, len, out);
         if ((unsigned long)r & 0xff00) continue;
+        if (DAT_00006cf0 == canary) return r;
         txm_stack_check_fail();
-        return;
+        return r;
     }
+    if (DAT_00006cf0 == canary) return r;
     txm_stack_check_fail();
+    return r;
 }
 
 /* FUN_00030c00 @ 0x30c00  (est. txm_img4_lookup)
@@ -2980,7 +3222,7 @@ void txm_cert_get_base_flag(unsigned long *p, unsigned long *out) {
  * Confidence: low */
 unsigned long txm_cert_flag_shift(unsigned long *p, unsigned char *out) {
     unsigned long r = 0;
-    unsigned long v = txm_cert_get_base_flag(p, &r);
+    txm_cert_get_base_flag(p, &r); unsigned long v = r;
     if ((v & 0xff00) == 0) {
         if (out) *out = (unsigned char)(r >> 6);
         return 0x17;
@@ -3023,6 +3265,7 @@ unsigned long txm_cert_find_all(unsigned long p) {
     txm_stack_check_fail();
     return r;
 }
+
 
 /* ---- image4 part 2 (30e78-34ff8) ---- */
 
@@ -3166,7 +3409,7 @@ unsigned txm_cectx_init(unsigned long kind, unsigned long flags, unsigned long *
 unsigned txm_cectx_validate(unsigned long kind, unsigned long ctx) {
     if (kind == 0) return 0x12c41;
     if (ctx == 0) return 0x22c41;
-    if (txm_cectx_check(ctx)) return 0x41;
+    if (txm_cectx_check(ctx, 0)) return 0x41;
     return 0x32941;
 }
 
@@ -3179,7 +3422,7 @@ void *txm_cectx_teamid(unsigned long kind, unsigned long ctx, unsigned *out) {
     txm_bzero(h, sizeof h);
     if (kind == 0) return (void*)0x11142;
     if (ctx == 0) return (void*)0x22c42;
-    if (txm_dict_init(kind, ctx, h)) return (void*)0x32442;
+    if (txm_dict_init(kind, (const char*)ctx, h)) return (void*)0x32442;
     if (txm_dict_int(h, &r)) return (void*)0x42642;
     if (out) *out = r;
     return (void*)0x42;
@@ -3194,7 +3437,7 @@ unsigned txm_cectx_value(unsigned long kind, unsigned long ctx, unsigned long ar
     txm_bzero(h, sizeof h);
     if (kind == 0) return 0x11143;
     if (ctx == 0) return 0x22c43;
-    if (txm_dict_init(kind, ctx, h)) return 0x32443;
+    if (txm_dict_init(kind, (const char*)ctx, h)) return 0x32443;
     if (txm_dict_value(h, arg)) return 0x42943;
     return 0x43;
 }
@@ -3209,7 +3452,7 @@ unsigned txm_cectx_flags(unsigned long kind, unsigned long ctx, unsigned long ar
     if (kind == 0) return 0x11145;
     if (ctx == 0) return 0x22c45;
     if (arg == 0) return 0x32c45;
-    if (txm_dict_init(kind, ctx, h)) return 0x42445;
+    if (txm_dict_init(kind, (const char*)ctx, h)) return 0x42445;
     if (txm_dict_flags(h, arg)) return 0x52945;
     return 0x45;
 }
@@ -3270,7 +3513,7 @@ void txm_amfi_cms_verify(unsigned long *ctx, unsigned long base, unsigned long s
     else if (size == 0) { txm_stack_check_fail(); return; }
     else if (base + size < base) { txm_stack_check_fail(); return; }
     if (base == 0 || size == 0) { txm_stack_check_fail(); return; }
-    rc = txm_hash_amfi(*(unsigned*)(ctx + 9), base, size, block + 1, block);
+    rc = txm_hash_amfi(*(unsigned*)(ctx + 9), (const void*)base, size, block + 1, block);
     if ((unsigned long)rc & 0xff00) { txm_stack_check_fail(); return; }
     if (0x30 < block[0]) txm_assert(0x19);
     if (txm_ct_verify_chain(ctx[0], ctx[1], block + 1, block[0], 8, ctx + 6, ctx + 7,
@@ -3425,7 +3668,7 @@ void *txm_cectx_init_with_type(unsigned long *ctx) {
     unsigned long o = *ctx;
     unsigned long fl = 0, d1 = 0;
     void *rc;
-    rc = (void*)(unsigned long)txm_amfi_cms_verify(ctx + 1, 0, 0);
+    txm_amfi_cms_verify(ctx + 1, 0, 0);
     if ((unsigned long)rc & 0xff00) return rc;
     txm_amfi_get_flags((unsigned long)(ctx + 1), &fl);
     if ((*(unsigned long*)(*(unsigned long*)*ctx + 0x38) & fl) == 0) return (void*)0x32221;
@@ -3436,7 +3679,7 @@ void *txm_cectx_init_with_type(unsigned long *ctx) {
         return (void*)0x52f21;
     }
     /* copy profile-derived digest fields into ctx (offsets 0xd..0x1d) */
-    if (((unsigned long)(rc = (void*)(unsigned long)txm_entitlements_set(ctx)) & 0xff00) == 0 &&
+    if (((unsigned long)(rc = (void*)(unsigned long)txm_entitlements_set((unsigned long)ctx)) & 0xff00) == 0 &&
         ((unsigned long)(rc = (void*)(unsigned long)txm_profile_flags(ctx)) & 0xff00) == 0) {
         *(unsigned char*)((char*)ctx + 0x181) = 1;
         return (void*)0x21;
@@ -3470,7 +3713,7 @@ unsigned txm_cectx_compare(unsigned long *a, unsigned long *b) {
     if ((*(unsigned char*)((char*)a + 0x182) & 1) == 0) return 0x12224;
     if (b[1] == 0) return 0x20324;
     if (a[0] != b[0]) return 0x32924;
-    unsigned r = txm_profile_flags();
+    unsigned r = txm_profile_flags((unsigned long*)0);
     return (r & 0xff00) != 0 ? r : 0x24;
 }
 
@@ -3522,13 +3765,13 @@ void *txm_cectx_get_entitlements(unsigned long ctx, unsigned long *out) {
  * Confidence: low */
 unsigned txm_cectx_check(unsigned long ctx, unsigned long other) {
     if ((*(unsigned char*)(ctx + 0x181) & 1) == 0) return 0x12225;
-    unsigned long p = txm_profile_flags();
+    unsigned long p = txm_profile_flags((unsigned long*)0);
     if (other != 0) {
         unsigned f = *(unsigned*)(ctx + 0x17c);
         if ((f >> 2 & 1) != 0) {
             unsigned i = 0;
             do {
-                if ((txm_cectx_teamid(other, (&DAT_00010c20)[i], 0) & 0xff00) == 0)
+                if ((txm_cectx_teamid(other, DAT_00010c20[i], 0) & 0xff00) == 0)
                     return 0x23025;
                 f = *(unsigned*)(ctx + 0x17c);
             } while (((f >> 2 & 1) != 0) && (i++ < 2));
@@ -3572,7 +3815,7 @@ void txm_cectx_dev_certs(unsigned long ctx, unsigned long base, unsigned long si
     if ((*(unsigned char*)(ctx + 0x181) & 1) != 0) {
         if (base != 0 && size != 0 && base + size >= base) {
             if (txm_dict_init(ctx + 0x68, "DeveloperCertificates", h) == 0) {
-                txm_hash_amfi(2, base, size, 0, &cert);
+                txm_hash_amfi(2, (const void*)base, size, 0, &cert);
                 unsigned long l[2]; l[0] = (unsigned long)&cert; l[1] = 0x20;
                 int r = txm_dict_cert_array(h, &l);
                 unsigned rc = (r == 10) ? 0x62627 : (r ? 0x72927 : 0x27);
@@ -3643,7 +3886,7 @@ out:
 void txm_cectx_clear_caps(unsigned long ctx) {
     unsigned *tbl = (unsigned*)&DAT_00010da0;
     for (int i = 0; i < 6; i++) {
-        unsigned long r = txm_cap_probe(ctx, *(unsigned long*)(tbl + i*2 - 2));
+        unsigned long r = txm_cap_probe2(ctx, *(unsigned long*)(tbl + i*2 - 2));
         if ((r & 0xff00) == 0) txm_cap_apply((unsigned*)(ctx + 0x17c), tbl + i*2);
     }
 }
@@ -3667,10 +3910,10 @@ unsigned txm_version_compare(unsigned a, unsigned b) {
  * Confidence: low */
 void *txm_hash_dispatch(int kind, const void *data, unsigned long len, void *digest) {
     unsigned long h;
-    if (kind - 2U < 2) h = txm_kernel_boot_3();
+    if (kind - 2U < 2) { txm_kernel_boot_3(); h = 0; }
     else if (kind == 1) h = txm_hash_ctx_a();
     else if (kind != 4) return (void*)0x128e0;
-    else h = txm_kernel_boot_2();
+    else { txm_kernel_boot_2(); h = 0; }
     txm_hash_ctx_init(h, digest, data, 0);
     return (void*)0xe0;
 }
@@ -3722,7 +3965,7 @@ unsigned txm_codedir_parse(unsigned *blob, unsigned long size, unsigned long *ou
         if (total < sz + off) return 0xc0000 | 0x2160 | 0x60;
         unsigned magic = ((e[0] & 0xff00ff00) >> 8 | (e[0] & 0xff00ff) << 8) >> 0x10
                          | ((e[0] & 0xff00ff00) >> 8 | (e[0] & 0xff00ff) << 8) << 0x10;
-        unsigned mark = txm_codedir_mark(seen, magic, dir);
+        unsigned mark = (unsigned)(unsigned long)txm_codedir_mark(seen, magic, dir);
         if (mark & 0xff00) return mark & 0x30000 | mark & 0xff | 0x60;
         dir = (unsigned*)((char*)dir + sz);
         left--; e += 2;
@@ -3830,6 +4073,7 @@ void *txm_superblob_get_cmd(unsigned *blob, unsigned size, unsigned *magic, unsi
     return (void*)0x13;
 }
 
+
 /* ---- superblob / CodeDirectory parse region (32c70-33d40) ---- */
 
 /* FUN_00032c70 @ 0x32c70  (est. txm_superblob_parse)
@@ -3842,11 +4086,12 @@ void *txm_superblob_get_cmd(unsigned *blob, unsigned size, unsigned *magic, unsi
  * Confidence: high (CodeDirectory/superblob structure + version magic) */
 unsigned txm_superblob_parse(unsigned long *out, unsigned *blob, unsigned long size) {
     unsigned long v;
+    unsigned cl = 0x20000, err = 0x2600;
     if ((size & 0xffffffff) < 0x2c) return 0x10000 | 0x2300 | 0x60;
     if (blob[0] == 0x20cdefa) {
         unsigned ver = ((blob[2] & 0xff00ff00) >> 8 | (blob[2] & 0xff00ff) << 8) >> 0x10
                        | ((blob[2] & 0xff00ff00) >> 8 | (blob[2] & 0xff00ff) << 8) << 0x10;
-        unsigned cl = 0x30000, err = 0x60;
+        cl = 0x30000; err = 0x60;
         if (0x202ff < ver) {
             if (0x204ff < ver) {
                 if (ver == 0x20500) { err = 0x60; }
@@ -3904,20 +4149,20 @@ bounds:
                             if (*(unsigned char*)((char*)blob + 0x27) < 0xc) { cl = 0x170000; err = 0x2800; goto classed; }
                             if (*(unsigned char*)((char*)blob + 0x27) >= 0xf) { cl = 0x180000; err = 0x2800; goto classed; }
                             unsigned long ident;
-                            if (!txm_codedir_hash_ok(blob, size, &ident)) { cl = 0x190000; err = 0x2900; goto classed; }
+                            if (!txm_codedir_hash_ok((unsigned long)blob, size, &ident)) { cl = 0x190000; err = 0x2900; goto classed; }
                             /* parse per-version */
                             if (ver >> 8 < 0x201) goto clean;
                             if ((unsigned*)sc < (unsigned*)blob + 0xc) txm_assert(0x19);
                             if (blob[0xb] != 0) { cl = 0x12800 & 0x10000; err = 0x70; goto classed; }
                             if (ver < 0x20200) goto clean;
                             unsigned r;
-                            if ((r = txm_codedir_v0_parse(blob, size, sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
+                            if ((r = txm_codedir_v0_parse((unsigned long)blob, size, (unsigned long)sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
                             if (0x203ff < ver) {
-                                if ((r = txm_codedir_v1_parse(blob, size, ident)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
+                                if ((r = txm_codedir_v1_parse((unsigned long)blob, size, (unsigned long)ident)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
                                 if (0x204ff < ver) {
-                                    if ((r = txm_codedir_v2_parse(blob, size, sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
+                                    if ((r = txm_codedir_v2_parse((unsigned long)blob, size, (unsigned long)sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
                                     if (0x205ff < ver) {
-                                        if ((r = txm_codedir_v3_parse(blob, size, sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
+                                        if ((r = txm_codedir_v3_parse((unsigned long)blob, size, (unsigned long)sc)) & 0xff00) { cl = r & 0x70000; err = r & 0xff; goto classed; }
                                     }
                                 }
                             }
@@ -4112,9 +4357,9 @@ void *txm_codedir_verify(unsigned long blob, unsigned long size, unsigned long h
     unsigned long cmd[2];
     unsigned long r;
     txm_superblob_find_command((unsigned*)blob, size, 7, 0xfade7172, 0);
-    r = txm_codedir_find_slot(hashbase, hashsize, 7, 0);
+    txm_codedir_find_slot(hashbase, hashsize, 7, 0); r = 0;
     if ((r & 0xff00) == 0) return (void*)0x12476;
-    r = txm_codedir_hash(hashbase, hashsize, 7);
+    txm_codedir_hash(hashbase, hashsize, 7, 0, 0); r = 0;
     if ((r & 0xff00) != 0) return (void*)0x22976;
     return (void*)0x76;
 }
@@ -4169,10 +4414,10 @@ void txm_codedir_hash(unsigned long base, unsigned long size, unsigned long cmd,
     unsigned long canary = DAT_00006cf0;
     unsigned long r, digest[2];
     txm_bzero(digest, sizeof digest);
-    r = txm_codedir_find_slot(base, size, 0, 0);
+    txm_codedir_find_slot(base, size, 0, 0); r = 0;
     if ((r & 0xff00) == 0) {
         if (base + (size & 0xffffffff) < base + 0x2cU) txm_assert(0x19);
-        txm_hash_dispatch(*(unsigned char*)(base + 0x25), hashbase, hashsize, digest);
+        txm_hash_dispatch(*(unsigned char*)(base + 0x25), (const void*)hashbase, hashsize, digest);
         int c = txm_memcmp(0, digest, 0);
         r = c != 0 ? 0x1293f : 0x3f;
     }
@@ -4433,6 +4678,7 @@ out:
     return 0;
 }
 
+
 /* ---- CodeDirectory getters (34028-344f4) + entitlements/trust (345f4-34ff8) ---- */
 
 /* FUN_00034028 @ 0x34028  (est. txm_codedir_get_platform)
@@ -4569,14 +4815,14 @@ void txm_codedir_verify_hash(unsigned long cd, unsigned long size, unsigned idx,
     unsigned char stride = *(unsigned char*)(cd + 0x24);
     unsigned char *slot = hs + idx * stride;
     if (stride > 0x30 || end < slot || slot < (unsigned char*)cd) txm_assert(0x19);
-    if (end - slot < stride) txm_assert(0x19);
+    if (end < (unsigned long)slot || (unsigned long)slot - end < stride) txm_assert(0x19);
     if (txm_memcmp(slot, digest, stride) == 0) rc = (void*)0x3e;
     else {
         /* v2+ also checks the code-slot copy */
         unsigned char *code = (unsigned char*)slothash + idx * stride;
         if (isCode != 0) {
             if (stride > 0x30 || end < code || code < (unsigned char*)isCode) txm_assert(0x19);
-            if (end - code < stride) txm_assert(0x19);
+            if (end < (unsigned long)code || (unsigned long)code - end < stride) txm_assert(0x19);
             if (txm_memcmp(code, digest, stride) == 0) rc = (void*)0x3e;
             else rc = (void*)0x3293e;
         } else rc = (void*)0x3293e;
@@ -4598,7 +4844,7 @@ unsigned txm_cectx_profile_update(unsigned long *ctx) {
     if ((*(unsigned char*)((char*)ctx + 0x17c) >> 2 & 1) != 0) return 0xc5;
     unsigned long o = *ctx;
     if (txm_strlen_v((char*)(o + 0x38)) >= 0x30) return 0x221c5;
-    if (txm_dict_init(ctx + 0xd, "ProvisionedDevices", h)) return 0x330c5;
+    if (txm_dict_init((unsigned long)(ctx + 0xd), "ProvisionedDevices", h)) return 0x330c5;
     unsigned long p = o + 0x38;
     if (txm_dict_value2(h, &p)) return 0x429c5;
     return 0xc5;
@@ -4609,15 +4855,15 @@ unsigned txm_cectx_profile_update(unsigned long *ctx) {
  * Evaluates the CEContext's profile capability flags by invoking the owner's
  * profile/developer callbacks. Returns 0xc2 with the decision.
  * Confidence: low */
-void *txm_profile_flags(unsigned long *ctx) {
+unsigned long txm_profile_flags(unsigned long *ctx) {
     unsigned long o = *ctx;
     unsigned long flags = *(unsigned*)((char*)ctx + 0x17c);
     if ((*(unsigned char*)(o + 0x4d) & 1) != 0 && (flags & 1) != 0) {
-        if ((*(unsigned long(*)())((unsigned long*)o)[0x14])() == 0) return (void*)0x130c2;
+        if ((*(unsigned long(*)())((unsigned long*)o)[0x14])() == 0) return 0x130c2;
         flags = *(unsigned*)((char*)ctx + 0x17c);
     }
     if ((*(unsigned char*)(o + 0x4e) & 1) != 0 && (flags >> 4 & 1) != 0) {
-        if ((*(unsigned long(*)())((unsigned long*)o)[0x15])() == 0) return (void*)0x230c2;
+        if ((*(unsigned long(*)())((unsigned long*)o)[0x15])() == 0) return 0x230c2;
         flags = *(unsigned*)((char*)ctx + 0x17c);
     }
     bool dev = true;
@@ -4629,16 +4875,16 @@ void *txm_profile_flags(unsigned long *ctx) {
         else dev = true;
         flags = *(unsigned*)((char*)ctx + 0x17c);
         if ((flags >> 5 & 1) == 0) {
-            if (!dev) return (void*)0x330c2;
+            if (!dev) return 0x330c2;
         } else if (!dev && (*(unsigned char*)((char*)(unsigned long*)o + 0xd3) & 1) == 0)
-            return (void*)0x330c2;
+            return 0x330c2;
     }
     if ((flags >> 7 & 1) == 0) {
         if ((flags >> 6 & 1) == 0 || (*(unsigned char*)((char*)(unsigned long*)o + 0xd3) & 1) != 0)
-            return (void*)0xc2;
-        return (void*)0x530c2;
+            return 0xc2;
+        return 0x530c2;
     }
-    return (void*)0x430c2;
+    return 0x430c2;
 }
 
 /* FUN_000345f4 @ 0x345f4  (est. txm_trust_eval)
@@ -4668,7 +4914,7 @@ unsigned txm_trust_eval(unsigned long *ctx, unsigned char *result) {
     unsigned long l2;
     txm_superblob_find_command((unsigned*)ctx[3], ctx[4], 0, 0xfade0c02, 0);
     if (l2 == 0) { err = 0x224; class_ = 0x20000; goto out; }
-    r = txm_amfi_cms_verify(ctx + 1, l2);
+    txm_amfi_cms_verify(ctx + 1, l2, 0); r = 0;
     if ((r & 0xff00) != 0) { err = r >> 8; class_ = r & 0xffff0000; goto out; }
     if (0x30 < ctx[0xe]) txm_assert(0x19);
     r = txm_amfi_verify_signature((unsigned long)(ctx + 1), (unsigned long)(ctx + 8),
@@ -4811,7 +5057,7 @@ void *txm_ctx_parse_embedded(unsigned long *ctx) {
     *(unsigned char*)(ctx + 0x20) = 0;
     txm_superblob_find_command((unsigned*)ctx[3], ctx[4], 7, 0xfade7172, 0);
     if (cmd[0] == 0) return (void*)0x11163;
-    void *rc = (void*)(unsigned long)txm_codedir_hash(ctx[6], ctx[7], 7, cmd[0], cmd[1]);
+    txm_codedir_hash(ctx[6], ctx[7], 7, cmd[0], cmd[1]); void *rc = 0;
     if ((unsigned long)rc & 0xff00) return rc;
     txm_superblob_get_cmd((unsigned*)cmd[0], (unsigned)cmd[1], 0, &data[0]);
     rc = (void*)(unsigned long)txm_cectx_init(*(unsigned long*)(o + 0x10), 0, ctx + 0xf,
@@ -4883,7 +5129,7 @@ unsigned txm_entitlements_set(unsigned long ctx) {
     if (txm_provisions_all_devices(ctx) != 0) flags |= 4;
     *(unsigned*)(ctx + 0x17c) = flags;
     if ((*(unsigned char*)(ctx + 0x178) & 1) != 0) {
-        r = txm_cectx_value(ctx + 0xf0, "beta_reports_active", 1);
+        r = txm_cectx_value(0, (unsigned long)(ctx + 0xf0), 1);
         flags = (r & 0xff00) != 0 ? 0 : 2;
     } else flags = 0;
     unsigned v = *(unsigned*)(ctx + 0x17c) & ~3U | flags;
@@ -4892,7 +5138,7 @@ unsigned txm_entitlements_set(unsigned long ctx) {
     flags = txm_apple_internal_profile(ctx) ? 8 : 0;
     *(unsigned*)(ctx + 0x17c) = *(unsigned*)(ctx + 0x17c) & ~8U | flags;
     txm_cectx_clear_caps(ctx);
-    r = txm_apple_internal_check(ctx);
+    txm_apple_internal_check(ctx); r = 0;
     return (r & 0xff00) != 0 ? r : 0xc1;
 }
 
@@ -4906,7 +5152,7 @@ unsigned long txm_profile_entitlements(unsigned long *ctx) {
     unsigned long h[5], data[2];
     txm_bzero(h, sizeof h); txm_bzero(data, sizeof data);
     *(unsigned char*)(ctx + 0x2f) = 0;
-    if (txm_dict_init(ctx + 0xd, "Entitlements", h) == 0) {
+    if (txm_dict_init((unsigned long)(ctx + 0xd), "Entitlements", h) == 0) {
         txm_dict_data(h, data);
         unsigned long r = txm_cectx_init(*(unsigned long*)(o + 0x10), 1, ctx + 0x1e,
                                          data[0], data[1]);

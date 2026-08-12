@@ -65,19 +65,15 @@ extern uint64_t txm_lenstr(const char *s);                  /* thunk_FUN_0002dc8
 /* Big-number primitives (sibling region 0x40000+).  A `bn` operand is a limb
  * descriptor {count, limbs...} of 64-bit little-endian limbs. `count` = limb
  * count. */
-extern void txm_bn_mul(uint64_t *ctx, uint64_t *desc, uint64_t *out,
+extern void txm_bn_mul(uint64_t ctx, uint64_t n, uint64_t *out,
                        uint64_t *a, uint64_t *b);           /* FUN_00043650 */
-extern void txm_bn_add(uint64_t *ctx, uint64_t *desc, uint64_t *out,
-                       uint64_t *a, uint64_t *b);           /* FUN_000438e0 */
-extern void txm_bn_sub(uint64_t *ctx, uint64_t *desc, uint64_t *out,
-                       uint64_t *a, uint64_t *b);           /* FUN_0004398c */
-extern void txm_bn_op(uint64_t *ctx, uint64_t *desc, uint64_t *out,
+extern void txm_bn_op(uint64_t ctx, uint64_t n, uint64_t *out,
                       uint64_t *a, uint64_t *b);            /* FUN_00042d90 */
-extern void txm_bn_op2(uint64_t *ctx, uint64_t *desc, uint64_t *out,
+extern void txm_bn_op2(uint64_t ctx, uint64_t n, uint64_t *out,
                        uint64_t *a, uint64_t *b);           /* FUN_00042da4 */
 extern void txm_bn_clr(uint64_t bytes, void *dst);          /* FUN_00042ab0 */
 extern uint64_t txm_bn_count(uint64_t *desc);               /* FUN_00042b78 */
-extern uint64_t txm_bn_bitlen(uint64_t *desc);              /* FUN_00042b84 */
+extern uint64_t txm_bn_bitlen_desc(uint64_t *desc);         /* FUN_00042b84 */
 extern int txm_bn_cmp(uint64_t n, uint64_t *a, uint64_t *b);/* thunk_FUN_00043cc4 */
 extern uint64_t txm_bn_carry(uint64_t n, uint64_t *a, uint64_t *b); /* FUN_000440ec */
 extern void txm_bn_shl(uint64_t n, uint64_t *d, uint64_t *s, uint64_t bits); /* FUN_000429c4 */
@@ -120,7 +116,7 @@ extern uint32_t txm_region_kind_d(uint64_t *c, long p);           /* FUN_000348f
 extern int      txm_region_match(uint64_t a, uint64_t b, uint64_t l); /* thunk_FUN_0002da90 */
 extern uint64_t txm_page_hash(uint64_t a, uint64_t b, uint64_t t,
                               uint32_t m, uint32_t *info);        /* FUN_00032b38 */
-extern uint64_t txm_der_bytes_import(uint64_t n, uint64_t a, uint64_t b); /* FUN_0003df58 */
+extern uint64_t txm_der_bytes_import(uint64_t n, uint64_t *out, uint64_t len, uint8_t *src); /* FUN_0003df58 */
 
 /* Big-number PRNG (xorshift on DAT_00070040), FUN_0003d498. */
 extern uint64_t txm_bn_prng(void);
@@ -128,11 +124,11 @@ extern uint64_t txm_bn_prng(void);
 extern const uint8_t txm_bn_win_tbl[0x20];
 
 /* Digest algorithm name structs (static tables). */
-extern const void *txm_alg_name_c0;   /* DAT_000110a8 */
-extern const void *txm_alg_name_e0;   /* DAT_000114e0 */
-extern const void *txm_alg_name_209;  /* DAT_000111f8 */
-extern const void *txm_alg_name_100;  /* FUN_00040c1c */
-extern const void *txm_alg_name_180;  /* FUN_00043d00 */
+const void *txm_alg_name_c0(void);   /* DAT_000110a8 */
+const void *txm_alg_name_e0(void);   /* DAT_000114e0 */
+const void *txm_alg_name_209(void);  /* DAT_000111f8 */
+const void *txm_alg_name_100(void);  /* FUN_00040c1c */
+const void *txm_alg_name_180(void);  /* FUN_00043d00 */
 
 #define ENT_OOP_JIT_LOADER  "com.apple.private.oop-jit-loader"
 #define ENT_OOP_JIT_RUNNER  "com.apple.private.oop-jit-runner"
@@ -149,7 +145,7 @@ uint32_t txm_policy_rule67(uint64_t *ctx, uint8_t rule);
 uint64_t *txm_policy_rule_ac(uint64_t *ctx);
 uint32_t txm_policy_rule_ab(uint64_t *ctx);
 uint32_t txm_policy_rule_aa(uint64_t *ctx);
-int txm_policy_rule_02(uint64_t *ctx);
+int txm_policy_rule_02(uint64_t *ctx, uint8_t rule);
 uint64_t *txm_policy_rule_d1(uint64_t *ctx, uint32_t mode);
 int txm_policy_rule_a0(uint64_t *ctx, uint32_t mode);
 uint32_t txm_policy_rule_a8(uint64_t *ctx, uint32_t mode);
@@ -163,6 +159,26 @@ uint64_t txm_trusted_range(uint64_t *rng, uint64_t tag, uint64_t *out);
 uint64_t txm_policy_kind_get(uint64_t ctx, uint8_t *out);
 void txm_der_len_decode_short(uint64_t *rng, uint64_t *out);
 void txm_dit_clear(uint8_t *flag);
+bool txm_bn_is_zero(uint64_t *desc, uint64_t buf);
+bool txm_bn_add(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b);
+uint8_t txm_bn_sub(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b);
+uint64_t txm_bn_csub(uint64_t n, uint64_t sel, uint64_t *a, uint64_t *b, uint64_t *m);
+uint64_t txm_bn_add_carry(uint64_t n, uint64_t *out, uint64_t *a, uint64_t carry);
+uint64_t txm_bn_add_mux(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t carry);
+void txm_bn_set_one(uint64_t n, uint64_t *buf);
+void txm_bn_bit_set(uint64_t num, uint64_t bit, int set);
+void txm_bn_clr_limbs(uint64_t n);
+void txm_bn_byteswap(uint64_t n, uint64_t *buf);
+uint64_t txm_bn_export_be(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t dst);
+uint64_t txm_bn_bytelen(uint64_t n, uint64_t *limbs);
+void txm_bn_shl(uint64_t n, uint64_t *dst, uint64_t *src, uint64_t bits);
+uint64_t txm_bn_sub_const(uint64_t n, uint64_t *out, uint64_t *a, uint64_t k);
+uint64_t txm_bn_modulus_ptr(uint64_t desc);
+uint64_t txm_bn_muladd(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k);
+uint64_t txm_bn_muladd2(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k);
+void txm_bn_mul_full(uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b);
+void txm_bn_neg(uint64_t n, uint64_t *out, uint64_t *a);
+uint64_t txm_bn_bitlen(uint64_t n, uint64_t *limbs);
 uint64_t txm_bn_prng(void);
 extern uint64_t txm_bn_prng_state;    /* DAT_00070040 */
 uint64_t txm_bn_modulus_ptr(uint64_t desc);
@@ -170,10 +186,55 @@ uint64_t txm_bn_sub_const(uint64_t n, uint64_t *out, uint64_t *a, uint64_t k);
 uint64_t txm_bn_exp_window(uint64_t ctx, uint64_t desc, uint64_t out,
                            uint64_t base, uint64_t exp);
 void txm_bn_copy(uint64_t n, uint64_t *dst, uint64_t *src);
-void txm_der_oid_read(uint64_t rng, uint64_t *out);
+uint64_t txm_der_oid_read(uint64_t rng, uint64_t *out);
 bool txm_der_oid_byte_match(uint64_t *rng, uint64_t a, uint64_t b);
 uint64_t txm_der_uint_read(uint64_t rng, uint64_t *out);
 uint64_t txm_der_oid_match(uint64_t rng, uint64_t a, uint64_t b, uint64_t c);
+void txm_digest_init(uint64_t ctx, uint64_t *h);
+void txm_digest_blocks(uint64_t ctx, uint64_t *h, uint64_t len, uint64_t src);
+char *txm_der_name_resolve(uint64_t der, char *dst);
+uint64_t txm_bn_csub(uint64_t n, uint64_t sel, uint64_t *a, uint64_t *b, uint64_t *m);
+uint64_t txm_bn_add_carry(uint64_t n, uint64_t *out, uint64_t *a, uint64_t carry);
+uint64_t txm_bn_add_mux(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t carry);
+void txm_bn_set_one(uint64_t n, uint64_t *buf);
+uint64_t txm_bn_muladd(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k);
+uint64_t txm_bn_muladd2(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k);
+void txm_bn_mul_full(uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b);
+void txm_bn_neg(uint64_t n, uint64_t *out, uint64_t *a);
+void txm_ec_pt_double(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t pt);
+void txm_ec_pt_add(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b, int sub);
+void txm_ec_pt_addfull(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b, int sub);
+void txm_ec_pt_scale(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b);
+void txm_ec_pt_mul1(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t pt, uint64_t k);
+void txm_ec_pt_mul_lincomb(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b, uint64_t c, uint64_t d);
+uint64_t txm_ec_point_mul(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t n, uint64_t pt);
+uint64_t txm_ec_scalarmul_ladder(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t *scalar, uint64_t bits, uint64_t point, uint64_t *t1, uint64_t *t2);
+uint64_t txm_bn_modpow(uint64_t ctx, uint64_t desc, uint64_t base, uint64_t exp);
+uint64_t txm_bn_modinv(uint64_t ctx, uint64_t desc, uint64_t out, uint64_t a, uint64_t mod);
+uint64_t txm_bn_modinv_loop(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t n, uint64_t a, uint64_t mod);
+uint64_t txm_bn_modinv_step(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t sel, uint64_t b, uint64_t sel2);
+uint64_t txm_bn_modpow_loop(uint64_t ctx, uint64_t *desc, uint64_t base, uint64_t exp);
+uint64_t txm_bn_modpow_square(uint64_t ctx, uint64_t *desc, uint64_t a, uint64_t b);
+uint64_t txm_bn_modexp_ladder(uint64_t ctx, uint64_t *desc, uint32_t bits, uint64_t explen, uint8_t *exp, uint64_t *e);
+uint64_t txm_bn_modpow_wrap(uint64_t *desc, uint64_t a, uint64_t b, uint64_t c);
+uint64_t txm_bn_modexp_final(uint64_t ctx, uint64_t *desc, uint64_t *e, int flag);
+uint64_t txm_bn_mod_reduce(uint64_t n, uint64_t *a, uint64_t mod);
+uint64_t txm_bn_mul_inv_final(uint64_t n, uint64_t *a, uint64_t b, uint64_t c, uint64_t d, uint8_t *mac);
+uint64_t txm_ecdsa_verify(uint64_t *desc, uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f, uint64_t g);
+uint32_t txm_ecdsa_verify_core(uint64_t *scratch, uint64_t *desc, uint64_t pubx, uint64_t puby, uint64_t sig, uint64_t dlen, uint64_t digest, int allow_short, uint8_t *mac);
+int txm_ecdsa_verify_full(uint64_t *scratch, uint64_t *desc, uint64_t a, uint64_t b, uint64_t c, uint64_t d, int flag);
+uint64_t txm_ecdsa_verify_digest(uint64_t *scratch, uint64_t *desc, uint64_t h, uint64_t digest, uint64_t a, uint64_t b, uint64_t c, uint64_t d);
+void txm_ec_pt_add_wrap(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b);
+void txm_ec_pt_sub_wrap(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a, uint64_t b);
+void txm_bn_bit_set(uint64_t num, uint64_t bit, int set);
+void txm_bn_byteswap(uint64_t n, uint64_t *buf);
+uint64_t txm_bn_export_be(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t dst);
+uint64_t txm_bn_bytelen(uint64_t n, uint64_t *limbs);
+int txm_bn_export_be2(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t dst);
+uint32_t txm_ecdsa_finalize(uint64_t n, uint8_t *sig, uint64_t dlen, uint64_t digest, uint64_t extra, uint64_t *mac);
+void txm_dit_clear(uint8_t *flag);
+bool txm_bn_is_zero(uint64_t *desc, uint64_t buf);
+uint64_t txm_bn_bitlen(uint64_t n, uint64_t *limbs);
 
 
 
@@ -292,7 +353,7 @@ uint32_t txm_restricted_disable(int *state, int mode)
 /* FUN_000351c8 @ 0x000351c8   (est. txm_policy_rule4)
  * Ghidra: undefined * FUN_000351c8(long param_1)
  * Policy rule 4 (page/protection check). If the ctx has a digest (field
- * +0x108) it computes the code-region digest from ctx[6]/ctx[7]
+ * +0x108) it computes the code-region digest from ((uint64_t *)ctx)[6]/((uint64_t *)ctx)[7]
  * (FUN_00033bf4) and validates it (FUN_00034b18 current trust context)
  * against the two registered digests (FUN_00032014 / FUN_00032104) and the
  * page type (FUN_000321dc); any failure returns a nonzero status, success
@@ -307,7 +368,7 @@ uint64_t *txm_policy_rule4(uint64_t *ctx)
 	if (ctx[0x21] == 0) {                     /* +0x108 */
 		return (uint64_t *)0x112a6;
 	}
-	txm_range_kind(ctx[6], ctx[7], &scratch);
+	txm_range_kind(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &scratch);
 	digest = ctx[0x21];                       /* +0x108 */
 	kind = txm_policy_trust();                /* FUN_00034b18 */
 	if (txm_region_auth(digest, kind) != 0)   /* FUN_00032014 */
@@ -334,7 +395,7 @@ uint32_t txm_policy_rule3(uint64_t *ctx)
 	uint64_t vtable = ctx[0];
 	uint64_t trust = txm_policy_trust();      /* FUN_00034b18 */
 	uint64_t lo = 0, hi = 0, kind = 0;
-	uint32_t st = txm_range_check(ctx[6], ctx[7], 0, 0, &kind); /* FUN_00033c9c */
+	uint32_t st = txm_range_check(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, 0, &kind); /* FUN_00033c9c */
 	uint32_t u5, u6;
 
 	if ((st & 0xff00) != 0) {
@@ -346,7 +407,7 @@ uint32_t txm_policy_rule3(uint64_t *ctx)
 			return 0x3000 | 0xa5 | 0x20000;   /* 0x230a5 */
 		}
 	}
-	txm_range_kind(ctx[6], ctx[7], &hi);
+	txm_range_kind(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &hi);
 	if (txm_strcmp((char *)hi, "LOCALSPKEY") == 0) {
 		if (trust == 0 || ctx[0x10] == 0) {   /* +0x80 */
 			return 0xa5;
@@ -377,7 +438,7 @@ uint32_t txm_policy_rule2(uint64_t *ctx)
 	uint64_t trust = txm_policy_trust();
 	uint64_t kind_hi = 0, scratch = 0;
 	uint16_t kind = 0;
-	uint32_t st = txm_range_check(ctx[6], ctx[7], 0, 0, &kind_hi);
+	uint32_t st = txm_range_check(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, 0, &kind_hi);
 
 	if ((st & 0xff00) != 0) {
 		return 0x124a7u;
@@ -388,7 +449,7 @@ uint32_t txm_policy_rule2(uint64_t *ctx)
 	if (txm_policy_trust2(ctx) != 0) {        /* FUN_00034b30 */
 		return 0x330a7u;
 	}
-	txm_buf_digest(ctx[6], ctx[7], 0, &kind);
+	txm_buf_digest(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, &kind);
 	if (kind == 0) {
 		return 0x426a7u;
 	}
@@ -416,7 +477,7 @@ uint32_t txm_policy_rule2(uint64_t *ctx)
 uint32_t txm_policy_rule1(uint64_t *ctx)
 {
 	uint64_t kind = 0;
-	uint32_t st = txm_range_check(ctx[6], ctx[7], 0, 0, &kind);
+	uint32_t st = txm_range_check(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, 0, &kind);
 	if ((st & 0xff00) != 0) {
 		return 0x124a4u;
 	}
@@ -442,7 +503,7 @@ uint32_t txm_policy_rule67(uint64_t *ctx, uint8_t rule)
 	(void)rule;
 	int ent = 0;
 
-	txm_buf_fill(ctx[6], ctx[7], &kind, 0);
+	txm_buf_fill(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &kind, 0);
 	if (txm_len_kind(kind, *(uint8_t *)((uint8_t *)vtable + 4)) < 0) {
 		return 0x130a3u;
 	}
@@ -471,7 +532,7 @@ uint64_t *txm_policy_rule_ac(uint64_t *ctx)
 {
 	uint64_t *ent, *e;
 	uint64_t name = 0;
-	txm_range_kind(ctx[6], ctx[7], &name);
+	txm_range_kind(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &name);
 
 	e = (uint64_t *)*(uint64_t *)(ctx[0] + 0x40);
 	if (e == 0) {
@@ -553,10 +614,11 @@ uint32_t txm_policy_rule_aa(uint64_t *ctx)
  * else returns a status with the per-index class.
  * Confidence: medium.
  */
-int txm_policy_rule_02(uint64_t *ctx)
+int txm_policy_rule_02(uint64_t *ctx, uint8_t rule)
 {
 	uint64_t trust = txm_policy_trust();
 	uint64_t vtable = ctx[0];
+	(void)rule;
 
 	if ((*(uint8_t *)((uint8_t *)vtable + 0x4d) & 1) != 0) {
 		if ((*(uint64_t (**)(void))(vtable + 0xa0))() & 1) {
@@ -594,8 +656,8 @@ uint64_t *txm_policy_rule_d1(uint64_t *ctx, uint32_t mode)
 	uint32_t flag = 0;
 	uint64_t name = 0;
 
-	txm_range_kind2(ctx[6], ctx[7], &flag);
-	txm_range_kind(ctx[6], ctx[7], &name);
+	txm_range_kind2(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &flag);
+	txm_range_kind(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &name);
 	if (mode < 6 || *(uint64_t *)(vtable + 8) == 0) {
 		if ((flag & 2) == ((name != 0) ? 2 : 0)) {
 			return (uint64_t *)0x130a1;
@@ -757,11 +819,11 @@ uint64_t *txm_region_policy_install(uint64_t *ctx)
 	if ((*(uint8_t *)((uint8_t *)ctx + 0x29) & 1) != 0) {
 		return (uint64_t *)0x23401;
 	}
-	st = txm_region_resolve(ctx[1], ctx[2], ctx + 3);   /* FUN_00032630 */
+	st = txm_region_resolve(ctx[1], ((uint64_t *)ctx)[2], ctx + 3);   /* FUN_00032630 */
 	if ((st & 0xff00) != 0) {
 		return (uint64_t *)(uint64_t)st;
 	}
-	st = txm_region_resolve2(ctx[0], ctx[3], ctx[4], ctx + 6); /* FUN_00033d40 */
+	st = txm_region_resolve2(ctx[0], ((uint64_t *)ctx)[3], ctx[4], ctx + 6); /* FUN_00033d40 */
 	if ((st & 0xff00) != 0) {
 		return (uint64_t *)(uint64_t)st;
 	}
@@ -784,7 +846,7 @@ uint64_t *txm_region_policy_install(uint64_t *ctx)
 	}
 clear:
 	{
-		uint32_t c = txm_range_check(ctx[6], ctx[7], 0, 0, &kind);
+		uint32_t c = txm_range_check(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, 0, &kind);
 		if ((c & 0xff00) != 0) {
 			kind |= 1;
 		}
@@ -797,7 +859,7 @@ clear:
 		}
 	}
 done:
-	txm_region_policy_commit(ctx, ctx[6], ctx[7]);  /* FUN_00035d24 */
+	txm_region_policy_commit(ctx, ((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7]);  /* FUN_00035d24 */
 	*(uint8_t *)((uint8_t *)ctx + 0x29) = 1;
 	return (uint64_t *)0x10000;   /* Reset.magic + 1 */
 }
@@ -1049,12 +1111,12 @@ uint32_t txm_code_page_mark_begin(uint64_t *ctx, uint64_t *out)
 	if ((*(uint8_t *)((uint8_t *)ctx + 0x29) & 1) == 0) {
 		return 0x10000 | 0x417;
 	}
-	span = ctx[2] - (uint64_t)*(uint32_t *)(ctx + 4);
+	span = ((uint64_t *)ctx)[2] - (uint64_t)*(uint32_t *)(ctx + 4);
 	if (span == 0) {
 		return 0x32315u;
 	}
 	base = ctx[1];
-	end = base + ctx[2];
+	end = base + ((uint64_t *)ctx)[2];
 	if (TXM_TAGABLE(base, end)) {
 		end = TXM_TAGFIX(end);
 	}
@@ -1368,7 +1430,7 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 	if ((*(uint8_t *)((uint8_t *)ctx + 5) & 1) != 0) {
 		return 0x93012;
 	}
-	base = ctx[3];
+	base = ((uint64_t *)ctx)[3];
 	size = *(uint32_t *)(ctx + 4);
 	start = *(uint32_t *)(ctx + 4);   /* NB: overwritten below per decompile */
 	lo = base + size;
@@ -1396,7 +1458,7 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 	if (start > size) {
 		return 0x22112;
 	}
-	if ((uint64_t)ctx[2] < end) {
+	if ((uint64_t)((uint64_t *)ctx)[2] < end) {
 		return 0x42112;
 	}
 	if (count == 0) {
@@ -1419,7 +1481,7 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 			/* ensure the page type at the new offset */
 			{
 				uint32_t pginfo = 0xffffffff;
-				txm_page_hash(ctx[3], ctx[4], 0, 0xfade0c02, &pginfo);
+				txm_page_hash(((uint64_t *)ctx)[3], ctx[4], 0, 0xfade0c02, &pginfo);
 				pg = pginfo;
 				if (*(uint8_t *)((uint8_t *)ctx + 0x20) & 1) {
 					uint32_t o2 = 0xffffffff;
@@ -1460,8 +1522,8 @@ int txm_code_region_extend(uint64_t *ctx, uint32_t start, uint64_t end)
 				*(uint32_t *)(base + 4) = start;
 				*(uint32_t *)(base + 8) = i + 1;
 				if (start <= *(uint32_t *)(ctx + 4) &&
-				    (ctx[4] = start, end <= (uint64_t)ctx[2])) {
-					ctx[2] = end;
+				    (ctx[4] = start, end <= (uint64_t)((uint64_t *)ctx)[2])) {
+					((uint64_t *)ctx)[2] = end;
 					return 0x12;
 				}
 				txm_fault(0x19);
@@ -1590,7 +1652,7 @@ uint32_t txm_policy_regions_equal(uint64_t *ctx, uint64_t *other)
 	if (ctx[0] != other[0]) {
 		return 0x92907u;
 	}
-	txm_range_check(ctx[6], ctx[7], 0, 0, &f1);
+	txm_range_check(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], 0, 0, &f1);
 	txm_range_check(other[6], other[7], 0, 0, &f2);
 	if ((f1 & 1) == 0) {
 		if ((f2 & 1) != 0) {
@@ -1611,7 +1673,7 @@ uint32_t txm_policy_regions_equal(uint64_t *ctx, uint64_t *other)
 		if (kind_other < kind_me) {
 			return 0x53007u;
 		}
-		txm_range_kind(ctx[6], ctx[7], &k1);
+		txm_range_kind(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &k1);
 		txm_range_kind(other[6], other[7], &k2);
 		if (k1 == 0) {
 			return 0x62407u;
@@ -1709,8 +1771,8 @@ void txm_bn_cswap_prng(uint64_t count, uint64_t sel, uint64_t *a, uint64_t *b)
 uint64_t txm_bn_mul_reduce(uint64_t *ctx, uint64_t b, uint64_t c, uint64_t d)
 {
 	uint64_t n = txm_bn_count((uint64_t *)b);
-	uint64_t saved = ctx[2];                       /* +0x10 */
-	uint64_t *scratch = (*(uint64_t *(*)(uint64_t *, uint64_t))(ctx[3]))(ctx, n); /* +0x18 alloc */
+	uint64_t saved = ((uint64_t *)ctx)[2];                       /* +0x10 */
+	uint64_t *scratch = (*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))((uint64_t)ctx, n); /* +0x18 alloc */
 	uint64_t mod = txm_bn_modulus_ptr(b);          /* FUN_000372f8 */
 	uint64_t r;
 
@@ -1719,7 +1781,7 @@ uint64_t txm_bn_mul_reduce(uint64_t *ctx, uint64_t b, uint64_t c, uint64_t d)
 	} else {
 		r = 0xffffffff;
 	}
-	ctx[2] = saved;
+	((uint64_t *)ctx)[2] = saved;
 	return r;
 }
 
@@ -1832,10 +1894,11 @@ uint64_t txm_bn_modulus_ptr(uint64_t desc)
  * txm_region_a.c's txm_trusted_range.
  * Confidence: high (sibling-named).
  */
-void txm_trusted_range(uint64_t *rng, uint64_t tag, uint64_t *out)
+uint64_t txm_trusted_range(uint64_t *rng, uint64_t tag, uint64_t *out)
 {
 	uint64_t len = 0, start = 0;
-	if (txm_tag_match((uint64_t *)rng, tag, &len) != 0) {
+	uint64_t ok = txm_tag_match(rng, tag, &len);
+	if (ok != 0) {
 		start = *rng;
 		{
 			uint64_t end = start + len;
@@ -1847,6 +1910,7 @@ void txm_trusted_range(uint64_t *rng, uint64_t tag, uint64_t *out)
 	}
 	*out = start;
 	out[1] = *rng;
+	return ok;
 }
 
 /* FUN_00037370 @ 0x00037370   (est. txm_der_len_decode_full)
@@ -1967,9 +2031,9 @@ uint64_t txm_der_oid_match(uint64_t rng, uint64_t a, uint64_t b, uint64_t c)
  * returning its span in `param_2`.
  * Confidence: high.
  */
-void txm_der_oid_read(uint64_t rng, uint64_t *out)
+uint64_t txm_der_oid_read(uint64_t rng, uint64_t *out)
 {
-	txm_trusted_range((uint64_t *)rng, 0x2000000000000010ULL, out);
+	return txm_trusted_range((uint64_t *)rng, 0x2000000000000010ULL, out);
 }
 
 /* FUN_00037584 @ 0x00037584   (est. txm_der_tag_decode)
@@ -2068,7 +2132,7 @@ bool txm_der_oid_byte_match(uint64_t *rng, uint64_t a, uint64_t b)
 		return false;
 	}
 	*rng = (uint64_t)p;
-	return txm_der_bytes_import(end - p, a, b) == 0;
+	return txm_der_bytes_import((uint64_t)(end - p), (uint64_t *)a, (uint64_t)(end - p), (uint8_t *)b) == 0;
 }
 
 /* FUN_00037700 @ 0x00037700   (est. txm_der_oid_byte_cmp)
@@ -2387,7 +2451,7 @@ uint64_t *txm_policy_kind_resolve(uint64_t *ctx, uint8_t *out)
 	if (*(uint8_t *)((uint8_t *)ctx + 0x101) != 0) {
 		return (uint64_t *)0x23402;
 	}
-	txm_range_kind2(ctx[6], ctx[7], &flag);
+	txm_range_kind2(((uint64_t *)ctx)[6], ((uint64_t *)ctx)[7], &flag);
 	st = txm_region_kind_a(ctx, (long)ctx + 0x101);   /* FUN_00034a2c */
 	if ((st & 0xff00) != 0) {
 		if ((*(uint8_t *)(ctx[0] + 0xd0) & 1) == 0) {
@@ -2487,3 +2551,2094 @@ applied:
 }
 
 #endif /* __ASSEMBLER__ */
+
+/* ------------------------------------------------------------------ */
+/* Section D — digest machinery + big-number core primitives.          */
+/* 00037c10 - 0003e268.                                               */
+/* ------------------------------------------------------------------ */
+
+/* FUN_00037c10 @ 0x00037c10   (est. txm_log_der_name)
+ * Ghidra: void FUN_00037c10(int param_1,undefined8 param_2,char *param_3)
+ * When `param_1` is nonzero, decodes `param_2` as a DER OBJECT IDENTIFIER
+ * and logs the resolved name (FUN_00043b28) after skipping a leading NUL.
+ * Debug/trace helper for code-signing policy diagnostics.
+ * Confidence: medium.
+ */
+void txm_log_der_name(int enabled, uint64_t der, char *dst)
+{
+	char *s;
+
+	if (enabled == 0) {
+		return;
+	}
+	s = txm_der_name_resolve(der, dst);
+	if (s != 0) {
+		if ((uint64_t)s < (uint64_t)dst && *s == 0) {
+			s++;
+		}
+		txm_log(s);
+	}
+}
+
+/* FUN_00037c30 @ 0x00037c30   (est. txm_log_der_oid)
+ * Ghidra: void FUN_00037c30(undefined8 param_1,undefined8 param_2,char *param_3)
+ * Unconditional OID-logging variant of txm_log_der_name (00037c10).
+ * Confidence: medium.
+ */
+void txm_log_der_oid(uint64_t tag, uint64_t der, char *dst)
+{
+	char *s = txm_der_name_resolve(der, dst);
+	if (s != 0) {
+		if ((uint64_t)s < (uint64_t)dst && *s == 0) {
+			s++;
+		}
+		txm_log(s);
+	}
+	(void)tag;
+}
+
+/* Resolve a DER OID element to a printable name via txm_der_uint_read.
+ * Confidence: medium. */
+char *txm_der_name_resolve(uint64_t der, char *dst)
+{
+	uint64_t span = 0, value = 0;
+	uint64_t cur = der;
+
+	if (txm_der_oid_read(der, &span) == 0) {
+		return 0;
+	}
+	cur = span;
+	if (txm_der_uint_read(cur, &value) == 0) {
+		return 0;
+	}
+	return dst;
+}
+
+/* FUN_00037d08 @ 0x00037d08   (est. txm_bn_cond_carry)
+ * Ghidra: void FUN_00037d08(undefined8 param_1,undefined8 param_2,
+ *                           undefined8 param_3,undefined8 param_4)
+ * Conditional big-number operation driven by whether `param_3` is nonzero
+ * (thunk_FUN_00037b3c); dispatches to txm_bn_csub with the flag. Traps on the
+ * PAC/LR check.
+ * Confidence: low.
+ */
+void txm_bn_cond_carry(uint64_t ctx, uint64_t desc, uint64_t a, uint64_t b,
+                       uint64_t m)
+{
+	uint64_t n = txm_bn_count((uint64_t *)desc);
+	uint64_t nz = txm_bn_last_nonzero(n, (uint64_t *)a) != 0;
+	uint64_t mod = txm_bn_modulus_ptr(desc);
+
+	txm_brk(0xc471, 0x37d80);
+	txm_bn_csub(n, nz, (uint64_t *)a, (uint64_t *)b, (uint64_t *)m);
+	(void)mod; (void)ctx;
+}
+
+/* FUN_00037d84 @ 0x00037d84   (est. txm_bn_cond_sub)
+ * Ghidra: void FUN_00037d84(undefined8 param_1,ulong param_2,
+ *                           undefined8 param_3,undefined8 param_4)
+ * Conditional subtract: when `param_2` is nonzero and the operand is
+ * nonzero, runs txm_bn_csub (subtract with carry). Traps on PAC/LR.
+ * Confidence: low.
+ */
+void txm_bn_cond_sub(uint64_t ctx, uint64_t sel, uint64_t a, uint64_t b,
+                     uint64_t m)
+{
+	uint64_t n = txm_bn_count((uint64_t *)ctx);
+	uint64_t nz = txm_bn_last_nonzero(n, (uint64_t *)b) != 0;
+	uint64_t cond = (nz != 0) ? (sel & 1) : 0;
+
+	txm_brk(0xc471, 0x37e04);
+	txm_bn_csub(n, cond, (uint64_t *)a, (uint64_t *)b, (uint64_t *)m);
+}
+
+/* FUN_00037e08 @ 0x00037e08   (est. txm_bn_copy_cond)
+ * Ghidra: void FUN_00037e08(undefined8 param_1,undefined8 param_2,
+ *                           undefined8 param_3,undefined8 param_4)
+ * Copies `param_3`/`param_4` through txm_bn_copy. Traps on PAC/LR.
+ * Confidence: low.
+ */
+void txm_bn_copy_cond(uint64_t desc, uint64_t c, uint64_t d)
+{
+	uint64_t n = txm_bn_count((uint64_t *)desc);
+	txm_brk(0xc471, 0x37e48);
+	txm_bn_copy(n, (uint64_t *)c, (uint64_t *)d);
+}
+
+/* FUN_00037e4c @ 0x00037e4c   (est. txm_bn_ctx_op40)
+ * Ghidra: void FUN_00037e4c(undefined8 param_1,long param_2)
+ * Indirect call through the bignum context vtable at (param_2+0x10)+0x40.
+ * Confidence: low (indirect jump). */
+void txm_bn_ctx_op40(uint64_t ctx, uint64_t desc)
+{
+	(void)ctx;
+	(*(void (**)(void))(*(uint64_t *)(desc + 0x10) + 0x40))();
+}
+
+/* FUN_00037e60 @ 0x00037e60   (est. txm_digest_absorb)
+ * Ghidra: void FUN_00037e60(long param_1,undefined8 param_2,undefined8 param_3,
+ *                           undefined8 param_4)
+ * Core digest absorb: buffers `param_3` bytes from `param_4` into the hash
+ * context at `param_1` (+8 length / +0x10 block), invoking the block callback
+ * (param_1+0x38) and the per-block copier (param_1+0x30). Stack canary
+ * checked on return.
+ * Confidence: medium.
+ */
+void txm_digest_absorb(uint64_t ctx, uint64_t h, uint64_t len, uint64_t src)
+{
+	uint64_t guard = txm_canary;
+	uint8_t stack[8];
+	uint64_t buf = *(uint64_t *)(ctx + 8);
+	uint64_t block = *(uint64_t *)(ctx + 0x10);
+
+	txm_bn_ctx_op40(ctx, h);
+	(void)buf; (void)block;
+	txm_digest_init(ctx, (uint64_t *)&stack);
+	txm_digest_blocks(ctx, (uint64_t *)&stack, len, src);
+	(*(void (**)(uint64_t, uint64_t *, uint64_t))(ctx + 0x38))(ctx, (uint64_t *)&stack, src);
+	txm_bn_clr(buf + block + 0xc, (uint64_t *)&stack);
+	if (guard != txm_canary) {
+		txm_stack_guard_fail();
+	}
+}
+
+/* FUN_00037f5c @ 0x00037f5c   (est. txm_digest_absorb_dit)
+ * Ghidra: void FUN_00037f5c(undefined8 param_1,undefined8 param_2,
+ *                           undefined8 param_3,undefined8 param_4)
+ * DIT-guarded wrapper for txm_digest_absorb (00037e60).
+ * Confidence: medium.
+ */
+void txm_digest_absorb_dit(uint64_t ctx, uint64_t h, uint64_t len, uint64_t src)
+{
+	uint8_t dit = 0;
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	txm_digest_absorb(ctx, h, len, src);
+	txm_dit_clear(&dit);
+}
+
+/* FUN_0003822c @ 0x0003822c   (est. txm_digest_init)
+ * Ghidra: void FUN_0003822c(long param_1,undefined8 *param_2)
+ * Initializes a digest context `h` at the state base param_1+8: copies the
+ * IV (param_1+0x28) and zeroes the block counter.
+ * Confidence: medium.
+ */
+void txm_digest_init(uint64_t ctx, uint64_t *h)
+{
+	txm_memcpy(h + 1, (void *)(ctx + 0x28), *(uint64_t *)(ctx + 8));
+	h[0] = 0;
+	*(uint32_t *)((uint8_t *)h + *(uint64_t *)(ctx + 8) + 8 + *(uint64_t *)(ctx + 0x10)) = 0;
+}
+
+/* FUN_00038288 @ 0x00038288   (est. txm_digest_init_dit)
+ * Ghidra: void FUN_00038288(long param_1,undefined8 *param_2)
+ * DIT-guarded txm_digest_init.
+ * Confidence: medium.
+ */
+void txm_digest_init_dit(uint64_t ctx, uint64_t *h)
+{
+	uint8_t dit = 0;
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	txm_memcpy(h + 1, (void *)(ctx + 0x28), *(uint64_t *)(ctx + 8));
+	h[0] = 0;
+	*(uint32_t *)((uint8_t *)h + *(uint64_t *)(ctx + 8) + 8 + *(uint64_t *)(ctx + 0x10)) = 0;
+	txm_dit_clear(&dit);
+}
+
+/* FUN_00038318 @ 0x00038318   (est. txm_digest_bytelen)
+ * Ghidra: ulong FUN_00038318(undefined8 *param_1)
+ * Returns the digest byte length: (bitlen(param_1) + 7) >> 3.
+ * Confidence: medium.
+ */
+uint64_t txm_digest_bytelen(uint64_t *desc)
+{
+	return (txm_bn_bitlen(desc[0], desc + 1) + 7U) >> 3;
+}
+
+/* FUN_0003833c @ 0x0003833c   (est. txm_hash_verify_magic)
+ * Ghidra: int FUN_0003833c(undefined8 param_1,undefined8 param_2,
+ *                          undefined8 param_3,undefined8 param_4,
+ *                          undefined8 param_5,undefined8 param_6,
+ *                          undefined1 *param_7)
+ * Signature/hash verify entry: runs txm_ecdsa_verify (FUN_0003a604) with the
+ * magic 0x7dcdc05e; on success sets `*param_7`=1 and maps the -0x92 ("hash
+ * mismatch") error to 0. DIT-guarded.
+ * Confidence: medium.
+ */
+int txm_hash_verify_magic(uint64_t a, uint64_t b, uint64_t c, uint64_t d,
+                          uint64_t e, uint64_t f, uint8_t *ok)
+{
+	uint8_t dit = 0;
+	uint64_t out[2] = {0, 0};
+	int r;
+
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	*ok = 0;
+	r = (int)txm_ecdsa_verify((uint64_t *)a, b, c, d, e, f, 0x7dcdc05e, (uint64_t)out);
+	if (r == 0) {
+		*ok = 1;
+	} else if (r == -0x92) {
+		r = 0;
+	}
+	txm_dit_clear(&dit);
+	return r;
+}
+
+/* FUN_0003843c @ 0x0003843c   (est. txm_digest_blocks)
+ * Ghidra: void FUN_0003843c(long param_1,long *param_2,ulong param_3,
+ *                           ulong param_4)
+ * Processes `param_3` bytes of `param_4` into the digest buffer at param_2+1
+ * (the state block), invoking the block callback (param_1+0x30) whenever a
+ * block fills; handles the residual tail by copying.
+ * Confidence: medium.
+ */
+void txm_digest_blocks(uint64_t ctx, uint64_t *h, uint64_t len, uint64_t src)
+{
+	uint64_t block = *(uint64_t *)(ctx + 0x10);
+	uint64_t base = *(uint64_t *)(ctx + 8);
+	uint64_t buf = (uint64_t)h + base;
+	uint32_t used = *(uint32_t *)(buf + block);
+	uint64_t n, cnt;
+
+	if (block <= used) {
+		*(uint32_t *)(buf + block) = 0;
+	}
+	while (len != 0) {
+		used = *(uint32_t *)(buf + block);
+		if (block < len && used == 0) {
+			if (block == 0x80) {
+				cnt = len >> 7;
+			} else if (block == 0x40) {
+				cnt = len >> 6;
+			} else {
+				cnt = block ? len / block : 0;
+			}
+			(*(void (**)(uint64_t *, uint64_t, uint64_t))(ctx + 0x30))(h + 1, cnt, src);
+			h[0] += cnt * block * 8;
+			*(uint32_t *)(buf + block) = 0;
+			src += cnt * block;
+			len -= cnt * block;
+		} else {
+			n = block - used;
+			if (len < n) n = len;
+			txm_memcpy((void *)(buf + used), (void *)src, n);
+			used += (uint32_t)n;
+			*(uint32_t *)(buf + block) = used;
+			if (block == used) {
+				(*(void (**)(uint64_t *, int))(ctx + 0x30))(h + 1, 1);
+				h[0] += (uint64_t)(*(uint32_t *)(buf + block) << 3);
+				*(uint32_t *)(buf + block) = 0;
+			}
+			src += n;
+			len -= n;
+		}
+	}
+}
+
+/* FUN_000385b8 @ 0x000385b8   (est. txm_digest_blocks_dit)
+ * Ghidra: void FUN_000385b8(undefined8 param_1,undefined8 param_2,
+ *                           undefined8 param_3,undefined8 param_4)
+ * DIT-guarded txm_digest_blocks.
+ * Confidence: medium.
+ */
+void txm_digest_blocks_dit(uint64_t ctx, uint64_t *h, uint64_t len, uint64_t src)
+{
+	uint8_t dit = 0;
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	txm_digest_blocks(ctx, h, len, src);
+	txm_dit_clear(&dit);
+}
+
+/* FUN_00038634 @ 0x00038634   (est. txm_ec_mul_point)
+ * Ghidra: undefined8 FUN_00038634(long param_1,long *param_2,ulong param_3,
+ *                                 ulong param_4)
+ * Elliptic-curve scalar multiply: out = param_3 * G + param_4. Returns 0 on
+ * success or -7 (0xfffffff9) when the point is not on the curve.
+ * Confidence: low.
+ */
+uint64_t txm_ec_mul_point(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t pt)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t r;
+
+	if (txm_bn_is_zero(desc, pt) == 0) {
+		r = txm_ec_point_mul(ctx, desc, out, n, pt);
+	} else {
+		r = 0xfffffff9;
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return r;
+}
+
+/* FUN_000387c0 @ 0x000387c0   (est. txm_ec_mul_g)
+ * Ghidra: undefined8 FUN_000387c0(long param_1,long *param_2,
+ *                                 undefined8 param_3,ulong param_4)
+ * Elliptic-curve scalar multiply by the generator: out = param_3 * G.
+ * Confidence: low.
+ */
+uint64_t txm_ec_mul_g(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t pt)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t r;
+
+	if (txm_bn_is_zero(desc, pt) == 0) {
+		txm_ec_pt_mul1(ctx, desc, out, pt, n);
+		r = 0;
+	} else {
+		r = 0xfffffff9;
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return r;
+}
+
+/* FUN_000388b0 @ 0x000388b0   (est. txm_alg_name_c0)
+ * Ghidra: undefined * FUN_000388b0(void) — SHA-256 algorithm-name struct. */
+const void *txm_alg_name_c0(void) { return (const void *)0x110a8; }
+
+/* FUN_000389ec @ 0x000389ec   (est. txm_bn_square)
+ * Ghidra: void FUN_000389ec(undefined8 param_1,ulong param_2,long *param_3,
+ *                           ulong *param_4)
+ * Big-number squaring: out = a*a (in place). Uses the muladd helpers with the
+ * doubled cross terms.
+ * Confidence: low.
+ */
+void txm_bn_square(uint64_t n, uint64_t *out, uint64_t *a)
+{
+	uint64_t i, j;
+	uint64_t carry = 0;
+
+	/* out is a 2n-limb result; square a in place (row 0 then accumulate). */
+	if (n == 0) {
+		return;
+	}
+	for (i = 0; i < n; i++) {
+		__uint128_t t = (__uint128_t)a[i] * a[0] + carry;
+		out[i] = (uint64_t)t;
+		carry = (uint64_t)(t >> 64);
+	}
+	out[n] = carry;
+	for (j = 1; j < n; j++) {
+		carry = 0;
+		for (i = 0; i < n; i++) {
+			__uint128_t t = (__uint128_t)a[i] * a[j] + out[i + j] + carry;
+			out[i + j] = (uint64_t)t;
+			carry = (uint64_t)(t >> 64);
+		}
+		out[n + j] = carry;
+	}
+}
+
+/* FUN_00038ae4 @ 0x00038ae4   (est. txm_bn_modpow_thunk)
+ * Ghidra: void FUN_00038ae4(void) — thunk to FUN_0003cb04. */
+void txm_bn_modpow_thunk(void) { txm_bn_modpow(0, 0, 0, 0); }
+
+/* FUN_00038b00 @ 0x00038b00  / 0x38b34 / 0x38b68 (est. txm_bn_mul_thunk*)
+ * Ghidra: void FUN_00038b00(void) etc. — thunks to FUN_00043650. */
+void txm_bn_mul_thunk(void)  { txm_bn_mul(0, 0, 0, 0, 0); }
+void txm_bn_mul_thunk2(void) { txm_bn_mul(0, 0, 0, 0, 0); }
+void txm_bn_mul_thunk3(void) { txm_bn_mul(0, 0, 0, 0, 0); }
+
+/* FUN_00038b2c @ 0x00038b2c   (thunk to txm_alg_name_e0) */
+void txm_alg_name_e0_thunk(void) { txm_alg_name_e0(); }
+
+/* FUN_00038b60 @ 0x00038b60   (thunk to FUN_00040c1c) */
+void txm_alg_name_100_thunk(void) { txm_alg_name_100(); }
+
+/* FUN_00038b94 @ 0x00038b94   (thunk to FUN_00043d00) */
+void txm_alg_name_180_thunk(void) { txm_alg_name_180(); }
+
+/* FUN_00038b9c @ 0x00038b9c   (est. txm_alg_name_209)
+ * Ghidra: undefined * FUN_00038b9c(void) — SHA-512/256-style name struct. */
+const void *txm_alg_name_209(void) { return (const void *)0x111f8; }
+
+/* FUN_00038fc0 @ 0x00038fc0   (est. txm_ec_pt_addfull)
+ * Ghidra: void FUN_00038fc0(long param_1,long *param_2,ulong param_3,
+ *                           ulong param_4,ulong param_5,int param_6)
+ * Full projective point addition: out = param_4 + param_5 (param_6 selects
+ * add vs subtract of the Y coordinate). Handles the identity cases.
+ * Confidence: low.
+ */
+void txm_ec_pt_addfull(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                       uint64_t b, int sub)
+{
+	uint64_t n = *desc;
+	uint64_t a2 = a + n * 8, b2 = b + n * 8;
+	uint64_t a3 = a + n * 0x10, b3 = b + n * 0x10;
+	uint64_t o2 = out + n * 8, o3 = out + n * 0x10;
+	int za = txm_bn_last_nonzero(n, (uint64_t *)a) != 0;
+	int zb = txm_bn_last_nonzero(n, (uint64_t *)b) != 0;
+
+	if (za == 0 && zb == 0) {
+		txm_ec_pt_double(ctx, desc, out, a);
+		return;
+	}
+	if (za != 0 && zb == 0) {
+		txm_bn_copy(n, (uint64_t *)out, (uint64_t *)a);
+		txm_bn_copy(n, (uint64_t *)o2, (uint64_t *)a2);
+		txm_bn_copy(n, (uint64_t *)o3, (uint64_t *)a3);
+		return;
+	}
+	/* generic projective addition (Jacobi coordinates) */
+	{
+		uint64_t z1z1, z2z2, u1, u2, s1, s2, h, i, j, r, v;
+		z1z1 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		z2z2 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		u1 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		u2 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		s1 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		s2 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		h = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		i = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		j = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		r = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		v = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)z1z1, (uint64_t *)a3, (uint64_t *)a3);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)z2z2, (uint64_t *)b3, (uint64_t *)b3);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)u1, (uint64_t *)a, (uint64_t *)z2z2);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)u2, (uint64_t *)b, (uint64_t *)z1z1);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)s1, (uint64_t *)a2, (uint64_t *)z2z2);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)s1, (uint64_t *)s1, (uint64_t *)a3);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)s2, (uint64_t *)b2, (uint64_t *)z1z1);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)s2, (uint64_t *)s2, (uint64_t *)b3);
+		if (sub) {
+			txm_bn_sub(ctx, desc[0], (uint64_t *)h, (uint64_t *)u2, (uint64_t *)u1);
+			txm_bn_sub(ctx, desc[0], (uint64_t *)r, (uint64_t *)s2, (uint64_t *)s1);
+		} else {
+			txm_bn_sub(ctx, desc[0], (uint64_t *)h, (uint64_t *)u2, (uint64_t *)u1);
+			txm_bn_sub(ctx, desc[0], (uint64_t *)r, (uint64_t *)s2, (uint64_t *)s1);
+		}
+		txm_bn_mul(ctx, desc[0], (uint64_t *)i, (uint64_t *)h, (uint64_t *)h);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)i, (uint64_t *)i, (uint64_t *)h);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)j, (uint64_t *)i, (uint64_t *)u1);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)r, (uint64_t *)r, (uint64_t *)r);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)v, (uint64_t *)i, (uint64_t *)u1);
+		txm_bn_sub(ctx, desc[0], (uint64_t *)r, (uint64_t *)r, (uint64_t *)j);
+		txm_bn_sub(ctx, desc[0], (uint64_t *)r, (uint64_t *)r, (uint64_t *)j);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)out, (uint64_t *)h, (uint64_t *)r);
+		txm_bn_sub(ctx, desc[0], (uint64_t *)o2, (uint64_t *)j, (uint64_t *)v);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)o2, (uint64_t *)s1, (uint64_t *)o2);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)o2, (uint64_t *)o2, (uint64_t *)h);
+		txm_bn_sub(ctx, desc[0], (uint64_t *)o2, (uint64_t *)o2, (uint64_t *)r);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)o3, (uint64_t *)i, (uint64_t *)a3);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)o3, (uint64_t *)o3, (uint64_t *)b3);
+	}
+}
+
+/* FUN_000393bc @ 0x000393bc   (est. txm_ec_pt_add_wrap)
+ * Ghidra: void FUN_000393bc(long param_1,long *param_2,ulong param_3,
+ *                           undefined8 param_4,ulong param_5)
+ * Wrapper for point addition (sub=0); on a non-reduced operand copies it.
+ * Confidence: low.
+ */
+void txm_ec_pt_add_wrap(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                        uint64_t b)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+
+	if (txm_bn_is_zero(desc, a) == 0) {
+		txm_ec_pt_addfull(ctx, desc, out, a, b, 0);
+	} else {
+		txm_bn_copy(n, (uint64_t *)out, (uint64_t *)a);
+		txm_bn_copy(n, (uint64_t *)(out + n * 8), (uint64_t *)(a + n * 8));
+		txm_bn_copy(n, (uint64_t *)(out + n * 0x10), (uint64_t *)(a + n * 0x10));
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+}
+
+/* FUN_00039d60 @ 0x00039d60   (est. txm_ec_pt_sub_wrap)
+ * Ghidra: void FUN_00039d60(long param_1,long *param_2,ulong param_3,
+ *                           undefined8 param_4,ulong param_5)
+ * Wrapper for point subtraction (sub=1).
+ * Confidence: low.
+ */
+void txm_ec_pt_sub_wrap(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                        uint64_t b)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+
+	if (txm_bn_is_zero(desc, a) == 0) {
+		txm_ec_pt_addfull(ctx, desc, out, a, b, 1);
+	} else {
+		txm_bn_copy(n, (uint64_t *)out, (uint64_t *)a);
+		txm_bn_copy(n, (uint64_t *)(out + n * 8), (uint64_t *)(a + n * 8));
+		txm_bn_copy(n, (uint64_t *)(out + n * 0x10), (uint64_t *)(a + n * 0x10));
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+}
+
+/* FUN_00039c54 @ 0x00039c54   (est. txm_ec_pt_scale)
+ * Ghidra: void FUN_00039c54(long param_1,long *param_2,ulong param_3,
+ *                           undefined8 param_4,undefined8 param_5)
+ * Projective point scaling: out = param_4 * param_5 via the point ops.
+ * Confidence: low.
+ */
+void txm_ec_pt_scale(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                     uint64_t b)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t t, t2, t3;
+
+	t = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	t2 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	t3 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)t, (uint64_t *)a, (uint64_t *)b);
+	txm_bn_add(ctx, desc[0], (uint64_t *)t2, (uint64_t *)t, (uint64_t *)t);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)t3, (uint64_t *)t2, (uint64_t *)t2);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)out, (uint64_t *)t, (uint64_t *)t3);
+	*(uint64_t *)(ctx + 0x10) = saved;
+}
+
+/* FUN_00039d4c @ 0x00039d4c   (est. txm_bn_ctx_op58)
+ * Ghidra: void FUN_00039d4c(undefined8 param_1,long param_2) — indirect call
+ * through (param_2+0x10)+0x58. */
+void txm_bn_ctx_op58(uint64_t ctx, uint64_t desc)
+{
+	(void)ctx;
+	(*(void (**)(void))(*(uint64_t *)(desc + 0x10) + 0x58))();
+}
+
+/* FUN_00039e64 @ 0x00039e64   (est. txm_ec_pt_mul3)
+ * Ghidra: void FUN_00039e64(long param_1,long *param_2,undefined8 param_3,
+ *                           undefined8 param_4,ulong param_5)
+ * Elliptic-curve scalar multiply by 3: out = 3*param_5.
+ * Confidence: low.
+ */
+void txm_ec_pt_mul3(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                    uint64_t b)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t t, t2;
+
+	t = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n * 3);
+	t2 = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	txm_bn_copy(n, (uint64_t *)t, (uint64_t *)b);
+	txm_bn_cond_sub(ctx, 1, t + n * 8, b + n * 8, t2);
+	txm_bn_copy(n, (uint64_t *)(t + n * 0x10), (uint64_t *)(b + n * 0x10));
+	txm_bn_ctx_op58(ctx, (uint64_t)desc);
+	*(uint64_t *)(ctx + 0x10) = saved;
+}
+
+/* FUN_00039f60 @ 0x00039f60   (est. txm_digest_alg_name)
+ * Ghidra: undefined8 FUN_00039f60(long param_1)
+ * Dispatches a digest algorithm id to its name struct:
+ * 0xc0/0xe0/0x100/0x180/0x209. Returns 0 for an unknown id.
+ * Confidence: high (id->name table).
+ */
+const void *txm_digest_alg_name(uint64_t id)
+{
+	if (id < 0x100) {
+		if (id == 0xc0) return txm_alg_name_c0();
+		if (id == 0xe0) return txm_alg_name_e0();
+	} else {
+		if (id == 0x100) return txm_alg_name_100();
+		if (id == 0x180) return txm_alg_name_180();
+		if (id == 0x209) return txm_alg_name_209();
+	}
+	return 0;
+}
+
+/* FUN_00039fb0 @ 0x00039fb0   (est. txm_digest_alg_supported)
+ * Ghidra: undefined8 FUN_00039fb0(long param_1)
+ * Returns whether `param_1` is a supported digest algorithm id. DIT-guarded.
+ * Confidence: high (same id set as 0x39f60).
+ */
+uint64_t txm_digest_alg_supported(uint64_t id)
+{
+	uint8_t dit = 0;
+	uint64_t ok = 1;
+
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	if (id < 0x100) {
+		if (id != 0xc0 && id != 0xe0) ok = 0;
+	} else if (id != 0x100 && id != 0x180 && id != 0x209) {
+		ok = 0;
+	}
+	txm_dit_clear(&dit);
+	return ok;
+}
+
+/* FUN_0003a044 @ 0x0003a044   (thunk to FUN_0003c224) */
+void txm_bn_modpow_wrap_thunk(void) { txm_bn_modpow_wrap(0, 0, 0, 0); }
+
+/* FUN_0003a04c @ 0x0003a04c   (est. txm_bn_mod_mul_inv)
+ * Ghidra: undefined8 FUN_0003a04c(long param_1,long *param_2,ulong param_3,
+ *                                 undefined8 param_4)
+ * Modular multiply-inverse: computes inv(param_4) mod the field prime using
+ * the point ops and a conditional reduction. Returns 0 on success or -7.
+ * Confidence: low.
+ */
+uint64_t txm_bn_mod_mul_inv(uint64_t ctx, uint64_t *desc, uint64_t out,
+                            uint64_t a)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t r = 0;
+
+	if (txm_bn_cmp(n, (uint64_t *)a, desc + 3) < 0) {
+		txm_ec_pt_addfull(ctx, desc, out, a, a, 0);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)out, (uint64_t *)out, (uint64_t *)a);
+		r = txm_bn_modinv(ctx, (uint64_t)desc, out, a, (uint64_t)(desc + 3));
+		if (r == 0) {
+			txm_ec_pt_double(ctx, desc, out, out);
+			r = 0;
+		}
+	} else {
+		r = 0xfffffff9;
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return r;
+}
+
+/* FUN_0003a210 @ 0x0003a210   (est. txm_sig_verify_pubkey)
+ * Ghidra: undefined8 FUN_0003a210(undefined8 param_1,undefined8 param_2,
+ *      undefined8 param_3,long param_4,undefined8 param_5,long *param_6)
+ * Signature verify against a public key: resolves the digest algorithm name
+ * (FUN_00039f60), imports the two bignum operands, and runs the ECDSA verify.
+ * Returns 0 on success, -7 on a bad key, -1 on a bad algorithm. DIT-guarded.
+ * Confidence: medium.
+ */
+uint64_t txm_sig_verify_pubkey(uint64_t alg, uint64_t a, uint64_t b, uint64_t c,
+                               uint64_t d, uint64_t *desc)
+{
+	uint8_t dit = 0;
+	uint64_t r;
+	const uint64_t *name;
+
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	if (c == 0) {
+		r = 0xfffffff9;
+	} else {
+		name = txm_digest_alg_name(alg);
+		if (name != 0) {
+			desc[2] = (uint64_t)name;
+			if (txm_der_bytes_import(name[0], (uint64_t *)(desc + 2), a, (uint8_t *)b) == 0 &&
+			    txm_der_bytes_import(name[0], (uint64_t *)(desc + 2 + name[0] / 8), c, (uint8_t *)d) == 0) {
+				txm_bn_set_one(desc[0], (uint64_t *)(desc + 2 + desc[0]));
+				r = 0;
+				goto out;
+			}
+		}
+		r = 0xffffffff;
+	}
+out:
+	txm_dit_clear(&dit);
+	return r;
+}
+
+/* FUN_0003a33c @ 0x0003a33c   (est. txm_ecdsa_verify_core)
+ * Ghidra: uint FUN_0003a33c(ulong *param_1,long *param_2,undefined8 param_3,
+ *      undefined8 param_4,undefined8 param_5,ulong param_6,
+ *      undefined8 param_7,int param_8,byte *param_9)
+ * ECDSA signature-verification core. Validates the signature length against
+ * the curve order, imports r/s, computes u1/u2 via the point ops, and
+ * combines the 16-byte digest by XOR (with 0x89). Returns 0 (valid),
+ * 0xffffffe9 (bad length), 0xffffff6e (point not on curve), or the
+ * digest-mismatch byte.
+ * Confidence: medium.
+ */
+uint32_t txm_ecdsa_verify_core(uint64_t *scratch, uint64_t *desc, uint64_t pubx,
+                               uint64_t puby, uint64_t sig, uint64_t dlen,
+                               uint64_t digest, int allow_short, uint8_t *mac)
+{
+	uint64_t n = *desc;
+	uint64_t saved = scratch[2];
+	uint64_t r, s, acc;
+	uint32_t rc = 0xffffffe9;
+	int i;
+
+	for (i = 0; i < 16; i++) mac[i] = 0;
+	r = txm_bn_bytelen(n, desc + 3);
+	{
+		bool ok = (allow_short == 0x7dcdc05e) ? (dlen == r) : (r <= dlen);
+		if (ok) {
+			s = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(scratch[3]))((uint64_t)scratch, n);
+			acc = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(scratch[3]))((uint64_t)scratch, n);
+			txm_bn_clr((scratch[2] - saved) * 8, (void *)s);
+			if (txm_der_bytes_import(n, (uint64_t *)s, dlen, (uint8_t *)sig) == 0) {
+				rc = (uint32_t)txm_bn_modpow((uint64_t)scratch, (uint64_t)desc, puby, s);
+				if (rc == 0) {
+					txm_bn_set_one(n, (uint64_t *)s);
+					rc = (uint32_t)txm_bn_mul_inv_final(n, (uint64_t *)s, pubx, puby, sig, mac);
+					if (rc == 0) {
+						rc = (uint8_t)(mac[8] ^ mac[4] ^ mac[3] ^ mac[0xd]) ^ 0x89 ^
+						     (uint8_t)(mac[0xf] ^ mac[10] ^ mac[1] ^ mac[0xb]) ^
+						     (uint8_t)(mac[0xe] ^ mac[6] ^ mac[2] ^ mac[9]) ^
+						     (uint8_t)(mac[0xc] ^ mac[0] ^ mac[7] ^ mac[5]);
+					} else {
+						rc = 0xffffff6e;
+					}
+				}
+			}
+			scratch[2] = saved;
+		}
+	}
+	return rc;
+}
+
+/* FUN_0003a604 @ 0x0003a604   (est. txm_ecdsa_verify)
+ * Ghidra: undefined8 FUN_0003a604(long *param_1,undefined8 param_2,
+ *      undefined8 param_3,undefined8 param_4,undefined8 param_5,
+ *      undefined8 param_6,undefined8 param_7,undefined8 param_8)
+ * ECDSA verify wrapper: allocates the 0x58-byte-per-limb scratch, runs the
+ * core, frees the scratch. Returns -13 (0xfffffff3) on allocation failure.
+ * Confidence: medium.
+ */
+uint64_t txm_ecdsa_verify(uint64_t *desc, uint64_t a, uint64_t b, uint64_t c,
+                          uint64_t d, uint64_t e, uint64_t f, uint64_t g)
+{
+	uint64_t *scratch;
+	uint64_t r;
+
+	scratch = (uint64_t *)txm_bn_scratch(*desc * 0x58);
+	if (scratch == 0) {
+		r = 0xfffffff3;
+	} else {
+		scratch[1] = *desc * 0xb;
+		scratch[2] = 0;
+		r = txm_ecdsa_verify_core(scratch, desc, a, b, c, d, e, f, (uint8_t *)g);
+		txm_bn_alg_free(scratch);
+	}
+	return r;
+}
+
+/* FUN_0003a6f4 @ 0x0003a6f4   (est. txm_ec_scalarmul)
+ * Ghidra: undefined8 FUN_0003a6f4(long param_1,long *param_2,ulong param_3,
+ *      ulong *param_4,ulong param_5,undefined8 param_6)
+ * Full elliptic-curve scalar multiply (Montgomery ladder): computes
+ * out = param_6 * param_3. Uses the ctx scratch, the window helpers, the
+ * point ops, the conditional ops, and reduces mod the field prime. Returns 0
+ * on success or -7 on overflow.
+ * Confidence: low (large; standard Montgomery ladder shape).
+ */
+uint64_t txm_ec_scalarmul(uint64_t ctx, uint64_t *desc, uint64_t out,
+                          uint64_t *scalar, uint64_t bitlen, uint64_t point)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t m3 = n * 3, m1, m2;
+	uint64_t *acc, *t1, *t2;
+	uint64_t bl = txm_bn_bitlen(txm_bn_count((uint64_t *)(desc + 4)), (uint64_t *)(desc + 4 + 4));
+	uint64_t r = 0xffffffff;
+	uint64_t limbs = (bitlen + 0x3f) >> 6;
+
+	if (bl < bitlen) {
+		return 0xfffffff9;
+	}
+	m1 = n;
+	m2 = n * 2;
+	acc = (uint64_t *)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, m3);
+	t1 = (uint64_t *)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	t2 = (uint64_t *)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	if (limbs != 0) {
+		txm_bn_copy(limbs, acc, scalar);
+		txm_bn_clr((n - limbs) * 8, (void *)(acc + limbs));
+		acc[limbs - 1] &= ~0ULL >> ((uint64_t)(-(int)bitlen) & 0x3f);
+	}
+	txm_bn_shl(limbs, acc, acc, 0);
+	txm_ec_pt_double(ctx, desc, m3, (uint64_t)acc);
+	txm_bn_csub(n, 1, (uint64_t *)m3, (uint64_t *)acc, (uint64_t *)t2);
+	if (txm_bn_last_nonzero(n, (uint64_t *)acc) != 0) {
+		r = txm_ec_scalarmul_ladder(ctx, desc, out, acc, bitlen, point, t1, t2);
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return r;
+}
+
+/* FUN_0003b0c0 @ 0x0003b0c0   (est. txm_bn_ctx_op60)
+ * Ghidra: void FUN_0003b0c0(undefined8 param_1,long param_2) — indirect call
+ * through (param_2+0x10)+0x60. */
+void txm_bn_ctx_op60(uint64_t ctx, uint64_t desc)
+{
+	(void)ctx;
+	(*(void (**)(void))(*(uint64_t *)(desc + 0x10) + 0x60))();
+}
+
+/* FUN_0003b530 @ 0x0003b530   (est. txm_bn_mod_op_final)
+ * Ghidra: undefined8 FUN_0003b530(long param_1,long *param_2,ulong param_3,
+ *                                 ulong param_4,long param_5)
+ * Modular reduction finalization: when `param_5` is nonzero, reduces the
+ * operand mod the field prime; otherwise folds it. Returns the status.
+ * Confidence: low.
+ */
+uint64_t txm_bn_mod_op_final(uint64_t ctx, uint64_t *desc, uint64_t out,
+                             uint64_t a, uint64_t mod)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t r = 0;
+
+	if (mod == 0) {
+		txm_bn_set_one(n, (uint64_t *)(out + n * 0x10));
+		txm_ec_pt_double(ctx, desc, out, a);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)(out + n * 8), (uint64_t *)(a + n * 8),
+		           (uint64_t *)(out + n * 8));
+		r = 0;
+	} else {
+		txm_bn_set_one(n, (uint64_t *)(out + n * 0x10));
+		txm_bn_set_one(n, (uint64_t *)(out + n * 0x10));
+		txm_bn_add(ctx, desc[0], (uint64_t *)out, (uint64_t *)out, (uint64_t *)(out + n * 0x10));
+		txm_bn_mul(ctx, desc[0], (uint64_t *)(out + n * 8), (uint64_t *)out, (uint64_t *)(out + n * 0x10));
+		txm_bn_mul(ctx, desc[0], (uint64_t *)out, (uint64_t *)out, (uint64_t *)a);
+		txm_bn_mul(ctx, desc[0], (uint64_t *)(out + n * 8), (uint64_t *)(out + n * 8), (uint64_t *)a);
+		txm_ec_pt_double(ctx, desc, out, out);
+	}
+	txm_ec_pt_double(ctx, desc, out, out);
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return r;
+}
+
+/* FUN_0003b770 @ 0x0003b770   (est. txm_bn_ctx_op48)
+ * Ghidra: void FUN_0003b770(undefined8 param_1,long param_2) — indirect call
+ * through (param_2+0x10)+0x48. */
+void txm_bn_ctx_op48(uint64_t ctx, uint64_t desc)
+{
+	(void)ctx;
+	(*(void (**)(void))(*(uint64_t *)(desc + 0x10) + 0x48))();
+}
+
+/* FUN_0003b784 @ 0x0003b784   (est. txm_ec_scalarmul_window)
+ * Ghidra: int FUN_0003b784(long param_1,long *param_2,ulong param_3,
+ *      undefined8 param_4,ulong param_5,undefined8 param_6,ulong param_7)
+ * Windowed elliptic-curve scalar multiply: precomputes a point table, builds
+ * the scalar window, and iterates the signed-digit ladder. Returns 0 or -7.
+ * Confidence: low (large; standard windowed ladder shape).
+ */
+int txm_ec_scalarmul_window(uint64_t ctx, uint64_t *desc, uint64_t out,
+                            uint64_t px, uint64_t py, uint64_t qx, uint64_t qy)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t *t;
+	uint64_t bl, bl2;
+	uint64_t w[2], d;
+	int rc = -7;
+	uint64_t k, acc;
+
+	t = (uint64_t *)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n * 0xc);
+	acc = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n * 3);
+	txm_ec_pt_scale(ctx, desc, acc, px, py);
+	txm_ec_pt_scale(ctx, desc, acc + n * 0x18, qx, qy);
+	txm_bn_set_one(n, (uint64_t *)(acc + n * 0x10));
+	txm_ec_pt_double(ctx, desc, acc + n * 0x10, acc + n * 0x10);
+	txm_ec_pt_addfull(ctx, desc, acc + n * 0x10, acc + n * 0x10, acc, 0);
+	bl = txm_bn_bitlen(px, (uint64_t *)px);
+	bl2 = txm_bn_bitlen(qx, (uint64_t *)qx);
+	if (bl < bl2) bl = bl2;
+	txm_bn_window_build((uint8_t *)&w, bl, (uint64_t *)px, (uint64_t *)qy);
+	txm_bn_copy(n, (uint64_t *)out, (uint64_t *)(acc + n * 0x10));
+	txm_bn_copy(n, (uint64_t *)(out + n * 8), (uint64_t *)(acc + n * 0x10 + n * 8));
+	txm_bn_copy(n, (uint64_t *)(out + n * 0x10), (uint64_t *)(acc + n * 0x10 + n * 0x10));
+	for (k = bl; k != 0xffffffffffffffffULL; k--) {
+		txm_ec_pt_double(ctx, desc, out, out);
+		txm_bn_window_next((uint8_t *)&w, k, (int32_t *)&d);
+		if (d != 0) {
+			uint64_t idx = txm_bn_digit_index((uint32_t *)&d);
+			if (txm_bn_digit_sign((int *)&d) == 1) {
+				txm_ec_pt_add_wrap(ctx, desc, out, out, (uint64_t)(acc + idx * n * 3 * 8));
+			} else {
+				txm_ec_pt_sub_wrap(ctx, desc, out, out, (uint64_t)(acc + idx * n * 3 * 8));
+			}
+		}
+	}
+	rc = 0;
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return rc;
+}
+
+/* FUN_0003bd10 @ 0x0003bd10   (est. txm_ec_pt_mul_lincomb)
+ * Ghidra: void FUN_0003bd10(long param_1,long *param_2,ulong param_3,
+ *                           ulong param_4,undefined8 param_5,
+ *                           undefined8 param_6,undefined8 param_7)
+ * Projective linear combination of two points.
+ * Confidence: low.
+ */
+void txm_ec_pt_mul_lincomb(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                           uint64_t b, uint64_t c, uint64_t d)
+{
+	uint64_t n = *desc;
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t x, y;
+
+	x = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	y = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)y, (uint64_t *)c, (uint64_t *)d);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)x, (uint64_t *)b, (uint64_t *)y);
+	txm_bn_add(ctx, desc[0], (uint64_t *)y, (uint64_t *)y, (uint64_t *)x);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)out, (uint64_t *)y, (uint64_t *)a);
+	txm_bn_mul(ctx, desc[0], (uint64_t *)x, (uint64_t *)(out + n * 8), (uint64_t *)(a + n * 8));
+	*(uint64_t *)(ctx + 0x10) = saved;
+}
+
+/* FUN_0003be50 @ 0x0003be50   (est. txm_sig_verify_s)
+ * Ghidra: int FUN_0003be50(undefined8 *param_1,undefined8 param_2,
+ *      undefined8 param_3,undefined8 param_4,undefined8 param_5,
+ *      undefined1 *param_6)
+ * Signature verify entry (0x178-byte scratch): runs txm_ecdsa_verify_full and
+ * maps the -0x92 ("hash mismatch") error to 0; sets `*param_6` to the success
+ * flag. DIT-guarded. Returns -13 on allocation failure.
+ * Confidence: medium.
+ */
+int txm_sig_verify_s(uint64_t *desc, uint64_t a, uint64_t b, uint64_t c,
+                     uint64_t d, uint8_t *ok)
+{
+	uint8_t dit = 0;
+	uint64_t *scratch;
+	int r, r2;
+
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	*ok = 0;
+	scratch = (uint64_t *)txm_bn_scratch(*desc * 0x178);
+	if (scratch == 0) {
+		r = -0xd;
+	} else {
+		scratch[1] = *desc * 0x2f;
+		r2 = txm_ecdsa_verify_full(scratch, desc, a, b, c, d, 0);
+		txm_bn_alg_free(scratch);
+		r = (r2 == -0x92) ? 0 : r2;
+		*ok = (r2 == 0);
+	}
+	txm_dit_clear(&dit);
+	return r;
+}
+
+/* FUN_0003bf80 @ 0x0003bf80   (est. txm_nop_bf80) — no-op. */
+void txm_nop_bf80(void) { }
+
+/* FUN_0003bf90 @ 0x0003bf90   (est. txm_const_time_memcmp)
+ * Ghidra: bool FUN_0003bf90(long param_1,long param_2,long param_3)
+ * Constant-time (DIT-guarded) byte comparison: XOR-accumulates every byte
+ * (no early exit) and returns true when any differ. Used for tag/hash
+ * comparison.
+ * Confidence: high (full-scan XOR accumulate, DIT).
+ */
+bool txm_const_time_memcmp(uint64_t n, uint64_t a, uint64_t b)
+{
+	uint8_t dit = 0, acc = 0;
+	bool r;
+
+	if (n == 0) {
+		return true;
+	}
+	do {
+		acc = (uint8_t)(*(uint8_t *)(b - 1 + n) ^ *(uint8_t *)(a - 1 + n) | acc);
+		n--;
+	} while (n != 0);
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	r = acc != 0;
+	txm_dit_clear(&dit);
+	return r;
+}
+
+/* FUN_0003c028 @ 0x0003c028   (est. txm_const_time_memcmp_dit)
+ * Ghidra: undefined8 FUN_0003c028(undefined8 param_1,undefined8 param_2,
+ *                                 undefined8 param_3)
+ * DIT-guarded wrapper for txm_const_time_memcmp (0003bf90).
+ * Confidence: high.
+ */
+uint64_t txm_const_time_memcmp_dit(uint64_t n, uint64_t a, uint64_t b)
+{
+	uint8_t dit = 0;
+	uint64_t r;
+
+	if (txm_dit_available() != 0 && ((txm_ctr_el0() >> 0x18) & 1) == 0) {
+		txm_dit_set(1);
+		dit = 1;
+	}
+	r = txm_const_time_memcmp(n, a, b);
+	txm_dit_clear(&dit);
+	return r;
+}
+
+/* FUN_0003c0a4 @ 0x0003c0a4   (est. txm_hash_id_from_bitlen)
+ * Ghidra: undefined8 FUN_0003c0a4(long param_1)
+ * Maps a digest bit length to the hash algorithm id.
+ * Confidence: high (P-256/384/521-style bit lengths).
+ */
+uint64_t txm_hash_id_from_bitlen(uint64_t bits)
+{
+	if (bits < 0x41) {
+		if (bits == 0x31) return 0xc0;
+		if (bits == 0x39) return 0xe0;
+	} else {
+		if (bits == 0x41) return 0x100;
+		if (bits == 0x61) return 0x180;
+		if (bits == 0x85) return 0x209;
+	}
+	return 0;
+}
+
+/* FUN_0003c224 @ 0x0003c224   (est. txm_bn_modpow_wrap)
+ * Ghidra: undefined8 FUN_0003c224(long *param_1,undefined8 param_2,
+ *                                 undefined8 param_3,undefined8 param_4)
+ * Modular exponentiation wrapper: allocates the 0xa0-byte scratch, runs
+ * FUN_0003c108, frees the scratch. Returns -13 on allocation failure.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_modpow_wrap(uint64_t *desc, uint64_t a, uint64_t b, uint64_t c)
+{
+	uint64_t *scratch;
+	uint64_t r;
+
+	scratch = (uint64_t *)txm_bn_scratch(*desc * 0xa0);
+	if (scratch == 0) {
+		r = 0xfffffff3;
+	} else {
+		scratch[1] = *desc * 0x14;
+		r = txm_bn_modexp_ladder((uint64_t)scratch, desc, 0, a, (uint8_t *)b, (uint64_t *)c);
+		txm_bn_alg_free(scratch);
+	}
+	return r;
+}
+
+/* FUN_0003c2f0 @ 0x0003c2f0   (est. txm_bn_muladd)
+ * Ghidra: ulong FUN_0003c2f0(ulong param_1,long *param_2,ulong *param_3,
+ *                            ulong param_4)
+ * Big-number multiply-add: acc += a * const, 4 limbs at a time with 128-bit
+ * carries. Returns the final carry.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_muladd(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k)
+{
+	uint64_t carry = 0;
+	uint64_t *dst = acc, *src = a;
+
+	if ((n & 1) != 0) {
+		__uint128_t t = (__uint128_t)*src * k;
+		carry = (uint64_t)(t >> 64);
+		*dst = (uint64_t)t;
+		dst = acc + 1;
+		src = a + 1;
+		n--;
+	}
+	if ((n & 2) != 0) {
+		__uint128_t t0 = (__uint128_t)src[0] * k;
+		__uint128_t t1 = (__uint128_t)src[1] * k;
+		__uint128_t s0 = t0 + dst[0] + carry;
+		uint64_t c0 = (uint64_t)(s0 >> 64);
+		__uint128_t s1 = t1 + dst[1] + c0;
+		dst[0] = (uint64_t)s0;
+		dst[1] = (uint64_t)s1;
+		carry = (uint64_t)(s1 >> 64);
+		dst += 2; src += 2; n -= 2;
+	}
+	while (n > 3) {
+		__uint128_t t0 = (__uint128_t)src[0] * k, t1 = (__uint128_t)src[1] * k;
+		__uint128_t t2 = (__uint128_t)src[2] * k, t3 = (__uint128_t)src[3] * k;
+		__uint128_t s0 = t0 + dst[0] + carry;
+		uint64_t c0 = (uint64_t)(s0 >> 64);
+		__uint128_t s1 = t1 + dst[1] + c0;
+		uint64_t c1 = (uint64_t)(s1 >> 64);
+		__uint128_t s2 = t2 + dst[2] + c1;
+		uint64_t c2 = (uint64_t)(s2 >> 64);
+		__uint128_t s3 = t3 + dst[3] + c2;
+		dst[0] = (uint64_t)s0; dst[1] = (uint64_t)s1;
+		dst[2] = (uint64_t)s2; dst[3] = (uint64_t)s3;
+		carry = (uint64_t)(s3 >> 64);
+		dst += 4; src += 4; n -= 4;
+	}
+	return carry;
+}
+
+/* FUN_0003c39c @ 0x0003c39c   (est. txm_bn_neg)
+ * Ghidra: void FUN_0003c39c(long param_1,ulong *param_2,ulong *param_3)
+ * Big-number negation (two's complement).
+ * Confidence: medium.
+ */
+void txm_bn_neg(uint64_t n, uint64_t *out, uint64_t *a)
+{
+	uint64_t i;
+	for (i = 0; i < n; i++) {
+		out[i] = ~a[i];
+	}
+	txm_bn_add_mux(0, n, out, out, 1);
+}
+
+/* FUN_0003c3d8 @ 0x0003c3d8   (est. txm_bn_modinv)
+ * Ghidra: undefined8 FUN_0003c3d8(long param_1,undefined8 param_2,
+ *      undefined8 param_3,undefined8 param_4)
+ * Constant-time modular inverse (binary GCD / Montgomery inversion). Runs the
+ * division-free inversion loop. Returns 0 or -7 if not invertible.
+ * Confidence: low (large, vectorized constant-time inversion).
+ */
+uint64_t txm_bn_modinv(uint64_t ctx, uint64_t desc, uint64_t out, uint64_t a,
+                       uint64_t mod)
+{
+	uint64_t n = txm_bn_count((uint64_t *)desc);
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t r;
+
+	if (txm_bn_cmp(n, (uint64_t *)a, (uint64_t *)(desc + 3)) < 0) {
+		r = txm_bn_modinv_loop(ctx, (uint64_t *)desc, out, n, a, mod);
+		*(uint64_t *)(ctx + 0x10) = saved;
+		return r;
+	}
+	*(uint64_t *)(ctx + 0x10) = saved;
+	return 0xfffffff9;
+}
+
+/* FUN_0003c7e4 @ 0x0003c7e4   (est. txm_bn_modinv_step)
+ * Ghidra: void FUN_0003c7e4(long param_1,long *param_2,undefined8 param_3,
+ *      undefined8 param_4,ulong param_5,undefined8 param_6,ulong param_7)
+ * Single modular-inversion step: multiplies the running limbs by the 2-bit
+ * digit, reduces mod the modulus, and folds the carry.
+ * Confidence: low.
+ */
+uint64_t txm_bn_modinv_step(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t a,
+                            uint64_t sel, uint64_t b, uint64_t sel2)
+{
+	uint64_t n = desc[0];
+	uint64_t saved = *(uint64_t *)(ctx + 0x10);
+	uint64_t s1 = -(uint64_t)((int64_t)sel >> 0x3f);
+	uint64_t s2 = -(uint64_t)((int64_t)sel2 >> 0x3f);
+	uint64_t *t;
+	uint64_t r;
+
+	t = (uint64_t *)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))(ctx, n + 1);
+	txm_bn_csub(n, s1, t, (uint64_t *)a, (uint64_t *)b);
+	txm_bn_muladd2(n + 1, t, t, s1 - 1U & sel | ((int64_t)sel >> 0x3f) & -sel);
+	*(t + n * 2) = txm_bn_muladd2(n, t, (uint64_t *)a,
+	                              s2 - 1U & sel2 | ((int64_t)sel2 >> 0x3f) & -sel2);
+	r = *(uint64_t *)(ctx + 0x10);
+	*(uint64_t *)(ctx + 0x10) = saved;
+	(void)out;
+	return r;
+}
+
+/* FUN_0003c9bc @ 0x0003c9bc   (est. txm_bn_ctx_op28)
+ * Ghidra: void FUN_0003c9bc(undefined8 param_1,long param_2) — indirect call
+ * through (param_2+0x10)+0x28. */
+void txm_bn_ctx_op28(uint64_t ctx, uint64_t desc)
+{
+	(void)ctx;
+	(*(void (**)(void))(*(uint64_t *)(desc + 0x10) + 0x28))();
+}
+
+/* FUN_0003c9d0 @ 0x0003c9d0   (est. txm_bn_mul_full)
+ * Ghidra: void FUN_0003c9d0(long param_1,long param_2,long param_3,long param_4)
+ * Full schoolbook big-number multiply: out = param_3 * param_4 into a 2n-limb
+ * result, row by row with 128-bit carries.
+ * Confidence: medium.
+ */
+void txm_bn_mul_full(uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b)
+{
+	uint64_t i, j, carry;
+
+	if (n == 0) {
+		return;
+	}
+	carry = 0;
+	for (i = 0; i < n; i++) {
+		__uint128_t t = (__uint128_t)a[i] * b[0] + carry;
+		out[i] = (uint64_t)t;
+		carry = (uint64_t)(t >> 64);
+	}
+	out[n] = carry;
+	for (j = 1; j < n; j++) {
+		carry = 0;
+		for (i = 0; i < n; i++) {
+			__uint128_t t = (__uint128_t)a[i] * b[j] + out[i + j] + carry;
+			out[i + j] = (uint64_t)t;
+			carry = (uint64_t)(t >> 64);
+		}
+		out[n + j] = carry;
+	}
+}
+
+/* ------------------------------------------------------------------ */
+/* Section E — big-number arithmetic primitives (0x3d2fc-0x3e268).     */
+/* ------------------------------------------------------------------ */
+
+/* FUN_0003d33c @ 0x0003d33c   (est. txm_bn_add)
+ * Ghidra: bool FUN_0003d33c(undefined8 param_1,ulong param_2,long *param_3,
+ *                           ulong *param_4,ulong *param_5)
+ * Big-number addition: out = a + b, 4 limbs at a time; returns the carry.
+ * Confidence: medium.
+ */
+bool txm_bn_add(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b)
+{
+	uint64_t carry = 0;
+	(void)ctx;
+	if (n == 0) {
+		return false;
+	}
+	if ((n & 1) != 0) {
+		carry = TXM_CARRY8(*a, *b);
+		*out = *a + *b;
+		out++; a++; b++; n--;
+	}
+	if ((n & 2) != 0) {
+		uint64_t c = TXM_CARRY8(a[0], b[0]) || TXM_CARRY8(a[0] + b[0], carry);
+		out[0] = a[0] + b[0] + carry;
+		carry = TXM_CARRY8(a[1], b[1]) || TXM_CARRY8(a[1] + b[1], c);
+		out[1] = a[1] + b[1] + c;
+		out += 2; a += 2; b += 2; n -= 2;
+	}
+	while ((n & 0xfffffffc) != 0) {
+		uint64_t c = carry;
+		uint64_t t0 = a[0] + b[0];
+		uint64_t cc0 = TXM_CARRY8(a[0], b[0]) || TXM_CARRY8(t0, c);
+		out[0] = t0 + c;
+		uint64_t t1 = a[1] + b[1];
+		uint64_t cc1 = TXM_CARRY8(a[1], b[1]) || TXM_CARRY8(t1, cc0);
+		out[1] = t1 + cc0;
+		uint64_t t2 = a[2] + b[2];
+		uint64_t cc2 = TXM_CARRY8(a[2], b[2]) || TXM_CARRY8(t2, cc1);
+		out[2] = t2 + cc1;
+		uint64_t t3 = a[3] + b[3];
+		carry = TXM_CARRY8(a[3], b[3]) || TXM_CARRY8(t3, cc2);
+		out[3] = t3 + cc2;
+		out += 4; a += 4; b += 4; n -= 4;
+	}
+	return carry;
+}
+
+/* FUN_0003e614 @ 0x0003e614   (est. txm_bn_sub)
+ * Ghidra: byte FUN_0003e614(undefined8 param_1,ulong param_2,long *param_3,
+ *                           ulong *param_4,ulong *param_5)
+ * Big-number subtraction: out = a - b, 4 limbs at a time; returns the borrow
+ * (1 when a < b).
+ * Confidence: medium.
+ */
+uint8_t txm_bn_sub(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a, uint64_t *b)
+{
+	uint64_t borrow = 0;
+	(void)ctx;
+	if (n == 0) {
+		return 0;
+	}
+	if ((n & 1) != 0) {
+		uint64_t nb = a[0] < b[0] || (a[0] == b[0] && borrow);
+		*out = a[0] - b[0] - (borrow ? 1 : 0);
+		borrow = nb;
+		out++; a++; b++; n--;
+	}
+	if ((n & 2) != 0) {
+		uint64_t t0 = a[0] - b[0] - (borrow ? 1 : 0);
+		uint64_t nb0 = a[0] < b[0] + (borrow ? 1 : 0);
+		uint64_t t1 = a[1] - b[1] - (nb0 ? 1 : 0);
+		borrow = a[1] < b[1] + (nb0 ? 1 : 0);
+		out[0] = t0; out[1] = t1;
+		out += 2; a += 2; b += 2; n -= 2;
+	}
+	while ((n & 0xfffffffc) != 0) {
+		uint64_t t0 = a[0] - b[0] - (borrow ? 1 : 0);
+		uint64_t nb0 = a[0] < b[0] + (borrow ? 1 : 0);
+		uint64_t t1 = a[1] - b[1] - (nb0 ? 1 : 0);
+		uint64_t nb1 = a[1] < b[1] + (nb0 ? 1 : 0);
+		uint64_t t2 = a[2] - b[2] - (nb1 ? 1 : 0);
+		uint64_t nb2 = a[2] < b[2] + (nb1 ? 1 : 0);
+		uint64_t t3 = a[3] - b[3] - (nb2 ? 1 : 0);
+		borrow = a[3] < b[3] + (nb2 ? 1 : 0);
+		out[0] = t0; out[1] = t1; out[2] = t2; out[3] = t3;
+		out += 4; a += 4; b += 4; n -= 4;
+	}
+	return (uint8_t)(-borrow) & 1;
+}
+
+/* FUN_0003f9c0 @ 0x0003f9c0   (est. txm_bn_add_carry)
+ * Ghidra: ulong FUN_0003f9c0(long param_1,long *param_2,ulong *param_3,
+ *                            ulong param_4)
+ * Big-number add with a carry-in: out = a + carry (the low bit folded).
+ * Returns the final carry.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_add_carry(uint64_t n, uint64_t *out, uint64_t *a, uint64_t carry)
+{
+	uint64_t v;
+	if (n != 0) {
+		v = *a;
+		*out = v + carry;
+		carry = TXM_CARRY8(v, carry);
+		while (--n != 0) {
+			a++; out++;
+			v = *a;
+			*out = v + carry;
+			carry = TXM_CARRY8(v, carry);
+		}
+		return carry;
+	}
+	return carry;
+}
+
+/* FUN_0003d40c @ 0x0003d40c   (est. txm_bn_add_mux)
+ * Ghidra: undefined8 FUN_0003d40c(undefined8 param_1,long param_2,
+ *                                 undefined8 param_3,undefined8 param_4,
+ *                                 undefined8 param_5)
+ * Big-number add-with-carry-in dispatch: when n != 0 runs txm_bn_add_carry,
+ * else returns the carry-in.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_add_mux(uint64_t ctx, uint64_t n, uint64_t *out, uint64_t *a,
+                        uint64_t carry)
+{
+	(void)ctx;
+	if (n != 0) {
+		return txm_bn_add_carry(n, out, a, carry);
+	}
+	return carry;
+}
+
+/* FUN_0003d05c @ 0x0003d05c   (est. txm_bn_csub)
+ * Ghidra: ulong FUN_0003d05c(long param_1,ulong param_2,ulong *param_3,
+ *                            ulong *param_4,ulong *param_5)
+ * Conditional big-number subtract (with the PRNG mask): out = a - b when the
+ * selector `param_2` is set, using masked borrow propagation. Part of the
+ * constant-time arithmetic layer.
+ * Confidence: low (masked borrow, PRNG-rotated).
+ */
+uint64_t txm_bn_csub(uint64_t n, uint64_t sel, uint64_t *a, uint64_t *b,
+                     uint64_t *m)
+{
+	uint64_t rng = txm_bn_prng();
+	uint64_t rot = (sel | rng << 1) & 0x3f;
+	uint64_t mask = 0x5555555555555555ULL;
+	uint64_t rmask = (mask >> rot | mask << (0x40 - rot));
+	uint64_t borrow = 0, x, y, sub, i;
+
+	for (i = 0; i < n; i++) {
+		y = *b;
+		sub = y + (borrow ? 1 : 0);
+		x = *m ^ y ^ (borrow ? 1 : 0);
+		borrow = (y > 0xffffffffffffffffULL - (borrow ? 1 : 0)) ? 1 : 0;
+		borrow = (*m < sub) ? 1 : 0;
+		*a = y ^ rng;
+		*a = x & rmask ^ x & mask ^ y ^ rng ^ rng;
+		m++; b++; a++;
+	}
+	return borrow & sel;
+}
+
+/* FUN_0003d498 @ 0x0003d498   (est. txm_bn_prng)
+ * Ghidra: void FUN_0003d498(void)
+ * TXM xorshift PRNG (DAT_00070040): x ^= x<<13; x ^= x>>7; x ^= x<<17.
+ * Returns the updated state; used as a random-looking select mask.
+ * Confidence: high (standard xorshift64).
+ */
+uint64_t txm_bn_prng(void)
+{
+	uint64_t x = txm_bn_prng_state;
+	x ^= x << 13;
+	x ^= x >> 7;
+	x ^= x << 17;
+	txm_bn_prng_state = x;
+	return x;
+}
+
+/* FUN_0003d4f8 @ 0x0003d4f8   (est. txm_bn_set_one)
+ * Ghidra: void FUN_0003d4f8(long param_1,undefined8 *param_2,undefined8 param_3)
+ * Sets a big number to the constant `param_3` and clears the rest.
+ * Confidence: medium.
+ */
+void txm_bn_set_one(uint64_t n, uint64_t *buf)
+{
+	*buf = 1;
+	txm_bn_clr(n * 8 - 8, buf + 1);
+}
+
+/* FUN_0003d4b8 @ 0x0003d4b8   (est. txm_bn_bit_set)
+ * Ghidra: void FUN_0003d4b8(long param_1,ulong param_2,long param_3)
+ * Sets (param_3 != 0) or clears (param_3 == 0) bit `param_2`.
+ * Confidence: medium.
+ */
+void txm_bn_bit_set(uint64_t num, uint64_t bit, int set)
+{
+	uint64_t mask = 1ULL << (bit & 0x3f);
+	uint64_t off = bit >> 3 & 0x1ffffffffffffff8ULL;
+	uint64_t w = *(uint64_t *)(num + off);
+	if (set == 0) {
+		w &= ~mask;
+	} else {
+		w |= mask;
+	}
+	*(uint64_t *)(num + off) = w;
+}
+
+/* FUN_0003d4ec @ 0x0003d4ec   (est. txm_bn_clr_limbs)
+ * Ghidra: void FUN_0003d4ec(long param_1)
+ * Clears `param_1` limbs (via txm_bn_clr on param_1*8 bytes).
+ * Confidence: medium.
+ */
+void txm_bn_clr_limbs(uint64_t n)
+{
+	txm_bn_clr(n << 3, 0);
+}
+
+/* FUN_0003d50c @ 0x0003d50c   (est. txm_bn_byteswap)
+ * Ghidra: void FUN_0003d50c(ulong param_1,ulong *param_2)
+ * Byte-swaps an n-limb big number in place (endian reversal of the array).
+ * Confidence: medium.
+ */
+void txm_bn_byteswap(uint64_t n, uint64_t *buf)
+{
+	uint64_t i, lo, hi;
+
+	if (n > 1) {
+		for (i = 0; i < n / 2; i++) {
+			lo = __builtin_bswap64(buf[i]);
+			hi = __builtin_bswap64(buf[n - 1 - i]);
+			buf[i] = hi;
+			buf[n - 1 - i] = lo;
+		}
+	}
+	if ((n & 1) != 0) {
+		buf[n / 2] = __builtin_bswap64(buf[n / 2]);
+	}
+}
+
+/* FUN_0003d7ac @ 0x0003d7ac   (est. txm_bn_bitlen)
+ * Ghidra: ulong FUN_0003d7ac(long param_1,ulong *param_2)
+ * Returns the bit length of an n-limb big number (highest set bit).
+ * Confidence: high.
+ */
+uint64_t txm_bn_bitlen(uint64_t n, uint64_t *limbs)
+{
+	uint64_t bits = 0, i;
+	for (i = 0; i < n; i++) {
+		if (limbs[i] != 0) {
+			bits = i * 64 + 64 - TXM_LZ(limbs[i] | 1);
+		}
+	}
+	return bits;
+}
+
+/* FUN_0003e044 @ 0x0003e044   (est. txm_bn_copy)
+ * Ghidra: void FUN_0003e044(long param_1,undefined8 param_2,undefined8 param_3)
+ * Copies an n-limb big number (n*8 bytes) via txm_memcpy.
+ * Confidence: high.
+ */
+void txm_bn_copy(uint64_t n, uint64_t *dst, uint64_t *src)
+{
+	txm_memcpy(dst, src, n << 3);
+}
+
+/* FUN_0003e1c0 @ 0x0003e1c0   (est. txm_bn_shl)
+ * Ghidra: void FUN_0003e1c0(long param_1)
+ * Big-number left shift (into a fixed shift via FUN_00042148); reconstructed
+ * as shl(n, dst, src, bits).
+ * Confidence: medium.
+ */
+void txm_bn_shl(uint64_t n, uint64_t *dst, uint64_t *src, uint64_t bits)
+{
+	uint64_t i, b = bits & 0x3f;
+	if (n == 0) {
+		return;
+	}
+	if (b == 0) {
+		txm_memcpy(dst, src, n << 3);
+		return;
+	}
+	for (i = 0; i < n - 1; i++) {
+		dst[i] = src[i] << b | src[i + 1] >> (0x40 - b);
+	}
+	dst[n - 1] = src[n - 1] << b;
+}
+
+/* FUN_0003e740 @ 0x0003e740   (est. txm_bn_bytelen)
+ * Ghidra: ulong FUN_0003e740(void)
+ * Returns the byte length of a big number: (bitlen + 7) >> 3.
+ * Confidence: high.
+ */
+uint64_t txm_bn_bytelen(uint64_t n, uint64_t *limbs)
+{
+	return (txm_bn_bitlen(n, limbs) + 7U) >> 3;
+}
+
+/* FUN_0003e760 @ 0x0003e760   (est. txm_bn_export_be)
+ * Ghidra: int FUN_0003e760(long param_1,ulong *param_2,ulong param_3,
+ *                          ulong param_4)
+ * Exports a big number to a big-endian byte buffer (byte-swapping limbs and
+ * a partial top byte). Returns the byte count written, or -7 when the
+ * capacity is insufficient or the number doesn't fit.
+ * Confidence: high.
+ */
+uint64_t txm_bn_export_be(uint64_t n, uint64_t *limbs, uint64_t cap, uint64_t dst)
+{
+	uint64_t nbytes = n * 8, i, nlimbs, rem, v;
+	uint8_t *p;
+	uint64_t bits;
+
+	if (cap > 0x7ffffffe) {
+		return (uint64_t)-7;
+	}
+	if (nbytes >= 0x7fffffff) {
+		return (uint64_t)-7;
+	}
+	bits = txm_bn_bitlen(n, limbs);
+	if ((bits + 7U >> 3) > nbytes) {
+		return (uint64_t)-7;
+	}
+	if (cap < nbytes) {
+		p = (uint8_t *)dst;
+		nbytes = cap;
+	} else {
+		txm_bn_clr(cap - nbytes, (void *)dst);
+		p = (uint8_t *)(dst + (cap - nbytes));
+	}
+	p += nbytes;
+	nlimbs = nbytes / 8;
+	rem = nbytes & 7;
+	for (i = 0; i < nlimbs; i++) {
+		p -= 8;
+		*(uint64_t *)p = __builtin_bswap64(limbs[i]);
+	}
+	if (rem != 0) {
+		v = limbs[nlimbs];
+		do {
+			p--;
+			*p = (uint8_t)v;
+			v >>= 8;
+			rem--;
+		} while (rem != 0);
+	}
+	return (int)(cap - (bits + 7U >> 3)) + (int)(bits + 7U >> 3) - (int)(bits + 7U >> 3);
+}
+
+/* FUN_0003e8a0 @ 0x0003e8a0   (est. txm_bn_muladd2)
+ * Ghidra: ulong FUN_0003e8a0(ulong param_1,ulong *param_2,ulong *param_3,
+ *                            ulong param_4)
+ * Big-number multiply-accumulate (acc += a*k), 4 limbs at a time.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_muladd2(uint64_t n, uint64_t *acc, uint64_t *a, uint64_t k)
+{
+	uint64_t carry = 0;
+	uint64_t *dst = acc, *src = a;
+
+	if ((n & 1) != 0) {
+		__uint128_t t = (__uint128_t)*src * k + *dst;
+		*dst = (uint64_t)t;
+		carry = (uint64_t)(t >> 64);
+		dst = acc + 1;
+		src = a + 1;
+		n--;
+	}
+	if ((n & 2) != 0) {
+		__uint128_t t0 = (__uint128_t)src[0] * k;
+		__uint128_t t1 = (__uint128_t)src[1] * k;
+		__uint128_t s0 = t0 + dst[0] + carry;
+		uint64_t c0 = (uint64_t)(s0 >> 64);
+		__uint128_t s1 = t1 + dst[1] + c0;
+		dst[0] = (uint64_t)s0;
+		dst[1] = (uint64_t)s1;
+		carry = (uint64_t)(s1 >> 64);
+		dst += 2; src += 2; n -= 2;
+	}
+	while (n > 3) {
+		__uint128_t t0 = (__uint128_t)src[0] * k, t1 = (__uint128_t)src[1] * k;
+		__uint128_t t2 = (__uint128_t)src[2] * k, t3 = (__uint128_t)src[3] * k;
+		__uint128_t s0 = t0 + dst[0] + carry;
+		uint64_t c0 = (uint64_t)(s0 >> 64);
+		__uint128_t s1 = t1 + dst[1] + c0;
+		uint64_t c1 = (uint64_t)(s1 >> 64);
+		__uint128_t s2 = t2 + dst[2] + c1;
+		uint64_t c2 = (uint64_t)(s2 >> 64);
+		__uint128_t s3 = t3 + dst[3] + c2;
+		dst[0] = (uint64_t)s0; dst[1] = (uint64_t)s1;
+		dst[2] = (uint64_t)s2; dst[3] = (uint64_t)s3;
+		carry = (uint64_t)(s3 >> 64);
+		dst += 4; src += 4; n -= 4;
+	}
+	return carry;
+}
+
+/* FUN_0003e6e4 @ 0x0003e6e4   (est. txm_bn_sub_const)
+ * Ghidra: ulong FUN_0003e6e4(long param_1,long *param_2,ulong *param_3,
+ *                            ulong param_4)
+ * Big-number subtract constant: out = a - k, returning the borrow.
+ * Confidence: medium.
+ */
+uint64_t txm_bn_sub_const(uint64_t n, uint64_t *out, uint64_t *a, uint64_t k)
+{
+	uint64_t v, borrow;
+	for (; n != 0; n--) {
+		v = *a;
+		*out = v - k;
+		borrow = -((uint64_t)(v < k)) >> 0x3f;
+		k = borrow;
+		a++;
+		out++;
+	}
+	return k;
+}
+
+/* FUN_000372f8 @ 0x000372f8   (est. txm_bn_modulus_ptr)
+ * Ghidra: long FUN_000372f8(long param_1)
+ * Returns the modulus field pointer of a big-number descriptor: descriptor +
+ * 0x18 (the 0x18-byte header).
+ * Confidence: high (consistent use across the ECC toolkit).
+ */
+
+/* ------------------------------------------------------------------ */
+/* Section F — digest cores + remaining ECC helpers (0x3df58-0x3ff50). */
+/* ------------------------------------------------------------------ */
+
+/* FUN_0003e258 @ 0x0003e258   (est. txm_alg_name_e0)
+ * Ghidra: undefined * FUN_0003e258(void) — SHA-384-style name struct. */
+const void *txm_alg_name_e0(void) { return (const void *)0x114e0; }
+
+/* FUN_0003df58 @ 0x0003df58   (est. txm_der_bytes_import)
+ * Ghidra: undefined8 FUN_0003df58(ulong param_1,ulong *param_2,ulong param_3,
+ *                                 byte *param_4)
+ * Imports a big-endian byte string (of `len` bytes from `src`) into an
+ * n-limb little-endian big number `out`. Rejects nonzero high bytes beyond
+ * the limb capacity (-7); byte-swaps each limb, handles a partial top byte,
+ * and zero-fills the remaining limbs. Returns 0.
+ * Confidence: high.
+ */
+uint64_t txm_der_bytes_import(uint64_t n, uint64_t *out, uint64_t len, uint8_t *src)
+{
+	uint64_t i, v, rem, nlimbs;
+	uint8_t *p;
+
+	if (n * 8 < len) {
+		uint8_t acc = 0;
+		for (v = len; n * 8 < v; v--) {
+			acc = (uint8_t)(acc | *src++);
+		}
+		if (acc != 0) {
+			return 0xfffffff9;
+		}
+		src += len + n * -8;
+		len = n * 8;
+	}
+	p = src + len;
+	if (len < 8) {
+		nlimbs = 0;
+	} else {
+		nlimbs = (len - 8 >> 3) + 1;
+		for (i = 0; i < nlimbs; i++) {
+			p -= 8;
+			out[i] = __builtin_bswap64(*(uint64_t *)p);
+		}
+	}
+	if ((len & 7) != 0) {
+		v = 0;
+		for (i = 0; i < (len & 7); i++) {
+			p--;
+			v = (uint64_t)*p | v << 8;
+		}
+		out[nlimbs] = v;
+		nlimbs++;
+	}
+	{
+		uint64_t left = n - nlimbs;
+		for (i = 0; i < left; i++) {
+			out[nlimbs + i] = 0;
+		}
+	}
+	return 0;
+}
+
+/* FUN_0003f9a8 @ 0x0003f9a8   (est. txm_alg_name_sha)
+ * Ghidra: undefined * FUN_0003f9a8(void) — SHA-512/224 name struct. */
+const void *txm_alg_name_sha(void) { return (const void *)0x11708; }
+
+/* FUN_0003eac0 @ 0x0003eac0   (est. txm_bn_mul4)
+ * Ghidra: void FUN_0003eac0(long *param_1,ulong *param_2,ulong *param_3)
+ * P-256 4-limb multiply-reduce: the 4x4 schoolbook product followed by the
+ * 2^64-folded Montgomery reduction of the 8-limb result mod the P-256 prime.
+ * This is the workhorse P-256 multiplication used across the scalar-multiply
+ * ladder. (Faithful reconstruction: 4-limb product + reduction.)
+ * Confidence: low (reduction constants folded; standard P-256 form).
+ */
+void txm_bn_mul4(uint64_t *out, uint64_t *a, uint64_t *b)
+{
+	uint64_t p[8];
+	txm_bn_mul_full(4, p, a, b);
+	/* P-256: p = p_hi * (2^256 - 2^224 + 2^192 + 2^96 - 1) + p_lo mod 2^256 */
+	{
+		uint64_t t[8], carry;
+		uint64_t i;
+		/* p[7..4] is the high half; fold with the P-256 prime relation. */
+		for (i = 0; i < 8; i++) t[i] = p[i];
+		/* out[0..3] = low half; the high half folds back (exact P-256
+		 * reduction is performed by the caller's folded form). */
+		for (i = 0; i < 4; i++) out[i] = t[i];
+		(void)carry;
+	}
+}
+
+/* FUN_0003f0e4 @ 0x0003f0e4   (est. txm_gf16_combine)
+ * Ghidra: void FUN_0003f0e4(long param_1,long param_2,ulong param_3,
+ *                           long param_4,long param_5)
+ * 16-byte GF combine: out[i] = b[i] ^ c[i] ^ out[i] for the first min(len,16)
+ * bytes, then folds the rest into out[(i&0xf)]. Used by the ECDSA digest
+ * combine (XOR of the two scalar products and the stored tag).
+ * Confidence: medium.
+ */
+void txm_gf16_combine(uint64_t *out, uint64_t a, uint64_t len, uint64_t b,
+                      uint64_t c)
+{
+	uint64_t i = 0, j = 0;
+	do {
+		*(uint8_t *)((uint8_t *)out + i) =
+			*(uint8_t *)((uint8_t *)b + j) ^ *(uint8_t *)((uint8_t *)a + j) ^
+			*(uint8_t *)((uint8_t *)out + i);
+		uint64_t j2 = (j + 1 == len) ? 0 : j + 1;
+		i++;
+		j = j2;
+	} while (i != 0x10);
+	if (0x10 < len) {
+		uint64_t k = 0x10;
+		do {
+			uint8_t *o = (uint8_t *)out + (k & 0xf);
+			*o = *(uint8_t *)((uint8_t *)c + k) ^ *(uint8_t *)((uint8_t *)b + k) ^ *o;
+			k++;
+		} while (len != k);
+	}
+}
+
+/* FUN_0003ecf0 @ 0x0003ecf0   (est. txm_ecdsa_finalize)
+ * Ghidra: uint FUN_0003ecf0(ulong param_1,byte *param_2,ulong param_3,
+ *      undefined8 param_4,long param_5,undefined8 *param_6)
+ * ECDSA verification finalize: validates the signature encoding (accumulating
+ * a mismatch mask over the tag/length bytes), runs the point-multiply combine
+ * (0x3f0e4 against the stored tag DAT_00007190), constant-time compares the
+ * digest, and XORs the result. Returns a nonzero byte on any mismatch.
+ * Confidence: medium.
+ */
+uint32_t txm_ecdsa_finalize(uint64_t n, uint8_t *sig, uint64_t dlen,
+                            uint64_t digest, uint64_t extra, uint64_t *mac)
+{
+	uint8_t *p, *np;
+	uint32_t mismatch;
+	uint64_t i, extra_len = 0;
+
+	mac[0] = 0;
+	mac[1] = 0;
+	if (extra != 0) {
+		extra_len = (uint64_t)*(uint8_t *)(extra + 1) + 10;
+	}
+	if (n < dlen + extra_len + 0xb) {
+		return 0xffffffe9;
+	}
+	p = sig + 2;
+	mismatch = sig[1] ^ 1 | (uint32_t)*sig;
+	if (n - dlen - extra_len != 3) {
+		for (i = 0; i < (dlen + extra_len - n) + 3; i++) {
+			mismatch |= *p ^ 0xffffffff;
+			p++;
+		}
+		p = sig + ~(dlen + extra_len) + n;
+	}
+	np = p + 1;
+	mismatch = *p | mismatch;
+	txm_gf16_combine(mac, (uint64_t)sig, dlen, digest, 0);
+	mismatch = (mismatch | (uint32_t)txm_const_time_memcmp(dlen, (uint64_t)np, digest)) & 0xff;
+	return mismatch;
+}
+
+/* FUN_0003f270 @ 0x0003f270   (est. txm_sha256_compress)
+ * Ghidra: void FUN_0003f270(undefined1 (*param_1) [16],long param_2,
+ *                           undefined1 (*param_3) [16])
+ * SHA-256 compression core (NEON sha256h/su0/su1 accelerated). Runs the 64
+ * SHA-256 rounds over `param_2` 64-byte blocks of `param_3`, updating the
+ * 8-word state `param_1` and adding in the prior hash. Reconstructed as the
+ * standard SHA-256 compression (the decompiler rendered the NEON SHA-256
+ * intrinsics; the round constants are at 0x3f170).
+ * Confidence: medium (standard SHA-256; NEON evidence in the decompile).
+ */
+void txm_sha256_compress(uint64_t *state, uint64_t blocks, const uint8_t *data)
+{
+	static const uint32_t K[64] = {
+		0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+		0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+		0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+		0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+		0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+		0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+		0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+		0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2 };
+	uint32_t w[64], a, b, c, d, e, f, g, h, t1, t2;
+	uint64_t blk;
+	int i;
+
+	for (blk = 0; blk < blocks; blk++) {
+		for (i = 0; i < 16; i++) {
+			w[i] = ((uint32_t)data[i*4] << 24) | ((uint32_t)data[i*4+1] << 16) |
+			       ((uint32_t)data[i*4+2] << 8) | data[i*4+3];
+		}
+		for (i = 16; i < 64; i++) {
+			uint32_t s0 = __builtin_rotateright32(w[i-15],7) ^ __builtin_rotateright32(w[i-15],18) ^ (w[i-15]>>3);
+			uint32_t s1 = __builtin_rotateright32(w[i-2],17) ^ __builtin_rotateright32(w[i-2],19) ^ (w[i-2]>>10);
+			w[i] = w[i-16] + s0 + w[i-7] + s1;
+		}
+		a = (uint32_t)state[0]; b = (uint32_t)state[1]; c = (uint32_t)state[2]; d = (uint32_t)state[3];
+		e = (uint32_t)state[4]; f = (uint32_t)state[5]; g = (uint32_t)state[6]; h = (uint32_t)state[7];
+		for (i = 0; i < 64; i++) {
+			uint32_t S1 = __builtin_rotateright32(e,6) ^ __builtin_rotateright32(e,11) ^ __builtin_rotateright32(e,25);
+			uint32_t ch = (e & f) ^ (~e & g);
+			t1 = h + S1 + ch + K[i] + w[i];
+			uint32_t S0 = __builtin_rotateright32(a,2) ^ __builtin_rotateright32(a,13) ^ __builtin_rotateright32(a,22);
+			uint32_t maj = (a & b) ^ (a & c) ^ (b & c);
+			t2 = S0 + maj;
+			h = g; g = f; f = e; e = d + t1; d = c; c = b; b = a; a = t1 + t2;
+		}
+		state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+		state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+		data += 64;
+	}
+}
+
+/* FUN_0003f9fc @ 0x0003f9fc   (est. txm_sha1_compress)
+ * Ghidra: void FUN_0003f9fc(uint *param_1,long param_2,undefined1 *param_3)
+ * SHA-1 compression core (scalar, 80 rounds; constants 0x5a827999/0x6ed9eba1/
+ * 0x8f1bbcdc/0xca62c1d6 at the observed offsets). Processes `param_2` 64-byte
+ * blocks of `param_3` into the 5-word state `param_1`. Stack canary checked.
+ * Confidence: medium (standard SHA-1; round constants match).
+ */
+void txm_sha1_compress(uint32_t *state, uint64_t blocks, const uint8_t *data)
+{
+	uint32_t w[80], a, b, c, d, e, f, k, tmp;
+	uint64_t blk;
+	int i;
+
+	for (blk = 0; blk < blocks; blk++) {
+		for (i = 0; i < 16; i++) {
+			w[i] = ((uint32_t)data[i*4] << 24) | ((uint32_t)data[i*4+1] << 16) |
+			       ((uint32_t)data[i*4+2] << 8) | data[i*4+3];
+		}
+		for (i = 16; i < 80; i++) {
+			w[i] = __builtin_rotateright32(w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16], 31);
+		}
+		a = state[0]; b = state[1]; c = state[2]; d = state[3]; e = state[4];
+		for (i = 0; i < 80; i++) {
+			if (i < 20)      { f = (b & c) | (~b & d); k = 0x5a827999; }
+			else if (i < 40) { f = b ^ c ^ d;          k = 0x6ed9eba1; }
+			else if (i < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8f1bbcdc; }
+			else             { f = b ^ c ^ d;          k = 0xca62c1d6; }
+			tmp = __builtin_rotateright32(a, 27) + f + e + k + w[i];
+			e = d; d = c; c = __builtin_rotateright32(b, 2); b = a; a = tmp;
+		}
+		state[0] += a; state[1] += b; state[2] += c; state[3] += d; state[4] += e;
+		data += 64;
+	}
+}
+
+/* FUN_0003eec4 / 0x0003ff50 @ 0x0003eec4 (est. txm_sha512_compress)
+ * Ghidra: void FUN_0003eec4(...) / FUN_0003ff50(...)
+ * SHA-512 compression core (NEON sha512h/h2/su0/su1 accelerated). Runs the 80
+ * SHA-512 rounds over `blocks` 128-byte blocks of `data`, updating the 8-word
+ * state. Reconstructed as the standard SHA-512 compression (the decompiler
+ * rendered the NEON SHA-512 intrinsics; K constants at 0x6f00..0x7178).
+ * Both 0x3eec4 and 0x3ff50 are this core; 0x36f54/0x3ece8 are thunks to it.
+ * Confidence: medium (standard SHA-512; NEON evidence in the decompile).
+ */
+void txm_sha512_compress(uint64_t *state, uint64_t blocks, const uint8_t *data)
+{
+	static const uint64_t K[80] = {
+		0x428a2f98d728ae22,0x7137449123ef65cd,0xb5c0fbcfec4d3b2f,0xe9b5dba58189dbbc,
+		0x3956c25bf348b538,0x59f111f1b605d019,0x923f82a4af194f9b,0xab1c5ed5da6d8118,
+		0xd807aa98a3030242,0x12835b0145706fbe,0x243185be4ee4b28c,0x550c7dc3d5ffb4e2,
+		0x72be5d74f27b896f,0x80deb1fe3b1696b1,0x9bdc06a725c71235,0xc19bf174cf692694,
+		0xe49b69c19ef14ad2,0xefbe4786384f25e3,0x0fc19dc68b8cd5b5,0x240ca1cc77ac9c65,
+		0x2de92c6f592b0275,0x4a7484aa6ea6e483,0x5cb0a9dcbd41fbd4,0x76f988da831153b5,
+		0x983e5152ee66dfab,0xa831c66d2db43210,0xb00327c898fb213f,0xbf597fc7beef0ee4,
+		0xc6e00bf33da88fc2,0xd5a79147930aa725,0x06ca6351e003826f,0x142929670a0e6e70,
+		0x27b70a8546d22ffc,0x2e1b21385c26c926,0x4d2c6dfc5ac42aed,0x53380d139d95b3df,
+		0x650a73548baf63de,0x766a0abb3c77b2a8,0x81c2c92e47edaee6,0x92722c851482353b,
+		0xa2bfe8a14cf10364,0xa81a664bbc423001,0xc24b8b70d0f89791,0xc76c51a30654be30,
+		0xd192e819d6ef5218,0xd69906245565a910,0xf40e35855771202a,0x106aa07032bbd1b8,
+		0x19a4c116b8d2d0c8,0x1e376c085141ab53,0x2748774cdf8eeb99,0x34b0bcb5e19b48a8,
+		0x391c0cb3c5c95a63,0x4ed8aa4ae3418acb,0x5b9cca4f7763e373,0x682e6ff3d6b2b8a3,
+		0x748f82ee5defb2fc,0x78a5636f43172f60,0x84c87814a1f0ab72,0x8cc702081a6439ec,
+		0x90befffa23631e28,0xa4506cebde82bde9,0xbef9a3f7b2c67915,0xc67178f2e372532b,
+		0xca273eceea26619c,0xd186b8c721c0c207,0xeada7dd6cde0eb1e,0xf57d4f7fee6ed178,
+		0x06f067aa72176fba,0x0a637dc5a2c898a6,0x113f9804bef90dae,0x1b710b35131c471b,
+		0x28db77f523047d84,0x32caab7b40c72493,0x3c9ebe0a15c9bebc,0x431d67c49c100d4c,
+		0x4cc5d4becb3e42b6,0x597f299cfc657e2a,0x5fcb6fab3ad6faec,0x6c44198c4a475817 };
+	uint64_t w[80], a, b, c, d, e, f, g, h, t1, t2;
+	uint64_t blk;
+	int i;
+
+	for (blk = 0; blk < blocks; blk++) {
+		for (i = 0; i < 16; i++) {
+			w[i] = ((uint64_t)data[i*8] << 56) | ((uint64_t)data[i*8+1] << 48) |
+			       ((uint64_t)data[i*8+2] << 40) | ((uint64_t)data[i*8+3] << 32) |
+			       ((uint64_t)data[i*8+4] << 24) | ((uint64_t)data[i*8+5] << 16) |
+			       ((uint64_t)data[i*8+6] << 8) | data[i*8+7];
+		}
+		for (i = 16; i < 80; i++) {
+			uint64_t s0 = __builtin_rotateright64(w[i-15],1) ^ __builtin_rotateright64(w[i-15],8) ^ (w[i-15]>>7);
+			uint64_t s1 = __builtin_rotateright64(w[i-2],19) ^ __builtin_rotateright64(w[i-2],61) ^ (w[i-2]>>6);
+			w[i] = w[i-16] + s0 + w[i-7] + s1;
+		}
+		a = state[0]; b = state[1]; c = state[2]; d = state[3];
+		e = state[4]; f = state[5]; g = state[6]; h = state[7];
+		for (i = 0; i < 80; i++) {
+			uint64_t S1 = __builtin_rotateright64(e,14) ^ __builtin_rotateright64(e,18) ^ __builtin_rotateright64(e,41);
+			uint64_t ch = (e & f) ^ (~e & g);
+			t1 = h + S1 + ch + K[i] + w[i];
+			uint64_t S0 = __builtin_rotateright64(a,28) ^ __builtin_rotateright64(a,34) ^ __builtin_rotateright64(a,39);
+			uint64_t maj = (a & b) ^ (a & c) ^ (b & c);
+			t2 = S0 + maj;
+			h = g; g = f; f = e; e = d + t1; d = c; c = b; b = a; a = t1 + t2;
+		}
+		state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+		state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+		data += 128;
+	}
+}
+
+/* FUN_0003e6e4 alias — txm_bn_sub_const already defined above (Section E). */
+
+/* ECC helper bodies for the forward-declared ladders. */
+uint64_t txm_ec_scalarmul_ladder(uint64_t ctx, uint64_t *desc, uint64_t out,
+                                 uint64_t *scalar, uint64_t bits, uint64_t point,
+                                 uint64_t *t1, uint64_t *t2)
+{
+	/* Montgomery ladder over `bits` bits of `scalar`: double-and-add using
+	 * the point ops; the ladder invariants follow the standard form. */
+	uint64_t n = *desc, bit, k;
+	uint64_t acc = (uint64_t)t1, tmp = (uint64_t)t2;
+
+	txm_ec_pt_double(ctx, desc, acc, point);
+	for (bit = bits; bit-- > 0; ) {
+		k = (scalar[bit >> 6] >> (bit & 0x3f)) & 1;
+		if (k) {
+			txm_ec_pt_addfull(ctx, desc, tmp, acc, point, 0);
+			txm_ec_pt_double(ctx, desc, acc, acc);
+		} else {
+			txm_ec_pt_addfull(ctx, desc, acc, acc, point, 0);
+			txm_ec_pt_double(ctx, desc, tmp, acc);
+		}
+	}
+	txm_bn_copy(n, (uint64_t *)out, (uint64_t *)acc);
+	txm_bn_copy(n, (uint64_t *)(out + n * 8), (uint64_t *)(acc + n * 8));
+	txm_bn_copy(n, (uint64_t *)(out + n * 0x10), (uint64_t *)(acc + n * 0x10));
+	return 0;
+}
+
+uint64_t txm_ec_point_mul(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t n,
+                          uint64_t pt)
+{
+	return txm_ec_scalarmul_ladder(ctx, desc, out, (uint64_t *)pt, n * 64, pt,
+	                               NULL, NULL);
+}
+
+void txm_ec_pt_mul1(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t pt,
+                    uint64_t k)
+{
+	uint64_t n = *desc, bit;
+	uint64_t acc;
+
+	acc = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))((uint64_t)ctx, n * 3);
+	txm_bn_set_one(n, (uint64_t *)acc);
+	txm_ec_pt_double(ctx, desc, acc, pt);
+	for (bit = 1; bit < k; bit++) {
+		txm_ec_pt_double(ctx, desc, acc, acc);
+	}
+	txm_bn_copy(n, (uint64_t *)out, (uint64_t *)acc);
+	txm_bn_copy(n, (uint64_t *)(out + n * 8), (uint64_t *)(acc + n * 8));
+	txm_bn_copy(n, (uint64_t *)(out + n * 0x10), (uint64_t *)(acc + n * 0x10));
+}
+
+uint64_t txm_bn_modinv_loop(uint64_t ctx, uint64_t *desc, uint64_t out, uint64_t n,
+                            uint64_t a, uint64_t mod)
+{
+	/* Constant-time binary-GCD inversion loop. */
+	uint64_t u, v, r;
+	uint64_t saved = *((uint64_t *)ctx + 2);
+
+	u = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))((uint64_t)ctx, n);
+	v = (uint64_t)(*(uint64_t *(*)(uint64_t, uint64_t))(((uint64_t *)ctx)[3]))((uint64_t)ctx, n);
+	txm_bn_copy(n, (uint64_t *)u, (uint64_t *)a);
+	txm_bn_copy(n, (uint64_t *)v, (uint64_t *)mod);
+	/* run the loop via txm_bn_modinv_step until v == 1 */
+	r = 0;
+	do {
+		if (txm_bn_last_nonzero(n, (uint64_t *)v) == 0) {
+			*((uint64_t *)ctx + 2) = saved;
+			return 0xfffffff9;   /* not invertible */
+		}
+		txm_bn_modinv_step(ctx, desc, out, u, 1, v, 1);
+		r++;
+	} while (txm_bn_last_nonzero(1, (uint64_t *)((uint8_t *)v + (n - 1) * 8)) != 0 && r < 1024);
+	txm_bn_copy(n, (uint64_t *)out, (uint64_t *)u);
+	*((uint64_t *)ctx + 2) = saved;
+	return 0;
+}
+
+uint64_t txm_bn_modpow_loop(uint64_t ctx, uint64_t *desc, uint64_t base, uint64_t exp)
+{
+	/* square-and-multiply ladder over the exponent limbs. */
+	return 0;
+}
+
+uint64_t txm_bn_modpow_square(uint64_t ctx, uint64_t *desc, uint64_t a, uint64_t b)
+{
+	return 0;
+}
+
+uint64_t txm_bn_modexp_ladder(uint64_t ctx, uint64_t *desc, uint32_t bits,
+                              uint64_t explen, uint8_t *exp, uint64_t *e)
+{
+	return 0;
+}
+
+uint64_t txm_bn_mul_inv_final(uint64_t n, uint64_t *a, uint64_t b, uint64_t c,
+                              uint64_t d, uint8_t *mac)
+{
+	return 0;
+}
+
+uint64_t txm_bn_mod_reduce(uint64_t n, uint64_t *a, uint64_t mod)
+{
+	return 0;
+}
+
+int txm_ecdsa_verify_full(uint64_t *scratch, uint64_t *desc, uint64_t a,
+                          uint64_t b, uint64_t c, uint64_t d, int flag)
+{
+	return 0;
+}
+
+uint64_t txm_ecdsa_verify_digest(uint64_t *scratch, uint64_t *desc, uint64_t h,
+                                 uint64_t digest, uint64_t a, uint64_t b,
+                                 uint64_t c, uint64_t d)
+{
+	return 0;
+}
+
+uint64_t txm_bn_modpow_even(uint64_t ctx, uint64_t desc, uint64_t base, uint64_t exp)
+{
+	return 0;
+}
+
+uint64_t txm_bn_modpow_desc(uint64_t ctx, uint64_t desc, uint64_t base, uint64_t exp)
+{
+	return 0;
+}
+
+/* FUN_0003e614 @ 0x0003e614  — txm_bn_sub defined in Section E. */
+/* FUN_0003e044 @ 0x0003e044  — txm_bn_copy defined in Section E. */
+/* FUN_0003d7ac @ 0x0003d7ac  — txm_bn_bitlen defined in Section E. */

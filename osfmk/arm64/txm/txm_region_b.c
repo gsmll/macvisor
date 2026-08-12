@@ -39,27 +39,24 @@ extern void txm_panic_call(const char *fmt, ...);
 extern uint64_t txm_percpu_state(void);         /* FUN_0005077c */
 extern uint64_t txm_percpu_context(void);       /* FUN_0005078c */
 
-/* "Optional not set" / "unreachable" panic helpers (FUN_0005a4d4/4ec/4fc). */
-extern void txm_optional_not_set(void);
-extern void txm_unreachable(void);
 
 /* mem/str/format helpers. */
-extern void   txm_snprintf(void *out, size_t cap, const char *fmt, ...);   /* FUN_0002eb44 */
-extern void   txm_format_ident(void *out, const char *src, size_t n, uint64_t cap); /* FUN_0002efc4 */
-extern void   txm_bzero(void *dst, size_t n);                              /* FUN_0002d240 */
-extern int    txm_memcmp(const void *a, const void *b, size_t n);          /* FUN_0002d4d0 */
-extern void   txm_memcpy(void *dst, const void *src, size_t n);            /* FUN_0002d6b0 */
+extern void   txm_snprintf(uint64_t out, size_t cap, const char *fmt, ...);   /* FUN_0002eb44 */
+extern void   txm_format_ident(uint64_t out, uint64_t src, size_t n, uint64_t cap); /* FUN_0002efc4 */
+extern void   txm_bzero(uint64_t dst, size_t n);                           /* FUN_0002d240 */
+extern int    txm_memcmp(uint64_t a, uint64_t b, size_t n);                 /* FUN_0002d4d0 */
+extern void   txm_memcpy(uint64_t dst, uint64_t src, size_t n);            /* FUN_0002d6b0 */
 extern size_t txm_strlen(const char *s);                                   /* FUN_0002dbe0 */
-extern size_t txm_strnlen(const char *s, size_t max);                      /* FUN_0002dc80 */
-extern int    txm_strncmp(const char *a, const char *b, size_t n);         /* FUN_0002d3c0 */
-extern uint32_t txm_strtoul(const char *s, char **end, int base);          /* FUN_0002d990 */
-extern uint64_t txm_hash_bytes(const void *p);                             /* FUN_0002abe4 */
+extern size_t txm_strnlen(uint64_t s, size_t max);                         /* FUN_0002dc80 */
+extern int    txm_strncmp(uint64_t a, uint64_t b, size_t n);              /* FUN_0002d3c0 */
+extern uint32_t txm_strtoul(uint64_t s, uint64_t end, int base);           /* FUN_0002d990 */
+extern uint64_t txm_hash_bytes(uint64_t p);                                /* FUN_0002abe4 */
 
 /* Object alloc/free + CE log. */
 extern void  *txm_alloc(size_t n);              /* FUN_00024f14 */
 extern void   txm_free(void *p);                /* FUN_00029894 */
 extern void   txm_ce_log(const char *fmt, ...); /* FUN_00025c6c */
-extern void   txm_dictionary_iter_reset(void);  /* FUN_0002986c */
+extern int    txm_dictionary_iter_reset(void); /* FUN_0002986c */
 
 /* ASN.1 / DER decode + image4 property query (img4decode internals). */
 extern int    txm_der_decode_item(uint64_t *data, uint64_t *out);       /* FUN_00044178 */
@@ -88,15 +85,16 @@ extern void   txm_sha256(uint64_t *state, uint64_t *out);  /* FUN_00038288 */
 extern void   txm_sha_update_data(uint64_t *state, uint64_t *out, uint64_t a, uint64_t b); /* FUN_000385b8 */
 
 /* Digest-object copy / hash helpers. */
-extern void   txm_digest_copy(void *dst, const void *src);  /* FUN_0004ff74 */
-extern void   txm_digest_set(const void *src, void *dst);   /* FUN_0004f8b0 */
-extern void   txm_digest_import(void *dst, const void *src);/* FUN_0004f980 */
+extern void   txm_digest_copy(uint64_t dst, uint64_t src);  /* FUN_0004ff74 */
+extern void   txm_digest_set(uint64_t src, uint64_t dst);   /* FUN_0004f8b0 */
+extern void   txm_digest_import(uint64_t dst, uint64_t src);/* FUN_0004f980 */
 extern int    txm_hash_query(uint64_t tag, ...);            /* FUN_0004f9b8 */
 extern int    txm_hash_query2(uint64_t tag, ...);           /* FUN_0004f9c8 */
 extern void   txm_hash_combine(void *a, const void *b);     /* FUN_0004f948 */
 
 /* Property / environment / img4decode object helpers. */
-extern int    txm_env_query(void);                          /* FUN_00050420 */
+extern int    txm_env_query(uint64_t a, ...);                              /* FUN_00050420 */
+extern uint64_t txm_obj_check(uint64_t);                                  /* FUN_00042b84 */
 extern uint64_t txm_env_get(uint64_t a);                    /* FUN_0005042c */
 extern void   txm_property_set_init(uint64_t *d, ...);      /* FUN_00051c78 */
 extern int    txm_cdhash_lookup(uint64_t a, ...);           /* FUN_00051bd0 */
@@ -128,266 +126,278 @@ extern void   txm_breakpoint(unsigned code, uint64_t addr);
 
 #ifndef __ASSEMBLER__
 /* Internal recreated-function forward declarations (ordering). */
-bool txm_manifest_has_more_props(uint64_t obj);
-bool txm_manifest_needs_restore(uint64_t key, uint64_t rec);
-bool txm_manifest_restore_revalidate(uint64_t key, uint64_t rec);
-bool txm_property_available(uint64_t prop, uint64_t set);
-bool txm_property_match(uint64_t a, uint64_t b);
-int txm_ce_bool_equal(uint64_t a, uint8_t expect);
-int txm_enforce_digest64_constraint(uint64_t prop, uint64_t obj, uint64_t a, uint64_t b);
-int txm_iter_is_entitlement(uint64_t p);
-int txm_iter_is_manifest_profile(uint64_t p);
-int txm_iter_is_payload_profile(uint64_t p);
-int txm_iter_not_manifest(uint64_t p);
-int txm_iter_not_payload(uint64_t p);
-int64_t txm_iter_terminal(uint64_t p);
-uint32_t * txm_property_get_uint32(uint32_t *obj, uint64_t prop, uint32_t *val);
-uint32_t txm_boot_chain_integrity_check(uint64_t base, uint64_t *rec);
-uint32_t txm_ce_alloc_valid(uint64_t obj);
-uint32_t txm_ce_data_cmp(uint64_t a, uint64_t data, uint64_t len, int wildcard);
-uint32_t txm_ce_data_equal(uint64_t a, uint64_t span);
-uint32_t txm_ce_key_dict_wrap(int *a, uint64_t *ctx);
-uint32_t txm_ce_key_lookup_cb(uint64_t a, uint64_t *ctx);
-uint32_t txm_ce_key_lookup_cb_direct(uint64_t a);
-uint32_t txm_dict_apply(uint64_t dict, uint64_t cb, uint64_t ctx);
-uint32_t txm_enforce_bool_constraint(uint64_t prop, uint64_t obj, uint8_t *req, uint8_t *val);
-uint32_t txm_enforce_uint32_constraint(uint64_t prop, uint64_t obj, uint32_t *req, uint32_t *val);
-uint32_t txm_enforce_uint64_constraint(uint64_t prop, uint64_t obj, uint64_t *req, uint64_t *val);
-uint32_t txm_entitlements_blob_parse(uint64_t ctx, uint32_t type, uint8_t *blob, uint64_t a, uint64_t b);
-uint32_t txm_entitlements_parse(uint64_t blob, uint64_t *out);
-uint32_t txm_errno_lookup(uint32_t idx);
-uint32_t txm_odometer_minmax(uint64_t src, uint32_t min, uint32_t max);
-uint32_t txm_property_tag(uint64_t p);
-uint32_t txm_runtime_name_validate(char *name, uint64_t key);
-uint64_t * txm_digest_import_obj(uint64_t *obj, uint64_t *len, uint64_t *desc);
-uint64_t * txm_img4_decode_init_manifest(uint64_t *rec, uint64_t ctx, uint64_t restore);
-uint64_t * txm_img4_decode_init_payload(uint64_t *rec, uint64_t ctx, uint64_t restore);
-uint64_t * txm_img4_get_property_dispatch(uint64_t key, uint64_t obj, uint64_t tag, uint64_t rec);
-uint64_t * txm_manifest_constraint_ctx(uint64_t *rec, uint64_t ctx, uint64_t profile);
-uint64_t * txm_odometer_current(void);
-uint64_t * txm_property_get_uint64(uint64_t *obj, uint64_t prop, uint64_t *val);
-uint64_t * txm_range_normalize(uint64_t base, uint64_t len, uint32_t extra);
-uint64_t * txm_type_property_table(void);
-uint64_t * txm_type_singleton(void);
-uint64_t txm_cdhash_lookup_dispatch(uint64_t base, int tag, int exp, uint64_t *out);
-uint64_t txm_ce_alloc_free(uint64_t obj);
-uint64_t txm_ce_alloc_sort(uint64_t obj);
-uint64_t txm_ce_array_subset(int *a, uint64_t b);
-uint64_t txm_ce_bool_get(uint64_t a, uint8_t *out);
-uint64_t txm_ce_data_cmp_alt(uint64_t *a, uint64_t data, uint64_t len);
-uint64_t txm_ce_data_get(uint64_t a, uint64_t *out);
-uint64_t txm_ce_dict_match(uint64_t a, uint64_t b);
-uint64_t txm_ce_dict_subset(uint64_t a, uint64_t b);
-uint64_t txm_ce_key_apply(int *a, uint64_t ctx);
-uint64_t txm_ce_key_array_elem(uint64_t a, uint64_t *ctx);
-uint64_t txm_ce_key_copy(uint64_t *a, uint64_t *out);
-uint64_t txm_ce_key_count(uint64_t a, uint64_t ctx);
-uint64_t txm_ce_key_entitlement(uint64_t *a, uint64_t *ctx);
-uint64_t txm_ce_key_lookup(uint64_t dict, uint64_t key, uint64_t *out);
-uint64_t txm_ce_key_lookup2(uint64_t a, uint64_t *ctx);
-uint64_t txm_ce_key_lookup_cb2(uint64_t a, uint64_t ctx);
-uint64_t txm_ce_span_match(uint64_t a, uint64_t *span);
-uint64_t txm_ce_subset(uint64_t a, uint64_t b);
-uint64_t txm_ce_subset_key(uint64_t a, uint64_t b);
-uint64_t txm_ce_type_code(uint64_t a, uint32_t *out);
-uint64_t txm_context_available(void);
-uint64_t txm_context_dispatch(uint8_t *ctx);
-uint64_t txm_current_object(void);
-uint64_t txm_decode_trust_eval(uint64_t *rec, uint64_t impl, uint64_t p3);
-uint64_t txm_decode_trust_eval2(uint64_t *rec, uint64_t impl, uint64_t p3);
-uint64_t txm_dict_apply_dict(uint64_t dict, uint64_t cb, uint64_t ctx);
-uint64_t txm_dict_count(uint64_t dict, uint64_t *out);
-uint64_t txm_dict_elem(uint64_t arr, uint64_t idx, uint64_t *out);
-uint64_t txm_dict_next_value(uint64_t obj, uint64_t *key, uint64_t *span, uint64_t *span2, uint64_t *it);
-uint64_t txm_dict_parse(uint64_t *iter, uint64_t span);
-uint64_t txm_dict_parse_collection(uint64_t *iter, uint64_t span);
-uint64_t txm_digest64_import(uint64_t obj, uint64_t a, uint32_t n);
-uint64_t txm_digest_equal(uint64_t a, uint64_t b);
-uint64_t txm_digest_oid_type(uint64_t *oid);
-uint64_t txm_digest_set_bytes(uint64_t obj, uint64_t src, uint64_t n);
-uint64_t txm_enforce_digest64_constraint_v(uint64_t *obj, uint64_t prop, uint64_t a, uint64_t b);
-uint64_t txm_enforce_digest_constraint(uint64_t prop, uint64_t obj, uint64_t a, uint64_t b);
-uint64_t txm_entitlements_dict_init(uint64_t obj, uint64_t *span, uint64_t *iter);
-uint64_t txm_guest_count(void);
-uint64_t txm_guest_index(void);
-uint64_t txm_hex_cstr_length(uint64_t src, uint64_t out);
-uint64_t txm_identifier_16byte(uint64_t obj, uint64_t ctx, uint64_t out);
-uint64_t txm_identifier_from_cstr(uint64_t out, uint64_t src, uint64_t cap);
-uint64_t txm_image4_cert_root_parse(uint64_t def, uint64_t data, uint64_t *out);
-uint64_t txm_image4_cert_type(uint64_t obj, uint32_t *out);
-uint64_t txm_impl_ctx_name(void);
-uint64_t txm_impl_stub_bad(void);
-uint64_t txm_impl_stub_ok(void);
-uint64_t txm_impl_type_label(uint64_t a, uint64_t obj);
-uint64_t txm_impl_vtable_dispatch(uint64_t impl, uint64_t op, uint64_t *out);
-uint64_t txm_iterator_next(uint64_t *it);
-uint64_t txm_manifest_decode_init(uint64_t *rec);
-uint64_t txm_manifest_exec_policy_check(uint8_t *ctx, uint64_t arg2, uint64_t *arg3);
-uint64_t txm_manifest_restore_lookup(uint64_t rec);
-uint64_t txm_manifest_trust_evaluate(uint64_t *rec, uint64_t impl, uint64_t flag, uint64_t p4, uint64_t p5);
-uint64_t txm_nonce_entangle(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t out);
-uint64_t txm_nonce_equal(uint64_t a, uint64_t b);
-uint64_t txm_nonce_set(uint64_t obj, uint64_t src, uint64_t n);
-uint64_t txm_null_iter(void);
-uint64_t txm_object_tag_check(uint64_t a, uint64_t tag);
-uint64_t txm_odometer_chip_query(uint64_t *obj);
-uint64_t txm_odometer_compare(uint64_t a, uint64_t b);
-uint64_t txm_odometer_entangle_check(uint64_t base, uint64_t *rec);
-uint64_t txm_odometer_query_nonce(uint64_t *obj, uint64_t ctx, int type, uint64_t out);
-uint64_t txm_odometer_restore_bool(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-uint64_t txm_odometer_restore_digest3(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-uint64_t txm_odometer_restore_query(uint64_t *obj, uint64_t ctx, uint64_t out);
-uint64_t txm_odometer_restore_type(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-uint64_t txm_odometer_restore_uint32(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-uint64_t txm_panic_unsupported_image4_cert(void);
-uint64_t txm_parse_12byte(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_parse_18byte(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_parse_23byte(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_parse_4byte(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_parse_bool(uint64_t obj, uint64_t span);
-uint64_t txm_parse_decimal(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_parse_entitlement(uint64_t obj, uint64_t *out, uint64_t span);
-uint64_t txm_payload_decode_init(uint64_t *obj);
-uint64_t txm_payload_init_manifest(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore);
-uint64_t txm_payload_init_payload(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore);
-uint64_t txm_payload_type_check(uint64_t *obj);
-uint64_t txm_policy_bool_count(uint64_t obj, uint64_t ctx, int *out);
-uint64_t txm_policy_impose(uint64_t *rec, uint64_t set, uint64_t key, uint64_t obj, uint64_t *ep);
-uint64_t txm_policy_init(uint64_t *policy, uint64_t name, uint64_t impl, uint64_t ctx);
-uint64_t txm_policy_prepare(uint64_t *policy);
-uint64_t txm_policy_replay_check(uint64_t *policy);
-uint64_t txm_policy_table_find(uint64_t policy, uint64_t *table, uint64_t n);
-uint64_t txm_property_bool_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint8_t *out);
-uint64_t txm_property_digest64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t out);
-uint64_t txm_property_digest_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t out);
-uint64_t txm_property_get(uint64_t container, uint64_t prop);
-uint64_t txm_property_get_bool_impl(uint64_t a, uint64_t b, uint8_t *out);
-uint64_t txm_property_get_digest(uint64_t obj, uint64_t prop, uint64_t val);
-uint64_t txm_property_get_digest64(uint64_t obj, uint64_t prop, uint64_t val);
-uint64_t txm_property_get_uint32_impl(uint64_t a, uint64_t b, uint32_t *out);
-uint64_t txm_property_get_uint64_impl(uint64_t a, uint64_t b, uint64_t *out);
-uint64_t txm_property_impose_env(uint64_t obj, uint64_t set, uint64_t key);
-uint64_t txm_property_override_lookup(uint64_t base, uint64_t prop, uint64_t *alt);
-uint64_t txm_property_override_validate(uint64_t base, uint64_t prop);
-uint64_t txm_property_set_by_tag(int *tag, int kind);
-uint64_t txm_property_set_default(uint64_t set);
-uint64_t txm_property_set_lookup(uint64_t container, uint64_t prop);
-uint64_t txm_property_set_resolve(uint64_t set, uint64_t prop, uint64_t fallback);
-uint64_t txm_property_uint32_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint32_t *out);
-uint64_t txm_property_uint64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t *out);
-uint64_t txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expect);
-uint64_t txm_restore_info_batch(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
-uint64_t txm_restore_info_impose(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
-uint64_t txm_restore_info_impose2(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
-uint64_t txm_restore_info_query(uint64_t *obj, uint64_t prop, uint64_t src, uint64_t out);
-uint64_t txm_runtime_bad_id_a(void);
-uint64_t txm_runtime_bad_id_b(void);
-uint64_t txm_runtime_stub_null(void);
-uint8_t * txm_property_get_bool(uint8_t *obj, uint64_t prop, uint8_t *val);
-uint8_t txm_restore_info_bool(uint8_t *obj, uint64_t prop);
-void txm_ce_cstr_match(uint64_t a, uint64_t s);
-void txm_cpu_ctx_revalidate_a(void);
-void txm_cpu_ctx_revalidate_b(void);
-void txm_cpu_ctx_validate(void);
-void txm_decode_impl_dispatch(uint64_t impl);
-void txm_decode_manifest_if_mode(uint64_t a, uint64_t b, uint64_t c);
-void txm_decode_payload_if_mode(uint64_t a, uint64_t b, uint64_t c);
-void txm_digest64_copy_set(uint64_t *dst, uint64_t *src);
-void txm_digest_copy_get(uint64_t src, uint64_t dst);
-void txm_digest_copy_set(uint64_t dst, uint64_t src);
-void txm_digest_export_32(uint64_t src, uint64_t dst, uint32_t *len);
-void txm_digest_export_64(uint64_t src, uint64_t dst, uint64_t *len);
-void txm_digest_import_copy(uint64_t obj, uint64_t out);
-void txm_digest_import_dispatch(uint64_t obj, uint64_t arg);
-void txm_digest_import_set(uint64_t obj, uint64_t key, uint64_t *out);
-void txm_digest_release(uint64_t obj, uint64_t arg, uint64_t *out);
-void txm_enforce_digest64_constraint2(uint64_t *obj, uint64_t prop);
-void txm_entangle_nonce(uint64_t obj, uint64_t src, uint64_t manifest, uint64_t out);
-void txm_env_query_thunk(void);
-void txm_expert_tag_validate(uint64_t obj, uint32_t expect);
-void txm_flag_manifest_hash_present(uint64_t obj);
-void txm_flag_manifest_present(uint64_t obj);
-void txm_flag_odometer_present(uint64_t obj, uint8_t v);
-void txm_identifier_import_16(uint64_t obj, uint64_t *src);
-void txm_image4_cert_root_parse_v(uint64_t def, uint64_t data, uint64_t *out);
-void txm_img4_get_property_apply(uint64_t *obj, uint64_t reg, uint64_t tag, uint64_t rec);
-void txm_impl_ctx_reval_a(void);
-void txm_impl_ctx_reval_b(void);
-void txm_impl_ctx_validate(void);
-void txm_impl_stub_void(void);
-void txm_log_level(uint64_t obj, uint64_t level);
-void txm_manifest_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out);
-void txm_manifest_dump(uint64_t obj);
-void txm_manifest_get_raw(uint64_t rec, uint64_t out);
-void txm_manifest_hash_import(uint64_t obj, uint64_t *src);
-void txm_manifest_payload_digest_release(uint64_t *rec);
-void txm_manifest_record_release(uint64_t *rec);
-void txm_manifest_restore_release(uint64_t *rec);
-void txm_manifest_trust_eval_call(void);
-void txm_nonce_copy_set(uint64_t dst, uint64_t src);
-void txm_odometer_restore_digest(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-void txm_odometer_restore_digest2(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
-void txm_optional_not_set(void);
-void txm_panic_failed_resolve_expert(void);
-void txm_panic_guest_unavailable(void);
-void txm_panic_illegal_chip_config(void);
-void txm_panic_illegal_odometer_consumption(void);
-void txm_panic_no_anti_replay_policy(void);
-void txm_panic_no_guests(void);
-void txm_payload_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out);
-void txm_payload_digest_get(uint64_t obj, uint64_t out);
-void txm_payload_digest_get_v(uint64_t obj, uint64_t out);
-void txm_payload_get_raw(uint64_t obj, uint64_t out);
-void txm_payload_init_core(uint64_t *obj, uint64_t prop, uint64_t ctx);
-void txm_payload_set_range(uint64_t obj, uint64_t base, uint64_t len);
-void txm_percpu_ctx_reval_a(void);
-void txm_percpu_ctx_reval_b(void);
-void txm_percpu_ctx_validate2(void);
-void txm_percpu_state_thunk(void);
-void txm_policy_any_bool(uint64_t obj, uint64_t ctx, uint64_t out);
-void txm_property_entropy_resolve(uint64_t obj, uint64_t src, uint64_t arg);
-void txm_property_set_bool(uint8_t *obj, uint64_t prop, uint8_t *val);
-void txm_property_set_digest(uint64_t obj, uint64_t prop, uint64_t val);
-void txm_property_set_digest64(uint64_t obj, uint64_t prop, uint64_t val);
-void txm_property_set_uint32(uint32_t *obj, uint64_t prop, uint32_t *val);
-void txm_property_set_uint64(uint64_t *obj, uint64_t prop, uint64_t *val);
-void txm_query_anchor(uint64_t obj);
-void txm_record_attach(uint64_t rec, uint64_t ctx, uint64_t propset);
-void txm_runtime_alloc_type(void);
-void txm_runtime_chain_panic(void);
-void txm_runtime_copy_nonce(void);
-void txm_runtime_dealloc_type(void);
-void txm_runtime_get_identifier_bool(void);
-void txm_runtime_get_identifier_cstr(void);
-void txm_runtime_get_identifier_digest(void);
-void txm_runtime_get_identifier_uint(void);
-void txm_runtime_get_identifier_uint2(void);
-void txm_runtime_log(void);
-void txm_runtime_log_handle(void);
-void txm_runtime_roll_nonce(void);
-void txm_runtime_set_nonce(void);
-void txm_runtime_stub_void(void);
-void txm_snprintf_var(uint64_t a, uint64_t b, uint64_t c, uint64_t d);
-void txm_store_tag_swapped(uint32_t *rec, uint32_t tag);
-void txm_store_tag_swapped_ptr(uint64_t rec, uint32_t *tag);
-void txm_trust_eval_record(uint64_t *rec, int rc, uint64_t eval);
-void txm_unreachable(void);
-void txm_vtable_dispatch_100(uint64_t obj);
-void txm_vtable_dispatch_20(uint64_t obj);
-void txm_vtable_dispatch_28(uint64_t obj);
-void txm_vtable_dispatch_78(uint64_t obj);
-void txm_vtable_dispatch_80(uint64_t obj);
-void txm_vtable_dispatch_80_ctx_a(void);
-void txm_vtable_dispatch_80_ctx_b(void);
-void txm_vtable_dispatch_88(uint64_t obj);
-void txm_vtable_dispatch_90(uint64_t obj);
-void txm_vtable_dispatch_98(uint64_t obj);
-void txm_vtable_dispatch_a0(uint64_t obj);
-void txm_vtable_dispatch_b0(uint64_t obj);
-void txm_vtable_dispatch_b8(uint64_t obj);
-void txm_vtable_dispatch_f0(uint64_t obj);
-void txm_vtable_dispatch_f8(uint64_t obj);
+static bool txm_manifest_has_more_props(uint64_t obj);
+static bool txm_manifest_needs_restore(uint64_t key, uint64_t rec);
+static bool txm_manifest_restore_revalidate(uint64_t key, uint64_t rec);
+static bool txm_property_available(uint64_t prop, uint64_t set);
+static bool txm_property_match(uint64_t a, uint64_t b);
+static int txm_ce_bool_equal(uint64_t a, uint8_t expect);
+static int txm_enforce_digest64_constraint(uint64_t prop, uint64_t obj, uint64_t a, uint64_t b);
+static int txm_iter_is_entitlement(uint64_t p);
+static int txm_iter_is_manifest_profile(uint64_t p);
+static int txm_iter_is_payload_profile(uint64_t p);
+static int txm_iter_not_manifest(uint64_t p);
+static int txm_iter_not_payload(uint64_t p);
+static int64_t txm_iter_terminal(uint64_t p);
+static uint32_t * txm_property_get_uint32(uint32_t *obj, uint64_t prop, uint32_t *val);
+static uint32_t txm_boot_chain_integrity_check(uint64_t base, uint64_t *rec);
+static uint32_t txm_ce_alloc_valid(uint64_t obj);
+static uint32_t txm_ce_data_cmp(uint64_t a, uint64_t data, uint64_t len, int wildcard);
+static uint32_t txm_ce_data_equal(uint64_t a, uint64_t span);
+static uint32_t txm_ce_key_dict_wrap(int *a, uint64_t *ctx);
+static uint32_t txm_ce_key_lookup_cb(uint64_t a, uint64_t *ctx);
+static uint32_t txm_ce_key_lookup_cb_direct(uint64_t a);
+static uint32_t txm_dict_apply(uint64_t dict, uint64_t cb, uint64_t ctx);
+static uint32_t txm_enforce_bool_constraint(uint64_t prop, uint64_t obj, uint8_t *req, uint8_t *val);
+static uint32_t txm_enforce_uint32_constraint(uint64_t prop, uint64_t obj, uint32_t *req, uint32_t *val);
+static uint32_t txm_enforce_uint64_constraint(uint64_t prop, uint64_t obj, uint64_t *req, uint64_t *val);
+static uint32_t txm_entitlements_blob_parse(uint64_t ctx, uint32_t type, uint8_t *blob, uint64_t a, uint64_t b);
+static uint32_t txm_entitlements_parse(uint64_t blob, uint64_t *out);
+static uint32_t txm_errno_lookup(uint32_t idx);
+static uint32_t txm_odometer_minmax(uint64_t src, uint32_t min, uint32_t max);
+static uint32_t txm_property_tag(uint64_t p);
+static uint32_t txm_runtime_name_validate(char *name, uint64_t key);
+static uint64_t * txm_digest_import_obj(uint64_t *obj, uint64_t *len, uint64_t *desc);
+static uint64_t * txm_img4_decode_init_manifest(uint64_t *rec, uint64_t ctx, uint64_t restore);
+static uint64_t * txm_img4_decode_init_payload(uint64_t *rec, uint64_t ctx, uint64_t restore);
+static uint64_t * txm_img4_get_property_dispatch(uint64_t key, uint64_t obj, uint64_t tag, uint64_t rec);
+static uint64_t txm_manifest_constraint_ctx(uint64_t *rec, uint64_t ctx, uint64_t profile);
+static uint64_t * txm_odometer_current(void);
+static uint64_t * txm_property_get_uint64(uint64_t *obj, uint64_t prop, uint64_t *val);
+static uint64_t * txm_range_normalize(uint64_t base, uint64_t len, uint32_t extra);
+static uint64_t * txm_type_property_table(void);
+static uint64_t * txm_type_singleton(void);
+static uint64_t txm_cdhash_lookup_dispatch(uint64_t base, int tag, int exp, uint64_t *out);
+static uint64_t txm_ce_alloc_free(uint64_t obj);
+static uint64_t txm_ce_alloc_sort(uint64_t obj);
+static uint64_t txm_ce_array_subset(int *a, uint64_t b);
+static uint64_t txm_ce_bool_get(uint64_t a, uint8_t *out);
+static uint64_t txm_ce_data_cmp_alt(uint64_t *a, uint64_t data, uint64_t len);
+static uint64_t txm_ce_data_get(uint64_t a, uint64_t *out);
+static uint64_t txm_ce_dict_match(uint64_t a, uint64_t b);
+static uint64_t txm_ce_dict_subset(uint64_t a, uint64_t b);
+static uint64_t txm_ce_key_apply(int *a, uint64_t ctx);
+static uint64_t txm_ce_key_array_elem(uint64_t a, uint64_t *ctx);
+static uint64_t txm_ce_key_copy(uint64_t *a, uint64_t *out);
+static uint64_t txm_ce_key_count(uint64_t a, uint64_t ctx);
+static uint64_t txm_ce_key_entitlement(uint64_t *a, uint64_t *ctx);
+static uint64_t txm_ce_key_lookup(uint64_t dict, uint64_t key, uint64_t *out);
+static uint64_t txm_ce_key_lookup2(uint64_t a, uint64_t *ctx);
+static uint64_t txm_ce_key_lookup_cb2(uint64_t a, uint64_t ctx);
+static uint64_t txm_ce_span_match(uint64_t a, uint64_t *span);
+static uint64_t txm_ce_subset(uint64_t a, uint64_t b);
+static uint64_t txm_ce_subset_key(uint64_t a, uint64_t b);
+static uint64_t txm_ce_type_code(uint64_t a, uint32_t *out);
+static uint64_t txm_context_available(void);
+static uint64_t txm_context_dispatch(uint8_t *ctx);
+static uint64_t txm_current_object(void);
+static uint64_t txm_manifest_trust_eval(uint64_t *rec, uint64_t impl, uint64_t p3);
+static uint64_t txm_manifest_trust_eval_alt(uint64_t *rec, uint64_t impl, uint64_t p3);
+static uint64_t txm_dict_apply_dict(uint64_t dict, uint64_t cb, uint64_t ctx);
+static uint64_t txm_dict_count(uint64_t dict, uint64_t *out);
+static uint64_t txm_dict_get_elem(uint64_t arr, uint64_t idx, uint64_t *out);
+static uint64_t txm_dict_next_value(uint64_t obj, uint64_t *key, uint64_t *span, uint64_t *span2, uint64_t *it);
+static uint64_t txm_dict_parse(uint64_t *iter, uint64_t span);
+static uint64_t txm_dict_parse_collection(uint64_t *iter, uint64_t span);
+static uint64_t txm_digest64_import(uint64_t obj, uint64_t a, uint32_t n);
+static uint64_t txm_digest64_copy_get(uint64_t src, uint64_t dst);
+static uint64_t txm_digest_equal(uint64_t a, uint64_t b);
+static uint64_t txm_digest_oid_type(uint64_t *oid);
+static uint64_t txm_digest_set_bytes(uint64_t obj, uint64_t src, uint64_t n);
+static uint64_t txm_enforce_digest64_constraint_v(uint64_t *obj, uint64_t prop, uint64_t a, uint64_t b);
+static uint64_t txm_enforce_digest_constraint(uint64_t prop, uint64_t obj, uint64_t a, uint64_t b);
+static uint64_t txm_entitlements_dict_init(uint64_t obj, uint64_t *span, uint64_t *iter);
+static uint64_t txm_guest_count(void);
+static uint64_t txm_guest_index(void);
+static uint64_t txm_hex_cstr_length(uint64_t src, uint64_t out);
+static uint64_t txm_identifier_16byte(uint64_t obj, uint64_t ctx, uint64_t out);
+static uint64_t txm_identifier_from_cstr(uint64_t out, uint64_t src, uint64_t cap);
+static uint64_t txm_image4_cert_root_parse(uint64_t def, uint64_t data, uint64_t *out);
+static uint64_t txm_image4_cert_type(uint64_t obj, uint32_t *out);
+static uint64_t txm_impl_ctx_name(void);
+static uint64_t txm_impl_stub_bad(void);
+static uint64_t txm_impl_stub_ok(void);
+static uint64_t txm_impl_type_label(uint64_t a, uint64_t obj);
+static uint64_t txm_impl_vtable_dispatch(uint64_t impl, uint64_t op, uint64_t *out);
+static uint64_t txm_iterator_next(uint64_t *it);
+static uint64_t txm_manifest_decode_init(uint64_t *rec);
+static uint64_t txm_manifest_exec_policy_check(uint8_t *ctx, uint64_t arg2, uint64_t *arg3);
+static uint64_t txm_manifest_restore_lookup(uint64_t rec);
+static uint64_t txm_manifest_trust_evaluate(uint64_t *rec, uint64_t impl, uint64_t flag, uint64_t p4, uint64_t p5);
+static uint64_t txm_nonce_entangle(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t out);
+static uint64_t txm_nonce_equal(uint64_t a, uint64_t b);
+static uint64_t txm_nonce_set(uint64_t obj, uint64_t src, uint64_t n);
+static uint64_t txm_null_iter(void);
+static uint64_t txm_object_tag_check(uint64_t a, uint64_t tag);
+static uint64_t txm_odometer_chip_query(uint64_t *obj);
+static uint64_t txm_odometer_compare(uint64_t a, uint64_t b);
+static uint64_t txm_odometer_entangle_check(uint64_t base, uint64_t *rec);
+static uint64_t txm_odometer_query_nonce(uint64_t *obj, uint64_t ctx, int type, uint64_t out);
+static uint64_t txm_odometer_restore_bool(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static uint64_t txm_odometer_restore_digest3(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static uint64_t txm_odometer_restore_query(uint64_t *obj, uint64_t ctx, uint64_t out);
+static uint64_t txm_odometer_restore_type(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static uint64_t txm_odometer_restore_uint32(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static uint64_t txm_panic_unsupported_image4_cert(void);
+static uint64_t txm_parse_12byte(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_parse_18byte(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_parse_23byte(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_parse_4byte(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_parse_bool(uint64_t obj, uint64_t span);
+static uint64_t txm_parse_decimal(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_parse_entitlement(uint64_t obj, uint64_t *out, uint64_t span);
+static uint64_t txm_payload_decode_init(uint64_t *obj);
+static uint64_t txm_payload_init_manifest(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore);
+static uint64_t txm_payload_init_payload(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore);
+static uint64_t txm_payload_type_check(uint64_t *obj);
+static uint64_t txm_policy_bool_count(uint64_t obj, uint64_t ctx, int *out);
+static uint64_t txm_policy_impose(uint64_t *rec, uint64_t set, uint64_t key, uint64_t obj, uint64_t *ep);
+static uint64_t txm_policy_init(uint64_t *policy, uint64_t name, uint64_t impl, uint64_t ctx);
+static uint64_t txm_policy_prepare(uint64_t *policy);
+static uint64_t txm_policy_replay_check(uint64_t *policy);
+static uint64_t txm_policy_table_find(uint64_t policy, uint64_t *table, uint64_t n);
+static uint64_t txm_property_bool_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint8_t *out);
+static uint64_t txm_property_digest64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t out);
+static uint64_t txm_property_digest_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t out);
+static uint64_t txm_property_get(uint64_t container, uint64_t prop);
+static uint64_t txm_property_get_bool_impl(uint64_t a, uint64_t b, uint8_t *out);
+static uint64_t txm_property_get_digest(uint64_t obj, uint64_t prop, uint64_t val);
+static uint64_t txm_property_get_digest64(uint64_t obj, uint64_t prop, uint64_t val);
+static uint64_t txm_property_get_uint32_impl(uint64_t a, uint64_t b, uint32_t *out);
+static uint64_t txm_property_get_uint64_impl(uint64_t a, uint64_t b, uint64_t *out);
+static uint64_t txm_property_impose_env(uint64_t obj, uint64_t set, uint64_t key);
+static uint64_t txm_property_override_lookup(uint64_t base, uint64_t prop, uint64_t *alt);
+static uint64_t txm_property_override_validate(uint64_t base, uint64_t prop);
+static uint64_t txm_property_set_by_tag(int *tag, int kind);
+static uint64_t txm_property_set_default(uint64_t set);
+static uint64_t txm_property_set_lookup(uint64_t container, uint64_t prop);
+static uint64_t txm_property_set_resolve(uint64_t set, uint64_t prop, uint64_t fallback);
+static uint64_t txm_property_uint32_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint32_t *out);
+static uint64_t txm_property_uint64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t *out);
+static uint64_t txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expect);
+static uint64_t txm_restore_info_batch(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
+static uint64_t txm_restore_info_impose(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
+static uint64_t txm_restore_info_impose2(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src);
+static uint64_t txm_restore_info_query(uint64_t *obj, uint64_t prop, uint64_t src, uint64_t out);
+static uint64_t txm_runtime_bad_id_a(void);
+static uint64_t txm_runtime_bad_id_b(void);
+static uint64_t txm_runtime_stub_null(void);
+static uint8_t * txm_property_get_bool(uint8_t *obj, uint64_t prop, uint8_t *val);
+static uint8_t txm_restore_info_bool(uint8_t *obj, uint64_t prop);
+static void txm_ce_cstr_match(uint64_t a, uint64_t s);
+static void txm_cpu_ctx_revalidate_a(void);
+static void txm_cpu_ctx_revalidate_b(void);
+static void txm_cpu_ctx_validate(void);
+static void txm_decode_impl_dispatch(uint64_t impl);
+static uint64_t txm_decode_manifest_if_mode(uint64_t a, uint64_t b, uint64_t c);
+static uint64_t txm_decode_payload_if_mode(uint64_t a, uint64_t b, uint64_t c);
+static void txm_digest64_copy_set(uint64_t *dst, uint64_t *src);
+static uint64_t txm_digest_copy_get(uint64_t src, uint64_t dst);
+static void txm_digest_copy_set(uint64_t dst, uint64_t src);
+static void txm_digest_export_32(uint64_t src, uint64_t dst, uint32_t *len);
+static void txm_digest_export_64(uint64_t src, uint64_t dst, uint64_t *len);
+static void txm_digest_import_copy(uint64_t obj, uint64_t out);
+static void txm_digest_import_dispatch(uint64_t obj, uint64_t arg);
+static void txm_digest_import_set(uint64_t obj, uint64_t key, uint64_t *out);
+static void txm_digest_release(uint64_t obj, uint64_t arg, uint64_t *out);
+static void txm_enforce_digest64_constraint2(uint64_t *obj, uint64_t prop);
+static void txm_entangle_nonce(uint64_t obj, uint64_t src, uint64_t manifest, uint64_t out);
+static void txm_env_query_thunk(void);
+static void txm_expert_tag_validate(uint64_t obj, uint32_t expect);
+static void txm_flag_manifest_hash_present(uint64_t obj);
+static void txm_flag_manifest_present(uint64_t obj);
+static void txm_flag_odometer_present(uint64_t obj, uint8_t v);
+static void txm_identifier_import_16(uint64_t obj, uint64_t *src);
+static void txm_image4_cert_root_parse_v(uint64_t def, uint64_t data, uint64_t *out);
+static void txm_img4_get_property_apply(uint64_t *obj, uint64_t reg, uint64_t tag, uint64_t rec);
+static void txm_impl_ctx_reval_a(void);
+static void txm_impl_ctx_reval_b(void);
+static void txm_impl_ctx_validate(void);
+static void txm_impl_stub_void(void);
+static void txm_log_level(uint64_t obj, uint64_t level);
+static void txm_manifest_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out);
+static void txm_manifest_dump(uint64_t obj);
+static void txm_manifest_get_raw(uint64_t rec, uint64_t out);
+static void txm_manifest_hash_import(uint64_t obj, uint64_t *src);
+static void txm_manifest_payload_digest_release(uint64_t *rec);
+static void txm_manifest_record_release(uint64_t *rec);
+static void txm_manifest_restore_release(uint64_t *rec);
+static void txm_manifest_trust_eval_call(void);
+static void txm_nonce_copy_set(uint64_t dst, uint64_t src);
+static void txm_odometer_restore_digest(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static void txm_odometer_restore_digest2(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t src);
+static void txm_optional_not_set(void);
+static void txm_panic_failed_resolve_expert(void);
+static void txm_panic_guest_unavailable(void);
+static void txm_panic_illegal_chip_config(void);
+static void txm_panic_illegal_odometer_consumption(void);
+static void txm_panic_no_anti_replay_policy(void);
+static void txm_panic_no_guests(void);
+static void txm_payload_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out);
+static void txm_payload_digest_get(uint64_t obj, uint64_t out);
+static void txm_payload_digest_get_v(uint64_t obj, uint64_t out);
+static void txm_payload_get_raw(uint64_t obj, uint64_t out);
+static void txm_payload_init_core(uint64_t *obj, uint64_t prop, uint64_t ctx);
+static void txm_payload_set_range(uint64_t obj, uint64_t base, uint64_t len);
+static void txm_percpu_ctx_reval_a(void);
+static void txm_percpu_ctx_reval_b(void);
+static void txm_percpu_ctx_validate2(void);
+static void txm_percpu_state_thunk(void);
+static void txm_policy_any_bool(uint64_t obj, uint64_t ctx, uint64_t out);
+static uint64_t txm_property_entropy_resolve(uint64_t obj, uint64_t src, uint64_t arg);
+static void txm_property_set_bool(uint8_t *obj, uint64_t prop, uint8_t *val);
+static void txm_property_set_digest(uint64_t obj, uint64_t prop, uint64_t val);
+static void txm_property_set_digest64(uint64_t obj, uint64_t prop, uint64_t val);
+static void txm_property_set_uint32(uint32_t *obj, uint64_t prop, uint32_t *val);
+static void txm_property_set_uint64(uint64_t *obj, uint64_t prop, uint64_t *val);
+static uint64_t txm_query_anchor(uint64_t obj, uint64_t a, uint64_t b, uint64_t *c, uint64_t *d);
+static void txm_record_attach(uint64_t rec, uint64_t ctx, uint64_t propset);
+static void txm_runtime_alloc_type(void);
+static void txm_runtime_chain_panic(void);
+static void txm_runtime_copy_nonce(void);
+static void txm_runtime_dealloc_type(void);
+static void txm_runtime_get_identifier_bool(void);
+static void txm_runtime_get_identifier_cstr(void);
+static void txm_runtime_get_identifier_digest(void);
+static void txm_runtime_get_identifier_uint(void);
+static void txm_runtime_get_identifier_uint2(void);
+static void txm_runtime_log(void);
+static void txm_runtime_log_handle(void);
+static void txm_runtime_roll_nonce(void);
+static void txm_runtime_set_nonce(void);
+static void txm_runtime_stub_void(void);
+static void txm_snprintf_var(uint64_t a, uint64_t b, uint64_t c, uint64_t d);
+static uint64_t txm_store_tag_swapped(uint32_t *rec, uint32_t tag);
+static uint64_t txm_store_tag_swapped_ptr(uint64_t rec, uint32_t *tag);
+static void txm_trust_eval_record(uint64_t *rec, int rc, uint64_t eval);
+static void txm_unreachable(void);
+static uint64_t txm_vtable_dispatch_100(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_20(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_28(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_78(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_80(uint64_t obj, uint64_t arg);
+static void txm_vtable_dispatch_80_ctx_a(void);
+static void txm_vtable_dispatch_80_ctx_b(void);
+static uint64_t txm_vtable_dispatch_88(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_90(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_98(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_a0(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_b0(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_b8(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_f0(uint64_t obj, uint64_t arg);
+static uint64_t txm_vtable_dispatch_f8(uint64_t obj, uint64_t arg);
 #endif /* __ASSEMBLER__ */
+
+/* Foreign (other-file / CE) helpers referenced from this region. */
+extern uint64_t txm_mix_match_query(uint64_t, uint64_t, uint32_t, uint64_t, uint64_t);  /* FUN_00058fa0 */
+extern uint64_t txm_parse_root(uint64_t, uint64_t, uint64_t, int, uint64_t *);          /* FUN_00047ba0 */
+extern uint64_t txm_decode_impl_dispatch_result(uint64_t, uint64_t, uint64_t);          /* FUN_00056e00 */
+extern uint64_t txm_policy_table_validate(uint64_t, uint64_t);                          /* FUN_00052a88 */
+extern uint64_t txm_policy_table_present(uint64_t, uint64_t);                           /* FUN_00052a78 */
+extern uint64_t txm_ce_decode_object(uint64_t *, uint64_t *);                           /* FUN_00060230 */
+extern uint64_t txm_ce_parse_identifier(uint64_t *, uint64_t, uint32_t);                /* FUN_0006037c */
+extern uint64_t txm_ce_key_uint32(uint64_t, uint64_t);                                  /* CE uint32 key callback */
+extern uint64_t txm_ce_key_array(uint64_t, uint64_t);                                   /* CE array callback */
 
 /* ------------------------------------------------------------------ */
 /* Globals referenced by this region (addresses from Ghidra) */
@@ -426,7 +436,7 @@ txm_manifest_exec_policy_check(uint8_t *ctx, uint64_t arg2, uint64_t *arg3)
     if (obj == 0) {
         txm_panic_fmt("failed to resolve expert function");   /* FUN_000564b8 */
     } else if ((*(uint64_t *)(ctx + 0x30) == 0) || ((*ctx >> 1 & 1) != 0) ||
-               (int)txm_env_query() == 0) {    /* thunk_FUN_0005abf4 */
+               (int)txm_env_query(0) == 0) {    /* thunk_FUN_0005abf4 */
         uint64_t chain = *(uint64_t *)(ctx + 0x270);
         if (chain == 0) {
             if (*(int16_t *)(*(uint64_t *)(ctx + 0x30) + 0x58) == 0) {
@@ -487,7 +497,7 @@ txm_manifest_exec_policy_check(uint8_t *ctx, uint64_t arg2, uint64_t *arg3)
                 txm_stack_check();
             }
             uint64_t r = txm_manifest_constraint_ctx(ctx + 0x278, obj, *(uint64_t *)(ctx + 0x30) + 0x30); /* FUN_0005979c */
-            rc = (r == 0) ? 0 : 0;
+            rc = r;
             /* local_d0 = r */
         } else {
             rc = 0;
@@ -530,10 +540,10 @@ txm_manifest_record_release(uint64_t *rec)
         uint64_t id = *(uint64_t *)(l3 + 8);
         uint64_t state = txm_percpu_state();
         uint64_t a = l3 + 0x498, b = l3 + 0x4b8;
-        txm_manifest_payload_digest_release(l3 + 0x270);   /* FUN_00059fe8 */
-        txm_manifest_restore_release(l3 + 0x30);           /* FUN_0005ad14 */
-        txm_digest_set(id, &a);                            /* FUN_0004f8b0 */
-        txm_digest_set(id, &b);
+        txm_manifest_payload_digest_release((uint64_t *)l3 + 0x270);   /* FUN_00059fe8 */
+        txm_manifest_restore_release((uint64_t *)l3 + 0x30);           /* FUN_0005ad14 */
+        txm_digest_set(id, (uint64_t)&a);                            /* FUN_0004f8b0 */
+        txm_digest_set(id, (uint64_t)&b);
         txm_digest_release(state, *(uint64_t *)(l3 + 0x10), rec); /* FUN_00057f38 */
     }
 }
@@ -764,7 +774,7 @@ txm_iterator_next(uint64_t *it)
         txm_panic_fmt("panic: iteration underflow: idx");   /* FUN_00050d70 */
     if (0x27 < idx)
         txm_panic_fmt("panic: iteration overflow: idx");
-    uint64_t (*get)(uint64_t) = txm_null_iter;             /* FUN_00056628 */
+    uint64_t (*get)(uint64_t) = (uint64_t (*)(uint64_t))txm_null_iter;   /* FUN_00056628 */
     if (it[0] != 0)
         get = (uint64_t (*)(uint64_t))it[0];
     for (;;) {
@@ -803,7 +813,7 @@ txm_manifest_restore_revalidate(uint64_t key, uint64_t rec)
         }
         uint64_t r = txm_manifest_restore_lookup(*(uint64_t *)(rec + 8)); /* FUN_00059980 */
         if ((r == 0) && (*(int16_t *)(rec + 0x3c0) != 0) && (*(int16_t *)(rec + 0x360) != 0)) {
-            int v = txm_restore_constraint(rec, key, *(uint64_t *)(ps + 0xd8), rec + 0x2f8); /* FUN_0005c230 */
+            int v = txm_restore_constraint((uint8_t *)rec, key, *(uint64_t *)(ps + 0xd8), rec + 0x2f8); /* FUN_0005c230 */
             return v != 0;
         }
     }
@@ -831,9 +841,9 @@ txm_odometer_entangle_check(uint64_t base, uint64_t *rec)
     uint64_t ps = rec[2];
     uint32_t type = *(uint32_t *)(rec + 0x6d);
     uint64_t e1 = 0, e2 = 0, ent = 0;
-    uint64_t rc = txm_odometer_query_nonce(rec, base, type, &ent);  /* FUN_0005c0cc */
+    uint64_t rc = txm_odometer_query_nonce(rec, base, type, (uint64_t)&ent);  /* FUN_0005c0cc */
     if ((int)rc == 0) {
-        rc = txm_mix_match_query(name, ps, type, &ent, &e1);        /* FUN_00058fa0 */
+        rc = txm_mix_match_query(name, ps, type, (uint64_t)&ent, (uint64_t)&e1);  /* FUN_00058fa0 */
         if ((int)rc != 0) {
             uint64_t m = *rec;
             txm_optional_not_set();                                /* FUN_00042b84 */
@@ -842,8 +852,8 @@ txm_odometer_entangle_check(uint64_t base, uint64_t *rec)
             if (rc > 0x6b)
                 txm_panic_fmt("panic: error not set to valid po");
         } else {
-            txm_entangle_nonce(name, ps, &e1, &ent);               /* FUN_0005bd78 */
-            int v = txm_enforce_digest_constraint(obj, name, rec + 0x6e, &ent); /* FUN_0005b7f0 */
+            txm_entangle_nonce(name, ps, (uint64_t)&e1, (uint64_t)&ent);               /* FUN_0005bd78 */
+            int v = txm_enforce_digest_constraint(obj, name, (uint64_t)rec + 0x6e, (uint64_t)&ent); /* FUN_0005b7f0 */
             if (v != 0) {
                 rc = *(uint32_t *)(base + 0x18);
                 uint64_t m = *rec;
@@ -982,7 +992,7 @@ txm_image4_cert_root_parse_v(uint64_t def, uint64_t data, uint64_t *out)
 static uint64_t
 txm_property_set_lookup(uint64_t container, uint64_t prop)
 {
-    uint64_t result = txm_env_query();          /* FUN_00050420 */
+    uint64_t result = txm_env_query(0);          /* FUN_00050420 */
     if (result == 0)
         return 0;
     uint64_t tag = txm_env_get(container);      /* FUN_0005042c */
@@ -1240,7 +1250,7 @@ txm_property_set_digest64(uint64_t obj, uint64_t prop, uint64_t val)
         uint64_t lr = (uint64_t)__builtin_return_address(0);
         if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
             txm_breakpoint(0xc471, 0x57220);
-        txm_digest64_copy_set(p, val);                       /* FUN_0005d498 */
+        txm_digest64_copy_set((uint64_t *)p, (uint64_t *)val);                       /* FUN_0005d498 */
         return;
     }
     txm_panic_fmt("panic: property not present in c");
@@ -1378,7 +1388,7 @@ txm_runtime_name_validate(char *name, uint64_t key)
     if (*name == '\0')
         return 2;
     uint64_t fmt[4] = {0, 0, 0, 0};
-    txm_format_ident(fmt, name, 0x25, 0x25);
+    txm_format_ident((uint64_t)fmt, (uint64_t)name, 0x25, 0x25);
     int r = 0;                                              /* FUN_00054228 */
     if (r != 0)
         return 0x16;
@@ -1664,30 +1674,32 @@ txm_errno_lookup(uint32_t idx)
  * Ghidra: void FUN_00057960(undefined8 param_1,undefined8 param_2,undefined8 param_3)
  * Decodes an img4 payload iff the encoder mode (FUN_00045418) is 2 (payload
  *   mode); otherwise returns without action. */
-static void
+static uint64_t
 txm_decode_payload_if_mode(uint64_t a, uint64_t b, uint64_t c)
 {
     if (txm_encode_init_mode() != 2)   /* FUN_00045418 */
-        return;
+        return 0;
     uint64_t lr = (uint64_t)__builtin_return_address(0);
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x579b4);
     txm_encode_payload(a, b, c);       /* FUN_00045504 */
+    return 0;
 }
 
 /* ============================================================================
  * FUN_000579c8 @ 0x000579c8  (est. txm_decode_manifest_if_mode)
  * Ghidra: void FUN_000579c8(undefined8 param_1,undefined8 param_2,undefined8 param_3)
  * Decodes an img4 manifest iff the encoder mode is 2; else returns. */
-static void
+static uint64_t
 txm_decode_manifest_if_mode(uint64_t a, uint64_t b, uint64_t c)
 {
     if (txm_encode_init_mode() != 2)
-        return;
+        return 0;
     uint64_t lr = (uint64_t)__builtin_return_address(0);
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x57a1c);
     txm_encode_payload(a, b, c);       /* FUN_000455a0 */
+    return 0;
 }
 
 /* ============================================================================
@@ -1770,7 +1782,7 @@ txm_digest_copy_set(uint64_t dst, uint64_t src)
     uint64_t lr = (uint64_t)__builtin_return_address(0);
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x57c40);
-    txm_digest_set_bytes(dst, src + 8);                  /* FUN_00057b58 */
+    txm_digest_set_bytes(dst, src + 8, *(uint64_t *)(src + 0x48));  /* FUN_00057b58 */
 }
 
 /* ============================================================================
@@ -1795,7 +1807,7 @@ txm_digest_equal(uint64_t a, uint64_t b)
  * FUN_00057ca8 @ 0x00057ca8  (est. txm_digest_copy_get)
  * Ghidra: void FUN_00057ca8(long param_1,undefined8 param_2)
  * Copies a digest from param_1+8 into param_2 via FUN_0004ff74. */
-static void
+static uint64_t
 txm_digest_copy_get(uint64_t src, uint64_t dst)
 {
     if (0x40 < *(uint64_t *)(src + 0x48))
@@ -1804,6 +1816,18 @@ txm_digest_copy_get(uint64_t src, uint64_t dst)
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x57cd0);
     txm_digest_copy(dst, src + 8);                       /* FUN_0004ff74 */
+    return src;
+}
+
+/* ============================================================================
+ * (internal) txm_digest64_copy_get
+ * Copies a 64-byte digest record into dst and returns src (mirror of
+ *   FUN_0005d498 getter path). */
+static uint64_t
+txm_digest64_copy_get(uint64_t src, uint64_t dst)
+{
+    txm_digest64_copy_set((uint64_t *)dst, (uint64_t *)src);
+    return src;
 }
 
 /* ============================================================================
@@ -1871,19 +1895,19 @@ txm_expert_tag_validate(uint64_t obj, uint32_t expect)
 /* ============================================================================
  * FUN_00057eb0 @ 0x00057eb0  (est. txm_vtable_dispatch_20)
  * Ghidra: void FUN_00057eb0(long param_1) — indirect jump through +0x20. */
-static void
-txm_vtable_dispatch_20(uint64_t obj)
+static uint64_t
+txm_vtable_dispatch_20(uint64_t obj, uint64_t arg)
 {
-    ((void (*)(void))(*(uint64_t *)(obj + 0x20)))();
+    return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x20)))(obj, arg);
 }
 
 /* ============================================================================
  * FUN_00057ec0 @ 0x00057ec0  (est. txm_vtable_dispatch_28)
  * Ghidra: void FUN_00057ec0(long param_1) — indirect jump through +0x28. */
-static void
-txm_vtable_dispatch_28(uint64_t obj)
+static uint64_t
+txm_vtable_dispatch_28(uint64_t obj, uint64_t arg)
 {
-    ((void (*)(void))(*(uint64_t *)(obj + 0x28)))();
+    return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x28)))(obj, arg);
 }
 
 /* ============================================================================
@@ -1895,7 +1919,7 @@ txm_vtable_dispatch_28(uint64_t obj)
 static uint64_t
 txm_impl_vtable_dispatch(uint64_t impl, uint64_t op, uint64_t *out)
 {
-    uint64_t r = txm_optional_not_set();        /* FUN_00042b84 */
+    uint64_t r = txm_obj_check(op);            /* FUN_00042b84 */
     if (r == 0) {
         uint64_t *singleton = txm_type_singleton();   /* FUN_00059250 */
         uint64_t s = singleton[0];
@@ -1946,7 +1970,7 @@ txm_manifest_dump(uint64_t obj)
     if (r == 0) {
         if ((2 < kind) && (kind != 3))
             txm_panic_fmt("panic: unreachable case %s 0x");
-        txm_snprintf(&ident, 0x20, "0x%llx");
+        txm_snprintf((uint64_t)&ident, 0x20, "0x%llx");
     } else {
         kind = 3;
     }
@@ -1955,16 +1979,16 @@ txm_manifest_dump(uint64_t obj)
     uint64_t pv = ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x80)))(obj, kind);
     (void)txm_optional_not_set();
     uint64_t e;
+    uint64_t d[0x40];
     if ((*(uint64_t *)(obj + 0x68) == 0) || ((e = ((uint64_t (*)(uint64_t))(*(uint64_t *)(obj + 0x68)))(obj)) < 7)) {
         if ((*(uint64_t *)(obj + 0x70) == 0) || ((e = ((uint64_t (*)(uint64_t))(*(uint64_t *)(obj + 0x70)))(obj)) < 7)) {
             /* iterate property table */
             for (;;) {
                 uint64_t id = txm_iterator_next(ident);
                 if (id == 0) {
-                    uint64_t d[0x40];  /* 0x200-byte scratch */
-                    int rc = txm_property_digest_query(obj, 0, 0x1a858, d);  /* FUN_00058b88 */
+                    int rc = txm_property_digest_query(obj, 0, 0x1a858, (uint64_t)d);  /* FUN_00058b88 */
                     if (rc == 0)
-                        txm_digest_copy_get(d, &d);
+                        txm_digest_copy_get((uint64_t)d, (uint64_t)&d);
                     if (*(uint64_t *)(obj + 0x38) != 0) {
                         txm_panic_fmt("");
                         ((void (*)(uint64_t, int))(*(uint64_t *)(obj + 0x38)))(obj, 1);
@@ -1984,9 +2008,9 @@ txm_manifest_dump(uint64_t obj)
                 } else if (vtype == 2) {
                     rc = txm_property_uint64_query(obj, pv, id, &d);      /* FUN_000589bc */
                 } else if (vtype == 3) {
-                    rc = txm_property_digest_query(obj, pv, id, &d);      /* FUN_00058b88 */
+                    rc = txm_property_digest_query(obj, pv, id, (uint64_t)&d);   /* FUN_00058b88 */
                 } else if (vtype == 4) {
-                    rc = txm_property_digest64_query(obj, pv, id, &d);    /* FUN_00058d18 */
+                    rc = txm_property_digest64_query(obj, pv, id, (uint64_t)&d); /* FUN_00058d18 */
                 } else {
                     txm_panic_fmt("panic: unreachable case %s 0x");
                 }
@@ -2000,10 +2024,10 @@ txm_manifest_dump(uint64_t obj)
 /* ============================================================================
  * FUN_0005856c @ 0x0005856c  (est. txm_vtable_dispatch_78)
  * Ghidra: void FUN_0005856c(long param_1) — indirect jump through +0x78. */
-static void
-txm_vtable_dispatch_78(uint64_t obj)
+static uint64_t
+txm_vtable_dispatch_78(uint64_t obj, uint64_t arg)
 {
-    ((void (*)(void))(*(uint64_t *)(obj + 0x78)))();
+    return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x78)))(obj, arg);
 }
 
 /* ============================================================================
@@ -2034,10 +2058,10 @@ txm_log_level(uint64_t obj, uint64_t level)
 /* ============================================================================
  * FUN_0005860c @ 0x0005860c  (est. txm_vtable_dispatch_80)
  * Ghidra: void FUN_0005860c(long param_1) — indirect jump through +0x80. */
-static void
-txm_vtable_dispatch_80(uint64_t obj)
+static uint64_t
+txm_vtable_dispatch_80(uint64_t obj, uint64_t arg)
 {
-    ((void (*)(void))(*(uint64_t *)(obj + 0x80)))();
+    return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x80)))(obj, arg);
 }
 
 /* ============================================================================
@@ -2061,13 +2085,13 @@ txm_property_bool_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint8_t *out)
     uint64_t d[0x10] = {0};
     uint64_t fmt = 0x2f6e61;                   /* "na" prefix */
     uint8_t val = raw & 1;
-    uint64_t (*get)(uint64_t, uint64_t, uint8_t *) = txm_property_get_bool;  /* FUN_00059220 */
+    uint64_t (*get)(uint64_t, uint64_t, uint8_t *) = (uint64_t (*)(uint64_t, uint64_t, uint8_t *))txm_property_get_bool;  /* FUN_00059220 */
     if (*(uint64_t *)(prop + 0x30) != 0x1d5e8)
         get = (uint64_t (*)(uint64_t, uint64_t, uint8_t *))(*(uint64_t *)(prop + 0x58));
     if (e != 2) {
         if (e != 0) goto done;
         get = (uint64_t (*)(uint64_t, uint64_t, uint8_t *))(*(uint64_t *)(prop + 0x60));
-        txm_snprintf_var(&d, 0x40, 0x40, 0x5870);
+        txm_snprintf_var((uint64_t)&d, 0x40, 0x40, 0x5870);
     }
     if (get != 0) {
         rc = get(prop, ctx, &val);
@@ -2104,13 +2128,13 @@ txm_property_uint32_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint32_t *o
         txm_panic_fmt("failed to query property %s %d");
     uint64_t d[0x10] = {0};
     uint32_t val = raw;
-    uint64_t (*get)(uint64_t, uint64_t, uint32_t *) = txm_property_get_uint32;  /* FUN_00059230 */
+    uint64_t (*get)(uint64_t, uint64_t, uint32_t *) = (uint64_t (*)(uint64_t, uint64_t, uint32_t *))txm_property_get_uint32;  /* FUN_00059230 */
     if (*(uint64_t *)(prop + 0x30) != 0x1d5e8)
         get = (uint64_t (*)(uint64_t, uint64_t, uint32_t *))(*(uint64_t *)(prop + 0x58));
     if (e != 2) {
         if (e != 0) goto done;
         get = (uint64_t (*)(uint64_t, uint64_t, uint32_t *))(*(uint64_t *)(prop + 0x60));
-        txm_snprintf_var(&d, 0x40, 0x40, 0x5870);
+        txm_snprintf_var((uint64_t)&d, 0x40, 0x40, 0x5870);
     }
     if (get != 0) {
         rc = get(prop, ctx, &val);
@@ -2147,13 +2171,13 @@ txm_property_uint64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t *o
         txm_panic_fmt("failed to query property %s %d");
     uint64_t d[0x10] = {0};
     uint64_t val = raw;
-    uint64_t (*get)(uint64_t, uint64_t, uint64_t *) = txm_property_get_uint64;  /* FUN_00059240 */
+    uint64_t (*get)(uint64_t, uint64_t, uint64_t *) = (uint64_t (*)(uint64_t, uint64_t, uint64_t *))txm_property_get_uint64;  /* FUN_00059240 */
     if (*(uint64_t *)(prop + 0x30) != 0x1d5e8)
         get = (uint64_t (*)(uint64_t, uint64_t, uint64_t *))(*(uint64_t *)(prop + 0x58));
     if (e != 2) {
         if (e != 0) goto done;
         get = (uint64_t (*)(uint64_t, uint64_t, uint64_t *))(*(uint64_t *)(prop + 0x60));
-        txm_snprintf_var(&d, 0x40, 0x40, 0x55db);
+        txm_snprintf_var((uint64_t)&d, 0x40, 0x40, 0x55db);
     }
     if (get != 0) {
         rc = get(prop, ctx, &val);
@@ -2194,14 +2218,14 @@ txm_property_digest_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t ou
             goto done;
         }
         uint64_t d[0x30] = {0};
-        txm_digest_copy_get(raw, d);       /* FUN_00057ca8 */
-        txm_digest_copy_set(raw, d);       /* FUN_00057c20 */
+        txm_digest_copy_get((uint64_t)raw, (uint64_t)d);       /* FUN_00057ca8 */
+        txm_digest_copy_set((uint64_t)raw, (uint64_t)d);       /* FUN_00057c20 */
     } else if (e != 0) {
         if (e > 0x6b)
             txm_panic_fmt("panic: error not set to valid po");
         goto done;
     }
-    txm_digest_copy_set(out, raw);         /* FUN_00057c20 */
+    txm_digest_copy_set(out, (uint64_t)raw);         /* FUN_00057c20 */
     rc = 0;
 done:
     if (txm_canary == saved)
@@ -2238,7 +2262,7 @@ txm_property_digest64_query(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t 
             txm_panic_fmt("panic: error not set to valid po");
         goto done;
     }
-    txm_digest64_copy_set(out, raw);       /* FUN_0005d498 */
+    txm_digest64_copy_set((uint64_t *)out, raw);       /* FUN_0005d498 */
     rc = 0;
 done:
     if (txm_canary == saved)
@@ -2271,7 +2295,7 @@ txm_image4_cert_type(uint64_t obj, uint32_t *out)
  * Ghidra: void FUN_00058f24(long param_1,long param_2,undefined8 param_3)
  * Resolves an entropy/nonce source: if param_2 is 0, obtains it via the
  *   object's +0x80 hook, then dispatches through the +0x60 method. */
-static void
+static uint64_t
 txm_property_entropy_resolve(uint64_t obj, uint64_t src, uint64_t arg)
 {
     if (src == 0)
@@ -2279,44 +2303,44 @@ txm_property_entropy_resolve(uint64_t obj, uint64_t src, uint64_t arg)
     uint64_t lr = (uint64_t)__builtin_return_address(0);
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x58f78);
-    ((void (*)(uint64_t, uint64_t, uint64_t))(*(uint64_t *)(obj + 0x60)))(obj, src, arg);
+    return ((uint64_t (*)(uint64_t, uint64_t, uint64_t))(*(uint64_t *)(obj + 0x60)))(obj, src, arg);
 }
 
 /* ============================================================================
  * FUN_00058f80/90/a0/b0 @ 0x00058f80-0x58fb0  (est. txm_vtable_dispatch_88..a0)
  * Ghidra: void FUN_00058f80/90/a0/b0(long param_1) — indirect jumps through
  *   +0x88/0x90/0x98/0xa0. */
-static void
-txm_vtable_dispatch_88(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0x88)))(); }
-static void
-txm_vtable_dispatch_90(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0x90)))(); }
-static void
-txm_vtable_dispatch_98(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0x98)))(); }
-static void
-txm_vtable_dispatch_a0(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0xa0)))(); }
+static uint64_t
+txm_vtable_dispatch_88(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x88)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_90(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x90)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_98(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x98)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_a0(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0xa0)))(obj, arg); }
 
 /* ============================================================================
  * FUN_00058fc0 @ 0x00058fc0  (est. txm_query_anchor)
  * Ghidra: void FUN_00058fc0(long param_1) — indirect jump through +0xa8. */
-static void
-txm_query_anchor(uint64_t obj)
+static uint64_t
+txm_query_anchor(uint64_t obj, uint64_t a, uint64_t b, uint64_t *c, uint64_t *d)
 {
-    ((void (*)(void))(*(uint64_t *)(obj + 0xa8)))();
+    return ((uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t *, uint64_t *))(*(uint64_t *)(obj + 0xa8)))(obj, a, b, c, d);
 }
 
 /* ============================================================================
  * FUN_00058fd0/fe0/ff0/9000/9010 @ 0x00058fd0-0x59010  (est. txm_vtable_dispatch)
  * Ghidra: void FUN_00058fd0..59010 — indirect jumps through +0xb0/0xb8/0xf0/0xf8/0x100. */
-static void
-txm_vtable_dispatch_b0(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0xb0)))(); }
-static void
-txm_vtable_dispatch_b8(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0xb8)))(); }
-static void
-txm_vtable_dispatch_f0(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0xf0)))(); }
-static void
-txm_vtable_dispatch_f8(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0xf8)))(); }
-static void
-txm_vtable_dispatch_100(uint64_t obj) { ((void (*)(void))(*(uint64_t *)(obj + 0x100)))(); }
+static uint64_t
+txm_vtable_dispatch_b0(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0xb0)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_b8(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0xb8)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_f0(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0xf0)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_f8(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0xf8)))(obj, arg); }
+static uint64_t
+txm_vtable_dispatch_100(uint64_t obj, uint64_t arg) { return ((uint64_t (*)(uint64_t, uint64_t))(*(uint64_t *)(obj + 0x100)))(obj, arg); }
 
 /* ============================================================================
  * FUN_00059020 @ 0x00059020  (est. txm_manifest_has_more_props)
@@ -2340,7 +2364,7 @@ static uint64_t
 txm_identifier_16byte(uint64_t obj, uint64_t ctx, uint64_t out)
 {
     uint64_t a = 0, b = 0;
-    uint64_t rc = txm_property_uint32_query(obj, ctx, 0x1c600, (uint32_t *)&a | 4);
+    uint64_t rc = txm_property_uint32_query(obj, ctx, 0x1c600, (uint32_t *)&a);
     if (((int)rc == 0) && (rc = txm_property_uint64_query(obj, ctx, 0x1c8b0, &b), (int)rc == 0)) {
         uint32_t t = (uint32_t)(a & 0xffffffff);
         uint32_t s = (t & 0xff00ff00) >> 8 | (t & 0xff00ff) << 8;
@@ -2348,7 +2372,7 @@ txm_identifier_16byte(uint64_t obj, uint64_t ctx, uint64_t out)
         uint64_t s2 = (b & 0xff00ff00ff00ff00) >> 8 | (b & 0xff00ff00ff00ff) << 8;
         s2 = (s2 & 0xffff0000ffff0000) >> 0x10 | (s2 & 0xffff0000ffff) << 0x10;
         b = s2 >> 0x20 | s2 << 0x20;
-        txm_digest_set_bytes(out, &a, 0x10);   /* FUN_00057b58 */
+        txm_digest_set_bytes(out, (uint64_t)&a, 0x10);   /* FUN_00057b58 */
         rc = 0;
     }
     return rc;
@@ -2434,7 +2458,7 @@ txm_type_singleton(void)
  * FUN_00059268 @ 0x00059268  (est. txm_store_tag_swapped)
  * Ghidra: void FUN_00059268(uint *param_1,uint param_2)
  * Stores a 4-byte tag (byte-swapped into a second word) into a 9-byte record. */
-static void
+static uint64_t
 txm_store_tag_swapped(uint32_t *rec, uint32_t tag)
 {
     *rec = tag;
@@ -2442,7 +2466,7 @@ txm_store_tag_swapped(uint32_t *rec, uint32_t tag)
         uint32_t t = (tag & 0xff00ff00) >> 8 | (tag & 0xff00ff) << 8;
         *(uint8_t *)(rec + 2) = 0;
         rec[1] = t >> 0x10 | t << 0x10;
-        return;
+        return (uint64_t)rec;
     }
     txm_panic_bounds(0x19);
 }
@@ -2450,10 +2474,10 @@ txm_store_tag_swapped(uint32_t *rec, uint32_t tag)
 /* ============================================================================
  * FUN_000592a8 @ 0x000592a8  (est. txm_store_tag_swapped_ptr)
  * Ghidra: void FUN_000592a8(undefined8 param_1,undefined4 *param_2) */
-static void
+static uint64_t
 txm_store_tag_swapped_ptr(uint64_t rec, uint32_t *tag)
 {
-    txm_store_tag_swapped(rec, *tag);
+    return txm_store_tag_swapped((uint32_t *)rec, *tag);
 }
 
 /* ============================================================================
@@ -2473,9 +2497,9 @@ txm_manifest_trust_evaluate(uint64_t *rec, uint64_t impl, uint64_t flag, uint64_
     uint64_t saved = txm_canary;
     uint64_t *ar = 0, *sp = 0;
     uint64_t obj = rec[0], code = rec[1];
-    uint64_t (*trust)(uint64_t *, uint64_t, uint64_t) = txm_decode_trust_eval;  /* FUN_00059628 */
+    uint64_t (*trust)(uint64_t *, uint64_t, uint64_t) = txm_manifest_trust_eval;  /* FUN_00059628 */
     if (flag == 0)
-        trust = txm_decode_trust_eval2;          /* FUN_000596b8 */
+        trust = txm_manifest_trust_eval_alt;          /* FUN_000596b8 */
     uint64_t lvl = txm_env_level(0xd7c8);        /* FUN_00052da8 */
     if (lvl < 2)
         lvl = 1;
@@ -2513,8 +2537,8 @@ txm_manifest_trust_evaluate(uint64_t *rec, uint64_t impl, uint64_t flag, uint64_
     } else {
         txm_panic_fmt("panic: unreachable case %s 0x");
     }
-    uint64_t policy = txm_policy_init(sp2, obj, rec, impl);   /* FUN_0005c61c */
-    uint64_t rc = txm_policy_prepare();                        /* FUN_0005c6d4 */
+    uint64_t policy = txm_policy_init(sp2, obj, (uint64_t)rec, impl);   /* FUN_0005c61c */
+    uint64_t rc = txm_policy_prepare((uint64_t *)policy);        /* FUN_0005c6d4 */
     if ((int)rc == 0) {
         if ((code != 0) && (*(uint64_t *)(code + 0x20) != 0)) {
             ((void (*)(uint64_t *, uint64_t, uint64_t))(*(uint64_t *)(code + 0x20)))(rec, policy, rec[2]);
@@ -2522,7 +2546,7 @@ txm_manifest_trust_evaluate(uint64_t *rec, uint64_t impl, uint64_t flag, uint64_
         ar[5] = (uint64_t)(rec);
         int t = trust(rec, (uint64_t)rec, (uint64_t)ar);
         if (t == 0) {
-            rc = txm_policy_replay_check(policy);              /* FUN_0005c944 */
+            rc = txm_policy_replay_check((uint64_t *)policy);              /* FUN_0005c944 */
             if ((int)rc == 0) {
                 rc = 0;
                 goto out;
@@ -2553,7 +2577,7 @@ out:
  * Performs Img4DecodePerformTrustEvaluation when the manifest flag is set
  *   (rec+0x42), else panics via FUN_0005a4ec. Logs "Img4DecodePerformTrustEvaluation". */
 static uint64_t
-txm_decode_trust_eval(uint64_t *rec, uint64_t impl, uint64_t p3)
+txm_manifest_trust_eval(uint64_t *rec, uint64_t impl, uint64_t p3)
 {
     if (*(int16_t *)(rec + 0x42) != 0) {
         uint64_t rc = 0;   /* FUN_000456f8(**(uint32 **)(*(uint64_t *)(impl+0x10)+8), rec+9, impl+0x20, impl+0x28, p3) */
@@ -2571,7 +2595,7 @@ txm_decode_trust_eval(uint64_t *rec, uint64_t impl, uint64_t p3)
  * Manifest-trust evaluation variant. Logs
  *   "Img4DecodePerformManifestTrustEv". */
 static uint64_t
-txm_decode_trust_eval2(uint64_t *rec, uint64_t impl, uint64_t p3)
+txm_manifest_trust_eval_alt(uint64_t *rec, uint64_t impl, uint64_t p3)
 {
     if (*(int16_t *)(rec + 0x42) != 0) {
         uint64_t rc = 0;   /* FUN_00061e08(rec+9, impl+0x20, impl+0x28, p3) */
@@ -2597,8 +2621,8 @@ txm_img4_decode_init_manifest(uint64_t *rec, uint64_t ctx, uint64_t restore)
     rec[1] = 0;
     rec[2] = 0;
     rec[0] = ctx;
-    txm_bzero(rec + 3, 0x208);
-    txm_img4_set_restore(rec + 3, restore);    /* FUN_00052318 */
+    txm_bzero((uint64_t)rec + 3, 0x208);
+    txm_img4_set_restore((uint64_t)rec + 3, restore);    /* FUN_00052318 */
     *(int16_t *)(rec + 8) = 1;
     return rec;
 }
@@ -2608,7 +2632,7 @@ txm_img4_decode_init_manifest(uint64_t *rec, uint64_t ctx, uint64_t restore)
  * Ghidra: long * FUN_0005979c(long *param_1,long param_2,long param_3)
  * Initializes the manifest execution-policy constraint context (0x220 bytes
  *   of zeroed state), stores the profile (param_3) and marks it active. */
-static uint64_t *
+static uint64_t
 txm_manifest_constraint_ctx(uint64_t *rec, uint64_t ctx, uint64_t profile)
 {
     if (ctx == 0)
@@ -2622,7 +2646,7 @@ txm_manifest_constraint_ctx(uint64_t *rec, uint64_t ctx, uint64_t profile)
     rec[0x43] = profile;
     /* FUN_00052370(rec+3, profile) */
     *(int16_t *)(rec + 8) = 1;
-    return rec;
+    return (uint64_t)rec;
 }
 
 /* ============================================================================
@@ -2638,8 +2662,8 @@ txm_img4_decode_init_payload(uint64_t *rec, uint64_t ctx, uint64_t restore)
     rec[1] = 0;
     rec[2] = 0;
     rec[0] = ctx;
-    txm_bzero(rec + 3, 0x208);
-    txm_img4_set_restore(rec + 3, restore);    /* FUN_000522f4 */
+    txm_bzero((uint64_t)rec + 3, 0x208);
+    txm_img4_set_restore((uint64_t)rec + 3, restore);    /* FUN_000522f4 */
     *(int16_t *)(rec + 8) = 1;
     return rec;
 }
@@ -2674,7 +2698,7 @@ txm_manifest_decode_init(uint64_t *rec)
         *(int16_t *)(rec + 0x42) = 1;
         return 0;
     }
-    uint64_t e = txm_errno_lookup();
+    uint64_t e = txm_errno_lookup(0);
     txm_panic_fmt("Img4DecodeInitAsManifest %d");
     if (e > 0x6b)
         txm_panic_fmt("panic: error not set to valid po");
@@ -2749,7 +2773,7 @@ txm_img4_get_property_dispatch(uint64_t key, uint64_t obj, uint64_t tag, uint64_
         uint64_t len = ep[1];
         uint64_t tagrec[2] = {0, 0};
         uint64_t t = txm_store_tag_swapped(&tagrec, key);  /* FUN_00059268 */
-        uint64_t set = txm_property_set_by_tag(t, 1);      /* FUN_0005b074 */
+        uint64_t set = txm_property_set_by_tag((int *)t, 1);      /* FUN_0005b074 */
         if ((set != 0) && (txm_policy_impose(base, set, len, obj, ep) != 0)) {   /* FUN_0005a0ac */
             *(int *)(ep + 8) = 0;
             txm_panic_fmt("object property failed to impose");
@@ -2762,7 +2786,8 @@ txm_img4_get_property_dispatch(uint64_t key, uint64_t obj, uint64_t tag, uint64_
     }
     if (kind != 0) {
         uint64_t *get = txm_type_property_table();         /* FUN_0005a4fc */
-        uint64_t obj2 = get[0], reg = get[1];
+        uint64_t *obj2 = (uint64_t *)get[0];
+        uint64_t reg = get[1];
         uint64_t *m = (uint64_t *)obj2[1];
         uint64_t tagrec[4] = {0, 0, 0, 0};
         if (m == 0)
@@ -2803,7 +2828,7 @@ txm_img4_get_property_dispatch(uint64_t key, uint64_t obj, uint64_t tag, uint64_
         uint64_t off = ep[6];
         uint64_t tagrec[2] = {0, 0};
         uint64_t t = txm_store_tag_swapped(&tagrec, key);
-        uint64_t set = txm_property_set_by_tag(t, 0);       /* FUN_0005b074 */
+        uint64_t set = txm_property_set_by_tag((int *)t, 0);       /* FUN_0005b074 */
         if (set == 0) {
             if (base + 0x44 <= base || t + 0xc <= t)
                 txm_panic_bounds(0x19);
@@ -2905,10 +2930,10 @@ txm_manifest_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out)
     uint64_t len = **(uint64_t **)(chip + 0x20);
     if (len > 0x40)
         txm_panic_bounds(0x19);
-    uint64_t rc = txm_decode_copy_manifest_digest(manifest, digest, len);  /* FUN_00061960 */
+    uint64_t rc = txm_decode_copy_manifest_digest((uint64_t)manifest, digest, len);  /* FUN_00061960 */
     if ((int)rc == 0) {
         txm_digest_release(obj, 0xd7c8, (uint64_t *)&dec);
-        txm_digest_set_bytes(out, digest, len);   /* FUN_00057b58 */
+        txm_digest_set_bytes(out, (uint64_t)digest, len);   /* FUN_00057b58 */
         if (txm_canary != saved)
             txm_stack_check();
         return;
@@ -2969,7 +2994,7 @@ txm_policy_impose(uint64_t *rec, uint64_t set, uint64_t key, uint64_t obj, uint6
     uint64_t def = txm_property_set_default(key);    /* FUN_00056d6c */
     uint64_t raw = 0, val = 0;
     uint32_t tag = *(uint32_t *)(set + 0x18);
-    uint64_t prop = txm_property_override_lookup(key, set, *(uint64_t *)(ep + 0x18));  /* FUN_00056d88 */
+    uint64_t prop = txm_property_override_lookup(key, set, (uint64_t *)*(uint64_t *)(ep + 0x18));  /* FUN_00056d88 */
     int ctype = *(int *)(prop + 0x38);
     uint64_t rc;
     if (ctype == 0) {
@@ -2993,7 +3018,7 @@ impose:
                 }
                 rc = txm_property_bool_query(objname, key, prop, &val);   /* FUN_0005861c */
                 if ((int)rc == 0)
-                    rc = txm_enforce_bool_constraint(prop, objname, qv, &val);  /* FUN_0005b224 */
+                    rc = txm_enforce_bool_constraint(prop, objname, (uint8_t *)qv, &val);  /* FUN_0005b224 */
             } else if (vtype == 1) {
                 uint32_t qv = 0;
                 if (txm_decode_get_int(obj, tag, &qv) != 0) {
@@ -3002,40 +3027,40 @@ impose:
                 }
                 rc = txm_property_uint32_query(objname, key, prop, &val);
                 if ((int)rc == 0)
-                    rc = txm_enforce_uint32_constraint(prop, objname, qv, &val); /* FUN_0005b430 */
+                    rc = txm_enforce_uint32_constraint(prop, objname, (uint32_t *)qv, &val); /* FUN_0005b430 */
             }
         } else if (vtype == 2) {
             uint64_t qv = 0;
             if (txm_decode_get_uint64(obj, tag, &qv) == 0) {
                 rc = txm_property_uint64_query(objname, key, prop, &val);
                 if ((int)rc == 0)
-                    rc = txm_enforce_uint64_constraint(prop, objname, qv, &val); /* FUN_0005b610 */
+                    rc = txm_enforce_uint64_constraint(prop, objname, (uint64_t *)qv, &val); /* FUN_0005b610 */
             } else {
                 txm_panic_fmt("Img4DecodeGetPropertyInteger64 %s");
-                rc = txm_errno_lookup();
+                rc = txm_errno_lookup(0);
                 goto nxt;
             }
         } else if (vtype == 3) {
             uint64_t a = 0; uint32_t b = 0;
             if (txm_img4_get_data(obj, tag, &a, &b) == 0) {
-                txm_digest_set_bytes(&raw, a, b);
+                txm_digest_set_bytes((uint64_t)&raw, a, b);
                 if (txm_property_match(prop, def) == 0) {   /* FUN_0005b134 */
-                    rc = txm_property_digest_query(objname, key, prop, &val);
+                    rc = txm_property_digest_query(objname, key, prop, (uint64_t)&val);
                 } else {
                     txm_digest_import_set(*(uint64_t *)(ep + 0x10), key, &val);  /* FUN_0005acd4 */
                 }
-                rc = txm_enforce_digest_constraint(prop, objname, &raw, &val);   /* FUN_0005b7f0 */
+                rc = txm_enforce_digest_constraint(prop, objname, (uint64_t)&raw, (uint64_t)&val);   /* FUN_0005b7f0 */
             }
         } else if (vtype == 4) {
             uint64_t a = 0; uint32_t b = 0;
             if (txm_img4_get_data(obj, tag, &a, &b) == 0) {
-                txm_digest64_import(&raw, a, b);            /* FUN_0005d258 */
-                rc = txm_property_digest64_query(objname, key, prop, &val);
+                txm_digest64_import((uint64_t)&raw, a, b);            /* FUN_0005d258 */
+                rc = txm_property_digest64_query(objname, key, prop, (uint64_t)&val);
                 if ((int)rc == 0)
-                    rc = txm_enforce_digest64_constraint(prop, objname, &raw, &val); /* FUN_0005bb1c */
+                    rc = txm_enforce_digest64_constraint(prop, objname, (uint64_t)&raw, (uint64_t)&val); /* FUN_0005bb1c */
             } else {
                 txm_panic_fmt("Img4DecodeGetPropertyData %d");
-                rc = txm_errno_lookup();
+                rc = txm_errno_lookup(0);
             }
         } else {
             txm_panic_fmt("panic: unreachable case %s 0x");
@@ -3117,8 +3142,8 @@ txm_boot_chain_integrity_check(uint64_t base, uint64_t *rec)
     if (*(int16_t *)(rec + 0x42) == 0) {
         txm_optional_not_set();                       /* FUN_00051c78 */
     } else {
-        txm_manifest_digest_compute(obj, prop, digest);    /* FUN_00059e14 */
-        if (txm_enforce_digest_constraint(context, name, digest, rec + 0x38) == 0) {  /* FUN_0005b7f0 */
+        txm_manifest_digest_compute((uint64_t *)obj, prop, (uint64_t)digest);    /* FUN_00059e14 */
+        if (txm_enforce_digest_constraint(context, name, (uint64_t)digest, (uint64_t)rec + 0x38) == 0) {  /* FUN_0005b7f0 */
             if (txm_canary == saved)
                 return 0;
         } else {
@@ -3169,7 +3194,7 @@ txm_current_object(void)
 {
     uint64_t ctx = txm_percpu_context();
     uint64_t obj = 0;
-    int r = txm_vtable_dispatch_78(ctx, &obj);   /* FUN_0005856c */
+    int r = (int)txm_vtable_dispatch_78(ctx, (uint64_t)&obj);   /* FUN_0005856c */
     if (r != 0)
         obj = 0;
     txm_vtable_dispatch_80(ctx, obj);            /* FUN_0005860c */
@@ -3204,7 +3229,7 @@ txm_nonce_copy_set(uint64_t dst, uint64_t src)
     uint64_t lr = (uint64_t)__builtin_return_address(0);
     if ((((lr ^ lr << 1) >> 0x3e) & 1) != 0)
         txm_breakpoint(0xc471, 0x5a758);
-    txm_nonce_set(dst, src + 0x10);
+    txm_nonce_set(dst, src + 0x10, *(uint64_t *)(src + 0x10));
 }
 
 /* ============================================================================
@@ -3425,7 +3450,7 @@ txm_payload_digest_get(uint64_t obj, uint64_t out)
 static uint64_t
 txm_payload_init_manifest(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore)
 {
-    txm_payload_init_core(obj, prop, ctx);      /* FUN_0005aa30 */
+    txm_payload_init_core((uint64_t *)obj, prop, ctx);      /* FUN_0005aa30 */
     txm_img4_set_restore(obj + 0x30, restore);  /* FUN_00052318 */
     *(int16_t *)(obj + 0x58) = 1;
     return obj;
@@ -3442,7 +3467,7 @@ txm_payload_init_core(uint64_t *obj, uint64_t prop, uint64_t ctx)
     if (ctx == 0)
         ctx = txm_percpu_state();
     obj[0] = ctx;
-    uint64_t tag = txm_store_tag_swapped_ptr((uint64_t)(obj + 2), prop);  /* FUN_000592a8 */
+    uint64_t tag = txm_store_tag_swapped_ptr((uint64_t)(obj + 2), (uint32_t *)prop);  /* FUN_000592a8 */
     obj[1] = tag;
     obj[4] = 0x1d528;
     uint64_t *p = obj + 5;
@@ -3458,7 +3483,7 @@ txm_payload_init_core(uint64_t *obj, uint64_t prop, uint64_t ctx)
 static uint64_t
 txm_payload_init_payload(uint64_t obj, uint64_t ctx, uint64_t prop, uint64_t restore)
 {
-    txm_payload_init_core(obj, prop, ctx);
+    txm_payload_init_core((uint64_t *)obj, prop, ctx);
     txm_img4_set_restore(obj + 0x30, restore);  /* FUN_000522f4 */
     *(int16_t *)(obj + 0x58) = 1;
     return obj;
@@ -3484,9 +3509,9 @@ static uint64_t
 txm_payload_type_check(uint64_t *obj)
 {
     uint32_t t = 0;
-    if ((int)txm_env_query() == 0) {      /* FUN_0005abf4 */
-        if (txm_get_property_oid(obj + 0xe, &t) != 0) {   /* FUN_0004507c */
-            uint64_t e = txm_errno_lookup();
+    if ((int)txm_env_query(0) == 0) {      /* FUN_0005abf4 */
+        if (txm_get_property_oid((uint64_t)obj + 0xe, &t) != 0) {   /* FUN_0004507c */
+            uint64_t e = txm_errno_lookup(0);
             txm_panic_fmt("%s Img4DecodeGetPayloadType %d");
             if (e > 0x6b)
                 txm_panic_fmt("panic: error not set to valid po");
@@ -3518,7 +3543,7 @@ txm_payload_decode_init(uint64_t *obj)
             txm_panic_bounds(0x19);
         int r = txm_decode_payload_if_mode(base, obj[7], (uint64_t)(obj + 0xe));  /* FUN_00057960 */
         if (r != 0) {
-            uint64_t e = txm_errno_lookup();
+            uint64_t e = txm_errno_lookup(0);
             txm_panic_fmt("%s Img4DecodeInitAsPayload %d");
             if (e < 0x6c)
                 return e;
@@ -3539,7 +3564,7 @@ txm_payload_decode_init(uint64_t *obj)
 static void
 txm_env_query_thunk(void)
 {
-    (void)txm_env_query();
+    (void)txm_env_query(0);
 }
 
 /* ============================================================================
@@ -3634,7 +3659,7 @@ txm_payload_digest_compute(uint64_t *rec, uint64_t impl, uint64_t out)
     uint64_t rc = txm_decode_copy_payload_digest(rec[0xd], digest, len);  /* FUN_00061880 */
     if ((int)rc == 0) {
         txm_digest_release(obj, 0xd7c8, (uint64_t *)&d);
-        txm_digest_set_bytes(out, digest, len);
+        txm_digest_set_bytes(out, (uint64_t)digest, len);
         if (txm_canary != saved)
             txm_stack_check();
         return;
@@ -3689,11 +3714,12 @@ static uint64_t
 txm_property_set_by_tag(int *tag, int kind)
 {
     uint64_t table[3] = {0xdbc8, 0xdbd0, 0xdbd8};
-    uint64_t (*keep)(uint64_t) = txm_iter_not_manifest;    /* FUN_0005666c */
-    if ((kind != 0) && ((keep = table[0]), kind == 1))
-        keep = txm_iter_not_payload;                       /* FUN_00056680 */
+    uint64_t (*keep)(uint64_t) = (uint64_t (*)(uint64_t))txm_iter_not_manifest;    /* FUN_0005666c */
+    if (kind == 1)
+        keep = (uint64_t (*)(uint64_t))txm_iter_not_payload;  /* FUN_00056680 */
+    uint64_t e;
     for (;;) {
-        uint64_t e = txm_iterator_next(table);
+        e = txm_iterator_next(table);
         if (e == 0)
             return 0;
         if ((txm_iter_not_manifest(e) == 0) || (txm_iter_not_payload(e) == 0) || (*(int *)(e + 0x18) == *tag))
@@ -3955,8 +3981,8 @@ txm_enforce_digest_constraint(uint64_t prop, uint64_t obj, uint64_t a, uint64_t 
 {
     uint64_t saved = txm_canary;
     uint64_t d1[0x20] = {0}, d2[0x20] = {0};
-    txm_digest_copy_get(a, d1);
-    txm_digest_copy_get(b, d2);
+    txm_digest_copy_get(a, (uint64_t)d1);
+    txm_digest_copy_get(b, (uint64_t)d2);
     uint64_t eq = txm_digest_equal(a, b);              /* FUN_00057c58 */
     uint64_t op = **(uint64_t **)(prop + 0x30);
     if (op < 5) {
@@ -4087,7 +4113,7 @@ txm_entangle_nonce(uint64_t obj, uint64_t src, uint64_t manifest, uint64_t out)
     ((void (*)(uint64_t *, uint64_t *, uint64_t *))ent[7])(ent, d, d);
     if (n > 0x40)
         txm_panic_bounds(0x19);
-    txm_digest_set_bytes(out, d);             /* FUN_00057b58 */
+    txm_digest_copy_set(out, (uint64_t)d);    /* FUN_00057b58 via copy_set */
     if (txm_canary == saved)
         return;
     txm_stack_check();
@@ -4103,9 +4129,9 @@ txm_nonce_entangle(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t out)
 {
     uint64_t saved = txm_canary;
     uint64_t nonce[0x20] = {0};
-    uint64_t rc = txm_vtable_dispatch_98(a);   /* FUN_00058fa0 */
+    uint64_t rc = txm_vtable_dispatch_98(a, 0);   /* FUN_00058fa0 */
     if ((uint32_t)rc == 0) {
-        txm_entangle_nonce(a, b, nonce, out);  /* FUN_0005bd78 */
+        txm_entangle_nonce(a, b, (uint64_t)nonce, out);  /* FUN_0005bd78 */
     } else {
         txm_panic_fmt("failed to entangle nonce %d");
         if (rc > 0x6b)
@@ -4177,7 +4203,7 @@ static uint64_t
 txm_odometer_query_nonce(uint64_t *obj, uint64_t ctx, int type, uint64_t out)
 {
     if (*(int16_t *)(obj + 7) != 0) {
-        txm_nonce_copy_set(out, obj + 4);      /* FUN_0005a73c */
+        txm_nonce_copy_set(out, (uint64_t)obj + 4);      /* FUN_0005a73c */
         return 0;
     }
     if (type != -1) {
@@ -4209,7 +4235,7 @@ txm_odometer_restore_query(uint64_t *obj, uint64_t ctx, uint64_t out)
     }
     if ((int)rc == 0) {
         if (b < 0x11) {
-            txm_nonce_set(out, a);       /* FUN_0005a6e4 */
+            txm_nonce_set(out, a, b);    /* FUN_0005a6e4 */
             return 0;
         }
         return 0x54;
@@ -4244,14 +4270,14 @@ txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expec
             if ((int)rc == 0) {
                 if (expect + 1 <= expect)
                     txm_panic_bounds(0x19);
-                rc = txm_enforce_bool_constraint(prop, name, expect, &d);
+                rc = txm_enforce_bool_constraint(prop, name, (uint8_t *)expect, &d);
             }
         } else if (vtype == 1) {
             rc = txm_property_uint32_query(name, key, prop, &d);
             if ((int)rc == 0) {
                 if (expect + 4 <= expect)
                     txm_panic_bounds(0x19);
-                rc = txm_enforce_uint32_constraint(prop, name, expect, &d);
+                rc = txm_enforce_uint32_constraint(prop, name, (uint32_t *)expect, &d);
             }
         } else {
             txm_panic_fmt("panic: unreachable case %s 0x");
@@ -4261,14 +4287,14 @@ txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expec
         if ((int)rc == 0) {
             if (expect + 8 <= expect)
                 txm_panic_bounds(0x19);
-            rc = txm_enforce_uint64_constraint(prop, name, expect, &d);
+            rc = txm_enforce_uint64_constraint(prop, name, (uint64_t *)expect, &d);
         }
     } else if (vtype == 3) {
-        rc = txm_property_digest_query(name, key, prop, &d);
+        rc = txm_property_digest_query(name, key, prop, (uint64_t)&d);
         if ((int)rc == 0) {
             if (expect + 0x50 <= expect)
                 txm_panic_bounds(0x19);
-            rc = txm_enforce_digest_constraint(prop, name, expect, &d);
+            rc = txm_enforce_digest_constraint(prop, name, expect, (uint64_t)&d);
         }
     } else if (vtype == 4) {
         uint64_t end = (uint64_t)obj + 0x3d0;
@@ -4281,14 +4307,14 @@ txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expec
             txm_panic_bounds(0x19);
         uint8_t b1 = *p1, b2 = *p2, b3 = *p3;
         uint64_t saved2 = *(uint64_t *)(key + 0x18);
-        rc = txm_property_digest64_query(name, key, prop, &d);
+        rc = txm_property_digest64_query(name, key, prop, (uint64_t)&d);
         if ((int)rc == 0) {
             if (expect + 0x68 <= expect)
                 txm_panic_bounds(0x19);
-            uint64_t (*enf)(uint64_t, uint64_t, uint64_t, uint64_t) = txm_enforce_digest64_constraint;  /* FUN_0005c5bc */
+            uint64_t (*enf)(uint64_t, uint64_t, uint64_t, uint64_t) = (uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t))txm_enforce_digest64_constraint;  /* FUN_0005c5bc */
             if (((uint8_t)(((b2 ^ 0xff) & 1) + (b1 & 1)) != 0 || (b3 & 1) != 0) || saved2 == 0)
-                enf = txm_enforce_digest64_constraint2;    /* FUN_0005c5d0 */
-            rc = enf(prop, name, expect, &d);
+                enf = (uint64_t (*)(uint64_t, uint64_t, uint64_t, uint64_t))txm_enforce_digest64_constraint2;    /* FUN_0005c5d0 */
+            rc = enf(prop, name, expect, (uint64_t)&d);
         }
     } else {
         txm_panic_fmt("panic: unreachable case %s 0x");
@@ -4311,7 +4337,7 @@ txm_restore_constraint(uint8_t *obj, uint64_t ctx, uint64_t prop, uint64_t expec
 static void
 txm_enforce_digest64_constraint2(uint64_t *obj, uint64_t prop)
 {
-    txm_enforce_digest64_constraint(prop, obj[0]);
+    txm_enforce_digest64_constraint(prop, obj[0], 0, 0);
 }
 
 /* ============================================================================
@@ -4322,7 +4348,7 @@ txm_enforce_digest64_constraint2(uint64_t *obj, uint64_t prop)
 static uint64_t
 txm_enforce_digest64_constraint_v(uint64_t *obj, uint64_t prop, uint64_t a, uint64_t b)
 {
-    uint64_t rc = txm_enforce_digest64_constraint(prop, obj[0]);
+    uint64_t rc = txm_enforce_digest64_constraint(prop, obj[0], a, b);
     if (((int)rc == 0) || (*(int *)(a + 100) != *(int *)(b + 100)))
         rc = 0;
     return rc;
@@ -4505,20 +4531,20 @@ txm_policy_replay_check(uint64_t *policy)
     int chip = (int)txm_odometer_chip_query(policy);      /* FUN_0005c00c */
     uint64_t rc;
     if (chip == 0) {
-        uint64_t p1 = txm_policy_table_find(policy, 0x704e0, 8);   /* FUN_0005cab8 */
-        rc = txm_policy_table_validate(p1, policy);               /* FUN_00052a88 */
+        uint64_t p1 = txm_policy_table_find((uint64_t)policy, (uint64_t *)0x704e0, 8);   /* FUN_0005cab8 */
+        rc = txm_policy_table_validate(p1, (uint64_t)policy);        /* FUN_00052a88 */
         if ((int)rc != 0)
             goto fail;
     }
     {
-        uint64_t p2 = txm_policy_table_find(policy, 0x70520, 5);
-        rc = txm_policy_table_validate(p2, policy);
+        uint64_t p2 = txm_policy_table_find((uint64_t)policy, (uint64_t *)0x70520, 5);
+        rc = txm_policy_table_validate(p2, (uint64_t)policy);
         if ((int)rc != 0) goto fail;
     }
-    if (txm_policy_table_present(0x1af08, policy) != 0) {   /* FUN_00052a78 */
+    if (txm_policy_table_present(0x1af08, (uint64_t)policy) != 0) {   /* FUN_00052a78 */
         return 0;
     }
-    rc = txm_policy_table_validate(0x1af08, policy);
+    rc = txm_policy_table_validate(0x1af08, (uint64_t)policy);
     if ((int)rc == 0)
         return rc;
     txm_optional_not_set();
@@ -4569,7 +4595,7 @@ txm_odometer_restore_digest(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t
     uint32_t n = 0;
     uint64_t d[0x20] = {0};
     if (txm_img4_get_data(src, *(uint32_t *)(prop + 0x18), &a, &n) == 0) {   /* FUN_00045364 */
-        txm_digest_set_bytes(d, a, n);
+        txm_digest_set_bytes((uint64_t)d, a, n);
         rec[0xd] = d[6];
         rec[0xc] = d[5];
         rec[0xf] = d[7];
@@ -4614,7 +4640,7 @@ txm_odometer_restore_uint32(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t
 static uint64_t
 txm_restore_info_impose(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src)
 {
-    uint64_t rc = txm_restore_info_query(rec, prop, src, rec + 0x2f8);   /* FUN_0005cccc */
+    uint64_t rc = txm_restore_info_query((uint64_t *)rec, prop, src, rec + 0x2f8);   /* FUN_0005cccc */
     if ((int)rc == 0) {
         *(int16_t *)(rec + 0x360) = 1;
     } else {
@@ -4639,7 +4665,7 @@ txm_restore_info_query(uint64_t *obj, uint64_t prop, uint64_t src, uint64_t out)
     uint64_t rc;
     if (vtype < 2) {
         if (vtype == 0) {
-            rc = txm_decode_get_bool(src, tag, out);
+            rc = txm_decode_get_bool(src, tag, (void *)out);
             if ((int)rc == 0)
                 return rc;
             txm_optional_not_set();
@@ -4649,7 +4675,7 @@ txm_restore_info_query(uint64_t *obj, uint64_t prop, uint64_t src, uint64_t out)
         if (vtype != 1) {
             txm_panic_fmt("panic: unreachable case %s 0x");
         }
-        rc = txm_decode_get_int(src, tag, out);
+        rc = txm_decode_get_int(src, tag, (void *)out);
         if ((int)rc == 0)
             return rc;
         txm_optional_not_set();
@@ -4681,7 +4707,7 @@ txm_restore_info_query(uint64_t *obj, uint64_t prop, uint64_t src, uint64_t out)
             }
             return 0;
         }
-        rc = txm_decode_get_uint64(src, tag, out);
+        rc = txm_decode_get_uint64(src, tag, (void *)out);
         if ((int)rc == 0)
             return rc;
         txm_optional_not_set();
@@ -4720,7 +4746,7 @@ txm_odometer_restore_digest2(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_
     uint32_t n = 0;
     uint64_t d[0x20] = {0};
     if (txm_img4_get_data(src, *(uint32_t *)(prop + 0x18), &a, &n) == 0) {
-        txm_digest_set_bytes(d, a, n);
+        txm_digest_set_bytes((uint64_t)d, a, n);
         rec[0x73] = d[6];
         rec[0x72] = d[5];
         rec[0x75] = d[7];
@@ -4750,7 +4776,7 @@ txm_odometer_restore_digest3(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_
     uint32_t n = 0;
     uint64_t rc = txm_img4_get_data(src, *(uint32_t *)(prop + 0x18), &a, &n);
     if ((int)rc == 0) {
-        txm_digest_set_bytes(rec + 0x1e, a, n);
+        txm_digest_set_bytes((uint64_t)rec + 0x1e, a, n);
         *(int16_t *)(rec + 0x28) = 1;
         rc = 0;
     } else {
@@ -4785,7 +4811,7 @@ txm_odometer_restore_bool(uint64_t obj, uint64_t *rec, uint64_t prop, uint64_t s
 static uint64_t
 txm_restore_info_impose2(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src)
 {
-    uint64_t rc = txm_restore_info_query(rec, prop, src, rec + 0x148);
+    uint64_t rc = txm_restore_info_query((uint64_t *)rec, prop, src, rec + 0x148);
     if ((int)rc == 0) {
         *(int16_t *)(rec + 0x1b0) = 1;
     } else {
@@ -4808,7 +4834,7 @@ txm_restore_info_batch(uint64_t obj, uint64_t rec, uint64_t prop, uint64_t src)
     for (;;) {
         if (txm_property_match(prop, *(uint64_t *)(base + 0xf0 + i * 8)) != 0) {
             uint64_t d = rec + i * 0x70;
-            uint64_t rc = txm_restore_info_query(rec, prop, src, d + 0x218);
+            uint64_t rc = txm_restore_info_query((uint64_t *)rec, prop, src, d + 0x218);
             if ((int)rc != 0)
                 return 0xffffffff;
             *(int16_t *)(d + 0x280) = 1;
@@ -4861,15 +4887,15 @@ txm_digest64_import(uint64_t obj, uint64_t a, uint32_t n)
         src++;
     } while (i != 0x19);
     uint64_t h = txm_hash_bytes(obj);
-    txm_format_ident(d, h, 0x40, 0x40);
+    txm_format_ident((uint64_t)d, h, 0x40, 0x40);
     uint64_t *it = &d;
-    uint64_t *e = txm_digest_oid(it, 0x61f6);   /* FUN_00053070 */
+    uint64_t e = txm_digest_oid(it, (uint64_t *)0x61f6);   /* FUN_00053070 */
     if (it != 0) {
-        *(uint32_t *)(obj + 100) = txm_odometer_minmax(e, 0, 0);   /* FUN_0005d3b8 */
+        *(uint32_t *)(obj + 100) = txm_odometer_minmax((uint64_t)e, 0, 0);   /* FUN_0005d3b8 */
     }
     i = 0;
     for (;;) {
-        uint64_t l = txm_digest_oid(e, 0x61f8);
+        uint64_t l = txm_digest_oid((uint64_t *)e, (uint64_t *)0x61f8);
         if (l == 0)
             break;
         *(uint32_t *)(obj + i + 0x50) = txm_odometer_minmax(l, *(uint32_t *)(0xdbe0 + i), *(uint32_t *)(0xdbf4 + i));
@@ -4877,7 +4903,7 @@ txm_digest64_import(uint64_t obj, uint64_t a, uint32_t n)
         if (i == 0x14)
             break;
     }
-    if (txm_strtoul(obj, "0_0_0_0_0_0") == 0)   /* FUN_0002d990 */
+    if (txm_strtoul(obj, (uint64_t)"0_0_0_0_0_0", 0) == 0)   /* FUN_0002d990 */
         *(uint32_t *)(obj + 0x50) = 0;
     if (txm_canary == saved)
         return obj;
@@ -5048,7 +5074,7 @@ static uint64_t
 txm_parse_decimal(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    if ((txm_dict_find_key(span, 2, &p) & 1) == 0) {
+    if ((txm_dict_find_key((uint64_t *)span, 2, &p) & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
         return 0;
@@ -5081,7 +5107,7 @@ static uint64_t
 txm_parse_bool(uint64_t obj, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 1, &p);   /* FUN_00037304 */
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 1, &p);   /* FUN_00037304 */
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5102,7 +5128,7 @@ static uint64_t
 txm_parse_12byte(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 0xc, &p);
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 0xc, &p);
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5121,7 +5147,7 @@ static uint64_t
 txm_parse_4byte(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 4, &p);
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 4, &p);
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5140,7 +5166,7 @@ static uint64_t
 txm_parse_18byte(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 0x12, &p);
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 0x12, &p);
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5159,7 +5185,7 @@ static uint64_t
 txm_parse_23byte(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 0x17, &p);
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 0x17, &p);
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5178,9 +5204,9 @@ static uint64_t
 txm_parse_entitlement(uint64_t obj, uint64_t *out, uint64_t span)
 {
     char *p = 0, *e = 0;
-    uint64_t ok = txm_dict_find_key(span, 0x6000000000000010, &p);
+    uint64_t ok = txm_dict_find_key((uint64_t *)span, 0x6000000000000010, &p);
     if (((ok & 1) == 0) &&
-        (ok = txm_dict_find_key(span, 0x2000000000000011, &p), (ok & 1) == 0)) {
+        (ok = txm_dict_find_key((uint64_t *)span, 0x2000000000000011, &p), (ok & 1) == 0)) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
         return 0;
@@ -5215,7 +5241,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
     uint64_t key = 0, keylen = 0, itstart = 0;
     if (obj + 0x40 <= obj)
         txm_breakpoint(0x5519, 0x5e080);
-    uint64_t ok = txm_dict_next_value(obj, &key, &itstart, 0, span);
+    uint64_t ok = txm_dict_next_value(obj, &key, &itstart, 0, (uint64_t *)span);
     if ((ok & 1) == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0)
             ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5241,7 +5267,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
                 return 0;
             }
             uint64_t ksp = 0, kslen = 0;
-            uint64_t rc = txm_parse_12byte(obj, &ksp, &vs);    /* FUN_0005d80c */
+            uint64_t rc = txm_parse_12byte(obj, &ksp, (uint64_t)&vs);    /* FUN_0005d80c */
             if ((rc == 0) || (kslen == 0)) {
                 if (*(uint64_t *)(obj + 0x18) != 0)
                     ((void (*)(uint64_t, const char *))(*(uint64_t *)(obj + 0x18)))(obj, "%s %s");
@@ -5307,7 +5333,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
             if (klen == 4) {
                 if ((iter[3] & 1) != 0) {
                     uint64_t v = 0;
-                    rc2 = txm_parse_4byte(obj, &v, &itstart);   /* FUN_0005d8a4 */
+                    rc2 = txm_parse_4byte(obj, &v, (uint64_t)&itstart);   /* FUN_0005d8a4 */
                     goto merged;
                 }
                 if (*(uint64_t *)(obj + 0x18) != 0)
@@ -5316,7 +5342,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
             }
             if (klen == 0xc) {
                 uint64_t v = 0;
-                rc2 = txm_parse_12byte(obj, &v, &itstart);
+                rc2 = txm_parse_12byte(obj, &v, (uint64_t)&itstart);
                 if ((int)rc2 == 0)
                     return rc2;
                 if (txm_strncmp(v, 0, 0) == 0)
@@ -5328,19 +5354,19 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
             goto err;
         }
         if (klen == 1) {
-            rc2 = txm_parse_bool(obj, &itstart);   /* FUN_0005d76c */
+            rc2 = txm_parse_bool(obj, (uint64_t)&itstart);   /* FUN_0005d76c */
             goto merged;
         }
         if (klen != 2)
             goto err;
         uint64_t v = 0;
-        rc2 = txm_parse_decimal(obj, &v, &itstart);   /* FUN_0005d664 */
+        rc2 = txm_parse_decimal(obj, &v, (uint64_t)&itstart);   /* FUN_0005d664 */
         goto merged;
     } else if ((int64_t)klen < 0x2000000000000010) {
         if (klen == 0x12) {
             if ((*(uint8_t *)((char *)iter + 0x19) & 1) != 0) {
                 uint64_t v = 0;
-                rc2 = txm_parse_18byte(obj, &v, &itstart);   /* FUN_0005d93c */
+                rc2 = txm_parse_18byte(obj, &v, (uint64_t)&itstart);   /* FUN_0005d93c */
                 goto merged;
             }
             if (*(uint64_t *)(obj + 0x18) != 0)
@@ -5350,7 +5376,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
         if (klen == 0x17) {
             if ((*(uint8_t *)((char *)iter + 0x1a) & 1) != 0) {
                 uint64_t v = 0;
-                rc2 = txm_parse_23byte(obj, &v, &itstart);   /* FUN_0005d9d4 */
+                rc2 = txm_parse_23byte(obj, &v, (uint64_t)&itstart);   /* FUN_0005d9d4 */
                 goto merged;
             }
             if (*(uint64_t *)(obj + 0x18) != 0)
@@ -5360,7 +5386,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
         goto err;
     } else {
         if (klen == 0x2000000000000010) {
-            rc2 = txm_dict_parse_collection(iter, &itstart);   /* FUN_0005e080 */
+            rc2 = txm_dict_parse_collection(iter, (uint64_t)&itstart);   /* FUN_0005e080 */
             goto merged;
         }
         if ((klen != 0x2000000000000011) && (klen != 0x6000000000000010)) {
@@ -5372,7 +5398,7 @@ txm_dict_parse(uint64_t *iter, uint64_t span)
             return 0;
         }
         uint64_t v = 0;
-        rc2 = txm_parse_entitlement(obj, &v, &itstart);   /* FUN_0005da6c */
+        rc2 = txm_parse_entitlement(obj, &v, (uint64_t)&itstart);   /* FUN_0005da6c */
     }
 merged:
     if ((rc2 & 1) == 0)
@@ -5394,7 +5420,7 @@ txm_dict_parse_collection(uint64_t *iter, uint64_t span)
 {
     uint64_t obj = *iter;
     uint64_t p = 0, e = 0;
-    uint64_t ok = txm_dict_next(span, &p);     /* FUN_00037570 */
+    uint64_t ok = txm_dict_next((uint64_t *)span, &p);     /* FUN_00037570 */
     if (ok == 0) {
         if (*(uint64_t *)(obj + 0x18) != 0) {
             if (obj + 0x40 <= obj)
@@ -5500,17 +5526,18 @@ txm_ce_subset(uint64_t a, uint64_t b)
 {
     if ((a == 0) || (b == 0))
         return 0xb;
+    uint64_t rc = 0;
     if ((*(uint8_t *)b == 0x01) && (*(uint8_t *)a == 0)) {
         uint64_t count = 0;
         if (*(uint64_t *)(a + 0x18) == 0x2000000000000011 ||
             *(uint64_t *)(a + 0x18) == 0x6000000000000010) {
             if (*(uint64_t *)(b + 0x18) == 0x2000000000000011 ||
                 *(uint64_t *)(b + 0x18) == 0x6000000000000010) {
-                uint64_t rc = txm_dict_count(a + 8, &count);    /* FUN_0005f1d0 */
+                rc = txm_dict_count(a + 8, &count);    /* FUN_0005f1d0 */
                 if ((int)rc == 0) {
                     if (count == 0)
                         return 0;
-                    return txm_dict_apply(a + 8, txm_ce_subset_key, b + 8);   /* FUN_0005ef74 */
+                    return txm_dict_apply(a + 8, (uint64_t)txm_ce_subset_key, b + 8);   /* FUN_0005ef74 */
                 }
             } else {
                 return 9;
@@ -5538,16 +5565,16 @@ txm_ce_subset_key(uint64_t a, uint64_t b)
         key = *(uint64_t *)(a + 0x18);
         val = *(uint64_t *)(a + 0x20);
     }
-    uint64_t rc = txm_ce_key_lookup(*(uint64_t *)(b + 8), &key, &val);   /* FUN_0005f5a4 */
+    uint64_t rc = txm_ce_key_lookup(*(uint64_t *)(b + 8), (uint64_t)&key, &val);   /* FUN_0005f5a4 */
     if ((int)rc == 0) {
-        uint64_t la = txm_strnlen(0x6b55);   /* DAT_00006b55 */
+        uint64_t la = txm_strnlen(0x6b55, 0);   /* DAT_00006b55 */
         uint64_t lb = 0;
         if ((la != 0) && (val == 0xc)) {
             uint64_t n = la <= lb ? la : lb;
             if ((txm_strncmp(0x6b55, val, n) == 0) && (la == lb))
                 return 0;
         }
-        rc = txm_ce_dict_subset(a + 0x30, &val);   /* FUN_0005e540 */
+        rc = txm_ce_dict_subset(a + 0x30, (uint64_t)&val);   /* FUN_0005e540 */
         if ((int)rc == 0)
             return rc;
     }
@@ -5579,7 +5606,7 @@ txm_ce_dict_subset(uint64_t a, uint64_t b)
                     if ((int)rc == 0) {
                         if (count == 0)
                             return 0;
-                        return txm_dict_apply(a, txm_ce_subset_key, b);
+                        return txm_dict_apply(a, (uint64_t)txm_ce_subset_key, b);
                     }
                 } else {
                     return 9;
@@ -5593,15 +5620,15 @@ txm_ce_dict_subset(uint64_t a, uint64_t b)
             if (atype != 2)
                 return 0xc;
             /* uint32: use a 4-byte string compare */
-            (void)txm_decode_int(a + 0x18, &val);
+            (void)txm_decode_int((uint64_t *)a + 0x18, &val);
             if (*(uint64_t *)(b + 0x10) == 2) {
                 uint64_t bv = 0;
-                (void)txm_decode_int(b + 0x18, &bv);
+                (void)txm_decode_int((uint64_t *)b + 0x18, &bv);
                 if (val != bv)
                     return 8;
                 return 0;
             }
-            uint64_t rc = txm_ce_key_lookup(b, txm_ce_key_uint32, &val);
+            uint64_t rc = txm_ce_key_lookup(b, (uint64_t)txm_ce_key_uint32, &val);
             if ((int)rc != 0)
                 return rc;
             return 0;
@@ -5625,7 +5652,7 @@ txm_ce_dict_subset(uint64_t a, uint64_t b)
                 if ((int)rc != 0)
                     return rc;
                 if (count != 0)
-                    return txm_dict_apply(a, txm_ce_key_array, b);
+                    return txm_dict_apply(a, (uint64_t)txm_ce_key_array, b);
                 return 0;
             }
             if (atype != 0x2000000000000011)
@@ -5640,7 +5667,7 @@ txm_ce_dict_subset(uint64_t a, uint64_t b)
                     if ((int)rc == 0) {
                         if (count == 0)
                             return 0;
-                        return txm_dict_apply(a, txm_ce_subset_key, b);
+                        return txm_dict_apply(a, (uint64_t)txm_ce_subset_key, b);
                     }
                 } else {
                     return 9;
@@ -5658,7 +5685,7 @@ txm_ce_dict_subset(uint64_t a, uint64_t b)
         }
         /* string/uint compare against lookup */
         uint64_t bv = 0;
-        uint64_t rc = txm_ce_key_lookup(b, txm_ce_key_uint32, &bv);
+        uint64_t rc = txm_ce_key_lookup(b, (uint64_t)txm_ce_key_uint32, &bv);
         return 0;
     }
 }
@@ -5685,7 +5712,7 @@ txm_ce_array_subset(int *a, uint64_t b)
             uint64_t i = 0;
             for (;;) {
                 uint64_t elem[7] = {0};
-                rc = txm_dict_elem(data, i, elem + 1);   /* FUN_0005f360 */
+                rc = txm_dict_get_elem((uint64_t)data, i, elem + 1);   /* FUN_0005f360 */
                 if ((int)rc != 0)
                     return rc;
                 int kind;
@@ -5700,7 +5727,7 @@ txm_ce_array_subset(int *a, uint64_t b)
                 case 0x2000000000000010: return 5;
                 default: goto skip;
                 }
-                rc = txm_ce_dict_subset(a + 2, elem + 1);
+                rc = txm_ce_dict_subset((uint64_t)a + 2, (uint64_t)elem + 1);
                 if ((int)rc == 0)
                     return rc;
 skip:
@@ -5750,7 +5777,7 @@ txm_entitlements_parse(uint64_t blob, uint64_t *out)
         return 0xb;
     uint64_t base = blob + 8;
     uint64_t count = 0, key = 0, val = 0;
-    uint32_t rc = txm_dict_apply(base, txm_ce_key_entitlement, &base);   /* FUN_0005ef74 */
+    uint32_t rc = txm_dict_apply(base, (uint64_t)txm_ce_key_entitlement, (uint64_t)&base);   /* FUN_0005ef74 */
     if ((rc != 0) && (rc != 0x12)) {
         if (rc != 0xd) {
             return rc;
@@ -5842,7 +5869,7 @@ txm_ce_alloc_sort(uint64_t obj)
         }
         uint64_t d[3] = {obj + 8, 0, 0};
         uint64_t ctx[2] = {(uint64_t)buf, n >> 3};
-        uint64_t r = txm_dict_apply(d[0], txm_ce_key_entitlement, d);   /* FUN_0005ef74 */
+        uint64_t r = txm_dict_apply(d[0], (uint64_t)txm_ce_key_entitlement, (uint64_t)d);   /* FUN_0005ef74 */
         if (r == 0) {
             if (7 < n) {
                 /* bubble-sort the n/8 entries by key */
@@ -5862,7 +5889,7 @@ txm_ce_alloc_sort(uint64_t obj)
                 }
             }
         } else {
-            txm_free(buf, count);
+            txm_free(buf);
             buf = 0;
             n = 0;
         }
@@ -5883,7 +5910,7 @@ txm_ce_alloc_free(uint64_t obj)
         if (*(uint64_t *)(obj + 0x30) == 0) {
             return 0xf;
         }
-        txm_free(*(uint64_t *)(obj + 0x30), *(uint64_t *)(obj + 0x38) << 3);
+        txm_free((void *)*(uint64_t *)(obj + 0x30));
         *(uint64_t *)(obj + 0x30) = 0;
         *(uint64_t *)(obj + 0x38) = 0;
         return 0;
@@ -5909,7 +5936,7 @@ txm_dict_apply(uint64_t dict, uint64_t cb, uint64_t ctx)
         return 2;
     if ((*(uint64_t *)(dict + 0x10) + 0xdffffffffffffff0U < 2) ||
         (*(uint64_t *)(dict + 0x10) == 0x6000000000000010)) {
-        txm_der_dict_iter(dict + 0x18, st);   /* FUN_000446f4 */
+        txm_der_dict_iter((uint64_t *)dict + 0x18, st);   /* FUN_000446f4 */
         uint32_t rc = 1;
         uint64_t first;
         while (txm_der_dict_next(st, st + 2) == 0) {   /* FUN_00044724 */
@@ -5952,7 +5979,7 @@ txm_dict_apply_dict(uint64_t dict, uint64_t cb, uint64_t ctx)
     if (*(uint64_t *)(dict + 0x10) == 0x2000000000000011 ||
         *(uint64_t *)(dict + 0x10) == 0x6000000000000010) {
         uint64_t c[2] = {ctx, cb};
-        return txm_dict_apply(dict, txm_ce_key_dict_wrap, c);   /* FUN_0005efe0 */
+        return txm_dict_apply(dict, (uint64_t)txm_ce_key_dict_wrap, (uint64_t)c);   /* FUN_0005efe0 */
     }
     return 10;
 }
@@ -6010,7 +6037,7 @@ static uint64_t
 txm_dict_count(uint64_t dict, uint64_t *out)
 {
     uint64_t n = 0;
-    uint64_t rc = txm_dict_apply(dict, txm_ce_key_count, &n);   /* FUN_0005ed6c + FUN_0005f238 */
+    uint64_t rc = txm_dict_apply(dict, (uint64_t)txm_ce_key_count, (uint64_t)&n);   /* FUN_0005ed6c + FUN_0005f238 */
     if ((int)rc == 0xd) {
         n = 0;
     } else if ((int)rc != 0) {
@@ -6043,10 +6070,10 @@ txm_ce_key_lookup2(uint64_t a, uint64_t *ctx)
         val = *(uint64_t *)(a + 0x20);
     }
     uint64_t want = ctx[0];
-    uint64_t rc = txm_dict_apply(ctx[1], txm_ce_key_lookup_cb, &want);   /* FUN_0005ef74 */
+    uint64_t rc = txm_dict_apply(ctx[1], (uint64_t)txm_ce_key_lookup_cb, (uint64_t)&want);   /* FUN_0005ef74 */
     if ((int)rc == 0) {
         if (*(int *)(a + 0x28) == 1) {
-            rc = txm_dict_apply_dict(a + 0x30, txm_ce_key_lookup2, a + 0x30);
+            rc = txm_dict_apply_dict(a + 0x30, (uint64_t)txm_ce_key_lookup2, a + 0x30);
             if (((int)rc != 0xd) && ((int)rc != 0))
                 return rc;
         }
@@ -6063,7 +6090,7 @@ txm_ce_key_lookup_cb(uint64_t a, uint64_t *ctx)
 {
     if (*(uint64_t *)ctx[1] < ctx[0]) {
         if (*(uint64_t *)(a + 0x10) == 0xc) {
-            return txm_ce_data_cmp((uint64_t *)ctx[1] + 1, *(uint64_t *)(a + 0x18), *(uint64_t *)(a + 0x20)) == 0 ? 0 : 4;   /* FUN_0005f8d0 */
+            return txm_ce_data_cmp((uint64_t)((uint64_t *)ctx[1] + 1), *(uint64_t *)(a + 0x18), *(uint64_t *)(a + 0x20), 0) == 0 ? 0 : 4;   /* FUN_0005f8d0 */
         }
         return 0;
     }
@@ -6076,7 +6103,7 @@ txm_ce_key_lookup_cb(uint64_t a, uint64_t *ctx)
 static uint32_t
 txm_ce_key_lookup_cb_direct(uint64_t a)
 {
-    if (txm_ce_data_cmp(a + 8, 0, 0) != 0)   /* FUN_0005f8d0 */
+    if (txm_ce_data_cmp(a + 8, 0, 0, 0) != 0)   /* FUN_0005f8d0 */
         return 0;
     return 4;
 }
@@ -6087,7 +6114,7 @@ txm_ce_key_lookup_cb_direct(uint64_t a)
  *   dispatching by element type; returns 0 and writes {type,data,len} into
  *   param_3. */
 static uint64_t
-txm_dict_elem(uint64_t arr, uint64_t idx, uint64_t *out)
+txm_dict_get_elem(uint64_t arr, uint64_t idx, uint64_t *out)
 {
     uint64_t out2[5] = {0};
     uint64_t atype = *(uint64_t *)(arr + 0x10);
@@ -6097,7 +6124,7 @@ txm_dict_elem(uint64_t arr, uint64_t idx, uint64_t *out)
     } else {
         if (atype == 0x2000000000000010) {
             uint64_t st = idx;
-            uint64_t rc = txm_dict_apply(arr, txm_ce_key_array_elem, &st);   /* FUN_0005ed6c + FUN_0005f468 */
+            uint64_t rc = txm_dict_apply(arr, (uint64_t)txm_ce_key_array_elem, (uint64_t)&st);   /* FUN_0005ed6c + FUN_0005f468 */
             if ((int)rc != 0)
                 return rc;
             if ((out2[0] & 1) == 0)
@@ -6173,7 +6200,7 @@ txm_ce_key_lookup(uint64_t dict, uint64_t key, uint64_t *out)
 {
     uint64_t st[5] = {0};
     uint64_t key2 = key;
-    uint64_t rc = txm_dict_apply_dict(dict, txm_ce_key_lookup_cb2, &st);   /* FUN_0005ef74 + FUN_0005f628 */
+    uint64_t rc = txm_dict_apply_dict(dict, (uint64_t)txm_ce_key_lookup_cb2, (uint64_t)&st);   /* FUN_0005ef74 + FUN_0005f628 */
     if ((int)rc == 0) {
         if ((st[0] & 1) == 0) {
             rc = 7;
@@ -6200,7 +6227,7 @@ static uint64_t
 txm_ce_key_lookup_cb2(uint64_t a, uint64_t ctx)
 {
     uint8_t *dst = *(uint8_t **)(ctx + 8);
-    int m = txm_ce_data_cmp(a, *(uint64_t **)(dst + 0x30), (*(uint64_t **)(dst + 0x30))[1], 0);   /* FUN_0005f690 */
+    int m = txm_ce_data_cmp(a, (uint64_t)*(uint64_t **)(dst + 0x30), (*(uint64_t **)(dst + 0x30))[1], 0);   /* FUN_0005f690 */
     if (m == 0) {
         *dst = 1;
         *(uint64_t *)(dst + 0x28) = *(uint64_t *)(a + 0x50);
@@ -6244,7 +6271,7 @@ txm_ce_data_cmp(uint64_t a, uint64_t data, uint64_t len, int wildcard)
             }
         }
         uint64_t n = clen <= alen ? clen : alen;
-        if ((txm_memcmp(data, p, n) == 0) && (clen == alen))
+        if ((txm_memcmp(data, (uint64_t)p, n) == 0) && (clen == alen))
             return 0;
         return 8;
     }
@@ -6325,7 +6352,7 @@ txm_ce_data_equal(uint64_t a, uint64_t span)
     if (*(uint64_t *)(span + 8) == 0)
         return 0xb;
     if (*(uint64_t *)(a + 0x10) == 4) {
-        if (txm_ce_data_cmp_alt(span, *(uint64_t *)(a + 0x18), *(uint64_t *)(a + 0x20)) != 0)   /* FUN_0005f8d0 */
+        if (txm_ce_data_cmp_alt((uint64_t *)span, *(uint64_t *)(a + 0x18), *(uint64_t *)(a + 0x20)) != 0)   /* FUN_0005f8d0 */
             return 8;
         return 0;
     }
@@ -6362,11 +6389,11 @@ txm_ce_key_apply(int *a, uint64_t ctx)
     int type = *dst;
     if (type == *a) {
         if (type == 6) {
-            uint32_t rc = txm_ce_data_equal(a + 2, *(uint64_t *)(dst + 2));
+            uint32_t rc = txm_ce_data_equal((uint64_t)a + 2, *(uint64_t *)(dst + 2));
             if (rc != 0)
                 return rc;
         } else if (type == 4) {
-            uint32_t rc = txm_ce_data_cmp(a + 2, *(uint64_t **)(dst + 2)[0], *(uint64_t **)(dst + 2)[1], (*(uint8_t *)(dst + 4) & 1) != 0);
+            uint32_t rc = txm_ce_data_cmp((uint64_t)a + 2, (uint64_t)*(uint64_t **)(dst + 2)[0], (uint64_t)*(uint64_t **)(dst + 2)[1], (*(uint8_t *)(dst + 4) & 1) != 0);
             if (rc != 0)
                 return rc;
         } else if (type == 3) {
@@ -6394,7 +6421,7 @@ txm_ce_dict_match(uint64_t a, uint64_t b)
     uint64_t st[5] = {0};
     uint64_t ctx[2] = {0, b};
     if (*(uint64_t *)(a + 0x10) != 4) {
-        uint64_t rc = txm_dict_apply(a, txm_ce_key_apply, ctx);   /* FUN_0005ed6c + FUN_0005f91c */
+        uint64_t rc = txm_dict_apply(a, (uint64_t)txm_ce_key_apply, (uint64_t)ctx);   /* FUN_0005ed6c + FUN_0005f91c */
         if ((int)rc == 0) {
             uint32_t r = ((st[0] & 0x100) == 0) ? 8 : 0;
             return (uint64_t)r;
@@ -6432,7 +6459,7 @@ txm_ce_span_match(uint64_t a, uint64_t *span)
         uint64_t len = span[1];
         uint64_t st[5] = {0};
         uint64_t ctx[2] = {0, 0};
-        uint64_t rc = txm_dict_apply(a, txm_ce_key_apply, ctx);   /* FUN_0005ed6c + FUN_0005f91c */
+        uint64_t rc = txm_dict_apply(a, (uint64_t)txm_ce_key_apply, (uint64_t)ctx);   /* FUN_0005ed6c + FUN_0005f91c */
         uint32_t r = ((st[0] & 0x100) == 0) ? 8 : 0;
         if (rc != 0)
             r = rc;
@@ -6479,7 +6506,7 @@ txm_entitlements_blob_parse(uint64_t ctx, uint32_t type, uint8_t *blob, uint64_t
         if (type < 5) {
             /* parse the identifier keys (FUN_0006037c) */
             uint64_t id = 0;
-            rc = txm_ce_parse_identifier(&v, &id, type);   /* FUN_0006037c */
+            rc = txm_ce_parse_identifier(&v, (uint64_t)&id, type);   /* FUN_0006037c */
             if ((rc != 0) && (rc != 0xcf))
                 goto out;
         }
@@ -6496,7 +6523,7 @@ txm_entitlements_blob_parse(uint64_t ctx, uint32_t type, uint8_t *blob, uint64_t
             } else {
                 uint64_t ent[5] = {0, 0, 0, ctx, 0};
                 uint64_t s2[2] = {a, a + b};
-                rc = txm_dict_parse(&ent, &s2);   /* FUN_0005db20 */
+                rc = txm_dict_parse(&ent, (uint64_t)&s2);   /* FUN_0005db20 */
                 /* (status in ent[0]: 0 = success) */
                 if (rc == 0) {
                     uint64_t span3[2] = {a, a + b};

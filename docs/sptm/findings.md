@@ -733,3 +733,39 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `switch (alg_class) { case 1: table=0x11fe0; case 4: 0x12018; case 8: 0x12050; case 0x10: 0x12088; default: return 0xc0001; }`.
 - **Severity (hypothesis)**: informational — confined algorithm dispatch (no arbitrary size reaches the verify path).
 - **Confidence**: medium
+
+## [ringminus1] 00024000 txm_policy_init — boot-state keyed system policy
+- **Observation**: The active TXM system policy (code-limit, debug, exec flags at 0x10618..0x10678) is selected from an 8-entry table keyed by the boot state (DAT_000104f2, 0-7); any other state is an unassignable-system-policy panic (0x1332). The platform-code-only flag (0x1351) forces bit 16 of the policy header. Policy function handlers are then wired from the table and per-profile feature bits (0x4a/0x4b/0x49), with restricted-execution-mode support logged (0x136f). An unsupported secure-channel/policy combination panics (0x1c/0x27/0xd0).
+- **Evidence**: `if (DAT_000104f2==0..7) tbl = &DAT_... else panic(0x1332)`; `if ((FUN_0002a004()&1)!=0) _DAT_00010618 = CONCAT16(1,_DAT_00010618)`; feature-bit-gated function-pointer installs at 0x106e8..0x10748.
+- **Severity (hypothesis)**: medium — the policy table and boot-state selection define the TXM trust/permission envelope; a mis-assigned table (wrong boot state) would install the wrong code-execution policy.
+- **Confidence**: medium
+
+## [ringminus1] 00024970 txm_trust_cache_load — prospective trust-cache build bounds
+- **Observation**: Building a prospective/local trust cache validates the DER entry count against the expected number (0x54), requires the code-limit start/end pointers to match the dictionary (0x5d/0x5e), and enforces that the code-limit range lies within the local policy buffer (0x19 on out-of-range). A second load on the same object is rejected (0x51); an unsupported dictionary version (0x52) rejects. Only the entry count and pointers are cross-checked, not the individual CD hashes (validated later by the execution path).
+- **Evidence**: `if (local_9c != iVar15) panic 0x54`; `if (local_b0 != local_98) panic 0x5d`; `if (local_a8 != pcVar13) panic 0x5e`; range bounds `if (pcVar10 < pcVar1 || pcVar1 < local_b0) FUN_00029a3c(0x19)`; `if (*(byte*)(param_1+0x18)&1) panic 0x51`.
+- **Severity (hypothesis)**: high (hypothesis) — the trust cache is the executable-code allow-list; a bounds bug (range under/overflow) here would let the cache claim code outside the intended region.
+- **Confidence**: medium
+
+## [ringminus1] 00025160 txm_cdhash_accelerate — entitlement acceleration cache
+- **Observation**: Accelerable entitlements are cached in a linked list of 0x1337-magic entries keyed by the entitlement pointer, with separate counters (DAT_00071000/004/008/00c/010) for the build-embedded vs out-of-line paths. The acceleration only proceeds when the entitlement range is a build-embedded pointer (< prospective-local-policy-gen 0x3ff9) and the range is valid; a non-embedded entitlement is silently skipped (0x28). If the entitlements are not marked accelerable (0x12aa) or cannot accelerate (0x1280), TXM panics.
+- **Evidence**: `if (local_68 < s_prospective_local_policy_generat_00003ff9) {...build accel entry...}`; `*(undefined2*)puVar6 = 0x1337; *(int*)(puVar6+4) = (int)local_68`; `if (FUN_0005eb3c(local_58)!=0) panic(0x1280); if (FUN_0005eb18(local_58)!=0) panic(0x12aa)`; counter `*piVar9 = *piVar9 + 1` at 0x71000/004/008/00c/010.
+- **Severity (hypothesis)**: medium — the acceleration cache is a performance fast-path over the trusted entitlement evaluation; a stale/forged 0x1337 entry (if a pointer could be made to collide) could skip re-validation.
+- **Confidence**: medium
+
+## [ringminus1] 00025780 txm_amfi_cdhash_reg — amfi.can-load-cdhash registration gate
+- **Observation**: The amfi CD-hash policy block (which will gate which CD hashes may be loaded/executed) is registered only by a caller holding com.apple.private.amfi.can-load-cdhash (0x130b), or when a system policy is already selected (DAT_00010800). Single-registration (re-set panics 0x36). This couples the CD-hash allow-list policy to the private amfi entitlement.
+- **Evidence**: `if (((DAT_00010800&1)==0) && (FUN_00022a38(0,s_com_apple_private_amfi_can_load__0000130b,0)==0)) return 0xe; if (DAT_00070f68!=0) panic 0x36;` then copies 7 words into 0x70f68..0x70fa0.
+- **Severity (hypothesis)**: high (hypothesis) — the CD-hash policy installed here is the executable allow-list; entitlement-gated registration is the control point.
+- **Confidence**: high
+
+## [ringminus1] 00025ec4 txm_external_tc_load — boot trust-cache install
+- **Observation**: At boot, trust-cache modules from the DT range are parsed and installed into the TC array with a per-module entry-count/offset table. The module count is bounds-checked (count>>0x1e, count!=0x3fffffff, count*4+4<=len), and every module pointer is validated to lie within the copied range (0x19 on OOB). A malformed range (missing/zero/short) is logged or panics (0x22-0x26). The first module is installed into the boot profile slot; the ERM trust-cache disallow policy (FUN_0002623c) is wired at the same time.
+- **Evidence**: `if (count>>0x1e==0 && count!=0x3fffffff && count*4+4<=len) { loop } else panic 0x24`; module pointer bounds `if (puVar2<puVar5) FUN_00029a3c(0x19)`; `if (*puVar5==0) panic 0x23`; install via `FUN_00030f00(&DAT_00010590,...)`.
+- **Severity (hypothesis)**: high (hypothesis) — the boot trust cache is the executable allow-list; an off-by-one in the module/offset table could let a malformed cache claim code ranges.
+- **Confidence**: high
+
+## [ringminus1] 00026350 txm_trust_cache_load — load-trust-cache admission
+- **Observation**: Installing a trust-cache module (selector 0x03) is gated on com.apple.private.pmap.load-trust-cache (0x1448) unless a system policy is pre-selected (DAT_00010800). The module index is bounded (3..0x19; else 9/10), and the load runs under the TC lock + secure-channel entry (FUN_000262c4). This couples trust-cache installation to the private pmap entitlement.
+- **Evidence**: `if (*(long*)(&DAT_000100f8+idx*0x28)!=0 && (DAT_00010800&1)==0 && FUN_00022a38(0,s_com_apple_private_pmap_load_trus_00001448,0)==0) return 0xe`; `if ((uint)param_1<3) return 9; if (0x19<(uint)param_1) return 10`.
+- **Severity (hypothesis)**: high (hypothesis) — the entitlement is the gate for extending the executable allow-list.
+- **Confidence**: high

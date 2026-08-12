@@ -35,6 +35,7 @@ extern int txm_read_le64(uint64_t *rng, uint64_t *out, uint64_t *consumed);
 extern int txm_tlv_read_varint(uint64_t *rng, uint64_t *out);
 extern void txm_bad_tailq(const char *msg) __attribute__((noreturn));
 extern void txm_panic(const char *fmt, ...) __attribute__((noreturn));
+extern void txm_memzero(void *dst, uint64_t len);
 
 /* CDHash algorithm OID constants (DER, txm.raw .rodata). */
 static const uint8_t TXM_CDHASH_SHA256[] = {0x2a,0x86,0x48,0x86,0xf7,0x63,0x64,0x06,0x02,0x01}; /* 0xa031? -> SHA-256 */
@@ -67,6 +68,11 @@ static uint64_t txm_ops_init(uint64_t a, uint64_t ops);
 static uint64_t txm_ops_alloc(uint64_t ops);
 static void txm_object_release(uint64_t *slot);
 static void txm_digest_len_panic(void) __attribute__((noreturn));
+static void txm_panic_msg(uint64_t msg) __attribute__((noreturn));
+static void txm_panic_illegal_chip_config(void) __attribute__((noreturn));
+static void txm_panic_illegal_chip_def(void) __attribute__((noreturn));
+static void txm_panic_unreachable(void) __attribute__((noreturn));
+static void txm_panic_illegal_chip_def_c(void) __attribute__((noreturn));
 static void txm_panic_boot_expert(void) __attribute__((noreturn));
 static uint64_t txm_pa_resolve(uint64_t pa, uint64_t *out);   /* FUN_00061ea4 */
 extern void CallSupervisor(int svc);
@@ -90,7 +96,7 @@ extern void txm_payload_free(uint64_t *pay);                      /* FUN_00059fe
 extern void txm_fault_check_pac(void);                            /* SoftwareBreakpoint 0xc471 */
 
 /* image4/crypto/DeviceTree out-of-batch helpers (sibling regions) */
-extern uint64_t txm_dt_chosen_get(uint64_t iodev, uint64_t a, uint64_t b, uint64_t *out, uint64_t *size); /* FUN_00050f9c */
+static uint64_t txm_dt_chosen_get(uint64_t iodev, uint64_t a, uint64_t b, uint64_t *out, uint64_t *size); /* FUN_00050f9c */
 extern uint64_t txm_iodev_get(void);                                 /* FUN_0005464c */
 extern uint64_t txm_ctx_ops(void);                                   /* FUN_000507b0 */
 extern void txm_expert_announce(void);                               /* FUN_00055da4 */
@@ -108,7 +114,7 @@ extern int txm_img4_parse_section(uint64_t *man, const char *name, uint64_t *v, 
 extern uint64_t txm_img4_section_u64(uint64_t *man, uint64_t a, const char *name, uint64_t *v); /* FUN_00045190 */
 extern uint64_t txm_img4_err(uint64_t e);                            /* FUN_0005793c */
 extern uint64_t txm_img4_install_hash(uint64_t base, uint64_t v, uint64_t len); /* FUN_00057b58 */
-extern void txm_img4_hash_finalize(uint64_t h, uint64_t *p);        /* FUN_00057ca8 */
+extern void txm_img4_hash_finalize(uint64_t h, uint64_t p);         /* FUN_00057ca8 */
 extern void txm_img4_hash_copy(uint64_t out, uint64_t src);          /* FUN_000522d8 */
 extern uint64_t txm_obj_resolve(uint64_t obj, int b);                /* FUN_0005860c */
 extern uint64_t txm_obj_prop_lookup(uint64_t base, uint64_t key);    /* FUN_00056e90 */
@@ -117,7 +123,7 @@ extern void txm_obj_prop_set_v2(uint64_t base, uint64_t key, uint64_t v); /* FUN
 extern void txm_obj_prop_set_v3(uint64_t base, uint64_t key, uint64_t v); /* FUN_000573c8 */
 extern void txm_obj_prop_set_v4(uint64_t base, uint64_t key, uint64_t v); /* FUN_00057478 */
 extern void txm_obj_prop_set_v5(uint64_t base, uint64_t key, uint64_t v); /* FUN_0005753c */
-extern uint64_t txm_manifest_hash_resolve(uint64_t a, uint64_t b);   /* FUN_00052a34 */
+extern uint64_t txm_manifest_hash_resolve(uint64_t ctx, uint64_t array);   /* FUN_00052a34 */
 extern void txm_bc_ctx_build(uint64_t a, uint64_t b, uint64_t *out); /* FUN_00059e14 */
 extern uint64_t txm_bc_verify(uint64_t *p, uint64_t a, uint64_t h, uint64_t *ctx); /* FUN_0005c230 */
 extern void txm_bc_ctx_release(uint64_t ctx);                        /* FUN_00042b84 */
@@ -135,6 +141,61 @@ extern void FUN_00056fac(uint64_t a, uint64_t b, uint8_t *in);   /* type 1 */
 extern void FUN_00057050(uint64_t a, uint64_t b, uint8_t *in);   /* type 2 */
 extern void FUN_000570f4(uint64_t a, uint64_t b, uint8_t *in);   /* type 3 */
 extern void FUN_000571ac(uint64_t a, uint64_t b, uint8_t *in);   /* type 4 */
+extern void FUN_00058fd0(uint64_t a, char *hex, uint64_t b, uint64_t c);  /* digest report */
+extern void FUN_00058fe0(uint64_t a, char *hex, uint64_t b, uint64_t c);  /* digest report v2 */
+extern void FUN_00051c10(char *buf, uint64_t len);               /* zero buffer */
+extern void FUN_00051c50(uint64_t a);                            /* magazine name err */
+extern void FUN_00051c90(uint64_t item);                         /* cryptex item init */
+extern void txm_img4_hash_to_hex(char *out, uint64_t len);       /* digest -> hex */
+extern void txm_img4_hash_copy2(uint64_t out, uint64_t src, uint64_t *len); /* hash copy w/ len */
+extern uint64_t txm_str_len(uint64_t s);                         /* strlen */
+
+/* nonce/magazine out-of-batch helpers */
+extern uint64_t FUN_00054024(void);                             /* default name */
+extern uint64_t FUN_00054034(uint64_t name);                    /* name deref */
+extern uint64_t FUN_00054074(uint64_t obj, uint64_t *slot);     /* nonce resolve */
+extern void FUN_0005a6e4(uint64_t out, uint64_t src);           /* nonce copy */
+extern uint64_t FUN_0005bef0(uint64_t ctx, uint64_t a, uint32_t type, uint64_t *d, uint64_t p4); /* nonce digest */
+extern int FUN_0005b7f0(uint64_t hash, uint64_t name, uint64_t *p2, uint64_t *p1); /* anti-replay verify */
+extern int FUN_00057c58(uint64_t *a, uint64_t *b);             /* stamp compare */
+extern void FUN_00057ce8(uint64_t a, uint64_t b, uint64_t *len);/* stamp read */
+extern void FUN_00059010(uint64_t ctx, uint64_t a, uint64_t b); /* nonce ctr write */
+extern uint64_t txm_nonce_name(uint64_t slot);                  /* slot name */
+
+/* odometer/ODP out-of-batch helpers */
+extern uint64_t FUN_0005c0cc(uint64_t *params, uint64_t ctx, uint32_t type, uint64_t *q); /* boot-anticipation query */
+extern uint64_t FUN_00058fb0(uint64_t name, uint64_t a, uint64_t b, uint64_t *d);         /* query nonce */
+extern uint64_t FUN_00058fa0(uint64_t name, uint64_t obj, uint32_t type, uint64_t *q, uint64_t *dig); /* entangle */
+extern void FUN_0005bd78(uint64_t name, uint64_t obj, uint64_t *dig, uint64_t *out);     /* nonce digest */
+extern uint64_t FUN_0005bfb4(uint64_t *params, uint64_t tag);                            /* policy flag */
+extern uint64_t FUN_00058f80(uint64_t name, uint64_t obj);                               /* boot-anticipation */
+
+/* image4 nonce/release-type out-of-batch helpers */
+extern uint64_t FUN_00058ff0(void);                               /* magazine root */
+extern uint64_t FUN_0005ace8(uint64_t a, uint64_t *out);         /* handle decode a */
+extern uint64_t FUN_0005acfc(uint64_t a, uint64_t *out);         /* handle decode b */
+extern uint64_t FUN_0002ebb8(uint64_t src, char **str, uint64_t a3); /* manifest string */
+extern uint64_t FUN_0002dd00(uint64_t a, uint64_t b);            /* string search */
+extern uint64_t FUN_0002dbe0(uint64_t a, uint64_t n);            /* prefix probe */
+extern uint32_t *FUN_00029750(void);                              /* error slot */
+extern uint64_t FUN_00054784(uint64_t ctx);                      /* chip ctx */
+extern uint64_t FUN_00053cd4(uint64_t ctx, uint64_t a, uint64_t b, uint64_t c, uint64_t *out, uint64_t cap); /* release-type map */
+extern uint64_t FUN_00054688(uint64_t a, uint64_t *b);           /* release-type apply */
+extern void FUN_00057c20(uint64_t *a, uint64_t *b);             /* nonce ctx build */
+extern uint64_t FUN_00045118(uint64_t table, uint64_t a, uint32_t type, uint64_t def); /* prop lookup */
+extern uint64_t FUN_00053310(uint64_t c) __attribute__((noreturn));
+
+/* trap-handler out-of-batch helpers */
+extern uint64_t FUN_0005470c(uint64_t chip, uint64_t *inp);    /* set boot uuid */
+extern uint64_t FUN_00059000(void);                             /* image array */
+extern uint64_t FUN_00059980(uint64_t a);                       /* image digest */
+extern uint64_t FUN_0005c134(uint64_t *params, uint64_t img, uint64_t *q); /* boot ctx query */
+extern void FUN_0005400c(void);                                 /* fallback */
+extern void FUN_00051c78(void) __attribute__((noreturn));       /* optional not set panic */
+extern void FUN_00051ce0(uint64_t *p);                        /* name deref side-effect (54034) */
+extern uint64_t FUN_00051ccc(uint64_t *p);                      /* name or default (54024) */
+extern void FUN_00051ff8(uint64_t *slot, uint64_t ctx);
+extern void FUN_00052020(uint64_t *slot, uint64_t ctx, uint64_t mode);
 
 /* ================================================================== */
 /* 0x4b0ac .. 0x4b1b8 — element / header readers                      */
@@ -2397,7 +2458,7 @@ static uint64_t txm_cryptex1_manifest_decode(uint64_t a, uint64_t ctx, uint64_t 
                 *(uint64_t*)0x710d8 = val;
             }
             *(uint64_t*)0x71080 = txm_img4_install_hash(0x71088, val, hash);
-            txm_img4_hash_finalize(*(uint64_t*)0x71080, &hash + 1);
+            txm_img4_hash_finalize(*(uint64_t*)0x71080, (uint64_t)&hash + 8);
             err = 0;
             goto done;
         }
@@ -2733,6 +2794,7 @@ static void txm_trap_ctx_enter_n(void)
  * Returns the object's data pointer (*(param_1 + 0x78)).
  * Confidence: high
  */
+static uint64_t txm_nonce_derive(uint64_t slot, uint64_t ctx, uint64_t *data);
 static uint64_t txm_obj_data_ptr(uint64_t obj) { return *(uint64_t*)(obj + 0x78); }
 
 /* FUN_0005042c @ 0x0005042c   (est. txm_obj_data_head)
@@ -3057,6 +3119,2028 @@ static uint64_t txm_manifest_set_property_v6(uint64_t obj, uint64_t a, uint64_t 
     uint64_t slot = txm_obj_prop_lookup(base, key);
     if (slot == 0) return 2;
     txm_obj_prop_set(base, key, val);
+    return 0;
+}
+
+/* ================================================================== */
+/* 0x50bb0 .. 0x5130c — magazine/cryptex + DT property read           */
+/* ================================================================== */
+
+/* FUN_00050bb0/4c10/4c70/4cd0   (est. txm_manifest_set_property_v7..v10)
+ * Ghidra: undefined8 FUN_00050bb0/4c10/4c70/4cd0(long,...)
+ * Property set variants resolving via *(*(obj+0x10)+0x18) and storing
+ * through FUN_00057318/573c8/57478/5753c. Return 0 or 2 (unknown).
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_set_property_v7(uint64_t obj, uint64_t a, uint64_t key, uint64_t v)
+{
+    uint64_t base = *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x18);
+    if (txm_obj_prop_lookup(base, key) == 0) return 2;
+    txm_obj_prop_set_v2(base, key, v);
+    return 0;
+}
+static uint64_t txm_manifest_set_property_v8(uint64_t obj, uint64_t a, uint64_t key, uint64_t v)
+{
+    uint64_t base = *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x18);
+    if (txm_obj_prop_lookup(base, key) == 0) return 2;
+    txm_obj_prop_set_v3(base, key, v);
+    return 0;
+}
+static uint64_t txm_manifest_set_property_v9(uint64_t obj, uint64_t a, uint64_t key, uint64_t v)
+{
+    uint64_t base = *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x18);
+    if (txm_obj_prop_lookup(base, key) == 0) return 2;
+    txm_obj_prop_set_v4(base, key, v);
+    return 0;
+}
+static uint64_t txm_manifest_set_property_v10(uint64_t obj, uint64_t a, uint64_t key, uint64_t v)
+{
+    uint64_t base = *(uint64_t*)(*(uint64_t*)(obj + 0x10) + 0x18);
+    if (txm_obj_prop_lookup(base, key) == 0) return 2;
+    txm_obj_prop_set_v5(base, key, v);
+    return 0;
+}
+
+/* FUN_00050d30 / 4d3c   (est. txm_return_zero_d/e)
+ * Ghidra: undefined8 FUN_00050d30/4d3c(void)
+ * Return 0.
+ * Confidence: high
+ */
+static uint64_t txm_return_zero_d(void) { return 0; }
+static uint64_t txm_return_zero_e(void) { return 0; }
+
+/* FUN_00050d48 / 4d50   (est. txm_noop9/10)
+ * Ghidra: void FUN_00050d48/4d50(void)
+ * Empty stubs.
+ * Confidence: high
+ */
+static void txm_noop9(void) { return; }
+static void txm_noop10(void) { return; }
+
+/* FUN_00050d58 / 4d5c   (est. txm_panic_should_never_b/c)
+ * Ghidra: void FUN_00050d58/4d5c(void)
+ * noreturn panic "panic: should never be called" (0x36bd) via
+ * FUN_00050d70.
+ * Confidence: high
+ */
+static void txm_panic_should_never_b(void) { txm_panic_msg(0x36bd); }
+static void txm_panic_should_never_c(void) { txm_panic_msg(0x36bd); }
+
+/* FUN_00050d70 @ 0x00050d70   (est. txm_panic_msg)
+ * Ghidra: void FUN_00050d70(undefined8)
+ * noreturn panic taking a message pointer (FUN_00029784).
+ * Confidence: high
+ */
+static void txm_panic_msg(uint64_t msg) { txm_panic((const char*)msg); }
+
+/* FUN_00050d9c / 4da0   (est. txm_trap_ctx_enter_o/p)
+ * Ghidra: void FUN_00050d9c/4da0(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_o(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_p(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_00050dc4 @ 0x00050dc4   (est. txm_trap_ctx_enter_q)
+ * Ghidra: void FUN_00050dc4(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_q(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_00050df0 @ 0x00050df0   (est. txm_dt_property_read)
+ * Ghidra: undefined8 FUN_00050df0(void)
+ * Reads a DeviceTree property into the caller-provided buffer: resolves
+ * the property node (FUN_0004eb24), copies the value (thunk_FUN_0002d240
+ * + memset), and zeroes the size out-param. Returns 0 on success, 2 if
+ * the property is absent.
+ * Confidence: medium
+ * Notes: property name looked up by FUN_0004eb24 (path resolve).
+ */
+static uint64_t txm_dt_property_read(uint64_t *out_size)
+{
+    uint64_t sz = *out_size;
+    if (txm_dt_property_find_wrap((uint64_t*)0, 0, 0, 0, 0) == 1) {
+        if (*out_size < sz) txm_fault_impl(0x19, 0);
+        txm_memzero(out_size, sz);
+        *out_size = 0;
+        return 0;
+    }
+    return 2;
+}
+
+/* FUN_00050ebc @ 0x00050ebc   (est. txm_dt_property_read_u8)
+ * Ghidra: void FUN_00050ebc(void)
+ * Reads a DT property as a byte into the caller's output; panics
+ * "failed to read property" if the read fails with a real error.
+ * Confidence: medium
+ */
+static void txm_dt_property_read_u8(uint8_t *out)
+{
+    int r = (int)txm_dt_property_read((uint64_t*)0);
+    if ((r != 2) && (r != 0)) txm_panic_msg(0x3781);
+    *out = 0;
+}
+
+/* FUN_00050f30 @ 0x00050f30   (est. txm_dt_property_read_u32)
+ * Ghidra: void FUN_00050f30(void)
+ * Reads a DT property as a uint32 into the caller's output; same panic
+ * behavior.
+ * Confidence: medium
+ */
+static void txm_dt_property_read_u32(uint32_t *out)
+{
+    int r = (int)txm_dt_property_read((uint64_t*)0);
+    if ((r != 2) && (r != 0)) txm_panic_msg(0x3781);
+    *out = 0;
+}
+
+/* FUN_00050f9c @ 0x00050f9c   (est. txm_dt_chosen_get)
+ * Ghidra: undefined8 FUN_00050f9c(undefined8,undefined8,undefined8,undefined8,undefined8)
+ * Resolves a path under /chosen (FUN_0004e8b4) and reads the property
+ * (FUN_00050df0). Returns 0 on success, 0x13 if the path does not exist.
+ * Confidence: medium
+ */
+static uint64_t txm_dt_chosen_get(uint64_t iodev, uint64_t path, uint64_t prop,
+                                  uint64_t *out, uint64_t *size)
+{
+    uint64_t node = 0;
+    if (txm_dt_path_resolve((uint64_t*)iodev, 0, (char*)path, &node) == 1) {
+        return txm_dt_property_read(size);
+    }
+    return 0x13;
+    (void)prop; (void)out;
+}
+
+/* FUN_00051014 @ 0x00051014   (est. txm_digest_hex_report)
+ * Ghidra: void FUN_00051014(long,undefined8,undefined8,undefined8)
+ * Formats a binary digest into a 0x80-byte hex string (zeroed first via
+ * FUN_00051c10), then reports it via FUN_00058fd0. The hex string is
+ * produced from the object's digest (param_1+0x10).
+ * Confidence: medium
+ */
+static void txm_digest_hex_report(uint64_t obj, uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t canary = txm_canary;
+    char hexbuf[0x81];
+    for (int i = 0; i < 0x81; i++) hexbuf[i] = 0;
+    txm_img4_hash_to_hex(hexbuf, 0x80);
+    uint64_t i = 0;
+    while (hexbuf[i] != '\0') { i = i + 1; if (i == 0x80) txm_fault_impl(0x19, 0); }
+    FUN_00058fd0(*(uint64_t*)(obj + 0x10), hexbuf, b, c);
+    (void)a;
+    if (txm_canary != canary) txm_stack_check_fail();
+}
+
+/* FUN_000510fc @ 0x000510fc   (est. txm_digest_hex_report_v2)
+ * Ghidra: void FUN_000510fc(long,undefined8,undefined8,undefined8)
+ * Same hex digest report via FUN_00058fe0.
+ * Confidence: medium
+ */
+static void txm_digest_hex_report_v2(uint64_t obj, uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t canary = txm_canary;
+    char hexbuf[0x81];
+    for (int i = 0; i < 0x81; i++) hexbuf[i] = 0;
+    txm_img4_hash_to_hex(hexbuf, 0x80);
+    uint64_t i = 0;
+    while (hexbuf[i] != '\0') { i = i + 1; if (i == 0x80) txm_fault_impl(0x19, 0); }
+    FUN_00058fe0(*(uint64_t*)(obj + 0x10), hexbuf, b, c);
+    (void)a;
+    if (txm_canary != canary) txm_stack_check_fail();
+}
+
+/* FUN_000511f8 @ 0x000511f8   (est. txm_cryptex_ctx_init)
+ * Ghidra: undefined8* FUN_000511f8(undefined8*,undefined8,undefined8*,long)
+ * Initializes a cryptex/magazine context block: writes the magic
+ * 0x656e697a7a696e65 ("enzin..." = cryptex tag), binds the ops table,
+ * input list, and item count, then iterates the input list calling
+ * FUN_00051c90 per item.
+ * Confidence: medium
+ * Notes: magic 0x656e697a7a696e65 = "e n i z z i n e"; table DAT_00019710.
+ */
+static uint64_t *txm_cryptex_ctx_init(uint64_t *ctx, uint64_t ops, uint64_t *items, uint64_t count)
+{
+    ctx[0] = 0x656e697a7a696e65ull;
+    *(uint8_t*)(ctx + 1) = 0;
+    *(uint16_t*)((char*)ctx + 9) = 0;
+    *(uint8_t*)((char*)ctx + 0xb) = 0;
+    ctx[0xf] = 0x19710;
+    ctx[2] = ops;
+    ctx[3] = (uint64_t)items;
+    ctx[5] = count;
+    ctx[0x11] = 0xffffffffffffffffull;
+    *(uint16_t*)(ctx + 0xe) = 0;
+    ctx[0xb] = 0;
+    ctx[10] = 0;
+    ctx[0xd] = 0;
+    ctx[0xc] = 0;
+    ctx[7] = 0;
+    ctx[6] = 0;
+    ctx[9] = 0;
+    ctx[8] = 0;
+    for (; count != 0; count = count - 1) {
+        FUN_00051c90(*items);
+        items = items + 1;
+    }
+    return ctx;
+}
+
+/* FUN_00051290 @ 0x00051290   (est. txm_magazine_name_store)
+ * Ghidra: void FUN_00051290(long,undefined8)
+ * Stores a magazine name string (via FUN_0002efc4) into the object's
+ * name buffer (param_1+0x30), max 0x40 bytes; faults 0x19 on overflow
+ * or if the buffer is already in use.
+ * Confidence: medium
+ */
+static void txm_magazine_name_store(uint64_t obj, uint64_t name)
+{
+    uint64_t len = txm_str_len(name);
+    if (len < 0x40) {
+        if ((uint16_t*)(obj + 0x30) <= (uint16_t*)(obj + 0x70)) {
+            txm_img4_no_digest((char*)(obj+0x30), name, 0x40, 0xffffffffffffffffull);
+            *(uint16_t*)(obj + 0x70) = 1;
+            return;
+        }
+    } else {
+        FUN_00051c50(name);
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_000512fc @ 0x000512fc   (est. txm_obj_set_data)
+ * Ghidra: void FUN_000512fc(long,long)
+ * Sets the object's data pointer (param_1+0x78) if param_2 nonzero.
+ * Confidence: high
+ */
+static void txm_obj_set_data(uint64_t obj, uint64_t data)
+{
+    if (data != 0) *(uint64_t*)(obj + 0x78) = data;
+}
+
+/* FUN_0005130c @ 0x0005130c   (est. txm_magazine_parse)
+ * Ghidra: ulong FUN_0005130c(long,undefined8*)
+ * Parses a magazine (cryptex) header from the object: queries the
+ * "board-id" (FUN_00058b88) and "chip-id" (FUN_0005861c) expert
+ * properties, reads the magazine data via the ops-table callback
+ * (*(*(obj+0x78)+0x10)), validates the magazine magic/format
+ * (0x42-byte header), extracts the digest and stamp fields into
+ * *param_2. Returns 0 on success.
+ * Confidence: low (large format parser; field layout inferred)
+ * Notes: "magazine: %s: ..." error strings at 0x388a/0x3905/0x393a/
+ *   0x3993/0x39e7/0x3a44; stamp validation via FUN_00057ce8/57b58/
+ *   57ca8; error codes 0x22/0x54/0x57/0x60.
+ */
+static uint64_t txm_magazine_parse(uint64_t obj, uint64_t *out)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ops = *(uint64_t*)(obj + 0x10);
+    uint64_t board[2] = {0,0}, chip[2] = {0,0}, digest[2] = {0,0};
+    uint8_t present = 0;
+    uint64_t r = FUN_00058b88(ops, 0, 0x1a858, (uint8_t*)&board[0]);
+    if ((r & 0xfffffffd) == 0) {
+        if (FUN_0005861c(ops, 0, 0x1c110, &present) != 0)
+            txm_panic_msg(0x38bf);
+        *(uint64_t*)(obj + 0xb8) = board[1]; *(uint64_t*)(obj + 0xb0) = board[0];
+        *(uint64_t*)(obj + 200) = chip[1];   *(uint64_t*)(obj + 0xc0) = chip[0];
+        *(uint64_t*)(obj + 0xe0) = 1;
+        *(uint8_t*)(obj + 0xf0) = present & 1;
+        uint64_t sz = 0x42;
+        r = (*(uint64_t(**)(uint64_t,uint64_t,uint64_t*,uint64_t*))(*(uint64_t*)(obj + 0x78) + 0x10))(obj, 0, &digest[0], &sz);
+        if ((int)r == 0) {
+            if (sz == 0) {
+                FUN_00051ccc(NULL);
+                txm_log_error(ops, 0, "magazine: %s: magazine data too short", 0x3942);
+                r = 0x60;
+            } else {
+                uint8_t b = (uint8_t)digest[0];
+                if ((uint8_t)digest[0] < 2) {
+                    if (sz == 0x42) {
+                        uint8_t dlen = *(uint8_t*)&digest[1];
+                        if ((uint64_t)dlen < 0x41) {
+                            if (*(uint64_t*)(obj + 0xd8) == (uint64_t)dlen) {
+                                /* copy digest inline */
+                            } else {
+                                uint64_t dl = 0x40;
+                                txm_img4_hash_copy2(obj + 0x90, (uint64_t)&digest[1], &dl);
+                                dlen = (uint8_t)dl;
+                            }
+                            if (0x40 < dlen) txm_fault_impl(0x19, 0);
+                            txm_img4_install_hash((uint64_t)&board[0], (uint64_t)&digest[1], dlen);
+                            txm_img4_hash_finalize((uint64_t)&board[0], (uint64_t)&chip[0]);
+                            r = 0;
+                            *(uint8_t*)(obj + 0x80) = b;
+                            out[5] = digest[1]; out[4] = digest[0];
+                            out[7] = 0; out[6] = 0;
+                            *(uint16_t*)(out + 8) = 0;
+                            out[1] = 0; out[0] = 0;
+                            out[3] = 0; out[2] = 0;
+                        } else {
+                            FUN_00051ccc(NULL);
+                            txm_log_error(ops, 0, "magazine: %s: magazine data has invalid digest", 0x3a44);
+                            r = 0x54;
+                        }
+                    } else {
+                        FUN_00051ccc(NULL);
+                        txm_log_error(ops, 0, "magazine: %s: magazine data has invalid magic", 0x39e7);
+                        r = 0x22;
+                    }
+                } else {
+                    if (0x41 < sz) { r = 0x57; goto done; }
+                    FUN_00051ccc(NULL);
+                    txm_log_error(ops, 0, "magazine: %s: future magazine is unsupported", 0x3993);
+                    r = 0x22;
+                }
+            }
+        } else {
+            if (((int)r == 0x54) || ((int)r == 2)) {
+                r = 0;
+                for (int i = 0; i < 9; i++) out[i] = 0;
+                goto done;
+            }
+            FUN_00051ccc(NULL);
+            txm_log_error(ops, 0, "magazine: %s: failed to query stamp", 0x3905);
+        }
+    } else {
+        FUN_00051ccc(NULL);
+        txm_log_error(ops, 0, "magazine: %s: failed to query board-id", 0x388a);
+    }
+done:
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* ================================================================== */
+/* 0x516c0 .. 0x523c8 — magazine/stamp/nonce + hash-range primitives  */
+/* ================================================================== */
+
+/* FUN_000516c0 @ 0x000516c0   (est. txm_magazine_stamp_parse)
+ * Ghidra: void FUN_000516c0(long,long)
+ * Parses a magazine stamp (param_2) into the object's stamp fields.
+ * If the object has no stamp slot yet (*(param_1+0xe0)==0) faults
+ * "optional not set". Validates the stamp digest (< 0x41 bytes),
+ * compares it against the magazine header, and copies the stamp fields
+ * into param_1+0x90..; sets the "valid" short (param_1+0xe0) to 1 and
+ * records the digest source (param_1+0xe8). Faults 0x19 on bad length.
+ * Confidence: medium
+ */
+static void txm_magazine_stamp_parse(uint64_t obj, uint64_t stamp)
+{
+    uint64_t canary = txm_canary;
+    if (*(uint16_t*)(obj + 0xe0) == 0) {
+        FUN_00051c78();
+    } else if (*(uint8_t*)(stamp + 0x41) < 0x41) {
+        uint64_t *slot = (uint64_t*)(obj + 0x90);
+        uint64_t tmp[0xa] = {0};   /* 0x50-byte magazine header copy */
+        uint64_t *src;
+        txm_img4_install_hash((uint64_t)&tmp[0], (uint64_t)(stamp + 1), 0x40);
+        int r = FUN_00057c58(slot, &tmp[0]);
+        if (r == 0) {
+            *(uint64_t*)(obj + 0xe8) = 0;
+            src = slot;
+        } else {
+            txm_img4_hash_finalize((uint64_t)&tmp[0], 0);
+            txm_img4_hash_finalize((uint64_t)slot, 0);
+            int has_sha1 = (*(uint8_t*)(obj + 0xf0) & 1) == 0;
+            *(uint64_t*)(obj + 0xe8) = has_sha1 ? 2 : 1;
+            src = &tmp[0];
+            if (!has_sha1) src = slot;
+        }
+        uint64_t v0 = src[0];
+        *(uint64_t*)(obj + 0x98) = src[1];
+        slot[0] = v0;
+        uint64_t v6 = src[3], v5 = src[2], v8 = src[5], v7 = src[4];
+        uint64_t v9 = src[6], v11 = src[9], v10 = src[8];
+        *(uint64_t*)(obj + 200) = src[7];
+        *(uint64_t*)(obj + 0xc0) = v9;
+        *(uint64_t*)(obj + 0xd8) = v11;
+        *(uint64_t*)(obj + 0xd0) = v10;
+        *(uint64_t*)(obj + 0xa8) = v6;
+        *(uint64_t*)(obj + 0xa0) = v5;
+        *(uint64_t*)(obj + 0xb8) = v8;
+        *(uint64_t*)(obj + 0xb0) = v7;
+        *(uint16_t*)(obj + 0xe0) = 1;
+        if (txm_canary != canary) txm_stack_check_fail();
+        return;
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_000517f8 @ 0x000517f8   (est. txm_magazine_load_nonces)
+ * Ghidra: void FUN_000517f8(long)
+ * Loads the magazine nonce slots: for each nonce entry (count at
+ * param_1+0x28), reads its value via the ops-table callback, validates
+ * and derives the nonce digest (FUN_00051dd8), sets up the slot
+ * (FUN_00052020), and records the anti-replay root. On a nonce read
+ * failure logs and clears the slot.
+ * Confidence: medium
+ * Notes: "magazine: %s: ..." strings at 0x3a9f/0x3ad0; 0x80-byte digest
+ *   buffer; FUN_00051ff8 clears a failed slot.
+ */
+static void txm_magazine_load_nonces(uint64_t obj)
+{
+    uint64_t canary = txm_canary;
+    if (*(uint64_t*)(obj + 0x28) != 0) {
+        uint64_t count = 0;
+        uint64_t ops = *(uint64_t*)(obj + 0x10);
+        do {
+            uint64_t *slot = *(uint64_t**)(*(uint64_t*)(obj + 0x18) + count * 8);
+            uint64_t digest[0x11] = {0};
+            digest[0] = 0x80;
+            uint64_t nonce[2] = {0,0};
+            int r = (*(uint64_t(**)(uint64_t,uint64_t,uint64_t*,uint64_t*))(*(uint64_t*)(obj+0x78)+0x10))
+                        (obj, *slot + 0xc, &digest[1], &digest[0]);
+            if (r == 0) {
+                if (0x80 < digest[0]) txm_fault_impl(0x19, 0);
+                txm_img4_hash_copy((uint64_t)&nonce[0], (uint64_t)&digest[1]);
+                r = txm_nonce_derive((uint64_t)slot, ops, &nonce[0]);
+                if (r != 0) {
+                    uint64_t c = *(uint64_t*)(obj + 0x10);
+                    FUN_00051ccc(NULL);
+                    txm_log_error(c, 0, "magazine: %s: invalid nonce slot (%s)", 0x3ad0);
+                    goto fail;
+                }
+                uint64_t *root = NULL;
+                if ((*(uint8_t*)(slot[4] + 1) & 4) != 0) root = slot;
+                if (slot + 5 <= slot) txm_fault_impl(0x19, 0);
+                FUN_00052020(slot, ops, *(uint64_t*)(obj + 0xe8));
+                if (*(uint64_t*)(obj + 0x20) == 0) {
+                    if (slot + 5 <= root) txm_fault_impl(0x19, 0);
+                    *(uint64_t**)(obj + 0x20) = root;
+                }
+            } else {
+                uint64_t c = *(uint64_t*)(obj + 0x10);
+                FUN_00051ccc(NULL);
+                txm_log_error(c, 0, "magazine: %s: failed to read nonce (%s)", 0x3a9f);
+fail:
+                FUN_00051ff8(slot, ops);
+            }
+            count = count + 1;
+        } while (count < *(uint64_t*)(obj + 0x28));
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+}
+
+/* FUN_000519c8 @ 0x000519c8   (est. txm_magazine_slot_find)
+ * Ghidra: undefined8 FUN_000519c8(long,long,int,undefined8*)
+ * Finds a magazine slot by nonce name (param_2) or its +0x58 alias and
+ * a requested type (param_3); returns the slot into *param_4. Returns 0
+ * on match, 2 on none.
+ * Confidence: medium
+ */
+static uint64_t txm_magazine_slot_find(uint64_t obj, uint64_t key, int type, uint64_t *out)
+{
+    if (*(uint64_t*)(obj + 0x28) == 0) return 2;
+    uint64_t i = 0;
+    uint64_t slot = 0;
+    while (1) {
+        slot = *(uint64_t*)(*(uint64_t*)(obj + 0x18) + i * 8);
+        FUN_00051ce0((uint64_t*)slot);
+        uint64_t name = FUN_00051ccc((uint64_t*)slot);
+        if (((key == name) || (key == *(uint64_t*)(name + 0x58))) &&
+            (*(int*)(name + 0x30) == type)) break;
+        i = i + 1;
+        if (*(uint64_t*)(obj + 0x28) <= i) return 2;
+    }
+    *out = slot;
+    return 0;
+}
+
+/* FUN_00051b3c @ 0x00051b3c   (est. txm_magazine_slot_find_type)
+ * Ghidra: undefined8 FUN_00051b3c(long,int,undefined8*)
+ * Finds a magazine slot whose type (+8) equals param_2; returns it into
+ * *param_3. Returns 0 on match, 2 on none.
+ * Confidence: medium
+ */
+static uint64_t txm_magazine_slot_find_type(uint64_t obj, int type, uint64_t *out)
+{
+    if (*(uint64_t*)(obj + 0x28) == 0) return 2;
+    uint64_t i = 0;
+    do {
+        uint64_t slot = *(uint64_t*)(*(uint64_t*)(obj + 0x18) + i * 8);
+        uint64_t name = FUN_00051ccc(NULL);
+        if (*(int*)(name + 8) == type) { *out = slot; return 0; }
+        i = i + 1;
+    } while (i < *(uint64_t*)(obj + 0x28));
+    return 2;
+}
+
+/* FUN_00051bd0 @ 0x00051bd0   (est. txm_magazine_slot_find_id)
+ * Ghidra: undefined8 FUN_00051bd0(long,long,undefined8*)
+ * Finds a magazine slot whose id (*(slot+0x40)) equals param_2; returns
+ * it into *param_3. Returns 0 on match, 2 on none.
+ * Confidence: medium
+ */
+static uint64_t txm_magazine_slot_find_id(uint64_t obj, uint64_t id, uint64_t *out)
+{
+    uint64_t n = *(uint64_t*)(obj + 0x28);
+    if (n != 0) {
+        uint64_t *e = *(uint64_t**)(obj + 0x18);
+        do {
+            if (*(uint64_t*)(*(uint64_t*)*e + 0x40) == id) { *out = *e; return 0; }
+            n = n - 1;
+            e = e + 1;
+        } while (n != 0);
+    }
+    return 2;
+}
+
+/* FUN_00051c10 @ 0x00051c10   (est. txm_zero_buf)
+ * Ghidra: void FUN_00051c10(undefined8,undefined8)
+ * Zeroes a 0x80-byte buffer (FUN_0002eb44 with a "no digest" marker).
+ * Confidence: medium
+ */
+static void txm_zero_buf(uint64_t buf, uint64_t len)
+{
+    txm_memzero((void*)buf, 0x80);
+    (void)len;
+}
+
+/* FUN_00051c50 @ 0x00051c50   (est. txm_nonce_prefix_overflow_panic)
+ * Ghidra: void FUN_00051c50(void)
+ * noreturn panic "panic: nonce slot prefix overflow" (0x3849).
+ * Confidence: high
+ */
+static void txm_nonce_prefix_overflow_panic(void) { txm_panic_msg(0x3849); }
+
+/* FUN_00051c78 @ 0x00051c78   (est. txm_optional_not_set_panic)
+ * Ghidra: void FUN_00051c78(void)
+ * noreturn panic "panic: optional not set" (0x38ed).
+ * Confidence: high
+ */
+
+/* FUN_00051c90 @ 0x00051c90   (est. txm_nonce_item_init)
+ * Ghidra: void FUN_00051c90(long)
+ * Initializes a nonce item: calls its init callback (*(param_1+8)) and
+ * clears its 5-word state block at *(param_1+0x20).
+ * Confidence: medium
+ */
+static void txm_nonce_item_init(uint64_t item)
+{
+    (*(void(**)(void))(item + 8))();
+    uint64_t *st = *(uint64_t**)(item + 0x20);
+    *(uint8_t*)((char*)st + 0x1d) = 0;
+    st[1] = 0; st[0] = 0; st[3] = 0; st[2] = 0;
+}
+
+/* FUN_00051ccc @ 0x00051ccc   (est. txm_obj_name_or_default)
+ * Ghidra: undefined8 FUN_00051ccc(undefined8*)
+ * Returns *param_1 (the object name), or a default (FUN_00054024) if
+ * param_1 is null.
+ * Confidence: medium
+ */
+
+/* FUN_00051ce0 @ 0x00051ce0   (est. txm_obj_name)
+ * Ghidra: void FUN_00051ce0(undefined8*)
+ * Returns the object name via FUN_00054034(*param_1).
+ * Confidence: medium
+ */
+
+/* FUN_00051cec @ 0x00051cec   (est. txm_obj_run_vtbl_10)
+ * Ghidra: long FUN_00051cec(long)
+ * Runs the object's vtable slot +0x10 and returns the object.
+ * Confidence: medium
+ */
+static uint64_t txm_obj_run_vtbl_10(uint64_t obj)
+{
+    (*(void(**)(void))(obj + 0x10))();
+    return obj;
+}
+
+/* FUN_00051d1c @ 0x00051d1c   (est. txm_obj_destroy)
+ * Ghidra: void FUN_00051d1c(long*)
+ * Destroys the object: if *param_1 nonzero, runs its destructor vtable
+ * slot (+0x18) and clears the slot.
+ * Confidence: medium
+ */
+static void txm_obj_destroy(uint64_t *slot)
+{
+    if (*slot != 0) {
+        (*(void(**)(void))(*slot + 0x18))();
+        *slot = 0;
+    }
+}
+
+/* FUN_00051d54 @ 0x00051d54   (est. txm_obj_derive_nonce)
+ * Ghidra: undefined8 FUN_00051d54(long*,undefined8)
+ * Derives a nonce digest from the object: resolves the object
+ * (FUN_00054074), bounds-checks the 0x10-byte digest, and copies the
+ * derived nonce into param_2 via FUN_0005a6e4. Returns the derive status.
+ * Confidence: medium
+ */
+static uint64_t txm_obj_derive_nonce(uint64_t *slot, uint64_t out)
+{
+    uint64_t obj = *slot;
+    uint64_t r = FUN_00054074(obj, slot);
+    if ((int)r == 0) {
+        if (0x10 < *(uint64_t*)(obj + 0x48)) txm_fault_impl(0x19, 0);
+        FUN_0005a6e4(out, slot[4] + 5);
+    }
+    return r;
+}
+
+/* FUN_00051dc0 @ 0x00051dc0   (est. txm_nonce_set_replay_bit)
+ * Ghidra: void FUN_00051dc0(long)
+ * Sets bit 1 in the nonce state flags (*(*(param_1+0x20)+1) |= 2).
+ * Confidence: medium
+ */
+static void txm_nonce_set_replay_bit(uint64_t obj)
+{
+    *(uint32_t*)(*(uint64_t*)(obj + 0x20) + 1) |= 2;
+}
+
+/* FUN_00051dd8 @ 0x00051dd8   (est. txm_nonce_derive)
+ * Ghidra: undefined8 FUN_00051dd8(long,undefined8,undefined8*)
+ * Derives a nonce from a slot's data (param_3 {ptr,len}): requires
+ * non-empty data, a 0x25-byte stamped format, and copies the 0x20-byte
+ * nonce + 0x10-byte counter into the slot state. Returns 0, 0x22 (bad
+ * format), 0x57 (future), or 0x60 (too small). Logs "slot: %s: ..."
+ * errors at 0x3b2d/0x3b7b/0x3bc7.
+ * Confidence: medium
+ */
+static uint64_t txm_nonce_derive(uint64_t slot, uint64_t ctx, uint64_t *data)
+{
+    uint64_t len = data[1];
+    if (len == 0) {
+        txm_log_error(ctx, 0, "slot: %s: slot data too small for nonce (%s)", 0x3b2d);
+        return 0x60;
+    }
+    char *p = (char*)*data;
+    if (*p == '\0') {
+        if (len == 0x25) {
+            uint8_t *st = *(uint8_t**)(slot + 0x20);
+            *st = 0;
+            *(uint32_t*)(st + 1) = (uint8_t)p[4] & 0x7f;
+            uint64_t n0 = *(uint64_t*)(p + 5);
+            *(uint64_t*)(st + 0xd) = *(uint64_t*)(p + 0xd);
+            *(uint64_t*)(st + 5) = n0;
+            uint64_t n1 = *(uint64_t*)(p + 0x15);
+            *(uint64_t*)(st + 0x1d) = *(uint64_t*)(p + 0x1d);
+            *(uint64_t*)(st + 0x15) = n1;
+            return 0;
+        }
+        txm_log_error(ctx, 0, "slot: %s: slot data has incorrect format (%s)", 0x3bc7);
+    } else {
+        if (0x24 < len) return 0x57;
+        txm_log_error(ctx, 0, "slot: %s: future slot is bogus (%s)", 0x3b7b);
+    }
+    return 0x22;
+}
+
+/* FUN_00051ecc @ 0x00051ecc   (est. txm_nonce_derive_digest)
+ * Ghidra: undefined8 FUN_00051ecc(long*,undefined8,undefined8*,undefined8)
+ * Derives the nonce digest for an object: optionally creates a fresh
+ * nonce (vtable callbacks param_1[2]/[3]) then runs the nonce-digest
+ * derivation (FUN_0005bef0). Logs "failed to derive nonce digest (nonce)"
+ * (0x3c1c) on failure. Returns 0 on success.
+ * Confidence: medium
+ */
+static uint64_t txm_nonce_derive_digest(uint64_t *slot, uint64_t ctx, uint64_t *data, uint64_t a4)
+{
+    uint64_t canary = txm_canary;
+    uint64_t obj = *slot;
+    uint64_t r;
+    uint64_t local[3] = {0,0,0};
+    r = FUN_00054034(obj);
+    if (data == NULL) {
+        (*(void(**)(uint64_t*))slot[2])(slot);
+        data = &local[0];
+        r = txm_obj_derive_nonce(slot, (uint64_t)&local[0]);
+        (*(void(**)(uint64_t*))slot[3])(slot);
+        if ((int)r != 0) goto out;
+    }
+    r = FUN_0005bef0(ctx, r, *(uint32_t*)(obj + 0x30), data, a4);
+    if ((int)r != 0) txm_log_error(ctx, 0, "failed to derive nonce digest (nonce)", 0x3c1c);
+out:
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00051ff8 @ 0x00051ff8   (est. txm_nonce_slot_fail)
+ * Ghidra: void FUN_00051ff8(long*,undefined8)
+ * Marks a nonce slot failed: sets the failed bit (|1) in the slot state
+ * flags and clears the slot via FUN_00052020.
+ * Confidence: medium
+ */
+
+/* FUN_00052020 @ 0x00052020   (est. txm_nonce_slot_clear)
+ * Ghidra: void FUN_00052020(long*,undefined8,ulong)
+ * Clears a nonce slot's counter/replay state after use: selects the
+ * SHA-1 vs SHA-256 field layout, copies the counter, clears the replay
+ * flags, and applies the mode bits. Faults 0x19 on layout overflow.
+ * Confidence: medium
+ */
+static void txm_nonce_slot_clear(uint64_t *slot, uint64_t ctx, uint64_t mode)
+{
+    uint64_t *st = (uint64_t*)slot[4];
+    uint32_t flags = *(uint32_t*)((char*)st + 1);
+    uint64_t max = *(uint64_t*)(*slot + 0x50);
+    uint64_t m = (max > 1) ? 2 : max;
+    int sha1 = (flags & 4) != 0;
+    uint32_t ctr_sz = sha1 ? 8 : 0x40;
+    uint32_t ctr_off = sha1 ? 0x27 : 0x23;
+    uint64_t *ctr = sha1 ? (uint64_t*)((char*)st + 0x25) : NULL;
+    uint64_t *counter = sha1 ? (uint64_t*)((char*)st + 0x15) : NULL;
+    uint64_t mm = mode;
+    if (mode < 4) mm = 3;
+    if ((flags & 3) != 0) mode = mm;
+    uint32_t newf = flags;
+    if (m <= mode) {
+        if (counter == NULL) {
+            if ((uint64_t*)((char*)st + 0x25) <= st) txm_fault_impl(0x19, 0);
+            FUN_00059010(ctx, (uint64_t)((char*)st + 5), *(uint64_t*)(*slot + 0x48));
+            ctr_sz = ctr_sz | 0x40;
+        } else {
+            if (ctr <= counter) txm_fault_impl(0x19, 0);
+            uint64_t c0 = *counter;
+            *(uint64_t*)((char*)st + 0xd) = counter[1];
+            *(uint64_t*)((char*)st + 5) = c0;
+            *(uint64_t*)((char*)st + 0x1d) = 0;
+            *(uint64_t*)((char*)st + 0x15) = 0;
+        }
+        newf = *(uint32_t*)((char*)st + 1) & (ctr_sz ^ 0xffffffffu);
+    }
+    *(uint32_t*)((char*)st + 1) = newf & ((ctr_off | (mode & 2) << 2) ^ 0xffffffffu);
+}
+
+/* FUN_00052114 @ 0x00052114   (est. txm_magazine_anti_replay_disabled)
+ * Ghidra: bool FUN_00052114(undefined8,long)
+ * Returns whether anti-replay is disabled for the object: true if the
+ * hash type is unresolvable (FUN_00052a34) or the stamp slot is empty,
+ * or if the digest-source short (param_2+0xe8) is zero.
+ * Confidence: medium
+ */
+static int txm_magazine_anti_replay_disabled(uint64_t a, uint64_t obj)
+{
+    uint64_t hash = txm_manifest_hash_resolve(a, *(uint64_t*)(obj + 0x10));
+    if ((hash == 0) || (*(uint16_t*)(obj + 0x90) == 0)) return 1;
+    return *(uint16_t*)(obj + 0xe8) == 0;
+}
+
+/* FUN_0005215c @ 0x0005215c   (est. txm_odometer_anti_replay)
+ * Ghidra: uint FUN_0005215c(long,undefined8*)
+ * Performs the odometer anti-replay check: resolves the hash type and
+ * verifies the nonce (FUN_0005b7f0). On violation returns the error code
+ * from param_1+0x18 and logs "odometer: %s: %s anti-replay violation"
+ * (0x3cb6).
+ * Confidence: medium
+ */
+static uint32_t txm_odometer_anti_replay(uint64_t obj, uint64_t *params)
+{
+    uint64_t name = *params;
+    uint64_t hash = txm_manifest_hash_resolve(obj, params[2]);
+    uint64_t *p1 = NULL, *p2 = NULL;
+    if (*(uint16_t*)(params + 0x1d) != 0) p1 = params + 0x13;
+    if (*(uint16_t*)(params + 0x12) != 0) p2 = params + 8;
+    int r = FUN_0005b7f0(hash, name, p2, p1);
+    if (r == 0) return 0;
+    uint32_t e = *(uint32_t*)(obj + 0x18);
+    uint64_t nm = *params;
+    txm_bc_ctx_release(params[2]);
+    txm_log_error(nm, 0, "odometer: %s: %s anti-replay violation (%s)", 0x3cb6);
+    if (0x6b < e) txm_fault_impl(0, 0);
+    return e;
+}
+
+/* FUN_00052210 @ 0x00052210   (est. txm_hash_type_set)
+ * Ghidra: undefined8 FUN_00052210(undefined8,undefined8,undefined4*)
+ * Sets the hash type output to 0xf1 and returns 0.
+ * Confidence: medium
+ */
+static uint64_t txm_hash_type_set(uint64_t a, uint64_t b, uint32_t *out)
+{
+    *out = 0xf1;
+    return 0;
+}
+
+/* FUN_00052224 @ 0x00052224   (est. txm_noop11)
+ * Ghidra: void FUN_00052224(void)
+ * Empty stub.
+ * Confidence: high
+ */
+static void txm_noop11(void) { return; }
+
+/* FUN_0005222c / 4f30   (est. txm_trap_ctx_enter_r/s)
+ * Ghidra: void FUN_0005222c/4f30(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_r(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_s(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_00052254 @ 0x00052254   (est. txm_trap_ctx_enter_t)
+ * Ghidra: void FUN_00052254(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_t(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+
+/* FUN_00052280 @ 0x00052280   (est. txm_return_zero_f)
+ * Ghidra: undefined8 FUN_00052280(void)
+ * Returns 0.
+ * Confidence: high
+ */
+static uint64_t txm_return_zero_f(void) { return 0; }
+
+/* FUN_0005228c..522ac (5 fns)   (est. txm_noop12..16)
+ * Ghidra: void FUN_0005228c/4f94/4f9c/4fa4/4fac(void)
+ * Empty stubs.
+ * Confidence: high
+ */
+static void txm_noop12(void) { return; }
+static void txm_noop13(void) { return; }
+static void txm_noop14(void) { return; }
+static void txm_noop15(void) { return; }
+static void txm_noop16(void) { return; }
+
+/* FUN_000522b4 @ 0x000522b4   (est. txm_hash_range_move)
+ * Ghidra: void FUN_000522b4(undefined8*,undefined8*,undefined8,long,undefined8)
+ * Moves a hash range: takes the source base from *param_2, zeroes it,
+ * fills param_1 with {base, len, buffer+8}, and stores the buffer's
+ * embedded length (*(param_4+8)) back into *param_2.
+ * Confidence: medium
+ */
+static void txm_hash_range_move(uint64_t *dst, uint64_t *src, uint64_t len, uint64_t buf, uint64_t a)
+{
+    uint64_t v = *src;
+    *src = 0;
+    dst[0] = v;
+    dst[1] = len;
+    dst[2] = buf;
+    dst[4] = a;
+    *src = *(uint64_t*)(buf + 8);
+}
+
+/* FUN_000522d8 @ 0x000522d8   (est. txm_hash_range_init)
+ * Ghidra: void FUN_000522d8(undefined8*,undefined8,undefined8)
+ * Initializes a hash range: {ptr=param_2, len=param_3, ops=&DAT_00019cc0,
+ * flags=0}.
+ * Confidence: high
+ */
+static uint64_t txm_hash_range_init(uint64_t *rng, uint64_t ptr, uint64_t len)
+{
+    rng[0] = ptr;
+    rng[1] = len;
+    rng[2] = 0x19cc0;
+    rng[4] = 0;
+    return ptr;
+}
+
+/* FUN_000522f4 @ 0x000522f4   (est. txm_hash_range_copy)
+ * Ghidra: void FUN_000522f4(undefined8*,undefined8*)
+ * Copies a hash range {ptr,len} with ops=&DAT_00019c98, flags=0.
+ * Confidence: high
+ */
+static void txm_hash_range_copy(uint64_t *dst, uint64_t *src)
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = 0x19c98;
+    dst[4] = 0;
+}
+
+/* FUN_00052318 @ 0x00052318   (est. txm_hash_range_take)
+ * Ghidra: void FUN_00052318(undefined8*,undefined8*)
+ * Takes ownership of a hash range from *param_2: moves its fields into
+ * param_1, re-reads the buffer's embedded length, clears the source
+ * buffer ops, and zeroes the source. Faults 0x19 on invalid range.
+ * Confidence: medium
+ */
+static void txm_hash_range_take(uint64_t *dst, uint64_t *src)
+{
+    uint64_t *r = (uint64_t*)*src;
+    if (r < r + 1) {
+        uint64_t v1 = r[1], l2 = r[2], v4 = r[4], v0 = r[0];
+        *r = 0;
+        dst[0] = v0;
+        dst[1] = v1;
+        dst[2] = l2;
+        dst[4] = v4;
+        *r = *(uint64_t*)(l2 + 8);
+        r[2] = 0;
+        *src = 0;
+        return;
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_00052370 @ 0x00052370   (est. txm_hash_range_relocate)
+ * Ghidra: void FUN_00052370(undefined8*,undefined8*)
+ * Relocates a hash range, swapping ops tables (0x19ce8 vs 0x19d10).
+ * Confidence: medium
+ */
+static void txm_hash_range_relocate(uint64_t *dst, uint64_t *src)
+{
+    dst[0] = src[0];
+    dst[2] = 0x19ce8;
+    uint64_t v = src[2];
+    dst[1] = src[1];
+    src[2] = 0x19d10;
+    src[3] = v;
+}
+
+/* FUN_000523a0 @ 0x000523a0   (est. txm_hash_range_reset)
+ * Ghidra: void FUN_000523a0(long,undefined8*)
+ * Resets a hash range: moves the buffer (param_1+0x18) into the object
+ * (+0x10), zeroes the buffer state, clears the source range.
+ * Confidence: medium
+ */
+static void txm_hash_range_reset(uint64_t obj, uint64_t *src)
+{
+    uint64_t *r = (uint64_t*)*src;
+    *(uint64_t*)(obj + 0x10) = *(uint64_t*)(obj + 0x18);
+    *(uint64_t*)(obj + 0x18) = 0;
+    *r = 0;
+    r[1] = 0;
+    r[2] = 0x19c98;
+    *src = 0;
+}
+
+/* FUN_000523c8 @ 0x000523c8   (est. txm_range_buf_reserve)
+ * Ghidra: undefined8 FUN_000523c8(ulong*,undefined8,ulong*)
+ * Reserves a buffer for a hash range: if the requested capacity
+ * (*param_3) is >= the range length (param_1[1]), zeroes the buffer,
+ * stores the length into *param_3 and returns the buffer; otherwise
+ * returns 0. Faults 0x19 on invalid range.
+ * Confidence: medium
+ */
+static uint64_t txm_range_buf_reserve(uint64_t *rng, uint64_t buf, uint64_t *cap)
+{
+    if (*cap < rng[1]) return 0;
+    if (*rng <= *rng + rng[1]) {
+        txm_memzero((void*)buf, rng[1]);
+        uint64_t n = rng[1];
+        if ((n <= *cap) && (*cap = n, n != 0)) return buf;
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* ================================================================== */
+/* 0x5244c .. 0x52bec — odometer / anti-replay / ODP region           */
+/* ================================================================== */
+
+/* FUN_0005244c @ 0x0005244c   (est. txm_hash_range_destroy)
+ * Ghidra: void FUN_0005244c(undefined8*)
+ * Destroys a hash range: if *param_1 nonzero, calls the range's
+ * teardown vtable slots (+0x18, +0x20) with {base,len,flags} and resets
+ * the ops to the empty table (0x19c70). Faults 0x19 on invalid range.
+ * Confidence: medium
+ */
+static void txm_hash_range_destroy(uint64_t *slot)
+{
+    uint64_t *r = (uint64_t*)*slot;
+    if (r != NULL) {
+        if (r + 5 <= r) txm_fault_impl(0x19, 0);
+        if (r[2] != 0) {
+            uint64_t b = r[0], n = r[1];
+            if (b + n < b) txm_fault_impl(0x19, 0);
+            uint64_t fl = r[4];
+            (*(void(**)(uint64_t,uint64_t,uint64_t))(r[2] + 0x18))(b, n, fl);
+            (*(void(**)(uint64_t,uint64_t,uint64_t))(r[2] + 0x20))(b, n, fl);
+            r[2] = 0x19c70;
+        }
+        *slot = 0;
+    }
+}
+
+/* FUN_000524f8..52528 (7 fns)   (est. txm_noop17..23)
+ * Ghidra: void FUN_000524f8/500/508/510/518/520/528(void)
+ * Empty stubs.
+ * Confidence: high
+ */
+static void txm_noop17(void) { return; }
+static void txm_noop18(void) { return; }
+static void txm_noop19(void) { return; }
+static void txm_noop20(void) { return; }
+static void txm_noop21(void) { return; }
+static void txm_noop22(void) { return; }
+static void txm_noop23(void) { return; }
+
+/* FUN_00052530 / 4f34   (est. txm_panic_destroy_twice)
+ * Ghidra: void FUN_00052530/4f34(void)
+ * noreturn panic "panic: attempt to destroy already-..." (0x3d16).
+ * Confidence: high
+ */
+static void txm_panic_destroy_twice(void) { txm_panic_msg(0x3d16); }
+static void txm_panic_destroy_twice_b(void) { txm_panic_msg(0x3d16); }
+
+/* FUN_00052548 / 4f4c   (est. txm_panic_dealloc_loaded)
+ * Ghidra: void FUN_00052548/4f4c(void)
+ * noreturn panic "panic: attempt to deallocate loaded..." (0x3d50).
+ * Confidence: high
+ */
+static void txm_panic_dealloc_loaded(void) { txm_panic_msg(0x3d50); }
+static void txm_panic_dealloc_loaded_b(void) { txm_panic_msg(0x3d50); }
+
+/* FUN_00052564 @ 0x00052564   (est. txm_panic_dealloc_loaded2)
+ * Ghidra: void FUN_00052564(void)
+ * noreturn panic "panic: attempt to deallocate loaded..." (0x3d80).
+ * Confidence: high
+ */
+static void txm_panic_dealloc_loaded2(void) { txm_panic_msg(0x3d80); }
+
+/* FUN_000525b8 @ 0x000525b8   (est. txm_odometer_verify_nonce)
+ * Ghidra: ulong FUN_000525b8(long,undefined8*)
+ * Verifies the odometer nonce for a manifest: requires the nonce
+ * present (param_2+0x12 short), queries the boot-anticipation context
+ * (FUN_0005c0cc), and on success computes and verifies the anti-replay
+ * nonce digest (FUN_00058fa0/5bd78/5b7f0). Returns 0 on success; error
+ * codes 0x54/2 and 0x6b-family on failure.
+ * Confidence: low (multi-step odometer verification; field layout
+ *   inferred from context)
+ * Notes: "odometer: %s: ..." error strings at 0x3cb6/0x3de0/0x3e37/
+ *   0x3e6c; FUN_00052804 panics on illegal chip config; 0x40-byte
+ *   digest buffer.
+ */
+static uint64_t txm_odometer_verify_nonce(uint64_t ctx, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    uint64_t name = *params;
+    uint64_t hash = txm_manifest_hash_resolve(ctx, params[2]);
+    if (*(uint16_t*)(params + 0x12) == 0) {
+        FUN_00051c78();
+        goto fail_canary;
+    }
+    uint64_t obj = params[2];
+    uint32_t type = *(uint32_t*)(params + 3);
+    uint64_t q[2] = {0,0}, dig[2] = {0,0};
+    uint64_t nonce[0x41] = {0};
+    nonce[0] = 0x40;
+    uint64_t r = FUN_0005c0cc(params, ctx, type, &q[0]);
+    if ((int)r == 6) {
+        if (*(uint64_t*)(obj + 0xb0) == 0) { txm_panic_illegal_chip_config(); txm_fault_impl(0x19, 0); }
+        r = FUN_00058fb0(name, *(uint64_t*)(obj + 0xb0) + 0x1c, (uint64_t)(&nonce[1]) | 8, &nonce[0]);
+        if ((int)r == 0) {
+            if (0x40 < nonce[0]) txm_fault_impl(0x19, 0);
+            txm_img4_install_hash((uint64_t)&nonce[1], (uint64_t)(&nonce[1]) | 8, nonce[0]);
+            goto verify;
+        }
+        uint64_t n = *params;
+        txm_bc_ctx_release(params[2]);
+        txm_log_error(n, 0, "odometer: %s: %s failed to query nonce (%s)", 0x3e37);
+        goto out_chk;
+    } else if ((int)r != 0) {
+        uint64_t n = *params;
+        txm_bc_ctx_release(params[2]);
+        txm_log_error(n, 0, "odometer: %s: %s failed to query (%s)", 0x3e6c);
+        goto out_chk;
+    } else {
+        r = FUN_00058fa0(name, obj, type, &q[0], &dig[0]);
+        if ((int)r != 0) {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s failed to entangle (%s)", 0x3de0);
+            goto out_chk;
+        }
+        FUN_0005bd78(name, obj, &dig[0], &nonce[1]);
+    }
+verify:
+    if (FUN_0005b7f0(hash, name, params + 8, &nonce[1]) != 0) {
+        r = (uint64_t)*(uint32_t*)(ctx + 0x18);
+        uint64_t n = *params;
+        txm_bc_ctx_release(params[2]);
+        txm_log_error(n, 0, "odometer: %s: %s anti-replay violation (%s)", 0x3cb6);
+        goto out_chk;
+    }
+    r = 0;
+out_chk:
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+fail_canary:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00052804 @ 0x00052804   (est. txm_panic_illegal_chip_config)
+ * Ghidra: void FUN_00052804(void)
+ * noreturn panic "panic: illegal chip expert config" (0x3e0e).
+ * Confidence: high
+ */
+static void txm_panic_illegal_chip_config(void) { txm_panic_msg(0x3e0e); }
+
+/* FUN_0005282c @ 0x0005282c   (est. txm_anti_replay_none)
+ * Ghidra: undefined8 FUN_0005282c(undefined8,undefined8,undefined1*)
+ * Sets the anti-replay mode byte to 0 and returns 0 (no anti-replay).
+ * Confidence: high
+ */
+static uint64_t txm_anti_replay_none(uint64_t a, uint64_t b, uint8_t *out)
+{
+    *out = 0;
+    return 0;
+}
+
+/* FUN_0005283c @ 0x0005283c   (est. txm_noop24)
+ * Ghidra: void FUN_0005283c(void)
+ * Empty stub.
+ * Confidence: high
+ */
+static void txm_noop24(void) { return; }
+
+/* FUN_00052844 / 4f48   (est. txm_trap_ctx_enter_u/v)
+ * Ghidra: void FUN_00052844/4f48(void)
+ * PAC-checked trap-context enter.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_u(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+static void txm_trap_ctx_enter_v(void) { txm_fault_check_pac(); txm_ctx_finish(NULL); }
+
+/* FUN_0005286c @ 0x0005286c   (est. txm_trap_ctx_enter_w)
+ * Ghidra: void FUN_0005286c(void)
+ * Trap-context enter passing saved context.
+ * Confidence: medium
+ */
+static void txm_trap_ctx_enter_w(void)
+{
+    uint64_t ctx = txm_ctx_save();
+    txm_ctx_finish(&ctx);
+}
+extern uint64_t txm_ctx_finish_val(uint64_t ctx);   /* FUN_00054848 value-returning variant */
+
+/* FUN_00052898 @ 0x00052898   (est. txm_anti_replay_none2)
+ * Ghidra: undefined8 FUN_00052898(undefined8,undefined8,undefined1*)
+ * Sets the anti-replay mode byte to 0 and returns 0.
+ * Confidence: high
+ */
+static uint64_t txm_anti_replay_none2(uint64_t a, uint64_t b, uint8_t *out)
+{
+    *out = 0;
+    return 0;
+}
+
+/* FUN_000528a8 @ 0x000528a8   (est. txm_odometer_hash_resolved)
+ * Ghidra: bool FUN_000528a8(undefined8,long)
+ * Returns whether the odometer hash is resolved: if the object's
+ * boot-anticipation/nonce pointers are unset, resolves the hash type
+ * (FUN_00052a34) and returns whether its +0x100 is zero; otherwise
+ * releases the chip definition (FUN_00052a10) — faults 0x19.
+ * Confidence: medium
+ */
+static int txm_odometer_hash_resolved(uint64_t a, uint64_t obj)
+{
+    uint64_t c = *(uint64_t*)(obj + 0x10);
+    if ((*(uint64_t*)(c + 200) == 0) || (*(uint64_t*)(c + 0xb8) == 0)) {
+        if (c < c + 0x110) {
+            uint64_t h = txm_manifest_hash_resolve(a, c);
+            return (h == 0) ? 1 : (*(uint64_t*)(c + 0x100) == 0);
+        }
+    } else if (c < c + 0x110) {
+        txm_panic_illegal_chip_def();
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_0005291c @ 0x0005291c   (est. txm_odometer_boot_chain_verify)
+ * Ghidra: undefined8 FUN_0005291c(undefined8,undefined8*)
+ * Verifies the boot-chain integrity (FUN_0005c230) unless the
+ * "skip" flag (param_2+0x37) is set. On failure releases the context
+ * and logs "odometer: %s: %s boot chain integrity" (0x364b). Returns 0
+ * on success.
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_boot_chain_verify(uint64_t a, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    uint64_t r = 0;
+    if ((*(uint8_t*)(params + 0x37) & 1) == 0) {
+        uint64_t bc_ctx = 0;
+        txm_bc_ctx_build(params[1], params[2], &bc_ctx);
+        r = txm_bc_verify(params, a, 0x1a858, &bc_ctx);
+        if ((uint32_t)r != 0) {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s boot chain integrity (%s)", 0x364b);
+            if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        }
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00052a10 @ 0x00052a10   (est. txm_panic_illegal_chip_def)
+ * Ghidra: void FUN_00052a10(void)
+ * noreturn panic "panic: illegal chip definition" (0x3f83); first
+ * releases the boot context (FUN_00042b84).
+ * Confidence: high
+ */
+static void txm_panic_illegal_chip_def(void)
+{
+    txm_bc_ctx_release(0);
+    txm_panic_msg(0x3f83);
+}
+
+/* FUN_00052a78 @ 0x00052a78   (est. txm_ops_slot_20)
+ * Ghidra: void FUN_00052a78(long)
+ * Indirect vtable dispatch: (*(param_1 + 0x20))().
+ * Confidence: medium
+ */
+static void txm_ops_slot_20(uint64_t ops) { (*(void(**)(void))(ops + 0x20))(); }
+
+/* FUN_00052a88 @ 0x00052a88   (est. txm_odp_validate)
+ * Ghidra: undefined8 FUN_00052a88(long,undefined8*)
+ * Validates an ODP (one-device policy) record: dispatches on the record
+ * type (param_1+8): type 2 runs the boot-anticipation checks
+ * (FUN_00058f80), type 1 checks the policy flag (FUN_0005bfb4); then
+ * enforces the anti-replay conditions and calls the ODP validator vtable
+ * slot (param_1+0x28). Returns 0 if the record is admissible.
+ * Confidence: low (ODP policy semantics inferred)
+ * Notes: "odp>odp_type" 0x3feb; "panic: unreachable case" 0x36f2.
+ */
+static uint64_t txm_odp_validate(uint64_t ctx, uint64_t *params)
+{
+    uint64_t type = *(uint64_t*)(ctx + 8);
+    uint64_t r = 0;
+    if (type != 0) {
+        if (type == 2) {
+            if (((*(uint8_t*)(params + 0x37) & 1) != 0) && ((*(uint8_t*)(params + 0x79) & 1) != 0)) return 0;
+            if (FUN_00058f80(*params, params[2]) != 0) return 0;
+        } else {
+            if (type != 1) {
+                txm_panic_unreachable();
+                txm_panic_msg(0x36f2);
+            }
+            if ((FUN_0005bfb4(params, 0x1d618) & 1) != 0) return 0;
+        }
+    }
+    if (((*(uint8_t*)((char*)params + 0x1b9) & 1) != 0) &&
+        ((FUN_0005bfb4(params, 0x1d618) & 1) != 0 ||
+         (((*(uint8_t*)((char*)params + 0x1ba) & 1) != 0 && ((*(uint8_t*)(params + 0x37) & 1) != 0)))))
+        return 0;
+    txm_fault_check_pac();
+    return (*(uint64_t(**)(uint64_t,uint64_t*))(ctx + 0x28))(ctx, params);
+}
+
+/* FUN_00052b74 @ 0x00052b74   (est. txm_panic_unreachable)
+ * Ghidra: void FUN_00052b74(void)
+ * noreturn panic "panic: unreachable case" (0x36f2).
+ * Confidence: high
+ */
+static void txm_panic_unreachable(void) { txm_panic_msg(0x36f2); }
+
+/* FUN_00052bec @ 0x00052bec   (est. txm_odometer_verify_manifest)
+ * Ghidra: ulong FUN_00052bec(long,undefined8*)
+ * Verifies the odometer manifest nonce: requires the nonce present,
+ * queries the boot-anticipation context, entangles and anti-replay-
+ * verifies the manifest nonce (FUN_00058fa0/5bd78/5b7f0). Returns 0 on
+ * success.
+ * Confidence: low (multi-step; field layout inferred)
+ * Notes: "odometer: %s: ..." strings at 0x3de0/0x4040e/0x406e.
+ */
+static uint64_t txm_odometer_verify_manifest(uint64_t ctx, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    if (*(uint16_t*)(params + 0x12) == 0) {
+        FUN_00051c78();
+        goto done;
+    }
+    uint64_t name = *params;
+    uint64_t obj = params[2];
+    uint64_t nonce = *(uint64_t*)(obj + 0xa8);
+    uint32_t type = *(uint32_t*)(params + 3);
+    uint64_t q[2] = {0,0}, dig[2] = {0,0}, out[2] = {0,0};
+    uint64_t r = FUN_0005c0cc(params, ctx, type, &q[0]);
+    if ((int)r == 0) {
+        r = FUN_00058fa0(name, obj, type, &q[0], &dig[0]);
+        if ((int)r != 0) {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s failed to entangle (%s)", 0x3de0);
+            goto chk;
+        }
+        FUN_0005bd78(name, obj, &dig[0], &out[0]);
+        if (FUN_0005b7f0(nonce, name, params + 8, &out[0]) != 0) {
+            r = (uint64_t)*(uint32_t*)(ctx + 0x18);
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s manifest inconsistent (%s)", 0x406e);
+            goto chk;
+        }
+        r = 0;
+    } else {
+        uint64_t n = *params;
+        txm_bc_ctx_release(params[2]);
+        txm_log_error(n, 0, "odometer: %s: %s failed to query (%s)", 0x403e);
+    }
+chk:
+    if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+done:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* ================================================================== */
+/* 0x52da8 .. 0x53604 — image4 nonce handle / release-type region     */
+/* ================================================================== */
+
+/* FUN_00052da8 @ 0x00052da8   (est. txm_obj_type_ptr)
+ * Ghidra: undefined8 FUN_00052da8(long)
+ * Returns the object's type pointer (*(param_1+0x10)).
+ * Confidence: high
+ */
+static uint64_t txm_obj_type_ptr(uint64_t obj) { return *(uint64_t*)(obj + 0x10); }
+
+/* FUN_00052db4 @ 0x00052db4   (est. txm_nonce_handle_decode)
+ * Ghidra: void FUN_00052db4(byte*)
+ * Decodes a nonce handle from the object: selects the decode routine
+ * (FUN_0005ace8 vs FUN_0005acfc by flag bit 4 of *param_1), copies the
+ * decoded {ptr,len} into the handle fields (param_1+0x10/0x18), and
+ * zeroes the trailing handle state.
+ * Confidence: medium
+ */
+static void txm_nonce_handle_decode(uint8_t *h)
+{
+    uint64_t out[2] = {0,0};
+    uint64_t *dec;
+    if ((*h >> 4 & 1) == 0) dec = (uint64_t*)FUN_0005ace8(*(uint64_t*)(h + 0x28), &out[0]);
+    else dec = (uint64_t*)FUN_0005acfc(*(uint64_t*)(h + 0x28), &out[0]);
+    h[8] = 0; h[9] = 0;
+    uint64_t b = dec[0], n = dec[1];
+    if (b + n < b) txm_fault_impl(0x19, 0);
+    *(uint64_t*)(h + 0x10) = b;
+    *(uint64_t*)(h + 0x18) = n;
+    for (int i = 0; i < 8; i++) *(uint64_t*)(h + 0x20 + i*8) = 0;
+}
+
+/* FUN_00052e34 @ 0x00052e34   (est. txm_manifest_prop_query)
+ * Ghidra: undefined8 FUN_00052e34(long,undefined4,undefined8)
+ * Queries a manifest property: selects the property table (param_1+0x48
+ * if the version short at *(param_1+0x30)+0x210 is set) and looks up the
+ * property by type via FUN_00045118; on failure returns 0.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_prop_query(uint64_t obj, uint32_t type, uint64_t def)
+{
+    uint64_t table = 0;
+    if (*(uint16_t*)(*(uint64_t*)(obj + 0x30) + 0x210) != 0)
+        table = *(uint64_t*)(obj + 0x30) + 0x48;
+    if (FUN_00045118(table, 0, type, def) != 0) def = 0;
+    return def;
+}
+
+/* FUN_00052e80 @ 0x00052e80   (est. txm_triple_store_v2)
+ * Ghidra: void FUN_00052e80(undefined8*,undefined8,undefined8,undefined8)
+ * Stores {a4, a2, a3} into param_1[0], param_1[5], param_1[6].
+ * Confidence: medium
+ */
+static void txm_triple_store_v2(uint64_t *out, uint64_t a2, uint64_t a3, uint64_t a4)
+{
+    out[0] = a4;
+    out[5] = a2;
+    out[6] = a3;
+}
+
+/* FUN_00052e90 @ 0x00052e90   (est. txm_nonce_handle_compute)
+ * Ghidra: undefined8 FUN_00052e90(long,undefined8)
+ * Computes the nonce for a magazine slot handle: resolves the slot by id
+ * (FUN_00051bd0), derives the nonce digest (FUN_00051d54/51ecc), and
+ * emits the manifest object (FUN_0004f904) from the derived nonce.
+ * Returns 0 on success; logs "no nonce slot for handle" (0x40d0) and
+ * "slot: %s: failed to compute nonce" (0x40f3) errors.
+ * Confidence: medium
+ */
+static uint64_t txm_nonce_handle_compute(uint64_t obj, uint64_t out)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ctx = txm_ctx_current_or_dispatch();
+    uint64_t mag = FUN_00058ff0();
+    uint64_t slot = 0, obj2 = 0, nonce = 0;
+    uint64_t r = txm_magazine_slot_find_id(mag, *(uint64_t*)(obj + 8), &slot);
+    if ((int)r == 0) {
+        obj2 = txm_obj_run_vtbl_10(slot);
+        r = txm_obj_derive_nonce((uint64_t*)&obj2, (uint64_t)&nonce);
+        if ((int)r == 0) {
+            txm_obj_destroy(&obj2);
+            r = txm_nonce_derive_digest((uint64_t*)slot, ctx, &nonce, (uint64_t)&obj2);
+            if ((int)r == 0) {
+                txm_manifest_obj_init((uint16_t*)out, obj2);
+                txm_obj_destroy(&obj2);
+                goto done;
+            }
+            txm_log_error(ctx, 0, "slot: %s: failed to compute nonce (%s)", 0x40f3);
+        }
+    } else {
+        txm_log_error(ctx, 0, "no nonce slot for handle (%llx)", 0x40d0);
+    }
+    txm_obj_destroy(&obj2);
+    if (0x6b < (uint32_t)r) txm_fault_impl(0, 0);
+done:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00052fe4 @ 0x00052fe4   (est. txm_manifest_decode_string)
+ * Ghidra: ulong FUN_00052fe4(undefined8,undefined8*,undefined8)
+ * Decodes a manifest string field (FUN_0002ebb8): requires a non-empty
+ * string, else sets the error code 0x22 and returns 0xffffffff. Returns
+ * 0 on success with *param_2 = the string pointer.
+ * Confidence: medium
+ */
+static uint64_t txm_manifest_decode_string(uint64_t src, uint64_t *out, uint64_t a3)
+{
+    char *str = NULL;
+    uint32_t *err = FUN_00029750();
+    *err = 0;
+    uint64_t r = FUN_0002ebb8(src, &str, a3);
+    if ((str == NULL) || (*str == '\0')) {
+        if (r >> 0x20 != 0) {
+            uint32_t *e2 = FUN_00029750();
+            *e2 = 0x22;
+            r = 0xffffffff;
+        }
+    } else {
+        r = 0;
+        if (out != NULL) *out = (uint64_t)str;
+    }
+    return r;
+}
+
+/* FUN_00053070 @ 0x00053070   (est. txm_expert_name_split)
+ * Ghidra: char* FUN_00053070(long*,ulong)
+ * Splits an expert record name at a "::" separator: searches the string
+ * (FUN_0002dd00) for the prefix of length >= 2, terminates the prefix
+ * and returns the remainder (or NULL). Faults 0x19 on invalid bounds.
+ * Confidence: medium
+ */
+static char *txm_expert_name_split(uint64_t *rec, uint64_t name)
+{
+    uint64_t base = *rec;
+    if (base == 0) return NULL;
+    uint64_t i = 0;
+    while (*(char*)(name + i) != '\0') i = i + 1;
+    if ((1 < i) && (name <= name + i)) {
+        uint64_t sep = FUN_0002dbe0(name, 2);
+        if (1 < sep) return NULL;
+        char *p = (char*)FUN_0002dd00(base, name);
+        if (p == NULL) {
+            char *r = NULL;
+            *rec = (uint64_t)r;
+            return p;
+        }
+        if (*p != '\0') {
+            uint64_t len = 0;
+            while (p[len + 1] != '\0') len = len + 1;
+            *p = '\0';
+            if (0 < len) {
+                char *r = NULL;
+                if (p[1] != '\0') r = p + 1;
+                if (r < p + len + 1) { *rec = (uint64_t)r; return p; }
+            }
+        }
+    }
+    txm_fault_impl(0x19, 0);
+}
+
+/* FUN_00053150 @ 0x00053150   (est. txm_odometer_nonce_disabled)
+ * Ghidra: bool FUN_00053150(undefined8,long)
+ * Returns whether the odometer nonce is disabled: true if the hash is
+ * unresolved; if the nonce pointer (+0xa8) is set, faults "illegal chip
+ * definition" (FUN_00053310); otherwise returns whether the nonce short
+ * (param_2+0x90) is zero.
+ * Confidence: medium
+ */
+static int txm_odometer_nonce_disabled(uint64_t a, uint64_t obj)
+{
+    uint64_t c = *(uint64_t*)(obj + 0x10);
+    uint64_t h = txm_manifest_hash_resolve(a, c);
+    if (h == 0) return 1;
+    if (*(uint64_t*)(c + 0xa8) != 0) {
+        if (c < c + 0x110) FUN_00053310(c);
+        txm_fault_impl(0x19, 0);
+    }
+    return *(uint16_t*)(obj + 0x90) == 0;
+}
+
+/* FUN_000531b8 @ 0x000531b8   (est. txm_odometer_verify_stamp)
+ * Ghidra: ulong FUN_000531b8(long,undefined8*)
+ * Verifies the odometer stamp/nonce: if the anti-replay short
+ * (param_2+0x1d) is zero, verifies the boot-anticipation nonce
+ * (FUN_00057c20/5c230); otherwise runs the direct anti-replay check
+ * (FUN_0005b7f0). Returns 0 on success; logs "odometer: %s: %s
+ * anti-replay violation" (0x3cb6).
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_verify_stamp(uint64_t ctx, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    uint64_t name = *params;
+    uint64_t hash = txm_manifest_hash_resolve(ctx, params[2]);
+    uint64_t r = 0;
+    if (*(uint16_t*)(params + 0x1d) == 0) {
+        uint64_t ctx2 = 0;
+        FUN_00057c20(&ctx2, params + 8);
+        r = txm_bc_verify(params, ctx, hash, &ctx2);
+        if ((int)r != 0) {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s anti-replay violation (%s)", 0x3cb6);
+            if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        }
+    } else {
+        if (FUN_0005b7f0(hash, name, params + 8, params + 0x13) == 0) {
+            r = 0;
+        } else {
+            r = (uint64_t)*(uint32_t*)(ctx + 0x18);
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s anti-replay violation (%s)", 0x3cb6);
+            if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        }
+    }
+    if (txm_canary != canary) txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00053310 @ 0x00053310   (est. txm_panic_illegal_chip_def_b)
+ * Ghidra: void FUN_00053310(void)
+ * noreturn panic "panic: illegal chip definition" (0x41e3); releases
+ * the boot context first.
+ * Confidence: high
+ */
+static void txm_panic_illegal_chip_def_b(void)
+{
+    txm_bc_ctx_release(0);
+    txm_panic_msg(0x41e3);
+}
+
+/* FUN_00053334 @ 0x00053334   (est. txm_odometer_seal_disabled)
+ * Ghidra: bool FUN_00053334(undefined8,long)
+ * Returns whether the odometer seal is disabled: true if the hash is
+ * unresolved, else whether the seal short (param_2+0x140) is zero.
+ * Confidence: medium
+ */
+static int txm_odometer_seal_disabled(uint64_t a, uint64_t obj)
+{
+    uint64_t h = txm_manifest_hash_resolve(a, *(uint64_t*)(obj + 0x10));
+    if (h == 0) return 1;
+    return *(uint16_t*)(obj + 0x140) == 0;
+}
+
+/* FUN_00053374 @ 0x00053374   (est. txm_odometer_verify_seal)
+ * Ghidra: undefined8 FUN_00053374(undefined8,undefined8*)
+ * Verifies the odometer seal: requires the seal short (param_2+0x28),
+ * verifies the boot-chain integrity (FUN_00057c20/5c230). Returns 0 on
+ * success; logs "odometer: %s: %s boot chain integrity" (0x364b).
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_verify_seal(uint64_t a, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    uint64_t hash = txm_manifest_hash_resolve(a, params[2]);
+    uint64_t r = 0;
+    if (*(uint16_t*)(params + 0x28) == 0) {
+        FUN_00051c78();
+    } else {
+        uint64_t ctx2 = 0;
+        FUN_00057c20(&ctx2, params + 0x1e);
+        r = txm_bc_verify(params, a, hash, &ctx2);
+        if ((uint32_t)r != 0) {
+            uint64_t n = *params;
+            txm_bc_ctx_release(params[2]);
+            txm_log_error(n, 0, "odometer: %s: %s boot chain integrity (%s)", 0x364b);
+            if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+        }
+        if (txm_canary != canary) txm_stack_check_fail();
+        return r;
+    }
+    txm_stack_check_fail();
+    return r;
+}
+
+/* FUN_00053470 / 4f74   (est. txm_odometer_seal_available)
+ * Ghidra: undefined8 FUN_00053470/4f74(undefined8,long)
+ * Returns 1 if the seal flag (+0xf0) is clear (no seal), else faults
+ * "illegal chip definition" (FUN_000535bc) if the nonce is set, and
+ * returns 0.
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_seal_available(uint64_t a, uint64_t obj)
+{
+    uint64_t c = *(uint64_t*)(obj + 0x10);
+    if (*(uint64_t*)(c + 0xf0) == 0) return 1;
+    if (*(uint64_t*)(c + 0xa8) != 0) {
+        if (c < c + 0x110) txm_panic_illegal_chip_def_c();
+        txm_fault_impl(0x19, 0);
+    }
+    return 0;
+}
+static uint64_t txm_odometer_seal_available_b(uint64_t a, uint64_t obj)
+{
+    return txm_odometer_seal_available(a, obj);
+}
+
+/* FUN_000534bc @ 0x000534bc   (est. txm_odometer_verify_all_seals)
+ * Ghidra: undefined8 FUN_000534bc(undefined8,undefined8*)
+ * Verifies all odometer seals: if the "skip" policy flag
+ * (FUN_0005bfb4 0x1d648) is clear, iterates the seal slots and verifies
+ * each via FUN_0005c230. Returns 0 on success.
+ * Confidence: medium
+ */
+static uint64_t txm_odometer_verify_all_seals(uint64_t a, uint64_t *params)
+{
+    uint64_t obj = params[2];
+    if ((FUN_0005bfb4(params, 0x1d648) & 1) == 0) {
+        int first = 1;
+        do {
+            int more = first;
+            if ((*(uint64_t*)(obj + 0xf0) != 0) && (params != NULL) &&
+                (*(uint16_t*)(params + 0x43 + 0xd) != 0)) {
+                uint64_t r = txm_bc_verify(params, a, 0, NULL);
+                if ((uint32_t)r != 0) {
+                    uint64_t n = *params;
+                    txm_bc_ctx_release(params[2]);
+                    txm_log_error(n, 0, "odometer: %s: %s anti-replay violation (%s)", 0x3cb6);
+                    if ((uint32_t)r < 0x6c) return r;
+                    txm_panic_msg(0x3b00);
+                }
+            }
+            first = 0;
+        } while (0 && first);
+    }
+    return 0;
+}
+
+/* FUN_000535bc @ 0x000535bc   (est. txm_panic_illegal_chip_def_c)
+ * Ghidra: void FUN_000535bc(void)
+ * noreturn panic "panic: illegal chip definition" (0x4281); releases
+ * the boot context first.
+ * Confidence: high
+ */
+static void txm_panic_illegal_chip_def_c(void)
+{
+    txm_bc_ctx_release(0);
+    txm_panic_msg(0x4281);
+}
+
+/* FUN_000535e0 @ 0x000535e0   (est. txm_release_type_table)
+ * Ghidra: undefined8 FUN_000535e0(ulong)
+ * Returns the release-type table entry at DAT_0001af68[param_1] for
+ * param_1 < 7, else 0.
+ * Confidence: medium
+ */
+static uint64_t txm_release_type_table(uint64_t idx)
+{
+    if (idx < 7) return *(uint64_t*)(0x1af68 + idx * 8);
+    return 0;
+}
+
+/* FUN_00053604 @ 0x00053604   (est. txm_release_type_set)
+ * Ghidra: undefined8 FUN_00053604(undefined8,undefined8,undefined8)
+ * Sets the image4 release type: queries the chip (FUN_00058ff0), maps
+ * the release-type via FUN_00053cd4 (image4 release-type handler), and
+ * applies it (FUN_00054688). Logs "failed to set release type (%d)"
+ * (0x42d6) on failure. Returns 0 on success.
+ * Confidence: low (release-type mapping semantics inferred)
+ */
+static uint64_t txm_release_type_set(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ctx = txm_ctx_current();
+    uint64_t chip = 0, rt = 0, buf[0x11] = {0};
+    FUN_00058ff0();
+    chip = FUN_00054784(ctx);
+    uint64_t r = FUN_00053cd4(ctx, a, b, c, &buf[0], 0x40);
+    if ((int)r == 0) {
+        rt = txm_ctx_finish_val(chip);
+        r = FUN_00054688(rt, &buf[0]);
+        if ((int)r == 0) {
+            txm_ctx_finish(&rt);
+        } else {
+            txm_log_error(ctx, 0, "failed to set release type (%d)", 0x42d6);
+        }
+    }
+    txm_ctx_finish(&rt);
+    txm_ctx_finish(&chip);
+    if ((uint32_t)r < 0x6c) {
+        if (txm_canary != canary) txm_stack_check_fail();
+        return r;
+    }
+    txm_fault_impl(0, 0);
+    return r;
+}
+
+/* ================================================================== */
+/* 0x53728 .. 0x53e48 — image4 trap handlers (set/release/activate)   */
+/* ================================================================== */
+
+/* FUN_00053728 @ 0x00053728   (est. txm_trap_set_nonce)
+ * Ghidra: undefined8 FUN_00053728(undefined8,undefined8,undefined8)
+ * Image4 "set nonce" trap handler: decodes the input (FUN_00053cd4),
+ * looks up the magazine slot by handle (FUN_00051b3c), and stores the
+ * nonce counter/replay fields into the slot. Returns 0 on success;
+ * logs "no slot for handle (%llx) (%d)" (0x4347); error 0x25 (slot
+ * already set) / 0x54 (bad length).
+ * Confidence: medium
+ */
+static uint64_t txm_trap_set_nonce(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ctx = txm_ctx_current();
+    uint64_t inp[0x11] = {0};
+    uint64_t slot = 0, obj = 0;
+    uint64_t mag = FUN_00058ff0();
+    uint64_t chip = FUN_00054784(ctx);
+    uint64_t r = FUN_00053cd4(ctx, a, b, c, &inp[0], 0x2c);
+    uint64_t result = r;
+    if ((int)r == 0) {
+        if (inp[0] >> 0x20 == 0) {
+            r = txm_magazine_slot_find_type(mag, (uint32_t)inp[0], &slot);
+            if (slot == 0) {
+                txm_log_error(ctx, 0, "no slot for handle (%llx) (%d)", 0x4347);
+            } else {
+                obj = txm_obj_run_vtbl_10(slot);
+                uint64_t st = *(uint64_t*)(obj + 0x20);
+                if (*(uint64_t*)(st + 0x28) == 0) {
+                    uint64_t s2 = *(uint64_t*)(slot + 0x20);
+                    *(uint32_t*)(s2 + 1) = (uint32_t)inp[1] & 0x7f;
+                    *(uint64_t*)(s2 + 0xd) = inp[3];
+                    *(uint64_t*)(s2 + 5) = inp[2];
+                    *(uint64_t*)(st + 0x38) = inp[0x11 - 1];
+                    *(uint64_t*)(st + 0x30) = inp[4];
+                    *(uint64_t*)(st + 0x28) = st + 0x30;
+                    txm_obj_destroy(&obj);
+                    result = 0;
+                } else {
+                    result = 0x25;
+                }
+            }
+        } else {
+            result = 0x54;
+        }
+    }
+    txm_obj_destroy(&obj);
+    txm_ctx_finish(&chip);
+    if ((uint32_t)result < 0x6c) {
+        if (txm_canary != canary) txm_stack_check_fail();
+        return result;
+    }
+    txm_fault_impl(0, 0);
+    return result;
+}
+
+/* FUN_000538a8 @ 0x000538a8   (est. txm_trap_clear_nonce)
+ * Ghidra: undefined8 FUN_000538a8(undefined8,undefined8,undefined8)
+ * Image4 "clear nonce" trap handler: looks up the magazine slot by
+ * handle, checks the caller entitlement (FUN_0005020c), and clears the
+ * nonce slot (FUN_00051dc0). Returns 0 on success; logs "no slot for
+ * handle" (0x4347) and "slot: %s: caller not entitled" (0x4364).
+ * Confidence: medium
+ */
+static uint64_t txm_trap_clear_nonce(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t ctx = txm_ctx_current();
+    uint64_t inp = 0;
+    uint64_t *slot = NULL;
+    uint64_t obj = 0;
+    uint64_t mag = FUN_00058ff0();
+    uint64_t chip = FUN_00054784(ctx);
+    uint64_t r = FUN_00053cd4(ctx, a, b, c, &inp, 8);
+    if ((int)r == 0) {
+        if (inp >> 0x20 == 0) {
+            r = txm_magazine_slot_find_type(mag, (uint32_t)inp, (uint64_t*)&slot);
+            if (slot == NULL) {
+                txm_log_error(ctx, 0, "no slot for handle (%llx) (%d)", 0x4347);
+            } else {
+                r = txm_expert_available(*(uint64_t*)(*slot + 0x38));
+                if ((int)r == 0) {
+                    obj = txm_obj_run_vtbl_10((uint64_t)slot);
+                    txm_nonce_set_replay_bit((uint64_t)slot);
+                    txm_obj_destroy(&obj);
+                    goto done;
+                }
+                txm_log_error(ctx, 0, "slot: %s: caller not entitled to clear", 0x4364);
+            }
+            txm_ctx_finish(&chip);
+            if ((uint32_t)r < 0x6c) return r;
+            txm_fault_impl(0, 0);
+        }
+        r = 0x54;
+    }
+done:
+    txm_ctx_finish(&chip);
+    return r;
+}
+
+/* FUN_000539ec @ 0x000539ec   (est. txm_trap_activate)
+ * Ghidra: undefined8 FUN_000539ec(undefined8,undefined8,undefined8)
+ * Image4 "activate image" trap handler: resolves the image manifest by
+ * handle (FUN_0004f408), checks the activation entitlement
+ * (FUN_0005020c), maps the user buffers (FUN_00053d38), and executes
+ * the manifest (FUN_0004f460). Returns 0 on success; logs "no image for
+ * handle" (0x4394) and "caller not entitled to activate" (0x43b2) and
+ * "activation failed" (0x3034).
+ * Confidence: medium
+ */
+static uint64_t txm_trap_activate(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t ctx = txm_ctx_current();
+    uint64_t inp[2] = {0,0}, buf[0x11] = {0}, buf2[0x11] = {0};
+    uint64_t *imgs = (uint64_t*)FUN_00059000();
+    uint64_t chip = FUN_00054784(ctx);
+    uint64_t r = FUN_00053cd4(ctx, a, b, c, &inp[0], 0x20);
+    uint64_t result = r;
+    if ((int)r == 0) {
+        uint64_t img = txm_image4_find_manifest((uint64_t)imgs, inp[0]);
+        if (img == 0) {
+            result = 2;
+            txm_log_error(ctx, 0, "no image for handle (%llx) (%d)", 0x4394);
+        } else {
+            result = txm_expert_available(*(uint64_t*)(img + 8));
+            if ((int)result != 0) {
+                uint64_t n = *imgs;
+                txm_log_error(n, 0, "%s: caller not entitled to activate", 0x43b2);
+                txm_ctx_finish(&chip);
+                if ((uint32_t)result < 0x6c) return result;
+                txm_fault_impl(0, 0);
+            }
+            result = FUN_00053d38(ctx, a, inp[1], (uint32_t)inp[2], *(uint64_t*)(img + 0x20), &buf[0]);
+            if (((int)result == 0) &&
+                (result = FUN_00053d38(ctx, a, (uint64_t)inp[1], (uint32_t)inp[2],
+                                       *(uint64_t*)(img + 0x28), &buf2[0]), (int)result == 0)) {
+                if ((imgs + 3 <= imgs) || (img + 0x70 <= img)) txm_fault_impl(0x19, 0);
+                result = txm_manifest_execute(imgs, img, (uint64_t)&buf[0], (uint64_t)&buf2[0]);
+                if ((int)result != 0) {
+                    uint64_t n = *imgs;
+                    txm_log_error(n, 0, "%s: activation failed (%d)", 0x3034);
+                }
+            }
+        }
+    }
+    txm_ctx_finish(&chip);
+    return result;
+}
+
+/* FUN_00053ba4 @ 0x00053ba4   (est. txm_trap_set_boot_uuid)
+ * Ghidra: undefined8 FUN_00053ba4(undefined8,undefined8,undefined8)
+ * Image4 "set boot uuid" trap handler: decodes the 0x10-byte input and
+ * sets the boot UUID (FUN_0005470c). Logs "failed to set boot uuid (%d)"
+ * (0x448a) on failure. Returns 0 on success.
+ * Confidence: medium
+ */
+static uint64_t txm_trap_set_boot_uuid(uint64_t a, uint64_t b, uint64_t c)
+{
+    uint64_t canary = txm_canary;
+    uint64_t ctx = txm_ctx_current();
+    uint64_t inp[2] = {0,0};
+    uint64_t chip = FUN_00054784(ctx);
+    uint64_t r = FUN_00053cd4(ctx, a, b, c, &inp[0], 0x10);
+    uint64_t result = r;
+    if ((int)r == 0) {
+        uint64_t r2 = FUN_0005470c(chip, &inp[0]);
+        if ((uint32_t)r2 != 0) {
+            txm_log_error(ctx, 0, "failed to set boot uuid (%d)", 0x448a);
+            txm_ctx_finish(&chip);
+            if (0x6b < (uint32_t)r2) txm_fault_impl(0, 0);
+            result = r2;
+            goto done;
+        }
+        txm_ctx_finish(&chip);
+    }
+    txm_ctx_finish(&chip);
+    result = r;
+done:
+    if (txm_canary != canary) txm_stack_check_fail();
+    return result;
+}
+
+/* FUN_00053cb0 @ 0x00053cb0   (est. txm_trap_release_type_table)
+ * Ghidra: undefined8 FUN_00053cb0(ulong)
+ * Returns the trap release-type table entry at DAT_0000d880[param_1]
+ * for param_1 < 7, else 0xffffffffffffffff.
+ * Confidence: medium
+ */
+static uint64_t txm_trap_release_type_table(uint64_t idx)
+{
+    if (idx < 7) return *(uint64_t*)(0xd880 + idx * 8);
+    return 0xffffffffffffffffull;
+}
+
+/* FUN_00053cd4 @ 0x00053cd4   (est. txm_trap_copy_input)
+ * Ghidra: undefined8 FUN_00053cd4(undefined8,undefined8,undefined8,long,undefined8,long)
+ * Copies a trap input of expected length param_6 from param_3 into
+ * param_5; faults if the input length mismatches ("trap input has
+ * unexpected length", 0x42f5, error 0x54).
+ * Confidence: high
+ */
+static uint64_t txm_trap_copy_input(uint64_t ctx, uint64_t a, uint64_t src, uint64_t len,
+                                    uint64_t dst, uint64_t expect)
+{
+    if (len == expect) {
+        txm_memzero((void*)dst, len);
+        return 0;
+    }
+    txm_log_error(ctx, 0, "trap input has unexpected length (%s)", 0x42f5);
+    return 0x54;
+}
+
+/* FUN_00053d38 @ 0x00053d38   (est. txm_user_buffer_map)
+ * Ghidra: undefined8 FUN_00053d38(undefined8,undefined8,long,ulong,ulong,undefined8)
+ * Maps a user buffer {ptr, len} into a TXM hash range: requires a
+ * non-null pointer (error 0x16 "user buffer is null"), nonzero length
+ * (0x16 "user buffer length is zero"), and length <= max (0x54 "user
+ * buffer exceeds maximum bounds"). On success emits the hash range via
+ * FUN_000522b4 and returns 0.
+ * Confidence: medium
+ */
+static uint64_t txm_user_buffer_map(uint64_t ctx, uint64_t a, uint64_t ptr, uint64_t len,
+                                    uint64_t max, uint64_t out)
+{
+    if (ptr == 0) {
+        txm_log_error(ctx, 0, "user buffer is null (trap (0x%l)", 0x43e0);
+        return 0x16;
+    }
+    if (len == 0) {
+        txm_log_error(ctx, 0, "user buffer length is zero (trap", 0x4407);
+        return 0x16;
+    }
+    if (len <= max) {
+        uint64_t rng[2] = {ptr, 0};
+        txm_hash_range_move((uint64_t*)out, &rng[0], len, 0x19c98, 0);
+        return 0;
+    }
+    txm_log_error(ctx, 0, "user buffer exceeds maximum bounds (trap", 0x4435);
+    return 0x54;
+}
+
+/* FUN_00053de8 @ 0x00053de8   (est. txm_odometer_nonce_absent)
+ * Ghidra: bool FUN_00053de8(undefined8,long)
+ * Returns whether the odometer nonce is absent: true if the hash is
+ * unresolved, the nonce/counter pointers are unset, or the image
+ * digest (FUN_00059980) is unresolved; else whether the nonce short
+ * (param_2+0x90) is zero.
+ * Confidence: medium
+ */
+static int txm_odometer_nonce_absent(uint64_t a, uint64_t obj)
+{
+    uint64_t c = *(uint64_t*)(obj + 0x10);
+    uint64_t h = txm_manifest_hash_resolve(a, c);
+    if (((h == 0) || (*(uint64_t*)(c + 0x50) == 0)) ||
+        (*(uint64_t*)(c + 0x58) != 0) ||
+        (FUN_00059980(*(uint64_t*)(obj + 8)) == 0)) return 1;
+    return *(uint16_t*)(obj + 0x90) == 0;
+}
+
+/* FUN_00053e48 @ 0x00053e48   (est. txm_odometer_verify_img_digest)
+ * Ghidra: ulong FUN_00053e48(long,undefined8*)
+ * Verifies the odometer image digest: requires the nonce, resolves the
+ * image digest (FUN_00059980), queries the boot context
+ * (FUN_0005c134), entangles and anti-replay-verifies the digest
+ * (FUN_00058fa0/5bd78/5b7f0). Returns 0 on success.
+ * Confidence: low (multi-step; field layout inferred)
+ * Notes: "odometer: %s: ..." strings at 0x3de0/0x406e/0x4528.
+ */
+static uint64_t txm_odometer_verify_img_digest(uint64_t ctx, uint64_t *params)
+{
+    uint64_t canary = txm_canary;
+    if (*(uint16_t*)(params + 0x12) == 0) {
+        FUN_00051c78();
+    } else {
+        uint64_t obj = params[2];
+        uint64_t nonce = *(uint64_t*)(obj + 0xa8);
+        uint32_t type = *(uint32_t*)(params + 3);
+        uint64_t q[2] = {0,0}, dig[2] = {0,0}, out[2] = {0,0};
+        uint64_t name = *params;
+        uint64_t img = FUN_00059980(params[1]);
+        uint64_t r;
+        if (img != 0) {
+            r = FUN_0005c134(params, img, &q[0]);
+            if ((int)r == 0) {
+                r = FUN_00058fa0(name, obj, type, &q[0], &dig[0]);
+                if ((int)r != 0) {
+                    uint64_t n = *params;
+                    txm_bc_ctx_release(params[2]);
+                    txm_log_error(n, 0, "odometer: %s: %s failed to entangle (%s)", 0x3de0);
+                    goto chk;
+                }
+                FUN_0005bd78(name, obj, &dig[0], &out[0]);
+                if (FUN_0005b7f0(nonce, name, params + 8, &out[0]) != 0) {
+                    r = (uint64_t)*(uint32_t*)(ctx + 0x18);
+                    uint64_t n = *params;
+                    txm_bc_ctx_release(params[2]);
+                    txm_log_error(n, 0, "odometer: %s: %s manifest inconsistent (%s)", 0x406e);
+                    goto chk;
+                }
+                r = 0;
+            } else {
+                uint64_t n = *params;
+                txm_bc_ctx_release(params[2]);
+                txm_log_error(n, 0, "odometer: %s: %s failed to query (%s)", 0x4528);
+chk:
+                if (0x6b < (uint32_t)r) txm_panic_msg(0x3b00);
+            }
+            if (txm_canary != canary) txm_stack_check_fail();
+            return r;
+        }
+    }
+    FUN_0005400c();
+    txm_stack_check_fail();
     return 0;
 }
 
