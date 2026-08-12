@@ -1,0 +1,70 @@
+L581: void __attribute__((weak)) _sptm_pre_entry_hook(void);
+L582: void __attribute__((weak)) _sptm_post_exit_hook(void);
+L591: void sptm_lockdown(void);
+L600: void sptm_lockdown_xnu(void);
+L609: void sptm_init_xnu_fixups_complete(void);
+L624: void sptm_xnu_panic_begin(void);
+L627: sptm_return_t sptm_map_page(sptm_paddr_t root_pt_paddr,
+L632: sptm_return_t sptm_map_page(sptm_root_pt_u root_pt_U,
+L681: sptm_return_t sptm_map_table(sptm_paddr_t root_pt_paddr,
+L686: sptm_return_t sptm_map_table(sptm_root_pt_u root_pt_U,
+L729: void sptm_unmap_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr, sptm_pt_level_t target_level);
+L731: void sptm_unmap_table(sptm_root_pt_u root_pt_U,
+L747: void sptm_surt_alloc(sptm_paddr_t surt_frame,
+L753: void sptm_surt_alloc(sptm_surt_frame_u surt_frame_U,
+L767: void sptm_surt_free(sptm_paddr_t surt_frame, uint8_t surt_index);
+L769: void sptm_surt_free(sptm_surt_frame_u surt_frame_U, sptm_surt_index_u surt_index_U);
+L795: sptm_return_t sptm_condemn_leaf_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr);
+L797: sptm_return_t sptm_condemn_leaf_table(sptm_root_pt_u root_pt_U,
+L813: void sptm_uncondemn_leaf_table(sptm_paddr_t root_pt_paddr, sptm_vaddr_t vaddr);
+L815: void sptm_uncondemn_leaf_table(sptm_root_pt_u root_pt_U, sptm_aligned_vaddr_u aligned_vaddr_U);
+L827: void sptm_serial_putc(uint8_t c);
+L836: void sptm_serial_disable(void);
+L843: void sptm_program_irgkey(uint64_t seed);
+L974: sptm_return_t sptm_update_region(sptm_paddr_t root_pt_paddr,
+L980: sptm_return_t sptm_update_region(sptm_root_pt_u root_pt_U,
+L1064: sptm_return_t sptm_update_disjoint(sptm_paddr_t paddr,
+L1069: sptm_return_t sptm_update_disjoint(sptm_managed_page_u paddr_U,
+L1163: sptm_return_t sptm_update_disjoint_multipage(sptm_paddr_t multipage_ops_pa, size_t num_entries);
+L1165: sptm_return_t sptm_update_disjoint_multipage(sptm_managed_addr_u multipage_ops_U,
+L1196: void sptm_unmap_region(sptm_paddr_t root_pt_paddr,
+L1201: void sptm_unmap_region(sptm_root_pt_u root_pt_U,
+L1244: void sptm_unmap_disjoint(sptm_paddr_t paddr,
+L1248: void sptm_unmap_disjoint(sptm_managed_page_u paddr_U,
+L1276: void sptm_configure_shared_region(sptm_paddr_t shared_root_pt_paddr,
+L1280: void sptm_configure_shared_region(sptm_shared_root_pt_u shared_root_pt_U,
+L1303: void sptm_set_shared_region(sptm_paddr_t user_root_pt_paddr, sptm_paddr_t shared_root_pt_paddr);
+L1305: void sptm_set_shared_region(sptm_user_root_pt_u user_root_pt_U,
+L1339: void sptm_nest_region(sptm_paddr_t user_root_pt_paddr,
+L1344: void sptm_nest_region(sptm_user_root_pt_u user_root_pt_U,
+L1366: void sptm_unnest_region(sptm_paddr_t user_root_pt_paddr,
+L1371: void sptm_unnest_region(sptm_user_root_pt_u user_root_pt_U,
+L1395: void sptm_configure_root(sptm_paddr_t root_pt_paddr,
+L1399: void sptm_configure_root(sptm_user_root_pt_u user_root_pt_U,
+L1431: sptm_return_t sptm_switch_root(sptm_paddr_t root_pt_paddr,
+L1435: sptm_return_t sptm_switch_root(sptm_root_pt_u root_pt_U,
+L1459: uint64_t sptm_guest_va_to_ipa(sptm_paddr_t stage2_root_pt_paddr, uint64_t gva);
+L1461: uint64_t sptm_guest_va_to_ipa(sptm_stage2_root_pt_u stage2_root_pt_U, uint64_t gva);
+L1554: void sptm_guest_exit(sptm_paddr_t stage2_root_pt_paddr);
+L1556: void sptm_guest_exit(sptm_stage2_root_pt_u stage2_root_pt_U);
+L1575: void sptm_guest_dispatch(sptm_paddr_t guest_state_paddr);
+L1577: void sptm_guest_dispatch(sptm_managed_addr_u guest_state_paddr_U);
+L1592: void *sptm_sign_user_pointer(void *value, ptrauth_key key, uint64_t discriminator, uint64_t jop_key);
+L1594: void *sptm_sign_user_pointer(void *value,
+L1617: void *sptm_auth_user_pointer(void *value, ptrauth_key key, uint64_t discriminator, uint64_t jop_key);
+L1619: void *sptm_auth_user_pointer(void *value,
+L1662: void sptm_batch_sign_user_pointer(sptm_paddr_t user_pointer_ops_pa,
+L1666: void sptm_batch_sign_user_pointer(sptm_managed_addr_u user_pointer_ops_pa_U,
+L1708: uint64_t sptm_reg_read(sptm_regid_t regid);
+L1721: void sptm_reg_write(sptm_regid_t regid, uint64_t new_value);
+L1728: void sptm_reg_snapshot(void);
+L1739: void sptm_map_sk_domain(void);
+L1753: void sptm_register_xnu_exc_return(sptm_vaddr_t return_addr);
+L1773: void sptm_register_cpu(uint64_t physical_id);
+L1793: void sptm_slide_region(sptm_papt_t target_papt_start, uint32_t num_mappings);
+L1795: void sptm_slide_region(sptm_papt_u target_papt_start_U, sptm_page_count_u num_mappings_U);
+L1813: uint16_t sptm_cpu_id(uint64_t physical_id);
+L1830: void sptm_iofilter_protected_write(sptm_paddr_t paddr, uint64_t value, uint64_t width);
+L1832: void sptm_iofilter_protected_write(sptm_io_filter_protected_paddr_u paddr,
+L1931: uint64_t sptm_sysctl(sptm_sysctl_selector_t selector, sptm_sysctl_op_t op, uint64_t arg);
+L1933: uint64_t sptm_sysctl(sptm_sysctl_selector_u selector_U, sptm_sysctl_op_u op_U, uint64_t arg);
