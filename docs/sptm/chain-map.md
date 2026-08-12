@@ -400,3 +400,11 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 0003eec4/0003ff50 (SHA-512 core) ← 00036f54/3ece8 (thunks)
 - 0003f270 (SHA-256 core), 0003f9fc (SHA-1 core)
 - 00039f60 (digest alg dispatch) → 000388b0/3e258/40c1c/43d00/38b9c (alg name tables)
+
+## TXM core runtime primitives (osfmk/arm64/txm/txm_region_runtime.c) — 0x24f14-0x29f28
+- Lock/refcount: 0x27128 txm_lock_acquire, 0x27218 txm_lock_release (per-object +0x10 counter, +0x11 active bit). Called by every region file's object lifecycle.
+- Object pools (alloc/free/handle-validate): small 0x40 (0x26e80/0x27284/0x26de0), obj 0x1a0 (0x27448/0x27614/0x27378), medium 0x148 (0x278e4/0x27ab0/0x27814), node 0x50 (0x27d78/0x27f44/0x27ca8), slot 0x70 (0x281ec/0x283b8/0x2811c). Release wrappers 0x27720/0x27bb4/0x28028/0x284a0.
+- Large slabs: 0x286d8/0x288a8/0x28a78/0x28c48 alloc, 0x28e20 free, 0x285d0 size-class select, 0x28594 span check. Back 0x24fc8 txm_boot_obj_release.
+- Page alloc/release: 0x26ba4/0x26a74 (boot free-list DAT_000706b0/b8).
+- Panic family: 0x298ec txm_panic -> 0x29730 txm_panic_msg -> 0x29784 txm_panic_call; 0x29a3c txm_fault; 0x2976c txm_panic_abort; 0x29a98 header write. Terminal secure-channel trap thunk_FUN_0002d230 (code 0xa0 only).
+- Platform init: 0x2940c txm_platform_init (DT setup 0x29ad8, security/version probes 0x29bc8/0x29c9c/0x29d84/0x29e48/0x29f28, version 0x29714).

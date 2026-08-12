@@ -889,3 +889,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (*lock != 0) FUN_000298ec(0x36,0); *lock = -1;` and unlock `if (*lock != -1) FUN_000298ec(0x38,0); lock[0..3]=0`. Set/cleared via tag 0x7472786d ("trxm") state transitions.
 - **Severity (hypothesis)**: low — the locks protect the boot/subsystem context from re-entrant modification; a fault inside a locked region leaves the lock held (availability), but there is no privilege-confusion vector observed.
 - **Confidence**: high
+
+## [ringminus1] 0x27128 txm_lock_acquire — shared refcount take not gated on the active bit
+- **Observation**: The shared-take path (mode 0) increments the object's +0x10 reference counter and only afterwards checks the +0x11 active bit (fault 0x35). A shared acquire therefore bumps the count of an object that is not marked active, and the "no-increment" exclusive path clears the counter via a 4-byte write that also wipes +0x11 — allowing a caller to clear another object's active bit by manipulating the shared path.
+- **Evidence**: `count = *(uint8_t*)(obj+0x10); if (count<0xfe) { CAS-increment; } goto check_active;` where check_active faults 0x35 only when `need_increment`; the exclusive branch does `*(uint32_t*)(obj+0x10)=0` (clears 4 bytes: counter+active). Panics 0x34/0x35/0x36/0x38 bound the state machine.
+- **Severity (hypothesis)**: low-medium — the refcount byte saturates at 0xfe (0x38 fault), bounding increment abuse, but the 4-byte clear in the exclusive path can mask the active flag of a live object; TXM is the code-signing root of trust, so a compromised client could only reach this via the trusted call surface.
+- **Confidence**: high
+
+## [ringminus1] 0x29784/0x298ec txm_panic_call / txm_panic — panic-path recursion on fault 0x4b
+- **Observation**: The panic printer (txm_panic_call) formats "TXM [Panic] ", writes to the console, and then faults with code 0x4b via txm_panic — which formats "(code: 0x%08X)" and re-enters txm_panic_call. The two fault paths are mutually recursive (noreturn), so the intended termination is the secure-channel trap (thunk_FUN_0002d230) reached only for code 0xa0; any other code recurses.
+- **Evidence**: `txm_panic_call: ... txm_panic_console(buf); txm_panic(0x4b);` and `txm_panic: if(code==0xa0){...txm_state_trap(...)} txm_panic_msg(" (code: 0x%08X)");`. The panic code is passed as the sole arg to txm_panic but the format string has two conversions, so %u reads an undefined register — the printed code is not guaranteed to match.
+- **Severity (hypothesis)**: low — a monitor panic halts/loops by design; the recursion only degrades the already-panicking path and leaks no further privilege. The stale-register %u is a diagnostics fidelity issue, not a security hole.
+- **Confidence**: high
+
+## [ringminus1] 0x26e80..0x28c48 slab allocators — no active-bit ownership check before handoff
+- **Observation**: The large slab allocators (0x400/0x800/0x1000/0x2000) pop a slot and verify it is still zeroed (fault 0x3d if the +2 word is nonzero) rather than carrying an active/owned bit like the refcount pools. A doubly-freed slab that still contains non-zero payload data in its first 16 bytes trips 0x3d, but a slab whose first 16 bytes happen to be zero is handed out again — a use-after-free window if the free path (txm_slab_free) races.
+- **Evidence**: `slot[0]=0; slot[1]=0; if (txm_memcmp(slot+2, &(uint64_t){0}, 8)!=0) txm_panic(0x3d);` in txm_slab_alloc_0x400/0x800/0x1000/0x2000; free zeroes the whole slot via txm_memset.
+- **Severity (hypothesis)**: low — the lock-free list pop plus the zero check reduce (not eliminate) double-free reuse; TXM runs in a single trusted execution context so the adversarial surface is limited to monitor-internal faults.
+- **Confidence**: high
