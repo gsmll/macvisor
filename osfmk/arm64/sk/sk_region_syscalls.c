@@ -33,6 +33,888 @@ typedef void      (*clone_fn_t)(long, long);
 extern unsigned char g_scan_mask0[16];  /* DAT_00114fd0 */
 extern unsigned char g_scan_mask1[16];  /* DAT_00114fc0 */
 extern char LAB_0030c98c;  /* code label address */
+extern const char s_Fatal_error_005accd0[];         /* "Fatal error" @ 0x005accd0 */
+extern const char s_Swift_UnsafeBufferPointer_swift_005cdc10[];  /* Swift UnsafeBufferPointer @ 0x005cdc10 */
+extern const char s_UnsafeMutableBufferPointer_withC_005d3350[]; /* @ 0x005d3350 */
+extern const char s_Unexpectedly_found_nil_while_unw_005cd7d0[]; /* @ 0x005cd7d0 */
+extern uint64_t thunk_FUN_00012568();
+extern uint64_t thunk_FUN_0028c754();
+extern uint64_t FUN_003542b8();
+extern uint64_t DAT_003207d0, DAT_003471a4, DAT_003471a8;
+extern uint64_t sk_00027754();  /* fwd decl for cross-slice call */
+extern uint64_t sk_000277b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_0008f6f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_00310924();  /* fwd decl for cross-slice call */
+extern uint64_t sk_00310a44();  /* fwd decl for cross-slice call */
+extern uint64_t sk_00310e20();  /* fwd decl for cross-slice call */
+extern uint64_t sk_alloc_pages();  /* fwd decl for cross-slice call */
+extern uint64_t sk_alloc_tag();  /* fwd decl for cross-slice call */
+extern uint64_t sk_assert_msg();  /* fwd decl for cross-slice call */
+extern uint64_t sk_badge();  /* fwd decl for cross-slice call */
+extern uint64_t sk_badgemsk();  /* fwd decl for cross-slice call */
+extern uint64_t sk_badgemsk2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_boot_reg();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cache_maintenance();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cannot_initialize();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cap_bind();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cap_check();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cap_check_3a25d4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_caprev();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cnode();  /* fwd decl for cross-slice call */
+extern uint64_t sk_count_log_001a89a8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cpu_8e5d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cpu_call0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cpu_enter();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cpu_enter_kernel();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cpu_exit();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ctx();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ctx_aquire();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ctx_fetch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ctx_fetch_pair();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ctx_set_tag();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cur_cap();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cur_tcb();  /* fwd decl for cross-slice call */
+extern uint64_t sk_cur_thread();  /* fwd decl for cross-slice call */
+extern uint64_t sk_debug_print_2534();  /* fwd decl for cross-slice call */
+extern uint64_t sk_deref_word();  /* fwd decl for cross-slice call */
+extern uint64_t sk_disp2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch1();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch3();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch_0036986c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_dispatch_leave();  /* fwd decl for cross-slice call */
+extern uint64_t sk_enter2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_err();  /* fwd decl for cross-slice call */
+extern uint64_t sk_evt();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00002534();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00012568();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077550();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077560();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077570();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077580();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077624();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00077708();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000839d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0008409c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00084180();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000841a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0008e500();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0008e518();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000a6f88();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000b4594();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000b45b0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_000dbd0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00106e3c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00154148();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019c3a4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019ccec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019d498();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019d6d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019f63c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0019f658();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001a0774();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001a0d1c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001a26e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001a79e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001aa2fc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001aa318();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001afdbc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001b5894();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001b58b0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001bf9b0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001d1e00();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001d1e18();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001dccb4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001dccd0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001df5ec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001df7dc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001e4a30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001e4a48();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001ee0fc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001eed8c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_001f99f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00212d50();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00212e74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00212e8c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00212ea4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00212ec8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_002298d4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_002364dc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00238e1c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00249a64();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00249e20();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024a5c0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024be2c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024c0d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024c158();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024c250();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024c7bc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0024d788();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00251f6c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00255e68();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00259b64();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0026001c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00260690();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00267820();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0026a2ac();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0026c2a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0026f824();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00270ae4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0027c7a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0027c85c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_002871b4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_002a4148();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00310f1c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00319440();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003194bc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00319808();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003198cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00319a4c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b098();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b258();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b320();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b348();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b364();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b4cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031b6d4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031ba24();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031bb34();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031cbe4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031d404();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031dcbc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031dce0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031dd6c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031ddc8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031e064();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031e240();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0031f668();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0032156c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003243b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00324404();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00343b5c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00344120();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00344250();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034426c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00348074();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00348194();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003482c4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003483c4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003488bc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00348f50();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349178();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003494e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349530();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349644();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349720();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349734();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349a18();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00349d58();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034aebc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034b044();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034b07c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034b264();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034bb84();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034c2a4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034cdb4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034d024();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034d454();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034d49c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034e73c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034ece8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034f2f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034f7d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0034fbe4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003503e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003504d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003504f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035056c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00350678();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00350774();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00350bcc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00350e04();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00350e94();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351094();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351790();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351be0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351c88();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351e84();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351ef8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00351f40();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00352028();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035216c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003523e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003523f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00352800();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003528cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00352e54();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00352efc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00353498();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003538f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00353aac();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00354720();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00355090();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00355190();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003551d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035556c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035578c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00355ce4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00355d60();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00356030();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003561a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003563e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00356590();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003565a8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00356c6c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00357120();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003574b4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00357a0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00357b04();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003580d4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003583dc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00358594();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003586d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003590e4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003597f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003598a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00359920();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00359abc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00359b50();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00359cf8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_00359ea0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035a218();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035a2fc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035a758();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0035ace8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_003628f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_f_0039f9e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fatal_swift_error();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fault();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fetch_result();  /* fwd decl for cross-slice call */
+extern uint64_t sk_flag_reset();  /* fwd decl for cross-slice call */
+extern uint64_t sk_frame_load();  /* fwd decl for cross-slice call */
+extern uint64_t sk_frame_save();  /* fwd decl for cross-slice call */
+extern uint64_t sk_free();  /* fwd decl for cross-slice call */
+extern uint64_t sk_free_masked();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_000026e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00019858();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0001df60();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0001e790();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0006a414();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_000839f8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00084220();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00084234();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00086368();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_000863bc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0009461c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_000a6f88();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_000e710c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00106e3c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00324904();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00325088();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00348990();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00348ad8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00348c64();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00349204();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00349530();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00349748();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00349e38();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034a32c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b044();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b07c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b3c8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b528();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b550();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034b590();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034bf0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034bf1c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034bfb4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034c7c4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034cdf8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034d034();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034d454();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034d5d8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034de74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034e250();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034e32c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034e888();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034ee78();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0034f924();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003504d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0035098c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00350c5c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00351538();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003520e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00352758();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00352778();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00353424();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00353900();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00353dc4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003544ec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003546b4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00354c58();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00354ce4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00354e88();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00354ec0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00355150();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003551b0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0035549c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003558b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00355938();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00355d34();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00356518();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003566cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00356d74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00356d8c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00357154();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003571b0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003575d4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00357ef4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003580f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00358184();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0035884c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003597cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00359c2c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_0035a7e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00370060();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_003728b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00374104();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00377824();  /* fwd decl for cross-slice call */
+extern uint64_t sk_fun_00377dcc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_gate2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_0008f6f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_001a983c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_001d9840();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_00310a14();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_0031ba70();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_16796c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_1a1138();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_2472e0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_277e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_2a4c98();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_310984();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_310b08();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_310ea4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_312d08();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_319628();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_319658();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_31e874();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_36b270();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_839f8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_8f6c0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_helper_8f6f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00027670();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0006b6f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0008409c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00084180();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00084220();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00084234();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_000f5d30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_001afe4c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_001b5474();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0022944c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002cc0ec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002ccf5c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002ce228();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002d1070();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002d4af4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_002e3b64();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00320dbc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00321e64();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00322010();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348718();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003489c0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348a50();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348a80();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348c30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348d00();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00348d18();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00349234();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034951c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00349644();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00349b28();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00349e38();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00349ea0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034a168();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034a180();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034a30c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034b07c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034b5fc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034b628();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034b87c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034c5dc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034dab8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034dad8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034db98();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e220();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e238();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e268();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e2fc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e314();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e35c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034e66c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034ee78();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034f384();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034f4f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0034f90c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00350038();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003504d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003504f4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003505e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035060c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035081c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003508a8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003508f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003509c8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00350aac();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00350b0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00350bd8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00351094();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00351100();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00351148();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035130c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003514b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003514e8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003517e4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003524ec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00352a4c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00352b20();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00352c28();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00353130();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035331c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00353734();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003537f0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035396c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00353e2c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003540dc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354720();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354780();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354798();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003548ac();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354e18();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354e50();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00354ea4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355244();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355418();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355dcc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355e8c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355ec8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00355f1c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035662c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035675c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356d20();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356da4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356dbc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356dd4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356dec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00356e04();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00357068();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003571d0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035729c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035738c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003573a4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_003573cc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00357498();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00357710();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00357c74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00357cb4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035860c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00358624();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00358774();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035878c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035881c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00358b9c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00359018();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00359880();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035994c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00359960();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00359b0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035a190();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0035aad8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_0036b21c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00377824();  /* fwd decl for cross-slice call */
+extern uint64_t sk_hlp_00377bec();  /* fwd decl for cross-slice call */
+extern uint64_t sk_init_dispatch_wrap();  /* fwd decl for cross-slice call */
+extern uint64_t sk_invoke_002a9ba8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ipc2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ipc_send();  /* fwd decl for cross-slice call */
+extern uint64_t sk_irq();  /* fwd decl for cross-slice call */
+extern uint64_t sk_irq_restore2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_leave2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_lock_acquire_6a4c0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_lock_release();  /* fwd decl for cross-slice call */
+extern uint64_t sk_lock_state_check();  /* fwd decl for cross-slice call */
+extern uint64_t sk_lookup_cur();  /* fwd decl for cross-slice call */
+extern uint64_t sk_method_call_then_flush();  /* fwd decl for cross-slice call */
+extern uint64_t sk_msg_init();  /* fwd decl for cross-slice call */
+extern uint64_t sk_notify();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ntfn();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_acquire();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_complete();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_copy();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_08();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_0c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_14();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_20();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_34();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_4c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_a0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_field_pair();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_intern_table_shared();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_iv20_get();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_iv32_get();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_iv40_get();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_iv4_get();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_ivc_get();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_meta();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_method();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_method_dispatch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_path();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_read();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_release();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_release2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_retain();  /* fwd decl for cross-slice call */
+extern uint64_t sk_obj_vtbl_call();  /* fwd decl for cross-slice call */
+extern uint64_t sk_object_alloc2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_object_alloc_sized();  /* fwd decl for cross-slice call */
+extern uint64_t sk_object_init_runtime();  /* fwd decl for cross-slice call */
+extern uint64_t sk_object_lock();  /* fwd decl for cross-slice call */
+extern uint64_t sk_op_fetch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_pair_init();  /* fwd decl for cross-slice call */
+extern uint64_t sk_panic_001afa84();  /* fwd decl for cross-slice call */
+extern uint64_t sk_panic_1df60();  /* fwd decl for cross-slice call */
+extern uint64_t sk_panic_path();  /* fwd decl for cross-slice call */
+extern uint64_t sk_power();  /* fwd decl for cross-slice call */
+extern uint64_t sk_print_err();  /* fwd decl for cross-slice call */
+extern uint64_t sk_queue_complete();  /* fwd decl for cross-slice call */
+extern uint64_t sk_rec_acquire();  /* fwd decl for cross-slice call */
+extern uint64_t sk_rec_release_hi();  /* fwd decl for cross-slice call */
+extern uint64_t sk_recv();  /* fwd decl for cross-slice call */
+extern uint64_t sk_ref_release();  /* fwd decl for cross-slice call */
+extern uint64_t sk_region_resolve();  /* fwd decl for cross-slice call */
+extern uint64_t sk_register_00002534();  /* fwd decl for cross-slice call */
+extern uint64_t sk_register_00027614();  /* fwd decl for cross-slice call */
+extern uint64_t sk_registry_get_or_init();  /* fwd decl for cross-slice call */
+extern uint64_t sk_release();  /* fwd decl for cross-slice call */
+extern uint64_t sk_resolve_string();  /* fwd decl for cross-slice call */
+extern uint64_t sk_retain();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runq();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_boot();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_call();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_cur();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_fini();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_init_pair();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_ping();  /* fwd decl for cross-slice call */
+extern uint64_t sk_runtime_req();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sched();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sched2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sched3();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sched_notify();  /* fwd decl for cross-slice call */
+extern uint64_t sk_scope_drop();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sel();  /* fwd decl for cross-slice call */
+extern uint64_t sk_send1();  /* fwd decl for cross-slice call */
+extern uint64_t sk_send2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_send3();  /* fwd decl for cross-slice call */
+extern uint64_t sk_send4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_send5();  /* fwd decl for cross-slice call */
+extern uint64_t sk_state_dispatch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_state_dispatch2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_state_enter();  /* fwd decl for cross-slice call */
+extern uint64_t sk_state_enter2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_state_fetch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_destroy();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_fatal();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_field_0x30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_field_0x3c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_field_0x4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_field_0x4b();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_field_0xc();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_grow();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_jumptable_0x30();  /* fwd decl for cross-slice call */
+extern uint64_t sk_swift_meta_field();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys2();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_00027754();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_000277b8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_000839f8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_0008f728();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_000a68c4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_0014ae44();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_00310924();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_003109b4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_00310a44();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_00310a74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_dispatch_0031948c();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_post();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_pre();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_ret();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_status();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sys_switch();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_dispatch_310a14();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_dispatch_310a74();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_name_table_init();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_op();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_register();  /* fwd decl for cross-slice call */
+extern uint64_t sk_syscall_ret_310fc4();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sysreg_leaf_6564a8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_sysreg_leaf_6564c0();  /* fwd decl for cross-slice call */
+extern uint64_t sk_teardown_a();  /* fwd decl for cross-slice call */
+extern uint64_t sk_timer();  /* fwd decl for cross-slice call */
+extern uint64_t sk_tls();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trace_log_1a89a8();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trace_word();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trap_dispatch_indirect();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trap_enter();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trap_leave();  /* fwd decl for cross-slice call */
+extern uint64_t sk_trap_panic_norentry();  /* fwd decl for cross-slice call */
+extern uint64_t sk_try_acquire();  /* fwd decl for cross-slice call */
+
+extern uint64_t sk_user_error();  /* fwd decl for cross-slice call */
+extern uint64_t sk_util_init_once();  /* fwd decl for cross-slice call */
+extern uint64_t sk_vspace_op_2a4c98();  /* fwd decl for cross-slice call */
+extern uint64_t sk_yield();  /* fwd decl for cross-slice call */
+extern const char s_005cf680[];  /* string global */
+extern const char s_Cannot_initialize_005ce9b0[];  /* string global */
+extern const char s_Current_access__a__s__started_at_005d46b4[];  /* string global */
+extern const char s_Division_by_zero[];  /* string global */
+extern const char s_Division_results_in_an_overflow[];  /* string global */
+extern const char s_Fatal_access_conflict_detected__005d4606[];  /* string global */
+extern const char s_Fatal_error[];  /* string global */
+extern const char s_Fatal_error__Attempted_to_read_a_005d4506[];  /* string global */
+extern const char s_Fatal_error__Attempted_to_read_a_005d455f[];  /* string global */
+extern const char s_Fatal_error__Call_of_deleted_met_005d4429[];  /* string global */
+extern const char s_Fatal_error__Object_s_unowned_re_005d447f[];  /* string global */
+extern const char s_Fatal_error__Object_s_weak_refer_005d44c4[];  /* string global */
+extern const char s_Fatal_error__Object_was_retained_005d444e[];  /* string global */
+extern const char s_Fatal_error__failed_to_allocate___005d45b9[];  /* string global */
+extern const char s_Mangling_for_prespecialized_meta_005d49c0[];  /* string global */
+extern const char s_Negative_word_index[];  /* string global */
+extern const char s_Prespecializations_library__Look_005d4a82[];  /* string global */
+extern const char s_Prespecializations_library__Look_005d4ae1[];  /* string global */
+extern const char s_Prespecializations_library__Look_005d4b32[];  /* string global */
+extern const char s_Prespecializations_library__Reje_005d48c6[];  /* string global */
+extern const char s_Prespecializations_library__Reje_005d4914[];  /* string global */
+extern const char s_Prespecializations_library__fail_005d4974[];  /* string global */
+extern const char s_Prespecializations_library__foun_005d49f9[];  /* string global */
+extern const char s_Previous_access__a__s__started_a_005d4677[];  /* string global */
+extern const char s_Simultaneous_accesses_to_0x_lx__b_005d4627[];  /* string global */
+extern const char s_Swift_Codable_swift_005ce990[];  /* string global */
+extern const char s_Swift_Duration_swift_005d0db0[];  /* string global */
+extern const char s_Swift_ExistentialCollection[];  /* string global */
+extern const char s_Swift_ExistentialCollection_swif_005cf680[];  /* string global */
+extern const char s_Swift_Optional_swift_005ce1f0[];  /* string global */
+extern const char s_Swift_UnsafeRawBufferPointer_swi_005cde40[];  /* string global */
+extern const char s_Swift_UnsafeRawPointer_swift_005cf1b0[];  /* string global */
+extern const char s_Unexpected_symbolic_reference__p_005d4a2f[];  /* string global */
+extern const char s_UnsafeMutablePointer_update_with_005cf3f0[];  /* string global */
+extern const char s_UnsafeMutableRawBufferPointer_co_005d1070[];  /* string global */
+extern const char s_UnsafeMutableRawBufferPointer_wi_005d31e0[];  /* string global */
+extern const char s_Word_index_out_of_range[];  /* string global */
+extern const char s___4u_0x_0_16tx_005d4400[];  /* string global */
+extern const char s___count__005d2d90[];  /* string global */
+extern const char s___mtx_init__handle_mutex____mtx__005d3f10[];  /* string global */
+extern const char s___mtx_lock__handle_mutex__failed_005d3ee0[];  /* string global */
+extern const char s___mtx_unlock__handle_mutex__fail_005d3f4d[];  /* string global */
+extern const char s__rawValue__005ce327[];  /* string global */
+extern const char s__start__005d2d87[];  /* string global */
+extern const char s_buffer_cannot_contain_every_elem_005d0570[];  /* string global */
+extern const char s_failed_to_demangle_witness[];  /* string global */
+extern const char s_failed_to_demangle_witness_for_a[];  /* string global */
+extern const char s_fatal_error[];  /* string global */
+extern const char s_from_invalid_005ce9c3[];  /* string global */
+extern const char s_instantiating_class_metadata_for_005d4ec5[];  /* string global */
+extern const char s_meta[];  /* string global */
+extern const char s_more_005d3bd7[];  /* string global */
+extern const char s_unsafelyUnwrapped_of_nil_optiona_005ce1c0[];  /* string global */
+extern const char s_value_005ce9d2[];  /* string global */
+extern const char s_value_cannot_be_converted_to_005cfbb0[];  /* string global */
+extern uint64_t thunk_FUN_0001612c();  /* thunk */
+extern uint64_t thunk_FUN_00053aa0();  /* thunk */
+extern uint64_t thunk_FUN_0010d44c();  /* thunk */
+extern uint64_t thunk_FUN_0010d6b4();  /* thunk */
+extern uint64_t thunk_FUN_00111888();  /* thunk */
+extern uint64_t thunk_FUN_00114330();  /* thunk */
+extern uint64_t thunk_FUN_001144a0();  /* thunk */
+extern uint64_t thunk_FUN_001145b0();  /* thunk */
+extern uint64_t thunk_FUN_00114c60();  /* thunk */
+extern uint64_t thunk_FUN_00114d10();  /* thunk */
+extern uint64_t thunk_FUN_00114e50();  /* thunk */
+extern uint64_t thunk_FUN_00115080();  /* thunk */
+extern uint64_t thunk_FUN_001a0754();  /* thunk */
+extern uint64_t thunk_FUN_001a0774();  /* thunk */
+extern uint64_t thunk_FUN_001a0d1c();  /* thunk */
+extern uint64_t thunk_FUN_001a29a0();  /* thunk */
+extern uint64_t thunk_FUN_001ef804();  /* thunk */
+extern uint64_t thunk_FUN_00200b38();  /* thunk */
+extern uint64_t thunk_FUN_002298d4();  /* thunk */
+extern uint64_t thunk_FUN_0024d9ac();  /* thunk */
+extern uint64_t thunk_FUN_0025bca4();  /* thunk */
+extern uint64_t thunk_FUN_0026c2a0();  /* thunk */
+extern uint64_t thunk_FUN_002acbb8();  /* thunk */
+extern uint64_t thunk_FUN_002b3978();  /* thunk */
+extern uint64_t thunk_FUN_002b74c0();  /* thunk */
+extern uint64_t thunk_FUN_002d3c28();  /* thunk */
+extern uint64_t thunk_FUN_002d49f4();  /* thunk */
+extern uint64_t thunk_FUN_002d4a64();  /* thunk */
+extern uint64_t thunk_FUN_002d738c();  /* thunk */
+extern uint64_t thunk_FUN_002db8cc();  /* thunk */
+extern uint64_t thunk_FUN_00320078();  /* thunk */
+extern uint64_t thunk_FUN_0035723c();  /* thunk */
+extern uint64_t thunk_FUN_0035911c();  /* thunk */
+extern uint64_t thunk_FUN_00359208();  /* thunk */
+extern uint64_t thunk_FUN_00369b04();  /* thunk */
+extern uint64_t thunk_FUN_0036B270();  /* thunk */
+extern uint64_t thunk_FUN_0036b118();  /* thunk */
+extern uint64_t thunk_FUN_0036b270();  /* thunk */
+extern uint64_t thunk_FUN_0039c74c();  /* thunk */
+extern uint64_t thunk_FUN_004bab7c();  /* thunk */
+extern uint64_t DAT_00114fc0;  /* data global */
+extern uint64_t DAT_00114fd0;  /* data global */
+extern uint64_t DAT_00372510;  /* data global */
+extern uint64_t DAT_00372564;  /* data global */
+extern uint64_t DAT_004bbf40;  /* data global */
+extern uint64_t DAT_004c1010;  /* data global */
+extern uint64_t DAT_004e4980;  /* data global */
+extern uint64_t DAT_004e7d40;  /* data global */
+extern uint64_t DAT_004e7d48;  /* data global */
+extern uint64_t DAT_004e7d70;  /* data global */
+extern uint64_t DAT_004e7ed0;  /* data global */
+extern uint64_t DAT_004e7ed8;  /* data global */
+extern uint64_t DAT_004e7f10;  /* data global */
+extern uint64_t DAT_004e7f88;  /* data global */
+extern uint64_t DAT_004e7f98;  /* data global */
+extern uint64_t DAT_004e7fa8;  /* data global */
+extern uint64_t DAT_004e7fb0;  /* data global */
+extern uint64_t DAT_004e7fc0;  /* data global */
+extern uint64_t DAT_004e7fd8;  /* data global */
+extern uint64_t DAT_004e7ff0;  /* data global */
+extern uint64_t DAT_004e7ff8;  /* data global */
+extern uint64_t DAT_004e8000;  /* data global */
+extern uint64_t DAT_004e8008;  /* data global */
+extern uint64_t DAT_004e8010;  /* data global */
+extern uint64_t DAT_004e8040;  /* data global */
+extern uint64_t DAT_004e8060;  /* data global */
+extern uint64_t DAT_004e8070;  /* data global */
+extern uint64_t DAT_004e8098;  /* data global */
+extern uint64_t DAT_004e80a0;  /* data global */
+extern uint64_t DAT_004e824c;  /* data global */
+extern uint64_t DAT_004e8268;  /* data global */
+extern uint64_t DAT_004e82bc;  /* data global */
+extern uint64_t DAT_004e8400;  /* data global */
+extern uint64_t DAT_004e84f0;  /* data global */
+extern uint64_t DAT_004e8514;  /* data global */
+extern uint64_t DAT_004e8b7c;  /* data global */
+extern uint64_t DAT_004e8b98;  /* data global */
+extern uint64_t DAT_004e8bb4;  /* data global */
+extern uint64_t DAT_004e8bd0;  /* data global */
+extern uint64_t DAT_004e8f2c;  /* data global */
+extern uint64_t DAT_004e8f80;  /* data global */
+extern uint64_t DAT_004e8f9c;  /* data global */
+extern uint64_t DAT_004e90b0;  /* data global */
+extern uint64_t DAT_004e9518;  /* data global */
+extern uint64_t DAT_004e956c;  /* data global */
+extern uint64_t DAT_004e984c;  /* data global */
+extern uint64_t DAT_004e9c1c;  /* data global */
+extern uint64_t DAT_004e9c44;  /* data global */
+extern uint64_t DAT_004e9d3c;  /* data global */
+extern uint64_t DAT_004e9db0;  /* data global */
+extern uint64_t DAT_004ea760;  /* data global */
+extern uint64_t DAT_004ea794;  /* data global */
+extern uint64_t DAT_004ea7c8;  /* data global */
+extern uint64_t DAT_004eaac8;  /* data global */
+extern uint64_t DAT_004eaae4;  /* data global */
+extern uint64_t DAT_004eab00;  /* data global */
+extern uint64_t DAT_004eac00;  /* data global */
+extern uint64_t DAT_004eac1c;  /* data global */
+extern uint64_t DAT_004ead58;  /* data global */
+extern uint64_t DAT_004eb028;  /* data global */
+extern uint64_t DAT_004eb050;  /* data global */
+extern uint64_t DAT_004eb078;  /* data global */
+extern uint64_t DAT_004eb0a0;  /* data global */
+extern uint64_t DAT_004eb0c8;  /* data global */
+extern uint64_t DAT_004eb0e4;  /* data global */
+extern uint64_t DAT_004eb734;  /* data global */
+extern uint64_t DAT_004eb788;  /* data global */
+extern uint64_t DAT_004eb7dc;  /* data global */
+extern uint64_t DAT_004eb948;  /* data global */
+extern uint64_t DAT_004eb964;  /* data global */
+extern uint64_t DAT_004eb980;  /* data global */
+extern uint64_t DAT_004ebcf8;  /* data global */
+extern uint64_t DAT_004ebd14;  /* data global */
+extern uint64_t DAT_004ebd30;  /* data global */
+extern uint64_t DAT_004ebe14;  /* data global */
+extern uint64_t DAT_004ebe30;  /* data global */
+extern uint64_t DAT_004ebe4c;  /* data global */
+extern uint64_t DAT_004ebea8;  /* data global */
+extern uint64_t DAT_004ebecc;  /* data global */
+extern uint64_t DAT_004ebff8;  /* data global */
+extern uint64_t DAT_004ec000;  /* data global */
+extern uint64_t DAT_004ec2fc;  /* data global */
+extern uint64_t DAT_004ec318;  /* data global */
+extern uint64_t DAT_004ec334;  /* data global */
+extern uint64_t DAT_004ec728;  /* data global */
+extern uint64_t DAT_004ec7a0;  /* data global */
+extern uint64_t DAT_004ec7bc;  /* data global */
+extern uint64_t DAT_004ecd68;  /* data global */
+extern uint64_t DAT_004ecee8;  /* data global */
+extern uint64_t DAT_004ecf60;  /* data global */
+extern uint64_t DAT_004ed078;  /* data global */
+extern uint64_t DAT_004ed10c;  /* data global */
+extern uint64_t DAT_004ed1f8;  /* data global */
+extern uint64_t DAT_004ed270;  /* data global */
+extern uint64_t DAT_004ed388;  /* data global */
+extern uint64_t DAT_004ed41c;  /* data global */
+extern uint64_t DAT_004ed508;  /* data global */
+extern uint64_t DAT_004ed580;  /* data global */
+extern uint64_t DAT_004ed698;  /* data global */
+extern uint64_t DAT_004ed72c;  /* data global */
+extern uint64_t DAT_004ed818;  /* data global */
+extern uint64_t DAT_004ed9a8;  /* data global */
+extern uint64_t DAT_004eda3c;  /* data global */
+extern uint64_t DAT_004edb28;  /* data global */
+extern uint64_t DAT_004edd08;  /* data global */
+extern uint64_t DAT_004edd24;  /* data global */
+extern uint64_t DAT_004eddb0;  /* data global */
+extern uint64_t DAT_004eddcc;  /* data global */
+extern uint64_t DAT_004ede18;  /* data global */
+extern uint64_t DAT_004edef0;  /* data global */
+extern uint64_t DAT_004eed48;  /* data global */
+extern uint64_t DAT_004effd8;  /* data global */
+extern uint64_t DAT_004f0e1c;  /* data global */
+extern uint64_t DAT_004f0e38;  /* data global */
+extern uint64_t DAT_004f11a0;  /* data global */
+extern uint64_t DAT_004f1208;  /* data global */
+extern uint64_t DAT_004f1260;  /* data global */
+extern uint64_t DAT_004f1428;  /* data global */
+extern uint64_t DAT_004f1900;  /* data global */
+extern uint64_t DAT_004f1918;  /* data global */
+extern uint64_t DAT_004f1930;  /* data global */
+extern uint64_t DAT_004f2108;  /* data global */
+extern uint64_t DAT_005cde70;  /* data global */
+extern uint64_t DAT_005cdef0;  /* data global */
+extern uint64_t DAT_005d021c;  /* data global */
+extern uint64_t DAT_005d0ce6;  /* data global */
+extern uint64_t DAT_005d3566;  /* data global */
+extern uint64_t DAT_005d3bb7;  /* data global */
+extern uint64_t DAT_005d3bb9;  /* data global */
+extern uint64_t DAT_005d4601;  /* data global */
+extern uint64_t DAT_005d4672;  /* data global */
+extern uint64_t DAT_005d4699;  /* data global */
+extern uint64_t DAT_005d46d5;  /* data global */
+extern uint64_t DAT_0060cfa0;  /* data global */
+extern uint64_t DAT_00611b24;  /* data global */
+extern uint64_t DAT_00611b3c;  /* data global */
+extern uint64_t DAT_0064c040;  /* data global */
+extern uint64_t DAT_0064c2e0;  /* data global */
+extern uint64_t DAT_00657588;  /* data global */
+extern uint64_t DAT_006575a0;  /* data global */
+extern uint64_t DAT_006575e0;  /* data global */
+extern uint64_t DAT_00657628;  /* data global */
+extern uint64_t DAT_00657778;  /* data global */
+extern uint64_t DAT_0067b148;  /* data global */
+extern uint64_t DAT_006adf10;  /* data global */
+extern uint64_t DAT_006c;  /* data global */
 
 
 typedef uint64_t (*sk_fn_t)();
@@ -54,7 +936,7 @@ typedef uint64_t (*sk_fn_t)();
 extern sk_fn_t  DAT_00658c00;                 /* function-pointer global (Swift retain/task hook) */
 extern uint64_t DAT_00613644, DAT_0061368c;   /* static string arguments */
 extern uint64_t DAT_004ea4dc, DAT_004edcd0;
-typedef unsigned long ulong;
+/* (ulong defined canonically above) */
 
 /* Global lazy-init dispatch slots (DAT_006575xx) written by thunks/inits. */
 extern word_t DAT_006575b0, DAT_006575c8, DAT_006575d0, DAT_006575d8;
@@ -5169,7 +6051,7 @@ extern void FUN_00354534();  /* defined in this region (fwd decl) */
 extern void FUN_0035454c();  /* defined in this region (fwd decl) */
 extern void FUN_00354558();  /* defined in this region (fwd decl) */
 extern void FUN_0035457c();  /* defined in this region (fwd decl) */
-extern void FUN_00354588();  /* defined in this region (fwd decl) */
+extern uint64_t FUN_00354588();  /* defined in this region (value-returning stub) */
 extern void FUN_003545a0();  /* defined in this region (fwd decl) */
 extern void FUN_003545ac();  /* defined in this region (fwd decl) */
 extern void FUN_003545b8();  /* defined in this region (fwd decl) */
@@ -7865,6 +8747,7 @@ extern uint64_t DAT_006c0530;  /* data global */
 extern uint64_t DAT_006c0540;  /* data global */
 extern uint64_t DAT_006c0548;  /* data global */
 
+extern uint64_t FUN_00354720();  /* external callee (permissive) */
 /* ============ sk_region_syscalls_part01.c ============ */
 /* Recreated from cl4_kernel.raw (cL4 Secure Kernel, arm64e, image base 0) —
  * the cL4 microkernel (GL1). Ground truth: Ghidra FUN_ names + addresses.
@@ -14285,7 +15168,7 @@ void sk_op_allocate_0031b394(word_t *ctx, long count, long prealloc)
 {
     word_t obj_hdr = ctx[2];
     word_t uVar2 = FUN_00027754(ctx[4]);
-    cl4_result_t r = FUN_00349ea0(uVar2, uVar2);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00349ea0(uVar2, uVar2), .hi = 0 };
     FUN_00377824(r.lo, r.hi, obj_hdr);
     FUN_00351f10();
     {
@@ -16009,9 +16892,9 @@ word_t sk_stub_unsupported_0031ca3c_0031ca3c(void)
  * Confidence: low; Notes: extraout_w9 (carry) artifact; callees out of slice */
 void sk_op_masked_0031ca54(word_t a, word_t b, uint32_t flags, word_t *ctx)
 {
-    cl4_result_t r = FUN_003586d8();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_003586d8(), .hi = 0 };
     (void)r;
-    cl4_result_t rr = FUN_00359abc();
+    cl4_result_t rr = (cl4_result_t){ .lo = FUN_00359abc(), .hi = 0 };
     (void)rr;
     uint32_t x = flags & 0 /*extraout_w9*/;
     FUN_002493c8(rr.lo, rr.hi, x);
@@ -16024,9 +16907,9 @@ void sk_op_masked_0031ca54(word_t a, word_t b, uint32_t flags, word_t *ctx)
  * Confidence: low; Notes: extraout_w9 (carry) artifact; callees out of slice */
 void sk_op_masked_0031ca58(word_t a, word_t b, uint32_t flags, word_t *ctx)
 {
-    cl4_result_t r = FUN_003586d8();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_003586d8(), .hi = 0 };
     (void)r;
-    cl4_result_t rr = FUN_00359abc();
+    cl4_result_t rr = (cl4_result_t){ .lo = FUN_00359abc(), .hi = 0 };
     (void)rr;
     uint32_t x = flags & 0 /*extraout_w9*/;
     FUN_002493c8(rr.lo, rr.hi, x);
@@ -16085,7 +16968,7 @@ void sk_op_drain_0031cb04(word_t *ctx, word_t *out)
         word_t *head = (word_t *)ctx[4];
         word_t *tail = (word_t *)ctx[6];
         word_t *scratch = (word_t *)ctx[7];
-        cl4_result_t r = FUN_003551c4();
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_003551c4(), .hi = 0 };
         if (r.lo == 0 || r.hi == r.lo) {
             out[0] = *(word_t *)(head + 2);
             out[1] = 0;
@@ -16116,7 +16999,7 @@ void sk_op_drain_0031cb04(word_t *ctx, word_t *out)
  * Confidence: low; Notes: extraout_w9 artifact; callees out of slice */
 void sk_op_masked7_0031cbbc(word_t a, word_t b, uint32_t flags, word_t *ctx)
 {
-    cl4_result_t r = FUN_003586d8();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_003586d8(), .hi = 0 };
     FUN_0024a290(r.lo, r.hi, flags & 0 /*extraout_w9*/, ctx[4], ctx[5], ctx[2], ctx[3]);
 }
 
@@ -16127,7 +17010,7 @@ void sk_op_masked7_0031cbbc(word_t a, word_t b, uint32_t flags, word_t *ctx)
  * Confidence: low; Notes: extraout_w9 artifact; callees out of slice */
 void sk_op_masked7_0031cbc0(word_t a, word_t b, uint32_t flags, word_t *ctx)
 {
-    cl4_result_t r = FUN_003586d8();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_003586d8(), .hi = 0 };
     FUN_0024a290(r.lo, r.hi, flags & 0 /*extraout_w9*/, ctx[4], ctx[5], ctx[2], ctx[3]);
 }
 
@@ -16431,7 +17314,7 @@ void sk_dispatch_0x28_0031cff4(word_t *ctx)
  * Confidence: low; Notes: extraout_* artifacts; callees out of slice */
 void sk_op_init_region2_0031d024(word_t *ctx)
 {
-    cl4_result_t r = FUN_00084220();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00084220(), .hi = 0 };
     word_t uVar2 = ctx[2];
     FUN_003504e8(r.lo, r.hi, ctx[3], ctx[5]);
     (void)FUN_00319338();
@@ -16479,7 +17362,7 @@ void sk_op_query_map_0031d0e0(word_t *ctx)
  * Confidence: low; Notes: extraout_* artifacts; callees out of slice */
 void sk_op_init_region3_0031d150(word_t *ctx)
 {
-    cl4_result_t r = FUN_00084220();
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00084220(), .hi = 0 };
     word_t uVar2 = ctx[2];
     FUN_00356bb0(ctx[5]);
     FUN_0034ce98();
@@ -16561,7 +17444,7 @@ void sk_op_composite2_0031d2a8(word_t *ctx)
     FUN_00352ea8();
     FUN_00377bec();
     {
-        cl4_result_t r = FUN_003509bc();
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_003509bc(), .hi = 0 };
         FUN_00277be4(r.lo, r.hi, uVar1);
     }
     uVar1 = FUN_0035396c();
@@ -16587,7 +17470,7 @@ void sk_op_composite3_0031d324(word_t *ctx)
     FUN_00352ea8();
     FUN_00377bec();
     {
-        cl4_result_t r = FUN_003509bc();
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_003509bc(), .hi = 0 };
         FUN_00277be4(r.lo, r.hi, uVar1);
     }
     uVar1 = FUN_00356d20();
@@ -24423,7 +25306,7 @@ void sk_exception_entry(void)
     FUN_00348d94(0);
     FUN_00377824(0);
     FUN_0034b57c(0);
-    cl4_result_t r = FUN_00357104(0);   /* obtain entry result/selector */
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00357104(0), .hi = 0 };   /* obtain entry result/selector */
 
     if (/* carry clear && !zero */1 && 0xffffffffffffffe6 < (int64_t)r.lo) {
         /* success path: commit capability write through frame words */
@@ -24664,7 +25547,7 @@ void sk_syscall_entry_dispatch_0(void)
     FUN_00348d94(0);                 /* fetch arg/cap word */
     FUN_00377824(0);                 /* fetch entry context */
     FUN_0034b57c(0);                 /* dispatch prelude */
-    cl4_result_t sel = FUN_00357104(0);   /* result selector */
+    cl4_result_t sel = (cl4_result_t){ .lo = FUN_00357104(0), .hi = 0 };   /* result selector */
 
     if (/* carry clear && !zero */1 && 0xffffffffffffffe6 < (int64_t)sel.lo) {
         *((word_t *)/* x19 */0) = *((word_t *)/* x20 */0);
@@ -24837,7 +25720,7 @@ long sk_result_return_1(long frame)
  *   374104, 354c58. */
 void sk_tcb_release_regs_0(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x50));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x50)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -24860,7 +25743,7 @@ void sk_sched_yield_common_3(void) { FUN_00353498(0); FUN_00374104(0); FUN_00354
  * Confidence: medium. */
 void sk_tcb_release_regs_1(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0xb8));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0xb8)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -24872,7 +25755,7 @@ void sk_tcb_release_regs_1(long tcb)
 /* FUN_0032d65c @ 0x32d65c (est. sk_tcb_release_regs_2) offset +0x140 */
 void sk_tcb_release_regs_2(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x140));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x140)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -24884,7 +25767,7 @@ void sk_tcb_release_regs_2(long tcb)
 /* FUN_0032d6cc @ 0x32d6cc (est. sk_tcb_release_regs_3) offset +0x158 */
 void sk_tcb_release_regs_3(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x158));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x158)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -24896,7 +25779,7 @@ void sk_tcb_release_regs_3(long tcb)
 /* FUN_0032d73c @ 0x32d73c (est. sk_tcb_release_regs_4) offset +0x160 */
 void sk_tcb_release_regs_4(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x160));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x160)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -24967,7 +25850,7 @@ void sk_syscall_entry_a(void)
     FUN_00377824(0);
     FUN_0034b57c(0);
     FUN_0035510c(/* x16 */0);
-    cl4_result_t r = FUN_0034c144(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c144(0), .hi = 0 };
     if (/* zero-set && */ (ulong)0 < 0x19) {
         FUN_0034df14(r.lo, r.hi, r.lo);
         ((void (*)(void))/* dispatch */0)();
@@ -25051,7 +25934,7 @@ ulong sk_msg_count_cap(void)
     FUN_00349830(0);
     FUN_00377824(0);
     word_t r = FUN_0034ada0(0);
-    cl4_result_t c = FUN_00355008(r, *(uint *)/* table+0x54 */0);
+    c = (cl4_result_t){ .lo = FUN_00355008(r, *(uint *)/* table+0x54 */0), .hi = 0 };
     word_t count = c.hi;
     uint caller = /* w20 */0;
     if (caller == 0) return 0;
@@ -25109,12 +25992,12 @@ void sk_syscall_enter_release(void)
     FUN_00357cb4(0);
     FUN_00355160(0);
     FUN_003502c8(0x13f);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     ulong sz = r.hi, base = r.lo;
     int is_big = 0x3e < sz, is_3f = (sz == 0x3f);
     if (sz < 0x40) {
         FUN_0034de44(0);
-        cl4_result_t r2 = FUN_00377824(0);
+        cl4_result_t r2 = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
         FUN_0035298c(r2.lo, r2.hi, r2.lo);
         FUN_00377824(0);
         long l = FUN_00357acc(0);
@@ -25122,7 +26005,7 @@ void sk_syscall_enter_release(void)
             FUN_003558b8(*(long *)(l + -8) + 0x40);
             FUN_0034d1c0(0);
             FUN_003728b8(0);
-            cl4_result_t r3 = FUN_00019858(0);
+            cl4_result_t r3 = (cl4_result_t){ .lo = FUN_00019858(0), .hi = 0 };
             sz = r3.hi; base = r3.lo;
         }
     } else {
@@ -25150,7 +26033,7 @@ void sk_syscall_msg_write(void)
     long dst = *(long *)/* x8+0x40 */0;
     FUN_00356bd4(0);
     FUN_0034e5bc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350500(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_000a6f88(0);
@@ -25164,12 +26047,12 @@ void sk_syscall_msg_write(void)
         ((void (*)(void))0)();
         FUN_003518dc(dst + /* x20 */0);
         if (FUN_000839f8(0) == 0) {
-            cl4_result_t r2 = FUN_003595b4(*(word_t *)/* table+0x10 */0);
+            r2 = (cl4_result_t){ .lo = FUN_003595b4(*(word_t *)/* table+0x10 */0), .hi = 0 };
             ((void (*)(word_t, word_t, word_t))0)(r2.lo, r2.hi, sz);
             FUN_0034ee88(dst + /* x19 */0);
             FUN_000839d8(0);
         } else {
-            cl4_result_t r2 = FUN_003595b4(0);
+            cl4_result_t r2 = (cl4_result_t){ .lo = FUN_003595b4(0), .hi = 0 };
             FUN_00117cc4(r2.lo, r2.hi, lim);
         }
     } else {
@@ -25230,7 +26113,7 @@ void sk_syscall_cap_copy_18(void)
     long dst = *(long *)/* table+0x40 */0;
     FUN_00355780(0);
     FUN_0034be0c(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25273,7 +26156,7 @@ void sk_syscall_cap_copy_20(void)
     long dst = *(long *)/* table+0x40 */0;
     FUN_00355780(0);
     FUN_0034be0c(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25301,7 +26184,7 @@ void sk_syscall_cap_copy_28(void)
     long dst = *(long *)/* table+0x40 */0;
     FUN_00355780(0);
     FUN_0034be0c(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25353,7 +26236,7 @@ void sk_msg_cap_validate_write(void)
     uint limit = *(uint *)/* table+0x54 */0;
     FUN_00356bd4(0);
     FUN_0034e5bc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350500(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0034c11c(0);
@@ -25446,7 +26329,7 @@ void sk_tcb_release_extra(long tcb)
     int is_3f = (/* x1 */0 == 0x3f);
     if (/* x1 */0 < 0x40) {
         FUN_00348f14(r2);
-        cl4_result_t r = FUN_00377824(0xff, /* x1_00 */0, r1);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0xff, /* x1_00 */0, r1), .hi = 0 };
         FUN_0034a32c(r.lo, r.hi, r.lo);
         FUN_00351930(0);
         FUN_00377824(0);
@@ -25493,12 +26376,12 @@ void sk_syscall_msg_write_b(word_t p1, word_t p2, long frame)
         ((void (*)(void))0)();
         FUN_003518dc(dst + /* x20 */0);
         if (FUN_000839f8(0) == 0) {
-            cl4_result_t r = FUN_003595b4(*(word_t *)/* table+0x10 */0);
+            r = (cl4_result_t){ .lo = FUN_003595b4(*(word_t *)/* table+0x10 */0), .hi = 0 };
             ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, sz);
             FUN_0034ee88(dst + /* x19 */0);
             FUN_000839d8(0);
         } else {
-            cl4_result_t r = FUN_003595b4(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_003595b4(0), .hi = 0 };
             FUN_00117cc4(r.lo, r.hi, lim);
         }
     } else {
@@ -25553,7 +26436,7 @@ void sk_syscall_cap_copy_18b(void)
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348f14(0);
-    cl4_result_t r = FUN_00358410(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00358410(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25597,7 +26480,7 @@ void sk_syscall_cap_copy_20b(void)
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348f14(0);
-    cl4_result_t r = FUN_00358410(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00358410(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25626,7 +26509,7 @@ void sk_syscall_cap_copy_28b(void)
     ((void (*)(void))0)();
     long dst = *(long *)/* table+0x40 */0;
     FUN_00348f14(0);
-    cl4_result_t r = FUN_00358410(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00358410(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_003503b0(0);
@@ -25739,7 +26622,7 @@ void sk_msg_cap_validate_write_c(word_t p1, word_t p2, long frame)
             if (st == 0) { out = 0; goto done; }
         }
         if (v <= limit) {
-            cl4_result_t r = FUN_003507e0(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_003507e0(0), .hi = 0 };
             FUN_0007767c(r.lo, r.hi, u5, /* x30 */0);
             FUN_000839f8(0);
             return;
@@ -25848,7 +26731,7 @@ word_t sk_tcb_validate_3(word_t p1, word_t p2, word_t code)
         FUN_00377824(0x13f);
         FUN_00354ce4(0);
         if (/* carry clear && !zero */1) {
-            cl4_result_t r = FUN_0034c16c(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
             code = 3;
             FUN_003728b8(r.lo, r.hi, 3);
             FUN_0035884c(0);
@@ -25868,7 +26751,7 @@ void sk_syscall_msg_write_d(word_t p1, word_t p2, long frame)
     word_t w = FUN_00350c5c(0);
     long u = *(long *)(frame + 0x10);
     FUN_00349734(w, *(word_t *)(frame + 0x18));
-    cl4_result_t r = FUN_00348d94(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00348d94(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u);
     FUN_000a6f88(0);
     long dst = *(long *)/* x8+0x40 */0 + (ulong)(byte)*(uint *)/* table+0x50 */0;
@@ -25878,7 +26761,7 @@ void sk_syscall_msg_write_d(word_t p1, word_t p2, long frame)
         ((void (*)(void))0)();
         FUN_00355800(0);
         void *pc = 0;
-        cl4_result_t r2 = FUN_000b43d0(0);
+        cl4_result_t r2 = (cl4_result_t){ .lo = FUN_000b43d0(0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))pc)(r2.lo, r2.hi, sz);
         ((void (*)(word_t, word_t, word_t))pc)(dst + u & ~/* x8_00 */0, dst + /* x20 */0 & ~/* x8_00 */0, sz);
     } else {
@@ -25898,7 +26781,7 @@ void sk_syscall_msg_read_c(void)
     word_t w = FUN_0034b3c8(0);
     w = ((word_t (*)(word_t, word_t))0)(w, u4);
     long dst = *(long *)/* table+0x40 */0;
-    cl4_result_t r = FUN_00348d94(w, *(word_t *)/* x19+0x18 */0);
+    r = (cl4_result_t){ .lo = FUN_00348d94(w, *(word_t *)/* x19+0x18 */0), .hi = 0 };
     w = FUN_00377824(r.lo, r.hi, u4).lo;
     FUN_0034ab20(0);
     void *jt = 0;
@@ -25979,7 +26862,7 @@ word_t sk_msg_cap_validate_1(word_t p1, word_t p2, long frame)
     word_t u5 = *(word_t *)(frame + 0x10);
     FUN_0035549c(w, *(word_t *)(frame + 0x18));
     uint limit = *(uint *)/* table+0x54 */0;
-    cl4_result_t r = FUN_00348d94(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00348d94(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u5);
     FUN_0034f924(0);
     uint lim2 = *(uint *)/* table2+0x54 */0;
@@ -26048,7 +26931,7 @@ void sk_tcb_validate_1(long tcb)
 {
     FUN_00370f2c(0x13f, *(word_t *)(tcb + 0x10), *(word_t *)(tcb + 0x18));
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r = FUN_0034c16c(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
         FUN_003728b8(r.lo, r.hi, 1);
         FUN_00019858(0);
     }
@@ -26309,7 +27192,7 @@ void sk_msg_write_commit(void)
     FUN_00348e00(0);
     FUN_00356bd4(0);
     FUN_0034e5bc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350488(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_000a6f88(0);
@@ -26322,14 +27205,14 @@ void sk_msg_write_commit(void)
         FUN_0034bfb4(*(word_t *)/* table+0x10 */0);
         ((void (*)(void))0)();
         FUN_00355800(0);
-        cl4_result_t rr = FUN_00351d24(0);
+        cl4_result_t rr = (cl4_result_t){ .lo = FUN_00351d24(0), .hi = 0 };
         if (FUN_000839f8(rr.lo, rr.hi, sz) == 0) {
-            cl4_result_t r2 = FUN_000b43d0(*(word_t *)/* table+0x10 */0);
+            r2 = (cl4_result_t){ .lo = FUN_000b43d0(*(word_t *)/* table+0x10 */0), .hi = 0 };
             ((void (*)(word_t, word_t, word_t))0)(r2.lo, r2.hi, sz);
             FUN_0034e094(0);
             FUN_000839d8(0);
         } else {
-            cl4_result_t r2 = FUN_000b43d0(0);
+            cl4_result_t r2 = (cl4_result_t){ .lo = FUN_000b43d0(0), .hi = 0 };
             FUN_00117cc4(r2.lo, r2.hi, dst);
         }
         FUN_00355d60(/* x21 */0 + dst);
@@ -26370,12 +27253,12 @@ void sk_msg_read_commit(void)
     long dst = *(long *)/* table+0x40 */0;
     word_t extra = *(word_t *)/* x20+0x20 */0;
     FUN_0034c444(0xff);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350798(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_00350fbc(0);
     byte sel = *(byte *)/* table+0x50 */0;
-    cl4_result_t rr = FUN_00351330(0);
+    cl4_result_t rr = (cl4_result_t){ .lo = FUN_00351330(0), .hi = 0 };
     if (FUN_000839f8(rr.lo, rr.hi, extra) == 0) {
         FUN_00353c0c(0);
         FUN_0009461c(0);
@@ -26399,7 +27282,7 @@ void sk_syscall_cap_copy2_10(void)
     word_t extra = *(word_t *)/* x21+0x20 */0;
     FUN_00355780(0);
     FUN_0034be0c(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0035295c(0);
@@ -26451,7 +27334,7 @@ void sk_syscall_cap_copy3_18(word_t p1, word_t p2, long frame)
     ((void (*)(void))0)();
     FUN_003519fc(0);
     FUN_00350bfc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350798(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0035295c(0);
@@ -26513,7 +27396,7 @@ void sk_syscall_cap_copy2_20(void)
     word_t extra = *(word_t *)/* x21+0x20 */0;
     FUN_00355780(0);
     FUN_0034be0c(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_0034e6dc(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0035295c(0);
@@ -26558,7 +27441,7 @@ void sk_syscall_cap_copy3_28(word_t p1, word_t p2, long frame)
     ((void (*)(void))0)();
     FUN_003519fc(0);
     FUN_00350bfc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350798(r.lo, r.hi, r.lo);
     FUN_00377824(0);
     FUN_0035295c(0);
@@ -26627,10 +27510,10 @@ void sk_msg_slot_read(void)
     uint lim1 = *(uint *)/* table+0x54 */0;
     FUN_00356bd4(0);
     FUN_0034e5bc(0);
-    cl4_result_t r = FUN_00377824(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(0), .hi = 0 };
     FUN_00350500(r.lo, r.hi, r.lo);
     FUN_00377824(0);
-    cl4_result_t cw = FUN_0034cb60(0);
+    cl4_result_t cw = (cl4_result_t){ .lo = FUN_0034cb60(0), .hi = 0 };
     uint lim2 = *(uint *)/* table+0x54 */0;
     uint a = (lim2 != 0) ? lim2 - 1 : 0;
     uint top = (a <= lim1) ? lim1 : a;
@@ -26725,7 +27608,7 @@ void sk_tcb_finalize_a(void)
     long tcb = FUN_00355150(0);
     FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x40));
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r = FUN_00351244(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_00351244(0), .hi = 0 };
         FUN_00374104(r.lo, r.hi, 6);
         FUN_00354c58(0);
     }
@@ -26742,7 +27625,7 @@ void sk_tcb_finalize_b(long tcb)
         FUN_00355150(0);
         FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x40));
         if (/* x1_00 */0 < 0x40) {
-            cl4_result_t r = FUN_00351244(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_00351244(0), .hi = 0 };
             FUN_00374104(r.lo, r.hi, 6);
             FUN_00354c58(0);
         }
@@ -26752,7 +27635,7 @@ void sk_tcb_finalize_b(long tcb)
 /* FUN_003320b8 @ 0x3320b8 (est. sk_tcb_release_regs_c) */
 void sk_tcb_release_regs_c(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x38));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x38)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -26764,7 +27647,7 @@ void sk_tcb_release_regs_c(long tcb)
 /* FUN_003320f8 @ 0x3320f8 (est. sk_tcb_release_regs_d) offset +0x38 */
 void sk_tcb_release_regs_d(long tcb)
 {
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x38));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x38)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -26797,7 +27680,7 @@ void sk_cap_validate_commit(void)
  *   3728b8/19858. */
 void sk_slot_validate_commit(long slot)
 {
-    cl4_result_t r = FUN_0035aa54(slot, *(word_t *)(slot + 0x20), *(word_t *)(slot + 0x10));
+    r = (cl4_result_t){ .lo = FUN_0035aa54(slot, *(word_t *)(slot + 0x20), *(word_t *)(slot + 0x10)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00357d44(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d1c0(0);
@@ -26817,7 +27700,7 @@ void sk_entry_dispatch_commit(void)
     FUN_00377824(0);
     FUN_0034b57c(0);
     FUN_0035510c(/* x16 */0);
-    cl4_result_t r = FUN_0034c144(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c144(0), .hi = 0 };
     if (/* zero && x10<0x19 */1) {
         FUN_0034df14(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
@@ -26908,7 +27791,7 @@ ulong sk_msg_count_cap_b(word_t p1, uint count)
     FUN_00349830(0);
     FUN_00377824(0);
     word_t r = FUN_0034ada0(0);
-    cl4_result_t c = FUN_00355008(r, *(uint *)/* table+0x54 */0);
+    c = (cl4_result_t){ .lo = FUN_00355008(r, *(uint *)/* table+0x54 */0), .hi = 0 };
     word_t cnt = c.hi;
     if (count == 0) return 0;
     if (/* w9 */0 < count) {
@@ -26957,7 +27840,7 @@ ulong sk_msg_count_cap_b(word_t p1, uint count)
 void sk_cap_validate_commit_b(void)
 {
     FUN_0034c7c4(0);
-    cl4_result_t r = FUN_00377dcc(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377dcc(0), .hi = 0 };
     if (r.hi < 0x40) {
         long *p = (long *)(r.lo + -8);
         FUN_00351244((word_t)p, r.hi, *p + 0x40);
@@ -27039,10 +27922,10 @@ void sk_slot3_dispatch_28(void)
 /* FUN_00332e2c @ 0x332e2c (est. sk_slot_validate_commit_b) */
 void sk_slot_validate_commit_b(long slot)
 {
-    cl4_result_t r = FUN_0035aa54(slot, *(word_t *)(slot + 0x18), *(word_t *)(slot + 0x10));
+    r = (cl4_result_t){ .lo = FUN_0035aa54(slot, *(word_t *)(slot + 0x18), *(word_t *)(slot + 0x10)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00357d44(*(long *)(r.lo + -8) + 0x40);
-        cl4_result_t r2 = FUN_0034c16c(0);
+        cl4_result_t r2 = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
         FUN_003728b8(r2.lo, r2.hi, 3);
         FUN_00019858(0);
     }
@@ -27058,7 +27941,7 @@ void sk_entry_copy_commit(void)
     FUN_0034d724(0);
     FUN_00349830(0);
     FUN_00377824(0);
-    cl4_result_t r = FUN_0034b57c(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034b57c(0), .hi = 0 };
     ulong sel = (ulong)*(uint *)/* table+0x50 */0 & 0xff;
     long base = *(long *)/* x9+0x40 */0 + 7;
     if ((sel < 8 && (/*...*/0 & 0x100000) == 0) &&
@@ -27201,7 +28084,7 @@ void sk_msg_peek(void)
 {
     FUN_003561f4(0);
     word_t w = FUN_00348d94(0).lo;
-    cl4_result_t r = FUN_00377824(w, /* x8 */0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377824(w, /* x8 */0), .hi = 0 };
     FUN_00351330(r.lo, r.hi, r.lo);
     FUN_000839f8(0);
 }
@@ -27215,7 +28098,7 @@ void sk_msg_notify(word_t p1, word_t p2, long frame)
     word_t w = FUN_003504d0(0);
     FUN_00348d94(w, *(word_t *)(frame + 0x18), *(word_t *)(frame + 0x10));
     FUN_00377824(0);
-    cl4_result_t r = FUN_0007c1c4(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0007c1c4(0), .hi = 0 };
     FUN_000839d8(r.lo, r.hi, 1);
 }
 
@@ -27224,7 +28107,7 @@ void sk_tcb_validate_1b(long tcb)
 {
     FUN_0031d5a8(0x13f, *(word_t *)(tcb + 0x10), *(word_t *)(tcb + 0x18));
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r = FUN_0034c16c(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
         FUN_003728b8(r.lo, r.hi, 1);
         FUN_00019858(0);
     }
@@ -27251,7 +28134,7 @@ long sk_msg_write_commit_b(void)
         FUN_00356328(0);
         FUN_003513e4(0);
         if (FUN_000839f8(0) != 0) {
-            cl4_result_t r = FUN_0009461c(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_0009461c(0), .hi = 0 };
             frame = FUN_00117cc4(r.lo, r.hi, dst);
             return frame;
         }
@@ -27278,7 +28161,7 @@ void sk_msg_peek_dispatch(void)
     FUN_003561f4(0);
     word_t w = FUN_00348d94(0).lo;
     w = FUN_00377824(w, /* x8 */0).lo;
-    cl4_result_t r = FUN_00351330(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00351330(0), .hi = 0 };
     if (FUN_000839f8(r.lo, r.hi, w) != 0) return;
     FUN_003511b4(0);
     ((void (*)(void))0)();
@@ -27449,7 +28332,7 @@ void sk_cap_validate_commit_c(void)
     FUN_0034c7c4(0);
     FUN_00377dcc(0);
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r = FUN_0034cdf8(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_0034cdf8(0), .hi = 0 };
         FUN_003728b8(r.lo, r.hi, 2);
         FUN_00019858(0);
     }
@@ -27459,7 +28342,7 @@ void sk_cap_validate_commit_c(void)
 void sk_cap_release_regs(void)
 {
     FUN_0034c7c4(0);
-    cl4_result_t r = FUN_00377dcc(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377dcc(0), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_00353424(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d034(0);
@@ -27472,7 +28355,7 @@ void sk_cap_release_regs(void)
 void sk_tcb_release_regs_e(void)
 {
     long tcb = FUN_00355150(0);
-    cl4_result_t r = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x10));
+    r = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)(tcb + 0x10)), .hi = 0 };
     if (r.hi < 0x40) {
         FUN_003558b8(*(long *)(r.lo + -8) + 0x40);
         FUN_0034d1c0(0);
@@ -27506,7 +28389,7 @@ void sk_syscall_entry_commit(void)
 void sk_dispatch3_18(void)
 {
     FUN_0034f2f4(0);
-    cl4_result_t r = FUN_0034a054(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034a054(0), .hi = 0 };
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
         (sel + 8 + r.lo & ~sel, sel + 8 + r.hi & ~sel);
@@ -27516,7 +28399,7 @@ void sk_dispatch3_18(void)
 void sk_dispatch3_20(void)
 {
     FUN_0034f2f4(0);
-    cl4_result_t r = FUN_0034a054(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034a054(0), .hi = 0 };
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
         (sel + 8 + r.lo & ~sel, sel + 8 + r.hi & ~sel);
@@ -27526,7 +28409,7 @@ void sk_dispatch3_20(void)
 void sk_dispatch3_28(void)
 {
     FUN_0034f2f4(0);
-    cl4_result_t r = FUN_0034a054(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034a054(0), .hi = 0 };
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     ((void (*)(word_t, word_t))0)
         (sel + 8 + r.lo & ~sel, sel + 8 + r.hi & ~sel);
@@ -27539,9 +28422,9 @@ void sk_dispatch3_28(void)
 void sk_tcb_validate_commit(void)
 {
     FUN_0034c7c4(0);
-    cl4_result_t r = FUN_00377dcc(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377dcc(0), .hi = 0 };
     if (r.hi < 0x40) {
-        cl4_result_t r2 = FUN_00377dcc(0x13f, *(word_t *)/* x19+0x18 */0);
+        r2 = (cl4_result_t){ .lo = FUN_00377dcc(0x13f, *(word_t *)/* x19+0x18 */0), .hi = 0 };
         if (r2.hi < 0x40) {
             FUN_003558b8(*(long *)(r2.lo + -8) + 0x40);
             FUN_0034d1c0(0);
@@ -27610,7 +28493,7 @@ long sk_msg_tag_store(long frame)
 cl4_result_t sk_tcb_lookup(void)
 {
     FUN_0034c7c4(0);
-    cl4_result_t r = FUN_00377dcc(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00377dcc(0), .hi = 0 };
     long base = r.lo;
     if (r.hi < 0x40) {
         FUN_00350bd8(*(word_t *)/* x19+0x18 */0);
@@ -27619,7 +28502,7 @@ cl4_result_t sk_tcb_lookup(void)
         base = r.lo;
         if (r.hi < 0x40) {
             FUN_003558b8(*(long *)(base + -8) + 0x40);
-            cl4_result_t r2 = FUN_0034cdf8(0);
+            cl4_result_t r2 = (cl4_result_t){ .lo = FUN_0034cdf8(0), .hi = 0 };
             FUN_003728b8(r2.lo, r2.hi, 2);
             base = 0;
             r.hi = 0;
@@ -27642,7 +28525,7 @@ void sk_syscall_msg_write_e(word_t p1, word_t p2, long frame)
     word_t u = *(word_t *)(frame + 0x10);
     FUN_00349734(*(word_t *)(frame + 0x18));
     FUN_00350bd8(0);
-    cl4_result_t r = FUN_00348d94(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00348d94(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u);
     FUN_000a6f88(0);
     FUN_0034d5d8(*(uint *)/* table+0x50 */0 & 0xff);
@@ -27671,7 +28554,7 @@ void sk_syscall_msg_read_d(void)
     ((word_t (*)(word_t, word_t))0)(w, u3);
     long dst = *(long *)/* table+0x40 */0;
     FUN_00350bd8(*(word_t *)/* x19+0x18 */0);
-    cl4_result_t r = FUN_00348d94(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00348d94(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u3);
     FUN_0034bf0c(0);
     ulong sel = (ulong)*(byte *)/* table2+0x50 */0;
@@ -27736,7 +28619,7 @@ word_t sk_msg_cap_validate_3(word_t p1, word_t p2, long frame)
     FUN_0035549c(*(word_t *)(frame + 0x18));
     uint limit = *(uint *)/* table+0x54 */0;
     FUN_00350bd8(0);
-    cl4_result_t r = FUN_00348d94(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00348d94(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u4);
     FUN_0034f924(0);
     uint lim2 = *(uint *)/* table2+0x54 */0;
@@ -27802,11 +28685,11 @@ out:
 void sk_tcb_validate_1c(void)
 {
     FUN_00358c20(0);
-    cl4_result_t r = FUN_00350bd8(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00350bd8(0), .hi = 0 };
     FUN_0034a32c(r.lo, r.hi, *(word_t *)/* x19+0x10 */0);
     FUN_00377824(0x13f);
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r2 = FUN_0034c16c(0);
+        cl4_result_t r2 = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
         FUN_003728b8(r2.lo, r2.hi, 1);
         FUN_00019858(0);
     }
@@ -27819,7 +28702,7 @@ void sk_tcb_validate_1c(void)
 void sk_syscall_entry_b(word_t p1, word_t p2, long frame)
 {
     FUN_0034da78(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)/* x21+0x10 */0);
     FUN_00377824(0);
     FUN_0034b57c(0);
@@ -27840,7 +28723,7 @@ void sk_syscall_entry_b(word_t p1, word_t p2, long frame)
 void sk_syscall_entry_c(void)
 {
     FUN_003504d0(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)/* x1+0x18 */0);
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)/* x1+0x18 */0), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)/* x19+0x10 */0);
     FUN_00377824(0);
     FUN_00350404(0);
@@ -27851,7 +28734,7 @@ void sk_syscall_entry_c(void)
 void sk_dispatch5_18(word_t p1, word_t p2, long frame)
 {
     FUN_0034b430(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)/* x19+0x10 */0);
     FUN_00377824(0);
     FUN_00349530(0);
@@ -27862,7 +28745,7 @@ void sk_dispatch5_18(word_t p1, word_t p2, long frame)
 void sk_dispatch5_20(word_t p1, word_t p2, long frame)
 {
     FUN_0034b430(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)/* x19+0x10 */0);
     FUN_00377824(0);
     FUN_00349530(0);
@@ -27873,7 +28756,7 @@ void sk_dispatch5_20(word_t p1, word_t p2, long frame)
 void sk_dispatch5_28(word_t p1, word_t p2, long frame)
 {
     FUN_0034b430(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)/* x19+0x10 */0);
     FUN_00377824(0);
     FUN_00349530(0);
@@ -27889,7 +28772,7 @@ word_t sk_msg_cap_validate_4(word_t p1, word_t p2, long frame)
 {
     long fr = frame;
     FUN_00350c5c(0);
-    cl4_result_t r = FUN_00350bd8(*(word_t *)(fr + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00350bd8(*(word_t *)(fr + 0x18)), .hi = 0 };
     FUN_00348d94(r.lo, r.hi, *(word_t *)(frame + 0x10));
     FUN_00377824(0);
     word_t w = FUN_000a6f88(0);
@@ -27934,7 +28817,7 @@ void sk_cap_validate_commit_d(void)
     FUN_0034c7c4(0);
     FUN_00377dcc(0);
     if (/* x1 */0 < 0x40) {
-        cl4_result_t r = FUN_0034cdf8(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_0034cdf8(0), .hi = 0 };
         FUN_003728b8(r.lo, r.hi, 2);
         FUN_00019858(0);
     }
@@ -28066,7 +28949,7 @@ void sk_entry_commit_d(void)
     FUN_00377824(0);
     FUN_0034b57c(0);
     FUN_0035510c(/* x16 */0);
-    cl4_result_t r = FUN_0034c144(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c144(0), .hi = 0 };
     if (/* zero && x10<0x19 */1) {
         FUN_0034df14(r.lo, r.hi, r.lo);
         ((void (*)(void))0)();
@@ -28082,7 +28965,7 @@ void sk_entry_commit_d(void)
 /* FUN_00336878 @ 0x336878 (est. sk_slot_setup_dispatch_b) */
 void sk_slot_setup_dispatch_b(void)
 {
-    cl4_result_t r = FUN_00355694(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00355694(0), .hi = 0 };
     long base = r.hi;
     FUN_003524bc(*(word_t *)(base + 0x18), r.lo, base, *(word_t *)(base + 0x10));
     FUN_00377824(0);
@@ -28252,7 +29135,7 @@ void sk_tcb_release_extra_b(void)
         long l = FUN_00357acc(0);
         if (!is_big || is_3f) {
             FUN_003558b8(*(long *)(l + -8) + 0x40);
-            cl4_result_t r = FUN_0034cdf8(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_0034cdf8(0), .hi = 0 };
             FUN_003728b8(r.lo, r.hi, 2);
             FUN_00019858(0);
         }
@@ -28353,12 +29236,12 @@ void sk_syscall_cap_copy5_10(word_t p1, word_t p2, long frame)
     FUN_00359d2c(0);
     FUN_0035163c(/* x8 */0 & ~(ulong)sel);
     if (FUN_000839f8(0) == 0) {
-        cl4_result_t r = FUN_00359588(*(word_t *)/* table+0x10 */0);
+        r = (cl4_result_t){ .lo = FUN_00359588(*(word_t *)/* table+0x10 */0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u2);
         FUN_0034c9e8(dst & ~(ulong)sel);
         FUN_000839d8(0);
     } else {
-        cl4_result_t r = FUN_00357d74(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_00357d74(0), .hi = 0 };
         long l = /* x9 */0;
         if (/* zero */0) { l = l + 1; }
         FUN_00359588(r.lo, r.hi, l);
@@ -28438,12 +29321,12 @@ void sk_syscall_cap_copy5_20(word_t p1, word_t p2, long frame)
     FUN_00359d2c(0);
     FUN_0035163c(/* x8 */0 & ~(ulong)sel);
     if (FUN_000839f8(0) == 0) {
-        cl4_result_t r = FUN_00359588(*(word_t *)/* table+0x20 */0);
+        r = (cl4_result_t){ .lo = FUN_00359588(*(word_t *)/* table+0x20 */0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))0)(r.lo, r.hi, u2);
         FUN_0034c9e8(dst & ~(ulong)sel);
         FUN_000839d8(0);
     } else {
-        cl4_result_t r = FUN_00357d74(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_00357d74(0), .hi = 0 };
         long l = /* x9 */0;
         if (/* zero */0) { l = l + 1; }
         FUN_00359588(r.lo, r.hi, l);
@@ -28662,7 +29545,7 @@ void sk_msg_slot_write(word_t p1, word_t p2, uint count)
                 FUN_000839d8(0);
                 return;
             } else {
-                cl4_result_t r = FUN_0009461c(0);
+                cl4_result_t r = (cl4_result_t){ .lo = FUN_0009461c(0), .hi = 0 };
                 FUN_0008e500(r.lo, r.hi);
                 FUN_000839d8(0);
                 return;
@@ -28739,7 +29622,7 @@ void sk_tcb_release_pair(long tcb)
     FUN_0034a32c(tcb, *(word_t *)(tcb + 0x18));
     FUN_00377824(0x13f, /* x1 */0, w);
     if ((/* x1_00 */0 < 0x40)) {
-        cl4_result_t r = FUN_0034c16c(0);
+        cl4_result_t r = (cl4_result_t){ .lo = FUN_0034c16c(0), .hi = 0 };
         FUN_003728b8(r.lo, r.hi, 3);
         FUN_00019858(0);
     }
@@ -28755,7 +29638,7 @@ void sk_syscall_msg_write_g(word_t p1, word_t p2, long frame)
     FUN_00351e20(0);
     word_t u2 = FUN_00353fac(0);
     word_t u1 = *(word_t *)(frame + 0x10);
-    cl4_result_t r = FUN_00348d94(u2, *(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00348d94(u2, *(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u1);
     FUN_000a6f88(0);
     long base = *(long *)/* x8+0x40 */0;
@@ -28766,9 +29649,9 @@ void sk_syscall_msg_write_g(word_t p1, word_t p2, long frame)
     if (((sel | /* x9 */0) < 8 && ((/* w13 */0 | /* w10 */0) & 0x100000) == 0)
         && (ulong)(/* x11 */0 + *(long *)/* table+0x40 */0) < 0x19) {
         void *pc = 0;
-        cl4_result_t a = FUN_0035060c(0);
+        cl4_result_t a = (cl4_result_t){ .lo = FUN_0035060c(0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))pc)(a.lo, a.hi, u2b);
-        cl4_result_t b = FUN_003504f4(0);
+        cl4_result_t b = (cl4_result_t){ .lo = FUN_003504f4(0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))pc)(b.lo, b.hi, u2b);
         long dst2 = base + sel;
         ((void (*)(word_t, word_t, word_t))0)
@@ -28813,7 +29696,7 @@ void sk_syscall_cap_copy7_18(word_t p1, word_t p2, long frame)
     FUN_00084220(0);
     word_t u2 = FUN_003504d0(0);
     word_t u1 = *(word_t *)(frame + 0x10);
-    cl4_result_t r = FUN_00348d94(u2, *(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00348d94(u2, *(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u1);
     FUN_0034ab20(0);
     void *pc = 0;
@@ -28835,7 +29718,7 @@ void sk_syscall_cap_copy7_20(word_t p1, word_t p2, long frame)
     FUN_00084220(0);
     word_t u2 = FUN_003504d0(0);
     word_t u1 = *(word_t *)(frame + 0x10);
-    cl4_result_t r = FUN_00348d94(u2, *(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00348d94(u2, *(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u1);
     FUN_0034ab20(0);
     void *pc = 0;
@@ -28857,7 +29740,7 @@ void sk_syscall_cap_copy7_28(word_t p1, word_t p2, long frame)
     FUN_00084220(0);
     word_t u2 = FUN_003504d0(0);
     word_t u1 = *(word_t *)(frame + 0x10);
-    cl4_result_t r = FUN_00348d94(u2, *(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00348d94(u2, *(word_t *)(frame + 0x18)), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u1);
     FUN_0034ab20(0);
     void *pc = 0;
@@ -28881,7 +29764,7 @@ ulong sk_msg_slot_read_c(word_t p1, word_t p2, long frame)
 {
     word_t w = FUN_00351a38(0);
     long u = *(long *)(frame + 0x10);
-    cl4_result_t r = FUN_00348d94(w, *(word_t *)(frame + 0x18));
+    r = (cl4_result_t){ .lo = FUN_00348d94(w, *(word_t *)(frame + 0x18)), .hi = 0 };
     long d = FUN_00377824(r.lo, r.hi, u).lo;
     long dst = *(long *)(d + -8);
     long src = *(long *)(u + -8);
@@ -28952,7 +29835,7 @@ long sk_tcb_lookup_commit(word_t p1, word_t p2, long code)
         if (/* carry clear && !zero */1) {
             long f2 = *(long *)(code + -8) + 0x40;
             FUN_00371758(/* stack */0, base);
-            cl4_result_t r = FUN_0034cdf8(0);
+            cl4_result_t r = (cl4_result_t){ .lo = FUN_0034cdf8(0), .hi = 0 };
             code = 4;
             FUN_003728b8(r.lo, r.hi, 4);
             FUN_0035884c(0);
@@ -28968,7 +29851,7 @@ long sk_tcb_lookup_commit(word_t p1, word_t p2, long code)
  *   34dfc4/350630/3592b0/351774. */
 void sk_syscall_msg_write_h(word_t p1, word_t p2, long frame)
 {
-    cl4_result_t r0 = FUN_0035193c(0);
+    cl4_result_t r0 = (cl4_result_t){ .lo = FUN_0035193c(0), .hi = 0 };
     word_t *buf = (word_t *)r0.lo;
     word_t u2 = *(word_t *)(frame + 0x10);
     FUN_00349b00((word_t)buf, *(word_t *)(frame + 0x18));
@@ -28977,7 +29860,7 @@ void sk_syscall_msg_write_h(word_t p1, word_t p2, long frame)
     ulong s1 = (ulong)sel1 & 0xff;
     ulong dst = base + (ulong)(byte)sel1;
     word_t *pd = (word_t *)(dst & ~s1);
-    cl4_result_t r = FUN_00349394(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00349394(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u2);
     word_t w = FUN_000a6f88(0);
     uint sel2 = *(uint *)/* table2+0x50 */0;
@@ -29106,7 +29989,7 @@ void sk_msg_slot_read_d(void)
     FUN_00349394(0);
     FUN_00377824(0);
     FUN_0034cb60(0);
-    cl4_result_t r = FUN_00353af8(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00353af8(0), .hi = 0 };
     word_t cnt = r.hi;
     if (/* w22 */0 != 0) {
         if (/* w22 */0 <= /* w10 */0) goto out;
@@ -29186,7 +30069,7 @@ long sk_tcb_lookup_commit_b(word_t p1, word_t p2, long code)
  *   350630/3592b0/351774. */
 void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
 {
-    cl4_result_t r0 = FUN_0035193c(0);
+    cl4_result_t r0 = (cl4_result_t){ .lo = FUN_0035193c(0), .hi = 0 };
     word_t *buf = (word_t *)r0.lo;
     word_t u8 = *(word_t *)(frame + 0x10);
     FUN_00349b00((word_t)buf, *(word_t *)(frame + 0x18));
@@ -29194,7 +30077,7 @@ void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
     uint sel1 = *(uint *)/* table+0x50 */0;
     ulong s1 = (ulong)sel1 & 0xff;
     ulong dst = base + (ulong)(byte)sel1;
-    cl4_result_t r = FUN_00349394(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00349394(0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u8);
     word_t w = FUN_000a6f88(0);
     uint sel2 = *(uint *)/* table2+0x50 */0;
@@ -29211,7 +30094,7 @@ void sk_syscall_msg_write_i(word_t p1, word_t p2, long frame)
         cl4_result_t a = ((cl4_result_t (*)(void))pc)();
         FUN_00350630(a.lo, a.hi, u8);
         ((void (*)(void))pc)();
-        cl4_result_t b = FUN_00350630(*(word_t *)/* table2+0x10 */0);
+        b = (cl4_result_t){ .lo = FUN_00350630(*(word_t *)/* table2+0x10 */0), .hi = 0 };
         ((void (*)(word_t, word_t, word_t))0)(b.lo, b.hi, w);
         long o2 = base2 + 7;
         word_t *s1p = (word_t *)(o2 + ((dst + (long)r0.hi & m) + base + s2 & ~s2) & 0xfffffffffffffff8);
@@ -29246,7 +30129,7 @@ void sk_syscall_msg_read_g(void)
     ulong sel = (ulong)*(byte *)/* table+0x50 */0;
     FUN_00084180(0);
     word_t w = ((word_t (*)(void))jt)();
-    cl4_result_t r = FUN_00349394(w, *(word_t *)/* x20+0x18 */0);
+    r = (cl4_result_t){ .lo = FUN_00349394(w, *(word_t *)/* x20+0x18 */0), .hi = 0 };
     FUN_00377824(r.lo, r.hi, u3);
     FUN_000841a0(0);
     ulong sel2 = (ulong)*(byte *)/* table2+0x50 */0;
@@ -29337,7 +30220,7 @@ void sk_msg_slot_read_e(void)
     FUN_00377824(0);
     FUN_0034c11c(0);
     FUN_003559c8(0);
-    cl4_result_t r = FUN_00352e90(0);
+    cl4_result_t r = (cl4_result_t){ .lo = FUN_00352e90(0), .hi = 0 };
     int res = 0;
     if (/* w22 */0 == 0) {
         res = 0;
@@ -59302,10 +60185,10 @@ void FUN_0035457c(void)
 
 /* FUN_00354588 — empty leaf stub. No modeled body: the decompiler collapses
  * callee-saved-register traffic (unaff_x19..x29) to an empty return. */
-void FUN_00354588(void)
+uint64_t FUN_00354588(void)
 {
     /* no-op leaf stub */
-    return;
+    return 0;
 }
 
 /* FUN_00354594 — frame_word_load_6 (low confidence).

@@ -54,55 +54,60 @@ typedef struct { const char *ptr; word_t len; } sk185_str_t;
  * them with the counts shown in each decompile.
  * ------------------------------------------------------------------ */
 
-extern word_t sk_swift_release(word_t, ...);                 /* FUN_0036b118 */
-extern word_t sk_swift_retain(word_t, ...);                  /* FUN_0036b270 */
-extern word_t sk_str_convert(word_t, ...);                   /* FUN_00377824 */
-extern word_t sk_str_convert2(word_t, ...);                  /* FUN_00377bec */
-extern word_t sk_desc_deref_release(word_t, ...);            /* FUN_00377dcc */
-extern word_t sk_vt_dispatch38(word_t, ...);                 /* FUN_000839d8 */
-extern word_t sk_vt_dispatch30(word_t, ...);                 /* FUN_000839f8 */
-extern word_t sk_collection_initialize_buffer(word_t, ...);  /* FUN_00235488 */
-extern word_t sk_swift_collection_count(word_t, ...);        /* FUN_0025177c */
-extern word_t sk_syscall_args_1_2(word_t, ...);              /* FUN_003513b4 */
-extern word_t sk_exclave_extent_c(word_t, ...);              /* FUN_000a649c */
-extern word_t sk_cL4_noop_7(word_t, ...);                    /* FUN_000a6e14 */
-extern void   sk_assert_fatal(word_t, ...) __attribute__((noreturn)); /* FUN_001afa84 */
+extern word_t sk_swift_release();                 /* FUN_0036b118 */
+extern word_t sk_swift_retain();                  /* FUN_0036b270 */
+extern word_t sk_str_convert();                   /* FUN_00377824 */
+extern word_t sk_str_convert2();                  /* FUN_00377bec */
+extern word_t sk_desc_deref_release();            /* FUN_00377dcc */
+extern word_t sk_vt_dispatch38();                 /* FUN_000839d8 */
+extern word_t sk_vt_dispatch30();                 /* FUN_000839f8 */
+extern word_t sk_collection_initialize_buffer();  /* FUN_00235488 */
+extern word_t sk_swift_collection_count();        /* FUN_0025177c */
+extern word_t sk_syscall_args_1_2();              /* FUN_003513b4 */
+extern word_t sk_exclave_extent_c();              /* FUN_000a649c */
+extern word_t sk_cL4_noop_7();                    /* FUN_000a6e14 */
+extern void   sk_assert_fatal() __attribute__((noreturn)); /* FUN_001afa84 */
 extern void   sk_boot_fatal(void) __attribute__((noreturn)); /* FUN_0011d7e8 */
 
 /* Region-local `_Concurrency` helpers (bodies reconstructed by other
  * workers / not part of this slice). FUN_ address is ground truth. */
-extern word_t sk185_helper_3fa478(word_t, ...);   /* FUN_003fa478 */
-extern word_t sk185_helper_3fa168(word_t, ...);   /* FUN_003fa168 */
-extern word_t sk185_helper_3f9e34(word_t, ...);   /* FUN_003f9e34 */
-extern word_t sk185_helper_3f9f4c(word_t, ...);   /* FUN_003f9f4c */
-extern word_t sk185_helper_3f6668(word_t, ...);   /* FUN_003f6668 */
-extern word_t sk185_helper_3f9cec(word_t, ...);   /* FUN_003f9cec */
-extern word_t sk185_helper_3f7d48(word_t, ...);   /* FUN_003f7d48 */
-extern word_t sk185_helper_3f4210(word_t, ...);   /* FUN_003f4210 */
-extern word_t sk185_helper_3f5c00(word_t, ...);   /* FUN_003f5c00 */
-extern word_t sk185_helper_3f6560(word_t, ...);   /* FUN_003f6560 */
-extern word_t sk185_helper_3f6174(word_t, ...);   /* FUN_003f6174 */
-extern word_t sk185_helper_3504d0(word_t, ...);   /* FUN_003504d0 */
-extern word_t sk185_helper_350500(word_t, ...);   /* FUN_00350500 */
-extern word_t sk185_helper_35050c(word_t, ...);   /* FUN_0035050c */
-extern word_t sk185_helper_350bfc(word_t, ...);   /* FUN_00350bfc */
-extern word_t sk185_helper_35860c(word_t, ...);   /* FUN_0035860c */
-extern word_t sk185_helper_3d4658(word_t, ...);   /* FUN_003d4658 */
-extern word_t sk185_helper_3ef9b0(word_t, ...);   /* FUN_003ef9b0 */
-extern word_t sk185_helper_3fcc1c(word_t, ...);   /* FUN_003fcc1c */
-extern word_t sk185_helper_3fc2c0(word_t, ...);   /* FUN_003fc2c0 */
-extern word_t sk185_helper_3fbcd4(word_t, ...);   /* FUN_003fbcd4 */
-extern word_t sk185_helper_404c60(word_t, ...);   /* FUN_00404c60 */
-extern word_t sk185_helper_404d84(word_t, ...);   /* FUN_00404d84 */
-extern word_t sk185_helper_405830(word_t, ...);   /* FUN_00405830 */
-extern word_t sk185_helper_4070cc(word_t, ...);   /* FUN_004070cc */
-extern word_t sk185_helper_407f18(word_t, ...);   /* FUN_00407f18 */
-extern word_t sk185_helper_407f24(word_t, ...);   /* FUN_00407f24 */
-extern word_t sk185_helper_408238(word_t, ...);   /* FUN_00408238 */
-extern word_t sk185_helper_4082d4(word_t, ...);   /* FUN_004082d4 */
-extern word_t sk185_helper_408db8(word_t, ...);   /* FUN_00408db8 */
-extern word_t sk185_helper_40bd24(word_t, ...);   /* FUN_0040bd24 */
-extern word_t sk185_helper_3fc9d0(word_t, ...);   /* FUN_003fc9d0 */
+extern word_t sk185_helper_3fa478();   /* FUN_003fa478 */
+extern word_t sk185_helper_3fa168();   /* FUN_003fa168 */
+extern word_t sk185_helper_3f9e34();   /* FUN_003f9e34 */
+extern word_t sk185_helper_3f9f4c();   /* FUN_003f9f4c */
+extern word_t sk185_helper_3f6668();   /* FUN_003f6668 */
+extern word_t sk185_helper_3f9cec();   /* FUN_003f9cec */
+extern word_t sk185_helper_3f7d48();   /* FUN_003f7d48 */
+extern word_t sk185_helper_3f4210();   /* FUN_003f4210 */
+extern word_t sk185_helper_3f5c00();   /* FUN_003f5c00 */
+extern word_t sk185_helper_3f6560();   /* FUN_003f6560 */
+extern word_t sk185_helper_3f6174();   /* FUN_003f6174 */
+extern sk185_pair_t sk185_helper_3504d0();   /* FUN_003504d0 (16-byte x0/x1 return) */
+extern word_t sk185_helper_350500();   /* FUN_00350500 */
+extern word_t sk185_helper_35050c();   /* FUN_0035050c */
+extern word_t sk185_helper_350bfc();   /* FUN_00350bfc */
+extern word_t sk185_helper_35860c();   /* FUN_0035860c */
+extern word_t sk185_helper_3d4658();   /* FUN_003d4658 */
+extern word_t sk185_helper_3ef9b0();   /* FUN_003ef9b0 */
+extern word_t sk185_helper_3fcc1c();   /* FUN_003fcc1c */
+extern word_t sk185_helper_3fc2c0();   /* FUN_003fc2c0 */
+extern word_t sk185_helper_3fbcd4();   /* FUN_003fbcd4 */
+extern word_t sk185_helper_404c60();   /* FUN_00404c60 */
+extern word_t sk185_helper_404d84();   /* FUN_00404d84 */
+extern word_t sk185_helper_405830();   /* FUN_00405830 */
+extern word_t sk185_helper_4070cc();   /* FUN_004070cc */
+extern word_t sk185_helper_407f18();   /* FUN_00407f18 */
+extern word_t sk185_helper_407f24();   /* FUN_00407f24 */
+extern word_t sk185_helper_408238();   /* FUN_00408238 */
+extern word_t sk185_helper_4082d4();   /* FUN_004082d4 */
+extern word_t sk185_helper_408db8();   /* FUN_00408db8 */
+extern word_t sk185_helper_40bd24();   /* FUN_0040bd24 */
+extern word_t sk185_helper_3fc9d0();   /* FUN_003fc9d0 */
+
+/* Forward declarations for functions defined below that are called earlier
+ * in this translation unit (cross-references within the slice). */
+void sk185_noop_4068cc(void);
+sk185_str_t sk185_str_assertion_failed_c(void);
 
 /* ------------------------------------------------------------------ *
  * Dispatch thunks: forward (arg1,arg2, context fields, ...) into a shared
@@ -326,11 +331,11 @@ word_t *sk185_e80_copy3(word_t *param_1, word_t *param_2)
  * FUN_0036b118). Confidence: low. */
 void sk185_eb8_move_retain(word_t *self, uint8_t *src)
 {
-    sk185_helper_3504d0();
+    sk185_pair_t v = sk185_helper_3504d0();
     word_t old = self[0];
-    self[0] = 0;                        /* extraout_x1 → incoming value (see note) */
-    sk_swift_retain();                  /* FUN_0036b270 */
-    sk_swift_release(old);              /* FUN_0036b118 */
+    self[0] = v.hi;                 /* extraout_x1 = hi word of the 16-byte return */
+    sk_swift_retain();              /* FUN_0036b270 */
+    sk_swift_release(old);          /* FUN_0036b118 */
     self[1] = *(word_t *)(src + 8);
     self[2] = *(word_t *)(src + 0x10);
 }
@@ -342,8 +347,7 @@ void sk185_eb8_move_retain(word_t *self, uint8_t *src)
  * from x19+8/+0x10. Confidence: low. */
 void sk185_f0c_move_retain(word_t *self, uint8_t *src)
 {
-    sk185_pair_t v = { 0, 0 };
-    v = (sk185_pair_t){ sk185_helper_3504d0(), 0 };
+    sk185_pair_t v = sk185_helper_3504d0();
     word_t old = v.lo;
     self[0] = v.hi;
     sk_swift_release(old);              /* FUN_0036b118 */

@@ -55,7 +55,7 @@ extern word_t FUN_0036aae4(void);              /* tag deref / move */
 extern word_t thunk_FUN_0036b270(word_t);      /* retain (returns obj) */
 extern word_t FUN_0036a9d4(word_t, word_t);    /* object alloc */
 extern word_t thunk_FUN_000126e8(void);        /* size/count probe */
-extern void   FUN_0006ae9c(word_t, word_t);    /* span/key builder */
+extern word_t FUN_0006ae9c(word_t, word_t);    /* span/key builder */
 extern void   FUN_00072464(word_t);            /* slot-key resolve */
 extern word_t FUN_000724cc(word_t, word_t);    /* slot-key resolve (2 arg) */
 extern void   FUN_0007198c(word_t *, word_t, word_t, word_t); /* bitmap ctx */
@@ -74,6 +74,7 @@ extern void   FUN_00081d14(void);              /* insert */
 extern void   FUN_00081d60(void);              /* insert-move */
 extern void   FUN_00081df0(void);              /* insert */
 extern word_t thunk_FUN_00081ce8(word_t);      /* element move */
+extern word_t FUN_00081fe0(word_t *, word_t, word_t, word_t); /* build 3-word elem */
 extern void   FUN_000777c4(word_t, word_t, word_t); /* move helper */
 extern void   FUN_00077860(word_t, word_t, word_t, word_t); /* move (u08) */
 extern word_t FUN_00077888(void);              /* size probe */
@@ -186,11 +187,21 @@ static void   sk_copy17_75c50(word_t, word_t, word_t, long);
 
 /* Forward declarations for vector-insert / helper functions (defined below). */
 static word_t FUN_000775b8(void);
-static void   FUN_00076918(word_t, word_t, word_t, word_t, word_t);
-static void   FUN_000765c4(word_t, word_t, word_t, word_t, word_t);
 static word_t sk_elem_swap_store_774c8(word_t, word_t);
 extern word_t FUN_0036b270(word_t);
 extern word_t FUN_003a25d4(word_t);
+
+/* FUN_000775b8 @ 0x775b8  (est. sk_lock_snapshot)
+ * Decompiled as a no-op (`void FUN(void){ return; }`); in this register-passing
+ * convention it returns the current lock snapshot in the value registers, which
+ * the callers read as a packed {slot-low, flag-high} word.  Model as returning
+ * 0 (empty snapshot) to reflect the empty body.
+ * Confidence: high (empty body) */
+static word_t FUN_000775b8(void) { return 0; }
+
+/* Forward decls: the 8-byte insert workhorses, defined below. */
+static void sk_vec_insert_765c4(word_t, word_t, word_t, word_t, word_t);
+static void sk_vec_insert_76918(word_t, word_t, word_t, word_t, word_t);
 /* ================================================================== *
  * Cap-type allocation factory wrappers.
  * Common shape (register-passed `this` in x19, grow flag in x20/param_3):
@@ -1960,7 +1971,77 @@ static void sk_vec_insert_764c8(word_t value, word_t key1, word_t key2)
  * Confidence: high (single call) */
 static void sk_vec_insert_76274(word_t a, word_t b)
 {
-    FUN_00076918(a, b, 0x64e828, 0x4c0680, (word_t)thunk_FUN_00081ce8);
+    sk_vec_insert_76918(a, b, 0x64e828, 0x4c0680, (word_t)thunk_FUN_00081ce8);
+}
+
+/* FUN_0007629c @ 0x7629c  (est. sk_vec_insert_u10_token2)
+ * Insert a 0x10-byte token element: snapshot, resolve, acquire with typeinfo
+ * pair (0x64e7e0, 0x4c0638); free path runs FUN_00081c58 + retain; occupied
+ * path writes both halves (no release).  Fatal 0x76358/0x76360.
+ * Confidence: medium */
+static void sk_vec_insert_7629c(word_t value_lo, word_t value_hi)
+{
+    sk_lock_state_enter();                              /* 77698 */
+    word_t v_lo = sk_element_probe();                   /* 777e4 */
+    sk_clear_element(/*this*/ 0);                       /* 776b4 */
+    word_t st = FUN_00077928();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76358) */
+    {
+        word_t tag = FUN_00002534(0x64e7e0, 0x4c0638);
+        word_t r = FUN_00258c60(v_lo, 0 + 0, 0);
+        if ((r & 1) != 0) {
+            FUN_00077928();
+            idx = sk_clear_element(/*this*/ 0);         /* 77604 */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x76360) */
+        }
+    }
+    if (((st >> 32) & 1) == 0) {
+        FUN_00081c58();                                 /* 81c58 */
+        thunk_FUN_0036b270(0);
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 0x10);
+        slot[0] = value_lo;
+        slot[1] = value_hi;
+    }
+    sk_clear_element(/*this*/ 0);                       /* 7767c */
+}
+
+/* FUN_00076360 @ 0x76360  (est. sk_vec_insert_u20_wide2)
+ * Insert a 0x20-byte element (6-arg wide variant): resolve, acquire with
+ * typeinfo pair (0x64e7d8, 0x4c0630); free path runs FUN_00081b4c + retain of
+ * param_6; occupied path writes the four halves and releases the displaced
+ * first half.  Fatal 0x76498/0x764a0.
+ * Confidence: medium */
+static void sk_vec_insert_76360(word_t v0, word_t v1, word_t v2, word_t v3,
+                                word_t v4, word_t v5)
+{
+    word_t lock = FUN_003a261c(/*this*/ 0);
+    word_t thisp = /*this*/ 0;
+    FUN_0006ae9c(v4, v5);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76498) */
+    {
+        word_t tag = FUN_00002534(0x64e7d8, 0x4c0630);
+        word_t r = FUN_00258c60(lock, 0 + 0, tag);
+        if ((r & 1) != 0) {
+            word_t st2 = FUN_0006ae9c(v4, v5);
+            idx = st2 & 0xffffffff;
+            if (((st >> 32) & 1) != ((st2 >> 32) & 1))
+                CL4_FATAL();                            /* SBP(1,0x764a0) */
+        }
+    }
+    if (((st >> 32) & 1) == 0) {
+        FUN_00081b4c(idx, v4, v5, v0, v1, v2, v3, thisp);
+        thunk_FUN_0036b270(v5);
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(thisp + 0x38) + idx * 0x20);
+        word_t old = slot[0];
+        slot[0] = v0; slot[1] = v1; slot[2] = v2; slot[3] = v3;
+        FUN_0036b118(old);
+    }
 }
 
 /* FUN_000764a0 @ 0x764a0  (est. sk_vec_insert_u08_wrapperB)
@@ -1969,7 +2050,7 @@ static void sk_vec_insert_76274(word_t a, word_t b)
  * Confidence: high (single call) */
 static void sk_vec_insert_764a0(word_t a, word_t b)
 {
-    FUN_000765c4(a, b, 0x64e780, 0x4c05d8, (word_t)thunk_FUN_00081ce8);
+    sk_vec_insert_765c4(a, b, 0x64e780, 0x4c05d8, (word_t)thunk_FUN_00081ce8);
 }
 
 /* FUN_0007659c @ 0x7659c  (est. sk_vec_insert_u08_wrapperC)
@@ -1978,7 +2059,7 @@ static void sk_vec_insert_764a0(word_t a, word_t b)
  * Confidence: high (single call) */
 static void sk_vec_insert_7659c(word_t a, word_t b)
 {
-    FUN_000765c4(a, b, 0x64e650, 0x4c04a8, (word_t)thunk_FUN_00081ce8);
+    sk_vec_insert_765c4(a, b, 0x64e650, 0x4c04a8, (word_t)thunk_FUN_00081ce8);
 }
 
 /* FUN_000765c4 @ 0x765c4  (est. sk_vec_insert_u08_workhorse)
@@ -2139,7 +2220,7 @@ static void sk_vec_insert_7682c(word_t value_lo, word_t value_hi)
  * Confidence: high (single call) */
 static void sk_vec_insert_768f0(word_t a, word_t b)
 {
-    FUN_00076918(a, b, 0x64e798, 0x4c05f0, (word_t)thunk_FUN_00081ce8);
+    sk_vec_insert_76918(a, b, 0x64e798, 0x4c05f0, (word_t)thunk_FUN_00081ce8);
 }
 
 /* FUN_00076918 @ 0x76918  (est. sk_vec_insert_u08_workhorse2)
@@ -2279,7 +2360,7 @@ static void sk_slot_iter_76ac8(word_t v, word_t unused, word_t key,
         }
         word = word + 1;
         if ((word_t)word < /*prev*/ 0) CL4_FATAL();      /* SBP(1,0x76cec) */
-        if (word >= (long)(ctx[3] + 0x40 >> 6)) break;
+        if (word >= (long)((ctx[3] + 0x40) >> 6)) break;
         bits = *(word_t *)(ctx[2] + word * 8);
     }
     FUN_0036b118(/*local*/ 0);
@@ -2343,7 +2424,7 @@ static void sk_slot_iter_76d08(word_t v, word_t unused, word_t key,
         }
         word = word + 1;
         if ((word_t)word < /*prev*/ 0) CL4_FATAL();      /* SBP(1,0x76f58) */
-        if (word >= (long)(ctx[3] + 0x40 >> 6)) break;
+        if (word >= (long)((ctx[3] + 0x40) >> 6)) break;
         bits = *(word_t *)(ctx[2] + word * 8);
     }
     FUN_0036b118(/*local*/ 0);
@@ -2502,7 +2583,7 @@ static word_t sk_lock_state_save_7752c(void) { return 0; }
  * container.  Confidence: high (single call) */
 static void sk_move_range_77540(word_t a, word_t b, word_t c, word_t d)
 {
-    FUN_00117d14(d, a);
+    FUN_00117d14(d, a, 0);
 }
 
 /* FUN_00077550 @ 0x77550  (est. sk_lock_state_clear)
@@ -2542,7 +2623,7 @@ static void sk_vec_set_size_775dc(word_t thisp)
 {
     long probe = thunk_FUN_000126e8();
     long count = 0;
-    if (/*unaff_x21*/ 0 != 0) count = (probe - 0x20) / /*unaff_x21*/ 0;
+    long divisor = /*unaff_x21*/ 0; if (divisor != 0) count = (probe - 0x20) / divisor;
     *(word_t *)(thisp + 0x10) = /*unaff_x19*/ 0;
     *(long *)(thisp + 0x18) = count << 1;
 }
@@ -2582,7 +2663,7 @@ static void sk_clear_element_noop3_7765c(void) { }
 static void sk_vec_set_size2_7766c(word_t param_1)
 {
     long count = 0;
-    if (/*in_x9*/ 0 != 0) count = (long)param_1 / /*in_x9*/ 0;
+    long divisor = /*in_x9*/ 0; if (divisor != 0) count = (long)param_1 / divisor;
     *(word_t *)(/*this*/ 0 + 0x10) = /*unaff_x19*/ 0;
     *(long *)(/*this*/ 0 + 0x18) = count << 1;
 }

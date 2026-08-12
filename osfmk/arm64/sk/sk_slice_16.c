@@ -259,6 +259,8 @@ static void sk_field_emit_big(uint64_t a, uint64_t b);
 static void sk_observer_wrap(uint64_t a, uint64_t b, uint64_t c);
 static void sk_fatal_launcher(void);
 static sk_u128_t sk_set_next(void);
+static uint64_t sk_vec_alloc_0x10(uint64_t n, uint64_t cap);
+static void sk_vec_alloc_0x04(uint64_t n);
 static void sk_set_iter_init(long *out, long set, long cb, long ctx);
 static void sk_do_emit(void);
 static void sk_emit_one(uint64_t a);
@@ -277,7 +279,6 @@ static void sk_set_skip_pair(long a, long b, uint64_t idx);
 static sk_u128_t sk_set_find_int(int key, uint64_t idx);
 static sk_u128_t sk_set_find_word(long key, uint64_t idx);
 static sk_u128_t sk_set_find_obj(uint64_t key, uint64_t idx);
-static void sk_apply_first(uint64_t *out, uint64_t a, uint64_t b, uint64_t tag);
 static void sk_reserve_grow_u8(uint64_t n);
 static void sk_reserve_grow_word(uint64_t n);
 static void sk_reserve_grow_byte(uint64_t n);
@@ -298,8 +299,6 @@ static sk_u128_t sk_reserve_u64(uint64_t a, uint64_t b, uint64_t c);
 static void sk_set_probe2(unsigned long flag);
 static void sk_set_first_probe(uint64_t a, uint64_t b, uint64_t c);
 static void sk_iter_probe(long *out, long set, long a, long b);
-
-/*============================================================================
 
 /* ---- out-of-region helpers ---- */
 /* Out-of-region kernel/Swift helpers referenced by this slice. */
@@ -422,6 +421,8 @@ static sk_u128_t sk_set_find_pair(long a, long b, long c, long d, uint64_t idx);
 static void sk_emit_run(void);
 static void sk_fatal_launcher(void);
 static sk_u128_t sk_set_next(void);
+static uint64_t sk_vec_alloc_0x10(uint64_t n, uint64_t cap);
+static void sk_vec_alloc_0x04(uint64_t n);
 static void sk_set_iter_init(long *out, long set, long cb, long ctx);
 
 /*============================================================================
@@ -946,17 +947,18 @@ static void sk_set_iter_init(long *out, long set, long cb, long ctx)
 }
 
 /* FUN_000719dc @ 0x719dc  (est. sk_set_emit_str)
- * Emit the string key for a set element via sk_apply_first(..., s___cstring).
+ * Allocate a 0x10-byte-element vector from the string-cache key (0x64e108)
+ * and value table (0x4be910); delegates to sk_vec_alloc_0x10.
  * Confidence: medium. */
 static void sk_set_emit_str(uint64_t a, uint64_t b)
 {
-    sk_apply_first((uint64_t *)0, a, b, DAT_0064e108);
+    sk_vec_alloc_0x10(a, b);
 }
 
 /* FUN_000719f0 @ 0x719f0  (est. sk_set_emit_str2) */
 static void sk_set_emit_str2(uint64_t a, uint64_t b)
 {
-    sk_apply_first((uint64_t *)0, a, b, DAT_0064e638);
+    sk_vec_alloc_0x04(a);
 }
 
 /* FUN_00071a04 @ 0x71a04  (est. sk_vec_alloc_0x04)
@@ -2379,6 +2381,236 @@ static sk_u128_t sk_reserve_u32e(uint64_t a, uint64_t b, uint64_t grow)
     }
     sk_u128_t r; r.lo = u; r.hi = 0; return r;
 }
+
+#endif /* _SK_SLICE_16_H_ */
+
+/* FUN_00070960 @ 0x70960  (est. sk_set_build)
+ * Build a fresh set/dictionary: with flag x21 set, iterate the occupied-bitmap
+ * of the source set at x20+0x10, decode each set element's {key, tag} and
+ * stored value, scale the value by its count (unsigned-divide + overflow
+ * traps at 0x70ca8/0x70cac/0x70cb0/0x70cb4/0x70ca0), then insert the {scaled
+ * value, key} pair into the growing result set lVar11 via sk_set_insert
+ * (0x258c60), filling its bitmap + value arrays.  With flag x23 set, iterate
+ * the second source vector (x20+0x18), retain each element, recursively call
+ * sk_set_build(&local, 1, 1), and fold the result through FUN_00076ac8.
+ * Finalize: *x19 = result set, x19[1] = sk_hash2_copy (0x70cc8), x19[2] = 0.
+ * Confidence: medium (bitmap bit-reversal set iteration, string-cache keys). */
+static void sk_set_build(void)
+{
+    uint64_t u = sk_empty_vec();
+    uint64_t dict = sk_class_vt(u, 0x65f260, 0x677830, 0x65f178);
+    uint64_t *dst = (uint64_t *)*(uint64_t *)0;
+    uint64_t res = 0;
+    uint64_t wordidx;
+    if ((*(uint64_t *)*(uint64_t *)0 & 1) != 0) {   /* flag x21 */
+        uint64_t src, setbase, w;
+        sk_ext_00002828((uint64_t)dst + 0x10, &src);
+        setbase = *(uint64_t *)(dst + 0x10);
+        src = *(uint64_t *)(setbase + 0x40);   /* first bitmap word */
+        setbase = sk_ext_00077724(src);
+        wordidx = 0;
+        do {
+            while (src != 0) {
+                /* lowest set bit via bit-reverse + LZCOUNT */
+                uint64_t t = (src & 0xaaaaaaaaaaaaaaaaULL) >> 1 | (src & 0x5555555555555555ULL) << 1;
+                t = (t & 0xccccccccccccccccULL) >> 2 | (t & 0x3333333333333333ULL) << 2;
+                t = (t & 0xf0f0f0f0f0f0f0f0ULL) >> 4 | (t & 0xf0f0f0f0f0f0f0fULL) << 4;
+                t = (t & 0xff00ff00ff00ff00ULL) >> 8 | (t & 0xff00ff00ff00ffULL) << 8;
+                t = (t & 0xffff0000ffff0000ULL) >> 16 | (t & 0xffff0000ffffULL) << 16;
+                uint64_t pos = LZCOUNT(t >> 32 | t << 32) | wordidx << 6;
+                uint64_t *ent = (uint64_t *)(*(uint64_t *)(setbase + 0x30) + pos * 0x10);
+                uint64_t key = ent[0];
+                uint64_t tag = ent[1] & 0xff;
+                uint64_t val = *(uint64_t *)(*(uint64_t *)(setbase + 0x38) + pos * 8);
+                uint64_t u17, u21, scale;
+                bool b8;
+                if (*(int64_t *)(dict + 0x10) == 0) {
+                    u17 = 0;
+                    if (tag == 0) { key = sk_int_udiv(key); if ((int64_t)key < 0) sk_break(1, 0x70cb8); key = sk_int_zero(); b8 = false; }
+                    else { b8 = tag != 1; if (b8) key = 1; }
+                } else {
+                    sk_u128_t pr = sk_set_find(tag > 1 ? 1 : 0, 0, 0);
+                    if ((pr.hi & 1) == 0) { u17 = 0; if (tag == 0) { key = sk_int_udiv(key); if ((int64_t)key < 0) sk_break(1, 0x70cb8); key = sk_int_zero(); b8 = false; } else { b8 = tag != 1; if (b8) key = 1; } }
+                    else {
+                        u17 = *(uint64_t *)(*(uint64_t *)(dict + 0x38) + pr.lo * 8);
+                        if (tag == 0) { key = sk_int_udiv(key); if ((int64_t)key < 0) sk_break(1, 0x70cb8); key = sk_int_zero(); b8 = false; }
+                        else { b8 = tag != 1; if (b8) key = 1; }
+                    }
+                }
+                u21 = key;
+                scale = val;
+                if (((u21 * scale) >> 8) != 0) sk_break(1, 0x70ca8);
+                u21 = u21 * scale;
+                u17 = u17 + u21;
+                if (CARRY8(u17, u21)) sk_break(1, 0x70cac);
+                uint64_t r2 = sk_ext_003a261c(dict);
+                uint64_t save = dict;
+                sk_u128_t pr2 = sk_set_find(b8, 0, 0);
+                u21 = pr2.lo;
+                scale = ~pr2.hi & 1;
+                int64_t newcount = *(int64_t *)(dict + 0x10) + scale;
+                uint64_t newcount_eq0 = newcount == 0;
+                if (SCARRY8(*(int64_t *)(dict + 0x10), scale)) sk_break(1, 0x70cb0);
+                uint64_t k2 = sk_string_cache(0x64e5b8, DAT_004c03b0);
+                uint64_t ins = sk_set_insert(r2, newcount, k2);
+                if ((ins & 1) != 0) {
+                    sk_set_find(b8, 0, 0);
+                    sk_ext_00077604();
+                    if (!newcount_eq0) sk_fatal_ret(0x65f260);
+                }
+                if ((pr2.hi & 1) == 0) {
+                    uint64_t *base = (uint64_t *)(save + (u21 >> 6) * 8);
+                    base[8] = base[8] | 1UL << (u21 & 0x3f);
+                    *(bool *)(*(uint64_t *)(save + 0x30) + u21) = b8;
+                    *(uint64_t *)(*(uint64_t *)(save + 0x38) + u21 * 8) = u17;
+                    if (SCARRY8(*(int64_t *)(save + 0x10), 1)) sk_break(1, 0x70cb4);
+                    *(int64_t *)(save + 0x10) = *(int64_t *)(save + 0x10) + 1;
+                } else {
+                    *(uint64_t *)(*(uint64_t *)(save + 0x38) + u21 * 8) = u17;
+                }
+                dict = save;
+                src = src - 1 & src;
+            }
+            if (SCARRY8(wordidx, 1)) sk_break(1, 0x70ca0);
+            wordidx = wordidx + 1;
+            if ((int64_t)(((uint64_t)0 + 0x3f) >> 6) <= (int64_t)wordidx) goto build_done;
+            src = *(uint64_t *)(*(uint64_t *)(dst + 0x10) + 0x40 + wordidx * 8);
+        } while (1);
+    }
+build_done:
+    if ((*(uint64_t *)*(uint64_t *)0 & 1) != 0) {   /* flag x23 */
+        uint64_t v, n, i, obj;
+        sk_ext_00002828((uint64_t)dst + 0x18, &v);
+        n = *(uint64_t *)(v + 0x10);
+        sk_swift_retain(v);
+        for (i = 0; n != i; i = i + 1) {
+            if (*(uint64_t *)(v + 0x10) <= i) sk_break(1, 0x70ca4);
+            obj = *(uint64_t *)(v + i * 8 + 0x20);
+            sk_swift_retain(obj);
+            sk_set_build();
+            sk_ext_00076ac8(0, 0, 0, 0, &dict);
+            sk_swift_release(obj);
+        }
+        sk_swift_release(v);
+    }
+    *(uint64_t *)0 = dict;
+    *(uint64_t *)((uint64_t)0 + 8) = (uint64_t)sk_hash2_copy;
+    *(uint64_t *)((uint64_t)0 + 0x10) = 0;
+}
+
+/* FUN_00071050 @ 0x71050  (est. sk_emit_borrow_report)
+ * Emit the full "borrow report" for a (name, value) accounting pair: build a
+ * set of children (sk_set_build 1,0), fetch its child records, release the
+ * intermediates, then build a format record from the global const pair
+ * (_DAT_004baeb0/b8) and the string cache; store param_1/param_2 with a retain
+ * of param_2, append the "borrow(" markers, and iterate two child sets
+ * emitting each field via sk_emit_field (0x70098) — the second pass appends
+ * the "borrow(...)" / "error(...)" markers (0x776f72726f622820,0xeb00000000296465
+ * = "borrow(" ... ")").  Emits each record (0x2804) and finalizes.
+ * Confidence: medium (string markers + retain/release chain). */
+static void sk_emit_borrow_report(uint64_t a, uint64_t b)
+{
+    uint64_t set, key, rec, const_hi, const_lo;
+    sk_u128_t pr;
+    uint64_t name, value, childA, childB, slot, cur;
+    uint64_t val, next;
+
+    /* build the children set (sk_set_build 1,0) and fetch its record */
+    sk_set_build();
+    set = sk_children_get(0, 0, 0).lo;
+    sk_swift_release(childB);
+    sk_swift_release_masked(name);
+    name = set;
+    /* format pair {0x202c, 0xe2...} from the global const pair */
+    pr = sk_pair_pack(0x202c, 0xe200000000000000, 0, 0);
+    sk_swift_release(set);
+    key = sk_string_cache(DAT_0064c040, DAT_004bbf40);
+    rec = sk_record_alloc(key, (uint64_t *)&name);
+    const_hi = *(uint64_t *)0x4baeb8;   /* _DAT_004baeb8 */
+    const_lo = *(uint64_t *)0x4baeb0;   /* _DAT_004baeb0 */
+    *(uint64_t *)(rec + 0x18) = const_hi;
+    *(uint64_t *)(rec + 0x10) = const_lo;
+    name = a;
+    value = b;
+    sk_swift_retain(b);
+    sk_str_append(0x203a, 0xe200000000000000);
+    sk_str_append(pr.lo, pr.hi);
+    sk_swift_release_masked(pr.hi);
+    *(uint64_t *)(rec + 0x38) = 0x6753a0;
+    *(uint64_t *)(rec + 0x20) = name;
+    *(uint64_t *)(rec + 0x28) = value;
+    sk_obj_emit(rec);
+    sk_record_ref(rec);
+    sk_obj_done();
+    sk_ext_00002834();
+    sk_swift_barrier();
+
+    /* first child-set iteration (1,0): emit each field record */
+    sk_vec_pair_make((uint64_t *)&name, 1, 0);
+    sk_set_iter_init((long *)&name, name, value, childA);
+    set = name;
+    while (1) {
+        pr = sk_set_next();
+        cur = name;
+        val = pr.hi;
+        if ((~(uint32_t)pr.hi & 0xff) == 0) break;
+        rec = sk_record_alloc(key, (uint64_t *)&name);
+        *(uint64_t *)(rec + 0x18) = const_hi;
+        *(uint64_t *)(rec + 0x10) = const_lo;
+        name = 0x202d20;
+        value = 0xe300000000000000;
+        sk_emit_field(val, pr.lo, 0);
+        sk_str_append();
+        sk_swift_release_masked(0);
+        *(uint64_t *)(rec + 0x38) = 0x6753a0;
+        *(uint64_t *)(rec + 0x20) = name;
+        *(uint64_t *)(rec + 0x28) = value;
+        sk_obj_emit(rec);
+        sk_record_ref(rec);
+        sk_obj_done();
+        sk_ext_00002834();
+        sk_swift_barrier();
+        val = cur;
+    }
+    sk_swift_release(childB);
+    sk_swift_release(cur);
+
+    /* second child-set iteration (0,1) with "borrow(...)"/"error(...)" markers */
+    sk_vec_pair_make((uint64_t *)&name, 0, 1);
+    sk_set_iter_init((long *)&name, name, value, childA);
+    set = name;
+    while (1) {
+        pr = sk_set_next();
+        cur = name;
+        val = pr.hi;
+        if ((~(uint32_t)pr.hi & 0xff) == 0) break;
+        rec = sk_record_alloc(key, (uint64_t *)&name);
+        *(uint64_t *)(rec + 0x18) = const_hi;
+        *(uint64_t *)(rec + 0x10) = const_lo;
+        name = 0;
+        value = 0xe000000000000000;
+        sk_fault_builder(0x10);
+        sk_swift_release_masked(value);
+        name = 0x202d20;
+        value = 0xe300000000000000;
+        sk_emit_field(val, pr.lo, 0);
+        sk_str_append();
+        sk_swift_release_masked(0);
+        sk_str_append(0x776f72726f622820, 0xeb00000000296465); /* "borrow(...)" */
+        *(uint64_t *)(rec + 0x38) = 0x6753a0;
+        *(uint64_t *)(rec + 0x20) = name;
+        *(uint64_t *)(rec + 0x28) = value;
+        sk_obj_emit(rec);
+        sk_record_ref(rec);
+        sk_obj_done();
+        sk_ext_00002834();
+        sk_swift_barrier();
+        val = cur;
+    }
+    sk_swift_release(childB);
+    sk_swift_release(cur);
+}
+
 
 #endif /* _SK_SLICE_16_H_ */
 

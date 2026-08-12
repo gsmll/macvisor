@@ -1864,3 +1864,51 @@ Observation: The COW attribute is derived from vspace flags bitfield (param_4+0x
 Evidence: Decompile: "fl = (*(uint*)(vas+0x20) >> 3) & 3; CallSupervisor(0); ... out[0]=1; *(long*)(out+0x10)=va;".
 Severity (hypothesis): low — supervisor call mediates the actual mapping.
 Confidence: low
+
+## [sk-185] 0x00405bc0 sk185_bc0_bump — overflow-guarded counter increment traps via SoftwareBreakpoint
+Observation: The function adds the result of FUN_003f4210() to the counter at param_1+8, checking for signed-carry (SCARRY8) overflow of the add; on carry it reaches a SoftwareBreakpoint(1, 0x405ca0) trap. This is a faithful Swift overflow-checked arithmetic guard (the Swift runtime traps rather than wrapping on integer overflow).
+Evidence: Decompile: "lVar4 = FUN_003f4210(); if (!SCARRY8(*(long *)(param_1 + 8), lVar4)) { *(long *)(param_1 + 8) += lVar4; return; } SoftwareBreakpoint(1,0x405ca0)".
+Severity (hypothesis): informational — defense-in-depth overflow trap; counter is a length/offset accumulator, not an attacker input surface.
+Confidence: high (code is self-evident).
+
+## [sk-185] 0x00405dfc sk185_dfC_vcall — indirect call through a pointer masked with & ~3, no tag validation
+Observation: When param_1 is non-null the function loads param_1[0] and calls the function pointer obtained from FUN_003d4658(param_2 & ~3) with (param_1[0], param_2 & ~3). The & ~3 masks the low pointer-tag bits (Swift tag-bit scheme) but the masked target is invoked directly with no validation of param_1's object identity; an attacker able to control param_1/param_2 within the exclave could redirect the indirect call.
+Evidence: Decompile: "uVar2 = *param_1; pcVar1 = (code *)FUN_003d4658(param_2 & 0xfffffffffffffffc); (*pcVar1)(uVar2, param_2 & 0xfffffffffffffffc);".
+Severity (hypothesis): low — Swift vtable/method dispatch is a standard pattern; the call target derives from an internal method-table slot, not user input directly.
+Confidence: low.
+
+## [sk-185] 0x00405cd4 sk185_cd4_fill — bounded fill raises "Assertion failed" runtime failure on invalid state instead of corrupting
+Observation: If param_1+0x10 is non-zero the function bails to FUN_004070cc and raises the "Assertion failed" runtime failure (via FUN_004063f4 + FUN_001afa84), a noreturn path; the normal path only fills when the self+0x18 count is positive. This is a defensive precondition check preventing a fill on already-initialized/invalid state.
+Evidence: Decompile: "if (*(long *)(param_1 + 0x10) == 0) { ...count>0... } FUN_004070cc(); FUN_004063f4(0x218); FUN_001afa84();" plus sk185_str_assertion_failed_c returns "Assertion failed"/0x10.
+Severity (hypothesis): informational — precondition guard that terminates rather than proceeding in an invalid state.
+Confidence: medium (string s_Assertion_failed_005ce250 anchors the runtime-failure identity).
+
+## [sk-16] 0x00070098 sk_emit_field — accounting-field multiply guarded by SoftwareBreakpoint overflow trap
+Observation: The field emitter computes `value * value` and checks the high half (SUB168 product) — on a nonzero high half it reaches a SoftwareBreakpoint(1, 0x701c0) noreturn trap; a negative unsigned-divide count also traps (0x701c4). Swift-style overflow-checked arithmetic rather than wrapping.
+Evidence: Decompile: "if (SUB168(auVar1 * auVar2,8) == 0) { ...normal... } SoftwareBreakpoint(1,0x701c0)". The count path: "uVar7 = FUN_00157308(param_2); if (uVar7 >> 0x1f != 0) SoftwareBreakpoint(1,0x701c4)".
+Severity (hypothesis): informational — defense-in-depth overflow trap on an internal accounting counter.
+Confidence: high (code self-evident).
+
+## [sk-16] 0x00070674 sk_vec_counted_insert — counted-array insert with CARRY8 overflow trap
+Observation: Inserting a delta into the counted array sums `total + delta` with a CARRY8 overflow check; on carry it reaches SoftwareBreakpoint(1, 0x70754) noreturn. The per-key count lookup (sk_set_find) is done under a retained set reference (retain/release_masked around the probe).
+Evidence: Decompile: "if (!CARRY8(uVar3,param_1)) { ...insert total+param_1... } SoftwareBreakpoint(1,0x70754)".
+Severity (hypothesis): informational — overflow trap; the counted array tracks per-key accounting totals.
+Confidence: high.
+
+## [sk-16] 0x000716b4 sk_fatal_launcher — InternalExclaveLauncher accounting fatal with context string
+Observation: The noreturn fatal path formats "Fatal error" (s_Fatal_error_005accd0) with the string "InternalExclaveLauncher Accounti..." (0x5bfc00) and detail 0x5bfc10 via the variadic fatal printer (FUN_001afa84). This identifies the region as the InternalExclaveLauncher accounting subsystem (per-exclave resource/refcount bookkeeping).
+Evidence: Decompile: "FUN_001afa84(s_Fatal_error_005accd0,0xb,2,0xd000000000000034,0x80000000005bfc10,s_InternalExclaveLauncher_Accounti_005bfc00,0x28,2,0xec,0)".
+Severity (hypothesis): informational — identifies the subsystem; fatal path, not reachable with attacker data directly.
+Confidence: high (exact string constants).
+
+## [sk-16] 0x000727ec sk_set_find_impl — set-probe with tag-based equality; no bounds check on wrap
+Observation: The set probe scans occupied bitmap slots comparing {key, tag} with a mask-based index wrap (`idx = idx + 1 & ~mask`); tag 2 accepts key==0. The scan terminates only when the bitmap bit is clear; there is no explicit loop-bound guard beyond the mask, so a fully-occupied table relies on the caller's insert path to have reserved an empty slot (standard open-addressing).
+Evidence: Decompile: "param_3 = param_3 & (uVar6 ^ 0xffffffffffffffff); if ((...bit set...)) { do { ... } while (bit set) }".
+Severity (hypothesis): informational — standard open-addressed set; the probe does not self-terminate on a full table, but insertion always reserves a slot.
+Confidence: medium.
+
+## [sk-16] 0x00072c98 sk_reserve_impl — vector reserve capacity growth with signed-overflow trap
+Observation: The reserve computes `cap = count`; when the grow flag is set it doubles from `vec[0x18] >> 1` and, if that would underflow/overflow the count (fatal at 0x72d5c), masks to even capacity and clamps to count. The growth is Swift-style overflow-checked; on the unique (move) path it memmoves elements then releases the old buffer.
+Evidence: Decompile: "if ((long)(uVar3 + 0x4000000000000000) < 0) SoftwareBreakpoint(1,0x72d5c)" and "*(undefined8 *)(param_4 + 0x10) = 0; FUN_0036b118(param_4)".
+Severity (hypothesis): informational — overflow-guarded vector growth; standard Swift Array reserve semantics.
+Confidence: high.

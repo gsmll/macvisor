@@ -204,6 +204,7 @@ extern const char sk_str_004be290[];   /* s_..._004BE290 */
 extern const char sk_str_004be2b0[];   /* s_..._004BE2B0 */
 extern const char sk_str_004be2d0[];   /* s_..._004BE2D0 */
 extern const char sk_str_005a8b30[];   /* s_..._005A8B30 */
+extern const char sk_str_005a8c7b[];   /* s_..._005A8C7B */
 extern const char sk_str_005bba0f[];   /* s_..._005BBA0F */
 extern const char sk_str_005bc16c[];   /* s_..._005BC16C */
 extern const char sk_str_005bc367[];   /* s_..._005BC367 */
@@ -219,6 +220,7 @@ extern const char sk_str_005bc520[];   /* s_..._005BC520 */
 extern const char sk_str_005bc54e[];   /* s_..._005BC54E */
 extern const char sk_str_005bc559[];   /* s_..._005BC559 */
 extern const char sk_str_005bc6c6[];   /* s_..._005BC6C6 */
+extern const char sk_str_005bc6d7[];   /* s_..._005BC6D7 */
 extern const char sk_str_005bc719[];   /* s_..._005BC719 */
 extern const char sk_str_005bc73c[];   /* s_..._005BC73C */
 extern const char sk_str_005bc8ca[];   /* s_..._005BC8CA */
@@ -258,7 +260,7 @@ extern const char sk_str_00689ea0[];   /* s_..._00689EA0 */
 
 /* Forward declarations (full prototypes, all 120 slice functions). */
 uint64_t sk_f_0005acac(uint64_t slot_addr, uint64_t arg2, uint64_t arg3);
-void sk_f_0005ace4(void);
+uint64_t sk_f_0005ace4(void);
 uint64_t sk_f_0005ad24(void);
 void sk_f_0005ad40(void);
 void sk_f_0005ad58(int64_t trace);
@@ -270,8 +272,8 @@ void sk_f_0005b120(uint64_t slot);
 void sk_f_0005b12c(uint64_t param);
 void sk_f_0005b140(void);
 uint64_t sk_f_0005b160(void);
-void __attribute__((noreturn)) sk_f_0005b190(uint64_t thread, uint64_t reason);
-void sk_f_0005b1b0(uint64_t thread, uint64_t arg2, uint64_t arg3);
+void __attribute__((noreturn)) sk_f_0005b190(uint64_t thread, const char *reason);
+void sk_f_0005b1b0(uint64_t thread, const char *reason, uint64_t arg3);
 void sk_f_0005b824(uint64_t a, uint64_t b, uint64_t c, uint64_t d);
 uint64_t sk_f_0005b860(uint64_t *out_name);
 uint64_t sk_f_0005b89c(void);
@@ -312,7 +314,7 @@ int64_t sk_f_0005c5b4(uint64_t arg);
 void sk_f_0005c614(uint64_t arg);
 void sk_f_0005c650(uint64_t *out, uint64_t timebase_id);
 void sk_f_0005c710(void);
-void sk_f_0005c764(uint64_t timebase_id, int64_t entry);
+void sk_f_0005c764(uint64_t timebase_id, uint8_t *entry);
 int64_t sk_f_0005c86c(uint64_t timebase_id, uint8_t (*target)[16], uint8_t (*out)[16],
                       uint64_t flags);
 int64_t sk_f_0005c924(uint64_t timebase_id);
@@ -411,7 +413,7 @@ uint64_t sk_f_0005acac(uint64_t slot_addr, uint64_t arg2, uint64_t arg3)
  * smaller than a header region (0x30 words), traps via SoftwareBreakpoint.
  * Confidence: medium
  * Notes: s_No_commpage_was_supplied_005bc16c string; SoftwareBreakpoint(0x5519,0x5ad14). */
-void sk_f_0005ace4(void)
+uint64_t sk_f_0005ace4(void)
 {
     uint64_t commpage;
 
@@ -422,7 +424,7 @@ void sk_f_0005ace4(void)
         __builtin_unreachable();
     }
     if (commpage <= commpage + 0x30) {
-        return;
+        return commpage;
     }
     SoftwareBreakpoint(0x5519, 0x5ad14);
 }
@@ -447,7 +449,7 @@ uint64_t sk_f_0005ad24(void)
 void sk_f_0005ad40(void)
 {
     *(volatile uint64_t *)0x64db08 = 0x64da80;
-    sk_f_0005ba5c();
+    sk_f_0005ba5c(0);   /* decompiler dropped the enqueue-entry arg here */
     return;
 }
 
@@ -673,7 +675,7 @@ uint64_t sk_f_0005b160(void)
  * Confidence: high
  * Notes: &stack0x00000000 is the caller's stack frame; represented as the
  * address of a local. sk_f_0005b1b0 is noreturn. */
-void sk_f_0005b190(uint64_t thread, uint64_t reason)
+void sk_f_0005b190(uint64_t thread, const char *reason)
 {
     uint64_t frame;
     sk_f_0005b1b0(thread, reason, (uint64_t)&frame);
@@ -702,7 +704,7 @@ void sk_f_0005b190(uint64_t thread, uint64_t reason)
  *   s__Exclave__005bc54e, s__xrt_0x_06x__Unable_to_trigger_d_005bc559.
  *   unaff_x30 -> __builtin_return_address(0). tpidrro_el0 via mrs.
  *   Canary absent; ends in SoftwareBreakpoint(0x5519,0x5b824). */
-void sk_f_0005b1b0(uint64_t thread, uint64_t arg2, uint64_t arg3)
+void sk_f_0005b1b0(uint64_t thread, const char *reason, uint64_t arg3)
 {
     long found;
     long *rec;
@@ -757,14 +759,14 @@ select_done:
 
     sk_x_001185EC(0xeb1a02bf914012ba, sk_str_005bc486);   /* "xrt: %#06x: Thread requested panic" */
     sk_x_00118ABC(sk_str_005bc4b5, 0x20, 1, 0xeb1a02bf914012ba); /* "xrt: %#06x: Full panic message --" */
-    sk_x_00118C38(0xeb1a02bf914012ba, arg2, arg3);
+    sk_x_00118C38(0xeb1a02bf914012ba, reason, arg3);
     sk_x_00118ABC((uint8_t *)&sk_g_005bc4d6, 2, 1, 0xeb1a02bf914012ba);
     if (thread == cur_thread) {
         sk_x_00062474(sk_str_005bc4d9, 0x3d, 0xeb1a02bf914012ba, thread,
                       1, 0, 0, 0, id_hi, id_lo);            /* "Panic requested" */
     }
     sk_x_00114330(panic_buffer, 0x1b8);                     /* clear the 0x1b8-byte buffer */
-    sk_x_00116BB4(panic_buffer, 0x80, arg2, arg3);          /* format message header */
+    sk_x_00116BB4(panic_buffer, 0x80, reason, arg3);          /* format message header */
 
     thread_id = *(uint64_t *)(thread + 8);
     found = sk_f_0005d154(thread_id, &slot2);               /* find thread record by id */
@@ -1066,17 +1068,17 @@ void sk_f_0005ba40(uint64_t arg)
 void sk_f_0005ba5c(uint64_t *entry)
 {
     uint64_t cpu_data;
-    uint64_t **queue_head;
+    uint64_t *queue_head;
     uint64_t head;
 
     __asm__ volatile("mrs %0, tpidr_el0" : "=r"(cpu_data));
-    queue_head = (uint64_t **)(cpu_data + 0x10);
+    queue_head = (uint64_t *)(cpu_data + 0x10);
     while (*entry == 0) {
         if (queue_head + 1 < queue_head) goto trap;
         head = *queue_head;
         *entry = head;
         if (*queue_head == head) {
-            *queue_head = (uint64_t)entry;
+            *queue_head = (uint64_t)(uintptr_t)entry;
             return;
         }
     }
@@ -1274,7 +1276,7 @@ int sk_f_0005bc48(uint64_t *value_ptr, int32_t mode)
 void sk_f_0005bce0(uint8_t *callback_slot)
 {
     if ((uint32_t)(uintptr_t)(callback_slot + 8) <= (uint32_t)(uintptr_t)(callback_slot + 0xc)) {
-        sk_f_0005d470(callback_slot + 8, sk_f_0005bd10);
+        sk_f_0005d470((uint32_t *)(callback_slot + 8), (void (*)(void *))sk_f_0005bd10, 0);
         return;
     }
     SoftwareBreakpoint(0x5519, 0x5bd10);
@@ -1541,7 +1543,7 @@ void sk_f_0005c0ac(void)
 void sk_f_0005c16c(void)
 {
     sk_g_0064DB50 = 0x6b2570;
-    sk_f_0005ba5c();
+    sk_f_0005ba5c(0);   /* decompiler dropped the enqueue-entry arg here */
     return;
 }
 
@@ -1560,13 +1562,13 @@ void sk_f_0005c16c(void)
 uint64_t sk_f_0005c184(uint64_t src, uint64_t count)
 {
     uint64_t *buffer;
-    long thread_reg;
+    uint8_t *thread_reg;
     long *node;
     uint64_t *candidate;
     uint64_t *result;
     uint64_t written;
 
-    thread_reg = tpidr_el0;
+    thread_reg = (uint8_t *)tpidr_el0;
     node = *(long **)*(long **)(thread_reg + 0x10);
     if (node == (long *)0x0) {
         result = (uint64_t *)0x0;
@@ -1618,13 +1620,13 @@ fail:
 uint64_t sk_f_0005c278(uint64_t dst, uint64_t count)
 {
     uint64_t *src_ptr;
-    long thread_reg;
+    uint8_t *thread_reg;
     long *node;
     uint64_t *candidate;
     uint64_t *result;
     uint64_t new_len;
 
-    thread_reg = tpidr_el0;
+    thread_reg = (uint8_t *)tpidr_el0;
     node = *(long **)*(long **)(thread_reg + 0x10);
     if (node == (long *)0x0) {
         result = (uint64_t *)0x0;
@@ -1782,13 +1784,13 @@ void sk_f_0005c650(uint64_t *out, uint64_t timebase_id)
     table_addr = 0x64db60;
     do {
         if (((uint32_t)idx - 1 & 0xff) < 3) {
-            sk_f_0005c764((uint32_t)idx & 0xff, table_addr);
+            sk_f_0005c764((uint32_t)idx & 0xff, (uint8_t *)table_addr);
         }
         idx = idx + 1;
         table_addr = table_addr + 0x50;
     } while (idx != 4);
 
-    sk_f_0005c764(timebase_id, (uint64_t)(uintptr_t)entry);
+    sk_f_0005c764(timebase_id, (uint8_t *)entry);
     sk_f_0005c86c(timebase_id, (uint8_t (*)[16])entry, (uint8_t (*)[16])0, 1);
     lo = entry[6];                  /* local_50 = entry[0x30] */
     hi = entry[7];                  /* uStack_48 = entry[0x38] */
@@ -1814,7 +1816,7 @@ void sk_f_0005c710(void)
 
     do {
         if (((uint32_t)idx - 1 & 0xff) < 3) {
-            sk_f_0005c764((uint32_t)idx & 0xff, table_addr);
+            sk_f_0005c764((uint32_t)idx & 0xff, (uint8_t *)table_addr);
         }
         idx = idx + 1;
         table_addr = table_addr + 0x50;
@@ -1835,7 +1837,7 @@ void sk_f_0005c710(void)
  * Confidence: medium
  * Notes: s_invalid_timebase__u_005bc6d7 referenced as sk_str_005bc6d7; the GCD loop
  * is a faithful transcription of the decompiled Euclid reduction. */
-void sk_f_0005c764(uint64_t timebase_id, int64_t entry)
+void sk_f_0005c764(uint64_t timebase_id, uint8_t *entry)
 {
     int64_t offset;
     uint64_t base, end, a, b, gcd, freq;
@@ -1907,7 +1909,7 @@ int64_t sk_f_0005c86c(uint64_t timebase_id, uint8_t (*target)[16], uint8_t (*out
     int cmp;
     int64_t result;
 
-    sk_f_0005c764(timebase_id, (uint64_t)(uintptr_t)entry);
+    sk_f_0005c764(timebase_id, (uint8_t *)entry);
     now_lo = *(uint64_t *)&entry[0x00];   /* local_90 */
     now_hi = *(uint64_t *)&entry[0x08];   /* uStack_88 */
     b_lo   = *(uint64_t *)&entry[0x10];   /* local_80 */
@@ -2097,7 +2099,7 @@ void sk_f_0005cb24(uint64_t token, uint64_t dividend, uint8_t (*out)[16], uint64
     rec4 = 0;
     rec1 = 0;
     rec0 = 0;
-    sk_f_0005c764(token, (uint64_t *)&rec0);
+    sk_f_0005c764(token, (uint8_t *)&rec0);
     quotient = 0;
     if (divisor_hi != 0) {
         quotient = dividend / divisor_hi;
