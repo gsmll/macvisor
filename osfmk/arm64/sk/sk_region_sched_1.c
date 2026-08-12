@@ -24,6 +24,7 @@
 
 /* Ghidra decompiler models indirect calls through a "code *" function pointer (returns x0). */
 typedef unsigned long (*code)();
+typedef uint64_t undefined;
 
 /* Out-of-range kernel / Swift-runtime helpers referenced by this region (FUN_ addr in comment).
  * Names are estimates from repeated call patterns; reconstructed by sibling SK range workers. */
@@ -180,6 +181,22 @@ extern unsigned long stack0xffffffffffffffc8;
 extern unsigned char DAT_00611b24;
 extern unsigned long LAB_00611b34;
 
+
+
+/* Compile-fix externs (forward decls for file-local defs + undeclared helpers; FUN_ addr in comment). */
+extern void FUN_0019ea20();                       /* defined in this file @ 0x0019ea20 */
+extern void FUN_0019f658();                       /* defined in this file @ 0x0019f658 */
+extern void FUN_0019f698();                       /* defined in this file @ 0x0019f698 */
+extern unsigned long FUN_0019f8e4(long *, unsigned long, unsigned long, long); /* defined in this file @ 0x0019f8e4 */
+extern void FUN_0019fa60();                       /* defined in this file @ 0x0019fa60 */
+extern void FUN_0019ff50();                       /* defined in this file @ 0x0019ff50 */
+extern long sk_collection_underflow();            /* FUN_0019f9c4 caller */
+extern void FUN_003580e4();
+extern void FUN_0034c434();
+extern void FUN_00348384();
+extern unsigned char DAT_003471a4;
+extern unsigned char DAT_003471a8;
+extern unsigned char DAT_004e8214;
 
 
 /* Out-of-range helpers referenced by bodies (old-style externs). */
@@ -8284,7 +8301,7 @@ void FUN_0019ad48(unsigned long param_1,unsigned long param_2)
   
   FUN_0019a1e0(param_1,(unsigned long)*(unsigned char *)(unaff_x20 + 0x10) |
                        (unsigned long)*(unsigned int *)(unaff_x20 + 0x14) << 0x20,*(unsigned int *)(unaff_x20 + 0x18),
-               param_2);
+               (unsigned int *)param_2);
   return;
 }
 
@@ -8307,7 +8324,7 @@ void FUN_0019ad4c(unsigned long param_1,unsigned long param_2)
   
   FUN_0019a1e0(param_1,(unsigned long)*(unsigned char *)(unaff_x20 + 0x10) |
                        (unsigned long)*(unsigned int *)(unaff_x20 + 0x14) << 0x20,*(unsigned int *)(unaff_x20 + 0x18),
-               param_2);
+               (unsigned int *)param_2);
   return;
 }
 
@@ -9859,7 +9876,7 @@ void FUN_0019c53c(param_1, param_2, param_3, param_4, param_5, param_6, param_7,
     fatal_v = FUN_00310c74(param_7);
     FUN_00352314(fatal_v,local_30);
     auVar14 = (*extraout_x8_01)();
-    lVar12 = *auVar14;
+    lVar12 = *(unsigned long *)auVar14;
     if (SCARRY8(lVar12,lVar3)) {
                     /* WARNING: Does not return */
       __builtin_trap();
@@ -12030,7 +12047,7 @@ unsigned long FUN_0019ea94(void)
   auVar2 = next + ((unsigned long)*(unsigned char *)(extraout_x16 + 0x50) + 0x20 &
                          ((unsigned long)*(unsigned char *)(extraout_x16 + 0x50) ^ 0xffffffffffffffff)) +
                  *(long *)(extraout_x8 + 0x48) * ctx_err;
-  auVar2 = FUN_0001a1c8;
+  auVar2 = (unsigned long)FUN_0001a1c8;
   return auVar2;
 }
 
@@ -12335,7 +12352,7 @@ unsigned long *FUN_0019ef84(long *param_1,unsigned long *param_2,unsigned long p
   
   next = FUN_0036a908(0x28,0xdb1);
   *param_1 = next;
-  err = FUN_0019ea94(next,*param_2,param_3);
+  err = FUN_0019ea94();
   *(unsigned long *)(next + 0x20) = err;
   return &DAT_003471a0;
 }
@@ -12374,8 +12391,8 @@ unsigned long FUN_0019f010(long *param_1,unsigned long *param_2,long param_3)
   *pauVar1 = auVar4;
   *(unsigned long *)pauVar1[1] = err;
   *(unsigned long *)(pauVar1[1] + 8) = res;
-  auVar4 = pauVar1;
-  auVar4 = &DAT_0019f098;
+  auVar4 = (unsigned long)pauVar1;
+  auVar4 = (unsigned long)&DAT_0019f098;
   return auVar4;
 }
 

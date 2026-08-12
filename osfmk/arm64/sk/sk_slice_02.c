@@ -2789,6 +2789,7 @@ unsigned long tb_transport_append_cap(unsigned long reg, unsigned long m, unsign
 unsigned long tb_transport_read(unsigned long reg, unsigned long m, unsigned long obj,
                                 unsigned long kind, unsigned long count)
 {
+    unsigned long r = 0;
     unsigned long *t = (unsigned long *)tb_get_transport(obj);
     if ((*(unsigned char *)(t + 0x28) & 1) == 0) {
         unsigned long *cr = (unsigned long *)FUN_00015264(reg, *(unsigned long *)(obj + 0x18));
@@ -2807,7 +2808,7 @@ unsigned long tb_transport_read(unsigned long reg, unsigned long m, unsigned lon
         if (cap <= end) {
             avail = cap - cur;
         }
-        unsigned long r = FUN_00014db8(m, obj, 1, avail, 0);
+        r = FUN_00014db8(m, obj, 1, avail, 0);
         if ((int)r == 0) {
             unsigned long *t2 = (unsigned long *)tb_get_transport(obj);
             unsigned short kind2 = 3;
@@ -4108,7 +4109,7 @@ unsigned long tb_f32_size(void)
  * (TB_FATAL tb_message_encode_f32). */
 void tb_msg_encode_f32_chk(void)
 {
-    int r = FUN_00019490();
+    int r = FUN_00019490(0, 0);
     if (r == 0) {
         return;
     }
@@ -4149,7 +4150,7 @@ unsigned long tb_msg_encode_f32(unsigned int v, int *m)
     FUN_004b18c4();
 bad:
     FUN_004b18a0();
-    unsigned long r = FUN_00019588();
+    unsigned long r = FUN_00019588(0, 0);
     if ((int)r != 0) {
         FUN_00118b28(TB_FATAL_DEC_F32);
         SoftwareBreakpoint(1, 0x19588);
@@ -4163,7 +4164,7 @@ bad:
  * (TB_FATAL tb_message_decode_f32). */
 void tb_msg_decode_f32_chk(void)
 {
-    int r = FUN_00019588();
+    int r = FUN_00019588(0, 0);
     if (r == 0) {
         return;
     }
@@ -4227,7 +4228,7 @@ unsigned long tb_f64_size(void)
  * (TB_FATAL tb_message_encode_f64). */
 void tb_msg_encode_f64_chk(void)
 {
-    int r = FUN_00019670();
+    int r = FUN_00019670(0, 0);
     if (r == 0) {
         return;
     }
@@ -4268,7 +4269,7 @@ unsigned long tb_msg_encode_f64(unsigned long v, int *m)
     FUN_004b19c0();
 bad:
     FUN_004b199c();
-    unsigned long r = FUN_00019768();
+    unsigned long r = FUN_00019768(0, 0);
     if ((int)r != 0) {
         FUN_00118b28(TB_FATAL_DEC_F64);
         SoftwareBreakpoint(1, 0x19768);
@@ -4282,7 +4283,7 @@ bad:
  * (TB_FATAL tb_message_decode_f64). */
 void tb_msg_decode_f64_chk(void)
 {
-    int r = FUN_00019768();
+    int r = FUN_00019768(0, 0);
     if (r == 0) {
         return;
     }
@@ -4366,7 +4367,7 @@ unsigned long long tb_zero128(void)
  * Confidence: low */
 void tb_register(unsigned long v)
 {
-    FUN_0001a0d0(v, &_DAT_0064c098, &_LAB_006593e8);
+    FUN_0001a0d0(v, (long *)&_DAT_0064c098, (unsigned long)&_LAB_006593e8);
 }
 
 /* FUN_00019d40 @ 0x00019d40   (est. tb_emit_tag)
@@ -4502,9 +4503,9 @@ unsigned long tb_va_cap_resolve(unsigned long a, unsigned long b, unsigned long 
             q = ((unsigned long long)((hi & 0xfffffffffffffff) + 0x20) << 32) |
                 (lo & 0xffffffffffff);
         }
-        FUN_0001a2f4((void *)(unsigned int)q, q >> 32, a, b, idx);
+        FUN_0001a2f4((unsigned long)(unsigned int)q, q >> 32, a, b, idx);
     } else {
-        FUN_0001a2f4(&lo, hi >> 0x38 & 0xf, a, b, idx);
+        FUN_0001a2f4((unsigned long)&lo, hi >> 0x38 & 0xf, a, b, idx);
     }
     FUN_003a25d4(hi);
     return idx;

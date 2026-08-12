@@ -635,7 +635,7 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
 
     unsigned long lock = sk_obj_lock2(p6);             /* FUN_00027754 */
     unsigned long mlock = sk_lock_acquire(0, lock, p3, &DAT_00611b24, &DAT_00611b34); /* 00377824 */
-    f28 = (void (*)(void))tightbeam_method_38(p6);     /* FUN_00027788 */
+    f28 = (unsigned long (*)(unsigned long, ...))tightbeam_method_38(p6);     /* FUN_00027788 */
     sub = (unsigned long *)sk_rt_001a0414(0, p4);      /* FUN_001a0414 */
     if ((long)f28(p3, p6) == 0) {
         /* empty: nothing to iterate */
@@ -643,13 +643,13 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
         unsigned long saved = sk_rt_006f6b4(p4);       /* FUN_0006f6b4 */
         unsigned long ctx = sk_rt_00310d80(0, p4);     /* FUN_00310d80 */
         sk_rt_0019e410((unsigned long)f28);            /* FUN_0019e410 */
-        next = (void (*)(void))tightbeam_method_20(p6); /* FUN_000277b8 */
+        next = (unsigned long (*)(unsigned long, ...))tightbeam_method_20(p6); /* FUN_000277b8 */
         next(0, p3, p6);
         if ((long)f28 < 0) {
             /* does not return */
             (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26754);
         }
-        step = (void (*)(void))tightbeam_method_28(p6); /* FUN_000277e8 */
+        step = (unsigned long (*)(unsigned long, ...))tightbeam_method_28(p6); /* FUN_000277e8 */
         count = (unsigned long)(long)f28;
         i = 0;
         do {
@@ -657,10 +657,10 @@ void vas_iterate_objects(void (*iter)(void), unsigned long p2, unsigned long p3,
             unsigned long elem[3];
             step(&elem, i, p3, p6);
             /* invoke store op */
-            (*(void (**)(void))0)(0, 0, 0);
-            (*(void (**)(void))0)(&elem, &elem, 0);
+            sk_indirect_call(0, 0, 0);
+            sk_indirect_call((unsigned long)&elem, (unsigned long)&elem, 0);
             iter(0, 0, 0);
-            (*(void (**)(void))0)(0, 0);
+            sk_indirect_call(0, 0);
             sk_rt_0019e538(i, ctx);                    /* FUN_0019e538 */
             (void)tightbeam_method_60(p6);             /* FUN_00027818 */
             i++;
@@ -796,7 +796,7 @@ unsigned long vas_iterate_internal(unsigned long out, unsigned long p2, unsigned
     long n = (long)sk_rt_0001612c(0, p3);              /* thunk_FUN_0001612c */
     if (n < 0)
         (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26c98);
-    void (*get)(void) = (void (*)(void))sk_rt_00023c78(p6); /* FUN_00023c78 */
+    unsigned long (*get)(unsigned long, ...) = (unsigned long (*)(unsigned long, ...))sk_rt_00023c78(p6); /* FUN_00023c78 */
     get(n, p4, p6);
     n = (long)sk_rt_0001612c(p2, p3);                  /* thunk_FUN_0001612c */
     unsigned long result = 0;
@@ -809,11 +809,11 @@ unsigned long vas_iterate_internal(unsigned long out, unsigned long p2, unsigned
             if (next < i)
                 (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26c94);
             /* invoke store op (element) */
-            (*(void (**)(void))0)(&buf, &buf, p3);
+            sk_indirect_call((unsigned long)&buf, (unsigned long)&buf, p3);
             unsigned long elem = p5;
             result = (*(unsigned long (*)(void))tightbeam_method_8(elem))(out, p4, p6, p3, elem); /* 268a0 */
             /* invoke release */
-            (*(void (**)(void))0)(&buf, p3);
+            sk_indirect_call((unsigned long)&buf, p3);
             if (__builtin_frame_address(0) != 0)
                 return result;
             long m = (long)sk_rt_0001612c(p2, p3);
@@ -872,7 +872,7 @@ unsigned int vas_iterate_2(unsigned long a, unsigned long b, unsigned long c,
 unsigned long vas_object_call(unsigned long p1, unsigned long p2, unsigned long p3,
                               unsigned long p4, unsigned long p5)
 {
-    long ctx = (long)(*(long (*)(void))sk_rt_00023d00(p5))(p3, p5); /* FUN_00023d00 */
+    long ctx = (long)(*(long (*)(unsigned long, unsigned long))sk_rt_00023d00(p5))(p3, p5); /* FUN_00023d00 */
     if (ctx < 0)
         (*(void (**)(void))SoftwareBreakpoint)(0xffffffff, 0x26e28);
     unsigned int slot[3] = {0, 0, 0};
@@ -937,14 +937,14 @@ unsigned long vas_object_call2_internal(unsigned long out, unsigned long p2, uns
     (*(void (**)(void))0)(0, 0, p2);
     int kind = (**(int (**)(void))(obj + 0x30)) (0, 1, ctx);
     if (kind == 1) {
-        (*(void (**)(void))0)(0, p2);
+        sk_indirect_call(0, p2);
         (*(void (*)(void))tightbeam_method_8b(p5))(0, p3, p5); /* FUN_000276c4 */
     } else {
-        (*(void (**)(void))0)(0, 0, ctx);
+        sk_indirect_call(0, 0, ctx);
         (*(void (*)(void))tightbeam_method_8b(p5))(1, p3, p5); /* FUN_000276c4 */
         unsigned long elem = p4;
         out = (*(unsigned long (*)(void))tightbeam_method_8(elem))(out, p3, p5, ctx, elem); /* 268a0 */
-        (*(void (**)(void))0)(0, ctx);
+        sk_indirect_call(0, ctx);
     }
     return out;
 }

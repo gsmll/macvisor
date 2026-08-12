@@ -2634,7 +2634,7 @@ static uint64_t sk_tb_send_buf(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a
 	if (x != 0) sk_tb_can_send(a2);
 	uint32_t chk = sk_cap_check(a2, a4);
 	if (*(uint8_t *)(a3 + 0x28) == 1) {
-		sk_tb_buf_release((uint64_t *)a3);
+		sk_tb_buf_release((uint64_t *)a3, 0, 0, 0, 0);
 		if ((chk & 1) == 0) {
 			uint64_t r = sk_tb_send_dispatch(a2, a4, a5, a3);
 			if ((int32_t)r == 0) return 0;
@@ -2730,14 +2730,14 @@ static uint64_t sk_tb_cancel2(void)
  * Notes: FUN_000159b8/14c90/15630/15964, FUN_004b0528. */
 static void sk_tb_release_msg(uint64_t *w, uint64_t m, uint64_t a3, uint64_t a4)
 {
-	uint64_t *t = sk_tb_get(m);
+	uint64_t *t = (uint64_t *)sk_tb_get((void *)m);
 	if (*(uint8_t *)((long)t + 8) == 0) {
 		if (*(uint8_t *)((long)t + 0x28) == 1) {
-			sk_tb_buf_release((uint64_t *)t);
+			sk_tb_buf_release(t, 0, 0, 0, 0);
 		} else {
-			sk_tb_msg_join(*w);
+			sk_tb_msg_join(*w, (uint64_t)t);
 		}
-		sk_tb_release(m);
+		sk_tb_release(t);
 		return;
 	}
 	sk_tb_send(w, m, 1, a3, a4);
@@ -2794,7 +2794,7 @@ static uint64_t sk_registry_entry_create(uint64_t cap, uint64_t tag, uint64_t ke
  * Notes: FUN_00010244(1,0x20,0x1020040fee5c632); FUN_001157f0 zeroes. */
 static uint64_t sk_registry_alloc(void)
 {
-	uint64_t r = sk_zone_alloc_obj(1, 0x20, 0x1020040fee5c632ull);
+	uint64_t r = (uint64_t)sk_zone_alloc_obj(1, 0x20, 0x1020040fee5c632ull);
 	if (r == 0) sk_boot_abort3();
 	sk_obj_lock((void *)r);
 	return r;
@@ -2868,7 +2868,7 @@ static void sk_registry_remove(uint64_t *reg, uint64_t key)
 		}
 		*prev = *cur;
 	}
-	(**(void (**)(void))(cur[3] + 0x10))(cur[3], cur[2]);
+	(*(void (**)(uint64_t, uint64_t))(cur[3] + 0x10))(cur[3], cur[2]);
 	sk_zone_free_0((uint64_t)cur);
 out:
 	sk_lock_release((void *)reg);
@@ -2944,7 +2944,7 @@ static void sk_registry_set2(uint32_t a, uint64_t ptr, uint32_t c)
 static void sk_registry_invoke(uint64_t e)
 {
 	if (*(uint64_t (**)(void))(e + 0x10) != 0)
-		(*(void (**)(void))(e + 0x10))(*(uint64_t *)(e + 0x18), *(uint64_t *)(e + 0x20));
+		(*(void (**)(uint64_t, uint64_t))(e + 0x10))(*(uint64_t *)(e + 0x18), *(uint64_t *)(e + 0x20));
 	if (*(uint8_t *)(e + 0x28) == 1) sk_zone_free_0(e);
 }
 

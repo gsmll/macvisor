@@ -10,6 +10,16 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+/* Ghidra-transcription convenience typedefs. */
+typedef uint32_t uint;
+typedef uint64_t ulong;
+typedef uint64_t undefined8;
+typedef uint8_t  undefined1;
+typedef uint64_t undefined;
+typedef uint8_t  byte;
+typedef uint16_t ushort;
+typedef uint64_t (*code_fn_t)(long, ...);
+
 /* ------------------------------------------------------------------ *
  * Cross-range cL4 kernel helpers (declared extern with FUN_ address;
  * reconstructed by sibling SK range workers). Names are estimates.
@@ -22,13 +32,13 @@ extern void sk_alloc(unsigned long, unsigned long);      /* FUN_0036a908 */
 extern void sk_alloc_sized(unsigned long, unsigned long, unsigned long); /* FUN_0036a940 */
 extern void sk_alloc_pages(unsigned long, unsigned long);/* FUN_0036b270 */
 extern void sk_free(void *);                             /* FUN_0036b118 */
-extern void sk_obj_method(uint64_t);                     /* FUN_00310e20 */
-extern void sk_obj_method2(uint64_t);                    /* FUN_00310954 */
-extern void sk_obj_method3(uint64_t);                    /* FUN_00310f04 */
+extern code_fn_t sk_obj_method(uint64_t);                    /* FUN_00310e20 */
+extern code_fn_t sk_obj_method2(uint64_t);                   /* FUN_00310954 */
+extern code_fn_t sk_obj_method3(uint64_t);                   /* FUN_00310f04 */
 extern void sk_fatal_error(void);                        /* FUN_001afe4c (Swift fatal, noreturn) */
 extern void sk_fatal_swift(void);                        /* FUN_001afa84 (Swift precondition noreturn) */
 extern void sk_sched_dispatch(void);                     /* FUN_0008412c */
-extern void sk_sched_yield(void);                        /* FUN_001e638c (in-range) */
+extern void sk_sched_yield(long, long);                     /* FUN_001e638c (in-range) */
 extern void sk_swift_fatal(void);                        /* FUN_00068e14 */
 
 /* Out-of-range Swift runtime entry points referenced throughout this region. */
@@ -41,6 +51,12 @@ extern void sk_swift_retain(void *);                              /* FUN_0001256
 extern void sk_swift_collection_insert(void);                     /* FUN_0026bdc4 */
 extern void sk_swift_collection_append(void);                     /* FUN_001dffa0 */
 extern void sk_memcpy(void *, const void *, unsigned long);       /* FUN_00117d14 */
+
+/* Forward prototypes for helpers defined later in this file but called earlier
+ * (avoids implicit-declaration/conflicting-type errors). */
+extern uint64_t sk_dict_bucket_init(long *out, uint64_t p2, long p3, uint64_t p4, uint64_t p5); /* FUN_001e312c */
+extern long sk_swift_str_distance(long p1, long p2, uint p3);                                  /* FUN_001e67d8 */
+extern uint sk_dict_contains_key_impl(void);                                                    /* FUN_001e4938 */
 
 /* ------------------------------------------------------------------ *
  * FUN_001e0414 @ 0x001e0414   (est. sk_sched_flag_check)
@@ -574,11 +590,11 @@ void *sk_dict_bucket_create(long *out, uint64_t p2, uint64_t p3, unsigned long p
 {
     long b = /* FUN_0036a908(0x28,0x7135) */0;
     *out = b;
-    uint64_t r = sk_dict_bucket_init(b, p2, p3,
+    uint64_t r = sk_dict_bucket_init((long *)b, p2, p3,
                                      *(uint64_t *)((p4 & 0xfffffffffffffffe) - 8),
                                      *(uint64_t *)((p4 & 0xfffffffffffffffe) - 0x10));
     *(uint64_t *)(b + 0x20) = r;
-    return &/* DAT_003471a4 */0;
+    return (void *) /* DAT_003471a4 */0;
 }
 
 /* ------------------------------------------------------------------ *

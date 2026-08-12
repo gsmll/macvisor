@@ -12,6 +12,16 @@ typedef uint64_t cap_t;
 typedef uint64_t vptr_t;
 typedef uint64_t pptr_t;
 
+/* Ghidra decompiler primitive type aliases (compile-fix typedefs). */
+typedef uint64_t ulong;
+typedef uint64_t undefined;
+typedef uint64_t undefined8;
+typedef uint8_t  undefined1;
+typedef uint8_t  byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef unsigned __int128 uint128_t;
+
 /* 16-byte object descriptor {data ptr, method table}; 8-byte find result. */
 typedef struct { word_t lo; word_t hi; } cl4_desc_t;
 typedef struct { word_t index; ulong found; } cl4_find_t;

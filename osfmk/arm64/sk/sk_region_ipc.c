@@ -9395,3 +9395,344 @@ static uint64_t sk_report_error_15fff8(void)
     /* FUN_0036993c(0x667580, 0x6674c8, 0, 0); *x1 = 4; x1[1] = 1; FUN_0036986c() */
     return 0;
 }
+
+/* ============ 0x160070 - 0x162b2c : DART mapper / Launcher.FileFetcher ============ */
+
+/* FUN_00160070 @ 0x160070  (est. sk_dart_ctx_dtor)
+ * DART context teardown: init 0x48-byte buf, FUN_0001c2a4(ctx), reinit. */
+static void sk_dart_ctx_dtor_160070(void)
+{
+    /* undefined1 auStack_68[72]; FUN_001a84f4(auStack_68); FUN_0001c2a4(auStack_68,*x20); FUN_001a8564(); */
+}
+
+/* FUN_001600b0 @ 0x1600b0  (est. sk_page_tracker_map)  [big dispatcher]
+ * Launcher.PageTableTracker page-map core: validates the page-table entry
+ * (0x1604cc), classifies op by param_6 (0x1605d0), then routes to the
+ * allocate (0x160e24, param_6==1) or unwire (0x160fac, param_6==0) path via
+ * the vtable +200 entry. Overflow bits [63:62] on the entry abort (fatal
+ * 0x667580/0x6674c8). */
+static void sk_page_tracker_map_1600b0(void)
+{
+    /* see decompile: mask/tag checks, vtable dispatch, SoftwareBreakpoint paths */
+}
+
+/* FUN_001604cc @ 0x1604cc  (est. sk_page_tracker_resolve_len)
+ * Resolves element stride: if size exceeds remaining, computes the element
+ * count from the distance via the size-advance helper (0x15ff94) and the
+ * per-type stride fn (0x16113c / 0x16116c); asserts the count fits. */
+static void sk_page_tracker_resolve_len_1604cc(void)
+{
+    /* if (param_3 <= param_1) { uVar2=0x15ff94(...); if (CARRY8) SB; if (param_1 < param_3+uVar2) { stride=(*fn)(...); if(!stride)SB; count=(param_1-param_3)/stride; if(count<0)SB; } } fatal(2); */
+}
+
+/* FUN_001605d0 @ 0x1605d0  (est. sk_page_tracker_is_empty)
+ * Tests whether the entry describes a full/empty span (all-zero 128-bit
+ * value) via vtable +0xc0. */
+static uint32_t sk_page_tracker_is_empty_1605d0(void)
+{
+    /* auVar3 = (**(+0xc0))(buf,0x1604cc()); pl=auVar3._8_8_;
+       w22 = (pl[3]<-0x4000000000000000 && pl[3]==-0x8000000000000000 && pl[1]==0 && pl[2]==0 && *pl==0) ? 0 : 1;
+       return w22&1; */
+    return 0;
+}
+
+/* FUN_00160690 @ 0x160690  (est. sk_dart_cfg_init)
+ * Allocates 0x28-byte config (zone 0xf20c), copies 4 words from ctx+0x10,
+ * returns ctor FUN_00160708. */
+static void sk_dart_cfg_init_160690(long *out)
+{
+    /* long b=FUN_0036a908(0x28,0xf20c); *out=b; FUN_0036a1a0(x20+0x10,b,0x20,0);
+       b[0x20]=*(x20+0x28); b[0x18]=*(x20+0x20); return {FUN_00160708, *(x20+0x10)}; */
+}
+
+/* FUN_00160708 @ 0x160708  (est. sk_dart_cfg_dtor) */
+static void sk_dart_cfg_dtor_160708(uint64_t *p)
+{
+    /* uVar1=*p; FUN_0036a20c(uVar1); thunk_FUN_00012568(uVar1); */
+}
+
+/* FUN_00160738 @ 0x160738  (est. sk_page_tracker_set)
+ * Swaps the 4 config words and releases the prior span (0x160e10). */
+static void sk_page_tracker_set_160738(void)
+{
+    /* FUN_0036a1a0(x20+0x10, buf,1,0); old[4]; set new; FUN_00160e10(old...); */
+}
+
+/* FUN_001607a4 @ 0x1607a4  (est. sk_page_tracker_init) */
+static uint64_t sk_page_tracker_init_1607a4(uint64_t p)
+{
+    /* uVar1=FUN_0036a940(); FUN_001607e4(p); return uVar1; */
+    return 0;
+}
+
+/* FUN_001607e4 @ 0x1607e4  (est. sk_page_tracker_setup)
+ * Builds a 16-byte span descriptor via 0x160888 using the ctx's +0x38/+0x40
+ * metadata. */
+static void sk_page_tracker_setup_1607e4(uint64_t p)
+{
+    /* auVar3=FUN_00160888(1,p,0,0,*(*x20+0x38),*(*x20+0x40));
+       FUN_0036a1a0(x20+2,buf,1,0); *(x20+2)=auVar3; x20[4]=0; x20[5]=0; */
+}
+
+/* FUN_00160888 @ 0x160888  (est. sk_span_build)
+ * Builds a 16-byte (off,len) span; when param_4==0 resolves the type
+ * metadata (0x16119c), walks n elements via the +0x78 destructor. */
+static void sk_span_build_160888(void)
+{
+    /* if (param_4==0) { uVar1=0x16119c(0xff,param_5,param_6); 0x1545c4(0,uVar1);
+       (*0x161574)(param_5,param_6); pl=0x153cdc(); n=(*0x161574)(param_5,param_6);
+       if(n) { f=**(pl+0x78); do { local={0,0,0,0x8000...}; (*f)(&local); n--; } while(n); } }
+       return {param_2, param_3}; */
+}
+
+/* FUN_001609ac @ 0x1609ac  (est. sk_page_tracker_write_span)
+ * Calls the page-map dispatcher (0x1600b0) with the built span + meta. */
+static void sk_page_tracker_write_span_1609ac(void)
+{
+    /* uVar6=*(*x20+0x38); uVar7=*(*x20+0x40); auVar9=0x160888(0,p,param_2,0,u6,u7);
+       ... FUN_001600b0(lo,hi,param_2&0xff,0,param_2,1,u5,u8,0,u6); */
+}
+
+/* FUN_00160af4 @ 0x160af4  (est. sk_page_tracker_reset)
+ * Resets the tracker with empty span (0x4000000000000000 tag). */
+static void sk_page_tracker_reset_160af4(void)
+{
+    /* FUN_001600b0(param_1,0,0,0x4000000000000000,param_2,0,param_3,param_4,param_5,u2); */
+}
+
+/* FUN_00160be4 @ 0x160be4  (est. sk_span_release)
+ * Releases the stored span (0x160e10). */
+static void sk_span_release_160be4(void)
+{
+    /* FUN_00160e10(*(x20+0x10),*(x20+0x18),*(x20+0x20),*(x20+0x28)); */
+}
+
+/* FUN_00160be8 @ 0x160be8  (est. sk_span_release_b)  dup */
+static void sk_span_release_160be8(void) { /* dup 0x160be4 */ }
+
+/* FUN_00160c08 @ 0x160c08  (est. sk_span_release_then_notify) */
+static void sk_span_release_160c08(void)
+{
+    /* FUN_00160e10(...); FUN_0036b6ac(); */
+}
+
+/* FUN_00160c0c @ 0x160c0c  (est. sk_span_release_then_notify_b) */
+static void sk_span_release_160c0c(void) { /* dup 0x160c08 */ }
+
+/* FUN_00160c54 @ 0x160c54  (est. sk_span_add_len)
+ * Additive span length advance; asserts no carry. */
+static int64_t sk_span_add_len_160c54(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e, uint64_t f)
+{
+    (void)c; (void)d; (void)e; (void)f;
+    /* u = 0x15ff94(...); if carry -> SoftwareBreakpoint */
+    return (int64_t)b;
+}
+
+/* FUN_00160d70 @ 0x160d70  (est. sk_skip_1c)
+ * Skip-list node advance (base+0x1c). */
+static int64_t sk_skip_1c_160d70(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x1c) + (int64_t)*(int32_t *)(p + 0x1c);
+}
+
+/* FUN_00160da0 @ 0x160da0  (est. sk_skip_18)
+ * Skip-list node advance (base+0x18). */
+static int64_t sk_skip_18_160da0(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x18) + (int64_t)*(int32_t *)(p + 0x18);
+}
+
+/* FUN_00160dd0 @ 0x160dd0  (est. sk_span_call_stride) */
+static void sk_span_call_stride_160dd0(uint64_t a, uint64_t b)
+{
+    /* (*0x161574)(a,b); */
+}
+
+/* FUN_00160e10 @ 0x160e10  (est. sk_span_drop)
+ * Drops an owned span; if the tag's [63:62] are clear it releases the buffer. */
+static void sk_span_drop_160e10(void)
+{
+    /* if (in_x3>>0x3e==0) FUN_0036b118(in_x3); */
+}
+
+/* FUN_00160e24 @ 0x160e24  (est. sk_page_tracker_alloc)
+ * PageTableTracker allocation path (op==1). Rebuilds the span via 0x160fd8
+ * table, else fatal "Launcher.PageTableTracker" (0x160fd8,line 0x61). */
+static void sk_page_tracker_alloc_160e24(uint64_t *p, uint64_t a)
+{
+    (void)a;
+    /* if (p[3]>>0x3e==1) { save; uVar1=0x1558e4(...); if x21==0 restore tag 0x4000000000000000; else error(0x6665b0/0x666518); }
+       else { 0x160e10(...); fatal(0x160fd8,"Launcher.PageTableTracker",0x61); } */
+}
+
+/* FUN_00160fac @ 0x160fac  (est. sk_page_tracker_unwire)
+ * PageTableTracker unwire path (op==0). Rebuilds via 0x155850; failure path
+ * fatal "Launcher.PageTableTracker" line 0x6b. */
+static void sk_page_tracker_unwire_160fac(uint64_t *p, uint64_t a)
+{
+    (void)a;
+    /* if (p[3]>>0x3e==0) { save; uVar5=0x155850(...); if x21==0 restore; else error+FUN_0036b118(u4); }
+       else { 0x160e10(...); fatal("Launcher.PageTableTracker",0x6b); } */
+}
+
+/* FUN_0016113c @ 0x16113c  (est. sk_skip_0c_f)  base+0xc */
+static int64_t sk_skip_0c_16113c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0xc) + (int64_t)*(int32_t *)(p + 0xc);
+}
+
+/* FUN_0016116c @ 0x16116c  (est. sk_skip_10_g)  base+0x10 */
+static int64_t sk_skip_10_16116c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x10) + (int64_t)*(int32_t *)(p + 0x10);
+}
+
+/* FUN_0016119c @ 0x16119c  (est. sk_span_meta_acquire)
+ * Acquires span metadata (FUN_00021480). */
+static void sk_span_meta_acquire_16119c(void)
+{
+    /* FUN_00021480(); */
+}
+
+/* FUN_00161278 @ 0x161278  (est. sk_span_move)
+ * Moves a span (copy 4 words + release prior). */
+static uint64_t *sk_span_move_161278(uint64_t *dst, uint64_t *src)
+{
+    uint64_t t[4] = { dst[0], dst[1], dst[2], dst[3] };
+    dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2]; dst[3] = src[3];
+    sk_span_drop_160e10();
+    return dst;
+}
+
+/* FUN_001613ac @ 0x1613ac  (est. sk_dart_cfg_write) */
+static void sk_dart_cfg_write_1613ac(int64_t p)
+{
+    /* local_18=&DAT_004e4850; FUN_00374104(p,0,1,&local_18,p+0x48); */
+}
+
+/* FUN_00161418 @ 0x161418  (est. sk_span_meta_release) */
+static void sk_span_meta_release_161418(uint64_t *p)
+{
+    /* FUN_0016119c(0,*p,p[1]); */
+}
+
+/* FUN_00161458 @ 0x161458  (est. sk_span_copy)
+ * Copy span (4 words incl byte tag) + release old owner. */
+static uint64_t *sk_span_copy_161458(uint64_t *dst, uint64_t *src)
+{
+    uint64_t old3 = dst[3];
+    dst[0] = src[0]; dst[1] = src[1];
+    *(uint8_t *)(dst + 2) = *(uint8_t *)(src + 2);
+    dst[3] = src[3];
+    /* FUN_0036b118(old3); */
+    return dst;
+}
+
+/* FUN_001614c0 @ 0x1614c0  (est. sk_span_foreach)
+ * Iterates the span, printing each element via 0x14b5f8. */
+static void sk_span_foreach_1614c0(uint64_t *p)
+{
+    /* uVar3=0x177824(0xff,p[1],*p,&DAT_0060a0f0,&DAT_0060a100);
+       uStack_38=0x177bec(...); local={0x666cf0,0x666bf0,uVar3}; FUN_0014b5f8(0,&local); */
+}
+
+/* FUN_00161574 @ 0x161574  (est. sk_skip_20)
+ * Skip-list node advance (base+0x20). */
+static int64_t sk_skip_20_161574(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 0x20) + (int64_t)*(int32_t *)(p + 0x20);
+}
+
+/* FUN_001615a4 @ 0x1615a4  (est. sk_span_all_zero)
+ * Returns 1 if the span buffer (param_1+0x20, len at +0x10) is all zero. */
+static char sk_span_all_zero_1615a4(int64_t p)
+{
+    int64_t n = *(int64_t *)(p + 0x10);
+    char *c = (char *)(p + 0x20);
+    char v;
+    do {
+        if (n == 0) { v = 1; break; }
+        v = *c; n--; c++;
+    } while (v == 1);
+    return v;
+}
+
+/* FUN_001615ec @ 0x1615ec  (est. sk_span_compare)
+ * Lexicographic span compare via type vtable compare; returns 3/1/0-ish. */
+static uint8_t sk_span_compare_1615ec(uint64_t a, int64_t b, uint64_t c)
+{
+    (void)a; (void)b; (void)c;
+    /* see decompile: vtable +0x10 copies, 0x177824/0x177bec, FUN_000a68c4/68f4 loop */
+    return 0;
+}
+
+/* FUN_001617dc @ 0x1617dc  (est. sk_span_compare_ordered)
+ * Two-way compare; returns 0 if a<=b, 1 if b<a, 2 if incomparable. */
+static uint32_t sk_span_compare_ordered_1617dc(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    /* f=0x16186c; r=(*f)(a,b,c,d); if(!r){r=(*f)(b,a,c,d); return r?2:1;} return 0; */
+    return 0;
+}
+
+/* FUN_0016186c @ 0x16186c  (est. sk_skip_8)
+ * Skip-list node advance (base+8). */
+static int64_t sk_skip_8_16186c(uint64_t p)
+{
+    if (p & 1) p = *(uint64_t *)(p & ~1ULL);
+    return (int64_t)(p + 8) + (int64_t)*(int32_t *)(p + 8);
+}
+
+/* FUN_0016189c @ 0x16189c  (est. sk_span_merge)
+ * Merges two adjacent spans (param_1,param_2) into param_3; returns merge
+ * status. Uses vtable +0x30 compare / +0x20 advance. */
+static uint8_t sk_span_merge_16189c(void)
+{
+    /* see decompile: copies via lVar5+0x10, compare via lVar7+0x30, 0x1617dc for order */
+    return 0;
+}
+
+/* FUN_00161bd0 @ 0x161bd0  (est. sk_span_merge2)
+ * Two-span merge into param_3. */
+static uint8_t sk_span_merge2_161bd0(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    (void)a; (void)b; (void)c; (void)d;
+    return sk_span_merge_16189c();
+}
+
+/* FUN_00161d28 @ 0x161d28  (est. sk_span_libload)
+ * Loads a span from the asan lib / asan.dylib bundles (0x161d28 strings
+ * "asan_" / "asan.dylib"). */
+static void sk_span_libload_161d28(uint64_t a, uint64_t b)
+{
+    (void)a; (void)b;
+    /* uVar1=0x2abe60("asan_",0xe5...); if(!ok) rel; else { u2=0x1ee018; 0x16325c; rel; }
+       repeat for "asan.dylib" (0x79642e6e6173615f,0xeb0000000062696c). */
+}
+
+/* FUN_00161e78 @ 0x161e78  (est. sk_feature_dart)
+ * Feature check: string-match tag 0x11 at 0x5c9a40. */
+static uint32_t sk_feature_dart_161e78(void)
+{
+    /* uVar2=FUN_000f5e08(); uVar1=FUN_00467468(0xd000000000000011,0x80000000005c9a40,0x6753a0,uVar2); */
+    /* feature-present string match; return uVar1&1 */
+    return 0;
+}
+
+/* FUN_00161ed4 @ 0x161ed4  (est. sk_file_fetcher_fetch)  [huge]
+ * Launcher.FileFetcher: resolves "/System/..." boot bundle paths, parses
+ * the component graph (0x1f5998 / 0x19dfc4), merges page-table entries
+ * (0x162e44), sorts them (0x1631c0 / 0x1631d4), and records the result into
+ * the 0x657798 table. ~1800-line body; see decompile. */
+static int64_t sk_file_fetcher_fetch_161ed4(void)
+{
+    /* see decompile (Launcher.FileFetcher): path resolve via 0x2abcb0 "/System/...",
+       graph build, span merge 0x162e44, sort 0x1631c0/0x1631d4, DAT_00657788 counter,
+       fatal strings "Launcher.FileFetcher" lines 0x42/0x4a. */
+    return 0;
+}

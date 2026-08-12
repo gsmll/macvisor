@@ -21,6 +21,16 @@ typedef struct sk_r4_u128 {
     uint64_t hi;
 } sk_r4_u128_t;
 
+/* Ghidra type aliases used throughout the mechanical transcription. */
+typedef uint64_t undefined8;
+typedef uint8_t undefined1;
+typedef uint64_t undefined;
+typedef uint8_t byte;
+typedef uint16_t ushort;
+typedef uint32_t uint;
+typedef uint64_t ulong;
+typedef void (*code)(void);        /* Ghidra `code` = function pointer */
+
 /*------------------------------------------------------------------*/
 /* Shared runtime helpers referenced from this region (out-of-slice: FUN_ address in the
  * comment). Reconstructed by sibling SK range workers. Many of these are no-op Swift runtime
