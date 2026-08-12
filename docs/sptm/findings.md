@@ -4332,3 +4332,21 @@ Confidence: high
 - **Evidence**: decompile: `if (*(char *)((long)param_1 + 1) != '\x01') goto LAB_004ba2e0; ... LAB_004ba2e0: pcVar1 = (code *)SoftwareBreakpoint(1,0x4ba2e4); (*pcVar1)(); ... FUN_00369bb0(0,s_Failed_to_look_up_symbolic_refer_005d51b4);`.
 - **Severity (hypothesis)**: low (informational) — fail-closed on a malformed fixup marker is the safer behaviour; no bypass observed.
 - **Confidence**: medium (all three failure paths deterministic noreturn).
+
+## [SkR48] 0x0065c310 — panic core uses SoftwareBreakpoint as the only termination path
+- **Observation**: `sk_panic_core` (FUN_0065c310) formats a message, walks the capability/notification lists, and terminates exclusively via `SoftwareBreakpoint(0x5519, ...)` noreturn traps on every failure branch (bounds violations on the capability record walk, list head corruption). There is no recoverable error return — all malformed-state paths halt the kernel.
+- **Evidence**: decompile: multiple `pcVar7 = (code *)SoftwareBreakpoint(0x5519,0x65c984); (*pcVar7)();` and `LAB_0065c980` / `SoftwareBreakpoint(1,0x65c980)` traps on the message-buffer scan (`while (lVar9 != 0x2000)` zero-byte scan) and capability-record bounds checks.
+- **Severity (hypothesis)**: low (informational) — fail-closed halt on panic path; no privilege bypass observed.
+- **Confidence**: medium (deterministic noreturn traps; complex flow transcribed).
+
+## [SkR48] 0x0065d080 / 0x0065cfe4 — notification list link tags mixed into pointer arithmetic
+- **Observation**: The notification slot lists (object @ 0x6fe638) store node links as `(link & 0xfffffffff) | 0x2000000000`, i.e. a tag bit OR-ed into the low address bits. `sk_notif_slot_unlink` (FUN_0065d080) clears the low-40 bits (`*param_1 & 0xfffffffff`) before unlinking and re-derives the tag from the predecessor (`uVar3 >> 0x24 & 0xffff) << 0x24`). If a slot's link word is corrupted to set bit 0x25 spuriously, the walk treats it as a list terminator (`(link >> 0x25 & 1) != 0`), silently dropping the rest of the list.
+- **Evidence**: decompile FUN_0065d080: `if ((uVar3 >> 0x25 & 1) != 0) break;` walking via `puVar6 = (ulong *)(uVar3 & 0xfffffffff)`; FUN_0065cfe4 stamps `*param_1 = uVar3 & 0xfffffffff | 0x2000000000`.
+- **Severity (hypothesis)**: low (defense-in-depth) — tag-as-terminator may hide corruption but also could drop legitimate entries if the tag bit is abused; requires corrupting a kernel pointer first.
+- **Confidence**: medium.
+
+## [SkR48] 0x0065bd88 / 0x0065bcf0 — feature gate read from per-cpu byte + config table
+- **Observation**: `sk_notif_feature_check` gates a notification feature on a per-cpu byte (bit 0, via FUN_00655848) and a string/config-table comparison (0x6a60ff vs 0x6a610e) plus a bit test in the 0x6a60cc config table (FUN_0065bcf0). The config table byte index is bounds-checked against a length read from FUN_006661e0 before dereference, so the bit test is in-bounds.
+- **Evidence**: decompile FUN_0065bcf0: `if (local_28 < (param_1 & 0xffffffff)) { panic(0x6a60da) } pcVar1 = (char *)(lVar3 + (param_1 & 0xffffffff)); if ((char *)(lVar3 + local_28) <= pcVar1) { SoftwareBreakpoint }`.
+- **Severity (hypothesis)**: low (informational) — feature gating appears bounds-safe; the per-cpu byte gate means the feature state is per-core.
+- **Confidence**: medium.

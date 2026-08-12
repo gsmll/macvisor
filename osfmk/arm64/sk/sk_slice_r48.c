@@ -1493,3 +1493,511 @@ static void sk_notif_cleanup(uint64_t obj)
     }
     sk_panic2(0, 0x6a634a);   /* noreturn */
 }
+
+/* FUN_0065c310 @ 0x0065c310   (est. sk_panic_core)
+ * Ghidra: void FUN_0065c310(ulong param_1, undefined8 param_2, undefined8 param_3)
+ * Noreturn panic core. Reads the current thread/object (FUN_00661318), sets
+ * pending-flag bits (+0x48 |= 0x20 / 0x40), emits a log record sequence
+ * (0x6a6469 "panic", 0x6a6498, 0x6a64b9, 0x6a64bc), formats a message buffer,
+ * walks the notification/capability lists to build context, and finally halts
+ * via SoftwareBreakpoint (0x5519). Transcription of the Ghidra decompile.
+ * Confidence: low (decompiler warnings; complex control flow) */
+static void FUN_0065c310(uint64_t param_1, uint64_t param_2, uint64_t param_3)
+{
+    uint64_t ctx = FUN_00661318();
+    if ((param_1 != 0 || (param_1 = ctx, ctx <= ctx + 0x178)) &&
+        ((*(uint64_t *)(param_1 + 0x48) |= 0x20), ctx <= ctx + 0x178)) {
+        *(uint64_t *)(ctx + 0x48) |= 0x40;
+        uint64_t s1 = ctx >> 0xe & 0xffffff;
+        uint64_t s2 = param_1 >> 0xe & 0xffffff;
+        FUN_0067d1f0(_DAT_006b4368, 0x6a6469);
+        FUN_0067d6c0(0x6a6498, 0x20, 1, _DAT_006b4368);
+        FUN_0067d83c(_DAT_006b4368, (void *)param_2, (void *)param_3);
+        FUN_0067d6c0(0x6a64b9, 2, 1, _DAT_006b4368);
+        if (param_1 == ctx) {
+            FUN_006631d8(0x6a64bc, 0x3d, _DAT_006b4368, param_1, 1, 0, 0, 0, s1, s2);
+        }
+        uint8_t msg[0x1b8] = {0};
+        FUN_0067ca6c(msg, 0x80, (void *)param_2, (void *)param_3);
+        uint64_t slot = *(uint64_t *)(param_1 + 8);
+        uint64_t out = 0;
+        uint64_t msgstr = 0x6a64cc;
+        if (slot <= slot + 0x28) {
+            if (FUN_0065e138((void *)slot, &out) == 0) {
+                long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+                if (*(long *)(obj + 0x78) == 0) {
+                    msgstr = 0x6a64d1;
+                }
+            }
+        }
+        uint8_t buf2[0x130] = {0};
+        sk_log_msg((uint64_t)(uintptr_t)buf2, 0x130, 0x40, msgstr);
+        /* continue: capability list walk + final message build, then halt */
+        if (*(uint64_t *)(param_1 + 0xa8) != 0) {
+            FUN_0066455c();
+        }
+        /* If a pending-capability record exists, format it into the message. */
+        uint64_t cr[12] = {0};
+        uint64_t n = FUN_00661e1c((void *)param_1, 0, cr, 0xc, 0);
+        uint64_t cnt = 0;
+        if (n != 0) {
+            uint64_t i;
+            for (i = 0; i < n; i++) {
+                uint64_t w = (uint64_t)*(uint16_t *)((uint8_t *)cr + i * 8 + 6);
+                if (cnt <= w && w != 0xffff) {
+                    cnt = w + 1;
+                }
+            }
+        }
+        if (cnt < 7) {
+            /* compute shift and walk list to fill remaining slots */
+            uint64_t shift = 6 - cnt;
+            if (n < (shift << 1)) {
+                *(uint16_t *)((uint8_t *)cr + n * 8 - 2) = 6;
+            }
+            long *head = (long *)sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+            for (long *it = (long *)*head; it != 0; it = (long *)*it) {
+                if ((*(int8_t *)((uint8_t *)it + 8) < 0)) {
+                    uint64_t idx = (uint64_t)*(uint16_t *)((uint8_t *)it + 0x10);
+                    if (idx < cnt) {
+                        uint64_t dst = (shift + idx) * 0x10 + 0x158;
+                        uint64_t avail = 0;
+                        if (dst < 0x1b9) {
+                            avail = 0x1b8 - dst;
+                        }
+                        FUN_0067cd24((uint8_t *)cr + shift * 2 + idx * 2, (uint8_t *)it + 0x10, 0x10, avail);
+                    }
+                }
+            }
+        }
+        /* re-stamp capability tag bits */
+        if (n != 0) {
+            uint64_t i;
+            for (i = 0; i < n; i++) {
+                ((uint64_t *)cr)[i] = ((uint64_t *)cr)[i] + ((uint64_t)0 << 0x30);
+            }
+        }
+        /* invoke registered panic hook if present, else log + halt */
+        if (*(uint64_t *)(ctx + 0xa0) == 0) {
+            FUN_0067d1f0(_DAT_006b4368, 0x6a6503);
+        } else {
+            (*(void (**)(uint8_t *))(ctx + 0xa0))(msg);
+            FUN_0067d1f0(_DAT_006b4368, 0x6a64d9);
+        }
+        /* final: dump to 0x6fc5a0 region, panic if any byte zero -> SoftwareBreakpoint */
+        FUN_0065f468(msg, 0x6fc5a0, 0x2000, 0);
+        FUN_006550cc(0x6a6531, 0x6fc5a0, 0x2000, _DAT_006b4368);
+        SoftwareBreakpoint(0x5519, 0x65c984);
+    }
+    SoftwareBreakpoint(0x5519, 0x65c984);
+}
+
+/* FUN_0065ca28 @ 0x0065ca28   (est. sk_state_hash)
+ * Ghidra: void FUN_0065ca28(void)
+ * Computes a 32-bit hash from the notification object's +0x40 ushort and a
+ * 16-byte key loaded from 0x6a66a9..; returns void but stores hash in a reg
+ * after canary check. Uses the canary at 0x6b5ed0.
+ * Confidence: medium */
+static void sk_state_hash(void)
+{
+    long canary = _DAT_006b5ed0;
+    long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    uint64_t shift = 0;
+    uint32_t acc = 0;
+    uint64_t len = (uint64_t)*(uint16_t *)(obj + 0x40);
+    uint8_t key[16] = {0};
+    /* 16-byte key built from byte constants at 0x6a66a9..0x6a66b8 */
+    while (1) {
+        uint8_t *p = (uint8_t *)&key + (len & 0xf);
+        if ((uint8_t *)&key[7] <= p || p < (uint8_t *)&key) break;
+        acc = (uint32_t)*p << (shift & 0x1f) | acc;
+        len = len >> 4;
+        shift = shift + 8;
+        if (shift == 0x20) {
+            if (_DAT_006b5ed0 == canary) {
+                return;
+            }
+            FUN_0067f660();
+        }
+    }
+    SoftwareBreakpoint(0x5519, 0x65cb70);
+}
+
+/* FUN_0065cc50 @ 0x0065cc50   (est. sk_notif_slot_alloc)
+ * Ghidra: void FUN_0065cc50(ulong *param_1)
+ * Allocates a notification slot: bumps the object's +8 ushort counter, writes
+ * the previous value into param_1+8, then links param_1 into the object's
+ * head (+0 slot). Panics on overflow.
+ * Confidence: medium */
+static void sk_notif_slot_alloc(uint64_t *param_1)
+{
+    uint64_t *obj = (uint64_t *)sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    int16_t prev = (int16_t)obj[1];
+    *(int16_t *)(obj + 1) = prev + 1;
+    *(int16_t *)(param_1 + 8) = prev;
+    while (1) {
+        uint64_t h = *obj;
+        *param_1 = h;
+        if (*obj == h) {
+            *obj = (uint64_t)param_1;
+            return;
+        }
+    }
+}
+
+/* FUN_0065ccdc @ 0x0065ccdc   (est. sk_notif_slot_walk)
+ * Ghidra: ulong * FUN_0065ccdc(void)
+ * Walks the object's slot list (+0) and returns the first slot whose +1 byte
+ * bit0 is clear (a "dirty"/in-use marker); returns 0x6b64a0 if list empty.
+ * Confidence: medium */
+static uint64_t *sk_notif_slot_walk(void)
+{
+    uint64_t *obj = (uint64_t *)sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    uint64_t *cur = (uint64_t *)*obj;
+    uint64_t *best;
+    if (*obj == 0) {
+        return (uint64_t *)0x6b64a0;
+    }
+    do {
+        best = cur;
+        if (*best == 0) break;
+        cur = (uint64_t *)*best;
+    } while ((*(uint8_t *)(best + 1) & 1) == 0);
+    if ((uint64_t)best + 0xf0 < (uint64_t)best) {
+        SoftwareBreakpoint(0x5519, 0x65cd28);
+    }
+    return best;
+}
+
+/* FUN_0065cd38 @ 0x0065cd38   (est. sk_str_scan)
+ * Ghidra: ulong FUN_0065cd38(long param_1, long *param_2)
+ * Scans memory for the '/' delimiter (0x2f) starting at param_1+0x50 with
+ * count param_1+0x48; on match writes the address to *param_2 and returns
+ * the next position; else panics.
+ * Confidence: medium */
+static uint64_t sk_str_scan(uint64_t base, long *out)
+{
+    uint64_t count = *(uint64_t *)(base + 0x48);
+    uint64_t pos = *(uint64_t *)(base + 0x50);
+    do {
+        long hit = FUN_0067a900(pos, 0x2f, count);
+        if (hit == 0) {
+            *out = (long)count;
+            return pos;
+        }
+        uint64_t next = hit + 1;
+        uint64_t remain = pos + count;
+        count = ~(hit - pos) + count;
+        bool inrange = pos <= next;
+        pos = next;
+        if (!(next <= remain && inrange)) break;
+    } while (1);
+    SoftwareBreakpoint(0x5519, 0x65cd90);
+    return 0;
+}
+
+/* FUN_0065cedc @ 0x0065cedc   (est. sk_notif_dispatch)
+ * Ghidra: void FUN_0065cedc(code *param_1, undefined8 param_2)
+ * Enters a spin (FUN_00661348 loop), then walks the object's slot list
+ * (+0x10) and invokes the callback param_1(param_2) for each marked slot,
+ * following the low-40-bit next pointer; leaves the spin at the end.
+ * Confidence: medium */
+static void sk_notif_dispatch(void *cb, uint64_t arg)
+{
+    uint8_t spin = 0;
+    while (FUN_00661348(&spin) == 0) { }
+    long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    uint64_t *node = *(uint64_t **)(obj + 0x10);
+    uint64_t link = 0;
+    if (node == 0) {
+        goto leave;
+    }
+    do {
+        link = *node;
+        if ((link >> 0x25 & 1) != 0) break;
+        node = (uint64_t *)(link & 0xfffffffff);
+    } while (node != 0);
+    while (1) {
+        while (1) {
+            if ((uint64_t)node + 0x178 < (uint64_t)node) {
+                SoftwareBreakpoint(0x5519, 0x65cfa8);
+            }
+        leave:
+            if (node == 0) {
+                FUN_006613d0(&spin);
+                return;
+            }
+            ((void (*)(uint64_t))cb)(arg);
+            node = (uint64_t *)(link & 0xfffffffff);
+            if (node != 0) break;
+            link = 0;
+        }
+        do {
+            link = *node;
+            if ((link >> 0x25 & 1) != 0) break;
+            node = (uint64_t *)(link & 0xfffffffff);
+        } while (node != 0);
+    }
+}
+
+/* FUN_0065cfe4 @ 0x0065cfe4   (est. sk_notif_push_tagged)
+ * Ghidra: void FUN_0065cfe4(ulong *param_1, int param_2)
+ * Links param_1 into the object's list at +0x10 (if param_2==0, bumps +0x18
+ * counter and uses +0x10 head; else uses +0x20 head), stamping the low-40-bit
+ * link with the 0x2000000000 tag bit. Calls the notify callback (_DAT_006fe630)
+ * if installed.
+ * Confidence: medium */
+static void sk_notif_push_tagged(uint64_t *param_1, int which)
+{
+    long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    uint64_t *head;
+    if (which == 0) {
+        head = (uint64_t *)(obj + 0x10);
+        *(long *)(obj + 0x18) = *(long *)(obj + 0x18) + 1;
+    } else {
+        head = (uint64_t *)(obj + 0x20);
+    }
+    uint64_t v;
+    do {
+        v = *head;
+        *param_1 = (v & 0xfffffffff) | 0x2000000000;
+    } while (*head != v);
+    *head = (uint64_t)param_1;
+    if (_DAT_006fe630 == 0) {
+        return;
+    }
+    (*(void (**)(uint64_t *, int))_DAT_006fe630)(param_1, 1);
+}
+
+/* FUN_0065d080 @ 0x0065d080   (est. sk_notif_slot_unlink)
+ * Ghidra: void FUN_0065d080(ulong *param_1)
+ * Removes param_1 from the object's slot list (+0x10). Clears its link tag,
+ * enters a spin, walks the list unlinking param_1, fixes the predecessor's
+ * link, leaves the spin, clears param_1 and calls the notify callback
+ * (_DAT_006fe630) with (param_1, 0).
+ * Confidence: medium */
+static void sk_notif_slot_unlink(uint64_t *param_1)
+{
+    long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    *param_1 = *param_1 & 0xfffffffff;
+    uint8_t spin = 0;
+    while ((FUN_00661348(&spin) & 1) == 0) { }
+    uint64_t *head;
+    while (1) {
+        while (1) {
+            head = *(uint64_t **)(obj + 0x10);
+            if (head == 0) goto done;
+            if (param_1 != head) break;
+            uint64_t next = *param_1 & 0xfffffffff;
+            if (*(uint64_t **)(obj + 0x10) == head) {
+                *(uint64_t *)(obj + 0x10) = next;
+                goto done;
+            }
+        }
+        uint64_t link;
+        uint64_t *cur = head;
+        do {
+            link = *cur;
+            if ((link >> 0x25 & 1) != 0) break;
+            cur = (uint64_t *)(link & 0xfffffffff);
+        } while (cur != 0 && param_1 != cur);
+        if (cur == 0) goto done;
+        /* walk to predecessor of param_1 */
+        uint64_t *prev = 0;
+        uint64_t plink = 0;
+        while (cur != 0 && cur != param_1) {
+            prev = cur;
+            plink = *cur;
+            cur = (uint64_t *)(plink & 0xfffffffff);
+        }
+        if (cur == 0) goto done;
+        if (prev != 0) {
+            *prev = *param_1 & 0xfff0000000000000 |
+                    *param_1 & 0xfffffffff | (plink >> 0x24 & 0xffff) << 0x24;
+        }
+        break;
+    }
+done:
+    FUN_006613d0(&spin);
+    FUN_00661428();
+    *param_1 = 0;
+    if (_DAT_006fe630 != 0) {
+        (*(void (**)(uint64_t *, int))_DAT_006fe630)(param_1, 0);
+    }
+}
+
+/* FUN_0065d20c @ 0x0065d20c   (est. sk_notif_slot_release)
+ * Ghidra: void FUN_0065d20c(void)
+ * Pops and clears the head of the +0x20 list; returns when list empty.
+ * Confidence: medium */
+static void sk_notif_slot_release(void)
+{
+    long obj = sk_notif_list_ensure((long *)&_DAT_006fe638, 1, 1);
+    while (1) {
+        uint64_t *head = *(uint64_t **)(obj + 0x20);
+        if (head == 0) {
+            return;
+        }
+        uint64_t next = *head & 0xfffffffff;
+        if (*(uint64_t **)(obj + 0x20) == head) {
+            *(uint64_t *)(obj + 0x20) = next;
+            *head = 0;
+            return;
+        }
+    }
+}
+
+/* FUN_0065d2e4 @ 0x0065d2e4   (est. sk_msg_copyin)
+ * Ghidra: ulong FUN_0065d2e4(undefined8 param_1, ulong param_2)
+ * Copies param_2 bytes from param_1 into the slot object's message area
+ * (obj+*obj+8), growing the used count (*obj). Returns bytes copied.
+ * Confidence: medium */
+static uint64_t sk_msg_copyin(uint64_t src, uint64_t len)
+{
+    /* resolve slot object id (5,1) via per-thread list */
+    long *list = *(long **)**(long **)((char *)sk_thread_base() + 0x10);
+    uint64_t *obj = 0;
+    long prev = 0;
+    if (list != 0) {
+        do {
+            obj = (uint64_t *)list[3];
+            if ((int)list[2] != 5 || (int)list[1] != 1) {
+                obj = (uint64_t *)prev;
+            }
+            list = (long *)*list;
+            prev = (long)obj;
+        } while (list != 0);
+    }
+    uint64_t *payload = obj + 0x10;
+    if ((uint64_t)payload <= (uint64_t)(obj + 0x12)) {
+        FUN_0065db84((void *)payload);
+        if (len < 0x79 && (*obj <= 0x78 - len)) {
+            uint64_t dst = (uint64_t)obj + *obj + 8;
+            FUN_0067aa00((void *)dst, (void *)src, len);
+            *obj = *obj + len;
+        } else {
+            len = 0;
+        }
+        if ((uint64_t)obj <= (uint64_t)(obj + 0x12)) {
+            FUN_0065de3c((void *)payload);
+            return len;
+        }
+    }
+    SoftwareBreakpoint(0x5519, 0x65d3d8);
+    return 0;
+}
+
+/* FUN_0065d3d8 @ 0x0065d3d8   (est. sk_msg_copyout)
+ * Ghidra: ulong FUN_0065d3d8(ulong param_1, ulong param_2)
+ * Copies param_2 bytes from the tail of the slot object's message area to
+ * param_1, shrinking the used count. Returns bytes copied.
+ * Confidence: medium */
+static uint64_t sk_msg_copyout(uint64_t dst, uint64_t len)
+{
+    long *list = *(long **)**(long **)((char *)sk_thread_base() + 0x10);
+    uint64_t *obj = 0;
+    long prev = 0;
+    if (list != 0) {
+        do {
+            obj = (uint64_t *)list[3];
+            if ((int)list[2] != 5 || (int)list[1] != 1) {
+                obj = (uint64_t *)prev;
+            }
+            list = (long *)*list;
+            prev = (long)obj;
+        } while (list != 0);
+    }
+    uint64_t *payload = obj + 0x10;
+    if ((uint64_t)payload <= (uint64_t)(obj + 0x12)) {
+        FUN_0065db84((void *)payload);
+        uint64_t used = *obj - len;
+        if (*obj < len) {
+            len = 0;
+        } else {
+            uint64_t *src = (uint64_t *)((uint64_t)(obj + 1) + used);
+            FUN_0067aa00((void *)dst, (void *)src, len);
+            FUN_0067a780((void *)src, len);
+            *obj = *obj - len;
+        }
+        if ((uint64_t)obj <= (uint64_t)(obj + 0x12)) {
+            FUN_0065de3c((void *)payload);
+            return len;
+        }
+    }
+    SoftwareBreakpoint(0x5519, 0x65d484);
+    return 0;
+}
+
+/* FUN_00659ef4 @ 0x00659ef4   (est. sk_objtype_table_build_0x600000001)
+ * Ghidra: bool FUN_00659ef4(long param_1, long param_2)
+ * Version-tagged object-type method-table builder (tag 0x600000001).
+ * Confidence: medium (structural builder, no string match) */
+static bool sk_objtype_table_build_0x600000001(uint64_t version, uint8_t *tbl)
+{
+    if (version == 0x600000001ULL) {
+        *(uint64_t *)(tbl + 0x08) = 0x600000001ULL;
+        *(uint64_t *)(tbl + 8) = 0x600000001;
+        *(uint64_t *)(tbl + 0x10) = 0x6a5ed4;
+        *(uint8_t *)(tbl + 0x18) = 0;
+        *(uint32_t *)(tbl + 0x1c) = 0xffffffff;
+        *(uint8_t *)(tbl + 0x20) = 0;
+        *(uint64_t *)(tbl + 0x28) = 0;
+        *(uint8_t *)(tbl + 0x30) = 1;
+        *(uint32_t *)(tbl + 0x34) = 3;
+        *(int32_t *)(tbl + 0x38) = (int32_t)DAT_006887b0;
+        *(void **)(tbl + 0x40) = (void *)(uintptr_t)0x0065a278; /* &LAB_0065a278 */
+        *(void **)(tbl + 0x48) = (void *)(uintptr_t)0x0065a290; /* &DAT_0065a290 */
+        *(void **)(tbl + 0x50) = (void *)(uintptr_t)0x0065a2a8; /* &LAB_0065a2a8 */
+        *(void **)(tbl + 0x58) = (void *)sk_syscall1_0065a550;
+        *(void **)(tbl + 0x60) = (void *)(uintptr_t)0x0065a2c4; /* &DAT_0065a2c4 */
+        *(void **)(tbl + 0x68) = (void *)sk_syscall1_0065a580;
+        *(void **)(tbl + 0x70) = (void *)(uintptr_t)0x0065a2dc; /* &DAT_0065a2dc */
+        *(void **)(tbl + 0x78) = (void *)(uintptr_t)0x0065a314; /* &LAB_0065a314 */
+        *(void **)(tbl + 0x80) = (void *)(uintptr_t)0x0065a32c; /* &LAB_0065a32c */
+        *(void **)(tbl + 0x88) = (void *)(uintptr_t)0x0065a344; /* &LAB_0065a344 */
+        *(void **)(tbl + 0x90) = (void *)(uintptr_t)0x0065a36c; /* &LAB_0065a36c */
+        *(void **)(tbl + 0x98) = (void *)sk_syscall1_0065a5b0;
+        *(uint8_t *)(tbl + 0xa0) = 1;
+        *(uint32_t *)(tbl + 0xa4) = 4;
+        *(void **)(tbl + 0xa8) = (void *)(uintptr_t)0x0065a390; /* &LAB_0065a390 */
+        *(void **)(tbl + 0xb0) = (void *)(uintptr_t)0x0065a398; /* &LAB_0065a398 */
+        *(void **)(tbl + 0xb8) = (void *)(uintptr_t)0x0065a3a0; /* &LAB_0065a3a0 */
+        *(void **)(tbl + 0xc0) = (void *)(uintptr_t)0x0065a3a8; /* &LAB_0065a3a8 */
+        *(uint64_t *)(tbl + 0xd0) = 0xc;
+        *(void **)(tbl + 0xd8) = (void *)(uintptr_t)0x0065a3b0; /* &LAB_0065a3b0 */
+        *(void **)(tbl + 0xe0) = (void *)(uintptr_t)0x0065a3b8; /* &LAB_0065a3b8 */
+        *(void **)(tbl + 0xe8) = (void *)(uintptr_t)0x0065a3c0; /* &LAB_0065a3c0 */
+        *(uint16_t *)(tbl + 0xf0) = 0x1601;
+        *(uint32_t *)(tbl + 0xf4) = 3;
+        *(void **)(tbl + 0xf8) = (void *)(uintptr_t)0x0065a3c8; /* &LAB_0065a3c8 */
+        *(void **)(tbl + 0x100) = (void *)(uintptr_t)0x0065a3e8; /* &LAB_0065a3e8 */
+        *(void **)(tbl + 0x108) = (void *)(uintptr_t)0x0065a404; /* &LAB_0065a404 */
+        *(void **)(tbl + 0x110) = (void *)(uintptr_t)0x0065a41c; /* &LAB_0065a41c */
+        *(void **)(tbl + 0x118) = (void *)(uintptr_t)0x0065a424; /* &LAB_0065a424 */
+        *(void **)(tbl + 0x120) = (void *)sk_syscall3_0065a42c;
+        *(void **)(tbl + 0x128) = (void *)sk_syscall1_0065a5e0;
+        *(void **)(tbl + 0x130) = (void *)(uintptr_t)0x0065a458; /* &LAB_0065a458 */
+        *(void **)(tbl + 0x138) = (void *)sk_syscall1_0065a610;
+        *(uint16_t *)(tbl + 0x149) = 0x1701;
+        *(uint32_t *)(tbl + 0x14c) = 1;
+        *(void **)(tbl + 0x150) = (void *)(uintptr_t)0x0065a474; /* &LAB_0065a474 */
+        *(void **)(tbl + 0x158) = (void *)(uintptr_t)0x0065a494; /* &LAB_0065a494 */
+        *(void **)(tbl + 0x160) = (void *)sk_syscall2_0065a640;
+        *(void **)(tbl + 0x168) = (void *)(uintptr_t)0x0065a4b4; /* &LAB_0065a4b4 */
+        *(void **)(tbl + 0x170) = (void *)(uintptr_t)0x0065a4fc; /* &LAB_0065a4fc */
+        *(uint8_t *)(tbl + 0x140) = 1;
+        *(uint32_t *)(tbl + 0x144) = 5;
+        *(uint8_t *)(tbl + 0x148) = 0;
+        *(uint8_t *)(tbl + 0x178) = 0x1a;
+        *(void **)(tbl + 0x180) = (void *)(uintptr_t)0x00689310; /* &DAT_00689310 */
+        *(void **)(tbl + 0x188) = (void *)(uintptr_t)0x006893e0; /* &DAT_006893e0 */
+        *(uint64_t *)(tbl + 400) = 0x6b4e28;
+        *(void **)(tbl + 0x198) = (void *)(uintptr_t)0x0065a53c; /* &LAB_0065a53c */
+        *(void **)(tbl + 0x1a0) = (void *)(uintptr_t)0x0065a544; /* &LAB_0065a544 */
+        *(uint8_t *)(tbl + 0x1a8) = 1;
+        *(uint64_t *)(tbl + 0x1b0) = 1;
+        *(uint32_t *)(tbl + 0x1b8) = 1;
+        /* (unparsed) } */
+    }
+    return version == 0x600000001ULL;
+}

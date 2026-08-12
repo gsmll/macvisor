@@ -19,10 +19,6 @@ extern void sk_assert_panic(const char *msg);                    /* FUN_004afae4
 extern void sk_fault_slot(unsigned long obj);                    /* FUN_0005fd24 */
 
 /* ---- noreturn helpers local to this region (bodies below) ---- */
-extern void sk_fatal_6a5e5a(void);      /* FUN_006833d4 noreturn: state-fatal panic */
-extern void sk_fatal_6a5aab(void);      /* FUN_006833d4 variant */
-extern void sk_fatal_6a5afd(void);      /* FUN_0067b280 noreturn: init-fatal */
-extern void sk_fatal_6a576b(void);      /* FUN_0067b280 noreturn: slot-check fatal */
 extern void sk_stack_check_fail(void);  /* FUN_0067f660 noreturn */
 
 /* ---- cL4 monitor / syscall primitives ---- */
@@ -64,9 +60,9 @@ extern int  sk_page_unwire_chk(void);                /* FUN_0065dda4 */
 extern void sk_page_destroy(void);                   /* FUN_0065de3c */
 
 /* ---- cL4 object-store (bucket) helpers ---- */
-extern void *sk_bucket_lookup(unsigned long id, unsigned long a, unsigned long b); /* FUN_0065be08 */
-extern void *sk_bucket_head(void);                   /* FUN_0065cb74 */
-extern void *sk_bucket_iter(unsigned long id, unsigned long a, unsigned long b);   /* FUN_0065cbbc */
+extern unsigned long sk_bucket_lookup(unsigned long id, unsigned long a, unsigned long b); /* FUN_0065be08 */
+extern unsigned long sk_bucket_head(void);            /* FUN_0065cb74 */
+extern unsigned long sk_bucket_iter(unsigned long id, unsigned long a, unsigned long b);   /* FUN_0065cbbc */
 extern int  sk_bucket_acquire(unsigned long a, unsigned long b); /* FUN_0065cc0c */
 extern void sk_bucket_release(void *obj);            /* FUN_0065cc50 */
 extern void *sk_bucket_current(void);                /* FUN_0065ccdc */
@@ -76,7 +72,7 @@ extern void sk_store_write8(unsigned long addr, unsigned long val);   /* FUN_006
 extern unsigned long sk_cur_ipc_buf(unsigned long *inout); /* FUN_00654cc8 */
 
 /* ---- context / state save-restore ---- */
-extern void sk_ctx_finish(void);                     /* FUN_0064effc */
+extern void sk_ctx_finish(unsigned long a, unsigned long b);  /* FUN_0064effc */
 extern void sk_sys_before(void);                     /* FUN_0065c218 */
 extern void sk_sys_after(void);                      /* FUN_0065c9fc */
 extern void sk_sys_reset(void);                      /* FUN_0065db00 */
@@ -86,19 +82,19 @@ extern unsigned long sk_sys_next(unsigned long n);   /* FUN_0066239c */
 extern void sk_vcpu_enter(void *key, void *v);       /* FUN_0066b750 */
 extern void sk_sched_tick(void);                     /* FUN_0065cbbc */
 extern void sk_trace_flush(void);                    /* FUN_0067dbc0 */
-extern void sk_cache_flush(void);                    /* FUN_006825bc */
-extern void sk_rt_disable(void);                     /* FUN_0067d798 */
-extern void sk_rt_write(void *a, unsigned long b, void *c); /* FUN_0067d83c */
-extern void sk_rt_writel(void *a, unsigned long b);  /* FUN_0067cffc */
-extern unsigned long sk_rt_writel_ok(void *a, unsigned long b); /* FUN_0067d014 */
-extern void sk_rt_writel2(void *a, unsigned long b); /* FUN_0067d02c */
-extern void sk_rt_clr(void *a, unsigned long b);     /* FUN_0067cfe0 */
-extern void sk_rt_writel_t(void *a, unsigned long b);/* FUN_0067cd74 */
+extern void sk_cache_flush(unsigned long a, unsigned long b);  /* FUN_006825bc */
+extern void sk_rt_disable(unsigned long a);            /* FUN_0067d798 */
+extern void sk_rt_write(unsigned long a, unsigned long b, unsigned long c); /* FUN_0067d83c */
+extern void sk_rt_writel(unsigned long a, unsigned long b);  /* FUN_0067cffc */
+extern unsigned long sk_rt_writel_ok(unsigned long a, unsigned long b); /* FUN_0067d014 */
+extern void sk_rt_writel2(unsigned long a, unsigned long b); /* FUN_0067d02c */
+extern void sk_rt_clr(unsigned long a, unsigned long b);     /* FUN_0067cfe0 */
+extern void sk_rt_writel_t(unsigned long a, unsigned long b);/* FUN_0067cd74 */
 extern unsigned long sk_cur_magic(void);             /* FUN_0066ad54 */
 extern unsigned long sk_cur_magic2(void);            /* FUN_00683e50 */
 extern unsigned long sk_cur_magic3(void);            /* FUN_00683e68 */
-extern void sk_obj_release(unsigned long obj);       /* FUN_006860f4 */
-extern void sk_obj_release2(unsigned long obj);      /* FUN_00683e80 */
+extern unsigned long sk_obj_release(unsigned long obj);   /* FUN_006860f4 */
+extern void sk_obj_release2(void);      /* FUN_00683e80 */
 extern void sk_obj_release3(void);                   /* FUN_00683ea4 */
 extern void sk_obj_release4(void);                   /* FUN_00683ee8 */
 extern void sk_obj_release5(void);                   /* FUN_00683e40 */
@@ -106,22 +102,22 @@ extern void sk_obj_release6(void);                   /* FUN_00683f38 */
 extern void sk_obj_release7(void);                   /* FUN_00683f4c */
 extern void sk_sched_switch(void);                   /* FUN_00665bd4 */
 extern int  sk_sched_ready(unsigned long a, unsigned long b); /* FUN_0065bcf0 */
-extern void sk_sched_init(void);                     /* FUN_0066133c */
-extern void sk_sched_pin(unsigned long a, unsigned long b, void *c); /* FUN_00660eec */
-extern unsigned long sk_sched_slot(void);            /* FUN_0065d90c */
+extern int  sk_sched_init(void);                     /* FUN_0066133c */
+extern int  sk_sched_pin(unsigned long a, unsigned long b, unsigned long c); /* FUN_00660eec */
+extern unsigned long sk_sched_slot(unsigned long n);   /* FUN_0065d90c */
 extern void sk_sched_wake(unsigned long a, unsigned long b); /* FUN_006631d8 */
 extern void sk_sched_unpin(void);                    /* FUN_006635ac */
 extern void sk_sched_unpin2(unsigned long a, unsigned long b); /* FUN_006635c0 */
 extern unsigned long sk_sched_unpin3(unsigned long a, unsigned long b); /* FUN_0066363c */
 extern void sk_sched_unpin4(unsigned long a, unsigned long b); /* FUN_00663644 */
-extern void sk_mem_reclaim(void);                    /* FUN_0064cbc0 */
+extern int  sk_mem_reclaim(void);                    /* FUN_0064cbc0 */
 extern void sk_mem_reclaim2(void);                   /* FUN_0064fec8 */
 extern void sk_mem_reclaim3(void);                   /* FUN_00650418 */
 extern void sk_flush_soft(void);                     /* FUN_0065c218 */
 extern unsigned long sk_flush_soft2(void);           /* FUN_00652204 */
 
 /* ---- vspace / page-table helpers ---- */
-extern void sk_vas_walk_commit(unsigned long region, unsigned long off); /* FUN_0064f7e8 */
+extern void sk_vas_walk_commit(unsigned long a, unsigned long b, unsigned short c, long d); /* FUN_0064f7e8 */
 extern void sk_vas_walk_commit2(void);               /* FUN_0064fa00 */
 extern void sk_vas_walk_commit3(unsigned long a, unsigned long b, unsigned long c, unsigned long d, unsigned long e); /* FUN_0064fe58 */
 extern unsigned long sk_vas_region_at(unsigned long a, unsigned long b); /* FUN_0064fd24 */
@@ -183,10 +179,10 @@ extern unsigned long _DAT_006fc540, _DAT_006fc548, _DAT_006fc550, _DAT_006fc558;
 extern unsigned long _DAT_006fc560, _DAT_006fc568, _DAT_006fc570, _DAT_006fc578;
 extern unsigned long _DAT_006fb9c0;
 extern unsigned long _DAT_006b43a0b;
-extern unsigned long _DAT_0064c020;   /* machine feature register */
-extern unsigned long _DAT_0064c038;   /* image data base */
+extern unsigned long _DAT_0064c020;   /* machine feature register */extern unsigned long _DAT_0064c038;   /* image data base */
 extern unsigned long _DAT_0064c058;   /* feature field */
 extern unsigned long _DAT_0064c05c;   /* feature field */
+extern unsigned long _DAT_00654240;   /* teardown callback table */
 
 /* =====================================================================
  * Function bodies (address order).
@@ -215,18 +211,46 @@ static void sk_notif_broadcast(int want_root, unsigned long arg);
 static void sk_notif_dispatch_all_panic(void);
 static void sk_vspace_teardown(long async);
 static void sk_object_store_build(void);
-static void sk_deref_obj(unsigned long *obj);
+static unsigned long sk_deref_obj(unsigned long *obj);
 static unsigned long sk_store_type1(void);
 static unsigned long sk_store_type2(void);
 static unsigned long sk_store_type3(void);
 static unsigned long sk_store_type2_get(void);
+static void sk_rt_clr_entry(int clear_locks);
+static void sk_fatal_6a5cea(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5da6(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5de8(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5d4e(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5aab(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5afd(void);   /* FUN_0067b280 noreturn */
+static void sk_fatal_6a576b(void);   /* FUN_0067b280 noreturn */
+static void sk_fatal_6a5e5a(void);   /* FUN_006833d4 variant */
+static void sk_fatal_6a5ce0(void);
 
-/* L4 error-code name strings (Ghidra s_L4_ErrorCode*_00688648..) */
-extern unsigned char _DAT_00688788[];   /* overflow/hex fallback string */
+/* ---- noreturn state-fatal panic helpers (FUN_006833d4 / FUN_0067b280 variants) ---- */
+static void sk_fatal_6a5e5a(void)  { sk_fatal_msg("store state fatal"); }
+static void sk_fatal_6a5aab(void)  { sk_fatal_msg("teardown fatal"); }
+static void sk_fatal_6a5afd(void)  { sk_fatal_msg("init fatal"); }
+static void sk_fatal_6a576b(void)  { sk_fatal_msg("slot check fatal"); }
+static void sk_fatal_6a5cea(void)  { sk_fatal_msg("store build fatal (0x6a5cea)"); }
+static void sk_fatal_6a5da6(void)  { sk_fatal_msg("store build fatal (0x6a5da6)"); }
+static void sk_fatal_6a5de8(void)  { sk_fatal_msg("store build fatal (0x6a5de8)"); }
+static void sk_fatal_6a5d4e(void)  { sk_fatal_msg("store build fatal (0x6a5d4e)"); }
+static void sk_fatal_6a5ce0(void)  { sk_fatal_msg("store build fatal (0x6a5ce0)"); }
 
 /* object-create helper (FUN_0066a8c4 vtable dispatch, 6-arg) */
 extern int sk_obj_vt_call(void *self, unsigned long kind, unsigned char *tag,
                           unsigned long *out, unsigned long a, unsigned long b);
+
+/* L4 error-code name strings (Ghidra s_L4_ErrorCode*_00688648..) */
+extern unsigned char _DAT_00688788[];   /* overflow/hex fallback string */
+
+/* sk_obj_create: dispatch object creation through the vtable (FUN_0066a8c4 + call) */
+static int sk_obj_create(unsigned long kind, unsigned char *tag, unsigned long *out)
+{
+    /* returns nonzero on error; the real helper resolves self/vtable via FUN_0066a8c4 */
+    return sk_obj_vt_call(0, kind, tag, out, 0, 0);
+}
 
 /* FUN_00652254 @ 0x00652254  (est. sk_syscall_dispatch)
  * Ghidra: void FUN_00652254(undefined8 param_1, ushort *param_2, undefined8 param_3,
@@ -1119,7 +1143,7 @@ static void sk_vas_store_enable(long sw_flag)
         _DAT_006fec90 = sw_flag != 0;
         _DAT_006fec91 = 0;
         _DAT_006fec92 = 1;
-        sk_vas_store_init(0);
+        sk_vas_store_init(0, 0);
         return;
     }
     SoftwareBreakpoint(1, 0x653b74);
@@ -1268,13 +1292,13 @@ static void sk_vspace_teardown(long async)
     unsigned long cpu;
     unsigned char *m;
 
-    cpu = sk_bucket_lookup(0x6fc580, 2, 2);
-    sk_rt_clr(*(unsigned char *)(cpu + 0xd8) & 1, 0);   /* FUN_006557e0 */
+    cpu = (unsigned long)sk_bucket_lookup(0x6fc580, 2, 2);
+    sk_rt_clr_entry(*(unsigned char *)(cpu + 0xd8) & 1);   /* FUN_006557e0 */
     sk_notif_broadcast(async != 0, 1);
-    sk_cache_flush(0x6bb9c0, &_DAT_006fb9c0);
+    sk_cache_flush(0x6bb9c0, (unsigned long)&_DAT_006fb9c0);
     sk_notif_broadcast(async != 0, 0);
     if (async == 0 && (rc = sk_sched_init(), rc != 0)) {
-        rc = sk_sched_pin(0x40000, &_DAT_00654240, cpu);
+        rc = sk_sched_pin(0x40000, (unsigned long)&_DAT_00654240, cpu);
     } else {
         sk_rt_disable(cpu);
         rc = sk_mem_reclaim();
@@ -1308,7 +1332,7 @@ static void sk_vspace_teardown(long async)
  * Confidence: medium */
 static void sk_notif_broadcast(int want_root, unsigned long arg)
 {
-    sk_send_msg(0x706c6174);                 /* "plat" */
+    sk_send_msg(0x706c6174, 0);              /* "plat" */
     if (sk_flush_soft2() != 0) {
         sk_notif_dispatch_type_b(arg);
         return;
