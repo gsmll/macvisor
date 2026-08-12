@@ -633,6 +633,7 @@ static word_t dt_iter_advance(word_t *iter)
         }
         dt_overflow_fatal();
     }
+    return 1;
 }
 
 /* FUN_00065f48 @ 0x65f48  (est. dt_children)
@@ -772,6 +773,7 @@ static word_t dt_list_len(word_t *head)
         n = n + 1;
     }
     dt_overflow_fatal();
+    return n;
 }
 
 /* FUN_00066204 @ 0x66204  (est. dt_overflow_fatal)
@@ -779,6 +781,7 @@ static word_t dt_list_len(word_t *head)
 static void dt_overflow_fatal(void)
 {
     FUN_001150e0((word_t)"integer overflow");
+    __builtin_unreachable();
 }
 
 /* FUN_00066210 @ 0x66210  (est. dt_nop)
@@ -1186,6 +1189,7 @@ static word_t dtk_dump_node_tree(word_t a, word_t b)
         }
     }
     dtk_end_dump(&ctx, a, b);
+    return 0;
 }
 
 /* FUN_00067444 @ 0x67444  (est. dtk_begin_dump)

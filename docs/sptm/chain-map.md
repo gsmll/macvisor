@@ -448,3 +448,9 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - Key security-relevant cores (see docs/sptm/findings.md [sk-vspace]): slot-set bitmap walk 0x2587e0 (bitmap = sole mapping-permission authority, medium), open-addressing slot-key insert 0x25a864/0x25acb8 (no owner check, panic-on-dup), slot-path subscript 0x2557b8 (bounds-checked fail-closed), vspace entry table lookup-insert 0x26a328/0x26a9a8, owner-mask isolation gate 0x249a64/0x24a648, size-divisibility permission gate 0x24c2ec, region-equality gate 0x24ad48.
 - Runtime prologue/epilogue thunks: 0x200150 object-describe root, 0x2023c4 sk_map_region_core, 0x277d80 guarded TLB/ASID flush entry (per-cpu ready gate 0x1e3048).
 - Shared seL4/Swift runtime callees are extern (FUN_ addresses in comments); bodies owned by other waves (0x3xxxxx runtime library, out of this range).
+
+## Batch SK14 (0x6a468-0x6d52c) — cL4 Secure Kernel cbootinfo/IPMM bootstrap (osfmk/arm64/sk/sk_slice_14.c)
+- 120 functions decompiled (range fully covered) — launcher IPMM physical-memory manager + cbootinfo bootstrap parser + vspace-table client registry + embedded Swift-runtime thunks (DeviceTreeKit, Swift.NativeDictionary).
+- Internal edges: sk_ipmm_freelist_init 0x6b7e0 → cboot alloc 0x6d240, launcher cap-table 0x6cea4; sk_ipmm_frame_alloc 0x6bcf8 → 0x6b7e0 (arena extend) + 0x6cea4 (freelist-table); sk_cbootinfo_parse 0x6c5cc → untyped-region finders 0x6cf50/0x6cfe4/0x6d024/0x6d0b8/0x6d150/0x6d1e4; dict layer 0x6abac → pair build 0x6ae9c → probe 0x6af08.
+- Key security cores (see findings [Sk14]): frame alloc 0x6bcf8 (type-gated, arena-exhaustion fail-closed), boot-info parse 0x6c5cc (bounds-gated untyped/DART tables), freelist/zero-frame cap create 0x6b7e0, vspace list unlink 0x6c454 (fail-closed).
+- Shared cL4/Swift runtime callees (FUN_004b7xxx/004b8xxx error funnels, 0x34a2c/0x36b118/0x36b270 etc) are extern (FUN_ addresses in comments); bodies owned by sibling SK wave workers.

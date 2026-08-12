@@ -8615,13 +8615,13 @@ void sk_vspace_region_init(void *obj)
     void *as = sk_amx_state();                  /* FUN_00034f70 */
     sk_word_t b0 = *(sk_word_t *)((char*)obj + 0x18);
     sk_word_t b1 = *(sk_word_t *)((char*)obj + 0x20);
-    sk_word_t adj = sk_alloc_align_adjust(obj, b0);
-    sk_word_t r = sk_region_map(as, b0, b1, adj);   /* FUN_000f6d20 */
+    sk_word_t adj = (sk_word_t)sk_alloc_align_adjust((long*)obj, (long)b0);
+    sk_word_t r = sk_region_map((sk_word_t)(uintptr_t)as, b0, b1, adj);   /* FUN_000f6d20 */
     *(void **)((char*)unaff_x20 + 0x18) = as;
     *(sk_word_t *)((char*)unaff_x20 + 0x20) = r;
     *(long **)((char*)unaff_x20 + 0x10) = pt;
     void (*map)(int, void*) = *(void(**)(int,void*))(*pt + 0x90);
-    sk_alloc_pages(pt, 0);
+    sk_alloc_pages((sk_word_t)pt, 0);
     map(0, as);
     unsigned int *desc = (unsigned int*)(*(sk_word_t(*)(void))(*pt + 0xe0))();
     if (desc == NULL) sk_breakpoint(1, 0x6da1c);
@@ -8671,12 +8671,12 @@ void sk_commpage_mint(void)
         sk_word_t rec[2] = {0, 0xe000000000000000};
         sk_report_lock(0x36);
         sk_report_emit(0xd000000000000022, 0x80000000005bfb30);
-        void (*p1)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2(0x671df8);
+        void (*p1)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2((void*)(uintptr_t)0x671df8);
         p1(0x677830, 0x671df8);
         sk_report_emit(0, 0);
         sk_report_free(0);
         sk_report_emit(0x3d6573616220, 0xe600000000000000);   /* ' base=' */
-        void (*p2)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2(0x671848);
+        void (*p2)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2((void*)(uintptr_t)0x671848);
         p2(0x677790, 0x671848);
         sk_report_emit(0, 0);
         sk_report_free(0);
@@ -8702,9 +8702,9 @@ void sk_commpage_slot_set(sk_word_t v)
         sk_panic_halt2();
         sk_fatal0();
     }
-    void (*get)(void) = *(void(**)(void))(*cp + 0xe0);
-    sk_alloc_pages(cp, 0);
-    long d = (long)get();
+    long (*get)(void) = (long(*)(void))*(void(**)(void))(*cp + 0xe0);
+    sk_alloc_pages((sk_word_t)cp, 0);
+    long d = get();
     if (d != 0) {
         *(sk_word_t *)((char*)d + 0x28) = v;
         sk_free(cp);
@@ -8721,11 +8721,11 @@ void sk_commpage_slot_set(sk_word_t v)
 sk_word_t sk_commpage_mint_cap(sk_word_t mode)
 {
     void *as = sk_amx_state();
-    long r = sk_cs_map(*(sk_word_t *)((char*)unaff_x20 + 0x18), as, mode & 1);  /* FUN_0006de38 */
+    long r = (long)sk_cs_map(*(sk_word_t *)((char*)unaff_x20 + 0x18), (sk_word_t)(uintptr_t)as, mode & 1);  /* FUN_0006de38 */
     if (r == 0) return (sk_word_t)as;
     sk_report_lock(0x1f);
     sk_report_free(0xe000000000000000);
-    void (*p)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2(0x671df8);
+    void (*p)(sk_word_t,sk_word_t) = (void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2((void*)(uintptr_t)0x671df8);
     p(0x677830, 0x671df8);
     sk_report_emit(0, 0);
     sk_report_free(0);
@@ -8936,7 +8936,7 @@ long sk_commpage_alloc3(void)
     sk_word_t ct = sk_ctx7(0);
     long o = (long)sk_alloc_obj(ct, 0x20, 7);
     sk_commpage_prep();                         /* FUN_0006f70c */
-    *(sk_word_t *)(o + 0x10) = sk_disp_done(&DAT_00657778);
+    *(sk_word_t *)(o + 0x10) = sk_disp_done();
     *(void **)(o + 0x18) = &DAT_00657778;
     return o;
 }
@@ -9213,7 +9213,7 @@ void sk_ctx_reg(long id, void *(*build)(long))
  * Confidence: low
  * Notes: Indirect jump, 'Too many branches'.
  */
-void sk_ctx_dispatch(sk_word_t a, long tbl, sk_word_t c){ (*(void(**)(sk_word_t,sk_word_t,long))(*(void***)(tbl + 0x40)[0]))(a, c, 0); }
+void sk_ctx_dispatch(sk_word_t a, long tbl, sk_word_t c){ (*(void(**)(sk_word_t,sk_word_t,long))(*(void***)((char*)(uintptr_t)tbl + 0x40)[0]))(a, c, 0); }
 /* FUN_0006f180 @ 0x6f180   (est. sk_ctx_bind3)
  * Ghidra: void FUN_0006f180(undefined8)
  * Binds a context via 0x1a0d0 (LAB_0064e408/0x65e908).
@@ -9377,7 +9377,7 @@ void sk_obj_state_word(sk_word_t *out){ sk_state_prep((char*)unaff_x20 + 0x18); 
  * Confidence: low
  * Notes: FUN_002a4ab4/003a25d4/0006fd6c/0036a1a0/00027724; thunk_FUN_002acbb8; 0x80000000005bfb60/0xd000000000000023.
  */
-sk_word_t sk_state_error_rec(void){ sk_report_lock(0x1d); sk_report_free(0xe000000000000000); sk_state_prep((char*)unaff_x20 + 0x18); sk_state_export(); void (*p)(sk_word_t,sk_word_t)=(void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2(0x671df8); p(0x677830,0x671df8); sk_report_emit(0,0); sk_report_free(0); sk_report_emit(0x29, 0xe100000000000000); return 0x80000000005bfb60; }
+sk_word_t sk_state_error_rec(void){ sk_report_lock(0x1d); sk_report_free(0xe000000000000000); sk_state_prep((char*)unaff_x20 + 0x18); sk_state_export(); void (*p)(sk_word_t,sk_word_t)=(void(*)(sk_word_t,sk_word_t))sk_boot_obj_helper2((void*)(uintptr_t)0x671df8); p(0x677830,0x671df8); sk_report_emit(0,0); sk_report_free(0); sk_report_emit(0x29, 0xe100000000000000); return 0x80000000005bfb60; }
 /* FUN_0006fa2c @ 0x6fa2c   (est. sk_obj_free_tear)
  * Ghidra: void FUN_0006fa2c(void)
  * Frees the object at +0x10 and runs the allocator teardown.
@@ -9506,7 +9506,7 @@ sk_word_t sk_untyped_name(sk_word_t i, char quote)
     } while (idx != 0);
     if (idx == 0) idx = 0;
     if ((long)(idx*10) != 0 && 0) sk_breakpoint(1, 0x6ff34);
-    sk_boot_obj_helper2(0x671df8);
+    sk_boot_obj_helper2((void*)(uintptr_t)0x671df8);
     sk_word_t v = sk_778a0();                    /* FUN_000778a0 */
     (*(void(**)(sk_word_t,sk_word_t))extraout_x8)(v, 0x671df8);
     sk_report_emit(0, 0);

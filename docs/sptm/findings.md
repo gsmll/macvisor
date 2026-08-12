@@ -1688,3 +1688,45 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `res=(uint16_t*)FUN_0004E7B8(uvar12, kind_sel)`; `p = (sel!=2)? res+0xc : res; p2=(sel!=1)?p:res; p3=(sel<0x50)?p2:res+4; word = packed 8-byte read of *p3`; no match → `sk_ec_switch(0,"No tighbeam placeholder resource")`.
 - **Severity (hypothesis)**: low — descriptor content is boot-image (GL1 trust-boundary) input; a malformed descriptor with a valid kind could be read at an unintended offset, but the result is only used to seed config, and no-match panics rather than proceeding.
 - **Confidence**: medium
+
+## [Sk14] 0x0006bcf8 sk_ipmm_frame_alloc — launcher IPMM physical-frame allocator (guest memory boundary)
+- **Observation**: The launcher IPMM hands physical frames to exclaves. The allocation type (param_5) is validated against `(param_5 & 0xfffffffd) != 0` → panic "unexpected PMM allocation type", and type 5 returns error 0x107 (fail-closed). Frame selection is bounded to known memory types (4, 6, 7, 8, 0x11); the freelist-recycle path pops `g_freelist_base + g_freelist_used*0x40` after decrementing `g_freelist_used` (index validated non-zero). The cbootinfo arena is bumped only after checking `g_cboot_alloc_limit` (calls FUN_0006b7e0 to extend, else panics "ipmm: Operation Invalid: Wrong"). Success creates the untyped frame via SVC 0 with `{type, frame, param_4}` staged in the tpidrro_el0 block.
+- **Evidence**: `if ((param_5 & 0xfffffffd) != 0) FUN_0005b190(0, s_unexpected_PMM_allocation_type)`; `if (param_3 == 5) return 0x107`; `if ((mtype==0x11) && (g_freelist_used!=0)) { g_freelist_used -= 1; frame = g_freelist_base + g_freelist_used*0x40; }`; arena `if (g_cboot_alloc_limit < base+0x4000) { FUN_0006b7e0(); if (g_cboot_alloc_limit < base+0x4000) goto funnel_end; }`; SVC frame `*puVar2=param_2&0xffffffff; puVar2[1]=uVar5; puVar2[2]=param_4; CallSupervisor(0)`.
+- **Severity (hypothesis)**: medium — this is the physical-memory allocation boundary between the launcher and exclaves; the type gate and arena-exhaustion panics are fail-closed, but the tpidrro_el0 SVC frame and freelist-recycle state are worth auditing (a corrupted freelist could hand out an already-allocated frame).
+- **Confidence**: medium
+
+## [Sk14] 0x0006c5cc sk_cbootinfo_parse — boot-info capability-array parsing (GL1 trust boundary)
+- **Observation**: Parses the launcher cbootinfo cap array (a linked list of pages) and records untyped regions, DART/Table SIDs, TEXT/DATA segment caps, and the roottask slide. Registry writes are bounds-gated: `if (0x3f < g_untyped_scan_idx) FUN_004b8288()` (region overflow), `if (0x1f < g_dart_count) / g_dart_table_count` panic. The __TEXT/__DATA segment slide uses FUN_00051e5c on the Mach-O header; a missing segment leaves the roottask slide unset (logged "Roottask slide is 0x.."). Malformed/missing entries route to the FUN_004b8xxx abort funnel rather than proceeding.
+- **Evidence**: `if (0x3f < g_untyped_scan_idx) FUN_004b8288(); goto err_funnel`; `if (0x1f < g_dart_count) goto err_funnel_h`; `if (0x1f < g_dart_table_count) goto err_funnel_i`; `FUN_00118b28(s_Roottask_slide_is_0x_llx_005a8b16)`.
+- **Severity (hypothesis)**: medium — boot-info is external (GL1 trust-boundary) input; the population of the untyped-region and DART tables is bounds-checked, so a hostile cbootinfo array is constrained, but the segment-slide/roottask computation and the tpidrro SVC replication (type 1 untyped) are the highest-value attack surface here and merit focused review.
+- **Confidence**: medium
+
+## [Sk14] 0x0006b7e0 sk_ipmm_freelist_init — launcher freelist + zero-frame cap creation
+- **Observation**: On IPMM re-entry, builds the launcher freelist cap (selector 0x940) and the zero-frame cap (selector 0x1808) via the cap-create IPC dispatch `(**(code**)(arena.hi+0x30))(arena.lo, sel, msg, &outcap, 0, 0)`. The vtable-backed `+8` method seeds the freelist, and `+0x28` maps frames to zero (g_zero_frames_active set). Any failure aborts with an "IPMM abort in function" panic. Notably it snapshots the 26-entry launcher cap table (FUN_0006cea4) into 0x6b2848, which FUN_0006bcf8 later indexes by memory-type without a direct bounds check (reliance on the type-gate in the caller).
+- **Evidence**: `cVar4 = op(arena.lo, 0x940, &local_a0, &g_freelist_handle, 0, 0)`; `if (g_freelist_vtable==0) FUN_00054354(); (**(code**)(g_freelist_vtable+8))(g_freelist_handle, 0x6b2800)`; zero-frame `op(arena.lo, 0x1808, &local_a0, &g_zero_handle, 0, 0)`; `(**(code**)(g_zero_vtable+0x28))(g_zero_handle, 0, frame_cap)`.
+- **Severity (hypothesis)**: medium — zero-mapping frames is a confidentiality control (exclave memory is zeroed before handoff); a failure aborts rather than silently returning unzeroed memory (fail-closed), which is good, but the cap-create message globals (DAT_004bee90/98/a0/a8/b0/b8) are opaque and worth cross-checking.
+- **Confidence**: medium
+
+## [Sk14] 0x0006c454 sk_vspace_table_remove — vspace client-list unlink integrity (fail-closed)
+- **Observation**: Removes the current client from the vspace-table list with explicit doubly-linked-list integrity checks before unlinking; corruption panics via FUN_001150e0 ("Bad link elm: p->next->prev != el" / "p->prev->next != el") and a missing node panics "expected client to be in list". The head-removal path flushes via FUN_00012568. An unarmed table aborts "vspace table not ready yet".
+- **Evidence**: `if (*(uint64_t**)(next+0x28) != (uint64_t*)((uint8_t*)p+0x20)) FUN_001150e0(s_Bad_link_elm__p_next_005bf1e6)`; `if ((uint16_t*)**(uint64_t**)((uint8_t*)p+0x28) != p) FUN_001150e0(s_Bad_link_elm__p_prev_005bf20c)`.
+- **Severity (hypothesis)**: low — list-unlink integrity checks are fail-closed; a corrupted list panics instead of corrupting the registry, so the risk is DoS via an already-compromised list, not a new primitive.
+- **Confidence**: high
+
+## [SK18-ringminus1] 0007acd8 sk_cnode_alloc_object_and_cap
+- **Observation**: The cL4 CNodeAllocator's `allocObjectAndCap` validates the requested object type against the "relocated cap" table and fails closed on three distinct precondition violations. Relocating a capability into a CNode is refused when the table is being filled ("Cannot give relocated cap when filling..."), when the object type does not match the entry, or when a generic entry cannot be allocated predictably. Every violation traps (fail-closed), never silently dropping.
+- **Evidence**: `FUN_0007b0cc(obj, 0x65f380)` presence check gates the "relocated cap" branch; `sk_identity_hash(obj,3)` validity gate; fatal strings at 0x5bfca0 ("Cannot give relocated cap when filling"), 0x5bfce0 ("allocObjectAndCap is called with wrong object type"), 0x5bfd30 ("failed to allocate generic entry in a predictable way") via `FUN_0007bfdc` + `FUN_001afa84`; SoftwareBreakpoint(1,0x7b00c/0x7b010/0x7b014) bounds traps.
+- **Severity (hypothesis)**: informational — capability-relocation integrity check in the exclave-launch path.
+- **Confidence**: medium
+
+## [SK18-ringminus1] 0007a718 sk_cnode_entry_build
+- **Observation**: Building a CNode entry performs Swift overflow-checked arithmetic on the entry index/count and element-stride products, with a dedicated SoftwareBreakpoint trap for every overflow. The source and destination table element-size mismatch is diagnosed via a Swift `fatalError` string, so an inconsistent CNode shape aborts rather than corrupting the entry table.
+- **Evidence**: traps at 0x7aa88/0x7aa8c/0x7aa90/0x7aa94/0x7aa98/0x7aa9c/0x7aaa4/0x7aaa8/0x7aaac on division-by-zero / negative / carry / high-64-of-product mismatches; mismatch path builds a fault string via `FUN_002a4ab4` + `FUN_00027724` (type names 0x671df8/0x6720e0) then `FUN_001afa84` (noreturn).
+- **Severity (hypothesis)**: low — the CNode entry table is a security-relevant capability store; an overflow would allow out-of-bounds entry writes.
+- **Confidence**: medium
+
+## [SK18-ringminus1] 00078880 sk_cnode_allocator_init
+- **Observation**: The CNodeAllocator designated initializer seeds every stored property (offsets 0x48..0x98) and allocates a 0x60-byte generic-entry descriptor plus a 0x38-byte CNodeEntry whose fields are fully zeroed except the validated ones. The root "space cap" and fault-data fields are set once here; the class metadata is consulted for each field offset, so the property layout is defined by the Swift metadata, not the launcher.
+- **Evidence**: writes `self[0x48..0x98]` in sequence interleaved with `FUN_0007c0b8` (accessor ctx); builds entry via `FUN_0036a940(..,0x38,7)` and `FUN_0036a940(..,0x60,7)`; `FUN_00002534(DAT_0064e868, DAT_004c06c0)` string; `self[*self+0x50]`/`self[*self+0x68]`/`self[*self+0x80]` store the cap/space-cap/fault-data; trap 0x78ec4 if `FUN_0014aedc` round-up fails.
+- **Severity (hypothesis)**: informational — single-time capability/root setup for the exclave CNode.
+- **Confidence**: low

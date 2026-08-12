@@ -130,6 +130,7 @@ extern word_t sk_cnode_fn3(void);                             /* FUN_0007b3b4 */
 extern word_t sk_string_end_index(word_t, ...);               /* FUN_00078fec */
 extern word_t sk_f6d88(word_t, ...);                          /* FUN_000f6d88 */
 extern word_t sk_cnode_resize_cb(word_t, ...);                /* FUN_00072d5c */
+extern word_t thunk_sk_cnode_probe(word_t, word_t);           /* thunk_FUN_0000456c */
 
 /* Register-held "self"/context pointers (Ghidra sk_reg_x19/x20/x21/x22/w19):
  * these are the arm64e callee-saved registers that carry the Swift self /
@@ -1982,9 +1983,10 @@ void sk_cnode_alloc_object_and_cap(word_t *out, word_t obj, word_t a3,
 {
     word_t self, tbl, idx, value, off;
     word_t found;
+    word_t a5_ret;
     word_t boxf8[3], boxd0[3], boxa8[3];
     word_t u6, u7;
-    void (*fn)(word_t, ...);
+    word_t (*fn)(word_t, ...);
     void (*trap)(void) __attribute__((noreturn));
 
     self = *(word_t *)sk_reg_x20;
@@ -2001,8 +2003,8 @@ void sk_cnode_alloc_object_and_cap(word_t *out, word_t obj, word_t a3,
                 sk_identity(0) + 0x1b8))((word_t)&a5_ret, obj, 0, 0, a3);
             if (sk_reg_x21 != 0) return;
             sk_acc_w13();
-            (*(void (**)(word_t, word_t, word_t))(
-                sk_identity(0) + 0x100))((word_t)boxd0);
+            (*(void (**)(word_t, ...))(
+                sk_identity(0) + 0x100))((word_t)boxd0, 0, 0);
             if (sk_identity(0) != 0) {
                 /* COW-reserve + append the new generic entry */
                 sk_cnode_buf_append((word_t)sk_cnode_resize_cb);
@@ -2011,7 +2013,7 @@ void sk_cnode_alloc_object_and_cap(word_t *out, word_t obj, word_t a3,
                 self = *(word_t *)sk_reg_x20;
                 *(word_t *)(self + 0x10) = tbl + 1;
                 *(word_t *)(self + tbl * 8 + 0x20) = value;
-                (*(void (**)(word_t, word_t))(boxf8_0))((word_t)boxd0, 0);
+                (*(void (**)(word_t, ...))(boxf8[0]))((word_t)boxd0, 0);
                 sk_acc_w13();
                 fn = (word_t (*)(word_t, ...))(*(word_t *)(sk_identity(0) + 0xa0));
                 tbl = fn(0);

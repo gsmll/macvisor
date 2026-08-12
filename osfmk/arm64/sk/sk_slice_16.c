@@ -47,14 +47,14 @@ extern void sk_lo_release(void);                 /* LORelease */
 /* FUN_0036a9a0 */ extern uint64_t sk_record_alloc(uint64_t key, uint64_t *out);
 /* FUN_0036b6ac */ extern void sk_swift_barrier(void);
 /* FUN_0036b588 */ extern void sk_record_ref(uint64_t obj);
-/* thunk_FUN_002acbb8 */ extern void sk_str_append(uint64_t tag, uint64_t val);
+/* thunk_FUN_002acbb8 */ extern void sk_str_append(...);
 /* thunk_FUN_002298d4 */ extern void sk_lock_select(uint64_t n);
-/* FUN_001a84f4 */ extern void sk_scope_enter(uint64_t *frame, uint64_t ctx);
+/* FUN_001a84f4 */ extern void sk_scope_enter(...);
 /* FUN_001a8564 */ extern uint64_t sk_scope_exit(void);
 /* FUN_00117d14 */ extern void sk_memmove(uint64_t dst, uint64_t src, uint64_t n);
-/* FUN_001a1564 */ extern void sk_vec_push(uint64_t obj, uint64_t val);
-/* FUN_001a0774 */ extern void sk_vec_reserve(uint64_t grow, uint64_t count, uint64_t unit);
-/* FUN_0001a1c8 */ extern uint64_t sk_identity_hash(uint64_t obj);
+/* FUN_001a1564 */ extern void sk_vec_push(...);
+/* FUN_001a0774 */ extern void sk_vec_reserve(...);
+/* FUN_0001a1c8 */ extern uint64_t sk_identity_hash(...);
 /* FUN_0001c294 */ extern uint64_t sk_key_hasheq(uint64_t a, uint64_t b);
 /* FUN_0001c2a4 */ extern void sk_key_eq(uint64_t a, uint64_t b);
 /* FUN_00002534 */ extern uint64_t sk_string_cache(uint64_t a, uint64_t b);
@@ -157,12 +157,7 @@ extern void sk_lo_release(void);                 /* LORelease */
 /* FUN_00072320 */ extern void sk_move72(void);
 /* FUN_000723f4 */ extern void sk_move48(void);
 /* FUN_00072b44 */ static void sk_set_byte_skip(char c, uint64_t idx);
-/* FUN_00070de4 */ extern sk_u128_t sk_children_get(uint64_t a, uint64_t b, uint64_t c);
 /* FUN_00070960 */ extern void sk_set_build(void);
-/* FUN_000707a8 */ extern void sk_vec_pair_make(uint64_t *out, uint64_t a, uint64_t b);
-/* FUN_0007198c */ extern void sk_iter_init(long *out, long set, long a, long b);
-/* FUN_000718b8 */ extern sk_u128_t sk_iter_next(void);
-/* FUN_00072464 */ extern void sk_set_probe_flag(uint64_t flag);
 
 /* Fixed-string / format globals. */
 #define STR_FATAL_ERROR      ((uint64_t)0x5accd0)   /* "Fatal error" */
@@ -631,206 +626,6 @@ static void sk_vec_pair_make(uint64_t *out, uint64_t a, uint64_t b)
 /* Ghidra FUN_0036a1a0 */ extern void sk_reserve_slot(uint64_t p, uint64_t tmp, uint64_t sz, uint64_t fl);
 /* Ghidra FUN_0036a20c */ extern void sk_commit_slot(uint64_t tmp);
 /* Ghidra FUN_00075cb4 */ extern void sk_counted_insert(uint64_t a, uint64_t b, uint64_t c);
-
-
-/*============================================================================
- * 0x70098 - 0x70960 : field/scope emitters, vector push, set build
- *==========================================================================*/
-
-/* FUN_00070098 @ 0x70098  (est. sk_emit_field)
- * Emit an accounting {name, value} field: resolve the name key via vt lookup
- * (0x671df8), pack a {const,key} pair, append the "name" marker, then dispatch
- * on the `tag` byte (0 -> unsigned-divide value + negative trap, 1 -> keep,
- * else value=1).  Multiply value*value with a high-half overflow trap (fatal
- * 0x701c0) and pass the product to the copy helper before finalizing with a
- * "value" marker.  Returns the pair low word.  Confidence: medium. */
-static uint64_t sk_emit_field(uint64_t name_key, uint64_t value, uint64_t tag)
-{
-    sk_u128_t field;
-    uint64_t u;
-
-    sk_ext_00027724(0x671df8);
-    u = sk_const_677830();
-    field = sk_pair_pack(u, 0x671df8, 0, 0);
-    sk_str_append(0x20, 0xe100000000000000);
-    sk_nop2(value, tag);
-    sk_str_append();
-    sk_swift_release_masked(0);
-    sk_str_append(0x2820, 0xe200000000000000);
-    if ((tag & 0xff) == 0) {
-        value = sk_int_udiv(value);
-        if ((int64_t)value < 0) {
-            sk_break(1, 0x701c4); /* fatal: negative */
-        }
-        value = sk_int_zero();
-    } else {
-        if (((uint8_t)tag & 0xff) != 1) {
-            value = 1;
-        }
-    }
-    if (((value * value) >> 8) == 0) { /* SUB168(product, 0) */
-        sk_nop2(value * value, ((uint8_t)tag & 0xff) != 1);
-        sk_str_append();
-        sk_swift_release_masked(0);
-        sk_str_append(0x29, 0xe100000000000000);
-        return field.lo;
-    }
-    sk_break(1, 0x701c0); /* fatal: overflow */
-    return 0;
-}
-
-/* FUN_0007021c @ 0x7021c  (est. sk_scope_emit_pair)
- * Scope-bound emitter: tag==0 -> lock-select 0 then key-eq {a,b}; tag==1 ->
- * lock-select 1; else value=2 then lock-select.  Confidence: medium. */
-static void sk_scope_emit_pair(uint64_t a, uint64_t b, char tag)
-{
-    if (tag != '\0') {
-        if (tag == '\x01') {
-            sk_lock_select(1);
-        } else {
-            b = 2;
-        }
-        sk_lock_select(b);
-        return;
-    }
-    sk_lock_select(0);
-    sk_key_eq(a, b);
-}
-
-/* FUN_00070288 @ 0x70288  (est. sk_scope_emit_ctx)
- * Scope-entered variant of sk_scope_emit_pair.  Confidence: medium. */
-static void sk_scope_emit_ctx(uint64_t a, char tag)
-{
-    uint64_t frame[9];
-    sk_scope_enter(frame, 0);
-    if (tag == '\0') {
-        sk_lock_select(0);
-        sk_key_eq((uint64_t)frame, a);
-    } else {
-        if (tag == '\x01') {
-            sk_lock_select(1);
-        } else {
-            a = 2;
-        }
-        sk_lock_select(a);
-    }
-    sk_scope_exit();
-}
-
-/* FUN_0007032c @ 0x7032c  (est. sk_scope_emit_ctx_r) */
-static void sk_scope_emit_ctx_r(void)
-{
-    uint64_t value = *(uint64_t *)0;
-    char tag = *(char *)((uint64_t)0 + 8);
-    uint64_t frame[9];
-    sk_scope_enter(frame);
-    sk_scope_emit_pair((uint64_t)frame, value, tag);
-    sk_scope_exit();
-}
-
-/* FUN_00070390 @ 0x70390  (est. sk_field_count) */
-static void sk_field_count(void)
-{
-    sk_vec_counted_insert(1, 0, 2);
-    sk_scope_emit_pair(1, 0, 2);
-}
-
-/* FUN_00070594 @ 0x70594  (est. sk_vec_push_elem)
- * Growable-array push of one 8-byte element.  Confidence: medium. */
-static void sk_vec_push_elem(uint64_t obj, uint64_t val)
-{
-    uint64_t count;
-    uint64_t *base = (uint64_t *)*(uint64_t *)0;
-    sk_vec_push(obj, val);
-    count = base[2];
-    if (base[3] >> 1 <= count) {
-        sk_vec_reserve(base[3] > 1, count + 1, 1);
-        base = (uint64_t *)*(uint64_t *)0;
-    }
-    base[2] = count + 1;
-    base[count * 2 + 4] = val;
-}
-
-/* FUN_000705f8 @ 0x705f8  (est. sk_vec_push_elem2) */
-static void sk_vec_push_elem2(uint64_t obj, uint64_t val)
-{
-    sk_vec_push_elem(obj, val);
-}
-
-/* FUN_0007063c @ 0x7063c  (est. sk_vec_pack_init)
- * Initialize a two-word vector record: obj[2]=vt, obj[3]=empty sentinel.
- * Confidence: medium. */
-static void sk_vec_pack_init(void)
-{
-    uint64_t u = sk_class_vt(0, 0, 0, 0);
-    *(uint64_t *)((uint64_t)0 + 0x10) = u;
-    *(uint64_t *)((uint64_t)0 + 0x18) = DAT_00657778;
-}
-
-/* FUN_00070674 @ 0x70674  (est. sk_vec_counted_insert)
- * Insert `delta` into the counted array at x20[2] keyed by {key,tag}: look up
- * the pair via sk_set_find; if absent read the stored count and add `delta`
- * (fatal 0x70754 on overflow).  Then reserve a 0x21 slot and call
- * FUN_00075cb4(total, key, tag).  Confidence: medium. */
-static void sk_vec_counted_insert(uint64_t delta, uint64_t key, uint64_t tag)
-{
-    uint64_t *vec = (uint64_t *)*(uint64_t *)0;
-    uint64_t base, total;
-    sk_u128_t res;
-    uint64_t tmp[3];
-
-    sk_reserve_slot((uint64_t)vec + 0x10, (uint64_t)tmp, 0x20, 0);
-    base = vec[2];
-    if (*(uint64_t *)(base + 0x10) == 0) {
-        total = 0;
-    } else {
-        sk_swift_retain(base);
-        res = sk_set_find(key, (char)tag, 0);
-        if ((res.hi & 1) == 0) {
-            total = 0;
-        } else {
-            total = *(uint64_t *)(*(uint64_t *)(base + 0x38) + res.lo * 8);
-        }
-        sk_swift_release_masked(base);
-    }
-    sk_commit_slot((uint64_t)tmp);
-    if (!CARRY8(total, delta)) {
-        sk_reserve_slot((uint64_t)vec + 0x10, (uint64_t)tmp, 0x21, 0);
-        sk_ext_00075cb4(total + delta, key, tag);
-        sk_commit_slot((uint64_t)tmp);
-        return;
-    }
-    sk_break(1, 0x70754); /* fatal: overflow */
-}
-
-/* FUN_00070754 @ 0x70754  (est. sk_vec_retain_push)
- * Reserve a 0x21 slot in vec[3], retain obj, push one element, commit.
- * Confidence: medium. */
-static void sk_vec_retain_push(uint64_t obj)
-{
-    uint64_t *vec = (uint64_t *)*(uint64_t *)0;
-    uint64_t tmp[3];
-    sk_reserve_slot((uint64_t)vec + 0x18, (uint64_t)tmp, 0x21, 0);
-    sk_swift_retain(obj);
-    sk_vec_push_elem(obj, 0);
-    sk_commit_slot((uint64_t)tmp);
-}
-
-/* FUN_000707a8 @ 0x707a8  (est. sk_vec_pair_make)
- * Build a two-vector {names, values} pair iterator from the container at x20.
- * Confidence: medium (structural: vt + two per-vector init passes). */
-static void sk_vec_pair_make(uint64_t *out, uint64_t a, uint64_t b)
-{
-    (void)out; (void)a; (void)b;
-    sk_empty_vec();
-    sk_vec_pack_init();
-    sk_class_vt(0, 0, 0, 0);
-}
-
-/*============================================================================
- * 0x70920 - 0x71050 : pair/hash copy + children/property builders
- *==========================================================================*/
-
 /* FUN_00070920 @ 0x70920  (est. sk_pair_copy_hash)
  * Copy a {hash, tag} pair: out[0]=hash(in[0], in[1]); out[1]=tag; out[2]=in[2].
  * Confidence: high (structural). */

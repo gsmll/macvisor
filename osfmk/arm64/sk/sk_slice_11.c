@@ -282,9 +282,9 @@ void sk_f_0005ba5c();
 int64_t sk_f_0005baac();
 void sk_f_0005baf0();
 void sk_f_0005bb68();
-unsigned long sk_f_0005bb7c();
+uint64_t * sk_f_0005bb7c();
 uint64_t sk_f_0005bbd8();
-void sk_f_0005bc48();
+int sk_f_0005bc48();
 void sk_f_0005bce0();
 void sk_f_0005bd10();
 void sk_f_0005bd7c();
@@ -350,7 +350,7 @@ void sk_f_0005dd94();
 void sk_f_0005deb4();
 void sk_f_0005ded8();
 void sk_f_0005df34();
-unsigned long sk_f_0005dfa8();
+cl4_result_t sk_f_0005dfa8();
 void sk_f_0005e0dc();
 void sk_f_0005e100();
 void sk_f_0005e4ac();
@@ -388,8 +388,9 @@ void sk_f_0005fd24();
  * Confidence: medium
  * Notes: Ghidra header shows void, but callers (0005afe8/0005b05c/0005b0bc) use the returned
  *   initialized pointer, so it is declared to return the slot value. */
-uint64_t sk_f_0005acac(int64_t *slot, uint64_t arg2, uint64_t arg3)
+uint64_t sk_f_0005acac(uint64_t slot_addr, uint64_t arg2, uint64_t arg3)
 {
+    int64_t *slot = (int64_t *)slot_addr;
     int64_t initialized;
 
     if (*slot == 0) {
@@ -556,7 +557,7 @@ void sk_f_0005afe8(int64_t obj, uint64_t arg2, uint64_t arg3)
     uint8_t *flavor;
     uint64_t changed;
 
-    flavor = (uint8_t *)sk_f_0005acac((int64_t *)0x6b04b8, 1, 3);
+    flavor = (uint8_t *)sk_f_0005acac(0x6b04b8, 1, 3);
     if ((*flavor != '\x02') || (changed = sk_x_004B5FB8(obj, arg3, arg2), (changed & 1) != 0)) {
         *(int64_t *)(obj + 0x58) = *(int64_t *)(obj + 0x58) + 1;
     }
@@ -573,7 +574,7 @@ void sk_f_0005b05c(int64_t obj, uint64_t arg2)
 {
     uint8_t *flavor;
 
-    flavor = (uint8_t *)sk_f_0005acac((int64_t *)0x6b04b8, 1, 3);
+    flavor = (uint8_t *)sk_f_0005acac(0x6b04b8, 1, 3);
     if (*flavor == '\x02') {
         sk_x_004B6194(obj, arg2);
     }
@@ -592,7 +593,7 @@ void sk_f_0005b0bc(int64_t obj)
 {
     uint8_t *flavor;
 
-    flavor = (uint8_t *)sk_f_0005acac((int64_t *)0x6b04b8, 1, 3);
+    flavor = (uint8_t *)sk_f_0005acac(0x6b04b8, 1, 3);
     if (*flavor == '\x02') {
         sk_x_004B63CC(obj);
     }
@@ -611,7 +612,7 @@ void sk_f_0005b0bc(int64_t obj)
  * Notes: forwards to lazy-init; flavor params 1, 3. */
 void sk_f_0005b120(uint64_t slot)
 {
-    sk_f_0005acac((int64_t *)slot, 1, 3);
+    sk_f_0005acac((uint64_t)slot, 1, 3);
     return;
 }
 
@@ -1233,7 +1234,7 @@ uint64_t sk_f_0005bbd8(uint8_t *thread, int64_t *out_size)
  * Confidence: medium
  * Notes: node[5]/node[6] are the range base and length; node[4] is the region
  *        start used to compute an offset; id field is a short at offset 64. */
-void sk_f_0005bc48(uint64_t *value_ptr, int32_t mode)
+int sk_f_0005bc48(uint64_t *value_ptr, int32_t mode)
 {
     int64_t *node;
     uint64_t value;
@@ -1242,18 +1243,18 @@ void sk_f_0005bc48(uint64_t *value_ptr, int32_t mode)
     node = (int64_t *)*node;
     do {
         if (node == 0) {
-            return;
+            return 0;   /* not found */
         }
         if (mode == 0) {
             value = *value_ptr;
             if (((uint64_t)node[5] <= value) && (value - node[5] < (uint64_t)node[6])) {
                 *value_ptr = value - node[4];
-                return;
+                return 1;   /* found */
             }
         }
         else if (*(int16_t *)(node + 8) == (int16_t)(*value_ptr >> 0x30)) {
             *value_ptr = *value_ptr & 0xffffffffffff;
-            return;
+            return 1;   /* found */
         }
         node = (int64_t *)*node;
     } while (true);

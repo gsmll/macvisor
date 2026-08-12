@@ -3631,7 +3631,649 @@ static void sk_vec_insert_764c8(word_t value, word_t key1, word_t key2)
  * Thin wrapper forwarding to sk_vec_insert_765c4 with typeinfo pair
  * (0x64e650, 0x4c04a8) and the element-move thunk FUN_00081ce8.
  * Confidence: high (single call) */
+
+
+/* FUN_00076274 @ 0x76274  (est. sk_vec_insert_u08_wrapperA)
+ * Thin wrapper forwarding to sk_vec_insert_76918 with typeinfo pair
+ * (0x64e828, 0x4c0680) and the element-move thunk FUN_00081ce8.
+ * Confidence: high (single call) */
+static void sk_vec_insert_76274(word_t a, word_t b)
+{
+    FUN_00076918(a, b, 0x64e828, 0x4c0680, (word_t)thunk_FUN_00081ce8);
+}
+
+/* FUN_000764a0 @ 0x764a0  (est. sk_vec_insert_u08_wrapperB)
+ * Thin wrapper forwarding to sk_vec_insert_765c4 with typeinfo pair
+ * (0x64e780, 0x4c05d8) and the element-move thunk FUN_00081ce8.
+ * Confidence: high (single call) */
+static void sk_vec_insert_764a0(word_t a, word_t b)
+{
+    FUN_000765c4(a, b, 0x64e780, 0x4c05d8, (word_t)thunk_FUN_00081ce8);
+}
+
+/* FUN_0007659c @ 0x7659c  (est. sk_vec_insert_u08_wrapperC)
+ * Thin wrapper forwarding to sk_vec_insert_765c4 with typeinfo pair
+ * (0x64e650, 0x4c04a8) and the element-move thunk FUN_00081ce8.
+ * Confidence: high (single call) */
 static void sk_vec_insert_7659c(word_t a, word_t b)
 {
     FUN_000765c4(a, b, 0x64e650, 0x4c04a8, (word_t)thunk_FUN_00081ce8);
 }
+
+/* FUN_000765c4 @ 0x765c4  (est. sk_vec_insert_u08_workhorse)
+ * The shared 8-byte element insert core.  Snapshot the lock state, resolve
+ * the slot key, acquire the grow lock (FUN_00258c60) with the caller-supplied
+ * typeinfo pair, then on the free path invoke the caller-supplied element-move
+ * thunk (`in_stack_00000000`); on the occupied path store the moved element
+ * into the slot table (this+0x38 + idx*8), releasing the displaced token.
+ * Fatal 0x76674/0x7667c on count overflow.
+ * Confidence: medium */
+static void sk_vec_insert_765c4(word_t a, word_t b, word_t t1, word_t t2,
+                                word_t move_thunk)
+{
+    sk_lock_state_enter();                              /* 77698 */
+    sk_slot_release(/*this*/ 0, 0);                     /* 77794 */
+    sk_element_probe();                                 /* 775c8 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76674) */
+    {
+        word_t tag = FUN_00002534(t1, t2);
+        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            sk_overflow_probe();                        /* 77764 */
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 77604 */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x7667c) */
+        }
+    }
+    if ((/*w25*/ 1) == 0) {
+        ((void (*)(word_t))move_thunk)(idx);
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 8);
+        word_t old = *slot;
+        *slot = /*unaff_x22*/ b;
+        FUN_0036b118(old);
+    }
+    sk_clear_element(/*this*/ 0);                       /* 7767c */
+}
+
+/* FUN_0007667c @ 0x7667c  (est. sk_vec_insert_u08_token)
+ * Insert a single 8-byte token element: snapshot, resolve, acquire with
+ * typeinfo pair (0x64e680, 0x4c04d0); free path runs the insert helper
+ * FUN_00081d14; occupied path runs FUN_000774c8 (store+release pair).
+ * Fatal 0x76758/0x76760.
+ * Confidence: medium */
+static void sk_vec_insert_7667c(word_t value)
+{
+    word_t lock = FUN_000778c0();
+    sk_clear_element(/*this*/ 0);                       /* 776b4 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76758) */
+    {
+        word_t tag = FUN_00002534(0x64e680, 0x4c04d0);
+        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 7765c */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x76760) */
+        }
+    }
+    if (((st >> 32) & 1) == 0) {
+        FUN_00077894(idx);
+        FUN_00081d14();
+    } else {
+        sk_vec_insert_774c8(value, 0);
+    }
+}
+
+/* FUN_00076760 @ 0x76760  (est. sk_vec_insert_u10_move)
+ * Insert a 0x10-byte element (move variant): snapshot, resolve, acquire with
+ * typeinfo pair (0x64e778, 0x4c05d0); free path runs FUN_00081d60; occupied
+ * path writes both halves and releases the displaced pair.
+ * Fatal 0x76824/0x7682c.
+ * Confidence: medium */
+static void sk_vec_insert_76760(word_t value_lo, word_t value_hi)
+{
+    sk_lock_state_enter();                              /* 77698 */
+    word_t v_lo = sk_slot_release(/*this*/ 0, 0);       /* 777b4 */
+    sk_slot_release(/*this*/ 0, 0);                     /* 7783c */
+    sk_element_probe();                                 /* 775c8 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76824) */
+    {
+        word_t tag = FUN_00002534(0x64e778, 0x4c05d0);
+        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            sk_overflow_probe();                        /* 77764 */
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 77604 */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x7682c) */
+        }
+    }
+    if ((/*w25*/ 1) == 0) {
+        FUN_00081d60();                                 /* 81d60 */
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 0x10);
+        word_t old_lo = slot[0];
+        word_t old_hi = slot[1];
+        slot[0] = value_lo;
+        slot[1] = value_hi;
+        FUN_0036b118(old_hi);
+        FUN_0036b118(old_lo);
+    }
+    sk_clear_element(/*this*/ 0);                       /* 7767c */
+}
+
+/* FUN_0007682c @ 0x7682c  (est. sk_vec_insert_u10_token)
+ * Insert a 0x10-byte token element: snapshot, resolve, acquire with typeinfo
+ * pair (0x64e688, 0x4c25c0); free path runs FUN_00081d60; occupied path
+ * writes both halves and releases the displaced token via FUN_003a25d4.
+ * Fatal 0x768e8/0x768f0.
+ * Confidence: medium */
+static void sk_vec_insert_7682c(word_t value_lo, word_t value_hi)
+{
+    sk_lock_state_enter();                              /* 77698 */
+    word_t v_lo = sk_slot_release(/*this*/ 0, 0);       /* 777b4 */
+    sk_slot_release(/*this*/ 0, 0);                     /* 7783c */
+    sk_element_probe();                                 /* 775c8 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x768e8) */
+    {
+        word_t tag = FUN_00002534(0x64e688, 0x4c25c0);
+        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            sk_overflow_probe();                        /* 77764 */
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 77604 */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x768f0) */
+        }
+    }
+    if ((/*w25*/ 1) == 0) {
+        FUN_00081d60();                                 /* 81d60 */
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 0x10);
+        word_t old_hi = slot[1];
+        slot[0] = value_lo;
+        slot[1] = value_hi;
+        FUN_003a25d4(old_hi);
+    }
+    sk_clear_element(/*this*/ 0);                       /* 7767c */
+}
+
+/* FUN_000768f0 @ 0x768f0  (est. sk_vec_insert_u08_wrapperD)
+ * Thin wrapper forwarding to sk_vec_insert_76918 with typeinfo pair
+ * (0x64e798, 0x4c05f0) and the element-move thunk FUN_00081ce8.
+ * Confidence: high (single call) */
+static void sk_vec_insert_768f0(word_t a, word_t b)
+{
+    FUN_00076918(a, b, 0x64e798, 0x4c05f0, (word_t)thunk_FUN_00081ce8);
+}
+
+/* FUN_00076918 @ 0x76918  (est. sk_vec_insert_u08_workhorse2)
+ * The shared 8-byte element insert core (2nd shape).  Snapshot the lock state,
+ * resolve the slot key, acquire the grow lock (FUN_00258c60) with the
+ * caller-supplied typeinfo pair, then on the free path invoke the caller-
+ * supplied element-move thunk; on the occupied path store the moved element
+ * directly (no release).  Fatal 0x769cc/0x769d4 on count overflow.
+ * Confidence: medium */
+static void sk_vec_insert_76918(word_t a, word_t b, word_t t1, word_t t2,
+                                word_t move_thunk)
+{
+    sk_lock_state_enter();                              /* 77698 */
+    sk_slot_release(/*this*/ 0, 0);                     /* 77794 */
+    sk_element_probe();                                 /* 775c8 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x769cc) */
+    {
+        word_t tag = FUN_00002534(t1, t2);
+        word_t r = FUN_00258c60(sk_element_probe(), /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            sk_overflow_probe();                        /* 77764 */
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 7765c */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x769d4) */
+        }
+    }
+    if (((st >> 32) & 1) == 0) {
+        ((void (*)(word_t))move_thunk)(idx);
+    } else {
+        *(word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 8) = b;
+    }
+    sk_clear_element(/*this*/ 0);                       /* 7767c */
+}
+
+/* FUN_000769d4 @ 0x769d4  (est. sk_vec_insert_u28_move)
+ * Insert a 0x28-byte element (move variant): snapshot, resolve, acquire with
+ * typeinfo pair (0x64e648, 0x4c04a0); free path runs FUN_00081df0; occupied
+ * path copies the five 8-byte halves from the source element and releases the
+ * displaced first half.  Fatal 0x76ac0/0x76ac8.
+ * Confidence: medium */
+static void sk_vec_insert_769d4(word_t *src)
+{
+    word_t lock = FUN_000778c0();
+    sk_clear_element(/*this*/ 0);                       /* 776b4 */
+    FUN_00072664(/*key*/ 0);
+    word_t st = FUN_000775b8();
+    word_t idx = st & 0xffffffff;
+    word_t zero = 1;
+    if ((word_t)(/*x8*/ 0 + /*x9*/ 0) < /*x8*/ 0) CL4_FATAL(); /* SBP(1,0x76ac0) */
+    {
+        word_t tag = FUN_00002534(0x64e648, 0x4c04a0);
+        word_t r = FUN_00258c60(lock, /*x8+*/ 0 + /*x9*/ 0);
+        if ((r & 1) != 0) {
+            FUN_00072664(/*key*/ 0);
+            idx = sk_clear_element(/*this*/ 0);         /* 7765c */
+            if (!zero) CL4_FATAL();                     /* SBP(1,0x76ac8) */
+        }
+    }
+    if (((st >> 32) & 1) == 0) {
+        FUN_00077894(idx);
+        FUN_00081df0();
+    } else {
+        word_t *slot = (word_t *)(*(word_t *)(/*this*/ 0 + 0x38) + idx * 0x28);
+        word_t old = slot[0];
+        slot[4] = src[4];
+        slot[0] = src[0];
+        slot[1] = src[1];
+        slot[3] = src[3];
+        slot[2] = src[2];
+        FUN_0036b118(old);
+    }
+}
+
+/* ================================================================== *
+ * Bitmap-slot iterator cores.  These walk the set bits of a reversed bitmap
+ * (a vector of 64-bit words) and write a derived element into each selected
+ * slot.  The incoming value (param_1) and keys (param_3) are retained; the
+ * bitmap context is built by FUN_0007198c.  For each set bit the bit index is
+ * recovered via the standard 64-bit bit-reverse + LZCOUNT sequence, the slot
+ * key is re-derived, the grow lock is acquired (FUN_00258c60), and the slot's
+ * element table entry (this+0x30) / auxiliary entry (this+0x38) is written.
+ * On a collision the auxiliary value is accumulated (CARRY fatal).
+ * ================================================================== */
+
+/* FUN_00076ac8 @ 0x76ac8  (est. sk_slot_iter_u08_bitmap)
+ * Iterate the set bits of a bitmap-derived slot set, writing one byte into
+ * this+0x30[idx] and an 8-byte count into this+0x38[idx] per bit; on collision
+ * accumulate the count (CARRY fatal 0x76cf4), on free set the occupancy bit
+ * in this+0x40 and bump the count (0x76cf8/0x76cf0/0x76cec fatals).  Retains
+ * param_1/param_3, releases local/container/param_3 and param_1 token at exit.
+ * Confidence: medium */
+static void sk_slot_iter_76ac8(word_t v, word_t unused, word_t key,
+                               word_t flags, word_t *out)
+{
+    word_t ctx[7];                                       /* local_98.. */
+    FUN_0007198c(ctx, /*container*/ 0, 0, 0);
+    thunk_FUN_0036b270(v);
+    FUN_0036b270(key);
+    word_t bits = ctx[6];                                /* local_78 */
+    long word = ctx[5];                                  /* lStack_80 */
+    for (;;) {
+        while (bits != 0) {
+            word_t b = (bits & 0xaaaaaaaaaaaaaaaaULL) >> 1 |
+                       (bits & 0x5555555555555555ULL) << 1;
+            b = (b & 0xccccccccccccccccULL) >> 2 | (b & 0x3333333333333333ULL) << 2;
+            b = (b & 0xf0f0f0f0f0f0f0f0ULL) >> 4 | (b & 0x0f0f0f0f0f0f0f0fULL) << 4;
+            b = (b & 0xff00ff00ff00ff00ULL) >> 8 | (b & 0x00ff00ff00ff00ffULL) << 8;
+            b = (b & 0xffff0000ffff0000ULL) >> 16 | (b & 0x0000ffff0000ffffULL) << 16;
+            word_t idx = (word_t)__builtin_clzll(b >> 32 | b << 32) | word << 6;
+            /* slot byte + aux value from container tables */
+            word_t slot_byte = *(unsigned char *)(ctx[0] + 0x30 + idx);
+            word_t aux = *(word_t *)(ctx[0] + 0x38 + idx * 8);
+            word_t tag = FUN_00002534(0x64e5b8, 0x4c03b0);
+            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag);
+            if ((r & 1) != 0)
+                FUN_002591b4(0x65f260);                  /* slot moved fatal */
+            bits = bits - 1 & bits;
+            word_t thisp = *out;
+            if ((((word_t)(r >> 32)) & 1) == 0) {
+                word_t *bm = (word_t *)(thisp + (idx >> 6) * 8);
+                bm[0x40 / 8] |= 1ULL << (idx & 0x3f);
+                *(unsigned char *)(*(word_t *)(thisp + 0x30) + idx) = slot_byte;
+                *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8) = aux;
+                if ((word_t)(*(word_t *)(thisp + 0x10) + 1) < *(word_t *)(thisp + 0x10))
+                    CL4_FATAL();                        /* SBP(1,0x76cf8) */
+                *(word_t *)(thisp + 0x10) += 1;
+            } else {
+                word_t old = *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8);
+                if ((word_t)(old + aux) < old) CL4_FATAL(); /* SBP(1,0x76cf4) */
+                *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8) = old + aux;
+            }
+            flags = 1;
+        }
+        word = word + 1;
+        if ((word_t)word < /*prev*/ 0) CL4_FATAL();      /* SBP(1,0x76cec) */
+        if (word >= (long)(ctx[3] + 0x40 >> 6)) break;
+        bits = *(word_t *)(ctx[2] + word * 8);
+    }
+    FUN_0036b118(/*local*/ 0);
+    FUN_0036b118(ctx[0]);
+    FUN_0036b118(key);
+    FUN_003a25d4(v);
+}
+
+/* FUN_00076d08 @ 0x76d08  (est. sk_slot_iter_u10_bitmap)
+ * Iterate the set bits of a bitmap-derived slot set, writing a 0x10-byte
+ * element into this+0x30[idx*0x10] and an 8-byte count into this+0x38[idx]
+ * per bit; on collision accumulate the count (CARRY fatal 0x76f60), on free
+ * set the occupancy bit and bump the count (0x76f64/0x76f5c/0x76f58 fatals).
+ * Retains param_1/param_3, releases local/container/param_3 and param_1 token.
+ * Confidence: medium */
+static void sk_slot_iter_76d08(word_t v, word_t unused, word_t key,
+                               word_t flags, word_t *out)
+{
+    word_t ctx[7];
+    FUN_0007198c(ctx, /*container*/ 0, 0, 0);
+    thunk_FUN_0036b270(v);
+    FUN_0036b270(key);
+    word_t bits = ctx[6];
+    long word = ctx[5];
+    for (;;) {
+        while (bits != 0) {
+            word_t b = (bits & 0xaaaaaaaaaaaaaaaaULL) >> 1 |
+                       (bits & 0x5555555555555555ULL) << 1;
+            b = (b & 0xccccccccccccccccULL) >> 2 | (b & 0x3333333333333333ULL) << 2;
+            b = (b & 0xf0f0f0f0f0f0f0f0ULL) >> 4 | (b & 0x0f0f0f0f0f0f0f0fULL) << 4;
+            b = (b & 0xff00ff00ff00ff00ULL) >> 8 | (b & 0x00ff00ff00ff00ffULL) << 8;
+            b = (b & 0xffff0000ffff0000ULL) >> 16 | (b & 0x0000ffff0000ffffULL) << 16;
+            word_t idx = (word_t)__builtin_clzll(b >> 32 | b << 32) | word << 6;
+            word_t *e = (word_t *)(ctx[0] + 0x30 + idx * 0x10);
+            word_t el_lo = e[0];
+            word_t el_hi = (word_t)(unsigned char)((word_t)(e + 1));
+            word_t aux = *(word_t *)(ctx[0] + 0x38 + idx * 8);
+            word_t tag = FUN_00002534(0x64e8e8, 0x4c0748);
+            word_t r = FUN_00258c60(flags & 1, ctx[1] + /*count*/ 0, tag);
+            if ((r & 1) != 0)
+                FUN_002591b4(0x65f2f0);                  /* slot moved fatal */
+            bits = bits - 1 & bits;
+            word_t thisp = *out;
+            if ((((word_t)(r >> 32)) & 1) == 0) {
+                word_t *bm = (word_t *)(thisp + (idx >> 6) * 8);
+                bm[0x40 / 8] |= 1ULL << (idx & 0x3f);
+                word_t *slot = (word_t *)(*(word_t *)(thisp + 0x30) + idx * 0x10);
+                slot[0] = el_lo;
+                slot[1] = el_hi;
+                *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8) = aux;
+                if ((word_t)(*(word_t *)(thisp + 0x10) + 1) < *(word_t *)(thisp + 0x10))
+                    CL4_FATAL();                        /* SBP(1,0x76f64) */
+                *(word_t *)(thisp + 0x10) += 1;
+                flags = 1;
+            } else {
+                word_t old = *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8);
+                if ((word_t)(old + aux) < old) CL4_FATAL(); /* SBP(1,0x76f60) */
+                *(word_t *)(*(word_t *)(thisp + 0x38) + idx * 8) = old + aux;
+                flags = 1;
+            }
+        }
+        word = word + 1;
+        if ((word_t)word < /*prev*/ 0) CL4_FATAL();      /* SBP(1,0x76f58) */
+        if (word >= (long)(ctx[3] + 0x40 >> 6)) break;
+        bits = *(word_t *)(ctx[2] + word * 8);
+    }
+    FUN_0036b118(/*local*/ 0);
+    FUN_0036b118(ctx[0]);
+    FUN_0036b118(key);
+    FUN_003a25d4(v);
+}
+
+/* ================================================================== *
+ * Pointer / tagged-union / element helpers.
+ * ================================================================== */
+
+/* FUN_00076f74 @ 0x76f74  (est. sk_elem_build_3word)
+ * Build a 3-word tagged element from the source element's fields via
+ * FUN_00081fe0, storing low word, tag byte, and spill word into the
+ * destination 3-word tuple.
+ * Confidence: medium */
+static void sk_elem_build_76f74(word_t *dst, word_t *src)
+{
+    word_t spill;
+    word_t lo = FUN_00081fe0(&spill, src[0], *(unsigned char *)((word_t)src + 8), src[2]);
+    dst[0] = lo;
+    *(unsigned char *)((word_t)dst + 8) = /*extraout_w1*/ 0;
+    dst[2] = spill;
+}
+
+/* FUN_00076fc0 @ 0x76fc0  (est. sk_write_imm64)
+ * Write a single 64-bit immediate (0x91181400d00002a0, an ARM64 instruction
+ * constant / jump-patch) to the global slot at 0x64e038.
+ * Confidence: low (constant global write; unreachable block removed) */
+static void sk_write_imm64_76fc0(void)
+{
+    *(word_t *)0x64e038 = 0x91181400d00002a0ULL;
+}
+
+/* FUN_00077024 @ 0x77024  (est. sk_tagged_deref)
+ * Dereference a tagged pointer: if the tag bit (bit 1 of the byte at the
+ * object's type tag +0x52) is set, unwind through FUN_0036aae4 to the real
+ * pointer; else return the argument unchanged.
+ * Confidence: medium */
+static word_t sk_tagged_deref_77024(word_t *p)
+{
+    word_t *r = p;
+    if ((*(unsigned char *)(*(word_t *)(p[3] + -8) + 0x52) >> 1 & 1) != 0) {
+        word_t lo = FUN_0036aae4();
+        r = (word_t *)/*hi*/ 0;
+        *p = lo;
+    }
+    return (word_t)r;
+}
+
+/* FUN_00077070 @ 0x77070  (est. sk_elem_copy_5word)
+ * Copy a 5-word element from src to dst (5 x 8 bytes).
+ * Confidence: high (structural) */
+static word_t sk_elem_copy_5word_77070(word_t *src, word_t *dst)
+{
+    word_t a = src[0], b = src[1], c = src[2], d = src[3];
+    dst[4] = src[4];
+    dst[1] = b;
+    dst[0] = a;
+    dst[3] = d;
+    dst[2] = c;
+    return (word_t)dst;
+}
+
+/* FUN_00077088 @ 0x77088  (est. sk_elem_end_off8)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +8 (len is a signed 32-bit int).  Used to find the
+ * end of a packed sub-element.
+ * Confidence: high (structural) */
+static long sk_elem_end_off8_77088(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 8) + (long)*(int *)(p + 8);
+}
+
+/* FUN_000770b8 @ 0x770b8  (est. sk_elem_end_offc)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +0xc.
+ * Confidence: high (structural) */
+static long sk_elem_end_offc_770b8(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 0xc) + (long)*(int *)(p + 0xc);
+}
+
+/* FUN_000770e8 @ 0x770e8  (est. sk_elem_end_off14)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +0x14.
+ * Confidence: high (structural) */
+static long sk_elem_end_off14_770e8(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 0x14) + (long)*(int *)(p + 0x14);
+}
+
+/* FUN_00077118 @ 0x77118  (est. sk_elem_end_off18)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +0x18.
+ * Confidence: high (structural) */
+static long sk_elem_end_off18_77118(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 0x18) + (long)*(int *)(p + 0x18);
+}
+
+/* FUN_00077148 @ 0x77148  (est. sk_elem_end_off1c)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +0x1c.
+ * Confidence: high (structural) */
+static long sk_elem_end_off1c_77148(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 0x1c) + (long)*(int *)(p + 0x1c);
+}
+
+/* FUN_00077178 @ 0x77178  (est. sk_elem_end_off20)
+ * Resolve a tagged pointer and return the end of a length-prefixed blob whose
+ * length lives at offset +0x20.
+ * Confidence: high (structural) */
+static long sk_elem_end_off20_77178(word_t p)
+{
+    if ((p & 1) != 0) p = *(word_t *)(p & 0xfffffffffffffffeULL);
+    return (long)(p + 0x20) + (long)*(int *)(p + 0x20);
+}
+
+/* FUN_000773f0 @ 0x773f0  (est. sk_slot_table_cleanup)
+ * Clean up the slot table referenced by the constant 0x64e5d8 (a global
+ * table address) via FUN_00077770.
+ * Confidence: low (constant-table cleanup) */
+static void sk_slot_table_cleanup_773f0(void)
+{
+    FUN_00077770(0x64e5d8);
+}
+
+/* FUN_000774c8 @ 0x774c8  (est. sk_elem_swap_store)
+ * Store one element into a slot via an indirect call through a PAC'd function
+ * pointer global (_DAT_aa2803e838002f47), returning the stored value.
+ * Confidence: low (PAC'd global call) */
+static word_t sk_elem_swap_store_774c8(word_t a, word_t b)
+{
+    ((void (*)(word_t, word_t))0xaa2803e838002f47)(b, a);
+    return b;
+}
+
+/* ================================================================== *
+ * Container lock-state / size / copy glue.
+ * ================================================================== */
+
+/* FUN_0007752c @ 0x7752c  (est. sk_lock_state_save)
+ * Save lock state; returns 0.  Confidence: high */
+static word_t sk_lock_state_save_7752c(void) { return 0; }
+
+/* FUN_00077540 @ 0x77540  (est. sk_move_range)
+ * memmove helper: FUN_00117d14(param_4, param_1) — move a range within a
+ * container.  Confidence: high (single call) */
+static void sk_move_range_77540(word_t a, word_t b, word_t c, word_t d)
+{
+    FUN_00117d14(d, a);
+}
+
+/* FUN_00077550 @ 0x77550  (est. sk_lock_state_clear)
+ * Clear the grow-lock state (no-op in this shape).  Confidence: high */
+static void sk_lock_state_clear_77550(void) { }
+
+/* FUN_00077560 @ 0x77560  (est. sk_lock_state_probe)
+ * Probe the grow-lock state (no-op).  Confidence: high */
+static void sk_lock_state_probe_77560(void) { }
+
+/* FUN_00077570 @ 0x77570  (est. sk_lock_state_enter)
+ * Enter the grow-lock state (no-op).  Confidence: high */
+static void sk_lock_state_enter_77570(void) { }
+
+/* FUN_00077580 @ 0x77580  (est. sk_this_tail)
+ * Return the tail pointer of the element vector (this + 0x20).
+ * Confidence: high */
+static long sk_this_tail_77580(long thisp) { return thisp + 0x20; }
+
+/* FUN_00077590 @ 0x77590  (est. sk_slot_release_noop)
+ * No-op.  Confidence: high */
+static void sk_slot_release_noop_77590(void) { }
+
+/* FUN_000775b8 @ 0x775b8  (est. sk_lock_snapshot)
+ * No-op (register-returned lock snapshot).  Confidence: high */
+static void sk_lock_snapshot_775b8(void) { }
+
+/* FUN_000775c8 @ 0x775c8  (est. sk_element_probe_noop)
+ * No-op.  Confidence: high */
+static void sk_element_probe_noop_775c8(void) { }
+
+/* FUN_000775dc @ 0x775dc  (est. sk_vec_set_size_probe)
+ * Compute the element-vector size: `count = (probe - 0x20) / unaff_x21`, store
+ * the element-table pointer at this+0x10 and `count<<1` at this+0x18.
+ * Confidence: medium */
+static void sk_vec_set_size_775dc(word_t thisp)
+{
+    long probe = thunk_FUN_000126e8();
+    long count = 0;
+    if (/*unaff_x21*/ 0 != 0) count = (probe - 0x20) / /*unaff_x21*/ 0;
+    *(word_t *)(thisp + 0x10) = /*unaff_x19*/ 0;
+    *(long *)(thisp + 0x18) = count << 1;
+}
+
+/* FUN_00077604 @ 0x77604  (est. sk_clear_element_noop)
+ * No-op.  Confidence: high */
+static void sk_clear_element_noop_77604(void) { }
+
+/* FUN_00077614 @ 0x77614  (est. sk_element_probe_noop2)
+ * No-op.  Confidence: high */
+static void sk_element_probe_noop2_77614(void) { }
+
+/* FUN_00077624 @ 0x77624  (est. sk_overflow_probe_noop)
+ * No-op.  Confidence: high */
+static void sk_overflow_probe_noop_77624(void) { }
+
+/* FUN_00077630 @ 0x77630  (est. sk_alloc_count_probe)
+ * Probe allocation count via thunk_FUN_000126e8.  Confidence: high */
+static void sk_alloc_count_probe_77630(void) { thunk_FUN_000126e8(); }
+
+/* FUN_0007764c @ 0x7764c  (est. sk_typeinfo_build)
+ * Build a typeinfo token from a tag pair via FUN_00002534.
+ * Confidence: high */
+static void sk_typeinfo_build_7764c(word_t a, word_t b)
+{
+    FUN_00002534(a, b);
+}
+
+/* FUN_0007765c @ 0x7765c  (est. sk_clear_element_noop3)
+ * No-op.  Confidence: high */
+static void sk_clear_element_noop3_7765c(void) { }
+
+/* FUN_0007766c @ 0x7766c  (est. sk_vec_set_size_probe2)
+ * Compute the element-vector size: `count = param_1 / in_x9`, store the
+ * element-table pointer at this+0x10 and `count<<1` at this+0x18.
+ * Confidence: medium */
+static void sk_vec_set_size2_7766c(word_t param_1)
+{
+    long count = 0;
+    if (/*in_x9*/ 0 != 0) count = (long)param_1 / /*in_x9*/ 0;
+    *(word_t *)(/*this*/ 0 + 0x10) = /*unaff_x19*/ 0;
+    *(long *)(/*this*/ 0 + 0x18) = count << 1;
+}
+
+/* FUN_0007767c @ 0x7767c  (est. sk_clear_element_noop4)
+ * No-op.  Confidence: high */
+static void sk_clear_element_noop4_7767c(void) { }
+
+/* FUN_00077698 @ 0x77698  (est. sk_lock_state_enter2)
+ * No-op.  Confidence: high */
+static void sk_lock_state_enter2_77698(void) { }
+
+/* FUN_000776b4 @ 0x776b4  (est. sk_clear_element_noop5)
+ * No-op.  Confidence: high */
+static void sk_clear_element_noop5_776b4(void) { }
