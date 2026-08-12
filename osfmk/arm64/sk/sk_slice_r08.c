@@ -4638,7 +4638,7 @@ long l0;
   *(word_t **)(ux1 + 0x48) = p0;
   *p0 = ex0;
   u1 = sk_h_004083a0();
-  sk_f_003e1da8(u1,&DAT_005a0078,l0);
+  sk_f_003e1da8(u1,(word_t)&DAT_005a0078,l0);
   return;
 }
 
@@ -4685,7 +4685,7 @@ long l0;
   *(word_t **)(ux1 + 0x48) = p0;
   *p0 = ex0;
   u1 = sk_h_004083a0();
-  sk_f_003e262c(u1,&DAT_005a0088,l0);
+  sk_f_003e262c(u1,(word_t)&DAT_005a0088,l0);
   return;
 }
 

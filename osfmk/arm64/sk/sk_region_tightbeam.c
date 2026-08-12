@@ -2173,7 +2173,7 @@ static unsigned long *cL4_tbl1_lookup_insert(unsigned long id, uint32_t mode)
             unsigned long stride = (unsigned long)id * 8 + 8;
             ((unsigned long*)entry)[7] = (unsigned long)&cL4_dispatch_copy_slot10;
             ((unsigned long*)entry)[8] = stride;
-            ((unsigned long*)entry)[10] = cL4_tbl2_cache == 0 ? 0 : 0; /* DAT_004f2758 */
+            ((unsigned long*)entry)[10] = 0x4f2758; /* DAT_004f2758 */
             ((unsigned long*)entry)[9] = stride;
             ent[u*2+2] = (unsigned int)(unsigned long)entry;
             cL4_tbl1_load = (uint32_t)(u + 1);
@@ -2333,12 +2333,14 @@ unsigned long *cL4_obj_table_lookup_insert(unsigned long id, uint32_t mode, int 
     if (a == 1) return (unsigned long*)0x67aa20;
     if ((id & 1) == 0) {
         if (mode < 3) return (unsigned long *)((unsigned long)mode * 8 + 0x67b780);
-        return cL4_tbl1_lookup_insert(id, mode);
+        /* table-1 half keys on param_2 (mode): stride = mode*8+8, lookup key = mode */
+        return cL4_tbl1_lookup_insert(mode, mode);
     }
-    if (b == 0) return cL4_tbl2_lookup_insert(id, 0);
+    /* odd path: key = (b ? 0x80000000 : 0) | (mode & 0x7fffffff); param_1 (id) unused */
+    if (b == 0) return cL4_tbl2_lookup_insert(mode & 0x7fffffff, mode);
     if (mode == 0) return (unsigned long*)0x67b188;
     if (mode == 1) return (unsigned long*)0x67b710;
-    return cL4_tbl2_lookup_insert(id | 0x80000000, mode);
+    return cL4_tbl2_lookup_insert(mode | 0x80000000, mode);
 }
 
 /* Table-3 globals (fixed small-id object table, base _DAT_006c07e0). */
