@@ -49,6 +49,9 @@ extern uint64_t waitq_hash_table;    /* DAT_fffffe0007d7c8e0 universal waitq has
 extern uint64_t waitq_hash_size;     /* DAT_fffffe0007d7c8e8 universal waitq hash size (kernel) */
 extern void kernel_owner_mismatch_panic(void *mutex, void *thread) __attribute__((noreturn)); /* FUN_fffffe000c0e4d74: "Mutex %p is unexpectedly not owned by thread %p" */
 extern void kernel_panic_msg_fmt(const char *fmt, ...) __attribute__((noreturn)); /* FUN_fffffe000c0e11ec */
+extern uint64_t hv_map_descriptor;   /* DAT_fffffe00070142ec rodata map descriptor (kernel) */
+extern int kernel_callee_1accc(uint64_t *out, uint64_t *ctx, uint64_t size, uint32_t flags); /* FUN_fffffe000b91accc, kernel slot-register helper (stubbed extern) */
+extern int kernel_callee_49e8(uint64_t a, uint64_t b, uint32_t c, uint32_t d); /* FUN_fffffe000b8b49e8, kernel copy/validate helper (stubbed extern) */
 extern void hv_el2_pt_alloc(struct hv_vm *vm);  /* FUN_fffffe000b98e344 (see hv_internal.h) */
 
 /* Nesting-exit idiom (INLINE in FUN_fffffe000b988e70 / b98e788 / b85e180, not a
@@ -1182,14 +1185,18 @@ done_reason:
  *   - HVC32 0xc1000000 compound (b98c370, 5 save/OR/store sequences),
  *     0xc1000001 (b98bd1c), 0x2 (b98c670), 0x3 (b98a4c0), 0x4 (b98c70c),
  *     0x5 (b98bdf0), 0x6..0xf (b98c798)
- *   - SVC64 0xc6000012 (b98ce3c), 0x13 (b98cd70), 0x14 (b98c864 per-slot
- *     CAS: bitmap vm+0x2188, slot table vm+0x2148, hv_vcpu_map_memory,
- *     b98cfd4-b98d5f4), 0x18 (b98cf28/b98d07c per-slot notify), 0x19
- *     (b98ce54 slot-group sweep), 0x1a (b98caa4 SIMD select)
- * REMAINING (deep shared slot-record machinery, read but not yet fully
- *   transcribed with verified register tracking): SVC 0xc6000010 deep path
- *   (b98d308), SVC 0xc6000011 deep path (b98d268/b98d270), the 0x19 copyin
- *   continuation (b98d120-b98d148), the shared b98d148-b98d838 block. */
+ *   - SVC64 0xc6000010 (b98cee0/b98d308 slot select), 0x11 (b98cb50/
+ *     b98d270 copyin slot op), 0x12 (b98ce3c), 0x13 (b98cd70), 0x14
+ *     (b98c864 per-slot CAS: bitmap vm+0x2188, slot table vm+0x2148,
+ *     hv_vcpu_map_memory, b98cfd4-b98d5f4), 0x18 (b98cf28/b98d07c
+ *     per-slot notify), 0x19 (b98ce54 slot-group sweep + b98d104
+ *     copyin/region path), 0x1a (b98caa4 SIMD select)
+ * All leaf bodies are transcribed from the instruction stream; kernel
+ * callees beyond the audit boundary are declared externs with their FUN_
+ * addresses (hv_copyin_user, cpu_signal, hv_percpu_notify, lock_*,
+ * kernel_copyin2, kernel_mem_release, hv_vcpu_slot_op, hv_vcpu_map_memory,
+ * hv_vcpu_save_el2_state, hv_el2_state_build, hv_vcpu_state_merge,
+ * hv_flush_lock_op, kernel_callee_1accc/49e8, kernel_owner_mismatch_panic). */
 static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
 {
     uint64_t *es = (uint64_t *)vcpu->el2_state;
@@ -1259,25 +1266,258 @@ static void hv_esr_classify(hv_vcpu_t *vcpu, uint64_t esr)
                         es[0x8] = 0xfffffffffae94001ull;   /* b98cf14 */
                         return;
                     }
-                    goto svc_shared_slot;       /* b98d308 (pending) */
+                    /* b98d308: slot acquire + sub-slot state check.
+                     * slot = vm+0x2148[idx] (csel 0x2bad-tagged); CAS-
+                     * increment slot->refcount (b98d330-b98d348; bit31 ->
+                     * es[0x8] = 0xfffffffffae94002, b98d510). slot[0x1008]
+                     * == 0 -> release refcount (ldaddl -1) + es[0x8] =
+                     * 0xfffffffffae94006 (b98d5a0/b98b4a4). sub-slot =
+                     * slot+8+sub*0x40 (csel 0xc8a2-tagged,
+                     * b98d354-b98d36c); CAS [sub-slot]: 1 -> 2 (casa,
+                     * b98d370); old==1 -> b98da40 (vcpu[0xe8] =
+                     * {sub-slot,old}, ldaddl -1 on slot, goto unhandled).
+                     * Release slot refcount (ldaddl -1, b98d384);
+                     * es[0x8] = (old==0) ? 0xfffffffffae94003 :
+                     * 0xfffffffffae94002 (cinc eq, b98d390-b98d39c). */
+                    {
+                        uint64_t slot_s = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                                          (int64_t)(es[0x10] * 8);
+                        uint64_t slot_u = (uint64_t)((uint64_t *)((char *)vmp + 0x2148)) +
+                                          (es[0x10] * 8);
+                        uint64_t *slot = (uint64_t *)((slot_s == slot_u)
+                                                          ? slot_s
+                                                          : (slot_u | 0x2bad000000000000ull));
+                        uint32_t r = *(uint32_t *)slot;
+                        for (;;) {
+                            uint32_t expected = r;
+                            uint32_t desired = expected + 1;
+                            if (expected & 0x80000000u) {
+                                es[0x8] = 0xfffffffffae94002ull;  /* b98d510 */
+                                return;
+                            }
+                            if (__atomic_compare_exchange_n(
+                                    (uint32_t *)slot, &expected, desired,
+                                    /*weak*/0, __ATOMIC_ACQUIRE,
+                                    __ATOMIC_RELAXED))
+                                break;
+                            r = expected;
+                        }
+                        if (slot[0x1008/8] == 0) {
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);  /* b98d5a0 */
+                            es[0x8] = 0xfffffffffae94006ull;   /* b98b4a4 */
+                            return;
+                        }
+                        {
+                            uint64_t ent_s = (uint64_t)((char *)slot + 8) +
+                                             (int64_t)(es[0x18] * 0x40);
+                            uint64_t ent_u = (uint64_t)((char *)slot + 8) +
+                                             (es[0x18] * 0x40);
+                            uint32_t *entry = (uint32_t *)((ent_s == ent_u)
+                                                               ? ent_s
+                                                               : (ent_u | 0xc8a2000000000000ull));
+                            uint32_t old = 1;
+                            __atomic_compare_exchange_n(entry, &old, 2u,
+                                                        /*weak*/0,
+                                                        __ATOMIC_ACQUIRE,
+                                                        __ATOMIC_RELAXED);
+                            if (old == 1) {             /* b98da40 */
+                                *(uint64_t *)((char *)vcpu + 0xe8) =
+                                    (uint64_t)slot;      /* stp x8,x9 */
+                                *(uint64_t *)((char *)vcpu + 0xf0) =
+                                    (uint64_t)entry;
+                                __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                                   __ATOMIC_RELEASE);
+                                goto unhandled_ec;      /* b98d860 */
+                            }
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);  /* b98d384 */
+                            es[0x8] = (old == 0)
+                                          ? 0xfffffffffae94003ull
+                                          : 0xfffffffffae94002ull; /* cinc eq */
+                            return;
+                        }
+                    }
                 }
                 if (esr == 0xc6000011ull) {
                     /* b98cb50 (0xc6000011): copyin slot op. Gate (fully
                      * traced): slot = es[0x10] (<= 7), sub = es[0x18]
                      * (<= 0x3f), es[0x20]&0x3fff == 0 else es[0x8] =
                      * 0xfffffffffae94003 (b98cb78-b98cb8c); zero the
-                     * stack out-buffer (b98cb58-b98cb68); if
+                     * stack out-buffer (b98cb58-b98cb68). If
                      * vm+0x2198[0x16]<<16 != 0x3000000 -> b98d268 (the
-                     * descriptor-mismatch path, deep) else hv_copyin_user
-                     * path with 0x4000 size (b98d270, deep — FULL
-                     * TRANSCRIPTION PENDING, shared block). */
+                     * descriptor-mismatch path: w27/w25 = desc[0x24]/
+                     * [0x28], x9 = desc[0x20], then the copyin below with
+                     * x3 = x9+x25 and x2 = es[0x20]); else the 0x4000-size
+                     * path (b98cba4-b98cbb0: w27 = w25 = 0x4000, x9 =
+                     * 0x4000).
+                     * b98d270: hv_copyin_user(vcpu[0x88], &out, es[0x20],
+                     * x3) (b98e020); on error es[0x8] = sxtw(err)
+                     * (b98d7b8). Then x22 = w27 + es[0x20];
+                     * kernel_callee_1accc(&out, &vcpu[0x88], x22, 0x2010)
+                     * (b91accc, b98d2a4); on error copyout+dealloc +
+                     * es[0x8] = 0xfae94002 (b98d2b4-b98d2ec); on success
+                     * -> b98d3a0 (the shared slot-record registration,
+                     * b91ae80 etc. — deep machinery, read but not yet
+                     * transcribed with verified register tracking). */
                     uint64_t *vmp = (uint64_t *)vm;
+                    uint64_t x3, x25;
+                    uint64_t out = 0;
+                    uint32_t rc;
                     if (es[0x10] > 7 || es[0x18] > 0x3f ||
                         (es[0x20] & 0x3fff) != 0) {
                         es[0x8] = 0xfffffffffae94003ull;   /* b98cb78-b98cb8c */
                         return;
                     }
-                    goto svc_shared_slot;       /* b98d270 (pending) */
+                    if (*(uint16_t *)(*(uint64_t *)((char *)vmp + 0x2198) + 0x16)
+                            << 16 != 0x3000000ull) {
+                        /* b98d268 descriptor-mismatch path */
+                        uint64_t *desc = (uint64_t *)vmp[0x2198/8];
+                        x3  = *(uint32_t *)((char *)desc + 0x20) +
+                              *(uint32_t *)((char *)desc + 0x28); /* w9 + w25 */
+                        x25 = *(uint32_t *)((char *)desc + 0x28);
+                    } else {
+                        /* b98cba4: 0x4000-size path */
+                        x3 = 0x4000;
+                        x25 = 0x4000;
+                    }
+                    rc = hv_copyin_user(
+                        (void *)*(uint64_t *)((char *)vcpu + 0x88),
+                        (void **)&out, es[0x20], x3);
+                    if (rc != 0) {                  /* b98d28c/b98d7b8 */
+                        es[0x8] = (int64_t)(int32_t)rc;
+                        return;
+                    }
+                    /* b98d290: x22 = w27 + es[0x20] */
+                    {
+                        uint64_t w27 = *(uint16_t *)(*(uint64_t *)((char *)vmp + 0x2198) + 0x24);
+                        uint64_t x22 = w27 + es[0x20];
+                        if (kernel_callee_1accc((uint64_t *)&out,
+                                                (uint64_t *)((char *)vcpu + 0x88),
+                                                x22, 0x2010) != 0) {
+                            /* b98d2b4: copyout + dealloc + error */
+                            kernel_copyin2(*(uint64_t *)0xfffffe0007e97ac8ull,
+                                           out, out + 0x8000, 0,
+                                           (uint64_t *)0xfffffe0007d81408ull);
+                            kernel_mem_release(
+                                *(uint64_t *)0xfffffe0007e97ac8ull,
+                                out, 0x8000);
+                            es[0x8] = 0xfae94002ull;        /* b98d2ec */
+                            return;
+                        }
+                        /* b98d3a0 success: kernel_callee_1ae80(&out,
+                         * &vcpu[0x88]) (b91ae80); checks; then the slot
+                         * registration (b98d3e8-b98d68c, shared with 0x10):
+                         * slot = vm+0x2148[es[0x10]] (csel 0x2bad);
+                         * CAS-increment slot->refcount (retry loop, bit31
+                         * -> es[0x8] = 0xfffffffffae94003, b98d72c);
+                         * slot[0x1008]==0 -> release + es[0x8] =
+                         * 0xfffffffffae94006 (b98d5ac); sub-slot =
+                         * slot+8+es[0x18]*0x40 (csel 0x2bad); CAS
+                         * [sub-slot]: 0 -> 2 (b98d464); busy -> release +
+                         * es[0x8] = 0xfffffffffae94004 (b98d5bc). Then the
+                         * map-descriptor check (vm+0x2198[0x16]<<16 ==
+                         * 0x3000000, b98d46c); if != -> allocate a 0x8000
+                         * record (b8a6c14, b98d654). Fill the slot record
+                         * (b98d68c): [entry+8] = {out, 0}, [entry+0x18] =
+                         * x22, [entry+0x20] = (w27>>7)&7, [entry+0x28] =
+                         * ++hv_vcpu_generation (DAT_fffffe000c716e40),
+                         * [entry+0x30] = 0, [entry+0x38] = 0, copy 0x8000
+                         * (b758d80), hv_el2_state_build(vcpu, [entry+8], 1)
+                         * (b9895b8), copy [entry+0x10] (b758d80), CAS
+                         * [entry]: 2 -> 1 (casl, b98d6ec), release slot
+                         * refcount (ldaddl -1), es[0x8] = 0, done. */
+                        uint64_t *vmp2 = (uint64_t *)vm;
+                        uint64_t slot_s, slot_u, ent_s, ent_u;
+                        uint64_t *slot;
+                        uint32_t *entry;
+                        uint32_t r;
+                        if (*(uint64_t *)((char *)vcpu + 0x88) == 0) {
+                            es[0x8] = 0xfae94002ull;        /* b98d2b4 */
+                            return;
+                        }
+                        if (kernel_callee_49e8(x22, x25 + x22, 0, 1) != 0) {
+                            es[0x8] = 0xfae94002ull;
+                            return;
+                        }
+                        slot_s = (uint64_t)((uint64_t *)((char *)vmp2 + 0x2148)) +
+                                 (int64_t)(es[0x10] * 8);
+                        slot_u = (uint64_t)((uint64_t *)((char *)vmp2 + 0x2148)) +
+                                 (es[0x10] * 8);
+                        slot = (uint64_t *)((slot_s == slot_u)
+                                                ? slot_s
+                                                : (slot_u | 0x2bad000000000000ull));
+                        r = *(uint32_t *)slot;
+                        for (;;) {
+                            uint32_t expected = r;
+                            uint32_t desired = expected + 1;
+                            if (expected & 0x80000000u) {
+                                es[0x8] = 0xfffffffffae94003ull;  /* b98d72c */
+                                return;
+                            }
+                            if (__atomic_compare_exchange_n(
+                                    (uint32_t *)slot, &expected, desired,
+                                    /*weak*/0, __ATOMIC_ACQUIRE,
+                                    __ATOMIC_RELAXED))
+                                break;
+                            r = expected;
+                        }
+                        if (slot[0x1008/8] == 0) {
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);
+                            es[0x8] = 0xfffffffffae94006ull;  /* b98d5ac */
+                            return;
+                        }
+                        ent_s = (uint64_t)((char *)slot + 8) +
+                                (int64_t)(es[0x18] * 0x40);
+                        ent_u = (uint64_t)((char *)slot + 8) +
+                                (es[0x18] * 0x40);
+                        entry = (uint32_t *)((ent_s == ent_u)
+                                                 ? ent_s
+                                                 : (ent_u | 0x2bad000000000000ull));
+                        {
+                            uint32_t old = 0;
+                            __atomic_compare_exchange_n(entry, &old, 2u,
+                                                        /*weak*/0,
+                                                        __ATOMIC_ACQUIRE,
+                                                        __ATOMIC_RELAXED);
+                            if (old != 0) {
+                                __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                                   __ATOMIC_RELEASE);
+                                es[0x8] = 0xfffffffffae94004ull;  /* b98d5bc */
+                                return;
+                            }
+                        }
+                        /* record fill (b98d68c) */
+                        {
+                            uint64_t rec = out;     /* b98d3f0: x27 = out */
+                            uint64_t *rcd = (uint64_t *)((char *)entry + 8);
+                            rcd[0] = rec;           /* stp x27,x8 */
+                            rcd[1] = 0;
+                            *(uint64_t *)((char *)entry + 0x18) = x22;
+                            *(uint32_t *)((char *)entry + 0x20) =
+                                (uint32_t)((w27 >> 7) & 7);   /* ubfx w4,w27,#7,#3 */
+                            *(uint64_t *)((char *)entry + 0x28) =
+                                __atomic_add_fetch(&hv_vcpu_generation,
+                                                   1, __ATOMIC_RELAXED); /* DAT_fffffe000c716e40 */
+                            *(uint64_t *)((char *)entry + 0x30) = 0;
+                            *(uint8_t *)((char *)entry + 0x38) = 0;
+                            kernel_copy_src((void *)rec,
+                                            (const void *)((char *)entry + 8),
+                                            0x8000);            /* b758d80 */
+                            hv_el2_state_build((struct hv_vm *)vcpu,
+                                               (uint8_t *)rcd[0], 1); /* b9895b8 */
+                            if (rcd[1] != 0)
+                                kernel_copy_src((void *)rcd[1],
+                                                (const void *)((char *)entry + 8),
+                                                0x8000);            /* b758d80 */
+                            __atomic_store_n(entry, 1u, __ATOMIC_RELEASE); /* casl */
+                            __atomic_fetch_add((uint32_t *)slot, 0xffffffffu,
+                                               __ATOMIC_RELEASE);
+                            es[0x8] = 0;                            /* b98d2ec */
+                            return;
+                        }
+                    }
                 }
                 if (esr == 0xc6000012ull)
                     /* b98ce3c: hv_vcpu_slot_op(vcpu, es[0x10], es[0x18])
@@ -1648,25 +1888,75 @@ svc19_argcheck:                     /* b98d064 */
                         return;
                     }
                     /* b98d104: hv_copyin_user(vcpu[0x88], &out, es[0x10],
-                     * es[0x18]) (b98e020); on error es[0x8] = sxtw(err).
-                     * (Deep region-validation continuation still to expand:
-                     * b98d120-b98d148, the shared map/region block.) */
+                     * es[0x18]) (b98e020); on error es[0x8] = sxtw(err)
+                     * (b98d180). Then (b98d124) region validation: if
+                     * *out >= 0x1c && 2**out == es[0x18] -> the descriptor
+                     * path (b98d520); else the copyout/dealloc path
+                     * (b98d148).
+                     * b98d520: x = *out - out[8]; x < 0x1c or
+                     * (out[0x14] >> 16) != 0x206879703000 -> copyout path
+                     * (b98d148, err 0xfae94004 via b98d6fc). Else set
+                     * vm+0x2198 = DAT_fffffe00070142ec (the map descriptor),
+                     * hv_vcpu_state_merge(desc, out+*out, desc[0], desc[1],
+                     * out[8], <x6 leftover — decompiler artifact>)
+                     * (b98503c, b98d570), vm+0x2191 = 1, vm+0x21a0 =
+                     * out[0x14], then the copyout path.
+                     * Copyout path (b98d148-b98d17c):
+                     * kernel_copyin2([DAT_fffffe0007e97ac8], out,
+                     * out+es[0x18], 0, [DAT_fffffe0007d81408]) (b8b122c);
+                     * kernel_mem_release([DAT_fffffe0007e97ac8], out,
+                     * es[0x18]) (b8a8078); es[0x8] = sxtw(err) (b98d180;
+                     * err = 0xfae94004 unless the descriptor path cleared
+                     * it, b98d574). */
                     {
                         uint64_t out = 0;
                         uint32_t rc = hv_copyin_user(
                             (void *)*(uint64_t *)((char *)vcpu + 0x88),
                             (void **)&out, es[0x10], es[0x18]);
-                        es[0x8] = (int64_t)(int32_t)rc;
+                        uint64_t err = 0xfae94004ull;   /* b98d12c */
+                        if (rc != 0) {                  /* b98d11c */
+                            es[0x8] = (int64_t)(int32_t)rc;    /* b98d180 */
+                            return;
+                        }
+                        if (*((uint64_t *)out) >= 0x1c &&
+                            2 * *((uint64_t *)out) == es[0x18]) {
+                            /* b98d520 descriptor path */
+                            uint64_t x = *((uint64_t *)out) -
+                                         *((uint64_t *)(out + 8));
+                            if (x >= 0x1c &&
+                                (*(uint64_t *)(out + 0x14) >> 16) ==
+                                    0x206879703000ull) {
+                                uint64_t *vmp2 = (uint64_t *)vm;
+                                uint64_t *desc;
+                                vmp2[0x2198/8] =
+                                    (uint64_t)&hv_map_descriptor; /* DAT_fffffe00070142ec */
+                                desc = (uint64_t *)vmp2[0x2198/8];
+                                hv_vcpu_state_merge(
+                                    (uint64_t)desc, out + *((uint64_t *)out),
+                                    desc[0], desc[1],
+                                    *((uint64_t *)(out + 8)), 0); /* x6 leftover */
+                                *(uint8_t *)((char *)vmp2 + 0x2191) = 1;
+                                vmp2[0x21a0/8] = *(uint64_t *)(out + 0x14);
+                                err = 0;                /* b98d574 */
+                            }
+                        }
+                        /* b98d148: copyout + release */
+                        if (kernel_copyin2(
+                                *(uint64_t *)0xfffffe0007e97ac8ull,
+                                (uint64_t)out, out + es[0x18], 0,
+                                (uint64_t *)0xfffffe0007d81408ull) == 0) {
+                            kernel_mem_release(
+                                *(uint64_t *)0xfffffe0007e97ac8ull,
+                                (uint64_t)out, es[0x18]);
+                        }
+                        es[0x8] = (int64_t)(int32_t)err;   /* b98d180 */
+                        return;
                     }
                     return;
                 }
             }
-            /* 0xc6000010/0x11 dispatch + 0x15-0x17 -> unhandled (b98d860).
-             * 0x10 (b98cee0) / 0x11 (b98cb50) gates are fully traced above;
-             * their deep continuations (b98d308/b98d268/b98d270) are the
-             * shared slot-record machinery (b98d148-b98d838), read but not
-             * yet transcribed with verified register tracking. */
-svc_shared_slot:                /* b98d308 / b98d270 (pending) */
+            /* 0xc6000015..0x17 and other SVC numbers -> unhandled
+             * (b98d860). */
             goto unhandled_ec;
         }
         return;
