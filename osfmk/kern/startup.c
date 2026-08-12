@@ -441,33 +441,33 @@ void pe_init_iokit(void)
              * progress value by 0x32*DAT_fffffe0007e9d429 until it fits
              * the limit>>1, and scale by the factor. */
             {
-                uint64_t *puVar11;
-                int *piVar9, *piVar12;
-                int iVar4, iVar5, iVar6;
-                uint uVar1;
+                uint64_t *prog_limit;
+                int *prog_val, *prog_inc;
+                int scale, val, next;
+                uint sum;
                 uint mode = *(uint *)0xfffffe0007e9d428ull;
-                byte bVar2 = *(byte *)0xfffffe0007e9d429ull;
-                puVar11 = (uint64_t *)0xfffffe0007e9d3b8ull;
+                byte step = *(byte *)0xfffffe0007e9d429ull;
+                prog_limit = (uint64_t *)0xfffffe0007e9d3b8ull;
                 if (mode < 3) {
-                    puVar11 = ((uint64_t **)0xfffffe0007e9d350ull)[mode];
-                    piVar9 = ((int **)0xfffffe0007e9d368ull)[mode];
-                    piVar12 = ((int **)0xfffffe0007e9d380ull)[mode];
-                    iVar4 = *(int *)(0xfffffe00070454c8ull + mode * 4);
+                    prog_limit = ((uint64_t **)0xfffffe0007e9d350ull)[mode];
+                    prog_val = ((int **)0xfffffe0007e9d368ull)[mode];
+                    prog_inc = ((int **)0xfffffe0007e9d380ull)[mode];
+                    scale = *(int *)(0xfffffe00070454c8ull + mode * 4);
                 } else {
-                    piVar12 = (int *)0xfffffe000c5d0120ull;
-                    piVar9 = (int *)0xfffffe000c5d0128ull;
-                    iVar4 = 1;
+                    prog_inc = (int *)0xfffffe000c5d0120ull;
+                    prog_val = (int *)0xfffffe000c5d0128ull;
+                    scale = 1;
                 }
-                iVar5 = *piVar9;
-                if (*puVar11 >> 1 <= (uint)(iVar5 + *piVar12)) {
-                    iVar6 = iVar5;
+                val = *prog_val;
+                if (*prog_limit >> 1 <= (uint)(val + *prog_inc)) {
+                    next = val;
                     do {
-                        iVar5 = iVar6 + (uint)bVar2 * -0x32;
-                        uVar1 = *piVar12 + (uint)bVar2 * -0x32 + iVar6;
-                        iVar6 = iVar5;
-                    } while (*puVar11 >> 1 <= uVar1);
+                        val = next + (uint)step * -0x32;
+                        sum = *prog_inc + (uint)step * -0x32 + next;
+                        next = val;
+                    } while (*prog_limit >> 1 <= sum);
                 }
-                *piVar9 = iVar5 * iVar4;
+                *prog_val = val * scale;
             }
             /* progress-dy via FUN_fffffe000c09d30c("progress-dy", &DAT_fffffe000c5d012c, 4) */
             kernel_progress("progress-dy", 0xfffffe000c5d012c, 4);  /* kernel */

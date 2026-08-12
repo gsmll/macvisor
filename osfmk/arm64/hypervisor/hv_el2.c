@@ -660,7 +660,7 @@ int hv_el2_guest_pte_check(uint64_t *pmap, uint64_t ipa, uint32_t prot,
     uint64_t child;             /* validated physical of the current pte */
     uint64_t cpu, cpu_idx, cur;
     uint64_t *stat;             /* per-cpu fault-entry counter slot */
-    uint64_t idx, b0;           /* paging-state block (local_a8 / uStack_b0) */
+    uint64_t idx, b0;           /* paging-state block (pg_out / uStack_b0) */
     uint32_t levels, elow;
     uint32_t sel, upg, gran;
     uint64_t attr_ix, attrs, type_sel;
@@ -668,7 +668,7 @@ int hv_el2_guest_pte_check(uint64_t *pmap, uint64_t ipa, uint32_t prot,
     bool not_all_masked;
     int ret = 5;
 
-    token = 0; idx = 0; b0 = 0;        /* local_b8 / local_a8 / uStack_b0 */
+    token = 0; idx = 0; b0 = 0;        /* map_ctx / pg_out / uStack_b0 */
     cpu = tpidr_el1;
     if (*(int *)(cpu + 0x1c0) == 0) {
         preempt_safe = (~(uint32_t)daif & 0x1c0) == 0;
@@ -762,7 +762,7 @@ int hv_el2_guest_pte_check(uint64_t *pmap, uint64_t ipa, uint32_t prot,
                                                + 0x4c) >> 2 & 1) != 0)) {
                                 kernel_tlb_flush();
                             }
-                            lkchild &= 0xffffffffffffff00ULL;  /* align (local_a0 reuse) */
+                            lkchild &= 0xffffffffffffff00ULL;  /* align (pg_block reuse) */
                             if (kernel_paddr_type(paddr, &lkchild) != 0) {
                                 kernel_panic_msg2(); /* "sptm_get_paddr_type returned failure ..." */
                             }
@@ -962,10 +962,10 @@ empty_slot:
     {
         /* lock-wait state block passed through to b7f8ce0 unchanged. */
         uint64_t lkarg[4];
-        lkarg[0] = 0xfffffe000c68af18ULL;      /* local_a0 = &DAT_fffffe000c68af18 */
+        lkarg[0] = 0xfffffe000c68af18ULL;      /* pg_block = &DAT_fffffe000c68af18 */
         lkarg[1] = 0x40000000ULL;              /* local_98 */
-        lkarg[2] = 0xfffffe000b941704ULL;      /* local_90 = &LAB_fffffe000b941704 */
-        lkarg[3] = 0xfffffe0007d82d70ULL;      /* local_88 = &DAT_fffffe0007d82d70 */
+        lkarg[2] = 0xfffffe000b941704ULL;      /* fault_off_full = &LAB_fffffe000b941704 */
+        lkarg[3] = 0xfffffe0007d82d70ULL;      /* cur_obj = &DAT_fffffe0007d82d70 */
         for (;;) {
             while (kernel_lock_bit_wait4(lk + 4, 0x1d,
                                          (void **)0xfffffe0007d82e88,
@@ -990,7 +990,7 @@ empty_slot:
     *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_278 + cpu_idx) = cur + 1;
     *(uint64_t *)((uint8_t *)hv_pcpu_fault_stat_270 + cpu_idx) = cur + 1;
     kernel_memory_barrier(2, 3);
-    /* token is the unlocked entry value read in the wait loop (local_b8) */
+    /* token is the unlocked entry value read in the wait loop (map_ctx) */
     if ((~*pte & 3) == 0) {
         lkchild = 0;
         child = (kernel_page_validate(*pte & 0xfffffffff000ULL,
@@ -1169,7 +1169,7 @@ extern void kernel_vm_fault_panic_enter(uint64_t lo, uint64_t hi) __attribute__(
 extern void kernel_vm_fault_panic_cow(uint64_t obj) __attribute__((noreturn));                /* FUN_fffffe000c0f86a4 */
 
 /* XNU brk assert helper returning the code pointer the decompile then calls:
- * `pcVar10 = SoftwareBreakpoint(imm, addr); (*pcVar10)();`. */
+ * `brk_code = SoftwareBreakpoint(imm, addr); (*brk_code)();`. */
 extern void *SoftwareBreakpoint(uint32_t imm, uint64_t addr);                /* XNU brk assert */
 
 /* ---- kernel_vm_fault globals (DAT_/PTR_DAT_ kept in comments) ---------- */
@@ -1216,37 +1216,37 @@ static inline uint64_t *hv_pcpu_slot(uint64_t *base, uint64_t cpu_idx)
 { return (uint64_t *)((uint8_t *)base + cpu_idx * 0x4000); }
 
 /* The fault-state reset sub-block shared by the ~dozen retry/paging paths
- * (identical in the decompile): recompose local_160/lStack_148/local_150/
- * uStack_158 from their 32-bit halves when (uStack_134 & 0xc)==8, then flush
+ * (identical in the decompile): recompose paging_state/state_w2/state_w3/
+ * state_w4 from their 32-bit halves when (state_ctrl & 0xc)==8, then flush
  * the saved paging state via b91ab24 (or b9164f8). Emitted in full so every
  * branch is exactly as decompiled. */
 #define HV_FMT_PAGING_CONCAT()                                              \
     do {                                                                    \
-        if ((uStack_134 & 0xc) == 8) {                                      \
-            if (((uint8_t)uStack_138 >> 2 & 1) == 0) {                      \
-                local_160 = (long)hv_concat44(uStack_114, uStack_118);      \
+        if ((state_ctrl & 0xc) == 8) {                                      \
+            if (((uint8_t)state_flags >> 2 & 1) == 0) {                      \
+                paging_state = (long)hv_concat44(state_w11, state_w10);      \
             } else {                                                        \
-                uStack_130 = hv_concat44(uStack_fc, local_100) +            \
-                             hv_concat44((uint32_t)(uStack_130 >> 32),      \
-                                         (uint32_t)uStack_130);             \
-                local_160 = local_160 + (long)hv_concat44(uStack_fc, local_100); \
+                state_hi = hv_concat44(state_lo0, state_lo1) +            \
+                             hv_concat44((uint32_t)(state_hi >> 32),      \
+                                         (uint32_t)state_hi);             \
+                paging_state = paging_state + (long)hv_concat44(state_lo0, state_lo1); \
             }                                                               \
-            lStack_148 = (long)hv_concat44(uStack_f4, local_f8);            \
-            local_150 = hv_concat44(uStack_104, uStack_108);                \
-            uStack_158 = hv_concat44(uStack_10c, uStack_110);               \
-            uStack_134 = uStack_134 & 0xfffffff3;                           \
-            local_f8 = 0; uStack_f4 = 0; local_100 = 0; uStack_fc = 0;      \
+            state_w2 = (long)hv_concat44(state_lo2, state_lo3);            \
+            state_w3 = hv_concat44(state_w15, state_w14);                \
+            state_w4 = hv_concat44(state_w13, state_w12);               \
+            state_ctrl = state_ctrl & 0xfffffff3;                           \
+            state_lo3 = 0; state_lo2 = 0; state_lo1 = 0; state_lo0 = 0;      \
         }                                                                   \
     } while (0)
 
 /* Full zeroing of the fault-state locals (decompiled as a trailing block). */
 #define HV_FMT_ZERO_STATE()                                                 \
     do {                                                                    \
-        local_150 = 0; lStack_148 = 0; uStack_130 = 0;                      \
-        uStack_128 = 0; uStack_134 = 0; uStack_11c = 0; uStack_118 = 0;     \
-        uStack_124 = 0; uStack_120 = 0; uStack_10c = 0; uStack_108 = 0;     \
-        uStack_114 = 0; uStack_110 = 0; uStack_fc = 0;                      \
-        local_f8 = 0; uStack_104 = 0; local_100 = 0; uStack_f4 = 0;         \
+        state_w3 = 0; state_w2 = 0; state_hi = 0;                      \
+        state_w8 = 0; state_ctrl = 0; state_w9 = 0; state_w10 = 0;     \
+        state_w7 = 0; state_w6 = 0; state_w13 = 0; state_w14 = 0;     \
+        state_w11 = 0; state_w12 = 0; state_lo0 = 0;                      \
+        state_lo3 = 0; state_w15 = 0; state_lo1 = 0; state_lo2 = 0;         \
     } while (0)
 
 /*
@@ -1271,7 +1271,7 @@ static inline uint64_t *hv_pcpu_slot(uint64_t *base, uint64_t cpu_idx)
  *      b8cc2f4, b8ce7d4, b8d31ac, ...), and the retry loop headed by the
  *      `retry:` label (b899ca8).
  *   4. Common exit `fault_done:` (b89ca08): restores tpidr_el1+0xc0,
- *      releases the deferred paging object (local_c8) with paging-end
+ *      releases the deferred paging object (defer_obj2) with paging-end
  *      accounting, and returns a vm_fault status.
  * Returns a vm_fault status: 0 = success, 1 = early reject, 5 = KERN_FAILURE,
  * 9 = VM_MEMORY_ERROR path, 0xe = VM_MEMORY_ERROR, 0x1e = retry, etc.
@@ -1291,574 +1291,574 @@ static inline uint64_t *hv_pcpu_slot(uint64_t *base, uint64_t cpu_idx)
  *   b89fd14, b8a1f14, b83f58c, b8f52fc, b7f19b4, b94c554, bd7e720, b8d4ba8,
  *   b815288, b8a2590, b8a2224, b8a24d0, ba6c27c, be3a0d8, b938dbc, b938e78,
  *   c0e11ec (kernel_panic_msg_fmt), c0f1874, c0f86a4, SoftwareBreakpoint.
- *   Three incoming stack args (in_stack_fffffffffffffd10/fd18/fd28) are
+ *   Three incoming stack args (stack_arg0/fd18/fd28) are
  *   modeled as locals initialized to 0: the hv_el2.h 9-param prototype cannot
  *   carry them (callers pass 9 args) and their values are only forwarded
  *   opaquely to vm_fault_enter / kernel_trace / b89e03c. The Ghidra
- *   extraout_x1* post-call register values are likewise modeled as 0.
+ *   x1_carry* post-call register values are likewise modeled as 0.
  */
-long kernel_vm_fault(void *vm, uint64_t addr, uint32_t fault_type,
+long kernel_vm_fault(void *vm, uint64_t addr, uint32_t fault_type_arg,
                      uint32_t fault_flags, void **vnode_mp, uint64_t mp_size,
                      uint32_t *result_out, uint16_t *fault_opts,
                      void *fault_arg)
 {
-    /* ---- decompile locals (Ghidra names kept for traceability) ---------- */
-    int iVar1;
-    char cVar2;
-    ushort uVar3;
-    uint uVar4;
-    long lVar5;
-    bool bVar6;
-    bool bVar7;
-    int iVar8;
-    ulong uVar9;
-    void *pcVar10;
-    long lVar11;
-    uint uVar12;
-    int iVar13;
-    long lVar14;
-    ulong uVar15;
-    long lVar16;
-    ulong uVar17;
-    uint uVar18;
-    uint uVar19;
-    uint64_t *puVar20;
-    uint64_t *puVar21;
-    long *plVar22;
-    byte bVar23;
-    byte bVar24;
-    ulong uVar25;
-    ulong uVar26;
-    uint uVar27;
-    ulong uVar28;
-    uint64_t *puVar29;
-    uint64_t *puVar30;
-    uint64_t *puVar31;
-    ulong uVar32;
-    uint uVar33;
-    long lVar34;
-    uint *puVar35;
-    long lVar36;
-    long lVar37;
-    ulong uVar38;
-    uint uVar39;
-    ulong uVar40;
-    uint64_t *puVar41;
-    ulong uVar42;
-    ulong uVar43;
-    ulong extraout_x1 = 0;   /* Ghidra extraout_x1* post-call register (see Notes) */
-    hv_u128_t auVar45;
-    uint16_t *puVar46;
-    byte *pbVar47;
-    uint uVar48;
-    uint64_t in_stack_fffffffffffffd10 = 0;  /* incoming stack arg (see Notes) */
-    uint64_t in_stack_fffffffffffffd18 = 0;  /* incoming stack arg (see Notes); 64-bit slot, also carries a pointer (cast at use) */
-    uint uVar49;
-    uint64_t in_stack_fffffffffffffd28 = 0;  /* incoming stack arg (see Notes) */
-    uint uVar50;
+    /* ---- decompile locals (renamed English; Ghidra originals in comments) */
+    int fault_mode;
+    char obj_tag;
+    ushort saved_irq;
+    uint prot_bits;
+    long cur;
+    bool defer_mode;
+    bool swap_mode;
+    int owner_flag;
+    ulong va_lo;
+    void *brk_code;
+    long pcpu;
+    uint hi_word;
+    int rc;
+    long page_mask;
+    ulong ctx_val;
+    long sched_word;
+    ulong trace_code;
+    uint enter_flags;
+    uint obj_flags;
+    uint64_t *obj;
+    uint64_t *pmap_ref;
+    long *out_state;
+    byte pmap_ok;
+    byte opt_flag;
+    ulong fault_va;
+    ulong orig_va;
+    uint fault_type_cur;
+    ulong mm_addr;
+    uint64_t *defer_obj;
+    uint64_t *pmap;
+    uint64_t *obj2;
+    ulong trace_va;
+    uint enter_flags2;
+    long page_obj;
+    uint *obj_flags_ptr;
+    long alloc_page;
+    long page2;
+    ulong packed_opts;
+    uint fault_type_raw;
+    ulong page_shift;
+    uint64_t *obj3;
+    ulong fault_off;
+    ulong status;
+    ulong x1_carry = 0;   /* Ghidra extraout_x1* post-call register (see Notes) */
+    hv_u128_t zext_result;
+    uint16_t *opts_ptr;
+    byte *out_flag_ptr;
+    uint sarg_hi;
+    uint64_t stack_arg0 = 0;  /* incoming stack arg (see Notes) */
+    uint64_t stack_arg1 = 0;  /* incoming stack arg (see Notes); 64-bit slot, also carries a pointer (cast at use) */
+    uint sarg_hi2;
+    uint64_t stack_arg2 = 0;  /* incoming stack arg (see Notes) */
+    uint sarg_hi3;
 
-    uint local_274 = 0;
-    long local_258 = 0;
-    uint64_t *local_208 = 0;
-    uint local_1e4 = 0;
-    ulong local_1d8 = 0;
-    int local_1cc = 0;
-    int local_1a8 = 0;
-    ulong local_198 = 0;
-    long lStack_190 = 0;
-    ulong local_188 = 0;
-    uint local_17c = 0;
-    ulong local_178 = 0;
-    uint64_t *local_170 = 0;
-    byte local_161 = 0;
-    long local_160 = 0;
-    ulong uStack_158 = 0;
-    ulong local_150 = 0;
-    long lStack_148 = 0;
-    ulong local_140 = 0;
-    uint uStack_138 = 0;
-    uint uStack_134 = 0;
-    uint64_t uStack_130 = 0;
-    uint uStack_128 = 0;
-    uint uStack_124 = 0;
-    uint uStack_120 = 0;
-    uint uStack_11c = 0;
-    uint uStack_118 = 0;
-    uint uStack_114 = 0;
-    uint uStack_110 = 0;
-    uint uStack_10c = 0;
-    uint uStack_108 = 0;
-    uint uStack_104 = 0;
-    uint uStack_fc = 0;
-    uint local_100 = 0;
-    uint uStack_f4 = 0;
-    uint local_f8 = 0;
-    long local_f0 = 0;
-    long local_e8 = 0;
-    byte local_dd = 0;
-    int local_dc = 0;
-    long local_d8 = 0;
-    long local_d0 = 0;
-    uint64_t *local_c8 = 0;
-    byte local_b9 = 0;
-    uint local_b0 = 0;
-    uint local_ac = 0;
-    ulong local_a8 = 0;
-    long local_a0 = 0;
-    uint local_94 = 0;
-    ulong local_90 = 0;
-    uint64_t *local_88 = 0;
-    int local_7c = 0;
-    long local_78[3];
-    long local_b8 = 0;
+    uint mod_flag = 0;
+    long fault_timer = 0;
+    uint64_t *paging_obj = 0;
+    uint write_fault = 0;
+    ulong prior_off = 0;
+    int obj_retain2 = 0;
+    int obj_retain = 0;
+    ulong mem_obj = 0;
+    long paging_size = 0;
+    ulong flush_flag = 0;
+    uint prot2 = 0;
+    ulong off2 = 0;
+    uint64_t *obj2_out = 0;
+    byte dcache_flag = 0;
+    long paging_state = 0;
+    ulong state_w4 = 0;
+    ulong state_w3 = 0;
+    long state_w2 = 0;
+    ulong state_w5 = 0;
+    uint state_flags = 0;
+    uint state_ctrl = 0;
+    uint64_t state_hi = 0;
+    uint state_w8 = 0;
+    uint state_w7 = 0;
+    uint state_w6 = 0;
+    uint state_w9 = 0;
+    uint state_w10 = 0;
+    uint state_w11 = 0;
+    uint state_w12 = 0;
+    uint state_w13 = 0;
+    uint state_w14 = 0;
+    uint state_w15 = 0;
+    uint state_lo0 = 0;
+    uint state_lo1 = 0;
+    uint state_lo2 = 0;
+    uint state_lo3 = 0;
+    long paging_ctx = 0;
+    long copy_info = 0;
+    byte dcache2 = 0;
+    int vt_delta = 0;
+    long paging_end = 0;
+    long paging_obj2 = 0;
+    uint64_t *defer_obj2 = 0;
+    byte retry_flag = 0;
+    uint fault_result = 0;
+    uint res_word = 0;
+    ulong pg_out = 0;
+    long pg_block = 0;
+    uint prot = 0;
+    ulong fault_off_full = 0;
+    uint64_t *cur_obj = 0;
+    int want_mod = 0;
+    long vm_slot[3];
+    long map_ctx = 0;
 
-    long p1 = (long)vm;                 /* param_1 as integer base */
-    uint64_t auVar44;                   /* low 64 of vm_fault_enter's 128-bit return */
+    long vm_base = (long)vm;                 /* param_1 as integer base */
+    uint64_t enter_result;                   /* low 64 of vm_fault_enter's 128-bit return */
     uint64_t cpu_idx;
 
-    local_7c = 0;
-    local_90 = 0;
-    local_88 = 0;
-    local_94 = 0;
-    local_a8 = 0;
-    local_a0 = 0;
-    local_ac = 0;
-    local_b9 = 0;
-    local_d0 = 0;
-    local_c8 = 0;
-    local_d8 = 0;
-    local_dd = 0;
-    local_f0 = 0;
-    local_e8 = 0;
-    uStack_108 = 0; uStack_104 = 0; uStack_110 = 0; uStack_10c = 0;
-    local_f8 = 0; uStack_f4 = 0; local_100 = 0; uStack_fc = 0;
-    uStack_128 = 0; uStack_124 = 0;
-    uStack_130 = 0;
-    uStack_118 = 0; uStack_114 = 0; uStack_120 = 0; uStack_11c = 0;
-    lStack_148 = 0; local_150 = 0; uStack_138 = 0; uStack_134 = 0;
-    local_140 = 0; uStack_158 = 0; local_160 = 0;
-    lVar5 = tpidr_el1;
-    local_b8 = p1;
-    local_78[0] = p1;
+    want_mod = 0;
+    fault_off_full = 0;
+    cur_obj = 0;
+    prot = 0;
+    pg_out = 0;
+    pg_block = 0;
+    res_word = 0;
+    retry_flag = 0;
+    paging_obj2 = 0;
+    defer_obj2 = 0;
+    paging_end = 0;
+    dcache2 = 0;
+    paging_ctx = 0;
+    copy_info = 0;
+    state_w14 = 0; state_w15 = 0; state_w12 = 0; state_w13 = 0;
+    state_lo3 = 0; state_lo2 = 0; state_lo1 = 0; state_lo0 = 0;
+    state_w8 = 0; state_w7 = 0;
+    state_hi = 0;
+    state_w10 = 0; state_w11 = 0; state_w6 = 0; state_w9 = 0;
+    state_w2 = 0; state_w3 = 0; state_flags = 0; state_ctrl = 0;
+    state_w5 = 0; state_w4 = 0; paging_state = 0;
+    cur = tpidr_el1;
+    map_ctx = vm_base;
+    vm_slot[0] = vm_base;
 
     /* entry guard: b899974 */
-    if ((((((hv_fault_boot_threshold < 0x12) && (*(long *)(lVar5 + 0x418) == 0)) ||
-           ((lVar14 = (long)per_cpu_base((uint64_t)lVar5), lVar14 == 0))) ||
-          ((*(ushort *)(lVar14 + 0x6b0) >> 2 & 1) != 0)) &&
-         ((puVar29 = *(uint64_t **)(p1 + 0x58), puVar29 != 0) &&
-          (puVar29 != 0))) && (addr != 0)) {
-        if (puVar29 == &hv_special_owner_block) {
+    if ((((((hv_fault_boot_threshold < 0x12) && (*(long *)(cur + 0x418) == 0)) ||
+           ((page_mask = (long)per_cpu_base((uint64_t)cur), page_mask == 0))) ||
+          ((*(ushort *)(page_mask + 0x6b0) >> 2 & 1) != 0)) &&
+         ((defer_obj = *(uint64_t **)(vm_base + 0x58), defer_obj != 0) &&
+          (defer_obj != 0))) && (addr != 0)) {
+        if (defer_obj == &hv_special_owner_block) {
             addr = addr | 0xf00000000000000ULL;
             goto entry_else;
         }
         addr = addr & 0xf0ffffffffffffffULL;
-        bVar23 = *(byte *)(p1 + 0xb2);
+        pmap_ok = *(byte *)(vm_base + 0xb2);
     } else {
 entry_else:                             /* b899974 */
-        bVar23 = *(byte *)(p1 + 0xb2);
+        pmap_ok = *(byte *)(vm_base + 0xb2);
     }
-    if ((bVar23 & 1) != 0) {
+    if ((pmap_ok & 1) != 0) {
         return 1;
     }
-    uVar40 = (ulong)*(ushort *)(p1 + 0x44);
-    lVar14 = 1L << (uVar40 & 0x3f);
-    uVar25 = -1L << (uVar40 & 0x3f);
-    if (0xd < *(ushort *)(p1 + 0x44)) {
-        lVar14 = 0x4000;
-        uVar25 = 0xffffffffffffc000;
+    page_shift = (ulong)*(ushort *)(vm_base + 0x44);
+    page_mask = 1L << (page_shift & 0x3f);
+    fault_va = -1L << (page_shift & 0x3f);
+    if (0xd < *(ushort *)(vm_base + 0x44)) {
+        page_mask = 0x4000;
+        fault_va = 0xffffffffffffc000;
     }
-    uVar25 = addr & uVar25;
-    uVar26 = addr;
-    uVar32 = uVar25;
-    if (p1 == 0) {
-        uVar32 = 0;
-        uVar26 = 0;
+    fault_va = addr & fault_va;
+    orig_va = addr;
+    trace_va = fault_va;
+    if (vm_base == 0) {
+        trace_va = 0;
+        orig_va = 0;
     }
     if ((hv_trace_flag & 0xfffffff7) != 0) {
-        kernel_trace(0x1300009, uVar32 >> 0x20, uVar32, p1 == 0, 0);
+        kernel_trace(0x1300009, trace_va >> 0x20, trace_va, vm_base == 0, 0);
     }
-    if (*(int *)(lVar5 + 0x1c0) == 0) {
-        if ((*(byte *)(lVar5 + 0x3f0) & 1) == 0) {
-            iVar1 = *(int *)(lVar5 + 0x1fc);
-            local_161 = 0;
-            if (iVar1 == 1) {
-                local_258 = UnkSytemRegRead(3,4,0xf,10,6);  /* op1=4 => EL2; identity unverified */
-                local_258 = hv_fault_timer_base + local_258;
+    if (*(int *)(cur + 0x1c0) == 0) {
+        if ((*(byte *)(cur + 0x3f0) & 1) == 0) {
+            fault_mode = *(int *)(cur + 0x1fc);
+            dcache_flag = 0;
+            if (fault_mode == 1) {
+                fault_timer = UnkSytemRegRead(3,4,0xf,10,6);  /* op1=4 => EL2; identity unverified */
+                fault_timer = hv_fault_timer_base + fault_timer;
             } else {
-                local_258 = 0;
+                fault_timer = 0;
             }
-            uVar3 = *(ushort *)(lVar5 + 0xc0);
-            *(ushort *)(lVar5 + 0xc0) = uVar3 & 0xfffc | *fault_opts & 3;
-            uVar39 = (uint)fault_type;
-            uVar27 = uVar39;
+            saved_irq = *(ushort *)(cur + 0xc0);
+            *(ushort *)(cur + 0xc0) = saved_irq & 0xfffc | *fault_opts & 3;
+            fault_type_raw = (uint)fault_type_arg;
+            fault_type_cur = fault_type_raw;
             if ((*(uint *)((uint8_t *)fault_opts + 0x14) & 0x800) != 0) {
-                uVar27 = 0;
+                fault_type_cur = 0;
             }
-            cpu_idx = (uint64_t)*(ushort *)(lVar5 + 0x1b0);
-            lVar11 = *(long *)(hv_pcpu_slot(hv_pcpu_faults, cpu_idx));
-            *hv_pcpu_slot(hv_pcpu_faults, cpu_idx) = lVar11 + 1;
-            lVar11 = (long)kernel_vm_fault_callee_866ec4((uint64_t)lVar11, (uint64_t)lVar5);
-            plVar22 = (long *)(*(long *)(lVar11 + 0x3b0) + cpu_idx * 0x4000);
-            *plVar22 = *plVar22 + 1;
-            if ((uVar27 >> 1 & 1) == 0) {
-                local_1a8 = 1;
+            cpu_idx = (uint64_t)*(ushort *)(cur + 0x1b0);
+            pcpu = *(long *)(hv_pcpu_slot(hv_pcpu_faults, cpu_idx));
+            *hv_pcpu_slot(hv_pcpu_faults, cpu_idx) = pcpu + 1;
+            pcpu = (long)kernel_vm_fault_callee_866ec4((uint64_t)pcpu, (uint64_t)cur);
+            out_state = (long *)(*(long *)(pcpu + 0x3b0) + cpu_idx * 0x4000);
+            *out_state = *out_state + 1;
+            if ((fault_type_cur >> 1 & 1) == 0) {
+                obj_retain = 1;
                 if ((*(byte *)((uint8_t *)fault_opts + 0x29) & 8) != 0) {
-                    local_1a8 = 2;
+                    obj_retain = 2;
                 }
             } else {
-                local_1a8 = 2;
+                obj_retain = 2;
             }
-            local_dc = 0;
-            if (((p1 == 0) && ((uVar39 >> 1 & 1) != 0)) &&
+            vt_delta = 0;
+            if (((vm_base == 0) && ((fault_type_raw >> 1 & 1) != 0)) &&
                ((hv_compressor_map != 0 &&
-                ((*(ulong *)((uint8_t *)hv_compressor_map + 0x28) <= uVar25 &&
-                 (uVar25 < *(ulong *)((uint8_t *)hv_compressor_map + 0x30))))))) {
+                ((*(ulong *)((uint8_t *)hv_compressor_map + 0x28) <= fault_va &&
+                 (fault_va < *(ulong *)((uint8_t *)hv_compressor_map + 0x30))))))) {
                 /* WARNING: Subroutine does not return */
                 kernel_panic_msg_fmt(
                     "Write fault on compressor map, va: %p type: %u bounds: %p->%p @%s:%d");
             }
-            bVar6 = false;
-            bVar23 = 0;
-            local_274 = 0;
-            local_1e4 = uVar27 >> 1 & 1;
-            uVar28 = uVar25;
+            defer_mode = false;
+            pmap_ok = 0;
+            mod_flag = 0;
+            write_fault = fault_type_cur >> 1 & 1;
+            mm_addr = fault_va;
             if (vnode_mp != 0) {
-                uVar28 = mp_size;
+                mm_addr = mp_size;
             }
-            local_1d8 = 0xffffffffffffffff;
-            local_1cc = 1;
-            puVar29 = 0;
+            prior_off = 0xffffffffffffffff;
+            obj_retain2 = 1;
+            defer_obj = 0;
 retry:                                  /* b899ca8 */
-            local_b0 = 4;
-            if (bVar6) {
+            fault_result = 4;
+            if (defer_mode) {
                 hv_fault_stat_2a0 = hv_fault_stat_2a0 + 1;
-                uVar18 = 0x10;
-                local_1a8 = 2;
-                local_1e4 = 1;
-                uVar33 = 1;
+                enter_flags = 0x10;
+                obj_retain = 2;
+                write_fault = 1;
+                enter_flags2 = 1;
             } else {
-                uVar18 = 0x10;
-                uVar33 = uVar27;
-                if (local_1e4 == 0) {
-                    uVar18 = 0;
+                enter_flags = 0x10;
+                enter_flags2 = fault_type_cur;
+                if (write_fault == 0) {
+                    enter_flags = 0;
                 }
             }
-            uStack_f4 = 0;
-            local_f8 = 0;
-            uStack_fc = 0;
-            local_100 = 0;
-            uStack_104 = 0;
-            uStack_108 = 0;
-            uStack_10c = 0;
-            uStack_110 = 0;
-            uStack_114 = 0;
-            uStack_118 = 0;
-            uStack_11c = 0;
-            uStack_120 = 0;
-            uStack_124 = 0;
-            uStack_128 = 0;
-            uStack_130 = 0;
-            uStack_134 = 0;
-            uStack_138 = 0;
-            local_140 = 0;
-            lStack_148 = 0;
-            local_150 = 0;
-            uStack_158 = 0;
-            local_160 = 0;
-            in_stack_fffffffffffffd10 =
-                 (uint64_t)(in_stack_fffffffffffffd10 & 0xffffffffffffff00);
-            plVar22 = &local_160;
-            puVar46 = fault_opts;
-            local_78[0] = p1;
-            auVar44 = vm_fault_enter_full(local_78, uVar25, uVar18 | uVar33,
-                                          &local_88, &local_e8, &local_90,
-                                          &local_94, &local_7c, fault_opts,
-                                          &local_b8, plVar22, fault_arg,
-                                          in_stack_fffffffffffffd10);
-            uVar43 = auVar44;
-            *(int *)(lVar5 + 0x1c0) = *(int *)(lVar5 + 0x1c0) + 1;
-            lVar34 = *(long *)(lVar5 + 0x1b0) >> 0x10;
-            auVar45.lo = auVar44; auVar45.hi = 0;
-            if ((long)hv_paging_free0[lVar34] == 0) {
-                puVar20 = (uint64_t *)hv_paging_free0n[lVar34];
-                if (puVar20 == 0) {
-                    hv_paging_free0[lVar34] = 0;
+            state_lo2 = 0;
+            state_lo3 = 0;
+            state_lo0 = 0;
+            state_lo1 = 0;
+            state_w15 = 0;
+            state_w14 = 0;
+            state_w13 = 0;
+            state_w12 = 0;
+            state_w11 = 0;
+            state_w10 = 0;
+            state_w9 = 0;
+            state_w6 = 0;
+            state_w7 = 0;
+            state_w8 = 0;
+            state_hi = 0;
+            state_ctrl = 0;
+            state_flags = 0;
+            state_w5 = 0;
+            state_w2 = 0;
+            state_w3 = 0;
+            state_w4 = 0;
+            paging_state = 0;
+            stack_arg0 =
+                 (uint64_t)(stack_arg0 & 0xffffffffffffff00);
+            out_state = &paging_state;
+            opts_ptr = fault_opts;
+            vm_slot[0] = vm_base;
+            enter_result = vm_fault_enter_full(vm_slot, fault_va, enter_flags | enter_flags2,
+                                          &cur_obj, &copy_info, &fault_off_full,
+                                          &prot, &want_mod, fault_opts,
+                                          &map_ctx, out_state, fault_arg,
+                                          stack_arg0);
+            status = enter_result;
+            *(int *)(cur + 0x1c0) = *(int *)(cur + 0x1c0) + 1;
+            page_obj = *(long *)(cur + 0x1b0) >> 0x10;   /* lVar34 reused: per-CPU index */
+            zext_result.lo = enter_result; zext_result.hi = 0;
+            if ((long)hv_paging_free0[page_obj] == 0) {
+                obj = (uint64_t *)hv_paging_free0n[page_obj];
+                if (obj == 0) {
+                    hv_paging_free0[page_obj] = 0;
                 } else {
-                    hv_paging_free0n[lVar34] = *puVar20;
-                    *puVar20 = 0;
-                    hv_paging_free0[lVar34] = (uint64_t)puVar20;
-                    kernel_vm_fault_callee_61544((ulong)*(uint *)((uint8_t *)puVar20 + 0x30) << 0xe,
+                    hv_paging_free0n[page_obj] = *obj;
+                    *obj = 0;
+                    hv_paging_free0[page_obj] = (uint64_t)obj;
+                    kernel_vm_fault_callee_61544((ulong)*(uint *)((uint8_t *)obj + 0x30) << 0xe,
                                                  0x4000,
-                                                 (*(uint *)((uint8_t *)puVar20 + 0x2c) & 0x10) << 6);
+                                                 (*(uint *)((uint8_t *)obj + 0x2c) & 0x10) << 6);
                     *hv_pcpu_slot(hv_pcpu_paging, cpu_idx) =
                          *hv_pcpu_slot(hv_pcpu_paging, cpu_idx) + 1;
-                    auVar45.lo = 1; auVar45.hi = 0;   /* ZEXT816(1) */
+                    zext_result.lo = 1; zext_result.hi = 0;   /* ZEXT816(1) */
                 }
             }
-            lVar37 = *(long *)((long)&hv_paging_free0n[lVar34]);
-            if ((long)hv_paging_free1[lVar34] == 0) {
-                puVar20 = (uint64_t *)hv_paging_free1n[lVar34];
-                if (puVar20 == 0) {
-                    hv_paging_free1[lVar34] = 0;
+            page2 = *(long *)((long)&hv_paging_free0n[page_obj]);
+            if ((long)hv_paging_free1[page_obj] == 0) {
+                obj = (uint64_t *)hv_paging_free1n[page_obj];
+                if (obj == 0) {
+                    hv_paging_free1[page_obj] = 0;
                 } else {
-                    hv_paging_free1n[lVar34] = *puVar20;
-                    *puVar20 = 0;
-                    hv_paging_free1[lVar34] = (uint64_t)puVar20;
-                    kernel_vm_fault_callee_61544((ulong)*(uint *)((uint8_t *)puVar20 + 0x30) << 0xe,
+                    hv_paging_free1n[page_obj] = *obj;
+                    *obj = 0;
+                    hv_paging_free1[page_obj] = (uint64_t)obj;
+                    kernel_vm_fault_callee_61544((ulong)*(uint *)((uint8_t *)obj + 0x30) << 0xe,
                                                  0x4000,
-                                                 (*(uint *)((uint8_t *)puVar20 + 0x2c) & 0x10) << 6);
+                                                 (*(uint *)((uint8_t *)obj + 0x2c) & 0x10) << 6);
                     *hv_pcpu_slot(hv_pcpu_paging, cpu_idx) =
                          *hv_pcpu_slot(hv_pcpu_paging, cpu_idx) + 1;
-                    auVar45.lo = 1; auVar45.hi = 0;   /* ZEXT816(1) */
+                    zext_result.lo = 1; zext_result.hi = 0;   /* ZEXT816(1) */
                 }
             }
-            if (*(int *)(lVar5 + 0x1c0) == 0) {
+            if (*(int *)(cur + 0x1c0) == 0) {
                 /* WARNING: Subroutine does not return */
-                kernel_vm_fault_panic_enter(auVar45.lo, auVar45.hi);
+                kernel_vm_fault_panic_enter(zext_result.lo, zext_result.hi);
             }
-            lVar34 = (long)hv_paging_free1n[lVar34];
-            iVar13 = *(int *)(lVar5 + 0x1c0) + -1;
-            *(int *)(lVar5 + 0x1c0) = iVar13;
-            if ((iVar13 == 0) && ((*(byte *)(*(long *)(lVar5 + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
+            page_obj = (long)hv_paging_free1n[page_obj];
+            rc = *(int *)(cur + 0x1c0) + -1;
+            *(int *)(cur + 0x1c0) = rc;
+            if ((rc == 0) && ((*(byte *)(*(long *)(cur + 0x1b8) + 0x4c) >> 2 & 1) != 0)) {
                 kernel_tlb_flush();
             }
-            if (lVar37 == 0) {
+            if (page2 == 0) {
                 kernel_vm_fault_callee_f13c(10);
             }
-            puVar20 = local_88;
-            if (lVar34 == 0) {
+            obj = cur_obj;
+            if (page_obj == 0) {
                 kernel_vm_fault_callee_f13c(0x2000a);
-                puVar20 = local_88;
+                obj = cur_obj;
             }
-            local_88 = puVar20;
-            if ((uint32_t)auVar44 != 0) goto fault_done;
-            puVar30 = *(uint64_t **)(local_b8 + 0x58);
-            uVar18 = *(uint *)((uint8_t *)fault_opts + 0x14);
-            *(uint *)((uint8_t *)fault_opts + 0x14) = uVar18 & 0xffffff9b;
-            if (local_7c != 0) {
-                uVar33 = local_94 | 2;
+            cur_obj = obj;
+            if ((uint32_t)enter_result != 0) goto fault_done;
+            pmap = *(uint64_t **)(map_ctx + 0x58);
+            enter_flags = *(uint *)((uint8_t *)fault_opts + 0x14);
+            *(uint *)((uint8_t *)fault_opts + 0x14) = enter_flags & 0xffffff9b;
+            if (want_mod != 0) {
+                enter_flags2 = prot | 2;
             }
-            iVar13 = 2;
-            if (local_7c == 0 && local_1e4 == 0) {
-                iVar13 = local_1a8;
+            rc = 2;
+            if (want_mod == 0 && write_fault == 0) {
+                rc = obj_retain;
             }
-            if ((((*(byte *)(puVar30 + 0xe) & 1) != 0) && ((uVar39 >> 2 & 1) != 0)) &&
+            if ((((*(byte *)(pmap + 0xe) & 1) != 0) && ((fault_type_raw >> 2 & 1) != 0)) &&
                ((*(uint *)((uint8_t *)fault_opts + 0x16) >> 0xe & 1) == 0)) {
                 if (fault_arg == 0) {
-                    *(uint64_t *)(lVar5 + 0x238) = 0;
-                    if ((uStack_134 & 0xc) == 8) {
-                        if (((uint8_t)uStack_138 >> 2 & 1) == 0) {
-                            local_160 = (long)hv_concat44(uStack_114, uStack_118);
+                    *(uint64_t *)(cur + 0x238) = 0;
+                    if ((state_ctrl & 0xc) == 8) {
+                        if (((uint8_t)state_flags >> 2 & 1) == 0) {
+                            paging_state = (long)hv_concat44(state_w11, state_w10);
                         } else {
-                            uStack_130 = hv_concat44(uStack_fc, local_100) +
-                                         hv_concat44((uint32_t)(uStack_130 >> 32),
-                                                     (uint32_t)uStack_130);
-                            local_160 = local_160 + (long)hv_concat44(uStack_fc, local_100);
+                            state_hi = hv_concat44(state_lo0, state_lo1) +
+                                         hv_concat44((uint32_t)(state_hi >> 32),
+                                                     (uint32_t)state_hi);
+                            paging_state = paging_state + (long)hv_concat44(state_lo0, state_lo1);
                         }
-                        lStack_148 = (long)hv_concat44(uStack_f4, local_f8);
-                        local_150 = hv_concat44(uStack_104, uStack_108);
-                        uStack_158 = hv_concat44(uStack_10c, uStack_110);
-                        uStack_134 = uStack_134 & 0xfffffff3;
-                        local_f8 = 0;
-                        uStack_f4 = 0;
-                        local_100 = 0;
-                        uStack_fc = 0;
+                        state_w2 = (long)hv_concat44(state_lo2, state_lo3);
+                        state_w3 = hv_concat44(state_w15, state_w14);
+                        state_w4 = hv_concat44(state_w13, state_w12);
+                        state_ctrl = state_ctrl & 0xfffffff3;
+                        state_lo3 = 0;
+                        state_lo2 = 0;
+                        state_lo1 = 0;
+                        state_lo0 = 0;
                     }
-                    if ((uStack_138 >> 2 & 1) == 0) goto c924;
+                    if ((state_flags >> 2 & 1) == 0) goto c924;
 c9c8:                               /* LAB_fffffe000b89c9c8 */
-                    if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                    if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                         kernel_vm_fault_callee_164f8();
                     }
 c9e4:                               /* LAB_fffffe000b89c9e4 */
-                    uVar43 = 2;
+                    status = 2;
                     goto done_zero;  /* LAB_fffffe000b89ca04: zero fault-state locals, then falls into fault_done */
                 }
 c814:                               /* LAB_fffffe000b89c814 */
-                uVar43 = 2;
+                status = 2;
                 goto fault_done;    /* LAB_fffffe000b89ca08 */
             }
-            if (((uVar33 == 1) && ((local_94 & 5) == 4)) && (puVar30 != &hv_special_owner_block)) {
+            if (((enter_flags2 == 1) && ((prot & 5) == 4)) && (pmap != &hv_special_owner_block)) {
                 if (fault_arg != 0) goto c814;
-                *(uint64_t *)(lVar5 + 0x238) = 0;
-                if ((uStack_134 & 0xc) == 8) {
-                    if (((uint8_t)uStack_138 >> 2 & 1) == 0) {
-                        local_160 = (long)hv_concat44(uStack_114, uStack_118);
+                *(uint64_t *)(cur + 0x238) = 0;
+                if ((state_ctrl & 0xc) == 8) {
+                    if (((uint8_t)state_flags >> 2 & 1) == 0) {
+                        paging_state = (long)hv_concat44(state_w11, state_w10);
                     } else {
-                        uStack_130 = hv_concat44(uStack_fc, local_100) +
-                                     hv_concat44((uint32_t)(uStack_130 >> 32),
-                                                 (uint32_t)uStack_130);
-                        local_160 = local_160 + (long)hv_concat44(uStack_fc, local_100);
+                        state_hi = hv_concat44(state_lo0, state_lo1) +
+                                     hv_concat44((uint32_t)(state_hi >> 32),
+                                                 (uint32_t)state_hi);
+                        paging_state = paging_state + (long)hv_concat44(state_lo0, state_lo1);
                     }
-                    lStack_148 = (long)hv_concat44(uStack_f4, local_f8);
-                    local_150 = hv_concat44(uStack_104, uStack_108);
-                    uStack_158 = hv_concat44(uStack_10c, uStack_110);
-                    uStack_134 = uStack_134 & 0xfffffff3;
-                    local_f8 = 0;
-                    uStack_f4 = 0;
-                    local_100 = 0;
-                    uStack_fc = 0;
+                    state_w2 = (long)hv_concat44(state_lo2, state_lo3);
+                    state_w3 = hv_concat44(state_w15, state_w14);
+                    state_w4 = hv_concat44(state_w13, state_w12);
+                    state_ctrl = state_ctrl & 0xfffffff3;
+                    state_lo3 = 0;
+                    state_lo2 = 0;
+                    state_lo1 = 0;
+                    state_lo0 = 0;
                 }
-                if ((uStack_138 >> 2 & 1) != 0) goto c9c8;
+                if ((state_flags >> 2 & 1) != 0) goto c9c8;
 c924:                               /* LAB_fffffe000b89c924 */
-                kernel_vm_fault_callee_1ab24(&local_160);
+                kernel_vm_fault_callee_1ab24(&paging_state);
                 goto c9e4;
             }
-            if (bVar6) {
-                if ((((puVar20 != 0) && (puVar20 == puVar29)) && (local_90 == local_1d8)) &&
-                   ((uVar18 >> 7 & 1) != 0)) {
+            if (defer_mode) {
+                if ((((obj != 0) && (obj == defer_obj)) && (fault_off_full == prior_off)) &&
+                   ((enter_flags >> 7 & 1) != 0)) {
                     hv_fault_stat_2a8 = hv_fault_stat_2a8 + 1;
                     goto a0e8;
                 }
                 if (fault_arg == 0) {
-                    *(uint64_t *)(lVar5 + 0x238) = 0;
+                    *(uint64_t *)(cur + 0x238) = 0;
                     HV_FMT_PAGING_CONCAT();
-                    if ((uStack_138 >> 2 & 1) == 0) {
-                        kernel_vm_fault_callee_1ab24(&local_160);
-                    } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                    if ((state_flags >> 2 & 1) == 0) {
+                        kernel_vm_fault_callee_1ab24(&paging_state);
+                    } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                         kernel_vm_fault_callee_164f8();
                     }
                     HV_FMT_ZERO_STATE();
                 }
-                kernel_vm_fault_callee_c2f4(puVar29);
-                puVar29 = 0;
-                bVar6 = false;
+                kernel_vm_fault_callee_c2f4(defer_obj);
+                defer_obj = 0;
+                defer_mode = false;
                 hv_fault_stat_2b8 = hv_fault_stat_2b8 + 1;
-                local_1d8 = 0xffffffffffffffff;
-                local_1a8 = iVar13;
+                prior_off = 0xffffffffffffffff;
+                obj_retain = rc;
                 goto retry;
             }
-            local_1d8 = 0xffffffffffffffff;
+            prior_off = 0xffffffffffffffff;
 a0e8:                               /* b89a0e8 */
-            if ((iVar13 == 2) || ((puVar20[9] == 0 && (*(short *)(puVar20 + 2) != 0)))) {
-                kernel_vm_fault_callee_e7d4((uint64_t)puVar20);
-                local_1a8 = 2;
+            if ((rc == 2) || ((obj[9] == 0 && (*(short *)(obj + 2) != 0)))) {
+                kernel_vm_fault_callee_e7d4((uint64_t)obj);
+                obj_retain = 2;
             } else {
-                kernel_vm_fault_callee_f3f8((uint64_t)puVar20);
-                local_1a8 = 1;
+                kernel_vm_fault_callee_f3f8((uint64_t)obj);
+                obj_retain = 1;
             }
-            uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-            uVar38 = local_90 & 0x3fff;
-            if ((((*(uint *)(puVar20 + 0xe) | 4) != 6) || (puVar20[7] == 0)) ||
-                ((uVar33 >> 1 & 1) == 0)) {
-                uVar18 = 0x20000;
-                if (*(char *)((uint8_t *)puVar20 + 0xae) != '"') {
-                    uVar18 = 0;
+            hi_word = (uint)((uint64_t)out_state >> 0x20);
+            packed_opts = fault_off_full & 0x3fff;
+            if ((((*(uint *)(obj + 0xe) | 4) != 6) || (obj[7] == 0)) ||
+                ((enter_flags2 >> 1 & 1) == 0)) {
+                enter_flags = 0x20000;
+                if (*(char *)((uint8_t *)obj + 0xae) != '"') {
+                    enter_flags = 0;
                     if (((hv_fault_prot_tab[(*(uint *)((uint8_t *)fault_opts + 2) >> 6) & 0x3ff] >>
                           ((uint32_t)*(uint *)((uint8_t *)fault_opts + 2) & 0x3f) & 1)) != 0) {
-                        uVar18 = 0x40000;
+                        enter_flags = 0x40000;
                     }
                 }
-                puVar35 = (uint *)((uint8_t *)puVar20 + 0x7c);
-                uVar19 = *puVar35;
-                uVar42 = local_90;
+                obj_flags_ptr = (uint *)((uint8_t *)obj + 0x7c);
+                obj_flags = *obj_flags_ptr;
+                fault_off = fault_off_full;
 a1a8:                               /* b89a1a8 */
-                uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                puVar31 = puVar20;
-                if ((uVar19 & 0x2000080) != 0x2000000) {
+                hi_word = (uint)((uint64_t)out_state >> 0x20);
+                obj2 = obj;
+                if ((obj_flags & 0x2000080) != 0x2000000) {
                     do {
-                        uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                        puVar31 = puVar20;
-                        if (*(char *)(puVar20 + 0x16) < '\0') break;
-                        uVar43 = uVar42 & 0xffffffffffffc000;
-                        auVar45 = kernel_vm_fault_callee_f4e94(puVar20, uVar43);
-                        uVar15 = auVar45.hi;
-                        lVar34 = (long)auVar45.lo;
-                        uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                        if (lVar34 != 0) {
-                            if ((local_161 & 1) != 0) {
-                                auVar45 = kernel_vm_fault_callee_dc68(puVar30, (uint64_t)lVar34,
-                                                                     uVar25, local_94, fault_opts,
-                                                                     &local_161);
-                                puVar41 = local_88;
-                                uVar15 = auVar45.hi;
-                                uVar43 = auVar45.lo;
-                                if (auVar45.lo != 0) {
-                                    kernel_vm_fault_callee_7050(local_88 + 1);
-                                    if (puVar41 != puVar20) {
-                                        kernel_vm_fault_callee_7050(puVar20 + 1);
+                        hi_word = (uint)((uint64_t)out_state >> 0x20);
+                        obj2 = obj;
+                        if (*(char *)(obj + 0x16) < '\0') break;
+                        status = fault_off & 0xffffffffffffc000;
+                        zext_result = kernel_vm_fault_callee_f4e94(obj, status);
+                        ctx_val = zext_result.hi;
+                        page_obj = (long)zext_result.lo;
+                        hi_word = (uint)((uint64_t)out_state >> 0x20);
+                        if (page_obj != 0) {
+                            if ((dcache_flag & 1) != 0) {
+                                zext_result = kernel_vm_fault_callee_dc68(pmap, (uint64_t)page_obj,
+                                                                     fault_va, prot, fault_opts,
+                                                                     &dcache_flag);
+                                obj3 = cur_obj;
+                                ctx_val = zext_result.hi;
+                                status = zext_result.lo;
+                                if (zext_result.lo != 0) {
+                                    kernel_vm_fault_callee_7050(cur_obj + 1);
+                                    if (obj3 != obj) {
+                                        kernel_vm_fault_callee_7050(obj + 1);
                                     }
                                     if (fault_arg == 0) {
-                                        *(uint64_t *)(lVar5 + 0x238) = 0;
+                                        *(uint64_t *)(cur + 0x238) = 0;
                                         HV_FMT_PAGING_CONCAT();
-                                        if ((uStack_138 >> 2 & 1) == 0) {
-                                            kernel_vm_fault_callee_1ab24(&local_160);
-                                        } else if ((lStack_148 != 0) &&
-                                                   ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                        if ((state_flags >> 2 & 1) == 0) {
+                                            kernel_vm_fault_callee_1ab24(&paging_state);
+                                        } else if ((state_w2 != 0) &&
+                                                   ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                             kernel_vm_fault_callee_164f8();
                                         }
                                         HV_FMT_ZERO_STATE();
                                     }
                                     goto fault_done;
                                 }
-                                bVar24 = local_161;
-                                if ((*(byte *)(lVar34 + 0x2c) & 1) == 0) goto a2ac;
+                                opt_flag = dcache_flag;
+                                if ((*(byte *)(page_obj + 0x2c) & 1) == 0) goto a2ac;
 a2b0:                           /* b89a2b0 */
-                                puVar41 = local_88;
-                                local_161 = 0;
-                                if (local_88 == puVar20) {
-                                    if ((local_1a8 == 1) &&
-                                        (iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1),
-                                         iVar13 == 0)) goto a56c;
-                                    local_1a8 = 2;
+                                obj3 = cur_obj;
+                                dcache_flag = 0;
+                                if (cur_obj == obj) {
+                                    if ((obj_retain == 1) &&
+                                        (rc = kernel_vm_fault_callee_f5f18(cur_obj + 1),
+                                         rc == 0)) goto a56c;
+                                    obj_retain = 2;
                                 } else {
-                                    if ((local_1cc == 1) &&
-                                        (iVar13 = kernel_vm_fault_callee_f5f18(puVar20 + 1),
-                                         iVar13 == 0)) {
-                                        kernel_vm_fault_callee_7050(local_88 + 1);
-                                        local_1cc = 2;
+                                    if ((obj_retain2 == 1) &&
+                                        (rc = kernel_vm_fault_callee_f5f18(obj + 1),
+                                         rc == 0)) {
+                                        kernel_vm_fault_callee_7050(cur_obj + 1);
+                                        obj_retain2 = 2;
                                         if (fault_arg == 0) {
-                                            *(uint64_t *)(lVar5 + 0x238) = 0;
+                                            *(uint64_t *)(cur + 0x238) = 0;
                                             HV_FMT_PAGING_CONCAT();
-                                            if ((uStack_138 >> 2 & 1) == 0) {
-                                                kernel_vm_fault_callee_1ab24(&local_160);
-                                            } else if ((lStack_148 != 0) &&
-                                                       ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                            if ((state_flags >> 2 & 1) == 0) {
+                                                kernel_vm_fault_callee_1ab24(&paging_state);
+                                            } else if ((state_w2 != 0) &&
+                                                       ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                                 kernel_vm_fault_callee_164f8();
                                             }
-                                            local_1cc = 2;
+                                            obj_retain2 = 2;
                                         }
                                         goto retry;
                                     }
-                                    local_1cc = 2;
+                                    obj_retain2 = 2;
                                 }
-                                uVar43 = hv_fault_paging_token;
-                                if (((*(byte *)(lVar34 + 0x2a) & 0xf) == 7) &&
-                                   ((*(byte *)((uint8_t *)puVar35 + 1) >> 4 & 1) != 0)) {
+                                status = hv_fault_paging_token;
+                                if (((*(byte *)(page_obj + 0x2a) & 0xf) == 7) &&
+                                   ((*(byte *)((uint8_t *)obj_flags_ptr + 1) >> 4 & 1) != 0)) {
                                     if (hv_fault_paging_token == 0) {
-                                        hv_fault_paging_token = (ulong)*(uint *)(lVar5 + 0x518);
+                                        hv_fault_paging_token = (ulong)*(uint *)(cur + 0x518);
                                     }
-                                    if (uVar43 != 0 || hv_fault_paging_owner != 0) {
-                                        kernel_vm_fault_callee_f0afc(&hv_fault_paging_lock, lVar5,
-                                                                     uVar43, 0);
+                                    if (status != 0 || hv_fault_paging_owner != 0) {
+                                        kernel_vm_fault_callee_f0afc(&hv_fault_paging_lock, cur,
+                                                                     status, 0);
                                     }
-                                    if ((*(byte *)(lVar34 + 0x2a) & 0xf) == 7) {
-                                        uVar15 = kernel_vm_fault_callee_d91fc((uint64_t)lVar34);
-                                        if (hv_fault_paging_token == *(int *)(lVar5 + 0x518)) {
+                                    if ((*(byte *)(page_obj + 0x2a) & 0xf) == 7) {
+                                        ctx_val = kernel_vm_fault_callee_d91fc((uint64_t)page_obj);
+                                        if (hv_fault_paging_token == *(int *)(cur + 0x518)) {
                                             hv_fault_paging_token =
                                                 hv_concat44((uint32_t)(hv_fault_paging_token >> 32),
                                                             0);  /* in_wzr_value() = WZR zero register = 0 */
                                             if (hv_fault_paging_owner != 0) goto a5c4;
                                         } else {
 a5c4:                               /* b89a5c4 */
-                                            uVar15 = kernel_vm_fault_callee_f1e80(&hv_fault_paging_lock,
-                                                                                 (uint64_t)lVar5);
+                                            ctx_val = kernel_vm_fault_callee_f1e80(&hv_fault_paging_lock,
+                                                                                 (uint64_t)cur);
                                         }
-                                        kernel_vm_fault_callee_d31ac(uVar15, (uint64_t)lVar34);
-                                        uVar15 = extraout_x1;
+                                        kernel_vm_fault_callee_d31ac(ctx_val, (uint64_t)page_obj);
+                                        ctx_val = x1_carry;
                                         goto a3f4;
                                     }
                                     kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
                                 }
-                                if (local_88 != puVar20) {
-                                    kernel_vm_fault_callee_7050(local_88 + 1);
+                                if (cur_obj != obj) {
+                                    kernel_vm_fault_callee_7050(cur_obj + 1);
                                 }
                                 if (fault_arg == 0) {
-                                    *(uint64_t *)(lVar5 + 0x238) = 0;
+                                    *(uint64_t *)(cur + 0x238) = 0;
                                     HV_FMT_PAGING_CONCAT();
-                                    if ((uStack_138 >> 2 & 1) == 0) {
-                                        kernel_vm_fault_callee_1ab24(&local_160);
-                                    } else if ((lStack_148 != 0) &&
-                                               ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                    if ((state_flags >> 2 & 1) == 0) {
+                                        kernel_vm_fault_callee_1ab24(&paging_state);
+                                    } else if ((state_w2 != 0) &&
+                                               ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                         kernel_vm_fault_callee_164f8();
                                     }
                                     HV_FMT_ZERO_STATE();
@@ -1868,532 +1868,532 @@ a5c4:                               /* b89a5c4 */
                                                                 ((uint64_t *)fault_arg)[0],
                                                                 ((uint64_t *)fault_arg)[1]);
                                 }
-                                iVar13 = kernel_vm_fault_callee_cdf50(puVar20, (uint64_t)lVar34,
+                                rc = kernel_vm_fault_callee_cdf50(obj, (uint64_t)page_obj,
                                                                       *(uint32_t *)fault_opts, 1);
-                                if ((iVar13 == 0) || (iVar13 == 3)) goto retry;
-                                if (lVar5 == 0) {
-                                    uVar15 = 0;
+                                if ((rc == 0) || (rc == 3)) goto retry;
+                                if (cur == 0) {
+                                    ctx_val = 0;
                                 } else {
-                                    uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                                    ctx_val = *(uint64_t *)(cur + 0x510);
                                 }
-                                kernel_vm_fault_callee_2db44(uVar15, 0x1000034, 0);
-                                uVar43 = 0xe;
+                                kernel_vm_fault_callee_2db44(ctx_val, 0x1000034, 0);
+                                status = 0xe;
                                 goto fault_done;
                             }
-                            bVar24 = 0;
-                            if ((*(byte *)(lVar34 + 0x2c) & 1) != 0) goto a2b0;
+                            opt_flag = 0;
+                            if ((*(byte *)(page_obj + 0x2c) & 1) != 0) goto a2b0;
 a2ac:                           /* b89a2ac */
-                            if ((bVar24 & 1) != 0) goto a2b0;
+                            if ((opt_flag & 1) != 0) goto a2b0;
 a3f4:                           /* b89a3f4 */
-                            puVar41 = local_88;
-                            if ((*(byte *)(lVar34 + 0x2b) >> 1 & 1) != 0) {
-                                if (local_88 != puVar20) {
-                                    if (local_1cc != 1) goto a440;
-                                    kernel_vm_fault_callee_7050(local_88 + 1);
-                                    kernel_vm_fault_callee_7050(puVar20 + 1);
-                                    local_1cc = 2;
+                            obj3 = cur_obj;
+                            if ((*(byte *)(page_obj + 0x2b) >> 1 & 1) != 0) {
+                                if (cur_obj != obj) {
+                                    if (obj_retain2 != 1) goto a440;
+                                    kernel_vm_fault_callee_7050(cur_obj + 1);
+                                    kernel_vm_fault_callee_7050(obj + 1);
+                                    obj_retain2 = 2;
                                     if (fault_arg == 0) {
-                                        *(uint64_t *)(lVar5 + 0x238) = 0;
-                                        if ((uStack_134 & 0xc) == 8) {
-                                            if (((uint8_t)uStack_138 >> 2 & 1) == 0) {
-                                                local_160 = (long)hv_concat44(uStack_114, uStack_118);
+                                        *(uint64_t *)(cur + 0x238) = 0;
+                                        if ((state_ctrl & 0xc) == 8) {
+                                            if (((uint8_t)state_flags >> 2 & 1) == 0) {
+                                                paging_state = (long)hv_concat44(state_w11, state_w10);
                                             } else {
-                                                uStack_130 = hv_concat44(uStack_fc, local_100) +
-                                                             hv_concat44((uint32_t)(uStack_130 >> 32),
-                                                                         (uint32_t)uStack_130);
-                                                local_160 = local_160 +
-                                                            (long)hv_concat44(uStack_fc, local_100);
+                                                state_hi = hv_concat44(state_lo0, state_lo1) +
+                                                             hv_concat44((uint32_t)(state_hi >> 32),
+                                                                         (uint32_t)state_hi);
+                                                paging_state = paging_state +
+                                                            (long)hv_concat44(state_lo0, state_lo1);
                                             }
-                                            lStack_148 = (long)hv_concat44(uStack_f4, local_f8);
-                                            local_150 = hv_concat44(uStack_104, uStack_108);
-                                            uStack_158 = hv_concat44(uStack_10c, uStack_110);
-                                            uStack_134 = uStack_134 & 0xfffffff3;
-                                            local_f8 = 0;
-                                            uStack_f4 = 0;
-                                            local_100 = 0;
-                                            uStack_fc = 0;
+                                            state_w2 = (long)hv_concat44(state_lo2, state_lo3);
+                                            state_w3 = hv_concat44(state_w15, state_w14);
+                                            state_w4 = hv_concat44(state_w13, state_w12);
+                                            state_ctrl = state_ctrl & 0xfffffff3;
+                                            state_lo3 = 0;
+                                            state_lo2 = 0;
+                                            state_lo1 = 0;
+                                            state_lo0 = 0;
                                         }
-                                        if ((uStack_138 >> 2 & 1) == 0) goto c31c;
+                                        if ((state_flags >> 2 & 1) == 0) goto c31c;
 c38c:                               /* LAB_fffffe000b89c38c */
-                                        if ((lStack_148 != 0) &&
-                                            ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                        if ((state_w2 != 0) &&
+                                            ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                             kernel_vm_fault_callee_164f8();
                                         }
 c3a8:                               /* LAB_fffffe000b89c3a8 */
-                                        local_1cc = 2;
+                                        obj_retain2 = 2;
                                     }
                                     goto retry;
                                 }
-                                if ((local_1a8 != 1) ||
-                                    (iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1),
-                                     iVar13 != 0)) {
-                                    local_1a8 = 2;
+                                if ((obj_retain != 1) ||
+                                    (rc = kernel_vm_fault_callee_f5f18(cur_obj + 1),
+                                     rc != 0)) {
+                                    obj_retain = 2;
 a440:                               /* b89a440 */
-                                    kernel_vm_fault_callee_e2c70((uint64_t)lVar34, 0);
-                                    uVar15 = extraout_x1;
+                                    kernel_vm_fault_callee_e2c70((uint64_t)page_obj, 0);
+                                    ctx_val = x1_carry;
                                     goto a44c;
                                 }
                                 goto a56c;
                             }
 a44c:                           /* b89a44c */
-                            lVar37 = local_78[0];
-                            puVar41 = local_88;
-                            uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                            if ((*(int *)(lVar34 + 0x30) == -2) ||
-                               ((uVar19 = *(uint *)(lVar34 + 0x2c),
-                                 (uVar19 >> 0x11 & 1) != 0 &&
-                                 (((uVar19 & 0x10800) != 0 ||
-                                  (((-1 < *(char *)(lVar34 + 0x2a) &&
-                                    (*(uint *)(lVar34 + 0x30) < 0xfffffffe)) ||
-                                   ((uVar19 >> 10 & 1) != 0)))))))) break;
-                            if ((((uint)puVar20[0x16] >> 5 & 1) != 0) &&
-                               ((*(ushort *)((uint8_t *)puVar35 + 2) & 3) - 1 < 2)) {
-                                if (local_88 != puVar20) {
-                                    kernel_vm_fault_callee_7050(local_88 + 1);
+                            page2 = vm_slot[0];
+                            obj3 = cur_obj;
+                            hi_word = (uint)((uint64_t)out_state >> 0x20);
+                            if ((*(int *)(page_obj + 0x30) == -2) ||
+                               ((obj_flags = *(uint *)(page_obj + 0x2c),
+                                 (obj_flags >> 0x11 & 1) != 0 &&
+                                 (((obj_flags & 0x10800) != 0 ||
+                                  (((-1 < *(char *)(page_obj + 0x2a) &&
+                                    (*(uint *)(page_obj + 0x30) < 0xfffffffe)) ||
+                                   ((obj_flags >> 10 & 1) != 0)))))))) break;
+                            if ((((uint)obj[0x16] >> 5 & 1) != 0) &&
+                               ((*(ushort *)((uint8_t *)obj_flags_ptr + 2) & 3) - 1 < 2)) {
+                                if (cur_obj != obj) {
+                                    kernel_vm_fault_callee_7050(cur_obj + 1);
                                 }
                                 if (fault_arg == 0) {
-                                    *(uint64_t *)(lVar5 + 0x238) = 0;
+                                    *(uint64_t *)(cur + 0x238) = 0;
                                     HV_FMT_PAGING_CONCAT();
-                                    if ((uStack_138 >> 2 & 1) == 0) {
-                                        kernel_vm_fault_callee_1ab24(&local_160);
-                                    } else if ((lStack_148 != 0) &&
-                                               ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                    if ((state_flags >> 2 & 1) == 0) {
+                                        kernel_vm_fault_callee_1ab24(&paging_state);
+                                    } else if ((state_w2 != 0) &&
+                                               ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                         kernel_vm_fault_callee_164f8();
                                     }
                                     HV_FMT_ZERO_STATE();
                                 }
-                                kernel_vm_fault_callee_7050(puVar20 + 1);
-                                if (lVar5 == 0) {
-                                    uVar15 = 0;
+                                kernel_vm_fault_callee_7050(obj + 1);
+                                if (cur == 0) {
+                                    ctx_val = 0;
                                 } else {
-                                    uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                                    ctx_val = *(uint64_t *)(cur + 0x510);
                                 }
-                                uVar17 = 0x1000038;
+                                trace_code = 0x1000038;
                                 goto d1dc;
                             }
-                            puVar21 = (uint64_t *)(local_78[0] + 0x58);
-                            if ((((((puVar20[0x16] & 1) != 0) &&
-                                   (*puVar21 != &hv_special_owner_block)) &&
-                                  (((uVar19 ^ 0xffffffff) & 0x3c00000) != 0)) &&
-                                 ((uVar19 & 0x3c0100) != 0x3c0000)) ||
-                                ((result_out != 0 && (((byte)local_94 >> 1 & 1) != 0)))) {
-                                if (local_88 != puVar20) {
-                                    if (local_1cc != 1) goto b674;
+                            pmap_ref = (uint64_t *)(vm_slot[0] + 0x58);
+                            if ((((((obj[0x16] & 1) != 0) &&
+                                   (*pmap_ref != &hv_special_owner_block)) &&
+                                  (((obj_flags ^ 0xffffffff) & 0x3c00000) != 0)) &&
+                                 ((obj_flags & 0x3c0100) != 0x3c0000)) ||
+                                ((result_out != 0 && (((byte)prot >> 1 & 1) != 0)))) {
+                                if (cur_obj != obj) {
+                                    if (obj_retain2 != 1) goto b674;
 b9bc:                               /* b89b9bc */
-                                    kernel_vm_fault_callee_7050(puVar41 + 1);
-                                    kernel_vm_fault_callee_7050(puVar20 + 1);
-                                    local_1cc = 2;
+                                    kernel_vm_fault_callee_7050(obj3 + 1);
+                                    kernel_vm_fault_callee_7050(obj + 1);
+                                    obj_retain2 = 2;
                                     if (fault_arg == 0) {
-                                        *(uint64_t *)(lVar5 + 0x238) = 0;
-                                        if ((uStack_134 & 0xc) == 8) {
-                                            if (((uint8_t)uStack_138 >> 2 & 1) == 0) {
-                                                local_160 = (long)hv_concat44(uStack_114, uStack_118);
+                                        *(uint64_t *)(cur + 0x238) = 0;
+                                        if ((state_ctrl & 0xc) == 8) {
+                                            if (((uint8_t)state_flags >> 2 & 1) == 0) {
+                                                paging_state = (long)hv_concat44(state_w11, state_w10);
                                             } else {
-                                                uStack_130 = hv_concat44(uStack_fc, local_100) +
-                                                             hv_concat44((uint32_t)(uStack_130 >> 32),
-                                                                         (uint32_t)uStack_130);
-                                                local_160 = local_160 +
-                                                            (long)hv_concat44(uStack_fc, local_100);
+                                                state_hi = hv_concat44(state_lo0, state_lo1) +
+                                                             hv_concat44((uint32_t)(state_hi >> 32),
+                                                                         (uint32_t)state_hi);
+                                                paging_state = paging_state +
+                                                            (long)hv_concat44(state_lo0, state_lo1);
                                             }
-                                            lStack_148 = (long)hv_concat44(uStack_f4, local_f8);
-                                            local_150 = hv_concat44(uStack_104, uStack_108);
-                                            uStack_158 = hv_concat44(uStack_10c, uStack_110);
-                                            uStack_134 = uStack_134 & 0xfffffff3;
-                                            local_f8 = 0;
-                                            uStack_f4 = 0;
-                                            local_100 = 0;
-                                            uStack_fc = 0;
+                                            state_w2 = (long)hv_concat44(state_lo2, state_lo3);
+                                            state_w3 = hv_concat44(state_w15, state_w14);
+                                            state_w4 = hv_concat44(state_w13, state_w12);
+                                            state_ctrl = state_ctrl & 0xfffffff3;
+                                            state_lo3 = 0;
+                                            state_lo2 = 0;
+                                            state_lo1 = 0;
+                                            state_lo0 = 0;
                                         }
-                                        if ((uStack_138 >> 2 & 1) != 0) goto c38c;
+                                        if ((state_flags >> 2 & 1) != 0) goto c38c;
 c31c:                               /* LAB_fffffe000b89c31c */
-                                        kernel_vm_fault_callee_1ab24(&local_160);
+                                        kernel_vm_fault_callee_1ab24(&paging_state);
                                         goto c3a8;
                                     }
                                     goto retry;
                                 }
-                                if (local_1a8 != 1) {
-                                    local_1a8 = 2;
+                                if (obj_retain != 1) {
+                                    obj_retain = 2;
                                     goto b674;
                                 }
-                                iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1);
-                                uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                                if (iVar13 == 0) goto a56c;
-                                local_1a8 = 2;
-                                uVar15 = extraout_x1;
+                                rc = kernel_vm_fault_callee_f5f18(cur_obj + 1);
+                                hi_word = (uint)((uint64_t)out_state >> 0x20);
+                                if (rc == 0) goto a56c;
+                                obj_retain = 2;
+                                ctx_val = x1_carry;
                             }
 b674:                           /* b89b674 */
-                            puVar41 = local_88;
-                            uVar49 = (uint)(in_stack_fffffffffffffd28 >> 0x20);
-                            if ((local_88 == puVar20) && (local_88[7] == 0)) {
-                                puVar31 = 0;
-                                puVar41 = puVar20;
+                            obj3 = cur_obj;
+                            sarg_hi2 = (uint)(stack_arg2 >> 0x20);
+                            if ((cur_obj == obj) && (cur_obj[7] == 0)) {
+                                obj2 = 0;
+                                obj3 = obj;
                                 goto bee0;
                             }
-                            if (local_1e4 == 0) {
-                                if ((((local_88 != puVar20) &&
+                            if (write_fault == 0) {
+                                if ((((cur_obj != obj) &&
                                       ((*(uint *)((uint8_t *)fault_opts + 0x14) >> 8 & 1) == 0)) &&
-                                     ((*puVar35 & 0x1400) == 0)) &&
-                                   (((*(byte *)(puVar20 + 0x16) & 1) == 0 &&
+                                     ((*obj_flags_ptr & 0x1400) == 0)) &&
+                                   (((*(byte *)(obj + 0x16) & 1) == 0 &&
                                      (hv_fault_lowbit_flag2 != 0)))) {
-                                    lVar36 = (long)kernel_vm_fault_callee_6659c();
-                                    lVar16 = *(long *)(lVar36 + 0x18);
-                                    if (lVar16 == 0) {
-                                        lVar16 = 0;
+                                    alloc_page = (long)kernel_vm_fault_callee_6659c();
+                                    sched_word = *(long *)(alloc_page + 0x18);
+                                    if (sched_word == 0) {
+                                        sched_word = 0;
                                     }
-                                    iVar13 = kernel_vm_fault_callee_42a30((uint64_t)lVar16);
-                                    if (((iVar13 != 0) ||
-                                        (((*puVar21 != 0) && (*puVar21 == &hv_special_owner_block)))) ||
-                                       (uVar15 = extraout_x1,
-                                        (*(byte *)(lVar37 + 0xb2) >> 4 & 1) != 0)) {
+                                    rc = kernel_vm_fault_callee_42a30((uint64_t)sched_word);
+                                    if (((rc != 0) ||
+                                        (((*pmap_ref != 0) && (*pmap_ref == &hv_special_owner_block)))) ||
+                                       (ctx_val = x1_carry,
+                                        (*(byte *)(page2 + 0xb2) >> 4 & 1) != 0)) {
                                         hv_fault_stat_250 = hv_fault_stat_250 + 1;
-                                        lVar34 = *(long *)(lVar36 + 0x18);
-                                        if (lVar34 == 0) {
-                                            lVar34 = 0;
+                                        page_obj = *(long *)(alloc_page + 0x18);
+                                        if (page_obj == 0) {
+                                            page_obj = 0;
                                         }
-                                        iVar13 = kernel_vm_fault_callee_42a30((uint64_t)lVar34);
-                                        if (iVar13 == 0) {
-                                            if (*puVar21 == 0) {
-                                                plVar22 = (long *)&hv_fault_stat_260;
+                                        rc = kernel_vm_fault_callee_42a30((uint64_t)page_obj);
+                                        if (rc == 0) {
+                                            if (*pmap_ref == 0) {
+                                                out_state = (long *)&hv_fault_stat_260;
                                             } else {
-                                                plVar22 = (long *)&hv_fault_stat_258;
-                                                if (*puVar21 != &hv_special_owner_block) {
-                                                    plVar22 = (long *)&hv_fault_stat_260;
+                                                out_state = (long *)&hv_fault_stat_258;
+                                                if (*pmap_ref != &hv_special_owner_block) {
+                                                    out_state = (long *)&hv_fault_stat_260;
                                                 }
                                             }
-                                            *plVar22 = *plVar22 + 1;
+                                            *out_state = *out_state + 1;
                                         }
-                                        kernel_vm_fault_callee_7050(puVar41 + 1);
-                                        kernel_vm_fault_callee_7050(puVar20 + 1);
-                                        local_1e4 = 1;
-                                        local_1a8 = 2;
+                                        kernel_vm_fault_callee_7050(obj3 + 1);
+                                        kernel_vm_fault_callee_7050(obj + 1);
+                                        write_fault = 1;
+                                        obj_retain = 2;
                                         if (fault_arg == 0) {
-                                            *(uint64_t *)(lVar5 + 0x238) = 0;
+                                            *(uint64_t *)(cur + 0x238) = 0;
                                             HV_FMT_PAGING_CONCAT();
-                                            if ((uStack_138 >> 2 & 1) == 0) {
-                                                kernel_vm_fault_callee_1ab24(&local_160);
-                                            } else if ((lStack_148 != 0) &&
-                                                       ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                            if ((state_flags >> 2 & 1) == 0) {
+                                                kernel_vm_fault_callee_1ab24(&paging_state);
+                                            } else if ((state_w2 != 0) &&
+                                                       ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                                 kernel_vm_fault_callee_164f8();
                                             }
-                                            local_1e4 = 1;
-                                            local_1a8 = 2;
+                                            write_fault = 1;
+                                            obj_retain = 2;
                                         }
                                         goto retry;
                                     }
                                 }
-                                uVar49 = (uint)(in_stack_fffffffffffffd28 >> 0x20);
-                                if ((uVar33 >> 1 & 1) == 0) {
-                                    if (puVar30 == 0) {
-                                        bVar24 = 1;
+                                sarg_hi2 = (uint)(stack_arg2 >> 0x20);
+                                if ((enter_flags2 >> 1 & 1) == 0) {
+                                    if (pmap == 0) {
+                                        opt_flag = 1;
                                     } else {
-                                        bVar24 = *(byte *)(puVar30[4] + 0x4c) ^ 1;
+                                        opt_flag = *(byte *)(pmap[4] + 0x4c) ^ 1;
                                     }
-                                    if (((((local_94 ^ 0xffffffff) & 7) == 0) && ((bVar24 & 1) != 0)) &&
+                                    if (((((prot ^ 0xffffffff) & 7) == 0) && ((opt_flag & 1) != 0)) &&
                                        (((*(uint *)((uint8_t *)fault_opts + 0x16) >> 0xe & 1) != 0 ||
-                                        ((*(byte *)(puVar30 + 0xe) & 1) == 0)))) {
+                                        ((*(byte *)(pmap + 0xe) & 1) == 0)))) {
                                         if (((uint8_t)fault_opts[0x14] >> 3 & 1) == 0) goto d4e8;
                                     } else {
-                                        local_94 = local_94 & 0xfffffffd;
+                                        prot = prot & 0xfffffffd;
                                     }
-                                    if (puVar41 == puVar20) {
-                                        puVar31 = 0;
-                                        puVar41 = puVar20;
+                                    if (obj3 == obj) {
+                                        obj2 = 0;
+                                        obj3 = obj;
                                     } else {
-                                        local_1a8 = local_1cc;
-                                        puVar31 = puVar41;
-                                        puVar41 = puVar20;
-                                        local_88 = puVar20;
+                                        obj_retain = obj_retain2;
+                                        obj2 = obj3;
+                                        obj3 = obj;
+                                        cur_obj = obj;
                                     }
                                     goto bee0;
                                 }
                             }
-                            if (puVar41 == puVar20) break;
-                            if (local_1cc == 1) {
-                                if ((*(byte *)(puVar20 + 0x16) & 1) == 0) {
-                                    local_1cc = 1;
+                            if (obj3 == obj) break;
+                            if (obj_retain2 == 1) {
+                                if ((*(byte *)(obj + 0x16) & 1) == 0) {
+                                    obj_retain2 = 1;
                                 } else {
-                                    local_1cc = 1;
-                                    if ((((*(uint *)(lVar34 + 0x2c) ^ 0xffffffff) & 0x3c00000) != 0) &&
-                                       ((*(uint *)(lVar34 + 0x2c) & 0x3c0100) != 0x3c0000)) goto b9bc;
+                                    obj_retain2 = 1;
+                                    if ((((*(uint *)(page_obj + 0x2c) ^ 0xffffffff) & 0x3c00000) != 0) &&
+                                       ((*(uint *)(page_obj + 0x2c) & 0x3c0100) != 0x3c0000)) goto b9bc;
                                 }
                             }
-                            lVar36 = kernel_vm_fault_callee_f5be0(uVar18);
-                            uVar49 = (uint)(in_stack_fffffffffffffd28 >> 0x20);
-                            if (lVar36 == 0) break;
-                            kernel_vm_fault_callee_f8738((uint64_t)lVar34, lVar36);
-                            kernel_vm_fault_callee_f19b0(lVar36, puVar41, local_90 & 0xffffffffffffc000,
+                            alloc_page = kernel_vm_fault_callee_f5be0(enter_flags);
+                            sarg_hi2 = (uint)(stack_arg2 >> 0x20);
+                            if (alloc_page == 0) break;
+                            kernel_vm_fault_callee_f8738((uint64_t)page_obj, alloc_page);
+                            kernel_vm_fault_callee_f19b0(alloc_page, obj3, fault_off_full & 0xffffffffffffc000,
                                                          0, 0, 0);
-                            *(uint *)(lVar36 + 0x2c) = *(uint *)(lVar36 + 0x2c) | 0x1000;
-                            if ((*(uint *)(puVar41 + 5) < 2) ||
-                                ((*(byte *)(lVar34 + 0x2c) >> 6 & 1) == 0)) {
-                                if (*(ushort *)(lVar37 + 0x44) < 0xe) {
-                                    uVar12 = *(uint *)(lVar34 + 0x30);
+                            *(uint *)(alloc_page + 0x2c) = *(uint *)(alloc_page + 0x2c) | 0x1000;
+                            if ((*(uint *)(obj3 + 5) < 2) ||
+                                ((*(byte *)(page_obj + 0x2c) >> 6 & 1) == 0)) {
+                                if (*(ushort *)(page2 + 0x44) < 0xe) {
+                                    hi_word = *(uint *)(page_obj + 0x30);
                                     goto bd30;
                                 }
                             } else {
-                                uVar12 = *(uint *)(lVar34 + 0x30);
+                                hi_word = *(uint *)(page_obj + 0x30);
 bd30:                               /* b89bd30 */
-                                kernel_vm_fault_callee_e48c(uVar12);
+                                kernel_vm_fault_callee_e48c(hi_word);
                             }
-                            if ((*(byte *)(lVar34 + 0x2c) >> 5 & 1) != 0) {
-                                plVar22 = (long *)(*(long *)(lVar11 + 0x3b8) + cpu_idx * 0x4000);
-                                *plVar22 = *plVar22 + 1;
-                                uVar12 = *(uint *)(lVar34 + 0x30);
-                                kernel_vm_fault_callee_e538(uVar12, 0);
-                                if ((*(byte *)(lVar34 + 0x2c) >> 5 & 1) != 0) {
-                                    uVar43 = (ulong)*(uint *)(lVar34 + 0x1c) << 6 | 0xfffffe0000000000;
-                                    *(int *)(uVar43 + 0xa8) = *(int *)(uVar43 + 0xa8) + 1;
-                                    *(uint *)(lVar34 + 0x2c) = *(uint *)(lVar34 + 0x2c) & 0xffffffdf;
+                            if ((*(byte *)(page_obj + 0x2c) >> 5 & 1) != 0) {
+                                out_state = (long *)(*(long *)(pcpu + 0x3b8) + cpu_idx * 0x4000);
+                                *out_state = *out_state + 1;
+                                hi_word = *(uint *)(page_obj + 0x30);
+                                kernel_vm_fault_callee_e538(hi_word, 0);
+                                if ((*(byte *)(page_obj + 0x2c) >> 5 & 1) != 0) {
+                                    status = (ulong)*(uint *)(page_obj + 0x1c) << 6 | 0xfffffe0000000000;
+                                    *(int *)(status + 0xa8) = *(int *)(status + 0xa8) + 1;
+                                    *(uint *)(page_obj + 0x2c) = *(uint *)(page_obj + 0x2c) & 0xffffffdf;
                                 }
-                                kernel_vm_fault_callee_e6b8(uVar12);
-                                kernel_vm_fault_callee_e370(puVar20, uVar42, *(uint *)((uint8_t *)fault_opts + 8));
+                                kernel_vm_fault_callee_e6b8(hi_word);
+                                kernel_vm_fault_callee_e370(obj, fault_off, *(uint *)((uint8_t *)fault_opts + 8));
                             }
-                            if (((*(byte *)((uint8_t *)puVar35 + 1) >> 4 & 1) == 0) &&
-                                (*(int *)(puVar20 + 0xe) == 2)) {
-                                if ((uint64_t *)puVar20[7] == local_88) {
-                                    kernel_vm_fault_callee_7050(puVar20 + 1);
+                            if (((*(byte *)((uint8_t *)obj_flags_ptr + 1) >> 4 & 1) == 0) &&
+                                (*(int *)(obj + 0xe) == 2)) {
+                                if ((uint64_t *)obj[7] == cur_obj) {
+                                    kernel_vm_fault_callee_7050(obj + 1);
 c260:                               /* b89c260 */
-                                    local_274 = 0;
+                                    mod_flag = 0;
                                     hv_fault_stat_5178 = hv_fault_stat_5178 + 1;
                                 } else {
-                                    if ((uint64_t *)puVar20[7] != (uint64_t *)local_88[9])
+                                    if ((uint64_t *)obj[7] != (uint64_t *)cur_obj[9])
                                         goto be70;
-                                    iVar13 = *(int *)((long)local_88[9] + 0x2c);
-                                    kernel_vm_fault_callee_7050(puVar20 + 1);
-                                    if (iVar13 == 0) goto c260;
-                                    local_274 = 1;
+                                    rc = *(int *)((long)cur_obj[9] + 0x2c);
+                                    kernel_vm_fault_callee_7050(obj + 1);
+                                    if (rc == 0) goto c260;
+                                    mod_flag = 1;
                                 }
                             } else {
 be70:                               /* b89be70 */
-                                kernel_vm_fault_callee_7050(puVar20 + 1);
-                                local_274 = 1;
+                                kernel_vm_fault_callee_7050(obj + 1);
+                                mod_flag = 1;
                             }
-                            uVar15 = 0;
+                            ctx_val = 0;
                             hv_fault_stat_5170 = hv_fault_stat_5170 + 1;
-                            local_b0 = 3;
+                            fault_result = 3;
                             *hv_pcpu_slot(hv_pcpu_map, cpu_idx) =
                                  *hv_pcpu_slot(hv_pcpu_map, cpu_idx) + 1;
-                            plVar22 = (long *)(*(long *)(lVar11 + 0x3c0) + cpu_idx * 0x4000);
-                            *plVar22 = *plVar22 + 1;
-                            puVar31 = 0;
-                            lVar34 = lVar36;
+                            out_state = (long *)(*(long *)(pcpu + 0x3c0) + cpu_idx * 0x4000);
+                            *out_state = *out_state + 1;
+                            obj2 = 0;
+                            page_obj = alloc_page;
                             goto bee0;
                         }
-                        if ((char)*puVar35 < '\0') {
-                            if ((((*(uint *)((uint8_t *)puVar20 + 0x7c) >> 0xc & 1) == 0) ||
-                                ((*(uint *)((uint8_t *)puVar20 + 0x7c) & 0x408000) != 0x8000)) ||
-                                (puVar20[10] == 0)) break;
-                            iVar13 = kernel_vm_fault_callee_1224(puVar20[10], puVar20[0xc] + uVar42);
-                            puVar41 = local_88;
-                            uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                            if (iVar13 != 3) goto a2e8;
+                        if ((char)*obj_flags_ptr < '\0') {
+                            if ((((*(uint *)((uint8_t *)obj + 0x7c) >> 0xc & 1) == 0) ||
+                                ((*(uint *)((uint8_t *)obj + 0x7c) & 0x408000) != 0x8000)) ||
+                                (obj[10] == 0)) break;
+                            rc = kernel_vm_fault_callee_1224(obj[10], obj[0xc] + fault_off);
+                            obj3 = cur_obj;
+                            hi_word = (uint)((uint64_t)out_state >> 0x20);
+                            if (rc != 3) goto a2e8;
                         }
-                        uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                        puVar31 = (uint64_t *)puVar20[9];
-                        if (!(bool)(puVar31 != 0 & (bVar6 ^ 1U))) {
-                            if (((((*(uint *)((uint8_t *)puVar20 + 0x7c) >> 0x18 & 1) != 0) ||
-                                 (((*(byte *)(puVar20 + 0x16) >> 5 & 1) != 0 &&
-                                  ((*(uint *)((uint8_t *)puVar20 + 0x7c) >> 0x10 & 3) - 1 < 2)))) ||
-                                (puVar20 == &hv_fault_special_400)) ||
-                               ((puVar20 == &hv_fault_special_300 ||
-                                 (puVar20 == &hv_fault_special_800)))) {
-                                if (local_88 != puVar20) {
-                                    kernel_vm_fault_callee_7050(puVar20 + 1);
+                        hi_word = (uint)((uint64_t)out_state >> 0x20);
+                        obj2 = (uint64_t *)obj[9];
+                        if (!(bool)(obj2 != 0 & (defer_mode ^ 1U))) {
+                            if (((((*(uint *)((uint8_t *)obj + 0x7c) >> 0x18 & 1) != 0) ||
+                                 (((*(byte *)(obj + 0x16) >> 5 & 1) != 0 &&
+                                  ((*(uint *)((uint8_t *)obj + 0x7c) >> 0x10 & 3) - 1 < 2)))) ||
+                                (obj == &hv_fault_special_400)) ||
+                               ((obj == &hv_fault_special_300 ||
+                                 (obj == &hv_fault_special_800)))) {
+                                if (cur_obj != obj) {
+                                    kernel_vm_fault_callee_7050(obj + 1);
                                 }
-                                kernel_vm_fault_callee_7050(local_88 + 1);
+                                kernel_vm_fault_callee_7050(cur_obj + 1);
                                 if (fault_arg == 0) {
-                                    *(uint64_t *)(lVar5 + 0x238) = 0;
+                                    *(uint64_t *)(cur + 0x238) = 0;
                                     HV_FMT_PAGING_CONCAT();
-                                    if ((uStack_138 >> 2 & 1) == 0) {
-                                        kernel_vm_fault_callee_1ab24(&local_160);
-                                    } else if ((lStack_148 != 0) &&
-                                               ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                    if ((state_flags >> 2 & 1) == 0) {
+                                        kernel_vm_fault_callee_1ab24(&paging_state);
+                                    } else if ((state_w2 != 0) &&
+                                               ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                         kernel_vm_fault_callee_164f8();
                                     }
                                     HV_FMT_ZERO_STATE();
                                 }
-                                uVar27 = *(uint *)((uint8_t *)puVar20 + 0x7c);
-                                if (((*(byte *)(puVar20 + 0x16) >> 5 & 1) != 0) &&
-                                    ((uVar27 >> 0x10 & 3) - 1 < 2)) {
-                                    if (lVar5 == 0) {
-                                        uVar15 = 0;
+                                fault_type_cur = *(uint *)((uint8_t *)obj + 0x7c);
+                                if (((*(byte *)(obj + 0x16) >> 5 & 1) != 0) &&
+                                    ((fault_type_cur >> 0x10 & 3) - 1 < 2)) {
+                                    if (cur == 0) {
+                                        ctx_val = 0;
                                     } else {
-                                        uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                                        ctx_val = *(uint64_t *)(cur + 0x510);
                                     }
-                                    kernel_vm_fault_callee_2db44(uVar15, 0x1000038, 0);
-                                    uVar27 = *(uint *)((uint8_t *)puVar20 + 0x7c);
+                                    kernel_vm_fault_callee_2db44(ctx_val, 0x1000038, 0);
+                                    fault_type_cur = *(uint *)((uint8_t *)obj + 0x7c);
                                 }
-                                if ((uVar27 >> 0x18 & 1) == 0) {
-                                    uVar43 = 10;
+                                if ((fault_type_cur >> 0x18 & 1) == 0) {
+                                    status = 10;
                                 } else {
-                                    if (lVar5 == 0) {
-                                        uVar15 = 0;
+                                    if (cur == 0) {
+                                        ctx_val = 0;
                                     } else {
-                                        uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                                        ctx_val = *(uint64_t *)(cur + 0x510);
                                     }
-                                    uVar17 = 0x100003c;
+                                    trace_code = 0x100003c;
 d1dc:                               /* b89d1dc */
-                                    kernel_vm_fault_callee_2db44(uVar15, uVar17, 0);
-                                    uVar43 = 10;
+                                    kernel_vm_fault_callee_2db44(ctx_val, trace_code, 0);
+                                    status = 10;
                                 }
                                 goto fault_done;
                             }
-                            if (puVar20 != local_88) {
-                                kernel_vm_fault_callee_7050(puVar20 + 1);
-                                puVar20 = local_88;
+                            if (obj != cur_obj) {
+                                kernel_vm_fault_callee_7050(obj + 1);
+                                obj = cur_obj;
                             }
-                            puVar31 = local_88;
-                            if (local_1a8 == 1) {
-                                iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1);
-                                if (iVar13 == 0) {
-                                    local_1a8 = 2;
+                            obj2 = cur_obj;
+                            if (obj_retain == 1) {
+                                rc = kernel_vm_fault_callee_f5f18(cur_obj + 1);
+                                if (rc == 0) {
+                                    obj_retain = 2;
                                     if (fault_arg == 0) {
-                                        *(uint64_t *)(lVar5 + 0x238) = 0;
+                                        *(uint64_t *)(cur + 0x238) = 0;
                                         HV_FMT_PAGING_CONCAT();
-                                        if ((uStack_138 >> 2 & 1) == 0) {
-                                            kernel_vm_fault_callee_1ab24(&local_160);
-                                        } else if ((lStack_148 != 0) &&
-                                                   ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                                        if ((state_flags >> 2 & 1) == 0) {
+                                            kernel_vm_fault_callee_1ab24(&paging_state);
+                                        } else if ((state_w2 != 0) &&
+                                                   ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                                             kernel_vm_fault_callee_164f8();
                                         }
-                                        local_1a8 = 2;
+                                        obj_retain = 2;
                                     }
                                     goto retry;
                                 }
                             }
-                            lVar34 = local_78[0];
-                            if ((*(byte *)((uint8_t *)puVar31 + 0x7d) >> 4 & 1) == 0) {
+                            page_obj = vm_slot[0];
+                            if ((*(byte *)((uint8_t *)obj2 + 0x7d) >> 4 & 1) == 0) {
                                 /* WARNING: Subroutine does not return */
                                 kernel_panic_msg_fmt(
                                     "%s:%d should not zero-fill page at offset 0x%llx in external object %p @%s:%d");
                             }
-                            lVar37 = kernel_vm_fault_callee_f5be0(
-                                (*(int *)(local_78[0] + 0xb0) << 3 ^ 0xffffffffU) & 0x10 | uVar18);
-                            uVar9 = local_90;
-                            uVar49 = (uint)((uint64_t)in_stack_fffffffffffffd18 >> 0x20);
-                            uVar50 = (uint)(in_stack_fffffffffffffd28 >> 0x20);
-                            if (lVar37 == 0) {
-                                local_1a8 = 2;
-                                puVar31 = puVar20;
+                            page2 = kernel_vm_fault_callee_f5be0(
+                                (*(int *)(vm_slot[0] + 0xb0) << 3 ^ 0xffffffffU) & 0x10 | enter_flags);
+                            va_lo = fault_off_full;
+                            sarg_hi2 = (uint)((uint64_t)stack_arg1 >> 0x20);
+                            sarg_hi3 = (uint)(stack_arg2 >> 0x20);
+                            if (page2 == 0) {
+                                obj_retain = 2;
+                                obj2 = obj;
                                 break;
                             }
-                            kernel_vm_fault_callee_f19b0(lVar37, puVar31, local_90 & 0xffffffffffffc000,
+                            kernel_vm_fault_callee_f19b0(page2, obj2, fault_off_full & 0xffffffffffffc000,
                                                          0, 8, 0);
-                            if ((((local_94 >> 1 & 1) != 0) && ((uVar33 >> 1 & 1) == 0)) &&
-                                (puVar31[7] != 0)) {
-                                if (puVar30 == 0) {
-                                    bVar24 = 1;
+                            if ((((prot >> 1 & 1) != 0) && ((enter_flags2 >> 1 & 1) == 0)) &&
+                                (obj2[7] != 0)) {
+                                if (pmap == 0) {
+                                    opt_flag = 1;
                                 } else {
-                                    bVar24 = *(byte *)(puVar30[4] + 0x4c) ^ 1;
+                                    opt_flag = *(byte *)(pmap[4] + 0x4c) ^ 1;
                                 }
-                                if (((((local_94 ^ 0xffffffff) & 7) == 0) && ((bVar24 & 1) != 0)) &&
+                                if (((((prot ^ 0xffffffff) & 7) == 0) && ((opt_flag & 1) != 0)) &&
                                    (((*(uint *)((uint8_t *)fault_opts + 0x16) >> 0xe & 1) != 0 ||
-                                    ((*(byte *)(puVar30 + 0xe) & 1) == 0)))) {
+                                    ((*(byte *)(pmap + 0xe) & 1) == 0)))) {
                                     if (((uint8_t)fault_opts[0x14] >> 3 & 1) == 0) goto d4e8;
                                 } else {
-                                    local_94 = local_94 & 0xfffffffd;
+                                    prot = prot & 0xfffffffd;
                                 }
                             }
-                            *(uint *)(lVar37 + 0x2c) = *(uint *)(lVar37 + 0x2c) & 0xc003ffff | 0x40;
-                            local_b0 = 5;
-                            if ((*(uint *)(lVar34 + 0xb0) & 2) == 0) {
-                                local_b0 = 1;
+                            *(uint *)(page2 + 0x2c) = *(uint *)(page2 + 0x2c) & 0xc003ffff | 0x40;
+                            fault_result = 5;
+                            if ((*(uint *)(page_obj + 0xb0) & 2) == 0) {
+                                fault_result = 1;
                             }
-                            puVar20 = puVar30;
+                            obj = pmap;
                             if (vnode_mp != 0) {
-                                puVar20 = (uint64_t *)(uintptr_t)vnode_mp;
+                                obj = (uint64_t *)(uintptr_t)vnode_mp;
                             }
-                            uVar18 = uVar39;
+                            enter_flags = fault_type_raw;
                             if ((*(uint *)((uint8_t *)fault_opts + 0x14) & 0x800) != 0) {
-                                uVar18 = 0;
+                                enter_flags = 0;
                             }
-                            pbVar47 = &local_161;
-                            puVar35 = &local_b0;
-                            puVar46 = fault_opts;
-                            uVar43 = kernel_vm_fault_callee_e480(
-                                lVar37, puVar20, uVar28, &local_94, (uint)fault_type, lVar14,
-                                uVar38, uVar18, fault_opts, puVar35, &local_dd, pbVar47);
-                            iVar13 = local_7c;
-                            uVar12 = (uint)((uint64_t)puVar35 >> 0x20);
-                            uVar48 = (uint)((uint64_t)pbVar47 >> 0x20);
-                            if ((int)uVar43 == 0) {
+                            out_flag_ptr = &dcache_flag;
+                            obj_flags_ptr = &fault_result;
+                            opts_ptr = fault_opts;
+                            status = kernel_vm_fault_callee_e480(
+                                page2, obj, mm_addr, &prot, (uint)fault_type_arg, page_mask,
+                                packed_opts, enter_flags, fault_opts, obj_flags_ptr, &dcache2, out_flag_ptr);
+                            rc = want_mod;
+                            hi_word = (uint)((uint64_t)obj_flags_ptr >> 0x20);
+                            sarg_hi = (uint)((uint64_t)out_flag_ptr >> 0x20);
+                            if ((int)status == 0) {
                                 if (((*(uint *)((uint8_t *)fault_opts + 0x14) >> 9 & 1) != 0) &&
-                                   ((*(byte *)(puVar31 + 0x16) & 1) == 0)) {
+                                   ((*(byte *)(obj2 + 0x16) & 1) == 0)) {
                                     *(uint *)((uint8_t *)fault_opts + 0x16) =
                                         *(uint *)((uint8_t *)fault_opts + 0x16) | 0x20000;
                                 }
                                 if ((*(uint *)((uint8_t *)fault_opts + 0x14) >> 10 & 1) == 0) {
-                                    uVar19 = *(uint *)((uint8_t *)fault_opts + 0x16);
+                                    obj_flags = *(uint *)((uint8_t *)fault_opts + 0x16);
                                 } else {
-                                    uVar19 = *(uint *)((uint8_t *)fault_opts + 0x16);
-                                    if (((byte)local_94 >> 1 & 1) != 0) {
-                                        uVar19 = uVar19 | 0x40000;
-                                        *(uint *)((uint8_t *)fault_opts + 0x16) = uVar19;
+                                    obj_flags = *(uint *)((uint8_t *)fault_opts + 0x16);
+                                    if (((byte)prot >> 1 & 1) != 0) {
+                                        obj_flags = obj_flags | 0x40000;
+                                        *(uint *)((uint8_t *)fault_opts + 0x16) = obj_flags;
                                     }
                                 }
-                                pbVar47 = &local_b9;
-                                puVar46 = (uint16_t *)hv_concat44((uint32_t)((uint64_t)puVar46 >> 0x20),
-                                                                  uVar19);
-                                uVar43 = kernel_vm_fault_callee_f5e4(
-                                    puVar20, uVar28, uVar38, lVar37, &local_94, (uint)fault_type,
-                                    uVar18, local_7c != 0, puVar46, pbVar47);
-                                uVar12 = (uint)((uint64_t)pbVar47 >> 0x20);
+                                out_flag_ptr = &retry_flag;
+                                opts_ptr = (uint16_t *)hv_concat44((uint32_t)((uint64_t)opts_ptr >> 0x20),
+                                                                  obj_flags);
+                                status = kernel_vm_fault_callee_f5e4(
+                                    obj, mm_addr, packed_opts, page2, &prot, (uint)fault_type_arg,
+                                    enter_flags, want_mod != 0, opts_ptr, out_flag_ptr);
+                                hi_word = (uint)((uint64_t)out_flag_ptr >> 0x20);
                             }
-                            kernel_vm_fault_callee_f6d4(puVar31, lVar37);
+                            kernel_vm_fault_callee_f6d4(obj2, page2);
                             kernel_vm_fault_callee_f8bc(
-                                puVar31, lVar37, iVar13 != 0, *(uint *)((uint8_t *)fault_opts + 0x14) >> 0xb & 1,
+                                obj2, page2, rc != 0, *(uint *)((uint8_t *)fault_opts + 0x14) >> 0xb & 1,
                                 (uint)fault_flags, *(uint *)((uint8_t *)fault_opts + 0x14) & 1,
-                                &local_b0, uVar43);
-                            if (((iVar1 == 1) && ((*(byte *)(lVar37 + 0x2b) >> 4 & 1) == 0)) &&
+                                &fault_result, status);
+                            if (((fault_mode == 1) && ((*(byte *)(page2 + 0x2b) >> 4 & 1) == 0)) &&
                                 (hv_fault_lowbit_flag != 0)) {
                                 kernel_vm_fault_callee_f0ac8(&hv_fault_paging_lock);
-                                if ((*(byte *)(lVar37 + 0x2b) >> 4 & 1) == 0) {
-                                    *(byte *)(lVar37 + 0x2b) = *(byte *)(lVar37 + 0x2b) | 0x10;
-                                    lVar34 = (ulong)hv_fault_stat_158 + 1;
-                                    hv_fault_stat_158 = (uint)lVar34;
-                                    if (lVar34 != lVar34 * 0x80000000 >> 0x1f) {
+                                if ((*(byte *)(page2 + 0x2b) >> 4 & 1) == 0) {
+                                    *(byte *)(page2 + 0x2b) = *(byte *)(page2 + 0x2b) | 0x10;
+                                    page_obj = (ulong)hv_fault_stat_158 + 1;
+                                    hv_fault_stat_158 = (uint)page_obj;
+                                    if (page_obj != page_obj * 0x80000000 >> 0x1f) {
                                         /* WARNING: Does not return */
-                                        pcVar10 = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5c0);
-                                        ((void (*)(void))pcVar10)();
+                                        brk_code = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5c0);
+                                        ((void (*)(void))brk_code)();
                                     }
                                 }
                                 kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
                             }
-                            bVar24 = local_b9;
-                            in_stack_fffffffffffffd28 = hv_concat44(uVar50, uVar33);
-                            in_stack_fffffffffffffd18 = hv_concat44(uVar49, local_274);
-                            in_stack_fffffffffffffd10 = 0;
-                            uVar38 = hv_concat44((uint32_t)hv_concat31((uint64_t)puVar46 >> 0x28,
-                                                                        local_b9), local_b0) &
+                            opt_flag = retry_flag;
+                            stack_arg2 = hv_concat44(sarg_hi3, enter_flags2);
+                            stack_arg1 = hv_concat44(sarg_hi2, mod_flag);
+                            stack_arg0 = 0;
+                            packed_opts = hv_concat44((uint32_t)hv_concat31((uint64_t)opts_ptr >> 0x28,
+                                                                        retry_flag), fault_result) &
                                      0xffffff01ffffffff;
                             kernel_vm_fault_callee_e03c(
-                                puVar31, puVar31, lVar37, uVar9, uVar26, fault_opts, (uint)fault_type,
-                                addr, uVar38, hv_concat44(uVar12, (uint)uVar43), result_out,
-                                hv_concat44(uVar48, local_94), 0, in_stack_fffffffffffffd18,
-                                uVar42, in_stack_fffffffffffffd28, &local_c8, &local_d0, &local_d8,
-                                &local_160, fault_arg);
-                            if ((bVar24 & 1) == 0) goto fault_done;
-                            local_1a8 = 2;
-                            kernel_vm_fault_callee_fbf0(puVar30, uVar25, 0, 0, 0, 0, 0, 2,
-                                                        uVar38 & 0xffffffffffffff00);
-                            local_b9 = 0;
+                                obj2, obj2, page2, va_lo, orig_va, fault_opts, (uint)fault_type_arg,
+                                addr, packed_opts, hv_concat44(hi_word, (uint)status), result_out,
+                                hv_concat44(sarg_hi, prot), 0, stack_arg1,
+                                fault_off, stack_arg2, &defer_obj2, &paging_obj2, &paging_end,
+                                &paging_state, fault_arg);
+                            if ((opt_flag & 1) == 0) goto fault_done;
+                            obj_retain = 2;
+                            kernel_vm_fault_callee_fbf0(pmap, fault_va, 0, 0, 0, 0, 0, 2,
+                                                        packed_opts & 0xffffffffffffff00);
+                            retry_flag = 0;
                             goto retry;
                         }
-                        lVar34 = (long)puVar20[0xb];
-                        if (local_1cc == 1) {
+                        page_obj = (long)obj[0xb];
+                        if (obj_retain2 == 1) {
                             kernel_vm_fault_callee_f3f8(0);   /* (0/1-arg) */
                         } else {
-                            kernel_vm_fault_callee_e7d4((uint64_t)puVar31);
+                            kernel_vm_fault_callee_e7d4((uint64_t)obj2);
                         }
-                        if (puVar20 != local_88) {
-                            kernel_vm_fault_callee_7050(puVar20 + 1);
+                        if (obj != cur_obj) {
+                            kernel_vm_fault_callee_7050(obj + 1);
                         }
-                        uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-                        uVar42 = lVar34 + uVar42;
-                        uVar38 = uVar42 & 0x3fff;
-                        puVar35 = (uint *)((uint8_t *)puVar31 + 0x7c);
-                        puVar20 = puVar31;
-                        if ((*puVar35 & 0x2000080) == 0x2000000) break;
+                        hi_word = (uint)((uint64_t)out_state >> 0x20);
+                        fault_off = page_obj + fault_off;
+                        packed_opts = fault_off & 0x3fff;
+                        obj_flags_ptr = (uint *)((uint8_t *)obj2 + 0x7c);
+                        obj = obj2;
+                        if ((*obj_flags_ptr & 0x2000080) == 0x2000000) break;
                     } while (true);
                 }
                 goto a708;
@@ -2401,789 +2401,789 @@ d1dc:                               /* b89d1dc */
             goto joined_a74c;
         }
         if ((hv_trace_flag & 0xfffffff7) == 0) {
-            if (lVar5 == 0) goto d210;
+            if (cur == 0) goto d210;
 b9b20:                              /* LAB_fffffe000b899b20 */
-            uVar15 = *(uint64_t *)(lVar5 + 0x510);
+            ctx_val = *(uint64_t *)(cur + 0x510);
         } else {
-            kernel_trace(0x130000a, uVar32 >> 0x20, uVar32, 5, 0);
-            if (lVar5 != 0) goto b9b20;
+            kernel_trace(0x130000a, trace_va >> 0x20, trace_va, 5, 0);
+            if (cur != 0) goto b9b20;
 d210:                               /* b89d210 */
-            uVar15 = 0;
+            ctx_val = 0;
         }
-        uVar17 = 0x10000e0;
+        trace_code = 0x10000e0;
         goto d220;
     }
     if ((hv_trace_flag & 0xfffffff7) == 0) {
-        if (lVar5 == 0) goto cff4;
+        if (cur == 0) goto cff4;
 b9af4:                              /* LAB_fffffe000b899af4 */
-        uVar15 = *(uint64_t *)(lVar5 + 0x510);
+        ctx_val = *(uint64_t *)(cur + 0x510);
     } else {
-        kernel_trace(0x130000a, uVar32 >> 0x20, uVar32, 5, 0);
-        if (lVar5 != 0) goto b9af4;
+        kernel_trace(0x130000a, trace_va >> 0x20, trace_va, 5, 0);
+        if (cur != 0) goto b9af4;
 cff4:                               /* b89cff4 */
-        uVar15 = 0;
+        ctx_val = 0;
     }
-    uVar17 = 0x1000030;
+    trace_code = 0x1000030;
 d220:                               /* b89d220 */
-    kernel_vm_fault_callee_2db44(uVar15, uVar17, 0);
+    kernel_vm_fault_callee_2db44(ctx_val, trace_code, 0);
     return 5;
 a2e8:                               /* b89a2e8 */
-    local_198 = local_198 & 0xffffffff00000000;
-    if (((iVar13 != 1) || (local_78[0] == 0)) || (local_b8 == 0)) goto a708;
-    if (local_88 == puVar20) {
-        if (local_1a8 == 1) {
-            iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1);
-            uVar12 = (uint)((uint64_t)plVar22 >> 0x20);
-            if (iVar13 == 0) {
+    mem_obj = mem_obj & 0xffffffff00000000;
+    if (((rc != 1) || (vm_slot[0] == 0)) || (map_ctx == 0)) goto a708;
+    if (cur_obj == obj) {
+        if (obj_retain == 1) {
+            rc = kernel_vm_fault_callee_f5f18(cur_obj + 1);
+            hi_word = (uint)((uint64_t)out_state >> 0x20);
+            if (rc == 0) {
 a56c:                               /* b89a56c */
-                kernel_vm_fault_callee_e7d4((uint64_t)puVar41);
-                puVar35 = (uint *)((uint8_t *)puVar20 + 0x7c);
-                uVar19 = *puVar35;
-                local_1a8 = 2;
+                kernel_vm_fault_callee_e7d4((uint64_t)obj3);
+                obj_flags_ptr = (uint *)((uint8_t *)obj + 0x7c);
+                obj_flags = *obj_flags_ptr;
+                obj_retain = 2;
                 goto a1a8;
             }
         }
-        bVar7 = false;
-        local_1a8 = 2;
-        uVar19 = 1;
-    } else if ((uVar33 >> 1 & 1) == 0) {
-        if ((local_1cc == 1) && (iVar13 = kernel_vm_fault_callee_f5f18(puVar20 + 1), iVar13 == 0)) {
-            kernel_vm_fault_callee_7050(local_88 + 1);
-            local_1cc = 2;
+        swap_mode = false;
+        obj_retain = 2;
+        obj_flags = 1;
+    } else if ((enter_flags2 >> 1 & 1) == 0) {
+        if ((obj_retain2 == 1) && (rc = kernel_vm_fault_callee_f5f18(obj + 1), rc == 0)) {
+            kernel_vm_fault_callee_7050(cur_obj + 1);
+            obj_retain2 = 2;
 joined_bb5c:                        /* joined_r0xfffffe000b89bb5c */
             if (fault_arg == 0) {
-                *(uint64_t *)(lVar5 + 0x238) = 0;
+                *(uint64_t *)(cur + 0x238) = 0;
                 HV_FMT_PAGING_CONCAT();
-                if ((uStack_138 >> 2 & 1) == 0) {
-                    kernel_vm_fault_callee_1ab24(&local_160);
-                } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                if ((state_flags >> 2 & 1) == 0) {
+                    kernel_vm_fault_callee_1ab24(&paging_state);
+                } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                     kernel_vm_fault_callee_164f8();
                 }
             }
             goto retry;
         }
-        local_1cc = 2;
-        uVar19 = 1;
-        bVar7 = true;
-        puVar41 = local_88;
+        obj_retain2 = 2;
+        obj_flags = 1;
+        swap_mode = true;
+        obj3 = cur_obj;
     } else {
-        if (local_1a8 == 1) {
-            kernel_vm_fault_callee_7050(local_88 + 1);
-            kernel_vm_fault_callee_7050(puVar20 + 1);
-            local_1a8 = 2;
+        if (obj_retain == 1) {
+            kernel_vm_fault_callee_7050(cur_obj + 1);
+            kernel_vm_fault_callee_7050(obj + 1);
+            obj_retain = 2;
             goto joined_bb5c;
         }
-        bVar7 = false;
-        local_1a8 = 2;
-        uVar19 = 3;
+        swap_mode = false;
+        obj_retain = 2;
+        obj_flags = 3;
     }
-    uVar4 = uVar19 | 0x20;
-    if (*(char *)((uint8_t *)puVar41 + 0xae) != '"') {
-        uVar4 = uVar19;
+    prot_bits = obj_flags | 0x20;
+    if (*(char *)((uint8_t *)obj3 + 0xae) != '"') {
+        prot_bits = obj_flags;
     }
-    lVar34 = kernel_vm_fault_callee_f5be0(uVar18);
-    if (lVar34 != 0) {
-        iVar13 = kernel_vm_fault_callee_0ed8(puVar20[10], puVar20[0xc] + uVar43,
-                                             *(uint *)(lVar34 + 0x30), &local_198, uVar4, &local_dc);
-        uVar49 = (uint)(in_stack_fffffffffffffd28 >> 0x20);
-        lVar37 = (long)puVar20[10];
-        if (((lVar37 != 0) && (local_dc != 0)) &&
-           (*(uint64_t ***)(lVar37 + 8) == (uint64_t ***)&PTR_fault_vt_878)) {
-            *(int *)(lVar37 + 0x34) = *(int *)(lVar37 + 0x34) + local_dc;
+    page_obj = kernel_vm_fault_callee_f5be0(enter_flags);
+    if (page_obj != 0) {
+        rc = kernel_vm_fault_callee_0ed8(obj[10], obj[0xc] + status,
+                                             *(uint *)(page_obj + 0x30), &mem_obj, prot_bits, &vt_delta);
+        sarg_hi2 = (uint)(stack_arg2 >> 0x20);
+        page2 = (long)obj[10];
+        if (((page2 != 0) && (vt_delta != 0)) &&
+           (*(uint64_t ***)(page2 + 8) == (uint64_t ***)&PTR_fault_vt_878)) {
+            *(int *)(page2 + 0x34) = *(int *)(page2 + 0x34) + vt_delta;
         }
-        if (iVar13 == 0) {
-            *(uint *)(lVar34 + 0x2c) = *(uint *)(lVar34 + 0x2c) | 0x1000;
-            if (((!(bool)(puVar41 != puVar20 & (bVar7 ^ 1U))) &&
-                ((((*puVar35 ^ 0xffffffff) & 0x30000) != 0 ||
-                 ((*(byte *)((uint8_t *)puVar20 + 0xb2) & 0x70) != 0)))) &&
-               ((puVar20[0xb] != 0 && (local_dc != 0)))) {
-                kernel_vm_fault_callee_b078((uint64_t)puVar20, 0xffffffff);
+        if (rc == 0) {
+            *(uint *)(page_obj + 0x2c) = *(uint *)(page_obj + 0x2c) | 0x1000;
+            if (((!(bool)(obj3 != obj & (swap_mode ^ 1U))) &&
+                ((((*obj_flags_ptr ^ 0xffffffff) & 0x30000) != 0 ||
+                 ((*(byte *)((uint8_t *)obj + 0xb2) & 0x70) != 0)))) &&
+               ((obj[0xb] != 0 && (vt_delta != 0)))) {
+                kernel_vm_fault_callee_b078((uint64_t)obj, 0xffffffff);
             }
-            puVar41 = local_88;
-            if (bVar7) {
-                kernel_vm_fault_callee_f19b0(lVar34, puVar20, uVar43, 0, 0, 0);
-                uVar15 = extraout_x1;
-                puVar41 = puVar20;
+            obj3 = cur_obj;
+            if (swap_mode) {
+                kernel_vm_fault_callee_f19b0(page_obj, obj, status, 0, 0, 0);
+                ctx_val = x1_carry;
+                obj3 = obj;
             } else {
-                kernel_vm_fault_callee_f19b0(lVar34, local_88, local_90 & 0xffffffffffffc000, 0, 0, 0);
-                uVar15 = extraout_x1;
+                kernel_vm_fault_callee_f19b0(page_obj, cur_obj, fault_off_full & 0xffffffffffffc000, 0, 0, 0);
+                ctx_val = x1_carry;
             }
-            cVar2 = *(char *)((uint8_t *)puVar41 + 0xae);
-            if (((cVar2 != '\x02') && (cVar2 != '"')) && (cVar2 != -0x80)) {
+            obj_tag = *(char *)((uint8_t *)obj3 + 0xae);
+            if (((obj_tag != '\x02') && (obj_tag != '"')) && (obj_tag != -0x80)) {
                 DataSynchronizationBarrier(3,3,0);
             }
-            local_b0 = (uint)local_198;
+            fault_result = (uint)mem_obj;
             *hv_pcpu_slot(hv_pcpu_pageins, cpu_idx) =
                  *hv_pcpu_slot(hv_pcpu_pageins, cpu_idx) + 1;
-            *(int *)(lVar5 + 0x590) = *(int *)(lVar5 + 0x590) + 1;
-            if (puVar20 == local_88) {
-                puVar31 = 0;
-            } else if (bVar7) {
-                local_1a8 = local_1cc;
-                puVar31 = local_88;
-                local_88 = puVar20;
+            *(int *)(cur + 0x590) = *(int *)(cur + 0x590) + 1;
+            if (obj == cur_obj) {
+                obj2 = 0;
+            } else if (swap_mode) {
+                obj_retain = obj_retain2;
+                obj2 = cur_obj;
+                cur_obj = obj;
             } else {
-                kernel_vm_fault_callee_7050(puVar20 + 1);
-                uVar15 = extraout_x1;
-                puVar31 = 0;
+                kernel_vm_fault_callee_7050(obj + 1);
+                ctx_val = x1_carry;
+                obj2 = 0;
             }
 bee0:                               /* b89bee0 */
-            if ((bVar6) && ((local_94 >> 1 & 1) != 0)) {
-                if (puVar30 == 0) {
-                    bVar24 = 1;
+            if ((defer_mode) && ((prot >> 1 & 1) != 0)) {
+                if (pmap == 0) {
+                    opt_flag = 1;
                 } else {
-                    bVar24 = *(byte *)(puVar30[4] + 0x4c) ^ 1;
+                    opt_flag = *(byte *)(pmap[4] + 0x4c) ^ 1;
                 }
-                if (((((local_94 ^ 0xffffffff) & 7) == 0) && ((bVar24 & 1) != 0)) &&
+                if (((((prot ^ 0xffffffff) & 7) == 0) && ((opt_flag & 1) != 0)) &&
                    (((*(uint *)((uint8_t *)fault_opts + 0x16) >> 0xe & 1) != 0 ||
-                    ((*(byte *)(puVar30 + 0xe) & 1) == 0)))) {
+                    ((*(byte *)(pmap + 0xe) & 1) == 0)))) {
                     if (((uint8_t)fault_opts[0x14] >> 3 & 1) == 0) {
 d4e8:                               /* b89d4e8 */
                         /* WARNING: Subroutine does not return */
                         kernel_panic_msg_fmt("%s: pmap %p vaddr 0x%llx prot 0x%x options 0x%x @%s:%d");
                     }
                 } else {
-                    local_94 = local_94 & 0xfffffffd;
+                    prot = prot & 0xfffffffd;
                 }
             }
-            if (((iVar1 == 1) && ((*(byte *)(lVar34 + 0x2b) >> 4 & 1) == 0)) &&
+            if (((fault_mode == 1) && ((*(byte *)(page_obj + 0x2b) >> 4 & 1) == 0)) &&
                (hv_fault_lowbit_flag != 0)) {
-                kernel_vm_fault_callee_f0ac8(&hv_fault_paging_lock, uVar15);
-                if ((*(byte *)(lVar34 + 0x2b) >> 4 & 1) == 0) {
-                    *(byte *)(lVar34 + 0x2b) = *(byte *)(lVar34 + 0x2b) | 0x10;
-                    lVar37 = (ulong)hv_fault_stat_158 + 1;
-                    hv_fault_stat_158 = (uint)lVar37;
-                    if (lVar37 != lVar37 * 0x80000000 >> 0x1f) {
+                kernel_vm_fault_callee_f0ac8(&hv_fault_paging_lock, ctx_val);
+                if ((*(byte *)(page_obj + 0x2b) >> 4 & 1) == 0) {
+                    *(byte *)(page_obj + 0x2b) = *(byte *)(page_obj + 0x2b) | 0x10;
+                    page2 = (ulong)hv_fault_stat_158 + 1;
+                    hv_fault_stat_158 = (uint)page2;
+                    if (page2 != page2 * 0x80000000 >> 0x1f) {
                         /* WARNING: Does not return */
-                        pcVar10 = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5ec);
-                        ((void (*)(void))pcVar10)();
+                        brk_code = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5ec);
+                        ((void (*)(void))brk_code)();
                     }
                 }
                 kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
             }
-            uVar18 = local_94;
-            local_b9 = 0;
-            pbVar47 = &local_161;
-            puVar20 = puVar30;
-            uVar43 = uVar25;
+            enter_flags = prot;
+            retry_flag = 0;
+            out_flag_ptr = &dcache_flag;
+            obj = pmap;
+            status = fault_va;
             if (vnode_mp != 0) {
-                puVar20 = (uint64_t *)(uintptr_t)vnode_mp;
-                uVar43 = mp_size;
+                obj = (uint64_t *)(uintptr_t)vnode_mp;
+                status = mp_size;
             }
-            uVar15 = hv_concat62((uint64_t)puVar46 >> 0x10, (uint16_t)(int16_t)fault_flags);
-            uVar43 = kernel_vm_fault_callee_de34(
-                lVar34, puVar20, uVar43, lVar14, uVar38, local_94, (uint)fault_type, local_7c,
-                uVar15, fault_opts, &local_b9, &local_b0, in_stack_fffffffffffffd10, pbVar47);
-            uVar19 = 0xb;
-            if (!(bool)(bVar23 & local_b0 == 3)) {
-                uVar19 = local_b0;
+            ctx_val = hv_concat62((uint64_t)opts_ptr >> 0x10, (uint16_t)(int16_t)fault_flags);
+            status = kernel_vm_fault_callee_de34(
+                page_obj, obj, status, page_mask, packed_opts, prot, (uint)fault_type_arg, want_mod,
+                ctx_val, fault_opts, &retry_flag, &fault_result, stack_arg0, out_flag_ptr);
+            obj_flags = 0xb;
+            if (!(bool)(pmap_ok & fault_result == 3)) {
+                obj_flags = fault_result;
             }
-            in_stack_fffffffffffffd28 = hv_concat44(uVar49, uVar33);
-            in_stack_fffffffffffffd18 = hv_concat44((uint32_t)((uint64_t)pbVar47 >> 0x20),
-                                                    local_274);
-            uVar38 = hv_concat44((uint32_t)hv_concat31((uint64_t)uVar15 >> 0x28,
-                                                        local_b9 | local_161), uVar19) &
+            stack_arg2 = hv_concat44(sarg_hi2, enter_flags2);
+            stack_arg1 = hv_concat44((uint32_t)((uint64_t)out_flag_ptr >> 0x20),
+                                                    mod_flag);
+            packed_opts = hv_concat44((uint32_t)hv_concat31((uint64_t)ctx_val >> 0x28,
+                                                        retry_flag | dcache_flag), obj_flags) &
                      0xffffff01ffffffff;
             kernel_vm_fault_callee_e03c(
-                local_88, puVar41, lVar34, local_90, uVar26, fault_opts, (uint)fault_type, addr,
-                uVar38, uVar43 & 0xffffffff, result_out, uVar18, puVar31,
-                in_stack_fffffffffffffd18, uVar42, in_stack_fffffffffffffd28, &local_c8, &local_d0,
-                &local_d8, &local_160, fault_arg);
-            if ((local_b9 & 1) != 0) {
-                kernel_vm_fault_callee_fbf0(puVar30, uVar25, 0, 0, 0, 0, 0, 2,
-                                            uVar38 & 0xffffffffffffff00);
-                local_b9 = 0;
-                in_stack_fffffffffffffd10 = (uint64_t)puVar31;
+                cur_obj, obj3, page_obj, fault_off_full, orig_va, fault_opts, (uint)fault_type_arg, addr,
+                packed_opts, status & 0xffffffff, result_out, enter_flags, obj2,
+                stack_arg1, fault_off, stack_arg2, &defer_obj2, &paging_obj2,
+                &paging_end, &paging_state, fault_arg);
+            if ((retry_flag & 1) != 0) {
+                kernel_vm_fault_callee_fbf0(pmap, fault_va, 0, 0, 0, 0, 0, 2,
+                                            packed_opts & 0xffffffffffffff00);
+                retry_flag = 0;
+                stack_arg0 = (uint64_t)obj2;
                 goto retry;
             }
-            in_stack_fffffffffffffd10 = (uint64_t)puVar31;
-            if ((local_161 & 1) == 0) goto fault_done;
+            stack_arg0 = (uint64_t)obj2;
+            if ((dcache_flag & 1) == 0) goto fault_done;
             goto retry;
         }
-        kernel_vm_fault_callee_f17cc((uint64_t)lVar34, 0);
-        if (iVar13 == 9) {
-            if (puVar41 != puVar20) {
-                kernel_vm_fault_callee_7050(puVar20 + 1);
-                puVar41 = local_88;
+        kernel_vm_fault_callee_f17cc((uint64_t)page_obj, 0);
+        if (rc == 9) {
+            if (obj3 != obj) {
+                kernel_vm_fault_callee_7050(obj + 1);
+                obj3 = cur_obj;
             }
-            kernel_vm_fault_callee_7050(puVar41 + 1);
+            kernel_vm_fault_callee_7050(obj3 + 1);
             if (fault_arg == 0) {
-                *(uint64_t *)(lVar5 + 0x238) = 0;
+                *(uint64_t *)(cur + 0x238) = 0;
                 HV_FMT_PAGING_CONCAT();
-                if ((uStack_138 >> 2 & 1) == 0) {
-                    kernel_vm_fault_callee_1ab24(&local_160);
-                } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                if ((state_flags >> 2 & 1) == 0) {
+                    kernel_vm_fault_callee_1ab24(&paging_state);
+                } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                     kernel_vm_fault_callee_164f8();
                 }
                 HV_FMT_ZERO_STATE();
             }
-            uVar43 = 9;
+            status = 9;
             goto fault_done;
         }
     }
 a708:                               /* b89a708 */
-    if (local_88 != puVar31) {
-        kernel_vm_fault_callee_7050(puVar31 + 1);
+    if (cur_obj != obj2) {
+        kernel_vm_fault_callee_7050(obj2 + 1);
     }
-    puVar20 = local_88;
-    if ((local_1a8 == 1) && (iVar13 = kernel_vm_fault_callee_f5f18(local_88 + 1), iVar13 == 0)) {
-        kernel_vm_fault_callee_e7d4((uint64_t)puVar20);
+    obj = cur_obj;
+    if ((obj_retain == 1) && (rc = kernel_vm_fault_callee_f5f18(cur_obj + 1), rc == 0)) {
+        kernel_vm_fault_callee_e7d4((uint64_t)obj);
     }
-    local_1a8 = 2;
+    obj_retain = 2;
 joined_a74c:                        /* joined_r0xfffffe000b89a74c */
     if (fault_arg == 0) {
-        *(uint64_t *)(lVar5 + 0x238) = 0;
+        *(uint64_t *)(cur + 0x238) = 0;
         HV_FMT_PAGING_CONCAT();
-        if ((uStack_138 >> 2 & 1) == 0) {
-            kernel_vm_fault_callee_1ab24(&local_160);
-        } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+        if ((state_flags >> 2 & 1) == 0) {
+            kernel_vm_fault_callee_1ab24(&paging_state);
+        } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
             kernel_vm_fault_callee_164f8();
         }
         HV_FMT_ZERO_STATE();
     }
-    local_e8 = 0;
-    if (local_88 == &hv_fault_special_400) {
-        puVar20 = &hv_fault_special_400;
+    copy_info = 0;
+    if (cur_obj == &hv_fault_special_400) {
+        obj = &hv_fault_special_400;
 cf88:                               /* b89cf88 */
-        kernel_vm_fault_callee_7050(puVar20 + 1);
-        uVar43 = 10;
+        kernel_vm_fault_callee_7050(obj + 1);
+        status = 10;
         goto fault_done;
     }
-    puVar20 = local_88;
-    if ((local_88 == &hv_fault_special_300) || (local_88 == &hv_fault_special_800)) goto cf88;
-    if (bVar6) {
-        if (local_88 != puVar29) {
-            kernel_vm_fault_callee_c2f4(puVar29);
-            puVar29 = 0;
+    obj = cur_obj;
+    if ((cur_obj == &hv_fault_special_300) || (cur_obj == &hv_fault_special_800)) goto cf88;
+    if (defer_mode) {
+        if (cur_obj != defer_obj) {
+            kernel_vm_fault_callee_c2f4(defer_obj);
+            defer_obj = 0;
             hv_fault_stat_2c0 = hv_fault_stat_2c0 + 1;
-            local_1d8 = 0xffffffffffffffff;
+            prior_off = 0xffffffffffffffff;
             goto a87c;
         }
-        puVar29 = 0;
+        defer_obj = 0;
         hv_fault_stat_2c0 = hv_fault_stat_2c0 + 1;
-        local_1d8 = 0xffffffffffffffff;
+        prior_off = 0xffffffffffffffff;
     } else {
 a87c:                               /* b89a87c */
-        if (*(int *)(local_88 + 5) + 0xf0000001U < 0xf0000002) {
+        if (*(int *)(cur_obj + 5) + 0xf0000001U < 0xf0000002) {
             /* WARNING: Subroutine does not return */
-            kernel_vm_fault_panic_cow((uint64_t)(local_88 + 5));
+            kernel_vm_fault_panic_cow((uint64_t)(cur_obj + 5));
         }
-        *(int *)(local_88 + 5) = *(int *)(local_88 + 5) + 1;
+        *(int *)(cur_obj + 5) = *(int *)(cur_obj + 5) + 1;
     }
-    puVar20 = local_88;
-    uVar42 = local_90;
-    uVar18 = *(ushort *)((uint8_t *)local_88 + 0x74) + 1;
-    *(short *)((uint8_t *)local_88 + 0x74) = (short)uVar18;
-    if (uVar18 >> 0x10 != 0) {
+    obj = cur_obj;
+    fault_off = fault_off_full;
+    enter_flags = *(ushort *)((uint8_t *)cur_obj + 0x74) + 1;
+    *(short *)((uint8_t *)cur_obj + 0x74) = (short)enter_flags;
+    if (enter_flags >> 0x10 != 0) {
         /* WARNING: Subroutine does not return */
         kernel_panic_msg_fmt("vm_object_paging_begin(%p): overflow\n @%s:%d");
     }
-    *(uint *)(lVar5 + 0x4a8) = 0;
-    local_ac = 0;
-    local_a0 = 0;
-    uVar43 = local_90;
-    in_stack_fffffffffffffd10 = (uint64_t)fault_arg;
-    iVar13 = kernel_vm_fault_callee_fd14(
-        local_88, local_90, uVar33, (uint)(local_7c == 0) & *(uint *)((uint8_t *)fault_opts + 0x14) >> 0xb,
-        0, &local_94, &local_a0, &local_a8, &local_b0, &local_ac,
-        hv_concat44(uVar12, *(uint *)(local_78[0] + 0xb0) >> 1) & 0xffffffff00000001,
+    *(uint *)(cur + 0x4a8) = 0;
+    res_word = 0;
+    pg_block = 0;
+    status = fault_off_full;
+    stack_arg0 = (uint64_t)fault_arg;
+    rc = kernel_vm_fault_callee_fd14(
+        cur_obj, fault_off_full, enter_flags2, (uint)(want_mod == 0) & *(uint *)((uint8_t *)fault_opts + 0x14) >> 0xb,
+        0, &prot, &pg_block, &pg_out, &fault_result, &res_word,
+        hv_concat44(hi_word, *(uint *)(vm_slot[0] + 0xb0) >> 1) & 0xffffffff00000001,
         fault_opts, fault_arg);
-    if ((iVar13 != 0) && (iVar13 != 6)) {
-        if (iVar13 == 5) {
+    if ((rc != 0) && (rc != 6)) {
+        if (rc == 5) {
             if (-1 < (char)fault_opts[0x14]) {
-                kernel_vm_fault_callee_c2f4(puVar20);
-                local_88 = 0;
-                uVar27 = 10;
-                if (local_ac != 0) {
-                    uVar27 = local_ac;
+                kernel_vm_fault_callee_c2f4(obj);
+                cur_obj = 0;
+                fault_type_cur = 10;
+                if (res_word != 0) {
+                    fault_type_cur = res_word;
                 }
-                uVar43 = (ulong)uVar27;
+                status = (ulong)fault_type_cur;
                 goto fault_done;
             }
             hv_fault_stat_298 = hv_fault_stat_298 + 1;
-            bVar6 = true;
-            puVar29 = puVar20;
-            local_1d8 = uVar43;
+            defer_mode = true;
+            defer_obj = obj;
+            prior_off = status;
             goto retry;
         }
-        kernel_vm_fault_callee_c2f4(puVar20);
-        puVar20 = 0;
-        local_88 = 0;
-        if (iVar13 < 3) {
-            bVar6 = false;
-            if (iVar13 == 1) goto retry;
-            if (iVar13 == 2) {
-                if (lVar5 == 0) {
-                    uVar15 = 0;
+        kernel_vm_fault_callee_c2f4(obj);
+        obj = 0;
+        cur_obj = 0;
+        if (rc < 3) {
+            defer_mode = false;
+            if (rc == 1) goto retry;
+            if (rc == 2) {
+                if (cur == 0) {
+                    ctx_val = 0;
                 } else {
-                    uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                    ctx_val = *(uint64_t *)(cur + 0x510);
                 }
 cd24:                               /* b89cd24 */
-                kernel_vm_fault_callee_2db44(uVar15, 0x1000024, 0);
-                uVar43 = 0xe;
+                kernel_vm_fault_callee_2db44(ctx_val, 0x1000024, 0);
+                status = 0xe;
                 goto fault_done;
             }
         } else {
-            if (iVar13 == 3) {
-                iVar13 = kernel_vm_fault_callee_f671c((*(uint *)((uint8_t *)fault_opts + 0x14) >> 10 ^ 0xffffffff) & 2);
-                bVar6 = false;
-                if (iVar13 != 0) goto retry;
-                if (lVar5 == 0) {
-                    uVar15 = 0;
+            if (rc == 3) {
+                rc = kernel_vm_fault_callee_f671c((*(uint *)((uint8_t *)fault_opts + 0x14) >> 10 ^ 0xffffffff) & 2);
+                defer_mode = false;
+                if (rc != 0) goto retry;
+                if (cur == 0) {
+                    ctx_val = 0;
                 } else {
-                    uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                    ctx_val = *(uint64_t *)(cur + 0x510);
                 }
-                kernel_vm_fault_callee_2db44(uVar15, 0x1000014, 0);
+                kernel_vm_fault_callee_2db44(ctx_val, 0x1000014, 0);
                 goto cd24;
             }
-            if (iVar13 == 7) {
-                uVar43 = 0x1e;
+            if (rc == 7) {
+                status = 0x1e;
                 goto fault_done;
             }
         }
     }
-    lVar34 = local_a0;
-    if (local_a0 == 0) {
-        lVar37 = 0;
-        lVar36 = 0;
-        local_208 = 0;
+    page_obj = pg_block;
+    if (pg_block == 0) {
+        page2 = 0;
+        alloc_page = 0;
+        paging_obj = 0;
     } else {
-        puVar20 = (uint64_t *)((ulong)*(uint *)(local_a0 + 0x1c) << 6 | 0xfffffe0000000000);
-        lVar37 = (long)puVar20[7];
-        lVar36 = (long)puVar20[8];
-        *(short *)(lVar5 + 0x21e) = *(short *)(lVar5 + 0x21e) + 1;
-        local_208 = puVar20;
-        local_f0 = lVar5;
+        obj = (uint64_t *)((ulong)*(uint *)(pg_block + 0x1c) << 6 | 0xfffffe0000000000);
+        page2 = (long)obj[7];
+        alloc_page = (long)obj[8];
+        *(short *)(cur + 0x21e) = *(short *)(cur + 0x21e) + 1;
+        paging_obj = obj;
+        paging_ctx = cur;
     }
-    kernel_vm_fault_callee_7050(puVar20 + 1);
-    local_178 = 0;
-    local_170 = 0;
-    local_17c = 0;
-    uStack_158 = 0;
-    local_160 = 0;
-    lStack_148 = 0;
-    local_150 = 0;
-    uStack_138 = 0;
-    uStack_134 = 0;
-    local_140 = 0;
-    uStack_128 = 0;
-    uStack_124 = 0;
-    uStack_130 = 0;
-    uStack_118 = 0;
-    uStack_114 = 0;
-    uStack_120 = 0;
-    uStack_11c = 0;
-    uStack_108 = 0;
-    uStack_104 = 0;
-    uStack_110 = 0;
-    uStack_10c = 0;
-    local_f8 = 0;
-    uStack_f4 = 0;
-    local_100 = 0;
-    uStack_fc = 0;
-    in_stack_fffffffffffffd10 = hv_concat71(in_stack_fffffffffffffd10 >> 8, 1);
-    puVar46 = fault_opts;
-    local_78[0] = p1;
-    uVar43 = vm_fault_enter_full(local_78, uVar25, uVar33, &local_170, &local_e8, &local_178,
-                                 &local_17c, &local_7c, fault_opts, &local_b8, &local_160,
-                                 fault_arg, in_stack_fffffffffffffd10);
-    puVar30 = local_88;
-    puVar20 = local_170;
-    puVar41 = (uint64_t *)(local_b8 + 0x58);
-    puVar31 = (uint64_t *)*puVar41;   /* slot holds a pointer value */
-    iVar13 = (int)uVar43;
-    if (iVar13 != 0) {
-        if (lVar34 == 0) {
-            kernel_vm_fault_callee_e7d4((uint64_t)local_88);
-            kernel_vm_fault_callee_a1f14(puVar30, local_a8);
+    kernel_vm_fault_callee_7050(obj + 1);
+    off2 = 0;
+    obj2_out = 0;
+    prot2 = 0;
+    state_w4 = 0;
+    paging_state = 0;
+    state_w2 = 0;
+    state_w3 = 0;
+    state_flags = 0;
+    state_ctrl = 0;
+    state_w5 = 0;
+    state_w8 = 0;
+    state_w7 = 0;
+    state_hi = 0;
+    state_w10 = 0;
+    state_w11 = 0;
+    state_w6 = 0;
+    state_w9 = 0;
+    state_w14 = 0;
+    state_w15 = 0;
+    state_w12 = 0;
+    state_w13 = 0;
+    state_lo3 = 0;
+    state_lo2 = 0;
+    state_lo1 = 0;
+    state_lo0 = 0;
+    stack_arg0 = hv_concat71(stack_arg0 >> 8, 1);
+    opts_ptr = fault_opts;
+    vm_slot[0] = vm_base;
+    status = vm_fault_enter_full(vm_slot, fault_va, enter_flags2, &obj2_out, &copy_info, &off2,
+                                 &prot2, &want_mod, fault_opts, &map_ctx, &paging_state,
+                                 fault_arg, stack_arg0);
+    pmap = cur_obj;
+    obj = obj2_out;
+    obj3 = (uint64_t *)(map_ctx + 0x58);
+    obj2 = (uint64_t *)*obj3;   /* slot holds a pointer value */
+    rc = (int)status;
+    if (rc != 0) {
+        if (page_obj == 0) {
+            kernel_vm_fault_callee_e7d4((uint64_t)cur_obj);
+            kernel_vm_fault_callee_a1f14(pmap, pg_out);
             goto abe4;
         }
-        kernel_vm_fault_callee_e7d4((uint64_t)local_208);
-        uVar15 = kernel_vm_fault_callee_3f58c(&local_f0);
-        kernel_vm_fault_callee_d31ac(uVar15, (uint64_t)lVar34);
-        iVar8 = (int)hv_fault_paging_owner;
-        if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
-            *(int *)(lVar5 + 0x1c0) = *(int *)(lVar5 + 0x1c0) + 1;
-            uVar38 = hv_fault_paging_token;
+        kernel_vm_fault_callee_e7d4((uint64_t)paging_obj);
+        ctx_val = kernel_vm_fault_callee_3f58c(&paging_ctx);
+        kernel_vm_fault_callee_d31ac(ctx_val, (uint64_t)page_obj);
+        owner_flag = (int)hv_fault_paging_owner;
+        if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
+            *(int *)(cur + 0x1c0) = *(int *)(cur + 0x1c0) + 1;
+            packed_opts = hv_fault_paging_token;
             if (hv_fault_paging_token == 0) {
-                hv_fault_paging_token = (ulong)*(uint *)(lVar5 + 0x518) | 0x30000000;
+                hv_fault_paging_token = (ulong)*(uint *)(cur + 0x518) | 0x30000000;
             }
-            if (uVar38 != 0 || iVar8 != 0) {
-                kernel_vm_fault_callee_f0afc(&hv_fault_paging_lock, lVar5, uVar38, 1);
+            if (packed_opts != 0 || owner_flag != 0) {
+                kernel_vm_fault_callee_f0afc(&hv_fault_paging_lock, cur, packed_opts, 1);
             }
-            if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
-                kernel_vm_fault_callee_f52fc((uint64_t)lVar34);
+            if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
+                kernel_vm_fault_callee_f52fc((uint64_t)page_obj);
             }
-            if (hv_fault_paging_token == *(int *)(lVar5 + 0x518)) {
+            if (hv_fault_paging_token == *(int *)(cur + 0x518)) {
                 hv_fault_paging_token =
                     hv_concat44((uint32_t)(hv_fault_paging_token >> 32), 0);
                 if (hv_fault_paging_owner == 0) goto ab80;
             }
-            kernel_vm_fault_callee_f1e80(&hv_fault_paging_lock, (uint64_t)lVar5);
+            kernel_vm_fault_callee_f1e80(&hv_fault_paging_lock, (uint64_t)cur);
         }
 ab80:                               /* b89ab80 */
-        kernel_vm_fault_callee_a1f14(local_208, local_a8);
-        puVar30 = local_88;
+        kernel_vm_fault_callee_a1f14(paging_obj, pg_out);
+        pmap = cur_obj;
 abe4:                               /* b89abe4 */
-        kernel_vm_fault_callee_c2f4(puVar30);
-        if (iVar13 != 0x20008007) {
-            if (iVar13 == 1) {
-                if (lVar5 == 0) {
-                    uVar15 = 0;
+        kernel_vm_fault_callee_c2f4(pmap);
+        if (rc != 0x20008007) {
+            if (rc == 1) {
+                if (cur == 0) {
+                    ctx_val = 0;
                 } else {
-                    uVar15 = *(uint64_t *)(lVar5 + 0x510);
+                    ctx_val = *(uint64_t *)(cur + 0x510);
                 }
-                kernel_vm_fault_callee_2db44(uVar15, 0x100000c, 0);
-                uVar43 = 1;
+                kernel_vm_fault_callee_2db44(ctx_val, 0x100000c, 0);
+                status = 1;
             }
             goto fault_done;
         }
-        bVar6 = false;
-        if ((*(byte *)(local_78[0] + 0xb3) & 1) != 0) {
-            bVar6 = false;
+        defer_mode = false;
+        if ((*(byte *)(vm_slot[0] + 0xb3) & 1) != 0) {
+            defer_mode = false;
             *hv_pcpu_slot(hv_pcpu_restart, cpu_idx) =
                  *hv_pcpu_slot(hv_pcpu_restart, cpu_idx) + 1;
             if ((hv_trace_flag & 0xfffffff7) != 0) {
-                kernel_trace(0x1b12004, local_78[0], uVar25, uVar25, 0);
-                bVar6 = false;
+                kernel_trace(0x1b12004, vm_slot[0], fault_va, fault_va, 0);
+                defer_mode = false;
             }
         }
         goto retry;
     }
-    if ((local_170 != local_88) || (local_178 != uVar42)) {
-        if (lVar34 == 0) {
-            kernel_vm_fault_callee_e7d4((uint64_t)local_88);
-            local_208 = puVar30;
+    if ((obj2_out != cur_obj) || (off2 != fault_off)) {
+        if (page_obj == 0) {
+            kernel_vm_fault_callee_e7d4((uint64_t)cur_obj);
+            paging_obj = pmap;
         } else {
-            kernel_vm_fault_callee_e7d4((uint64_t)local_208);
-            uVar15 = kernel_vm_fault_callee_3f58c(&local_f0);
-            kernel_vm_fault_callee_d31ac(uVar15, (uint64_t)lVar34);
-            if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
+            kernel_vm_fault_callee_e7d4((uint64_t)paging_obj);
+            ctx_val = kernel_vm_fault_callee_3f58c(&paging_ctx);
+            kernel_vm_fault_callee_d31ac(ctx_val, (uint64_t)page_obj);
+            if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
                 kernel_vm_fault_callee_f19b4(&hv_fault_paging_lock);
-                if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
-                    kernel_vm_fault_callee_f52fc((uint64_t)lVar34);
+                if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
+                    kernel_vm_fault_callee_f52fc((uint64_t)page_obj);
                 }
                 kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
             }
         }
-        kernel_vm_fault_callee_a1f14(local_208, local_a8);
-        kernel_vm_fault_callee_c2f4(puVar30);
-        bVar6 = false;
+        kernel_vm_fault_callee_a1f14(paging_obj, pg_out);
+        kernel_vm_fault_callee_c2f4(pmap);
+        defer_mode = false;
         if (fault_arg != 0) goto retry;
-        *(uint64_t *)(lVar5 + 0x238) = 0;
+        *(uint64_t *)(cur + 0x238) = 0;
         HV_FMT_PAGING_CONCAT();
         goto joined_b110;
     }
-    if (puVar31 == 0) {
-        bVar23 = 1;
+    if (obj2 == 0) {
+        pmap_ok = 1;
     } else {
-        bVar23 = *(byte *)(puVar31[4] + 0x4c) ^ 1;
+        pmap_ok = *(byte *)(obj2[4] + 0x4c) ^ 1;
     }
-    if (((((local_17c ^ 0xffffffff) & 7) == 0) && ((bVar23 & 1) != 0)) &&
-       ((~*(byte *)(puVar31 + 0xe) & 1) != 0 || (*(uint *)((uint8_t *)fault_opts + 0x16) & 0x4000) != 0)) {
-        local_94 = 0xffffffff;
+    if (((((prot2 ^ 0xffffffff) & 7) == 0) && ((pmap_ok & 1) != 0)) &&
+       ((~*(byte *)(obj2 + 0xe) & 1) != 0 || (*(uint *)((uint8_t *)fault_opts + 0x16) & 0x4000) != 0)) {
+        prot = 0xffffffff;
     }
-    uVar18 = local_94 & local_17c;
-    local_94 = uVar18;
-    if (lVar34 == 0) {
+    enter_flags = prot & prot2;
+    prot = enter_flags;
+    if (page_obj == 0) {
         kernel_vm_fault_callee_e7d4(0);   /* (0/1-arg) */
     } else {
-        kernel_vm_fault_callee_e7d4((uint64_t)local_208);
-        kernel_vm_fault_callee_3f58c(&local_f0);
-        if (((uVar18 >> 1 & 1) != 0) && ((local_208[7] != (uint64_t)lVar37 || (local_208[8] != (uint64_t)lVar36)))) {
-            if (puVar31 == 0) {
-                bVar23 = 1;
+        kernel_vm_fault_callee_e7d4((uint64_t)paging_obj);
+        kernel_vm_fault_callee_3f58c(&paging_ctx);
+        if (((enter_flags >> 1 & 1) != 0) && ((paging_obj[7] != (uint64_t)page2 || (paging_obj[8] != (uint64_t)alloc_page)))) {
+            if (obj2 == 0) {
+                pmap_ok = 1;
             } else {
-                bVar23 = *(byte *)(puVar31[4] + 0x4c) ^ 1;
+                pmap_ok = *(byte *)(obj2[4] + 0x4c) ^ 1;
             }
-            if (((((uVar18 ^ 0xffffffff) & 7) == 0) && ((bVar23 & 1) != 0)) &&
+            if (((((enter_flags ^ 0xffffffff) & 7) == 0) && ((pmap_ok & 1) != 0)) &&
                (((*(uint *)((uint8_t *)fault_opts + 0x16) >> 0xe & 1) != 0 ||
-                ((*(byte *)(puVar31 + 0xe) & 1) == 0)))) {
+                ((*(byte *)(obj2 + 0xe) & 1) == 0)))) {
                 /* WARNING: Subroutine does not return */
                 kernel_panic_msg_fmt(
                     "%s: pmap %p vaddr 0x%llx prot 0x%x options 0x%x m%p obj %p copyobj %p @%s:%d");
             }
-            local_94 = uVar18 & 0xfffffffd;
-            uVar18 = local_94;
+            prot = enter_flags & 0xfffffffd;
+            enter_flags = prot;
         }
     }
-    if (((local_1e4 == 0) && (lVar34 != 0)) && ((*(uint *)((uint8_t *)fault_opts + 0x14) >> 8 & 1) == 0)) {
-        if (*(uint *)(lVar34 + 0x1c) == 0) {
-            puVar21 = 0;
+    if (((write_fault == 0) && (page_obj != 0)) && ((*(uint *)((uint8_t *)fault_opts + 0x14) >> 8 & 1) == 0)) {
+        if (*(uint *)(page_obj + 0x1c) == 0) {
+            pmap_ref = 0;
         } else {
-            puVar21 = (uint64_t *)((ulong)*(uint *)(lVar34 + 0x1c) << 6 | 0xfffffe0000000000);
+            pmap_ref = (uint64_t *)((ulong)*(uint *)(page_obj + 0x1c) << 6 | 0xfffffe0000000000);
         }
-        if (((puVar20 == puVar21) || ((*(byte *)((uint8_t *)puVar21 + 0x7d) >> 2 & 1) != 0)) ||
-           ((hv_fault_lowbit_flag2 == 0 || ((*(byte *)(puVar21 + 0x16) & 1) != 0))))
+        if (((obj == pmap_ref) || ((*(byte *)((uint8_t *)pmap_ref + 0x7d) >> 2 & 1) != 0)) ||
+           ((hv_fault_lowbit_flag2 == 0 || ((*(byte *)(pmap_ref + 0x16) & 1) != 0))))
             goto ae9c;
-        lVar37 = (long)kernel_vm_fault_callee_6659c();
-        if (*(long *)(lVar37 + 0x18) == 0) {
-            puVar20 = (uint64_t *)kernel_vm_fault_callee_42a30(0);
-            iVar13 = (int)(uintptr_t)puVar20;
+        page2 = (long)kernel_vm_fault_callee_6659c();
+        if (*(long *)(page2 + 0x18) == 0) {
+            obj = (uint64_t *)kernel_vm_fault_callee_42a30(0);
+            rc = (int)(uintptr_t)obj;
         } else {
-            puVar20 = (uint64_t *)kernel_vm_fault_callee_42a30(0);   /* (0/1-arg) */
-            iVar13 = (int)(uintptr_t)puVar20;
+            obj = (uint64_t *)kernel_vm_fault_callee_42a30(0);   /* (0/1-arg) */
+            rc = (int)(uintptr_t)obj;
         }
-        if (iVar13 == 0) goto ae9c;
+        if (rc == 0) goto ae9c;
         hv_fault_stat_250 = hv_fault_stat_250 + 1;
-        bVar23 = 1;
-        local_1e4 = 1;
+        pmap_ok = 1;
+        write_fault = 1;
 aec8:                               /* b89aec8 */
-        kernel_vm_fault_callee_d31ac((uint64_t)puVar20, (uint64_t)lVar34);
-        puVar20 = local_208;
-        if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
+        kernel_vm_fault_callee_d31ac((uint64_t)obj, (uint64_t)page_obj);
+        obj = paging_obj;
+        if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
             kernel_vm_fault_callee_f19b4(&hv_fault_paging_lock);
-            if ((1L << (*(byte *)(lVar34 + 0x2a) & 0xf) & 0x3d40U) == 0) {
-                kernel_vm_fault_callee_f52fc((uint64_t)lVar34);
+            if ((1L << (*(byte *)(page_obj + 0x2a) & 0xf) & 0x3d40U) == 0) {
+                kernel_vm_fault_callee_f52fc((uint64_t)page_obj);
             }
             kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
         }
     } else {
 ae9c:                               /* b89ae9c */
-        if ((local_7c == 0) || (uVar33 == (uVar18 | 2))) {
-            if (lVar34 == 0) {
-                uVar26 = *(ulong *)(local_e8 + 0x10);
-                lVar11 = uVar25 - hv_concat44(uStack_fc, local_100);
-                uVar43 = lVar11 - uVar26;
-                lVar14 = (uVar43 < 0xfffffffffffff001) * uVar43 +
-                         (ulong)(uVar43 >= 0xfffffffffffff001) * -0x1000;
-                uVar28 = *(long *)(local_e8 + 0x18) - lVar11;
-                if ((*(uint *)((uint8_t *)puVar30 + 0x7c) & 0x2000080) == 0x2000000) {
-                    if ((*(ulong *)(local_e8 + 0x30) < 0x1000) &&
-                       (lVar34 = *(long *)(local_e8 + 0x18) - uVar26, lVar34 == (long)puVar30[3])) {
-                        uVar27 = 0;
-                        if (((lVar34 - 1U & uVar26) == 0) && (uVar27 = 0x100, result_out != 0)) {
-                            *result_out = (uint)((puVar30[0xb] + uVar43 >> 0xe));
-                            uVar26 = *(ulong *)(local_e8 + 0x10);
-                            uVar27 = 0x100;
+        if ((want_mod == 0) || (enter_flags2 == (enter_flags | 2))) {
+            if (page_obj == 0) {
+                orig_va = *(ulong *)(copy_info + 0x10);
+                pcpu = fault_va - hv_concat44(state_lo0, state_lo1);
+                status = pcpu - orig_va;
+                page_mask = (status < 0xfffffffffffff001) * status +
+                         (ulong)(status >= 0xfffffffffffff001) * -0x1000;
+                mm_addr = *(long *)(copy_info + 0x18) - pcpu;
+                if ((*(uint *)((uint8_t *)pmap + 0x7c) & 0x2000080) == 0x2000000) {
+                    if ((*(ulong *)(copy_info + 0x30) < 0x1000) &&
+                       (page_obj = *(long *)(copy_info + 0x18) - orig_va, page_obj == (long)pmap[3])) {
+                        fault_type_cur = 0;
+                        if (((page_obj - 1U & orig_va) == 0) && (fault_type_cur = 0x100, result_out != 0)) {
+                            *result_out = (uint)((pmap[0xb] + status >> 0xe));
+                            orig_va = *(ulong *)(copy_info + 0x10);
+                            fault_type_cur = 0x100;
                         }
                     } else {
-                        uVar27 = 0;
+                        fault_type_cur = 0;
                     }
                 } else {
-                    uVar27 = 0;
+                    fault_type_cur = 0;
                 }
                 if ((vnode_mp == 0) &&
-                   (vnode_mp = (void **)(uintptr_t)*puVar41, mp_size = uVar25, vnode_mp == 0)) {
+                   (vnode_mp = (void **)(uintptr_t)*obj3, mp_size = fault_va, vnode_mp == 0)) {
                     vnode_mp = 0;
                 }
                 kernel_vm_fault_callee_c554(
-                    (void *)(uintptr_t)vnode_mp, mp_size - (uint64_t)lVar14,
-                    ((lVar11 - lVar14) + (long)puVar30[0xb] +
-                     (*(ulong *)(local_e8 + 0x30) & 0xfffffffffffff000)) - uVar26,
-                    (uVar28 < 0xfffffffffffff001) * uVar28 +
-                    (ulong)(uVar28 >= 0xfffffffffffff001) * -0x1000 + lVar14 >> (uVar40 & 0x3f),
-                    uVar18, uVar27 | *(byte *)((uint8_t *)puVar30 + 0xae), 0);
-                kernel_vm_fault_callee_a1f14(puVar30, local_a8);
+                    (void *)(uintptr_t)vnode_mp, mp_size - (uint64_t)page_mask,
+                    ((pcpu - page_mask) + (long)pmap[0xb] +
+                     (*(ulong *)(copy_info + 0x30) & 0xfffffffffffff000)) - orig_va,
+                    (mm_addr < 0xfffffffffffff001) * mm_addr +
+                    (ulong)(mm_addr >= 0xfffffffffffff001) * -0x1000 + page_mask >> (page_shift & 0x3f),
+                    enter_flags, fault_type_cur | *(byte *)((uint8_t *)pmap + 0xae), 0);
+                kernel_vm_fault_callee_a1f14(pmap, pg_out);
             } else {
-                local_b9 = 0;
-                in_stack_fffffffffffffd18 = (uint64_t)&local_161;   /* 64-bit stack slot carries a pointer here */
-                puVar20 = puVar31;
-                uVar43 = uVar25;
+                retry_flag = 0;
+                stack_arg1 = (uint64_t)&dcache_flag;   /* 64-bit stack slot carries a pointer here */
+                obj = obj2;
+                status = fault_va;
                 if (vnode_mp != 0) {
-                    puVar20 = (uint64_t *)(uintptr_t)vnode_mp;
-                    uVar43 = mp_size;
+                    obj = (uint64_t *)(uintptr_t)vnode_mp;
+                    status = mp_size;
                 }
-                uVar42 = hv_concat62((uint64_t)puVar46 >> 0x10, (uint16_t)(int16_t)fault_flags);
-                uVar43 = kernel_vm_fault_callee_de34(
-                    lVar34, puVar20, uVar43, lVar14, uVar38, uVar18, (uint)fault_type, local_7c,
-                    uVar42, fault_opts, &local_b9, &local_b0, in_stack_fffffffffffffd10,
-                    (uint8_t *)in_stack_fffffffffffffd18);
-                uVar19 = local_b0;
-                lVar37 = (long)(int)local_b0;
-                uVar12 = 0x1320008;
-                if ((*(byte *)((uint8_t *)local_208 + 0x7d) >> 4 & 1) == 0) {
-                    uVar12 = 0x1320010;
-                    if ((*(byte *)((uint8_t *)local_208 + 0xb1) & 2) != 0) {
-                        uVar12 = 0x1320014;
+                fault_off = hv_concat62((uint64_t)opts_ptr >> 0x10, (uint16_t)(int16_t)fault_flags);
+                status = kernel_vm_fault_callee_de34(
+                    page_obj, obj, status, page_mask, packed_opts, enter_flags, (uint)fault_type_arg, want_mod,
+                    fault_off, fault_opts, &retry_flag, &fault_result, stack_arg0,
+                    (uint8_t *)stack_arg1);
+                obj_flags = fault_result;
+                page2 = (long)(int)fault_result;
+                hi_word = 0x1320008;
+                if ((*(byte *)((uint8_t *)paging_obj + 0x7d) >> 4 & 1) == 0) {
+                    hi_word = 0x1320010;
+                    if ((*(byte *)((uint8_t *)paging_obj + 0xb1) & 2) != 0) {
+                        hi_word = 0x1320014;
                     }
                 }
                 if ((hv_trace_flag & 0xfffffff7) != 0) {
-                    uVar4 = uVar39 << 8 | *(int *)((uint8_t *)fault_opts + 2) << 0x10 | local_b0;
-                    uVar17 = *(uint64_t *)(lVar34 + 0x20);
-                    uVar15 = kernel_vm_fault_callee_7e720(addr);
-                    kernel_trace(uVar12, uVar26, uVar4, uVar17, uVar15);
+                    prot_bits = fault_type_raw << 8 | *(int *)((uint8_t *)fault_opts + 2) << 0x10 | fault_result;
+                    trace_code = *(uint64_t *)(page_obj + 0x20);
+                    ctx_val = kernel_vm_fault_callee_7e720(addr);
+                    kernel_trace(hi_word, orig_va, prot_bits, trace_code, ctx_val);
                 }
-                bVar23 = local_b9;
-                uVar15 = *(uint64_t *)(lVar34 + 0x20);
-                uVar49 = *(uint *)((uint8_t *)fault_opts + 2);
-                if ((((int)uVar43 != 0) || ((local_161 & 1) != 0)) || ((local_b9 & 1) != 0)) {
-                    kernel_vm_fault_callee_d31ac(addr, (uint64_t)lVar34);
-                    kernel_vm_fault_callee_a1f14(local_208, local_a8);
-                    kernel_vm_fault_callee_c2f4(puVar30);
-                    if ((bVar23 & 1) != 0) {
-                        uVar43 = uVar25;
+                pmap_ok = retry_flag;
+                ctx_val = *(uint64_t *)(page_obj + 0x20);
+                sarg_hi2 = *(uint *)((uint8_t *)fault_opts + 2);
+                if ((((int)status != 0) || ((dcache_flag & 1) != 0)) || ((retry_flag & 1) != 0)) {
+                    kernel_vm_fault_callee_d31ac(addr, (uint64_t)page_obj);
+                    kernel_vm_fault_callee_a1f14(paging_obj, pg_out);
+                    kernel_vm_fault_callee_c2f4(pmap);
+                    if ((pmap_ok & 1) != 0) {
+                        status = fault_va;
                         if (vnode_mp != 0) {
-                            puVar31 = (uint64_t *)(uintptr_t)vnode_mp;
-                            uVar43 = mp_size;
+                            obj2 = (uint64_t *)(uintptr_t)vnode_mp;
+                            status = mp_size;
                         }
-                        kernel_vm_fault_callee_fbf0(puVar31, uVar43, 0, 0, 0, 0, 0, 2,
-                                                    uVar42 & 0xffffffffffffff00);
-                        uVar43 = 0;
-                        local_b9 = 0;
+                        kernel_vm_fault_callee_fbf0(obj2, status, 0, 0, 0, 0, 0, 2,
+                                                    fault_off & 0xffffffffffffff00);
+                        status = 0;
+                        retry_flag = 0;
                     }
                     if (fault_arg == 0) {
-                        *(uint64_t *)(lVar5 + 0x238) = 0;
+                        *(uint64_t *)(cur + 0x238) = 0;
                         HV_FMT_PAGING_CONCAT();
-                        if ((uStack_138 >> 2 & 1) == 0) {
-                            kernel_vm_fault_callee_1ab24(&local_160);
-                        } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                        if ((state_flags >> 2 & 1) == 0) {
+                            kernel_vm_fault_callee_1ab24(&paging_state);
+                        } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                             kernel_vm_fault_callee_164f8();
                         }
                         HV_FMT_ZERO_STATE();
                     }
-                    bVar6 = false;
-                    bVar23 = 0;
-                    if ((int)uVar43 != 0) {
+                    defer_mode = false;
+                    pmap_ok = 0;
+                    if ((int)status != 0) {
 fault_done:                         /* b89ca08 */
-                        *(ushort *)(lVar5 + 0xc0) = uVar3 & 3 | *(ushort *)(lVar5 + 0xc0) & 0xfffc;
-                        if (puVar29 != 0) {
-                            kernel_vm_fault_callee_c2f4(puVar29);
+                        *(ushort *)(cur + 0xc0) = saved_irq & 3 | *(ushort *)(cur + 0xc0) & 0xfffc;
+                        if (defer_obj != 0) {
+                            kernel_vm_fault_callee_c2f4(defer_obj);
                             hv_fault_stat_2b0 = hv_fault_stat_2b0 + 1;
                         }
-                        uVar27 = local_b0;
-                        lVar14 = (long)(int)local_b0;
-                        if ((local_b0 < 0xb) && ((1 << (ulong)(local_b0 & 0x1f) & 0x580U) != 0)) {
+                        fault_type_cur = fault_result;
+                        page_mask = (long)(int)fault_result;
+                        if ((fault_result < 0xb) && ((1 << (ulong)(fault_result & 0x1f) & 0x580U) != 0)) {
                             kernel_vm_fault_callee_6c27c(1);
-                        } else if (((int)uVar43 == 0) &&
-                                   ((local_b0 & 0xfffffffd) != 4 &&
-                                    (iVar13 = kernel_vm_fault_callee_a2224(1), iVar13 != 0))) {
+                        } else if (((int)status == 0) &&
+                                   ((fault_result & 0xfffffffd) != 4 &&
+                                    (rc = kernel_vm_fault_callee_a2224(1), rc != 0))) {
                             kernel_vm_fault_callee_a24d0();
                         }
-                        puVar29 = local_c8;
-                        if (local_c8 != 0) {
-                            if ((local_d0 != 0) &&
-                                (*(uint64_t ***)(local_d0 + 8) == (uint64_t ***)&PTR_fault_vt_770)) {
-                                kernel_vm_fault_callee_e3a0d8(*(uint64_t *)(local_d0 + 0x20),
-                                                              (uint64_t)local_d8,
-                                                              (uint64_t)(local_d8 + 0x4000));
+                        defer_obj = defer_obj2;
+                        if (defer_obj2 != 0) {
+                            if ((paging_obj2 != 0) &&
+                                (*(uint64_t ***)(paging_obj2 + 8) == (uint64_t ***)&PTR_fault_vt_770)) {
+                                kernel_vm_fault_callee_e3a0d8(*(uint64_t *)(paging_obj2 + 0x20),
+                                                              (uint64_t)paging_end,
+                                                              (uint64_t)(paging_end + 0x4000));
                             }
-                            kernel_vm_fault_callee_e7d4((uint64_t)puVar29);
-                            uVar3 = *(ushort *)((uint8_t *)puVar29 + 0x74);
-                            uVar39 = uVar3 - 1;
-                            *(short *)((uint8_t *)puVar29 + 0x74) = (short)uVar39;
-                            if (0xffff < uVar39) {
+                            kernel_vm_fault_callee_e7d4((uint64_t)defer_obj);
+                            saved_irq = *(ushort *)((uint8_t *)defer_obj + 0x74);
+                            fault_type_raw = saved_irq - 1;
+                            *(short *)((uint8_t *)defer_obj + 0x74) = (short)fault_type_raw;
+                            if (0xffff < fault_type_raw) {
                                 /* WARNING: Subroutine does not return */
                                 kernel_panic_msg_fmt("vm_object_paging_end(%p): underflow\n @%s:%d");
                             }
-                            uVar39 = uVar39 & 0xffff;
-                            if (uVar3 == 0x10) {
-                                uVar18 = *(uint *)((uint8_t *)puVar29 + 0x7c);
-                                if ((uVar18 >> 6 & 1) != 0) {
-                                    kernel_vm_fault_callee_15288((uint8_t *)puVar29 + 6, 0, 0);
-                                    uVar18 = *(uint *)((uint8_t *)puVar29 + 0x7c);
-                                    uVar39 = (uint)*(ushort *)((uint8_t *)puVar29 + 0x74);
+                            fault_type_raw = fault_type_raw & 0xffff;
+                            if (saved_irq == 0x10) {
+                                enter_flags = *(uint *)((uint8_t *)defer_obj + 0x7c);
+                                if ((enter_flags >> 6 & 1) != 0) {
+                                    kernel_vm_fault_callee_15288((uint8_t *)defer_obj + 6, 0, 0);
+                                    enter_flags = *(uint *)((uint8_t *)defer_obj + 0x7c);
+                                    fault_type_raw = (uint)*(ushort *)((uint8_t *)defer_obj + 0x74);
                                 }
-                                *(uint *)((uint8_t *)puVar29 + 0x7c) = uVar18 & 0xffffffbf;
+                                *(uint *)((uint8_t *)defer_obj + 0x7c) = enter_flags & 0xffffffbf;
                             }
-                            if (uVar39 == 0) {
-                                uVar39 = *(uint *)((uint8_t *)puVar29 + 0x7c);
-                                if ((uVar39 >> 5 & 1) != 0) {
-                                    kernel_vm_fault_callee_15288((uint8_t *)puVar29 + 5, 0, 0);
-                                    uVar39 = *(uint *)((uint8_t *)puVar29 + 0x7c);
+                            if (fault_type_raw == 0) {
+                                fault_type_raw = *(uint *)((uint8_t *)defer_obj + 0x7c);
+                                if ((fault_type_raw >> 5 & 1) != 0) {
+                                    kernel_vm_fault_callee_15288((uint8_t *)defer_obj + 5, 0, 0);
+                                    fault_type_raw = *(uint *)((uint8_t *)defer_obj + 0x7c);
                                 }
-                                *(uint *)((uint8_t *)puVar29 + 0x7c) = uVar39 & 0xffffffdf;
-                                if (*(int *)(puVar29 + 0xf) == 0) {
-                                    kernel_vm_fault_callee_d4ba8(puVar29, 2);
+                                *(uint *)((uint8_t *)defer_obj + 0x7c) = fault_type_raw & 0xffffffdf;
+                                if (*(int *)(defer_obj + 0xf) == 0) {
+                                    kernel_vm_fault_callee_d4ba8(defer_obj, 2);
                                 }
                             }
-                            kernel_vm_fault_callee_7050(puVar29 + 1);
+                            kernel_vm_fault_callee_7050(defer_obj + 1);
                         }
-                        if (iVar1 == 1) {
-                            kernel_vm_fault_callee_a2590((uint64_t)lVar5, (uint64_t)local_258,
-                                                         uVar32, lVar14);
+                        if (fault_mode == 1) {
+                            kernel_vm_fault_callee_a2590((uint64_t)cur, (uint64_t)fault_timer,
+                                                         trace_va, page_mask);
                         }
                         if ((hv_trace_flag & 0xfffffff7) == 0) {
-                            return uVar43;
+                            return status;
                         }
-                        lVar5 = 0xb;
-                        if (!(bool)(bVar23 & uVar27 == 3)) {
-                            lVar5 = lVar14;
+                        cur = 0xb;
+                        if (!(bool)(pmap_ok & fault_type_cur == 3)) {
+                            cur = page_mask;
                         }
-                        kernel_trace(0x130000a, uVar32 >> 0x20, uVar32, (long)(int)uVar43, lVar5);
-                        return uVar43;
+                        kernel_trace(0x130000a, trace_va >> 0x20, trace_va, (long)(int)status, cur);
+                        return status;
                     }
                     goto retry;
                 }
                 if ((result_out != 0) &&
-                   (*result_out = *(uint *)(lVar34 + 0x30), (uVar18 >> 1 & 1) != 0)) {
-                    *(uint *)(lVar34 + 0x2c) = *(uint *)(lVar34 + 0x2c) | 0x1000;
+                   (*result_out = *(uint *)(page_obj + 0x30), (enter_flags >> 1 & 1) != 0)) {
+                    *(uint *)(page_obj + 0x2c) = *(uint *)(page_obj + 0x2c) | 0x1000;
                 }
-                if (((iVar1 == 1) && ((*(byte *)(lVar34 + 0x2b) >> 4 & 1) == 0)) &&
+                if (((fault_mode == 1) && ((*(byte *)(page_obj + 0x2b) >> 4 & 1) == 0)) &&
                    (hv_fault_lowbit_flag != 0)) {
-                    kernel_vm_fault_callee_f0ac8(&hv_fault_paging_lock, uVar15, uVar12,
-                                                 (long)(int)uVar39, lVar37, uVar49);
-                    if ((*(byte *)(lVar34 + 0x2b) >> 4 & 1) == 0) {
-                        *(byte *)(lVar34 + 0x2b) = *(byte *)(lVar34 + 0x2b) | 0x10;
-                        lVar14 = (ulong)hv_fault_stat_158 + 1;
-                        hv_fault_stat_158 = (uint)lVar14;
-                        if (lVar14 != lVar14 * 0x80000000 >> 0x1f) {
+                    kernel_vm_fault_callee_f0ac8(&hv_fault_paging_lock, ctx_val, hi_word,
+                                                 (long)(int)fault_type_raw, page2, sarg_hi2);
+                    if ((*(byte *)(page_obj + 0x2b) >> 4 & 1) == 0) {
+                        *(byte *)(page_obj + 0x2b) = *(byte *)(page_obj + 0x2b) | 0x10;
+                        page_mask = (ulong)hv_fault_stat_158 + 1;
+                        hv_fault_stat_158 = (uint)page_mask;
+                        if (page_mask != page_mask * 0x80000000 >> 0x1f) {
                             /* WARNING: Does not return */
-                            pcVar10 = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5f8);
-                            ((void (*)(void))pcVar10)();
+                            brk_code = SoftwareBreakpoint(0xbffc, 0xfffffe000b89d5f8);
+                            ((void (*)(void))brk_code)();
                         }
                     }
                     addr = kernel_vm_fault_callee_f1e4c(&hv_fault_paging_lock);
-                    bVar23 = *(byte *)((uint8_t *)local_208 + 0x7d);
+                    pmap_ok = *(byte *)((uint8_t *)paging_obj + 0x7d);
                 } else {
-                    bVar23 = *(byte *)((uint8_t *)local_208 + 0x7d);
+                    pmap_ok = *(byte *)((uint8_t *)paging_obj + 0x7d);
                 }
-                if (((bVar23 >> 4 & 1) == 0) && ((uVar33 >> 1 & 1) != 0)) {
-                    addr = kernel_vm_fault_callee_a21dc(local_208);   /* param_2 = FUN_fffffe000b8a21dc(local_208) */
-                    local_d0 = (long)local_208[10];
-                    local_d8 = *(long *)(lVar34 + 0x20) + (long)local_208[0xc];
-                    local_c8 = local_208;
+                if (((pmap_ok >> 4 & 1) == 0) && ((enter_flags2 >> 1 & 1) != 0)) {
+                    addr = kernel_vm_fault_callee_a21dc(paging_obj);   /* param_2 = FUN_fffffe000b8a21dc(paging_obj) */
+                    paging_obj2 = (long)paging_obj[10];
+                    paging_end = *(long *)(page_obj + 0x20) + (long)paging_obj[0xc];
+                    defer_obj2 = paging_obj;
                 }
-                kernel_vm_fault_callee_d31ac(addr, (uint64_t)lVar34);
-                local_198 = local_208[10];
-                lStack_190 = *(long *)(lVar34 + 0x20) + (long)local_208[0xc];
-                local_188 = 0;
-                if (uVar19 == 7) {
-                    iVar13 = kernel_vm_fault_callee_38dbc(&local_198);
-                    kernel_vm_fault_callee_a1f14(local_208, local_a8);
-                    if (iVar13 != 0) {
-                        kernel_vm_fault_callee_38e78(&local_198);
+                kernel_vm_fault_callee_d31ac(addr, (uint64_t)page_obj);
+                mem_obj = paging_obj[10];
+                paging_size = *(long *)(page_obj + 0x20) + (long)paging_obj[0xc];
+                flush_flag = 0;
+                if (obj_flags == 7) {
+                    rc = kernel_vm_fault_callee_38dbc(&mem_obj);
+                    kernel_vm_fault_callee_a1f14(paging_obj, pg_out);
+                    if (rc != 0) {
+                        kernel_vm_fault_callee_38e78(&mem_obj);
                     }
                 } else {
-                    kernel_vm_fault_callee_a1f14(local_208, local_a8);
+                    kernel_vm_fault_callee_a1f14(paging_obj, pg_out);
                 }
             }
-            kernel_vm_fault_callee_c2f4(puVar30);
+            kernel_vm_fault_callee_c2f4(pmap);
             if (fault_arg == 0) {
-                *(uint64_t *)(lVar5 + 0x238) = 0;
+                *(uint64_t *)(cur + 0x238) = 0;
                 HV_FMT_PAGING_CONCAT();
-                if ((uStack_138 >> 2 & 1) == 0) {
-                    kernel_vm_fault_callee_1ab24(&local_160);
-                } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+                if ((state_flags >> 2 & 1) == 0) {
+                    kernel_vm_fault_callee_1ab24(&paging_state);
+                } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
                     kernel_vm_fault_callee_164f8();
                 }
-                bVar23 = 0;
-                uVar43 = 0;
+                pmap_ok = 0;
+                status = 0;
 done_zero:                          /* b89ca04 */
                 HV_FMT_ZERO_STATE();
             } else {
-                bVar23 = 0;
-                uVar43 = 0;
+                pmap_ok = 0;
+                status = 0;
             }
             goto fault_done;
         }
-        bVar23 = 0;
-        puVar20 = puVar30;
-        if (lVar34 != 0) goto aec8;
+        pmap_ok = 0;
+        obj = pmap;
+        if (page_obj != 0) goto aec8;
     }
-    kernel_vm_fault_callee_a1f14(puVar20, local_a8);
-    kernel_vm_fault_callee_c2f4(puVar30);
-    bVar6 = false;
+    kernel_vm_fault_callee_a1f14(obj, pg_out);
+    kernel_vm_fault_callee_c2f4(pmap);
+    defer_mode = false;
     if (fault_arg != 0) goto retry;
-    *(uint64_t *)(lVar5 + 0x238) = 0;
+    *(uint64_t *)(cur + 0x238) = 0;
     HV_FMT_PAGING_CONCAT();
 joined_b110:                        /* joined_r0xfffffe000b89b110 */
-    if ((uStack_138 >> 2 & 1) == 0) {
-        kernel_vm_fault_callee_1ab24(&local_160);
-    } else if ((lStack_148 != 0) && ((~*(uint *)(lStack_148 + 0x28) & 3) != 0)) {
+    if ((state_flags >> 2 & 1) == 0) {
+        kernel_vm_fault_callee_1ab24(&paging_state);
+    } else if ((state_w2 != 0) && ((~*(uint *)(state_w2 + 0x28) & 3) != 0)) {
         kernel_vm_fault_callee_164f8();
     }
-    bVar6 = false;
+    defer_mode = false;
     goto retry;
 }
 
@@ -3192,20 +3192,20 @@ joined_b110:                        /* joined_r0xfffffe000b89b110 */
  * Ghidra: bool hv_el2_guest_fault_retry(ulong param_1, ulong param_2, uint param_3,
  *                                   long param_4)
  * Guest-fault retry helper called by hv_el2_guest_fault when vm_fault
- * (kernel_vm_fault) fails on a non-write guest abort. Guards on fault_type
+ * (kernel_vm_fault) fails on a non-write guest abort. Guards on fault_type_cur
  * (param_3 & 0x10003c0) == 0x1000040, binds the current cpu into the vm
  * owner slot (owner[0]+8), takes the per-vm lock when needed, then walks the
  * region rbtree (owner+0x427, nodes stride 0x30, start at node[0], end at
  * node[3]) for the region whose start == addr and end <= addr, checking
- * addr + page_size (1<<((fault_type>>0x16)&3)) <= region end. On a match it
+ * addr + page_size (1<<((fault_type_cur>>0x16)&3)) <= region end. On a match it
  * locks the region ref (b78fd40), releases the vm lock (b7f1e80), builds a
  * 0x40-byte fault record {0x4000000013, 0, 0, region[4], region[1], addr,
- * page_size, <saved reg per uVar4>, 2}, posts it (b7e16f0, size 0x40,
+ * page_size, <saved reg per prot_bits>, 2}, posts it (b7e16f0, size 0x40,
  * type 0x10), releases the region ref (refcount--, b78cc20 at 1,
  * panic c0f8674 at 0) and returns whether the post succeeded.
  * Confidence: high (complete decompile).
- * Notes: the register slot is param_4+uVar4*8+8 for uVar4 < 0x1d,
- *   param_4+0x100 for 0x1f, +0xf8 for 0x1e, else +0xf0; uVar4 =
+ * Notes: the register slot is param_4+prot_bits*8+8 for prot_bits < 0x1d,
+ *   param_4+0x100 for 0x1f, +0xf8 for 0x1e, else +0xf0; prot_bits =
  *   (param_3>>0x10)&0x1f. Callees b78fd40 (region lock), b7e16f0 (fault
  *   post), b78cc20 (release) are stubbed externs.
  */
@@ -3220,7 +3220,8 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
     int pending, prev, rc;
     uint64_t rec[9];
     uint64_t *reg_slot;
-    uint64_t *puVar12;
+    uint64_t *owner_cpu;
+    uint64_t *walk;
 
     if ((fault_type & 0x10003c0) != 0x1000040)
         return 0;
@@ -3228,10 +3229,10 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
     cpu_slot = tpidr_el1;
     owner_block = *(uint64_t **)(per_cpu_base(cpu_slot) + 0x628); /* vm owner block */
     owner_lock = owner_block[0];               /* owner[0] = the per-vm lock */
-    puVar12 = (uint64_t *)(owner_lock + 8);    /* owner cpu-id slot */
-    slot_val = *puVar12;
+    owner_cpu = (uint64_t *)(owner_lock + 8);    /* owner cpu-id slot */
+    slot_val = *owner_cpu;
     if (slot_val == 0)
-        *puVar12 = *(uint32_t *)(cpu_slot + 0x518);
+        *owner_cpu = *(uint32_t *)(cpu_slot + 0x518);
     pending = hv_debug_flag;                   /* DAT_fffffe000c62b3d0 */
     if (slot_val != 0 || pending != 0)
         lck_mtx_lock((void *)owner_lock, cpu_slot, slot_val, 0);   /* b7f0afc */
@@ -3243,29 +3244,29 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
     page_size = 1ULL << ((fault_type >> 0x16) & 3);
     reg_idx = (fault_type >> 0x10) & 0x1f;
     region = 0;
-    puVar12 = root;
+    walk = root;
     for (;;) {
-        uint64_t start = *puVar12;
+        uint64_t start = *walk;
         uint64_t *next;
         if (start < addr) {
-            next = (uint64_t *)((char *)puVar12 + 0x30);   /* right */
-            region = (addr != start) ? region : puVar12;
+            next = (uint64_t *)((char *)walk + 0x30);   /* right */
+            region = (addr != start) ? region : walk;
         } else if (start <= addr) {
-            if (puVar12[2] < addr)
-                next = (uint64_t *)((char *)puVar12 + 0x30);  /* right */
-            else if (puVar12[2] <= addr) {
-                region = puVar12;                /* found (LAB_987aac) */
+            if (walk[2] < addr)
+                next = (uint64_t *)((char *)walk + 0x30);  /* right */
+            else if (walk[2] <= addr) {
+                region = walk;                /* found (LAB_987aac) */
                 break;
             } else {
-                next = (uint64_t *)((char *)puVar12 + 0x28);  /* left */
+                next = (uint64_t *)((char *)walk + 0x28);  /* left */
                 region = 0;
             }
         } else {
-            next = (uint64_t *)((char *)puVar12 + 0x28);  /* left */
+            next = (uint64_t *)((char *)walk + 0x28);  /* left */
             region = 0;
         }
-        puVar12 = next;
-        if (puVar12 == 0)
+        walk = next;
+        if (walk == 0)
             break;
     }
     if (region == 0)
@@ -3286,9 +3287,9 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
         if (rc != prev || pending != 0)
             lck_mtx_unlock((void *)owner_lock, cpu_slot);  /* b7f1e80 */
         /* build the 0x40-byte fault record */
-        rec[0] = 0x4000000013ull;                /* local_a0 */
+        rec[0] = 0x4000000013ull;                /* pg_block */
         rec[1] = 0;                              /* uStack_88 */
-        rec[2] = 0;                              /* local_90 */
+        rec[2] = 0;                              /* fault_off_full */
         if (reg_idx < 0x1d)
             reg_slot = (uint64_t *)((char *)state + reg_idx * 8 + 8);
         else if (reg_idx == 0x1f)
@@ -3302,7 +3303,7 @@ int hv_el2_guest_fault_retry(void *vm, uint64_t addr, uint32_t fault_type,
         rec[5] = rec_ref;                        /* local_98 = region[4] */
         rec[6] = region_mid;                     /* local_80 = region[1] */
         rec[7] = addr;                           /* uStack_78 = param_2 */
-        rec[8] = page_size;                      /* local_68 = uVar3 */
+        rec[8] = page_size;                      /* local_68 = saved_irq */
         rc = kernel_fault_post(rec, 0x40, 0x10, 0, 0);  /* b7e16f0 */
         /* release the region reference */
         prev = *(int *)(rec_ref + 4);

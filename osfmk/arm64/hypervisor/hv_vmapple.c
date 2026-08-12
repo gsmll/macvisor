@@ -139,7 +139,7 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 
 	c = hv_debug_flag;
 	if (!retained) {
-		uint64_t *puVar12;
+		uint64_t *child_slot;
 		long *p;
 		node = (long *)*head;
 		key = *(uint64_t *)(node + 1);
@@ -153,12 +153,12 @@ hv_ikot_hypervisor_handler(uint64_t param_1, uint32_t param_2)
 		/* descend to the rightmost node of the region tree (head+0x427);
 		 * child = the last non-null node, node = 0 at exit. */
 		c = 0;
-		puVar12 = (uint64_t *)(head + 0x427);
+		child_slot = (uint64_t *)(head + 0x427);
 		node = 0;
 		do {
 			child = node;                 /* plVar10 = plVar11 */
-			node = (long *)*puVar12;      /* plVar11 = *puVar12 (root) */
-			puVar12 = (uint64_t *)(node + 5);
+			node = (long *)*child_slot;      /* plVar11 = *child_slot (root) */
+			child_slot = (uint64_t *)(node + 5);
 			c = hv_debug_flag;
 		} while (node != 0);
 
