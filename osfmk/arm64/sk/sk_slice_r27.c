@@ -10350,6 +10350,9 @@ static void sk_bcg_00478a98(void)
     unsigned char auStack_428[352];
     unsigned char auStack_168[360];
     word_t local_4e0[22];
+    word_t extraout_x8, extraout_x9, extraout_x9_01, extraout_w8;
+    long *plVar9;
+    word_t section_00000158;
 
     auVar24 = FUN_0008e518();
     lVar21 = *(word_t *)(auVar24.lo + 0x10);

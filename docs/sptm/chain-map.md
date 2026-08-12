@@ -572,3 +572,9 @@ Transport-buffer (tb_transport) + tb_message serialization layer.
 - lazy init guard: 0x004a35b8 → 0x00027614, 0x00376820, global DAT_00657d98
 - object-registration/check: 0x004a1cc0/0x004a07e4 → 0x00377824, 0x00377dcc, 0x004ab710 (pair), 0x003728b8
 - shared callees (pair): 0x00350c5c/0x00377824/0x004aa914/0x004aa4fc/0x004ab710/0x004abf7c/0x004ac784/0x004ac7c8
+
+## cL4 SKR30 slice (0x00490174-0x004961a0) — Swift runtime / _StringProcessing matcher
+- 120 functions in `osfmk/arm64/sk/sk_slice_r30.c` (manifest: 120/120 decompiled, status file `osfmk/arm64/sk/sk_slice_r30.c`).
+- Dense in-slice call cluster: sk_r30_00490268 ↔ 00490174/0049341c/0049153c/00491644/00494b44/00494810/0049490c/004934a8 (collection copy + recursive type-value walker).
+- Shared Swift-runtime callees across the slice: FUN_0036b118 (release), FUN_0036b270 (retain), FUN_0036a940 (alloc/emplace), FUN_00117cc4 (memcpy), FUN_003a25d4/FUN_0049153c (dispatch).
+- Guarded-entry supervisor calls rendered as `((code)0x54ffff60f100041f)(...)` (GENTER-style opaque SUB_54ffff60f100041f).
