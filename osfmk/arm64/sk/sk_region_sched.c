@@ -220,7 +220,7 @@ cl4_16_t FUN_00181a2c();
 void FUN_00181ab4();
 uint32_t FUN_00181af0();
 uint32_t FUN_00181af4();
-void FUN_00181b3c();
+void FUN_00181b3c(uint64_t p1, uint64_t p2, char p3, uint64_t p4, uint64_t p5);
 cl4_16_t FUN_00181bf0();
 cl4_16_t FUN_00181c44();
 void FUN_00181db8();
@@ -307,15 +307,15 @@ uint64_t * FUN_00185b94();
 cl4_16_t FUN_00185c60();
 void FUN_00185cbc();
 uint64_t FUN_00185ce4();
-uint64_t FUN_00186094();
-void FUN_00186460();
-uint64_t FUN_001866dc();
-void FUN_00186aa8();
-void FUN_00186e3c();
-void FUN_001871d0();
-void FUN_0018758c();
-uint64_t FUN_00187820();
-uint8_t FUN_00187aac();
+uint64_t FUN_00186094(uint8_t p1, uint64_t p2, long p3);
+void FUN_00186460(uint8_t p1, uint64_t p2);
+uint64_t FUN_001866dc(uint8_t p1, uint64_t p2, long p3);
+void FUN_00186aa8(uint8_t p1, uint64_t p2, uint64_t *p3);
+void FUN_00186e3c(uint8_t p1, uint64_t p2, uint64_t *p3);
+void FUN_001871d0(uint8_t p1, uint64_t p2, long p3);
+void FUN_0018758c(uint8_t p1, uint8_t p2, uint64_t p3);
+uint64_t FUN_00187820(uint8_t p1, uint64_t p2);
+uint8_t FUN_00187aac(uint8_t p1);
 void FUN_00187d28();
 void FUN_00187fa4();
 void FUN_00188220();
@@ -426,7 +426,7 @@ void FUN_0018e310();
 void FUN_0018e314();
 void FUN_0018e344();
 void FUN_0018e348();
-void FUN_0018e38c();
+void FUN_0018e38c(uint8_t *out, uint8_t v);
 void FUN_0018e6f4();
 void FUN_0018e744();
 void FUN_0018e77c();
@@ -528,7 +528,7 @@ extern unsigned long sk_swift_collection_op(); /* FUN_000268d0 */
 extern void sk_swift_retain(); /* FUN_003698b0 */
 extern void sk_swift_release(); /* FUN_0036993c */
 extern unsigned long sk_swift_err_code(); /* FUN_00019aac */
-extern void sk_swift_collection_count(); /* FUN_00026754 */
+extern uint64_t sk_swift_collection_count(); /* FUN_00026754 */
 extern unsigned long sk_swift_collection_init(); /* FUN_000267d4 */
 extern void sk_swift_epilogue(); /* FUN_00025704 */
 extern void sk_swift_precond_1(); /* FUN_002a4ab4 */
@@ -596,7 +596,7 @@ extern void FUN_00356d20();
 extern void FUN_001a07bc();
 extern void FUN_001a0908();
 extern void FUN_001a0ef0();
-extern void FUN_001a0fa4();
+extern unsigned long FUN_001a0fa4();
 extern unsigned long stack0xffffffffffffffc8;
 extern unsigned char DAT_00611b24;
 extern unsigned long LAB_00611b34;
@@ -604,7 +604,7 @@ extern void FUN_003488bc();
 extern void FUN_001dc56c();
 extern void FUN_001dc620();
 extern void FUN_001da01c();
-extern void FUN_0019f1ec();
+void FUN_0019f1ec(unsigned long param_1, ...);
 extern void FUN_00357874();
 extern unsigned long FUN_0005b140();
 extern void FUN_001150e0();
@@ -1210,10 +1210,10 @@ void FUN_0019b528();
 void FUN_0019b66c();
 void FUN_0019c03c();
 void FUN_0019c078();
-void FUN_0019c20c();
+uint64_t FUN_0019c20c();
 long FUN_0019c258();
 void FUN_0019c2b0();
-void FUN_0019c2fc();
+uint64_t FUN_0019c2fc();
 void FUN_0019c348();
 void FUN_0019c3a4();
 void FUN_0019c3f0();
@@ -1222,7 +1222,7 @@ void FUN_0019c53c();
 void FUN_0019c968();
 unsigned long FUN_0019c9bc();
 unsigned long FUN_0019c9c4();
-void FUN_0019c9cc();
+uint64_t FUN_0019c9cc();
 unsigned long FUN_0019cac8();
 unsigned long FUN_0019cb68();
 void FUN_0019cbd4();
@@ -1230,7 +1230,7 @@ void FUN_0019cc64();
 void FUN_0019ccec();
 void FUN_0019cd74();
 void FUN_0019cdf8();
-void FUN_0019ce60();
+uint64_t FUN_0019ce60();
 void FUN_0019cf3c();
 void FUN_0019d060();
 void FUN_0019d0d0();
@@ -1245,7 +1245,7 @@ void FUN_0019d6d0();
 void FUN_0019d7ac();
 void FUN_0019d888();
 void FUN_0019d960();
-void FUN_0019da34();
+void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3, ...);
 void FUN_0019dadc();
 void FUN_0019dbac();
 void FUN_0019dc44();
@@ -1267,7 +1267,7 @@ void thunk_FUN_001dc298();
 unsigned long FUN_0019e5ec();
 void FUN_0019e618();
 void FUN_0019e630();
-void FUN_0019e644();
+uint64_t FUN_0019e644();
 void FUN_0019e658();
 unsigned long FUN_0019e66c();
 void FUN_0019e690();
@@ -1283,19 +1283,13 @@ extern unsigned long sk_lock_ref(); /* FUN_00377bec */
 extern unsigned long sk_lzcount(); /* LZCOUNT intrinsic */
 extern reg16 sk_cpu_current(); /* FUN_0008e518 */
 extern void sk_thread_epilogue(); /* FUN_0008e500 */
-extern void sk_swift_fatal();
+void sk_swift_fatal(const char *p1, uint64_t p2, uint32_t p3, ...);
 extern void *swift_array_alloc_with_count(uint64_t a, void *b);             /* FUN_003a25d4 */
 extern void *swift_objc_metatype();                                     /* FUN_00376820 */
 extern void *swift_array_init();                                        /* FUN_001a042c */
 extern void *swift_alloc_small(uint64_t a, uint64_t b, uint64_t c);         /* FUN_003a261c */
 extern void *sk_current_tcb();                                          /* FUN_000867ec */
 extern void sk_schedule_yield(); /* FUN_00084180 */
-static inline uint64_t CONCAT17(uint64_t a, uint64_t b){ return (a<<8)|(b&0xff); }
-static inline uint64_t CONCAT71(uint64_t a, uint64_t b){ return (a<<7)|(b&0x7f); }
-static inline uint64_t SBORROW8(uint64_t a, uint64_t b){ return ((int64_t)a < (int64_t)b); }
-static inline uint64_t SCARRY8(uint64_t a, uint64_t b){ return (((uint64_t)a + (uint64_t)b) < (uint64_t)a); }
-static inline uint64_t SEXT816(uint64_t v){ return (uint64_t)(int64_t)(int8_t)(v & 0xff); }
-static inline uint64_t SUB168(uint64_t a, uint64_t b){ return a-b; }
 uint64_t NG, OV, ZR, a0, a1, a2, als_50, aus_108, aus_130, aus_20, aus_28, aus_50, aus_58, aus_60, aus_78, aus_8, aus_90, aus_98, aus_b8, buf, cur, fatal_str, flags, i, is_0, is_10, is_18, is_20, is_28, is_30, is_38, is_40, is_48, is_60, is_68, is_8, is_e0, is_fff8, local, ls_38, ls_40, ls_50, ls_68, lv12, lv3, lv4, next, slot_ptr, stack, stack_18, stack_20, stack_28, stack_2c, stack_2e, stack_2f, stack_30, stack_38, stack_40, stack_48, stack_50, stack_8, stack_88, stack_aligned, stack_arg, stack_buf, stack_d0, stack_e8, sv_18, sv_20, sv_28, sv_30, sv_31, sv_32, sv_34, sv_37, sv_38, sv_39, sv_47, sv_48, sv_50, sv_51, sv_52, sv_54, sv_58, sv_60, sv_64, sv_68, sv_70, sv_8, sv_80, sv_88, sv_90, sv_a0, sv_a8, sv_b0, sv_c0, sv_c8, sv_d8, sv_e0, sv_f0, u4, u8, us_24, us_28, us_2c, us_2e, us_2f, us_30, us_38, us_3f, us_40, us_48, us_50, us_58, us_68, us_78, us_88, us_a0, us_d0, us_d8, us_e8, v13b, v8, w1, w10, w11, w14, w19, w4, w8, w9, x1, x10, x11, x11_00, x12, x13, x14, x16, x16_00, x16_01, x19, x1_00, x1_02, x1_03, x21, x23, x24, x27, x28, x30, x4, x5, x6, x7, x8_00, x8_01, x8_02, x8_03, x8_04, x8_05, x8_06, x8_08, x8_09, x8_10, x8_11, x8_13, x8_14, x9, x9_00, x9_01, stack_60, x1_01;
 reg16 cpu_leak, node, out, r, s, src, v, v14, v14b, v19, v2, v5, v6, v7, vv, x15;
 uint64_t *obj, *sv_10, *sv_40, *x20, *x22, *x25, *x26, *x3, *x8, *x8_07;
@@ -1312,8 +1306,6 @@ void sk_sched_queue_foreach();
 void sk_swift_array_dispatch_impl();
 void swift_array_destroy();
 void swift_array_init_core();
-extern uint64_t CONCAT17();
-extern uint64_t CONCAT71();
 extern uint64_t FUN_00002688();
 extern uint64_t FUN_000026e8();
 extern uint64_t FUN_00002834();
@@ -1354,9 +1346,9 @@ extern uint64_t FUN_0014ae44();
 extern uint64_t FUN_00167404();
 extern uint64_t FUN_0016749c();
 extern uint64_t FUN_001676cc();
-extern uint64_t FUN_0019e93c();
+long FUN_0019e93c(long);
 extern unsigned long FUN_0019ed3c();
-extern void FUN_0019fd10();
+extern uint64_t FUN_0019fd10();
 extern void FUN_0019fe7c();
 extern uint64_t FUN_001a0194();
 extern uint64_t FUN_001a0414();
@@ -2166,10 +2158,6 @@ extern uint64_t FUN_0036b2d0();
 extern uint64_t FUN_0036b588();
 extern uint64_t FUN_0036b6ac();
 extern uint64_t FUN_003a2610();
-extern uint64_t SBORROW8();
-extern uint64_t SCARRY8();
-extern uint64_t SEXT816();
-extern uint64_t SUB168();
 extern uint64_t dispatch_slot();
 extern uint64_t sk_alloc_ok();
 extern uint64_t sk_array_append_shared();
@@ -3335,7 +3323,7 @@ extern void sk_r4_001c11d8();
 extern void sk_r4_001c12dc();
 extern void sk_r4_001c1300();
 extern void sk_r4_001c133c();
-extern void sk_r4_001c1388();
+extern void sk_r4_001c1388(uint64_t *,uint64_t,uint64_t,uint64_t,uint8_t,long *,uint64_t,uint64_t);
 extern void sk_r4_001c14ac();
 extern void sk_r4_001c1574();
 extern void sk_r4_001c169c();
@@ -3594,7 +3582,7 @@ extern void sk_r4_001c7e64();
 extern void sk_r4_001c7e90();
 extern void sk_r4_001c7f48();
 extern sk_r4_u128_t sk_r4_001c84fc();
-extern void sk_r4_001c877c();
+void sk_r4_001c877c(float2 p1);
 extern void sk_r4_001c87a0();
 extern void sk_r4_001c87a4();
 extern void sk_r4_001c87bc();
@@ -3747,14 +3735,14 @@ extern void sk_r4_001ccd1c();
 extern sk_r4_u128_t sk_r4_001cd0b8();
 extern void sk_r4_001cd168();
 extern void sk_r4_001cd194();
-extern void sk_r4_001cd1e0();
+void sk_r4_001cd1e0(uint64_t p1,uint64_t p2,uint64_t p3,uint8_t p4);
 extern void sk_r4_001cd260();
 extern void sk_r4_001cd3fc();
 extern void sk_r4_001cd478();
 extern void sk_r4_001cd618();
 extern sk_r4_u128_t sk_r4_001cd66c();
 extern void sk_r4_001cd6e0();
-extern void sk_r4_001cd70c();
+void sk_r4_001cd70c(uint64_t p1,uint64_t p2,uint64_t p3,uint8_t p4);
 extern sk_r4_u128_t sk_r4_001cd778();
 extern void sk_r4_001cd7e4(uint8_t (*p1) [16]);
 extern void sk_r4_001cd80c();
@@ -3794,7 +3782,7 @@ extern void sk_r4_001cfef4();
 extern void sk_r4_001cfef8();
 extern void sk_r4_001cff24();
 extern void sk_r4_001cff9c();
-typedef struct { undefined8 _0_8_; undefined8 _8_8_; undefined8 _8_4_; } sk_c16_t;
+typedef struct { undefined8 _0_8_; undefined8 _8_8_; } sk_c16_t;
 typedef uint32_t undefined4;
 #define concat(a,b) ((uint64_t)((uint64_t)(a) << 32) | (uint32_t)(b))
 #define ovf(a,b) ({ unsigned long long _ovf_out; __builtin_add_overflow((unsigned long long)(a),(unsigned long long)(b),&_ovf_out); })
@@ -5209,7 +5197,7 @@ void sk_001dfec0();
 void sk_001dff60();
 void sk_001dffa0();
 undefined8 sk_001dcd98();
-typedef uint64_t (*code_fn_t)(long, ...);
+/* dup */
 extern void sk_cpu_get(); /* FUN_0008e518 */
 extern void sk_obj_methods_table(); /* FUN_00377824 / DAT_00658c00 obj-method table */
 extern void sk_lock_release(); /* FUN_00377dcc */
@@ -6039,7 +6027,7 @@ static word_t *local_70;
 static word_t *local_d8;
 static word_t *local_e0;
 static word_t *local_e8;
-static word_t next;
+ uint64_t next;
 static word_t pc10;
 static word_t pc13;
 static word_t pc8;
@@ -6189,16 +6177,16 @@ static word_t local_f8;
 static word_t p6;
 static word_t pcStack_28;
 static word_t puStack_18;
-static word_t stack0x00000000;
-static word_t stack0x00000008;
+ uint64_t stack0x00000000;
+ uint64_t stack0x00000008;
 static word_t stack0x00000010;
 static word_t stack0x00000018;
 static word_t stack0x00000020;
-static word_t stack0x00000028;
+ uint64_t stack0x00000028;
 static word_t stack0x00000030;
-static word_t stack0x00000038;
+ uint64_t stack0x00000038;
 static word_t stack0x00000040;
-static word_t stack0x00000048;
+ uint64_t stack0x00000048;
 static word_t stack0x00000058;
 static word_t u1;
 static word_t u11;
@@ -6208,11 +6196,10 @@ static word_t u14;
 static word_t u2;
 static word_t u26;
 static word_t u3;
-static word_t u4;
+ uint64_t u4;
 static word_t u5;
 static word_t u6;
 static word_t u7;
-static word_t uRam00000000004baeb8;
 static word_t uStack_100;
 static word_t uStack_108;
 static word_t uStack_128;
@@ -6260,9 +6247,9 @@ static inline word_t bitrev_word(word_t x) {
     x = (x & 0xf0f0f0f0f0f0f0f0) >> 4 | (x & 0xf0f0f0f0f0f0f0f) << 4;
     x = (x & 0xff00ff00ff00ff00) >> 8 | (x & 0xff00ff00ff00ff) << 8;
     x = (x & 0xffff0000ffff0000) >> 0x10 | (x & 0xffff0000ffff) << 0x10;
- return();
+    return x;
 }
-typedef unsigned long code();
+/* dup */
 extern word_t FUN_00084024(); /* 0x84024 */
 extern word_t FUN_0031a29c(); /* 0x31a29c */
 extern word_t FUN_0031b560(); /* 0x31b560 */
@@ -21370,7 +21357,7 @@ void FUN_001983d4(param_1, param_2, param_3, param_4, param_5)
   
   uVar1 = FUN_00198438(param_3,param_4);
   if (ctx_err == 0) {
-    FUN_0018e38c(&local_21);
+    FUN_0018e38c(&local_21, 0);
     *param_1 = local_21;
   }
   else {
@@ -24922,7 +24909,7 @@ void FUN_0019b66c(void)
         lVar10 = (*extraout_x8_05)();
         if (lVar10 <= j) {
           FUN_0034e1d0();
-          auVar15 = FUN_003509d4(unaff_x26);
+          auVar15 = (FUN_003509d4(unaff_x26)).lo;
           FUN_003518f4(auVar15,auVar15,uVar4);
           (*extraout_x9_03)();
           FUN_00348e78(in_x5);
@@ -25004,7 +24991,7 @@ LAB_0019ba14:
             goto LAB_0019bb64;
           }
           FUN_0034e1d0();
-          auVar15 = FUN_003509d4(unaff_x26);
+          auVar15 = (FUN_003509d4(unaff_x26)).lo;
           unaff_x26 = extraout_x8_10;
 LAB_0019bb18:
           FUN_003518f4(auVar15,auVar15,uVar4);
@@ -25020,7 +25007,7 @@ LAB_0019bb34:
         }
         if (lVar10 < j) {
           FUN_0034e1d0();
-          auVar15 = FUN_003509d4(unaff_x26);
+          auVar15 = (FUN_003509d4(unaff_x26)).lo;
           goto LAB_0019bb18;
         }
         FUN_0034ad00();
@@ -25041,7 +25028,7 @@ LAB_0019bb34:
         (*extraout_x9_06)();
         if ((unaff_x28 & 1) == 0) {
           FUN_00351e84();
-          auVar15 = FUN_00100c38();
+          auVar15 = (FUN_00100c38()).lo;
           pcVar12 = extraout_x9_07;
           goto LAB_0019ba14;
         }
@@ -25325,7 +25312,7 @@ void FUN_0019c078()
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c20c()
+uint64_t FUN_0019c20c()
 {
   long unaff_x20;
   
@@ -25340,7 +25327,7 @@ void FUN_0019c20c()
     FUN_00077630();
     FUN_0007766c();
   }
-  return;
+  return 0;
 }
 
 
@@ -25422,7 +25409,7 @@ void FUN_0019c2b0(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c2fc()
+uint64_t FUN_0019c2fc()
 {
   long unaff_x20;
   
@@ -25437,7 +25424,7 @@ void FUN_0019c2fc()
     FUN_00077630();
     FUN_0007766c();
   }
-  return;
+  return 0;
 }
 
 
@@ -25565,7 +25552,7 @@ unsigned long FUN_0019c44c(param_1, param_2, param_3)
   unsigned long unaff_x30;
   unsigned long auVar5;
   
-  auVar5 = FUN_00357ca0();
+  auVar5 = (FUN_00357ca0()).lo;
   lVar2 = auVar5;
   if (auVar5 <= auVar5) {
     lVar2 = auVar5;
@@ -25660,7 +25647,7 @@ void FUN_0019c53c(param_1, param_2, param_3, param_4, param_5, param_6, param_7,
   lVar3 = auVar14;
   FUN_00027754(param_7);
   FUN_00027754();
-  auVar14 = FUN_00348b94();
+  auVar14 = (FUN_00348b94()).lo;
   len = FUN_00377824(auVar14,auVar14,param_5);
   lVar12 = *(long *)(len + -8);
   local_a0 = lVar12;
@@ -25749,7 +25736,7 @@ void FUN_0019c53c(param_1, param_2, param_3, param_4, param_5, param_6, param_7,
           auVar14 = FUN_003507d4(*puVar1);
           (*extraout_x8_04)(auVar14,auVar14,len);
           uVar13 = uVar13 + lVar11;
-          auVar14 = FUN_00350b00();
+          auVar14 = (FUN_00350b00()).lo;
           (*pcVar8)(auVar14,auVar14,param_8);
         } while (uVar13 < err);
       }
@@ -25844,7 +25831,7 @@ unsigned long FUN_0019c9c4(unsigned long param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019c9cc(void)
+uint64_t FUN_0019c9cc(void)
 
 {
   code *pcVar2;
@@ -25882,7 +25869,7 @@ void FUN_0019c9cc(void)
   __builtin_trap();
   uVar1 = FUN_00358f90();
   FUN_00084234(uVar1,unaff_x30);
-  return;
+  return 0;
 }
 
 
@@ -26093,7 +26080,7 @@ void FUN_0019cdf8(unsigned long param_1,long param_2,unsigned long param_3)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019ce60()
+uint64_t FUN_0019ce60()
 {
   unsigned long param_1;
   long param_2;
@@ -26125,16 +26112,16 @@ void FUN_0019ce60()
     uVar1 = FUN_001b8cf4(&stack0xffffffffffffffc8,&local_40);
     if ((uVar1 & 1) == 0) {
       if (result == ctx_err) {
-        return;
+        return 0;
       }
       FUN_0008412c();
       FUN_0035b898();
-      return;
+      return 0;
     }
   }
   FUN_0008412c();
   FUN_0035b7ac();
-  return;
+  return 0;
 }
 
 
@@ -26677,7 +26664,7 @@ void FUN_0019da34(unsigned long param_1,long param_2,unsigned long param_3, ...)
     FUN_0034a368();
   }
   else {
-    auVar1 = FUN_0008409c();
+    auVar1 = (FUN_0008409c()).lo;
     if (param_3 + auVar1 * 0x28 <= auVar1 ||
         auVar1 + auVar1 * 0x28 <= param_3) {
       FUN_00355b68();
@@ -27006,7 +26993,7 @@ void FUN_0019dfc4(param_1, param_2, param_3)
   local_50 = param_2;
   uStack_48 = param_3;
   local_38 = param_1;
-  uVar1 = FUN_00310d34(0);
+  uVar1 = (FUN_00310d34(0)).lo;
   err = FUN_00348718();
   FUN_00376820(err,uVar1);
   FUN_00354714();
@@ -27147,7 +27134,7 @@ LAB_0019e394:
                     /* WARNING: Does not return */
       __builtin_trap();
     }
-    auVar7 = FUN_00350944(*(unsigned long *)(extraout_x16_00 + 0x20));
+    auVar7 = (FUN_00350944(*(unsigned long *)(extraout_x16_00 + 0x20))).lo;
     (*extraout_x8_02)(auVar7,auVar7,auVar6);
     FUN_0034e54c();
     res = FUN_00356b2c();
@@ -27483,11 +27470,11 @@ void FUN_0019e630(long param_1)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019e644(long param_1)
+uint64_t FUN_0019e644(long param_1)
 
 {
   FUN_001a0908(0,*(unsigned long *)(param_1 + 0x10),0,param_1);
-  return;
+  return 0;
 }
 
 
@@ -28154,7 +28141,7 @@ void FUN_0019eec0(void)
   
   FUN_00349a18();
   FUN_0036a908(0x40,0xfada);
-  auVar1 = FUN_003501fc();
+  auVar1 = (FUN_003501fc()).lo;
   FUN_00100efc(auVar1,auVar1,*unaff_x20,*(unsigned long *)(unaff_x19 + 0x10));
   FUN_0019eb70();
   FUN_00357694();
@@ -28494,7 +28481,7 @@ void FUN_0019f410(unsigned long param_1,unsigned long param_2,unsigned long para
   FUN_0007c1a4();
   (*DAT_00658c00)();
   FUN_0034aee4();
-  auVar6 = FUN_00348b94();
+  auVar6 = (FUN_00348b94()).lo;
   uVar1 = FUN_00377824(auVar6,auVar6,param_3);
   FUN_000a6f88();
   (*DAT_00658c00)(*(unsigned long *)(extraout_x8 + 0x40));
@@ -28611,7 +28598,7 @@ void FUN_0019f698(param_1, param_2, param_3, param_4, param_5, param_6, param_7)
   res = *(unsigned long *)(lVar2 + 0x10);
   uVar1 = (unsigned long)*(unsigned char *)(*(long *)(*(long *)(param_4 + 0x10) + -8) + 0x50);
   uVar1 = uVar1 + 0x20 & (uVar1 ^ 0xffffffffffffffff);
-  *(unsigned long *)local_70 = FUN_001a26e0(lVar2 + uVar1,res);
+  *(unsigned long *)local_70 = (FUN_001a26e0(lVar2 + uVar1,res)).lo;
   (*param_2)(param_1,local_70);
   FUN_0034a210();
   if (ctx_err == 0) {
@@ -29043,7 +29030,7 @@ bool FUN_0019fcd4(void)
  * Confidence: medium (templated Swift runtime body).
  * Notes: source file XnuUpcallsV2/XnuUpcallsV2.swift; see extern table for helper addrs. */
 
-void FUN_0019fd10()
+uint64_t FUN_0019fd10()
 {
   unsigned long uVar1;
   long extraout_x8;
@@ -29082,7 +29069,7 @@ void FUN_0019fd10()
   (*result)();
   uVar1 = FUN_0035687c();
   FUN_00084234(uVar1,unaff_x30);
-  return;
+  return 0;
 }
 
 
@@ -31785,7 +31772,7 @@ void *swift_array_from_raw(uint64_t src, long count)
     if (count < 0)
         sk_swift_fatal(s_Fatal_error, 0xb, 2, s_unsafe_mut_buf, 0x2e, 2,
                        s_swift_unsafe_buf, 0x1f, 2, 0x4a, 1);
-    FUN_0019d40c(src, count, buf + 0x20);           /* copy */
+    FUN_0019d40c((unsigned long)src, count, (unsigned long)(buf + 0x20));           /* copy */
     return buf;
 }
 
@@ -31846,7 +31833,7 @@ void *swift_array_copy(long src)
     FUN_003556e0();
     FUN_00351244();
     uint8_t *buf = (uint8_t *)FUN_0019c2fc();
-    FUN_0019d15c(src + 0x20, n, buf + 0x20);        /* copy */
+    FUN_0019d15c((unsigned long)(src + 0x20), n, (unsigned long)(buf + 0x20));        /* copy */
     return buf;
 }
 
@@ -33814,7 +33801,7 @@ void swift_buffer_multiply_check(long base, long count, long desc)
 {
     long stride = *(long *)(*(long *)(desc - 8) + 0x48);
     long nbytes = count * stride;
-    if (SUB168(SEXT816(count) * SEXT816(stride), 8) != nbytes >> 0x3f) __builtin_trap(); /* 0x1a7e24 */
+    if (SUB168(SEXT816(count).lo * SEXT816(stride).lo, 8) != nbytes >> 0x3f) __builtin_trap(); /* 0x1a7e24 */
     if (nbytes < 0) {
         FUN_003483c4();
     } else {
@@ -33875,7 +33862,7 @@ void swift_buffer_multiply_check2(long base, long count, long desc)
 {
     long stride = *(long *)(*(long *)(desc - 8) + 0x48);
     long nbytes = count * stride;
-    if (SUB168(SEXT816(count) * SEXT816(stride), 8) != nbytes >> 0x3f) __builtin_trap(); /* 0x1a7f40 */
+    if (SUB168(SEXT816(count).lo * SEXT816(stride).lo, 8) != nbytes >> 0x3f) __builtin_trap(); /* 0x1a7f40 */
     if (nbytes < 0) {
         FUN_00348284();
     } else {
@@ -45335,7 +45322,7 @@ void sk_r4_001c14ac(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-  uint64_t stack0x00000028;
+  extern uint64_t stack0x00000028;
 void sk_r4_001c1574(uint64_t p1,uint64_t p2,uint64_t p3)
 
 {
@@ -53095,7 +53082,7 @@ void sk_r4_001c5c58(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-  uint64_t stack0x00000028;
+  extern uint64_t stack0x00000028;
 void sk_r4_001c5c80(void)
 
 {
@@ -53480,7 +53467,7 @@ void sk_r4_001c64fc(byte *p1)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
   uint64_t stack0x0000003f;
 void sk_r4_001c652c(void)
 
@@ -55996,7 +55983,7 @@ uint64_t sk_r4_001c8ca8(uint64_t p1)
 /* FUN_001c8cd8 @ 0x001c8cd8   (est. sk_r4_001c8cd8)
  * Ghidra: void FUN_001c8cd8(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
  * transcription of the decompile: helper calls, control flow, constants preserved.
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
@@ -56048,7 +56035,7 @@ void sk_r4_001c8d70(uint64_t p1,uint64_t p2)
 
 /* FUN_001c8da0 @ 0x001c8da0   (est. sk_r4_001c8da0)
  * Ghidra: void FUN_001c8da0(void)
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
  * Confidence: medium
@@ -56159,8 +56146,8 @@ void sk_r4_001c8e64(void)
 }
 
 /* FUN_001c8e90 @ 0x001c8e90   (est. sk_r4_001c8e90)
-  uint64_t stack0x00000008;
-  uint64_t stack0x00000038;
+  extern uint64_t stack0x00000008;
+  extern uint64_t stack0x00000038;
  * Ghidra: void FUN_001c8e90(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
@@ -56800,7 +56787,7 @@ uint64_t sk_r4_001c97a0(uint64_t p1)
   return 0;
 }
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
 /* FUN_001c97d0 @ 0x001c97d0   (est. sk_r4_001c97d0)
  * Ghidra: void FUN_001c97d0(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
@@ -56851,7 +56838,7 @@ void sk_r4_001c9864(uint64_t p1,uint64_t p2)
   return;
 }
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
 /* FUN_001c9894 @ 0x001c9894   (est. sk_r4_001c9894)
  * Ghidra: void FUN_001c9894(void)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
@@ -56964,7 +56951,7 @@ void sk_r4_001c995c(void)
   return;
 }
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
   uint64_t stack0x0000003f;
 /* FUN_001c9988 @ 0x001c9988   (est. sk_r4_001c9988)
  * Ghidra: void FUN_001c9988(void)
@@ -57894,7 +57881,7 @@ LAB_001ca870:
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
 uint64_t sk_r4_001ca8e0(uint64_t p1)
 
 {
@@ -57945,7 +57932,7 @@ void sk_r4_001ca910(uint64_t p1, uint64_t p2, uint64_t p3)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
 void sk_r4_001ca9a4(uint64_t p1,uint64_t p2)
 
 {
@@ -58058,7 +58045,7 @@ void sk_r4_001caa98(void)
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
   uint64_t stack0x0000003c;
 void sk_r4_001caa9c(void)
 
@@ -58566,7 +58553,7 @@ void sk_r4_001cb258(void)
  * Ghidra: void FUN_001cb2a0(undefined8 param_1)
  * Swift-runtime/thread-machinery function in the cL4 scheduler region. Faithful
  * transcription of the decompile: helper calls, control flow, constants preserved.
-  uint64_t stack0x00000008;
+  extern uint64_t stack0x00000008;
  * Confidence: medium
  * Notes: slice 0x1c0000-0x1d0000. */
 
@@ -61465,9 +61452,9 @@ void sk_r4_001ce6d8(uint64_t p1,long p2,uint64_t p3)
 /* WARNING: Removing unreachable block (ram,0x001cf424) */
 /* WARNING: Removing unreachable block (ram,0x001cefd0) */
 
-  uint64_t stack0x00000000;
-  uint64_t stack0x00000038;
-  uint64_t stack0x00000048;
+  extern uint64_t stack0x00000000;
+  extern uint64_t stack0x00000038;
+  extern uint64_t stack0x00000048;
 uint64_t sk_r4_001ce704(uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5, uint64_t p6)
 {
   sk_r4_u128_t _local_30;
@@ -73707,7 +73694,7 @@ void sk_swift_array_append_callout(uint64_t p1, void (*cb)(void), uint64_t p3, l
  * half capacity, allocates pages via FUN_0036b270 and returns it, else 0.
  * Confidence: medium.
  */
-uint64_t sk_swift_array_reserve(void)
+uint64_t sk_swift_array_reserve_e4e94(void)
 {
     /* FUN_00356988(); iVar1 = FUN_003a261c(); if (iVar1 && x19 <= (*(ulong*)(*x20+0x18) >> 1)) {
      *   uVar2 = FUN_0036b270(); return uVar2; } return 0 */
@@ -73863,7 +73850,7 @@ void sk_swift_array_pop_last2(void) { /* FUN_0019c078() */ }
  * Calls FUN_003a261c(*x20) (collection refcount/count check).
  * Confidence: medium.
  */
-void sk_swift_collection_count(void)
+uint64_t sk_swift_collection_count(void)
 {
     /* FUN_003a261c(*unaff_x20) */
 }
@@ -75786,11 +75773,11 @@ void sk_swift_set_bucket_alloc(void)
 
 void cl4_thread_free_cb(long *obj)
 {
-    code *finish_cb = *(code **)(*obj + 0x58);
+    code finish_cb = *(code *)(uintptr_t)(*obj + 0x58);
     long   inner   = *(long *)(*obj + 0x48);
     word_t inner2  = *(word_t *)(*obj + 0x50);
 
-    (**(code **)(*obj + 0x60))(*obj + 0x20, 0);      /* drop hook */
+    (*(code *)(uintptr_t)(*obj + 0x60))(*obj + 0x20, 0);      /* drop hook */
     FUN_0006b6f4(*(word_t *)(inner + 8));
     finish_cb();
     FUN_0035354c();
@@ -75838,7 +75825,7 @@ void cl4_sched_run_queue_drain(void)
             }
             FUN_00357170();
             FUN_0035190c();
-            (*(code **)(extraout_x16 + 0x20))(unaff_x24, unaff_x27 + stride, unaff_x21);
+            (*(code *)(extraout_x16 + 0x20))(unaff_x24, unaff_x27 + stride, unaff_x21);
             FUN_001f99f4(((word_t)(auVar8)), (*(word_t *)((char *)&(auVar8) + 8)), unaff_x20);
             if ((extraout_x1 & 1) != 0) { /* entry completed -> requeue path */
                 FUN_00350410();
@@ -76035,7 +76022,7 @@ void cl4_sched_notify_scan(void)
     FUN_0034ba68();
     if (*(long *)(in_x3 + 0x10) != 0) {
         thunk_FUN_0036b270(in_x3);
-        uint128_t r = FUN_003504c4();
+        uint128_t r = ({ reg16 _r = FUN_003504c4(); ((uint128_t)_r.hi << 64) | _r.lo; });
         word_t r_lo = (word_t)r;
         word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         FUN_001f99f4(r_lo, r_hi, in_x6);
@@ -76051,12 +76038,12 @@ void cl4_sched_notify_scan(void)
     FUN_000839d8();
     FUN_000aa46c();
     FUN_00351ab0();
-    (*(code **)extraout_x9)();
+    (*(code *)extraout_x9)();
     FUN_00349f3c();
     if ((bool)in_ZR) {
-        (*(code **)extraout_x1)();
+        (*(code *)extraout_x1)();
         FUN_0034c9f8();
-        (*(code **)extraout_x8_00)();
+        (*(code *)extraout_x8_00)();
     } else {
         FUN_00350bcc();
         (**(code **)(extraout_x16_00 + 0x20))();
@@ -76075,7 +76062,7 @@ void cl4_sched_notify_scan(void)
  * Notes: FUN_0036a908 zone alloc; FUN_001fbb74 insert; FUN_003a261c CNode. */
 void cl4_sched_alloc_and_insert(word_t a, word_t b, code *cb, word_t c, long sched)
 {
-    uint128_t r0 = FUN_0035193c();
+    uint128_t r0 = ({ reg16 _r = FUN_0035193c(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r0_lo = (word_t)r0;
     word_t r0_hi = (word_t)((unsigned __int128)r0 >> 64);
     word_t v0 = *(word_t *)(sched + 0x10);
@@ -76602,7 +76589,7 @@ void cl4_sched_op_finish(void)
     FUN_0034e55c();
     FUN_001f1514();
     if (unaff_x21 != 0) {
-        in_x3 = FUN_003a25d4(in_x3);
+        in_x3 = (FUN_003a25d4(in_x3)).lo;
     }
     FUN_00358fc8(in_x3, extraout_x8);
 }
@@ -77114,7 +77101,7 @@ void cl4_sched_set_result(void)
     word_t v1 = *(word_t *)(extraout_x1 + 0x10);
     word_t v2 = *(word_t *)(extraout_x1 + 0x20);
     thunk_FUN_0036b270(v0);
-    uint128_t r = FUN_0009461c();
+    uint128_t r = ({ reg16 _r = FUN_0009461c(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_001fb26c(r_lo, r_hi, v1, in_x3, v2);
@@ -77985,7 +77972,7 @@ apply:
             FUN_00355be8(unaff_x28, u7);
             FUN_000839d8();
             FUN_00358dac();
-            r = FUN_003510dc();
+            r = ({ reg16 _r = FUN_003510dc(); ((uint128_t)_r.hi << 64) | _r.lo; });
             (*(fn_any_t)extraout_x8_05)(r_lo, r_hi, u4);
             FUN_0034c4bc(extraout_x10);
             if ((bool)same) {
@@ -78001,12 +77988,12 @@ apply:
             }
             int i2 = *(int *)(unaff_x24 + 0x30);
             FUN_00354d50();
-            r = FUN_003508f0();
+            r = ({ reg16 _r = FUN_003508f0(); ((uint128_t)_r.hi << 64) | _r.lo; });
             (*(fn_any_t)extraout_x8_06)(r_lo, r_hi, c);
             u7 = FUN_00355eec();
             FUN_00353474(u7, extraout_x10 + i2);
             (*(fn_any_t)extraout_x8_07)();
-            r = FUN_00350914();
+            r = ({ reg16 _r = FUN_00350914(); ((uint128_t)_r.hi << 64) | _r.lo; });
             r = FUN_001f99f4(r_lo, r_hi, e);
             FUN_0034d688();
             FUN_00350914();
@@ -78140,7 +78127,7 @@ apply:
             }
             int i2 = *(int *)(unaff_x19 + 0x30);
             FUN_00354d50();
-            r = FUN_003509e0();
+            r = ({ reg16 _r = FUN_003509e0(); ((uint128_t)_r.hi << 64) | _r.lo; });
             (*(fn_any_t)extraout_x8_06)(r_lo, r_hi, c);
             FUN_00355eec();
             (*(fn_any_t)extraout_x8_07)(unaff_x21, unaff_x25 + i2, d);
@@ -78712,7 +78699,7 @@ void cl4_sched_op_dispatch_pair(void)
         FUN_003508c0(r_lo);
         (*(fn_any_t)m)();
     }
-    word_t v = FUN_00359920();
+    word_t v = (FUN_00359920()).lo;
     FUN_0008e500(v, in_stack_00000048);
 }
 
@@ -78775,7 +78762,7 @@ void cl4_sched_dispatch_main_loop(void)
     FUN_00359ab0();
     code *tag = (code *)((long)&__thread_bss.magic + 1);
     FUN_00350744();
-    (*(unsigned __int128 *)(void *)&(local_18)) = FUN_001a89a8();
+    (*(unsigned __int128 *)(void *)&(local_18)) = ({ reg16 _r = FUN_001a89a8(); ((uint128_t)_r.hi << 64) | _r.lo; });
     FUN_00350ed0(*(word_t *)(extraout_x16_01 + 0x10));
     (*(fn_any_t)extraout_x8_04)();
     FUN_003506b0();
@@ -78818,7 +78805,7 @@ void cl4_sched_dispatch_main_loop(void)
                 FUN_002a4c98();
                 FUN_003a25d4(tag);
             }
-            r = FUN_00084180();
+            r = ({ reg16 _r = FUN_00084180(); ((uint128_t)_r.hi << 64) | _r.lo; });
             FUN_0008e500(r_lo, r_hi, u2);
             return;
         }
@@ -78877,7 +78864,7 @@ build:
         FUN_00351f28();
         FUN_0034f030();
         FUN_003509f8(v4);
-        r = FUN_001a89a8();
+        r = ({ reg16 _r = FUN_001a89a8(); ((uint128_t)_r.hi << 64) | _r.lo; });
         code *pc10 = (code *)(uintptr_t)r_hi;
         tag = (code *)(uintptr_t)r_lo;
         FUN_00319808(unaff_x24 + 0x20, auStack_78);
@@ -78972,7 +78959,7 @@ free2:
         FUN_00353918();
         v4 = FUN_00349bfc();
         if ((extraout_x8_13 == 0) && (((v4 & ((ulong)pc9 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
-            uVar8 = FUN_003a25d4(pc9);
+            uVar8 = (FUN_003a25d4(pc9)).lo;
             (*(word_t *)((char *)&(local_18) + 8)) = local_140;
             (*(word_t *)(void *)&(local_18)) = (word_t)(uintptr_t)tag;
         } else {
@@ -78992,7 +78979,7 @@ free2:
                 if (!(bool)in_ZR) {
                     FUN_003517c0();
                     FUN_003a25d4(pc9);
-                    uVar8 = FUN_003a25d4(local_140);
+                    uVar8 = (FUN_003a25d4(local_140)).lo;
                     (*(word_t *)(void *)&(local_18)) = (word_t)unaff_x21;
                     (*(word_t *)((char *)&(local_18) + 8)) = (word_t)unaff_x24;
                     goto build2;
@@ -79001,7 +78988,7 @@ free2:
             pc9 = (code *)local_18;
             FUN_003504ac();
             FUN_00356cd4();
-            uVar8 = FUN_003a25d4(local_140);
+            uVar8 = (FUN_003a25d4(local_140)).lo;
             dpcb = tag;
         }
 build2:
@@ -79461,7 +79448,7 @@ void cl4_sched_result_build(word_t a, word_t b, uint8_t c, word_t d, word_t e, w
     (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8_00 + 0x40));
     FUN_00348f38();
     FUN_00353178();
-    uint128_t r4 = FUN_002db6b8();
+    uint128_t r4 = ({ reg16 _r = FUN_002db6b8(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r4_lo = (word_t)r4;
     word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_00350914();
@@ -80269,7 +80256,7 @@ void cl4_sched_scan_apply_main(void)
             int i2 = *(int *)(local_d8 + 0x30);
             FUN_00354064();
             code *pc9 = (code *)*unaff_x27;
-            r = FUN_00084180();
+            r = ({ reg16 _r = FUN_00084180(); ((uint128_t)_r.hi << 64) | _r.lo; });
             (*(fn_any_t)pc9)(r_lo, r_hi, 0x6753a0);
             pc10 = (word_t)*(word_t *)(uintptr_t)local_e8;
             (*(fn_any_t)pc10)(local_120 + i2, local_90 + i1b, in_x4);
@@ -80468,7 +80455,7 @@ void cl4_sched_resolve_entry(void)
                 i2 = *(int *)(m1 + 0x30);
                 FUN_0035735c();
                 code *pc11 = (code *)*unaff_x22;
-                r = FUN_00100c38();
+                r = ({ reg16 _r = FUN_00100c38(); ((uint128_t)_r.hi << 64) | _r.lo; });
                 (*(fn_any_t)pc11)(r_lo, r_hi, unaff_x20);
                 code *pc14 = (code *)*local_d8;
                 u10 = FUN_00357068(local_30, in_stack_ffffffffffffff00 + i2);
@@ -81633,7 +81620,8 @@ cl4_find_t cl4_sched_find_or_empty(word_t a, long set)
         }
         return out;
     }
-    return ZEXT816(0x100000000ULL << 0x40);
+    cl4_find_t empty = { .index = 0x100000000ULL, .found = 0 };
+    return empty;
 }
 
 /* FUN_001fb2f0 @ 0x001fb2f0   (est. cl4_sched_requeue_found)
@@ -81758,7 +81746,7 @@ void cl4_sched_found_dispatch(word_t a, word_t b, long set, word_t d, word_t e)
  * Notes: FUN_0036a908 alloc 0x6bb9; FUN_001fbb74; FUN_00351548; FUN_00084234. */
 void cl4_sched_op_build_dispatch(word_t a, word_t b, word_t c, long set)
 {
-    uint128_t r = FUN_00084220();
+    uint128_t r = ({ reg16 _r = FUN_00084220(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t *p = (word_t *)FUN_0036a908(0x48, 0x6bb9);
@@ -81908,7 +81896,7 @@ void cl4_sched_op_cmp(word_t a, word_t b, uint mode)
  * Notes: mirror of FUN_001fb9e0. */
 void cl4_sched_op_cmp_b(void)
 {
-    uint128_t r4 = FUN_00084220();
+    uint128_t r4 = ({ reg16 _r = FUN_00084220(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r4_lo = (word_t)r4;
     word_t r4_hi = (word_t)((unsigned __int128)r4 >> 64);
     FUN_001f9964();
@@ -81976,7 +81964,7 @@ void cl4_sched_insert_helper(word_t a, word_t b, long set)
  * Notes: FUN_001fa6c8 alloc; LZCOUNT bit scan; SoftwareBreakpoint overflow. */
 void cl4_sched_set_copy_28(void)
 {
-    word_t u4 = FUN_0035193c();
+    word_t u4 = (FUN_0035193c()).lo;
     FUN_0034b930();
     FUN_001fa6c8();
     FUN_00353584();
@@ -82094,7 +82082,7 @@ done:
  * Notes: mirror; FUN_001fa2e4 alloc. */
 void cl4_sched_set_copy_10(void)
 {
-    word_t u5 = FUN_0035193c();
+    word_t u5 = (FUN_0035193c()).lo;
     FUN_0034b930();
     FUN_001fa2e4();
     FUN_00353584();
@@ -82156,7 +82144,7 @@ done:
  * Notes: mirror; FUN_001fa430 alloc. */
 void cl4_sched_set_copy_20(void)
 {
-    word_t u4 = FUN_000b4594();
+    word_t u4 = (FUN_000b4594()).lo;
     FUN_0034b930();
     FUN_001fa430();
     FUN_00353584();
@@ -82317,7 +82305,7 @@ void cl4_sched_op_insert_check(word_t a, word_t b, word_t c, long set)
         FUN_000839d8();
         return;
     }
-    r = FUN_00350a34(*(word_t *)(extraout_x16 + 0x10));
+    r = ({ reg16 _r = FUN_00350a34(*(word_t *)(extraout_x16 + 0x10)); ((uint128_t)_r.hi << 64) | _r.lo; });
     (*(fn_any_t)extraout_x8_00)(r_lo, r_hi, u3);
     FUN_00350a04();
     FUN_003523fc();
@@ -82496,7 +82484,7 @@ void cl4_sched_read_dispatch(void)
  * Notes: FUN_001fa958 realloc; LZCOUNT bit scan; FUN_0035bc70 clear; overflow. */
 void cl4_sched_set_rehash(void)
 {
-    uint128_t r = FUN_00084220();
+    uint128_t r = ({ reg16 _r = FUN_00084220(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     long l5 = r_hi;
@@ -82769,7 +82757,7 @@ void cl4_sched_run_queue_drain2(void)
     FUN_0007c1a4();
     (*(fn_any_t)DAT_00658c00)();
     FUN_0034aee4();
-    uint128_t r = FUN_00348b94(l1);
+    uint128_t r = ({ reg16 _r = FUN_00348b94(l1); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00377824(r_lo, r_hi, u3);
@@ -82857,7 +82845,7 @@ void cl4_sched_queue_walk_dispatch(word_t a, word_t b, word_t c)
         code *pc7 = (code *)FUN_00027788();
         long l11 = 0;
         do {
-            uint128_t r = FUN_00351648(u3);
+            uint128_t r = ({ reg16 _r = FUN_00351648(u3); ((uint128_t)_r.hi << 64) | _r.lo; });
             word_t r_lo = (word_t)r;
             word_t r_hi = (word_t)((unsigned __int128)r >> 64);
             FUN_001fea40(r_lo, r_hi, u3, c);
@@ -83017,7 +83005,7 @@ void cl4_sched_debug_string(void)
     word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     local_10 = (word_t *)(uintptr_t)r8_lo;
     FUN_00353e14(s_range_005cf420);
-    uint128_t r9 = FUN_001a89a8();
+    uint128_t r9 = ({ reg16 _r = FUN_001a89a8(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r9_lo = (word_t)r9;
     word_t r9_hi = (word_t)((unsigned __int128)r9 >> 64);
     ulong u3 = r9_hi;
@@ -83025,7 +83013,7 @@ void cl4_sched_debug_string(void)
     void ***p4 = (void ***)(uintptr_t)unaff_x20;
     if ((extraout_x8 == 0) &&
         (((unaff_x28 & ((ulong)unaff_x20 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
-        u2 = FUN_003a25d4();
+        u2 = (FUN_003a25d4()).lo;
     } else {
         if (((ulong)(word_t)unaff_x20 >> 0x3d & 1) == 0) {
             in_ZR = (u3 & 0x2000000000000000) == 0;
@@ -83035,14 +83023,14 @@ void cl4_sched_debug_string(void)
             r9 = FUN_0034b7c8();
             if (!(bool)in_ZR) {
                 FUN_003a25d4();
-                u2 = FUN_003a25d4(u3);
+                u2 = (FUN_003a25d4(u3)).lo;
                 goto s1;
             }
         }
         FUN_000e72b0();
         FUN_00354b98();
         FUN_002a4c98();
-        u2 = FUN_003a25d4(u3);
+        u2 = (FUN_003a25d4(u3)).lo;
         r9_hi = r8_hi;
         r9_lo = (word_t)local_10;
         p4 = &local_10;
@@ -83098,7 +83086,7 @@ s2:
     FUN_0034c094((ulong)pp & 0xffffffffffff);
     if ((extraout_x8_02 == 0) &&
         ((((ulong)pp & ((ulong)unaff_x22 ^ 0xffffffffffffffff)) >> 0x3d & 1) == 0)) {
-        r9 = FUN_003a25d4(unaff_x22);
+        r9 = ({ reg16 _r = FUN_003a25d4(unaff_x22); ((uint128_t)_r.hi << 64) | _r.lo; });
         local_10 = p10;
     } else {
         if (((ulong)(word_t)unaff_x22 >> 0x3d & 1) == 0) {
@@ -83109,7 +83097,7 @@ s2:
             if (!(bool)in_ZR) {
                 FUN_00351e08();
                 FUN_003a25d4(unaff_x22);
-                r9 = FUN_003a25d4(p5);
+                r9 = ({ reg16 _r = FUN_003a25d4(p5); ((uint128_t)_r.hi << 64) | _r.lo; });
                 local_10 = p4;
                 p5 = (void ***)(uintptr_t)unaff_x20;
                 goto s3;
@@ -83118,7 +83106,7 @@ s2:
         p4 = &local_10;
         FUN_0034c9c8();
         FUN_002a4c98();
-        r9 = FUN_003a25d4(p5);
+        r9 = ({ reg16 _r = FUN_003a25d4(p5); ((uint128_t)_r.hi << 64) | _r.lo; });
         p5 = (void ***)(uintptr_t)unaff_x22;
     }
 s3:
@@ -83328,7 +83316,7 @@ void cl4_sched_queue_run_loop(void)
         FUN_003514e8();
         (*(fn_any_t)extraout_x8_04)();
         FUN_0034de8c();
-        r2 = FUN_00350630();
+        r2 = ({ reg16 _r = FUN_00350630(); ((uint128_t)_r.hi << 64) | _r.lo; });
         FUN_00377bec(r2_lo, r2_hi, u3);
         FUN_0031b0bc();
         FUN_00351f7c();
@@ -83353,7 +83341,7 @@ void cl4_sched_queue_run_loop(void)
             if (!(bool)in_ZR) {
                 FUN_0036b118(local_20[0]);
                 FUN_0035748c(&stack0x00000000);
-                r = FUN_003507e0();
+                r = ({ reg16 _r = FUN_003507e0(); ((uint128_t)_r.hi << 64) | _r.lo; });
                 (*(fn_any_t)extraout_x8_08)(r_lo, r_hi, unaff_x23);
                 FUN_00357338(&stack0x00000018);
                 FUN_003508cc();
@@ -83494,7 +83482,7 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
     FUN_0007c1a4();
     (*(fn_any_t)DAT_00658c00)();
     FUN_0034b250();
-    uint128_t r = FUN_00348b94(u1);
+    uint128_t r = ({ reg16 _r = FUN_00348b94(u1); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     word_t u6 = FUN_00377824(r_lo, r_hi, u10);
@@ -83533,7 +83521,7 @@ void cl4_sched_queue_walk_apply(word_t a, word_t b, word_t c)
             FUN_00350600(u1);
             FUN_00377bec();
             FUN_00356bb0();
-            r = FUN_0009e234();
+            r = ({ reg16 _r = FUN_0009e234(); ((uint128_t)_r.hi << 64) | _r.lo; });
             FUN_001de04c(r_lo, r_hi, u3);
             l12 = local_18;
         } while (local_18 != *(long *)(l11 + 0x10));
@@ -83570,7 +83558,7 @@ void cl4_sched_op_dispatch7(void)
     FUN_0034b2f8();
     FUN_0035139c(u1);
     word_t u3 = FUN_00377bec();
-    uint128_t r8 = FUN_00350488();
+    uint128_t r8 = ({ reg16 _r = FUN_00350488(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r8_lo = (word_t)r8;
     word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     FUN_00310e08(r8_lo, r8_hi, u3);
@@ -83582,7 +83570,7 @@ void cl4_sched_op_dispatch7(void)
     r8 = FUN_003504ac();
     ulong u4 = FUN_001fe95c(r8_lo, r8_hi, u3);
     if ((u4 & 1) != 0) {
-        u5 = FUN_00359920(extraout_x8);
+        u5 = (FUN_00359920(extraout_x8)).lo;
         FUN_0008e500(u5, in_stack_00000038);
         FUN_001fe9a8();
         return;
@@ -83732,7 +83720,7 @@ void cl4_sched_batch_apply(word_t a, word_t b, long src)
         local_58 = (word_t *)(uintptr_t)*pv;
         lStack_50 = *unaff_x24;
         local_40 = u12;
-        uint128_t r = FUN_00350798();
+        uint128_t r = ({ reg16 _r = FUN_00350798(); ((uint128_t)_r.hi << 64) | _r.lo; });
         word_t r_lo = (word_t)r;
         word_t r_hi = (word_t)((unsigned __int128)r >> 64);
         u5 = FUN_0031b71c(r_lo, r_hi, u5);
@@ -83945,7 +83933,7 @@ void cl4_sched_queue_reset(void)
     (*(fn_any_t)extraout_x9)();
     int i2 = *(int *)(unaff_x26 + 0x30);
     code *pc8 = *(code **)(extraout_x16_00 + 0x20);
-    r10 = FUN_00350c80();
+    r10 = ({ reg16 _r = FUN_00350c80(); ((uint128_t)_r.hi << 64) | _r.lo; });
     (*(fn_any_t)pc8)(r10_lo, r10_hi, u4);
     pc7 = *(code **)(extraout_x16_00 + 8);
     (*(fn_any_t)pc7)(unaff_x27 + i2, u4);
@@ -83954,7 +83942,7 @@ void cl4_sched_queue_reset(void)
     (*(fn_any_t)pc8)(l1 + *(int *)(l5 + 0x24), unaff_x27 + *(int *)(unaff_x20 + 0x30), u4);
     FUN_003508f0();
     (*(fn_any_t)pc7)();
-    r10 = FUN_003504c4();
+    r10 = ({ reg16 _r = FUN_003504c4(); ((uint128_t)_r.hi << 64) | _r.lo; });
     FUN_0028c7d8(r10_lo, r10_hi, l6);
     FUN_00353154();
     FUN_00350b78();
@@ -83966,7 +83954,7 @@ void cl4_sched_queue_reset(void)
     FUN_00351e3c(u4, r9_lo);
     (*(fn_any_t)extraout_x8_03)();
     FUN_00350df4();
-    r9 = FUN_00348b94();
+    r9 = ({ reg16 _r = FUN_00348b94(); ((uint128_t)_r.hi << 64) | _r.lo; });
     FUN_00377824(r9_lo, r9_hi, l1);
     FUN_00349530();
     (**(code **)(extraout_x16_01 + 0x10))(extraout_x8, (code *)(long)((long)i2 + (long)(uintptr_t)unaff_x20));
@@ -84031,7 +84019,7 @@ void cl4_sched_batch_step(void)
     int i1 = *(int *)(extraout_x1_00 + 0x24);
     long l6 = *(long *)(l3 + -8);
     code *pc9 = *(code **)(l6 + 0x10);
-    uint128_t r = FUN_0009461c();
+    uint128_t r = ({ reg16 _r = FUN_0009461c(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     (*(fn_any_t)pc9)(r_lo, r_hi, l3);
@@ -84073,7 +84061,7 @@ void cl4_sched_count_op(void)
 {
     FUN_0008e518();
     long *pv = (long *)FUN_00352ce0();
-    uint128_t r = FUN_00350488();
+    uint128_t r = ({ reg16 _r = FUN_00350488(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r_lo = (word_t)r;
     word_t r_hi = (word_t)((unsigned __int128)r >> 64);
     FUN_00377824(r_lo, r_hi, in_x3, &DAT_0060e208);
@@ -84154,7 +84142,7 @@ void cl4_sched_run_loop(void)
     code *next = (code *)FUN_000a68f4();
     do {
         (*(fn_any_t)next)(uStack_28, unaff_x23, u1);
-        r4 = FUN_00351330();
+        r4 = ({ reg16 _r = FUN_00351330(); ((uint128_t)_r.hi << 64) | _r.lo; });
         FUN_00350884(r4_lo, r4_hi, unaff_x28);
         if ((bool)in_ZR) {
             FUN_0035336c();
@@ -84173,7 +84161,7 @@ void cl4_sched_run_loop(void)
             goto done;
         }
         (**(code **)(extraout_x16 + 8))(extraout_x8, in_x4);
-        r4 = FUN_00350944(*(word_t *)(extraout_x16 + 0x20));
+        r4 = ({ reg16 _r = FUN_00350944(*(word_t *)(extraout_x16 + 0x20)); ((uint128_t)_r.hi << 64) | _r.lo; });
         (*(fn_any_t)extraout_x8_04)(r4_lo, r4_hi, in_x4);
     } while (true);
 done:
@@ -84330,7 +84318,7 @@ void cl4_sched_batch_advance_b(void)
     FUN_003515fc(u4, (long)unaff_x27 + (long)i3);
     (*(fn_any_t)extraout_x8_01)();
     FUN_00351a50();
-    r8 = FUN_00348b94(u2);
+    r8 = ({ reg16 _r = FUN_00348b94(u2); ((uint128_t)_r.hi << 64) | _r.lo; });
     FUN_00377824(r8_lo, r8_hi, u1);
     FUN_00349530();
     (**(code **)(extraout_x16_00 + 0x10))(extraout_x8, local_40);
@@ -84473,7 +84461,7 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
     FUN_00356900();
     FUN_00349720();
     (*(fn_any_t)DAT_00658c00)(*(word_t *)(extraout_x8 + 0x40));
-    uint128_t r8 = FUN_00348f38();
+    uint128_t r8 = ({ reg16 _r = FUN_00348f38(); ((uint128_t)_r.hi << 64) | _r.lo; });
     word_t r8_lo = (word_t)r8;
     word_t r8_hi = (word_t)((unsigned __int128)r8 >> 64);
     bool same = (r8_lo == r8_hi);
@@ -84505,7 +84493,7 @@ void cl4_sched_scan_apply_pair(word_t a, word_t b, word_t c, word_t d, word_t e)
                              *(long *)(extraout_x9 + 0x30) +
                              *(long *)(extraout_x16 + 0x48) * (extraout_x8_00 | l3 << 6));
                 (*(fn_any_t)extraout_x8_01)();
-                r8 = FUN_00350488();
+                r8 = ({ reg16 _r = FUN_00350488(); ((uint128_t)_r.hi << 64) | _r.lo; });
                 FUN_0031b614(r8_lo, r8_hi, d, e);
                 r8 = FUN_00356bb0(e);
                 FUN_00351360(r8_lo, r8_hi, 0x66bb20);
@@ -84556,6 +84544,11 @@ done:
     FUN_003596e4();
     FUN_00357c74(extraout_x1);
 }
+
+
+
+
+
 
 
 
