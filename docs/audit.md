@@ -265,9 +265,16 @@ Severity is a **hypothesis**, not a claim (per `AGENTS.md`).
 | op-table-id | `b984fd8` | hv_capabilities fixed-size copyout | informational |
 | op-table-id | `b98e788`/`b98e964` | hv_trap_op_15/16 gated, bounds-checked | informational |
 
-**Highest-priority:** `hv_trap_op_10` (`b98e488`) — guest-controlled
-out-of-bounds write into the vm owner block (`owner + idx*0x10 + 0x12` and
-`owner + idx*0x80 + 0x94` with `idx` in 0..63 and no `idx < 8` guard).
+**Highest-priority (as of 2026-08-12, after the full verification pass):** no
+`high` findings remain. The earlier high (`hv_trap_op_10` b98e488 "unbounded
+slot index") was corrected — the index is `CTZ(mask)` ∈ 0..63 into a
+**64-entry** per-CPU slot table (bounded at create by `0x3f < guest[0]` in
+b989040), so every access is in-bounds; severity downgraded to informational.
+Remaining `medium` hypotheses: `hv_vm_set_trap_debug` (b986f1c) NULL
+vm-resource deref in b954160 (kernel panic/DoS, registry is the trust
+boundary), and the guest-triggerable host panic on unhandled ESR EC /
+exit reason in the run hub (b989a44) — both fail-closed (panic, not
+corruption), and guest reachability is inferred, not demonstrated.
 
 ---
 
