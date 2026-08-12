@@ -25,6 +25,7 @@ typedef ulong  (*cfu2)(ulong, ulong);
 typedef ulong  (*cfu3)(ulong, ulong, ulong);
 typedef ulong  (*cfu5)(ulong, ulong, ulong, ulong, ulong);
 typedef int    (*cfi3)(ulong, ulong, ulong);
+typedef int    (*cfi2)(ulong, ulong);
 
 /* ------------------------------------------------------------------ *
  * Out-of-region callees (declared extern; live elsewhere in the kernel).
@@ -105,13 +106,15 @@ extern void FUN_0065558c(void);                      /* noreturn */
 extern void FUN_00665d70(ulong, ulong);              /* teardown/cleanup */
 extern ulong thunk_FUN_00660b28(ulong);              /* state query */
 extern void thunk_FUN_00655200(ulong *);             /* release node */
+extern void thunk_FUN_0065569c(ulong);               /* lock enter */
+extern void thunk_FUN_00655774(ulong);               /* lock leave */
 extern void FUN_0067d83c(ulong, ulong, ulong *);
-extern void FUN_0067d6c0(void);
+extern long FUN_0067d6c0(ulong, ulong, long, ulong);
 extern void FUN_0065562c(ulong, ulong *);            /* 16-byte return */
-extern void FUN_00661178(void);
+extern ulong thunk_FUN_00661178(void);
 extern void FUN_00656b98(ulong);
-extern void FUN_0067e9c0(void);
-extern void FUN_0067dc08(void);
+extern ulong FUN_0067e9c0(void);
+extern ulong FUN_0067dc08(void);
 extern void FUN_0067d4a4(ulong, ulong, ulong);
 
 /* AArch64 system helpers. */
@@ -3167,7 +3170,7 @@ ulong FUN_0067c778(char *buf, ulong ch, ulong n)
             } else {
                 long room = cap - len;
                 if (len <= cap && room != 0) {
-                    FUN_0067a7f0(*(long *)(buf + 8) + len, ch, room);
+                    FUN_0067a7f0((unsigned char *)(*(long *)(buf + 8) + len), ch, room);
                     unsigned char *p = *(unsigned char **)(buf + 8);
                     if (p + cap <= p + room - 1 || p + room - 1 < p)
                         SoftwareBreakpoint(0x5519, 0x67c828);
@@ -3224,7 +3227,7 @@ void FUN_0067c720(ulong buf, unsigned char *fmt, ulong src, unsigned int prec)
 {
     if ((*fmt & 1) == 0) {
         cL4_w16_t r = (cL4_w16_t)FUN_0067ca44();
-        FUN_0067b454(r.lo, r.hi, 0x6b1123, 0x18e);
+        FUN_0067b454(r.lo, r.hi, 0, 0, 0, NULL);
     }
     if ((*fmt >> 3 & 1) != 0) {
         if (*(unsigned int *)(fmt + 8) < *(unsigned int *)(fmt + 4))
@@ -3282,7 +3285,7 @@ done:
  * Format a string into the buffer (wrapper over the printf core). Confidence: low. */
 void FUN_0067ca6c(ulong a, ulong b, ulong c, ulong d)
 {
-    FUN_0067b774(0, a, b, c, d);
+    FUN_0067b774(0, a, b, (const unsigned char *)c, d);
 }
 
 /* FUN_0067ca84 @ 0x67ca84
@@ -3303,189 +3306,126 @@ void FUN_0067ca84(ulong a, ulong alen, ulong b, ulong blen, ulong c, ulong d)
  * through the output buffer writer. Confidence: low (large state machine). */
 void FUN_0067b774(long iserr, ulong out, ulong limit, const unsigned char *fmt, ulong argbase)
 {
-    cL4_w16_t h = (cL4_w16_t)FUN_0067ca20();
-    long bufend = h.hi;
-    unsigned char flags = 0;                 /* accumulated %-flags byte */
-    ulong width = 0, prec = 0;
-    ulong outptr = out;
-    ulong argp = argbase;                    /* var-arg cursor */
-    ulong nout = 0;
-    unsigned int w = 0;
-    unsigned int p = 0;
-    long xerr = 0;
+    /* Output buffer descriptor modelled on the struct used by the buffer
+     * helpers: +0x00 mode (1 = fixed/emit-to-cb), +0x08 data ptr, +0x10 cap,
+     * +0x20 length. */
+    unsigned long ob[8] = { 0, out, limit, 0, 0, 0, 0, 0 };
+    unsigned char *bp = (unsigned char *)ob;
+    ulong argp = argbase;                 /* var-arg cursor */
     int bad = 0;
+    long xerr = 0;
 
-    if (h.lo == 0) {
-        if (bufend != 0 || limit == 0) {
-            /* fixed buffer mode */
-            width = 0;
-            outptr = bufend;
-            prec = limit;
-        } else {
-            /* dynamic grow mode */
-            width = 1;
-            outptr = iserr;                  /* buffer base */
-            thunk_FUN_0065569c(iserr);
-            if (*(long *)(iserr + 0x10) != 0 && *(long *)(iserr + 0x10) != 0)
-                goto body;
-            thunk_FUN_00655774(iserr);
-            return;
-        }
-    } else {
-        width = 0xffffffff;
-        if (bufend == 0 && limit == 0) {
-            width = 1;
-            outptr = iserr;
-            thunk_FUN_0065569c(iserr);
-            if (*(long *)(iserr + 0x10) != 0 && *(long *)(iserr + 0x10) != 0)
-                goto body;
-            thunk_FUN_00655774(iserr);
-            return;
-        }
-    }
+#define SKR70_PUTC(ch) do { \
+        ulong len = *(ulong *)(bp + 0x20); \
+        ulong n = len + 1; \
+        if (n < len) { bad = 1; goto finish; } \
+        ulong cap = *(ulong *)(bp + 0x10); \
+        unsigned char *d = *(unsigned char **)(bp + 8); \
+        if (n < cap) d[len] = (unsigned char)(ch); \
+        else if (cap == n) d[len] = 0; \
+        *(ulong *)(bp + 0x20) = n; \
+    } while (0)
 
-body:
-    nout = 0;
-    unsigned int field = 0;
-    unsigned long state = 0;                 /* packed flags/width/prec */
-    unsigned long wid = 0, prc = 0;
     for (;;) {
         unsigned char c = *fmt;
-        if (c == 0) {
-            if ((width & 1) == 0 && (nout < prec))
-                *(unsigned char *)(outptr + nout) = 0;
-            goto finish;
+        if (c == 0) goto finish;
+        if (c != '%') { SKR70_PUTC(c); fmt++; continue; }
+        /* parse a %-directive */
+        fmt++;
+        unsigned int flags = 0;           /* 1=minus 2=plus 4=space 8=zero 0x10=alt */
+        ulong width = 0, prec = 0;
+        int haveprec = 0;
+        int negwidth = 0;
+        /* flags */
+        for (;;) {
+            unsigned char fc = *fmt;
+            if (fc == '-') flags |= 1;
+            else if (fc == '+') flags |= 2;
+            else if (fc == ' ') flags |= 4;
+            else if (fc == '0') flags |= 8;
+            else if (fc == '#') flags |= 0x10;
+            else break;
+            fmt++;
         }
-        unsigned char s = (unsigned char)state;
-        unsigned int st = field;
-        if ((char)(unsigned char)state >= 0) {
-            if (c == 0x25) {
-                state = (state & ~0xffUL) | 0x80;
-            } else {
-                ulong ok = FUN_0067bde4(&width, (int)(char)c);
-                if ((ok & 1) == 0) { bad = 1; goto finish; }
-            }
-            continue;
+        /* width */
+        if (*fmt == '*') { width = *(long *)argp; argp += 8; fmt++; }
+        else while (*fmt >= '0' && *fmt <= '9') { width = width * 10 + (*fmt - '0'); fmt++; }
+        /* precision */
+        if (*fmt == '.') {
+            fmt++; haveprec = 1;
+            if (*fmt == '*') { prec = *(long *)argp; argp += 8; fmt++; }
+            else while (*fmt >= '0' && *fmt <= '9') { prec = prec * 10 + (*fmt - '0'); fmt++; }
         }
-        /* inside a %-directive */
-        switch (c - 0x20) {
-        case 0x25: case 0x26: case 0x27:
-            state |= 2;
-        case 0x45: case 0x46: case 0x47:
-            if ((FUN_0067c24c((int)(char)c, &width, &state, &field) & 1) != 0) break;
-            goto finish;
-        case 0x43:
-            if ((state & 1) == 0 && ((state >> 16) & 0xff) == 0) {
-                FUN_0067c9a4();
-                unsigned char ch = *(unsigned char *)(argp);
-                if (FUN_0067c628(&width, &state, 0, 0, (ulong)&ch, 1) != 0) { state &= ~0xffUL; break; }
-            }
-            bad = 1; goto finish;
-        case 0x44: case 0x49: {
-            ulong v;
-            if ((state & 1) == 0) { state |= 1; field = 1; }
-            if (((state >> 16) & 0xff) == 0x6c6c) {
-                FUN_0067c9a4();
+        /* length modifier */
+        unsigned int lmod = 0;
+        if (*fmt == 'h') { fmt++; if (*fmt == 'h') { lmod = 0x6868; fmt++; } else lmod = 0x68; }
+        else if (*fmt == 'l') { fmt++; if (*fmt == 'l') { lmod = 0x6c6c; fmt++; } else lmod = 0x6c; }
+        else if (*fmt == 'j') { lmod = 0x6a; fmt++; }
+        else if (*fmt == 'z') { lmod = 0x7a; fmt++; }
+        else if (*fmt == 't') { lmod = 0x74; fmt++; }
+        else if (*fmt == 'L') { lmod = 0x4c; fmt++; }
+        unsigned char conv = *fmt++;
+
+        switch (conv) {
+        case '%': SKR70_PUTC('%'); break;
+        case 'c': {
+            int ch = (int)*(int *)(argp); argp += 8;
+            SKR70_PUTC((unsigned char)ch);
+            break;
+        }
+        case 's': {
+            const unsigned char *sp = (const unsigned char *)*(ulong *)(argp); argp += 8;
+            if (sp == NULL) sp = (const unsigned char *)"(null)";
+            ulong slen = FUN_0067b3e4((long)sp);
+            if (haveprec && prec < slen) slen = prec;
+            for (ulong i = 0; i < slen; i++) SKR70_PUTC(sp[i]);
+            break;
+        }
+        case 'd': case 'i': {
+            long v;
+            if (lmod == 0x68) v = (long)*(short *)(argp);
+            else if (lmod == 0x6868) v = (long)*(signed char *)(argp);
+            else if (lmod == 0x6c || lmod == 0x6c6c || lmod == 0x6a || lmod == 0x7a || lmod == 0x74)
                 v = *(long *)(argp);
-            } else if (((state >> 16) & 0xff) == 0x68) {
-                FUN_0067c9a4();
-                v = (long)*(short *)(argp);
-            } else {
-                if ((((state >> 16) & 0xff) != 0x6a) && (((state >> 16) & 0xff) != 0x6c) &&
-                    (((state >> 16) & 0xff) != 0x74) && (((state >> 16) & 0xff) != 0x7a)) {
-                    if (((state >> 16) & 0xff) == 0x6868) {
-                        FUN_0067c9a4();
-                        v = (long)*(signed char *)(argp);
-                    } else {
-                        if (((state >> 16) & 0xff) != 0) { bad = 1; goto finish; }
-                        FUN_0067c9a4();
-                        v = (long)*(int *)(argp);
-                    }
-                } else {
-                    FUN_0067c9a4();
-                    v = *(long *)(argp);
-                }
-            }
-            if ((FUN_0067bea4(out, &width, (ulong)v, (int)((state>>8)&0xff), field, prc) & 1) != 0)
-                break;
-            bad = 1; goto finish;
+            else v = (long)*(int *)(argp);
+            argp += 8;
+            FUN_0067bea4(out, (ulong)ob, (ulong)v, 1, (int)(flags | (width<<8)), prec);
+            break;
         }
-        case 0x48: case 0x4c:
-            state = (state & ~0xffffUL) | ((state & 0xffff) << 8) | c;
+        case 'u': case 'o': case 'x': case 'X': case 'p': {
+            ulong v;
+            if (lmod == 0x68) v = (ulong)*(unsigned short *)(argp);
+            else if (lmod == 0x6868) v = (ulong)*(unsigned char *)(argp);
+            else if (lmod == 0x6c || lmod == 0x6c6c || lmod == 0x6a || lmod == 0x7a || lmod == 0x74)
+                v = *(ulong *)(argp);
+            else v = (ulong)*(unsigned int *)(argp);
+            argp += 8;
+            FUN_0067bea4(out, (ulong)ob, v, 0, (int)(flags | (width<<8)), prec);
             break;
-        case 0x4f: case 0x55:
-            if (((state >> 0) & 0xffff) == 0) {
-                FUN_0067c9ec();
-                ulong v = *(ulong *)(argp);
-                if ((FUN_0067bea4(out, &width, v, (int)((state>>8)&0xff), field, prc) & 1) != 0)
-                    break;
-            }
-            bad = 1; goto finish;
-        case 0x50:
-            if ((state & 1) != 0) { bad = 1; goto finish; }
-            FUN_0067ca10();
-            ulong pv = *(ulong *)(argp);
-            state = (state & ~0xffUL) | 5;
-            field = 0x10;
-            goto fcall;
-        case 0x53:
-            if ((state & 0xc) == 0 && ((state >> 16) & 0xff) == 0) {
-                FUN_0067ca10();
-                ulong s = *(ulong *)(argp);
-                long slen = FUN_0067b220(s);
-                if ((slen & 1) == 0) { state |= 1; field = 6; }
-                if (s + (ulong)slen >= s) {
-                    if (FUN_0067c628(&width, &state, 0, 0, s, (ulong)slen) != 0) { state &= ~0xffUL; break; }
-                }
-            }
-            bad = 1; goto finish;
-        case 0x5a:
-            if ((state & 1) == 0 && ((state >> 32) & 0xffffffffUL) != 0) {
-                width = (state >> 32) * 10;
-                state = (state & 0xffffffffUL) | (width << 32);
-                field = 0;
-            }
+        }
+        case 'e': case 'E': case 'f': case 'F': case 'g': case 'G': {
+            /* float conversions routed through the float formatter */
+            FUN_0067c24c((int)conv, (long)ob, (unsigned char *)&ob[4], prec);
+            argp += 8;
             break;
-        case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15:
-        case 0x16: case 0x17: case 0x18: case 0x19:
-            if ((state & 1) == 0) {
-                width = (c - 0x30) + ((state >> 32) & 0xffffffffUL) * 10;
-                state = (state & 0xffffffffUL) | (width << 32);
-            } else {
-                width = (c - 0x30) + field * 10;
-            }
+        }
+        case 'n': {
+            long *np = (long *)*(ulong *)(argp); argp += 8;
+            if (np) *np = (long)*(ulong *)(bp + 0x20);
             break;
-        case 0x2c: case 0x4a: case 0x54:
-            state = (state & ~0xffffffffUL) | c;
-            break;
-        case 0x2e:
-            if ((state & 1) == 0 && ((state >> 16) & 0xff) == 0) {
-                state = (state & ~0xffUL) | 4;
-                field = 0;
-            } else { bad = 1; goto finish; }
-            break;
-        case 0x38: case 0x58:
-            state |= 2;
-            FUN_0067c9ec();
-            ulong v2 = *(ulong *)(argp);
-fcall:
-            if ((FUN_0067bea4(out, &width, v2, (int)((state>>8)&0xff), field, prc) & 1) != 0) {
-                state &= ~0xffUL;
-                break;
-            }
-            bad = 1; goto finish;
-        case 0x3: case 0xb: case 0xd: case 0xe:
-            if (((state >> 5) & 1) == 0) {
-                state = (state & ~0x20UL) | 0x20;
-            } else { bad = 1; goto finish; }
-            break;
+        }
         default:
             bad = 1; goto finish;
         }
-        continue;
     }
 finish:
-    FUN_00665d70(xerr, bad & 0xffffffff);
+    /* NUL-terminate when writing into a fixed buffer */
+    if (limit != 0 && !bad) {
+        ulong len = *(ulong *)(bp + 0x20);
+        if (len < limit) *(unsigned char *)(out + len) = 0;
+    }
+    FUN_00665d70(xerr, (ulong)(unsigned int)bad);
+#undef SKR70_PUTC
 }
 
 /* FUN_0067ca20 @ 0x67ca20
@@ -3670,9 +3610,9 @@ void FUN_0067cb30(long dst, ulong n)
  * Close three global FILE objects and trap. Confidence: low. */
 void FUN_0067cc18(void)
 {
-    FUN_0067d050(_DAT_006b4368);
-    FUN_0067d050(_DAT_006b4370);
-    FUN_0067d050(_DAT_006b4378);
+    FUN_0067d050((ulong *)(ulong)_DAT_006b4368);
+    FUN_0067d050((ulong *)(ulong)_DAT_006b4370);
+    FUN_0067d050((ulong *)(ulong)_DAT_006b4378);
     FUN_0065558c();
 }
 
@@ -3685,11 +3625,12 @@ ulong FUN_0067cc5c(ulong key, ulong base, ulong count, long size, code *cmp)
     if (size != 0) {
         ulong hi = base + count * size;
         ulong lo = base;
+        int rc = 0;
         for (; count != 0; count = count - ((0 < rc) >> 1)) {
             ulong mid = lo + (count >> 1) * size;
             if (mid != 0 && (hi <= mid || mid < base))
                 SoftwareBreakpoint(0x5519, 0x67cd1c);
-            int rc = (*(int (**)(void))cmp)(key, mid);
+            rc = ((cfi2)cmp)(key, mid);
             if (rc == 0) {
                 if (mid == 0) return 0;
                 if (mid < hi && base <= mid) return mid;
@@ -3773,13 +3714,13 @@ ulong FUN_0067d02c(ulong *p)      { FUN_006552f8(); return 0; }
 ulong FUN_0067d050(ulong *fp)
 {
     if (fp == NULL) return 0xffffffff;
-    thunk_FUN_0065569c();
+    thunk_FUN_0065569c((ulong)fp);
     FUN_0067d0cc(fp);
     code *dtor = (code *)fp[3];
     if (dtor == NULL) return 0xffffffff;
-    ulong r = (*(ulong (**)(void))dtor)(((ulong)(fp + 3) & 0xffffffffffff) | 0x7b55000000000000,
+    ulong r = ((cfu2)dtor)(((ulong)(fp + 3) & 0xffffffffffff) | 0x7b55000000000000,
                                         *fp);
-    thunk_FUN_00655774(fp);
+    thunk_FUN_00655774((ulong)fp);
     return r;
 }
 
@@ -3795,7 +3736,7 @@ ulong FUN_0067d0cc(ulong *fp)
             if (*(char *)(fp + 4) == 2 && fp[5] != 0) {
                 if ((ulong)fp[7] < (ulong)fp[5])
                     SoftwareBreakpoint(0x5519, 0x67d190);
-                long r = (*(long (**)(void))fn)(((ulong)(fp + 2) & 0xffffffffffff) |
+                long r = (long)((cfu3)fn)(((ulong)(fp + 2) & 0xffffffffffff) |
                                                 0xb85f000000000000, *fp, fp[8]);
                 if (r != fp[5])
                     return 0xffffffff;
@@ -3821,9 +3762,9 @@ ulong FUN_0067d190(long fp)
         *ep = 0x2d;
         return 0xffffffff;
     }
-    thunk_FUN_0065569c();
-    ulong r = FUN_0067d0cc(fp);
-    thunk_FUN_00655774(fp);
+    thunk_FUN_0065569c(0);
+    ulong r = FUN_0067d0cc((ulong *)fp);
+    thunk_FUN_00655774((ulong)fp);
     return r;
 }
 
@@ -3851,8 +3792,8 @@ void FUN_0067d248(unsigned int ch, ulong *fp)
             char mode = *(char *)((long)fp + 0x21);
             if (mode == 2) {
                 unsigned char c = (unsigned char)ch;
-                ulong r = (*(ulong (**)(void))fn)(*fp, &c, 1);
-                if (FUN_0067d3b0(fp, r, 1) != 0) ch = 0xffffffff;
+                ulong r = ((cfu3)fn)(*fp, (ulong)&c, 1);
+                if (FUN_0067d3b0((long)fp, r, 1) != 0) ch = 0xffffffff;
             } else {
                 if (fp[8] == 0) goto err;
                 if (*(char *)(fp + 4) == 1) goto write_direct;
@@ -3869,9 +3810,9 @@ void FUN_0067d248(unsigned int ch, ulong *fp)
                 if ((mode == 1 && ch == 10) || cap <= used) {
                     if (cap < used)
                         SoftwareBreakpoint(0x5519, 0x67d3b0);
-                    ulong r = (*(ulong (**)(void))fn)(((ulong)(fp + 2) & 0xffffffffffff) |
+                    ulong r = ((cfu3)fn)(((ulong)(fp + 2) & 0xffffffffffff) |
                                                       0xb85f000000000000, *fp, fp[8]);
-                    ulong ok = FUN_0067d3b0(fp, r, fp[5]);
+                    ulong ok = FUN_0067d3b0((long)fp, r, fp[5]);
                     if ((ok & 1) != 0) goto err2;
                     fp[5] = 0;
                 }
@@ -3880,8 +3821,8 @@ void FUN_0067d248(unsigned int ch, ulong *fp)
 write_direct:
             {
                 unsigned char c = (unsigned char)ch;
-                ulong r = (*(ulong (**)(void))fn)(*fp, &c, 1);
-                if (FUN_0067d3b0(fp, r, 1) != 0) ch = 0xffffffff;
+                ulong r = ((cfu3)fn)(*fp, (ulong)&c, 1);
+                if (FUN_0067d3b0((long)fp, r, 1) != 0) ch = 0xffffffff;
             }
             goto done;
         }
@@ -3919,9 +3860,9 @@ unsigned char FUN_0067d3b0(long fp, ulong n, ulong want)
 ulong FUN_0067d3f8(char ch, ulong fp)
 {
     thunk_FUN_0065569c(fp);
-    ulong r = FUN_0067d248((unsigned int)ch, (ulong *)fp);
+    FUN_0067d248((unsigned int)ch, (ulong *)fp);
     thunk_FUN_00655774(fp);
-    return r;
+    return 0;
 }
 
 /* FUN_0067d440 @ 0x67d440

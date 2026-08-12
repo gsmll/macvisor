@@ -5071,3 +5071,33 @@ Confidence: high
 - **Evidence**: `(*DAT_00658cf0)(*(word_t*)(base+0x40)); (*pcVar4)(lVar9, lVar10, ...);` with the targets documented as decompiler artifacts.
 - **Severity (hypothesis)**: low — unresolvable indirect-call targets are a completeness gap for call-graph forensics, not a confirmed defect.
 - **Confidence**: medium
+
+## [SKR70] 0067a510 sk_r70_resolve_pte_byte
+Observation: Page-table byte resolution for a mapped address walks the per-node page-object list and derives an index via `(addr >> 0xe & 0xff) * 0x87` with a `* 0x15` reciprocal multiply to compute a slot offset into `pg[0x25]`-sized entries; a `*slot & 7` page-size tag is read back.
+Evidence: 0x67a510: `uVar2 = ((uint)(param_3 >> 0xe) & 0xff) * 0x87; iVar4 = (int)(param_3 >> 0xe); uVar9 = *puVar1 >> ((ulong)((iVar4 + ((iVar4 - (uVar2 >> 8) >> 1 & 0x7f) + (uVar2 >> 8) >> 4 & 0xf) * -0x15) * 3) & 0x3f); bVar6 = (byte)uVar9 & 7;`.
+Severity (hypothesis): medium — the derived slot index feeds a pointer computation; an out-of-range addr could index past the page object unless the preceding `addr & 0xffffffffffc00000` match is strict.
+Confidence: low.
+
+## [SKR70] 00676a7c sk_r70_mapping_setup
+Observation: The mapping-install path marshals 4 words through `tpidrro_el0` and issues `CallSupervisor(0)`/`CallSupervisor(1)` to cross into the lower security state, then directly rewrites page-table entries (`*e = phys & 0xffffffffffffff | ...`) for cap objects.
+Evidence: 0x676a7c: `puVar2 = (ulong *)tpidrro_el0; *puVar2 = uVar9; puVar2[1] = param_4; puVar2[2]=0; puVar2[3]=0; CallSupervisor(0); *puVar2 = uVar9;` (via 0x6786fc/0x6787a0) and `*e = phys & 0xffffffffffffff | (ulong)*(byte *)((long)e + 7) << 0x38`.
+Severity (hypothesis): medium — the supervisor-boundary marshalling via the read-only thread-pointer register is the guest/GL0-facing surface; physical-address remapping of cap objects is a PTE-write primitive whose bounds depend on the earlier range validation (0x6766cc).
+Confidence: low.
+
+## [SKR70] 0067cb30 sk_r70_prng_fill
+Observation: PRNG fill mixes two 64-bit state words with a xoshiro-style rotation/permutation plus a `* 9` multiplier and feeds the output into caller buffers byte-wise.
+Evidence: 0x67cb30: `_DAT_006feb90 = _DAT_006feb90 ^ _DAT_006feb88; _DAT_006feb88 = (_DAT_006feb88 >> 0x28 | _DAT_006feb88 << 0x18) ^ _DAT_006feb90 << 0x10 ^ _DAT_006feb90; _DAT_006feb90 = _DAT_006feb90 >> 0x1b | _DAT_006feb90 << 0x25; local_60 = (uVar3 >> 0x39 | uVar1) * 9;` with 8-byte `thunk_FUN_0067aa00` copies.
+Severity (hypothesis): low — the generator's quality (and whether the 64-bit state is refreshed from a hardware source) determines whether outputs are unpredictable; a weak/derivable state could undermine any randomness-based protection.
+Confidence: low.
+
+## [SKR70] 0067b774 sk_r70_printf_core
+Observation: The formatter supports `%n` (write the emitted character count to a caller-supplied pointer), `%s`, integer and float conversions, with a bounded output buffer.
+Evidence: 0x67b774 `%n` path writes `*np = (long)*(ulong *)(bp + 0x20)`; float `%e/%g/%f` routed to 0x67c24c.
+Severity (hypothesis): low — if any format string reaches this path with user-controlled `%n`, it is an arbitrary 64-bit write; only a risk if the format source is untrusted.
+Confidence: low.
+
+## [SKR70] 0067d0cc sk_r70_fflush
+Observation: Buffered FILE flush calls a function pointer from `fp[2]` with a tagged handle `((ulong)(fp + 2) & 0xffffffffffff) | 0xb85f000000000000`, and validates the returned byte count against `fp[5]` before clearing the buffer.
+Evidence: 0x67d0cc: `lVar1 = (*pcVar2)((ulong)(param_1 + 2) & 0xffffffffffff | 0xb85f000000000000, *param_1, param_1[8]); if (lVar1 != param_1[5]) return 0xffffffff;`.
+Severity (hypothesis): low — function-pointer dispatch on a tagged object handle is standard; the count check limits buffer-state corruption.
+Confidence: medium.
