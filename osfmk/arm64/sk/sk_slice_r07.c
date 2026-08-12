@@ -152,9 +152,7 @@ extern int cL4_eq(unsigned long a, unsigned long b);
 extern void cL4_fatal(const char *msg);
 /* FUN_001afa84 @ 0x1afa84 — [[noreturn]] Swift runtime fatal error with
  * source location (file/line/column) metadata. */
-extern void cL4_runtime_fatal(unsigned long a, int b, int c, unsigned long d,
-                              unsigned long e, const char *file, int line,
-                              int col, ...);
+extern void cL4_runtime_fatal();
 /* FUN_0035ac70 @ 0x35ac70 — allocate/build a Swift String from a C literal. */
 extern unsigned long cL4_str_from_cstr(const char *s);
 /* FUN_003593c0 @ 0x3593c0 — return a static fatal-error message handle. */
@@ -2890,7 +2888,7 @@ void FUN_003d71b8(unsigned long param_1, unsigned long param_2, unsigned long pa
     *(long **)0x30 = plVar3;
     *plVar3 = 0;
     plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
-    FUN_003d69f8(plVar3, param_1, param_2, param_3, param_5, uVar2);
+    FUN_003d69f8((unsigned long)plVar3, param_1, param_2, param_3, param_5, uVar2);
 }
 
 /* FUN_003d72f0 @ 0x3d72f0   (est. cL4_async_drop_permits)
@@ -3375,7 +3373,7 @@ void FUN_003d85b8(unsigned long param_1, unsigned long param_2, unsigned long pa
     *(long **)0x30 = plVar3;
     *plVar3 = 0;
     plVar3[1] = (long)(((unsigned char*)DAT_00405fdc));
-    FUN_003d7c18(plVar3, param_1, param_2, param_3, param_5, uVar2);
+    FUN_003d7c18((unsigned long)plVar3, param_1, param_2, param_3, param_5, uVar2);
 }
 
 /* FUN_003d86f0 @ 0x3d86f0   (est. cL4_executor_teardown_guard_c)
@@ -3710,7 +3708,7 @@ void FUN_003d952c(void)
     FUN_00377824();
     FUN_00351f10();
     FUN_0007c1a4();
-    (*DAT_00658c80)();
+    (*DAT_00658c80)(0);
     FUN_0034b05c();
     FUN_00407100();
     FUN_00350518();

@@ -90,7 +90,7 @@ static void sk_003ab780(uint64_t * st); /* FUN_003ab780 */
 static uint64_t sk_003ab7f4(uint64_t * st); /* FUN_003ab7f4 */
 static uint64_t sk_003ab948(uint64_t * st, int32_t p2); /* FUN_003ab948 */
 static uint64_t * sk_003abad0(uint64_t * st); /* FUN_003abad0 */
-static void sk_003abc48(uint64_t * st); /* FUN_003abc48 */
+static uint64_t sk_003abc48(uint64_t *st); /* FUN_003abc48 (x0 returns value despite void decl) */
 static uint64_t sk_003abd1c(uint64_t * st); /* FUN_003abd1c */
 static void sk_003abef0(uint64_t * st); /* FUN_003abef0 */
 static uint64_t sk_003abf88(uint64_t * st); /* FUN_003abf88 */
@@ -131,7 +131,7 @@ static uint64_t * sk_003ae0c8(uint64_t * st); /* FUN_003ae0c8 */
 static uint64_t * sk_003ae134(uint64_t * st); /* FUN_003ae134 */
 static uint64_t sk_003ae1b4(uint64_t * st); /* FUN_003ae1b4 */
 static uint64_t sk_003ae36c(uint64_t * st); /* FUN_003ae36c */
-static void sk_003ae414(uint64_t * st, uint64_t p2); /* FUN_003ae414 */
+static uint64_t sk_003ae414(uint64_t *st, uint64_t p2); /* FUN_003ae414 (x0 returns value) */
 static uint64_t sk_003ae4c8(uint64_t * st, uint64_t p2); /* FUN_003ae4c8 */
 static uint64_t sk_003ae658(uint64_t * st); /* FUN_003ae658 */
 static uint64_t sk_003ae734(uint64_t * st, uint64_t p2, uint64_t *param_3); /* FUN_003ae734 */
@@ -674,7 +674,7 @@ static uint64_t sk_003ac580(uint64_t *st, int32_t p2, uint64_t p3)
         if (1 < p2) {
             uint32_t k = p2 + 1;
             do {
-                uint64_t *slot = &v;
+                uint64_t *slot = (uint64_t *)&v;
                 sk_003ad810(rbuf + 2, slot, st);   /* push onto stack buf */
                 k = k - 1;
             } while (2 < k);
@@ -846,7 +846,7 @@ build_zc:
         uint64_t *v = (uint64_t *)sk_003ae414(st, (uint64_t)z);
         built = v;
         if (v) {
-            uint64_t *slot = &v;
+            uint64_t *slot = (uint64_t *)&v;
             sk_003ad810(st + 13, slot, st);   /* append to result buf +0x68 */
         }
         a = 0;
@@ -937,5 +937,70 @@ dispatch:
         else { uint32_t i = STACK_CNT(st) - 1; v = STACK_BASE(st)[i];
                if (NODE_TAG(v) != 0xf4) v = 0; else STACK_CNT(st) = i; }
         return (uint64_t)sk_node_push2(st, 0x174, (uint64_t *)built, v);
+    }
+}
+
+/* FUN_003abc48 @ 0x3abc48   (est. sk_parse_z_s)
+ * Parses a range/indices token: 'z' -> empty range (0,0); 's' -> a 0x57 node;
+ * 'd' -> a range from two '_N_' idents (first+1, second); otherwise a range
+ * from (0, id+1). Delegates to sk_003ac2d0 which pushes the 0x27 range node.
+ * Returns 0 (the x0 value is the pushed range's 0-status, unused by callers).
+ * Confidence: medium */
+static uint64_t sk_003abc48(uint64_t *st)
+{
+    uint64_t pos = STREAM_POS(st);
+    if (pos < STREAM_END(st)) {
+        char c = STREAM_DATA(st)[pos];
+        if (c == 'z') {
+            STREAM_POS(st) = pos + 1;
+            sk_003ac2d0(st, 0, 0);
+            return 0;
+        }
+        if (c == 's') {
+            STREAM_POS(st) = pos + 1;
+            uint64_t *n = sk_node_alloc(st, 1);
+            NODE_SETTAG(n, 0x57); NODE_SETSUBT(n, 0);
+            return (uint64_t)n;
+        }
+        if (c == 'd') {
+            STREAM_POS(st) = pos + 1;
+            int32_t a = sk_003ac4a4(st);
+            uint32_t b = sk_003ac4a4(st);
+            sk_003ac2d0(st, a + 1, b);
+            return 0;
+        }
+    }
+    {
+        int32_t v = sk_003ac4a4(st);
+        sk_003ac2d0(st, 0, v + 1);
+        return 0;
+    }
+}
+
+/* FUN_003ae414 @ 0x3ae414   (est. sk_emit_range)
+ * Builds a 0x2e node: if param_2 is non-zero it becomes a fresh 0xf4 node's
+ * child, else the top 0xf4 element is popped (or 0). Pairs it with
+ * sk_003ae658's result and pushes as 0xf4.
+ * Confidence: medium */
+static uint64_t sk_003ae414(uint64_t *st, uint64_t p2)
+{
+    uint64_t *a = (uint64_t *)sk_003ae658(st);
+    uint64_t *v;
+    if (p2 == 0) {
+        if (STACK_CNT(st) != 0) {
+            uint32_t i = STACK_CNT(st) - 1;
+            v = STACK_BASE(st)[i];
+            if (NODE_TAG(v) == 0xf4) { STACK_CNT(st) = i; goto have; }
+        }
+        v = 0;
+    } else {
+        v = sk_node_alloc(st, 1);
+        NODE_SETTAG(v, 0xf4); NODE_SETSUBT(v, 0);
+        sk_node_add(v, (uint64_t *)p2, st);
+    }
+have:
+    {
+        uint64_t *r = sk_node_push2(st, 0x2e, v, a);
+        return (uint64_t)sk_node_push(st, 0xf4, r);
     }
 }

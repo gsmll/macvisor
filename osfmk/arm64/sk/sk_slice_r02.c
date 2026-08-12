@@ -2213,26 +2213,25 @@ void cL4_dem_emit_empty(dem_state_t *st, unsigned short kind)
  */
 void cL4_dem_node_push_child(dem_state_t *st, dem_node_t *n, unsigned long child)
 {
-    unsigned char tag = *(unsigned char *)((long)n + 0x12);
+    unsigned char tag = n->tag;
     unsigned long *base;
     unsigned int cnt;
-    if (child == 0) return;   /* FUN_003a3460's null-child early return */
-    /* (The decompile's real structure is reconstructed below.) */
+    if (child == 0) return;
     switch (tag) {
     case 0:
-        *(long *)n = child;
+        n->w0 = child;
         n->tag = 1;
         return;
     case 1:
-        *(long *)(n + 1) = child;
+        n->w1 = child;
         n->tag = 2;
         return;
     case 5:
-        base = (unsigned long*)*(long*)n;
+        base = (unsigned long*)n->w0;
         cnt = n->count;
         if (n->cap <= cnt) {
             cL4_dem_array_push(st, (long*)&n->w0, &n->count, 1);
-            base = (unsigned long*)*(long*)n;
+            base = (unsigned long*)n->w0;
             cnt = n->count;
         }
         base[cnt] = child;
@@ -2240,10 +2239,10 @@ void cL4_dem_node_push_child(dem_state_t *st, dem_node_t *n, unsigned long child
         return;
     case 2:
         base = (unsigned long*)cL4_dem_node_reserve(st, 3);
-        base[0] = *(unsigned long*)n;
-        base[1] = *(unsigned long*)(n + 1);
+        base[0] = n->w0;
+        base[1] = n->w1;
         base[2] = child;
-        *(long*)n = (long)base;
+        n->w0 = (unsigned long)base;
         n->tag = 5;
         n->count = 3;
         return;
@@ -2285,29 +2284,28 @@ void cL4_dem_array_push(dem_state_t *st, long *vec, unsigned int *cntp,
  * child), shifting remaining elements down and shrinking the count.
  * Confidence: medium
  */
-void cL4_dem_node_remove_at(long *n, unsigned int idx)
+void cL4_dem_node_remove_at(dem_node_t *n, unsigned int idx)
 {
     unsigned int cnt;
-    char tag = *(char *)((long)n + 0x12);
+    char tag = (char)n->tag;
     if (tag == 5) {
-        cnt = (unsigned int)n[1] - 1;
+        unsigned int i;
+        cnt = (unsigned int)n->count - 1;
         if (idx != cnt) {
             do {
-                unsigned int i = idx + 1;
-                *(unsigned long *)(*n + (unsigned long)idx * 8) =
-                    *(unsigned long *)(*n + (unsigned long)i * 8);
+                i = idx + 1;
+                *(unsigned long *)(n->w0 + (unsigned long)idx * 8) =
+                    *(unsigned long *)(n->w0 + (unsigned long)i * 8);
                 idx = i;
             } while (cnt != i);
-            cnt = (unsigned int)n[1] - 1;
+            cnt = (unsigned int)n->count - 1;
         }
-        *(unsigned int *)(n + 1) = cnt;
+        n->count = cnt;
     } else if (tag == 2) {
-        if (idx == 0) *n = n[1];
-        *(unsigned char*)((long)n + 0x12) = 1;
-        return;
+        if (idx == 0) n->w0 = n->w1;
+        n->tag = 1;
     } else if (tag == 1) {
-        *(unsigned char*)((long)n + 0x12) = 0;
-        return;
+        n->tag = 0;
     }
 }
 
@@ -2316,15 +2314,15 @@ void cL4_dem_node_remove_at(long *n, unsigned int idx)
  * Writes child `param_3` at index param_2 of a node, honoring its tag.
  * Confidence: medium
  */
-void cL4_dem_node_set_at(long *n, unsigned int idx, long child)
+void cL4_dem_node_set_at(dem_node_t *n, unsigned int idx, long child)
 {
-    char tag = *(char *)((long)n + 0x12);
+    char tag = (char)n->tag;
     if (tag == 5) {
-        *(long *)(*n + (unsigned long)idx * 8) = child;
+        *(long *)(n->w0 + (unsigned long)idx * 8) = child;
     } else if (tag == 2) {
-        n[idx] = child;
+        (&n->w0)[idx] = (unsigned long)child;
     } else if (tag == 1) {
-        *n = child;
+        n->w0 = (unsigned long)child;
     }
 }
 
@@ -2336,26 +2334,26 @@ void cL4_dem_node_set_at(long *n, unsigned int idx, long child)
  */
 void cL4_dem_node_reverse(dem_node_t *n, unsigned long idx)
 {
-    unsigned long *base, *hi, *lo, w;
+    unsigned long *base, *a, *b, *a2, *b2, w;
     if (n->tag == 5) {
-        base = (unsigned long*)*(long*)n;
-        hi = (unsigned long*)((*(long*)*(long*)n + (unsigned long)*(unsigned int*)(*n + 8) * 8) - 8);
-        if (idx != *(unsigned int *)(*n + 8) && &base[idx] < hi) {
-            unsigned long *a = &base[idx], *b = hi;
+        base = (unsigned long*)n->w0;
+        b = (unsigned long*)((n->w0 + (unsigned long)n->count * 8) - 8);
+        if (idx != n->count && &base[idx] < b) {
+            a = &base[idx];
             do {
-                unsigned long *a2 = a + 1;
+                a2 = a + 1;
                 w = *a;
                 *a = *b;
-                unsigned long *b2 = b - 1;
+                b2 = b - 1;
                 *b = w;
                 b = b2;
                 a = a2;
             } while (a2 < b2);
         }
     } else if (n->tag == 2 && idx == 0) {
-        w = *(long*)n;
-        *(long*)(*(long*)n + 8) = *(long*)(*(long*)n + 8);
-        *(long*)*(long*)n = w;
+        w = n->w0;
+        n->w0 = n->w1;
+        n->w1 = w;
     }
 }
 
@@ -2392,7 +2390,7 @@ loop:
         if (p == (unsigned short*)0) return 0;
 iter:
         p = q + 4;
-        q = (unsigned short*)cL4_dem_node_find(*(unsigned long*)q, key, depth - 1);
+        q = cL4_dem_node_find((unsigned short*)*(unsigned long*)q, key, depth - 1);
     } while (q == 0);
     return q;
 }

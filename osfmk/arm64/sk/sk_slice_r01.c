@@ -125,7 +125,6 @@ extern word_t cL4_pack_lookup3(word_t p);                   /* FUN_0037ffc4 */
 extern word_t cL4_pack_lookup4(word_t p);                   /* FUN_0037febc */
 extern word_t cL4_proto_desc(word_t p, word_t k);           /* FUN_0039d60c */
 extern word_t cL4_type_desc(word_t *p);                     /* FUN_0039c8e4 */
-extern word_t cL4_conform_desc(word_t *p);                  /* FUN_0039a1b0 */
 extern word_t cL4_conform_desc2(word_t p);                  /* FUN_00374e2c */
 extern word_t cL4_conform_major(word_t p);                  /* FUN_0039c84c */
 extern word_t cL4_conform_next(word_t p);                   /* FUN_0039c888 */
@@ -1421,7 +1420,7 @@ static word_t sk_pack_push(word_t *v, word_t val)
         }
         ne = (word_t*)((word_t)np + ((word_t)hi - (word_t)base));
         *ne = val; ne[1] = 0; hi = ne + 2;
-        cL4_memcpy_v((word_t)(ne + cnt * -2), (word_t)base, (word_t)hi - (word_t)ne + ((word_t)hi - (word_t)base) - ((word_t)hi - (word_t)base));
+        cL4_memcpy_v((word_t)(ne + cnt * -2), (word_t)base, cnt * 0x10);
         base = *(word_t**)(v + 0x50);
         *(word_t**)(v + 0x50) = ne + cnt * -2;
         *(word_t**)(v + 0x58) = hi;
