@@ -1051,20 +1051,24 @@ hv_trap_op_15(uint64_t mode)
 		    *(long *)(vcpu[0x18] + 0x1400) != 0)
 			return 0xfae94005;
 		if (vcpu[0x1a] == 0) {
-			va = 0;
-			r = kernel_alloc(0, 0x4000, 0, 0x10080, 0x1c, 0); /* est. alloc */
-			if (r != 0)
+			hv_u128_t ar;
+			va = 0;                          /* local_50: vm_map_enter out */
+			ar = kernel_alloc(0, 0x4000, 0, 0x10080, 0x1c, 0); /* FUN_fffffe000b8a6c14 */
+			if ((int)ar.lo != 0)
 				return 0xfae94005;
+			/* block (ar.hi) is the vm_map_enter 7th arg (extraout_x1) */
 			r = kernel_mem_validate(*(void **)(*vcpu + 0x10), &va, 0x4000, 0,
-			                          0x1c100008ULL, 0, 0, 0, &f1, &f0, 2); /* est. map */
+			                          0x1c100008ULL, 0, ar.hi, 0, &f1, &f0, 2); /* FUN_fffffe000b8b51c8 */
 			if (r != 0) {
-				kernel_lock_ref(0);
-				kernel_memzero(0, 0, 0 + 0x4000, 1, 0);  /* extraout_x1 VA not recoverable; 0 stand-in */
+				kernel_lock_ref(0);          /* FUN_fffffe000b7f62e8 */
+				/* b8b6860 is a no-arg batch vm-object release; the
+				 * decompiler renders 5 leftover args the callee ignores. */
+				kernel_vm_object_batch_dealloc();  /* FUN_fffffe000b8b6860 */
 				return 0xfae94005;
 			}
 			*(int *)(cpu_slot + 0x1c0) += 1;
-			vcpu[0x1a] = (long)va;   /* record EL2 scratch VA (extraout_x1 in decompile) */
-			*(uint64_t *)(v + 0x4148) = va;
+			vcpu[0x1a] = (long)ar.hi;        /* the alloc block (extraout_x1) */
+			*(uint64_t *)(v + 0x4148) = va;  /* the map (local_50) */
 			*(uint64_t *)(v + 0x4118) |= 0x10;
 			if (*(int *)(cpu_slot + 0x1c0) == 0)
 				kernel_panic();

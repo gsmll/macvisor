@@ -86,9 +86,22 @@ extern void sveStreamingModeStop(void);  /* SVE streaming-mode stop (intrinsic) 
 /* Ghidra POPCOUNT used in cache-geometry arithmetic (est.). */
 #define POPCOUNT(x) __builtin_popcountll((uint64_t)(x))
 
-/* Kernel alloc/dealloc helpers (kernel, not recreated). */
-extern int kalloc_zalloc(void *out, size_t size); /* est. FUN_fffffe000b8a6c14 */
-extern void dealloc(void *addr, size_t size);     /* est. FUN_fffffe000b8a8078 */
+/* Ghidra 128-bit return (auVar44/45 style) — used by kernel_alloc below. */
+typedef struct { uint64_t lo, hi; } hv_u128_t;
+
+/* Kernel alloc/dealloc helpers (kernel, not recreated). Signatures verified
+ * against fresh decompiles 2026-08-12:
+ *   b8a6c14 = vm-object allocation; returns a 16-byte {error, block} pair
+ *     (x0 = error word, x1 = the allocated block). Callers check .lo == 0
+ *     for success and use .hi as the block.
+ *   b8a8078 = dealloc (vm, addr, size), 3 args.
+ *   b8b6860 = NO-ARG batch vm-object release (drains the global free list;
+ *     callers' 5-arg renderings are decompiler register leftovers the callee
+ *     ignores — previously misnamed kernel_memzero/kfree/dealloc). */
+extern hv_u128_t kernel_alloc(uint64_t a, uint64_t size, uint64_t c,
+                              uint64_t flags, uint64_t e, void *f);
+extern int  kernel_mem_release(uint64_t vm, uint64_t addr, uint64_t size);
+extern void kernel_vm_object_batch_dealloc(void);
 
 /* Kernel zone allocator used by hv_vm_create (kernel, not recreated). */
 extern void *hv_zone_alloc(void *zone, int kind); /* est. FUN_fffffe000b7eb624 hv zone alloc */

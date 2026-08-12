@@ -110,18 +110,24 @@ extern void kernel_panic_c(void) __attribute__((noreturn));  /* FUN_fffffe000c0e
 extern void LORelease(void);
 
 /* Kernel zone allocation / free + validation used for EL2 translation and
- * guest-memory windows. Referenced by vcpu-core and el2-state.
- *   kernel_alloc @ 0xfffffe000b8a6c14  (est. kernel_alloc / kalloc)
- *   kernel_mem_validate @ 0xfffffe000b8b51c8  (est. kernel_mem_validate / vm_map_enter)
- *   kernel_mem_release @ 0xfffffe000b8a8078  (est. kernel_mem_release / dealloc)
- *   kernel_memzero @ 0xfffffe000b8b6860  (est. kernel_memzero / kfree) */
-extern int  kernel_alloc(uint64_t a, uint64_t b, uint64_t c, uint32_t prot,
-                         int e, int f);
-extern int  kernel_mem_validate(void *a, void *b, uint64_t len, int prot,
-                                uint32_t flags, uint64_t x, uint64_t y,
-                                int z, int *out1, int *out2, int k);
+ * guest-memory windows. Referenced by vcpu-core and el2-state. Signatures
+ * verified against fresh decompiles 2026-08-12:
+ *   kernel_alloc @ 0xfffffe000b8a6c14 — vm-object allocation, returns
+ *     {error, block} (x0/x1 pair); callers check .lo==0 and use .hi.
+ *   kernel_mem_validate @ 0xfffffe000b8b51c8 — actually vm_map_enter
+ *     (the vm_remap/VM_PROT_COPY strings + full map-enter body confirm).
+ *   kernel_mem_release @ 0xfffffe000b8a8078 — dealloc (vm, addr, size).
+ *   kernel_vm_object_batch_dealloc @ 0xfffffe000b8b6860 — NO-ARG batch
+ *     vm-object release; previously misnamed kernel_memzero/kfree/dealloc
+ *     (callers' 5-arg renderings are register leftovers the callee ignores). */
+extern hv_u128_t kernel_alloc(uint64_t a, uint64_t size, uint64_t c,
+                              uint64_t flags, uint64_t e, void *f);
+extern int  kernel_mem_validate(void *vm, void *map_out, uint64_t len,
+                                uint64_t prot, uint32_t flags, uint64_t x,
+                                uint64_t block, int z, int *out1, int *out2,
+                                int k);   /* FUN_fffffe000b8b51c8, vm_map_enter */
 extern int  kernel_mem_release(uint64_t a, uint64_t b, uint64_t c);
-extern void kernel_memzero(uint64_t a, uint64_t b, uint64_t c, int d, uint64_t e);
+extern void kernel_vm_object_batch_dealloc(void);
 
 /* ======================================================================== *
  * SHARED GLOBAL NAMING TABLE — one English name per hypervisor global.

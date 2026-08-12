@@ -257,41 +257,58 @@ out_release:
  *   (first, 0x8000) mapping and returns 0xfae94001.  Body corrected to match. */
 int hv_vcpu_alloc_init(hv_vcpu_t **out, uint64_t vm, int flag)
 {
+    hv_u128_t ar;
     uint64_t vcpu = 0, guest = 0, map = 0;
-    void *zone = 0;
+    void *zone[5] = {0};
+    int kr;
     int rc = 0xfae94005;
 
     *out = 0;
 
-    /* first allocation: the vcpu object itself (0x100 bytes) */
-    if (kalloc_zalloc(&vcpu, 0x100) != 0)           /* FUN_fffffe000b8a6c14 */
+    /* first allocation: the vcpu object (0x100), b8a6c14 -> {err, block} */
+    ar = kernel_alloc(0, 0x100, 0, 0x80, 0x1c, 0);
+    if ((int)ar.lo != 0)
         return 0xfae94005;
+    vcpu = ar.hi;
 
-    /* second allocation: guest memory (0x8000) */
-    if (kalloc_zalloc(&guest, 0x8000) != 0)         /* FUN_fffffe000b8a6c14 */
-        goto fail_vcpu;
-
-    /* map the guest region into the VM at param_2.
-     * Map-1 (0x8000) failure: rc stays 0xfae94005, no dealloc (decompile). */
-    if (vm_map_enter(vm, &map, 0x8000, 0, 0x1c100008) != 0)  /* FUN_fffffe000b8b51c8 */
-        goto fail_guest;
-    if (vm_map_enter(vm, &map, 0x4000, 0, 0x1c104001) != 0) {  /* FUN_fffffe000b8b51c8 */
-        dealloc((void *)guest, 0x8000);                 /* unmap the 0x8000 mapping */
-        rc = 0xfae94001;
-        goto fail_guest;
+    /* when flag != 0, build the 5-word zone/cache descriptor passed as the
+     * 6th arg of the guest allocation (local_88..uStack_68, b989390). */
+    if (flag != 0) {
+        zone[0] = (void *)0xfffffe000c68af18ull;
+        zone[1] = (void *)0x40000000ull;
+        zone[2] = (void *)0xfffffe000b8a7ac8ull;
+        zone[3] = (void *)0xfffffe0007d7fa28ull;
+        zone[4] = 0;
     }
 
-    /* link the pieces together */
-    *(uint64_t *)(vcpu + 0) = vcpu;
-    *(uint64_t *)(vcpu + 8) = guest;
-    *(uint64_t *)(vcpu + 0x10) = map;
-    *out = (hv_vcpu_t *)vcpu;
-    return 0;
-
-fail_guest:
-    kfree((void *)guest, 0x8000);                   /* FUN_fffffe000b8b6860 */
-fail_vcpu:
-    kfree((void *)vcpu, 0x100);                     /* FUN_fffffe000b8b6860 */
+    /* second allocation: guest memory (0x8000), b8a6c14 */
+    ar = kernel_alloc(0, 0x8000, 0, 0x10080, 0x1c, flag ? zone : 0);
+    if ((int)ar.lo == 0) {
+        int p1, p2;
+        guest = ar.hi;
+        map = 0;
+        p1 = 1; p2 = 1;                     /* local_98/uStack_94 = 1/1 */
+        kr = kernel_mem_validate((void *)vm, &map, 0x8000, 0, 0x1c100008, 0,
+                                 guest, 0, &p1, &p2, 2);   /* b8b51c8 */
+        if (kr == 0) {
+            p1 = 3; p2 = 3;                 /* local_98/uStack_94 = 3/3 */
+            kr = kernel_mem_validate((void *)vm, &map, 0x4000, 0, 0x1c104001, 0,
+                                     guest, 0, &p1, &p2, 2);   /* b8b51c8 */
+            if (kr == 0) {
+                *(uint64_t *)(vcpu + 0) = vcpu;
+                *(uint64_t *)(vcpu + 8) = guest;
+                *(uint64_t *)(vcpu + 0x10) = map;
+                *out = (hv_vcpu_t *)vcpu;
+                return 0;
+            }
+            kernel_mem_release(vm, map, 0x8000);    /* b8a8078: dealloc the map */
+            rc = 0xfae94001;
+        }
+        kernel_lock_ref(0);                  /* b7f62e8 */
+        kernel_vm_object_batch_dealloc();    /* b8b6860: guest */
+    }
+    kernel_lock_ref(0);                      /* b7f62e8 */
+    kernel_vm_object_batch_dealloc();        /* b8b6860: vcpu */
     return rc;
 }
 
@@ -324,6 +341,7 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
     el2 = p[0x18];                                  /* +0xc0 el2 allocation 1 */
     if (el2 != 0) {
         uint64_t es = p[0x16];                      /* el2_state base */
+        uint64_t old = *(uint64_t *)(es + 0x4150);  /* uVar4: old guest-PT block */
         /* enter the EL2-save nesting region, then clear the dirty bits */
         *(int *)(cpu + 0x1c0) = *(int *)(cpu + 0x1c0) + 1;   /* nesting++ */
         p[0x18] = 0;
@@ -332,13 +350,19 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
         if (*(int *)(cpu + 0x1c0) == 0)
             kernel_panic();                         /* FUN_fffffe000c0f1874 */
         hv_nesting_exit(cpu);                       /* tpidr_el1+0x1c0 --1 (+TLB flush) */
-        dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
-        kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
+        /* dealloc the old +0x4150 block (b8a8078); on success also drain the
+         * batch vm-object free list (b8b6860, no-arg). */
+        if (kernel_mem_release(*(uint64_t *)(*(uint64_t *)vcpu + 0x10),
+                               old, 0x4000) == 0) {     /* FUN_fffffe000b8a8078 */
+            kernel_lock_ref(0);                         /* FUN_fffffe000b7f62e8 */
+            kernel_vm_object_batch_dealloc();           /* FUN_fffffe000b8b6860 */
+        }
     }
 
     el2 = p[0x1a];                                  /* +0xd0 el2 allocation 2 */
     if (el2 != 0) {
         uint64_t es = p[0x16];
+        uint64_t old = *(uint64_t *)(es + 0x4148);  /* uVar4: old EL2-scratch block */
         *(int *)(cpu + 0x1c0) = *(int *)(cpu + 0x1c0) + 1;   /* nesting++ */
         p[0x1a] = 0;
         *(uint64_t *)(es + 0x4148) = 0;
@@ -346,13 +370,21 @@ void hv_vcpu_destroy(hv_vcpu_t *vcpu)
         if (*(int *)(cpu + 0x1c0) == 0)
             kernel_panic();                         /* FUN_fffffe000c0f1874 */
         hv_nesting_exit(cpu);
-        dealloc((void *)el2, 0x4000);                       /* FUN_fffffe000b8a8078 */
-        kfree((void *)el2, 0x4000);                         /* FUN_fffffe000b8b6860 */
+        if (kernel_mem_release(*(uint64_t *)(*(uint64_t *)vcpu + 0x10),
+                               old, 0x4000) == 0) {     /* FUN_fffffe000b8a8078 */
+            kernel_lock_ref(0);
+            kernel_vm_object_batch_dealloc();           /* FUN_fffffe000b8b6860 */
+        }
     }
 
-    dealloc((void *)p[2], 0x8000);                          /* guest_mem */
-    kfree((void *)p[0x16], 0x8000);                         /* el2_state */
-    kfree(vcpu, 0x800);                             /* the vcpu object */
+    /* guest memory (p[2]) dealloc, then the el2_state and vcpu objects go
+     * through the no-arg batch free (b8b6860) with lock_ref around each. */
+    kernel_mem_release(*(uint64_t *)(*(uint64_t *)vcpu + 0x10),
+                       p[2], 0x8000);                   /* FUN_fffffe000b8a8078 */
+    kernel_lock_ref(0);                                 /* FUN_fffffe000b7f62e8 */
+    kernel_vm_object_batch_dealloc();                   /* FUN_fffffe000b8b6860: el2_state */
+    kernel_lock_ref(0);
+    kernel_vm_object_batch_dealloc();                   /* FUN_fffffe000b8b6860: vcpu */
 }
 
 /* ------------------------------------------------------------------ */
@@ -404,7 +436,11 @@ void hv_vcpu_object_release(uint64_t *obj)
                     free_ptr = pl6;                   /* ptr0 (+0x10) */
                 } else {
                     free_ptr = &pl6[1];               /* ptr1 */
-                    kfree((void *)pl6[0], 0x8000);    /* free ptr0 */
+                    /* "free ptr0" per decompile: lock_ref + no-arg batch
+                     * vm-object release (b8b6860; the decompiler renders
+                     * (0, ptr0, ptr0+0x8000, 1, 0) as leftover args). */
+                    kernel_lock_ref(0);               /* FUN_fffffe000b7f62e8 */
+                    kernel_vm_object_batch_dealloc(); /* FUN_fffffe000b8b6860 */
                     size = (uint32_t)(*(uint32_t *)(obj[0x433] + 0x28) +
                                       *(uint32_t *)(obj[0x433] + 0x20));
                 }
@@ -420,7 +456,6 @@ void hv_vcpu_object_release(uint64_t *obj)
         uint64_t *slot = (uint64_t *)obj[0x429 + i];
         obj[0x429 + i] = 0;
         refcount_dec(&hv_slot_list, slot);            /* DAT_fffffe0007d53e38 FUN_fffffe000b862b6c */
-        kfree(slot, 0);
     }
 
     /* free the auxiliary allocations and the object header */
@@ -1084,21 +1119,31 @@ uint64_t hv_vcpu_run(void *arg)
 
     case 0xd:                   /* 0xfffffe000b98a1a8 */
         /* EL2 scratch allocation (0x4000 bytes) on first entry:
-         * kalloc(0x4000) via kernel_alloc, vm_map_enter via
-         * kernel_mem_validate (guard page at +0x1c10000), store the result
-         * in vcpu->el2_extra (+0xd0), record it at es+0x4148 and set the
-         * "extra mapped" bit (0x10) in es+0x4118.  vm = container[0x10]. */
+         * kernel_alloc([DAT_fffffe0007e97ac8 zone], 0x4000, 0, 0x180,
+         * 0x1c, 0) (b8a6c14; block in x1), vm_map_enter via
+         * kernel_mem_validate (b8b51c8, 11 args, block as arg7, prot
+         * locals 3/3), store the BLOCK in vcpu->el2_extra (+0xd0), record
+         * the MAP at es+0x4148 and set the "extra mapped" bit (0x10) in
+         * es+0x4118.  Failure (b98d974): lock_ref (b7f62e8) + no-arg batch
+         * vm-object release (b8b6860) then unhandled. */
         if (*(uint64_t *)(vcpu + 0xd0) == 0) {
-            uint64_t el2;
-            if (kalloc_zalloc(&el2, 0x4000) != 0)
+            hv_u128_t ar;
+            uint64_t el2, map = 0;
+            int p1 = 3, p2 = 3;
+            ar = kernel_alloc(*(uint64_t *)0xfffffe0007e97ac8ull,
+                              0x4000, 0, 0x180, 0x1c, 0);  /* b8a6c14 */
+            if ((int)ar.lo != 0)
                 goto unhandled_reason;           /* 0xfffffe000b98d860 */
-            if (vm_map_enter(*(uint64_t *)(container + 0x10), &vmm,
-                             0x4000, 0, 0x1c10000) != 0) {
-                dealloc((void *)el2, 0x4000);            /* FUN_fffffe000b8b6860 */
+            el2 = ar.hi;
+            if (kernel_mem_validate((void *)*(uint64_t *)(container + 0x10), &map,
+                                    0x4000, 0, 0x1c100008, 0, el2, 0,
+                                    &p1, &p2, 2) != 0) {   /* b8b51c8 */
+                kernel_lock_ref(0);              /* b7f62e8 */
+                kernel_vm_object_batch_dealloc();/* b8b6860 */
                 goto unhandled_reason;
             }
-            *(uint64_t *)(vcpu + 0xd0) = el2;    /* vcpu->el2_extra */
-            *(uint64_t *)((char *)es + ES_EXTRA_PTR) = vmm;
+            *(uint64_t *)(vcpu + 0xd0) = el2;    /* vcpu->el2_extra (x25/block) */
+            *(uint64_t *)((char *)es + ES_EXTRA_PTR) = map;
             es[ES_CONFIG_MASK/8] |= 0x10;        /* "extra mapped" */
             es[ES_HCR/8]          |= 0x3000000;  /* +0x4040 */
         }

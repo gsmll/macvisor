@@ -257,12 +257,12 @@ uint64_t hv_el2_pt_alloc_wrapper(uint64_t vcpu);
 /* Shared kernel deps (NOT recreated): see docs/chain-map.md + manifest. */
 extern int kernel_copyin(void *, uint64_t, uint64_t, int, int, int, int, uint64_t *);
 extern int kernel_copyin2(uint64_t, uint64_t, uint64_t, int, uint64_t *);
-extern int kernel_mem_validate(void *, void *, uint64_t, int, uint32_t, uint64_t,
+extern int kernel_mem_validate(void *, void *, uint64_t, uint64_t, uint32_t, uint64_t,
                                uint64_t, int, int *, int *, int);
 extern int kernel_copyout(uint64_t, uint64_t, uint64_t, int, uint64_t);
 extern int kernel_mem_release(uint64_t, uint64_t, uint64_t);
-extern void kernel_memzero(uint64_t, uint64_t, uint64_t, int, uint64_t);
-extern int kernel_alloc(uint64_t, uint64_t, uint64_t, uint32_t, int, int);
+extern hv_u128_t kernel_alloc(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, void *);
+extern void kernel_vm_object_batch_dealloc(void);
 extern void kernel_lock_ref(uint64_t);
 extern void kernel_tlb_flush(void);
 extern void kernel_panic(void);             /* noreturn */

@@ -1043,7 +1043,7 @@ panic_underflow:
  * hv_el2.h used guessed void/no-arg prototypes that do NOT match the real
  * call arity, so faithful forms are declared here under distinct names. */
 
-typedef struct { uint64_t lo, hi; } hv_u128_t;   /* Ghidra 128-bit (auVar44/45) returns */
+/* hv_u128_t (Ghidra 128-bit auVar44/45 returns) now in hv_compat.h. */
 
 /* Ghidra CONCAT44/CONCAT62/CONCAT31/CONCAT71 artifacts from the decompile
  * (see _DAT_fffffe000c62bd48, the CONCAT44 writes into the fault-state

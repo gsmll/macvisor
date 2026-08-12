@@ -417,7 +417,9 @@ uint32_t hv_vcpu_slot_op(struct hv_vm *vm, uint64_t slot, uint64_t which)
         src = cfg->el2_cfg;                      /* +0x2198 */
         dst = *(uint64_t *)(slot_desc + 2);      /* +0x8 */
         kernel_lock_ref(0);                      /* FUN_fffffe000b7f62e8 */
-        kernel_memzero(0, dst, dst + 0x8000, 1, 0);   /* FUN_fffffe000b8b6860 */
+        /* FUN_fffffe000b8b6860: no-arg batch vm-object release (decompile
+         * renders 5 leftover args, callee ignores them). */
+        kernel_vm_object_batch_dealloc();        /* FUN_fffffe000b8b6860 */
         count = *(uint32_t *)(src + 0x20);
         len   = *(uint32_t *)(src + 0x28);
         buf = *(uint64_t *)(slot_desc + 4);      /* +0x10 (lVar11) */
@@ -484,13 +486,14 @@ void hv_el2_pt_alloc(struct hv_vm *vm)
     int prot = 3, prot2 = 3;
 
     if (vm->pt_block == 0) {
-        /* kernel_alloc (FUN_fffffe000b8a6c14) returns the 0x4000 block; the
-         * decompiler renders it as extraout_x1 (x1 leftover).  Captured here
-         * via kalloc_zalloc (same FUN, pointer-out wrapper; see hv_compat.h).
+        /* kernel_alloc (FUN_fffffe000b8a6c14) returns {error, block} —
+         * the decompiler renders the block as extraout_x1 (x1 leftover).
          * Decompile call: kernel_alloc(0,0x4000,0,0x10080,0x1c,0). */
-        if (kalloc_zalloc(&block, 0x4000) != 0) {
+        hv_u128_t ar = kernel_alloc(0, 0x4000, 0, 0x10080, 0x1c, 0);
+        if ((int)ar.lo != 0) {
             goto out;
         }
+        block = ar.hi;
         kr = kernel_mem_validate((void *)((uint64_t)vm->cfg + 0x10), &validated,
                                  0x4000, 0, 0x1c100008, 0, block, 0,
                                  &prot2, &prot, 2);      /* FUN_fffffe000b8b51c8 */
@@ -511,8 +514,11 @@ void hv_el2_pt_alloc(struct hv_vm *vm)
                 kernel_tlb_flush();                      /* FUN_fffffe000b96c6d4 */
             }
         } else {
+            /* FUN_fffffe000b8b6860 is a no-arg batch vm-object release;
+             * the decompiler renders 5 leftover register args (0, block,
+             * block+0x4000, 1, 0) which the callee ignores. */
             kernel_lock_ref(0);                          /* FUN_fffffe000b7f62e8 */
-            kernel_memzero(0, block, block + 0x4000, 1, 0);  /* FUN_fffffe000b8b6860 */
+            kernel_vm_object_batch_dealloc();            /* FUN_fffffe000b8b6860 */
         }
     }
 out:
