@@ -769,3 +769,27 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: `if (*(long*)(&DAT_000100f8+idx*0x28)!=0 && (DAT_00010800&1)==0 && FUN_00022a38(0,s_com_apple_private_pmap_load_trus_00001448,0)==0) return 0xe`; `if ((uint)param_1<3) return 9; if (0x19<(uint)param_1) return 10`.
 - **Severity (hypothesis)**: high (hypothesis) — the entitlement is the gate for extending the executable allow-list.
 - **Confidence**: high
+
+## [ringminus1] 0005fb88 txm_entitlements_blob_parse — entitlements-blob policy enforcement
+- **Observation**: The entitlements blob parser (magic 0x6d783f3c = "<?xm", i.e. an XML-plist header) DER-decodes the caller-supplied blob and enforces the process entitlements policy. On a non-dictionary path it falls back to imposing the identifier keys via the recursive dict parser (FUN_0005db20) and the sorted-array initializer (FUN_0005e168); failure maps to 0xff00-0xff06. The blob length is arithmetic-overflow-checked before parsing.
+- **Evidence**: `if ((a & 0x8000000000000000) && (b & 0x8000000000000000)) { rc=3; }`; `txm_memcmp(a, 0x6d783f3c, 5)`; switch on the init result maps 0x1dab0..0x1daf0 to 0xff01..0xffffff06.
+- **Severity (hypothesis)**: high (hypothesis) — this is the boundary at which a caller-supplied entitlements blob becomes trusted policy for code execution.
+- **Confidence**: high (string/magic matched)
+
+## [ringminus1] 000592b4 txm_manifest_trust_evaluate — manifest trust-evaluation + anti-replay
+- **Observation**: The manifest trust-evaluation hub allocates the anti-replay policy object via the decode-implementation dispatch (DAT_0000d7c8/DAT_0000d7b0), boots the chip environment, and performs Img4DecodePerformTrustEvaluation followed by an anti-replay replay check. Failures log "trust evaluation failed %d", "manifest replay denied %d", "chip environment not booted %s", "failed to prepare anti-replay %s" — i.e. a manifest that fails trust eval or replay is denied. The replay check (0005c944) maps a missing (0x1f) boot-chain entry to 0x46 when the manifest flag is set, else rejects.
+- **Evidence**: `uVar8 = FUN_00052da8(&DAT_0000d7c8)` (env level); `iVar7 = (*pcVar15)(param_1,local_b0+2,puVar9)` (trust eval); `uVar8 = FUN_0005c944(local_70)` (replay check); string refs 0x58ee/0x58d2/0x58b0/0x588c.
+- **Severity (hypothesis)**: high (hypothesis) — the anti-replay/odometer gate is what prevents a downgraded/replayed boot manifest.
+- **Confidence**: high
+
+## [ringminus1] 000576f0-00057870 txm_runtime_* callback dispatch table — "function should never be called" dead-ends
+- **Observation**: The runtime callback region (0x576f0-0x57850) is a chain of txm_runtime_* API entries (log, log_handle, get_identifier_{bool,uint,uint2,digest,cstr}, alloc_type, dealloc_type, set/roll/copy_nonce). Each entry registers its successor via FUN_00057870 and the shared terminator always panics with "function should never be called" (FUN_00029784). These are forward-declared placeholders that must be rewired at runtime; invoking an unwired slot is a fatal panic rather than a graceful no-op.
+- **Evidence**: `local_20 = s__txm_runtime_log_0000548e; ... FUN_00057870(); ... FUN_00029784(s_panic__function_should_never_be_c_00005463,...)`.
+- **Severity (hypothesis)**: medium (hypothesis) — a panic-on-invocation stub is fail-closed by design; the risk is if any consumer path reaches an unwired slot during early boot.
+- **Confidence**: high
+
+## [ringminus1] 0005b224/0x5b430/0x5b610/0x5b7f0/0x5bb1c txm_enforce_*_constraint — img4 property constraint engine
+- **Observation**: Property constraints (bool/uint32/uint64/digest/digest64) are enforced against a fixed 8-operator set (==/!=/<=/>=/</> with 0/6 always-pass, 8 = "property is not constrained" panic). The enforcement is strict: violations are logged and the operator set rejects unknown operators with "unreachable case". The digest-length + content enforcement (0x5b7f0) and the odometer-style 64-byte comparison (0x5bb1c, FUN_0005d42c) gate anti-replay and boot-chain values.
+- **Evidence**: `if (lVar4 == 8) FUN_00050d70(s_panic__property_is_not_constrain_00005dd1)`; operator dispatch on `**(long**)(param_1+0x30)`.
+- **Severity (hypothesis)**: medium — the constraint engine is the policy backstop for boot-chain/anti-replay values; operator 8 panicking on "not constrained" means a mis-tagged property aborts boot.
+- **Confidence**: high

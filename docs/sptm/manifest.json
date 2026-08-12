@@ -8978,101 +8978,101 @@
  {
   "address": "00053728",
   "ghidra_name": "FUN_00053728",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_set_nonce",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "000538a8",
   "ghidra_name": "FUN_000538a8",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_clear_nonce",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "000539ec",
   "ghidra_name": "FUN_000539ec",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_activate",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053ba4",
   "ghidra_name": "FUN_00053ba4",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_set_boot_uuid",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053cb0",
   "ghidra_name": "FUN_00053cb0",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_release_type_table",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053cd4",
   "ghidra_name": "FUN_00053cd4",
-  "estimated_name": null,
+  "estimated_name": "txm_trap_copy_input",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053d38",
   "ghidra_name": "FUN_00053d38",
-  "estimated_name": null,
+  "estimated_name": "txm_user_buffer_map",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053de8",
   "ghidra_name": "FUN_00053de8",
-  "estimated_name": null,
+  "estimated_name": "txm_odometer_nonce_absent",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "00053e48",
   "ghidra_name": "FUN_00053e48",
-  "estimated_name": null,
+  "estimated_name": "txm_odometer_verify_img_digest",
   "confidence": "medium",
   "category": "txm",
   "tree": "ringminus1",
   "file": "osfmk/arm64/txm/txm_region_a.c",
-  "status": "claimed",
-  "notes": "T5 batch claim"
+  "status": "decompiled",
+  "notes": "T5 image4 trap-handler region"
  },
  {
   "address": "0005400c",

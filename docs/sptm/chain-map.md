@@ -347,3 +347,20 @@ Call-graph edges discovered while decompiling. Append with both addresses:
 - 000483a8 / 00048700 (txm_sig_verify_p256 / p384) → 00043c50 (txm_bn_from_bytes_checked), 0003833c/0003be50 (EC verify)
 - 000481cc (txm_cert_lookup) → DAT_000127a0 (8x0x20 cert-name table); 0004824c (txm_oid_alg) → OID→{name,len} map
 - 0004a498 (txm_img4_parse_elems) → 0004b80c, tailq ops; 0004a7b8 (txm_im4p_probe) → 00048c2c/000490b8/0003767c
+
+### TXM image4/boot-manifest region (batch T6, txm_region_b.c) — 0x56000-0x60000
+- 0005602c (txm_manifest_exec_policy_check) → 0005652c/0005077c (per-cpu ctx), 000564b8 (panic), 0005979c (constraint ctx), 000598b0/000598bc/00059a54 (manifest decode + trust eval), 000585b8 (log), 00050d70 (panic)
+- 00056584 (txm_cdhash_lookup_dispatch) → 00051bd0/00051b3c/00051ce0/00051ccc (CDhash lookup)
+- 00056834 (odometer entangle) → 0005c0cc (nonce query), 00058fa0 (mix-match), 0005bd78 (entangle), 0005b7f0 (digest constraint)
+- 00056a1c/0x56aa4 (image4 cert root parse) → 00058e9c (cert type), 00056e70 (unsupported cert panic), 00058fc0 (query anchor), 00044178 (DERDecodeItem), 00057a30 (digest OID type), 00047ba0 (parse root)
+- 000566b8 (iterator next) → 00056628 (null iter), DAT_0001cf30 table
+- 00057f7c (manifest dump) → 000566b8, 0005861c/0x587f0/0x589bc/0x58b88/0x58d18 (property queries), 000585b8
+- 000592b4 (manifest trust eval) → 00057ed0 (impl dispatch), 00056e00 (boot impl), 0005c61c/0x5c6d4 (anti-replay prep), 00059628/0x596b8 (trust eval), 0005c944 (replay check)
+- 0005a0ac (policy impose) → 00056d6c/0x56d88 (property resolve), 0005b180 (available), 0005b224/0x5b430/0x5b610/0x5b7f0/0x5bb1c (constraint enforcers)
+- 0005c230 (restore constraint) → 0005861c/0x587f0/0x589bc/0x58b88/0x58d18, 0005c5bc/0x5c5d0
+- 0005c944 (policy replay check) → 0005c00c (chip query), 0005cab8 (policy table find), 00052a88/0x52a78 (policy validate/present)
+- 0005d258 (digest64/odometer import) → 0005789c (ident from cstr), 00053070 (digest oid), 0005d3b8 (minmax), 0002d990 (strtoul)
+- 0005db20 (dict parse) → 00037304/0x37570/0x37584/0x374a0 (dict helpers), 0005d80c/0x5d8a4/0x5d93c/0x5d9d4/0x5da6c (key-length parsers), 0005e080 (collection)
+- 0005e374 family (CoreEntitlements subset) → 0005f1d0 (count), 0005ed6c/0x5ef74 (dict apply), 0005f5a4 (key lookup), 0005f690 (data cmp)
+- 0005fb88 (entitlements blob parse) → 00044178 (DER), 00060230 (decode object), 0006037c (parse ident), 0005db20 (dict parse), 0005e168 (dict init)
+- 000576f0-00057850 (runtime callback table) → 00057870 (chain builder), 00029784 (panic "function should never be called")

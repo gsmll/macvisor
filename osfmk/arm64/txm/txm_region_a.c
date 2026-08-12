@@ -73,6 +73,8 @@ static void txm_panic_illegal_chip_config(void) __attribute__((noreturn));
 static void txm_panic_illegal_chip_def(void) __attribute__((noreturn));
 static void txm_panic_unreachable(void) __attribute__((noreturn));
 static void txm_panic_illegal_chip_def_c(void) __attribute__((noreturn));
+static uint64_t txm_user_buffer_map(uint64_t ctx, uint64_t a, uint64_t ptr, uint64_t len,
+                                    uint64_t max, uint64_t out);
 static void txm_panic_boot_expert(void) __attribute__((noreturn));
 static uint64_t txm_pa_resolve(uint64_t pa, uint64_t *out);   /* FUN_00061ea4 */
 extern void CallSupervisor(int svc);
@@ -4960,10 +4962,10 @@ static uint64_t txm_trap_activate(uint64_t a, uint64_t b, uint64_t c)
                 if ((uint32_t)result < 0x6c) return result;
                 txm_fault_impl(0, 0);
             }
-            result = FUN_00053d38(ctx, a, inp[1], (uint32_t)inp[2], *(uint64_t*)(img + 0x20), &buf[0]);
+            result = txm_user_buffer_map(ctx, a, inp[1], (uint32_t)inp[2], *(uint64_t*)(img + 0x20), (uint64_t)&buf[0]);
             if (((int)result == 0) &&
-                (result = FUN_00053d38(ctx, a, (uint64_t)inp[1], (uint32_t)inp[2],
-                                       *(uint64_t*)(img + 0x28), &buf2[0]), (int)result == 0)) {
+                (result = txm_user_buffer_map(ctx, a, (uint64_t)inp[1], (uint32_t)inp[2],
+                                              *(uint64_t*)(img + 0x28), (uint64_t)&buf2[0]), (int)result == 0)) {
                 if ((imgs + 3 <= imgs) || (img + 0x70 <= img)) txm_fault_impl(0x19, 0);
                 result = txm_manifest_execute(imgs, img, (uint64_t)&buf[0], (uint64_t)&buf2[0]);
                 if ((int)result != 0) {

@@ -3771,7 +3771,7 @@ unsigned txm_cectx_check(unsigned long ctx, unsigned long other) {
         if ((f >> 2 & 1) != 0) {
             unsigned i = 0;
             do {
-                if ((txm_cectx_teamid(other, DAT_00010c20[i], 0) & 0xff00) == 0)
+                if ((((unsigned long)txm_cectx_teamid(other, ((unsigned long*)DAT_00010c20)[i], 0)) & 0xff00) == 0)
                     return 0x23025;
                 f = *(unsigned*)(ctx + 0x17c);
             } while (((f >> 2 & 1) != 0) && (i++ < 2));
