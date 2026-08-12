@@ -8912,7 +8912,7 @@ static wpair_t sk_bcg_00477338(long delta, word_t vec)
  * Confidence: medium   Notes: indirect (code*) calls; 16-byte return from
  * param_5; SBORROW8 is the ARM signed-borrow (no-underflow) condition. */
 static void sk_bcg_004773a8(long p1, word_t p2, word_t p3,
-                            code *size_fn, code *emit_fn, code *finalize_fn)
+                            code size_fn, code emit_fn, code finalize_fn)
 {
     word_t base;            /* lVar4 = FUN_00350b54() */
     word_t size;            /* lVar5 = (*size_fn)() */

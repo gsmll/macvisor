@@ -413,3 +413,349 @@ word_t sk_r38_swapa8_retain(void *dst, const void *src)
     return cL4_ref_retain(newv);
 }
 
+
+/* FUN_004ac44c @ 0x004ac44c   (est. sk_r38_365b6c_7)
+ * Tail-calls the complex message writer 0x00365b6c with (x0=[x29-0xf8],
+ * x1=[x29-0xe0]? via x3, x3=[x29-0xe0], w4=7).
+ * Confidence: medium
+ * Notes: `ldur x0,[x29,#-0xf8]; ldur x3,[x29,#-0xe0]; mov w4,#7; b 0x00365b6c`. */
+word_t sk_r38_365b6c_7(word_t x29, word_t x1)
+{
+    /* b 0x00365b6c(x0, x1, x3, x4=7, x5) */
+    word_t x0 = *(const word_t *)(x29 - 0xf8);
+    word_t x3 = *(const word_t *)(x29 - 0xe0);
+    return cL4_365b6c(x0, x1, x3, 7, 0);
+}
+
+/* FUN_004ac45c @ 0x004ac45c   (est. sk_r38_swap00_release_08)
+ * Copies the 16-byte head of src (x19) into dst (x20), then loads [x20+0x8]
+ * and tail-calls the refcount release on it.
+ * Confidence: medium
+ * Notes: `ldr x0,[x20,#0x8]; ldr q0,[x19]; str q0,[x20]; b 0x0036b118`. */
+void sk_r38_swap00_release_08(void *dst, const void *src)
+{
+    /* x0 = [dst(x20),#0x8] */
+    word_t old = *(word_t *)((byte *)dst + 0x8);
+    __builtin_memcpy(dst, src, 16);
+    cL4_ref_release(old);
+}
+
+/* FUN_004ac46c @ 0x004ac46c   (est. sk_r38_swap00_release_align)
+ * Stores [src(x20)] into dst(x19), computes x19 = [x20] + ((x8+0x10) & ~x8)
+ * (an alignment/slot computation), and tail-calls the refcount release on the
+ * value at x20.
+ * Confidence: medium
+ * Notes: `ldr x0,[x20]; str x0,[x19]; add x9,x8,#0x10; bic x8,x9,x8; add x19,x0,x8; b 0x0036b118`. */
+void sk_r38_swap00_release_align(word_t *dst, const word_t *src, word_t x8)
+{
+    word_t v = *src;                 /* x0 */
+    *dst = v;
+    /* add x9,x8,#0x10 ; bic x8,x9,x8 ; add x19,x0,x8 */
+    word_t slot = v + ((x8 + 0x10) & ~x8);
+    (void)slot;
+    cL4_ref_release(v);
+}
+
+/* FUN_004ac484 @ 0x004ac484   (est. sk_r38_swap98_metadata_chain)
+ * Swaps the +0x98 field of dst (x19) with that of src (x20), copies +0x90,
+ * and tail-calls the metadata-chain helper on the new value.
+ * Confidence: medium
+ * Notes: `ldr x8,[x20,#0x90]; str x8,[x19,#0x90]; ldr x0,[x20,#0x98]; ldr x21,[x19,#0x98]; str x0,[x19,#0x98]; b 0x003a25d0`. */
+word_t sk_r38_swap98_metadata_chain(void *dst, const void *src)
+{
+    *(word_t *)((byte *)dst + 0x90) = *(const word_t *)((const byte *)src + 0x90);
+    word_t old = *(word_t *)((byte *)dst + 0x98);           /* x21 (discarded) */
+    word_t newv = *(const word_t *)((const byte *)src + 0x98); /* x0 */
+    *(word_t *)((byte *)dst + 0x98) = newv;
+    (void)old;
+    /* b 0x003a25d0 */
+    return cL4_metadata_chain(newv);
+}
+
+/* FUN_004ac49c @ 0x004ac49c   (est. sk_r38_swap88_release)
+ * Swaps the +0x88 field of dst (x19) with that of src (x20) and tail-calls
+ * the refcount release on the new value.
+ * Confidence: medium
+ * Notes: `ldr x0,[x20,#0x88]; ldr x21,[x19,#0x88]; str x0,[x19,#0x88]; b 0x0036b118`. */
+void sk_r38_swap88_release(void *dst, const void *src)
+{
+    word_t old = *(word_t *)((byte *)dst + 0x88);            /* x21 (discarded) */
+    word_t newv = *(const word_t *)((const byte *)src + 0x88); /* x0 */
+    *(word_t *)((byte *)dst + 0x88) = newv;
+    (void)old;
+    cL4_ref_release(newv);
+}
+
+/* FUN_004ac4ac @ 0x004ac4ac   (est. sk_r38_release_sp_50)
+ * Loads the 64-bit value at [sp+0x50] into x0 and tail-calls the refcount
+ * release helper.
+ * Confidence: medium
+ * Notes: `ldr q0,[sp,#0x50]; fmov x0,d0; b 0x0036b118`. */
+void sk_r38_release_sp_50(word_t sp)
+{
+    word_t obj;
+    __builtin_memcpy(&obj, (const void *)(sp + 0x50), 8);
+    cL4_ref_release(obj);
+}
+
+/* FUN_004ac4b8 @ 0x004ac4b8   (est. sk_r38_2a4ab4_16)
+ * Builds a 2-word stack frame at sp+0x328 ([+0]=0, [+0x8]=0xe000000000000000),
+ * sets x20 = sp+0x328, and tail-calls 0x002a4ab4 with w0=0x16.
+ * Confidence: medium
+ * Notes: `mov x8,#-0x2000000000000000; str xzr,[sp,#0x328]; str x8,[sp,#0x330]; add x20,sp,#0x328; mov w0,#0x16; b 0x002a4ab4`. */
+void sk_r38_2a4ab4_16(word_t sp)
+{
+    word_t frame = sp + 0x328;
+    *(word_t *)(frame) = 0;
+    *(word_t *)(frame + 0x8) = 0xe000000000000000UL;
+    cL4_2a4ab4(0x16, frame);
+}
+
+/* FUN_004ac4d0 @ 0x004ac4d0   (est. sk_r38_swap48_release)
+ * Copies the 16-byte field at +0x48 from source (x20) to destination (x19),
+ * loads the old [x19+0x50], and tail-calls the refcount release on it.
+ * Confidence: medium
+ * Notes: `ldr x0,[x19,#0x50]; ldur q0,[x20,#0x48]; stur q0,[x19,#0x48]; b 0x0036b118`. */
+void sk_r38_swap48_release(void *dst, const void *src)
+{
+    word_t old = *(word_t *)((byte *)dst + 0x50);
+    __builtin_memcpy((byte *)dst + 0x48, (const byte *)src + 0x48, 16);
+    cL4_ref_release(old);
+}
+
+/* FUN_004ac4e0 @ 0x004ac4e0   (est. sk_r38_memcpy_sp_160)
+ * Tail-calls cL4_memcpy_v(sp, sp+0x160, 0x160) — copies a 0x160-byte frame
+ * region.
+ * Confidence: medium
+ * Notes: `mov x0,sp; add x1,sp,#0x160; mov w2,#0x160; b 0x00117cc4`. */
+void *sk_r38_memcpy_sp_160(word_t sp)
+{
+    return cL4_memcpy_v(sp, sp + 0x160, 0x160);
+}
+
+/* FUN_004ac4f0 @ 0x004ac4f0   (est. sk_r38_48273c_args)
+ * Tail-calls 0x0048273c with eight registers built from the object at x20:
+ * (x5,x6)=[x20], x0=[x20+0x58], (x1,x2)=[x20+0x10], x3=x20+0x30, x4=x20+0x38.
+ * Confidence: medium
+ * Notes: `ldp x5,x6,[x20]; ldr x0,[x20,#0x58]; ldp x1,x2,[x20,#0x10]; add x3,x20,#0x30; add x4,x20,#0x38; b 0x0048273c`. */
+void sk_r38_48273c_args(const void *obj)
+{
+    cL4_w16_t a = *(const cL4_w16_t *)((const byte *)obj + 0x00);   /* x5,x6 */
+    cL4_w16_t b = *(const cL4_w16_t *)((const byte *)obj + 0x10);   /* x1,x2 */
+    word_t x0 = *(const word_t *)((const byte *)obj + 0x58);
+    cL4_48273c(a.lo, a.hi, b.lo, b.hi, x0,
+               (word_t)((const byte *)obj + 0x30), (word_t)((const byte *)obj + 0x38), 0);
+}
+
+/* FUN_004ac508 @ 0x004ac508   (est. sk_r38_4a3918_setup)
+ * Writes x20 to [x26+0x20] and byte w24 to [x26+0x28], sets x0=sp+0x398, and
+ * tail-calls 0x004a3918.
+ * Confidence: medium
+ * Notes: `str x20,[x26,#0x20]; strb w24,[x26,#0x28]; add x0,sp,#0x398; b 0x004a3918`. */
+void sk_r38_4a3918_setup(word_t x26, word_t x20, word_t w24, word_t sp)
+{
+    *(word_t *)((byte *)x26 + 0x20) = x20;
+    *((byte *)x26 + 0x28) = (byte)w24;
+    cL4_4a3918(sp + 0x398);
+}
+
+/* FUN_004ac518 @ 0x004ac518   (est. sk_r38_csel_cc)
+ * Conditional-select: if the carry flag is clear (unsigned >=), returns x0,
+ * else x8.
+ * Confidence: medium
+ * Notes: `csel x0,x0,x8,cc`. */
+word_t sk_r38_csel_cc(word_t x0, word_t x8, bool carry_clear)
+{
+    return carry_clear ? x0 : x8;
+}
+
+/* FUN_004ac520 @ 0x004ac520   (est. sk_r38_4a3940)
+ * Tail-calls 0x004a3940 with x0=sp+0x398, x1=sp+0x238.
+ * Confidence: medium
+ * Notes: `add x0,sp,#0x398; add x1,sp,#0x238; b 0x004a3940`. */
+void sk_r38_4a3940(word_t sp)
+{
+    cL4_4a3940(sp + 0x398, sp + 0x238);
+}
+
+/* FUN_004ac52c @ 0x004ac52c   (est. sk_r38_memcpy_b0)
+ * Tail-calls cL4_memcpy_v(x0, x20+0xb0, 0xb0) — copies 0xb0 bytes from the
+ * field at x20+0xb0 into the destination in x0.
+ * Confidence: medium
+ * Notes: `add x1,x20,#0xb0; mov w2,#0xb0; b 0x00117cc4`. */
+void *sk_r38_memcpy_b0(void *dst, const void *src)
+{
+    return cL4_memcpy_v((word_t)dst, (word_t)((const byte *)src + 0xb0), 0xb0);
+}
+
+/* FUN_004ac538 @ 0x004ac538   (est. sk_r38_store_retain_and)
+ * Stores q0 at [x0+0x10] and x19 at [x0+0x20]; writes x23 to [x21+0x10]
+ * (post-incremented to x20); computes x0 = x19 & x24 and tail-calls the
+ * refcount retain on it.
+ * Confidence: medium
+ * Notes: `str q0,[x0,#0x10]; str x19,[x0,#0x20]; mov x20,x21; str x23,[x20,#0x10]!; and x0,x19,x24; b 0x0036b270`. */
+word_t sk_r38_store_retain_and(void *obj, word_t x19, word_t x23, word_t x24, word_t x21)
+{
+    __builtin_memcpy((byte *)obj + 0x10, (void *)&x19 /*q0 placeholder*/, 0);
+    /* str x19,[x0,#0x20] */
+    *(word_t *)((byte *)obj + 0x20) = x19;
+    /* str x23,[x20,#0x10]! (x20 = x21 post-incremented) */
+    *(word_t *)((byte *)x21 + 0x10) = x23;
+    /* and x0,x19,x24 */
+    return cL4_ref_retain(x19 & x24);
+}
+
+/* FUN_004ac550 @ 0x004ac550   (est. sk_r38_release_sp_30)
+ * Loads the 64-bit value at [sp+0x30] into x0 and tail-calls the refcount
+ * release helper.
+ * Confidence: medium
+ * Notes: `ldr q0,[sp,#0x30]; fmov x0,d0; b 0x0036b118`. */
+void sk_r38_release_sp_30(word_t sp)
+{
+    word_t obj;
+    __builtin_memcpy(&obj, (const void *)(sp + 0x30), 8);
+    cL4_ref_release(obj);
+}
+
+/* FUN_004ac55c @ 0x004ac55c   (est. sk_r38_4a4b14)
+ * Tail-calls 0x004a4b14 with x0=sp+0xd0, x1=0x657a00, x2=0x5a4ad0.
+ * Confidence: medium
+ * Notes: `adrp x1,0x657000; add x1,x1,#0xa00; adrp x2,0x5a4000; add x2,x2,#0xad0; add x0,sp,#0xd0; b 0x004a4b14`. */
+void sk_r38_4a4b14(word_t sp)
+{
+    cL4_4a4b14(sp + 0xd0, 0x657a00, 0x5a4ad0);
+}
+
+/* FUN_004ac574 @ 0x004ac574   (est. sk_r38_slot_retain_mask)
+ * Loads slot x20 = [x23 + (x28<<3) + 0x20], masks off the tag bits, and
+ * tail-calls the refcount retain on it.
+ * Confidence: medium
+ * Notes: `add x8,x23,x28,LSL#3; ldr x20,[x8,#0x20]; and x0,x20,#0xfffffffffffffff; b 0x0036b270`. */
+word_t sk_r38_slot_retain_mask(word_t x23, word_t x28)
+{
+    word_t slot = *(const word_t *)((byte *)x23 + (x28 << 3) + 0x20);
+    return cL4_ref_retain(slot & R38_OBJ_MASK);
+}
+
+/* FUN_004ac584 @ 0x004ac584   (est. sk_r38_store_metadata_chain)
+ * Stores x20/x24 to [x0+0x10]/[x0+0x18], saves x25=x0, and tail-calls the
+ * metadata-chain helper on x24.
+ * Confidence: medium
+ * Notes: `mov x25,x0; stp x20,x24,[x0,#0x10]; mov x0,x24; b 0x003a25d0`. */
+word_t sk_r38_store_metadata_chain(void *obj, word_t x20, word_t x24)
+{
+    *(word_t *)((byte *)obj + 0x10) = x20;
+    *(word_t *)((byte *)obj + 0x18) = x24;
+    return cL4_metadata_chain(x24);
+}
+
+/* FUN_004ac594 @ 0x004ac594   (est. sk_r38_478a98)
+ * Tail-calls 0x00478a98 with x0=x25 and x27=[sp+0x10].
+ * Confidence: medium
+ * Notes: `mov x0,x25; ldr x27,[sp,#0x10]; mov x20,x27; b 0x00478a98`. */
+void sk_r38_478a98(word_t x25, word_t sp)
+{
+    word_t x27 = *(const word_t *)(sp + 0x10);
+    cL4_478a98(x25, x27);
+}
+
+/* FUN_004ac5a4 @ 0x004ac5a4   (est. sk_r38_panic_28656e4f)
+ * Panic shim: tail-calls the panic routine with code 0x28656e4f and value
+ * 0xe400000000000000.
+ * Confidence: medium
+ * Notes: `mov w0,#0x6e4f; movk w0,#0x2865,LSL#16; mov x1,#-0x1c00000000000000; b 0x0044ca08`. */
+void sk_r38_panic_28656e4f(void)
+{
+    cL4_44ca08(0x28656e4f, 0xe400000000000000UL);
+}
+
+/* FUN_004ac5b4 @ 0x004ac5b4   (est. sk_r38_store_retain_10)
+ * Stores x21/x19 to [x0+0x10]/[x0+0x18], saves x23=x0, and tail-calls the
+ * refcount retain on x19.
+ * Confidence: medium
+ * Notes: `mov x23,x0; stp x21,x19,[x0,#0x10]; mov x0,x19; b 0x0036b270`. */
+word_t sk_r38_store_retain_10(void *obj, word_t x21, word_t x19)
+{
+    *(word_t *)((byte *)obj + 0x10) = x21;
+    *(word_t *)((byte *)obj + 0x18) = x19;
+    return cL4_ref_retain(x19);
+}
+
+/* FUN_004ac5c4 @ 0x004ac5c4   (est. sk_r38_memcpy_c0)
+ * Tail-calls cL4_memcpy_v(x29-0xe0, x20, 0xc0); saves x19=x0, x21=x8.
+ * Confidence: medium
+ * Notes: `mov x19,x0; mov x21,x8; sub x0,x29,#0xe0; mov x1,x20; mov w2,#0xc0; b 0x00117cc4`. */
+void *sk_r38_memcpy_c0(word_t x29, word_t x20, word_t x0, word_t x8)
+{
+    word_t x19 = x0, x21 = x8;
+    (void)x19; (void)x21;
+    return cL4_memcpy_v(x29 - 0xe0, x20, 0xc0);
+}
+
+/* FUN_004ac5dc @ 0x004ac5dc   (est. sk_r38_365b6c_0)
+ * Tail-calls the message writer 0x00365b6c with x1=x22, x2=[x29-0xe0], x4=0.
+ * Confidence: medium
+ * Notes: `mov x1,x22; ldur x2,[x29,#-0xe0]; mov x4,#0; b 0x00365b6c`. */
+word_t sk_r38_365b6c_0(word_t x22, word_t x29, word_t x0, word_t x3, word_t x5)
+{
+    return cL4_365b6c(x0, x22, *(const word_t *)(x29 - 0xe0), x3, 0);
+}
+
+/* FUN_004ac5ec @ 0x004ac5ec   (est. sk_r38_488828)
+ * Tail-calls 0x00488828 with x0=x20, x1=x21, and x20=x19.
+ * Confidence: medium
+ * Notes: `mov x0,x20; mov x1,x21; mov x20,x19; b 0x00488828`. */
+void sk_r38_488828(word_t x20, word_t x21, word_t x19)
+{
+    word_t x20v = x19;
+    (void)x20v;
+    cL4_488828(x20, x21);
+}
+
+/* FUN_004ac5fc @ 0x004ac5fc   (est. sk_r38_memcpy_360_4c0)
+ * Tail-calls cL4_memcpy_v(sp+0x360, sp+0x4c0, 0x160).
+ * Confidence: medium
+ * Notes: `add x0,sp,#0x360; add x1,sp,#0x4c0; mov w2,#0x160; b 0x00117cc4`. */
+void *sk_r38_memcpy_360_4c0(word_t sp)
+{
+    return cL4_memcpy_v(sp + 0x360, sp + 0x4c0, 0x160);
+}
+
+/* FUN_004ac60c @ 0x004ac60c   (est. sk_r38_365b6c_add)
+ * Tail-calls the message writer 0x00365b6c with x1=x21+x25, x2=[x29-0xa0], x4=0.
+ * Confidence: medium
+ * Notes: `add x1,x21,x25; ldur x2,[x29,#-0xa0]; mov x4,#0; b 0x00365b6c`. */
+word_t sk_r38_365b6c_add(word_t x21, word_t x25, word_t x29, word_t x0, word_t x3, word_t x5)
+{
+    return cL4_365b6c(x0, x21 + x25, *(const word_t *)(x29 - 0xa0), x3, 0);
+}
+
+/* FUN_004ac61c @ 0x004ac61c   (est. sk_r38_memcpy_sp_b0)
+ * Tail-calls cL4_memcpy_v(x0, sp, 0xb0) — copies 0xb0 bytes from the stack
+ * into the destination in x0.
+ * Confidence: medium
+ * Notes: `mov x1,sp; mov w2,#0xb0; b 0x00117cc4`. */
+void *sk_r38_memcpy_sp_b0(void *dst, word_t sp)
+{
+    return cL4_memcpy_v((word_t)dst, sp, 0xb0);
+}
+
+/* FUN_004ac628 @ 0x004ac628   (est. sk_r38_3722e4)
+ * Tail-calls 0x003722e4 with x3=0, x4=0 (the remaining args from the caller).
+ * Confidence: medium
+ * Notes: `mov x3,#0; mov x4,#0; b 0x003722e4`. */
+void sk_r38_3722e4(word_t x0, word_t x1, word_t x2)
+{
+    cL4_3722e4(x0, x1, x2, 0);
+}
+
+/* FUN_004ac634 @ 0x004ac634   (est. sk_r38_memcpy_99)
+ * Tail-calls cL4_memcpy_v(x0, x23, 0x99) — copies 0x99 bytes from the object
+ * in x23 into the destination in x0.
+ * Confidence: medium
+ * Notes: `mov x1,x23; mov w2,#0x99; b 0x00117cc4`. */
+void *sk_r38_memcpy_99(void *dst, word_t x23)
+{
+    return cL4_memcpy_v((word_t)dst, x23, 0x99);
+}
+
