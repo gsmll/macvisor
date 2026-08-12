@@ -1646,3 +1646,21 @@ No entry without Evidence. Severity is a hypothesis, never a claim. These feed
 - **Evidence**: switch on `lVar5` with 40+ cases writing distinct `_DAT_006b03xx` slots; `DAT_006b0348 = (uVar4 == 0)`, `_DAT_006b0440 = param_1`, `lRam_0064ccd0 = param_1`. Unknown/default tags write `_DAT_006b0350`. Loop runs 0x400/0x10 = 64 iterations.
 - **Severity (hypothesis)**: informational — tag ids are bounded to <0x2c and each writes a fixed global; no linear write derived from attacker-controlled length. Boot-time only.
 - **Confidence**: low
+
+## [ringminus1] 0x55454-0x5ac2c sk_svc_dispatch_* / sk_svc_class_*_build — redacted syscall-class descriptors; retry-on-return-1 SVC stubs
+- **Observation**: The entire slice is the cL4 syscall/service-interface dispatch layer. All per-class descriptor tables (classes 1, 2, 0x100000001..0x900000001) carry the same name string "Redacted" (0x5bbf32) — Apple strips the service identifiers from the shipped kernel image, and the two per-class data tables (DAT_004bcd10 etc.) are all-zero. The descriptor builders place PAC-authenticated method pointers (inline LAB_ stubs + SVC wrappers) and a per-class dispatch code pointer (0x64d198, 0x64d260, ...) into a caller-provided struct without validating the destination.
+- **Evidence**: `s_Redacted_005bbf32` read at ram:0x5bbf32 = "Redacted\0L4_Type"; builders write `*(word_t*)(param_2 + off) = <pacia'd ptr>` for ~60 offsets per class; dispatch code pointers 0x64d198/0x64d260/0x64d330/...; SVC wrappers do `do { CallSupervisor(0); } while (x0==1)` retry loop.
+- **Severity (hypothesis)**: low — the descriptor builders write into a caller-supplied buffer with no bounds/ownership check, but they are internal kernel-invoked paths; the redacted names and zeroed tables indicate deliberate identifier stripping rather than a runtime weakness.
+- **Confidence**: high (string + structure verified)
+
+## [ringminus1] 0x5ab94 sk_xrt_runflags_check — runflag capability gate with length panic
+- **Observation**: The `xrt__runflags` capability check reads the runflags word and tests the bit selected by param_2. If the runflags symbol's stored length is shorter than the requested offset, it panics with "xrt runflag metadata not long enough" (noreturn). A Software Breakpoint 0x5519 guards the pointer-range check.
+- **Evidence**: `FUN_0006562c("xrt__runflags",&symval)`; `if (symval < (param_1 & 0xffffffff)) FUN_0005b190(msg,...)`; bit test `(*p >> (param_2 & 0x1f)) & 1` returns 1/2.
+- **Severity (hypothesis)**: informational — fail-closed capability bit gate; no weak path observed.
+- **Confidence**: medium
+
+## [ringminus1] 0x5ac2c sk_sec_transition_allowed — sec_transition capability gate
+- **Observation**: Whether a secure (Sec) transition is allowed is gated on the singleton flag byte (0x1b8), the transition-in-progress bit at FUN_00054610(), and the "sec_transition" symbol. The symbol value is compared (thunk_FUN_00114e50) against _DAT_005cf0f4; a non-matching value forces the runflags bit clear path.
+- **Evidence**: `FUN_0006562c("sec_transition",&val)`; `thunk_FUN_00114e50(sym,&_DAT_005cf0f4,val)==0`; `sk_xrt_runflags_check(2,1)` result drives the allow/deny decision.
+- **Severity (hypothesis)**: medium — the transition-gate decision is an authorization boundary; a mis-gated comparison could allow or deny Sec transitions. Comparison target _DAT_005cf0f4 is opaque (out of slice) and worth auditing against the canonical string.
+- **Confidence**: low (comparison semantics partly inferred)

@@ -5107,7 +5107,7 @@ sk_word_t sk_dt_list_copy(sk_word_t *out, sk_word_t *dst, sk_word_t count, void 
                     sk_report_lock(0x16);
                     sk_report_free(0xe000000000000000);
                     sk_panic_reset();
-                    sk_panic_halt(0x677880);
+                    sk_panic_halt();
                     sk_report_emit(0, 0);
                     sk_report_free(0);
                     sk_report_emit(0x20666f2074756f20, 0xee0073646e756f62); /* 'out bound' */
@@ -5216,7 +5216,7 @@ sk_word_t sk_iter_next_idx(void)
 {
     long i = unaff_x20[1];
     if (i < (long)unaff_x20[2]) {
-        sk_word_t r = sk_dt_lookup_fatal(i, *unaff_x20);
+        sk_word_t r = sk_dt_lookup_fatal(*unaff_x20);
         unaff_x20[1] = i + 1;
         return r;
     }
@@ -5472,8 +5472,8 @@ sk_word_t sk_console_tree_dump(void)
 {
     sk_dt_boot_enter();
     sk_panic_iter_begin();
-    void *list = &DAT_00657778;
-    while (!(sk_panic_iter_next(&list), *(char*)&list == 1)) {
+    sk_word_t *list = (sk_word_t*)&DAT_00657778;
+    while (!(sk_panic_iter_next((long*)&list), *(char*)&list == 1)) {
         sk_word_t base = list[0];
         sk_word_t size = list[2];
         sk_word_t name[2];
@@ -5500,18 +5500,19 @@ sk_word_t sk_console_tree_dump(void)
         sk_word_t cap = sk_buf_cap(list);
         if ((cap & 1) == 0) {
             sk_buf_free(*(void**)((char*)list + 0x10));
-            list = sk_buf_new();
+            list = (sk_word_t*)sk_buf_new();
         }
         sk_word_t cnt = *(sk_word_t *)((char*)list + 0x10);
         if (*(sk_word_t *)((char*)list + 0x18) >> 1 <= cnt)
-            list = sk_buf_grow(list);
+            list = (sk_word_t*)sk_buf_grow(list);
         *(sk_word_t *)((char*)list + 0x10) = cnt + 1;
         *(void **)((char*)list + 0x20 + cnt*0x18) = name;
         *(void **)((char*)list + 0x30 + cnt*0x18) = str;
     }
-    sk_word_t count = sk_console_collect(list);   /* FUN_00068c40 */
+    sk_console_collect((long)(uintptr_t)list);   /* FUN_00068c40 */
     sk_console_init4(0,0,0);                       /* FUN_0006a468 */
     sk_panic_iter_end();
+    sk_word_t count = 0;
     if (*(char*)&list == 1) {
         /* recurse into children */
         while (!(sk_dt_next(&list) & 1)) {
@@ -5554,7 +5555,7 @@ void sk_console_collect(long list)
         sk_word_t key = sk_boot_enter();
         tbl = (sk_word_t *)sk_alloc_names(n, key);   /* FUN_001fac04 */
     }
-    sk_console_names(list, 1, &tbl);               /* FUN_0006abac */
+    sk_console_names((void*)(uintptr_t)list, 1, &tbl);               /* FUN_0006abac */
     if (unaff_x21 != 0) sk_free(tbl);
 }
 
@@ -6240,7 +6241,7 @@ void *sk_report_list16(sk_word_t list)
             sk_report_lock(0x16);
             sk_report_free(0xe000000000000000);
             sk_panic_reset();
-            sk_panic_halt(0x677880);
+            sk_panic_halt();
             sk_report_emit(0, 0);
             sk_report_free(0);
             sk_report_emit(0x20666f2074756f20, 0xee0073646e756f62);

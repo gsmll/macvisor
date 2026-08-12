@@ -512,9 +512,9 @@ void sk_cnode_prop_set_retain(word_t param_1)
 void sk_cnode_prop_retain_get_0x50(void)
 {
     extern word_t unaff_x20;
-    word_t off;
-    sk_metaclass_get();
-    off = *(word_t *)(sk_identity(0) + 0x50);
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x50);
     sk_acc_read(0);
     sk_swift_retain(*(word_t *)(unaff_x20 + off));
     return;
@@ -550,9 +550,9 @@ void sk_cnode_prop_modify2_0x50(void)
 word_t sk_cnode_prop_get_0x58(void)
 {
     extern word_t unaff_x20;
-    word_t off;
-    sk_metaclass_get();
-    off = *(word_t *)(sk_identity(0) + 0x58);
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x58);
     sk_acc_read(0);
     return *(word_t *)(unaff_x20 + off);
 }
@@ -564,9 +564,10 @@ word_t sk_cnode_prop_get_0x58(void)
 void sk_cnode_prop_set_0x58(word_t newValue)
 {
     extern word_t unaff_x20;
-    word_t off;
+    word_t mc, off;
     sk_acc_write_pre();
-    off = *(word_t *)(sk_identity(0) + 0x58);
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x58);
     sk_acc_write_post();
     *(word_t *)(unaff_x20 + off) = newValue;
     return;
@@ -589,9 +590,9 @@ void sk_cnode_prop_modify_0x58(void)
 word_t sk_cnode_prop_get_0x60(void)
 {
     extern word_t unaff_x20;
-    word_t off;
-    sk_metaclass_get();
-    off = *(word_t *)(sk_identity(0) + 0x60);
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x60);
     sk_acc_read(0);
     return *(word_t *)(unaff_x20 + off);
 }
@@ -602,9 +603,10 @@ word_t sk_cnode_prop_get_0x60(void)
 void sk_cnode_prop_set_0x60(word_t newValue)
 {
     extern word_t unaff_x20;
-    word_t off;
+    word_t mc, off;
     sk_acc_write_pre();
-    off = *(word_t *)(sk_identity(0) + 0x60);
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x60);
     sk_acc_write_post();
     *(word_t *)(unaff_x20 + off) = newValue;
     return;
@@ -632,4 +634,499 @@ void sk_cnode_closure_invoke_0xf0(word_t *param_1, word_t *param_2)
     sk_swift_retain(*param_1);
     fn();
     return;
+}
+
+/* FUN_0007802c @ 0x0007802c   (est. sk_cnode_prop_retain_get_0x68)
+ * Ghidra: void FUN_0007802c(void)  — Swift retain-getter for property at 0x68.
+ * Confidence: medium */
+void sk_cnode_prop_retain_get_0x68(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x68);
+    sk_acc_read(0);
+    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    return;
+}
+
+/* FUN_0007806c @ 0x0007806c   (est. sk_cnode_prop_modify_0x68)
+ * Ghidra: void FUN_0007806c(void)  — Swift modify-with-copy for 0x68 (finish2).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x68(void)
+{
+    sk_acc_write_pre();
+    sk_acc_write_post();
+    sk_acc_finish2();
+    return;
+}
+
+/* FUN_000780b0 @ 0x000780b0   (est. sk_cnode_prop_modify2_0x68)
+ * Ghidra: void FUN_000780b0(void)  — Swift modify-with-copy for 0x68 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify2_0x68(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_00078100 @ 0x00078100   (est. sk_cnode_closure_invoke_0x108)
+ * Ghidra: void FUN_00078100(undefined8 param_1,undefined8 *param_2)  —
+ *   materialize param_1 into a 40-byte closure box, then invoke the closure
+ *   vtable slot +0x108 from param_2's metadata with the box.
+ * Confidence: medium */
+void sk_cnode_closure_invoke_0x108(word_t param_1, word_t *param_2)
+{
+    word_t box[5];   /* 40-byte closure capture box */
+    sk_closure_enter(param_1, (word_t)box);
+    (*(void (**)(word_t))(*(long *)*param_2 + 0x108))((word_t)box);
+    return;
+}
+
+/* FUN_0007815c @ 0x0007815c   (est. sk_cnode_prop_box_write_0x70)
+ * Ghidra: void FUN_0007815c(undefined8 param_1)  — materialize self[0x70]
+ *   into a 24-byte box, then copy param_1 into it (Swift @boxed property).
+ * Confidence: medium */
+void sk_cnode_prop_box_write_0x70(word_t param_1)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    word_t box[3];   /* 24-byte box */
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x70);
+    sk_metaclass_field(unaff_x20 + off, (word_t)box);
+    sk_closure_enter(unaff_x20 + off, param_1);
+    return;
+}
+
+/* FUN_000781b4 @ 0x000781b4   (est. sk_cnode_prop_reset_0x70)
+ * Ghidra: void FUN_000781b4(void)  — Swift modify-with-copy for the boxed
+ *   property at 0x70: build an empty array with capacity 0x21, invoke the
+ *   modify, then destroy the temp.
+ * Confidence: medium */
+void sk_cnode_prop_reset_0x70(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    word_t box[3];   /* 24-byte temp */
+    sk_acc_write_pre();
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x70);
+    sk_swift_array_withcap(unaff_x20 + off, (word_t)box, 0x21, 0, 0);
+    sk_metaclass_chk(unaff_x20 + off);
+    sk_identity(0);                       /* FUN_00077070 */
+    sk_swift_array_destroy((word_t)box);
+    return;
+}
+
+/* FUN_00078220 @ 0x00078220   (est. sk_cnode_prop_modify_0x70)
+ * Ghidra: void FUN_00078220(void)  — Swift modify-with-copy for 0x70 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x70(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_00078270 @ 0x00078270   (est. sk_cnode_closure_invoke_0x120)
+ * Ghidra: void FUN_00078270(undefined8 *param_1,undefined8 *param_2)  —
+ *   invoke closure vtable slot +0x120 with (*param_1, param_1[1] as byte).
+ * Confidence: medium */
+void sk_cnode_closure_invoke_0x120(word_t *param_1, word_t *param_2)
+{
+    (*(void (**)(word_t, word_t))(*(long *)*param_2 + 0x120))(*param_1,
+        *(word_t *)(param_1 + 1));
+    return;
+}
+
+/* FUN_000782c0 @ 0x000782c0   (est. sk_cnode_prop_box_read_0x78)
+ * Ghidra: undefined1 [16] FUN_000782c0(void)  — materialize self[0x78] (a
+ *   9-byte value) into a 24-byte box and return it as a 16-byte register pair
+ *   (9 bytes of payload + zero padding).
+ * Confidence: medium */
+word_t sk_cnode_prop_box_read_0x78(word_t *out /*[2]*/)
+{
+    extern word_t unaff_x20;
+    word_t mc, off, p;
+    word_t box[3];   /* 24-byte box */
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x78);
+    p = unaff_x20 + off;
+    sk_metaclass_field(p, (word_t)box);
+    out[1] = 0;
+    out[0] = *(word_t *)p;
+    return out[0];
+}
+
+/* FUN_0007830c @ 0x0007830c   (est. sk_cnode_prop_box_write_0x78)
+ * Ghidra: void FUN_0007830c(undefined8 param_1,undefined1 param_2)  —
+ *   materialize self[0x78] then store the 9-byte value (param_1 + param_2).
+ * Confidence: medium */
+void sk_cnode_prop_box_write_0x78(word_t param_1, word_t param_2)
+{
+    extern word_t unaff_x20;
+    word_t mc, off, p;
+    word_t box[3];   /* 24-byte box */
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x78);
+    p = unaff_x20 + off;
+    sk_acc_w3(p, (word_t)box);
+    *(word_t *)p = param_1;
+    *(word_t *)(p + 8) = param_2;
+    return;
+}
+
+/* FUN_00078368 @ 0x00078368   (est. sk_cnode_prop_modify_0x78)
+ * Ghidra: void FUN_00078368(void)  — Swift modify-with-copy for 0x78 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x78(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_000783b8 @ 0x000783b8   (est. sk_cnode_closure_invoke_0x138)
+ * Ghidra: void FUN_000783b8(undefined8 *param_1,undefined8 *param_2)  —
+ *   retain *param_1 then invoke closure vtable slot +0x138.
+ * Confidence: medium */
+void sk_cnode_closure_invoke_0x138(word_t *param_1, word_t *param_2)
+{
+    void (*fn)(void) = *(void (**)(void))(*(long *)*param_2 + 0x138);
+    sk_swift_retain(*param_1);
+    fn();
+    return;
+}
+
+/* FUN_00078414 @ 0x00078414   (est. sk_cnode_prop_retain_get_0x80)
+ * Ghidra: void FUN_00078414(void)  — Swift retain-getter for property at 0x80.
+ * Confidence: medium */
+void sk_cnode_prop_retain_get_0x80(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x80);
+    sk_acc_read(0);
+    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    return;
+}
+
+/* FUN_00078454 @ 0x00078454   (est. sk_cnode_prop_modify_0x80)
+ * Ghidra: void FUN_00078454(void)  — Swift modify-with-copy for 0x80 (finish2).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x80(void)
+{
+    sk_acc_write_pre();
+    sk_acc_write_post();
+    sk_acc_finish2();
+    return;
+}
+
+/* FUN_00078498 @ 0x00078498   (est. sk_cnode_prop_modify2_0x80)
+ * Ghidra: void FUN_00078498(void)  — Swift modify-with-copy for 0x80 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify2_0x80(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_000784e8 @ 0x000784e8   (est. sk_cnode_closure_invoke_0x150)
+ * Ghidra: void FUN_000784e8(undefined8 *param_1,undefined8 *param_2)  —
+ *   retain *param_1 then invoke closure vtable slot +0x150.
+ * Confidence: medium */
+void sk_cnode_closure_invoke_0x150(word_t *param_1, word_t *param_2)
+{
+    void (*fn)(void) = *(void (**)(void))(*(long *)*param_2 + 0x150);
+    sk_swift_retain(*param_1);
+    fn();
+    return;
+}
+
+/* FUN_00078544 @ 0x00078544   (est. sk_cnode_prop_retain_get_0x88)
+ * Ghidra: void FUN_00078544(void)  — Swift retain-getter for property at 0x88.
+ * Confidence: medium */
+void sk_cnode_prop_retain_get_0x88(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x88);
+    sk_acc_read(0);
+    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    return;
+}
+
+/* FUN_00078584 @ 0x00078584   (est. sk_cnode_prop_modify_0x88)
+ * Ghidra: void FUN_00078584(void)  — Swift modify-with-copy for 0x88 (finish2).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x88(void)
+{
+    sk_acc_write_pre();
+    sk_acc_write_post();
+    sk_acc_finish2();
+    return;
+}
+
+/* FUN_000785c8 @ 0x000785c8   (est. sk_cnode_prop_modify2_0x88)
+ * Ghidra: void FUN_000785c8(void)  — Swift modify-with-copy for 0x88 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify2_0x88(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_00078618 @ 0x00078618   (est. sk_cnode_closure_invoke_0x168)
+ * Ghidra: void FUN_00078618(undefined8 *param_1,undefined8 *param_2)  —
+ *   retain *param_1 then invoke closure vtable slot +0x168.
+ * Confidence: medium */
+void sk_cnode_closure_invoke_0x168(word_t *param_1, word_t *param_2)
+{
+    void (*fn)(void) = *(void (**)(void))(*(long *)*param_2 + 0x168);
+    sk_swift_retain(*param_1);
+    fn();
+    return;
+}
+
+/* FUN_00078674 @ 0x00078674   (est. sk_cnode_prop_retain_get_0x90)
+ * Ghidra: void FUN_00078674(void)  — Swift retain-getter for property at 0x90.
+ * Confidence: medium */
+void sk_cnode_prop_retain_get_0x90(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x90);
+    sk_acc_read(0);
+    sk_swift_retain(*(word_t *)(unaff_x20 + off));
+    return;
+}
+
+/* FUN_000786b4 @ 0x000786b4   (est. sk_cnode_prop_modify_0x90)
+ * Ghidra: void FUN_000786b4(void)  — Swift modify-with-copy for 0x90 (finish2).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x90(void)
+{
+    sk_acc_write_pre();
+    sk_acc_write_post();
+    sk_acc_finish2();
+    return;
+}
+
+/* FUN_000786f8 @ 0x000786f8   (est. sk_cnode_prop_modify2_0x90)
+ * Ghidra: void FUN_000786f8(void)  — Swift modify-with-copy for 0x90 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify2_0x90(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_00078748 @ 0x00078748   (est. sk_cnode_prop_get_0x98)
+ * Ghidra: undefined8 FUN_00078748(void)  — Swift getter for property at 0x98.
+ * Confidence: medium */
+word_t sk_cnode_prop_get_0x98(void)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x98);
+    sk_acc_read(0);
+    return *(word_t *)(unaff_x20 + off);
+}
+
+/* FUN_00078784 @ 0x00078784   (est. sk_cnode_prop_set_0x98)
+ * Ghidra: void FUN_00078784(void)  — Swift setter for property at 0x98.
+ * Confidence: medium */
+void sk_cnode_prop_set_0x98(word_t newValue)
+{
+    extern word_t unaff_x20;
+    word_t mc, off;
+    sk_acc_write_pre();
+    mc = sk_metaclass_get();
+    off = *(word_t *)(mc + 0x98);
+    sk_acc_write_post();
+    *(word_t *)(unaff_x20 + off) = newValue;
+    return;
+}
+
+/* FUN_000787c8 @ 0x000787c8   (est. sk_cnode_prop_modify_0x98)
+ * Ghidra: void FUN_000787c8(void)  — Swift modify-with-copy for 0x98 (finish).
+ * Confidence: medium */
+void sk_cnode_prop_modify_0x98(void)
+{
+    sk_acc_write_pre();
+    sk_acc_modify();
+    sk_acc_finish();
+    return;
+}
+
+/* FUN_00078818 @ 0x00078818   (est. sk_cnode_alloc_and_init)
+ * Ghidra: undefined8 FUN_00078818(undefined8,undefined8,undefined8,undefined8)
+ *   — allocates a Swift array buffer then calls the big initializer
+ *   FUN_00078880 with the four arguments; returns the buffer pointer.
+ * Confidence: medium */
+word_t sk_cnode_alloc_and_init(word_t a, word_t b, word_t c, word_t d)
+{
+    word_t buf;
+    buf = sk_swift_array_alloc(0, 0, 0);
+    sk_cnode_init(a, b, c, d);
+    return buf;
+}
+
+/* FUN_00078880 @ 0x00078880   (est. sk_cnode_allocator_init)
+ * Ghidra: void FUN_00078880(undefined8,long,undefined8,undefined8)  — the
+ *   CNodeAllocator designated initializer (Swift init(asid:physAllocator:
+ *   virtBase:virtEnd:tag:asanEnabled:rootSpaceId:shadowCNodeAllocator:
+ *   faultDataECMode:)). Zeroes/initializes every stored property of the class
+ *   (offsets 0x48,0x50,0x58,0x60,0x68,0x70,0x78,0x80,0x88,0x90,0x98), builds a
+ *   0x38-byte CNodeEntry for the given object type, records it in the cnode
+ *   table, allocates a 0x60-byte generic-entry descriptor, and stores the
+ *   "space cap" + fault-data fields. Traps (SoftwareBreakpoint 0x78ec4) if an
+ *   alignment/round-up check fails.
+ * Confidence: low
+ * Notes: PAC-authorized indirect calls through SUB_90000010f9008430; string
+ *   refs DAT_00606a9c, DAT_0064e868, DAT_004c06c0, DAT_004baeb0/4baeb8,
+ *   DAT_00665ba0; a helper entry built via FUN_0007b178/FUN_0007b1c0
+ *   (Swift String endIndex helpers). */
+void sk_cnode_allocator_init(word_t param_1, word_t param_2, word_t param_3,
+                             word_t param_4)
+{
+    extern word_t *unaff_x20;
+    word_t *self;
+    word_t u8;
+    word_t u3, u5, u7;
+    word_t l9, l10, l11, l12;
+    word_t l13;
+    word_t *pu;
+    word_t aux16[2];        /* 16-byte register pair */
+    word_t stack130[2];     /* 8-byte */
+    word_t box80[4];        /* 32-byte */
+    word_t box98[3];        /* 24-byte */
+    word_t boxb8[4];        /* 32-byte */
+    word_t f8, f0, e8, e0, d8, d0, c8, c0, v;
+
+    self = unaff_x20;
+    u8 = *(word_t *)(*self + 0x40);     /* physAllocator */
+    l13 = *(word_t *)(*self + 0x38);    /* asid */
+    f0 = param_3;
+    c8 = param_4;
+    u3 = sk_acc_w5(0, 0);
+    d8 = sk_str_convert(u3, u8, l13);
+    sk_acc_w7();
+    /* v = class metadata / accessor context via the PAC code pointer. */
+    l12 = (word_t)((word_t)stack130 - ((word_t)sk_identity(0) & 0xfffffffffffffff0));
+    l9 = *(word_t *)(*self + 0x58);
+    *(word_t *)((word_t)self + l9) = 0;              /* faultDataECMode */
+    sk_acc_get(0);
+    *(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x60)) = 0;
+    sk_acc_get(0);
+    pu = (word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x78));
+    *pu = 0; *(word_t *)(pu + 1) = 1;                /* 9-byte tag/flag value */
+    sk_acc_get(0);
+    l10 = *(word_t *)(sk_identity(0) + 0x88);
+    *(word_t *)((word_t)self + l10) = 0x657778;      /* empty vector sentinel */
+    sk_acc_get(0);
+    *(word_t *)((word_t)self + *(word_t *)(sk_identity(0) + 0x90)) = u3;
+    sk_acc_get(0);
+    l11 = *(word_t *)(sk_identity(0) + 0x98);
+    *(word_t *)((word_t)self + l11) = 0;
+    sk_acc_get(0);
+    v = *(word_t *)(sk_identity(0) + 0x48);
+    f8 = *(word_t *)(l13 - 8);          /* Swift isa metadata */
+    (*(void (**)(word_t, word_t, word_t))(f8 + 0x10))((word_t)self + v, param_1, l13);
+    sk_acc_w3((word_t)self + l9, (word_t)box80);
+    *(word_t *)((word_t)self + l9) = 1;
+    sk_acc_get(0);
+    e8 = param_2;
+    sk_closure_enter(param_2, (word_t)self + *(word_t *)(sk_identity(0) + 0x70));
+    sk_acc_w3((word_t)self + l11, (word_t)box98);
+    *(word_t *)((word_t)self + l11) = c8;
+    /* u5 = FUN_00078fec(u8): Swift String.count-style helper */
+    l12 = (word_t)((word_t)stack130 - ((word_t)sk_identity(0) & 0xfffffffffffffff0));
+    c8 = param_1;
+    u5 = sk_string_end_index(u8);
+    u3 = sk_acc_w6();
+    u3 = sk_str_convert2(u3, u8, l13, 0x606a9c);
+    sk_acc_w2(0, 0, 0, 0);
+    d0 = sk_str_convert2b(u8, l13, u3, 0x606a9c);
+    v = u3;
+    l9 = sk_runtime_roundup(u3, 0);
+    if (-1 < (long)l9) {
+        sk_acc_w14();
+        u3 = d8;
+        u5 = sk_str_convert2b(u8, l13, d8);
+        e0 = u8;
+        u7 = sk_cnode_fn2(0);
+        /* build the CNode entry value; append it to the table (0x88 buffer). */
+        u3 = (word_t)self + l10;
+        sk_swift_array_withcap(u3, (word_t)boxb8, 0x21, 0, 0);
+        sk_cnode_buf_append((word_t)sk_cnode_resize_cb);
+        l11 = *(word_t *)(*(word_t *)((word_t)self + l10) + 0x10);
+        sk_cnode_buf_reserve(l11, (word_t)sk_cnode_resize_cb);
+        l9 = *(word_t *)((word_t)self + l10);
+        *(word_t *)(l9 + 0x10) = l11 + 1;
+        *(word_t *)(l9 + l11 * 8 + 0x20) = u7;
+        *(word_t *)((word_t)self + l10) = l9;
+        sk_swift_array_destroy((word_t)boxb8);
+        /* Build the 0x38-byte CNodeEntry descriptor from the "virtual"
+         * parameters (physAllocator, virt base/end, tag, asan). */
+        l10 = e8;
+        u3 = *(word_t *)(e8 + 0x18);
+        u8 = *(word_t *)(e8 + 0x20);
+        u7 = sk_copy2(e8, u3);
+        d8 = sk_identity_hash(u7, u3, u8, u7);
+        u3 = u7;   /* local_120 */
+        sk_metaclass_get();
+        (*(void (**)(word_t, word_t))(sk_identity(0) + 0x90))(0, u7);
+        u8 = v;
+        sk_acc_w15();
+        v = sk_identity(0);           /* auVar14 low */
+        c0 = sk_identity_hash(0);
+        u7 = sk_identity_hash(u7, 0x665ca8, u8, 0x665ba0, d0);
+        l9 = v;
+        u7 = sk_cnode_align(0xff, v, e0);
+        u7 = sk_identity_hash(0, u7);
+        u7 = sk_swift_array_alloc(u7, 0x38, 7);
+        l11 = sk_identity_hash(u7, 1);
+        *(word_t *)(l11 + 0x20) = v;
+        *(word_t *)(l11 + 0x30) = u3;
+        u3 = sk_cnode_identity_scope(l11, u7);
+        *(word_t *)((word_t)self + *(word_t *)(*self + 0x68)) = u3;
+        u3 = sk_string_cache(0x64e868, 0x4c06c0);
+        l11 = sk_swift_array_alloc(u3, 0x60, 7);
+        *(word_t *)(l11 + 0x18) = *(word_t *)0x4baeb8;
+        *(word_t *)(l11 + 0x10) = *(word_t *)0x4baeb0;
+        u3 = sk_runtime_roundup(u8, d0);
+        (*(void (**)(word_t, word_t))(f8 + 8))(c8, l9);
+        *(word_t *)(l11 + 0x20) = v;
+        *(word_t *)(l11 + 0x28) = 0;
+        *(word_t *)(l11 + 0x30) = d8;
+        *(word_t *)(l11 + 0x38) = 0;
+        *(word_t *)(l11 + 0x40) = 0;
+        *(word_t *)(l11 + 0x48) = u3;
+        *(word_t *)(l11 + 0x50) = 0;
+        *(word_t *)(l11 + 0x58) = 0;
+        *(word_t *)((word_t)self + *(word_t *)(*self + 0x50)) = l11;
+        *(word_t *)((word_t)self + *(word_t *)(*self + 0x80)) = f0;
+        l9 = *(word_t *)(*self + 0x60);
+        sk_acc_w3((word_t)self + l9, (word_t)boxb8);
+        *(word_t *)((word_t)self + l9) = 1;
+        sk_metaclass_chk(l10);
+        return;
+    }
+    SK18_FATAL(0x78ec4);
 }

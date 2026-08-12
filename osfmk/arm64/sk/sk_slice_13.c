@@ -1127,7 +1127,7 @@ static word_t dtk_report_node_error(word_t a, word_t b)
     FUN_002acbb8(FUN_0006b584(), v);
     FUN_003a25d4(v);
     FUN_002acbb8(0x202d20, 0xe300000000000000);
-    dtk_collect_props(a, b);
+    dtk_collect_props();
     FUN_0036b118();
     FUN_0001df60();
     FUN_0006b550();
@@ -1170,7 +1170,7 @@ static word_t dtk_dump_node_tree(word_t a, word_t b)
         FUN_003a25d4(end);
         if (!(FUN_003a261c(vec) & 1)) {
             FUN_0006b45c(*(word_t *)(vec + 0x10));
-            FUN_0006b3f4();
+            FUN_0006b3f4(0);
             vec = FUN_0006b3e0();
         }
         {
@@ -1193,13 +1193,7 @@ static word_t dtk_dump_node_tree(word_t a, word_t b)
  * prepare the top-level children iterator.  Confidence: medium */
 static void dtk_begin_dump(word_t *out, word_t a, word_t b)
 {
-    word_t rng[4];
-    FUN_0006b2dc();
-    if (1) {
-        dt_children(out, rng);
-        return;
-    }
-    FUN_0011d7e8();
+    dtk_call_and_wrap(out, a, b, (word_t)dt_thunk_range_set);
 }
 
 /* FUN_0006749c @ 0x6749c  (est. dtk_dump_next)
@@ -1265,13 +1259,7 @@ restore:
  * Confidence: medium */
 static void dtk_end_dump(word_t *out, word_t a, word_t b)
 {
-    word_t rng[4];
-    FUN_0006b2dc();
-    if (1) {
-        dt_range_make(out, rng);
-        return;
-    }
-    FUN_0011d7e8();
+    dtk_call_and_wrap(out, a, b, (word_t)dt_thunk_range_make);
 }
 
 /* FUN_00067640 @ 0x67640  (est. dtk_dump_child)
@@ -1340,7 +1328,7 @@ static word_t dtk_lookup_node_fatal(word_t idx)
 static word_t dtk_range_of(word_t base)
 {
     word_t out[2];
-    dt_list_len();
+    dt_list_len(0);
     out[1] = 0;
     out[0] = base;
     return (word_t)out;
@@ -1482,12 +1470,12 @@ static void dtk_dump_list(word_t head)
 /* FUN_00067d4c @ 0x67d4c  (est. dtk_list_next)
  * Return the next list entry (lookup at cursor x20[1]) or 0 when exhausted.
  * Confidence: medium */
-static word_t dtk_list_next(void)
+static word_t dtk_list_next(word_t *ctx)
 {
-    word_t cursor = 0[1];
-    if (cursor < (long)0[2]) {
+    word_t cursor = ctx[1];
+    if (cursor < (long)ctx[2]) {
         word_t v = dtk_lookup_node_fatal(cursor);
-        0[1] = cursor + 1;
+        ctx[1] = cursor + 1;
         return v;
     } else {
         return 0;
@@ -1732,10 +1720,9 @@ static void dtk_next_record_copy(word_t *out)
  * Invoke the callback in x9 with the range {base,limit} and mask the result
  * into a 5-word record; clears the result on failure.
  * Confidence: medium (register-passed callback) */
-static void dtk_call_and_wrap(word_t *out, word_t base, word_t limit)
+static void dtk_call_and_wrap(word_t *out, word_t base, word_t limit, word_t cb)
 {
     word_t r[4] = { 0, 0, 0, 0 };
-    word_t cb = 0;   /* callback in x9, unknown statically */
     FUN_0006b2ec();
     word_t ok = 0;
     if (cb)

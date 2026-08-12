@@ -9,30 +9,164 @@
 #include <stddef.h>
 #include "sk_internal.h"
 
-/* ---- hoisted per-part typedefs ---- */
-typedef uint8_t  byte;
-typedef struct { unsigned long lo, hi; } cL4_w16_t;
-typedef struct { uint64_t lo, hi; } cl4_pair_t;
 typedef struct sk_u128 {
     uint64_t lo;
-typedef struct sk_pair16 { uint64_t a, b; } sk_pair16_t;
-typedef struct sk_pair { uint64_t lo; uint64_t hi; } sk_pair_t;
-typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
+typedef uint64_t (*code_t)(void);
+
+/* ------------------------------------------------------------------ *
+ * Out-of-range cL4 helper declarations (declared extern with a one-line
+ * note; their bodies are reconstructed by the range worker that owns them).
+ * ------------------------------------------------------------------ */
+extern uint64_t FUN_000026e8(void);
+    typedef void (*clone_fn_t)(long, long);
+    (*(clone_fn_t *)(*(uint64_t *)(v + -8)))(dst, src);
+typedef uint64_t (*sk_fn_t)();
+
+/* Ghidra SBORROW8(a,b): signed underflow of (a - b). */
+#define SBORROW8(a,b)  ((((uint64_t)(a) ^ (uint64_t)(b)) &                           ((uint64_t)(a) ^ ((uint64_t)(a)-(uint64_t)(b)))) >> 63)
+/* Ghidra SCARRY8(a,b): signed overflow of (a + b). */
+#define SCARRY8(a,b)   ((((uint64_t)(a) ^ (uint64_t)(b)) &                           ((uint64_t)(a) ^ ((uint64_t)(a)+(uint64_t)(b)))) >> 63)
+
+/* Ghidra SoftwareBreakpoint(n, addr): kernel debug trap. */
+#define SK_TRAP() __builtin_trap()
+/* Ghidra SUB168(x,n): low n bits. SEXT816(x): sign-extend 16-bit. */
+#define SUB168(x,n) ((uint64_t)(x) & ((1ull<<(n))-1ull))
+#define SEXT816(x)  ((int64_t)(int16_t)(uint16_t)(x))
+
+/* ------------------------------------------------------------------ *
+ * Data symbols (strings / globals referenced by these functions).
+ * ------------------------------------------------------------------ */
+extern sk_fn_t  DAT_00658c00;                 /* function-pointer global (Swift retain/task hook) */
+extern uint64_t DAT_00613644, DAT_0061368c;   /* static string arguments */
+extern uint64_t DAT_004ea4dc, DAT_004edcd0;
 typedef uint32_t uint;
+typedef uint64_t ulong;
+typedef uint8_t  byte;
+typedef uint16_t ushort;
 typedef uint8_t  uint1_t;
 typedef uint16_t uint2_t;
 typedef uint32_t uint3_t;
 typedef uint32_t uint4_t;
-typedef uint64_t ulong;
 typedef uint8_t  und1_t;
 typedef uint16_t und2_t;
 typedef uint32_t und4_t;
-typedef uint64_t und8_t;
+
+/* =====================================================================
+ * Out-of-range callee declarations (bodies reconstructed by their range
+ * workers). All are in the 0x300000-0x380000 region or low boot helpers.
+ * ===================================================================== */
+
+/* --- syscall/entry setup helpers (0x34xxxx / 0x35xxxx range) --- */
+extern cl4_result_t FUN_0034d724(word_t, ...);
 typedef uint8_t   undefined1;
 typedef uint16_t  undefined2;
 typedef uint32_t  undefined4;
 typedef uint64_t  undefined8;
-typedef uint16_t ushort;
+typedef unsigned long ulong;
+
+/* Global lazy-init dispatch slots (DAT_006575xx) written by thunks/inits. */
+extern word_t DAT_006575b0, DAT_006575c8, DAT_006575d0, DAT_006575d8;
+typedef struct sk_pair {
+    und8_t lo;
+typedef struct sk_pair16 { uint64_t a, b; } sk_pair16_t;
+
+/* ================================================================== *
+ * FUN_00349ae0 @ 0x00349ae0   (est. sk_noop_stub)
+ * Ghidra: void FUN_00349ae0(void)
+ * Empty stub; performs no work.
+ * Confidence: medium   Notes: -
+ */
+void FUN_00349ae0(void)
+{
+    return;
+typedef struct { uint64_t lo; uint64_t hi; } sk_u128_t;
+
+/* ------------------------------------------------------------------ *
+ * Out-of-slice cL4 helper declarations (bodies reconstructed by the range
+ * worker that owns each address; declared here for linkage).
+ * ------------------------------------------------------------------ */
+extern void sk_tagged_deref_lo(uint64_t);   /* FUN_00310ad4 — tagged-pointer deref resolver (arg dropped) */
+extern void sk_tagged_deref_hi(uint64_t);   /* FUN_00027754 — tagged-pointer deref resolver (arg dropped) */
+extern void sk_callee_0016186c(uint64_t);   /* FUN_0016186c — out-of-slice helper */
+extern void sk_callee_003109b4(uint64_t);   /* FUN_003109b4 — out-of-slice helper */
+extern void sk_callee_00291ee0(uint64_t);   /* FUN_00291ee0 — out-of-slice helper */
+extern void sk_callee_000839f8(uint64_t, ...);   /* FUN_000839f8 — out-of-slice helper (variadic: args dropped at one site) */
+extern void sk_callee_0006a4c0(uint64_t);   /* FUN_0006a4c0 — out-of-slice helper */
+extern void sk_callee_0008f728(uint64_t);   /* FUN_0008f728 — out-of-slice helper */
+extern void sk_callee_0008f6c0(uint64_t);   /* FUN_0008f6c0 — out-of-slice helper */
+extern uint64_t sk_callee_0008f6f4(uint64_t);   /* FUN_0008f6f4 — out-of-slice helper (returns a value) */
+extern void sk_callee_0031a60c(uint64_t);   /* FUN_0031a60c — out-of-slice helper */
+extern void sk_callee_0031a17c(uint64_t);   /* FUN_0031a17c — out-of-slice helper */
+extern void sk_callee_00377824(uint64_t, uint64_t, uint64_t, void (*)(void), void (*)(void));   /* FUN_00377824 — out-of-slice register/callback helper */
+extern void sk_callee_000839d8(uint64_t);   /* FUN_000839d8 — out-of-slice helper */
+extern void sk_callee_00310a44(uint64_t);   /* FUN_00310a44 — out-of-slice helper */
+extern void sk_callee_00310a74(uint64_t);   /* FUN_00310a74 — out-of-slice helper */
+extern void sk_callee_0001df60(uint64_t);   /* FUN_0001df60 — out-of-slice helper */
+extern void sk_callee_0017e880(uint64_t);   /* FUN_0017e880 — out-of-slice helper */
+extern void sk_callee_0008e5d8(uint64_t);   /* FUN_0008e5d8 — out-of-slice helper */
+extern void sk_callee_0060e3fc(void);   /* FUN_0060e3fc — out-of-slice callback (passed as fn ptr) */
+extern void sk_callee_0060e40c(void);   /* FUN_0060e40c — out-of-slice callback (passed as fn ptr) */
+
+/* Out-of-slice global data tables referenced by getters below. */
+extern uint8_t sk_data_004c1010[];   /* DAT_004c1010 — FUN region data table */
+extern uint8_t sk_data_004e4980[];   /* DAT_004e4980 — global data */
+extern uint8_t sk_data_004e8c24[];   /* DAT_004e8c24 — global data */
+extern uint8_t sk_data_004e8f64[];   /* DAT_004e8f64 — global data */
+extern uint8_t sk_data_004e9d20[];   /* DAT_004e9d20 — global data */
+extern uint8_t sk_data_004ec2e0[];   /* DAT_004ec2e0 — global data */
+extern uint8_t sk_data_004edcd0[];   /* DAT_004edcd0 — global data */
+extern uint8_t sk_data_004edd94[];   /* DAT_004edd94 — global data */
+extern uint8_t sk_data_004f1754[];   /* DAT_004f1754 — global data */
+extern uint8_t sk_data_005ce788[];   /* DAT_005ce788 — global data */
+
+/* FUN_0034af04(void) @ 0x0034af04   (est. sk_callee_call_00310ad4)
+ * Ghidra: FUN_0034af04(void)
+ * Thin wrapper invoking out-of-slice helper(s); args dropped by decompiler where empty.
+ * Confidence: medium
+ * Notes: Thin wrapper invoking out-of-slice helper(s); args dropped by decompiler where empty. */
+void sk_callee_call_00310ad4_af04(void)
+{
+    sk_tagged_deref_lo(0);
+typedef struct { unsigned long lo, hi; } cL4_w16_t;
+
+/* Syscall descriptor/name tables (u32 offset arrays) returned by the getters. */
+extern und4_t DAT_004e8b7c[];  /* table at DAT_004e8b7c */
+extern und4_t DAT_004e8f9c[];  /* table at DAT_004e8f9c */
+extern und4_t DAT_004e9db0[];  /* table at DAT_004e9db0 */
+extern und4_t DAT_004ea760[];  /* table at DAT_004ea760 */
+extern und4_t DAT_004eab00[];  /* table at DAT_004eab00 */
+extern und4_t DAT_004eb964[];  /* table at DAT_004eb964 */
+extern und4_t DAT_004eb980[];  /* table at DAT_004eb980 */
+extern und4_t DAT_004edd08[];  /* table at DAT_004edd08 */
+
+/* Out-of-range cL4 helpers (bodies reconstructed by their range workers). */
+/* FUN_000839f8 — indirect method dispatch: invokes (*(obj-8)+0x30)(obj) through a vtable. */
+extern void cL4_vtable_dispatch(word_t obj, word_t flag);
+typedef struct sk_any_pair {
+    und8_t lo;
+typedef struct { uint64_t lo, hi; } cl4_pair_t;
+
+extern char sk_stack_anchor;   /* synthetic stack symbol for frame-depth deltas */
+extern word_t sk_global_4c1010;
+typedef uint32_t und4_t;
+typedef uint64_t und8_t;
+typedef struct sk_pair {
+    uint64_t lo;
+typedef uint64_t (*code)(void *, ...);   /* Ghidra 'code *' (variadic) fn pointer */
+typedef uint64_t (*sk_fnv_t)(uint64_t, ...);  /* variadic dispatch fn */
+
+/* Ghidra primitive aliases used in this translation. */
+typedef unsigned long  ulong;
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+typedef unsigned char  byte;
+typedef unsigned long  undefined8;
+typedef unsigned int   undefined4;
+typedef unsigned short undefined2;
+typedef unsigned char  undefined1;
+
+/* 16-byte register-pair return (Ghidra undefined1[16] / CONCAT816). */
+typedef struct sk_pair { uint64_t lo; uint64_t hi; } sk_pair_t;
 
 extern uint64_t FUN_00000000();  /* external callee (permissive) */
 extern uint64_t FUN_00002534();  /* external callee (permissive) */
@@ -10512,6 +10646,7 @@ void sk_swift_i64_convert_error_path(uint64_t a, uint64_t b, uint64_t srcmeta)
 
 
 /* 128-bit unsigned value (lo = low 64 bits, hi = high 64 bits). */
+    uint64_t lo;
     uint64_t hi;
 } sk_u128_t;
 
@@ -34662,6 +34797,7 @@ void sk_cap_merge_10(void)
  * Shared 16-byte return pair (Ghidra `undefined1 auVar[16]` returned via
  * x0/x1). lo = _0_8_, hi = _8_8_.
  * ------------------------------------------------------------------ */
+    und8_t lo;
     und8_t hi;
 } sk_pair_t;
 
@@ -49892,6 +50028,7 @@ void sk_syscall_stub_efa8(void)
 
 
 /* 16-byte cL4/Swift "Any"-value pair: {value, type-metadata/flags}. */
+    und8_t lo;
     und8_t hi;
 } sk_any_pair_t;
 
@@ -76662,6 +76799,7 @@ void cl4_r28_359c84(void)
  * argument-marshaling helpers. cl4_result_t is the canonical pair for
  * results; this is a plain data pair for the address/limits helpers.
  * ------------------------------------------------------------------ */
+    uint64_t lo;
     uint64_t hi;
 } sk_pair_t;
 
@@ -86198,6 +86336,8 @@ uint64_t sk_cap_null_ok() { return 0; }
  * Slice 32: 0x372534-0x37ffc4 syscall/exception-entry region. */
 
 
+
+/* Ghidra primitive aliases used in this translation. */
 
 /* 16-byte register-pair return (Ghidra undefined1[16] / CONCAT816). */
 #define SKPAIR(p) { (p).lo, (p).hi }
